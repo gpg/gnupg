@@ -1,0 +1,11 @@
+Stuff used by several modules of GnuPG.
+
+These directories use it:
+
+gpg
+sm
+agent
+
+These directories don't use it:
+
+kbx

@@ -1,0 +1,242 @@
+2003-07-31  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (scdaemon_LDADD): Added INTLLIBS.
+
+2003-07-28  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_setattr): Change implementation.  Allow all
+	useful DOs.
+
+2003-07-27  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.
+
+2003-07-24  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_learn_status): Print more status information.
+	(app_select_openpgp): Store the card version.
+	(store_fpr): Add argument card_version and fix DOs for old cards.
+	(app_openpgp_storekey): Likewise.
+
+2003-07-23  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_pkauth): New.
+	(cmd_setdata): Check whether data was given at all to avoid
+	passing 0 to malloc.
+
+	* app.c (app_auth): New.
+	* app-openpgp.c (do_auth): New.
+
+2003-07-22  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_passwd): New.
+	* app.c (app_change_pin): New.
+	* app-openpgp.c (do_change_pin): New.
+	* iso7816.c (iso7816_reset_retry_counter): Implemented.
+
+	* sc-investigate.c (main): New option --gen-random.
+	* iso7816.c (iso7816_get_challenge): Don't create APDUs with a
+	length larger than 255.
+
+2003-07-17  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_random): New command RANDOM.
+
+	* iso7816.c (map_sw): New. Use it in this file to return
+	meaningful error messages.  Changed all public fucntions to return
+	a gpg_error_t.
+	(iso7816_change_reference_data): New.
+	* apdu.c (apdu_open_reader): Use faked status words for soem
+	system errors.
+
+2003-07-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (apdu_send_simple): Use apdu_send_le so that we can
+	specify not to send Le as it should be.
+
+2003-07-15  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Add sc-copykeys program.
+	* sc-copykeys.c: New.
+	* app-openpgp.c (app_openpgp_storekey): New.
+	(app_openpgp_cardinfo): New.
+	(count_bits): New.
+	(store_fpr): And use it here to get the actual length in bit.
+
+2003-07-03  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_setattr): Add setting of the URL.
+	(app_select_openpgp): Dump card data only in very verbose mode.
+	(do_decipher): New.
+
+2003-07-02  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (get_sig_counter): New.
+	(do_sign): Print the signature counter and enable the PIN callback.
+	(do_genkey): Implement the PIN callback. 
+
+2003-07-01  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (store_fpr): Fixed fingerprint calculation.
+
+2003-06-26  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (find_tlv): Fixed length header parsing.
+
+	* app.c (app_genkey): New.
+	* command.c (cmd_genkey): New.
+
+2003-06-25  Werner Koch  <wk@gnupg.org>
+
+	* command.c (percent_plus_unescape): New.
+	(cmd_setattr): New.
+
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* command.c (send_status_info): New.
+
+	* app-openpgp.c (app_select_openpgp): Replace SLOT arg by APP arg
+	and setup the function pointers in APP on success. Changed callers.
+	* app.c: New.
+	* app-common.h: New.
+	* scdaemon.h (APP): New type to handle applications.
+	(server_control_s): Add an APP context field.
+
+	* command.c (cmd_serialno): Handle applications.
+	(cmd_pksign): Ditto.
+	(cmd_pkdecrypt): Ditto.
+	(reset_notify): Ditto.
+	(cmd_learn): For now return error for application contexts.
+	(cmd_readcert): Ditto.
+	(cmd_readkey): Ditto.
+
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	* card.c (map_sc_err): Renamed gpg_make_err to gpg_err_make.
+
+	Renamed error codes from INVALID to INV and removed _ERROR suffixes.
+
+2003-06-03  Werner Koch  <wk@gnupg.org>
+
+	Changed all error codes in all files to the new libgpg-error scheme.
+
+	* scdaemon.h: Include gpg-error.h and errno.h
+	* card.c (map_sc_err): Use unknown for the error source.
+	* Makefile.am: Link with libgpg-error
+
+2003-05-14  Werner Koch  <wk@gnupg.org>
+
+	* atr.c, atr.h: New.
+	* sc-investigate.c: Dump the ATR in a human readable format.
+
+2003-05-08  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.h (DBG_CARD_IO_VALUE): New.
+
+	* sc-investigate.c: New.
+	* scdaemon.c (main): Removed --print-atr option.
+
+	* iso7816.c, iso7816.h, app-openpgp.c: New.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: New options --print-atr and --reader-port
+	* apdu.c, apdu.h: New
+
+	* card.c, card-p15.c, card-dinsig.c: Allow build without OpenSC.
+	
+	* Makefile.am (LDFLAGS): Removed.
+
+	* command.c (register_commands): Adjusted for new Assuan semantics.
+
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): New option --daemon so that the program is
+	not accidently started in the background.
+
+2002-08-16  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: Include i18n.h.
+
+	* card-common.h (struct p15_private_s): Forward declaration.  Add
+	it to card_ctx_s.
+	* card.c (card_close): Make sure private data is released.
+	(card_enum_certs): New.
+	* card-p15.c (p15_release_private_data): New.
+	(init_private_data): New to work around an OpenSC weirdness.
+	(p15_enum_keypairs): Do an OpenSC get_objects only once.
+	(p15_enum_certs): New.
+	(card_p15_bind): Bind new function.
+	* command.c (cmd_learn): Return information about the certificates.
+
+2002-08-09  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_get_serial_and_stamp): Use the tokeinfo serial
+	number as a fallback. Add a special prefix for serial numbers.
+
+2002-07-30  Werner Koch  <wk@gnupg.org>
+
+        Changes to cope with OpenSC 0.7.0:
+	
+	* card.c: Removed the check for the packed opensc version.
+	Changed include file names of opensc.
+	(map_sc_err): Adjusted error codes for new opensc version.
+	* card-p15.c: Changed include filename of opensc.
+	* card-dinsig.c: Ditto.
+
+	* card-p15.c (p15_decipher): Add flags argument to OpenSC call.
+	
+2002-07-24  Werner Koch  <wk@gnupg.org>
+
+	* card.c (find_simple_tlv, find_iccsn): New.
+	(card_get_serial_and_stamp): Improved serial number parser.
+
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): Use GNUPG_DEFAULT_HOMEDIR constant.
+
+2002-06-15  Werner Koch  <wk@gnupg.org>
+
+	* card-dinsig.c: Documented some stuff from the DIN norm.
+
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_pksign, cmd_pkdecrypt): Use a copy of the key ID.
+
+2002-04-12  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: New option --debug-sc N.
+	* card.c (card_open): set it here.
+
+	* card-p15.c (p15_prepare_key): Factored out common code from ...
+	(p15_sign, p15_decipher): here and made the decryption work the
+	regular way.
+
+2002-04-10  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_open): Return immediately when no reader is available.
+
+2002-03-27  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_open, card_close): Adjusted for changes in OpenSC.
+
+2002-03-10  Werner Koch  <wk@gnupg.org>
+
+	* card-p15.c, card-dinsig.c, card-common.h: New.
+	* card.c: Factored most code out to the new modules, so that we
+	can better support different types of card applications.
+
+2002-01-26  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c scdaemon.h, command.c: New. Based on the code from
+	the gpg-agent.
+
+ Copyright 2002 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
