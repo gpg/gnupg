@@ -323,6 +323,58 @@ dispatch_command (ASSUAN_CONTEXT ctx, char *line, int linelen)
 
 
 
+
+static int
+process_request (ASSUAN_CONTEXT ctx)
+{
+  int rc;
+
+  rc = _assuan_read_line (ctx);
+  if (rc)
+    return rc;
+  if (*ctx->inbound.line == '#' || !ctx->inbound.linelen)
+    return 0; /* comment line - ignore */
+
+  ctx->outbound.data.error = 0;
+  ctx->outbound.data.linelen = 0;
+  /* dispatch command and return reply */
+  rc = dispatch_command (ctx, ctx->inbound.line, ctx->inbound.linelen);
+  /* check from data write errors */
+  if (ctx->outbound.data.fp)
+    { /* Flush the data lines */
+      fclose (ctx->outbound.data.fp);
+      ctx->outbound.data.fp = NULL;
+      if (!rc && ctx->outbound.data.error)
+        rc = ctx->outbound.data.error;
+    }
+  /* Error handling */
+  if (!rc)
+    {
+      rc = _assuan_write_line (ctx, "OK");
+    }
+  else if (rc == -1)
+    { /* No error checking because the peer may have already disconnect */ 
+      _assuan_write_line (ctx, "OK  Bye, bye - hope to meet you again");
+    }
+  else 
+    {
+      char errline[256];
+
+      if (rc < 100)
+        sprintf (errline, "ERR %d server fault (%.50s)",
+                 ASSUAN_Server_Fault, assuan_strerror (rc));
+      else
+        {
+          const char *text = ctx->err_no == rc? ctx->err_str:NULL;
+
+          sprintf (errline, "ERR %d %.50s%s%.100s",
+                   rc, assuan_strerror (rc), text? " - ":"", text?text:"");
+        }
+      rc = _assuan_write_line (ctx, errline);
+    }
+
+  return rc;
+}
 
 /**
  * assuan_process:
@@ -341,55 +393,7 @@ assuan_process (ASSUAN_CONTEXT ctx)
   int rc;
 
   do {
-    /* Read the line but skip comments */
-    do
-      {
-        rc = _assuan_read_line (ctx);
-        if (rc)
-          return rc;
-      
-/*          fprintf (stderr, "DBG-assuan: got %d bytes `%s'\n", */
-/*                   ctx->inbound.linelen, ctx->inbound.line); */
-      }
-    while ( *ctx->inbound.line == '#' || !ctx->inbound.linelen);
-
-    ctx->outbound.data.error = 0;
-    ctx->outbound.data.linelen = 0;
-    /* dispatch command and return reply */
-    rc = dispatch_command (ctx, ctx->inbound.line, ctx->inbound.linelen);
-    /* check from data write errors */
-    if (ctx->outbound.data.fp)
-      { /* Flush the data lines */
-        fclose (ctx->outbound.data.fp);
-        ctx->outbound.data.fp = NULL;
-        if (!rc && ctx->outbound.data.error)
-          rc = ctx->outbound.data.error;
-      }
-    /* Error handling */
-    if (!rc)
-      {
-        rc = _assuan_write_line (ctx, "OK");
-      }
-    else if (rc == -1)
-      { /* No error checking because the peer may have already disconnect */ 
-        _assuan_write_line (ctx, "OK  Bye, bye - hope to meet you again");
-      }
-    else 
-      {
-        char errline[256];
-
-        if (rc < 100)
-          sprintf (errline, "ERR %d server fault (%.50s)",
-                   ASSUAN_Server_Fault, assuan_strerror (rc));
-        else
-          {
-            const char *text = ctx->err_no == rc? ctx->err_str:NULL;
-
-            sprintf (errline, "ERR %d %.50s%s%.100s",
-                     rc, assuan_strerror (rc), text? " - ":"", text?text:"");
-          }
-        rc = _assuan_write_line (ctx, errline);
-      }
+    rc = process_request (ctx);
   } while (!rc);
 
   if (rc == -1)
@@ -398,6 +402,65 @@ assuan_process (ASSUAN_CONTEXT ctx)
   return rc;
 }
 
+
+/**
+ * assuan_process_next:
+ * @ctx: Assuan context
+ * 
+ * Same as assuan_process() but the user has to provide the outer
+ * loop.  He should loop as long as the return code is zero and stop
+ * otherwise; -1 is regular end.
+ * 
+ * See also: assuan_get_active_fds()
+ * Return value: -1 for end of server, 0 on success or an error code
+ **/
+int 
+assuan_process_next (ASSUAN_CONTEXT ctx)
+{
+  return process_request (ctx);
+}
+
+
+/**
+ * assuan_get_active_fds:
+ * @ctx: Assuan context
+ * @what: 0 for read fds, 1 for write fds
+ * @fdarray: Caller supplied array to store the FDs
+ * @fdarraysize: size of that array
+ * 
+ * Return all active filedescriptors for the given context.  This
+ * function can be used to select on the fds and call
+ * assuan_process_next() if there is an active one.
+ *
+ * Note, that write FDs are not yet supported.
+ * 
+ * Return value: number of FDs active and put into @fdarray or -1 on
+ * error which is most likely a too small fdarray.
+ **/
+int 
+assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
+                       int *fdarray, int fdarraysize)
+{
+  int n = 0;
+
+  if (ctx || fdarraysize < 2 || what < 0 || what > 1)
+    return -1;
+
+  if (!what)
+    {
+      if (ctx->inbound.fd != -1)
+        fdarray[n++] = ctx->inbound.fd;
+    }
+  else
+    {
+      if (ctx->outbound.fd != -1)
+        fdarray[n++] = ctx->outbound.fd;
+      if (ctx->outbound.data.fp)
+        fdarray[n++] = fileno (ctx->outbound.data.fp);
+    }
+
+  return n;
+}
 
 /* Return a FP to be used for data output.  The FILE pointer is valid
    until the end of a handler.  So a close is not needed.  Assuan does

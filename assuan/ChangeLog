@@ -4,6 +4,10 @@
 	(assuan_register_reset_notify)
 	(assuan_register_cancel_notify): New and call them from the
 	standard handlers.
+	(assuan_process): Moved bulk of function to ..
+	(process_request): .. new.
+	(assuan_process_next): One shot version of above.
+	(assuan_get_active_fds): New.
 
 2001-11-24  Werner Koch  <wk@gnupg.org>
 

@@ -92,6 +92,11 @@ int assuan_register_reset_notify (ASSUAN_CONTEXT ctx,
 int assuan_register_cancel_notify (ASSUAN_CONTEXT ctx,
                                    void (*fnc)(ASSUAN_CONTEXT));
 int assuan_process (ASSUAN_CONTEXT ctx);
+int assuan_process_next (ASSUAN_CONTEXT ctx);
+int assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
+                           int *fdarray, int fdarraysize);
+
+
 FILE *assuan_get_data_fp (ASSUAN_CONTEXT ctx);
 void assuan_write_status (ASSUAN_CONTEXT ctx,
                           const char *keyword, const char *text);
