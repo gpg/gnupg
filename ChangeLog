@@ -1,3 +1,10 @@
+2003-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Do not set GNUPG_LIBEXECDIR in ./configure, so
+	that makefiles can override it.  Verify that we have a 64-bit type
+	before building tiger.c or sha512.c.  Add uint64_t as a possible
+	64-bit type.
+
 2003-02-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Add notes about disabled keys, trustdb tweaks, and

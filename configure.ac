@@ -136,15 +136,6 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
-AC_MSG_CHECKING([whether to enable old-style TIGER digest support])
-AC_ARG_ENABLE(old-tiger,
-    [  --enable-old-tiger      enable old-style TIGER digest support],
-    old_tiger=$enableval, old_tiger=no)
-AC_MSG_RESULT($old_tiger)
-if test "$old_tiger" = yes ; then
-    AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER digest support])
-fi
-
 AC_MSG_CHECKING([whether to enable external program execution])
 AC_ARG_ENABLE(exec,
     [  --disable-exec          disable all external program execution],
@@ -561,15 +552,37 @@ GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
 
-AC_CHECK_SIZEOF(unsigned short, 2)
-AC_CHECK_SIZEOF(unsigned int, 4)
-AC_CHECK_SIZEOF(unsigned long, 4)
-AC_CHECK_SIZEOF(unsigned long long, 0)
+AC_CHECK_SIZEOF(unsigned short)
+AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(unsigned long)
+AC_CHECK_SIZEOF(unsigned long long)
+AC_CHECK_SIZEOF(uint64_t)
 
 if test "$ac_cv_sizeof_unsigned_short" = "0" \
    || test "$ac_cv_sizeof_unsigned_int" = "0" \
    || test "$ac_cv_sizeof_unsigned_long" = "0"; then
     AC_MSG_WARN([Hmmm, something is wrong with the sizes - using defaults]);
+fi
+
+dnl Do we have any 64-bit data types?
+if test "$ac_cv_sizeof_unsigned_int" != "8" \
+   && test "$ac_cv_sizeof_unsigned_long" != "8" \
+   && test "$ac_cv_sizeof_unsigned_long_long" != "8" \
+   && test "$ac_cv_sizeof_uint64_t" != "8"; then
+    AC_MSG_WARN([No 64-bit types.  Disabling TIGER/192, SHA-384, and SHA-512])
+else
+  AC_SUBST(TIGER_O,tiger.o)
+  AC_DEFINE(USE_TIGER,1,[Define to include TIGER/192 digest support])
+  AC_SUBST(SHA512_O,sha512.o)
+  AC_DEFINE(USE_SHA512,1,[Define to include SHA-384 and SHA-512 digest support])
+  AC_MSG_CHECKING([whether to enable old-style TIGER/192 digest support])
+  AC_ARG_ENABLE(old-tiger,
+      [  --enable-old-tiger      enable old-style TIGER/192 digest support],
+      old_tiger=$enableval, old_tiger=no)
+  AC_MSG_RESULT($old_tiger)
+  if test "$old_tiger" = yes ; then
+      AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
+  fi
 fi
 
 dnl Checks for library functions.
@@ -909,11 +922,7 @@ if test "$print_egd_warning" = yes; then
 ***]])
 fi
 
-
-
 # Note the \\\\ for backslashes.  Autoconf eats one layer, leaving \\
-
-AC_SUBST(GNUPG_LIBEXECDIR,"${libexecdir}/gnupg")
 
 AC_CONFIG_COMMANDS(g10defs.h,[[
 cat >g10defs.tmp <<G10EOF
@@ -927,7 +936,6 @@ cat >g10defs.tmp <<G10EOF
 #else
   #define G10_LOCALEDIR     "${datadir}/locale"
   #define GNUPG_LIBDIR      "${libdir}/gnupg"
-  #define GNUPG_LIBEXECDIR  "${libexecdir}/gnupg"
   #define GNUPG_DATADIR     "${datadir}/gnupg"
   #ifdef __VMS
     #define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
