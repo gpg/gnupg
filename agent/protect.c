@@ -168,12 +168,12 @@ do_encryption (const char *protbegin, size_t protlen,
     rc = out_of_core ();
   if (!rc)
     {
-      /* allocate random bytes to be used as IV, padding and s2k salt*/
-      iv = gcry_random_bytes (blklen*2+8, GCRY_WEAK_RANDOM);
+      /* Allocate random bytes to be used as IV, padding and s2k salt. */
+      iv = xtrymalloc (blklen*2+8);
       if (!iv)
         rc = gpg_error (GPG_ERR_ENOMEM);
-      else
-        rc = gcry_cipher_setiv (hd, iv, blklen);
+      gcry_create_nonce (iv, blklen*2+8);
+      rc = gcry_cipher_setiv (hd, iv, blklen);
     }
   if (!rc)
     {

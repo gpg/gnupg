@@ -1,3 +1,8 @@
+2003-12-15  Werner Koch  <wk@gnupg.org>
+
+	* protect.c (do_encryption): Use gcry_create_nonce instad of the
+	obsolete WEAK_RANDOM.
+
 2003-11-20  Werner Koch  <wk@gnupg.org>
 
 	* sexp-parse.h (snext): Don't use atoi_1 and digitp macros, so
