@@ -612,7 +612,7 @@ main (int argc, char **argv )
 
       printf ("verbose:%lu:\n"
               "quiet:%lu:\n"
-              "debug-level:%lu:\"none\":\n"
+              "debug-level:%lu:\"none:\n"
               "log-file:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
