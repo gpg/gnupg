@@ -155,7 +155,7 @@ mk_notation_policy_etc( PKT_signature *sig,
 	s=pct_expando(string,&args);
 	if(!s)
 	  {
-	    log_error(_("WARNING: unable to %%-expand policy url "
+	    log_error(_("WARNING: unable to %%-expand policy URL "
 			"(too large).  Using unexpanded.\n"));
 	    s=m_strdup(string);
 	  }

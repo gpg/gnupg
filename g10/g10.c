@@ -1181,7 +1181,7 @@ main( int argc, char **argv )
     opt.verify_options=
       VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION|VERIFY_SHOW_KEYSERVER;
     opt.trust_model=TM_AUTO;
-    opt.mangle_dos_filenames = 1;
+    opt.mangle_dos_filenames = 0;
 #if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));

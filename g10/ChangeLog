@@ -1,5 +1,14 @@
 2003-09-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* sign.c (mk_notation_policy_etc): Capitalize "URL".
+
+	* trustdb.c (validate_keys): Give a little more information while
+	rebuilding trustdb.
+
+	* pkclist.c (do_edit_ownertrust): Clarify "don't know".
+
+	* g10.c (main): Default to --no-mangle-dos-filenames.
+
 	* keydb.h, keyring.c (keyring_search), trustdb.c (search_skipfnc):
 	Expand the skipfnc to include a pointer to the user ID that
 	matched.

@@ -1929,7 +1929,6 @@ validate_keys (int interactive)
   KEYDB_HANDLE kdb = NULL;
   KBNODE node;
   int depth;
-  int key_count;
   int ot_unknown, ot_undefined, ot_never, ot_marginal, ot_full, ot_ultimate;
   KeyHashTable stored,used,full_trust;
   u32 start_time, next_expire;
@@ -1989,8 +1988,9 @@ validate_keys (int interactive)
 
   for (depth=0; depth < opt.max_cert_depth; depth++)
     {
+      int valids=0,key_count;
       /* See whether we should assign ownertrust values to the keys in
-         utk_list.  */
+         klist.  */
       ot_unknown = ot_undefined = ot_never = 0;
       ot_marginal = ot_full = ot_ultimate = 0;
       for (k=klist; k; k = k->next)
@@ -2045,6 +2045,8 @@ validate_keys (int interactive)
             ot_full++;
           else if (k->ownertrust == TRUST_ULTIMATE)
             ot_ultimate++;
+
+	  valids++;
         }
 
       /* Find all keys which are signed by a key in kdlist */
@@ -2067,9 +2069,9 @@ validate_keys (int interactive)
       for (kar=keys; kar->keyblock; kar++)
           store_validation_status (depth, kar->keyblock, stored);
 
-      log_info (_("checking at depth %d valid=%d"
-                  " ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"), 
-                depth, key_count, ot_unknown, ot_undefined,
+      log_info (_("depth: %d  valid: %3d  signed: %3d"
+                  "  trust: %d-, %dq, %dn, %dm, %df, %du\n"), 
+                depth, valids, key_count, ot_unknown, ot_undefined,
                 ot_never, ot_marginal, ot_full, ot_ultimate ); 
 
       /* Build a new kdlist from all fully valid keys in KEYS */

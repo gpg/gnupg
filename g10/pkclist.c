@@ -314,7 +314,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
                      "verify other users' keys (by looking at passports,\n"
                      "checking fingerprints from different sources...)?\n\n"));
 	if(min_num<=1)
-	  tty_printf (_(" %d = I don't know\n"), 1);
+	  tty_printf (_(" %d = I don't know or won't say\n"), 1);
 	if(min_num<=2)
 	  tty_printf (_(" %d = I do NOT trust\n"), 2);
 	if(min_num<=3)
