@@ -25,7 +25,7 @@
 #include <time.h>
 #include <ctype.h>
 #ifdef HAVE_LANGINFO_H
-  #include <langinfo.h>
+#include <langinfo.h>
 #endif
 #include "types.h"
 #include "util.h"
@@ -143,9 +143,9 @@ const char *
 asctimestamp( u32 stamp )
 {
     static char buffer[50];
-    #if defined (HAVE_STRFTIME) && defined (HAVE_NL_LANGINFO)
+#if defined (HAVE_STRFTIME) && defined (HAVE_NL_LANGINFO)
       static char fmt[50];
-    #endif
+#endif
     struct tm *tp;
     time_t atime = stamp;
 
@@ -155,23 +155,23 @@ asctimestamp( u32 stamp )
     }
 
     tp = localtime( &atime );
-  #ifdef HAVE_STRFTIME
-    #if defined(HAVE_NL_LANGINFO)
+#ifdef HAVE_STRFTIME
+#if defined(HAVE_NL_LANGINFO)
       mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3 );
       if( strstr( fmt, "%Z" ) == NULL )
 	strcat( fmt, " %Z");
       strftime( buffer, DIM(buffer)-1, fmt, tp );
-    #else
+#else
       /* fixme: we should check whether the locale appends a " %Z"
        * These locales from glibc don't put the " %Z":
        * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
        */
       strftime( buffer, DIM(buffer)-1, "%c %Z", tp );
-    #endif
+#endif
     buffer[DIM(buffer)-1] = 0;
-  #else
+#else
     mem2str( buffer, asctime(tp), DIM(buffer) );
-  #endif
+#endif
     return buffer;
 }
 

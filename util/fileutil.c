@@ -71,10 +71,10 @@ make_dirname(const char *filepath)
     char *p;
 
     if ( !(p=strrchr(filepath, DIRSEP_C)) )
-      #ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DRIVE_LETTERS
 	if ( !(p=strrchr(filepath, '\\')) )
 	    if ( !(p=strrchr(filepath, ':')) )
-      #endif
+#endif
 	      {
 		return m_strdup(EXTSEP_S);
 	      }
@@ -138,11 +138,11 @@ compare_filenames( const char *a, const char *b )
      * resolve symlinks?
      */
 #ifndef __riscos__
-  #ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DRIVE_LETTERS
     return ascii_strcasecmp(a,b);
-  #else
+#else
     return strcmp(a,b);
-  #endif
+#endif
 #else /* __riscos__ */
     int c = 0;
     char *abuf, *bbuf;
@@ -231,5 +231,3 @@ leave:
     iobuf_close( a );
     return rc;
 }
-
-

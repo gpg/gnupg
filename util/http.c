@@ -27,16 +27,16 @@
 #include <errno.h>
 
 #ifdef __MINGW32__
- #include <windows.h>
+#include <windows.h>
 #else
- #include <unistd.h>
- #include <sys/types.h>
- #include <sys/socket.h>
- #include <sys/time.h>
- #include <time.h>
- #include <netinet/in.h>
- #include <arpa/inet.h>
- #include <netdb.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #endif
 
 #include "util.h"
@@ -46,11 +46,11 @@
 #include "srv.h"
 
 #ifdef __riscos__
-  #define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
-  #define HTTP_PROXY_ENV_PRINTABLE "<GnuPG$HttpProxy>"
+#define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
+#define HTTP_PROXY_ENV_PRINTABLE "<GnuPG$HttpProxy>"
 #else
-  #define HTTP_PROXY_ENV           "http_proxy"
-  #define HTTP_PROXY_ENV_PRINTABLE "$http_proxy"
+#define HTTP_PROXY_ENV           "http_proxy"
+#define HTTP_PROXY_ENV_PRINTABLE "$http_proxy"
 #endif
 
 #ifdef __MINGW32__
@@ -66,7 +66,7 @@
 			"!\"#$%&'()*+,-./:;<=>?[\\]^_{|}~"
 
 #ifndef EAGAIN
-  #define EAGAIN  EWOULDBLOCK
+#define EAGAIN  EWOULDBLOCK
 #endif
 
 static int parse_uri( PARSED_URI *ret_uri, const char *uri );
@@ -172,11 +172,11 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
     http_start_data( hd ); /* make sure that we are in the data */
 
-  #if 0
+#if 0
     hd->sock = dup( hd->sock ); 
     if( hd->sock == -1 )
 	return G10ERR_GENERAL;
-  #endif
+#endif
     iobuf_ioctl (hd->fp_write, 1, 1, NULL); /* keep the socket open */
     iobuf_close (hd->fp_write);
     hd->fp_write = NULL;
@@ -843,7 +843,7 @@ write_server( int sock, const char *data, size_t length )
 
     nleft = length;
     while( nleft > 0 ) {
-      #ifdef __MINGW32__  
+#ifdef __MINGW32__  
         int nwritten;
 
         nwritten = send (sock, data, nleft, 0);
@@ -851,7 +851,7 @@ write_server( int sock, const char *data, size_t length )
 	    log_info ("write failed: ec=%d\n", (int)WSAGetLastError ());
 	    return G10ERR_NETWORK;
         }
-      #else
+#else
 	int nwritten = write( sock, data, nleft );
 	if( nwritten == -1 ) {
 	    if( errno == EINTR )
@@ -867,7 +867,7 @@ write_server( int sock, const char *data, size_t length )
 	    log_info("write failed: %s\n", strerror(errno));
 	    return G10ERR_NETWORK;
 	}
-      #endif
+#endif
 	nleft -=nwritten;
 	data += nwritten;
     }

@@ -26,15 +26,15 @@
 #include <stdarg.h>
 #include <unistd.h>
 #if defined(HAVE_MLOCK) || defined(HAVE_MMAP)
-  #include <sys/mman.h>
-  #include <sys/types.h>
-  #include <fcntl.h>
-  #ifdef USE_CAPABILITIES
-    #include <sys/capability.h>
-  #endif
-  #ifdef HAVE_PLOCK
-    #include <sys/lock.h>
-  #endif
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#ifdef USE_CAPABILITIES
+#include <sys/capability.h>
+#endif
+#ifdef HAVE_PLOCK
+#include <sys/lock.h>
+#endif
 #endif
 
 #include "types.h"
@@ -43,11 +43,11 @@
 #include "i18n.h"
 
 #if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
-  #define MAP_ANONYMOUS MAP_ANON
+#define MAP_ANONYMOUS MAP_ANON
 #endif
 /* It seems that Slackware 7.1 does not know about EPERM */
 #if !defined(EPERM) && defined(ENOMEM)
-  #define EPERM  ENOMEM
+#define EPERM  ENOMEM
 #endif
 
 
@@ -97,7 +97,7 @@ print_warn(void)
 static void
 lock_pool( void *p, size_t n )
 {
-  #if defined(USE_CAPABILITIES) && defined(HAVE_MLOCK)
+#if defined(USE_CAPABILITIES) && defined(HAVE_MLOCK)
     int err;
 
     cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
@@ -108,30 +108,30 @@ lock_pool( void *p, size_t n )
 
     if( err ) {
 	if( errno != EPERM
-	  #ifdef EAGAIN  /* OpenBSD returns this */
+#ifdef EAGAIN  /* OpenBSD returns this */
 	    && errno != EAGAIN
-	  #endif
-	  #ifdef ENOSYS  /* Some SCOs return this (function not implemented) */
+#endif
+#ifdef ENOSYS  /* Some SCOs return this (function not implemented) */
 	    && errno != ENOSYS
-	  #endif
-          #ifdef ENOMEM  /* Linux can return this */
+#endif
+#ifdef ENOMEM  /* Linux can return this */
             && errno != ENOMEM
-          #endif
+#endif
 	  )
 	    log_error("can't lock memory: %s\n", strerror(err));
 	show_warning = 1;
     }
 
-  #elif defined(HAVE_MLOCK)
+#elif defined(HAVE_MLOCK)
     uid_t uid;
     int err;
 
     uid = getuid();
 
-  #ifdef HAVE_BROKEN_MLOCK
+#ifdef HAVE_BROKEN_MLOCK
     /* ick. but at least we get secured memory. about to lock
        entire data segment. */
-  #ifdef HAVE_PLOCK
+#ifdef HAVE_PLOCK
     err = plock( DATLOCK );
     if( err && errno )
         err = errno;
@@ -145,12 +145,12 @@ lock_pool( void *p, size_t n )
 	if( err && errno )
 	    err = errno;
     }
-  #endif /*!HAVE_PLOCK*/
-  #else
+#endif /*!HAVE_PLOCK*/
+#else
     err = mlock( p, n );
     if( err && errno )
 	err = errno;
-  #endif
+#endif
 
     if( uid && !geteuid() ) {
 	/* check that we really dropped the privs.
@@ -161,38 +161,38 @@ lock_pool( void *p, size_t n )
 
     if( err ) {
 	if( errno != EPERM
-	  #ifdef EAGAIN  /* OpenBSD returns this */
+#ifdef EAGAIN  /* OpenBSD returns this */
 	    && errno != EAGAIN
-	  #endif
-	  #ifdef ENOSYS  /* Some SCOs return this (function not implemented) */
+#endif
+#ifdef ENOSYS  /* Some SCOs return this (function not implemented) */
 	    && errno != ENOSYS
-	  #endif
-          #ifdef ENOMEM  /* Linux can return this */
+#endif
+#ifdef ENOMEM  /* Linux can return this */
             && errno != ENOMEM
-          #endif
+#endif
 	  )
 	    log_error("can't lock memory: %s\n", strerror(err));
 	show_warning = 1;
     }
 
-  #elif defined ( __QNX__ )
+#elif defined ( __QNX__ )
     /* QNX does not page at all, so the whole secure memory stuff does
      * not make much sense.  However it is still of use because it
      * wipes out the memory on a free().
      * Therefore it is sufficient to suppress the warning
      */
-  #elif defined (HAVE_DOSISH_SYSTEM) || defined (__CYGWIN__)
+#elif defined (HAVE_DOSISH_SYSTEM) || defined (__CYGWIN__)
     /* It does not make sense to print such a warning, given the fact that 
      * this whole Windows !@#$% and their user base are inherently insecure
      */
-  #elif defined (__riscos__)
+#elif defined (__riscos__)
     /* no virtual memory on RISC OS, so no pages are swapped to disc,
      * besides we don't have mmap, so we don't use it! ;-)
      * But don't complain, as explained above.
      */
-  #else
+#else
     log_info("Please note that you don't have secure memory on this system\n");
-  #endif
+#endif
 }
 
 
@@ -206,18 +206,18 @@ init_pool( size_t n)
     if( disable_secmem )
 	log_bug("secure memory is disabled");
 
-  #ifdef HAVE_GETPAGESIZE
+#ifdef HAVE_GETPAGESIZE
     pgsize = getpagesize();
-  #else
+#else
     pgsize = 4096;
-  #endif
+#endif
 
-  #ifdef HAVE_MMAP
+#ifdef HAVE_MMAP
     poolsize = (poolsize + pgsize -1 ) & ~(pgsize-1);
-    #ifdef MAP_ANONYMOUS
+#ifdef MAP_ANONYMOUS
        pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
 				 MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    #else /* map /dev/zero instead */
+#else /* map /dev/zero instead */
     {	int fd;
 
 	fd = open("/dev/zero", O_RDWR);
@@ -230,7 +230,7 @@ init_pool( size_t n)
 				      MAP_PRIVATE, fd, 0);
 	}
     }
-    #endif
+#endif
     if( pool == (void*)-1 )
 	log_info("can't mmap pool of %u bytes: %s - using malloc\n",
 			    (unsigned)poolsize, strerror(errno));
@@ -239,7 +239,7 @@ init_pool( size_t n)
 	pool_okay = 1;
     }
 
-  #endif
+#endif
     if( !pool_okay ) {
 	pool = malloc( poolsize );
 	if( !pool )
@@ -290,11 +290,11 @@ secmem_init( size_t n )
 {
     if( !n ) {
 #ifndef __riscos__
-      #ifdef USE_CAPABILITIES
+#ifdef USE_CAPABILITIES
 	/* drop all capabilities */
 	cap_set_proc( cap_from_text("all-eip") );
 
-      #elif !defined(HAVE_DOSISH_SYSTEM)
+#elif !defined(HAVE_DOSISH_SYSTEM)
 	uid_t uid;
 
 	disable_secmem=1;
@@ -303,7 +303,7 @@ secmem_init( size_t n )
 	    if( setuid( uid ) || getuid() != geteuid() || !setuid(0) )
 		log_fatal("failed to drop setuid\n" );
 	}
-      #endif
+#endif
 #endif /* !__riscos__ */
     }
     else {
@@ -445,10 +445,10 @@ secmem_term()
     wipememory2( pool, 0xaa, poolsize);
     wipememory2( pool, 0x55, poolsize);
     wipememory2( pool, 0x00, poolsize);
-  #ifdef HAVE_MMAP
+#ifdef HAVE_MMAP
     if( pool_is_mmapped )
 	munmap( pool, poolsize );
-  #endif
+#endif
     pool = NULL;
     pool_okay = 0;
     poolsize=0;
@@ -467,4 +467,3 @@ secmem_dump_stats()
 		cur_alloced, max_alloced, cur_blocks, max_blocks,
 		(ulong)poollen, (ulong)poolsize );
 }
-
