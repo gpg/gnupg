@@ -1,3 +1,8 @@
+2003-08-26  Timo Schulz  <twoaday@freakmail.de>
+
+	* apdu.c (new_reader_slot): Only set 'is_osc' when OpenSC
+	is used.
+	
 2003-08-25  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_setattr): Use a copy of LINE.

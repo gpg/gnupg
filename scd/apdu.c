@@ -156,7 +156,9 @@ new_reader_slot (void)
     }
   reader_table[reader].used = 1;
   reader_table[reader].is_ctapi = 0;
+#ifdef HAVE_OPENSC
   reader_table[reader].is_osc = 0;
+#endif
   return reader;
 }
 
