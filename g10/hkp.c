@@ -279,8 +279,8 @@ parse_hkp_index(IOBUF buffer,char *line)
      certain unchanging landmarks, we can't reliably parse the
      response. */
   if(open && ascii_memcasecmp(line,"</pre>",6)!=0 &&
-     ascii_memcasecmp(line,"pub  ",5)!=0 &&
-     ascii_memcasecmp(line,"     ",5)!=0)
+     ascii_memcasecmp(line,"pub ",4)!=0 &&
+     ascii_memcasecmp(line,"    ",4)!=0)
     {
       m_free(key);
       m_free(uid);
@@ -313,7 +313,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 	  ret=1;
 	}
 
-      if(strncmp(line,"     ",5)!=0)
+      if(strncmp(line,"    ",4)!=0)
 	{
 	  revoked=0;
 	  m_free(key);
@@ -323,7 +323,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 	}
     }
 
-  if(ascii_memcasecmp(line,"pub  ",5)==0)
+  if(ascii_memcasecmp(line,"pub ",4)==0)
     {
       char *tok,*temp;
 

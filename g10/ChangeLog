@@ -1,3 +1,8 @@
+2002-08-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (parse_hkp_index): Properly handle really large keys
+	(5 digit key length) in HKP searches.
+
 2002-08-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* encode.c (encode_simple): Fix problem with using compression
