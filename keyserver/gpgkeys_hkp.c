@@ -535,7 +535,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 }
 
 void
-handle_old_hkp_index(IOBUF input)
+handle_old_hkp_index(IOBUF inp)
 {
   int ret,rc,count=0;
   unsigned int buflen;
@@ -554,7 +554,7 @@ handle_old_hkp_index(IOBUF input)
 	 stop sending before a large search result page is
 	 complete. */
 
-      rc=iobuf_read_line(input,&line,&buflen,&maxlen);
+      rc=iobuf_read_line(inp,&line,&buflen,&maxlen);
 
       ret=parse_hkp_index(buffer,line);
       if(ret==-1)

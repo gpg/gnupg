@@ -1,3 +1,8 @@
+2002-09-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_hkp.c (handle_old_hkp_index): s/input/inp/ to avoid
+	shadowing warning.
+
 2002-09-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (get_key, handle_old_hkp_index, search_key):
