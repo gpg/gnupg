@@ -1,5 +1,5 @@
-NewPG is a temporary protect to work on GnuPG extensions.  It will be
-merged into the regular GnuPG sources for a GnuPG 2.0 release.
+GnuPG 1.9 is a temporary protect to work on GnuPG extensions.  It will
+eventually lead to a GnuPG 2.0 release.
 
 jnlib/  utility functions
 assuan/ assuan protocol library

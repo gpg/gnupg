@@ -1,5 +1,7 @@
 2002-10-19  Werner Koch  <wk@gnupg.org>
 
+	* configure.ac: Bumped version number to 1.9.0-cvs.
+
         NewPG (Aegypten project) to GnuPG merge.
 
 2002-09-20  Werner Koch  <wk@gnupg.org>

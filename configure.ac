@@ -1,4 +1,4 @@
-# configure.ac - for NewPG
+# configure.ac - for GnuPG
 #       Copyright (C) 2001, 2002 Free Software Foundation, Inc,
 # 
 # This file is part of GnuPG.
@@ -21,7 +21,7 @@
 AC_PREREQ(2.52)
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(newpg, 0.9.3-cvs, gpa-dev@gnupg.org)
+AC_INIT(newpg, 1.9.0-cvs, gpa-dev@gnupg.org)
 NEED_LIBGCRYPT_VERSION=1.1.8
 NEED_KSBA_VERSION=0.4.4
 NEED_OPENSC_VERSION=0.7.0
@@ -30,6 +30,7 @@ ALL_LINGUAS="de"
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
+AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(sm/gpgsm.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
