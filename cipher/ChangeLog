@@ -1,3 +1,8 @@
+2003-10-06  Werner Koch  <wk@gnupg.org>
+
+	* primegen.c (gen_prime): Bail out if NBITS is zero.  This is
+	Debian bug #213989 reported by Max <rusmir@tula.net>.
+
 2003-08-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* random.c (getfnc_gather_random): Don't check NAME_OF_DEV_RANDOM
