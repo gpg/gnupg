@@ -86,11 +86,11 @@ make_mpi_comment_node( const char *s, gcry_mpi_t a )
     size_t n = strlen(s);
 
     nb1 = mpi_get_nbits( a );
-    if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, &n1, a))
+    if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &n1, a))
       BUG ();
     /* fixme: allocate it on the stack */
     buf = xmalloc (n1);
-    if (gcry_mpi_print (GCRYMPI_FMT_PGP, buf, &n1, a))
+    if (gcry_mpi_print (GCRYMPI_FMT_PGP, buf, n1, &n1, a))
       BUG ();
 
     pkt = xcalloc (1, sizeof *pkt );

@@ -441,13 +441,13 @@ static int
 write_sexp_keyparm (iobuf_t out, int *indent, const char *name, gcry_mpi_t a)
 {
   int rc;
-  char *buffer;
+  unsigned char *buffer;
 
   write_sexp_line (out, indent, "(");
   iobuf_writestr (out, name);
   iobuf_writestr (out, " #");
 
-  rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, (void **)&buffer, NULL, a);
+  rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a);
   assert (!rc);
   iobuf_writestr (out, buffer);
   iobuf_writestr (out, "#)");

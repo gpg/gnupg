@@ -111,7 +111,7 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
 	gcry_md_putc( digest,  a        & 0xff );
 	for(i=0; i < nsig; i++ ) {
 	    size_t n;
-            void *tmp;
+            unsigned char *tmp;
 
 	    if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &tmp, &n, sig->data[i]))
 		BUG();

@@ -161,10 +161,9 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                because the length may have an arbitrary value */
             if( sk->csum == csum ) {
                 for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-                    nbytes = ndata;
 		    assert( gcry_is_secure( p ) );
 		    res = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
-							     p, &nbytes);
+                                         p, ndata, &nbytes);
 		    if( res )
 			log_bug ("gcry_mpi_scan failed in do_check: %s\n",
                                  gpg_strerror (res));
@@ -197,7 +196,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 csum += checksum (buffer, ndata);
                 gcry_mpi_release (sk->skey[i]);
 		res = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_USG,
-				     buffer, &ndata );
+				     buffer, ndata, &ndata );
 		if( res )
 		    log_bug ("gcry_mpi_scan failed in do_check: %s\n", 
                              gpg_strerror (res));
@@ -352,7 +351,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
                             GCRY_STRONG_RANDOM);
 	    gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	    if( sk->version >= 4 ) {
-                byte *bufarr[PUBKEY_MAX_NSKEY];
+                unsigned char *bufarr[PUBKEY_MAX_NSKEY];
 		unsigned narr[PUBKEY_MAX_NSKEY];
 		unsigned nbits[PUBKEY_MAX_NSKEY];
 		int ndata=0;
@@ -363,7 +362,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    assert( !gcry_mpi_get_flag( sk->skey[i],
                                                 GCRYMPI_FLAG_OPAQUE ));
 
-		    if( gcry_mpi_aprint( GCRYMPI_FMT_USG, (void**)bufarr+j,
+		    if( gcry_mpi_aprint( GCRYMPI_FMT_USG, bufarr+j,
                                          narr+j, sk->skey[i]))
 			BUG();
 

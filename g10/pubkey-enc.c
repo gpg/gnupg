@@ -149,7 +149,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
       char *rbuf;
       size_t rbuflen;
       char *snbuf;
-      void *indata = NULL;
+      unsigned char *indata = NULL;
       unsigned int indatalen;
 
       snbuf = serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen, sk);
@@ -170,14 +170,11 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     }
   else
     {
-      void *indata;
-
       rc = pk_decrypt (sk->pubkey_algo, &plain_dek, enc->data, sk->skey);
       if( rc )
         goto leave;
-      if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &indata, &nframe, plain_dek))
+      if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &frame, &nframe, plain_dek))
         BUG();
-      frame = indata;
       gcry_mpi_release (plain_dek); plain_dek = NULL;
     }
 

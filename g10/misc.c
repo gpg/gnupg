@@ -122,14 +122,14 @@ checksum_mpi( gcry_mpi_t a )
   byte *buffer;
   size_t nbytes;
 
-  rc = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &nbytes, a );
+  rc = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, 0, &nbytes, a );
   if (rc)
     BUG ();
   /* fixme: for numbers not in secure memory we should use a stack
    * based buffer and only allocate a larger one if mpi_print return
    * an error */
-  buffer = gcry_is_secure(a)? gcry_xmalloc_secure(nbytes) : gcry_xmalloc(nbytes);
-  rc = gcry_mpi_print( GCRYMPI_FMT_PGP, buffer, &nbytes, a );
+  buffer = gcry_is_secure(a)? gcry_xmalloc_secure(nbytes):gcry_xmalloc(nbytes);
+  rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, NULL, a );
   if (rc)
     BUG ();
   csum = checksum (buffer, nbytes );
@@ -827,7 +827,7 @@ mpi_write( iobuf_t out, gcry_mpi_t a )
     int rc;
 
     nbytes = (MAX_EXTERN_MPI_BITS+7)/8;
-    rc = gcry_mpi_print( GCRYMPI_FMT_PGP, buffer, &nbytes, a );
+    rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
     if( !rc )
 	rc = iobuf_write( out, buffer, nbytes );
 
@@ -891,7 +891,7 @@ mpi_read(iobuf_t inp, unsigned int *ret_nread, int secure)
 	nread++;
     }
     nread += nbytes;
-    if( gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, buf, &nread ) )
+    if( gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, buf, nread, &nread ) )
 	a = NULL;
 
   leave:
@@ -961,9 +961,9 @@ mpi_print( FILE *fp, gcry_mpi_t a, int mode )
     }
     else {
 	int rc;
-	char *buffer;
+	unsigned char *buffer;
 
-	rc = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void **)&buffer, NULL, a );
+	rc = gcry_mpi_aprint( GCRYMPI_FMT_HEX, &buffer, NULL, a );
 	assert( !rc );
 	fputs( buffer, fp );
 	n += strlen(buffer);

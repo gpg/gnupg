@@ -27,7 +27,7 @@ AC_INIT(gnupg, 1.9.0-cvs, gnupg-devel@gnupg.org)
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
-NEED_LIBGCRYPT_VERSION=1.1.8
+NEED_LIBGCRYPT_VERSION=1.1.42
 NEED_LIBASSUAN_VERSION=0.0.1
 NEED_KSBA_VERSION=0.4.6
 NEED_OPENSC_VERSION=0.7.0

@@ -647,7 +647,7 @@ scd_genkey_cb (void *opaque, const char *line)
       while (spacep (line))
         line++;
 
-      rc = gcry_mpi_scan (&a, GCRYMPI_FMT_HEX, line, 0);
+      rc = gcry_mpi_scan (&a, GCRYMPI_FMT_HEX, line, 0, NULL);
       if (rc)
         log_error ("error parsing received key data: %s\n", gpg_strerror (rc));
       else if (*name == 'n' && spacep (name+1))

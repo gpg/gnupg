@@ -148,7 +148,7 @@ encode_session_key (DEK *dek, unsigned int nbits)
     if (DBG_CIPHER)
       log_printhex ("encoded session key:", frame, nframe );
 
-    if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, &nframe))
+    if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, n, &nframe))
       BUG();
     xfree (frame);
     return a;
@@ -185,7 +185,7 @@ do_encode_md( gcry_md_hd_t md, int algo, size_t len, unsigned nbits,
     memcpy( frame+n, asn, asnlen ); n += asnlen;
     memcpy( frame+n, gcry_md_read (md, algo), len ); n += len;
     assert( n == nframe );
-    if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, &nframe ))
+    if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, n, &nframe ))
 	BUG();
     xfree (frame);
     return a;
@@ -214,7 +214,7 @@ encode_md_value (int pubkey_algo, gcry_md_hd_t md, int hash_algo,
           return NULL;
         }
       if (gcry_mpi_scan( &frame, GCRYMPI_FMT_USG,
-                         gcry_md_read (md, hash_algo), &n ) )
+                         gcry_md_read (md, hash_algo), n, &n ) )
         BUG();
     }
   else

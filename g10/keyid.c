@@ -67,11 +67,12 @@ do_fingerprint_md( PKT_public_key *pk )
     for(i=0; i < npkey; i++ ) {
 	size_t nbytes;
 
-	if (gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &nbytes, pk->pkey[i] ))
+	if (gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, 0, &nbytes, pk->pkey[i] ))
           BUG ();
 	/* fixme: we should try to allocate a buffer on the stack */
 	pp[i] = xmalloc(nbytes);
-	if (gcry_mpi_print ( GCRYMPI_FMT_PGP, pp[i], &nbytes, pk->pkey[i] ))
+	if (gcry_mpi_print ( GCRYMPI_FMT_PGP, pp[i], nbytes, &nbytes,
+                             pk->pkey[i] ))
           BUG ();
 	nn[i] = nbytes;
 	n += nn[i];
@@ -135,11 +136,11 @@ v3_keyid (gcry_mpi_t a, u32 *ki)
   byte *buffer;
   size_t nbytes;
 
-  if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, &nbytes, a ))
+  if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0, &nbytes, a ))
     BUG ();
   /* fixme: allocate it on the stack */
   buffer = xmalloc (nbytes);
-  if (gcry_mpi_print( GCRYMPI_FMT_USG, buffer, &nbytes, a ))
+  if (gcry_mpi_print( GCRYMPI_FMT_USG, buffer, nbytes, NULL, a ))
     BUG ();
   if (nbytes < 8) /* oops */
     ki[0] = ki[1] = 0;
@@ -476,19 +477,20 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	if( pubkey_get_npkey( pk->pubkey_algo ) > 1 ) {
 	    size_t nbytes;
 
-	    if (gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, pk->pkey[0]))
+	    if (gcry_mpi_print( GCRYMPI_FMT_USG, NULL, 0, &nbytes,
+                                pk->pkey[0]))
               BUG ();
 	    /* fixme: allocate it on the stack */
 	    buf = xmalloc(nbytes);
-	    if (gcry_mpi_print (GCRYMPI_FMT_USG, buf, &nbytes, pk->pkey[0]))
+	    if (gcry_mpi_print (GCRYMPI_FMT_USG, buf, nbytes, NULL,pk->pkey[0]))
               BUG ();
 	    gcry_md_write (md, buf, nbytes);
 	    xfree (buf);
-	    if (gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, pk->pkey[1]))
+	    if (gcry_mpi_print( GCRYMPI_FMT_USG, NULL, 0, &nbytes, pk->pkey[1]))
               BUG ();
 	    /* fixme: allocate it on the stack */
 	    buf = xmalloc(nbytes);
-	    if (gcry_mpi_print( GCRYMPI_FMT_USG, buf, &nbytes, pk->pkey[1]))
+	    if (gcry_mpi_print( GCRYMPI_FMT_USG, buf, nbytes, NULL,pk->pkey[1]))
               BUG ();
 	    gcry_md_write( md, buf, nbytes );
 	    xfree(buf);
@@ -533,19 +535,19 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	if( pubkey_get_npkey( sk->pubkey_algo ) > 1 ) {
 	    size_t nbytes;
 
-	    if (gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, sk->skey[0]))
+	    if (gcry_mpi_print( GCRYMPI_FMT_USG, NULL, 0, &nbytes, sk->skey[0]))
               BUG ();
 	    /* fixme: allocate it on the stack */
 	    buf = xmalloc(nbytes);
-	    if (gcry_mpi_print (GCRYMPI_FMT_USG, buf, &nbytes, sk->skey[0]))
+	    if (gcry_mpi_print (GCRYMPI_FMT_USG, buf, nbytes, NULL,sk->skey[0]))
               BUG ();
 	    gcry_md_write (md, buf, nbytes);
 	    xfree (buf);
-	    if (gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, sk->skey[1]))
+	    if (gcry_mpi_print( GCRYMPI_FMT_USG, NULL, 0, &nbytes, sk->skey[1]))
               BUG ();
 	    /* fixme: allocate it on the stack */
 	    buf = xmalloc(nbytes);
-	    if (gcry_mpi_print( GCRYMPI_FMT_USG, buf, &nbytes, sk->skey[1]))
+	    if (gcry_mpi_print( GCRYMPI_FMT_USG, buf,nbytes, NULL, sk->skey[1]))
               BUG ();
 	    gcry_md_write( md, buf, nbytes );
 	    xfree(buf);

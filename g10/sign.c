@@ -304,8 +304,8 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
       xfree (snbuf);
       if (!rc)
         {
-          unsigned int nbytes = rbuflen;
-          if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG, rbuf, &nbytes ))
+          if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG,
+                             rbuf, rbuflen, NULL ))
             BUG ();
         }
     }
@@ -325,8 +325,8 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
       xfree (snbuf);
       if (!rc)
         {
-          unsigned int nbytes = rbuflen;
-          if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG, rbuf, &nbytes ))
+          if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG,
+                             rbuf, rbuflen, NULL))
             BUG ();
         }
     }
