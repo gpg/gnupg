@@ -1,5 +1,15 @@
 2004-05-11  Werner Koch  <wk@gnupg.org>
 
+	* sign.c (gpgsm_sign): Include the error source in the final error
+	message.
+	* decrypt.c (gpgsm_decrypt): Ditto.
+
+	* fingerprint.c (gpgsm_get_key_algo_info): New.
+	* sign.c (gpgsm_sign): Don't assume RSA in the status line.
+	* keylist.c (list_cert_colon): Really print the algorithm and key
+	length.
+	(list_cert_raw, list_cert_std): Ditto.
+
 	* gpgsm.c: New option --debug-allow-core-dump.
 
 	* gpgsm.h (opt): Add member CONFIG_FILENAME.

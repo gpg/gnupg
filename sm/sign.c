@@ -616,12 +616,15 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
                   gcry_md_close (md);
                   goto leave;
                 }
-              rc = asprintf (&buf, "%c %d %d 00 %s %s",
-                             detached? 'D':'S',
-                             GCRY_PK_RSA,  /* FIXME: get pk algo from cert */
-                             algo, 
-                             signed_at,
-                             fpr);
+              {
+                int pkalgo = gpgsm_get_key_algo_info (cl->cert, NULL);
+                rc = asprintf (&buf, "%c %d %d 00 %s %s",
+                               detached? 'D':'S',
+                               pkalgo, 
+                               algo, 
+                               signed_at,
+                               fpr);
+              }
               xfree (fpr);
               if (rc < 0)
                 {
@@ -651,7 +654,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
 
  leave:
   if (rc)
-    log_error ("error creating signature: %s\n", gpg_strerror (rc));
+    log_error ("error creating signature: %s <%s>\n",
+               gpg_strerror (rc), gpg_strsource (rc) );
   if (release_signerlist)
     gpgsm_release_certlist (signerlist);
   ksba_cms_release (cms);

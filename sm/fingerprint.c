@@ -198,6 +198,66 @@ gpgsm_get_keygrip_hexstring (ksba_cert_t cert)
 }
 
 
+/* Return the PK algorithm used by CERT as well as the length in bits
+   of the public key at NBITS. */
+int
+gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
+{
+  gcry_sexp_t s_pkey;
+  int rc;
+  ksba_sexp_t p;
+  size_t n;
+  gcry_sexp_t l1, l2;
+  const char *name;
+  char namebuf[128];
+
+  if (nbits)
+    *nbits = 0;
+
+  p = ksba_cert_get_public_key (cert);
+  if (!p)
+    return 0; 
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    {
+      xfree (p);
+      return 0;
+    }
+  rc = gcry_sexp_sscan (&s_pkey, NULL, p, n);
+  xfree (p);
+  if (rc)
+    return 0;
+
+  if (nbits)
+    *nbits = gcry_pk_get_nbits (s_pkey);
+
+  /* Breaking the algorithm out of the S-exp is a bit of a challenge ... */
+  l1 = gcry_sexp_find_token (s_pkey, "public-key", 0);
+  if (!l1)
+    {
+      gcry_sexp_release (s_pkey);
+      return 0;
+    }
+  l2 = gcry_sexp_cadr (l1);
+  gcry_sexp_release (l1);
+  l1 = l2;
+  name = gcry_sexp_nth_data (l1, 0, &n);
+  if (name)
+    {
+      if (n > sizeof namebuf -1)
+        n = sizeof namebuf -1;
+      memcpy (namebuf, name, n);
+      namebuf[n] = 0;
+    }
+  else
+    *namebuf = 0;
+  gcry_sexp_release (l1);
+  gcry_sexp_release (s_pkey);
+  return gcry_pk_map_name (namebuf);
+}
+
+
+
 
 /* For certain purposes we need a certificate id which has an upper
    limit of the size.  We use the hash of the issuer name and the

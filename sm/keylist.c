@@ -296,6 +296,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   char *fpr;
   ksba_isotime_t t;
   gpg_error_t valerr;
+  int algo;
+  unsigned int nbits;
 
   if (ctrl->with_validation)
     valerr = gpgsm_validate_chain (ctrl, cert, NULL, 1, NULL, 0);
@@ -330,10 +332,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     fputs (truststring, fp);
 
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-  fprintf (fp, ":%u:%d:%s:",
-           /*keylen_of_cert (cert)*/1024,
-           /* pubkey_algo_of_cert (cert)*/1,
-           fpr+24);
+  algo = gpgsm_get_key_algo_info (cert, &nbits);
+  fprintf (fp, ":%u:%d:%s:", nbits, algo, fpr+24);
 
   /* We assume --fixed-list-mode for gpgsm */
   ksba_cert_get_validity (cert, 0, t);
@@ -546,6 +546,14 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
   oid = ksba_cert_get_digest_algo (cert);
   s = get_oid_desc (oid, NULL);
   fprintf (fp, "     hashAlgo: %s%s%s%s\n", oid, s?" (":"",s?s:"",s?")":"");
+
+  {
+    const char *algoname;
+    unsigned int nbits;
+
+    algoname = gcry_pk_algo_name (gpgsm_get_key_algo_info (cert, &nbits));
+    fprintf (fp, "      keyType: %u bit %s\n",  nbits, algoname? algoname:"?");
+  }
 
   /* authorityKeyIdentifier */
   fputs ("    authKeyId: ", fp);
@@ -828,6 +836,16 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
   ksba_cert_get_validity (cert, 1, t);
   gpgsm_print_time (fp, t);
   putc ('\n', fp);
+
+
+  {
+    const char *algoname;
+    unsigned int nbits;
+
+    algoname = gcry_pk_algo_name (gpgsm_get_key_algo_info (cert, &nbits));
+    fprintf (fp, "     key type: %u bit %s\n", nbits, algoname? algoname:"?");
+  }
+
 
   err = ksba_cert_get_key_usage (cert, &kusage);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
