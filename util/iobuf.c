@@ -706,6 +706,8 @@ iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	m_free(a->d.buf);
 	memcpy(a,b, sizeof *a);
 	m_free(b);
+	if( DBG_IOBUF )
+	   log_debug("iobuf-%d.%d: popped filter\n", a->no, a->subno );
     }
     else if( !b->chain ) { /* remove the last iobuf from the chain */
 	log_bug("Ohh jeee, trying to remove a head filter\n");

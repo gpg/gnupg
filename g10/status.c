@@ -113,8 +113,7 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 	log_fatal("too much shared memory requested; only 8k are allowed\n");
     shm_size = 4096 /* one page for us */ + requested_shm_size;
 
-    /* FIXME: Need other permissions ... */
-    shm_id = shmget( IPC_PRIVATE, shm_size, IPC_CREAT | 0777 );
+    shm_id = shmget( IPC_PRIVATE, shm_size, IPC_CREAT | 0700 );
     if ( shm_id == -1 )
 	log_fatal("can't get %uk of shared memory: %s\n",
 				(unsigned)shm_size/1024, strerror(errno));

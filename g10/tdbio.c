@@ -356,6 +356,7 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 {
     int i;
     ulong rnum = rec->recnum;
+    byte *p;
 
     fprintf(fp, "rec %5lu, ", rnum );
 
@@ -405,9 +406,15 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 	putc('\n', fp);
 	break;
       case RECTYPE_PREF:
-	fprintf(fp, "pref %lu, next=%lu\n",
-		    rec->r.uid.lid,
-		    rec->r.uid.next);
+	fprintf(fp, "pref %lu, next=%lu,",
+		    rec->r.pref.lid, rec->r.pref.next);
+	for(i=0,p=rec->r.pref.data; i < ITEMS_PER_PREF_RECORD; i+=2,p+=2 ) {
+	    if( *p )
+		fprintf(fp, " %c%d", *p == PREFTYPE_SYM    ? 'S' :
+				     *p == PREFTYPE_HASH   ? 'H' :
+				     *p == PREFTYPE_COMPR  ? 'Z' : '?', p[1]);
+	}
+	putc('\n', fp);
 	break;
       case RECTYPE_SIG:
 	fprintf(fp, "sig %lu, next=%lu,",
@@ -537,6 +544,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
       case RECTYPE_PREF:  /* preference record */
 	rec->r.pref.lid     = buftoulong(p); p += 4;
 	rec->r.pref.next    = buftoulong(p); p += 4;
+	memcpy( rec->r.pref.data, p, 30 );
 	break;
       case RECTYPE_SIG:
 	rec->r.sig.lid	   = buftoulong(p); p += 4;
@@ -638,6 +646,7 @@ tdbio_write_record( TRUSTREC *rec )
       case RECTYPE_PREF:
 	ulongtobuf(p, rec->r.pref.lid); p += 4;
 	ulongtobuf(p, rec->r.pref.next); p += 4;
+	memcpy( p, rec->r.pref.data, 30 );
 	break;
 
       case RECTYPE_SIG:

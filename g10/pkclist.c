@@ -512,3 +512,102 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 }
 
 
+/****************
+ * Return -1 if we could not find an algorithm.
+ */
+int
+select_algo_from_prefs( PK_LIST pk_list, int preftype )
+{
+    PK_LIST pkr;
+    u32 bits[8];
+    byte *pref = NULL;
+    size_t npref;
+    int i, j;
+    int compr_hack=0;
+    int any;
+
+    if( !pk_list )
+	return -1;
+
+    memset( bits, ~0, 8 * sizeof *bits );
+    for( pkr = pk_list; pkr; pkr = pkr->next ) {
+	u32 mask[8];
+
+	memset( mask, 0, 8 * sizeof *mask );
+	if( !pkr->pk->local_id )
+	    BUG(); /* if this occurs, we can use get_ownertrust to set it */
+	if( preftype == PREFTYPE_SYM )
+	    bits[0] = (1<<2); /* 3DES is implicitly there */
+	m_free(pref);
+	pref = get_pref_data( pkr->pk->local_id, pkr->pk->namehash, &npref);
+	any = 0;
+	if( pref ) {
+	    /*log_hexdump("raw: ", pref, npref );*/
+	    for(i=0; i+1 < npref; i+=2 ) {
+		if( pref[i] == preftype ) {
+		    mask[pref[i+1]/32] |= 1 << (pref[i+1]%32);
+		    any = 1;
+		}
+	    }
+	}
+	if( (!pref || !any) && preftype == PREFTYPE_COMPR ) {
+	    mask[0] |= 3; /* asume no_compression and old pgp */
+	    compr_hack = 1;
+	}
+
+	/*log_debug("mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
+	       (ulong)mask[7], (ulong)mask[6], (ulong)mask[5], (ulong)mask[4],
+	     (ulong)mask[3], (ulong)mask[2], (ulong)mask[1], (ulong)mask[0]);*/
+	for(i=0; i < 8; i++ )
+	    bits[i] &= mask[i];
+	/*log_debug("bits=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
+	       (ulong)bits[7], (ulong)bits[6], (ulong)bits[5], (ulong)bits[4],
+	     (ulong)bits[3], (ulong)bits[2], (ulong)bits[1], (ulong)bits[0]);*/
+    }
+    /* usable algorithms are now in bits
+     * We now use the last key from pk_list to select
+     * the algorithm we want to use. there are no
+     * preferences for the last key, we select the one
+     * corresponding to first set bit.
+     */
+    i = -1;
+    any = 0;
+    if( pref ) {
+	for(j=0; j+1 < npref; j+=2 ) {
+	    if( pref[j] == preftype ) {
+		any = 1;
+		if( (bits[pref[j+1]/32] & (1<<(pref[j+1]%32))) ) {
+		    i = pref[j+1];
+		    break;
+		}
+	    }
+	}
+    }
+    if( !pref || !any ) {
+	for(j=0; j < 256; j++ )
+	    if( (bits[j/32] & (1<<(j%32))) ) {
+		i = j;
+		break;
+	    }
+    }
+    /*log_debug("prefs of type %d: selected %d\n", preftype, i );*/
+    if( compr_hack && !i ) {
+	/* selected no compression, but we should check whether
+	 * algorithm 1 is also available (the ordering is not relevant
+	 * in this case). */
+	if( bits[0] & (1<<1) )
+	    i = 1;  /* yep; we can use compression algo 1 */
+    }
+
+    if( preftype == PREFTYPE_SYM && i == CIPHER_ALGO_3DES ) {
+	i = CIPHER_ALGO_BLOWFISH;
+	if( opt.verbose )
+	    log_info("replacing 3DES by Blowfish\n");
+    }
+
+
+    m_free(pref);
+    return i;
+}
+
+

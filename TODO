@@ -1,5 +1,7 @@
     * Fix Oscaris problems with the trustdb.
 
+    * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
+
     * add test cases for invalid data (scrambled armor or other random data)
 
     * fix the expire stuff for v4 packets.
@@ -8,14 +10,16 @@
       sig) into a compressed packet - or should we only compress the data?
       what does pgp 5 do, what does OpenPGP say=
 
-    * invalid packets (Marco)
+    * invalid packets (Marco)  und Markus Gruber
 
     * add some sanity checks to read_keyblock, so that we are sure that
-    the minimal requirements are met (?)
+     the minimal requirements are met (?)
 
     * what about the CR,LF in cleartext singatures?
 
-    * make preferences work
+    * decryption of message with multiple recipients does not work.
+
+    * preferences of hash algorithms are not yet used.
 
     * rewrite --list-packets or put it into another tool.
 
@@ -24,8 +28,6 @@
 
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
-
-    * enable a SIGSEGV handler while using zlib functions
 
     * Change the buffering to a mbuf like scheme? Need it for PSST anyway.
     * add checking of armor trailers
@@ -39,4 +41,9 @@
       a backup system of only the secret part of the secret key.
 
     * replace getkey.c#enum_secret_keys
+
+    * OpenBSD has sometimes problems reading from /dev/random.
+
+    * change the fake_data stuff to mpi_set_opaque
+
 

@@ -22,7 +22,7 @@
     "pub  1312G/FF3EAA0B 1998-02-09 Werner Koch <wk@isil.d.shuttle.de>"
     "Key fingerprint = 8489 6CD0 1851 0E33 45DA  CD67 036F 11B8 FF3E AA0B"
 
-    My standard key is now:
+    My usual key is now:
     "pub  1024D/621CC013 1998-07-07 Werner Koch <werner.koch@guug.de>"
     "Key fingerprint = ECAF 7590 EB34 43B5 C7CF  3ACB 6C7E E1B8 621C C013"
 
@@ -42,7 +42,8 @@
     IDEA (which is patented worldwide) and RSA (which is patented in
     the United States until Sep 20, 2000).
 
-    GNUPG is in most aspects compatible with other OpenPGP implementations.
+    GNUPG is in almost all  aspects compatible with other OpenPGP
+    implementations.
 
     The default algorithms are now DSA and ELGamal.  ELGamal for signing
     is still available, but due to the larger size of such signatures it

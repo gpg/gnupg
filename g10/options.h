@@ -56,6 +56,7 @@ struct {
 
 
 #define EMUBUG_GPGCHKSUM  1
+#define EMUBUG_ENCR_MPI   2
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */

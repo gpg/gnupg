@@ -30,6 +30,7 @@
 #include "util.h"
 #include "cipher.h"
 #include "memory.h"
+#include "options.h"
 
 void
 free_symkey_enc( PKT_symkey_enc *enc )
@@ -82,6 +83,10 @@ release_public_key_parts( PKT_public_key *pk )
 	mpi_free( pk->pkey[i] );
 	pk->pkey[i] = NULL;
     }
+    if( pk->namehash ) {
+	m_free(pk->namehash);
+	pk->namehash = NULL;
+    }
 }
 
 
@@ -123,13 +128,22 @@ cp_data_block( byte *s )
 
 
 PKT_public_key *
-copy_public_key( PKT_public_key *d, PKT_public_key *s )
+copy_public_key_new_namehash( PKT_public_key *d, PKT_public_key *s,
+			      const byte *namehash )
 {
     int n, i;
 
     if( !d )
 	d = m_alloc(sizeof *d);
     memcpy( d, s, sizeof *d );
+    if( namehash ) {
+	d->namehash = m_alloc( 20 );
+	memcpy(d->namehash, namehash, 20 );
+    }
+    else if( s->namehash ) {
+	d->namehash = m_alloc( 20 );
+	memcpy(d->namehash, s->namehash, 20 );
+    }
     n = pubkey_get_npkey( s->pubkey_algo );
     if( !n )
 	d->pkey[0] = cp_fake_data(s->pkey[0]);
@@ -140,6 +154,11 @@ copy_public_key( PKT_public_key *d, PKT_public_key *s )
     return d;
 }
 
+PKT_public_key *
+copy_public_key( PKT_public_key *d, PKT_public_key *s )
+{
+   return copy_public_key_new_namehash( d, s, NULL );
+}
 
 PKT_signature *
 copy_signature( PKT_signature *d, PKT_signature *s )

@@ -1593,8 +1593,6 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
     u32 keyid[2];
 
 
-    if( DBG_TRUST )
-	log_info("check_trust() called.\n");
     keyid_from_pk( pk, keyid );
 
     /* get the pubkey record */
@@ -1762,6 +1760,90 @@ get_ownertrust_info( ulong lid )
 }
 
 
+byte *
+get_pref_data( ulong lid, const byte *namehash, size_t *ret_n )
+{
+    TRUSTREC rec;
+    ulong recno;
+    int rc;
+
+    if( tdbio_read_record( lid, &rec, RECTYPE_DIR ) ) {
+	log_error("get_pref_data: read dir record failed\n");
+	return NULL;
+    }
+
+    for( recno=rec.r.dir.uidlist; recno; recno = rec.r.uid.next ) {
+	rc = tdbio_read_record( recno, &rec, RECTYPE_UID );
+	if( rc ) {
+	    log_error("get_pref_data: read uid record failed: %s\n",
+						     g10_errstr(rc));
+	    return NULL;
+	}
+	if( rec.r.uid.prefrec
+	    && ( !namehash || !memcmp(namehash, rec.r.uid.namehash, 20) ))  {
+	    byte *buf;
+	    /* found the correct one or the first one */
+	    rc = tdbio_read_record( rec.r.uid.prefrec, &rec, RECTYPE_PREF );
+	    if( rc ) {
+		log_error("get_pref_data: read pref record failed: %s\n",
+							 g10_errstr(rc));
+		return NULL;
+	    }
+	    if( rec.r.pref.next )
+		log_info("warning: can't yet handle long pref records\n");
+	    buf = m_alloc( ITEMS_PER_PREF_RECORD );
+	    memcpy( buf, rec.r.pref.data, ITEMS_PER_PREF_RECORD );
+	    *ret_n = ITEMS_PER_PREF_RECORD;
+	    return buf;
+	}
+    }
+    return NULL;
+}
+
+
+
+/****************
+ * Check whether the algorithm is in one of the pref records
+ */
+int
+is_algo_in_prefs( ulong lid, int preftype, int algo )
+{
+    TRUSTREC rec;
+    ulong recno;
+    int i, rc;
+    byte *pref;
+
+    if( tdbio_read_record( lid, &rec, RECTYPE_DIR ) ) {
+	log_error("is_algo_in_prefs: read dir record failed\n");
+	return 0;
+    }
+
+    for( recno=rec.r.dir.uidlist; recno; recno = rec.r.uid.next ) {
+	rc = tdbio_read_record( recno, &rec, RECTYPE_UID );
+	if( rc ) {
+	    log_error("is_algo_in_prefs: read uid record failed: %s\n",
+						     g10_errstr(rc));
+	    return 0;
+	}
+	if( rec.r.uid.prefrec ) {
+	    rc = tdbio_read_record( rec.r.uid.prefrec, &rec, RECTYPE_PREF );
+	    if( rc ) {
+		log_error("is_algo_in_prefs: read pref record failed: %s\n",
+							 g10_errstr(rc));
+		return 0;
+	    }
+	    if( rec.r.pref.next )
+		log_info("warning: can't yet handle long pref records\n");
+	    pref = rec.r.pref.data;
+	    for(i=0; i+1 < ITEMS_PER_PREF_RECORD; i+=2 ) {
+		if( pref[i] == preftype && pref[i+1] == algo )
+		    return 1;
+	    }
+	}
+    }
+    return 0;
+}
+
 
 /****************
  * This function simply looks for the key in the trustdb
@@ -1909,8 +1991,40 @@ insert_trust_record( PKT_public_key *orig_pk )
 		    rc = 0;
 		}
 		else { /* build the prefrecord */
+		    static struct {
+			sigsubpkttype_t subpkttype;
+			int preftype;
+		    } prefs[] = {
+			{ SIGSUBPKT_PREF_SYM,	PREFTYPE_SYM	},
+			{ SIGSUBPKT_PREF_HASH,	PREFTYPE_HASH	},
+			{ SIGSUBPKT_PREF_COMPR, PREFTYPE_COMPR	},
+			{ 0, 0 }
+		    };
+		    const byte *s;
+		    size_t n;
+		    int k, i;
 		    assert(uidlist);
+		    assert(!uidlist->help_pref);
 		    uidlist->mark |= 1; /* mark valid */
+
+		    i = 0;
+		    for(k=0; prefs[k].subpkttype; k++ ) {
+			s = parse_sig_subpkt2( sig, prefs[k].subpkttype, &n );
+			if( s ) {
+			    while( n ) {
+				if( !i || i >= ITEMS_PER_PREF_RECORD ) {
+				    rec = m_alloc_clear( sizeof *rec );
+				    rec->rectype = RECTYPE_PREF;
+				    rec->next = uidlist->help_pref;
+				    uidlist->help_pref = rec;
+				    i = 0;
+				}
+				rec->r.pref.data[i++] = prefs[k].preftype;
+				rec->r.pref.data[i++] = *s++;
+				n--;
+			    }
+			}
+		    }
 		}
 	    }
 	    else if( 0 /* is revocation sig etc */ ) {
@@ -1959,13 +2073,15 @@ insert_trust_record( PKT_public_key *orig_pk )
 	rec->r.uid.lid = dirrec.recnum;
 	rec->recnum = tdbio_new_recnum();
 	/* (preference records) */
-	for( rec2 = rec->help_pref; rec2; rec2 = rec2->next ) {
-	    rec2->r.pref.lid = dirrec.recnum;
-	    rec2->recnum = tdbio_new_recnum();
+	if( rec->help_pref ) {
+	    for( rec2 = rec->help_pref; rec2; rec2 = rec2->next ) {
+		rec2->r.pref.lid = dirrec.recnum;
+		rec2->recnum = tdbio_new_recnum();
+	    }
+	    for( rec2 = rec->help_pref; rec2->next; rec2 = rec2->next )
+		rec2->next->r.pref.next = rec2->recnum;
+	    rec->r.uid.prefrec = rec2->recnum;
 	}
-	for( rec2 = rec->help_pref; rec2; rec2 = rec2->next )
-	    rec2->r.pref.next = rec2->next? rec2->next->recnum : 0;
-	rec->r.uid.prefrec = rec->help_pref? rec->help_pref->recnum : 0;
     }
     for(rec=uidlist_head; rec; rec = rec->next )
 	rec->r.uid.next = rec->next? rec->next->recnum : 0;

@@ -67,19 +67,48 @@ do_check( PKT_secret_key *sk )
 	memcpy(save_iv, sk->protect.iv, 8 );
 	cipher_decrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
 	csum = 0;
-	for(i=pubkey_get_npkey(sk->pubkey_algo);
-		i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-	    buffer = mpi_get_secure_buffer( sk->skey[i], &nbytes, NULL );
-	    cipher_sync( cipher_hd );
-	    assert( mpi_is_protected(sk->skey[i]) );
-	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-	    mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
-	    mpi_clear_protect_flag( sk->skey[i] );
-	    csum += checksum_mpi( sk->skey[i] );
-	    m_free( buffer );
+	if( sk->version >= 4 && !(opt.emulate_bugs & EMUBUG_ENCR_MPI) ) {
+	    int ndata;
+	    byte *p, *data;
+
+	    i = pubkey_get_npkey(sk->pubkey_algo);
+	    assert( mpi_is_opaque( sk->skey[i] ) );
+	    p = mpi_get_opaque( sk->skey[i], &ndata );
+	    data = m_alloc_secure( ndata );
+	    cipher_decrypt( cipher_hd, data, p, ndata );
+	    mpi_free( sk->skey[i] ); sk->skey[i] = NULL ;
+	    p = data;
+	    csum = checksum( data, ndata);
+	    if( ndata < 2 )
+		log_bug("not enough bytes for checksum\n");
+	    sk->csum = data[ndata-2] << 8 | data[ndata-1];
+	    /* must check it here otherwise the mpi_read_xx would fail
+	     * because the length das an abritary value */
+	    if( sk->csum == csum ) {
+		for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+		    nbytes = ndata;
+		    sk->skey[i] = mpi_read_from_buffer(p, &nbytes, 1 );
+		    ndata -= nbytes;
+		    p += nbytes;
+		}
+	    }
+	    m_free(data);
 	}
-	if( opt.emulate_bugs & EMUBUG_GPGCHKSUM ) {
-	   csum = sk->csum;
+	else {
+	    for(i=pubkey_get_npkey(sk->pubkey_algo);
+		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+		buffer = mpi_get_secure_buffer( sk->skey[i], &nbytes, NULL );
+		cipher_sync( cipher_hd );
+		assert( mpi_is_protected(sk->skey[i]) );
+		cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
+		mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
+		mpi_clear_protect_flag( sk->skey[i] );
+		csum += checksum_mpi( sk->skey[i] );
+		m_free( buffer );
+	    }
+	    if( opt.emulate_bugs & EMUBUG_GPGCHKSUM ) {
+	       csum = sk->csum;
+	    }
 	}
 	cipher_close( cipher_hd );
 	/* now let's see whether we have used the right passphrase */
@@ -190,21 +219,26 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
 	    cipher_setiv( cipher_hd, NULL );
 	    cipher_encrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
-	    /* NOTE: we always recalculate the checksum because there are some
-	     * test releases which calculated it wrong */
-	    csum = 0;
-	    for(i=pubkey_get_npkey(sk->pubkey_algo);
-		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-		csum += checksum_mpi_counted_nbits( sk->skey[i] );
-		buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
-		cipher_sync( cipher_hd );
-		assert( !mpi_is_protected(sk->skey[i]) );
-		cipher_encrypt( cipher_hd, buffer, buffer, nbytes );
-		mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
-		mpi_set_protect_flag( sk->skey[i] );
-		m_free( buffer );
+	    if( sk->version >= 4 && !(opt.emulate_bugs & EMUBUG_ENCR_MPI) ) {
+		BUG();
 	    }
-	    sk->csum = csum;
+	    else {
+		/* NOTE: we always recalculate the checksum because there
+		 * are some * test releases which calculated it wrong */
+		csum = 0;
+		for(i=pubkey_get_npkey(sk->pubkey_algo);
+			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+		    csum += checksum_mpi_counted_nbits( sk->skey[i] );
+		    buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
+		    cipher_sync( cipher_hd );
+		    assert( !mpi_is_protected(sk->skey[i]) );
+		    cipher_encrypt( cipher_hd, buffer, buffer, nbytes );
+		    mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
+		    mpi_set_protect_flag( sk->skey[i] );
+		    m_free( buffer );
+		}
+		sk->csum = csum;
+	    }
 	    sk->is_protected = 1;
 	    cipher_close( cipher_hd );
 	}

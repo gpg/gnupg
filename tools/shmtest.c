@@ -103,15 +103,6 @@ main(int argc, char **argv)
     if( argc < 1 )
 	my_usage();
 
-  #if 0
-    shm_ID = atoi( argv[1] );
-    pool = shmat( shm_ID, 0, 0 );
-    if( pool == (void*)-1 )
-	log_fatal("shmat of %d failed: %s\n", shm_ID, strerror(errno));
-    log_info("attached to %p  id=%d\n", pool, shm_ID );
-    getchar();
-  #endif
-
     for(n=0,i=1; i < argc; i++ )
 	n += strlen(argv[i]) + 1;
     p = m_alloc( 100 + n );

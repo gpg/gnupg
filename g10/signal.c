@@ -60,7 +60,7 @@ got_fatal_signal( int sig )
     fprintf( stderr, "\n%s: %s caught ... exiting\n",
 	      log_get_name(), signal_name(sig) );
     secmem_term();
-    exit( 2 );
+    exit( 8 );
 }
 
 
@@ -94,6 +94,7 @@ init_signals()
     do_sigaction( SIGHUP, &nact );
     do_sigaction( SIGTERM, &nact );
     do_sigaction( SIGQUIT, &nact );
+    do_sigaction( SIGSEGV, &nact );
     nact.sa_handler = got_usr_signal;
     sigaction( SIGUSR1, &nact, NULL );
 }

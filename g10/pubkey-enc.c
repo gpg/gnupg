@@ -28,6 +28,7 @@
 #include "packet.h"
 #include "mpi.h"
 #include "keydb.h"
+#include "trustdb.h"
 #include "cipher.h"
 #include "status.h"
 
@@ -124,6 +125,20 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     }
     if( DBG_CIPHER )
 	log_hexdump("DEK is:", dek->key, dek->keylen );
+    /* check that the algo is in the preferences */
+    {
+	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	if( (rc = get_pubkey( pk, k->keyid )) )
+	    log_error("public key problem: %s\n", g10_errstr(rc) );
+	else if( !pk->local_id && query_trust_record(pk) )
+	    log_error("can't check algorithm against preferences\n");
+	else if( dek->algo != CIPHER_ALGO_3DES
+	    && !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM, dek->algo ) )
+	    log_info("note: cipher algorithm %d not found in preferences\n",
+								 dek->algo );
+	free_public_key( pk );
+	rc = 0;
+    }
 
   leave:
     mpi_free(plain_dek);

@@ -32,6 +32,7 @@
 #include "ttyio.h"
 #include "options.h"
 #include "keydb.h"
+#include "status.h"
 #include "i18n.h"
 
 
@@ -389,7 +390,7 @@ ask_algo( int *ret_v4, int addmode )
 
     *ret_v4 = 1;
     for(;;) {
-	answer = tty_get(_("Your selection? "));
+	answer = cpr_get("keygen.algo",_("Your selection? "));
 	tty_kill_prompt();
 	algo = *answer? atoi(answer): 1;
 	m_free(answer);
@@ -433,7 +434,7 @@ ask_keysize( int algo )
 		 "    highest suggested keysize is 2048 bits\n"),
 					pubkey_algo_to_string(algo) );
     for(;;) {
-	answer = tty_get(_("What keysize do you want? (1024) "));
+	answer = cpr_get("keygen.size",_("What keysize do you want? (1024) "));
 	tty_kill_prompt();
 	nbits = *answer? atoi(answer): 1024;
 	m_free(answer);
@@ -441,7 +442,7 @@ ask_keysize( int algo )
 	    tty_printf(_("DSA only allows keysizes from 512 to 1024\n"));
 	else if( nbits < 768 )
 	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
-	else if( nbits > 2048 ) {
+	else if( nbits > 2048 && !cpr_enabled() ) {
 	    tty_printf(_("Keysizes larger than 2048 are not suggested because "
 			 "computations take REALLY long!\n"));
 	    if( tty_get_answer_is_yes(_(
@@ -452,7 +453,7 @@ ask_keysize( int algo )
 		break;
 	    }
 	}
-	else if( nbits > 1536 ) {
+	else if( nbits > 1536 && !cpr_enabled() ) {
 	    if( tty_get_answer_is_yes(_(
 		    "Do you really need such a large keysize? ")) )
 		break;
@@ -494,7 +495,7 @@ ask_valid_days()
 	int mult;
 
 	m_free(answer);
-	answer = tty_get(_("Key is valid for? (0) "));
+	answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
 	tty_kill_prompt();
 	trim_spaces(answer);
 	if( !*answer )
@@ -517,7 +518,8 @@ ask_valid_days()
 		       add_days_to_timestamp( make_timestamp(), valid_days )));
 	}
 
-	if( tty_get_answer_is_yes(_("Is this correct (y/n)? ")) )
+	if( !cpr_enabled()
+	     && tty_get_answer_is_yes(_("Is this correct (y/n)? ")) )
 	    break;
     }
     m_free(answer);
@@ -556,7 +558,7 @@ ask_user_id( int mode )
 	if( !aname ) {
 	    for(;;) {
 		m_free(aname);
-		aname = tty_get(_("Real name: "));
+		aname = cpr_get("keygen.name",_("Real name: "));
 		trim_spaces(aname);
 		tty_kill_prompt();
 		if( strpbrk( aname, "<([])>" ) )
@@ -572,7 +574,7 @@ ask_user_id( int mode )
 	if( !amail ) {
 	    for(;;) {
 		m_free(amail);
-		amail = tty_get(_("Email address: "));
+		amail = cpr_get("keygen.email",_("Email address: "));
 		trim_spaces(amail);
 		strlwr(amail);
 		tty_kill_prompt();
@@ -592,7 +594,7 @@ ask_user_id( int mode )
 	if( !acomment ) {
 	    for(;;) {
 		m_free(acomment);
-		acomment = tty_get(_("Comment: "));
+		acomment = cpr_get("keygen.comment",_("Comment: "));
 		trim_spaces(acomment);
 		tty_kill_prompt();
 		if( !*acomment )
@@ -622,9 +624,16 @@ ask_user_id( int mode )
 	/* fixme: add a warning if this user-id already exists */
 	for(;;) {
 	    char *ansstr = N_("NnCcEeOoQq");
-	    answer = tty_get(_(
-		"Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
-	    tty_kill_prompt();
+
+	    if( cpr_enabled() ) {
+		answer = m_strdup(ansstr+6);
+		answer[1] = 0;
+	    }
+	    else {
+		answer = tty_get(_(
+		    "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
+		tty_kill_prompt();
+	    }
 	    if( strlen(answer) > 1 )
 		;
 	    else if( *answer == ansstr[0] || *answer == ansstr[1] ) {
@@ -950,7 +959,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     assert(algo);
     nbits = ask_keysize( algo );
     ndays = ask_valid_days();
-    if( !tty_get_answer_is_yes( _("Really create? ") ) )
+    if( !cpr_enabled() && !tty_get_answer_is_yes( _("Really create? ") ) )
 	goto leave;
 
     if( passphrase ) {

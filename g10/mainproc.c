@@ -171,6 +171,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     PKT_pubkey_enc *enc;
     int result = 0;
 
+    /* check whether the secret key is available and store in this case */
     c->last_was_session_key = 1;
     enc = pkt->pkt.pubkey_enc;
     /*printf("enc: encrypted by a pubkey with keyid %08lX\n", enc->keyid[1] );*/
@@ -208,7 +209,9 @@ proc_encrypted( CTX c, PACKET *pkt )
     /*printf("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
     if( !c->dek && !c->last_was_session_key ) {
 	/* assume this is old conventional encrypted data */
-	c->dek = passphrase_to_dek( NULL, opt.def_cipher_algo, NULL, 0 );
+	c->dek = passphrase_to_dek( NULL,
+		    opt.def_cipher_algo ? opt.def_cipher_algo
+					: DEFAULT_CIPHER_ALGO, NULL, 0 );
     }
     else if( !c->dek )
 	result = G10ERR_NO_SECKEY;
@@ -223,6 +226,8 @@ proc_encrypted( CTX c, PACKET *pkt )
     }
     else {
 	log_error(_("decryption failed: %s\n"), g10_errstr(result));
+	/* FIXME: if this is secret key not available, try with
+	 * other keys */
     }
     free_packet(pkt);
     c->last_was_session_key = 0;
@@ -707,7 +712,9 @@ do_proc_packets( CTX c, IOBUF a )
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	/* cleanup if we have an illegal data structure */
 	if( c->dek && pkt->pkttype != PKT_ENCRYPTED ) {
-	    log_error("oops: valid pubkey enc packet not followed by data\n");
+	    /* FIXME: do we need to ave it in case we have no secret
+	     * key for one of the next reciepents- we should check it
+	     * here. */
 	    m_free(c->dek); c->dek = NULL; /* burn it */
 	}
 
@@ -889,7 +896,7 @@ proc_tree( CTX c, KBNODE node )
 	    /* ask for file and hash it */
 	    if( c->sigs_only )
 		rc = hash_datafiles( c->mfx.md, c->signed_data, c->sigfilename,
-			    n1->pkt->pkt.onepass_sig->sig_class == 0x01 );
+			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
 	    else
 		rc = ask_for_detached_datafile( &c->mfx,
 					    iobuf_get_fname(c->iobuf));

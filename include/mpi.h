@@ -50,6 +50,7 @@ typedef struct mpi_struct {
     int sign;	    /* indicates a negative number */
     unsigned flags; /* bit 0: array must be allocated in secure memory space */
 		    /* bit 1: the mpi is encrypted */
+		    /* bit 2: the limb is a pointer to some m_alloced data */
     mpi_limb_t *d;  /* array with the limbs */
 } *MPI;
 
@@ -80,6 +81,9 @@ typedef struct mpi_struct {
   void mpi_resize( MPI a, unsigned nlimbs );
   MPI  mpi_copy( MPI a );
 #endif
+#define mpi_is_opaque(a) ((a) && ((a)->flags&4))
+MPI mpi_set_opaque( MPI a, void *p, int len );
+void *mpi_get_opaque( MPI a, int *len );
 #define mpi_is_protected(a) ((a) && ((a)->flags&2))
 #define mpi_set_protect_flag(a) ((a)->flags |= 2)
 #define mpi_clear_protect_flag(a) ((a)->flags &= ~2)
@@ -100,6 +104,7 @@ int mpi_write( IOBUF out, MPI a );
 #else
   MPI mpi_read(IOBUF inp, unsigned *nread, int secure);
 #endif
+MPI mpi_read_from_buffer(byte *buffer, unsigned *ret_nread, int secure);
 int mpi_fromstr(MPI val, const char *str);
 int mpi_print( FILE *fp, MPI a, int mode );
 u32 mpi_get_keyid( MPI a, u32 *keyid );

@@ -1,3 +1,12 @@
+Wed Aug  5 15:11:12 1998  Werner Koch  (wk@(none))
+
+	* mpicoder.c (mpi_read_from_buffer): New.
+
+	* mpiutil.c (mpi_set_opaque): New.
+	(mpi_get_opaque): New.
+	(mpi_copy): Changed to support opauqe flag
+	(mpi_free): Ditto.
+
 Sat Jul  4 10:11:11 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mpiutil.c (mpi_clear): Reset flags.

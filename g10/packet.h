@@ -112,6 +112,7 @@ typedef struct {
     byte    pubkey_usage;   /* for now only used to pass it to getkey() */
     ulong   local_id;	    /* internal use, valid if > 0 */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
+    byte    *namehash;	    /* if != NULL: found by this name */
     MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
 
@@ -235,6 +236,8 @@ int copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff );
 int skip_some_packets( IOBUF inp, unsigned n );
 const byte *parse_sig_subpkt( const byte *buffer,
 			      sigsubpkttype_t reqtype, size_t *ret_n );
+const byte *parse_sig_subpkt2( PKT_signature *sig,
+			       sigsubpkttype_t reqtype, size_t *ret_n );
 
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
@@ -257,6 +260,9 @@ void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
 PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
+PKT_public_key *copy_public_key_new_namehash( PKT_public_key *d,
+					      PKT_public_key *s,
+					      const byte *namehash );
 PKT_secret_key *copy_secret_key( PKT_secret_key *d, PKT_secret_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *copy_user_id( PKT_user_id *d, PKT_user_id *s );

@@ -128,6 +128,7 @@ Record type 5: (pref record)
      1 u32  LID; points to the directory record (and not to the uid record!).
 	    (or 0 for standard preference record)
      1 u32  next
+     30 byte preference data
 
 Record type 6  (sigrec)
 -------------

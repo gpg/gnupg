@@ -1,3 +1,27 @@
+Wed Aug  5 11:54:37 1998  Werner Koch  (wk@(none))
+
+	* g10.c (check_opts): Moved to main.  Changed def_cipher_algo
+	semantics and chnaged all users.
+
+	* pubkey-enc.c (get_sssion_key): New informational output
+	about preferences.
+
+	* parse-packet.c (parse_symkeyenc): Fixed salted+iterated S2K
+	(parse_key): Ditto.
+	* build-packet.c (do_secret_key): Ditto.
+	(do_symkey_enc): Ditto.
+
+Tue Aug  4 08:59:10 1998  Werner Koch  (wk@(none))
+
+	* getkey.c (enum_secret_keys): Now returns only primary keys.
+
+	* getkey (lookup): Now sets the new namehash field.
+
+	* parse-packet.c (parse_sig_subpkt2): New.
+
+	* sign.c (sign_file): one-pass sigs are now emiited reverse.
+	Preference data is considered when selecting the compress algo.
+
 Wed Jul 29 12:53:03 1998  Werner Koch  (wk@(none))
 
 	* free-packet.c (copy_signature): New.

@@ -35,6 +35,9 @@
 #include "util.h"
 #include "i18n.h"
 
+#if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
+  #define MAP_ANONYMOUS MAP_ANON
+#endif
 
 #define DEFAULT_POOLSIZE 8196
 
@@ -105,10 +108,10 @@ init_pool( size_t n)
     if( disable_secmem )
 	log_bug("secure memory is disabled");
 
-  #if HAVE_MMAP && defined(MAP_ANONYMOUS)
+  #if HAVE_MMAP && defined(MAP_ANON)
     poolsize = (poolsize + 4095) & ~4095;
     pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
-			      MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+			      MAP_PRIVATE|MAP_ANON, -1, 0);
     if( pool == (void*)-1 )
 	log_error("can't mmap pool of %u bytes: %s - using malloc\n",
 			    (unsigned)poolsize, strerror(errno));

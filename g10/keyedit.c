@@ -40,8 +40,9 @@
 #include "status.h"
 #include "i18n.h"
 
+static void show_prefs( KBNODE keyblock, PKT_user_id *uid );
 static void show_key_with_all_names( KBNODE keyblock,
-		int only_marked, int with_fpr, int with_subkeys );
+	    int only_marked, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
 static void show_fingerprint( PKT_public_key *pk );
 static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock );
@@ -256,7 +257,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	}
 	/* Ask whether we realy should sign these user id(s) */
 	tty_printf("\n");
-	show_key_with_all_names( keyblock, 1, 1, 0 );
+	show_key_with_all_names( keyblock, 1, 1, 0, 0 );
 	tty_printf("\n");
 	tty_printf(_(
 	     "Are you really sure that you want to sign this key\n"
@@ -544,7 +545,7 @@ keyedit_menu( const char *username, STRLIST locusr )
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
-	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST,
+	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
 	   cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
@@ -573,6 +574,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 	{ N_("toggle")  , cmdTOGGLE , 1, N_("toggle between secret "
 					    "and public key listing") },
 	{ N_("t"     )  , cmdTOGGLE , 1, NULL },
+	{ N_("pref")    , cmdPREF  , 0, N_("list preferences") },
 	{ N_("passwd")  , cmdPASSWD , 1, N_("change the passphrase") },
 	{ N_("trust")   , cmdTRUST , 0, N_("change the ownertrust") },
 
@@ -625,7 +627,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 
 	tty_printf("\n");
 	if( redisplay ) {
-	    show_key_with_all_names( cur_keyblock, 0, 0, 1 );
+	    show_key_with_all_names( cur_keyblock, 0, 0, 1, 0 );
 	    tty_printf("\n");
 	    redisplay = 0;
 	}
@@ -670,7 +672,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 	    break;
 
 	  case cmdQUIT:
-	    if( !modified )
+	    if( !modified && !sec_modified )
 		goto leave;
 	    if( !cpr_get_answer_is_yes("keyedit.save",_("Save changes? ")) ) {
 		if( cpr_enabled()
@@ -680,11 +682,13 @@ keyedit_menu( const char *username, STRLIST locusr )
 	    }
 	    /* fall thru */
 	  case cmdSAVE:
-	    if( modified ) {
-		rc = update_keyblock( &keyblockpos, keyblock );
-		if( rc ) {
-		    log_error(_("update failed: %s\n"), g10_errstr(rc) );
-		    break;
+	    if( modified || sec_modified  ) {
+		if( modified ) {
+		    rc = update_keyblock( &keyblockpos, keyblock );
+		    if( rc ) {
+			log_error(_("update failed: %s\n"), g10_errstr(rc) );
+			break;
+		    }
 		}
 		if( sec_modified ) {
 		    rc = update_keyblock( &sec_keyblockpos, sec_keyblock );
@@ -807,13 +811,17 @@ keyedit_menu( const char *username, STRLIST locusr )
 	    break;
 
 	  case cmdTRUST:
-	    show_key_with_all_names( keyblock, 0, 0, 1 );
+	    show_key_with_all_names( keyblock, 0, 0, 1, 0 );
 	    tty_printf("\n");
 	    if( edit_ownertrust( find_kbnode( keyblock,
 		      PKT_PUBLIC_KEY )->pkt->pkt.public_key->local_id, 1 ) )
 		redisplay = 1;
 	    /* we don't need to set modified here, as the trustvalues
 	     * are updated immediately */
+	    break;
+
+	  case cmdPREF:
+	    show_key_with_all_names( keyblock, 0, 0, 0, 1 );
 	    break;
 
 	  case cmdNOP:
@@ -833,6 +841,45 @@ keyedit_menu( const char *username, STRLIST locusr )
 }
 
 
+/****************
+ * show preferences of a public keyblock.
+ */
+static void
+show_prefs( KBNODE keyblock, PKT_user_id *uid )
+{
+    KBNODE node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
+    PKT_public_key *pk;
+    byte *p;
+    int i;
+    size_t n;
+    byte namehash[20];
+
+    if( !node )
+	return; /* is a secret keyblock */
+    pk = node->pkt->pkt.public_key;
+    if( !pk->local_id ) {
+	log_error("oops: no LID\n");
+	return;
+    }
+
+    rmd160_hash_buffer( namehash, uid->name, uid->len );
+
+    p = get_pref_data( pk->local_id, namehash, &n );
+    if( !p )
+	return;
+
+    tty_printf("    ");
+    for(i=0; i < n; i+=2 ) {
+	if( p[i] )
+	    tty_printf( " %c%d", p[i] == PREFTYPE_SYM    ? 'S' :
+				 p[i] == PREFTYPE_HASH	 ? 'H' :
+				 p[i] == PREFTYPE_COMPR  ? 'Z' : '?', p[i+1]);
+    }
+    tty_printf("\n");
+
+    m_free(p);
+}
+
 
 /****************
  * Display the key a the user ids, if only_marked is true, do only
@@ -840,7 +887,7 @@ keyedit_menu( const char *username, STRLIST locusr )
  */
 static void
 show_key_with_all_names( KBNODE keyblock, int only_marked,
-			 int with_fpr, int with_subkeys )
+			 int with_fpr, int with_subkeys, int with_prefs )
 {
     KBNODE node;
     int i;
@@ -850,6 +897,15 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY
 	    || (with_subkeys && node->pkt->pkttype == PKT_PUBLIC_SUBKEY) ) {
 	    PKT_public_key *pk = node->pkt->pkt.public_key;
+	    int otrust=0, trust=0;
+
+	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+		/* do it here, so that debug messages don't clutter the
+		 * output */
+		trust = query_trust_info(pk);
+		otrust = get_ownertrust_info( pk->local_id );
+	    }
+
 	    tty_printf("%s%c %4u%c/%08lX  created: %s expires: %s",
 			  node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
 			  (node->flag & NODFLG_SELKEY)? '*':' ',
@@ -859,9 +915,6 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 			  datestr_from_pk(pk),
 			  expirestr_from_pk(pk) );
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
-		int otrust, trust;
-		trust = query_trust_info(pk);
-		otrust = get_ownertrust_info( pk->local_id );
 		tty_printf(" trust: %c/%c", otrust, trust );
 		if( with_fpr  )
 		    show_fingerprint( pk );
@@ -896,6 +949,8 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 		   tty_printf("(%d)  ", i);
 		tty_print_string( uid->name, uid->len );
 		tty_printf("\n");
+		if( with_prefs )
+		    show_prefs( keyblock, uid );
 	    }
 	}
     }

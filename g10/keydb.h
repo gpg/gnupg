@@ -91,6 +91,7 @@ struct pubkey_find_info {
 int  check_signatures_trust( PKT_signature *sig );
 void release_pk_list( PK_LIST pk_list );
 int  build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage );
+int  select_algo_from_prefs( PK_LIST pk_list, int preftype );
 
 /*-- skclist.c --*/
 void release_sk_list( SK_LIST sk_list );

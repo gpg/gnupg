@@ -35,6 +35,7 @@
 #include "main.h"
 #include "filter.h"
 #include "ttyio.h"
+#include "trustdb.h"
 #include "i18n.h"
 
 
@@ -118,6 +119,8 @@ only_old_style( SK_LIST sk_list )
     return old_style;
 }
 
+
+
 /****************
  * Sign the files whose names are in FILENAME.
  * If DETACHED has the value true,
@@ -150,6 +153,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     SK_LIST sk_rover = NULL;
     int multifile = 0;
     int old_style = opt.rfc1991;
+    int compr_algo = -1; /* unknown */
 
 
     memset( &afx, 0, sizeof afx);
@@ -176,6 +180,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( encrypt ) {
 	if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
 	    goto leave;
+	if( !old_style )
+	    compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_COMPR );
     }
 
     /* prepare iobufs */
@@ -227,16 +233,31 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     }
 
     if( opt.compress && !outfile && ( !detached || opt.compress_sigs) ) {
-	if( old_style )
-	    zfx.algo = 1;
-	iobuf_push_filter( out, compress_filter, &zfx );
+	if( !compr_algo )
+	    ; /* don't use compression */
+	else {
+	    if( old_style || compr_algo == 1 )
+		zfx.algo = 1;
+	    iobuf_push_filter( out, compress_filter, &zfx );
+	}
     }
 
     if( !detached && !old_style ) {
-	/* loop over the secret certificates and build headers */
-	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	int skcount=0;
+	/* loop over the secret certificates and build headers
+	 * The specs now say that the data should be bracket by
+	 * the onepass-sig and signature-packet; so we muts build it
+	 * here in reverse order */
+	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+	    skcount++;
+	for( ; skcount; skcount-- ) {
 	    PKT_secret_key *sk;
 	    PKT_onepass_sig *ops;
+	    int i = 0;
+
+	    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+		if( ++i == skcount )
+		    break;
 
 	    sk = sk_rover->sk;
 	    ops = m_alloc_clear( sizeof *ops );
@@ -244,7 +265,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    ops->digest_algo = hash_for(sk->pubkey_algo);
 	    ops->pubkey_algo = sk->pubkey_algo;
 	    keyid_from_sk( sk, ops->keyid );
-	    ops->last = !sk_rover->next;
+	    ops->last = skcount == 1;
 
 	    init_packet(&pkt);
 	    pkt.pkttype = PKT_ONEPASS_SIG;
@@ -258,7 +279,6 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    }
 	}
     }
-
 
     /* setup the inner packet */
     if( detached ) {

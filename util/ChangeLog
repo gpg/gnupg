@@ -1,3 +1,7 @@
+Mon Aug  3 17:06:00 1998  Werner Koch  (wk@(none))
+
+	* secmem.c (MAP_ANON): Add a macro test
+
 Wed Jul 29 14:53:34 1998  Werner Koch  (wk@(none))
 
 	* ttyio.c (tty_get_answer_is_yes): New.

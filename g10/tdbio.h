@@ -26,6 +26,10 @@
 #define SIGS_PER_RECORD 	((TRUST_RECORD_LEN-10)/5)
 #define ITEMS_PER_HTBL_RECORD	((TRUST_RECORD_LEN-2)/4)
 #define ITEMS_PER_HLST_RECORD	((TRUST_RECORD_LEN-6)/5)
+#define ITEMS_PER_PREF_RECORD	(TRUST_RECORD_LEN-10)
+#if ITEMS_PER_PREF_RECORD % 2
+  #error ITEMS_PER_PREF_RECORD must be even
+#endif
 #define MAX_LIST_SIGS_DEPTH  20
 
 
@@ -38,7 +42,6 @@
 #define RECTYPE_CACH 9
 #define RECTYPE_HTBL 10
 #define RECTYPE_HLST 11
-
 
 
 #define DIRF_CHECKED  1 /* everything has been checked, the other bits are
@@ -91,10 +94,11 @@ struct trust_record {
 	    byte uidflags;
 	    byte namehash[20]; /* ripemd hash of the username */
 	} uid;
-	struct {	    /* preference reord */
+	struct {	    /* preference record */
 	    ulong lid;	    /* point back to the directory record */
 			    /* or 0 for a glocal pref record */
 	    ulong next;    /* points to next pref record */
+	    byte  data[ITEMS_PER_PREF_RECORD];
 	} pref;
 	struct {	    /* signature record */
 	    ulong lid;

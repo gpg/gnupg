@@ -195,7 +195,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
     assert( s2k->hash_algo );
     dek->keylen = 0;
     md = md_open( s2k->hash_algo, 1);
-    if( s2k->mode == 1 || s2k->mode == 4 ) {
+    if( s2k->mode == 1 || s2k->mode == 3 ) {
 	if( create )
 	    randomize_buffer(s2k->salt, 8, 1);
 	md_write( md, s2k->salt, 8 );

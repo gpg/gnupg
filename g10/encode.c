@@ -34,6 +34,7 @@
 #include "util.h"
 #include "main.h"
 #include "filter.h"
+#include "trustdb.h"
 #include "i18n.h"
 
 
@@ -93,7 +94,9 @@ encode_simple( const char *filename, int mode )
 	s2k->mode = opt.rfc1991? 0:1;
 	s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
 					     : DEFAULT_DIGEST_ALGO;
-	cfx.dek = passphrase_to_dek( NULL, opt.def_cipher_algo, s2k, 2 );
+	cfx.dek = passphrase_to_dek( NULL,
+		       opt.def_cipher_algo ? opt.def_cipher_algo
+					   : DEFAULT_CIPHER_ALGO , s2k, 2 );
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = G10ERR_PASSPHRASE;
 	    m_free(cfx.dek);
@@ -218,7 +221,13 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     /* create a session key */
     cfx.dek = m_alloc_secure( sizeof *cfx.dek );
-    cfx.dek->algo = opt.def_cipher_algo;
+    if( !opt.def_cipher_algo ) { /* try to get it from the prefs */
+	cfx.dek->algo = select_algo_from_prefs( pk_list, PREFTYPE_SYM );
+	if( cfx.dek->algo == -1 )
+	    cfx.dek->algo = DEFAULT_CIPHER_ALGO;
+    }
+    else
+	cfx.dek->algo = opt.def_cipher_algo;
     make_session_key( cfx.dek );
     if( DBG_CIPHER )
 	log_hexdump("DEK is: ", cfx.dek->key, cfx.dek->keylen );
@@ -253,8 +262,16 @@ encode_crypt( const char *filename, STRLIST remusr )
     /* register the cipher filter */
     iobuf_push_filter( out, cipher_filter, &cfx );
     /* register the compress filter */
-    if( opt.compress )
-	iobuf_push_filter( out, compress_filter, &zfx );
+    if( opt.compress ) {
+	int compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_COMPR );
+	if( !compr_algo )
+	    ; /* don't use compression */
+	else {
+	    if( compr_algo == 1 )
+		zfx.algo = 1; /* default is 2 */
+	    iobuf_push_filter( out, compress_filter, &zfx );
+	}
+    }
 
     /* do the work */
     if( (rc = build_packet( out, &pkt )) )
@@ -293,7 +310,15 @@ encrypt_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	if( !efx->header_okay ) {
 	    efx->cfx.dek = m_alloc_secure( sizeof *efx->cfx.dek );
-	    efx->cfx.dek->algo = opt.def_cipher_algo;
+
+	    if( !opt.def_cipher_algo  ) { /* try to get it from the prefs */
+		efx->cfx.dek->algo =
+			  select_algo_from_prefs( efx->pk_list, PREFTYPE_SYM );
+		if( efx->cfx.dek->algo == -1 )
+		    efx->cfx.dek->algo = DEFAULT_CIPHER_ALGO;
+	    }
+	    else
+		efx->cfx.dek->algo = opt.def_cipher_algo;
 	    make_session_key( efx->cfx.dek );
 	    if( DBG_CIPHER )
 		log_hexdump("DEK is: ",

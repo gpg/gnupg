@@ -685,6 +685,8 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
     KBNODE keyblock = NULL;
     KBPOS kbpos;
     int oldmode = set_packet_list_mode(0);
+    byte namehash[20];
+    int use_namehash=0;
 
     rc = enum_keyblocks( 0, &kbpos, &keyblock );
     if( rc ) {
@@ -719,6 +721,10 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 			u32 aki[2];
 			keyid_from_pk( kk->pkt->pkt.public_key, aki );
 			cache_user_id( k->pkt->pkt.user_id, aki );
+			rmd160_hash_buffer( namehash,
+					    k->pkt->pkt.user_id->name,
+					    k->pkt->pkt.user_id->len );
+			use_namehash = 1;
 			k = kk;
 			break;
 		    }
@@ -799,7 +805,8 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 	if( k ) { /* found */
 	    assert(    k->pkt->pkttype == PKT_PUBLIC_KEY
 		    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY );
-	    copy_public_key( pk, k->pkt->pkt.public_key );
+	    copy_public_key_new_namehash( pk, k->pkt->pkt.public_key,
+					  use_namehash? namehash:NULL);
 	    add_stuff_from_selfsig( keyblock, k );
 	    if( ret_keyblock ) {
 		*ret_keyblock = keyblock;
@@ -950,7 +957,7 @@ lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name )
 
 
 /****************
- * Enumerate all secret keys.  Caller must use these procedure:
+ * Enumerate all primary secret keys.  Caller must use these procedure:
  *  1) create a void pointer and initialize it to NULL
  *  2) pass this void pointer by reference to this function
  *     and provide space for the secret key (pass a buffer for sk)
@@ -997,8 +1004,7 @@ enum_secret_keys( void **context, PKT_secret_key *sk )
 	while( (rc=parse_packet(c->iobuf, &pkt)) != -1 ) {
 	    if( rc )
 		; /* e.g. unknown packet */
-	    else if( pkt.pkttype == PKT_SECRET_KEY
-		    || pkt.pkttype == PKT_SECRET_SUBKEY ) {
+	    else if( pkt.pkttype == PKT_SECRET_KEY ) {
 		copy_secret_key( sk, pkt.pkt.secret_key );
 		set_packet_list_mode(save_mode);
 		return 0; /* found */

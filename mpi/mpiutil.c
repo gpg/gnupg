@@ -193,12 +193,16 @@ mpi_free( MPI a )
 	return;
     if( DBG_MEMORY )
 	log_debug("mpi_free\n" );
-  #ifdef M_DEBUG
-    mpi_debug_free_limb_space(a->d, info);
-  #else
-    mpi_free_limb_space(a->d);
-  #endif
-    if( a->flags & ~3 )
+    if( a->flags & 4 )
+	m_free( a->d );
+    else {
+      #ifdef M_DEBUG
+	mpi_debug_free_limb_space(a->d, info);
+      #else
+	mpi_free_limb_space(a->d);
+      #endif
+    }
+    if( a->flags & ~7 )
 	log_bug("invalid flag value in mpi\n");
     m_free(a);
 }
@@ -232,6 +236,47 @@ mpi_set_secure( MPI a )
 }
 
 
+MPI
+mpi_set_opaque( MPI a, void *p, int len )
+{
+    if( !a ) {
+      #ifdef M_DEBUG
+	a = mpi_debug_alloc(0,"alloc_opaque");
+      #else
+	a = mpi_alloc(0);
+      #endif
+    }
+
+    if( a->flags & 4 )
+	m_free( a->d );
+    else {
+      #ifdef M_DEBUG
+	mpi_debug_free_limb_space(a->d, "alloc_opaque");
+      #else
+	mpi_free_limb_space(a->d);
+      #endif
+    }
+
+    a->d = p;
+    a->alloced = 0;
+    a->nlimbs = 0;
+    a->nbits = len;
+    a->flags = 4;
+    return a;
+}
+
+
+void *
+mpi_get_opaque( MPI a, int *len )
+{
+    if( !(a->flags & 4) )
+	log_bug("mpi_get_opaque on normal mpi\n");
+    if( len )
+	*len = a->nbits;
+    return a->d;
+}
+
+
 /****************
  * Note: This copy function should not interpret the MPI
  *	 but copy it transparently.
@@ -246,7 +291,13 @@ mpi_copy( MPI a )
     int i;
     MPI b;
 
-    if( a ) {
+    if( a && (a->flags & 4) ) {
+	void *p = m_is_secure(a->d)? m_alloc_secure( a->nbits )
+				   : m_alloc( a->nbits );
+	memcpy( p, a->d, a->nbits );
+	b = mpi_set_opaque( NULL, p, a->nbits );
+    }
+    else if( a ) {
       #ifdef M_DEBUG
 	b = mpi_is_secure(a)? mpi_debug_alloc_secure( a->nlimbs, info )
 			    : mpi_debug_alloc( a->nlimbs, info );

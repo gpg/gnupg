@@ -35,10 +35,15 @@ Noteworthy changes in version 0.3.3
 
     * gpg now disables core dumps.
 
+    * compress and symmetric cipher preferences are now used.
+      Because there is no 3DES yet, this is replaced by Blowfish.
+
     * We have added the Twofish as an experimental cipher algorithm.
       Many thanks to Matthew Skala for doing this work.
       Twofish is the AES submission from Schneier et al.; see
       "www.counterpane.com/twofish.html" for more information.
+
+    * [talk about --emulate-encr-mpi-bug]
 
 
 

@@ -173,6 +173,7 @@ static ARGPARSE_OPTS opts[] = {
     { 559, "always-trust", 0, "@"},
     { 562, "emulate-checksum-bug", 0, "@"},
     { 554, "run-as-shm-coprocess", 4, "@" },
+    { 568, "emulate-encr-mpi-bug", 0, "@"},
 {0} };
 
 
@@ -361,24 +362,6 @@ set_cmd( enum cmd_values *ret_cmd, enum cmd_values new_cmd )
 
 
 
-static void
-check_opts(void)
-{
-    if( !opt.def_cipher_algo || check_cipher_algo(opt.def_cipher_algo) )
-	log_error(_("selected cipher algorithm is invalid\n"));
-    if( opt.def_digest_algo && check_digest_algo(opt.def_digest_algo) )
-	log_error(_("selected digest algorithm is invalid\n"));
-    if( opt.def_compress_algo < 1 || opt.def_compress_algo > 2 )
-	log_error(_("compress algorithm must be in range %d..%d\n"), 1, 2);
-    if( opt.completes_needed < 1 )
-	log_error(_("completes-needed must be greater than 0\n"));
-    if( opt.marginals_needed < 2 )
-	log_error(_("marginals-needed must be greater than 1\n"));
-}
-
-
-
-
 int
 main( int argc, char **argv )
 {
@@ -426,7 +409,7 @@ main( int argc, char **argv )
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
     /* fixme: set the next two to zero and decide where used */
-    opt.def_cipher_algo = DEFAULT_CIPHER_ALGO;
+    opt.def_cipher_algo = 0;
     opt.def_digest_algo = 0;
     opt.def_compress_algo = 2;
     opt.completes_needed = 1;
@@ -615,6 +598,7 @@ main( int argc, char **argv )
 	    log_error("shared memory coprocessing is not available\n");
 	  #endif
 	    break;
+	  case 568: opt.emulate_bugs |= EMUBUG_ENCR_MPI; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -657,12 +641,22 @@ main( int argc, char **argv )
     if( def_cipher_string ) {
 	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
 	m_free(def_cipher_string); def_cipher_string = NULL;
+	if( check_cipher_algo(opt.def_cipher_algo) )
+	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( def_digest_string ) {
 	opt.def_digest_algo = string_to_digest_algo(def_digest_string);
 	m_free(def_digest_string); def_digest_string = NULL;
+	if( check_digest_algo(opt.def_digest_algo) )
+	    log_error(_("selected digest algorithm is invalid\n"));
     }
-    check_opts();
+    if( opt.def_compress_algo < 1 || opt.def_compress_algo > 2 )
+	log_error(_("compress algorithm must be in range %d..%d\n"), 1, 2);
+    if( opt.completes_needed < 1 )
+	log_error(_("completes-needed must be greater than 0\n"));
+    if( opt.marginals_needed < 2 )
+	log_error(_("marginals-needed must be greater than 1\n"));
+
     if( log_get_errorcount(0) )
 	g10_exit(2);
 

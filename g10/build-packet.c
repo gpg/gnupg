@@ -301,18 +301,24 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	    iobuf_put(a, sk->protect.s2k.mode );
 	    iobuf_put(a, sk->protect.s2k.hash_algo );
 	    if( sk->protect.s2k.mode == 1
-		|| sk->protect.s2k.mode == 4 )
+		|| sk->protect.s2k.mode == 3 )
 		iobuf_write(a, sk->protect.s2k.salt, 8 );
-	    if( sk->protect.s2k.mode == 4 )
-		write_32(a, sk->protect.s2k.count );
+	    if( sk->protect.s2k.mode == 3 )
+		iobuf_put(a, sk->protect.s2k.count );
 	    iobuf_write(a, sk->protect.iv, 8 );
 	}
     }
     else
 	iobuf_put(a, 0 );
-    for(   ; i < nskey; i++ )
-	mpi_write(a, sk->skey[i] );
-    write_16(a, sk->csum );
+    if( sk->is_protected && sk->version >= 4
+			 && !(opt.emulate_bugs & EMUBUG_ENCR_MPI) ) {
+	BUG();
+    }
+    else {
+	for(   ; i < nskey; i++ )
+	    mpi_write(a, sk->skey[i] );
+	write_16(a, sk->csum );
+    }
 
   leave:
     write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes, 1 );
@@ -331,17 +337,17 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 
     assert( enc->version == 4 );
     switch( enc->s2k.mode ) {
-      case 0: case 1: case 4: break;
+      case 0: case 1: case 3: break;
       default: log_bug("do_symkey_enc: s2k=%d\n", enc->s2k.mode );
     }
     iobuf_put( a, enc->version );
     iobuf_put( a, enc->cipher_algo );
     iobuf_put( a, enc->s2k.mode );
     iobuf_put( a, enc->s2k.hash_algo );
-    if( enc->s2k.mode == 1 || enc->s2k.mode == 4 ) {
+    if( enc->s2k.mode == 1 || enc->s2k.mode == 3 ) {
 	iobuf_write(a, enc->s2k.salt, 8 );
-	if( enc->s2k.mode == 4 )
-	    write_32(a, enc->s2k.count);
+	if( enc->s2k.mode == 3 )
+	    iobuf_put(a, enc->s2k.count);
     }
     if( enc->seskeylen )
 	iobuf_write(a, enc->seskey, enc->seskeylen );

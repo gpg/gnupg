@@ -123,6 +123,50 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 }
 
 
+MPI
+mpi_read_from_buffer(byte *buffer, unsigned *ret_nread, int secure)
+{
+    int i, j;
+    unsigned nbits, nbytes, nlimbs, nread=0;
+    mpi_limb_t a;
+    MPI val = MPI_NULL;
+
+    if( *ret_nread < 2 )
+	goto leave;
+    nbits = buffer[0] << 8 | buffer[1];
+    if( nbits > MAX_EXTERN_MPI_BITS ) {
+	log_error("mpi too large (%u bits)\n", nbits);
+	goto leave;
+    }
+    buffer += 2;
+    nread = 2;
+
+    nbytes = (nbits+7) / 8;
+    nlimbs = (nbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB;
+    val = secure? mpi_alloc_secure( nlimbs )
+		: mpi_alloc( nlimbs );
+    i = BYTES_PER_MPI_LIMB - nbytes % BYTES_PER_MPI_LIMB;
+    i %= BYTES_PER_MPI_LIMB;
+    val->nbits = nbits;
+    j= val->nlimbs = nlimbs;
+    val->sign = 0;
+    for( ; j > 0; j-- ) {
+	a = 0;
+	for(; i < BYTES_PER_MPI_LIMB; i++ ) {
+	    if( ++nread > *ret_nread )
+		log_bug("mpi larger than buffer");
+	    a <<= 8;
+	    a |= *buffer++;
+	}
+	i = 0;
+	val->d[j-1] = a;
+    }
+
+  leave:
+    *ret_nread = nread;
+    return val;
+}
+
 
 /****************
  * Make an mpi from a character string.

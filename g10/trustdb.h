@@ -35,6 +35,11 @@
 #define TRUST_FLAG_REVOKED 32 /* r: revoked */
 
 
+#define PREFTYPE_SYM	  1
+#define PREFTYPE_HASH	  2
+#define PREFTYPE_COMPR	  3
+
+
 /*-- trustdb.c --*/
 void list_trustdb(const char *username);
 void list_trust_path( int max_depth, const char *username );
@@ -47,6 +52,8 @@ int query_trust_info( PKT_public_key *pk );
 int enum_trust_web( void **context, ulong *lid );
 int get_ownertrust( ulong lid, unsigned *r_otrust );
 int get_ownertrust_info( ulong lid );
+byte *get_pref_data( ulong lid, const byte *namehash, size_t *ret_n );
+int is_algo_in_prefs( ulong lid, int preftype, int algo );
 int keyid_from_lid( ulong lid, u32 *keyid );
 int query_trust_record( PKT_public_key *pk );
 int insert_trust_record( PKT_public_key *pk );

@@ -461,6 +461,25 @@ read_rest( IOBUF inp, ulong *r_pktlen )
     return p;
 }
 
+static void *
+read_rest2( IOBUF inp, size_t pktlen )
+{
+    byte *p;
+    int i;
+
+    if( iobuf_in_block_mode(inp) ) {
+	log_error("read_rest: can't store stream data\n");
+	p = NULL;
+    }
+    else {
+	p = m_alloc( pktlen );
+	for(i=0; pktlen; pktlen--, i++ )
+	    p[i] = iobuf_get(inp);
+    }
+    return p;
+}
+
+
 
 static int
 parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
@@ -491,8 +510,8 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
       case 1:  /* salted s2k */
 	minlen = 8;
 	break;
-      case 4:  /* iterated+salted s2k */
-	minlen = 12;
+      case 3:  /* iterated+salted s2k */
+	minlen = 9;
 	break;
       default:
 	log_error("unknown S2K %d\n", s2kmode );
@@ -509,12 +528,12 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     k->cipher_algo = cipher_algo;
     k->s2k.mode = s2kmode;
     k->s2k.hash_algo = hash_algo;
-    if( s2kmode == 1 || s2kmode == 4 ) {
+    if( s2kmode == 1 || s2kmode == 3 ) {
 	for(i=0; i < 8 && pktlen; i++, pktlen-- )
 	    k->s2k.salt[i] = iobuf_get_noeof(inp);
     }
-    if( s2kmode == 4 ) {
-	k->s2k.count = read_32(inp); pktlen -= 4;
+    if( s2kmode == 3 ) {
+	k->s2k.count = iobuf_get(inp); pktlen--;
     }
     k->seskeylen = seskeylen;
     for(i=0; i < seskeylen && pktlen; i++, pktlen-- )
@@ -524,11 +543,11 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     if( list_mode ) {
 	printf(":symkey enc packet: version %d, cipher %d, s2k %d, hash %d\n",
 			    version, cipher_algo, s2kmode, hash_algo);
-	if( s2kmode == 1  || s2kmode == 4 ) {
+	if( s2kmode == 1 || s2kmode == 3 ) {
 	    printf("\tsalt ");
 	    for(i=0; i < 8; i++ )
 		printf("%02x", k->s2k.salt[i]);
-	    if( s2kmode == 4 )
+	    if( s2kmode == 3 )
 		printf(", count %lu\n", (ulong)k->s2k.count );
 	    printf("\n");
 	}
@@ -675,6 +694,10 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	if( n < 8 )
 	    break;
 	return buffer;
+      case SIGSUBPKT_PREF_SYM:
+      case SIGSUBPKT_PREF_HASH:
+      case SIGSUBPKT_PREF_COMPR:
+	return buffer;
       case SIGSUBPKT_PRIV_ADD_SIG:
 	/* because we use private data, we check the GNUPG marker */
 	if( n < 24 )
@@ -691,6 +714,19 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
     log_error("buffer shorter than subpacket\n");
     return NULL;
 }
+
+
+const byte *
+parse_sig_subpkt2( PKT_signature *sig, sigsubpkttype_t reqtype, size_t *ret_n )
+{
+    const byte *p;
+
+    p = parse_sig_subpkt( sig->hashed_data, reqtype, ret_n );
+    if( !p )
+	p = parse_sig_subpkt( sig->unhashed_data, reqtype, ret_n );
+    return p;
+}
+
 
 
 static int
@@ -779,7 +815,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    log_error("signature packet without timestamp\n");
 	else
 	    sig->timestamp = buffer_to_u32(p);
-	p = parse_sig_subpkt( sig->unhashed_data, SIGSUBPKT_ISSUER, NULL );
+	p = parse_sig_subpkt2( sig, SIGSUBPKT_ISSUER, NULL );
 	if( !p )
 	    log_error("signature packet without keyid\n");
 	else {
@@ -959,7 +995,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
 
-    if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY )  {
+    if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY ) {
 	PKT_secret_key *sk = pkt->pkt.secret_key;
 	byte temp[8];
 
@@ -990,7 +1026,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
 		switch( sk->protect.s2k.mode ) {
 		  case 1:
-		  case 4:
+		  case 3:
 		    for(i=0; i < 8 && pktlen; i++, pktlen-- )
 			temp[i] = iobuf_get_noeof(inp);
 		    memcpy(sk->protect.s2k.salt, temp, 8 );
@@ -1001,7 +1037,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    break;
 		  case 1: if( list_mode ) printf(  "\tsalted S2K" );
 		    break;
-		  case 4: if( list_mode ) printf(  "\titer+salt S2K" );
+		  case 3: if( list_mode ) printf(  "\titer+salt S2K" );
 		    break;
 		  default:
 		    if( list_mode )
@@ -1016,7 +1052,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 				     sk->protect.algo,
 				     sk->protect.s2k.hash_algo );
 		    if( sk->protect.s2k.mode == 1
-			|| sk->protect.s2k.mode == 4 ) {
+			|| sk->protect.s2k.mode == 3 ) {
 			printf(", salt: ");
 			for(i=0; i < 8; i++ )
 			    printf("%02x", sk->protect.s2k.salt[i]);
@@ -1024,13 +1060,13 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    putchar('\n');
 		}
 
-		if( sk->protect.s2k.mode == 4 ) {
-		    if( pktlen < 4 ) {
+		if( sk->protect.s2k.mode == 3 ) {
+		    if( pktlen < 1 ) {
 			rc = G10ERR_INVALID_PACKET;
 			goto leave;
 		    }
-		    sk->protect.s2k.count = read_32(inp);
-		    pktlen -= 4;
+		    sk->protect.s2k.count = iobuf_get(inp);
+		    pktlen--;
 		}
 
 	    }
@@ -1066,25 +1102,37 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	 * If the user is so careless, not to protect his secret key,
 	 * we can assume, that he operates an open system :=(.
 	 * So we put the key into secure memory when we unprotect it. */
-
-	for(i=npkey; i < nskey; i++ ) {
-	    n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    if( sk->is_protected )
-		mpi_set_protect_flag(sk->skey[i]);
+	if( is_v4 && sk->is_protected && !(opt.emulate_bugs & EMUBUG_ENCR_MPI)){
+	    /* ugly; the length is encrypted too, so wee read all
+	     * stuff up to the end of the packet into the first
+	     * skey element */
+	    sk->skey[npkey] = mpi_set_opaque(NULL,
+					     read_rest2(inp, pktlen), pktlen );
+	    pktlen = 0;
 	    if( list_mode ) {
-		printf(  "\tskey[%d]: ", i);
-		if( sk->is_protected )
-		    printf(  "[encrypted]\n");
-		else {
-		    mpi_print(stdout, sk->skey[i], mpi_print_mode  );
-		    putchar('\n');
-		}
+		printf("\tencrypted stuff follows\n");
 	    }
 	}
+	else { /* v3 method: the mpi length is not encrypted */
+	    for(i=npkey; i < nskey; i++ ) {
+		n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
+		if( sk->is_protected )
+		    mpi_set_protect_flag(sk->skey[i]);
+		if( list_mode ) {
+		    printf(  "\tskey[%d]: ", i);
+		    if( sk->is_protected )
+			printf(  "[encrypted]\n");
+		    else {
+			mpi_print(stdout, sk->skey[i], mpi_print_mode  );
+			putchar('\n');
+		    }
+		}
+	    }
 
-	sk->csum = read_16(inp); pktlen -= 2;
-	if( list_mode ) {
-	    printf("\tchecksum: %04hx\n", sk->csum);
+	    sk->csum = read_16(inp); pktlen -= 2;
+	    if( list_mode ) {
+		printf("\tchecksum: %04hx\n", sk->csum);
+	    }
 	}
     }
     else {
