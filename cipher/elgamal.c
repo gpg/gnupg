@@ -1,5 +1,6 @@
 /* elgamal.c  -  elgamal Public Key encryption
- * Copyright (C) 1998, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * For a description of the algorithm, see:
  *   Bruce Schneier: Applied Cryptography. John Wiley & Sons, 1996.
@@ -52,8 +53,6 @@ static void generate( ELG_secret_key *sk, unsigned nbits, MPI **factors );
 static int  check_secret_key( ELG_secret_key *sk );
 static void do_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey );
 static void decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey );
-static void sign(MPI a, MPI b, MPI input, ELG_secret_key *skey);
-static int  verify(MPI a, MPI b, MPI input, ELG_public_key *pkey);
 
 
 static void (*progress_cb) ( void *, int );
@@ -140,10 +139,6 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
     decrypt( out2, out1_a, out1_b, sk );
     if( mpi_cmp( test, out2 ) )
 	log_fatal("Elgamal operation: encrypt, decrypt failed\n");
-
-    sign( out1_a, out1_b, test, sk );
-    if( !verify( out1_a, out1_b, test, &pk ) )
-	log_fatal("Elgamal operation: sign, verify failed\n");
 
     mpi_free( test );
     mpi_free( out1_a );
@@ -375,8 +370,6 @@ do_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 }
 
 
-
-
 static void
 decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
 {
@@ -398,111 +391,6 @@ decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
     mpi_free(t1);
 }
 
-
-/****************
- * Make an Elgamal signature out of INPUT
- */
-
-static void
-sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
-{
-    MPI k;
-    MPI t   = mpi_alloc( mpi_get_nlimbs(a) );
-    MPI inv = mpi_alloc( mpi_get_nlimbs(a) );
-    MPI p_1 = mpi_copy(skey->p);
-
-   /*
-    * b = (t * inv) mod (p-1)
-    * b = (t * inv(k,(p-1),(p-1)) mod (p-1)
-    * b = (((M-x*a) mod (p-1)) * inv(k,(p-1),(p-1))) mod (p-1)
-    *
-    */
-    mpi_sub_ui(p_1, p_1, 1);
-    k = gen_k( skey->p, 0 /* no small K ! */ );
-    mpi_powm( a, skey->g, k, skey->p );
-    mpi_mul(t, skey->x, a );
-    mpi_subm(t, input, t, p_1 );
-    while( mpi_is_neg(t) ) {
-	BUG();	/* That is nonsense code - left over from a very early test?*/
-	mpi_add(t, t, p_1);
-    }
-    mpi_invm(inv, k, p_1 );
-    mpi_mulm(b, t, inv, p_1 );
-
-#if 0
-    if( DBG_CIPHER ) {
-	log_mpidump("elg sign p= ", skey->p);
-	log_mpidump("elg sign g= ", skey->g);
-	log_mpidump("elg sign y= ", skey->y);
-	log_mpidump("elg sign x= ", skey->x);
-	log_mpidump("elg sign k= ", k);
-	log_mpidump("elg sign M= ", input);
-	log_mpidump("elg sign a= ", a);
-	log_mpidump("elg sign b= ", b);
-    }
-#endif
-    mpi_free(k);
-    mpi_free(t);
-    mpi_free(inv);
-    mpi_free(p_1);
-}
-
-
-/****************
- * Returns true if the signature composed of A and B is valid.
- */
-static int
-verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
-{
-    int rc;
-    MPI t1;
-    MPI t2;
-    MPI base[4];
-    MPI exp[4];
-
-    if( !(mpi_cmp_ui( a, 0 ) > 0 && mpi_cmp( a, pkey->p ) < 0) )
-	return 0; /* assertion	0 < a < p  failed */
-
-    t1 = mpi_alloc( mpi_get_nlimbs(a) );
-    t2 = mpi_alloc( mpi_get_nlimbs(a) );
-
-#if 0
-    /* t1 = (y^a mod p) * (a^b mod p) mod p */
-    mpi_powm( t1, pkey->y, a, pkey->p );
-    mpi_powm( t2, a, b, pkey->p );
-    mpi_mulm( t1, t1, t2, pkey->p );
-
-    /* t2 = g ^ input mod p */
-    mpi_powm( t2, pkey->g, input, pkey->p );
-
-    rc = !mpi_cmp( t1, t2 );
-#elif 0
-    /* t1 = (y^a mod p) * (a^b mod p) mod p */
-    base[0] = pkey->y; exp[0] = a;
-    base[1] = a;       exp[1] = b;
-    base[2] = NULL;    exp[2] = NULL;
-    mpi_mulpowm( t1, base, exp, pkey->p );
-
-    /* t2 = g ^ input mod p */
-    mpi_powm( t2, pkey->g, input, pkey->p );
-
-    rc = !mpi_cmp( t1, t2 );
-#else
-    /* t1 = g ^ - input * y ^ a * a ^ b  mod p */
-    mpi_invm(t2, pkey->g, pkey->p );
-    base[0] = t2     ; exp[0] = input;
-    base[1] = pkey->y; exp[1] = a;
-    base[2] = a;       exp[2] = b;
-    base[3] = NULL;    exp[3] = NULL;
-    mpi_mulpowm( t1, base, exp, pkey->p );
-    rc = !mpi_cmp_ui( t1, 1 );
-
-#endif
-
-    mpi_free(t1);
-    mpi_free(t2);
-    return rc;
-}
 
 /*********************************************
  **************  interface  ******************
@@ -546,7 +434,6 @@ elg_check_secret_key( int algo, MPI *skey )
 }
 
 
-
 int
 elg_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 {
@@ -586,45 +473,6 @@ elg_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
     return 0;
 }
 
-int
-elg_sign( int algo, MPI *resarr, MPI data, MPI *skey )
-{
-    ELG_secret_key sk;
-
-    if( !is_ELGAMAL(algo) )
-	return G10ERR_PUBKEY_ALGO;
-    if( !data || !skey[0] || !skey[1] || !skey[2] || !skey[3] )
-	return G10ERR_BAD_MPI;
-
-    sk.p = skey[0];
-    sk.g = skey[1];
-    sk.y = skey[2];
-    sk.x = skey[3];
-    resarr[0] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
-    resarr[1] = mpi_alloc( mpi_get_nlimbs( sk.p ) );
-    sign( resarr[0], resarr[1], data, &sk );
-    return 0;
-}
-
-int
-elg_verify( int algo, MPI hash, MPI *data, MPI *pkey )
-{
-    ELG_public_key pk;
-
-    if( !is_ELGAMAL(algo) )
-	return G10ERR_PUBKEY_ALGO;
-    if( !data[0] || !data[1] || !hash
-	|| !pkey[0] || !pkey[1] || !pkey[2] )
-	return G10ERR_BAD_MPI;
-
-    pk.p = pkey[0];
-    pk.g = pkey[1];
-    pk.y = pkey[2];
-    if( !verify( data[0], data[1], hash, &pk ) )
-	return G10ERR_BAD_SIGN;
-    return 0;
-}
-
 
 unsigned int
 elg_get_nbits( int algo, MPI *pkey )
@@ -642,9 +490,6 @@ elg_get_nbits( int algo, MPI *pkey )
  *	    the ALGO is invalid.
  * Usage: Bit 0 set : allows signing
  *	      1 set : allows encryption
- * NOTE: This function allows signing also for ELG-E, which is not
- * okay but a bad hack to allow to work with old gpg keys. The real check
- * is done in the gnupg ocde depending on the packet version.
  */
 const char *
 elg_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
@@ -656,11 +501,8 @@ elg_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
     *nsig = 2;
 
     switch( algo ) {
-      case PUBKEY_ALGO_ELGAMAL:
-	*use = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
-	return "ELG";
       case PUBKEY_ALGO_ELGAMAL_E:
-	*use = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
+	*use = PUBKEY_USAGE_ENC;
 	return "ELG-E";
       default: *use = 0; return NULL;
     }

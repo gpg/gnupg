@@ -1,5 +1,6 @@
 /* pubkey.c  -	pubkey dispatcher
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -97,23 +98,6 @@ setup_pubkey_table(void)
 {
     int i=0;
 
-    pubkey_table[i].algo = PUBKEY_ALGO_ELGAMAL;
-    pubkey_table[i].name = elg_get_info( pubkey_table[i].algo,
-					 &pubkey_table[i].npkey,
-					 &pubkey_table[i].nskey,
-					 &pubkey_table[i].nenc,
-					 &pubkey_table[i].nsig,
-					 &pubkey_table[i].use );
-    pubkey_table[i].generate	     = elg_generate;
-    pubkey_table[i].check_secret_key = elg_check_secret_key;
-    pubkey_table[i].encrypt	     = elg_encrypt;
-    pubkey_table[i].decrypt	     = elg_decrypt;
-    pubkey_table[i].sign	     = elg_sign;
-    pubkey_table[i].verify	     = elg_verify;
-    pubkey_table[i].get_nbits	     = elg_get_nbits;
-    if( !pubkey_table[i].name )
-	BUG();
-    i++;
     pubkey_table[i].algo = PUBKEY_ALGO_ELGAMAL_E;
     pubkey_table[i].name = elg_get_info( pubkey_table[i].algo,
 					 &pubkey_table[i].npkey,

@@ -1,3 +1,9 @@
+2004-01-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* pubkey.c (setup_pubkey_table), elgamal.c (sign, verify,
+	test_keys, elg_sign, elg_verify, elg_get_info): Remove the last
+	bits of Elgamal type 20 support.
+
 2003-12-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* idea-stub.c (load_module, idea_get_info): Return the proper type
@@ -1166,7 +1172,8 @@ Mon Feb 16 10:08:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+	   2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -1175,5 +1182,3 @@ Mon Feb 16 10:08:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-
