@@ -1,0 +1,6 @@
+
+    * The string "(INSECURE!)" is appended to a new user-id if this
+      is generated on a system without a good random number generator.
+
+    * works (more or less) on a UltraPenguin (sparc64--gnu-linux)
+

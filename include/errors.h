@@ -52,5 +52,6 @@
 #define G10ERR_BAD_MPI	      30
 #define G10ERR_RESOURCE_LIMIT 31
 #define G10ERR_INV_KEYRING    32
+#define G10ERR_TRUSTDB	      33 /* a problem with the trustdb */
 
 #endif /*G10_ERRORS_H*/

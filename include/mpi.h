@@ -39,27 +39,11 @@
 #define DBG_MPI     mpi_debug_mode
 int mpi_debug_mode;
 
-#if defined(__i386__)
-  #define BITS_PER_MPI_LIMB  32
-  #define BYTES_PER_MPI_LIMB  4
-  #define BYTES_PER_MPI_LIMB2 8
-  typedef unsigned long int mpi_limb_t;
-  typedef   signed long int mpi_limb_signed_t;
-#elif defined(__hppa__)
-  #define BITS_PER_MPI_LIMB   32
-  #define BYTES_PER_MPI_LIMB   4
-  #define BYTES_PER_MPI_LIMB2  8
-  typedef unsigned long int mpi_limb_t;
-  typedef   signed long int mpi_limb_signed_t;
-#elif defined(__alpha__)
-  #define BITS_PER_MPI_LIMB   64
-  #define BYTES_PER_MPI_LIMB   8
-  #define BYTES_PER_MPI_LIMB2 16
-  typedef unsigned long int mpi_limb_t;
-  typedef   signed long int mpi_limb_signed_t;
-#else
-  #error add definions for this machine here
-#endif
+#define BITS_PER_MPI_LIMB    (8*SIZEOF_UNSIGNED_LONG)
+#define BYTES_PER_MPI_LIMB   SIZEOF_UNSIGNED_LONG
+#define BYTES_PER_MPI_LIMB2  (2*SIZEOF_UNSIGNED_LONG)
+typedef unsigned long int mpi_limb_t;
+typedef   signed long int mpi_limb_signed_t;
 
 typedef struct mpi_struct {
     int alloced;    /* array size (# of allocated limbs) */

@@ -37,4 +37,6 @@
 
     * add g10 stuff to Mutt's pgpinvoke.c
 
+    * Burn the buffers used by fopen().
+
 

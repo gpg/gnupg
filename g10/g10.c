@@ -34,6 +34,7 @@
 #include "mpi.h"
 #include "cipher.h"
 #include "filter.h"
+#include "trustdb.h"
 
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
@@ -392,6 +393,13 @@ main( int argc, char **argv )
 	}
     }
 
+    if( cmd != aPrimegen && cmd != aPrintMDs ) {
+	rc = check_trustdb(0);
+	if( rc )
+	    log_error("failed to initialize the TrustDB: %s\n", g10_errstr(rc));
+    }
+
+
     switch( cmd ) {
       case aStore: /* only store the file */
 	if( argc > 1 )
@@ -582,9 +590,7 @@ print_mds( const char *fname )
     FILE *fp;
     char buf[1024];
     size_t n;
-    MD5HANDLE md5;
-    RMDHANDLE rmd160;
-    SHA1HANDLE sha1;
+    MD_HANDLE md;
 
     if( !fname ) {
 	fp = stdin;
@@ -597,31 +603,26 @@ print_mds( const char *fname )
 	return;
     }
 
-    md5    = md5_open(0);
-    rmd160 = rmd160_open(0);
-    sha1   = sha1_open(0);
+    md = md_open( DIGEST_ALGO_MD5, 0 );
+    md_enable( md, DIGEST_ALGO_RMD160 );
+    md_enable( md, DIGEST_ALGO_SHA1 );
 
-    while( (n=fread( buf, 1, DIM(buf), fp )) ) {
-	md5_write( md5, buf, n );
-	rmd160_write( rmd160, buf, n );
-	sha1_write( sha1, buf, n );
-    }
+    while( (n=fread( buf, 1, DIM(buf), fp )) )
+	md_write( md, buf, n );
     if( ferror(fp) )
 	log_error("%s: %s\n", fname, strerror(errno) );
     else {
 	byte *p;
 
-	md5_final(md5);
-	printf(  "%s:    MD5 =", fname ); print_hex(md5_read(md5), 16 );
-	printf("\n%s: RMD160 =", fname ); print_hex(rmd160_final(rmd160), 20 );
-	printf("\n%s:   SHA1 =", fname ); print_hex(sha1_final(sha1), 20 );
+	md_final(md);
+	printf(  "%s:    MD5 =", fname ); print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
+	printf("\n%s: RMD160 =", fname ); print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
+	printf("\n%s:   SHA1 =", fname ); print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
 	putchar('\n');
     }
 
 
-    md5_close(md5);
-    rmd160_close(rmd160);
-    sha1_close(sha1);
+    md_close(md);
 
     if( fp != stdin )
 	fclose(fp);

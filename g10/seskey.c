@@ -226,16 +226,17 @@ encode_md5_value( byte *md, unsigned len, unsigned nbits )
 }
 
 MPI
-encode_md_value( MD_HANDLE *md, unsigned nbits )
+encode_md_value( MD_HANDLE md, unsigned nbits )
 {
-    byte *p = md_final( md );
-    if( md->algo == DIGEST_ALGO_MD5 )
-	return encode_md5_value( p, 16, nbits );
-    else if( md->algo == DIGEST_ALGO_RMD160 )
-	return encode_rmd160_value( p, 20, nbits );
-    else if( md->algo == DIGEST_ALGO_SHA1 )
-	return encode_sha1_value( p, 20, nbits );
-    else
+    switch( md_get_algo( md ) ) {
+      case DIGEST_ALGO_MD5:
+	return encode_md5_value( md_read(md, DIGEST_ALGO_MD5), 16, nbits );
+      case DIGEST_ALGO_RMD160:
+	return encode_rmd160_value( md_read(md, DIGEST_ALGO_RMD160), 20, nbits );
+      case DIGEST_ALGO_SHA1:
+	return encode_sha1_value( md_read(md, DIGEST_ALGO_SHA1), 20, nbits );
+      default:
 	log_bug(NULL);
+    }
 }
 

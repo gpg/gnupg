@@ -42,6 +42,24 @@
 
 
 
+    Installation
+    ------------
+
+    1)	"./configure"
+
+       to enable the integrated malloc debugging stuff, use:
+
+	"./configure --enable-m-debug"
+
+    2) "make"
+
+    3) "make install"
+
+    4) You end up with a binary "g10" in /usr/local/bin
+
+
+
+
     Resources
     ---------
     G10 needs a directory "~/.g10" to store the default keyrings

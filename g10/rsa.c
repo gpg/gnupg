@@ -64,7 +64,7 @@ g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek )
 
 
 void
-g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE *md )
+g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE md )
 {
  #ifdef HAVE_RSA_CIPHER
     RSA_secret_key skey;
@@ -72,10 +72,11 @@ g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE *md )
 
     assert( sig->pubkey_algo == PUBKEY_ALGO_RSA );
 
-    dp = md_final( md );
+    md_final( md );
+    dp = md_read( md, 0 );
 
     keyid_from_skc( skc, sig->keyid );
-    sig->d.rsa.digest_algo = md->algo;
+    sig->d.rsa.digest_algo = md_get_algo( md );
     sig->d.rsa.digest_start[0] = dp[0];
     sig->d.rsa.digest_start[1] = dp[1];
     sig->d.rsa.rsa_integer =

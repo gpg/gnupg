@@ -60,6 +60,7 @@ cipher_SOURCES = blowfish.c	\
 		 dsa.h		\
 		 dsa.c		\
 		 md.c		\
+		 md.h		\
 		 misc.c 	\
 		 smallprime.c
 

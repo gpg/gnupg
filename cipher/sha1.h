@@ -25,26 +25,14 @@
 typedef struct {
     u32  h0,h1,h2,h3,h4;
     u32  nblocks;
-    byte buffer[64];
-    int  bufcount;
-} *SHA1HANDLE;
+    byte buf[64];
+    int  count;
+} SHA1_CONTEXT;
 
 
-/****************
- * Process a single character, this character will be buffered to
- * increase performance.
- */
-#define sha1_putchar(h,c)				    \
-	    do {					    \
-		if( (h)->bufcount == 64 )		    \
-		    sha1_write( (h), NULL, 0 ); 	    \
-		(h)->buffer[(h)->bufcount++] = (c) & 0xff;  \
-	    } while(0)
-
-SHA1HANDLE sha1_open( int secure );
-SHA1HANDLE sha1_copy( SHA1HANDLE a );
-void	   sha1_close( SHA1HANDLE hd );
-void	   sha1_write( SHA1HANDLE hd, byte *inbuf, size_t inlen );
-byte *	   sha1_final( SHA1HANDLE hd );
+void sha1_init( SHA1_CONTEXT *c );
+void sha1_write( SHA1_CONTEXT *hd, byte *inbuf, size_t inlen);
+void sha1_final( SHA1_CONTEXT *hd);
+#define sha1_read(h) ( (h)->buf )
 
 #endif /*G10_SHA1_H*/

@@ -84,7 +84,6 @@
 #include <assert.h>
 #include "util.h"
 #include "memory.h"
-#include "cipher.h" /* grrrr */
 #include "sha1.h"
 
 
@@ -110,16 +109,16 @@
     ( e += ROTL( 5, a ) + f( b, c, d ) + k + data, b = ROTL( 30, b ) )
 
 
-static void
-initialize( SHA1HANDLE hd )
+void
+sha1_init( SHA1_CONTEXT *hd )
 {
     hd->h0 = 0x67452301;
     hd->h1 = 0xefcdab89;
     hd->h2 = 0x98badcfe;
     hd->h3 = 0x10325476;
     hd->h4 = 0xc3d2e1f0;
-    hd->bufcount = 0;
     hd->nblocks = 0;
+    hd->count = 0;
 }
 
 
@@ -127,7 +126,7 @@ initialize( SHA1HANDLE hd )
  * Transform the message X which consists of 16 32-bit-words
  */
 static void
-transform( SHA1HANDLE hd, byte *data )
+transform( SHA1_CONTEXT *hd, byte *data )
 {
     u32 A, B, C, D, E;	   /* Local vars */
     u32 eData[ 16 ];	   /* Expanded data */
@@ -247,69 +246,22 @@ transform( SHA1HANDLE hd, byte *data )
 }
 
 
-
-
-SHA1HANDLE
-sha1_open( int secure )
-{
-    SHA1HANDLE hd;
-
-    hd = secure? m_alloc_secure( sizeof *hd )
-	       : m_alloc( sizeof *hd );
-    initialize(hd);
-    return hd;
-}
-
-
-SHA1HANDLE
-sha1_copy( SHA1HANDLE a )
-{
-    SHA1HANDLE b;
-
-    assert(a);
-    b = m_is_secure(a)? m_alloc_secure( sizeof *b )
-		      : m_alloc( sizeof *b );
-    memcpy( b, a, sizeof *a );
-    return b;
-}
-
-
-/* BAD Kludge!!! */
-MD_HANDLE *
-sha1_copy2md( SHA1HANDLE a )
-{
-    MD_HANDLE *md = md_makecontainer( DIGEST_ALGO_SHA1 );
-    md->u.sha1 = sha1_copy( a );
-    return md;
-}
-
-
-
-void
-sha1_close(SHA1HANDLE hd)
-{
-    if( hd )
-	m_free(hd);
-}
-
-
-
 /* Update the message digest with the contents
  * of INBUF with length INLEN.
  */
 void
-sha1_write( SHA1HANDLE hd, byte *inbuf, size_t inlen)
+sha1_write( SHA1_CONTEXT *hd, byte *inbuf, size_t inlen)
 {
-    if( hd->bufcount == 64 ) { /* flush the buffer */
-	transform( hd, hd->buffer );
-	hd->bufcount = 0;
+    if( hd->count == 64 ) { /* flush the buffer */
+	transform( hd, hd->buf );
+	hd->count = 0;
 	hd->nblocks++;
     }
     if( !inbuf )
 	return;
-    if( hd->bufcount ) {
-	for( ; inlen && hd->bufcount < 64; inlen-- )
-	    hd->buffer[hd->bufcount++] = *inbuf++;
+    if( hd->count ) {
+	for( ; inlen && hd->count < 64; inlen-- )
+	    hd->buf[hd->count++] = *inbuf++;
 	sha1_write( hd, NULL, 0 );
 	if( !inlen )
 	    return;
@@ -317,13 +269,13 @@ sha1_write( SHA1HANDLE hd, byte *inbuf, size_t inlen)
 
     while( inlen >= 64 ) {
 	transform( hd, inbuf );
-	hd->bufcount = 0;
+	hd->count = 0;
 	hd->nblocks++;
 	inlen -= 64;
 	inbuf += 64;
     }
-    for( ; inlen && hd->bufcount < 64; inlen-- )
-	hd->buffer[hd->bufcount++] = *inbuf++;
+    for( ; inlen && hd->count < 64; inlen-- )
+	hd->buf[hd->count++] = *inbuf++;
 }
 
 
@@ -334,8 +286,8 @@ sha1_write( SHA1HANDLE hd, byte *inbuf, size_t inlen)
  * Returns: 20 bytes representing the digest.
  */
 
-byte *
-sha1_final(SHA1HANDLE hd)
+void
+sha1_final(SHA1_CONTEXT *hd)
 {
     u32 t, msb, lsb;
     byte *p;
@@ -348,37 +300,37 @@ sha1_final(SHA1HANDLE hd)
 	msb++;
     msb += t >> 26;
     t = lsb;
-    if( (lsb = t + hd->bufcount) < t ) /* add the bufcount */
+    if( (lsb = t + hd->count) < t ) /* add the count */
 	msb++;
     t = lsb;
     if( (lsb = t << 3) < t ) /* multiply by 8 to make a bit count */
 	msb++;
     msb += t >> 29;
 
-    if( hd->bufcount < 56 ) { /* enough room */
-	hd->buffer[hd->bufcount++] = 0x80; /* pad */
-	while( hd->bufcount < 56 )
-	    hd->buffer[hd->bufcount++] = 0;  /* pad */
+    if( hd->count < 56 ) { /* enough room */
+	hd->buf[hd->count++] = 0x80; /* pad */
+	while( hd->count < 56 )
+	    hd->buf[hd->count++] = 0;  /* pad */
     }
     else { /* need one extra block */
-	hd->buffer[hd->bufcount++] = 0x80; /* pad character */
-	while( hd->bufcount < 64 )
-	    hd->buffer[hd->bufcount++] = 0;
+	hd->buf[hd->count++] = 0x80; /* pad character */
+	while( hd->count < 64 )
+	    hd->buf[hd->count++] = 0;
 	sha1_write(hd, NULL, 0);  /* flush */;
-	memset(hd->buffer, 0, 56 ); /* fill next block with zeroes */
+	memset(hd->buf, 0, 56 ); /* fill next block with zeroes */
     }
     /* append the 64 bit count */
-    hd->buffer[56] = msb >> 24;
-    hd->buffer[57] = msb >> 16;
-    hd->buffer[58] = msb >>  8;
-    hd->buffer[59] = msb      ;
-    hd->buffer[60] = lsb >> 24;
-    hd->buffer[61] = lsb >> 16;
-    hd->buffer[62] = lsb >>  8;
-    hd->buffer[63] = lsb      ;
-    transform( hd, hd->buffer );
+    hd->buf[56] = msb >> 24;
+    hd->buf[57] = msb >> 16;
+    hd->buf[58] = msb >>  8;
+    hd->buf[59] = msb	   ;
+    hd->buf[60] = lsb >> 24;
+    hd->buf[61] = lsb >> 16;
+    hd->buf[62] = lsb >>  8;
+    hd->buf[63] = lsb	   ;
+    transform( hd, hd->buf );
 
-    p = hd->buffer;
+    p = hd->buf;
   #ifdef BIG_ENDIAN_HOST
     #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
   #else /* little endian */
@@ -392,8 +344,6 @@ sha1_final(SHA1HANDLE hd)
     X(4);
   #undef X
 
-    initialize( hd );  /* prepare for next cycle */
-    return hd->buffer; /* now contains the digest */
 }
 
 

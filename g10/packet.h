@@ -220,7 +220,7 @@ int parse_packet( IOBUF inp, PACKET *ret_pkt);
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
-void hash_public_cert( MD_HANDLE *md, PKT_public_cert *pkc );
+void hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc );
 
 /*-- free-packet.c --*/
 void free_pubkey_enc( PKT_pubkey_enc *enc );
@@ -235,7 +235,7 @@ PKT_secret_cert *copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s );
 
 
 /*-- sig-check.c --*/
-int signature_check( PKT_signature *sig, MD_HANDLE *digest );
+int signature_check( PKT_signature *sig, MD_HANDLE digest );
 
 /*-- seckey-cert.c --*/
 int is_secret_key_protected( PKT_secret_cert *cert );

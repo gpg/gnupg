@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <errno.h>
 #include <assert.h>
 #include "util.h"
@@ -408,7 +409,7 @@ generate_keypair()
     tty_printf( "\n"
 "You need a User-ID to identify your key; the software constructs the user id\n"
 "from Real Name, Comment and Email Address in this form:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n" );
+"    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\n\n" );
     uid = NULL;
     aname=acomment=amail=NULL;
     for(;;) {
@@ -422,6 +423,8 @@ generate_keypair()
 		tty_kill_prompt();
 		if( strpbrk( aname, "<([])>" ) )
 		    tty_printf("Invalid character in name\n");
+		else if( isdigit(*aname) )
+		    tty_printf("Name may not start with a digit\n");
 		else if( strlen(aname) < 5 )
 		    tty_printf("Name must be at least 5 characters long\n");
 		else
@@ -464,12 +467,15 @@ generate_keypair()
 	}
 
 	m_free(uid);
-	uid = p = m_alloc(strlen(aname)+strlen(amail)+strlen(acomment)+10);
+	uid = p = m_alloc(strlen(aname)+strlen(amail)+strlen(acomment)+12+10);
 	p = stpcpy(p, aname );
 	if( *acomment )
 	    p = stpcpy(stpcpy(stpcpy(p," ("), acomment),")");
 	if( *amail )
 	    p = stpcpy(stpcpy(stpcpy(p," <"), amail),">");
+      #ifndef HAVE_DEV_RANDOM
+	strcpy(p, " (INSECURE!)" );
+      #endif
 
 	tty_printf("You selected this USER-ID:\n    \"%s\"\n\n", uid);
 	for(;;) {

@@ -60,7 +60,7 @@ build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list, int unlock )
 	    free_secret_cert( skc ); skc = NULL;
 	    log_error("no default secret key: %s\n", g10_errstr(rc) );
 	}
-	else if( is_valid_pubkey_algo(skc->pubkey_algo) ) {
+	else if( !(rc=check_pubkey_algo(skc->pubkey_algo)) ) {
 	    SKC_LIST r;
 	    r = m_alloc( sizeof *r );
 	    r->skc = skc; skc = NULL;
@@ -82,7 +82,7 @@ build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list, int unlock )
 		free_secret_cert( skc ); skc = NULL;
 		log_error("skipped '%s': %s\n", locusr->d, g10_errstr(rc) );
 	    }
-	    else if ( is_valid_pubkey_algo(skc->pubkey_algo) ) {
+	    else if( !(rc=check_pubkey_algo(skc->pubkey_algo)) ) {
 		SKC_LIST r;
 		r = m_alloc( sizeof *r );
 		r->skc = skc; skc = NULL;

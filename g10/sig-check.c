@@ -38,7 +38,7 @@
  * is able to append some data, before getting the digest.
  */
 int
-signature_check( PKT_signature *sig, MD_HANDLE *digest )
+signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
     MPI result = NULL;
@@ -54,16 +54,17 @@ signature_check( PKT_signature *sig, MD_HANDLE *digest )
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	ELG_public_key pkey;
 
-	if( (rc=md_okay(sig->d.elg.digest_algo)) )
+	if( (rc=check_digest_algo(sig->d.elg.digest_algo)) )
 	    goto leave;
 	/* complete the digest */
-	md_putchar( digest, sig->sig_class );
+	md_putc( digest, sig->sig_class );
 	{   u32 a = sig->timestamp;
-	    md_putchar( digest, (a >> 24) & 0xff );
-	    md_putchar( digest, (a >> 16) & 0xff );
-	    md_putchar( digest, (a >>  8) & 0xff );
-	    md_putchar( digest,  a	  & 0xff );
+	    md_putc( digest, (a >> 24) & 0xff );
+	    md_putc( digest, (a >> 16) & 0xff );
+	    md_putc( digest, (a >>  8) & 0xff );
+	    md_putc( digest,  a        & 0xff );
 	}
+	md_final( digest );
 	result = encode_md_value( digest, mpi_get_nbits(pkc->d.elg.p));
 	pkey.p = pkc->d.elg.p;
 	pkey.g = pkc->d.elg.g;
@@ -134,14 +135,15 @@ signature_check( PKT_signature *sig, MD_HANDLE *digest )
 	    }
 
 	    /* complete the digest */
-	    md_putchar( digest, sig->sig_class );
+	    md_putc( digest, sig->sig_class );
 	    {	u32 a = sig->timestamp;
-		md_putchar( digest, (a >> 24) & 0xff );
-		md_putchar( digest, (a >> 16) & 0xff );
-		md_putchar( digest, (a >>  8) & 0xff );
-		md_putchar( digest,  a	      & 0xff );
+		md_putc( digest, (a >> 24) & 0xff );
+		md_putc( digest, (a >> 16) & 0xff );
+		md_putc( digest, (a >>	8) & 0xff );
+		md_putc( digest,  a	   & 0xff );
 	    }
-	    dp = md_final( digest );
+	    md_final( digest );
+	    dp = md_read( digest, 0 );
 	    for(i=19; i >= 0; i--, dp++ )
 		if( mpi_getbyte( result, i ) != *dp ) {
 		    rc = G10ERR_BAD_SIGN;
@@ -177,14 +179,15 @@ signature_check( PKT_signature *sig, MD_HANDLE *digest )
 	    }
 
 	    /* complete the digest */
-	    md_putchar( digest, sig->sig_class );
+	    md_putc( digest, sig->sig_class );
 	    {	u32 a = sig->timestamp;
-		md_putchar( digest, (a >> 24) & 0xff );
-		md_putchar( digest, (a >> 16) & 0xff );
-		md_putchar( digest, (a >>  8) & 0xff );
-		md_putchar( digest,  a	      & 0xff );
+		md_putc( digest, (a >> 24) & 0xff );
+		md_putc( digest, (a >> 16) & 0xff );
+		md_putc( digest, (a >>	8) & 0xff );
+		md_putc( digest,  a	   & 0xff );
 	    }
-	    dp = md_final( digest );
+	    md_final( digest );
+	    dp = md_read( digest, 0 );
 	    for(i=15; i >= 0; i--, dp++ )
 		if( mpi_getbyte( result, i ) != *dp ) {
 		    rc = G10ERR_BAD_SIGN;
@@ -220,7 +223,7 @@ int
 check_key_signature( KBNODE root, KBNODE node )
 {
     KBNODE unode;
-    MD_HANDLE *md;
+    MD_HANDLE md;
     PKT_public_cert *pkc;
     PKT_signature *sig;
     int algo;
@@ -239,7 +242,7 @@ check_key_signature( KBNODE root, KBNODE node )
 	algo = sig->d.rsa.digest_algo;
     else
 	return G10ERR_PUBKEY_ALGO;
-    if( (rc=md_okay(algo)) )
+    if( (rc=check_digest_algo(algo)) )
 	return rc;
 
     unode = find_kbparent( root, node );

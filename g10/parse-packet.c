@@ -438,11 +438,11 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     int is_v4=0;
 
     if( pkttype == PKT_PUBLIC_CERT ) {
-	pkt->pkt.public_cert->mfx.md5 = md5_open(0);
-	pkt->pkt.public_cert->mfx.rmd160 = rmd160_open(0);
+	pkt->pkt.public_cert->mfx.md = md_open(DIGEST_ALGO_MD5, 0);
+	md_enable(pkt->pkt.public_cert->mfx.md, DIGEST_ALGO_RMD160);
+	md_enable(pkt->pkt.public_cert->mfx.md, DIGEST_ALGO_SHA1);
 	pkt->pkt.public_cert->mfx.maxbuf_size = 1;
-	md5_write(pkt->pkt.public_cert->mfx.md5, hdr, hdrlen);
-	rmd160_write(pkt->pkt.public_cert->mfx.rmd160, hdr, hdrlen);
+	md_write(pkt->pkt.public_cert->mfx.md, hdr, hdrlen);
 	iobuf_push_filter( inp, md_filter, &pkt->pkt.public_cert->mfx );
     }
 

@@ -61,7 +61,6 @@
 #include <assert.h>
 #include "util.h"
 #include "md5.h"
-#include "cipher.h"  /* kludge for md5_copy2md() */
 #include "memory.h"
 
 
@@ -74,7 +73,7 @@
 #endif
 
 
-static void Init( MD5HANDLE mdContext);
+static void Init( MD5_CONTEXT *mdContext);
 static void Transform(u32 *buf,u32 *in);
 
 static byte PADDING[64] = {
@@ -120,56 +119,9 @@ static byte PADDING[64] = {
    (a) += (b); \
   }
 
-/* The routine Init initializes the message-digest context
- * mdContext. All fields are set to zero.
- * mode should be zero is reserved for extensions.
- */
-
-MD5HANDLE
-md5_open(int secure)
-{
-    MD5HANDLE mdContext;
-
-    mdContext = secure? m_alloc_secure( sizeof *mdContext )
-		      : m_alloc( sizeof *mdContext );
-    Init(mdContext);
-    return mdContext;
-}
-
-
-MD5HANDLE
-md5_copy( MD5HANDLE a )
-{
-    MD5HANDLE mdContext;
-
-    assert(a);
-    mdContext = m_is_secure(a)? m_alloc_secure( sizeof *mdContext )
-			      : m_alloc( sizeof *mdContext );
-    memcpy( mdContext, a, sizeof *a );
-    return mdContext;
-}
-
-
-/* BAD Kludge!!! */
-MD_HANDLE *
-md5_copy2md( MD5HANDLE a )
-{
-    MD_HANDLE *md = md_makecontainer( DIGEST_ALGO_MD5 );
-    md->u.md5 = md5_copy( a );
-    return md;
-}
-
 
 void
-md5_close(MD5HANDLE hd)
-{
-    if( hd )
-	m_free(hd);
-}
-
-
-static void
-Init( MD5HANDLE mdContext)
+md5_init( MD5_CONTEXT *mdContext)
 {
     mdContext->i[0] = mdContext->i[1] = (u32)0;
     /* Load magic initialization constants.
@@ -178,7 +130,7 @@ Init( MD5HANDLE mdContext)
     mdContext->buf[1] = (u32)0xefcdab89L;
     mdContext->buf[2] = (u32)0x98badcfeL;
     mdContext->buf[3] = (u32)0x10325476L;
-    mdContext->bufcount = 0;
+    mdContext->count = 0;
 }
 
 /* The routine Update updates the message-digest context to
@@ -186,15 +138,15 @@ Init( MD5HANDLE mdContext)
  * in the message whose digest is being computed.
  */
 void
-md5_write( MD5HANDLE mdContext, byte *inBuf, size_t inLen)
+md5_write( MD5_CONTEXT *mdContext, byte *inBuf, size_t inLen)
 {
     register int i, ii;
     int mdi;
     u32 in[16];
 
-    if(mdContext->bufcount) { /* flush the buffer */
-	i = mdContext->bufcount;
-	mdContext->bufcount = 0;
+    if(mdContext->count) { /* flush the buffer */
+	i = mdContext->count;
+	mdContext->count = 0;
 	md5_write( mdContext, mdContext->digest, i);
     }
     if( !inBuf )
@@ -227,20 +179,6 @@ md5_write( MD5HANDLE mdContext, byte *inBuf, size_t inLen)
 }
 
 
-/****************
- * Process a single character, this character will be buffered to
- * increase performance. The digest-field is used as a buffer.
- */
-
-void
-md5_putchar( MD5HANDLE mdContext, int c )
-{
-    if(mdContext->bufcount == 16)
-	md5_write( mdContext, NULL, 0 );
-    mdContext->digest[mdContext->bufcount++] = c & 0xff;
-}
-
-
 
 /* The routine final terminates the message-digest computation and
  * ends with the desired message digest in mdContext->digest[0...15].
@@ -249,14 +187,14 @@ md5_putchar( MD5HANDLE mdContext, int c )
  */
 
 void
-md5_final(MD5HANDLE mdContext)
+md5_final( MD5_CONTEXT *mdContext )
 {
     u32 in[16];
     int mdi;
     unsigned int i, ii;
     unsigned int padLen;
 
-    if(mdContext->bufcount) /* flush buffer */
+    if(mdContext->count) /* flush buffer */
 	md5_write(mdContext, NULL, 0 );
     /* save number of bits */
     in[14] = mdContext->i[0];
@@ -284,49 +222,6 @@ md5_final(MD5HANDLE mdContext)
 	mdContext->digest[ii+2] = (byte)((mdContext->buf[i] >> 16) & 0xFF);
 	mdContext->digest[ii+3] = (byte)((mdContext->buf[i] >> 24) & 0xFF);
     }
-    Init(mdContext);
-}
-
-/**********
- * Returns 16 bytes representing the digest.
- */
-byte *
-md5_read(MD5HANDLE mdContext)
-{
-    return mdContext->digest;
-}
-
-
-
-/****************
- * Converts the result form Read into a printable representation.
- * This should only be used direct after a md5_read(), because it uses
- * In-Place conversion.
- * Returns digest.
- */
-
-char *
-md5_tostring( byte *digest )
-{
-    static byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ."
-			     "abcdefghijklmnopqrstuvwxyz_"
-			     "0123456789";
-    int i;
-    byte *d, *s;
-
-    memmove(digest+8,digest, 16); /* make some room */
-    d = digest;
-    s = digest+8;
-    for(i=0; i < 5; i++, s += 3 ) {
-	*d++ = bintoasc[(*s >> 2) & 077];
-	*d++ = bintoasc[(((*s << 4) & 060) | ((s[1] >> 4) & 017)) & 077];
-	*d++ = bintoasc[(((s[1] << 2) & 074) | ((s[2] >> 6) & 03)) & 077];
-	*d++ = bintoasc[s[2] & 077];
-    }
-    *d++ = bintoasc[(*s >> 2) & 077];
-    *d++ = bintoasc[((*s << 4) & 060) & 077];
-    *d = 0;
-    return (char*)digest;
 }
 
 

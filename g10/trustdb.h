@@ -1,4 +1,4 @@
-/* rmd.h - RIPE-MD hash functions
+/* trustdb.h - Trust database
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
  *
  * This file is part of G10.
@@ -17,22 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_RMD_H
-#define G10_RMD_H
 
-#include "types.h"
+#ifndef G10_TRUSTDB_H
+#define G10_TRUSTDB_H
 
-typedef struct {
-    u32  h0,h1,h2,h3,h4;
-    u32  nblocks;
-    byte buf[64];
-    int  count;
-} RMD160_CONTEXT;
+/*-- trustdb.c --*/
+int check_trustdb( int level );
+int check_pkc_trust( PKT_public_cert *pkc, int *r_trustlevel );
 
-
-void rmd160_init( RMD160_CONTEXT *c );
-void rmd160_write( RMD160_CONTEXT *hd, byte *inbuf, size_t inlen);
-void rmd160_final(RMD160_CONTEXT *hd);
-#define rmd160_read(h) ( (h)->buf )
-
-#endif /*G10_RMD_H*/
+#endif /*G10_TRUSTDB_H*/

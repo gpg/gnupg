@@ -82,13 +82,12 @@ open_device( const char *name, int minor )
 	log_fatal("can't open %s: %s\n", name, strerror(errno) );
     if( fstat( fd, &sb ) )
 	log_fatal("stat() off %s failed: %s\n", name, strerror(errno) );
-    if( !S_ISCHR(sb.st_mode)
-      #ifdef __linux__
-	|| (sb.st_rdev >> 8) != 1
-	|| (sb.st_rdev & 0xff) != minor
-      #endif
-      )
+  #if defined(__sparc__) && defined(__linux__)
+    #warning something is wrong with UltraPenguin /dev/random
+  #else
+    if( !S_ISCHR(sb.st_mode) )
 	log_fatal("invalid random device!\n" );
+  #endif
     return fd;
 }
 
@@ -140,6 +139,10 @@ the OS a chance to collect more entropy! (Need %d more bytes)\n", length );
 	assert( length < 200 );
 	do {
 	    n = read(fd, buffer, length );
+	    if( n > length ) {
+		log_error("bogus read from random device (n=%d)\n", n );
+		n = length;
+	    }
 	} while( n == -1 && errno == EINTR );
 	if( n == -1 )
 	    log_fatal("read error on random device: %s\n", strerror(errno) );

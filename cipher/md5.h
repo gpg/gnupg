@@ -25,20 +25,15 @@
 typedef struct {
     u32 i[2];		  /* number of _bits_ handled mod 2^64 */
     u32 buf[4]; 	  /* scratch buffer */
+    int count;
     byte in[64];	  /* input buffer */
     byte digest[16+8+1];  /* actual digest after Final call */
-    byte bufcount;	  /* extra room for bintoascii */
-} *MD5HANDLE;
+} MD5_CONTEXT;
 
-/*-- md5.c --*/
-MD5HANDLE md5_open(int);
-MD5HANDLE md5_copy(MD5HANDLE a);
-void md5_write(MD5HANDLE hd, byte *inBuf, size_t inLen);
-void md5_putchar(MD5HANDLE hd, int c );
-void md5_final(MD5HANDLE hd);
-byte *md5_read(MD5HANDLE hd);
-char *md5_tostring( byte *digest );
-void md5_close(MD5HANDLE hd);
 
+void md5_init( MD5_CONTEXT *c );
+void md5_write( MD5_CONTEXT *hd, byte *inbuf, size_t inlen);
+void md5_final( MD5_CONTEXT *hd);
+#define md5_read(h) ( (h)->digest )
 
 #endif /*G10_MD5_H*/

@@ -64,18 +64,18 @@ MPI encode_session_key( DEK *dek, unsigned nbits );
 MPI encode_sha1_value( byte *md, unsigned len, unsigned nbits );
 MPI encode_rmd160_value( byte *md, unsigned len, unsigned nbits );
 MPI encode_md5_value( byte *md, unsigned len, unsigned nbits );
-MPI encode_md_value( MD_HANDLE *md, unsigned nbits );
+MPI encode_md_value( MD_HANDLE md, unsigned nbits );
 
 /*-- comment.c --*/
 KBNODE make_comment_node( const char *s );
 
 /*-- elg.c --*/
 void g10_elg_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
-void g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE *md );
+void g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE md );
 
 /*-- rsa.c --*/
 void g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
-void g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE *md );
+void g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE md );
 
 
 #endif /*G10_MAIN_H*/

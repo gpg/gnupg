@@ -268,7 +268,7 @@ proc_plaintext( CTX c, PACKET *pkt )
      * And look at the sigclass to check wether we should use the
      * textmode filter (sigclass 0x01)
      */
-    c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
+    c->mfx.md = md_open( DIGEST_ALGO_RMD160, 0);
     rc = handle_plaintext( pt, &c->mfx );
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
@@ -302,7 +302,7 @@ static int
 do_check_sig( CTX c, KBNODE node )
 {
     PKT_signature *sig;
-    MD_HANDLE *md;
+    MD_HANDLE md;
     int algo, rc;
 
     assert( node->pkt->pkttype == PKT_SIGNATURE );
@@ -314,7 +314,7 @@ do_check_sig( CTX c, KBNODE node )
 	algo = sig->d.rsa.digest_algo;
     else
 	return G10ERR_PUBKEY_ALGO;
-    if( (rc=md_okay(algo)) )
+    if( (rc=check_digest_algo(algo)) )
 	return rc;
 
     if( sig->sig_class == 0x00 ) {
@@ -328,10 +328,6 @@ do_check_sig( CTX c, KBNODE node )
 
 		if( c->cert->pkt->pkt.public_cert->mfx.md )
 		    md = md_copy( c->cert->pkt->pkt.public_cert->mfx.md );
-		else if( algo == DIGEST_ALGO_RMD160 )
-		    md = rmd160_copy2md( c->cert->pkt->pkt.public_cert->mfx.rmd160 );
-		else if( algo == DIGEST_ALGO_MD5 )
-		    md = md5_copy2md( c->cert->pkt->pkt.public_cert->mfx.md5 );
 		else
 		    log_bug(NULL);
 		md_write( md, n1->pkt->pkt.user_id->name, n1->pkt->pkt.user_id->len);

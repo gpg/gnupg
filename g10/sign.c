@@ -41,7 +41,7 @@
 
 
 static int
-complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE *md )
+complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
 {
     int rc=0;
 
@@ -119,7 +119,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
     /* prepare to calculate the MD over the input */
     if( opt.textmode && opt.armor )
 	iobuf_push_filter( inp, text_filter, &tfx );
-    mfx.rmd160 = rmd160_open(0);
+    mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
     iobuf_push_filter( inp, md_filter, &mfx );
 
     if( opt.armor )
@@ -194,7 +194,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
     for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
 	PKT_secret_cert *skc;
 	PKT_signature *sig;
-	RMDHANDLE rmd;
+	MD_HANDLE md;
 	byte *dp;
 
 	skc = skc_rover->skc;
@@ -205,15 +205,16 @@ sign_file( const char *filename, int detached, STRLIST locusr,
 	sig->timestamp = make_timestamp();
 	sig->sig_class = opt.textmode? 0x01 : 0x00;
 
-	rmd = rmd160_copy( mfx.rmd160 );
-	rmd160_putchar( rmd, sig->sig_class );
+	md = md_copy( mfx.md );
+	md_putc( md, sig->sig_class );
 	{   u32 a = sig->timestamp;
-	    rmd160_putchar( rmd, (a >> 24) & 0xff );
-	    rmd160_putchar( rmd, (a >> 16) & 0xff );
-	    rmd160_putchar( rmd, (a >>	8) & 0xff );
-	    rmd160_putchar( rmd,  a	   & 0xff );
+	    md_putc( md, (a >> 24) & 0xff );
+	    md_putc( md, (a >> 16) & 0xff );
+	    md_putc( md, (a >>	8) & 0xff );
+	    md_putc( md,  a	   & 0xff );
 	}
-	dp = rmd160_final( rmd );
+	md_final( md );
+	dp = md_read( md, DIGEST_ALGO_RMD160 );
 
 	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	    ELG_secret_key skey;
@@ -268,7 +269,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
 	else
 	    log_bug(NULL);
 
-	rmd160_close( rmd );
+	md_close( md );
 
 	/* and write it */
 	init_packet(&pkt);
@@ -289,7 +290,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
     else
 	iobuf_close(out);
     iobuf_close(inp);
-    rmd160_close( mfx.rmd160 );
+    md_close( mfx.md );
     release_skc_list( skc_list );
     release_pkc_list( pkc_list );
     return rc;
@@ -621,7 +622,7 @@ sign_key( const char *username, STRLIST locusr )
   leave:
     release_kbnode( keyblock );
     release_skc_list( skc_list );
-    rmd160_close( mfx.rmd160 );
+    md_close( mfx.md );
     return rc;
 }
 
@@ -830,7 +831,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 {
     PKT_signature *sig;
     int rc=0;
-    MD_HANDLE *md;
+    MD_HANDLE md;
 
     assert( sigclass >= 0x10 && sigclass <= 0x13 );
     md = md_open( digest_algo, 0 );
@@ -843,12 +844,12 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
     sig->timestamp = make_timestamp();
     sig->sig_class = sigclass;
 
-    md_putchar( md, sig->sig_class );
+    md_putc( md, sig->sig_class );
     {	u32 a = sig->timestamp;
-	md_putchar( md, (a >> 24) & 0xff );
-	md_putchar( md, (a >> 16) & 0xff );
-	md_putchar( md, (a >>  8) & 0xff );
-	md_putchar( md,  a	  & 0xff );
+	md_putc( md, (a >> 24) & 0xff );
+	md_putc( md, (a >> 16) & 0xff );
+	md_putc( md, (a >>  8) & 0xff );
+	md_putc( md,  a        & 0xff );
     }
 
     rc = complete_sig( sig, skc, md );

@@ -196,7 +196,7 @@ do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
  * Make a hash value from the public key certificate
  */
 void
-hash_public_cert( MD_HANDLE *md, PKT_public_cert *pkc )
+hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
 {
     PACKET pkt;
     int rc = 0;
@@ -210,7 +210,7 @@ hash_public_cert( MD_HANDLE *md, PKT_public_cert *pkc )
     if( (rc = build_packet( a, &pkt )) )
 	log_fatal("build public_cert for hashing failed: %s\n", g10_errstr(rc));
     while( (c=iobuf_get(a)) != -1 )
-	md_putchar( md, c );
+	md_putc( md, c );
 
     iobuf_cancel(a);
 }

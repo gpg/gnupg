@@ -31,6 +31,22 @@
 #include "keydb.h"
 #include "memory.h"
 #include "util.h"
+#include "trustdb.h"
+
+
+/****************
+ * Check wether we can trust this pkc which has a trustlevel of TRUSTLEVEL
+ * Returns: true if we trust.
+ */
+static int
+do_we_trust( PKT_public_cert *pkc, int trustlevel )
+{
+    /* Eventuell fragen falls der trustlevel nicht ausreichend ist */
+
+
+    return 1; /* yes */
+}
+
 
 
 void
@@ -64,13 +80,27 @@ build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
 		free_public_cert( pkc ); pkc = NULL;
 		log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
 	    }
-	    else if( is_valid_pubkey_algo(pkc->pubkey_algo) ) {
-		PKC_LIST r;
-		r = m_alloc( sizeof *r );
-		r->pkc = pkc; pkc = NULL;
-		r->next = pkc_list;
-		r->mark = 0;
-		pkc_list = r;
+	    else if( !(rc=check_pubkey_algo(pkc->pubkey_algo)) ) {
+		int trustlevel;
+
+		rc = check_pkc_trust( pkc, &trustlevel );
+		if( rc ) {
+		    free_public_cert( pkc ); pkc = NULL;
+		    log_error("error checking pkc of '%s': %s\n",
+						      remusr->d, g10_errstr(rc) );
+		}
+		else if( do_we_trust( pkc, trustlevel ) ) {
+		    PKC_LIST r;
+
+		    r = m_alloc( sizeof *r );
+		    r->pkc = pkc; pkc = NULL;
+		    r->next = pkc_list;
+		    r->mark = 0;
+		    pkc_list = r;
+		}
+		else { /* we don't trust this pkc */
+		    free_public_cert( pkc ); pkc = NULL;
+		}
 	    }
 	    else {
 		free_public_cert( pkc ); pkc = NULL;

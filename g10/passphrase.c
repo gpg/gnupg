@@ -143,13 +143,14 @@ hash_passphrase( DEK *dek, char *pw )
 
     dek->keylen = 0;
     if( dek->algo == CIPHER_ALGO_BLOWFISH ) {
-	RMDHANDLE rmd;
+	MD_HANDLE md;
 
-	rmd = rmd160_open(1);
-	rmd160_write( rmd, pw, strlen(pw) );
+	md = md_open(DIGEST_ALGO_RMD160, 1);
+	md_write( md, pw, strlen(pw) );
+	md_final( md );
 	dek->keylen = 20;
-	memcpy( dek->key, rmd160_final(rmd), dek->keylen );
-	rmd160_close(rmd);
+	memcpy( dek->key, md_read(md,0), dek->keylen );
+	md_close(md);
     }
     else
 	rc = G10ERR_UNSUPPORTED;

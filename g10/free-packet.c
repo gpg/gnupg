@@ -68,8 +68,7 @@ free_public_cert( PKT_public_cert *cert )
 	mpi_free( cert->d.rsa.rsa_n );
 	mpi_free( cert->d.rsa.rsa_e );
     }
-    md5_close( cert->mfx.md5 );
-    rmd160_close( cert->mfx.rmd160 );
+    md_close( cert->mfx.md );
     m_free(cert);
 }
 
@@ -88,8 +87,7 @@ copy_public_cert( PKT_public_cert *d, PKT_public_cert *s )
 	d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
 	d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
     }
-    d->mfx.md5 = NULL;
-    d->mfx.rmd160 =NULL;
+    d->mfx.md = NULL;
     return d;
 }
 

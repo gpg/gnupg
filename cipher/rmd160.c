@@ -25,7 +25,6 @@
 #include <assert.h>
 #include "util.h"
 #include "memory.h"
-#include "cipher.h" /* grrrr */
 #include "rmd.h"
 
 /*********************************
@@ -139,16 +138,16 @@
  */
 
 
-static void
-initialize( RMDHANDLE hd )
+void
+rmd160_init( RMD160_CONTEXT *hd )
 {
     hd->h0 = 0x67452301;
     hd->h1 = 0xEFCDAB89;
     hd->h2 = 0x98BADCFE;
     hd->h3 = 0x10325476;
     hd->h4 = 0xC3D2E1F0;
-    hd->bufcount = 0;
     hd->nblocks = 0;
+    hd->count = 0;
 }
 
 
@@ -156,7 +155,7 @@ initialize( RMDHANDLE hd )
  * Transform the message X which consists of 16 32-bit-words
  */
 static void
-transform( RMDHANDLE hd, byte *data )
+transform( RMD160_CONTEXT *hd, byte *data )
 {
     static int r[80] = {
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -257,68 +256,22 @@ transform( RMDHANDLE hd, byte *data )
 
 
 
-
-RMDHANDLE
-rmd160_open( int secure )
-{
-    RMDHANDLE hd;
-
-    hd = secure? m_alloc_secure( sizeof *hd )
-	       : m_alloc( sizeof *hd );
-    initialize(hd);
-    return hd;
-}
-
-
-RMDHANDLE
-rmd160_copy( RMDHANDLE a )
-{
-    RMDHANDLE b;
-
-    assert(a);
-    b = m_is_secure(a)? m_alloc_secure( sizeof *b )
-		      : m_alloc( sizeof *b );
-    memcpy( b, a, sizeof *a );
-    return b;
-}
-
-
-/* BAD Kludge!!! */
-MD_HANDLE *
-rmd160_copy2md( RMDHANDLE a )
-{
-    MD_HANDLE *md = md_makecontainer( DIGEST_ALGO_RMD160 );
-    md->u.rmd = rmd160_copy( a );
-    return md;
-}
-
-
-
-void
-rmd160_close(RMDHANDLE hd)
-{
-    if( hd )
-	m_free(hd);
-}
-
-
-
 /* Update the message digest with the contents
  * of INBUF with length INLEN.
  */
 void
-rmd160_write( RMDHANDLE hd, byte *inbuf, size_t inlen)
+rmd160_write( RMD160_CONTEXT *hd, byte *inbuf, size_t inlen)
 {
-    if( hd->bufcount == 64 ) { /* flush the buffer */
-	transform( hd, hd->buffer );
-	hd->bufcount = 0;
+    if( hd->count == 64 ) { /* flush the buffer */
+	transform( hd, hd->buf );
+	hd->count = 0;
 	hd->nblocks++;
     }
     if( !inbuf )
 	return;
-    if( hd->bufcount ) {
-	for( ; inlen && hd->bufcount < 64; inlen-- )
-	    hd->buffer[hd->bufcount++] = *inbuf++;
+    if( hd->count ) {
+	for( ; inlen && hd->count < 64; inlen-- )
+	    hd->buf[hd->count++] = *inbuf++;
 	rmd160_write( hd, NULL, 0 );
 	if( !inlen )
 	    return;
@@ -326,25 +279,21 @@ rmd160_write( RMDHANDLE hd, byte *inbuf, size_t inlen)
 
     while( inlen >= 64 ) {
 	transform( hd, inbuf );
-	hd->bufcount = 0;
+	hd->count = 0;
 	hd->nblocks++;
 	inlen -= 64;
 	inbuf += 64;
     }
-    for( ; inlen && hd->bufcount < 64; inlen-- )
-	hd->buffer[hd->bufcount++] = *inbuf++;
+    for( ; inlen && hd->count < 64; inlen-- )
+	hd->buf[hd->count++] = *inbuf++;
 }
 
 
-/* The routine final terminates the computation and
- * returns the digest.
- * The handle is prepared for a new cycle, but adding bytes to the
- * handle will the destroy the returned buffer.
- * Returns: 20 bytes representing the digest.
+/* The routine terminates the computation
  */
 
-byte *
-rmd160_final(RMDHANDLE hd)
+void
+rmd160_final( RMD160_CONTEXT *hd )
 {
     u32 t, msb, lsb;
     byte *p;
@@ -357,37 +306,37 @@ rmd160_final(RMDHANDLE hd)
 	msb++;
     msb += t >> 26;
     t = lsb;
-    if( (lsb = t + hd->bufcount) < t ) /* add the bufcount */
+    if( (lsb = t + hd->count) < t ) /* add the count */
 	msb++;
     t = lsb;
     if( (lsb = t << 3) < t ) /* multiply by 8 to make a bit count */
 	msb++;
     msb += t >> 29;
 
-    if( hd->bufcount < 56 ) { /* enough room */
-	hd->buffer[hd->bufcount++] = 0x80; /* pad */
-	while( hd->bufcount < 56 )
-	    hd->buffer[hd->bufcount++] = 0;  /* pad */
+    if( hd->count < 56 ) { /* enough room */
+	hd->buf[hd->count++] = 0x80; /* pad */
+	while( hd->count < 56 )
+	    hd->buf[hd->count++] = 0;  /* pad */
     }
     else { /* need one extra block */
-	hd->buffer[hd->bufcount++] = 0x80; /* pad character */
-	while( hd->bufcount < 64 )
-	    hd->buffer[hd->bufcount++] = 0;
+	hd->buf[hd->count++] = 0x80; /* pad character */
+	while( hd->count < 64 )
+	    hd->buf[hd->count++] = 0;
 	rmd160_write(hd, NULL, 0);  /* flush */;
-	memset(hd->buffer, 0, 56 ); /* fill next block with zeroes */
+	memset(hd->buf, 0, 56 ); /* fill next block with zeroes */
     }
     /* append the 64 bit count */
-    hd->buffer[56] = lsb      ;
-    hd->buffer[57] = lsb >>  8;
-    hd->buffer[58] = lsb >> 16;
-    hd->buffer[59] = lsb >> 24;
-    hd->buffer[60] = msb      ;
-    hd->buffer[61] = msb >>  8;
-    hd->buffer[62] = msb >> 16;
-    hd->buffer[63] = msb >> 24;
-    transform( hd, hd->buffer );
+    hd->buf[56] = lsb	   ;
+    hd->buf[57] = lsb >>  8;
+    hd->buf[58] = lsb >> 16;
+    hd->buf[59] = lsb >> 24;
+    hd->buf[60] = msb	   ;
+    hd->buf[61] = msb >>  8;
+    hd->buf[62] = msb >> 16;
+    hd->buf[63] = msb >> 24;
+    transform( hd, hd->buf );
 
-    p = hd->buffer;
+    p = hd->buf;
   #ifdef BIG_ENDIAN_HOST
     #define X(a) do { *p++ = hd->h##a	   ; *p++ = hd->h##a >> 8;	\
 		      *p++ = hd->h##a >> 16; *p++ = hd->h##a >> 24; } while(0)
@@ -400,10 +349,6 @@ rmd160_final(RMDHANDLE hd)
     X(3);
     X(4);
   #undef X
-
-    initialize( hd );	/* prepare for next cycle */
-    return hd->buffer; /* now contains the digest */
 }
-
 
 

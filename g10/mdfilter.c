@@ -53,12 +53,8 @@ md_filter( void *opaque, int control,
 	    buf[i] = c;
 	}
 
-	if( i ) {
-	    if( mfx->md5 )
-		md5_write(mfx->md5, buf, i );
-	    if( mfx->rmd160 )
-		rmd160_write(mfx->rmd160, buf, i );
-	}
+	if( i )
+	    md_write(mfx->md, buf, i );
 	else
 	    rc = -1; /* eof */
 	*ret_len = i;
@@ -72,12 +68,8 @@ md_filter( void *opaque, int control,
 void
 free_md_filter_context( md_filter_context_t *mfx )
 {
-    if( mfx->md5 )
-	md5_close(mfx->md5);
-    mfx->md5 = NULL;
-    if( mfx->rmd160 )
-	rmd160_close(mfx->rmd160);
-    mfx->rmd160 = NULL;
+    md_close(mfx->md);
+    mfx->md = NULL;
     mfx->maxbuf_size = 0;
 }
 

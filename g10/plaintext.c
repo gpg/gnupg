@@ -79,11 +79,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 		goto leave;
 	    }
 	    if( mfx->md )
-		md_putchar(mfx->md, c );
-	    if( mfx->rmd160 )
-		rmd160_putchar(mfx->rmd160, c );
-	    if( mfx->md5 )
-		md5_putchar(mfx->md5, c );
+		md_putc(mfx->md, c );
 	    if( putc( c, fp ) == EOF ) {
 		log_error("Error writing to '%s': %s\n", fname, strerror(errno) );
 		rc = G10ERR_WRITE_FILE;
@@ -93,10 +89,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
     }
     else {
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
-	    if( mfx->rmd160 )
-		rmd160_putchar(mfx->rmd160, c );
-	    if( mfx->md5 )
-		md5_putchar(mfx->md5, c );
+	    if( mfx->md )
+		md_putc(mfx->md, c );
 	    if( putc( c, fp ) == EOF ) {
 		log_error("Error writing to '%s': %s\n",
 					    fname, strerror(errno) );
@@ -162,11 +156,7 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 
     while( (c = iobuf_get(fp)) != -1 ) {
 	if( mfx->md )
-	    md_putchar(mfx->md, c );
-	if( mfx->rmd160 )
-	    rmd160_putchar(mfx->rmd160, c );
-	if( mfx->md5 )
-	    md5_putchar(mfx->md5, c );
+	    md_putc(mfx->md, c );
     }
     iobuf_close(fp);
 

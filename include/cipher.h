@@ -28,9 +28,7 @@
 #define DBG_CIPHER cipher_debug_mode
 
 #include "mpi.h"
-#include "../cipher/md5.h"
-#include "../cipher/rmd.h"
-#include "../cipher/sha1.h"
+#include "../cipher/md.h"
 #ifdef HAVE_RSA_CIPHER
   #include "../cipher/rsa.h"
 #endif
@@ -67,26 +65,9 @@ typedef struct {
     byte key[20]; /* this is the largest used keylen */
 } DEK;
 
-typedef struct {
-    int algo;	/* digest algo */
-    union {
-      MD5HANDLE md5;
-      RMDHANDLE rmd;
-      SHA1HANDLE sha1;
-    } u;
-    int datalen;
-    char data[1];
-} MD_HANDLE;
-
 
 int cipher_debug_mode;
 
-#ifdef HAVE_RSA_CIPHER
-  #define is_valid_pubkey_algo(a) ( (a) == PUBKEY_ALGO_ELGAMAL	\
-				    || (a) == PUBKEY_ALGO_RSA )
-#else
-  #define is_valid_pubkey_algo(a) ( (a) == PUBKEY_ALGO_ELGAMAL	)
-#endif
 
 /*-- misc.c --*/
 int string_to_cipher_algo( const char *string );
@@ -95,19 +76,6 @@ int string_to_digest_algo( const char *string );
 int check_cipher_algo( int algo );
 int check_pubkey_algo( int algo );
 int check_digest_algo( int algo );
-
-/*-- md.c --*/
-int md_okay( int algo );
-MD_HANDLE *md_open( int algo, int secure );
-MD_HANDLE *md_copy( MD_HANDLE *a );
-MD_HANDLE *md_makecontainer( int algo ); /* used for a bad kludge */
-void md_write( MD_HANDLE *a, byte *inbuf, size_t inlen);
-void md_putchar( MD_HANDLE *a, int c );
-byte *md_final(MD_HANDLE *a);
-void md_close(MD_HANDLE *a);
-
-MD_HANDLE *md5_copy2md( MD5HANDLE a ); /* (in md5.c) */
-MD_HANDLE *rmd160_copy2md( RMDHANDLE a ); /* (in rmd160.c) */
 
 /*-- random.c --*/
 void randomize_buffer( byte *buffer, size_t length, int level );

@@ -66,7 +66,7 @@ g10_elg_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek )
 
 
 void
-g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE *md )
+g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE md )
 {
     ELG_secret_key skey;
     MPI frame;
@@ -74,9 +74,10 @@ g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE *md )
 
     assert( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL );
 
-    dp = md_final( md );
+    md_final( md );
+    dp = md_read( md, 0 );
     keyid_from_skc( skc, sig->keyid );
-    sig->d.elg.digest_algo = md->algo;
+    sig->d.elg.digest_algo = md_get_algo(md);
     sig->d.elg.digest_start[0] = dp[0];
     sig->d.elg.digest_start[1] = dp[1];
     sig->d.elg.a = mpi_alloc( mpi_get_nlimbs(skc->d.elg.p) );

@@ -48,14 +48,14 @@ pubkey_letter( int algo )
 
 /* this is special code for V3 which uses ElGamal and
  * calculates a fingerprint like V4, but with rmd160
- * and a version byte of 3. Returns an rmd160 handle, caller must
- * do rmd160_final()
+ * and a version byte of 3. Returns an md handle, caller must
+ * do md_close()
  */
 
-static RMDHANDLE
+static MD_HANDLE
 v3_elg_fingerprint_md( PKT_public_cert *pkc )
 {
-    RMDHANDLE md;
+    MD_HANDLE md;
     byte *buf1, *buf2, *buf3;
     byte *p1, *p2, *p3;
     unsigned n1, n2, n3;
@@ -73,35 +73,36 @@ v3_elg_fingerprint_md( PKT_public_cert *pkc )
 
     /* calculate length of packet (1+4+2+1+2+n1+2+n2+2+n3) */
     n = 14 + n1 + n2 + n3;
-    md = rmd160_open(0);
+    md = md_open( DIGEST_ALGO_RMD160, 0);
 
-    rmd160_putchar( md, 0x99 );     /* ctb */
-    rmd160_putchar( md, n >> 8 );   /* 2 byte length header */
-    rmd160_putchar( md, n );
-    rmd160_putchar( md, 3 );	    /* version */
+    md_putc( md, 0x99 );     /* ctb */
+    md_putc( md, n >> 8 );   /* 2 byte length header */
+    md_putc( md, n );
+    md_putc( md, 3 );	     /* version */
     {	u32 a = pkc->timestamp;
-	rmd160_putchar( md, a >> 24 );
-	rmd160_putchar( md, a >> 16 );
-	rmd160_putchar( md, a >>  8 );
-	rmd160_putchar( md, a	    );
+	md_putc( md, a >> 24 );
+	md_putc( md, a >> 16 );
+	md_putc( md, a >>  8 );
+	md_putc( md, a	     );
     }
     {	u16 a = pkc->valid_days;
-	rmd160_putchar( md, a >> 8 );
-	rmd160_putchar( md, a	   );
+	md_putc( md, a >> 8 );
+	md_putc( md, a	    );
     }
-    rmd160_putchar( md, pkc->pubkey_algo );
-    rmd160_putchar( md, n1>>8); rmd160_putchar( md, n1 ); rmd160_write( md, p1, n1 );
-    rmd160_putchar( md, n2>>8); rmd160_putchar( md, n2 ); rmd160_write( md, p2, n2 );
-    rmd160_putchar( md, n3>>8); rmd160_putchar( md, n3 ); rmd160_write( md, p3, n3 );
+    md_putc( md, pkc->pubkey_algo );
+    md_putc( md, n1>>8); md_putc( md, n1 ); md_write( md, p1, n1 );
+    md_putc( md, n2>>8); md_putc( md, n2 ); md_write( md, p2, n2 );
+    md_putc( md, n3>>8); md_putc( md, n3 ); md_write( md, p3, n3 );
     m_free(buf1);
     m_free(buf2);
     m_free(buf3);
+    md_final( md );
 
     return md;
 }
 
 
-static RMDHANDLE
+static MD_HANDLE
 v3_elg_fingerprint_md_skc( PKT_secret_cert *skc )
 {
     PKT_public_cert pkc;
@@ -133,13 +134,13 @@ keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
 
     if( skc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	const byte *dp;
-	RMDHANDLE md;
+	MD_HANDLE md;
 	md = v3_elg_fingerprint_md_skc(skc);
-	dp = rmd160_final( md );
+	dp = md_read( md, DIGEST_ALGO_RMD160 );
 	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
 	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
 	lowbits = keyid[1];
-	rmd160_close(md);
+	md_close(md);
     }
     else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	lowbits = mpi_get_keyid( skc->d.rsa.rsa_n, keyid );
@@ -166,13 +167,13 @@ keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid )
 
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	const byte *dp;
-	RMDHANDLE md;
+	MD_HANDLE md;
 	md = v3_elg_fingerprint_md(pkc);
-	dp = rmd160_final( md );
+	dp = md_read( md, DIGEST_ALGO_RMD160 );
 	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
 	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
 	lowbits = keyid[1];
-	rmd160_close(md);
+	md_close(md);
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	lowbits = mpi_get_keyid( pkc->d.rsa.rsa_n, keyid );
@@ -310,33 +311,33 @@ fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
     unsigned n;
 
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	RMDHANDLE md;
+	MD_HANDLE md;
 	md = v3_elg_fingerprint_md(pkc);
-	dp = rmd160_final( md );
+	dp = md_read( md, DIGEST_ALGO_RMD160 );
 	array = m_alloc( 20 );
 	len = 20;
 	memcpy(array, dp, 20 );
-	rmd160_close(md);
+	md_close(md);
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	MD5HANDLE md;
+	MD_HANDLE md;
 
-	md = md5_open(0);
+	md = md_open( DIGEST_ALGO_MD5, 0);
 	p = buf = mpi_get_buffer( pkc->d.rsa.rsa_n, &n, NULL );
 	for( ; !*p && n; p++, n-- )
 	    ;
-	md5_write( md, p, n );
+	md_write( md, p, n );
 	m_free(buf);
 	p = buf = mpi_get_buffer( pkc->d.rsa.rsa_e, &n, NULL );
 	for( ; !*p && n; p++, n-- )
 	    ;
-	md5_write( md, p, n );
+	md_write( md, p, n );
 	m_free(buf);
-	md5_final(md);
+	md_final(md);
 	array = m_alloc( 16 );
 	len = 16;
-	memcpy(array, md5_read(md), 16 );
-	md5_close(md);
+	memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
+	md_close(md);
     }
     else {
 	array = m_alloc(1);
