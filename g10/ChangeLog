@@ -1,3 +1,11 @@
+2004-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* delkey.c (do_delete_key): Allow deleting a public key with a
+	secret present if --expert is set.
+
+	* plaintext.c (handle_plaintext): Make bytecount static so it
+	works with multiple literal packets inside a message.
+
 2004-02-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* encode.c (encode_simple): Show cipher with --verbose.

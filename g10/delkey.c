@@ -1,5 +1,6 @@
 /* delkey.c - delete keys
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -98,7 +99,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 	pk = node->pkt->pkt.public_key;
 	keyid_from_pk( pk, keyid );
 	rc = seckey_available( keyid );
-	if( !rc ) {
+	if( !rc && !opt.expert ) {
             *r_sec_avail = 1;
             rc = -1;
             goto leave;
