@@ -32,6 +32,8 @@
 #include "types.h"
 #include "srv.h"
 
+/* Not every installation has gotten around to supporting SRVs
+   yet... */
 #ifndef T_SRV
 #define T_SRV 33
 #endif
@@ -50,9 +52,9 @@ static int priosort(const void *a,const void *b)
 int
 getsrv(const char *name,struct srventry **list)
 {
-  char answer[PACKETSZ];
+  unsigned char answer[PACKETSZ];
   int r,srvcount=0;
-  char *pt,*emsg;
+  unsigned char *pt,*emsg;
   u16 count,dlen;
 
   *list=NULL;

@@ -31,11 +31,11 @@
 
 struct srventry
 {
-  uint16_t priority;
-  uint16_t weight;
-  uint16_t port;
+  u16 priority;
+  u16 weight;
+  u16 port;
   int run_count;
-  char target[MAXDNAME];
+  unsigned char target[MAXDNAME];
 };
 
 int getsrv(const char *name,struct srventry **list);
