@@ -169,6 +169,7 @@ int verify_files( int nfiles, char **files );
 
 /*-- decrypt.c --*/
 int decrypt_message( const char *filename );
+void decrypt_messages(int nfiles, char **files);
 
 /*-- plaintext.c --*/
 int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,

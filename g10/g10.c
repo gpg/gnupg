@@ -72,6 +72,7 @@ enum cmd_and_opt_values { aNull = 0,
     oShowNotation,
     oNoShowNotation,
     oBatch	  = 500,
+    aDecryptFiles,                          
     aClearsign,
     aStore,
     aKeygen,
@@ -273,6 +274,7 @@ static ARGPARSE_OPTS opts[] = {
     { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
     { aStore, "store",     256, N_("store only")},
     { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
+    { aDecryptFiles, "decrypt-files", 256, N_("|[files]|decrypt files")},
     { aVerify, "verify"   , 256, N_("verify a signature")},
     { aVerifyFiles, "verify-files" , 256, "@" },
     { aListKeys, "list-keys", 256, N_("list keys")},
@@ -900,6 +902,7 @@ main( int argc, char **argv )
 	  case aSym: set_cmd( &cmd, aSym); break;
 
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
+          case aDecryptFiles: set_cmd( &cmd, aDecryptFiles); break;
 
 	  case aEncr: set_cmd( &cmd, aEncr); break;
 	  case aEncrFiles: set_cmd( &cmd, aEncrFiles ); break;
@@ -1611,7 +1614,10 @@ main( int argc, char **argv )
 	    log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
 	break;
 
-
+      case aDecryptFiles:
+        decrypt_messages(argc, argv);
+        break;
+            
       case aSignKey: /* sign the key given as argument */
 	if( argc != 1 )
 	    wrong_args(_("--sign-key user-id"));
