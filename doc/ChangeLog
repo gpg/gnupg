@@ -1,3 +1,13 @@
+2002-12-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Clarify include-revoked and include-disabled so they
+	match what the program actually does.  Noted by Dick Gevers.
+
+	* gpg.sgml: Document %-expandos for policy URLs and notations.
+
+	* gpg.sgml: Document --pgp8.  Clarify that --pgp6 and --pgp7
+	disable --throw-keyid.
+
 2002-12-05  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Document --no-mangle-dos-filenames.

@@ -1065,27 +1065,25 @@ keyserver types, some common options are:
 <varlistentry>
 <term>include-revoked</term>
 <listitem><para>
-When searching for a key, include keys that are marked on the
-keyserver as revoked.  Note that this option is always set when using
-the NAI HKP keyserver, as this keyserver does not differentiate
-between revoked and unrevoked keys.  When using the LDAP keyserver,
-this applies to both searching (--search-keys) and receiving
-(--recv-keys).
+When searching for a key with --search-keys, include keys that are
+marked on the keyserver as revoked.  Note that this option is always
+set when using the NAI HKP keyserver, as this keyserver does not
+differentiate between revoked and unrevoked keys.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>include-disabled</term>
 <listitem><para>
-When receiving or searching for a key, include keys that are marked on
-the keyserver as disabled.  Note that this option is not used with HKP
-keyservers, as they do not support disabling keys.
+When searching for a key with --search-keys, include keys that are
+marked on the keyserver as disabled.  Note that this option is not
+used with HKP keyservers.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>include-subkeys</term>
 <listitem><para>
-When receiving a key, include subkeys in the search.  Note that this
-option is not used with HKP keyservers, as they do not support
+When receiving a key, include subkeys as potential targets.  Note that
+this option is not used with HKP keyservers, as they do not support
 retrieving keys by subkey id.
 </para></listitem></varlistentry>
 
@@ -1471,7 +1469,19 @@ notation data will be flagged as critical (rfc2440:5.2.3.15).
 --sig-notation sets a notation for data signatures.  --cert-notation
 sets a notation for key signatures (certifications).  --notation-data
 sets both.
-</para></listitem></varlistentry>
+</para>
+
+<para>
+There are special codes that may be used in notation names.  "%k" will
+be expanded into the key ID of the key being signed, "%K" for the long
+key ID of the key being signed, "%f" for the key fingerprint of the
+key being signed, "%s" for the key ID of the key making the signature,
+"%S" for the long key ID of the key making the signature, and "%%"
+results in a single "%".  %k, %K, and %f are only meaningful when
+making a key signature (certification).
+</para>
+
+</listitem></varlistentry>
 
 <varlistentry>
 <term>--show-notation</term>
@@ -1496,6 +1506,10 @@ you prefix it with an exclamation mark, the policy URL packet will be
 flagged as critical.  --sig-policy-url sets a a policy url for data
 signatures.  --cert-policy-url sets a policy url for key signatures
 (certifications).  -set-policy-url sets both.
+</para>
+
+<para>
+The same %-expandos used for notation data are available here as well.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1813,9 +1827,9 @@ Resets the --pgp2 option.
 Set up all options to be as PGP 6 compliant as possible.  This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
 3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
-compression algorithms none and ZIP.  This also disables making
-signatures with signing subkeys as PGP 6 does not understand
-signatures made by signing subkeys.
+compression algorithms none and ZIP.  This also disables
+--throw-keyid, and making signatures with signing subkeys as PGP 6
+does not understand signatures made by signing subkeys.
 </para><para>
 This option implies `--disable-mdc --no-comment --escape-from-lines
 --force-v3-sigs --no-ask-sig-expire --compress-algo 1'
@@ -1840,6 +1854,21 @@ TWOFISH.
 <term>--no-pgp7</term>
 <listitem><para>
 Resets the --pgp7 option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--pgp8</term>
+<listitem><para>
+Set up all options to be as PGP 8 compliant as possible.  PGP 8 is a
+lot closer to the OpenPGP standard than previous versions of PGP, so
+all this does is disable --throw-keyid and set --escape-from-lines and
+--compress-algo 1.  The allowed algorithms list is the same as --pgp7.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-pgp8</term>
+<listitem><para>
+Resets the --pgp8 option.
 </para></listitem></varlistentry>
 
 <varlistentry>
