@@ -1,10 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 
-if COMPILE_LIBGCRYPT
-gcrypt = gcrypt
-else
+#if COMPILE_LIBGCRYPT
+#gcrypt = gcrypt
+#else
 gcrypt =
-endif
+#endif
 
 SUBDIRS = intl zlib util mpi cipher tools g10 po doc checks ${gcrypt}
 EXTRA_DIST = VERSION  PROJECTS BUGS

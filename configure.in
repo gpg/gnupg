@@ -102,15 +102,16 @@ AC_ARG_WITH(included-zlib,
 [g10_force_zlib=yes], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
 
-dnl
-dnl Check wether we want to compile libgcrypt
-dnl
-AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
-AC_ARG_ENABLE(libgcrypt,
-    [  --enable-libgcrypt      compile the libgcrypt [default=no]],
-[compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
-AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
-AC_MSG_RESULT($compile_libgcrypt)
+dnl This does not work because automakes install tareget still needs libtool
+dnl dnl
+dnl dnl Check wether we want to compile libgcrypt
+dnl dnl
+dnl AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
+dnl AC_ARG_ENABLE(libgcrypt,
+dnl     [  --enable-libgcrypt      compile the libgcrypt [default=no]],
+dnl [compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
+dnl AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
+dnl AC_MSG_RESULT($compile_libgcrypt)
 
 
 dnl Checks for programs.
@@ -135,11 +136,11 @@ AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
 
 
 
-if test x$compile_libgcrypt = xyes; then
-   dnl Don't default to build shared libs
-   AM_DISABLE_SHARED
-   AM_PROG_LIBTOOL
-fi
+dnl if test x$compile_libgcrypt = xyes; then
+dnl    dnl Don't default to build shared libs
+dnl    AM_DISABLE_SHARED
+dnl    AM_PROG_LIBTOOL
+dnl fi
 
 
 MPI_OPT_FLAGS=""

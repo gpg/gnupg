@@ -14,9 +14,9 @@ Noteworthy changes in version 0.9.8
 
     * New option --with-key-data to list the public key parameters.
       New option -N to insert notations and a --set-policy-url.
-      A couple of other options to allow restting of options.
+      A couple of other options to allow reseting of options.
 
-    * Better support for HPUX
+    * Better support for HPUX.
 
 
 Noteworthy changes in version 0.9.7
