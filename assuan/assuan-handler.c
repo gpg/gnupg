@@ -377,11 +377,11 @@ process_request (ASSUAN_CONTEXT ctx)
   /* Error handling */
   if (!rc)
     {
-      rc = _assuan_write_line (ctx, "OK");
+      rc = assuan_write_line (ctx, "OK");
     }
   else if (rc == -1)
     { /* No error checking because the peer may have already disconnect */ 
-      _assuan_write_line (ctx, "OK  Bye, bye - hope to meet you again");
+      assuan_write_line (ctx, "OK  Hope to meet you again");
     }
   else 
     {
@@ -397,7 +397,7 @@ process_request (ASSUAN_CONTEXT ctx)
           sprintf (errline, "ERR %d %.50s%s%.100s",
                    rc, assuan_strerror (rc), text? " - ":"", text?text:"");
         }
-      rc = _assuan_write_line (ctx, errline);
+      rc = assuan_write_line (ctx, errline);
     }
 
   return rc;
@@ -538,7 +538,7 @@ assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
           strcat (buffer, " ");
           strcat (buffer, text);
         }
-      _assuan_write_line (ctx, buffer);
+      assuan_write_line (ctx, buffer);
     }
   else if ( (helpbuf = xtrymalloc (n)) )
     {
@@ -549,7 +549,7 @@ assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
           strcat (helpbuf, " ");
           strcat (helpbuf, text);
         }
-      _assuan_write_line (ctx, helpbuf);
+      assuan_write_line (ctx, helpbuf);
       xfree (helpbuf);
     }
 }

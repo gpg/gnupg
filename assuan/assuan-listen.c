@@ -25,6 +25,28 @@
 
 #include "assuan-defs.h"
 
+AssuanError
+assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line)
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  if (!line)
+    {
+      xfree (ctx->hello_line);
+      ctx->hello_line = NULL;
+    }
+  else
+    {
+      char *buf = xtrymalloc (3+strlen(line)+1);
+      if (!buf)
+        return ASSUAN_Out_Of_Core;
+      strcpy (buf, "OK ");
+      strcpy (buf+3, line);
+      xfree (ctx->hello_line);
+      ctx->hello_line = buf;
+    }
+  return 0;
+}
 
 
 /**
@@ -38,7 +60,7 @@
  * Return value: 0 on success or an error if the connection could for
  * some reason not be established.
  **/
-int
+AssuanError
 assuan_accept (ASSUAN_CONTEXT ctx)
 {
   int rc;
@@ -57,9 +79,8 @@ assuan_accept (ASSUAN_CONTEXT ctx)
     }
 
   /* send the hello */
-  
-  rc = _assuan_write_line (ctx,
-                           "OK Hello dear client - what can I do for you?");
+  rc = assuan_write_line (ctx, ctx->hello_line? ctx->hello_line
+                                              : "OK Your orders please");
   if (rc)
     return rc;
   
@@ -68,6 +89,7 @@ assuan_accept (ASSUAN_CONTEXT ctx)
   
   return 0;
 }
+
 
 
 int

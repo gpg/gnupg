@@ -151,7 +151,7 @@ assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
   init_membuf (&mb, maxlen? maxlen:1024, maxlen);
 
   strcpy (stpcpy (cmdbuf, "INQUIRE "), keyword);
-  rc = _assuan_write_line (ctx, cmdbuf);
+  rc = assuan_write_line (ctx, cmdbuf);
   if (rc)
     goto leave;
 

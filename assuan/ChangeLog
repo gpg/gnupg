@@ -1,3 +1,18 @@
+2001-12-12  Werner Koch  <wk@gnupg.org>
+
+	* assuan-connect.c (assuan_pipe_connect): Implemented the inital
+	handshake.
+	* assuan-client.c (read_from_server): Renamed to  
+	(_assuan_read_from_server): this and made external.
+
+	* assuan-listen.c (assuan_set_hello_line): New.
+	(assuan_accept): Use a custom hello line is available.
+
+	* assuan-buffer.c (assuan_read_line): New.
+	(assuan_pending_line): New.
+	(_assuan_write_line): Renamed to ..
+	(assuan_write_line): this, made public and changed all callers.
+
 2001-12-04  Werner Koch  <wk@gnupg.org>
 
 	* assuan-connect.c (assuan_pipe_connect): Add more error reporting.

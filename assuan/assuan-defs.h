@@ -38,6 +38,7 @@ struct assuan_context_s {
 
   int is_server;  /* set if this is context belongs to a server */
   int in_inquire;
+  char *hello_line;
   
   void *user_pointer;  /* for assuan_[gs]et_pointer () */
 
@@ -51,6 +52,7 @@ struct assuan_context_s {
     struct {
       char line[LINELENGTH];
       int linelen ;
+      int pending; /* i.e. at least one line is available in the attic */
     } attic;
   } inbound;
 
@@ -91,12 +93,12 @@ struct assuan_context_s {
 int _assuan_register_std_commands (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-buffer.c --*/
-int _assuan_write_line (ASSUAN_CONTEXT ctx, const char *line);
 int _assuan_read_line (ASSUAN_CONTEXT ctx);
 int _assuan_cookie_write_data (void *cookie, const char *buffer, size_t size);
 int _assuan_cookie_write_flush (void *cookie);
 
-
+/*-- assuan-client.c --*/
+AssuanError _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off);
 
 
 /*-- assuan-util.c --*/

@@ -40,6 +40,7 @@
 #endif
 
 #ifdef HAVE_JNLIB_LOGGING
+#include "../jnlib/logging.h"
 #define LOGERROR1(a,b)   log_error ((a), (b))
 #else
 #define LOGERROR1(a,b)   fprintf (stderr, (a), (b))
@@ -188,35 +189,37 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[])
 
   close (rp[1]);
   close (wp[0]);
-  _assuan_read_line (*ctx); /* FIXME: Handshake.  */
 
-#if 0 /* old stuff */
-  inbound.eof = 0;
-  inbound.linelen = 0;
-  inbound.attic.linelen = 0;
+  /* initial handshake */
+  {
+    int okay, off;
 
-  /* The server is available - read the greeting */
-  rc = read_from_agent (&okay);
-  if (rc)
+    err = _assuan_read_from_server (*ctx, &okay, &off);
+    if (err)
+      {
+        LOGERROR1 ("can't connect server: %s\n", assuan_strerror (err));
+      }
+    else if (okay != 1)
+      {
+        LOGERROR1 ("can't connect server: `%s'\n", (*ctx)->inbound.line);
+        err = ASSUAN_Connect_Failed;
+      }
+  }
+
+  if (err)
     {
-      log_error ("can't connect to the agent: %s\n", gnupg_strerror (rc));
+      if ((*ctx)->pid != -1)
+        waitpid ((*ctx)->pid, NULL, 0);  /* FIXME Check return value.  */
+      assuan_deinit_pipe_server (*ctx);  /* FIXME: Common code should be factored out.  */
     }
-  else if (!okay)
-    {
-      log_error ("can't connect to the agent: %s\n", inbound.line);
-      rc = seterr (No_Agent);
-    }
- else
-#endif
 
-
-  return 0;
+  return err;
 }
 
 void
 assuan_pipe_disconnect (ASSUAN_CONTEXT ctx)
 {
-  _assuan_write_line (ctx, "BYE");
+  assuan_write_line (ctx, "BYE");
   close (ctx->inbound.fd);
   close (ctx->outbound.fd);
   waitpid (ctx->pid, NULL, 0);  /* FIXME Check return value.  */

@@ -32,8 +32,8 @@
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
 
-static AssuanError
-read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
+AssuanError
+_assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
 {
   char *line;
   int linelen;
@@ -114,12 +114,12 @@ assuan_transact (ASSUAN_CONTEXT ctx,
   unsigned char *line;
   int linelen;
 
-  rc = _assuan_write_line (ctx, command);
+  rc = assuan_write_line (ctx, command);
   if (rc)
     return rc;
 
  again:
-  rc = read_from_server (ctx, &okay, &off);
+  rc = _assuan_read_from_server (ctx, &okay, &off);
   if (rc)
     return rc; /* error reading from server */
 
@@ -162,8 +162,8 @@ assuan_transact (ASSUAN_CONTEXT ctx,
     {
       if (!inquire_cb)
         {
-          _assuan_write_line (ctx, "END"); /* get out of inquire mode */
-          read_from_server (ctx, &okay, &off); /* dummy read the response */
+          assuan_write_line (ctx, "END"); /* get out of inquire mode */
+          _assuan_read_from_server (ctx, &okay, &off); /* dummy read */
           rc = ASSUAN_No_Inquire_Callback;
         }
       else

@@ -55,9 +55,12 @@ assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2])
 void
 assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx)
 {
-  xfree (ctx);
+  if (ctx)
+    {
+      xfree (ctx->hello_line);
+      xfree (ctx);
+    }
 }
-
 
 
 

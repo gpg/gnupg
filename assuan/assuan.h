@@ -46,6 +46,7 @@ typedef enum {
   ASSUAN_Invalid_Response = 11,
   ASSUAN_No_Data_Callback = 12,
   ASSUAN_No_Inquire_Callback = 13,
+  ASSUAN_Connect_Failed = 14,
 
   /* error codes above 99 are meant as status codes */
   ASSUAN_Not_Implemented = 100,
@@ -130,7 +131,8 @@ void assuan_write_status (ASSUAN_CONTEXT ctx,
 
 
 /*-- assuan-listen.c --*/
-int assuan_accept (ASSUAN_CONTEXT ctx);
+AssuanError assuan_set_hello_line (ASSUAN_CONTEXT ctx, const char *line);
+AssuanError assuan_accept (ASSUAN_CONTEXT ctx);
 int assuan_get_input_fd (ASSUAN_CONTEXT ctx);
 int assuan_get_output_fd (ASSUAN_CONTEXT ctx);
 
@@ -161,6 +163,10 @@ AssuanError assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
                             char **r_buffer, size_t *r_length, size_t maxlen);
 
 /*-- assuan-buffer.c --*/
+AssuanError assuan_read_line (ASSUAN_CONTEXT ctx,
+                              char **line, size_t *linelen);
+int assuan_pending_line (ASSUAN_CONTEXT ctx);
+AssuanError assuan_write_line (ASSUAN_CONTEXT ctx, const char *line );
 AssuanError assuan_send_data (ASSUAN_CONTEXT ctx,
                               const void *buffer, size_t length);
 
