@@ -33,7 +33,6 @@
 #include "cipher.h"
 #include "keydb.h"
 #include "filter.h"
-#include "cipher.h"
 #include "main.h"
 #include "status.h"
 #include "i18n.h"

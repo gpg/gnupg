@@ -30,7 +30,6 @@
 #include "iobuf.h"
 #include "memory.h"
 #include "util.h"
-#include "iobuf.h"
 #include "filter.h"
 #include "packet.h"
 #include "options.h"
