@@ -237,6 +237,19 @@ find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
               keydb_set_ephemeral (kh, old);
             }
         }
+      /* print a note so that the user does not feel too helpless when
+         an issuer certificate was found and gpgsm prints BAD
+         signature becuase it is not the correct one. */
+      if (rc == -1)
+        {
+          log_info ("issuer certificate (#");
+          gpgsm_dump_serial (authidno);
+          log_printf ("/");
+          gpgsm_dump_string (s);
+          log_printf (") not found\n");
+        }
+      else if (rc)
+        log_error ("failed to find authorityKeyIdentifier: rc=%d\n", rc);
       ksba_name_release (authid);
       xfree (authidno);
       /* Fixme: don't know how to do dirmngr lookup with serial+issuer. */
@@ -267,7 +280,7 @@ find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
         log_info (_("looking up issuer at external location\n"));
       /* dirmngr is confused about unknown attributes so has a quick
          and ugly hack we locate the CN and use this and the
-         following.  Fixme: we should have far ebtter parsing in the
+         following.  Fixme: we should have far better parsing in the
          dirmngr. */
       s = strstr (issuer, "CN=");
       if (!s || s == issuer || s[-1] != ',')
@@ -588,7 +601,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
         {
           if (rc == -1)
             {
-              log_info ("issuer certificate (");
+              log_info ("issuer certificate (#/");
               gpgsm_dump_string (issuer);
               log_printf (") not found\n");
             }
@@ -735,7 +748,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
         {
           if (rc == -1)
             {
-              log_info ("issuer certificate (");
+              log_info ("issuer certificate (#/");
               gpgsm_dump_string (issuer);
               log_printf (") not found\n");
             }

@@ -123,6 +123,8 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
       log_error ("md_open failed: %s\n", gcry_strerror (-1));
       return GNUPG_General_Error;
     }
+  if (DBG_HASHING)
+    gcry_md_start_debug (md, "hash.cert");
 
   rc = ksba_cert_hash (cert, 1, HASH_FNC, md);
   if (rc)
@@ -142,6 +144,15 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
       ksba_free (p);
       return GNUPG_Bug;
     }
+  if (DBG_X509)
+    {
+      int j;
+      log_debug ("signature value:");
+      for (j=0; j < n; j++)
+        log_printf (" %02X", p[j]);
+      log_printf ("\n");
+    }
+
   rc = gcry_sexp_sscan ( &s_sig, NULL, p, n);
   ksba_free (p);
   if (rc)
@@ -184,6 +195,7 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
     BUG ();
   gcry_mpi_release (frame);
+
   
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_CRYPTO)
