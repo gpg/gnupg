@@ -52,11 +52,11 @@ ask_for_card (const unsigned char *shadow_info, char **r_kid)
   n = snext (&s);
   if (!n)
     return GNUPG_Invalid_Sexp;
-  want_sn = xtrymalloc (n+1);
+  want_sn = xtrymalloc (n*2+1);
   if (!want_sn)
     return GNUPG_Out_Of_Core;
-  memcpy (want_sn, s, n);
-  want_sn[n] = 0;
+  for (i=0; i < n; i++)
+    sprintf (want_sn+2*i, "%02X", s[i]);
   s += n;
 
   n = snext (&s);
@@ -229,7 +229,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 
 int
 divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
-               const char *shadow_info, unsigned char **r_sig)
+               const unsigned char *shadow_info, unsigned char **r_sig)
 {
   int rc;
   char *kid;
@@ -262,7 +262,8 @@ divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
    key identified by SHADOW_INFO and return the plaintext in an
    allocated buffer in R_BUF.  */
 int  
-divert_pkdecrypt (const unsigned char *cipher, const char *shadow_info,
+divert_pkdecrypt (const unsigned char *cipher,
+                  const unsigned char *shadow_info,
                   char **r_buf, size_t *r_len)
 {
   int rc;

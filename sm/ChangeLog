@@ -1,5 +1,10 @@
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
+	* gpgsm.c: New command --learn-card
+	* call-agent.c (learn_cb,gpgsm_agent_learn): New.
+
+	* gpgsm.c (main): Print error messages for non-implemented commands.
+
 	* base64.c (base64_reader_cb): Use case insensitive compare of the
 	Content-Type string to detect plain base-64.
 

@@ -102,6 +102,8 @@ const char *trans (const char *text);
 void start_command_handler (int);
 
 /*-- findkey.c --*/
+int agent_write_private_key (const unsigned char *grip,
+                             const void *buffer, size_t length, int force);
 GCRY_SEXP agent_key_from_file (const unsigned char *grip,
                                unsigned char **shadow_info);
 int agent_key_available (const unsigned char *grip);
@@ -152,12 +154,14 @@ int agent_marktrusted (const char *name, const char *fpr, int flag);
 
 /*-- divert-scd.c --*/
 int divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
-                   const char *shadow_info, unsigned char **r_sig);
-int divert_pkdecrypt (const unsigned char *cipher, const char *shadow_info,
+                   const unsigned char *shadow_info, unsigned char **r_sig);
+int divert_pkdecrypt (const unsigned char *cipher,
+                      const unsigned char *shadow_info,
                       char **r_buf, size_t *r_len);
 
 /*-- call-scd.c --*/
-int agent_card_learn (void);
+int agent_card_learn (void (*kpinfo_cb)(void*, const char *),
+                      void *kpinfo_cb_arg);
 int agent_card_serialno (char **r_serialno);
 int agent_card_pksign (const char *keyid,
                        int (*getpin_cb)(void *, const char *, char*, size_t),
@@ -169,6 +173,12 @@ int agent_card_pkdecrypt (const char *keyid,
                           void *getpin_cb_arg,
                           const unsigned char *indata, size_t indatalen,
                           char **r_buf, size_t *r_buflen);
+int agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen);
+int agent_card_readkey (const char *id, unsigned char **r_buf);
+
+
+/*-- learncard.c --*/
+int agent_handle_learn (void *assuan_context);
 
 
 #endif /*AGENT_H*/

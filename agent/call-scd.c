@@ -41,9 +41,8 @@ static ASSUAN_CONTEXT scd_ctx = NULL;
 
 /* callback parameter for learn card */
 struct learn_parm_s {
-  int lines;
-  size_t size;
-  char *buffer;
+  void (*kpinfo_cb)(void*, const char *);
+  void *kpinfo_cb_arg;
 };
 
 struct inq_needpin_s {
@@ -176,7 +175,7 @@ start_scd (void)
 static AssuanError
 learn_status_cb (void *opaque, const char *line)
 {
-  /*  struct learn_parm_s *parm = opaque;*/
+  struct learn_parm_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
 
@@ -186,7 +185,7 @@ learn_status_cb (void *opaque, const char *line)
     line++;
   if (keywordlen == 11 && !memcmp (keyword, "KEYPAIRINFO", keywordlen))
     {
-      log_debug ("learn_status_cb: keypair `%s'\n", line);
+      parm->kpinfo_cb (parm->kpinfo_cb_arg, line);
     }
   else if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
     {
@@ -201,7 +200,7 @@ learn_status_cb (void *opaque, const char *line)
 /* Perform the learn command and return a list of all private keys
    stored on the card. */
 int
-agent_card_learn (void)
+agent_card_learn (void (*kpinfo_cb)(void*, const char *), void *kpinfo_cb_arg)
 {
   int rc;
   struct learn_parm_s parm;
@@ -210,12 +209,9 @@ agent_card_learn (void)
   if (rc)
     return rc;
 
-  rc = assuan_transact (scd_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc)
-    return map_assuan_err (rc);
-
   memset (&parm, 0, sizeof parm);
-
+  parm.kpinfo_cb = kpinfo_cb;
+  parm.kpinfo_cb_arg = kpinfo_cb_arg;
   rc = assuan_transact (scd_ctx, "LEARN --force",
                         NULL, NULL, NULL, NULL,
                         learn_status_cb, &parm);
@@ -259,7 +255,7 @@ get_serialno_cb (void *opaque, const char *line)
 }
 
 /* Return the serial number of the card or an appropriate error.  The
-   serial number is returned as a hext string. */
+   serial number is returned as a hexstring. */
 int
 agent_card_serialno (char **r_serialno)
 {
@@ -296,7 +292,8 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   struct membuf *data = opaque;
 
-  put_membuf (data, buffer, length);
+  if (buffer)
+    put_membuf (data, buffer, length);
   return 0;
 }
   
@@ -455,4 +452,83 @@ agent_card_pkdecrypt (const char *keyid,
 
   return 0;
 }
+
+
+
+/* Read a certificate with ID into R_BUF and R_BUFLEN. */
+int
+agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  struct membuf data;
+  size_t len;
+
+  *r_buf = NULL;
+  rc = start_scd ();
+  if (rc)
+    return rc;
+
+  init_membuf (&data, 1024);
+  snprintf (line, DIM(line)-1, "READCERT %s", id);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (scd_ctx, line,
+                        membuf_data_cb, &data,
+                        NULL, NULL,
+                        NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return map_assuan_err (rc);
+    }
+  *r_buf = get_membuf (&data, r_buflen);
+  if (!*r_buf)
+    return GNUPG_Out_Of_Core;
+
+  return 0;
+}
+
+
+
+/* Read a key with ID and return it in an allocate buffer pointed to
+   by r_BUF as a valid S-expression. */
+int
+agent_card_readkey (const char *id, unsigned char **r_buf)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  struct membuf data;
+  size_t len, buflen;
+
+  *r_buf = NULL;
+  rc = start_scd ();
+  if (rc)
+    return rc;
+
+  init_membuf (&data, 1024);
+  snprintf (line, DIM(line)-1, "READKEY %s", id);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (scd_ctx, line,
+                        membuf_data_cb, &data,
+                        NULL, NULL,
+                        NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return map_assuan_err (rc);
+    }
+  *r_buf = get_membuf (&data, &buflen);
+  if (!*r_buf)
+    return GNUPG_Out_Of_Core;
+
+  if (!gcry_sexp_canon_len (*r_buf, buflen, NULL, NULL))
+    {
+      xfree (*r_buf); *r_buf = NULL;
+      return GNUPG_Invalid_Value;
+    }
+
+  return 0;
+}
+
+
 

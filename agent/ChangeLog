@@ -1,5 +1,11 @@
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
+	* learncard.c: New.
+	* divert-scd.c (ask_for_card): The serial number is binary so
+	convert it to hex here.
+	* findkey.c (agent_write_private_key): New.
+	* genkey.c (store_key): And use it here.
+	
 	* pkdecrypt.c (agent_pkdecrypt): Changed the way the diversion is done.
 	* divert-scd.c (divert_pkdecrypt): Changed interface and
 	implemented it.

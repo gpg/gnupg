@@ -32,7 +32,7 @@
 #include "gpgsm.h"
 #include "../assuan/assuan.h"
 #include "i18n.h"
-
+#include "keydb.h" /* fixme: Move this to import.c */
 
 static ASSUAN_CONTEXT agent_ctx = NULL;
 static int force_pipe_server = 0;
@@ -49,6 +49,11 @@ struct genkey_parm_s {
   size_t sexplen;
 };
 
+struct learn_parm_s {
+  int error;
+  ASSUAN_CONTEXT ctx;
+  struct membuf *data;
+};
 
 struct membuf {
   size_t len;
@@ -218,7 +223,8 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   struct membuf *data = opaque;
 
-  put_membuf (data, buffer, length);
+  if (buffer)
+    put_membuf (data, buffer, length);
   return 0;
 }
   
@@ -518,5 +524,88 @@ gpgsm_agent_havekey (const char *hexkeygrip)
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   return map_assuan_err (rc);
+}
+
+
+static AssuanError
+learn_cb (void *opaque, const void *buffer, size_t length)
+{
+  struct learn_parm_s *parm = opaque;
+  size_t len;
+  char *buf;
+  KsbaCert cert;
+  int rc;
+
+  if (parm->error)
+    return 0;
+
+  if (buffer)
+    {
+      put_membuf (parm->data, buffer, length);
+      return 0;
+    }
+  /* END encountered - process what we have */
+  buf = get_membuf (parm->data, &len);
+  if (!buf)
+    {
+      parm->error = GNUPG_Out_Of_Core;
+      return 0;
+    }
+
+
+  /* FIXME: this shoudl go inot import.c */
+  cert = ksba_cert_new ();
+  if (!cert)
+    {
+      parm->error = GNUPG_Out_Of_Core;
+      return 0;
+    }
+  rc = ksba_cert_init_from_mem (cert, buf, len);
+  if (rc)
+    {
+      log_error ("failed to parse a certificate: %s\n", ksba_strerror (rc));
+      ksba_cert_release (cert);
+      parm->error = map_ksba_err (rc);
+      return 0;
+    }
+
+  rc = gpgsm_basic_cert_check (cert);
+  if (rc)
+    log_error ("invalid certificate: %s\n", gnupg_strerror (rc));
+  else
+    {
+      keydb_store_cert (cert);
+      log_error ("certificate stored\n");
+    }
+
+  ksba_cert_release (cert);
+  init_membuf (parm->data, 4096);
+  return 0;
+}
+  
+/* Call the agent to learn about a smartcard */
+int
+gpgsm_agent_learn ()
+{
+  int rc;
+  struct learn_parm_s learn_parm;
+  struct membuf data;
+  size_t len;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  init_membuf (&data, 4096);
+  learn_parm.error = 0;
+  learn_parm.ctx = agent_ctx;
+  learn_parm.data = &data;
+  rc = assuan_transact (agent_ctx, "LEARN --send",
+                        learn_cb, &learn_parm, 
+                        NULL, NULL, NULL, NULL);
+  xfree (get_membuf (&data, &len));
+  if (rc)
+    return map_assuan_err (rc);
+  return learn_parm.error;
 }
 

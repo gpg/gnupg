@@ -216,6 +216,7 @@ int gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey);
 int gpgsm_agent_istrusted (KsbaCert cert);
 int gpgsm_agent_havekey (const char *hexkeygrip);
 int gpgsm_agent_marktrusted (KsbaCert cert);
+int gpgsm_agent_learn (void);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (KsbaCert cert);

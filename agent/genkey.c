@@ -25,8 +25,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 #include "agent.h"
 
@@ -34,65 +32,32 @@
 static int
 store_key (GCRY_SEXP private, const char *passphrase)
 {
-  int i;
-  char *fname;
-  FILE *fp;
+  int rc;
   char *buf;
   size_t len;
   unsigned char grip[20];
-  char hexgrip[40+4+1];
   
   if ( !gcry_pk_get_keygrip (private, grip) )
     {
       log_error ("can't calculate keygrip\n");
       return seterr (General_Error);
     }
-  for (i=0; i < 20; i++)
-    sprintf (hexgrip+2*i, "%02X", grip[i]);
-  strcpy (hexgrip+40, ".key");
-
-  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL);
-  if (!access (fname, F_OK))
-    {
-      log_error ("secret key file `%s' already exists - very strange\n",
-                 fname);
-      xfree (fname);
-      return seterr (General_Error);
-    }
-  fp = fopen (fname, "wbx");  /* FIXME: the x is a GNU extension - let
-                                 configure check whether this actually
-                                 works */
-  if (!fp) 
-    { 
-      log_error ("can't create `%s': %s\n", fname, strerror (errno));
-      xfree (fname);
-      return seterr (File_Create_Error);
-    }
 
   len = gcry_sexp_sprint (private, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
   buf = gcry_malloc_secure (len);
   if (!buf)
-    {
-      fclose (fp);
-      remove (fname);
-      xfree (fname);
       return seterr (Out_Of_Core);
-    }
   len = gcry_sexp_sprint (private, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
 
   if (passphrase)
     {
       unsigned char *p;
-      int rc;
 
       rc = agent_protect (buf, passphrase, &p, &len);
       if (rc)
         {
-          fclose (fp);
-          remove (fname);
-          xfree (fname);
           xfree (buf);
           return rc;
         }
@@ -100,27 +65,9 @@ store_key (GCRY_SEXP private, const char *passphrase)
       buf = p;
     }
 
-  if (fwrite (buf, len, 1, fp) != 1)
-    {
-      log_error ("error writing `%s': %s\n", fname, strerror (errno));
-      fclose (fp);
-      remove (fname);
-      xfree (fname);
-      xfree (buf);
-      return seterr (File_Create_Error);
-    }
-  if ( fclose (fp) )
-    {
-      log_error ("error closing `%s': %s\n", fname, strerror (errno));
-      remove (fname);
-      xfree (fname);
-      xfree (buf);
-      return seterr (File_Create_Error);
-    }
-
-  xfree (fname);
+  rc = agent_write_private_key (grip, buf, len, 0);
   xfree (buf);
-  return 0;
+  return rc;
 }
 
 

@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <ksba.h>
 
 #include "scdaemon.h"
 #include "../assuan/assuan.h"
@@ -297,6 +298,65 @@ cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+/* READKEY <hexified_certid>
+
+   Return the public key for the given cert or key ID as an standard
+   S-Expression.  */
+static int
+cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  unsigned char *cert = NULL;
+  size_t ncert, n;
+  KsbaCert kc = NULL;
+  KsbaSexp p;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
+  if (rc)
+    {
+      log_error ("card_read_cert failed: %s\n", gnupg_strerror (rc));
+      goto leave;
+    }
+      
+  kc = ksba_cert_new ();
+  if (!kc)
+    {
+      xfree (cert);
+      rc = GNUPG_Out_Of_Core;
+      goto leave;
+    }
+  rc = ksba_cert_init_from_mem (kc, cert, ncert);
+  if (rc)
+    {
+      log_error ("failed to parse the certificate: %s\n", ksba_strerror (rc));
+      rc = map_ksba_err (rc);
+      goto leave;
+    }
+
+  p = ksba_cert_get_public_key (kc);
+  if (!p)
+    {
+      rc = GNUPG_No_Public_Key;
+      goto leave;
+    }
+
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  rc = assuan_send_data (ctx, p, n);
+  rc = map_assuan_err (rc);
+  xfree (p);
+
+
+ leave:
+  ksba_cert_release (kc);
+  xfree (cert);
+  return map_to_assuan_status (rc);
+}
+
+
 
 
 /* SETDATA <hexstring> 
@@ -449,6 +509,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "SERIALNO", 0, cmd_serialno },
     { "LEARN", 0, cmd_learn },
     { "READCERT", 0, cmd_readcert },
+    { "READKEY", 0,  cmd_readkey },
     { "SETDATA", 0,  cmd_setdata },
     { "PKSIGN", 0,   cmd_pksign },
     { "PKDECRYPT", 0,cmd_pkdecrypt },

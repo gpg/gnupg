@@ -110,6 +110,9 @@ getpin_cb (void *opaque, const void *buffer, size_t length)
 {
   struct entry_parm_s *parm = opaque;
 
+  if (!buffer)
+    return 0;
+
   /* we expect the pin to fit on one line */
   if (parm->lines || length >= parm->size)
     return ASSUAN_Too_Much_Data;

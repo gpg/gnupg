@@ -64,6 +64,21 @@ reset_notify (ASSUAN_CONTEXT ctx)
   ctrl->digest.valuelen = 0;
 }
 
+
+/* Check whether the option NAME appears in LINE */
+static int
+has_option (const char *line, const char *name)
+{
+  const char *s;
+  int n = strlen (name);
+
+  s = strstr (line, name);
+  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
+}
+
+
+
+
 /* ISTRUSTED <hexstring_with_fingerprint>
 
    Return OK when we have an entry with this fingerprint in our
@@ -463,18 +478,18 @@ cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-/* LEARN
+/* LEARN [--send]
 
-   Learn something about the currently inserted smartcard 
- */
+   Learn something about the currently inserted smartcard.  With
+   --send the new certificates are send back.  */
 static int
 cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
 
-  rc = agent_card_learn ();
+  rc = agent_handle_learn (has_option (line, "--send")? ctx : NULL);
   if (rc)
-    log_error ("agent_learn_card failed: %s\n", gnupg_strerror (rc));
+    log_error ("agent_handle_learn failed: %s\n", gnupg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 

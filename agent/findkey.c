@@ -30,6 +30,64 @@
 
 #include "agent.h"
 
+
+int
+agent_write_private_key (const unsigned char *grip,
+                         const void *buffer, size_t length, int force)
+{
+  int i;
+  char *fname;
+  FILE *fp;
+  char hexgrip[40+4+1];
+  
+  for (i=0; i < 20; i++)
+    sprintf (hexgrip+2*i, "%02X", grip[i]);
+  strcpy (hexgrip+40, ".key");
+
+  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL);
+  if (force)
+    fp = fopen (fname, "wb");
+  else
+    {
+      if (!access (fname, F_OK))
+      {
+        log_error ("secret key file `%s' already exists\n", fname);
+        xfree (fname);
+        return seterr (General_Error);
+      }
+      fp = fopen (fname, "wbx");  /* FIXME: the x is a GNU extension - let
+                                     configure check whether this actually
+                                     works */
+    }
+
+  if (!fp) 
+    { 
+      log_error ("can't create `%s': %s\n", fname, strerror (errno));
+      xfree (fname);
+      return seterr (File_Create_Error);
+    }
+
+  if (fwrite (buffer, length, 1, fp) != 1)
+    {
+      log_error ("error writing `%s': %s\n", fname, strerror (errno));
+      fclose (fp);
+      remove (fname);
+      xfree (fname);
+      return seterr (File_Create_Error);
+    }
+  if ( fclose (fp) )
+    {
+      log_error ("error closing `%s': %s\n", fname, strerror (errno));
+      remove (fname);
+      xfree (fname);
+      return seterr (File_Create_Error);
+    }
+
+  xfree (fname);
+  return 0;
+}
+
+
 static int
 unprotect (unsigned char **keybuf, const unsigned char *grip)
 {

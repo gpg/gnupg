@@ -76,6 +76,7 @@ enum cmd_and_opt_values {
   aExportAll,
   aCheckKeys,
   aServer,                        
+  aLearnCard,
 
   oOptions,
   oDebug,
@@ -217,6 +218,7 @@ static ARGPARSE_OPTS opts[] = {
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
     { aImport, "import",      256     , N_("import/merge keys")},
+    { aLearnCard, "learn-card", 256 ,N_("register a smartcard")},
     { aServer, "server",      256, N_("run in server mode")},
     
 
@@ -709,6 +711,8 @@ main ( int argc, char **argv)
         case aListKeys: set_cmd (&cmd, aListKeys); break;
         case aListSecretKeys: set_cmd (&cmd, aListSecretKeys); break;
 
+        case aLearnCard: set_cmd (&cmd, aLearnCard); break;
+
         case aDeleteKey:
           set_cmd (&cmd, aDeleteKey);
           greeting=1;
@@ -726,6 +730,7 @@ main ( int argc, char **argv)
         case aKeygen: set_cmd (&cmd, aKeygen); greeting=1; break;
         case aClearsign: set_cmd (&cmd, aClearsign); break;
         case aVerify: set_cmd (&cmd, aVerify); break;
+
 
           /* output encoding selection */
         case oArmor:
@@ -1069,6 +1074,7 @@ main ( int argc, char **argv)
       break;
         
     case aSignEncr: /* sign and encrypt the given file */
+      log_error ("this command has not yet been implemented\n");
 #if 0
       if (argc > 1)
         wrong_args(_("--sign --encrypt [filename]"));
@@ -1088,6 +1094,7 @@ main ( int argc, char **argv)
       break;
 
     case aClearsign: /* make a clearsig */
+      log_error ("this command has not yet been implemented\n");
 #if 0
       if (argc > 1)
         wrong_args (_("--clearsign [filename]"));
@@ -1109,6 +1116,7 @@ main ( int argc, char **argv)
       break;
 
     case aVerifyFiles:
+      log_error ("this command has not yet been implemented\n");
 /*        if ((rc = verify_files( argc, argv ))) */
 /*          log_error ("verify files failed: %s\n", gpg_errstr(rc) ); */
       break;
@@ -1125,6 +1133,7 @@ main ( int argc, char **argv)
     case aDeleteKey:
       if (argc != 1)
         wrong_args(_("--delete-key user-id"));
+      log_error ("this command has not yet been implemented\n");
 /*        username = make_username (fname); */
 /*        if( (rc = delete_key(username)) ) */
 /*          log_error ("%s: delete key failed: %s\n", username, gpg_errstr(rc) ); */
@@ -1146,6 +1155,7 @@ main ( int argc, char **argv)
       break;
 
     case aKeygen: /* generate a key */
+      log_error ("this function is not yet available from the commandline\n");
 /*        if (opt.batch) */
 /*          { */
 /*            if (argc > 1) */
@@ -1169,10 +1179,12 @@ main ( int argc, char **argv)
             gpgsm_import (&ctrl, open_read (*argv));
         }
       break;
+
       
     case aExport:
     case aSendKeys:
     case aRecvKeys:
+      log_error ("this command has not yet been implemented\n");
 /*        sl = NULL; */
 /*        for ( ; argc; argc--, argv++ ) */
 /*          add_to_strlist (&sl, *argv); */
@@ -1185,7 +1197,21 @@ main ( int argc, char **argv)
 /*        free_strlist (sl); */
       break;
 
-      default:
+
+    case aLearnCard:
+      if (argc)
+        wrong_args ("--learn-card");
+      else
+        {
+          int rc = gpgsm_agent_learn ();
+          if (rc)
+            log_error ("error learning card: %s\n", gnupg_strerror (rc));
+        }
+      break;
+
+
+    default:
+        log_error ("invalid command\n");
 	if (argc > 1)
           wrong_args(_("[filename]"));
 	/* Issue some output for the unix newbie */
