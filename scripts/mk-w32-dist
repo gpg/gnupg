@@ -76,9 +76,12 @@ for i in ${srcdir}/po/*.po; do
      tr) toset="CP1254" ;;   # DOS: CP857
      el) toset="CP1253" ;;   # same as latin-7?
      el|eo|et|ja|pl|hu|sk|zh_TW) toset="" ;;
+     en@*) toset="skip" ;;
       *) toset="CP850" ;;
    esac
-   if [ -n "$toset" ]; then
+   if [ "$toset" = "skip" ]; then
+       :
+   elif [ -n "$toset" ]; then
        echo "$lang: converting from $fromset to $toset" >&2 
        iconv --silent --from-code=$fromset --to-code=$toset < $i | \
          sed "/^\"Content-Type:/ s/charset=[a-zA-Z0-9_-]*/charset=$toset/" | \
