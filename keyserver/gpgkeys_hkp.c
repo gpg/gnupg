@@ -84,6 +84,11 @@ int send_key(void)
   char line[MAX_LINE];
 
   request=malloc(strlen(host)+100);
+  if(!request)
+    {
+      fprintf(console,"gpgkeys: out of memory\n");
+      return -1;
+    }
 
   iobuf_push_filter(temp,urlencode_filter,NULL);
 
@@ -223,6 +228,11 @@ int get_key(char *getkey)
 	    getkey,host,port[0]?":":"",port[0]?port:"");
 
   request=malloc(strlen(host)+100);
+  if(!request)
+    {
+      fprintf(console,"gpgkeys: out of memory\n");
+      return -1;
+    }
 
   sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&search=%s",
 	  host,port[0]?":":"",port[0]?port:"", search);
@@ -288,25 +298,25 @@ dehtmlize(char *line)
 	  break;
 
 	case '&':
-	  if((*(line+1)!='\0' && tolower(*(line+1))=='l') &&
-	     (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+	  if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='l') &&
+	     (*(line+2)!='\0' && ascii_tolower(*(line+2))=='t') &&
 	     (*(line+3)!='\0' && *(line+3)==';'))
 	    {
 	      parsed[parsedindex++]='<';
 	      line+=4;
 	      break;
 	    }
-	  else if((*(line+1)!='\0' && tolower(*(line+1))=='g') &&
-		  (*(line+2)!='\0' && tolower(*(line+2))=='t') &&
+	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='g') &&
+		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='t') &&
 		  (*(line+3)!='\0' && *(line+3)==';'))
 	    {
 	      parsed[parsedindex++]='>';
 	      line+=4;
 	      break;
 	    }
-	  else if((*(line+1)!='\0' && tolower(*(line+1))=='a') &&
-		  (*(line+2)!='\0' && tolower(*(line+2))=='m') &&
-		  (*(line+3)!='\0' && tolower(*(line+3))=='p') &&
+	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='a') &&
+		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='m') &&
+		  (*(line+3)!='\0' && ascii_tolower(*(line+3))=='p') &&
 		  (*(line+4)!='\0' && *(line+4)==';'))
 	    {
 	      parsed[parsedindex++]='&';
@@ -329,7 +339,7 @@ dehtmlize(char *line)
   if(parsedindex>0)
     {
       parsedindex--;
-      while(isspace(parsed[parsedindex]))
+      while(isspace(((unsigned char *)parsed)[parsedindex]))
 	{
 	  parsed[parsedindex]='\0';
 	  parsedindex--;
@@ -393,8 +403,8 @@ parse_hkp_index(IOBUF buffer,char *line)
      response.  This only complains about problems within the key
      section itself.  Headers and footers should not matter. */
   if(open && line[0]!='\0' &&
-     ascii_memcasecmp(line,"pub ",4)!=0 &&
-     ascii_memcasecmp(line,"    ",4)!=0)
+     ascii_strncasecmp(line,"pub ",4)!=0 &&
+     ascii_strncasecmp(line,"    ",4)!=0)
     {
       free(key);
       free(uid);
@@ -440,7 +450,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 	}
     }
 
-  if(ascii_memcasecmp(line,"pub ",4)==0)
+  if(ascii_strncasecmp(line,"pub ",4)==0)
     {
       char *tok,*temp;
 
@@ -527,6 +537,11 @@ int search_key(char *searchkey)
 	{
 	  max+=100;
 	  search=realloc(search,max+1); /* Note +1 for \0 */
+          if (!search)
+            {
+              fprintf(console,"gpgkeys: out of memory\n");
+              return -1;
+            }
 	}
 
       if(isalnum(*request) || *request=='-')
@@ -548,6 +563,11 @@ int search_key(char *searchkey)
 	  searchkey,host);
 
   request=malloc(strlen(host)+100+strlen(search));
+  if(!request)
+    {
+      fprintf(console,"gpgkeys: out of memory\n");
+      return -1;
+    }
 
   sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&search=%s",
 	  host,port[0]?":":"",port[0]?port:"",search);
