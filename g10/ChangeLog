@@ -1,3 +1,10 @@
+2003-09-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_key_with_all_names): Show names a little neater
+	by putting the [revoked] or [expired] in the space used for the
+	[validity].  There is also no point in showing "[unknown]
+	[revoked]".
+
 2003-09-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (mk_notation_policy_etc): Capitalize "URL".

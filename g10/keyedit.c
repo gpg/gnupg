@@ -2001,7 +2001,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 {
     KBNODE node;
     int i, rc;
-    int do_warn = 0;
+    int do_warn = 0, indent=0;
     byte pk_version=0;
     PKT_public_key *primary=NULL;
 
@@ -2130,15 +2130,33 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
     }
     
     /* the user ids */
+
+    for( node = keyblock; node; node = node->next )
+      {
+	if(node->pkt->pkttype == PKT_USER_ID
+	   && (node->pkt->pkt.user_id->is_revoked
+	       || node->pkt->pkt.user_id->is_expired))
+	  {
+	    indent=1;
+	    break;
+	  }
+      }
+
     i = 0;
     for( node = keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 	    ++i;
 	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A))){
-                if(opt.list_options&LIST_SHOW_VALIDITY && primary)
+	        if(uid->is_revoked)
+		  tty_printf("[%8.8s] ",_("revoked"));
+		else if(uid->is_expired)
+		  tty_printf("[%8.8s] ",_("expired"));
+		else if(opt.list_options&LIST_SHOW_VALIDITY && primary)
 		  tty_printf("[%8.8s] ",
 			     trust_value_to_string(get_validity(primary,uid)));
+		else if(indent)
+		  tty_printf("           ");
 		if( only_marked )
 		   tty_printf("     ");
 		else if( node->flag & NODFLG_SELUID )
@@ -2147,10 +2165,6 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		   tty_printf("(%d). ", i);
 		else
 		   tty_printf("(%d)  ", i);
-                if ( uid->is_revoked )
-                    tty_printf (_("[revoked] "));
-                if ( uid->is_expired )
-                    tty_printf (_("[expired] "));
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( with_prefs )
