@@ -245,6 +245,18 @@ get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
     return '?';
 }
 
+unsigned int
+get_validity (PKT_public_key *pk, PKT_user_id *uid)
+{
+  return 0;
+}
+
+const char *
+trust_value_to_string (unsigned int value)
+{
+  return "err";
+}
+
 /* Stub: */
 int
 get_ownertrust_info (PKT_public_key *pk)

@@ -1260,7 +1260,7 @@ main( int argc, char **argv )
       {
        /* Try for a version specific config file first */
 	configname = make_filename(opt.homedir,
-				   "gpg" EXTSEP_S "conf-" VERSION, NULL );
+				   "gpg" EXTSEP_S "conf-" SAFE_VERSION, NULL );
 	if(access(configname,R_OK))
 	  {
 	    m_free(configname);
@@ -1752,6 +1752,8 @@ main( int argc, char **argv )
 		  {"show-policy-url",LIST_SHOW_POLICY},
 		  {"show-notation",LIST_SHOW_NOTATION},
 		  {"show-keyring",LIST_SHOW_KEYRING},
+		  {"show-validity",LIST_SHOW_VALIDITY},
+		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
 		  {NULL,0}
 		};
 

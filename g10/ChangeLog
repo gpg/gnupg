@@ -1,3 +1,13 @@
+2003-06-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), keylist.c (list_keyblock_print): Add
+	"show-validity" and "show-long-keyid" list-options.
+
+	* gpgv.c (get_validity, trust_value_to_string): Stubs.
+
+	* g10.c (main): Use SAFE_VERSION instead of VERSION in the
+	version-specific gpg.conf file so it can be overridden on RISCOS.
+
 2003-06-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main), keylist.c (show_policy_url, show_notation),

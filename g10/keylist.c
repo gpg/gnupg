@@ -505,6 +505,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     u32 keyid[2];
     int any=0;
     struct sig_stats *stats=opaque;
+    int newformat=((opt.list_options&LIST_SHOW_VALIDITY) && !secret)
+      || (opt.list_options&LIST_SHOW_LONG_KEYID);
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -514,28 +516,56 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	return;
     }
 
-    if( secret ) {
+    if( secret )
+      {
 	pk = NULL;
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
-        printf("sec%c %4u%c/%08lX %s ", (sk->protect.s2k.mode==1001)?'#':' ',
-	                                nbits_from_sk( sk ),
-				        pubkey_letter( sk->pubkey_algo ),
-				        (ulong)keyid[1],
-				        datestr_from_sk( sk ) );
-    }
-    else {
+
+        printf("sec%c  %4u%c/",(sk->protect.s2k.mode==1001)?'#':' ',
+	       nbits_from_sk( sk ),pubkey_letter( sk->pubkey_algo ));
+
+	if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	  printf("%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+	else
+	  printf("%08lX",(ulong)keyid[1]);
+
+	printf(" %s%s",datestr_from_sk( sk ),newformat?"":" " );
+
+	if(newformat && sk->expiredate )
+	  printf(_(" [expires: %s]"), expirestr_from_sk( sk ) );
+      }
+    else
+      {
+	int validity;
 	pk = node->pkt->pkt.public_key;
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
-        printf("pub   %4u%c/%08lX %s ", nbits_from_pk( pk ),
-				       pubkey_letter( pk->pubkey_algo ),
-				       (ulong)keyid[1],
-				       datestr_from_pk( pk ) );
-    }
+
+	validity=get_validity(pk,NULL);
+
+	printf("pub   %4u%c/",
+	       nbits_from_pk(pk),pubkey_letter(pk->pubkey_algo));
+
+	if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	  printf("%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+	else
+	  printf("%08lX",(ulong)keyid[1]);
+
+	printf(" %s%s",datestr_from_pk( pk ),newformat?"":" " );
+
+	/* We didn't include this before in the key listing, but there
+	   is room in the new format, so why not? */
+	if(newformat && pk->expiredate)
+	  printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
+
+	if(opt.list_options&LIST_SHOW_VALIDITY)
+	  printf(" [%s]",trust_value_to_string(validity));
+      }
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
+	    int indent;
             /* don't list revoked or expired UIDS unless we are in
              * verbose mode and signature listing has not been
              * requested */
@@ -547,13 +577,33 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
 	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
 
-	    if( any ) 
-                printf("uid%*s", 29, "");
+	    if(!any && newformat)
+	      printf("\n");
+
+	    if((opt.list_options&LIST_SHOW_VALIDITY) && pk)
+	      {
+		const char *validity=
+		trust_value_to_string(get_validity(pk,node->pkt->pkt.user_id));
+
+		/* Includes the 3 spaces for [, ], and " ". */
+		indent=((opt.list_options&LIST_SHOW_LONG_KEYID)?23:15)
+		  -strlen(validity);
+
+		if(indent<0)
+		  indent=0;
+
+		printf("uid%*s[%s] ",indent,"",validity);
+	      }
+	    else if(newformat)
+	      printf("uid%*s",26,"");
+	    else if(any)
+	      printf("uid%*s",29,"");
 
             if ( node->pkt->pkt.user_id->is_revoked )
                 fputs ("[revoked] ", stdout);
             if ( node->pkt->pkt.user_id->is_expired )
                 fputs ("[expired] ", stdout);
+
             print_utf8_string( stdout,  node->pkt->pkt.user_id->name,
                                node->pkt->pkt.user_id->len );
 	    putchar('\n');
@@ -582,13 +632,15 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    }
 
 	    keyid_from_pk( pk2, keyid2 );
-            printf("sub   %4u%c/%08lX %s", nbits_from_pk( pk2 ),
-                   pubkey_letter( pk2->pubkey_algo ),
-                   (ulong)keyid2[1],
-                   datestr_from_pk( pk2 ) );
-            if( pk2->expiredate ) {
-                printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
-            }
+            printf("sub   %4u%c/",
+		   nbits_from_pk( pk2 ),pubkey_letter( pk2->pubkey_algo ));
+	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	      printf("%08lX%08lX",(ulong)keyid2[0],(ulong)keyid2[1]);
+	    else
+	      printf("%08lX",(ulong)keyid2[1]);
+	    printf(" %s",datestr_from_pk(pk2));
+            if( pk2->expiredate )
+	      printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
             putchar('\n');
 	    if( fpr > 1 )
 		print_fingerprint( pk2, NULL, 0 );
@@ -607,10 +659,16 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    }
 
 	    keyid_from_sk( sk2, keyid2 );
-            printf("ssb  %4u%c/%08lX %s\n", nbits_from_sk( sk2 ),
-					   pubkey_letter( sk2->pubkey_algo ),
-					   (ulong)keyid2[1],
-					   datestr_from_sk( sk2 ) );
+            printf("ssb   %4u%c/",
+		   nbits_from_sk( sk2 ),pubkey_letter( sk2->pubkey_algo ));
+	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	      printf("%08lX%08lX",(ulong)keyid2[0],(ulong)keyid2[1]);
+	    else
+	      printf("%08lX",(ulong)keyid2[1]);
+	    printf(" %s",datestr_from_sk( sk2 ) );
+            if( sk2->expiredate )
+	      printf(_(" [expires: %s]"), expirestr_from_sk( sk2 ) );
+	    putchar('\n');
 	    if( fpr > 1 )
 		print_fingerprint( NULL, sk2, 0 );
 	}
@@ -674,7 +732,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    }
 
             fputs( sigstr, stdout );
-	    printf("%c%c %c%c%c%c%c%c %08lX %s   ",
+	    printf("%c%c %c%c%c%c%c%c ",
                    sigrc,(sig->sig_class-0x10>0 &&
                           sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
                    sig->flags.exportable?' ':'L',
@@ -683,8 +741,12 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                    sig->flags.notation?'N':' ',
                    sig->flags.expired?'X':' ',
 		   (sig->trust_depth>9)?'T':
-		      (sig->trust_depth>0)?'0'+sig->trust_depth:' ',
-                   (ulong)sig->keyid[1], datestr_from_sig(sig));
+		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ');
+	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	      printf("%08lX%08lX",(ulong)sig->keyid[0],(ulong)sig->keyid[1]);
+	    else
+	      printf("%08lX",(ulong)sig->keyid[1]);
+	    printf(" %s   ", datestr_from_sig(sig));
 	    if( sigrc == '%' )
 		printf("[%s] ", g10_errstr(rc) );
 	    else if( sigrc == '?' )
