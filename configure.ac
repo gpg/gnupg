@@ -687,6 +687,12 @@ dnl
 dnl Check whether we can use Linux capabilities as requested
 dnl
 if test "$use_capabilities" = "yes" ; then
+
+AC_MSG_WARN([[
+***
+*** WARNING: using capabilities with GnuPG is experimental code!
+***]])
+
 use_capabilities=no
 AC_CHECK_HEADERS(sys/capability.h)
 if test "$ac_cv_header_sys_capability_h" = "yes" ; then
