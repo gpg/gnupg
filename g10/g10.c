@@ -1385,7 +1385,7 @@ main( int argc, char **argv )
 	  case oAlwaysTrust: opt.always_trust = 1; break;
 	  case oLoadExtension:
 #ifndef __riscos__
-#ifdef USE_DYNAMIC_LINKING
+#if defined(USE_DYNAMIC_LINKING) || defined(__MINGW32__)
 	    if(check_permissions(pargs.r.ret_str,2))
 	      log_info(_("cipher extension \"%s\" not loaded due to "
 			 "unsafe permissions\n"),pargs.r.ret_str);
