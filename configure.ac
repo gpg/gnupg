@@ -410,6 +410,7 @@ case "${target}" in
         have_dosish_system=yes
         need_dlopen=no
         try_gettext="no"
+	LDAPLIBS="-lwldap32"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
