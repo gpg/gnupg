@@ -1,3 +1,8 @@
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* agent.h (map_assuan_err): Define in terms of
+	map_assuan_err_with_source.
+
 2004-12-17  Moritz Schulte  <moritz@g10code.com>
 
 	* query.c: Undo change from 2004-12-05.

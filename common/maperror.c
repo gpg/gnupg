@@ -38,7 +38,7 @@
    simple: All errors with a gpg_err_source of UNKNOWN are genuine
    Assuan codes all others are passed verbatim through. */
 gpg_error_t
-map_assuan_err (int err)
+map_assuan_err_with_source (int err, int source)
 {
   gpg_err_code_t ec;
 
@@ -77,7 +77,7 @@ map_assuan_err (int err)
       ec = err < 100? GPG_ERR_ASSUAN_SERVER_FAULT : GPG_ERR_ASSUAN;
       break;
     }
-  return gpg_err_make (GPG_ERR_SOURCE_UNKNOWN, ec);
+  return gpg_err_make (source, ec);
 }
 
 /* Map GPG_xERR_xx error codes to Assuan status codes */

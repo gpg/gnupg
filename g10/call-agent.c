@@ -171,7 +171,9 @@ start_agent (void)
   if (rc)
     return map_assuan_err (rc);
 
+#ifdef __GNUC__
 #warning put this code into common/asshelp.c
+#endif
 
   dft_display = getenv ("DISPLAY");
   if (opt.display || dft_display)

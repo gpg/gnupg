@@ -168,7 +168,7 @@ start_agent (ctrl_t ctrl)
   if (rc)
     return map_assuan_err (rc);
 
-  return send_pinentry_environment (agent_ctx,
+  return send_pinentry_environment (agent_ctx, GPG_ERR_SOURCE_DEFAULT,
                                     opt.display, opt.ttyname, opt.ttytype,
                                     opt.lc_ctype, opt.lc_messages);
 }

@@ -61,7 +61,7 @@ typedef char gnupg_isotime_t[16];
 
 /*-- maperror.c --*/
 int map_kbx_err (int err);
-gpg_error_t map_assuan_err (int err);
+gpg_error_t map_assuan_err_with_source (int source, int err);
 int map_to_assuan_status (int rc);
 
 /*-- gettime.c --*/

@@ -26,6 +26,7 @@
 
 gpg_error_t
 send_pinentry_environment (assuan_context_t ctx,
+                           gpg_err_source_t errsource,
                            const char *opt_display,
                            const char *opt_ttyname,
                            const char *opt_ttytype,

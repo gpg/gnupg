@@ -1,3 +1,10 @@
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* maperror.c (map_assuan_err): Renamed to ..
+	(map_assuan_err_with_source): .. this and add arg SOURCE.c
+	* asshelp.c (send_pinentry_environment, send_one_option): Add arg
+	ERRSOURCE.
+
 2004-12-15  Werner Koch  <wk@g10code.com>
 
 	* sysutils.h [W32]: Prototypes for registry functions.

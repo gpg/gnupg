@@ -1,3 +1,12 @@
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* gpg.h (map_assuan_err): Define in terms of
+	map_assuan_err_with_source.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (LDADD): Remove ZLIBS.
+
 2004-10-22  Werner Koch  <wk@g10code.com>
 
 	* g10.c (main): Display a bit fat warning that this gpg should not

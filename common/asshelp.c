@@ -34,7 +34,8 @@
 
 
 static gpg_error_t
-send_one_option (assuan_context_t ctx, const char *name, const char *value)
+send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
+                 const char *name, const char *value)
 {
   gpg_error_t err;
   char *optstr;
@@ -48,7 +49,7 @@ send_one_option (assuan_context_t ctx, const char *name, const char *value)
       assuan_error_t ae;
 
       ae = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL, NULL);
-      err = ae? map_assuan_err (ae) : 0;
+      err = ae? map_assuan_err_with_source (errsource, ae) : 0;
       free (optstr);
     }
 
@@ -61,6 +62,7 @@ send_one_option (assuan_context_t ctx, const char *name, const char *value)
    defaults taken from the current locale. */
 gpg_error_t
 send_pinentry_environment (assuan_context_t ctx,
+                           gpg_err_source_t errsource,
                            const char *opt_display,
                            const char *opt_ttyname,
                            const char *opt_ttytype,
@@ -78,7 +80,7 @@ send_pinentry_environment (assuan_context_t ctx,
   dft_display = getenv ("DISPLAY");
   if (opt_display || dft_display)
     {
-      err = send_one_option (ctx, "display", 
+      err = send_one_option (ctx, errsource, "display", 
                              opt_display ? opt_display : dft_display);
       if (err)
         return err;
@@ -93,7 +95,7 @@ send_pinentry_environment (assuan_context_t ctx,
     }
   if (opt_ttyname || dft_ttyname)
     {
-      err = send_one_option (ctx, "ttyname", 
+      err = send_one_option (ctx, errsource, "ttyname", 
                              opt_ttyname ? opt_ttyname : dft_ttyname);
       if (err)
         return err;
@@ -103,7 +105,7 @@ send_pinentry_environment (assuan_context_t ctx,
   dft_ttytype = getenv ("TERM");
   if (opt_ttytype || (dft_ttyname && dft_ttytype))
     {
-      err = send_one_option (ctx, "ttytype", 
+      err = send_one_option (ctx, errsource, "ttytype", 
                              opt_ttyname ? opt_ttytype : dft_ttytype);
       if (err)
         return err;
@@ -122,7 +124,7 @@ send_pinentry_environment (assuan_context_t ctx,
 #endif
   if (opt_lc_ctype || (dft_ttyname && dft_lc))
     {
-      err = send_one_option (ctx, "lc-ctype", 
+      err = send_one_option (ctx, errsource, "lc-ctype", 
                              opt_lc_ctype ? opt_lc_ctype : dft_lc);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
@@ -148,7 +150,7 @@ send_pinentry_environment (assuan_context_t ctx,
 #endif
   if (opt_lc_messages || (dft_ttyname && dft_lc))
     {
-      err = send_one_option (ctx, "display", 
+      err = send_one_option (ctx, errsource, "display", 
                              opt_lc_messages ? opt_lc_messages : dft_lc);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)

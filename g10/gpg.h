@@ -29,6 +29,8 @@
 #error GPG_ERR_SOURCE_DEFAULT already defined
 #endif
 #define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_GPG
+#define map_assuan_err(a) \
+        map_assuan_err_with_source (GPG_ERR_SOURCE_DEFAULT, (a))
 #include <gpg-error.h>
 
 
