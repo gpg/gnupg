@@ -211,6 +211,16 @@ ones given on the command line.
 
 
 <varlistentry>
+<term>--show-keyring</term>
+<listitem><para>
+Causes --list-keys, --list-public-keys, and --list-secret-keys to
+display the name of the keyring a given key resides on. This is only
+useful when you're listing a specific key or set of keys. It has no
+effect when listig all keys.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
 <term>--list-sigs &OptParmNames;</term>
 <listitem><para>
 Same as --list-keys, but the signatures are listed too.

@@ -73,7 +73,7 @@ faq.html : faq.raw
 	$(FAQPROG) -h -f $< $@ 2>&1 || $(FAQPROG) -h -f $< $@
 
 dist-hook:
-	@if test `wc -c < gpg.1` -lt 200; then \
+	@if test "`wc -c < gpg.1`" -lt 200; then \
 	    echo 'ERROR: dummy man page'; false; fi
 
 
