@@ -26,6 +26,8 @@
 #else
 #include <windows.h>
 
+#define RTLD_LAZY 0
+
 static __inline__ void *
 dlopen (const char * name, int flag)
 {

@@ -241,7 +241,8 @@ int write_w32_registry_string(const char *root, const char *dir,
                               const char *name, const char *value);
 
 /*-- strgutil.c --*/
-int vasprintf ( char **result, const char *format, va_list args);
+int vasprintf (char **result, const char *format, va_list args);
+int asprintf (char **buf, const char *fmt, ...);
 #endif
 
 /**** other missing stuff ****/

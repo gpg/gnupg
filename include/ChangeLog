@@ -1,3 +1,8 @@
+2003-09-28  Timo Schulz  <twoaday@freakmail.de>
+
+	* util.h [WIN32]: Prototype for asprintf.
+	* dynload.h [WIN32]: Define RTLD_LAZY.
+	
 2003-09-28  Werner Koch  <wk@gnupg.org>
 
 	* util.h: Add the atoi_* and xtoi_* suite of macros from 1.9.
