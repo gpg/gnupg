@@ -1,3 +1,20 @@
+2003-01-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (add_group): Trim whitespace after a group name so it does
+	not matter where the user puts the = sign.
+
+	* options.skel: Comment out the first three lines in case someone
+	manually copies the skel file to their homedir.
+
+	* sign.c (clearsign_file): Only use pgp2mode with v3 keys and
+	MD5. This matches what we do when decoding such messages and
+	prevents creating a message (v3+RIPEMD/160) that we can't verify.
+
+	* sig-check.c (signature_check2): Use G10ERR_GENERAL as the error
+	for signature digest conflict.  BAD_SIGN implies that a signature
+	was checked and we may try and print out a user ID for a key that
+	doesn't exist.
+
 2003-01-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (init_trustdb, get_validity): Don't use a changed

@@ -974,8 +974,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     }
     if ( DBG_HASHING )
 	md_start_debug( textmd, "clearsign" );
-    copy_clearsig_text( out, inp, textmd,
-			!opt.not_dash_escaped, opt.escape_from, old_style );
+    copy_clearsig_text( out, inp, textmd, !opt.not_dash_escaped,
+			opt.escape_from, (old_style && only_md5) );
     /* fixme: check for read errors */
 
     /* now write the armor */
