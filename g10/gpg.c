@@ -187,6 +187,7 @@ enum cmd_and_opt_values { aNull = 0,
     oIgnoreTimeConflict,
     oNoRandomSeedFile,
     oNoAutoKeyRetrieve,
+    oUseAgent,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
 aTest };
@@ -271,6 +272,7 @@ static ARGPARSE_OPTS opts[] = {
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
   /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
+    { oUseAgent, "use-agent",0, N_("use the gpg-agent")},
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
     { oAnswerNo,  "no",        0, N_("assume no on most questions")},
@@ -809,6 +811,7 @@ main( int argc, char **argv )
 	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
 	  case oBatch: opt.batch = 1; greeting = 0; break;
+          case oUseAgent: opt.use_agent = 1; break;
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;

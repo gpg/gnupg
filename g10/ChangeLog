@@ -1,3 +1,11 @@
+Mon Aug 21 17:59:17 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * gpg.c: New option --use-agent
+        * passphrase.c (agent_open,agent_close): New.
+        (agent_get_passphrase,agent_clear_passphrase): New.
+        (passphrase_to_dek): Use the agent here.
+        * seckey-cert.c (do_check): Clear wrong cached passphrases.
+
 Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
 
   * status.c (do_get_from_fd): Ooops, we used fd instead of opt.command_fd.

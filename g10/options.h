@@ -91,6 +91,7 @@ struct {
     int ignore_time_conflict;
     int command_fd;
     int auto_key_retrieve;
+    int use_agent;
 } opt;
 
 

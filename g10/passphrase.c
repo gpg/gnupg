@@ -21,9 +21,14 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <errno.h>
 
 #include <gcrypt.h>
 #include "util.h"
@@ -33,6 +38,17 @@
 #include "main.h"
 #include "i18n.h"
 #include "status.h"
+#include "gpga-prot.h"
+
+#define buftou32( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \
+		       (*((byte*)(p)+2) << 8) | (*((byte*)(p)+3)))
+#define u32tobuf( p, a ) do { 			                \
+			    ((byte*)p)[0] = (byte)((a) >> 24);	\
+			    ((byte*)p)[1] = (byte)((a) >> 16);	\
+			    ((byte*)p)[2] = (byte)((a) >>  8);	\
+			    ((byte*)p)[3] = (byte)((a) 	    );	\
+			} while(0)
+
 
 static char *fd_passwd = NULL;
 static char *next_pw = NULL;
@@ -43,6 +59,8 @@ static void hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create );
 int
 have_static_passphrase()
 {
+    if ( opt.use_agent )
+        return 0;
     return !!fd_passwd;
 }
 
@@ -81,6 +99,10 @@ read_passphrase_from_fd( int fd )
     int i, len;
     char *pw;
 
+    if ( opt.use_agent ) 
+        return;  /* not used here */
+        
+
     if( !opt.batch )
 	tty_printf("Reading passphrase from file descriptor %d ...", fd );
     for( pw = NULL, i = len = 100; ; i++ ) {
@@ -102,6 +124,333 @@ read_passphrase_from_fd( int fd )
 
     gcry_free( fd_passwd );
     fd_passwd = pw;
+}
+
+
+static int
+writen ( int fd, const void *buf, size_t nbytes )
+{
+    size_t nleft = nbytes;
+    ssize_t nwritten;
+
+    while( nleft > 0 ) {
+        nwritten = write( fd, buf, nleft );
+        if( nwritten < 0 ) {
+            if ( errno == EINTR )
+                nwritten = 0;
+            else {
+                log_error ( "writen() failed: %s\n", strerror (errno) );
+                return -1;
+            }
+        }
+        nleft -= nwritten;
+        buf = (const char*)buf + nwritten;
+    }
+    return 0;
+}
+
+
+static int
+readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
+{
+    size_t nleft = buflen;
+    int nread;
+    char *p;
+
+    p = buf;
+    while( nleft > 0 ) {
+        nread = read ( fd, buf, nleft );
+        if( nread < 0 ) {
+            if (nread == EINTR)
+                nread = 0;
+            else {
+                log_error ( "read() error: %s\n", strerror (errno) );
+                return -1;
+            }
+        }
+        else if( !nread )
+            break; /* EOF */
+        nleft -= nread;
+        buf = (char*)buf + nread;
+    }
+    if( ret_nread )
+        *ret_nread = buflen - nleft;
+    return 0;
+}
+
+
+
+/*
+ * Open a connection to the agent and send the magic string
+ * Returns: -1 on error or an filedescriptor for urther processing
+ */
+
+static int
+agent_open ()
+{
+    int fd;
+    char *infostr, *p;
+    struct sockaddr_un client_addr;
+    size_t len;
+
+    infostr = getenv ( "GPG_AGENT_INFO" );
+    if ( !infostr ) {
+        log_error (_("gpg-agent is not available in this session\n"));
+        return -1;
+    }
+    infostr = gcry_xstrdup ( infostr );
+    if ( !(p = strchr ( infostr, ':')) || p == infostr
+         || (p-infostr)+1 >= sizeof client_addr.sun_path ) {
+        log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
+        gcry_free (infostr );
+        return -1;
+    }
+    *p = 0;
+        
+    if( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 ) {
+        log_error ("can't create socket: %s\n", strerror(errno) );
+        gcry_free (infostr );
+        return -1;
+    }
+
+    memset( &client_addr, 0, sizeof client_addr );
+    client_addr.sun_family = AF_UNIX;
+    strcpy( client_addr.sun_path, infostr );
+    len = offsetof (struct sockaddr_un, sun_path)
+        + strlen(client_addr.sun_path) + 1;
+    
+    if( connect( fd, (struct sockaddr*)&client_addr, len ) == -1 ) {
+        log_error ( _("can't connect to `%s': %s\n"), 
+                    infostr, strerror (errno) );
+        gcry_free (infostr );
+        close (fd );
+        return -1;
+    }
+    gcry_free (infostr);
+
+    if ( writen ( fd, "GPGA\0\0\0\x01", 8 ) ) {
+        close (fd);
+        fd = -1;
+    }
+    return fd;
+}
+
+static void
+agent_close ( int fd )
+{
+    close (fd);
+}
+
+
+
+/*
+ * Ask the GPG Agent for the passphrase.
+ * Mode 0:  Allow cached passphrase
+ *      1:  No cached passphrase FIXME: Not really implemented
+ *      2:  Ditto, but change the text to "repeat entry"
+ */
+static char *
+agent_get_passphrase ( u32 *keyid, int mode )
+{
+    size_t n;
+    char *atext;
+    char buf[50];
+    int fd = -1;
+    int nread;
+    u32 reply;
+    char *pw = NULL;
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
+    byte fpr[MAX_FINGERPRINT_LEN];
+
+#if MAX_FINGERPRINT_LEN < 20
+  #error agent needs a 20 byte fingerprint
+#endif
+
+    memset (fpr, 0, MAX_FINGERPRINT_LEN );
+    if( keyid && get_pubkey( pk, keyid ) )
+        pk = NULL; /* oops: no key for some reason */
+
+    if ( !mode && pk ) { 
+        char *uid;
+        size_t uidlen;
+        const char *algo_name = gcry_pk_algo_name( pk->pubkey_algo );
+        const char *timestr;
+        char *maink;
+        const char *fmtstr;
+     
+        if ( !algo_name )
+            algo_name = "?";
+   
+        fmtstr = _(" (main key ID %08lX)");
+        maink = gcry_xmalloc ( strlen (fmtstr) + 20 );
+        if( keyid[2] && keyid[3] && keyid[0] != keyid[2] 
+            && keyid[1] != keyid[3] )
+            sprintf( maink, fmtstr, (ulong)keyid[3] );
+        else
+            *maink = 0;
+
+        uid = get_user_id( keyid, &uidlen ); 
+        timestr = strtimestamp (pk->timestamp);
+        fmtstr = _("You need a passphrase to unlock the"
+                   " secret key for user:\n"
+                   "\"%.*s\"\n"
+                   "%u-bit %s key, ID %08lX, created %s%s\n" );
+        atext = gcry_xmalloc ( 100 + strlen (fmtstr)  
+                               + uidlen + 15 + strlen(algo_name) + 8
+                               + strlen (timestr) + strlen (maink) );
+        sprintf (atext, fmtstr,
+                 uidlen, uid,
+                 nbits_from_pk (pk), algo_name, (ulong)keyid[1], timestr,
+                 maink  );
+        gcry_free (uid);
+        gcry_free (maink);
+
+        { 
+            size_t dummy;
+            fingerprint_from_pk( pk, fpr, &dummy );
+        }
+        
+    }
+    else if (mode == 1 ) 
+        atext = gcry_xstrdup ( _("Enter passphrase\n") );
+    else 
+        atext = gcry_xstrdup ( _("Repeat passphrase\n") );
+
+        
+        
+    if ( (fd = agent_open ()) == -1 ) 
+        goto failure;
+
+
+    n = 4 + 20 + strlen (atext);
+    u32tobuf (buf, n );
+    u32tobuf (buf+4, GPGA_PROT_GET_PASSPHRASE );
+    memcpy (buf+8, fpr, 20 );
+    if ( writen ( fd, buf, 28 ) || writen ( fd, atext, strlen (atext) ) ) 
+        goto failure;
+    gcry_free (atext); atext = NULL;
+
+    /* get response */
+    if ( readn ( fd, buf, 12, &nread ) ) 
+        goto failure;
+
+    if ( nread < 8 ) {
+        log_error ( _("response from agent too short\n") );
+        goto failure;
+    }
+    n = buftou32 ( buf );
+    reply = buftou32 ( buf + 4 );
+    if ( reply == GPGA_PROT_GOT_PASSPHRASE ) {
+        size_t pwlen;
+        size_t nn;
+
+        if ( nread < 12 || n < 8 ) {
+            log_error ( _("response from agent too short\n") );
+            goto failure;
+        }
+        pwlen = buftou32 ( buf + 8 );
+        nread -= 12;
+        n -= 8;
+        if ( pwlen > n || n > 1000 ) {
+            log_error (_("passphrase too long\n"));
+            /* or protocol error */
+            goto failure;
+        }
+        /* we read the whole block in one chunk to give no hints
+         * on how long the passhrase actually is - this wastes some bytes
+         * but because we already have this padding we should not loosen
+         * the by issuing 2 read calls */
+        pw = gcry_xmalloc_secure ( n+1 );
+        if ( readn ( fd, pw, n, &nn ) )
+            goto failure;
+        if ( n != nn ) {
+            log_error (_("invalid response from agent\n"));
+            goto failure;           
+        }
+        pw[pwlen] = 0; /* make a C String */
+        agent_close (fd);
+        free_public_key( pk );
+        return pw;
+    }
+    else if ( reply == GPGA_PROT_CANCELED ) {
+        log_info ( _("cancelled by user\n") );
+    }
+    else {
+        log_error ( _("problem with the agent: agent returns 0x%lx\n"),
+                      (ulong)reply );
+    }
+        
+        
+  failure:
+    gcry_free (atext);
+    if ( fd != -1 )
+        agent_close (fd);
+    gcry_free (pw );
+    free_public_key( pk );
+
+    return NULL;
+}
+
+
+/*
+ * Reste the cached passphrase
+ */
+void
+passphrase_clear_cache ( u32 *keyid, int algo )
+{
+    size_t n;
+    char buf[50];
+    int fd = -1;
+    int nread;
+    u32 reply;
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
+    byte fpr[MAX_FINGERPRINT_LEN];
+    
+#if MAX_FINGERPRINT_LEN < 20
+#error agent needs a 20 byte fingerprint
+#endif
+    
+    memset (fpr, 0, MAX_FINGERPRINT_LEN );
+    if( !keyid || get_pubkey( pk, keyid ) ) {
+        log_debug ("oops, no key in passphrase_clear_cache\n");
+        goto failure; /* oops: no key for some reason */
+    }
+    
+    {
+        size_t dummy;
+        fingerprint_from_pk( pk, fpr, &dummy );
+    }
+    
+    if ( (fd = agent_open ()) == -1 ) 
+        goto failure;
+    
+    n = 4 + 20;
+    u32tobuf (buf, n );
+    u32tobuf (buf+4, GPGA_PROT_CLEAR_PASSPHRASE );
+    memcpy (buf+8, fpr, 20 );
+    if ( writen ( fd, buf, 28 ) )  
+        goto failure;
+    
+    /* get response */
+    if ( readn ( fd, buf, 8, &nread ) ) 
+        goto failure;
+    
+    if ( nread < 8 ) {
+        log_error ( _("response from agent too short\n") );
+        goto failure;
+    }
+    
+    reply = buftou32 ( buf + 4 );
+    if ( reply != GPGA_PROT_OKAY && reply != GPGA_PROT_NO_PASSPHRASE ) {
+        log_error ( _("problem with the agent: agent returns 0x%lx\n"),
+                    (ulong)reply );
+    }
+        
+        
+  failure:
+    if ( fd != -1 )
+        agent_close (fd);
+    free_public_key( pk );
 }
 
 
@@ -181,6 +530,22 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     if( next_pw ) {
 	pw = next_pw;
 	next_pw = NULL;
+    }
+    else if ( opt.use_agent ) {
+	pw = agent_get_passphrase ( keyid, mode == 2? 1: 0 );
+        if ( !pw )
+            pw = gcry_xstrdup ("");
+        if( *pw && mode == 2 ) {
+	    char *pw2 = agent_get_passphrase ( keyid, 2 );
+            if ( !pw2 )
+                pw2 = gcry_xstrdup ("");
+	    if( strcmp(pw, pw2) ) {
+		gcry_free(pw2);
+		gcry_free(pw);
+		return NULL;
+	    }
+	    gcry_free(pw2);
+	}
     }
     else if( fd_passwd ) {
 	pw = gcry_xmalloc_secure( strlen(fd_passwd)+1 );

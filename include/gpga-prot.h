@@ -103,6 +103,7 @@ enum gpga_protocol_codes {
     GPGA_PROT_GET_PASSPHRASE  = 2,
     GPGA_PROT_CLEAR_PASSPHRASE= 3,
     GPGA_PROT_SHUTDOWN        = 4,
+    GPGA_PROT_FLUSH           = 5,
 
     /* Reply codes */
     GPGA_PROT_REPLY_BASE     = 0x10000,

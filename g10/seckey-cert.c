@@ -191,6 +191,7 @@ do_check( PKT_secret_key *sk )
 	/* now let's see whether we have used the right passphrase */
 	if( csum != sk->csum ) {
 	    copy_secret_key( sk, save_sk );
+            passphrase_clear_cache ( keyid, sk->pubkey_algo );
 	    free_secret_key( save_sk );
 	    return GPGERR_BAD_PASS;
 	}
@@ -199,6 +200,7 @@ do_check( PKT_secret_key *sk )
 	res = pk_check_secret_key( sk->pubkey_algo, sk->skey );
 	if( res ) {
 	    copy_secret_key( sk, save_sk );
+            passphrase_clear_cache ( keyid, sk->pubkey_algo );
 	    free_secret_key( save_sk );
 	    return GPGERR_BAD_PASS;
 	}
