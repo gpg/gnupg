@@ -37,6 +37,74 @@
 static int get_it( PKT_pubkey_enc *k,
 		   DEK *dek, PKT_secret_key *sk, u32 *keyid );
 
+
+/****************
+ * Emulate our old PK interface here - sometime in the future we might
+ * change the internal design to directly fit to libgcrypt.
+ */
+static int
+pk_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
+{
+    GCRY_SEXP s_skey, s_data, s_plain;
+    int rc;
+
+    *result = NULL;
+    /* make a sexp from skey */
+    if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "elg", 0 ),
+			  gcry_sexp_new_name_mpi( "p", skey[0] ),
+			  gcry_sexp_new_name_mpi( "g", skey[1] ),
+			  gcry_sexp_new_name_mpi( "y", skey[2] ),
+			  gcry_sexp_new_name_mpi( "x", skey[3] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_RSA ) {
+	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "rsa", 0 ),
+			  gcry_sexp_new_name_mpi( "n", skey[0] ),
+			  gcry_sexp_new_name_mpi( "e", skey[1] ),
+			  gcry_sexp_new_name_mpi( "d", skey[2] ),
+			  gcry_sexp_new_name_mpi( "p", skey[3] ),
+			  gcry_sexp_new_name_mpi( "q", skey[4] ),
+			  gcry_sexp_new_name_mpi( "u", skey[5] ),
+			  NULL ));
+    }
+    else
+	return G10ERR_PUBKEY_ALGO;
+
+    /* put data into a S-Exp s_data */
+    if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	s_data = SEXP_CONS( SEXP_NEW( "enc-val", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "elg", 0 ),
+			  gcry_sexp_new_name_mpi( "a", data[0] ),
+			  gcry_sexp_new_name_mpi( "b", data[1] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_RSA ) {
+	s_data = SEXP_CONS( SEXP_NEW( "enc-val", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "rsa", 0 ),
+			  gcry_sexp_new_name_mpi( "a", data[0] ),
+			  NULL ));
+    }
+    else
+	BUG();
+
+    rc = gcry_pk_decrypt( &s_plain, s_data, s_skey );
+    gcry_sexp_release( s_skey );
+    gcry_sexp_release( s_data);
+    if( rc )
+	return rc;
+
+    *result = gcry_sexp_car_mpi( s_plain, 0 );
+    if( !*result )
+	return -1; /* oops */
+
+    return 0;
+}
+
+
+
 /****************
  * Get the session key from a pubkey enc paket and return
  * it in DEK, which should have been allocated in secure memory.
@@ -106,7 +174,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     size_t nframe;
     u16 csum, csum2;
 
-    rc = pubkey_decrypt(sk->pubkey_algo, &plain_dek, k->data, sk->skey );
+    rc = pk_decrypt(sk->pubkey_algo, &plain_dek, k->data, sk->skey );
     if( rc )
 	goto leave;
     if( gcry_mpi_aprint( GCRYMPI_FMT_USG, &frame, &nframe, plain_dek ) )

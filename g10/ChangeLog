@@ -1,3 +1,16 @@
+Mon Jan 24 22:24:38 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* misc.c (mpi_read_opaque): Fixed double counting.
+
+	* seckey-cert.c (do_check): Removed buffer and the unmotivated free
+	on it.
+
+	* pubkey-enc.c (pk_decrypt): New wrapper for the gcry_ function.
+	* seckey-cert.c (pk_check_secret_key): Likewise.
+	* encode.c (pk_encrypt): Likewise.
+
+	* parse-packet.c (parse_key): Fixed case of unencrypted secret keys.
+
 Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* misc.c (mpi_print): Use gcry_mpi_aprint.

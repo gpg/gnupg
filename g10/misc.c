@@ -178,7 +178,7 @@ mpi_read(IOBUF inp, unsigned int *ret_nread, int secure)
 
 /****************
  * Same as mpi_read but the value is stored as an opaque MPI.
- * This function is used to read encrpted MPI of v3 packets.
+ * This function is used to read encrypted MPI of v3 packets.
  */
 GCRY_MPI
 mpi_read_opaque(IOBUF inp, unsigned *ret_nread )
@@ -205,7 +205,6 @@ mpi_read_opaque(IOBUF inp, unsigned *ret_nread )
     p = buf;
     for( i=0 ; i < nbytes; i++ ) {
 	p[i] = iobuf_get(inp) & 0xff;
-	nread++;
     }
     nread += nbytes;
     a = gcry_mpi_set_opaque(NULL, buf, nbits );

@@ -1,3 +1,7 @@
+Mon Jan 24 22:24:38 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* mpicoder.c (gcry_mpi_aprint): Now really returns the length.
+
 Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* mpiutil.c: Removed all memory debugging code.

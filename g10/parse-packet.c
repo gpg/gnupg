@@ -1420,10 +1420,11 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		printf("\tencrypted stuff follows\n");
 	    }
 	}
-	else { /* v3 method: the mpi length is not encrypted */
+	else { /* unencrypted v4 or v3 method (where length is not encrypted) */
 	    for(i=npkey; i < nskey; i++ ) {
 		n = pktlen;
-		sk->skey[i] = mpi_read_opaque(inp, &n );
+		sk->skey[i] = sk->is_protected ? mpi_read_opaque(inp, &n )
+					       : mpi_read( inp, &n, 1 );
 		pktlen -=n;
 		if( list_mode ) {
 		    printf(  "\tskey[%d]: ", i);

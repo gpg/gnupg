@@ -33,11 +33,58 @@
 #include "i18n.h"
 #include "status.h"
 
+/****************
+ * Emulate our old PK interface here - sometime in the future we might
+ * change the internal design to directly fit to libgcrypt.
+ */
+static int
+pk_check_secret_key( int algo, MPI *skey )
+{
+    GCRY_SEXP s_skey;
+    int rc;
+
+    /* make a sexp from skey */
+    if( algo == GCRY_PK_DSA ) {
+	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "dsa", 0 ),
+			  gcry_sexp_new_name_mpi( "p", skey[0] ),
+			  gcry_sexp_new_name_mpi( "q", skey[1] ),
+			  gcry_sexp_new_name_mpi( "g", skey[2] ),
+			  gcry_sexp_new_name_mpi( "y", skey[3] ),
+			  gcry_sexp_new_name_mpi( "x", skey[4] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "elg", 0 ),
+			  gcry_sexp_new_name_mpi( "p", skey[0] ),
+			  gcry_sexp_new_name_mpi( "g", skey[1] ),
+			  gcry_sexp_new_name_mpi( "y", skey[2] ),
+			  gcry_sexp_new_name_mpi( "x", skey[3] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_RSA ) {
+	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "rsa", 0 ),
+			  gcry_sexp_new_name_mpi( "n", skey[0] ),
+			  gcry_sexp_new_name_mpi( "e", skey[1] ),
+			  gcry_sexp_new_name_mpi( "d", skey[2] ),
+			  gcry_sexp_new_name_mpi( "p", skey[3] ),
+			  gcry_sexp_new_name_mpi( "q", skey[4] ),
+			  gcry_sexp_new_name_mpi( "u", skey[5] ),
+			  NULL ));
+    }
+    else
+	return G10ERR_PUBKEY_ALGO;
+
+    rc = gcry_pk_testkey( s_skey );
+    gcry_sexp_release( s_skey );
+    return rc;
+}
 
 static int
 do_check( PKT_secret_key *sk )
 {
-    byte *buffer;
     u16 csum=0;
     int i, res;
     unsigned nbytes;
@@ -141,7 +188,7 @@ do_check( PKT_secret_key *sk )
 		    log_bug("gcry_mpi_scan failed in do_check: rc=%d\n", res);
 
 		csum += checksum_mpi( sk->skey[i] );
-		gcry_free( buffer );
+		gcry_free( data );
 	    }
 	}
 	gcry_cipher_close( cipher_hd );
@@ -152,7 +199,7 @@ do_check( PKT_secret_key *sk )
 	    return G10ERR_BAD_PASS;
 	}
 	/* the checksum may fail, so we also check the key itself */
-	res = pubkey_check_secret_key( sk->pubkey_algo, sk->skey );
+	res = pk_check_secret_key( sk->pubkey_algo, sk->skey );
 	if( res ) {
 	    copy_secret_key( sk, save_sk );
 	    free_secret_key( save_sk );
@@ -165,6 +212,7 @@ do_check( PKT_secret_key *sk )
 	csum = 0;
 	for(i=pubkey_get_npkey(sk->pubkey_algo);
 		i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+	    assert( !gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
 	    csum += checksum_mpi( sk->skey[i] );
 	}
 	if( csum != sk->csum )

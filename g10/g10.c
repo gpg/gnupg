@@ -488,7 +488,7 @@ make_username( const char *string )
 static void
 register_extension( const char *mainpgm, const char *fname )
 {
-  #warning fixme add resgitser cipher extension
+  #warning fixme add register cipher extension
   #if 0
     if( *fname != '/' ) { /* do tilde expansion etc */
 	char *tmp;

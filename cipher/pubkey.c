@@ -95,6 +95,7 @@ static struct {
 	{  NULL }};
 
 
+static int pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
 static int pubkey_sign( int algo, MPI *resarr, MPI hash, MPI *skey );
 static int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 		      int (*cmp)(void *, MPI), void *opaque );
@@ -432,7 +433,7 @@ pubkey_get_nenc( int algo )
 }
 
 
-int
+static int
 pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
 {
     int i;
@@ -447,7 +448,7 @@ pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
 }
 
 
-int
+static int
 pubkey_check_secret_key( int algo, MPI *skey )
 {
     int i;
@@ -467,7 +468,7 @@ pubkey_check_secret_key( int algo, MPI *skey )
  * should be an array of MPIs of size PUBKEY_MAX_NENC (or less if the
  * algorithm allows this - check with pubkey_get_nenc() )
  */
-int
+static int
 pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 {
     int i, rc;
@@ -504,12 +505,12 @@ pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
  * result is a pointer to a mpi variable which will receive a
  * newly allocated mpi or NULL in case of an error.
  */
-int
+static int
 pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 {
     int i, rc;
 
-    *result = NULL; /* so the caller can always do an mpi_free */
+    *result = NULL; /* so the caller can always do a mpi_free */
     if( DBG_CIPHER ) {
 	log_debug("pubkey_decrypt: algo=%d\n", algo );
 	for(i=0; i < pubkey_get_nskey(algo); i++ )
@@ -751,20 +752,196 @@ sexp_to_sig( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
 }
 
 
-
-
-
-int
-gcry_pk_encrypt( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP pkey )
+/****************
+ * Take sexp and return an array of MPI as used for our internal decrypt
+ * function.
+ */
+static int
+sexp_to_enc( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
 {
-	/* ... */
+    GCRY_SEXP list, l2;
+    const char *name;
+    const char *s;
+    size_t n;
+    int i, idx;
+    int algo;
+    const char *elems;
+    GCRY_MPI *array;
+
+    /* check that the first element is valid */
+    list = gcry_sexp_find_token( sexp, "enc-val" , 0 );
+    if( !list )
+	return GCRYERR_INV_OBJ; /* Does not contain a encrypted value object */
+    list = gcry_sexp_cdr( list );
+    if( !list )
+	return GCRYERR_NO_OBJ; /* no cdr for the data object */
+    name = gcry_sexp_car_data( list, &n );
+    if( !name )
+	return GCRYERR_INV_OBJ; /* invalid structure of object */
+    for(i=0; (s=enc_info_table[i].name); i++ ) {
+	if( strlen(s) == n && !memcmp( s, name, n ) )
+	    break;
+    }
+    if( !s )
+	return GCRYERR_INV_PK_ALGO; /* unknown algorithm */
+    algo = enc_info_table[i].algo;
+    elems = enc_info_table[i].elements;
+    array = g10_calloc( (strlen(elems)+1) , sizeof *array );
+    if( !array )
+	return GCRYERR_NO_MEM;
+
+    idx = 0;
+    for(s=elems; *s; s++, idx++ ) {
+	l2 = gcry_sexp_find_token( list, s, 1 );
+	if( !l2 ) {
+	    g10_free( array );
+	    return GCRYERR_NO_OBJ; /* required parameter not found */
+	}
+	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	if( !array[idx] ) {
+	    g10_free( array );
+	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
+	}
+    }
+
+    *retarray = array;
+    *retalgo = algo;
+
     return 0;
 }
 
+
+/****************
+ * Do a PK encrypt operation
+ *
+ * Caller has to provide a public key as the SEXP pkey and data as a SEXP
+ * with just one MPI in it.  The function returns a a sexp which may
+ * be passed tp to pk_decrypt.
+ * Later versions of this functions may take more complex input data.
+ *
+ * Returns: 0 or an errorcode.
+ *
+ * s_data = (<mpi>)
+ * s_pkey = <key-as-defined-in-sexp_to_key>
+ * r_ciph = (enc-val
+ *	      (<algo>
+ *		(<param_name1> <mpi>)
+ *		...
+ *		(<param_namen> <mpi>)
+ *	      ))
+ */
 int
-gcry_pk_decrypt( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey )
+gcry_pk_encrypt( GCRY_SEXP *r_ciph, GCRY_SEXP s_data, GCRY_SEXP s_pkey )
 {
-	/* ... */
+    MPI *pkey, data, *ciph;
+    const char *algo_name, *algo_elems;
+    GCRY_SEXP *s_elems;
+    int i, rc, algo;
+
+    /* get the key */
+    rc = sexp_to_key( s_pkey, 0, &pkey, &algo );
+    if( rc ) {
+	return rc;
+    }
+
+    /* get the name and the required size of the return value */
+    for(i=0; (algo_name = enc_info_table[i].name); i++ ) {
+	if( enc_info_table[i].algo == algo )
+	    break;
+    }
+    if( !algo_name ) {
+	release_mpi_array( pkey );
+	return GCRYERR_INV_PK_ALGO;
+    }
+    algo_elems = enc_info_table[i].elements;
+
+    /* get the stuff we want to encrypt */
+    data = gcry_sexp_car_mpi( s_data, 0 );
+    if( !data ) {
+	release_mpi_array( pkey );
+	return GCRYERR_INV_OBJ;
+    }
+
+    /* Now we can encrypt data to ciph */
+    ciph = g10_xcalloc( (strlen(algo_elems)+1) , sizeof *ciph );
+    rc = pubkey_encrypt( algo, ciph, data, pkey );
+    release_mpi_array( pkey );
+    mpi_free( data );
+    if( rc ) {
+	g10_free( ciph );
+	return rc;
+    }
+
+    /* We did it.  Now build the return list */
+    s_elems = g10_xcalloc( (strlen(algo_elems)+2), sizeof *s_elems );
+    s_elems[0] = SEXP_NEW( algo_name, 0 );
+    for(i=0; algo_elems[i]; i++ ) {
+	char tmp[2];
+	tmp[0] = algo_elems[i];
+	tmp[1] = 0;
+	s_elems[i+1] = gcry_sexp_new_name_mpi( tmp, ciph[i] );
+    }
+    release_mpi_array( ciph );
+    g10_free( ciph );
+
+    *r_ciph = SEXP_CONS( SEXP_NEW( "enc-val", 0 ),
+			 gcry_sexp_alist( s_elems ) );
+
+    g10_free( s_elems );
+    return 0;
+}
+
+/****************
+ * Do a PK decrypt operation
+ *
+ * Caller has to provide a secret key as the SEXP skey and data in a format
+ * as created by gcry_pk_encrypt.  Currently the function returns
+ * simply a MPI.  Later versions of this functions may return a more
+ * complex data structure.
+ *
+ * Returns: 0 or an errorcode.
+ *
+ * s_data = (enc-val
+ *	      (<algo>
+ *		(<param_name1> <mpi>)
+ *		...
+ *		(<param_namen> <mpi>)
+ *	      ))
+ * s_skey = <key-as-defined-in-sexp_to_key>
+ * r_plain= (<mpi>)   FIXME: Return a more structered value
+ */
+int
+gcry_pk_decrypt( GCRY_SEXP *r_plain, GCRY_SEXP s_data, GCRY_SEXP s_skey )
+{
+    MPI *skey, *data, plain;
+    int rc, algo, dataalgo;
+
+    rc = sexp_to_key( s_skey, 1, &skey, &algo );
+    if( rc ) {
+	return rc;
+    }
+    rc = sexp_to_enc( s_data, &data, &dataalgo );
+    if( rc ) {
+	release_mpi_array( skey );
+	return rc;
+    }
+    if( algo != dataalgo ) {
+	release_mpi_array( skey );
+	release_mpi_array( data );
+	return -1; /* fixme: add real errornumber - algo does not match */
+    }
+
+    rc = pubkey_decrypt( algo, &plain, data, skey );
+    if( rc ) {
+	release_mpi_array( skey );
+	release_mpi_array( data );
+	return -1; /* fixme: add real errornumber - decryption failed */
+    }
+
+    *r_plain = gcry_sexp_new_mpi( plain );
+    mpi_free( plain );
+    release_mpi_array( data );
+    release_mpi_array( skey );
     return 0;
 }
 
@@ -800,7 +977,7 @@ gcry_pk_sign( GCRY_SEXP *r_sig, GCRY_SEXP s_hash, GCRY_SEXP s_skey )
     MPI *result;
     int i, algo, rc;
     const char *algo_name, *algo_elems;
-    GCRY_SEXP s;
+    GCRY_SEXP *s_elems;
 
     rc = sexp_to_key( s_skey, 1, &skey, &algo );
     if( rc )
@@ -832,16 +1009,21 @@ gcry_pk_sign( GCRY_SEXP *r_sig, GCRY_SEXP s_hash, GCRY_SEXP s_skey )
 	return rc;
     }
 
-    s = SEXP_NEW( algo_name, 0 );
+    s_elems = g10_xcalloc( (strlen(algo_elems)+2), sizeof *s_elems );
+    s_elems[0] = SEXP_NEW( algo_name, 0 );
     for(i=0; algo_elems[i]; i++ ) {
 	char tmp[2];
 	tmp[0] = algo_elems[i];
 	tmp[1] = 0;
-	s = gcry_sexp_append( s, gcry_sexp_new_name_mpi( tmp, result[i] ) );
+	s_elems[i+1] = gcry_sexp_new_name_mpi( tmp, result[i] );
     }
+    release_mpi_array( result );
     g10_free( result );
-    *r_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ), s );
-    gcry_sexp_dump( *r_sig );
+
+    *r_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ),
+			gcry_sexp_alist( s_elems ) );
+
+    g10_free( s_elems );
     return 0;
 }
 
@@ -888,6 +1070,52 @@ gcry_pk_verify( GCRY_SEXP s_sig, GCRY_SEXP s_hash, GCRY_SEXP s_pkey )
     return rc;
 }
 
+
+/****************
+ * Test a key.	This may be used either for a public or a secret key
+ * to see whether internal structre is valid.
+ *
+ * Returns: 0 or an errorcode.
+ *
+ * s_key = <key-as-defined-in-sexp_to_key>
+ */
+int
+gcry_pk_testkey( GCRY_SEXP s_key )
+{
+    MPI *key;
+    int rc, algo;
+
+    /* Note we currently support only secret key checking */
+    rc = sexp_to_key( s_key, 1, &key, &algo );
+    if( rc ) {
+	return rc;
+    }
+
+    rc = pubkey_check_secret_key( algo, key );
+    release_mpi_array( key );
+    return rc;
+}
+
+
+/****************
+ * Create a public key pair and return it in r_key.
+ * How the key is created depends on s_parms:
+ * (GNU
+ *  (genkey
+ *   (algo
+ *     (parameter_name_1 ....)
+ *	....
+ *     (parameter_name_n ....)
+ * )))
+ * The key is returned in a format depending on the
+ * algorithm. Both, private and secret key are returned
+ * and optionally some additional informatin.
+ */
+int
+gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
+{
+    return GCRYERR_NOT_IMPL;
+}
 
 /****************
  * Get the number of nbits from the public key

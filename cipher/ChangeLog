@@ -1,3 +1,14 @@
+Mon Jan 24 22:24:38 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* pubkey.c (gcry_pk_decrypt): Implemented.
+	(gcry_pk_encrypt): Implemented.
+	(gcry_pk_testkey): New.
+	(gcry_pk_genkey): New.
+	(pubkey_decrypt): Made static.
+	(pubkey_encrypt): Ditto.
+	(pubkey_check_secret_key): Ditto.
+	(pubkey_generate): Ditto.
+
 Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* pubkey.c (pubkey_nbits): Removed and replaced by ...

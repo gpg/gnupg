@@ -204,9 +204,10 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     MPI *factors;
 
     assert( is_ELGAMAL(algo) );
-    rc = pubkey_generate( algo, nbits, skey, &factors );
+    /*rc = pubkey_generate( algo, nbits, skey, &factors );*/
+    rc = gcry_pk_genkey( NULL, NULL );
     if( rc ) {
-	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
+	log_error("pk_genkey failed: %s\n", g10_errstr(rc) );
 	return rc;
     }
 
@@ -281,7 +282,8 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     if( nbits > 1024 )
 	nbits = 1024;
 
-    rc = pubkey_generate( GCRY_PK_DSA, nbits, skey, &factors );
+    /*rc = pubkey_generate( GCRY_PK_DSA, nbits, skey, &factors );*/
+    rc = gcry_pk_genkey( NULL, NULL );
     if( rc ) {
 	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
 	return rc;

@@ -608,6 +608,8 @@ gcry_mpi_aprint( enum gcry_mpi_format format, void **buffer, size_t *nbytes,
 	g10_free(*buffer);
 	*buffer = NULL;
     }
+    else if( nbytes )
+	*nbytes = n;
     return rc;
 }
 

@@ -41,6 +41,52 @@
 static int encode_simple( const char *filename, int mode );
 static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 
+/****************
+ * Emulate our old PK interface here - sometime in the future we might
+ * change the internal design to directly fit to libgcrypt.
+ */
+static int
+pk_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
+{
+    GCRY_SEXP s_ciph, s_data, s_pkey;
+    int rc;
+
+    /* make a sexp from pkey */
+    if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	s_pkey = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "elg", 3 ),
+			  gcry_sexp_new_name_mpi( "p", pkey[0] ),
+			  gcry_sexp_new_name_mpi( "g", pkey[1] ),
+			  gcry_sexp_new_name_mpi( "y", pkey[2] ),
+			  NULL ));
+    }
+    else
+	return G10ERR_PUBKEY_ALGO;
+
+    /* put the data into a simple list */
+    s_data = gcry_sexp_new_mpi( data );
+
+    /* pass it to libgcrypt */
+    rc = gcry_pk_encrypt( &s_ciph, s_data, s_pkey );
+    gcry_sexp_release( s_data );
+    gcry_sexp_release( s_pkey );
+
+    if( rc )
+	;
+    else { /* add better error handling or make gnupg use S-Exp directly */
+	GCRY_SEXP list = gcry_sexp_find_token( s_ciph, "a" , 0 );
+	assert( list );
+	resarr[0] = gcry_sexp_cdr_mpi( list, 0 );
+	assert( resarr[0] );
+	list = gcry_sexp_find_token( s_ciph, "b" , 0 );
+	assert( list );
+	resarr[1] = gcry_sexp_cdr_mpi( list, 0 );
+	assert( resarr[1] );
+    }
+
+    gcry_sexp_release( s_ciph );
+    return rc;
+}
 
 
 /****************
@@ -464,7 +510,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	 * number of bits we have to use.  We then encode the session
 	 * key in some way and we get it back in the big intger value
 	 * FRAME.  Then we use FRAME, the public key PK->PKEY and the
-	 * algorithm number PK->PUBKEY_ALGO and pass it to pubkey_encrypt
+	 * algorithm number PK->PUBKEY_ALGO and pass it to pk_encrypt
 	 * which returns the encrypted value in the array ENC->DATA.
 	 * This array has a size which depends on the used algorithm
 	 * (e.g. 2 for ElGamal).  We don't need frame anymore because we
@@ -473,7 +519,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	 */
 	frame = encode_session_key( dek, pubkey_nbits( pk->pubkey_algo,
 							  pk->pkey ) );
-	rc = pubkey_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );
+	rc = pk_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );
 	mpi_release( frame );
 	if( rc )
 	    log_error("pubkey_encrypt failed: %s\n", g10_errstr(rc) );
