@@ -57,6 +57,7 @@ static struct {
 static int import( IOBUF inp, int fast, const char* fname, int allow_secret );
 static void print_stats(void);
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
+static void remove_bad_stuff (KBNODE keyblock);
 static int import_one( const char *fname, KBNODE keyblock, int fast );
 static int import_secret_one( const char *fname, KBNODE keyblock, int allow );
 static int import_revoke_cert( const char *fname, KBNODE node );
@@ -171,6 +172,7 @@ import( IOBUF inp, int fast, const char* fname, int allow_secret )
     }
 
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
+        remove_bad_stuff (keyblock);
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
 	    rc = import_one( fname, keyblock, fast );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
@@ -346,6 +348,21 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
     free_packet( pkt );
     m_free( pkt );
     return rc;
+}
+
+
+static void
+remove_bad_stuff (KBNODE keyblock)
+{
+    KBNODE node;
+
+    for (node=keyblock; node; node = node->next ) {
+        if( node->pkt->pkttype == PKT_SIGNATURE ) {
+            /* delete the subpackets we use for the verification cache */
+            delete_sig_subpkt (node->pkt->pkt.signature->unhashed_data,
+                               SIGSUBPKT_PRIV_VERIFY_CACHE);
+        }
+    }
 }
 
 

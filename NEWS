@@ -1,3 +1,12 @@
+        
+    * The verification status of self-signatures are now cached. To increase
+      the speed of key list operations for existing keys you can do the
+      following in yout GnuPG homedir (~/.gnupg): 
+        $ cp pubring.gpg pubring.gpg.save
+        $ gpg --export-all >x
+        $ rm pubring.gpg
+        $ gpg --import x
+      Note, that only v4 keys (i.e no old RSA keys) benefit from this caching.
 
     * WARNING: The semantics of --verify have changed to address a problem
       with detached signature detection. --verify now ignores signed material

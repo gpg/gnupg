@@ -648,13 +648,83 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
     return NULL;
 }
 
+/****************
+ * Delete all subpackets of type REQTYPE and return the number of bytes
+ * which are now unused at the end of the buffer.
+ */
+size_t
+delete_sig_subpkt( byte *buffer, sigsubpkttype_t reqtype )
+{
+    int buflen, orig_buflen;
+    sigsubpkttype_t type;
+    byte *bufstart, *orig_buffer;
+    size_t n;
+    size_t unused = 0;
+    int okay = 0;
+
+    if( !buffer )
+	return 0;
+    orig_buffer = buffer;
+    buflen = (*buffer << 8) | buffer[1];
+    buffer += 2;
+    orig_buflen = buflen;
+    for(;;) {
+	if( !buflen ) {
+            okay = 1;
+            break;
+        }
+	bufstart = buffer;
+	n = *buffer++; buflen--;
+	if( n == 255 ) {
+	    if( buflen < 4 )
+		break;
+	    n = (buffer[0] << 24) | (buffer[1] << 16)
+				  | (buffer[2] << 8) | buffer[3];
+	    buffer += 4;
+	    buflen -= 4;
+	}
+	else if( n >= 192 ) {
+	    if( buflen < 2 )
+		break;
+	    n = (( n - 192 ) << 8) + *buffer + 192;
+	    buffer++;
+	    buflen--;
+	}
+	if( buflen < n )
+	    break;
+	type = *buffer & 0x7f;
+	if( type == reqtype ) {
+	    buffer++;
+            buflen--;
+	    n--;
+	    if( n > buflen )
+		break;
+            memmove (bufstart, buffer + n, n + (buffer-bufstart)); /* shift */
+            unused += n + (buffer-bufstart);
+            buffer = bufstart;
+            buflen -= n;
+	}
+        else {
+            buffer += n; buflen -=n;
+        }
+    }
+
+    if (!okay)
+        log_error("delete_subpkt: buffer shorter than subpacket\n");
+    assert (unused <= orig_buflen);
+    orig_buflen -= unused;
+    orig_buffer[0] = (orig_buflen >> 8) & 0xff;
+    orig_buffer[1] = orig_buflen & 0xff;
+    return unused;
+}
+
 
 /****************
  * Create or update a signature subpacket for SIG of TYPE.
  * This functions knows where to put the data (hashed or unhashed).
- * The function may move data from the unhased part to the hashed one.
+ * The function may move data from the unhashed part to the hashed one.
  * Note: All pointers into sig->[un]hashed are not valid after a call
- * to this function.  The data to but into the subpaket should be
+ * to this function.  The data to put into the subpaket should be
  * in buffer with a length of buflen.
  */
 void
@@ -666,6 +736,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
     int found=0;
     int critical, hashed, realloced;
     size_t n, n0;
+    size_t unused = 0;
 
     critical = (type & SIGSUBPKT_FLAG_CRITICAL);
     type &= ~SIGSUBPKT_FLAG_CRITICAL;
@@ -676,6 +747,12 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 	found = 1;
     else if( (data = find_subpkt( sig->unhashed_data, type, &hlen, &dlen )))
 	found = 2;
+
+    if (found==2 && type == SIGSUBPKT_PRIV_VERIFY_CACHE) {
+        unused = delete_sig_subpkt (sig->unhashed_data, type);
+        assert (unused);
+        found = 0;
+    }
 
     if( found )
 	log_bug("build_sig_packet: update nyi\n");
@@ -688,7 +765,6 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 
     switch( type ) {
       case SIGSUBPKT_SIG_CREATED:
-      case SIGSUBPKT_PRIV_ADD_SIG:
       case SIGSUBPKT_PREF_SYM:
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
@@ -713,9 +789,17 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 	n0 = sig->unhashed_data ? ((*sig->unhashed_data << 8)
 				      | sig->unhashed_data[1]) : 0;
 	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
-	realloced = !!sig->unhashed_data;
-	data = sig->unhashed_data ? m_realloc( sig->unhashed_data, n+2 )
-				  : m_alloc( n+2 );
+        if ( sig->unhashed_data && (nlen + 1 + buflen) <= unused ) {
+            /* does fit into the freed area */
+            data = sig->unhashed_data;
+            realloced = 1;
+            log_debug ("updating area of type %d\n", type );
+        }
+        else {
+            realloced = !!sig->unhashed_data;
+            data = sig->unhashed_data ? m_realloc( sig->unhashed_data, n+2 )
+                                      : m_alloc( n+2 );
+        }
     }
 
     if( critical )

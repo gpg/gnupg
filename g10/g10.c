@@ -108,6 +108,7 @@ enum cmd_and_opt_values { aNull = 0,
     aEnArmor,
     aGenRandom,
     aPipeMode,
+    aRefreshCaches,
 
     oTextmode,
     oFingerprint,

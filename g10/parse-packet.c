@@ -848,8 +848,8 @@ dump_sig_subpkt( int hashed, int type, int critical,
 		printf("%02X", buffer[i] );
 	}
         break;
-      case SIGSUBPKT_PRIV_ADD_SIG:
-	p = "signs additional user ID";
+      case SIGSUBPKT_PRIV_VERIFY_CACHE:
+	p = "verification cache";
 	break;
       default: p = "?"; break;
     }
@@ -900,13 +900,17 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
           if ( n != 1 )
               break;
           return 0;   
-      case SIGSUBPKT_PRIV_ADD_SIG:
-	/* because we use private data, we check the GNUPG marker */
-	if( n < 24 )
+      case SIGSUBPKT_PRIV_VERIFY_CACHE:
+        /* "GPG" 0x00 <mode> <stat>
+         * where mode == 1: valid data, stat == 0: invalid signature
+         * stat == 1: valid signature 
+	 * (because we use private data, we check our marker) */
+	if( n < 6 )
 	    break;
-	if( buffer[0] != 'G' || buffer[1] != 'P' || buffer[2] != 'G' )
+	if( buffer[0] != 'G' || buffer[1] != 'P'
+            || buffer[2] != 'G' || buffer[3] )
 	    return -2;
-	return 3;
+	return 4;
       default: return -1;
     }
     return -3;

@@ -1,3 +1,19 @@
+2001-03-05  Werner Koch  <wk@gnupg.org>
+
+	* packet.h: Replaced sigsubpkt_t value 101 by PRIV_VERIFY_CACHE.
+	We have never used the old value, so we can do this without any harm.
+	* parse-packet.c (dump_sig_subpkt): Ditto.
+	(parse_one_sig_subpkt): Parse that new sub packet.
+	* build-packet.c (build_sig_subpkt): Removed the old one from the
+	hashed area.
+	(delete_sig_subpkt): New.
+	(build_sig_subpkt): Allow an update of that new subpkt.
+	* sig-check.c (check_key_signature2): Add verification caching
+	(cache_selfsig_result): New.
+	* export.c (do_export_stream): Delete that sig subpkt before exporting.
+	* import.c (remove_bad_stuff): New.
+	(import): Apply that function to all imported data 
+
 2001-03-03  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c: Introduced a new lookup context flag "exact" and used 

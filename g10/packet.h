@@ -272,7 +272,7 @@ typedef enum {
     SIGSUBPKT_KEY_FLAGS    =27, /* key flags */
     SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
     SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
-    SIGSUBPKT_PRIV_ADD_SIG =101,/* signatur is also valid for this uid */
+    SIGSUBPKT_PRIV_VERIFY_CACHE =101, /* cache verification result */
 
     SIGSUBPKT_FLAG_CRITICAL=128
 } sigsubpkttype_t;
@@ -331,6 +331,7 @@ void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
 void build_sig_subpkt_from_sig( PKT_signature *sig );
+size_t delete_sig_subpkt( byte *buffer, sigsubpkttype_t type );
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );

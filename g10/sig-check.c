@@ -437,6 +437,31 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
     }
 }
 
+static void
+cache_selfsig_result ( PKT_signature *sig, int result )
+{
+    byte buf[6];
+
+    buf[0] = 'G';
+    buf[1] = 'P';
+    buf[2] = 'G';
+    buf[3] = 0;
+    if ( !result ) {
+        buf[4] = 1; /* mark cache valid */
+        buf[5] = 1; /* mark signature valid */
+    }
+    else if ( result == G10ERR_BAD_SIGN ) {
+        buf[4] = 1; /* mark cache valid */
+        buf[5] = 0; /* mark signature invalid */
+    }
+    else {
+        buf[4] = 0; /* mark cache invalid */
+        buf[5] = 0; 
+    }
+
+    build_sig_subpkt (sig, SIGSUBPKT_PRIV_VERIFY_CACHE, buf, 6 );
+}
+
 /****************
  * check the signature pointed to by NODE. This is a key signature.
  * If the function detects a self-signature, it uses the PK from
@@ -477,13 +502,33 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 		      sig->flags.valid? "good":"bad" );
   #endif
 
+    /* Check whether we have cached the result of a previous signature check.*/
+    {
+        const byte *p;
+        size_t len;
+
+        p = parse_sig_subpkt( sig->unhashed_data,
+                              SIGSUBPKT_PRIV_VERIFY_CACHE, &len );
+        if ( p && len >= 2 && p[0] == 1 ) { /* cache hit */
+	    if( is_selfsig ) {	
+		u32 keyid[2];	
+
+		keyid_from_pk( pk, keyid );
+		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+		    *is_selfsig = 1;
+	    }
+            return p[1] == 1? 0 : G10ERR_BAD_SIGN;
+        }
+    }
+
     if( (rc=check_digest_algo(algo)) )
 	return rc;
 
-    if( sig->sig_class == 0x20 ) {
+    if( sig->sig_class == 0x20 ) { /* key revocation */
 	md = md_open( algo, 0 );
 	hash_public_key( md, pk );
 	rc = do_check( pk, sig, md, r_expired );
+        cache_selfsig_result ( sig, rc );
 	md_close(md);
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
@@ -494,6 +539,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md, r_expired );
+            cache_selfsig_result ( sig, rc );
 	    md_close(md);
 	}
 	else {
@@ -516,6 +562,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md, r_expired );
+            cache_selfsig_result ( sig, rc );
 	    md_close(md);
 	}
 	else {
@@ -537,6 +584,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 		if( is_selfsig )
 		    *is_selfsig = 1;
 		rc = do_check( pk, sig, md, r_expired );
+                cache_selfsig_result ( sig, rc );
 	    }
 	    else {
 		rc = do_signature_check( sig, md, r_expiredate, r_expired );
