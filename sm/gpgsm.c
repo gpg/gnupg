@@ -438,6 +438,10 @@ int gpgsm_errors_seen = 0;
 /* It is possible that we are currentlu running under setuid permissions */
 static int maybe_setuid = 1;
 
+/* Helper to implement --debug-level and --debug*/
+static const char *debug_level;
+static unsigned int debug_value;
+
 /* Option --enable-special-filenames */
 static int allow_special_filenames;
 
@@ -580,45 +584,44 @@ wrong_args (const char *text)
 }
 
 
-/* Setup the debugging.  With a LEVEL of NULL only the active debug
-   flags are propagated to the subsystems.  With LEVEL set, a specific
-   set of debug flags is set; thus overriding all flags already
-   set. */
+/* Setup the debugging.  With a DEBUG_LEVEL of NULL only the active
+   debug flags are propagated to the subsystems.  With DEBUG_LEVEL
+   set, a specific set of debug flags is set; and individual debugging
+   flags will be added on top.  */
 static void
-set_debug (const char *level)
+set_debug (void)
 {
-  if (!level)
+  if (!debug_level)
     ;
-  else if (!strcmp (level, "none"))
+  else if (!strcmp (debug_level, "none"))
     opt.debug = 0;
-  else if (!strcmp (level, "basic"))
+  else if (!strcmp (debug_level, "basic"))
     opt.debug = DBG_ASSUAN_VALUE;
-  else if (!strcmp (level, "advanced"))
+  else if (!strcmp (debug_level, "advanced"))
     opt.debug = DBG_ASSUAN_VALUE|DBG_X509_VALUE;
-  else if (!strcmp (level, "expert"))
+  else if (!strcmp (debug_level, "expert"))
     opt.debug = (DBG_ASSUAN_VALUE|DBG_X509_VALUE
                  |DBG_CACHE_VALUE|DBG_CRYPTO_VALUE);
-  else if (!strcmp (level, "guru"))
+  else if (!strcmp (debug_level, "guru"))
     opt.debug = ~0;
   else
     {
-      log_error (_("invalid debug-level `%s' given\n"), level);
+      log_error (_("invalid debug-level `%s' given\n"), debug_level);
       gpgsm_exit(2);
     }
 
+  opt.debug |= debug_value;
 
   if (opt.debug && !opt.verbose)
-    {
-      opt.verbose = 1;
-      gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
-    }
-  if (opt.debug && opt.quiet)
+    opt.verbose = 1;
+  if (opt.debug)
     opt.quiet = 0;
 
   if (opt.debug & DBG_MPI_VALUE)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
   if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
+  gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 }
  
 
@@ -695,7 +698,6 @@ main ( int argc, char **argv)
   int greeting = 0;
   int nogreeting = 0;
   int debug_wait = 0;
-  const char *debug_level = NULL;
   int use_random_seed = 1;
   int with_fpr = 0;
   char *def_digest_string = NULL;
@@ -1010,8 +1012,8 @@ main ( int argc, char **argv)
 
         case oKeyring: append_to_strlist (&nrings, pargs.r.ret_str); break;
 
-        case oDebug: opt.debug |= pargs.r.ret_ulong; break;
-        case oDebugAll: opt.debug = ~0; break;
+        case oDebug: debug_value |= pargs.r.ret_ulong; break;
+        case oDebugAll: debug_value = ~0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
         case oDebugAllowCoreDump:
@@ -1201,7 +1203,7 @@ main ( int argc, char **argv)
 
   gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
 
-  set_debug (debug_level);
+  set_debug ();
 
   /* Although we alwasy use gpgsm_exit, we better install a regualr
      exit handler so that at least the secure memory gets wiped

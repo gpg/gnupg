@@ -42,7 +42,11 @@
 
 #ifndef HAVE_BYTE_TYPEDEF
   #undef byte	    /* maybe there is a macro with this name */
+/* Windows typedefs byte in the rpc headers.  Avoid warning about
+   double definition.  */
+#if !(defined(_WIN32) && defined(cbNDRContext))
   typedef unsigned char byte;
+#endif
   #define HAVE_BYTE_TYPEDEF
 #endif
 

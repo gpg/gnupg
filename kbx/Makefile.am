@@ -43,11 +43,8 @@ common_sources = \
 
 libkeybox_a_SOURCES = $(common_sources)
 
+# Note that libcommon is only required to resolve the LIBOBJS.
 kbxutil_SOURCES = kbxutil.c $(common_sources)
 kbxutil_LDADD   = ../jnlib/libjnlib.a  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
-                  -lgpg-error @LIBINTL@ 
-
-
-
-
+                  -lgpg-error $(LIBINTL) ../common/libcommon.a
 

@@ -22,6 +22,7 @@
 #include <config.h>
 #endif
 #include <stdio.h>
+#include <sys/types.h>  /* Defines off_t under W32.  */
 
 off_t
 ftello (FILE *stream)

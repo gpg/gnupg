@@ -41,6 +41,8 @@ libcommon_a_SOURCES = \
 	iobuf.c iobuf.h \
 	ttyio.c ttyio.h \
 	asshelp.c asshelp.h \
+	simple-gettext.c \
+	w32reg.c \
 	signal.c \
 	dynload.h
 

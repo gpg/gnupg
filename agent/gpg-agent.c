@@ -244,12 +244,12 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 }
 
 
-/* Setup the debugging.  With a LEVEL of NULL only the active debug
-   flags are propagated to the subsystems.  With LEVEL set, a specific
-   set of debug flags is set; thus overriding all flags already
-   set. Note that we don't fail here, because it is important to keep
-   gpg-agent running even after re-reading the options due to a
-   SIGHUP. */
+/* Setup the debugging.  With the global variable DEBUG_LEVEL set to NULL
+   only the active debug flags are propagated to the subsystems.  With
+   DEBUG_LEVEL set, a specific set of debug flags is set; thus overriding
+   all flags already set. Note that we don't fail here, because it is
+   important to keep gpg-agent running even after re-reading the
+   options due to a SIGHUP. */
 static void
 set_debug (void)
 {

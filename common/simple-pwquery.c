@@ -31,8 +31,12 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#else
 #include <sys/socket.h>
 #include <sys/un.h>
+#endif
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -255,6 +259,9 @@ agent_send_all_options (int fd)
 static int
 agent_open (int *rfd)
 {
+#ifdef _WIN32
+  return SPWQ_NO_AGENT;  /* FIXME */
+#else
   int rc;
   int fd;
   char *infostr, *p;
@@ -346,6 +353,7 @@ agent_open (int *rfd)
 
   *rfd = fd;
   return 0;
+#endif
 }
 
 

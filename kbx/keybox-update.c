@@ -66,7 +66,7 @@ create_tmp_file (const char *template,
       strcpy (tmpfname + strlen (template)-4, EXTSEP_S "tmp");
     }
   else 
-    { /* file does not end with kbx; hmmm */
+    { /* File does not end with kbx; hmmm. */
       bakfname = xtrymalloc ( strlen (template) + 5);
       if (!bakfname)
         return gpg_error (gpg_err_code_from_errno (errno));

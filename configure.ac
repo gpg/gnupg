@@ -343,7 +343,7 @@ GNUPG_CHECK_DOCBOOK_TO_TEXI
 
 try_gettext=yes
 have_dosish_system=no
-case "${target}" in
+case "${host}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
@@ -660,7 +660,7 @@ fi
 
 AC_SUBST(GPGKEYS_MAILTO)
 
-case "${target}" in
+case "${host}" in
     *-*-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
         ;;
@@ -782,7 +782,7 @@ AC_REPLACE_FUNCS(mkdtemp)
 AC_REPLACE_FUNCS(fseeko ftello)
 AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(putc_unlocked)
-
+AC_REPLACE_FUNCS(strsep)
 
 
 
@@ -970,7 +970,7 @@ GNUPG_CHECK_GNUMAKE
 
 # add some extra libs here so that previous tests don't fail for
 # mysterious reasons - the final link step should bail out. 
-case "${target}" in
+case "${host}" in
     *-*-mingw32*)
         W32LIBS="-lwsock32"
         ;;
@@ -1037,6 +1037,14 @@ if test "$build_agent_only" = "yes" ; then
   build_gpgsm=no
   build_scdaemon=no
 fi
+
+# We don't yet want to build some parts for W32
+case "${host}" in 
+    *-mingw32*) 
+      build_gpg=no
+      ;;
+esac
+
 
 AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
 AM_CONDITIONAL(BUILD_GPGSM, test "$build_gpgsm" = "yes")
@@ -1140,7 +1148,7 @@ AC_OUTPUT
 echo "
         GnuPG v${VERSION} has been configured as follows:
         
-        Platform:  $PRINTABLE_OS_NAME ($target)
+        Platform:  $PRINTABLE_OS_NAME ($host)
 
         OpenPGP:   $build_gpg
         S/MIME:    $build_gpgsm

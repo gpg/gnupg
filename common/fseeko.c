@@ -22,6 +22,7 @@
 #include <config.h>
 #endif
 #include <stdio.h>
+#include <sys/types.h>  /* Defines off_t under W32.  */
 
 int
 fseeko (FILE *stream, off_t off, int whence)

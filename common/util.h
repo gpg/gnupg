@@ -144,7 +144,9 @@ int is_file_compressed (const char *s, int *ret_rc);
 int vasprintf (char **result, const char *format, va_list args);
 int asprintf (char **result, const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
 #endif
-
+#ifndef HAVE_STRSEP
+char *strsep (char **stringp, const char *delim);
+#endif
 
 
 /*-- some macros to replace ctype ones and avoid locale problems --*/

@@ -1,3 +1,10 @@
+2004-11-29  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (set_debug): Changed to use a globals DEBUG_LEVEL and
+	DEBUG_VALUE.
+	(main): Made DEBUG_LEVEL global and introduced DEBUG_VALUE.  This
+	now allows to add debug flags on top of a debug-level setting.
+
 2004-11-23  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c: New option --prefer-system-dirmngr.

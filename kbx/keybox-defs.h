@@ -31,8 +31,11 @@
 
 /* We include the type defintions from jnlib instead of defining our
    owns here.  This will not allow us build KBX in a standalone way
-   but tehre is currently no need for it anyway. */
+   but there is currently no need for it anyway.  Same goes for
+   stringhelp.h which for example provides a replacement for stpcpy -
+   fixme: Better the LIBOBJ mechnism. */
 #include "../jnlib/types.h"
+#include "../jnlib/stringhelp.h"
 
 #include "keybox.h"
 

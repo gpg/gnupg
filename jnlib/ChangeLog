@@ -1,3 +1,7 @@
+2004-11-26  Werner Koch  <wk@g10code.com>
+
+	* logging.c [_WIN32]: Don't include socket headers.
+
 2004-11-30  Timo Schulz  <ts@g10code.com>
 
 	* w32-afunix.c: New. AF_UNIX emulation for W32.
