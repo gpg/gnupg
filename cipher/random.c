@@ -116,16 +116,7 @@ initialize()
     keypool = secure_alloc ? m_alloc_secure_clear(POOLSIZE+BLOCKLEN)
 			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
     is_initialized = 1;
-
-  #if	USE_RNDLINUX
-    rndlinux_constructor();
-  #elif USE_RNDUNIX
-    rndunix_constructor();
-  #elif USE_RNDW32
-  #elif USE_RNDOS2
-  #elif USE_RNDATARI
-  #elif USE_RNDMVS
-  #endif
+    cipher_modules_constructor();
 }
 
 void

@@ -1,3 +1,25 @@
+Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* g10.c (main): check for development version now in configure
+
+	* tdbio.c (tdbio_write_record): Add uid.validity
+	(tdbio_read_record) : Ditto.
+	(tdbio_dump_record) : Ditto.
+
+	* keygen.c (keygen_add_std_prefs): Replaced Blowfish by Twofish,
+	removed MD5 and Tiger.
+	* pubkey-enc.c (get_it): Suppress warning about missing Blowfish
+	in preferences in certain cases.
+
+	* ringedit.c (lock_rentry,unlock_rentry): New.
+
+	* getkey.c (key_byname): Pass ret_kb down to lookup_xx.
+
+	* armor.c (armor_filter): No output of of empty comment lines.
+	Add option --no-version to suppress the output of the version string.
+
+	* getkey.c: Release the getkey context for auto context variables.
+
 Sun Jan 24 18:16:26 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* getkey.c: Changed the internal design to allow simultaneous

@@ -32,6 +32,7 @@
 #undef VERSION
 #undef PACKAGE
 #undef PRINTABLE_OS_NAME
+#undef IS_DEVELOPMENT_VERSION
 
 /* Define if your locale.h file contains LC_MESSAGES.  */
 #undef HAVE_LC_MESSAGES
@@ -64,14 +65,6 @@
 
 #undef HAVE_BROKEN_MLOCK
 
-/* One of the following macros is defined to select which of
- * the cipher/rndxxxx.c is linked into the program */
-#undef USE_RNDLINUX
-#undef USE_RNDUNIX
-#undef USE_RNDOS2
-#undef USE_RNDATARI
-#undef USE_RNDW32
-#undef USE_RNDMVS
 /* defined if we have a /dev/random and /dev/urandom */
 #undef HAVE_DEV_RANDOM
 /* and the real names of the random devices */
@@ -92,6 +85,11 @@
 #undef USE_ONLY_8DOT3
 /* defined if we must run on a stupid file system */
 #undef HAVE_DRIVE_LETTERS
+/* defined if we run on some of the PCDOS like systems (DOS, Windoze. OS/2)
+ * with special properties like no file modes */
+#undef HAVE_DOSISH_SYSTEM
+
+
 
 @BOTTOM@
 

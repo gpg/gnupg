@@ -126,8 +126,11 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	*(char**)buf = "file_filter";
     }
     else if( control == IOBUFCTRL_FREE ) {
-	if( fp != stdin && fp != stdout )
+	if( fp != stdin && fp != stdout ) {
+	    if( DBG_IOBUF )
+		log_debug("%s: close fd %d\n", a->fname, fileno(fp) );
 	    fclose(fp);
+	}
 	fp = NULL;
 	m_free(a); /* we can free our context now */
     }
@@ -545,7 +548,8 @@ iobuf_open( const char *fname )
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: open `%s'\n", a->no, a->subno, fname );
+	log_debug("iobuf-%d.%d: open `%s' fd=%d\n",
+		   a->no, a->subno, fname, fileno(fcx->fp) );
 
     return a;
 }

@@ -33,9 +33,10 @@
 #define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
 #define CIPHER_ALGO_SAFER_SK128  5
 #define CIPHER_ALGO_DES_SK	 6
+#define CIPHER_ALGO_TWOFISH	10  /* twofish 256 bit */
 #define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
 #define CIPHER_ALGO_SKIPJACK   101  /* experimental: skipjack */
-#define CIPHER_ALGO_TWOFISH    102  /* experimental: twofish 128 bit */
+#define CIPHER_ALGO_TWOFISH_OLD 102 /* experimental: twofish 128 bit */
 #define CIPHER_ALGO_DUMMY      110  /* no encryption at all */
 
 #define PUBKEY_ALGO_RSA        1
@@ -63,17 +64,17 @@ typedef struct {
     byte key[24]; /* this is the largest used keylen (3des) */
 } DEK;
 
+struct cipher_handle_s;
 typedef struct cipher_handle_s *CIPHER_HANDLE;
 
-#ifndef DEFINES_CIPHER_HANDLE
-struct cipher_handle_s { char does_not_matter[1]; };
-#endif
 
 #define CIPHER_MODE_ECB       1
 #define CIPHER_MODE_CFB       2
 #define CIPHER_MODE_PHILS_CFB 3
 #define CIPHER_MODE_AUTO_CFB  4
 #define CIPHER_MODE_DUMMY     5  /* used with algo DUMMY for no encryption */
+
+struct md_digest_list_s;
 
 typedef struct {
     int  secure;
@@ -83,12 +84,6 @@ typedef struct {
     int  bufsize;
     byte buffer[1];
 } *MD_HANDLE;
-
-
-#ifndef DEFINES_MD_HANDLE /* not really the handle but the algorithm list */
-struct md_digest_list_s { char does_not_matter[1]; };
-#endif
-
 
 
 int g10c_debug_mode;

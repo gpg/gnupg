@@ -37,6 +37,7 @@
 #include "types.h"
 #include "errors.h"
 #include "blowfish.h"
+#include "dynload.h"
 
 
 

@@ -59,9 +59,10 @@
 #define KEYF_EXPIRED  4 /* this key is expired */
 #define KEYF_REVOKED  8 /* this key has been revoked */
 
-#define UIDF_CHECKED  1 /* user id has been checked - other bits are valid */
-#define UIDF_VALID    2 /* this is a valid user id */
-#define UIDF_REVOKED  8 /* this user id has been revoked */
+#define UIDF_CHECKED  1  /* user id has been checked - other bits are valid */
+#define UIDF_VALID    2  /* this is a valid user id */
+#define UIDF_REVOKED  8  /* this user id has been revoked */
+#define UIDF_VALVALID 16 /* the validity field is valid */
 
 #define SIGF_CHECKED  1 /* signature has been checked - bits 0..6 are valid */
 #define SIGF_VALID    2 /* the signature is valid */
@@ -98,7 +99,7 @@ struct trust_record {
 	    ulong cacherec; /* the cache record */
 	    byte ownertrust;
 	    byte dirflags;
-	    byte validity; /* calculated trustlevel */
+	    byte validity; /* calculated trustlevel over all uids */
 	} dir;
 	struct {	    /* primary public key record */
 	    ulong lid;
@@ -114,6 +115,7 @@ struct trust_record {
 	    ulong prefrec;   /* recno of preference record */
 	    ulong siglist;   /* list of valid signatures (w/o self-sig)*/
 	    byte uidflags;
+	    byte validity;  /* calculated trustlevel of this uid */
 	    byte namehash[20]; /* ripemd hash of the username */
 	} uid;
 	struct {	    /* preference record */

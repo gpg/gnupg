@@ -282,6 +282,9 @@ case $basic_machine in
 	atarist)
 		basic_machine=m68k-atari
 		;;
+	emx)
+		basic_machine=i386-emx
+		;;
 	aux)
 		basic_machine=m68k-apple
 		os=-aux
@@ -970,6 +973,9 @@ case $os in
 		;;
 	-mint)
 		os=-mint
+		;;
+	-os2)
+		os=-os2
 		;;
 	-none)
 		;;

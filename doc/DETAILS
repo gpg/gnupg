@@ -79,7 +79,7 @@ more arguments in future versions.
 	The used key has been revoked by his owner.  No arguments yet.
 
     BADARMOR
-	The ascii armor is corrupted.  No arguments yet.
+	The ASCII armor is corrupted.  No arguments yet.
 
     RSA_OR_IDEA
 	The RSA or IDEA algorithms has been used in the data.  A
@@ -175,7 +175,7 @@ Record type 2: (directory record)
      1 u32   cache record
      1 byte  ownertrust
      1 byte  dirflag
-     1 byte  validity
+     1 byte  validity of the key calucalted over all user ids
     19 byte reserved
 
 
@@ -208,7 +208,7 @@ Record type 4: (uid record)
      1 u32  pointer to preference record
      1 u32  siglist  list of valid signatures
      1 byte uidflags
-     1 byte reserved
+     1 byte validity of the key calculated over this user id
      20 bytes ripemd160 hash of the username.
 
 
@@ -418,7 +418,7 @@ Usage of gdbm files for keyrings
 ================================
     The key to store the keyblock is it's fingerprint, other records
     are used for secondary keys.  fingerprints are always 20 bytes
-    where 16 bit fingerprints are appded with zero.
+    where 16 bit fingerprints are appended with zero.
     The first byte of the key gives some information on the type of the
     key.
       1 = key is a 20 bit fingerprint (16 bytes fpr are padded with zeroes)

@@ -642,6 +642,9 @@ start_gatherer( int pipefd )
 		    select(0, NULL, NULL, NULL, &tv);
 		    continue;
 		}
+		if( errno == EPIPE ) /* parent has exited, so give up */
+		   exit(0);
+
 		/* we can't do very much here because stderr is closed */
 		if( dbgfp )
 		    fprintf(dbgfp, "gatherer can't write to pipe: %s\n",

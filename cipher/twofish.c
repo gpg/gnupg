@@ -24,6 +24,7 @@
 #include "types.h"  /* for byte and u32 typedefs */
 #include "util.h"
 #include "errors.h"
+#include "dynload.h"
 
 
 /* Prototype for the self-test function. */
@@ -462,7 +463,7 @@ twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
    static const char *selftest_failed=0;
 
    /* Check key length. */
-   if( keylen != 16 )
+   if( keylen != 16 )  /* enhance this code for 256 bit keys */
        return G10ERR_WRONG_KEYLEN;
 
    /* Do self-test if necessary. */
@@ -840,16 +841,18 @@ twofish_get_info (int algo, size_t *keylen,
 		  void (**r_decrypt) (void *c, byte *outbuf, byte *inbuf)
 		 )
 {
-    *keylen = 128;
+    *keylen = algo==10? 256 : 128;
     *blocksize = 16;
     *contextsize = sizeof (TWOFISH_context);
     *r_setkey = FNCCAST_SETKEY (twofish_setkey);
     *r_encrypt= FNCCAST_CRYPT (twofish_encrypt);
     *r_decrypt= FNCCAST_CRYPT (twofish_decrypt);
 
+   if( algo == 10 )
+     return "TWOFISH";
    if (algo == 102) /* This algorithm number is assigned for
 		     * experiments, so we can use it */
-     return "TWOFISH";
+     return "TWOFISH128";
    return NULL;
 }
 
@@ -863,6 +866,7 @@ static struct {
     void (*func)(void);
 } func_table[] = {
     { 20, 1, 0, (void(*)(void))twofish_get_info },
+    { 21, 1, 10  },
     { 21, 1, 102 },
 };
 

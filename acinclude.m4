@@ -1,4 +1,4 @@
-dnl macros to configure g10
+dnl macros to configure g10                                       7cache_va
 
 
 dnl GNUPG_MSG_PRINT(STRING)
@@ -203,6 +203,9 @@ define(GNUPG_CHECK_RDYNAMIC,
           solaris*)
             CFLAGS_RDYNAMIC="-Wl,-dy"
             ;;
+          freebsd2*)
+            CFLAGS_RDYNAMIC=""
+            ;;
           *)
             CFLAGS_RDYNAMIC="-Wl,-export-dynamic"
             ;;
@@ -221,8 +224,9 @@ dnl
 define(GNUPG_CHECK_IPC,
    [ AC_CHECK_HEADERS(sys/ipc.h sys/shm.h)
      if test "$ac_cv_header_sys_shm_h" = "yes"; then
-       AC_MSG_CHECKING(whether shmctl IPC_RMID allowes subsequent attaches)
-       AC_TRY_RUN([
+       AC_MSG_CHECKING(whether IPC_RMID allowes subsequent attaches)
+       AC_CACHE_VAL(gnupg_cv_ipc_rmid_deferred_release,
+          AC_TRY_RUN([
              #include <sys/types.h>
              #include <sys/ipc.h>
              #include <sys/shm.h>
@@ -245,19 +249,38 @@ define(GNUPG_CHECK_IPC,
                exit (0);
              }
          ],
-         AC_DEFINE(IPC_RMID_DEFERRED_RELEASE)
-         AC_MSG_RESULT(yes),
-         AC_MSG_RESULT(no),
-         AC_MSG_RESULT(assuming no))
+         gnupg_cv_ipc_rmid_deferred_release="yes",
+         gnupg_cv_ipc_rmid_deferred_release="no",
+         gnupg_cv_ipc_rmid_deferred_release="assume-no")
+       )
+       if test "$gnupg_cv_ipc_rmid_deferred_release" = "yes"; then
+           AC_DEFINE(IPC_RMID_DEFERRED_RELEASE)
+           AC_MSG_RESULT(yes)
+       else
+          if test "$gnupg_cv_ipc_rmid_deferred_release" = "no"; then
+              AC_MSG_RESULT(no)
+          else
+              AC_MSG_RESULT([assuming no])
+          fi
+       fi
+
        AC_MSG_CHECKING(whether SHM_LOCK is available)
-       AC_TRY_COMPILE([#include <sys/types.h>
+       AC_CACHE_VAL(gnupg_cv_ipc_have_shm_lock,
+          AC_TRY_COMPILE([#include <sys/types.h>
              #include <sys/ipc.h>
              #include <sys/shm.h>],[
              int foo( int shm_id ) {  shmctl(shm_id, SHM_LOCK, 0); }
              ],
+             gnupg_cv_ipc_have_shm_lock="yes",
+             gnupg_cv_ipc_have_shm_lock="no"
+          )
+       )
+       if test "$gnupg_cv_ipc_have_shm_lock" = "yes"; then
          AC_DEFINE(IPC_HAVE_SHM_LOCK)
-         AC_MSG_RESULT(yes),
-         AC_MSG_RESULT(no))
+         AC_MSG_RESULT(yes)
+       else
+         AC_MSG_RESULT(no)
+       fi
      fi
    ])
 
@@ -272,7 +295,8 @@ define(GNUPG_CHECK_MLOCK,
   [ AC_CHECK_FUNCS(mlock)
     if test "$ac_cv_func_mlock" = "yes"; then
         AC_MSG_CHECKING(whether mlock is broken)
-          AC_TRY_RUN([
+          AC_CACHE_VAL(gnupg_cv_have_broken_mlock,
+             AC_TRY_RUN([
                 #include <stdlib.h>
                 #include <unistd.h>
                 #include <errno.h>
@@ -299,10 +323,21 @@ define(GNUPG_CHECK_MLOCK,
                 }
 
             ],
-            AC_MSG_RESULT(no),
-            AC_DEFINE(HAVE_BROKEN_MLOCK)
-            AC_MSG_RESULT(yes),
-            AC_MSG_RESULT(assuming no))
+            gnupg_cv_have_broken_mlock="no",
+            gnupg_cv_have_broken_mlock="yes",
+            gnupg_cv_have_broken_mlock="assume-no"
+           )
+         )
+         if test "$gnupg_cv_have_broken_mlock" = "yes"; then
+             AC_DEFINE(HAVE_BROKEN_MLOCK)
+             AC_MSG_RESULT(yes)
+         else
+            if test "$gnupg_cv_have_broken_mlock" = "no"; then
+                AC_MSG_RESULT(no)
+            else
+                AC_MSG_RESULT(assuming no)
+            fi
+         fi
     fi
   ])
 

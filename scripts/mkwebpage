@@ -18,6 +18,10 @@ fix_it () {
 
 EOF
     cvs -Q checkout -p gnupg/NEWS >>$dir/NEWS
+    here=`pwd`
+    cd $dir
+    ln -sf gnupg.html index.html
+    cd $here
 }
 
 

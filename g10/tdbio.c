@@ -77,7 +77,8 @@ struct cmp_sdir_struct {
 
 
 static char *db_name;
-static const char *lockname;
+static DOTLOCK lockhandle;
+static int is_locked;
 static int  db_fd = -1;
 static int in_transaction;
 
@@ -236,10 +237,12 @@ put_record_into_cache( ulong recno, const char *data )
 	int n = dirty_count / 5; /* discard some dirty entries */
 	if( !n )
 	    n = 1;
-	if( !lockname )
-	    lockname = make_dotlock( db_name, -1 );
-	if( !lockname )
-	    log_fatal("can't get a lock - giving up\n");
+	if( !is_locked ) {
+	    if( make_dotlock( lockhandle, -1 ) )
+		log_fatal("can't acquire lock - giving up\n");
+	    else
+		is_locked = 1;
+	}
 	for( unused = NULL, r = cache_list; r; r = r->next ) {
 	    if( r->flags.used && r->flags.dirty ) {
 		int rc = write_cache_item( r );
@@ -254,8 +257,8 @@ put_record_into_cache( ulong recno, const char *data )
 	    }
 	}
 	if( !opt.lock_once ) {
-	    release_dotlock( lockname );
-	    lockname=NULL;
+	    if( !release_dotlock( lockhandle ) )
+		is_locked = 0;
 	}
 	assert( unused );
 	r = unused;
@@ -287,17 +290,20 @@ tdbio_sync()
     CACHE_CTRL r;
     int did_lock = 0;
 
+    if( db_fd == -1 )
+	open_db();
     if( in_transaction )
 	log_bug("tdbio: syncing while in transaction\n");
 
     if( !cache_is_dirty )
 	return 0;
 
-    if( !lockname ) {
-	lockname = make_dotlock( db_name, -1 );
+    if( !is_locked ) {
+	if( make_dotlock( lockhandle, -1 ) )
+	    log_fatal("can't acquire lock - giving up\n");
+	else
+	    is_locked = 1;
 	did_lock = 1;
-	if( !lockname )
-	    log_fatal("can't get a lock - giving up\n");
     }
     for( r = cache_list; r; r = r->next ) {
 	if( r->flags.used && r->flags.dirty ) {
@@ -308,8 +314,8 @@ tdbio_sync()
     }
     cache_is_dirty = 0;
     if( did_lock && !opt.lock_once ) {
-	release_dotlock( lockname );
-	lockname=NULL;
+	if( !release_dotlock( lockhandle ) )
+	    is_locked = 0;
     }
     return 0;
 }
@@ -344,17 +350,19 @@ tdbio_end_transaction()
 
     if( !in_transaction )
 	log_bug("tdbio: no active transaction\n");
-    if( !lockname )
-	lockname = make_dotlock( db_name, -1 );
-    if( !lockname )
-	log_fatal("can't get a lock - giving up\n");
+    if( !is_locked ) {
+	if( make_dotlock( lockhandle, -1 ) )
+	    log_fatal("can't acquire lock - giving up\n");
+	else
+	    is_locked = 1;
+    }
     block_all_signals();
     in_transaction = 0;
     rc = tdbio_sync();
     unblock_all_signals();
     if( !opt.lock_once ) {
-	release_dotlock( lockname );
-	lockname=NULL;
+	if( !release_dotlock( lockhandle ) )
+	    is_locked = 0;
     }
     return rc;
 }
@@ -392,9 +400,9 @@ tdbio_cancel_transaction()
 static void
 cleanup(void)
 {
-    if( lockname ) {
-	release_dotlock(lockname);
-	lockname = NULL;
+    if( is_locked ) {
+	if( !release_dotlock(lockhandle) )
+	    is_locked = 0;
     }
 }
 
@@ -428,7 +436,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( access( fname, F_OK ) ) {
 		if( strlen(fname) >= 7
 		    && !strcmp(fname+strlen(fname)-7, "/.gnupg" ) ) {
-		  #if __MINGW32__
+		  #if HAVE_DOSISH_SYSTEM
 		    if( mkdir( fname ) )
 		  #else
 		    if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
@@ -450,7 +458,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    fclose(fp);
 	    m_free(db_name);
 	    db_name = fname;
-	  #ifdef __MINGW32__
+	  #ifdef HAVE_DOSISH_SYSTEM
 	    db_fd = open( db_name, O_RDWR | O_BINARY );
 	  #else
 	    db_fd = open( db_name, O_RDWR );
@@ -501,7 +509,10 @@ open_db()
     TRUSTREC rec;
     assert( db_fd == -1 );
 
-  #ifdef __MINGW32__
+    lockhandle = create_dotlock( db_name );
+    if( !lockhandle )
+	log_fatal( _("%s: can't create lock\n"), db_name );
+  #ifdef HAVE_DOSISH_SYSTEM
     db_fd = open( db_name, O_RDWR | O_BINARY );
   #else
     db_fd = open( db_name, O_RDWR );
@@ -970,6 +981,8 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		    rec->r.uid.prefrec,
 		    rec->r.uid.siglist,
 		    rec->r.uid.namehash[18], rec->r.uid.namehash[19]);
+	if( rec->r.uid.uidflags & UIDF_VALVALID )
+	    fprintf( fp, ", v=%02x", rec->r.uid.validity );
 	if( rec->r.uid.uidflags & UIDF_CHECKED ) {
 	    if( rec->r.uid.uidflags & UIDF_VALID )
 		fputs(", valid", fp );
@@ -1155,7 +1168,18 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.uid.prefrec  = buftoulong(p); p += 4;
 	rec->r.uid.siglist  = buftoulong(p); p += 4;
 	rec->r.uid.uidflags = *p++;
-	p ++;
+	rec->r.uid.validity   = *p++;
+	switch( rec->r.uid.validity ) {
+	  case 0:
+	  case TRUST_UNDEFINED:
+	  case TRUST_NEVER:
+	  case TRUST_MARGINAL:
+	  case TRUST_FULLY:
+	  case TRUST_ULTIMATE:
+	    break;
+	  default:
+	    log_info("lid %lu: invalid validity value - cleared\n", recnum);
+	}
 	memcpy( rec->r.uid.namehash, p, 20);
 	break;
       case RECTYPE_PREF:  /* preference record */
@@ -1278,7 +1302,7 @@ tdbio_write_record( TRUSTREC *rec )
 	ulongtobuf(p, rec->r.uid.prefrec); p += 4;
 	ulongtobuf(p, rec->r.uid.siglist); p += 4;
 	*p++ = rec->r.uid.uidflags;
-	p++;
+	*p++ = rec->r.uid.validity;
 	memcpy( p, rec->r.uid.namehash, 20 ); p += 20;
 	break;
 

@@ -117,6 +117,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDebugAll,
     oStatusFD,
     oNoComment,
+    oNoVersion,
     oCompletesNeeded,
     oMarginalsNeeded,
     oMaxCertDepth,
@@ -307,6 +308,7 @@ static ARGPARSE_OPTS opts[] = {
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
     { oComment, "comment", 2, "@" },
+    { oNoVersion, "no-version", 0,   "@"},
     { oNotDashEscaped, "not-dash-escaped", 0, "@" },
     { oEscapeFrom, "escape-from-lines", 0, "@" },
     { oLockOnce, "lock-once", 0, "@" },
@@ -716,6 +718,7 @@ main( int argc, char **argv )
 			   opt.verbose = 0; opt.list_sigs=0; break;
 	  case oQuickRandom: quick_random_gen(1); break;
 	  case oNoComment: opt.no_comment=1; break;
+	  case oNoVersion: opt.no_version=1; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
 	  case oMarginalsNeeded: opt.marginals_needed = pargs.r.ret_int; break;
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;
@@ -810,6 +813,9 @@ main( int argc, char **argv )
     if( greeting ) {
 	tty_printf("%s %s; %s\n", strusage(11), strusage(13), strusage(14) );
 	tty_printf("%s\n", strusage(15) );
+      #ifdef IS_DEVELOPMENT_VERSION
+	log_info("NOTE: this is a development version!\n");
+      #endif
     }
 
     secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
@@ -859,12 +865,6 @@ main( int argc, char **argv )
 	log_error(_("invalid S2K mode; must be 0, 1 or 3\n"));
     }
 
-    {	const char *p = strusage(13);
-	for( ; *p && (isdigit(*p) || *p=='.'); p++ )
-	    ;
-	if( *p )
-	    log_info("NOTE: this is a development version!\n");
-    }
 
     if( log_get_errorcount(0) )
 	g10_exit(2);

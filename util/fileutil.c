@@ -38,16 +38,16 @@ char *
 make_basename(const char *filepath)
 {
     char *p;
-    
+
     if ( !(p=strrchr(filepath, '/')) )
-      #ifdef __MINGW32__
-        if ( !(p=strrchr(filepath, '\\')) )
-            if ( !(p=strrchr(filepath, ':')) )
+      #ifdef HAVE_DRIVE_LETTERS
+	if ( !(p=strrchr(filepath, '\\')) )
+	    if ( !(p=strrchr(filepath, ':')) )
       #endif
-              {
-                return m_strdup(filepath);
-              }
-    
+	      {
+		return m_strdup(filepath);
+	      }
+
     return m_strdup(p+1);
 }
 
@@ -65,21 +65,21 @@ make_dirname(const char *filepath)
     char *dirname;
     int  dirname_length;
     char *p;
-    
+
     if ( !(p=strrchr(filepath, '/')) )
-      #ifdef __MINGW32__
-        if ( !(p=strrchr(filepath, '\\')) )
-            if ( !(p=strrchr(filepath, ':')) )
+      #ifdef HAVE_DRIVE_LETTERS
+	if ( !(p=strrchr(filepath, '\\')) )
+	    if ( !(p=strrchr(filepath, ':')) )
       #endif
-              {
-                return m_strdup(".");
-              }
-    
+	      {
+		return m_strdup(".");
+	      }
+
     dirname_length = p-filepath;
     dirname = m_alloc(dirname_length+1);
     strncpy(dirname, filepath, dirname_length);
     dirname[dirname_length] = 0;
-    
+
     return dirname;
 }
 
@@ -126,7 +126,7 @@ compare_filenames( const char *a, const char *b )
     /* ? check whether this is an absolute filename and
      * resolve symlinks?
      */
-  #ifdef __MINGW32__
+  #ifdef HAVE_DRIVE_LETTERS
     return stricmp(a,b);
   #else
     return strcmp(a,b);

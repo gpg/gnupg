@@ -67,7 +67,7 @@ B<-k> [I<username>] [I<keyring>]
     Kludge to be somewhat compatible with PGP.
     Without arguments, all public keyrings are listed.
     With one argument, only I<keyring> is listed.
-    Special combinations are also allowed, but it may
+    Special combinations are also allowed, but they may
     give strange results when combined with more options.
     B<-kv>    Same as B<-k>
     B<-kvv>   List the signatures with every key.
@@ -130,7 +130,7 @@ B<--edit-key> I<name>
        Remove a subkey.
     B<expire>
        Change the key expiration time.	If a key is
-       select, the time of this key will be changed.
+       selected, the time of this key will be changed.
        With no selection the key expiration of the
        primary key is changed.
     B<passwd>
@@ -154,10 +154,10 @@ B<--edit-key> I<name>
        key rings.
     The listing shows you the key with its secondary
     keys and all user ids. Selected keys or user ids
-    indicated by an asterisk. The trust value is
-    displayed with the primary key: The first one is the
-    assigned owner trust and the second the calculated
-    trust value; letters are used for the values:
+    are indicated by an asterisk. The trust value is
+    displayed with the primary key: the first is the
+    assigned owner trust and the second is the calculated
+    trust value.  Letters are used for the values:
       B<->  No ownertrust assigned / not yet calculated.
       B<e>  Trust calculation has failed.
       B<q>  Not enough information for calculation.
@@ -201,11 +201,11 @@ B<--export-secret-keys> [I<names>]
 
 B<--import>, B<--fast-import>
     Import/merge keys.	The fast version does not build
-    the trustdb; this can be deon at anytime with the
+    the trustdb; this can be done at any time with the
     command B<--update-trustdb>.
 
 B<--export-ownertrust>
-    List the assigned ownertrust values in ascii format
+    List the assigned ownertrust values in ASCII format
     for backup purposes [B<gpgm> only].
 
 B<--import-ownertrust> [I<filename>]
@@ -215,9 +215,9 @@ B<--import-ownertrust> [I<filename>]
 
 =head1 OPTIONS
 
-Long options can be put in an options file (default F<~/.gnupg/options>);
-do not write the 2 dashes, but simply the name of the option and any
-arguments if required.	Lines with a hash as the first non-white-space
+Long options can be put in an options file (default F<~/.gnupg/options>).
+Do not write the 2 dashes, but simply the name of the option and any
+required arguments.	Lines with a hash as the first non-white-space
 character are ignored. Commands may be put in this file too, but that
 does not make sense.
 
@@ -250,7 +250,7 @@ B<--trusted-key>  I<keyid>
 
     You may also use this option to skip the verification
     of your own secret keys which is normally done every
-    time GnuPG starts up:  Use for I<keyid> the one of
+    time GnuPG starts up by using the I<keyid> of
     your key.
 
 B<-r>  I<name>, B<--recipient>	I<name>
@@ -268,7 +268,7 @@ B<-q>, B<--quiet>
 B<-z> I<n>
     Set compress level to I<n>. A value of 0 for I<n>
     disables compression. Default is to use the default
-    compression level of zlib (which is 6).
+    compression level of zlib (normally 6).
 
 B<-t>, B<--textmode>
     Use canonical text mode.  If B<-t> (but not
@@ -276,17 +276,17 @@ B<-t>, B<--textmode>
     and signing, this enables clearsigned messages.
     This kludge is needed for PGP compatibility;
     normally you would use B<--sign> or B<--clearsign>
-    to selected the type os signatures.
+    to selected the type of the signature.
 
 B<-n>, B<--dry-run>
     Don't make any changes (not yet implemented).
 
 B<--batch>
-    Batch mode; never ask, do not allow interactive
+    Use batch mode.  Never ask, do not allow interactive
     commands.
 
 B<--no-batch>
-    Disable batch mode; this may be used if B<batch>
+    Disable batch mode.  This may be used if B<batch>
     is used in the options file.
 
 B<--yes>
@@ -297,7 +297,7 @@ B<--no>
 
 B<--keyserver> I<name>
     Use I<name> to lookup keys which are not yet in
-    your keyring; this is only done while verifying
+    your keyring.  This is only done while verifying
     messages with signatures.  The option is also
     required for the command B<--send-keys> to
     specify the keyserver to where the keys should
@@ -374,11 +374,11 @@ B<--set-filename> I<string>
 
 B<--completes-needed> I<n>
     Number of completely trusted users to introduce a new
-    key signator (defaults to 1).
+    key signer (defaults to 1).
 
 B<--marginals-needed> I<n>
     Number of marginally trusted users to introduce a new
-    key signator (defaults to 3)
+    key signer (defaults to 3)
 
 B<--max-cert-depth> I<n>
     Maximum depth of a certification chain (default is 5).
@@ -409,7 +409,7 @@ B<--s2k-digest-algo> I<name>
     encryption if B<--digest-algo> is not given.
 
 B<--s2k-mode> I<number>
-    Selects how passphrases are mangled: A number of I<0>
+    Selects how passphrases are mangled. A number of I<0>
     uses the plain passphrase (which is not recommended),
     a I<1> (default) adds a salt to the passphrase and
     I<3> iterates the whole process a couple of times.
@@ -418,12 +418,12 @@ B<--s2k-mode> I<number>
 
 B<--compress-algo> I<number>
     Use compress algorithm I<number>. Default is I<2> which is
-    RFC1950 compression; you may use I<1> to use the old zlib
-    version which is used by PGP.
-    The default algorithm may give better
-    results because the window size is not limited to 8K.
-    If this is not used the OpenPGP behavior is used; i.e.
-    the compression algorithm is selected from the preferences.
+    RFC1950 compression. You may use I<1> to use the old zlib
+    version which is used by PGP. The default algorithm may
+    give better results because the window size is not limited
+    to 8K. If this is not used the OpenPGP behavior is used,
+    i.e. the compression algorithm is selected from the
+    preferences.
 
 B<--digest-algo> I<name>
     Use I<name> as message digest algorithm. Running the
@@ -438,21 +438,20 @@ B<--throw-keyid>
     process because all available secret keys are tried.
 
 B<--not-dash-escaped>
-    This option changes the behavior of cleartext signature
+    This option changes the behavior of cleartext signatures
     so that they can be used for patch files. You should not
     send such an armored file via email because all spaces
     and line endings are hashed too.  You can not use this
-    option for data which has 5 dashes somewhere at the
-    beginning of a line - patch files don't have this.
-    A special armor header line tells GnuPG about this
-    cleartext signature framework.
+    option for data which has 5 dashes at the beginning of a
+    line, patch files don't have this. A special armor header
+    line tells GnuPG about this cleartext signature option.
 
 B<--escape-from-lines>
     Because some mailers change lines starting with "From "
     to ">From " it is good to handle such lines in a special
-    way when creating cleartext signatures; all other PGP
-    versions do it this way too.  Because this would violate
-    rfc2440, this option is not enabled per default.
+    way when creating cleartext signatures. All other PGP
+    versions do it this way too. This option is not enabled
+    by default because it would violate rfc2440.
 
 B<--passphrase-fd> I<n>
     Read the passphrase from file descriptor I<n>. If you use
@@ -464,10 +463,10 @@ B<--rfc1991>
     Try to be more RFC1991 (PGP 2.x) compliant.
 
 B<--force-v3-sigs>
-    OpenPGP states that a implementation should generate
-    v4 signatures but PGP 5.x does only recognize such
-    signatures on key material.  This options forces
-    v3 signatures for signatures on data.
+    OpenPGP states that an implementation should generate
+    v4 signatures but PGP 5.x recognizes v4 signatures only
+    on key material.  This options forces v3 signatures for
+    signatures on data.
 
 B<--lock-once>
     Lock the file the first time a lock is requested
@@ -510,7 +509,7 @@ B<-h>, B<--help>
 =head1 RETURN VALUE
 
 The Program returns 0 if everything was fine, 1 if at least
-a signature was bad and other errorcode for fatal errors.
+a signature was bad, and other error codes for fatal errors.
 
 =head1 EXAMPLES
 
@@ -552,15 +551,15 @@ Use a B<good> password for your user account and a B<good> passphrase
 to protect your secret key.  This passphrase is the weakest part of the
 whole system.  Programs to do dictionary attacks on your secret keyring
 are very easy to write and so you should protect your B<~/.gnupg/>
-directory very good.
+directory very well.
 
 Keep in mind that, if this program is used over a network (telnet), it
 is B<very> easy to spy out your passphrase!
 
 =head1 BUGS
 
-On many systems this program should be installed as setuid(root); this
-is necessary to lock some pages of memory. If you get no warning message
-about insecure memory your OS kernel supports locking without being root;
-setuid is dropped as soon as this memory is allocated.
+On many systems this program should be installed as setuid(root). This
+is necessary to lock memory pages. If you get no warning message about
+insecure memory your OS kernel supports locking without being root.
+The program drops root privileges as soon as locked memory is allocated.
 

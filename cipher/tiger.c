@@ -909,6 +909,9 @@ tiger_get_info( int algo, size_t *contextsize,
 
 
 
+#ifndef IS_MODULE
+static
+#endif
 const char * const gnupgext_version = "TIGER ($Revision$)";
 
 static struct {
@@ -938,6 +941,9 @@ static struct {
  *		  version = interface version of the function/pointer
  *			    (currently this is 1 for all functions)
  */
+#ifndef IS_MODULE
+static
+#endif
 void *
 gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
 {
@@ -968,6 +974,18 @@ gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
     /*fprintf(stderr, "success\n");*/
     return ret;
 }
+
+
+
+#ifndef IS_MODULE
+void
+tiger_constructor(void)
+{
+    register_internal_cipher_extension( gnupgext_version,
+					gnupgext_enum_func );
+}
+#endif
+
 
 #endif /* HAVE_U64_TYPEDEF */
 

@@ -1,12 +1,33 @@
 ## Process this file with automake to produce Makefile.in
 
+
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
 noinst_LIBRARIES = libcipher.a
 
-EXTRA_PROGRAMS	 = tiger twofish rndunix rndlinux
+# The configure script greps the module names from the following lines.
+# You must also add all these names to EXTRA_PROGRAMS some lines below
+# and EXTRA_foo_SOURCES entries.
+# Hmmm is there a more easy way to do this?  (EXTRA_PROGRAMS
+# might also list programs which are not modules)
+# MODULES: rndunix rndlinux
+# MODULES: sha1 rmd160 md5 tiger
+# MODULES: twofish
+EXTRA_PROGRAMS = rndunix rndlinux	\
+		 sha1 rmd160 md5 tiger	\
+		 twofish
+
+EXTRA_rndlinux_SOURCES = rndlinux.c
+EXTRA_rndunix_SOURCES = rndunix.c
+EXTRA_md5_SOURCES = md5.c
+EXTRA_rmd160_SOURCES = rmd160.c
+EXTRA_sha1_SOURCES = sha1.c
+EXTRA_tiger_SOURCES = tiger.c
+EXTRA_twofish_SOURCES = twofish.c
+
+
 if ENABLE_GNUPG_EXTENSIONS
-pkglib_PROGRAMS  = @DYNAMIC_CIPHER_MODS@ @DYNAMIC_RANDOM_MODS@
+pkglib_PROGRAMS  = @DYNAMIC_CIPHER_MODS@
 else
 pkglib_PROGRAMS  =
 endif
@@ -27,37 +48,41 @@ libcipher_a_SOURCES = cipher.c	\
 		 cast5.h	\
 		 elgamal.c	\
 		 elgamal.h	\
-		 md5.c		\
-		 md5.h		\
 		 primegen.c	\
 		 random.h	\
 		 random.c	\
 		 rand-internal.h \
 		 rmd.h		\
-		 rmd160.c	\
-		 sha1.h 	\
-		 sha1.c 	\
 		 dsa.h		\
 		 dsa.c		\
 		 g10c.c 	\
-		 smallprime.c
+		 smallprime.c	\
+		 construct.c
+
+# configure creates the constructor file
+BUILT_SOURCES = construct.c
 
 
-EXTRA_libcipher_a_SOURCES = rndlinux.c rndunix.c
-EXTRA_tiger_SOURCES = tiger.c
-EXTRA_twofish_SOURCES = twofish.c
+libcipher_a_DEPENDENCIES = @STATIC_CIPHER_OBJS@
+libcipher_a_LIBADD =	   @STATIC_CIPHER_OBJS@
 
-libcipher_a_DEPENDENCIES = @STATIC_RANDOM_OBJS@ @STATIC_CIPHER_OBJS@
-libcipher_a_LIBADD =	   @STATIC_RANDOM_OBJS@ @STATIC_CIPHER_OBJS@
 
+# If I remember it correct, automake 1.4 has a feature to set
+# fooFLAGS depending on the program.  So we should check it out.
 
 tiger: $(srcdir)/tiger.c
 	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o tiger $(srcdir)/tiger.c | \
-	    sed -e 's/-O[2-9]*/-O1/' `
+	    sed -e 's/-O[2-9]*/-O1/g' `
+
+tiger.o: $(srcdir)/tiger.c
+	`echo $(COMPILE) $(srcdir)/tiger.c | sed -e 's/-O[2-9]*/-O1/g' `
 
 twofish: $(srcdir)/twofish.c
 	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o twofish $(srcdir)/twofish.c | \
-	    sed -e 's/-O[0-9]*/  /' `
+	    sed -e 's/-O[0-9]*/  /g' `
+
+twofish.o: $(srcdir)/twofish.c
+	`echo $(COMPILE) $(srcdir)/twofish.c | sed -e 's/-O[0-9]*/  /g' `
 
 
 rndunix: $(srcdir)/rndunix.c

@@ -38,9 +38,9 @@
 #define MAX_PK_CACHE_ENTRIES	50
 #define MAX_UID_CACHE_ENTRIES	50
 
-/* Aa map of the all characters valid used for word_match()
+/* A map of the all characters valid used for word_match()
  * Valid characters are in in this table converted to uppercase.
- * becuase the upper 128 bytes have special meanin, we assume
+ * because the upper 128 bytes have special meaning, we assume
  * that they are all valid.
  * Note: We must use numerical values here in case that this program
  * will be converted to those little blue HAL9000s with their strange
@@ -95,6 +95,7 @@ struct getkey_ctx_s {
     KBPOS kbpos;
     int last_rc;
     ulong count;
+    int not_allocated;
     int nitems;
     getkey_item_t items[1];
 };
@@ -322,11 +323,13 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     /* do a lookup */
     {	struct getkey_ctx_s ctx;
 	memset( &ctx, 0, sizeof ctx );
+	ctx.not_allocated = 1;
 	ctx.nitems = 1;
 	ctx.items[0].mode = 11;
 	ctx.items[0].keyid[0] = keyid[0];
 	ctx.items[0].keyid[1] = keyid[1];
 	rc = lookup_pk( &ctx, pk, NULL );
+	get_pubkey_end( &ctx );
     }
     if( !rc )
 	goto leave;
@@ -371,11 +374,13 @@ get_seckey( PKT_secret_key *sk, u32 *keyid )
     struct getkey_ctx_s ctx;
 
     memset( &ctx, 0, sizeof ctx );
+    ctx.not_allocated = 1;
     ctx.nitems = 1;
     ctx.items[0].mode = 11;
     ctx.items[0].keyid[0] = keyid[0];
     ctx.items[0].keyid[1] = keyid[1];
     rc = lookup_sk( &ctx, sk, NULL );
+    get_seckey_end( &ctx );
     if( !rc ) {
 	/* check the secret key (this may prompt for a passprase to
 	 * unlock the secret key
@@ -395,14 +400,18 @@ int
 get_primary_seckey( PKT_secret_key *sk, u32 *keyid )
 {
     struct getkey_ctx_s ctx;
+    int rc;
 
     memset( &ctx, 0, sizeof ctx );
+    ctx.not_allocated = 1;
     ctx.primary = 1;
     ctx.nitems = 1;
     ctx.items[0].mode = 11;
     ctx.items[0].keyid[0] = keyid[0];
     ctx.items[0].keyid[1] = keyid[1];
-    return lookup_sk( &ctx, sk, NULL );
+    rc = lookup_sk( &ctx, sk, NULL );
+    get_seckey_end( &ctx );
+    return rc;
 }
 
 
@@ -421,11 +430,13 @@ seckey_available( u32 *keyid )
 
     sk = m_alloc_clear( sizeof *sk );
     memset( &ctx, 0, sizeof ctx );
+    ctx.not_allocated = 1;
     ctx.nitems = 1;
     ctx.items[0].mode = 11;
     ctx.items[0].keyid[0] = keyid[0];
     ctx.items[0].keyid[1] = keyid[1];
     rc = lookup_sk( &ctx, sk, NULL );
+    get_seckey_end( &ctx );
     free_secret_key( sk );
     return rc;
 }
@@ -653,9 +664,9 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     /* and call the lookup function */
     ctx->primary = 1; /* we want to look for the primary key only */
     if( sk )
-	rc = lookup_sk( ctx, sk, NULL );
+	rc = lookup_sk( ctx, sk, ret_kb );
     else
-	rc = lookup_pk( ctx, pk, NULL );
+	rc = lookup_pk( ctx, pk, ret_kb );
 
     if( retctx ) /* caller wants the context */
 	*retctx = ctx;
@@ -733,7 +744,8 @@ get_pubkey_end( GETKEY_CTX ctx )
 	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
 	for(n=0; n < ctx->nitems; n++ )
 	    m_free( ctx->items[n].namebuf );
-	m_free( ctx );
+	if( !ctx->not_allocated )
+	    m_free( ctx );
     }
 }
 
@@ -748,10 +760,12 @@ get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint, size_t fprint_len)
     if( fprint_len == 20 || fprint_len == 16 ) {
 	struct getkey_ctx_s ctx;
 	memset( &ctx, 0, sizeof ctx );
+	ctx.not_allocated = 1;
 	ctx.nitems = 1;
 	ctx.items[0].mode = fprint_len;
 	memcpy( ctx.items[0].fprint, fprint, fprint_len );
 	rc = lookup_pk( &ctx, pk, NULL );
+	get_pubkey_end( &ctx );
     }
     else
 	rc = G10ERR_GENERAL; /* Oops */
@@ -772,10 +786,12 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
     if( fprint_len == 20 || fprint_len == 16 ) {
 	struct getkey_ctx_s ctx;
 	memset( &ctx, 0, sizeof ctx );
+	ctx.not_allocated = 1;
 	ctx.nitems = 1;
 	ctx.items[0].mode = fprint_len;
 	memcpy( ctx.items[0].fprint, fprint, fprint_len );
 	rc = lookup_pk( &ctx, pk, ret_keyblock );
+	get_pubkey_end( &ctx );
     }
     else
 	rc = G10ERR_GENERAL; /* Oops */
@@ -806,10 +822,12 @@ get_seckey_byname( PKT_secret_key *sk, const char *name, int unprotect )
 	struct getkey_ctx_s ctx;
 
 	memset( &ctx, 0, sizeof ctx );
+	ctx.not_allocated = 1;
 	ctx.primary = 1;
 	ctx.nitems = 1;
 	ctx.items[0].mode = 15;
 	rc = lookup_sk( &ctx, sk, NULL );
+	get_seckey_end( &ctx );
     }
     else {
 	add_to_strlist( &namelist, name );
@@ -868,7 +886,8 @@ get_seckey_end( GETKEY_CTX ctx )
 	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
 	for(n=0; n < ctx->nitems; n++ )
 	    m_free( ctx->items[n].namebuf );
-	m_free( ctx );
+	if( !ctx->not_allocated )
+	    m_free( ctx );
     }
 }
 
@@ -1600,7 +1619,7 @@ lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 		    k = find_first( ctx->keyblock, pk );
 		else if( item->mode == 16 || item->mode == 20 )
 		    k = find_by_fpr( ctx->keyblock, pk,
-				     item->name, item->mode );
+				     item->fprint, item->mode );
 		else
 		    BUG();
 		if( k ) {
@@ -1687,7 +1706,7 @@ lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
 		    k = find_first_sk( ctx->keyblock, sk );
 		else if( item->mode == 16 || item->mode == 20 )
 		    k = find_by_fpr_sk( ctx->keyblock, sk,
-					item->name, item->mode );
+					item->fprint, item->mode );
 		else
 		    BUG();
 		if( k ) {

@@ -708,6 +708,10 @@ main ()
   printf ("i860-alliant-bsd\n"); exit (0);
 #endif
 
+#ifdef __EMX__
+  printf ("i386-emx-os2"); exit(0);
+#endif
+
   exit (1);
 }
 EOF

@@ -20,6 +20,8 @@
 #ifndef G10_CIPHER_DYNLOAD_H
 #define G10_CIPHER_DYNLOAD_H
 
+#include "mpi.h"
+
 
 void register_internal_cipher_extension( const char *module_id,
 			      void * (*enumfunc)(int, int*, int*, int*) );
@@ -59,5 +61,8 @@ int (*dynload_getfnc_gather_random(void))( void (*)(const void*, size_t, int),
 void (*dynload_getfnc_fast_random_poll(void)
 				)( void (*)(const void*, size_t, int), int );
 
+
+/** This function is in construct.c **/
+void cipher_modules_constructor(void);
 
 #endif /*G10_CIPHER_DYNLOAD_H*/

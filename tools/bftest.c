@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __MINGW32__
+#ifdef HAVE_DOSISH_SYSTEM
   #include <io.h>
   #include <fcntl.h>
 #endif
@@ -67,7 +67,7 @@ main(int argc, char **argv)
     int n, size=4096;
     int algo;
 
-  #ifdef __MINGW32__
+  #ifdef HAVE_DOSISH_SYSTEM
     setmode( fileno(stdin), O_BINARY );
     setmode( fileno(stdout), O_BINARY );
   #endif

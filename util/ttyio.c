@@ -105,6 +105,8 @@ init_ttyfp()
     SetConsoleMode(con.in, DEF_INPMODE );
     SetConsoleMode(con.out, DEF_OUTMODE );
 
+  #elif defined(__EMX__)
+    ttyfp = stdout; /* Fixme: replace by the real functions: see wklib */
   #else
     ttyfp = fopen("/dev/tty", "r+");
     if( !ttyfp )

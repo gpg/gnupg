@@ -876,23 +876,26 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, head_strings[afx->what] );
 	    iobuf_writestr(a, "-----\n");
-	    iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
-					    PRINTABLE_OS_NAME ")\n");
+	    if( !opt.no_version )
+		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
+					      PRINTABLE_OS_NAME ")\n");
 
 	    if( opt.comment_string ) {
 		const char *s = opt.comment_string;
-		iobuf_writestr(a, "Comment: " );
-		for( ; *s; s++ ) {
-		    if( *s == '\n' )
-			iobuf_writestr(a, "\\n" );
-		    else if( *s == '\r' )
-			iobuf_writestr(a, "\\r" );
-		    else if( *s == '\v' )
-			iobuf_writestr(a, "\\v" );
-		    else
-			iobuf_put(a, *s );
+		if( *s ) {
+		    iobuf_writestr(a, "Comment: " );
+		    for( ; *s; s++ ) {
+			if( *s == '\n' )
+			    iobuf_writestr(a, "\\n" );
+			else if( *s == '\r' )
+			    iobuf_writestr(a, "\\r" );
+			else if( *s == '\v' )
+			    iobuf_writestr(a, "\\v" );
+			else
+			    iobuf_put(a, *s );
+		    }
+		    iobuf_put(a, '\n' );
 		}
-		iobuf_put(a, '\n' );
 	    }
 	    else
 		iobuf_writestr(a,

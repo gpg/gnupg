@@ -13,10 +13,10 @@ Configure options for GNUPG
 --disable-nls	    Disable NLS support (See ABOUT-NLS)
 
 --enable-m-debug    Compile with the integrated malloc debugging stuff.
-		    This makes the program slower but is checks every
+		    This makes the program slower but it checks every
 		    free operation and can be used to create statistics
 		    of memory usage. If this option is used the program
-		    option "--debug 32" displays every call to a a malloc
+		    option "--debug 32" displays every call to a malloc
 		    function (this makes the program *really* slow), the
 		    option "--debug 128" displays a memory statistic after
 		    the program run.
@@ -55,8 +55,8 @@ Don't forget to delete "config.cache" and run "./config.status --recheck".
 The Random Device
 =================
 Random devices are available in Linux, FreeBSD and OpenBSD.
-The device files may not exist on your system, please check this
-and create them if needed.
+The random device files may not exist on your system, please check whether
+they do and create them if needed.
 
 The Linux files should look like this:
     cr--r--r--	 1 root     sys        1,   8 May 28  1997 /dev/random
@@ -72,23 +72,23 @@ You can create them with:
     mknod /dev/random  c 2 3
     mknod /dev/urandom c 2 4
 
-Unices without a random devices must use another entropy collector
-which is called rndunix and available as an extension module. You
+Unices without a random devices must use another entropy collector.  One
+entropy collector called rndunix and available as an extension module. You
 should put this in your ~/.gnupg/options file:
 ===8<====================
 load-extension rndunix
 ===>8====================
-This collector works by running a lot of tools which yields more or
+This collector works by running a lot of commands that yield more or
 less unpredictable output and feds this as entropy into the random
-generator - It should work reliable but you should check whether
-it produces good output for your kind of Unix.	There are some debug
+generator - It should work reliably but you should check whether
+it produces good output for your version of Unix. There are some debug
 options to help you (see cipher/rndunix.c).
 
 
 
 Installation
 ============
-gpg is not installed as suid:root; if you want to do it, do it manually.
+gpg is not installed as suid:root; if you want to do that, do it manually.
 We will use capabilities in the future.
 
 The ~/.gnupg directory will be created if it does not exist.  Your first
@@ -135,9 +135,9 @@ diffs or instructions to the address given in the `README' so they can
 be considered for the next release.  If at some point `config.cache'
 contains results you don't want to keep, you may remove or edit it.
 
-   The file `configure.in' is used to create `configure' by a program
-called `autoconf'.  You only need `configure.in' if you want to change
-it or regenerate `configure' using a newer version of `autoconf'.
+   The file `configure.in' is used by the program `autoconf' to create
+`configure'.  You only need `configure.in' if you want to change it or
+regenerate `configure' using a newer version of `autoconf'.
 
 The simplest way to compile this package is:
 
@@ -147,7 +147,7 @@ The simplest way to compile this package is:
      `sh ./configure' instead to prevent `csh' from trying to execute
      `configure' itself.
 
-     Running `configure' takes awhile.  While running, it prints some
+     Running `configure' takes a while.  While running, it prints some
      messages telling which features it is checking for.
 
   2. Type `make' to compile the package.
@@ -177,19 +177,19 @@ a Bourne-compatible shell, you can do that on the command line like
 this:
      CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
 
-Or on systems that have the `env' program, you can do it like this:
+Or, on systems that have the `env' program, you can do it like this:
      env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
 
 Compiling For Multiple Architectures
 ====================================
 
-   You can compile the package for more than one kind of computer at the
-same time, by placing the object files for each architecture in their
-own directory.	To do this, you must use a version of `make' that
-supports the `VPATH' variable, such as GNU `make'.  `cd' to the
-directory where you want the object files and executables to go and run
-the `configure' script.  `configure' automatically checks for the
-source code in the directory that `configure' is in and in `..'.
+   You can compile the package for more than one kind of computer at the same
+time by placing the object files for each architecture in their own
+directory.  To do this, you must use a version of `make', such as GNU `make',
+that supports the `VPATH' variable.  `cd' to the directory where you want the
+object files and executables to go and run the `configure' script.
+`configure' automatically checks for the source code in the directory that
+`configure' is in and in `..'.
 
    If you have to use a `make' that does not supports the `VPATH'
 variable, you have to compile the package for one architecture at a time

@@ -169,6 +169,7 @@ list_keyblock( KBNODE keyblock, int secret )
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key lost!\n");
+	dump_kbnode( keyblock );
 	return;
     }
 

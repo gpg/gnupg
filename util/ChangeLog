@@ -1,3 +1,10 @@
+Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* dotlock.c (remove_lockfiles): Add cleanup function.
+	(make_dotlock): Add deadlock check.
+
+	* secmem.c (secmem_malloc): Changed error message.
+
 Wed Jan 20 21:40:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* http.c (http_wait_response): Moved the shutdown behind the dup

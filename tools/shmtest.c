@@ -19,10 +19,10 @@
 #include "ttyio.h"
 #include "i18n.h"
 
-#ifdef __MINGW32__
+#ifdef HAVE_DOSISH_SYSTEM
 int main( int argc, char **argv )
 {
-    fprintf(stderr, "Sorry, not yet available for Windoze\n");
+    fprintf(stderr, "Sorry, not yet available for DOSish systems\n");
     exit(1);
 }
 #else
@@ -193,4 +193,4 @@ main(int argc, char **argv)
 }
 
 
-#endif /* !__MINGW32__ */
+#endif

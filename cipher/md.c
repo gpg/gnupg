@@ -18,8 +18,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#define DEFINES_MD_HANDLE 1
-
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,8 +28,6 @@
 #include "cipher.h"
 #include "errors.h"
 #include "dynload.h"
-#include "md5.h"
-#include "sha1.h"
 #include "rmd.h"
 
 
@@ -57,7 +53,6 @@ struct md_digest_list_s {
 static struct md_digest_list_s *digest_list;
 
 
-
 static struct md_digest_list_s *
 new_list_item( int algo,
 	       const char *(*get_info)( int, size_t*,byte**, int*, int*,
@@ -79,33 +74,19 @@ new_list_item( int algo,
     return r;
 }
 
-/****************
- * Put the static entries into the table.
- */
-static void
-setup_digest_list()
-{
-    struct md_digest_list_s *r;
-
-    r = new_list_item( DIGEST_ALGO_MD5, md5_get_info );
-    if( r ) { r->next = digest_list; digest_list = r; }
-
-    r = new_list_item( DIGEST_ALGO_RMD160, rmd160_get_info );
-    if( r ) { r->next = digest_list; digest_list = r; }
-
-    r = new_list_item( DIGEST_ALGO_SHA1, sha1_get_info );
-    if( r ) { r->next = digest_list; digest_list = r; }
-}
 
 
 /****************
- * Try to load all modules and return true if new modules are available
+ * Try to load the modules with the requeste algorithm
+ * and return true if new modules are available
+ * If req_alog is -1 try to load all digest algorithms.
  */
 static int
-load_digest_modules()
+load_digest_module( int req_algo )
 {
-    static int done = 0;
     static int initialized = 0;
+    static u32 checked_algos[256/32];
+    static int checked_all = 0;
     struct md_digest_list_s *r;
     void *context = NULL;
     int algo;
@@ -116,16 +97,24 @@ load_digest_modules()
 			    void (**)(void*),byte *(**)(void*));
 
     if( !initialized ) {
-	setup_digest_list(); /* load static modules on the first call */
+	cipher_modules_constructor();
 	initialized = 1;
-	return 1;
     }
-
-    if( done )
-	return 0;
-    done = 1;
+    algo = req_algo;
+    if( algo > 255 || !algo )
+	return 0; /* algorithm number too high (does not fit into out bitmap)*/
+    if( checked_all )
+	return 0; /* already called with -1 */
+    if( algo < 0 )
+	checked_all = 1;
+    else if( (checked_algos[algo/32] & (1 << (algo%32))) )
+	return 0; /* already checked and not found */
+    else
+	checked_algos[algo/32] |= (1 << (algo%32));
 
     while( enum_gnupgext_digests( &context, &algo, &get_info ) ) {
+	if( req_algo != -1 && algo != req_algo )
+	    continue;
 	for(r=digest_list; r; r = r->next )
 	    if( r->algo == algo )
 		break;
@@ -144,6 +133,8 @@ load_digest_modules()
 	r->next = digest_list;
 	digest_list = r;
 	any = 1;
+	if( req_algo != -1 )
+	    break;
     }
     enum_gnupgext_digests( &context, NULL, NULL );
     return any;
@@ -163,7 +154,7 @@ string_to_digest_algo( const char *string )
 	for(r = digest_list; r; r = r->next )
 	    if( !stricmp( r->name, string ) )
 		return r->algo;
-    } while( !r && load_digest_modules() );
+    } while( !r && load_digest_module(-1) );
     return 0;
 }
 
@@ -180,7 +171,7 @@ digest_algo_to_string( int algo )
 	for(r = digest_list; r; r = r->next )
 	    if( r->algo == algo )
 		return r->name;
-    } while( !r && load_digest_modules() );
+    } while( !r && load_digest_module( algo ) );
     return NULL;
 }
 
@@ -194,7 +185,7 @@ check_digest_algo( int algo )
 	for(r = digest_list; r; r = r->next )
 	    if( r->algo == algo )
 		return 0;
-    } while( !r && load_digest_modules() );
+    } while( !r && load_digest_module(algo) );
     return G10ERR_DIGEST_ALGO;
 }
 
@@ -241,7 +232,7 @@ md_enable( MD_HANDLE h, int algo )
 	for(r = digest_list; r; r = r->next )
 	    if( r->algo == algo )
 		break;
-    } while( !r && load_digest_modules() );
+    } while( !r && load_digest_module( algo ) );
     if( !r ) {
 	log_error("md_enable: algorithm %d not available\n", algo );
 	return;
@@ -456,7 +447,7 @@ md_digest_length( int algo )
 	    if( r->algo == algo )
 		return r->mdlen;
 	}
-    } while( !r && load_digest_modules() );
+    } while( !r && load_digest_module( algo ) );
     log_error("WARNING: no length for md algo %d\n", algo);
     return 0;
 }
@@ -479,7 +470,7 @@ md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 		return r->asnoid;
 	    }
 	}
-    } while( !r && load_digest_modules() );
+    } while( !r && load_digest_module( algo ) );
     log_bug("no asn for md algo %d\n", algo);
     return NULL;
 }

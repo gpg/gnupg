@@ -66,6 +66,7 @@ typedef struct {
     int seq1;
     int seq2;
     void *sym;
+    int reqalgo;
 } ENUMCONTEXT;
 
 
@@ -323,6 +324,7 @@ enum_gnupgext_digests( void **enum_context,
     if( !*enum_context ) { /* init context */
 	ctx = m_alloc_clear( sizeof( *ctx ) );
 	ctx->r = extensions;
+	ctx->reqalgo = *algo;
 	*enum_context = ctx;
     }
     else if( !algo ) { /* release the context */
@@ -333,6 +335,7 @@ enum_gnupgext_digests( void **enum_context,
     else
 	ctx = *enum_context;
 
+    /* fixme: have a look at the hint string */
     for( r = ctx->r; r; r = r->next )  {
 	int class, vers;
 

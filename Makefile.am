@@ -10,7 +10,7 @@ all-recursive-am: g10defs.h
 g10defs.h : config.h
 	@( set -e; \
 	echo "/* Generated automatically by Makefile */" ; \
-	echo "#ifdef __MINGW32__"; \
+	echo "#ifdef HAVE_DRIVE_LETTERS"; \
 	echo "#define G10_LOCALEDIR \"c:/lib/gnupg/locale\""; \
 	echo "#define GNUPG_LIBDIR \"c:/lib/gnupg\""; \
 	echo "#define GNUPG_DATADIR \"c:/lib/gnupg\""; \

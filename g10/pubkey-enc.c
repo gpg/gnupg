@@ -31,6 +31,7 @@
 #include "trustdb.h"
 #include "cipher.h"
 #include "status.h"
+#include "options.h"
 #include "i18n.h"
 
 static int get_it( PKT_pubkey_enc *k,
@@ -179,9 +180,17 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	else if( !pk->local_id && query_trust_record(pk) )
 	    log_error("can't check algorithm against preferences\n");
 	else if( dek->algo != CIPHER_ALGO_3DES
-	    && !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM, dek->algo ) )
-	    log_info(_("NOTE: cipher algorithm %d not found in preferences\n"),
+	    && !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM, dek->algo ) ) {
+	    /* Don't print a note while we are not on verbose mode,
+	     * the cipher is blowfish and the preferences have twofish
+	     * listed */
+	    if( opt.verbose || dek->algo != CIPHER_ALGO_BLOWFISH
+		|| !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM,
+						    CIPHER_ALGO_TWOFISH ) )
+		log_info(_(
+		    "NOTE: cipher algorithm %d not found in preferences\n"),
 								 dek->algo );
+	}
 	free_public_key( pk );
 	rc = 0;
     }

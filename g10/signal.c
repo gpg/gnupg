@@ -70,7 +70,7 @@ got_usr_signal( int sig )
     caught_sigusr1 = 1;
 }
 
-#ifndef __MINGW32__
+#ifndef HAVE_DOSISH_SYSTEM
 static void
 do_sigaction( int sig, struct sigaction *nact )
 {
@@ -85,7 +85,7 @@ do_sigaction( int sig, struct sigaction *nact )
 void
 init_signals()
 {
-  #ifndef __MINGW32__
+  #ifndef HAVE_DOSISH_SYSTEM
     struct sigaction nact;
 
     nact.sa_handler = got_fatal_signal;
@@ -100,7 +100,7 @@ init_signals()
     nact.sa_handler = got_usr_signal;
     sigaction( SIGUSR1, &nact, NULL );
     nact.sa_handler = SIG_IGN;
-    sigaction( SIGPIPE, &nact, NULL ); 
+    sigaction( SIGPIPE, &nact, NULL );
   #endif
 }
 
@@ -108,7 +108,7 @@ init_signals()
 void
 pause_on_sigusr( int which )
 {
-  #ifndef __MINGW32__
+  #ifndef HAVE_DOSISH_SYSTEM
     sigset_t mask, oldmask;
 
     assert( which == 1 );
@@ -127,7 +127,7 @@ pause_on_sigusr( int which )
 static void
 do_block( int block )
 {
-  #ifndef __MINGW32__
+  #ifndef HAVE_DOSISH_SYSTEM
     static int is_blocked;
     static sigset_t oldmask;
 
@@ -146,7 +146,7 @@ do_block( int block )
 	sigprocmask( SIG_SETMASK, &oldmask, NULL );
 	is_blocked = 0;
     }
-  #endif /*__MINGW32__*/
+  #endif /*HAVE_DOSISH_SYSTEM*/
 }
 
 

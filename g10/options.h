@@ -47,6 +47,7 @@ struct {
     int def_compress_algo;
     const char *def_secret_key;
     int no_comment;
+    int no_version;
     int marginals_needed;
     int completes_needed;
     int max_cert_depth;

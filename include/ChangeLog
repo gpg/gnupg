@@ -1,3 +1,8 @@
+Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* cipher.h (CIPHER_ALGO_TWOFISH): Chnaged ID to 10 and renamed
+	the old experimenatl algorithm to xx_OLD.
+
 Thu Jan  7 18:00:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* cipher.h (MD_BUFFER_SIZE): Removed.

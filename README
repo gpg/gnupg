@@ -1,19 +1,19 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 
-		    GnuPG - The GNU Privacy Guard
-		   -------------------------------
-			    Version 0.9
+                    GnuPG - The GNU Privacy Guard
+                   -------------------------------
+                            Version 0.9
 
     GnuPG is now in Beta test and you should report all bugs to the
-    mailing list (see below).  The 0.9.x versions are mainly released
-    to fix all remaining serious bugs.	As soon as version 1.0 is out,
+    mailing list (see below).  The 0.9.x versions are released mainly
+    to fix all remaining serious bugs.  As soon as version 1.0 is out,
     development will continue with a 1.1 series and bug fixes for the
-    1.0 version are released as needed.
+    1.0 version as needed.
 
     GnuPG works best on GNU/Linux or *BSD.  Other Unices are
-    also supported but not as good tested as those Freenix ones.
-    Please verify the tar file; there is a PGP2 and a GnuPG/PGP5
-    signature available. My PGP2 key is well known and published in
+    also supported but are not as well tested as the Free Unices.
+    Please verify the tar file with the PGP2 or GnuPG/PGP5
+    signatures provided.  My PGP2 key is well known and published in
     the "Global Trust Register for 1998", ISBN 0-9532397-0-5.
 
     I have included my pubring as "g10/pubring.asc", which contains
@@ -25,33 +25,33 @@
     "pub  1024D/621CC013 1998-07-07 Werner Koch <werner.koch@guug.de>"
     "Key fingerprint = ECAF 7590 EB34 43B5 C7CF  3ACB 6C7E E1B8 621C C013"
 
-    You may want add it to your GnuPG pubring and use it in the future to
-    verify new releases.  Because you verified this README file and
-    _checked_that_it_is_really_my PGP2 key 0C9857A5, you can be sure
-    that the above fingerprints are correct.
+    You may want add my new DSA key to your GnuPG pubring and use it in
+    the future to verify new releases.  Because you verified this README
+    file and _checked_that_it_is_really_my PGP2 key 0C9857A5, you can be
+    sure that the above fingerprints are correct.
 
     Please subscribe to g10@net.lut.ac.uk by sending a mail with
     the word "subscribe" in the body to "g10-request@net.lut.ac.uk".
-    This mailing list is a closed one (only subscribers are allowed
-    to post) to avoid misuse by folks who don't know the Netiquette
-    and trash your mailspool with commercial junk.
+    This mailing list is closed (only subscribers are allowed to post)
+    to avoid misuse by folks who don't know the Netiquette and trash
+    your mailspool with commercial junk.
 
     See the file COPYING for copyright and warranty information.
 
     GnuPG is in compliance with RFC2440 (OpenPGP), see doc/OpenPGP for
     details.
 
-    Due to the fact that GnuPG does not use use any patented algorithm,
-    it cannot be compatible with PGP2 versions; PGP 2.x does only use
-    IDEA (which is patented worldwide) and RSA (which is patented in
-    the United States until Sep 20, 2000).
+    Because GnuPG does not use use any patented algorithm it cannot be
+    compatible with PGP2 versions.  PGP 2.x uses only IDEA (which is
+    patented worldwide) and RSA (which is patented in the United States
+    until Sep 20, 2000).
 
     The default algorithms are now DSA and ElGamal.  ElGamal for signing
-    is still available, but due to the larger size of such signatures it
-    is depreciated (Please note that the GnuPG implementation of ElGamal
-    signatures is *not* insecure).  Symmetric algorithms are: 3DES,
-    Blowfish and CAST5 (Twofish will come soon),  available digest
-    algorithms are MD5, RIPEMD160, SHA1 and TIGER/192.
+    is still available, but because of the larger size of such
+    signatures it is deprecated (Please note that the GnuPG
+    implementation of ElGamal signatures is *not* insecure).  Symmetric
+    algorithms are: 3DES, Blowfish, and CAST5 (Twofish will come soon).
+    Digest algorithms available are MD5, RIPEMD160, SHA1, and TIGER/192.
 
 
     Installation
@@ -61,7 +61,7 @@
 
     Here is a quick summary:
 
-    1)	"./configure"
+    1)  "./configure"
 
     2) "make"
 
@@ -69,24 +69,25 @@
 
     4) You end up with the binaries "gpg" and "gpgm" in /usr/local/bin.
 
-    5) Optional, but suggested: install the binary "gpg" as suid root.
+    5) Optional, but suggested, install the binary "gpg" as suid root.
 
 
 
-    Intro
-    -----
-    This is a brief overview how to use GnuPG - it is highly suggested
-    that you read the manual^H^H^H more information about the use
-    of cryptography.  GnuPG is only the technical tool to do it and
-    the security highly depends on that YOU KNOW WHAT YOU ARE DOING.
+    Introduction
+    ------------
+
+    This is a brief overview how to use GnuPG - it is strongly suggested
+    that you read the manual^H^H^H more information about the use of
+    cryptography.  GnuPG is only a tool, secure results require that YOU
+    KNOW WHAT YOU ARE DOING.
 
     If you already have a DSA key from PGP 5 (they call them DH/ElGamal)
     you can simply copy the pgp keyrings over the GnuPG keyrings after
-    running gpg once, so that it can create the correct directory.
+    running gpg once to create the correct directory.
 
-    The normal way to create a key is:
+    The normal way to create a key is
 
-	gpg --gen-key
+        gpg --gen-key
 
     This asks some questions and then starts key generation. To create
     good random numbers for the key parameters, GnuPG needs to gather
@@ -98,209 +99,212 @@
     access - don't do it over the network or on a machine used also
     by others - especially if you have no access to the root account.
 
-    When you are asked for a passphrase; use a good one which you can easy
-    remember. Don't make the passphrase too long because you have to
-    type it for every decryption or signing; but - AND THIS IS VERY
-    IMPORTANT - use a good one which is not easily guessable as the
+    When you are asked for a passphrase use a good one which you can
+    easy remember.  Don't make the passphrase too long because you have
+    to type it for every decryption or signing; but, - AND THIS IS VERY
+    IMPORTANT - use a good one that is not easily to guess because the
     security of the whole system relies on your secret key and the
-    passphrase is used to protect this secret key in case someone was
-    able to get access to your secret keyring. A good way to select
-    a passphrase is to figure out a short nonsense sentence which makes
-    some sense for you and modify it by inserting extra spaces, non-letters
-    and changing the case of some characters - this is really easy to
-    remember especially if you associate some pictures with it.
+    passphrase that protects it when someone gains access to your secret
+    keyring.  A good way to select a passphrase is to figure out a short
+    nonsense sentence which makes some sense for you and modify it by
+    inserting extra spaces, non-letters and changing the case of some
+    characters - this is really easy to remember especially if you
+    associate some pictures with it.
 
-    Then you should create a revocation certificate in case someone
-    gets knowledge of your secret key or you forgot your passphrase:
+    Next, you should create a revocation certificate in case someone
+    gets knowledge of your secret key or you forgot your passphrase
 
-	gpg --gen-revoke your_user_id
+        gpg --gen-revoke your_user_id
 
-    Run this command and store it away; output is always ASCII armored,
-    so that you can print it and (hopefully never) re-create it if
-    your electronic media fails.
+    Run this command and store the revocation certificate away.  The output
+    is always ASCII armored, so that you can print it and (hopefully
+    never) re-create it if your electronic media fails.
 
-    Now you can use your key to create digital signatures:
+    Now you can use your key to create digital signatures
 
-	gpg -s file
+        gpg -s file
 
-    This creates a file file.gpg which is compressed and has a signature
-    attached.
+    This creates a file "file.gpg" which is compressed and has a
+    signature attached.
 
-	gpg -sa file
+        gpg -sa file
 
-    Same as above, but creates the file.asc which is ascii armored and
-    and ready for sending by mail.  Note: It is better to use your
+    Same as above, but creates a file "file.asc" which is ASCII armored
+    and and ready for sending by mail.  It is better to use your
     mailers features to create signatures (The mailer uses GnuPG to do
     this) because the mailer has the ability to MIME encode such
     signatures - but this is not a security issue.
 
-	gpg -s -o out file
+        gpg -s -o out file
 
-    Creates a signature of file, but writes the output to the file "out".
+    Creates a signature of "file", but writes the output to the file
+    "out".
 
     Everyone who knows your public key (you can and should publish
     your key by putting it on a key server, a web page or in your .plan
-    file) is now able to check whether you really signed this text;
+    file) is now able to check whether you really signed this text
 
-	gpg --verify file
+        gpg --verify file
 
     GnuPG now checks whether the signature is valid and prints an
     appropriate message.  If the signature is good, you know at least
     that the person (or machine) has access to the secret key which
     corresponds to the published public key.
+
     If you run gpg without an option it will verify the signature and
-    create a new file which is identical to the original file.	gpg
-    can also run as a filter, so that you can pipe data to verify
-    trough it:
+    create a new file that is identical to the original.  gpg can also
+    run as a filter, so that you can pipe data to verify trough it
 
-	cat signed-file | gpg | wc -l
+        cat signed-file | gpg | wc -l
 
-    will check the signature of signed-file and then display the
+    which will check the signature of signed-file and then display the
     number of lines in the original file.
 
-    To send a message encrypted to someone you can use this:
+    To send a message encrypted to someone you can use
 
-	gpg -e -r heine file
+        gpg -e -r heine file
 
-    This encrypts file with the public key of the user "heine" and
+    This encrypts "file" with the public key of the user "heine" and
     writes it to "file.gpg"
 
-	echo "hallo" | gpg -ea -r heine | mail heine
+        echo "hello" | gpg -ea -r heine | mail heine
 
-    Ditto, but encrypts "hallo\n" and mails it as ascii armored message
+    Ditto, but encrypts "hello\n" and mails it as ASCII armored message
     to the user with the mail address heine.
 
-	gpg -se -r heine file
+        gpg -se -r heine file
 
-    This encrypts file with the public key of "heine" and writes it
+    This encrypts "file" with the public key of "heine" and writes it
     to "file.gpg" after signing it with your user id.
 
-	gpg -se -r heine -u Suttner file
+        gpg -se -r heine -u Suttner file
 
     Ditto, but sign the file with your alternative user id "Suttner"
 
 
-    GnuPG has some options to help you publish public keys; this is
-    called "exporting" a key:
+    GnuPG has some options to help you publish public keys.  This is
+    called "exporting" a key, thus
 
-	gpg --export >all-my-keys
+        gpg --export >all-my-keys
 
-    exports all the keys in the keyring and writes them (in a binary format)
-    to all-my-keys.  You may then mail "all-my-keys" as an MIME attachment
-    to someone else or put it on an FTP server. To export only some
-    user IDs, you give them as arguments on the command line.
+    exports all the keys in the keyring and writes them (in a binary
+    format) to "all-my-keys".  You may then mail "all-my-keys" as an
+    MIME attachment to someone else or put it on an FTP server. To
+    export only some user IDs, you give them as arguments on the command
+    line.
 
     To mail a public key or put it on a web page you have to create
-    the key in ASCII armored format:
+    the key in ASCII armored format
 
-	gpg --export --armor | mail panther@tiger.int
+        gpg --export --armor | mail panther@tiger.int
 
     This will send all your public keys to your friend panther.
 
     If you have received a key from someone else you can put it
-    into your public keyring; is called "importing":
+    into your public keyring.  This is called "importing"
 
-	gpg --import [filenames]
+        gpg --import [filenames]
 
     New keys are appended to your keyring and already existing
-    keys are updated. Note that GnuPG does not allow keys which
-    are not self-signed by the user.
+    keys are updated. Note that GnuPG does not import keys that
+    are not self-signed.
 
-    Because anyone can claim that the public key belongs to her
-    we must have some way to check that the public key really belongs
+    Because anyone can claim that a public key belongs to her
+    we must have some way to check that a public key really belongs
     to the owner.  This can be achieved by comparing the key during
     a phone call.  Sure, it is not very easy to compare a binary file
     by reading the complete hex dump of the file - GnuPG (and nearly
     every other program used for management of cryptographic keys)
-    provides other solutions:
+    provides other solutions.
 
-	gpg --fingerprint <username>
+        gpg --fingerprint <username>
 
-    prints the so called "fingerprint" of the given username; this
+    prints the so called "fingerprint" of the given username which
     is a sequence of hex bytes (which you may have noticed in mail
-    sigs or on business cards) which uniquely identify the public
-    key - two different keys will always have different fingerprints.
-    It is easy to compare this fingerprint by phone and I suggest
+    sigs or on business cards) that uniquely identifies the public
+    key - different keys will always have different fingerprints.
+    It is easy to compare fingerprints by phone and I suggest
     that you print your fingerprint on the back of your business
     card.
 
-    If you don't know the owner of the public key you are in trouble;
-    but wait: A friend of you knows someone who knows someone who
-    has met the owner of the public key at some computer conference.
-    So all the persons between you and the public key holder may now
-    act as introducer to you; this is done by signing the keys and
-    thereby certifying the other keys.	If you then trust all the
-    introducers to correctly sign other keys, you can be be sure that
-    the other key really belongs to the one who claims so.
+    If you don't know the owner of the public key you are in trouble.
+    Suppose however that friend of yours knows someone who knows someone
+    who has met the owner of the public key at some computer conference.
+    Suppose that all the people between you and the public key holder
+    may now act as introducers to you.  Introducers signing keys thereby
+    certify that they know the owner of the keys they sign.  If you then
+    trust all the introducers to have correctly signed other keys, you
+    can be be sure that the other key really belongs to the one who
+    claims to own it..
 
-    There are 2 steps to validate a target key:
-	1. First check that there is a complete chain
-	   of signed keys from the public key you want to use
-	   and your key and verify each signature.
-	2. Make sure that you have full trust in the certificates
-	   of all the introduces between the public key holder and
-	   you.
+    There are 2 steps to validate a key:
+        1. First check that there is a complete chain
+           of signed keys from the public key you want to use
+           and your key and verify each signature.
+        2. Make sure that you have full trust in the certificates
+           of all the introduces between the public key holder and
+           you.
     Step 2 is the more complicated part because there is no easy way
     for a computer to decide who is trustworthy and who is not.  GnuPG
     leaves this decision to you and will ask you for a trust value
     (here also referenced as the owner-trust of a key) for every key
-    needed to check the chain of certificates.	You may choose from:
+    needed to check the chain of certificates.  You may choose from:
       a) "I don't know" - then it is not possible to use any
-	 of the chains of certificates, in which this key is used
-	 as an introducer, to validate the target key.	Use this if
-	 you don't know the introducer.
+         of the chains of certificates, in which this key is used
+         as an introducer, to validate the target key.  Use this if
+         you don't know the introducer.
       b) "I do not trust" - Use this if you know that the introducer
-	 does not do a good job in certifying other keys.  The effect
-	 is the same as with a) but for a) you may later want to
-	 change the value because you got new information about this
-	 introducer.
+         does not do a good job in certifying other keys.  The effect
+         is the same as with a) but for a) you may later want to
+         change the value because you got new information about this
+         introducer.
       c) "I trust marginally" - Use this if you assume that the
-	 introducer knows what he is doing.  Together with some
-	 other marginally trusted keys, GnuPG validates the target
-	 key then as good.
+         introducer knows what he is doing.  Together with some
+         other marginally trusted keys, GnuPG validates the target
+         key then as good.
       d) "I fully trust" - Use this if you really know that this
-	 introducer does a good job when certifying other keys.
-	 If all the introducer are of this trust value, GnuPG
-	 normally needs only one chain of signatures to validate
-	 a target key okay. (But this may be adjusted with the help
-	 of some options).
-    These information are confidential because they give your
-    personal opinion on the trustworthy of someone else.  Therefore
-    this data is not stored in the keyring but in the "trustdb"
+         introducer does a good job when certifying other keys.
+         If all the introducer are of this trust value, GnuPG
+         normally needs only one chain of signatures to validate
+         a target key okay. (But this may be adjusted with the help
+         of some options).
+    This information is confidential because it gives your personal
+    opinion on the trustworthiness of someone else.  Therefore this data
+    is not stored in the keyring but in the "trustdb"
     (~/.gnupg/trustdb.gpg).  Do not assign a high trust value just
-    because the introducer is a friend of you - decide how far she
-    understands all the implications of key signatures and you may
-    want to tell him more about public key cryptography so you
-    can later change the trust value you assigned.
+    because the introducer is a friend of yours - decide how well she
+    understands the implications of key signatures and you may want to
+    tell her more about public key cryptography so you can later change
+    the trust value you assigned.
 
-    Okay, here is how GnuPG helps you in key management:  Most stuff is
-    done with the --edit-key  command:
+    Okay, here is how GnuPG helps you with key management.  Most stuff
+    is done with the --edit-key command
 
-	gpg --edit-key <keyid or username>
+        gpg --edit-key <keyid or username>
 
     GnuPG displays some information about the key and then prompts
     for a command (enter "help" to see a list of commands and see
     the man page for a more detailed explanation).  To sign a key
     you select the user ID you want to sign by entering the number
-    which is displayed in the leftmost column (or do nothing if the
+    that is displayed in the leftmost column (or do nothing if the
     key has only one user ID) and then enter the command "sign" and
     follow all the prompts.  When you are ready, give the command
     "save" (or use "quit" to cancel your actions).
 
-    If you want to sign the key with another user ID of yours, you
+    If you want to sign the key with another of your user IDs, you
     must give an "-u" option on the command line together with the
     "--edit-key".
 
     Normally you want to sign only one user ID because GnuPG
-    does only use one and this keeps the public key certificate
+    uses only one and this keeps the public key certificate
     small.  Because such key signatures are very important you
-    should make sure that the signators of your key sign a user ID
+    should make sure that the signatories of your key sign a user ID
     which is very likely to stay for a long time - choose one with an
     email address you have full control of or do not enter an email
     address at all.  In future GnuPG will have a way to tell which
     user ID is the one with an email address you prefer - because
     you have no signatures on this email address it is easy to change
-    this address.  Remember: Your signators sign your public key (the
+    this address.  Remember, your signatories sign your public key (the
     primary one) together with one of your user IDs - so it is not possible
     to change the user ID later without voiding all the signatures.
 
@@ -310,51 +314,59 @@
     trust you assign to a key).
 
 
-    7 Ways to Specify a User ID
+    8 Ways to Specify a User ID
     --------------------------
-    There are several ways to specify a user ID, here are some examples:
+    There are several ways to specify a user ID, here are some examples.
 
     * Only by the short keyid (prepend a zero if it begins with A..F):
 
-	"234567C4"
-	"0F34E556E"
-	"01347A56A"
-	"0xAB123456
+        "234567C4"
+        "0F34E556E"
+        "01347A56A"
+        "0xAB123456
 
     * By a complete keyid:
 
-	"234AABBCC34567C4"
-	"0F323456784E56EAB"
-	"01AB3FED1347A5612"
-	"0x234AABBCC34567C4"
+        "234AABBCC34567C4"
+        "0F323456784E56EAB"
+        "01AB3FED1347A5612"
+        "0x234AABBCC34567C4"
 
     * By a fingerprint:
 
-	"1234343434343434C434343434343434"
-	"123434343434343C3434343434343734349A3434"
-	"0E12343434343434343434EAB3484343434343434"
+        "1234343434343434C434343434343434"
+        "123434343434343C3434343434343734349A3434"
+        "0E12343434343434343434EAB3484343434343434"
 
       The first one is MD5 the others are ripemd160 or sha1.
 
     * By an exact string:
 
-	"=Heinrich Heine <heinrichh@uni-duesseldorf.de>"
+        "=Heinrich Heine <heinrichh@uni-duesseldorf.de>"
 
     * By an email address:
 
-	"<heinrichh@uni-duesseldorf.de>"
+        "<heinrichh@uni-duesseldorf.de>"
+
+    * By word match
+
+        "+Heinrich Heine duesseldorf"
+
+      All words must match excatly (not case sensitive) and appear in
+      any order in the user ID.  Words are any sequences of letters,
+      digits, the underscore and characters with bit 7 set.
 
     * By the Local ID (from the trust DB):
 
-	"#34"
+        "#34"
 
       This may be used by a MUA to specify an exact key after selecting
-      a key from GnuPG (by the use of a special option or an extra utility)
+      a key from GnuPG (by using a special option or an extra utility)
 
     * Or by the usual substring:
 
-	"Heine"
-	"*Heine"
+        "Heine"
+        "*Heine"
 
       The '*' indicates substring search explicitly.
 
@@ -363,7 +375,7 @@
     ----------
     If you use the option "--batch", GnuPG runs in non-interactive mode and
     never prompts for input data.  This does not even allow entering the
-    passphrase; until we have a better solution (something like ssh-agent),
+    passphrase.  Until we have a better solution (something like ssh-agent),
     you can use the option "--passphrase-fd n", which works like PGPs
     PGPPASSFD.
 
@@ -375,29 +387,29 @@
     -----------
     GnuPG returns with an exit status of 1 if in batch mode and a bad signature
     has been detected or 2 or higher for all other errors.  You should parse
-    stderr or better the output of the fd specified with --status-fd to get
+    stderr or, better, the output of the fd specified with --status-fd to get
     detailed information about the errors.
 
 
     Esoteric commands
     -----------------
 
-	gpg --list-packets datafile
+        gpg --list-packets datafile
 
     Use this to list the contents of a data file. If the file is encrypted
     you are asked for the passphrase, so that GnuPG is able to look at the
-    inner structure of a encrypted packet.  This command should be able
-    to list all kinds of rfc2440 messages.
+    inner structure of a encrypted packet.  This command should list all
+    kinds of rfc2440 messages.
 
-	gpgm --list-trustdb
+        gpgm --list-trustdb
 
     List the contents of the trust DB in a human readable format
 
-	gpgm --list-trustdb  <usernames>
+        gpgm --list-trustdb  <usernames>
 
     List the tree of certificates for the given usernames
 
-	gpgm --list-trust-path	username
+        gpgm --list-trust-path  username
 
     List the possible trust paths for the given username. The length
     of such a trust path is limited by the option --max-cert-depth
@@ -415,22 +427,21 @@
     See http://www.gnupg.org/mirrors.html for a list of FTP mirrors
     and use them if possible.
 
-    Please direct bug reports to <gnupg-bugs@gnu.org> or better
+    Please direct bug reports to <gnupg-bugs@gnu.org> or, better,
     post them to the mailing list <g10@net.lut.ac.uk> (this is a
     closed list - subscribe before posting, see above (~line 33)).
     Please direct questions about GnuPG to the mailing list or
-    one of the pgp newsgroups; this gives me more time to improve
+    one of the pgp newsgroups and give me more time to improve
     GnuPG.  Commercial support for GnuPG will be available soon.
 
     Have fun and remember: Echelon is looking at you kid.
 
-
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.1 (GNU/Linux)
+Version: GnuPG v0.9.2 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iQB1AwUBNpyIDR0Z9MEMmFelAQGn4gL+IVlEye5I6LplxdUExsrHQpLV21H0UXFa
-/Dl1T/HjrGHj41NeW2evO4Ck2K6Z0TG5jPg9CuJdcJp0siJ8odO7BTLaF3r6gwxF
-CA4EXgqhSyE8PXRPS4m4M5I7Ru/bsZrF
-=HfE0
+iQB1AwUBNr2fPh0Z9MEMmFelAQHqNAL/e7pApR0CGUJ/zuIsjaVhNGPEgKAglcEd
+YuVdB+RCN0wq7ZfI0AHU2FdVISRACmSN3xituTTgeiOUsczM40EZ4l1XNfyRF768
+fglui6XxEeYHFY7mSQMgzzFWDG0Squx0
+=enRo
 -----END PGP SIGNATURE-----

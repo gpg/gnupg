@@ -252,7 +252,11 @@ proc_plaintext( CTX c, PACKET *pkt )
     free_md_filter_context( &c->mfx );
     c->mfx.md = md_open( 0, 0);
     /* fixme: we may need to push the textfilter if we have sigclass 1
-     * and no armoring - Not yet tested */
+     * and no armoring - Not yet tested
+     * Hmmm, why don't we need it at all if we have sigclass 1
+     * Should we assume that plaintext in mode 't' has always sigclass 1??
+     * See: Russ Allbery's mail 1999-02-09
+     */
     any = clearsig = 0;
     for(n=c->list; n; n = n->next ) {
 	if( n->pkt->pkttype == PKT_ONEPASS_SIG ) {

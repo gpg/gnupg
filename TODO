@@ -8,8 +8,13 @@ Bugs
 
     * clearsign bug Greg Troxel Jan 11.
 
+    * README does not verify okay. verify inserts an extra CR,LF
+      just before "Esoteric Command" (after ~8k of text).
+
 Important
 ----------
+    * replace gettext by a non exploitable one.
+
     * Check revocation and expire stuff.  PLEASE: THIS MUST BE TESTED!
 
     * Check calculation of key validity. PLEASE: IT IS IMPORTED THAT
@@ -34,6 +39,8 @@ Needed
       -Wl,-export-dynamic flag from my Makefile and it linked and seems to
       be working OK so far.
 
+    * Use capabilities if available.
+
 
 Minor Bugs
 ----------
@@ -56,7 +63,7 @@ Nice to have
       really make sense?
     * change the fake_data stuff to mpi_set_opaque
     * How about letting something like 'gpg --version -v', list the
-      effective options.
+      effective options. Too much work.
     * Stats about used random numbers.
 
 

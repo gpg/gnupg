@@ -72,12 +72,13 @@ struct resource_table_struct {
     GDBM_FILE dbf;
   #endif
     enum resource_type rt;
+    DOTLOCK lockhd;
+    int    is_locked;
 };
 typedef struct resource_table_struct RESTBL;
 
 #define MAX_RESOURCES 10
 static RESTBL resource_table[MAX_RESOURCES];
-static const char *keyring_lock;
 
 static int search( PACKET *pkt, KBPOS *kbpos, int secret );
 
@@ -117,14 +118,39 @@ fatal_gdbm_error( const char *string )
 
 #endif /* HAVE_LIBGDBM */
 
+
+/****************
+ * Hmmm, how to avoid deadlock? They should not happen if everyone
+ * locks the key resources in the same order; but who knows.
+ * A solution is to use only one lock file in the gnupg homedir but
+ * what will happen with key resources which normally don't belong
+ * to the gpg homedir?
+ */
 static void
-cleanup( void )
+lock_rentry( RESTBL *rentry )
 {
-    if( keyring_lock )	{
-	release_dotlock( keyring_lock );
-	keyring_lock = NULL;
+    if( !rentry->lockhd ) {
+	rentry->lockhd = create_dotlock( rentry->fname );
+	if( !rentry->lockhd )
+	    log_fatal("can't allocate lock for `%s'\n", rentry->fname );
+	rentry->is_locked = 0;
+    }
+    if( !rentry->is_locked ) {
+	if( make_dotlock( rentry->lockhd, -1 ) )
+	    log_fatal("can't lock `%s'\n", rentry->fname );
+	rentry->is_locked = 1;
     }
 }
+
+static void
+unlock_rentry( RESTBL *rentry )
+{
+    if( opt.lock_once )
+	return;
+    if( !release_dotlock( rentry->lockhd ) )
+	rentry->is_locked = 0;
+}
+
 
 /****************************************************************
  ****************** public functions ****************************
@@ -162,7 +188,6 @@ enum_keyblock_resources( int *sequence, int secret )
 int
 add_keyblock_resource( const char *url, int force, int secret )
 {
-    static int initialized = 0;
     static int any_secret, any_public;
     const char *resname = url;
     IOBUF iobuf = NULL;
@@ -171,10 +196,6 @@ add_keyblock_resource( const char *url, int force, int secret )
     int rc = 0;
     enum resource_type rt = rt_UNKNOWN;
 
-    if( !initialized ) {
-	initialized = 1;
-	atexit( cleanup );
-    }
 
     /* Do we have an URL?
      *	gnupg-gdbm:filename  := this is a GDBM resource
@@ -190,7 +211,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    rt = rt_GDBM;
 	    resname += 11;
 	}
-      #ifndef __MINGW32__
+      #ifndef HAVE_DRIVE_LETTERS
 	else if( strchr( resname, ':' ) ) {
 	    log_error("%s: invalid URL\n", url );
 	    rc = G10ERR_GENERAL;
@@ -264,7 +285,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    if( access(filename, F_OK) ) {
 		if( strlen(filename) >= 7
 		    && !strcmp(filename+strlen(filename)-7, "/.gnupg") ) {
-		  #if __MINGW32__
+		  #ifdef HAVE_DOSISH_SYSTEM
 		    if( mkdir(filename) )
 		  #else
 		    if( mkdir(filename, S_IRUSR|S_IWUSR|S_IXUSR) )
@@ -298,10 +319,10 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    else
 		log_info(_("%s: keyring created\n"), filename );
 	}
-      #if __MINGW32__ || 1
-	/* must close it again */
+      #if HAVE_DOSISH_SYSTEM || 1
 	iobuf_close( iobuf );
 	iobuf = NULL;
+	/* must close it again */
       #endif
 	break;
 
@@ -1039,7 +1060,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
     kbpos->rt = rt_RING;
     kbpos->valid = 0;
 
-  #if __MINGW32__  || 1
+  #if HAVE_DOSISH_SYSTEM || 1
     assert(!iobuf);
     iobuf = iobuf_open( fname );
     if( !iobuf ) {
@@ -1084,7 +1105,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
   leave:
     free_packet(&pkt);
     set_packet_list_mode(save_mode);
-  #if __MINGW32__ || 1
+  #if HAVE_DOSISH_SYSTEM || 1
     iobuf_close(iobuf);
   #endif
     return rc;
@@ -1276,10 +1297,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     if( kbpos->fp )
 	BUG(); /* not allowed with such a handle */
 
-    if( !keyring_lock );
-	keyring_lock = make_dotlock( rentry->fname, -1 );
-    if( !keyring_lock )
-	log_fatal("can't lock `%s'\n", rentry->fname );
+    lock_rentry( rentry );
 
     /* open the source file */
     fp = iobuf_open( rentry->fname );
@@ -1290,10 +1308,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	newfp = iobuf_create( rentry->fname );
 	if( !newfp ) {
 	    log_error(_("%s: can't create: %s\n"), rentry->fname, strerror(errno));
-	    if( !opt.lock_once ) {
-		release_dotlock( keyring_lock );
-		keyring_lock = NULL;
-	    }
+	    unlock_rentry( rentry );
 	    return G10ERR_OPEN_FILE;
 	}
 	else
@@ -1305,28 +1320,19 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 		log_error("build_packet(%d) failed: %s\n",
 			    node->pkt->pkttype, g10_errstr(rc) );
 		iobuf_cancel(newfp);
-		if( !opt.lock_once ) {
-		    release_dotlock( keyring_lock );
-		    keyring_lock = NULL;
-		}
+		unlock_rentry( rentry );
 		return G10ERR_WRITE_FILE;
 	    }
 	}
 	if( iobuf_close(newfp) ) {
 	    log_error("%s: close failed: %s\n", rentry->fname, strerror(errno));
-	    if( !opt.lock_once ) {
-		release_dotlock( keyring_lock );
-		keyring_lock = NULL;
-	    }
+	    unlock_rentry( rentry );
 	    return G10ERR_CLOSE_FILE;
 	}
 	if( chmod( rentry->fname, S_IRUSR | S_IWUSR ) ) {
 	    log_error("%s: chmod failed: %s\n",
 				    rentry->fname, strerror(errno) );
-	    if( !opt.lock_once ) {
-		release_dotlock( keyring_lock );
-		keyring_lock = NULL;
-	    }
+	    unlock_rentry( rentry );
 	    return G10ERR_WRITE_FILE;
 	}
 	return 0;
@@ -1338,7 +1344,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     }
 
     /* create the new file */
-  #ifdef __MINGW32__
+  #ifdef USE_ONLY_8DOT3
     /* Here is another Windoze bug?:
      * you cant rename("pubring.gpg.tmp", "pubring.gpg");
      * but	rename("pubring.gpg.tmp", "pubring.aaa");
@@ -1451,7 +1457,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	goto leave;
     }
     /* if the new file is a secring, restrict the permissions */
-  #ifndef __MINGW32__
+  #ifndef HAVE_DOSISH_SYSTEM
     if( rentry->secret ) {
 	if( chmod( tmpfname, S_IRUSR | S_IWUSR ) ) {
 	    log_error("%s: chmod failed: %s\n",
@@ -1464,7 +1470,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 
     /* rename and make backup file */
     if( !rentry->secret ) {  /* but not for secret keyrings */
-      #ifdef __MINGW32__
+      #ifdef HAVE_DOSISH_SYSTEM
 	remove( bakfname );
       #endif
 	if( rename( rentry->fname, bakfname ) ) {
@@ -1474,7 +1480,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	    goto leave;
 	}
     }
-  #ifdef __MINGW32__
+  #ifdef HAVE_DOSISH_SYSTEM
     remove( rentry->fname );
   #endif
     if( rename( tmpfname, rentry->fname ) ) {
@@ -1492,10 +1498,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     }
 
   leave:
-    if( !opt.lock_once ) {
-	release_dotlock( keyring_lock );
-	keyring_lock = NULL;
-    }
+    unlock_rentry( rentry );
     m_free(bakfname);
     m_free(tmpfname);
     return rc;

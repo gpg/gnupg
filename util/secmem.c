@@ -217,7 +217,7 @@ void
 secmem_init( size_t n )
 {
     if( !n ) {
-      #ifndef __MINGW32__
+      #ifndef HAVE_DOSISH_SYSTEM
 	uid_t uid;
 
 	disable_secmem=1;
@@ -245,8 +245,12 @@ secmem_malloc( size_t size )
     MEMBLOCK *mb, *mb2;
     int compressed=0;
 
-    if( !pool_okay )
-	log_bug("secmem not initialized\n");
+    if( !pool_okay ) {
+	log_info(
+	 _("operation is not possible without initialized secure memory\n"));
+	log_info(_("(you may have used the wrong program for this task)\n"));
+	exit(2);
+    }
     if( show_warning && !suspend_warning ) {
 	show_warning = 0;
 	print_warn();

@@ -170,6 +170,7 @@ load_pubkey_modules()
 
 
     if( !initialized ) {
+	cipher_modules_constructor();
 	setup_pubkey_table();
 	initialized = 1;
 	return 1;

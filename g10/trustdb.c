@@ -104,6 +104,8 @@ static void release_lid_table( LOCAL_ID_TABLE tbl );
 static int ins_lid_table_item( LOCAL_ID_TABLE tbl, ulong lid, unsigned flag );
 static int qry_lid_table_flag( LOCAL_ID_TABLE tbl, ulong lid, unsigned *flag );
 
+
+
 static void print_user_id( const char *text, u32 *keyid );
 static void sort_tsl_list( TRUST_SEG_LIST *trust_seg_list );
 static int list_sigs( ulong pubkey_id );
@@ -839,42 +841,13 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
     ulong rn, uidrn;
     int marginal=0;
     int fully=0;
-    LOCAL_ID_TABLE sigs_seen = NULL;
+    /*LOCAL_ID_TABLE sigs_seen = NULL;*/
 
     if( depth >= max_depth )  /* max cert_depth reached */
 	return TRUST_UNDEFINED;
 
-    stack[depth].lid = drec->r.dir.lid;
-    stack[depth].otrust = drec->r.dir.ownertrust;
-    stack[depth].trust = 0;
-    {	int i;
-
-	for(i=0; i < depth; i++ )
-	    if( stack[i].lid == drec->r.dir.lid )
-		return TRUST_UNDEFINED; /* closed (we already visited this lid) */
-    }
-    if( !qry_lid_table_flag( ultikey_table, drec->r.dir.lid, NULL ) ) {
-	/* we are at the end of a path */
-	TRUST_SEG_LIST tsl;
-	int i;
-
-	stack[depth].trust = TRUST_ULTIMATE;
-	stack[depth].otrust = TRUST_ULTIMATE;
-	if( trust_seg_head ) {
-	    /* we can now put copy our current stack to the trust_seg_list */
-	    tsl = m_alloc( sizeof *tsl + (depth+1)*sizeof( TRUST_INFO ) );
-	    for(i=0; i <= depth; i++ )
-		tsl->path[i] = stack[i];
-	    tsl->pathlen = i;
-	    tsl->next = *trust_seg_head;
-	    *trust_seg_head = tsl;
-	}
-	return TRUST_ULTIMATE;
-    }
-
     /* loop over all user-ids */
-    if( !all )
-	sigs_seen = new_lid_table();
+    /*if( !all ) sigs_seen = new_lid_table();*/
     for( rn = drec->r.dir.uidlist; rn; rn = uidrn ) {
 	TRUSTREC rec;  /* used for uids and sigs */
 	ulong sigrn;
@@ -888,7 +861,36 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 	if( (rec.r.uid.uidflags & UIDF_REVOKED) )
 	    continue; /* user id has been revoked */
 
-	/* loop over all signature records */
+	stack[depth].lid = drec->r.dir.lid;
+	stack[depth].otrust = drec->r.dir.ownertrust;
+	stack[depth].trust = 0;
+	{   int i;
+
+	    for(i=0; i < depth; i++ )
+		if( stack[i].lid == drec->r.dir.lid )
+		    return TRUST_UNDEFINED; /* closed (we already visited this lid) */
+	}
+	if( !qry_lid_table_flag( ultikey_table, drec->r.dir.lid, NULL ) ) {
+	    /* we are at the end of a path */
+	    TRUST_SEG_LIST tsl;
+	    int i;
+
+	    stack[depth].trust = TRUST_ULTIMATE;
+	    stack[depth].otrust = TRUST_ULTIMATE;
+	    if( trust_seg_head ) {
+		/* we can now put copy our current stack to the trust_seg_list */
+		tsl = m_alloc( sizeof *tsl + (depth+1)*sizeof( TRUST_INFO ) );
+		for(i=0; i <= depth; i++ )
+		    tsl->path[i] = stack[i];
+		tsl->pathlen = i;
+		tsl->next = *trust_seg_head;
+		*trust_seg_head = tsl;
+	    }
+	    return TRUST_ULTIMATE;
+	}
+
+
+	/* loop over all signature records of this user id */
 	for( rn = rec.r.uid.siglist; rn; rn = sigrn ) {
 	    int i;
 
@@ -917,11 +919,11 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 		}
 
 		/* visit every signer only once (a signer may have
-		 * signed more than one user ID) */
-		if( sigs_seen && ins_lid_table_item( sigs_seen,
-						     rec.r.sig.sig[i].lid, 0) )
-		    continue; /* we already have this one */
-
+		 * signed more than one user ID)
+		 * if( sigs_seen && ins_lid_table_item( sigs_seen,
+		 *				   rec.r.sig.sig[i].lid, 0) )
+		 *   continue;	we already have this one
+		 */
 		read_record( rec.r.sig.sig[i].lid, &tmp, 0 );
 		if( tmp.rectype != RECTYPE_DIR ) {
 		    if( tmp.rectype != RECTYPE_SDIR )
@@ -945,8 +947,7 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 		    /* we have signed this key and only in this special case
 		     * we assume that this one is fully trusted */
 		    if( !all ) {
-			if( sigs_seen )
-			    release_lid_table( sigs_seen );
+			/*if( sigs_seen ) release_lid_table( sigs_seen );*/
 			return (stack[depth].trust = TRUST_FULLY);
 		    }
 		}
@@ -962,16 +963,14 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 		if( fully >= opt.completes_needed
 		    || marginal >= opt.marginals_needed ) {
 		    if( !all ) {
-			if( sigs_seen )
-			    release_lid_table( sigs_seen );
+			/*if( sigs_seen ) release_lid_table( sigs_seen );*/
 			return (stack[depth].trust = TRUST_FULLY);
 		    }
 		}
 	    }
 	}
     }
-    if( sigs_seen )
-	release_lid_table( sigs_seen );
+    /*if( sigs_seen ) release_lid_table( sigs_seen ); */
     if( all && ( fully >= opt.completes_needed
 		 || marginal >= opt.marginals_needed ) ) {
 	return (stack[depth].trust = TRUST_FULLY );
@@ -981,6 +980,145 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
     }
     return (stack[depth].trust=TRUST_UNDEFINED);
 }
+
+
+typedef struct {
+    ulong lid;
+    ulong uid;
+} CERT_ITEM;
+
+/* structure to hold certification chains. Item[nitems-1] is the
+ * ultimateley trusted key, item[0] is the key which
+ * is introduced, indices [1,(nitems-2)] are all introducers.
+ */
+typedef struct cert_chain *CERT_CHAIN;
+struct cert_chain {
+    CERT_CHAIN next;
+    int dups;
+    int nitems;
+    CERT_ITEM items[1];
+};
+
+
+
+/****************
+ * Copy all items to the set SET_HEAD in a way that the requirements
+ * of a CERT_CHAIN are met.
+ */
+static void
+add_cert_items_to_set( CERT_CHAIN *set_head, CERT_ITEM *items, int nitems )
+{
+    CERT_CHAIN ac;
+    int i;
+
+    ac = m_alloc_clear( sizeof *ac + (nitems-1)*sizeof(CERT_ITEM) );
+    ac->nitems = nitems;
+    for(i=0; i < nitems; i++ )
+       ac->items[i] = items[i];
+    ac->next = *set_head;
+    *set_head = ac;
+}
+
+
+/****************
+ * Find all certification paths of a given LID.
+ * Limit the search to MAX_DEPTH. stack is a helper variable which
+ * should have been allocated with size max_depth, stack[0] should
+ * be setup to the key we are investigating, so the minimal depth
+ * we should ever see in this function is 1.
+ * Returns: -1 max_depth reached
+ *	    0  no paths found
+ *	    1  ultimately trusted key found
+ * certchain_set must be a valid set or point to NULL; this function
+ * may modifiy it.
+ */
+static int
+find_cert_chain( ulong lid, int depth, int max_depth,
+		 CERT_ITEM *stack, CERT_CHAIN *cert_chain_set )
+{
+    TRUSTREC dirrec;
+    TRUSTREC uidrec;
+    ulong uidrno;
+
+    if( depth >= max_depth )
+	return -1;
+
+    stack[depth].lid = lid;
+    stack[depth].uid = 0;
+
+    if( !qry_lid_table_flag( ultikey_table, lid, NULL ) ) {
+	/* this is an ultimately trusted key;
+	 * which means that we have found the end of the chain:
+	 * copy the chain to the set */
+	add_cert_items_to_set( cert_chain_set, stack, depth+1 );
+	return 1;
+    }
+
+
+    read_record( lid, &dirrec, 0 );
+    if( dirrec.rectype != RECTYPE_DIR ) {
+	if( dirrec.rectype != RECTYPE_SDIR )
+	    log_debug("lid %lu, has rectype %d"
+		      " - skipped\n", lid, dirrec.rectype );
+	return 0;
+    }
+    /* Performance hint: add stuff to ignore this one when the
+     *			 assigned validity of the key is bad   */
+
+    /* loop over all user ids */
+    for( uidrno = dirrec.r.dir.uidlist; uidrno; uidrno = uidrec.r.uid.next ) {
+	TRUSTREC sigrec;
+	ulong sigrno;
+
+	stack[depth].uid = uidrno;
+	read_record( uidrno, &uidrec, RECTYPE_UID );
+
+	if( !(uidrec.r.uid.uidflags & UIDF_CHECKED) )
+	    continue; /* user id has not been checked */
+	if( !(uidrec.r.uid.uidflags & UIDF_VALID) )
+	    continue; /* user id is not valid */
+	if( (uidrec.r.uid.uidflags & UIDF_REVOKED) )
+	    continue; /* user id has been revoked */
+
+	/* loop over all signature records */
+	for(sigrno=uidrec.r.uid.siglist; sigrno; sigrno = sigrec.r.sig.next ) {
+	    int i, j;
+
+	    read_record( sigrno, &sigrec, RECTYPE_SIG );
+
+	    for(i=0; i < SIGS_PER_RECORD; i++ ) {
+		if( !sigrec.r.sig.sig[i].lid )
+		    continue; /* skip deleted sigs */
+		if( !(sigrec.r.sig.sig[i].flag & SIGF_CHECKED) )
+		    continue; /* skip unchecked signatures */
+		if( !(sigrec.r.sig.sig[i].flag & SIGF_VALID) )
+		    continue; /* skip invalid signatures */
+		if( (sigrec.r.sig.sig[i].flag & SIGF_EXPIRED) )
+		    continue; /* skip expired signatures */
+		if( (sigrec.r.sig.sig[i].flag & SIGF_REVOKED) )
+		    continue; /* skip revoked signatures */
+		for(j=0; j < depth; j++ ) {
+		    if( stack[j].lid == sigrec.r.sig.sig[i].lid )
+			break;
+		}
+		if( j < depth )
+		    continue; /* avoid cycles as soon as possible */
+
+		if( find_cert_chain( sigrec.r.sig.sig[i].lid,
+				     depth+1, max_depth,
+				     stack, cert_chain_set ) > 0 ) {
+		    /* ultimately trusted key found:
+		     * no need to check more signatures of this uid */
+		    sigrec.r.sig.next = 0;
+		    break;
+		}
+	    }
+	} /* end loop over sig recs */
+    } /* end loop over user ids */
+    return 0;
+}
+
+
 
 
 /****************
@@ -1337,6 +1475,7 @@ void
 list_trust_path( const char *username )
 {
     int rc;
+    ulong lid;
     TRUSTREC rec;
     TRUST_INFO *tmppath;
     TRUST_SEG_LIST trust_seg_list, tsl, tsl2;
@@ -1357,8 +1496,10 @@ list_trust_path( const char *username )
 	    assert( pk->local_id );
 	}
     }
+    lid = pk->local_id;
     free_public_key( pk );
 
+  #if 0
     /* collect the paths */
     tmppath = m_alloc_clear( (opt.max_cert_depth+1)* sizeof *tmppath );
     trust_seg_list = NULL;
@@ -1378,6 +1519,26 @@ list_trust_path( const char *username )
 	m_free( tsl );
     }
     trust_seg_list = NULL;
+  #else /* test code */
+    {
+	CERT_ITEM *stack;
+	CERT_CHAIN chains, r;
+	int i;
+
+	chains = NULL;
+	stack = m_alloc_clear( (opt.max_cert_depth+1)* sizeof *stack );
+	find_cert_chain( lid, 0, opt.max_cert_depth, stack, &chains);
+	m_free( stack );
+	/* dump chains */
+	for(r=chains; r ; r = r->next ) {
+	    printf("chain:" );
+	    for(i=0; i < r->nitems; i++ )
+		printf(" %4lu/%-4lu", r->items[i].lid, r->items[i].uid );
+	    putchar('\n');
+	}
+
+    }
+  #endif
 }
 
 
@@ -2719,15 +2880,17 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		continue; /* skip deleted sigs */
 	    }
 	    if( rec.r.sig.sig[i].lid == pk_lid ) {
+	      #if 0 /* must take uid into account */
 		if( found_sig ) {
 		    log_info( "sig %08lX.%lu/%02X%02X/%08lX: %s\n",
 			      (ulong)keyid[1], lid, uidhash[18],
 			       uidhash[19], (ulong)sig->keyid[1],
-			     _("Duplicated certificate - deleted") );
+			     _("duplicated certificate - deleted") );
 		    rec.r.sig.sig[i].lid = 0;
 		    rec.dirty = 1;
 		    continue;
 		}
+	      #endif
 		found_sig = 1;
 	    }
 	    if( !recheck && !revoke && (rec.r.sig.sig[i].flag & SIGF_CHECKED) )
@@ -2811,7 +2974,7 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 	}
     }
 
-    if( found_sig )
+    if( found_sig )  /* fixme: uid stuff */
 	return;
 
     /* at this point, we have verified, that the signature is not in

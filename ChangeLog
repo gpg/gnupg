@@ -1,3 +1,15 @@
+Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* acinclude.m4 (GNUPG_CHECK_RDYNAMIC): Fix for freebsd 2.2
+
+	* configure.in: a lot of changes to allow selection of modules.
+	Add support for OS/2.
+
+	* acinclude.m4: add some more caching
+
+	* README: Spelling and grammar corrections (John A. Martin)
+	* INSTALL: Ditto.
+
 Wed Jan 20 21:40:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in: --enable-m-guard is now default
