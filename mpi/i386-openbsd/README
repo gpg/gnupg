@@ -1,3 +1,0 @@
-These are special i386 files for use on OpenBSD, which (at least until
-version 3.1) has an older assembler that won't work with the files in
-i386.
