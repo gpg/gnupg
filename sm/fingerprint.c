@@ -246,7 +246,7 @@ gpgsm_get_certid (KsbaCert cert)
     sprintf (endp, "%02X", hash[i]);
   *endp++ = '.';
   for (i=0; i < n; i++, endp += 2)
-    sprintf (endp, "%02X", hash[i]);
+    sprintf (endp, "%02X", p[i]);
   *endp = 0;
 
   xfree (serial);

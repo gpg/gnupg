@@ -1,3 +1,8 @@
+2002-01-13  Werner Koch  <wk@gnupg.org>
+
+	* fingerprint.c (gpgsm_get_certid): Print the serialand not the
+	hash after the dot.
+
 2002-01-11  Werner Koch  <wk@gnupg.org>
 
 	* call-dirmngr.c: New.
