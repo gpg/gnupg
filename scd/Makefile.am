@@ -25,7 +25,7 @@ LDFLAGS = @LDFLAGS@
 
 scdaemon_SOURCES = \
 	scdaemon.c scdaemon.h \
-	command.c 
+	command.c card.c
 
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \

@@ -21,6 +21,7 @@
 #ifndef SCDAEMON_H
 #define SCDAEMON_H
 
+#include <time.h>
 #include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/errors.h"
@@ -55,13 +56,15 @@ struct {
 #define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
 
 struct server_local_s;
+struct card_ctx_s;
 
 struct server_control_s {
   struct server_local_s *server_local;
+  struct card_ctx_s *card_ctx;
 
 };
 typedef struct server_control_s *CTRL;
-
+typedef struct card_ctx_s *CARD;
 
 /*-- scdaemon.c --*/
 void scd_exit (int rc);
@@ -69,6 +72,12 @@ void scd_init_default_ctrl (CTRL ctrl);
 
 /*-- command.c --*/
 void scd_command_handler (int);
+
+/*-- card.c --*/
+int card_open (CARD *rcard);
+void card_close (CARD card);
+int card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp);
+
 
 
 #endif /*SCDAEMON_H*/

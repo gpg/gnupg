@@ -18,9 +18,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/* FIXME: we should not use the default assuan buffering but setup
-   some buffering in secure mempory to protect session keys etc. */
-
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>
@@ -40,32 +37,103 @@ struct server_local_s {
 };
 
 
+/* Check whether the option NAME appears in LINE */
+static int
+has_option (const char *line, const char *name)
+{
+  const char *s;
+  int n = strlen (name);
+
+  s = strstr (line, name);
+  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
+}
+
+
 
 
+/* Note, that this reset_notify is also used for cleanup purposes. */
 static void
 reset_notify (ASSUAN_CONTEXT ctx)
 {
-/*    CTRL ctrl = assuan_get_pointer (ctx); */
+  CTRL ctrl = assuan_get_pointer (ctx); 
 
-
+  if (ctrl->card_ctx)
+    {
+      card_close (ctrl->card_ctx);
+      ctrl->card_ctx = NULL;
+    }
 }
 
 
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
-/*    CTRL ctrl = assuan_get_pointer (ctx); */
-
-/*    if (!strcmp (key, "foo")) */
-/*      { */
-/*      } */
-/*    else */
-/*      return ASSUAN_Invalid_Option; */
-
   return 0;
 }
 
 
+/* LEARN [--force]
+
+   Learn all useful information of the currently inserted card.  When
+   used without the force options, the command might to an INQUIRE
+   like this:
+
+      INQUIRE KNOWNCARDP <hexstring_with_serialNumber> <timestamp>
+
+   The client should just send an "END" if the processing should go on
+   or a "CANCEL" to force the function to terminate with a Cancel
+   error message.
+
+*/
+static int
+cmd_learn (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc = 0;
+
+  /* if this is the first command issued for a new card, open the card and 
+     and create a context */
+  if (!ctrl->card_ctx)
+    {
+      rc = card_open (&ctrl->card_ctx);
+      if (rc)
+        return map_to_assuan_status (rc);
+    }
+
+  /* Unless the force option is used we try a shortcut by identifying
+     the card using a serial number and inquiring the client with
+     that. The client may choose to cancel the operation if he already
+     knows about this card */
+  if (!has_option (line, "--force"))
+    {
+      char *serial;
+      time_t stamp;
+      char *command;
+
+      rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
+      if (rc)
+        return map_to_assuan_status (rc);
+
+      rc = asprintf (&command, "KNOWNCARDP %s %lu",
+                     serial, (unsigned long)stamp);
+      xfree (serial);
+      if (rc < 0)
+        return ASSUAN_Out_Of_Core;
+      rc = 0;
+      rc = assuan_inquire (ctx, command, NULL, NULL, 0); 
+      free (command);  /* (must use standard free here) */
+      if (rc)
+        {
+          if (rc != ASSUAN_Canceled)
+            log_error ("inquire KNOWNCARDP failed: %s\n",
+                       assuan_strerror (rc));
+          return rc; 
+        }
+      /* not canceled, so we have to proceeed */
+    }
+
+  return map_to_assuan_status (rc);
+}
 
 
 
@@ -81,6 +149,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     int cmd_id;
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
+    { "LEARN", 0, cmd_learn },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { NULL }
@@ -168,7 +237,7 @@ scd_command_handler (int listen_fd)
           continue;
         }
     }
-
+  reset_notify (ctx); /* used for cleanup */
 
   assuan_deinit_server (ctx);
 }
