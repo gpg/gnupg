@@ -151,7 +151,17 @@ cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
      S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id>
 
    If there is no certificate yet stored on the card a single "X" is
-   returned as the keygrip.
+   returned as the keygrip.  In addition to the keypair info, information
+   about all certificates stored on the card is also returned:
+
+     S CERTINFO <certtype> <hexstring_with_id>
+
+   Where CERTINFO is a number indicating the type of certificate:
+      0   := Unknown
+      100 := Regular X.509 cert
+      101 := Trusted X.509 cert
+      102 := Useful X.509 cert
+
 
 */
 static int
@@ -209,6 +219,34 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
     free (serial_and_stamp);
   }
 
+  /* Return information about the certificates. */
+  for (idx=0; !rc; idx++)
+    {
+      char *certid;
+      int certtype;
+
+      rc = card_enum_certs (ctrl->card_ctx, idx, &certid, &certtype);
+      if (!rc)
+        {
+          char *buf;
+
+          buf = xtrymalloc (40 + 1 + strlen (certid) + 1);
+          if (!buf)
+            rc = GNUPG_Out_Of_Core;
+          else
+            {
+              sprintf (buf, "%d %s", certtype, certid);
+              assuan_write_status (ctx, "CERTINFO", buf);
+              xfree (buf);
+            }
+        }
+      xfree (certid);
+    }
+  if (rc == -1)
+    rc = 0;
+
+
+  /* Return information about the keys. */
   for (idx=0; !rc; idx++)
     {
       unsigned char keygrip[20];

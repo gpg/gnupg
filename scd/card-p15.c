@@ -35,6 +35,8 @@
 struct p15private_s {
   int n_prkey_rsa_objs;
   struct sc_pkcs15_object *prkey_rsa_objs[32];
+  int n_cert_objs;
+  struct sc_pkcs15_object *cert_objs[32];
 };
 
 
@@ -70,6 +72,19 @@ init_private_data (CARD card)
       return GNUPG_Card_Error;
     }
   priv->n_prkey_rsa_objs = rc;
+
+  /* Read all certificate objects. */
+  rc = sc_pkcs15_get_objects (card->p15card, SC_PKCS15_TYPE_CERT_X509, 
+                              priv->cert_objs,
+                              DIM (priv->cert_objs));
+  if (rc < 0) 
+    {
+      log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
+      xfree (priv);
+      return GNUPG_Card_Error;
+    }
+  priv->n_cert_objs = rc;
+
   card->p15priv = priv;
   return 0;
 }
@@ -169,6 +184,57 @@ p15_enum_keypairs (CARD card, int idx,
       for (i=0; i < pinfo->id.len; i++, p += 2)
         sprintf (p, "%02X", pinfo->id.value[i]);
       *p = 0;
+    }
+  
+  return rc;
+}
+
+/* See card.c for interface description */
+static int
+p15_enum_certs (CARD card, int idx, char **certid, int *type)
+{
+  int rc;
+  struct p15private_s *priv;
+  struct sc_pkcs15_object *obj;
+  struct sc_pkcs15_cert_info *cinfo;
+  int nobjs;
+
+  rc = init_private_data (card);
+  if (rc) 
+      return rc;
+  priv = card->p15priv;
+  nobjs = priv->n_cert_objs;
+  rc = 0;
+  if (idx >= nobjs)
+    return -1;
+  obj =  priv->cert_objs[idx];
+  cinfo = obj->data;
+  
+  if (certid)
+    {
+      char *p;
+      int i;
+
+      *certid = p = xtrymalloc (9+cinfo->id.len*2+1);
+      if (!*certid)
+        return GNUPG_Out_Of_Core;
+      p = stpcpy (p, "P15-5015.");
+      for (i=0; i < cinfo->id.len; i++, p += 2)
+        sprintf (p, "%02X", cinfo->id.value[i]);
+      *p = 0;
+    }
+  if (type)
+    {
+      if (!obj->df)
+        *type = 0; /* unknown */
+      else if (obj->df->type == SC_PKCS15_CDF)
+        *type = 100;
+      else if (obj->df->type == SC_PKCS15_CDF_TRUSTED)
+        *type = 101;
+      else if (obj->df->type == SC_PKCS15_CDF_USEFUL)
+        *type = 102;
+      else 
+        *type = 0; /* error -> unknown */
     }
   
   return rc;
@@ -425,6 +491,7 @@ void
 card_p15_bind (CARD card)
 {
   card->fnc.enum_keypairs = p15_enum_keypairs;
+  card->fnc.enum_certs    = p15_enum_certs;
   card->fnc.read_cert     = p15_read_cert;
   card->fnc.sign          = p15_sign;
   card->fnc.decipher      = p15_decipher;

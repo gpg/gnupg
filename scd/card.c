@@ -428,6 +428,39 @@ card_enum_keypairs (CARD card, int idx,
 }
 
 
+/* Enumerate all trusted certificates available on the card, return
+   their ID in CERT and the type in CERTTYPE.  Types of certificates
+   are:
+      0   := Unknown
+      100 := Regular X.509 cert
+      101 := Trusted X.509 cert
+      102 := Useful X.509 cert
+ */
+int
+card_enum_certs (CARD card, int idx, char **certid, int *certtype)
+{
+  int rc;
+
+  if (certid)
+    *certid = NULL;
+
+  if (!card)
+    return GNUPG_Invalid_Value;
+  if (idx < 0)
+    return GNUPG_Invalid_Index;
+  if (!card->fnc.initialized)
+    return GNUPG_Card_Not_Initialized;
+  if (!card->fnc.enum_certs)
+    return GNUPG_Unsupported_Operation;
+  rc = card->fnc.enum_certs (card, idx, certid, certtype);
+  if (opt.verbose)
+    log_info ("card operation enum_certs result: %s\n",
+              gnupg_strerror (rc));
+  return rc;
+}
+
+
+
 /* Read the certificate identified by CERTIDSTR which is the
    hexadecimal encoded ID of the certificate, prefixed with the string
    "3F005015.". The certificate is return in DER encoded form in CERT

@@ -85,6 +85,7 @@ int card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp);
 int card_enum_keypairs (CARD card, int idx,
                         unsigned char *keygrip,
                         char **keyid);
+int card_enum_certs (CARD card, int idx, char **certid, int *certtype);
 int card_read_cert (CARD card, const char *certidstr,
                     unsigned char **cert, size_t *ncert);
 int card_sign (CARD card,

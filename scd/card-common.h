@@ -40,6 +40,7 @@ struct card_ctx_s {
 
     int (*enum_keypairs) (CARD card, int idx,
                           unsigned char *keygrip, char **keyid);
+    int (*enum_certs) (CARD card, int idx, char **certid, int *certtype);
     int (*read_cert) (CARD card, const char *certidstr,
                       unsigned char **cert, size_t *ncert);
     int (*sign) (CARD card,
