@@ -1,3 +1,8 @@
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* assuan-client.c (_assuan_read_from_server): Detect END.
+	(assuan_transact): Pass it to the data callback.
+
 2002-02-27  Werner Koch  <wk@gnupg.org>
 
 	* assuan-client.c (assuan_transact): Add 2 more arguments to

@@ -95,6 +95,13 @@ _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off)
       while (line[*off] == ' ')
         ++*off;
     }
+  else if (linelen >= 3
+           && line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
+           && (line[3] == '\0' || line[3] == ' '))
+    {
+      *okay = 5; /* end line */
+      *off = 3;
+    }
   else
     rc = ASSUAN_Invalid_Response;
   return rc;
@@ -201,6 +208,18 @@ assuan_transact (ASSUAN_CONTEXT ctx,
       if (!rc)
         goto again;
     }
+  else if (okay == 5)
+    {
+      if (!data_cb)
+        rc = ASSUAN_No_Data_Callback;
+      else 
+        {
+          rc = data_cb (data_cb_arg, NULL, 0);
+          if (!rc)
+            goto again;
+        }
+    }
 
   return rc;
 }
+
