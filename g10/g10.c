@@ -1,5 +1,5 @@
 /* g10.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998,1999,2000,2001,2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -313,6 +313,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoStrict,
     oMangleDosFilenames,
     oNoMangleDosFilenames,
+    oEnableProgressFilter,                          
 aTest };
 
 
@@ -616,6 +617,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoStrict,   "no-strict",   0, "@" },
     { oMangleDosFilenames, "mangle-dos-filenames", 0, "@" },
     { oNoMangleDosFilenames, "no-mangle-dos-filenames", 0, "@" },
+    { oEnableProgressFilter, "enable-progress-filter", 0, "@" },
 {0} };
 
 
@@ -1817,6 +1819,8 @@ main( int argc, char **argv )
 
           case oMangleDosFilenames: opt.mangle_dos_filenames = 1; break;
           case oNoMangleDosFilenames: opt.mangle_dos_filenames = 0; break;
+
+          case oEnableProgressFilter: opt.enable_progress_filter = 1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

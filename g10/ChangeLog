@@ -1,3 +1,31 @@
+2003-04-15  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (AM_CFLAGS): Make use of AM_CFLAGS and AM_LDFLAGS.
+
+	* g10.c, options.h: New option --enable-progress-filter.
+	* progress.c (handle_progress): Make use of it.
+
+2003-04-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* progress.c: New file.
+	* Makefile.am (common_source): Add progress.c.
+	* filter.h (progress_filter_context_t): New type.
+	(progress_filter, handle_progress): New prototypes.
+	* main.h (open_sigfile): New argument for prototype.
+	* openfile.c (open_sigfile): New argument to install progress
+	filter.
+	* encode.c (encode_simple): New variable PFX.  Register
+	progress filter.  Install text_filter after that.
+	(encode_crypt): Likewise.
+	* sign.c (sign_file): Likewise.
+	(clearsign_file): Likewise.
+	* decrypt.c (decrypt_message): Likewise.
+	(decrypt_messages): Likewise.
+	* verify.c (verify_signatures): Likewise.
+	(verify_one_file): Likewise.
+	* plaintext.c (hash_datafiles): Likewise.
+	(ask_for_detached_datafile): Likewise.
+
 2003-04-10  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (read_passphrase_from_fd): Do a dummy read if the

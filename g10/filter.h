@@ -109,6 +109,14 @@ typedef struct {
 } text_filter_context_t;
 
 
+typedef struct {
+    char *what;			/* description */
+    u32 last_time;		/* last time reported */
+    unsigned long last;		/* last amount reported */
+    unsigned long offset;	/* current amount */
+    unsigned long total;	/* total amount */
+} progress_filter_context_t;
+
 /* encrypt_filter_context_t defined in main.h */
 
 /*-- mdfilter.c --*/
@@ -137,6 +145,10 @@ int text_filter( void *opaque, int control,
 int copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 			  int escape_dash, int escape_from, int pgp2mode );
 
-
+/*-- progress.c --*/
+int progress_filter (void *opaque, int control,
+		     IOBUF a, byte *buf, size_t *ret_len);
+void handle_progress (progress_filter_context_t *pfx,
+		      IOBUF inp, char *name);
 
 #endif /*G10_FILTER_H*/
