@@ -124,21 +124,6 @@ string_to_digest_algo( const char *string )
 {
     struct md_digest_list_s *r;
 
-    /* Hi there.  I see you changing that code so you can use the new
-       SHA hashes.  Before you do it, please think about it.  There
-       are no official releases of any OpenPGP programs that generate
-       these hashes, and we're trying to get a code base that can
-       understand the hashes before we release one that generates
-       them. - dshaw */
-
-    if(!ascii_strcasecmp("sha384",string)
-       || !ascii_strcasecmp("sha512",string))
-      {
-	log_info(_("digest algorithm `%s' is read-only in this release\n"),
-		 string);
-	return 0;
-      }
-
     do {
 	for(r = digest_list; r; r = r->next )
 	    if( !ascii_strcasecmp( r->name, string ) )

@@ -1,3 +1,8 @@
+2004-11-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* md.c (string_to_digest_algo): Allow read/write SHA384 and
+	SHA512.
+
 2004-11-03  Timo Schulz  <twoaday@g10code.com>
 
         * idea-stub.c (dlopen, dlsym): Use w32_strerror instead of
