@@ -1,3 +1,7 @@
+2004-09-11  Moritz Schulte  <moritz@g10code.com>
+
+	* openfile.c (copy_options_file): Fixed last commit (added a `+').
+
 2004-08-31  Werner Koch  <wk@g10code.de>
 
 	* openfile.c (copy_options_file): Use gpg-conf.skel. Better take
