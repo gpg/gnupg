@@ -1,4 +1,7 @@
 
+  * try to do --verify even if the files are swapped on the commandline
+    (requested by Herny Spencer)
+
 Scheduled for 1.1
 -----------------
   * With option -i prompt before adding a key to the keyring and show some

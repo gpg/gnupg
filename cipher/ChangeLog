@@ -1,5 +1,10 @@
-Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Wed Sep 15 14:39:59 CEST 1999  Michael Roth <mroth@nessie.de>
 
+	* des.c: Various speed improvements: One bit pre rotation
+	  trick after initial permutation (Richard Outerbridge).
+	  Finished test of SSLeay Tripple-DES patterns.
+
+Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* rndw32.c: New.
 
