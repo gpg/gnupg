@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -534,8 +534,33 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			    {
 			      force_v4=1;
 			      node->flag|=NODFLG_DELSIG;
+			      m_free(user);
 			      continue;
 			    }
+		      }
+
+		    /* Is the current signature expired? */
+		    if(node->pkt->pkt.signature->flags.expired)
+		      {
+			tty_printf(_("Your current signature on \"%s\"\n"
+				     "has expired.\n"),user);
+
+			if(cpr_get_answer_is_yes("sign_uid.replace_expired_okay",
+						 _("Do you want to issue a "
+						   "new signature to replace "
+						   "the expired one? (y/N) ")))
+			  {
+			    /* Mark these for later deletion.  We
+                               don't want to delete them here, just in
+                               case the replacement signature doesn't
+                               happen for some reason.  We only delete
+                               these after the replacement is already
+                               in place. */
+
+			    node->flag|=NODFLG_DELSIG;
+			    m_free(user);
+			    continue;
+			  }
 		      }
 
 		    if(!node->pkt->pkt.signature->flags.exportable && !local)
@@ -558,6 +583,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
                                in place. */
 
 			    node->flag|=NODFLG_DELSIG;
+			    m_free(user);
 			    continue;
 			  }
 		      }
@@ -572,6 +598,18 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
                       tty_printf(_(
                          "\"%s\" was already signed by key %08lX\n"),
                                  user,(ulong)sk_keyid[1] );
+
+		    if(opt.expert
+		       && cpr_get_answer_is_yes("sign_uid.dupe_okay",
+						_("Do you want to sign it "
+						  "again anyway? (y/N) ")))
+		      {
+			/* Don't delete the old sig here since this is
+			   an --expert thing. */
+			m_free(user);
+			continue;
+		      }
+
                     sprintf (buf, "%08lX%08lX",
                              (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
                     write_status_text (STATUS_ALREADY_SIGNED, buf);

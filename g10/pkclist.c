@@ -1,6 +1,6 @@
 /* pkclist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -591,20 +591,20 @@ check_signatures_trust( PKT_signature *sig )
   unsigned int trustlevel;
   int rc=0;
 
+  rc = get_pubkey( pk, sig->keyid );
+  if (rc) 
+    { /* this should not happen */
+      log_error("Ooops; the key vanished  - can't check the trust\n");
+      rc = G10ERR_NO_PUBKEY;
+      goto leave;
+    }
+
   if ( opt.trust_model==TM_ALWAYS )
     {
       if( !opt.quiet )
         log_info(_("WARNING: Using untrusted key!\n"));
       if (opt.with_fingerprint)
         print_fingerprint (pk, NULL, 1);
-      goto leave;
-    }
-
-  rc = get_pubkey( pk, sig->keyid );
-  if (rc) 
-    { /* this should not happen */
-      log_error("Ooops; the key vanished  - can't check the trust\n");
-      rc = G10ERR_NO_PUBKEY;
       goto leave;
     }
 

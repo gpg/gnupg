@@ -110,7 +110,7 @@ typedef struct {
 
 
 typedef struct {
-    char *what;			/* description */
+    const char *what;		/* description */
     u32 last_time;		/* last time reported */
     unsigned long last;		/* last amount reported */
     unsigned long offset;	/* current amount */
@@ -149,6 +149,6 @@ int copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 int progress_filter (void *opaque, int control,
 		     IOBUF a, byte *buf, size_t *ret_len);
 void handle_progress (progress_filter_context_t *pfx,
-		      IOBUF inp, char *name);
+		      IOBUF inp, const char *name);
 
 #endif /*G10_FILTER_H*/

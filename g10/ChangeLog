@@ -1,3 +1,21 @@
+2003-04-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_revoke_cert): Remove ultimate trust when
+	revoking an ultimately trusted key.
+
+	* keyedit.c (sign_uids): Allow replacing expired signatures.
+	Allow duplicate signatures with --expert.
+
+	* pkclist.c (check_signatures_trust): Don't display a null
+	fingerprint when checking a signature with --always-trust enabled.
+
+	* filter.h (progress_filter_context_t), progress.c
+	(handle_progress), plaintext.c (ask_for_detached_datafile,
+	hash_datafiles): Fix compiler warnings.  Make "what" constant.
+
+	* build-packet.c (do_plaintext): Do not create invalid literal
+	packets with >255-byte names.
+
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (AM_CFLAGS): Make use of AM_CFLAGS and AM_LDFLAGS.

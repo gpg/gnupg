@@ -401,7 +401,7 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     do_hash( md, md2, fp, textmode );
     iobuf_close(fp);
     if (dealloc_pfx_name)
-      m_free (pfx.what);
+      m_free ((void *)pfx.what);
 
   leave:
     m_free(answer);
@@ -428,7 +428,7 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 	if( fp ) {
 	    do_hash( md, md2, fp, textmode );
 	    iobuf_close(fp);
-	    m_free (pfx.what);
+	    m_free ((void *)pfx.what);
 	    return 0;
 	}
         log_error (_("no signed data\n"));

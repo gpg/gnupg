@@ -1105,6 +1105,13 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
 	m_free(p);
     }
     stats->n_revoc++;
+
+    /* If the key we just revoked was ultimately trusted, remove its
+       ultimate trust.  This doesn't stop the user from putting the
+       ultimate trust back, but is a reasonable solution for now. */
+    if(get_ownertrust(pk)==TRUST_ULTIMATE)
+      clear_ownertrusts(pk);
+
     revalidation_mark ();
 
   leave:
