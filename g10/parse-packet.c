@@ -1523,6 +1523,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	pk->max_expiredate = max_expiredate;
 	pk->hdrbytes	= hdrlen;
 	pk->version	= version;
+	pk->is_primary = pkttype == PKT_PUBLIC_KEY;
 	pk->pubkey_algo = algorithm;
 	pk->req_usage = 0; 
 	pk->pubkey_usage = 0; /* not yet used */

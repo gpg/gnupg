@@ -305,9 +305,10 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
     if ( use & PUBKEY_USAGE_ENC ) {
         putchar ('e');
     }
-    if ( use & PUBKEY_USAGE_SIG ) {
+    if ( (use & PUBKEY_USAGE_SIG) && !(sk?(sk->protect.s2k.mode==1001):0) ) {
         putchar ('s');
-        putchar ('c');
+	if( pk? pk->is_primary : sk->is_primary )
+	  putchar ('c');
     }
     if ( keyblock ) { /* figure our the usable capabilities */
         KBNODE k;
@@ -321,17 +322,26 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
                     if ( pk->pubkey_usage & PUBKEY_USAGE_ENC )
                         enc = 1;
                     if ( pk->pubkey_usage & PUBKEY_USAGE_SIG )
-                        sign = cert = 1;
+		      {
+			sign = 1;
+			if(pk->is_primary)
+			  cert = 1;
+		      }
                 }
             }
             else if ( k->pkt->pkttype == PKT_SECRET_KEY 
                       || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
                 sk = k->pkt->pkt.secret_key;
-                if ( sk->is_valid && !sk->is_revoked && !sk->has_expired ) {
+                if ( sk->is_valid && !sk->is_revoked && !sk->has_expired
+		     && sk->protect.s2k.mode!=1001 ) {
                     if ( sk->pubkey_usage & PUBKEY_USAGE_ENC )
                         enc = 1;
                     if ( sk->pubkey_usage & PUBKEY_USAGE_SIG )
-                        sign = cert = 1;
+		      {
+			sign = 1;
+			if(sk->is_primary)
+			  cert = 1;
+		      }
                 }
             }
         }

@@ -1,3 +1,12 @@
+2002-10-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (print_capabilities): Secret-parts-missing keys should
+	show that fact in the capabilities, and only primary signing keys
+	can certify other keys.
+
+	* packet.h, parse_packet.c (parse_key): Add is_primary flag for
+	public keys (it already exists for secret keys).
+
 2002-10-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (import_secret_one): Check for an illegal (>110)
