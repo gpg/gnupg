@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 1.0[H p]
-Last-Modified: Feb 20, 2001[H p]
+Version: 1.1[H p]
+Last-Modified: Mar 16, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -810,6 +810,36 @@ material?
     algorithm to use.
 
 
+<Q> What is the list of preferred algorithms?
+
+    The list of preferred algorithms is a list of cypher, hash and
+    compression algorithms stored in the self-signature of a key during
+    key generation. When you encrypt a document, GnuPG uses this list
+    (which is then part of a public key) to determine which algorithms
+    to use. Basically it tells other people what algorithms the
+    recipient is able to handle and provides an order of preference.
+
+<Q> How do I change the list of preferred algorithms?
+
+    Currently the default is hard-wired into the GnuPG source code.
+    You'll have to change [H pre]g10/keygen.c[H/pre] and recompile. The
+    function you'll have to change is [H pre]keygen_add_std_prefs[H /pre].  
+    The code is pretty self-explanatory. The constants used to
+    denote the algorithms are defined in [H pre]include/cipher.h[H /pre].
+
+    After having done that, generate a new key pair (or a new encryption
+    subkey) with the modified executable. This new key will have the
+    modified preferences and can then be used with unmodified executables.
+
+    To modify the preferences of an existing key, use a modified
+    executable (see above) to change the expiry date and then save the
+    key. The use your original expiry date and save the key again. Now
+    you've got the prefs changed and can use the key again with your
+    unmodified executable.
+
+    Changing the list of preferences with an unmodified GnuPG
+    executable (possibly in the edit-key menu) is on the TODO list and
+    planned for future releases.
 
 
 <S> ACKNOWLEDGEMENTS
