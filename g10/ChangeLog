@@ -1,3 +1,8 @@
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* misc.c (setsysinfo): Removed a #warning for Alpha's uniligedn
+	trap disabling - it is quite possible that this is a debug relict.
+
 2002-06-20  Stefan Bellon  <sbellon@sbellon.de>
 
 	* g10.c [__riscos__]: Added image file system feature.

@@ -60,7 +60,6 @@ pull_in_libs(void)
 
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
-#warning using trap_unaligned
 static int
 setsysinfo(unsigned long op, void *buffer, unsigned long size,
 		     int *start, void *arg, unsigned long flag)
