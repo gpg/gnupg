@@ -24,7 +24,7 @@ AC_PREREQ(2.52)
 dnl A snapshot release has a letter appended.  CVS files before a release
 dnl are suffixed with the string "-cvs", so "1.0.6a-cvs" is a cvs version
 dnl between 1.0.6 and 1.0.6a. 
-AC_INIT(gnupg, 1.0.6d, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.0.6e-cvs, bug-gnupg@gnu.org)
 ALL_LINGUAS="da de eo es_ES et fr id it ja nl pl pt_BR pt_PT sv tr"
 static_modules="sha1 md5 rmd160"
 static_random_module=""
