@@ -640,7 +640,10 @@ gpgsm_format_keydesc (ksba_cert_t cert)
     orig_codeset = nl_langinfo (CODESET);
 #endif
   if (orig_codeset)
-    { /* We only switch when we are able to restore the codeset later. */
+    { /* We only switch when we are able to restore the codeset later.
+         Note that bind_textdomain_codeset does only return on memory
+         errors but not if a codeset is not available.  Thus we don't
+         bother printing a diagnostic here. */
       orig_codeset = xstrdup (orig_codeset);
       if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
         orig_codeset = NULL; 
