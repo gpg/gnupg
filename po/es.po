@@ -3401,7 +3401,7 @@ msgid ""
 msgstr ""
 "Necesita una contraseña para desbloquear la clave secreta\n"
 "del usuario: \"%.*s\"\n"
-"clave %s de %u bits, ID %08lX, creada el %s%s\n"
+"clave %3$s de %2$u bits, ID %08lX, creada el %s%s\n"
 
 #: g10/passphrase.c:542
 msgid "Enter passphrase\n"

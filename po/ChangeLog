@@ -1,5 +1,8 @@
 2002-04-09  Werner Koch  <wk@gnupg.org>
 
+	* es.po: Fixed a c-format problem; for unknown reasons msgfmt -c
+	can't cope with swapped arguments.
+
 	* de.po: Fuzzy fixes and a few new translations.
 
 	* id.po: Fixed a format string mismatch.
