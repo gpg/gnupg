@@ -1,5 +1,8 @@
 2004-07-01  Werner Koch  <wk@gnupg.org>
 
+	* sc-investigate.c: Initialize Pth which is now required.
+	(interactive_shell): New command "readpk".
+
 	* app-openpgp.c (do_getattr): Fix for sending CA-FPR.
 
 2004-06-30  Werner Koch  <wk@gnupg.org>

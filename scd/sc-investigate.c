@@ -26,6 +26,9 @@
 #include <errno.h>
 #include <ctype.h>
 #include <unistd.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+#endif
 
 #ifdef HAVE_READLINE_READLINE_H
 #include <readline/readline.h>
@@ -86,6 +89,12 @@ static ARGPARSE_OPTS opts[] = {
   { oGenRandom, "gen-random", 4, "|N|generate N bytes of random"},
   {0}
 };
+
+
+#ifdef USE_GNU_PTH
+/* Pth wrapper function definitions. */
+GCRY_THREAD_OPTION_PTH_IMPL;
+#endif /*USE_GNU_PTH*/
 
 
 static void interactive_shell (int slot);
@@ -151,7 +160,18 @@ main (int argc, char **argv )
   /* Try to auto set the character set.  */
   set_native_charset (NULL); 
 
-  /* check that the libraries are suitable.  Do it here because
+  /* Libgcrypt requires us to register the threading model first.
+     Note that this will also do the pth_init. */
+#ifdef USE_GNU_PTH
+  rc = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
+  if (rc)
+    {
+      log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
+                 gpg_strerror (rc));
+    }
+#endif /*USE_GNU_PTH*/
+
+  /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
@@ -411,6 +431,7 @@ interactive_shell (int slot)
       cmdDEBUG,
       cmdVERIFY,
       cmdCHANGEREF,
+      cmdREADPK,
 
       cmdINVCMD
     };
@@ -439,6 +460,7 @@ interactive_shell (int slot)
     { "verify" , cmdVERIFY, "verify CHVNO PIN" },
     { "ver"    , cmdVERIFY, NULL },
     { "changeref", cmdCHANGEREF, "change reference data" },
+    { "readpk",    cmdREADPK,    "read a public key" },
     { NULL, cmdINVCMD } 
   };
   enum cmdids cmd = cmdNOP;
@@ -654,6 +676,23 @@ interactive_shell (int slot)
               }
           }
           break;
+
+        case cmdREADPK:
+          if (arg_number < 1 || arg_number > 255)
+            printf ("usage: readpk CRTBYTE1\n");
+          else
+            {
+              unsigned char crt[2];
+            
+              crt[0] = arg_number;
+              crt[1] = 0;
+              err = iso7816_read_public_key(slot, crt, 2,
+                                            &result, &resultlen);
+              if (!err) 
+                dump_or_store_buffer (arg_string, result, resultlen);
+            }
+            break;
+
 
         case cmdINVCMD:
         default:
