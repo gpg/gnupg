@@ -76,6 +76,7 @@ enum {
   GNUPG_CRL_Too_Old = 47,
   GNUPG_Line_Too_Long = 48,
   GNUPG_Not_Trusted = 49,
+  GNUPG_Canceled = 50,
 };
 
 /* Status codes - fixme: should go into another file */
