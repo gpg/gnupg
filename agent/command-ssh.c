@@ -181,8 +181,8 @@ static ssh_key_type_spec_t ssh_key_types[] =
    General utility functions. 
  */
 
-/* A secure realloc, i.e. it amkese sure to allocate secure memory if
-   A is NULL.  This is required becuase the standard gcry_realloc does
+/* A secure realloc, i.e. it makes sure to allocate secure memory if A
+   is NULL.  This is required becuase the standard gcry_realloc does
    not know whether to allocate secure or normal if NULL is passed as
    existing buffer.  */
 static void *
@@ -220,17 +220,12 @@ make_cstring (const char *data, size_t data_n)
 
 /* 
    Primitive I/O functions.  
-
-   FIXME: Needs documentation.
-
-   Why are all these functions prefixed with es_ ? They are not part
-   of libestream, thus they should not use this prefix.
-
  */
 
 
+/* Read a byte from STREAM, store it in B.  */
 static gpg_error_t
-es_read_byte (estream_t stream, unsigned char *b)
+stream_read_byte (estream_t stream, unsigned char *b)
 {
   gpg_error_t err;
   int ret;
@@ -252,9 +247,9 @@ es_read_byte (estream_t stream, unsigned char *b)
   return err;
 }
 
-
+/* Write the byte contained in B to STREAM.  */
 static gpg_error_t
-es_write_byte (estream_t stream, unsigned char b)
+stream_write_byte (estream_t stream, unsigned char b)
 {
   gpg_error_t err;
   int ret;
@@ -268,9 +263,9 @@ es_write_byte (estream_t stream, unsigned char b)
   return err;
 }
 
-
+/* Read a uint32 from STREAM, store it in UINT32.  */
 static gpg_error_t
-es_read_uint32 (estream_t stream, u32 *uint32)
+stream_read_uint32 (estream_t stream, u32 *uint32)
 {
   unsigned char buffer[4];
   size_t bytes_read;
@@ -308,9 +303,9 @@ es_read_uint32 (estream_t stream, u32 *uint32)
   return err;
 }
 
-
+/* Write the uint32 contained in UINT32 to STREAM.  */
 static gpg_error_t
-es_write_uint32 (estream_t stream, u32 uint32)
+stream_write_uint32 (estream_t stream, u32 uint32)
 {
   unsigned char buffer[4];
   gpg_error_t err;
@@ -331,9 +326,9 @@ es_write_uint32 (estream_t stream, u32 uint32)
   return err;
 }
 
-
+/* Read SIZE bytes from STREAM into BUFFER.  */
 static gpg_error_t
-es_read_data (estream_t stream, unsigned char *buffer, size_t size)
+stream_read_data (estream_t stream, unsigned char *buffer, size_t size)
 {
   gpg_error_t err;
   size_t bytes_read;
@@ -353,9 +348,9 @@ es_read_data (estream_t stream, unsigned char *buffer, size_t size)
   return err;
 }
 
-
+/* Write SIZE bytes from BUFFER to STREAM.  */
 static gpg_error_t
-es_write_data (estream_t stream, const unsigned char *buffer, size_t size)
+stream_write_data (estream_t stream, const unsigned char *buffer, size_t size)
 {
   gpg_error_t err;
   int ret;
@@ -369,10 +364,12 @@ es_write_data (estream_t stream, const unsigned char *buffer, size_t size)
   return err;
 }
 
-
+/* Read a binary string from STREAM into STRING, store size of string
+   in STRING_SIZE; depending on SECURE use secure memory for
+   string.  */
 static gpg_error_t
-es_read_string (estream_t stream, unsigned int secure,
-		unsigned char **string, u32 *string_size)
+stream_read_string (estream_t stream, unsigned int secure,
+		    unsigned char **string, u32 *string_size)
 {
   gpg_error_t err;
   unsigned char *buffer;
@@ -381,7 +378,7 @@ es_read_string (estream_t stream, unsigned int secure,
   buffer = NULL;
 
   /* Read string length.  */
-  err = es_read_uint32 (stream, &length);
+  err = stream_read_uint32 (stream, &length);
   if (err)
     goto out;
 
@@ -399,7 +396,7 @@ es_read_string (estream_t stream, unsigned int secure,
     }
 
   /* Read data.  */
-  err = es_read_data (stream, buffer, length);
+  err = stream_read_data (stream, buffer, length);
   if (err)
     goto out;
 
@@ -417,14 +414,14 @@ es_read_string (estream_t stream, unsigned int secure,
   return err;
 }
 
-
+/* Read a C-string from STREAM, store copy in STRING.  */
 static gpg_error_t
-es_read_cstring (estream_t stream, char **string)
+stream_read_cstring (estream_t stream, char **string)
 {
   unsigned char *buffer;
   gpg_error_t err;
 
-  err = es_read_string (stream, 0, &buffer, NULL);
+  err = stream_read_string (stream, 0, &buffer, NULL);
   if (err)
     goto out;
   
@@ -436,39 +433,40 @@ es_read_cstring (estream_t stream, char **string)
 }
 
 
-/* FIXME: Needs documentation.  */
+/* Write a binary string from STRING of size STRING_N to STREAM.  */
 static gpg_error_t
-es_write_string (estream_t stream,
-		 const unsigned char *string, u32 string_n)
+stream_write_string (estream_t stream,
+		     const unsigned char *string, u32 string_n)
 {
   gpg_error_t err;
 
-  err = es_write_uint32 (stream, string_n);
+  err = stream_write_uint32 (stream, string_n);
   if (err)
     goto out;
 
-  err = es_write_data (stream, string, string_n);
+  err = stream_write_data (stream, string, string_n);
 
  out:
 
   return err;
 }
 
-
+/* Write a C-string from STRING to STREAM.  */
 static gpg_error_t
-es_write_cstring (estream_t stream, const char *string)
+stream_write_cstring (estream_t stream, const char *string)
 {
   gpg_error_t err;
 
-  err = es_write_string (stream,
-			 (const unsigned char *) string, strlen (string));
+  err = stream_write_string (stream,
+			     (const unsigned char *) string, strlen (string));
 
   return err;
 }			  
 
-
+/* Read an MPI from STREAM, store it in MPINT.  Depending on SECURE
+   use secure memory.  */
 static gpg_error_t
-es_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
+stream_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
 {
   unsigned char *mpi_data;
   u32 mpi_data_size;
@@ -477,7 +475,7 @@ es_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
 
   mpi_data = NULL;
 
-  err = es_read_string (stream, secure, &mpi_data, &mpi_data_size);
+  err = stream_read_string (stream, secure, &mpi_data, &mpi_data_size);
   if (err)
     goto out;
 
@@ -494,9 +492,9 @@ es_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
   return err;
 }
 
-
+/* Write the MPI contained in MPINT to STREAM.  */
 static gpg_error_t
-es_write_mpi (estream_t stream, gcry_mpi_t mpint)
+stream_write_mpi (estream_t stream, gcry_mpi_t mpint)
 {
   unsigned char *mpi_buffer;
   size_t mpi_buffer_n;
@@ -508,7 +506,7 @@ es_write_mpi (estream_t stream, gcry_mpi_t mpint)
   if (err)
     goto out;
 
-  err = es_write_string (stream, mpi_buffer, mpi_buffer_n);
+  err = stream_write_string (stream, mpi_buffer, mpi_buffer_n);
 
  out:
 
@@ -517,9 +515,42 @@ es_write_mpi (estream_t stream, gcry_mpi_t mpint)
   return err;
 }
 
-
+/* Copy data from SRC to DST until EOF is reached.  */
 static gpg_error_t
-es_read_file (const char *filename, unsigned char **buffer, size_t *buffer_n)
+stream_copy (estream_t dst, estream_t src)
+{
+  char buffer[BUFSIZ];
+  size_t bytes_read;
+  gpg_error_t err;
+  int ret;
+
+  err = 0;
+  while (1)
+    {
+      ret = es_read (src, buffer, sizeof (buffer), &bytes_read);
+      if (ret || (! bytes_read))
+	{
+	  if (ret)
+	    err = gpg_error_from_errno (errno);
+	  break;
+	}
+      ret = es_write (dst, buffer, bytes_read, NULL);
+      if (ret)
+	{
+	  err = gpg_error_from_errno (errno);
+	  break;
+	}
+    }
+
+  return err;
+}
+
+
+/* Read the content of the file specified by FILENAME into a newly
+   create buffer, which is to be stored in BUFFER; store length of
+   buffer in BUFFER_N.  */
+static gpg_error_t
+file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
 {
   unsigned char *buffer_new;
   struct stat statbuf;
@@ -551,7 +582,7 @@ es_read_file (const char *filename, unsigned char **buffer, size_t *buffer_n)
       goto out;
     }
 
-  err = es_read_data (stream, buffer_new, statbuf.st_size);
+  err = stream_read_data (stream, buffer_new, statbuf.st_size);
   if (err)
     goto out;
 
@@ -565,36 +596,6 @@ es_read_file (const char *filename, unsigned char **buffer, size_t *buffer_n)
 
   if (err)
     xfree (buffer_new);
-
-  return err;
-}
-
-
-static gpg_error_t
-es_copy (estream_t dst, estream_t src)
-{
-  char buffer[BUFSIZ];
-  size_t bytes_read;
-  gpg_error_t err;
-  int ret;
-
-  err = 0;
-  while (1)
-    {
-      ret = es_read (src, buffer, sizeof (buffer), &bytes_read);
-      if (ret || (! bytes_read))
-	{
-	  if (ret)
-	    err = gpg_error_from_errno (errno);
-	  break;
-	}
-      ret = es_write (dst, buffer, bytes_read, NULL);
-      if (ret)
-	{
-	  err = gpg_error_from_errno (errno);
-	  break;
-	}
-    }
 
   return err;
 }
@@ -661,7 +662,7 @@ ssh_receive_mpint_list (estream_t stream, int secret,
   for (i = 0; i < elems_n; i++)
     {
       elem_is_secret = strchr (elems_secret, elems[i]) ? 1 : 0;
-      err = es_read_mpi (stream, elem_is_secret, &mpis[i]);
+      err = stream_read_mpi (stream, elem_is_secret, &mpis[i]);
       if (err)
 	break;
     }
@@ -727,7 +728,7 @@ ssh_signature_encoder_rsa (estream_t signature_blob, gcry_mpi_t *mpis)
   if (err)
     goto out;
 
-  err = es_write_string (signature_blob, data, data_n);
+  err = stream_write_string (signature_blob, data, data_n);
   xfree (data);
 
  out:
@@ -771,7 +772,7 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
   if (err)
     goto out;
 
-  err = es_write_string (signature_blob, buffer, sizeof (buffer));
+  err = stream_write_string (signature_blob, buffer, sizeof (buffer));
 
  out:
 
@@ -1075,7 +1076,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
   comment = "";
   key = NULL;
   	
-  err = es_read_cstring (stream, &key_type);
+  err = stream_read_cstring (stream, &key_type);
   if (err)
     goto out;
 
@@ -1089,7 +1090,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
 
   if (read_comment)
     {
-      err = es_read_cstring (stream, &comment);
+      err = stream_read_cstring (stream, &comment);
       if (err)
 	goto out;
     }
@@ -1145,12 +1146,12 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
       goto out;
     }
 
-  err = es_write_cstring (stream, type);
+  err = stream_write_cstring (stream, type);
   if (err)
     goto out;
 
   for (i = 0; mpis[i] && (! err); i++)
-    err = es_write_mpi (stream, mpis[i]);
+    err = stream_write_mpi (stream, mpis[i]);
   if (err)
     goto out;
 
@@ -1172,7 +1173,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
       goto out;
     }
 
-  err = es_read_data (stream, blob_new, blob_size_new);
+  err = stream_read_data (stream, blob_new, blob_size_new);
   if (err)
     goto out;
 
@@ -1223,11 +1224,11 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public)
   if (err)
     goto out;
   
-  err = es_write_string (stream, blob, blob_n);
+  err = stream_write_string (stream, blob, blob_n);
   if (err)
     goto out;
 
-  err = es_write_cstring (stream, comment);
+  err = stream_write_cstring (stream, comment);
   
  out:
 
@@ -1256,7 +1257,7 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
       goto out;
     }
 
-  err = es_write_data (blob_stream, blob, blob_size);
+  err = stream_write_data (blob_stream, blob, blob_size);
   if (err)
     goto out;
 
@@ -1373,6 +1374,7 @@ key_secret_to_public (gcry_sexp_t *key_public,
   if (err)
     goto out;
 
+  /* FIXME: write better.  */
   sprintf (template, "(public-key (%s", spec.identifier);
   for (i = 0; i < elems_n; i++)
     sprintf (strchr (template, 0)," (%c %%m)", elems[i]);
@@ -1479,7 +1481,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
 	      strncpy (key_path + key_directory_n + 1, dir_entry->d_name, 40);
 
 	      /* Read file content.  */
-	      err = es_read_file (key_path, &buffer, &buffer_n);
+	      err = file_to_buffer (key_path, &buffer, &buffer_n);
 	      if (err)
 		break;
 	      
@@ -1540,19 +1542,19 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   if (! err)
     {
-      ret_err = es_write_byte (response, SSH_RESPONSE_IDENTITIES_ANSWER);
+      ret_err = stream_write_byte (response, SSH_RESPONSE_IDENTITIES_ANSWER);
       if (ret_err)
 	goto leave;
-      ret_err = es_write_uint32 (response, key_counter);
+      ret_err = stream_write_uint32 (response, key_counter);
       if (ret_err)
 	goto leave;
-      ret_err = es_copy (response, key_blobs);
+      ret_err = stream_copy (response, key_blobs);
       if (ret_err)
 	goto leave;
     }
   else
     {
-      ret_err = es_write_byte (response, SSH_RESPONSE_FAILURE);
+      ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
       goto leave;
     };
 
@@ -1651,7 +1653,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   if (err)
     goto out;
 
-  err = es_write_cstring (stream, spec.ssh_identifier);
+  err = stream_write_cstring (stream, spec.ssh_identifier);
   if (err)
     goto out;
 
@@ -1714,7 +1716,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
       goto out;
     }    
 
-  err = es_read_data (stream, sig_blob, sig_blob_n);
+  err = stream_read_data (stream, sig_blob, sig_blob_n);
   if (err)
     goto out;
   
@@ -1763,7 +1765,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
 
   /* Receive key.  */
   
-  err = es_read_string (request, 0, &key_blob, &key_blob_size);
+  err = stream_read_string (request, 0, &key_blob, &key_blob_size);
   if (err)
     goto out;
 
@@ -1772,12 +1774,12 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
     goto out;
 
   /* Receive data to sign.  */
-  err = es_read_string (request, 0, &data, &data_size);
+  err = stream_read_string (request, 0, &data, &data_size);
   if (err)
     goto out;
 
   /* FIXME?  */
-  err = es_read_uint32 (request, &flags);
+  err = stream_read_uint32 (request, &flags);
   if (err)
     goto out;
 
@@ -1817,16 +1819,16 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
 
   if (! err)
     {
-      ret_err = es_write_byte (response, SSH_RESPONSE_SIGN_RESPONSE);
+      ret_err = stream_write_byte (response, SSH_RESPONSE_SIGN_RESPONSE);
       if (ret_err)
 	goto leave;
-      ret_err = es_write_string (response, sig, sig_n);
+      ret_err = stream_write_string (response, sig, sig_n);
       if (ret_err)
 	goto leave;
     }
   else
     {
-      ret_err = es_write_byte (response, SSH_RESPONSE_FAILURE);
+      ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
       if (ret_err)
 	goto leave;
     }
@@ -1975,7 +1977,6 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   unsigned char *buffer;
   unsigned int buffer_n;
   char passphrase[100];
-  size_t description_length;
   char *description;
   char key_grip[41];
   char *comment;
@@ -2000,23 +2001,15 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   if (err)
     goto out;
 
-
-  /* FIXME: What the hell is that: Never have use sprintf in that way.
-     When marking a string translatbale you might get a buffer
-     overflow.  We have never done this elsewhere.  Using [x]asprintf
-     is the right way!! */
-  description_length = 95 + (comment ? strlen (comment) : 0);
-  description = malloc (description_length);
-  if (! description)
+  ret = asprintf (&description,
+		  "Please provide the passphrase, which should be used "
+		  "for protecting the received secret key `%s':",
+		  comment ? comment : "");
+  if (ret < 0)
     {
       err = gpg_err_code_from_errno (errno);
       goto out;
     }
-  else
-    sprintf (description,
-	     "Please provide the passphrase, which should be used "
-               "for protecting the received secret key `%s':",
-	     comment ? comment : "");
 
   err = get_passphrase (ctrl, description, sizeof (passphrase), passphrase);
   if (err)
@@ -2041,7 +2034,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
 
   xfree (buffer);
   xfree (comment);
-  xfree (description);
+  free (description);
   /* FIXME: verify xfree vs free.  */
 
   return err;
@@ -2088,7 +2081,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 
   while (1)
     {
-      err = es_read_byte (request, &b);
+      err = stream_read_byte (request, &b);
       if (gpg_err_code (err) == GPG_ERR_EOF)
 	{
 	  err = 0;
@@ -2101,7 +2094,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 	  {
 	    u32 n = 0;
 
-	    err = es_read_uint32 (request, &n);
+	    err = stream_read_uint32 (request, &n);
 	    if (! err)
 	      ttl = n;
 	    break;
@@ -2129,7 +2122,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 
   gcry_sexp_release (key);
 
-  ret_err = es_write_byte (response,
+  ret_err = stream_write_byte (response,
 			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
   return ret_err;
@@ -2150,7 +2143,7 @@ ssh_handler_remove_identity (ctrl_t ctrl, estream_t request,
   key_blob = NULL;
   key = NULL;
   
-  err = es_read_string (request, 0, &key_blob, &key_blob_size);
+  err = stream_read_string (request, 0, &key_blob, &key_blob_size);
   if (err)
     goto out;
 
@@ -2165,7 +2158,7 @@ ssh_handler_remove_identity (ctrl_t ctrl, estream_t request,
   xfree (key_blob);
   gcry_sexp_release (key);
 
-  ret_err = es_write_byte (response,
+  ret_err = stream_write_byte (response,
 			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
   return ret_err;
@@ -2192,7 +2185,7 @@ ssh_handler_remove_all_identities (ctrl_t ctrl, estream_t request,
   gpg_error_t err;
   
   err = ssh_identities_remove_all ();
-  ret_err = es_write_byte (response,
+  ret_err = stream_write_byte (response,
 			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
   return ret_err;
@@ -2228,7 +2221,7 @@ ssh_handler_lock (ctrl_t ctrl, estream_t request, estream_t response)
   gpg_error_t err;
   
   err = ssh_lock ();
-  ret_err = es_write_byte (response,
+  ret_err = stream_write_byte (response,
 			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
   return ret_err;
@@ -2241,7 +2234,7 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
   gpg_error_t err;
   
   err = ssh_unlock ();
-  ret_err = es_write_byte (response,
+  ret_err = stream_write_byte (response,
 			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
 
   return ret_err;
@@ -2278,7 +2271,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
      client -wk */
       
   /* Retrieve request.  */
-  err = es_read_string (stream_sock, 1, &request_data, &request_data_size);
+  err = stream_read_string (stream_sock, 1, &request_data, &request_data_size);
   if (err)
     goto out;
 
@@ -2301,7 +2294,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
       err = gpg_error_from_errno (errno);
       goto out;
     }
-  err = es_write_data (request, request_data, request_data_size);
+  err = stream_write_data (request, request_data, request_data_size);
   if (err)
     goto out;
   es_rewind (request);
@@ -2313,7 +2306,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
       goto out;
     }
 
-  err = es_read_byte (request, &request_type);
+  err = stream_read_byte (request, &request_type);
   if (err)
     {
       send_err = 1;
@@ -2350,14 +2343,14 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
       goto out;
     }
 
-  err = es_write_uint32 (stream_sock, response_size);
+  err = stream_write_uint32 (stream_sock, response_size);
   if (err)
     {
       send_err = 1;
       goto out;
     }
 
-  err = es_copy (stream_sock, response);
+  err = stream_copy (stream_sock, response);
   if (err)
     goto out;
 
@@ -2373,10 +2366,10 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 
   if (send_err)
     {
-      err = es_write_uint32 (stream_sock, 1);
+      err = stream_write_uint32 (stream_sock, 1);
       if (err)
 	goto leave;
-      err = es_write_byte (stream_sock, SSH_RESPONSE_FAILURE);
+      err = stream_write_byte (stream_sock, SSH_RESPONSE_FAILURE);
       if (err)
 	goto leave;
     }
