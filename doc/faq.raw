@@ -717,6 +717,13 @@ in it - why?
     configure script and place a [H pre]unset CDPATH[H /pre] statement
     below it. 
 
+<Q> Why does GnuPG 1.0.6 bail out on keyrings used with 1.0.7?
+
+    There is a small bug in 1.0.6 which didn't parse trust packets
+    currectly.  You may want to apply this patch if you can't upgrade:
+       http://www.gnupg.org/developer/gpg-woody-fix.txt 
+
+
 
 <S> ADVANCED TOPICS
 
@@ -910,9 +917,9 @@ material?
 
 <S> ACKNOWLEDGEMENTS
 
-    Many thanks to Werner Koch for the original FAQ file and to all
-    posters to gnupg-users and gnupg-devel. They all provided most of
-    the answers.
+    Many thanks to Nils Ellmenreich for maintaining this FAQ file for
+    a long time and to all posters to gnupg-users and gnupg-devel. They
+    all provided most of the answers.
 
     Also thanks to Casper Dik for providing me with a script to generate
     this FAQ (he uses it for the excellent Solaris2 FAQ).

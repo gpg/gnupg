@@ -2,7 +2,8 @@
 
 	* samplekeys.asc: Added gnupg distribution key 57548DCD.
 
-	* faq.raw: Inserted Douglas Calvert as new maintainer.
+	* faq.raw: Inserted Douglas Calvert as new maintainer. Acknowledge
+	Nils.  Add entry about trust packet parsing problems.
 
 2002-04-24  David Shaw  <dshaw@jabberwocky.com>
 
