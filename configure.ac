@@ -461,6 +461,13 @@ AC_CHECK_LIB(usb, usb_find_device,
              ])
 AC_SUBST(LIBUSB_LIBS)
 
+#
+# Check wether it is necessary to link against libdl.
+#
+LIBS=""
+AC_SEARCH_LIBS(dlopen, c dl,,,)
+DL_LIBS=$LIBS
+AC_SUBST(DL_LIBS)
 
 #
 # OpenSC is needed by the SCdaemon - if it is not availbale we can only
