@@ -30,7 +30,7 @@
 
 #include "agent.h"
 #include "sexp-parse.h"
-
+#include "i18n.h"
 
 
 static int
@@ -173,14 +173,16 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 {
   struct pin_entry_info_s *pi;
   int rc;
+  char *desc;
 
   assert (!opaque);
 
   if (maxbuf < 2)
     return GNUPG_Invalid_Value;
 
-  /* FIXME: keep PI and TRIES in OPAQUE.  Actually this is a whole
-     mess becuase we should call the card's verify function from the
+
+  /* FIXME: keep PI and TRIES in OPAQUE.  Frankly this is a whole
+     mess because we should call the card's verify function from the
      pinentry check pin CB. */
   pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
   pi->max_length = maxbuf-1;
@@ -188,7 +190,13 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   pi->max_digits = 8;
   pi->max_tries = 3;
 
-  rc = agent_askpin (info, pi);
+  if ( asprintf (&desc, _("Please enter the PIN%s%s%s to unlock the card"), 
+                 info? " (`":"",
+                 info? info:"",
+                 info? "')":"") < 0)
+    desc = NULL;
+  rc = agent_askpin (desc?desc:info, pi);
+  free (desc);
   if (!rc)
     {
       strncpy (buf, pi->pin, maxbuf-1);

@@ -22,7 +22,7 @@ localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
 bin_PROGRAMS = gpg-agent
-pkglib_PROGRAMS = protect-tool
+pkglib_PROGRAMS = gpg-protect-tool
 
 AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS) $(PTH_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
@@ -48,13 +48,13 @@ gpg_agent_SOURCES = \
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 		../common/libcommon.a $(LIBGCRYPT_LIBS) $(PTH_LIBS)
 
-protect_tool_SOURCES = \
+gpg_protect_tool_SOURCES = \
 	protect-tool.c \
 	protect.c \
 	minip12.c minip12.h \
 	simple-pwquery.c simple-pwquery.h
 
-protect_tool_LDADD = ../jnlib/libjnlib.a \
+gpg_protect_tool_LDADD = ../jnlib/libjnlib.a \
 		     ../common/libcommon.a $(LIBGCRYPT_LIBS)
 
 

@@ -66,6 +66,7 @@ enum cmd_and_opt_values
   oNoGrab,
   oLogFile,
   oServer,
+  oDaemon,
   oBatch,
 
   oPinentryProgram,
@@ -88,8 +89,9 @@ static ARGPARSE_OPTS opts[] = {
   
   { 301, NULL, 0, N_("@Options:\n ") },
 
-  { oServer,   "server",     0, N_("run in server mode") },
-  { oVerbose, "verbose",   0, N_("verbose") },
+  { oServer,   "server",     0, N_("run in server mode (foreground)") },
+  { oDaemon,   "daemon",     0, N_("run in daemon mode (background)") },
+  { oVerbose, "verbose",     0, N_("verbose") },
   { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
   { oSh,	"sh",        0, N_("sh-style command output") },
   { oCsh,	"csh",       0, N_("csh-style command output") },
@@ -258,6 +260,7 @@ main (int argc, char **argv )
   int greeting = 0;
   int nogreeting = 0;
   int pipe_server = 0;
+  int is_daemon = 0;
   int nodetach = 0;
   int csh_style = 0;
   char *logfile = NULL;
@@ -274,15 +277,15 @@ main (int argc, char **argv )
 
   /* check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
-  if (!gcry_check_version ( "1.1.5" ) )
+  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
       log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
-                 "1.1.5", gcry_check_version (NULL) );
+                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
     }
 
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 #ifdef USE_GNU_PTH
-    assuan_set_io_func (pth_read, pth_write);
+  assuan_set_io_func (pth_read, pth_write);
 #endif
 
   gcry_set_log_handler (my_gcry_logger, NULL);
@@ -397,6 +400,7 @@ main (int argc, char **argv )
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;
         case oServer: pipe_server = 1; break;
+        case oDaemon: is_daemon = 1; break;
         case oDisablePth: disable_pth = 1; break;
 
         case oPinentryProgram: opt.pinentry_program = pargs.r.ret_str; break;
@@ -465,6 +469,11 @@ main (int argc, char **argv )
   if (pipe_server)
     { /* this is the simple pipe based server */
       start_command_handler (-1, -1);
+    }
+  else if (!is_daemon)
+    {
+      log_info (_("please use the option `--daemon'"
+                  " to run the program in the background\n"));
     }
   else
     { /* regular server mode */

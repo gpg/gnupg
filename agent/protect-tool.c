@@ -106,17 +106,17 @@ my_strusage (int level)
   const char *p;
   switch (level)
     {
-    case 11: p = "protect-tool (GnuPG)";
+    case 11: p = "gpg-protect-tool (GnuPG)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <" PACKAGE_BUGREPORT ">.\n");
       break;
     case 1:
-    case 40: p =  _("Usage: protect-tool [options] (-h for help)\n");
+    case 40: p =  _("Usage: gpg-protect-tool [options] (-h for help)\n");
       break;
-    case 41: p =  _("Syntax: protect-tool [options] [args]]\n"
-                    "INTERNAL USE ONLY!\n");
+    case 41: p =  _("Syntax: gpg-protect-tool [options] [args]]\n"
+                    "Secret key maintenance tool\n");
     break;
     
     default: p = NULL;
@@ -812,13 +812,13 @@ main (int argc, char **argv )
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-  log_set_prefix ("protect-tool", 1); 
+  log_set_prefix ("gpg-protect-tool", 1); 
   i18n_init ();
 
-  if (!gcry_check_version ( "1.1.5" ) )
+  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
       log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
-                 "1.1.5", gcry_check_version (NULL) );
+                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
     }
 
   gcry_set_log_handler (my_gcry_logger, NULL);

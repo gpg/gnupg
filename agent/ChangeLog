@@ -1,3 +1,14 @@
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* divert-scd.c (getpin_cb): Pass a more descritive text to the
+	pinentry.
+
+	* Makefile.am: Renamed the binary protect-tool to gpg-protect-tool.
+	* protect-tool.c: Removed the note about internal use only.
+
+	* gpg-agent.c (main): New option --daemon so that the program is
+	not accidently started in the background.
+
 2002-08-16  Werner Koch  <wk@gnupg.org>
 
 	* call-scd.c (learn_status_cb): Handle CERTINFO status.
