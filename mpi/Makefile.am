@@ -51,8 +51,7 @@ libmpi_a_SOURCES = longlong.h	  \
 	      mpih-cmp.c     \
 	      mpih-div.c     \
 	      mpih-mul.c     \
-	      mpiutil.c      \
-	      g10m.c
+	      mpiutil.c
 
 # Note this objects are actually links, the sourcefiles are
 # distributed by special code in dist-hook
@@ -75,5 +74,3 @@ libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 	 mv -f _$*.o $*.o
 
 .S.lo:
-
-
