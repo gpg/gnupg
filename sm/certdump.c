@@ -196,11 +196,31 @@ gpgsm_dump_cert (const char *text, ksba_cert_t cert)
 static const unsigned char *
 parse_dn_part (struct dn_array_s *array, const unsigned char *string)
 {
+  static struct {
+    const char *label;
+    const char *oid;
+  } label_map[] = {
+    /* Warning: When adding new labels, make sure that the buffer
+       below we be allocated large enough. */
+    {"EMail",        "1.2.840.113549.1.9.1" },
+    {"T",            "2.5.4.12" },
+    {"GN",           "2.5.4.42" },
+    {"SN",           "2.5.4.4" },
+    {"NameDistinguisher", "0.2.262.1.10.7.20"}, 
+    {"ADDR",         "2.5.4.16" },
+    {"BC",           "2.5.4.15" },
+    {"D",            "2.5.4.13" },
+    {"PostalCode",   "2.5.4.17" },
+    {"Pseudo",       "2.5.4.65" },
+    {"SerialNumber", "2.5.4.5" },
+    {NULL, NULL}
+  };
   const unsigned char *s, *s1;
   size_t n;
   unsigned char *p;
+  int i;
 
-  /* parse attributeType */
+  /* Parse attributeType */
   for (s = string+1; *s && *s != '='; s++)
     ;
   if (!*s)
@@ -208,17 +228,25 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
   n = s - string;
   if (!n)
     return NULL; /* empty key */
-  array->key = p = xtrymalloc (n+1);
+
+  /* We need to allocate a few bytes more due to the possible mapping
+     from the shorter OID to the longer label. */
+  array->key = p = xtrymalloc (n+10);
   if (!array->key)
     return NULL;
   memcpy (p, string, n); 
   p[n] = 0;
   trim_trailing_spaces (p);
-  if ( !strcmp (p, "1.2.840.113549.1.9.1") )
-    strcpy (p,     "EMail");
-  else if ( !strcmp (p, "0.2.262.1.10.7.20") )
-    strcpy (p,          "NameDistinguisher");
 
+  if (digitp (p))
+    {
+      for (i=0; label_map[i].label; i++ )
+        if ( !strcmp (p, label_map[i].oid) )
+          {
+            strcpy (p, label_map[i].label);
+            break;
+          }
+    }
   string = s + 1;
 
   if (*string == '#')
@@ -228,13 +256,18 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
         s++;
       n = s - string;
       if (!n || (n & 1))
-        return NULL; /* empty or odd number of digits */
+        return NULL; /* Empty or odd number of digits. */
       n /= 2;
       array->value = p = xtrymalloc (n+1);
       if (!p)
         return NULL;
-      for (s1=string; n; s1 += 2, n--)
-        *p++ = xtoi_2 (s1);
+      for (s1=string; n; s1 += 2, n--, p++)
+        {
+          *p = xtoi_2 (s1);
+          if (!*p)
+            *p = 0x01; /* Better print a wrong value than truncating
+                          the string. */
+        }
       *p = 0;
    }
   else

@@ -1,3 +1,9 @@
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* certdump.c (parse_dn_part): Map common OIDs to human readable
+	labels.  Make sure that a value won't get truncated if it includes
+	a Nul.
+
 2004-01-28  Werner Koch  <wk@gnupg.org>
 
 	* certchain.c (gpgsm_validate_chain): Changed the message printed

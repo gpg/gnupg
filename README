@@ -339,17 +339,21 @@ modes for gpgsm, here is the entire list of ways to specify a key:
  * [NEW] Exact match by subject's DN
 
    This is indicated by a leading slash, directly followed by the
-   rfc2253 encoded DN of the subject.
+   rfc2253 encoded DN of the subject.  Note that you can't use the
+   string printed by "gpgsm --list-keys" because that one as been
+   reordered and modified for better readability; use --with-colons to 
+   print the raw (but standard escaped) rfc2253 string 
 
    Example:
 
-      /CN=Henrich Heine,O=Poets,L=Paris,C=FR
+      /CN=Heinrich Heine,O=Poets,L=Paris,C=FR
 
  * [NEW] Excact match by issuer's DN
 
    This is indicated by a leading hash mark, directly followed by a
    slash and then directly followed by the rfc2253 encoded DN of the
-   issuer.  This should return the Root cert of the issuer
+   issuer.  This should return the Root cert of the issuer.  See note
+   above.
 
    Example:
 
@@ -359,7 +363,7 @@ modes for gpgsm, here is the entire list of ways to specify a key:
 
    This is indicated by a hash mark, followed by the hexadecmal
    representation of the serial number, the followed by a slahs and
-   the RFC2253 encoded DN of the issuer.
+   the RFC2253 encoded DN of the issuer. See note above.
 
    Example:
 
