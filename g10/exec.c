@@ -477,13 +477,13 @@ int exec_write(struct exec_info **info,const char *program,
     log_debug("using temp file `%s'\n",(*info)->tempfile_in);
 
   /* It's not fork/exec/pipe, so create a temp file */
-  (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
-  if((*info)->tochild && is_secured_file (fileno ((*info)->tochild)))
+  if( is_secured_filename ((*info)->tempfile_in) )
     {
-      fclose ((*info)->tochild);
       (*info)->tochild = NULL;
       errno = EPERM;
     }
+  else
+    (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
       log_error(_("can't create file `%s': %s\n"),

@@ -167,7 +167,7 @@ copy_mpi (MPI a, unsigned char *buffer, size_t len, size_t *ncopied)
 static void
 print_status_key_created (int letter, PKT_public_key *pk, const char *handle)
 {
-  unsigned char array[MAX_FINGERPRINT_LEN], *s;
+  byte array[MAX_FINGERPRINT_LEN], *s;
   char *buf, *p;
   size_t i, n;
   
@@ -2683,9 +2683,14 @@ do_generate_keypair( struct para_data_s *para,
 	    outctrl->pub.fname =  outctrl->pub.newfname;
 	    outctrl->pub.newfname = NULL;
 
-	    outctrl->pub.stream = iobuf_create( outctrl->pub.fname );
+            if (is_secured_filename (outctrl->pub.fname) ) {
+                outctrl->pub.stream = NULL;
+                errno = EPERM;
+            }
+            else
+                outctrl->pub.stream = iobuf_create( outctrl->pub.fname );
 	    if( !outctrl->pub.stream ) {
-		log_error("can't create `%s': %s\n", outctrl->pub.newfname,
+		log_error(_("can't create `%s': %s\n"), outctrl->pub.newfname,
 						     strerror(errno) );
 		return;
 	    }
@@ -2707,10 +2712,15 @@ do_generate_keypair( struct para_data_s *para,
 	    outctrl->sec.newfname = NULL;
 
 	    oldmask = umask (077);
-	    outctrl->sec.stream = iobuf_create( outctrl->sec.fname );
+            if (is_secured_filename (outctrl->sec.fname) ) {
+                outctrl->sec.stream = NULL;
+                errno = EPERM;
+            }
+            else
+                outctrl->sec.stream = iobuf_create( outctrl->sec.fname );
             umask (oldmask);
 	    if( !outctrl->sec.stream ) {
-		log_error("can't create `%s': %s\n", outctrl->sec.newfname,
+		log_error(_("can't create `%s': %s\n"), outctrl->sec.newfname,
 						     strerror(errno) );
 		return;
 	    }
@@ -3328,7 +3338,13 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
 
     fname = make_filename (backup_dir, name_buffer, NULL);
     oldmask = umask (077);
-    fp = iobuf_create (fname);
+    if (is_secured_filename (fname))
+      {
+        fp = NULL;
+        errno = EPERM;
+      }
+    else
+      fp = iobuf_create (fname);
     umask (oldmask);
     if (!fp) 
       {

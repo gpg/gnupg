@@ -768,7 +768,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     }
 
     if( outfile ) {
-	if( !(out = iobuf_create( outfile )) ) {
+        if (is_secured_filename ( outfile )) {
+            out = NULL;
+            errno = EPERM;
+        }
+        else
+            out = iobuf_create( outfile );
+	if( !out ) {
 	    log_error(_("can't create file `%s': %s\n"),
 		      outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
@@ -1019,7 +1025,13 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     handle_progress (&pfx, inp, fname);
 
     if( outfile ) {
-	if( !(out = iobuf_create( outfile )) ) {
+        if (is_secured_filename (outfile) ) {
+            outfile = NULL;
+            errno = EPERM;
+        }
+        else 
+            out = iobuf_create( outfile );
+	if( !out ) {
 	    log_error(_("can't create file `%s': %s\n"),
 		      outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;

@@ -175,8 +175,9 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 
   *a = NULL;
   if( iobuf_is_pipe_filename (iname) && !opt.outfile ) {
-    if( !(*a = iobuf_create(NULL)) ) {
-      log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
+    *a = iobuf_create(NULL);
+    if( !*a ) {
+      log_error(_("can't open `%s': %s\n"), "[stdout]", strerror(errno) );
       rc = G10ERR_CREATE_FILE;
     }
     else if( opt.verbose )
@@ -244,9 +245,16 @@ open_outfile( const char *iname, int mode, IOBUF *a )
     
     if( !rc )
       {
-        if( !(*a = iobuf_create( name )) )
+        if (is_secured_filename (name) )
           {
-            log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
+            *a = NULL;
+            errno = EPERM;
+          }
+        else
+          *a = iobuf_create( name );
+        if( !*a )
+          {
+            log_error(_("can't create `%s': %s\n"), name, strerror(errno) );
             rc = G10ERR_CREATE_FILE;
           }
         else if( opt.verbose )
@@ -322,16 +330,22 @@ copy_options_file( const char *destdir )
         errno = EPERM;
       }
     if( !src ) {
-	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );
+	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	m_free(fname);
 	return;
     }
     strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg" EXTSEP_S "conf" );
     oldmask=umask(077);
-    dst = fopen( fname, "w" );
+    if ( is_secured_filename (fname) )
+      {
+        dst = NULL;
+        errno = EPERM;
+      }
+    else
+      dst = fopen( fname, "w" );
     umask(oldmask);
     if( !dst ) {
-	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );
+	log_error(_("can't create `%s': %s\n"), fname, strerror(errno) );
 	fclose( src );
 	m_free(fname);
 	return;
@@ -389,10 +403,10 @@ try_make_homedir( const char *fname )
               && !compare_filenames( fname, defhome ) )
         ) {
 	if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
-	    log_fatal( _("%s: can't create directory: %s\n"),
+	    log_fatal( _("can't create directory `%s': %s\n"),
 					fname,	strerror(errno) );
 	else if( !opt.quiet )
-	    log_info( _("%s: directory created\n"), fname );
+	    log_info( _("directory `%s' created\n"), fname );
 	copy_options_file( fname );
 /*  	log_info(_("you have to start GnuPG again, " */
 /*  		   "so it can read the new configuration file\n") ); */

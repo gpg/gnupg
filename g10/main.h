@@ -75,6 +75,7 @@ int disable_core_dumps(void);
 void register_secured_file (const char *fname);
 void unregister_secured_file (const char *fname);
 int  is_secured_file (int fd);
+int  is_secured_filename (const char *fname);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( MPI a );

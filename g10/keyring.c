@@ -1185,7 +1185,13 @@ create_tmp_file (const char *template,
 
     /* Create the temp file with limited access */
     oldmask=umask(077);
-    *r_fp = iobuf_create (tmpfname);
+    if (is_secured_filename (tmpfname))
+      {
+        *r_fp = NULL;
+        errno = EPERM;
+      }
+    else
+      *r_fp = iobuf_create (tmpfname);
     umask(oldmask);
     if (!*r_fp) {
 	log_error ("can't create `%s': %s\n", tmpfname, strerror(errno) );
@@ -1467,7 +1473,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     char *bakfname = NULL;
     char *tmpfname = NULL;
 
-    /* Open the source file. Because we do a rname, we have to check the 
+    /* Open the source file. Because we do a rename, we have to check the 
        permissions of the file */
     if (access (fname, W_OK))
       return G10ERR_WRITE_FILE;
@@ -1479,10 +1485,15 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	mode_t oldmask;
 
 	oldmask=umask(077);
-	newfp = iobuf_create (fname);
+        if (!secret && is_secured_filename (fname)) {
+            newfp = NULL;
+            errno = EPERM;
+        }
+        else
+            newfp = iobuf_create (fname);
 	umask(oldmask);
 	if( !newfp ) {
-	    log_error (_("%s: can't create: %s\n"),
+	    log_error (_("can't create `%s': %s\n"),
                        fname, strerror(errno));
 	    return G10ERR_OPEN_FILE;
 	}
@@ -1506,7 +1517,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     }
 
     if( !fp ) {
-	log_error ("%s: can't open: %s\n", fname, strerror(errno) );
+	log_error ("can't open `%s': %s\n", fname, strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }

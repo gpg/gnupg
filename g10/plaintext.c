@@ -128,6 +128,13 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #ifndef __riscos__
     if( fp || nooutput )
 	;
+    else if (is_secured_filename (fname))
+      {
+        errno = EPERM;
+	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
+	rc = G10ERR_CREATE_FILE;
+	goto leave;
+      }
     else if( !(fp = fopen(fname,"wb")) ) {
 	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
 	rc = G10ERR_CREATE_FILE;

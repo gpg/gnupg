@@ -494,7 +494,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 
     if( access( fname, R_OK ) ) {
 	if( errno != ENOENT ) {
-	    log_error( _("%s: can't access: %s\n"), fname, strerror(errno) );
+	    log_error( _("can't access `%s': %s\n"), fname, strerror(errno) );
 	    m_free(fname);
 	    return G10ERR_TRUSTDB;
 	}
@@ -519,25 +519,30 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( !lockhandle )
 		lockhandle = create_dotlock( db_name );
 	    if( !lockhandle )
-		log_fatal( _("%s: can't create lock\n"), db_name );
+		log_fatal( _("can't create lock for `%s'\n"), db_name );
             if( make_dotlock( lockhandle, -1 ) )
-                log_fatal( _("%s: can't make lock\n"), db_name );
+                log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
 	    oldmask=umask(077);
-	    fp =fopen( fname, "wb" );
+            if (is_secured_filename (fname)) {
+                fp = NULL;
+                errno = EPERM;
+            }
+            else
+                fp =fopen( fname, "wb" );
 	    umask(oldmask);
 	    if( !fp )
-		log_fatal( _("%s: can't create: %s\n"), fname, strerror(errno) );
+		log_fatal( _("can't create `%s': %s\n"), fname, strerror(errno) );
 	    fclose(fp);
 	    db_fd = open( db_name, O_RDWR | MY_O_BINARY );
 	    if( db_fd == -1 )
-		log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
+		log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
 
 #ifndef __riscos__
 	    if( !lockhandle )
 		lockhandle = create_dotlock( db_name );
 	    if( !lockhandle )
-		log_fatal( _("%s: can't create lock\n"), db_name );
+		log_fatal( _("can't create lock for `%s'\n"), db_name );
 #endif /* !__riscos__ */
 
             rc = create_version_record ();
@@ -580,10 +585,10 @@ open_db()
   if (!lockhandle )
     lockhandle = create_dotlock( db_name );
   if (!lockhandle )
-    log_fatal( _("%s: can't create lock\n"), db_name );
+    log_fatal( _("can't create lock for `%s'\n"), db_name );
 #ifdef __riscos__
   if (make_dotlock( lockhandle, -1 ) )
-    log_fatal( _("%s: can't make lock\n"), db_name );
+    log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
   db_fd = open (db_name, O_RDWR | MY_O_BINARY );
   if (db_fd == -1 && errno == EACCES) {
@@ -592,7 +597,7 @@ open_db()
           log_info (_("NOTE: trustdb not writable\n"));
   }
   if ( db_fd == -1 )
-    log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
+    log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
   register_secured_file (db_name);
 
   /* check whether we need to do a version migration */

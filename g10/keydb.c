@@ -154,7 +154,13 @@ maybe_create_keyring (char *filename, int force)
 
   /* The file does not yet exist, create it now. */
   oldmask = umask (077);
-  iobuf = iobuf_create (filename);
+  if (is_secured_filename (filename))
+    {
+      iobuf = NULL;
+      errno = EPERM;
+    }
+  else
+    iobuf = iobuf_create (filename);
   umask (oldmask);
   if (!iobuf) 
     {
