@@ -1,0 +1,4 @@
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* Initial version of gpgkeys_ldap (LDAP keyserver helper) and
+	gpgkeys_mailto (email keyserver helper)
