@@ -570,7 +570,7 @@ keyserver_spawn(int action,STRLIST list,
 
       /* remove trailing whitespace */
       plen=strlen(ptr);
-      while(plen>0 && spacep(ptr+plen-1))
+      while(plen>0 && ascii_isspace(ptr[plen-1]))
 	plen--;
       plen[ptr]='\0';
 
