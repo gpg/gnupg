@@ -1,5 +1,14 @@
 2004-03-04  David Shaw  <dshaw@jabberwocky.com>
 
+	* revoke.c (export_minimal_pk), export.c (do_export_stream),
+	passphrase.c (passphrase_to_dek), keyserver.c (print_keyrec): A
+	few more places to use --keyid-format.
+
+	* options.h, g10.c (main), export.c (parse_export_options,
+	do_export_stream): Remove --export-all and the "include-non-rfc"
+	export-option as they are no longer meaningful with the removal of
+	v3 Elgamal keys.
+
 	* armor.c (fake_packet, armor_filter): Use the 2440 partial length
 	encoding for the faked plaintext packet.
 

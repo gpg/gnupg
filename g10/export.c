@@ -1,6 +1,6 @@
 /* export.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -45,7 +45,6 @@ parse_export_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options export_opts[]=
     {
-      {"include-non-rfc",EXPORT_INCLUDE_NON_RFC,NULL},
       {"include-local-sigs",EXPORT_INCLUDE_LOCAL_SIGS,NULL},
       {"include-attributes",EXPORT_INCLUDE_ATTRIBUTES,NULL},
       {"include-sensitive-revkeys",EXPORT_INCLUDE_SENSITIVE_REVKEYS,NULL},
@@ -186,17 +185,6 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	    goto leave;
 	}
 
-	/* do not export keys which are incompatible with rfc2440 */
-	if( !(options&EXPORT_INCLUDE_NON_RFC) &&
-	    (node = find_kbnode( keyblock, PKT_PUBLIC_KEY )) ) {
-	    PKT_public_key *pk = node->pkt->pkt.public_key;
-	    if( pk->version == 3 && pk->pubkey_algo > 3 ) {
-		log_info(_("key %08lX: not a rfc2440 key - skipped\n"),
-			      (ulong)keyid_from_pk( pk, NULL) );
-		continue;
-	    }
-	}
-
 	node=find_kbnode( keyblock, PKT_SECRET_KEY );
 	if(node)
 	  {
@@ -207,16 +195,16 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	    /* we can't apply GNU mode 1001 on an unprotected key */
 	    if( secret == 2 && !sk->is_protected )
 	      {
-		log_info(_("key %08lX: not protected - skipped\n"),
-			 (ulong)sk_keyid[1]);
+		log_info(_("key %s: not protected - skipped\n"),
+			 keystr(sk_keyid));
 		continue;
 	      }
 
 	    /* no v3 keys with GNU mode 1001 */
 	    if( secret == 2 && sk->version == 3 )
 	      {
-		log_info(_("key %08lX: PGP 2.x style key - skipped\n"),
-			 (ulong)sk_keyid[1]);
+		log_info(_("key %s: PGP 2.x style key - skipped\n"),
+			 keystr(sk_keyid));
 		continue;
 	      }
 	  }
@@ -341,7 +329,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	      continue;
 	    }
 
-	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY ) {
+	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY )
+	      {
 		/* we don't want to export the secret parts of the
 		 * primary key, this is done by using GNU protection mode 1001
 		 */
@@ -349,25 +338,26 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		node->pkt->pkt.secret_key->protect.s2k.mode = 1001;
 		rc = build_packet( out, node->pkt );
 		node->pkt->pkt.secret_key->protect.s2k.mode = save_mode;
-	    }
-	    else {
-	      /* Warn the user if the secret key or any of the secret
-                 subkeys are protected with SHA1 and we have
-                 simple_sk_checksum set. */
-	      if(!sha1_warned && opt.simple_sk_checksum &&
-		 (node->pkt->pkttype==PKT_SECRET_KEY ||
-		  node->pkt->pkttype==PKT_SECRET_SUBKEY) &&
-		 node->pkt->pkt.secret_key->protect.sha1chk)
-		{
-		  /* I hope this warning doesn't confuse people. */
-		  log_info(_("WARNING: secret key %08lX does not have a "
-			     "simple SK checksum\n"),(ulong)sk_keyid[1]);
+	      }
+	    else
+	      {
+		/* Warn the user if the secret key or any of the secret
+		   subkeys are protected with SHA1 and we have
+		   simple_sk_checksum set. */
+		if(!sha1_warned && opt.simple_sk_checksum &&
+		   (node->pkt->pkttype==PKT_SECRET_KEY ||
+		    node->pkt->pkttype==PKT_SECRET_SUBKEY) &&
+		   node->pkt->pkt.secret_key->protect.sha1chk)
+		  {
+		    /* I hope this warning doesn't confuse people. */
+		    log_info(_("WARNING: secret key %s does not have a "
+			       "simple SK checksum\n"),keystr(sk_keyid));
 
-		  sha1_warned=1;
-		}
+		    sha1_warned=1;
+		  }
 
 		rc = build_packet( out, node->pkt );
-	    }
+	      }
 
 	    if( rc ) {
 		log_error("build_packet(%d) failed: %s\n",

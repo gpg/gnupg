@@ -1,5 +1,6 @@
 /* revoke.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -89,7 +90,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
   node=find_kbnode(keyblock,PKT_PUBLIC_KEY);
   if(!node)
     {
-      log_error(_("key incomplete\n"));
+      log_error("key incomplete\n");
       return G10ERR_GENERAL;
     }
 
@@ -142,7 +143,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
 	    break;
 	  else
 	    {
-	      log_error(_("key %08lX incomplete\n"),(ulong)keyid[1]);
+	      log_error(_("key %s has no user IDs\n"),keystr(keyid));
 	      return G10ERR_GENERAL;
 	    }
 	}

@@ -113,7 +113,6 @@ enum cmd_and_opt_values
     aRecvKeys,
     aSearchKeys,
     aExport,
-    aExportAll,
     aExportSecret,
     aExportSecretSub,
     aCheckKeys,
@@ -385,7 +384,6 @@ static ARGPARSE_OPTS opts[] = {
                                     N_("search for keys on a key server") },
     { aRefreshKeys, "refresh-keys", 256,
                                     N_("update all keys from a keyserver")},
-    { aExportAll, "export-all"    , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
@@ -1435,11 +1433,9 @@ main( int argc, char **argv )
     opt.force_v3_sigs = 1;
     opt.escape_from = 1;
     opt.import_options=IMPORT_SK2PK;
-    opt.export_options=
-      EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
+    opt.export_options=EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
-    opt.keyserver_options.export_options=
-      EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
+    opt.keyserver_options.export_options=EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.keyserver_options.try_dns_srv=1;
@@ -1636,10 +1632,6 @@ main( int argc, char **argv )
 	  case aSearchKeys: set_cmd( &cmd, aSearchKeys); break;
 	  case aRefreshKeys: set_cmd( &cmd, aRefreshKeys); break;
 	  case aExport: set_cmd( &cmd, aExport); break;
-	  case aExportAll:
-	    opt.export_options|=EXPORT_INCLUDE_NON_RFC;
-	    set_cmd(&cmd,aExport);
-	    break;
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;

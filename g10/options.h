@@ -242,10 +242,9 @@ struct
 #define IMPORT_SK2PK                     (1<<3)
 #define IMPORT_MERGE_ONLY                (1<<4)
 
-#define EXPORT_INCLUDE_NON_RFC           (1<<0)
-#define EXPORT_INCLUDE_LOCAL_SIGS        (1<<1)
-#define EXPORT_INCLUDE_ATTRIBUTES        (1<<2)
-#define EXPORT_INCLUDE_SENSITIVE_REVKEYS (1<<3)
+#define EXPORT_INCLUDE_LOCAL_SIGS        (1<<0)
+#define EXPORT_INCLUDE_ATTRIBUTES        (1<<1)
+#define EXPORT_INCLUDE_SENSITIVE_REVKEYS (1<<2)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

@@ -276,13 +276,20 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   switch(keyrec->desc.mode)
     {
+      /* If the keyserver helper gave us a short keyid, we have no
+	 choice but to use it.  Do check --keyid-format to add a 0x if
+	 needed. */
     case KEYDB_SEARCH_MODE_SHORT_KID:
-      printf("key %08lX",(ulong)keyrec->desc.u.kid[1]);
+      printf("key %s%08lX",
+	     (opt.keyid_format==KF_0xSHORT
+	      || opt.keyid_format==KF_0xLONG)?"0x":"",
+	     (ulong)keyrec->desc.u.kid[1]);
       break;
 
+      /* However, if it gave us a long keyid, we can honor
+	 --keyid-format */
     case KEYDB_SEARCH_MODE_LONG_KID:
-      printf("key %08lX%08lX",(ulong)keyrec->desc.u.kid[0],
-	     (ulong)keyrec->desc.u.kid[1]);
+      printf("key %s",keystr(keyrec->desc.u.kid));
       break;
 
     case KEYDB_SEARCH_MODE_FPR16:
