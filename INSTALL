@@ -46,7 +46,10 @@ Configure options for GNUPG
 
 --disable-nls	    Disable NLS support (See the file ABOUT-NLS)
 
---enable-m-guard    Enable the integrated malloc checking code.
+--enable-m-guard    Enable the integrated malloc checking code. Please
+                    note that this feature does not work on all CPUs
+                    (e.g. SunOS 5.7 on UltraSparc-2) and might give
+                    you a Bus error.
 
 --disable-dynload   If you have problems with dynamic loading, this option
 		    disables all dynamic loading stuff.

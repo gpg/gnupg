@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1e\n"
-"POT-Creation-Date: 2001-04-17 11:40+0200\n"
+"POT-Creation-Date: 2001-04-19 12:04+0200\n"
 "PO-Revision-Date: 2000-08-16 23:19+01:00\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <eo@li.org>\n"
@@ -25,27 +25,27 @@ msgstr "operacio ne eblas sen sekura memoro kun komenca valoro\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(eble vi uzis la maløustan programon por æi tiu tasko)\n"
 
-#: util/miscutil.c:277 util/miscutil.c:306
+#: util/miscutil.c:287 util/miscutil.c:316
 msgid "yes"
 msgstr "jes"
 
-#: util/miscutil.c:278 util/miscutil.c:309
+#: util/miscutil.c:288 util/miscutil.c:319
 msgid "yY"
 msgstr "jJ"
 
-#: util/miscutil.c:279 util/miscutil.c:307
+#: util/miscutil.c:289 util/miscutil.c:317
 msgid "no"
 msgstr "ne"
 
-#: util/miscutil.c:280 util/miscutil.c:310
+#: util/miscutil.c:290 util/miscutil.c:320
 msgid "nN"
 msgstr "nN"
 
-#: g10/keyedit.c:581 util/miscutil.c:308
+#: g10/keyedit.c:581 util/miscutil.c:318
 msgid "quit"
 msgstr "fini"
 
-#: util/miscutil.c:311
+#: util/miscutil.c:321
 msgid "qQ"
 msgstr "fF"
 

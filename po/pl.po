@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.4\n"
-"POT-Creation-Date: 2001-04-17 11:40+0200\n"
+"POT-Creation-Date: 2001-04-19 12:04+0200\n"
 "PO-Revision-Date: 2000-10-18 22:54+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -35,27 +35,27 @@ msgstr "operacja niemo¿liwa do wykonania bez dostêpnej pamiêci bezpiecznej\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(prawdopodobnie u¿ywany program jest niew³a¶ciwy dlatego zadania)\n"
 
-#: util/miscutil.c:277 util/miscutil.c:306
+#: util/miscutil.c:287 util/miscutil.c:316
 msgid "yes"
 msgstr "tak"
 
-#: util/miscutil.c:278 util/miscutil.c:309
+#: util/miscutil.c:288 util/miscutil.c:319
 msgid "yY"
 msgstr "tT"
 
-#: util/miscutil.c:279 util/miscutil.c:307
+#: util/miscutil.c:289 util/miscutil.c:317
 msgid "no"
 msgstr "nie"
 
-#: util/miscutil.c:280 util/miscutil.c:310
+#: util/miscutil.c:290 util/miscutil.c:320
 msgid "nN"
 msgstr "nN"
 
-#: g10/keyedit.c:581 util/miscutil.c:308
+#: g10/keyedit.c:581 util/miscutil.c:318
 msgid "quit"
 msgstr "wyj¶cie"
 
-#: util/miscutil.c:311
+#: util/miscutil.c:321
 msgid "qQ"
 msgstr "wW"
 

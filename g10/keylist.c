@@ -399,8 +399,8 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_sk( sk ),
-		    sk->expiredate? strtimestamp(sk->expiredate):""
+		    colon_datestr_from_sk( sk ),
+		    colon_strtime (sk->expiredate)
 		    /* fixme: add LID here */ );
     }
     else {
@@ -427,8 +427,8 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_pk( pk ),
-		    pk->expiredate? strtimestamp(pk->expiredate):"" );
+		    colon_datestr_from_pk( pk ),
+		    colon_strtime (pk->expiredate) );
         if( pk->local_id )
             printf("%lu", pk->local_id );
         putchar(':');
@@ -529,8 +529,8 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 			nbits_from_pk( pk2 ),
 			pk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
-			datestr_from_pk( pk2 ),
-			pk2->expiredate? strtimestamp(pk2->expiredate):""
+			colon_datestr_from_pk( pk2 ),
+			colon_strtime (pk2->expiredate)
 			/* fixme: add LID and ownertrust here */
 						);
             if( pk->local_id ) /* use the local_id of the main key??? */
@@ -565,8 +565,8 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 			nbits_from_sk( sk2 ),
 			sk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
-			datestr_from_sk( sk2 ),
-			sk2->expiredate? strtimestamp(sk2->expiredate):""
+			colon_datestr_from_sk( sk2 ),
+			colon_strtime (sk2->expiredate)
                    /* fixme: add LID */ );
             print_capabilities (NULL, sk2, NULL);
             putchar ('\n');
@@ -627,7 +627,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 putchar(sigrc);
             printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
 						 (ulong)sig->keyid[0],
-			   (ulong)sig->keyid[1], datestr_from_sig(sig));
+			   (ulong)sig->keyid[1], colon_datestr_from_sig(sig));
 	    if( sigrc == '%' )
 		printf("[%s] ", g10_errstr(rc) );
 	    else if( sigrc == '?' )

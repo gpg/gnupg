@@ -1,6 +1,9 @@
 2001-04-17  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4 (GNUPG_CHECK_DOCBOOK_TO_TEXI): New.
+	(GNUPG_CHECK_TYPEDEF): Define _GNU_SOURCE because we will use it
+	anyway.
+
 	* configure.in: Use it here.
 	
 	* configure.in (ALL_LINGUAS): Add Estonian translation by Toomas Soome.

@@ -7,7 +7,7 @@
 # GPG version: 1.0.0
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2001-04-17 11:40+0200\n"
+"POT-Creation-Date: 2001-04-19 12:04+0200\n"
 "PO-Revision-Date: 1999-10-27 06:35+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
@@ -34,27 +34,27 @@ msgstr "operación imposible sin memoria segura inicializada\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(es posible que haya usado el programa incorrecto para esta tarea)\n"
 
-#: util/miscutil.c:277 util/miscutil.c:306
+#: util/miscutil.c:287 util/miscutil.c:316
 msgid "yes"
 msgstr "sí"
 
-#: util/miscutil.c:278 util/miscutil.c:309
+#: util/miscutil.c:288 util/miscutil.c:319
 msgid "yY"
 msgstr "sS"
 
-#: util/miscutil.c:279 util/miscutil.c:307
+#: util/miscutil.c:289 util/miscutil.c:317
 msgid "no"
 msgstr ""
 
-#: util/miscutil.c:280 util/miscutil.c:310
+#: util/miscutil.c:290 util/miscutil.c:320
 msgid "nN"
 msgstr ""
 
-#: g10/keyedit.c:581 util/miscutil.c:308
+#: g10/keyedit.c:581 util/miscutil.c:318
 msgid "quit"
 msgstr ""
 
-#: util/miscutil.c:311
+#: util/miscutil.c:321
 msgid "qQ"
 msgstr ""
 

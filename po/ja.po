@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4\n"
-"POT-Creation-Date: 2001-04-17 11:40+0200\n"
+"POT-Creation-Date: 2001-04-19 12:04+0200\n"
 "PO-Revision-Date: 2000-10-19 23:08+09:00\n"
 "Last-Translator: IIDA Yosiaki <y-iida@secom.co.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -27,27 +27,27 @@ msgstr "初期化済みの安全なメモリーがない場合には実行できません\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(この目的には誤ったプログラムを用いたのでしょう)\n"
 
-#: util/miscutil.c:277 util/miscutil.c:306
+#: util/miscutil.c:287 util/miscutil.c:316
 msgid "yes"
 msgstr "yes"
 
-#: util/miscutil.c:278 util/miscutil.c:309
+#: util/miscutil.c:288 util/miscutil.c:319
 msgid "yY"
 msgstr "yY"
 
-#: util/miscutil.c:279 util/miscutil.c:307
+#: util/miscutil.c:289 util/miscutil.c:317
 msgid "no"
 msgstr "no"
 
-#: util/miscutil.c:280 util/miscutil.c:310
+#: util/miscutil.c:290 util/miscutil.c:320
 msgid "nN"
 msgstr "nN"
 
-#: g10/keyedit.c:581 util/miscutil.c:308
+#: g10/keyedit.c:581 util/miscutil.c:318
 msgid "quit"
 msgstr "quit"
 
-#: util/miscutil.c:311
+#: util/miscutil.c:321
 msgid "qQ"
 msgstr "qQ"
 

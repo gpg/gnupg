@@ -1,3 +1,7 @@
+2001-04-19  Werner Koch  <wk@gnupg.org>
+
+	* faq.raw: Add a note about dates displayed as ????-??-??.
+
 2001-04-17  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (%.texi): Add rules to create .texi from .sgml.

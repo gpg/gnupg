@@ -1,3 +1,23 @@
+2001-04-19  Werner Koch  <wk@gnupg.org>
+
+	* keyid.c (mk_datestr): New.  Handles negative times.  we must do
+	this because Windoze segvs on negative times passed to gmtime().
+	Changed all datestr_from function to use this one.
+
+	* keyid.c, keyid.h (colon_strtime): New. To implement the
+	fixed-list-mode.
+	(colon_datestr_from_pk): New.
+	(colon_datestr_from_sk): New.
+	(colon_datestr_from_sig): New.
+	* keylist.c (list_keyblock_colon): Use these functions here.
+	* mainproc.c (list_node): Ditto.
+
+2001-04-18  Werner Koch  <wk@gnupg.org>
+
+	* openfile.c (open_sigfile): Fixed the handling of ".sign".
+	* mainproc.c (proc_tree): Use iobuf_get_real_fname.
+	Both are by Vincent Broman.
+
 2001-04-14  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (fixup_uidnode): Removed check for !sig which is

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2001-04-17 11:40+0200\n"
+"POT-Creation-Date: 2001-04-19 12:04+0200\n"
 "PO-Revision-Date: 2000-02-20 21:30+01:00\n"
 "Last-Translator: Ivo Timmermans <itimmermans@bigfoot.com>\n"
 "Language-Team: Dutch <nl@li.org>\n"
@@ -25,27 +25,27 @@ msgstr "bewerking is niet mogelijk zonder initialisatie van veilig geheugen\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(misschien heb je hiervoor het verkeerde programma gebruikt)\n"
 
-#: util/miscutil.c:277 util/miscutil.c:306
+#: util/miscutil.c:287 util/miscutil.c:316
 msgid "yes"
 msgstr "ja"
 
-#: util/miscutil.c:278 util/miscutil.c:309
+#: util/miscutil.c:288 util/miscutil.c:319
 msgid "yY"
 msgstr "yYjJ"
 
-#: util/miscutil.c:279 util/miscutil.c:307
+#: util/miscutil.c:289 util/miscutil.c:317
 msgid "no"
 msgstr "nee"
 
-#: util/miscutil.c:280 util/miscutil.c:310
+#: util/miscutil.c:290 util/miscutil.c:320
 msgid "nN"
 msgstr "nN"
 
-#: g10/keyedit.c:581 util/miscutil.c:308
+#: g10/keyedit.c:581 util/miscutil.c:318
 msgid "quit"
 msgstr "einde"
 
-#: util/miscutil.c:311
+#: util/miscutil.c:321
 msgid "qQ"
 msgstr "qQeE"
 

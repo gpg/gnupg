@@ -632,6 +632,14 @@ in it - why?
     "deprecated". Ignore this warning, more recent versions of gpg are
     corrected.
 
+<Q> Some dates are displayed as ????-??-??, why?
+
+    Due to constraints in most libc implementations, dates beyond
+    2038-01-19 can't be displayed correctly. 64 bit OSes are not
+    affected by this problem.  To avoid printing wrong dates, GnuPG
+    instead prints some question marks.  To see the correct value, you
+    can use the options --with-colons and --fixed-list-mode.
+
 <Q> I still have a problem. How do I report a bug?
 
     Are you sure that it's not been mentioned somewhere on the mailing

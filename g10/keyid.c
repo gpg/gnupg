@@ -260,6 +260,21 @@ nbits_from_sk( PKT_secret_key *sk )
     return pubkey_nbits( sk->pubkey_algo, sk->skey );
 }
 
+static const char *
+mk_datestr (char *buffer, time_t atime)
+{
+    struct tm *tp;
+
+    if ( atime < 0 ) /* 32 bit time_t and after 2038-01-19 */
+        strcpy (buffer, "????-??-??"); /* mark this as invalid */
+    else {
+        tp = gmtime (&atime);
+        sprintf (buffer,"%04d-%02d-%02d",
+                 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    }
+    return buffer;
+}
+
 /****************
  * return a string with the creation date of the pk
  * Note: this is alloced in a static buffer.
@@ -269,36 +284,27 @@ const char *
 datestr_from_pk( PKT_public_key *pk )
 {
     static char buffer[11+5];
-    struct tm *tp;
     time_t atime = pk->timestamp;
 
-    tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
-    return buffer;
+    return mk_datestr (buffer, atime);
 }
 
 const char *
 datestr_from_sk( PKT_secret_key *sk )
 {
     static char buffer[11+5];
-    struct tm *tp;
     time_t atime = sk->timestamp;
 
-    tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
-    return buffer;
+    return mk_datestr (buffer, atime);
 }
 
 const char *
 datestr_from_sig( PKT_signature *sig )
 {
     static char buffer[11+5];
-    struct tm *tp;
     time_t atime = sig->timestamp;
 
-    tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
-    return buffer;
+    return mk_datestr (buffer, atime);
 }
 
 
@@ -306,31 +312,72 @@ const char *
 expirestr_from_pk( PKT_public_key *pk )
 {
     static char buffer[11+5];
-    struct tm *tp;
     time_t atime;
 
     if( !pk->expiredate )
 	return _("never     ");
     atime = pk->expiredate;
-    tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
-    return buffer;
+    return mk_datestr (buffer, atime);
 }
 
 const char *
 expirestr_from_sk( PKT_secret_key *sk )
 {
     static char buffer[11+5];
-    struct tm *tp;
     time_t atime;
 
     if( !sk->expiredate )
 	return "never     ";
     atime = sk->expiredate;
-    tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
-    return buffer;
+    return mk_datestr (buffer, atime);
 }
+
+const char *
+colon_strtime (u32 t)
+{
+    if (!t)
+        return "";
+    if (opt.fixed_list_mode) {
+        static char buf[15];
+        sprintf (buf, "%lu", (ulong)t);
+        return buf;
+    }
+    return strtimestamp(t);
+}
+
+const char *
+colon_datestr_from_pk (PKT_public_key *pk)
+{
+    if (opt.fixed_list_mode) {
+        static char buf[15];
+        sprintf (buf, "%lu", (ulong)pk->timestamp);
+        return buf;
+    }
+    return datestr_from_pk (pk);
+}
+
+const char *
+colon_datestr_from_sk (PKT_secret_key *sk)
+{
+    if (opt.fixed_list_mode) {
+        static char buf[15];
+        sprintf (buf, "%lu", (ulong)sk->timestamp);
+        return buf;
+    }
+    return datestr_from_sk (sk);
+}
+
+const char *
+colon_datestr_from_sig (PKT_signature *sig)
+{
+    if (opt.fixed_list_mode) {
+        static char buf[15];
+        sprintf (buf, "%lu", (ulong)sig->timestamp);
+        return buf;
+    }
+    return datestr_from_sig (sig);
+}
+
 
 
 /**************** .

@@ -10,20 +10,21 @@ aclocal_vers=1.4
 
 DIE=no
 if test "$1" = "--build-w32"; then
+    tsdir=$(cd `dirname $0`; cd ..; pwd)
     shift
     target=i386--mingw32
-    if [ ! -f scripts/config.guess ]; then
-        echo "scripts/config.guess not found" >&2
+    if [ ! -f $tsdir/scripts/config.guess ]; then
+        echo "$tsdir/scripts/config.guess not found" >&2
         exit 1
     fi
-    host=`scripts/config.guess`
+    host=`$tsdir/scripts/config.guess`
         
     if ! mingw32 --version >/dev/null; then
         echo "We need at least version 0.3 of MingW32/CPD" >&2
         exit 1
     fi
 
-    if [ -f config.h ]; then
+    if [ -f "$tsdir/config.h" ]; then
         if grep HAVE_DOSISH_SYSTEM config.h | grep undef >/dev/null; then
             echo "Pease run a 'make distclean' first" >&2
             exit 1
@@ -53,7 +54,7 @@ if test "$1" = "--build-w32"; then
     fi
     [ $DIE = yes ] && exit 1
 
-    ./configure --host=${host} --target=${target} \
+    $tsdir/configure --host=${host} --target=${target} \
                 ${disable_foo_tests} $*
     exit $?
 fi

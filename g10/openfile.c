@@ -267,7 +267,7 @@ open_sigfile( const char *iname )
                         || !strcmp(iname + len - 4, ".asc")) ) {
 	    char *buf;
 	    buf = m_strdup(iname);
-	    buf[len-4] = 0 ;
+	    buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
 	    a = iobuf_open( buf );
 	    if( a && opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );

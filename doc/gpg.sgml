@@ -1377,7 +1377,8 @@ in future versions.
 <varlistentry>
 <term>--fixed-list-mode</term>
 <listitem><para>
-Do not merge user ID and primary key in --with-colon listing mode.
+Do not merge user ID and primary key in --with-colon listing mode and
+print all timestamps as seconds since 1970-01-01.
 </para></listitem></varlistentry>
 
 <varlistentry>

@@ -781,8 +781,8 @@ list_node( CTX c, KBNODE node )
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_pk( pk ),
-		    pk->expiredate? strtimestamp(pk->expiredate):"" );
+		    colon_datestr_from_pk( pk ),
+		    colon_strtime (pk->expiredate) );
 	    if( c->local_id )
 		printf("%lu", c->local_id );
 	    putchar(':');
@@ -868,8 +868,8 @@ list_node( CTX c, KBNODE node )
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_sk( sk ),
-		    sk->expiredate? strtimestamp(sk->expiredate):""
+		    colon_datestr_from_sk( sk ),
+		    colon_strtime (sk->expiredate)
 		    /* fixme: add LID */ );
 	}
 	else
@@ -966,7 +966,7 @@ list_node( CTX c, KBNODE node )
 		putchar(sigrc);
 	    printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
 					     (ulong)sig->keyid[0],
-		       (ulong)sig->keyid[1], datestr_from_sig(sig));
+		       (ulong)sig->keyid[1], colon_datestr_from_sig(sig));
 	}
 	else
 	    printf("%c       %08lX %s   ",
@@ -1415,7 +1415,7 @@ proc_tree( CTX c, KBNODE node )
 	    }
 	    else {
 		rc = ask_for_detached_datafile( c->mfx.md, c->mfx.md2,
-						iobuf_get_fname(c->iobuf),
+						iobuf_get_real_fname(c->iobuf),
 			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
 	    }
 	    if( rc ) {
@@ -1493,7 +1493,7 @@ proc_tree( CTX c, KBNODE node )
 	    }
 	    else {
 		rc = ask_for_detached_datafile( c->mfx.md, c->mfx.md2,
-						iobuf_get_fname(c->iobuf),
+						iobuf_get_real_fname(c->iobuf),
 						(sig->sig_class == 0x01) );
 	    }
 	    if( rc ) {

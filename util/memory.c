@@ -42,6 +42,10 @@
 #define MAGIC_SEC_BYTE 0xcc
 #define MAGIC_END_BYTE 0xaa
 
+/* This is a very crude alignment check which does not work on all CPUs
+ * IIRC, I once introduced it for testing on an Alpha.  We should better
+ * replace this guard stuff with one provided by a modern malloc library
+ */
 #if SIZEOF_UNSIGNED_LONG == 8
   #define EXTRA_ALIGN 4
 #else

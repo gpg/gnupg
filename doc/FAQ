@@ -83,8 +83,9 @@ you could search in the mailing list archive.
    6.11) I get "gpg: waiting for lock ..."
    6.12) Older gpg's (e.g., 1.0) have problems with keys from newer gpgs ...
    6.13) With 1.0.4, I get "this cipher algorithm is deprecated ..."
-   6.14) I still have a problem. How do I report a bug?
-   6.15) Why doesn't GnuPG support X509 certificates?
+   6.14) Some dates are displayed as ????-??-??, why?
+   6.15) I still have a problem. How do I report a bug?
+   6.16) Why doesn't GnuPG support X509 certificates?
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -665,7 +666,15 @@ in it - why?
     "deprecated". Ignore this warning, more recent versions of gpg are
     corrected.
 
-6.14) I still have a problem. How do I report a bug?
+6.14) Some dates are displayed as ????-??-??, why?
+
+    Due to constraints in most libc implementations, dates beyond
+    2038-01-19 can't be displayed correctly. 64 bit OSes are not
+    affected by this problem.  To avoid printing wrong dates, GnuPG
+    instead prints some question marks.  To see the correct value, you
+    can use the options --with-colons and --fixed-list-mode.
+
+6.15) I still have a problem. How do I report a bug?
 
     Are you sure that it's not been mentioned somewhere on the mailing
     lists? Did you have a look at the bug list (You'll find a link to
@@ -674,7 +683,7 @@ in it - why?
     list. Otherwise, use the GUUG bug tracking system 
     http://bugs.guug.de/Reporting.html.   
 
-6.15) Why doesn't GnuPG support X509 certificates?
+6.16) Why doesn't GnuPG support X509 certificates?
 
     GnuPG, first and foremost, is an implementation of the OpenPGP
     standard (RFC 2440), which is a competing infrastructure, different

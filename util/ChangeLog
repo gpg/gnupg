@@ -1,3 +1,9 @@
+2001-04-19  Werner Koch  <wk@gnupg.org>
+
+	* miscutil.c (asctimestamp): Handle negative times.  We must do
+	this because Windoze segvs on negative times passed to gmtime().
+	(strtimestamp): Ditto.
+
 2001-04-14  Werner Koch  <wk@gnupg.org>
 
 	* strgutil.c (utf8_to_native): Fixed a segv.  Thanks to Keith Clayton.

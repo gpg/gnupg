@@ -124,10 +124,15 @@ strtimestamp( u32 stamp )
     static char buffer[11+5];
     struct tm *tp;
     time_t atime = stamp;
-
-    tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d",
-		    1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    
+    if (atime < 0) {
+        strcpy (buffer, "????-??-??");
+    }
+    else {
+        tp = gmtime( &atime );
+        sprintf(buffer,"%04d-%02d-%02d",
+                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    }
     return buffer;
 }
 
@@ -143,6 +148,11 @@ asctimestamp( u32 stamp )
     #endif
     struct tm *tp;
     time_t atime = stamp;
+
+    if (atime < 0) {
+        strcpy (buffer, "????-??-??");
+        return buffer;
+    }
 
     tp = localtime( &atime );
   #ifdef HAVE_STRFTIME
