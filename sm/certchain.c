@@ -61,7 +61,7 @@ unknown_criticals (KsbaCert cert)
           rc = gpg_error (GPG_ERR_UNSUPPORTED_CERT);
         }
     }
-  if (err && err != -1)
+  if (err && gpg_err_code (err) != GPG_ERR_EOF)
     rc = err;
 
   return rc;

@@ -1,3 +1,9 @@
+2003-11-18  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgsm_verify): Fixed for changes API of gcry_md_info.
+
+	* certchain.c (unknown_criticals): Fixed an error code test.
+
 2003-11-12  Werner Koch  <wk@gnupg.org>
 
 	Adjusted for API changes in Libksba.
