@@ -1007,9 +1007,15 @@ main ( int argc, char **argv)
     {
       int rc = gpgsm_add_to_certlist (sl->d, &recplist);
       if (rc)
-        log_error (_("can't encrypt to `%s': %s\n"),
-                   sl->d, gnupg_strerror (rc));
-    }
+        {
+          log_error (_("can't encrypt to `%s': %s\n"),
+                     sl->d, gnupg_strerror (rc));
+          gpgsm_status2 (&ctrl, STATUS_INV_RECP,
+                         rc == -1? "1":
+                         rc == GNUPG_Ambiguous_Name? "2 ": "0 ",
+                         sl->d, NULL);
+        }
+  }
   if (log_get_errorcount(0))
     gpgsm_exit(1); /* must stop for invalid recipients */
   

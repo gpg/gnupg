@@ -135,6 +135,7 @@ void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
 /*-- server.c --*/
 void gpgsm_server (void);
 void gpgsm_status (CTRL ctrl, int no, const char *text);
+void gpgsm_status2 (CTRL ctrl, int no, ...);
 
 /*-- fingerprint --*/
 char *gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len);

@@ -282,6 +282,13 @@ gpgsm_validate_path (KsbaCert cert)
   KsbaCert subject_cert = NULL, issuer_cert = NULL;
   time_t current_time = time (NULL);
 
+  if ((opt.debug & 4096))
+    {
+      log_info ("WARNING: bypassing path validation\n");
+      return 0;
+    }
+      
+
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
@@ -521,6 +528,12 @@ gpgsm_basic_cert_check (KsbaCert cert)
   KEYDB_HANDLE kh = keydb_new (0);
   KsbaCert issuer_cert = NULL;
 
+  if ((opt.debug & 4096))
+    {
+      log_info ("WARNING: bypassing basic certificate checks\n");
+      return 0;
+    }
+
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
@@ -532,8 +545,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
   subject = ksba_cert_get_subject (cert, 0);
   if (!issuer)
     {
-      if (DBG_X509)
-        log_debug ("ERROR: issuer missing\n");
+      log_error ("no issuer found in certificate\n");
       rc = GNUPG_Bad_Certificate;
       goto leave;
     }

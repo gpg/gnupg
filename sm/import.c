@@ -75,8 +75,14 @@ gpgsm_import (CTRL ctrl, int in_fd)
     }
 
   if ( !gpgsm_basic_cert_check (cert) )
-    keydb_store_cert (cert);
-
+    {
+      if (!keydb_store_cert (cert))
+        {
+          if (opt.verbose)
+            log_info ("certificate imported\n");
+        }
+    }
+      
  leave:
   ksba_cert_release (cert);
   gpgsm_destroy_reader (b64reader);

@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <unistd.h>
 
@@ -176,6 +177,11 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
   int rc;
 
   rc = gpgsm_add_to_certlist (line, &ctrl->server_local->recplist);
+  if (rc)
+    gpgsm_status2 (ctrl, STATUS_INV_RECP,
+                   rc == -1? "1":
+                   rc == GNUPG_Ambiguous_Name? "2 ": "0 ",
+                   line, NULL);
 
   return map_to_assuan_status (rc);
 }
@@ -672,10 +678,14 @@ get_status_string ( int no )
 }
 
 
-
 void
-gpgsm_status (CTRL ctrl, int no, const char *text)
+gpgsm_status2 (CTRL ctrl, int no, ...)
 {
+  va_list arg_ptr;
+  const char *text;
+
+  va_start (arg_ptr, no);
+
   if (ctrl->no_server)
     {
       if (ctrl->status_fd == -1)
@@ -699,7 +709,7 @@ gpgsm_status (CTRL ctrl, int no, const char *text)
       fputs ("[GNUPG:] ", statusfp);
       fputs (get_status_string (no), statusfp);
     
-      if (text)
+      while ( (text = va_arg (arg_ptr, const char*) ))
         {
           putc ( ' ', statusfp );
           for (; *text; text++) 
@@ -718,10 +728,29 @@ gpgsm_status (CTRL ctrl, int no, const char *text)
   else 
     {
       ASSUAN_CONTEXT ctx = ctrl->server_local->assuan_ctx;
+      char buf[950], *p;
+      size_t n;
 
-      assuan_write_status (ctx, get_status_string (no), text);
+      p = buf; 
+      n = 0;
+      while ( (text = va_arg (arg_ptr, const char *)) )
+        {
+          for ( ; *text && n < DIM (buf)-1; n++)
+            *p++ = *text++;
+        }
+      *p = 0;
+      assuan_write_status (ctx, get_status_string (no), buf);
     }
+
+  va_end (arg_ptr);
 }
+
+void
+gpgsm_status (CTRL ctrl, int no, const char *text)
+{
+  gpgsm_status2 (ctrl, no, text, NULL);
+}
+
 
 
 #if 0

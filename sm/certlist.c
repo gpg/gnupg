@@ -61,6 +61,7 @@ gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
                 rc = 0;
               else if (!rc)
                 rc = GNUPG_Ambiguous_Name;
+
             }
           if (!rc)
             rc = gpgsm_validate_path (cert);

@@ -359,33 +359,24 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   DEK dek = NULL;
   int recpno;
   FILE *data_fp = NULL;
-  struct certlist_s help_recplist;
   CERTLIST cl;
 
   memset (&encparm, 0, sizeof encparm);
-  help_recplist.next = NULL;
-  help_recplist.cert = NULL;
+
+  if (!recplist)
+    {
+      log_error(_("no valid recipients given\n"));
+      gpgsm_status (ctrl, STATUS_NO_RECP, "0");
+      rc = GNUPG_No_Public_Key;
+      goto leave;
+    }
+
   kh = keydb_new (0);
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
       rc = GNUPG_General_Error;
       goto leave;
-    }
-
-  /* If no recipient list is given, use a default one */
-  /* FIXME: we shoudl not do this but return an error and a
-     STATUS_NO_RECP */
-  if (!recplist)
-    {
-      rc = gpgsm_get_default_cert (&help_recplist.cert);
-      if (rc)
-        {
-          log_error ("no default recipient found\n");
-          rc = seterr (General_Error);
-          goto leave;
-        }
-      recplist = &help_recplist;
     }
 
   data_fp = fdopen ( dup (data_fd), "rb");
@@ -554,7 +545,5 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   if (data_fp)
     fclose (data_fp);
   xfree (encparm.buffer);
-  if (help_recplist.cert)
-    ksba_cert_release (help_recplist.cert);
   return rc;
 }

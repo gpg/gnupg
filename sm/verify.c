@@ -201,12 +201,10 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           if (is_detached)
             {
               if (data_fd == -1)
-                {
-                  log_error ("detached signature but no data given\n");
-                  rc = GNUPG_Bad_Signature;
-                  goto leave;
-                }
-              hash_data (data_fd, data_md);  
+                log_info ("detached signature w/o data "
+                          "- assuming certs-only\n");
+              else
+                hash_data (data_fd, data_md);  
             }
           else
             {
@@ -259,6 +257,12 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       size_t msgdigestlen;
 
       err = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
+      if (!signer && err == KSBA_No_Data && data_fd == -1 && is_detached)
+        {
+          log_info ("certs-only message accepted\n");
+          err = 0;
+          break;
+        }
       if (err)
         break;
       log_debug ("signer %d - issuer: `%s'\n", signer, issuer? issuer:"[NONE]");
@@ -424,3 +428,4 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
     fclose (fp);
   return rc;
 }
+

@@ -1,3 +1,21 @@
+2002-03-12  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgsm_verify): Detect certs-only message.
+
+2002-03-11  Werner Koch  <wk@gnupg.org>
+
+	* import.c (gpgsm_import): Print a notice about imported certificates
+	when in verbose mode.
+
+	* gpgsm.c (main): Print INV_RECP status.
+	* server.c (cmd_recipient): Ditto.
+
+	* server.c (gpgsm_status2): New.  Allows for a list of strings.
+	(gpgsm_status): Divert to gpgsm_status2.
+
+	* encrypt.c (gpgsm_encrypt): Don't use a default key when no
+	recipients are given.  Print a NO_RECP status.
+
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
 	* server.c (cmd_listkeys, cmd_listsecretkeys): Divert to
