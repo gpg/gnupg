@@ -1,3 +1,8 @@
+2002-08-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am, md.c (load_digest_module): Allow switching TIGER on
+	and off via configure.
+
 2002-08-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* md.c (md_algo_present): New function to check if a given algo is
