@@ -1,3 +1,10 @@
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (init_membuf,put_membuf,get_membuf): Removed.
+	Include new membuf header and changed used type.
+
+	Renamed error codes from INVALID to INV and removed _ERROR suffixes.
+
 2003-06-03  Werner Koch  <wk@gnupg.org>
 
 	Changed all error codes in all files to the new libgpg-error scheme.

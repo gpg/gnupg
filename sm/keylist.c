@@ -485,7 +485,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
       rc = keydb_get_cert (hd, &cert);
       if (rc) 
         {
-          log_error ("keydb_get_cert failed: %s\n", gnupg_strerror (rc));
+          log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
       
@@ -593,7 +593,7 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
 
   rc = gpgsm_dirmngr_lookup (ctrl, names, list_external_cb, &parm);
   if (rc)
-    log_error ("listing external keys failed: %s\n", gnupg_strerror (rc));
+    log_error ("listing external keys failed: %s\n", gpg_strerror (rc));
 }
 
 /* List all keys or just the key given as NAMES.

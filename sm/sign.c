@@ -148,7 +148,7 @@ gpgsm_get_default_cert (KsbaCert *r_cert)
       rc = keydb_get_cert (hd, &cert);
       if (rc) 
         {
-          log_error ("keydb_get_cert failed: %s\n", gnupg_strerror (rc));
+          log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
           keydb_release (hd);
           return rc;
         }
@@ -171,7 +171,7 @@ gpgsm_get_default_cert (KsbaCert *r_cert)
     }
   while (!(rc = keydb_search_next (hd)));
   if (rc && rc != -1)
-    log_error ("keydb_search_next failed: %s\n", gnupg_strerror (rc));
+    log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
   
   ksba_cert_release (cert);
   keydb_release (hd);
@@ -194,7 +194,7 @@ get_default_signer (void)
         {
           if (rc != -1)
             log_debug ("failed to find default certificate: %s\n",
-                       gnupg_strerror (rc));
+                       gpg_strerror (rc));
           return NULL;
         }
       return cert;

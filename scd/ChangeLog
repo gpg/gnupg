@@ -1,3 +1,9 @@
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	* card.c (map_sc_err): Renamed gpg_make_err to gpg_err_make.
+
+	Renamed error codes from INVALID to INV and removed _ERROR suffixes.
+
 2003-06-03  Werner Koch  <wk@gnupg.org>
 
 	Changed all error codes in all files to the new libgpg-error scheme.

@@ -211,7 +211,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
   rc = gpgsm_create_reader (&b64reader, ctrl, fp, &reader);
   if (rc)
     {
-      log_error ("can't create reader: %s\n", gnupg_strerror (rc));
+      log_error ("can't create reader: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -310,7 +310,7 @@ gpgsm_import (CTRL ctrl, int in_fd)
      line invocation will return with an error (log_error keeps a
      global errorcount) */
   if (rc && !log_get_errorcount (0))
-    log_error (_("error importing certificate: %s\n"), gnupg_strerror (rc));
+    log_error (_("error importing certificate: %s\n"), gpg_strerror (rc));
   return rc;
 }
 
@@ -342,7 +342,7 @@ gpgsm_import_files (CTRL ctrl, int nfiles, char **files,
      line invocation will return with an error (log_error keeps a
      global errorcount) */
   if (rc && !log_get_errorcount (0))
-    log_error (_("error importing certificate: %s\n"), gnupg_strerror (rc));
+    log_error (_("error importing certificate: %s\n"), gpg_strerror (rc));
   return rc;
 }
 

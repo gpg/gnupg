@@ -1,6 +1,4 @@
-Stuff used by several modules of GnuPG.  This way we can share error
-codes and serveral other things.
-
+Stuff used by several modules of GnuPG.
 
 These directories use it:
 
@@ -10,5 +8,4 @@ agent
 
 These directories don't use it:
 
-assuan
 kbx

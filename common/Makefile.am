@@ -1,5 +1,5 @@
 # Makefile for common gnupg modules
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -29,19 +29,17 @@ AM_CPPFLAGS =  $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 libcommon_a_SOURCES = \
 	util.h i18n.h \
-	errors.c errors.h \
+	errors.h \
 	maperror.c \
 	sysutils.c sysutils.h \
 	cryptmiss.c \
 	gettime.c \
+	membuf.c membuf.h \
 	signal.c
 
 
 libcommon_a_LIBADD = @LIBOBJS@
 
-errors.c : errors.h mkerrors mkerrtok
-	$(srcdir)/mkerrors < $(srcdir)/errors.h > errors.c
-	$(srcdir)/mkerrtok < $(srcdir)/errors.h >> errors.c
 
 
 

@@ -365,8 +365,13 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           else
             log_error ("failed to find the certificate: %s\n",
                        gnupg_strerror(rc));
-          gpgsm_status2 (ctrl, STATUS_ERROR, "verify.findkey",
-                         gnupg_error_token (rc), NULL);
+          {
+            char numbuf[50];
+            sprintf (numbuf, "%d", rc);
+
+            gpgsm_status2 (ctrl, STATUS_ERROR, "verify.findkey",
+                           numbuf, NULL);
+          }
           /* fixme: we might want to append the issuer and serial
              using our standard notation */
           goto next_signer;
@@ -533,8 +538,13 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
     fclose (fp);
 
   if (rc)
-    gpgsm_status2 (ctrl, STATUS_ERROR, "verify.leave",
-                   gnupg_error_token (rc), NULL);
+    {
+      char numbuf[50];
+      sprintf (numbuf, "%d", rc );
+      gpgsm_status2 (ctrl, STATUS_ERROR, "verify.leave",
+                     numbuf, NULL);
+    }
+
   return rc;
 }
 

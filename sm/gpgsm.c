@@ -1290,7 +1290,7 @@ main ( int argc, char **argv)
         {
           int rc = gpgsm_agent_learn ();
           if (rc)
-            log_error ("error learning card: %s\n", gnupg_strerror (rc));
+            log_error ("error learning card: %s\n", gpg_strerror (rc));
         }
       break;
 
@@ -1311,7 +1311,7 @@ main ( int argc, char **argv)
           else 
             rc = gpgsm_agent_passwd (grip);
           if (rc)
-            log_error ("error changing passphrase: %s\n", gnupg_strerror (rc));
+            log_error ("error changing passphrase: %s\n", gpg_strerror (rc));
           xfree (grip);
           ksba_cert_release (cert);
         }

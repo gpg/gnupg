@@ -165,7 +165,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
           rc = gpgsm_finish_writer (b64writer);
           if (rc) 
             {
-              log_error ("write failed: %s\n", gnupg_strerror (rc));
+              log_error ("write failed: %s\n", gpg_strerror (rc));
               goto leave;
             }
           gpgsm_destroy_writer (b64writer);
@@ -182,7 +182,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
       rc = gpgsm_finish_writer (b64writer);
       if (rc) 
         {
-          log_error ("write failed: %s\n", gnupg_strerror (rc));
+          log_error ("write failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
     }

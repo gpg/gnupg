@@ -155,7 +155,7 @@ cmd_istrusted (ASSUAN_CONTEXT ctx, char *line)
     return ASSUAN_Not_Trusted;
   else
     {
-      log_error ("command is_trusted failed: %s\n", gnupg_strerror (rc));
+      log_error ("command is_trusted failed: %s\n", gpg_strerror (rc));
       return map_to_assuan_status (rc);
     }
 }
@@ -168,7 +168,7 @@ cmd_listtrusted (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc = agent_listtrusted (ctx);
   if (rc)
-    log_error ("command listtrusted failed: %s\n", gnupg_strerror (rc));
+    log_error ("command listtrusted failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 
@@ -210,7 +210,7 @@ cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
 
   rc = agent_marktrusted (ctrl, p, fpr, flag);
   if (rc)
-    log_error ("command marktrusted failed: %s\n", gnupg_strerror (rc));
+    log_error ("command marktrusted failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 
@@ -316,7 +316,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 
   rc = agent_pksign (ctrl, assuan_get_data_fp (ctx), ignore_cache);
   if (rc)
-    log_error ("command pksign failed: %s\n", gnupg_strerror (rc));
+    log_error ("command pksign failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 
@@ -341,7 +341,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   rc = agent_pkdecrypt (ctrl, value, valuelen, assuan_get_data_fp (ctx));
   xfree (value);
   if (rc)
-    log_error ("command pkdecrypt failed: %s\n", gnupg_strerror (rc));
+    log_error ("command pkdecrypt failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 
@@ -376,7 +376,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
   rc = agent_genkey (ctrl, value, valuelen, assuan_get_data_fp (ctx));
   xfree (value);
   if (rc)
-    log_error ("command genkey failed: %s\n", gnupg_strerror (rc));
+    log_error ("command genkey failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 
@@ -491,7 +491,7 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
     }
 
   if (rc)
-    log_error ("command get_passphrase failed: %s\n", gnupg_strerror (rc));
+    log_error ("command get_passphrase failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 
@@ -534,7 +534,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 
   rc = agent_handle_learn (has_option (line, "--send")? ctx : NULL);
   if (rc)
-    log_error ("command learn failed: %s\n", gnupg_strerror (rc));
+    log_error ("command learn failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 
@@ -571,7 +571,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
   if (rc)
-    log_error ("command passwd failed: %s\n", gnupg_strerror (rc));
+    log_error ("command passwd failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
 }
 

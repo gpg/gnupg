@@ -1,3 +1,20 @@
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+
+	* errors.h: Removed all error codes.  We keep the status codes for
+	now.
+	* Makefile.am: Do not create errors.c anymore; remove it from the
+	sources.
+
+	* maperror.c: Don't include error.h.  Change all error codes to
+	libgpg-error style.
+	(map_assuan_err): Changed to new Assuan error code convention.
+	(map_to_assuan_status): Likewise.
+	(map_gcry_err,map_kbx_err): Not needed.  For now dummy functions.
+
+	* membuf.c, membuf.h: New.  Code taken from ../sm/call-agent.h.
+	* Makefile.am: Added above.
+
 2003-04-29  Werner Koch  <wk@gnupg.org>
 
 	* util.h (fopencokokie): Removed prototype and struct.

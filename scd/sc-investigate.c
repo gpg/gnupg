@@ -145,11 +145,11 @@ main (int argc, char **argv )
 
   rc = atr_dump (slot, stdout); 
   if (rc)
-    log_error ("can't dump ATR: %s\n", gnupg_strerror (rc));
+    log_error ("can't dump ATR: %s\n", gpg_strerror (rc));
 
   rc = app_select_openpgp (slot);
   if (rc)
-    log_error ("selecting openpgp failed: %s\n", gnupg_strerror (rc));
+    log_error ("selecting openpgp failed: %s\n", gpg_strerror (rc));
   else
     log_info ("openpgp application selected\n");
 

@@ -306,7 +306,7 @@ agent_key_from_file (CTRL ctrl,
                 }
             }
           if (rc)
-            log_error ("get_shadow_info failed: %s\n", gnupg_strerror (rc));
+            log_error ("get_shadow_info failed: %s\n", gpg_strerror (rc));
         }
       rc = -1; /* ugly interface: we return an error but keep a value
                   in shadow_info.  */

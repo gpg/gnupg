@@ -300,7 +300,7 @@ read_and_protect (const char *fname)
   xfree (key);
   if (rc)
     {
-      log_error ("protecting the key failed: %s\n", gnupg_strerror (rc));
+      log_error ("protecting the key failed: %s\n", gpg_strerror (rc));
       return;
     }
   
@@ -335,7 +335,7 @@ read_and_unprotect (const char *fname)
   xfree (key);
   if (rc)
     {
-      log_error ("unprotecting the key failed: %s\n", gnupg_strerror (rc));
+      log_error ("unprotecting the key failed: %s\n", gpg_strerror (rc));
       return;
     }
   
@@ -371,7 +371,7 @@ read_and_shadow (const char *fname)
   xfree (key);
   if (rc)
     {
-      log_error ("shadowing the key failed: %s\n", gnupg_strerror (rc));
+      log_error ("shadowing the key failed: %s\n", gpg_strerror (rc));
       return;
     }
   resultlen = gcry_sexp_canon_len (result, 0, NULL,NULL);
@@ -407,7 +407,7 @@ show_shadow_info (const char *fname)
   xfree (key);
   if (rc)
     {
-      log_error ("get_shadow_info failed: %s\n", gnupg_strerror (rc));
+      log_error ("get_shadow_info failed: %s\n", gpg_strerror (rc));
       return;
     }
   infolen = gcry_sexp_canon_len (info, 0, NULL,NULL);
@@ -663,7 +663,7 @@ import_p12_file (const char *fname)
   xfree (key);
   if (rc)
     {
-      log_error ("protecting the key failed: %s\n", gnupg_strerror (rc));
+      log_error ("protecting the key failed: %s\n", gpg_strerror (rc));
       return;
     }
   
