@@ -25,6 +25,10 @@ Requires(post,preun): /sbin/install-info
 BuildRoot: %{_tmppath}/rpmbuild_%{name}-%{version}
 
 %changelog
+* Wed Feb 16 2005 David Shaw <dshaw@jabberwocky.com>
+- Fix problem with storing the gpgkeys helpers in libexec, but calling
+  them in libexec/gnupg.
+
 * Wed Jul 30 2003 David Shaw <dshaw@jabberwocky.com>
 - Rework much of the spec to use %-macros throughout.
 - Fix to work properly with RPM 4.1 (all files in buildroot must be packaged)
@@ -161,11 +165,11 @@ fi
 make
 
 %install
-%makeinstall
+%makeinstall libexecdir=$RPM_BUILD_ROOT/%{_libexecdir}/gnupg
 %find_lang %{name}
 rm %{buildroot}%{_datadir}/%{name}/FAQ
 rm %{buildroot}%{_datadir}/%{name}/faq.html
-rm %{buildroot}%{_infodir}/dir
+rm -f %{buildroot}%{_infodir}/dir
 
 %files -f %{name}.lang
 %defattr (-,root,root)
@@ -181,7 +185,7 @@ rm %{buildroot}%{_infodir}/dir
 %attr (4755,root,root) %{_bindir}/gpg
 %attr (0755,root,root) %{_bindir}/gpgv
 %attr (0755,root,root) %{_bindir}/gpgsplit
-%attr (0755,root,root) %{_libexecdir}/*
+%attr (0755,root,root) %{_libexecdir}/gnupg/*
 
 %post
 /sbin/install-info %{_infodir}/gpg.info %{_infodir}/dir 2>/dev/null || :
