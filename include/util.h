@@ -1,5 +1,6 @@
 /* util.h
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -165,6 +166,7 @@ const char *strtimevalue( u32 stamp );
 const char *strtimestamp( u32 stamp ); /* GMT */
 const char *asctimestamp( u32 stamp ); /* localized */
 void print_string( FILE *fp, const byte *p, size_t n, int delim );
+void print_string2( FILE *fp, const byte *p, size_t n, int delim, int delim2 );
 void  print_utf8_string( FILE *fp, const byte *p, size_t n );
 void  print_utf8_string2( FILE *fp, const byte *p, size_t n, int delim);
 char *make_printable_string( const byte *p, size_t n, int delim );
