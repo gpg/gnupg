@@ -1,5 +1,8 @@
 2004-02-19  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: Check for ln -s and add GPGKEYS_LDAP conditional,
+	both for making gpgkeys_ldaps symlink to gpgkeys_ldap.
+
 	* configure.ac: Simplify the LDAP checking code since OpenLDAP is
 	far more mature these days and dependencies are cleaner.  Add
 	checks for ldap_set_option and ldap_start_tls_s.

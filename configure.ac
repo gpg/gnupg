@@ -376,6 +376,7 @@ AC_PATH_PROG(PERL,"perl")
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
 AC_PROG_INSTALL
+AC_PROG_LN_S
 AC_PROG_AWK
 AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
 AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
@@ -565,6 +566,7 @@ fi
 
 AC_SUBST(GPGKEYS_LDAP)
 AC_SUBST(LDAPLIBS)
+AM_CONDITIONAL(GPGKEYS_LDAP, test "$GPGKEYS_LDAP" != "")
 
 dnl This isn't necessarily sendmail itself, but anything that gives a
 dnl sendmail-ish interface to the outside world.  That includes qmail,
