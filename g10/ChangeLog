@@ -1,10 +1,15 @@
 2004-09-27  Werner Koch  <wk@g10code.com>
 
+	* card-util.c (card_edit): Take admin only status from the table.
+
 	* app-openpgp.c: Made all strings translatable.
 	(verify_chv3) [GNUPG_MAJOR_VERSION]: Make opt.allow_admin
 	available for use in gnupg 2. 
 	(verify_chv3): Reimplemented countdown showing to use only
-	functions from this module. 
+	functions from this module.  Flush the CVH status cache on a
+	successful read.
+	(get_one_do): Hack to bypass the cache for cards versions > 1.0.
+	(store_fpr): Store the creation date for card version > 1.0.
 
 2004-09-25  David Shaw  <dshaw@jabberwocky.com>
 

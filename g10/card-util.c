@@ -1166,6 +1166,7 @@ card_edit (STRLIST commands)
       const char *arg_string = "";
       char *p;
       int i;
+      int cmd_admin_only;
       
       tty_printf("\n");
       if (redisplay )
@@ -1208,46 +1209,39 @@ card_edit (STRLIST commands)
 	    }
 	    trim_spaces(answer);
 	}
-      while( *answer == '#' );
+      while ( *answer == '#' );
 
       arg_number = 0; /* Yes, here is the init which egcc complains about */
+      cmd_admin_only = 0;
       if (!*answer)
         cmd = cmdLIST; /* Default to the list command */
       else if (*answer == CONTROL_D)
         cmd = cmdQUIT;
-      else {
-        if ((p=strchr (answer,' ')))
-          {
-            *p++ = 0;
-            trim_spaces (answer);
-            trim_spaces (p);
-            arg_number = atoi(p);
-            arg_string = p;
-          }
+      else 
+        {
+          if ((p=strchr (answer,' ')))
+            {
+              *p++ = 0;
+              trim_spaces (answer);
+              trim_spaces (p);
+              arg_number = atoi(p);
+              arg_string = p;
+            }
+          
+          for (i=0; cmds[i].name; i++ )
+            if (!ascii_strcasecmp (answer, cmds[i].name ))
+              break;
 
-        for (i=0; cmds[i].name; i++ )
-          if (!ascii_strcasecmp (answer, cmds[i].name ))
-            break;
+          cmd = cmds[i].id;
+          cmd_admin_only = cmds[i].admin_only;
+        }
 
-        cmd = cmds[i].id;
-      }
-
-      if(!allow_admin)
-	switch(cmd)
-	  {
-	  case cmdNAME:
-	  case cmdURL:
-	  case cmdLOGIN:
-	  case cmdLANG:
-	  case cmdCAFPR:
-	  case cmdFORCESIG:
-	  case cmdGENERATE:
-	    tty_printf ("\n");
-	    tty_printf (_("Admin-only command\n"));
-	    continue;
-	  default:
-	    break;
-	  }
+      if (!allow_admin && cmd_admin_only)
+	{
+          tty_printf ("\n");
+          tty_printf (_("Admin-only command\n"));
+          continue;
+        }
 
       switch (cmd)
         {

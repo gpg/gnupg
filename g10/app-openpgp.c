@@ -52,27 +52,33 @@ static struct {
   int binary;
   int dont_cache;
   int flush_on_error;
+  int get_immediate_in_v11; /* Enable a hack to bypass the cache of
+                               this data object if it is used in 1.1
+                               and later versions of the card.  This
+                               does not work with composite DO and is
+                               currently only useful for the CHV
+                               status bytes. */
   char *desc;
 } data_objects[] = {
-  { 0x005E, 0,    0, 1, 0, 0, "Login Data" },
-  { 0x5F50, 0,    0, 0, 0, 0, "URL" },
-  { 0x0065, 1,    0, 1, 0, 0, "Cardholder Related Data"},
-  { 0x005B, 0, 0x65, 0, 0, 0, "Name" },
-  { 0x5F2D, 0, 0x65, 0, 0, 0, "Language preferences" },
-  { 0x5F35, 0, 0x65, 0, 0, 0, "Sex" },
-  { 0x006E, 1,    0, 1, 0, 0, "Application Related Data" },
-  { 0x004F, 0, 0x6E, 1, 0, 0, "AID" },
-  { 0x0073, 1,    0, 1, 0, 0, "Discretionary Data Objects" },
-  { 0x0047, 0, 0x6E, 1, 1, 0, "Card Capabilities" },
-  { 0x00C0, 0, 0x6E, 1, 1, 0, "Extended Card Capabilities" },
-  { 0x00C1, 0, 0x6E, 1, 1, 0, "Algorithm Attributes Signature" },
-  { 0x00C2, 0, 0x6E, 1, 1, 0, "Algorithm Attributes Decryption" },
-  { 0x00C3, 0, 0x6E, 1, 1, 0, "Algorithm Attributes Authentication" },
-  { 0x00C4, 0, 0x6E, 1, 0, 1, "CHV Status Bytes" },
-  { 0x00C5, 0, 0x6E, 1, 0, 0, "Fingerprints" },
-  { 0x00C6, 0, 0x6E, 1, 0, 0, "CA Fingerprints" },
-  { 0x007A, 1,    0, 1, 0, 0, "Security Support Template" },
-  { 0x0093, 0, 0x7A, 1, 1, 0, "Digital Signature Counter" },
+  { 0x005E, 0,    0, 1, 0, 0, 0, "Login Data" },
+  { 0x5F50, 0,    0, 0, 0, 0, 0, "URL" },
+  { 0x0065, 1,    0, 1, 0, 0, 0, "Cardholder Related Data"},
+  { 0x005B, 0, 0x65, 0, 0, 0, 0, "Name" },
+  { 0x5F2D, 0, 0x65, 0, 0, 0, 0, "Language preferences" },
+  { 0x5F35, 0, 0x65, 0, 0, 0, 0, "Sex" },
+  { 0x006E, 1,    0, 1, 0, 0, 0, "Application Related Data" },
+  { 0x004F, 0, 0x6E, 1, 0, 0, 0, "AID" },
+  { 0x0073, 1,    0, 1, 0, 0, 0, "Discretionary Data Objects" },
+  { 0x0047, 0, 0x6E, 1, 1, 0, 0, "Card Capabilities" },
+  { 0x00C0, 0, 0x6E, 1, 1, 0, 0, "Extended Card Capabilities" },
+  { 0x00C1, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Signature" },
+  { 0x00C2, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Decryption" },
+  { 0x00C3, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Authentication" },
+  { 0x00C4, 0, 0x6E, 1, 0, 1, 1, "CHV Status Bytes" },
+  { 0x00C5, 0, 0x6E, 1, 0, 0, 0, "Fingerprints" },
+  { 0x00C6, 0, 0x6E, 1, 0, 0, 0, "CA Fingerprints" },
+  { 0x007A, 1,    0, 1, 0, 0, 0, "Security Support Template" },
+  { 0x0093, 0, 0x7A, 1, 1, 0, 0, "Digital Signature Counter" },
   { 0 }
 };
 
@@ -267,6 +273,15 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
   for (i=0; data_objects[i].tag && data_objects[i].tag != tag; i++)
     ;
 
+  if (app->card_version > 0x0100 && data_objects[i].get_immediate_in_v11)
+    {
+      if( iso7816_get_data (app->slot, tag, &buffer, &buflen))
+        return NULL;
+      *result = buffer;
+      *nbytes = buflen;
+      return buffer;
+    }
+
   value = NULL;
   rc = -1;
   if (data_objects[i].tag && data_objects[i].get_from)
@@ -441,6 +456,21 @@ store_fpr (int slot, int keynumber, u32 timestamp,
                                + keynumber, fpr, 20);
   if (rc)
     log_error (_("failed to store the fingerprint: %s\n"),gpg_strerror (rc));
+
+  if (!rc && card_version > 0x0100)
+    {
+      unsigned char buf[4];
+
+      buf[0] = timestamp >> 24;
+      buf[1] = timestamp >> 16;
+      buf[2] = timestamp >>  8;
+      buf[3] = timestamp;
+
+      rc = iso7816_put_data (slot, 0xCE + keynumber, buf, 4);
+      if (rc)
+        log_error (_("failed to store the creation date: %s\n"),
+                   gpg_strerror (rc));
+    }
 
   return rc;
 }
@@ -686,6 +716,8 @@ verify_chv3 (APP app,
       void *relptr;
       unsigned char *value;
       size_t valuelen;
+      int reread_chv_status;
+      
 
       relptr = get_one_do (app, 0x00C4, &value, &valuelen);
       if (!relptr || valuelen < 7)
@@ -700,6 +732,8 @@ verify_chv3 (APP app,
           xfree (relptr);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
+
+      reread_chv_status = (value[6] < 3);
 
       log_info(_("%d Admin PIN attempts remaining before card"
                  " is permanently locked\n"), value[6]);
@@ -729,6 +763,13 @@ verify_chv3 (APP app,
           return rc;
         }
       app->did_chv3 = 1;
+      /* If the PIN has been entered wrongly before, we need to flush
+         the cached value so that the next read correctly reflects the
+         resetted retry counter.  Note that version 1.1 of the specs
+         allow direct reading of that DO, so that we could actually
+         flush it in all cases. */
+      if (reread_chv_status)
+        flush_cache_item (app, 0x00C4);
     }
   return rc;
 }
