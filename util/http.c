@@ -775,7 +775,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
   init_sockets();
   /* Win32 gethostbyname doesn't handle IP addresses internally, so we
      try inet_addr first on that platform only. */
-  if((inaddr=inet_addr(server))!=SOCKET_ERROR)
+  if((inaddr=inet_addr(server))!=INADDR_NONE)
     {
       struct sockaddr_in addr;
 
