@@ -1,3 +1,12 @@
+2002-12-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (proc_tree): Handle multiple detached sigs
+	concatenated together by warning the user and processing only the
+	first.
+
+	* g10.c (main): Comment out --list-trust-path until it can be
+	implemented.
+
 2002-12-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (ask_algo): Make the Elgamal sign+encrypt warning

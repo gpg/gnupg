@@ -1581,6 +1581,10 @@ proc_tree( CTX c, KBNODE node )
     else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
 
+	if(find_next_kbnode(node, PKT_SIGNATURE))
+	  log_info(_("WARNING: multiple signatures detected.  "
+		     "Only the first will be checked.\n"));
+
 	if( sig->sig_class != 0x00 && sig->sig_class != 0x01 )
 	    log_info(_("standalone signature of class 0x%02x\n"),
 						    sig->sig_class);
@@ -1641,8 +1645,7 @@ proc_tree( CTX c, KBNODE node )
 	else if (!opt.quiet)
 	    log_info(_("old style (PGP 2.x) signature\n"));
 
-	for( n1 = node; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )) )
-	    check_sig_and_print( c, n1 );
+	check_sig_and_print( c, node );
     }
     else {
         dump_kbnode (c->list);
