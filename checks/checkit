@@ -10,7 +10,7 @@ usrname1="one"
 usrpass1="def"
 usrname2="two"
 usrpass2="abc"
-plain_files="plain-1 plain-2 plain-3"
+plain_files="plain-1 plain-2"
 data_files=""
 exp_files=""
 
@@ -50,6 +50,13 @@ run_g10 () {
     fi
 }
 
+run_g10maint () {
+    if ! eval ../g10/g10maint --homedir . $* ; then
+	echo "(../g10/g10maint --homedir . $*) failed" >&2
+	exit 1
+    fi
+}
+
 #--------------------------------
 #-------- main program ----------
 #--------------------------------
@@ -60,7 +67,7 @@ trap cleanup SIGHUP SIGINT SIGQUIT
 
 
 # some checks
-for i in $plain_files; do
+for i in $plain_files plain-3o.asc ; do
     [ -f $i ] || fatal "$i: missing"
 done
 for i in $exp_files; do
@@ -76,6 +83,13 @@ EOF
 
 # print the G10 version
 run_g10 --version
+
+info Unpacking some material
+run_g10maint --yes --dearmor -o pubring.g10 pubring.asc
+run_g10maint --yes --dearmor -o secring.g10 secring.asc
+run_g10maint --yes --dearmor -o plain-3 plain-3o.asc
+plain_files="$plain_files plain-3"
+
 
 
 info Checking decryption
@@ -124,7 +138,7 @@ done
 info Checking armored encryption
 for i in $plain_files $data_files ; do
     run_g10 -ea -o x --yes -r "$usrname2" $i
-    run_g10 -o y --yes x
+    echo "$usrpass2" | run_g10 -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 
