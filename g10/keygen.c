@@ -2066,6 +2066,24 @@ generate_keypair( const char *fname )
 
 
 static void
+print_status_key_created (int letter, PKT_public_key *pk)
+{
+  byte array[MAX_FINGERPRINT_LEN], *s;
+  char buf[MAX_FINGERPRINT_LEN*2+30], *p;
+  size_t i, n;
+  
+  p = buf;
+  *p++ = letter;
+  *p++ = ' ';
+  fingerprint_from_pk (pk, array, &n);
+  s = array;
+  for (i=0; i < n ; i++, s++, p += 2)
+    sprintf (p, "%02X", *s);
+  *p = 0;
+  write_status_text (STATUS_KEY_CREATED, buf);
+}
+
+static void
 do_generate_keypair( struct para_data_s *para,
 		     struct output_control_s *outctrl )
 {
@@ -2276,7 +2294,9 @@ do_generate_keypair( struct para_data_s *para,
 	    tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
     }
     else {
-        write_status_text (STATUS_KEY_CREATED, did_sub? "B":"P");
+        PKT_public_key *pk = find_kbnode (pub_root, 
+                                    PKT_PUBLIC_KEY)->pkt->pkt.public_key;
+        print_status_key_created (did_sub? 'B':'P', pk);
     }
     release_kbnode( pub_root );
     release_kbnode( sec_root );
