@@ -144,7 +144,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     }
 
     /* prepare to calculate the MD over the input */
-    if( opt.textmode && opt.armor && !outfile )
+    if( opt.textmode && !outfile )
 	iobuf_push_filter( inp, text_filter, &tfx );
     mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
     if( !multifile )
@@ -301,22 +301,36 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
 
 
+/****************
+ * note: we do not count empty lines at the beginning
+ */
 static int
 write_dash_escaped( IOBUF inp, IOBUF out, MD_HANDLE md )
 {
     int c;
     int lastlf = 1;
+    int skip_empty = 1;
 
     while( (c = iobuf_get(inp)) != -1 ) {
 	/* Note: We don't escape "From " because the MUA should cope with it */
-	if( lastlf && c == '-' ) {
-	    iobuf_put( out, c );
-	    iobuf_put( out, ' ' );
+	if( lastlf ) {
+	    if( c == '-' ) {
+		iobuf_put( out, c );
+		iobuf_put( out, ' ' );
+		skip_empty = 0;
+	    }
+	    else if( skip_empty && c == '\r' )
+		skip_empty = 2;
+	    else
+		skip_empty = 0;
 	}
 
-	md_putc(md, c );
+	if( !skip_empty )
+	    md_putc(md, c );
 	iobuf_put( out, c );
 	lastlf = c == '\n';
+	if( skip_empty == 2 )
+	    skip_empty = lastlf ? 0 : 1;
     }
     return 0; /* fixme: add error handling */
 }
@@ -368,7 +382,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	goto leave;
     }
 
-    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n\n" );
+    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n"
+			"Hash: RIPEMD160\n\n" );
 
     textmd = md_open(DIGEST_ALGO_RMD160, 0);
     iobuf_push_filter( inp, text_filter, &tfx );

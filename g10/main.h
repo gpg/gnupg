@@ -76,6 +76,7 @@ MPI encode_md_value( MD_HANDLE md, unsigned nbits );
 
 /*-- comment.c --*/
 KBNODE make_comment_node( const char *s );
+KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- elg.c --*/
 void g10_elg_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );

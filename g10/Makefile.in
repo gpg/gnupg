@@ -86,8 +86,8 @@ POSUB = @POSUB@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
 
-INCLUDES = -I.. -I$(top_srcdir)/include
-EXTRA_DIST = OPTIONS
+INCLUDES = -I$(top_srcdir)/include
+EXTRA_DIST = OPTIONS  pubring.g10
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 bin_PROGRAMS = g10 g10maint
@@ -140,7 +140,7 @@ g10_SOURCES  = g10.c		\
 g10maint_SOURCES = g10maint.c	\
 	      $(common_source)
 
-LDADD = $(needed_libs)
+LDADD = @INTLLIBS@ $(needed_libs)
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

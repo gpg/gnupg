@@ -45,6 +45,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
     FILE *fp = NULL;
     int rc = 0;
     int c;
+static FILE *abc;
+if( !abc )
+    abc=fopen("plaintext.out", "wb");
+if( !abc ) BUG();
 
     /* create the filename as C string */
     if( opt.outfile ) {
@@ -78,6 +82,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }
+	    putc( c, abc );
 	    if( mfx->md )
 		md_putc(mfx->md, c );
 	    if( putc( c, fp ) == EOF ) {
@@ -89,6 +94,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
     }
     else {
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
+	    putc( c, abc );
 	    if( mfx->md )
 		md_putc(mfx->md, c );
 	    if( putc( c, fp ) == EOF ) {

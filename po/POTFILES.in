@@ -2,6 +2,7 @@
 # Copyright (c) 1998 by Werner Koch (dd9jn)
 
 # utility
+util/secmem.c
 
 # cipher
 cipher/random.c

@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I.. -I$(top_srcdir)/include
-EXTRA_DIST = OPTIONS
+INCLUDES = -I$(top_srcdir)/include
+EXTRA_DIST = OPTIONS  pubring.g10
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 bin_PROGRAMS = g10 g10maint
@@ -55,7 +55,7 @@ g10_SOURCES  = g10.c		\
 g10maint_SOURCES = g10maint.c	\
 	      $(common_source)
 
-LDADD = $(needed_libs)
+LDADD = @INTLLIBS@ $(needed_libs)
 
 $(PROGRAMS): $(needed_libs)
 

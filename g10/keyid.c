@@ -59,14 +59,18 @@ v3_elg_fingerprint_md( PKT_public_cert *pkc )
     byte *buf1, *buf2, *buf3;
     byte *p1, *p2, *p3;
     unsigned n1, n2, n3;
+    unsigned nb1, nb2, nb3;
     unsigned n;
 
+    nb1 = mpi_get_nbits(pkc->d.elg.p);
     p1 = buf1 = mpi_get_buffer( pkc->d.elg.p, &n1, NULL );
     for( ; !*p1 && n1; p1++, n1-- )  /* skip leading null bytes */
 	;
+    nb2 = mpi_get_nbits(pkc->d.elg.g);
     p2 = buf2 = mpi_get_buffer( pkc->d.elg.g, &n2, NULL );
     for( ; !*p2 && n2; p2++, n2-- )  /* skip leading null bytes */
 	;
+    nb3 = mpi_get_nbits(pkc->d.elg.y);
     p3 = buf3 = mpi_get_buffer( pkc->d.elg.y, &n3, NULL );
     for( ; !*p3 && n3; p3++, n3-- )  /* skip leading null bytes */
 	;
@@ -90,9 +94,9 @@ v3_elg_fingerprint_md( PKT_public_cert *pkc )
 	md_putc( md, a	    );
     }
     md_putc( md, pkc->pubkey_algo );
-    md_putc( md, n1>>8); md_putc( md, n1 ); md_write( md, p1, n1 );
-    md_putc( md, n2>>8); md_putc( md, n2 ); md_write( md, p2, n2 );
-    md_putc( md, n3>>8); md_putc( md, n3 ); md_write( md, p3, n3 );
+    md_putc( md, nb1>>8); md_putc( md, nb1 ); md_write( md, p1, n1 );
+    md_putc( md, nb2>>8); md_putc( md, nb2 ); md_write( md, p2, n2 );
+    md_putc( md, nb3>>8); md_putc( md, nb3 ); md_write( md, p3, n3 );
     m_free(buf1);
     m_free(buf2);
     m_free(buf3);

@@ -113,9 +113,11 @@ gen_k( MPI p )
 /****************
  * Generate a key pair with a key of size NBITS
  * Returns: 2 structures filles with all needed values
+ *	    and an array with n-1 factors of (p-1)
  */
 void
-elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
+elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
+	      unsigned nbits, MPI **ret_factors )
 {
     MPI p;    /* the prime */
     MPI p_min1;
@@ -136,7 +138,7 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
     else
 	qbits = 240;
     g = mpi_alloc(1);
-    p = generate_elg_prime( nbits, qbits, g );
+    p = generate_elg_prime( nbits, qbits, g, ret_factors );
     mpi_sub_ui(p_min1, p, 1);
 
 

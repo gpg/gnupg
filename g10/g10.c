@@ -101,8 +101,12 @@ strusage( int level )
 static void
 i18n_init(void)
 {
-  #ifdef ENABLE_NLS
-    setlocale( LC_MESSAGES, "" );
+  #ifdef HAVE_LIBINTL
+    #ifdef HAVE_LC_MESSAGES
+       setlocale( LC_MESSAGES, "" );
+    #else
+       setlocale( LC_ALL, "" );
+    #endif
     bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
   #endif
@@ -235,8 +239,10 @@ main( int argc, char **argv )
     enum cmd_values cmd = 0;
     const char *trustdb_name = NULL;
 
-
-    secmem_init( 16384 );
+    /* Please note that we may running SUID(ROOT), so be very CAREFUL
+     * when adding any stuff between here and the call to
+     * secmem_init()  somewhere after the option parsing
+     */
 
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
@@ -396,6 +402,10 @@ main( int argc, char **argv )
     }
     if( errors )
 	g10_exit(2);
+
+    /* initialize the secure memory. */
+    secmem_init( 16384 );
+    /* Okay, we are now working under our real uid */
 
     write_status( STATUS_ENTER );
 

@@ -44,6 +44,11 @@
 /* Define as 1 if you have gettext and don't want to use GNU gettext.  */
 #undef HAVE_GETTEXT
 
+/* libintl.h is available; this is obsolete because if we don't have
+ * this header we use a symlink to the one in intl/ */
+#undef HAVE_LIBINTL_H
+
+
 #undef HAVE_STPCPY
 
 

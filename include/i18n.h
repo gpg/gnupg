@@ -21,12 +21,8 @@
 #ifndef G10_I18N_H
 #define G10_I18N_H
 
-#ifdef ENABLE_NLS
-#ifdef HAVE_LIBINTL_H
+#ifdef HAVE_LIBINTL
   #include <libintl.h>
-#else
-  #include "../intl/libintl.h"
-#endif
   #define _(a) gettext (a)
   #ifdef gettext_noop
     #define N_(a) gettext_noop (a)

@@ -1,4 +1,12 @@
 
+    * Found a bug in the calculation of ELG fingerprints. This is now
+      fixed, but all existing fingerprints and keyids for ELG keys
+      are not any more valid.
+
+    * armor should now work; including clear signed text.
+
+    * moved some options to the new program g10maint
+
     * It's now 64 bit clean and runs fine on an alpha--linux.
 
     * Key generation is much faster now.  I fixed this by using not

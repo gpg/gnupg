@@ -65,12 +65,12 @@ generate_public_prime( unsigned  nbits )
  * indeed a strong prime.
  */
 MPI
-generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
+generate_elg_prime( unsigned pbits, unsigned qbits, MPI g, MPI **ret_factors )
 {
     int n;  /* number of factors */
     int m;  /* number of primes in pool */
     unsigned fbits; /* length of prime factors */
-    MPI *factors; /* curent factors */
+    MPI *factors; /* current factors */
     MPI *pool;	/* pool of primes */
     MPI q;	/* first prime factor */
     MPI prime;	/* prime test value */
@@ -167,7 +167,6 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 	    count2 = 0;
     } while( !(nprime == pbits && check_prime( prime )) );
 
-
     if( DBG_CIPHER ) {
 	putc('\n', stderr);
 	log_mpidump( "prime    : ", prime );
@@ -178,6 +177,12 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 	for(i=0; i < n; i++ )
 	    fprintf(stderr, ", p%d=%u", i, mpi_get_nbits(factors[i]) );
 	putc('\n', stderr);
+    }
+
+    if( ret_factors ) { /* caller wants the factors */
+	*ret_factors = m_alloc_clear( (n+1) * sizeof **ret_factors );
+	for(i=0; i < n; i++ )
+	    (*ret_factors)[i] = mpi_copy( factors[i] );
     }
 
     if( g ) { /* create a generator (start with 3)*/

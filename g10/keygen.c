@@ -145,13 +145,15 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	PKT_secret_cert **ret_skc )
 {
     int rc;
+    int i;
     PACKET *pkt;
     PKT_secret_cert *skc;
     PKT_public_cert *pkc;
     ELG_public_key pk;
     ELG_secret_key sk;
+    MPI *factors;
 
-    elg_generate( &pk, &sk, nbits );
+    elg_generate( &pk, &sk, nbits, &factors );
 
     skc = m_alloc_clear( sizeof *skc );
     pkc = m_alloc_clear( sizeof *pkc );
@@ -190,10 +192,15 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pkt->pkt.public_cert = pkc;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
+    /* don't know wether it make sense to have the factors, so for now
+     * we store them in the secret keyring (but they are of secret) */
     pkt = m_alloc_clear(sizeof *pkt);
     pkt->pkttype = PKT_SECRET_CERT;
     pkt->pkt.secret_cert = skc;
     add_kbnode(sec_root, new_kbnode( pkt ));
+    for(i=0; factors[i]; i++ )
+	add_kbnode( sec_root,
+		    make_mpi_comment_node("#:ELG_factor:", factors[i] ));
 
     return 0;
 }

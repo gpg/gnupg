@@ -69,3 +69,30 @@ make_comment_node( const char *s )
 }
 
 
+KBNODE
+make_mpi_comment_node( const char *s, MPI a )
+{
+    PACKET *pkt;
+    byte *buf, *p, *pp;
+    unsigned n1, nb1;
+    size_t n = strlen(s);
+
+    nb1 = mpi_get_nbits( a );
+    p = buf = mpi_get_buffer( a, &n1, NULL );
+    for( ; !*p && n1; p++, n1-- )  /* skip leading null bytes */
+	;
+
+    pkt = m_alloc_clear( sizeof *pkt );
+    pkt->pkttype = PKT_COMMENT;
+    pkt->pkt.comment = m_alloc( sizeof *pkt->pkt.comment + n + 2 + n1 );
+    pkt->pkt.comment->len = n+1+2+n1;
+    pp = pkt->pkt.comment->data;
+    memcpy(pp, s, n+1);
+    pp[n+1] = nb1 >> 8;
+    pp[n+2] = nb1 ;
+    memcpy(pp+n+3, p, n1 );
+    m_free(buf);
+    return new_kbnode( pkt );
+}
+
+

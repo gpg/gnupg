@@ -86,7 +86,7 @@ POSUB = @POSUB@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
 
-SUBDIRS =  util mpi cipher tools g10
+SUBDIRS =  intl po util mpi cipher tools g10
 EXTRA_DIST = VERSION
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
@@ -214,7 +214,7 @@ distcheck: dist
 	mkdir $(distdir)/=inst
 	dc_install_base=`cd $(distdir)/=inst && pwd`; \
 	cd $(distdir)/=build \
-	  && ../configure --srcdir=.. --prefix=$$dc_install_base \
+	  && ../configure --with-included-gettext --srcdir=.. --prefix=$$dc_install_base \
 	  && $(MAKE) \
 	  && $(MAKE) dvi \
 	  && $(MAKE) check \

@@ -144,8 +144,9 @@ fill_buffer( byte *buffer, size_t length, int level )
 	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
 	    if( !warn )
 		tty_printf( _(
-"\nNot enough random bytes available.  Please do some other work to give
-the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
+"\n"
+"Not enough random bytes available.  Please do some other work to give\n"
+"the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
 	    warn = 1;
 	    continue;
 	}

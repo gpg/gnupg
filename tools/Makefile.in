@@ -86,7 +86,8 @@ POSUB = @POSUB@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
 
-INCLUDES = -I.. -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include
+needed_libs = ../cipher/libcipher.a  ../util/libutil.a ../mpi/libmpi.a ../util/libutil.a
 
 noinst_PROGRAMS = mpicalc bftest
 
@@ -94,8 +95,7 @@ mpicalc_SOURCES = mpicalc.c
 
 bftest_SOURCES = bftest.c
 
-LDADD = -L ../cipher -L ../mpi -L ../util -L ../cipher	\
-	-lmpi -lutil -lmpi -lutil -lcipher
+LDADD = @INTLLIBS@  $(needed_libs)
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -108,11 +108,13 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 mpicalc_OBJECTS =  mpicalc.o
 mpicalc_LDADD = $(LDADD)
-mpicalc_DEPENDENCIES =  ../cipher ../mpi ../util ../cipher
+mpicalc_DEPENDENCIES =  ../cipher/libcipher.a ../util/libutil.a \
+../mpi/libmpi.a ../util/libutil.a
 mpicalc_LDFLAGS = 
 bftest_OBJECTS =  bftest.o
 bftest_LDADD = $(LDADD)
-bftest_DEPENDENCIES =  ../cipher ../mpi ../util ../cipher
+bftest_DEPENDENCIES =  ../cipher/libcipher.a ../util/libutil.a \
+../mpi/libmpi.a ../util/libutil.a
 bftest_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
@@ -304,7 +306,7 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-$(PROGRAMS): ../mpi/libmpi.a ../cipher/libcipher.a
+$(PROGRAMS): $(needed_libs)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

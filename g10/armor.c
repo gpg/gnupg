@@ -172,6 +172,52 @@ invalid_armor(void)
 
 
 /****************
+ * check wether the armor header is valid on a signed message.
+ * this is for security reasons: the header lines are not included in the
+ * hash and by using some creative formatting rules, Mallory could fake
+ * any text at the beginning of a document; assuming it is read with
+ * a simple viewer. We do only allow the Hash Header.
+ */
+static int
+parse_hash_header( const char *line )
+{
+    const char *s, *s2;
+    unsigned found = 0;
+
+    if( strlen(line) < 6  || strlen(line) > 60 )
+	return 0; /* too short or too long */
+    if( memcmp( line, "Hash:", 5 ) )
+	return 0; /* invalid header */
+    s = line+5;
+    for(s=line+5;;s=s2) {
+	for(; *s && (*s==' ' || *s == '\t'); s++ )
+	    ;
+	if( !*s )
+	    break;
+	for(s2=s+1; *s2 && *s2!=' ' && *s2 != '\t' && *s2 != ','; s2++ )
+	    ;
+	if( !strncmp( s, "RIPEMD160", s2-s ) )
+	    found |= 1;
+	else if( !strncmp( s, "SHA1", s2-s ) )
+	    found |= 2;
+	else if( !strncmp( s, "MD5", s2-s ) )
+	    found |= 4;
+	else if( !strncmp( s, "MD2", s2-s ) )
+	    found |= 8;
+	else
+	    return 0;
+	for(; *s2 && (*s2==' ' || *s2 == '\t'); s2++ )
+	    ;
+	if( *s2 && *s2 != ',' )
+	    return 0;
+	if( *s2 )
+	    s2++;
+    }
+    return found;
+}
+
+
+/****************
  * parse an ascii armor.
  * Returns: the state,
  *	    the remaining bytes in BUF are returned in RBUFLEN.
@@ -197,15 +243,17 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
     do {
 	switch( state ) {
 	  case fhdrHASArmor:
-	    /* read 28 bytes, which is the bare minimum for a BEGIN...
-	     * and check wether this has a Armor. */
+	    /* read at least the first byte to check wether it is armored
+	     * or not */
 	    c = 0;
 	    for(n=0; n < 28 && (c=iobuf_get2(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
-	    if( n < 28 || c == -1 )
+	    if( !n  || c == -1 )
 		state = fhdrNOArmor; /* too short */
 	    else if( !is_armored( buf ) )
 		state = fhdrNOArmor;
+	    else if( c == '\n' )
+		state = fhdrCHECKBegin;
 	    else
 		state = fhdrINITCont;
 	    break;
@@ -243,7 +291,12 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 			log_debug("armor header: ");
 			print_string( stderr, buf, n );
 			putc('\n', stderr);
-			state = fhdrWAITHeader;
+			if( clearsig && !parse_hash_header( buf ) ) {
+			    log_error("invalid clearsig header\n");
+			    state = fhdrERROR;
+			}
+			else
+			    state = fhdrWAITHeader;
 		    }
 		    else
 			state = fhdrCHECKDashEscaped3;
@@ -605,7 +658,6 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    break;
 
 	  case fhdrENDClearsig:
-	    log_debug("endclearsig: emplines=%u n=%u\n", emplines, n );
 	    assert( emplines );
 	    emplines--; /* don't count the last one */
 	    state = fhdrENDClearsigHelp;
@@ -760,12 +812,14 @@ armor_filter( void *opaque, int control,
     int  idx, idx2;
     size_t n=0;
     u32 crc;
+  #if 1
     static FILE *fp ;
 
     if( !fp ) {
 	fp = fopen("armor.out", "w");
 	assert(fp);
     }
+  #endif
 
     if( DBG_FILTER )
 	log_debug("armor-filter: control: %d\n", control );
@@ -794,8 +848,14 @@ armor_filter( void *opaque, int control,
 	    rc = fake_packet( afx, a, &n, buf, size );
 	else if( !afx->inp_checked ) {
 	    rc = check_input( afx, a );
-	    if( afx->inp_bypass )
-		;
+	    if( afx->inp_bypass ) {
+		for( n=0; n < size && n < afx->helplen; n++ )
+		    buf[n] = afx->helpbuf[n];
+		if( !n )
+		    rc = -1;
+		assert( n == afx->helplen );
+		afx->helplen = 0;
+	    }
 	    else if( afx->faked ) {
 		/* the buffer is at least 30 bytes long, so it
 		 * is easy to construct the packets */
@@ -824,9 +884,11 @@ armor_filter( void *opaque, int control,
 	}
 	else
 	    rc = radix64_read( afx, a, &n, buf, size );
+      #if 1
 	if( n )
 	    if( fwrite(buf, n, 1, fp ) != 1 )
 		BUG();
+      #endif
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_FLUSH ) {

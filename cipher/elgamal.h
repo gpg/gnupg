@@ -39,7 +39,8 @@ typedef struct {
 
 void elg_free_public_key( ELG_public_key *pk );
 void elg_free_secret_key( ELG_secret_key *sk );
-void elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits );
+void elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
+				unsigned nbits, MPI **factors );
 int  elg_check_secret_key( ELG_secret_key *sk );
 void elg_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey );
 void elg_decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey );

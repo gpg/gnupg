@@ -33,6 +33,7 @@
 #include "types.h"
 #include "memory.h"
 #include "util.h"
+#include "i18n.h"
 
 
 #define DEFAULT_POOLSIZE 8196
@@ -79,8 +80,9 @@ lock_pool( void *p, size_t n )
     }
 
     if( err ) {
-	log_error("can´t lock memory: %s\n", strerror(err));
-	log_info("Warning: using insecure memory!\n");
+	if( errno != EPERM )
+	    log_error("can´t lock memory: %s\n", strerror(err));
+	log_info(_("Warning: using insecure memory!\n"));
     }
 
   #else

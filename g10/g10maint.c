@@ -101,8 +101,12 @@ strusage( int level )
 static void
 i18n_init(void)
 {
-  #ifdef ENABLE_NLS
-    setlocale( LC_MESSAGES, "" );
+  #ifdef HAVE_LIBINTL
+    #ifdef HAVE_LC_MESSAGES
+       setlocale( LC_MESSAGES, "" );
+    #else
+       setlocale( LC_ALL, "" );
+    #endif
     bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
   #endif
@@ -449,13 +453,13 @@ main( int argc, char **argv )
 	}
 	else if( argc == 2 ) {
 	    mpi_print( stdout, generate_elg_prime( atoi(argv[0]),
-						   atoi(argv[1]), NULL ), 1);
+						   atoi(argv[1]), NULL,NULL ), 1);
 	    putchar('\n');
 	}
 	else if( argc == 3 ) {
 	    MPI g = mpi_alloc(1);
 	    mpi_print( stdout, generate_elg_prime( atoi(argv[0]),
-						   atoi(argv[1]), g ), 1);
+						   atoi(argv[1]), g, NULL ), 1);
 	    printf("\nGenerator: ");
 	    mpi_print( stdout, g, 1 );
 	    putchar('\n');

@@ -29,6 +29,7 @@
 
 #include "util.h"
 #include "cipher.h"
+#include "i18n.h"
 
 static void
 my_usage(void)
@@ -41,6 +42,20 @@ const char *
 strusage( int level )
 {
     return default_strusage(level);
+}
+
+static void
+i18n_init(void)
+{
+  #ifdef HAVE_LIBINTL
+    #ifdef HAVE_LC_MESSAGES
+       setlocale( LC_MESSAGES, "" );
+    #else
+       setlocale( LC_ALL, "" );
+    #endif
+    bindtextdomain( PACKAGE, G10_LOCALEDIR );
+    textdomain( PACKAGE );
+  #endif
 }
 
 int
@@ -57,6 +72,7 @@ main(int argc, char **argv)
     setmode( fileno(stdout), O_BINARY );
   #endif
 
+    i18n_init();
     if( argc > 1 && !strcmp(argv[1], "-e") ) {
 	encode++;
 	argc--; argv++;

@@ -31,6 +31,7 @@
 
 #include "util.h"
 #include "mpi.h"
+#include "i18n.h"
 
 #define STACKSIZE  100
 static MPI stack[STACKSIZE];
@@ -58,6 +59,21 @@ strusage( int level )
       default:	p = default_strusage(level);
     }
     return p;
+}
+
+
+static void
+i18n_init(void)
+{
+  #ifdef HAVE_LIBINTL
+    #ifdef HAVE_LC_MESSAGES
+       setlocale( LC_MESSAGES, "" );
+    #else
+       setlocale( LC_ALL, "" );
+    #endif
+    bindtextdomain( PACKAGE, G10_LOCALEDIR );
+    textdomain( PACKAGE );
+  #endif
 }
 
 
@@ -201,6 +217,7 @@ main(int argc, char **argv)
     char strbuf[1000];
     int stridx=0;
 
+    i18n_init();
     while( arg_parse( &pargs, opts) ) {
 	switch( pargs.r_opt ) {
 	  default : pargs.err = 2; break;

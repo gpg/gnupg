@@ -61,7 +61,7 @@ AC_DEFUN(ud_WITH_NLS,
 	CATOBJEXT=NONE
 
 	dnl Debian 1.3.1 does not have libintl.h but libintl.a
-	AC_CHECK_HEADERS(libintl.h)
+	AC_CHECK_HEADER(libintl.h, [ AC_DEFINE(HAVE_LIBINTL_H) ])
 	if    test "$ac_cv_lib_intl_main" = yes \
 	   && test "$ac_cv_header_libintl_h" != "yes" ; then
 	    nls_cv_use_gnu_gettext=yes
@@ -98,7 +98,7 @@ AC_DEFUN(ud_WITH_NLS,
 		   INTLDEPS="\${top_srcdir}/intl/libintl.a"
 		   INTLLIBS=$INTLDEPS
 		   LIBS=`echo $LIBS | sed -e 's/-lintl//'`
-		   nls_cv_header_intl=intl/libintl.h
+		   nls_cv_header_intl=libintl.h
 		   nls_cv_header_libgt=intl/libgettext.h
 		 fi])
 	    fi
@@ -124,7 +124,7 @@ AC_DEFUN(ud_WITH_NLS,
 	INTLDEPS="\${top_srcdir}/intl/libintl.a"
 	INTLLIBS=$INTLDEPS
 	LIBS=`echo $LIBS | sed -e 's/-lintl//'`
-	nls_cv_header_intl=intl/libintl.h
+	nls_cv_header_intl=libintl.h
 	nls_cv_header_libgt=intl/libgettext.h
       fi
 
@@ -133,7 +133,7 @@ AC_DEFUN(ud_WITH_NLS,
       POSUB=po
     else
       DATADIRNAME=share
-      nls_cv_header_intl=intl/libintl.h
+      nls_cv_header_intl=libintl.h
       nls_cv_header_libgt=intl/libgettext.h
     fi
 
@@ -271,8 +271,8 @@ AC_DEFUN(WK_CHECK_TYPEDEF,
 
 
 dnl WK_LINK_FILES( SRC, DEST )
-dnl same as AC_LINK_FILES, but collet the files to link in
-dnl some special variables and do the link macro
+dnl same as AC_LINK_FILES, but collect the files to link in
+dnl some special variables and do the link
 dnl when WK_DO_LINK_FILES is called
 dnl This is a workaround for AC_LINK_FILES, because it does not work
 dnl correct when using a caching scheme

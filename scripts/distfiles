@@ -3,3 +3,4 @@ config.sub
 install-sh
 mkinstalldirs
 mkdiff
+missing

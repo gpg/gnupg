@@ -1,6 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I.. -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include
+needed_libs = ../cipher/libcipher.a  ../util/libutil.a ../mpi/libmpi.a ../util/libutil.a
 
 noinst_PROGRAMS = mpicalc bftest
 
@@ -9,8 +10,7 @@ mpicalc_SOURCES = mpicalc.c
 bftest_SOURCES = bftest.c
 
 
-LDADD = -L ../cipher -L ../mpi -L ../util -L ../cipher	\
-	-lmpi -lutil -lmpi -lutil -lcipher
+LDADD = @INTLLIBS@  $(needed_libs)
 
-$(PROGRAMS): ../mpi/libmpi.a ../cipher/libcipher.a
+$(PROGRAMS): $(needed_libs)
 

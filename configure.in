@@ -5,9 +5,6 @@ dnl (Process this file with autoconf to produce a configure script.)
 
 AC_INIT(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
-dnl Ooops: automake 1.2d looks for AC_CONFIG_HEADER (and not AM_..)
-dnl	   to decide where config.h is - so we have to add -I.. to
-dnl	   every Makefile.am
 AM_CONFIG_HEADER(config.h)
 
 
@@ -25,13 +22,10 @@ fi
 VERSION=`cat $srcdir/VERSION`
 PACKAGE=g10
 ALL_LINGUAS="de"
-G10_LOCALEDIR="$g10_prefix/share/locale"
 AC_SUBST(VERSION)
 AC_SUBST(PACKAGE)
-AC_SUBST(G10_LOCALEDIR)
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
-AC_DEFINE_UNQUOTED(G10_LOCALEDIR, "$G10_LOCALEDIR")
 
 AC_ARG_ENABLE(m-debug,
 [  --enable-m-debug	  Enable debugging of memory allocation])
@@ -91,10 +85,12 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)
 
-dnl AM_GNU_GETTEXT
-dnl WK_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl )
-AC_MSG_WARN([i18n disabled for this release - sorry])
+AM_GNU_GETTEXT
+G10_LOCALEDIR="$g10_prefix/$DATADIRNAME/locale"
+AC_SUBST(G10_LOCALEDIR)
+AC_DEFINE_UNQUOTED(G10_LOCALEDIR, "$G10_LOCALEDIR")
 
+WK_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl )
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -192,6 +188,13 @@ if test $ac_cv_have_rsa_cipher = yes; then
 fi
 AC_SUBST(CIPHER_EXTRA_OBJS)
 AC_SUBST(CIPHER_EXTRA_DIST)
+
+dnl
+dnl If no gettext is found, default to gnu gettext
+dnl
+if test x$ac_cv_func_gettext = xno; then
+    LIBS="$LIBS -lintl -L\$(topbuilddir)/intl"
+fi
 
 
 WK_DO_LINK_FILES
