@@ -38,6 +38,8 @@ if(@ARGV)
 
 ($login,$name)=(getpwuid($<))[0,6];
 
+$from="$name <$login>";
+
 while(<STDIN>)
 {
     last if($_ eq "\n");
@@ -78,6 +80,29 @@ if(!defined($address))
     exit(1);
 }
 
+# decode $address
+
+($address,$args)=split(/\?/,$address);
+
+if(defined($args))
+{
+    @pairs = split(/&/, $args);
+    foreach $pair (@pairs)
+    {
+	($hdr, $val) = split(/=/, $pair);
+	$hdr =~ tr/+/ /;
+	$hdr =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+	$val =~ tr/+/ /;
+	$val =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+# we only handle "from" right now
+	if($hdr=~/^from$/i)
+	{
+	    $from=$val;
+	    last;
+	}
+    }
+}
+
 while(<STDIN>)
 {
     last if($_ eq "\n");
@@ -104,7 +129,7 @@ if($command=~/get/i || $command=~/search/i)
     foreach $key (@keys)
     {
 	open(MAIL,"|$sendmail") || die "ERROR: Can't open $sendmail\n";
-	print MAIL "From: $name <$login>\n";
+	print MAIL "From: $from\n";
 	print MAIL "To: $address\n";
 	if($command=~/get/i)
 	{

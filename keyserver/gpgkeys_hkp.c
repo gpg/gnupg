@@ -261,11 +261,7 @@ get_key(char *getkey)
 	    {
 	      fprintf(output,line);
 	      if(strcmp(line,"-----END PGP PUBLIC KEY BLOCK-----\n")==0)
-		{
-		  gotit=0;
-		  fprintf(output,"KEY 0x%s END\n",getkey);
-		  break;
-		}
+		break;
 	    }
 	  else
 	    if(strcmp(line,"-----BEGIN PGP PUBLIC KEY BLOCK-----\n")==0)
@@ -273,6 +269,14 @@ get_key(char *getkey)
 		fprintf(output,line);
 		gotit=1;
 	      }
+	}
+
+      if(gotit)
+	fprintf(output,"KEY 0x%s END\n",getkey);
+      else
+	{
+	  fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
+	  fprintf(output,"KEY 0x%s FAILED\n",getkey);
 	}
     }
 
