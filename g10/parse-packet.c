@@ -1,6 +1,6 @@
 /* parse-packet.c  - read packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,8 +37,9 @@
 #include "main.h"
 #include "i18n.h"
 
-static int mpi_print_mode = 0;
-static int list_mode = 0;
+static int mpi_print_mode;
+static int list_mode;
+static FILE *listfp;
 
 static int  parse( IOBUF inp, PACKET *pkt, int onlykeypkts,
                   off_t *retpos, int *skip, IOBUF out, int do_skip
@@ -105,6 +106,23 @@ set_packet_list_mode( int mode )
     int old = list_mode;
     list_mode = mode;
     mpi_print_mode = DBG_MPI;
+    /* We use stdout print only if invoked by the --list-packets
+       command but switch to stderr in all otehr cases.  This breaks
+       the previous behaviour but that seems to be more of a bug than
+       intentional.  I don't believe that any application makes use of
+       this long standing annoying way of printing to stdout except
+       when doing a --list-packets. If this assumption fails, it will
+       be easy to add an option for the listing stream.  Note that we
+       initialize it only once; mainly because some code may switch
+       the option value later back to 1 and we want to have all output
+       to the same stream.  
+
+       Using stderr is not actually very clean because it bypasses the
+       logging code but it is a special thing anyay.  I am not sure
+       whether using log_stream() would be better.  Perhaps we should
+       enable the list mdoe only with a special option. */
+    if (!listfp)
+        listfp = opt.list_packets == 2 ? stdout : stderr;
     return old;
 }
 
@@ -523,14 +541,14 @@ dump_hex_line( int c, int *i )
 {
     if( *i && !(*i%8) ) {
 	if( *i && !(*i%24) )
-	    printf("\n%4d:", *i );
+	    fprintf (listfp, "\n%4d:", *i );
 	else
-	    putchar(' ');
+	    putc (' ', listfp);
     }
     if( c == -1 )
-	printf(" EOF" );
+	fprintf (listfp, " EOF" );
     else
-	printf(" %02x", c );
+	fprintf (listfp, " %02x", c );
     ++*i;
 }
 
@@ -573,13 +591,14 @@ skip_packet( IOBUF inp, int pkttype, unsigned long pktlen, int partial )
 {
     if( list_mode ) {
 	if( pkttype == PKT_MARKER )
-	    fputs(":marker packet:\n", stdout );
+	    fputs(":marker packet:\n", listfp );
 	else
-	    printf(":unknown packet: type %2d, length %lu\n", pkttype, pktlen);
+	    fprintf (listfp, ":unknown packet: type %2d, length %lu\n",
+                     pkttype, pktlen);
 	if( pkttype ) {
 	    int c, i=0 ;
 	    if( pkttype != PKT_MARKER )
-		fputs("dump:", stdout );
+		fputs("dump:", listfp );
 	    if( partial ) {
 		while( (c=iobuf_get(inp)) != -1 )
 		    dump_hex_line(c, &i);
@@ -588,7 +607,7 @@ skip_packet( IOBUF inp, int pkttype, unsigned long pktlen, int partial )
 		for( ; pktlen; pktlen-- )
 		    dump_hex_line(iobuf_get(inp), &i);
 	    }
-	    putchar('\n');
+	    putc ('\n', listfp);
 	    return;
 	}
     }
@@ -691,18 +710,18 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     assert( !pktlen );
 
     if( list_mode ) {
-	printf(":symkey enc packet: version %d, cipher %d, s2k %d, hash %d",
+	fprintf (listfp, ":symkey enc packet: version %d, cipher %d, s2k %d, hash %d",
 	       version, cipher_algo, s2kmode, hash_algo);
 	if(seskeylen)
-	  printf(", seskey %d bits",(seskeylen-1)*8);
-	printf("\n");
+	  fprintf (listfp, ", seskey %d bits",(seskeylen-1)*8);
+	fprintf (listfp, "\n");
 	if( s2kmode == 1 || s2kmode == 3 ) {
-	    printf("\tsalt ");
+	    fprintf (listfp, "\tsalt ");
 	    for(i=0; i < 8; i++ )
-		printf("%02x", k->s2k.salt[i]);
+		fprintf (listfp, "%02x", k->s2k.salt[i]);
 	    if( s2kmode == 3 )
-		printf(", count %lu", (ulong)k->s2k.count );
-	    printf("\n");
+		fprintf (listfp, ", count %lu", (ulong)k->s2k.count );
+	    fprintf (listfp, "\n");
 	}
     }
 
@@ -736,13 +755,13 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     k->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
     k->throw_keyid = 0; /* only used as flag for build_packet */
     if( list_mode )
-	printf(":pubkey enc packet: version %d, algo %d, keyid %08lX%08lX\n",
+	fprintf (listfp, ":pubkey enc packet: version %d, algo %d, keyid %08lX%08lX\n",
 	  k->version, k->pubkey_algo, (ulong)k->keyid[0], (ulong)k->keyid[1]);
 
     ndata = pubkey_get_nenc(k->pubkey_algo);
     if( !ndata ) {
 	if( list_mode )
-	    printf("\tunsupported algorithm %d\n", k->pubkey_algo );
+	    fprintf (listfp, "\tunsupported algorithm %d\n", k->pubkey_algo );
 	unknown_pubkey_warning( k->pubkey_algo );
 	k->data[0] = NULL;  /* no need to store the encrypted data */
     }
@@ -751,9 +770,9 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	    n = pktlen;
 	    k->data[i] = mpi_read(inp, &n, 0); pktlen -=n;
 	    if( list_mode ) {
-		printf("\tdata: ");
-		mpi_print(stdout, k->data[i], mpi_print_mode );
-		putchar('\n');
+		fprintf (listfp, "\tdata: ");
+		mpi_print(listfp, k->data[i], mpi_print_mode );
+		putc ('\n', listfp);
 	    }
             if (!k->data[i])
                 rc = G10ERR_INVALID_PACKET;
@@ -777,82 +796,83 @@ dump_sig_subpkt( int hashed, int type, int critical,
      * detect the ARRs - we print our old message here when it is a faked
      * ARR and add an additional notice */
     if ( type == SIGSUBPKT_ARR && !hashed ) {
-        printf("\tsubpkt %d len %u (additional recipient request)\n"
-               "WARNING: PGP versions > 5.0 and < 6.5.8 will automagically "
-               "encrypt to this key and thereby reveal the plaintext to "
-               "the owner of this ARR key. Detailed info follows:\n",
-               type, (unsigned)length );
+        fprintf (listfp,
+                 "\tsubpkt %d len %u (additional recipient request)\n"
+                 "WARNING: PGP versions > 5.0 and < 6.5.8 will automagically "
+                 "encrypt to this key and thereby reveal the plaintext to "
+                 "the owner of this ARR key. Detailed info follows:\n",
+                 type, (unsigned)length );
     }
     
     buffer++;
     length--;
    
-    printf("\t%s%ssubpkt %d len %u (", /*)*/
+    fprintf (listfp, "\t%s%ssubpkt %d len %u (", /*)*/
 	      critical ? "critical ":"",
 	      hashed ? "hashed ":"", type, (unsigned)length );
     if( length > buflen ) {
-	printf("too short: buffer is only %u)\n", (unsigned)buflen );
+	fprintf (listfp, "too short: buffer is only %u)\n", (unsigned)buflen );
 	return;
     }
     switch( type ) {
       case SIGSUBPKT_SIG_CREATED:
 	if( length >= 4 )
-	    printf("sig created %s", strtimestamp( buffer_to_u32(buffer) ) );
+	    fprintf (listfp, "sig created %s", strtimestamp( buffer_to_u32(buffer) ) );
 	break;
       case SIGSUBPKT_SIG_EXPIRE:
 	if( length >= 4 )
-	    printf("sig expires after %s",
+	    fprintf (listfp, "sig expires after %s",
 				     strtimevalue( buffer_to_u32(buffer) ) );
 	break;
       case SIGSUBPKT_EXPORTABLE:
 	if( length )
-	    printf("%sexportable", *buffer? "":"not ");
+	    fprintf (listfp, "%sexportable", *buffer? "":"not ");
 	break;
       case SIGSUBPKT_TRUST:
 	if(length!=2)
 	  p="[invalid trust subpacket]";
 	else
-	  printf("trust signature of depth %d, value %d",buffer[0],buffer[1]);
+	  fprintf (listfp, "trust signature of depth %d, value %d",buffer[0],buffer[1]);
 	break;
       case SIGSUBPKT_REGEXP:
 	if(!length)
 	  p="[invalid regexp subpacket]";
 	else
-	  printf("regular expression: \"%s\"",buffer);
+	  fprintf (listfp, "regular expression: \"%s\"",buffer);
 	break;
       case SIGSUBPKT_REVOCABLE:
 	if( length )
-	    printf("%srevocable", *buffer? "":"not ");
+	    fprintf (listfp, "%srevocable", *buffer? "":"not ");
 	break;
       case SIGSUBPKT_KEY_EXPIRE:
 	if( length >= 4 )
-	    printf("key expires after %s",
+	    fprintf (listfp, "key expires after %s",
 				    strtimevalue( buffer_to_u32(buffer) ) );
 	break;
       case SIGSUBPKT_PREF_SYM:
-	fputs("pref-sym-algos:", stdout );
+	fputs("pref-sym-algos:", listfp );
 	for( i=0; i < length; i++ )
-	    printf(" %d", buffer[i] );
+	    fprintf (listfp, " %d", buffer[i] );
 	break;
       case SIGSUBPKT_REV_KEY:
-	fputs("revocation key: ", stdout );
+	fputs("revocation key: ", listfp );
 	if( length < 22 )
 	    p = "[too short]";
 	else {
-	    printf("c=%02x a=%d f=", buffer[0], buffer[1] );
+	    fprintf (listfp, "c=%02x a=%d f=", buffer[0], buffer[1] );
 	    for( i=2; i < length; i++ )
-		printf("%02X", buffer[i] );
+		fprintf (listfp, "%02X", buffer[i] );
 	}
 	break;
       case SIGSUBPKT_ISSUER:
 	if( length >= 8 )
-	    printf("issuer key ID %08lX%08lX",
+	    fprintf (listfp, "issuer key ID %08lX%08lX",
 		      (ulong)buffer_to_u32(buffer),
 		      (ulong)buffer_to_u32(buffer+4) );
 	break;
       case SIGSUBPKT_NOTATION:
 	{
-	    fputs("notation: ", stdout );
+	    fputs("notation: ", listfp );
 	    if( length < 8 )
 		p = "[too short]";
 	    else {
@@ -865,11 +885,11 @@ dump_sig_subpkt( int hashed, int type, int critical,
 		if( 8+n1+n2 != length )
 		    p = "[error]";
 		else {
-		    print_string( stdout, s, n1, ')' );
-		    putc( '=', stdout );
+		    print_string( listfp, s, n1, ')' );
+		    putc( '=', listfp );
 
 		    if( *buffer & 0x80 )
-		      print_string( stdout, s+n1, n2, ')' );
+		      print_string( listfp, s+n1, n2, ')' );
 		    else
 		      p = "[not human readable]";
 		}
@@ -877,67 +897,67 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	}
 	break;
       case SIGSUBPKT_PREF_HASH:
-	fputs("pref-hash-algos:", stdout );
+	fputs("pref-hash-algos:", listfp );
 	for( i=0; i < length; i++ )
-	    printf(" %d", buffer[i] );
+	    fprintf (listfp, " %d", buffer[i] );
 	break;
       case SIGSUBPKT_PREF_COMPR:
-	fputs("pref-zip-algos:", stdout );
+	fputs("pref-zip-algos:", listfp );
 	for( i=0; i < length; i++ )
-	    printf(" %d", buffer[i] );
+	    fprintf (listfp, " %d", buffer[i] );
 	break;
       case SIGSUBPKT_KS_FLAGS:
-	fputs("key server preferences:",stdout);
+	fputs("key server preferences:",listfp);
 	for(i=0;i<length;i++)
-	  printf(" %02X", buffer[i]);
+	  fprintf (listfp, " %02X", buffer[i]);
 	break;
       case SIGSUBPKT_PREF_KS:
-	fputs("preferred key server: ", stdout );
-	print_string( stdout, buffer, length, ')' );
+	fputs("preferred key server: ", listfp );
+	print_string( listfp, buffer, length, ')' );
 	break;
       case SIGSUBPKT_PRIMARY_UID:
 	p = "primary user ID";
 	break;
       case SIGSUBPKT_POLICY:
-	fputs("policy: ", stdout );
-	print_string( stdout, buffer, length, ')' );
+	fputs("policy: ", listfp );
+	print_string( listfp, buffer, length, ')' );
 	break;
       case SIGSUBPKT_KEY_FLAGS:
-        fputs ( "key flags:", stdout );
+        fputs ( "key flags:", listfp );
         for( i=0; i < length; i++ )
-            printf(" %02X", buffer[i] );
+            fprintf (listfp, " %02X", buffer[i] );
 	break;
       case SIGSUBPKT_SIGNERS_UID:
 	p = "signer's user ID";
 	break;
       case SIGSUBPKT_REVOC_REASON:
         if( length ) {
-	    printf("revocation reason 0x%02x (", *buffer );
-	    print_string( stdout, buffer+1, length-1, ')' );
+	    fprintf (listfp, "revocation reason 0x%02x (", *buffer );
+	    print_string( listfp, buffer+1, length-1, ')' );
 	    p = ")";
 	}
 	break;
       case SIGSUBPKT_ARR:
-        fputs("Big Brother's key (ignored): ", stdout );
+        fputs("Big Brother's key (ignored): ", listfp );
 	if( length < 22 )
 	    p = "[too short]";
 	else {
-	    printf("c=%02x a=%d f=", buffer[0], buffer[1] );
+	    fprintf (listfp, "c=%02x a=%d f=", buffer[0], buffer[1] );
 	    for( i=2; i < length; i++ )
-		printf("%02X", buffer[i] );
+		fprintf (listfp, "%02X", buffer[i] );
 	}
         break;
       case SIGSUBPKT_FEATURES:
-        fputs ( "features:", stdout );
+        fputs ( "features:", listfp );
         for( i=0; i < length; i++ )
-            printf(" %02x", buffer[i] );
+            fprintf (listfp, " %02x", buffer[i] );
 	break;
       case SIGSUBPKT_SIGNATURE:
-	fputs("signature: ",stdout);
+	fputs("signature: ",listfp);
 	if(length<17)
 	  p="[too short]";
 	else
-	  printf("v%d, class 0x%02X, algo %d, digest algo %d",
+	  fprintf (listfp, "v%d, class 0x%02X, algo %d, digest algo %d",
 		 buffer[0],
 		 buffer[0]==3?buffer[2]:buffer[1],
 		 buffer[0]==3?buffer[15]:buffer[2],
@@ -951,7 +971,7 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	break;
     }
 
-    printf("%s)\n", p? p: "");
+    fprintf (listfp, "%s)\n", p? p: "");
 }
 
 /****************
@@ -1369,7 +1389,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
     if( list_mode ) {
-	printf(":signature packet: algo %d, keyid %08lX%08lX\n"
+	fprintf (listfp, ":signature packet: algo %d, keyid %08lX%08lX\n"
 	       "\tversion %d, created %lu, md5len %d, sigclass %02x\n"
 	       "\tdigest algo %d, begin of digest %02x %02x\n",
 		sig->pubkey_algo,
@@ -1386,7 +1406,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     ndata = pubkey_get_nsig(sig->pubkey_algo);
     if( !ndata ) {
 	if( list_mode )
-	    printf("\tunknown algorithm %d\n", sig->pubkey_algo );
+	    fprintf (listfp, "\tunknown algorithm %d\n", sig->pubkey_algo );
 	unknown_pubkey_warning( sig->pubkey_algo );
 	/* we store the plain material in data[0], so that we are able
 	 * to write it back with build_packet() */
@@ -1399,9 +1419,9 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    sig->data[i] = mpi_read(inp, &n, 0 );
 	    pktlen -=n;
 	    if( list_mode ) {
-		printf("\tdata: ");
-		mpi_print(stdout, sig->data[i], mpi_print_mode );
-		putchar('\n');
+		fprintf (listfp, "\tdata: ");
+		mpi_print(listfp, sig->data[i], mpi_print_mode );
+		putc ('\n', listfp);
 	    }
             if (!sig->data[i])
                 rc = G10ERR_INVALID_PACKET;
@@ -1439,7 +1459,7 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
     ops->keyid[1] = read_32(inp); pktlen -= 4;
     ops->last = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
-	printf(":onepass_sig packet: keyid %08lX%08lX\n"
+	fprintf (listfp, ":onepass_sig packet: keyid %08lX%08lX\n"
 	       "\tversion %d, sigclass %02x, digest %d, pubkey %d, last=%d\n",
 		(ulong)ops->keyid[0], (ulong)ops->keyid[1],
 		version, ops->sig_class,
@@ -1515,16 +1535,16 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	/* early versions of G10 use old PGP comments packets;
 	 * luckily all those comments are started by a hash */
 	if( list_mode ) {
-	    printf(":rfc1991 comment packet: \"" );
+	    fprintf (listfp, ":rfc1991 comment packet: \"" );
 	    for( ; pktlen; pktlen-- ) {
 		int c;
 		c = iobuf_get_noeof(inp);
 		if( c >= ' ' && c <= 'z' )
-		    putchar(c);
+		    putc (c, listfp);
 		else
-		    printf("\\x%02x", c );
+		    fprintf (listfp, "\\x%02x", c );
 	    }
-	    printf("\"\n");
+	    fprintf (listfp, "\"\n");
 	}
 	iobuf_skip_rest(inp, pktlen, 0);
 	return 0;
@@ -1560,7 +1580,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     algorithm = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
-	printf(":%s key packet:\n"
+	fprintf (listfp, ":%s key packet:\n"
 	       "\tversion %d, algo %d, created %lu, expires %lu\n",
 		pkttype == PKT_PUBLIC_KEY? "public" :
 		pkttype == PKT_SECRET_KEY? "secret" :
@@ -1602,7 +1622,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     npkey = pubkey_get_npkey( algorithm );
     if( !npkey ) {
 	if( list_mode )
-	    printf("\tunknown algorithm %d\n", algorithm );
+	    fprintf (listfp, "\tunknown algorithm %d\n", algorithm );
 	unknown_pubkey_warning( algorithm );
     }
 
@@ -1622,9 +1642,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	for(i=0; i < npkey; i++ ) {
 	    n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    if( list_mode ) {
-		printf(  "\tskey[%d]: ", i);
-		mpi_print(stdout, sk->skey[i], mpi_print_mode  );
-		putchar('\n');
+		fprintf (listfp,   "\tskey[%d]: ", i);
+		mpi_print(listfp, sk->skey[i], mpi_print_mode  );
+		putc ('\n', listfp);
 	    }
             if (!sk->skey[i])
                 rc = G10ERR_INVALID_PACKET;
@@ -1654,7 +1674,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 			temp[i] = iobuf_get_noeof(inp);
 		    if( i < 4 || memcmp( temp, "GNU", 3 ) ) {
 			if( list_mode )
-			    printf(  "\tunknown S2K %d\n",
+			    fprintf (listfp,   "\tunknown S2K %d\n",
 						sk->protect.s2k.mode );
 			rc = G10ERR_INVALID_PACKET;
 			goto leave;
@@ -1675,19 +1695,21 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    break;
 		}
 		switch( sk->protect.s2k.mode ) {
-		  case 0: if( list_mode ) printf(  "\tsimple S2K" );
+		  case 0: if( list_mode ) fprintf (listfp, "\tsimple S2K" );
 		    break;
-		  case 1: if( list_mode ) printf(  "\tsalted S2K" );
+		  case 1: if( list_mode ) fprintf (listfp, "\tsalted S2K" );
 		    break;
-		  case 3: if( list_mode ) printf(  "\titer+salt S2K" );
+		  case 3: if( list_mode ) fprintf (listfp, "\titer+salt S2K" );
 		    break;
-		  case 1001: if( list_mode ) printf(  "\tgnu-dummy S2K" );
+		  case 1001: if( list_mode ) fprintf (listfp,
+                                                      "\tgnu-dummy S2K" );
 		    break;
-		  case 1002: if (list_mode) printf("\tgnu-divert-to-card S2K");
+		  case 1002: if (list_mode) fprintf (listfp,
+                                                  "\tgnu-divert-to-card S2K");
 		    break;
 		  default:
 		    if( list_mode )
-			printf(  "\tunknown %sS2K %d\n",
+			fprintf (listfp,   "\tunknown %sS2K %d\n",
 				 sk->protect.s2k.mode < 1000? "":"GNU ",
 						   sk->protect.s2k.mode );
 		    rc = G10ERR_INVALID_PACKET;
@@ -1695,18 +1717,18 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		}
 
 		if( list_mode ) {
-		    printf(", algo: %d,%s hash: %d",
+		    fprintf (listfp, ", algo: %d,%s hash: %d",
 				     sk->protect.algo,
                                      sk->protect.sha1chk?" SHA1 protection,"
                                                         :" simple checksum,",
 				     sk->protect.s2k.hash_algo );
 		    if( sk->protect.s2k.mode == 1
 			|| sk->protect.s2k.mode == 3 ) {
-			printf(", salt: ");
+			fprintf (listfp, ", salt: ");
 			for(i=0; i < 8; i++ )
-			    printf("%02x", sk->protect.s2k.salt[i]);
+			    fprintf (listfp, "%02x", sk->protect.s2k.salt[i]);
 		    }
-		    putchar('\n');
+		    putc ('\n', listfp);
 		}
 
 		if( sk->protect.s2k.mode == 3 ) {
@@ -1717,7 +1739,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    sk->protect.s2k.count = iobuf_get(inp);
 		    pktlen--;
 		    if( list_mode )
-			printf("\tprotect count: %lu\n",
+			fprintf (listfp, "\tprotect count: %lu\n",
 					    (ulong)sk->protect.s2k.count);
 		}
 		else if( sk->protect.s2k.mode == 1002 ) {
@@ -1741,7 +1763,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		sk->protect.s2k.mode = 0;
 		sk->protect.s2k.hash_algo = DIGEST_ALGO_MD5;
 		if( list_mode )
-		    printf(  "\tprotect algo: %d  (hash algo: %d)\n",
+		    fprintf (listfp,   "\tprotect algo: %d  (hash algo: %d)\n",
 			 sk->protect.algo, sk->protect.s2k.hash_algo );
 	    }
 	    /* It is really ugly that we don't know the size
@@ -1772,11 +1794,12 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    for(i=0; i < sk->protect.ivlen && pktlen; i++, pktlen-- )
 		temp[i] = iobuf_get_noeof(inp);
 	    if( list_mode ) {
-		printf( sk->protect.s2k.mode == 1002? "\tserial-number: "
-                                                    : "\tprotect IV: ");
+		fprintf (listfp,
+                         sk->protect.s2k.mode == 1002? "\tserial-number: "
+                                                     : "\tprotect IV: ");
 		for(i=0; i < sk->protect.ivlen; i++ )
-		    printf(" %02x", temp[i] );
-		putchar('\n');
+		    fprintf (listfp, " %02x", temp[i] );
+		putc ('\n', listfp);
 	    }
 	    memcpy(sk->protect.iv, temp, sk->protect.ivlen );
 	}
@@ -1800,7 +1823,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 					     read_rest(inp, pktlen, 0),pktlen);
 	    pktlen = 0;
 	    if( list_mode ) {
-		printf("\tencrypted stuff follows\n");
+		fprintf (listfp, "\tencrypted stuff follows\n");
 	    }
 	}
 	else { /* v3 method: the mpi length is not encrypted */
@@ -1808,16 +1831,16 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
                 if ( sk->is_protected ) {
                     sk->skey[i] = read_protected_v3_mpi (inp, &pktlen);
                     if( list_mode ) 
-                        printf(  "\tskey[%d]: [encrypted]\n", i);
+                        fprintf (listfp,   "\tskey[%d]: [encrypted]\n", i);
                 }
                 else {
                     n = pktlen;
                     sk->skey[i] = mpi_read(inp, &n, 0 );
                     pktlen -=n;
                     if( list_mode ) {
-                        printf(  "\tskey[%d]: ", i);
-                        mpi_print(stdout, sk->skey[i], mpi_print_mode  );
-                        putchar('\n');
+                        fprintf (listfp,   "\tskey[%d]: ", i);
+                        mpi_print(listfp, sk->skey[i], mpi_print_mode  );
+                        putc ('\n', listfp);
                     }
                 }
 
@@ -1829,7 +1852,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	    sk->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
-		printf("\tchecksum: %04hx\n", sk->csum);
+		fprintf (listfp, "\tchecksum: %04hx\n", sk->csum);
 	    }
 	}
     }
@@ -1846,9 +1869,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	for(i=0; i < npkey; i++ ) {
 	    n = pktlen; pk->pkey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    if( list_mode ) {
-		printf(  "\tpkey[%d]: ", i);
-		mpi_print(stdout, pk->pkey[i], mpi_print_mode  );
-		putchar('\n');
+		fprintf (listfp,   "\tpkey[%d]: ", i);
+		mpi_print(listfp, pk->pkey[i], mpi_print_mode  );
+		putc ('\n', listfp);
 	    }
             if (!pk->pkey[i])
                 rc = G10ERR_INVALID_PACKET;
@@ -1959,15 +1982,15 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
     if( list_mode ) {
 	int n = packet->pkt.user_id->len;
-	printf(":user ID packet: \"");
+	fprintf (listfp, ":user ID packet: \"");
 	/* fixme: Hey why don't we replace this with print_string?? */
 	for(p=packet->pkt.user_id->name; n; p++, n-- ) {
 	    if( *p >= ' ' && *p <= 'z' )
-		putchar(*p);
+		putc (*p, listfp);
 	    else
-		printf("\\x%02x", *p );
+		fprintf (listfp, "\\x%02x", *p );
 	}
-	printf("\"\n");
+	fprintf (listfp, "\"\n");
     }
     return 0;
 }
@@ -2030,7 +2053,7 @@ parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     make_attribute_uidname(packet->pkt.user_id, EXTRA_UID_NAME_SPACE);
 
     if( list_mode ) {
-	printf(":attribute packet: %s\n", packet->pkt.user_id->name );
+	fprintf (listfp, ":attribute packet: %s\n", packet->pkt.user_id->name );
     }
     return 0;
 }
@@ -2049,15 +2072,15 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
     if( list_mode ) {
 	int n = packet->pkt.comment->len;
-	printf(":%scomment packet: \"", pkttype == PKT_OLD_COMMENT?
+	fprintf (listfp, ":%scomment packet: \"", pkttype == PKT_OLD_COMMENT?
 					 "OpenPGP draft " : "" );
 	for(p=packet->pkt.comment->data; n; p++, n-- ) {
 	    if( *p >= ' ' && *p <= 'z' )
-		putchar(*p);
+		putc (*p, listfp);
 	    else
-		printf("\\x%02x", *p );
+		fprintf (listfp, "\\x%02x", *p );
 	}
-	printf("\"\n");
+	fprintf (listfp, "\"\n");
     }
     return 0;
 }
@@ -2084,14 +2107,14 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
             pkt->pkt.ring_trust->sigcache = c;
         }
       if( list_mode )
-	printf(":trust packet: flag=%02x sigcache=%02x\n",
+	fprintf (listfp, ":trust packet: flag=%02x sigcache=%02x\n",
                pkt->pkt.ring_trust->trustval,
                pkt->pkt.ring_trust->sigcache);
     }
   else
     {
       if( list_mode )
-	printf(":trust packet: empty\n");
+	fprintf (listfp, ":trust packet: empty\n");
     }
   iobuf_skip_rest (inp, pktlen, 0);
 }
@@ -2136,21 +2159,21 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
     pktlen = 0;
 
     if( list_mode ) {
-	printf(":literal data packet:\n"
+	fprintf (listfp, ":literal data packet:\n"
 	       "\tmode %c (%X), created %lu, name=\"",
 	            mode >= ' ' && mode <'z'? mode : '?', mode,
 		    (ulong)pt->timestamp );
 	for(p=pt->name,i=0; i < namelen; p++, i++ ) {
 	    if( *p >= ' ' && *p <= 'z' )
-		putchar(*p);
+		putc (*p, listfp);
 	    else
-		printf("\\x%02x", *p );
+		fprintf (listfp, "\\x%02x", *p );
 	}
-	printf("\",\n\traw data: ");
+	fprintf (listfp, "\",\n\traw data: ");
 	if(partial)
-	  printf("unknown length\n");
+	  fprintf (listfp, "unknown length\n");
 	else
-	  printf("%lu bytes\n", (ulong)pt->len );
+	  fprintf (listfp, "%lu bytes\n", (ulong)pt->len );
     }
 
   leave:
@@ -2174,7 +2197,7 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
     zd->new_ctb = new_ctb;
     zd->buf = inp;
     if( list_mode )
-	printf(":compressed packet: algo=%d\n", zd->algorithm);
+	fprintf (listfp, ":compressed packet: algo=%d\n", zd->algorithm);
     return 0;
 }
 
@@ -2223,11 +2246,12 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     if( list_mode ) {
 	if( orig_pktlen )
-	    printf(":encrypted data packet:\n\tlength: %lu\n", orig_pktlen);
+	    fprintf (listfp, ":encrypted data packet:\n\tlength: %lu\n",
+                     orig_pktlen);
 	else
-	    printf(":encrypted data packet:\n\tlength: unknown\n");
+	    fprintf (listfp, ":encrypted data packet:\n\tlength: unknown\n");
 	if( ed->mdc_method )
-	    printf("\tmdc_method: %d\n", ed->mdc_method );
+	    fprintf (listfp, "\tmdc_method: %d\n", ed->mdc_method );
     }
 
     ed->buf = inp;
@@ -2247,7 +2271,7 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 
     mdc = pkt->pkt.mdc=  m_alloc(sizeof *pkt->pkt.mdc );
     if( list_mode )
-	printf(":mdc packet: length=%lu\n", pktlen);
+	fprintf (listfp, ":mdc packet: length=%lu\n", pktlen);
     if( !new_ctb || pktlen != 20 ) {
 	log_error("mdc_packet with invalid encoding\n");
         rc = G10ERR_INVALID_PACKET;
@@ -2283,7 +2307,7 @@ parse_gpg_control( IOBUF inp, int pkttype,
     int i;
 
     if ( list_mode )
-        printf(":packet 63: length %lu ",  pktlen);
+        fprintf (listfp, ":packet 63: length %lu ",  pktlen);
 
     sesmark = get_session_marker ( &sesmarklen );
     if ( pktlen < sesmarklen+1 ) /* 1 is for the control bytes */
@@ -2310,7 +2334,7 @@ parse_gpg_control( IOBUF inp, int pkttype,
         int c;
 
         i=0;
-        printf("- private (rest length %lu)\n",  pktlen);
+        fprintf (listfp, "- private (rest length %lu)\n",  pktlen);
         if( partial ) {
             while( (c=iobuf_get(inp)) != -1 )
                 dump_hex_line(c, &i);
@@ -2319,7 +2343,7 @@ parse_gpg_control( IOBUF inp, int pkttype,
             for( ; pktlen; pktlen-- )
                 dump_hex_line(iobuf_get(inp), &i);
         }
-        putchar('\n');
+        putc ('\n', listfp);
     }
     iobuf_skip_rest(inp,pktlen, 0);
     return G10ERR_INVALID_PACKET;

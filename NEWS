@@ -23,6 +23,9 @@ Noteworthy changes in version 1.4.1
       available, missing secret key stubs will be created on the fly.
       Details of the key are listed too.
 
+    * The implicit packet dumping in double verbose mode is now send
+      to stderr and not to stdout.
+
     * [W32] The algorithm for the default home directory changed:
       First we look at the environment variable GNUPGHOME, if this one
       is not set, we check whether the registry entry

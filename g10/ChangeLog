@@ -18,6 +18,10 @@
 
 2005-01-27  Werner Koch  <wk@g10code.com>
 
+	* parse-packet.c (listfp): New.
+	(set_packet_list_mode): Intialize it to stdout or stderr depending
+	on a global option.  Made all printing in list mode use LISTFP.
+
 	* keygen.c (generate_subkeypair): Detect primary key on-card and
 	ask for the passphrase.  Return an error if the primary key is a
 	plain stub.
