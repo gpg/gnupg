@@ -292,7 +292,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 
 
 static MPI
-gen_prime( unsigned  nbits, int secret, int randomlevel )
+gen_prime( unsigned int nbits, int secret, int randomlevel )
 {
     unsigned  nlimbs;
     MPI prime, ptest, pminus1, val_2, val_3, result;
@@ -303,6 +303,9 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 
     if( 0 && DBG_CIPHER )
 	log_debug("generate a prime of %u bits ", nbits );
+
+    if (!nbits)
+      log_fatal ("trying to generate a prime of zero bits\n");
 
     if( !no_of_small_prime_numbers ) {
 	for(i=0; small_prime_numbers[i]; i++ )

@@ -1,3 +1,8 @@
+2003-10-06  Werner Koch  <wk@gnupg.org>
+
+	* primegen.c (gen_prime): Bail out if NBITS is zero.  This is
+	Debian bug #213989 reported by Max <rusmir@tula.net>.
+
 2003-09-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* md.c (string_to_digest_algo): Enable read-write SHA-256 support.
