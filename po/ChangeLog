@@ -1,3 +1,9 @@
+Thu Jan  6 16:56:18 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.in.in: Is not longer maintained as a symlink because we
+	have a patch to work around a bug in non-gnu Make.
+	Fixed by Dave Dykstra.
+
 Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* pt_PT.po: Updated.
