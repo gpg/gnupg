@@ -1,3 +1,15 @@
+2003-01-07  Werner Koch  <wk@gnupg.org>
+
+	* de.po: Updated the translation myself.
+
+	* fi.po, zh_TW.po: New from TP Robot.
+
+	* es.po, gl.po, id.po, tr.po: Updated from TP Robot.
+
+2002-11-28  Werner Koch  <wk@gnupg.org>
+
+	* sv.po: Got an old update from Daniel.
+
 2002-10-25  Werner Koch  <wk@gnupg.org>
 
 	* et.po, ca.po, es.po: Updated from TP archive.
