@@ -71,6 +71,7 @@ void idea_cipher_warn( int show );
 struct expando_args
 {
   PKT_public_key *pk;
+  PKT_secret_key *sk;
   byte imagetype;
 };
 

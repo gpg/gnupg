@@ -1,3 +1,11 @@
+2002-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (mk_notation_and_policy): Include secret key to enable %s
+	expandos, and pass notations through pct_expando as well.
+
+	* main.h, misc.c (pct_expando): Add %s and %S expandos for
+	signer's keyid.
+
 2002-05-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (strusage, build_list): Add compress algorithms to

@@ -55,7 +55,8 @@
  * NAME=VALUE format.
  */
 static void
-mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
+mk_notation_and_policy( PKT_signature *sig,
+			PKT_public_key *pk, PKT_secret_key *sk )
 {
     const char *string;
     char *s=NULL;
@@ -66,6 +67,7 @@ mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
 
     memset(&args,0,sizeof(args));
     args.pk=pk;
+    args.sk=sk;
 
     /* notation data */
     if(IS_SIG(sig) && opt.sig_notation_data)
@@ -84,13 +86,24 @@ mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
       }
 
     for( ; nd; nd = nd->next ) {
+        char *expanded;
+
         string = nd->d;
 	s = strchr( string, '=' );
 	if( !s )
 	  BUG(); /* we have already parsed this */
 	n1 = s - string;
 	s++;
-	n2 = strlen(s);
+
+	expanded=pct_expando(s,&args);
+	if(!expanded)
+	  {
+	    log_error(_("WARNING: unable to %%-expand notation "
+			"(too large).  Using unexpanded.\n"));
+	    expanded=m_strdup(s);
+	  }
+
+	n2 = strlen(expanded);
 	buf = m_alloc( 8 + n1 + n2 );
 	buf[0] = 0x80; /* human readable */
 	buf[1] = buf[2] = buf[3] = 0;
@@ -99,10 +112,11 @@ mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
 	buf[6] = n2 >> 8;
 	buf[7] = n2;
 	memcpy(buf+8, string, n1 );
-	memcpy(buf+8+n1, s, n2 );
+	memcpy(buf+8+n1, expanded, n2 );
 	build_sig_subpkt( sig, SIGSUBPKT_NOTATION
 			  | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
 			  buf, 8+n1+n2 );
+	m_free(expanded);
     }
 
     if(opt.show_notation)
@@ -536,7 +550,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 
 	if (sig->version >= 4)
 	    build_sig_subpkt_from_sig (sig);
-	mk_notation_and_policy (sig, NULL);
+	mk_notation_and_policy (sig, NULL, sk);
 
         hash_sigversion_to_magic (md, sig);
 	md_final (md);
@@ -1165,7 +1179,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	rc = (*mksubpkt)( sig, opaque );
 
     if( !rc ) {
-	mk_notation_and_policy( sig, pk );
+	mk_notation_and_policy( sig, pk, sk );
         hash_sigversion_to_magic (md, sig);
 	md_final(md);
 

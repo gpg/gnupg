@@ -455,11 +455,14 @@ pct_expando(const char *string,struct expando_args *args)
 {
   const char *ch=string;
   int idx=0,maxlen=0,done=0;
-  u32 keyid[2]={0,0};
+  u32 pk_keyid[2]={0,0},sk_keyid[2]={0,0};
   char *ret=NULL;
 
   if(args->pk)
-    keyid_from_pk(args->pk,keyid);
+    keyid_from_pk(args->pk,pk_keyid);
+
+  if(args->sk)
+    keyid_from_sk(args->sk,sk_keyid);
 
   while(*ch!='\0')
     {
@@ -481,10 +484,29 @@ pct_expando(const char *string,struct expando_args *args)
 	{
 	  switch(*(ch+1))
 	    {
+	    case 's': /* short key id */
+	      if(idx+8<maxlen)
+		{
+		  sprintf(&ret[idx],"%08lX",(ulong)sk_keyid[1]);
+		  idx+=8;
+		  done=1;
+		}
+	      break;
+
+	    case 'S': /* long key id */
+	      if(idx+16<maxlen)
+		{
+		  sprintf(&ret[idx],"%08lX%08lX",
+			  (ulong)sk_keyid[0],(ulong)sk_keyid[1]);
+		  idx+=16;
+		  done=1;
+		}
+	      break;
+
 	    case 'k': /* short key id */
 	      if(idx+8<maxlen)
 		{
-		  sprintf(&ret[idx],"%08lX",(ulong)keyid[1]);
+		  sprintf(&ret[idx],"%08lX",(ulong)pk_keyid[1]);
 		  idx+=8;
 		  done=1;
 		}
@@ -494,7 +516,7 @@ pct_expando(const char *string,struct expando_args *args)
 	      if(idx+16<maxlen)
 		{
 		  sprintf(&ret[idx],"%08lX%08lX",
-			  (ulong)keyid[0],(ulong)keyid[1]);
+			  (ulong)pk_keyid[0],(ulong)pk_keyid[1]);
 		  idx+=16;
 		  done=1;
 		}
