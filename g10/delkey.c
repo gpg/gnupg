@@ -168,24 +168,33 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
  * Delete a public or secret key from a keyring.
  */
 int
-delete_key( const char *username, int secret, int allow_both )
+delete_keys( STRLIST names, int secret, int allow_both )
 {
     int rc, avail;
 
-    rc = do_delete_key (username, secret, &avail );
-    if ( rc && avail ) { 
-        if ( allow_both ) {
-            rc = do_delete_key (username, 1, &avail );
-            if ( !rc )
-                rc = do_delete_key (username, 0, &avail );
-        }
-        else {
-            log_error(_(
-                "there is a secret key for this public key!\n"));
-            log_info(_(
-                "use option \"--delete-secret-key\" to delete it first.\n"));
-            write_status_text( STATUS_DELETE_PROBLEM, "2" );
-        }
+    for(;names;names=names->next) {
+       rc = do_delete_key (names->d, secret, &avail );
+       if ( rc && avail ) { 
+	 if ( allow_both ) {
+	   rc = do_delete_key (names->d, 1, &avail );
+	   if ( !rc )
+	     rc = do_delete_key (names->d, 0, &avail );
+	 }
+	 else {
+	   log_error(_(
+	      "there is a secret key for public key \"%s\"!\n"),names->d);
+	   log_info(_(
+	      "use option \"--delete-secret-keys\" to delete it first.\n"));
+	   write_status_text( STATUS_DELETE_PROBLEM, "2" );
+	   return rc;
+	 }
+       }
+
+       if(rc) {
+	 log_error("%s: delete key failed: %s\n", names->d, g10_errstr(rc) );
+	 return rc;
+       }
     }
-    return rc;
+
+    return 0;
 }

@@ -48,8 +48,6 @@ extern int g10_errors_seen;
 void print_pubkey_algo_note( int algo );
 void print_cipher_algo_note( int algo );
 void print_digest_algo_note( int algo );
-void idea_cipher_warn( int show );
-const char *get_temp_dir(void);
 
 /*-- armor.c --*/
 char *make_radix64_string( const byte *data, size_t len );
@@ -68,6 +66,7 @@ int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
 int check_permissions(const char *path,int extension,int checkonly);
+void idea_cipher_warn( int show );
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
@@ -94,7 +93,7 @@ int check_key_signature2( KBNODE root, KBNODE node,
 			  int *is_selfsig, u32 *r_expiredate, int *r_expired );
 
 /*-- delkey.c --*/
-int delete_key( const char *username, int secret, int allow_both );
+int delete_keys( STRLIST names, int secret, int allow_both );
 
 /*-- keyedit.c --*/
 void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,

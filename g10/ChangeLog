@@ -1,3 +1,16 @@
+2002-01-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c, misc.c, gpgv.c: move idea_cipher_warn to misc.c so gpgv.c
+	doesn't need a stub for it any longer.
+
+	* g10.c (get_temp_dir), main.h: no longer used (it's in exec.c now)
+
+	* g10.c (main), delkey.c (delete_keys), main.h : Allow
+	--delete-key (now --delete-keys, though --delete-key still works,
+	of course) to delete multiple keys in one go.  This applies to
+	--delete-secret-key(s) and --delete-secret-and-public-key(s) as
+	well.
+
 2001-01-09  Timo Schulz  <ts@winpt.org>
 
 	* encode.c (encode_crypt_files): Now it behaves like verify_files.

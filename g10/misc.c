@@ -423,3 +423,18 @@ check_permissions(const char *path,int extension,int checkonly)
 
   return 0;
 }
+
+/* Special warning for the IDEA cipher */
+void
+idea_cipher_warn(int show)
+{
+  static int warned=0;
+
+  if(!warned || show)
+    {
+      log_info(_("the IDEA cipher plugin is not present\n"));
+      log_info(_("please see http://www.gnupg.org/why-not-idea.html "
+		 "for more information\n"));
+      warned=1;
+    }
+}

@@ -82,9 +82,9 @@ enum cmd_and_opt_values { aNull = 0,
     aNRSignKey,
     aListPackets,
     aEditKey,
-    aDeleteKey,
-    aDeleteSecretKey,
-    aDeleteSecretAndPublicKey,
+    aDeleteKeys,
+    aDeleteSecretKeys,
+    aDeleteSecretAndPublicKeys,
     aKMode,
     aKModeC,
     aImport,
@@ -282,9 +282,9 @@ static ARGPARSE_OPTS opts[] = {
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
-    { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
-    { aDeleteSecretKey, "delete-secret-key",256,
-				    N_("remove key from the secret keyring")},
+    { aDeleteKeys,"delete-keys",256,N_("remove keys from the public keyring")},
+    { aDeleteSecretKeys, "delete-secret-keys",256,
+				    N_("remove keys from the secret keyring")},
     { aSignKey,  "sign-key"   ,256, N_("sign a key")},
     { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
     { aNRSignKey, "nrsign-key"  ,256, N_("sign a key non-revocably")},
@@ -499,7 +499,7 @@ static ARGPARSE_OPTS opts[] = {
     { oTryAllSecrets,  "try-all-secrets", 0, "@" },
     { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
     { oNoExpensiveTrustChecks, "no-expensive-trust-checks", 0, "@" },
-    { aDeleteSecretAndPublicKey, "delete-secret-and-public-key",256, "@" },
+    { aDeleteSecretAndPublicKeys, "delete-secret-and-public-keys",256, "@" },
     { aRebuildKeydbCaches, "rebuild-keydb-caches", 256, "@"},
     { oPreservePermissions, "preserve-permissions", 0, "@"},
     { oPreferenceList,  "preference-list", 2, "@"},
@@ -888,13 +888,13 @@ main( int argc, char **argv )
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
 	  case aExportSecretSub: set_cmd( &cmd, aExportSecretSub); break;
-	  case aDeleteSecretKey: set_cmd( &cmd, aDeleteSecretKey);
+	  case aDeleteSecretKeys: set_cmd( &cmd, aDeleteSecretKeys);
 							greeting=1; break;
-	  case aDeleteSecretAndPublicKey:
-            set_cmd( &cmd, aDeleteSecretAndPublicKey);
+	  case aDeleteSecretAndPublicKeys:
+            set_cmd( &cmd, aDeleteSecretAndPublicKeys);
             greeting=1; 
             break;
-	  case aDeleteKey: set_cmd( &cmd, aDeleteKey); greeting=1; break;
+	  case aDeleteKeys: set_cmd( &cmd, aDeleteKeys); greeting=1; break;
 
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case aSym: set_cmd( &cmd, aSym); break;
@@ -1652,26 +1652,18 @@ main( int argc, char **argv )
 	m_free(username);
 	break;
 
-      case aDeleteSecretKey:
-	if( argc != 1 )
-	    wrong_args(_("--delete-secret-key user-id"));
-      case aDeleteKey:
-	if( argc != 1 )
-	    wrong_args(_("--delete-key user-id"));
-	username = make_username( fname );
-	if( (rc = delete_key(username, cmd==aDeleteSecretKey, 0)) )
-	    log_error("%s: delete key failed: %s\n", username, g10_errstr(rc) );
-	m_free(username);
+      case aDeleteKeys:
+      case aDeleteSecretKeys:
+      case aDeleteSecretAndPublicKeys:
+	sl = NULL;
+	/* I'm adding these in reverse order as add_to_strlist2
+           reverses them again, and it's easier to understand in the
+           proper order :) */
+	for( ; argc; argc-- )
+	  add_to_strlist2( &sl, argv[argc-1], utf8_strings );
+	delete_keys(sl,cmd==aDeleteSecretKeys,cmd==aDeleteSecretAndPublicKeys);
+	free_strlist(sl);
 	break;
-      case aDeleteSecretAndPublicKey:
-	if( argc != 1 )
-	    wrong_args(_("--delete-secret-and-public-key user-id"));
-	username = make_username( fname );
-	if( (rc = delete_key(username, 0, 1)) )
-	    log_error("%s: delete key failed: %s\n", username, g10_errstr(rc));
-	m_free(username);
-	break;
-
 
       case aCheckKeys:
 	opt.check_sigs = 1;
@@ -2231,47 +2223,4 @@ check_policy_url( const char *s )
 	    return -1;
     }
     return 0;
-}
-
-/* Special warning for the IDEA cipher */
-void
-idea_cipher_warn(int show)
-{
-  static int warned=0;
-
-  if(!warned || show)
-    {
-      log_info(_("the IDEA cipher plugin is not present\n"));
-      log_info(_("please see http://www.gnupg.org/why-not-idea.html "
-		 "for more information\n"));
-      warned=1;
-    }
-}
-
-const char *
-get_temp_dir(void)
-{
-  char *tmp;
-
-#ifndef __MINGW32__
-  /* Don't allow to be setuid when we are going to create temporary
-     files or directories - yes, this is a bit paranoid */
-  if (getuid() != geteuid() )
-      BUG ();
-#endif
-
-  if(opt.temp_dir)
-    return opt.temp_dir;
-
-  if((tmp=getenv("TMPDIR")))
-    return tmp;
-
-  if((tmp=getenv("TMP")))
-    return tmp;
-
-#ifdef __riscos__
-  return "<Wimp$ScrapDir>";
-#else
-  return "/tmp";
-#endif
 }

@@ -300,9 +300,6 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     return NULL;
 }
 
-/* Stub: no decrypting, so no IDEA needed */
-void idea_cipher_warn( int show ) {}
-
 /* Stub to avoid linking to photoid.c */
 void show_photo(const struct user_attribute *attr,PKT_public_key *pk) {}
 
