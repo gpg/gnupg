@@ -215,11 +215,11 @@ static ARGPARSE_OPTS opts[] = {
     { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
     { oLoadExtension, "load-extension" ,2, N_("|file|load extension module")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
-    { oS2KMode, "s2k-mode",  1, N_("|N| use passphrase mode N")},
+    { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
     { oS2KDigest, "s2k-digest-algo",2,
-		N_("|NAME| use message digest algorithm NAME for passphrases")},
+		N_("|NAME|use message digest algorithm NAME for passphrases")},
     { oS2KCipher, "s2k-cipher-algo",2,
-		N_("|NAME| use cipher algorithm NAME for passphrases")},
+		N_("|NAME|use cipher algorithm NAME for passphrases")},
   #ifdef IS_G10
     { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
@@ -789,7 +789,10 @@ main( int argc, char **argv )
     if( opt.marginals_needed < 2 )
 	log_error(_("marginals-needed must be greater than 1\n"));
     switch( opt.s2k_mode ) {
-      case 0: case 1: case 3: break;
+      case 0:
+	log_info(_("note: simple S2K mode (0) is strongly discouraged\n"));
+	break;
+      case 1: case 3: break;
       default:
 	log_error(_("invalid S2K mode; must be 0, 1 or 3\n"));
     }

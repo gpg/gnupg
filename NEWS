@@ -11,6 +11,12 @@ Noteworthy changes in version 0.4.1
 	"--s2k-mode 3 --s2k-cipher-algo cast5 --s2k-digest-algo sha1"
       when changing a passphrase.
 
+    * doc/OpenPGP talks about OpenPGP compliance, doc/HACKING gives
+      some hints about the internal structure.
+
+    * checked gnupg against the August 1998 draft (07) and I believe
+      it is in compliance with this document (except one point).
+
 
 Noteworthy changes in version 0.4.0
 -----------------------------------

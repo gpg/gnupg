@@ -1,0 +1,129 @@
+		    GNUPG and OpenPGP
+		    =================
+
+   The current OpenPGP draft expires 1999-02.
+
+   OpenPGP is an Internet-Draft.  Internet-Drafts are working
+   documents of the Internet Engineering Task Force (IETF), its areas,
+   and its working groups.  Note that other groups may also distribute
+   working documents as Internet-Drafts.
+
+   Internet-Drafts are draft documents valid for a maximum of six
+   months and may be updated, replaced, or obsoleted by other documents
+   at any time.  It is inappropriate to use Internet-Drafts as
+   reference material or to cite them other than as "work in progress."
+
+   To view the entire list of current Internet-Drafts, please check the
+   "1id-abstracts.txt" listing contained in the Internet-Drafts Shadow
+   Directories on ftp.is.co.za (Africa), ftp.nordu.net (Northern
+   Europe), ftp.nis.garr.it (Southern Europe), munnari.oz.au (Pacific
+   Rim), ftp.ietf.org (US East Coast), or ftp.isi.edu (US West Coast).
+
+
+  Compatibility Notes
+  ===================
+   GNUPG (>0.4) is in compliance with OpenPGP despite these exeptions:
+
+    * (5.1) The critical bit in signature subpackets is currently
+      ignored.	This will be fixed soon.
+
+    * (5.3) GNUPG has an option to use simple S2K for "Symmetric-Key
+      Encrypted Session-Key Packets"; however a warning message is
+      issued if this option is active.
+
+    * (5.5.2) states that an implementaion MUST NOT create a v3 key
+      with an algorithm other than RSA.  GNUPG has an option to
+      create an ElGamal key in a v3 packet; the properties of such
+      a key are as good as a v4 key.  RFC1991 does not specifiy how
+      to create fingerprints for algorithms other than RSA and so it
+      is okay to choose a special format for ElGamal.
+
+    * (9.1) states that RSA SHOULD be implemented.  This is not done
+      (except with an extension, usable outside the U.S.) due to
+      patent problems.
+
+    * (9.2) states that IDEA SHOULD be implemented.  This is not done
+      due to patent problems.
+
+    * (12.1) states that an implementaion MUST NOT use a symmetric
+      algorithm which is not in the preference list.  GNUPG has an
+      option to override this.
+
+    * A special format of partial packet length exists for v3 packets
+      which can be considered to be in compliance with RFC1991;  this
+      format is only created if a special option is active.
+
+   All MAY features are implemented with this exception:
+
+    * multi-part armored messages are not supported.
+      MIME should be used instead.
+
+
+
+
+  Some Notes on OpenPGP / PGP Compatibility:
+  ==========================================
+
+     * PGP 5.x does not accept V4 signatures for anything other than
+       key material.
+
+     * PGP 5.x does not recognize the "five-octet" lengths in
+       new-format headers or in signature subpacket lengths.
+
+     * PGP 5.0 rejects an encrypted session key if the keylength
+       differs from the S2K symmetric algorithm. This is a bug in its
+       validation function.
+
+     * PGP 5.0 does not handle multiple one-pass signature headers and
+       trailers. Signing one will compress the one-pass signed literal
+       and prefix a V3 signature instead of doing a nested one-pass
+       signature.
+
+     * When exporting a private key, PGP 2.x generates the header
+       "BEGIN PGP SECRET KEY BLOCK" instead of "BEGIN PGP PRIVATE KEY
+       BLOCK". All previous versions ignore the implied data type, and
+       look directly at the packet data type.
+
+     * In a clear-signed signature, PGP 5.0 will figure out the correct
+       hash algorithm if there is no "Hash:" header, but it will reject
+       a mismatch between the header and the actual algorithm used. The
+       "standard" (i.e. Zimmermann/Finney/et al.) version of PGP 2.x
+       rejects the "Hash:" header and assumes MD5. There are a number
+       of enhanced variants of PGP 2.6.x that have been modified for
+       SHA-1 signatures.
+
+     * PGP 5.0 can read an RSA key in V4 format, but can only recognize
+       it with a V3 keyid, and can properly use only a V3 format RSA
+       key.
+
+     * Neither PGP 5.x nor PGP 6.0 recognize Elgamal Encrypt and Sign
+       keys. They only handle Elgamal Encrypt-only keys.
+
+
+  Parts of this document are taken from:
+  ======================================
+
+			 OpenPGP Message Format
+		   draft-ietf-openpgp-formats-07.txt
+
+
+   Copyright 1998 by The Internet Society. All Rights Reserved.
+
+   This document and translations of it may be copied and furnished to
+   others, and derivative works that comment on or otherwise explain it
+   or assist in its implementation may be prepared, copied, published
+   and distributed, in whole or in part, without restriction of any
+   kind, provided that the above copyright notice and this paragraph
+   are included on all such copies and derivative works.  However, this
+   document itself may not be modified in any way, such as by removing
+   the copyright notice or references to the Internet Society or other
+   Internet organizations, except as needed for the purpose of
+   developing Internet standards in which case the procedures for
+   copyrights defined in the Internet Standards process must be
+   followed, or as required to translate it into languages other than
+   English.
+
+   The limited permissions granted above are perpetual and will not be
+   revoked by the Internet Society or its successors or assigns.
+
+

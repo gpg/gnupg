@@ -909,15 +909,16 @@ update_sigs( TRUSTREC *dir )
 	    if( (sig->sig_class&~3) == 0x10 ) {
 		rc = check_key_signature( keyblock, node, &i );
 		if( rc == G10ERR_NO_PUBKEY ) {
-		    log_info("key %08lX.%lu, uid %02X%02X: "
-			      "no public key for signature %08lX\n",
+		    if( opt.verbose )
+			log_info(_("key %08lX.%lu, uid %02X%02X: "
+				   "no public key for signature %08lX\n"),
 			      (ulong)keyid[1], lid, urec.r.uid.namehash[18],
 			      urec.r.uid.namehash[19], (ulong)sig->keyid[1] );
 		    miskey = 1;
 		}
 		else if( rc )
-		    log_error("key %08lX.%lu, uid %02X%02X: "
-			      "invalid %ssignature: %s\n",
+		    log_info(_("key %08lX.%lu, uid %02X%02X: "
+			       "invalid %ssignature: %s\n"),
 			      (ulong)keyid[1], lid, urec.r.uid.namehash[18],
 			      urec.r.uid.namehash[19],
 			      i?"self-":"",g10_errstr(rc));
@@ -1520,6 +1521,7 @@ list_trust_path( int max_depth, const char *username )
 
 /****************
  * Check the complete trustdb or only the entries for the given username
+ * FIXME: We need a mode which only looks at keys with the MISKEY flag set.
  */
 void
 check_trustdb( const char *username )

@@ -2,6 +2,15 @@
     * after creating a new uid, the preferences in the trustdb are not updated.
       We should always sync the trustdb in such cases.
 
+    * The critical bit of signature subpackets is not yet supported; i.e.
+      it is ignored.
+
+    * Exportable Certification Flag is ignored
+
+    * Why does OpenPGP say: The algorithm byte is included in the
+      checksum of an encoded key, but the actual implementaion does
+      not do this but works??
+
     * write a tool to extract selected keys from a file.
 
     * new menu to delete signatures and list signature in menu

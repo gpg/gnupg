@@ -1,3 +1,8 @@
+Tue Sep 29 08:32:08 1998  me,,,  (wk@tobold)
+
+	* mainproc.c (proc_plaintext): Display note for special filename.
+	* plaintext.c (handle_plaintext): Suppress output of special file.
+
 Mon Sep 28 12:57:12 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* g10.c (verify_own_keys): Add warning if a key is not protected.

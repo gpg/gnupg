@@ -98,6 +98,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	fname = m_alloc( strlen( opt.outfile ) + 1);
 	strcpy(fname, opt.outfile );
     }
+    else if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) ) {
+	log_info(_("data not saved; use option \"--output\" to save it\n"));
+	nooutput = 1;
+    }
     else {
 	fname = m_alloc( pt->namelen +1 );
 	memcpy( fname, pt->name, pt->namelen );

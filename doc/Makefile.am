@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 
-EXTRA_DIST = DETAILS rfcs gpg.1pod gpg.1 FAQ  HACKING
+EXTRA_DIST = DETAILS rfcs gpg.1pod gpg.1 FAQ HACKING OpenPGP
 
 man_MANS = gpg.1
 

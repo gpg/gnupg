@@ -243,7 +243,9 @@ proc_plaintext( CTX c, PACKET *pkt )
     int any, clearsig, rc;
     KBNODE n;
 
-    if( opt.verbose )
+    if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) )
+	log_info(_("note: sender requested \"for-your-eyes-only\"\n"));
+    else if( opt.verbose )
 	log_info("original file name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
     c->mfx.md = md_open( 0, 0);

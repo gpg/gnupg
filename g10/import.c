@@ -247,6 +247,7 @@ import_one( const char *fname, KBNODE keyblock )
     u32 keyid[2];
     int rc = 0;
     int new_key = 0;
+    int mod_key = 0;
 
     /* get the key and print some info about it */
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -283,6 +284,7 @@ import_one( const char *fname, KBNODE keyblock )
 	log_info(_("this may be caused by a missing self-signature\n"));
 	return 0;
     }
+
 
     /* do we have this key already in one of our pubrings ? */
     pk_orig = m_alloc_clear( sizeof *pk_orig );
@@ -350,6 +352,7 @@ import_one( const char *fname, KBNODE keyblock )
 	if( rc )
 	    goto leave;
 	if( n_uids || n_sigs || n_subk ) {
+	    mod_key = 1;
 	    /* keyblock_orig has been updated; write */
 	    if( opt.verbose > 1 )
 		log_info_f(keyblock_resource_name(&kbpos),
@@ -394,6 +397,8 @@ import_one( const char *fname, KBNODE keyblock )
 		log_error("key %08lX: trustdb insert failed: %s\n",
 					(ulong)keyid[1], g10_errstr(rc) );
 	}
+	else if( mod_key )
+	    rc = update_trustdb( new_key? pk: pk_orig);
 	else
 	    rc = clear_trust_checked_flag( new_key? pk : pk_orig );
     }
