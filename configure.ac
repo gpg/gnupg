@@ -28,7 +28,7 @@ AC_PREREQ(2.52)
 AC_INIT(gnupg, 1.1.91, bug-gnupg@gnu.org)
 development_version=yes
 
-ALL_LINGUAS="cs da de eo el es et fr gl id it ja nl pl pt_BR pt sv tr"
+ALL_LINGUAS="ca cs da de eo el es et fr gl id it ja nl pl pt_BR pt sv tr"
 
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION

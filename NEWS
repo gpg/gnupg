@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.1.91
+Noteworthy changes in version 1.1.91 (2002-08-04)
 -------------------------------------------------
 
     * All modules are now linked statically; the --load-extension
