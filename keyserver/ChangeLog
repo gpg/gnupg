@@ -1,3 +1,10 @@
+2004-02-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (ldap_to_gpg_err): Make sure that
+	LDAP_OPT_ERROR_NUMBER is defined before we use it.
+
+	* gpgkeys_mailto.in: Fix VERSION number.
+
 2004-01-13  Werner Koch  <wk@gnupg.org>
 
 	* gpgkeys_hkp.c (send_key): Add a content type.
@@ -16,7 +23,8 @@
 	* gpgkeys_hkp.c (send_key, get_key, main): Work with new HTTP code
 	that passes the proxy in from the outside.  If the command file
 	sends a proxy, use it.  If it sends "http-proxy" with no
-	arguments, use $http_proxy from the environment.
+	arguments, use $http_proxy from the environment.  Suggested by
+	Christian Biere.
 
 2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
 
@@ -41,7 +49,7 @@
 	* gpgkeys_hkp.c, gpgkeys_ldap.c: #include <getopt.h> if it is
 	available.  Also include extern references for optarg and optind
 	since there is no guarantee that any header file will include
-	them.  Standards?  We don't need no stinkin' standards
+	them.  Standards?  We don't need no stinkin' standards.
 
 	* Makefile.am: Use @GETOPT@ to pull in libiberty on those
 	platforms that need it.
@@ -395,7 +403,8 @@
 	gpgkeys_mailto (email keyserver helper)
 
 	
- Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+	   2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -404,4 +413,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-	

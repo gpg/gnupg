@@ -114,7 +114,7 @@ while(<STDIN>)
 
 # Send response
 
-print "VERSION 0\n";
+print "VERSION 1\n";
 print "OPTION OUTOFBAND\n\n";
 
 # Email keyservers get and search the same way

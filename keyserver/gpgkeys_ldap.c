@@ -86,7 +86,7 @@ ldap_err_to_gpg_err(int err)
 int
 ldap_to_gpg_err(LDAP *ld)
 {
-#if defined(HAVE_LDAP_GET_OPTION)
+#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_NUMBER)
 
   int err;
 
