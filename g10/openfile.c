@@ -266,7 +266,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
  * Return NULL if such a file is not available.
  */
 IOBUF
-open_sigfile( const char *iname )
+open_sigfile( const char *iname, progress_filter_context_t *pfx )
 {
     IOBUF a = NULL;
     size_t len;
@@ -282,7 +282,10 @@ open_sigfile( const char *iname )
 	    a = iobuf_open( buf );
 	    if( a && opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );
-	    m_free(buf);
+	    if (a && pfx)
+	      handle_progress (pfx, a, buf);
+	    else
+	      m_free(buf);
 	}
     }
     return a;

@@ -56,6 +56,7 @@ verify_signatures( int nfiles, char **files )
 {
     IOBUF fp;
     armor_filter_context_t afx;
+    progress_filter_context_t pfx;
     const char *sigfile;
     int i, rc;
     STRLIST sl;
@@ -94,6 +95,7 @@ verify_signatures( int nfiles, char **files )
 	log_error(_("can't open `%s'\n"), print_fname_stdin(sigfile));
 	return G10ERR_OPEN_FILE;
     }
+    handle_progress (&pfx, fp, sigfile);
 
     if( !opt.no_armor && use_armor_filter( fp ) )
 	iobuf_push_filter( fp, armor_filter, &afx );
@@ -130,6 +132,7 @@ verify_one_file( const char *name )
 {
     IOBUF fp;
     armor_filter_context_t afx;
+    progress_filter_context_t pfx;
     int rc;
 
     print_file_status( STATUS_FILE_START, name, 1 );
@@ -139,6 +142,7 @@ verify_one_file( const char *name )
 	log_error(_("can't open `%s'\n"), print_fname_stdin(name));
 	return G10ERR_OPEN_FILE;
     }
+    handle_progress (&pfx, fp, name);
 
     if( !opt.no_armor ) {
 	if( use_armor_filter( fp ) ) {

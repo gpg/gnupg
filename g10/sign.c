@@ -606,6 +606,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     compress_filter_context_t zfx;
     md_filter_context_t mfx;
     text_filter_context_t tfx;
+    progress_filter_context_t pfx;
     encrypt_filter_context_t efx;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
@@ -652,11 +653,15 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* prepare iobufs */
     if( multifile )  /* have list of filenames */
 	inp = NULL; /* we do it later */
-    else if( !(inp = iobuf_open(fname)) ) {
-	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
-					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
-	goto leave;
+    else {
+        if( !(inp = iobuf_open(fname)) ) {
+	    log_error("can't open %s: %s\n", fname? fname: "[stdin]",
+		      strerror(errno) );
+	    rc = G10ERR_OPEN_FILE;
+	    goto leave;
+	}
+
+        handle_progress (&pfx, inp, fname);
     }
 
     if( outfile ) {
@@ -794,6 +799,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		    rc = G10ERR_OPEN_FILE;
 		    goto leave;
 		}
+                handle_progress (&pfx, inp, sl->d);
 		if( opt.verbose )
 		    fprintf(stderr, " `%s'", sl->d );
 		if(opt.textmode)
@@ -857,6 +863,7 @@ int
 clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 {
     armor_filter_context_t afx;
+    progress_filter_context_t pfx;
     MD_HANDLE textmd = NULL;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
@@ -894,6 +901,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
+    handle_progress (&pfx, inp, fname);
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
@@ -989,6 +997,7 @@ int
 sign_symencrypt_file (const char *fname, STRLIST locusr)
 {
     armor_filter_context_t afx;
+    progress_filter_context_t pfx;
     compress_filter_context_t zfx;
     md_filter_context_t mfx;
     text_filter_context_t tfx;
@@ -1024,6 +1033,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
+    handle_progress (&pfx, inp, fname);
 
     /* prepare key */
     s2k = m_alloc_clear( sizeof *s2k );

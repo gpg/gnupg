@@ -327,11 +327,16 @@ int
 ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 			   const char *inname, int textmode )
 {
+    progress_filter_context_t pfx;
+    int dealloc_pfx_name = 1;
     char *answer = NULL;
     IOBUF fp;
     int rc = 0;
 
-    fp = open_sigfile( inname ); /* open default file */
+    fp = open_sigfile( inname, &pfx ); /* open default file */
+    if (!fp)
+      dealloc_pfx_name = 0;
+
     if( !fp && !opt.batch ) {
 	int any=0;
 	tty_printf(_("Detached signature.\n"));
@@ -365,7 +370,8 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     }
     do_hash( md, md2, fp, textmode );
     iobuf_close(fp);
-
+    if (dealloc_pfx_name)
+      m_free (pfx.what);
 
   leave:
     m_free(answer);
@@ -382,15 +388,17 @@ int
 hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 		const char *sigfilename, int textmode )
 {
+    progress_filter_context_t pfx;
     IOBUF fp;
     STRLIST sl;
 
     if( !files ) {
 	/* check whether we can open the signed material */
-	fp = open_sigfile( sigfilename );
+	fp = open_sigfile( sigfilename, &pfx );
 	if( fp ) {
 	    do_hash( md, md2, fp, textmode );
 	    iobuf_close(fp);
+	    m_free (pfx.what);
 	    return 0;
 	}
         log_error (_("no signed data\n"));
@@ -405,6 +413,7 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 						print_fname_stdin(sl->d));
 	    return G10ERR_OPEN_FILE;
 	}
+        handle_progress (&pfx, fp, sl->d);
 	do_hash( md, md2, fp, textmode );
 	iobuf_close(fp);
     }

@@ -164,6 +164,7 @@ encode_simple( const char *filename, int mode, int compat )
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
+    progress_filter_context_t pfx;
     int do_compress = opt.compress && !opt.rfc1991;
 
     memset( &cfx, 0, sizeof cfx);
@@ -178,6 +179,8 @@ encode_simple( const char *filename, int mode, int compat )
 					strerror(errno) );
 	return G10ERR_OPEN_FILE;
     }
+
+    handle_progress (&pfx, inp, filename);
 
     if( opt.textmode )
 	iobuf_push_filter( inp, text_filter, &tfx );
@@ -391,6 +394,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
+    progress_filter_context_t pfx;
     PK_LIST pk_list,work_list;
     int do_compress = opt.compress && !opt.rfc1991;
 
@@ -426,6 +430,8 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
     else if( opt.verbose )
 	log_info(_("reading from `%s'\n"), filename? filename: "[stdin]");
+
+    handle_progress (&pfx, inp, filename);
 
     if( opt.textmode )
 	iobuf_push_filter( inp, text_filter, &tfx );

@@ -51,6 +51,7 @@ decrypt_message( const char *filename )
 {
     IOBUF fp;
     armor_filter_context_t afx;
+    progress_filter_context_t pfx;
     int rc;
     int no_out=0;
 
@@ -60,6 +61,8 @@ decrypt_message( const char *filename )
 	log_error(_("can't open `%s'\n"), print_fname_stdin(filename));
 	return G10ERR_OPEN_FILE;
     }
+
+    handle_progress (&pfx, fp, filename);
 
     if( !opt.no_armor ) {
 	if( use_armor_filter( fp ) ) {
@@ -84,6 +87,7 @@ decrypt_messages(int nfiles, char **files)
 {
   IOBUF fp;
   armor_filter_context_t afx;  
+  progress_filter_context_t pfx;
   char *p, *output = NULL;
   int rc = 0;
   
@@ -106,6 +110,9 @@ decrypt_messages(int nfiles, char **files)
           log_error(_("can't open `%s'\n"), print_fname_stdin(*files));
           goto next_file;
         }
+
+      handle_progress (&pfx, fp, *files);
+
       if (!opt.no_armor)
         {
           if (use_armor_filter(fp))

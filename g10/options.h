@@ -1,5 +1,6 @@
 /* options.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -179,6 +180,7 @@ struct {
     int show_keyring;
     struct groupitem *grouplist;
     int mangle_dos_filenames;
+    int enable_progress_filter;
 } opt;
 
 

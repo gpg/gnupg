@@ -23,7 +23,9 @@ EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
 libexecdir = @libexecdir@/@PACKAGE@
+if ! HAVE_DOSISH_SYSTEM
 AM_CFLAGS =  -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
+endif
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a @CAPLIBS@
 
 #noinst_PROGRAMS = gpgd
@@ -45,6 +47,7 @@ common_source =  \
 	      armor.c		\
 	      mdfilter.c	\
 	      textfilter.c	\
+	      progress.c	\
 	      misc.c		\
 	      options.h 	\
 	      openfile.c	\
