@@ -40,7 +40,7 @@
 #define SEARCH 2
 #define MAX_LINE 80
 
-int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=1;
+int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
 char *basekeyspacedn=NULL;
 char host[80];
 FILE *input=NULL,*output=NULL,*console=NULL;
