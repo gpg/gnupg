@@ -1,6 +1,7 @@
 2002-04-09  Werner Koch  <wk@gnupg.org>
 
-	* configure.ac (ALL_LINGUAS): Added Czech translation.
+	* configure.ac (ALL_LINGUAS): Added Czech, Galician and Greek
+	translations.  s/es_ES/es/.
 
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
