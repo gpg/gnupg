@@ -1,5 +1,7 @@
 2003-06-19  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Include W32LIBS where appropriate.
+
 	* keyedit.c (sign_uids): Add additional prompt to the signature
 	level question.
 	(menu_expire): When changing expiration dates, don't replace
