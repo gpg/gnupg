@@ -23,12 +23,14 @@
 	* openfile.c (copy_options_file, open_outfile)
 	* exec.c (exec_write)
 	* keygen.c (do_generate_keypair, gen_card_key_with_backup)
+
 	* sign.c (sign_file, clearsign_file)
 	* keyring.c (create_tmp_file, do_copy): Check for secured files
 	before creating them. 
 
-	* keygen.c (print_status_key_created): s/unsigned char/byte/ due
-	to a strange typedef for RISC OS.  Noted by Stefan.
+	* keygen.c (print_status_key_created, read_parameter_file):
+	s/unsigned char/byte/ due to a strange typedef for RISC OS.  Noted
+	by Stefan.
 
 2004-10-13  David Shaw  <dshaw@jabberwocky.com>
 

@@ -2200,7 +2200,7 @@ read_parameter_file( const char *fname )
 	{ NULL, 0 }
     };
     IOBUF fp;
-    unsigned char *line;
+    byte *line;
     unsigned int maxlen, nline;
     char *p;
     int lnr;
