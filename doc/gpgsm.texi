@@ -305,6 +305,16 @@ a line tagged @code{grp} is printed which tells you the keygrip of a
 key.  This string is for example used as the file name of the
 secret key.
 
+@item --with-validation
+@opindex with-validation
+When doing a key listing, do a full validation check for each key and
+print the result.  This is usually a slow operation because it
+requires a CRL lookup and other operations.
+
+@item --with-md5-fingerprint
+For standard key listings, also print the MD5 fingerprint of the
+certificate.
+
 @end table
 
 @node CMS Options
@@ -730,7 +740,10 @@ To import certificates into the internal key database, the command
 @end example
 
 is used.  The data is expected on the file descriptor set with the
-@code{INPUT} command.  Certain checks are performend on the certificate.
+@code{INPUT} command.  Certain checks are performend on the
+certificate.  Note that the code will also handle PKCS\#12 files and
+import private keys; a helper program is used for that.
+
 
 @node GPGSM DELETE
 @subsection Delete certificates
