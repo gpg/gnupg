@@ -1,6 +1,8 @@
 2003-10-10  Werner Koch  <wk@gnupg.org>
 
 	* cardglue.c (card_close): New.
+	(agent_scd_change_pin): Implemented.
+
 	* ccid-driver.c (ccid_close_reader): New.
 	* apdu.c (close_ccid_reader, close_ct_reader, close_csc_reader)
 	(close_osc_reader, apdu_close_reader): New.  Not all are properly

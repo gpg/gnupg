@@ -664,7 +664,19 @@ agent_scd_pkdecrypt (const char *serialno,
 int 
 agent_scd_change_pin (int chvno)
 {
+  APP app;
+  char chvnostr[20];
+  int reset = 0;
 
-  return gpg_error (GPG_ERR_CARD);
+  reset = (chvno >= 100);
+  chvno %= 100;
+
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  sprintf (chvnostr, "%d", chvno);
+  return app->fnc.change_pin (app, NULL, chvnostr, reset,
+                              pin_cb, NULL);
 }
 
