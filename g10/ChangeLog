@@ -1,3 +1,8 @@
+2004-03-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (proc_pubkey_enc, print_pkenc_list, list_node):
+	--keyid-format conversion.
+
 2004-03-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (skip_unusable, merge_selfsigs_main,

@@ -363,7 +363,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     /* Hmmm: why do I have this algo check here - anyway there is
      * function to check it. */
     if( opt.verbose )
-	log_info(_("public key is %08lX\n"), (ulong)enc->keyid[1] );
+	log_info(_("public key is %s\n"), keystr(enc->keyid) );
 
     if( is_status_enabled() ) {
 	char buf[50];
@@ -448,22 +448,23 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 	if( !algstr )
 	    algstr = "[?]";
 	pk->pubkey_algo = list->pubkey_algo;
-	if( !get_pubkey( pk, list->kid ) ) {
+	if( !get_pubkey( pk, list->kid ) )
+	  {
 	    size_t n;
 	    char *p;
-	    log_info( _("encrypted with %u-bit %s key, ID %08lX, created %s\n"),
-		       nbits_from_pk( pk ), algstr, (ulong)list->kid[1],
-		       strtimestamp(pk->timestamp) );
+	    log_info( _("encrypted with %u-bit %s key, ID %s, created %s\n"),
+		      nbits_from_pk( pk ), algstr, keystr_from_pk(pk),
+		      strtimestamp(pk->timestamp) );
 	    fputs("      \"", log_stream() );
 	    p = get_user_id( list->kid, &n );
 	    print_utf8_string2 ( log_stream(), p, n, '"' );
 	    m_free(p);
 	    fputs("\"\n", log_stream() );
-	}
-	else {
-	    log_info(_("encrypted with %s key, ID %08lX\n"),
-			algstr, (ulong) list->kid[1] );
-	}
+	  }
+	else
+	  log_info(_("encrypted with %s key, ID %s\n"),
+		   algstr,keystr(list->kid));
+
 	free_public_key( pk );
 
 	if( list->reason == G10ERR_NO_SECKEY ) {
@@ -839,40 +840,38 @@ list_node( CTX c, KBNODE node )
 	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	PKT_public_key *pk = node->pkt->pkt.public_key;
 
-	if( opt.with_colons ) {
+	if( opt.with_colons )
+	  {
 	    u32 keyid[2];
 	    keyid_from_pk( pk, keyid );
 	    if( mainkey )
 	      c->trustletter = opt.fast_list_mode?
-					   0 : get_validity_info( pk, NULL );
+		0 : get_validity_info( pk, NULL );
 	    printf("%s:", mainkey? "pub":"sub" );
 	    if( c->trustletter )
-		putchar( c->trustletter );
+	      putchar( c->trustletter );
 	    printf(":%u:%d:%08lX%08lX:%s:%s::",
-		    nbits_from_pk( pk ),
-		    pk->pubkey_algo,
-		    (ulong)keyid[0],(ulong)keyid[1],
-		    colon_datestr_from_pk( pk ),
-		    colon_strtime (pk->expiredate) );
+		   nbits_from_pk( pk ),
+		   pk->pubkey_algo,
+		   (ulong)keyid[0],(ulong)keyid[1],
+		   colon_datestr_from_pk( pk ),
+		   colon_strtime (pk->expiredate) );
 	    if( mainkey && !opt.fast_list_mode )
-                 putchar( get_ownertrust_info (pk) );
+	      putchar( get_ownertrust_info (pk) );
 	    putchar(':');
 	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
-		putchar('\n'); any=1;
-		if( opt.fingerprint )
-		    print_fingerprint( pk, NULL, 0 );
-		printf("rtv:1:%u:\n",
-			    node->next->pkt->pkt.ring_trust->trustval );
+	      putchar('\n'); any=1;
+	      if( opt.fingerprint )
+		print_fingerprint( pk, NULL, 0 );
+	      printf("rtv:1:%u:\n",
+		     node->next->pkt->pkt.ring_trust->trustval );
 	    }
-	}
+	  }
 	else
-	    printf("%s  %4u%c/%08lX %s%s",
-				      mainkey? "pub":"sub",
-				      nbits_from_pk( pk ),
-				      pubkey_letter( pk->pubkey_algo ),
-				      (ulong)keyid_from_pk( pk, NULL ),
-				      datestr_from_pk( pk ),
-		                      mainkey?" ":"");
+	  printf("%s  %4u%c/%s %s%s",
+		 mainkey? "pub":"sub", nbits_from_pk( pk ),
+		 pubkey_letter( pk->pubkey_algo ), keystr_from_pk( pk ),
+		 datestr_from_pk( pk ), mainkey?" ":"");
 
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
@@ -935,25 +934,23 @@ list_node( CTX c, KBNODE node )
 	     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 	PKT_secret_key *sk = node->pkt->pkt.secret_key;
 
-	if( opt.with_colons ) {
+	if( opt.with_colons )
+	  {
 	    u32 keyid[2];
 	    keyid_from_sk( sk, keyid );
 	    printf("%s::%u:%d:%08lX%08lX:%s:%s:::",
-		    mainkey? "sec":"ssb",
-		    nbits_from_sk( sk ),
-		    sk->pubkey_algo,
-		    (ulong)keyid[0],(ulong)keyid[1],
-		    colon_datestr_from_sk( sk ),
-		    colon_strtime (sk->expiredate)
-		    /* fixme: add LID */ );
-	}
+		   mainkey? "sec":"ssb",
+		   nbits_from_sk( sk ),
+		   sk->pubkey_algo,
+		   (ulong)keyid[0],(ulong)keyid[1],
+		   colon_datestr_from_sk( sk ),
+		   colon_strtime (sk->expiredate)
+		   /* fixme: add LID */ );
+	  }
 	else
-	    printf("%s  %4u%c/%08lX %s ",
-				      mainkey? "sec":"ssb",
-				      nbits_from_sk( sk ),
-				      pubkey_letter( sk->pubkey_algo ),
-				      (ulong)keyid_from_sk( sk, NULL ),
-				      datestr_from_sk( sk )   );
+	  printf("%s  %4u%c/%s %s ", mainkey? "sec":"ssb",
+		 nbits_from_sk( sk ), pubkey_letter( sk->pubkey_algo ),
+		 keystr_from_sk( sk ), datestr_from_sk( sk ));
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
 	    for( node = node->next; node; node = node->next ) {
@@ -1055,8 +1052,8 @@ list_node( CTX c, KBNODE node )
 	    printf(":");
 	}
 	else
-	    printf("%c       %08lX %s   ",
-		    sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
+	  printf("%c       %s %s   ",
+		 sigrc, keystr(sig->keyid), datestr_from_sig(sig));
 	if( sigrc == '%' )
 	    printf("[%s] ", g10_errstr(rc2) );
 	else if( sigrc == '?' )
