@@ -1,3 +1,9 @@
+2004-04-30  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (parse_rereadable_options): New arg REREAD.  Allow
+	changing oLogFile.
+	(current_logfile): New.
+
 2004-04-26  Werner Koch  <wk@gnupg.org>
 
 	* call-scd.c (start_scd): Do not register an event signal if we

@@ -155,6 +155,10 @@ static char *config_filename;
 /* Helper to implement --debug-level */
 static const char *debug_level;
 
+/* Keep track of the current log file so that we can avoid updating
+   the log file afte a SIGHUP if id didn't changed. Malloced. */
+static char *current_logfile;
+
 /* Local prototypes. */
 static void create_directories (void);
 #ifdef USE_GNU_PTH
@@ -317,9 +321,10 @@ cleanup_sh (int sig)
 /* Handle options which are allowed to be reset after program start.
    Return true when the current option in PARGS could be handled and
    false if not.  As a special feature, passing a value of NULL for
-   PARGS, resets the options to the default. */
+   PARGS, resets the options to the default.  REREAD should be set
+   true if it is not the initial option parsing. */
 static int
-parse_rereadable_options (ARGPARSE_ARGS *pargs)
+parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 {
   if (!pargs)
     { /* reset mode */
@@ -342,6 +347,16 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs)
     case oDebug: opt.debug |= pargs->r.ret_ulong; break;
     case oDebugAll: opt.debug = ~0; break;
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
+
+    case oLogFile:
+      if (!current_logfile || !pargs->r.ret_str
+          || strcmp (current_logfile, pargs->r.ret_str))
+        {
+          log_set_file (pargs->r.ret_str);
+          xfree (current_logfile);
+          current_logfile = xtrystrdup (pargs->r.ret_str);
+        }
+      break;
 
     case oNoGrab: opt.no_grab = 1; break;
       
@@ -424,7 +439,7 @@ main (int argc, char **argv )
 
   may_coredump = disable_core_dumps ();
 
-  parse_rereadable_options (NULL); /* Reset them to default values. */
+  parse_rereadable_options (NULL, 0); /* Reset them to default values. */
 
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
@@ -503,7 +518,7 @@ main (int argc, char **argv )
 
   while (optfile_parse( configfp, configname, &configlineno, &pargs, opts) )
     {
-      if (parse_rereadable_options (&pargs))
+      if (parse_rereadable_options (&pargs, 0))
         continue; /* Already handled */
       switch (pargs.r_opt)
         {
@@ -626,7 +641,7 @@ main (int argc, char **argv )
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
-              GC_OPT_FLAG_NONE );
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME );
       printf ("default-cache-ttl:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, DEFAULT_CACHE_TTL );
       printf ("no-grab:%lu:\n", 
@@ -659,6 +674,7 @@ main (int argc, char **argv )
       log_set_prefix (NULL, (JNLIB_LOG_WITH_PREFIX
                              |JNLIB_LOG_WITH_TIME
                              |JNLIB_LOG_WITH_PID));
+      current_logfile = xstrdup (logfile);
     }
 
   /* Make sure that we have a default ttyname. */
@@ -957,7 +973,7 @@ reread_configuration (void)
       return;
     }
 
-  parse_rereadable_options (NULL); /* Start from the default values. */
+  parse_rereadable_options (NULL, 1); /* Start from the default values. */
 
   memset (&pargs, 0, sizeof pargs);
   dummy = 0;
@@ -968,7 +984,7 @@ reread_configuration (void)
       if (pargs.r_opt < -1)
         pargs.err = 1; /* Print a warning. */
       else /* Try to parse this option - ignore unchangeable ones. */
-        parse_rereadable_options (&pargs);
+        parse_rereadable_options (&pargs, 1);
     }
   fclose (fp);
   set_debug ();

@@ -211,7 +211,7 @@ fun_closer (void *cookie_arg)
 
 
 
-/* Set the file to write log to.  The sepcial names NULL and "_" may
+/* Set the file to write log to.  The special names NULL and "-" may
    be used to select stderr and names formatted like
    "socket:///home/foo/mylogs" may be used to write the logging to the
    socket "/home/foo/mylogs".  If the connection to the socket fails
@@ -258,6 +258,13 @@ log_set_file (const char *name)
       /* We always need to print the prefix and the pid, so that the
          server reading the socket can do something meanigful. */
       force_prefixes = 1;
+      /* On success close the old logstream right now, so that we are
+         really sure it has been closed. */
+      if (fp)
+        {
+          fclose (logstream);
+          logstream = NULL;
+        }
     }
   else
     fp = (name && strcmp(name,"-"))? fopen (name, "a") : stderr;
