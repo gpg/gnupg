@@ -3,24 +3,6 @@
 SUBDIRS = intl zlib util mpi cipher tools g10 po doc checks
 EXTRA_DIST = VERSION  PROJECTS BUGS
 
-all-am: g10defs.h
-all-recursive-am: g10defs.h
-
-
-g10defs.h : config.h
-	@( set -e; \
-	echo "/* Generated automatically by Makefile */" ; \
-	echo "#ifdef HAVE_DRIVE_LETTERS"; \
-	echo "#define G10_LOCALEDIR \"c:/lib/gnupg/locale\""; \
-	echo "#define GNUPG_LIBDIR \"c:/lib/gnupg\""; \
-	echo "#define GNUPG_DATADIR \"c:/lib/gnupg\""; \
-	echo "#else";\
-	echo "#define G10_LOCALEDIR \"$(prefix)/$(DATADIRNAME)/locale\""; \
-	echo "#define GNUPG_LIBDIR \"$(libdir)/gnupg\""; \
-	echo "#define GNUPG_DATADIR \"$(datadir)/gnupg\""; \
-	echo "#endif";\
-	) >g10defs.h
-
 
 dist-hook:
 	@set -e; \
@@ -40,11 +22,11 @@ dist-hook:
 # maintainer only
 cvs-get:
 	rsync -Cavuzb  --exclude scratch --exclude .deps \
-		      koch@ftp.guug.de:work/gnupg .
+		      wkoch@sigtrap.guug.de:work/gnupg .
 
 cvs-put:
 	rsync -Cavuzb --exclude .deps --exclude scratch \
-		      . koch@ftp.guug.de:work/gnupg
+		      . wkoch@sigtrap.guug.de:work/gnupg
 
 cvs-sync: cvs-get cvs-put
 

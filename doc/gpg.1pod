@@ -13,7 +13,7 @@ B<gpgm> [--homedir name] [--options file] [options] command [args]
 B<gpg> is the main program for the GnuPG system. B<gpgm> is a maintenance
 tool which has some commands B<gpg> does not have; it is there because
 it does not handle sensitive data and therefore has no need to allocate
-secure memory.
+secure memory.  Both programs may be merged in the future.
 
 =head1 COMMANDS
 
@@ -37,7 +37,7 @@ B<-c>, B<--symmetric>
     This command asks for a passphrase.
 
 B<--store>
-    store only (make a simple RFC1991 packet).
+    Store only (make a simple RFC1991 packet).
 
 B<--decrypt> [I<file>]
     Decrypt file (or stdin if no file is specified) and
@@ -50,7 +50,7 @@ B<--decrypt> [I<file>]
     message.
 
 B<--verify> [[I<sigfile>] {I<signed-files>}]
-    Assume that I<filename> is a signature and verify it
+    Assume that I<sigfile> is a signature and verify it
     without generating any output.  With no arguments,
     the signature packet is read from stdin (it may be a
     detached signature when not used in batch mode). If
@@ -75,7 +75,10 @@ B<-k> [I<username>] [I<keyring>]
     B<-kvc>   List fingerprints
     B<-kvvc>  List fingerprints and signatures
 
+    B<This command may be removed in the future!>
+
 B<--list-keys>  [I<names>]
+B<--list-public-keys>  [I<names>]
     List all keys from the public keyrings, or just the
     ones given on the command line.
 

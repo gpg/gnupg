@@ -1,5 +1,5 @@
 /* seckey-cert.c -  secret key certificate packet handling
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -52,8 +52,7 @@ do_check( PKT_secret_key *sk )
 
 	if( sk->protect.algo == CIPHER_ALGO_NONE )
 	    BUG();
-	if( check_cipher_algo( sk->protect.algo )
-	    || cipher_get_blocksize( sk->protect.algo  ) != 8 ) {
+	if( check_cipher_algo( sk->protect.algo ) ) {
 	    log_info(_("protection algorithm %d is not supported\n"),
 			sk->protect.algo );
 	    return G10ERR_CIPHER_ALGO;
@@ -221,8 +220,6 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	CIPHER_HANDLE cipher_hd=NULL;
 
 	if( check_cipher_algo( sk->protect.algo ) )
-	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
-	else if( cipher_get_blocksize( sk->protect.algo ) != 8 )
 	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
 	else {
 	    print_cipher_algo_note( sk->protect.algo );

@@ -1318,7 +1318,6 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		rc = G10ERR_INVALID_PACKET;
 		goto leave;
 	    }
-	    /* fixme: Add support for other blocksizes */
 	    for(i=0; i < 8 && pktlen; i++, pktlen-- )
 		temp[i] = iobuf_get_noeof(inp);
 	    if( list_mode ) {

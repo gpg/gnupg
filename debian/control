@@ -8,7 +8,7 @@ Package: gnupg
 Architecture: any
 Depends: ${shlibs:Depends}
 Description: GNU privacy guard - a free PGP replacement.
- GnuPG is the GNU encryption and signing tool.	As you can see from the
+ GnuPG is the GNU encryption and signing tool.  As you can see from the
  version number, the program may have some bugs and some features may not
  work at all.
  .

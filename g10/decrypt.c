@@ -1,4 +1,4 @@
-/* verify.c - verify signed data
+/* decrypt.c - verify signed data
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

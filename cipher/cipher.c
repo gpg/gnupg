@@ -83,6 +83,17 @@ setup_cipher_table(void)
     int i;
 
     i = 0;
+    cipher_table[i].algo = CIPHER_ALGO_TWOFISH;
+    cipher_table[i].name = twofish_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
     cipher_table[i].algo = CIPHER_ALGO_BLOWFISH;
     cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
@@ -118,6 +129,17 @@ setup_cipher_table(void)
     i++;
     cipher_table[i].algo = CIPHER_ALGO_BLOWFISH160;
     cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_TWOFISH_OLD;
+    cipher_table[i].name = twofish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
 					 &cipher_table[i].contextsize,

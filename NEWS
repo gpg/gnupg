@@ -1,3 +1,7 @@
+
+    * Full Twofish support.  It is now statically linked by default.
+   ---->   Hmmm, still have to check the message format
+
 Noteworthy changes in version 0.9.5
 -----------------------------------
 

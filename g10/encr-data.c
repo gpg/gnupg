@@ -52,6 +52,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     int rc, c, i;
     byte temp[32];
     unsigned blocksize;
+    unsigned nprefix;
 
     if( opt.verbose ) {
 	const char *s = cipher_algo_to_string( dek->algo );
@@ -65,10 +66,15 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     blocksize = cipher_get_blocksize(dek->algo);
     if( !blocksize || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
-    if( ed->len && ed->len < (blocksize+2) )
-	log_bug("Nanu\n");   /* oops: found a bug */
+    /* FIXME: remove the kludge for the experimental twofish128 mode:
+     * we always use the 10 byte prefix and not one depending on the blocksize
+     */
+    nprefix = dek->algo == CIPHER_ALGO_TWOFISH_OLD? blocksize : 8;
+    if( ed->len && ed->len < (nprefix+2) )
+	BUG();
 
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+ /*log_hexdump( "thekey", dek->key, dek->keylen );*/
     rc = cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen );
     if( rc == G10ERR_WEAK_KEY )
 	log_info(_("WARNING: message was encrypted with "
@@ -79,7 +85,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     cipher_setiv( dfx.cipher_hd, NULL );
 
     if( ed->len ) {
-	for(i=0; i < (blocksize+2) && ed->len; i++, ed->len-- ) {
+	for(i=0; i < (nprefix+2) && ed->len; i++, ed->len-- ) {
 	    if( (c=iobuf_get(ed->buf)) == -1 )
 		break;
 	    else
@@ -87,16 +93,17 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
 	}
     }
     else {
-	for(i=0; i < (blocksize+2); i++ )
+	for(i=0; i < (nprefix+2); i++ )
 	    if( (c=iobuf_get(ed->buf)) == -1 )
 		break;
 	    else
 		temp[i] = c;
     }
-    cipher_decrypt( dfx.cipher_hd, temp, temp, blocksize+2);
+    cipher_decrypt( dfx.cipher_hd, temp, temp, nprefix+2);
     cipher_sync( dfx.cipher_hd );
     p = temp;
-    if( p[blocksize-2] != p[blocksize] || p[blocksize-1] != p[blocksize+1] ) {
+ /*log_hexdump( "prefix", temp, nprefix+2 );*/
+    if( p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1] ) {
 	cipher_close(dfx.cipher_hd);
 	return G10ERR_BAD_KEY;
     }

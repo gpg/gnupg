@@ -1,3 +1,18 @@
+Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* encr-data.c (decrypt_data): Fixes for 128 bit blocksize
+	* cipher.c (write_header): Ditto.
+	* seckey-cert.c (do_check): Ditto.
+	(protect_secret_key). Ditto.
+	* misc.c (print_cipher_algo_note): Twofish is now a standard algo.
+
+	* keygen.c (do_create): Fixed spelling (Gaël Quéri)
+	(ask_keysize): Only allow keysizes up to 4096
+
+	* ringedit.c (add_keyblock_resource): chmod newly created secrings.
+
+	* import.c (delete_inv_parts): Fixed accidently deleted subkeys.
+
 Tue Apr  6 19:58:12 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* armor.c: Removed duped include (John Bley)

@@ -31,4 +31,14 @@ blowfish_get_info( int algo, size_t *keylen,
 		   void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
 		 );
 
+/* this is just a kludge for the time we have not yet chnaged the cipher
+ * stuff to the scheme we use for random and digests */
+const char *
+twofish_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   int	(**setkeyf)( void *c, byte *key, unsigned keylen ),
+		   void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
+		 );
+
 #endif /*G10_BLOWFISH_H*/

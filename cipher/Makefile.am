@@ -12,10 +12,8 @@ noinst_LIBRARIES = libcipher.a
 # might also list programs which are not modules)
 # MODULES: rndunix rndlinux rndegd
 # MODULES: sha1 rmd160 md5 tiger
-# MODULES: twofish
 EXTRA_PROGRAMS = rndunix rndlinux rndegd  \
-		 sha1 rmd160 md5 tiger	\
-		 twofish
+		 sha1 rmd160 md5 tiger
 
 EXTRA_rndlinux_SOURCES = rndlinux.c
 EXTRA_rndunix_SOURCES = rndunix.c
@@ -24,7 +22,6 @@ EXTRA_md5_SOURCES = md5.c
 EXTRA_rmd160_SOURCES = rmd160.c
 EXTRA_sha1_SOURCES = sha1.c
 EXTRA_tiger_SOURCES = tiger.c
-EXTRA_twofish_SOURCES = twofish.c
 
 
 if ENABLE_GNUPG_EXTENSIONS
@@ -43,6 +40,8 @@ libcipher_a_SOURCES = cipher.c	\
 		 dynload.h	\
 		 des.c		\
 		 des.h		\
+		 twofish.c	\
+		 twofish.h	\
 		 blowfish.c	\
 		 blowfish.h	\
 		 cast5.c	\
@@ -76,14 +75,14 @@ tiger: $(srcdir)/tiger.c
 	    sed -e 's/-O[2-9]*/-O1/g' `
 
 tiger.o: $(srcdir)/tiger.c
-	`echo $(COMPILE) $(srcdir)/tiger.c | sed -e 's/-O[2-9]*/-O1/g' `
+	`echo $(COMPILE) -c $(srcdir)/tiger.c | sed -e 's/-O[2-9]*/-O1/g' `
 
 twofish: $(srcdir)/twofish.c
 	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o twofish $(srcdir)/twofish.c | \
 	    sed -e 's/-O[0-9]*/  /g' `
 
 twofish.o: $(srcdir)/twofish.c
-	`echo $(COMPILE) $(srcdir)/twofish.c | sed -e 's/-O[0-9]*/  /g' `
+	`echo $(COMPILE) -c $(srcdir)/twofish.c | sed -e 's/-O[0-9]*/  /g' `
 
 
 rndunix: $(srcdir)/rndunix.c

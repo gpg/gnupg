@@ -765,7 +765,10 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		}
 		delete_kbnode( node ); /* the user-id */
 		/* and all following packets up to the next user-id */
-		while( node->next && node->next->pkt->pkttype != PKT_USER_ID ){
+		while( node->next
+		       && node->next->pkt->pkttype != PKT_USER_ID
+		       && node->next->pkt->pkttype != PKT_PUBLIC_SUBKEY
+		       && node->next->pkt->pkttype != PKT_SECRET_SUBKEY ){
 		    delete_kbnode( node->next );
 		    node = node->next;
 		}

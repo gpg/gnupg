@@ -1,3 +1,12 @@
+Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* random.c (get_random_bits): Can now handle requests > POOLSIZE
+
+	* cipher.c (cipher_open): Now uses standard CFB for automode if
+	the blocksize is gt 8 (according to rfc2440).
+
+	* twofish.c: Applied Matthew Skala's patches for 256 bit key.
+
 Tue Apr  6 19:58:12 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* random.c (get_random_bits): Can now handle requests > POOLSIZE

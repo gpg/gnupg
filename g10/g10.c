@@ -176,6 +176,7 @@ static ARGPARSE_OPTS opts[] = {
     { aVerify, "verify"   , 256, N_("verify a signature")},
   #endif
     { aListKeys, "list-keys", 256, N_("list keys")},
+    { aListKeys, "list-public-keys", 256, "@" },
     { aListSigs, "list-sigs", 256, N_("list keys and signatures")},
     { aCheckKeys, "check-sigs",256, N_("check key signatures")},
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},

@@ -1,5 +1,5 @@
 /* misc.c -  miscellaneous functions
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -225,6 +225,7 @@ print_cipher_algo_note( int algo )
     else if(	algo == CIPHER_ALGO_3DES
 	     || algo == CIPHER_ALGO_CAST5
 	     || algo == CIPHER_ALGO_BLOWFISH
+	     || algo == CIPHER_ALGO_TWOFISH
 	   )
 	;
     else {

@@ -1,5 +1,5 @@
 /* keygen.c - generate a key pair
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -454,6 +454,18 @@ ask_keysize( int algo )
 	    tty_printf(_("DSA only allows keysizes from 512 to 1024\n"));
 	else if( nbits < 768 )
 	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
+	else if( nbits > 4096 ) {
+	    /* It is ridiculous and an annoyance to use larger key sizes!
+	     * GnuPG can handle much larger sizes; but it takes an eternity
+	     * to create such a key (but less than the time the Sirius
+	     * Computer Corporation needs to process one of the usual
+	     * complaints) and {de,en}cryption although needs some time.
+	     * So, before you complain about this limitation, I suggest that
+	     * you start a discussion with Marvin about this theme and then
+	     * do whatever you want. */
+	    tty_printf(_("keysize too large; %d is largest value allowed.\n"),
+									 4096);
+	}
 	else if( nbits > 2048 && !cpr_enabled() ) {
 	    tty_printf(
 		_("Keysizes larger than 2048 are not suggested because\n"
@@ -762,8 +774,8 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
     tty_printf(_(
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
-"the disks) during the prime generation; this gives the random\n"
-"number generator a better chance to gain enough entropy.\n") );
+"disks) during the prime generation; this gives the random number\n"
+"generator a better chance to gain enough entropy.\n") );
 
     if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
 	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k,

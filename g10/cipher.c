@@ -1,5 +1,5 @@
 /* cipher.c - En-/De-ciphering filter
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -45,6 +45,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     PKT_encrypted ed;
     byte temp[18];
     unsigned blocksize;
+    unsigned nprefix;
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
@@ -57,16 +58,22 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     blocksize = cipher_get_blocksize( cfx->dek->algo );
     if( blocksize < 8 || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
-    randomize_buffer( temp, blocksize, 1 );
-    temp[blocksize] = temp[blocksize-2];
-    temp[blocksize+1] = temp[blocksize-1];
+    /* FIXME: remove the kludge for the experimental twofish128 mode:
+     * we always use the 10 byte prefix and not one depending on the blocksize
+     */
+    nprefix = cfx->dek->algo == CIPHER_ALGO_TWOFISH_OLD? blocksize : 8;
+    randomize_buffer( temp, nprefix, 1 );
+    temp[nprefix] = temp[nprefix-2];
+    temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
     cfx->cipher_hd = cipher_open( cfx->dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+ /*log_hexdump( "thekey", cfx->dek->key, cfx->dek->keylen );*/
     cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );
     cipher_setiv( cfx->cipher_hd, NULL );
-    cipher_encrypt( cfx->cipher_hd, temp, temp, blocksize+2);
+  /* log_hexdump( "prefix", temp, nprefix+2 );*/
+    cipher_encrypt( cfx->cipher_hd, temp, temp, nprefix+2);
     cipher_sync( cfx->cipher_hd );
-    iobuf_write(a, temp, blocksize+2);
+    iobuf_write(a, temp, nprefix+2);
     cfx->header=1;
 }
 

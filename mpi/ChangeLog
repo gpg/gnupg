@@ -1,3 +1,7 @@
+Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* Makefile.am: Explicit rules to invoke cpp on *.S
+
 Mon Mar  8 20:47:17 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* config.links: Take advantage of the with_symbol_underscore macro.

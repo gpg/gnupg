@@ -1,3 +1,8 @@
+Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* Makefile.am (g10defs.h): Removed.
+	* configure.in (AC_OUTPUT_COMMANDS): Create g10defs.h
+
 Sat Mar 20 12:55:33 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* VERSION: Now 0.9.5

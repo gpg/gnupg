@@ -4,16 +4,14 @@ INCLUDES =  -I$(top_srcdir)/include
 CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
 SFLAGS = @MPI_SFLAGS@
 
-SUFFIXES = .S .s
-
 EXTRA_DIST = config.links
 DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
 		 mpih-lshift.S mpih-rshift.S mpih-sub1.S asm-syntax.h sysdep.h
+CLEANFILES = tmp-*.s
 
 
 noinst_LIBRARIES = libmpi.a
 # noinst_HEADERS   =
-
 
 
 libmpi_a_SOURCES = longlong.h	  \
@@ -50,4 +48,12 @@ common_asm_objects = mpih-mul1.o    \
 
 libmpi_a_DEPENDENCIES = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
+
+SUFFIXES = .S
+
+.S.o:
+	$(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' >tmp-$*.s
+	$(CC) $(CFLAGS) $(SFLAGS) -c tmp-$*.s
+	mv tmp-$*.o $@
+	rm -f tmp-$*.s
 

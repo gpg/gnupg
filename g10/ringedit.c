@@ -318,8 +318,19 @@ add_keyblock_resource( const char *url, int force, int secret )
 		rc = G10ERR_OPEN_FILE;
 		goto leave;
 	    }
-	    else
+	    else {
+	      #ifndef HAVE_DOSISH_SYSTEM
+		if( secret ) {
+		    if( chmod( filename, S_IRUSR | S_IWUSR ) ) {
+			log_error("%s: chmod failed: %s\n",
+						filename, strerror(errno) );
+			rc = G10ERR_WRITE_FILE;
+			goto leave;
+		    }
+		}
+	      #endif
 		log_info(_("%s: keyring created\n"), filename );
+	    }
 	}
       #if HAVE_DOSISH_SYSTEM || 1
 	iobuf_close( iobuf );
@@ -349,6 +360,13 @@ add_keyblock_resource( const char *url, int force, int secret )
 	rc = G10ERR_GENERAL;
 	goto leave;
     }
+
+  #ifndef HAVE_DOSISH_SYSTEM
+  #if 0 /* fixme: check directory permissions and print a warning */
+    if( secret ) {
+    }
+  #endif
+  #endif
 
     /* fixme: avoid duplicate resources */
     resource_table[i].used = 1;
