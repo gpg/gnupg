@@ -177,7 +177,7 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 	    md_close(md);
 	  }
 	else
-	  keyid[0]=keyid[1]=0;
+	  keyid[0]=keyid[1]=lowbits=0;
     }
 
     return lowbits;

@@ -132,80 +132,6 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
 }
 
 
-/****************
- * This function gets called by pubkey_verify() if the algorithm needs it.
- */
-static int
-cmp_help( void *opaque, MPI result )
-{
-#if 0 /* we do not use this anymore */
-    int rc=0, i, j, c, old_enc;
-    byte *dp;
-    const byte *asn;
-    size_t mdlen, asnlen;
-    struct cmp_help_context_s *ctx = opaque;
-    PKT_signature *sig = ctx->sig;
-    MD_HANDLE digest = ctx->md;
-
-    old_enc = 0;
-    for(i=j=0; (c=mpi_getbyte(result, i)) != -1; i++ ) {
-	if( !j ) {
-	    if( !i && c != 1 )
-		break;
-	    else if( i && c == 0xff )
-		; /* skip the padding */
-	    else if( i && !c )
-		j++;
-	    else
-		break;
-	}
-	else if( ++j == 18 && c != 1 )
-	    break;
-	else if( j == 19 && c == 0 ) {
-	    old_enc++;
-	    break;
-	}
-    }
-    if( old_enc ) {
-	log_error("old encoding scheme is not supported\n");
-	return G10ERR_GENERAL;
-    }
-
-    if( (rc=check_digest_algo(sig->digest_algo)) )
-	return rc; /* unsupported algo */
-    asn = md_asn_oid( sig->digest_algo, &asnlen, &mdlen );
-
-    for(i=mdlen,j=asnlen-1; (c=mpi_getbyte(result, i)) != -1 && j >= 0;
-							   i++, j-- )
-	if( asn[j] != c )
-	    break;
-    if( j != -1 || mpi_getbyte(result, i) )
-	return G10ERR_BAD_PUBKEY;  /* ASN is wrong */
-    for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
-	if( c != 0xff  )
-	    break;
-    i++;
-    if( c != sig->digest_algo || mpi_getbyte(result, i) ) {
-	/* Padding or leading bytes in signature is wrong */
-	return G10ERR_BAD_PUBKEY;
-    }
-    if( mpi_getbyte(result, mdlen-1) != sig->digest_start[0]
-	|| mpi_getbyte(result, mdlen-2) != sig->digest_start[1] ) {
-	/* Wrong key used to check the signature */
-	return G10ERR_BAD_PUBKEY;
-    }
-
-    dp = md_read( digest, sig->digest_algo );
-    for(i=mdlen-1; i >= 0; i--, dp++ ) {
-	if( mpi_getbyte( result, i ) != *dp )
-	    return G10ERR_BAD_SIGN;
-    }
-    return 0;
-#else
-    return -1;
-#endif
-}
-
 static int
 do_check_messages( PKT_public_key *pk, PKT_signature *sig,
 		   int *r_expired, int *r_revoked )
@@ -330,8 +256,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
         return G10ERR_GENERAL;
     ctx.sig = sig;
     ctx.md = digest;
-    rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
-			cmp_help, &ctx );
+    rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
     mpi_free( result );
 
     if( !rc && sig->flags.unknown_critical ) {

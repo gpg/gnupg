@@ -357,8 +357,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
                 rc = G10ERR_GENERAL;
             else
                 rc = pubkey_verify (pk->pubkey_algo, frame,
-                                    sig->data, pk->pkey,
-                                    NULL, NULL );
+                                    sig->data, pk->pkey );
             mpi_free (frame);
         }
         if (rc)
@@ -380,7 +379,6 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     }
     return rc;
 }
-
 
 
 int
