@@ -1,5 +1,10 @@
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgconf-comp.c (gc_options_dirmngr): Remove CRL group, put its
+	only option "max-replies" into LDAP group.
+	(gc_component): Change description of dirmngr to "Directory
+	Manager".
+
 	* gpgconf-comp.c (gc_component_change_options): Move the
 	per-process backup file into a standard location.
 

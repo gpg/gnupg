@@ -749,10 +749,6 @@ static gc_option_t gc_options_dirmngr[] =
    { "LDAP Server", GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
      NULL, "LDAP server list",
      GC_ARG_TYPE_LDAP_SERVER, GC_BACKEND_DIRMNGR_LDAP_SERVER_LIST },
-
-   { "CRL",
-     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Configuration of the CRL" },
    { "max-replies", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "dirmngr", "|N|do not return more than N items in one query",
      GC_ARG_TYPE_UINT32, GC_BACKEND_DIRMNGR },
@@ -823,7 +819,7 @@ static struct
     { "gpg-agent", NULL, "GPG Agent", gc_options_gpg_agent },
     { "scdaemon", NULL, "Smartcard Daemon", gc_options_scdaemon },
     { "gpgsm", NULL, "GPG for S/MIME", gc_options_gpgsm },
-    { "dirmngr", NULL, "CRL Manager", gc_options_dirmngr }
+    { "dirmngr", NULL, "Directory Manager", gc_options_dirmngr }
   };
 
 
