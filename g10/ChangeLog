@@ -1,3 +1,8 @@
+2003-03-02  Timo Schulz  <twoaday@freakmail.de>
+
+	* seckey-cert.c (do_check): Issue the RSA_OR_IDEA status when
+	the cipher algo is IDEA to make it easier to track down the problem.
+	
 2003-02-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (validate_keys): Mask the ownertrust when building the
