@@ -770,17 +770,18 @@ connect_server( const char *server, ushort port )
 
     /* Try all A records until one responds. TODO: do this on the
        MINGW32 side as well. */
-    do
+
+    while(host->h_addr_list[i])
       {
 	addr.sin_addr = *(struct in_addr*)host->h_addr_list[i];
+
 	if(connect( sd, (struct sockaddr *)&addr, sizeof addr) == 0)
 	  break;
 
 	i++;
       }
-    while(addr.sin_addr.s_addr!=0);
 
-    if(addr.sin_addr.s_addr==0)
+    if(host->h_addr_list[i]==0)
       {
 	sock_close(sd);
 	return -1;
