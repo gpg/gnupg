@@ -58,10 +58,50 @@ map_gcry_err (int err)
 {
   switch (err)
     {
+    case GCRYERR_EOF:
     case -1:
+      err = -1;
+      break;
+
     case 0:
       break;
+
+    case GCRYERR_WRONG_PK_ALGO:
+    case GCRYERR_INV_PK_ALGO:
+    case GCRYERR_INV_MD_ALGO:
+    case GCRYERR_INV_CIPHER_ALGO:
+      err = GNUPG_Unsupported_Algorithm;
+      break;
+    case GCRYERR_INV_KEYLEN:
+    case GCRYERR_WEAK_KEY:
+    case GCRYERR_BAD_PUBLIC_KEY: err = GNUPG_Bad_Public_Key; break;
+    case GCRYERR_BAD_SECRET_KEY: err = GNUPG_Bad_Secret_Key; break;
+    case GCRYERR_BAD_SIGNATURE:  err = GNUPG_Bad_Signature; break;
+
+    case GCRYERR_BAD_MPI:
+      err = GNUPG_Bad_Data;
+      break;
       
+    case GCRYERR_INV_ARG:
+    case GCRYERR_INV_OP:
+    case GCRYERR_INTERNAL:
+    case GCRYERR_INV_CIPHER_MODE:
+      err = GNUPG_Invalid_Value;
+      break;
+
+    case GCRYERR_SELFTEST: 
+      err = GNUPG_Bug;
+      break;
+
+    case GCRYERR_NO_MEM: err = GNUPG_Out_Of_Core; break;
+
+    case GCRYERR_NOT_IMPL:  err = GNUPG_Not_Implemented; break;
+    case GCRYERR_CONFLICT:  err = GNUPG_Conflict; break;
+      
+    case GCRYERR_INV_OBJ:   /* an object is not valid */
+    case GCRYERR_TOO_SHORT: /* provided buffer too short */
+    case GCRYERR_TOO_LARGE: /* object is too large */
+    case GCRYERR_NO_OBJ:    /* Missing item in an object */
     default:
       err = seterr (General_Error);
       break;

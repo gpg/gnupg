@@ -64,6 +64,9 @@ enum {
   GNUPG_Bad_PIN = 35,
   GNUPG_Bad_Passphrase = 36,
   GNUPG_Invalid_Name = 37,
+  GNUPG_Bad_Public_Key = 38,
+  GNUPG_Bad_Secret_Key = 39,
+  GNUPG_Bad_Data = 40,
 };
 
 /* Status codes - fixme: should go into another file */
