@@ -45,6 +45,7 @@
 <!entity ParmValue  "<parameter>value</parameter>">
 <!entity ParmNameValue	"<parameter>name=value</parameter>">
 <!entity ParmNameValues	"<parameter>name=value1 <optional>value2 value3 ...</optional></parameter>">
+<!entity OptEqualsValue	"<optional>=value</optional>">
 ]>
 
 <refentry id="gpg">
@@ -632,8 +633,9 @@ keyring.  The fast version is currently just a synonym.
 </para>
 <para>
 There are a few other options which control how this command works.
-Most notable here is the --merge-only option which does not insert new keys
-but does only the merging of new signatures, user-IDs and subkeys.
+Most notable here is the --keyserver-option merge-only option which
+does not insert new keys but does only the merging of new signatures,
+user-IDs and subkeys.
 </para></listitem></varlistentry>
 
 
@@ -1166,11 +1168,12 @@ be repeated multiple times to increase the verbosity level.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>honor-http-proxy</term>
+<term>http-proxy&OptEqualsValue;</term>
 <listitem><para>
 For keyserver schemes that use HTTP (such as HKP), try to access the
-keyserver over the proxy set with the environment variable
-"http_proxy".
+keyserver over a proxy.  If a &ParmValue; is specified, use this as
+the HTTP proxy.  If no &ParmValue; is specified, try to use the value
+of the environment variable "http_proxy".
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1215,6 +1218,13 @@ subkeys.  Note that this cannot completely repair the damaged key as
 some crucial data is removed by the keyserver, but it does at least
 give you back one subkey.  Defaults to no for regular --import and to
 yes for keyserver --recv-keys.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>merge-only</term>
+<listitem><para>
+During import, allow key updates to existing keys, but do not allow
+any new keys to be imported.  Defaults to no.
 </para></listitem></varlistentry>
 
 </variablelist>
@@ -2355,15 +2365,6 @@ This is not for normal use.  Use the source to see for what it might be useful.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--emulate-md-encode-bug</term>
-<listitem><para>
-GnuPG versions prior to 1.0.2 had a bug in the way a signature was
-encoded.  This options enables a workaround by checking faulty
-signatures again with the encoding used in old versions.  This may
-only happen for Elgamal signatures which are not widely used.
-</para></listitem></varlistentry>
-
-<varlistentry>
 <term>--show-session-key</term>
 <listitem><para>
 Display the session key used for one message. See --override-session-key
@@ -2415,12 +2416,6 @@ certain warning messages about potentially incompatible actions.  As
 the name implies, this option is for experts only.  If you don't fully
 understand the implications of what it allows you to do, leave this
 off.  --no-expert disables this option.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--merge-only</term>
-<listitem><para>
-Don't insert new keys into the keyrings while doing an import.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2719,6 +2714,14 @@ be used to override it.</para></listitem>
 <listitem><para>Only honored when the keyserver-option
 honor-http-proxy is set.</para></listitem>
 </varlistentry>
+
+<varlistentry>
+<term>COLUMNS</term>
+<term>LINES</term>
+<listitem><para>
+Used to size some displays to the full size of the screen.
+</para></listitem></varlistentry>
+
     </variablelist>
 
 </refsect1>

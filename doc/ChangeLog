@@ -1,3 +1,9 @@
+2004-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document keyserver-option http-proxy, import-option
+	merge-only, remove old honor-http-proxy, --merge-only, and
+	--emulate-md-encode-bug.  Document COLUMNS and LINES.
+
 2004-02-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* gnupg.7: Clarify that 'gpgv' doesn't encrypt, and that's not a
