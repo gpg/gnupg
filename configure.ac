@@ -30,7 +30,7 @@ development_version=yes
 NEED_GPG_ERROR_VERSION=0.4
 NEED_LIBGCRYPT_VERSION=1.1.43
 NEED_LIBASSUAN_VERSION=0.6.0
-NEED_KSBA_VERSION=0.4.6
+NEED_KSBA_VERSION=0.9.0
 NEED_OPENSC_VERSION=0.8.0
 
 
@@ -686,7 +686,7 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
-AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times)
+AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times gmtime_r)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat getaddrinfo)
