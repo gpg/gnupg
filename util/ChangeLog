@@ -1,3 +1,7 @@
+2002-12-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (iobuf_flush): Only print debug info if debugging is on.
+
 2002-11-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* secmem.c (lock_pool) [__CYGWIN__]: Don't print secmem warning.

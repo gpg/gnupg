@@ -1587,7 +1587,8 @@ iobuf_flush(IOBUF a)
 	char *newbuf;
 	size_t newsize = a->d.size + 8192;
 
-	log_debug("increasing temp iobuf from %lu to %lu\n",
+	if( DBG_IOBUF )
+	  log_debug("increasing temp iobuf from %lu to %lu\n",
 		    (ulong)a->d.size, (ulong)newsize );
 	newbuf = m_alloc( newsize );
 	memcpy( newbuf, a->d.buf, a->d.len );
