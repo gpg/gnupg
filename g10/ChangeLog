@@ -1,3 +1,15 @@
+2003-06-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (hkp_search): Return proper error code on failure.
+
+	* keyedit.c (sign_uids): Do not allow signing a user ID without a
+	self-signature.  --expert overrides.
+
+	* options.skel: Use subkeys.pgp.net as the default keyserver.
+
+	* trustdb.c (validate_one_keyblock): Certifications on revoked or
+	expired uids do not count in the web of trust.
+
 2003-06-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (list_keyblock_colon): Don't include validity values

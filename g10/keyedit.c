@@ -397,10 +397,26 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			    tty_printf(_("  Unable to sign.\n"));
 			  }
 		      }
-		    else if(!uidnode->pkt->pkt.user_id->created)
+		    else if(!uidnode->pkt->pkt.user_id->created && !selfsig)
 		      {
-			tty_printf(_("WARNING: user ID \"%s\" is not "
-				     "self-signed.\n"),user);
+			tty_printf(_("User ID \"%s\" is not self-signed."),
+				   user);
+
+			if(opt.expert)
+			  {
+			    tty_printf("\n");
+			    /* No, so remove the mark and continue */
+			    if(!cpr_get_answer_is_yes("sign_uid.nosig_okay",
+						      _("Are you sure you "
+							"still want to sign "
+							"it? (y/N) ")))
+			      uidnode->flag &= ~NODFLG_MARK_A;
+			  }
+			else
+			  {
+			    uidnode->flag &= ~NODFLG_MARK_A;
+			    tty_printf(_("  Unable to sign.\n"));
+			  }
 		      }
 
 		    m_free(user);

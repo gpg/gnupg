@@ -366,7 +366,7 @@ parse_hkp_index(IOBUF buffer,char *line)
     {
       m_free(key);
       m_free(uid);
-      log_error(_("this keyserver is not fully HKP compatible\n"));
+      log_error(_("this keyserver does not support --search-keys\n"));
       return -1;
     }
 
@@ -598,7 +598,10 @@ int hkp_search(STRLIST tokens)
 
 	  ret=parse_hkp_index(buffer,line);
 	  if(ret==-1)
-	    break;
+	    {
+	      rc=G10ERR_KEYSERVER;
+	      break;
+	    }
 
 	  if(rc!=0)
 	    count+=ret;
