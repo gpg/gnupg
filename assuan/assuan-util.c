@@ -96,3 +96,57 @@ assuan_get_pointer (ASSUAN_CONTEXT ctx)
   return ctx? ctx->user_pointer : NULL;
 }
 
+
+void
+assuan_set_log_stream (ASSUAN_CONTEXT ctx, FILE *fp)
+{
+  if (ctx)
+    {
+      if (ctx->log_fp)
+        fflush (ctx->log_fp);
+      ctx->log_fp = fp;
+    }
+}
+
+
+void
+assuan_begin_confidential (ASSUAN_CONTEXT ctx)
+{
+  if (ctx)
+    {
+      ctx->confidential = 1;
+    }
+}
+
+void
+assuan_end_confidential (ASSUAN_CONTEXT ctx)
+{
+  if (ctx)
+    {
+      ctx->confidential = 0;
+    }
+}
+
+void
+_assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
+{
+  const unsigned char *s;
+  int n;
+
+  for (n=length,s=buffer; n; n--, s++)
+    {
+      if (*s < ' ' || (*s >= 0x7f && *s <= 0xa0))
+        break;
+    }
+  s = buffer;
+  if (!n && *s != '[')
+    fwrite (buffer, length, 1, fp);
+  else
+    {
+      putc ('[', fp);
+      for (n=0; n < length; n++, s++)
+          fprintf (fp, " %02x", *s);
+      putc (' ', fp);
+      putc (']', fp);
+    }
+}

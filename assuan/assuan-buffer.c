@@ -20,6 +20,7 @@
 
 #include <config.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -119,10 +120,17 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
     rc = readline (ctx->inbound.fd, line, LINELENGTH,
                    &nread, &ctx->inbound.eof);
   if (rc)
-    return ASSUAN_Read_Error;
+    {
+      if (ctx->log_fp)
+        fprintf (ctx->log_fp, "%p <- [Error: %s]\n",
+                 ctx, strerror (errno)); 
+      return ASSUAN_Read_Error;
+    }
   if (!nread)
     {
       assert (ctx->inbound.eof);
+      if (ctx->log_fp)
+        fprintf (ctx->log_fp, "%p <- [EOF]\n", ctx); 
       return -1; 
     }
 
@@ -153,10 +161,23 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
             n--;
           line[n] = 0;
           ctx->inbound.linelen = n;
+          if (ctx->log_fp)
+            {
+              fprintf (ctx->log_fp, "%p <- ", ctx); 
+              if (ctx->confidential)
+                fputs ("[Confidential data not shown]", ctx->log_fp);
+              else
+                _assuan_log_print_buffer (ctx->log_fp, 
+                                          ctx->inbound.line,
+                                          ctx->inbound.linelen);
+              putc ('\n', ctx->log_fp);
+            }
           return 0;
         }
     }
 
+  if (ctx->log_fp)
+    fprintf (ctx->log_fp, "%p <- [Invalid line]\n", ctx);
   *line = 0;
   ctx->inbound.linelen = 0;
   return ctx->inbound.eof? ASSUAN_Line_Not_Terminated : ASSUAN_Line_Too_Long;
@@ -206,6 +227,17 @@ assuan_write_line (ASSUAN_CONTEXT ctx, const char *line )
     return ASSUAN_Invalid_Value;
 
   /* fixme: we should do some kind of line buffering */
+  if (ctx->log_fp)
+    {
+      fprintf (ctx->log_fp, "%p -> ", ctx); 
+      if (ctx->confidential)
+        fputs ("[Confidential data not shown]", ctx->log_fp);
+      else
+        _assuan_log_print_buffer (ctx->log_fp, 
+                                  line, strlen (line));
+      putc ('\n', ctx->log_fp);
+    }
+
   rc = writen (ctx->outbound.fd, line, strlen(line));
   if (rc)
     rc = ASSUAN_Write_Error;
@@ -266,6 +298,17 @@ _assuan_cookie_write_data (void *cookie, const char *buffer, size_t size)
       
       if (linelen >= LINELENGTH-2-2)
         {
+          if (ctx->log_fp)
+            {
+              fprintf (ctx->log_fp, "%p -> ", ctx); 
+              if (ctx->confidential)
+                fputs ("[Confidential data not shown]", ctx->log_fp);
+              else 
+                _assuan_log_print_buffer (ctx->log_fp, 
+                                          ctx->outbound.data.line,
+                                          linelen);
+              putc ('\n', ctx->log_fp);
+            }
           *line++ = '\n';
           linelen++;
           if (writen (ctx->outbound.fd, ctx->outbound.data.line, linelen))
@@ -300,6 +343,17 @@ _assuan_cookie_write_flush (void *cookie)
   line += linelen;
   if (linelen)
     {
+      if (ctx->log_fp)
+        {
+          fprintf (ctx->log_fp, "%p -> ", ctx); 
+          if (ctx->confidential)
+            fputs ("[Confidential data not shown]", ctx->log_fp);
+          else
+            _assuan_log_print_buffer (ctx->log_fp, 
+                                      ctx->outbound.data.line,
+                                      linelen);
+          putc ('\n', ctx->log_fp);
+            }
       *line++ = '\n';
       linelen++;
       if (writen (ctx->outbound.fd, ctx->outbound.data.line, linelen))

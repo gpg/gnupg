@@ -1,5 +1,5 @@
-/* assuan-pipe-server.c - Assuan server working over a pipe 
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+/* assuan-socket-server.c - Assuan socket based server
+ *	Copyright (C) 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -21,32 +21,67 @@
 #include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 #include "assuan-defs.h"
-
-static void
-deinit_pipe_server (ASSUAN_CONTEXT ctx)
-{
-  /* nothing to do for this simple server */
-}
 
 static int
 accept_connection (ASSUAN_CONTEXT ctx)
 {
-  /* This is a NOP for a pipe server */
+  int fd;
+  struct sockaddr_un clnt_addr;
+  size_t len = sizeof clnt_addr;
+
+  fd = accept (ctx->listen_fd, (struct sockaddr*)&clnt_addr, &len );
+  if (fd == -1)
+    {
+      ctx->os_errno = errno;
+      return ASSUAN_Accept_Failed;
+    }
+
+  ctx->inbound.fd = fd;
+  ctx->inbound.eof = 0;
+  ctx->inbound.linelen = 0;
+  ctx->inbound.attic.linelen = 0;
+  ctx->inbound.attic.pending = 0;
+
+  ctx->outbound.fd = fd;
+  ctx->outbound.data.linelen = 0;
+  ctx->outbound.data.error = 0;
+  
+  ctx->confidential = 0;
+
   return 0;
 }
 
 static int
 finish_connection (ASSUAN_CONTEXT ctx)
 {
-  /* This is a NOP for a pipe server */
+  if (ctx->inbound.fd != -1)
+    {
+      close (ctx->inbound.fd);
+    }
+  ctx->inbound.fd = -1;
+  ctx->outbound.fd = -1;
   return 0;
 }
 
 
+static void
+deinit_socket_server (ASSUAN_CONTEXT ctx)
+{
+  finish_connection (ctx);
+}
+
+
+
+/* Initialize a server for the socket LISTEN_FD which has already be
+   put into listen mode */
 int
-assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2])
+assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd)
 {
   ASSUAN_CONTEXT ctx;
   int rc;
@@ -59,12 +94,11 @@ assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2])
   ctx->input_fd = -1;
   ctx->output_fd = -1;
 
-  ctx->inbound.fd = filedes[0];
-  ctx->outbound.fd = filedes[1];
+  ctx->inbound.fd = -1;
+  ctx->outbound.fd = -1;
 
-  ctx->pipe_mode = 1;
-  ctx->listen_fd = -1;
-  ctx->deinit_handler = deinit_pipe_server;
+  ctx->listen_fd = listen_fd;
+  ctx->deinit_handler = deinit_socket_server;
   ctx->accept_handler = accept_connection;
   ctx->finish_handler = finish_connection;
 
@@ -77,20 +111,6 @@ assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2])
 }
 
 
-void
-assuan_deinit_server (ASSUAN_CONTEXT ctx)
-{
-  if (ctx)
-    {
-      /* We use this function pointer to avoid linking other server
-         when not needed but still allow for a generic deinit function */
-      ctx->deinit_handler (ctx);
-      ctx->deinit_handler = NULL;
-      xfree (ctx->hello_line);
-      xfree (ctx->okay_line);
-      xfree (ctx);
-    }
-}
 
 
 

@@ -133,7 +133,7 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
       close (rp[1]);
       close (wp[0]);
       close (wp[1]);
-      assuan_deinit_pipe_server (*ctx);  /* FIXME: Common code should be factored out.  */
+      assuan_deinit_server (*ctx);  /* FIXME: Common code should be factored out.  */
       return ASSUAN_General_Error;
     }
 
@@ -221,7 +221,7 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
     {
       if ((*ctx)->pid != -1)
         waitpid ((*ctx)->pid, NULL, 0);  /* FIXME Check return value.  */
-      assuan_deinit_pipe_server (*ctx);  /* FIXME: Common code should be factored out.  */
+      assuan_deinit_server (*ctx);  /* FIXME: Common code should be factored out.  */
     }
 
   return err;
@@ -234,7 +234,7 @@ assuan_pipe_disconnect (ASSUAN_CONTEXT ctx)
   close (ctx->inbound.fd);
   close (ctx->outbound.fd);
   waitpid (ctx->pid, NULL, 0);  /* FIXME Check return value.  */
-  assuan_deinit_pipe_server (ctx);
+  assuan_deinit_server (ctx);
 }
 
 pid_t

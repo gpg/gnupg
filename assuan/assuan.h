@@ -47,6 +47,7 @@ typedef enum {
   ASSUAN_No_Data_Callback = 12,
   ASSUAN_No_Inquire_Callback = 13,
   ASSUAN_Connect_Failed = 14,
+  ASSUAN_Accept_Failed = 15,
 
   /* error codes above 99 are meant as status codes */
   ASSUAN_Not_Implemented = 100,
@@ -146,7 +147,10 @@ AssuanError assuan_close_output_fd (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-pipe-server.c --*/
 int assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2]);
-void assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx);
+void assuan_deinit_server (ASSUAN_CONTEXT ctx);
+
+/*-- assuan-socket-server.c --*/
+int assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd);
 
 
 /*-- assuan-connect.c --*/
@@ -182,10 +186,13 @@ AssuanError assuan_send_data (ASSUAN_CONTEXT ctx,
 void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
                                void *(*new_realloc_func)(void *p, size_t n),
                                void (*new_free_func)(void*) );
+void assuan_set_log_stream (ASSUAN_CONTEXT ctx, FILE *fp);
 int assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text);
 void assuan_set_pointer (ASSUAN_CONTEXT ctx, void *pointer);
 void *assuan_get_pointer (ASSUAN_CONTEXT ctx);
 
+void assuan_begin_confidential (ASSUAN_CONTEXT ctx);
+void assuan_end_confidential (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-errors.c (built) --*/
 const char *assuan_strerror (AssuanError err);

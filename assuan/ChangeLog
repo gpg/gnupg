@@ -1,3 +1,22 @@
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* assuan-buffer.c (_assuan_read_line): Add output logging.
+	(assuan_write_line): Ditto.
+	(_assuan_cookie_write_data): Ditto.
+	(_assuan_cookie_write_flush): Ditto.
+	* assuan-util.c (_assuan_log_print_buffer): New.
+	(assuan_set_log_stream): New.
+	(assuan_begin_confidential): New.
+	(assuan_end_confidential): New.
+
+	* assuan-defs.h: Add a few handler variables.
+	* assuan-pipe-server.c (assuan_deinit_pipe_server): Removed.
+	(deinit_pipe_server): New.
+	(assuan_deinit_server): New.  Changed all callers to use this.
+	* assuan-listen.c (assuan_accept): Use the accept handler.
+	* assuan-handler.c (process_request): Use the close Handler.
+	* assuan-socket-server.c: New.
+
 2002-01-14  Werner Koch  <wk@gnupg.org>
 
 	* assuan-client.c (_assuan_read_from_server): Skip spaces after

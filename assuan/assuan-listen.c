@@ -69,15 +69,13 @@ assuan_accept (ASSUAN_CONTEXT ctx)
   if (!ctx)
     return ASSUAN_Invalid_Value;
 
-  /* fixme: cancel existing connection */
   if (ctx->pipe_mode > 1)
     return -1; /* second invocation for pipemode -> terminate */
+  ctx->finish_handler (ctx);
 
-  if (!ctx->pipe_mode)
-    {
-
-      /* fixme: wait for request */
-    }
+  rc = ctx->accept_handler (ctx);
+  if (rc)
+    return rc;
 
   /* send the hello */
   rc = assuan_write_line (ctx, ctx->hello_line? ctx->hello_line

@@ -387,12 +387,13 @@ process_request (ASSUAN_CONTEXT ctx)
   else if (rc == -1)
     { /* No error checking because the peer may have already disconnect */ 
       assuan_write_line (ctx, "OK closing connection");
+      ctx->finish_handler (ctx);
     }
   else 
     {
       char errline[256];
 
-      if (rc < 100)
+        if (rc < 100)
         sprintf (errline, "ERR %d server fault (%.50s)",
                  ASSUAN_Server_Fault, assuan_strerror (rc));
       else
@@ -405,6 +406,7 @@ process_request (ASSUAN_CONTEXT ctx)
       rc = assuan_write_line (ctx, errline);
     }
 
+  ctx->confidential = 0;
   if (ctx->okay_line)
     {
       xfree (ctx->okay_line);
