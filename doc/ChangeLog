@@ -1,3 +1,7 @@
+2002-12-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document %-expandos for policy URLs and notations.
+
 2002-12-05  Werner Koch  <wk@gnupg.org>
 
 	* faq.raw: Got update from David Scribner.

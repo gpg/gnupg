@@ -1429,7 +1429,19 @@ notation data will be flagged as critical (rfc2440:5.2.3.15).
 --sig-notation sets a notation for data signatures.  --cert-notation
 sets a notation for key signatures (certifications).  --notation-data
 sets both.
-</para></listitem></varlistentry>
+</para>
+
+<para>
+There are special codes that may be used in notation names.  "%k" will
+be expanded into the key ID of the key being signed, "%K" for the long
+key ID of the key being signed, "%f" for the key fingerprint of the
+key being signed, "%s" for the key ID of the key making the signature,
+"%S" for the long key ID of the key making the signature, and "%%"
+results in a single "%".  %k, %K, and %f are only meaningful when
+making a key signature (certification).
+</para>
+
+</listitem></varlistentry>
 
 <varlistentry>
 <term>--show-notation</term>
@@ -1454,6 +1466,10 @@ you prefix it with an exclamation mark, the policy URL packet will be
 flagged as critical.  --sig-policy-url sets a a policy url for data
 signatures.  --cert-policy-url sets a policy url for key signatures
 (certifications).  -set-policy-url sets both.
+</para>
+
+<para>
+The same %-expandos used for notation data are available here as well.
 </para></listitem></varlistentry>
 
 <varlistentry>
