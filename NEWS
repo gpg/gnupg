@@ -1,4 +1,12 @@
 
+
+
+
+
+
+Noteworthy changes in version 0.9.6
+-----------------------------------
+
     * Twofish is now statically linked by default. The experimental 128 bit
       version is now disabled.	Full support will be available as soon as
       the OpenPGP WG has decided on an interpretation of rfc2440.

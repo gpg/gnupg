@@ -292,9 +292,6 @@ proc_plaintext( CTX c, PACKET *pkt )
 	     * to do it. (We could use a special packet type to indicate
 	     * this, but this may also be faked - it simply can't be verified
 	     * and is _no_ security issue)
-	     * Hmmm: There is one problem: The MDC also uses a keyid of 0
-	     * and a pubkey algo of 0 - the only difference is that the
-	     * sig_class will be 0.
 	     */
 	    if( n->pkt->pkt.onepass_sig->sig_class == 0x01
 		&& !n->pkt->pkt.onepass_sig->keyid[0]
@@ -416,12 +413,7 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     }
     else
 	return G10ERR_SIG_CLASS;
-    if( sig->pubkey_algo )
-	rc = signature_check( sig, md );
-    else if( !is_encrypted( c ) )
-	rc = G10ERR_NOT_ENCRYPTED;
-    else
-	rc = mdc_kludge_check( sig, md );
+    rc = signature_check( sig, md );
     md_close(md);
 
     return rc;
@@ -863,33 +855,7 @@ do_proc_packets( CTX c, IOBUF a )
 }
 
 
-
-static int
-check_sig_and_print( CTX c, KBNODE node )
-{
-    PKT_signature *sig = node->pkt->pkt.signature;
-    const char *astr, *tstr;
-    int rc;
-    int mdc_hack = !sig->pubkey_algo;
-
-    if( opt.skip_verify && !mdc_hack ) {
-	log_info(_("signature verification suppressed\n"));
-	return 0;
-    }
-
-    if( !mdc_hack ) {
-	tstr = asctimestamp(sig->timestamp);
-	astr = pubkey_algo_to_string( sig->pubkey_algo );
-	log_info(_("Signature made %.*s using %s key ID %08lX\n"),
-	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
-    }
-
-    rc = do_check_sig(c, node, NULL );
-    if( rc == G10ERR_NO_PUBKEY && opt.keyserver_name ) {
-	if( !hkp_ask_import( sig->keyid ) )
-	    rc = do_check_sig(c, node, NULL );
-    }
-    if( mdc_hack ) {
+#if 0 /* old MDC hack code preserved to reuse the messages later */
 	if( !rc ) {
 	    if( opt.verbose )
 		log_info(_("encrypted message is valid\n"));
@@ -903,8 +869,31 @@ check_sig_and_print( CTX c, KBNODE node )
 	    write_status( STATUS_ERRMDC );
 	    log_error(_("Can't check MDC: %s\n"), g10_errstr(rc) );
 	}
+#endif
+
+static int
+check_sig_and_print( CTX c, KBNODE node )
+{
+    PKT_signature *sig = node->pkt->pkt.signature;
+    const char *astr, *tstr;
+    int rc;
+
+    if( opt.skip_verify ) {
+	log_info(_("signature verification suppressed\n"));
+	return 0;
     }
-    else if( !rc || rc == G10ERR_BAD_SIGN ) {
+
+    tstr = asctimestamp(sig->timestamp);
+    astr = pubkey_algo_to_string( sig->pubkey_algo );
+    log_info(_("Signature made %.*s using %s key ID %08lX\n"),
+	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
+
+    rc = do_check_sig(c, node, NULL );
+    if( rc == G10ERR_NO_PUBKEY && opt.keyserver_name ) {
+	if( !hkp_ask_import( sig->keyid ) )
+	    rc = do_check_sig(c, node, NULL );
+    }
+    if( !rc || rc == G10ERR_BAD_SIGN ) {
 	KBNODE un, keyblock;
 	char *us;
 	int count=0;

@@ -72,7 +72,7 @@ B<-k> [I<username>] [I<keyring>]
 
     B<This command may be removed in the future!>
 
-B<--list-keys>  [I<names>]
+B<--list-keys>	[I<names>]
 B<--list-public-keys>  [I<names>]
     List all keys from the public keyrings, or just the
     ones given on the command line.
@@ -81,7 +81,7 @@ B<--list-secret-keys> [I<names>]
     List all keys from the secret keyrings, or just the
     ones given on the command line.
 
-B<--list-sigs>  [I<names>]
+B<--list-sigs>	[I<names>]
     Same as B<--list-keys>, but the signatures are listed
     too.
 
@@ -141,7 +141,7 @@ B<--edit-key> I<name>
     B<revkey>
        Revoke a subkey.
     B<expire>
-       Change the key expiration time.  If a key is
+       Change the key expiration time.	If a key is
        selected, the time of this key will be changed.
        With no selection the key expiration of the
        primary key is changed.
@@ -212,7 +212,7 @@ B<--export-secret-keys> [I<names>]
     This is normally not very useful.
 
 B<--import>, B<--fast-import>
-    Import/merge keys.  The fast version does not build
+    Import/merge keys.	The fast version does not build
     the trustdb; this can be done at any time with the
     command B<--update-trustdb>.
 
@@ -234,7 +234,7 @@ B<--import-ownertrust> [I<filename>]
 
 Long options can be put in an options file (default F<~/.gnupg/options>).
 Do not write the 2 dashes, but simply the name of the option and any
-required arguments.     Lines with a hash as the first non-white-space
+required arguments.	Lines with a hash as the first non-white-space
 character are ignored. Commands may be put in this file too, but that
 does not make sense.
 
@@ -257,7 +257,7 @@ B<--default-key>  I<name>
     is not used the default user-id is the first user-id
     from the secret keyring.
 
-B<-r>  I<name>, B<--recipient>  I<name>
+B<-r>  I<name>, B<--recipient>	I<name>
     Encrypt for user id I<name>.  If this option is not
     specified, GnuPG asks for the user id.
 
@@ -332,9 +332,11 @@ B<--keyring> I<file>
     The filename may be prefixed with a scheme:
       "gnupg-ring:" is the default one.
       "gnupg-gdbm:" may be used for a GDBM ring.
+    It might make sense to use it together with
+    B<--no-default-keyring>.
 
 B<--secret-keyring> I<file>
-    Same as B<--keyring> but for secret keyrings.
+    Same as B<--keyring> but for the secret keyrings.
 
 B<--homedir> I<dir>
     Set the name of the home directory to I<dir>. If this
@@ -532,11 +534,11 @@ a signature was bad, and other error codes for fatal errors.
 
 =head1 EXAMPLES
 
-  -se -r Bob [file]          sign and encrypt for user Bob
-  -sat [file]                make a clear text signature
-  -sb  [file]                make a detached signature
-  -k   [userid]              show keys
-  -kc  [userid]              show fingerprint
+  -se -r Bob [file]	     sign and encrypt for user Bob
+  -sat [file]		     make a clear text signature
+  -sb  [file]		     make a detached signature
+  -k   [userid] 	     show keys
+  -kc  [userid] 	     show fingerprint
 
 =head1 ENVIRONMENT
 
@@ -554,7 +556,7 @@ F<~/.gnupg/pubring.gpg.lock> and the lock file
 F<~/.gnupg/trustdb.gpg>      The trust database
 F<~/.gnupg/trustdb.gpg.lock> and the lock file
 
-F<~/.gnupg/options>         May contain options
+F<~/.gnupg/options>	    May contain options
 F</usr[/local]/share/gnupg/options.skel> Skeleton file
 
 F</usr[/local]/lib/gnupg/>  Default location for extensions

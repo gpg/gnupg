@@ -302,7 +302,6 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 /*-- sig-check.c --*/
 int signature_check( PKT_signature *sig, MD_HANDLE digest );
-int mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest );
 
 /*-- seckey-cert.c --*/
 int is_secret_key_protected( PKT_secret_key *sk );

@@ -107,7 +107,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 }
 
 
-
+#if 0 /* not anymore used */
 /****************
  * Check the MDC which is contained in SIG.
  * The MD_HANDLE should be currently open, so that this function
@@ -193,7 +193,7 @@ mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest )
 
     return rc;
 }
-
+#endif
 
 /****************
  * This function gets called by pubkey_verify() if the algorithm needs it.

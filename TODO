@@ -28,8 +28,10 @@
 
 Nice to have
 ------------
+  * Let take --help an option to select some topics.
   * Offcial test vectors for 3DES-EDE3
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
+    or better readline.
   * Print a warning if the directory mode is wrong.
   * replace the keyserver stuff either by a call to a specialized
     utility or SOCKSify the stuff.
@@ -43,8 +45,8 @@ Nice to have
   * add test cases for invalid data (scrambled armor or other random data)
   * add checking of armor trailers
   * Burn the buffers used by fopen(), or use read(2). Does this
-    really make sense?
-  * change the fake_data stuff to mpi_set_opaque
+    really make sense?	And while we are at it:  implement a secure deletion
+    stuff?
   * Stats about used random numbers.
   * the pubkey encrypt functions should do some sanity checks.
   * dynload: implement the hint stuff.

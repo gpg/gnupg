@@ -1,3 +1,8 @@
+Sat May  8 19:28:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mkinstalldirs, install-sh: New from GNU repository
+	* config.sub, config.guess: Merged with rep version.
+
 Sun Mar 14 19:34:36 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* autogen.sh: Add a check for libtool because some autoconf macros

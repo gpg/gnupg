@@ -43,10 +43,8 @@ free_pubkey_enc( PKT_pubkey_enc *enc )
 {
     int n, i;
     n = pubkey_get_nenc( enc->pubkey_algo );
-    if( !n ) {
-	m_free(enc->data[0]);
-	enc->data[0] = NULL;
-    }
+    if( !n )
+	mpi_free(enc->data[0]);
     for(i=0; i < n; i++ )
 	mpi_free( enc->data[i] );
     m_free(enc);
@@ -56,7 +54,7 @@ void
 free_seckey_enc( PKT_signature *sig )
 {
     int n, i;
-    n = sig->pubkey_algo? pubkey_get_nsig( sig->pubkey_algo ) : 0;
+    n = pubkey_get_nsig( sig->pubkey_algo );
     if( !n )
 	mpi_free(sig->data[0]);
     for(i=0; i < n; i++ )
@@ -73,10 +71,8 @@ release_public_key_parts( PKT_public_key *pk )
 {
     int n, i;
     n = pubkey_get_npkey( pk->pubkey_algo );
-    if( !n ) {
-	m_free(pk->pkey[0]);
-	pk->pkey[0] = NULL;
-    }
+    if( !n )
+	mpi_free(pk->pkey[0]);
     for(i=0; i < n; i++ ) {
 	mpi_free( pk->pkey[i] );
 	pk->pkey[i] = NULL;
@@ -95,20 +91,6 @@ free_public_key( PKT_public_key *pk )
     m_free(pk);
 }
 
-static void *
-cp_fake_data( MPI a )
-{
-    byte *d, *s;
-    u16 len;
-
-    if( !a )
-	return NULL;
-    s = (byte*)a;
-    len = (s[0] << 8) | s[1];
-    d = m_alloc( len+2 );
-    memcpy(d, s, len+2);
-    return d;
-}
 
 static void *
 cp_data_block( byte *s )
@@ -144,7 +126,7 @@ copy_public_key_new_namehash( PKT_public_key *d, PKT_public_key *s,
     }
     n = pubkey_get_npkey( s->pubkey_algo );
     if( !n )
-	d->pkey[0] = cp_fake_data(s->pkey[0]);
+	d->pkey[0] = mpi_copy(s->pkey[0]);
     else {
 	for(i=0; i < n; i++ )
 	    d->pkey[i] = mpi_copy( s->pkey[i] );
@@ -166,11 +148,13 @@ copy_signature( PKT_signature *d, PKT_signature *s )
     if( !d )
 	d = m_alloc(sizeof *d);
     memcpy( d, s, sizeof *d );
-    n = s->pubkey_algo? pubkey_get_nsig( s->pubkey_algo ) : 0;
+    n = pubkey_get_nsig( s->pubkey_algo );
     if( !n )
 	d->data[0] = mpi_copy(s->data[0]);
-    for(i=0; i < n; i++ )
-	d->data[i] = mpi_copy( s->data[i] );
+    else {
+	for(i=0; i < n; i++ )
+	    d->data[i] = mpi_copy( s->data[i] );
+    }
     d->hashed_data = cp_data_block(s->hashed_data);
     d->unhashed_data = cp_data_block(s->unhashed_data);
     return d;
@@ -194,10 +178,8 @@ release_secret_key_parts( PKT_secret_key *sk )
     int n, i;
 
     n = pubkey_get_nskey( sk->pubkey_algo );
-    if( !n ) {
-	m_free(sk->skey[0]);
-	sk->skey[0] = NULL;
-    }
+    if( !n )
+	mpi_free(sk->skey[0]);
     for(i=0; i < n; i++ ) {
 	mpi_free( sk->skey[i] );
 	sk->skey[i] = NULL;
@@ -221,7 +203,7 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nskey( s->pubkey_algo );
     if( !n )
-	d->skey[0] = cp_fake_data(s->skey[0]);
+	d->skey[0] = mpi_copy(s->skey[0]);
     else {
 	for(i=0; i < n; i++ )
 	    d->skey[i] = mpi_copy( s->skey[i] );
@@ -430,7 +412,7 @@ cmp_signatures( PKT_signature *a, PKT_signature *b )
     if( a->pubkey_algo != b->pubkey_algo )
 	return -1;
 
-    n = a->pubkey_algo? pubkey_get_nsig( a->pubkey_algo ) : 0;
+    n = pubkey_get_nsig( a->pubkey_algo );
     if( !n )
 	return -1; /* can't compare due to unknown algorithm */
     for(i=0; i < n; i++ ) {

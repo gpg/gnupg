@@ -166,13 +166,12 @@ calc_packet_length( PACKET *pkt )
 static void
 write_fake_data( IOBUF out, MPI a )
 {
-    byte *s;
-    u16 len;
-
     if( a ) {
-	s = (byte*)a;
-	len = (s[0] << 8) | s[1];
-	iobuf_write( out, s+2, len );
+	int i;
+	void *p;
+
+	p = mpi_get_opaque( a, &i );
+	iobuf_write( a, p, i );
     }
 }
 
@@ -732,15 +731,9 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     }
     iobuf_put(a, sig->digest_start[0] );
     iobuf_put(a, sig->digest_start[1] );
-    n = sig->pubkey_algo? pubkey_get_nsig( sig->pubkey_algo ) : 0;
-    if( !n ) {	/* the MDC data */
-	fputs("The MDC: ", stderr);
-	mpi_print(stderr, sig->data[0], 0 );
-	fputs("  ", stderr);
-	mpi_print(stderr, sig->data[0], 1 );
-	putc('\n', stderr);
-	mpi_write( a, sig->data[0] );
-    }
+    n = pubkey_get_nsig( sig->pubkey_algo );
+    if( !n )
+	write_fake_data( a, sig->data[0] );
     for(i=0; i < n; i++ )
 	mpi_write(a, sig->data[i] );
 

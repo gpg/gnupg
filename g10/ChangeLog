@@ -1,3 +1,24 @@
+Sat May  8 19:28:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* build-packet.c (do_signature): Removed MDC hack.
+	* encode.c (encode_crypt_mdc): Removed.
+	* mainproc.c (do_check_sig): Removed MDC hack.
+	(check_sig_and_print): Ditto.
+	* parse-packet.c (parse_signature): Ditto.
+	* sig-check.c (mdc_kludge_check): Ditto.
+	* free-packte.c (copy_signature, free_seckey_enc): Ditto.
+
+	* parse-packet.c (parse_signature,parse_key): Store data of
+	unknown algorithms with mpi_set_opaque inseatd of the old
+	faked data stuff.
+	(read_rest): Removed.
+	(read_rest2): Renamed to read_rest
+	* build-packet.c (write_fake_data): Use mpi_get_opaque.
+	* free-packet.c (cp_fake_data): Removed and cahnged all callers
+	to use mpi_copy.
+	(free_pubkey_enc,free_seckey_enc,release_public_key_parts,
+	 release_secret_key_parts): Use mpi_free for opaque data.
+
 Thu May  6 14:18:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* trustdb.c (check_trust): Check for revoked subkeys.

@@ -39,7 +39,6 @@
 
 
 static int encode_simple( const char *filename, int mode );
-static int encode_crypt_mdc( const char* fname, STRLIST remusr );
 static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 
 
@@ -216,9 +215,6 @@ encode_crypt( const char *filename, STRLIST remusr )
     PK_LIST pk_list;
     int do_compress = opt.compress && !opt.rfc1991;
 
-    if( opt.force_mdc )
-	return encode_crypt_mdc( filename, remusr );
-
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
@@ -332,191 +328,6 @@ encode_crypt( const char *filename, STRLIST remusr )
     release_pk_list( pk_list );
     return rc;
 }
-
-
-
-static int
-encode_crypt_mdc( const char* fname, STRLIST remusr )
-{
-    armor_filter_context_t afx;
-    compress_filter_context_t zfx;
-    md_filter_context_t mfx;
-    text_filter_context_t tfx;
-    encrypt_filter_context_t efx;
-    IOBUF inp = NULL, out = NULL;
-    PACKET pkt;
-    PKT_plaintext *pt = NULL;
-    u32 filesize;
-    int rc = 0;
-    PK_LIST pk_list = NULL;
-    int compr_algo = -1; /* unknown */
-
-
-    memset( &afx, 0, sizeof afx);
-    memset( &zfx, 0, sizeof zfx);
-    memset( &mfx, 0, sizeof mfx);
-    memset( &tfx, 0, sizeof tfx);
-    memset( &efx, 0, sizeof efx);
-    init_packet( &pkt );
-
-    if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
-	goto leave;
-    compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_COMPR );
-
-    /* prepare iobufs */
-    if( !(inp = iobuf_open(fname)) ) {
-	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
-					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
-	goto leave;
-    }
-
-    if( (rc = open_outfile( fname, opt.armor? 1: 0, &out )))
-	goto leave;
-
-    /* prepare to calculate the MD over the input */
-    mfx.md = md_open( DIGEST_ALGO_SHA1, 0 );
-    iobuf_push_filter( inp, md_filter, &mfx );
-
-    if( opt.armor )
-	iobuf_push_filter( out, armor_filter, &afx );
-    efx.pk_list = pk_list;
-    /* fixme: set efx.cfx.datalen if known */
-    iobuf_push_filter( out, encrypt_filter, &efx );
-
-    if( opt.compress ) {
-	if( !compr_algo )
-	    ; /* don't use compression */
-	else {
-	    if( compr_algo == 1 )
-		zfx.algo = 1;
-	    iobuf_push_filter( out, compress_filter, &zfx );
-	}
-    }
-
-    /* build a one pass packet */
-    {
-	PKT_onepass_sig *ops;
-
-	ops = m_alloc_clear( sizeof *ops );
-	ops->sig_class = 0x00;
-	ops->digest_algo = DIGEST_ALGO_SHA1;
-	ops->pubkey_algo = 0;
-	ops->keyid[0] = 0;
-	ops->keyid[1] = 0;
-	ops->last = 1;
-
-	init_packet(&pkt);
-	pkt.pkttype = PKT_ONEPASS_SIG;
-	pkt.pkt.onepass_sig = ops;
-	rc = build_packet( out, &pkt );
-	free_packet( &pkt );
-	if( rc ) {
-	    log_error("build onepass_sig packet failed: %s\n",
-							g10_errstr(rc));
-	    goto leave;
-	}
-    }
-
-    /* setup the inner packet */
-    if( fname || opt.set_filename ) {
-	char *s = make_basename( opt.set_filename ? opt.set_filename : fname );
-	pt = m_alloc( sizeof *pt + strlen(s) - 1 );
-	pt->namelen = strlen(s);
-	memcpy(pt->name, s, pt->namelen );
-	m_free(s);
-    }
-    else { /* no filename */
-	pt = m_alloc( sizeof *pt - 1 );
-	pt->namelen = 0;
-    }
-    if( fname ) {
-	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info(_("WARNING: `%s' is an empty file\n"), fname );
-
-	/* because the text_filter modifies the length of the
-	 * data, it is not possible to know the used length
-	 * without a double read of the file - to avoid that
-	 * we simple use partial length packets.
-	 */
-	if( opt.textmode )
-	    filesize = 0;
-    }
-    else
-	filesize = 0; /* stdin */
-    pt->timestamp = make_timestamp();
-    pt->mode = opt.textmode ? 't':'b';
-    pt->len = filesize;
-    pt->new_ctb = !pt->len;
-    pt->buf = inp;
-    pkt.pkttype = PKT_PLAINTEXT;
-    pkt.pkt.plaintext = pt;
-    /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
-    if( (rc = build_packet( out, &pkt )) )
-	log_error("build_packet(PLAINTEXT) failed: %s\n", g10_errstr(rc) );
-    pt->buf = NULL;
-
-    /* build the MDC faked signature packet */
-    {
-	PKT_signature *sig;
-	MD_HANDLE md;
-	byte buf[6];
-	size_t n;
-
-	sig = m_alloc_clear( sizeof *sig );
-	sig->version = 4;
-	sig->digest_algo = DIGEST_ALGO_SHA1;
-	md = md_copy( mfx.md );
-
-	md_putc( md, sig->version );
-	md_putc( md, sig->sig_class );
-	md_putc( md, sig->pubkey_algo );
-	md_putc( md, sig->digest_algo );
-	n = 6;
-	/* add some magic */
-	buf[0] = sig->version;
-	buf[1] = 0xff; buf[2] = 0; buf[3] = 0; buf[4] = 0; buf[5] = 6;
-	md_write( md, buf, 6 );
-	md_final( md );
-
-	/* pack the hash into data[0] */
-	memcpy( sig->digest_start, md_read( md, DIGEST_ALGO_SHA1), 2 );
-	sig->data[0] = mpi_alloc( (20+BYTES_PER_MPI_LIMB-1)
-				  /BYTES_PER_MPI_LIMB );
-	mpi_set_buffer( sig->data[0], md_read(md, DIGEST_ALGO_SHA1),
-				 md_digest_length(DIGEST_ALGO_SHA1), 0 );
-
-	md_close( md );
-
-	if( !rc ) { /* and write it */
-	    init_packet(&pkt);
-	    pkt.pkttype = PKT_SIGNATURE;
-	    pkt.pkt.signature = sig;
-	    rc = build_packet( out, &pkt );
-	    free_packet( &pkt );
-	    if( rc )
-		log_error("build MDC packet failed: %s\n", g10_errstr(rc) );
-	}
-	if( rc )
-	    goto leave;
-    }
-
-
-  leave:
-    if( rc )
-	iobuf_cancel(out);
-    else
-	iobuf_close(out);
-    iobuf_close(inp);
-    md_close( mfx.md );
-    release_pk_list( pk_list );
-    return rc;
-}
-
-
-
-
-
 
 
 

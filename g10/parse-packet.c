@@ -48,7 +48,7 @@ static int  copy_packet( IOBUF inp, IOBUF out, int pkttype,
 					       unsigned long pktlen );
 static void skip_packet( IOBUF inp, int pkttype, unsigned long pktlen );
 static void skip_rest( IOBUF inp, unsigned long pktlen );
-static void *read_rest( IOBUF inp, ulong *r_pktlen );
+static void *read_rest( IOBUF inp, size_t pktlen );
 static int  parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
 							     PACKET *packet );
 static int  parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -535,30 +535,9 @@ skip_rest( IOBUF inp, unsigned long pktlen )
     }
 }
 
-static void *
-read_rest( IOBUF inp, ulong *r_pktlen )
-{
-    byte *p;
-    int i;
-    size_t pktlen = *r_pktlen;
-
-    if( iobuf_in_block_mode(inp) ) {
-	log_error("read_rest: can't store stream data\n");
-	p = NULL;
-    }
-    else {
-	p = m_alloc( pktlen + 2 );
-	p[0] = pktlen >> 8;
-	p[1] = pktlen & 0xff;
-	for(i=2; pktlen; pktlen--, i++ )
-	    p[i] = iobuf_get(inp);
-    }
-    *r_pktlen = 0;
-    return p;
-}
 
 static void *
-read_rest2( IOBUF inp, size_t pktlen )
+read_rest( IOBUF inp, size_t pktlen )
 {
     byte *p;
     int i;
@@ -1065,40 +1044,28 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
     }
 
-    if( !sig->pubkey_algo ) {
-	n = pktlen;
-	sig->data[0] = mpi_read(inp, &n, 0 );
-	pktlen -=n;
-	if( list_mode ) {
-	    printf("\tMDC data: ");
-	    mpi_print(stdout, sig->data[0], mpi_print_mode );
-	    putchar('\n');
-	}
+    ndata = pubkey_get_nsig(sig->pubkey_algo);
+    if( !ndata ) {
+	if( list_mode )
+	    printf("\tunknown algorithm %d\n", sig->pubkey_algo );
+	unknown_pubkey_warning( sig->pubkey_algo );
+	/* we store the plain material in data[0], so that we are able
+	 * to write it back with build_packet() */
+	sig->data[0] = mpi_set_opaque(NULL, read_rest(inp, pktlen), pktlen );
+	pktlen = 0;
     }
     else {
-	ndata = pubkey_get_nsig(sig->pubkey_algo);
-	if( !ndata ) {
-	    if( list_mode )
-		printf("\tunknown algorithm %d\n", sig->pubkey_algo );
-	    unknown_pubkey_warning( sig->pubkey_algo );
-	    /* we store the plain material in data[0], so that we are able
-	     * to write it back with build_packet() */
-	    sig->data[0] = read_rest(inp, &pktlen );
-	}
-	else {
-	    for( i=0; i < ndata; i++ ) {
-		n = pktlen;
-		sig->data[i] = mpi_read(inp, &n, 0 );
-		pktlen -=n;
-		if( list_mode ) {
-		    printf("\tdata: ");
-		    mpi_print(stdout, sig->data[i], mpi_print_mode );
-		    putchar('\n');
-		}
+	for( i=0; i < ndata; i++ ) {
+	    n = pktlen;
+	    sig->data[i] = mpi_read(inp, &n, 0 );
+	    pktlen -=n;
+	    if( list_mode ) {
+		printf("\tdata: ");
+		mpi_print(stdout, sig->data[i], mpi_print_mode );
+		putchar('\n');
 	    }
 	}
     }
-
 
   leave:
     skip_rest(inp, pktlen);
@@ -1243,7 +1210,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	byte temp[8];
 
 	if( !npkey ) {
-	    sk->skey[0] = read_rest( inp, &pktlen );
+	    sk->skey[0] = mpi_set_opaque( NULL,
+					  read_rest(inp, pktlen), pktlen );
+	    pktlen = 0;
 	    goto leave;
 	}
 
@@ -1361,7 +1330,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * stuff up to the end of the packet into the first
 	     * skey element */
 	    sk->skey[npkey] = mpi_set_opaque(NULL,
-					     read_rest2(inp, pktlen), pktlen );
+					     read_rest(inp, pktlen), pktlen );
 	    pktlen = 0;
 	    if( list_mode ) {
 		printf("\tencrypted stuff follows\n");
@@ -1393,7 +1362,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	PKT_public_key *pk = pkt->pkt.public_key;
 
 	if( !npkey ) {
-	    pk->pkey[0] = read_rest( inp, &pktlen );
+	    pk->pkey[0] = mpi_set_opaque( NULL,
+					  read_rest(inp, pktlen), pktlen );
+	    pktlen = 0;
 	    goto leave;
 	}
 
