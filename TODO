@@ -3,6 +3,12 @@
     (requested by Herny Spencer) or change the error message to
     a more clear one.
 
+W32 only:
+- End of ASCII lines in clearsig files : when you clearsig a ANSI text file
+(the Windows text format), the ends of line are in Unix format (linefeed)
+instead of Win32 format (carriage return + linefeed).
+
+
 Scheduled for 1.1
 -----------------
   * With option -i prompt before adding a key to the keyring and show some

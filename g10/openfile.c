@@ -190,10 +190,10 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    dot = strchr(buf, '.' );
 	    if( dot && dot > buf && dot[1] && strlen(dot) <= 4
 					   && CMP_FILENAME(newsfx, dot) ) {
-		strcpy(buf, newsfx );
+		strcpy(dot, newsfx );
 	    }
 	    else if( dot && !dot[1] ) /* don't duplicate a dot */
-		strcpy( dot, newsfx );
+		strcpy( dot, newsfx+1 );
 	    else
 		strcat( buf, newsfx );
 	  #else

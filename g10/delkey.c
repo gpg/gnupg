@@ -124,7 +124,7 @@ delete_key( const char *username, int secret )
 		      pubkey_letter( pk->pubkey_algo ),
 		      keyid[1], datestr_from_pk(pk) );
 	p = get_user_id( keyid, &n );
-	tty_print_string( p, n );
+	tty_print_utf8_string( p, n );
 	m_free(p);
 	tty_printf("\n\n");
 

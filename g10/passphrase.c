@@ -159,7 +159,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	tty_printf(_("\nYou need a passphrase to unlock the secret key for\n"
 		     "user: \"") );
 	p = get_user_id( keyid, &n );
-	tty_print_string( p, n );
+	tty_print_utf8_string( p, n );
 	m_free(p);
 	tty_printf("\"\n");
 

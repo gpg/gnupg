@@ -149,7 +149,7 @@ show_paths( ulong lid, int only_first )
 	putchar(' ');
 
 	p = get_user_id( keyid, &n );
-	tty_print_string( p, n ),
+	tty_print_utf8_string( p, n ),
 	m_free(p);
 	tty_printf("\"\n");
 	free_public_key( pk );
@@ -203,7 +203,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 			  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 			  (ulong)keyid[1], datestr_from_pk( pk ) );
 		p = get_user_id( keyid, &n );
-		tty_print_string( p, n ),
+		tty_print_utf8_string( p, n ),
 		m_free(p);
 		tty_printf("\"\n");
 		print_fpr( pk );
@@ -460,7 +460,7 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_pk( pk ) );
 	p = get_user_id( keyid, &n );
-	tty_print_string( p, n ),
+	tty_print_utf8_string( p, n ),
 	m_free(p);
 	tty_printf("\"\n");
 	print_fpr( pk );

@@ -1,3 +1,14 @@
+Thu Sep 23 19:24:30 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* openfile.c (open_outfile): Fixed the 8dot3 handling.
+
+	* passphrase.c (passphrase_to_dek): Print uid using utf8 func.
+	* delkey.c (delete_key): Ditto.
+	* pkclist.c (show_paths,do_edit_ownertrust,do_we_trust): Ditto
+	(do_we_trust_pre): Ditto.
+	* trustdb.c (print_user_id,check_uidsigs): Ditto.
+	* revoke.c (gen_revoke,ask_revoke_sig): Ditto.
+
 Thu Sep 23 09:52:58 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* verify.c (print_file_status): New.

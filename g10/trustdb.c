@@ -586,13 +586,13 @@ print_user_id( FILE *fp, const char *text, u32 *keyid )
     p = get_user_id( keyid, &n );
     if( fp ) {
 	fprintf( fp, "%s \"", text );
-	print_string( fp, p, n, 0 );
+	print_utf8_string( fp, p, n );
 	putc('\"', fp);
 	putc('\n', fp);
     }
     else {
 	tty_printf( "%s \"", text );
-	tty_print_string( p, n );
+	tty_print_utf8_string( p, n );
 	tty_printf( "\"\n" );
     }
     m_free(p);
@@ -652,7 +652,7 @@ print_path( int pathlen, TN ME .........., FILE *fp, ulong highlight )
 	p = get_user_id( keyid, &n );
 	putc(' ', fp);
 	putc('\"', fp);
-	print_string( fp, p, n > 40? 40:n, 0 );
+	print_utf8_string( fp, p, n > 40? 40:n );
 	putc('\"', fp);
 	m_free(p);
 	putc('\n', fp );
