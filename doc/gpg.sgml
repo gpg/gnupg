@@ -1814,14 +1814,22 @@ clock problem.
 <varlistentry>
 <term>--ignore-crc-error</term>
 <listitem><para>
-The ASCII armor used by OpenPG is protected by a CRC checksum against
+The ASCII armor used by OpenPGP is protected by a CRC checksum against
 transmission errors.  Sometimes it happens that the CRC gets mangled
-somewhere on the transmission channel 
-but the actual content (which is anyway protected by
-the OpenPGP protocol) is still okay.  This option will let gpg ignore
-CRC errors.
+somewhere on the transmission channel but the actual content (which is
+protected by the OpenPGP protocol anyway) is still okay.  This option
+will let gpg ignore CRC errors.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--ignore-mdc-error</term>
+<listitem><para>
+This option changes a MDC integrity protection failure into a warning.
+This can be useful if a message is partially corrupt, but it is
+necessary to get as much data as possible out of the corrupt message.
+However, be aware that a MDC protection failure may also mean that the
+message was tampered with intentionally by an attacker.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--lock-once</term>
@@ -1891,6 +1899,7 @@ Suppress the warning about unsafe file permissions.
 <listitem><para>
 Suppress the warning about missing MDC integrity protection.
 </para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--no-armor</term>

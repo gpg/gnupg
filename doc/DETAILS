@@ -45,7 +45,10 @@ record.
 		d = The key has been disabled
 		r = The key has been revoked
 		e = The key has expired
-		q = Undefined (no value assigned)
+		- = Unknown trust (i.e. no value assigned)
+		q = Undefined trust
+	            '-' and 'q' may safely be treated as the same
+		    value for most purposes
 		n = Don't trust this key at all
 		m = There is marginal trust in this key
 		f = The key is full trusted.

@@ -1,3 +1,10 @@
+2002-08-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Clarify that trust letters 'q' and '-' can be treated
+	identically.
+
+	* gpg.sgml: Document --ignore-mdc-error.
+
 2002-08-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Clarify that only long-form options can go in the
