@@ -1,3 +1,19 @@
+Tue Jul 25 17:44:15 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * keyedit.c (menu_expire): expire date for primary key can be set again.
+
+  * keylist.c (is_uid_valid): New.
+  (list_keyblock): Print validity information for all user IDs.  Note, this
+  has to be done at other places too; for now we have only minimal support.
+
+  * sign.c (pk_sign): Changed to use the new S-Exp interface.
+  * encode.c (pk_encrypt): Ditto.
+  * sig-check.c (pk_verify): Ditto.
+  * seckey-cert.c (pk_check_secret_key): Ditto.
+  * pubkey-enc.c (pk_decrypt): Ditto.
+  * misc.c (pubkey_nbits): Ditto.
+  * keygen.c (key_from_sexp,factors_from_sexp,gen_elg,gen_dsa): Ditto.
+
 Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
 
   Replaced everything with the code from the STABLE-BRANCH-1-0 and

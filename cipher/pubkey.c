@@ -701,25 +701,38 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
 						    :"public-key", 0 );
     if( !list )
 	return GCRYERR_INV_OBJ; /* Does not contain a public- or private-key object */
-    list = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cdr( list );
+    gcry_sexp_release ( list );
+    list = l2;
     if( !list )
 	return GCRYERR_NO_OBJ; /* no cdr for the key object */
+    l2 = gcry_sexp_car( list );
+    gcry_sexp_release ( list );
+    list = l2;
+    if( !list )
+	return GCRYERR_NO_OBJ; /* no car for the key object */
     name = gcry_sexp_car_data( list, &n );
-    if( !name )
+    if( !name ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* invalid structure of object */
+    }
     for(i=0; (s=algo_info_table[i].name); i++ ) {
 	if( strlen(s) == n && !memcmp( s, name, n ) )
 	    break;
     }
-    if( !s )
+    if( !s ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_PK_ALGO; /* unknown algorithm */
+    }
     algo = algo_info_table[i].algo;
     elems1 = algo_info_table[i].common_elements;
     elems2 = want_private? algo_info_table[i].secret_elements
 			 : algo_info_table[i].public_elements;
     array = g10_calloc( strlen(elems1)+strlen(elems2)+1, sizeof *array );
-    if( !array )
+    if( !array ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_NO_MEM;
+    }
 
     idx = 0;
     for(s=elems1; *s; s++, idx++ ) {
@@ -728,13 +741,16 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
 	    for(i=0; i<idx; i++)
 		g10_free( array[i] );
 	    g10_free( array );
+	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
 	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    for(i=0; i<idx; i++)
 		g10_free( array[i] );
 	    g10_free( array );
+	    gcry_sexp_release ( list );
 	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
 	}
     }
@@ -744,18 +760,21 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
 	    for(i=0; i<idx; i++)
 		g10_free( array[i] );
 	    g10_free( array );
+	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
-	/* FIXME: put the MPI in secure memory when needed */
 	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    for(i=0; i<idx; i++)
 		g10_free( array[i] );
 	    g10_free( array );
+	    gcry_sexp_release ( list );
 	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
 	}
     }
 
+    gcry_sexp_release ( list );
     *retarray = array;
     *retalgo = algo;
 
@@ -778,38 +797,55 @@ sexp_to_sig( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
     list = gcry_sexp_find_token( sexp, "sig-val" , 0 );
     if( !list )
 	return GCRYERR_INV_OBJ; /* Does not contain a signature value object */
-    list = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cdr( list );
+    gcry_sexp_release ( list );
+    list = l2;
     if( !list )
 	return GCRYERR_NO_OBJ; /* no cdr for the sig object */
+    l2 = gcry_sexp_car( list );
+    gcry_sexp_release ( list );
+    list = l2;
+    if( !list )
+	return GCRYERR_NO_OBJ; /* no car for the key object */
     name = gcry_sexp_car_data( list, &n );
-    if( !name )
+    if( !name ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* invalid structure of object */
+    }
     for(i=0; (s=sig_info_table[i].name); i++ ) {
 	if( strlen(s) == n && !memcmp( s, name, n ) )
 	    break;
     }
-    if( !s )
+    if( !s ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_PK_ALGO; /* unknown algorithm */
+    }
     algo = sig_info_table[i].algo;
     elems = sig_info_table[i].elements;
     array = g10_calloc( (strlen(elems)+1) , sizeof *array );
-    if( !array )
+    if( !array ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_NO_MEM;
+    }
 
     idx = 0;
     for(s=elems; *s; s++, idx++ ) {
 	l2 = gcry_sexp_find_token( list, s, 1 );
 	if( !l2 ) {
 	    g10_free( array );
+	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
 	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    g10_free( array );
+	    gcry_sexp_release ( list );
 	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
 	}
     }
 
+    gcry_sexp_release ( list );
     *retarray = array;
     *retalgo = algo;
 
@@ -837,38 +873,53 @@ sexp_to_enc( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
     list = gcry_sexp_find_token( sexp, "enc-val" , 0 );
     if( !list )
 	return GCRYERR_INV_OBJ; /* Does not contain a encrypted value object */
-    list = gcry_sexp_cdr( list );
-    if( !list )
+    l2 = gcry_sexp_cdr( list );
+    gcry_sexp_release ( list );
+    list = l2;
+    if( !list ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_NO_OBJ; /* no cdr for the data object */
+    }
     name = gcry_sexp_car_data( list, &n );
-    if( !name )
+    if( !name ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* invalid structure of object */
+    }
     for(i=0; (s=enc_info_table[i].name); i++ ) {
 	if( strlen(s) == n && !memcmp( s, name, n ) )
 	    break;
     }
-    if( !s )
+    if( !s ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_PK_ALGO; /* unknown algorithm */
+    }
+
     algo = enc_info_table[i].algo;
     elems = enc_info_table[i].elements;
     array = g10_calloc( (strlen(elems)+1) , sizeof *array );
-    if( !array )
+    if( !array ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_NO_MEM;
+    }
 
     idx = 0;
     for(s=elems; *s; s++, idx++ ) {
 	l2 = gcry_sexp_find_token( list, s, 1 );
 	if( !l2 ) {
 	    g10_free( array );
+	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
 	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    g10_free( array );
+	    gcry_sexp_release ( list );
 	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
 	}
     }
 
+    gcry_sexp_release ( list );
     *retarray = array;
     *retalgo = algo;
 
@@ -900,7 +951,6 @@ gcry_pk_encrypt( GCRY_SEXP *r_ciph, GCRY_SEXP s_data, GCRY_SEXP s_pkey )
 {
     MPI *pkey, data, *ciph;
     const char *algo_name, *algo_elems;
-    GCRY_SEXP *s_elems;
     int i, rc, algo;
 
     /* get the key */
@@ -933,26 +983,61 @@ gcry_pk_encrypt( GCRY_SEXP *r_ciph, GCRY_SEXP s_data, GCRY_SEXP s_pkey )
     release_mpi_array( pkey );
     mpi_free( data );
     if( rc ) {
+	release_mpi_array( ciph );
 	g10_free( ciph );
 	return rc;
     }
 
     /* We did it.  Now build the return list */
-    s_elems = g10_xcalloc( (strlen(algo_elems)+2), sizeof *s_elems );
-    s_elems[0] = SEXP_NEW( algo_name, 0 );
-    for(i=0; algo_elems[i]; i++ ) {
-	char tmp[2];
-	tmp[0] = algo_elems[i];
-	tmp[1] = 0;
-	s_elems[i+1] = gcry_sexp_new_name_mpi( tmp, ciph[i] );
+    {
+	char *string, *p;
+	size_t nelem, needed= strlen(algo_name) + 20;
+
+	/* count elements, so that we can allocate enough space */
+	for(nelem=0; algo_elems[nelem]; nelem++ )
+	    needed += 10; /* 6 + a safety margin */
+	/* build the string */
+	string = p = g10_xmalloc ( needed );
+	p = stpcpy ( p, "(enc-val(" );
+	p = stpcpy ( p, algo_name );
+	for(i=0; algo_elems[i]; i++ ) {
+	    *p++ = '(';
+	    *p++ = algo_elems[i];
+	    p = stpcpy ( p, "%m)" );
+	}
+	strcpy ( p, "))" );
+	/* and now the ugly part:  we don't have a function to
+	 * pass an array to a format string, so we have to do it this way :-(
+	 */
+	switch ( nelem ) {
+	  case 1: rc = gcry_sexp_build ( r_ciph, NULL, string,
+		     ciph[0]
+		  ); break;
+	  case 2: rc = gcry_sexp_build ( r_ciph, NULL, string,
+		     ciph[0], ciph[1]
+		  ); break;
+	  case 3: rc = gcry_sexp_build ( r_ciph, NULL, string,
+		     ciph[0], ciph[1], ciph[2]
+		  ); break;
+	  case 4: rc = gcry_sexp_build ( r_ciph, NULL, string,
+		     ciph[0], ciph[1], ciph[2], ciph[3]
+		  ); break;
+	  case 5: rc = gcry_sexp_build ( r_ciph, NULL, string,
+		     ciph[0], ciph[1], ciph[2], ciph[3], ciph[4]
+		  ); break;
+	  case 6: rc = gcry_sexp_build ( r_ciph, NULL, string,
+		     ciph[0], ciph[1], ciph[2], ciph[3], ciph[4], ciph[5]
+		  ); break;
+	  default: BUG ();
+	}
+	if ( rc )
+	    BUG ();
+	g10_free ( string );
     }
     release_mpi_array( ciph );
     g10_free( ciph );
 
-    *r_ciph = SEXP_CONS( SEXP_NEW( "enc-val", 0 ),
-			 gcry_sexp_alist( s_elems ) );
 
-    g10_free( s_elems );
     return 0;
 }
 
@@ -1003,7 +1088,9 @@ gcry_pk_decrypt( GCRY_SEXP *r_plain, GCRY_SEXP s_data, GCRY_SEXP s_skey )
 	return -1; /* fixme: add real errornumber - decryption failed */
     }
 
-    *r_plain = gcry_sexp_new_mpi( plain );
+    if ( gcry_sexp_build( r_plain, NULL, "%m", plain ) )
+	BUG ();
+
     mpi_free( plain );
     release_mpi_array( data );
     release_mpi_array( skey );
@@ -1042,7 +1129,6 @@ gcry_pk_sign( GCRY_SEXP *r_sig, GCRY_SEXP s_hash, GCRY_SEXP s_skey )
     MPI *result;
     int i, algo, rc;
     const char *algo_name, *algo_elems;
-    GCRY_SEXP *s_elems;
 
     rc = sexp_to_key( s_skey, 1, &skey, &algo );
     if( rc )
@@ -1074,21 +1160,54 @@ gcry_pk_sign( GCRY_SEXP *r_sig, GCRY_SEXP s_hash, GCRY_SEXP s_skey )
 	return rc;
     }
 
-    s_elems = g10_xcalloc( (strlen(algo_elems)+2), sizeof *s_elems );
-    s_elems[0] = SEXP_NEW( algo_name, 0 );
-    for(i=0; algo_elems[i]; i++ ) {
-	char tmp[2];
-	tmp[0] = algo_elems[i];
-	tmp[1] = 0;
-	s_elems[i+1] = gcry_sexp_new_name_mpi( tmp, result[i] );
+    {
+	char *string, *p;
+	size_t nelem, needed= strlen(algo_name) + 20;
+
+	/* count elements, so that we can allocate enough space */
+	for(nelem=0; algo_elems[nelem]; nelem++ )
+	    needed += 10; /* 6 + a safety margin */
+	/* build the string */
+	string = p = g10_xmalloc ( needed );
+	p = stpcpy ( p, "(sig-val(" );
+	p = stpcpy ( p, algo_name );
+	for(i=0; algo_elems[i]; i++ ) {
+	    *p++ = '(';
+	    *p++ = algo_elems[i];
+	    p = stpcpy ( p, "%m)" );
+	}
+	strcpy ( p, "))" );
+	/* and now the ugly part:  we don't have a function to
+	 * pass an array to a format string, so we have to do it this way :-(
+	 */
+	switch ( nelem ) {
+	  case 1: rc = gcry_sexp_build ( r_sig, NULL, string,
+		     result[0]
+		  ); break;
+	  case 2: rc = gcry_sexp_build ( r_sig, NULL, string,
+		     result[0], result[1]
+		  ); break;
+	  case 3: rc = gcry_sexp_build ( r_sig, NULL, string,
+		     result[0], result[1], result[2]
+		  ); break;
+	  case 4: rc = gcry_sexp_build ( r_sig, NULL, string,
+		     result[0], result[1], result[2], result[3]
+		  ); break;
+	  case 5: rc = gcry_sexp_build ( r_sig, NULL, string,
+		     result[0], result[1], result[2], result[3], result[4]
+		  ); break;
+	  case 6: rc = gcry_sexp_build ( r_sig, NULL, string,
+		     result[0], result[1], result[2], result[3], result[4], result[5]
+		  ); break;
+	  default: BUG ();
+	}
+	if ( rc )
+	    BUG ();
+	g10_free ( string );
     }
     release_mpi_array( result );
     g10_free( result );
 
-    *r_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ),
-			gcry_sexp_alist( s_elems ) );
-
-    g10_free( s_elems );
     return 0;
 }
 
@@ -1199,7 +1318,7 @@ gcry_pk_testkey( GCRY_SEXP s_key )
 int
 gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 {
-    GCRY_SEXP list, l2, *s_elems, pub_list, sec_list, misc_list;
+    GCRY_SEXP list, l2;
     const char *name;
     const char *s;
     size_t n;
@@ -1213,18 +1332,24 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
     list = gcry_sexp_find_token( s_parms, "genkey", 0 );
     if( !list )
 	return GCRYERR_INV_OBJ; /* Does not contain genkey data */
-    list = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cdr( list );
+    gcry_sexp_release ( list );
+    list = l2;
     if( !list )
 	return GCRYERR_NO_OBJ; /* no cdr for the genkey */
     name = gcry_sexp_car_data( list, &n );
-    if( !name )
+    if( !name ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* algo string missing */
+    }
     for(i=0; (s=algo_info_table[i].name); i++ ) {
 	if( strlen(s) == n && !memcmp( s, name, n ) )
 	    break;
     }
-    if( !s )
+    if( !s ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_PK_ALGO; /* unknown algorithm */
+    }
 
     algo = algo_info_table[i].algo;
     algo_name = algo_info_table[i].name;
@@ -1234,11 +1359,15 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
     strcat( sec_elems, algo_info_table[i].secret_elements );
 
     l2 = gcry_sexp_find_token( list, "nbits", 0 );
-    if( !l2 )
+    gcry_sexp_release ( list );
+    list = l2;
+    if( !list )
 	return GCRYERR_NO_OBJ; /* no nbits aparemter */
-    name = gcry_sexp_cdr_data( l2, &n );
-    if( !name )
+    name = gcry_sexp_cdr_data( list, &n );
+    if( !name ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* nbits without a cdr */
+    }
     {
 	char *p = g10_xmalloc(n+1);
 	memcpy(p, name, n );
@@ -1246,56 +1375,84 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 	nbits = (unsigned int)strtol( p, NULL, 0 );
 	g10_free( p );
     }
+    gcry_sexp_release ( list );
 
     rc = pubkey_generate( algo, nbits, skey, &factors );
     if( rc ) {
 	return rc;
     }
 
-    /* build the public key list */
-    s_elems = g10_xcalloc( (strlen(pub_elems)+2), sizeof *s_elems );
-    s_elems[0] = SEXP_NEW( algo_name, 0 );
-    for(i=0; pub_elems[i]; i++ ) {
-	char tmp[2];
-	tmp[0] = pub_elems[i];
-	tmp[1] = 0;
-	s_elems[i+1] = gcry_sexp_new_name_mpi( tmp, skey[i] );
-    }
-    pub_list = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
-			  gcry_sexp_alist( s_elems ) );
-    g10_free( s_elems );
+    {
+	char *string, *p;
+	size_t nelem=0, needed=0;
+	GCRY_MPI mpis[30];
 
-    /* build the secret key list */
-    s_elems = g10_xcalloc( (strlen(sec_elems)+2), sizeof *s_elems );
-    s_elems[0] = SEXP_NEW( algo_name, 0 );
-    for(i=0; sec_elems[i]; i++ ) {
-	char tmp[2];
-	tmp[0] = sec_elems[i];
-	tmp[1] = 0;
-	s_elems[i+1] = gcry_sexp_new_name_mpi( tmp, skey[i] );
-    }
-    sec_list = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
-			  gcry_sexp_alist( s_elems ) );
-    g10_free( s_elems );
 
-    /* build the list of factors */
-    for(n=0; factors[n]; n++ )
-	;
-    s_elems = g10_xcalloc( n+2, sizeof *s_elems );
-    s_elems[0] = SEXP_NEW( "pm1-factors", 0 );
-    for(i=0; factors[i]; i++ ) {
-	s_elems[i+1] = gcry_sexp_new_mpi( factors[i] );
-    }
-    misc_list = SEXP_CONS( SEXP_NEW( "misc-key-info", 0 ),
-			  gcry_sexp_alist( s_elems ) );
-    g10_free( s_elems );
+	/* count elements, so that we can allocate enough space */
+	for(i=0; pub_elems[i]; i++, nelem++ )
+	    needed += 10; /* 6 + a safety margin */
+	for(i=0; sec_elems[i]; i++, nelem++ )
+	    needed += 10; /* 6 + a safety margin */
+	for(i=0; factors[i]; i++, nelem++ )
+	    needed += 10; /* 6 + a safety margin */
+	needed += 2* strlen(algo_name) +  300;
+	if ( nelem > DIM(mpis) )
+	    BUG ();
 
-    /* and put all together */
-    *r_key = gcry_sexp_vlist( SEXP_NEW( "key-data", 0 ),
-			      pub_list, sec_list, misc_list, NULL );
-    gcry_sexp_release( pub_list );
-    gcry_sexp_release( sec_list );
-    gcry_sexp_release( misc_list );
+	/* build the string */
+	nelem = 0;
+	string = p = g10_xmalloc ( needed );
+	p = stpcpy ( p, "(key-data(" );
+
+	p = stpcpy ( p, "(public-key(" );
+	p = stpcpy ( p, algo_name );
+	for(i=0; pub_elems[i]; i++ ) {
+	    *p++ = '(';
+	    *p++ = pub_elems[i];
+	    p = stpcpy ( p, "%m)" );
+	    mpis[nelem++] = skey[i];
+	}
+	strcpy ( p, "))" );
+
+	p = stpcpy ( p, "(private-key(" );
+	p = stpcpy ( p, algo_name );
+	for(i=0; sec_elems[i]; i++ ) {
+	    *p++ = '(';
+	    *p++ = sec_elems[i];
+	    p = stpcpy ( p, "%m)" );
+	    mpis[nelem++] = skey[i];
+	}
+	strcpy ( p, "))" );
+
+	p = stpcpy ( p, "(misc-key-info(pm1-factors" );
+	for(i=0; factors[i]; i++ ) {
+	    p = stpcpy ( p, "%m" );
+	    mpis[nelem++] = factors[i];
+	}
+	strcpy ( p, "))" );
+
+	while ( nelem < DIM(mpis) )
+	    mpis[nelem++] = NULL;
+
+	/* and now the ugly part:  we don't have a function to
+	 * pass an array to a format string, so we have just pass everything
+	 * we have. which normally should be no problem as only those
+	 * with a corresponding %m are used
+	 */
+	if ( gcry_sexp_build ( r_key, NULL, string,
+		   mpis[0], mpis[1], mpis[2], mpis[3], mpis[4], mpis[5],
+		   mpis[6], mpis[7], mpis[8], mpis[9], mpis[10], mpis[11],
+		   mpis[12], mpis[13], mpis[14], mpis[15], mpis[16], mpis[17],
+		   mpis[18], mpis[19], mpis[20], mpis[21], mpis[22], mpis[23],
+		   mpis[24], mpis[25], mpis[26], mpis[27], mpis[28], mpis[29]
+		  ) )
+	    BUG ();
+	assert ( DIM(mpis) == 29 );
+	g10_free ( string );
+    }
+    release_mpi_array ( skey );
+    release_mpi_array ( factors );
+
     return 0;
 }
 

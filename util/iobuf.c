@@ -468,7 +468,7 @@ int
 iobuf_close( IOBUF a )
 {
     IOBUF a2;
-    size_t dummy_len;
+    size_t dummy_len = 0;
     int rc=0;
 
     if( a && a->directfp ) {
@@ -986,7 +986,7 @@ underflow(IOBUF a)
 
 	}
 	if( a->use == 1 && rc == -1 ) { /* EOF: we can remove the filter */
-	    size_t dummy_len;
+	    size_t dummy_len=0;
 
 	    /* and tell the filter to free itself */
 	    if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,

@@ -61,58 +61,48 @@ pk_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 
     /* make a sexp from pkey */
     if( algo == GCRY_PK_DSA ) {
-	s_pkey = SEXP_CONS( SEXP_NEW( "public-key", 10 ),
-			  gcry_sexp_vlist( SEXP_NEW( "dsa", 3 ),
-			  gcry_sexp_new_name_mpi( "p", pkey[0] ),
-			  gcry_sexp_new_name_mpi( "q", pkey[1] ),
-			  gcry_sexp_new_name_mpi( "g", pkey[2] ),
-			  gcry_sexp_new_name_mpi( "y", pkey[3] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_pkey, NULL,
+			      "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
+				  pkey[0], pkey[1], pkey[2], pkey[3] );
     }
     else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	s_pkey = SEXP_CONS( SEXP_NEW( "public-key", 10 ),
-			  gcry_sexp_vlist( SEXP_NEW( "elg", 3 ),
-			  gcry_sexp_new_name_mpi( "p", pkey[0] ),
-			  gcry_sexp_new_name_mpi( "g", pkey[1] ),
-			  gcry_sexp_new_name_mpi( "y", pkey[2] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_pkey, NULL,
+			      "(public-key(dsa(p%m)(g%m)(y%m)))",
+				  pkey[0], pkey[1], pkey[2] );
     }
     else if( algo == GCRY_PK_RSA ) {
-	s_pkey = SEXP_CONS( SEXP_NEW( "public-key", 10 ),
-			  gcry_sexp_vlist( SEXP_NEW( "rsa", 3 ),
-			  gcry_sexp_new_name_mpi( "n", pkey[0] ),
-			  gcry_sexp_new_name_mpi( "e", pkey[1] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_pkey, NULL,
+			      "(public-key(rsa(n%m)(e%m)))",
+				  pkey[0], pkey[1] );
     }
     else
 	return GPGERR_PUBKEY_ALGO;
 
+    if ( rc )
+	BUG ();
+
     /* put hash into a S-Exp s_hash */
-    s_hash = gcry_sexp_new_mpi( hash );
+    if ( gcry_sexp_build( &s_hash, NULL, "%m", hash ) )
+	BUG ();
 
     /* put data into a S-Exp s_sig */
     if( algo == GCRY_PK_DSA ) {
-	s_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "dsa", 0 ),
-			  gcry_sexp_new_name_mpi( "r", data[0] ),
-			  gcry_sexp_new_name_mpi( "s", data[1] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_sig, NULL,
+			      "(sig-val(dsa(r%m)(s%m)))", data[0], data[1] );
     }
     else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	s_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "elg", 0 ),
-			  gcry_sexp_new_name_mpi( "r", data[0] ),
-			  gcry_sexp_new_name_mpi( "s", data[1] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_sig, NULL,
+			      "(sig-val(elg(r%m)(s%m)))", data[0], data[1] );
     }
     else if( algo == GCRY_PK_RSA ) {
-	s_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "rsa", 3 ),
-			  gcry_sexp_new_name_mpi( "s", data[0] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_sig, NULL,
+			      "(sig-val(rsa(s%m)))", data[0] );
     }
     else
 	BUG();
+
+    if ( rc )
+	BUG ();
 
 
     rc = gcry_pk_verify( s_sig, s_hash, s_pkey );

@@ -54,18 +54,19 @@ pk_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 
     /* make a sexp from pkey */
     if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	s_pkey = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "elg", 3 ),
-			  gcry_sexp_new_name_mpi( "p", pkey[0] ),
-			  gcry_sexp_new_name_mpi( "g", pkey[1] ),
-			  gcry_sexp_new_name_mpi( "y", pkey[2] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_pkey, NULL,
+			      "(public-key(elg(p%m)(g%m)(y%m)))",
+				  pkey[0], pkey[1], pkey[2] );
     }
     else
 	return GPGERR_PUBKEY_ALGO;
 
+    if ( rc )
+	BUG ();
+
     /* put the data into a simple list */
-    s_data = gcry_sexp_new_mpi( data );
+    if ( gcry_sexp_build( &s_data, NULL, "%m", data ) )
+	BUG ();
 
     /* pass it to libgcrypt */
     rc = gcry_pk_encrypt( &s_ciph, s_data, s_pkey );
@@ -79,10 +80,13 @@ pk_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 	assert( list );
 	resarr[0] = gcry_sexp_cdr_mpi( list, 0 );
 	assert( resarr[0] );
+	gcry_sexp_release ( list );
+
 	list = gcry_sexp_find_token( s_ciph, "b" , 0 );
 	assert( list );
 	resarr[1] = gcry_sexp_cdr_mpi( list, 0 );
 	assert( resarr[1] );
+	gcry_sexp_release ( list );
     }
 
     gcry_sexp_release( s_ciph );

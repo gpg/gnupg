@@ -420,39 +420,33 @@ pubkey_get_nenc( int algo )
     return n > 0? n : 0;
 }
 
+
 unsigned int
 pubkey_nbits( int algo, MPI *key )
 {
-    int nbits;
+    int rc, nbits;
     GCRY_SEXP sexp;
 
-
     if( algo == GCRY_PK_DSA ) {
-	sexp = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "dsa", 3 ),
-			  gcry_sexp_new_name_mpi( "p", key[0] ),
-			  gcry_sexp_new_name_mpi( "q", key[1] ),
-			  gcry_sexp_new_name_mpi( "g", key[2] ),
-			  gcry_sexp_new_name_mpi( "y", key[3] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
+				  key[0], key[1], key[2], key[3] );
     }
     else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	sexp = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "elg", 3 ),
-			  gcry_sexp_new_name_mpi( "p", key[0] ),
-			  gcry_sexp_new_name_mpi( "g", key[1] ),
-			  gcry_sexp_new_name_mpi( "y", key[2] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(elg(p%m)(g%m)(y%m)))",
+				  key[0], key[1], key[2] );
     }
     else if( algo == GCRY_PK_RSA ) {
-	sexp = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "rsa", 3 ),
-			  gcry_sexp_new_name_mpi( "n", key[0] ),
-			  gcry_sexp_new_name_mpi( "e", key[1] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(rsa(n%m)(e%m)))",
+				  key[0], key[1] );
     }
     else
 	return 0;
+
+    if ( rc )
+	BUG ();
 
     nbits = gcry_pk_get_nbits( sexp );
     gcry_sexp_release( sexp );

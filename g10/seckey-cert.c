@@ -46,37 +46,25 @@ pk_check_secret_key( int algo, MPI *skey )
 
     /* make a sexp from skey */
     if( algo == GCRY_PK_DSA ) {
-	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "dsa", 0 ),
-			  gcry_sexp_new_name_mpi( "p", skey[0] ),
-			  gcry_sexp_new_name_mpi( "q", skey[1] ),
-			  gcry_sexp_new_name_mpi( "g", skey[2] ),
-			  gcry_sexp_new_name_mpi( "y", skey[3] ),
-			  gcry_sexp_new_name_mpi( "x", skey[4] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_skey, NULL,
+			      "(private-key(dsa(p%m)(q%m)(g%m)(y%m)(x%m)))",
+				  skey[0], skey[1], skey[2], skey[3], skey[4] );
     }
     else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "elg", 0 ),
-			  gcry_sexp_new_name_mpi( "p", skey[0] ),
-			  gcry_sexp_new_name_mpi( "g", skey[1] ),
-			  gcry_sexp_new_name_mpi( "y", skey[2] ),
-			  gcry_sexp_new_name_mpi( "x", skey[3] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_skey, NULL,
+			      "(private-key(elg(p%m)(g%m)(y%m)(x%m)))",
+				  skey[0], skey[1], skey[2], skey[3] );
     }
     else if( algo == GCRY_PK_RSA ) {
-	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "rsa", 0 ),
-			  gcry_sexp_new_name_mpi( "n", skey[0] ),
-			  gcry_sexp_new_name_mpi( "e", skey[1] ),
-			  gcry_sexp_new_name_mpi( "d", skey[2] ),
-			  gcry_sexp_new_name_mpi( "p", skey[3] ),
-			  gcry_sexp_new_name_mpi( "q", skey[4] ),
-			  gcry_sexp_new_name_mpi( "u", skey[5] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_skey, NULL,
+		     "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
+		       skey[0], skey[1], skey[2], skey[3], skey[4], skey[5] );
     }
     else
 	return GPGERR_PUBKEY_ALGO;
+
+    if ( rc )
+	BUG ();
 
     rc = gcry_pk_testkey( s_skey );
     gcry_sexp_release( s_skey );

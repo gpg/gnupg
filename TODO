@@ -28,8 +28,6 @@
 
   * Speed up calculation of key validation.
 
-  * Allow a replacement for the progress functions in ./cipher
-
   * print a warning when a revoked/expired _secret_ key is used.
 
   * --disable-asm should still assemble _udiv_qrnnd when needed
@@ -46,6 +44,12 @@
 
   * Delay the read of the passphrase-fd afte a NEED_PASSPHRASE.  But this
     may break some scripts.
+
+  * as soon as we have moved to KBX, we can check signatures at all places
+  because there is no perfomance drawback as we can store the result of
+  a verification in the KBX.  This enable us to better print information on
+  revoked user IDs and signatures. Well, caching of non-self-signatures
+  will still be complicated.
 
 
 Nice to have

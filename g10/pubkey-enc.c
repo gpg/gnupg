@@ -51,44 +51,35 @@ pk_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
     *result = NULL;
     /* make a sexp from skey */
     if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "elg", 0 ),
-			  gcry_sexp_new_name_mpi( "p", skey[0] ),
-			  gcry_sexp_new_name_mpi( "g", skey[1] ),
-			  gcry_sexp_new_name_mpi( "y", skey[2] ),
-			  gcry_sexp_new_name_mpi( "x", skey[3] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_skey, NULL,
+			      "(private-key(elg(p%m)(g%m)(y%m)(x%m)))",
+				  skey[0], skey[1], skey[2], skey[3] );
     }
     else if( algo == GCRY_PK_RSA ) {
-	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "rsa", 0 ),
-			  gcry_sexp_new_name_mpi( "n", skey[0] ),
-			  gcry_sexp_new_name_mpi( "e", skey[1] ),
-			  gcry_sexp_new_name_mpi( "d", skey[2] ),
-			  gcry_sexp_new_name_mpi( "p", skey[3] ),
-			  gcry_sexp_new_name_mpi( "q", skey[4] ),
-			  gcry_sexp_new_name_mpi( "u", skey[5] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_skey, NULL,
+		    "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
+		     skey[0], skey[1], skey[2], skey[3], skey[4], skey[5] );
     }
     else
 	return GPGERR_PUBKEY_ALGO;
 
+    if ( rc )
+	BUG ();
+
     /* put data into a S-Exp s_data */
     if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
-	s_data = SEXP_CONS( SEXP_NEW( "enc-val", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "elg", 0 ),
-			  gcry_sexp_new_name_mpi( "a", data[0] ),
-			  gcry_sexp_new_name_mpi( "b", data[1] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_data, NULL,
+			       "(enc-val(elg(a%m)(b%m)))", data[0], data[1] );
     }
     else if( algo == GCRY_PK_RSA ) {
-	s_data = SEXP_CONS( SEXP_NEW( "enc-val", 0 ),
-			  gcry_sexp_vlist( SEXP_NEW( "rsa", 0 ),
-			  gcry_sexp_new_name_mpi( "a", data[0] ),
-			  NULL ));
+	rc = gcry_sexp_build ( &s_data, NULL,
+			       "(enc-val(rsa(a%m)))", data[0] );
     }
     else
 	BUG();
+
+    if ( rc )
+	BUG ();
 
     rc = gcry_pk_decrypt( &s_plain, s_data, s_skey );
     gcry_sexp_release( s_skey );
@@ -97,6 +88,7 @@ pk_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 	return rc;
 
     *result = gcry_sexp_car_mpi( s_plain, 0 );
+    gcry_sexp_release( s_plain );
     if( !*result )
 	return -1; /* oops */
 

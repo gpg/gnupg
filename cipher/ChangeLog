@@ -1,3 +1,9 @@
+Tue Jul 25 17:44:15 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * pubkey.c (exp_to_key,sexp_to_sig,sexp_to_enc,gcry_pk_encrypt,
+    gcry_pk_decrypt,gcry_pk_sign,gcry_pk_genkey): Changed to work with
+    the new S-Exp interface.
+
 Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
 
   * random.c (gather_faked): Replaced make_timestamp by time(2) again.

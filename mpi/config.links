@@ -178,6 +178,16 @@ case "${target}" in
 	cat   $srcdir/mpi/powerpc32/syntax.h	>>./mpi/asm-syntax.h
 	path="powerpc32"
 	;;
+
+    powerpc*-*-netbsd*)
+       echo '/* configured NetBSD on powerpc */' >>./mpi/asm-syntax.h
+       echo '#define ELF_SYNTAX'                 >>./mpi/asm-syntax.h
+       cat   $srcdir/mpi/powerpc32/syntax.h	 >>./mpi/asm-syntax.h
+       mpi_sflags="-Wa,-mppc"
+       path="powerpc32"
+       ;;
+
+
     rs6000-*-aix[456789]*    | \
     rs6000-*-aix3.2.[456789])
 	mpi_sflags="-Wa,-mpwr"

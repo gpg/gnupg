@@ -254,7 +254,9 @@ key_from_sexp( GCRY_MPI *array,
     list = gcry_sexp_find_token( sexp, topname, 0 );
     if( !list )
 	return GCRYERR_INV_OBJ;
-    list = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cdr( list );
+    gcry_sexp_release ( list );
+    list = l2;
     if( !list )
 	return GCRYERR_NO_OBJ;
 
@@ -266,17 +268,21 @@ key_from_sexp( GCRY_MPI *array,
 		gcry_free( array[i] );
 		array[i] = NULL;
 	    }
+	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
 	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    for(i=0; i<idx; i++) {
 		gcry_free( array[i] );
 		array[i] = NULL;
 	    }
+	    gcry_sexp_release ( list );
 	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
 	}
     }
+    gcry_sexp_release ( list );
 
     return 0;
 }
@@ -294,36 +300,45 @@ factors_from_sexp( MPI **retarray, GCRY_SEXP sexp )
     list = gcry_sexp_find_token( sexp, "misc-key-info", 0 );
     if( !list )
 	return GCRYERR_INV_OBJ;
-    list = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cdr( list );
+    gcry_sexp_release ( list );
+    list = l2;
     if( !list )
 	return GCRYERR_NO_OBJ;
-    list = gcry_sexp_find_token( list, "pm1-factors", 0 );
+    l2 = gcry_sexp_find_token( list, "pm1-factors", 0 );
+    gcry_sexp_release ( list );
+    list = l2;
     if( !list )
 	return GCRYERR_NO_OBJ;
 
     /* count factors */
     ctx = NULL;
     for( n=0; (l2 = gcry_sexp_enum( list, &ctx, 0 )); n++ )
-	;
+	gcry_sexp_release ( l2 );
 
     array = gcry_xcalloc( n, sizeof *array );
-    if( !array )
+    if( !array ) {
+	gcry_sexp_release ( list );
 	return GCRYERR_NO_MEM;
-
-    /* retrieve factors  (the first enum is to skip the car) */
+    }
+    /* retrieve factors */
     ctx = NULL;
-    if( gcry_sexp_enum( list, &ctx, 0 ) ) {
+    if( (l2 = gcry_sexp_enum( list, &ctx, 0 )) ) {
+	gcry_sexp_release ( l2 ); /* skip the car */
 	for( n=0; (l2 = gcry_sexp_enum( list, &ctx, 0 )); n++ ) {
 	    array[n] = gcry_sexp_car_mpi( l2, 0 );
+	    gcry_sexp_release ( l2 );
 	    if( !array[n] ) {
 		for(i=0; i < n; i++ )
 		    gcry_mpi_release( array[i] );
 		gcry_free(array);
+		gcry_sexp_release ( list );
 		return GCRYERR_INV_OBJ;
 	    }
 	}
     }
 
+     gcry_sexp_release ( list );
     *retarray = array;
     return 0;
 }
@@ -340,7 +355,6 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PKT_secret_key *sk;
     PKT_public_key *pk;
     MPI *factors;
-    char buf[100];
     GCRY_SEXP s_parms, s_key;
 
     assert( is_ELGAMAL(algo) );
@@ -355,12 +369,12 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	log_info(_("keysize rounded up to %u bits\n"), nbits );
     }
 
-    sprintf(buf, "%u", nbits );
-    s_parms = SEXP_CONS( SEXP_NEW( "genkey", 0 ),
-		 SEXP_CONS( SEXP_NEW(algo == GCRY_PK_ELG_E ? "openpgp-elg" :
-				   algo == GCRY_PK_ELG	 ? "elg" : "x-oops",0),
-			    gcry_sexp_new_name_data( "nbits", buf, 0 ) )
-			);
+    if ( gcry_sexp_build ( &s_parms, NULL,
+			   "(genkey(%s(nbits %d)))",
+			   algo == GCRY_PK_ELG_E ? "openpgp-elg" :
+			   algo == GCRY_PK_ELG	 ? "elg" : "x-oops" ,
+			   (int)nbits ) )
+	BUG ();
 
     rc = gcry_pk_genkey( &s_key, s_parms );
     gcry_sexp_release( s_parms );
@@ -447,7 +461,6 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PKT_secret_key *sk;
     PKT_public_key *pk;
     MPI *factors;
-    char buf[100];
     GCRY_SEXP s_parms, s_key;
 
     if( nbits > 1024 || nbits < 512 ) {
@@ -460,11 +473,9 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	log_info(_("keysize rounded up to %u bits\n"), nbits );
     }
 
-    sprintf(buf, "%u", nbits );
-    s_parms = SEXP_CONS( SEXP_NEW( "genkey", 0 ),
-		 SEXP_CONS( SEXP_NEW("dsa",0),
-			    gcry_sexp_new_name_data( "nbits", buf, 0 ) )
-			);
+    if ( gcry_sexp_build ( &s_parms, NULL,
+			  "(genkey(dsa(nbits %d)))", (int)nbits ) )
+	BUG ();
 
     rc = gcry_pk_genkey( &s_key, s_parms );
     gcry_sexp_release( s_parms );
