@@ -1,3 +1,8 @@
+2002-06-30  Werner Koch  <wk@gnupg.org>
+
+	* mk-w32-dist (bindir): Fixes vor VPATH builds in a subdir,
+	include gpgv.
+
 2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
 
 	* conf-riscos/Makefile: Changes due to moving around RISC OS

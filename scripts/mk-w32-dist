@@ -15,8 +15,13 @@ set -e
 
 cd dist-w32
 
+bindir=..
+
 if [ -f ../README ]; then
     srcdir=..
+elif [ -f ../../README ]; then
+    srcdir=../..
+    bindir=..
 elif [ -f ../../gnupg-stable/README ]; then
     srcdir=../../gnupg-stable
 elif [ -f ../../../gnupg-stable/README ]; then
@@ -26,13 +31,18 @@ else
     exit 1
 fi
 
+version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.]*\)\"/\1/p' $bindir/config.h)
+echo "building version $version"
+
 rm * || true
-ln ../g10/gpg gpg.exe
+ln ${bindir}/g10/gpg.exe gpg.exe
+ln ${bindir}/g10/gpgv.exe gpgv.exe
 mingw32 strip gpg.exe
-if [ -f ../doc/gpg.man ] ; then
+mingw32 strip gpgv.exe
+if [ -f ${srcdir}/doc/gpg.man ] ; then
   sed `printf "s/\b.//g"` ../doc/gpg.man >gpg.man
 else
-  man -Tlatin1 -l ../doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
+  man -Tlatin1 -l ${srcdir}/doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
 fi
 todos gpg.man
 cp ${srcdir}/README .
@@ -44,10 +54,6 @@ todos README.W32
 ln ${srcdir}/doc/FAQ .
 todos FAQ
 for i in ${srcdir}/po/*.gmo; do ln $i "$(basename $i .gmo).mo" ; done
-zip "gnupg-w32-$(cat ${srcdir}/VERSION).zip" *
-
-
-
-
+zip "gnupg-w32-${version}.zip" *
 
 
