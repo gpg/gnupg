@@ -27,7 +27,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
-#ifdef HAVE_READLINE_READLINE_H
+#ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
@@ -83,7 +83,7 @@ got_fatal_signal( int sig )
 
     secmem_term();
 
-#if defined(HAVE_READLINE_READLINE_H) && defined(HAVE_LIBREADLINE)
+#ifdef HAVE_LIBREADLINE
     rl_free_line_state ();
     rl_cleanup_after_signal ();
 #endif

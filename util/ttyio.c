@@ -46,7 +46,7 @@
 #endif
 #include <errno.h>
 #include <ctype.h>
-#ifdef HAVE_READLINE_READLINE_H
+#ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
@@ -162,7 +162,7 @@ init_ttyfp(void)
                   tty_get_ttyname (), strerror(errno) );
 	exit(2);
     }
-#if defined(HAVE_READLINE_READLINE_H) && defined(HAVE_LIBREADLINE)
+#ifdef HAVE_LIBREADLINE
     rl_catch_signals = 0;
     rl_instream = rl_outstream = ttyfp;
 #endif
@@ -512,7 +512,7 @@ do_get( const char *prompt, int hidden )
 char *
 tty_get( const char *prompt )
 {
-#if defined(HAVE_READLINE_READLINE_H) && defined(HAVE_LIBREADLINE)
+#ifdef HAVE_LIBREADLINE
     if (!batchmode && !no_terminal) {
       char *line;
       char *buf;
@@ -544,7 +544,7 @@ tty_get( const char *prompt )
       return buf;
     }
     else
-#endif /* HAVE_READLINE_READLINE_H && HAVE_LIBREADLINE */
+#endif /* HAVE_LIBREADLINE */
       return do_get( prompt, 0 );
 }
 

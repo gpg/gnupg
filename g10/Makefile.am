@@ -132,7 +132,7 @@ gpgv_SOURCES = gpgv.c           \
 #	       ks-db.h \
 #	       $(common_source)
 
-LDADD =  $(needed_libs) $(other_libs) @ZLIBS@ @W32LIBS@
+LDADD =  $(needed_libs) $(other_libs) @ZLIBS@ @W32LIBS@ @LIBREADLINE@
 gpg_LDADD = $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB_LIBS@
 
 $(PROGRAMS): $(needed_libs)
