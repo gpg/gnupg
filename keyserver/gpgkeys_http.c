@@ -31,6 +31,7 @@
 #include "util.h"
 #include "http.h"
 #include "keyserver.h"
+#include "ksutil.h"
 
 extern char *optarg;
 extern int optind;
@@ -38,10 +39,10 @@ extern int optind;
 #define GET    0
 #define MAX_LINE 80
 
-int verbose=0;
-unsigned int http_flags=0;
-char host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'},path[1024]={'\0'};
-FILE *input=NULL,*output=NULL,*console=NULL;
+static int verbose=0;
+static unsigned int http_flags=0;
+static char host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'},path[1024]={'\0'};
+static FILE *input=NULL,*output=NULL,*console=NULL;
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
 #define END   "-----END PGP PUBLIC KEY BLOCK-----"
@@ -128,6 +129,7 @@ main(int argc,char *argv[])
   int arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
   char *thekey=NULL;
+  unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
 
   console=stderr;
 
@@ -281,9 +283,22 @@ main(int argc,char *argv[])
 	      else
 		http_flags|=HTTP_FLAG_TRY_SRV;
 	    }
+	  else if(strncasecmp(start,"timeout",7)==0)
+	    {
+	      if(no)
+		timeout=0;
+	      else
+		timeout=atoi(&start[8]);
+	    }
 
 	  continue;
 	}
+    }
+
+  if(timeout && register_timeout()==-1)
+    {
+      fprintf(console,"gpgkeys: unable to register timeout handler\n");
+      return KEYSERVER_INTERNAL_ERROR;
     }
 
   /* By suggested convention, if the user gives a :port, then disable
@@ -350,6 +365,8 @@ main(int argc,char *argv[])
 	fprintf(console,"Path:\t\t%s\n",path);
       fprintf(console,"Command:\tGET\n");
     }
+
+  set_timeout(timeout);
 
   ret=get_key(thekey);
 

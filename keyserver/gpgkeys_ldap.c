@@ -38,6 +38,7 @@
 
 #include "util.h"
 #include "keyserver.h"
+#include "ksutil.h"
 
 #ifdef __riscos__
 #include "util.h"
@@ -1538,6 +1539,7 @@ main(int argc,char *argv[])
   char line[MAX_LINE];
   int version,failed=0,use_ssl=0,use_tls=0,bound=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
+  unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
 
   console=stderr;
 
@@ -1738,9 +1740,22 @@ main(int argc,char *argv[])
 		  real_ldap=1;
 		}
 	    }
+	  else if(strncasecmp(start,"timeout",7)==0)
+	    {
+	      if(no)
+		timeout=0;
+	      else
+		timeout=atoi(&start[8]);
+	    }
 
 	  continue;
 	}
+    }
+
+  if(timeout && register_timeout()==-1)
+    {
+      fprintf(console,"gpgkeys: unable to register timeout handler\n");
+      return KEYSERVER_INTERNAL_ERROR;
     }
 
   /* SSL trumps TLS */
@@ -1826,6 +1841,9 @@ main(int argc,char *argv[])
 #endif
     }
 
+  /* We have a timeout set for the setup stuff since it could time out
+     as well. */
+  set_timeout(timeout);
 
   /* Note that this tries all A records on a given host (or at least,
      OpenLDAP does). */
@@ -1946,6 +1964,8 @@ main(int argc,char *argv[])
 
       while(keyptr!=NULL)
 	{
+	  set_timeout(timeout);
+
 	  if(get_key(keyptr->str)!=KEYSERVER_OK)
 	    failed++;
 
@@ -1959,6 +1979,8 @@ main(int argc,char *argv[])
 
 	do
 	  {
+	    set_timeout(timeout);
+
 	    if(real_ldap)
 	      {
 		if(send_key(&eof)!=KEYSERVER_OK)
@@ -1978,6 +2000,8 @@ main(int argc,char *argv[])
       {
 	char *searchkey=NULL;
 	int len=0;
+
+	set_timeout(timeout);
 
 	/* To search, we stick a * in between each key to search for.
 	   This means that if the user enters words, they'll get

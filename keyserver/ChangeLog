@@ -1,3 +1,12 @@
+2004-10-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main), gpgkeys_hkp.c (main), gpgkeys_http.c
+	(main), gpgkeys_finger.c (main): Call timeout functions before
+	performing an action that could block for a long time.
+
+	* ksutil.h, ksutil.c: New.  Right now just contains timeout
+	functions.
+
 2004-10-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_finger.c, gpgkeys_hkp.c, gpgkeys_http.c, gpgkeys_ldap.c:

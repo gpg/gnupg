@@ -44,13 +44,13 @@
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "util.h"
 #include "keyserver.h"
+#include "ksutil.h"
 
 #ifdef _WIN32
 #define sock_close(a)  closesocket(a)
 #else
 #define sock_close(a)  close(a)
 #endif
-
 
 extern char *optarg;
 extern int optind;
@@ -64,7 +64,6 @@ static FILE *input, *output, *console;
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
 #define END   "-----END PGP PUBLIC KEY BLOCK-----"
-
 
 #ifdef _WIN32
 static void
@@ -364,6 +363,7 @@ main(int argc,char *argv[])
   int arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
   char *thekey=NULL;
+  unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
 
   console=stderr;
 
@@ -472,9 +472,22 @@ main(int argc,char *argv[])
 	      else
 		verbose++;
 	    }
+	  else if(strncasecmp(start,"timeout",7)==0)
+	    {
+	      if(no)
+		timeout=0;
+	      else
+		timeout=atoi(&start[8]);
+	    }
 
 	  continue;
 	}
+    }
+
+  if(timeout && register_timeout()==-1)
+    {
+      fprintf(console,"gpgkeys: unable to register timeout handler\n");
+      return KEYSERVER_INTERNAL_ERROR;
     }
 
   /* If it's a GET or a SEARCH, the next thing to come in is the
@@ -533,6 +546,8 @@ main(int argc,char *argv[])
 	fprintf(console,"Path:\t\t%s\n",path);
       fprintf(console,"Command:\tGET\n");
     }
+
+  set_timeout(timeout);
 
   ret = get_key(thekey);
 
