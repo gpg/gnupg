@@ -1,60 +1,46 @@
-#!/bin/sh
-# Run this to generate all the initial makefiles, etc.
-# It is only needed for the CVS version.
-
-# have_version(prog, list of executables, required version) 
+#! /bin/sh
+# Run this to generate all the initial makefiles, etc. 
 #
-# Returns true and sets $prog to the first executable with the
-# required minimum major.minor.
-have_version ()
-{
-  found=0
+# Copyright (C) 2003 g10 Code GmbH
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-  for prog in $2 :
-  do
-    ver=$($prog --version \
-  	  | gawk '{ if (match($0, /[0-9]+\.[0-9]+/))
-                      {
-                        print substr($0, RSTART, RLENGTH); ok=1; exit 0;
-                      }
-                  }
-  
-                  END {
-                        if (! ok)
-                          exit 1;
-                      }')
-  
-    if test $? = 0
-    then
-      if expr 0$ver '>=' 0$3 >/dev/null 2>&1
-      then
-        echo Using $prog
-	found=1
-	export $1="$prog"
-	break
-      fi
-    fi
-  done
+configure_ac="configure.ac"
 
-  if test 0$found = 01
-  then
-    true
-  else
-    echo "*** Error.  Could not find an appropriate executable for $1 with "
-    echo "at least version $3."
-    false
-  fi
+cvtver () {
+  awk 'NR==1 {split($NF,A,".");X=1000000*A[1]+1000*A[2]+A[3];print X;exit 0}'
 }
 
-PGM=NEWPG
-lib_config_files=""
-autoconf_vers=2.52
-automake_vers=1.5
-aclocal_vers=1.5
-#libtool_vers=1.3
+check_version () {
+    if [ $(( `("$1" --version || echo "0") | cvtver` >= $2 )) == 1 ]; then
+       return 0
+    fi
+    echo "**Error**: "\`$1\'" not installed or too old." >&2
+    echo '           Version '$3' or newer is required.' >&2
+    [ -n "$4" ] && echo '           Note that this is part of '\`$4\''.' >&2
+    DIE="yes"
+    return 1
+}
+
+# Allow to override the default tool names
+AUTOCONF=${AUTOCONF_PREFIX}${AUTOCONF:-autoconf}${AUTOCONF_SUFFIX}
+AUTOHEADER=${AUTOCONF_PREFIX}${AUTOHEADER:-autoheader}${AUTOCONF_SUFFIX}
+
+AUTOMAKE=${AUTOMAKE_PREFIX}${AUTOMAKE:-automake}${AUTOMAKE_SUFFIX}
+ACLOCAL=${AUTOMAKE_PREFIX}${ACLOCAL:-aclocal}${AUTOMAKE_SUFFIX}
+
+GETTEXT=${GETTEXT_PREFIX}${GETTEXT:-gettext}${GETTEXT_SUFFIX}
+MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 
 DIE=no
-if test "$1" = "--build-w32"; then
+
+if [ "$1" = "--build-w32" ]; then
     shift
     target=i386--mingw32
     if [ ! -f ./config.guess ]; then
@@ -113,51 +99,62 @@ if test "$1" = "--build-w32"; then
     exit $?
 fi
 
-if ! have_version autoconf "$autoconf autoconf" $autoconf_vers
+
+
+# Grep the required versions from configure.ac
+autoconf_vers=`sed -n '/^AC_PREREQ(/ { 
+s/^.*(\(.*\))/\1/p
+q
+}' ${configure_ac}`
+autoconf_vers_num=`echo "$autoconf_vers" | cvtver`
+
+automake_vers=`sed -n '/^min_automake_version=/ { 
+s/^.*="\(.*\)"/\1/p
+q
+}' ${configure_ac}`
+automake_vers_num=`echo "$automake_vers" | cvtver`
+
+gettext_vers=`sed -n '/^AM_GNU_GETTEXT_VERSION(/ { 
+s/^.*(\(.*\))/\1/p
+q
+}' ${configure_ac}`
+gettext_vers_num=`echo "$gettext_vers" | cvtver`
+
+
+if [ -z "$autoconf_vers" -o -z "$automake_vers" -o -z "$gettext_vers" ]
 then
-  DIE="yes"
+  echo "**Error**: version information not found in "\`${configure_ac}\'"." >&2
+  exit 1
 fi
 
-if have_version automake "$automake automake automake-1.6" $automake_vers
-then
-  if ! have_version aclocal "$aclocal aclocal aclocal-1.6" $aclocal_vers
-  then
-    DIE='yes'
-  fi
-else
-    DIE='yes'
-fi
 
-#if (libtool --version) < /dev/null > /dev/null 2>&1 ; then
-#    if (libtool --version | awk 'NR==1 { if( $4 >= '$libtool_vers') \
-#                               exit 1; exit 0; }');
-#    then
-#       echo "**Error**: "\`libtool\'" is too old."
-#       echo '           (version ' $libtool_vers ' or newer is required)'
-#       DIE="yes"
-#    fi
-#else
-#    echo
-#    echo "**Error**: You must have "\`libtool\'" installed to compile $PGM."
-#    echo '           (version ' $libtool_vers ' or newer is required)'
-#    DIE="yes"
-#fi
+if check_version $AUTOCONF $autoconf_vers_num $autoconf_vers ; then
+    check_version $AUTOHEADER $autoconf_vers_num $autoconf_vers autoconf
+fi
+if check_version $AUTOMAKE $automake_vers_num $automake_vers; then
+  check_version $ACLOCAL $automake_vers_num $autoconf_vers automake
+fi
+if check_version $GETTEXT $gettext_vers_num $gettext_vers; then
+  check_version $MSGMERGE $gettext_vers_num $gettext_vers gettext
+fi
 
 if test "$DIE" = "yes"; then
+    cat <<EOF
+
+Note that you may use alternative versions of the tools by setting 
+the corresponding environment variables; see README.CVS for details.
+                   
+EOF
     exit 1
 fi
 
-#echo "Running libtoolize...  Ignore non-fatal messages."
-#echo "no" | libtoolize
-
-echo "Running autopoint"
-autopoint
-
-echo "Running $aclocal -I m4"
-$aclocal -I m4
+echo "Running aclocal -I m4 ..."
+$ACLOCAL -I m4
 echo "Running autoheader..."
-autoheader
-echo "Running $automake --gnu -a"
-$automake --gnu -a
-echo "Running $autoconf"
-$autoconf
+$AUTOHEADER
+echo "Running automake --gnu ..."
+$AUTOMAKE --gnu;
+echo "Running autoconf..."
+$AUTOCONF
+
+echo "You may now run \"./configure --enable-maintainer-mode && make\"."

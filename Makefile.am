@@ -21,7 +21,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = scripts/config.rpath  autogen.sh README-alpha
+EXTRA_DIST = scripts/config.rpath  autogen.sh README-alpha README.CVS
 DISTCLEANFILES = g10defs.h 
 
 if BUILD_GPG
@@ -45,7 +45,7 @@ else
 scd =
 endif
 
-SUBDIRS = m4  intl jnlib common kbx \
+SUBDIRS = m4 intl jnlib common kbx \
  ${gpg} ${sm} ${agent} ${scd} po doc 
 
 #tests

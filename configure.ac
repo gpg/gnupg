@@ -20,6 +20,8 @@
 
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.52)
+min_automake_version="1.7.6"
+
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
 AC_INIT(gnupg, 1.9.3-cvs, gnupg-devel@gnupg.org)
@@ -36,8 +38,6 @@ NEED_OPENSC_VERSION=0.8.0
 
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
-
-AM_GNU_GETTEXT_VERSION(0.11.5)
 
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(sm/gpgsm.c)
@@ -354,6 +354,7 @@ AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 # Checks for libraries.
 #
 
+
 #
 # libgpg-error is a library with error codes shared between GnuPG
 # related projects.
@@ -608,6 +609,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
                    [A human readable text with the name of the OS])
 
 
+AM_GNU_GETTEXT_VERSION(0.12.1)
 if test "$try_gettext" = yes; then
   AM_GNU_GETTEXT(,[need-ngettext])
 

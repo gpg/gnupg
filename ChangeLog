@@ -1,3 +1,10 @@
+2003-12-09  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Add a min_automake_version.
+	* README.CVS: New.
+	* autogen.sh: Revamped except for the --build-w32 hack.
+	* Makefile.am: Add README.CVS
+
 2003-11-17  Werner Koch  <wk@gnupg.org>
 
 	Release 1.9.2.
