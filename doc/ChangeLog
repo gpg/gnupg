@@ -1,3 +1,9 @@
+2003-05-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --trustdb-name.  Document --gnupg in a new
+	compliance section, and remove the various --no-PGPX
+	options. Deprecate --no-comment in favor of --no-sk-comments.
+
 2003-05-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Some general language tweaks.  Note default algo for
