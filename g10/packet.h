@@ -1,6 +1,6 @@
 /* packet.h - packet definitions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -424,7 +424,6 @@ PACKET *create_gpg_control ( ctrlpkttype_t type,
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
-void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
 void build_sig_subpkt_from_sig( PKT_signature *sig );

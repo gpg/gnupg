@@ -1,3 +1,26 @@
+2003-12-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, build-packet.c (hash_public_key): Remove function ...
+
+	* keydb.h, keyid.c (hash_public_key, do_fingerprint_md): ... and
+	make a new one here that shares code with the fingerprint
+	calculations.  This removes some duplicated functionality, and is
+	also around 14% faster.  (Every bit helps).
+
+	* import.c (import_one): No longer need the Elgamal import
+	warning.
+
+	* getkey.c (get_pubkey_fast): This one is sort of obscure.
+	get_pubkey_fast returns the primary key when requesting a subkey,
+	so if a user has a key signed by a subkey (we don't do this, but
+	used to), AND that key is not self-signed, AND the algorithm of
+	the subkey in question is not present in GnuPG, AND the algorithm
+	of the primary key that owns the subkey in question is present in
+	GnuPG, then we will try and verify the subkey signature using the
+	primary key algorithm and hit a BUG().  The fix is to not return a
+	hit if the keyid is not the primary.  All other users of
+	get_pubkey_fast already expect a primary only.
+
 2003-12-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyid.c (do_fingerprint_md): Remove the rules to hash the old v3

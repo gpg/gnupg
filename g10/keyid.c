@@ -47,59 +47,80 @@ pubkey_letter( int algo )
     }
 }
 
+/* This function is useful for v4 fingerprints and v3 or v4 key
+   signing. */
+void
+hash_public_key( MD_HANDLE md, PKT_public_key *pk )
+{
+  unsigned n=6;
+  unsigned nb[PUBKEY_MAX_NPKEY];
+  unsigned nn[PUBKEY_MAX_NPKEY];
+  byte *pp[PUBKEY_MAX_NPKEY];
+  int i;
+  int npkey = pubkey_get_npkey( pk->pubkey_algo );
+
+  /* Two extra bytes for the expiration date in v3 */
+  if(pk->version<4)
+    n+=2;
+
+  if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
+    {
+      pp[0]=mpi_get_opaque(pk->pkey[0],&nn[0]);
+      n+=nn[0];
+    }
+  else
+    for(i=0; i < npkey; i++ )
+      {
+	nb[i] = mpi_get_nbits(pk->pkey[i]);
+	pp[i] = mpi_get_buffer( pk->pkey[i], nn+i, NULL );
+	n += 2 + nn[i];
+      }
+
+  md_putc( md, 0x99 );     /* ctb */
+  /* What does it mean if n is greater than than 0xFFFF ? */
+  md_putc( md, n >> 8 );   /* 2 byte length header */
+  md_putc( md, n );
+  md_putc( md, pk->version );
+
+  md_putc( md, pk->timestamp >> 24 );
+  md_putc( md, pk->timestamp >> 16 );
+  md_putc( md, pk->timestamp >>  8 );
+  md_putc( md, pk->timestamp       );
+
+  if(pk->version<4)
+    {
+      u16 days=0;
+      if(pk->expiredate)
+	days=(u16)((pk->expiredate - pk->timestamp) / 86400L);
+ 
+      md_putc( md, days >> 8 );
+      md_putc( md, days );
+    }
+
+  md_putc( md, pk->pubkey_algo );
+
+  if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
+    md_write(md,pp[0],nn[0]);
+  else
+    for(i=0; i < npkey; i++ )
+      {
+	md_putc( md, nb[i]>>8);
+	md_putc( md, nb[i] );
+	md_write( md, pp[i], nn[i] );
+	m_free(pp[i]);
+      }
+}
+
 static MD_HANDLE
 do_fingerprint_md( PKT_public_key *pk )
 {
-    MD_HANDLE md;
-    unsigned n=6;
-    unsigned nb[PUBKEY_MAX_NPKEY];
-    unsigned nn[PUBKEY_MAX_NPKEY];
-    byte *pp[PUBKEY_MAX_NPKEY];
-    int i;
-    int npkey = pubkey_get_npkey( pk->pubkey_algo );
+  MD_HANDLE md;
 
-    md = md_open( DIGEST_ALGO_SHA1, 0);
+  md = md_open( DIGEST_ALGO_SHA1, 0);
+  hash_public_key(md,pk);
+  md_final( md );
 
-    if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
-      {
-	pp[0]=mpi_get_opaque(pk->pkey[0],&nn[0]);
-	n+=nn[0];
-      }
-    else
-      for(i=0; i < npkey; i++ )
-	{
-	  nb[i] = mpi_get_nbits(pk->pkey[i]);
-	  pp[i] = mpi_get_buffer( pk->pkey[i], nn+i, NULL );
-	  n += 2 + nn[i];
-	}
-
-    md_putc( md, 0x99 );     /* ctb */
-    /* What does it mean if n is greater than than 0xFFFF ? */
-    md_putc( md, n >> 8 );   /* 2 byte length header */
-    md_putc( md, n );
-    md_putc( md, 4 );
-
-    md_putc( md, pk->timestamp >> 24 );
-    md_putc( md, pk->timestamp >> 16 );
-    md_putc( md, pk->timestamp >>  8 );
-    md_putc( md, pk->timestamp       );
-
-    md_putc( md, pk->pubkey_algo );
-
-    if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
-      md_write(md,pp[0],nn[0]);
-    else
-      for(i=0; i < npkey; i++ )
-	{
-	  md_putc( md, nb[i]>>8);
-	  md_putc( md, nb[i] );
-	  md_write( md, pp[i], nn[i] );
-	  m_free(pp[i]);
-	}
-
-    md_final( md );
-
-    return md;
+  return md;
 }
 
 static MD_HANDLE
@@ -121,7 +142,6 @@ do_fingerprint_md_sk( PKT_secret_key *sk )
       pk.pkey[i] = sk->skey[i];
     return do_fingerprint_md( &pk );
 }
-
 
 /****************
  * Get the keyid from the secret key and put it into keyid

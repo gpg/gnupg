@@ -374,13 +374,15 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 
 /* Get a public key and store it into the allocated pk.  This function
    differs from get_pubkey() in that it does not do a check of the key
-   to avoid recursion.  It should be used only in very certain cases.  */
+   to avoid recursion.  It should be used only in very certain cases.
+   It will only retrieve primary keys. */
 int
 get_pubkey_fast (PKT_public_key *pk, u32 *keyid)
 {
   int rc = 0;
   KEYDB_HANDLE hd;
   KBNODE keyblock;
+  u32 pkid[2];
   
   assert (pk);
 #if MAX_PK_CACHE_ENTRIES
@@ -413,18 +415,23 @@ get_pubkey_fast (PKT_public_key *pk, u32 *keyid)
       log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
       return G10ERR_NO_PUBKEY;
     }
-  
+
   assert ( keyblock->pkt->pkttype == PKT_PUBLIC_KEY
            ||  keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY );
-  copy_public_key (pk, keyblock->pkt->pkt.public_key );
+
+  keyid_from_pk(keyblock->pkt->pkt.public_key,pkid);
+  if(keyid[0]==pkid[0] && keyid[1]==pkid[1])
+    copy_public_key (pk, keyblock->pkt->pkt.public_key );
+  else
+    rc=G10ERR_NO_PUBKEY;
+
   release_kbnode (keyblock);
 
   /* Not caching key here since it won't have all of the fields
      properly set. */
 
-  return 0;
+  return rc;
 }
-
 
 
 KBNODE

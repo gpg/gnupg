@@ -1,5 +1,5 @@
 /* keydb.h - Key database
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -237,6 +237,7 @@ KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
+void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
 u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );
@@ -250,13 +251,11 @@ const char *datestr_from_sig( PKT_signature *sig );
 const char *expirestr_from_pk( PKT_public_key *pk );
 const char *expirestr_from_sk( PKT_secret_key *sk );
 const char *expirestr_from_sig( PKT_signature *sig );
-
 const char *colon_strtime (u32 t);
 const char *colon_datestr_from_pk (PKT_public_key *pk);
 const char *colon_datestr_from_sk (PKT_secret_key *sk);
 const char *colon_datestr_from_sig (PKT_signature *sig);
 const char *colon_expirestr_from_sig (PKT_signature *sig);
-
 byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf, size_t *ret_len );
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
 
