@@ -673,11 +673,23 @@ optsep(char **stringp)
 	      ptr++;
 	    }
 
-	  /* There is an argument, so grab that too. */
+	  /* There is an argument, so grab that too.  At this point,
+	     ptr points to the first character of the argument. */
 	  if(sawequals)
-	    end=strpbrk(ptr," ,");
+	    {
+	      /* Is it a quoted argument? */
+	      if(*ptr=='"')
+		{
+		  ptr++;
+		  end=strchr(ptr,'"');
+		  if(end)
+		    end++;
+		}
+	      else
+		end=strpbrk(ptr," ,");
+	    }
 
-	  if(end)
+	  if(end && *end)
 	    {
 	      *end='\0';
 	      *stringp=end+1;

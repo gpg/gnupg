@@ -1,3 +1,8 @@
+2004-07-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (optsep): Add the ability to understand keyword="quoted
+	arg with spaces" type options.
+
 2004-07-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (list_keyblock_print): Always use the new listing
