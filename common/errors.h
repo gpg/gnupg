@@ -100,6 +100,8 @@ enum {
   GNUPG_Scdaemon_Error = 71,
   GNUPG_Unsupported_Protocol = 72,
   GNUPG_Bad_PIN_Method = 73,
+  GNUPG_Card_Not_Initialized = 74,
+  GNUPG_Unsupported_Operation = 75,
 };
 
 /* Status codes - fixme: should go into another file */
