@@ -138,6 +138,7 @@ card_open (CARD *rcard)
     {
       log_error ("no card reader available\n");
       rc = GNUPG_Card_Error;
+      goto leave;
     }
   card->ctx->error_file = log_get_stream ();
   if (opt.debug)

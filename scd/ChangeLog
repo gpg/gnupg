@@ -1,3 +1,7 @@
+2002-04-10  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_open): Return immediately when no reader is available.
+
 2002-03-27  Werner Koch  <wk@gnupg.org>
 
 	* card.c (card_open, card_close): Adjusted for changes in OpenSC.
