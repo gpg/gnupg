@@ -28,7 +28,7 @@ AM_CFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl @GPG_ERROR_CFLAGS@
 
 bin_PROGRAMS = gpgconf
 
-gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-list.c no-libgcrypt.c
+gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a @INTLLIBS@
 

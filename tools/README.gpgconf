@@ -1,0 +1,322 @@
+============
+  GPG Conf
+============
+
+CONCEPT
+=======
+
+gpgconf provides access to the configuration of one or more components
+of the GnuPG system.  These components correspond more or less to the
+programs that exist in the GnuPG framework, like GnuPG, GPGSM,
+DirMngr, etc.  But this is not a strict one-to-one relationship.  Not
+all configuration options are available through GPGConf.  GPGConf
+provides a generic and abstract method to access the most important
+configuration options that can feasibly be controlled via such a
+mechanism.
+
+GPGConf can be used to gather and change the options available in each
+component, and can also provide their default values.  GPGConf will
+give detailed type information that can be used to restrict the user's
+input without making an attempt to commit the changes.
+
+GPGConf provides the backend of a configuration editor.  The
+configuration editor would usually be a graphical user interface
+program, that allows to display the current options, their default
+values, and allows the user to make changes to the options.  These
+changes can then be made active with GPGConf again.  Such a program
+that uses GPGConf in this way will be called 'GUI' throughout this
+document.
+
+
+Format Conventions
+==================
+
+Some lines in the output of GPGConf contain a list of colon-separated
+fields.  The following conventions apply:
+
+The GUI program is required to strip off trailing newline and/or carriage
+return characters from the output.
+
+GPGConf will never leave out fields.  If a certain version documents a
+certain field, this field will always be present in all GPGConf
+versions from that time on.
+
+Future versions of GPGConf might append fields to the list.  New
+fields will always be separated from the previously last field by a
+colon separator.  The GUI should be prepared to parse the last field
+it knows about up until a colon or end of line.
+
+Not all fields are defined under all conditions.  You are required to
+ignore the content of undefined fields.
+
+Some fields contain strings that are not escaped in any way.  Such
+fields are described to be used "verbatim".  These fields will never
+contain a colon character (for obvious reasons).  No de-escaping or
+other formatting is required to use the field content.  This is for
+easy parsing of the output, when it is known that the content can
+never contain any special characters.
+
+Some fields contain strings that are described to be
+"percent-escaped".  Such strings need to be de-escaped before their
+content can be presented to the user.  A percent-escaped string is
+de-escaped by replacing all occurences of %XY by the byte that has the
+hexadecimal value XY.  X and Y are from the set { '0'..'9', 'a'..'f' }.
+
+Some fields contain strings that are described to be "localised".  Such
+strings are translated to the active language and formatted in the
+active character set.
+
+Some fields contain an unsigned number.  This number will always fit
+into a 32-bit unsigned integer variable.  The number may be followed
+by a space, followed by a human readable description of that value.
+You should ignore everything in the field that follows the number.
+
+Some fields contain a signed number.  This number will always fit into
+a 32-bit signed integer variable.  The number may be followed by a
+space, followed by a human readable description of that value.  You
+should ignore everything in the field that follows the number.
+
+Some fields contain an option argument.  The format of an option
+argument depends on the type of the option and on some flags:
+
+The simplest case is that the option does not take an argument at all
+(TYPE is 0).  Then the option argument is either empty if the option
+is not set, or an unsigned number that specifies how often the option
+occurs.  If the LIST flag is not set, then the only valid number is 1.
+
+If the option takes a number argument (ALT-TYPE is 2 or 3), and it can
+only occur once (LIST flag is not set), then the option argument is
+either empty if the option is not set, or it is a number.  A number is
+a string that begins with an optional minus character, followed by one
+or more digits.  The number must fit into an integer variable
+(unsigned or signed, depending on ALT-TYPE).
+
+If the option takes a number argument and it can occur more than once,
+then the option argument is either empty, or it is a comma-separated
+list of numbers as described above.
+
+If the option takes a string argument (ALT-TYPE is 1), and it can only
+occur once (LIST flag is not set) then the option argument is either
+empty if the option is not set, or it starts with a double quote
+character (") followed by a percent-escaped string that is the
+argument value.  Note that there is only a leading double quote
+character, no trailing one.  The double quote character is only needed
+to be able to differentiate between no value and the empty string as
+value.
+
+If the option takes a string argument and it can occur more than once,
+then the option argument is either empty or it starts with a double
+quote character (") followed by a comma-separated list of
+percent-escaped strings.  Obviously any commas in the individual
+strings must be percent-escaped.
+
+
+FIXME: Document the active language and active character set.  Allow
+to change it via the command line?
+
+
+Components
+==========
+
+A component is a set of configuration options that semantically belong
+together.  Furthermore, several changes to a component can be made in
+an atomic way with a single operation.  The GUI could for example
+provide a menu with one entry for each component, or a window with one
+tabulator sheet per component.
+
+The following interface is provided to list the available components:
+
+Command --list-components
+-------------------------
+
+Outputs a list of all components available, one per line.  The format
+of each line is:
+
+NAME:DESCRIPTION
+
+NAME
+
+This field contains a name tag of the component.  The name tag is used
+to specify the component in all communication with GPGConf.  The name
+tag is to be used verbatim.  It is not in any escaped format.
+
+DESCRIPTION
+
+The string in this field contains a human-readable description of the
+component.  It can be displayed to the user of the GUI for
+informational purposes.  It is percent-escaped and localized.
+
+Example:
+$ gpgconf --list-components
+gpg-agent:GPG Agent
+dirmngr:CRL Manager
+
+
+OPTIONS
+=======
+
+Every component contains one or more options.  Options may belong to a
+group.  The following command lists all options and the groups they
+belong to:
+
+Command --list-options COMPONENT
+--------------------------------
+
+Lists all options (and the groups they belong to) in the component
+COMPONENT.  COMPONENT is the string in the field NAME in the
+output of the --list-components command.
+
+There is one line for each option and each group.  First come all
+options that are not in any group.  Then comes a line describing a
+group.  Then come all options that belong into each group.  Then comes
+the next group and so on.
+
+The format of each line is:
+
+NAME:FLAGS:LEVEL:DESCRIPTION:TYPE:ALT-TYPE:ARGNAME:DEFAULT:VALUE
+
+NAME
+
+This field contains a name tag for the group or option.  The name tag
+is used to specify the group or option in all communication with
+GPGConf.  The name tag is to be used verbatim.  It is not in any
+escaped format.
+
+FLAGS
+
+The flags field contains an unsigned number.  Its value is the
+OR-wise combination of the following flag values:
+
+	1 group		If this flag is set, this is a line describing
+			a group and not an option.
+  O	2 optional arg	If this flag is set, the argument is optional.
+  O	4 list		If this flag is set, the option can be given
+			multiple times.
+  O	8 runtime	If this flag is set, the option can be changed
+			at runtime.
+
+Flags marked with a 'O' are only defined for options (ie, if the GROUP
+flag is not set).
+
+LEVEL
+
+This field is defined for options and for groups.  It contains an
+unsigned number that specifies the expert level under which this group
+or option should be displayed.  The following expert levels are
+defined for options (they have analogous meaning for groups):
+
+	0 basic		This option should always be offered to the user.
+	1 advanced	This option may be offered to advanced users.
+	2 expert	This option should only be offered to expert users.
+	3 invisible	This option should normally never be displayed,
+			not even to expert users.
+	4 internal	This option is for internal use only.  Ignore it.
+
+The level of a group will always be the lowest level of all options it
+contains.
+
+DESCRIPTION
+
+This field is defined for options and groups.  The string in this
+field contains a human-readable description of the option or group.
+It can be displayed to the user of the GUI for informational purposes.
+It is percent-escaped and localized.
+
+TYPE
+
+This field is only defined for options.  It contains an unsigned
+number that specifies the type of the option's argument, if any.
+The following types are defined:
+
+	0 none		No argument allowed.
+	1 string	An unformatted string.
+	2 int32		A signed integer number.
+	3 uint32	An unsigned integer number.
+	4 pathname	A string that describes the pathname of a file.
+			The file does not necessarily need to exist.
+	5 ldap server	A string that describes an LDAP server in the format
+			HOSTNAME:PORT:USERNAME:PASSWORD:BASE_DN.
+
+More types will be added in the future.  Please see the ALT-TYPE field
+for information on how to cope with unknown types.
+
+ALT-TYPE
+
+This field is identical to TYPE, except that only the types 0 to 3 are
+allowed.  The GUI is expected to present the user the option in the
+format specified by TYPE.  But if the argument type TYPE is not
+supported by the GUI, it can still display the option in the more
+generic basic type ALT-TYPE.  The GUI must support the basic types 0
+to 3 to be able to display all options.
+
+ARGNAME
+
+This field is only defined for options with an argument type TYPE that
+is not 0.  In this case it may contain a percent-escaped and localised
+string that gives a short name for the argument.  The field may also
+be empty, though, in which case a short name is not known.
+
+DEFAULT
+
+This field is defined only for options.  Its format is that of an
+option argument (see section Format Conventions for details).  If the
+default value is empty, then no default is known.  Otherwise, the
+value specifies the default value for this option.  Note that this
+field is also meaningful if the option itself does not take a real
+argument.
+
+VALUE
+
+This field is defined only for options.  Its format is that of an
+option argument.  If it is empty, then the option is not explicitely
+set in the current configuration, and the default applies (if any).
+Otherwise, it contains the current value of the option.  Note that
+this field is also meaningful if the option itself does not take a
+real argument.
+
+
+CHANGING OPTIONS
+================
+
+To change the options for a component, you must provide them in the
+following format:
+
+NAME:NEW-VALUE
+
+NAME
+
+This is the name of the option to change.
+
+NEW-VALUE
+
+The new value for the option.  The format is that of an option
+argument.  If it is empty (or the field is omitted), the option will
+be deleted, so that the default value is used.  Otherwise, the option
+will be set to the specified value.
+
+Option --runtime
+----------------
+
+If this option is set, the changes will take effect at run-time, as
+far as this is possible.  Otherwise, they will take effect at the next
+start of the respective backend programs.
+
+
+BACKENDS
+========
+
+Backends should support the following commands:
+
+Command --gpgconf-list
+----------------------
+
+List the location of the configuration file, and all default values of
+all options.  The location of the configuration file must be an
+absolute pathname.
+
+Example:
+$ dirmngr --gpgconf-list
+gpgconf-config-file:/mnt/marcus/.gnupg/dirmngr.conf
+ldapservers-file:/mnt/marcus/.gnupg/dirmngr_ldapservers.conf
+add-servers:
+max-replies:10

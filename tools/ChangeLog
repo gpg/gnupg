@@ -1,3 +1,11 @@
+2004-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-list.c: File removed.
+	* README.gpgconf: New file.
+	* gpgconf-comp.c: New file.
+	* Makefile.am (gpgconf_SOURCES): Remove gpgconf-list.c, add
+	gpgconf-comp.c.
+
 2004-01-16  Werner Koch  <wk@gnupg.org>
 
 	* watchgnupg.c (main): Need to use FD_ISSET for the client

@@ -26,16 +26,31 @@
 /* We keep all global options in the structure OPT. */
 struct {
   int verbose;         /* Verbosity level. */
-  int quiet;           /* Be as quiet as possible. */
+  int quiet;	       /* Be extra quiet.  */
   int dry_run;         /* Don't change any persistent data. */
-  const char *homedir; /* Configuration directory name. */
   char *outfile;       /* Name of output file. */
+
+  int component;	/* The active component.  */
 } opt;
 
 
 
-/*-- gpgconf-list.c --*/
-void gpgconf_list_standard_options (void);
+/*-- gpgconf-comp.c --*/
+/* List all components that are available.  */
+void gc_component_list_components (FILE *out);
 
+/* Find the component with the name NAME.  Returns -1 if not
+   found.  */
+int gc_component_find (const char *name);
+
+/* Retrieve the currently active options and their defaults from all
+   involved backends for this component.  */
+void gc_component_retrieve_options (int component);
+
+/* List all options of the component COMPONENT.  */
+void gc_component_list_options (int component, FILE *out);
+
+/* Read the modifications from IN and apply them.  */
+void gc_component_change_options (int component, FILE *in);
 
 #endif /*GPGCONF_H*/
