@@ -1,3 +1,18 @@
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+
+	* keyserver.c: Moved util.h include down in order to avoid
+	redefinition problems on RISC OS.
+
+	* keyring.c (keyring_lock): Only lock keyrings that are writable.
+
+	* keyring.c (keyring_update_keyblock): Close unused iobuf.
+
+	* hkp.c (parse_hkp_index, hkp_search) [__riscos__]: Changed
+	unsigned char* to char* because of compiler issues.
+
+	* exec.c (exec_finish) [__riscos__]: Invalidate close cache so
+	that file can be unlinked.
+
 2001-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Use a different strlist to check extensions since
@@ -181,8 +196,6 @@
 	* getkey.c (get_ctx_handle): New.
 	* keylist.c (list_one): Implement option here.  By David Champion. 
 
-=======
->>>>>>> 1.162.2.192
 2001-12-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Use mkdtemp() to make temp

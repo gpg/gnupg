@@ -292,6 +292,8 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
     if (yes) {
         /* first make sure the lock handles are created */
         for (kr=kr_names; kr; kr = kr->next) {
+            if (!keyring_is_writable(kr))
+                continue;
             if (!kr->lockhd) {
                 kr->lockhd = create_dotlock( kr->fname );
                 if (!kr->lockhd) {
@@ -305,6 +307,8 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
         
         /* and now set the locks */
         for (kr=kr_names; kr; kr = kr->next) {
+            if (!keyring_is_writable(kr))
+                continue;
             if (kr->is_locked)
                 ;
             else if (make_dotlock (kr->lockhd, -1) ) {
@@ -318,6 +322,8 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
 
     if (rc || !yes) {
         for (kr=kr_names; kr; kr = kr->next) {
+            if (!keyring_is_writable(kr))
+                continue;
             if (!kr->is_locked)
                 ;
             else if (release_dotlock (kr->lockhd))
@@ -487,6 +493,12 @@ keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb)
         if (!hd->found.n_packets)
             BUG ();
     }
+
+    /* The open iobuf isn't needed anymore and in fact is a problem when
+       it comes to renaming the keyring files on some operating systems,
+       so close it here */
+    iobuf_close(hd->current.iobuf);
+    hd->current.iobuf = NULL;
 
     /* do the update */
     rc = do_copy (3, hd->found.kr->fname, kb, hd->secret,
@@ -1410,6 +1422,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
        permissions of the file */
     if (access (fname, W_OK))
       return G10ERR_WRITE_FILE;
+
     fp = iobuf_open (fname);
     if (mode == 1 && !fp && errno == ENOENT) { 
 	/* insert mode but file does not exist: create a new file */
@@ -1456,7 +1469,6 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	iobuf_close(fp);
 	goto leave;
     }
-
     if( mode == 1 ) { /* insert */
 	/* copy everything to the new file */
 	rc = copy_all_packets (fp, newfp);
