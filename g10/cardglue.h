@@ -151,7 +151,7 @@ int agent_scd_pksign (const char *keyid, int hashalgo,
 /* Send a PKDECRYPT command to the SCdaemon. */
 int agent_scd_pkdecrypt (const char *serialno,
                          const unsigned char *indata, size_t indatalen,
-                         char **r_buf, size_t *r_buflen);
+                         unsigned char **r_buf, size_t *r_buflen);
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
 int agent_scd_change_pin (int chvno);

@@ -1,3 +1,14 @@
+2003-10-09  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (ccid_transceive): Add T=1 chaining for sending.
+
+	* sign.c (do_sign) [!ENABLE_CARD_SUPPORT]: Return an error for
+	card keys.
+
+	* cardglue.c (agent_scd_pkdecrypt): Implemented.
+	* pubkey-enc.c (get_it) [ENABLE_CARD_SUPPORT]: Divert decryption
+	to card
+
 2003-10-08  Werner Koch  <wk@gnupg.org>
 
 	* cardglue.c (pin_cb): Detect whether an admin or regular PIN is

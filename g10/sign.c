@@ -306,9 +306,9 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
-#ifdef ENABLE_CARD_SUPPORT
     if (sk->is_protected && sk->protect.s2k.mode == 1002) 
       { 
+#ifdef ENABLE_CARD_SUPPORT
         unsigned char *rbuf;
         size_t rbuflen;
         char *snbuf;
@@ -327,9 +327,11 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
             mpi_set_buffer (sig->data[0], rbuf, rbuflen, 0);
             xfree (rbuf);
           }
+#else
+        return G10ERR_UNSUPPORTED;
+#endif /* ENABLE_CARD_SUPPORT */
       }
     else 
-#endif /* ENABLE_CARD_SUPPORT */
       {
         frame = encode_md_value( sk->pubkey_algo, md,
                                  digest_algo, mpi_get_nbits(sk->skey[0]), 0 );

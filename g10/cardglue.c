@@ -631,10 +631,21 @@ agent_scd_pksign (const char *serialno, int hashalgo,
 int 
 agent_scd_pkdecrypt (const char *serialno,
                      const unsigned char *indata, size_t indatalen,
-                     char **r_buf, size_t *r_buflen)
+                     unsigned char **r_buf, size_t *r_buflen)
 {
 
-  return gpg_error (GPG_ERR_CARD);
+  APP app;
+
+  *r_buf = NULL;
+  *r_buflen = 0;
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  return app->fnc.decipher (app, serialno, 
+                            pin_cb, NULL,
+                            indata, indatalen,
+                            r_buf, r_buflen);
 }
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */

@@ -34,6 +34,7 @@
 #include "options.h"
 #include "main.h"
 #include "i18n.h"
+#include "cardglue.h"
 
 static int get_it( PKT_pubkey_enc *k,
 		   DEK *dek, PKT_secret_key *sk, u32 *keyid );
@@ -132,17 +133,51 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 static int
 get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 {
-    int rc;
-    MPI plain_dek  = NULL;
-    byte *frame = NULL;
-    unsigned n, nframe;
-    u16 csum, csum2;
+  int rc;
+  MPI plain_dek  = NULL;
+  byte *frame = NULL;
+  unsigned n, nframe;
+  u16 csum, csum2;
+  
+  int card = 0;
 
-    rc = pubkey_decrypt(sk->pubkey_algo, &plain_dek, enc->data, sk->skey );
-    if( rc )
+  if (sk->is_protected && sk->protect.s2k.mode == 1002)
+    { /* Note, that we only support RSA for now. */
+#ifdef ENABLE_CARD_SUPPORT
+      unsigned char *rbuf;
+      size_t rbuflen;
+      char *snbuf;
+      unsigned char *indata = NULL;
+      unsigned int indatalen;
+
+      snbuf = serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen, sk);
+
+      indata = mpi_get_buffer (enc->data[0], &indatalen, NULL);
+      if (!indata)
+        BUG ();
+
+      rc = agent_scd_pkdecrypt (snbuf, indata, indatalen, &rbuf, &rbuflen);
+      xfree (snbuf);
+      xfree (indata);
+      if (rc)
+        goto leave;
+
+      frame = rbuf;
+      nframe = rbuflen;
+      card = 1;
+#else
+      rc = G10ERR_UNSUPPORTED;
+      goto leave;
+#endif /*!ENABLE_CARD_SUPPORT*/
+    }
+  else
+    {
+      rc = pubkey_decrypt(sk->pubkey_algo, &plain_dek, enc->data, sk->skey );
+      if( rc )
 	goto leave;
-    frame = mpi_get_buffer( plain_dek, &nframe, NULL );
-    mpi_free( plain_dek ); plain_dek = NULL;
+      frame = mpi_get_buffer( plain_dek, &nframe, NULL );
+      mpi_free( plain_dek ); plain_dek = NULL;
+    }
 
     /* Now get the DEK (data encryption key) from the frame
      *
@@ -164,18 +199,22 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     if( DBG_CIPHER )
 	log_hexdump("DEK frame:", frame, nframe );
     n=0;
-    if( n + 7 > nframe )
-	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
-    if( frame[n] == 1 && frame[nframe-1] == 2 ) {
-	log_info(_("old encoding of the DEK is not supported\n"));
-	rc = G10ERR_CIPHER_ALGO;
-	goto leave;
-    }
-    if( frame[n] != 2 )  /* somethink is wrong */
-	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
-    for(n++; n < nframe && frame[n]; n++ ) /* skip the random bytes */
-	;
-    n++; /* and the zero byte */
+    if (!card)
+      {
+        if( n + 7 > nframe )
+          { rc = G10ERR_WRONG_SECKEY; goto leave; }
+        if( frame[n] == 1 && frame[nframe-1] == 2 ) {
+          log_info(_("old encoding of the DEK is not supported\n"));
+          rc = G10ERR_CIPHER_ALGO;
+          goto leave;
+        }
+        if( frame[n] != 2 )  /* somethink is wrong */
+          { rc = G10ERR_WRONG_SECKEY; goto leave; }
+        for(n++; n < nframe && frame[n]; n++ ) /* skip the random bytes */
+          ;
+        n++; /* and the zero byte */
+      }
+
     if( n + 4 > nframe )
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
 

@@ -132,6 +132,11 @@
 #endif /* This source not used by scdaemon. */
 
 
+/* Define to print information pertaining the T=1 protocol. */
+#undef DEBUG_T1 1
+
+
+
 enum {
   RDR_to_PC_NotifySlotChange= 0x50,
   RDR_to_PC_HardwareError   = 0x51,
@@ -566,7 +571,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       return -1;
     }
 
-  DEBUGOUT_3 ("status: %02X  error: %02X clock-status: %02X\n"
+  DEBUGOUT_3 ("status: %02X  error: %02X  octet[9]: %02X\n"
               "               data:",  buffer[7], buffer[8], buffer[9] );
   for (i=10; i < msglen; i++)
     DEBUGOUT_CONT_1 (" %02X", buffer[i]);
@@ -753,44 +758,62 @@ ccid_get_atr (ccid_driver_t handle,
 
 int
 ccid_transceive (ccid_driver_t handle,
-                 const unsigned char *apdu, size_t apdulen,
+                 const unsigned char *apdu_buf, size_t apdu_buflen,
                  unsigned char *resp, size_t maxresplen, size_t *nresp)
 {
   int rc;
   unsigned char send_buffer[10+258], recv_buffer[10+258];
+  const unsigned char *apdu;
+  size_t apdulen;
   unsigned char *msg, *tpdu, *p;
   size_t msglen, tpdulen, n;
   unsigned char seqno;
   int i;
   unsigned char crc;
   size_t dummy_nresp;
+  int next_chunk = 1;
   int sending = 1;
 
   if (!nresp)
     nresp = &dummy_nresp;
-
   *nresp = 0;
-  
-  /* Construct an I-Block. */
-  if (apdulen > 254)
-    return -1; /* Invalid length. */
 
+  tpdulen = 0; /* Avoid compiler warning about no initialization. */
   msg = send_buffer;
-
-  tpdu = msg+10;
-  tpdu[0] = ((1 << 4) | 0); /* NAD: DAD=1, SAD=0 */
-  tpdu[1] = ((handle->t1_ns & 1) << 6); /* I-block */
-  tpdu[2] = apdulen;
-  memcpy (tpdu+3, apdu, apdulen);
-  crc = 0;
-  for (i=0,p=tpdu; i < apdulen+3; i++)
-    crc ^= *p++;
-  tpdu[3+apdulen] = crc;
-
-  tpdulen = apdulen + 4;
-
   for (;;)
     {
+      if (next_chunk)
+        {
+          next_chunk = 0;
+
+          apdu = apdu_buf;
+          apdulen = apdu_buflen;
+          assert (apdulen);
+
+          /* Construct an I-Block. */
+          if (apdulen > 254)
+            return -1; /* Invalid length. */
+
+          tpdu = msg+10;
+          tpdu[0] = ((1 << 4) | 0); /* NAD: DAD=1, SAD=0 */
+          tpdu[1] = ((handle->t1_ns & 1) << 6); /* I-block */
+          if (apdulen > 128 /* fixme: replace by ifsc */)
+            {
+              apdulen = 128;
+              apdu_buf += 128;  
+              apdu_buflen -= 128;
+              tpdu[1] |= (1 << 5); /* Set more bit. */
+            }
+          tpdu[2] = apdulen;
+          memcpy (tpdu+3, apdu, apdulen);
+          crc = 0;
+          for (i=0,p=tpdu; i < apdulen+3; i++)
+            crc ^= *p++;
+          tpdu[3+apdulen] = crc;
+          
+          tpdulen = apdulen + 4;
+        }
+
       msg[0] = PC_to_RDR_XfrBlock;
       msg[5] = 0; /* slot */
       msg[6] = seqno = handle->seqno++;
@@ -804,12 +827,14 @@ ccid_transceive (ccid_driver_t handle,
       for (i=0; i < msglen; i++)
         DEBUGOUT_CONT_1 (" %02X", msg[i]);
       DEBUGOUT_LF ();
-      
-/*       fprintf (stderr, "T1: put %c-block seq=%d\n", */
-/*                ((msg[11] & 0xc0) == 0x80)? 'R' : */
-/*                (msg[11] & 0x80)? 'S' : 'I', */
-/*         ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40))); */
-  
+
+#ifdef DEBUG_T1      
+      fprintf (stderr, "T1: put %c-block seq=%d\n",
+               ((msg[11] & 0xc0) == 0x80)? 'R' :
+               (msg[11] & 0x80)? 'S' : 'I',
+        ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)));
+#endif  
+
       rc = bulk_out (handle, msg, msglen);
       if (rc)
         return rc;
@@ -829,12 +854,14 @@ ccid_transceive (ccid_driver_t handle,
           return -1; 
         }
 
-/*       fprintf (stderr, "T1: got %c-block seq=%d err=%d\n", */
-/*                ((msg[11] & 0xc0) == 0x80)? 'R' : */
-/*                (msg[11] & 0x80)? 'S' : 'I', */
-/*         ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)), */
-/*                ((msg[11] & 0xc0) == 0x80)? (msg[11] & 0x0f) : 0 */
-/*                ); */
+#ifdef DEBUG_T1
+      fprintf (stderr, "T1: got %c-block seq=%d err=%d\n",
+               ((msg[11] & 0xc0) == 0x80)? 'R' :
+               (msg[11] & 0x80)? 'S' : 'I',
+        ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)),
+               ((msg[11] & 0xc0) == 0x80)? (msg[11] & 0x0f) : 0
+               );
+#endif
 
       if (!(tpdu[1] & 0x80))
         { /* This is an I-block. */
@@ -899,9 +926,20 @@ ccid_transceive (ccid_driver_t handle,
             { /* Error: repeat last block */
               msg = send_buffer;
             }
+          else if (sending && !!(tpdu[1] & 0x40) == handle->t1_ns)
+            { /* Reponse does not match our sequence number. */
+              DEBUGOUT ("R-block with wrong seqno received on more bit\n");
+              return -1;
+            }
+          else if (sending)
+            { /* Send next chunk. */
+              msg = send_buffer;
+              next_chunk = 1;
+              handle->t1_ns ^= 1;
+            }
           else
             {
-              DEBUGOUT ("unxpectec ACK R-block received\n");
+              DEBUGOUT ("unexpected ACK R-block received\n");
               return -1;
             }
         }
