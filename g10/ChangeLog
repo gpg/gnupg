@@ -1,3 +1,7 @@
+2003-11-16  Moritz Schulte  <mo@g10code.com>
+
+	* signal.c: Removed unused file.
+
 2003-11-10  Moritz Schulte  <mo@g10code.com>
 
 	* Makefile.am (INCLUDES): Added: @LIBGCRYPT_CFLAGS@.
