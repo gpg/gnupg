@@ -469,7 +469,9 @@
 		     linux - Use the module which accesses /dev/random.
 			     This is the first choice and the default one
 			     for GNU/Linux or *BSD.
-
+                      auto - Compile linux, egd and unix in and 
+                             automagically select at runtime.
+  
     --with-egd-socket=<name>
                      This is only used when EGD is used as random
                      gatherer. GnuPG uses by default "~/.gnupg/entropy"

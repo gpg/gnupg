@@ -5,9 +5,6 @@
   * Check for consistent spelling of user ID, key ID etc.
     Replace "user id not found" in getkey.c by "no valid user ID found".
  
-  * Add remarks to the man page about OpenPGP OPTIONAL algorithms and
-    issue warnings when such an algorithm is used (disabled by expert modus?)
-
   * Return status information even when an imported key is already
     stored.  This is useful for GPGME's detailed info function.
 
@@ -29,9 +26,6 @@
 
   * Check the changes to the gpg random gatherer on all W32 platforms.
 
-  * Put a note into readme.w32 that there is a man page and a options
-    file;  write the registry stuff in regedit format.
-
   * Show more info does not work from edit->trust
 
   * set default charset from nl_langinfo.
@@ -42,8 +36,6 @@
   * We need another special packet at the end of a clearsign message to mark
     it's end and allow for multiple signature for one message.  And
     add a real grammar to the code in mainproc.c
-
-  * Option to warn when a non MDC message is decrypted?
 
   * If there is no secure memory, allocate more memory for the secure
     memory block or do it in all cases.
@@ -67,20 +59,12 @@
   * Add option to put the list of recipients (from the encryption
     layer) into the signatures notation data.
 
-  * With option -i prompt before adding a key to the keyring and show some
-    info what we are about to add.
-
   * --disable-asm should still assemble _udiv_qrnnd when needed
 
   * Get new assembler stuff from gmp 3.1
 
-  * Use new-format headers for compressed packets.
-    The advantage is that a garbled zip files can be better detected.
- 
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
-
-  * preferences of hash algorithms are not yet used.
 
   * add test cases for invalid data (scrambled armor or other random data)
 
@@ -111,11 +95,6 @@
 
   * cat foo | gpg --sign | gpg --list-packets
     Does not list the signature packet.
-
-  * Replace wording "It is NOT certain that the key belongs to its owner..."
-    with "It is NOT certain that the key belongs to the person named in the
-    user ID..." (or similar but clearer message).
-
 
 Things we won't do
 ------------------

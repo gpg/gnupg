@@ -50,7 +50,7 @@ dnl  Check for random module options
 dnl
 AC_MSG_CHECKING([which random module to use])
 AC_ARG_ENABLE(static-rnd,
-    [  --enable-static-rnd=[egd|unix|linux]  ],
+    [  --enable-static-rnd=[egd|unix|linux|auto]  ],
 [use_static_rnd=$enableval], [use_static_rnd=default] )
 
 if test "$use_static_rnd" = no; then
@@ -60,6 +60,9 @@ fi
 case "$use_static_rnd" in
     egd | linux | unix | default )
       AC_MSG_RESULT($use_static_rnd)
+      ;;
+    auto )
+      AC_MSG_RESULT(automagically selected at runtime)
       ;;
     * )
       AC_MSG_RESULT(invalid argument)
@@ -636,67 +639,64 @@ fi
 dnl
 dnl Figure out the default random module.
 dnl
-static_random_module=""
+random_modules=""
 if test "$use_static_rnd" = default; then
-  if test "$ac_cv_have_dev_random" = yes; then
-      static_random_module="rndlinux"
+     if test "$ac_cv_have_dev_random" = yes; then
+        random_modules="rndlinux"
+     else
+         case "${target}" in
+            *-*-mingw32*|*-*-cygwin*)
+                random_modules="rndw32"
+                ;;
+            i?86-emx-os2|i?86-*-os2*emx)
+                random_modules="rndos2"
+                ;;
+            m68k-atari-mint)
+                random_modules="rndatari"
+                ;;
+            i?86-*-msdosdjgpp*)
+                :
+                ;;
+            *)
+                random_modules="rndunix"
+                ;;
+         esac
+     fi
+else
+  if test "$use_static_rnd" = auto; then
+     random_modules="rndlinux rndegd rndunix"
+     AC_DEFINE(USE_ALL_RANDOM_MODULES, 1, 
+                  [Allow to select random modules at runtime.])
   else
-      case "${target}" in
-          *-*-mingw32*|*-*-cygwin*)
-              static_random_module="rndw32"
-              ;;
-          i?86-emx-os2|i?86-*-os2*emx)
-              static_random_module="rndos2"
-              ;;
-          m68k-atari-mint)
-              static_random_module="rndatari"
-              ;;
-          i?86-*-msdosdjgpp*)
-              :
-              ;;
-          *)
-              static_random_module="rndunix"
-             ;;
-      esac
+     random_modules="rnd$use_static_rnd";
   fi
 fi
-case "$static_random_module" in
-  rndlinux)
-      AC_DEFINE(USE_RNDLINUX,1, 
-                  [Defined if the /dev/random based RNG shoudl be used.])
-        ;;
-  rndunix)
-       AC_DEFINE(USE_RNDUNIX,1, 
+
+if test -z "$random_modules"; then
+   AC_MSG_ERROR(no random module available)
+fi
+print_egd_warning=no
+for rndmod in $random_modules "" ; do
+  case "$rndmod" in
+    rndlinux)
+         AC_DEFINE(USE_RNDLINUX,1, 
+                  [Defined if the /dev/random based RNG should be used.])
+         ;;
+    rndunix)
+         AC_DEFINE(USE_RNDUNIX,1, 
                   [Defined if the default Unix RNG should be used.])
-       AC_MSG_WARN([[
-***
-*** The performance of the UNIX random gatherer module is not very good
-*** and it does not keep the entropy pool over multiple invocations of
-*** GnuPG.  The suggested way to overcome this problem is to use the
-***
-***               Entropy Gathering Daemon (EGD)
-***
-*** which provides a entropy source for the whole system.  It is written
-*** in Perl and available at the GnuPG FTP servers.  For more information
-*** consult the GnuPG webpages:
-***
-***           http://www.gnupg.org/download.html#egd
-***
-*** You may want to run ./configure with --enable-static-rnd=egd to use it.
-***]])
-        ;;
-  rndegd)
-       AC_DEFINE(USE_RNDEGD,1, 
-                  [Defined if the EGD based RNG shoudl be used.])
-        ;;
-  rndw32)
-       AC_DEFINE(USE_RNDW32,1, 
+         print_egd_warning=yes
+          ;;
+    rndegd)
+         AC_DEFINE(USE_RNDEGD,1, 
+                  [Defined if the EGD based RNG should be used.])
+         ;;
+    rndw32)
+         AC_DEFINE(USE_RNDW32,1, 
                   [Defined if the Windows specific RNG should be used.])
         ;;
-   *)
-       AC_MSG_ERROR(no random module available)
-        ;;
-esac
+   esac
+done
 
 dnl setup assembler stuff
 AC_MSG_CHECKING(for mpi assembler functions)
@@ -799,6 +799,28 @@ if test "$GCC" = yes; then
 fi
 
 AC_SUBST(NETLIBS)
+
+
+if test "$print_egd_warning" = yes; then
+  AC_MSG_WARN([[
+***
+*** The performance of the UNIX random gatherer module is not very good
+*** and it does not keep the entropy pool over multiple invocations of
+*** GnuPG.  The suggested way to overcome this problem is to use the
+***
+***               Entropy Gathering Daemon (EGD)
+***
+*** which provides a entropy source for the whole system.  It is written
+*** in Perl and available at the GnuPG FTP servers.  For more information
+*** consult the GnuPG webpages:
+***
+***           http://www.gnupg.org/download.html#egd
+***
+*** You may want to run ./configure with --enable-static-rnd=egd to use it.
+***]])
+fi
+
+
 
 # Note the \\\\ for backslashes.  Autoconf eats one layer, leaving \\
 
