@@ -527,7 +527,6 @@ check_signatures_trust( PKT_signature *sig )
 {
   PKT_public_key *pk = m_alloc_clear( sizeof *pk );
   unsigned int trustlevel;
-  int did_add = 0;
   int rc=0;
 
   if ( opt.always_trust)
@@ -579,14 +578,12 @@ check_signatures_trust( PKT_signature *sig )
       /* fall thru */
     case TRUST_UNKNOWN: 
     case TRUST_UNDEFINED:
-      if( did_add || opt.batch || opt.answer_no ) {
-        write_status( STATUS_TRUST_UNDEFINED );
-        log_info(_("WARNING: This key is not certified with"
-                   " a trusted signature!\n"));
-        log_info(_("         There is no indication that the "
-                   "signature belongs to the owner.\n" ));
-        print_fingerprint (pk, NULL, 1);
-      }
+      write_status( STATUS_TRUST_UNDEFINED );
+      log_info(_("WARNING: This key is not certified with"
+                 " a trusted signature!\n"));
+      log_info(_("         There is no indication that the "
+                 "signature belongs to the owner.\n" ));
+      print_fingerprint (pk, NULL, 1);
       break;
 
     case TRUST_NEVER:

@@ -1,3 +1,11 @@
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New option --no-use-agent. 
+
+	* pkclist.c (check_signatures_trust): Always print the warning for
+	unknown and undefined trust.  Removed the did_add cruft.  Reported
+	by Janusz A. Urbanowicz.
+
 2002-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (parse_hkp_index): Bug fix - properly handle user IDs with

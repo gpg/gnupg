@@ -255,6 +255,7 @@ enum cmd_and_opt_values { aNull = 0,
     oAutoKeyRetrieve,
     oNoAutoKeyRetrieve,
     oUseAgent,
+    oNoUseAgent,
     oGpgAgentInfo,
     oMergeOnly,
     oTryAllSecrets,
@@ -371,6 +372,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
   /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
     { oUseAgent, "use-agent",0, N_("use the gpg-agent")},
+    { oNoUseAgent, "no-use-agent",0, "@"},
     { oGpgAgentInfo, "gpg-agent-info",2, "@"},
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
@@ -971,6 +973,7 @@ main( int argc, char **argv )
             not_implemented("use-agent");
 #endif /* __riscos__ */
             break;
+          case oNoUseAgent: opt.use_agent = 0; break;
 	  case oGpgAgentInfo: opt.gpg_agent_info = pargs.r.ret_str; break;
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
