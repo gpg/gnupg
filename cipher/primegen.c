@@ -327,8 +327,8 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 	    m_free(p);
 	}
 
-	/* set high order bit to 1, set low order bit to .
-           if we are generating a secret prime we are most probably
+	/* Set high order bit to 1, set low order bit to 0.
+           If we are generating a secret prime we are most probably
            doing that for RSA, to make sure that the modulus does have
            the requested keysize we set the 2 high order bits */
 	mpi_set_highbit( prime, nbits-1 );
