@@ -2,6 +2,10 @@
   * don't allow certain commands in the edit menu when the secret key is
     selected.
 
+  * --delete-secret-key should work even when the public key is not there.
+
+  * Add reason for revocation which is going to be a SHOULD
+
 Scheduled for 1.1
 -----------------
   * With option -i prompt before adding a key to the keyring and show some

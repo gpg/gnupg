@@ -1,3 +1,7 @@
+Fri Dec 31 14:08:15 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* logger.c (log_inc_errorcount): New.
+
 Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* iobuf.c (iobuf_cancel): Broadcast the new Cancel mesaage to all

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.0\n"
-"POT-Creation-Date: 1999-12-16 09:44+0100\n"
+"POT-Creation-Date: 1999-12-19 16:04+0100\n"
 "PO-Revision-Date: 1999-10-02 21:35+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -790,7 +790,7 @@ msgstr "--delete-secret-key nazwa u¿ytkownika"
 msgid "--delete-key user-id"
 msgstr "--delete-key nazwa u¿ytkownika"
 
-#: g10/encode.c:260 g10/g10.c:1214 g10/sign.c:366
+#: g10/encode.c:260 g10/g10.c:1214 g10/sign.c:372
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "nie mo¿na otworzyæ %s: %s\n"
@@ -848,75 +848,75 @@ msgstr "kropki w adnotacji musz± znajdowaæ siê pomiêdzy innymi znakami\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "warto¶æ adnotacji nie mo¿e zawieraæ znaków steruj±cych\n"
 
-#: g10/armor.c:296
+#: g10/armor.c:301
 #, c-format
 msgid "armor: %s\n"
 msgstr "opakowanie: %s\n"
 
-#: g10/armor.c:325
+#: g10/armor.c:330
 msgid "invalid armor header: "
 msgstr "niepoprawny nag³ówek opakowania: "
 
-#: g10/armor.c:332
+#: g10/armor.c:337
 msgid "armor header: "
 msgstr "nag³ówek opakowania: "
 
-#: g10/armor.c:343
+#: g10/armor.c:348
 msgid "invalid clearsig header\n"
 msgstr "niew³a¶ciwy nag³ówek czytelnego podpisanego dokumentu\n"
 
-#: g10/armor.c:395
+#: g10/armor.c:400
 msgid "nested clear text signatures\n"
 msgstr "zagnie¿d¿one podpisy na czytelnym dokumencie\n"
 
-#: g10/armor.c:506
+#: g10/armor.c:524
 msgid "invalid dash escaped line: "
 msgstr "niepoprawne oznaczenie linii minusami: "
 
-#: g10/armor.c:518
+#: g10/armor.c:536
 msgid "unexpected armor:"
 msgstr "nieoczekiwane opakowanie:"
 
-#: g10/armor.c:635
+#: g10/armor.c:653
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "niew³a¶ciwy znak formatu radix64 %02x zosta³ pominiêty\n"
 
-#: g10/armor.c:678
+#: g10/armor.c:696
 msgid "premature eof (no CRC)\n"
 msgstr "przewczesny koniec pliku (brak CRC)\n"
 
-#: g10/armor.c:712
+#: g10/armor.c:730
 msgid "premature eof (in CRC)\n"
 msgstr "przedwczesny koniec pliku (w CRC)\n"
 
-#: g10/armor.c:716
+#: g10/armor.c:734
 msgid "malformed CRC\n"
 msgstr "b³±d formatu CRC\n"
 
-#: g10/armor.c:720
+#: g10/armor.c:738
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "B³±d sumy CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:737
+#: g10/armor.c:755
 msgid "premature eof (in Trailer)\n"
 msgstr "przedwczesny koniec pliku (w zakoñczeniu)\n"
 
-#: g10/armor.c:741
+#: g10/armor.c:759
 msgid "error in trailer line\n"
 msgstr "b³±d w linii koñcz±cej\n"
 
-#: g10/armor.c:1012
+#: g10/armor.c:1030
 msgid "no valid OpenPGP data found.\n"
 msgstr "nie odnaleziono poprawnych danych w formacie OpenPGP.\n"
 
-#: g10/armor.c:1017
+#: g10/armor.c:1035
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "b³±d opakowania: linia d³u¿sza ni¿ %d znaków\n"
 
-#: g10/armor.c:1021
+#: g10/armor.c:1039
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1505,7 +1505,7 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "Generacja klucza nie powiod³a siê: %s\n"
 
-#: g10/keygen.c:1022 g10/sig-check.c:312 g10/sign.c:105
+#: g10/keygen.c:1022 g10/sig-check.c:312 g10/sign.c:111
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1513,7 +1513,7 @@ msgstr ""
 "klucz zosta³ stworzony %lu sekund w przysz³o¶ci (zaburzenia\n"
 "czasoprzestrzeni, lub ¼le ustawiony zegar systemowy)\n"
 
-#: g10/keygen.c:1024 g10/sig-check.c:314 g10/sign.c:107
+#: g10/keygen.c:1024 g10/sig-check.c:314 g10/sign.c:113
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1693,7 +1693,7 @@ msgstr "klucz %08lX: brak klucza publicznego: %s\n"
 msgid "no default public keyring\n"
 msgstr "brak domy¶lnego zbioru kluczy publicznych\n"
 
-#: g10/import.c:420 g10/openfile.c:220 g10/sign.c:268 g10/sign.c:580
+#: g10/import.c:420 g10/openfile.c:220 g10/sign.c:274 g10/sign.c:586
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "zapis do '%s'\n"
@@ -1957,7 +1957,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Na pewno podpisaæ? "
 
-#: g10/keyedit.c:370 g10/keyedit.c:1835 g10/keyedit.c:1884 g10/sign.c:128
+#: g10/keyedit.c:370 g10/keyedit.c:1835 g10/keyedit.c:1884 g10/sign.c:134
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "z³o¿enie podpisu nie powiod³o siê: %s\n"
@@ -2601,20 +2601,20 @@ msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "dane nie zosta³y zapisane; nale¿y u¿yæ opcji \"--output\" aby je zapisaæ\n"
 
-#: g10/plaintext.c:311
+#: g10/plaintext.c:317
 #, fuzzy
 msgid "Detached signature.\n"
 msgstr "%d podpis usuniêty.\n"
 
-#: g10/plaintext.c:315
+#: g10/plaintext.c:321
 msgid "Please enter name of data file: "
 msgstr "Nazwa pliku danych: "
 
-#: g10/plaintext.c:336
+#: g10/plaintext.c:342
 msgid "reading stdin ...\n"
 msgstr "odczyt ze strumienia standardowego wej¶cia...\n"
 
-#: g10/plaintext.c:379
+#: g10/plaintext.c:385
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "nie mo¿na otworzyæ podpisanego pliku '%s'\n"
@@ -2724,31 +2724,31 @@ msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 "przyjêto niewa¿no¶æ podpisu z powonu ustawienia nieznanego bitu krytycznego\n"
 
-#: g10/sign.c:132
+#: g10/sign.c:138
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "%s podpis z³o¿ony przez: %s\n"
 
-#: g10/sign.c:263 g10/sign.c:575
+#: g10/sign.c:269 g10/sign.c:581
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "nie mo¿na stworzyæ %s: %s\n"
 
-#: g10/sign.c:361
+#: g10/sign.c:367
 msgid "signing:"
 msgstr "podpis:"
 
-#: g10/sign.c:404
+#: g10/sign.c:410
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "OSTRZE¯ENIE: plik '%s' jest pusty\n"
 
-#: g10/textfilter.c:128
+#: g10/textfilter.c:133
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
 msgstr "nie mo¿na obs³u¿yæ linii tekstu d³u¿szej ni¿ %d znaków\n"
 
-#: g10/textfilter.c:218
+#: g10/textfilter.c:227
 #, c-format
 msgid "input line longer than %d characters\n"
 msgstr "linia d³u¿sza ni¿ %d znaków\n"

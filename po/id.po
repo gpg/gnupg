@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Privacy Guard 1.0.0\n"
-"POT-Creation-Date: 1999-12-16 09:44+0100\n"
+"POT-Creation-Date: 1999-12-19 16:04+0100\n"
 "PO-Revision-Date: 1999-09-17 15:21+07:00\n"
 "Last-Translator: Tedi Heriyanto <tedi-h@usa.net>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -776,7 +776,7 @@ msgstr "--delete-secret-key id-user"
 msgid "--delete-key user-id"
 msgstr "--delete-key id-user"
 
-#: g10/encode.c:260 g10/g10.c:1214 g10/sign.c:366
+#: g10/encode.c:260 g10/g10.c:1214 g10/sign.c:372
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "tidak dapat membuka %s: %s\n"
@@ -834,75 +834,75 @@ msgstr "titik dalam nama notasi harus diapit oleh karakter lain\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "nilai notasi tidak boleh menggunakan karakter kendali\n"
 
-#: g10/armor.c:296
+#: g10/armor.c:301
 #, c-format
 msgid "armor: %s\n"
 msgstr "armor: %s\n"
 
-#: g10/armor.c:325
+#: g10/armor.c:330
 msgid "invalid armor header: "
 msgstr "header armor tidak valid: "
 
-#: g10/armor.c:332
+#: g10/armor.c:337
 msgid "armor header: "
 msgstr "header armor: "
 
-#: g10/armor.c:343
+#: g10/armor.c:348
 msgid "invalid clearsig header\n"
 msgstr "header clearsig tidak valid\n"
 
-#: g10/armor.c:395
+#: g10/armor.c:400
 msgid "nested clear text signatures\n"
 msgstr "signature teks bersarang\n"
 
-#: g10/armor.c:506
+#: g10/armor.c:524
 msgid "invalid dash escaped line: "
 msgstr "dash escaped line tidak valid: "
 
-#: g10/armor.c:518
+#: g10/armor.c:536
 msgid "unexpected armor:"
 msgstr "armor tidak terduga:"
 
-#: g10/armor.c:635
+#: g10/armor.c:653
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "karakter radix64 tidak valid %02x dilewati\n"
 
-#: g10/armor.c:678
+#: g10/armor.c:696
 msgid "premature eof (no CRC)\n"
 msgstr "eof prematur (tanpa CRC)\n"
 
-#: g10/armor.c:712
+#: g10/armor.c:730
 msgid "premature eof (in CRC)\n"
 msgstr "eof prematur (dalam CRC)\n"
 
-#: g10/armor.c:716
+#: g10/armor.c:734
 msgid "malformed CRC\n"
 msgstr "CRC tidak tepat\n"
 
-#: g10/armor.c:720
+#: g10/armor.c:738
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "kesalahan CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:737
+#: g10/armor.c:755
 msgid "premature eof (in Trailer)\n"
 msgstr "eof prematur (dalam Trailer)\n"
 
-#: g10/armor.c:741
+#: g10/armor.c:759
 msgid "error in trailer line\n"
 msgstr "kesalahan dalam garis trailer\n"
 
-#: g10/armor.c:1012
+#: g10/armor.c:1030
 msgid "no valid OpenPGP data found.\n"
 msgstr "tidak ditemukan data OpenPGP yang valid.\n"
 
-#: g10/armor.c:1017
+#: g10/armor.c:1035
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "armor tidak valid: baris melebihi %d karakter\n"
 
-#: g10/armor.c:1021
+#: g10/armor.c:1039
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1477,14 +1477,14 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "Pembuatan kunci gagal: %s\n"
 
-#: g10/keygen.c:1022 g10/sig-check.c:312 g10/sign.c:105
+#: g10/keygen.c:1022 g10/sig-check.c:312 g10/sign.c:111
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
 "kunci telah diciptakan dalam %lu detik mendatang (masalah waktu atau jam)\n"
 
-#: g10/keygen.c:1024 g10/sig-check.c:314 g10/sign.c:107
+#: g10/keygen.c:1024 g10/sig-check.c:314 g10/sign.c:113
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1663,7 +1663,7 @@ msgstr "kunci %08lX: kunci publik tidak ditemukan: %s\n"
 msgid "no default public keyring\n"
 msgstr "tidak ada keyring publik baku\n"
 
-#: g10/import.c:420 g10/openfile.c:220 g10/sign.c:268 g10/sign.c:580
+#: g10/import.c:420 g10/openfile.c:220 g10/sign.c:274 g10/sign.c:586
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "menulis ke `%s'\n"
@@ -1921,7 +1921,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Ditandai? "
 
-#: g10/keyedit.c:370 g10/keyedit.c:1835 g10/keyedit.c:1884 g10/sign.c:128
+#: g10/keyedit.c:370 g10/keyedit.c:1835 g10/keyedit.c:1884 g10/sign.c:134
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "gagal menandai: %s\n"
@@ -2556,20 +2556,20 @@ msgstr "Ulangi passphrase: "
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "data tidak disimpan; gunakan pilihan \"--output\" untuk menyimpannya\n"
 
-#: g10/plaintext.c:311
+#: g10/plaintext.c:317
 #, fuzzy
 msgid "Detached signature.\n"
 msgstr "Menghapus %d signature.\n"
 
-#: g10/plaintext.c:315
+#: g10/plaintext.c:321
 msgid "Please enter name of data file: "
 msgstr "Silakan masukkan nama file data: "
 
-#: g10/plaintext.c:336
+#: g10/plaintext.c:342
 msgid "reading stdin ...\n"
 msgstr "membaca stdin ...\n"
 
-#: g10/plaintext.c:379
+#: g10/plaintext.c:385
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "tidak dapat membuka data tertandai `%s'\n"
@@ -2673,31 +2673,31 @@ msgstr "CATATAN: kunci signature berakhir %s\n"
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr "mengasumsikan signature buruk karena ada bit kritik tidak dikenal\n"
 
-#: g10/sign.c:132
+#: g10/sign.c:138
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "%s signature dari: %s\n"
 
-#: g10/sign.c:263 g10/sign.c:575
+#: g10/sign.c:269 g10/sign.c:581
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "tidak dapat membuat %s: %s\n"
 
-#: g10/sign.c:361
+#: g10/sign.c:367
 msgid "signing:"
 msgstr "menandai:"
 
-#: g10/sign.c:404
+#: g10/sign.c:410
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "PERINGATAN: `%s' adalah file kosong\n"
 
-#: g10/textfilter.c:128
+#: g10/textfilter.c:133
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
 msgstr "tidak dapat menangani baris teks lebih dari %d karakter\n"
 
-#: g10/textfilter.c:218
+#: g10/textfilter.c:227
 #, c-format
 msgid "input line longer than %d characters\n"
 msgstr "baris input lebih dari %d karakter\n"

@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1\n"
-"POT-Creation-Date: 1999-12-16 09:44+0100\n"
+"POT-Creation-Date: 1999-12-19 16:04+0100\n"
 "PO-Revision-Date: 1999-10-06 21:43+0200\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -783,7 +783,7 @@ msgstr "--delete-secret-key utilisateur"
 msgid "--delete-key user-id"
 msgstr "--delete-key utilisateur"
 
-#: g10/encode.c:260 g10/g10.c:1214 g10/sign.c:366
+#: g10/encode.c:260 g10/g10.c:1214 g10/sign.c:372
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "impossible d'ouvrir %s: %s\n"
@@ -846,75 +846,75 @@ msgstr ""
 msgid "a notation value must not use any control characters\n"
 msgstr "une valeur de notation ne doit utiliser aucun caractère de contrôle\n"
 
-#: g10/armor.c:296
+#: g10/armor.c:301
 #, c-format
 msgid "armor: %s\n"
 msgstr "armure : %s\n"
 
-#: g10/armor.c:325
+#: g10/armor.c:330
 msgid "invalid armor header: "
 msgstr "en-tête d'armure invalide : "
 
-#: g10/armor.c:332
+#: g10/armor.c:337
 msgid "armor header: "
 msgstr "en-tête d'armure : "
 
-#: g10/armor.c:343
+#: g10/armor.c:348
 msgid "invalid clearsig header\n"
 msgstr "en-tête de signature claire invalide\n"
 
-#: g10/armor.c:395
+#: g10/armor.c:400
 msgid "nested clear text signatures\n"
 msgstr "signatures en texte clair imbriquées\n"
 
-#: g10/armor.c:506
+#: g10/armor.c:524
 msgid "invalid dash escaped line: "
 msgstr "ligne de traits d'échappement invalide : "
 
-#: g10/armor.c:518
+#: g10/armor.c:536
 msgid "unexpected armor:"
 msgstr "armure inattendue :"
 
-#: g10/armor.c:635
+#: g10/armor.c:653
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caractère %02x invalide en base 64 ignoré\n"
 
-#: g10/armor.c:678
+#: g10/armor.c:696
 msgid "premature eof (no CRC)\n"
 msgstr "fin de fichier prématurée (pas de CRC)\n"
 
-#: g10/armor.c:712
+#: g10/armor.c:730
 msgid "premature eof (in CRC)\n"
 msgstr "fin de fichier prématurée (dans le CRC)\n"
 
-#: g10/armor.c:716
+#: g10/armor.c:734
 msgid "malformed CRC\n"
 msgstr "CRC malformé\n"
 
-#: g10/armor.c:720
+#: g10/armor.c:738
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "Erreur de CRC ; %06lx - %06lx\n"
 
-#: g10/armor.c:737
+#: g10/armor.c:755
 msgid "premature eof (in Trailer)\n"
 msgstr "fin de fichier prématurée (dans la remorque)\n"
 
-#: g10/armor.c:741
+#: g10/armor.c:759
 msgid "error in trailer line\n"
 msgstr "erreur dans la ligne de remorque\n"
 
-#: g10/armor.c:1012
+#: g10/armor.c:1030
 msgid "no valid OpenPGP data found.\n"
 msgstr "aucune donnée OpenPGP valide n'a été trouvée.\n"
 
-#: g10/armor.c:1017
+#: g10/armor.c:1035
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "armure invalide : ligne plus longue que %d caractères\n"
 
-#: g10/armor.c:1021
+#: g10/armor.c:1039
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1500,7 +1500,7 @@ msgid "Key generation failed: %s\n"
 msgstr "La génération de clé a échoué : %s\n"
 
 # on s'amuse comme on peut...
-#: g10/keygen.c:1022 g10/sig-check.c:312 g10/sign.c:105
+#: g10/keygen.c:1022 g10/sig-check.c:312 g10/sign.c:111
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1508,7 +1508,7 @@ msgstr ""
 "la clé a été créée %lu seconde dans le futur (discontinuité temporelle ou\n"
 "problème d'horloge)\n"
 
-#: g10/keygen.c:1024 g10/sig-check.c:314 g10/sign.c:107
+#: g10/keygen.c:1024 g10/sig-check.c:314 g10/sign.c:113
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1690,7 +1690,7 @@ msgstr "clé %08lX : clé publique pas trouvée: %s\n"
 msgid "no default public keyring\n"
 msgstr "pas de porte-clés public par défaut\n"
 
-#: g10/import.c:420 g10/openfile.c:220 g10/sign.c:268 g10/sign.c:580
+#: g10/import.c:420 g10/openfile.c:220 g10/sign.c:274 g10/sign.c:586
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "écriture de `%s'\n"
@@ -1948,7 +1948,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Signer réellement ? "
 
-#: g10/keyedit.c:370 g10/keyedit.c:1835 g10/keyedit.c:1884 g10/sign.c:128
+#: g10/keyedit.c:370 g10/keyedit.c:1835 g10/keyedit.c:1884 g10/sign.c:134
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "la signature a échoué : %s\n"
@@ -2590,20 +2590,20 @@ msgstr ""
 "données non enregistrées ; utilisez l'option \"--output\" pour\n"
 "les enregistrer\n"
 
-#: g10/plaintext.c:311
+#: g10/plaintext.c:317
 #, fuzzy
 msgid "Detached signature.\n"
 msgstr "%d signature supprimée.\n"
 
-#: g10/plaintext.c:315
+#: g10/plaintext.c:321
 msgid "Please enter name of data file: "
 msgstr "Entrez le nom d'un fichier de données : "
 
-#: g10/plaintext.c:336
+#: g10/plaintext.c:342
 msgid "reading stdin ...\n"
 msgstr "lecture de l'entrée standard...\n"
 
-#: g10/plaintext.c:379
+#: g10/plaintext.c:385
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "impossible d'ouvir les données signées `%s'\n"
@@ -2712,31 +2712,31 @@ msgstr ""
 "la signature est supposée être fausse car un bit critique est\n"
 "inconnu\n"
 
-#: g10/sign.c:132
+#: g10/sign.c:138
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "Signature %s de : %s\n"
 
-#: g10/sign.c:263 g10/sign.c:575
+#: g10/sign.c:269 g10/sign.c:581
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "impossible de créer %s : %s\n"
 
-#: g10/sign.c:361
+#: g10/sign.c:367
 msgid "signing:"
 msgstr "signature :"
 
-#: g10/sign.c:404
+#: g10/sign.c:410
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "ATTENTION : `%s' est un fichier vide\n"
 
-#: g10/textfilter.c:128
+#: g10/textfilter.c:133
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
 msgstr "impossible de traiter les lignes plus longues que %d caractères\n"
 
-#: g10/textfilter.c:218
+#: g10/textfilter.c:227
 #, c-format
 msgid "input line longer than %d characters\n"
 msgstr "la ligne d'entrée est plus longue que %d caractères\n"

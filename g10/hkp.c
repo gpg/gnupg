@@ -102,7 +102,12 @@ hkp_import( STRLIST users )
 	    log_info(_("%s: not a valid key ID\n"), users->d );
 	    continue;
 	}
-	hkp_ask_import( kid );
+	/* because the function may use log_info in some situations, the
+	 * errorcounter ist not increaed and the program will return
+	 * with success - which is not good when this function is used.
+	 */
+	if( hkp_ask_import( kid ) )
+	    log_inc_errorcount();
     }
     return 0;
   #endif

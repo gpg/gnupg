@@ -1,3 +1,10 @@
+Fri Dec 31 14:08:15 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* armor.c (armor_filter): Made the "Comment:" header translatable.
+
+	* hkp.c (hkp_import): Make sure that the program does not return
+	success when there is a connection problem.  Reported by Phillip Jones.
+
 Sun Dec 19 15:22:26 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* armor.c (LF): Use this new macro at all places where a line LF
