@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <assert.h>
 #ifdef HAVE_DOSISH_SYSTEM
-  #include <fcntl.h> /* for setmode() */
+#include <fcntl.h> /* for setmode() */
 #endif
 
 #include "util.h"
@@ -85,9 +85,9 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     else if( !*fname || (*fname=='-' && !fname[1])) {
 	/* no filename or "-" given; write to stdout */
 	fp = stdout;
-      #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
 	setmode ( fileno(fp) , O_BINARY );
-      #endif
+#endif
     }
     else {
 	while( !overwrite_filep (fname) ) {
@@ -127,10 +127,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		}
 		if( mfx->md )
 		    md_putc(mfx->md, c );
-	      #ifndef HAVE_DOSISH_SYSTEM
+#ifndef HAVE_DOSISH_SYSTEM
 		if( c == '\r' )  /* convert to native line ending */
 		    continue;	 /* fixme: this hack might be too simple */
-	      #endif
+#endif
 		if( fp ) {
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
@@ -174,10 +174,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    while( (c = iobuf_get(pt->buf)) != -1 ) {
 		if( mfx->md )
 		    md_putc(mfx->md, c );
-	      #ifndef HAVE_DOSISH_SYSTEM
+#ifndef HAVE_DOSISH_SYSTEM
 		if( convert && c == '\r' )
 		    continue; /* fixme: this hack might be too simple */
-	      #endif
+#endif
 		if( fp ) {
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
@@ -414,8 +414,3 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 
     return 0;
 }
-
-
-
-
-

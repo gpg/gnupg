@@ -1217,18 +1217,18 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 	    compr_hack = 1;
 	}
 
-      #if 0
+#if 0
 	log_debug("pref mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
 	       (ulong)mask[7], (ulong)mask[6], (ulong)mask[5], (ulong)mask[4],
 	     (ulong)mask[3], (ulong)mask[2], (ulong)mask[1], (ulong)mask[0]);
-      #endif
+#endif
 	for(i=0; i < 8; i++ )
 	    bits[i] &= mask[i];
-      #if 0
+#if 0
 	log_debug("pref bits=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
 	       (ulong)bits[7], (ulong)bits[6], (ulong)bits[5], (ulong)bits[4],
 	     (ulong)bits[3], (ulong)bits[2], (ulong)bits[1], (ulong)bits[0]);
-      #endif
+#endif
     }
     /* usable algorithms are now in bits
      * We now use the last key from pk_list to select
@@ -1275,9 +1275,9 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 	    }
     }
 
-  #if 0
+#if 0
     log_debug("prefs of type %d: selected %d\n", preftype, i );
-  #endif
+#endif
     if( compr_hack && !i ) {
 	/* selected no compression, but we should check whether
 	 * algorithm 1 is also available (the ordering is not relevant

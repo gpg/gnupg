@@ -26,19 +26,19 @@
 #include <unistd.h>
 #include <signal.h>
 #ifdef USE_SHM_COPROCESSING
-  #ifdef USE_CAPABILITIES
-    #include <sys/capability.h>
-  #endif
-  #ifdef HAVE_SYS_IPC_H
-    #include <sys/types.h>
-    #include <sys/ipc.h>
-  #endif
-  #ifdef HAVE_SYS_SHM_H
-    #include <sys/shm.h>
-  #endif
-  #if defined(HAVE_MLOCK)
-    #include <sys/mman.h>
-  #endif
+#ifdef USE_CAPABILITIES
+#include <sys/capability.h>
+#endif
+#ifdef HAVE_SYS_IPC_H
+#include <sys/types.h>
+#include <sys/ipc.h>
+#endif
+#ifdef HAVE_SYS_SHM_H
+#include <sys/shm.h>
+#endif
+#if defined(HAVE_MLOCK)
+#include <sys/mman.h>
+#endif
 #endif
 #include "util.h"
 #include "status.h"
@@ -310,9 +310,9 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
     char buf[100];
     struct shmid_ds shmds;
 
-  #ifndef IPC_RMID_DEFERRED_RELEASE
+#ifndef IPC_RMID_DEFERRED_RELEASE
     atexit( remove_shmid );
-  #endif
+#endif
     requested_shm_size = (requested_shm_size + 4095) & ~4095;
     if ( requested_shm_size > 2 * 4096 )
 	log_fatal("too much shared memory requested; only 8k are allowed\n");
@@ -323,7 +323,7 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 	log_fatal("can't get %uk of shared memory: %s\n",
 				(unsigned)shm_size/1024, strerror(errno));
 
-  #if !defined(IPC_HAVE_SHM_LOCK) \
+#if !defined(IPC_HAVE_SHM_LOCK) \
       && defined(HAVE_MLOCK) && !defined(HAVE_BROKEN_MLOCK)
     /* part of the old code which uses mlock */
     shm_area = shmat( shm_id, 0, 0 );
@@ -333,25 +333,25 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
     log_debug("mapped %uk shared memory at %p, id=%d\n",
 			    (unsigned)shm_size/1024, shm_area, shm_id );
     if( lock_mem ) {
-      #ifdef USE_CAPABILITIES
+#ifdef USE_CAPABILITIES
 	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
-      #endif
+#endif
 	/* (need the cast for Solaris with Sun's workshop compilers) */
 	if ( mlock ( (char*)shm_area, shm_size) )
 	    log_info("locking shared memory %d failed: %s\n",
 				shm_id, strerror(errno));
 	else
 	    shm_is_locked = 1;
-      #ifdef USE_CAPABILITIES
+#ifdef USE_CAPABILITIES
 	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
-      #endif
+#endif
     }
 
-  #ifdef IPC_RMID_DEFERRED_RELEASE
+#ifdef IPC_RMID_DEFERRED_RELEASE
     if( shmctl( shm_id, IPC_RMID, 0) )
 	log_fatal("shmctl IPC_RMDID of %d failed: %s\n",
 					    shm_id, strerror(errno));
-  #endif
+#endif
 
     if( shmctl( shm_id, IPC_STAT, &shmds ) )
 	log_fatal("shmctl IPC_STAT of %d failed: %s\n",
@@ -363,27 +363,27 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 						shm_id, strerror(errno));
     }
 
-  #else /* this is the new code which handles the changes in the SHM semantics
-	 * introduced with Linux 2.4.  The changes is that we now change the
-	 * permissions and then attach to the memory.
-	 */
+#else /* this is the new code which handles the changes in the SHM
+       * semantics introduced with Linux 2.4.  The changes is that we
+       * now change the permissions and then attach to the memory.
+       */
 
     if( lock_mem ) {
-      #ifdef USE_CAPABILITIES
+#ifdef USE_CAPABILITIES
 	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
-      #endif
-      #ifdef IPC_HAVE_SHM_LOCK
+#endif
+#ifdef IPC_HAVE_SHM_LOCK
 	if ( shmctl (shm_id, SHM_LOCK, 0) )
 	    log_info("locking shared memory %d failed: %s\n",
 				shm_id, strerror(errno));
 	else
 	    shm_is_locked = 1;
-      #else
+#else
 	log_info("Locking shared memory %d failed: No way to do it\n", shm_id );
-      #endif
-      #ifdef USE_CAPABILITIES
+#endif
+#ifdef USE_CAPABILITIES
 	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
-      #endif
+#endif
     }
 
     if( shmctl( shm_id, IPC_STAT, &shmds ) )
@@ -403,13 +403,13 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
     log_debug("mapped %uk shared memory at %p, id=%d\n",
 			    (unsigned)shm_size/1024, shm_area, shm_id );
 
-  #ifdef IPC_RMID_DEFERRED_RELEASE
+#ifdef IPC_RMID_DEFERRED_RELEASE
     if( shmctl( shm_id, IPC_RMID, 0) )
 	log_fatal("shmctl IPC_RMDID of %d failed: %s\n",
 					    shm_id, strerror(errno));
-  #endif
+#endif
 
-  #endif
+#endif
     /* write info; Protocol version, id, size, locked size */
     sprintf( buf, "pv=1 pid=%d shmid=%d sz=%u lz=%u", (int)getpid(),
 	    shm_id, (unsigned)shm_size, shm_is_locked? (unsigned)shm_size:0 );
@@ -479,11 +479,11 @@ myread(int fd, void *buf, size_t count)
             eof_emmited++;
         }
         else { /* Ctrl-D not caught - do something reasonable */
-          #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
             raise (SIGINT);  /* nothing to hangup under DOS */
-          #else
+#else
             raise (SIGHUP); /* no more input data */
-          #endif
+#endif
         }
     }    
     return rc;
@@ -541,10 +541,10 @@ cpr_enabled()
 {
     if( opt.command_fd != -1 )
 	return 1;
-  #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return 1;
-  #endif
+#endif
     return 0;
 }
 
@@ -555,10 +555,10 @@ cpr_get_no_help( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return do_get_from_fd ( keyword, 0, 0 );
-  #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 0, 0 );
-  #endif
+#endif
     for(;;) {
 	p = tty_get( prompt );
         return p;
@@ -572,10 +572,10 @@ cpr_get( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return do_get_from_fd ( keyword, 0, 0 );
-  #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 0, 0 );
-  #endif
+#endif
     for(;;) {
 	p = tty_get( prompt );
 	if( *p=='?' && !p[1] && !(keyword && !*keyword)) {
@@ -608,10 +608,10 @@ cpr_get_hidden( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return do_get_from_fd ( keyword, 1, 0 );
-  #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 1, 0 );
-  #endif
+#endif
     for(;;) {
 	p = tty_get_hidden( prompt );
 	if( *p == '?' && !p[1] ) {
@@ -628,10 +628,10 @@ cpr_kill_prompt(void)
 {
     if( opt.command_fd != -1 )
 	return;
-  #ifdef USE_SHM_COPROCESSING
+#ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return;
-  #endif
+#endif
     tty_kill_prompt();
     return;
 }
@@ -691,4 +691,3 @@ cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt )
 	}
     }
 }
-

@@ -1,3 +1,13 @@
+2003-05-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.c, g10.c, kbnode.c, misc.c, pkclist.c, sign.c,
+	build-packet.c, getkey.c, keydb.c, openfile.c, plaintext.c,
+	status.c, gpgv.c, keygen.c, options.h, sig-check.c, tdbio.h,
+	encode.c, hkp.c, mainproc.c, parse-packet.c, signal.c,
+	textfilter.c: Edit all preprocessor instructions to remove
+	whitespace before the '#'.  This is not required by C89, but there
+	are some compilers out there that don't like it.
+
 2003-05-21  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (write_plaintext_packet)

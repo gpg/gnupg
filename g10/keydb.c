@@ -96,13 +96,13 @@ keydb_add_resource (const char *url, int force, int secret)
 	    rt = KEYDB_RESOURCE_TYPE_KEYRING;
 	    resname += 11;
 	}
-      #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
+#if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
 	else if (strchr (resname, ':')) {
 	    log_error ("invalid key resource URL `%s'\n", url );
 	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
-      #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
+#endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
     }
 
     if (*resname != DIRSEP_C ) { /* do tilde expansion etc */
@@ -688,6 +688,3 @@ keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr)
     memcpy (desc.u.fpr, fpr, MAX_FINGERPRINT_LEN);
     return keydb_search (hd, &desc, 1);
 }
-
-
-

@@ -180,7 +180,7 @@ hkp_export( STRLIST users )
 		   opt.keyserver_host, g10_errstr(rc) );
     }
     else {
-      #if 1
+#if 1
 	if( opt.verbose ) {
 	    int c;
 	    while( (c=iobuf_get(hd.fp_read)) != EOF )
@@ -189,7 +189,7 @@ hkp_export( STRLIST users )
               else
                 putchar ( '?' );
 	}
-      #endif
+#endif
 	if( (status/100) == 2 )
 	    log_info(_("success sending to `%s' (status=%u)\n"),
 					opt.keyserver_host, status  );
