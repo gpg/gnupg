@@ -2075,6 +2075,11 @@ change_options_program (gc_component_t component, gc_backend_t backend,
      Now, dump the changed options (except for those we are going to
      revert to their default), and write the end marker, possibly
      followed by the rest of the original file.  */
+
+  /* We have to turn on UTF8 strings for GnuPG.  */
+  if (backend == GC_BACKEND_GPG)
+    fprintf (src_file, "utf8-strings\n");
+
   option = gc_component[component].options;
   while (option->name)
     {
