@@ -2,6 +2,8 @@
 
 	* keylist.c (list_cert_colon): Fixed listing of crt record; the
 	issuer is not at the right place.  Print a chainingID.
+	* certpath.c (gpgsm_walk_cert_chain): Be a bit more silent on
+	common errors.
 
 2002-03-21  Werner Koch  <wk@gnupg.org>
 

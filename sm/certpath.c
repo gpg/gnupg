@@ -237,7 +237,10 @@ gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
   rc = keydb_search_subject (kh, issuer);
   if (rc)
     {
-      log_error ("failed to find issuer's certificate: rc=%d\n", rc);
+      /* it is quite common not to have a certificate, so better don't
+         print an error here */
+      if (rc != -1 && opt.verbose > 1)
+        log_error ("failed to find issuer's certificate: rc=%d\n", rc);
       rc = GNUPG_Missing_Certificate;
       goto leave;
     }
