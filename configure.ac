@@ -461,10 +461,23 @@ if test x"$try_hkp" = xyes && test x"$use_dns_srv" = xyes ; then
                  AC_SEARCH_LIBS(__dn_skipname,resolv bind,,use_dns_srv=no))
 
   if test x"$use_dns_srv" = xyes ; then
+
+    # Make sure that the BIND 4 resolver interface is workable before
+    # enabling SRVs.  At some point I'll rewrite the code to use the
+    # BIND 8 resolver API.
+
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/nameser.h>
+#include <resolv.h>],
+[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);]])],,use_dns_srv=no)
+  fi
+
+  if test x"$use_dns_srv" = xyes ; then
      AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
      SRVLIBS=$LIBS
   else
-     AC_MSG_WARN([Resolver functions not found.  Disabling DNS SRV.])
+     AC_MSG_WARN([Resolver functions not found or not usable.  Disabling DNS SRV.])
   fi
   LIBS=$_srv_save_libs
 fi

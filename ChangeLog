@@ -1,3 +1,8 @@
+2003-11-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Make sure that the resolver API actually compiles,
+	and not just that the right functions exist.
+
 2003-10-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Locate libbz2 for bzip2 compression support.
