@@ -1,3 +1,8 @@
+2004-12-14  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (install-exec-hook, uninstall-hook): Removed.  For
+	Windows reasons we can't use the symlink trick.
+
 2004-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: The harmless "ignored error" on gpgkeys_ldap

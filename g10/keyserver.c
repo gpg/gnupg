@@ -789,10 +789,15 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 #endif
 
   /* Build the filename for the helper to execute */
+  /* Note that we don't use a symlink for "ldaps" anymore because this
+     won't work under MS Windows. */
   command=m_alloc(strlen("gpgkeys_")+strlen(keyserver->scheme)+1);
-  strcpy(command,"gpgkeys_");
-  strcat(command,keyserver->scheme);
-
+  strcpy(command,"gpgkeys_"); 
+  if (!strcmp (keyserver->scheme, "ldaps"))
+    strcat(command, "ldap");
+  else
+    strcat(command,keyserver->scheme);
+  
   if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
     {
       if(opt.keyserver_options.options&KEYSERVER_KEEP_TEMP_FILES)
@@ -1247,7 +1252,9 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 	case KEYSERVER_VERSION_ERROR:
 	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
-		    keyserver->scheme,KEYSERVER_PROTO_VERSION);
+		    !strcmp (keyserver->scheme,"ldaps")?
+                    "ldap": keyserver->scheme, 
+                    KEYSERVER_PROTO_VERSION);
 	  break;
 
 	case KEYSERVER_TIMEOUT:

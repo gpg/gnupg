@@ -1,3 +1,9 @@
+2004-12-14  Werner Koch  <wk@g10code.com>
+
+	Released 1.3.93.
+	
+	* Makefile.am (AUTOMAKE_OPTIONS): Add filename-length-max=99.
+
 2004-11-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Autodetect wldap32 on Windoze.
@@ -1093,8 +1099,8 @@ Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
 
 Wed Jun  7 19:19:09 CEST 2000  Werner Koch  <wk@openit.de>
 
-  * acinclude.m4 (MKDIR_TAKES_ONE_ARG): Check some headers. By Gaël Quéri.
-  * configure.in (AM_INIT_AUTOMAKE): Use this now. By Gaël.
+  * acinclude.m4 (MKDIR_TAKES_ONE_ARG): Check some headers. By GaÃ«l QuÃ©ri.
+  * configure.in (AM_INIT_AUTOMAKE): Use this now. By GaÃ«l.
 
 Mon Jun  5 12:37:43 CEST 2000  Werner Koch  <wk@openit.de>
 
@@ -1166,7 +1172,7 @@ Wed Feb 16 14:09:00 CET 2000  Werner Koch  <wk@gnupg.de>
 Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* configure.in: Use /usr/local for CFLAGS and LDFLAGS when
-	target is freebsd.  By Rémi.
+	target is freebsd.  By RÃ©mi.
 
 Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
 
@@ -1433,7 +1439,7 @@ Tue Jan 12 11:17:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* config.links (m68k-atari-mint): New
 
-Tue Jan 12 09:17:19 CET 1999  Gaël Quéri <gqueri@mail.dotcom.fr>
+Tue Jan 12 09:17:19 CET 1999  GaÃ«l QuÃ©ri <gqueri@mail.dotcom.fr>
 
 	* all: Fixed typos all over the place
 

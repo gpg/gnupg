@@ -39,12 +39,4 @@ gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@  $(other_libs) @GETOPT
 gpgkeys_http_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@  $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 
-install-exec-hook:
-if GPGKEYS_LDAP
-	(cd $(libexecdir) && $(LN_S) -f gpgkeys_ldap$(EXEEXT) gpgkeys_ldaps$(EXEEXT))
-endif
 
-uninstall-hook:
-if GPGKEYS_LDAP
-	rm -f $(libexecdir)/gpgkeys_ldaps$(EXEEXT)
-endif
