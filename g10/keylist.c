@@ -938,10 +938,20 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
             putchar(':');
             if( sigrc != ' ' )
                 putchar(sigrc);
-            printf("::%d:%08lX%08lX:%s:%s:::", sig->pubkey_algo,
-						 (ulong)sig->keyid[0],
-			   (ulong)sig->keyid[1], colon_datestr_from_sig(sig),
-		           colon_expirestr_from_sig(sig));
+            printf("::%d:%08lX%08lX:%s:%s:", sig->pubkey_algo,
+		   (ulong)sig->keyid[0], (ulong)sig->keyid[1],
+		   colon_datestr_from_sig(sig),
+		   colon_expirestr_from_sig(sig));
+
+	    if(sig->trust_depth || sig->trust_value)
+	      printf("%d %d",sig->trust_depth,sig->trust_value);
+	    printf(":");
+
+	    if(sig->trust_regexp)
+	      print_string(stdout,sig->trust_regexp,
+			   strlen(sig->trust_regexp),':');
+	    printf(":");
+
 	    if( sigrc == '%' )
 		printf("[%s] ", g10_errstr(rc) );
 	    else if( sigrc == '?' )
