@@ -1050,6 +1050,7 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
 	fingerprint_from_pk (pk, array, &n);
     p = array;
     if (opt.with_colons && !mode) {
+        fp = mainproc_get_output( );
 	fprintf (fp, "fpr:::::::::");
 	for (i=0; i < n ; i++, p++ )
 	    fprintf (fp, "%02X", *p );

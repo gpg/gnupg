@@ -1,3 +1,18 @@
+2003-04-13  Timo Schulz  <twoaday@freakmail.de>
+
+        * mainproc.c (mainproc_open_output): New. Support for
+        --output when GPG is in the list mode.
+        (mainproc_get_output): New.
+
+        * keylist.c (print_fingerprint): If the mode is zero and
+        we are in the colon mode, we try to get the file handle
+        via mainproc_get_output().
+
+        * g10.c (main): Use the new code to support --output in
+        the list mode.
+
+        * main.h: Add prototypes.
+	
 2003-04-10  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (read_passphrase_from_fd): Do a dummy read if the

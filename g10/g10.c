@@ -2545,10 +2545,13 @@ main( int argc, char **argv )
 		set_packet_list_mode(1);
 		opt.list_packets=1;
 	    }
+            if( opt.outfile )
+                mainproc_open_output( opt.outfile );
 	    rc = proc_packets(NULL, a );
 	    if( rc )
 		log_error("processing message failed: %s\n", g10_errstr(rc) );
 	    iobuf_close(a);
+            mainproc_open_output( NULL );
 	}
 	break;
     }
