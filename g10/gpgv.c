@@ -251,7 +251,12 @@ trust_value_to_string (unsigned int value)
   return "err";
 }
 
-/* Stub: */
+const char *
+uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
+{
+  return "err";
+}
+
 int
 get_ownertrust_info (PKT_public_key *pk)
 {

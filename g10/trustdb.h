@@ -1,6 +1,6 @@
 /* trustdb.h - Trust database
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -21,7 +21,6 @@
 
 #ifndef G10_TRUSTDB_H
 #define G10_TRUSTDB_H
-
 
 /* Trust values must be sorted in ascending order */
 #define TRUST_MASK	 15
@@ -48,6 +47,7 @@ void init_trustdb( void );
 void check_trustdb_stale(void);
 void sync_trustdb( void );
 
+const char *uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid);
 const char *trust_value_to_string (unsigned int value);
 int string_to_trust_value (const char *str);
 

@@ -892,7 +892,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		while(class==0)
 		  {
 		    answer = cpr_get("sign_uid.class",_("Your selection? "
-					"(enter '?' for more information): "));
+					"(enter `?' for more information): "));
 		    if(answer[0]=='\0')
 		      class=0x10+opt.def_cert_level; /* Default */
 		    else if(ascii_strcasecmp(answer,"0")==0)
@@ -2360,16 +2360,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A)))
 	      {
 		if(!only_marked)
-		  {
-		    if(uid->is_revoked)
-		      tty_printf(_("[%8.8s] "),_("revoked"));
-		    else if(uid->is_expired)
-		      tty_printf(_("[%8.8s] "),_("expired"));
-		    else if(primary)
-		      tty_printf(_("[%8.8s] "),
-				 trust_value_to_string(get_validity(primary,
-								    uid)));
-		  }
+		  tty_printf("%s ",uid_trust_string_fixed(primary,uid));
 
 		if( only_marked )
 		  tty_printf("     ");
@@ -2403,16 +2394,16 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 			show_prefs (uid, selfsig, with_prefs == 2);
 		      }
 		    else
-		      tty_printf(_("There are no preferences on a "
-				   "PGP 2.x-style user ID.\n"));
+		      tty_printf(_("There are no preferences on a"
+				   " PGP 2.x-style user ID.\n"));
 		  }
 	      }
 	  }
       }
 
     if (do_warn)
-        tty_printf (_("Please note that the shown key validity "
-                      "is not necessarily correct\n"
+        tty_printf (_("Please note that the shown key validity"
+                      " is not necessarily correct\n"
                       "unless you restart the program.\n")); 
 }
 

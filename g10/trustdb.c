@@ -489,6 +489,34 @@ trust_letter (unsigned int value)
     }
 }
 
+/* NOTE TO TRANSLATOR: these strings are similar to those in
+   trust_value_to_string(), but are a fixed length.  This is needed to
+   make attractive information listings where columns line up
+   properly.  The value "10" should be the length of the strings you
+   choose to translate to.  This is the length in printable
+   columns. */
+const char *
+uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
+{
+  if(!key && !uid)
+    return _("10");
+  else if(uid->is_revoked)
+    return                         _("[ revoked]");
+  else if(uid->is_expired)
+    return                         _("[ expired]");
+  else if(key)
+    switch(get_validity(key,uid)&TRUST_MASK)
+      {
+      case TRUST_UNKNOWN:   return _("[ unknown]");
+      case TRUST_UNDEFINED: return _("[  undef ]");
+      case TRUST_MARGINAL:  return _("[marginal]");
+      case TRUST_FULLY:     return _("[  full  ]");
+      case TRUST_ULTIMATE:  return _("[ultimate]");
+      }
+
+  return "err";
+}
+
 /* The strings here are similar to those in
    pkclist.c:do_edit_ownertrust() */
 const char *

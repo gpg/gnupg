@@ -778,19 +778,13 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		const char *validity;
 		int indent;
 
-		if(uid->is_revoked)
-		  validity=_("revoked");
-		else if(uid->is_expired)
-		  validity=_("expired");
-		else
-		  validity=trust_value_to_string(get_validity(pk,uid));
+		validity=uid_trust_string_fixed(pk,uid);
+		indent=(keystrlen()+9)-atoi(uid_trust_string_fixed(NULL,NULL));
 
-		indent=(keystrlen()+7)-strlen(validity);
-
-		if(indent<0)
+		if(indent<0 || indent>40)
 		  indent=0;
 
-		printf("uid%*s[%s] ",indent,"",validity);
+		printf("uid%*s%s ",indent,"",validity);
 	      }
 	    else
 	      printf("uid%*s",keystrlen()+10,"");
