@@ -8,6 +8,10 @@
 	the passphrase must be changed for this to take effect.  Note that
 	--pgp7 does not disable MDC.  Document --no-mdc-warning.
 
+2002-07-25  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Document new --delete behaviour.
+
 2002-07-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Clarify the differences between "pref" and "showpref".

@@ -490,19 +490,23 @@ This is a shortcut version of the subcommand "nrsign" from --edit.
 <varlistentry>
 <term>--delete-key &ParmName;</term>
 <listitem><para>
-Remove key from the public keyring
+Remove key from the public keyring.  In batch mode either --yes is
+required or the key must be specified by fingerprint.  This is a
+safeguard against accidental deletion of multiple keys.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--delete-secret-key  &ParmName;</term>
 <listitem><para>
-Remove key from the secret and public keyring
+Remove key from the secret and public keyring. In batch mode the key
+must be specified by fingerprint.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--delete-secret-and-public-key  &ParmName;</term>
 <listitem><para>
-Same as --delete-key, but if a secret key exists, it will be removed first.
+Same as --delete-key, but if a secret key exists, it will be removed 
+first. In batch mode the key must be specified by fingerprint.
 </para></listitem></varlistentry>
 
 <varlistentry>
