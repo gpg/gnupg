@@ -1,5 +1,15 @@
 2002-07-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h, import.c (parse_import_options, fix_hkp_corruption,
+	import_one, delete_inv_parts), g10.c (main): New import-option
+	"repair-hkp-subkey-bug", which repairs as much as possible the HKP
+	mangling multiple subkeys bug.  It is on by default for keyserver
+	receives, and off by default for regular --import.
+
+	* main.h, import.c (import, import_one, delete_inv_parts), hkp.c
+	(hkp_ask_import), keyserver.c (keyserver_spawn): Use keyserver
+	import options when doing keyserver receives.
+
 	* options.h, exec.h, exec.c (set_exec_path, exec_write), g10.c
 	(main), keyserver.c (keyserver_spawn): If the user does not use
 	"exec-path", completely replace $PATH with GNUPG_LIBEXECDIR before

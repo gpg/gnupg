@@ -598,7 +598,8 @@ keyserver_spawn(int action,STRLIST list,
 	     do this could be to continue parsing this line-by-line and
 	     make a temp iobuf for each key. */
 
-	  import_keys_stream(spawn->fromchild,0,stats_handle);
+	  import_keys_stream(spawn->fromchild,0,stats_handle,
+			     opt.keyserver_options.import_options);
 
 	  import_print_stats(stats_handle);
 	  import_release_stats_handle(stats_handle);

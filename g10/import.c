@@ -55,19 +55,20 @@ struct stats_s {
 
 
 static int import( IOBUF inp, int fast, const char* fname,
-                   struct stats_s *stats );
+                   struct stats_s *stats, unsigned int options );
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void revocation_present(KBNODE keyblock);
 static void remove_bad_stuff (KBNODE keyblock);
 static int import_one( const char *fname, KBNODE keyblock, int fast,
-                       struct stats_s *stats);
+                       struct stats_s *stats, unsigned int options);
 static int import_secret_one( const char *fname, KBNODE keyblock,
                               struct stats_s *stats );
 static int import_revoke_cert( const char *fname, KBNODE node,
                                struct stats_s *stats);
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_key *pk, u32 *keyid );
-static int delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid );
+static int delete_inv_parts( const char *fname, KBNODE keyblock,
+			     u32 *keyid, unsigned int options );
 static int merge_blocks( const char *fname, KBNODE keyblock_orig,
 			 KBNODE keyblock, u32 *keyid,
 			 int *n_uids, int *n_sigs, int *n_subk );
@@ -93,6 +94,7 @@ parse_import_options(char *str,unsigned int *options)
   } import_opts[]=
     {
       {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS},
+      {"repair-hkp-subkey-bug",IMPORT_REPAIR_HKP_SUBKEY_BUG},
       {NULL,0}
     };
 
@@ -170,7 +172,8 @@ import_release_stats_handle (void *p)
  *
  */
 void
-import_keys( char **fnames, int nnames, int fast, void *stats_handle )
+import_keys( char **fnames, int nnames, int fast,
+	     void *stats_handle, unsigned int options )
 {
     int i;
     struct stats_s *stats = stats_handle;
@@ -189,7 +192,7 @@ import_keys( char **fnames, int nnames, int fast, void *stats_handle )
 	if( !inp )
 	    log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	else {
-	    int rc = import( inp, fast, fname, stats );
+	    int rc = import( inp, fast, fname, stats, options );
 	    iobuf_close(inp);
 	    if( rc )
 		log_error("import from `%s' failed: %s\n", fname,
@@ -206,7 +209,8 @@ import_keys( char **fnames, int nnames, int fast, void *stats_handle )
 }
 
 int
-import_keys_stream( IOBUF inp, int fast, void *stats_handle )
+import_keys_stream( IOBUF inp, int fast,
+		    void *stats_handle, unsigned int options )
 {
     int rc = 0;
     struct stats_s *stats = stats_handle;
@@ -214,7 +218,7 @@ import_keys_stream( IOBUF inp, int fast, void *stats_handle )
     if (!stats)
         stats = import_new_stats_handle ();
 
-    rc = import( inp, fast, "[stream]", stats);
+    rc = import( inp, fast, "[stream]", stats, options);
     if (!stats_handle) {
         import_print_stats (stats);
         import_release_stats_handle (stats);
@@ -224,7 +228,8 @@ import_keys_stream( IOBUF inp, int fast, void *stats_handle )
 }
 
 static int
-import( IOBUF inp, int fast, const char* fname, struct stats_s *stats )
+import( IOBUF inp, int fast, const char* fname,
+	struct stats_s *stats, unsigned int options )
 {
     PACKET *pending_pkt = NULL;
     KBNODE keyblock;
@@ -241,7 +246,7 @@ import( IOBUF inp, int fast, const char* fname, struct stats_s *stats )
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
         remove_bad_stuff (keyblock);
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-	    rc = import_one( fname, keyblock, fast, stats );
+	    rc = import_one( fname, keyblock, fast, stats, options );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
                 rc = import_secret_one( fname, keyblock, stats );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
@@ -440,6 +445,70 @@ remove_bad_stuff (KBNODE keyblock)
     }
 }
 
+/* Walk through the subkeys on a pk to find if we have the HKP
+   disease: multiple subkeys with their binding sigs stripped, and the
+   sig for the first subkey placed after the last subkey.  That is,
+   instead of "pk uid sig sub1 bind1 sub2 bind2 sub3 bind3" we have
+   "pk uid sig sub1 sub2 sub3 bind1".  We can't do anything about sub2
+   and sub3, as they are already lost, but we can try and rescue sub1
+   by reordering the keyblock so that it reads "pk uid sig sub1 bind1
+   sub2 sub3".  Returns TRUE if the keyblock was modified. */
+
+static int
+fix_hkp_corruption(KBNODE keyblock)
+{
+  int changed=0,keycount=0;
+  KBNODE node,last=NULL,sknode=NULL;
+
+  /* First determine if we have the problem at all.  Look for 2 or
+     more subkeys in a row, followed by a single binding sig. */
+  for(node=keyblock;node;last=node,node=node->next)
+    {
+      if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY)
+	{
+	  keycount++;
+	  if(!sknode)
+	    sknode=node;
+	}
+      else if(node->pkt->pkttype==PKT_SIGNATURE &&
+	      node->pkt->pkt.signature->sig_class==0x18 &&
+	      keycount>=2 && node->next==NULL)
+	{
+	  /* We might have the problem, as this key has two subkeys in
+	     a row without any intervening packets. */
+
+	  /* Sanity check */
+	  if(last==NULL)
+	    break;
+
+	  /* Temporarily attach node to sknode. */
+	  node->next=sknode->next;
+	  sknode->next=node;
+	  last->next=NULL;
+
+	  if(check_key_signature(keyblock,node,NULL))
+	    {
+	      /* Not a match, so undo the changes. */
+	      sknode->next=node->next;
+	      last->next=node;
+	      node->next=NULL;
+	      break;
+	    }
+	  else
+	    {
+	      sknode->flag |= 1; /* Mark it good so we don't need to
+                                    check it again */
+	      changed=1;
+	      break;
+	    }
+	}
+      else
+	keycount=0;
+    }
+
+  return changed;
+}
+
 /* Clean the subkeys on a pk so that they each have at most 1 binding
    sig and at most 1 revocation sig.  This works based solely on the
    timestamps like the rest of gpg.  If the standard does get
@@ -538,7 +607,7 @@ clean_subkeys(KBNODE keyblock,u32 *keyid)
  */
 static int
 import_one( const char *fname, KBNODE keyblock, int fast,
-            struct stats_s *stats )
+            struct stats_s *stats, unsigned int options )
 {
     PKT_public_key *pk;
     PKT_public_key *pk_orig;
@@ -574,6 +643,11 @@ import_one( const char *fname, KBNODE keyblock, int fast,
     }
 
     clear_kbnode_flags( keyblock );
+
+    if((options&IMPORT_REPAIR_HKP_SUBKEY_BUG) && fix_hkp_corruption(keyblock))
+      log_info(_("key %08lX: HKP subkey corruption repaired\n"),
+	       (ulong)keyid[1]);
+
     rc = chk_self_sigs( fname, keyblock , pk, keyid );
     if( rc )
 	return rc== -1? 0:rc;
@@ -591,7 +665,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	    m_free(user);
 	  }
 
-    if( !delete_inv_parts( fname, keyblock, keyid ) ) {
+    if( !delete_inv_parts( fname, keyblock, keyid, options ) ) {
 	if( !opt.quiet ) {
 	    log_info( _("key %08lX: no valid user IDs\n"),
 							(ulong)keyid[1]);
@@ -1033,7 +1107,8 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
  * returns: true if at least one valid user-id is left over.
  */
 static int
-delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
+delete_inv_parts( const char *fname, KBNODE keyblock,
+		  u32 *keyid, unsigned int options)
 {
     KBNODE node;
     int nvalid=0, uid_seen=0, subkey_seen=0;
@@ -1086,7 +1161,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	    delete_kbnode( node ); /* build_packet() can't handle this */
 	else if( node->pkt->pkttype == PKT_SIGNATURE &&
 		 !node->pkt->pkt.signature->flags.exportable &&
-		 !(opt.import_options&IMPORT_ALLOW_LOCAL_SIGS) &&
+		 !(options&IMPORT_ALLOW_LOCAL_SIGS) &&
 		 seckey_available( node->pkt->pkt.signature->keyid ) ) {
 	    /* here we violate the rfc a bit by still allowing
 	     * to import non-exportable signature when we have the

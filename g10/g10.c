@@ -906,10 +906,12 @@ main( int argc, char **argv )
     opt.pgp2_workarounds = 1;
     opt.force_v3_sigs = 1;
     opt.escape_from = 1;
-    opt.import_options=IMPORT_DEFAULT;
-    opt.export_options=EXPORT_DEFAULT;
-    opt.keyserver_options.import_options=IMPORT_DEFAULT;
-    opt.keyserver_options.export_options=EXPORT_DEFAULT;
+    opt.import_options=0;
+    opt.export_options=
+      EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
+    opt.keyserver_options.import_options=IMPORT_REPAIR_HKP_SUBKEY_BUG;
+    opt.keyserver_options.export_options=
+      EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.include_subkeys=1;
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
@@ -2027,7 +2029,8 @@ main( int argc, char **argv )
 
       case aFastImport:
       case aImport:
-	import_keys( argc? argv:NULL, argc, (cmd == aFastImport), NULL );
+	import_keys( argc? argv:NULL, argc, (cmd == aFastImport),
+		     NULL, opt.import_options );
 	break;
 
       case aExport:

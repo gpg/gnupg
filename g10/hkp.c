@@ -98,7 +98,8 @@ hkp_ask_import( KEYDB_SEARCH_DESC *desc, void *stats_handle)
 					    : g10_errstr(rc) );
     }
     else {
-      rc = import_keys_stream( hd.fp_read, 0, stats_handle);
+      rc = import_keys_stream( hd.fp_read, 0, stats_handle,
+			       opt.keyserver_options.import_options);
 	http_close( &hd );
     }
 
