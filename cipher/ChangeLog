@@ -1,3 +1,18 @@
+2001-04-06  Werner Koch  <wk@gnupg.org>
+
+	* rijndael.c, des.c, blowfish.c, twofish.c, cast5.c (burn_stack):
+	New.  Add wrappers for most functions to be able to call
+	burn_stack after the function invocation. This methods seems to be
+	the most portable way to zeroise the stack used. It does only work
+	on stack frame based machines but it is highly portable and has no
+	side effects.  Just setting the automatic variables at the end of
+	a function to zero does not work well because the compiler will
+	optimize them away - marking them as volatile woule be bad for
+	performance.
+	* md5.c, sha1.c, rmd160.c, tiger.c (burn_stack): Likewise.
+	* random.c (burn_stack): New.
+	(mix_pool): Use it here to burn the stack of te mixblock function.
+	
 2001-04-02  Werner Koch  <wk@gnupg.org>
 
 	* primegen.c (generate_elg_prime): I was not initialized for mode

@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 1.1
-Last-Modified: Mar 16, 2001
+Version: 1.2
+Last-Modified: Apr 4, 2001
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -84,6 +84,7 @@ you could search in the mailing list archive.
    6.12) Older gpg's (e.g., 1.0) have problems with keys from newer gpgs ...
    6.13) With 1.0.4, I get "this cipher algorithm is deprecated ..."
    6.14) I still have a problem. How do I report a bug?
+   6.15) Why doesn't GnuPG support X509 certificates?
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -672,6 +673,15 @@ in it - why?
     sure about it being a bug, you can send mail to the gnupg-devel
     list. Otherwise, use the GUUG bug tracking system 
     http://bugs.guug.de/Reporting.html.   
+
+6.15) Why doesn't GnuPG support X509 certificates?
+
+    GnuPG, first and foremost, is an implementation of the OpenPGP
+    standard (RFC 2440), which is a competing infrastructure, different
+    from X509.
+
+    They are both public-key cryptosystems, but how the public keys are
+    actually handled is different.
 
 7. ADVANCED TOPICS
 

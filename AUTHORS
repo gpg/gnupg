@@ -30,13 +30,15 @@ Matthew Skala <mskala@ansuz.sooke.bc.ca>  Disclaimer
 Niklas Hernaeus <nh@df.lth.se> Disclaimer
     (weak key patches)
 
+Nilgun Belma Buguner <nilgun@technologist.com> Translations [tr]
+
 Nils Ellmenreich  <nils 'at' infosun.fmi.uni-passau.de> Assignment
     (configure.in, cipher/rndlinux.c, FAQ)
 
 Paul Eggert <eggert@twinsun.com> 
     (configuration macros for LFS)
 
-Pedro Morais <morais@poli.org> Translations [pt_BR]
+Pedro Morais <morais@poli.org> Translations [pt_PT]
 
 Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assignment
     (g10/compress.c, g10/encr-data.c,
@@ -48,7 +50,7 @@ Thiago Jung Bauermann <jungmann@cwb.matrix.com.br> Translations [pt_BR]
 
 Urko Lusa <ulusa@euskalnet.net> Translations [es_ES]
 
-Walter Koch <koch@hsp.de>  Translations [de]
+Walter Koch <koch@u32.de>  Translations [de]
 
 Werner Koch  <wk@gnupg.org>  Assignment
     (started the whole thing)

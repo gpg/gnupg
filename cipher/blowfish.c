@@ -278,6 +278,17 @@ function_F( BLOWFISH_context *bc, u32 x )
 #endif
 #define R(l,r,i)  do { l ^= p[i]; r ^= F(l); } while(0)
 
+static void
+burn_stack (int bytes)
+{
+    char buf[64];
+    
+    memset (buf, 0, sizeof buf);
+    bytes -= sizeof buf;
+    if (bytes > 0)
+        burn_stack (bytes);
+}
+
 
 static void
 do_encrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
@@ -413,7 +424,7 @@ decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 #undef R
 
 static void
-encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+do_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
@@ -430,9 +441,15 @@ encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
     outbuf[7] =  d2	   & 0xff;
 }
 
+static void
+encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+{
+    do_encrypt_block (bc, outbuf, inbuf);
+    burn_stack (64);
+}
 
 static void
-decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+do_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
@@ -447,6 +464,13 @@ decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
     outbuf[5] = (d2 >> 16) & 0xff;
     outbuf[6] = (d2 >>	8) & 0xff;
     outbuf[7] =  d2	   & 0xff;
+}
+
+static void
+decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+{
+    do_decrypt_block (bc, outbuf, inbuf);
+    burn_stack (64);
 }
 
 
@@ -481,7 +505,7 @@ selftest(void)
 
 
 static int
-bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
+do_bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 {
     int i, j;
     u32 data, datal, datar;
@@ -563,6 +587,13 @@ bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
     return 0;
 }
 
+static int
+bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
+{
+    int rc = do_bf_setkey (c, key, keylen);
+    burn_stack (64);
+    return rc;
+}
 
 /****************
  * Return some information about the algorithm.  We need algo here to

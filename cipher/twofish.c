@@ -545,11 +545,25 @@ static byte calc_sb_tbl[512] = {
    x += y; y += x; ctx->a[j] = x; \
    ctx->a[(j) + 1] = (y << 9) + (y >> 23)
 
+
+static void
+burn_stack (int bytes)
+{
+    char buf[64];
+    
+    memset (buf, 0, sizeof buf);
+    bytes -= sizeof buf;
+    if (bytes > 0)
+        burn_stack (bytes);
+}
+
+
+
 /* Perform the key setup.  Note that this works only with 128- and 256-bit
  * keys, despite the API that looks like it might support other sizes. */
 
 static int
-twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
+do_twofish_setkey (TWOFISH_context *ctx, const byte *key, unsigned int keylen)
 {
     int i, j, k;
 
@@ -682,6 +696,16 @@ twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
 
     return 0;
 }
+
+static int
+twofish_setkey (TWOFISH_context *ctx, const byte *key, unsigned int keylen)
+{
+    int rc = do_twofish_setkey (ctx, key, keylen);
+    burn_stack (23+6*sizeof(void*));
+    return rc;
+}
+        
+
 
 /* Macros to compute the g() function in the encryption and decryption
  * rounds.  G1 is the straight g() function; G2 includes the 8-bit
@@ -744,7 +768,7 @@ twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
 /* Encrypt one block.  in and out may be the same. */
 
 static void
-twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
+do_twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
 {
    /* The four 32-bit chunks of the text. */
    u32 a, b, c, d;
@@ -774,11 +798,18 @@ twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
    OUTUNPACK (2, a, 6);
    OUTUNPACK (3, b, 7);
 }
+
+static void
+twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
+{
+    do_twofish_encrypt (ctx, out, in);
+    burn_stack (24+3*sizeof (void*));
+}
 
 /* Decrypt one block.  in and out may be the same. */
 
 static void
-twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
+do_twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
 {
    /* The four 32-bit chunks of the text. */
    u32 a, b, c, d;
@@ -807,6 +838,13 @@ twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
    OUTUNPACK (1, b, 1);
    OUTUNPACK (2, c, 2);
    OUTUNPACK (3, d, 3);
+}
+
+static void
+twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
+{
+    do_twofish_decrypt (ctx, out, in);
+    burn_stack (24+3*sizeof (void*));
 }
 
 /* Test a single encryption and decryption with each key size. */

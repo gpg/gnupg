@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2001-03-27 16:54+0200\n"
+"POT-Creation-Date: 2001-04-06 10:29+0200\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -324,64 +324,64 @@ msgstr "Ой-йо ... ошибка в программе (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "Вы нашли ошибку в программе ... (%s:%d)\n"
 
-#: cipher/random.c:309 g10/import.c:129 g10/keygen.c:1265
+#: cipher/random.c:320 g10/import.c:129 g10/keygen.c:1265
 #, fuzzy, c-format
 msgid "can't open `%s': %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
 
-#: cipher/random.c:313
+#: cipher/random.c:324
 #, fuzzy, c-format
 msgid "can't stat `%s': %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
 
-#: cipher/random.c:318
+#: cipher/random.c:329
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
 msgstr ""
 
-#: cipher/random.c:323
+#: cipher/random.c:334
 msgid "note: random_seed file is empty\n"
 msgstr ""
 
-#: cipher/random.c:329
+#: cipher/random.c:340
 msgid "warning: invalid size of random_seed file - not used\n"
 msgstr ""
 
-#: cipher/random.c:337
+#: cipher/random.c:348
 #, fuzzy, c-format
 msgid "can't read `%s': %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
 
-#: cipher/random.c:375
+#: cipher/random.c:386
 msgid "note: random_seed file not updated\n"
 msgstr ""
 
-#: cipher/random.c:395
+#: cipher/random.c:406
 #, fuzzy, c-format
 msgid "can't create `%s': %s\n"
 msgstr "%s: невозможно открыть: %s\n"
 
-#: cipher/random.c:402
+#: cipher/random.c:413
 #, fuzzy, c-format
 msgid "can't write `%s': %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
 
-#: cipher/random.c:405
+#: cipher/random.c:416
 #, fuzzy, c-format
 msgid "can't close `%s': %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
 
-#: cipher/random.c:416
+#: cipher/random.c:427
 #, c-format
 msgid "too many random bits requested; the limit is %d\n"
 msgstr ""
 
-#: cipher/random.c:648
+#: cipher/random.c:659
 #, fuzzy
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "Внимание: используется ненадежный генератор случайных чисел!\n"
 
-#: cipher/random.c:649
+#: cipher/random.c:660
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -982,83 +982,83 @@ msgstr ""
 msgid "a notation value must not use any control characters\n"
 msgstr ""
 
-#: g10/armor.c:304
+#: g10/armor.c:306
 #, fuzzy, c-format
 msgid "armor: %s\n"
 msgstr "Кодировка: %s\n"
 
-#: g10/armor.c:333
+#: g10/armor.c:335
 msgid "invalid armor header: "
 msgstr ""
 
-#: g10/armor.c:340
+#: g10/armor.c:342
 msgid "armor header: "
 msgstr ""
 
-#: g10/armor.c:351
+#: g10/armor.c:353
 #, fuzzy
 msgid "invalid clearsig header\n"
 msgstr "недопустимое начало текстовой подписи\n"
 
-#: g10/armor.c:403
+#: g10/armor.c:405
 #, fuzzy
 msgid "nested clear text signatures\n"
 msgstr "|[файл]|создать текстовую подпись"
 
-#: g10/armor.c:527
+#: g10/armor.c:529
 msgid "invalid dash escaped line: "
 msgstr "недопустимая строка начинающаяся с минусов: "
 
-#: g10/armor.c:539
+#: g10/armor.c:541
 #, fuzzy
 msgid "unexpected armor:"
 msgstr "Неожиданные данные"
 
-#: g10/armor.c:665
+#: g10/armor.c:667 g10/armor.c:1235
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "недопустимый для кодировки radix64 символ %02x пропущен\n"
 
-#: g10/armor.c:708
+#: g10/armor.c:710
 msgid "premature eof (no CRC)\n"
 msgstr "неожиданный конец файла (нет CRC)\n"
 
-#: g10/armor.c:742
+#: g10/armor.c:744
 msgid "premature eof (in CRC)\n"
 msgstr "неожиданный конец файла (в CRC)\n"
 
-#: g10/armor.c:746
+#: g10/armor.c:748
 msgid "malformed CRC\n"
 msgstr "неправильная форма CRC\n"
 
-#: g10/armor.c:750
+#: g10/armor.c:752 g10/armor.c:1272
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "ошибка CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:770
+#: g10/armor.c:772
 msgid "premature eof (in Trailer)\n"
 msgstr "неожиданный конец файла (в хвосте)\n"
 
-#: g10/armor.c:774
+#: g10/armor.c:776
 msgid "error in trailer line\n"
 msgstr "ошибка в завершающей строке\n"
 
-#: g10/armor.c:920
+#: g10/armor.c:922
 msgid "For info see http://www.gnupg.org"
 msgstr ""
 
-#: g10/armor.c:1048
+#: g10/armor.c:1050
 #, fuzzy
 msgid "no valid OpenPGP data found.\n"
 msgstr "не найдено допустимых RFC1991 или OpenPGP данных.\n"
 
-#: g10/armor.c:1053
+#: g10/armor.c:1055
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr ""
 
-#: g10/armor.c:1057
+#: g10/armor.c:1059
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1722,7 +1722,7 @@ msgstr ""
 msgid "Really create? "
 msgstr "Действительно создать? "
 
-#: g10/encode.c:91 g10/openfile.c:178 g10/openfile.c:288 g10/tdbio.c:454
+#: g10/encode.c:91 g10/openfile.c:180 g10/openfile.c:300 g10/tdbio.c:454
 #: g10/tdbio.c:515
 #, c-format
 msgid "%s: can't open: %s\n"
@@ -1781,17 +1781,17 @@ msgstr ""
 msgid "too many entries in unk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:2160
+#: g10/getkey.c:2169
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "используется дополнительный ключ %09lX вместо основного %08lX%\n"
 
-#: g10/getkey.c:2202 g10/trustdb.c:577
+#: g10/getkey.c:2211 g10/trustdb.c:577
 #, fuzzy, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "секретный ключ %08lX: не имеет соответствующего открытого ключа.\n"
 
-#: g10/getkey.c:2490
+#: g10/getkey.c:2499
 #, fuzzy
 msgid "[User id not found]"
 msgstr "%s: пользователь не найден\n"
@@ -1899,7 +1899,7 @@ msgstr "секретный ключ %08lX: не имеет соответствующего открытого ключа.\n"
 msgid "no default public keyring\n"
 msgstr "нет связки открытых ключей по умолчанию\n"
 
-#: g10/import.c:452 g10/openfile.c:230 g10/sign.c:312 g10/sign.c:635
+#: g10/import.c:452 g10/openfile.c:244 g10/sign.c:312 g10/sign.c:635
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "записывается в `%s'\n"
@@ -2702,119 +2702,125 @@ msgid "no secret key\n"
 msgstr "Плохой секретный ключ"
 
 #. of subkey
-#: g10/keylist.c:279 g10/mainproc.c:838
+#: g10/keylist.c:279 g10/mainproc.c:851
 #, fuzzy, c-format
 msgid " [expires: %s]"
 msgstr "Ключ действует до %s\n"
 
-#: g10/mainproc.c:271
+#: g10/mainproc.c:269
 #, fuzzy, c-format
 msgid "public key is %08lX\n"
 msgstr "Открытый ключ не найден"
 
-#: g10/mainproc.c:316
+#: g10/mainproc.c:314
 #, fuzzy
 msgid "public key encrypted data: good DEK\n"
 msgstr "расшифровка открытым ключом не удалась %s\n"
 
-#: g10/mainproc.c:368
+#: g10/mainproc.c:366
 #, fuzzy, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "(%u-бит %s ключ, ID %08lX, создан %s)\n"
 
-#: g10/mainproc.c:378
+#: g10/mainproc.c:376
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "Подпись сделана %.*s, используя %s ключ %08lX\n"
 
-#: g10/mainproc.c:392
+#: g10/mainproc.c:390
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "расшифровка открытым ключом не удалась %s\n"
 
-#: g10/mainproc.c:432
+#: g10/mainproc.c:430
 #, fuzzy
 msgid "decryption okay\n"
 msgstr "расшифровка не удалась: %s\n"
 
-#: g10/mainproc.c:437
+#: g10/mainproc.c:435
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr ""
 
-#: g10/mainproc.c:442
+#: g10/mainproc.c:440
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "расшифровка не удалась: %s\n"
 
-#: g10/mainproc.c:461
+#: g10/mainproc.c:459
 #, fuzzy
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "замечание: отправитель запросил \"только-для-Ваших-глаз\"\n"
 
-#: g10/mainproc.c:463
+#: g10/mainproc.c:461
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr ""
 
-#: g10/mainproc.c:619
+#: g10/mainproc.c:632
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 
-#: g10/mainproc.c:706 g10/mainproc.c:715
+#: g10/mainproc.c:719 g10/mainproc.c:728
 #, fuzzy
 msgid "WARNING: invalid notation data found\n"
 msgstr "не найдено допустимых RFC1991 или OpenPGP данных.\n"
 
-#: g10/mainproc.c:718
+#: g10/mainproc.c:731
 msgid "Notation: "
 msgstr ""
 
-#: g10/mainproc.c:727
+#: g10/mainproc.c:740
 msgid "Policy: "
 msgstr ""
 
-#: g10/mainproc.c:1180
+#: g10/mainproc.c:1193
 msgid "signature verification suppressed\n"
 msgstr ""
 
-#: g10/mainproc.c:1217
+#. plaintext before signatures but no one-pass packets
+#: g10/mainproc.c:1235 g10/mainproc.c:1245
+#, fuzzy
+msgid "can't handle these multiple signatures\n"
+msgstr "создать отдельную подпись"
+
+#: g10/mainproc.c:1256
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Подпись сделана %.*s, используя %s ключ %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1245 g10/mainproc.c:1253
+#: g10/mainproc.c:1284 g10/mainproc.c:1292
 msgid "BAD signature from \""
 msgstr "ПЛОХАЯ подпись от \""
 
-#: g10/mainproc.c:1246 g10/mainproc.c:1254
+#: g10/mainproc.c:1285 g10/mainproc.c:1293
 msgid "Good signature from \""
 msgstr "Хорошая подпись от \""
 
-#: g10/mainproc.c:1269
+#: g10/mainproc.c:1308
 msgid "                aka \""
 msgstr ""
 
-#: g10/mainproc.c:1319
+#: g10/mainproc.c:1358
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Невозможно проверить подпись: %s\n"
 
-#: g10/mainproc.c:1376 g10/mainproc.c:1392 g10/mainproc.c:1454
+#: g10/mainproc.c:1427 g10/mainproc.c:1443 g10/mainproc.c:1505
 #, fuzzy
 msgid "not a detached signature\n"
 msgstr "создать отдельную подпись"
 
-#: g10/mainproc.c:1403
+#: g10/mainproc.c:1454
 #, fuzzy, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "Подпись неизвестного типа"
 
-#: g10/mainproc.c:1458
+#: g10/mainproc.c:1511
 msgid "old style (PGP 2.x) signature\n"
 msgstr ""
 
-#: g10/mainproc.c:1463
+#: g10/mainproc.c:1518
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr ""
 
@@ -2946,25 +2952,25 @@ msgstr "Повторите ключевую фразу: %s\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "данные не были сохранены; воспользуйтесь --\"output\" для сохранения\n"
 
-#: g10/plaintext.c:324
+#: g10/plaintext.c:332
 #, fuzzy
 msgid "Detached signature.\n"
 msgstr "%d плохих подписей\n"
 
-#: g10/plaintext.c:328
+#: g10/plaintext.c:336
 msgid "Please enter name of data file: "
 msgstr "Пожалуйста, введите имя файла данных: "
 
-#: g10/plaintext.c:349
+#: g10/plaintext.c:357
 msgid "reading stdin ...\n"
 msgstr ""
 
-#: g10/plaintext.c:383
+#: g10/plaintext.c:391
 #, fuzzy
 msgid "no signed data\n"
 msgstr "невозможно открыть подписанные данные `%s' .\n"
 
-#: g10/plaintext.c:391
+#: g10/plaintext.c:399
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "невозможно открыть подписанные данные `%s' .\n"
@@ -3139,7 +3145,7 @@ msgstr "%s: невозможно открыть: %s\n"
 msgid "%s: directory does not exist!\n"
 msgstr ""
 
-#: g10/openfile.c:226 g10/openfile.c:295 g10/ringedit.c:1371 g10/tdbio.c:444
+#: g10/openfile.c:240 g10/openfile.c:307 g10/ringedit.c:1371 g10/tdbio.c:444
 #, fuzzy, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: невозможно открыть: %s\n"
@@ -3623,32 +3629,32 @@ msgstr ""
 msgid "Enter new filename"
 msgstr "--store [имя файла]"
 
-#: g10/openfile.c:182
+#: g10/openfile.c:184
 #, fuzzy
 msgid "writing to stdout\n"
 msgstr "записывается в `%s'\n"
 
-#: g10/openfile.c:261
+#: g10/openfile.c:273
 #, fuzzy, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "невозможно открыть подписанные данные `%s' .\n"
 
-#: g10/openfile.c:311
+#: g10/openfile.c:323
 #, c-format
 msgid "%s: new options file created\n"
 msgstr ""
 
-#: g10/openfile.c:338
+#: g10/openfile.c:350
 #, fuzzy, c-format
 msgid "%s: can't create directory: %s\n"
 msgstr "%s: невозможно открыть: %s\n"
 
-#: g10/openfile.c:341
+#: g10/openfile.c:353
 #, fuzzy, c-format
 msgid "%s: directory created\n"
 msgstr "%s: невозможно открыть: %s\n"
 
-#: g10/openfile.c:343
+#: g10/openfile.c:355
 msgid "you have to start GnuPG again, so it can read the new options file\n"
 msgstr ""
 

@@ -1707,10 +1707,23 @@ static const u32 rcon[30] = {
 };
 
 
+
+static void
+burn_stack (int bytes)
+{
+    char buf[64];
+    
+    memset (buf, 0, sizeof buf);
+    bytes -= sizeof buf;
+    if (bytes > 0)
+        burn_stack (bytes);
+}
+
+
 /* Perform the key setup.
  */  
 static int
-rijndael_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
+do_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
 {
     static int initialized = 0;
     static const char *selftest_failed=0;
@@ -1719,6 +1732,7 @@ rijndael_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
     int i,j, r, t, rconpointer = 0;
     byte tk[MAXKC][4];
     int KC;
+    /* space for automatic variables is about 64 + 11*int */
 
     if (!initialized) {
         initialized = 1;
@@ -1809,6 +1823,14 @@ rijndael_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
     return 0;
 }
 
+static int
+rijndael_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
+{
+    int rc = do_setkey (ctx, key, keylen);
+    burn_stack ( 100 + 16*sizeof(int));
+    return rc;
+}
+
 /* make a decryption  key from an encryption key */
 static void
 prepare_decryption( RIJNDAEL_context *ctx )
@@ -1847,7 +1869,7 @@ prepare_decryption( RIJNDAEL_context *ctx )
 
 /* Encrypt one block.  A and B may be the same. */
 static void
-rijndael_encrypt (const RIJNDAEL_context *ctx, byte *b, const byte *a)
+do_encrypt (const RIJNDAEL_context *ctx, byte *b, const byte *a)
 {
     int r;
     byte temp[4][4];
@@ -1924,10 +1946,18 @@ rijndael_encrypt (const RIJNDAEL_context *ctx, byte *b, const byte *a)
     *((u32*)(b+12)) ^= *((u32*)rk[ROUNDS][3]);
   #undef rk
 }
+
+static void
+rijndael_encrypt (const RIJNDAEL_context *ctx, byte *b, const byte *a)
+{
+    do_encrypt (ctx, b, a);
+    burn_stack (16 + 2*sizeof(int));
+}
+
 
 /* Decrypt one block.  a and b may be the same. */
 static void
-rijndael_decrypt (RIJNDAEL_context *ctx, byte *b, const byte *a)
+do_decrypt (RIJNDAEL_context *ctx, byte *b, const byte *a)
 {
   #define rk  (ctx->keySched2)
     int ROUNDS = ctx->ROUNDS; 
@@ -1936,6 +1966,7 @@ rijndael_decrypt (RIJNDAEL_context *ctx, byte *b, const byte *a)
 
     if ( !ctx->decryption_prepared ) {
         prepare_decryption ( ctx );
+        burn_stack (64);
         ctx->decryption_prepared = 1;
     }
     
@@ -2008,6 +2039,13 @@ rijndael_decrypt (RIJNDAEL_context *ctx, byte *b, const byte *a)
 	*((u32*)(b+ 8)) ^= *((u32*)rk[0][2]);
 	*((u32*)(b+12)) ^= *((u32*)rk[0][3]);
   #undef rk
+}
+
+static void
+rijndael_decrypt (RIJNDAEL_context *ctx, byte *b, const byte *a)
+{
+    do_decrypt (ctx, b, a);
+    burn_stack (16+2*sizeof(int));
 }
 
 /* Test a single encryption and decryption with each key size. */

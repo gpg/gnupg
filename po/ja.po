@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4\n"
-"POT-Creation-Date: 2001-03-27 16:54+0200\n"
+"POT-Creation-Date: 2001-04-06 10:29+0200\n"
 "PO-Revision-Date: 2000-10-19 23:08+09:00\n"
 "Last-Translator: IIDA Yosiaki <y-iida@secom.co.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -268,63 +268,63 @@ msgstr "... バグです (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "バグを見つけたようです ... (%s:%d)\n"
 
-#: cipher/random.c:309 g10/import.c:129 g10/keygen.c:1265
+#: cipher/random.c:320 g10/import.c:129 g10/keygen.c:1265
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "`%s'が開けません: %s\n"
 
-#: cipher/random.c:313
+#: cipher/random.c:324
 #, c-format
 msgid "can't stat `%s': %s\n"
 msgstr "`%s'を調べることができません: %s\n"
 
-#: cipher/random.c:318
+#: cipher/random.c:329
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
 msgstr "`%s' は普通のファイルではありません - 無視\n"
 
-#: cipher/random.c:323
+#: cipher/random.c:334
 msgid "note: random_seed file is empty\n"
 msgstr "注意: random_seed ファイルは空です\n"
 
-#: cipher/random.c:329
+#: cipher/random.c:340
 msgid "warning: invalid size of random_seed file - not used\n"
 msgstr "警告: 無効なサイズの random_seed ファイル - 使いません\n"
 
-#: cipher/random.c:337
+#: cipher/random.c:348
 #, c-format
 msgid "can't read `%s': %s\n"
 msgstr "`%s'を読めません: %s\n"
 
-#: cipher/random.c:375
+#: cipher/random.c:386
 msgid "note: random_seed file not updated\n"
 msgstr "注意: random_seed ファイルの更新をしません\n"
 
-#: cipher/random.c:395
+#: cipher/random.c:406
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "`%s'ができません: %s\n"
 
-#: cipher/random.c:402
+#: cipher/random.c:413
 #, c-format
 msgid "can't write `%s': %s\n"
 msgstr "`%s'に書けません: %s\n"
 
-#: cipher/random.c:405
+#: cipher/random.c:416
 #, c-format
 msgid "can't close `%s': %s\n"
 msgstr "`%s'を閉じられません: %s\n"
 
-#: cipher/random.c:416
+#: cipher/random.c:427
 #, c-format
 msgid "too many random bits requested; the limit is %d\n"
 msgstr "ランダム・ビットをたくさん要求し過ぎです。限界は %d\n"
 
-#: cipher/random.c:648
+#: cipher/random.c:659
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "警告: やばい乱数生成子が使われています!!\n"
 
-#: cipher/random.c:649
+#: cipher/random.c:660
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -941,79 +941,79 @@ msgstr "注釈名のドットは他の文字で囲まなければなりません\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "注釈名の値に制御文字を用いてはいけません\n"
 
-#: g10/armor.c:304
+#: g10/armor.c:306
 #, c-format
 msgid "armor: %s\n"
 msgstr "包装: %s\n"
 
-#: g10/armor.c:333
+#: g10/armor.c:335
 msgid "invalid armor header: "
 msgstr "無効な包装ヘッダー: "
 
-#: g10/armor.c:340
+#: g10/armor.c:342
 msgid "armor header: "
 msgstr "包装ヘッダー: "
 
-#: g10/armor.c:351
+#: g10/armor.c:353
 msgid "invalid clearsig header\n"
 msgstr "無効なクリア署名ヘッダー\n"
 
-#: g10/armor.c:403
+#: g10/armor.c:405
 msgid "nested clear text signatures\n"
 msgstr "入れ子のクリア署名\n"
 
-#: g10/armor.c:527
+#: g10/armor.c:529
 msgid "invalid dash escaped line: "
 msgstr "無効なダッシュでエスケープされた行: "
 
-#: g10/armor.c:539
+#: g10/armor.c:541
 msgid "unexpected armor:"
 msgstr "予期せぬ包装:"
 
-#: g10/armor.c:665
+#: g10/armor.c:667 g10/armor.c:1235
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "無効な64進文字%02xをとばします\n"
 
-#: g10/armor.c:708
+#: g10/armor.c:710
 msgid "premature eof (no CRC)\n"
 msgstr "ファイル末尾が早すぎます (CRCがありません)\n"
 
-#: g10/armor.c:742
+#: g10/armor.c:744
 msgid "premature eof (in CRC)\n"
 msgstr "ファイル末尾が早すぎます (CRCの中にあります)\n"
 
-#: g10/armor.c:746
+#: g10/armor.c:748
 msgid "malformed CRC\n"
 msgstr "CRCの書式が正しくありません\n"
 
-#: g10/armor.c:750
+#: g10/armor.c:752 g10/armor.c:1272
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "CRCエラー。%06lx - %06lx\n"
 
-#: g10/armor.c:770
+#: g10/armor.c:772
 msgid "premature eof (in Trailer)\n"
 msgstr "ファイル末尾が早すぎます (後尾部の中にあります)\n"
 
-#: g10/armor.c:774
+#: g10/armor.c:776
 msgid "error in trailer line\n"
 msgstr "後尾の行にエラーがあります\n"
 
-#: g10/armor.c:920
+#: g10/armor.c:922
 msgid "For info see http://www.gnupg.org"
 msgstr "KUHASIKU WA http://www.gnupg.org/ WO GORANKUDASAI"
 
-#: g10/armor.c:1048
+#: g10/armor.c:1050
 msgid "no valid OpenPGP data found.\n"
 msgstr "有効なOpenPGPデータが見つかりません。\n"
 
-#: g10/armor.c:1053
+#: g10/armor.c:1055
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "無効な包装: 行の長さが%d文字を超えています\n"
 
-#: g10/armor.c:1057
+#: g10/armor.c:1059
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1659,7 +1659,7 @@ msgstr "鍵は%lu秒未来にできました (時間旅行か時計のくるいでしょう)\n"
 msgid "Really create? "
 msgstr "本当に作りますか? "
 
-#: g10/encode.c:91 g10/openfile.c:178 g10/openfile.c:288 g10/tdbio.c:454
+#: g10/encode.c:91 g10/openfile.c:180 g10/openfile.c:300 g10/tdbio.c:454
 #: g10/tdbio.c:515
 #, c-format
 msgid "%s: can't open: %s\n"
@@ -1717,17 +1717,17 @@ msgstr "pkキャッシュのエントリーが多すぎます - 使用禁止\n"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "unkキャッシュのエントリーが多すぎます - 使用禁止\n"
 
-#: g10/getkey.c:2160
+#: g10/getkey.c:2169
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "副鍵%08lXを主鍵%08lXに代用します\n"
 
-#: g10/getkey.c:2202 g10/trustdb.c:577
+#: g10/getkey.c:2211 g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "鍵%08lX: 公開鍵のない秘密鍵です。スキップ\n"
 
-#: g10/getkey.c:2490
+#: g10/getkey.c:2499
 msgid "[User id not found]"
 msgstr "[ユーザーidが見つかりません]"
 
@@ -1834,7 +1834,7 @@ msgstr "鍵 %08lX: 新しい鍵です - スキップ\n"
 msgid "no default public keyring\n"
 msgstr "既定の公開鍵輪がありません\n"
 
-#: g10/import.c:452 g10/openfile.c:230 g10/sign.c:312 g10/sign.c:635
+#: g10/import.c:452 g10/openfile.c:244 g10/sign.c:312 g10/sign.c:635
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "`%s'への書出し\n"
@@ -2586,115 +2586,121 @@ msgid "no secret key\n"
 msgstr "秘密鍵がありません\n"
 
 #. of subkey
-#: g10/keylist.c:279 g10/mainproc.c:838
+#: g10/keylist.c:279 g10/mainproc.c:851
 #, c-format
 msgid " [expires: %s]"
 msgstr " [有効期限: %s]"
 
-#: g10/mainproc.c:271
+#: g10/mainproc.c:269
 #, c-format
 msgid "public key is %08lX\n"
 msgstr "公開鍵は%08lXです\n"
 
-#: g10/mainproc.c:316
+#: g10/mainproc.c:314
 msgid "public key encrypted data: good DEK\n"
 msgstr "公開鍵で暗号化されたデータ: 正しいDEKです\n"
 
-#: g10/mainproc.c:368
+#: g10/mainproc.c:366
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "%u-ビット%s鍵, ID %08lXで暗号化%sにできました\n"
 
-#: g10/mainproc.c:378
+#: g10/mainproc.c:376
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "%s鍵, ID %08lXで暗号化されました\n"
 
-#: g10/mainproc.c:392
+#: g10/mainproc.c:390
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "公開鍵の復号に失敗しました: %s\n"
 
-#: g10/mainproc.c:432
+#: g10/mainproc.c:430
 msgid "decryption okay\n"
 msgstr "復号に成功\n"
 
-#: g10/mainproc.c:437
+#: g10/mainproc.c:435
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "警告: 暗号化されたメッセージは改竄されています!\n"
 
-#: g10/mainproc.c:442
+#: g10/mainproc.c:440
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "復号に失敗しました: %s\n"
 
-#: g10/mainproc.c:461
+#: g10/mainproc.c:459
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "注意: 送信者は「内緒にする」ように求めています\n"
 
-#: g10/mainproc.c:463
+#: g10/mainproc.c:461
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "元のファイル名='%.*s'\n"
 
-#: g10/mainproc.c:619
+#: g10/mainproc.c:632
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "独立破棄。「gpg --import」を使って適用してください\n"
 
-#: g10/mainproc.c:706 g10/mainproc.c:715
+#: g10/mainproc.c:719 g10/mainproc.c:728
 msgid "WARNING: invalid notation data found\n"
 msgstr "警告: 無効な注釈データがあります\n"
 
-#: g10/mainproc.c:718
+#: g10/mainproc.c:731
 msgid "Notation: "
 msgstr "注釈: "
 
-#: g10/mainproc.c:727
+#: g10/mainproc.c:740
 msgid "Policy: "
 msgstr "ポリシー: "
 
-#: g10/mainproc.c:1180
+#: g10/mainproc.c:1193
 msgid "signature verification suppressed\n"
 msgstr "署名の検証を省略\n"
 
-#: g10/mainproc.c:1217
+#. plaintext before signatures but no one-pass packets
+#: g10/mainproc.c:1235 g10/mainproc.c:1245
+#, fuzzy
+msgid "can't handle these multiple signatures\n"
+msgstr "分離署名を作成"
+
+#: g10/mainproc.c:1256
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "%.*s の%s鍵ID %08lXによる署名\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1245 g10/mainproc.c:1253
+#: g10/mainproc.c:1284 g10/mainproc.c:1292
 msgid "BAD signature from \""
 msgstr "不正な 署名: \""
 
-#: g10/mainproc.c:1246 g10/mainproc.c:1254
+#: g10/mainproc.c:1285 g10/mainproc.c:1293
 msgid "Good signature from \""
 msgstr "正しい署名: \""
 
-#: g10/mainproc.c:1269
+#: g10/mainproc.c:1308
 msgid "                aka \""
 msgstr "       別名 \""
 
-#: g10/mainproc.c:1319
+#: g10/mainproc.c:1358
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "署名を検証できません: %s\n"
 
-#: g10/mainproc.c:1376 g10/mainproc.c:1392 g10/mainproc.c:1454
+#: g10/mainproc.c:1427 g10/mainproc.c:1443 g10/mainproc.c:1505
 #, fuzzy
 msgid "not a detached signature\n"
 msgstr "分離署名を作成"
 
-#: g10/mainproc.c:1403
+#: g10/mainproc.c:1454
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "クラス0x%02xの独立署名\n"
 
-#: g10/mainproc.c:1458
+#: g10/mainproc.c:1511
 msgid "old style (PGP 2.x) signature\n"
 msgstr "古い形式 (PGP 2.x) の署名\n"
 
-#: g10/mainproc.c:1463
+#: g10/mainproc.c:1518
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "proc_tree() の中に無効なパケットを検出しました\n"
 
@@ -2813,24 +2819,24 @@ msgstr ""
 "データは保存されていません。\n"
 "保存するには「--output」オプションを使用してください\n"
 
-#: g10/plaintext.c:324
+#: g10/plaintext.c:332
 msgid "Detached signature.\n"
 msgstr "分離署名。\n"
 
-#: g10/plaintext.c:328
+#: g10/plaintext.c:336
 msgid "Please enter name of data file: "
 msgstr "データ・ファイルの名前を入力: "
 
-#: g10/plaintext.c:349
+#: g10/plaintext.c:357
 msgid "reading stdin ...\n"
 msgstr "標準入力より読込み中 ...\n"
 
-#: g10/plaintext.c:383
+#: g10/plaintext.c:391
 #, fuzzy
 msgid "no signed data\n"
 msgstr "署名されたデータ`%s'が開けません\n"
 
-#: g10/plaintext.c:391
+#: g10/plaintext.c:399
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "署名されたデータ`%s'が開けません\n"
@@ -3002,7 +3008,7 @@ msgstr "%s: アクセスできません: %s\n"
 msgid "%s: directory does not exist!\n"
 msgstr "%s: 辞書がありません!\n"
 
-#: g10/openfile.c:226 g10/openfile.c:295 g10/ringedit.c:1371 g10/tdbio.c:444
+#: g10/openfile.c:240 g10/openfile.c:307 g10/ringedit.c:1371 g10/tdbio.c:444
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: 作成できません: %s\n"
@@ -3482,31 +3488,31 @@ msgstr "%s: 未知の拡張子\n"
 msgid "Enter new filename"
 msgstr "新しいファイル名を入力してください"
 
-#: g10/openfile.c:182
+#: g10/openfile.c:184
 msgid "writing to stdout\n"
 msgstr "標準出力に書き出します\n"
 
-#: g10/openfile.c:261
+#: g10/openfile.c:273
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "署名されたデータが`%s'にあると想定します\n"
 
-#: g10/openfile.c:311
+#: g10/openfile.c:323
 #, c-format
 msgid "%s: new options file created\n"
 msgstr "%s: 新しいオプション・ファイルができました\n"
 
-#: g10/openfile.c:338
+#: g10/openfile.c:350
 #, c-format
 msgid "%s: can't create directory: %s\n"
 msgstr "%s: 辞書ができません: %s\n"
 
-#: g10/openfile.c:341
+#: g10/openfile.c:353
 #, c-format
 msgid "%s: directory created\n"
 msgstr "%s: 辞書ができました\n"
 
-#: g10/openfile.c:343
+#: g10/openfile.c:355
 msgid "you have to start GnuPG again, so it can read the new options file\n"
 msgstr "オプション・ファイルを読み直すよう、GnuPGを再起動してください\n"
 

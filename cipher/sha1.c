@@ -49,7 +49,16 @@ typedef struct {
     int  count;
 } SHA1_CONTEXT;
 
-
+static void
+burn_stack (int bytes)
+{
+    char buf[128];
+    
+    memset (buf, 0, sizeof buf);
+    bytes -= sizeof buf;
+    if (bytes > 0)
+        burn_stack (bytes);
+}
 
 
 void
@@ -214,6 +223,7 @@ sha1_write( SHA1_CONTEXT *hd, byte *inbuf, size_t inlen)
 {
     if( hd->count == 64 ) { /* flush the buffer */
 	transform( hd, hd->buf );
+        burn_stack (88+4*sizeof(void*));
 	hd->count = 0;
 	hd->nblocks++;
     }
@@ -234,6 +244,7 @@ sha1_write( SHA1_CONTEXT *hd, byte *inbuf, size_t inlen)
 	inlen -= 64;
 	inbuf += 64;
     }
+    burn_stack (88+4*sizeof(void*));
     for( ; inlen && hd->count < 64; inlen-- )
 	hd->buf[hd->count++] = *inbuf++;
 }
@@ -290,6 +301,7 @@ sha1_final(SHA1_CONTEXT *hd)
     hd->buf[62] = lsb >>  8;
     hd->buf[63] = lsb	   ;
     transform( hd, hd->buf );
+    burn_stack (88+4*sizeof(void*));
 
     p = hd->buf;
   #ifdef BIG_ENDIAN_HOST

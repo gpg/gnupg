@@ -1,3 +1,8 @@
+2001-04-06  Werner Koch  <wk@gnupg.org>
+
+	* configure.in (ALL_LINGUAS): Add Turkish translation.  Thanks
+	to Nilgun Belma Buguner.
+
 2001-03-18  Werner Koch  <wk@gnupg.org>
 
 	* configure.in: Hardwire the use of -lsocket for some

@@ -139,6 +139,16 @@ initialize(void)
     cipher_modules_constructor();
 }
 
+static void
+burn_stack (int bytes)
+{
+    char buf[128];
+    
+    memset (buf, 0, sizeof buf);
+    bytes -= sizeof buf;
+    if (bytes > 0)
+        burn_stack (bytes);
+}
 
 void
 random_dump_stats()
@@ -269,6 +279,7 @@ mix_pool(byte *pool)
 	rmd160_mixblock( &md, hashbuf);
 	memcpy(p, hashbuf, 20 );
     }
+    burn_stack (200); /* for the rmd160_mixblock() */
 }
 
 
