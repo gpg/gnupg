@@ -18,6 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+
 #ifndef G10_RSA_H
 #define G10_RSA_H
 
@@ -26,11 +27,9 @@ int rsa_check_secret_key( int algo, MPI *skey );
 int rsa_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
 int rsa_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
 int rsa_sign( int algo, MPI *resarr, MPI data, MPI *skey );
-int rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
-		    int (*cmp)(void *, MPI), void *opaquev );
+int rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey );
 unsigned rsa_get_nbits( int algo, MPI *pkey );
 const char *rsa_get_info( int algo, int *npkey, int *nskey,
 				    int *nenc, int *nsig, int *use );
-
 
 #endif /*G10_RSA_H*/

@@ -435,8 +435,7 @@ rsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 }
 
 int
-rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
-	   int (*cmp)(void *opaque, MPI tmp), void *opaquev )
+rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey )
 {
     RSA_public_key pk;
     MPI result;
@@ -448,7 +447,6 @@ rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
     pk.e = pkey[1];
     result = mpi_alloc( (160+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB);
     public( result, data[0], &pk );
-    /*rc = (*cmp)( opaquev, result );*/
     rc = mpi_cmp( result, hash )? G10ERR_BAD_SIGN:0;
     mpi_free(result);
 

@@ -426,8 +426,7 @@ dsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 }
 
 int
-dsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
-		    int (*cmp)(void *, MPI), void *opaquev )
+dsa_verify( int algo, MPI hash, MPI *data, MPI *pkey )
 {
     DSA_public_key pk;
 
@@ -479,5 +478,3 @@ dsa_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
       default: *use = 0; return NULL;
     }
 }
-
-

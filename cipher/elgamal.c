@@ -607,8 +607,7 @@ elg_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 }
 
 int
-elg_verify( int algo, MPI hash, MPI *data, MPI *pkey,
-		    int (*cmp)(void *, MPI), void *opaquev )
+elg_verify( int algo, MPI hash, MPI *data, MPI *pkey )
 {
     ELG_public_key pk;
 
@@ -625,7 +624,6 @@ elg_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 	return G10ERR_BAD_SIGN;
     return 0;
 }
-
 
 
 unsigned int

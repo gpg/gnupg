@@ -1,3 +1,9 @@
+2003-12-17  David Shaw  <dshaw@localhost.localdomain>
+
+	* dsa.h, dsa.c (dsa_verify), elgamal.h, elgamal.c (elg_verify),
+	rsa.h, rsa.c (rsa_verify), pubkey.c (dummy_verify, pubkey_verify):
+	Remove old unused code.
+
 2003-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* pubkey.c (setup_pubkey_table): Don't allow signatures to and
