@@ -154,7 +154,7 @@ unprotect (CTRL ctrl,
     sprintf (hexgrip+2*i, "%02X", grip[i]);
   hexgrip[40] = 0;
 
-  /* first try to get it from the cache - if there is none or we can't
+  /* First try to get it from the cache - if there is none or we can't
      unprotect it, we fall back to ask the user */
   if (!ignore_cache)
     {
@@ -329,9 +329,9 @@ agent_key_from_file (CTRL ctrl,
       return rc;
     }
 
-  /* Arggg FIXME: does scan support secure memory? */
-  rc = gcry_sexp_sscan (&s_skey, &erroff,
-                        buf, gcry_sexp_canon_len (buf, 0, NULL, NULL));
+  buflen = gcry_sexp_canon_len (buf, 0, NULL, NULL);
+  rc = gcry_sexp_sscan (&s_skey, &erroff, buf, buflen);
+  wipememory (buf, buflen);
   xfree (buf);
   if (rc)
     {

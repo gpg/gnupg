@@ -93,12 +93,12 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       putc (0, outfp);
     }
   else
-    { /* no smartcard, but a private key */
-      if (DBG_CRYPTO)
-        {
-          log_debug ("skey: ");
-          gcry_sexp_dump (s_skey);
-        }
+    { /* No smartcard, but a private key */
+/*       if (DBG_CRYPTO ) */
+/*         { */
+/*           log_debug ("skey: "); */
+/*           gcry_sexp_dump (s_skey); */
+/*         } */
 
       rc = gcry_pk_decrypt (&s_plain, s_cipher, s_skey);
       if (rc)

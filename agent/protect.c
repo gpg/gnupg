@@ -46,6 +46,8 @@ static struct {
   int prot_from, prot_to;
 } protect_info[] = {
   { "rsa",  "nedpqu", 2, 5 },
+  { "dsa",  "pqgyx", 4, 4 },
+  { "elg",  "pgyx", 3, 3 },
   { NULL }
 };
 
@@ -432,13 +434,13 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
       xfree (outbuf);
       return rc;
     }
-  /* do a quick check first */
+  /* Do a quick check first. */
   if (*outbuf != '(' && outbuf[1] != '(')
     {
       xfree (outbuf);
       return gpg_error (GPG_ERR_BAD_PASSPHRASE);
     }
-  /* check that we have a consistent S-Exp */
+  /* Check that we have a consistent S-Exp. */
   reallen = gcry_sexp_canon_len (outbuf, protectedlen, NULL, NULL);
   if (!reallen || (reallen + blklen < protectedlen) )
     {
@@ -458,7 +460,8 @@ static int
 merge_lists (const unsigned char *protectedkey,
              size_t replacepos, 
              const unsigned char *cleartext,
-             unsigned char *sha1hash, unsigned char **result)
+             unsigned char *sha1hash,
+             unsigned char **result, size_t *resultlen)
 {
   size_t n, newlistlen;
   unsigned char *newlist, *p;
@@ -559,13 +562,16 @@ merge_lists (const unsigned char *protectedkey,
 
   /* ready */
   *result = newlist;
+  *resultlen = newlistlen;
   return 0;
 
  failure:
+  wipememory (newlist, newlistlen);
   xfree (newlist);
   return rc;
 
  invalid_sexp:
+  wipememory (newlist, newlistlen);
   xfree (newlist);
   return gpg_error (GPG_ERR_INV_SEXP);
 }
@@ -589,6 +595,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   const unsigned char *prot_begin;
   unsigned char *cleartext;
   unsigned char *final;
+  size_t finallen;
 
   s = protectedkey;
   if (*s != '(')
@@ -612,7 +619,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   if (!protect_info[infidx].algo)
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM); 
 
-  /* now find the list with the protected information.  Here is an
+  /* Now find the list with the protected information.  Here is an
      example for such a list:
      (protected openpgp-s2k3-sha1-aes-cbc 
         ((sha1 <salt> <count>) <Initialization_Vector>)
@@ -669,7 +676,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   s++; /* skip list end */
 
   n = snext (&s);
-  if (n != 16) /* Wrong blocksize for IV (we support ony aes-128) */
+  if (n != 16) /* Wrong blocksize for IV (we support only aes-128). */
     return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
   iv = s;
   s += n;
@@ -688,7 +695,11 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
     return rc;
 
   rc = merge_lists (protectedkey, prot_begin-protectedkey, cleartext,
-                    sha1hash, &final);
+                    sha1hash, &final, &finallen);
+  /* Albeit cleartext has been allocated in secure memory and thus
+     xfree will wipe it out, we do an extra wipe just in case
+     somethings goes badly wrong. */
+  wipememory (cleartext, prot_begin-protectedkey);
   xfree (cleartext);
   if (rc)
     return rc;
@@ -698,6 +709,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
     rc = gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
   if (rc)
     {
+      wipememory (final, finallen);
       xfree (final);
       return rc;
     }
@@ -954,7 +966,7 @@ agent_get_shadow_info (const unsigned char *shadowkey,
       depth--;
       s++;
     }
-  /* found the shadowed list, s points to the protocol */
+  /* Found the shadowed list, S points to the protocol */
   n = snext (&s);
   if (!n) 
     return gpg_error (GPG_ERR_INV_SEXP); 

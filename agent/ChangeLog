@@ -1,3 +1,13 @@
+2004-02-03  Werner Koch  <wk@gnupg.org>
+
+	* findkey.c (agent_key_from_file): Extra paranoid wipe.
+	* protect.c (agent_unprotect): Ditto.
+	(merge_lists): Ditto. Add arg RESULTLEN.
+	* pkdecrypt.c (agent_pkdecrypt): Don't show the secret key even in
+	debug mode.
+
+	* protect.c: Add DSA and Elgamal description.
+
 2004-01-29  Werner Koch  <wk@gnupg.org>
 
 	* agent.h (server_control_s): Add connection_fd field.
