@@ -83,7 +83,7 @@ included here. Your help is very much appreciated.
 
 <Q> Where do I get GnuPG?
 
-    You can download the GNU Privacy Guard from it's primary FTP server
+    You can download the GNU Privacy Guard from its primary FTP server
     [H a href=ftp://ftp.gnupg.org/pub/gcrypt]ftp.gnupg.org[H /a] or from
     one of the mirrors: [H a href=[$hGPG]/mirrors.html]<[$hGPG]/mirror.html>[H /a]
     The current version is 1.0.4, please upgrade to this version as it
@@ -321,8 +321,8 @@ messages?
 
 <Q> How can a get list of key IDs used to encrypt a message?
 
-    [H pre] gpg --batch --decrypt --list-only --status-fd 1 2>/dev/null
-    \ | awk '/^\[GNUPG:\] ENC_TO / { print $3 }' [H /pre]
+    [H pre] gpg --batch --decrypt --list-only --status-fd 1 2>/dev/null | \
+    awk '/^\[GNUPG:\] ENC_TO / { print $3 }' [H /pre]
 
 <Q> I can't decrypt my symmetrical only (-c) encrypted message with
     a new version of GnuPG.
@@ -548,7 +548,7 @@ in it - why?
 <Q> What is the thing with "can't handle multiple signatures"?
 
     Due to different message formats GnuPG is not always able to split a
-    file with multiple signatures unambiguously into it's parts.  This 
+    file with multiple signatures unambiguously into its parts.  This
     error message informs you that there is something wrong with the input.
 
     The only way to have multiple signatures in a file is by using the 
