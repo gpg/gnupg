@@ -13,18 +13,20 @@ GnuPG comes with a couple of smaller tools:
 * gpgconf::               Modify .gnupg home directories.
 @end menu
 
-
+@c
+@c  WATHCGNUPG
+@c
 @node watchgnupg
 @section Read logs from a socket
 
 Most of the main utilities are able to write there log files to a
-Unix Domain socket if configured that way.  watchgnupg is a simple
+Unix Domain socket if configured that way.  @command{watchgnupg} is a simple
 listener for such a socket.  It ameliorates the output with a time
 stamp and makes sure that long lines are not interspersed with log
 output from other utilities.
 
 @noindent
-watchgnupg is commonly invoked as
+@command{watchgnupg} is commonly invoked as
 
 @samp{watchgnupg --force ~/.gnupg/S.log}
 
@@ -33,7 +35,7 @@ This starts it on the current terminal for listening on the socket
 @file{~/.gnupg/S.log}.  
 
 @noindent
-watchgnupg understands these options:
+@command{watchgnupg} understands these options:
 
 @table @gnupgtabopt
 
@@ -56,7 +58,9 @@ Display a brief help page and exit
 @end table
 
 
-
+@c
+@c    ADDGNUPGHOME
+@c
 @node addgnupghome
 @section Create .gnupg home directories.
 
@@ -69,11 +73,14 @@ directories of the accounts given on the command line.  It takes care
 not to overwrite existing GnuPG home directories.
 
 @noindent
-addgnupghome is invoked by root as:
+@command{addgnupghome} is invoked by root as:
 
 @samp{addgnupghome account1 account2 ... accountn}
 
 
+@c
+@c   GPGCONF
+@c
 @node gpgconf
 @section Modify .gnupg home directories.
 

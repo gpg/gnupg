@@ -102,8 +102,8 @@ Boston, MA 02111-1307 USA
 This manual documents how to use the GNU Privay Guard system as well as
 the administration and the architecture.
 
-@c * Gpg::             Using the OpenPGP protocol.
 @menu
+* Invoking GPG::        Using the OpenPGP protocol.
 * Invoking GPGSM::      Using the S/MIME protocol.
 * Invoking GPG-AGENT::  How to launch the secret key daemon.
 * Invoking SCDAEMON::   How to handle Smartcards.
@@ -127,6 +127,7 @@ Indices
 * Index::	        Index of concepts and symbol names.
 @end menu
 
+@include gpg.texi
 @include gpgsm.texi
 @include gpg-agent.texi
 @include scdaemon.texi

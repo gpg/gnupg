@@ -10,7 +10,7 @@
 
 @c man begin DESCRIPTION
 
-The @sc{scdaemon} is a daemon to manage smartcards.  It is usually
+The @command{scdaemon} is a daemon to manage smartcards.  It is usually
 invoked by gpg-agent and in general not used directly.
 
 @c man end
@@ -87,7 +87,7 @@ below the home directory of the user.
 @opindex verbose
 Outputs additional information while running.
 You can increase the verbosity by giving several
-verbose commands to @sc{gpgsm}, such as @samp{-vv}.
+verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
 @item --debug-level @var{level}
 @opindex debug-level
@@ -200,7 +200,7 @@ stripping off the two leading dashes.
 @node Card applications
 @section Description of card applications
 
-@sc{scdaemon} supports the card applications as described below.
+@command{scdaemon} supports the card applications as described below.
 
 @menu
 * OpenPGP Card::          The OpenPGP card application
@@ -212,8 +212,8 @@ stripping off the two leading dashes.
 @node OpenPGP Card
 @subsection The OpenPGP card application ``openpgp''
 
-This application is currently only used by @sc{gpg} but may in
-future also be useful with @sc{gpgsm}. 
+This application is currently only used by @command{gpg} but may in
+future also be useful with @command{gpgsm}. 
 
 The specification for such a card is available at
 @uref{http://g10code.com/docs/openpgp-card-1.0.pdf}.
@@ -223,7 +223,7 @@ The specification for such a card is available at
 
 This is the main application of the Telesec cards as available in
 Germany.  It is a superset of the German DINSIG card.  The card is
-used by @sc{gpgsm}.
+used by @command{gpgsm}.
 
 @node DINSIG Card
 @subsection The DINSIG card application ``dinsig''
@@ -237,7 +237,7 @@ the German signature law and its bylaws (SigG and SigV).
 
 This is common fraqmework for smart card applications; support is only
 available if compiled with support for the OpenSC library.  It is used
-by @sc{gpgsm}.
+by @command{gpgsm}.
 
 
 
@@ -375,7 +375,7 @@ To sign some data the caller should use the command
  SETDATA @var{hexstring}
 @end example
 
-to tell scdaemon about the data to be signed.  The data must be given in
+to tell @command{scdaemon} about the data to be signed.  The data must be given in
 hex notation.  The actual signing is done using the command
 
 @example
@@ -395,8 +395,9 @@ To decrypt some data the caller should use the command
  SETDATA @var{hexstring}
 @end example
 
-to tell scdaemon about the data to be decrypted.  The data must be given in
-hex notation.  The actual decryption is then done using the command
+to tell @command{scdaemon} about the data to be decrypted.  The data
+must be given in hex notation.  The actual decryption is then done
+using the command
 
 @example
   PKDECRYPT @var{keyid}

@@ -10,9 +10,10 @@
 
 @c man begin DESCRIPTION
 
-@sc{gpg-agent} is a daemon to manage secret (private) keys independelty
-from any protocol.  It is used as a backend for @sc{gpg} and @sc{gpgsm}
-as well as for a couple of other utilities.
+@command{gpg-agent} is a daemon to manage secret (private) keys
+independelty from any protocol.  It is used as a backend for
+@command{gpg} and @command{gpgsm} as well as for a couple of other
+utilities.
 
 @noindent
 The usual way to run the agent is from the @code{~/.xsession} file:
@@ -24,8 +25,8 @@ eval `gpg-agent --daemon`
 @noindent
 If you don't use an X server, you can also put this into your regular
 startup file @code{~/.profile} or @code{.bash_profile}.  It is best not
-to run multiple instance of the gpg-agent, so you should make sure that
-only is running:  @sc{gpg-agent} uses an environment variable to inform
+to run multiple instance of the @command{gpg-agent}, so you should make sure that
+only is running:  @command{gpg-agent} uses an environment variable to inform
 clients about the communication parameters. You can write the
 content of this environment variable to a file so that you can test for
 a running agent.  This short script may do the job:
@@ -66,7 +67,7 @@ one (e.g. @file{/usr/bin/pinentry}).
 @c man end
 
 @noindent
-@xref{Option Index}, for an index to GPG-AGENTS's commands and options.
+@xref{Option Index}, for an index to @command{GPG-AGENT}'s commands and options.
 
 @menu
 * Agent Commands::      List of all commands.
@@ -254,7 +255,7 @@ harder for users to inadvertly accept Root-CA keys.
 
 @item --ignore-cache-for-signing
 @opindex ignore-cache-for-signing
-This option will let gpg-agent bypass the passphrase cache for all
+This option will let @command{gpg-agent} bypass the passphrase cache for all
 signing operation.  Note that there is also a per-session option to
 control this behaviour but this command line option takes precedence.
 
@@ -372,13 +373,13 @@ $ eval `gpg-agent --daemon`
 @node Agent Protocol
 @section Agent's Assuan Protocol
 
-The gpg-agent should be started by the login shell and set an
+The @command{gpg-agent} should be started by the login shell and set an
 environment variable to tell clients about the socket to be used.
 Clients should deny to access an agent with a socket name which does
 not match its own configuration.  An application may choose to start
 an instance of the gpgagent if it does not figure that any has been
 started; it should not do this if a gpgagent is running but not
-usable.  Because gpg-agent can only be used in background mode, no
+usable.  Because @command{gpg-agent} can only be used in background mode, no
 special command line option is required to activate the use of the
 protocol.
 
@@ -416,7 +417,7 @@ appropriate secret key or to delegate it to a smartcard.
 @end example
 
 Tell the server about the key to be used for decryption.  If this is
-not used, gpg-agent may try to figure out the key by trying to
+not used, @command{gpg-agent} may try to figure out the key by trying to
 decrypt the message with each key available.
 
 @example
@@ -528,8 +529,8 @@ The operation is affected by the option
 @end example
 
 The default of @code{1} uses the cache.  Setting this option to @code{0}
-will lead gpg-agent to ignore the passphrase cache.  Note, that there is
-also a global command line option for gpg-agent to globally disable the
+will lead @command{gpg-agent} to ignore the passphrase cache.  Note, that there is
+also a global command line option for @command{gpg-agent} to globally disable the
 caching.
 
 

@@ -1,3 +1,13 @@
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi: New.
+	* gnupg.texi: Include gpg.texi
+
+	* tools.texi: Add a few @command markups.
+	* gpgsm.texi: Ditto 
+	* gpg-agent.texi: Ditto.
+	* scdaemon.texi: Ditto.
+
 2004-09-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* tools.texi (Changing options): Add documentation for gpgconf.

@@ -10,15 +10,15 @@
 
 @c man begin DESCRIPTION
 
-@sc{gpgsm} is a tool similar to @sc{gpg} to provide digital encryption
-and signing servicesd on X.509 certificates and the CMS protocoll.  It
-is mainly used as a backend for S/MIME mail processing.  @sc{gpgsm}
-includes a full features certificate management and complies with all
-rules defined for the German Sphinx project.
+@command{gpgsm} is a tool similar to @command{gpg} to provide digital
+encryption and signing servicesd on X.509 certificates and the CMS
+protocoll.  It is mainly used as a backend for S/MIME mail processing.
+@command{gpgsm} includes a full features certificate management and
+complies with all rules defined for the German Sphinx project.
 
 @c man end
 
-@xref{Option Index}, for an index to GPGSM's commands and options.
+@xref{Option Index}, for an index to @command{GPGSM}'s commands and options.
 
 @menu
 * GPGSM Commands::        List of all commands.
@@ -26,7 +26,7 @@ rules defined for the German Sphinx project.
 * GPGSM Examples::        Some usage examples.
 
 Developer information:
-* Unattended Usage::      Using @sc{gpgsm} from other programs.
+* Unattended Usage::      Using @command{gpgsm} from other programs.
 * GPGSM Protocol::        The protocol the server mode uses.
 @end menu
 
@@ -106,7 +106,7 @@ is not possible to pass data via stdin to the Dirmngr.  @var{command}
 should not contain spaces.
 
 This is command is required for certain maintaining tasks of the dirmngr
-where a dirmngr must be able to call back to gpgsm.  See the Dirmngr
+where a dirmngr must be able to call back to @command{gpgsm}.  See the Dirmngr
 manual for details.
 
 @item --call-protect-tool @var{arguments}
@@ -169,7 +169,7 @@ This is a debugging aid to reset certain flags in the key database
 which are used to cache certain certificate stati.  It is especially
 useful if a bad CRL or a weird running OCSP reponder did accidently
 revoke certificate.  There is no security issue with this command
-because gpgsm always make sure that the validity of a certificate is
+because @command{gpgsm} always make sure that the validity of a certificate is
 checked right before it is used.
 
 @item --delete-keys @var{pattern}
@@ -208,7 +208,7 @@ smartcard is not yet supported.
 @node GPGSM Options
 @section Option Summary
 
-GPGSM comes features a bunch ofoptions to control the exact behaviour
+@command{GPGSM} comes features a bunch ofoptions to control the exact behaviour
 and to change the default configuration.
 
 @menu 
@@ -242,7 +242,7 @@ below the home directory of the user.
 @opindex verbose
 Outputs additional information while running.
 You can increase the verbosity by giving several
-verbose commands to @sc{gpgsm}, such as @samp{-vv}.
+verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
 @item --policy-file @var{filename}
 @opindex policy-file
@@ -463,7 +463,7 @@ Same as @code{--debug=0xffffffff}
 
 @item --debug-allow-core-dump
 @opindex debug-allow-core-dump
-Usually gpgsm tries to avoid dumping core by well written code and by
+Usually @command{gpgsm} tries to avoid dumping core by well written code and by
 disabling core dumps for security reasons.  However, bugs are pretty
 durable beasts and to squash them it is sometimes useful to have a core
 dump.  This option enables core dumps unless the Bad Thing happened
@@ -472,12 +472,12 @@ before the option parsing.
 @item --debug-no-chain-validation
 @opindex debug-no-chain-validation
 This is actually not a debugging option but only useful as such.  It
-lets gpgsm bypass all certificate chain validation checks.
+lets @command{gpgsm} bypass all certificate chain validation checks.
 
 @item --debug-ignore-expiration
 @opindex debug-ignore-expiration
 This is actually not a debugging option but only useful as such.  It
-lets gpgsm ignore all notAfter dates, this is used by the regresssion
+lets @command{gpgsm} ignore all notAfter dates, this is used by the regresssion
 tests.
 
 @item --fixed-passphrase @var{string}
@@ -515,7 +515,7 @@ $ gpgsm -er goo@@bar.net <plaintext >ciphertext
 @node Unattended Usage
 @section Unattended Usage
 
-@sc{gpgsm} is often used as a backend engine by other software.  To help
+@command{gpgsm} is often used as a backend engine by other software.  To help
 with this a machine interface has been defined to have an unambiguous
 way to do this.  This is most likely used with the @code{--server} command
 but may also be used in the standard operation mode by using the
@@ -541,7 +541,7 @@ certificates are all sane.  However there are two subcases with
 important information:  One of the certificates may have expired or a
 signature of a message itself as expired.  It is a sound practise to
 consider such a signature still as valid but additional information
-should be displayed.  Depending on the subcase @sc{gpgsm} will issue
+should be displayed.  Depending on the subcase @command{gpgsm} will issue
 these status codes:
   @table @asis 
   @item signature valid and nothing did expire
@@ -556,7 +556,7 @@ these status codes:
 @item The signature is invalid
 This means that the signature verification failed (this is an indication
 of af a transfer error, a programm error or tampering with the message).
-@sc{gpgsm} issues one of these status codes sequences:
+@command{gpgsm} issues one of these status codes sequences:
   @table @code
   @item  @code{BADSIG}
   @item  @code{GOODSIG}, @code{VALIDSIG} @code{TRUST_NEVER}
@@ -576,12 +576,13 @@ this is a missing certificate.
 @node GPGSM Protocol
 @section The Protocol the Server Mode Uses.
 
-Description of the protocol used to access GPGSM.  GPGSM does implement
-the Assuan protocol and in addition provides a regular command line
-interface which exhibits a full client to this protocol (but uses
-internal linking).  To start gpgsm as a server the commandline "gpgsm
---server" must be used.  Additional options are provided to select the
-communication method (i.e. the name of the socket).
+Description of the protocol used to access @command{GPGSM}.
+@command{GPGSM} does implement the Assuan protocol and in addition
+provides a regular command line interface which exhibits a full client
+to this protocol (but uses internal linking).  To start
+@command{gpgsm} as a server the command line the option
+@code{--server} must be used.  Additional options are provided to
+select the communication method (i.e. the name of the socket).
 
 We assume that the connection has already been established; see the
 Assuan manual for details.
@@ -658,7 +659,7 @@ It takes the plaintext from the @code{INPUT} command, writes to the
 ciphertext to the file descriptor set with the @code{OUTPUT} command,
 take the recipients from all the recipients set so far.  If this command
 fails the clients should try to delete all output currently done or
-otherwise mark it as invalid.  GPGSM does ensure that there won't be any
+otherwise mark it as invalid.  @command{GPGSM} does ensure that there won't be any
 security problem with leftover data on the output in this case.
 
 This command should in general not fail, as all necessary checks have
@@ -671,7 +672,7 @@ closed.
 
 Input and output FDs are set the same way as in encryption, but
 @code{INPUT} refers to the ciphertext and output to the plaintext. There
-is no need to set recipients.  GPGSM automatically strips any
+is no need to set recipients.  @command{GPGSM} automatically strips any
 @acronym{S/MIME} headers from the input, so it is valid to pass an
 entire MIME part to the INPUT pipe.
 
@@ -697,7 +698,7 @@ Signing is usually done with these commands:
   INPUT FD=@var{n} [--armor|--base64|--binary]
 @end example
 
-This tells GPGSM to read the data to sign from file descriptor @var{n}.
+This tells @command{GPGSM} to read the data to sign from file descriptor @var{n}.
 
 @example
   OUTPUT FD=@var{m} [--armor|--base64]
@@ -755,14 +756,14 @@ client must provide it.
 This is used to generate a new keypair, store the secret part in the
 @acronym{PSE} and the public key in the key database.  We will probably
 add optional commands to allow the client to select whether a hardware
-token is used to store the key.  Configuration options to GPGSM can be
+token is used to store the key.  Configuration options to @command{GPGSM} can be
 used to restrict the use of this command.
 
 @example
   GENKEY 
 @end example
 
-GPGSM checks whether this command is allowed and then does an
+@command{GPGSM} checks whether this command is allowed and then does an
 INQUIRY to get the key parameters, the client should then send the
 key parameters in the native format:
 
