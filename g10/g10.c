@@ -2379,7 +2379,7 @@ main( int argc, char **argv )
 	    break;
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oExecPath:
-	    if(set_exec_path(pargs.r.ret_str,0))
+	    if(set_exec_path(pargs.r.ret_str))
 	      log_error(_("unable to set exec-path to %s\n"),pargs.r.ret_str);
 	    else
 	      opt.exec_path_set=1;

@@ -1,5 +1,5 @@
 /* exec.c - generic call-a-program code
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -51,7 +51,7 @@ int exec_write(struct exec_info **info,const char *program,
 
 int exec_read(struct exec_info *info) { return G10ERR_GENERAL; }
 int exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
-int set_exec_path(const char *path,int method) { return G10ERR_GENERAL; }
+int set_exec_path(const char *path) { return G10ERR_GENERAL; }
 
 #else /* ! NO_EXEC */
 
@@ -91,29 +91,17 @@ static int win_system(const char *command)
 }
 #endif
 
-/* method==0 to replace current $PATH, and 1 to append to current
-   $PATH.  */
-int set_exec_path(const char *path,int method)
+/* Replaces current $PATH */
+int set_exec_path(const char *path)
 {
-  char *p,*curpath=NULL;
-  size_t curlen=0;
+  char *p;
 
-  if(method==1 && (curpath=getenv("PATH")))
-    curlen=strlen(curpath)+1;
-
-  p=m_alloc(5+curlen+strlen(path)+1);
+  p=m_alloc(5+strlen(path)+1);
   strcpy(p,"PATH=");
-
-  if(curpath)
-    {
-      strcat(p,curpath);
-      strcat(p,":");
-    }
-
   strcat(p,path);
 
   if(DBG_EXTPROG)
-    log_debug("set_exec_path method %d: %s\n",method,p);
+    log_debug("set_exec_path: %s\n",p);
 
   /* Notice that path is never freed.  That is intentional due to the
      way putenv() works.  This leaks a few bytes if we call

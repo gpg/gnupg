@@ -876,7 +876,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
      Unix-like systems (since we're going to give a full path to
      gpgkeys_foo), but on W32 it prevents loading any DLLs from
      directories in %PATH%. */
-  set_exec_path(GNUPG_LIBEXECDIR,0);
+  set_exec_path(GNUPG_LIBEXECDIR);
 #else
   if(opt.exec_path_set)
     {

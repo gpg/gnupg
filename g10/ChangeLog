@@ -1,3 +1,8 @@
+2005-03-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* exec.h, exec.c (set_exec_path): Remove some dead code and change
+	all callers.  We no longer need to append to $PATH.
+
 2005-03-31  Werner Koch  <wk@g10code.com>
 
 	* keydb.c (keydb_add_resource): Clarify meaning of flags.  Add new
