@@ -270,6 +270,7 @@ void riscos_set_filetype(const char *filename, const char *mimetype);
 pid_t riscos_getpid(void);
 int riscos_kill(pid_t pid, int sig);
 int riscos_access(const char *path, int amode);
+int riscos_getchar(void);
 int fdopenfile(const char *filename, const int allow_write);
 void close_fds(void);
 int renamefile(const char *old, const char *new);

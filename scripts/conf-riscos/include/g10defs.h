@@ -38,5 +38,5 @@
 
 /* External process spawning mechanism */
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
-#define EXEC_TEMPFILE_ONLY
+#define EXEC_TEMPFILE_ONLY 1
 #endif

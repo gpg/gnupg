@@ -26,11 +26,6 @@
 #include <unistd.h>
 #ifdef HAVE_TCGETATTR
   #include <termios.h>
-  #ifdef __riscos__
-    #include <kernel.h>
-    #include <swis.h>
-    #undef HAVE_TCGETATTR
-  #endif /* __riscos__ */
 #else
   #ifdef HAVE_TERMIO_H
     /* simulate termios with termio */
@@ -80,13 +75,8 @@ static int batchmode;
 static int no_terminal;
 
 #ifdef HAVE_TCGETATTR
- #ifdef __riscos__
-   struct termios termsave;
-   int restore_termios;
- #else
     static struct termios termsave;
     static int restore_termios;
- #endif
 #endif
 
 
@@ -286,10 +276,7 @@ do_get( const char *prompt, int hidden )
     char *buf;
   #ifndef __riscos__
     byte cbuf[1];
-  #else 
-    int carry;
-    _kernel_swi_regs r;
-  #endif 
+  #endif
     int c, n, i;
 
     if( batchmode ) {
@@ -346,11 +333,7 @@ do_get( const char *prompt, int hidden )
 
   #elif defined(__riscos__)
     do {
-        if (_kernel_swi_c(OS_ReadC, &r, &r, &carry))
-            log_fatal("OS_ReadC failed: Couldn't read from keyboard!\n");
-        c = r.r[0];
-        if (carry != 0)
-            log_fatal("OS_ReadC failed: Return Code = %i!\n", c);
+        c = riscos_getchar();
         if (c == 0xa || c == 0xd) { /* Return || Enter */
             c = (int) '\n';
         } else if (c == 0x8 || c == 0x7f) { /* Backspace || Delete */

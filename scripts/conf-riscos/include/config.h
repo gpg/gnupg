@@ -38,11 +38,11 @@
 
 /* Define if you have alloca, as a function or macro.  */
 /* #undef HAVE_ALLOCA */
-#define HAVE_ALLOCA
+#define HAVE_ALLOCA 1
 
 /* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
 /* #undef HAVE_ALLOCA_H */
-#define HAVE_ALLOCA_H
+#define HAVE_ALLOCA_H 1
 
 /* #undef _LIBC */
 
@@ -50,7 +50,7 @@
 #undef HAVE_DOPRNT
 
 /* Define if you have the vprintf function.  */
-#define HAVE_VPRINTF
+#define HAVE_VPRINTF 1
 
 /* Define to `long' if <sys/types.h> doesn't define.  */
 #undef off_t
@@ -74,26 +74,26 @@
 #undef STACK_DIRECTION
 
 /* Define if you have the ANSI C header files.  */
-#define STDC_HEADERS
+#define STDC_HEADERS 1
 
 /* Define if `sys_siglist' is declared by <signal.h>.  */
-#define SYS_SIGLIST_DECLARED
+#define SYS_SIGLIST_DECLARED 1
 
 #undef M_DEBUG
 #undef M_GUARD
 #define PRINTABLE_OS_NAME "RISC OS"
 
 /* Define if your locale.h file contains LC_MESSAGES.  */
-#define HAVE_LC_MESSAGES
+#define HAVE_LC_MESSAGES 1
 
 /* Define to 1 if NLS is requested.  */
 #define ENABLE_NLS 1
 
 /* Define as 1 if you have catgets and don't want to use GNU gettext.  */
-#define HAVE_CATGETS 0
+#undef HAVE_CATGETS
 
 /* Define as 1 if you have gettext and don't want to use GNU gettext.  */
-#define HAVE_GETTEXT 0
+#undef HAVE_GETTEXT
 
 #undef BIG_ENDIAN_HOST
 #define LITTLE_ENDIAN_HOST 1
@@ -169,13 +169,13 @@
 #undef HAVE___ARGZ_STRINGIFY
 
 /* Define if you have the atexit function.  */
-#define HAVE_ATEXIT
+#define HAVE_ATEXIT 1
 
 /* Define if you have the clock_gettime function.  */
 #undef HAVE_CLOCK_GETTIME
 
 /* Define if you have the dcgettext function.  */
-#define HAVE_DCGETTEXT 0
+#undef HAVE_DCGETTEXT
 
 /* Define if you have the dlopen function.  */
 #undef HAVE_DLOPEN
@@ -187,25 +187,25 @@
 #undef HAVE_FSTAT64
 
 /* Define if you have the getcwd function.  */
-#define HAVE_GETCWD
+#define HAVE_GETCWD 1
 
 /* Define if you have the gethrtime function.  */
 #undef HAVE_GETHRTIME
 
 /* Define if you have the getpagesize function.  */
-#define HAVE_GETPAGESIZE
+#define HAVE_GETPAGESIZE 1
 
 /* Define if you have the getrusage function.  */
-#define HAVE_GETRUSAGE
+#define HAVE_GETRUSAGE 1
 
 /* Define if you have the gettimeofday function.  */
-#define HAVE_GETTIMEOFDAY
+#define HAVE_GETTIMEOFDAY 1
 
 /* Define if you have the memicmp function.  */
 #undef HAVE_MEMICMP
 
 /* Define if you have the memmove function.  */
-#define HAVE_MEMMOVE
+#define HAVE_MEMMOVE 1
 
 /* Define if you have the mlock function.  */
 #undef HAVE_MLOCK
@@ -220,64 +220,64 @@
 #undef HAVE_NL_LANGINFO
 
 /* Define if you have the putenv function.  */
-#define HAVE_PUTENV
+#define HAVE_PUTENV 1
 
 /* Define if you have the raise function.  */
-#define HAVE_RAISE
+#define HAVE_RAISE 1
 
 /* Define if you have the rand function.  */
-#define HAVE_RAND
+#define HAVE_RAND 1
 
 /* Define if you have the setenv function.  */
-#define HAVE_SETENV
+#define HAVE_SETENV 1
 
 /* Define if you have the setlocale function.  */
-#define HAVE_SETLOCALE
+#define HAVE_SETLOCALE 1
 
 /* Define if you have the setrlimit function.  */
-#define HAVE_SETRLIMIT
+#define HAVE_SETRLIMIT 1
 
 /* Define if you have the sigaction function.  */
-#define HAVE_SIGACTION
+#define HAVE_SIGACTION 1
 
 /* Define if you have the sigprocmask function.  */
-#define HAVE_SIGPROCMASK
+#define HAVE_SIGPROCMASK 1
 
 /* Define if you have the stpcpy function.  */
-#define HAVE_STPCPY
+#define HAVE_STPCPY 1
 
 /* Define if you have the strcasecmp function.  */
-#define HAVE_STRCASECMP
+#define HAVE_STRCASECMP 1
 
 /* Define if you have the strchr function.  */
-#define HAVE_STRCHR
+#define HAVE_STRCHR 1
 
 /* Define if you have the strdup function.  */
-#define HAVE_STRDUP
+#define HAVE_STRDUP 1
 
 /* Define if you have the strerror function.  */
-#define HAVE_STRERROR
+#define HAVE_STRERROR 1
 
 /* Define if you have the strftime function.  */
-#define HAVE_STRFTIME
+#define HAVE_STRFTIME 1
 
 /* Define if you have the stricmp function.  */
-#define HAVE_STRICMP
+#define HAVE_STRICMP 1
 
 /* Define if you have the strlwr function.  */
 #undef HAVE_STRLWR
 
 /* Define if you have the strtoul function.  */
-#define HAVE_STRTOUL
+#define HAVE_STRTOUL 1
 
 /* Define if you have the tcgetattr function.  */
-#define HAVE_TCGETATTR
+#undef HAVE_TCGETATTR
 
 /* Define if you have the wait4 function.  */
-#define HAVE_WAIT4
+#define HAVE_WAIT4 1
 
 /* Define if you have the waitpid function.  */
-#define HAVE_WAITPID
+#define HAVE_WAITPID 1
 
 /* Define if you have the <argz.h> header file.  */
 #undef HAVE_ARGZ_H
@@ -292,22 +292,22 @@
 #undef HAVE_LANGINFO_H
 
 /* Define if you have the <limits.h> header file.  */
-#define HAVE_LIMITS_H
+#define HAVE_LIMITS_H 1
 
 /* Define if you have the <linux/random.h> header file.  */
 #undef HAVE_LINUX_RANDOM_H
 
 /* Define if you have the <locale.h> header file.  */
-#define HAVE_LOCALE_H
+#define HAVE_LOCALE_H 1
 
 /* Define if you have the <malloc.h> header file.  */
-#define HAVE_MALLOC_H
+#define HAVE_MALLOC_H 1
 
 /* Define if you have the <nl_types.h> header file.  */
 #undef HAVE_NL_TYPES_H
 
 /* Define if you have the <string.h> header file.  */
-#define HAVE_STRING_H
+#define HAVE_STRING_H 1
 
 /* Define if you have the <sys/capability.h> header file.  */
 #undef HAVE_SYS_CAPABILITY_H
@@ -316,25 +316,25 @@
 #undef HAVE_SYS_IPC_H
 
 /* Define if you have the <sys/mman.h> header file.  */
-#define HAVE_SYS_MMAN_H
+#define HAVE_SYS_MMAN_H 1
 
 /* Define if you have the <sys/param.h> header file.  */
-#define HAVE_SYS_PARAM_H
+#define HAVE_SYS_PARAM_H 1
 
 /* Define if you have the <sys/shm.h> header file.  */
 #undef HAVE_SYS_SHM_H
 
 /* Define if you have the <sys/stat.h> header file.  */
-#define HAVE_SYS_STAT_H
+#define HAVE_SYS_STAT_H 1
 
 /* Define if you have the <termio.h> header file.  */
-#define HAVE_TERMIO_H
+#undef HAVE_TERMIO_H
 
 /* Define if you have the <unistd.h> header file.  */
-#define HAVE_UNISTD_H
+#define HAVE_UNISTD_H 1
 
 /* Define if you have the <zlib.h> header file.  */
-#define HAVE_ZLIB_H
+#define HAVE_ZLIB_H 1
 
 /* Define if you have the dl library (-ldl).  */
 #undef HAVE_LIBDL
@@ -359,15 +359,15 @@
 
 
 /* define if compiled symbols have a leading underscore */
-#define WITH_SYMBOL_UNDERSCORE
+#define WITH_SYMBOL_UNDERSCORE 1
 
 #ifdef IS_DEVELOPMENT_VERSION
-  #define DEBUG
+  #define DEBUG 1
 /*  #define M_DEBUG */
-  #define M_GUARD
+  #define M_GUARD 1
 #endif
 
-#define USE_RNDRISCOS
+#define USE_RNDRISCOS 1
 
 /* RISC OS specifica */
 #if (__CC_NORCROFT == 1) /* Norcroft */
@@ -382,6 +382,8 @@
 # endif
 #else /* gcc */
 #endif
+
+/* #define USE_EXTERNAL_HKP */
 
 #include "g10defs.h"
 

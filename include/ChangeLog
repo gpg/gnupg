@@ -1,3 +1,7 @@
+2002-08-06  Stefan Bellon  <sbellon@sbellon.de>
+
+	* util.h [__riscos__]: Added riscos_getchar().
+
 2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
 
 	* util.h [__riscos__]: Further moving away of RISC OS specific

@@ -61,19 +61,16 @@ static int initialized = 0;
 static int
 is_read_only(const char *filename)
 {
-    _kernel_swi_regs r;
+    int type, attr;
     
-    r.r[0] = 17;
-    r.r[1] = (int) filename;
-    
-    if (_kernel_swi(OS_File, &r, &r))
+    if (_swix(OS_File, _INR(0,1) | _OUT(0) | _OUT(5),
+              17, filename, &type, &attr))
         log_fatal("Can't get file attributes for %s!\n", filename);
     
-    if (r.r[0] == 0)
+    if (type == 0)
         log_fatal("Can't find file %s!\n", filename);
 
-    r.r[0] = 4;
-    if (_kernel_swi(OS_File, &r, &r))
+    if (_swix(OS_File, _INR(0,1) | _IN(5), 4, filename, attr))
         return 1;
 
     return 0;
@@ -82,13 +79,7 @@ is_read_only(const char *filename)
 static void
 riscos_set_filetype_by_number(const char *filename, int type)
 {
-    _kernel_swi_regs r;
-
-    r.r[0] = 18;
-    r.r[1] = (int) filename;
-    r.r[2] = type;
-    
-    if (_kernel_swi(OS_File, &r, &r))
+    if (_swix(OS_File, _INR(0,2), 18, filename, type))
         log_fatal("Can't set filetype for file %s!\n"
                   "Is the file on a read-only file system?\n", filename);
 }        
@@ -105,55 +96,45 @@ riscos_global_defaults(void)
 void
 riscos_set_filetype(const char *filename, const char *mimetype)
 {
-    _kernel_swi_regs r;
+    int result;
 
-    r.r[0] = MMM_TYPE_MIME;
-    r.r[1] = (int) mimetype;
-    r.r[2] = MMM_TYPE_RISCOS;
-    
-    if (_kernel_swi(MimeMap_Translate, &r, &r))
+    if (_swix(MimeMap_Translate, _INR(0,2) | _OUT(3),
+              MMM_TYPE_MIME, mimetype, MMM_TYPE_RISCOS, &result))
         log_fatal("Can't translate MIME type %s!\n", mimetype);
 
-    riscos_set_filetype_by_number(filename, r.r[3]);
+    riscos_set_filetype_by_number(filename, result);
 }        
 
 pid_t
 riscos_getpid(void)
 {
-    _kernel_swi_regs r;
+    int state;
 
-    r.r[0] = 3;
-    if (_kernel_swi(Wimp_ReadSysInfo, &r, &r))
+    if (_swix(Wimp_ReadSysInfo, _IN(0) | _OUT(0), 3, &state))
         log_fatal("Wimp_ReadSysInfo failed: Can't get WimpState (R0=3)!\n");
 
-    if (!r.r[0])
-        return (pid_t) 0;
+    if (state)
+        if (_swix(Wimp_ReadSysInfo, _IN(0) | _OUT(0), 5, &state))
+            log_fatal("Wimp_ReadSysInfo failed: Can't get task handle (R0=5)!\n");
 
-    r.r[0] = 5;
-    if (_kernel_swi(Wimp_ReadSysInfo, &r, &r))
-        log_fatal("Wimp_ReadSysInfo failed: Can't get task handle (R0=5)!\n");
-
-    return (pid_t) r.r[0];
+    return (pid_t) state;
 }
 
 int
 riscos_kill(pid_t pid, int sig)
 {
-    _kernel_swi_regs r;
-    int buf[4];
+    int buf[4], iter = 0;
 
     if (sig)
         kill(pid, sig);
 
-    r.r[0] = 0;
     do {
-        r.r[1] = (int) buf;
-        r.r[2] = 16;
-        if (_kernel_swi(TaskManager_EnumerateTasks, &r, &r))
+        if (_swix(TaskManager_EnumerateTasks, _INR(0,2) | _OUT(0),
+                  iter, buf, 16, &iter))
             log_fatal("TaskManager_EnumerateTasks failed!\n");
         if (buf[0] == pid)
             return 0;
-    } while (r.r[0] >= 0);
+    } while (iter >= 0);
 
     return __set_errno(ESRCH);
 }
@@ -165,6 +146,19 @@ riscos_access(const char *path, int amode)
     if ((amode & W_OK) && is_read_only(path))
         return 1;
     return access(path, amode);
+}
+
+int
+riscos_getchar(void)
+{
+    int c, flags;
+
+    if (_swix(OS_ReadC, _OUT(0) | _OUT(_FLAGS), &c, &flags))
+        log_fatal("OS_ReadC failed: Couldn't read from keyboard!\n");
+    if (flags & _C)
+        log_fatal("OS_ReadC failed: Return Code = %i!\n", c);
+
+    return c;
 }
 
 #ifdef DEBUG
@@ -224,13 +218,9 @@ close_fds(void)
 int
 renamefile(const char *old, const char *new)
 {
-    _kernel_swi_regs r;
     _kernel_oserror *e;
 
-    r.r[0] = 25;
-    r.r[1] = (int) old;
-    r.r[2] = (int) new;
-    if (e = _kernel_swi(OS_FSControl, &r, &r)) {
+    if (e = _swix(OS_FSControl, _INR(0,2), 25, old, new)) {
         if (e->errnum == 214)
             return __set_errno(ENOENT);
         if (e->errnum == 176)
@@ -244,30 +234,23 @@ renamefile(const char *old, const char *new)
 char *
 gstrans(const char *old)
 {
-    _kernel_swi_regs r;
-    int c = 0;
-    int size = 256;
+    int size = 256, last;
     char *buf, *tmp;
 
     buf = (char *) m_alloc(size);
     if (!buf)
         log_fatal("Can't claim memory for OS_GSTrans buffer!\n");
-    do {
-        r.r[0] = (int) old;
-        r.r[1] = (int) buf;
-        r.r[2] = size;
-        _kernel_swi_c(OS_GSTrans, &r, &r, &c);
-        if (c) {
-            size += 256;
-            tmp = (char *) m_realloc(buf, size);
-            if (!tmp)
-                 log_fatal("Can't claim memory for OS_GSTrans buffer!\n");
-            buf = tmp;
-        }
-    } while (c);
+    while (_C & _swi(OS_GSTrans, _INR(0,2) | _OUT(2) | _RETURN(_FLAGS),
+                     old, buf, size, &last)) {
+        size += 256;
+        tmp = (char *) m_realloc(buf, size);
+        if (!tmp)
+             log_fatal("Can't claim memory for OS_GSTrans buffer!\n");
+        buf = tmp;
+    }
 
-    buf[r.r[2]] = '\0';
-    tmp = (char *) m_realloc(buf, r.r[2] + 1);
+    buf[last] = '\0';
+    tmp = (char *) m_realloc(buf, last + 1);
     if (!tmp)
         log_fatal("Can't realloc memory after OS_GSTrans!\n");
 
@@ -278,41 +261,30 @@ gstrans(const char *old)
 void
 list_openfiles(void)
 {
-    _kernel_swi_regs r;
     char *name;
-    int i;
+    int i, len;
     
     for (i = 255; i >= 0; --i) {
-        r.r[0] = 7;
-        r.r[1] = i;
-        r.r[2] = 0;
-        r.r[5] = 0;
-        if (_kernel_swi(OS_Args, &r, &r))
+        if (_swix(OS_Args, _INR(0,2) | _IN(5) | _OUT(5), 7, i, 0, 0, &len))
             continue;
 
-        name = (char *) m_alloc(1-r.r[5]);
+        name = (char *) m_alloc(1-len);
         if (!name)
             log_fatal("Can't claim memory for OS_Args buffer!\n");
 
-        r.r[0] = 7;
-        r.r[1] = i;
-        r.r[2] = (int) name;
-        r.r[5] = 1-r.r[5];
-        if (_kernel_swi(OS_Args, &r, &r)) {
+        if (_swix(OS_Args, _INR(0,2) | _IN(5), 7, i, name, 1-len)) {
             m_free(name);
             log_fatal("Error when calling OS_Args(7)!\n");
         }
         
-        r.r[0] = 254;
-        r.r[1] = i;
-        if (_kernel_swi(OS_Args, &r, &r)) {
+        if (_swix(OS_Args, _INR(0,1) | _OUT(0), 254, i, &len)) {
             m_free(name);
             log_fatal("Error when calling OS_Args(254)!\n");
         }
         
         printf("%3i: %s (%c%c)\n", i, name,
-                                   (r.r[0] & 0x40) ? 'R' : 0,
-                                   (r.r[0] & 0x80) ? 'W' : 0);
+                                   (len & 0x40) ? 'R' : 0,
+                                   (len & 0x80) ? 'W' : 0);
         m_free(name);
     }
 }
