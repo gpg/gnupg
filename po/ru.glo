@@ -1,0 +1,94 @@
+in utf8: (Vy mogete preobrazovat eto komandoi:
+          iconv -f utf8 -t <vasha_kodirovka> -o <fail dla sohranenia> terms.txt)
+
+insecure memory		незащищеннная память
+secure memory		защищенная память
+packet type		тип пакета
+pubkey,public key	открытый ключ
+seckey,secrect key	секретный ключ
+subkey			подключ
+digest,hash		хэш-функция; иногда просто: хэш (напр. хэши файлов)
+cipher,simmetric cipher	шифрование, симметричное шифрование
+cipher algorithm	алгоритм шифрования, алгоритм симметричного шифрования
+cipher			шифр
+pubkey algorithm	алгоритм с открытым ключом
+digest algorithm	хэш-функция
+compress algorithm	алгоритм сжатия
+signature		подпись (в смысле подпись под документом)
+passphrase		пароль
+keyring			связка ключей (связка подключей во главе с  главным)
+keyring                 таблица связок ключей (файл)
+armor			ASCII кодировка, заголовок формата ASCII
+armor header		заголовок формата ASCII
+En-Armor		закодировать в ASCII формат
+De-Armor		раскодировать из ASCII формата
+user id			User ID
+signature class		класс подписи
+trust database,TrustDB	таблица доверий
+certificate		сертификат (в смысле подпись на UID)
+timestamp		штамп времени, отметка времени
+entropy gathering module	модуль накопления энтропии
+insecure random number generator	небезопасный генератор случайных чисел
+strong random numbers	сильные случайные числа
+clear text signature,clearsig	прозрачная подпись
+detached signature	отделенная подпись
+encrypt			зашифрование
+encrypted		зашифрованный
+decrypt			расшифровать
+fingerprint		отпечаток [ключа]
+public keyring		связка открытых ключей
+secret keyring		связка закрытых ключей
+sign			(глагол) подписать
+locally			локально
+non-revocably		без возможности отзыва
+revocation certificate	сертификат отзыва
+ownertrust values	присвоенные степени доверия владельцу
+ownertrust		доверие владельцу
+keyid			KeyID,keyid,идентификатор ключа
+Photo ID		фото ID
+cipher extention	расширение шифрования
+certification digest algorithm	хэш-функция для сертификации
+trusted key		доверяемый ключ
+dash escaped line	отступ из минусов
+trailer line		строка дополнения (в 1.3.2 эта часть не задействована)
+revoke, revocation	отзыв (ключа/подписи/сертификата)
+trust value		значение доверия
+expire                  годен до/срок действия до/ истекает с
+expired		        просрочен
+untrusted		недоверяемый
+trusted signature	доверенная подпись
+enabled/disabled	включен/отключен (ключ)
+self signature		самоподпись
+key/signature expires	[ключ/подпись] действите{лен,льна} до
+keyblock		блок ключей
+primary key/user id	главный ключ / User ID
+key binding		связывание/связь ключей
+casual checking		проверил частично
+careful checking	проверил тщательно
+revoker [key]		[ключ] назначенный отзывающим
+revoke			отозвать
+revocation signature    отзывающая подпись
+expires			истекает (имеется в виду: срок)
+good signature		действительная подпись
+invalid signature	недействительная подпись
+valid signature		действительная подпись
+unknown signature	неизвестная подпись
+designated revoker	назначенный отзывающим (ключ)
+session key		сеансовый ключ
+symkey algorithm	симметричный алгоритм (?)
+  #: g10/mainproc.c:259
+  #, c-format
+  msgid "invalid symkey algorithm detected (%d)\n"
+  msgstr "обнаружен недопустимый симметричный алгоритм (%d)\n"
+
+subpacket		подпакет
+FD			дескриптор [файла]
+notation data		примечание, данные примечания
+
+Степени доверия:
+ultimate		абсолютное
+marginally		ограниченно
+fully			полностью
+
+
+regular file		регулярный файл

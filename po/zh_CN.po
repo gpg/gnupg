@@ -1,48 +1,46 @@
-# Dutch translation of gnupg.
-# Copyright (C) 2004 Free Software Foundation, Inc.
-# This file is distributed under the same license as the gnupg package.
-# Elros Cyriatan <cyriatan@fastmail.fm>, 2004.
-# 
+# Simplified Chinese(zh-CN) messages for GnuPG
+# Copyright (C) 2002 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Meng Jie <zuxyhere@eastday.com>, 2004.
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
-"Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2003-05-01 13:05+0200\n"
-"PO-Revision-Date: 2004-05-10 19:23+0200\n"
-"Last-Translator: Elros Cyriatan <cyriatan@fastmail.fm>\n"
-"Language-Team: Dutch <vertaling@nl.linux.org>\n"
+"PO-Revision-Date: 2004-02-27 19:30+0800\n"
+"Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
+"Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=GB2312\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: util/secmem.c:88
 msgid "WARNING: using insecure memory!\n"
-msgstr "WAARSCHUWING: er wordt onveilig geheugen gebruikt!\n"
+msgstr "警告：正在使用不安全的内存！\n"
 
 #: util/secmem.c:89
 msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr "zie alstublieft http://www.gnupg.org/faq.html voor meer informatie\n"
+msgstr "请访问 http://www.gnupg.org/faq.html 以获得更详细的信息\n"
 
 #: util/secmem.c:326
 msgid "operation is not possible without initialized secure memory\n"
-msgstr "bewerking is niet mogelijk zonder ge茂nitialiseerd veilig geheugen\n"
+msgstr "安全内存未初始化，不能进行操作\n"
 
 #: util/secmem.c:327
 msgid "(you may have used the wrong program for this task)\n"
-msgstr "(mogelijk heeft u het verkeerde programma gebruikt voor deze taak)\n"
+msgstr "(您可能使用了错误的程序来完成此项任务)\n"
 
 #: util/miscutil.c:296 util/miscutil.c:331
 msgid "yes"
-msgstr "ja"
+msgstr "yes"
 
 #: util/miscutil.c:297 util/miscutil.c:334
 msgid "yY"
-msgstr "jJ"
+msgstr "yY"
 
 #: util/miscutil.c:298 util/miscutil.c:332
 msgid "no"
-msgstr "nee"
+msgstr "no"
 
 #: util/miscutil.c:299 util/miscutil.c:335
 msgid "nN"
@@ -50,7 +48,7 @@ msgstr "nN"
 
 #: util/miscutil.c:333 g10/keyedit.c:941
 msgid "quit"
-msgstr "afsluiten"
+msgstr "quit"
 
 #: util/miscutil.c:336
 msgid "qQ"
@@ -58,277 +56,277 @@ msgstr "qQ"
 
 #: util/errors.c:54
 msgid "general error"
-msgstr "algemene fout"
+msgstr "常规错误"
 
 #: util/errors.c:55
 msgid "unknown packet type"
-msgstr "onbekende pakketsoort"
+msgstr "未知的包类型"
 
 #: util/errors.c:56
 msgid "unknown version"
-msgstr "onbekende versie"
+msgstr "未知的版本"
 
 #: util/errors.c:57
 msgid "unknown pubkey algorithm"
-msgstr "onbekend openbare sleutel algoritme"
+msgstr "未知的公钥算法"
 
 #: util/errors.c:58
 msgid "unknown digest algorithm"
-msgstr "onbekend digest-algoritme"
+msgstr "未知的散列算法"
 
 #: util/errors.c:59
 msgid "bad public key"
-msgstr "slechte openbare sleutel"
+msgstr "公钥已经损坏"
 
 #: util/errors.c:60
 msgid "bad secret key"
-msgstr "slechte geheime sleutel"
+msgstr "私钥已经损坏"
 
 #: util/errors.c:61
 msgid "bad signature"
-msgstr "slechte ondertekening"
+msgstr "签字已经损坏"
 
 #: util/errors.c:62
 msgid "checksum error"
-msgstr "controlesom fout"
+msgstr "校验和错误"
 
 #: util/errors.c:63
 msgid "bad passphrase"
-msgstr "slecht wachtwoord"
+msgstr "错误的密码"
 
 #: util/errors.c:64
 msgid "public key not found"
-msgstr "openbare sleutel niet gevonden"
+msgstr "找不到公钥"
 
 #: util/errors.c:65
 msgid "unknown cipher algorithm"
-msgstr "onbekend codeeralgoritme"
+msgstr "未知的对称加密算法"
 
 #: util/errors.c:66
 msgid "can't open the keyring"
-msgstr "kan de sleutelbos niet openen"
+msgstr "无法打开钥匙环"
 
 #: util/errors.c:67
 msgid "invalid packet"
-msgstr "ongeldig pakket"
+msgstr "无效包"
 
 #: util/errors.c:68
 msgid "invalid armor"
-msgstr "ongeldige bepantsering"
+msgstr "无效的 ASCII 封装格式"
 
 #: util/errors.c:69
 msgid "no such user id"
-msgstr "onbekende gebruikerscode"
+msgstr "没有这个用户标识"
 
 #: util/errors.c:70
 msgid "secret key not available"
-msgstr "geheime sleutel niet beschikbaar"
+msgstr "私钥不可用"
 
 #: util/errors.c:71
 msgid "wrong secret key used"
-msgstr "verkeerde geheime sleutel gebruikt"
+msgstr "使用了错误的私钥"
 
 #: util/errors.c:72
 msgid "not supported"
-msgstr "niet ondersteund"
+msgstr "未被支持"
 
 #: util/errors.c:73
 msgid "bad key"
-msgstr "slechte sleutel"
+msgstr "密钥已损坏"
 
 #: util/errors.c:74
 msgid "file read error"
-msgstr "bestandsleesfout"
+msgstr "文件读取错误"
 
 #: util/errors.c:75
 msgid "file write error"
-msgstr "bestandsschrijffout"
+msgstr "文件写入错误"
 
 #: util/errors.c:76
 msgid "unknown compress algorithm"
-msgstr "onbekend inpakalgoritme"
+msgstr "未知的压缩算法"
 
 #: util/errors.c:77
 msgid "file open error"
-msgstr "bestandsopenfout"
+msgstr "文件打开错误"
 
 #: util/errors.c:78
 msgid "file create error"
-msgstr "bestandsaanmaakfout"
+msgstr "文件建立错误"
 
 #: util/errors.c:79
 msgid "invalid passphrase"
-msgstr "ongeldig wachtwoord"
+msgstr "无效的密码"
 
 #: util/errors.c:80
 msgid "unimplemented pubkey algorithm"
-msgstr "niet-ge茂mplementeerd openbare sleutel algoritme"
+msgstr "尚未实现的公钥算法"
 
 #: util/errors.c:81
 msgid "unimplemented cipher algorithm"
-msgstr "niet-ge茂mplementeerd codeeralgoritme"
+msgstr "尚未实现的对称加密算法"
 
 #: util/errors.c:82
 msgid "unknown signature class"
-msgstr "onbekende ondertekeningsklasse"
+msgstr "未知的签字等级"
 
 #: util/errors.c:83
 msgid "trust database error"
-msgstr "vertrouwensgegevensbank fout"
+msgstr "信任度数据库错误"
 
 #: util/errors.c:84
 msgid "bad MPI"
-msgstr "slechte MPI"
+msgstr "损坏的多精度整数(MPI)"
 
 #: util/errors.c:85
 msgid "resource limit"
-msgstr "grens aan bronnen"
+msgstr "资源限制"
 
 #: util/errors.c:86
 msgid "invalid keyring"
-msgstr "ongeldige sleutelbos"
+msgstr "无效的钥匙环"
 
 #: util/errors.c:87
 msgid "bad certificate"
-msgstr "slecht certificaat"
+msgstr "证书已损坏"
 
 #: util/errors.c:88
 msgid "malformed user id"
-msgstr "misvormde gebruikerscode"
+msgstr "被变造过的用户标识"
 
 #: util/errors.c:89
 msgid "file close error"
-msgstr "bestandssluitfout"
+msgstr "文件关闭错误"
 
 #: util/errors.c:90
 msgid "file rename error"
-msgstr "bestandshernoemfout"
+msgstr "文件重命名错误"
 
 #: util/errors.c:91
 msgid "file delete error"
-msgstr "bestandsverwijderfout"
+msgstr "文件删除错误"
 
 #: util/errors.c:92
 msgid "unexpected data"
-msgstr "onverwachte gegevens"
+msgstr "未预期的数据"
 
 #: util/errors.c:93
 msgid "timestamp conflict"
-msgstr "tijdsstempel conflict"
+msgstr "时间戳有矛盾"
 
 #: util/errors.c:94
 msgid "unusable pubkey algorithm"
-msgstr "onbruikbar openbare sleutel algoritme"
+msgstr "无法使用的公钥算法"
 
 #: util/errors.c:95
 msgid "file exists"
-msgstr "bestand bestaat"
+msgstr "文件已存在"
 
 #: util/errors.c:96
 msgid "weak key"
-msgstr "zwakke sleutel"
+msgstr "弱密钥"
 
 #: util/errors.c:97
 msgid "invalid argument"
-msgstr "ongeldig argument"
+msgstr "无效的参数"
 
 #: util/errors.c:98
 msgid "bad URI"
-msgstr "slechte URI"
+msgstr "URI 已损坏"
 
 #: util/errors.c:99
 msgid "unsupported URI"
-msgstr "niet-ondersteunde URI"
+msgstr "未被支持的 URI"
 
 #: util/errors.c:100
 msgid "network error"
-msgstr "netwerkfout"
+msgstr "网络错误"
 
 #: util/errors.c:102
 msgid "not encrypted"
-msgstr "niet gecodeerd"
+msgstr "未被加密"
 
 #: util/errors.c:103
 msgid "not processed"
-msgstr "niet verwerkt"
+msgstr "未被处理"
 
 #. the key cannot be used for a specific usage
 #: util/errors.c:105
 msgid "unusable public key"
-msgstr "onbruikbare openbare sleutel"
+msgstr "不可用的公钥"
 
 #: util/errors.c:106
 msgid "unusable secret key"
-msgstr "onbruikbare geheime sleutel"
+msgstr "不可用的私钥"
 
 #: util/errors.c:107
 msgid "keyserver error"
-msgstr "sleutelserverfout"
+msgstr "公钥服务器错误"
 
 #: util/logger.c:249
 #, c-format
 msgid "... this is a bug (%s:%d:%s)\n"
-msgstr "... dit is een softwarefout (%s:%d:%s)\n"
+msgstr "……这是个程序缺陷(%s:%d:%s)\n"
 
 #: util/logger.c:255
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
-msgstr "u heeft een softwarefout gevonden ... (%s:%d)\n"
+msgstr "您找到一个程序缺陷了……(%s:%d)\n"
 
 #: cipher/random.c:157
 msgid "no entropy gathering module detected\n"
-msgstr "geen entropie verzamelende module gevonden\n"
+msgstr "检测不到熵数搜集模块\n"
 
 #: cipher/random.c:381 g10/keygen.c:1824 g10/import.c:196
 #, c-format
 msgid "can't open `%s': %s\n"
-msgstr "kan `%s' niet openen: %s\n"
+msgstr "无法打开‘%s’： %s\n"
 
 #: cipher/random.c:385
 #, c-format
 msgid "can't stat `%s': %s\n"
-msgstr "kan `%s' niet vinden: %s\n"
+msgstr "无法获得文件‘%s’的信息： %s\n"
 
 #: cipher/random.c:390
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
-msgstr "`%s' is geen gewoon bestand - genegeerd\n"
+msgstr "‘%s’不是一个合乎标准的文件——已忽略\n"
 
 #: cipher/random.c:395
 msgid "note: random_seed file is empty\n"
-msgstr "let op: random_seed bestand is leeg\n"
+msgstr "注意：随机数种子文件为空\n"
 
 #: cipher/random.c:401
 msgid "WARNING: invalid size of random_seed file - not used\n"
-msgstr "WAARSCHUWING: ongeldige grootte van random_seed bestand - niet gebruikt\n"
+msgstr "警告：随机数种子文件大小无效——未使用\n"
 
 #: cipher/random.c:409
 #, c-format
 msgid "can't read `%s': %s\n"
-msgstr "kan `%s' niet lezen: %s\n"
+msgstr "无法读取‘%s’：%s\n"
 
 #: cipher/random.c:447
 msgid "note: random_seed file not updated\n"
-msgstr "let op: random_seed bestand niet bijgewerkt\n"
+msgstr "注意：随机数种子文件未被更新\n"
 
 #: cipher/random.c:467 g10/exec.c:481
 #, c-format
 msgid "can't create `%s': %s\n"
-msgstr "kan `%s' niet aanmaken: %s\n"
+msgstr "无法建立‘%s’：%s\n"
 
 #: cipher/random.c:474
 #, c-format
 msgid "can't write `%s': %s\n"
-msgstr "kan `%s' niet schrijven: %s\n"
+msgstr "无法写入‘%s’：%s\n"
 
 #: cipher/random.c:477
 #, c-format
 msgid "can't close `%s': %s\n"
-msgstr "kan `%s' niet sluiten: %s\n"
+msgstr "无法关闭‘%s’：%s\n"
 
 #: cipher/random.c:723
 msgid "WARNING: using insecure random number generator!!\n"
-msgstr "WAARSCHUWING: er wordt een onveilige willekeurige getallen generator gebruikt!!\n"
+msgstr "警告：正在使用不安全的随机数发生器！！\n"
 
 #: cipher/random.c:724
 msgid ""
@@ -338,10 +336,10 @@ msgid ""
 "DON'T USE ANY DATA GENERATED BY THIS PROGRAM!!\n"
 "\n"
 msgstr ""
-"De willekeurige getallen generator is slechts profisorisch bedoeld om het\n"
-"programma te laten werken - hij is zeker niet goed!\n"
+"这个随机数字发生器根本就是大杂烩──\n"
+"它根本就不是强有力的随机数发生器！\n"
 "\n"
-"GEBRUIK GEEN GEGEVENS DIE GEGENEREERD ZIJN DOOR DIT PROGRAMMA!!\n"
+"*绝对不要使用这个程序产生的任何数据！！\n"
 "\n"
 
 #: cipher/rndlinux.c:134
@@ -352,14 +350,13 @@ msgid ""
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"
 msgstr ""
 "\n"
-"Onvoldoende willekeurige bytes beschikbaar.  Doe alstublieft wat ander werk\n"
-"om het besturingssysteem de kans te geven om meer entropie te verzamelen!\n"
-"(Er zijn nog %d bytes nodig)\n"
+"随机字节不够多。请再做一些其他的琐事，\n"
+"以使得操作系统能搜集到更多的熵数！(还需要%d字节)\n"
 
 #: cipher/md.c:140
 #, c-format
 msgid "digest algorithm `%s' is read-only in this release\n"
-msgstr "digest-algoritme `%s' is alleen-lezen in deze uitgave\n"
+msgstr "‘%s’散列算法在本发行版本中只读\n"
 
 #: cipher/rndegd.c:204
 msgid ""
@@ -367,173 +364,172 @@ msgid ""
 "keep you from getting bored, because it will improve the quality\n"
 "of the entropy.\n"
 msgstr ""
-"Even geduld alstublieft, er wordt entropie verzameld. Doe wat werk\n"
-"als u dan niet verveeld raakt, want het verbeterd de kwaliteit van de\n"
-"entropie.\n"
+"请稍待片刻，系统此时正在搜集熵数。如果您会觉得无聊的话，\n"
+"不妨做些别的事，实际上这甚至能够让熵数的品质更好。\n"
 
 #: g10/g10.c:307
 msgid ""
 "@Commands:\n"
 " "
 msgstr ""
-"@Opdrachten:\n"
+"@指令：\n"
 " "
 
 #: g10/g10.c:309
 msgid "|[file]|make a signature"
-msgstr "|[bestand]|een ondertekening maken"
+msgstr "|[文件名]|生成一份签字"
 
 #: g10/g10.c:310
 msgid "|[file]|make a clear text signature"
-msgstr "|[bestand]|een niet-gecodeerde ondertekening maken"
+msgstr "|[文件名]|生成一份明文签字"
 
 #: g10/g10.c:311
 msgid "make a detached signature"
-msgstr "een losse ondertekening maken"
+msgstr "生成一份分离的签字"
 
 #: g10/g10.c:312
 msgid "encrypt data"
-msgstr "gegevens coderen"
+msgstr "加密数据"
 
 #: g10/g10.c:313
 msgid "|[files]|encrypt files"
-msgstr "|[bestanden]|bestanden coderen"
+msgstr "|[文件名]|加密文件"
 
 #: g10/g10.c:314
 msgid "encryption only with symmetric cipher"
-msgstr "slechts met symmetrische codering coderen"
+msgstr "仅使用对称加密"
 
 #: g10/g10.c:315
 msgid "store only"
-msgstr "alleen opslaan"
+msgstr "仅保存"
 
 #: g10/g10.c:316
 msgid "decrypt data (default)"
-msgstr "gegevens decoderen (standaard)"
+msgstr "解密数据(默认)"
 
 #: g10/g10.c:317
 msgid "|[files]|decrypt files"
-msgstr "|[bestanden]|bestanden decoderen"
+msgstr "|[文件名]|解密文件"
 
 #: g10/g10.c:318
 msgid "verify a signature"
-msgstr "een ondertekening controleren"
+msgstr "验证签字"
 
 #: g10/g10.c:320
 msgid "list keys"
-msgstr "sleutels opsommen"
+msgstr "列出密钥"
 
 #: g10/g10.c:322
 msgid "list keys and signatures"
-msgstr "sleutels en ondertekeningen opsommen"
+msgstr "列出密钥和签字"
 
 #: g10/g10.c:323
 msgid "check key signatures"
-msgstr "sleutelondertekeningen controleren"
+msgstr "检查密钥签字"
 
 #: g10/g10.c:324
 msgid "list keys and fingerprints"
-msgstr "sleutels en vingerafdrukken opsommen"
+msgstr "列出密钥和指纹"
 
 #: g10/g10.c:325
 msgid "list secret keys"
-msgstr "geheime sleutels opsommen"
+msgstr "列出私钥"
 
 #: g10/g10.c:326
 msgid "generate a new key pair"
-msgstr "een nieuw sleutelpaar genereren"
+msgstr "生成一副新的密钥对"
 
 #: g10/g10.c:327
 msgid "remove keys from the public keyring"
-msgstr "sleutels uit de openbare sleutelbos verwijderen"
+msgstr "从公钥钥匙环里删除密钥"
 
 #: g10/g10.c:329
 msgid "remove keys from the secret keyring"
-msgstr "sleutels uit de geheime sleutelbos verwijderen"
+msgstr "从私钥钥匙环里删除密钥"
 
 #: g10/g10.c:330
 msgid "sign a key"
-msgstr "een sleutel ondertekenen"
+msgstr "为某把密钥添加签字"
 
 #: g10/g10.c:331
 msgid "sign a key locally"
-msgstr "een sleutel lokaal ondertekenen"
+msgstr "为某把密钥添加本地签字"
 
 #: g10/g10.c:332
 msgid "sign a key non-revocably"
-msgstr "een sleutel onherroepbaar ondertekenen"
+msgstr "为某把密钥添加不可吊销的签字"
 
 #: g10/g10.c:333
 msgid "sign a key locally and non-revocably"
-msgstr "een sleutel lokaal en onherroepbaar ondertekenen"
+msgstr "为某把密钥添加不可吊销的本地签字"
 
 #: g10/g10.c:334
 msgid "sign or edit a key"
-msgstr "een sleutel ondertekenen of bewerken"
+msgstr "编辑某把密钥或为其添加签字"
 
 #: g10/g10.c:335
 msgid "generate a revocation certificate"
-msgstr "een herroepingscertificaat genereren"
+msgstr "生成一份吊销证书"
 
 #: g10/g10.c:337
 msgid "export keys"
-msgstr "sleutels uitvoeren"
+msgstr "导出密钥"
 
 #: g10/g10.c:338
 msgid "export keys to a key server"
-msgstr "sleutels uitvoeren naar een sleutelserver"
+msgstr "把密钥导出到某个公钥服务器上"
 
 #: g10/g10.c:339
 msgid "import keys from a key server"
-msgstr "sleutels invoeren van een sleutelserver"
+msgstr "从公钥服务器上导入密钥"
 
 #: g10/g10.c:341
 msgid "search for keys on a key server"
-msgstr "zoeken naar sleutels op een sleutelserver"
+msgstr "在公钥服务器上搜寻密钥"
 
 #: g10/g10.c:343
 msgid "update all keys from a keyserver"
-msgstr "alle sleutels bijwerken vanaf een sleutelserver"
+msgstr "从公钥服务器更新所有的本地密钥"
 
 #: g10/g10.c:347
 msgid "import/merge keys"
-msgstr "sleutels invoeren/samenvoegen"
+msgstr "导入/合并密钥"
 
 #: g10/g10.c:349
 msgid "list only the sequence of packets"
-msgstr "slechts de reeks van pakketten opsommen"
+msgstr "仅列出包序列"
 
 #: g10/g10.c:351
 msgid "export the ownertrust values"
-msgstr "de eigenaarsvertrouwen-waarden uitvoeren"
+msgstr "导出信任度"
 
 #: g10/g10.c:353
 msgid "import ownertrust values"
-msgstr "eigenaarsvertrouwen-waarden invoeren"
+msgstr "导入信任度"
 
 #: g10/g10.c:355
 msgid "update the trust database"
-msgstr "de vertrouwensgegevensbank bijwerken"
+msgstr "更新信任度数据库"
 
 #: g10/g10.c:357
 msgid "unattended trust database update"
-msgstr "automatische vertrouwensgegevensbank bijwerking"
+msgstr "不受干预地更新信任度数据库"
 
 #: g10/g10.c:358
 msgid "fix a corrupted trust database"
-msgstr "een kapotte vertrouwensgegevensbank repareren"
+msgstr "修复某个已损坏的信任度数据库"
 
 #: g10/g10.c:359
 msgid "De-Armor a file or stdin"
-msgstr "Een bestand of standaardinvoer ontpantseren"
+msgstr "为文件或标准输入解开 ASCII 封装"
 
 #: g10/g10.c:361
 msgid "En-Armor a file or stdin"
-msgstr "Een bestand of standaardinvoer bepantseren"
+msgstr "为文件或标准输入进行 ASCII 封装"
 
 #: g10/g10.c:363
 msgid "|algo [files]|print message digests"
-msgstr "|algoritme [bestanden]|berichtdigest weergeven"
+msgstr "|算法名 [文件名]|打印报文散列值，使用指定的散列算法"
 
 #: g10/g10.c:367 g10/gpgv.c:64
 msgid ""
@@ -542,196 +538,196 @@ msgid ""
 " "
 msgstr ""
 "@\n"
-"Opties:\n"
+"选项：\n"
 " "
 
 #: g10/g10.c:369
 msgid "create ascii armored output"
-msgstr "ASCII-bepantserde uitvoer maken"
+msgstr "输出经 ASCII 封装"
 
 #: g10/g10.c:371
 msgid "|NAME|encrypt for NAME"
-msgstr "|NAAM|coderen voor NAAM"
+msgstr "|某甲|为收件者“某甲”加密"
 
 #: g10/g10.c:374
 msgid "|NAME|use NAME as default recipient"
-msgstr "|NAAM|NAAM gebruiken als standaardontvanger"
+msgstr "|某甲|将“某甲”选为默认的收件者"
 
 #: g10/g10.c:376
 msgid "use the default key as default recipient"
-msgstr "de standaardsleutel gebruiken als standaardontvanger"
+msgstr "把默认的密钥当作默认的收件者"
 
 #: g10/g10.c:382
 msgid "use this user-id to sign or decrypt"
-msgstr "deze gebruikerscode gebruiken om te ondertekenen of decoderen"
+msgstr "使用这个用户标识来签字或解密"
 
 #: g10/g10.c:383
 msgid "|N|set compress level N (0 disables)"
-msgstr "|N|inpakniveau N instellen (0 zet dit uit)"
+msgstr "|N|设定压缩等级为 N(0 表示不压缩)"
 
 #: g10/g10.c:385
 msgid "use canonical text mode"
-msgstr "kanonieke tekstmodus gebruiken"
+msgstr "使用标准的文本模式"
 
 #: g10/g10.c:393
 msgid "use as output file"
-msgstr "gebruiken als uitvoerbestand"
+msgstr "指定输出文件"
 
 #: g10/g10.c:394 g10/gpgv.c:66
 msgid "verbose"
-msgstr "breedsprakig"
+msgstr "详细模式"
 
 #: g10/g10.c:395 g10/gpgv.c:67
 msgid "be somewhat more quiet"
-msgstr "iets stiller zijn"
+msgstr "尽量减少提示信息"
 
 #: g10/g10.c:396
 msgid "don't use the terminal at all"
-msgstr "helemaal niet de terminal gebruiken"
+msgstr "完全不要使用终端"
 
 #: g10/g10.c:397
 msgid "force v3 signatures"
-msgstr "versie 3 ondertekeningen afdwingen"
+msgstr "强行使用 v3 签字"
 
 #: g10/g10.c:398
 msgid "do not force v3 signatures"
-msgstr "niet versie 3 ondertekeningen afdwingen"
+msgstr "不要强行使用 v3 签字"
 
 #: g10/g10.c:399
 msgid "force v4 key signatures"
-msgstr "versie 4 sleutelondertekeningen afdwingen"
+msgstr "强行使用 v4 密钥签字"
 
 #: g10/g10.c:400
 msgid "do not force v4 key signatures"
-msgstr "niet versie 4 sleutelondertekeningen afdwingen"
+msgstr "不要强行使用 v4 密钥签字"
 
 #: g10/g10.c:401
 msgid "always use a MDC for encryption"
-msgstr "altijd een MDC gebruiken voor codering"
+msgstr "加密时总使用变动侦测码"
 
 #: g10/g10.c:403
 msgid "never use a MDC for encryption"
-msgstr "nooit een MDC gebruiken voor codering"
+msgstr "加密时永远不使用变动侦测码"
 
 #: g10/g10.c:405
 msgid "do not make any changes"
-msgstr "geen wijzigingen maken"
+msgstr "不要做任何改变"
 
 #: g10/g10.c:406
 msgid "prompt before overwriting"
-msgstr "vragen alvorens te overschrijven"
+msgstr "覆盖前先询问"
 
 #: g10/g10.c:407
 msgid "use the gpg-agent"
-msgstr "de gpg-agent gebruiken"
+msgstr "使用 gpg-agent 代理程序"
 
 #: g10/g10.c:410
 msgid "batch mode: never ask"
-msgstr "batch-modus: nooit vragen"
+msgstr "批处理模式：永远不询问"
 
 #: g10/g10.c:411
 msgid "assume yes on most questions"
-msgstr "ja aannemen bij de meeste vragen"
+msgstr "假定大多数问题的回答为“是”"
 
 #: g10/g10.c:412
 msgid "assume no on most questions"
-msgstr "nee aannemen bij de meeste vragen"
+msgstr "假定大多数问题的回答为“否”"
 
 #: g10/g10.c:413
 msgid "add this keyring to the list of keyrings"
-msgstr "deze sleutelbos toevoegen aan de lijst van sleutelbossen"
+msgstr "把这个钥匙环加进钥匙环清单中"
 
 #: g10/g10.c:414
 msgid "add this secret keyring to the list"
-msgstr "deze geheime sleutelbos toevoegen aan de lijst"
+msgstr "把这个私钥钥匙环加进清单中"
 
 #: g10/g10.c:415
 msgid "show which keyring a listed key is on"
-msgstr "weergeven op welke sleutelbos een opgesomde sleutel zit"
+msgstr "显示被列出的密钥在哪一个钥匙环上"
 
 #: g10/g10.c:416
 msgid "|NAME|use NAME as default secret key"
-msgstr "|NAAM|NAAM gebruiken als standaard geheime sleutel"
+msgstr "|某甲|将“某甲”设为默认私钥"
 
 #: g10/g10.c:417
 msgid "|HOST|use this keyserver to lookup keys"
-msgstr "|HOST|deze sleutelserver gebruiken om sleutels op te zoeken"
+msgstr "|主机名|使用这个公钥服务器来寻找密钥"
 
 #: g10/g10.c:421
 msgid "|NAME|set terminal charset to NAME"
-msgstr "|NAAM|terminal tekenset instellen op NAAM"
+msgstr "|字符集名|设定终端使用的字符集"
 
 #: g10/g10.c:422
 msgid "read options from file"
-msgstr "opties lezen uit een bestand"
+msgstr "从文件读取选项"
 
 #: g10/g10.c:426 g10/gpgv.c:71
 msgid "|FD|write status info to this FD"
-msgstr ""
+msgstr "|FD|把状态信息写入文件描述符 FD"
 
 #: g10/g10.c:428
 msgid "|[file]|write status info to file"
-msgstr "|[bestand]|statusinfo naar dit bestand schrijven"
+msgstr "|[文件名]|把状态信息写入文件"
 
 #: g10/g10.c:440
 msgid "|KEYID|ultimately trust this key"
-msgstr "|SLEUTEL|deze sleutel maximaal vertrouwen"
+msgstr "|钥匙号|绝对信任此密钥"
 
 #: g10/g10.c:441
 msgid "|FILE|load extension module FILE"
-msgstr "|BESTAND|uitbreidingsmodule BESTAND laden"
+msgstr "|文件名|载入扩展模块"
 
 #: g10/g10.c:442
 msgid "emulate the mode described in RFC1991"
-msgstr "de modus beschreven in RFC1991 emuleren"
+msgstr "仿真 RFC1991 里所描述的模式"
 
 #: g10/g10.c:443
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
-msgstr "alles pakket-, codering- en digestopties instellen op OpenPGP gedrag"
+msgstr "包、加密和散列算法的选项调整为 OpenPGP 样式"
 
 #: g10/g10.c:444
 msgid "set all packet, cipher and digest options to PGP 2.x behavior"
-msgstr "alle pakket-, codering- en digestopties instellen op PGP 2.x gedrag"
+msgstr "包、加密和散列算法的选项调整为 PGP 2.x 样式"
 
 #: g10/g10.c:452
 msgid "|N|use passphrase mode N"
-msgstr "|N|wachtwoordmodus N gebruiken"
+msgstr "|N|使用模式 N 的密码"
 
 #: g10/g10.c:454
 msgid "|NAME|use message digest algorithm NAME for passphrases"
-msgstr "|NAAM|berichtdigest-algoritme NAAM gebruiken voor wachtwoorden"
+msgstr "|算法名|指定密码使用的报文散列算法"
 
 #: g10/g10.c:456
 msgid "|NAME|use cipher algorithm NAME for passphrases"
-msgstr "|NAAM|codeeralgoritme NAAM gebruiken voor wachtwoorden"
+msgstr "|算法名|指定密码使用的对称加密算法"
 
 #: g10/g10.c:458
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAAM|codeeralgoritme NAAM gebruiken"
+msgstr "|算法名|指定使用的对称加密算法"
 
 #: g10/g10.c:459
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAAM|berichtdigest-algoritme NAAM gebruiken"
+msgstr "|算法名|指定使用的报文散列算法"
 
 #: g10/g10.c:461
 msgid "|N|use compress algorithm N"
-msgstr "|N|inpakalgoritme N gebruiken"
+msgstr "|N|使用第 N 号压缩算法"
 
 #: g10/g10.c:462
 msgid "throw keyid field of encrypted packets"
-msgstr "keyid-veld uit gecodeerde pakketten gooien"
+msgstr "不将收件人钥匙号加入加密包中"
 
 #: g10/g10.c:463
 msgid "Show Photo IDs"
-msgstr "Foto's weergeven"
+msgstr "显示照片标识"
 
 #: g10/g10.c:464
 msgid "Don't show Photo IDs"
-msgstr "Niet foto's weergeven"
+msgstr "不显示照片标识"
 
 #: g10/g10.c:465
 msgid "Set command line to view Photo IDs"
-msgstr "Opdrachtregel instellen voor weergeven van foto's"
+msgstr "设定查看照片标识时使用的命令行"
 
 #: g10/g10.c:471
 msgid ""
@@ -739,7 +735,7 @@ msgid ""
 "(See the man page for a complete listing of all commands and options)\n"
 msgstr ""
 "@\n"
-"(Zie de man-handleiding voor een volledige lijst met alle opdrachten en opties)\n"
+"(请参考在线说明以获得所有命令和选项的完整清单)\n"
 
 #: g10/g10.c:474
 msgid ""
@@ -753,23 +749,21 @@ msgid ""
 " --fingerprint [names]      show fingerprints\n"
 msgstr ""
 "@\n"
-"Voorbeelden:\n"
+"范例：\n"
 "\n"
-" -se -r Bob [bestand]       ondertekenen en coderen voor gebruiker Bob\n"
-" --clearsign [bestand]      een niet-gecodeerde ondertekening maken\n"
-" --detach-sign [bestand]    een losse ondertekening maken\n"
-" --list-keys [namen]        sleutels weergeven\n"
-" --fingerprint [namen]      vingerafdrukken weergeven\n"
+" -se -r Bob [文件名]          为 Bob 这个收件人签字及加密\n"
+" --clearsign [文件名]         做出明文签字\n"
+" --detach-sign [文件名]       做出分离式签字\n"
+" --list-keys [某甲]           显示密钥\n"
+" --fingerprint [某甲]         显示指纹\n"
 
 #: g10/g10.c:634 g10/gpgv.c:95
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
-msgstr ""
-"Rapporteer softwarefouten alstublieft aan <gnupg-bugs@gnu.org>.\n"
-"Rapporteer fouten in de vertaling alstublieft aan <vertaling@nl.linux.org>.\n"
+msgstr "请向 <gnupg-bugs@gnu.org> 报告程序缺陷。\n"
 
 #: g10/g10.c:638
 msgid "Usage: gpg [options] [files] (-h for help)"
-msgstr "Gebruik: gpg [opties] [bestanden] (-h voor hulp)"
+msgstr "用法： gpg [选项] [文件] (用 -h 求助)"
 
 #: g10/g10.c:641
 msgid ""
@@ -777,9 +771,9 @@ msgid ""
 "sign, check, encrypt or decrypt\n"
 "default operation depends on the input data\n"
 msgstr ""
-"Syntaxis: gpg [opties] [bestanden]\n"
-"ondertekenen, controleren, coderen of decoderen\n"
-"standaardbewerking hangt af van invoergegevens\n"
+"语法：gpg [选项] [文件名]\n"
+"签字、检查、加密或解密\n"
+"默认的操作依输入数据而定\n"
 
 #: g10/g10.c:652
 msgid ""
@@ -787,456 +781,457 @@ msgid ""
 "Supported algorithms:\n"
 msgstr ""
 "\n"
-"Ondersteunde algoritmes:\n"
+"支持的算法：\n"
 
 #: g10/g10.c:655
 msgid "Pubkey: "
-msgstr "Openbare sleutel: "
+msgstr "公钥："
 
 #: g10/g10.c:661 g10/keyedit.c:1531
 msgid "Cipher: "
-msgstr "Codering: "
+msgstr "对称加密："
 
 #: g10/g10.c:667
 msgid "Hash: "
-msgstr "Hash: "
+msgstr "散列："
 
 #: g10/g10.c:673 g10/keyedit.c:1577
 msgid "Compression: "
-msgstr "Compressie: "
+msgstr "压缩："
 
 #: g10/g10.c:756
 msgid "usage: gpg [options] "
-msgstr "gebruik: gpg [opties] "
+msgstr "用法：gpg [选项] "
 
 #: g10/g10.c:824
 msgid "conflicting commands\n"
-msgstr "conflicterende opdrachten\n"
+msgstr "冲突的指令\n"
 
 #: g10/g10.c:842
 #, c-format
 msgid "no = sign found in group definition \"%s\"\n"
-msgstr "geen =-teken gevonden in groepdefinitie \"%s\"\n"
+msgstr "在“%s”组定义里找不到等号(=)\n"
 
 #: g10/g10.c:1010
 #, c-format
 msgid "WARNING: unsafe ownership on %s \"%s\"\n"
-msgstr "WAARSCHUWING: onveilig eigendom op %s \"%s\"\n"
+msgstr "警告：%s 的所有权不安全“%s”\n"
 
 #: g10/g10.c:1013
 #, c-format
 msgid "WARNING: unsafe permissions on %s \"%s\"\n"
-msgstr "WAARSCHUWING: onveilige toegangsrechten op %s \"%s\"\n"
+msgstr "警告：%s 的权限不安全“%s”\n"
 
 #: g10/g10.c:1016
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on %s \"%s\"\n"
-msgstr "WAARSCHUWING: onveilig omsluitend mapeigendom op %s \"%s\"\n"
+msgstr "警告：%s 的关闭目录所有权不安全“%s”\n"
 
 #: g10/g10.c:1020
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on %s \"%s\"\n"
-msgstr "WAARSCHUWING: onveilige omsluitende maptoegangsrechten op %s \"%s\"\n"
+msgstr "警告：%s 的关闭目录权限不安全“%s”\n"
 
 #: g10/g10.c:1196
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
-msgstr "LET OP: oude bestand voor standaard opties `%s' genegeerd\n"
+msgstr "注意：旧式的默认配置文件‘%s’已被忽略\n"
 
 #: g10/g10.c:1232
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
-msgstr "LET OP: geen bestand voor standaard opties `%s'\n"
+msgstr "注意：没有默认配置文件‘%s’\n"
 
 #: g10/g10.c:1236
 #, c-format
 msgid "option file `%s': %s\n"
-msgstr "optiebestand `%s': %s\n"
+msgstr "配置文件‘%s’：%s\n"
 
 #: g10/g10.c:1243
 #, c-format
 msgid "reading options from `%s'\n"
-msgstr "bezig met lezen opties uit `%s'\n"
+msgstr "从‘%s’读取选项\n"
 
 #: g10/g10.c:1429
 #, c-format
 msgid "cipher extension \"%s\" not loaded due to unsafe permissions\n"
-msgstr "coderingsuitbreiding \"%s\" niet geladen vanwege onveilige toegangsrechten\n"
+msgstr "对称加算密法扩展模块“%s”因为权限不安全而未被载入\n"
 
 #: g10/g10.c:1569
 #, c-format
 msgid "%s is not a valid character set\n"
-msgstr "%s is geen geldige tekenset\n"
+msgstr "%s 不是一个有效的字符集\n"
 
 #: g10/g10.c:1587
 msgid "could not parse keyserver URI\n"
-msgstr "kon sleutelserver URI niet inlezen\n"
+msgstr "无法解析公钥服务器 URI\n"
 
 #: g10/g10.c:1596
 #, c-format
 msgid "%s:%d: invalid import options\n"
-msgstr "%s:%d: ongeldige invoeropties\n"
+msgstr "%s：%d：无效的导入选项\n"
 
 #: g10/g10.c:1599
 msgid "invalid import options\n"
-msgstr "ongeldige invoeropties\n"
+msgstr "无效的导入选项\n"
 
 #: g10/g10.c:1606
 #, c-format
 msgid "%s:%d: invalid export options\n"
-msgstr "%s:%d: ongeldige uitvoeropties\n"
+msgstr "%s：%d：无效的导出选项\n"
 
 #: g10/g10.c:1609
 msgid "invalid export options\n"
-msgstr "ongeldige uitvoeropties\n"
+msgstr "无效的导出选项\n"
 
 #: g10/g10.c:1615
 #, c-format
 msgid "unable to set exec-path to %s\n"
-msgstr "kan exec-path niet instellen op %s\n"
+msgstr "无法把运行路径设成 %s\n"
 
 #: g10/g10.c:1742
 msgid "WARNING: program may create a core file!\n"
-msgstr "WAARSCHUWING: programma maakt mogelijk een core-bestand aan!\n"
+msgstr "警告：程序可能会创建核心内存转储！\n"
 
 #: g10/g10.c:1746
 #, c-format
 msgid "WARNING: %s overrides %s\n"
-msgstr "WAARSCHUWING: %s gaat boven %s\n"
+msgstr "警告：%s 会使得 %s 失效\n"
 
 #: g10/g10.c:1753 g10/g10.c:1764
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
-msgstr "LET OP: %s is niet voor normaal gebruik!\n"
+msgstr "注意：一般情况下不会用到 %s！\n"
 
 #: g10/g10.c:1755 g10/g10.c:1774
 #, c-format
 msgid "%s not allowed with %s!\n"
-msgstr "%s niet toegestaan met %s!\n"
+msgstr "%s 不可与 %s 并用\n"
 
 #: g10/g10.c:1758
 #, c-format
 msgid "%s makes no sense with %s!\n"
-msgstr "%s slaat nergens op met %s!\n"
+msgstr "%s 与 %s 并用无意义！\n"
 
 #: g10/g10.c:1784
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr "u kunt alleen losse of ongecodeerde ondertekeningen maken in --pgp2 modus\n"
+msgstr "您只有在 --pgp2 模式下才能做分离式或明文签字\n"
 
 #: g10/g10.c:1790
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr "u kunt niet tegelijkertijd ondertekenen en coderen in --pgp2 modus\n"
+msgstr "您在 --pgp2 模式下时，不能同时签字和加密\n"
 
 #: g10/g10.c:1796
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr "u dient bestanden te gebruiken (en niet een pijp) in --pgp2 modus.\n"
+msgstr "启用 --pgp2 时您应该只使用文件，而非管道\n"
 
 #: g10/g10.c:1809
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr "het coderen van een bericht in --pgp2 modus vereist de IDEA-codering\n"
+msgstr "在 --pgp2 模式下加密报文需要 IDEA 算法\n"
 
 #: g10/g10.c:1834 g10/encode.c:418 g10/encode.c:470 g10/encode.c:725
 #: g10/sign.c:650 g10/sign.c:897
 #, c-format
 msgid "this message may not be usable by %s\n"
-msgstr "dit bericht is mogelijk niet bruikbaar voor %s\n"
+msgstr "%s 也许不能使用这个报文\n"
 
 #: g10/g10.c:1890 g10/g10.c:1908
 msgid "selected cipher algorithm is invalid\n"
-msgstr "het gekozen coderingsalgoritme is ongeldig\n"
+msgstr "所选的对称加密算法无效\n"
 
 #: g10/g10.c:1896 g10/g10.c:1914
 msgid "selected digest algorithm is invalid\n"
-msgstr "het gekozen digest-algoritme is ongeldig\n"
+msgstr "所选的散列算法无效\n"
 
 #: g10/g10.c:1902
 msgid "selected certification digest algorithm is invalid\n"
-msgstr "het gekozen certificaat-digest-algoritme is ongeldig\n"
+msgstr "所选的证书散列算法无效\n"
 
 #: g10/g10.c:1917
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
-msgstr "inpakalgoritme moet binnen bereik %d..%d liggen\n"
+msgstr "压缩算法一定要介于 %d 到 %d 之间\n"
 
 #: g10/g10.c:1919
 msgid "completes-needed must be greater than 0\n"
-msgstr "completes-needed moet groter zijn dan 0\n"
+msgstr "需要的完全可信签字数一定要大于 0\n"
 
 #: g10/g10.c:1921
 msgid "marginals-needed must be greater than 1\n"
-msgstr "marginals-needed moet groter zijn dan 1\n"
+msgstr "需要的勉强可信签字数一定要大于 1\n"
 
 #: g10/g10.c:1923
 msgid "max-cert-depth must be in range 1 to 255\n"
-msgstr "max-cert-depth moet binnen het bereik 1 tot 255 vallen\n"
+msgstr "最大认证深度一定要介于 1 和 255 之间\n"
 
 #: g10/g10.c:1926
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
-msgstr "LET OP: eenvoudige S2K-modus (0) wordt sterk ontraden\n"
+msgstr "注意：强烈不建议使用简单的 S2K 模式(0)\n"
 
 #: g10/g10.c:1930
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
-msgstr "ongeldige S2K-modus; moet 0, 1 of 3 zijn\n"
+msgstr "无效的 S2K 模式；必须是 0，1 或 3\n"
 
 #: g10/g10.c:1934
 msgid "invalid default-check-level; must be 0, 1, 2, or 3\n"
-msgstr "ongeldig standaard controleniveau; moet 0, 1, 2 of 3 zijn\n"
+msgstr "无效的默认验证层次；一定要是 0，1，2 或 3\n"
 
 #: g10/g10.c:1940
 msgid "invalid default preferences\n"
-msgstr "ongeldige standaardvoorkeuren\n"
+msgstr "无效的默认首选项\n"
 
 #: g10/g10.c:1948
 msgid "invalid personal cipher preferences\n"
-msgstr "ongeldige persoonlijke coderingsvoorkeuren\n"
+msgstr "无效的个人对称加密算法首选项\n"
 
 #: g10/g10.c:1952
 msgid "invalid personal digest preferences\n"
-msgstr "ongeldige persoonlijke digestvoorkeuren\n"
+msgstr "无效的个人散列算法首选项\n"
 
 #: g10/g10.c:1956
 msgid "invalid personal compress preferences\n"
-msgstr "ongeldige persoonlijke inpakvoorkeuren\n"
+msgstr "无效的个人压缩算法首选项\n"
 
 #: g10/g10.c:2042
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
-msgstr "initialiseren van vertrouwensgegevensbank mislukt: %s\n"
+msgstr "初始化信任度数据库失败：%s\n"
 
 #: g10/g10.c:2052
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
-msgstr "WAARSCHUWING: ontvangers (-r) gegeven zonder gebruik te maken van openbare sleutel codering\n"
+msgstr "警告：给定了收件人(-r)但并未使用公钥加密\n"
 
 #: g10/g10.c:2062
 msgid "--store [filename]"
-msgstr "--store [bestandsnaam]"
+msgstr "--store [文件名]"
 
 #: g10/g10.c:2069
 msgid "--symmetric [filename]"
-msgstr "--symmetric [bestandsnaam]"
+msgstr "--symmetric [文件名]"
 
 #: g10/g10.c:2077
 msgid "--encrypt [filename]"
-msgstr "--encrypt [bestandsnaam]"
+msgstr "--encrypt [文件名]"
 
 #: g10/g10.c:2094
 msgid "--sign [filename]"
-msgstr "--sign [bestandsnaam]"
+msgstr "--sign [文件名]"
 
 #: g10/g10.c:2107
 msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [bestandsnaam]"
+msgstr "--sign --encrypt [文件名]"
 
 #: g10/g10.c:2121
 msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [bestandsnaam]"
+msgstr "--sign --symmetric [文件名]"
 
 #: g10/g10.c:2130
 msgid "--clearsign [filename]"
-msgstr "--clearsign [bestandsnaam]"
+msgstr "--clearsign [文件名]"
 
 #: g10/g10.c:2148
 msgid "--decrypt [filename]"
-msgstr "--decrypt [bestandsnaam]"
+msgstr "--decrypt [文件名]"
 
 #: g10/g10.c:2159
 msgid "--sign-key user-id"
-msgstr "--sign-key gebruikerscode"
+msgstr "--sign-key 用户标识"
 
 #: g10/g10.c:2167
 msgid "--lsign-key user-id"
-msgstr "--lsign-key gebruikerscode"
+msgstr "--lsign-key 用户标识"
 
 #: g10/g10.c:2175
 msgid "--nrsign-key user-id"
-msgstr "--nrsign-key gebruikerscode"
+msgstr "--nrsign-key 用户标识"
 
 #: g10/g10.c:2183
 msgid "--nrlsign-key user-id"
-msgstr "--nrlsign-key gebruikerscode"
+msgstr "--nrlsign-key 用户标识"
 
 #: g10/g10.c:2191
 msgid "--edit-key user-id [commands]"
-msgstr "--edit-key gebruikerscode [opdrachten]"
+msgstr "--edit-key 用户标识 [指令]"
 
 #: g10/g10.c:2247 g10/encode.c:426 g10/sign.c:801
 #, c-format
 msgid "can't open %s: %s\n"
-msgstr "kan %s niet openen: %s\n"
+msgstr "无法打开 %s：%s\n"
 
 #: g10/g10.c:2262
 msgid "-k[v][v][v][c] [user-id] [keyring]"
-msgstr "-k[v][v][v][c] [gebruikerscode] [sleutelbos]"
+msgstr "-k[v][v][v][c] [用户标识] [钥匙环]"
 
 #: g10/g10.c:2354
 #, c-format
 msgid "dearmoring failed: %s\n"
-msgstr "ontpantseren mislukt: %s\n"
+msgstr "解开 ASCII 封装失败：%s\n"
 
 #: g10/g10.c:2362
 #, c-format
 msgid "enarmoring failed: %s\n"
-msgstr "bepantseren mislukt: %s\n"
+msgstr "进行 ASCII 封装失败：%s\n"
 
 #: g10/g10.c:2449
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
-msgstr "ongeldig hash-algoritme `%s'\n"
+msgstr "无效的‘%s’散列算法\n"
 
 #: g10/g10.c:2535
 msgid "[filename]"
-msgstr "[bestandsnaam]"
+msgstr "[文件名]"
 
 #: g10/g10.c:2539
 msgid "Go ahead and type your message ...\n"
-msgstr "Ga uw gang en typ uw bericht...\n"
+msgstr "请开始键入您的报文……\n"
 
 #: g10/g10.c:2542 g10/decrypt.c:61 g10/decrypt.c:110 g10/verify.c:95
 #: g10/verify.c:142
 #, c-format
 msgid "can't open `%s'\n"
-msgstr "kan `%s' niet openen\n"
+msgstr "无法打开‘%s’\n"
 
 #: g10/g10.c:2815
 msgid "a notation name must have only printable characters or spaces, and end with an '='\n"
-msgstr "een notatienaam mag slechts afdrukbare tekens of spaties bevatten, en moet eindigen met een '='\n"
+msgstr "标记名称必须只含有可打印的字符或空格，并以一个“=”来结尾\n"
 
 #: g10/g10.c:2824
 msgid "a user notation name must contain the '@' character\n"
-msgstr "een gebruikersnotatienaam moet het '@'-teken bevatten\n"
+msgstr "用户标记名称一定要含有“@”字符\n"
 
 #: g10/g10.c:2832
 msgid "a notation value must not use any control characters\n"
-msgstr "een notatiewaarde mag geen stuurtekens bevatten\n"
+msgstr "标记值一定不能使用任何的控制字符\n"
 
 #: g10/g10.c:2869
 msgid "the given certification policy URL is invalid\n"
-msgstr "de gegeven certificatiebeleid URL is ongeldig\n"
+msgstr "给定的的认证策略 URL 无效\n"
 
 #: g10/g10.c:2871
 msgid "the given signature policy URL is invalid\n"
-msgstr "de gegeven ondertekeningbeleid URL is ongeldig\n"
+msgstr "给定的签字策略 URL 无效\n"
 
 #: g10/gpgv.c:68
 msgid "take the keys from this keyring"
-msgstr "de sleutels uit deze sleutelbos nemen"
+msgstr "从这个钥匙环里取用密钥"
 
 #: g10/gpgv.c:70
 msgid "make timestamp conflicts only a warning"
-msgstr "geeft alleen waarschuwing bij tijdsstempel conflicten"
+msgstr "把时间戳矛盾仅视为警告"
 
 #: g10/gpgv.c:99
 msgid "Usage: gpgv [options] [files] (-h for help)"
-msgstr "Gebruik: gpgv [opties] [bestanden] (-h voor hulp)"
+msgstr "用法：gpgv [选项] [文件] (用 -h 求助)"
 
 #: g10/gpgv.c:102
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "Check signatures against known trusted keys\n"
 msgstr ""
-"Syntaxis: gpg [opties] [bestanden]\n"
-"Ondertekeningen controleren met bekende, vertrouwde sleutels\n"
+"语法：gpg [选项] [文件]\n"
+"用已知的受信任密钥来检查签字\n"
 
 #: g10/armor.c:321
 #, c-format
 msgid "armor: %s\n"
-msgstr "bepantsering: %s\n"
+msgstr "ASCII 封装：%s\n"
 
 #: g10/armor.c:350
 msgid "invalid armor header: "
-msgstr "ongeldige bepantseringskop: "
+msgstr "无效的 ASCII 封装头："
 
 #: g10/armor.c:357
 msgid "armor header: "
-msgstr "bepantseringskop: "
+msgstr "ASCII 封装头："
 
 #: g10/armor.c:368
 msgid "invalid clearsig header\n"
-msgstr "ongeldige kop niet-gecodeerde ondertekening\n"
+msgstr "无效的明文签字头\n"
 
 #: g10/armor.c:420
 msgid "nested clear text signatures\n"
-msgstr "geneste niet-gecodeerde ondertekeningen\n"
+msgstr "多层明文签字\n"
 
 #: g10/armor.c:544
 msgid "invalid dash escaped line: "
-msgstr ""
+msgstr "无效的连字号跳出行："
 
 #: g10/armor.c:556
 msgid "unexpected armor:"
-msgstr "onverwachte bepantsering:"
+msgstr "与预期不符的 ASCII 封装："
 
 #: g10/armor.c:682 g10/armor.c:1258
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
-msgstr "ongeldig grondtal64-teken %02x overgeslagen\n"
+msgstr "跳过无效的 64 进制字符 %02x\n"
 
 #: g10/armor.c:725
 msgid "premature eof (no CRC)\n"
-msgstr "vroegtijdig einde bestand (geen CRC)\n"
+msgstr "文件先于预期结束(没有 CRC 部分)\n"
 
 #: g10/armor.c:759
 msgid "premature eof (in CRC)\n"
-msgstr "vroegtijdig einde bestand (in CRC)\n"
+msgstr "文件先于预期结束(CRC 部分未结束)\n"
 
 #: g10/armor.c:763
 msgid "malformed CRC\n"
-msgstr "misvormde CRC\n"
+msgstr "异常的 CRC\n"
 
 #: g10/armor.c:767 g10/armor.c:1295
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
-msgstr "CRC-fout; %06lx - %06lx\n"
+msgstr "CRC 错误：%06lx - %06lx\n"
 
 #: g10/armor.c:787
 msgid "premature eof (in Trailer)\n"
-msgstr "vroegtijdig einde bestand (in afsluitend deel)\n"
+msgstr "文件先于预期结束(于结尾处)\n"
 
 #: g10/armor.c:791
 msgid "error in trailer line\n"
-msgstr "fout in afsluitende regel\n"
+msgstr "结尾行有问题\n"
 
 #: g10/armor.c:1073
 msgid "no valid OpenPGP data found.\n"
-msgstr "geen geldige OpenPGP-gegevens gevonden.\n"
+msgstr "找不到有效的 OpenPGP 数据。\n"
 
 #: g10/armor.c:1078
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
-msgstr "ongeldige bepantsering: regel langer dan %d tekens\n"
+msgstr "无效的 ASCII 封装：一行超过 %d 字符\n"
 
 #: g10/armor.c:1082
 msgid "quoted printable character in armor - probably a buggy MTA has been used\n"
-msgstr ""
+msgstr "封装里出现括上的可打印字符——可能是有缺陷的信件传输程序造成的\n"
 
 #: g10/pkclist.c:63 g10/revoke.c:603
 msgid "No reason specified"
-msgstr "Geen reden opgegeven"
+msgstr "未指定原因"
 
 #: g10/pkclist.c:65 g10/revoke.c:605
 msgid "Key is superseded"
-msgstr "Sleutel is achterhaald"
+msgstr "密钥被替换"
 
 #: g10/pkclist.c:67 g10/revoke.c:604
 msgid "Key has been compromised"
-msgstr "Sleutel is in gevaar gebracht"
+msgstr "密钥已泄漏"
 
 #: g10/pkclist.c:69 g10/revoke.c:606
 msgid "Key is no longer used"
-msgstr "Sleutel wordt niet meer gebruikt"
+msgstr "密钥不再使用"
 
 #: g10/pkclist.c:71 g10/revoke.c:607
 msgid "User ID is no longer valid"
-msgstr "Gebruikerscode is niet langer geldig"
+msgstr "用户标识不再有效"
 
 #: g10/pkclist.c:75
 msgid "reason for revocation: "
-msgstr "reden voor herroeping: "
+msgstr "吊销原因："
 
 #: g10/pkclist.c:92
 msgid "revocation comment: "
-msgstr "herroepingsopmerking: "
+msgstr "吊销注释："
 
+#  a string with valid answers
 #. a string with valid answers
 #: g10/pkclist.c:254
 msgid "iImMqQsS"
@@ -1248,12 +1243,12 @@ msgid ""
 "No trust value assigned to:\n"
 "%4u%c/%08lX %s \""
 msgstr ""
-"Geen vertrouwenswaarde toegewezen aan:\n"
+"下列项目没有指定信任度：\n"
 "%4u%c/%08lX %s \""
 
 #: g10/pkclist.c:290 g10/mainproc.c:1428
 msgid "                aka \""
-msgstr "                alias \""
+msgstr "                亦即 \""
 
 #: g10/pkclist.c:301
 msgid ""
@@ -1262,94 +1257,92 @@ msgid ""
 "checking fingerprints from different sources...)?\n"
 "\n"
 msgstr ""
-"Besluit alstublieft in hoeverre u deze gebruiker erop\n"
-"vertrouwt om sleutels van andere gebruikers te\n"
-"controleren (door paspoorten te bekijken, vingerafdrukken\n"
-"te controleren van verschillende bronnen...).\n"
+"您对这位用户验证其他用户的密钥(查对身份证、\n"
+"通过不同的渠道检查指纹等)的能力有多信任呢？\n"
 "\n"
 
 #: g10/pkclist.c:304
 #, c-format
 msgid " %d = Don't know\n"
-msgstr " %d = Weet niet\n"
+msgstr " %d = 不知道\n"
 
 #: g10/pkclist.c:305
 #, c-format
 msgid " %d = I do NOT trust\n"
-msgstr " %d = Ik vertrouw NIET\n"
+msgstr " %d = 我不信任\n"
 
 #: g10/pkclist.c:306
 #, c-format
 msgid " %d = I trust marginally\n"
-msgstr " %d = Ik vertrouw een beetje\n"
+msgstr " %d = 我勉强信任\n"
 
 #: g10/pkclist.c:307
 #, c-format
 msgid " %d = I trust fully\n"
-msgstr " %d = Ik vertrouw volledig\n"
+msgstr " %d = 我完全信任\n"
 
 #: g10/pkclist.c:309
 #, c-format
 msgid " %d = I trust ultimately\n"
-msgstr " %d = Ik vertrouw maximaal\n"
+msgstr " %d = 我绝对信任\n"
 
 #. not yet implemented
 #: g10/pkclist.c:312
 msgid " i = please show me more information\n"
-msgstr " i = meer informatie weergeven\n"
+msgstr " i = 请告诉我更多信息\n"
 
 #: g10/pkclist.c:315
 msgid " m = back to the main menu\n"
-msgstr " m = terug naar het hoofdmenu\n"
+msgstr " m = 回到主菜单\n"
 
 #: g10/pkclist.c:318
 msgid " s = skip this key\n"
-msgstr " s = deze sleutel overslaan\n"
+msgstr " s = 跳过这把密钥\n"
 
 #: g10/pkclist.c:319
 msgid " q = quit\n"
-msgstr " q = afsluiten\n"
+msgstr " q = 退出\n"
 
 #: g10/pkclist.c:326 g10/revoke.c:631
 msgid "Your decision? "
-msgstr "Uw beslissing? "
+msgstr "您的决定是什么？"
 
 #: g10/pkclist.c:347
 msgid "Do you really want to set this key to ultimate trust? "
-msgstr "Wilt u deze sleutel echt maximaal vertrouwen? "
+msgstr "您真的要把这把密钥设成绝对信任？"
 
 #: g10/pkclist.c:361
 msgid "Certificates leading to an ultimately trusted key:\n"
-msgstr "Certificaten die leiden tot een maximaal vertrouwde sleutel:\n"
+msgstr "被绝对信任的密钥的证书：\n"
 
 #: g10/pkclist.c:436
 #, c-format
 msgid "key %08lX: key has been revoked!\n"
-msgstr "sleutel %08lX: sleutel is herroepen!\n"
+msgstr "密钥 %08lX：已经被吊销了！\n"
 
 #: g10/pkclist.c:443 g10/pkclist.c:455 g10/pkclist.c:555
 msgid "Use this key anyway? "
-msgstr "Toch deze sleutel gebruiken? "
+msgstr "无论如何还是使用这把密钥吗？ "
 
 #: g10/pkclist.c:448
 #, c-format
 msgid "key %08lX: subkey has been revoked!\n"
-msgstr "sleutel %08lX: deelsleutel is herroepen!\n"
+msgstr "密钥 %08lX：子钥已经被吊销了！\n"
 
 #: g10/pkclist.c:469
 #, c-format
 msgid "%08lX: key has expired\n"
-msgstr "%08lX: sleutel is verlopen\n"
+msgstr "%08lX: 密钥已经过期了\n"
 
 #: g10/pkclist.c:479
 #, c-format
 msgid "%08lX: There is no indication that this key really belongs to the owner\n"
-msgstr "%08lX: Er is geen aanwijzing dat deze sleutel echt van de eigenaar is\n"
+msgstr "%08lX：没有证据表明这把密钥真的属于它所声称的持有者\n"
 
 #: g10/pkclist.c:485
 #, c-format
 msgid "%08lX: We do NOT trust this key\n"
-msgstr "%08lX: We vertrouwen deze sleutel NIET\n"
+msgstr "%08lX：我们不信任这把密钥\n"
 
 #: g10/pkclist.c:491
 #, c-format
@@ -1357,16 +1350,16 @@ msgid ""
 "%08lX: It is not sure that this key really belongs to the owner\n"
 "but it is accepted anyway\n"
 msgstr ""
-"%08lX: Het is niet zeker dat deze sleutel echt van de eigenaar is,\n"
-"maar de sleutel is toch geaccepteerd\n"
+"%08lX: 无法确定这把密钥是否真的属于它所声称的持有者\n"
+"但是密钥仍旧被接受了\n"
 
 #: g10/pkclist.c:497
 msgid "This key probably belongs to the owner\n"
-msgstr "Deze sleutel is waarschijnlijk van de eigenaar\n"
+msgstr "这把密钥有可能属于这个持有者\n"
 
 #: g10/pkclist.c:502
 msgid "This key belongs to us\n"
-msgstr "Deze sleutel is van ons\n"
+msgstr "这把密钥是属于我们的\n"
 
 #: g10/pkclist.c:550
 msgid ""
@@ -1375,72 +1368,71 @@ msgid ""
 "you may answer the next question with yes\n"
 "\n"
 msgstr ""
-"Het is NIET zeker dat deze sleutel echt van de persoon is die\n"
-"in de gebruikerscode staat.  Als u *echt* weet wat u doet, kunt\n"
-"u de volgende vraag met ja beantwoorden\n"
-"\n"
+"这把密钥并不一定属于用户标识声称的那个人。\n"
+"如果您真的知道自己在做什么，\n"
+"您可以在下一个问题回答yes\n"
 
 #: g10/pkclist.c:564 g10/pkclist.c:594
 msgid "WARNING: Using untrusted key!\n"
-msgstr "WAARSCHUWING: Er wordt een niet-vertrouwde sleutel gebruikt!\n"
+msgstr "警告：正在使用不被信任的密钥！\n"
 
 #: g10/pkclist.c:605
 msgid "WARNING: This key has been revoked by its owner!\n"
-msgstr "WAARSCHUWING: Deze sleutel is herroepen door zijn eigenaar!\n"
+msgstr "警告：这把密钥已经被它的持有者吊销了！\n"
 
 #: g10/pkclist.c:606
 msgid "         This could mean that the signature is forgery.\n"
-msgstr "         Dit kan betekenen dat de ondertekening een vervalsing is.\n"
+msgstr "      这表明这个签字有可能是伪造的。\n"
 
 #: g10/pkclist.c:612
 msgid "WARNING: This subkey has been revoked by its owner!\n"
-msgstr "WAARSCHUWING: Deze deelsleutel is herroepen door zijn eigenaar!\n"
+msgstr "警告：这把子钥已经被它的持有人吊销了！\n"
 
 #: g10/pkclist.c:617
 msgid "Note: This key has been disabled.\n"
-msgstr "Let op: Deze sleutel is uit gezet.\n"
+msgstr "注意：这把密钥已经被禁用了。\n"
 
 #: g10/pkclist.c:622
 msgid "Note: This key has expired!\n"
-msgstr "Let op: Deze sleutel is verlopen!\n"
+msgstr "注意：这把密钥已经过期了！\n"
 
 #: g10/pkclist.c:633
 msgid "WARNING: This key is not certified with a trusted signature!\n"
-msgstr "WAARSCHUWING: Deze sleutel is niet gecertificeerd met een vertrouwde ondertekening!\n"
+msgstr "警告：这把密钥未经受信任的签字认证！\n"
 
 #: g10/pkclist.c:635
 msgid "         There is no indication that the signature belongs to the owner.\n"
-msgstr "         Er is geen aanwijzing dat de ondertekening is van de eigenaar.\n"
+msgstr "      没有证据表明这个签字属于它所声称的持有者。\n"
 
 #: g10/pkclist.c:643
 msgid "WARNING: We do NOT trust this key!\n"
-msgstr "WAARSCHUWING: Vertrouw deze sleutel NIET!\n"
+msgstr "警告：我们不信任这把密钥！\n"
 
 #: g10/pkclist.c:644
 msgid "         The signature is probably a FORGERY.\n"
-msgstr "         De ondertekening is waarschijnlijk VERVALST.\n"
+msgstr "      这个签字很有可能是伪造的。\n"
 
 #: g10/pkclist.c:652
 msgid "WARNING: This key is not certified with sufficiently trusted signatures!\n"
-msgstr "WAARSCHUWING: Deze sleutel is niet gecertificeerd met voldoende vertrouwde ondertekeningen!\n"
+msgstr "警告：这把密钥未经有足够信任度的签字所认证。\n"
 
 #: g10/pkclist.c:654
 msgid "         It is not certain that the signature belongs to the owner.\n"
-msgstr "         Het is niet zeker dat de ondertekening is van de eigenaar.\n"
+msgstr "      这份签字并不一定属于它所声称的持有者\n"
 
 #: g10/pkclist.c:808 g10/pkclist.c:832 g10/pkclist.c:990 g10/pkclist.c:1050
 #, c-format
 msgid "%s: skipped: %s\n"
-msgstr "%s: overgeslagen: %s\n"
+msgstr "%s：已跳过：%s\n"
 
 #: g10/pkclist.c:818 g10/pkclist.c:1022
 #, c-format
 msgid "%s: skipped: public key already present\n"
-msgstr "%s: overgeslagen: openbare sleutel reeds aanwezig\n"
+msgstr "%s: 已跳过：公钥已存在\n"
 
 #: g10/pkclist.c:849
 msgid "You did not specify a user ID. (you may use \"-r\")\n"
-msgstr "U heeft geen gebruikerscode opgegeven. (u kunt \"-r\" gebruiken)\n"
+msgstr "您没有指定用户标识。(您可以在命令行中用“-r”指定)\n"
 
 #: g10/pkclist.c:862
 msgid ""
@@ -1448,121 +1440,121 @@ msgid ""
 "Enter the user ID.  End with an empty line: "
 msgstr ""
 "\n"
-"Geef een gebruikerscode.  Eindig met een lege regel: "
+"输入用户标识。以空白行结束："
 
 #: g10/pkclist.c:878
 msgid "No such user ID.\n"
-msgstr "Gebruikerscode niet gevonden.\n"
+msgstr "没有这个用户标识。\n"
 
 #: g10/pkclist.c:883 g10/pkclist.c:965
 msgid "skipped: public key already set as default recipient\n"
-msgstr "overgeslagen: openbare sleutel reeds ingesteld als standaard ontvanger\n"
+msgstr "已跳过：公钥已被设为默认收件者\n"
 
 #: g10/pkclist.c:901
 msgid "Public key is disabled.\n"
-msgstr "Openbare sleutel is uit gezet.\n"
+msgstr "公钥被禁用。\n"
 
 #: g10/pkclist.c:908
 msgid "skipped: public key already set\n"
-msgstr "overgeslagen: openbare sleutel reeds ingesteld\n"
+msgstr "已跳过：公钥已被设定\n"
 
 #: g10/pkclist.c:957
 #, c-format
 msgid "unknown default recipient `%s'\n"
-msgstr "onbekende standaard ontvanger `%s'\n"
+msgstr "未知的默认收件者‘%s’\n"
 
 #: g10/pkclist.c:1002
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: overgeslagen: openbare sleutel is uit gezet\n"
+msgstr "%s：已跳过：公钥已被禁用\n"
 
 #: g10/pkclist.c:1057
 msgid "no valid addressees\n"
-msgstr "geen geldige geadresseerden\n"
+msgstr "没有有效的地址\n"
 
 #: g10/keygen.c:191
 #, c-format
 msgid "preference %c%lu is not valid\n"
-msgstr "voorkeur %c%lu is niet geldig\n"
+msgstr "首选项 %c%lu 无效\n"
 
 #: g10/keygen.c:198
 #, c-format
 msgid "preference %c%lu duplicated\n"
-msgstr "voorkeur %c%lu komt dubbel voor\n"
+msgstr "首选项 %c%lu 重复\n"
 
 #: g10/keygen.c:203
 #, c-format
 msgid "too many `%c' preferences\n"
-msgstr "teveel `%c' voorkeuren\n"
+msgstr "太多首选项‘%c’\n"
 
 #: g10/keygen.c:273
 msgid "invalid character in preference string\n"
-msgstr "ongeldig teken in voorkeurtekenreeks\n"
+msgstr "首选项字符串里有无效的字符\n"
 
 #: g10/keygen.c:533
 msgid "writing direct signature\n"
-msgstr "bezig met schrijven directe ondertekening\n"
+msgstr "正在写入直接签字\n"
 
 #: g10/keygen.c:572
 msgid "writing self signature\n"
-msgstr "bezig met schrijven zelf-ondertekening\n"
+msgstr "正在写入自身签字\n"
 
 #: g10/keygen.c:616
 msgid "writing key binding signature\n"
-msgstr "bezig met schrijven sleutelbindende ondertekening\n"
+msgstr "正在写入密钥绑定签字\n"
 
 #: g10/keygen.c:670 g10/keygen.c:754 g10/keygen.c:845
 #, c-format
 msgid "keysize invalid; using %u bits\n"
-msgstr "sleutelgrootte ongeldig; %u bits worden gebruikt\n"
+msgstr "密钥尺寸无效：改用 %u 字节\n"
 
 #: g10/keygen.c:675 g10/keygen.c:759 g10/keygen.c:850
 #, c-format
 msgid "keysize rounded up to %u bits\n"
-msgstr "sleutelgrootte naar boven afgerond tot %u bits\n"
+msgstr "密钥尺寸舍入到 %u 字节\n"
 
 #: g10/keygen.c:950
 msgid "Please select what kind of key you want:\n"
-msgstr "Kies alstublieft wat voor sleutel u wilt hebben:\n"
+msgstr "请选择您要使用的密钥种类：\n"
 
 #: g10/keygen.c:952
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
-msgstr "   (%d) DSA en ElGamal (standaard)\n"
+msgstr "   (%d) DSA 和 ElGamal (默认)\n"
 
 #: g10/keygen.c:953
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
-msgstr "   (%d) DSA (alleen ondertekenen)\n"
+msgstr "   (%d) DSA (仅用于签字)\n"
 
 #: g10/keygen.c:955
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
-msgstr "   (%d) ElGamal (alleen coderen)\n"
+msgstr "   (%d) ElGamal (仅用于加密)\n"
 
 #: g10/keygen.c:957
 #, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
-msgstr "   (%d) ElGamal (ondertekenen en coderen)\n"
+msgstr "   (%d) ElGamal (用于签字及加密)\n"
 
 #: g10/keygen.c:958
 #, c-format
 msgid "   (%d) RSA (sign only)\n"
-msgstr "   (%d) RSA (alleen ondertekenen)\n"
+msgstr "   (%d) RSA (仅用于签字)\n"
 
 #: g10/keygen.c:960
 #, c-format
 msgid "   (%d) RSA (encrypt only)\n"
-msgstr "   (%d) RSA (alleen coderen)\n"
+msgstr "   (%d) RSA (仅用于加密)\n"
 
 #: g10/keygen.c:962
 #, c-format
 msgid "   (%d) RSA (sign and encrypt)\n"
-msgstr "   (%d) RSA (ondertekenen en coderen)\n"
+msgstr "   (%d) RSA (用于签字及加密)\n"
 
 #: g10/keygen.c:965 g10/keyedit.c:616
 msgid "Your selection? "
-msgstr "Uw keuze? "
+msgstr "您的选择？ "
 
 #: g10/keygen.c:991
 msgid ""
@@ -1570,17 +1562,17 @@ msgid ""
 "able to use this key to communicate with PGP users.  This algorithm is also\n"
 "very slow, and may not be as secure as the other choices.\n"
 msgstr ""
-"Het gebruik van dit algoritme wordt alleen ondersteund door GnuPG.  U zult met\n"
-"deze sleutel niet kunnen communiceren met PGP gebruikers.  Dit algoritme is\n"
-"ook erg langzaam, en mogelijk niet zo veilig als de andere keuzes.\n"
+"请注意，只有 GnuPG 才支持这个算法。用这个算法生成的密钥\n"
+"无法跟 PGP 使用者互通。同时这个算法非常缓慢，\n"
+"而且可能也不如其他算法安全。\n"
 
 #: g10/keygen.c:996
 msgid "Create anyway? "
-msgstr "Toch aanmaken? "
+msgstr "无论如何还是要生成吗？ "
 
 #: g10/keygen.c:1011 g10/keyedit.c:629 g10/revoke.c:664
 msgid "Invalid selection.\n"
-msgstr "Ongeldige keuze.\n"
+msgstr "无效的选择。\n"
 
 #: g10/keygen.c:1024
 #, c-format
@@ -1590,26 +1582,26 @@ msgid ""
 "              default keysize is 1024 bits\n"
 "    highest suggested keysize is 2048 bits\n"
 msgstr ""
-"Er wordt een nieuw %s sleutelpaar aangemaakt.\n"
-"              minimale sleutelgrootte is  768 bits\n"
-"              standaard sleutelgrootte is 1024 bits\n"
-"    hoogst aangeraden sleutelgrootte is 2048 bits\n"
+"将要生成一副新的%s密钥对。\n"
+"        最小的密钥尺寸是  768字节\n"
+"        默认的密钥尺寸是 1024字节\n"
+"    推荐的最大密钥尺寸是 2048字节\n"
 
 #: g10/keygen.c:1033
 msgid "What keysize do you want? (1024) "
-msgstr "Welke sleutelgrootte wilt u? (1024) "
+msgstr "您想要用多大的密钥尺寸？(1024)"
 
 #: g10/keygen.c:1038
 msgid "DSA only allows keysizes from 512 to 1024\n"
-msgstr "DSA staat alleen sleutelgroottes toe van 512 tot 1024\n"
+msgstr "DSA的密钥尺寸只能介于 512 和 1024 之间\n"
 
 #: g10/keygen.c:1040
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
-msgstr "sleutelgrootte te klein; 1024 is de kleinste toegestane waarde voor RSA.\n"
+msgstr "密钥尺寸太小：RSA 密钥尺寸至少要有 1024。\n"
 
 #: g10/keygen.c:1043
 msgid "keysize too small; 768 is smallest value allowed.\n"
-msgstr "sleutelgrootte te klein; 768 is de kleinste toegestane waarde.\n"
+msgstr "密钥尺寸太小；至少要有 768。\n"
 
 #. It is ridiculous and an annoyance to use larger key sizes!
 #. * GnuPG can handle much larger sizes; but it takes an eternity
@@ -1622,33 +1614,33 @@ msgstr "sleutelgrootte te klein; 768 is de kleinste toegestane waarde.\n"
 #: g10/keygen.c:1054
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
-msgstr "sleutelgrootte te groot; %d is de grootste toegestane waarde.\n"
+msgstr "密钥尺寸太大；最大只能够用到 %d。\n"
 
 #: g10/keygen.c:1059
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
 "computations take REALLY long!\n"
 msgstr ""
-"Sleutelgroottes boven de 2048 worden niet aangeraden\n"
-"omdat berekeningen daarmee ERG lang duren!\n"
+"不建议使用尺寸大于 2048 的密钥，\n"
+"因为计算真的会花去很多时间！\n"
 
 #: g10/keygen.c:1062
 msgid "Are you sure that you want this keysize? "
-msgstr "Weet u zeker dat u deze sleutelgrootte wilt? "
+msgstr "您确定要用这个密钥尺寸吗？ "
 
 #: g10/keygen.c:1063
 msgid "Okay, but keep in mind that your monitor and keyboard radiation is also very vulnerable to attacks!\n"
-msgstr "Goed, maar houd er rekening mee dat de straling van uw beeldscherm en toetsenbord ook erg gevoelig zijn voor aanvallen!\n"
+msgstr "好吧，但是请记住您的屏幕和键盘也是相当易被窥视的！\n"
 
 #: g10/keygen.c:1072
 #, c-format
 msgid "Requested keysize is %u bits\n"
-msgstr "Gevraagde sleutelgrootte is %u bits\n"
+msgstr "您所要求的密钥尺寸是 %u 字节\n"
 
 #: g10/keygen.c:1075 g10/keygen.c:1079
 #, c-format
 msgid "rounded up to %u bits\n"
-msgstr "afgerond naar boven tot %u bits\n"
+msgstr "舍入到 %u 字节\n"
 
 #: g10/keygen.c:1130
 msgid ""
@@ -1659,12 +1651,12 @@ msgid ""
 "      <n>m = key expires in n months\n"
 "      <n>y = key expires in n years\n"
 msgstr ""
-"Geef alstublieft aan hoe lang de sleutel geldig moet zijn.\n"
-"         0 = sleutel verloopt niet\n"
-"      <n>  = sleutel verloopt na n dagen\n"
-"      <n>w = sleutel verloopt na n weken\n"
-"      <n>m = sleutel verloopt na n maanden\n"
-"      <n>y = sleutel verloopt na n jaren\n"
+"请设定这把密钥的有效期限。\n"
+"         0 = 密钥永不过期\n"
+"      <n>  = 密钥在 n 天后过期\n"
+"      <n>w = 密钥在 n 周后过期\n"
+"      <n>m = 密钥在 n 月后过期\n"
+"      <n>y = 密钥在 n 年后过期\n"
 
 #: g10/keygen.c:1139
 msgid ""
@@ -1675,47 +1667,47 @@ msgid ""
 "      <n>m = signature expires in n months\n"
 "      <n>y = signature expires in n years\n"
 msgstr ""
-"Geef alstublieft aan hoe lang de ondertekening geldig moet zijn.\n"
-"         0 = ondertekening verloopt niet\n"
-"      <n>  = ondertekening verloopt na n dagen\n"
-"      <n>w = ondertekening verloopt na n weken\n"
-"      <n>m = ondertekening verloopt na n maanden\n"
-"      <n>y = ondertekening verloopt na n jaren\n"
+"请设定这份签字的有效期限。\n"
+"         0 = 签字永不过期\n"
+"      <n>  = 签字在 n 天后过期\n"
+"      <n>w = 签字在 n 周后过期\n"
+"      <n>m = 签字在 n 月后过期\n"
+"      <n>y = 签字在 n 年后过期\n"
 
 #: g10/keygen.c:1161
 msgid "Key is valid for? (0) "
-msgstr "Hoe lang is de sleutel geldig? (0) "
+msgstr "密钥的有效期限是？(0) "
 
 #: g10/keygen.c:1163
 msgid "Signature is valid for? (0) "
-msgstr "Hoe lang is de ondertekening geldig? (0) "
+msgstr "签字的有效期限是多久？(0) "
 
 #: g10/keygen.c:1168
 msgid "invalid value\n"
-msgstr "ongeldige waarde\n"
+msgstr "无效的数值\n"
 
 #: g10/keygen.c:1173
 #, c-format
 msgid "%s does not expire at all\n"
-msgstr "%s verloopt nooit\n"
+msgstr "%s 永远不会过期\n"
 
 #. print the date when the key expires
 #: g10/keygen.c:1180
 #, c-format
 msgid "%s expires at %s\n"
-msgstr "%s verloopt op %s\n"
+msgstr "%s 将在 %s 过期\n"
 
 #: g10/keygen.c:1186
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
-"Uw systeem kan geen data weergeven na 2038.\n"
-"Het zal data echter correct verwerken tot 2106.\n"
+"您的系统无法显示 2038 年以后的日期。\n"
+"不过，它可以正确处理 2106 年之前的年份。\n"
 
 #: g10/keygen.c:1191
 msgid "Is this correct (y/n)? "
-msgstr "Is dit juist (j/n)? "
+msgstr "以上正确吗？(y/n)"
 
 #: g10/keygen.c:1234
 msgid ""
@@ -1726,48 +1718,47 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"U heeft een gebruikerscode nodig om de sleutel mee te identificeren;\n"
-"dit programma maakt een gebruikerscode van Echte naam, Opmerking\n"
-"en E-mail adres op de volgende manier:\n"
-"    \"Heinrich Heine (De dichter) <heinrichh@duesseldorf.de>\"\n"
+"您需要一个用户标识来辨识您的密钥；本软件会用真实姓名、\n"
+"注释和电子邮件地址组合成用户标识，如下所示：\n"
+"    “Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>”\n"
 "\n"
 
 #: g10/keygen.c:1246
 msgid "Real name: "
-msgstr "Echte naam: "
+msgstr "真实姓名："
 
 #: g10/keygen.c:1254
 msgid "Invalid character in name\n"
-msgstr "Ongeldig teken in naam\n"
+msgstr "姓名含有无效的字符\n"
 
 #: g10/keygen.c:1256
 msgid "Name may not start with a digit\n"
-msgstr "Naam mag niet met een cijfer beginnen\n"
+msgstr "姓名不可以用数字开头\n"
 
 #: g10/keygen.c:1258
 msgid "Name must be at least 5 characters long\n"
-msgstr "Naam moet tenminste 5 tekens lang zijn\n"
+msgstr "姓名至少要有五个字符长\n"
 
 #: g10/keygen.c:1266
 msgid "Email address: "
-msgstr "E-mail adres: "
+msgstr "电子邮件地址："
 
 #: g10/keygen.c:1277
 msgid "Not a valid email address\n"
-msgstr "Geen geldig e-mail adres\n"
+msgstr "电子邮件地址无效\n"
 
 #: g10/keygen.c:1285
 msgid "Comment: "
-msgstr "Opmerking: "
+msgstr "注释："
 
 #: g10/keygen.c:1291
 msgid "Invalid character in comment\n"
-msgstr "Ongeldig teken in opmerking\n"
+msgstr "注释含有无效的字符\n"
 
 #: g10/keygen.c:1314
 #, c-format
 msgid "You are using the `%s' character set.\n"
-msgstr "U gebruikt de `%s' tekenset.\n"
+msgstr "您正在使用‘%s’字符集。\n"
 
 #: g10/keygen.c:1320
 #, c-format
@@ -1776,41 +1767,41 @@ msgid ""
 "    \"%s\"\n"
 "\n"
 msgstr ""
-"U heeft deze gebruikerscode gekozen:\n"
-"    \"%s\"\n"
+"您选择了这个用户标识：\n"
+"    “%s”\n"
 "\n"
 
 #: g10/keygen.c:1324
 msgid "Please don't put the email address into the real name or the comment\n"
-msgstr "Stop het e-mail adres alstublieft niet in de echte naam of de opmerking\n"
+msgstr "请不要把电子邮件地址放进您的真实姓名或注释里\n"
 
 #: g10/keygen.c:1329
 msgid "NnCcEeOoQq"
-msgstr "NnOoEeAaFf"
+msgstr "NnCcEeOoQq"
 
 #: g10/keygen.c:1339
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
-msgstr "(N)aam, (C) opmerking, (E)-mail wijzigen of (Q) afsluiten? "
+msgstr "更改姓名(N)、注释(C)、电子邮件地址(E)或退出(Q)？"
 
 #: g10/keygen.c:1340
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
-msgstr "(N)aam, (C) opmerking, (E)-mail wijzigen of (O) accepteren/(Q) afsluiten? "
+msgstr "更改姓名(N)、注释(C)、电子邮件地址(E)或确定(O)/退出(Q)？"
 
 #: g10/keygen.c:1359
 msgid "Please correct the error first\n"
-msgstr "Verbeter de fout alstublieft eerst\n"
+msgstr "请先改正错误\n"
 
 #: g10/keygen.c:1398
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
 msgstr ""
-"U heeft een wachtwoord nodig om uw geheime sleutel mee te beschermen.\n"
+"您需要一个密码来保护您的私钥。\n"
 "\n"
 
 #: g10/keygen.c:1407 g10/keyedit.c:827
 msgid "passphrase not correctly repeated; try again"
-msgstr "wachtwoord niet juist herhaald; probeer opnieuw"
+msgstr "密码再次输入时与首次输入不符；请再试一次"
 
 #: g10/keygen.c:1408
 #, c-format
@@ -1824,9 +1815,9 @@ msgid ""
 "using this program with the option \"--edit-key\".\n"
 "\n"
 msgstr ""
-"U wilt geen wachtwoord - dit is waarschijnlijk een *slecht* idee!\n"
-"Toch zal ik het doen.  U kunt uw wachtwoord altijd veranderen,\n"
-"met dit programma met de optie \"--edit-key\".\n"
+"您不想要有密码——这个想法实在是遭透了！\n"
+"不过，我仍然会照您想的去做。您任何时候都可以变更您的密码，\n"
+"仅需要再次执行这个程序，并且使用“--edit-key”选项即可。\n"
 "\n"
 
 #: g10/keygen.c:1435
@@ -1836,474 +1827,473 @@ msgid ""
 "disks) during the prime generation; this gives the random number\n"
 "generator a better chance to gain enough entropy.\n"
 msgstr ""
-"Voor het genereren hebben we veel willekeurige bytes nodig. Het is een\n"
-"goed idee om wat te doen (iets typen met het toetsenbord, de muis\n"
-"bewegen, schijven gebruiken) tijdens het genereren van priemgetallen;\n"
-"dit geeft de willekeurige getallen generator een betere kans om genoeg\n"
-"entropie te verzamelen.\n"
+"我们需要生成大量的随机字节。这个时候您可以多做些琐事\n"
+"(像是敲打键盘、移动鼠标、读写硬盘之类的)\n"
+"这会让随机数字发生器有更好的机会获得足够的熵数。\n"
 
 #: g10/keygen.c:2000
 msgid "DSA keypair will have 1024 bits.\n"
-msgstr "DSA sleutelpaar zal 1024 bits hebben.\n"
+msgstr "DSA 密钥对会有 1024 字节。\n"
 
 #: g10/keygen.c:2054
 msgid "Key generation canceled.\n"
-msgstr "Sleutelaanmaak geannuleerd.\n"
+msgstr "密钥生成已取消。\n"
 
 #: g10/keygen.c:2161 g10/keygen.c:2249
 #, c-format
 msgid "writing public key to `%s'\n"
-msgstr "bezig met schrijven openbare sleutel naar `%s'\n"
+msgstr "正在将公钥写至`%s'\n"
 
 #: g10/keygen.c:2162 g10/keygen.c:2251
 #, c-format
 msgid "writing secret key to `%s'\n"
-msgstr "bezig met schrijven geheime sleutel naar `%s'\n"
+msgstr "正在将私钥写至`%s'\n"
 
 #: g10/keygen.c:2238
 #, c-format
 msgid "no writable public keyring found: %s\n"
-msgstr "geen schrijfbare openbare sleutelbos gevonden: %s\n"
+msgstr "找不到可写的公钥钥匙环：%s\n"
 
 #: g10/keygen.c:2244
 #, c-format
 msgid "no writable secret keyring found: %s\n"
-msgstr "geen schrijfbare geheime sleutelbos gevonden: %s\n"
+msgstr "找不到可写的私钥钥匙环：%s\n"
 
 #: g10/keygen.c:2258
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
-msgstr "fout bij schrijven openbare sleutelbos `%s': %s\n"
+msgstr "写入公钥钥匙环‘%s’时发生错误： %s\n"
 
 #: g10/keygen.c:2265
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
-msgstr "fout bij schrijven geheime sleutelbos `%s': %s\n"
+msgstr "写入私钥钥匙环‘%s’时发生错误： %s\n"
 
 #: g10/keygen.c:2285
 msgid "public and secret key created and signed.\n"
-msgstr "openbare en geheime sleutel aangemaakt en ondertekend.\n"
+msgstr "公钥和私钥已经生成并经签字。\n"
 
 #: g10/keygen.c:2286
 msgid "key marked as ultimately trusted.\n"
-msgstr "sleutel gemarkeerd als maximaal vertrouwd.\n"
+msgstr "密钥已被标记成绝对信任。\n"
 
 #: g10/keygen.c:2297
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
 msgstr ""
-"Let op dat deze sleutel niet gebruikt kan worden voor coderen.  Mogelijk\n"
-"wilt u daarvoor met de opdracht \"--edit-key\" een tweede sleutel aanmaken.\n"
+"请注意这把密钥还不能用来加密，您必须先用“--edit-key”指令\n"
+"生成用于加密的子钥。\n"
 
 #: g10/keygen.c:2309 g10/keygen.c:2428
 #, c-format
 msgid "Key generation failed: %s\n"
-msgstr "Sleutelaanmaak mislukt: %s\n"
+msgstr "生成密钥失败：%s\n"
 
 #: g10/keygen.c:2355 g10/sign.c:261
 #, c-format
 msgid "key has been created %lu second in future (time warp or clock problem)\n"
-msgstr "sleutel is %lu seconde in de toekomst aangemaakt (tijdsreis of klokprobleem)\n"
+msgstr "密钥是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
 #: g10/keygen.c:2357 g10/sign.c:263
 #, c-format
 msgid "key has been created %lu seconds in future (time warp or clock problem)\n"
-msgstr "sleutel is %lu seconden in de toekomst aangemaakt (tijdsreis of klokprobleem)\n"
+msgstr "密钥是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
 #: g10/keygen.c:2366
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
-msgstr "LET OP: het aanmaken van deelsleutels voor v3-sleutels komt niet overeen met OpenPGP\n"
+msgstr "注意：为 v3 密钥生成子钥会失去 OpenPGP 兼容性\n"
 
 #: g10/keygen.c:2395
 msgid "Really create? "
-msgstr "Echt aanmaken? "
+msgstr "真的要建立吗？ "
 
 #: g10/decrypt.c:96 g10/encode.c:780
 msgid "--output doesn't work for this command\n"
-msgstr "--uitvoer werkt niet voor deze opdracht\n"
+msgstr "--output 在这个命令中不起作用\n"
 
 #: g10/encode.c:178 g10/tdbio.c:505 g10/tdbio.c:566 g10/openfile.c:180
 #: g10/openfile.c:316
 #, c-format
 msgid "%s: can't open: %s\n"
-msgstr "%s: kan niet openen: %s\n"
+msgstr "%s：无法打开：%s\n"
 
 #: g10/encode.c:209 g10/sign.c:1056
 #, c-format
 msgid "error creating passphrase: %s\n"
-msgstr "fout bij maken wachtwoord: %s\n"
+msgstr "生成密码的时候发生错误：%s\n"
 
 #: g10/encode.c:214
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
-msgstr "kan geen symmetrisch ESK-pakket gebruiken vanwege de S2K-modus\n"
+msgstr "在此 S2K 模式下无法使用对称的 ESK 包\n"
 
 #: g10/encode.c:233 g10/encode.c:498
 #, c-format
 msgid "`%s' already compressed\n"
-msgstr "`%s' is al ingepakt\n"
+msgstr "‘%s’已被压缩\n"
 
 #: g10/encode.c:301 g10/encode.c:534
 #, c-format
 msgid "%s: WARNING: empty file\n"
-msgstr "%s: WAARSCHUWING: leeg bestand\n"
+msgstr "%s：警告：空文件\n"
 
 #: g10/encode.c:416
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr "u kunt slechts coderen naar RSA-sleutels van 2048 bits of minder in --pgp2 modus\n"
+msgstr "在 --pgp2 模式中，您只能使用 2048 字节及以下的 RSA 密钥加密\n"
 
 #: g10/encode.c:432
 #, c-format
 msgid "reading from `%s'\n"
-msgstr "bezig met lezen uit `%s'\n"
+msgstr "正在从‘%s’读取\n"
 
 #: g10/encode.c:468
 msgid "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr "kan de IDEA-codering niet gebruiken voor alle sleutels waarnaar u codeert.\n"
+msgstr "您正要用来加密的所有密钥都不能使用 IDEA 算法。\n"
 
 #: g10/encode.c:479 g10/encode.c:662
 #, c-format
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "het afdwingen van symmetrische codering %s (%d) gaat tegen de voorkeuren van de ontvanger in\n"
+msgstr "强行使用的 %s (%d)对称加密算法不在收件者的首选项中\n"
 
 #: g10/encode.c:576 g10/sign.c:770
 #, c-format
 msgid "forcing compression algorithm %s (%d) violates recipient preferences\n"
-msgstr "het afdwingen van inpakalgoritme %s (%d) gaat tegen de voorkeuren van de ontvanger in\n"
+msgstr "强行使用的 %s (%d)压缩算法不在收件者的首选项中\n"
 
 #: g10/encode.c:721
 #, c-format
 msgid "you may not use %s while in %s mode\n"
-msgstr "u kunt %s niet gebruiken in %s modus\n"
+msgstr "您不该将 %s 用于 %s 模式中\n"
 
 #: g10/encode.c:753
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
-msgstr "%s/%s gecodeerd voor: \"%s\"\n"
+msgstr "%s/%s 已经加密给：“%s”\n"
 
 #: g10/export.c:190 g10/keyedit.c:2410 g10/delkey.c:73 g10/revoke.c:224
 #, c-format
 msgid "key `%s' not found: %s\n"
-msgstr "sleutel `%s' niet gevonden: %s\n"
+msgstr "找不到‘%s’密钥：%s\n"
 
 #: g10/export.c:213 g10/delkey.c:81 g10/revoke.c:230 g10/revoke.c:454
 #, c-format
 msgid "error reading keyblock: %s\n"
-msgstr "fout bij lezen sleutelblok: %s\n"
+msgstr "读取密钥区块时发生错误：%s\n"
 
 #: g10/export.c:222
 #, c-format
 msgid "key %08lX: not a rfc2440 key - skipped\n"
-msgstr "sleutel %08lX: niet een rfc2440 sleutel - overgeslagen\n"
+msgstr "密钥 %08lX：不是一把 rfc2440 密钥——已跳过\n"
 
 #: g10/export.c:238
 #, c-format
 msgid "key %08lX: not protected - skipped\n"
-msgstr "sleutel %08lX: niet beschermd - overgeslagen\n"
+msgstr "密钥 %08lX：未被保护——已跳过\n"
 
 #: g10/export.c:246
 #, c-format
 msgid "key %08lX: PGP 2.x style key - skipped\n"
-msgstr "sleutel %08lX: PGP 2.x stijl sleutel - overgeslagen\n"
+msgstr "密钥 %08lX：PGP 2.x 样式的密钥——已跳过\n"
 
+#  I hope this warning doesn't confuse people.
 #. I hope this warning doesn't confuse people.
 #: g10/export.c:321
 #, c-format
 msgid "WARNING: secret key %08lX does not have a simple SK checksum\n"
-msgstr "WAARSCHUWING: geheime sleutel %08lX heeft geen eenvoudige SK controlesom\n"
+msgstr "警告：私钥 %08lX 不存在简单SK检验和\n"
 
 #: g10/export.c:347
 msgid "WARNING: nothing exported\n"
-msgstr "WAARSCHUWING: niets uitgevoerd\n"
+msgstr "警告：没有导出任何东西\n"
 
 #: g10/getkey.c:150
 msgid "too many entries in pk cache - disabled\n"
-msgstr "teveel ingangen in pk buffer - uit gezet\n"
+msgstr "pk 缓存里项目太多——已禁用\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
 #: g10/getkey.c:186 g10/getkey.c:2521
 msgid "[User id not found]"
-msgstr "[Gebruikerscode niet gevonden]"
+msgstr "[找不到用户标识]"
 
 #: g10/getkey.c:1557
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
-msgstr "Ongeldige sleutel %08lX geldig gemaakt met --allow-non-selfsigned-uid\n"
+msgstr "--allow-non-selfsigned-uid 能让无效的密钥 %08lX 生效\n"
 
 #: g10/getkey.c:2009
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
-msgstr "geen geheime deelsleutel voor openbare deelsleutel %08lX - genegeerd\n"
+msgstr "公钥 %08lX 没有相对应的私钥——正在忽略\n"
 
 #: g10/getkey.c:2237
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
-msgstr "de secundaire sleutel %08lX wordt gebruikt in plaats van primaire sleutel %08lX\n"
+msgstr "使用子钥 %08lX 而非主钥 %08lX\n"
 
 #: g10/getkey.c:2284
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
-msgstr "sleutel %08lX: geheime sleutel zonder openbare sleutel - overgeslagen\n"
+msgstr "密钥 %08lX：只有私钥而没有公钥——已跳过\n"
 
 #: g10/import.c:259
 #, c-format
 msgid "skipping block of type %d\n"
-msgstr "blok van soort %d wordt overgeslagen\n"
+msgstr "正在跳过 %d 样式的区块\n"
 
 #: g10/import.c:268
 #, c-format
 msgid "%lu keys so far processed\n"
-msgstr "tot nu toe %lu sleutels verwerkt\n"
+msgstr "已处理 %lu 把密钥\n"
 
 #: g10/import.c:273
 #, c-format
 msgid "error reading `%s': %s\n"
-msgstr "fout bij lezen `%s': %s\n"
+msgstr "读取‘%s’时出错：%s\n"
 
 #: g10/import.c:285
 #, c-format
 msgid "Total number processed: %lu\n"
-msgstr "Totale aantal verwerkt: %lu\n"
+msgstr "合计被处理的数量：%lu\n"
 
 #: g10/import.c:287
 #, c-format
 msgid "      skipped new keys: %lu\n"
-msgstr "      overgeslagen nieuwe sleutels: %lu\n"
+msgstr "  已跳过的新密钥：%lu\n"
 
 #: g10/import.c:290
 #, c-format
 msgid "          w/o user IDs: %lu\n"
-msgstr "          zonder gebruikerscode: %lu\n"
+msgstr "  遗失的用户标识：%lu\n"
 
 #: g10/import.c:292
 #, c-format
 msgid "              imported: %lu"
-msgstr "              ingevoerd: %lu"
+msgstr "          已导入：%lu"
 
 #: g10/import.c:298
 #, c-format
 msgid "             unchanged: %lu\n"
-msgstr "             ongewijzigd: %lu\n"
+msgstr "          未改变：%lu\n"
 
 #: g10/import.c:300
 #, c-format
 msgid "          new user IDs: %lu\n"
-msgstr "          nieuwe gebruikerscodes: %lu\n"
+msgstr "      新用户标识：%lu\n"
 
 #: g10/import.c:302
 #, c-format
 msgid "           new subkeys: %lu\n"
-msgstr "           nieuwe deelsleutels: %lu\n"
+msgstr "        新的子钥：%lu\n"
 
 #: g10/import.c:304
 #, c-format
 msgid "        new signatures: %lu\n"
-msgstr "        nieuwe ondertekeningen: %lu\n"
+msgstr "        新的签字：%lu\n"
 
 #: g10/import.c:306
 #, c-format
 msgid "   new key revocations: %lu\n"
-msgstr "   nieuwe sleutelherroepingen: %lu\n"
+msgstr "    新的密钥吊销：%lu\n"
 
 #: g10/import.c:308
 #, c-format
 msgid "      secret keys read: %lu\n"
-msgstr "      gelezen geheime sleutels: %lu\n"
+msgstr "      读取的私钥：%lu\n"
 
 #: g10/import.c:310
 #, c-format
 msgid "  secret keys imported: %lu\n"
-msgstr "  ingevoerde geheime sleutels: %lu\n"
+msgstr "      导入的私钥：%lu\n"
 
 #: g10/import.c:312
 #, c-format
 msgid " secret keys unchanged: %lu\n"
-msgstr " ongewijzigde geheime sleutels: %lu\n"
+msgstr "    未改变的私钥：%lu\n"
 
 #: g10/import.c:314
 #, c-format
 msgid "          not imported: %lu\n"
-msgstr "          niet ingevoerd: %lu\n"
+msgstr "        未被导入：%lu\n"
 
 #: g10/import.c:599
 msgid "NOTE: Elgamal primary key detected - this may take some time to import\n"
-msgstr "LET OP: Elgamal primaire sleutel gevonden - het invoeren kan even duren\n"
+msgstr "注意：检测到 Elgamal 主钥——导入这把主钥可能会消耗一段时间\n"
 
 #: g10/import.c:613 g10/import.c:875
 #, c-format
 msgid "key %08lX: no user ID\n"
-msgstr "sleutel %08lX: gebruikerscode niet gevonden\n"
+msgstr "密钥 %08lX：没有用户标识\n"
 
 #: g10/import.c:634
 #, c-format
 msgid "key %08lX: HKP subkey corruption repaired\n"
-msgstr "sleutel %08lX: HKP-deelsleutel beschadiging gerepareerd\n"
+msgstr "密钥 %08lX：破损的 HKP 子钥已被修复\n"
 
 #: g10/import.c:649
 #, c-format
 msgid "key %08lX: accepted non self-signed user ID '%s'\n"
-msgstr "sleutel %08lX: niet-zelfondertekende gebruikerscode '%s' geaccepteerd\n"
+msgstr "密钥 %08lX：不含自身签字的用户标识‘%s’已被接受\n"
 
 #: g10/import.c:656
 #, c-format
 msgid "key %08lX: no valid user IDs\n"
-msgstr "sleutel %08lX: geen geldige gebruikerscodes\n"
+msgstr "密钥 %08lX：没有有效的用户标识\n"
 
 #: g10/import.c:658
 msgid "this may be caused by a missing self-signature\n"
-msgstr "dit is mogelijk veroorzaakt door een ontbrekende zelfondertekening\n"
+msgstr "这可能由遗失自身签字所致\n"
 
 #: g10/import.c:668 g10/import.c:955
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
-msgstr "sleutel %08lX: openbare sleutel niet gevonden: %s\n"
+msgstr "密钥 %08lX：找不到公钥：%s\n"
 
 #: g10/import.c:673
 #, c-format
 msgid "key %08lX: new key - skipped\n"
-msgstr "sleutel %08lX: nieuwe sleutel - overgeslagen\n"
+msgstr "密钥 %08lX：新密钥——已跳过\n"
 
 #: g10/import.c:683
 #, c-format
 msgid "no writable keyring found: %s\n"
-msgstr "geen schrijfbare sleutelbos gevonden: %s\n"
+msgstr "找不到可写的钥匙环：%s\n"
 
 #: g10/import.c:688 g10/sign.c:678 g10/sign.c:917 g10/openfile.c:254
 #, c-format
 msgid "writing to `%s'\n"
-msgstr "bezig met schrijven naar `%s'\n"
+msgstr "正在写入‘%s’\n"
 
 #: g10/import.c:691 g10/import.c:776 g10/import.c:902 g10/import.c:1015
 #, c-format
 msgid "error writing keyring `%s': %s\n"
-msgstr "fout bij schrijven sleutelbos `%s': %s\n"
+msgstr "写入钥匙环‘%s’时出错： %s\n"
 
 #: g10/import.c:708
 #, c-format
 msgid "key %08lX: public key \"%s\" imported\n"
-msgstr "sleutel %08lX: openbare sleutel \"%s\" ge茂mporteerd\n"
+msgstr "密钥 %08lX：公钥“%s”已导入\n"
 
 #: g10/import.c:730
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
-msgstr "sleutel %08lX: komt niet overeen met onze versie\n"
+msgstr "密钥 %08lX：与我们的副本不吻合\n"
 
 #: g10/import.c:747 g10/import.c:972
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
-msgstr "sleutel %08lX: kan oorspronkelijk sleutelblok niet vinden: %s\n"
+msgstr "密钥 %08lX：无法定位原始的密钥区块：%s\n"
 
 #: g10/import.c:754 g10/import.c:978
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
-msgstr "sleutel %08lX: kan oorspronkelijk sleutelblok niet lezen: %s\n"
+msgstr "密钥 %08lX：无法读取原始的密钥区块： %s\n"
 
 #: g10/import.c:785
 #, c-format
 msgid "key %08lX: \"%s\" 1 new user ID\n"
-msgstr "sleutel %08lX: \"%s\" 1 nieuwe gebruikerscode\n"
+msgstr "密钥 %08lX：“%s”一个新的用户标识\n"
 
 #: g10/import.c:788
 #, c-format
 msgid "key %08lX: \"%s\" %d new user IDs\n"
-msgstr "sleutel %08lX: \"%s\" %d nieuwe gebruikerscodes\n"
+msgstr "密钥 %08lX：“%s”%d 个新的用户标识\n"
 
 #: g10/import.c:791
 #, c-format
 msgid "key %08lX: \"%s\" 1 new signature\n"
-msgstr "sleutel %08lX: \"%s\" 1 nieuwe ondertekening\n"
+msgstr "密钥 %08lX：“%s”1 个新的签字\n"
 
 #: g10/import.c:794
 #, c-format
 msgid "key %08lX: \"%s\" %d new signatures\n"
-msgstr "sleutel %08lX: \"%s\" %d nieuwe ondertekeningen\n"
+msgstr "密钥 %08lX：“%s”%d 个新的签字\n"
 
 #: g10/import.c:797
 #, c-format
 msgid "key %08lX: \"%s\" 1 new subkey\n"
-msgstr "sleutel %08lX: \"%s\" 1 nieuwe deelsleutel\n"
+msgstr "密钥 %08lX：“%s”1 个新的子钥\n"
 
 #: g10/import.c:800
 #, c-format
 msgid "key %08lX: \"%s\" %d new subkeys\n"
-msgstr "sleutel %08lX: \"%s\" %d nieuwe deelsleutels\n"
+msgstr "密钥 %08lX：“%s”%d 个新的子钥\n"
 
 #: g10/import.c:819
 #, c-format
 msgid "key %08lX: \"%s\" not changed\n"
-msgstr "sleutel %08lX: \"%s\" niet gewijzigd\n"
+msgstr "密钥 %08lX：“%s”没有被改变\n"
 
 #: g10/import.c:881
 #, c-format
 msgid "key %08lX: secret key with invalid cipher %d - skipped\n"
-msgstr "sleutel %08lX: geheime sleutel met ongeldige codering %d - overgeslagen\n"
+msgstr "密钥 %08lX：私钥使用了无效的加密算法 %d——已跳过\n"
 
 #: g10/import.c:896
 #, c-format
 msgid "no default secret keyring: %s\n"
-msgstr "geen standaard geheime sleutelbos: %s\n"
+msgstr "没有默认的私钥钥匙环： %s\n"
 
 #: g10/import.c:907
 #, c-format
 msgid "key %08lX: secret key imported\n"
-msgstr "sleutel %08lX: geheime sleutel ge茂mporteerd\n"
+msgstr "密钥 %08lX：私钥已导入\n"
 
 #. we can't merge secret keys
 #: g10/import.c:913
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
-msgstr "sleutel %08lX: al in geheime sleutelbos\n"
+msgstr "密钥 %08lX：已在私钥钥匙环中了\n"
 
 #: g10/import.c:920
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
-msgstr "sleutel %08lX: geheime sleutel niet gevonden: %s\n"
+msgstr "密钥 %08lX：找不到私钥：%s\n"
 
 #: g10/import.c:949
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
-msgstr "sleutel %08lX: geen openbare sleutel - kan herroepingscertificaat niet toepassen\n"
+msgstr "密钥 %08lX：没有公钥——无法应用吊销证书\n"
 
 #: g10/import.c:989
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
-msgstr "sleutel %08lX: ongeldig herroepingscertificaat: %s - verworpen\n"
+msgstr "密钥 %08lX：无效的吊销证书：%s——拒绝\n"
 
 #: g10/import.c:1021
 #, c-format
 msgid "key %08lX: \"%s\" revocation certificate imported\n"
-msgstr "sleutel %08lX: \"%s\" herroepingscertificaat ge茂mporteerd\n"
+msgstr "密钥 %08lX：“%s”吊销证书已被导入\n"
 
 #: g10/import.c:1084
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
-msgstr "sleutel %08lX: geen gebruikerscode voor ondertekening\n"
+msgstr "密钥 %08lX：签字没有用户标识\n"
 
 #: g10/import.c:1097
 #, c-format
 msgid "key %08lX: unsupported public key algorithm on user id \"%s\"\n"
-msgstr "sleutel %08lX: niet-ondersteund openbare sleutel algoritme bij gebruikerscode \"%s\"\n"
+msgstr "密钥 %08lX：用户标识“%s”使用了不支持的公钥算法\n"
 
 #: g10/import.c:1099
 #, c-format
 msgid "key %08lX: invalid self-signature on user id \"%s\"\n"
-msgstr "sleutel %08lX: ongeldige zelfondertekening bij gebruikerscode \"%s\"\n"
+msgstr "密钥 %08lX：用户标识“%s”自身签字无效\n"
 
 #: g10/import.c:1114
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
-msgstr "sleutel %08lX: geen deelsleutel voor sleutelkoppeling\n"
+msgstr "密钥 %08lX：没有可供绑定的子钥\n"
 
 #: g10/import.c:1122 g10/import.c:1163
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
-msgstr "sleutel %08lX: niet-ondersteund openbare sleutel algoritme\n"
+msgstr "密钥 %08lX：不支持的公钥算法\n"
 
 #: g10/import.c:1123
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
-msgstr "sleutel %08lX: ongeldige deelsleutelkoppeling\n"
+msgstr "密钥 %08lX：无效的子钥绑定\n"
 
 #. Delete the last binding
 #. sig since this one is
@@ -2311,17 +2301,17 @@ msgstr "sleutel %08lX: ongeldige deelsleutelkoppeling\n"
 #: g10/import.c:1135
 #, c-format
 msgid "key %08lX: removed multiple subkey binding\n"
-msgstr "sleutel %08lX: meervoudige deelsleutelkoppeling verwijderd\n"
+msgstr "密钥 %08lX：多重子钥绑定已被删除\n"
 
 #: g10/import.c:1155
 #, c-format
 msgid "key %08lX: no subkey for key revocation\n"
-msgstr "sleutel %08lX: geen deelsleutel voor sleutelherroeping\n"
+msgstr "密钥 %08lX：没有用于密钥吊销的子钥\n"
 
 #: g10/import.c:1164
 #, c-format
 msgid "key %08lX: invalid subkey revocation\n"
-msgstr "sleutel %08lX: ongeldige deelsleutel herroeping\n"
+msgstr "密钥 %08lX：无效的子钥吊销\n"
 
 #. Delete the last revocation
 #. sig since this one is
@@ -2329,18 +2319,22 @@ msgstr "sleutel %08lX: ongeldige deelsleutel herroeping\n"
 #: g10/import.c:1175
 #, c-format
 msgid "key %08lX: removed multiple subkey revocation\n"
-msgstr "sleutel %08lX: meervoudige deelsleutel herroeping verwijderd\n"
+msgstr "密钥 %08lX：多重子钥吊销已删除\n"
 
 #: g10/import.c:1212
 #, c-format
 msgid "key %08lX: skipped user ID '"
-msgstr "sleutel %08lX: gebruikerscode overgeslagen '"
+msgstr "密钥 %08lX：已跳过用户标识‘"
 
 #: g10/import.c:1235
 #, c-format
 msgid "key %08lX: skipped subkey\n"
-msgstr "sleutel %08lX: deelsleutel overgeslagen\n"
+msgstr "密钥 %08lX：子钥已跳过\n"
 
+#  here we violate the rfc a bit by still allowing
+#  * to import non-exportable signature when we have the
+#  * the secret key used to create this signature - it
+#  * seems that this makes sense
 #. here we violate the rfc a bit by still allowing
 #. * to import non-exportable signature when we have the
 #. * the secret key used to create this signature - it
@@ -2348,114 +2342,114 @@ msgstr "sleutel %08lX: deelsleutel overgeslagen\n"
 #: g10/import.c:1261
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
-msgstr "sleutel %08lX: niet-uitvoerbare ondertekening (klasse %02x) - overgeslagen\n"
+msgstr "密钥 %08lX：不可导出的签字(等级 %02x)——已跳过\n"
 
 #: g10/import.c:1270
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
-msgstr "sleutel %08lX: herroepingscertificaat op verkeerde plek - overgeslagen\n"
+msgstr "密钥 %08lX：吊销证书位置错误——已跳过\n"
 
 #: g10/import.c:1287
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
-msgstr "sleutel %08lX: ongeldig herroepingscertificaat: %s - overgeslagen\n"
+msgstr "密钥 %08lX：无效的吊销证书：%s——已跳过\n"
 
 #: g10/import.c:1299
 #, c-format
 msgid "key %08lX: subkey signature in wrong place - skipped\n"
-msgstr "sleutel %08lX: deelsleutel ondertekening op verkeerde plek - overgeslagen\n"
+msgstr "密钥 %08lX：子钥签字位置错误——已跳过\n"
 
 #: g10/import.c:1307
 #, c-format
 msgid "key %08lX: unexpected signature class (0x%02X) - skipped\n"
-msgstr "sleutel %08lX: onverwachte ondertekeningsklasse (0x%02X) - overgeslagen\n"
+msgstr "密钥 %08lX：与预期不符的签字等级(0x%02X)——已跳过\n"
 
 #: g10/import.c:1405
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
-msgstr "sleutel %08lX: dubbele gebruikerscode gevonden - samengevoegd\n"
+msgstr "密钥 %08lX：检测到重复的用户标识——已合并\n"
 
 #: g10/import.c:1464
 #, c-format
 msgid "WARNING: key %08lX may be revoked: fetching revocation key %08lX\n"
-msgstr "WAARSCHUWING: sleutel %08lX kan herroepen zijn: herroepingssleutel %08lX wordt opgehaald\n"
+msgstr "警告：密钥 %08lX 可能被吊销了：正在取回吊销密钥 %08lX\n"
 
 #: g10/import.c:1478
 #, c-format
 msgid "WARNING: key %08lX may be revoked: revocation key %08lX not present.\n"
-msgstr "WAARSCHUWING: sleutel %08lX kan herroepen zijn: herroepingssleutel %08lX niet aanwezig.\n"
+msgstr "警告：密钥 %08lX 可能被吊销了：吊销密钥 %08lX 不存在。\n"
 
 #: g10/import.c:1535
 #, c-format
 msgid "key %08lX: \"%s\" revocation certificate added\n"
-msgstr "sleutel %08lX: \"%s\" herroepingscertificaat toegevoegd\n"
+msgstr "密钥 %08lX：已新增吊销证书“%s”\n"
 
 #: g10/import.c:1566
 #, c-format
 msgid "key %08lX: direct key signature added\n"
-msgstr "sleutel %08lX: directe sleutelondertekening toegevoegd\n"
+msgstr "密钥 %08lX：已新增直接密钥签字\n"
 
 #: g10/keyedit.c:149
 msgid "[revocation]"
-msgstr "[herroeping]"
+msgstr "[吊销]"
 
 #: g10/keyedit.c:150
 msgid "[self-signature]"
-msgstr "[zelfondertekening]"
+msgstr "[自身签字]"
 
 #: g10/keyedit.c:221 g10/keylist.c:148
 msgid "1 bad signature\n"
-msgstr "1 slechte ondertekening\n"
+msgstr "1 个损坏的签字\n"
 
 #: g10/keyedit.c:223 g10/keylist.c:150
 #, c-format
 msgid "%d bad signatures\n"
-msgstr "%d slechte ondertekeningen\n"
+msgstr "%d 个损坏的签字\n"
 
 #: g10/keyedit.c:225 g10/keylist.c:152
 msgid "1 signature not checked due to a missing key\n"
-msgstr "1 ondertekening niet gecontroleerd vanwege een ontbrekende sleutel\n"
+msgstr "有 1 份签字因为遗失密钥而未被检查\n"
 
 #: g10/keyedit.c:227 g10/keylist.c:154
 #, c-format
 msgid "%d signatures not checked due to missing keys\n"
-msgstr "%d ondertekeningen niet gecontroleerd vanwege ontbrekende sleutels\n"
+msgstr "有 %d 份签字因为遗失密钥而未被检查\n"
 
 #: g10/keyedit.c:229 g10/keylist.c:156
 msgid "1 signature not checked due to an error\n"
-msgstr "1 ondertekening niet gecontroleerd vanwege een fout\n"
+msgstr "有 1 份签字因为某个错误而未被检查\n"
 
 #: g10/keyedit.c:231 g10/keylist.c:158
 #, c-format
 msgid "%d signatures not checked due to errors\n"
-msgstr "%d ondertekeningen niet gecontroleerd vanwege fouten\n"
+msgstr "有 %d 份签字因为某些错误而未被检查\n"
 
 #: g10/keyedit.c:233
 msgid "1 user ID without valid self-signature detected\n"
-msgstr "1 gebruikerscode zonder geldige zelfondertekening gevonden\n"
+msgstr "检测到 1 个没有有效自身签字的用户标识\n"
 
 #: g10/keyedit.c:235
 #, c-format
 msgid "%d user IDs without valid self-signatures detected\n"
-msgstr "%d gebruikerscodes zonder geldige zelfondertekening gevonden\n"
+msgstr "检测到 %d 个没有有效自身签字的用户标识\n"
 
 #: g10/keyedit.c:362
 #, c-format
 msgid "User ID \"%s\" is revoked."
-msgstr "Gebruikerscode \"%s\" is herroepen."
+msgstr "用户标识“%s”已被吊销。"
 
 #: g10/keyedit.c:369 g10/keyedit.c:524 g10/keyedit.c:582 g10/keyedit.c:1182
 msgid "Are you sure you still want to sign it? (y/N) "
-msgstr "Weet u zeker dat u deze toch wilt ondertekenen? (j/N) "
+msgstr "您仍然想要为它签字吗？(y/N)"
 
 #: g10/keyedit.c:377 g10/keyedit.c:530 g10/keyedit.c:1188
 msgid "  Unable to sign.\n"
-msgstr "  Kan niet ondertekenen.\n"
+msgstr "  无法添加签字。\n"
 
 #: g10/keyedit.c:382
 #, c-format
 msgid "WARNING: user ID \"%s\" is not self-signed.\n"
-msgstr "WAARSCHUWING: gebruikerscode \"%s\" is niet zelfondertekend.\n"
+msgstr "警告：用户标识“%s”不含自身签字。\n"
 
 #: g10/keyedit.c:401
 #, c-format
@@ -2463,12 +2457,12 @@ msgid ""
 "The self-signature on \"%s\"\n"
 "is a PGP 2.x-style signature.\n"
 msgstr ""
-"De zelfondertekening op \"%s\"\n"
-"is een PGP 2.x-stijl ondertekening.\n"
+"“%s”里的自身签字\n"
+"是 PGP 2.x 样式的签字。\n"
 
 #: g10/keyedit.c:410
 msgid "Do you want to promote it to an OpenPGP self-signature? (y/N) "
-msgstr "Wilt u deze promoveren tot een OpenPGP zelfondertekening? (j/N) "
+msgstr "您是否想要将它升级成 OpenPGP 的自身签字？(y/N)"
 
 #: g10/keyedit.c:424
 #, c-format
@@ -2476,12 +2470,12 @@ msgid ""
 "Your current signature on \"%s\"\n"
 "has expired.\n"
 msgstr ""
-"Uw huidige ondertekening van \"%s\"\n"
-"is verlopen.\n"
+"您目前为“%s”的签字\n"
+"已经过期了。\n"
 
 #: g10/keyedit.c:428
 msgid "Do you want to issue a new signature to replace the expired one? (y/N) "
-msgstr "Wilt u een nieuwe ondertekening plaatsen om de oude te vervangen? (j/N) "
+msgstr "您想要发布一份新的签字来取代已过期的那一个吗？(y/N)"
 
 #. It's a local sig, and we want to make a
 #. exportable sig.
@@ -2491,92 +2485,92 @@ msgid ""
 "Your current signature on \"%s\"\n"
 "is a local signature.\n"
 msgstr ""
-"Uw huidige ondertekening van \"%s\"\n"
-"is een lokale ondertekening.\n"
+"您目前在“%s”的签字\n"
+"是一份本地签字。\n"
 
 #: g10/keyedit.c:453
 msgid "Do you want to promote it to a full exportable signature? (y/N) "
-msgstr "WIlt u deze promoveren tot een volledig uitvoerbare ondertekening? (j/N) "
+msgstr "您是否想要把他升级成可以完全导出的签字？(y/N)"
 
 #: g10/keyedit.c:474
 #, c-format
 msgid "\"%s\" was already locally signed by key %08lX\n"
-msgstr "\"%s\" was al lokaal ondertekend met sleutel %08lX\n"
+msgstr "“%s”已经密钥 %08lX 在本地签字\n"
 
 #: g10/keyedit.c:478
 #, c-format
 msgid "\"%s\" was already signed by key %08lX\n"
-msgstr "\"%s\" was al ondertekend met sleutel %08lX\n"
+msgstr "“%s”已经密钥 %08lX 签字\n"
 
 #: g10/keyedit.c:483
 msgid "Do you want to sign it again anyway? (y/N) "
-msgstr "Wilt u deze toch ondertekenen? (j/N) "
+msgstr "您仍然想要为它再次签字吗？(y/N)"
 
 #: g10/keyedit.c:503
 #, c-format
 msgid "Nothing to sign with key %08lX\n"
-msgstr "Niets te ondertekenen bij sleutel %08lX\n"
+msgstr "没有东西可以让密钥 %08lX 签字\n"
 
 #: g10/keyedit.c:518
 msgid "This key has expired!"
-msgstr "Deze sleutel is verlopen!"
+msgstr "这把密钥已经过期！"
 
 #: g10/keyedit.c:538
 #, c-format
 msgid "This key is due to expire on %s.\n"
-msgstr "Deze sleutel zal verlopen op %s.\n"
+msgstr "这把密钥将在 %s 过期。\n"
 
 #: g10/keyedit.c:542
 msgid "Do you want your signature to expire at the same time? (Y/n) "
-msgstr "Wilt u dat uw ondertekening op hetzelfde moment verloopt? (J/n) "
+msgstr "您想要让您的签字也同时过期吗？ (Y/n) "
 
 #: g10/keyedit.c:575
 msgid "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 mode.\n"
-msgstr "U kunt geen OpenPGP-ondertekening maken van een PGP 2.x sleutel in --pgp2 modus.\n"
+msgstr "您不能在 --pgp2 模式下，用 PGP 2.x 密钥生成 OpenPGP 签字。\n"
 
 #: g10/keyedit.c:577
 msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "Dit zou de sleutel onbruikbaar maken in PGP 2.x.\n"
+msgstr "这会让这把密钥在 PGP 2.x 模式下不可使用。\n"
 
 #: g10/keyedit.c:600
 msgid ""
 "How carefully have you verified the key you are about to sign actually belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
 msgstr ""
-"Hoe nauwkeurig heeft u gecontroleerd dat de sleutel die u nu ondertekent echt\n"
-"is van de bovengenoemde persoon?  Als u geen antwoord weet, kies \"0\".\n"
+"您有多么谨慎地检查过正要签字的密钥是否确实属于以上它声称的所有者呢？\n"
+"如果您不知道这个问题的答案，请输入“0”。\n"
 
 #: g10/keyedit.c:604
 #, c-format
 msgid "   (0) I will not answer.%s\n"
-msgstr "   (0) Ik geef geen antwoord.%s\n"
+msgstr "   (0) 我不作答。 %s\n"
 
 #: g10/keyedit.c:605 g10/keyedit.c:607 g10/keyedit.c:609 g10/keyedit.c:611
 msgid " (default)"
-msgstr " (standaard)"
+msgstr " (默认)"
 
 #: g10/keyedit.c:606
 #, c-format
 msgid "   (1) I have not checked at all.%s\n"
-msgstr "   (1) Ik heb helemaal niet gecontroleerd.%s\n"
+msgstr "   (1) 我根本没有检查过。 %s\n"
 
 #: g10/keyedit.c:608
 #, c-format
 msgid "   (2) I have done casual checking.%s\n"
-msgstr "   (2) Ik heb nonchalant gecontroleerd.%s\n"
+msgstr "   (2) 我随意检查过。 %s\n"
 
 #: g10/keyedit.c:610
 #, c-format
 msgid "   (3) I have done very careful checking.%s\n"
-msgstr "   (3) Ik heb heel nauwkeurig gecontroleerd.%s\n"
+msgstr "   (3) 我非常小心地检查过。 %s\n"
 
 #: g10/keyedit.c:635
 msgid ""
 "Are you really sure that you want to sign this key\n"
 "with your key: \""
 msgstr ""
-"Weet u zeker dat u deze sleutel wilt ondertekenen\n"
-"met uw sleutel: \""
+"您真的确定要签字这把密钥\n"
+"使用您的密钥：\""
 
 #: g10/keyedit.c:644
 msgid ""
@@ -2584,7 +2578,7 @@ msgid ""
 "This will be a self-signature.\n"
 msgstr ""
 "\n"
-"Dit zal een zelfondertekening zijn.\n"
+"这将会是自身签字。\n"
 
 #: g10/keyedit.c:648
 msgid ""
@@ -2592,7 +2586,7 @@ msgid ""
 "WARNING: the signature will not be marked as non-exportable.\n"
 msgstr ""
 "\n"
-"WAARSCHUWING: de ondertekening zal niet worden gemarkeerd als niet-uitvoerbaar.\n"
+"警告：这份签字不会被标记为不可导出。\n"
 
 #: g10/keyedit.c:653
 msgid ""
@@ -2600,7 +2594,7 @@ msgid ""
 "WARNING: the signature will not be marked as non-revocable.\n"
 msgstr ""
 "\n"
-"WAARSCHUWING: de ondertekening zal niet worden gemarkeerd als niet-herroepbaar.\n"
+"警告：这份签字不会被标记成不可吊销。\n"
 
 #: g10/keyedit.c:660
 msgid ""
@@ -2608,7 +2602,7 @@ msgid ""
 "The signature will be marked as non-exportable.\n"
 msgstr ""
 "\n"
-"De ondertekening zal worden gemarkeerd als niet-uitvoerbaar.\n"
+"这份签字会被标记成不可导出。\n"
 
 #: g10/keyedit.c:664
 msgid ""
@@ -2616,7 +2610,7 @@ msgid ""
 "The signature will be marked as non-revocable.\n"
 msgstr ""
 "\n"
-"De ondertekening zal worden gemarkeerd als niet-herroepbaar.\n"
+"这份签字会被标记成不可吊销。\n"
 
 #: g10/keyedit.c:669
 msgid ""
@@ -2624,7 +2618,7 @@ msgid ""
 "I have not checked this key at all.\n"
 msgstr ""
 "\n"
-"Ik heb deze sleutel helemaal niet gecontroleerd.\n"
+"我根本没有检查过这把密钥。\n"
 
 #: g10/keyedit.c:673
 msgid ""
@@ -2632,7 +2626,7 @@ msgid ""
 "I have checked this key casually.\n"
 msgstr ""
 "\n"
-"Ik heb deze sleutel nonchalant gecontroleerd.\n"
+"我随意检查过这把密钥。\n"
 
 #: g10/keyedit.c:677
 msgid ""
@@ -2640,41 +2634,41 @@ msgid ""
 "I have checked this key very carefully.\n"
 msgstr ""
 "\n"
-"Ik heb deze sleutel heel nauwkeurig gecontroleerd.\n"
+"我非常小心地检查过这把密钥。\n"
 
 #: g10/keyedit.c:686
 msgid "Really sign? "
-msgstr "Echt ondertekenen? "
+msgstr "真的要签字吗？ "
 
 #: g10/keyedit.c:728 g10/keyedit.c:3185 g10/keyedit.c:3276 g10/keyedit.c:3349
 #: g10/sign.c:312
 #, c-format
 msgid "signing failed: %s\n"
-msgstr "ondertekenen mislukt: %s\n"
+msgstr "签字时失败： %s\n"
 
 #: g10/keyedit.c:784
 msgid "This key is not protected.\n"
-msgstr "Deze sleutel is niet beschermd.\n"
+msgstr "这把密钥没有被保护。\n"
 
 #: g10/keyedit.c:788
 msgid "Secret parts of primary key are not available.\n"
-msgstr "Geheime delen van primaire sleutel zijn niet beschikbaar.\n"
+msgstr "主钥的私钥部分无法取用。\n"
 
 #: g10/keyedit.c:792
 msgid "Key is protected.\n"
-msgstr "Sleutel is beschermd.\n"
+msgstr "密钥被保护了。\n"
 
 #: g10/keyedit.c:812
 #, c-format
 msgid "Can't edit this key: %s\n"
-msgstr "Kan deze sleutel niet bewerken: %s\n"
+msgstr "无法编辑这把密钥： %s\n"
 
 #: g10/keyedit.c:818
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
 msgstr ""
-"Geef het nieuwe wachtwoord voor deze geheime sleutel.\n"
+"输入要给这把私钥用的新密码。\n"
 "\n"
 
 #: g10/keyedit.c:832
@@ -2682,20 +2676,20 @@ msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
 msgstr ""
-"U wilt geen wachtwoord - dit is waarschijnlijk een *slecht* idee!\n"
+"您不想要用密码——这大概是个坏主意！\n"
 "\n"
 
 #: g10/keyedit.c:835
 msgid "Do you really want to do this? "
-msgstr "Wilt u dit echt doen? "
+msgstr "您真的想要这么做吗？ "
 
 #: g10/keyedit.c:899
 msgid "moving a key signature to the correct place\n"
-msgstr "een sleutelondertekening wordt naar de juiste plek verplaatst\n"
+msgstr "正在把密钥的签字移动到正确的位置去\n"
 
 #: g10/keyedit.c:941
 msgid "quit this menu"
-msgstr "dit menu verlaten"
+msgstr "离开这个菜单"
 
 #: g10/keyedit.c:942
 msgid "q"
@@ -2707,7 +2701,7 @@ msgstr "save"
 
 #: g10/keyedit.c:943
 msgid "save and quit"
-msgstr "opslaan en afsluiten"
+msgstr "保存并离开"
 
 #: g10/keyedit.c:944
 msgid "help"
@@ -2715,7 +2709,7 @@ msgstr "help"
 
 #: g10/keyedit.c:944
 msgid "show this help"
-msgstr "deze hulp weergeven"
+msgstr "显示这份在线说明"
 
 #: g10/keyedit.c:946
 msgid "fpr"
@@ -2723,7 +2717,7 @@ msgstr "fpr"
 
 #: g10/keyedit.c:946
 msgid "show fingerprint"
-msgstr "vingerafdruk weergeven"
+msgstr "显示指纹"
 
 #: g10/keyedit.c:947
 msgid "list"
@@ -2731,7 +2725,7 @@ msgstr "list"
 
 #: g10/keyedit.c:947
 msgid "list key and user IDs"
-msgstr "sleutel en gebruikerscodes opsommen"
+msgstr "列出密钥和用户标识"
 
 #: g10/keyedit.c:948
 msgid "l"
@@ -2743,7 +2737,7 @@ msgstr "uid"
 
 #: g10/keyedit.c:949
 msgid "select user ID N"
-msgstr "gebruikerscode N selecteren"
+msgstr "选择用户标识N"
 
 #: g10/keyedit.c:950
 msgid "key"
@@ -2751,7 +2745,7 @@ msgstr "key"
 
 #: g10/keyedit.c:950
 msgid "select secondary key N"
-msgstr "secundaire sleutel N kiezen"
+msgstr "选择子钥 N"
 
 #: g10/keyedit.c:951
 msgid "check"
@@ -2759,7 +2753,7 @@ msgstr "check"
 
 #: g10/keyedit.c:951
 msgid "list signatures"
-msgstr "ondertekeningen opsommen"
+msgstr "列出签字"
 
 #: g10/keyedit.c:952
 msgid "c"
@@ -2771,7 +2765,7 @@ msgstr "sign"
 
 #: g10/keyedit.c:953
 msgid "sign the key"
-msgstr "de sleutel ondertekenen"
+msgstr "为密钥添加签字"
 
 #: g10/keyedit.c:954
 msgid "s"
@@ -2783,7 +2777,7 @@ msgstr "lsign"
 
 #: g10/keyedit.c:955
 msgid "sign the key locally"
-msgstr "de sleutel lokaal ondertekenen"
+msgstr "为密钥添加本地签字"
 
 #: g10/keyedit.c:956
 msgid "nrsign"
@@ -2791,7 +2785,7 @@ msgstr "nrsign"
 
 #: g10/keyedit.c:956
 msgid "sign the key non-revocably"
-msgstr "de sleutel niet-herroepbaar ondertekenen"
+msgstr "为密钥添加不可吊销签字"
 
 #: g10/keyedit.c:957
 msgid "nrlsign"
@@ -2799,7 +2793,7 @@ msgstr "nrlsign"
 
 #: g10/keyedit.c:957
 msgid "sign the key locally and non-revocably"
-msgstr "de sleutel lokaal en niet-herroepbaar ondertekenen"
+msgstr "为密钥添加不可吊销的本地签字"
 
 #: g10/keyedit.c:958
 msgid "debug"
@@ -2811,7 +2805,7 @@ msgstr "adduid"
 
 #: g10/keyedit.c:959
 msgid "add a user ID"
-msgstr "een gebruikerscode toevoegen"
+msgstr "增加一个用户标识"
 
 #: g10/keyedit.c:960
 msgid "addphoto"
@@ -2819,7 +2813,7 @@ msgstr "addphoto"
 
 #: g10/keyedit.c:960
 msgid "add a photo ID"
-msgstr "een foto ID toevoegen"
+msgstr "增加一个照片标识"
 
 #: g10/keyedit.c:961
 msgid "deluid"
@@ -2827,7 +2821,7 @@ msgstr "deluid"
 
 #: g10/keyedit.c:961
 msgid "delete user ID"
-msgstr "gebruikerscode verwijderen"
+msgstr "删除一个用户/照片标识"
 
 #. delphoto is really deluid in disguise
 #: g10/keyedit.c:963
@@ -2840,7 +2834,7 @@ msgstr "addkey"
 
 #: g10/keyedit.c:964
 msgid "add a secondary key"
-msgstr "een secundaire sleutel toevoegen"
+msgstr "增加一把子钥"
 
 #: g10/keyedit.c:965
 msgid "delkey"
@@ -2848,7 +2842,7 @@ msgstr "delkey"
 
 #: g10/keyedit.c:965
 msgid "delete a secondary key"
-msgstr "een secundaire sleutel verwijderen"
+msgstr "删除一把子钥"
 
 #: g10/keyedit.c:966
 msgid "addrevoker"
@@ -2856,7 +2850,7 @@ msgstr "addrevoker"
 
 #: g10/keyedit.c:966
 msgid "add a revocation key"
-msgstr "een herroepingssleutel toevoegen"
+msgstr "增加一把吊销密钥"
 
 #: g10/keyedit.c:967
 msgid "delsig"
@@ -2864,7 +2858,7 @@ msgstr "delsig"
 
 #: g10/keyedit.c:967
 msgid "delete signatures"
-msgstr "ondertekeningen verwijderen"
+msgstr "删除签字"
 
 #: g10/keyedit.c:968
 msgid "expire"
@@ -2872,7 +2866,7 @@ msgstr "expire"
 
 #: g10/keyedit.c:968
 msgid "change the expire date"
-msgstr "de verloopdatum wijzigen"
+msgstr "更改使用期限"
 
 #: g10/keyedit.c:969
 msgid "primary"
@@ -2880,7 +2874,7 @@ msgstr "primary"
 
 #: g10/keyedit.c:969
 msgid "flag user ID as primary"
-msgstr "gebruikerscode als primair markeren"
+msgstr "设定首选用户标识"
 
 #: g10/keyedit.c:970
 msgid "toggle"
@@ -2888,7 +2882,7 @@ msgstr "toggle"
 
 #: g10/keyedit.c:970
 msgid "toggle between secret and public key listing"
-msgstr "overschakelen tussen geheime en openbare sleutellijst"
+msgstr "在私钥和公钥清单间切换"
 
 #: g10/keyedit.c:972
 msgid "t"
@@ -2900,7 +2894,7 @@ msgstr "pref"
 
 #: g10/keyedit.c:973
 msgid "list preferences (expert)"
-msgstr "lijst voorkeuren (ervaren gebruiker)"
+msgstr "列出首选项(专家模式)"
 
 #: g10/keyedit.c:974
 msgid "showpref"
@@ -2908,7 +2902,7 @@ msgstr "showpref"
 
 #: g10/keyedit.c:974
 msgid "list preferences (verbose)"
-msgstr "lijst voorkeuren (breedsprakig)"
+msgstr "列出首选项(详细模式)"
 
 #: g10/keyedit.c:975
 msgid "setpref"
@@ -2916,7 +2910,7 @@ msgstr "setpref"
 
 #: g10/keyedit.c:975
 msgid "set preference list"
-msgstr "voorkeurenlijst instellen"
+msgstr "设定首选项"
 
 #: g10/keyedit.c:976
 msgid "updpref"
@@ -2924,7 +2918,7 @@ msgstr "updpref"
 
 #: g10/keyedit.c:976
 msgid "updated preferences"
-msgstr "voorkeuren bijgewerkt"
+msgstr "更新过的首选项"
 
 #: g10/keyedit.c:977
 msgid "passwd"
@@ -2932,7 +2926,7 @@ msgstr "passwd"
 
 #: g10/keyedit.c:977
 msgid "change the passphrase"
-msgstr "het wachtwoord wijzigen"
+msgstr "更改密码"
 
 #: g10/keyedit.c:978
 msgid "trust"
@@ -2940,7 +2934,7 @@ msgstr "trust"
 
 #: g10/keyedit.c:978
 msgid "change the ownertrust"
-msgstr "het eigenaarsvertrouwen wijzigen"
+msgstr "更改信任度"
 
 #: g10/keyedit.c:979
 msgid "revsig"
@@ -2948,7 +2942,7 @@ msgstr "revsig"
 
 #: g10/keyedit.c:979
 msgid "revoke signatures"
-msgstr "ondertekeningen herroepen"
+msgstr "吊销签字"
 
 #: g10/keyedit.c:980
 msgid "revuid"
@@ -2956,7 +2950,7 @@ msgstr "revuid"
 
 #: g10/keyedit.c:980
 msgid "revoke a user ID"
-msgstr "een gebruikerscode herroepen"
+msgstr "吊销一个用户标识"
 
 #: g10/keyedit.c:981
 msgid "revkey"
@@ -2964,7 +2958,7 @@ msgstr "revkey"
 
 #: g10/keyedit.c:981
 msgid "revoke a secondary key"
-msgstr "een secundaire sleutel herroepen"
+msgstr "吊销一把子钥"
 
 #: g10/keyedit.c:982
 msgid "disable"
@@ -2972,7 +2966,7 @@ msgstr "disable"
 
 #: g10/keyedit.c:982
 msgid "disable a key"
-msgstr "een sleutel uit zetten"
+msgstr "禁用一把密钥"
 
 #: g10/keyedit.c:983
 msgid "enable"
@@ -2980,7 +2974,7 @@ msgstr "enable"
 
 #: g10/keyedit.c:983
 msgid "enable a key"
-msgstr "een sleutel aan zetten"
+msgstr "启用一把密钥"
 
 #: g10/keyedit.c:984
 msgid "showphoto"
@@ -2988,322 +2982,325 @@ msgstr "showphoto"
 
 #: g10/keyedit.c:984
 msgid "show photo ID"
-msgstr "foto ID weergeven"
+msgstr "显示照片标识"
 
 #: g10/keyedit.c:1004 g10/delkey.c:119
 msgid "can't do that in batchmode\n"
-msgstr "dat kan niet in batch-modus\n"
+msgstr "该操作无法在批处理模式中进行\n"
 
 #: g10/keyedit.c:1042
 #, c-format
 msgid "error reading secret keyblock `%s': %s\n"
-msgstr "fout bij lezen geheim sleutelblok `%s': %s\n"
+msgstr "读取密钥区块‘%s’时出错：%s\n"
 
 #: g10/keyedit.c:1060
 msgid "Secret key is available.\n"
-msgstr "Geheime sleutel is beschikbaar.\n"
+msgstr "私钥可用。\n"
 
 #: g10/keyedit.c:1091
 msgid "Command> "
-msgstr "Opdracht> "
+msgstr "命令> "
 
 #: g10/keyedit.c:1123
 msgid "Need the secret key to do this.\n"
-msgstr "De geheime sleutel is nodig om dit te doen.\n"
+msgstr "要有私钥才能这么做。\n"
 
 #: g10/keyedit.c:1127
 msgid "Please use the command \"toggle\" first.\n"
-msgstr "Gebruik alstublieft eerst de \"toggle\" opdracht.\n"
+msgstr "请先使用“toggle”指令。\n"
 
 #: g10/keyedit.c:1176
 msgid "Key is revoked."
-msgstr "Sleutel is herroepen."
+msgstr "密钥已被吊销。"
 
 #: g10/keyedit.c:1195
 msgid "Really sign all user IDs? "
-msgstr "Echt alle gebruikerscodes ondertekenen? "
+msgstr "真的为所有的用户标识签字吗？ "
 
 #: g10/keyedit.c:1196
 msgid "Hint: Select the user IDs to sign\n"
-msgstr "Tip: Selecteer de gebruikerscodes om te ondertekenen\n"
+msgstr "提示：选择要添加签字的用户标识\n"
 
 #: g10/keyedit.c:1221
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
-msgstr "Deze opdracht is niet toegestaan in %s modus.\n"
+msgstr "在 %s 模式中不允许使用这个指令。\n"
 
 #: g10/keyedit.c:1241 g10/keyedit.c:1262 g10/keyedit.c:1322
 msgid "You must select at least one user ID.\n"
-msgstr "U dient tenminste 茅茅n gebruikerscode te selecteren.\n"
+msgstr "您至少得选择一个用户标识。\n"
 
 #: g10/keyedit.c:1243
 msgid "You can't delete the last user ID!\n"
-msgstr "U kunt niet de laatste gebruikerscode verwijderen!\n"
+msgstr "您不能删除最后一个用户标识！\n"
 
 #: g10/keyedit.c:1246
 msgid "Really remove all selected user IDs? "
-msgstr "Echt alle geselecteerde gebruikerscodes verwijderen? "
+msgstr "真的要删除所有被选择的用户标识吗？ "
 
 #: g10/keyedit.c:1247
 msgid "Really remove this user ID? "
-msgstr "Echt deze gebruikerscode verwijderen? "
+msgstr "真的要删除这个用户标识吗？ "
 
 #: g10/keyedit.c:1285 g10/keyedit.c:1341
 msgid "You must select at least one key.\n"
-msgstr "U dient tenminste 茅茅n sleutel te selecteren.\n"
+msgstr "您必须选择至少一把密钥。\n"
 
 #: g10/keyedit.c:1289
 msgid "Do you really want to delete the selected keys? "
-msgstr "Wilt u echt de geselecteerde sleutels verwijderen? "
+msgstr "您真的想要删除被选择的密钥吗？ "
 
 #: g10/keyedit.c:1290
 msgid "Do you really want to delete this key? "
-msgstr "Wilt u echt deze sleutel verwijderen? "
+msgstr "您真的要删除这把密钥吗？ "
 
 #: g10/keyedit.c:1325
 msgid "Really revoke all selected user IDs? "
-msgstr "Echt alle geselecteerde gebruikerscodes herroepen? "
+msgstr "真的要吊销所有被选择的用户标识吗？ "
 
 #: g10/keyedit.c:1326
 msgid "Really revoke this user ID? "
-msgstr "Echt deze gebruikerscode herroepen? "
+msgstr "真的要吊销这个用户标识吗？ "
 
 #: g10/keyedit.c:1345
 msgid "Do you really want to revoke the selected keys? "
-msgstr "Wilt u echt de geselecteerde sleutels herroepen? "
+msgstr "您真的想要吊销这些被选择的密钥吗？ "
 
 #: g10/keyedit.c:1346
 msgid "Do you really want to revoke this key? "
-msgstr "Wilt u echt deze sleutel herroepen? "
+msgstr "您真的想要吊销这把密钥吗？ "
 
 #: g10/keyedit.c:1415
 msgid "Really update the preferences for the selected user IDs? "
-msgstr "Echt de voorkeuren bijwerken voor de geselecteerde gebruikerscodes? "
+msgstr "真的要更新被选择用户标识的首选项吗？ "
 
 #: g10/keyedit.c:1417
 msgid "Really update the preferences? "
-msgstr "Echt de voorkeuren bijwerken? "
+msgstr "真的要更新首选项吗？ "
 
 #: g10/keyedit.c:1455
 msgid "Save changes? "
-msgstr "Wijzigingen opslaan? "
+msgstr "要保存变动吗？ "
 
 #: g10/keyedit.c:1458
 msgid "Quit without saving? "
-msgstr "Afsluiten zonder op te slaan? "
+msgstr "要不保存而离开吗？ "
 
 #: g10/keyedit.c:1469
 #, c-format
 msgid "update failed: %s\n"
-msgstr "bijwerken mislukt: %s\n"
+msgstr "更新失败：%s\n"
 
 #: g10/keyedit.c:1476
 #, c-format
 msgid "update secret failed: %s\n"
-msgstr "bijwerken geheim mislukt: %s\n"
+msgstr "更新私钥失败：%s\n"
 
 #: g10/keyedit.c:1483
 msgid "Key not changed so no update needed.\n"
-msgstr "Sleutel niet gewijzigd dus bijwerken niet nodig.\n"
+msgstr "密钥没有变动所以不需要更新。\n"
 
 #: g10/keyedit.c:1495
 msgid "Invalid command  (try \"help\")\n"
-msgstr "Ongeldige opdracht (probeer \"hulp\")\n"
+msgstr "无效的指令(尝试“help”)\n"
 
 #: g10/keyedit.c:1554
 msgid "Digest: "
-msgstr "Samenvatting: "
+msgstr "散列："
 
 #: g10/keyedit.c:1606
 msgid "Features: "
-msgstr "Mogelijkheden: "
+msgstr "特点："
 
 #: g10/keyedit.c:1843
 #, c-format
 msgid "This key may be revoked by %s key "
-msgstr "Deze sleutel is mogelijk herroepen door sleutel %s "
+msgstr "这把密钥可被此 %s 密钥吊销："
 
 #: g10/keyedit.c:1847
 msgid " (sensitive)"
-msgstr " (gevoelig)"
+msgstr " (敏感的)"
 
 #. Note, we use the same format string as in other show
 #. functions to make the translation job easier.
 #: g10/keyedit.c:1853 g10/keyedit.c:1879 g10/keyedit.c:1964 g10/keyedit.c:1979
 #, c-format
 msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
-msgstr "%s%c %4u%c/%08lX  gemaakt: %s verloopt: %s"
+msgstr "%s%c %4u%c/%08lX 生成于：%s 有效至：%s"
 
 #: g10/keyedit.c:1862
 #, c-format
 msgid " trust: %c/%c"
-msgstr " vertrouwen: %c/%c"
+msgstr " 信任度： %c/%c"
 
 #: g10/keyedit.c:1866
 msgid "This key has been disabled"
-msgstr "Deze sleutel is uit gezet"
+msgstr "这把密钥已经被禁用"
 
 #: g10/keyedit.c:1895
 #, c-format
 msgid "rev! subkey has been revoked: %s\n"
-msgstr "herroepen! deelsleutel is herroepen: %s\n"
+msgstr "rev! 子钥已经被吊销：%s\n"
 
 #: g10/keyedit.c:1898
 msgid "rev- faked revocation found\n"
-msgstr "herroepen- vervalste herroeping gevonden\n"
+msgstr "rev- 发现伪造的吊销\n"
 
 #: g10/keyedit.c:1900
 #, c-format
 msgid "rev? problem checking revocation: %s\n"
-msgstr "herroepen? probleem bij controleren herroeping: %s\n"
+msgstr "rev? 检查吊销时发生问题：%s\n"
 
 #: g10/keyedit.c:1920
 msgid "[revoked] "
-msgstr "[herroepen] "
+msgstr "[已吊销]"
 
 #: g10/keyedit.c:1922
 msgid "[expired] "
-msgstr "[verlopen] "
+msgstr "[已过期]"
 
 #: g10/keyedit.c:1930
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
-msgstr "Er zijn geen voorkeuren op een PGP 2.x stijl gebruikerscode.\n"
+msgstr "PGP 2.x 样式的用户标识没有首选项。\n"
 
 #: g10/keyedit.c:1938
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
 msgstr ""
-"Let er alstublieft op dat de weergegeven sleutelgeldigheid niet per s茅 juist\n"
-"is tenzij u het programma opnieuw start.\n"
+"请注意，在您重启程序之前，\n"
+"显示的密钥有效性未必正确，\n"
 
 #: g10/keyedit.c:2095
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
-"WAARSCHUWING: Dit is een PGP2-stijl sleutel.  Het toevoegen van een foto ID kan\n"
-"         zorgen dat sommige versies van PGP deze sleutel verwerpen.\n"
+"警告：这是一把 PGP2 样式的密钥。\n"
+"      增加照片标识可能会导致某些版本的 PGP 不能识别这把密钥。\n"
 
 #: g10/keyedit.c:2100 g10/keyedit.c:2373
 msgid "Are you sure you still want to add it? (y/N) "
-msgstr "Weet u zeker dat u deze toch wilt toevoegen? (j/N) "
+msgstr "您确定仍然想要增加吗？(y/N)"
 
 #: g10/keyedit.c:2106
 msgid "You may not add a photo ID to a PGP2-style key.\n"
-msgstr "U kunt geen foto ID toevoegen aan een PGP2 stijl sleutel.\n"
+msgstr "您不可以把照片标识增加到 PGP2 样式的密钥里。\n"
 
 #: g10/keyedit.c:2241
 msgid "Delete this good signature? (y/N/q)"
-msgstr "Deze goede ondertekening verwijderen? (j/N/q)"
+msgstr "删除这个完好的签字吗？(y/N/q)"
 
 #: g10/keyedit.c:2251
 msgid "Delete this invalid signature? (y/N/q)"
-msgstr "Deze ongeldige ondertekening verwijderen? (j/N/q)"
+msgstr "删除这个无效的签字吗？(y/N/q)"
 
 #: g10/keyedit.c:2255
 msgid "Delete this unknown signature? (y/N/q)"
-msgstr "Deze onbekende ondertekening verwijderen? (j/N/q)"
+msgstr "删除这个未知的签字吗？(y/N/q)"
 
 #: g10/keyedit.c:2261
 msgid "Really delete this self-signature? (y/N)"
-msgstr "Echt deze zelfondertekening verwijderen? (j/N)"
+msgstr "真的要删除这个自身签字吗？(y/N)"
 
 #: g10/keyedit.c:2275
 #, c-format
 msgid "Deleted %d signature.\n"
-msgstr "%d ondertekening verwijderd.\n"
+msgstr "已经删除了 %d 个签字。\n"
 
 #: g10/keyedit.c:2276
 #, c-format
 msgid "Deleted %d signatures.\n"
-msgstr "%d ondertekeningen verwijderd.\n"
+msgstr "已经删除了 %d 个签字。\n"
 
 #: g10/keyedit.c:2279
 msgid "Nothing deleted.\n"
-msgstr "Niets verwijderd.\n"
+msgstr "没有东西被删除。\n"
 
 #: g10/keyedit.c:2368
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may cause\n"
 "         some versions of PGP to reject this key.\n"
 msgstr ""
-"WAARSCHUWING: Dit is een PGP 2.x-stijl sleutel.  Een aangestelde herroeper\n"
-"         toevoegen kan zorgen dat sommige versies van PGP deze sleutel verwerpen.\n"
+"警告：这是一把 PGP2 样式的密钥。\n"
+"     增加指定吊销者可能会导致某些版本的 PGP 无法识别这把密钥。\n"
 
 #: g10/keyedit.c:2379
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
-msgstr "U kunt geen aangestelde herroeper toevoegen aan een PGP 2.x stijl sleutel.\n"
+msgstr "您不可以为 PGP 2.x 样式的密钥添加指定吊销者。\n"
 
 #: g10/keyedit.c:2402
 msgid "Enter the user ID of the designated revoker: "
-msgstr "Geef de gebruikerscode van de aangestelde herroeper: "
+msgstr "输入指定吊销者的用户标识："
 
 #: g10/keyedit.c:2417
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
-msgstr "kan een PGP 2.x stijl sleutel niet aanwijzen als een aangestelde herroeper\n"
+msgstr "无法将 PGP 2.x 样式的密钥设为指定吊销者\n"
 
+#  This actually causes no harm (after all, a key that
+#  designates itself as a revoker is the same as a
+#  regular key), but it's easy enough to check.
 #. This actually causes no harm (after all, a key that
 #. designates itself as a revoker is the same as a
 #. regular key), but it's easy enough to check.
 #: g10/keyedit.c:2427
 msgid "you cannot appoint a key as its own designated revoker\n"
-msgstr "u kunt geen sleutel aanwijzen als zijn eigen aangestelde herroeper\n"
+msgstr "您不能将某把密钥设为它自己的指定吊销者\n"
 
 #: g10/keyedit.c:2446
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
-msgstr "WAARSCHUWING: het aanwijzen van een sleutel als een aangestelde herroeper kan niet ongedaan gemaakt worden!\n"
+msgstr "警告：将某把密钥指派为指定吊销者的操作无法撤销！\n"
 
 #: g10/keyedit.c:2452
 msgid "Are you sure you want to appoint this key as a designated revoker? (y/N): "
-msgstr "Wilt u echt deze sleutel aanwijzen als een aangestelde herroeper? (j/N): "
+msgstr "您确定要将这把密钥设为指定吊销者吗？(y/N)："
 
 #: g10/keyedit.c:2517
 msgid "Please remove selections from the secret keys.\n"
-msgstr "Verwijder alstublieft selecties van de geheime sleutels.\n"
+msgstr "请从私钥中删除选择。\n"
 
 #: g10/keyedit.c:2523
 msgid "Please select at most one secondary key.\n"
-msgstr "Selecteer alstublieft ten hoogste 茅茅n secundaire sleutel.\n"
+msgstr "请至多选择一把子钥。\n"
 
 #: g10/keyedit.c:2527
 msgid "Changing expiration time for a secondary key.\n"
-msgstr "De verlooptijd voor een secundaire sleutel wordt gewijzigd.\n"
+msgstr "正在变更子钥的使用期限。\n"
 
 #: g10/keyedit.c:2529
 msgid "Changing expiration time for the primary key.\n"
-msgstr "De verlooptijd voor de primaire sleutel wordt gewijzigd.\n"
+msgstr "正在变更主钥的使用期限。\n"
 
 #: g10/keyedit.c:2571
 msgid "You can't change the expiration date of a v3 key\n"
-msgstr "U kunt de verlooptijd van een v3-sleutel niet wijzigen\n"
+msgstr "您不能变更v3密钥的使用期限\n"
 
 #: g10/keyedit.c:2587
 msgid "No corresponding signature in secret ring\n"
-msgstr "Geen geassocieerde ondertekening in geheime sleutelbos\n"
+msgstr "在私钥环里没有一致的签字\n"
 
 #: g10/keyedit.c:2667
 msgid "Please select exactly one user ID.\n"
-msgstr "Selecteer alstublieft precies 茅茅n gebruikerscode.\n"
+msgstr "请精确地选择一个用户标识。\n"
 
 #: g10/keyedit.c:2704 g10/keyedit.c:2811
 #, c-format
 msgid "skipping v3 self-signature on user id \"%s\"\n"
-msgstr "v3-zelfondertekening op gebruikerscode \"%s\" wordt overgeslagen\n"
+msgstr "正在跳过用户标识“%s”的 v3 自身签字\n"
 
 #: g10/keyedit.c:2871
 #, c-format
 msgid "No user ID with index %d\n"
-msgstr "Geen gebruikerscode met index %d\n"
+msgstr "没有索引为 %d 的用户标识\n"
 
 #: g10/keyedit.c:2917
 #, c-format
 msgid "No secondary key with index %d\n"
-msgstr "Geen secundaire sleutel met index %d\n"
+msgstr "没有索引为 %d 的子钥\n"
 
 #: g10/keyedit.c:3031
 msgid "user ID: \""
-msgstr "gebruikerscode: \""
+msgstr "用户标识：“"
 
 #: g10/keyedit.c:3036
 #, c-format
@@ -3311,8 +3308,8 @@ msgid ""
 "\"\n"
 "signed with your key %08lX at %s\n"
 msgstr ""
-"\"\n"
-"ondertekend met uw sleutel %08lX op %s\n"
+"”\n"
+"已经使用您的密钥 %08lX 于 %s 添加签字\n"
 
 #: g10/keyedit.c:3039
 #, c-format
@@ -3320,62 +3317,62 @@ msgid ""
 "\"\n"
 "locally signed with your key %08lX at %s\n"
 msgstr ""
-"\"\n"
-"lokaal ondertekend met uw sleutel %08lX op %s\n"
+"”\n"
+"已经使用您的密钥 %08lX 于 %s 添加本地签字\n"
 
 #: g10/keyedit.c:3044
 #, c-format
 msgid "This signature expired on %s.\n"
-msgstr "Deze ondertekening is verlopen op %s.\n"
+msgstr "这份签字已在 %s 过期。\n"
 
 #: g10/keyedit.c:3048
 msgid "Are you sure you still want to revoke it? (y/N) "
-msgstr "Weet u zeker dat u deze nog steeds wilt herroepen? (j/N) "
+msgstr "您确定您仍然想要吊销它吗？(y/N)"
 
 #: g10/keyedit.c:3052
 msgid "Create a revocation certificate for this signature? (y/N) "
-msgstr "Een herroepingscertificaat maken voor deze ondertekening? (j/N) "
+msgstr "要为这份签字生成一份吊销证书吗？(y/N)"
 
 #. FIXME: detect duplicates here
 #: g10/keyedit.c:3077
 msgid "You have signed these user IDs:\n"
-msgstr "U heeft deze gebruikerscodes ondertekend:\n"
+msgstr "您已经为这些用户标识添加签字：\n"
 
 #: g10/keyedit.c:3096
 #, c-format
 msgid "   signed by %08lX at %s%s%s\n"
-msgstr "   ondertekend door %08lX op %s%s%s\n"
+msgstr "   由 %08lX 于 %s%s%s 添加签字\n"
 
 #: g10/keyedit.c:3104
 #, c-format
 msgid "   revoked by %08lX at %s\n"
-msgstr "   herroepen door %08lX op %s\n"
+msgstr "   由 %08lX 吊销于 %s\n"
 
 #: g10/keyedit.c:3124
 msgid "You are about to revoke these signatures:\n"
-msgstr "U staat op het punt deze ondertekeningen te herroepen:\n"
+msgstr "您正在吊销这些签字：\n"
 
 #: g10/keyedit.c:3134
 #, c-format
 msgid "   signed by %08lX at %s%s\n"
-msgstr "   ondertekend door %08lX op %s%s\n"
+msgstr "   由 %08lX 于 %s%s 添加签字\n"
 
 #: g10/keyedit.c:3136
 msgid " (non-exportable)"
-msgstr " (niet-uitvoerbaar)"
+msgstr " (不可导出)"
 
 #: g10/keyedit.c:3143
 msgid "Really create the revocation certificates? (y/N) "
-msgstr "Echt de herroepingscertificaten maken? (j/N) "
+msgstr "真的要生成吊销证书吗？(y/N)"
 
 #: g10/keyedit.c:3173
 msgid "no secret key\n"
-msgstr "geen geheime sleutel\n"
+msgstr "没有私钥\n"
 
 #: g10/keyedit.c:3243
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
-msgstr "gebruikerscode \"%s\" is al herroepen\n"
+msgstr "用户标识“%s”已经被吊销。\n"
 
 #. Okay, this is a problem.  The user ID selfsig was
 #. created in the future, so we need to warn the user and
@@ -3384,331 +3381,333 @@ msgstr "gebruikerscode \"%s\" is al herroepen\n"
 #: g10/keyedit.c:3260
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
-msgstr "WAARSCHUWING: een gebruikerscode ondertekening is van %d seconden in de toekomst\n"
+msgstr "警告：有一份用户标识签字的日期标记为 %d 秒后的未来\n"
 
 #: g10/keyedit.c:3433
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key 0x%08lX (uid %d)\n"
-msgstr "Foto ID %s van grootte %ld voor sleutel 0x%08lX (gebruiker %d) wordt weergegeven\n"
+msgstr "正在显示 %s 照片标识(大小为 %ld，属于密钥 0x%08lX，用户标识 %d)\n"
 
 #: g10/keylist.c:91
 msgid "Critical signature policy: "
-msgstr "Kritisch ondertekenbeleid: "
+msgstr "关键签字策略："
 
 #: g10/keylist.c:93
 msgid "Signature policy: "
-msgstr "Ondertekenbeleid: "
+msgstr "签字策略："
 
 #: g10/keylist.c:118 g10/keylist.c:141 g10/mainproc.c:769 g10/mainproc.c:778
 msgid "WARNING: invalid notation data found\n"
-msgstr "WAARSCHUWING: ongeldige notatiegegevens gevonden\n"
+msgstr "警告：找到无效的标记数据\n"
 
 #: g10/keylist.c:127
 msgid "Critical signature notation: "
-msgstr "Kritische ondertekennotatie: "
+msgstr "关键签字标记："
 
 #: g10/keylist.c:129
 msgid "Signature notation: "
-msgstr "Ondertekennotatie: "
+msgstr "签字标记："
 
 #: g10/keylist.c:136
 msgid "not human readable"
-msgstr "niet leesbaar voor mensen"
+msgstr "不是人类能读懂的"
 
 #: g10/keylist.c:225
 msgid "Keyring"
-msgstr "Sleutelbos"
+msgstr "钥匙环"
 
+#  of subkey
 #. of subkey
 #: g10/keylist.c:507 g10/mainproc.c:905
 #, c-format
 msgid " [expires: %s]"
-msgstr " [verloopt: %s]"
+msgstr " [有效期至：%s]"
 
 #: g10/keylist.c:1025
 msgid "Primary key fingerprint:"
-msgstr "Vingerafdruk primaire sleutel:"
+msgstr "主钥指纹："
 
 #: g10/keylist.c:1027
 msgid "     Subkey fingerprint:"
-msgstr "     Vingerafdruk deelsleutel:"
+msgstr "子钥指纹："
 
 #: g10/keylist.c:1034
 msgid " Primary key fingerprint:"
-msgstr " Vingerafdruk primaire sleutel:"
+msgstr " 主钥指纹："
 
 #: g10/keylist.c:1036
 msgid "      Subkey fingerprint:"
-msgstr "      Vingerafdruk deelsleutel:"
+msgstr " 子钥指纹："
 
+#  use tty
 #. use tty
 #: g10/keylist.c:1040 g10/keylist.c:1044
 msgid "     Key fingerprint ="
-msgstr "     Vingerafdruk sleutel ="
+msgstr " 密钥指纹 ="
 
 #: g10/mainproc.c:248
 #, c-format
 msgid "weird size for an encrypted session key (%d)\n"
-msgstr "vreemde grootte voor een gecodeerde sessiesleutel (%d)\n"
+msgstr "加密过的会话密钥尺寸(%d)诡异\n"
 
 #: g10/mainproc.c:259
 #, c-format
 msgid "invalid symkey algorithm detected (%d)\n"
-msgstr ""
+msgstr "检测到无效的对称加密算法 (%d)\n"
 
 #: g10/mainproc.c:288 g10/encr-data.c:66
 #, c-format
 msgid "%s encrypted data\n"
-msgstr "%s gecodeerde gegevens\n"
+msgstr "%s 加密过的数据\n"
 
 #: g10/mainproc.c:290 g10/encr-data.c:68
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
-msgstr "gecodeerd met onbekend algoritme %d\n"
+msgstr "以未知的算法 %d 加密\n"
 
 #: g10/mainproc.c:318
 #, c-format
 msgid "public key is %08lX\n"
-msgstr "openbare sleutel is %08lX\n"
+msgstr "公钥是 %08lX\n"
 
 #: g10/mainproc.c:364
 msgid "public key encrypted data: good DEK\n"
-msgstr "openbare sleutel gecodeerde gegevens: goede DEK\n"
+msgstr "公钥加密过的数据：完好的 DEK\n"
 
 #: g10/mainproc.c:416
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
-msgstr "gecodeerd met %u-bit %s sleutel, ID %08lX, aangemaakt op %s\n"
+msgstr "用长度为 %u 字节、类型为 %s、钥匙号为 %08lX、生成于 %s 的密钥加密过\n"
 
 #: g10/mainproc.c:426
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
-msgstr "gecodeerd met %s sleutel, ID %08lX\n"
+msgstr "用类型为 %s、钥匙号为 %08lX 的密钥加密过\n"
 
 #: g10/mainproc.c:440
 #, c-format
 msgid "public key decryption failed: %s\n"
-msgstr "openbare sleutel decodering mislukt: %s\n"
+msgstr "公钥解密失败：%s\n"
 
 #: g10/mainproc.c:467 g10/mainproc.c:486
 #, c-format
 msgid "assuming %s encrypted data\n"
-msgstr "er wordt aangenomen dat het om %s-gecodeerde gegevens gaat\n"
+msgstr "假定 %s 为加密过的数据\n"
 
 #: g10/mainproc.c:474
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
-msgstr "IDEA-codering niet beschikbaar; er wordt optimistisch in plaats daarvan %s te gebruiken\n"
+msgstr "IDEA 算法不可用，试以 %s 代替\n"
 
 #: g10/mainproc.c:504
 msgid "decryption okay\n"
-msgstr "decodering goed\n"
+msgstr "解密成功\n"
 
 #: g10/mainproc.c:508
 msgid "WARNING: message was not integrity protected\n"
-msgstr "WAARSCHUWING: bericht integriteit was niet beschermd\n"
+msgstr "警告：报文未受到完整的保护\n"
 
 #: g10/mainproc.c:511
 msgid "WARNING: encrypted message has been manipulated!\n"
-msgstr "WAARSCHUWING: het gecodeerde bericht is gemanipuleerd!\n"
+msgstr "警告：加密过的报文已经变造！\n"
 
 #: g10/mainproc.c:517
 #, c-format
 msgid "decryption failed: %s\n"
-msgstr "decodering mislukt: %s\n"
+msgstr "解密失败：%s\n"
 
 #: g10/mainproc.c:536
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
-msgstr "LET OP: verzender heeft gevraagd om \"alleen-voor-uw-ogen\"\n"
+msgstr "注意：发件者要求您“只阅读不存盘”\n"
 
 #: g10/mainproc.c:538
 #, c-format
 msgid "original file name='%.*s'\n"
-msgstr "oorspronkelijke bestandsnaam='%.*s'\n"
+msgstr "原始文件名 =‘%.*s’\n"
 
 #: g10/mainproc.c:713
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
-msgstr "losstaande herroeping - gebruik \"gpg --import\" om toe te passen\n"
+msgstr "独立的吊销证书——请用“gpg --import”来应用\n"
 
 #: g10/mainproc.c:781
 msgid "Notation: "
-msgstr "Notatie: "
+msgstr "标记："
 
 #: g10/mainproc.c:793
 msgid "Policy: "
-msgstr "Beleid: "
+msgstr "策略："
 
 #: g10/mainproc.c:1248
 msgid "signature verification suppressed\n"
-msgstr "verificatie van ondertekening onderdrukt\n"
+msgstr "签字验证已被抑制\n"
 
 #. plaintext before signatures but no one-pass packets
 #: g10/mainproc.c:1290 g10/mainproc.c:1300
 msgid "can't handle these multiple signatures\n"
-msgstr "kan deze meervoudige ondertekeningen niet verwerken\n"
+msgstr "无法处理这些多重签字\n"
 
 #: g10/mainproc.c:1311
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
-msgstr "Ondertekening gemaakt op %.*s met %s sleutel ID %08lX\n"
+msgstr "于 %.*s 建立的签字，使用 %s，钥匙号 %08lX\n"
 
 #: g10/mainproc.c:1360 g10/mainproc.c:1393
 msgid "BAD signature from \""
-msgstr "SLECHTE ondertekening van \""
+msgstr "已损坏的签字，来自于\""
 
 #: g10/mainproc.c:1361 g10/mainproc.c:1394
 msgid "Expired signature from \""
-msgstr "Verlopen ondertekening van \""
+msgstr "过期的签字，来自于\""
 
 #: g10/mainproc.c:1362 g10/mainproc.c:1395
 msgid "Good signature from \""
-msgstr "Goede ondertekening van \""
+msgstr "完好的签字，来自于\""
 
 #: g10/mainproc.c:1397
 msgid "[uncertain]"
-msgstr "[onzeker]"
+msgstr "[不确定]"
 
 #: g10/mainproc.c:1491
 #, c-format
 msgid "Signature expired %s\n"
-msgstr "Ondertekening verlopen %s\n"
+msgstr "这份签字已于 %s 过期。\n"
 
 #: g10/mainproc.c:1496
 #, c-format
 msgid "Signature expires %s\n"
-msgstr "Ondertekening verloopt %s\n"
+msgstr "这份签字在 %s 过期。\n"
 
 #: g10/mainproc.c:1499
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
-msgstr "%s ondertekeing, digest-algoritme %s\n"
+msgstr "%s签字，散列算法 %s\n"
 
 #: g10/mainproc.c:1500
 msgid "binary"
-msgstr "binair"
+msgstr "二进制"
 
 #: g10/mainproc.c:1501
 msgid "textmode"
-msgstr "tekstmodus"
+msgstr "文本模式"
 
 #: g10/mainproc.c:1501
 msgid "unknown"
-msgstr "onbekend"
+msgstr "未知"
 
 #: g10/mainproc.c:1521
 #, c-format
 msgid "Can't check signature: %s\n"
-msgstr "Kan ondertekening niet controleren: %s\n"
+msgstr "无法检查签字：%s\n"
 
 #: g10/mainproc.c:1590 g10/mainproc.c:1606 g10/mainproc.c:1672
 msgid "not a detached signature\n"
-msgstr "geen losgekoppelde ondertekening\n"
+msgstr "不是一份分离的签字\n"
 
 #: g10/mainproc.c:1617
 msgid "WARNING: multiple signatures detected.  Only the first will be checked.\n"
-msgstr "WAARSCHUWING: meerdere ondertekeningen gevonden.  Alleen de eerste wordt gecontroleerd.\n"
+msgstr "警告：检测到多重签字。只检查第一个签字。\n"
 
 #: g10/mainproc.c:1621
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
-msgstr "losstaande ondertekening van klasse 0x%02x\n"
+msgstr "等级 0x%02x 的独立签字\n"
 
 #: g10/mainproc.c:1678
 msgid "old style (PGP 2.x) signature\n"
-msgstr "oude stijl (PGP 2.x) ondertekening\n"
+msgstr "旧式(PGP 2.x)签字\n"
 
 #: g10/mainproc.c:1684
 msgid "invalid root packet detected in proc_tree()\n"
-msgstr "ongeldig root-pakket gevonden in proc_tree()\n"
+msgstr "在 proc_tree() 中检测到无效的根包\n"
 
 #: g10/misc.c:98
 #, c-format
 msgid "can't disable core dumps: %s\n"
-msgstr "kan geheugendumps niet uit zetten: %s\n"
+msgstr "无法禁用核心内存转储：%s\n"
 
 #: g10/misc.c:162
 msgid "Experimental algorithms should not be used!\n"
-msgstr "Experimentele algoritme moeten niet worden gebruikt!\n"
+msgstr "不应使用实验性的算法！\n"
 
 #: g10/misc.c:192
 msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
-msgstr "dit coderingsalgoritme wordt afgeraden; gebruik alstublieft een wat normalere!\n"
+msgstr "不推荐使用这个加密算法；请换用更符合标准的算法！\n"
 
 #: g10/misc.c:300
 msgid "the IDEA cipher plugin is not present\n"
-msgstr "de IDEA-coderingsplug-in is niet aanwezig\n"
+msgstr "IDEA 算法插件不存在\n"
 
 #: g10/misc.c:301
 msgid "please see http://www.gnupg.org/why-not-idea.html for more information\n"
-msgstr "zie alstublieft http://www.gnupg.org/why-not-idea.html voor meer informatie\n"
+msgstr "请访问 http://www.gnupg.org/why-not-idea.html 以获得更详细的信息\n"
 
 #: g10/misc.c:509
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
-msgstr "%s:%d: afgeraden optie \"%s\"\n"
+msgstr "%s:%d：建议不使用的选项“%s”\n"
 
 #: g10/misc.c:513
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "WAARSCHUWING: \"%s\" is een afgeraden optie\n"
+msgstr "警告：“%s”选项已不建议使用\n"
 
 #: g10/misc.c:515
 #, c-format
 msgid "please use \"%s%s\" instead\n"
-msgstr "gebruik alstublieft \"%s%s\"\n"
+msgstr "请以“%s%s”代替\n"
 
 #: g10/parse-packet.c:120
 #, c-format
 msgid "can't handle public key algorithm %d\n"
-msgstr "kan openbare sleutel algoritme %d niet behandelen\n"
+msgstr "无法操作公钥算法 %d\n"
 
 #: g10/parse-packet.c:1069
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
-msgstr "deelpakket van soort %d heeft kritische bit ingesteld\n"
+msgstr "%d 类别的子包设定了关键字节\n"
 
 #: g10/passphrase.c:455 g10/passphrase.c:502
 msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent is niet beschikbaar in deze sessie\n"
+msgstr "gpg-agent 在此次舍话中无法使用\n"
 
 #: g10/passphrase.c:463
 msgid "can't set client pid for the agent\n"
-msgstr "kan PID voor agent niet instellen\n"
+msgstr "无法设定代理程序客户端的进程标识\n"
 
 #: g10/passphrase.c:471
 msgid "can't get server read FD for the agent\n"
-msgstr ""
+msgstr "无法取得代理程序所需的服务器读取文件描述符\n"
 
 #: g10/passphrase.c:478
 msgid "can't get server write FD for the agent\n"
-msgstr ""
+msgstr "无法取得代理程序所需的服务器写入文件描述符\n"
 
 #: g10/passphrase.c:511
 msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "misvormde GPG_AGENT_INFO omgevingsvariabele\n"
+msgstr "GPG_AGENT_INFO 环境变量格式错误\n"
 
 #: g10/passphrase.c:524
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "gpg-agent protocol versie %d wordt niet ondersteund\n"
+msgstr "不支持 gpg-agent 协议版本 %d\n"
 
 #: g10/passphrase.c:545 g10/hkp.c:155
 #, c-format
 msgid "can't connect to `%s': %s\n"
-msgstr "kan niet verbinden met `%s': %s\n"
+msgstr "无法连接至‘%s’：%s\n"
 
 #: g10/passphrase.c:567
 msgid "communication problem with gpg-agent\n"
-msgstr "communicatieprobleem met gpg-agent\n"
+msgstr "与 gpg-agent 通讯有问题\n"
 
 #: g10/passphrase.c:574 g10/passphrase.c:875 g10/passphrase.c:988
 msgid "problem with the agent - disabling agent use\n"
-msgstr "probleem met de agent - gebruik van agent uit gezet\n"
+msgstr "代理程序的问题——正在停用代理程序\n"
 
 #: g10/passphrase.c:676 g10/passphrase.c:1094
 #, c-format
 msgid " (main key ID %08lX)"
-msgstr " (hoofdsleutel ID %08lX)"
+msgstr "(主钥匙号 %08lX)"
 
 #: g10/passphrase.c:686
 #, c-format
@@ -3717,34 +3716,34 @@ msgid ""
 "\"%.*s\"\n"
 "%u-bit %s key, ID %08lX, created %s%s\n"
 msgstr ""
-"U heeft een wachtwoord nodig om de geheime sleutel te ontgrendelen voor gebruiker:\n"
-"\"%.*s\"\n"
-"%u-bit %s sleutel, ID %08lX, gemaakt op %s%s\n"
+"您需要下列用户的密码来解开私钥：\n"
+"“%.*s”\n"
+"%u 字节的 %s 密钥，钥匙号 %08lX，建立于 %s%s\n"
 
 #: g10/passphrase.c:708
 msgid "Repeat passphrase\n"
-msgstr "Herhaal wachtwoord\n"
+msgstr "请再输入一次密码\n"
 
 #: g10/passphrase.c:710
 msgid "Enter passphrase\n"
-msgstr "Geef wachtwoord\n"
+msgstr "请输入密码\n"
 
 #: g10/passphrase.c:748
 msgid "passphrase too long\n"
-msgstr "wachtwoord te lang\n"
+msgstr "密码太长\n"
 
 #: g10/passphrase.c:761
 msgid "invalid response from agent\n"
-msgstr "ongeldig antwoord van agent\n"
+msgstr "代理程序响应无效\n"
 
 #: g10/passphrase.c:776 g10/passphrase.c:869
 msgid "cancelled by user\n"
-msgstr "geannuleerd door gebruiker\n"
+msgstr "用户取消\n"
 
 #: g10/passphrase.c:781 g10/passphrase.c:959
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
-msgstr "probleem met agent: agent geeft 0x%lx terug\n"
+msgstr "代理程序的问题：代理程序返回 0x%lx\n"
 
 #: g10/passphrase.c:1080
 msgid ""
@@ -3753,488 +3752,488 @@ msgid ""
 "user: \""
 msgstr ""
 "\n"
-"U heeft een wachtwoord nodig om de geheime sleutel\n"
-"voor de gebruiker te ontgrendelen: \""
+"您需要下列使用者的密码，才能解开私钥：\n"
+"\""
 
 #: g10/passphrase.c:1089
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
-msgstr "%u-bit %s sleutel, ID %08lX, gemaakt op %s"
+msgstr "%u 字节的 %s 密钥，钥匙号 %08lX，建立于 %s"
 
 #: g10/passphrase.c:1141
 msgid "can't query password in batchmode\n"
-msgstr "kan niet vragen om wachtwoord in batch-modus\n"
+msgstr "在批处理模式中无法询问密码\n"
 
 #: g10/passphrase.c:1145
 msgid "Enter passphrase: "
-msgstr "Geef wachtwoord: "
+msgstr "请输入密码："
 
 #: g10/passphrase.c:1149
 msgid "Repeat passphrase: "
-msgstr "Herhaal wachtwoord: "
+msgstr "请再输入一次密码："
 
 #: g10/plaintext.c:67
 msgid "data not saved; use option \"--output\" to save it\n"
-msgstr "gegevens niet opgeslagen; gebruik optie \"--output\" om gegevens op te slaan\n"
+msgstr "数据未被保存；请用“--output”选项来保存它们\n"
 
 #: g10/plaintext.c:108
 #, c-format
 msgid "error creating `%s': %s\n"
-msgstr "fout bij maken `%s': %s\n"
+msgstr "建立‘%s’时发生错误：%s\n"
 
 #: g10/plaintext.c:339
 msgid "Detached signature.\n"
-msgstr "Losgekoppelde ondertekening.\n"
+msgstr "分离的签字。\n"
 
 #: g10/plaintext.c:343
 msgid "Please enter name of data file: "
-msgstr "Geef bestandsnaam van gegevensbestand: "
+msgstr "请输入数据文件的名称： "
 
 #: g10/plaintext.c:364
 msgid "reading stdin ...\n"
-msgstr "bezig met lezen standaard invoer...\n"
+msgstr "正在从标准输入读取 ...\n"
 
 #: g10/plaintext.c:398
 msgid "no signed data\n"
-msgstr "geen ondertekende gegevens\n"
+msgstr "不含签字的数据\n"
 
 #: g10/plaintext.c:406
 #, c-format
 msgid "can't open signed data `%s'\n"
-msgstr "kan ondertekende gegevens `%s' niet openen\n"
+msgstr "无法打开有签字的数据‘%s’\n"
 
 #: g10/pubkey-enc.c:101
 #, c-format
 msgid "anonymous recipient; trying secret key %08lX ...\n"
-msgstr "anonieme ontvanger; geheime sleutel %08lX wordt geprobeerd...\n"
+msgstr "匿名收件者；正在尝试使用私钥 %08lX  ...\n"
 
 #: g10/pubkey-enc.c:107
 msgid "okay, we are the anonymous recipient.\n"
-msgstr "goed, we zijn de anonieme ontvanger.\n"
+msgstr "很好，我们就是匿名收件者。\n"
 
 #: g10/pubkey-enc.c:159
 msgid "old encoding of the DEK is not supported\n"
-msgstr "oude codering van DEK wordt niet ondersteund\n"
+msgstr "不支持旧式的 DEK 编码\n"
 
 #: g10/pubkey-enc.c:178
 #, c-format
 msgid "cipher algorithm %d%s is unknown or disabled\n"
-msgstr "coderingsalgoritme %d%s is onbekend of uit gezet\n"
+msgstr "对称加密算法 %d%s 未知或已停用\n"
 
 #: g10/pubkey-enc.c:221
 #, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
-msgstr "LET OP: coderingsalgoritme %d niet gevonden in voorkeuren\n"
+msgstr "注意：首选项中找不到加密算法 %d\n"
 
 #: g10/pubkey-enc.c:243
 #, c-format
 msgid "NOTE: secret key %08lX expired at %s\n"
-msgstr "LET OP: geheime sleutel %08lX verlopen op %s\n"
+msgstr "注意：私钥 %08lX 已于 %s 过期\n"
 
 #: g10/pubkey-enc.c:249
 msgid "NOTE: key has been revoked"
-msgstr "LET OP: sleutel is herroepen"
+msgstr "注意：密钥已被吊销"
 
 #: g10/hkp.c:71
 #, c-format
 msgid "requesting key %08lX from %s\n"
-msgstr "bezig met opvragen sleutel %08lX van %s\n"
+msgstr "正在查询密钥 %08lX，来自 %s\n"
 
 #: g10/hkp.c:98
 #, c-format
 msgid "can't get key from keyserver: %s\n"
-msgstr "kan sleutel niet ontvangen van sleutelserver: %s\n"
+msgstr "无法从公钥服务器取得密钥： %s\n"
 
 #: g10/hkp.c:179
 #, c-format
 msgid "error sending to `%s': %s\n"
-msgstr "fout bij verzenden aan `%s': %s\n"
+msgstr "上传到‘%s’的时候发生错误：%s\n"
 
 #: g10/hkp.c:194
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
-msgstr "succes bij zenden aan `%s' (status=%u)\n"
+msgstr "成功上传至‘%s’(状态 = %u)\n"
 
 #: g10/hkp.c:197
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
-msgstr "verzenden aan `%s' mislukt: status=%u\n"
+msgstr "上传到‘%s’失败：状态 = %u\n"
 
 #: g10/hkp.c:369
 msgid "this keyserver is not fully HKP compatible\n"
-msgstr "deze sleutelserver is niet helemaal HKP-compatibel\n"
+msgstr "这个公钥服务器并非完全与 HKP 兼容\n"
 
 #: g10/hkp.c:519
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
-msgstr "bezig met zoeken naar \"%s\" bij HKP-server %s\n"
+msgstr "正在搜寻“%s”，在 HKP 服务器 %s 上\n"
 
 #: g10/hkp.c:571
 #, c-format
 msgid "can't search keyserver: %s\n"
-msgstr "kan niet zoeken op sleutelserver: %s\n"
+msgstr "无法搜寻公钥服务器：%s\n"
 
 #: g10/seckey-cert.c:53
 msgid "secret key parts are not available\n"
-msgstr "delen geheime sleutel zijn niet beschikbaar\n"
+msgstr "私钥部分不可用\n"
 
 #: g10/seckey-cert.c:59
 #, c-format
 msgid "protection algorithm %d%s is not supported\n"
-msgstr "beschermingsalgoritme %d%s wordt niet ondersteund\n"
+msgstr "保护算法 %d%s 未被支持\n"
 
 #: g10/seckey-cert.c:233
 msgid "Invalid passphrase; please try again"
-msgstr "Ongeldig wachtwoord; probeer alstublieft opnieuw"
+msgstr "无效的密码；请再试一次"
 
 #: g10/seckey-cert.c:234
 #, c-format
 msgid "%s ...\n"
-msgstr "%s...\n"
+msgstr "%s ...\n"
 
 #: g10/seckey-cert.c:291
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
-msgstr "WAARSCHUWING: Zwakke sleutel gevonden - wijzig alstublieft het wachtwoord opnieuw.\n"
+msgstr "警告：检测到弱密钥——请更换密码。\n"
 
 #: g10/seckey-cert.c:329
 msgid "generating the deprecated 16-bit checksum for secret key protection\n"
-msgstr "er wordt een afgeraden 16-bit controlesom gegenereerd om te geheime sleutel te beschermen\n"
+msgstr "正在产生私钥保护使用的旧式 16 字节校验和\n"
 
 #: g10/sig-check.c:73
 msgid "WARNING: signature digest conflict in message\n"
-msgstr "WAARSCHUWING: ondertekening en digest conflicteren in bericht\n"
+msgstr "警告：签字散列值与报文不一致\n"
 
 #: g10/sig-check.c:213
 #, c-format
 msgid "key %08lX: this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
-msgstr "sleutel %08lX: dit is een met PGP aangemaakte ElGamal-sleutel die NIET veilig is voor ondertekeningen!\n"
+msgstr "密钥 %08lX：这是由 PGP 产生的 ElGamal 密钥，用于签字不安全！\n"
 
 #: g10/sig-check.c:222
 #, c-format
 msgid "public key %08lX is %lu second newer than the signature\n"
-msgstr "openbare sleutel %08lX is %lu seconde nieuwer dan de ondertekening\n"
+msgstr "公钥 %08lX 在其签字前 %lu 秒生成\n"
 
 #: g10/sig-check.c:223
 #, c-format
 msgid "public key %08lX is %lu seconds newer than the signature\n"
-msgstr "openbare sleutel %08lX is %lu seconden nieuwer dan de ondertekening\n"
+msgstr "公钥 %08lX 在其签字前 %lu 秒生成\n"
 
 #: g10/sig-check.c:232
 #, c-format
 msgid "key %08lX has been created %lu second in future (time warp or clock problem)\n"
-msgstr "sleutel %08lX is %lu seconde in de toekomst gemaakt (tijdsreis of klokprobleem)\n"
+msgstr "密钥 %08lX 是在 %lu 秒后的未来生成的(时空扭曲或时钟的问题)\n"
 
 #: g10/sig-check.c:234
 #, c-format
 msgid "key %08lX has been created %lu seconds in future (time warp or clock problem)\n"
-msgstr "sleutel %08lX is %lu seconden in de toekomst gemaakt (tijdsreis of klokprobleem)\n"
+msgstr "密钥 %08lX 是在 %lu 秒后的未来生成的(时空扭曲或时钟的问题)\n"
 
 #: g10/sig-check.c:247
 #, c-format
 msgid "NOTE: signature key %08lX expired %s\n"
-msgstr "LET OP: ondertekening van sleutel %08lX verlopen op %s\n"
+msgstr "注意：签字密钥 %08lX 已于 %s 过期\n"
 
 #: g10/sig-check.c:346
 #, c-format
 msgid "assuming bad signature from key %08lX due to an unknown critical bit\n"
-msgstr "er wordt aangenomen dat de ondertekening van sleutel %08lX slecht is, vanwege een onbekende kritische bit\n"
+msgstr "假定密钥 %08lX 的签字由于某个未知的关键字节出错而导致损坏\n"
 
 #: g10/sig-check.c:552
 #, c-format
 msgid "key %08lX: no subkey for subkey revocation packet\n"
-msgstr "sleutel %08lX: geen deelsleutel voor deelsleutel-herroepingspakket\n"
+msgstr "密钥 %08lX：没有子钥吊销包所需的子钥\n"
 
 #: g10/sign.c:78
 msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
-msgstr "kan geen notatiegegevens in v3 (PGP 2.x stijl) ondertekeningen stoppen\n"
+msgstr "无法在 v3 (PGP 2.x样式)的签字内放入标记数据\n"
 
 #: g10/sign.c:86
 msgid "can't put notation data into v3 (PGP 2.x style) key signatures\n"
-msgstr "kan geen notatiegegevens in v3 (PGP 2.x stijl) sleutelondertekeningen stoppen\n"
+msgstr "无法在 v3 (PGP 2.x样式)的密钥签字内放入标记数据\n"
 
 #: g10/sign.c:105
 #, c-format
 msgid "WARNING: unable to %%-expand notation (too large).  Using unexpanded.\n"
-msgstr "WAARSCHUWING: kan notatie niet %%-uitbreiden  (te groot).  Niet uitgebreide versie wordt gebruikt.\n"
+msgstr "警告：标记 %% 无法扩展(太大了)。现在使用未扩展的。\n"
 
 #: g10/sign.c:134
 msgid "can't put a policy URL into v3 (PGP 2.x style) signatures\n"
-msgstr "kan geen beleid-URL in v3 (PGP 2.x stijl) ondertekeningen stoppen\n"
+msgstr "无法在 v3 (PGP 2.x样式)的签字内放入策略 URL\n"
 
 #: g10/sign.c:142
 msgid "can't put a policy URL into v3 key (PGP 2.x style) signatures\n"
-msgstr "kan geen beleid-URL in v3 (PGP 2.x stijl) ondertekeningen stoppen\n"
+msgstr "无法在 v3 (PGP 2.x样式)的密钥签字内放入策略 URL\n"
 
 #: g10/sign.c:155
 #, c-format
 msgid "WARNING: unable to %%-expand policy url (too large).  Using unexpanded.\n"
-msgstr "WAARSCHUWING: kan beleid-URL niet %%-uitbreiden (te groot).  Niet uitgebreide versie wordt gebruikt.\n"
+msgstr "警告：策略 URL 的 %% 无法扩展(太大了)。现在使用未扩展的。\n"
 
 #: g10/sign.c:307
 #, c-format
 msgid "checking created signature failed: %s\n"
-msgstr "het controleren van de aangemaakte ondertekening is mislukt: %s\n"
+msgstr "检查已建立的签字时发生错误： %s\n"
 
 #: g10/sign.c:316
 #, c-format
 msgid "%s signature from: \"%s\"\n"
-msgstr "%s ondertekening van: \"%s\"\n"
+msgstr "%s签字来自：“%s”\n"
 
 #: g10/sign.c:465
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
-msgstr "WAARSCHUWING: `%s' is een leeg bestand\n"
+msgstr "警告：‘%s’是一个空文件\n"
 
 #: g10/sign.c:648
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr "u kunt alleen losgekoppeld ondertekenen met PGP 2.x stijl sleutels in in --pgp2 modus\n"
+msgstr "您在 --pgp2 模式下只能够使用 PGP 2.x 样式的密钥来做分离签字\n"
 
 #: g10/sign.c:673 g10/sign.c:912
 #, c-format
 msgid "can't create %s: %s\n"
-msgstr "kan %s niet aanmaken: %s\n"
+msgstr "无法建立 %s：%s\n"
 
 #: g10/sign.c:702
 #, c-format
 msgid "forcing digest algorithm %s (%d) violates recipient preferences\n"
-msgstr "afdwingen van digest-algoritme %s (%d) overtreedt voorkeuren ontvanger\n"
+msgstr "强行使用的 %s (%d)散列算法不在收件者的首选项中\n"
 
 #: g10/sign.c:796
 msgid "signing:"
-msgstr "bezig met ondertekenen:"
+msgstr "正在签字："
 
 #: g10/sign.c:895
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr "u kunt alleen niet-gecodeerde ondertekeningen maken met PGP 2.x stijl sleutels in --pgp2 modus\n"
+msgstr "您在 --pgp2 模式下只能够使用 PGP 2.x 样式的密钥来做明文签字\n"
 
 #: g10/sign.c:1050
 #, c-format
 msgid "%s encryption will be used\n"
-msgstr "%s codering zal worden gebruikt\n"
+msgstr "%s 加密将被采用\n"
 
 #: g10/textfilter.c:134
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
-msgstr "kan tekstregels langer dan %d tekens niet verwerken\n"
+msgstr "无法处理长于 %d 字符的文本行\n"
 
 #: g10/textfilter.c:231
 #, c-format
 msgid "input line longer than %d characters\n"
-msgstr "invoerregel langer dan %d tekens\n"
+msgstr "输入行长度超过 %d 字符\n"
 
 #: g10/tdbio.c:128 g10/tdbio.c:1406
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
-msgstr "trustdb rec %lu: lseek mislukt: %s\n"
+msgstr "信任度数据库记录 %lu：本地搜索失败：%s\n"
 
 #: g10/tdbio.c:134 g10/tdbio.c:1413
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
-msgstr "trustdb rec %lu: schrijven mislukt (n=%d): %s\n"
+msgstr "信任度数据库记录 %lu：写入失败 (n=%d): %s\n"
 
 #: g10/tdbio.c:244
 msgid "trustdb transaction too large\n"
-msgstr "trustdb transactie te groot\n"
+msgstr "信任度数据库处理量过大\n"
 
 #: g10/tdbio.c:468
 #, c-format
 msgid "%s: can't access: %s\n"
-msgstr "%s: kan niet benaderen: %s\n"
+msgstr "%s：无法存取：%s\n"
 
 #: g10/tdbio.c:483
 #, c-format
 msgid "%s: directory does not exist!\n"
-msgstr "%s: map bestaat niet!\n"
+msgstr "%s：目录不存在！\n"
 
 #: g10/tdbio.c:493 g10/tdbio.c:511 g10/tdbio.c:554
 #, c-format
 msgid "%s: can't create lock\n"
-msgstr "%s: kan geen blokkering aanmaken\n"
+msgstr "%s：无法锁定\n"
 
 #: g10/tdbio.c:495 g10/tdbio.c:557
 #, c-format
 msgid "%s: can't make lock\n"
-msgstr "%s: kan geen blokkering maken\n"
+msgstr "%s：无法锁定\n"
 
 #: g10/tdbio.c:501 g10/openfile.c:250 g10/openfile.c:325 g10/keyring.c:1453
 #, c-format
 msgid "%s: can't create: %s\n"
-msgstr "%s: kan niet aanmaken: %s\n"
+msgstr "%s：无法建立：%s\n"
 
 #: g10/tdbio.c:516
 #, c-format
 msgid "%s: failed to create version record: %s"
-msgstr "%s: aanmaken versie-ingang mislukt: %s"
+msgstr "%s：建立版本记录失败：%s"
 
 #: g10/tdbio.c:520
 #, c-format
 msgid "%s: invalid trustdb created\n"
-msgstr "%s: ongeldige trustdb aangemaakt\n"
+msgstr "%s：建立了无效的信任度数据库\n"
 
 #: g10/tdbio.c:523
 #, c-format
 msgid "%s: trustdb created\n"
-msgstr "%s: trustdb aangemaakt\n"
+msgstr "%s：建立了信任度数据库\n"
 
 #: g10/tdbio.c:563
 msgid "NOTE: trustdb not writable\n"
-msgstr "LET OP: trustdb niet schrijfbaar\n"
+msgstr "注意：信任度数据库不可写入\n"
 
 #: g10/tdbio.c:579
 #, c-format
 msgid "%s: invalid trustdb\n"
-msgstr "%s: ongeldige trustdb\n"
+msgstr "%s：无效的信任度数据库\n"
 
 #: g10/tdbio.c:611
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
-msgstr "%s: aanmaken hash-tabel mislukt: %s\n"
+msgstr "%s：建立散列表失败：%s\n"
 
 #: g10/tdbio.c:619
 #, c-format
 msgid "%s: error updating version record: %s\n"
-msgstr "%s: fout bij bijwerken versie-ingang: %s\n"
+msgstr "%s：更新版本记录时出错： %s\n"
 
 #: g10/tdbio.c:635 g10/tdbio.c:671 g10/tdbio.c:685 g10/tdbio.c:715
 #: g10/tdbio.c:1339 g10/tdbio.c:1366
 #, c-format
 msgid "%s: error reading version record: %s\n"
-msgstr "%s: fout bij lezen versie-ingang: %s\n"
+msgstr "%s：读取版本记录时出错： %s\n"
 
 #: g10/tdbio.c:648 g10/tdbio.c:694
 #, c-format
 msgid "%s: error writing version record: %s\n"
-msgstr "%s: fout bij schrijven versie-ingang: %s\n"
+msgstr "%s：写入版本记录时出错：%s\n"
 
 #: g10/tdbio.c:1133
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
-msgstr "trustdb: lseek mislukt: %s\n"
+msgstr "信任度数据库：本地搜索失败：%s\n"
 
 #: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
-msgstr "trustdb: lezen mislukt (n=%d): %s\n"
+msgstr "信任度数据库：读取失败(n=%d)：%s\n"
 
 #: g10/tdbio.c:1162
 #, c-format
 msgid "%s: not a trustdb file\n"
-msgstr "%s: geen trustdb bestand\n"
+msgstr "%s：不是一个信任度数据库文件\n"
 
 #: g10/tdbio.c:1182
 #, c-format
 msgid "%s: version record with recnum %lu\n"
-msgstr "%s: versie-ingang met recnum %lu\n"
+msgstr "%s：记录编号为%lu的版本记录\n"
 
 #: g10/tdbio.c:1187
 #, c-format
 msgid "%s: invalid file version %d\n"
-msgstr "%s: ongeldige bestandsversie %d\n"
+msgstr "%s：无效的文件版本%d\n"
 
 #: g10/tdbio.c:1372
 #, c-format
 msgid "%s: error reading free record: %s\n"
-msgstr "%s: fout bij lezen vrije ingang: %s\n"
+msgstr "%s：读取自由记录时出错：%s\n"
 
 #: g10/tdbio.c:1380
 #, c-format
 msgid "%s: error writing dir record: %s\n"
-msgstr "%s: fout bij schrijven map ingang: %s\n"
+msgstr "%s：写入目录记录时出错：%s\n"
 
 #: g10/tdbio.c:1390
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
-msgstr "%s: op nul stellen van een ingang mislukt: %s\n"
+msgstr "%s：记录归零时失败：%s\n"
 
 #: g10/tdbio.c:1420
 #, c-format
 msgid "%s: failed to append a record: %s\n"
-msgstr "%s: achtervoegen van een ingang mislukt: %s\n"
+msgstr "%s：附加记录时失败：%s\n"
 
 #: g10/tdbio.c:1465
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
-msgstr "de trustdb is beschadigd; voer alstublieft \"gpg --fix-trustdb\" uit.\n"
+msgstr "信任度数据库已损坏；请执行“gpg --fix-trustdb”。\n"
 
 #: g10/trustdb.c:201
 #, c-format
 msgid "`%s' is not a valid long keyID\n"
-msgstr "`%s' is geen geldige lange keyID\n"
+msgstr "‘%s’不是一个有效的长式钥匙号\n"
 
 #: g10/trustdb.c:236
 #, c-format
 msgid "key %08lX: accepted as trusted key\n"
-msgstr "sleutel %08lX: geaccepteerd als vertrouwde sleutel\n"
+msgstr "密钥 %08lX：受信任，已接受\n"
 
 #: g10/trustdb.c:274
 #, c-format
 msgid "key %08lX occurs more than once in the trustdb\n"
-msgstr "sleutel %08lX komt meerdere keren voor in de trustdb\n"
+msgstr "密钥 %08lX 在信任度数据库中重复出现\n"
 
 #: g10/trustdb.c:289
 #, c-format
 msgid "key %08lX: no public key for trusted key - skipped\n"
-msgstr "sleutel %08lX: geen openbare sleutel voor vertrouwde sleutel - overgeslagen\n"
+msgstr "密钥 %08lX：受信任的密钥没有公钥——已跳过\n"
 
 #: g10/trustdb.c:298
 #, c-format
 msgid "key %08lX marked as ultimately trusted\n"
-msgstr "sleutel %08lX gemarkeerd als maximaal vertrouwd\n"
+msgstr "密钥 %08lX 被标记为绝对信任\n"
 
 #: g10/trustdb.c:324
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
-msgstr "vertrouwensingang %lu, req soort %d: lezen mislukt: %s\n"
+msgstr "信任记录 %lu，请求类别 %d：读取失败：%s\n"
 
 #: g10/trustdb.c:330
 #, c-format
 msgid "trust record %lu is not of requested type %d\n"
-msgstr "vertrouwensingang %lu is niet van gevraagde soort %d\n"
+msgstr "信任记录 %lu 不属于所请求的类别 %d\n"
 
 #: g10/trustdb.c:345 g10/tdbdump.c:59
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
-msgstr "vertrouwensingang %lu, soort %d: schrijven mislukt: %s\n"
+msgstr "信任记录 %lu，类别 %d：写入失败：%s\n"
 
 #: g10/trustdb.c:360 g10/tdbdump.c:217
 #, c-format
 msgid "trustdb: sync failed: %s\n"
-msgstr "trustdb: synchronisatie mislukt: %s\n"
+msgstr "信任度数据库：同步失败：%s\n"
 
 #: g10/trustdb.c:460
 msgid "no need for a trustdb check\n"
-msgstr "trustdb controle niet nodig\n"
+msgstr "不需要检查信任度数据库\n"
 
 #: g10/trustdb.c:466 g10/trustdb.c:1771
 #, c-format
 msgid "next trustdb check due at %s\n"
-msgstr "volgende trustdb controle op %s\n"
+msgstr "下次信任度数据库检查将于 %s 进行\n"
 
 #: g10/trustdb.c:819
 msgid "please do a --check-trustdb\n"
-msgstr "doe alstublieft een --check-trustdb\n"
+msgstr "请执行一次 --check-trustdb\n"
 
 #: g10/trustdb.c:823
 msgid "checking the trustdb\n"
-msgstr "bezig met controleren trustdb\n"
+msgstr "正在检查信任度数据库\n"
 
 #: g10/trustdb.c:1024
 #, c-format
 msgid "public key %08lX not found: %s\n"
-msgstr "openbare sleutel %08lX niet gevonden: %s\n"
+msgstr "公钥 %08lX 未被找到：%s\n"
 
 #: g10/trustdb.c:1565
 #, c-format
 msgid "%d keys processed (%d validity counts cleared)\n"
-msgstr "%d sleutels verwerkt (%d geldigheidsgetallen gewist)\n"
+msgstr "已经处理了 %d 把密钥(共计已解决了 %d 份的有效性)\n"
 
 #: g10/trustdb.c:1619
 msgid "no ultimately trusted keys found\n"
-msgstr "geen maximaal vertrouwde sleutels gevonden\n"
+msgstr "没有找到任何绝对信任的密钥\n"
 
 #: g10/trustdb.c:1637
 #, c-format
 msgid "public key of ultimately trusted key %08lX not found\n"
-msgstr "openbare sleutel van maximaal vertrouwde sleutel %08lX niet gevonden\n"
+msgstr "绝对信任的密钥 %08lX 的公钥未被找到\n"
 
 #. This should be valid=%d now, but I'm not changing it so I
 #. don't break the translated strings in the stable branch.
@@ -4242,7 +4241,7 @@ msgstr "openbare sleutel van maximaal vertrouwde sleutel %08lX niet gevonden\n"
 #: g10/trustdb.c:1712
 #, c-format
 msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
-msgstr "bezig met controleren op diepte %d ondertekend=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
+msgstr "检查深度为 %d，签字=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 
 #: g10/verify.c:110
 msgid ""
@@ -4250,140 +4249,140 @@ msgid ""
 "Please remember that the signature file (.sig or .asc)\n"
 "should be the first file given on the command line.\n"
 msgstr ""
-"de ondertekening kon niet worden geverifieerd.\n"
-"Onthoud alstublieft dat het ondertekeningsbestand (.sig of .asc)\n"
-"als eerste moet worden gegevens op de opdrachtregel.\n"
+"签字无法被验证。\n"
+"请记住签字文件(.sig或.asc)\n"
+"应该是在命令行中给定的第一个文件。\n"
 
 #: g10/verify.c:177
 #, c-format
 msgid "input line %u too long or missing LF\n"
-msgstr "invoerregel %u te lang of mist LF (enter)\n"
+msgstr "输入行 %u 太长或者行末的换行符 LF 遗失\n"
 
 #: g10/skclist.c:129 g10/skclist.c:185
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
-msgstr "sleutel is niet gemarkeerd als onveilig - kan deze niet gebruiken met de nep RNG!\n"
+msgstr "密钥未被标示为不安全——不能与假的随机数发生器共同使用！\n"
 
 #: g10/skclist.c:157
 #, c-format
 msgid "skipped `%s': duplicated\n"
-msgstr "`%s' overgeslagen: dubbel\n"
+msgstr "‘%s’已跳过：重复\n"
 
 #: g10/skclist.c:164 g10/skclist.c:172
 #, c-format
 msgid "skipped `%s': %s\n"
-msgstr "`%s' overgeslagen: %s\n"
+msgstr "‘%s’已跳过：%s\n"
 
 #: g10/skclist.c:168
 msgid "skipped: secret key already present\n"
-msgstr "overgeslagen: geheime sleutel reeds aanwezig\n"
+msgstr "已跳过：私钥已存在\n"
 
 #: g10/skclist.c:179
 #, c-format
 msgid "skipped `%s': this is a PGP generated ElGamal key which is not secure for signatures!\n"
-msgstr "`%s' overgeslagen: dit is een met PGP aangemaakte ElGamal-sleutel die niet veilig is voor ondertekeningen!\n"
+msgstr "‘%s’已跳过：这是一把由 PGP 生成的 ElGamal 密钥，用于签字不安全！\n"
 
 #. do not overwrite
 #: g10/openfile.c:84
 #, c-format
 msgid "File `%s' exists. "
-msgstr "Bestand `%s' bestaat. "
+msgstr "文件‘%s’已存在。 "
 
 #: g10/openfile.c:86
 msgid "Overwrite (y/N)? "
-msgstr "Overschrijven (j/N)? "
+msgstr "是否覆盖(y/N)？"
 
 #: g10/openfile.c:119
 #, c-format
 msgid "%s: unknown suffix\n"
-msgstr "%s: onbekend achtervoegsel\n"
+msgstr "%s：未知的后缀名\n"
 
 #: g10/openfile.c:141
 msgid "Enter new filename"
-msgstr "Geef nieuwe bestandsnaam"
+msgstr "请输入新的文件名"
 
 #: g10/openfile.c:184
 msgid "writing to stdout\n"
-msgstr "bezig met schrijven naar standaard uitvoer\n"
+msgstr "正在写入到标准输出\n"
 
 #: g10/openfile.c:284
 #, c-format
 msgid "assuming signed data in `%s'\n"
-msgstr "er wordt aangenomen dat het in `%s' om ondertekende gegevens gaat\n"
+msgstr "假定被签字的数据在‘%s’\n"
 
 #: g10/openfile.c:352
 #, c-format
 msgid "new configuration file `%s' created\n"
-msgstr "nieuw configuratiebestand `%s' aangemaakt\n"
+msgstr "新的配置文件‘%s’已建立\n"
 
 #: g10/openfile.c:354
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgstr "WAARSCHUWING: opties in `%s' zijn tijdens deze sessie nog niet actief\n"
+msgstr "警告：在‘%s’里的选项于此次运行期间未被使用\n"
 
 #: g10/openfile.c:383
 #, c-format
 msgid "%s: can't create directory: %s\n"
-msgstr "%s: kan map niet aanmaken: %s\n"
+msgstr "%s：无法建立目录：%s\n"
 
 #: g10/openfile.c:386
 #, c-format
 msgid "%s: directory created\n"
-msgstr "%s: map aangemaakt\n"
+msgstr "%s：已创建目录\n"
 
 #: g10/encr-data.c:91
 msgid "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
-msgstr "WAARSCHUWING: bericht was gecodeerd met een zwakke sleutel in de symmetrische codering.\n"
+msgstr "警告：报文被使用对称加密算法的弱密钥加密。\n"
 
 #: g10/encr-data.c:98
 msgid "problem handling encrypted packet\n"
-msgstr "probleem bij verwerken gecodeerd pakket\n"
+msgstr "处理加密包有问题\n"
 
 #: g10/seskey.c:52
 msgid "weak key created - retrying\n"
-msgstr "zwakke sleutel aangemaakt - bezig met opnieuw proberen\n"
+msgstr "建立了弱密钥——正在重试\n"
 
 #: g10/seskey.c:57
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
-msgstr "kan zwakke sleutel voor symmetrische codering niet vermijden; %d keer geprobeerd!\n"
+msgstr "对称加密无法避免生成弱密钥；已经尝试 %d 次！\n"
 
 #: g10/seskey.c:200
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA vereist het gebruik van een 160-bits hash-algoritme\n"
+msgstr "DSA 要求使用 160 字节的散列算法\n"
 
 #: g10/delkey.c:120 g10/delkey.c:127
 msgid "(unless you specify the key by fingerprint)\n"
-msgstr "(tenzij u de sleutel aangeeft met de vingerafdruk)\n"
+msgstr "(除非您用指纹指定密钥)\n"
 
 #: g10/delkey.c:126
 msgid "can't do that in batchmode without \"--yes\"\n"
-msgstr "dat kan niet in batch-modus zonder \"--yes\"\n"
+msgstr "在批处理模式中，没有“--yes”就无法这么做\n"
 
 #: g10/delkey.c:150
 msgid "Delete this key from the keyring? "
-msgstr "Deze sleutel verwijderen uit de sleutelbos? "
+msgstr "要从钥匙环里删除这把密钥吗？"
 
 #: g10/delkey.c:158
 msgid "This is a secret key! - really delete? "
-msgstr "Dit is een geheime sleutel! - echt verwijderen? "
+msgstr "这是一把私钥！——真的要删除吗？"
 
 #: g10/delkey.c:168
 #, c-format
 msgid "deleting keyblock failed: %s\n"
-msgstr "verwijderen sleutelblok mislukt: %s\n"
+msgstr "删除密钥区块时失败：%s\n"
 
 #: g10/delkey.c:178
 msgid "ownertrust information cleared\n"
-msgstr "eigenaarsvertrouwen informatie gewist\n"
+msgstr "信任度信息已被清除\n"
 
 #: g10/delkey.c:206
 #, c-format
 msgid "there is a secret key for public key \"%s\"!\n"
-msgstr "er is een geheime sleutel voor openbare sleutel \"%s\"!\n"
+msgstr "公钥“%s”有对应的私钥！\n"
 
 #: g10/delkey.c:208
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
-msgstr "gebruik de optie \"--delete-secret-keys\" om deze eerst te verwijderen.\n"
+msgstr "请先使用“--delete-secret-keys”选项来删除它。\n"
 
 #: g10/helptext.c:47
 msgid ""
@@ -4391,10 +4390,8 @@ msgid ""
 "to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
 "to do with the (implicitly created) web-of-certificates."
 msgstr ""
-"Het is aan u om hier een waarde toe te wijzen; deze waarde wordt nooit\n"
-"uitgevoerd naar een derde partij.  We hebben het nodig om een web\n"
-"van vertrouwen te maken; het heeft niets te maken met het (impliciet\n"
-"gemaakte) web van certificaten."
+"在这里指定的数值完全由您自己决定；这些数值永远不会被输出给任何第三方。\n"
+"我们需要它来实现信任度网络；这跟隐含建立起来的认证网络无关。"
 
 #: g10/helptext.c:53
 msgid ""
@@ -4403,22 +4400,21 @@ msgid ""
 "access to the secret key.  Answer \"yes\" to set this key to\n"
 "ultimately trusted\n"
 msgstr ""
-"Om een Web van Vertrouwen te bouwen, moet GnuPG weten welke\n"
-"sleutels maximaal vertrouwd moeten worden - dit zijn meestal de\n"
-"sleutels waarvan u toegang heeft tot de geheime sleutel.  Antwoord\n"
-"\"ja\" om deze sleutel in te stellen als maximaal vertrouwd\n"
+"要建立起信任网络，GnuPG 需要知道哪些密钥是可绝对信任的\n"
+"——通常就是您拥有私钥的那些密钥。回答“yes”来将这些\n"
+"密钥设成可绝对信任的\n"
 
 #: g10/helptext.c:60
 msgid "If you want to use this revoked key anyway, answer \"yes\"."
-msgstr "Antwoord \"ja\" als u toch deze herroepen sleutel wilt gebruiken."
+msgstr "如果您无论如何要使用这把被吊销了的密钥，请回答“yes”。"
 
 #: g10/helptext.c:64
 msgid "If you want to use this untrusted key anyway, answer \"yes\"."
-msgstr "Antwoord \"ja\" als u toch deze niet-vertrouwde sleutel wilt gebruiken."
+msgstr "如果您无论如何要使用这把未被信任的密钥，请回答“yes”。"
 
 #: g10/helptext.c:68
 msgid "Enter the user ID of the addressee to whom you want to send the message."
-msgstr "Geef de gebruikerscode van de geadresseerde aan wie u het bericht wilt sturen."
+msgstr "输入您要递送的报文的接收者的用户标识。"
 
 #: g10/helptext.c:72
 msgid ""
@@ -4439,23 +4435,19 @@ msgid ""
 "this is the reason why the encryption only ElGamal key is not available in\n"
 "this menu."
 msgstr ""
-"Kies het te gebruiken algoritme.\n"
+"选择要使用的算法。\n"
 "\n"
-"DSA (ofwel DSS) is het digitale ondertekening algoritme dat alleen kan\n"
-"worden gebruikt voor ondertekeningen.  Dit is het voorgestelde algoritme\n"
-"omdat verificatie van DSA-ondertekeningen veel sneller is dan van ElGamal.\n"
+"DSA (亦即DSS)是一种只能用于签字的数字签字算法。这也是推荐使用的算法，\n"
+"因为验证 DSA 签字远比 ElGamal 签字快。\n"
 "\n"
-"ElGamal is een algoritme dat kan worden gebruikt voor ondertekenen en\n"
-"coderen. OpenPGP onderscheidt twee smaken van dit algoritme: een alleen-\n"
-"coderen en een coderen+coderen versie; ze zijn eigenlijk hetzelfde, maar\n"
-"sommige parameters moeten op een speciale manier worden gekozen\n"
-"om veilige sleutels voor ondertekenen te maken: dit programma\n"
-"doet dit maar andere OpenPGP-implementaties hoeven de coderen+\n"
-"ondertekenen smaak niet te begrijpen.\n"
+"ElGamal 是一种既可用于签字和也可用于加密的算法。\n"
+"OpenPGP 把这种算法区分成两种样式：只能用于加密的，和能签字及加密的；\n"
+"尽管它们原理一致，但为生成安全的用于签字的密钥，必须先以特定的方法\n"
+"选择一些参数：本程序实现了此功能，但其他实现 OpenPGP 的程序可能不能\n"
+"识别这种兼具签字及加密功能的样式。\n"
 "\n"
-"De eerste (primaire) sleutel moet altijd een sleutel zijn waarmee kan\n"
-"ondertekend kan worden; dit is de reden dat de alleen-coderen ElGamal-\n"
-"sleutel niet beschikbaar is in dit menu."
+"第一个密钥(主密钥)必须要具备签字的能力；因此\n"
+"只能用于加密的 ElGamal 密钥在这个菜单里无法使用。"
 
 #: g10/helptext.c:92
 msgid ""
@@ -4463,10 +4455,9 @@ msgid ""
 "because they are not supported by all programs and signatures created\n"
 "with them are quite large and very slow to verify."
 msgstr ""
-"Ondanks dat deze sleutels gedefinieerd zijn in RFC2440 worden ze niet\n"
-"aangeraden omdat ze niet door alle programma's worden ondersteund\n"
-"en omdat de ondertekeningen die ermee worden gemaakt behoorlijk\n"
-"groot zijn en traag om te verifi毛ren."
+"虽然在 RFC2440 中定义了这些密钥，但并不推荐采用它们，\n"
+"因为它们并不被所有的程序所支持，并且由它们所生成的签字\n"
+"十分庞大，验证起来更是缓慢。"
 
 #: g10/helptext.c:98
 msgid ""
@@ -4474,19 +4465,18 @@ msgid ""
 "encryption.  This algorithm should only be used in certain domains.\n"
 "Please consult your security expert first."
 msgstr ""
-"In het algemeen is het geen goed idee om dezelfde sleutel te gebruiken\n"
-"voor ondertekenen en coderen.  Dit algoritme moet alleen in bepaalde\n"
-"domeinen worden gebruikt.\n"
-"Neem alstublieft eerst contact op met uw veiligheidsexpert."
+"通常来说用同一把密钥签字及加密并不是个好主意。\n"
+"这个算法只在特定的情况下使用。\n"
+"请先咨询安全方面的专家。"
 
 #: g10/helptext.c:105
 msgid "Enter the size of the key"
-msgstr "Geef de grootte van de sleutel"
+msgstr "请输入密钥的尺寸"
 
 #: g10/helptext.c:109 g10/helptext.c:114 g10/helptext.c:126 g10/helptext.c:158
 #: g10/helptext.c:186 g10/helptext.c:191 g10/helptext.c:196
 msgid "Answer \"yes\" or \"no\""
-msgstr "Beantwoord \"ja\" of \"nee\""
+msgstr "请回答“yes”或“no”"
 
 #: g10/helptext.c:119
 msgid ""
@@ -4495,23 +4485,21 @@ msgid ""
 "get a good error response - instead the system tries to interpret\n"
 "the given value as an interval."
 msgstr ""
-"Geef de vereiste waarde zoals weergegeven in de opdrachtregel.\n"
-"Het is mogelijk om een ISO-datum (JJJJ-MM-DD) in te geven, maar\n"
-"u zal geen goede foutrespons krijgen - in plaats daarvan zal het\n"
-"systeem de gegeven waarde proberen te interpreteren als een\n"
-"interval."
+"请输入提示所要求的数值。\n"
+"您可以输入 ISO 日期格式(YYYY-MM-DD)，但是出错时您不会得到友好的响应——\n"
+"系统会尝试将给定值解释为时间间隔。"
 
 #: g10/helptext.c:131
 msgid "Enter the name of the key holder"
-msgstr "Geef de naam van de sleutelhouder"
+msgstr "请输入密钥持有人的名字"
 
 #: g10/helptext.c:136
 msgid "please enter an optional but highly suggested email address"
-msgstr "geef alstublieft een niet-verplichte maar sterk aangeraden e-mail adres"
+msgstr "请输入电子邮件地址(可选项，但强烈推荐使用)"
 
 #: g10/helptext.c:140
 msgid "Please enter an optional comment"
-msgstr "Geef alstublieft een niet-verplichte opmerking"
+msgstr "请输入注释(可选项)"
 
 #: g10/helptext.c:145
 msgid ""
@@ -4521,15 +4509,15 @@ msgid ""
 "O  to continue with key generation.\n"
 "Q  to to quit the key generation."
 msgstr ""
-"N  om de naam te wijzigen.\n"
-"C  om de opmerking te wijzigen.\n"
-"E  om het e-mail adres te wijzigen.\n"
-"O  om door te gaan met de aanmaak van de sleutel.\n"
-"Q  om te stoppen met de aanmaak van de sleutel."
+"N  修改姓名。\n"
+"C  修改注释。\n"
+"E  修改电子邮件地址。\n"
+"O  继续产生密钥。\n"
+"Q  中止产生密钥。"
 
 #: g10/helptext.c:154
 msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
-msgstr "Beantwoord \"ja\" (of \"j\") als het goed is om een deelsleutel aan te maken."
+msgstr "如果您允许生成子钥，请回答“yes”(或者“y”)。"
 
 #: g10/helptext.c:162
 msgid ""
@@ -4561,51 +4549,50 @@ msgid ""
 "\n"
 "If you don't know what the right answer is, answer \"0\"."
 msgstr ""
-"Als u een gebruikerscode op een sleutel ondertekend, is het eerst nodig\n"
-"dat u controleert dat de sleutel is van de persoon die genoemd wordt in\n"
-"de gebruikerscode.  Het is nuttig voor anderen om precies te weten hoe\n"
-"nauwkeurig u dit gedaan heeft.\n"
+"当您为某把密钥上某个用户标识添加签字时，您必须首先验证这把\n"
+"密钥确实属于署名于它的用户标识上的那个人。了解到您曾多么谨\n"
+"慎地对此进行过验证，对其他人是非常有用的\n"
 "\n"
-"\"0\" betekent dat u niets beweert over u precies u de sleutel geverifieerd\n"
-"....heeft.\n"
+"“0” 表示您不能提出任何特定的声明来表明\n"
+"    您多仔细验证那把密钥\n"
 "\n"
-"\"1\" betekent dat u gelooft dat de sleutel is van de persoon die beweert de\n"
-"    eigenaar te zijn, maar dat u de sleutel helemaal niet geverifieerd heeft\n"
-"    Dit is nuttig voor een \"persona\" verificatie, waar u de sleutel van een\n"
-"    pseudonieme gebruiker ondertekent.\n"
+"“1” 表示您相信这把密钥属于那个声明是主人的人，\n"
+"    但是您不能或根本没有验证过。\n"
+"    这对那些只想要“个人”验证的人来说很有用，\n"
+"    因为您为一把类似匿名使用者的密钥签了字。\n"
 "\n"
-"\"2\" betekent dat u de sleutel een beetje geverifieerd heeft.  Bijvoorbeeld\n"
-"    door de vingerafdruk van de sleutel te controleren en de gebruikerscode\n"
-"    t.o.v. een foto ID te vergelijken.\n"
+"“2” 表示您随意地验证了那把密钥。\n"
+"    例如，您验证了这把密钥的指纹，\n"
+"    或比对照片验证了用户标识。\n"
 "\n"
-"\"3\" betekent dat u een uitgebreide verificatie van de sleutel heeft gedaan.\n"
-"    Bijvoorbeeld door de vingerafdruk van de sleutel in persoon te verifi毛ren\n"
-"    met de eigenaar van de sleutel, door de naam van de sleutel eigenaar\n"
-"    vast te stellen aan de hand van een betrouwbaar document met foto\n"
-"    (zoals een paspoort), en door met het versturen van e-mail te controleren\n"
-"    dat het e-mail adres van de sleutel eigenaar is.\n"
+"“3” 表示您做了大量详尽的验证密钥工作。\n"
+"    例如说，您同密钥持有人验证了密钥指纹，\n"
+"    而且通过查验附带照片而难以伪造的证件(如护照)\n"
+"    确认了密钥持有人的姓名与密钥上的用户标识一致，\n"
+"    最后您还(通过电子邮件往来)验证了密钥上的\n"
+"    电子邮件地址确实属于密钥持有人。\n"
 "\n"
-"Let op dat de voorbeelden bij niveau 2 en 3 *alleen* voorbeelden zijn.\n"
-"Het is uiteindelijk aan u om te besluiten wat \"een beetje\" en \"uitgebreid\"\n"
-"voor u betekent bij het ondertekenen van sleutels.\n"
+"请注意上述关于等级 2 和 3 的说明仅是例子而已。\n"
+"最终还是得由您自己决定当您为其他密钥签字时，\n"
+"什么是“随意”，而什么是“大量而详尽”。\n"
 "\n"
-"Als u niet weet wat te antwoorden, kunt u \"0\" antwoorden."
+"如果您不知道应该选什么答案的话，就选“0”。"
 
 #: g10/helptext.c:200
 msgid "Answer \"yes\" is you want to sign ALL the user IDs"
-msgstr "Antwoord \"ja\" als u ALLE gebruikerscodes wilt ondertekenen"
+msgstr "如果您想要为所有用户标识签字的话就选“yes”"
 
 #: g10/helptext.c:204
 msgid ""
 "Answer \"yes\" if you really want to delete this user ID.\n"
 "All certificates are then also lost!"
 msgstr ""
-"Antwoord \"ja\" als u echt deze gebruikerscode wilt verwijderen.\n"
-"Alle certificaten zullen ook verloren gaan!"
+"如果您真的想要删除这个用户标识的话就回答“yes”。\n"
+"所有相关认证在此之后也会丢失！"
 
 #: g10/helptext.c:209
 msgid "Answer \"yes\" if it is okay to delete the subkey"
-msgstr "Antwoord \"ja\" als het goed is om de deelsleutel te verwijderen"
+msgstr "如果可以删除这把子钥，请回答“yes”"
 
 #: g10/helptext.c:214
 msgid ""
@@ -4613,11 +4600,9 @@ msgid ""
 "to delete this signature because it may be important to establish a\n"
 "trust connection to the key or another key certified by this key."
 msgstr ""
-"Dit is een geldige ondertekening op de sleutel; normaal\n"
-"gesproken wilt u deze ondertekening niet verwijderen omdat\n"
-"deze belangrijk kan zijn in het tot stand brengen van een\n"
-"vertrouwensverbinding met de sleutel of een andere sleutel\n"
-"die gecertificeerd wordt met deze sleutel."
+"这是一份在这把密钥上有效的签字；通常您不会想要删除这份签字，\n"
+"因为要与这把密钥或拥有这把密钥的签字的密钥建立认证关系可能\n"
+"相当重要。"
 
 #: g10/helptext.c:219
 msgid ""
@@ -4626,19 +4611,15 @@ msgid ""
 "know which key was used because this signing key might establish\n"
 "a trust connection through another already certified key."
 msgstr ""
-"De ondertekening kan niet worden gecontroleerd omdat u de\n"
-"geassocieerde sleutel niet heeft.  U kunt beter wachten met de\n"
-"verwijdering totdat u weet welke sleutel gebruikt is, omdat deze\n"
-"ondertekensleutel mogelijk een vetrouwensverbinding tot stand\n"
-"brengt via een andere gecertificeerde sleutel."
+"这份签字无法被检验，因为您没有相应的密钥。您应该暂缓删除它，\n"
+"直到您知道此签字使用了哪一把密钥；因为用来签字的密钥可能与\n"
+"其他已经验证的密钥存在认证关系。"
 
 #: g10/helptext.c:225
 msgid ""
 "The signature is not valid.  It does make sense to remove it from\n"
 "your keyring."
-msgstr ""
-"De ondertekening is niet geldig.  Het is logisch deze te verwijderen\n"
-"uit uw sleutelbos."
+msgstr "这份签字无效。应当把它从您的钥匙环里删除。"
 
 #: g10/helptext.c:229
 msgid ""
@@ -4648,11 +4629,11 @@ msgid ""
 "only if this self-signature is for some reason not valid and\n"
 "a second one is available."
 msgstr ""
-"Dit is een ondertekening die de gebruikerscode aan de sleutel bindt.\n"
-"Het is meestal geen goed idee om zo'n ondertekening te verwijderen.\n"
-"GnuPG kan zelfs niet meer in staat zijn om deze sleutel te gebruiken.\n"
-"Doe dit dus alleen als deze zelfondertekening om de een of andere\n"
-"reden niet geldig is en er een tweede beschikbaar is."
+"这是一份将密钥与用户标识相联系的签字。通常不应\n"
+"删除这样的签字。事实上，一旦删除，GnuPG\n"
+"可能从此就不能再使用这把密钥了。因此，只有在这\n"
+"把密钥的第一个自身签字因某些原因失效，而有第二\n"
+"个自身签字可用的情况下才这么做。"
 
 #: g10/helptext.c:237
 msgid ""
@@ -4660,33 +4641,32 @@ msgid ""
 "to the current list of preferences.  The timestamp of all affected\n"
 "self-signatures will be advanced by one second.\n"
 msgstr ""
-"De voorkeuren van alle gebruikerscodes (of alleen bepaalde) veranderen\n"
-"naar de huidige lijst van voorkeuren.  De tijdsstempel van alle betrokken\n"
-"zelfondertekeningen worden verhoogt met een seconde.\n"
+"用现有的首选项更新所有(或被选取的)用户标识的首选项。\n"
+"所有受影响的自身签字的时间戳都会增加一秒钟。\n"
 
 #: g10/helptext.c:244
 msgid "Please enter the passhrase; this is a secret sentence \n"
-msgstr "Geef alstublieft het wachtwoord; dit is een geheime zin \n"
+msgstr "请输入密码：这是一个秘密的句子 \n"
 
 #: g10/helptext.c:250
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
-msgstr "Herhaal alstublieft het laatste wachtwoord, zodat u zeker weet wat u heeft ingevoerd."
+msgstr "请再次输入最后的密码，以确定您到底键入了些什么。"
 
 #: g10/helptext.c:254
 msgid "Give the name of the file to which the signature applies"
-msgstr "Geef de naam van het bestand waarvoor de ondertekening van toepassing is"
+msgstr "请给定要添加签字的文件名"
 
 #: g10/helptext.c:259
 msgid "Answer \"yes\" if it is okay to overwrite the file"
-msgstr "Antwoord \"ja\" als het goed is om het bestand te overschrijven"
+msgstr "如果可以覆盖这个文件，请回答“yes”"
 
 #: g10/helptext.c:264
 msgid ""
 "Please enter a new filename. If you just hit RETURN the default\n"
 "file (which is shown in brackets) will be used."
 msgstr ""
-"Geef alstublieft een nieuwe bestandsnaam. Als u alleen op enter\n"
-"drukt wordt het (weergegeven) standaardbestand gebruikt."
+"请输入一个新的文件名。如果您直接按下了回车，那么\n"
+"就会使用显示在括号中的默认的文件名。"
 
 #: g10/helptext.c:270
 msgid ""
@@ -4703,19 +4683,18 @@ msgid ""
 "      Use this to state that the user ID should not longer be used;\n"
 "      this is normally used to mark an email address invalid.\n"
 msgstr ""
-"Het is nodig om een reden voor de certificatie op te geven.  Afhankelijk van\n"
-"van context kunt u uit de volgende lijst kiezen:\n"
-"  \"Sleutel is in gevaar gebracht\"\n"
-"      Gebruik dit als u een reden heeft om te geloven dat personen toegang\n"
-"      tot uw geheime sleutel hebben gekregen die dat niet mochten hebben.\n"
-"  \"Sleutel is achterhaald\"\n"
-"      Gebruik dit als u deze sleutel heeft vervangen door een nieuwere.\n"
-"  \"Sleutel wordt niet meer gebruikt\"\n"
-"      Gebruik dit als u deze sleutel niet meer gebruikt.\n"
-"  \"Gebruikerscode is niet meer geldig\"\n"
-"      Gebruik dit om aan te geven dat de gebruikerscode niet langer moet\n"
-"      worden gebruikt; meestal wordt dit gebruikt om aan te geven dat een\n"
-"      e-mail adres niet meer geldig is.\n"
+"您应该为这份吊销证书指定一个原因。\n"
+"根据情境的不同，您应该可以从这个清单中选出一项：\n"
+"  “密钥已泄漏”\n"
+"      如果您相信有某个未经许可的人已取得了您的私钥，\n"
+"      请选此项。\n"
+"  “密钥已替换”\n"
+"      如果您已用一把新密钥代替旧的，请选此项。\n"
+"  “密钥不再被使用”\n"
+"      如果您已决定让这把密钥退休，请选此项\n"
+"  “用户标识不再有效”\n"
+"      如果这个用户标识不再被使用了，请选此项；\n"
+"      这通常用表明某个电子邮件地址已不再有效。\n"
 
 #: g10/helptext.c:286
 msgid ""
@@ -4723,71 +4702,71 @@ msgid ""
 "revocation certificate.  Please keep this text concise.\n"
 "An empty line ends the text.\n"
 msgstr ""
-"Als u dat wilt, kunt u een tekst invoeren die beschrijft waarom\n"
-"u dit herroepingscertificaat uitgeeft.  Hou de tekst a.u.b. kort.\n"
-"Een lege regel eindigt de tekst.\n"
+"您也可以输入一串文字，描述发布这份吊销证书的理由。\n"
+"请尽量使这段文字简明扼要。\n"
+"键入一空行以结束输入。\n"
 
 #: g10/helptext.c:301
 msgid "No help available"
-msgstr "Geen hulp beschikbaar"
+msgstr "没有可用的帮助"
 
 #: g10/helptext.c:309
 #, c-format
 msgid "No help available for `%s'"
-msgstr "Geen hulp beschikbaar voor `%s'"
+msgstr "‘%s’没有可用的帮助"
 
 #: g10/keydb.c:185
 #, c-format
 msgid "error creating keyring `%s': %s\n"
-msgstr "fout bij aanmaken sleutelbos `%s': %s\n"
+msgstr "建立钥匙环‘%s’时发生错误：%s\n"
 
 #: g10/keydb.c:192
 #, c-format
 msgid "keyring `%s' created\n"
-msgstr "sleutelbos `%s' aangemaakt\n"
+msgstr "钥匙环‘%s’已建立\n"
 
 #: g10/keydb.c:582
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
-msgstr "opnieuw opbouwen sleutelbos buffer mislukt: %s\n"
+msgstr "重新建立钥匙环缓存失败： %s\n"
 
 #: g10/keyring.c:1226
 msgid "WARNING: 2 files with confidential information exists.\n"
-msgstr "WAARSCHUWING: 2 bestanden met vertrouwelijke informatie bestaan.\n"
+msgstr "警告：两个文件存在有互相矛盾的信息。\n"
 
 #: g10/keyring.c:1228
 #, c-format
 msgid "%s is the unchanged one\n"
-msgstr "%s is de ongewijzigde\n"
+msgstr "%s 是没有改变的那一个\n"
 
 #: g10/keyring.c:1229
 #, c-format
 msgid "%s is the new one\n"
-msgstr "%s is de nieuwe\n"
+msgstr "%s 是新的那一个\n"
 
 #: g10/keyring.c:1230
 msgid "Please fix this possible security flaw\n"
-msgstr "Repareer alstublieft dit mogelijke veiligheidsrisico\n"
+msgstr "请修补这个可能的安全性漏洞\n"
 
 #: g10/keyring.c:1350
 #, c-format
 msgid "checking keyring `%s'\n"
-msgstr "bezig met controleren sleutelbos `%s'\n"
+msgstr "正在检查钥匙环‘%s’\n"
 
 #: g10/keyring.c:1381
 #, c-format
 msgid "%lu keys so far checked (%lu signatures)\n"
-msgstr "tot nu toe %lu sleutels gecontroleerd (%lu ondertekeningen)\n"
+msgstr "已检查 %lu 把密钥(%lu 份签字)\n"
 
 #: g10/keyring.c:1392
 #, c-format
 msgid "%lu keys checked (%lu signatures)\n"
-msgstr "%lu sleutels gecontroleerd (%lu ondertekeningen)\n"
+msgstr "已检查 %lu 把密钥(%lu 份签字)\n"
 
 #: g10/keyring.c:1458
 #, c-format
 msgid "%s: keyring created\n"
-msgstr "%s: sleutelbos aangemaakt\n"
+msgstr "%s：钥匙环已建立\n"
 
 #: g10/photoid.c:65
 msgid ""
@@ -4798,163 +4777,163 @@ msgid ""
 "Keeping the image close to 240x288 is a good size to use.\n"
 msgstr ""
 "\n"
-"Kies een afbeelding om te gebruiken als uw foto ID.  De afbeelding moet een\n"
-"JPEG-bestand zijn. Bedenk dat deze afbeelding bewaard wordt in uw openbare\n"
-"sleutel.  Als u een hele grote afbeelding gebruikt, wordt uw sleutel ook erg\n"
-"groot!  Een afbeeldingsgrootte dichtbij 240x288 is het best.\n"
+"请挑选一张图片作为您的照片标识 。这张图片一定要是JPEG文件。\n"
+"请记住这张图片会被存放在您的公钥里。如果您挑了非常大的图片的话，\n"
+"您的密钥也会变成非常大！\n"
+"请尽量把图片尺寸控制在240x288左右，这是个理想的尺寸。\n"
 
 #: g10/photoid.c:79
 msgid "Enter JPEG filename for photo ID: "
-msgstr "Geef JPEG-bestandsnaam voor foto ID: "
+msgstr "输入要当作相片标识的JPEG文件名： "
 
 #: g10/photoid.c:87
 #, c-format
 msgid "Unable to open photo \"%s\": %s\n"
-msgstr "Kan foto \"%s\" niet openen: %s\n"
+msgstr "无法打开照片“%s”：%s\n"
 
 #: g10/photoid.c:97
 msgid "Are you sure you want to use it (y/N)? "
-msgstr "Weet u zeker dat u deze wilt gebruiken (j/N)? "
+msgstr "您确定要用它吗？(y/N)"
 
 #: g10/photoid.c:112
 #, c-format
 msgid "\"%s\" is not a JPEG file\n"
-msgstr "\"%s\" is geen JPEG-bestand\n"
+msgstr "“%s”不是一个 JPEG 文件\n"
 
 #: g10/photoid.c:129
 msgid "Is this photo correct (y/N/q)? "
-msgstr "Is deze foto goed (j/N/q)? "
+msgstr "这张照片正确吗？(y/N/q)"
 
 #: g10/photoid.c:331
 msgid "unable to display photo ID!\n"
-msgstr "kan foto ID niet weergeven!\n"
+msgstr "无法显示照片标识！\n"
 
 #: g10/exec.c:48
 msgid "no remote program execution supported\n"
-msgstr "uitvoeren van andere programma's niet ondersteund\n"
+msgstr "不支持远程调用\n"
 
 #: g10/exec.c:184
 #, c-format
 msgid "can't create directory `%s': %s\n"
-msgstr "kan map `%s' niet aanmaken: %s\n"
+msgstr "无法建立目录‘%s’：%s\n"
 
 #: g10/exec.c:325
 msgid "external program calls are disabled due to unsafe options file permissions\n"
-msgstr "aanroepen van externe programma's zijn uit gezet vanwege onveilige opties-bestandstoegangsrechten\n"
+msgstr "由于配置文件权限不安全，外部程序调用被禁用\n"
 
 #: g10/exec.c:355
 msgid "this platform requires temp files when calling external programs\n"
-msgstr "dit platform vereist het maken van tijdelijke bestanden bij het aanroepen van externe programma's\n"
+msgstr "在这个操作平台上调用外部程序时需要临时文件\n"
 
 #. If we get this far the exec failed.  Clean up and return.
 #: g10/exec.c:432
 #, c-format
 msgid "unable to execute %s \"%s\": %s\n"
-msgstr "kan %s \"%s\" niet uitvoeren: %s\n"
+msgstr "无法执行%s“%s”：%s\n"
 
 #: g10/exec.c:513
 #, c-format
 msgid "system error while calling external program: %s\n"
-msgstr "systeemfout bij aanroepen van extern programma: %s\n"
+msgstr "调用外部程序时发生系统错误：%s\n"
 
 #: g10/exec.c:524 g10/exec.c:583
 msgid "unnatural exit of external program\n"
-msgstr "ongewone afsluiting van extern programma\n"
+msgstr "外部程序异常退出\n"
 
 #: g10/exec.c:539
 msgid "unable to execute external program\n"
-msgstr "kan extern programma niet uitvoeren\n"
+msgstr "无法执行外部程序\n"
 
 #: g10/exec.c:548
 #, c-format
 msgid "unable to read external program response: %s\n"
-msgstr "kan antwoord van extern programma niet lezen: %s\n"
+msgstr "无法读取外部程序响应：%s\n"
 
 #: g10/exec.c:594 g10/exec.c:601
 #, c-format
 msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
-msgstr "WAARSCHUWING: kan tijdelijke bestand (%s) `%s' niet verwijderen: %s\n"
+msgstr "警告：无法删除临时文件(%s)‘%s’：%s\n"
 
 #: g10/exec.c:606
 #, c-format
 msgid "WARNING: unable to remove temp directory `%s': %s\n"
-msgstr "WAARSCHUWING: kan tijdelijke map `%s' niet verwijderen: %s\n"
+msgstr "警告：无法删除临时目录‘%s’：%s\n"
 
 #: g10/keyid.c:316 g10/keyid.c:328 g10/keyid.c:340
 msgid "never     "
-msgstr "nooit"
+msgstr "永不过期"
 
 #: g10/revoke.c:92
 msgid "key incomplete\n"
-msgstr "sleutel onvolledig\n"
+msgstr "密钥不完整\n"
 
 #: g10/revoke.c:102 g10/revoke.c:116 g10/revoke.c:128 g10/revoke.c:174
 #: g10/revoke.c:186 g10/revoke.c:568
 #, c-format
 msgid "build_packet failed: %s\n"
-msgstr "build_packet mislukt: %s\n"
+msgstr "build_packet 失败：%s\n"
 
 #: g10/revoke.c:145
 #, c-format
 msgid "key %08lX incomplete\n"
-msgstr "sleutel %08lX onvolledig\n"
+msgstr "密钥 %08lX 不完整\n"
 
 #: g10/revoke.c:214 g10/revoke.c:433
 msgid "sorry, can't do this in batch mode\n"
-msgstr "sorry, dat kan niet in batch-modus\n"
+msgstr "抱歉，在批处理模式中无法完成此操作\n"
 
 #: g10/revoke.c:281
 msgid "To be revoked by:\n"
-msgstr "Zal worden herroepen door:\n"
+msgstr "将被吊销，吊销者：\n"
 
 #: g10/revoke.c:293
 msgid "(This is a sensitive revocation key)\n"
-msgstr "(Dit is een gevoelige herroepingssleutel)\n"
+msgstr "(这是一把敏感的吊销密钥)\n"
 
 #: g10/revoke.c:297 g10/revoke.c:503
 msgid "Create a revocation certificate for this key? "
-msgstr "Wilt u een herroepingscertificaat aanmaken voor deze sleutel? "
+msgstr "要为这把密钥建立一份吊销证书吗？ "
 
 #: g10/revoke.c:310 g10/revoke.c:534
 msgid "ASCII armored output forced.\n"
-msgstr "ASCII-bepantserde uitvoer afgedwongen.\n"
+msgstr "已强行使用 ASCII 封装过的输出。\n"
 
 #: g10/revoke.c:324 g10/revoke.c:548
 #, c-format
 msgid "make_keysig_packet failed: %s\n"
-msgstr "make_keysig_packet mislukt: %s\n"
+msgstr "make_keysig_packet 失败： %s\n"
 
 #. and issue a usage notice
 #: g10/revoke.c:387
 msgid "Revocation certificate created.\n"
-msgstr "Herroepingscertificaat aangemaakt.\n"
+msgstr "已建立吊销证书。\n"
 
 #: g10/revoke.c:393
 #, c-format
 msgid "no revocation keys found for `%s'\n"
-msgstr "geen herroepingssleutels gevonden voor `%s'\n"
+msgstr "没有找到‘%s’用的吊销密钥\n"
 
 #: g10/revoke.c:447
 #, c-format
 msgid "secret key `%s' not found: %s\n"
-msgstr "geheime sleutel `%s' niet gevonden: %s\n"
+msgstr "找不到‘%s’私钥：%s\n"
 
 #: g10/revoke.c:485
 #, c-format
 msgid "no corresponding public key: %s\n"
-msgstr "geen geassocieerde openbare sleutel: %s\n"
+msgstr "没有相对应的公钥：%s\n"
 
 #: g10/revoke.c:496
 msgid "public key does not match secret key!\n"
-msgstr "openbare sleutel komt niet overeen met geheime sleutel!\n"
+msgstr "公钥与私钥不吻合！\n"
 
 #: g10/revoke.c:519
 msgid "unknown protection algorithm\n"
-msgstr "onbekend beschermingsalgoritme\n"
+msgstr "未知的保护算法\n"
 
 #: g10/revoke.c:523
 msgid "NOTE: This key is not protected!\n"
-msgstr "LET OP: deze sleutel wordt niet beschermd!\n"
+msgstr "注意：这把密钥没有被保护！\n"
 
 #. and issue a usage notice
 #: g10/revoke.c:574
@@ -4967,44 +4946,44 @@ msgid ""
 "your media become unreadable.  But have some caution:  The print system of\n"
 "your machine might store the data and make it available to others!\n"
 msgstr ""
-"Herroepingscertificaat aangemaakt.\n"
+"已建立吊销证书。\n"
 "\n"
-"Bewaar het alstublieft op een medium dat u kunt verstoppen; als boze\n"
-"Gijs er toegang toe krijgt, kan hij het gebruiken om uw sleutel onbruikbaar\n"
-"te maken. Het is slim om dit certificaat af te drukken en te verstoppen, in\n"
-"het geval dat het medium onleesbaar wordt.  Maar pas wel op:  uw afdruk-\n"
-"systeem bewaart mogelijk de gegevens en maakt ze beschikbaar voor\n"
-"anderen!\n"
+"请把这个文件转移到一个可隐藏起来的介质(如软盘)上；\n"
+"如果坏人能够取得这份证书的话，那么他就能让您的密\n"
+"钥无法继续使用。把这份凭证打印出来再藏到安全的地\n"
+"方也是很好的方法，以免您的保存媒体损毁而无法读取。\n"
+"但是千万小心：您的机器上的打印系统可能会在打印过\n"
+"程中把这些数据临时在某个其他人也能够看得到的地方！\n"
 
 #: g10/revoke.c:614
 msgid "Please select the reason for the revocation:\n"
-msgstr "Kies alstublieft een reden voor de herroeping:\n"
+msgstr "请选择吊销的原因：\n"
 
 #: g10/revoke.c:624
 msgid "Cancel"
-msgstr "Annuleren"
+msgstr "取消"
 
 #: g10/revoke.c:626
 #, c-format
 msgid "(Probably you want to select %d here)\n"
-msgstr "(Waarschijnlijk wilt u hier %d kiezen)\n"
+msgstr "(也许您会想要在这里选择%d)\n"
 
 #: g10/revoke.c:667
 msgid "Enter an optional description; end it with an empty line:\n"
-msgstr "Geef een optionele beschrijving; eindig met een lege regel:\n"
+msgstr "请输入描述(可选)；以空白行结束：\n"
 
 #: g10/revoke.c:695
 #, c-format
 msgid "Reason for revocation: %s\n"
-msgstr "Reden voor herroeping: %s\n"
+msgstr "吊销原因：%s\n"
 
 #: g10/revoke.c:697
 msgid "(No description given)\n"
-msgstr "(Geen beschrijving gegeven)\n"
+msgstr "(不给定描述)\n"
 
 #: g10/revoke.c:702
 msgid "Is this okay? "
-msgstr "Is dit goed? "
+msgstr "这样可以吗？ "
 
 #: g10/tdbdump.c:104
 #, c-format
@@ -5012,37 +4991,37 @@ msgid ""
 "# List of assigned trustvalues, created %s\n"
 "# (Use \"gpg --import-ownertrust\" to restore them)\n"
 msgstr ""
-"# Lijst van toegewezen vertrouwenswaarden, gemaakt op %s\n"
-"# (Gebruik \"gpg --import-ownertrust\" om ze te herstellen)\n"
+"# 已指定的信任度的清单，建立于 %s \n"
+"# (请用“gpg --import-ownertrust”导入这些信任度)\n"
 
 #: g10/tdbdump.c:140
 #, c-format
 msgid "can't open file: %s\n"
-msgstr "kan bestand niet openen: %s\n"
+msgstr "无法打开文件：%s\n"
 
 #: g10/tdbdump.c:151
 msgid "line too long\n"
-msgstr "regel te lang\n"
+msgstr "行太长\n"
 
 #: g10/tdbdump.c:159
 msgid "error: missing colon\n"
-msgstr "fout: ontbrekende dubbele punt\n"
+msgstr "错误：冒号缺漏\n"
 
 #: g10/tdbdump.c:164
 msgid "error: invalid fingerprint\n"
-msgstr "fout: ongeldige vingerafdruk\n"
+msgstr "错误：无效的指纹\n"
 
 #: g10/tdbdump.c:168
 msgid "error: no ownertrust value\n"
-msgstr "fout: geen eigenaarsvertrouwen waarde\n"
+msgstr "错误：没有信任度\n"
 
 #. error
 #: g10/tdbdump.c:204
 #, c-format
 msgid "error finding trust record: %s\n"
-msgstr "fout bij vinden vertrouwensgegevens: %s\n"
+msgstr "寻找信任度记录时出错：%s\n"
 
 #: g10/tdbdump.c:208
 #, c-format
 msgid "read error: %s\n"
-msgstr "leesfout: %s\n"
+msgstr "读取错误：%s\n"
