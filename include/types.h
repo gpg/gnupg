@@ -21,7 +21,7 @@
 #ifndef G10_TYPES_H
 #define G10_TYPES_H
 
-#if HAVE_INTTYPES_H
+#ifdef HAVE_INTTYPES_H
 /* For uint64_t */
 #include <inttypes.h>
 #endif
@@ -103,15 +103,19 @@
   #undef u64	    /* maybe there is a macro with this name */
   #if SIZEOF_UNSIGNED_INT == 8
     typedef unsigned int u64;
+    #define U64_C(c) (c ## U)
     #define HAVE_U64_TYPEDEF
   #elif SIZEOF_UNSIGNED_LONG == 8
     typedef unsigned long u64;
+    #define U64_C(c) (c ## UL)
     #define HAVE_U64_TYPEDEF
   #elif SIZEOF_UNSIGNED_LONG_LONG == 8
     typedef unsigned long long u64;
+    #define U64_C(c) (c ## ULL)
     #define HAVE_U64_TYPEDEF
   #elif SIZEOF_UINT64_T == 8
     typedef uint64_t u64;
+    #define U64_C(c) (UINT64_C(c))
     #define HAVE_U64_TYPEDEF
   #endif
 #endif
