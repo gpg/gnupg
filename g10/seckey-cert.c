@@ -158,6 +158,32 @@ do_check( PKT_secret_key *sk, const char *tryagain_text )
 		csum += checksum_mpi( sk->skey[i] );
 		m_free( buffer );
 	    }
+            if( csum != sk->csum ) {
+              /* Due to a fix of a bug in mpi_get_secure_buffer we
+                 might encounter seceret keys which are not correctly
+                 encrypted.  We fix this by a second try, this time
+                 with a reversed bug fix (the memmove below). */
+                byte *p;
+              
+                copy_secret_key( sk, save_sk );
+                cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
+                csum = 0;
+                for(i=pubkey_get_npkey (sk->pubkey_algo);
+		    i < pubkey_get_nskey (sk->pubkey_algo); i++ ) {
+                    buffer = mpi_get_secure_buffer (sk->skey[i], &nbytes,NULL);
+                    for (p=buffer; !*p && nbytes; p++, --nbytes )
+                      ;
+                    if (p != buffer)
+                      memmove (buffer, p, nbytes);
+                    cipher_sync (cipher_hd);
+                    assert (mpi_is_protected(sk->skey[i]));
+                    cipher_decrypt (cipher_hd, buffer, buffer, nbytes);
+                    mpi_set_buffer (sk->skey[i], buffer, nbytes, 0);
+                    mpi_clear_protect_flag (sk->skey[i]);
+                    csum += checksum_mpi (sk->skey[i]);
+                    m_free (buffer);
+                }
+            }
 	    if( opt.emulate_bugs & EMUBUG_GPGCHKSUM ) {
 	       csum = sk->csum;
 	    }
