@@ -33,13 +33,36 @@ in any CPU directory, because there maybe no C substitute.
 Don't forget to delete "config.cache" and run "./config.status --recheck".
 
 
+The Random Device
+=================
+The current version of GNUPG needs the support of a random device.
+If there is no such device, it uses a very simple RNG, which does
+not generate strong random numbers.
+Random devices are available in Linux, FreeBSD and OpenBSD.
+The device files may not exist on your system, please check this
+and create them if needed.
+
+The Linux files should look like this:
+    cr--r--r--	 1 root     sys        1,   8 May 28  1997 /dev/random
+    cr--r--r--	 1 root     sys        1,   9 Feb 16 08:23 /dev/urandom
+You can create them with:
+    mknod /dev/random c 1 8
+    mknod /dev/random c 1 8
+
+The FreeBSD files [from the 970202 snapshot]:
+    crw-r--r--	1 root	wheel	 2,   3 Feb 25 16:54 /dev/random
+    crw-r--r--	1 root	wheel	 2,   4 Feb 25 16:54 /dev/urandom
+You can create them with:
+    mknod /dev/random  c 2 3
+    mknod /dev/urandom c 2 4
+
 
 
 Installation
 ============
-pgp is not installed as suid:root; if you want to do it, do it manually.
+gpg is not installed as suid:root; if you want to do it, do it manually.
 
-The ~/.gpg directory will be created if it does not exist.  Your first
+The ~/.gnupg directory will be created if it does not exist.  Your first
 action should be to create a key pair: "gpg --gen-key".
 
 

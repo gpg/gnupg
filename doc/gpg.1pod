@@ -1,0 +1,297 @@
+=head1 NAME
+
+gpg - GNU Privacy Guard
+
+=head1 SYNOPSIS
+
+B<gpg> [--homedir name] [--options file] [options] command [args]
+
+=head1 DESCRIPTION
+
+This is the main program from the GNUPG system.
+
+=head1 COMMANDS
+
+B<gpg> recognizes these commands:
+
+B<-s>, B<--sign>
+    Make a signature. This option maybe combined
+    with B<--encrypt>.
+
+B<--clearsign>
+    Make a clear text signature.
+
+B<-b>, B<--detach-sign>
+    Make a detached signature.
+
+B<-e>, B<--encrypt>
+    Encrypt data. This option may be combined with B<--sign>.
+
+B<-c>, B<--symmetric>
+    Encrypt only with symmetric cipher
+    This command asks for a passphrase.
+
+B<--store>
+    store only (make a RFC1991 packet).
+
+B<-d>, B<--decrypt>
+    Decrypt data. This is the default operation for data
+    files.
+
+B<-k> [I<keyring>]
+    Kludge to be somewhat compatibe to PGP.
+    Without arguments, all public key-rings are listed,
+    with one argument, only I<keyring> is listed.
+    Special combinations are also allowed, but it may
+    give starnge results when combined with more options.
+    B<-kv>    Same as B<-k>
+    B<-kvv>   List the signatures with every key.
+    B<-kvvv>  Additional check all signatures.
+    B<-kvc>   List fingerprints
+    B<-kvvc>  List fingerprints and signatures
+
+B<--list-keys>
+    List all keys in all public key-rings and check the
+    signatures.
+
+B<--check-keys>
+    Check signatures on a key in the keyring
+
+B<--fingerprint>
+    Show the fingerprints
+
+B<--list-packets>
+    List only the sequence of packets. This is mainly
+    useful for debugging.
+
+B<--gen-key>
+    Generate a new key pair. This command can only be
+    used interactive.
+
+B<--sign-key> I<name>
+    Make a signature on key of user I<name>.
+    This looks for the key, displays the key and checks
+    all existing signatures of this key. If the key is
+    not yet signed by the default user (or the users given
+    with B<-u>), the program displays the information of
+    the key again, together with it's fingerprint and
+    asked whether it should be signed. This question
+    is repeated for all users specified with B<-u>.
+    The key is then signed and the keyring which
+    contains the key is updated.
+
+
+B<--delete-key>
+    Remove key from the public keyring
+
+B<--edit-sig>
+    Edit/remove a key signature.
+
+B<--change-passphrase>
+    Change the passphrase of your secret keyring
+
+B<--gen-revoke>
+    Generate a revocation certificate.
+
+B<--export> [I<names>]
+    Either export all keys from all key-rings (default
+    key-rings and those registered via option B<--keyring>,
+    or if at least one name is given, those of the given
+    name. The new keyring is written to F<stdout> or to
+    the file given with option "output".  Use together
+    with B<-a> to mail those keys.
+
+B<--import>
+    import/merge keys
+
+
+=head1 OPTIONS
+
+Long options can be put in an options file (default F<~/.gnupg/options>);
+do not write the 2 dashes, but simply the name of the option and any
+arguments if required, lines with a hash as the first non-white-space
+character are ignored. Commands maybe put in this file too, but that
+does not make sense.
+
+B<gpg> recognizes these options:
+
+
+B<-a>, B<--armor>
+    Create ASCII armored output.
+
+B<-o> I<file>, B<--output> I<file>
+    Write output to I<file>.
+
+B<-u> I<name>, B<--local-user> I<name>
+    Use I<name> as the user-id to sign.
+
+B<-r>  I<name>, B<--remote-user>  I<name>
+    Use  I<name> as the user-id for encryption.
+
+B<-v>, B<--verbose>
+    Give more informations during processing. If used
+    2 times, the input data is listed in detail.
+
+
+B<-z> I<n>
+    Set compress level to I<n>. A value of 0 for I<n>
+    disables compression. Default is to use the default
+    compression level of zlib (which is 6).
+
+B<-t>, B<--textmode>
+    Use canonical text mode.  Used to make clear-text
+    signatures.
+
+B<-n>, B<--dry-run>
+    Don't make any changes (not yet implemented).
+
+B<--batch>
+    Batch mode; never ask, do not allow interactive
+    commands.
+
+B<--no-batch>
+    Disable batch mode; this may be used if B<batch>
+    is used in the options file.
+
+B<--yes>
+    Assume yes on most questions.
+
+B<--no>
+    Assume no on most questions.
+
+B<--keyring> I<file>
+    Add I<file> to the list of key-rings.
+    If I<file> begins with a tilde and a slash, these
+    are replaced by the HOME directory. If the filename
+    does not contain a slash, it is assumed to be in the
+    home-directory (F<~/.gnupg> if B<--homedir>) is not used.
+
+B<--secret-keyring> I<file>
+    Same as B<--keyring> but for secret key-rings.
+
+B<--homedir> I<dir>
+    Set the name of the home directory to I<dir>. If this
+    option is not used it defaults to F<~/.gnupg>. It does
+    not make sense to use this in a options file.
+
+B<--options> I<file>
+    Read options from I<file> and do not try to read
+    them from the default options file in the homedir
+    (see B<--homedir>). This option is ignored when used
+    in an options file.
+
+B<no-options>
+    Shortcut for B<--options> I</dev/null>.  This option is
+    detected before an attempt to open an option file.
+
+B<--debug> I<flags>
+    Set debugging flags. All flags are or-ed and I<flags> may
+    be given in C syntax (e.g. 0x0042).
+
+B<--debug-all>
+    Set all useful debugging flags.
+
+B<--status-fd> I<n>
+    Write special status strings to the file descriptor I<n>.
+
+B<--no-comment>
+    Do not write comment packets.
+
+B<--completes-needed> I<n>
+    Number of completey trusted users to introduce a new
+    key signator (defaults to 1).
+
+B<--marginals-needed> I<n>
+    Number of marginally trusted users to introduce a new
+    key signator (defaults to 3)
+
+B<--cipher-algo> I<name>
+    Use I<name> as cipher algorithm. Running the program
+    with the option B<--verbose> yields a list off supported
+    algorithms.
+
+B<--pubkey-algo> I<name>
+    Use I<name> as puplic key algorithm. Running the program
+    with the option B<--verbose> yields a list off supported
+    algorithms.
+
+B<--digest-algo> I<name>
+    Use I<name> as message digest algorithm. Running the
+    program with the option B<--verbose> yields a list off
+    supported algorithms.
+
+B<--passphrase-fd> I<n>
+    Read the passphrase from file descriptor I<n>. If you use
+    0 for I<n>, the passphrase will be read from stdin.  This
+    can only be used if only one passphrase is supplied.
+    B<Don't use this option if you can avoid it>
+
+B<no-verbose>
+    Reset verbose level to 0.
+
+B<no-greeting>
+    Suppress the initial copyright message but do not
+    enter batch mode.
+
+B<no-armor>
+    Assume the input data is not in ASCCI armored format.
+
+B<no-default-keyring>
+    Do not add the default key-rings to the list of
+    key-rings.
+
+B<--version>
+    Print version information along with a list
+    of supported algorithms.
+
+B<--warranty>
+    Print warranty information.
+
+B<-h>, B<--help>
+    Print usage information.
+
+
+=head1 RETURN VALUE
+
+The Program returns 0 if everything was fine, 1 if at least
+a signature was bad and other errorcode for fatal errors.
+
+=head1 EXAMPLES
+
+  -se -r Bob [file]	     sign and encrypt for user Bob
+  -sat [file]		     make a clear text signature
+  -sb  [file]		     make a detached signature
+  -k   [userid] 	     show keys
+  -kc  [userid] 	     show fingerprint
+
+=head1 ENVIRONMENT
+
+C<HOME>   Used to locate the default home directory.
+
+=head1 FILES
+
+F<~/.gnupg/secring.gpg>     The secret key-ring
+
+F<~/.gnupg/pubring.gpg>     The public key-ring
+
+F<~/.gnupg/trustdb.gpg>     The trust database
+
+F<~/.gnupg/gnupg.gpg>	    Signature of GNUPG files.
+
+F<~/.gnupg/options>	    May contain options
+
+
+=head1 SEE ALSO
+
+gpgm(1)  gpgk(1)
+
+
+=head1 WARNINGS
+
+Use a B<good> password for your user account and a non-simple passphrase
+to protect your secret key.
+
+Keep in mind that, if this program is used over a network (telnet), it
+is B<very> easy to spy out your passphrase!
+
+

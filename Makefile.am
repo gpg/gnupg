@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS =  intl po zlib util mpi cipher tools g10 checks
+SUBDIRS =  intl po zlib util mpi cipher tools g10 doc checks
 EXTRA_DIST = VERSION
 
 

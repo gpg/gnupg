@@ -1,3 +1,20 @@
+Thu Feb 26 17:09:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in, acinclude.m4, intl/, po/: New macros taken
+	from GNOME, switched to automake 1.2f
+
+Thu Feb 26 09:05:46 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in (doc/Makefile): New
+
+Thu Feb 26 07:40:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in: Changed gettext stuff
+
+Wed Feb 25 11:44:10 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* checks/*test : restructured the directory.
+
 Tue Feb 24 15:59:12 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* configure.in: Changed the name of the package to GNUPG and

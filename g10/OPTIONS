@@ -1,11 +1,11 @@
 # This is a sample option file
 #
 # Unless you you specify which option file to use with the
-# commandline option "--options filename", g10 uses per
-# default the file ~/.g10/options.
+# commandline option "--options filename", gpg uses per
+# default the file ~/.gnupg/options.
 #
 # An option file can contain all long options which are
-# available in G10. If the first non white space character of
+# available in GNUPG. If the first non white space character of
 # a line is a '#', this line is ignored.  Empty lines are also
 # ignored.
 #
@@ -19,41 +19,6 @@
 #-----------------------------------------------
 # With some expections, those cannot be combined
 
-add-key
-# add key to the public keyring
-
-change-passphrase
-# change the passphrase of your secret keyring
-
-check
-# check a signature
-
-decrypt
-# decrypt data (default)
-
-delete-key
-# remove key from public keyring,
-
-edit-sig
-# edit a key signature. Currently you have only the option to delete
-# some signatures.
-
-encrypt
-# (Can be combined with a "sign")
-# encrypt data
-
-export <names>
-# Either export all keys from all keyrings (default keyrings and
-# those registered via option "keyring"), or if at least one name is
-# given, those of the givename. The new keyring is written to stdout
-# or to the file given with option "output"
-
-fingerprint
-# show the fingerprints,
-
-gen-key
-# generate a new key pair, this is an interactive command.
-
 gen-prime
 # Generate a prime.
 # With one argument:  take it as the bitsize and make a simple prime of
@@ -62,160 +27,10 @@ gen-prime
 # With three arguments: same as above, but a third argument indicates
 #			that a generator should also be calculated.
 
-list-packets
-# List only the sequence of packets"},
-
-
 print-mds
 # print all message digests of all give filenames
 
-sign
-# (Can be combined with a "encrypt")
-# make a signature
-
 sign-key
-# make a signature on a key in the keyring
-# Argument is the userid of the key to sign.
-# This looks for the key, displays the key and checks all
-# existing signatures of this key. If the key is not yet signed
-# by the default user (or the users given with "-l"), the programm
-# displays the information of the key again, together with
-# it's fingerprint and asked wehter it should be signed. This question
-# is repeated for all users specified with "-l".  The key is then signed
-# and the keyring which contains the key is updated.
-
 store
 # simply packs the input data into a rfc1991 packet format
-
-symmetric
-# encrypt the input only with the symmetric (conventional) cipher.
-# This asks for a passphrase.
-
-
-test
-# Used for testing some parts of the program
-
-#----------------------------------------------
-#------  Options without a long form ----------
-#----------------------------------------------
-
--k
-# List keyrings.
-# Without arguments, all default public keyrings are listed
-# With one argument, this keyring is listed.
-#
-# -kv	 is the same as -k
-# -kvv	 list the signatures with every key
-# -kvvv  additional checks all signatures
-# -kvc	 list fingerprints
-# -kvvc  list fingerprints and signatures
-# Note that this is a kludge, to emulate the strange pgp syntax;
-# combining it with other options may give other outputs.
-
-
-
--z n
-# Set compress level to n.
-# n = 0 disables compresson. Default compress level depends on
-# the local zlib (6).
-
-
-#-----------------------------------------------
-#------------------- Options -------------------
-#-----------------------------------------------
-
-
-armor
-# create ascii armored output
-
-
-batch
-# batch mode: never ask
-
-no-batch
-# disables batch
-
-cache-all
-# hold everything in memory
-
-
-check-key
-# check signatures on a key in the keyring
-
-debug  value|hexvalue
-#  set debugging flags,
-
-debug-all
-# enable full debugging
-
-
-detach-sign
-# make a detached signature,
-
-dry-run
-# don't make any changes
-
-homedir dirname
-# Set the name of the home directory which defaults to "~/.g10".
-
-keyring  filename
-# add this filename to the list of keyrings.
-# If the filename begins with a tilde and a slash, these are replaced
-# by the HOME directory. If the filename does not contain a slash, it
-# is assumed to be in "~/.g10"
-
-local-user user-string
-#  use this user-string to sign or decrypt
-
-no
-# assume no on most questions
-
-no-armor
-# Assume the input data is not in ascii armored format.
-
-no-default-keyring
-# Do not add the default keyrings to the list of keyrings
-
-no-greeting
-# suppress the initial copyright etc. messages but do not enter batch mode.
-
-no-verbose
-# set verbose level to 0
-
-options filename
-#  Ignored in option files.
-
-no-options
-# same as --options /dev/null.	This option is detected
-# before an attempt to open an option file
-
-output filename
-# use filename for output
-
-passphrase-fd n
-# Read the passphrase from file with the descriptor n.	If you use
-# 0 for n, the passphrase will be read from stdin.  This can only be used
-# if only one passphrase is supplied.
-
-
-remote-user
-# use this user-id for encryption"
-
-secret-keyring filename
-# add filename to the list of secret keyrings
-# see "keyring" for further informations
-
-status-fd n
-# Write status informations to this file descriptor. If this option
-# is not used, no status information is writte.  This option is for the
-# sake of a calling programm (e.g. a MUA) to ease up parsing of output
-# and providing a defined set of status messages.
-# FIXME: use a format ala "100 Blabla"?
-
-verbose
-# Give more informations suring processing. If used 2 times, the input data
-# is listed in detail.
-
-yes
-# assume yes on most questions
 

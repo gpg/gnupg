@@ -1,6 +1,7 @@
 
     * improve iobuf by reading more than one byte at once,
       this shoud espceially done for the buffer in the chain.
+      Change the buffering to a mbuf like scheme? Need it for PSST anyway.
     * add a way to difference between errors and eof in the underflow/flush
       function of iobuf.
     * add checking of armor trailers

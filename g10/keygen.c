@@ -502,7 +502,7 @@ generate_keypair()
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
-    dek = m_alloc_secure( sizeof *dek );
+    dek = m_alloc_secure( sizeof *dek + 8 );
     salt = (byte*)dek + sizeof *dek;
     for(;;) {
 	dek->algo = CIPHER_ALGO_BLOWFISH;

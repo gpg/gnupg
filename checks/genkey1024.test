@@ -1,0 +1,59 @@
+#!/bin/sh
+
+. defs.inc || exit 3
+
+info "This expect script does yet work"
+exit 0
+
+expect - <<EOF
+set timeout -1
+match_max 100000
+spawn ../g10/gpg --no-batch --quick-random --homedir . --gen-key
+expect -exact "Please select the algorithm to use:\r
+   (1) ElGamal is the suggested one.\r
+   (2) DSA can only be used for signatures.\r
+Your selection? (1,2) "
+send -- "1\r"
+expect -exact "1\r
+\r                       \rAbout to generate a new ElGamal keypair.\r
+              minimum keysize is  768 bits\r
+              default keysize is 1024 bits\r
+    highest suggested keysize is 2048 bits\r
+What keysize do you want? (1024) "
+send -- "\r"
+expect -exact "\r
+\r                                 \rRequested keysize is 1024 bits\r
+\r
+You need a User-ID to identify your key; the software constructs the user id\r
+from Real Name, Comment and Email Address in this form:\r
+    \"Heinrich Heine (Der Dichter) <heinrichh@uni-duesseldorf.de>\"\r
+\r
+Real name: "
+send -- "Harry H.\r"
+expect -exact "Harry H.\r
+\r                   \rEmail address: "
+send -- "hh@ddorf.de\r"
+expect -exact "hh@ddorf.de\r
+\r                          \rComment: "
+send -- "a test\r"
+expect -exact "a test\r
+\r               \rYou selected this USER-ID:\r
+    \"Harry H. (a test) <hh@ddorf.de> (INSECURE!)\"\r
+\r
+Edit (N)ame, (C)omment, (E)mail or (O)kay? "
+send -- "o\r"
+expect -exact "o\r
+\r                                            \rYou need a Passphrase to protect your secret key.\r
+\r
+Enter pass phrase: "
+send -- "abc\r"
+expect -ex "abc\r\n"
+expect -ex "\r                   \rRepeat pass phrase:\ "
+send -- "abc\r"
+expect -ex "abc\r\n"
+expect {
+    -ex "public and secret key created and signed.\r"
+    eof  abort
+}
+EOF
+

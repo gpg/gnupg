@@ -137,7 +137,7 @@ strusage( int level )
   static char *digests, *pubkeys, *ciphers;
     const char *p;
     switch( level ) {
-      case 11: p = "GNUPG"; break;
+      case 11: p = "gpg (GNUPG)"; break;
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
       case 19: p = _(

@@ -82,7 +82,11 @@ lock_pool( void *p, size_t n )
     }
 
     if( err ) {
-	if( errno != EPERM )
+	if( errno != EPERM
+	  #ifdef EAGAIN  /* OpenBSD returns this */
+	    && errno != EAGAIN
+	  #endif
+	  )
 	    log_error("can´t lock memory: %s\n", strerror(err));
 	show_warning = 1;
     }

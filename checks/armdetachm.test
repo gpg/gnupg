@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. defs.inc || exit 3
+
+#info Checking armored detached signatures of multiple files
+i="$plain_files $data_files"
+echo "$usrpass1" | run_gpg --passphrase-fd 0 -sab -o x --yes $i
+cat $i | run_gpg -o /dev/null --yes x || error "$i: bad signature"
+

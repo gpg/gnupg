@@ -1,0 +1,20 @@
+#!/bin/sh
+
+. defs.inc || exit 3
+
+#info Checking cleartext signatures
+# There is a minor glitch, which appends a lf to the cleartext.
+# I do not consider that a bug, but I have to use the head .. mimic.
+# It is not clear what should happen to leading LFs, we must
+# change the defintion of cleartext, so that only 1 empty line
+# must follow the headers, but some specs say: any number of empty lines ..
+# clean-sat removes leading LFs
+# I know that this does not work for random data files (due to large lines
+# or what ever) - I hope we can live with it.
+for i in $plain_files; do
+    echo "$usrpass1" | run_gpg --passphrase-fd 0 -sat -o x --yes $i
+    run_gpg -o y --yes x
+    ../tools/clean-sat < $i > z
+    head -c $[ $(cat y | wc -c) - 1 ] y | diff - z || error "$i: mismatch"
+done
+

@@ -82,11 +82,10 @@
 
     Key generation shows progress by printing different characters to
     stderr:
-	     "."  Miller-Rabin test failed.
+	     "."  Last 10 Miller-Rabin tests failed.
 	     "+"  Miller-Rabin test succeeded.
 	     "!"  Reloading the pool with fresh prime numbers
 	     "^"  Checking a new value for the generator
-	     "~"  Issued during generator checks
 	     "<"  Size of one factor decreased
 	     ">"  Size of one factor increased
 
@@ -204,7 +203,7 @@
     -----------------------
     There are several ways to specify a userID, here are some examples:
 
-    * Only by the short keyid (prepend a zero if it start with A..F):
+    * Only by the short keyid (prepend a zero if it begins with A..F):
 
 	"234567C4"
 	"0F34E556E"

@@ -203,7 +203,7 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g, MPI **ret_factors )
 	    else
 		fputc('^', stderr);
 	    for(i=0; i < n+2; i++ ) {
-		fputc('~', stderr);
+		/*fputc('~', stderr);*/
 		mpi_fdiv_q(tmp, pmin1, factors[i] );
 		/* (no mpi_pow(), but it is okay to use this with mod prime) */
 		mpi_powm(b, g, tmp, prime );
@@ -260,6 +260,8 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
     count1 = count2 = 0;
     /* enter (endless) loop */
     for(;;) {
+	int dotcount=0;
+
 	/* generate a random number */
 	mpi_set_bytes( prime, nbits, get_random_byte, randomlevel );
 	/* set high order bit to 1, set low order bit to 1 */
@@ -315,7 +317,10 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 		m_free(mods);
 		return prime;
 	    }
-	    fputc('.', stderr);
+	    if( ++dotcount == 10 ) {
+		fputc('.', stderr);
+		dotcount = 0;
+	    }
 	}
 	fputc(':', stderr); /* restart with a new random value */
     }

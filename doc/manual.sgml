@@ -1,0 +1,92 @@
+<!doctype book PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+]>
+<book>
+  <bookinfo>
+    <title>The GNU Privacy Guard</title>
+    <authorgroup>
+      <author> <firstname>Werner</firstname> <surname>Koch</surname>
+	<affiliation><address><email>wk@computer.org</email></address>
+	</affiliation>
+      </author>
+    </authorgroup>
+    <!-- <version>last modified: <date></version> -->
+    <copyright><year>1998</year><year>1998</year>
+	       <holder>Free Software Foundation, Inc.</holder>
+    </copyright>
+    <legalnotice>
+      <para>This documentation is free software; you can redistribute
+	it and/or modify it under the terms of the GNU General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later
+	version.</para>
+
+      <para>This program is distributed in the hope that it will be
+	useful, but WITHOUT ANY WARRANTY; without even the implied
+	warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+	PURPOSE.  See the GNU General Public License for more
+	details.</para>
+
+      <para>You should have received a copy of the GNU General Public
+	License along with this program; if not, write to the Free
+	Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA 02111-1307 USA</para>
+
+      <para>For more details see the file COPYING in the source
+	distribution of GNUPG.</para>
+    </legalnotice>
+  </bookinfo>
+
+  <toc></toc>
+
+  <chapter id="intro">
+    <title>Introduction</title>
+    <sect1 id="feedback">
+      <title>Feedback</title>
+      <para>Well, I'm german and I find it hard to express myself in
+	english. So if you find some phrases and/or words that I used
+	in a wrong way (and you will find them :-) ), please send me a
+	mail, to let me correct this. Please send me notes about
+	typos, too.</para>
+    </sect1>
+
+
+    <sect1 id="whatis">
+	<title>What is GBUPG</title>
+      <para>GNUPG is a free data encryption and signing tool.
+
+	<screen>
+	    <prompt/$/ <userinput>gpg --version</>
+
+	</screen>
+
+    </sect1>
+
+  </chapter>
+
+<reference>
+   <title>Manual Pages</title>
+     <partintro>
+       <para>These are some short man(1) pages</para>
+     </partintro>
+   <refentry>
+     <refmeta>
+       <refentrytitle>gpg</refentrytitle>
+       <manvolnum>1</manvolnum>
+       <refmiscinfo class="tools">GNU Tools</refmiscinfo></refmiscinfo>
+     </refmeta>
+
+     <refsynopsisdiv>
+     <synopsis>
+     <command>gpg</command>
+     <optional><parameter>options</parameter></optional>
+     <replaceable class="parameter">file name</replaceable>
+     </synopsis>
+     <refpurpose>is the GNUU tool for signing and exncryption</>
+     <refsect1>
+     <title>Description</title>
+     <para> </para>
+     </refsect1>
+   </refentry>
+</reference>
+
+</book>

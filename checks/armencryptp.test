@@ -1,0 +1,12 @@
+#!/bin/sh
+
+. defs.inc || exit 3
+
+#info Checking armored encryption with a pipe
+for i in $plain_files $data_files ; do
+    run_gpg -ea --yes -r "$usrname2" < $i | tee x | run_gpg -o y --yes
+    cmp $i y || error "$i: mismatch"
+    run_gpg --yes < x > y
+    cmp $i y || error "$i: mismatch"
+done
+

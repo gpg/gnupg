@@ -1,3 +1,8 @@
+Thu Feb 26 14:36:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* secmem.c (lock_pool): No error if EAGAIN is returned instead
+	of EPERM.
+
 Fri Feb 20 17:43:05 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* ttyio.c [MINGW32]: Add support for mingw32.

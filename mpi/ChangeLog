@@ -1,3 +1,7 @@
+Thu Feb 26 06:48:54 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* config.links (X86_BROKEN_ALIGN): Added for some systems.
+
 Mon Feb 23 12:21:40 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mpi/m68k/mpih-shift.S (Lspecial): Changed duplicate symbol.

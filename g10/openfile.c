@@ -124,7 +124,7 @@ open_outfile( const char *iname, int mode )
 
 
 /****************
- * Try to open a file without the extension ".sig"
+ * Try to open a file without the extension ".sig" or ".asc"
  * Return NULL if such a file is not available.
  */
 IOBUF
@@ -135,7 +135,8 @@ open_sigfile( const char *iname )
 
     if( iname ) {
 	len = strlen(iname);
-	if( len > 4 && !strcmp(iname + len - 4, ".sig") ) {
+	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")
+			|| !strcmp(iname + len - 4, ".asc")) ) {
 	    char *buf;
 	    buf = m_strdup(iname);
 	    buf[len-4] = 0 ;

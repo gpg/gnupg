@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. defs.inc || exit 3
+
+#info Checking decryption of supplied files
+for i in $plain_files ; do
+    echo "$usrpass1" | run_gpg --passphrase-fd 0 -o y --yes $i.asc
+    cmp $i y || error "$i: mismatch"
+done
+
