@@ -204,15 +204,32 @@ destroy_dotlock ( DOTLOCK h )
 #if !defined (HAVE_DOSISH_SYSTEM)
     if ( h )
       {
+        DOTLOCK hprev, htmp;
+
+        /* First remove the handle from our global list of all locks. */
+        for (hprev=NULL, htmp=all_lockfiles; htmp; hprev=htmp, htmp=htmp->next)
+          if (htmp == h)
+            {
+              if (hprev)
+                hprev->next = htmp->next;
+              else
+                all_lockfiles = htmp->next;
+              h->next = NULL;
+              break;
+            }
+
+        /* Second destroy the lock. */
 	if (!h->disable)
           {
-	    if (h->locked)
+	    if (h->locked && h->lockname)
               unlink (h->lockname);
-	    unlink (h->tname);
+            if (h->tname)
+              unlink (h->tname);
 	    m_free (h->tname);
 	    m_free (h->lockname);
           }
 	m_free(h);
+
       }
 #endif
 }
@@ -339,9 +356,15 @@ release_dotlock( DOTLOCK h )
 #else
     int pid;
 
-    if( h->disable ) {
+    /* To avoid atexit race conditions we first check whether there
+       are any locks left.  It might happen that another atexit
+       handler tries to release the lock while the atexit handler of
+       this module already ran and thus H is undefined.  */
+    if(!all_lockfiles)
+        return 0;
+
+    if( h->disable ) 
 	return 0;
-    }
 
     if( !h->locked ) {
 	log_debug("oops, `%s' is not locked\n", h->lockname );
