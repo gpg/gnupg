@@ -34,23 +34,25 @@
 #include "card-common.h"
 
 /* Map the SC error codes to the GNUPG ones */
-int
+gpg_error_t
 map_sc_err (int rc)
 {
+  gpg_err_code_t e;
+
   switch (rc)
     {
-    case 0: rc = 0; break;
+    case 0: e = 0; break;
 #ifdef HAVE_OPENSC
-    case SC_ERROR_NOT_SUPPORTED:         rc = GNUPG_Not_Supported; break;
-    case SC_ERROR_PKCS15_APP_NOT_FOUND:  rc = GNUPG_No_PKCS15_App; break;
-    case SC_ERROR_OUT_OF_MEMORY:         rc = GNUPG_Out_Of_Core; break;
-    case SC_ERROR_CARD_NOT_PRESENT:      rc = GNUPG_Card_Not_Present; break;
-    case SC_ERROR_CARD_REMOVED:          rc = GNUPG_Card_Removed; break;
-    case SC_ERROR_INVALID_CARD:          rc = GNUPG_Invalid_Card; break;
+    case SC_ERROR_NOT_SUPPORTED:         e = GPG_ERR_NOT_SUPPORTED; break;
+    case SC_ERROR_PKCS15_APP_NOT_FOUND:  e = GPG_ERR_NO_PKCS15_APP; break;
+    case SC_ERROR_OUT_OF_MEMORY:         e = GPG_ERR_ENOMEM; break;
+    case SC_ERROR_CARD_NOT_PRESENT:      e = GPG_ERR_CARD_NOT_PRESENT; break;
+    case SC_ERROR_CARD_REMOVED:          e = GPG_ERR_CARD_REMOVED; break;
+    case SC_ERROR_INVALID_CARD:          e = GPG_ERR_INVALID_CARD; break;
 #endif
-    default: rc = GNUPG_Card_Error; break;
+    default: e = GPG_ERR_CARD_ERROR; break;
     }
-  return rc;
+  return gpg_make_error (GPG_ERR_SOURCE_UNKNOWN, e);
 }
 
 /* Get the keygrip from CERT, return 0 on success */
@@ -89,7 +91,7 @@ card_help_get_keygrip (KsbaCert cert, unsigned char *array)
    information of the card.  Detects whgether a PKCS_15 application is
    stored.
 
-   Common errors: GNUPG_Card_Not_Present */
+   Common errors: GPG_ERR_CARD_NOT_PRESENT */
 int
 card_open (CARD *rcard)
 {
@@ -99,7 +101,7 @@ card_open (CARD *rcard)
 
   card = xtrycalloc (1, sizeof *card);
   if (!card)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
   card->reader = 0;
   
   rc = sc_establish_context (&card->ctx, "scdaemon");
@@ -112,7 +114,7 @@ card_open (CARD *rcard)
   if (card->reader >= card->ctx->reader_count)
     {
       log_error ("no card reader available\n");
-      rc = GNUPG_Card_Error;
+      rc = gpg_error (GPG_ERR_CARD_ERROR);
       goto leave;
     }
   card->ctx->error_file = log_get_stream ();
@@ -121,7 +123,7 @@ card_open (CARD *rcard)
 
   if (sc_detect_card_presence (card->ctx->reader[card->reader], 0) != 1)
     {
-      rc = GNUPG_Card_Not_Present;
+      rc = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
       goto leave;
     }
 
@@ -155,7 +157,7 @@ card_open (CARD *rcard)
 
   return rc;
 #else
-  return GNUPG_Not_Supported;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif
 }
 
@@ -240,7 +242,7 @@ find_iccsn (const unsigned char *buffer, size_t length, char **serial)
 
   s = find_simple_tlv (buffer, length, 0x5A, &n);
   if (!s)
-    return GNUPG_Card_Error;
+    return gpg_error (GPG_ERR_CARD_ERROR);
   length -= s - buffer;
   if (n > length)
     {
@@ -255,14 +257,16 @@ find_iccsn (const unsigned char *buffer, size_t length, char **serial)
           n--;
         }
       else
-        return GNUPG_Card_Error; /* Bad encoding; does not fit into buffer. */
+        return gpg_error (GPG_ERR_CARD_ERROR); /* Bad encoding; does
+                                                  not fit into
+                                                  buffer. */
     }
   if (!n)
-    return GNUPG_Card_Error; /* Well, that is too short. */
+    return gpg_error (GPG_ERR_CARD_ERROR); /* Well, that is too short. */
 
   *serial = p = xtrymalloc (2*n+1);
   if (!*serial)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
   for (; n; n--, p += 2, s++)
     sprintf (p, "%02X", *s);
   *p = 0;
@@ -290,7 +294,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
 #endif
 
   if (!card || !serial || !stamp)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   *serial = NULL;
   *stamp = 0; /* not available */
@@ -328,21 +332,21 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
   if (rc)
     {
       log_error ("sc_select_file failed: %s\n", sc_strerror (rc));
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   if (file->type != SC_FILE_TYPE_WORKING_EF
       || file->ef_structure != SC_FILE_EF_TRANSPARENT)
     {
       log_error ("wrong type or structure of GDO file\n");
       sc_file_free (file);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
 
   if (!file->size || file->size >= DIM(buf) )
     { /* FIXME: Use a real parser */
       log_error ("unsupported size of GDO file (%d)\n", file->size);
       sc_file_free (file);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   buflen = file->size;
       
@@ -351,16 +355,16 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
   if (rc < 0) 
     {
       log_error ("error reading GDO file: %s\n", sc_strerror (rc));
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   if (rc != buflen)
     {
       log_error ("short read on GDO file\n");
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
 
   rc = find_iccsn (buf, buflen, serial);
-  if (rc == GNUPG_Card_Error)
+  if (gpg_err_code (rc) == GPG_ERR_CARD_ERROR)
     log_error ("invalid structure of GDO file\n");
   if (!rc && card->p15card && !strcmp (*serial, "D27600000000000000000000"))
     { /* This is a German card with a silly serial number.  Try to get
@@ -376,7 +380,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
       *serial = NULL;
       p = xtrymalloc (strlen (efser) + 7);
       if (!p)
-          rc = GNUPG_Out_Of_Core;
+          rc = out_of_core ();
       else
         {
           strcpy (p, "FF0100");
@@ -392,7 +396,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
         {
           xfree (*serial);
           *serial = NULL;
-          rc = GNUPG_Out_Of_Core;
+          rc = out_of_core ();
         }
       else
         {
@@ -404,7 +408,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
     }
   return rc;
 #else
-  return GNUPG_Not_Supported;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif
 }
 
@@ -415,7 +419,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
    the KEYGRIP of the keypair.  If KEYID is not NULL, it returns the
    ID field of the key in allocated memory; this is a string without
    spaces.  The function returns -1 when all keys have been
-   enumerated.  Note that the error GNUPG_Missing_Certificate may be
+   enumerated.  Note that the error GPG_ERR_MISSING_CERTIFICATE may be
    returned if there is just the private key but no public key (ie.e a
    certificate) available.  Applications might want to continue
    enumerating after this error.*/
@@ -430,13 +434,13 @@ card_enum_keypairs (CARD card, int idx,
     *keyid = NULL;
 
   if (!card || !keygrip)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (idx < 0)
-    return GNUPG_Invalid_Index;
+    return gpg_error (GPG_ERR_INVALID_INDEX);
   if (!card->fnc.initialized)
-    return GNUPG_Card_Not_Initialized;
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!card->fnc.enum_keypairs)
-    return GNUPG_Unsupported_Operation;
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   rc = card->fnc.enum_keypairs (card, idx, keygrip, keyid);
   if (opt.verbose)
     log_info ("card operation enum_keypairs result: %s\n",
@@ -462,13 +466,13 @@ card_enum_certs (CARD card, int idx, char **certid, int *certtype)
     *certid = NULL;
 
   if (!card)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (idx < 0)
-    return GNUPG_Invalid_Index;
+    return gpg_error (GPG_ERR_INVALID_INDEX);
   if (!card->fnc.initialized)
-    return GNUPG_Card_Not_Initialized;
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!card->fnc.enum_certs)
-    return GNUPG_Unsupported_Operation;
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   rc = card->fnc.enum_certs (card, idx, certid, certtype);
   if (opt.verbose)
     log_info ("card operation enum_certs result: %s\n",
@@ -489,11 +493,11 @@ card_read_cert (CARD card, const char *certidstr,
   int rc;
 
   if (!card || !certidstr || !cert || !ncert)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (!card->fnc.initialized)
-    return GNUPG_Card_Not_Initialized;
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!card->fnc.read_cert)
-    return GNUPG_Unsupported_Operation;
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   rc = card->fnc.read_cert (card, certidstr, cert, ncert);
   if (opt.verbose)
     log_info ("card operation read_cert result: %s\n", gnupg_strerror (rc));
@@ -514,11 +518,11 @@ card_sign (CARD card, const char *keyidstr, int hashalgo,
   int rc;
 
   if (!card || !indata || !indatalen || !outdata || !outdatalen || !pincb)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (!card->fnc.initialized)
-    return GNUPG_Card_Not_Initialized;
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!card->fnc.sign)
-    return GNUPG_Unsupported_Operation;
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   rc =  card->fnc.sign (card, keyidstr, hashalgo,
                         pincb, pincb_arg,
                         indata, indatalen,
@@ -542,11 +546,11 @@ card_decipher (CARD card, const char *keyidstr,
   int rc;
 
   if (!card || !indata || !indatalen || !outdata || !outdatalen || !pincb)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (!card->fnc.initialized)
-    return GNUPG_Card_Not_Initialized;
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!card->fnc.decipher)
-    return GNUPG_Unsupported_Operation;
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   rc =  card->fnc.decipher (card, keyidstr,
                             pincb, pincb_arg,
                             indata, indatalen,

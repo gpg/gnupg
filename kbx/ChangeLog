@@ -1,3 +1,11 @@
+2003-06-03  Werner Koch  <wk@gnupg.org>
+	
+	Changed all error codes in all files to the new libgpg-error scheme.
+
+	* keybox-defs.h: Include gpg-error.h .
+	(KeyboxError): Removed. 
+	* Makefile.am: Removed keybox-error.c stuff.
+
 2002-11-14  Werner Koch  <wk@gnupg.org>
 
 	* keybox-search.c (blob_cmp_name) <compare all names>: Fixed

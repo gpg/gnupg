@@ -1,5 +1,5 @@
 /* export.c
- * Copyright (C) 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -70,7 +70,8 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
   desc = xtrycalloc (ndesc, sizeof *desc);
   if (!ndesc)
     {
-      log_error ("%s\n", gnupg_strerror (GNUPG_Out_Of_Core));
+      log_error ("allocating memory for export failed: %s\n",
+                 gpg_strerror (OUT_OF_CORE (errno)));
       goto leave;
     }
 

@@ -1,5 +1,5 @@
 /* call-dirmngr.c - communication with the dromngr 
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,9 +29,9 @@
 #include <ctype.h>
 
 #include <gcrypt.h>
+#include <assuan.h>
 
 #include "gpgsm.h"
-#include "../assuan/assuan.h"
 #include "i18n.h"
 
 struct membuf {
@@ -154,8 +154,9 @@ start_dirmngr (void)
       
       if (fflush (NULL))
         {
+          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
           log_error ("error flushing pending output: %s\n", strerror (errno));
-          return seterr (Write_Error);
+          return tmperr;
         }
 
       if (!opt.dirmngr_program || !*opt.dirmngr_program)
@@ -219,7 +220,7 @@ start_dirmngr (void)
   if (rc)
     {
       log_error ("can't connect to the dirmngr: %s\n", assuan_strerror (rc));
-      return seterr (No_Dirmngr);
+      return gpg_error (GPG_ERR_NO_DIRMNGR);
     }
   dirmngr_ctx = ctx;
 
@@ -284,9 +285,9 @@ inq_certificate (void *opaque, const char *line)
 /* Call the directory manager to check whether the certificate is valid
    Returns 0 for valid or usually one of the errors:
 
-  GNUPG_Certificate_Revoked
-  GNUPG_No_CRL_Known
-  GNUPG_CRL_Too_Old
+  GPG_ERR_CERTIFICATE_REVOKED
+  GPG_ERR NO_CRL_KNOWN
+  GPG_ERR_CRL_TOO_OLD
  */
 int
 gpgsm_dirmngr_isvalid (KsbaCert cert)
@@ -304,7 +305,7 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
   if (!certid)
     {
       log_error ("error getting the certificate ID\n");
-      return seterr (General_Error);
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   if (opt.verbose > 1)
@@ -352,14 +353,14 @@ lookup_cb (void *opaque, const void *buffer, size_t length)
   buf = get_membuf (&parm->data, &len);
   if (!buf)
     {
-      parm->error = GNUPG_Out_Of_Core;
+      parm->error = gpg_error (GPG_ERR_ENOMEM);
       return 0;
     }
 
   cert = ksba_cert_new ();
   if (!cert)
     {
-      parm->error = GNUPG_Out_Of_Core;
+      parm->error = gpg_error (GPG_ERR_ENOMEM);
       return 0;
     }
   rc = ksba_cert_init_from_mem (cert, buf, len);
@@ -475,7 +476,7 @@ gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
 
   pattern = pattern_from_strlist (names);
   if (!pattern)
-    return GNUPG_Out_Of_Core;
+    return OUT_OF_CORE (errno);
   snprintf (line, DIM(line)-1, "LOOKUP %s", pattern);
   line[DIM(line)-1] = 0;
   xfree (pattern);
@@ -598,7 +599,7 @@ gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,
     len += 1 + 3*strlen (argv[i]); /* enough space for percent escaping */
   line = xtrymalloc (len);
   if (!line)
-    return GNUPG_Out_Of_Core;
+    return OUT_OF_CORE (errno);
 
   p = stpcpy (line, command);
   for (i=0; i < argc; i++)

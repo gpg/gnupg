@@ -1,5 +1,5 @@
 /* certlist.c - build list of certificates
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -65,7 +65,7 @@ cert_usage_p (KsbaCert cert, int mode)
       if ((use & (KSBA_KEYUSAGE_KEY_CERT_SIGN)))
         return 0;
       log_info ( _("certificate should have not been used certification\n"));
-      return GNUPG_Wrong_Key_Usage;
+      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
   if ((use & ((mode&1)?
@@ -77,7 +77,7 @@ cert_usage_p (KsbaCert cert, int mode)
             mode==2? _("certificate should have not been used for signing\n"):
             mode==1? _("certificate is not usable for encryption\n"):
                      _("certificate is not usable for signing\n"));
-  return GNUPG_Wrong_Key_Usage;
+  return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
 }
 
 
@@ -150,7 +150,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
     {
       kh = keydb_new (0);
       if (!kh)
-        rc = GNUPG_Out_Of_Core;
+        rc = gpg_error (GPG_ERR_ENOMEM);
       else
         {
           int wrong_usage = 0;
@@ -165,7 +165,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
             {
               rc = secret? gpgsm_cert_use_sign_p (cert)
                          : gpgsm_cert_use_encrypt_p (cert);
-              if (rc == GNUPG_Wrong_Key_Usage)
+              if (gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE)
                 {
                   /* There might be another certificate with the
                      correct usage, so we try again */
@@ -209,14 +209,16 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
                   if (!keydb_get_cert (kh, &cert2))
                     {
                       int tmp = (same_subject_issuer (subject, issuer, cert2)
-                                 && ((secret? gpgsm_cert_use_sign_p (cert2):
-                                      gpgsm_cert_use_encrypt_p (cert2))
-                                     == GNUPG_Wrong_Key_Usage));
+                                 && ((gpg_err_code (
+                                      secret? gpgsm_cert_use_sign_p (cert2)
+                                            : gpgsm_cert_use_encrypt_p (cert2)
+                                      )
+                                     )  == GPG_ERR_WRONG_KEY_USAGE));
                       ksba_cert_release (cert2);
                       if (tmp)
                         goto next_ambigious;
                     }
-                  rc = GNUPG_Ambiguous_Name;
+                  rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
                 }
             }
           xfree (subject);
@@ -226,7 +228,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
             {
               char *p;
 
-              rc = GNUPG_No_Secret_Key;
+              rc = gpg_error (GPG_ERR_NO_SECKEY);
               p = gpgsm_get_keygrip_hexstring (cert);
               if (p)
                 {
@@ -241,7 +243,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
             {
               CERTLIST cl = xtrycalloc (1, sizeof *cl);
               if (!cl)
-                rc = GNUPG_Out_Of_Core;
+                rc = OUT_OF_CORE (errno);
               else 
                 {
                   cl->cert = cert; cert = NULL;
@@ -254,7 +256,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
   
   keydb_release (kh);
   ksba_cert_release (cert);
-  return rc == -1? GNUPG_No_Public_Key: rc;
+  return rc == -1? gpg_error (GPG_ERR_NO_PUBKEY): rc;
 }
 
 void
@@ -285,7 +287,7 @@ gpgsm_find_cert (const char *name, KsbaCert *r_cert)
     {
       kh = keydb_new (0);
       if (!kh)
-        rc = GNUPG_Out_Of_Core;
+        rc = gpg_error (GPG_ERR_ENOMEM);
       else
         {
           rc = keydb_search (kh, &desc, 1);
@@ -299,7 +301,7 @@ gpgsm_find_cert (const char *name, KsbaCert *r_cert)
               else 
                 {
                   if (!rc)
-                    rc = GNUPG_Ambiguous_Name;
+                    rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
                   ksba_cert_release (*r_cert);
                   *r_cert = NULL;
                 }
@@ -308,6 +310,6 @@ gpgsm_find_cert (const char *name, KsbaCert *r_cert)
     }
   
   keydb_release (kh);
-  return rc == -1? GNUPG_No_Public_Key: rc;
+  return rc == -1? gpg_error (GPG_ERR_NO_PUBKEY): rc;
 }
 

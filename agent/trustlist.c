@@ -29,8 +29,7 @@
 #include <sys/stat.h>
 
 #include "agent.h"
-#include "../assuan/assuan.h" /* fixme: need a way to avoid assuan
-                                 calls here */
+#include <assuan.h> /* fixme: need a way to avoid assuan calls here */
 
 static const char headerblurb[] =
 "# This is the list of trusted keys.  Comments like this one and empty\n"
@@ -60,9 +59,10 @@ open_list (int append)
       trustfp = fopen (fname, "wx");
       if (!trustfp)
         {
+          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
           log_error ("can't create `%s': %s\n", fname, strerror (errno));
           xfree (fname);
-          return seterr (File_Create_Error);
+          return tmperr;
         }
       fputs (headerblurb, trustfp);
       fclose (trustfp);
@@ -71,9 +71,10 @@ open_list (int append)
 
   if (!trustfp)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("can't open `%s': %s\n", fname, strerror (errno));
       xfree (fname);
-      return seterr (File_Open_Error);
+      return tmperr;
     }
 
   /*FIXME: check the MAC */
@@ -109,7 +110,7 @@ read_list (char *key, int *keyflag)
         {
           if (feof (trustfp))
             return -1;
-          return GNUPG_Read_Error;
+          return gpg_error (gpg_err_code_from_errno (errno));
         }
       
       if (!*line || line[strlen(line)-1] != '\n')
@@ -117,7 +118,8 @@ read_list (char *key, int *keyflag)
           /* eat until end of line */
           while ( (c=getc (trustfp)) != EOF && c != '\n')
             ;
-          return *line? GNUPG_Line_Too_Long: GNUPG_Incomplete_Line;
+          return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
+                                 : GPG_ERR_INCOMPLETE_LINE);
         }
       
       /* Allow for emty lines and spaces */
@@ -132,7 +134,7 @@ read_list (char *key, int *keyflag)
   if (i!=40 || !(spacep (p+i) || p[i] == '\n'))
     {
       log_error ("invalid formatted fingerprint in trustlist\n");
-      return GNUPG_Bad_Data;
+      return gpg_error (GPG_ERR_BAD_DATA);
     }
   assert (p[i]);
   if (p[i] == '\n')
@@ -149,13 +151,13 @@ read_list (char *key, int *keyflag)
       else
         {
           log_error ("invalid keyflag in trustlist\n");
-          return GNUPG_Bad_Data;
+          return gpg_error (GPG_ERR_BAD_DATA);
         }
       i++;
       if ( !(spacep (p+i) || p[i] == '\n'))
         {
           log_error ("invalid keyflag in trustlist\n");
-          return GNUPG_Bad_Data;
+          return gpg_error (GPG_ERR_BAD_DATA);
         }
     }
 
@@ -253,7 +255,7 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
                 "  \"%s\"%%0A"
                 "has the fingerprint:%%0A"
                 "  %s", name, fpr) < 0 )
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
   rc = agent_get_confirmation (ctrl, desc, "Correct", "No");
   free (desc);
   if (rc)
@@ -264,7 +266,7 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
                 "  \"%s\"%%0A"
                 "to correctly certify user certificates?",
                 name) < 0 )
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
   rc = agent_get_confirmation (ctrl, desc, "Yes", "No");
   free (desc);
   if (rc)
@@ -294,11 +296,11 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
   print_sanitized_string (trustfp, name, 0);
   fprintf (trustfp, "\n%s %c\n", fpr, flag);
   if (ferror (trustfp))
-    rc = GNUPG_Write_Error;
+    rc = gpg_error (gpg_err_code_from_errno (errno));
   
   /* close because we are in append mode */
   if (fclose (trustfp))
-    rc = GNUPG_File_Error;
+    rc = gpg_error (gpg_err_code_from_errno (errno));
   trustfp = NULL;
   return rc;
 }

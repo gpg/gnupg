@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 
 #include "agent.h"
-#include "../assuan/assuan.h"
+#include <assuan.h>
 
 struct keypair_info_s {
   struct keypair_info_s *next;
@@ -97,7 +97,7 @@ kpinfo_cb (void *opaque, const char *line)
   item = xtrycalloc (1, sizeof *item + strlen (line));
   if (!item)
     {
-      parm->error = GNUPG_Out_Of_Core;
+      parm->error = out_of_core ();
       return;
     }
   strcpy (item->hexgrip, line);
@@ -110,7 +110,7 @@ kpinfo_cb (void *opaque, const char *line)
     }
   else if ((p - item->hexgrip) != 40 || !spacep (p))
     { /* not a 20 byte hex keygrip or not followed by a space */
-      parm->error = GNUPG_Invalid_Response;
+      parm->error = gpg_error (GPG_ERR_INVALID_RESPONSE);
       xfree (item);
       return;
     }
@@ -122,7 +122,7 @@ kpinfo_cb (void *opaque, const char *line)
     p++;
   if (p == item->id)
     { /* invalid ID string */
-      parm->error = GNUPG_Invalid_Response;
+      parm->error = gpg_error (GPG_ERR_INVALID_RESPONSE);
       xfree (item);
       return;
     }
@@ -154,7 +154,7 @@ certinfo_cb (void *opaque, const char *line)
     ;
   if (p == pend || !*p)
     { 
-      parm->error = GNUPG_Invalid_Response;
+      parm->error = gpg_error (GPG_ERR_INVALID_RESPONSE);
       return;
     }
   *pend = 0; /* ignore trailing stuff */
@@ -162,7 +162,7 @@ certinfo_cb (void *opaque, const char *line)
   item = xtrycalloc (1, sizeof *item + strlen (p));
   if (!item)
     {
-      parm->error = GNUPG_Out_Of_Core;
+      parm->error = out_of_core ();
       return;
     }
   item->type = type;
@@ -323,7 +323,7 @@ agent_handle_learn (void *assuan_context)
         unsigned char *shadow_info = make_shadow_info (serialno, item->id);
         if (!shadow_info)
           {
-            rc = GNUPG_Out_Of_Core;
+            rc = gpg_error (GPG_ERR_ENOMEM);
             xfree (pubkey);
             goto leave;
           }

@@ -23,7 +23,13 @@
 
 #include "util.h"
 
-/* Error numbers */
+#ifdef GPG_ERR_SOURCE_DEFAULT
+# define GPG_ERR_INVALID_VALUE GPG_ERR_INV_VALUE
+# define GPG_ERR_INVALID_DATA  GPG_ERR_INV_DATA
+# define GPG_ERR_INVALID_SEXP  GPG_ERR_INV_SEXP
+#else /*GPG_ERR_SOURCE_DEFAUL*/
+/* Error numbers.  Note, that they are onkly used for old code not yet
+   converted to libgpg-error. */
 enum {
   GNUPG_EOF = -1,
   GNUPG_No_Error = 0,
@@ -104,6 +110,7 @@ enum {
   GNUPG_Unsupported_Operation = 75,
   GNUPG_Wrong_Key_Usage = 76,
 };
+#endif /* !GPG_ERR_SOURCE_DEFAULT */
 
 /* Status codes - fixme: should go into another file */
 enum {

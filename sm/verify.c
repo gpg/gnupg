@@ -1,5 +1,5 @@
 /* verify.c - Verify a messages signature
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -114,7 +114,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
@@ -122,8 +122,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   fp = fdopen ( dup (in_fd), "rb");
   if (!fp)
     {
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("fdopen() failed: %s\n", strerror (errno));
-      rc = seterr (IO_Error);
       goto leave;
     }
 
@@ -147,7 +147,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   cms = ksba_cms_new ();
   if (!cms)
     {
-      rc = seterr (Out_Of_Core);
+      rc = gpg_error (GPG_ERR_ENOMEM);
       goto leave;
     }
 
@@ -233,7 +233,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   if (data_fd != -1 && !is_detached)
     {
       log_error ("data given for a non-detached signature\n");
-      rc = GNUPG_Conflict;
+      rc = gpg_error (GPG_ERR_CONFLICT);
       goto leave;
     }
 
@@ -360,7 +360,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           if (rc == -1)
             {
               log_error ("certificate not found\n");
-              rc = GNUPG_No_Public_Key;
+              rc = gpg_error (GPG_ERR_NO_PUBKEY);
             }
           else
             log_error ("failed to find the certificate: %s\n",
@@ -457,7 +457,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (DBG_X509)
         log_debug ("signature okay - checking certs\n");
       rc = gpgsm_validate_chain (ctrl, cert, &keyexptime);
-      if (rc == GNUPG_Certificate_Expired)
+      if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
         {
           gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);
           rc = 0;
@@ -482,10 +482,10 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (rc) /* of validate_chain */
         {
           log_error ("invalid certification chain: %s\n", gnupg_strerror (rc));
-          if (rc == GNUPG_Bad_Certificate_Chain
-              || rc == GNUPG_Bad_Certificate
-              || rc == GNUPG_Bad_CA_Certificate
-              || rc == GNUPG_Certificate_Revoked)
+          if (gpg_err_code (rc) == GPG_ERR_BAD_CERT_CHAIN
+              || gpg_err_code (rc) == GPG_ERR_BAD_CERT
+              || gpg_err_code (rc) == GPG_ERR_BAD_CA_CERT
+              || gpg_err_code (rc) == GPG_ERR_CERT_REVOKED)
             gpgsm_status (ctrl, STATUS_TRUST_NEVER, gnupg_error_token (rc));
           else
             gpgsm_status (ctrl, STATUS_TRUST_UNDEFINED, gnupg_error_token (rc));

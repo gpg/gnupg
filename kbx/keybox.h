@@ -1,5 +1,5 @@
 /* keybox.h - Keybox operations
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -41,27 +41,6 @@ extern "C" {
 #ifdef KEYBOX_WITH_X509
 # include <ksba.h>
 #endif
-
-
-typedef enum {
-  KEYBOX_No_Error = 0,
-  KEYBOX_General_Error = 1,
-  KEYBOX_Out_Of_Core = 2,
-  KEYBOX_Invalid_Value = 3,
-  KEYBOX_Timeout = 4,  
-  KEYBOX_Read_Error = 5,
-  KEYBOX_Write_Error = 6,
-  KEYBOX_File_Error = 7,
-  KEYBOX_Blob_Too_Short = 8,
-  KEYBOX_Blob_Too_Large = 9,
-  KEYBOX_Invalid_Handle = 10,
-  KEYBOX_File_Create_Error = 11,
-  KEYBOX_File_Open_Error = 12,
-  KEYBOX_File_Close_Error = 13,
-  KEYBOX_Nothing_Found = 14,
-  KEYBOX_Wrong_Blob_Type = 15,
-  KEYBOX_Missing_Value = 16,
-} KeyboxError;
 
 
 
@@ -114,9 +93,6 @@ int keybox_rebuild_cache (void *);
 void keybox_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
                                void *(*new_realloc_func)(void *p, size_t n),
                                void (*new_free_func)(void*) );
-
-/*-- keybox-errors.c (built) --*/
-const char *keybox_strerror (KeyboxError err);
 
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /* scdaemon.h - Global definitions for the SCdaemon
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -21,10 +21,26 @@
 #ifndef SCDAEMON_H
 #define SCDAEMON_H
 
+#ifdef GPG_ERR_SOURCE_DEFAULT
+#error GPG_ERR_SOURCE_DEFAULT already defined
+#endif
+#define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_SCD
+#include <gpg-error.h>
+#include <errno.h>
+
 #include <time.h>
 #include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/errors.h"
+
+/* Convenience funcion to be used instead of returning the old
+   GNUPG_Out_Of_Core. */
+static __inline__ gpg_error_t
+out_of_core (void)
+{
+  return gpg_error (gpg_err_code_from_errno (errno));
+}
+
 
 #define MAX_DIGEST_LEN 24 
 
@@ -48,6 +64,7 @@ struct {
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 #define DBG_ASSUAN_VALUE 1024   
+#define DBG_CARD_IO_VALUE 2048
 
 #define DBG_COMMAND (opt.debug & DBG_COMMAND_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
@@ -55,6 +72,7 @@ struct {
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
+#define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
 
 struct server_local_s;
 struct card_ctx_s;

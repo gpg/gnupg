@@ -1,5 +1,5 @@
 /* keybox-blob.c - KBX Blob handling
- *	Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -489,7 +489,7 @@ x509_create_blob_cert (KEYBOXBLOB blob, KsbaCert cert)
 
   image = ksba_cert_get_image (cert, &length);
   if (!image)
-    return KEYBOX_General_Error;
+    return gpg_error (GPG_ERR_GENERAL);
   put_membuf (a, image, length);
 
   add_fixup (blob, 12, a->len - kbstart);
@@ -651,7 +651,7 @@ create_blob_finish (KEYBOXBLOB blob)
   /* get the memory area */
   p = get_membuf (a, &n);
   if (!p)
-    return KEYBOX_Out_Of_Core;
+    return gpg_error (GPG_ERR_ENOMEM);
   assert (n >= 20);
 
   /* fixup the length */
@@ -659,7 +659,7 @@ create_blob_finish (KEYBOXBLOB blob)
 
   /* do the fixups */
   if (blob->fixup_out_of_core)
-    return KEYBOX_Out_Of_Core;
+    return gpg_error (GPG_ERR_ENOMEM);
 
   {
     struct fixup_list *fl;
@@ -678,7 +678,7 @@ create_blob_finish (KEYBOXBLOB blob)
 
   pp = xtrymalloc (n);
   if ( !pp )
-    return KEYBOX_Out_Of_Core;
+    return gpg_error (gpg_err_code_from_errno (errno));
   memcpy (pp , p, n);
   blob->blob = pp;
   blob->bloblen = n;
@@ -698,8 +698,8 @@ _keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock, int as_ephemeral)
 
   *r_blob = NULL;
   blob = xtrycalloc (1, sizeof *blob);
-  if( !blob )
-    return KEYBOX_Out_Of_Core;
+  if (!blob)
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   /* fixme: Do some sanity checks on the keyblock */
 
@@ -723,7 +723,7 @@ _keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock, int as_ephemeral)
   blob->sigs = xtrycalloc (blob->nsigs, sizeof *blob->sigs );
   if (!blob->keys || !blob->uids || !blob->sigs)
     {
-      rc = KEYBOX_Out_Of_Core;
+      rc = gpg_error (GPG_ERR_ENOMEM);
       goto leave;
     }
 
@@ -818,7 +818,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   *r_blob = NULL;
   blob = xtrycalloc (1, sizeof *blob);
   if( !blob )
-    return KEYBOX_Out_Of_Core;
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   p = ksba_cert_get_serial (cert);
   if (p)
@@ -828,7 +828,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
       if (n < 2)
         {
           xfree (p);
-          return KEYBOX_General_Error;
+          return gpg_error (GPG_ERR_GENERAL);
         }
       blob->serialbuf = p;
       p++; n--; /* skip '(' */
@@ -838,7 +838,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
         {
           xfree (blob->serialbuf);
           blob->serialbuf = NULL;
-          return KEYBOX_General_Error;
+          return gpg_error (GPG_ERR_GENERAL);
         }
       p++;
       blob->serial = p;
@@ -853,13 +853,13 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   names = xtrymalloc (max_names * sizeof *names);
   if (!names)
     {
-      rc = KEYBOX_Out_Of_Core;
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       goto leave;
     }
   p = ksba_cert_get_issuer (cert, 0);
   if (!p)
     {
-      rc =  KEYBOX_Missing_Value;
+      rc =  gpg_error (GPG_ERR_MISSING_VALUE);
       goto leave;
     }
   names[blob->nuids++] = p;
@@ -874,7 +874,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
           tmp = xtryrealloc (names, max_names * sizeof *names);
           if (!tmp)
             {
-              rc = KEYBOX_Out_Of_Core;
+              rc = gpg_error (gpg_err_code_from_errno (errno));
               goto leave;
             }
         }
@@ -891,7 +891,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   blob->sigs = xtrycalloc (blob->nsigs, sizeof *blob->sigs );
   if (!blob->keys || !blob->uids || !blob->sigs)
     {
-      rc = KEYBOX_Out_Of_Core;
+      rc = gpg_error (GPG_ERR_ENOMEM);
       goto leave;
     }
 
@@ -964,7 +964,7 @@ _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen, off_t off)
   *r_blob = NULL;
   blob = xtrycalloc (1, sizeof *blob);
   if (!blob)
-    return KEYBOX_Out_Of_Core;
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   blob->blob = image;
   blob->bloblen = imagelen;

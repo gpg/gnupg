@@ -1,5 +1,5 @@
 /* certchain.c - certificate chain validation
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -58,7 +58,7 @@ unknown_criticals (KsbaCert cert)
         {
           log_error (_("critical certificate extension %s is not supported\n"),
                      oid);
-          rc = GNUPG_Unsupported_Certificate;
+          rc = gpg_error (GPG_ERR_UNSUPPORTED_CERT);
         }
     }
   if (err && err != -1)
@@ -79,7 +79,7 @@ allowed_ca (KsbaCert cert, int *chainlen)
   if (!flag)
     {
       log_error (_("issuer certificate is not marked as a CA\n"));
-      return GNUPG_Bad_CA_Certificate;
+      return gpg_error (GPG_ERR_BAD_CA_CERT);
     }
   return 0;
 }
@@ -116,7 +116,7 @@ check_cert_policy (KsbaCert cert)
       if (any_critical)
         {
           log_error ("critical marked policy without configured policies\n");
-          return GNUPG_No_Policy_Match;
+          return gpg_error (GPG_ERR_NO_POLICY_MATCH);
         }
       return 0;
     }
@@ -127,7 +127,7 @@ check_cert_policy (KsbaCert cert)
       log_error ("failed to open `%s': %s\n",
                  opt.policy_file, strerror (errno));
       xfree (policies);
-      return GNUPG_No_Policy_Match;
+      return gpg_error (GPG_ERR_NO_POLICY_MATCH);
     }
 
   for (;;) 
@@ -141,6 +141,8 @@ check_cert_policy (KsbaCert cert)
         {
           if (!fgets (line, DIM(line)-1, fp) )
             {
+              gpg_error_t tmperr;
+
               xfree (policies);
               if (feof (fp))
                 {
@@ -152,10 +154,11 @@ check_cert_policy (KsbaCert cert)
                       return 0;
                     }
                   log_error (_("certificate policy not allowed\n"));
-                  return GNUPG_No_Policy_Match;
+                  return gpg_error (GPG_ERR_NO_POLICY_MATCH);
                 }
+              tmperr = gpg_error (gpg_err_code_from_errno (errno));
               fclose (fp);
-              return GNUPG_Read_Error;
+              return tmperr;
             }
       
           if (!*line || line[strlen(line)-1] != '\n')
@@ -165,7 +168,8 @@ check_cert_policy (KsbaCert cert)
                 ;
               fclose (fp);
               xfree (policies);
-              return *line? GNUPG_Line_Too_Long: GNUPG_Incomplete_Line;
+              return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
+                                     : GPG_ERR_INCOMPLETE_LINE);
             }
           
           /* Allow for empty lines and spaces */
@@ -182,7 +186,7 @@ check_cert_policy (KsbaCert cert)
         {
           fclose (fp);
           xfree (policies);
-          return GNUPG_Configuration_Error;
+          return gpg_error (GPG_ERR_CONFIGURATION_ERROR);
         }
       *p = 0; /* strip the rest of the line */
       /* See whether we find ALLOWED (which is an OID) in POLICIES */
@@ -288,7 +292,7 @@ find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
 
       pattern = xtrymalloc (strlen (s)+2);
       if (!pattern)
-        return GNUPG_Out_Of_Core;
+        return OUT_OF_CORE (errno);
       strcpy (stpcpy (pattern, "/"), s);
       add_to_strlist (&names, pattern);
       xfree (pattern);
@@ -332,7 +336,7 @@ gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
@@ -341,13 +345,13 @@ gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
   if (!issuer)
     {
       log_error ("no issuer found in certificate\n");
-      rc = GNUPG_Bad_Certificate;
+      rc = gpg_error (GPG_ERR_BAD_CERT);
       goto leave;
     }
   if (!subject)
     {
       log_error ("no subject found in certificate\n");
-      rc = GNUPG_Bad_Certificate;
+      rc = gpg_error (GPG_ERR_BAD_CERT);
       goto leave;
     }
 
@@ -364,7 +368,7 @@ gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
          print an error here */
       if (rc != -1 && opt.verbose > 1)
         log_error ("failed to find issuer's certificate: rc=%d\n", rc);
-      rc = GNUPG_Missing_Certificate;
+      rc = gpg_error (GPG_ERR_MISSING_CERT);
       goto leave;
     }
 
@@ -372,7 +376,7 @@ gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
   if (rc)
     {
       log_error ("failed to get cert: rc=%d\n", rc);
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
     }
 
  leave:
@@ -431,7 +435,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
@@ -451,7 +455,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       if (!issuer)
         {
           log_error ("no issuer found in certificate\n");
-          rc = GNUPG_Bad_Certificate;
+          rc = gpg_error (GPG_ERR_BAD_CERT);
           goto leave;
         }
 
@@ -463,7 +467,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
         if (not_before == (time_t)(-1) || not_after == (time_t)(-1))
           {
             log_error ("certificate with invalid validity\n");
-            rc = GNUPG_Bad_Certificate;
+            rc = gpg_error (GPG_ERR_BAD_CERT);
             goto leave;
           }
 
@@ -480,7 +484,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
             log_error ("certificate too young; valid from ");
             gpgsm_dump_time (not_before);
             log_printf ("\n");
-            rc = GNUPG_Certificate_Too_Young;
+            rc = gpg_error (GPG_ERR_CERT_TOO_YOUNG);
             goto leave;
           }            
         if (not_after && current_time > not_after)
@@ -499,7 +503,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       if (!opt.no_policy_check)
         {
           rc = check_cert_policy (subject_cert);
-          if (rc == GNUPG_No_Policy_Match)
+          if (gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH)
             {
               any_no_policy_match = 1;
               rc = 1;
@@ -515,15 +519,15 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
             {
               switch (rc)
                 {
-                case GNUPG_Certificate_Revoked:
+                case GPG_ERR_CERT_REVOKED:
                   log_error (_("the certificate has been revoked\n"));
                   any_revoked = 1;
                   break;
-                case GNUPG_No_CRL_Known:
+                case GPG_ERR_NO_CRL_KNOWN:
                   log_error (_("no CRL found for certificate\n"));
                   any_no_crl = 1;
                   break;
-                case GNUPG_CRL_Too_Old:
+                case GPG_ERR_CRL_TOO_OLD:
                   log_error (_("the available CRL is too old\n"));
                   log_info (_("please make sure that the "
                               "\"dirmngr\" is properly installed\n"));
@@ -531,7 +535,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
                   break;
                 default:
                   log_error (_("checking the CRL failed: %s\n"),
-                             gnupg_strerror (rc));
+                             gpg_strerror (rc));
                   goto leave;
                 }
               rc = 0;
@@ -543,7 +547,8 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
           if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
             {
               log_error ("selfsigned certificate has a BAD signatures\n");
-              rc = depth? GNUPG_Bad_Certificate_Chain : GNUPG_Bad_Certificate;
+              rc = gpg_error (depth? GPG_ERR_BAD_CERT_CHAIN
+                                   : GPG_ERR_BAD_CERT);
               goto leave;
             }
           rc = allowed_ca (subject_cert, NULL);
@@ -553,7 +558,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
           rc = gpgsm_agent_istrusted (subject_cert);
           if (!rc)
             ;
-          else if (rc == GNUPG_Not_Trusted)
+          else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
             {
               int rc2;
 
@@ -590,7 +595,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       if (depth > maxdepth)
         {
           log_error (_("certificate chain too long\n"));
-          rc = GNUPG_Bad_Certificate_Chain;
+          rc = gpg_error (GPG_ERR_BAD_CERT_CHAIN);
           goto leave;
         }
 
@@ -607,7 +612,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
             }
           else
             log_error ("failed to find issuer's certificate: rc=%d\n", rc);
-          rc = GNUPG_Missing_Certificate;
+          rc = gpg_error (GPG_ERR_MISSING_CERT);
           goto leave;
         }
 
@@ -616,7 +621,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       if (rc)
         {
           log_error ("failed to get cert: rc=%d\n", rc);
-          rc = GNUPG_General_Error;
+          rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
 
@@ -629,7 +634,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       if (gpgsm_check_cert_sig (issuer_cert, subject_cert) )
         {
           log_error ("certificate has a BAD signatures\n");
-          rc = GNUPG_Bad_Certificate_Chain;
+          rc = gpg_error (GPG_ERR_BAD_CERT_CHAIN);
           goto leave;
         }
 
@@ -642,7 +647,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
           {
             log_error (_("certificate chain longer than allowed by CA (%d)\n"),
                        chainlen);
-            rc = GNUPG_Bad_Certificate_Chain;
+            rc = gpg_error (GPG_ERR_BAD_CERT_CHAIN);
             goto leave;
           }
       }
@@ -672,15 +677,15 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
     { /* If we encountered an error somewhere during the checks, set
          the error code to the most critical one */
       if (any_revoked)
-        rc = GNUPG_Certificate_Revoked;
+        rc = gpg_error (GPG_ERR_CERT_REVOKED);
       else if (any_no_crl)
-        rc = GNUPG_No_CRL_Known;
+        rc = gpg_error (GPG_ERR_NO_CRL_KNOWN);
       else if (any_crl_too_old)
-        rc = GNUPG_CRL_Too_Old;
+        rc = gpg_error (GPG_ERR_CRL_TOO_OLD);
       else if (any_no_policy_match)
-        rc = GNUPG_No_Policy_Match;
+        rc = gpg_error (GPG_ERR_NO_POLICY_MATCH);
       else if (any_expired)
-        rc = GNUPG_Certificate_Expired;
+        rc = gpg_error (GPG_ERR_CERT_EXPIRED);
     }
   
  leave:
@@ -717,7 +722,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
@@ -726,7 +731,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
   if (!issuer)
     {
       log_error ("no issuer found in certificate\n");
-      rc = GNUPG_Bad_Certificate;
+      rc = gpg_error (GPG_ERR_BAD_CERT);
       goto leave;
     }
 
@@ -735,7 +740,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
       if (gpgsm_check_cert_sig (cert, cert) )
         {
           log_error ("selfsigned certificate has a BAD signatures\n");
-          rc = GNUPG_Bad_Certificate;
+          rc = gpg_error (GPG_ERR_BAD_CERT);
           goto leave;
         }
     }
@@ -754,7 +759,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
             }
           else
             log_error ("failed to find issuer's certificate: rc=%d\n", rc);
-          rc = GNUPG_Missing_Certificate;
+          rc = gpg_error (GPG_ERR_MISSING_CERT);
           goto leave;
         }
       
@@ -763,14 +768,14 @@ gpgsm_basic_cert_check (KsbaCert cert)
       if (rc)
         {
           log_error ("failed to get cert: rc=%d\n", rc);
-          rc = GNUPG_General_Error;
+          rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
 
       if (gpgsm_check_cert_sig (issuer_cert, cert) )
         {
           log_error ("certificate has a BAD signatures\n");
-          rc = GNUPG_Bad_Certificate;
+          rc = gpg_error (GPG_ERR_BAD_CERT);
           goto leave;
         }
       if (opt.verbose)

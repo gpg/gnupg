@@ -69,7 +69,6 @@ enum cmd_and_opt_values
   oDaemon,
   oBatch,
   oReaderPort,
-  oPrintATR,
 
 aTest };
 
@@ -93,7 +92,6 @@ static ARGPARSE_OPTS opts[] = {
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
   { oReaderPort, "reader-port", 1, N_("|N|connect to reader at port N")},
-  { oPrintATR,  "print-atr", 0, N_("print ATR and exit")},
 
   {0}
 };
@@ -233,9 +231,6 @@ main (int argc, char **argv )
   char *logfile = NULL;
   int debug_wait = 0;
   int reader_port = 32768; /* First USB reader. */
-  int print_atr = 0;
-  
-
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -371,7 +366,6 @@ main (int argc, char **argv )
         case oDaemon: is_daemon = 1; break;
 
         case oReaderPort: reader_port = pargs.r.ret_int; break;
-        case oPrintATR: print_atr = 1; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}
@@ -410,12 +404,6 @@ main (int argc, char **argv )
     }
 
   
-  if (print_atr)
-    {
-      apdu_open_reader (reader_port);
-      scd_exit (0);
-    }
-
   if (debug_wait && pipe_server)
     {
       log_debug ("waiting for debugger - my pid is %u .....\n",

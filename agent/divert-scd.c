@@ -48,14 +48,14 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
   *r_kid = NULL;
   s = shadow_info;
   if (*s != '(')
-    return GNUPG_Invalid_Sexp;
+    return gpg_error (GPG_ERR_INVALID_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return GNUPG_Invalid_Sexp;
+    return gpg_error (GPG_ERR_INVALID_SEXP);
   want_sn = xtrymalloc (n*2+1);
   if (!want_sn)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
   for (i=0; i < n; i++)
     sprintf (want_sn+2*i, "%02X", s[i]);
   s += n;
@@ -68,12 +68,13 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
 
   n = snext (&s);
   if (!n)
-    return GNUPG_Invalid_Sexp;
+    return gpg_error (GPG_ERR_INVALID_SEXP);
   want_kid = xtrymalloc (n+1);
   if (!want_kid)
     {
+      gpg_error_t tmperr = out_of_core ();
       xfree (want_sn);
-      return GNUPG_Out_Of_Core;
+      return tmperr;
     }
   memcpy (want_kid, s, n);
   want_kid[n] = 0;
@@ -94,7 +95,7 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
               return 0; /* yes, we have the correct card */
             }
         }
-      else if (rc == GNUPG_Card_Not_Present)
+      else if (gpg_err_code (rc) == GPG_ERR_CARD_NOT_PRESENT)
         {
           log_debug ("no card present\n");
           rc = 0;
@@ -115,7 +116,7 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
                     "insert the one with serial number",
                     want_sn_displen, want_sn) < 0)
             {
-              rc = GNUPG_Out_Of_Core;
+              rc = out_of_core ();
             }
           else
             {
@@ -146,12 +147,12 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
   if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
     {
       log_error ("no object identifier for algo %d\n", algo);
-      return GNUPG_Internal_Error;
+      return gpg_error (GPG_ERR_INTERNAL);
     }
 
   frame = xtrymalloc (asnlen + digestlen);
   if (!frame)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
   memcpy (frame, asn, asnlen);
   memcpy (frame+asnlen, digest, digestlen);
   if (DBG_CRYPTO)
@@ -177,7 +178,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   CTRL ctrl = opaque;
 
   if (maxbuf < 2)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
 
   /* FIXME: keep PI and TRIES in OPAQUE.  Frankly this is a whole
@@ -260,32 +261,32 @@ divert_pkdecrypt (CTRL ctrl,
 
   s = cipher;
   if (*s != '(')
-    return GNUPG_Invalid_Sexp;
+    return gpg_error (GPG_ERR_INVALID_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return GNUPG_Invalid_Sexp; 
+    return gpg_error (GPG_ERR_INVALID_SEXP); 
   if (!smatch (&s, n, "enc-val"))
-    return GNUPG_Unknown_Sexp; 
+    return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   if (*s != '(')
-    return GNUPG_Unknown_Sexp;
+    return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return GNUPG_Invalid_Sexp; 
+    return gpg_error (GPG_ERR_INVALID_SEXP); 
   if (!smatch (&s, n, "rsa"))
-    return GNUPG_Unsupported_Algorithm; 
+    return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM); 
   if (*s != '(')
-    return GNUPG_Unknown_Sexp;
+    return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return GNUPG_Invalid_Sexp; 
+    return gpg_error (GPG_ERR_INVALID_SEXP); 
   if (!smatch (&s, n, "a"))
-    return GNUPG_Unknown_Sexp;
+    return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   n = snext (&s);
   if (!n)
-    return GNUPG_Unknown_Sexp; 
+    return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   ciphertext = s;
   ciphertextlen = n;
 

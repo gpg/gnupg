@@ -1,3 +1,14 @@
+2003-06-03  Werner Koch  <wk@gnupg.org>
+
+	Changed all error codes in all files to the new libgpg-error scheme.
+
+	* agent.h: Include gpg-error.h and errno.h
+	* Makefile.am: Link with libgpg-error
+
+	* query.c: assuan.h is now a system header.
+	* genkey.c (agent_genkey): Fixed silly use of xmalloc by
+	xtrymalloc.
+
 2003-04-29  Werner Koch  <wk@gnupg.org>
 
 	* command.c (register_commands): Adjusted for new Assuan semantics.

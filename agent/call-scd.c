@@ -38,7 +38,7 @@
 #endif
 
 #include "agent.h"
-#include "../assuan/assuan.h"
+#include <assuan.h>
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX
@@ -144,7 +144,7 @@ unlock_scd (int rc)
     {
       log_error ("failed to release the SCD lock\n");
       if (!rc)
-        rc = GNUPG_Internal_Error;
+        rc = gpg_error (GPG_ERR_INTERNAL);
     }
 #endif
   return rc;
@@ -165,7 +165,7 @@ start_scd (void)
   if (!pth_mutex_acquire (&scd_lock, 0, NULL))
     {
       log_error ("failed to acquire the SCD lock\n");
-      return GNUPG_Internal_Error;
+      return gpg_error (GPG_ERR_INTERNAL);
     }
 #endif
 
@@ -179,8 +179,9 @@ start_scd (void)
       
   if (fflush (NULL))
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("error flushing pending output: %s\n", strerror (errno));
-      return unlock_scd (seterr (Write_Error));
+      return unlock_scd (tmperr);
     }
 
   if (!opt.scdaemon_program || !*opt.scdaemon_program)
@@ -210,7 +211,7 @@ start_scd (void)
     {
       log_error ("can't connect to the SCdaemon: %s\n",
                  assuan_strerror (rc));
-      return unlock_scd (seterr (No_Scdaemon));
+      return unlock_scd (gpg_error (GPG_ERR_NO_SCDAEMON));
     }
   scd_ctx = ctx;
   
@@ -410,7 +411,7 @@ agent_card_pksign (const char *keyid,
     return rc;
 
   if (indatalen*2 + 50 > DIM(line))
-    return unlock_scd (seterr (General_Error));
+    return unlock_scd (gpg_error (GPG_ERR_GENERAL));
 
   sprintf (line, "SETDATA ");
   p = line + strlen (line);
@@ -443,8 +444,9 @@ agent_card_pksign (const char *keyid,
   *r_buf = xtrymalloc (*r_buflen);
   if (!*r_buf)
     {
+      gpg_error_t tmperr = out_of_core ();
       xfree (*r_buf);
-      return unlock_scd (GNUPG_Out_Of_Core);
+      return unlock_scd (tmperr);
     }
   p = stpcpy (*r_buf, "(7:sig-val(3:rsa(1:s" );
   sprintf (p, "%u:", (unsigned int)sigbuflen);
@@ -479,7 +481,7 @@ agent_card_pkdecrypt (const char *keyid,
 
   /* FIXME: use secure memory where appropriate */
   if (indatalen*2 + 50 > DIM(line))
-    return unlock_scd (seterr (General_Error));
+    return unlock_scd (gpg_error (GPG_ERR_GENERAL));
 
   sprintf (line, "SETDATA ");
   p = line + strlen (line);
@@ -506,7 +508,7 @@ agent_card_pkdecrypt (const char *keyid,
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
-    return unlock_scd (GNUPG_Out_Of_Core);
+    return unlock_scd (gpg_error (GPG_ERR_ENOMEM));
 
   return unlock_scd (0);
 }
@@ -541,7 +543,7 @@ agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen)
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
-    return unlock_scd (GNUPG_Out_Of_Core);
+    return unlock_scd (gpg_error (GPG_ERR_ENOMEM));
 
   return unlock_scd (0);
 }
@@ -577,12 +579,12 @@ agent_card_readkey (const char *id, unsigned char **r_buf)
     }
   *r_buf = get_membuf (&data, &buflen);
   if (!*r_buf)
-    return unlock_scd (GNUPG_Out_Of_Core);
+    return unlock_scd (gpg_error (GPG_ERR_ENOMEM));
 
   if (!gcry_sexp_canon_len (*r_buf, buflen, NULL, NULL))
     {
       xfree (*r_buf); *r_buf = NULL;
-      return unlock_scd (GNUPG_Invalid_Value);
+      return unlock_scd (gpg_error (GPG_ERR_INV_VALUE));
     }
 
   return unlock_scd (0);

@@ -21,9 +21,24 @@
 #ifndef AGENT_H
 #define AGENT_H
 
+#ifdef GPG_ERR_SOURCE_DEFAULT
+#error GPG_ERR_SOURCE_DEFAULT already defined
+#endif
+#define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_GPGAGENT
+#include <gpg-error.h>
+#include <errno.h>
+
 #include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/errors.h"
+
+/* Convenience function to be used instead of returning the old
+   GNUPG_Out_Of_Core. */
+static __inline__ gpg_error_t
+out_of_core (void)
+{
+  return gpg_error (gpg_err_code_from_errno (errno));
+}
 
 #define MAX_DIGEST_LEN 24 
 

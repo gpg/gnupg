@@ -47,7 +47,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
   if (!ctrl->have_keygrip)
     {
       log_error ("speculative decryption not yet supported\n");
-      rc = seterr (No_Secret_Key);
+      rc = gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
     }
 
@@ -55,7 +55,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
   if (rc)
     {
       log_error ("failed to convert ciphertext: %s\n", gcry_strerror (rc));
-      rc = seterr (Invalid_Data);
+      rc = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
 
@@ -68,7 +68,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
   if (!s_skey && !shadow_info)
     {
       log_error ("failed to read the secret key\n");
-      rc = seterr (No_Secret_Key);
+      rc = gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
     }
 
@@ -77,7 +77,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
 
       if (!gcry_sexp_canon_len (ciphertext, ciphertextlen, NULL, NULL))
         {
-          rc = GNUPG_Invalid_Sexp;
+          rc = gpg_error (GPG_ERR_INVALID_SEXP);
           goto leave;
         }
 

@@ -45,14 +45,14 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
   if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
     {
       log_error ("no object identifier for algo %d\n", algo);
-      return GNUPG_Internal_Error;
+      return gpg_error (GPG_ERR_INTERNAL);
     }
 
   if (digestlen + asnlen + 4  > nframe )
     {
       log_error ("can't encode a %d bit MD into a %d bits frame\n",
                  (int)(digestlen*8), (int)nbits);
-      return GNUPG_Internal_Error;
+      return gpg_error (GPG_ERR_INTERNAL);
     }
   
   /* We encode the MD in this way:
@@ -63,7 +63,7 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
    */
   frame = xtrymalloc (nframe);
   if (!frame)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
   n = 0;
   frame[n++] = 0;
   frame[n++] = 1; /* block type */
@@ -96,14 +96,14 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
   size_t len;
 
   if (!ctrl->have_keygrip)
-    return seterr (No_Secret_Key);
+    return gpg_error (GPG_ERR_NO_SECKEY);
 
   s_skey = agent_key_from_file (ctrl,
                                 ctrl->keygrip, &shadow_info, ignore_cache);
   if (!s_skey && !shadow_info)
     {
       log_error ("failed to read the secret key\n");
-      rc = seterr (No_Secret_Key);
+      rc = gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
     }
 

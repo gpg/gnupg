@@ -1,5 +1,5 @@
 /* gpgsm.c - GnuPG for S/MIME 
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,8 +28,9 @@
 #include <fcntl.h>
 
 #include <gcrypt.h>
+#include <assuan.h> /* malloc hooks */
+
 #include "gpgsm.h"
-#include "../assuan/assuan.h" /* malloc hooks */
 #include "../kbx/keybox.h" /* malloc hooks */
 #include "i18n.h"
 #include "keydb.h"
@@ -1096,16 +1097,16 @@ main ( int argc, char **argv)
           log_error (_("can't sign using `%s': %s\n"),
                      sl->d, gnupg_strerror (rc));
           gpgsm_status2 (&ctrl, STATUS_INV_RECP,
-                         rc == -1? "1":
-                         rc == GNUPG_No_Public_Key?       "1":
-                         rc == GNUPG_Ambiguous_Name?      "2":
-                         rc == GNUPG_Wrong_Key_Usage?     "3":
-                         rc == GNUPG_Certificate_Revoked? "4":
-                         rc == GNUPG_Certificate_Expired? "5":
-                         rc == GNUPG_No_CRL_Known?        "6":
-                         rc == GNUPG_CRL_Too_Old?         "7":
-                         rc == GNUPG_No_Policy_Match?     "8":
-                         rc == GNUPG_No_Secret_Key?       "9":
+                         gpg_err_code (rc) == -1?                      "1":
+                         gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?       "1":
+                         gpg_err_code (rc) == GPG_ERR_AMBIGUOUS_NAME?  "2":
+                         gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE? "3":
+                         gpg_err_code (rc) == GPG_ERR_CERT_REVOKED?    "4":
+                         gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED?    "5":
+                         gpg_err_code (rc) == GPG_ERR_NO_CRL_KNOWN?    "6":
+                         gpg_err_code (rc) == GPG_ERR_CRL_TOO_OLD?     "7":
+                         gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH? "8":
+                         gpg_err_code (rc) == GPG_ERR_NO_SECKEY?       "9":
                          "0",
                          sl->d, NULL);
         }
@@ -1118,15 +1119,15 @@ main ( int argc, char **argv)
           log_error (_("can't encrypt to `%s': %s\n"),
                      sl->d, gnupg_strerror (rc));
           gpgsm_status2 (&ctrl, STATUS_INV_RECP,
-                         rc == -1? "1":
-                         rc == GNUPG_No_Public_Key?       "1":
-                         rc == GNUPG_Ambiguous_Name?      "2":
-                         rc == GNUPG_Wrong_Key_Usage?     "3":
-                         rc == GNUPG_Certificate_Revoked? "4":
-                         rc == GNUPG_Certificate_Expired? "5":
-                         rc == GNUPG_No_CRL_Known?        "6":
-                         rc == GNUPG_CRL_Too_Old?         "7":
-                         rc == GNUPG_No_Policy_Match?     "8":
+                         gpg_err_code (rc) == -1?                         "1":
+                         gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?          "1":
+                         gpg_err_code (rc) == GPG_ERR_AMBIGUOUS_NAME?     "2":
+                         gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE?    "3":
+                         gpg_err_code (rc) == GPG_ERR_CERT_REVOKED?       "4":
+                         gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED?       "5":
+                         gpg_err_code (rc) == GPG_ERR_NO_CRL_KNOWN?       "6":
+                         gpg_err_code (rc) == GPG_ERR_CRL_TOO_OLD?        "7":
+                         gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH?    "8":
                          "0",
                          sl->d, NULL);
         }
@@ -1306,7 +1307,7 @@ main ( int argc, char **argv)
           if (rc)
             ;
           else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))
-            rc = GNUPG_Bug;
+            rc = gpg_error (GPG_ERR_BUG);
           else 
             rc = gpgsm_agent_passwd (grip);
           if (rc)

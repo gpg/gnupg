@@ -1,3 +1,10 @@
+2003-06-03  Werner Koch  <wk@gnupg.org>
+
+	Changed all error codes in all files to the new libgpg-error scheme.
+
+	* gpgsm.h: Include gpg-error.h .
+	* Makefile.am: Link with libgpg-error.
+
 2003-04-29  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Use libassuan.  Don't override LDFLAGS anymore.

@@ -1,3 +1,25 @@
+2003-06-03  Werner Koch  <wk@gnupg.org>
+
+	Changed all error codes in all files to the new libgpg-error scheme.
+
+	* scdaemon.h: Include gpg-error.h and errno.h
+	* card.c (map_sc_err): Use unknown for the error source.
+	* Makefile.am: Link with libgpg-error
+
+2003-05-14  Werner Koch  <wk@gnupg.org>
+
+	* atr.c, atr.h: New.
+	* sc-investigate.c: Dump the ATR in a human readable format.
+
+2003-05-08  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.h (DBG_CARD_IO_VALUE): New.
+
+	* sc-investigate.c: New.
+	* scdaemon.c (main): Removed --print-atr option.
+
+	* iso7816.c, iso7816.h, app-openpgp.c: New.
+
 2003-04-29  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c: New options --print-atr and --reader-port

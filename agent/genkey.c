@@ -40,14 +40,14 @@ store_key (GCRY_SEXP private, const char *passphrase, int force)
   if ( !gcry_pk_get_keygrip (private, grip) )
     {
       log_error ("can't calculate keygrip\n");
-      return seterr (General_Error);
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   len = gcry_sexp_sprint (private, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
   buf = gcry_malloc_secure (len);
   if (!buf)
-      return seterr (Out_Of_Core);
+      return out_of_core ();
   len = gcry_sexp_sprint (private, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
 
@@ -101,7 +101,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   if (rc)
     {
       log_error ("failed to convert keyparam: %s\n", gcry_strerror (rc));
-      return seterr (Invalid_Data);
+      return gpg_error (GPG_ERR_INVALID_DATA);
     }
 
   /* Get the passphrase now, cause key generation may take a while. */
@@ -147,7 +147,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_key);
       xfree (pi);
-      return seterr (Invalid_Data);
+      return gpg_error (GPG_ERR_INVALID_DATA);
     }
   s_public = gcry_sexp_find_token (s_key, "public-key", 0);
   if (!s_public)
@@ -156,7 +156,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
       gcry_sexp_release (s_private);
       gcry_sexp_release (s_key);
       xfree (pi);
-      return seterr (Invalid_Data);
+      return gpg_error (GPG_ERR_INVALID_DATA);
     }
   gcry_sexp_release (s_key); s_key = NULL;
   
@@ -175,22 +175,24 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   log_debug ("returning public key\n");
   len = gcry_sexp_sprint (s_public, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
-  buf = xmalloc (len);
+  buf = xtrymalloc (len);
   if (!buf)
     {
+      gpg_error_t tmperr = out_of_core ();
       gcry_sexp_release (s_private);
       gcry_sexp_release (s_public);
-      return seterr (Out_Of_Core);
+      return tmperr;
     }
   len = gcry_sexp_sprint (s_public, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
   if (fwrite (buf, len, 1, outfp) != 1)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("error writing public key: %s\n", strerror (errno));
       gcry_sexp_release (s_private);
       gcry_sexp_release (s_public);
       xfree (buf);
-      return seterr (File_Create_Error);
+      return tmperr;
     }
   gcry_sexp_release (s_public);
   xfree (buf);

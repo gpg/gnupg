@@ -1,5 +1,5 @@
 /* import.c - Import certificates
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -181,8 +181,8 @@ check_and_store (CTRL ctrl, struct stats_s *stats, KsbaCert cert, int depth)
       log_error (_("basic certificate checks failed - not imported\n"));
       stats->not_imported++;
       print_import_problem (ctrl, cert,
-                            rc == GNUPG_Missing_Certificate? 2 :
-                            rc == GNUPG_Bad_Certificate?     1 : 0);
+                            gpg_err_code (rc) == GPG_ERR_MISSING_CERT? 2 :
+                            gpg_err_code (rc) == GPG_ERR_BAD_CERT?     1 : 0);
     }
 }
 
@@ -203,8 +203,8 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
   fp = fdopen ( dup (in_fd), "rb");
   if (!fp)
     {
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("fdopen() failed: %s\n", strerror (errno));
-      rc = seterr (IO_Error);
       goto leave;
     }
 
@@ -224,7 +224,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
       cms = ksba_cms_new ();
       if (!cms)
         {
-          rc = seterr (Out_Of_Core);
+          rc = gpg_error (GPG_ERR_ENOMEM);
           goto leave;
         }
 
@@ -268,7 +268,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
       cert = ksba_cert_new ();
       if (!cert)
         {
-          rc = seterr (Out_Of_Core);
+          rc = gpg_error (GPG_ERR_ENOMEM);
           goto leave;
         }
 
@@ -284,7 +284,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
   else
     {
       log_error ("can't extract certificates from input\n");
-      rc = GNUPG_No_Data;
+      rc = gpg_error (GPG_ERR_NO_DATA);
     }
    
  leave:

@@ -559,11 +559,11 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
 
   s_skey = agent_key_from_file (ctrl, grip, &shadow_info, 1);
   if (!s_skey && !shadow_info)
-    rc = seterr (No_Secret_Key);
+    rc = gpg_error (GPG_ERR_NO_SECKEY);
   else if (!s_skey)
     {
       log_error ("changing a smartcard PIN is not yet supported\n");
-      rc = seterr (Not_Implemented);
+      rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
   else
     rc = agent_protect_and_store (ctrl, s_skey);

@@ -1,5 +1,5 @@
 /* sign.c - Sign a message
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -73,8 +73,9 @@ hash_and_copy_data (int fd, GCRY_MD_HD md, KsbaWriter writer)
   fp = fdopen ( dup (fd), "rb");
   if (!fp)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
-      return GNUPG_File_Open_Error;
+      return tmperr;
     }
 
   do 
@@ -95,8 +96,8 @@ hash_and_copy_data (int fd, GCRY_MD_HD md, KsbaWriter writer)
   while (nread && !rc);
   if (ferror (fp))
     {
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("read error on fd %d: %s\n", fd, strerror (errno));
-      rc = GNUPG_Read_Error;
     }
   fclose (fp);
   if (!any)
@@ -106,7 +107,7 @@ hash_and_copy_data (int fd, GCRY_MD_HD md, KsbaWriter writer)
          already written the tag for data and now expects an octet
          string but an octet string of zeize 0 is illegal. */
       log_error ("cannot sign an empty message\n");
-      rc = GNUPG_No_Data;
+      rc = gpg_error (GPG_ERR_NO_DATA);
     }
   if (!rc)
     {
@@ -134,7 +135,7 @@ gpgsm_get_default_cert (KsbaCert *r_cert)
 
   hd = keydb_new (0);
   if (!hd)
-    return GNUPG_General_Error;
+    return gpg_error (GPG_ERR_GENERAL);
   rc = keydb_search_first (hd);
   if (rc)
     {
@@ -313,7 +314,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
@@ -328,7 +329,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   cms = ksba_cms_new ();
   if (!cms)
     {
-      rc = seterr (Out_Of_Core);
+      rc = gpg_error (GPG_ERR_ENOMEM);
       goto leave;
     }
 
@@ -360,13 +361,13 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       if (!cert)
         {
           log_error ("no default signer found\n");
-          rc = seterr (General_Error);
+          rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
       signerlist = xtrycalloc (1, sizeof *signerlist);
       if (!signerlist)
         {
-          rc = GNUPG_Out_Of_Core;
+          rc = OUT_OF_CORE (errno);
           ksba_cert_release (cert);
           goto leave;
         }
@@ -424,7 +425,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       if (!algo)
         {
           log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
-          rc = GNUPG_Bug;
+          rc = gpg_error (GPG_ERR_BUG);
           goto leave;
         }
       gcry_md_enable (data_md, algo);
@@ -446,7 +447,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       if ( !digest || !digest_len)
         {
           log_error ("problem getting the hash of the data\n");
-          rc = GNUPG_Bug;
+          rc = gpg_error (GPG_ERR_BUG);
           goto leave;
         }
       for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
@@ -505,7 +506,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
           if ( !digest || !digest_len)
             {
               log_error ("problem getting the hash of the data\n");
-              rc = GNUPG_Bug;
+              rc = gpg_error (GPG_ERR_BUG);
               goto leave;
             }
           for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
@@ -574,7 +575,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
               fpr = gpgsm_get_fingerprint_hexstring (cl->cert, GCRY_MD_SHA1);
               if (!fpr)
                 {
-                  rc = seterr (Out_Of_Core);
+                  rc = gpg_error (GPG_ERR_ENOMEM);
                   gcry_md_close (md);
                   goto leave;
                 }
@@ -587,7 +588,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
               xfree (fpr);
               if (rc < 0)
                 {
-                  rc = seterr (Out_Of_Core);
+                  rc = gpg_error (GPG_ERR_ENOMEM);
                   gcry_md_close (md);
                   goto leave;
                 }

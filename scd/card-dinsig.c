@@ -116,8 +116,9 @@ dinsig_enum_keypairs (CARD card, int idx,
   cert = ksba_cert_new ();
   if (!cert)
     {
+      gpg_error_t tmperr = out_of_core ();
       xfree (buf);
-      return GNUPG_Out_Of_Core;
+      return tmperr;
     }
 
   krc = ksba_cert_init_from_mem (cert, buf, buflen); 
@@ -127,13 +128,13 @@ dinsig_enum_keypairs (CARD card, int idx,
       log_error ("failed to parse the certificate at idx %d: %s\n",
                  idx, ksba_strerror (krc));
       ksba_cert_release (cert);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   if (card_help_get_keygrip (cert, keygrip))
     {
       log_error ("failed to calculate the keygrip at index %d\n", idx);
       ksba_cert_release (cert);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }      
   ksba_cert_release (cert);
 
@@ -142,7 +143,7 @@ dinsig_enum_keypairs (CARD card, int idx,
     {
       *keyid = xtrymalloc (17);
       if (!*keyid)
-        return GNUPG_Out_Of_Core;
+        return out_of_core ();
       if (!idx)
         strcpy (*keyid, "DINSIG-DF01.C000");
       else
@@ -170,7 +171,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
   else if (!strcmp (certidstr, "DINSIG-DF01.C200"))
     sc_format_path ("3F00DF01C200", &path);
   else
-    return GNUPG_Invalid_Id;
+    return gpg_error (GPG_ERR_INVALID_ID);
 
   rc = sc_select_file (card->scard, &path, &file);
   if (rc) 
@@ -183,19 +184,20 @@ dinsig_read_cert (CARD card, const char *certidstr,
     {
       log_error ("wrong type or structure of certificate EF\n");
       sc_file_free (file);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   if (file->size < 20) /* check against a somewhat arbitrary length */
     { 
       log_error ("certificate EF too short\n");
       sc_file_free (file);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   buf = xtrymalloc (file->size);
   if (!buf)
     {
+      gpg_error_t tmperr = out_of_core ();
       sc_file_free (file);
-      return GNUPG_Out_Of_Core;
+      return tmperr;
     }
       
   rc = sc_read_binary (card->scard, 0, buf, file->size, 0);
@@ -204,7 +206,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
       log_error ("short read on certificate EF\n");
       sc_file_free (file);
       xfree (buf);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   sc_file_free (file);
   if (rc < 0) 

@@ -1,5 +1,5 @@
 /* call-agent.c - divert operations to the agent
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,9 +30,9 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
+#include <assuan.h>
 
 #include "gpgsm.h"
-#include "../assuan/assuan.h"
 #include "i18n.h"
 #include "keydb.h" /* fixme: Move this to import.c */
 
@@ -159,8 +159,9 @@ start_agent (void)
 
       if (fflush (NULL))
         {
+          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
           log_error ("error flushing pending output: %s\n", strerror (errno));
-          return seterr (Write_Error);
+          return tmperr;
         }
 
       if (!opt.agent_program || !*opt.agent_program)
@@ -224,7 +225,7 @@ start_agent (void)
   if (rc)
     {
       log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
-      return seterr (No_Agent);
+      return gpg_error (GPG_ERR_NO_AGENT);
     }
   agent_ctx = ctx;
 
@@ -241,7 +242,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION display=%s",
 		    opt.display ? opt.display : dft_display) < 0)
-	return GNUPG_Out_Of_Core;
+	return OUT_OF_CORE (errno);
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -259,7 +260,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION ttyname=%s",
 		    opt.ttyname ? opt.ttyname : dft_ttyname) < 0)
-	return GNUPG_Out_Of_Core;
+	return OUT_OF_CORE (errno);
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -272,7 +273,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s",
 		    opt.ttyname ? opt.ttytype : dft_ttytype) < 0)
-	return GNUPG_Out_Of_Core;
+	return OUT_OF_CORE (errno);
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -285,7 +286,7 @@ start_agent (void)
     {
       old_lc = strdup (old_lc);
       if (!old_lc)
-        return GNUPG_Out_Of_Core;
+        return OUT_OF_CORE (errno);
     }
   dft_lc = setlocale (LC_CTYPE, "");
 #endif
@@ -294,7 +295,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-ctype=%s",
 		    opt.lc_ctype ? opt.lc_ctype : dft_lc) < 0)
-	rc = GNUPG_Out_Of_Core;
+	rc = OUT_OF_CORE (errno);
       else
 	{
 	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
@@ -319,7 +320,7 @@ start_agent (void)
     {
       old_lc = strdup (old_lc);
       if (!old_lc)
-        return GNUPG_Out_Of_Core;
+        return OUT_OF_CORE (errno);
     }
   dft_lc = setlocale (LC_MESSAGES, "");
 #endif
@@ -328,7 +329,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-messages=%s",
 		    opt.lc_messages ? opt.lc_messages : dft_lc) < 0)
-	rc = GNUPG_Out_Of_Core;
+	rc = OUT_OF_CORE (errno);
       else
 	{
 	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
@@ -381,7 +382,7 @@ gpgsm_agent_pksign (const char *keygrip,
     return rc;
 
   if (digestlen*2 + 50 > DIM(line))
-    return seterr (General_Error);
+    return gpg_error (GPG_ERR_GENERAL);
 
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
@@ -414,10 +415,10 @@ gpgsm_agent_pksign (const char *keygrip,
   if (!gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL))
     {
       xfree (*r_buf); *r_buf = NULL;
-      return GNUPG_Invalid_Value;
+      return gpg_error (GPG_ERR_INVALID_VALUE);
     }
 
-  return *r_buf? 0 : GNUPG_Out_Of_Core;
+  return *r_buf? 0 : OUT_OF_CORE (errno);
 }
 
 
@@ -454,12 +455,12 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   size_t ciphertextlen;
   
   if (!keygrip || strlen(keygrip) != 40 || !ciphertext || !r_buf || !r_buflen)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
   *r_buf = NULL;
 
   ciphertextlen = gcry_sexp_canon_len (ciphertext, 0, NULL, NULL);
   if (!ciphertextlen)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
 
   rc = start_agent ();
   if (rc)
@@ -492,16 +493,17 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   put_membuf (&data, "", 1); /* make sure it is 0 terminated */
   buf = get_membuf (&data, &len);
   if (!buf)
-    return seterr (Out_Of_Core);
+    return gpg_error (GPG_ERR_ENOMEM);
   /* FIXME: We would better a return a full S-exp and not just a part */
   assert (len);
   len--; /* remove the terminating 0 */
   n = strtoul (buf, &endp, 10);
   if (!n || *endp != ':')
-    return seterr (Invalid_Sexp);
+    return gpg_error (GPG_ERR_INVALID_SEXP);
   endp++;
   if (endp-buf+n > len)
-    return seterr (Invalid_Sexp); /* oops len does not match internal len*/
+    return gpg_error (GPG_ERR_INVALID_SEXP); /* oops len does not
+                                                match internal len*/
   memmove (buf, endp, n);
   *r_buflen = n;
   *r_buf = buf;
@@ -550,7 +552,7 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
   gk_parm.sexp = keyparms;
   gk_parm.sexplen = gcry_sexp_canon_len (keyparms, 0, NULL, NULL);
   if (!gk_parm.sexplen)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
   rc = assuan_transact (agent_ctx, "GENKEY",
                         membuf_data_cb, &data, 
                         inq_genkey_parms, &gk_parm, NULL, NULL);
@@ -561,11 +563,11 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
     }
   buf = get_membuf (&data, &len);
   if (!buf)
-    return GNUPG_Out_Of_Core;
+    return gpg_error (GPG_ERR_ENOMEM);
   if (!gcry_sexp_canon_len (buf, len, NULL, NULL))
     {
       xfree (buf);
-      return GNUPG_Invalid_Sexp;
+      return gpg_error (GPG_ERR_INVALID_SEXP);
     }
   *r_pubkey = buf;
   return 0;
@@ -589,7 +591,7 @@ gpgsm_agent_istrusted (KsbaCert cert)
   if (!fpr)
     {
       log_error ("error getting the fingerprint\n");
-      return seterr (General_Error);
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   snprintf (line, DIM(line)-1, "ISTRUSTED %s", fpr);
@@ -616,14 +618,14 @@ gpgsm_agent_marktrusted (KsbaCert cert)
   if (!fpr)
     {
       log_error ("error getting the fingerprint\n");
-      return seterr (General_Error);
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   dn = ksba_cert_get_issuer (cert, 0);
   if (!dn)
     {
       xfree (fpr);
-      return seterr (General_Error);
+      return gpg_error (GPG_ERR_GENERAL);
     }
   snprintf (line, DIM(line)-1, "MARKTRUSTED %s S %s", fpr, dn);
   line[DIM(line)-1] = 0;
@@ -649,7 +651,7 @@ gpgsm_agent_havekey (const char *hexkeygrip)
     return rc;
 
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
 
   snprintf (line, DIM(line)-1, "HAVEKEY %s", hexkeygrip);
   line[DIM(line)-1] = 0;
@@ -680,7 +682,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
   buf = get_membuf (parm->data, &len);
   if (!buf)
     {
-      parm->error = GNUPG_Out_Of_Core;
+      parm->error = gpg_error (GPG_ERR_ENOMEM);
       return 0;
     }
 
@@ -689,7 +691,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
   cert = ksba_cert_new ();
   if (!cert)
     {
-      parm->error = GNUPG_Out_Of_Core;
+      parm->error = gpg_error (GPG_ERR_ENOMEM);
       return 0;
     }
   rc = ksba_cert_init_from_mem (cert, buf, len);
@@ -702,7 +704,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
     }
 
   rc = gpgsm_basic_cert_check (cert);
-  if (rc == GNUPG_Missing_Certificate)
+  if (gpg_err_code (rc) == GPG_ERR_MISSING_CERT)
     { /* For later use we store it in the ephemeral database. */
       log_info ("issuer certificate missing - storing as ephemeral\n");
       keydb_store_cert (cert, 1, NULL);
@@ -766,7 +768,7 @@ gpgsm_agent_passwd (const char *hexkeygrip)
     return rc;
 
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
 
   snprintf (line, DIM(line)-1, "PASSWD %s", hexkeygrip);
   line[DIM(line)-1] = 0;

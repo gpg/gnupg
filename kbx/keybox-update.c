@@ -1,5 +1,5 @@
 /* keybox-update.c - keybox update operations
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -50,15 +50,16 @@ create_tmp_file (const char *template,
     {
       bakfname = xtrymalloc (strlen (template) + 1);
       if (!bakfname)
-        return KEYBOX_Out_Of_Core;
+        return gpg_error (gpg_err_code_from_errno (errno));
       strcpy (bakfname, template);
       strcpy (bakfname+strlen(template)-4, EXTSEP_S "bak");
       
       tmpfname = xtrymalloc (strlen (template) + 1);
       if (!tmpfname)
         {
+          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
           xfree (bakfname);
-          return KEYBOX_Out_Of_Core;
+          return tmperr;
         }
       strcpy (tmpfname,template);
       strcpy (tmpfname + strlen (template)-4, EXTSEP_S "tmp");
@@ -67,28 +68,30 @@ create_tmp_file (const char *template,
     { /* file does not end with kbx; hmmm */
       bakfname = xtrymalloc ( strlen (template) + 5);
       if (!bakfname)
-        return KEYBOX_Out_Of_Core;
+        return gpg_error (gpg_err_code_from_errno (errno));
       strcpy (stpcpy (bakfname, template), EXTSEP_S "bak");
       
       tmpfname = xtrymalloc ( strlen (template) + 5);
       if (!tmpfname)
         {
+          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
           xfree (bakfname);
-          return KEYBOX_Out_Of_Core;
+          return tmperr;
         }
       strcpy (stpcpy (tmpfname, template), EXTSEP_S "tmp");
     }
 # else /* Posix file names */
   bakfname = xtrymalloc (strlen (template) + 2);
   if (!bakfname)
-    return KEYBOX_Out_Of_Core;
+    return gpg_error (gpg_err_code_from_errno (errno));
   strcpy (stpcpy (bakfname,template),"~");
   
   tmpfname = xtrymalloc ( strlen (template) + 5);
   if (!tmpfname)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       xfree (bakfname);
-      return KEYBOX_Out_Of_Core;
+      return tmperr;
     }
   strcpy (stpcpy (tmpfname,template), EXTSEP_S "tmp");
 # endif /* Posix filename */
@@ -96,9 +99,10 @@ create_tmp_file (const char *template,
   *r_fp = fopen (tmpfname, "wb");
   if (!*r_fp)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       xfree (tmpfname);
       xfree (bakfname);
-      return KEYBOX_File_Create_Error;
+      return tmperr;
     }
   
   *r_bakfname = bakfname;
@@ -139,7 +143,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 #endif
       if (rename (fname, bakfname) )
         {
-          return KEYBOX_File_Error;
+          return gpg_error (gpg_err_code_from_errno (errno));
 	}
     }
   
@@ -149,7 +153,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 #endif
   if (rename (tmpfname, fname) )
     {
-      rc = KEYBOX_File_Error;
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       if (secret)
         {
 /*            log_info ("WARNING: 2 files with confidential" */
@@ -185,7 +189,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   /* Open the source file. Because we do a rename, we have to check the 
      permissions of the file */
   if (access (fname, W_OK))
-    return KEYBOX_Write_Error;
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   fp = fopen (fname, "rb");
   if (mode == 1 && !fp && errno == ENOENT)
@@ -193,7 +197,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
       newfp = fopen (fname, "wb");
       if (!newfp )
         {
-          return KEYBOX_File_Create_Error;
+          return gpg_error (gpg_err_code_from_errno (errno));
 	}
 
       rc = _keybox_write_blob (blob, newfp);
@@ -203,7 +207,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         }
       if ( fclose (newfp) )
         {
-          return KEYBOX_File_Create_Error;
+          return gpg_error (gpg_err_code_from_errno (errno));
 	}
 
 /*        if (chmod( fname, S_IRUSR | S_IWUSR )) */
@@ -216,7 +220,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
 
   if (!fp)
     {
-      rc = KEYBOX_File_Open_Error;
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       goto leave;
     }
 
@@ -236,13 +240,13 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         {
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
-              rc = KEYBOX_Write_Error;
+              rc = gpg_error (gpg_err_code_from_errno (errno));
               goto leave;
             }
         }
       if (ferror (fp))
         {
-          rc = KEYBOX_Read_Error;
+          rc = gpg_error (gpg_err_code_from_errno (errno));
           goto leave;
         }
     }
@@ -265,14 +269,14 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
-              rc = KEYBOX_Write_Error;
+              rc = gpg_error (gpg_err_code_from_errno (errno));
               goto leave;
             }
         }
       if (ferror (fp))
         {
-            rc = KEYBOX_Read_Error;
-            goto leave;
+          rc = gpg_error (gpg_err_code_from_errno (errno));
+          goto leave;
         }
       
       /* skip this blob */
@@ -296,13 +300,13 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         {
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
-              rc = KEYBOX_Write_Error;
+              rc = gpg_error (gpg_err_code_from_errno (errno));
               goto leave;
             }
         }
       if (ferror (fp))
         {
-          rc = KEYBOX_Read_Error;
+          rc = gpg_error (gpg_err_code_from_errno (errno));
           goto leave;
         }
     }
@@ -310,13 +314,13 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   /* close both files */
   if (fclose(fp))
     {
-      rc = KEYBOX_File_Close_Error;
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       fclose (newfp);
       goto leave;
     }
   if (fclose(newfp))
     {
-      rc = KEYBOX_File_Close_Error;
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       goto leave;
     }
 
@@ -341,12 +345,12 @@ keybox_insert_cert (KEYBOX_HANDLE hd, KsbaCert cert,
   KEYBOXBLOB blob;
 
   if (!hd)
-    return KEYBOX_Invalid_Handle; 
+    return gpg_error (GPG_ERR_INV_HANDLE); 
   if (!hd->kb)
-    return KEYBOX_Invalid_Handle; 
+    return gpg_error (GPG_ERR_INV_HANDLE); 
   fname = hd->kb->fname;
   if (!fname)
-    return KEYBOX_Invalid_Handle; 
+    return gpg_error (GPG_ERR_INV_HANDLE); 
 
   /* close this one otherwise we will mess up the position for a next
      search.  Fixme: it would be better to adjust the position after
@@ -390,18 +394,18 @@ keybox_delete (KEYBOX_HANDLE hd)
   int rc;
 
   if (!hd)
-    return KEYBOX_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (!hd->found.blob)
-    return KEYBOX_Nothing_Found;
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
   if (!hd->kb)
-    return KEYBOX_Invalid_Handle; 
+    return gpg_error (GPG_ERR_INV_HANDLE); 
   fname = hd->kb->fname;
   if (!fname)
-    return KEYBOX_Invalid_Handle; 
+    return gpg_error (GPG_ERR_INV_HANDLE); 
 
   off = _keybox_get_blob_fileoffset (hd->found.blob);
   if (off == (off_t)-1)
-    return KEYBOX_General_Error;
+    return gpg_error (GPG_ERR_GENERAL);
   off += 4;
 
   if (hd->fp)
@@ -412,19 +416,19 @@ keybox_delete (KEYBOX_HANDLE hd)
   
   fp = fopen (hd->kb->fname, "r+b");
   if (!fp)
-    return KEYBOX_File_Open_Error;
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   if (fseeko (fp, off, SEEK_SET))
-    rc = KEYBOX_Write_Error;
+    rc = gpg_error (gpg_err_code_from_errno (errno));
   else if (putc (0, fp) == EOF)
-    rc = KEYBOX_Write_Error;
+    rc = gpg_error (gpg_err_code_from_errno (errno));
   else
     rc = 0;
 
   if (fclose (fp))
     {
       if (!rc)
-        rc = KEYBOX_File_Close_Error;
+        rc = gpg_error (gpg_err_code_from_errno (errno));
     }
 
   return rc;

@@ -24,6 +24,13 @@
 #include <sys/types.h> /* off_t */
 #include "keybox.h"
 
+#ifdef GPG_ERR_SOURCE_DEFAULT
+#error GPG_ERR_SOURCE_DEFAULT already defined
+#endif
+#define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_KEYBOX
+#include <gpg-error.h>
+
+
 #ifndef HAVE_BYTE_TYPEDEF
 typedef unsigned char byte; /* fixme */
 #endif

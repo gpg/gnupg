@@ -1,5 +1,5 @@
 /* keybox-file.c - file oeprations
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include "keybox-defs.h"
 
@@ -40,7 +41,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
   *r_blob = NULL;
   off = ftello (fp);
   if (off == (off_t)-1)
-    return KEYBOX_Read_Error;
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   if ((c1 = getc (fp)) == EOF
       || (c2 = getc (fp)) == EOF
@@ -50,33 +51,34 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
     {
       if ( c1 == EOF && !ferror (fp) )
         return -1; /* eof */
-      return KEYBOX_Read_Error;
+      return gpg_error (gpg_err_code_from_errno (errno));
     }
 
   imagelen = (c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
   if (imagelen > 500000) /* sanity check */
-    return KEYBOX_Blob_Too_Large;
+    return gpg_error (GPG_ERR_TOO_LARGE);
   
   if (imagelen < 5) 
-    return KEYBOX_Blob_Too_Short;
+    return gpg_error (GPG_ERR_TOO_SHORT);
 
   if (!type)
     {
       /* special treatment for empty blobs. */
       if (fseek (fp, imagelen-5, SEEK_CUR))
-        return KEYBOX_Read_Error;
+        return gpg_error (gpg_err_code_from_errno (errno));
       goto again;
     }
 
   image = xtrymalloc (imagelen);
   if (!image) 
-    return KEYBOX_Out_Of_Core;
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   image[0] = c1; image[1] = c2; image[2] = c3; image[3] = c4; image[4] = type;
   if (fread (image+5, imagelen-5, 1, fp) != 1)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       xfree (image);
-      return KEYBOX_Read_Error;
+      return tmperr;
     }
   
   rc = r_blob? _keybox_new_blob (r_blob, image, imagelen, off) : 0;
@@ -95,8 +97,6 @@ _keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
 
   image = _keybox_get_blob_image (blob, &length);
   if (fwrite (image, length, 1, fp) != 1)
-    {
-      return KEYBOX_Write_Error;
-    }
+    return gpg_error (gpg_err_code_from_errno (errno));
   return 0;
 }

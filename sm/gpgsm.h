@@ -1,5 +1,5 @@
 /* gpgsm.h - Global definitions for GpgSM
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -21,9 +21,17 @@
 #ifndef GPGSM_H
 #define GPGSM_H
 
+#ifdef GPG_ERR_SOURCE_DEFAULT
+#error GPG_ERR_SOURCE_DEFAULT already defined
+#endif
+#define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_GPGSM
+#include <gpg-error.h>
+
 #include <ksba.h>
 #include "../common/util.h"
 #include "../common/errors.h"
+
+#define OUT_OF_CORE(a) (gpg_error (gpg_err_code_from_errno ((a))))
 
 #define MAX_DIGEST_LEN 24 
 

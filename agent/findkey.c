@@ -64,7 +64,7 @@ agent_write_private_key (const unsigned char *grip,
       {
         log_error ("secret key file `%s' already exists\n", fname);
         xfree (fname);
-        return seterr (General_Error);
+        return gpg_error (GPG_ERR_GENERAL);
       }
 
       /* We would like to create FNAME but only if it does not already
@@ -82,32 +82,39 @@ agent_write_private_key (const unsigned char *grip,
       else
 	{
 	  fp = fdopen (fd, "wb");
-	  if (! fp)
-	    close (fd);
+	  if (!fp)
+            { 
+              int save_e = errno;
+              close (fd);
+              errno = save_e;
+            }
 	}
     }
 
   if (!fp) 
     { 
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("can't create `%s': %s\n", fname, strerror (errno));
       xfree (fname);
-      return seterr (File_Create_Error);
+      return tmperr;
     }
 
   if (fwrite (buffer, length, 1, fp) != 1)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("error writing `%s': %s\n", fname, strerror (errno));
       fclose (fp);
       remove (fname);
       xfree (fname);
-      return seterr (File_Create_Error);
+      return tmperr;
     }
   if ( fclose (fp) )
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("error closing `%s': %s\n", fname, strerror (errno));
       remove (fname);
       xfree (fname);
-      return seterr (File_Create_Error);
+      return tmperr;
     }
 
   xfree (fname);
@@ -291,7 +298,7 @@ agent_key_from_file (CTRL ctrl,
               assert (n);
               *shadow_info = xtrymalloc (n);
               if (!*shadow_info)
-                rc = GNUPG_Out_Of_Core;
+                rc = out_of_core ();
               else
                 {
                   memcpy (*shadow_info, s, n);
@@ -306,7 +313,7 @@ agent_key_from_file (CTRL ctrl,
       break;
     default:
       log_error ("invalid private key format\n");
-      rc = GNUPG_Bad_Secret_Key;
+      rc = gpg_error (GPG_ERR_BAD_SECKEY);
       break;
     }
   if (rc)

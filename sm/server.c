@@ -245,18 +245,21 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
 
   rc = gpgsm_add_to_certlist (ctrl, line, 0, &ctrl->server_local->recplist);
   if (rc)
-    gpgsm_status2 (ctrl, STATUS_INV_RECP,
-                   rc == -1? "1":
-                   rc == GNUPG_No_Public_Key?       "1":
-                   rc == GNUPG_Ambiguous_Name?      "2":
-                   rc == GNUPG_Wrong_Key_Usage?     "3":
-                   rc == GNUPG_Certificate_Revoked? "4":
-                   rc == GNUPG_Certificate_Expired? "5":
-                   rc == GNUPG_No_CRL_Known?        "6":
-                   rc == GNUPG_CRL_Too_Old?         "7":
-                   rc == GNUPG_No_Policy_Match?     "8":
+    {
+      gpg_err_code_t r = gpg_err_code (rc);
+      gpgsm_status2 (ctrl, STATUS_INV_RECP,
+                   r == -1? "1":
+                   r == GPG_ERR_NO_PUBKEY?       "1":
+                   r == GPG_ERR_AMBIGUOUS_NAME?  "2":
+                   r == GPG_ERR_WRONG_KEY_USAGE? "3":
+                   r == GPG_ERR_CERT_REVOKED?    "4":
+                   r == GPG_ERR_CERT_EXPIRED?    "5":
+                   r == GPG_ERR_NO_CRL_KNOWN?    "6":
+                   r == GPG_ERR_CRL_TOO_OLD?     "7":
+                   r == GPG_ERR_NO_POLICY_MATCH? "8":
                    "0",
                    line, NULL);
+    }
 
   return map_to_assuan_status (rc);
 }
@@ -285,20 +288,22 @@ cmd_signer (ASSUAN_CONTEXT ctx, char *line)
 
   rc = gpgsm_add_to_certlist (ctrl, line, 1, &ctrl->server_local->signerlist);
   if (rc)
-    gpgsm_status2 (ctrl, STATUS_INV_RECP,
-                   rc == -1? "1":
-                   rc == GNUPG_No_Public_Key?       "1":
-                   rc == GNUPG_Ambiguous_Name?      "2":
-                   rc == GNUPG_Wrong_Key_Usage?     "3":
-                   rc == GNUPG_Certificate_Revoked? "4":
-                   rc == GNUPG_Certificate_Expired? "5":
-                   rc == GNUPG_No_CRL_Known?        "6":
-                   rc == GNUPG_CRL_Too_Old?         "7":
-                   rc == GNUPG_No_Policy_Match?     "8":
-                   rc == GNUPG_No_Secret_Key?       "9":
+    {
+      gpg_err_code_t r = gpg_err_code (rc);
+      gpgsm_status2 (ctrl, STATUS_INV_RECP,
+                   r == -1?                          "1":
+                   r == GPG_ERR_NO_PUBKEY?           "1":
+                   r == GPG_ERR_AMBIGUOUS_NAME?      "2":
+                   r == GPG_ERR_WRONG_KEY_USAGE?     "3":
+                   r == GPG_ERR_CERT_REVOKED?        "4":
+                   r == GPG_ERR_CERT_EXPIRED?        "5":
+                   r == GPG_ERR_NO_CRL_KNOWN?        "6":
+                   r == GPG_ERR_CRL_TOO_OLD?         "7":
+                   r == GPG_ERR_NO_POLICY_MATCH?     "8":
+                   r == GPG_ERR_NO_SECKEY?           "9":
                    "0",
-                   line, NULL);
-
+                  line, NULL);
+    }
   return map_to_assuan_status (rc);
 }
 

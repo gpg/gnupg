@@ -1,5 +1,5 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -103,7 +103,7 @@ keydb_add_resource (const char *url, int force, int secret)
       else if (strchr (resname, ':'))
         {
           log_error ("invalid key resource URL `%s'\n", url );
-          rc = GNUPG_General_Error;
+          rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
 	}
 #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
@@ -150,14 +150,14 @@ keydb_add_resource (const char *url, int force, int secret)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
       log_error ("unknown type of key resource `%s'\n", url );
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
       
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       fp = fopen (filename, "rb");
       if (!fp && !force)
         {
-          rc = GNUPG_File_Open_Error;
+          rc = gpg_error (gpg_err_code_from_errno (errno));
           goto leave;
         }
       
@@ -175,7 +175,7 @@ keydb_add_resource (const char *url, int force, int secret)
                    terminated, so that on the next invocation can
                    read the options file in on startup */
                 try_make_homedir (filename);
-                rc = GNUPG_File_Open_Error;
+                rc = gpg_error (GPG_ERR_FILE_OPEN_ERROR);
                 *last_slash_in_filename = DIRSEP_C;
                 goto leave;
               }
@@ -185,9 +185,9 @@ keydb_add_resource (const char *url, int force, int secret)
           fp = fopen (filename, "w");
           if (!fp)
             {
+              rc = gpg_error (gpg_err_code_from_errno (errno));
               log_error (_("error creating keybox `%s': %s\n"),
                          filename, strerror(errno));
-              rc = GNUPG_File_Create_Error;
               goto leave;
 	    }
 
@@ -204,7 +204,7 @@ keydb_add_resource (const char *url, int force, int secret)
           if (!token)
             ; /* already registered - ignore it */
           else if (used_resources >= MAX_KEYDB_RESOURCES)
-            rc = GNUPG_Resource_Limit;
+            rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
           else 
             {
               all_resources[used_resources].type = rt;
@@ -223,7 +223,7 @@ keydb_add_resource (const char *url, int force, int secret)
 	break;
     default:
       log_error ("resource type of `%s' not supported\n", url);
-      rc = GNUPG_Not_Supported;
+      rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
       goto leave;
     }
 
@@ -562,7 +562,7 @@ keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert)
   int rc = 0;
 
   if (!hd)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
   
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -570,7 +570,7 @@ keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert)
   switch (hd->active[hd->found].type) 
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = GNUPG_General_Error; /* oops */
+      rc = gpg_error (GPG_ERR_GENERAL); /* oops */
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_get_cert (hd->active[hd->found].u.kr, r_cert);
@@ -591,7 +591,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
   char digest[20];
   
   if (!hd) 
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
 
   if (opt.dry_run)
     return 0;
@@ -601,7 +601,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
   else if ( hd->current >= 0 && hd->current < hd->used) 
     idx = hd->current;
   else
-    return GNUPG_General_Error;
+    return gpg_error (GPG_ERR_GENERAL);
 
   rc = lock_all (hd);
   if (rc)
@@ -612,7 +612,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
   switch (hd->active[idx].type) 
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_insert_cert (hd->active[idx].u.kr, cert, digest);
@@ -633,7 +633,7 @@ keydb_update_cert (KEYDB_HANDLE hd, KsbaCert cert)
   char digest[20];
   
   if (!hd)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
 
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -650,7 +650,7 @@ keydb_update_cert (KEYDB_HANDLE hd, KsbaCert cert)
   switch (hd->active[hd->found].type) 
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = GNUPG_General_Error; /* oops */
+      rc = gpg_error (GPG_ERR_GENERAL); /* oops */
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_update_cert (hd->active[hd->found].u.kr, cert, digest);
@@ -671,7 +671,7 @@ keydb_delete (KEYDB_HANDLE hd)
   int rc = -1;
   
   if (!hd)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
 
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -686,7 +686,7 @@ keydb_delete (KEYDB_HANDLE hd)
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_delete (hd->active[hd->found].u.kr);
@@ -710,7 +710,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
   int rc;
   
   if (!hd)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
   
   rc = keydb_search_reset (hd); /* this does reset hd->current */
   if (rc)
@@ -770,7 +770,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
   int i, rc = 0;
   
   if (!hd)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
 
   hd->current = 0; 
   hd->found = -1;
@@ -800,7 +800,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
   int rc = -1;
   
   if (!hd)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
 
   while (rc == -1 && hd->current >= 0 && hd->current < hd->used) 
     {
@@ -891,12 +891,12 @@ keydb_search_issuer_sn (KEYDB_HANDLE hd,
   desc.mode = KEYDB_SEARCH_MODE_ISSUER_SN;
   s = serial;
   if (*s !='(')
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
   s++;
   for (desc.snlen = 0; digitp (s); s++)
     desc.snlen = 10*desc.snlen + atoi_1 (s);
   if (*s !=':')
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
   desc.sn = s+1;
   desc.u.name = issuer;
   rc = keydb_search (hd, &desc, 1);
@@ -1209,7 +1209,7 @@ keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc)
     desc = &dummy_desc;
 
   if (!classify_user_id (name, desc, &dummy))
-    return GNUPG_Invalid_Name;
+    return gpg_error (GPG_ERR_INV_NAME);
   return 0;
 }
 
@@ -1231,14 +1231,14 @@ keydb_store_cert (KsbaCert cert, int ephemeral, int *existed)
   if (!gpgsm_get_fingerprint (cert, 0, fpr, NULL))
     {
       log_error (_("failed to get the fingerprint\n"));
-      return GNUPG_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   kh = keydb_new (0);
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
-      return GNUPG_Out_Of_Core;
+      return gpg_error (GPG_ERR_ENOMEM);;
     }
 
   if (ephemeral)

@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
+#include <assert.h>
 
 #include "scdaemon.h"
 #include "apdu.h"
@@ -243,6 +244,31 @@ open_ct_reader (int port)
 }
 
 
+/* Actuall send the APDU of length APDULEN to SLOT and return a
+   maximum of *BUFLEN data in BUFFER, the actual retruned size will be
+   set to BUFLEN.  Returns: CT API error code. */
+static int
+ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+              unsigned char *buffer, size_t *buflen)
+{
+  int rc;
+  unsigned char dad[1], sad[1];
+  unsigned short ctbuflen;
+  
+  dad[0] = 0;     /* Destination address: Card. */    
+  sad[0] = 2;     /* Source address: Host. */
+  ctbuflen = *buflen;
+  if (DBG_CARD_IO)
+    log_printhex ("  CT_data:", apdu, apdulen);
+  rc = CT_data (slot, dad, sad, apdulen, apdu, &ctbuflen, buffer);
+  *buflen = ctbuflen;
+
+  /* FIXME: map the errorcodes to GNUPG ones, so that they can be
+     shared between CTAPI and PCSC. */
+  return rc;
+}
+
+
 #endif /*HAVE_CTAPI*/
 
 
@@ -292,8 +318,235 @@ apdu_open_reader (int port)
 }
 
 
+unsigned char *
+apdu_get_atr (int slot, size_t *atrlen)
+{
+  char *buf;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return NULL;
+  
+  buf = xtrymalloc (reader_table[slot].atrlen);
+  if (!buf)
+    return NULL;
+  memcpy (buf, reader_table[slot].atr, reader_table[slot].atrlen);
+  *atrlen = reader_table[slot].atrlen;
+  return buf;
+}
+  
+    
+static const char *
+error_string (int slot, int rc)
+{
+#ifdef HAVE_CTAPI
+  return ct_error_string (rc);
+#elif defined(HAVE_PCSC)
+  return "?";
+#else
+  return "?";
+#endif
+}
 
 
+/* Dispatcher for the actual send_apdu fucntion. */
+static int
+send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+           unsigned char *buffer, size_t *buflen)
+{
+#ifdef HAVE_CTAPI
+  return ct_send_apdu (slot, apdu, apdulen, buffer, buflen);
+#elif defined(HAVE_PCSC)
+  return -1;
+#else
+  return -1;
+#endif
+}
 
+/* Send an APDU to the card in SLOT.  The APDU is created from all
+   given parameters: CLASS, INS, P0, P1, LC, DATA, LE.  A value of -1
+   for LC won't sent this field and the data field; in this case DATA
+   must also be passed as NULL.  The return value is the status word
+   or -1 for an invalid SLOT or other non card related error.  If
+   RETBUF is not NULL, it will receive an allocated buffer with the
+   returned data.  The length of that data will be put into
+   *RETBUFLEN.  The caller is reposnible for releasing the buffer even
+   in case of errors.  */
+int 
+apdu_send_le(int slot, int class, int ins, int p0, int p1,
+             int lc, const char *data, int le,
+             unsigned char **retbuf, size_t *retbuflen)
+{
+  unsigned char result[256+10]; /* 10 extra in case of bugs in the driver. */
+  size_t resultlen = 256;
+  unsigned char apdu[5+256+1];
+  size_t apdulen;
+  int rc, sw;
 
+  if (DBG_CARD_IO)
+    log_debug ("send apdu: c=%02X i=%02X p0=%02X p1=%02X lc=%d le=%d\n",
+               class, ins, p0, p1, lc, le);
 
+  if (lc != -1 && (lc > 255 || lc < 0))
+    return SW_WRONG_LENGTH; 
+  if (le != -1 && (le > 256 || le < 1))
+    return SW_WRONG_LENGTH; 
+  if ((!data && lc != -1) || (data && lc == -1))
+    return -1;
+
+  apdulen = 0;
+  apdu[apdulen++] = class;
+  apdu[apdulen++] = ins;
+  apdu[apdulen++] = p0;
+  apdu[apdulen++] = p1;
+  if (lc != -1)
+    {
+      apdu[apdulen++] = lc;
+      memcpy (apdu+apdulen, data, lc);
+      apdulen += lc;
+    }
+  if (le != -1)
+    apdu[apdulen++] = le; /* Truncation is okay becuase 0 means 256. */
+  assert (sizeof (apdu) >= apdulen);
+  /* As safeguard don't pass any garbage from the stack to the driver. */
+  memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+  rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
+  if (rc || resultlen < 2)
+    {
+      log_error ("apdu_send_simple(%d) failed: %s\n",
+                 slot, error_string (slot, rc));
+      return -1;
+    }
+  sw = (result[resultlen-2] << 8) | result[resultlen-1];
+  /* store away the returned data but strip the statusword. */
+  resultlen -= 2;
+  if (DBG_CARD_IO)
+    {
+      log_debug (" response: sw=%04X  datalen=%d\n", sw, resultlen);
+      if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
+        log_printhex ("     dump: ", result, resultlen);
+    }
+
+  if (sw == SW_SUCCESS)
+    {
+      if (retbuf)
+        {
+          *retbuf = xtrymalloc (resultlen? resultlen : 1);
+          if (!*retbuf)
+            return -1; /* fixme: this is actually out of core. */
+          *retbuflen = resultlen;
+          memcpy (*retbuf, result, resultlen);
+        }
+    }
+  else if ((sw & 0xff00) == SW_MORE_DATA)
+    {
+      unsigned char *p = NULL, *tmp;
+      size_t bufsize = 4096;
+
+      /* It is likely that we need to return much more data, so we
+         start off with a large buffer. */
+      if (retbuf)
+        {
+          *retbuf = p = xtrymalloc (bufsize);
+          if (!*retbuf)
+            return -1; /* fixme: this is actually out of core. */
+          assert (resultlen < bufsize);
+          memcpy (p, result, resultlen);
+          p += resultlen;
+        }
+
+      do
+        {
+          int len = (sw & 0x00ff);
+          
+          log_debug ("apdu_send_simple(%d): %d more bytes available\n",
+                     slot, len);
+          apdulen = 0;
+          apdu[apdulen++] = class;
+          apdu[apdulen++] = 0xC0;
+          apdu[apdulen++] = 0;
+          apdu[apdulen++] = 0;
+          apdu[apdulen++] = 64; /* that is 256 bytes for Le */
+          memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+          rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
+          if (rc || resultlen < 2)
+            {
+              log_error ("apdu_send_simple(%d) for get response failed: %s\n",
+                         slot, error_string (slot, rc));
+              return -1;
+            }
+          sw = (result[resultlen-2] << 8) | result[resultlen-1];
+          resultlen -= 2;
+          if (DBG_CARD_IO)
+            {
+              log_debug ("     more: sw=%04X  datalen=%d\n", sw, resultlen);
+              if (!retbuf && (sw==SW_SUCCESS || (sw&0xff00)==SW_MORE_DATA))
+                log_printhex ("     dump: ", result, resultlen);
+            }
+
+          if ((sw & 0xff00) == SW_MORE_DATA || sw == SW_SUCCESS)
+            {
+              if (retbuf)
+                {
+                  if (p - *retbuf + resultlen > bufsize)
+                    {
+                      bufsize += resultlen > 4096? resultlen: 4096;
+                      tmp = xtryrealloc (*retbuf, bufsize);
+                      if (!tmp)
+                        return -1; /* fixme: actually this is out of core */
+                      p = tmp + (p - *retbuf);
+                      *retbuf = tmp;
+                    }
+                  memcpy (p, result, resultlen);
+                  p += resultlen;
+                }
+            }
+          else
+            log_info ("apdu_send_simple(%d) "
+                      "got unexpected status %04X from get response\n",
+                      slot, sw);
+        }
+      while ((sw & 0xff00) == SW_MORE_DATA);
+      
+      if (retbuf)
+        {
+          *retbuflen = p - *retbuf;
+          tmp = xtryrealloc (*retbuf, *retbuflen);
+          if (tmp)
+            *retbuf = tmp;
+        }
+    }
+  if (DBG_CARD_IO && retbuf && sw == SW_SUCCESS)
+    log_printhex ("      dump: ", *retbuf, *retbuflen);
+ 
+  return sw;
+}
+
+/* Send an APDU to the card in SLOT.  The APDU is created from all
+   given parameters: CLASS, INS, P0, P1, LC, DATA.  A value of -1 for
+   LC won't sent this field and the data field; in this case DATA must
+   also be passed as NULL. The return value is the status word or -1
+   for an invalid SLOT or other non card related error.  If RETBUF is
+   not NULL, it will receive an allocated buffer with the returned
+   data.  The length of that data will be put into *RETBUFLEN.  The
+   caller is reponsible for releasing the buffer even in case of
+   errors.  */
+int 
+apdu_send(int slot, int class, int ins, int p0, int p1,
+          int lc, const char *data, unsigned char **retbuf, size_t *retbuflen)
+{
+  return apdu_send_le (slot, class, ins, p0, p1, lc, data, 256, 
+                       retbuf, retbuflen);
+}
+
+/* Send an APDU to the card in SLOT.  The APDU is created from all
+   given parameters: CLASS, INS, P0, P1, LC, DATA.  A value of -1 for
+   LC won't sent this field and the data field; in this case DATA must
+   also be passed as NULL. The return value is the status word or -1
+   for an invalid SLOT or other non card related error.  No data will be
+   returned. */
+int 
+apdu_send_simple (int slot, int class, int ins, int p0, int p1,
+                  int lc, const char *data)
+{
+  return apdu_send (slot, class, ins, p0, p1, lc, data, NULL, NULL);
+}

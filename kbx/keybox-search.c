@@ -1,5 +1,5 @@
 /* keybox-search.c - Search operations
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "../jnlib/stringhelp.h" /* ascii_xxxx() */
 #include "keybox-defs.h"
@@ -481,7 +482,7 @@ int
 keybox_search_reset (KEYBOX_HANDLE hd)
 {
   if (!hd)
-    return KEYBOX_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (hd->found.blob)
     {
@@ -512,7 +513,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
   struct sn_array_s *sn_array = NULL;
 
   if (!hd)
-    return KEYBOX_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   /* clear last found result */
   if (hd->found.blob)
@@ -548,7 +549,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
         {
           sn_array = xtrycalloc (ndesc, sizeof *sn_array);
           if (!sn_array)
-            return (hd->error = KEYBOX_Out_Of_Core);
+            return (hd->error = gpg_error (gpg_err_code_from_errno (errno)));
         }
     }
 
@@ -557,8 +558,9 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       hd->fp = fopen (hd->kb->fname, "rb");
       if (!hd->fp)
         {
+          hd->error = gpg_error (gpg_err_code_from_errno (errno));
           xfree (sn_array);
-          return (hd->error = KEYBOX_File_Open_Error);
+          return hd->error;
         }
     }
 
@@ -588,8 +590,9 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               sn_array[n].sn = xtrymalloc (snlen);
               if (!sn_array[n].sn)
                 {
+                  hd->error = gpg_error (gpg_err_code_from_errno (errno));
                   release_sn_array (sn_array, n);
-                  return (hd->error = KEYBOX_Out_Of_Core);
+                  return hd->error;
                 }
               sn_array[n].snlen = snlen;
               sn = sn_array[n].sn;
@@ -611,8 +614,9 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               sn_array[n].sn = xtrymalloc (snlen);
               if (!sn_array[n].sn)
                 {
+                  hd->error = gpg_error (gpg_err_code_from_errno (errno));
                   release_sn_array (sn_array, n);
-                  return (hd->error = KEYBOX_Out_Of_Core);
+                  return hd->error;
                 }
               sn_array[n].snlen = snlen;
               memcpy (sn_array[n].sn, sn, snlen);
@@ -700,7 +704,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               goto found;
               break;
             default: 
-              rc = KEYBOX_Invalid_Value;
+              rc = gpg_error (GPG_ERR_INV_VALUE);
               goto found;
             }
 	}
@@ -759,37 +763,37 @@ keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
   int rc;
 
   if (!hd)
-    return KEYBOX_Invalid_Value;
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (!hd->found.blob)
-    return KEYBOX_Nothing_Found;
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
 
   if (blob_get_type (hd->found.blob) != BLOBTYPE_X509)
-    return KEYBOX_Wrong_Blob_Type;
+    return gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
 
   buffer = _keybox_get_blob_image (hd->found.blob, &length);
   if (length < 40)
-    return KEYBOX_Blob_Too_Short;
+    return gpg_error (GPG_ERR_TOO_SHORT);
   cert_off = get32 (buffer+8);
   cert_len = get32 (buffer+12);
   if (cert_off+cert_len > length)
-    return KEYBOX_Blob_Too_Short;
+    return gpg_error (GPG_ERR_TOO_SHORT);
 
   reader = ksba_reader_new ();
   if (!reader)
-    return KEYBOX_Out_Of_Core;
+    return gpg_error (GPG_ERR_ENOMEM);
   rc = ksba_reader_set_mem (reader, buffer+cert_off, cert_len);
   if (rc)
     {
       ksba_reader_release (reader);
       /* fixme: need to map the error codes */
-      return KEYBOX_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   cert = ksba_cert_new ();
   if (!cert)
     {
       ksba_reader_release (reader);
-      return KEYBOX_Out_Of_Core;
+      return gpg_error (GPG_ERR_ENOMEM);
     }
 
   rc = ksba_cert_read_der (cert, reader);
@@ -798,7 +802,7 @@ keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
       ksba_cert_release (cert);
       ksba_reader_release (reader);
       /* fixme: need to map the error codes */
-      return KEYBOX_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   *r_cert = cert;

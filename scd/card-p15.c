@@ -53,7 +53,7 @@ init_private_data (CARD card)
 
   priv = xtrycalloc (1, sizeof *priv);
   if (!priv)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
 
   /* OpenSC (0.7.0) is a bit strange in that the get_objects functions
      tries to be a bit too clever and implicitly does an enumeration
@@ -70,7 +70,7 @@ init_private_data (CARD card)
     {
       log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
       xfree (priv);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   priv->n_prkey_rsa_objs = rc;
 
@@ -82,7 +82,7 @@ init_private_data (CARD card)
     {
       log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
       xfree (priv);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   priv->n_cert_objs = rc;
 
@@ -136,7 +136,7 @@ p15_enum_keypairs (CARD card, int idx,
       log_info ("certificate for private key %d not found: %s\n",
                 idx, sc_strerror (rc));
       /* note, that we return the ID anyway */
-      rc = GNUPG_Missing_Certificate;
+      rc = gpg_error (GPG_ERR_MISSING_CERTIFICATE);
       goto return_keyid;
     }
   certinfo = tmpobj->data;
@@ -145,14 +145,15 @@ p15_enum_keypairs (CARD card, int idx,
     {
       log_info ("failed to read certificate for private key %d: %s\n",
                 idx, sc_strerror (rc));
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
 
   cert = ksba_cert_new ();
   if (!cert)
     {
+      gpg_error_t tmperr = out_of_core ();
       sc_pkcs15_free_certificate (certder);
-      return GNUPG_Out_Of_Core;
+      return tmperr;
     }
   krc = ksba_cert_init_from_mem (cert, certder->data, certder->data_len);
   sc_pkcs15_free_certificate (certder);
@@ -161,13 +162,13 @@ p15_enum_keypairs (CARD card, int idx,
       log_error ("failed to parse the certificate for private key %d: %s\n",
                  idx, ksba_strerror (krc));
       ksba_cert_release (cert);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
   if (card_help_get_keygrip (cert, keygrip))
     {
       log_error ("failed to calculate the keygrip of private key %d\n", idx);
       ksba_cert_release (cert);
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }      
   ksba_cert_release (cert);
 
@@ -180,7 +181,7 @@ p15_enum_keypairs (CARD card, int idx,
 
       *keyid = p = xtrymalloc (9+pinfo->id.len*2+1);
       if (!*keyid)
-        return GNUPG_Out_Of_Core;
+        return out_of_core ();
       p = stpcpy (p, "P15-5015.");
       for (i=0; i < pinfo->id.len; i++, p += 2)
         sprintf (p, "%02X", pinfo->id.value[i]);
@@ -218,7 +219,7 @@ p15_enum_certs (CARD card, int idx, char **certid, int *type)
 
       *certid = p = xtrymalloc (9+cinfo->id.len*2+1);
       if (!*certid)
-        return GNUPG_Out_Of_Core;
+        return out_of_core ();
       p = stpcpy (p, "P15-5015.");
       for (i=0; i < cinfo->id.len; i++, p += 2)
         sprintf (p, "%02X", cinfo->id.value[i]);
@@ -251,14 +252,14 @@ idstr_to_id (const char *idstr, struct sc_pkcs15_id *id)
 
   /* For now we only support the standard DF */
   if (strncmp (idstr, "P15-5015.", 9) ) 
-    return GNUPG_Invalid_Id;
+    return gpg_error (GPG_ERR_INVALID_ID);
   for (s=idstr+9, n=0; hexdigitp (s); s++, n++)
     ;
   if (*s || (n&1))
-    return GNUPG_Invalid_Id; /* invalid or odd number of digits */
+    return gpg_error (GPG_ERR_INVALID_ID); /*invalid or odd number of digits*/
   n /= 2;
   if (!n || n > SC_PKCS15_MAX_ID_SIZE)
-    return GNUPG_Invalid_Id; /* empty or too large */
+    return gpg_error (GPG_ERR_INVALID_ID); /* empty or too large */
   for (s=idstr+9, n=0; *s; s += 2, n++)
     id->value[n] = xtoi_2 (s);
   id->len = n;
@@ -278,9 +279,9 @@ p15_read_cert (CARD card, const char *certidstr,
   int rc;
 
   if (!card || !certidstr || !cert || !ncert)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
   if (!card->p15card)
-    return GNUPG_No_PKCS15_App;
+    return gpg_error (GPG_ERR_NO_PKCS15_APP);
 
   rc = idstr_to_id (certidstr, &certid);
   if (rc)
@@ -299,14 +300,15 @@ p15_read_cert (CARD card, const char *certidstr,
     {
       log_info ("failed to read certificate '%s': %s\n",
                 certidstr, sc_strerror (rc));
-      return GNUPG_Card_Error;
+      return gpg_error (GPG_ERR_CARD_ERROR);
     }
 
   *cert = xtrymalloc (certder->data_len);
   if (!*cert)
     {
+      gpg_error_t tmperr = out_of_core ();
       sc_pkcs15_free_certificate (certder);
-      return GNUPG_Out_Of_Core;
+      return tmperr;
     }
   memcpy (*cert, certder->data, certder->data_len);
   *ncert = certder->data_len;
@@ -337,7 +339,7 @@ p15_prepare_key (CARD card, const char *keyidstr,
   if (rc < 0)
     {
       log_error ("private key not found: %s\n", sc_strerror(rc));
-      return GNUPG_No_Secret_Key;
+      return gpg_error (GPG_ERR_NO_SECRET_KEY);
     }
 
   rc = sc_pkcs15_find_pin_by_auth_id (card->p15card,
@@ -345,7 +347,7 @@ p15_prepare_key (CARD card, const char *keyidstr,
   if (rc)
     {
       log_error ("failed to find PIN by auth ID: %s\n", sc_strerror (rc));
-      return GNUPG_Bad_PIN_Method;
+      return gpg_error (GPG_ERR_BAD_PIN_METHOD);
     }
   pin = pinobj->data;
 
@@ -365,7 +367,7 @@ p15_prepare_key (CARD card, const char *keyidstr,
   if (rc)
     {
       log_info ("PIN verification failed: %s\n", sc_strerror (rc));
-      return GNUPG_Bad_PIN;
+      return gpg_error (GPG_ERR_BAD_PIN);
     }
 
   /* fixme: check wheter we need to release KEYOBJ in case of an error */
@@ -389,7 +391,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
   size_t outbuflen;
 
   if (hashalgo != GCRY_MD_SHA1)
-    return GNUPG_Unsupported_Algorithm;
+    return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
 
   rc = p15_prepare_key (card, keyidstr, pincb, pincb_arg, &keyobj);
   if (rc)
@@ -400,7 +402,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
   outbuflen = 1024; 
   outbuf = xtrymalloc (outbuflen);
   if (!outbuf)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
   
   rc = sc_pkcs15_compute_signature (card->p15card, keyobj,
                                     cryptflags,
@@ -409,7 +411,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
   if (rc < 0)
     {
       log_error ("failed to create signature: %s\n", sc_strerror (rc));
-      rc = GNUPG_Card_Error;
+      rc = gpg_error (GPG_ERR_CARD_ERROR);
     }
   else
     {
@@ -462,7 +464,7 @@ p15_decipher (CARD card, const char *keyidstr,
   outbuflen = indatalen < 256? 256 : indatalen; 
   outbuf = xtrymalloc (outbuflen);
   if (!outbuf)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
 
   rc = sc_pkcs15_decipher (card->p15card, keyobj, 
                            0,
@@ -471,7 +473,7 @@ p15_decipher (CARD card, const char *keyidstr,
   if (rc < 0)
     {
       log_error ("failed to decipher the data: %s\n", sc_strerror (rc));
-      rc = GNUPG_Card_Error;
+      rc = gpg_error (GPG_ERR_CARD_ERROR);
     }
   else
     {

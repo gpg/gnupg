@@ -1,5 +1,5 @@
 /* base64.c 
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -482,7 +482,7 @@ base64_finish_write (struct writer_cb_parm_s *parm)
       fputs (parm->pem_name, fp);
       fputs ("-----\n", fp);
     }
-  return ferror (fp)? GNUPG_Write_Error : 0;
+  return ferror (fp)? gpg_error (gpg_err_code_from_errno (errno)) : 0;
 }
 
 
@@ -504,13 +504,13 @@ gpgsm_create_reader (Base64Context *ctx,
   *r_reader = NULL;
   *ctx = xtrycalloc (1, sizeof **ctx);
   if (!*ctx)
-    return seterr (Out_Of_Core);
+    return OUT_OF_CORE (errno);
 
   r = ksba_reader_new ();
   if (!r)
     {
       xfree (*ctx); *ctx = NULL;
-      return seterr (Out_Of_Core);
+      return gpg_error (GPG_ERR_ENOMEM);
     }
 
   (*ctx)->u.rparm.fp = fp;
@@ -569,13 +569,13 @@ gpgsm_create_writer (Base64Context *ctx,
   *r_writer = NULL;
   *ctx = xtrycalloc (1, sizeof **ctx);
   if (!*ctx)
-    return seterr (Out_Of_Core);
+    return OUT_OF_CORE (errno);
 
   w = ksba_writer_new ();
   if (!w)
     {
       xfree (*ctx); *ctx = NULL;
-      return seterr (Out_Of_Core);
+      return gpg_error (GPG_ERR_ENOMEM);
     }
 
   if (ctrl->create_pem || ctrl->create_base64)
@@ -607,7 +607,7 @@ gpgsm_finish_writer (Base64Context ctx)
   struct writer_cb_parm_s *parm;
   
   if (!ctx)
-    return GNUPG_Invalid_Value;
+    return gpg_error (GPG_ERR_INVALID_VALUE);
   parm = &ctx->u.wparm;
   if (parm->did_finish)
     return 0; /* already done */

@@ -1,4 +1,4 @@
-/* apdu.c - ISO 7816 APDU functions and low level I/O
+/* apdu.h - ISO 7816 APDU functions and low level I/O
  *	Copyright (C) 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -21,9 +21,38 @@
 #ifndef APDU_H
 #define APDU_H
 
+/* ISO 7816 values for the statusword are defined here because they
+   should not be visible to the users of the actual iso command
+   API. */
+enum {
+  SW_MORE_DATA      = 0x6100, /* Note: that the low byte must be
+                                 masked of.*/
+  SW_EEPROM_FAILURE = 0x6581,
+  SW_WRONG_LENGTH   = 0x6700,
+  SW_CHV_WRONG      = 0x6982,
+  SW_CHV_BLOCKED    = 0x6983,
+  SW_USE_CONDITIONS = 0x6985,
+  SW_BAD_PARAMETER  = 0x6a80, /* (in the data field) */
+  SW_REF_NOT_FOUND  = 0x6a88,
+  SW_BAD_P0_P1      = 0x6b00,
+  SW_INS_NOT_SUP    = 0x6d00,
+  SW_CLA_NOT_SUP    = 0x6e00,
+  SW_SUCCESS        = 0x9000
+};
 
 
 
+int apdu_open_reader (int port);
+unsigned char *apdu_get_atr (int slot, size_t *atrlen);
+
+int apdu_send_simple (int slot, int class, int ins, int p0, int p1,
+                      int lc, const char *data);
+int apdu_send (int slot, int class, int ins, int p0, int p1,
+               int lc, const char *data,
+               unsigned char **retbuf, size_t *retbuflen);
+int apdu_send_le (int slot, int class, int ins, int p0, int p1,
+                  int lc, const char *data, int le,
+                  unsigned char **retbuf, size_t *retbuflen);
 
 
 #endif /*APDU_H*/

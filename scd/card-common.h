@@ -59,7 +59,7 @@ struct card_ctx_s {
 };
 
 /*-- card.c --*/
-int map_sc_err (int rc);
+gpg_error_t map_sc_err (int rc);
 int card_help_get_keygrip (KsbaCert cert, unsigned char *array);
 
 /*-- card-15.c --*/

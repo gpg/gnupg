@@ -233,7 +233,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 
           buf = xtrymalloc (40 + 1 + strlen (certid) + 1);
           if (!buf)
-            rc = GNUPG_Out_Of_Core;
+            rc = out_of_core ();
           else
             {
               sprintf (buf, "%d %s", certtype, certid);
@@ -255,7 +255,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
       int no_cert = 0;
 
       rc = card_enum_keypairs (ctrl->card_ctx, idx, keygrip, &keyid);
-      if (rc == GNUPG_Missing_Certificate && keyid)
+      if (gpg_err_code (rc) == GPG_ERR_MISSING_CERT && keyid)
         {
           /* this does happen with an incomplete personalized
              card; i.e. during the time we have stored the key on the
@@ -271,7 +271,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 
           buf = p = xtrymalloc (40 + 1 + strlen (keyid) + 1);
           if (!buf)
-            rc = GNUPG_Out_Of_Core;
+            rc = out_of_core ();
           else
             {
               int i;
@@ -358,8 +358,8 @@ cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
   kc = ksba_cert_new ();
   if (!kc)
     {
+      rc = out_of_core ();
       xfree (cert);
-      rc = GNUPG_Out_Of_Core;
       goto leave;
     }
   rc = ksba_cert_init_from_mem (kc, cert, ncert);
@@ -373,7 +373,7 @@ cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
   p = ksba_cert_get_public_key (kc);
   if (!p)
     {
-      rc = GNUPG_No_Public_Key;
+      rc = gpg_error (GPG_ERR_NO_PUBKEY);
       goto leave;
     }
 
@@ -439,7 +439,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
 
   rc = asprintf (&command, "NEEDPIN %s", info);
   if (rc < 0)
-    return GNUPG_Out_Of_Core;
+    return out_of_core ();
 
   /* FIXME: Write an inquire function which returns the result in
      secure memory */
@@ -452,7 +452,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
     {
       /* We require that the returned value is an UTF-8 string */
       xfree (value);
-      return GNUPG_Invalid_Response;
+      return gpg_error (GPG_ERR_INVALID_RESPONSE);
     }
   *retstr = value;
   return 0;

@@ -120,7 +120,7 @@ int
 keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes)
 {
   if (!hd)
-    return KEYBOX_Invalid_Handle; 
+    return gpg_error (GPG_ERR_INV_HANDLE); 
   hd->ephemeral = yes;
   return 0;
 }

@@ -1,5 +1,5 @@
 /* decrypt.c - Decrypt a message
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -82,7 +82,7 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
     {
       if (n + 7 > seskeylen )
         {
-          rc = seterr (Invalid_Session_Key);
+          rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
           goto leave; 
         }
       
@@ -96,7 +96,7 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
       
       if (seskey[n] != 2 )  /* wrong block type version */
         { 
-          rc = seterr (Invalid_Session_Key);
+          rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
           goto leave; 
         }
       
@@ -105,7 +105,7 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
       n++; /* and the zero byte */
       if (n >= seskeylen )
         { 
-          rc = seterr (Invalid_Session_Key);
+          rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
           goto leave; 
         }
     }
@@ -261,7 +261,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
@@ -269,8 +269,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
   in_fp = fdopen ( dup (in_fd), "rb");
   if (!in_fp)
     {
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("fdopen() failed: %s\n", strerror (errno));
-      rc = seterr (IO_Error);
       goto leave;
     }
 
@@ -291,7 +291,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
   cms = ksba_cms_new ();
   if (!cms)
     {
-      rc = seterr (Out_Of_Core);
+      rc = gpg_error (GPG_ERR_ENOMEM);
       goto leave;
     }
 
@@ -327,7 +327,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
           mode = gcry_cipher_mode_from_oid (algoid);
           if (!algo || !mode)
             {
-              rc = GNUPG_Unsupported_Algorithm;
+              rc = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
               log_error ("unsupported algorithm `%s'\n", algoid? algoid:"?");
               if (algoid && !strcmp (algoid, "1.2.840.113549.3.2"))
                 log_info (_("(this is the RC2 algorithm)\n"));
@@ -342,7 +342,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
           dfparm.mode = mode;
           dfparm.blklen = gcry_cipher_get_algo_blklen (algo);
           if (dfparm.blklen > sizeof (dfparm.helpblock))
-            return GNUPG_Bug;
+            return gpg_error (GPG_ERR_BUG);
 
           rc = ksba_cms_get_content_enc_iv (cms,
                                             dfparm.iv,
@@ -437,7 +437,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
             }
           if (!any_key)
             {
-              rc = GNUPG_No_Secret_Key;
+              rc = gpg_error (GPG_ERR_NO_SECKEY);
               goto leave;
             }
         }
@@ -450,7 +450,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
               if (!npadding || npadding > dfparm.blklen)
                 {
                   log_error ("invalid padding with value %d\n", npadding);
-                  rc = seterr (Invalid_Data);
+                  rc = gpg_error (GPG_ERR_INVALID_DATA);
                   goto leave;
                 }
               rc = ksba_writer_write (writer,
@@ -466,7 +466,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   if (dfparm.lastblock[i] != npadding)
                     {
                       log_error ("inconsistent padding\n");
-                      rc = seterr (Invalid_Data);
+                      rc = gpg_error (GPG_ERR_INVALID_DATA);
                       goto leave;
                     }
                 }

@@ -1,5 +1,5 @@
 /* certcheck.c - check one certificate
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -50,7 +50,7 @@ do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
   if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
     {
       log_error ("No object identifier for algo %d\n", algo);
-      return GNUPG_Internal_Error;
+      return gpg_error (GPG_ERR_INTERNAL);
     }
 
   len = gcry_md_get_algo_dlen (algo);
@@ -59,7 +59,7 @@ do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
     {
       log_error ("can't encode a %d bit MD into a %d bits frame\n",
                  (int)(len*8), (int)nbits);
-      return GNUPG_Internal_Error;
+      return gpg_error (GPG_ERR_INTERNAL);
     }
   
   /* We encode the MD in this way:
@@ -70,7 +70,7 @@ do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
    */
   frame = xtrymalloc (nframe);
   if (!frame)
-    return GNUPG_Out_Of_Core;
+    return OUT_OF_CORE (errno);
   n = 0;
   frame[n++] = 0;
   frame[n++] = 1; /* block type */
@@ -115,13 +115,13 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   if (!algo)
     {
       log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
-      return GNUPG_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     }
   md = gcry_md_open (algo, 0);
   if (!md)
     {
       log_error ("md_open failed: %s\n", gcry_strerror (-1));
-      return GNUPG_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     }
   if (DBG_HASHING)
     gcry_md_start_debug (md, "hash.cert");
@@ -142,7 +142,7 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
       log_error ("libksba did not return a proper S-Exp\n");
       gcry_md_close (md);
       ksba_free (p);
-      return GNUPG_Bug;
+      return gpg_error (GPG_ERR_BUG);
     }
   if (DBG_X509)
     {
@@ -170,7 +170,7 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
       gcry_md_close (md);
       ksba_free (p);
       gcry_sexp_release (s_sig);
-      return GNUPG_Bug;
+      return gpg_error (GPG_ERR_BUG);
     }
   rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
   ksba_free (p);
@@ -223,7 +223,7 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
   if (!n)
     {
       log_error ("libksba did not return a proper S-Exp\n");
-      return GNUPG_Bug;
+      return gpg_error (GPG_ERR_BUG);
     }
   rc = gcry_sexp_sscan (&s_sig, NULL, sigval, n);
   if (rc)
@@ -239,7 +239,7 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
       log_error ("libksba did not return a proper S-Exp\n");
       ksba_free (p);
       gcry_sexp_release (s_sig);
-      return GNUPG_Bug;
+      return gpg_error (GPG_ERR_BUG);
     }
   if (DBG_X509)
     log_printhex ("public key: ", p, n);
@@ -287,7 +287,7 @@ gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
 
   grip = gpgsm_get_keygrip_hexstring (cert);
   if (!grip)
-    return seterr (Bad_Certificate);
+    return gpg_error (GPG_ERR_BAD_CERT);
 
   rc = gpgsm_agent_pksign (grip, gcry_md_read(md, mdalgo), 
                            gcry_md_get_algo_dlen (mdalgo), mdalgo,

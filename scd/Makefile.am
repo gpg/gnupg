@@ -1,4 +1,4 @@
-# Copyright (C) 2002 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -21,7 +21,7 @@
 localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
-bin_PROGRAMS = scdaemon
+bin_PROGRAMS = scdaemon sc-investigate sc-genkey
 
 AM_CPPFLAGS = -I$(top_srcdir)/common $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
 	      $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
@@ -31,7 +31,37 @@ scdaemon_SOURCES = \
 	command.c card.c \
 	card-common.h \
 	card-p15.c card-dinsig.c \
-	apdu.c apdu.h
+	apdu.c apdu.h \
+	iso7816.c iso7816.h \
+	app-openpgp.c
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) -ldl
+	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) -lgpg-error -ldl
+
+sc_investigate_SOURCES = \
+	sc-investigate.c scdaemon.h \
+	apdu.c apdu.h \
+	iso7816.c iso7816.h \
+	app-openpgp.c \
+	atr.c atr.h 
+
+sc_investigate_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+		$(LIBGCRYPT_LIBS) -lgpg-error -ldl
+
+sc_genkey_SOURCES = \
+	sc-genkey.c scdaemon.h \
+	apdu.c apdu.h \
+	iso7816.c iso7816.h \
+	app-openpgp.c \
+	atr.c atr.h 
+
+sc_genkey_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+		$(LIBGCRYPT_LIBS) -lgpg-error -ldl
+
+
+
+
+
+
+
+

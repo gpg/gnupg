@@ -1,5 +1,5 @@
 /* certreqgen.c - Generate a key and a certification request
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -366,12 +366,12 @@ read_parameters (FILE *fp, KsbaWriter writer)
   if (err)
     {
       log_error ("line %d: %s\n", outctrl.lnr, err);
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
     }
   else if (ferror(fp))
     {
       log_error ("line %d: read error: %s\n", outctrl.lnr, strerror(errno) );
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
     }
   else if (para)
     {
@@ -382,7 +382,7 @@ read_parameters (FILE *fp, KsbaWriter writer)
     }
 
   if (!rc && !any)
-    rc = GNUPG_No_Data;
+    rc = gpg_error (GPG_ERR_NO_DATA);
 
  leave:
   release_parameter_list (para);
@@ -436,7 +436,7 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
     {
       r = get_parameter (para, pKEYTYPE);
       log_error ("line %d: invalid algorithm\n", r->lnr);
-      return GNUPG_Invalid_Parameter;
+      return gpg_error (GPG_ERR_INV_PARAMETER);
     }
   
   /* check the keylength */
@@ -449,12 +449,12 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
       r = get_parameter (para, pKEYTYPE);
       log_error ("line %d: invalid key length %u (valid are 512 to 4096)\n",
                  r->lnr, nbits);
-      return GNUPG_Invalid_Parameter;
+      return gpg_error (GPG_ERR_INV_PARAMETER);
     }
     
   /* check the usage */
   if (parse_parameter_usage (para, pKEYUSAGE))
-    return GNUPG_Invalid_Parameter;
+    return gpg_error (GPG_ERR_INV_PARAMETER);
 
   /* check that there is a subject name and that this DN fits our
      requirements */
@@ -462,7 +462,7 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
     {
       r = get_parameter (para, pKEYTYPE);
       log_error ("line %d: no subject name given\n", r->lnr);
-      return GNUPG_Invalid_Parameter;
+      return gpg_error (GPG_ERR_INV_PARAMETER);
     }
   /* fixme check s */
 
@@ -477,7 +477,7 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
         {
           r = get_parameter (para, pKEYTYPE);
           log_error ("line %d: not a valid email address\n", r->lnr);
-          return GNUPG_Invalid_Parameter;
+          return gpg_error (GPG_ERR_INV_PARAMETER);
         }
     }
 
@@ -515,7 +515,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
 
   cr = ksba_certreq_new ();
   if (!cr)
-    return seterr (Out_Of_Core);
+    return gpg_error (GPG_ERR_ENOMEM);
 
   md = gcry_md_open (GCRY_MD_SHA1, 0);
   if (!md)
@@ -542,11 +542,12 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
   s = get_parameter_value (para, pNAMEEMAIL);
   if (s)
     {
-      char *buf = xtrymalloc (strlen (s) + 3);
+      char *buf;
 
+      buf = xtrymalloc (strlen (s) + 3);
       if (!buf)
         {
-          rc = GNUPG_Out_Of_Core;
+          rc = OUT_OF_CORE (errno);
           goto leave;
         }
       *buf = '<';
@@ -594,7 +595,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
           if (!n)
             {
               log_error ("libksba did not return a proper S-Exp\n");
-              err = GNUPG_Bug;
+              err = gpg_error (GPG_ERR_BUG);
               goto leave;
             }
           rc = gcry_sexp_sscan (&s_pkey, NULL, public, n);
@@ -606,7 +607,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
             }
           if ( !gcry_pk_get_keygrip (s_pkey, grip) )
             {
-              rc = seterr (General_Error);
+              rc = gpg_error (GPG_ERR_GENERAL);
               log_error ("can't figure out the keygrip\n");
               gcry_sexp_release (s_pkey);
               goto leave;
@@ -661,8 +662,9 @@ gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp)
   in_fp = fdopen (dup (in_fd), "rb");
   if (!in_fp)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("fdopen() failed: %s\n", strerror (errno));
-      return seterr (IO_Error);
+      return tmperr;
     }
 
   ctrl->pem_name = "NEW CERTIFICATE REQUEST";

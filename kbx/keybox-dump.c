@@ -1,5 +1,5 @@
 /* keybox-dump.c - Debug helpers
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -322,8 +322,9 @@ _keybox_dump_file (const char *filename, FILE *outfp)
     fp = fopen (filename, "rb");
   if (!fp)
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       fprintf (outfp, "can't open `%s': %s\n", filename, strerror(errno));
-      return KEYBOX_File_Error;
+      return tmperr;
     }
 
   while ( !(rc = _keybox_read_blob (&blob, fp)) )
@@ -337,8 +338,7 @@ _keybox_dump_file (const char *filename, FILE *outfp)
   if (rc == -1)
     rc = 0;
   if (rc)
-    fprintf (outfp, "error reading `%s': %s\n", filename,
-             rc == KEYBOX_Read_Error? keybox_strerror(rc):strerror (errno));
+    fprintf (outfp, "error reading `%s': %s\n", filename, gpg_strerror (rc));
   
   if (fp != stdin)
     fclose (fp);

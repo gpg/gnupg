@@ -92,13 +92,13 @@ delete_one (CTRL ctrl, const char *username)
                   goto next_ambigious;
                 }
             }
-          rc = GNUPG_Ambiguous_Name;
+          rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
         }
     }
   if (rc)
     {
       if (rc == -1)
-        rc = GNUPG_No_Public_Key;
+        rc = gpg_error (GPG_ERR_NO_PUBKEY);
       log_error (_("certificate `%s' not found: %s\n"),
                  username, gnupg_strerror (rc));
       gpgsm_status2 (ctrl, STATUS_DELETE_PROBLEM, "3", NULL);
@@ -147,7 +147,7 @@ gpgsm_delete (CTRL ctrl, STRLIST names)
   if (!names)
     {
       log_error ("nothing to delete\n");
-      return GNUPG_No_Data;
+      return gpg_error (GPG_ERR_NO_DATA);
     }
   
   for (; names; names=names->next )

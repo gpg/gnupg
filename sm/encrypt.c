@@ -1,5 +1,5 @@
 /* encrypt.c - Encrypt a message
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -72,28 +72,28 @@ init_dek (DEK dek)
   if (!dek->algo || !mode)
     {
       log_error ("unsupported algorithm `%s'\n", dek->algoid);
-      return GNUPG_Unsupported_Algorithm;
+      return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }
 
   dek->keylen = gcry_cipher_get_algo_keylen (dek->algo);
   if (!dek->keylen || dek->keylen > sizeof (dek->key))
-    return GNUPG_Bug;
+    return gpg_error (GPG_ERR_BUG);
 
   dek->ivlen = gcry_cipher_get_algo_blklen (dek->algo);
   if (!dek->ivlen || dek->ivlen > sizeof (dek->iv))
-    return GNUPG_Bug;
+    return gpg_error (GPG_ERR_BUG);
 
   if (dek->keylen < 100/8)
     { /* make sure we don't use weak keys */
       log_error ("key length of `%s' too small\n", dek->algoid);
-      return GNUPG_Unsupported_Algorithm;
+      return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }
   
   dek->chd = gcry_cipher_open (dek->algo, mode, GCRY_CIPHER_SECURE);
   if (!dek->chd)
     {
       log_error ("failed to create cipher context: %s\n", gcry_strerror (-1));
-      return GNUPG_General_Error;
+      return gpg_error (GPG_ERR_GENERAL);
     }
   
   for (i=0; i < 8; i++)
@@ -218,13 +218,13 @@ encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
   if (!buf)
     {
       log_error ("no public key for recipient\n");
-      return GNUPG_No_Public_Key;
+      return gpg_error (GPG_ERR_NO_PUBKEY);
     }
   len = gcry_sexp_canon_len (buf, 0, NULL, NULL);
   if (!len)
     {
       log_error ("libksba did not return a proper S-Exp\n");
-      return GNUPG_Bug;
+      return gpg_error (GPG_ERR_BUG);
     }
   rc = gcry_sexp_sscan (&s_pkey, NULL, buf, len);
   xfree (buf); buf = NULL;
@@ -241,7 +241,7 @@ encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
     if (!data)
       {
         gcry_mpi_release (data);
-        return GNUPG_General_Error;
+        return gpg_error (GPG_ERR_GENERAL);
       }
     if (gcry_sexp_build (&s_data, NULL, "%m", data))
       BUG ();
@@ -259,8 +259,9 @@ encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
   buf = xtrymalloc (len);
   if (!buf)
     {
+      gpg_error_t tmperr = OUT_OF_CORE (errno);
       gcry_sexp_release (s_ciph);
-      return GNUPG_Out_Of_Core;
+      return tmperr;
     }
   len = gcry_sexp_sprint (s_ciph, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
@@ -367,7 +368,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
     {
       log_error(_("no valid recipients given\n"));
       gpgsm_status (ctrl, STATUS_NO_RECP, "0");
-      rc = GNUPG_No_Public_Key;
+      rc = gpg_error (GPG_ERR_NO_PUBKEY);
       goto leave;
     }
 
@@ -375,15 +376,15 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GNUPG_General_Error;
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
   data_fp = fdopen ( dup (data_fd), "rb");
   if (!data_fp)
     {
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("fdopen() failed: %s\n", strerror (errno));
-      rc = seterr (IO_Error);
       goto leave;
     }
 
@@ -410,7 +411,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   cms = ksba_cms_new ();
   if (!cms)
     {
-      rc = seterr (Out_Of_Core);
+      rc = gpg_error (GPG_ERR_ENOMEM);
       goto leave;
     }
 
@@ -439,7 +440,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   /* create a session key */
   dek = xtrycalloc (1, sizeof *dek); /* hmmm: should we put it into secmem?*/
   if (!dek)
-    rc = GNUPG_Out_Of_Core;
+    rc = OUT_OF_CORE (errno);
   else
   {
     dek->algoid = opt.def_cipher_algoid;
@@ -467,7 +468,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   encparm.buffer = xtrymalloc (encparm.bufsize);
   if (!encparm.buffer)
     {
-      rc = seterr (Out_Of_Core);
+      rc = OUT_OF_CORE (errno);
       goto leave;
     }
 
@@ -523,7 +524,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   if (encparm.readerror)
     {
       log_error ("error reading input: %s\n", strerror (encparm.readerror));
-      rc = seterr (Read_Error);
+      rc = gpg_error (gpg_err_code_from_errno (encparm.readerror));
       goto leave;
     }
 

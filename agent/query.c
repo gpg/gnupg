@@ -33,7 +33,7 @@
 
 #include "agent.h"
 #include "i18n.h"
-#include "../assuan/assuan.h"
+#include <assuan.h>
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX
@@ -70,7 +70,7 @@ unlock_pinentry (int rc)
     {
       log_error ("failed to release the entry lock\n");
       if (!rc)
-        rc = GNUPG_Internal_Error;
+        rc = gpg_error (GPG_ERR_INTERNAL);
     }
 #endif
   entry_ctx = NULL;
@@ -96,7 +96,7 @@ start_pinentry (CTRL ctrl)
   if (!pth_mutex_acquire (&entry_lock, 0, NULL))
     {
       log_error ("failed to acquire the entry lock\n");
-      return GNUPG_Internal_Error;
+      return gpg_error (GPG_ERR_INTERNAL);
     }
 #endif
 
@@ -108,8 +108,9 @@ start_pinentry (CTRL ctrl)
       
   if (fflush (NULL))
     {
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("error flushing pending output: %s\n", strerror (errno));
-      return unlock_pinentry (seterr (Write_Error));
+      return unlock_pinentry (tmperr);
     }
 
   if (!opt.pinentry_program || !*opt.pinentry_program)
@@ -145,7 +146,7 @@ start_pinentry (CTRL ctrl)
     {
       log_error ("can't connect to the PIN entry module: %s\n",
                  assuan_strerror (rc));
-      return unlock_pinentry (seterr (No_PIN_Entry));
+      return unlock_pinentry (gpg_error (GPG_ERR_NO_PIN_ENTRY));
     }
   entry_ctx = ctx;
 
@@ -161,7 +162,7 @@ start_pinentry (CTRL ctrl)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttyname=%s", ctrl->ttyname) < 0 )
-	return unlock_pinentry (GNUPG_Out_Of_Core);
+	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -172,7 +173,7 @@ start_pinentry (CTRL ctrl)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s", ctrl->ttytype) < 0 )
-	return unlock_pinentry (GNUPG_Out_Of_Core);
+	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
@@ -182,7 +183,7 @@ start_pinentry (CTRL ctrl)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-ctype=%s", ctrl->lc_ctype) < 0 )
-	return unlock_pinentry (GNUPG_Out_Of_Core);
+	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
@@ -192,7 +193,7 @@ start_pinentry (CTRL ctrl)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-messages=%s", ctrl->lc_messages) < 0 )
-	return unlock_pinentry (GNUPG_Out_Of_Core);
+	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
@@ -250,7 +251,7 @@ agent_askpin (CTRL ctrl,
     return 0; /* fixme: we should return BAD PIN */
 
   if (!pininfo || pininfo->max_length < 1)
-    return seterr (Invalid_Value);
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (!desc_text && pininfo->min_digits)
     desc_text = _("Please enter your PIN, so that the secret key "
                   "can be unlocked for this session");
@@ -322,7 +323,8 @@ agent_askpin (CTRL ctrl,
           rc = pininfo->check_cb (pininfo);
           if (rc == -1 && pininfo->cb_errtext)
             errtext = pininfo->cb_errtext;
-          else if (rc == GNUPG_Bad_Passphrase || rc == GNUPG_Bad_PIN)
+          else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+                   || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
             errtext = (is_pin? _("Bad PIN")
                        : _("Bad Passphrase"));
           else if (rc)
@@ -333,8 +335,8 @@ agent_askpin (CTRL ctrl,
         return unlock_pinentry (0); /* okay, got a PIN or passphrase */
     }
 
-  return unlock_pinentry (pininfo->min_digits? GNUPG_Bad_PIN
-                          : GNUPG_Bad_Passphrase);
+  return unlock_pinentry (gpg_error (pininfo->min_digits? GPG_ERR_BAD_PIN
+                          : GPG_ERR_BAD_PASSPHRASE));
 }
 
 
@@ -356,7 +358,7 @@ agent_get_passphrase (CTRL ctrl,
 
   *retpass = NULL;
   if (opt.batch)
-    return GNUPG_Bad_Passphrase; 
+    return gpg_error (GPG_ERR_BAD_PASSPHRASE); 
 
   rc = start_pinentry (ctrl);
   if (rc)
@@ -394,7 +396,7 @@ agent_get_passphrase (CTRL ctrl,
   parm.size = ASSUAN_LINELENGTH/2 - 5;
   parm.buffer = gcry_malloc_secure (parm.size+10);
   if (!parm.buffer)
-    return unlock_pinentry (seterr (Out_Of_Core));
+    return unlock_pinentry (out_of_core ());
 
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL, NULL, NULL);
@@ -407,8 +409,9 @@ agent_get_passphrase (CTRL ctrl,
   hexstring = gcry_malloc_secure (strlen (parm.buffer)*2+1);
   if (!hexstring)
     {
+      gpg_error_t tmperr = out_of_core ();
       xfree (parm.buffer);
-      return unlock_pinentry (seterr (Out_Of_Core));
+      return unlock_pinentry (tmperr);
     }
 
   for (i=0, p=parm.buffer; *p; p++, i += 2)
@@ -423,7 +426,7 @@ agent_get_passphrase (CTRL ctrl,
 
 /* Pop up the PIN-entry, display the text and the prompt and ask the
    user to confirm this.  We return 0 for success, ie. the used
-   confirmed it, GNUPG_Not_Confirmed for what the text says or an
+   confirmed it, GPG_ERR_NOT_CONFIRMED for what the text says or an
    other error. */
 int 
 agent_get_confirmation (CTRL ctrl,

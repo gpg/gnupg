@@ -46,7 +46,7 @@ gpg_agent_SOURCES = \
 
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-                $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS)
+                $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) -lgpg-error
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
@@ -55,8 +55,6 @@ gpg_protect_tool_SOURCES = \
 	simple-pwquery.c simple-pwquery.h
 
 gpg_protect_tool_LDADD = ../jnlib/libjnlib.a \
-		     ../common/libcommon.a $(LIBGCRYPT_LIBS)
-
-
+		     ../common/libcommon.a $(LIBGCRYPT_LIBS) -lgpg-error
 
 
