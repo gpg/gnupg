@@ -475,7 +475,6 @@ parse_hkp_index(IOBUF buffer,char *line)
 int hkp_search(STRLIST tokens)
 {
   int rc=0,len=0,max,first=1;
-  unsigned int maxlen=1024,buflen=0;
 #ifndef __riscos__
   unsigned char *searchstr=NULL,*searchurl;
   unsigned char *request;
@@ -485,7 +484,6 @@ int hkp_search(STRLIST tokens)
 #endif
   struct http_context hd;
   unsigned int hflags=opt.keyserver_options.honor_http_proxy?HTTP_FLAG_TRY_PROXY:0;
-  byte *line=NULL;
 
   /* Glue the tokens together to make a search string */
 
@@ -569,13 +567,17 @@ int hkp_search(STRLIST tokens)
     {
       IOBUF buffer;
       int count=1;
-      int ret;
+      int ret=0; /* gcc wants me to initialize this */
+      unsigned int buflen;
+      byte *line=NULL;
 
       buffer=iobuf_temp();
 
       rc=1;
       while(rc!=0)
 	{
+	  unsigned int maxlen=1024;
+
 	  /* This is a judgement call.  Is it better to slurp up all
              the results before prompting the user?  On the one hand,
              it probably makes the keyserver happier to not be blocked

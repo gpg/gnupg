@@ -837,6 +837,8 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	       sigstr = "sig";
 	    else if( sig->sig_class == 0x18 )
 	       sigstr = "sig";
+	    else if( sig->sig_class == 0x1F )
+	       sigstr = "sig";
 	    else {
                 printf ("sig::::::::::%02x%c:\n",
                         sig->sig_class, sig->flags.exportable?'x':'l');
