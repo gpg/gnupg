@@ -21,7 +21,7 @@
 localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
-bin_PROGRAMS = scdaemon sc-investigate sc-genkey
+bin_PROGRAMS = scdaemon sc-investigate
 
 AM_CPPFLAGS = -I$(top_srcdir)/common $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
 	      $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
@@ -48,15 +48,6 @@ sc_investigate_SOURCES = \
 sc_investigate_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
 		$(LIBGCRYPT_LIBS) -lgpg-error -ldl
 
-sc_genkey_SOURCES = \
-	sc-genkey.c scdaemon.h \
-	apdu.c apdu.h \
-	iso7816.c iso7816.h \
-	app-openpgp.c \
-	atr.c atr.h 
-
-sc_genkey_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-		$(LIBGCRYPT_LIBS) -lgpg-error -ldl
 
 
 
