@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 
-INCLUDES =  -I$(top_srcdir)/include
+INCLUDES =  -I$(top_srcdir)/gcrypt
 CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
 SFLAGS = @MPI_SFLAGS@
 
@@ -32,8 +32,7 @@ libmpi_la_SOURCES = longlong.h	   \
 	      mpih-cmp.c     \
 	      mpih-div.c     \
 	      mpih-mul.c     \
-	      mpiutil.c      \
-	      g10m.c
+	      mpiutil.c
 
 # Note this objects are actually links, the sourcefiles are
 # distributed by special code in dist-hook

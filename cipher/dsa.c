@@ -178,7 +178,7 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
     do {
 	mpi_add_ui( h, h, 1 );
 	/* g = h^e mod p */
-	mpi_powm( g, h, e, p );
+	gcry_mpi_powm( g, h, e, p );
     } while( !mpi_cmp_ui( g, 1 ) );  /* continue until g != 1 */
 
     /* select a random number which has these properties:
@@ -212,7 +212,7 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
 
     /* y = g^x mod p */
     y = mpi_alloc( mpi_get_nlimbs(p) );
-    mpi_powm( y, g, x, p );
+    gcry_mpi_powm( y, g, x, p );
 
     if( DBG_CIPHER ) {
 	progress('\n');
@@ -246,7 +246,7 @@ check_secret_key( DSA_secret_key *sk )
     int rc;
     MPI y = mpi_alloc( mpi_get_nlimbs(sk->y) );
 
-    mpi_powm( y, sk->g, sk->x, sk->p );
+    gcry_mpi_powm( y, sk->g, sk->x, sk->p );
     rc = !mpi_cmp( y, sk->y );
     mpi_free( y );
     return rc;
@@ -269,7 +269,7 @@ sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
     k = gen_k( skey->q );
 
     /* r = (a^k mod p) mod q */
-    mpi_powm( r, skey->g, k, skey->p );
+    gcry_mpi_powm( r, skey->g, k, skey->p );
     mpi_fdiv_r( r, r, skey->q );
 
     /* kinv = k^(-1) mod q */

@@ -28,7 +28,6 @@
 #include "util.h"
 #include "packet.h"
 #include "memory.h"
-#include "mpi.h"
 #include "keydb.h"
 #include "main.h"
 #include "status.h"
@@ -452,7 +451,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
     ctx.md = digest;
     rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
 			cmp_help, &ctx );
-    mpi_free( result );
+    mpi_release( result );
     if( !rc && sig->flags.unknown_critical ) {
 	log_info(_("assuming bad signature due to an unknown critical bit\n"));
 	rc = G10ERR_BAD_SIGN;

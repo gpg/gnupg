@@ -34,9 +34,12 @@
 #include <gcrypt.h>
 #include "util.h"
 #include "main.h"
+#include "memory.h"
 #include "options.h"
 #include "i18n.h"
 
+
+#define MAX_EXTERN_MPI_BITS 16384
 
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
@@ -86,23 +89,140 @@ disable_core_dumps()
 
 
 
-u16
-checksum_u16( unsigned n )
+/****************
+ * write an mpi to out.
+ */
+int
+mpi_write( IOBUF out, MPI a )
 {
-    u16 a;
+    char buffer[(MAX_EXTERN_MPI_BITS+7)/8];
+    size_t nbytes;
+    int rc;
 
-    a  = (n >> 8) & 0xff;
-    if( opt.emulate_bugs & EMUBUG_GPGCHKSUM ) {
-       a |= n & 0xff;
-       log_debug("csum_u16 emulated for n=%u\n", n);
+    nbytes = (MAX_EXTERN_MPI_BITS+7)/8;
+    rc = gcry_mpi_print( GCRYMPI_FMT_PGP, buffer, &nbytes, a );
+    if( !rc )
+	rc = iobuf_write( out, buffer, nbytes );
+
+    return rc;
+}
+
+/****************
+ * Writye a MPI to out, but in this case it is an opaque one,
+ * s used vor v3 protected keys.
+ */
+int
+mpi_write_opaque( IOBUF out, MPI a )
+{
+    size_t nbytes, nbits;
+    int rc;
+
+    assert( gcry_mpi_get_flag( a, GCRYMPI_FLAG_OPAQUE ) );
+    p = gcry_mpi_get_opaque( a, &nbits );
+    nbytes = (nbits+7) / 8;
+    iobuf_put( out, nbits >> 8 );
+    iobuf_put( out, nbits )
+    rc = iobuf_write( out, p, nbytes );
+    return rc;
+}
+
+
+/****************
+ * Read an external representation of an mpi and return the MPI
+ * The external format is a 16 bit unsigned value stored in network byte order,
+ * giving the number of bits for the following integer. The integer is stored
+ * with MSB first (left padded with zeroes to align on a byte boundary).
+ */
+MPI
+mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
+{
+    int c, c1, c2, i;
+    unsigned nbits, nbytes, nread=0;
+    MPI a = NULL;
+    byte *buf = NULL;
+    byte *p;
+
+    if( (c = c1 = iobuf_get(inp)) == -1 )
+	goto leave;
+    nbits = c << 8;
+    if( (c = c2 = iobuf_get(inp)) == -1 )
+	goto leave;
+    nbits |= c;
+    if( nbits > MAX_EXTERN_MPI_BITS ) {
+	log_error("mpi too large (%u bits)\n", nbits);
+	goto leave;
     }
+    nread = 2;
+    nbytes = (nbits+7) / 8;
+    buf = secure? m_alloc_secure( nbytes+2 ) : m_alloc( nbytes+2 );
+    p = buf;
+    p[0] = c1;
+    p[1] = c2;
+    for( i=0 ; i < nbytes; i++ ) {
+	p[i+2] = iobuf_get(inp) & 0xff;
+	nread++;
+    }
+    nread += nbytes;
+    /* FIXME: replace with the gcry_scan function */
+    a = mpi_read_from_buffer( buf, &nread, secure );
+
+  leave:
+    m_free(buf);
+    if( nread > *ret_nread )
+	log_bug("mpi larger than packet");
     else
-       a += n & 0xff;
+	*ret_nread = nread;
     return a;
 }
 
-static u16
-checksum_u16_nobug( unsigned n )
+/****************
+ * Same as mpi_read but the value is stored as an opaque MPI.
+ * This function is used to read encrpted MPI of v3 packets.
+ */
+GCRY_MPI
+mpi_read_opaque(IOBUF inp, unsigned *ret_nread )
+{
+    int c, c1, c2, i;
+    unsigned nbits, nbytes, nread=0;
+    GCRY_MPI a = NULL;
+    byte *buf = NULL;
+    byte *p;
+
+    if( (c = c1 = iobuf_get(inp)) == -1 )
+	goto leave;
+    nbits = c << 8;
+    if( (c = c2 = iobuf_get(inp)) == -1 )
+	goto leave;
+    nbits |= c;
+    if( nbits > MAX_EXTERN_MPI_BITS ) {
+	log_error("mpi too large (%u bits)\n", nbits);
+	goto leave;
+    }
+    nread = 2;
+    nbytes = (nbits+7) / 8;
+    buf = m_alloc( nbytes );
+    p = buf;
+    for( i=0 ; i < nbytes; i++ ) {
+	p[i] = iobuf_get(inp) & 0xff;
+	nread++;
+    }
+    nread += nbytes;
+    a = gcry_mpi_set_opaque(NULL, buf, nbits );
+    buf = NULL;
+
+  leave:
+    m_free(buf);
+    if( nread > *ret_nread )
+	log_bug("mpi larger than packet");
+    else
+	*ret_nread = nread;
+    return a;
+}
+
+
+
+u16
+checksum_u16( unsigned n )
 {
     u16 a;
 
@@ -130,43 +250,13 @@ checksum_mpi( MPI a )
     unsigned nbits;
 
     buffer = mpi_get_buffer( a, &nbytes, NULL );
-    /* some versions of gpg encode wrong values for the length of an mpi
-     * so that mpi_get_nbits() which counts the mpi yields another (shorter)
-     * value than the one store with the mpi.  mpi_get_nbit_info() returns
-     * this stored value if it is still available.
-     */
-
-    if( opt.emulate_bugs & EMUBUG_GPGCHKSUM )
-	nbits = 0;
-    else
-	nbits = mpi_get_nbit_info(a);
-    if( !nbits )
-       nbits = mpi_get_nbits(a);
+    nbits = mpi_get_nbits(a);
     csum = checksum_u16( nbits );
     csum += checksum( buffer, nbytes );
     m_free( buffer );
     return csum;
 }
 
-/****************
- * This is the correct function
- */
-u16
-checksum_mpi_counted_nbits( MPI a )
-{
-    u16 csum;
-    byte *buffer;
-    unsigned nbytes;
-    unsigned nbits;
-
-    buffer = mpi_get_buffer( a, &nbytes, NULL );
-    nbits = mpi_get_nbits(a);
-    mpi_set_nbit_info(a,nbits);
-    csum = checksum_u16_nobug( nbits );
-    csum += checksum( buffer, nbytes );
-    m_free( buffer );
-    return csum;
-}
 
 
 u32
@@ -213,10 +303,10 @@ print_cipher_algo_note( int algo )
 {
     if( algo >= 100 && algo <= 110 )
 	no_exp_algo();
-    else if(	algo == CIPHER_ALGO_3DES
-	     || algo == CIPHER_ALGO_CAST5
-	     || algo == CIPHER_ALGO_BLOWFISH
-	     || algo == CIPHER_ALGO_TWOFISH
+    else if(	algo == GCRY_CIPHER_3DES
+	     || algo == GCRY_CIPHER_CAST5
+	     || algo == GCRY_CIPHER_BLOWFISH
+	     || algo == GCRY_CIPHER_TWOFISH
 	   )
 	;
     else {

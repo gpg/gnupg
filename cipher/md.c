@@ -157,7 +157,7 @@ load_digest_module( int req_algo )
 	    continue;
 	}
 	/* put it into the list */
-	if( g10_opt_verbose > 1 )
+	if( g10_log_verbosity( 2 ) )
 	    log_info("loaded digest %d\n", algo);
 	r->next = digest_list;
 	digest_list = r;

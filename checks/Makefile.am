@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 
-GPG_DEARMOR = --no-options --quiet --yes --dearmor
+GPG_DEARMOR = ../g10/gpg --no-options --quiet --yes --dearmor
 
 TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \

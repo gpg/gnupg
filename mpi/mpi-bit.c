@@ -55,7 +55,7 @@ __clz_tab[] =
 void
 mpi_normalize( MPI a )
 {
-    if( mpi_is_protected(a) )
+    if( mpi_is_opaque(a) )
 	return;
 
     for( ; a->nlimbs && !a->d[a->nlimbs-1]; a->nlimbs-- )
@@ -67,16 +67,13 @@ mpi_normalize( MPI a )
 /****************
  * Return the number of bits in A.
  */
-unsigned
+unsigned int
 mpi_get_nbits( MPI a )
 {
     unsigned n;
 
-    if( mpi_is_protected(a) ) {
-	n = mpi_get_nbit_info(a);
-	if( !n )
-	    n = a->nlimbs * BITS_PER_MPI_LIMB;
-	return n;
+    if( mpi_is_opaque(a) ) {
+	return a->sign; /* which holds the number of bits */
     }
 
     mpi_normalize( a );

@@ -908,7 +908,7 @@ static int
 algo_available( int preftype, int algo )
 {
     if( preftype == PREFTYPE_SYM ) {
-	if( algo == CIPHER_ALGO_TWOFISH )
+	if( algo == GCRY_CIPHER_TWOFISH )
 	    return 0;  /* we don't want to generate Twofish messages for now*/
 	return algo && !openpgp_cipher_test_algo( algo );
     }

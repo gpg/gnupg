@@ -193,7 +193,7 @@ load_cipher_modules(void)
 	    continue;
 	}
 	/* put it into the table */
-	if( g10_opt_verbose > 1 )
+	if( g10_log_verbosity( 2 ) )
 	    log_info("loaded cipher %d (%s)\n", ct->algo, name);
 	ct->name = name;
 	ct_idx++;

@@ -249,7 +249,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		/*fputc('~', stderr);*/
 		mpi_fdiv_q(tmp, pmin1, factors[i] );
 		/* (no mpi_pow(), but it is okay to use this with mod prime) */
-		mpi_powm(b, g, tmp, prime );
+		gcry_mpi_powm(b, g, tmp, prime );
 		if( !mpi_cmp_ui(b, 1) )
 		    break;
 	    }
@@ -334,7 +334,7 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 	    /* do a faster Fermat test */
 	    count2++;
 	    mpi_sub_ui( pminus1, ptest, 1);
-	    mpi_powm( result, val_2, pminus1, ptest );
+	    gcry_mpi_powm( result, val_2, pminus1, ptest );
 	    if( !mpi_cmp_ui( result, 1 ) ) { /* not composite */
 		/* perform stronger tests */
 		if( is_prime(ptest, 5, &count2 ) ) {
@@ -383,7 +383,7 @@ check_prime( MPI prime, MPI val_2 )
 	MPI result = mpi_alloc_like( prime );
 	MPI pminus1 = mpi_alloc_like( prime );
 	mpi_sub_ui( pminus1, prime, 1);
-	mpi_powm( result, val_2, pminus1, prime );
+	gcry_mpi_powm( result, val_2, pminus1, prime );
 	mpi_free( pminus1 );
 	if( mpi_cmp_ui( result, 1 ) ) { /* if composite */
 	    mpi_free( result );
@@ -443,10 +443,10 @@ is_prime( MPI n, int steps, int *count )
 	    }
 	    assert( mpi_cmp( x, nminus1 ) < 0 && mpi_cmp_ui( x, 1 ) > 0 );
 	}
-	mpi_powm( y, x, q, n);
+	gcry_mpi_powm( y, x, q, n);
 	if( mpi_cmp_ui(y, 1) && mpi_cmp( y, nminus1 ) ) {
 	    for( j=1; j < k && mpi_cmp( y, nminus1 ); j++ ) {
-		mpi_powm(y, y, a2, n);
+		gcry_mpi_powm(y, y, a2, n);
 		if( !mpi_cmp_ui( y, 1 ) )
 		    goto leave; /* not a prime */
 	    }

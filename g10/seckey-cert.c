@@ -28,7 +28,6 @@
 #include "util.h"
 #include "memory.h"
 #include "packet.h"
-#include "mpi.h"
 #include "keydb.h"
 #include "main.h"
 #include "options.h"
@@ -84,15 +83,17 @@ do_check( PKT_secret_key *sk )
 	    log_fatal("set IV failed: %s\n", gcry_strerror(-1) );
 	csum = 0;
 	if( sk->version >= 4 ) {
-	    int ndata;
+	    size_t ndata;
+	    unsigned int ndatabits;
 	    byte *p, *data;
 
 	    i = pubkey_get_npkey(sk->pubkey_algo);
-	    assert( mpi_is_opaque( sk->skey[i] ) );
-	    p = mpi_get_opaque( sk->skey[i], &ndata );
+	    assert( gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
+	    p = gcry_mpi_get_opaque( sk->skey[i], &ndatabits );
+	    ndata = (ndatabits+7)/8;
 	    data = m_alloc_secure( ndata );
 	    gcry_cipher_decrypt( cipher_hd, data, ndata, p, ndata );
-	    mpi_free( sk->skey[i] ); sk->skey[i] = NULL ;
+	    mpi_release( sk->skey[i] ); sk->skey[i] = NULL ;
 	    p = data;
 	    if( ndata < 2 ) {
 		log_error("not enough bytes for checksum\n");
@@ -104,11 +105,12 @@ do_check( PKT_secret_key *sk )
 		sk->csum = data[ndata-2] << 8 | data[ndata-1];
 	    }
 	    /* must check it here otherwise the mpi_read_xx would fail
-	     * because the length das an abritary value */
+	     * because the length may have an arbitrary value */
 	    if( sk->csum == csum ) {
 		for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
 		    nbytes = ndata;
 		    sk->skey[i] = mpi_read_from_buffer(p, &nbytes, 1 );
+		    /* fixme: replace by mpi_scan */
 		    ndata -= nbytes;
 		    p += nbytes;
 		}
@@ -118,17 +120,23 @@ do_check( PKT_secret_key *sk )
 	else {
 	    for(i=pubkey_get_npkey(sk->pubkey_algo);
 		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-		buffer = mpi_get_secure_buffer( sk->skey[i], &nbytes, NULL );
+		size_t ndata;
+		unsigned int ndatabits;
+		byte *p, *data;
+
+		assert( gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
+		p = gcry_mpi_get_opaque( sk->skey[i], &ndatabits );
+		ndata = (ndatabits+7)/8;
+		data = m_alloc_secure( ndata );
 		gcry_cipher_sync( cipher_hd );
-		assert( mpi_is_protected(sk->skey[i]) );
-		gcry_cipher_decrypt( cipher_hd, buffer, nbytes, NULL, 0 );
-		mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
-		mpi_clear_protect_flag( sk->skey[i] );
+		gcry_cipher_decrypt( cipher_hd, data, ndata, p, ndata );
+		mpi_release( sk->skey[i] ); sk->skey[i] = NULL ;
+
+		res = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_USG,
+				     data, &ndata );
+
 		csum += checksum_mpi( sk->skey[i] );
 		m_free( buffer );
-	    }
-	    if( opt.emulate_bugs & EMUBUG_GPGCHKSUM ) {
-	       csum = sk->csum;
 	    }
 	}
 	gcry_cipher_close( cipher_hd );
@@ -261,6 +269,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    gcry_randomize(sk->protect.iv, sk->protect.ivlen,
 							GCRY_STRONG_RANDOM);
 	    gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
+	    #warning FIXME: replace set/get buffer
 	    if( sk->version >= 4 ) {
 	      #define NMPIS (GNUPG_MAX_NSKEY - GNUPG_MAX_NPKEY)
 		byte *bufarr[NMPIS];
@@ -271,7 +280,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 
 		for(j=0, i = pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++, j++ ) {
-		    assert( !mpi_is_opaque( sk->skey[i] ) );
+		    assert( !gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
 		    bufarr[j] = mpi_get_buffer( sk->skey[i], &narr[j], NULL );
 		    nbits[j]  = mpi_get_nbits( sk->skey[i] );
 		    ndata += narr[j] + 2;
@@ -299,25 +308,25 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		gcry_cipher_encrypt( cipher_hd, data, ndata, NULL, 0 );
 		for(i = pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-		    mpi_free( sk->skey[i] );
+		    mpi_release( sk->skey[i] );
 		    sk->skey[i] = NULL;
 		}
 		i = pubkey_get_npkey(sk->pubkey_algo);
-		sk->skey[i] = mpi_set_opaque(NULL, data, ndata );
+		sk->skey[i] = gcry_mpi_set_opaque(NULL, data, ndata*8 );
 	    }
 	    else {
 		/* NOTE: we always recalculate the checksum because there
 		 * are some test releases which calculated it wrong */
+	       #warning FIXME:	Replace this code
 		csum = 0;
 		for(i=pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-		    csum += checksum_mpi_counted_nbits( sk->skey[i] );
+		    csum += checksum_mpi( sk->skey[i] );
 		    buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
 		    gcry_cipher_sync( cipher_hd );
-		    assert( !mpi_is_protected(sk->skey[i]) );
+		    assert( !mpi_is_opaque(sk->skey[i]) );
 		    gcry_cipher_encrypt( cipher_hd, buffer, nbytes, NULL, 0 );
 		    mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
-		    mpi_set_protect_flag( sk->skey[i] );
 		    m_free( buffer );
 		}
 		sk->csum = csum;

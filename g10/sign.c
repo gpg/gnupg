@@ -181,7 +181,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     frame = encode_md_value( sk->pubkey_algo, md,
 			     digest_algo, mpi_get_nbits(sk->skey[0]));
     rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
-    mpi_free(frame);
+    mpi_release(frame);
     if( rc )
 	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
     else {
@@ -217,9 +217,9 @@ hash_for(int pubkey_algo )
     if( opt.def_digest_algo )
 	return opt.def_digest_algo;
     if( pubkey_algo == GCRY_PK_DSA )
-	return DIGEST_ALGO_SHA1;
+	return GCRY_MD_SHA1;
     if( pubkey_algo == GCRY_PK_RSA )
-	return DIGEST_ALGO_MD5;
+	return GCRY_MD_MD5;
     return DEFAULT_DIGEST_ALGO;
 }
 
@@ -645,7 +645,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	if( hash_for(sk->pubkey_algo) == DIGEST_ALGO_MD5 )
+	if( hash_for(sk->pubkey_algo) == GCRY_MD_MD5 )
 	    only_md5 = 1;
 	else {
 	    only_md5 = 0;
@@ -813,10 +813,10 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	    || sigclass == 0x30 || sigclass == 0x28 );
     if( !digest_algo ) {
 	switch( sk->pubkey_algo ) {
-	  case GCRY_PK_DSA: digest_algo = DIGEST_ALGO_SHA1; break;
+	  case GCRY_PK_DSA: digest_algo = GCRY_MD_SHA1; break;
 	  case GCRY_PK_RSA_S:
-	  case GCRY_PK_RSA: digest_algo = DIGEST_ALGO_MD5; break;
-	  default:		digest_algo = DIGEST_ALGO_RMD160; break;
+	  case GCRY_PK_RSA: digest_algo = GCRY_MD_MD5; break;
+	  default:		digest_algo = GCRY_MD_RMD160; break;
 	}
     }
     if( !(md = gcry_md_open( digest_algo, 0 )))

@@ -1,3 +1,36 @@
+Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* seckey-cert.c: Removed obsolete mpi_*_protect_flag.
+	* parse-packet.c: Ditto.
+
+	* misc.c (mpi_read): Removed the secure argumet becuase it is
+	never used.  Changed all Callers.
+	(mpi_read_opaque): New.
+	(mpi_write_opaque): New.
+	* parse-packet.c (parse_key): Use the opaque method also for
+	v3 keys.
+	* build-packet.c (do_secret_key): Likewise.
+
+	* g10.c (main): Check libgcrypt version.
+
+	* packet.h: replaced inclusion of mpi.h by a plain typeedef of the
+	gcry_mpi structure and removed all inclusions of "mpi.h" in all
+	sources.
+
+	* g10.c: Add --delete-secret-key to the help page.
+
+	* g10.c (main): Changed the default homedir to "~/.gnupg-test" so
+	that we don't mess up with the stable version.
+
+	* misc.c (mpi_write): New.
+	(mpi_write): New.
+
+	* misc.c (checksum_u16_nobug): Removed.
+	(checksum_mpi_counted_nbits): Renamed to ...
+	(checksum_mpi): ... this to superseed the old one. Changed all
+	callers. This is because we do not emulate the old gpg bug anymore.
+	* g10.c (oEmuChecksumBug): Removed.
+
 Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* g10.c (register_extension): New...

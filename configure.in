@@ -700,6 +700,7 @@ else
     mv g10defs.tmp g10defs.h
     echo "g10defs.h created"
 fi
+chmod +x gcrypt/gcrypt-config
 ],[
 prefix=$prefix
 exec_prefix=$exec_prefix
@@ -723,6 +724,7 @@ tools/Makefile
 zlib/Makefile
 checks/Makefile
 gcrypt/Makefile
+gcrypt/gcrypt-config
 ])
 
 dnl *-*wedit:notab*-*  Please keep this as the last line.

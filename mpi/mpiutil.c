@@ -24,10 +24,10 @@
 #include <string.h>
 #include <assert.h>
 
+#include "g10lib.h"
 #include "mpi.h"
 #include "mpi-internal.h"
 #include "memory.h"
-#include "g10lib.h"
 
 /****************
  * Note:  It was a bad idea to use the number of limbs to allocate
@@ -49,7 +49,6 @@ mpi_alloc( unsigned nlimbs )
     a->nlimbs = 0;
     a->sign = 0;
     a->flags = 0;
-    a->nbits = 0;
     return a;
 }
 
@@ -73,7 +72,6 @@ mpi_alloc_secure( unsigned nlimbs )
     a->flags = 1;
     a->nlimbs = 0;
     a->sign = 0;
-    a->nbits = 0;
     return a;
 }
 
@@ -140,7 +138,6 @@ void
 mpi_clear( MPI a )
 {
     a->nlimbs = 0;
-    a->nbits = 0;
     a->flags = 0;
 }
 
@@ -161,7 +158,6 @@ mpi_free( MPI a )
 	log_bug("invalid flag value in mpi\n");
     g10_free(a);
 }
-
 
 void
 mpi_set_secure( MPI a )
@@ -184,7 +180,7 @@ mpi_set_secure( MPI a )
 
 
 MPI
-mpi_set_opaque( MPI a, void *p, int len )
+mpi_set_opaque( MPI a, void *p, unsigned int nbits )
 {
     if( !a ) {
 	a = mpi_alloc(0);
@@ -199,19 +195,19 @@ mpi_set_opaque( MPI a, void *p, int len )
     a->d = p;
     a->alloced = 0;
     a->nlimbs = 0;
-    a->nbits = len;
+    a->sign  = nbits;
     a->flags = 4;
     return a;
 }
 
 
 void *
-mpi_get_opaque( MPI a, int *len )
+mpi_get_opaque( MPI a, unsigned int *nbits )
 {
     if( !(a->flags & 4) )
 	log_bug("mpi_get_opaque on normal mpi\n");
-    if( len )
-	*len = a->nbits;
+    if( nbits )
+	*nbits = a->sign;
     return a->d;
 }
 
@@ -227,10 +223,10 @@ mpi_copy( MPI a )
     MPI b;
 
     if( a && (a->flags & 4) ) {
-	void *p = g10_is_secure(a->d)? g10_xmalloc_secure( a->nbits )
-				     : g10_xmalloc( a->nbits );
-	memcpy( p, a->d, a->nbits );
-	b = mpi_set_opaque( NULL, p, a->nbits );
+	void *p = g10_is_secure(a->d)? g10_xmalloc_secure( (a->sign+7)/8 )
+				     : g10_xmalloc( (a->sign+7)/8 );
+	memcpy( p, a->d, (a->sign+7)/8 );
+	b = mpi_set_opaque( NULL, p, a->sign );
     }
     else if( a ) {
 	b = mpi_is_secure(a)? mpi_alloc_secure( a->nlimbs )
@@ -238,7 +234,6 @@ mpi_copy( MPI a )
 	b->nlimbs = a->nlimbs;
 	b->sign = a->sign;
 	b->flags  = a->flags;
-	b->nbits = a->nbits;
 	for(i=0; i < b->nlimbs; i++ )
 	    b->d[i] = a->d[i];
     }
@@ -259,10 +254,11 @@ mpi_alloc_like( MPI a )
     MPI b;
 
     if( a && (a->flags & 4) ) {
-	void *p = g10_is_secure(a->d)? g10_malloc_secure( a->nbits )
-				     : g10_malloc( a->nbits );
-	memcpy( p, a->d, a->nbits );
-	b = mpi_set_opaque( NULL, p, a->nbits );
+	int n = (a->sign+7)/8;
+	void *p = g10_is_secure(a->d)? g10_malloc_secure( n )
+				     : g10_malloc( n );
+	memcpy( p, a->d, n );
+	b = mpi_set_opaque( NULL, p, a->sign );
     }
     else if( a ) {
 	b = mpi_is_secure(a)? mpi_alloc_secure( a->nlimbs )
@@ -270,7 +266,6 @@ mpi_alloc_like( MPI a )
 	b->nlimbs = 0;
 	b->sign = 0;
 	b->flags = a->flags;
-	b->nbits = 0;
     }
     else
 	b = NULL;
@@ -290,7 +285,6 @@ mpi_set( MPI w, MPI u)
     up = u->d;
     MPN_COPY( wp, up, usize );
     w->nlimbs = usize;
-    w->nbits = u->nbits;
     w->flags = u->flags;
     w->sign = usign;
 }
@@ -303,7 +297,6 @@ mpi_set_ui( MPI w, unsigned long u)
     w->d[0] = u;
     w->nlimbs = u? 1:0;
     w->sign = 0;
-    w->nbits = 0;
     w->flags = 0;
 }
 
@@ -326,4 +319,73 @@ mpi_swap( MPI a, MPI b)
 
     tmp = *a; *a = *b; *b = tmp;
 }
+
+
+GCRY_MPI
+gcry_mpi_new( unsigned int nbits )
+{
+    return mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1) / BITS_PER_MPI_LIMB );
+}
+
+
+GCRY_MPI
+gcry_mpi_snew( unsigned int nbits )
+{
+    return mpi_alloc_secure( (nbits+BITS_PER_MPI_LIMB-1) / BITS_PER_MPI_LIMB );
+}
+
+void
+gcry_mpi_release( GCRY_MPI a )
+{
+    mpi_free( a );
+}
+
+GCRY_MPI
+gcry_mpi_copy( const GCRY_MPI a )
+{
+    return mpi_copy( (GCRY_MPI)a );
+}
+
+GCRY_MPI
+gcry_mpi_set( GCRY_MPI w, const GCRY_MPI u )
+{
+    if( !w )
+	w = mpi_alloc( mpi_get_nlimbs(u) );
+    mpi_set( w, (GCRY_MPI)u );
+    return w;
+}
+
+GCRY_MPI
+gcry_mpi_set_ui( GCRY_MPI w, unsigned long u )
+{
+    if( !w )
+	w = mpi_alloc(1);
+    mpi_set_ui( w, u );
+    return w;
+}
+
+
+int
+gcry_mpi_cmp( const GCRY_MPI u, const GCRY_MPI v )
+{
+    return mpi_cmp( (GCRY_MPI)u, (GCRY_MPI)v );
+}
+
+int
+gcry_mpi_cmp_ui( const GCRY_MPI u, unsigned long v )
+{
+    return mpi_cmp_ui( (GCRY_MPI)u, v );
+}
+
+
+void
+gcry_mpi_randomize( GCRY_MPI w,
+		    unsigned int nbits, enum gcry_random_level level )
+{
+    char *p = mpi_is_secure(w) ? gcry_random_bytes( (nbits+7)/8, level )
+			       : gcry_random_bytes_secure( (nbits+7)/8, level );
+    mpi_set_buffer( w, p, (nbits+7)/8, 0 );
+    m_free(p);
+}
+
 

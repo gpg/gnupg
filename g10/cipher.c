@@ -54,8 +54,8 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     ed.len = cfx->datalen;
     ed.new_ctb = !ed.len && !opt.rfc1991;
     if( use_mdc ) {
-	ed.mdc_method = DIGEST_ALGO_SHA1;
-	cfx->mdc_hash = gcry_md_open( DIGEST_ALGO_SHA1, 0 );
+	ed.mdc_method = GCRY_MD_SHA1;
+	cfx->mdc_hash = gcry_md_open( GCRY_MD_SHA1, 0 );
 	/*should we check the function works, or is it better to provide
 	  a flag which makes the function die itself ?? FIXME */
 	/*md_start_debug( cfx->mdc_hash, "mdccreat" );*/

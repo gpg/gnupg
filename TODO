@@ -1,4 +1,22 @@
 
+  * options.skel wird mit umaks von root installiert.
+
+  * See how we can handle the symlinks in ./gcrypt
+
+  * Add SIGSEGV handler to overcome zlib problems with truncated data.
+
+  * Use --output for keylistings too.
+
+  * Add to the (EGD) docs that ~/.gnupg/entropy should be a symlink to the
+    real socket.
+
+  * Add a way to generate keys in batch mode with arbitrary parameters.
+
+  * Never allocate packet memory with a m-alloc, but use a specific function.
+
+  * Should we change names like mpi_write in g10/ so that we don't
+    use the prefix mpi here?
+
   * Implement the AXP syscall to enable bus traps for GLIB 2
 
   * parse a paramter file to do automatic key generation and to set

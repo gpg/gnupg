@@ -23,6 +23,7 @@
 #include <gcrypt.h>
 
 #include "basicdefs.h"
+#include "iobuf.h"
 
 
 

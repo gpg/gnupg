@@ -26,10 +26,10 @@
 
 #include <gcrypt.h>
 #include "util.h"
-#include "cipher.h"
-#include "mpi.h"
+#include "dummy-cipher.h"
 #include "main.h"
 #include "i18n.h"
+#include "memory.h"
 
 
 /****************
@@ -144,7 +144,7 @@ encode_session_key( DEK *dek, unsigned nbits )
     frame[n++] = csum >>8;
     frame[n++] = csum;
     assert( n == nframe );
-    a = mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+    a = mpi_secure_new( nframe );
     mpi_set_buffer( a, frame, nframe, 0 );
     m_free(frame);
     return a;
@@ -182,9 +182,7 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
     memcpy( frame+n, asn, asnlen ); n += asnlen;
     memcpy( frame+n, gcry_md_read(md, algo), len ); n += len;
     assert( n == nframe );
-    a = gcry_md_is_secure(md)?
-	 mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
-	 : mpi_alloc( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+    a = gcry_md_is_secure(md)? mpi_secure_new( nframe ) : mpi_new( nframe );
     mpi_set_buffer( a, frame, nframe, 0 );
     m_free(frame);
     return a;
@@ -198,11 +196,9 @@ encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo, unsigned nbits )
     MPI frame;
 
     if( pubkey_algo == GCRY_PK_DSA ) {
-	frame = gcry_md_is_secure(md)? mpi_alloc_secure(
-				(gcry_md_get_algo_dlen(hash_algo)
-				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
-				: mpi_alloc((gcry_md_get_algo_dlen(hash_algo)
-				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+	frame = gcry_md_is_secure(md)?
+			mpi_secure_new( gcry_md_get_algo_dlen(hash_algo) )
+		      : mpi_new(	gcry_md_get_algo_dlen(hash_algo) );
 	mpi_set_buffer( frame, gcry_md_read(md, hash_algo),
 			       gcry_md_get_algo_dlen(hash_algo), 0 );
     }

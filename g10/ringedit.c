@@ -54,7 +54,6 @@
 #include "util.h"
 #include "packet.h"
 #include "memory.h"
-#include "mpi.h"
 #include "iobuf.h"
 #include "keydb.h"
 #include "host2net.h"

@@ -23,10 +23,13 @@
 
 #include "types.h"
 #include "iobuf.h"
-#include "mpi.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "filter.h"
 
+#ifndef DID_MPI_TYPEDEF
+  typedef struct gcry_mpi *MPI;
+  #define DID_MPI_TYPEDEF
+#endif
 
 #define GNUPG_MAX_NPKEY  4
 #define GNUPG_MAX_NSKEY  6

@@ -86,8 +86,6 @@ struct {
 } opt;
 
 
-#define EMUBUG_GPGCHKSUM  1
-
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
 #define DBG_CIPHER_VALUE  4	/* debug cipher handling */

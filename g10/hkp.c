@@ -30,6 +30,7 @@
 #include "util.h"
 #include "ttyio.h"
 #include "i18n.h"
+#include "memory.h"
 #include "options.h"
 #include "filter.h"
 #include "http.h"

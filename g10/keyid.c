@@ -28,9 +28,9 @@
 #include <gcrypt.h>
 #include "util.h"
 #include "main.h"
+#include "memory.h"
 #include "packet.h"
 #include "options.h"
-#include "mpi.h"
 #include "keydb.h"
 
 
@@ -353,7 +353,7 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	/* RSA in version 3 packets is special */
 	GCRY_MD_HD md;
 
-	md = gcry_md_open( DIGEST_ALGO_MD5, 0);
+	md = gcry_md_open( GCRY_MD_MD5, 0);
 	if( !md )
 	    BUG();
 	if( pubkey_get_npkey( pk->pubkey_algo ) > 1 ) {
@@ -368,7 +368,7 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	if( !array )
 	    array = m_alloc( 16 );
 	len = 16;
-	memcpy(array, gcry_md_read(md, DIGEST_ALGO_MD5), 16 );
+	memcpy(array, gcry_md_read(md, GCRY_MD_MD5), 16 );
 	gcry_md_close(md);
     }
     else {
@@ -399,7 +399,7 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	/* RSA in version 3 packets is special */
 	GCRY_MD_HD md;
 
-	md = gcry_md_open( DIGEST_ALGO_MD5, 0);
+	md = gcry_md_open( GCRY_MD_MD5, 0);
 	if( !md )
 	    BUG();
 	if( pubkey_get_npkey( sk->pubkey_algo ) > 1 ) {

@@ -830,19 +830,19 @@ armor_filter( void *opaque, int control,
 		    buf[n++] = 0x01; /* sigclass 0x01 (canonical text mode)*/
 		    if( hashes & 1 ) {
 			hashes &= ~1;
-			buf[n++] = DIGEST_ALGO_RMD160;
+			buf[n++] = GCRY_MD_RMD160;
 		    }
 		    else if( hashes & 2 ) {
 			hashes &= ~2;
-			buf[n++] = DIGEST_ALGO_SHA1;
+			buf[n++] = GCRY_MD_SHA1;
 		    }
 		    else if( hashes & 4 ) {
 			hashes &= ~4;
-			buf[n++] = DIGEST_ALGO_MD5;
+			buf[n++] = GCRY_MD_MD5;
 		    }
 		    else if( hashes & 8 ) {
 			hashes &= ~8;
-			buf[n++] = DIGEST_ALGO_TIGER;
+			buf[n++] = GCRY_MD_TIGER;
 		    }
 		    else
 			buf[n++] = 0;	 /* (don't know) */

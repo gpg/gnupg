@@ -376,7 +376,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 		gcry_md_enable( c->mfx.md,
 				n->pkt->pkt.onepass_sig->digest_algo );
 		if( !any && n->pkt->pkt.onepass_sig->digest_algo
-						      == DIGEST_ALGO_MD5 )
+						      == GCRY_MD_MD5 )
 		    only_md5 = 1;
 		else
 		    only_md5 = 0;
@@ -400,9 +400,9 @@ proc_plaintext( CTX c, PACKET *pkt )
 	}
     }
     if( !any ) { /* no onepass sig packet: enable all standard algos */
-	gcry_md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
-	gcry_md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
-	gcry_md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
+	gcry_md_enable( c->mfx.md, GCRY_MD_RMD160 );
+	gcry_md_enable( c->mfx.md, GCRY_MD_SHA1 );
+	gcry_md_enable( c->mfx.md, GCRY_MD_MD5 );
     }
     if( only_md5 ) {
 	/* This is a kludge to work around a bug in pgp2.  It does only
@@ -410,7 +410,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 	 * pgp mails we could see whether there is the signature packet
 	 * in front of the plaintext.  If someone needs this, send me a patch.
 	 */
-	if( !(c->mfx.md2 = gcry_md_open( DIGEST_ALGO_MD5, 0)) )
+	if( !(c->mfx.md2 = gcry_md_open( GCRY_MD_MD5, 0)) )
 	    BUG();
     }
   #if 0
@@ -1188,13 +1188,13 @@ proc_tree( CTX c, KBNODE node )
 	    free_md_filter_context( &c->mfx );
 	    if( !(c->mfx.md = gcry_md_open(sig->digest_algo, 0)) )
 		BUG();
-	    if( sig->digest_algo == DIGEST_ALGO_MD5
+	    if( sig->digest_algo == GCRY_MD_MD5
 		&& is_RSA( sig->pubkey_algo ) ) {
 		/* enable a workaround for a pgp2 bug */
-		if( !(c->mfx.md2 = gcry_md_open( DIGEST_ALGO_MD5, 0 )) )
+		if( !(c->mfx.md2 = gcry_md_open( GCRY_MD_MD5, 0 )) )
 		    BUG();
 	    }
-	    else if( sig->digest_algo == DIGEST_ALGO_SHA1
+	    else if( sig->digest_algo == GCRY_MD_SHA1
 		     && sig->pubkey_algo == GCRY_PK_DSA
 		     && sig->sig_class == 0x01 ) {
 		/* enable the workaround also for pgp5 when the detached

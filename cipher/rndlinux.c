@@ -42,7 +42,6 @@
 #endif
 #include "types.h"
 #include "g10lib.h"
-#include "ttyio.h"
 #include "dynload.h"
 
 static int open_device( const char *name, int minor );

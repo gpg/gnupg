@@ -270,7 +270,7 @@ load_extension( EXTLIST el )
     name = (char**)addr;
   #endif
 
-    if( g10_opt_verbose > 1 )
+    if( g10_log_verbosity( 2 ) )
 	log_info("%s: %s%s%s%s\n", el->name, *name,
 		  el->hintstr? " (":"",
 		  el->hintstr? el->hintstr:"",
@@ -301,7 +301,7 @@ load_extension( EXTLIST el )
   #endif
 
   #ifdef HAVE_DL_DLOPEN
-    if( g10_opt_verbose > 2 ) {
+    if( g10_log_verbosity( 3 ) ) {
 	/* list the contents of the module */
 	while( (sym = (*el->enumfunc)(0, &seq, &class, &vers)) ) {
 	    if( vers != 1 ) {

@@ -2,8 +2,7 @@
 
 EXTRA_DIST = lspgpot
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
-needed_libs = ../cipher/libcipher.la  \
-	../mpi/libmpi.la ../util/libutil.la ../gcrypt/libgcrypt.la @INTLLIBS@
+needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la @INTLLIBS@
 
 
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest

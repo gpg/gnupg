@@ -1,3 +1,36 @@
+Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am (INCLUDES): Add ../gcrypt.
+
+	* g10m.c : Removed.
+
+	* mpicoder.c (mpi_write): Removed.
+	(mpi_read): Removed.
+	(gcry_mpi_scan): New. Taken from ../gcrypt/mpiapi.c.
+	(gcry_mpi_print): Ditto.
+
+	* mpi-pow.c (mpi_powm): Renamed to ...
+	(gcry_mpi_powm): ... this.
+
+	* mpiutil.c (gcry_mpi_new): New as a wrapper around the old function.
+	Taken from ../gcrypt/mpiapi.c.
+	(gcry_mpi_snew): Ditto.
+	(gcry_mpi_release): Ditto.
+	(gcry_mpi_copy): Ditto.
+	(gcry_mpi_set): Ditto.
+	(gcry_mpi_set_ui): Ditto.
+	(gcry_mpi_cmp): Ditto.
+	(gcry_mpi_cmp_ui): Ditto.
+	(gcry_mpi_randomize): Ditto.
+
+	* mpicoder.c (mpi_print): Removed the nbit_info kludge.
+	* mpi-bits.c (mpi_get_nbits): Replaced the is_protected stuff by
+	checking whether it is an opaque mpi and then returns it's length
+	in bits.
+	* mpiutil.c (mpi_set_opaque): Changed the interface to take a number
+	of bits for the length.  Adjusted all users.
+	(mpi_get_opaque): Ditto.
+
 Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* mpicoder.c (g10_log_mpidump): Add a temporary workaround

@@ -27,9 +27,8 @@
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "mpi.h"
 #include "util.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "memory.h"
 #include "options.h"
 #include "main.h"
@@ -174,11 +173,11 @@ static void
 write_fake_data( IOBUF out, MPI a )
 {
     if( a ) {
-	int i;
+	size_t i;
 	void *p;
 
-	p = mpi_get_opaque( a, &i );
-	iobuf_write( out, p, i );
+	p = gcry_mpi_get_opaque( a, &i );
+	iobuf_write( out, p, (i+7)/8 );
     }
 }
 
@@ -372,13 +371,14 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	iobuf_put(a, 0 );
     if( sk->is_protected && sk->version >= 4 ) {
 	byte *p;
-	assert( mpi_is_opaque( sk->skey[npkey] ) );
-	p = mpi_get_opaque( sk->skey[npkey], &i );
-	iobuf_write(a, p, i );
+	size_t n;
+	assert( gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
+	p = gcry_mpi_get_opaque( sk->skey[i], &n );
+	iobuf_write(a, p, (n+7)/8 );
     }
     else {
 	for(   ; i < nskey; i++ )
-	    mpi_write(a, sk->skey[i] );
+	    mpi_write_opaque(a, sk->skey[i] );
 	write_16(a, sk->csum );
     }
 

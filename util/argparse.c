@@ -15,9 +15,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- *
- *
- * Note: This is an independent version of the one in WkLib
  */
 
 #include <config.h>
@@ -26,8 +23,13 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "util.h"
-#include "i18n.h"
+#include "libutil-config.h"
+#include "mischelp.h"
+#include "stringhelp.h"
+#ifndef LIBUTIL_CONFIG_OF_GNUPG
+  #include "logging.h"  /* currently not used in GnUPG */
+#endif
+#include "argparse.h"
 
 
 /*********************************
@@ -155,7 +157,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 	arg->err = 0;
 	arg->flags |= 1<<15; /* mark initialized */
 	if( *arg->argc < 0 )
-	    log_bug("Invalid argument for ArgParse\n");
+	    libutil_log_bug("Invalid argument for ArgParse\n");
     }
 
 
@@ -177,7 +179,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 		s = "%s:%u: invalid alias definition\n";
 	    else
 		s = "%s:%u: invalid option\n";
-	    log_error(s, filename, *lineno );
+	    libutil_log_error(s, filename, *lineno );
 	}
 	else {
 	    if( arg->r_opt == -3 )
@@ -192,7 +194,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 		s = "Command \"%.50s\" is ambiguous\n";
 	    else
 		s = "Invalid option \"%.50s\"\n";
-	    log_error(s, arg->internal.last? arg->internal.last:"[??]" );
+	    libutil_log_error(s, arg->internal.last? arg->internal.last:"[??]" );
 	}
 	if( arg->err != 1 )
 	    exit(2);
@@ -306,7 +308,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			    trim_spaces( p );
 			}
 			if( !p || !*p ) {
-			    m_free( buffer );
+			    libutil_free( buffer );
 			    arg->r_opt = -10;
 			}
 			else {
@@ -320,7 +322,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    char *p;
 		    if( !buffer ) {
 			keyword[i] = 0;
-			buffer = m_strdup(keyword);
+			buffer = libutil_strdup(keyword);
 		    }
 		    else
 			buffer[i] = 0;
@@ -333,7 +335,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			    p[strlen(p)-1] = 0;
 		    }
 		    if( !set_opt_arg(arg, opts[idx].flags, p) )
-			m_free(buffer);
+			libutil_free(buffer);
 		}
 		break;
 	    }
@@ -388,7 +390,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    buffer[i++] = c;
 		else {
 		    buflen += 50;
-		    buffer = m_realloc(buffer, buflen);
+		    buffer = libutil_realloc(buffer, buflen);
 		    buffer[i++] = c;
 		}
 	    }
@@ -396,7 +398,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		keyword[i++] = c;
 	    else {
 		buflen = DIM(keyword)+50;
-		buffer = m_alloc(buflen);
+		buffer = libutil_xmalloc(buflen);
 		memcpy(buffer, keyword, i);
 		buffer[i++] = c;
 	    }

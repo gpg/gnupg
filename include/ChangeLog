@@ -1,3 +1,12 @@
+Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* util.h: Moved argparse stuff to the argparse header.	Move some
+	of the string stuff to the stringhelp header.
+
+	* mpi.h: Moved to ../gcrypt
+	* cipher.h: Moved to ../gcrypt
+	* g10lib.h: Moved to ../gcrypt
+
 Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* g10lib.h: Moved from ../gcrypt to here.

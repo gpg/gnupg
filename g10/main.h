@@ -23,12 +23,15 @@
 #include <gcrypt.h>
 #include "basicdefs.h"
 #include "iobuf.h"
-#include "mpi.h"
 #include "keydb.h"
 
 #define DEFAULT_CIPHER_ALGO  GCRY_CIPHER_BLOWFISH
 #define DEFAULT_PUBKEY_ALGO  GCRY_PUBKEY_ELGAMAL
 #define DEFAULT_DIGEST_ALGO  GCRY_MD_RMD160
+
+#define is_RSA(a)     ((a)==GCRY_PK_RSA || (a)==GCRY_PK_RSA_E \
+					|| (a)==GCRY_PK_RSA_S )
+#define is_ELGAMAL(a) ((a)==GCRY_PK_ELG || (a)==GCRY_PK_ELG_E)
 
 
 /*-- g10.c --*/
@@ -52,8 +55,11 @@ void disable_core_dumps(void);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( MPI a );
-u16 checksum_mpi_counted_nbits( MPI a );
 u32 buffer_to_u32( const byte *buffer );
+
+int mpi_write( IOBUF out, GCRY_MPI a );
+GCRY_MPI mpi_read(IOBUF inp, unsigned *ret_nread );
+GCRY_MPI mpi_read_opaque(IOBUF inp, unsigned *ret_nread );
 
 int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo, unsigned int usage_flags );

@@ -27,10 +27,9 @@
 #include "memory.h"
 #include "packet.h"
 #include "main.h"
-#include "mpi.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "status.h"
 #include "options.h"
 #include "i18n.h"
@@ -110,7 +109,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     if( rc )
 	goto leave;
     frame = mpi_get_buffer( plain_dek, &nframe, NULL );
-    mpi_free( plain_dek ); plain_dek = NULL;
+    mpi_release( plain_dek ); plain_dek = NULL;
 
     /* Now get the DEK (data encryption key) from the frame
      *
@@ -129,7 +128,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
      * DEK is the encryption key (session key) with length k
      * CSUM
      */
-    if( DBG_CIPHER )
+    if( (opt.debug & DBG_CIPHER_VALUE)	)
 	log_hexdump("DEK frame:", frame, nframe );
     n=0;
     if( n + 7 > nframe )
@@ -171,7 +170,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	rc = G10ERR_WRONG_SECKEY;
 	goto leave;
     }
-    if( DBG_CIPHER )
+    if( (opt.debug & DBG_CIPHER_VALUE)	)
 	log_hexdump("DEK is:", dek->key, dek->keylen );
     /* check that the algo is in the preferences */
     {
@@ -197,7 +196,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     }
 
   leave:
-    mpi_free(plain_dek);
+    mpi_release(plain_dek);
     m_free(frame);
     return rc;
 }

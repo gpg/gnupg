@@ -33,7 +33,7 @@
 #include "memory.h"
 #include "util.h"
 #include "i18n.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "main.h"
 
 

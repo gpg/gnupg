@@ -26,109 +26,10 @@
 
 #include "mpi.h"
 #include "mpi-internal.h"
-#include "iobuf.h"
 #include "memory.h"
-#include "util.h"
-
-#ifdef M_DEBUG
-  #undef mpi_read
-#endif
+#include "g10lib.h"
 
 #define MAX_EXTERN_MPI_BITS 16384
-
-/****************
- * write an mpi to out.
- */
-int
-mpi_write( IOBUF out, MPI a )
-{
-    return -1;
-  #warning Function is disabled
-  #if 0
-    int rc;
-    unsigned nbits = mpi_get_nbits(a);
-    byte *p, *buf;
-    unsigned n;
-
-    if( nbits > MAX_EXTERN_MPI_BITS )
-	log_bug("mpi_encode: mpi too large (%u bits)\n", nbits);
-
-    iobuf_put(out, (nbits >>8) );
-    iobuf_put(out, (nbits) );
-
-    p = buf = mpi_get_buffer( a, &n, NULL );
-    rc = iobuf_write( out, p, n );
-    m_free(buf);
-    return rc;
-  #endif
-}
-
-
-/****************
- * Read an external representation of an mpi and return the MPI
- * The external format is a 16 bit unsigned value stored in network byte order,
- * giving the number of bits for the following integer. The integer is stored
- * with MSB first (left padded with zeroes to align on a byte boundary).
- */
-MPI
-#ifdef M_DEBUG
-mpi_debug_read(IOBUF inp, unsigned *ret_nread, int secure, const char *info)
-#else
-mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
-#endif
-{
-  return NULL;
-  #warning Function is disabled
-  #if 0
-    int c, i, j;
-    unsigned nbits, nbytes, nlimbs, nread=0;
-    mpi_limb_t a;
-    MPI val = MPI_NULL;
-
-    if( (c = iobuf_get(inp)) == -1 )
-	goto leave;
-    nbits = c << 8;
-    if( (c = iobuf_get(inp)) == -1 )
-	goto leave;
-    nbits |= c;
-    if( nbits > MAX_EXTERN_MPI_BITS ) {
-	log_error("mpi too large (%u bits)\n", nbits);
-	goto leave;
-    }
-    nread = 2;
-
-    nbytes = (nbits+7) / 8;
-    nlimbs = (nbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB;
-  #ifdef M_DEBUG
-    val = secure? mpi_debug_alloc_secure( nlimbs, info )
-		: mpi_debug_alloc( nlimbs, info );
-  #else
-    val = secure? mpi_alloc_secure( nlimbs )
-		: mpi_alloc( nlimbs );
-  #endif
-    i = BYTES_PER_MPI_LIMB - nbytes % BYTES_PER_MPI_LIMB;
-    i %= BYTES_PER_MPI_LIMB;
-    val->nbits = nbits;
-    j= val->nlimbs = nlimbs;
-    val->sign = 0;
-    for( ; j > 0; j-- ) {
-	a = 0;
-	for(; i < BYTES_PER_MPI_LIMB; i++ ) {
-	    a <<= 8;
-	    a |= iobuf_get(inp) & 0xff; nread++;
-	}
-	i = 0;
-	val->d[j-1] = a;
-    }
-
-  leave:
-    if( nread > *ret_nread )
-	log_bug("mpi crosses packet border");
-    else
-	*ret_nread = nread;
-    return val;
-  #endif
-}
 
 
 MPI
@@ -155,7 +56,6 @@ mpi_read_from_buffer(byte *buffer, unsigned *ret_nread, int secure)
 		: mpi_alloc( nlimbs );
     i = BYTES_PER_MPI_LIMB - nbytes % BYTES_PER_MPI_LIMB;
     i %= BYTES_PER_MPI_LIMB;
-    val->nbits = nbits;
     j= val->nlimbs = nlimbs;
     val->sign = 0;
     for( ; j > 0; j-- ) {
@@ -264,13 +164,9 @@ mpi_print( FILE *fp, MPI a, int mode )
     if( a == MPI_NULL )
 	return fprintf(fp, "[MPI_NULL]");
     if( !mode ) {
-	unsigned n1, n2;
+	unsigned int n1;
 	n1 = mpi_get_nbits(a);
-	n2 = mpi_get_nbit_info(a);
-	if( n2 && n2 != n1 )
-	    n += fprintf(fp, "[%u bits (%u)]", n1, n2 );
-	else
-	    n += fprintf(fp, "[%u bits]", n1);
+	n += fprintf(fp, "[%u bits]", n1);
     }
     else {
 	if( a->sign )
@@ -452,5 +348,233 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
     }
     a->nlimbs = i;
     assert( i == nlimbs );
+}
+
+
+
+int
+gcry_mpi_scan( struct gcry_mpi **ret_mpi, enum gcry_mpi_format format,
+		const char *buffer, size_t *nbytes )
+{
+    struct gcry_mpi *a = NULL;
+    unsigned int len;
+
+    len = nbytes? *nbytes : strlen(buffer);
+
+    /* TODO: add a way to allocate the MPI in secure memory
+     * Hmmm: maybe it is better to retrieve this information from
+     * the provided buffer. */
+    if( format == GCRYMPI_FMT_STD ) {
+	const byte *s = buffer;
+
+	a = mpi_alloc( (len+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+	if( len ) { /* not zero */
+	    a->sign = *s & 0x80;
+	    if( a->sign ) {
+		/* FIXME: we have to convert from 2compl to magnitude format */
+		mpi_free(a);
+		return GCRYERR_INTERNAL;
+	    }
+	    else
+		mpi_set_buffer( a, s, len, 0 );
+	}
+	if( ret_mpi )
+	    *ret_mpi = a;
+	else
+	    mpi_free(a);
+	return 0;
+    }
+    else if( format == GCRYMPI_FMT_USG ) {
+	a = mpi_alloc( (len+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+	if( len )  /* not zero */
+	    mpi_set_buffer( a, buffer, len, 0 );
+	if( ret_mpi )
+	    *ret_mpi = a;
+	else
+	    mpi_free(a);
+	return 0;
+    }
+    else if( format == GCRYMPI_FMT_PGP ) {
+	a = mpi_read_from_buffer( (char*)buffer, &len, 0 );
+	if( nbytes )
+	    *nbytes = len;
+	if( ret_mpi )
+	    *ret_mpi = a;
+	else
+	    mpi_free(a);
+	return a? 0 : GCRYERR_INV_OBJ;
+    }
+    else if( format == GCRYMPI_FMT_SSH ) {
+	const byte *s = buffer;
+	size_t n;
+
+	if( len < 4 )
+	    return GCRYERR_TOO_SHORT;
+	n = s[0] << 24 | s[1] << 16 | s[2] << 8 | s[3];
+	s += 4; len -= 4;
+	if( n > len )
+	    return GCRYERR_TOO_LARGE; /* or should it be too_short */
+
+	a = mpi_alloc( (n+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+	if( len ) { /* not zero */
+	    a->sign = *s & 0x80;
+	    if( a->sign ) {
+		/* FIXME: we have to convert from 2compl to magnitude format */
+		mpi_free(a);
+		return GCRYERR_INTERNAL;
+	    }
+	    else
+		mpi_set_buffer( a, s, n, 0 );
+	}
+	if( nbytes )
+	    *nbytes = n+4;
+	if( ret_mpi )
+	    *ret_mpi = a;
+	else
+	    mpi_free(a);
+	return 0;
+    }
+    else if( format == GCRYMPI_FMT_HEX ) {
+	if( nbytes )
+	    return GCRYERR_INV_ARG; /* can only handle C strings for now */
+	a = mpi_alloc(0);
+	if( mpi_fromstr( a, buffer ) )
+	    return GCRYERR_INV_OBJ;
+	if( ret_mpi )
+	    *ret_mpi = a;
+	else
+	    mpi_free(a);
+	return 0;
+    }
+    else
+	return GCRYERR_INV_ARG;
+}
+
+/****************
+ * Write a using format into buffer which has a length of *NBYTES.
+ * Returns the number of bytes actually written in nbytes.
+ */
+int
+gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
+		 struct gcry_mpi *a )
+{
+    unsigned int nbits = mpi_get_nbits(a);
+    size_t len;
+
+    if( !nbytes )
+	return GCRYERR_INV_ARG;
+
+    len = *nbytes;
+    if( format == GCRYMPI_FMT_STD ) {
+	byte *s = buffer;
+	char *tmp;
+	int extra = 0;
+	unsigned int n;
+
+	if( a->sign )
+	    return GCRYERR_INTERNAL; /* can't handle it yet */
+
+	tmp = mpi_get_buffer( a, &n, NULL );
+	if( n && (*tmp & 0x80) ) {
+	    n++;
+	    extra=1;
+	}
+
+	if( n > len ) {
+	    m_free(tmp);
+	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
+	}
+	if( extra )
+	    *s++ = 0;
+
+	memcpy( s, tmp, n-extra );
+	m_free(tmp);
+	*nbytes = n;
+	return 0;
+    }
+    else if( format == GCRYMPI_FMT_PGP ) {
+	unsigned int n = (nbits + 7)/8;
+	byte *s = buffer;
+	char *tmp;
+
+	if( a->sign )
+	    return GCRYERR_INV_ARG; /* pgp format can only handle unsigned */
+
+	if( n+2 > len )
+	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
+	s[0] = nbits >> 8;
+	s[1] = nbits;
+
+	tmp = mpi_get_buffer( a, &n, NULL );
+	memcpy( s+2, tmp, n );
+	m_free(tmp);
+	*nbytes = n+2;
+	return 0;
+    }
+    else if( format == GCRYMPI_FMT_SSH ) {
+	byte *s = buffer;
+	char *tmp;
+	int extra = 0;
+	unsigned int n;
+
+	if( a->sign )
+	    return GCRYERR_INTERNAL; /* can't handle it yet */
+
+	tmp = mpi_get_buffer( a, &n, NULL );
+	if( n && (*tmp & 0x80) ) {
+	    n++;
+	    extra=1;
+	}
+
+	if( n+4 > len ) {
+	    m_free(tmp);
+	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
+	}
+	*s++ = n >> 24;
+	*s++ = n >> 16;
+	*s++ = n >> 8;
+	*s++ = n;
+	if( extra )
+	    *s++ = 0;
+
+	memcpy( s, tmp, n-extra );
+	m_free(tmp);
+	*nbytes = 4+n;
+	return 0;
+    }
+    else if( format == GCRYMPI_FMT_HEX ) {
+	byte *s = buffer;
+	byte *tmp;
+	int i;
+	int extra = 0;
+	unsigned int n=0;
+
+	tmp = mpi_get_buffer( a, &n, NULL );
+	if( !n || (*tmp & 0x80) )
+	    extra=1;
+
+	if( 2*n+3+1 > len ) {
+	    m_free(tmp);
+	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
+	}
+	if( a->sign )
+	    *s++ = '-';
+	if( extra ) {
+	    *s++ = '0';
+	    *s++ = '0';
+	}
+
+	for(i=0; i < n; i++ ) {
+	    unsigned int c = tmp[i];
+	    *s++ = (c >> 4) < 10? '0'+(c>>4) : 'A'+(c>>4)-10 ;
+	    c &= 15;
+	    *s++ = c < 10? '0'+c : 'A'+c-10 ;
+	}
+	*s++ = 0;
+	*nbytes = (char*)s - buffer;
+	return 0;
+    }
+    else
+	return GCRYERR_INV_ARG;
 }
 

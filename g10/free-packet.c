@@ -26,9 +26,8 @@
 
 #include "packet.h"
 #include "iobuf.h"
-#include "mpi.h"
 #include "util.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "memory.h"
 #include "options.h"
 #include "main.h"
@@ -45,9 +44,9 @@ free_pubkey_enc( PKT_pubkey_enc *enc )
     int n, i;
     n = pubkey_get_nenc( enc->pubkey_algo );
     if( !n )
-	mpi_free(enc->data[0]);
+	mpi_release(enc->data[0]);
     for(i=0; i < n; i++ )
-	mpi_free( enc->data[i] );
+	mpi_release( enc->data[i] );
     m_free(enc);
 }
 
@@ -57,9 +56,9 @@ free_seckey_enc( PKT_signature *sig )
     int n, i;
     n = pubkey_get_nsig( sig->pubkey_algo );
     if( !n )
-	mpi_free(sig->data[0]);
+	mpi_release(sig->data[0]);
     for(i=0; i < n; i++ )
-	mpi_free( sig->data[i] );
+	mpi_release( sig->data[i] );
     m_free(sig->hashed_data);
     m_free(sig->unhashed_data);
     m_free(sig);
@@ -73,9 +72,9 @@ release_public_key_parts( PKT_public_key *pk )
     int n, i;
     n = pubkey_get_npkey( pk->pubkey_algo );
     if( !n )
-	mpi_free(pk->pkey[0]);
+	mpi_release(pk->pkey[0]);
     for(i=0; i < n; i++ ) {
-	mpi_free( pk->pkey[i] );
+	mpi_release( pk->pkey[i] );
 	pk->pkey[i] = NULL;
     }
     if( pk->namehash ) {
@@ -180,9 +179,9 @@ release_secret_key_parts( PKT_secret_key *sk )
 
     n = pubkey_get_nskey( sk->pubkey_algo );
     if( !n )
-	mpi_free(sk->skey[0]);
+	mpi_release(sk->skey[0]);
     for(i=0; i < n; i++ ) {
-	mpi_free( sk->skey[i] );
+	mpi_release( sk->skey[i] );
 	sk->skey[i] = NULL;
     }
 }

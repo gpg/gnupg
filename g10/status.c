@@ -43,6 +43,7 @@
 #include "ttyio.h"
 #include "options.h"
 #include "main.h"
+#include "memory.h"
 #include "i18n.h"
 
 static int fd = -1;

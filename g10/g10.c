@@ -36,7 +36,6 @@
 #include "options.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "mpi.h"
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
@@ -200,6 +199,8 @@ static ARGPARSE_OPTS opts[] = {
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
+    { aDeleteSecretKey, "delete-secret-key",256,
+				    N_("remove key from the secret keyring")},
     { aSignKey,  "sign-key"   ,256, N_("sign a key")},
     { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
     { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
@@ -299,7 +300,6 @@ static ARGPARSE_OPTS opts[] = {
     { aListTrustPath, "list-trust-path",0, "@"},
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
-    { aDeleteSecretKey, "delete-secret-key",0, "@" },
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
@@ -319,7 +319,6 @@ static ARGPARSE_OPTS opts[] = {
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
-    { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
     { oSetPolicyURL, "set-policy-url", 2, "@" },
@@ -489,6 +488,8 @@ make_username( const char *string )
 static void
 register_extension( const char *mainpgm, const char *fname )
 {
+  #warning fixme add resgitser cipher extension
+  #if 0
     if( *fname != '/' ) { /* do tilde expansion etc */
 	char *tmp;
 
@@ -501,6 +502,7 @@ register_extension( const char *mainpgm, const char *fname )
     }
     else
 	register_cipher_extension( mainpgm, fname );
+  #endif
 }
 
 
@@ -512,10 +514,12 @@ set_debug(void)
 	memory_debug_mode = 1;
     if( opt.debug & DBG_MEMSTAT_VALUE )
 	memory_stat_debug_mode = 1;
+
     if( opt.debug & DBG_MPI_VALUE )
-	mpi_debug_mode = 1;
+	gcry_control( GCRYCTL_SET_DEBUG_FLAGS, 2 );
     if( opt.debug & DBG_CIPHER_VALUE )
-	g10c_debug_mode = 1;
+	gcry_control( GCRYCTL_SET_DEBUG_FLAGS, 1 );
+
     if( opt.debug & DBG_IOBUF_VALUE )
 	iobuf_debug_mode = 1;
 
@@ -590,7 +594,14 @@ main( int argc, char **argv )
      * secmem_init()  somewhere after the option parsing
      */
     log_set_name("gpg");
-    secure_random_alloc(); /* put random number into secure memory */
+    /* check that the libraries are suitable.  Do it here because
+     * the option parse may need services of the library */
+    if ( !gcry_check_version ( "1.1.1" ) ) {
+	log_fatal(_("libgcrypt is too old (need %s, have %s)\n"),
+				VERSION, gcry_check_version(NULL) );
+    }
+
+    gcry_control( GCRYCTL_USE_SECURE_RNDPOOL );
     disable_core_dumps();
     init_signals();
     create_dotlock(NULL); /* register locking cleanup */
@@ -609,9 +620,9 @@ main( int argc, char **argv )
     opt.homedir = getenv("GNUPGHOME");
     if( !opt.homedir || !*opt.homedir ) {
       #ifdef HAVE_DRIVE_LETTERS
-	opt.homedir = "c:/gnupg";
+	opt.homedir = "c:/gnupg-test";
       #else
-	opt.homedir = "~/.gnupg";
+	opt.homedir = "~/.gnupg-test";
       #endif
     }
 
@@ -662,6 +673,7 @@ main( int argc, char **argv )
 
     if( default_config )
 	configname = make_filename(opt.homedir, "options", NULL );
+
 
     argc = orig_argc;
     argv = orig_argv;
@@ -741,8 +753,10 @@ main( int argc, char **argv )
 	  case oNoTTY: opt.quiet = 1; tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;
 	  case oInteractive: opt.interactive = 1; break;
-	  case oVerbose: g10_opt_verbose++;
-		    opt.verbose++; opt.list_sigs=1; break;
+	  case oVerbose:
+		opt.verbose++; opt.list_sigs=1;
+		gcry_control( GCRYCTL_SET_VERBOSITY, (int)opt.verbose );
+		break;
 	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
 	  case oBatch: opt.batch = 1; greeting = 0; break;
@@ -768,8 +782,10 @@ main( int argc, char **argv )
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
 	  case oNoGreeting: nogreeting = 1; break;
-	  case oNoVerbose: g10_opt_verbose = 0;
-			   opt.verbose = 0; opt.list_sigs=0; break;
+	  case oNoVerbose:
+		opt.verbose = 0; opt.list_sigs=0;
+		gcry_control( GCRYCTL_SET_VERBOSITY, (int)opt.verbose );
+		break;
 	  case oNoComment: opt.no_comment=1; break;
 	  case oNoVersion: opt.no_version=1; break;
 	  case oEmitVersion: opt.no_version=0; break;
@@ -823,7 +839,6 @@ main( int argc, char **argv )
 	    opt.s2k_digest_algo = GCRY_MD_RMD160;
 	    opt.s2k_cipher_algo = GCRY_CIPHER_BLOWFISH;
 	    break;
-	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
 	  #ifndef USE_SHM_COPROCESSING
@@ -950,10 +965,11 @@ main( int argc, char **argv )
     secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
 
     set_debug();
-    g10_opt_homedir = opt.homedir;
+    /* FIXME: should set filenames of libgcrypt explicitly
+     * g10_opt_homedir = opt.homedir; */
 
     /* must do this after dropping setuid, because string_to...
-     * may try to load an module */
+     * may try to load a module */
     if( def_cipher_string ) {
 	opt.def_cipher_algo = gcry_cipher_map_name(def_cipher_string);
 	m_free(def_cipher_string); def_cipher_string = NULL;
@@ -1018,7 +1034,7 @@ main( int argc, char **argv )
 	    opt.list_sigs++;
 
 	opt.verbose = opt.verbose > 1;
-	g10_opt_verbose = opt.verbose;
+	gcry_control( GCRYCTL_SET_VERBOSITY, (int)opt.verbose );
     }
 
 
@@ -1202,6 +1218,7 @@ main( int argc, char **argv )
       case aListSigs:
 	opt.list_sigs = 1;
       case aListKeys:
+	/* fixme: we chnaged this in 1.0 */
 	public_key_list( argc, argv );
 	break;
       case aListSecretKeys:
@@ -1318,13 +1335,13 @@ main( int argc, char **argv )
 		mpi_print( stdout, factors[0], 1 ); /* print q */
 	    }
 	    else if( mode == 4 && argc == 3 ) {
-		MPI g = mpi_alloc(1);
+		MPI g = mpi_new(8);
 		mpi_print( stdout, generate_elg_prime(
 						 0, atoi(argv[1]),
 						 atoi(argv[2]), g, NULL ), 1);
 		putchar('\n');
 		mpi_print( stdout, g, 1 );
-		mpi_free(g);
+		mpi_release(g);
 	    }
 	    else
 	  #endif

@@ -38,7 +38,7 @@
 #include <sys/stat.h>
 
 #include "util.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "options.h"
 #include "main.h"
 

@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 
-INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl
+INCLUDES = -I$(top_srcdir)/gcrypt
 
 noinst_LTLIBRARIES = libcipher.la
 

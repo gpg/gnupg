@@ -1,21 +1,25 @@
 #!/bin/sh
 
-if [ $# != 1 ] ; then
-    echo "usage: mkdiff package-name" >&2
+if [ $# = 1 ]; then
+    pack="$1"
+    vprf=""
+elif [ $# = 2 ] ; then
+    pack="$1"
+    vprf="$2"
+else
+    echo "usage: mkdiff package-name [version-prefix]" >&2
     exit 1
 fi
 
-pack="$1"
-
 set -e
 
-curr_ver=$(ls $pack-*.tar.gz 2>/dev/null | sed "s/^$pack-\(.*\)\.tar\.gz/\1/"\
+curr_ver=$(ls $pack-${vprf}*.tar.gz 2>/dev/null | sed "s/^$pack-\(.*\)\.tar\.gz/\1/"\
 	   | sort -r -t '.' -n +0 -1 +1 -2 +2 | head -1 )
 if [ ! -f $pack-$curr_ver.tar.gz ]; then
     echo "mkdiff: no current version of package $pack found" >&2
     exit 1
 fi
-prev_ver=$(ls $pack-*.tar.gz 2>/dev/null | sed "s/^$pack-\(.*\)\.tar\.gz/\1/"\
+prev_ver=$(ls $pack-${vprf}*.tar.gz 2>/dev/null | sed "s/^$pack-\(.*\)\.tar\.gz/\1/"\
 	   | sort -r -t '.' -n +0 -1 +1 -2 +2 | head -2 | tail -1 )
 if [ "$prev_ver" = "$curr_ver"  ]; then
     echo "mkdiff: no previous version of package $pack found" >&2

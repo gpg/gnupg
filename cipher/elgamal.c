@@ -229,7 +229,7 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
     g10_free(rndbuf);
 
     y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);
-    mpi_powm( y, g, x, p );
+    gcry_mpi_powm( y, g, x, p );
 
     if( DBG_CIPHER ) {
 	progress('\n');
@@ -263,7 +263,7 @@ check_secret_key( ELG_secret_key *sk )
     int rc;
     MPI y = mpi_alloc( mpi_get_nlimbs(sk->y) );
 
-    mpi_powm( y, sk->g, sk->x, sk->p );
+    gcry_mpi_powm( y, sk->g, sk->x, sk->p );
     rc = !mpi_cmp( y, sk->y );
     mpi_free( y );
     return rc;
@@ -281,13 +281,13 @@ encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
      */
 
     k = gen_k( pkey->p );
-    mpi_powm( a, pkey->g, k, pkey->p );
+    gcry_mpi_powm( a, pkey->g, k, pkey->p );
     /* b = (y^k * input) mod p
      *	 = ((y^k mod p) * (input mod p)) mod p
      * and because input is < p
      *	 = ((y^k mod p) * input) mod p
      */
-    mpi_powm( b, pkey->y, k, pkey->p );
+    gcry_mpi_powm( b, pkey->y, k, pkey->p );
     mpi_mulm( b, b, input, pkey->p );
   #if 0
     if( DBG_CIPHER ) {
@@ -312,7 +312,7 @@ decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
 
     /* output = b/(a^x) mod p */
 
-    mpi_powm( t1, a, skey->x, skey->p );
+    gcry_mpi_powm( t1, a, skey->x, skey->p );
     mpi_invm( t1, t1, skey->p );
     mpi_mulm( output, b, t1, skey->p );
   #if 0
@@ -348,7 +348,7 @@ sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
     */
     mpi_sub_ui(p_1, p_1, 1);
     k = gen_k( skey->p );
-    mpi_powm( a, skey->g, k, skey->p );
+    gcry_mpi_powm( a, skey->g, k, skey->p );
     mpi_mul(t, skey->x, a );
     mpi_subm(t, input, t, p_1 );
     while( mpi_is_neg(t) ) {
@@ -397,12 +397,12 @@ verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
 
   #if 0
     /* t1 = (y^a mod p) * (a^b mod p) mod p */
-    mpi_powm( t1, pkey->y, a, pkey->p );
-    mpi_powm( t2, a, b, pkey->p );
+    gcry_mpi_powm( t1, pkey->y, a, pkey->p );
+    gcry_mpi_powm( t2, a, b, pkey->p );
     mpi_mulm( t1, t1, t2, pkey->p );
 
     /* t2 = g ^ input mod p */
-    mpi_powm( t2, pkey->g, input, pkey->p );
+    gcry_mpi_powm( t2, pkey->g, input, pkey->p );
 
     rc = !mpi_cmp( t1, t2 );
   #elif 0
@@ -413,7 +413,7 @@ verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
     mpi_mulpowm( t1, base, exp, pkey->p );
 
     /* t2 = g ^ input mod p */
-    mpi_powm( t2, pkey->g, input, pkey->p );
+    gcry_mpi_powm( t2, pkey->g, input, pkey->p );
 
     rc = !mpi_cmp( t1, t2 );
   #else

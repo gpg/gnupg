@@ -26,9 +26,8 @@
 
 #include "packet.h"
 #include "iobuf.h"
-#include "mpi.h"
 #include "util.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "memory.h"
 #include "filter.h"
 #include "options.h"
@@ -98,7 +97,7 @@ set_packet_list_mode( int mode )
 {
     int old = list_mode;
     list_mode = mode;
-    mpi_print_mode = DBG_MPI;
+    mpi_print_mode = (opt.debug & DBG_MPI_VALUE);
     return old;
 }
 
@@ -1133,7 +1132,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	unknown_pubkey_warning( sig->pubkey_algo );
 	/* we store the plain material in data[0], so that we are able
 	 * to write it back with build_packet() */
-	sig->data[0] = mpi_set_opaque(NULL, read_rest(inp, pktlen), pktlen );
+	sig->data[0] = gcry_mpi_set_opaque(NULL,
+					   read_rest(inp, pktlen), pktlen*8 );
 	pktlen = 0;
     }
     else {
@@ -1292,8 +1292,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	byte temp[16];
 
 	if( !npkey ) {
-	    sk->skey[0] = mpi_set_opaque( NULL,
-					  read_rest(inp, pktlen), pktlen );
+	    sk->skey[0] = gcry_mpi_set_opaque( NULL,
+					     read_rest(inp, pktlen), pktlen*8 );
 	    pktlen = 0;
 	    goto leave;
 	}
@@ -1368,7 +1368,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	    else { /* old version; no S2K, so we set mode to 0, hash MD5 */
 		sk->protect.s2k.mode = 0;
-		sk->protect.s2k.hash_algo = DIGEST_ALGO_MD5;
+		sk->protect.s2k.hash_algo = GCRY_MD_MD5;
 		if( list_mode )
 		    printf(  "\tprotect algo: %d  (hash algo: %d)\n",
 			 sk->protect.algo, sk->protect.s2k.hash_algo );
@@ -1412,9 +1412,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	if( is_v4 && sk->is_protected ) {
 	    /* ugly; the length is encrypted too, so we read all
 	     * stuff up to the end of the packet into the first
-	     * skey element */
-	    sk->skey[npkey] = mpi_set_opaque(NULL,
-					     read_rest(inp, pktlen), pktlen );
+	     * skey element (which is the one indexed by npkey) */
+	    sk->skey[npkey] = gcry_mpi_set_opaque(NULL,
+					     read_rest(inp, pktlen), pktlen*8 );
 	    pktlen = 0;
 	    if( list_mode ) {
 		printf("\tencrypted stuff follows\n");
@@ -1422,9 +1422,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 	else { /* v3 method: the mpi length is not encrypted */
 	    for(i=npkey; i < nskey; i++ ) {
-		n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
-		if( sk->is_protected )
-		    mpi_set_protect_flag(sk->skey[i]);
+		n = pktlen;
+		sk->skey[i] = mpi_read_opaque(inp, &n, 0 );
+		pktlen -=n;
 		if( list_mode ) {
 		    printf(  "\tskey[%d]: ", i);
 		    if( sk->is_protected )
@@ -1446,8 +1446,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	PKT_public_key *pk = pkt->pkt.public_key;
 
 	if( !npkey ) {
-	    pk->pkey[0] = mpi_set_opaque( NULL,
-					  read_rest(inp, pktlen), pktlen );
+	    pk->pkey[0] = gcry_mpi_set_opaque( NULL,
+					     read_rest(inp, pktlen), pktlen*8 );
 	    pktlen = 0;
 	    goto leave;
 	}
@@ -1635,7 +1635,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 	    goto leave;
 	}
 	method = iobuf_get_noeof(inp); pktlen--;
-	if( method != DIGEST_ALGO_SHA1 ) {
+	if( method != GCRY_MD_SHA1 ) {
 	    log_error("encrypted_mdc does not use SHA1 method\n" );
 	    goto leave;
 	}

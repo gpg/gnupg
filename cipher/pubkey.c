@@ -256,7 +256,7 @@ load_pubkey_modules(void)
 	if( !ct->verify    )  ct->verify   = dummy_verify;
 	if( !ct->get_nbits )  ct->get_nbits= dummy_get_nbits;
 	/* put it into the table */
-	if( g10_opt_verbose > 1 )
+	if( g10_log_verbosity( 2 ) )
 	    log_info("loaded pubkey %d (%s)\n", ct->algo, name);
 	ct->name = name;
 	ct_idx++;

@@ -28,7 +28,7 @@
 #include "memory.h"
 #include "options.h"
 #include "ttyio.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "keydb.h"
 #include "main.h"
 #include "i18n.h"

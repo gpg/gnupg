@@ -474,7 +474,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	frame = encode_session_key( dek, pubkey_nbits( pk->pubkey_algo,
 							  pk->pkey ) );
 	rc = pubkey_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );
-	mpi_free( frame );
+	mpi_release( frame );
 	if( rc )
 	    log_error("pubkey_encrypt failed: %s\n", g10_errstr(rc) );
 	else {

@@ -30,16 +30,16 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "mpi-internal.h"
 #include "longlong.h"
-#include <assert.h>
 
 
 /****************
  * RES = BASE ^ EXP mod MOD
  */
 void
-mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
+gcry_mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 {
     mpi_ptr_t  rp, ep, mp, bp;
     mpi_size_t esize, msize, bsize, rsize;

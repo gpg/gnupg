@@ -27,8 +27,7 @@
 #include "util.h"
 #include "memory.h"
 #include "packet.h"
-#include "mpi.h"
-#include "cipher.h"
+#include "dummy-cipher.h"
 #include "options.h"
 #include "i18n.h"
 

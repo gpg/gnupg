@@ -35,6 +35,7 @@ and after about half a day in the rsync snapshots.
     on sparc-solaris2.6.
     --> Solaris fixed.
     --> IRIX bug still there but someone should test this again!
+	(<mack@sgi.com> reports that it is still alive in 1.0.0)
 
 [  *] #18 1999-05-27 <Steffen.Zahn@icn.siemens.de> 0.9.7
     rndunix hangs on hp/ux.  The problem is related to my_plcose which is
@@ -42,7 +43,8 @@ and after about half a day in the rsync snapshots.
 
 [  *] #22 1999-07-22
     Solaris make has problems with the generated POTFILES - seems to be a
-    gettext bug.  Use GNU gmake as a workaround.
+    gettext bug.  Use GNU make as a workaround.
+    FIX: 1999-12-03 (meanwhile fixed in gettext)
 
 [  *] #23 1999-09-03 <todd.brooks@yale.edu> 0.9.11
     Only the first signature of a cleartext sig seems to be verified.
@@ -58,7 +60,8 @@ and after about half a day in the rsync snapshots.
     Validity check based on user name is only done when listing a key;
     the key ID based checking (selecting the user ID with the most
     validity) is used in all other cases.  The Edit menu does not have
-    a way to disbly user ID based validity.
+    a way to disable user ID based validity.
+    FIX: 1999-12-03 (1.0.x only)
 
 [  *] #26 1999-11-11
     gpg still does not take UTF8 strings to select a UID.
@@ -66,7 +69,23 @@ and after about half a day in the rsync snapshots.
 
 [ **] #27 1999-11-12 <oren@hishome.net>
     Unknown packets (type 17 - photo ID?) mess up the checking
-    of self-signature becuase they are simply ignored.
+    of self-signature because they are simply ignored.
+    FIX: 1999-11-12 (1.0.x only)
+
+[  *] #28 1999-11-29
+    --list-key will only emit an error about unknown UIDs when all UIDs
+    are unknown.
+    [Postponed for 1.2]
 
 
-Next #28
+[ **] #29 1999-12-01 <karney@pppl.gov>
+    Using a --gen-key on a new user account (w/o ~./gnupg) doesn't pay
+    attention to the standard options files, which get's installed
+    afterwards.
+    FIX: 1999-12-02
+
+
+
+
+
+Next #30

@@ -1,3 +1,13 @@
+Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* dsa.c: s/mpi_powm/gcry_mpi_powm/g
+	* elgamal.c: Ditto.
+	* primegen.c: Ditto.
+
+	* : Replaced g10_opt_verbose by g10_log_verbosity().
+
+	* Makefile.am (INCLUDES): removed intl, add ../gcrypt
+
 Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* dynload.c (cmp_filenames): New to replaced compare_filename() in

@@ -47,7 +47,6 @@
 #endif
 #include "g10lib.h"
 #include "rmd.h"
-#include "ttyio.h"
 #include "random.h"
 #include "rand-internal.h"
 #include "dynload.h"

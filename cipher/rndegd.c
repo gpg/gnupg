@@ -32,7 +32,9 @@
 #include <sys/un.h>
 #include "types.h"
 #include "g10lib.h"
+#ifndef IS_MODULE
 #include "ttyio.h"
+#endif
 #include "dynload.h"
 #include "cipher.h"
 
@@ -141,7 +143,8 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	}
     }
     if( fd == -1 ) {
-	char *name = my_make_filename( g10_opt_homedir, "entropy", NULL );
+	#warning Fixme: make the filename configurable
+	char *name = my_make_filename( "~/.gnupg-test", "entropy", NULL );
 	struct sockaddr_un addr;
 	int addr_len;
 
