@@ -1,5 +1,7 @@
 2004-12-14  Werner Koch  <wk@g10code.com>
 
+	* passphrase.c (agent_get_passphrase): Removed debug output
+
 	* keyserver.c (keyserver_work, keyserver_spawn): Map ldaps to ldap.
 
 	* keyedit.c (keyedit_menu): Removed the N_() markers from the

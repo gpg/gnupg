@@ -652,7 +652,6 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   int prot;
   char *orig_codeset = NULL;
 
-  log_debug ("agent_get_passphrase tryagin='%s' prompt='%s'\n", tryagain_text, custom_prompt);
   if (canceled)
     *canceled = 0;
 
