@@ -1,3 +1,9 @@
+2000-10-13  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (keyedit_menu): Allow batchmode with a command_fd. 
+	* status.c (my_read): New.
+	(do_get_from_fd): use it.
+
 2000-10-12  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (keygen_add_std_prefs): Add Rijndael to the prefs.

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <signal.h>
 #ifdef USE_SHM_COPROCESSING
   #ifdef USE_CAPABILITIES
     #include <sys/capability.h>
@@ -45,6 +46,10 @@
 #include "main.h"
 #include "i18n.h"
 #include "cipher.h" /* for progress functions */
+
+#define CONTROL_D ('D' - 'A' + 1)
+
+
 
 static int fd = -1;
 #ifdef USE_SHM_COPROCESSING
@@ -340,6 +345,28 @@ do_shm_get( const char *keyword, int hidden, int bool )
 
 #endif /* USE_SHM_COPROCESSING */
 
+static int
+myread(int fd, void *buf, size_t count)
+{
+    int rc;
+    do {
+        rc = read( fd, buf, count );
+    } while ( rc == -1 && errno == EINTR );
+    if ( !rc && count ) {
+        static int eof_emmited=0;
+        if ( eof_emmited < 3 ) {
+            *(char*)buf = CONTROL_D;
+            rc = 1;
+            eof_emmited++;
+        }
+        else { /* Ctrl-D not caught - do something reasonable */
+            raise (SIGHUP); /* no more input data */
+        }
+    }    
+    return rc;
+}
+
+
 
 /****************
  * Request a string from the client over the command-fd
@@ -365,8 +392,14 @@ do_get_from_fd( const char *keyword, int hidden, int bool )
 		i=0;
 	}
 	/* Hmmm: why not use our read_line function here */
-	if( read( opt.command_fd, string+i, 1) != 1 || string[i] == '\n' )
-	    break;
+	if( myread( opt.command_fd, string+i, 1) != 1 || string[i] == '\n'  )
+            break;
+        else if ( string[i] == CONTROL_D ) {
+            /* found ETX - cancel the line and return a sole ETX */
+            string[0] = CONTROL_D;
+            i=1;
+            break;
+        }
     }
     string[i] = 0;
 

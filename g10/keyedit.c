@@ -625,8 +625,9 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     int toggle;
     int have_commands = !!commands;
 
-
-    if( opt.batch && !have_commands ) {
+    if ( opt.command_fd != -1 )
+        ;
+    else if( opt.batch && !have_commands  ) {
 	log_error(_("can't do that in batchmode\n"));
 	goto leave;
     }
