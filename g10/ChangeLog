@@ -1,5 +1,11 @@
 2004-02-12  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h, keyedit.c (keyedit_menu): Remove sign_mode and enhance
+	the more general command list functionality to replace it.
+
+	* g10.c (main): Use the general command functionality to implement
+	--sign-key, --lsign-key, --nrsign-key, and --nrlsign-key.
+
 	* import.c (import_one): Do the revocation check even in the case
 	when a key, a revocation key set in a direct key signature, and a
 	revocation from that revocation key, all arrive piecemeal.

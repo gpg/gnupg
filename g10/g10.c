@@ -2853,37 +2853,41 @@ main( int argc, char **argv )
 	  }
 	break;
             
-      case aSignKey: /* sign the key given as argument */
+      case aSignKey:
 	if( argc != 1 )
-	    wrong_args(_("--sign-key user-id"));
-	username = make_username( fname );
-	keyedit_menu(fname, locusr, NULL, 1 );
-	m_free(username);
-	break;
-
+	  wrong_args(_("--sign-key user-id"));
+	/* fall through */
       case aLSignKey:
 	if( argc != 1 )
-	    wrong_args(_("--lsign-key user-id"));
-	username = make_username( fname );
-	keyedit_menu(fname, locusr, NULL, 2 );
-	m_free(username);
-	break;
-
+	  wrong_args(_("--lsign-key user-id"));
+	/* fall through */
       case aNRSignKey:
 	if( argc != 1 )
-	    wrong_args(_("--nrsign-key user-id"));
-	username = make_username( fname );
-	keyedit_menu(fname, locusr, NULL, 3 );
-        m_free(username);
-        break;
-
+	  wrong_args(_("--nrsign-key user-id"));
+	/* fall through */
       case aNRLSignKey:
 	if( argc != 1 )
-	    wrong_args(_("--nrlsign-key user-id"));
+	  wrong_args(_("--nrlsign-key user-id"));
+
+	sl=NULL;
+
+	if(cmd==aSignKey)
+	  append_to_strlist(&sl,"sign");
+	else if(cmd==aLSignKey)
+	  append_to_strlist(&sl,"lsign");
+	else if(cmd==aNRSignKey)
+	  append_to_strlist(&sl,"nrsign");
+	else if(cmd==aNRLSignKey)
+	  append_to_strlist(&sl,"nrlsign");
+	else
+	  BUG();
+
+	append_to_strlist( &sl, "save" );
 	username = make_username( fname );
-	keyedit_menu(fname, locusr, NULL, 4 );
-        m_free(username);
-        break;
+	keyedit_menu(fname, locusr, sl, 0, 0 );
+	m_free(username);
+	free_strlist(sl);
+	break;
 
       case aEditKey: /* Edit a key signature */
 	if( !argc )
@@ -2893,11 +2897,11 @@ main( int argc, char **argv )
 	    sl = NULL;
 	    for( argc--, argv++ ; argc; argc--, argv++ )
 		append_to_strlist( &sl, *argv );
-	    keyedit_menu( username, locusr, sl, 0 );
+	    keyedit_menu( username, locusr, sl, 0, 1 );
 	    free_strlist(sl);
 	}
 	else
-	    keyedit_menu(username, locusr, NULL, 0 );
+	    keyedit_menu(username, locusr, NULL, 0, 1 );
 	m_free(username);
 	break;
 

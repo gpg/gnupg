@@ -1093,15 +1093,16 @@ fix_keyblock( KBNODE keyblock )
 }
 
 /****************
- * Menu driven key editor.  If sign_mode is true semi-automatical signing
- * will be performed. commands are ignore in this case
+ * Menu driven key editor.  If seckey_check is true, then a secret key
+ * that matches username will be looked for.  If it is false, not all
+ * commands will be available.
  *
  * Note: to keep track of some selection we use node->mark MARKBIT_xxxx.
  */
 
 void
-keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
-						    int sign_mode )
+keyedit_menu( const char *username, STRLIST locusr,
+	      STRLIST commands, int quiet, int seckey_check )
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
@@ -1116,55 +1117,54 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    enum cmdids id;
 		    int need_sk;
 		    int not_with_sk;
-		    int signmode;
 		    const char *desc;
 		  } cmds[] = {
-	{ N_("quit")    , cmdQUIT      , 0,0,1, N_("quit this menu") },
-	{ N_("q")       , cmdQUIT      , 0,0,1, NULL   },
-	{ N_("save")    , cmdSAVE      , 0,0,1, N_("save and quit") },
-	{ N_("help")    , cmdHELP      , 0,0,1, N_("show this help") },
-	{    "?"        , cmdHELP      , 0,0,1, NULL   },
-	{ N_("fpr")     , cmdFPR       , 0,0,1, N_("show fingerprint") },
-	{ N_("list")    , cmdLIST      , 0,0,1, N_("list key and user IDs") },
-	{ N_("l")       , cmdLIST      , 0,0,1, NULL   },
-	{ N_("uid")     , cmdSELUID    , 0,0,1, N_("select user ID N") },
-	{ N_("key")     , cmdSELKEY    , 0,0,0, N_("select secondary key N") },
-	{ N_("check")   , cmdCHECK     , 0,0,1, N_("list signatures") },
-	{ N_("c")       , cmdCHECK     , 0,0,1, NULL },
-	{ N_("sign")    , cmdSIGN      , 0,1,1, N_("sign the key") },
-	{ N_("s")       , cmdSIGN      , 0,1,1, NULL },
-	{ N_("tsign")   , cmdTSIGN     , 0,1,1, N_("make a trust signature")},
-	{ N_("lsign")   , cmdLSIGN     , 0,1,1, N_("sign the key locally") },
-	{ N_("nrsign")  , cmdNRSIGN    , 0,1,1, N_("sign the key non-revocably") },
-	{ N_("nrlsign") , cmdNRLSIGN   , 0,1,1, N_("sign the key locally and non-revocably") },
-	{ N_("debug")   , cmdDEBUG     , 0,0,0, NULL },
-	{ N_("adduid")  , cmdADDUID    , 1,1,0, N_("add a user ID") },
-	{ N_("addphoto"), cmdADDPHOTO  , 1,1,0, N_("add a photo ID") },
-	{ N_("deluid")  , cmdDELUID    , 0,1,0, N_("delete user ID") },
+	{ N_("quit")    , cmdQUIT      , 0,0, N_("quit this menu") },
+	{ N_("q")       , cmdQUIT      , 0,0, NULL   },
+	{ N_("save")    , cmdSAVE      , 0,0, N_("save and quit") },
+	{ N_("help")    , cmdHELP      , 0,0, N_("show this help") },
+	{    "?"        , cmdHELP      , 0,0, NULL   },
+	{ N_("fpr")     , cmdFPR       , 0,0, N_("show fingerprint") },
+	{ N_("list")    , cmdLIST      , 0,0, N_("list key and user IDs") },
+	{ N_("l")       , cmdLIST      , 0,0, NULL   },
+	{ N_("uid")     , cmdSELUID    , 0,0, N_("select user ID N") },
+	{ N_("key")     , cmdSELKEY    , 0,0, N_("select secondary key N") },
+	{ N_("check")   , cmdCHECK     , 0,0, N_("list signatures") },
+	{ N_("c")       , cmdCHECK     , 0,0, NULL },
+	{ N_("sign")    , cmdSIGN      , 0,1, N_("sign the key") },
+	{ N_("s")       , cmdSIGN      , 0,1, NULL },
+	{ N_("tsign")   , cmdTSIGN     , 0,1, N_("make a trust signature")},
+	{ N_("lsign")   , cmdLSIGN     , 0,1, N_("sign the key locally") },
+	{ N_("nrsign")  , cmdNRSIGN    , 0,1, N_("sign the key non-revocably") },
+	{ N_("nrlsign") , cmdNRLSIGN   , 0,1, N_("sign the key locally and non-revocably") },
+	{ N_("debug")   , cmdDEBUG     , 0,0, NULL },
+	{ N_("adduid")  , cmdADDUID    , 1,1, N_("add a user ID") },
+	{ N_("addphoto"), cmdADDPHOTO  , 1,1, N_("add a photo ID") },
+	{ N_("deluid")  , cmdDELUID    , 0,1, N_("delete user ID") },
 	/* delphoto is really deluid in disguise */
-	{ N_("delphoto"), cmdDELUID    , 0,1,0, NULL },
-	{ N_("addkey")  , cmdADDKEY    , 1,1,0, N_("add a secondary key") },
-	{ N_("delkey")  , cmdDELKEY    , 0,1,0, N_("delete a secondary key") },
-	{ N_("addrevoker"),cmdADDREVOKER,1,1,0, N_("add a revocation key") },
-	{ N_("delsig")  , cmdDELSIG    , 0,1,0, N_("delete signatures") },
-	{ N_("expire")  , cmdEXPIRE    , 1,1,0, N_("change the expire date") },
-        { N_("primary") , cmdPRIMARY   , 1,1,0, N_("flag user ID as primary")},
-	{ N_("toggle")  , cmdTOGGLE    , 1,0,0, N_("toggle between secret "
-						   "and public key listing") },
-	{ N_("t"     )  , cmdTOGGLE    , 1,0,0, NULL },
-	{ N_("pref")    , cmdPREF      , 0,1,0, N_("list preferences (expert)") },
-	{ N_("showpref"), cmdSHOWPREF  , 0,1,0, N_("list preferences (verbose)") },
-	{ N_("setpref") , cmdSETPREF   , 1,1,0, N_("set preference list") },
-	{ N_("updpref") , cmdUPDPREF   , 1,1,0, N_("updated preferences") },
-	{ N_("keyserver"),cmdPREFKS    , 1,1,0, N_("set preferred keyserver URL")},
-	{ N_("passwd")  , cmdPASSWD    , 1,1,0, N_("change the passphrase") },
-	{ N_("trust")   , cmdTRUST     , 0,1,0, N_("change the ownertrust") },
-	{ N_("revsig")  , cmdREVSIG    , 0,1,0, N_("revoke signatures") },
-	{ N_("revuid")  , cmdREVUID    , 1,1,0, N_("revoke a user ID") },
-	{ N_("revkey")  , cmdREVKEY    , 1,1,0, N_("revoke a secondary key") },
-	{ N_("disable") , cmdDISABLEKEY, 0,1,0, N_("disable a key") },
-	{ N_("enable")  , cmdENABLEKEY , 0,1,0, N_("enable a key") },
-	{ N_("showphoto"),cmdSHOWPHOTO , 0,0,0, N_("show photo ID") },
+	{ N_("delphoto"), cmdDELUID    , 0,1, NULL },
+	{ N_("addkey")  , cmdADDKEY    , 1,1, N_("add a secondary key") },
+	{ N_("delkey")  , cmdDELKEY    , 0,1, N_("delete a secondary key") },
+	{ N_("addrevoker"),cmdADDREVOKER,1,1, N_("add a revocation key") },
+	{ N_("delsig")  , cmdDELSIG    , 0,1, N_("delete signatures") },
+	{ N_("expire")  , cmdEXPIRE    , 1,1, N_("change the expire date") },
+        { N_("primary") , cmdPRIMARY   , 1,1, N_("flag user ID as primary")},
+	{ N_("toggle")  , cmdTOGGLE    , 1,0, N_("toggle between secret "
+					         "and public key listing") },
+	{ N_("t"     )  , cmdTOGGLE    , 1,0, NULL },
+	{ N_("pref")    , cmdPREF      , 0,1, N_("list preferences (expert)")},
+	{ N_("showpref"), cmdSHOWPREF  , 0,1, N_("list preferences (verbose)") },
+	{ N_("setpref") , cmdSETPREF   , 1,1, N_("set preference list") },
+	{ N_("updpref") , cmdUPDPREF   , 1,1, N_("updated preferences") },
+	{ N_("keyserver"),cmdPREFKS    , 1,1, N_("set preferred keyserver URL")},
+	{ N_("passwd")  , cmdPASSWD    , 1,1, N_("change the passphrase") },
+	{ N_("trust")   , cmdTRUST     , 0,1, N_("change the ownertrust") },
+	{ N_("revsig")  , cmdREVSIG    , 0,1, N_("revoke signatures") },
+	{ N_("revuid")  , cmdREVUID    , 1,1, N_("revoke a user ID") },
+	{ N_("revkey")  , cmdREVKEY    , 1,1, N_("revoke a secondary key") },
+	{ N_("disable") , cmdDISABLEKEY, 0,1, N_("disable a key") },
+	{ N_("enable")  , cmdENABLEKEY , 0,1, N_("enable a key") },
+	{ N_("showphoto"),cmdSHOWPHOTO , 0,0, N_("show photo ID") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd = 0;
@@ -1188,14 +1188,6 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	goto leave;
     }
 
-    if( sign_mode ) {
-	commands = NULL;
-	append_to_strlist( &commands, sign_mode == 1? "sign":
-			   sign_mode == 2?"lsign":
-			   sign_mode == 3?"nrsign":"nrlsign");
-	have_commands = 1;
-    }
-
     /* get the public key */
     rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd, 1);
     if( rc )
@@ -1206,7 +1198,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	modified++;
     reorder_keyblock(keyblock);
 
-    if( !sign_mode ) {/* see whether we have a matching secret key */
+    if(seckey_check)
+      {/* see whether we have a matching secret key */
         PKT_public_key *pk = keyblock->pkt->pkt.public_key;
 
         sec_kdbhd = keydb_new (1);
@@ -1237,10 +1230,9 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
             keydb_release (sec_kdbhd); sec_kdbhd = NULL;
             rc = 0;
         }
-    }
 
-    if( sec_keyblock ) { 
-	tty_printf(_("Secret key is available.\n"));
+	if( sec_keyblock && !quiet )
+	  tty_printf(_("Secret key is available.\n"));
     }
 
     toggle = 0;
@@ -1252,11 +1244,12 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	PKT_public_key *pk=keyblock->pkt->pkt.public_key;
 
 	tty_printf("\n");
-	if( redisplay ) {
+	if( redisplay && !quiet )
+	  {
 	    show_key_with_all_names( cur_keyblock, 0, 1, 0, 1, 0 );
 	    tty_printf("\n");
 	    redisplay = 0;
-	}
+	  }
 	do {
 	    m_free(answer);
 	    if( have_commands ) {
@@ -1300,9 +1293,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		if( !ascii_strcasecmp( answer, cmds[i].name ) )
 		    break;
 	    }
-	    if( sign_mode && !cmds[i].signmode )
-		cmd = cmdINVCMD;
-	    else if( cmds[i].need_sk && !sec_keyblock ) {
+	    if( cmds[i].need_sk && !sec_keyblock ) {
 		tty_printf(_("Need the secret key to do this.\n"));
 		cmd = cmdNOP;
 	    }
@@ -1316,12 +1307,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	switch( cmd )  {
 	  case cmdHELP:
 	    for(i=0; cmds[i].name; i++ ) {
-		if( sign_mode && !cmds[i].signmode )
-		    ;
-		else if( cmds[i].need_sk && !sec_keyblock )
-		    ; /* skip if we do not have the secret key */
-		else if( cmds[i].desc )
-		    tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
+	      if( cmds[i].need_sk && !sec_keyblock )
+		; /* skip if we do not have the secret key */
+	      else if( cmds[i].desc )
+		tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
 	    }
 	    break;
 
@@ -1381,12 +1370,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    break;
 		}
 	    }
-	    if( !sign_uids( keyblock, locusr, &modified,
-			    (cmd == cmdLSIGN) || (cmd == cmdNRLSIGN),
-			    (cmd == cmdNRSIGN) || (cmd==cmdNRLSIGN),
-			    (cmd == cmdTSIGN))
-		&& sign_mode )
-	        goto do_cmd_save;
+
+	    sign_uids( keyblock, locusr, &modified,
+		       (cmd == cmdLSIGN) || (cmd == cmdNRLSIGN),
+		       (cmd == cmdNRSIGN) || (cmd==cmdNRLSIGN),
+		       (cmd == cmdTSIGN));
 	    break;
 
 	  case cmdDEBUG:
@@ -1598,7 +1586,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  case cmdUPDPREF: 
             {
 	      PKT_user_id *temp=keygen_get_std_prefs();
-	      tty_printf(_("Current preference list:\n"));
+	      tty_printf(_("Set preference list to:\n"));
 	      show_prefs(temp,1);
 	      m_free(temp);
             }
@@ -1661,7 +1649,6 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    }
 	    /* fall thru */
 	  case cmdSAVE:
-	  do_cmd_save:
 	    if( modified || sec_modified  ) {
 		if( modified ) {
 		    rc = keydb_update_keyblock (kdbhd, keyblock);

@@ -1,6 +1,6 @@
 /* main.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -142,8 +142,8 @@ int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 int delete_keys( STRLIST names, int secret, int allow_both );
 
 /*-- keyedit.c --*/
-void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,
-							    int sign_mode );
+void keyedit_menu( const char *username, STRLIST locusr,
+		   STRLIST commands, int quiet, int seckey_check );
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/
