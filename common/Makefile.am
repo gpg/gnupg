@@ -44,7 +44,8 @@ libcommon_a_SOURCES = \
 	simple-gettext.c \
 	w32reg.c \
 	signal.c \
-	dynload.h
+	dynload.h \
+	estream.c estream.h
 
 
 libcommon_a_LIBADD = @LIBOBJS@
