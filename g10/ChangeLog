@@ -1,3 +1,8 @@
+2003-07-31  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgv.c [read_trust_options]: Removed trailing semicolon to avoid
+	"declaration with no effect" error with Norcroft C.
+
 2003-07-30  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (agent_send_all_options): Make use of $GPG_TTY.
