@@ -1,3 +1,7 @@
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* mkdtemp.c: Copied from gnupg-1.0.6c and changed to use libgcrypt.
+
 2002-01-19  Werner Koch  <wk@gnupg.org>
 
 	* sysutils.c: New.  This is the misc.c file from gnupg 1.0.6 with

@@ -33,6 +33,7 @@ libcommon_a_SOURCES = \
 	maperror.c \
 	sysutils.c sysutils.h
 
+libcommon_a_LIBADD = @LIBOBJS@
 
 errors.c : errors.h mkerrors
 	$(srcdir)/mkerrors < $(srcdir)/errors.h > errors.c
