@@ -1,6 +1,6 @@
 /* getkey.c -  Get a key from the database
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1059,14 +1059,20 @@ get_seckey_byname2( GETKEY_CTX *retctx,
 		    KBNODE *retblock )
 {
   STRLIST namelist = NULL;
-  int rc;
+  int rc,include_unusable=1;
+
+  /* If we have no name, try to use the default secret key.  If we
+     have no default, we'll use the first usable one. */
 
   if( !name && opt.def_secret_key && *opt.def_secret_key )
     add_to_strlist( &namelist, opt.def_secret_key );
   else if(name)
     add_to_strlist( &namelist, name );
+  else
+    include_unusable=0;
 
-  rc = key_byname( retctx, namelist, NULL, sk, 1, 1, retblock, NULL );
+  rc = key_byname( retctx, namelist, NULL, sk, 1, include_unusable,
+		   retblock, NULL );
 
   free_strlist( namelist );
 

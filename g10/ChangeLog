@@ -1,5 +1,8 @@
 2005-03-17  David Shaw  <dshaw@jabberwocky.com>
 
+	* getkey.c (get_seckey_byname2): If no explicit default key is
+	set, don't pick a disabled default.  Noted by David Crick.
+
 	* Makefile.am: Calculate GNUPG_LIBEXECDIR directly.  Do not
 	redefine $libexecdir.
 
