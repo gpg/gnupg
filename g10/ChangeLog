@@ -1,3 +1,18 @@
+2003-08-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, keygen.c (keygen_add_keyserver_url): Signature callback
+	for adding a keyserver URL.
+
+	* keyedit.c (keyedit_menu, menu_set_keyserver_url): New command to
+	set preferred keyserver to specified (or all) user IDs.
+
+	* build-packet.c (build_sig_subpkt): Set preferred keyserver flag
+	while building a preferred keyserver subpacket.
+
+	* keylist.c (show_policy_url): Policy URLs might be UTF8.
+
+	* keyedit.c (menu_addrevoker): Fix leaking a few bytes.
+
 2003-08-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names): Use list-option

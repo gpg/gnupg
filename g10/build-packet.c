@@ -747,6 +747,10 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	sig->flags.policy_url=1;
 	break;
 
+      case SIGSUBPKT_PREF_KS:
+	sig->flags.pref_ks=1;
+	break;
+
       case SIGSUBPKT_EXPORTABLE:
 	if(buffer[0])
 	  sig->flags.exportable=1;

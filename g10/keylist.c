@@ -174,7 +174,6 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
 	  for(i=0;i<indent;i++)
 	    putchar(' ');
 
-	  /* This isn't UTF8 as it is a URL(?) */
 	  if(crit)
 	    str=_("Critical signature policy: ");
 	  else
@@ -183,7 +182,7 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
 	    log_info("%s",str);
 	  else
 	    printf("%s",str);
-	  print_string(fp,p,len,0);
+	  print_utf8_string(fp,p,len);
 	  fprintf(fp,"\n");
 	}
 
@@ -216,7 +215,6 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
 	  for(i=0;i<indent;i++)
 	    putchar(' ');
 
-	  /* This isn't UTF8 as it is a URL(?) */
 	  if(crit)
 	    str=_("Critical preferred keyserver: ");
 	  else
@@ -225,7 +223,7 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
 	    log_info("%s",str);
 	  else
 	    printf("%s",str);
-	  print_string(fp,p,len,0);
+	  print_utf8_string(fp,p,len);
 	  fprintf(fp,"\n");
 	}
 

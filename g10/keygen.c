@@ -581,6 +581,16 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 }
 
 int
+keygen_add_keyserver_url(PKT_signature *sig, void *opaque)
+{
+  const char *url=opaque;
+
+  build_sig_subpkt(sig,SIGSUBPKT_PREF_KS,url,strlen(url));
+
+  return 0;
+}
+
+int
 keygen_add_revkey(PKT_signature *sig, void *opaque)
 {
   struct revocation_key *revkey=opaque;
