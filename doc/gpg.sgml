@@ -1277,12 +1277,6 @@ opposite meaning.  The options are:
 <variablelist>
 
 <varlistentry>
-<term>include-non-rfc</term>
-<listitem><para>
-Include non-RFC compliant keys in the export.  Defaults to yes.
-</para></listitem></varlistentry>
-
-<varlistentry>
 <term>include-local-sigs</term>
 <listitem><para>
 Allow exporting key signatures marked as "local".  This is not
@@ -1549,10 +1543,10 @@ $GNUPGHOME.
 <term>--charset &ParmName;</term>
 <listitem><para>
 Set the name of the native character set.  This is used to convert
-some strings to proper UTF-8 encoding. If this option is not used, the
-default character set is determined from the current locale.  A
-verbosity level of 3 shows the used one.  Valid values for &ParmName;
-are:</para>
+some informational strings like user IDs to the proper UTF-8
+encoding. If this option is not used, the default character set is
+determined from the current locale.  A verbosity level of 3 shows the
+used one.  Valid values for &ParmName; are:</para>
 <variablelist>
 <varlistentry>
 <term>iso-8859-1</term><listitem><para>This is the Latin 1 set.</para></listitem>
