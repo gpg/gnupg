@@ -57,6 +57,7 @@ struct inq_certificate_parm_s {
 };
 
 struct isvalid_status_parm_s {
+  CTRL ctrl;
   int seen;
   unsigned char fpr[20];
 };
@@ -348,7 +349,16 @@ isvalid_status_cb (void *opaque, const char *line)
 {
   struct isvalid_status_parm_s *parm = opaque;
 
-  if (!strncmp (line, "ONLY_VALID_IF_CERT_VALID", 24)
+  if (!strncmp (line, "PROGRESS", 8) && (line[8]==' ' || !line[8]))
+    {
+      if (parm->ctrl)
+        {
+          for (line += 8; *line == ' '; line++)
+            ;
+          gpgsm_status (parm->ctrl, STATUS_PROGRESS, line);
+        }
+    }
+  else if (!strncmp (line, "ONLY_VALID_IF_CERT_VALID", 24)
       && (line[24]==' ' || !line[24]))
     {
       parm->seen++;
@@ -413,6 +423,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
   parm.cert = cert;
   parm.issuer_cert = issuer_cert;
 
+  stparm.ctrl = ctrl;
   stparm.seen = 0;
   memset (stparm.fpr, 0, 20);
 
@@ -608,7 +619,16 @@ lookup_status_cb (void *opaque, const char *line)
 {
   struct lookup_parm_s *parm = opaque;
 
-  if (!strncmp (line, "TRUNCATED", 9) && (line[9]==' ' || !line[9]))
+  if (!strncmp (line, "PROGRESS", 8) && (line[8]==' ' || !line[8]))
+    {
+      if (parm->ctrl)
+        {
+          for (line += 8; *line == ' '; line++)
+            ;
+          gpgsm_status (parm->ctrl, STATUS_PROGRESS, line);
+        }
+    }
+  else if (!strncmp (line, "TRUNCATED", 9) && (line[9]==' ' || !line[9]))
     {
       if (parm->ctrl)
         {
@@ -728,9 +748,20 @@ run_command_inq_cb (void *opaque, const char *line)
 static AssuanError
 run_command_status_cb (void *opaque, const char *line)
 {
+  ctrl_t ctrl = opaque;
+
   if (opt.verbose)
     {
       log_info ("dirmngr status: %s\n", line);
+    }
+  if (!strncmp (line, "PROGRESS", 8) && (line[8]==' ' || !line[8]))
+    {
+      if (ctrl)
+        {
+          for (line += 8; *line == ' '; line++)
+            ;
+          gpgsm_status (ctrl, STATUS_PROGRESS, line);
+        }
     }
   return 0;
 }
@@ -790,7 +821,7 @@ gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,
   rc = assuan_transact (dirmngr_ctx, line,
                         run_command_cb, NULL,
                         run_command_inq_cb, &parm,
-                        run_command_status_cb, NULL);
+                        run_command_status_cb, ctrl);
   xfree (line);
   log_info ("response of dirmngr: %s\n", rc? assuan_strerror (rc): "okay");
   return map_assuan_err (rc);

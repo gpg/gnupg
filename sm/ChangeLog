@@ -1,5 +1,12 @@
 2004-12-15  Werner Koch  <wk@g10code.com>
 
+	* call-dirmngr.c (lookup_status_cb): Send progress messages
+	upstream.
+	(isvalid_status_cb): Ditto.
+	(gpgsm_dirmngr_isvalid): Put CTRL into status CB parameters.
+	(gpgsm_dirmngr_run_command, run_command_status_cb): Pass CTRL to
+	status callback and handle PROGRESS.
+
 	* misc.c (setup_pinentry_env) [W32]: Don't use it.
 
 	* gpgsm.c (main) [W32]: Init Pth because we need it for the socket
