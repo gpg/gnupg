@@ -1,3 +1,11 @@
+2002-11-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs): Revoked/expired/invalid primary keys
+	carry these facts onto all their subkeys, but only after the
+	subkey has a chance to be marked valid.  This is to fix an
+	incorrect "invalid public key" error verifying a signature made by
+	a revoked signing subkey, with a valid unrevoked primary key.
+
 2002-11-09  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (agent_send_all_options): Use tty_get_ttyname to
