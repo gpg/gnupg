@@ -1,5 +1,5 @@
 /* findkey.c - locate the secret key
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -139,6 +139,108 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
                           &arg->unprotected_key, &dummy);
 }
 
+
+/* Modify a Key description, replacing certain special format
+   characters.  List of currently supported replacements:
+
+   %% -> %
+   %c -> <COMMENT>. */
+static int
+modify_description (const char *description,
+		    const char *comment, size_t comment_length,
+		    char **description_modified)
+{
+  size_t description_length;
+  size_t description_new_length;
+  gpg_error_t err;
+  char *description_new;
+  unsigned int i, j;
+  unsigned int special;
+
+  description_length  = strlen (description);
+  description_new_length = description_length;
+  description_new = NULL;
+
+  /* Calculate length.  */
+  special = 0;
+  for (i = 0; i < description_length; i++)
+    {
+      if (description[i] == '%')
+	special = 1;
+      else
+	{
+	  if (special)
+	    {
+	      description_new_length -= 2;
+	      switch (description[i])
+		{
+		case 'c':
+		  /* Comment.  */
+		  description_new_length += comment_length;
+		  break;
+		  
+		case '%':
+		  description_new_length += 1;
+		  break;
+		}
+	      special = 0;
+	    }
+	}
+    }
+
+  /* Allocate.  */
+  description_new = xtrymalloc (description_new_length + 1);
+  if (! description_new)
+    {
+      err = gpg_error_from_errno (errno);
+      goto out;
+    }
+
+  /* Fill.  */
+  for (i = j = 0; i < description_length; i++)
+    {
+      if (description[i] == '%')
+	special = 1;
+      else
+	{
+	  if (special)
+	    {
+	      switch (description[i])
+		{
+		case 'c':
+		  /* Comment.  */
+		  if (comment)
+		    {
+		      strncpy (description_new + j, comment, comment_length);
+		      j += comment_length;
+		    }
+		  break;
+		  
+		case '%':
+		  description_new[j] = '%';
+		  j++;
+		  break;
+		}
+	      special = 0;
+	    }
+	  else
+	    {
+	      description_new[j] = description[i];
+	      j++;
+	    }
+	}
+    }
+
+  description_new[j] = 0;
+  *description_modified = description_new;
+  err = 0;
+
+ out:
+
+  return err;
+}
+
+  
 
 /* Unprotect the canconical encoded S-expression key in KEYBUF.  GRIP
    should be the hex encoded keygrip of that key to be used with the
@@ -292,10 +394,42 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
     case PRIVATE_KEY_CLEAR:
       break; /* no unprotection needed */
     case PRIVATE_KEY_PROTECTED:
-      rc = unprotect (ctrl, desc_text, &buf, grip, ignore_cache);
-      if (rc)
-        log_error ("failed to unprotect the secret key: %s\n",
-                   gpg_strerror (rc));
+      {
+	gcry_sexp_t comment_sexp;
+	size_t comment_length;
+	char *desc_text_final;
+	const char *comment;
+	
+	comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+	if (comment_sexp)
+	  comment = gcry_sexp_nth_data (comment_sexp, 1, &comment_length);
+	else
+	  {
+	    comment = NULL;
+	    comment_length = 0;
+	  }
+
+	if (desc_text)
+	  {
+	    rc = modify_description (desc_text,
+				     comment, comment_length, &desc_text_final);
+	    if (rc)
+	      log_error ("failed to modify description: %s\n", gpg_strerror (rc));
+	  }
+	else
+	  desc_text_final = NULL;
+
+	if (! rc)
+	  {
+	    rc = unprotect (ctrl, desc_text_final, &buf, grip, ignore_cache);
+	    if (rc)
+	      log_error ("failed to unprotect the secret key: %s\n",
+			 gpg_strerror (rc));
+	  }
+
+	gcry_sexp_release (comment_sexp);
+	xfree (desc_text_final);
+      }
       break;
     case PRIVATE_KEY_SHADOWED:
       if (shadow_info)

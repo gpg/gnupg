@@ -1,3 +1,36 @@
+2005-01-26  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c: New file.
+	* Makefile.am (gpg_agent_SOURCES): New source file: command-ssh.c.
+
+	* findkey.c (modify_description): New function.
+	(agent_key_from_file): Support comment field in key s-expressions.
+
+	* gpg-agent.c (enum cmd_and_opt_values): New item: oSSHSupport.
+	(opts) New entry for oSSHSupport.
+	New variable: socket_name_ssh.
+	(cleanup_do): New function based on cleanup().
+	(cleanup): Use cleanup_do() for socket_name and socket_name_ssh.
+	(main): New switch case for oSSHSupport.
+	(main): Move socket name creation code to ...
+	(create_socket_name): ... this new function.
+	(main): Use create_socket_name() for creating socket names for
+	socket_name and for socket_name_ssh in case ssh support is
+	enabled.
+	Move socket creation code to ...
+	(create_server_socket): ... this new function.
+	(main): Use create_server_socket() for creating sockets.
+	In case standard_socket is set, do not only store a socket name in
+	socket_name, but also in socket_name_ssh.
+	Generate additional environment info strings for ssh support.
+	Pass additional ssh socket argument to handle_connections.
+	(start_connection_thread_ssh): New function.
+	(handle_connections): Use select to multiplex between gpg-agent
+	and ssh-agent protocol.
+
+	* agent.h (struct opt): New member: ssh_support.
+	Declare function: start_command_handler_ssh.
+
 2005-01-04  Werner Koch  <wk@g10code.com>
 
 	* trustlist.c (agent_marktrusted): Use "Cancel" for the first

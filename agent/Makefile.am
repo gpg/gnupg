@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -29,7 +29,7 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
-	command.c \
+	command.c command-ssh.c \
 	query.c \
 	cache.c \
 	trans.c \

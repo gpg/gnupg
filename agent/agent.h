@@ -1,5 +1,5 @@
 /* agent.h - Global definitions for the agent
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -66,6 +66,7 @@ struct {
   int allow_preset_passphrase;
   int keep_tty;  /* don't switch the TTY (for pinentry) on request */
   int keep_display;  /* don't switch the DISPLAY (for pinentry) on request */
+  int ssh_support;		/* Enable ssh-agent emulation.  */
 } opt;
 
 
@@ -135,6 +136,9 @@ void agent_init_default_ctrl (struct server_control_s *ctrl);
 
 /*-- command.c --*/
 void start_command_handler (int, int);
+
+/*-- command-ssh.c --*/
+void start_command_handler_ssh (int);
 
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,
