@@ -80,10 +80,13 @@ do_check( PKT_secret_key *sk )
 	if( sk->version >= 4 ) {
 	    int ndata;
 	    byte *p, *data;
+            u16 csumc = 0;
 
 	    i = pubkey_get_npkey(sk->pubkey_algo);
 	    assert( mpi_is_opaque( sk->skey[i] ) );
 	    p = mpi_get_opaque( sk->skey[i], &ndata );
+            if ( ndata > 1 )
+                csumc = p[ndata-2] << 8 | p[ndata-1];
 	    data = m_alloc_secure( ndata );
 	    cipher_decrypt( cipher_hd, data, p, ndata );
 	    mpi_free( sk->skey[i] ); sk->skey[i] = NULL ;
@@ -96,9 +99,14 @@ do_check( PKT_secret_key *sk )
 	    else {
 		csum = checksum( data, ndata-2);
 		sk->csum = data[ndata-2] << 8 | data[ndata-1];
+                if ( sk->csum != csum ) {
+                    /* This is a PGP 7.0.0 workaround */
+                    sk->csum = csumc; /* take the encrypted one */
+                }
 	    }
+            
 	    /* must check it here otherwise the mpi_read_xx would fail
-	     * because the length das an abritary value */
+	     * because the length may have an arbitrary value */
 	    if( sk->csum == csum ) {
 		for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
 		    nbytes = ndata;
@@ -106,6 +114,7 @@ do_check( PKT_secret_key *sk )
 		    ndata -= nbytes;
 		    p += nbytes;
 		}
+                /* at this point ndata should be equal to 2 (the checksum) */
 	    }
 	    m_free(data);
 	}
@@ -237,9 +246,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    randomize_buffer(sk->protect.iv, sk->protect.ivlen, 1);
 	    cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	    if( sk->version >= 4 ) {
-		/* FIXME: There is a bug in this function for all algorithms
-		 * where the secret MPIs are more than 1 */
-		byte *bufarr[PUBKEY_MAX_NSKEY];
+                byte *bufarr[PUBKEY_MAX_NSKEY];
 		unsigned narr[PUBKEY_MAX_NSKEY];
 		unsigned nbits[PUBKEY_MAX_NSKEY];
 		int ndata=0;

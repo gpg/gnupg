@@ -1,3 +1,10 @@
+Wed Sep 13 18:12:34 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * keyedit.c (keyedit_menu): Allow to use "debug" on the secret key.
+
+        * ringedit.c (cmp_seckey): Fix for v4 RSA keys.
+        * seckey-cert.c (do_check): Workaround for PGP 7 bug.
+
 Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
 
         * misc.c (print_pubkey_algo_note): Do not print the RSA notice.

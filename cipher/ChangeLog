@@ -1,3 +1,9 @@
+Wed Sep 13 18:12:34 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * rsa.c (secret): Speed up by using the CRT.  For a 2k keys this
+        is about 3 times faster.
+        (stronger_key_check): New but unused code to check the secret key.
+
 Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
 
         * rsa.c: Changed the comment about the patent.
