@@ -1,3 +1,10 @@
+2003-02-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* sha256.c, sha512.c: New.
+
+	* Makefile.am, algorithms.h, md.c (load_digest_module,
+	string_to_digest_algo): Add read-only support for the new SHAs.
+
 2002-11-06  David Shaw  <dshaw@jabberwocky.com>
 
  	* rndw32.c [__CYGWIN32__]: Don't include winioctl.h - it is not

@@ -28,6 +28,7 @@
 #include "cipher.h"
 #include "errors.h"
 #include "algorithms.h"
+#include "i18n.h"
 
 /****************
  * This structure is used for the list of available algorithms
@@ -97,6 +98,12 @@ load_digest_module (void)
      frequently used are the first in the list. */
   if (!new_list_item (DIGEST_ALGO_TIGER, tiger_get_info))
     BUG();
+  if (!new_list_item (DIGEST_ALGO_SHA512, sha512_get_info)) 
+    BUG ();
+  if (!new_list_item (DIGEST_ALGO_SHA384, sha384_get_info)) 
+    BUG ();
+  if (!new_list_item (DIGEST_ALGO_SHA256, sha256_get_info)) 
+    BUG ();
   if (!new_list_item (DIGEST_ALGO_MD5, md5_get_info)) 
     BUG ();
   if (!new_list_item (DIGEST_ALGO_RMD160, rmd160_get_info)) 
@@ -114,6 +121,22 @@ int
 string_to_digest_algo( const char *string )
 {
     struct md_digest_list_s *r;
+
+    /* Hi there.  I see you changing that code so you can use the new
+       SHA hashes.  Before you do it, please think about it.  There
+       are no official releases of any OpenPGP programs that generate
+       these hashes, and we're trying to get a code base that can
+       understand the hashes before we release one that generates
+       them. - dshaw */
+
+    if(!ascii_strcasecmp("sha256",string)
+       || !ascii_strcasecmp("sha384",string)
+       || !ascii_strcasecmp("sha512",string))
+      {
+	log_info(_("digest algorithm `%s' is read-only in this release\n"),
+		 string);
+	return 0;
+      }
 
     do {
 	for(r = digest_list; r; r = r->next )
