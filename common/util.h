@@ -51,6 +51,12 @@
 #define xrealloc(a,b)    gcry_xrealloc ((a),(b))
 #define xstrdup(a)       gcry_xstrdup ((a))
 
+
+/* A type to hold the ISO time.  Note that this this is the same as
+   the the KSBA type ksba_isotime_t. */
+typedef char gnupg_isotime_t[16];
+
+
 /*-- maperror.c --*/
 int map_ksba_err (int err);
 int map_gcry_err (int err);
@@ -60,6 +66,7 @@ int map_to_assuan_status (int rc);
 
 /*-- gettime.c --*/
 time_t gnupg_get_time (void);
+void   gnupg_get_isotime (gnupg_isotime_t timebuf);
 void   gnupg_set_time (time_t newtime, int freeze);
 int    gnupg_faked_time_p (void);
 u32    make_timestamp (void);
@@ -68,6 +75,18 @@ u32    add_days_to_timestamp (u32 stamp, u16 days);
 const char *strtimevalue (u32 stamp);
 const char *strtimestamp (u32 stamp); /* GMT */
 const char *asctimestamp (u32 stamp); /* localized */
+
+
+/* Copy one iso ddate to another, this is inline so that we can do a
+   sanity check. */
+static inline void
+gnupg_copy_time (gnupg_isotime_t d, const gnupg_isotime_t s)
+{
+  if (*s && (strlen (s) != 15 || s[8] != 'T'))
+    BUG();
+  strcpy (d, s);
+}
+
 
 /*-- signal.c --*/
 void gnupg_init_signals (int mode, void (*fast_cleanup)(void));
