@@ -275,6 +275,7 @@ get_seckey( PKT_secret_cert *skc, u32 *keyid )
 
 /****************
  * Get a secret key by name and store it into skc
+ * If NAME is NULL use the default certificate
  */
 int
 get_seckey_by_name( PKT_secret_cert *skc, const char *name )
@@ -432,8 +433,12 @@ scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
     int save_mode;
     u32 akeyid[2];
     PKT_secret_cert *last_pk = NULL;
+    int get_first;
+    u32 dummy_keyid[2];
 
-    assert( !keyid || !name );
+    get_first = !keyid && !name;
+    if( get_first )
+	keyid = dummy_keyid;
 
     if( !(a = iobuf_open( filename ) ) ) {
 	log_debug("scan_secret_keyring: can't open '%s'\n", filename );
@@ -453,10 +458,16 @@ scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
 	    switch( pkt.pkt.secret_cert->pubkey_algo ) {
 	      case PUBKEY_ALGO_ELGAMAL:
 	      case PUBKEY_ALGO_RSA:
-		keyid_from_skc( pkt.pkt.secret_cert, akeyid );
-		if( akeyid[0] == keyid[0] && akeyid[1] == keyid[1] ) {
+		if( get_first ) {
 		    copy_secret_cert( skc, pkt.pkt.secret_cert );
 		    found++;
+		}
+		else {
+		    keyid_from_skc( pkt.pkt.secret_cert, akeyid );
+		    if( (akeyid[0] == keyid[0] && akeyid[1] == keyid[1]) ) {
+			copy_secret_cert( skc, pkt.pkt.secret_cert );
+			found++;
+		    }
 		}
 		break;
 	      default:

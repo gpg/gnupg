@@ -66,7 +66,7 @@ strusage( int level )
   #endif
   #ifdef HAVE_RSA_CIPHER
     "WARNING: This version has RSA support! Your are not allowed to\n"
-    "         use it inside the Unites States until Sep 30, 2000!\n"
+    "         use it inside the Unites States before Sep 30, 2000!\n"
   #endif
 	;
 	break;

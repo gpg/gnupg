@@ -251,6 +251,7 @@ int encrypt_data( PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx );
+int ask_for_detached_datafile( md_filter_context_t *mfx );
 
 /*-- comment.c --*/
 int write_comment( IOBUF out, const char *s );

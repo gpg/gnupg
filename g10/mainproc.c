@@ -67,6 +67,7 @@ typedef struct {
     int last_was_pubkey_enc;
     int opt_list;
     NODE cert;	   /* the current certificate */
+    int have_data;
 } *CTX;
 
 
@@ -152,8 +153,9 @@ release_cert( CTX c )
 static int
 add_onepass_sig( CTX c, PACKET *pkt )
 {
+    NODE node;
+
     if( c->cert ) { /* add another packet */
-	NODE node;
 
 	if( c->cert->pkt->pkttype != PKT_ONEPASS_SIG ) {
 	   log_error("add_onepass_sig: another packet is in the way\n");
@@ -164,7 +166,8 @@ add_onepass_sig( CTX c, PACKET *pkt )
 	c->cert = node;
     }
     else /* insert the first one */
-	c->cert = new_node( pkt );
+	c->cert = node = new_node( pkt );
+
     return 1;
 }
 
@@ -338,6 +341,8 @@ proc_plaintext( CTX c, PACKET *pkt )
 
     printf("txt: plain text data name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
+    /* fixme: take the digest algo to use from the
+     * onpass_sig packet (if we have these) */
     c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
     result = handle_plaintext( pt, &c->mfx );
     if( !result )
@@ -393,8 +398,9 @@ do_check_sig( CTX c, NODE node )
     if( (rc=md_okay(algo)) )
 	return rc;
 
-    if( sig->sig_class == 0x00 )
+    if( sig->sig_class == 0x00 ) {
 	md = md_copy( c->mfx.md );
+    }
     else if( (sig->sig_class&~3) == 0x10 ) { /* classes 0x10 .. 0x13 */
 	if( c->cert->pkt->pkttype == PKT_PUBLIC_CERT ) {
 	    NODE n1 = find_parent( c->cert, node );
@@ -568,6 +574,9 @@ proc_packets( IOBUF a )
 	  case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
 	  default: newpkt = 0; break;
 	}
+	if( pkt->pkttype != PKT_SIGNATURE )
+	    c->have_data = pkt->pkttype == PKT_PLAINTEXT;
+
 	if( newpkt == -1 )
 	    ;
 	else if( newpkt ) {
@@ -615,7 +624,19 @@ proc_tree( CTX c, NODE node )
 	    log_error("proc_tree: onepass_sig without followin data\n");
 	else if( node->child->pkt->pkttype != PKT_SIGNATURE )
 	    log_error("proc_tree: onepass_sig not followed by signature\n");
-	else {	/* check all signature */
+	else {	/* check all signatures */
+	    if( !c->have_data ) {
+		free_md_filter_context( &c->mfx );
+		/* fixme: take the digest algo to use from the
+		 * onepass_sig packet (if we have these) */
+		c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
+		rc = ask_for_detached_datafile( &c->mfx );
+		if( rc ) {
+		    log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		    return;
+		}
+	    }
+
 	    for(n1=node->child; n1; n1 = n1->next ) {
 		PKT_signature *sig = n1->pkt->pkt.signature;
 

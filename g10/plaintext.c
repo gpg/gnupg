@@ -82,6 +82,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }
+	    if( mfx->md )
+		md_putchar(mfx->md, c );
 	    if( mfx->rmd160 )
 		rmd160_putchar(mfx->rmd160, c );
 	    if( mfx->md5 )
@@ -123,4 +125,43 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
     m_free(fname);
     return rc;
 }
+
+
+/****************
+ * Ask for the detached datafile and calculate the digest from it.
+ */
+int
+ask_for_detached_datafile( md_filter_context_t *mfx )
+{
+    char *answer;
+    FILE *fp;
+    int rc = 0;
+    int c;
+
+    tty_printf("Detached signature.\n");
+    answer = tty_get("Please enter name of data file: ");
+    tty_kill_prompt();
+
+    fp = fopen(answer,"rb");
+    if( !fp ) {
+	log_error("can't open '%s': %s\n", answer, strerror(errno) );
+	rc = G10ERR_READ_FILE;
+	goto leave;
+    }
+
+    while( (c = getc(fp)) != EOF ) {
+	if( mfx->md )
+	    md_putchar(mfx->md, c );
+	if( mfx->rmd160 )
+	    rmd160_putchar(mfx->rmd160, c );
+	if( mfx->md5 )
+	    md5_putchar(mfx->md5, c );
+    }
+    fclose(fp);
+
+  leave:
+    m_free(answer);
+    return rc;
+}
+
 

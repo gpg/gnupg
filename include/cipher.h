@@ -79,6 +79,15 @@ typedef struct {
 
 int cipher_debug_mode;
 
+#ifdef HAVE_RSA_CIPHER
+  #define is_valid_pubkey_algo(a) ( (a) == PUBKEY_ALGO_ELGAMAL	\
+				    || (a) == PUBKEY_ALGO_RSA )
+#else
+  #define is_valid_pubkey_algo(a) ( (a) == PUBKEY_ALGO_ELGAMAL	)
+#endif
+
+
+
 /*-- md.c --*/
 int md_okay( int algo );
 MD_HANDLE *md_open( int algo, int secure );
