@@ -30,8 +30,5 @@ libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@
 libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
-# don't distribute hkp for now
-nodist_gpgkeys_hkp_SOURCES = gpgkeys_hkp.c
-
 gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@
 gpgkeys_hkp_LDADD = @NETLIBS@
