@@ -34,7 +34,7 @@ development_version=yes
 
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/g10.c)
-AC_CANONICAL_TARGET
+AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([std-options])
 AM_CONFIG_HEADER(config.h)
 
@@ -380,6 +380,12 @@ AC_ARG_WITH(capabilities,
 [use_capabilities="$withval"],[use_capabilities=no])
 AC_MSG_RESULT($use_capabilities)
 
+# To avoid double inclusion of config.h which might happen at some
+# places, we add the usual double inclusion protection.
+AH_TOP([
+#ifndef GNUPG_CONFIG_H_INCLUDED
+#define GNUPG_CONFIG_H_INCLUDED
+])
 
 AH_BOTTOM([
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
@@ -391,6 +397,8 @@ AH_BOTTOM([
 #define GNUPG_MAJOR_VERSION 1
 
 #include "g10defs.h"
+
+#endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
 
 
@@ -427,8 +435,8 @@ MPI_OPT_FLAGS=""
 try_gettext=yes
 have_dosish_system=no
 need_dlopen=yes
-case "${target}" in
-    *-*-mingw32*)
+case "${host}" in
+    *-mingw32*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3,1,
@@ -638,8 +646,8 @@ fi
 
 AC_SUBST(GPGKEYS_MAILTO)
 
-case "${target}" in
-    *-*-mingw32*)
+case "${host}" in
+    *-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
         ;;
     *-*-cygwin*)
@@ -668,7 +676,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 #
 NAME_OF_DEV_RANDOM="/dev/random"
 NAME_OF_DEV_URANDOM="/dev/urandom"
-case "${target}" in
+case "${host}" in
     *-openbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
         NAME_OF_DEV_URANDOM="/dev/urandom"
@@ -778,8 +786,9 @@ AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
 
 # Ensure that we have UINT64_C before we bother to check for uint64_t
-AC_CACHE_CHECK([for UINT64_C],[gnupg_cv_uint64_c_works],
-   AC_COMPILE_IFELSE(AC_LANG_PROGRAM([#include <inttypes.h>
+gt_HEADER_INTTYPES_H
+AC_CACHE_CHECK([for UINT64_C], [gnupg_cv_uint64_c_works],
+               AC_COMPILE_IFELSE(AC_LANG_PROGRAM([
 uint64_t foo=UINT64_C(42);]),gnupg_cv_uint64_c_works=yes,gnupg_cv_uint64_c_works=no))
 
 if test "$gnupg_cv_uint64_c_works" = "yes" ; then
@@ -932,8 +941,8 @@ if test "$use_static_rnd" = default; then
      if test "$ac_cv_have_dev_random" = yes; then
         random_modules="rndlinux"
      else
-         case "${target}" in
-            *-*-mingw32*|*-*-cygwin*)
+         case "${host}" in
+            *-mingw32*|*-*-cygwin*)
                 random_modules="rndw32"
                 ;;
             i?86-emx-os2|i?86-*-os2*emx)
@@ -1169,8 +1178,8 @@ GNUPG_CHECK_GNUMAKE
 
 # add some extra libs here so that previous tests don't fail for
 # mysterious reasons - the final link step should bail out. 
-case "${target}" in
-    *-*-mingw32*)
+case "${host}" in
+    *-mingw32*)
 dnl      NETLIBS="$NETLIBS -lwsock32"
 	W32LIBS="-lwsock32"
         ;;
@@ -1294,7 +1303,7 @@ AC_OUTPUT
 
 # Give some feedback
 echo
-echo   "                Configured for: $PRINTABLE_OS_NAME ($target)"
+echo   "                Configured for: $PRINTABLE_OS_NAME ($host)"
 if test -n "$show_extraasm"; then
   echo "  Extra cpu specific functions:$show_extraasm"
 fi

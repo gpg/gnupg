@@ -1,8 +1,8 @@
 \input texinfo
 @setfilename gpg.info
-@documentencoding us-ascii
+@dircategory GnuPG
 @direntry
-* gpg: .                        encryption and signing tool
+* gpg: (gpg).                         GnuPG encryption and signing tool.
 @end direntry
 
 @node Top, , , (dir)

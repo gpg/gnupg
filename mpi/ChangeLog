@@ -1,3 +1,7 @@
+2004-10-26  Werner Koch  <wk@g10code.com>
+
+	* config.links: Use HOST instead of TARGET.
+
 2004-10-12  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (.S.o): Include MPI_SFLAGS. This is our bug 145.

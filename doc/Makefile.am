@@ -22,9 +22,9 @@ AUTOMAKE_OPTIONS = no-texinfo.tex
 
 EXTRA_DIST = DETAILS gpg.sgml gpg.1 gpgv.sgml gpgv.1 faq.raw FAQ faq.html \
              HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 gnupg-w32.reg \
-             TRANSLATE
+             TRANSLATE gpg.ru.sgml
 
-man_MANS = gpg.1 gpgv.1 gnupg.7
+man_MANS = gpg.1 gpgv.1 gnupg.7 gpg.ru.1
 
 info_TEXINFOS = gpg.texi gpgv.texi
 
@@ -37,7 +37,7 @@ BUILT_SOURCES = FAQ faq.html
 # we can't add gpg.texi gpgv.texi here because automake does not like them to
 # be built files. 
 
-CLEANFILES = faq.raw.xref gpg.xml gpgv.xml
+CLEANFILES = faq.raw.xref gpg.xml gpgv.xml gpg.ru.xml
 
 
 # We better build the texi versions manually.

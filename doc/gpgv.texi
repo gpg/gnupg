@@ -1,8 +1,8 @@
 \input texinfo
 @setfilename gpgv.info
-@documentencoding us-ascii
+@dircategory GnuPG
 @direntry
-* gpgv: .                       signature verification tool
+* gpgv: (gpgv).                       GnuPG signature verification tool.
 @end direntry
 
 @node Top, , , (dir)

@@ -2,7 +2,13 @@
 
 	* configure.ac: New option --disable-gnupg-iconv, define
 	USE_GNUPG_ICONV.
-	
+	(AC_CANONICAL_TARGET): Replaced by AC_CANONICAL_HOST. Changed all
+	reference to TARGET to HOST.  Made sure that i586-mingw32msvc gets
+	detected as mingw32.
+	(UNIT64_C): Don't include inttype.h uncoditional but use a test to
+	ensure that it gets into conftest.h.
+	(AH_TOP): New. Prevent double inclusion of config.h.
+
 2004-10-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* acinclude.m4: aclocal 1.9 wants quoting on AC_DEFUN arguments.

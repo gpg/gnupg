@@ -29,10 +29,10 @@ mpi_sflags=
 test -d ./mpi || mkdir ./mpi
 
 echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
-echo "/* Target: ${target} */" >>./mpi/asm-syntax.h
+echo "/* Host: ${host} */" >>./mpi/asm-syntax.h
 
 if test "$try_asm_modules" = "yes" ; then
-case "${target}" in
+case "${host}" in
     powerpc-apple-darwin*          | \
     i[34567]86*-*-openbsd[12]*     | \
     i[34567]86*-*-openbsd3.[0123]*)
