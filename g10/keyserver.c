@@ -135,7 +135,7 @@ parse_keyserver_options(char *options)
   return ret;
 }
 
-static void
+void
 free_keyserver_spec(struct keyserver_spec *keyserver)
 {
   m_free(keyserver->uri);
@@ -146,7 +146,8 @@ free_keyserver_spec(struct keyserver_spec *keyserver)
 }
 
 struct keyserver_spec *
-parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
+parse_keyserver_uri(char *uri,int require_scheme,
+		    const char *configname,unsigned int configlineno)
 {
   int assume_hkp=0;
   struct keyserver_spec *keyserver;
@@ -163,6 +164,9 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
   scheme=strsep(&uri,":");
   if(uri==NULL)
     {
+      if(require_scheme)
+	return NULL;
+
       /* Assume HKP if there is no scheme */
       assume_hkp=1;
       uri=scheme;
@@ -1361,9 +1365,11 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 		      dupe[plen]='\0';
 
 		      /* Make up a keyserver structure and do an
-			 import for this key. */
+			 import for this key.  Note that a preferred
+			 keyserver without a scheme:// will be
+			 interpreted as hkp:// */
 
-		      keyserver=parse_keyserver_uri(dupe,NULL,0);
+		      keyserver=parse_keyserver_uri(dupe,0,NULL,0);
 		      m_free(dupe);
 
 		      if(keyserver)

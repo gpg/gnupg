@@ -1,3 +1,14 @@
+2004-05-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu, menu_set_keyserver_url): Allow passing
+	preferred keyserver on "keyserver" command line.  Sanity check
+	keyserver URL before accepting it.
+
+	* keyserver-internal.h, g10.c (main), keyserver.c
+	(parse_keyserver_uri): Add an option to require the scheme:// and
+	change all callers.
+	(free_keyserver_spec): Make public.
+
 2004-05-07  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (write_plaintext_packet): Fixed the detection of too

@@ -41,6 +41,7 @@
 #include "ttyio.h"
 #include "status.h"
 #include "i18n.h"
+#include "keyserver-internal.h"
 
 static void show_prefs( PKT_user_id *uid, int verbose );
 static void show_key_with_all_names( KBNODE keyblock, int only_marked,
@@ -55,7 +56,8 @@ static int menu_addrevoker( KBNODE pub_keyblock,
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
-static int menu_set_keyserver_url (KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_set_keyserver_url (const char *url,
+				   KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_select_uid( KBNODE keyblock, int idx );
 static int menu_select_key( KBNODE keyblock, int idx );
 static int count_uids( KBNODE keyblock );
@@ -1607,11 +1609,13 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
 	  case cmdPREFKS:
-	    if( menu_set_keyserver_url ( keyblock, sec_keyblock ) ) {
+	    if( menu_set_keyserver_url ( *arg_string?arg_string:NULL,
+					 keyblock, sec_keyblock ) )
+	      {
 		merge_keys_and_selfsig( keyblock );
 		modified = 1;
 		redisplay = 1;
-	    }
+	      }
 	    break;
 
 	  case cmdNOP:
@@ -3173,96 +3177,120 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
 
 
 static int
-menu_set_keyserver_url (KBNODE pub_keyblock, KBNODE sec_keyblock )
+menu_set_keyserver_url (const char *url,
+			KBNODE pub_keyblock, KBNODE sec_keyblock )
 {
-    PKT_secret_key *sk;    /* copy of the main sk */
-    PKT_public_key *main_pk;
-    PKT_user_id *uid;
-    KBNODE node;
-    u32 keyid[2];
-    int selected, select_all;
-    int modified = 0;
-    char *answer;
+  PKT_secret_key *sk;    /* copy of the main sk */
+  PKT_public_key *main_pk;
+  PKT_user_id *uid;
+  KBNODE node;
+  u32 keyid[2];
+  int selected, select_all;
+  int modified = 0;
+  char *answer;
+  struct keyserver_spec *keyserver;
 
-    no_primary_warning(pub_keyblock);
+  no_primary_warning(pub_keyblock);
 
-    answer=cpr_get_utf8("keyedit.add_keyserver",
-			_("Enter your preferred keyserver URL: "));
-    if(answer[0]=='\0' || answer[0]=='\004')
-      {
-	m_free(answer);
-	return 0;
-      }
-
-    select_all = !count_selected_uids (pub_keyblock);
-
-    node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
-    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
-
-    /* Now we can actually change the self signature(s) */
-    main_pk = NULL;
-    uid = NULL;
-    selected = 0;
-    for ( node=pub_keyblock; node; node = node->next ) {
-	if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
-            break; /* ready */
-
-	if ( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
-	    main_pk = node->pkt->pkt.public_key;
-	    keyid_from_pk( main_pk, keyid );
-	}
-	else if ( node->pkt->pkttype == PKT_USER_ID ) {
-	    uid = node->pkt->pkt.user_id;
-       	    selected = select_all || (node->flag & NODFLG_SELUID);
-        }
-	else if ( main_pk && uid && selected
-                  && node->pkt->pkttype == PKT_SIGNATURE ) {
-	    PKT_signature *sig = node->pkt->pkt.signature;
-	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-		 && (uid && (sig->sig_class&~3) == 0x10) ) {
-	      if( sig->version < 4 ) {
-		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
-
-		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
-			 user);
-		m_free(user);
-	      }
-	      else {
-		/* This is a selfsignature which is to be replaced 
-                 * We have to ignore v3 signatures because they are
-                 * not able to carry the preferences */
-		PKT_signature *newsig;
-		PACKET *newpkt;
-                int rc;
-
-                rc = update_keysig_packet (&newsig, sig,
-                                           main_pk, uid, NULL,
-                                           sk,
-                                           keygen_add_keyserver_url,
-                                           answer );
-                if( rc ) {
-                    log_error ("update_keysig_packet failed: %s\n",
-                               g10_errstr(rc));
-		    m_free(answer);
-		    free_secret_key( sk );
-                    return 0;
-                }
-                /* replace the packet */
-                newpkt = m_alloc_clear( sizeof *newpkt );
-                newpkt->pkttype = PKT_SIGNATURE;
-                newpkt->pkt.signature = newsig;
-                free_packet( node->pkt );
-                m_free( node->pkt );
-                node->pkt = newpkt;
-                modified = 1;
-	      }
-            }
+  if(url)
+    answer=m_strdup(url);
+  else
+    {
+      answer=cpr_get_utf8("keyedit.add_keyserver",
+			  _("Enter your preferred keyserver URL: "));
+      if(answer[0]=='\0' || answer[0]=='\004')
+	{
+	  m_free(answer);
+	  return 0;
 	}
     }
 
-    m_free(answer);
-    free_secret_key( sk );
-    return modified;
+  /* Sanity check the format */
+  keyserver=parse_keyserver_uri(answer,1,NULL,0);
+  m_free(answer);
+  if(!keyserver)
+    {
+      log_info(_("could not parse keyserver URL\n"));
+      return 0;
+    }
+
+  select_all = !count_selected_uids (pub_keyblock);
+
+  node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+  sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
+
+  /* Now we can actually change the self signature(s) */
+  main_pk = NULL;
+  uid = NULL;
+  selected = 0;
+  for ( node=pub_keyblock; node; node = node->next )
+    {
+      if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	break; /* ready */
+
+      if ( node->pkt->pkttype == PKT_PUBLIC_KEY )
+	{
+	  main_pk = node->pkt->pkt.public_key;
+	  keyid_from_pk( main_pk, keyid );
+	}
+      else if ( node->pkt->pkttype == PKT_USER_ID )
+	{
+	  uid = node->pkt->pkt.user_id;
+	  selected = select_all || (node->flag & NODFLG_SELUID);
+	}
+      else if ( main_pk && uid && selected
+		&& node->pkt->pkttype == PKT_SIGNATURE )
+	{
+	  PKT_signature *sig = node->pkt->pkt.signature;
+	  if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+	       && (uid && (sig->sig_class&~3) == 0x10) )
+	    {
+	      if( sig->version < 4 )
+		{
+		  char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+
+		  log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+			   user);
+		  m_free(user);
+		}
+	      else
+		{
+		  /* This is a selfsignature which is to be replaced 
+		   * We have to ignore v3 signatures because they are
+		   * not able to carry the preferences */
+		  PKT_signature *newsig;
+		  PACKET *newpkt;
+		  int rc;
+
+		  rc = update_keysig_packet (&newsig, sig,
+					     main_pk, uid, NULL,
+					     sk,
+					     keygen_add_keyserver_url,
+					     keyserver->uri );
+		  if( rc )
+		    {
+		      log_error ("update_keysig_packet failed: %s\n",
+				 g10_errstr(rc));
+		      free_keyserver_spec(keyserver);
+		      free_secret_key( sk );
+		      return 0;
+		    }
+		  /* replace the packet */
+		  newpkt = m_alloc_clear( sizeof *newpkt );
+		  newpkt->pkttype = PKT_SIGNATURE;
+		  newpkt->pkt.signature = newsig;
+		  free_packet( node->pkt );
+		  m_free( node->pkt );
+		  node->pkt = newpkt;
+		  modified = 1;
+		}
+	    }
+	}
+    }
+
+  free_keyserver_spec(keyserver);
+  free_secret_key( sk );
+  return modified;
 }
 
 

@@ -2084,10 +2084,10 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
             break;
 	  case oKeyServer:
-	    opt.keyserver=parse_keyserver_uri(pargs.r.ret_str,
+	    opt.keyserver=parse_keyserver_uri(pargs.r.ret_str,0,
 					      configname,configlineno);
 	    if(!opt.keyserver)
-	      log_error(_("could not parse keyserver URI\n"));
+	      log_error(_("could not parse keyserver URL\n"));
 	    break;
 	  case oKeyServerOptions:
 	    if(!parse_keyserver_options(pargs.r.ret_str))
