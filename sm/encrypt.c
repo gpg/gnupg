@@ -126,79 +126,27 @@ init_dek (DEK dek)
 }
 
 
-/* Encode the session key. NBITS is the number of bits which should be
-   used for packing the session key.  returns: An mpi with the session
-   key (caller must free) */
-static gcry_mpi_t
-encode_session_key (DEK dek, unsigned int nbits)
+static int
+encode_session_key (DEK dek, gcry_sexp_t * r_data)
 {
-  int nframe = (nbits+7) / 8;
-  byte *p;
-  byte *frame;
-  int i,n;
-  gcry_mpi_t a;
+  gcry_sexp_t data;
+  char * p, tmp[3];
+  int i;
+  int rc;
 
-  if (dek->keylen + 7 > nframe || !nframe)
-    log_bug ("can't encode a %d bit key in a %d bits frame\n",
-             dek->keylen*8, nbits );
-
-  /* We encode the session key in this way:
-   *
-   *	   0  2  RND(n bytes)  0  KEY(k bytes)
-   *
-   * (But how can we store the leading 0 - the external representaion
-   *	of MPIs doesn't allow leading zeroes =:-)
-   *
-   * RND are non-zero random bytes.
-   * KEY is the encryption key (session key) 
-   */
-
-  frame = gcry_xmalloc_secure (nframe);
-  n = 0;
-  frame[n++] = 0;
-  frame[n++] = 2;
-  i = nframe - 3 - dek->keylen;
-  assert (i > 0);
-  p = gcry_random_bytes_secure (i, GCRY_STRONG_RANDOM);
-  /* replace zero bytes by new values */
-  for (;;)
+  p = xmalloc (64+dek->keylen);
+  strcpy (p, "(data\n (flags pkcs1)\n (value #");
+  for (i=0; i < dek->keylen; i++)
     {
-      int j, k;
-      byte *pp;
-
-      /* count the zero bytes */
-      for(j=k=0; j < i; j++ )
-        {
-          if( !p[j] )
-            k++;
-        }
-      if( !k )
-        break; /* okay: no zero bytes */
-
-      k += k/128; /* better get some more */
-      pp = gcry_random_bytes_secure (k, GCRY_STRONG_RANDOM);
-      for (j=0; j < i && k; j++)
-        {
-          if( !p[j] )
-            p[j] = pp[--k];
-        }
-      xfree (pp);
+      sprintf (tmp, "%02x", dek->key[i]);
+      strcat (p, tmp);   
     }
-  memcpy (frame+n, p, i);
+  strcat (p, "#))\n");
+  rc = gcry_sexp_sscan (&data, NULL, p, strlen (p));
   xfree (p);
-
-  n += i;
-  frame[n++] = 0;
-  memcpy (frame+n, dek->key, dek->keylen);
-  n += dek->keylen;
-  assert (n == nframe);
-  if (gcry_mpi_scan (&a, GCRYMPI_FMT_USG, frame, n, &nframe) )
-    BUG ();
-  gcry_free(frame);
-
-  return a;
+  *r_data = data;
+  return rc;    
 }
-
 
 
 /* encrypt the DEK under the key contained in CERT and return it as a
@@ -235,17 +183,10 @@ encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
     }
 
   /* put the encoded cleartext into a simple list */
+  rc = encode_session_key (dek, &s_data);
   {
-    /* fixme: actually the pkcs-1 encoding should go into libgcrypt */
-    gcry_mpi_t data = encode_session_key (dek, gcry_pk_get_nbits (s_pkey));
-    if (!data)
-      {
-        gcry_mpi_release (data);
-        return gpg_error (GPG_ERR_GENERAL);
-      }
-    if (gcry_sexp_build (&s_data, NULL, "%m", data))
-      BUG ();
-    gcry_mpi_release (data);
+    log_error ("encode_session_key failed: %s\n", gpg_strerror (rc));
+    return rc;
   }
 
   /* pass it to libgcrypt */

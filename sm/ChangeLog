@@ -1,3 +1,7 @@
+2003-08-14  Timo Schulz  <twoaday@freakmail.de>
+
+	* encrypt.c (encode_session_key): Use new Libgcrypt interface.
+	
 2003-07-31  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (gpgsm_LDADD): Added INTLLIBS.
