@@ -125,11 +125,14 @@ struct
   int not_dash_escaped;
   int escape_from;
   int lock_once;
-  char *keyserver_uri;
-  char *keyserver_scheme;
-  char *keyserver_host;
-  char *keyserver_port;
-  char *keyserver_opaque;
+  struct keyserver_spec
+  {
+    char *uri;
+    char *scheme;
+    char *host;
+    char *port;
+    char *opaque;
+  } keyserver;
   struct
   {
     int verbose;

@@ -1,3 +1,7 @@
+2004-04-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h: Encapsulate keyserver details.  Change all callers.
+
 2004-03-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (keyedit_menu): Request a trustdb update when adding a

@@ -153,42 +153,42 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 
   assert(uri!=NULL);
 
-  opt.keyserver_host=NULL;
-  opt.keyserver_port=NULL;
-  opt.keyserver_opaque=NULL;
+  opt.keyserver.host=NULL;
+  opt.keyserver.port=NULL;
+  opt.keyserver.opaque=NULL;
 
   /* Get the scheme */
 
-  opt.keyserver_scheme=strsep(&uri,":");
+  opt.keyserver.scheme=strsep(&uri,":");
   if(uri==NULL)
     {
       /* Assume HKP if there is no scheme */
       assume_hkp=1;
-      uri=opt.keyserver_scheme;
-      opt.keyserver_scheme="hkp";
+      uri=opt.keyserver.scheme;
+      opt.keyserver.scheme="hkp";
     }
   else
     {
       /* Force to lowercase */
       char *i;
 
-      for(i=opt.keyserver_scheme;*i!='\0';i++)
+      for(i=opt.keyserver.scheme;*i!='\0';i++)
 	*i=ascii_tolower(*i);
     }
 
-  if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+  if(ascii_strcasecmp(opt.keyserver.scheme,"x-broken-hkp")==0)
     {
       deprecated_warning(configname,configlineno,"x-broken-hkp",
 			 "--keyserver-options ","broken-http-proxy");
-      opt.keyserver_scheme="hkp";
+      opt.keyserver.scheme="hkp";
       add_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
     }
-  else if(ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0
-	  || ascii_strcasecmp(opt.keyserver_scheme,"http")==0)
+  else if(ascii_strcasecmp(opt.keyserver.scheme,"x-hkp")==0
+	  || ascii_strcasecmp(opt.keyserver.scheme,"http")==0)
     {
       /* Canonicalize this to "hkp" so it works with both the internal
 	 and external keyserver interface. */
-      opt.keyserver_scheme="hkp";
+      opt.keyserver.scheme="hkp";
     }
 
   if(assume_hkp || (uri[0]=='/' && uri[1]=='/'))
@@ -200,21 +200,21 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 	uri+=2;
 
       /* Get the host */
-      opt.keyserver_host=strsep(&uri,":/");
-      if(opt.keyserver_host[0]=='\0')
+      opt.keyserver.host=strsep(&uri,":/");
+      if(opt.keyserver.host[0]=='\0')
 	return G10ERR_BAD_URI;
 
       if(uri==NULL || uri[0]=='\0')
-	opt.keyserver_port=NULL;
+	opt.keyserver.port=NULL;
       else
 	{
 	  char *ch;
 
 	  /* Get the port */
-	  opt.keyserver_port=strsep(&uri,"/");
+	  opt.keyserver.port=strsep(&uri,"/");
 
 	  /* Ports are digits only */
-	  ch=opt.keyserver_port;
+	  ch=opt.keyserver.port;
 	  while(*ch!='\0')
 	    {
 	      if(!digitp(ch))
@@ -236,7 +236,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
     {
       /* No slash means opaque.  Just record the opaque blob and get
 	 out. */
-      opt.keyserver_opaque=uri;
+      opt.keyserver.opaque=uri;
       return 0;
     }
   else
@@ -246,7 +246,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
       return G10ERR_BAD_URI;
     }
 
-  if(opt.keyserver_scheme[0]=='\0')
+  if(opt.keyserver.scheme[0]=='\0')
     return G10ERR_BAD_URI;
 
   return 0;
@@ -718,9 +718,9 @@ keyserver_spawn(int action,STRLIST list,
 #endif
 
   /* Build the filename for the helper to execute */
-  command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
+  command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver.scheme)+1);
   strcpy(command,"gpgkeys_");
-  strcat(command,opt.keyserver_scheme);
+  strcat(command,opt.keyserver.scheme);
 
   if(opt.keyserver_options.use_temp_files)
     {
@@ -748,17 +748,17 @@ keyserver_spawn(int action,STRLIST list,
   fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
   fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
-  fprintf(spawn->tochild,"SCHEME %s\n",opt.keyserver_scheme);
+  fprintf(spawn->tochild,"SCHEME %s\n",opt.keyserver.scheme);
 
-  if(opt.keyserver_opaque)
-    fprintf(spawn->tochild,"OPAQUE %s\n",opt.keyserver_opaque);
+  if(opt.keyserver.opaque)
+    fprintf(spawn->tochild,"OPAQUE %s\n",opt.keyserver.opaque);
   else
     {
-      if(opt.keyserver_host)
-	fprintf(spawn->tochild,"HOST %s\n",opt.keyserver_host);
+      if(opt.keyserver.host)
+	fprintf(spawn->tochild,"HOST %s\n",opt.keyserver.host);
 
-      if(opt.keyserver_port)
-	fprintf(spawn->tochild,"PORT %s\n",opt.keyserver_port);
+      if(opt.keyserver.port)
+	fprintf(spawn->tochild,"PORT %s\n",opt.keyserver.port);
     }
 
   /* Write options */
@@ -1112,7 +1112,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 {
   int rc=0,ret=0;
 
-  if(opt.keyserver_scheme==NULL)
+  if(opt.keyserver.scheme==NULL)
     {
       log_error(_("no keyserver known (use option --keyserver)\n"));
       return G10ERR_BAD_URI;
@@ -1133,7 +1133,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 	{
 	case KEYSERVER_SCHEME_NOT_FOUND:
 	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
-		    opt.keyserver_scheme);
+		    opt.keyserver.scheme);
 	  break;
 
 	case KEYSERVER_NOT_SUPPORTED:
@@ -1141,12 +1141,12 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 		      "scheme \"%s\"\n"),
 		    action==GET?"get":action==SEND?"send":
 		    action==SEARCH?"search":"unknown",
-		    opt.keyserver_scheme);
+		    opt.keyserver.scheme);
 	  break;
 
 	case KEYSERVER_VERSION_ERROR:
 	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
-		    opt.keyserver_scheme,KEYSERVER_PROTO_VERSION);
+		    opt.keyserver.scheme,KEYSERVER_PROTO_VERSION);
 	  break;
 
 	case KEYSERVER_INTERNAL_ERROR:
@@ -1403,9 +1403,9 @@ keyserver_refresh(STRLIST users)
 
   /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
      scheme, then enable fake v3 keyid generation. */
-  if(opt.keyserver_options.fake_v3_keyids && opt.keyserver_scheme &&
-     (ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
-      ascii_strcasecmp(opt.keyserver_scheme,"mailto")==0))
+  if(opt.keyserver_options.fake_v3_keyids && opt.keyserver.scheme &&
+     (ascii_strcasecmp(opt.keyserver.scheme,"hkp")==0 ||
+      ascii_strcasecmp(opt.keyserver.scheme,"mailto")==0))
     fakev3=1;
 
   rc=keyidlist(users,&desc,&count,fakev3);
@@ -1414,13 +1414,13 @@ keyserver_refresh(STRLIST users)
 
   if(count>0)
     {
-      if(opt.keyserver_uri)
+      if(opt.keyserver.uri)
 	{
 	  if(count==1)
-	    log_info(_("refreshing 1 key from %s\n"),opt.keyserver_uri);
+	    log_info(_("refreshing 1 key from %s\n"),opt.keyserver.uri);
 	  else
 	    log_info(_("refreshing %d keys from %s\n"),
-		     count,opt.keyserver_uri);
+		     count,opt.keyserver.uri);
 	}
 
       rc=keyserver_work(GET,NULL,desc,count);
