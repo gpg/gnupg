@@ -131,25 +131,25 @@ lock-once
 #                   on the keyserver.
 #
 # verbose = show more information as the keys are fetched.
-#           Can be included more than once to increase the amount
+#           Can be used more than once to increase the amount
 #           of information shown.
 #
 # use-temp-files = use temporary files instead of a pipe to talk to the
 #                  keyserver.  Some platforms (Win32 for one) always
 #                  have this on.
 #
-# keep-temp-files = don't delete the temporary files after using them
+# keep-temp-files = do not delete temporary files after using them
 #                   (really only useful for debugging)
 #
 # honor-http-proxy = if the keyserver uses http, honor the http_proxy
 #                    environment variable
+#
+# auto-key-retrieve = automatically fetch keys as needed from the
+#                     keyserver when verifying signatures or when importing
+#                     keys that have been revoked by a revocation key that
+#                     is not present on the keyring.
 
-#keyserver-options include-disabled include-revoked
-
-# Uncomment this line to automatically fetch a key from a keyserver
-# (which must be set - see above) when verifying signatures.
-
-#auto-key-retrieve
+#keyserver-options auto-key-retrieve include-disabled include-revoked
 
 # Uncomment this line to display photo user IDs in key listings
 #show-photos
@@ -201,6 +201,3 @@ lock-once
 # --gpg-agent-info=<path>:<pid>:1
 #
 # may be used to override it.
-#
-
-

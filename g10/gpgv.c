@@ -147,7 +147,7 @@ main( int argc, char **argv )
     i18n_init();
     opt.command_fd = -1; /* no command fd */
     opt.pgp2_workarounds = 1;
-    opt.auto_key_retrieve = 1;
+    opt.keyserver_options.auto_key_retrieve = 1;
     opt.always_trust = 1;
     opt.batch = 1;
 

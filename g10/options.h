@@ -109,6 +109,7 @@ struct {
       int use_temp_files:1;
       int keep_temp_files:1;
       int refresh_add_fake_v3_keyids:1;
+      int auto_key_retrieve:1;
       STRLIST other;
     } keyserver_options;
     int exec_disable;
@@ -133,7 +134,6 @@ struct {
     int ignore_valid_from;
     int ignore_crc_error;
     int command_fd;
-    int auto_key_retrieve;
     const char *override_session_key;
     int show_session_key;
     int use_agent;

@@ -1,3 +1,27 @@
+2002-03-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): make a few more strings translatable.
+
+	* options.h, options.skel, g10.c (main), gpgv.c, mainproc.c
+	(check_sig_and_print), keyserver.c (parse_keyserver_options):
+	--auto-key-retrieve should really be a keyserver-option variable.
+
+	* import.c (revocation_present): new function to print a warning
+	if a key is imported that has been revoked by designated revoker,
+	but the designated revoker is not present to verify the
+	revocation.  If keyserver-options auto-key-retrieve is set, try
+	and fetch the designated revoker from the keyserver.
+
+	* import.c (import_one): call revocation_present after importing a
+	new key.  Note that this applies to --import, --recv-keys, and
+	--search-keys.
+	
+	* keyserver-internal.h, keyserver.c (keyserver_import_fprint):
+	import via fingerprint (for revocation keys).
+
+	* keyserver.c (keyserver_import_keyid): much simpler
+	implementation now that we're using KEYDB_SEARCH_DESC internally.
+
 2002-03-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* revoke.c (gen_revoke): do not prompt for revocation reason for

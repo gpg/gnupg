@@ -35,7 +35,7 @@
 #include "main.h"
 #include "i18n.h"
 #include "status.h"
-
+#include "keyserver-internal.h"
 
 struct stats_s {
     ulong count;
@@ -57,6 +57,7 @@ struct stats_s {
 static int import( IOBUF inp, int fast, const char* fname,
                    struct stats_s *stats );
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
+static void revocation_present(KBNODE keyblock);
 static void remove_bad_stuff (KBNODE keyblock);
 static int import_one( const char *fname, KBNODE keyblock, int fast,
                        struct stats_s *stats);
@@ -597,6 +598,9 @@ import_one( const char *fname, KBNODE keyblock, int fast,
   leave:
     release_kbnode( keyblock_orig );
     free_public_key( pk_orig );
+
+    revocation_present(keyblock);
+
     return rc;
 }
 
@@ -1073,7 +1077,84 @@ collapse_uids( KBNODE *keyblock )
     return 1;
 }
 
+/* Check for a 0x20 revocation from a revocation key that is not
+   present.  This gets called without the benefit of merge_xxxx so you
+   can't rely on pk->revkey and friends. */
+static void
+revocation_present(KBNODE keyblock)
+{
+  KBNODE onode,inode;
+  PKT_public_key *pk=keyblock->pkt->pkt.public_key;
 
+  for(onode=keyblock->next;onode;onode=onode->next)
+    {
+      /* If we reach user IDs, we're done. */
+      if(onode->pkt->pkttype==PKT_USER_ID)
+	break;
+
+      if(onode->pkt->pkttype==PKT_SIGNATURE &&
+	 onode->pkt->pkt.signature->sig_class==0x1F &&
+	 onode->pkt->pkt.signature->revkey)
+	{
+	  int idx;
+	  PKT_signature *sig=onode->pkt->pkt.signature;
+
+	  for(idx=0;idx<sig->numrevkeys;idx++)
+	    {
+	      u32 keyid[2];
+
+	      keyid_from_fingerprint(sig->revkey[idx]->fpr,
+				     MAX_FINGERPRINT_LEN,keyid);
+
+	      for(inode=keyblock->next;inode;inode=inode->next)
+		{
+		  /* If we reach user IDs, we're done. */
+		  if(inode->pkt->pkttype==PKT_USER_ID)
+		    break;
+
+		  if(inode->pkt->pkttype==PKT_SIGNATURE &&
+		     inode->pkt->pkt.signature->sig_class==0x20 &&
+		     inode->pkt->pkt.signature->keyid[0]==keyid[0] &&
+		     inode->pkt->pkt.signature->keyid[1]==keyid[1])
+		    {
+		      /* Okay, we have a revocation key, and a
+                         revocation issued by it.  Do we have the key
+                         itself? */
+		      int rc;
+
+		      rc=get_pubkey_byfprint(NULL,sig->revkey[idx]->fpr,
+					     MAX_FINGERPRINT_LEN);
+		      if(rc==G10ERR_NO_PUBKEY || rc==G10ERR_UNU_PUBKEY)
+			{
+			  /* No, so try and get it */
+			  if(opt.keyserver_scheme &&
+			     opt.keyserver_options.auto_key_retrieve)
+			    {
+			      log_info(_("Warning: key %08lX may be revoked: "
+					 "fetching revocation key %08lX\n"),
+				       (ulong)keyid_from_pk(pk,NULL),
+				       (ulong)keyid[1]);
+			      keyserver_import_fprint(sig->revkey[idx]->fpr,
+						      MAX_FINGERPRINT_LEN);
+
+			      /* Do we have it now? */
+			      rc=get_pubkey_byfprint(NULL,
+						     sig->revkey[idx]->fpr,
+						     MAX_FINGERPRINT_LEN);
+			    }
+
+			  if(rc==G10ERR_NO_PUBKEY || rc==G10ERR_UNU_PUBKEY)
+			    log_info(_("Warning: key %08lX may be revoked: "
+				       "revocation key %08lX not present.\n"),
+				     (ulong)keyid_from_pk(pk,NULL),
+				     (ulong)keyid[1]);
+			}
+		    }
+		}
+	    }
+	}
+    }
+}
 
 /****************
  * compare and merge the blocks
@@ -1440,4 +1521,3 @@ append_key( KBNODE keyblock, KBNODE node, int *n_sigs,
 
     return 0;
 }
-

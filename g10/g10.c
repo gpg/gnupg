@@ -1227,8 +1227,10 @@ main( int argc, char **argv )
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy:
                 opt.honor_http_proxy = 1;
-		log_info("WARNING: --honor-http-proxy is deprecated.\n");
-		log_info("please use \"--keyserver-options honor-http-proxy\" instead\n");
+		log_info(_("WARNING: %s is a deprecated option.\n"),
+			 "--honor-http-proxy");
+		log_info(_("please use \"--keyserver-options %s\" instead\n"),
+			 "honor-http-proxy");
 		break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: opt.fixed_list_mode = 1; break;
@@ -1237,8 +1239,17 @@ main( int argc, char **argv )
 	  case oIgnoreValidFrom: opt.ignore_valid_from = 1; break;
 	  case oIgnoreCrcError: opt.ignore_crc_error = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
-	  case oAutoKeyRetrieve: opt.auto_key_retrieve = 1; break;
-	  case oNoAutoKeyRetrieve: opt.auto_key_retrieve = 0; break;
+	  case oAutoKeyRetrieve:
+	  case oNoAutoKeyRetrieve:
+	        opt.keyserver_options.auto_key_retrieve=
+	                                     (pargs.r_opt==oAutoKeyRetrieve);
+		log_info(_("WARNING: %s is a deprecated option.\n"),
+			 pargs.r_opt==oAutoKeyRetrieve?
+			 "--auto-key-retrieve":"--no-auto-key-retrieve");
+		log_info(_("please use \"--keyserver-options %s\" instead\n"),
+			 pargs.r_opt==oAutoKeyRetrieve?
+			 "auto-key-retrieve":"no-auto-key-retrieve");
+	    break;
 	  case oShowSessionKey: opt.show_session_key = 1; break;
 	  case oOverrideSessionKey:
 		opt.override_session_key = pargs.r.ret_str;

@@ -1258,7 +1258,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
 
     rc = do_check_sig(c, node, NULL );
-    if( rc == G10ERR_NO_PUBKEY && opt.keyserver_scheme && opt.auto_key_retrieve) {
+    if( rc == G10ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
 	if( keyserver_import_keyid ( sig->keyid )==0 )
 	    rc = do_check_sig(c, node, NULL );
     }

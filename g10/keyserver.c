@@ -90,6 +90,10 @@ parse_keyserver_options(char *options)
 	opt.keyserver_options.refresh_add_fake_v3_keyids=1;
       else if(strcasecmp(tok,"no-refresh-add-fake-v3-keyids")==0)
 	opt.keyserver_options.refresh_add_fake_v3_keyids=0;
+      else if(strcasecmp(tok,"auto-key-retrieve")==0)
+	opt.keyserver_options.refresh_add_fake_v3_keyids=1;
+      else if(strcasecmp(tok,"no-auto-key-retrieve")==0)
+	opt.keyserver_options.refresh_add_fake_v3_keyids=0;
       else if(strlen(tok)>0)
 	add_to_strlist(&opt.keyserver_options.other,tok);
 
@@ -676,22 +680,37 @@ keyserver_import(STRLIST users)
   return rc;
 }
 
+int
+keyserver_import_fprint(const byte *fprint,size_t fprint_len)
+{
+  KEYDB_SEARCH_DESC desc;
+
+  memset(&desc,0,sizeof(desc));
+
+  if(fprint_len==16)
+    desc.mode=KEYDB_SEARCH_MODE_FPR16;
+  else if(fprint_len==20)
+    desc.mode=KEYDB_SEARCH_MODE_FPR20;
+  else
+    return -1;
+
+  memcpy(desc.u.fpr,fprint,fprint_len);
+
+  return keyserver_work(GET,NULL,&desc,1);
+}
+
 int 
 keyserver_import_keyid(u32 *keyid)
 {
-  STRLIST sl=NULL;
-  char key[17];
-  int ret;
+  KEYDB_SEARCH_DESC desc;
 
-  sprintf(key,"%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+  memset(&desc,0,sizeof(desc));
 
-  add_to_strlist(&sl,key);
+  desc.mode=KEYDB_SEARCH_MODE_LONG_KID;
+  desc.u.kid[0]=keyid[0];
+  desc.u.kid[1]=keyid[1];
 
-  ret=keyserver_import(sl);
-
-  free_strlist(sl);
-
-  return ret;
+  return keyserver_work(GET,NULL,&desc,1);
 }
 
 /* code mostly stolen from do_export_stream */
