@@ -1,3 +1,7 @@
+Tue May 30 16:37:55 CEST 2000  Werner Koch  <wk@openit.de>
+
+  Version 1.0.1-ePit-1
+
 Sun May 28 13:55:17 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* acinclude.m4 (GNUPG_SYS_NM_PARSE): Added BSDI support.

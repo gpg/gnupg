@@ -1,5 +1,5 @@
-Noteworthy changes in the current test release
-----------------------------------------------
+Noteworthy changes in version 1.0.1-ePit-1
+------------------------------------------
 
     * Fixed expiration handling of encryption keys.
 
@@ -19,7 +19,7 @@ Noteworthy changes in the current test release
     * Some fixes for the W32 version.
 
     * The entropy.dll is not anymore used by the W32 version but replaced
-      by some code derived from Cryptlib.
+      by code derived from Cryptlib.
 
     * Encryption is now much faster: About 2 times for 1k bit keys
       and 8 times for 4k keys.

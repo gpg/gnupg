@@ -7,8 +7,6 @@
 
   * Fix localtime() in W32.
 
-  * INFO Kommand um z.B. default-recipients herauszufinden.
-
   * export sollte exit(1) machen bei einem Fehler - testen! Es wird ein
     leerer File erzeugt.  Nur unter Windows?
 

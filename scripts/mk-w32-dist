@@ -20,7 +20,6 @@ fi
 rm * || true
 ln ../g10/gpg gpg.exe
 i386--mingw32-strip gpg.exe
-ln ../../winseed/bin/entropy.dll entropy.dll
 man -T latin1 -l ../doc/gpg.1 >gpg.man
 todos gpg.man
 ln ${srcdir}/README .

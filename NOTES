@@ -17,3 +17,16 @@ gpg 1.0.1 okay with MP-RAS 3.02.01 Edition 5 using gcc 2.95.2 and EGD
 
 gpg 1.0.1 okay with 4.0.1 BSDI BSD/OS 4.0 i386
 
+
+rndw32 tested on:
+
+  Windows 98 4.10.1998 mit einem AMD-K6-2-450
+   	 Michael Engels <angel@dalrin.de>)
+
+  Windows 95 4.00.950a
+
+  Windows NT 4.00.1381
+
+
+
+  

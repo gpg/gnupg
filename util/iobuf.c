@@ -500,12 +500,21 @@ iobuf_cancel( IOBUF a )
 {
     const char *s;
     IOBUF a2;
+    int rc;
+  #ifdef HAVE_DOSISH_SYSTEM
+    char *remove_name = NULL;
+  #endif
 
     if( a && a->use == 2 ) {
 	s = iobuf_get_real_fname(a);
-	if( s && *s )
-	    remove(s);	/* remove the file. Fixme: this will fail for MSDOZE*/
-    }			/* because the file is still open */
+	if( s && *s ) {
+	  #ifdef HAVE_DOSISH_SYSTEM
+	    remove_name = m_strdup ( s );
+	  #else
+	    remove(s);
+	  #endif
+	}
+    }
 
     /* send a cancel message to all filters */
     for( a2 = a; a2 ; a2 = a2->chain ) {
@@ -515,7 +524,16 @@ iobuf_cancel( IOBUF a )
 							 NULL, &dummy );
     }
 
-    return iobuf_close(a);
+    rc = iobuf_close(a);
+  #ifdef HAVE_DOSISH_SYSTEM
+    if ( remove_name ) {
+	/* Argg, MSDOS does not allow to remove open files.  So
+	 * we have to do it here */
+	remove ( remove_name );
+	m_free ( remove_name );
+    }
+  #endif
+    return rc;
 }
 
 

@@ -1,3 +1,7 @@
+Tue May 30 16:37:55 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * iobuf.c (iobuf_cancel): Fix for MSDOS.
+
 Fri Apr 14 19:37:08 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* dotlock.c (disable_dotlock): New.  Implmented this in the module.
