@@ -696,7 +696,11 @@ reorder_keyblock (KBNODE keyblock)
 static void
 list_keyblock( KBNODE keyblock, int secret )
 {
+    log_debug ("before reorder:\n");
+    dump_kbnode (keyblock);
     reorder_keyblock (keyblock);
+    log_debug ("after reorder:\n");
+    dump_kbnode (keyblock);
     if (opt.with_colons)
         list_keyblock_colon (keyblock, secret );
     else

@@ -55,6 +55,13 @@ typedef enum {
 
 typedef struct packet_struct PACKET;
 
+/* PKT_GPG_CONTROL types */
+enum {
+    CTRLPKT_CLEARSIGN_START = 1,
+    CTRLPKT_PIPEMODE = 2
+} ctrlpkttype_t;
+
+
 typedef struct {
     int  mode;
     byte hash_algo;

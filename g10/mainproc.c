@@ -136,12 +136,12 @@ add_onepass_sig( CTX c, PACKET *pkt )
 static int
 add_gpg_control( CTX c, PACKET *pkt )
 {
-    if ( pkt->pkt.gpg_control->control == 1 ) {
+    if ( pkt->pkt.gpg_control->control == CTRLPKT_CLEARSIGN_START ) {
         /* New clear text signature.
          * Process the last one and reset everything */
         release_list(c);
     }   
-    else if ( pkt->pkt.gpg_control->control == 2 ) {
+    else if ( pkt->pkt.gpg_control->control == CTRLPKT_PIPEMODE ) {
         /* Pipemode control packet */
 #warning the --pipemode does not yet work 
         /* FIXME: We have to do more sanity checks all over the place */
@@ -485,13 +485,14 @@ proc_plaintext( CTX c, PACKET *pkt )
 		only_md5 = 0;
 	}
 	else if( n->pkt->pkttype == PKT_GPG_CONTROL
-                 && n->pkt->pkt.gpg_control->control == 1 ) {
+                 && n->pkt->pkt.gpg_control->control
+                    == CTRLPKT_CLEARSIGN_START ) {
             size_t datalen = n->pkt->pkt.gpg_control->datalen;
             const byte *data = n->pkt->pkt.gpg_control->data;
 
             /* check that we have at least the sigclass and one hash */
             if ( datalen < 2 )
-                log_fatal("invalid control packet of type 1\n"); 
+                log_fatal("invalid control packet CTRLPKT_CLEARSIGN_START\n"); 
             /* Note that we don't set the clearsig flag for not-dash-escaped
              * documents */
             clearsig = (*data == 0x01);
@@ -1380,7 +1381,8 @@ proc_tree( CTX c, KBNODE node )
 	    check_sig_and_print( c, n1 );
     }
     else if( node->pkt->pkttype == PKT_GPG_CONTROL
-             && node->pkt->pkt.gpg_control->control == 1 ) {
+             && node->pkt->pkt.gpg_control->control
+                == CTRLPKT_CLEARSIGN_START ) {
         /* clear text signed message */
 	if( !c->have_data ) {
             log_error("cleartext signature without data\n" );

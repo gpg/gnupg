@@ -753,6 +753,9 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    }
 	    else {
 		rc = 0;
+                /* FIXME: Here we should emit another control packet,
+                 * so that we know in mainproc that we are processing
+                 * a clearsign message */
 	      #if 0
 		for(rc=0;!rc;) {
 		    rc = 0 /*check_trailer( &fhdr, c )*/;
@@ -866,7 +869,7 @@ armor_filter( void *opaque, int control,
                 buf[n++] = 0xff; /* new format, type 63, 1 length byte */
                 n++;   /* see below */
                 memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
-                buf[n++] = 1;    /* control type */
+                buf[n++] = CTRLPKT_CLEARSIGN_START; 
                 buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
                 if( hashes & 1 ) 
                     buf[n++] = DIGEST_ALGO_RMD160;

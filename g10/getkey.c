@@ -811,13 +811,14 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
  * first pubkey certificate which has the given name in a user_id.
  * if pk/sk has the pubkey algo set, the function will only return
  * a pubkey with that algo.
- * The caller must provide storage for either the pk or the sk.
- * If ret_kb is not NULL the funtion will return the keyblock there.
+ * The caller should provide storage for either the pk or the sk.
+ * If ret_kb is not NULL the function will return the keyblock there.
  */
 
 static int
 key_byname( GETKEY_CTX *retctx, STRLIST namelist,
-	    PKT_public_key *pk, PKT_secret_key *sk, KBNODE *ret_kb )
+	    PKT_public_key *pk, PKT_secret_key *sk, int secmode,
+            KBNODE *ret_kb )
 {
     int rc = 0;
     int n;
@@ -862,9 +863,11 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     if ( !ret_kb ) 
         ret_kb = &help_kb;
 
-    if( sk ) {
-        ctx->req_algo  = sk->req_algo;
-        ctx->req_usage = sk->req_usage;
+    if( secmode ) {
+        if (sk) {
+            ctx->req_algo  = sk->req_algo;
+            ctx->req_usage = sk->req_usage;
+        }
 	rc = lookup( ctx, ret_kb, 1 );
         if ( !rc && sk ) {
             sk_from_block ( ctx, sk, *ret_kb );
@@ -905,7 +908,7 @@ get_pubkey_byname( GETKEY_CTX *retctx, PKT_public_key *pk,
     STRLIST namelist = NULL;
 
     add_to_strlist( &namelist, name );
-    rc = key_byname( retctx, namelist, pk, NULL, ret_keyblock );
+    rc = key_byname( retctx, namelist, pk, NULL, 0, ret_keyblock );
     free_strlist( namelist );
     return rc;
 }
@@ -914,7 +917,7 @@ int
 get_pubkey_bynames( GETKEY_CTX *retctx, PKT_public_key *pk,
 		    STRLIST names, KBNODE *ret_keyblock )
 {
-    return key_byname( retctx, names, pk, NULL, ret_keyblock );
+    return key_byname( retctx, names, pk, NULL, 0, ret_keyblock );
 }
 
 int
@@ -1053,7 +1056,7 @@ get_seckey_byname2( GETKEY_CTX *retctx,
 
     if( !name && opt.def_secret_key && *opt.def_secret_key ) {
 	add_to_strlist( &namelist, opt.def_secret_key );
-	rc = key_byname( retctx, namelist, NULL, sk, retblock );
+	rc = key_byname( retctx, namelist, NULL, sk, 1, retblock );
     }
     else if( !name ) { /* use the first one as default key */
 	struct getkey_ctx_s ctx;
@@ -1073,7 +1076,7 @@ get_seckey_byname2( GETKEY_CTX *retctx,
     }
     else {
 	add_to_strlist( &namelist, name );
-	rc = key_byname( retctx, namelist, NULL, sk, retblock );
+	rc = key_byname( retctx, namelist, NULL, sk, 1, retblock );
     }
 
     free_strlist( namelist );
@@ -1095,7 +1098,7 @@ int
 get_seckey_bynames( GETKEY_CTX *retctx, PKT_secret_key *sk,
 		    STRLIST names, KBNODE *ret_keyblock )
 {
-    return key_byname( retctx, names, NULL, sk, ret_keyblock );
+    return key_byname( retctx, names, NULL, sk, 1, ret_keyblock );
 }
 
 

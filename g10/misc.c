@@ -257,7 +257,7 @@ get_session_marker( size_t *rlen )
     static int initialized;
 
     if ( !initialized ) {
-        volatile ulong aa, bb; /* we really want the unitialized value */
+        volatile ulong aa, bb; /* we really want the uninitialized value */
         ulong a, b;
 
         initialized = 1;

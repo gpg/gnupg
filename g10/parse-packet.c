@@ -1840,8 +1840,7 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
  * we first check that tehre is a unique tag in it.
  * The format of such a control packet is:
  *   n byte  session marker
- *   1 byte  control type: 1 = Clearsign hash info
- *                         2 = Pipemode control
+ *   1 byte  control type CTRLPKT_xxxxx
  *   m byte  control data
  */
 

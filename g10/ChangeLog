@@ -1,3 +1,18 @@
+2001-03-27  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (key_byname): Add new arg secmode and changed all
+	callers to request explicitly the mode.  Deriving this information
+	from the other supplied parameters does not work if neither pk nor
+	sk are supplied.
+
+2001-03-25  Werner Koch  <wk@gnupg.org>
+
+	* packet.h (ctrlpkttype_t): New.
+	* mainproc.c (add_gpg_control,proc_plaintext,proc_tree): Use the
+	new enum values.
+	* pipemode.c (make_control): Ditto.
+	* armor.c (armor_filter): Ditto.
+
 2001-03-24  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (do_sign): Verify the signature right after creation.

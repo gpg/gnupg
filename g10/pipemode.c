@@ -72,7 +72,7 @@ make_control ( byte *buf, int code, int operation )
     buf[n++] = 0xff; /* new format, type 63, 1 length byte */
     n++;   /* length will fixed below */
     memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
-    buf[n++] = 2;    /* control type: pipemode marker */
+    buf[n++] = CTRLPKT_PIPEMODE;    
     buf[n++] = code;
     buf[n++] = operation;
     buf[1] = n-2;
