@@ -1,3 +1,7 @@
+2002-08-23  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh : Don't run gettextize.
+
 2002-08-06  Stefan Bellon  <sbellon@sbellon.de>
 
 	* conf-riscos/include/config.h: Changed #define FOO to

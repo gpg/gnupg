@@ -2,6 +2,10 @@
 
 	* gpg.sgml: Clarify meaning of keyserver option include-revoked.
 
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* DETAILS: Added IMPORT_PROBLEM.
+
 2002-08-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Clarify that trust letters 'q' and '-' can be treated

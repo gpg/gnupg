@@ -14,8 +14,8 @@
 PGM=GnuPG
 lib_config_files=""
 autoconf_vers=2.52
-automake_vers=1.5
-aclocal_vers=1.5
+automake_vers=1.6
+aclocal_vers=1.6
 
 
 DIE=no
@@ -132,9 +132,6 @@ if test "$DIE" = "yes"; then
     exit 1
 fi
 
-echo "Running gettextize...  Ignore non-fatal messages."
-echo "no" | gettextize --force
-
 echo "Running aclocal..."
 aclocal
 echo "Running autoheader..."
@@ -144,5 +141,5 @@ automake --gnu;
 echo "Running autoconf..."
 autoconf
 
-echo "You can now run \"./configure\" and then \"make\"."
+echo "You can now run \"./configure --enable-maintainer-mode\" and then \"make\"."
 
