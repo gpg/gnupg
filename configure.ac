@@ -855,13 +855,15 @@ GNUPG_CHECK_GNUMAKE
 # mysterious reasons - the final link step should bail out. 
 case "${target}" in
     *-*-mingw32*)
-        NETLIBS="$NETLIBS -lwsock32"
+dnl      NETLIBS="$NETLIBS -lwsock32"
+	W32LIBS="-lwsock32"
         ;;
     *)
        ;;
 esac
 
 AC_SUBST(NETLIBS)
+AC_SUBST(W32LIBS)
 
 if test "$GCC" = yes; then
     if test "$USE_MAINTAINER_MODE" = "yes"; then
