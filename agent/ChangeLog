@@ -1,3 +1,24 @@
+2005-03-02  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (sexp_key_extract): Removed FIXME, since
+	xtrymallos does set errno correctly by now.
+	(sexp_extract_identifier): Remove const attribute from identifier.
+	(ssh_handler_request_identities): Remove const attribute from
+	key_type; removes ugly casts and FIXME.
+	(sexp_key_extract): Remove const attribute from comment.
+	(ssh_send_key_public): Remove const attribute from
+	key_type/comment; removes ugly cast.
+	(data_sign): Remove const attribute from identifier; removes ugly
+	cast.
+	(key_secret_to_public): Remove const attribute from comment;
+	removes ugly cast.
+	(ssh_handler_sign_request): Remove const attribute from p.
+	(sexp_key_extract): Use make_cstring().
+	(ssh_key_extract_comment): Likewise.
+	(ssh_key_to_buffer): Use secure memory for memory area to hold the
+	key S-Expression.
+	Added more comments.
+
 2005-02-25  Werner Koch  <wk@g10code.com>
 
 	* findkey.c (modify_description): Keep invalid % escapes, so that

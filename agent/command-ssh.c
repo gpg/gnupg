@@ -1075,7 +1075,7 @@ sexp_key_construct (gcry_sexp_t *sexp,
 static gpg_error_t
 sexp_key_extract (gcry_sexp_t sexp,
 		  ssh_key_type_spec_t key_spec, int *secret,
-		  gcry_mpi_t **mpis, const char **comment)
+		  gcry_mpi_t **mpis, char **comment)
 {
   gpg_error_t err;
   gcry_sexp_t value_list;
@@ -1127,7 +1127,7 @@ sexp_key_extract (gcry_sexp_t sexp,
   mpis_new = xtrymalloc (sizeof (*mpis_new) * (elems_n + 1));
   if (! mpis_new)
     {
-      err = gpg_error_from_errno (errno); /* FIXME, xtrymalloc+errno.  */
+      err = gpg_error_from_errno (errno);
       goto out;
     }
   memset (mpis_new, 0, sizeof (*mpis_new) * (elems_n + 1));
@@ -1176,14 +1176,12 @@ sexp_key_extract (gcry_sexp_t sexp,
       data_n = 6;
     }
 
-  comment_new = xtrymalloc (data_n + 1);
+  comment_new = make_cstring (data, data_n);
   if (! comment_new)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
-  strncpy (comment_new, data, data_n);
-  comment_new[data_n] = 0;
 
   if (secret)
     *secret = is_secret;
@@ -1208,7 +1206,7 @@ sexp_key_extract (gcry_sexp_t sexp,
 /* Extract the car from SEXP, and create a newly created C-string 
    which is to be stored in IDENTIFIER.  */
 static gpg_error_t
-sexp_extract_identifier (gcry_sexp_t sexp, const char **identifier)
+sexp_extract_identifier (gcry_sexp_t sexp, char **identifier)
 {
   char *identifier_new;
   gcry_sexp_t sublist;
@@ -1251,8 +1249,16 @@ sexp_extract_identifier (gcry_sexp_t sexp, const char **identifier)
 
 
 
-/* Key I/O.  */
+/*
 
+  Key I/O.
+
+*/
+
+/* Search for a key specification entry.  If SSH_NAME is not NULL,
+   search for an entry whose "ssh_name" is equal to SSH_NAME;
+   otherwise, search for an entry whose "name" is equal to NAME.
+   Store found entry in SPEC on success, return error otherwise.  */
 static gpg_error_t
 ssh_key_type_lookup (const char *ssh_name, const char *name,
 		     ssh_key_type_spec_t *spec)
@@ -1276,6 +1282,11 @@ ssh_key_type_lookup (const char *ssh_name, const char *name,
   return err;
 }
 
+/* Receive a key from STREAM, according to the key specification given
+   as KEY_SPEC.  Depending on SECRET, receive a secret or a public
+   key.  If READ_COMMENT is true, receive a comment string as well.
+   Constructs a new S-Expression from received data and stores it in
+   KEY_NEW.  Returns zero on success or an error code.  */
 static gpg_error_t
 ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
                  int read_comment, ssh_key_type_spec_t *key_spec)
@@ -1342,6 +1353,9 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
   return err;
 }
 
+/* Converts a key of type TYPE, whose key material is given in MPIS,
+   into a newly created binary blob, which is to be stored in
+   BLOB/BLOB_SIZE.  Returns zero on success or an error code.  */
 static gpg_error_t
 ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
 			 const char *type, gcry_mpi_t *mpis)
@@ -1417,8 +1431,8 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public,
 {
   ssh_key_type_spec_t spec;
   gcry_mpi_t *mpi_list;
-  const char *key_type;
-  const char *comment;
+  char *key_type;
+  char *comment;
   unsigned char *blob;
   size_t blob_n;
   gpg_error_t err;
@@ -1455,13 +1469,16 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public,
  out:
 
   mpint_list_free (mpi_list);
-  xfree ((void *) key_type);
-  xfree ((void *) comment);
+  xfree (key_type);
+  xfree (comment);
   xfree (blob);
 
   return err;
 }
 
+/* Read a public key out of BLOB/BLOB_SIZE according to the key
+   specification given as KEY_SPEC, storing the new key in KEY_PUBLIC.
+   Returns zero on success or an error code.  */
 static gpg_error_t
 ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
 			       gcry_sexp_t *key_public,
@@ -1499,11 +1516,14 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
 
 
 
+/* Converts the secret key KEY_SECRET into a public key, storing it in
+   KEY_PUBLIC.  SPEC is the according key specification.  Returns zero
+   on success or an error code.  */
 static gpg_error_t
 key_secret_to_public (gcry_sexp_t *key_public,
 		      ssh_key_type_spec_t spec, gcry_sexp_t key_secret)
 {
-  const char *comment;
+  char *comment;
   gcry_mpi_t *mpis;
   gpg_error_t err;
   int is_secret;
@@ -1520,13 +1540,13 @@ key_secret_to_public (gcry_sexp_t *key_public,
  out:
 
   mpint_list_free (mpis);
-  xfree ((char *) comment);
+  xfree (comment);
 
   return err;
 }
 
 
-/* Chec whether a smartcard is available and whether it has a usable
+/* Check whether a smartcard is available and whether it has a usable
    key.  Store a copy of that key at R_PK and return 0.  If no key is
    available store NULL at R_PK and return an error code.  If CARDSN
    is no NULL, a string with the serial number of the card will be
@@ -1685,16 +1705,21 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 }
 
 
+
 
 /*
-  Request handler.  
- */
 
+  Request handler.  
+
+*/
+
+
+/* Handler for the "request_identities" command.  */
 static gpg_error_t
 ssh_handler_request_identities (ctrl_t ctrl,
                                 estream_t request, estream_t response)
 {
-  const char *key_type;
+  char *key_type;
   ssh_key_type_spec_t spec;
   struct dirent *dir_entry;
   char *key_directory;
@@ -1828,7 +1853,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           if (err)
             goto out;
 
-          xfree ((void *) key_type);
+          xfree (key_type);
           key_type = NULL;
 
           err = key_secret_to_public (&key_public, spec, key_secret);
@@ -1894,13 +1919,12 @@ ssh_handler_request_identities (ctrl_t ctrl,
   free (key_directory);
   xfree (key_path);
   xfree (buffer);
-  /* FIXME: Ist is for sure is a Bad Thing to use the const qualifier
-     and later cast it away.  You can't do that!!! */
-  xfree ((void *) key_type);		/* FIXME? */
+  xfree (key_type);
 
   return ret_err;
 }
 
+/*  */
 static gpg_error_t
 data_hash (unsigned char *data, size_t data_n,
 	   int md_algorithm, unsigned char *hash)
@@ -1923,7 +1947,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   gcry_mpi_t sig_value;
   unsigned char *sig_blob;
   size_t sig_blob_n;
-  const char *identifier;
+  char *identifier;
   const char *identifier_raw;
   size_t identifier_n;
   ssh_key_type_spec_t spec;
@@ -2064,7 +2088,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   gcry_sexp_release (signature_sexp);
   gcry_sexp_release (sublist);
   mpint_list_free (mpis);
-  xfree ((void *) identifier);
+  xfree (identifier);
 
   return err;
 }
@@ -2084,7 +2108,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   size_t sig_n;
   u32 data_size;
   u32 flags;
-  const void *p;
+  void *p;
   gpg_error_t err;
   gpg_error_t ret_err;
 
@@ -2197,15 +2221,13 @@ ssh_key_extract_comment (gcry_sexp_t key, char **comment)
       goto out;
     }
 
-  comment_new = xtrymalloc (data_n + 1);
+  comment_new = make_cstring (data, data_n);
   if (! comment_new)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
 
-  strncpy (comment_new, data, data_n);
-  comment_new[data_n] = 0;
   *comment = comment_new;
   err = 0;
 
@@ -2243,8 +2265,7 @@ ssh_key_to_buffer (gcry_sexp_t key, const char *passphrase,
 
   err = 0;
   buffer_new_n = gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON, NULL, 0);
-  buffer_new = xtrymalloc (buffer_new_n);
-  /* FIXME: secmem? */
+  buffer_new = xtrymalloc_secure (buffer_new_n);
   if (! buffer_new)
     {
       err = gpg_error_from_errno (errno);
