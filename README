@@ -588,6 +588,12 @@
         Due to problems with the ESIX as, you probably want to do
             CFLAGS="-O -K pentium" ./configure --disable-asm
 
+    * HP/UX 11 with HP's C compiler:
+
+        This compiler has some issues with inline functions.  If you
+        get an error like "Unexpected symbol: SWAP" in gettextP.h,
+        read and follow the instructions at the top of
+        intl/gettextP.h.
 
     The Random Device
     -----------------
@@ -645,7 +651,7 @@
     mailing list (gnupg-announce, gnupg-users, etc.).  An archive of
     the mailing lists is available at http://lists.gnupg.org .
 
-    Please direct bug reports to <bug-gnupg@gnu.org> or post
+    Please direct bug reports to http://bugs.gnupg.org or post
     them direct to the mailing list <gnupg-devel@gnupg.org>.
 
     Please direct questions about GnuPG to the users mailing list or
