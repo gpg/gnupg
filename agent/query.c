@@ -250,7 +250,8 @@ all_digitsp( const char *s)
    numbers. */
 int
 agent_askpin (CTRL ctrl,
-              const char *desc_text, struct pin_entry_info_s *pininfo)
+              const char *desc_text, const char *initial_errtext,
+              struct pin_entry_info_s *pininfo)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -289,6 +290,17 @@ agent_askpin (CTRL ctrl,
   if (rc)
     return unlock_pinentry (map_assuan_err (rc));
 
+
+  if (initial_errtext)
+    { 
+      snprintf (line, DIM(line)-1, "SETERROR %s", initial_errtext);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (entry_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        return unlock_pinentry (map_assuan_err (rc));
+    }
+
   for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
     {
       memset (&parm, 0, sizeof parm);
@@ -301,7 +313,8 @@ agent_askpin (CTRL ctrl,
           snprintf (line, DIM(line)-1, "SETERROR %s (try %d of %d)",
                     errtext, pininfo->failed_tries+1, pininfo->max_tries);
           line[DIM(line)-1] = 0;
-          rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+          rc = assuan_transact (entry_ctx, line,
+                                NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
             return unlock_pinentry (map_assuan_err (rc));
           errtext = NULL;

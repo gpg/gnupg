@@ -664,7 +664,8 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
     return rc; /* we can't jump to leave because this is already an
                   Assuan error code. */
 
-  rc = agent_key_from_file (ctrl, NULL, grip, &shadow_info, 1, &s_skey);
+  rc = agent_key_from_file (ctrl, ctrl->server_local->keydesc,
+                            grip, &shadow_info, 1, &s_skey);
   if (rc)
     ;
   else if (!s_skey)
@@ -675,6 +676,8 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   else
     rc = agent_protect_and_store (ctrl, s_skey);
 
+  xfree (ctrl->server_local->keydesc);
+  ctrl->server_local->keydesc = NULL;
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
   if (rc)

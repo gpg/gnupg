@@ -202,7 +202,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
                  info? info:"",
                  info? "')":"") < 0)
     desc = NULL;
-  rc = agent_askpin (ctrl, desc?desc:info, pi);
+  rc = agent_askpin (ctrl, desc?desc:info, NULL, pi);
   free (desc);
   if (!rc)
     {

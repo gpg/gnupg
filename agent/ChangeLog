@@ -1,3 +1,13 @@
+2004-02-21  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_passwd): Take acount of a key description.
+
+	* genkey.c (reenter_compare_cb): Do not set the error text.
+	(agent_protect_and_store, agent_genkey): Force a re-enter after a
+	non-matching passphrase.
+	* query.c (agent_askpin): Add new arg INITIAL_ERRTEXT; changed
+	all callers.
+
 2004-02-19  Werner Koch  <wk@gnupg.org>
 
 	* protect-tool.c: New options --have-cert and --prompt.

@@ -1,5 +1,5 @@
 /* pksign.c - Generate a keypair
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -79,7 +79,6 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
 
   if (!strcmp (pin1, pi->pin))
     return 0; /* okay */
-  pi->cb_errtext = _("does not match - try again");
   return -1;
 }
 
@@ -109,6 +108,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
     const char *text1 = _("Please enter the passphrase to%0A"
                                "to protect your new key");
     const char *text2 = _("Please re-enter this passphrase");
+    const char *initial_errtext = NULL;
 
     pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
     pi2 = pi + (sizeof *pi + 100);
@@ -119,9 +119,19 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
     pi2->check_cb = reenter_compare_cb;
     pi2->check_cb_arg = pi->pin;
 
-    rc = agent_askpin (ctrl, text1, pi);
+  next_try:
+    rc = agent_askpin (ctrl, text1, initial_errtext, pi);
+    initial_errtext = NULL;
     if (!rc)
-      rc = agent_askpin (ctrl, text2, pi2);
+      {
+        rc = agent_askpin (ctrl, text2, NULL, pi2);
+        if (rc == -1)
+          { /* The re-entered one did not match and the user did not
+               hit cancel. */
+            initial_errtext = _("does not match - try again");
+            goto next_try;
+          }
+      }
     if (rc)
       return rc;
     if (!*pi->pin)
@@ -212,6 +222,7 @@ agent_protect_and_store (CTRL ctrl, gcry_sexp_t s_skey)
   {
     const char *text1 = _("Please enter the new passphrase");
     const char *text2 = _("Please re-enter this passphrase");
+    const char *initial_errtext = NULL;
 
     pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
     pi2 = pi + (sizeof *pi + 100);
@@ -222,9 +233,18 @@ agent_protect_and_store (CTRL ctrl, gcry_sexp_t s_skey)
     pi2->check_cb = reenter_compare_cb;
     pi2->check_cb_arg = pi->pin;
 
-    rc = agent_askpin (ctrl, text1, pi);
+  next_try:
+    rc = agent_askpin (ctrl, text1, initial_errtext, pi);
     if (!rc)
-      rc = agent_askpin (ctrl, text2, pi2);
+      {
+        rc = agent_askpin (ctrl, text2, NULL, pi2);
+        if (rc == -1)
+          { /* The re-entered one did not match and the user did not
+               hit cancel. */
+            initial_errtext = _("does not match - try again");
+            goto next_try;
+          }
+      }
     if (rc)
       return rc;
     if (!*pi->pin)
