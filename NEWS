@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.3.2 (unreleased)
 ------------------------------------------------
 
+    * New "--gnupg" option (set by default) that disables --openpgp,
+      and the various --pgpX emulation options.  This replaces
+      --no-openpgp, and --no-pgpX, and also means that GnuPG has now
+      grown a --gnupg option to make GnuPG act like GnuPG.
+
     * A bug in key validation has been fixed.  This bug only affects
       keys with more than one user ID (photo IDs do not count here),
       and results in all user IDs on a given key being treated with
