@@ -94,9 +94,6 @@ MA 02111-1307, USA. */
    Please add support for more CPUs here, or improve the current support
    for the CPUs below!	*/
 
-#ifdef __riscos__
-#pragma continue_after_hash_error
-#else /* !__riscos__ */
 #if defined (__GNUC__) && !defined (NO_ASM)
 
 /* We sometimes need to clobber "cc" with gcc2, but that would not be
@@ -1319,7 +1316,6 @@ extern USItype __udiv_qrnnd ();
 #endif /* __z8000__ */
 
 #endif /* __GNUC__ */
-#endif /* !__riscos__ */
 
 
 /***************************************

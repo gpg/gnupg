@@ -1,3 +1,8 @@
+2002-07-24  Stefan Bellon  <sbellon@sbellon.de>
+
+	* longlong.h [__riscos__]: Removed #pragma which is not needed
+	anymore since the K&R multiline strings are gone.
+
 2002-07-24  Werner Koch  <wk@gnupg.org>
 
 	* longlong.h: Replaced all K&R multiline strings by ISO ones for
