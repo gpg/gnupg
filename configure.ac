@@ -130,6 +130,17 @@ if test "$use_exec" = no ; then
 fi
 
 if test "$use_exec" = yes ; then
+  AC_MSG_CHECKING([for a restricted exec-path])
+  AC_ARG_WITH(exec-path,
+      [  --with-exec-path=PATH        restrict exec-path to PATH],
+      [if test "$withval" = yes ; then
+         withval=no
+      else
+         AC_DEFINE_UNQUOTED(USE_EXEC_PATH,"$withval",
+	                    [restrict exec-path to this])
+      fi],withval=no)
+  AC_MSG_RESULT($withval)
+
   AC_MSG_CHECKING([whether LDAP keyserver support is requested])
   AC_ARG_ENABLE(ldap,
   [  --disable-ldap          disable LDAP keyserver interface],
