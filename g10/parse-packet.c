@@ -752,12 +752,12 @@ dump_sig_subpkt( int hashed, int type, int critical,
                type, (unsigned)length );
     }
     
+    buffer++;
+    length--;
    
     printf("\t%s%ssubpkt %d len %u (", /*)*/
 	      critical ? "critical ":"",
 	      hashed ? "hashed ":"", type, (unsigned)length );
-    buffer++;
-    length--;
     if( length > buflen ) {
 	printf("too short: buffer is only %u)\n", (unsigned)buflen );
 	return;
@@ -823,8 +823,6 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    fputs("notation: ", stdout );
 	    if( length < 8 )
 		p = "[too short]";
-	    else if( !(*buffer & 0x80) )
-		p = "[not human readable]";
 	    else {
 		const byte *s = buffer;
 		size_t n1, n2;
@@ -837,7 +835,11 @@ dump_sig_subpkt( int hashed, int type, int critical,
 		else {
 		    print_string( stdout, s, n1, ')' );
 		    putc( '=', stdout );
-		    print_string( stdout, s+n1, n2, ')' );
+
+		    if( *buffer & 0x80 )
+		      print_string( stdout, s+n1, n2, ')' );
+		    else
+		      p = "[not human readable]";
 		}
 	    }
 	}

@@ -42,7 +42,7 @@ typedef enum {
     KEYDB_RESOURCE_TYPE_NONE = 0,
     KEYDB_RESOURCE_TYPE_KEYRING
 } KeydbResourceType;
-#define MAX_KEYDB_RESOURCES 20
+#define MAX_KEYDB_RESOURCES 40
 
 struct resource_item {
   KeydbResourceType type;

@@ -1624,7 +1624,8 @@ show_prefs (PKT_user_id *uid, int verbose)
 
     if (verbose) {
         int any, des_seen=0, sha1_seen=0, uncomp_seen=0;
-        tty_printf ("     Cipher: ");
+        tty_printf ("     ");
+	tty_printf (_("Cipher: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_SYM ) {
                 const char *s = cipher_algo_to_string (prefs[i].value);
@@ -1646,7 +1647,8 @@ show_prefs (PKT_user_id *uid, int verbose)
                 tty_printf (", ");
             tty_printf ("%s",cipher_algo_to_string(CIPHER_ALGO_3DES));
         }
-        tty_printf ("\n     Hash: ");
+        tty_printf ("\n     ");
+	tty_printf (_("Digest: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_HASH ) {
                 const char *s = digest_algo_to_string (prefs[i].value);
@@ -1668,7 +1670,8 @@ show_prefs (PKT_user_id *uid, int verbose)
                 tty_printf (", ");
             tty_printf ("%s",digest_algo_to_string(DIGEST_ALGO_SHA1));
         }
-        tty_printf ("\n     Compression: ");
+        tty_printf ("\n     ");
+	tty_printf (_("Compression: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_ZIP ) {
                 const char *s=compress_algo_to_string(prefs[i].value);
@@ -1696,7 +1699,8 @@ show_prefs (PKT_user_id *uid, int verbose)
         }
 	if(uid->mdc_feature || !uid->ks_modify)
 	  {
-	    tty_printf ("\n     Features: ");
+	    tty_printf ("\n     ");
+	    tty_printf (_("Features: "));
 	    any=0;
 	    if(uid->mdc_feature)
 	      {
@@ -1707,7 +1711,7 @@ show_prefs (PKT_user_id *uid, int verbose)
 	      {
 		if(any)
 		  tty_printf (", ");
-		tty_printf ("Keyserver no-modify");
+		tty_printf (_("Keyserver no-modify"));
 	      }
 	  }
 	tty_printf("\n");

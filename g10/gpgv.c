@@ -179,6 +179,7 @@ main( int argc, char **argv )
 	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
 	  case oLoggerFD: log_set_logfile( NULL, pargs.r.ret_int ); break;
 	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
+	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  default : pargs.err = 2; break;
 	}
     }

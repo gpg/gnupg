@@ -1240,7 +1240,7 @@ main( int argc, char **argv )
     }
 #endif
     /* initialize the secure memory. */
-    secmem_init( 16384 );
+    secmem_init( 32768 );
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
 
@@ -1538,6 +1538,10 @@ main( int argc, char **argv )
             opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+	    opt.pgp2 = 0;
+	    opt.pgp6 = 0;
+	    opt.pgp7 = 0;
+	    opt.pgp8 = 0;
 	    break;
 	  case oPGP2: opt.pgp2 = 1; break;
 	  case oNoPGP2: opt.pgp2 = 0; break;

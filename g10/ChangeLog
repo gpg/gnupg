@@ -1,3 +1,43 @@
+2003-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (validate_keys): Mask the ownertrust when building the
+	list of fully valid keys so that disabled keys are still counted
+	in the web of trust.
+	(get_ownertrust_with_min): Do the same for the minimum ownertrust
+	calculation.
+
+	* parse-packet.c (dump_sig_subpkt): Show the notation names for
+	not-human-readable notations.  Fix cosmetic off-by-one length
+	counter.
+
+	* options.skel: Add explantion and commented-out
+	"no-mangle-dos-filenames".
+
+	* mainproc.c (proc_encrypted): Make string translatable.
+
+	* keyserver.c (keyserver_spawn): Quote ':', '%', and any 8-bit
+	characters in the uid strings sent to the keyserver helper.
+
+	* keyring.c (keyring_rebuild_cache): Lock the keyring while
+	rebuilding the signature caches to prevent another gpg from
+	tampering with the temporary copy.
+
+	* keygen.c (keygen_set_std_prefs): Include AES192 and AES256 in
+	default prefs.
+
+	* keyedit.c (show_prefs): Make strings translatable.
+
+	* keydb.c: Double the maximum number of keyrings to 40.
+
+	* gpgv.c (main): Fix bug #113 - gpgv should accept the
+	--ignore-time-conflict option.
+
+	* g10.c (main): --openpgp disables --pgpX.  Double the amount of
+	secure memory to 32k (keys are getting bigger these days).
+
+	* Makefile.am: Makefile.am: Use @CAPLIBS@ to link in -lcap if we
+	are using capabilities.
+
 2003-02-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Include various pieces of

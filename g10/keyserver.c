@@ -862,12 +862,26 @@ keyserver_spawn(int action,STRLIST list,
 		      case PKT_USER_ID:
 			{
 			  PKT_user_id *uid=node->pkt->pkt.user_id;
+			  int r;
 
 			  if(uid->attrib_data)
 			    continue;
 
-			  fprintf(spawn->tochild,"uid:%s:%u:%u:",
-				  uid->name,uid->created,uid->expiredate);
+			  fprintf(spawn->tochild,"uid:");
+
+			  /* Quote ':', '%', and any 8-bit
+			     characters */
+			  for(r=0;r<uid->len;r++)
+			    {
+			      if(uid->name[r]==':' || uid->name[r]=='%'
+				 || uid->name[r]&0x80)
+				fprintf(spawn->tochild,"%%%02X",uid->name[r]);
+			      else
+				fprintf(spawn->tochild,"%c",uid->name[r]);
+			    }
+
+			  fprintf(spawn->tochild,":%u:%u:",
+				  uid->created,uid->expiredate);
 
 			  if(uid->is_revoked)
 			    fprintf(spawn->tochild,"r");

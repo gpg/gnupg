@@ -638,7 +638,7 @@ get_ownertrust_with_min (PKT_public_key *pk)
 {
   unsigned int otrust,otrust_min;
 
-  otrust = get_ownertrust (pk);
+  otrust = (get_ownertrust (pk) & TRUST_MASK);
   otrust_min = get_min_ownertrust (pk);
   if(otrust<otrust_min)
     {
@@ -2004,7 +2004,8 @@ validate_keys (int interactive)
 		      k->kid[0]=kid[0];
 		      k->kid[1]=kid[1];
 		      k->ownertrust =
-			get_ownertrust (kar->keyblock->pkt->pkt.public_key);
+			(get_ownertrust (kar->keyblock->pkt->pkt.public_key)
+			 & TRUST_MASK);
 		      k->min_ownertrust =
 			get_min_ownertrust(kar->keyblock->pkt->pkt.public_key);
 		      k->trust_depth=
@@ -2056,5 +2057,6 @@ validate_keys (int interactive)
       do_sync ();
       pending_check_trustdb = 0;
     }
+
   return rc;
 }

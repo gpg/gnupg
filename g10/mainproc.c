@@ -505,7 +505,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	if( pkt->pkt.encrypted->mdc_method && !result )
 	    write_status( STATUS_GOODMDC );
 	else if(!opt.no_mdc_warn)
-	    log_info ("WARNING: message was not integrity protected\n");
+	    log_info (_("WARNING: message was not integrity protected\n"));
     }
     else if( result == G10ERR_BAD_SIGN ) {
 	log_error(_("WARNING: encrypted message has been manipulated!\n"));

@@ -56,7 +56,7 @@
 # If you do not use the Latin-1 (ISO-8859-1) charset, you should tell
 # GnuPG which is the native character set.  Please check the man page
 # for supported character sets.  This character set is only used for
-# Meta data and not for the actual message which does not undergo any
+# metadata and not for the actual message which does not undergo any
 # translation.  Note that future version of GnuPG will change to UTF-8
 # as default character set.
 
@@ -73,6 +73,11 @@
 # recipients.  In these cases it is better to use the key ID.
 
 #group mynames = paige 0x12345678 joe patti
+
+# Some old Windows platforms require 8.3 filenames.  If your system
+# can handle long filenames, uncomment this.
+
+#no-mangle-dos-filenames
 
 # Lock the file only once for the lifetime of a process.  If you do
 # not define this, the lock will be obtained and released every time
@@ -168,7 +173,8 @@
 # generating and then cleaning up a secure temp file.
 #
 # The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
-# On Mac OS X and Windows, the default is to use your regular image viewer.
+# On Mac OS X and Windows, the default is to use your regular JPEG image
+# viewer.
 #
 # Some other viewers:
 # photo-viewer "qiv %i"
@@ -181,13 +187,12 @@
 # Use your MIME handler to view photos:
 # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
 
-
 # Passphrase agent
 #
-# We support the old experimental passphrase agent protocol as well
-# as the new Assuan based one (currently available in the "newpg" package
-# at ftp.gnupg.org/gcrypt/alpha/aegypten/).  To make use of the agent, you have
-# to run an agent as daemon and use the option
+# We support the old experimental passphrase agent protocol as well as
+# the new Assuan based one (currently available in the "newpg" package
+# at ftp.gnupg.org/gcrypt/alpha/aegypten/).  To make use of the agent,
+# you have to run an agent as daemon and use the option
 #
 # use-agent
 # 

@@ -213,7 +213,7 @@ set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
 }
 
 #ifdef USE_AES
-#define AES "S7 "
+#define AES "S9 S8 S7 "
 #else
 #define AES ""
 #endif

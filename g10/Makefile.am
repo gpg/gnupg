@@ -25,7 +25,7 @@ EXTRA_DIST = options.skel
 LDFLAGS = @LDFLAGS@
 libexecdir = @libexecdir@/@PACKAGE@
 CFLAGS = @CFLAGS@ -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
-needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
+needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a @CAPLIBS@
 
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgv
