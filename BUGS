@@ -47,9 +47,6 @@ and after about half a day in the rsync snapshots.
     --> Solaris fixed.
     --> IRIX bug still there
 
-[ **] #12 1999-03-10
-    gpg --list-secret-keys --with-colon SEGVs
-    FIX: 1999-03-10
 
 Next #13
 

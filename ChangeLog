@@ -1,11 +1,15 @@
+Sat Mar 20 12:55:33 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* VERSION: Now 0.9.5
+
 Sun Mar 14 19:34:36 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-	* acinclude.m4 (AM_SYS_SYMBOL_UNDERSCORE): Removed becuase it is
+	* acinclude.m4 (AM_SYS_SYMBOL_UNDERSCORE): Removed because it is
 	now in the latest libtool.
 
 Thu Mar 11 16:39:46 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-	* configure.in: Remmoved the need for libtool
+	* configure.in: Removed the need for libtool
 
 Mon Mar  8 20:47:17 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 

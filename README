@@ -1,6 +1,9 @@
 Please note that this is only a bug fix release and some things
 do not yet work - see TODO for parts which are problematic
 
+The genkey1024 test will fail due to an expect problem :-(
+
+
 -----BEGIN PGP SIGNED MESSAGE-----
 
                     GnuPG - The GNU Privacy Guard

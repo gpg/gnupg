@@ -1,3 +1,5 @@
+Noteworthy changes in version 0.9.5
+-----------------------------------
 
     * New command "lsign" in the keyedit menu to create non-exportable
       signatures.  Removed --trusted-keys option.

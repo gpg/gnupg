@@ -40,4 +40,8 @@
     "cipher algo 10 not found".
     FIX: 1999-02-25 wk
 
+[ **] #12 1999-03-10
+    gpg --list-secret-keys --with-colon SEGVs
+    FIX: 1999-03-10
+
 
