@@ -153,7 +153,7 @@ compare_filenames( const char *a, const char *b )
     abuf = gstrans(a);
     bbuf = gstrans(b);
 
-    c = stricmp(abuf, bbuf);
+    c = strcasecmp (abuf, bbuf);
 
     m_free(abuf);
     m_free(bbuf);
@@ -227,6 +227,4 @@ leave:
     iobuf_close(a);
     return rc;
 }
-
-
 

@@ -299,12 +299,12 @@ answer_is_yes_no_default( const char *s, int def_answer )
     const char *short_no = _("nN");
 
     /* Note: we have to use the local dependent strcasecmp here */
-    if( !stricmp(s, long_yes ) )
+    if( !strcasecmp(s, long_yes ) )
 	return 1;
     if( *s && strchr( short_yes, *s ) && !s[1] )
 	return 1;
     /* test for no strings to catch ambiguities for the next test */
-    if( !stricmp(s, long_no ) )
+    if( !strcasecmp(s, long_no ) )
 	return 0;
     if( *s && strchr( short_no, *s ) && !s[1] )
 	return 0;
@@ -336,11 +336,11 @@ answer_is_yes_no_quit( const char *s )
     const char *short_quit = _("qQ");
 
     /* Note: We have to use the locale dependent strcasecmp */
-    if( !stricmp(s, long_no ) )
+    if( !strcasecmp(s, long_no ) )
 	return 0;
-    if( !stricmp(s, long_yes ) )
+    if( !strcasecmp(s, long_yes ) )
 	return 1;
-    if( !stricmp(s, long_quit ) )
+    if( !strcasecmp(s, long_quit ) )
 	return -1;
     if( *s && strchr( short_no, *s ) && !s[1] )
 	return 0;
@@ -359,5 +359,3 @@ answer_is_yes_no_quit( const char *s )
 	return -1;
     return 0;
 }
-
-

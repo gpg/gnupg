@@ -766,17 +766,17 @@ strcasecmp( const char *a, const char *b )
 }
 #endif
 
-/****************
- * mingw32/cpd has a memicmp()
- */
-#ifndef HAVE_MEMICMP
+#ifndef HAVE_STRNCASECMP
 int
-memicmp( const char *a, const char *b, size_t n )
+strncasecmp( const char *a, const char *b, size_t n )
 {
-    for( ; n; n--, a++, b++ )
-	if( *a != *b  && toupper(*(const byte*)a) != toupper(*(const byte*)b) )
-	    return *(const byte *)a - *(const byte*)b;
-    return 0;
+    for( ; n && *a && *b; a++, b++, n--) {
+	if( *a != *b && toupper(*a) != toupper(*b) )
+	    break;
+    }
+    if (!n)
+      return 0;
+    return *(const byte*)a - *(const byte*)b;
 }
 #endif
 

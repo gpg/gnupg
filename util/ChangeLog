@@ -1,3 +1,11 @@
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* fileutil.c (compare_filenames): Replaced stricmp by strcasecmp.
+	* miscutil.c (answer_is_yes_no_quit,answer_is_yes_no_default): Ditto.
+
+	* strgutil.c (strncasecmp): New.
+	(memicmp): Removed.
+
 2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
 
 	* memory.c (add_entry) [M_DEBUG]: Added some missing EXTRA_ALIGN.
