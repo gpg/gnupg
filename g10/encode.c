@@ -263,8 +263,8 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
 	return rc;
 
-    if(opt.pgp2)
-      for(work_list=pk_list;work_list->next!=NULL;work_list=work_list->next)
+    if(opt.pgp2) {
+      for(work_list=pk_list; work_list; work_list=work_list->next)
 	if(!(is_RSA(work_list->pk->pubkey_algo) &&
 	     nbits_from_pk(work_list->pk)<=2048))
 	  {
@@ -273,6 +273,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    log_info(_("This message will not be usable by PGP 2.x\n"));
 	    break;
 	  }
+    }
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {

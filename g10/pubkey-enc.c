@@ -70,7 +70,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     PKT_secret_key *sk = NULL;
     int rc;
 
-    rc = check_pubkey_algo( k->pubkey_algo );
+    rc = check_pubkey_algo2 (k->pubkey_algo, PUBKEY_USAGE_ENC);
     if( rc )
 	goto leave;
 

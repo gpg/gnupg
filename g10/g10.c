@@ -1285,7 +1285,8 @@ main( int argc, char **argv )
 	opt.force_v3_sigs = 1;
 	opt.pgp2_workarounds = 1;
 	opt.def_cipher_algo = CIPHER_ALGO_IDEA;
-	if( cmd==aEncr && check_cipher_algo(CIPHER_ALGO_IDEA) ) {
+	if( (cmd==aEncr || cmd==aSym || cmd==aSignEncr)
+            && check_cipher_algo(CIPHER_ALGO_IDEA) ) {
 	  log_info(_("Encrypting a message to a PGP 2.x user requires "
 		     "the IDEA cipher module.\n"));
 	  log_error(_("Please see http://www.gnupg.org/why-not-idea.html"
@@ -2110,9 +2111,17 @@ check_policy_url( const char *s )
     return 0;
 }
 
-const char *get_temp_dir(void)
+const char *
+get_temp_dir(void)
 {
   char *tmp;
+
+#ifndef __MINGW32__
+  /* Don't allow to be setuid when we are going to create temporary
+     files or directories - yes, this is a bit paranoid */
+  if (getuid() != geteuid() )
+      BUG ();
+#endif
 
   if(opt.temp_dir)
     return opt.temp_dir;

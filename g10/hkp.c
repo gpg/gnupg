@@ -165,7 +165,10 @@ hkp_export( STRLIST users )
 	if( opt.verbose ) {
 	    int c;
 	    while( (c=iobuf_get(hd.fp_read)) != EOF )
+              if ( c >= 32 && c < 127 )
 		putchar( c );
+              else
+                putchar ( '?' );
 	}
       #endif
 	if( (status/100) == 2 )
@@ -211,10 +214,12 @@ urlencode_filter( void *opaque, int control,
    LDAP server are close enough in output so the same function can
    parse them both. */
 
-static int parse_hkp_index(IOBUF buffer,char *line)
+static int 
+parse_hkp_index(IOBUF buffer,char *line)
 {
   static int open=0,revoked=0;
-  static char *key,*uid;
+  static char *key;
+  static unsigned char *uid;
   static u32 bits,createtime;
   int ret=0;
 
@@ -227,7 +232,7 @@ static int parse_hkp_index(IOBUF buffer,char *line)
 
       if(!(revoked && !opt.keyserver_options.include_revoked))
 	{
-	  char intstr[11];
+	  char intstr[20];
 
 	  iobuf_writestr(buffer,key);
 	  iobuf_writestr(buffer,":");
@@ -374,7 +379,8 @@ int hkp_search(STRLIST tokens)
 {
   int rc=0,len=0,first=1;
   unsigned int maxlen=1024,buflen=0;
-  char *searchstr=NULL,*searchurl=NULL,*request;
+  unsigned char *searchstr=NULL,*searchurl=NULL;
+  unsigned char *request;
   struct http_context hd;
   unsigned int hflags=opt.honor_http_proxy?HTTP_FLAG_TRY_PROXY:0;
   byte *line=NULL;

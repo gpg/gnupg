@@ -49,7 +49,8 @@
 #define SEND   1
 #define SEARCH 2
 
-void parse_keyserver_options(char *options)
+void 
+parse_keyserver_options(char *options)
 {
   char *tok="";
 
@@ -98,7 +99,8 @@ void parse_keyserver_options(char *options)
     while(tok!=NULL);
 }
 
-int parse_keyserver_uri(char *uri)
+int 
+parse_keyserver_uri(char *uri)
 {
   /* Get the scheme */
 
@@ -134,7 +136,8 @@ int parse_keyserver_uri(char *uri)
 }
 
 /* Unquote only the delimiter character */
-static void printunquoted(char *string,char delim)
+static void 
+printunquoted(char *string,char delim)
 {
   char *ch=string;
 
@@ -160,7 +163,8 @@ static void printunquoted(char *string,char delim)
     }
 }
 
-static int print_keyinfo(int count,char *keystring,u32 *keyid)
+static int 
+print_keyinfo(int count,char *keystring,u32 *keyid)
 {
   char *certid,*userid,*keytype,*tok;
   int flags,keysize=0;
@@ -212,6 +216,7 @@ static int print_keyinfo(int count,char *keystring,u32 *keyid)
 
   printf("(%d)\t",count);
 
+#warning Hmmm, do we need to check for non-printable characters?  (wk)
   printunquoted(userid,':');
 
   if(flags&1)
@@ -235,7 +240,9 @@ static int print_keyinfo(int count,char *keystring,u32 *keyid)
   return 0;
 }
 
-static int keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
+
+static int 
+keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 {
   int ret=KEYSERVER_INTERNAL_ERROR,i,to[2]={-1,-1},from[2]={-1,-1};
   pid_t child=0;
@@ -247,6 +254,13 @@ static int keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
   FILE *tochild=NULL;
   IOBUF fromchild=NULL;
   int gotversion=0,madedir=0;
+
+#ifndef __MINGW32__
+  /* Don't allow to be setuid when we are going to create temporary
+     files or directories - yes, this is a bit paranoid */
+  if (getuid() != geteuid() )
+      BUG ();
+#endif
 
   /* Build the filename for the helper to execute */
 
@@ -666,7 +680,8 @@ static int keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
   return ret;
 }
 
-static int keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
+static int 
+keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 {
   int rc=0;
 
@@ -732,12 +747,14 @@ static int keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
   return 0;
 }
 
-int keyserver_export(STRLIST users)
+int 
+keyserver_export(STRLIST users)
 {
   return keyserver_work(SEND,users,NULL,0);
 }
 
-int keyserver_import(STRLIST users)
+int 
+keyserver_import(STRLIST users)
 {
   u32 (*kidlist)[2];
   int num=100,count=0;
@@ -779,7 +796,8 @@ int keyserver_import(STRLIST users)
   return rc;
 }
 
-int keyserver_import_keyid(u32 *keyid)
+int 
+keyserver_import_keyid(u32 *keyid)
 {
   STRLIST sl=NULL;
   char key[17];
@@ -797,7 +815,8 @@ int keyserver_import_keyid(u32 *keyid)
 }
 
 /* code mostly stolen from do_export_stream */
-static int keyidlist(STRLIST users,u32 (**kidlist)[2],int *count)
+static int 
+keyidlist(STRLIST users,u32 (**kidlist)[2],int *count)
 {
   int rc=0,ndesc,num=100;
   KBNODE keyblock=NULL,node;
@@ -873,7 +892,8 @@ static int keyidlist(STRLIST users,u32 (**kidlist)[2],int *count)
 /* Note this is different than the original HKP refresh.  It allows
    usernames to refresh only part of the keyring. */
 
-int keyserver_refresh(STRLIST users)
+int 
+keyserver_refresh(STRLIST users)
 {
   int rc;
   u32 (*kidlist)[2];
@@ -883,6 +903,12 @@ int keyserver_refresh(STRLIST users)
   if(rc)
     return rc;
 
+  /* fixme: this is is a problem: for Example in German you have 1
+     Schlüssel, 2 Schlüssel but 1 Auto, 2 Autos.  There is no
+     regularity in German (afaik); other languages have even more
+     complicates ways.  The latest gettext versions have some code to
+     cope with this, but I haven't looked into it.  The old suggestion
+     is to write 2 full strings and don't use %s */
   log_info(_("%d key%s to refresh\n"),count,count!=1?"s":"");
 
   if(count>0)
@@ -893,7 +919,8 @@ int keyserver_refresh(STRLIST users)
   return 0;
 }
 
-int keyserver_search(STRLIST tokens)
+int 
+keyserver_search(STRLIST tokens)
 {
   if(tokens)
     return keyserver_work(SEARCH,tokens,NULL,0);
@@ -903,7 +930,8 @@ int keyserver_search(STRLIST tokens)
 
 /* Count is just for cosmetics.  If it is too small, it will grow
    safely.  If it negative it disables the "Key x-y of z" messages. */
-void keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
+void 
+keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 {
   int i=0,validcount=1;
   unsigned int maxlen=256,buflen=0;
