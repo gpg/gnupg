@@ -53,7 +53,7 @@ enum
 /* Mutex values. */
 #define PTH_MUTEX_INITIALIZED  (1<<0)
 #define PTH_MUTEX_LOCKED       (1<<1)
-#define PTH_MUTEX_INIT         {{NULL, NULL}, PTH_MUTEX_INITIALIZED, NULL, 0}
+#define PTH_MUTEX_INIT         {PTH_MUTEX_INITIALIZED}
 
 
 #define PTH_KEY_INIT	       (1<<0)
@@ -233,6 +233,12 @@ int pth_event_occured (pth_event_t hd);
 pth_event_t pth_event_concat (pth_event_t ev, ...);
 pth_event_t pth_event (unsigned long spec, ...);
 
+
+
+/* Backward compatibility (Pth < 1.5.0). */
+#define pth_event_occurred(ev) \
+    (   pth_event_status(ev) == PTH_STATUS_OCCURRED \
+     || pth_event_status(ev) == PTH_STATUS_FAILED   )
 
 
 /*-- pth_util.c --*/

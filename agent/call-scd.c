@@ -34,7 +34,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef HAVE_W32_SYSTEM
 #include <sys/wait.h>
+#endif
 #ifdef USE_GNU_PTH
 # include <pth.h>
 #endif
@@ -213,6 +215,7 @@ start_scd (ctrl_t ctrl)
 
       /* We better do a sanity check now to see whether it has
          accidently died. */
+#ifndef HAVE_W32_SYSTEM /* fixme */
       pid = assuan_get_pid (scd_ctx);
       if (pid != (pid_t)(-1) && pid
           && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
@@ -221,6 +224,7 @@ start_scd (ctrl_t ctrl)
           scd_ctx = NULL;
         }
       else
+#endif
         return 0; 
     }
 
@@ -275,10 +279,12 @@ start_scd (ctrl_t ctrl)
      simply as a pipe server. */
   if (ctrl->connection_fd != -1)
   {
+#ifndef HAVE_W32_SYSTEM
     char buf[100];
 
     sprintf (buf, "OPTION event-signal=%d", SIGUSR2);
     assuan_transact (scd_ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
+#endif
   }
 
   return 0;

@@ -23,6 +23,7 @@
 
 #include <sys/types.h>
 #include <windows.h>
+#include <ws2tcpip.h>
 #include <unistd.h>
 
 #define DIRSEP_C '\\'

@@ -790,7 +790,7 @@ static gc_option_t gc_options_dirmngr[] =
    { "allow-ocsp", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "dirmngr", "allow sending OCSP requests",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
-   { "ignore-ocsp-servic-url", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+   { "ignore-ocsp-service-url", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "dirmngr", "ignore certificate contained OCSP service URLs",
       GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
    { "ocsp-responder", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,

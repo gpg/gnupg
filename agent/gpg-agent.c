@@ -29,9 +29,11 @@
 #include <assert.h>
 #include <time.h>
 #include <fcntl.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
+#ifndef HAVE_W32_SYSTEM
+#include <sys/socket.h>
 #include <sys/un.h>
+#endif
 #include <unistd.h>
 #include <signal.h>
 #ifdef USE_GNU_PTH
@@ -40,11 +42,13 @@
 
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
-#include <assuan.h> /* malloc hooks */
+#include <assuan.h> /* Malloc hooks */
 
 #include "i18n.h"
 #include "sysutils.h"
-
+#ifdef HAVE_W32_SYSTEM
+#include "../jnlib/w32-afunix.h"
+#endif
 
 enum cmd_and_opt_values 
 { aNull = 0,
@@ -175,7 +179,9 @@ static void create_directories (void);
 static void handle_connections (int listen_fd);
 
 /* Pth wrapper function definitions. */
+#ifndef HAVE_W32_SYSTEM
 GCRY_THREAD_OPTION_PTH_IMPL;
+#endif
 
 #endif /*USE_GNU_PTH*/
 static void check_for_running_agent (void);
@@ -432,14 +438,14 @@ main (int argc, char **argv )
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
-#ifdef USE_GNU_PTH
+#if defined(USE_GNU_PTH) && !defined(HAVE_W32_SYSTEM)
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
-#endif /*USE_GNU_PTH*/
+#endif /*USE_GNU_PTH && !HAVE_W32_SYSTEM*/
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library. */
@@ -707,10 +713,12 @@ main (int argc, char **argv )
     }
 
   /* Make sure that we have a default ttyname. */
+#ifndef HAVE_W32_SYSTEM
   if (!default_ttyname && ttyname (1))
     default_ttyname = xstrdup (ttyname (1));
   if (!default_ttytype && getenv ("TERM"))
     default_ttytype = xstrdup (getenv ("TERM"));
+#endif
 
   if (pipe_server)
     { /* this is the simple pipe based server */
@@ -720,6 +728,7 @@ main (int argc, char **argv )
     ; /* NOTREACHED */
   else
     { /* Regular server mode */
+#ifndef HAVE_W32_SYSTEM
       int fd;
       pid_t pid;
       int len;
@@ -888,18 +897,21 @@ main (int argc, char **argv )
 #ifdef USE_GNU_PTH
       if (!disable_pth)
         {
+#ifndef HAVE_W32_SYSTEM  /* FIXME */
 	  struct sigaction sa;
 
 	  sa.sa_handler = SIG_IGN;
 	  sigemptyset (&sa.sa_mask);
 	  sa.sa_flags = 0;
 	  sigaction (SIGPIPE, &sa, NULL);
+#endif
           handle_connections (fd);
         }
       else
 #endif /*!USE_GNU_PTH*/
       /* setup signals */
         {
+#ifndef HAVE_W32_SYSTEM  /* FIXME */
           struct sigaction oact, nact;
           
           nact.sa_handler = cleanup_sh;
@@ -915,10 +927,11 @@ main (int argc, char **argv )
           nact.sa_handler = SIG_IGN;
           sigaction (SIGPIPE, &nact, NULL);
           sigaction (SIGINT, &nact, NULL);
-
+#endif
           start_command_handler (fd, -1);
         }
       close (fd);
+#endif
     }
   
   return 0;
@@ -1029,9 +1042,15 @@ create_private_keys_directory (const char *home)
   fname = make_filename (home, GNUPG_PRIVATE_KEYS_DIR, NULL);
   if (stat (fname, &statbuf) && errno == ENOENT)
     {
+#ifdef HAVE_W32_SYSTEM  /*FIXME: Setup proper permissions.  */
+      if (!CreateDirectory (fname, NULL))
+        log_error (_("can't create directory `%s': %s\n"),
+                   fname, w32_strerror (-1) );
+#else
       if (mkdir (fname, S_IRUSR|S_IWUSR|S_IXUSR ))
         log_error (_("can't create directory `%s': %s\n"),
-                   fname,	strerror(errno) );
+                   fname, strerror (errno) );
+#endif
       else if (!opt.quiet)
         log_info (_("directory `%s' created\n"), fname);
     }
@@ -1063,9 +1082,15 @@ create_directories (void)
                || (*defhome != '~' && !strcmp (home, defhome) )
                )
             {
+#ifdef HAVE_W32_SYSTEM
+              if (!CreateDirectory (home, NULL))
+                log_error (_("can't create directory `%s': %s\n"),
+                           home, w32_strerror (-1) );
+#else
               if (mkdir (home, S_IRUSR|S_IWUSR|S_IXUSR ))
                 log_error (_("can't create directory `%s': %s\n"),
-                           home, strerror(errno) );
+                           home, strerror (errno) );
+#endif
               else 
                 {
                   if (!opt.quiet)
@@ -1096,6 +1121,7 @@ handle_signal (int signo)
 {
   switch (signo)
     {
+#ifndef HAVE_W32_SYSTEM
     case SIGHUP:
       log_info ("SIGHUP received - "
                 "re-reading configuration and flushing cache\n");
@@ -1134,7 +1160,7 @@ handle_signal (int signo)
       cleanup ();
       agent_exit (0);
       break;
-
+#endif
     default:
       log_info ("signal %d received - no action defined\n", signo);
     }
@@ -1178,6 +1204,7 @@ handle_connections (int listen_fd)
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
   pth_attr_set (tattr, PTH_ATTR_NAME, "gpg-agent");
 
+#ifndef HAVE_W32_SYSTEM /* fixme */
   sigemptyset (&sigs );
   sigaddset (&sigs, SIGHUP);
   sigaddset (&sigs, SIGUSR1);
@@ -1185,6 +1212,9 @@ handle_connections (int listen_fd)
   sigaddset (&sigs, SIGINT);
   sigaddset (&sigs, SIGTERM);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+#else
+  ev = NULL;
+#endif
 
   for (;;)
     {

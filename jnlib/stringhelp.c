@@ -1,5 +1,6 @@
 /* stringhelp.c -  standard string helper functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,14 +24,17 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
 
 #include "libjnlib-config.h"
 #include "utf8conv.h"
 #include "stringhelp.h"
 
 
-/****************
- * look for the substring SUB in buffer and return a pointer to that
+/*
+ * Look for the substring SUB in buffer and return a pointer to that
  * substring in BUF or NULL if not found.
  * Comparison is case-insensitive.
  */
@@ -72,11 +76,12 @@ ascii_memistr( const char *buf, size_t buflen, const char *sub )
     return NULL ;
 }
 
-/****************
- * Wie strncpy(), aber es werden maximal n-1 zeichen kopiert und ein
- * '\0' angehängt. Ist n = 0, so geschieht nichts, ist Destination
- * gleich NULL, so wird via jnlib_xmalloc Speicher besorgt, ist dann nicht
- * genügend Speicher vorhanden, so bricht die funktion ab.
+/* This function is similar to strncpy().  However it won't copy more
+   than N - 1 characters and makes sure that a '\0' is appended. With
+   N given as 0, nothing will happen.  With DEST given as NULL, memory
+   will be allocated using jnlib_xmalloc (i.e. if it runs out of core
+   the function terminates).  Returns DES or a pointer to the
+   allocated memory.
  */
 char *
 mem2str( char *dest , const void *src , size_t n )
@@ -452,8 +457,29 @@ sanitize_buffer (const unsigned char *p, size_t n, int delim)
   return buffer;
 }
 
+
 /****************************************************
- ******** locale insensitive ctype functions ********
+ **********  W32 specific functions  ****************
+ ****************************************************/
+
+#ifdef HAVE_W32_SYSTEM
+const char *
+w32_strerror (int ec)
+{
+  static char strerr[256];
+  
+  if (ec == -1)
+    ec = (int)GetLastError ();
+  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
+                 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+                 strerr, DIM (strerr)-1, NULL);
+  return strerr;    
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/****************************************************
+ ******** Locale insensitive ctype functions ********
  ****************************************************/
 /* FIXME: replace them by a table lookup and macros */
 int
@@ -626,3 +652,5 @@ memicmp( const char *a, const char *b, size_t n )
     return 0;
 }
 #endif
+
+

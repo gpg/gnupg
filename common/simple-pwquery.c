@@ -182,8 +182,10 @@ agent_send_all_options (int fd)
     }
 
   dft_ttyname = getenv ("GPG_TTY");
+#ifndef HAVE_W32_SYSTEM
   if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
     dft_ttyname = ttyname (0);
+#endif
   if (dft_ttyname && *dft_ttyname)
     {
       if ((rc=agent_send_option (fd, "ttyname", dft_ttyname)))

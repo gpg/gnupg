@@ -49,6 +49,11 @@ size_t print_sanitized_utf8_string (FILE *fp, const char *string, int delim);
 char *sanitize_buffer (const unsigned char *p, size_t n, int delim);
 
 
+#ifdef HAVE_W32_SYSTEM
+const char *w32_strerror (int ec);
+#endif
+
+
 const char *ascii_memistr( const char *buf, size_t buflen, const char *sub );
 int ascii_isupper (int c);
 int ascii_islower (int c);

@@ -76,7 +76,11 @@ agent_write_private_key (const unsigned char *grip,
 	 The mode parameter to open is what fopen uses.  It will be
 	 combined with the process' umask automatically.  */
       fd = open (fname, O_CREAT | O_EXCL | O_RDWR,
-		 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+		 S_IRUSR | S_IWUSR 
+#ifndef HAVE_W32_SYSTEM
+                 | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+#endif
+                 );
       if (fd < 0)
 	fp = 0;
       else

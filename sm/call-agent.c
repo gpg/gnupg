@@ -113,7 +113,7 @@ start_agent (ctrl_t ctrl)
       no_close_list[i++] = fileno (stderr);
       no_close_list[i] = -1;
 
-      /* connect to the agent and perform initial handshaking */
+      /* Connect to the agent and perform initial handshaking. */
       rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv,
                                 no_close_list);
     }
