@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.7\n"
-"POT-Creation-Date: 2002-04-29 13:37+0200\n"
+"POT-Creation-Date: 2002-04-29 17:09+0200\n"
 "PO-Revision-Date: 2002-04-20 10:20+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"

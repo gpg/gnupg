@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"POT-Creation-Date: 2002-04-29 13:37+0200\n"
+"POT-Creation-Date: 2002-04-29 17:09+0200\n"
 "PO-Revision-Date: 2002-03-05 16:05+0000\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
