@@ -113,6 +113,7 @@ enum cmd_and_opt_values { aNull = 0,
     aGenRandom,
     aPipeMode,
     aRefreshCaches,
+    aRefreshKeys,
 
     oTextmode,
     oFingerprint,
@@ -260,6 +261,8 @@ static ARGPARSE_OPTS opts[] = {
     { aExport, "export"           , 256, N_("export keys") },
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
+    { aRefreshKeys, "refresh-keys", 256,
+                                    N_("update all keys from a keyserver")},
     { aExportAll, "export-all"    , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
@@ -798,6 +801,7 @@ main( int argc, char **argv )
 	  case aFastImport: set_cmd( &cmd, aFastImport); break;
 	  case aSendKeys: set_cmd( &cmd, aSendKeys); break;
 	  case aRecvKeys: set_cmd( &cmd, aRecvKeys); break;
+	  case aRefreshKeys: set_cmd( &cmd, aRefreshKeys); break;
 	  case aExport: set_cmd( &cmd, aExport); break;
 	  case aExportAll: set_cmd( &cmd, aExportAll); break;
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
@@ -1473,7 +1477,7 @@ main( int argc, char **argv )
 
       case aFastImport:
       case aImport:
-	import_keys( argc? argv:NULL, argc, (cmd == aFastImport) );
+	import_keys( argc? argv:NULL, argc, (cmd == aFastImport), NULL );
 	break;
 
       case aExport:
@@ -1491,6 +1495,12 @@ main( int argc, char **argv )
 	    export_pubkeys( sl, (cmd == aExport) );
 	free_strlist(sl);
 	break;
+
+      case aRefreshKeys:
+	if (argc)
+	    wrong_args("--refresh-keys");
+        hkp_refresh_keys ();
+        break;
 
       case aExportSecret:
 	sl = NULL;

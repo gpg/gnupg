@@ -207,7 +207,7 @@ print_string( FILE *fp, const byte *p, size_t n, int delim )
  * Print an UTF8 string to FP and filter all control characters out.
  */
 void
-print_utf8_string( FILE *fp, const byte *p, size_t n )
+print_utf8_string2 ( FILE *fp, const byte *p, size_t n, int delim )
 {
     size_t i;
     char *buf;
@@ -218,12 +218,19 @@ print_utf8_string( FILE *fp, const byte *p, size_t n )
 	    break;
     }
     if( i < n ) {
-	buf = utf8_to_native( p, n );
+	buf = utf8_to_native ( p, n, delim );
+	/*(utf8 conversion already does the control character quoting)*/
 	fputs( buf, fp );
 	m_free( buf );
     }
     else
-	print_string( fp, p, n, 0 );
+	print_string( fp, p, n, delim );
+}
+
+void
+print_utf8_string( FILE *fp, const byte *p, size_t n )
+{
+    print_utf8_string2 (fp, p, n, 0);
 }
 
 /****************

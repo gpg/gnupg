@@ -122,6 +122,7 @@ keyring_release (KEYRING_HANDLE hd)
     active_handles--;
     m_free (hd->word_match.name);
     m_free (hd->word_match.pattern);
+    iobuf_close (hd->current.iobuf);
     m_free (hd);
 }
 
@@ -224,6 +225,9 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     int pk_no = 0;
     int uid_no = 0;
 
+    if (ret_kb)
+        *ret_kb = NULL;
+
     if (!hd->found.kr)
         return -1; /* no successful search */
 
@@ -302,6 +306,13 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     free_packet (pkt);
     m_free (pkt);
     iobuf_close(a);
+
+    /* Make sure that future search operations fail immediately when
+     * we know that we are working on a invalid keyring 
+     */
+    if (rc == G10ERR_INV_KEYRING)
+        hd->current.error = rc;
+
     return rc;
 }
 
@@ -355,6 +366,13 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     if (!fname)
         return G10ERR_GENERAL; 
 
+    /* close this one otherwise we will lose the position for
+     * a next search.  Fixme: it would be better to adjust the position
+     * after the write opertions.
+     */
+    iobuf_close (hd->current.iobuf);
+    hd->current.iobuf = NULL;
+
     /* do the insert */
     rc = do_copy (1, fname, kb, hd->secret, 0, 0 );
     return rc;
@@ -378,6 +396,13 @@ keyring_delete_keyblock (KEYRING_HANDLE hd)
         if (!hd->found.n_packets)
             BUG ();
     }
+
+    /* close this one otherwise we will lose the position for
+     * a next search.  Fixme: it would be better to adjust the position
+     * after the write opertions.
+     */
+    iobuf_close (hd->current.iobuf);
+    hd->current.iobuf = NULL;
 
     /* do the delete */
     rc = do_copy (2, hd->found.kr->fname, NULL, hd->secret,
@@ -419,7 +444,8 @@ prepare_search (KEYRING_HANDLE hd)
         return hd->current.error; /* still in error state */
 
     if (hd->current.kr && !hd->current.eof) {
-        assert ( hd->current.iobuf);
+        if ( !hd->current.iobuf )
+            return G10ERR_GENERAL; /* position invalid after a modify */
         return 0; /* okay */
     }
 

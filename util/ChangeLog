@@ -1,3 +1,18 @@
+2001-09-19  Werner Koch  <wk@gnupg.org>
+
+	* w32reg.c (get_root_key): New.
+	(read_w32_registry_string): Use it here.
+	(write_w32_registry_string): New.  Contributed by Timo.
+
+	* iobuf.c (iobuf_ioctl): New command to disable fd
+	caching. Implemented no_cache flag where needed.
+	(iobuf_sockopen): Always set no_cache flag.
+
+	* strgutil.c (utf8_to_native): Add a delim arg and changed all
+	callers. Make sure that quoting is done when translation is
+	disabled.
+	* miscutil.c (print_utf8_string2): New.
+
 2001-09-17  Werner Koch  <wk@gnupg.org>
 
 	* miscutil.c (print_string): Use explicit ranges and not iscntrl().  

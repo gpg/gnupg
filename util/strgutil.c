@@ -439,11 +439,13 @@ native_to_utf8( const char *string )
 
 
 /****************
- * Convert string, which is in UTF8 to native encoding.
- * illegal encodings by some "\xnn" and quote all control characters
- */
+ * Convert string, which is in UTF8 to native encoding.  illegal
+ * encodings by some "\xnn" and quote all control characters. A
+ * character with value DELIM will always be quoted, it must be a
+ * vanilla ASCII character.  
+  */
 char *
-utf8_to_native( const char *string, size_t length )
+utf8_to_native( const char *string, size_t length, int delim )
 {
     int nleft;
     int i;
@@ -455,13 +457,6 @@ utf8_to_native( const char *string, size_t length )
     unsigned long val = 0;
     size_t slen;
     int resync = 0;
-
-    if (no_translation) {
-        buffer = m_alloc (length+1);
-        memcpy (buffer, string, length);
-        buffer[length] = 0; /* make sure it is a string */
-        return buffer;
-    }
 
     /* 1. pass (p==NULL): count the extended utf-8 characters */
     /* 2. pass (p!=NULL): create string */
@@ -481,7 +476,7 @@ utf8_to_native( const char *string, size_t length )
 	    }
 	    if( !nleft ) {
 		if( !(*s & 0x80) ) { /* plain ascii */
-		    if( iscntrl( *s ) ) {
+		    if( *s < 0x20 || *s == 0x7f || *s == delim) {
 			n++;
 			if( p )
 			    *p++ = '\\';
@@ -564,7 +559,15 @@ utf8_to_native( const char *string, size_t length )
 		val <<= 6;
 		val |= *s & 0x3f;
 		if( !--nleft ) { /* ready */
-		    if( active_charset ) { /* table lookup */
+                    if (no_translation) {
+                        if( p ) {
+                            for(i=0; i < encidx; i++ )
+                                *p++ = encbuf[i];
+                        }
+                        n += encidx;
+                        encidx = 0;
+                    }
+		    else if( active_charset ) { /* table lookup */
 			for(i=0; i < 128; i++ ) {
 			    if( active_charset[i] == val )
 				break;

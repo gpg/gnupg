@@ -82,6 +82,11 @@ static char *fd_passwd = NULL;
 static char *next_pw = NULL;
 static char *last_pw = NULL;
 
+#ifdef __MINGW32__
+static int read_fd = 0;
+static int write_fd = 0;
+#endif
+
 static void hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create );
 
 int
@@ -153,10 +158,27 @@ read_passphrase_from_fd( int fd )
     fd_passwd = pw;
 }
 
-#if !defined(HAVE_DOSISH_SYSTEM) && !defined(__riscos__)
 static int
 writen ( int fd, const void *buf, size_t nbytes )
 {
+#ifdef __MINGW32__
+    DWORD nwritten, nleft = nbytes;
+    
+    while (nleft > 0) {
+    	if ( !WriteFile( (HANDLE)write_fd, buf, nleft, &nwritten, NULL) ) {
+    		log_error("write failed: ec=%d\n", (int)GetLastError());
+    		return -1;
+    	}
+    	/*log_info("** WriteFile fd=%d nytes=%d nwritten=%d\n",
+    		 write_fd, nbytes, (int)nwritten);*/
+    	Sleep(100);
+    	
+    	nleft -= nwritten;
+    	buf = (const BYTE *)buf + nwritten;
+    }
+#elif defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+    /* not implemented */
+#else
     size_t nleft = nbytes;
     int nwritten;
 
@@ -166,13 +188,15 @@ writen ( int fd, const void *buf, size_t nbytes )
             if ( errno == EINTR )
                 nwritten = 0;
             else {
-                log_error ( "writen() failed: %s\n", strerror (errno) );
+                log_error ( "write() failed: %s\n", strerror (errno) );
                 return -1;
             }
         }
         nleft -= nwritten;
         buf = (const char*)buf + nwritten;
     }
+#endif
+    
     return 0;
 }
 
@@ -180,6 +204,29 @@ writen ( int fd, const void *buf, size_t nbytes )
 static int
 readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
 {
+#ifdef __MINGW32__
+    DWORD nread, nleft = buflen;
+    
+    while (nleft > 0) {
+    	if ( !ReadFile( (HANDLE)read_fd, buf, nleft, &nread, NULL) ) {
+            log_error("read() error: ec=%d\n", (int)GetLastError());
+            return -1;
+    	}
+    	if (!nread || GetLastError() == ERROR_BROKEN_PIPE)
+            break;
+    	/*log_info("** ReadFile fd=%d buflen=%d nread=%d\n",
+          read_fd, buflen, (int)nread);*/
+    	Sleep(100);
+    	
+    	nleft -= nread;
+    	buf = (BYTE *)buf + nread;
+    }    	
+    if (ret_nread)
+    	*ret_nread = buflen - nleft;
+
+#elif defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+    /* not implemented */
+#else
     size_t nleft = buflen;
     int nread;
     char *p;
@@ -202,6 +249,8 @@ readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
     }
     if( ret_nread )
         *ret_nread = buflen - nleft;
+#endif
+    
     return 0;
 }
 
@@ -213,6 +262,50 @@ readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
 static int
 agent_open (void)
 {
+#ifdef __MINGW32__
+    int fd;
+    char *infostr, *p;
+    HANDLE h;
+    char pidstr[128];
+
+    if ( !(infostr = read_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
+                                              "agentPID")) 
+         || *infostr == '0') {
+    	log_error( _("gpg-agent is not available in this session\n"));
+    	return -1;
+    }
+    free(infostr);
+    
+    sprintf(pidstr, "%u", (unsigned int)GetCurrentProcessId());
+    if (write_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
+                                  "agentCID", pidstr)) {
+        log_error( _("can't set client pid for the agent\n") );
+        return -1;
+    }
+    h = OpenEvent(EVENT_ALL_ACCESS, FALSE, "gpg_agent");
+    SetEvent(h);
+    Sleep(50); /* some time for the server */ 
+    if ( !(p = read_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
+                                        "agentReadFD")) ) {
+    	log_error( _("can't get server read FD for the agent\n") );
+    	return -1;
+    }
+    read_fd = atol(p);
+    free(p);    
+    if ( !(p = read_w32_registry_string(NULL, "Software\\GNU\\GnuPG",
+                                        "agentWriteFD")) ) {
+    	log_error ( _("can't get server write FD for the agent\n") );
+    	return -1;
+    }
+    write_fd = atol(p);
+    free(p);
+    fd = 0;
+
+    if ( writen ( fd, "GPGA\0\0\0\x01", 8 ) ) {
+        fd = -1;
+
+#else /* Posix */
+
     int fd;
     char *infostr, *p;
     struct sockaddr_un client_addr;
@@ -226,18 +319,18 @@ agent_open (void)
     infostr = m_strdup ( infostr );
     if ( !(p = strchr ( infostr, ':')) || p == infostr
          || (p-infostr)+1 >= sizeof client_addr.sun_path ) {
-        log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
+        log_error( _("malformed GPG_AGENT_INFO environment variable\n"));
         m_free (infostr );
         return -1;
     }
     *p = 0;
-        
+
     if( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 ) {
         log_error ("can't create socket: %s\n", strerror(errno) );
         m_free (infostr );
         return -1;
     }
-
+    
     memset( &client_addr, 0, sizeof client_addr );
     client_addr.sun_family = AF_UNIX;
     strcpy( client_addr.sun_path, infostr );
@@ -257,15 +350,22 @@ agent_open (void)
         close (fd);
         fd = -1;
     }
+#endif
+
     return fd;
 }
+
 
 static void
 agent_close ( int fd )
 {
+#ifdef __MINGW32__
+    HANDLE h = OpenEvent(EVENT_ALL_ACCESS, FALSE, "gpg_agent");
+    ResetEvent(h);
+#else
     close (fd);
+#endif
 }
-#endif /* !HAVE_DOSISH_SYSTEM && !__riscos__ */
 
 
 /*
@@ -277,22 +377,21 @@ agent_close ( int fd )
 static char *
 agent_get_passphrase ( u32 *keyid, int mode )
 {
-  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-    return NULL;
-  #else
-  
+#if defined(__riscos__)
+   return NULL;
+#else
     size_t n;
     char *atext;
     char buf[50];
     int fd = -1;
-    size_t nread;
+    int nread;
     u32 reply;
     char *pw = NULL;
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     byte fpr[MAX_FINGERPRINT_LEN];
 
 #if MAX_FINGERPRINT_LEN < 20
-  #error agent needs a 20 byte fingerprint
+#error agent needs a 20 byte fingerprint
 #endif
 
     memset (fpr, 0, MAX_FINGERPRINT_LEN );
@@ -344,12 +443,9 @@ agent_get_passphrase ( u32 *keyid, int mode )
         atext = m_strdup ( _("Enter passphrase\n") );
     else 
         atext = m_strdup ( _("Repeat passphrase\n") );
-
-        
-        
+                
     if ( (fd = agent_open ()) == -1 ) 
         goto failure;
-
 
     n = 4 + 20 + strlen (atext);
     u32tobuf (buf, n );
@@ -358,7 +454,7 @@ agent_get_passphrase ( u32 *keyid, int mode )
     if ( writen ( fd, buf, 28 ) || writen ( fd, atext, strlen (atext) ) ) 
         goto failure;
     m_free (atext); atext = NULL;
-
+	
     /* get response */
     if ( readn ( fd, buf, 12, &nread ) ) 
         goto failure;
@@ -418,7 +514,7 @@ agent_get_passphrase ( u32 *keyid, int mode )
     free_public_key( pk );
 
     return NULL;
-  #endif
+#endif /* Posix or W32 */
 }
 
 /*
@@ -427,9 +523,9 @@ agent_get_passphrase ( u32 *keyid, int mode )
 void
 passphrase_clear_cache ( u32 *keyid, int algo )
 {
-  #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+#if defined(__riscos__)
     return ;
-  #else
+#else
     size_t n;
     char buf[50];
     int fd = -1;
@@ -487,7 +583,7 @@ passphrase_clear_cache ( u32 *keyid, int algo )
     if ( fd != -1 )
         agent_close (fd);
     free_public_key( pk );
-  #endif
+#endif /* Posix or W32 */
 }
 
 

@@ -58,6 +58,7 @@
  typedef struct {
      FILE *fp;	   /* open file handle */
      int keep_open;
+     int no_cache;
      int  print_only_name; /* flags indicating that fname is not a real file*/
      char fname[1]; /* name of the file */
  } file_filter_ctx_t ;
@@ -80,6 +81,7 @@
  typedef struct {
      FILEP_OR_FD  fp;	   /* open file handle */
      int keep_open;
+     int no_cache;
      int eof_seen;
      int  print_only_name; /* flags indicating that fname is not a real file*/
      char fname[1]; /* name of the file */
@@ -98,6 +100,7 @@
 typedef struct {
     int sock;
     int keep_open;
+    int no_cache;
     int eof_seen;
     int  print_only_name; /* flags indicating that fname is not a real file*/
     char fname[1]; /* name of the file */
@@ -142,6 +145,8 @@ fd_cache_invalidate (const char *fname)
 
     for (cc=close_cache; cc; cc = cc->next ) {
         if ( cc->fp != INVALID_FP && !strcmp (cc->fname, fname) ) {
+            if( DBG_IOBUF )
+                log_debug ("                did (%s)\n", cc->fname);
           #ifdef HAVE_DOSISH_SYSTEM
             CloseHandle (cc->fp);
           #else
@@ -225,19 +230,21 @@ fd_cache_close (const char *fname, FILEP_OR_FD fp)
         close(fp);
 #endif
         if( DBG_IOBUF )
-            log_debug ("fd_cache_close (%s) immediately\n", fname);
+            log_debug ("fd_cache_close (%p) real\n", fp);
         return;
     }
     /* try to reuse a slot */
     for (cc=close_cache; cc; cc = cc->next ) {
         if ( cc->fp == INVALID_FP && !strcmp (cc->fname, fname) ) {
             cc->fp = fp;
+            if( DBG_IOBUF )
+                log_debug ("fd_cache_close (%s) used existing slot\n", fname);
             return;
         }
     }
     /* add a new one */
     if( DBG_IOBUF )
-        log_debug ("fd_cache_close (%s) new\n", fname);
+        log_debug ("fd_cache_close (%s) new slot created\n", fname);
     cc = m_alloc_clear (sizeof *cc + strlen (fname));
     strcpy (cc->fname, fname);
     cc->fp = fp;
@@ -259,7 +266,7 @@ fd_cache_open (const char *fname, const char *mode)
             FILEP_OR_FD fp = cc->fp;
             cc->fp = INVALID_FP;
             if( DBG_IOBUF )
-                log_debug ("fd_cache_open (%s) hit\n", fname);
+                log_debug ("fd_cache_open (%s) using cached fp\n", fname);
           #ifdef HAVE_DOSISH_SYSTEM
             if (SetFilePointer (fp, 0, NULL, FILE_BEGIN) == 0xffffffff ) {
                 log_error ("rewind file failed on handle %p: ec=%d\n",
@@ -276,7 +283,7 @@ fd_cache_open (const char *fname, const char *mode)
         }
     }
     if( DBG_IOBUF )
-        log_debug ("fd_cache_open (%s) miss\n", fname);
+        log_debug ("fd_cache_open (%s) not cached\n", fname);
     return direct_open (fname, mode);
 }
 
@@ -350,7 +357,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	*ret_len = nbytes;
     }
     else if( control == IOBUFCTRL_INIT ) {
-        a->keep_open = 0;
+        a->keep_open = a->no_cache = 0;
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "file_filter";
@@ -463,6 +470,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     else if ( control == IOBUFCTRL_INIT ) {
         a->eof_seen = 0;
         a->keep_open = 0;
+        a->no_cache = 0;
     }
     else if ( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "file_filter(fd)";
@@ -473,14 +481,14 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    if( DBG_IOBUF )
 		log_debug("%s: close handle %p\n", a->fname, f );
             if (!a->keep_open)
-                fd_cache_close (a->fname, f);
+                fd_cache_close (a->no_cache?NULL:a->fname, f);
         }
       #else
 	if ( (int)f != 0 && (int)f != 1 ) {
 	    if( DBG_IOBUF )
 		log_debug("%s: close fd %d\n", a->fname, f );
             if (!a->keep_open)
-                fd_cache_close (a->fname, f);
+                fd_cache_close (a->no_cache?NULL:a->fname, f);
 	}
 	f = INVALID_FP;
       #endif
@@ -550,6 +558,7 @@ sock_filter (void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     else if ( control == IOBUFCTRL_INIT ) {
         a->eof_seen = 0;
         a->keep_open = 0;
+        a->no_cache = 0;
     }
     else if ( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "sock_filter";
@@ -1096,8 +1105,8 @@ iobuf_fdopen( int fd, const char *mode )
 IOBUF
 iobuf_sockopen ( int fd, const char *mode )
 {
-#ifdef __MINGW32__
     IOBUF a;
+#ifdef __MINGW32__
     sock_filter_ctx_t *scx;
     size_t len;
 
@@ -1112,10 +1121,12 @@ iobuf_sockopen ( int fd, const char *mode )
     sock_filter( scx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: sockopen `%s'\n", a->no, a->subno, scx->fname);
-    return a;
 #else
-    return iobuf_fdopen (fd, mode);
+    a = iobuf_fdopen (fd, mode);
 #endif
+    if (a)
+        iobuf_ioctl (a,3,1,NULL); /* disable fd caching */ 
+    return a;
 }
 
 /****************
@@ -1226,6 +1237,9 @@ int
 iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
 {
     if ( cmd == 1 ) {  /* keep system filepointer/descriptor open */
+        if( DBG_IOBUF )
+            log_debug("iobuf-%d.%d: ioctl `%s' keep=%d\n",
+                      a? a->no:-1, a?a->subno:-1, a?a->desc:"?", intval );
         for( ; a; a = a->chain )
             if( !a->chain && a->filter == file_filter ) {
                 file_filter_ctx_t *b = a->filter_ov;
@@ -1241,12 +1255,33 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
           #endif
     }
     else if ( cmd == 2 ) {  /* invalidate cache */
+        if( DBG_IOBUF )
+            log_debug("iobuf-*.*: ioctl `%s' invalidate\n",
+                      ptrval? (char*)ptrval:"?");
         if ( !a && !intval && ptrval ) {
           #ifndef FILE_FILTER_USES_STDIO
             fd_cache_invalidate (ptrval);
           #endif
             return 0;
         }
+    }
+    else if ( cmd == 3 ) {  /* disallow/allow caching */
+        if( DBG_IOBUF )
+            log_debug("iobuf-%d.%d: ioctl `%s' no_cache=%d\n",
+                      a? a->no:-1, a?a->subno:-1, a?a->desc:"?", intval );
+        for( ; a; a = a->chain )
+            if( !a->chain && a->filter == file_filter ) {
+                file_filter_ctx_t *b = a->filter_ov;
+                b->no_cache = intval;
+                return 0;
+            }
+          #ifdef __MINGW32__
+            else if( !a->chain && a->filter == sock_filter ) {
+                sock_filter_ctx_t *b = a->filter_ov;
+                b->no_cache = intval;
+                return 0;
+            }
+          #endif
     }
 
     return -1;
@@ -1536,7 +1571,6 @@ iobuf_flush(IOBUF a)
     if( a->directfp )
 	return 0;
 
-    /*log_debug("iobuf-%d.%d: flush\n", a->no, a->subno );*/
     if( a->use == 3 ) { /* increase the temp buffer */
 	char *newbuf;
 	size_t newsize = a->d.size + 8192;

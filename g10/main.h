@@ -125,8 +125,12 @@ KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
-void import_keys( char **fnames, int nnames, int fast );
-int import_keys_stream( IOBUF inp, int fast );
+void import_keys( char **fnames, int nnames, int fast, void *stats_hd );
+int import_keys_stream( IOBUF inp, int fast, void *stats_hd );
+void *import_new_stats_handle (void);
+void import_release_stats_handle (void *p);
+void import_print_stats (void *hd);
+
 int collapse_uids( KBNODE *keyblock );
 
 /*-- export.c --*/

@@ -47,7 +47,7 @@ static int urlencode_filter( void *opaque, int control,
  *	    or other error codes.
  */
 int
-hkp_ask_import( u32 *keyid )
+hkp_ask_import( u32 *keyid, void *stats_handle)
 {
     struct http_context hd;
     char *request;
@@ -85,7 +85,7 @@ hkp_ask_import( u32 *keyid )
 					    : g10_errstr(rc) );
     }
     else {
-	rc = import_keys_stream( hd.fp_read , 0 );
+	rc = import_keys_stream( hd.fp_read , 0, stats_handle );
 	http_close( &hd );
     }
 
@@ -98,11 +98,14 @@ hkp_ask_import( u32 *keyid )
 int
 hkp_import( STRLIST users )
 {
+    void *stats_handle;
+
     if( !opt.keyserver_name ) {
 	log_error(_("no keyserver known (use option --keyserver)\n"));
 	return -1;
     }
 
+    stats_handle = import_new_stats_handle ();
     for( ; users; users = users->next ) {
         KEYDB_SEARCH_DESC desc;
 
@@ -116,9 +119,11 @@ hkp_import( STRLIST users )
 	 * errorcounter ist not increaed and the program will return
 	 * with success - which is not good when this function is used.
 	 */
-	if( hkp_ask_import( desc.u.kid ) )
+	if( hkp_ask_import( desc.u.kid, stats_handle ) )
 	    log_inc_errorcount();
     }
+    import_print_stats (stats_handle);
+    import_release_stats_handle (stats_handle);
     return 0;
 }
 
@@ -235,6 +240,96 @@ urlencode_filter( void *opaque, int control,
     }
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "urlencode_filter";
+    return rc;
+}
+
+
+int
+hkp_refresh_keys (void)
+{
+    KEYDB_HANDLE hd;
+    KBNODE node, keyblock = NULL;
+    PKT_public_key *pk;
+    u32 keyid[2];
+    u32 *keys = NULL;
+    size_t n, nkeys=0, maxkeys=0;
+    void *stats_handle;
+    int rc = 0;
+
+    /* fist take a snapshot of all keys */
+    hd = keydb_new(0);
+    rc = keydb_search_first(hd);
+    if (rc) {
+        if (rc != -1)
+            log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
+        goto leave;
+    }
+	
+    do {
+        if (!keys) {
+            maxkeys = 10000;
+            keys = m_alloc (maxkeys * sizeof *keys);
+            nkeys = 0;
+        }
+        else if ( nkeys == maxkeys ) {
+            maxkeys += 10000;
+            keys = m_realloc (keys, maxkeys * sizeof *keys);
+        }
+
+        rc = keydb_get_keyblock (hd, &keyblock);
+        if (rc) {
+            log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
+            goto leave;
+        }
+
+        node = keyblock;
+        if ( node->pkt->pkttype != PKT_PUBLIC_KEY) {
+            log_debug ("invalid pkttype %d encountered\n",
+                       node->pkt->pkttype);
+            dump_kbnode (node);
+            release_kbnode(keyblock);
+            continue;
+        }
+        pk = node->pkt->pkt.public_key;
+        keyid_from_pk(pk, keyid);
+        release_kbnode(keyblock);
+        keyblock = NULL;
+        /* fixme: replace the linear search */
+        for (n=0; n < nkeys; n++) {
+            if (keys[n] == keyid[1]) {
+                log_info (_("duplicate (short) key ID %08lX\n"),
+                          (ulong)keyid[1]);
+                break;
+            }
+        }
+        if (n == nkeys) /* not a duplicate */
+            keys[nkeys++] = keyid[1];
+    } while ( !(rc = keydb_search_next(hd)) );
+    if (rc == -1)
+        rc = 0;
+    if (rc)
+        log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
+    keydb_release(hd);
+    hd = NULL;
+    
+    /* and now refresh them */
+    stats_handle = import_new_stats_handle ();
+    log_info (_("%lu key(s) to refresh\n"), (ulong)nkeys);
+    for (n=0; n < nkeys; n++) {
+        /* Note: We do only use the short keyID */
+        keyid[0] = 0;
+        keyid[1] = keys[n];
+        if ( hkp_ask_import(keyid, stats_handle) )
+            log_inc_errorcount();
+    }
+    import_print_stats (stats_handle);
+    import_release_stats_handle (stats_handle);
+
+ leave:
+    m_free (keys);
+    if (keyblock)
+        release_kbnode(keyblock);
+    keydb_release(hd);
     return rc;
 }
 

@@ -254,7 +254,7 @@ get_ownertrust_info( ulong lid )
  * get them from a keyserver
  */
 int
-hkp_ask_import( u32 *keyid )
+hkp_ask_import( u32 *keyid, void *dummy )
 {
     return -1;
 }

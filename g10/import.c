@@ -37,7 +37,7 @@
 #include "status.h"
 
 
-static struct {
+struct stats_s {
     ulong count;
     ulong no_user_id;
     ulong imported;
@@ -51,16 +51,19 @@ static struct {
     ulong secret_imported;
     ulong secret_dups;
     ulong skipped_new_keys;
-} stats;
+};
 
 
-static int import( IOBUF inp, int fast, const char* fname, int allow_secret );
-static void print_stats(void);
+static int import( IOBUF inp, int fast, const char* fname,
+                   int allow_secret, struct stats_s *stats );
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void remove_bad_stuff (KBNODE keyblock);
-static int import_one( const char *fname, KBNODE keyblock, int fast );
-static int import_secret_one( const char *fname, KBNODE keyblock, int allow );
-static int import_revoke_cert( const char *fname, KBNODE node );
+static int import_one( const char *fname, KBNODE keyblock, int fast,
+                       struct stats_s *stats);
+static int import_secret_one( const char *fname, KBNODE keyblock,
+                              int allow, struct stats_s *stats );
+static int import_revoke_cert( const char *fname, KBNODE node,
+                               struct stats_s *stats);
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_key *pk, u32 *keyid );
 static void mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid );
@@ -77,6 +80,18 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
 			     const char *fname, u32 *keyid );
 
+
+void *
+import_new_stats_handle (void)
+{
+    return m_alloc_clear ( sizeof (struct stats_s) );
+}
+
+void
+import_release_stats_handle (void *p)
+{
+    m_free (p);
+}
 
 /****************
  * Import the public keys from the given filename. Input may be armored.
@@ -110,12 +125,13 @@ static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
  *
  */
 void
-import_keys( char **fnames, int nnames, int fast )
+import_keys( char **fnames, int nnames, int fast, void *stats_handle )
 {
     int i;
+    struct stats_s *stats = stats_handle;
 
-    /* fixme: don't use static variables */
-    memset( &stats, 0, sizeof( stats ) );
+    if (!stats)
+        stats = import_new_stats_handle ();
 
     if( !fnames && !nnames )
 	nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
@@ -128,7 +144,8 @@ import_keys( char **fnames, int nnames, int fast )
 	if( !inp )
 	    log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	else {
-	    int rc = import( inp, fast, fname, opt.allow_secret_key_import );
+	    int rc = import( inp, fast, fname,
+                             opt.allow_secret_key_import, stats );
 	    iobuf_close(inp);
 	    if( rc )
 		log_error("import from `%s' failed: %s\n", fname,
@@ -137,27 +154,37 @@ import_keys( char **fnames, int nnames, int fast )
 	if( !fname )
 	    break;
     }
-    print_stats();
+    if (!stats_handle) {
+        import_print_stats (stats);
+        import_release_stats_handle (stats);
+    }
     if( !fast )
 	sync_trustdb();
 }
 
 int
-import_keys_stream( IOBUF inp, int fast )
+import_keys_stream( IOBUF inp, int fast, void *stats_handle )
 {
     int rc = 0;
+    struct stats_s *stats = stats_handle;
 
-    /* fixme: don't use static variables */
-    memset( &stats, 0, sizeof( stats ) );
-    rc = import( inp, fast, "[stream]", opt.allow_secret_key_import );
-    print_stats();
+    if (!stats)
+        stats = import_new_stats_handle ();
+
+    rc = import( inp, fast, "[stream]",
+                 opt.allow_secret_key_import, stats );
+    if (!stats_handle) {
+        import_print_stats (stats);
+        import_release_stats_handle (stats);
+    }
     if( !fast )
 	sync_trustdb();
     return rc;
 }
 
 static int
-import( IOBUF inp, int fast, const char* fname, int allow_secret )
+import( IOBUF inp, int fast, const char* fname, int allow_secret,
+        struct stats_s *stats )
 {
     PACKET *pending_pkt = NULL;
     KBNODE keyblock;
@@ -174,12 +201,13 @@ import( IOBUF inp, int fast, const char* fname, int allow_secret )
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
         remove_bad_stuff (keyblock);
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-	    rc = import_one( fname, keyblock, fast );
+	    rc = import_one( fname, keyblock, fast, stats );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
-                rc = import_secret_one( fname, keyblock, allow_secret );
+                rc = import_secret_one( fname, keyblock,
+                                        allow_secret, stats );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
-	    rc = import_revoke_cert( fname, keyblock );
+	    rc = import_revoke_cert( fname, keyblock, stats );
 	else {
 	    log_info( _("skipping block of type %d\n"),
 					    keyblock->pkt->pkttype );
@@ -187,8 +215,8 @@ import( IOBUF inp, int fast, const char* fname, int allow_secret )
 	release_kbnode(keyblock);
 	if( rc )
 	    break;
-	if( !(++stats.count % 100) && !opt.quiet )
-	    log_info(_("%lu keys so far processed\n"), stats.count );
+	if( !(++stats->count % 100) && !opt.quiet )
+	    log_info(_("%lu keys so far processed\n"), stats->count );
     }
     if( rc == -1 )
 	rc = 0;
@@ -199,56 +227,58 @@ import( IOBUF inp, int fast, const char* fname, int allow_secret )
 }
 
 
-static void
-print_stats()
+void
+import_print_stats (void *hd)
 {
+    struct stats_s *stats = hd;
+
     if( !opt.quiet ) {
-	log_info(_("Total number processed: %lu\n"), stats.count );
-	if( stats.skipped_new_keys )
+	log_info(_("Total number processed: %lu\n"), stats->count );
+	if( stats->skipped_new_keys )
 	    log_info(_("      skipped new keys: %lu\n"),
-						stats.skipped_new_keys );
-	if( stats.no_user_id )
-	    log_info(_("          w/o user IDs: %lu\n"), stats.no_user_id );
-	if( stats.imported || stats.imported_rsa ) {
-	    log_info(_("              imported: %lu"), stats.imported );
-	    if( stats.imported_rsa )
-		fprintf(stderr, "  (RSA: %lu)", stats.imported_rsa );
+						stats->skipped_new_keys );
+	if( stats->no_user_id )
+	    log_info(_("          w/o user IDs: %lu\n"), stats->no_user_id );
+	if( stats->imported || stats->imported_rsa ) {
+	    log_info(_("              imported: %lu"), stats->imported );
+	    if( stats->imported_rsa )
+		fprintf(stderr, "  (RSA: %lu)", stats->imported_rsa );
 	    putc('\n', stderr);
 	}
-	if( stats.unchanged )
-	    log_info(_("             unchanged: %lu\n"), stats.unchanged );
-	if( stats.n_uids )
-	    log_info(_("          new user IDs: %lu\n"), stats.n_uids );
-	if( stats.n_subk )
-	    log_info(_("           new subkeys: %lu\n"), stats.n_subk );
-	if( stats.n_sigs )
-	    log_info(_("        new signatures: %lu\n"), stats.n_sigs );
-	if( stats.n_revoc )
-	    log_info(_("   new key revocations: %lu\n"), stats.n_revoc );
-	if( stats.secret_read )
-	    log_info(_("      secret keys read: %lu\n"), stats.secret_read );
-	if( stats.secret_imported )
-	    log_info(_("  secret keys imported: %lu\n"), stats.secret_imported );
-	if( stats.secret_dups )
-	    log_info(_(" secret keys unchanged: %lu\n"), stats.secret_dups );
+	if( stats->unchanged )
+	    log_info(_("             unchanged: %lu\n"), stats->unchanged );
+	if( stats->n_uids )
+	    log_info(_("          new user IDs: %lu\n"), stats->n_uids );
+	if( stats->n_subk )
+	    log_info(_("           new subkeys: %lu\n"), stats->n_subk );
+	if( stats->n_sigs )
+	    log_info(_("        new signatures: %lu\n"), stats->n_sigs );
+	if( stats->n_revoc )
+	    log_info(_("   new key revocations: %lu\n"), stats->n_revoc );
+	if( stats->secret_read )
+	    log_info(_("      secret keys read: %lu\n"), stats->secret_read );
+	if( stats->secret_imported )
+	    log_info(_("  secret keys imported: %lu\n"), stats->secret_imported );
+	if( stats->secret_dups )
+	    log_info(_(" secret keys unchanged: %lu\n"), stats->secret_dups );
     }
 
     if( is_status_enabled() ) {
 	char buf[13*20];
 	sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
-		stats.count,
-		stats.no_user_id,
-		stats.imported,
-		stats.imported_rsa,
-		stats.unchanged,
-		stats.n_uids,
-		stats.n_subk,
-		stats.n_sigs,
-		stats.n_revoc,
-		stats.secret_read,
-		stats.secret_imported,
-		stats.secret_dups,
-		stats.skipped_new_keys );
+		stats->count,
+		stats->no_user_id,
+		stats->imported,
+		stats->imported_rsa,
+		stats->unchanged,
+		stats->n_uids,
+		stats->n_subk,
+		stats->n_sigs,
+		stats->n_revoc,
+		stats->secret_read,
+		stats->secret_imported,
+		stats->secret_dups,
+		stats->skipped_new_keys );
 	write_status_text( STATUS_IMPORT_RES, buf );
     }
 }
@@ -373,7 +403,8 @@ remove_bad_stuff (KBNODE keyblock)
  * which called g10.
  */
 static int
-import_one( const char *fname, KBNODE keyblock, int fast )
+import_one( const char *fname, KBNODE keyblock, int fast,
+            struct stats_s *stats )
 {
     PKT_public_key *pk;
     PKT_public_key *pk_orig;
@@ -422,7 +453,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 							(ulong)keyid[1]);
 	    log_info(_("this may be caused by a missing self-signature\n"));
 	}
-	stats.no_user_id++;
+	stats->no_user_id++;
 	return 0;
     }
 
@@ -439,7 +470,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    log_info( _("key %08lX: new key - skipped\n"), (ulong)keyid[1] );
 	rc = 0;
 	fast = 1; /* so that we don't get into the trustdb update */
-	stats.skipped_new_keys++;
+	stats->skipped_new_keys++;
     }
     else if( rc ) { /* insert this key */
         KEYDB_HANDLE hd = keydb_new (0);
@@ -447,6 +478,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
         rc = keydb_locate_writable (hd, NULL);
 	if (rc) {
 	    log_error (_("no writable keyring found: %s\n"), g10_errstr (rc));
+            keydb_release (hd);
 	    return G10ERR_GENERAL;
 	}
 	if( opt.verbose > 1 )
@@ -464,9 +496,9 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    write_status_text( STATUS_IMPORTED, us );
 	    m_free(us);
 	}
-	stats.imported++;
+	stats->imported++;
 	if( is_RSA( pk->pubkey_algo ) )
-	    stats.imported_rsa++;
+	    stats->imported_rsa++;
 	new_key = 1;
     }
     else { /* merge */
@@ -526,7 +558,6 @@ import_one( const char *fname, KBNODE keyblock, int fast )
             if (rc)
 		log_error (_("error writing keyring `%s': %s\n"),
 			     keydb_get_resource_name (hd), g10_errstr(rc) );
-	    keydb_release (hd); hd = NULL;
 	    /* we are ready */
 	    if( !opt.quiet ) {
 		if( n_uids == 1 )
@@ -549,15 +580,16 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 					     (ulong)keyid[1], n_subk );
 	    }
 
-	    stats.n_uids +=n_uids;
-	    stats.n_sigs +=n_sigs;
-	    stats.n_subk +=n_subk;
+	    stats->n_uids +=n_uids;
+	    stats->n_sigs +=n_sigs;
+	    stats->n_subk +=n_subk;
 	}
 	else {
 	    if( !opt.quiet )
 		log_info( _("key %08lX: not changed\n"), (ulong)keyid[1] );
-	    stats.unchanged++;
+	    stats->unchanged++;
 	}
+        keydb_release (hd); hd = NULL;
     }
     if( !rc && !fast ) {
 	rc = query_trust_record( new_key? pk : pk_orig );
@@ -589,7 +621,8 @@ import_one( const char *fname, KBNODE keyblock, int fast )
  * with the trust calculation.
  */
 static int
-import_secret_one( const char *fname, KBNODE keyblock, int allow )
+import_secret_one( const char *fname, KBNODE keyblock, int allow,
+                   struct stats_s *stats)
 {
     PKT_secret_key *sk;
     KBNODE node, uidnode;
@@ -615,7 +648,7 @@ import_secret_one( const char *fname, KBNODE keyblock, int allow )
 				       uidnode->pkt->pkt.user_id->len );
 	putc('\n', stderr);
     }
-    stats.secret_read++;
+    stats->secret_read++;
     if (!allow) {
         log_info ( _("secret key %08lX not imported "
                     "(use %s to allow for it)\n"),
@@ -650,12 +683,12 @@ import_secret_one( const char *fname, KBNODE keyblock, int allow )
 	/* we are ready */
 	if( !opt.quiet )
 	    log_info( _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
-	stats.secret_imported++;
+	stats->secret_imported++;
     }
     else if( !rc ) { /* we can't merge secret keys */
 	log_error( _("key %08lX: already in secret keyring\n"),
 							(ulong)keyid[1]);
-	stats.secret_dups++;
+	stats->secret_dups++;
     }
     else
 	log_error( _("key %08lX: secret key not found: %s\n"),
@@ -669,7 +702,7 @@ import_secret_one( const char *fname, KBNODE keyblock, int allow )
  * Import a revocation certificate; this is a single signature packet.
  */
 static int
-import_revoke_cert( const char *fname, KBNODE node )
+import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
 {
     PKT_public_key *pk=NULL;
     KBNODE onode, keyblock = NULL;
@@ -759,7 +792,7 @@ import_revoke_cert( const char *fname, KBNODE node )
     if( !opt.quiet )
 	log_info( _("key %08lX: revocation certificate imported\n"),
 					(ulong)keyid[1]);
-    stats.n_revoc++;
+    stats->n_revoc++;
     if( clear_trust_checked_flag( pk ) ) {
 	/* seems that we have to insert the record first */
 	rc = insert_trust_record( keyblock );

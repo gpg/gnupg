@@ -1,4 +1,29 @@
+2001-09-19  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (writen, readn)
+	(agent_open, agent_close)
+	(agent_get_passphrase)
+	(passphrase_clear_cache): Support for W32.  Contributed by Timo.
+
+	* import.c (import_one): Release keydb handles at 2 more places.
+
+	* keyring.c (keyring_release): Close the iobuf.
+	(keyring_get_keyblock): Init ret_kb to NULL and store error contidion.
+
+	* import.c (import_new_stats_handle): New. 
+	(import_release_stats_handle): New.
+	(import_print_stats): Renamed from static fnc print_stats.
+	(import_keys, import_keys_stream): Add an optional status handle
+	arg and changed all callers.
+	* hkp.c (hkp_ask_import): Add an stats_handle arg and changed all
+	callers.
+
+	* mainproc.c (print_pkenc_list): Use print_utf8_string2().
+
 2001-09-18  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New command --refresh-keys.
+	* hkp.c (hkp_refresh_keys): New. Contributed by Timo Schulz.
 
 	* parse-packet.c (parse): Stop on impossible packet lengths.
 

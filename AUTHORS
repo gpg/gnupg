@@ -47,6 +47,9 @@ Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assignment
 Stefan Bellon   <sbellon@sbellon.de> Assignment
    (All patches to support RISC OS)
 
+Timo Schulz     <twoaday@freakmail.de> Assignment
+   (util/w32reg.c, g10/passphrase.c, g10/hkp.c)
+
 Tedi Heriyanto	<tedi_h@gmx.net> Translations [id]
 
 Thiago Jung Bauermann <jungmann@cwb.matrix.com.br> Translations [pt_BR]

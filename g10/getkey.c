@@ -2211,7 +2211,7 @@ char*
 get_user_id_string_native( u32 *keyid )
 {
     char *p = get_user_id_string( keyid );
-    char *p2 = utf8_to_native( p, strlen(p) );
+    char *p2 = utf8_to_native( p, strlen(p), 0 );
 
     m_free(p);
     return p2;

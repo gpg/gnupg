@@ -380,7 +380,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 		       strtimestamp(pk->timestamp) );
 	    fputs("      \"", log_stream() );
 	    p = get_user_id( list->kid, &n );
-	    print_string( log_stream(), p, n, '"' );
+	    print_utf8_string2 ( log_stream(), p, n, '"' );
 	    m_free(p);
 	    fputs("\"\n", log_stream() );
 	}
@@ -1271,7 +1271,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
     rc = do_check_sig(c, node, NULL );
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver_name && opt.auto_key_retrieve) {
-	if( !hkp_ask_import( sig->keyid ) )
+	if( !hkp_ask_import( sig->keyid, NULL ) )
 	    rc = do_check_sig(c, node, NULL );
     }
     if( !rc || rc == G10ERR_BAD_SIGN ) {
