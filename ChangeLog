@@ -1,3 +1,8 @@
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add PATHSEP_C and PATHSEP_S. For W32 let all
+	directories default to c:/gnupg.  Require libassuan 0.6.9.	
+	
 2004-12-18  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (AH_BOTTOM): Define EXEEXT_S.

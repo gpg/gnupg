@@ -43,7 +43,7 @@ fi
 @end smallexample
 
 @noindent
-You should aleways add the following lines to your @code{.bashrc} or
+You should always add the following lines to your @code{.bashrc} or
 whatever initialization file is used for all shell invocations:
 
 @smallexample
@@ -53,7 +53,8 @@ export GPG_TTY
 
 @noindent
 It is important that this environment variable always reflects the
-output of the @code{tty} command.
+output of the @code{tty} command.  For W32 systems this option is not
+required.
 
 Please make sure that a proper pinentry program has been installed
 under the default filename (which is system dependant) or use the
@@ -128,6 +129,15 @@ Reads configuration from @var{file} instead of from the default
 per-user configuration file.  The default configuration file is named
 @file{gpg-agent.conf} and expected in the @file{.gnupg} directory directly
 below the home directory of the user.
+
+@item --homedir @var{dir}
+@opindex homedir
+Set the name of the home directory to @var{dir}. If his option is not
+used, the home directory defaults to @file{~/.gnupg}.  It is only
+recognized when given on the command line.  It also overrides any home
+directory stated through the environment variable @var{GNUPGHOME} or
+(on W32 systems) by means on the Registry entry
+@var{HKCU\Software\GNU\GnuPG:HomeDir}.
 
 @item -v
 @item --verbose
@@ -278,6 +288,21 @@ dependend and can be shown with the @code{--version} command.
 Use program @var{filename} as the Smartcard daemon.  The default is
 installation dependend and can be shown with the @code{--version}
 command.
+
+@item --use-standard-socket
+@itemx --no-use-standard-socket
+@opindex use-standard-socket
+@opindex no-use-standard-socket
+By enabling this option @command{gpg-agent} will listen on the socket
+named @file{S.gpg-agent}, located in the home directory, and not create
+a random socket below a temporary directory.  Tools connecting to
+@command{gpg-agent} should first try to connect to the socket given in
+environment variable @var{GPG_AGENT_INFO} and the fall back to this
+socket.  This option may not be used if the home directory is mounted as
+a remote file system.  
+
+@noindent
+Note, that as of now, W32 systems default to this option.
 
 
 @item --display @var{string}

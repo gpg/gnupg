@@ -1,6 +1,12 @@
 Noteworthy changes in version 1.9.14
 -------------------------------------------------
 
+ * [gpg-agent] New option --use-standard-socket to allow the use of a
+   fixed socket.  gpgsm falls back to this socket if GPG_AGENT_INFO
+   has not been set.
+
+ * Ported to MS Windows.
+
 
 Noteworthy changes in version 1.9.13 (2004-12-03)
 -------------------------------------------------

@@ -209,7 +209,7 @@ start_dirmngr (void)
       infostr = xstrdup (infostr);
       if (!try_default && *infostr)
         {
-          if ( !(p = strchr (infostr, ':')) || p == infostr)
+          if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
             {
               log_error (_("malformed DIRMNGR_INFO environment variable\n"));
               xfree (infostr);

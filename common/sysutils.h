@@ -28,11 +28,19 @@ const unsigned char *get_session_marker (size_t *rlen);
 int check_permissions (const char *path,int extension,int checkonly);
 
 #ifdef HAVE_W32_SYSTEM
+/* Windows declares sleep as obsolete, but provides a definition for
+   _sleep but non for the still existing sleep.  */
+#define sleep(a) _sleep ((a))
+
 /*-- w32reg.c --*/
 char *read_w32_registry_string( const char *root,
 				const char *dir, const char *name );
 int write_w32_registry_string(const char *root, const char *dir,
                               const char *name, const char *value);
+
 #endif /*HAVE_W32_SYSTEM*/
+
+
+
 
 #endif /*GNUPG_COMMON_SYSUTILS_H*/

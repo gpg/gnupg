@@ -1,3 +1,11 @@
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (start_agent): Before starting a pipe server start
+	to connect to a server on the standard socket.  Use PATHSEP
+	* call-dirmngr.c (start_dirmngr): Use PATHSEP.
+
+	* import.c: Include unistd.h for dup and close.
+
 2004-12-18  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.h (map_assuan_err): Define in terms of

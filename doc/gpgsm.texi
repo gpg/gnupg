@@ -236,6 +236,16 @@ per-user configuration file.  The default configuration file is named
 @file{gpgsm.conf} and expected in the @file{.gnupg} directory directly
 below the home directory of the user.
 
+@item --homedir @var{dir}
+@opindex homedir
+Set the name of the home directory to @var{dir}. If his option is not
+used, the home directory defaults to @file{~/.gnupg}.  It is only
+recognized when given on the command line.  It also overrides any home
+directory stated through the environment variable @var{GNUPGHOME} or
+(on W32 systems) by means on the Registry entry
+@var{HKCU\Software\GNU\GnuPG:HomeDir}.
+
+
 @item -v
 @item --verbose
 @opindex v

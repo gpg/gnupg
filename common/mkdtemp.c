@@ -35,7 +35,8 @@
 # define mkdir(a,b) mkdir(a)
 #endif
 
-char *mkdtemp(char *template)
+char *
+mkdtemp (char *template)
 {
   int attempts,idx,count=0;
   unsigned char *ch;

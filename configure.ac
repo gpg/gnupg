@@ -34,7 +34,7 @@ NEED_GPG_ERROR_VERSION=0.7
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.1.94
 
-NEED_LIBASSUAN_VERSION=0.6.6
+NEED_LIBASSUAN_VERSION=0.6.9
 
 NEED_KSBA_VERSION=0.9.7
 
@@ -252,15 +252,19 @@ AH_BOTTOM([
    than one character because the code assumes strlen()==1 */
 #ifdef HAVE_DOSISH_SYSTEM
 #define DIRSEP_C '\\'
-#define EXTSEP_C '.'
 #define DIRSEP_S "\\"
+#define EXTSEP_C '.'
 #define EXTSEP_S "."
+#define PATHSEP_C ';'
+#define PATHSEP_S ";"
 #define EXEEXT_S ".exe"
 #else
 #define DIRSEP_C '/'
-#define EXTSEP_C '.'
 #define DIRSEP_S "/"
+#define EXTSEP_C '.'
 #define EXTSEP_S "."
+#define PATHSEP_C ':'
+#define PATHSEP_S ":"
 #define EXEEXT_S ""
 #endif
 
@@ -278,9 +282,9 @@ AH_BOTTOM([
    comply with the GNU coding standards. */
 #ifdef HAVE_DRIVE_LETTERS
 #define GNUPG_BINDIR      "c:\\gnupg"
-#define GNUPG_LIBEXECDIR  "c:\\lib\\gnupg"
-#define GNUPG_LIBDIR      "c:\\lib\\gnupg"
-#define GNUPG_DATADIR     "c:\\lib\\gnupg"
+#define GNUPG_LIBEXECDIR  "c:\\gnupg"
+#define GNUPG_LIBDIR      "c:\\gnupg"
+#define GNUPG_DATADIR     "c:\\gnupg"
 #endif
 
 /* Setup the hardwired names of modules. */

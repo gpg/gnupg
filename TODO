@@ -95,3 +95,10 @@ might want to have an agent context for each service request
    This needs support in libksba/src/cert.c as well as in sm/*.c.
    Need test certs as well.  Same goes for CRL authorityKeyIdentifier.
 
+
+* Windows port
+** gpgsm's LISTKEYS does not yet work
+    Fix is to change everything to libestream
+** Signals are not support 
+    This means we can't reread a configuration
+

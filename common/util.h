@@ -150,6 +150,10 @@ char *strsep (char **stringp, const char *delim);
 #ifndef HAVE_TTYNAME
 char *ttyname (int fd);
 #endif
+#ifndef HAVE_MKDTEMP
+char *mkdtemp (char *template);
+#endif
+
 
 /*-- some macros to replace ctype ones and avoid locale problems --*/
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')

@@ -81,41 +81,53 @@ start_agent (ctrl_t ctrl)
     {
       const char *pgmname;
       const char *argv[3];
+      char *sockname;
       int no_close_list[3];
       int i;
 
-      if (opt.verbose)
-        log_info (_("no running gpg-agent - starting one\n"));
-      
-      gpgsm_status (ctrl, STATUS_PROGRESS, "starting_agent ? 0 0");
+      /* First check whether we can connect at the standard
+         socket.  */
+      sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
+      rc = assuan_socket_connect (&ctx, sockname, 0);
+      xfree (sockname);
 
-      if (fflush (NULL))
+      if (rc)
         {
-          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-          log_error ("error flushing pending output: %s\n", strerror (errno));
-          return tmperr;
+          /* With no success start a new server.  */
+          if (opt.verbose)
+            log_info (_("no running gpg-agent - starting one\n"));
+          
+          gpgsm_status (ctrl, STATUS_PROGRESS, "starting_agent ? 0 0");
+          
+          if (fflush (NULL))
+            {
+              gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+              log_error ("error flushing pending output: %s\n",
+                         strerror (errno));
+              return tmperr;
+            }
+          
+          if (!opt.agent_program || !*opt.agent_program)
+            opt.agent_program = GNUPG_DEFAULT_AGENT;
+          if ( !(pgmname = strrchr (opt.agent_program, '/')))
+            pgmname = opt.agent_program;
+          else
+            pgmname++;
+
+          argv[0] = pgmname;
+          argv[1] = "--server";
+          argv[2] = NULL;
+
+          i=0;
+          if (log_get_fd () != -1)
+            no_close_list[i++] = log_get_fd ();
+          no_close_list[i++] = fileno (stderr);
+          no_close_list[i] = -1;
+
+          /* Connect to the agent and perform initial handshaking. */
+          rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv,
+                                    no_close_list);
         }
-
-      if (!opt.agent_program || !*opt.agent_program)
-        opt.agent_program = GNUPG_DEFAULT_AGENT;
-      if ( !(pgmname = strrchr (opt.agent_program, '/')))
-        pgmname = opt.agent_program;
-      else
-        pgmname++;
-
-      argv[0] = pgmname;
-      argv[1] = "--server";
-      argv[2] = NULL;
-
-      i=0;
-      if (log_get_fd () != -1)
-        no_close_list[i++] = log_get_fd ();
-      no_close_list[i++] = fileno (stderr);
-      no_close_list[i] = -1;
-
-      /* Connect to the agent and perform initial handshaking. */
-      rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv,
-                                no_close_list);
     }
   else
     {
@@ -123,7 +135,7 @@ start_agent (ctrl_t ctrl)
       int pid;
 
       infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, ':')) || p == infostr)
+      if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
         {
           log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
           xfree (infostr);

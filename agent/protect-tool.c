@@ -44,6 +44,8 @@
 #include "minip12.h"
 #include "simple-pwquery.h"
 #include "i18n.h"
+#include "sysutils.h"
+
 
 enum cmd_and_opt_values 
 { aNull = 0,
@@ -1065,12 +1067,12 @@ main (int argc, char **argv )
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 
 
-#ifdef HAVE_W32_SYSTEM
-  opt_homedir = read_w32_registry_string ( NULL,
-                                           "Software\\GNU\\GnuPG", "HomeDir" );
-#else /*!HAVE_W32_SYSTEM*/
   opt_homedir = getenv ("GNUPGHOME");
-#endif /*!HAVE_W32_SYSTEM*/
+#ifdef HAVE_W32_SYSTEM
+  if (!opt_homedir || !*opt_homedir)
+    opt_homedir = read_w32_registry_string (NULL,
+                                            "Software\\GNU\\GnuPG", "HomeDir");
+#endif /*HAVE_W32_SYSTEM*/
   if (!opt_homedir || !*opt_homedir)
     opt_homedir = GNUPG_DEFAULT_HOMEDIR;
 
@@ -1162,7 +1164,9 @@ get_passphrase (int promptno)
   char *pw;
   int err;
   const char *desc;
+#ifdef HAVE_LANGINFO_CODESET
   char *orig_codeset = NULL;
+#endif
   int error_msgno;
   
 

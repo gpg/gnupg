@@ -1,5 +1,11 @@
 2004-12-20  Werner Koch  <wk@g10code.com>
 
+	* gpg-agent.c (main) [W32]: Now that Mutexes work we can remove
+	the pth_init kludge.
+	(main): Add new options --[no-]use-standard-socket.
+	(check_for_running_agent): Check whether it is running on the
+	standard socket.
+
 	* call-scd.c (init_membuf, put_membuf, get_membuf): Removed.  We
 	now use the identical implementation from ../common/membuf.c.
 

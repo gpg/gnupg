@@ -84,13 +84,14 @@ enum cmd_and_opt_values
   oDisablePth,
   oDefCacheTTL,
   oMaxCacheTTL,
+  oUseStandardSocket,
+  oNoUseStandardSocket,
 
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
   oKeepTTY,
-  oKeepDISPLAY,
-
-aTest };
+  oKeepDISPLAY
+};
 
 
 
@@ -115,6 +116,9 @@ static ARGPARSE_OPTS opts[] = {
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
   { oDisablePth, "disable-pth", 0, N_("do not allow multiple connections")},
+  { oUseStandardSocket, "use-standard-socket", 0,
+                      N_("use a standard location for the socket")},
+  { oNoUseStandardSocket, "no-use-standard-socket", 0, "@"},
 
   { oPinentryProgram, "pinentry-program", 2 ,
                                N_("|PGM|use PGM as the PIN-Entry program") },
@@ -154,7 +158,7 @@ static int shutdown_pending;
 static int maybe_setuid = 1;
 
 /* Name of the communication socket */
-static char socket_name[128];
+static char *socket_name;
 
 /* Default values for options passed to the pinentry. */
 static char *default_display;
@@ -177,12 +181,11 @@ static char *current_logfile;
 static void create_directories (void);
 #ifdef USE_GNU_PTH
 static void handle_connections (int listen_fd);
-
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
-
 #endif /*USE_GNU_PTH*/
-static void check_for_running_agent (void);
+
+static int check_for_running_agent (int);
 
 
 
@@ -293,7 +296,7 @@ set_debug (void)
 static void
 cleanup (void)
 {
-  if (*socket_name)
+  if (socket_name && *socket_name)
     {
       char *p;
 
@@ -419,6 +422,7 @@ main (int argc, char **argv )
   int debug_wait = 0;
   int disable_pth = 0;
   int gpgconf_list = 0;
+  int standard_socket = 0;
   gpg_error_t err;
 
 
@@ -437,17 +441,12 @@ main (int argc, char **argv )
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
 #ifdef USE_GNU_PTH
-#ifdef HAVE_W32_SYSTEM
-  /* For W32 we need pth.  */
-  pth_init ();
-#else
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
-#endif
 #endif /*USE_GNU_PTH*/
 
 
@@ -468,18 +467,28 @@ main (int argc, char **argv )
 
   may_coredump = disable_core_dumps ();
 
+  /* Set default options.  */
   parse_rereadable_options (NULL, 0); /* Reset them to default values. */
-
+#ifdef HAVE_W32_SYSTEM
+  standard_socket = 1;  /* Under Windows we always use a standard
+                           socket.  */
+#endif
+  
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
-  
+
+
   opt.homedir = getenv("GNUPGHOME");
+#ifdef HAVE_W32_SYSTEM
+  if (!opt.homedir || !*opt.homedir)
+    opt.homedir = read_w32_registry_string (NULL,
+                                            "Software\\GNU\\GnuPG", "HomeDir");
+#endif /*HAVE_W32_SYSTEM*/
   if (!opt.homedir || !*opt.homedir)
     opt.homedir = GNUPG_DEFAULT_HOMEDIR;
 
-
-  /* check whether we have a config file on the commandline */
+  /* Check whether we have a config file on the commandline */
   orig_argc = argc;
   orig_argv = argv;
   pargs.argc = &argc;
@@ -508,7 +517,6 @@ main (int argc, char **argv )
   /* 
      Now we are now working under our real uid 
   */
-
 
   if (default_config)
     configname = make_filename (opt.homedir, "gpg-agent.conf", NULL );
@@ -583,6 +591,9 @@ main (int argc, char **argv )
         case oLCctype: default_lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: default_lc_messages = xstrdup (pargs.r.ret_str);
           break;
+
+        case oUseStandardSocket: standard_socket = 1; break;
+        case oNoUseStandardSocket: standard_socket = 0; break;
 
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
@@ -695,7 +706,7 @@ main (int argc, char **argv )
   if (!pipe_server && !is_daemon)
     {
       log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX); 
-      check_for_running_agent ();
+      check_for_running_agent (0);
       agent_exit (0);
     }
   
@@ -736,6 +747,7 @@ main (int argc, char **argv )
   else
     { /* Regular server mode */
       int fd;
+      int rc;
       pid_t pid;
       int len;
       struct sockaddr_un serv_addr;
@@ -750,28 +762,28 @@ main (int argc, char **argv )
         unsetenv ("DISPLAY");
 #endif
 
-      *socket_name = 0;
-      snprintf (socket_name, DIM(socket_name)-1,
-                "/tmp/gpg-XXXXXX/S.gpg-agent");
-      socket_name[DIM(socket_name)-1] = 0;
-      p = strrchr (socket_name, '/');
-      if (!p)
-        BUG ();
-      *p = 0;;
-
-#ifndef HAVE_W32_SYSTEM
-      if (!mkdtemp(socket_name))
+      /* Create the socket name . */
+      if (standard_socket)
+        socket_name = make_filename (opt.homedir, "S.gpg-agent", NULL);
+      else
         {
-          log_error ("can't create directory `%s': %s\n",
-	             socket_name, strerror(errno) );
-          exit (1);
+          socket_name = xstrdup ("/tmp/gpg-XXXXXX/S.gpg-agent");
+          p = strrchr (socket_name, '/');
+          if (!p)
+            BUG ();
+          *p = 0;;
+          if (!mkdtemp(socket_name))
+            {
+              log_error (_("can't create directory `%s': %s\n"),
+                         socket_name, strerror(errno) );
+              exit (1);
+            }
+          *p = '/';
         }
-#endif
-      *p = '/';
 
-      if (strchr (socket_name, ':') )
+      if (strchr (socket_name, PATHSEP_C) )
         {
-          log_error ("colons are not allowed in the socket name\n");
+          log_error ("`%s' are not allowed in the socket name\n", PATHSEP_S);
           exit (1);
         }
       if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path ) 
@@ -797,13 +809,22 @@ main (int argc, char **argv )
       len = (offsetof (struct sockaddr_un, sun_path)
              + strlen(serv_addr.sun_path) + 1);
 
-      if (
 #ifdef HAVE_W32_SYSTEM
-          _w32_sock_bind
+      rc = _w32_sock_bind (fd, (struct sockaddr*)&serv_addr, len);
+      if (rc == -1 && standard_socket)
+        {
+          remove (socket_name);
+          rc = bind (fd, (struct sockaddr*)&serv_addr, len);
+        }
 #else
-          bind 
+      rc = bind (fd, (struct sockaddr*)&serv_addr, len);
+      if (rc == -1 && standard_socket && errno == EADDRINUSE)
+        {
+          remove (socket_name);
+          rc = bind (fd, (struct sockaddr*)&serv_addr, len);
+        }
 #endif
-          (fd, (struct sockaddr*)&serv_addr, len) == -1)
+      if (rc == -1)
         {
           log_error ("error binding socket to `%s': %s\n",
                      serv_addr.sun_path, strerror (errno) );
@@ -823,7 +844,10 @@ main (int argc, char **argv )
 
 
       fflush (NULL);
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
+      pid = getpid ();
+      printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
+#else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
       if (pid == (pid_t)-1) 
         {
@@ -1286,53 +1310,72 @@ handle_connections (int listen_fd)
 
 
 /* Figure out whether an agent is available and running. Prints an
-   error if not.  */
-static void
-check_for_running_agent ()
+   error if not.  Usually started with MODE 0. */
+static int
+check_for_running_agent (int mode)
 {
   int rc;
   char *infostr, *p;
   assuan_context_t ctx;
   int prot, pid;
 
-  infostr = getenv ("GPG_AGENT_INFO");
-  if (!infostr || !*infostr)
+  if (!mode)
     {
-      log_error (_("no gpg-agent running in this session\n"));
-      return;
+      infostr = getenv ("GPG_AGENT_INFO");
+      if (!infostr || !*infostr)
+        {
+          if (!check_for_running_agent (1))
+            return 0; /* Okay, its running on the standard socket. */
+          log_error (_("no gpg-agent running in this session\n"));
+          return -1;
+        }
+
+      infostr = xstrdup (infostr);
+      if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
+        {
+          xfree (infostr);
+          if (!check_for_running_agent (1))
+            return 0; /* Okay, its running on the standard socket. */
+          log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
+          return -1;
+        }
+
+      *p++ = 0;
+      pid = atoi (p);
+      while (*p && *p != PATHSEP_C)
+        p++;
+      prot = *p? atoi (p+1) : 0;
+      if (prot != 1)
+        {
+          xfree (infostr);
+          log_error (_("gpg-agent protocol version %d is not supported\n"),
+                     prot);
+          if (!check_for_running_agent (1))
+            return 0; /* Okay, its running on the standard socket. */
+          return -1;
+        }
+    }
+  else /* MODE != 0 */
+    {
+      infostr = make_filename (opt.homedir, "S.gpg-agent", NULL);
     }
 
-  infostr = xstrdup (infostr);
-  if ( !(p = strchr (infostr, ':')) || p == infostr)
-    {
-      log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
-      xfree (infostr);
-      return;
-    }
-
-  *p++ = 0;
-  pid = atoi (p);
-  while (*p && *p != ':')
-    p++;
-  prot = *p? atoi (p+1) : 0;
-  if (prot != 1)
-    {
-      log_error (_("gpg-agent protocol version %d is not supported\n"),
-                 prot);
-      xfree (infostr);
-      return;
-    }
 
   rc = assuan_socket_connect (&ctx, infostr, pid);
   xfree (infostr);
   if (rc)
     {
-      log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
-      return;
+      if (!mode && !check_for_running_agent (1))
+        return 0; /* Okay, its running on the standard socket. */
+
+      if (!mode)
+        log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+      return -1;
     }
 
   if (!opt.quiet)
     log_info ("gpg-agent running and available\n");
 
   assuan_disconnect (ctx);
+  return 0;
 }
