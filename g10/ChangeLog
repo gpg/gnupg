@@ -1,5 +1,8 @@
 2002-05-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (sign_uids): Nonrevocable key signatures cause an
+	automatic promotion to v4.
+
 	* exec.c: Provide stubs for exec_ functions when NO_EXEC is
 	defined.
 

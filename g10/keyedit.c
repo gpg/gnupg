@@ -283,9 +283,12 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
       for(node=keyblock;node;node=node->next)
 	if(node->pkt->pkttype==PKT_SIGNATURE &&
 	   node->pkt->pkt.signature->version>3)
-	  all_v3=0;
+	  {
+	    all_v3=0;
+	    break;
+	  }
 
-    if(local || opt.cert_policy_url || opt.cert_notation_data)
+    if(local || nonrevocable || opt.cert_policy_url || opt.cert_notation_data)
       force_v4=1;
 
     /* build a list of all signators.
