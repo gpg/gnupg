@@ -13,6 +13,7 @@ bin_PROGRAMS = gpg
 common_source =  \
 	      build-packet.c	\
 	      compress.c	\
+	      basicdefs.h	\
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
@@ -86,9 +87,4 @@ install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel \
 				$(DESTDIR)$(pkgdatadir)/options.skel
-	@set -e;\
-	 if test -f $(DESTDIR)$(bindir)/gpgm ; then \
-	   echo "removing obsolete gpgm binary" ;   \
-	   rm $(DESTDIR)$(bindir)/gpgm ;	    \
-	 fi
 

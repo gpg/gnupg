@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.9.11\n"
-"POT-Creation-Date: 1999-10-26 13:53+0200\n"
+"POT-Creation-Date: 1999-10-26 18:57+0200\n"
 "PO-Revision-Date: 1999-09-07 10:59+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"

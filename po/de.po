@@ -3,7 +3,7 @@
 # Walter Koch <koch@hsp.de>, 1998.
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-10-26 13:53+0200\n"
+"POT-Creation-Date: 1999-10-26 18:57+0200\n"
 "PO-Revision-Date: 1999-09-04 22:36+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"

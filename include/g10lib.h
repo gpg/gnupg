@@ -29,7 +29,7 @@
   #error  gcrypt.h already included
 #endif
 
-#include "gcrypt.h"
+#include <gcrypt.h>
 
 #ifdef G10_I18N_H
   #error i18n should not be included here

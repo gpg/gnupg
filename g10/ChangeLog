@@ -1,3 +1,8 @@
+Tue Oct 26 20:03:44 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am (basicdefs.h): Added.
+	(install-data-local): Removed the handling for historic gpgm.
+
 Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* misc.c (openpgp_cipher_test_algo): New.
