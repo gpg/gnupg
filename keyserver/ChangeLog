@@ -1,3 +1,8 @@
+2003-01-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Fix regexp to work properly if the "keyid" is
+	not a keyid, but rather a text string from the user ID.
+
 2002-11-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (send_key), gpgkeys_ldap.c (send_key): Properly

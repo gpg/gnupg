@@ -44,7 +44,7 @@ while(<STDIN>)
 {
     last if($_ eq "\n");
 
-    if(/^COMMAND (\w+)/)
+    if(/^COMMAND (\S+)/)
     {
 	$command=$1;
     }
@@ -59,7 +59,7 @@ while(<STDIN>)
 	$program=$1;
     }
 
-    if(/^OPTION (\w+)/)
+    if(/^OPTION (\S+)/)
     {
 	if($1=~/^verbose$/i)
 	{
@@ -175,7 +175,7 @@ if($command=~/send/i)
 
 	while(<STDIN>)
 	{
-	    if(/^KEY (\w+) BEGIN$/)
+	    if(/^KEY (\S+) BEGIN$/)
 	    {
 		$key=$1;
 		last;
@@ -184,7 +184,7 @@ if($command=~/send/i)
 
 	while(<STDIN>)
 	{
-	    if(/^KEY \w+ END$/)
+	    if(/^KEY \S+ END$/)
 	    {
 		last;
 	    }
