@@ -72,9 +72,7 @@ map_assuan_err (int err)
     case ASSUAN_Not_Confirmed:   ec = GPG_ERR_NOT_CONFIRMED; break;
     case ASSUAN_Invalid_Id:      ec = GPG_ERR_INV_ID; break;
 
-#if 0 /* FIXME: Enable this after releasing libgpg error 0.7 */
     case ASSUAN_Locale_Problem:  ec = GPG_ERR_LOCALE_PROBLEM; break;
-#endif
 
     default:
       ec = err < 100? GPG_ERR_ASSUAN_SERVER_FAULT : GPG_ERR_ASSUAN;

@@ -1,3 +1,11 @@
+2004-03-11  Werner Koch  <wk@gnupg.org>
+
+	* dynload.h [__MINGW32__]: Define RTLD_LAZY.
+
+2004-03-09  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_assuan_err): Map the Locale_Problem item.
+
 2004-03-03  Werner Koch  <wk@gnupg.org>
 
 	* asshelp.c, asshelp.h: New.
