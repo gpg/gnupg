@@ -352,6 +352,9 @@ more arguments in future versions.
         The output was truncated to MAXNO items.  This status code is issued
         for certain external requests
 
+    ATTRIBUTE <fpr> <octets> <type> <index> <count> <timestamp> <expiredate> <flags>
+        Issued when an attribute packet was detected.
+
 
 Key generation
 ==============

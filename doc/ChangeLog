@@ -1,3 +1,7 @@
+2002-06-03  Timo Schulz  <ts@winpt.org>
+
+	* DETAILS: Add ATTRIBUTE.
+	
 2002-05-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Add "edit/addrevoker".  Document --desig-revoke.  Note
