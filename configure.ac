@@ -600,10 +600,6 @@ case "${target}" in
     *-linux*)
         PRINTABLE_OS_NAME="GNU/Linux"
         ;;
-dnl let that after linux to avoid gnu-linux problems
-    *-gnu*)
-        PRINTABLE_OS_NAME="GNU/Hurd"
-        ;;
     *)
         PRINTABLE_OS_NAME=`uname -s || echo "Unknown"`
         ;;
