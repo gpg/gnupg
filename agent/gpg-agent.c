@@ -64,6 +64,9 @@ enum cmd_and_opt_values
   oFlush,
   oLogFile,
   oServer,
+  
+  oPinentryProgram,
+
 aTest };
 
 
@@ -72,7 +75,6 @@ static ARGPARSE_OPTS opts[] = {
   
   { 301, NULL, 0, N_("@Options:\n ") },
 
-  /* FIXME: add option --server */
   { oServer,   "server",     0, N_("run in server mode") },
   { oVerbose, "verbose",   0, N_("verbose") },
   { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
@@ -87,6 +89,10 @@ static ARGPARSE_OPTS opts[] = {
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
   { oShutdown, "shutdown"  ,0, N_("shutdown the agent")},
   { oFlush   , "flush"     ,0, N_("flush the cache")},
+
+  { oPinentryProgram, "pinentry-program", 2 , "Path of PIN Entry program" },
+
+
   {0}
 };
 
@@ -383,6 +389,8 @@ main (int argc, char **argv )
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;
         case oServer: server_mode = 1; break;
+
+        case oPinentryProgram: opt.pinentry_program = pargs.r.ret_str; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}

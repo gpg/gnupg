@@ -59,6 +59,10 @@ enum {
   GNUPG_Invalid_Session_Key = 30,
   GNUPG_Invalid_Sexp = 31,
   GNUPG_Unsupported_Algorithm = 32,
+  GNUPG_No_PIN_Entry = 33,
+  GNUPG_PIN_Entry_Error = 34,
+  GNUPG_Bad_PIN = 35,
+  GNUPG_Bad_Passphrase = 36,
 };
 
 /* Status codes - fixme: should go into another file */

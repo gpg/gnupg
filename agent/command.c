@@ -79,6 +79,11 @@ rc_to_assuan_status (int rc)
     case GNUPG_No_Secret_Key:     rc = ASSUAN_No_Secret_Key; break;
     case GNUPG_Invalid_Data:      rc = ASSUAN_Invalid_Data; break;
 
+    case GNUPG_Bad_PIN:
+    case GNUPG_Bad_Passphrase:
+      rc = ASSUAN_No_Secret_Key;
+      break;
+
     case GNUPG_Read_Error: 
     case GNUPG_Write_Error:
     case GNUPG_IO_Error: 
@@ -295,13 +300,11 @@ start_command_handler (void)
   ctrl.server_local->assuan_ctx = ctx;
   ctrl.server_local->message_fd = -1;
 
-  log_info ("Assuan started\n");
   for (;;)
     {
       rc = assuan_accept (ctx);
       if (rc == -1)
         {
-          log_info ("Assuan terminated\n");
           break;
         }
       else if (rc)

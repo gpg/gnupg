@@ -30,6 +30,33 @@
 
 #include "agent.h"
 
+static int
+unprotect (GCRY_SEXP s_skey)
+{
+  struct pin_entry_info_s *pi;
+  int rc;
+
+  /* fixme: check whether the key needs unprotection */
+
+  /* fixme: allocate the pin in secure memory */
+  pi = xtrycalloc (1, sizeof (*pi) + 100);
+  pi->max_length = 100;
+  pi->min_digits = 4;
+  pi->max_digits = 8;
+  pi->max_tries = 3;
+
+  rc = agent_askpin (NULL, pi);
+  /* fixme: actually unprotect the key and ask again until we get a valid
+     PIN - agent_askpin takes care of counting failed tries */
+
+  xfree (pi);
+  return rc;
+}
+
+
+
+
+
 /* Return the secret key as an S-Exp after locating it using the grip.  Returns NULL if key is not available. */
 GCRY_SEXP
 agent_key_from_file (const unsigned char *grip)
@@ -86,6 +113,17 @@ agent_key_from_file (const unsigned char *grip)
       return NULL;
     }
 
+  rc = unprotect (s_skey);
+  if (rc)
+    {
+      gcry_sexp_release (s_skey);
+      log_error ("failed to unprotect the secret key: %s\n",
+                 gcry_strerror (rc));
+      return NULL;
+    }
+
   return s_skey;
 }
+
+
 

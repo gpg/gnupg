@@ -34,6 +34,8 @@ struct {
   int quiet;        /* be as quiet as possible */
   int dry_run;      /* don't change any persistent data */
   const char *homedir; /* configuration directory name */
+  const char *pinentry_program; 
+
 } opt;
 
 
@@ -66,9 +68,22 @@ struct server_control_s {
 };
 typedef struct server_control_s *CTRL;
 
+
+struct pin_entry_info_s {
+  int min_digits; /* min. number of digits required or 0 for freeform entry */
+  int max_digits; /* max. number of allowed digits allowed*/
+  int max_tries;
+  int failed_tries;
+  size_t max_length; /* allocated length of the buffer */
+  char pin[1];
+};
+
+
 /*-- gpg-agent.c --*/
 void agent_exit (int rc);
 
+/*-- trans.c --*/
+const char *trans (const char *text);
 
 /*-- command.c --*/
 void start_command_handler (void);
@@ -76,6 +91,8 @@ void start_command_handler (void);
 /*-- findkey.c --*/
 GCRY_SEXP agent_key_from_file (const unsigned char *grip);
 
+/*-- query.c --*/
+int agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo);
 
 /*-- pksign.c --*/
 int agent_pksign (CTRL ctrl, FILE *outfp);

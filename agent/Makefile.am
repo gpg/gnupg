@@ -26,6 +26,8 @@ LDFLAGS = @LDFLAGS@
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
 	command.c \
+	query.c \
+	trans.c \
 	findkey.c \
 	pksign.c \
 	pkdecrypt.c
