@@ -70,9 +70,6 @@
 #include <string.h>
 
 #include <windows.h>
-#ifdef __CYGWIN32__
-# include <winioctl.h>
-#endif
 
 
 #include "types.h"

@@ -156,7 +156,7 @@ _("\n"
 	(*add)( buffer, n, requester );
 	length -= n;
     }
-    memset(buffer, 0, sizeof(buffer) );
+    wipememory(buffer, sizeof(buffer) );
 
     return 0; /* success */
 }

@@ -1,3 +1,19 @@
+2002-11-06  David Shaw  <dshaw@jabberwocky.com>
+
+ 	* rndw32.c [__CYGWIN32__]: Don't include winioctl.h - it is not
+	required anymore. (From Werner)
+
+	* random.c (read_seed_file,update_random_seed_file): Use binary
+	mode for __CYGWIN__. (From Werner)
+
+	* blowfish.c (burn_stack), cast5.c (burn_stack), des.c
+        (burn_stack), md5.c (burn_stack), random.c (burn_stack, read_pool,
+	fast_random_poll), rijndael.c (burn_stack), rmd160.c (burn_stack),
+	rndegd.c (rndegd_gather_random), rndlinux.c
+        (rndlinux_gather_random), sha1.c (burn_stack), tiger.c
+	(burn_stack), twofish.c (burn_stack): Replace various calls to
+	memset() with the more secure wipememory().
+
 2002-11-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.c (string_to_cipher_algo), md.c (string_to_digest_algo):
