@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.2.1 (unreleased)
+Noteworthy changes in version 1.2.1 (2002-10-25)
 ------------------------------------------------
 
     * The library dependencies for OpenLDAP seem to change fairly
@@ -15,6 +15,10 @@ Noteworthy changes in version 1.2.1 (unreleased)
       ultimately trusted keys from the config file.  It is identical
       to using --edit and "trust" to change a key to ultimately
       trusted.
+
+    * The usual bug fixes as well as fixes to build problems on some
+      systems.
+
 
 Noteworthy changes in version 1.2.0 (2002-09-21)
 ------------------------------------------------
