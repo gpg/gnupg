@@ -1,3 +1,10 @@
+2005-03-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* card-util.c (command_generator, card_edit_completion)
+	[GNUPG_MAJOR_VERSION==1 && HAVE_LIBREADLINE]: New functions to
+	enable command completion in the --card-edit menu.
+	(card_edit): Call them here.
+
 2005-03-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (command_generator, keyedit_completion)

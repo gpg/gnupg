@@ -36,6 +36,10 @@
 #include "main.h"
 #include "keyserver-internal.h"
 #if GNUPG_MAJOR_VERSION == 1
+#ifdef HAVE_LIBREADLINE
+#include <stdio.h>
+#include <readline/readline.h>
+#endif
 #include "cardglue.h"
 #else
 #include "call-agent.h"
@@ -1271,13 +1275,8 @@ card_store_subkey (KBNODE node, int use)
 #endif
 }
 
-
-/* Menu to edit all user changeable values on an OpenPGP card.  Only
-   Key creation is not handled here. */
-void
-card_edit (STRLIST commands)
-{
-  enum cmdids {
+enum cmdids
+  {
     cmdNOP = 0,
     cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
@@ -1285,12 +1284,14 @@ card_edit (STRLIST commands)
     cmdINVCMD
   };
 
-  static struct {
-    const char *name;
-    enum cmdids id;
-    int admin_only;
-    const char *desc;
-  } cmds[] = {
+static struct
+{
+  const char *name;
+  enum cmdids id;
+  int admin_only;
+  const char *desc;
+} cmds[] =
+  {
     { "quit"    , cmdQUIT  , 0, N_("quit this menu")},
     { "q"       , cmdQUIT  , 0, NULL },
     { "admin"   , cmdADMIN , 0, N_("show admin commands")},
@@ -1313,7 +1314,55 @@ card_edit (STRLIST commands)
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { NULL, cmdINVCMD, 0, NULL } 
   };
- 
+
+#if GNUPG_MAJOR_VERSION == 1 && defined (HAVE_LIBREADLINE)
+
+/* These two functions are used by readline for command completion. */
+
+static char *command_generator(const char *text,int state)
+{
+  static int list_index,len;
+  const char *name;
+
+  /* If this is a new word to complete, initialize now.  This includes
+     saving the length of TEXT for efficiency, and initializing the
+     index variable to 0. */
+  if(!state)
+    {
+      list_index=0;
+      len=strlen(text);
+    }
+
+  /* Return the next partial match */
+  while((name=cmds[list_index].name))
+    {
+      /* Only complete commands that have help text */
+      if(cmds[list_index++].desc && strncmp(name,text,len)==0)
+	return strdup(name);
+    }
+
+  return NULL;
+}
+
+static char **card_edit_completion(const char *text, int start, int end)
+{
+  /* If we are at the start of a line, we try and command-complete.
+     If not, just do nothing for now. */
+
+  if(start==0)
+    return rl_completion_matches(text,command_generator);
+
+  rl_attempted_completion_over=1;
+
+  return NULL;
+}
+#endif
+
+/* Menu to edit all user changeable values on an OpenPGP card.  Only
+   Key creation is not handled here. */
+void
+card_edit (STRLIST commands)
+{
   enum cmdids cmd = cmdNOP;
   int have_commands = !!commands;
   int redisplay = 1;
@@ -1374,8 +1423,14 @@ card_edit (STRLIST commands)
 
 	    if (!have_commands)
               {
+#if GNUPG_MAJOR_VERSION == 1
+		tty_enable_completion(card_edit_completion);
+#endif
 		answer = cpr_get_no_help("cardedit.prompt", _("Command> "));
 		cpr_kill_prompt();
+#if GNUPG_MAJOR_VERSION == 1
+		tty_disable_completion();
+#endif
 	    }
 	    trim_spaces(answer);
 	}
