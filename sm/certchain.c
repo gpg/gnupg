@@ -127,6 +127,13 @@ check_cert_policy (ksba_cert_t cert)
       log_error ("failed to open `%s': %s\n",
                  opt.policy_file, strerror (errno));
       xfree (policies);
+      /* With no critical policies this is only a warning */
+      if (!any_critical)
+        {
+          log_info (_("note: certificate policy not allowed\n"));
+          return 0;
+        }
+      log_error (_("certificate policy not allowed\n"));
       return gpg_error (GPG_ERR_NO_POLICY_MATCH);
     }
 
@@ -141,13 +148,13 @@ check_cert_policy (ksba_cert_t cert)
         {
           if (!fgets (line, DIM(line)-1, fp) )
             {
-              gpg_error_t tmperr;
+              gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
 
               xfree (policies);
               if (feof (fp))
                 {
                   fclose (fp);
-                  /* with no critical policies this is only a warning */
+                  /* With no critical policies this is only a warning */
                   if (!any_critical)
                     {
                       log_info (_("note: certificate policy not allowed\n"));
@@ -156,7 +163,6 @@ check_cert_policy (ksba_cert_t cert)
                   log_error (_("certificate policy not allowed\n"));
                   return gpg_error (GPG_ERR_NO_POLICY_MATCH);
                 }
-              tmperr = gpg_error (gpg_err_code_from_errno (errno));
               fclose (fp);
               return tmperr;
             }
@@ -193,10 +199,10 @@ check_cert_policy (ksba_cert_t cert)
       for (haystack=policies; (p=strstr (haystack, allowed)); haystack = p+1)
         {
           if ( !(p == policies || p[-1] == '\n') )
-            continue; /* does not match the begin of a line */
+            continue; /* Does not match the begin of a line. */
           if (p[strlen (allowed)] != ':')
-            continue; /* the length does not match */
-          /* Yep - it does match so return okay */
+            continue; /* The length does not match. */
+          /* Yep - it does match so return okay. */
           fclose (fp);
           xfree (policies);
           return 0;

@@ -1,5 +1,9 @@
 2004-01-30  Werner Koch  <wk@gnupg.org>
 
+	* certchain.c (check_cert_policy): Fixed read error checking.
+	(check_cert_policy): With no critical policies issue only a
+	warning if the policy file does not exists.
+
 	* sign.c (add_certificate_list): Decrement N for the first cert.
 
 2004-01-29  Werner Koch  <wk@gnupg.org>
