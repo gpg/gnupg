@@ -17,10 +17,12 @@ if [ "$1" = "--dry-run" ]; then
    shift
 fi
 
-if [ -z "$1" -o -z "$2" ]; then
-   echo "usage: mail-signed-keys keyring signedby" >&2
+if [ -z "$1" -o -z "$2" -o -z "$3" ]; then
+   echo "usage: mail-signed-keys keyring signedby signame" >&2
    exit 1
 fi
+
+signame="$3"
 
 if [ ! -f $1 ]; then
     echo "mail-signed-keys: '$1': no such file" >&2
@@ -30,7 +32,7 @@ fi
 [ -f '.#tdb.tmp' ] && rm '.#tdb.tmp'
 ro="--homedir . --no-options --trustdb-name=./.#tdb.tmp --dry-run --lock-never --no-default-keyring --keyring $1"
 
-signedby=`gpg $ro --fast-list-mode --list-keys --with-colons $2 \
+signedby=`gpg $ro --list-keys --with-colons $2 \
 	  2>/dev/null | awk -F: '$1=="pub" {print $5; exit 0}'`
 
 if [ -z "$signedby" ]; then
@@ -46,7 +48,8 @@ if [ "$dryrun" = "0" ]; then
 fi
 
 gpg $ro --check-sigs --with-colons 2>/dev/null \
-     | awk -F: -v signedby="$signedby" -v gpgopt="$ro" -v dryrun="$dryrun" '
+     | awk -F: -v signedby="$signedby" -v gpgopt="$ro" \
+       -v dryrun="$dryrun" -v signame="$signame"  '
 BEGIN	      { sendmail="/usr/lib/sendmail -oi -t " }
 $1 == "pub"   { nextkid=$5; nextuid=$10
 		if( uidcount > 0 ) { myflush() }
@@ -78,9 +81,10 @@ function myflush()
          print "Hi,"                                        | sendmail
          print ""                                           | sendmail
          print "Here you get back the signed key."          | sendmail
+	 print "Please send it yourself to a keyserver."    | sendmail
          print ""                                           | sendmail
-         print "ciao,"                                      | sendmail
-         print "     your Key Signator"                     | sendmail
+         print "Peace,"                                     | sendmail
+         print "      " signame                             | sendmail
          print ""                                           | sendmail
          cmd = "gpg " gpgopt " --export -a " kid " 2>/dev/null"
          while( (cmd | getline) > 0 ) {

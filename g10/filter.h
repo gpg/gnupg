@@ -68,7 +68,7 @@ struct unarmor_pump_s;
 typedef struct unarmor_pump_s *UnarmorPump;
 
 
-typedef struct {
+struct compress_filter_context_s {
     int status;
     void *opaque;   /* (used for z_stream) */
     byte *inbuf;
@@ -77,7 +77,9 @@ typedef struct {
     unsigned outbufsize;
     int algo;	 /* compress algo */
     int algo1hack;
-} compress_filter_context_t;
+    void (*release)(struct compress_filter_context_s*);
+};
+typedef struct compress_filter_context_s compress_filter_context_t;
 
 
 typedef struct {

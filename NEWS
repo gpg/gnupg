@@ -1,3 +1,7 @@
+    * The default cipher algorithm for encryption is now CAST5,
+      default default hash algorithm is SHA-1.  This will give us
+      better interoperability with other OpenPGP implementations.
+
     * Symmetric encrypted messages now use a fixed file size if
       possible.  This is a tradeoff: it breaks PGP 5, but fixes PGP 2,
       6, and 7.  Note this was only an issue with RFC-1991 style

@@ -390,6 +390,7 @@ free_packet( PACKET *pkt )
 	free_compressed( pkt->pkt.compressed);
 	break;
       case PKT_ENCRYPTED:
+      case PKT_ENCRYPTED_MDC:
 	free_encrypted( pkt->pkt.encrypted );
 	break;
       case PKT_PLAINTEXT:

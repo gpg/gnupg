@@ -273,10 +273,12 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    arg->r_opt = -arg->r_opt;
 		if( !opts[idx].short_opt )   /* unknown command/option */
 		    arg->r_opt = (opts[idx].flags & 256)? -7:-2;
-		else if( (opts[idx].flags & 8) ) /* no argument */
-		    arg->r_opt = -3;	       /* error */
-		else			       /* no or optional argument */
+		else if( !(opts[idx].flags & 7) ) /* does not take an arg */
 		    arg->r_type = 0;	       /* okay */
+		else if( (opts[idx].flags & 8) )  /* argument is optional */
+                    arg->r_type = 0;	       /* okay */
+		else			       /* required argument */
+		    arg->r_opt = -3;	       /* error */
 		break;
 	    }
 	    else if( state == 3 ) {	       /* no argument found */

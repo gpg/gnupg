@@ -266,10 +266,19 @@ compress_filter( void *opaque, int control,
 	    zfx->opaque = NULL;
 	    m_free(zfx->outbuf); zfx->outbuf = NULL;
 	}
+        if (zfx->release)
+          zfx->release (zfx);
     }
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "compress_filter";
     return rc;
+}
+
+
+static void
+release_context (compress_filter_context_t *ctx)
+{
+  m_free (ctx);
 }
 
 /****************
@@ -279,26 +288,19 @@ int
 handle_compressed( void *procctx, PKT_compressed *cd,
 		   int (*callback)(IOBUF, void *), void *passthru )
 {
-    compress_filter_context_t cfx;
+    compress_filter_context_t *cfx;
     int rc;
 
-    memset( &cfx, 0, sizeof cfx );
     if( cd->algorithm < 1 || cd->algorithm > 2	)
 	return G10ERR_COMPR_ALGO;
-    cfx.algo = cd->algorithm;
-
-    iobuf_push_filter( cd->buf, compress_filter, &cfx );
+    cfx = m_alloc_clear (sizeof *cfx);
+    cfx->algo = cd->algorithm;
+    cfx->release = release_context;
+    iobuf_push_filter( cd->buf, compress_filter, cfx );
     if( callback )
 	rc = callback(cd->buf, passthru );
     else
 	rc = proc_packets(procctx, cd->buf);
-  #if 0
-    iobuf_pop_filter( cd->buf, compress_filter, &cfx );
-    if( cd->len )
-	iobuf_set_limit( cd->buf, 0 ); /* disable the readlimit */
-    else
-	iobuf_clear_eof( cd->buf );
-  #endif
     cd->buf = NULL;
     return rc;
 }

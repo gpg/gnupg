@@ -86,7 +86,7 @@ encode_simple( const char *filename, int mode )
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
     
-    if (is_file_compressed(filename, &rc))
+    if (opt.compress == -1 && is_file_compressed(filename, &rc))
       {
         if (opt.verbose)
           log_info(_("`%s' already compressed\n"), filename);
@@ -290,7 +290,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  }
     }
 
-    if (is_file_compressed(filename, &rc2))
+    if (opt.compress == -1 && is_file_compressed(filename, &rc2))
       {
         if (opt.verbose)
           log_info(_("`%s' already compressed\n"), filename);

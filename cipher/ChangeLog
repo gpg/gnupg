@@ -1,3 +1,10 @@
+2002-04-06  Werner Koch  <wk@gnupg.org>
+
+	* rijndael.c (rijndael_get_info): We do only support a 128 bit
+	blocksize so it makes sense to change the algorithm strings to
+	AES.
+	* cipher.c (string_to_cipher_algo): Map "RIJNDAEL" to "AES".
+
 2002-02-14  Werner Koch  <wk@gnupg.org>
 
 	* random.c (mix_pool): Removed the failsafe stuff again.  It makes

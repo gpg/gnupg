@@ -1254,7 +1254,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	if(p && *p==0)
 	  sig->flags.exportable=0;
 
-	/* Find all revokation keys. Back to hashed area only. */
+	/* Find all revocation keys. Back to hashed area only. */
 	if(sig->sig_class==0x1F)
 	  {
 	    struct revocation_key *revkey;
@@ -1267,7 +1267,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 							    &len,&seq)))
 	      {
 		if(len==sizeof(struct revocation_key) &&
-		   revkey->class&0x80) /* 0x80 bit must be set */
+		   (revkey->class&0x80)) /* 0x80 bit must be set */
 		  {
 		    sig->revkey=m_realloc(sig->revkey,
 			  sizeof(struct revocation_key *)*(sig->numrevkeys+1));

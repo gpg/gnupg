@@ -1,8 +1,16 @@
+2002-04-08  Werner Koch  <wk@gnupg.org>
+
+	Fixed filename of last entry.
+
 2002-03-29  David Shaw  <dshaw@jabberwocky.com>
 
-	* strgutil.c (print_string, utf8_to_native): If a delimiter is
+	* miscutil.c (print_string, utf8_to_native): If a delimiter is
 	used, then quote the backslash character as well.  Problem noted
 	by Rainer Perske.
+
+2002-03-15  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (optfile_parse): Fixed missing argument handling.
 
 2002-02-28  Timo Schulz  <ts@winpt.org>
 

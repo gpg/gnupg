@@ -1,3 +1,43 @@
+2002-04-06  Werner Koch  <wk@gnupg.org>
+
+	* keyring.c (keyring_get_keyblock): Disable the keylist mode here.
+
+	* encode.c (encode_simple, encode_crypt): Only test on compressed
+	files if a compress level was not explicity set.
+
+	* keygen.c (keygen_set_std_prefs): Removed Blowfish and Twofish
+	from the list of default preferences, swapped the preferences of
+	RMD160 and SHA1.  Don't include a preference to 3DES unless the
+	IDEA kludge gets used.
+
+	* free-packet.c (free_packet): call free_encrypted also for
+	PKT_ENCRYPTED_MDC.
+
+	* compress.c (release_context): New.
+	(handle_compressed): Allocate the context and setup a closure to
+	release the context.  This is required because there is no
+	guarabntee that the filter gets popped from the chain at the end
+	of the function.  Problem noted by Timo and probably also the
+	cause for a couple of other reports.
+	(compress_filter): Use the release function if set.
+
+	* tdbio.c [__CYGWIN32__]: Don't rename ftruncate.  Noted by
+	Disastry.
+
+	* parse-packet.c (parse_signature): Put parens around a bit test.
+
+	* exec.c (make_tempdir): Double backslash for TMP directory
+	creation under Windows.  Better strlen the DIRSEP_S constants for
+	allocation measurements.
+
+	* decrypt.c (decrypt_messages): Release the passphrase aquired
+	by get_last_passphrase.
+
+2002-04-02  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (EXTRA_DIST): Removed OPTIONS an pubring.asc - they
+	are no longer of any use. 
+
 2002-04-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (parse_keyserver_options): fix auto-key-retrieve to
@@ -36,6 +76,16 @@
 	searches
 
 	* hkp.c (write_quoted): quote backslashes from keyserver searches
+
+2002-03-26  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (ask_keysize): Removed the warning for key sizes > 1536.
+
+2002-03-25  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (sign_uids): Use 2 strings and not a %s so that
+	translations can be done the right way.
+	* helptext.c: Fixed small typo.
 
 2002-03-23  David Shaw  <dshaw@jabberwocky.com>
 
@@ -94,6 +144,10 @@
 
 	* sign.c (clearsign_file): Allow --not-dash-escaped to work with
 	v3 keys.
+
+2002-03-14  Werner Koch  <wk@gnupg.org>
+
+	* main.h: Changed the default algorithms to CAST5 and SHA1.
 
 2002-03-13  David Shaw  <dshaw@jabberwocky.com>
 

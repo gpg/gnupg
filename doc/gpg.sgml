@@ -1538,7 +1538,6 @@ Allow the import and use of keys with user IDs which are not
 self-signed.  This is not recommended, as a non self-signed user ID is
 trivial to forge.
 </para></listitem></varlistentry>
-<varlistentry>
 
 <varlistentry>
 <term>--no-allow-non-selfsigned-uid</term>
@@ -1546,6 +1545,7 @@ trivial to forge.
 Reset the --allow-non-selfsigned-uid option.
 </para></listitem></varlistentry>
 
+<varlistentry>
 <term>--allow-freeform-uid</term>
 <listitem><para>
 Disable all checks on the form of the user ID while generating a new

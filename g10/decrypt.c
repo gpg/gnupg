@@ -121,6 +121,7 @@ decrypt_messages(int nfiles, char **files)
                   g10_errstr(rc));
       p = get_last_passphrase();
       set_next_passphrase(p);
+      m_free (p);
       files++;
       m_free(output);
       write_status( STATUS_FILE_DONE );

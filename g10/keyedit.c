@@ -371,10 +371,19 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 		    /* Fixme: see whether there is a revocation in which
 		     * case we should allow to sign it again. */
-		    tty_printf(_("\"%s\" was already %ssigned by key %08lX\n"),
-			       uidnode->pkt->pkt.user_id->name,
-			       (!node->pkt->pkt.signature->flags.exportable &&
-				local)?"locally ":"",(ulong)sk_keyid[1] );
+                    /* Note: I kept the %s and the empty string in the
+                       else branch so that not too many translations
+                       get broken. */
+                    if (!node->pkt->pkt.signature->flags.exportable && local)
+                      tty_printf(_(
+                         "\"%s\" was already locally signed by key %08lX\n"),
+                                   uidnode->pkt->pkt.user_id->name,
+                                   (ulong)sk_keyid[1] );
+                    else
+                      tty_printf(_(
+                         "\"%s\" was already %ssigned by key %08lX\n"),
+                                 uidnode->pkt->pkt.user_id->name,
+                                 "",(ulong)sk_keyid[1] );
                     sprintf (buf, "%08lX%08lX",
                              (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
                     write_status_text (STATUS_ALREADY_SIGNED, buf);

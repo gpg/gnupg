@@ -2151,11 +2151,11 @@ rijndael_get_info (int algo, size_t *keylen,
 							= rijndael_decrypt;
 
     if( algo == 7 )
-	return "RIJNDAEL";
+	return "AES";
     if (algo == 8)
-        return "RIJNDAEL192";
+        return "AES192";
     if (algo == 9)
-        return "RIJNDAEL256";
+        return "AES256";
     return NULL;
 }
 

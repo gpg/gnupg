@@ -832,7 +832,7 @@ main( int argc, char **argv )
       #endif
     }
 
-  #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
     if ( strchr (opt.homedir,'\\') ) {
         char *d, *buf = m_alloc (strlen (opt.homedir)+1);
         const char *s = opt.homedir;
@@ -841,13 +841,13 @@ main( int argc, char **argv )
         *d = 0;
         opt.homedir = buf;
     }
-  #endif
-  #undef USE_SHM_COPROCESSING	
-  #ifdef USE_SHM_COPROCESSING
+#endif
+#undef USE_SHM_COPROCESSING	 /* huh? */
+#ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess ) {
 	init_shm_coprocessing(requested_shm_size, 1 );
     }
-  #endif
+#endif
     /* initialize the secure memory. */
     secmem_init( 16384 );
     maybe_setuid = 0;

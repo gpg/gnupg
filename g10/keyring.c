@@ -354,6 +354,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     int in_cert = 0;
     int pk_no = 0;
     int uid_no = 0;
+    int save_mode;
 
     if (ret_kb)
         *ret_kb = NULL;
@@ -377,6 +378,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     init_packet (pkt);
     hd->found.n_packets = 0;;
     lastnode = NULL;
+    save_mode = set_packet_list_mode(0);
     while ((rc=parse_packet (a, pkt)) != -1) {
         hd->found.n_packets++;
         if (rc == G10ERR_UNKNOWN_PACKET) {
@@ -444,6 +446,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
         pkt = m_alloc (sizeof *pkt);
         init_packet(pkt);
     }
+    set_packet_list_mode(save_mode);
 
     if (rc == -1 && keyblock) 
 	rc = 0; /* got the entire keyblock */

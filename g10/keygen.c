@@ -219,9 +219,9 @@ keygen_set_std_prefs (const char *string)
 
     if (!string || !ascii_strcasecmp (string, "default")) {
       if ( !check_cipher_algo(CIPHER_ALGO_IDEA) )
-        string = "S7 S10 S3 S4 S2 S1 H3 H2 Z2 Z1";
+        string = "S7 S3 S2 S1 H2 H3 Z2 Z1";
       else
-        string = "S7 S10 S3 S4 S2 H3 H2 Z2 Z1";
+        string = "S7 S3 H2 H3 Z2 Z1";
 
       /* If we have it, IDEA goes *after* 3DES so it won't be used
          unless we're encrypting along with a V3 key.  Ideally, we
@@ -348,6 +348,7 @@ keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
 /****************
  * Add preference to the self signature packet.
  * This is only called for packets with version > 3.
+
  */
 int
 keygen_add_std_prefs( PKT_signature *sig, void *opaque )
@@ -864,11 +865,6 @@ ask_keysize( int algo )
 			     "to attacks!\n"));
 		break;
 	    }
-	}
-	else if( nbits > 1536 && !cpr_enabled() && algo != PUBKEY_ALGO_RSA ) {
-	    if( cpr_get_answer_is_yes("keygen.size.large.okay",_(
-		    "Do you really need such a large keysize? ")) )
-		break;
 	}
 	else
 	    break;

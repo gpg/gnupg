@@ -1,9 +1,19 @@
+  * change the maintainer address in faq.raw
+
+  * Do we need a configure test for putenv?
+
+  * Add remarks to the man page about OpenPGP OPTIONAL algorithms and
+    issue warnings when such an algorithm is used (disabled by expert modus?)
+
+  * Return status information even when an imported key is already
+    stored.  This is useful for GPGME's detailed info fucntion.
+
   * Describe some pitfalls when using EGD.  Check that ~/.gnupg/entropy
     really is the default.  What about needed permission?  
 
   * Using an expired key for signing should give an error message
-    "expired key"and not "unusable key'.  Furthermore the error should
-    also be thrown when the defaultkey has expired.  Reported by
+    "expired key" and not "unusable key'.  Furthermore the error should
+    also be thrown when the default key has expired.  Reported by
     Eric.VanBuggenhaut@AdValvas.be.
 
   * pause scrolling help in --edit-key and elsewhere.
@@ -13,8 +23,6 @@
 
   * Selection using +wordlist does not work.
     What about adding a feature -word to the +wordlist search mode.
-
-  * add listing of notation data
 
   * Check the changes to the gpg random gatherer on all W32 platforms.
 
@@ -32,10 +40,6 @@
     it's end and allow for multiple signature for one message.  And
     add a real grammar to the code in mainproc.c
 
-  * option to set the signature expiration time for key sigs.
-    Rework the way we create signature subpackets - the current code
-    is not easy to understand.
-
   * Option to warn when a non MDC message is decrypted?
 
   * If there is no secure memory, allocate more memory for the secure
@@ -51,20 +55,14 @@
 
   * Add an is_valid flag to each user ID.
 
-  * Do not create a secring.gpg if it is not needed; I have fixed this
-    sometime ago but it has later reappeared.
-
   * Check for consistent spelling of user ID, key ID etc.
     Replace "user id not found" in getkey.c by "no valid user ID found".
  
   * Replace the printing of the user name by [self-signature] when
     appropriate so that a key listing does not get clobbered.
 
-  * Using --list-only to check for recipients while decrypting may
-    yield an error about an unknown packet.
-
   * Check that the way we select cipher and digest algorithms w/o
-    preferences is okay and make AES the default.
+    preferences is okay and make AES the default in some future.
 
   * Concatenated encryption messages don't work corectly - only the
     first one is processed.
@@ -72,26 +70,10 @@
   * Add option to put the list of recipients (from the encryption
     layer) into the signatures notation data.
 
-  * Allow to update key signatures.  It is also not possible to resign
-    an already revoked key signature.
-
-  * For FreeBSD only: spit out a message that rndcontrol (8) should be
-    used to enable the use of IRQs for entropy gathering.
-
-  * --passphrase-fd  can't work with -cs: document this or find a way
-    to work around.
-
   * With option -i prompt before adding a key to the keyring and show some
     info what we are about to add.
 
   * --disable-asm should still assemble _udiv_qrnnd when needed
-
-  * replace the keyserver stuff either by a call to a specialized
-    utility and SOCKSify this utility.
-    [David is working on this]
-
-  * Check the beginning of file to detect already compressed files (gzip,
-    bzip2, xdelta and some picture formats)  [Timo has some code for this]
 
   * Get new assembler stuff from gmp 3.1
 
@@ -100,8 +82,6 @@
  
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
-
-  * Print a warning if the directory mode is wrong.
 
   * preferences of hash algorithms are not yet used.
 
@@ -116,9 +96,6 @@
   * for messages created with "-t", it might make sense to append the
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.
-
-  * The user is asked for a revocation reasons even if this one can't
-    be used with v3 keys.
 
   * keyflags don't distinguish between {certify,signature}-only.
 

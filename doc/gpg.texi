@@ -582,17 +582,20 @@ each time.
 @item ---keyserver-options @code{parameters}
 This is a space or comma delimited string that gives options for the
 keyserver. Options can be prepended with a `no-' to give the opposite
-meaning. While not all options are available for all keyserver
-schemes, some common options are:
+meaning. While not all options are available for all keyserver types,
+some common options are:
 
 @table @asis
 @item include-revoked
 When receiving or searching for a key, include keys that are marked on
-the keyserver as revoked.
+the keyserver as revoked. Note that this option is always set when
+using the NAI HKP keyserver, as this keyserver does not differentiate
+between revoked and unrevoked keys.
 
 @item include-disabled
 When receiving or searching for a key, include keys that are marked on
-the keyserver as disabled.
+the keyserver as disabled. Note that this option is not used with HKP
+keyservers, as they do not support disabling keys.
 
 @item use-temp-files
 On most Unix-like platforms, GnuPG communicates with the keyserver
@@ -911,7 +914,9 @@ Try to be more RFC1991 (PGP 2.x) compliant.
 @item ---pgp2
 Set up all options to be as PGP 2.x compliant as possible, and warn if
 an action is taken (e.g. encrypting to a non-RSA key) that will create
-a message that PGP 2.x will not be able to handle.
+a message that PGP 2.x will not be able to handle. Note that `PGP
+2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
+available, but the MIT release is a good common baseline.
 
 This option implies `---rfc1991 --no-openpgp --no-force-v4-certs
 ---no-comment --escape-from --no-force-v3-sigs --cipher-algo IDEA
@@ -949,16 +954,14 @@ Reset the ---force-v4-certs option.
 Force the use of encryption with appended manipulation
 code. This is always used with the newer ciphers (those
 with a blocksize greater than 64 bit).
-This option might not be implemented yet.
 
 @item ---allow-non-selfsigned-uid
-Allow the import of keys with user IDs which are not self-signed, but
-have at least one signature.
-This only allows the import - key validation will fail and you
-have to check the validity of the key by other means. This hack is
-needed for some German keys generated with pgp 2.6.3in. You should really
-avoid using it, because OpenPGP has better mechanics to do separate signing
-and encryption keys.
+Allow the import and use of keys with user IDs which are not
+self-signed. This is not recommended, as a non self-signed user ID is
+trivial to forge.
+
+@item ---no-allow-non-selfsigned-uid
+Reset the ---allow-non-selfsigned-uid option.
 
 @item ---allow-freeform-uid
 Disable all checks on the form of the user ID while generating a new

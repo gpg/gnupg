@@ -96,7 +96,7 @@ lock-once
 # support).
 #
 # Example HKP keyserver:
-#      x-hkp://wwwkeys.nl.pgp.net
+#      x-hkp://keyserver.cryptnet.net
 #
 # Example email keyserver:
 #      mailto:pgp-public-keys@keys.nl.pgp.net
@@ -118,9 +118,9 @@ lock-once
 # Most servers do synchronize with each other and DNS round-robin may
 # give you a quasi-random server each time.
 
+#keyserver x-hkp://keyserver.cryptnet.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 #keyserver ldap://keyserver.pgp.com
-#keyserver x-hkp://wwwkeys.nl.pgp.net
 
 # Options for keyserver functions
 #

@@ -64,7 +64,7 @@ static int make_tempdir(struct exec_info *info)
 #elif defined (__MINGW32__) || defined (__CYGWIN32__)
 	      tmp=m_alloc(256);
 	      if(GetTempPath(256,tmp)==0)
-		strcpy(tmp,"c:\temp");
+		strcpy(tmp,"c:\\temp");
 	      else
 		{
 		  int len=strlen(tmp);
@@ -83,7 +83,7 @@ static int make_tempdir(struct exec_info *info)
 	}
     }
 
-  info->tempdir=m_alloc(strlen(tmp)+1+10+1);
+  info->tempdir=m_alloc(strlen(tmp)+strlen(DIRSEP_S)+10+1);
 
   sprintf(info->tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
 
@@ -98,13 +98,15 @@ static int make_tempdir(struct exec_info *info)
     {
       info->madedir=1;
 
-      info->tempfile_in=m_alloc(strlen(info->tempdir)+1+10+1);
+      info->tempfile_in=m_alloc(strlen(info->tempdir)
+                                +strlen(DIRSEP_S)+6+strlen(EXTSEP_S)+3+1);
       sprintf(info->tempfile_in,"%s" DIRSEP_S "datain" EXTSEP_S "%s",
 	      info->tempdir,info->binary?"bin":"txt");
 
       if(!info->writeonly)
 	{
-	  info->tempfile_out=m_alloc(strlen(info->tempdir)+1+11+1);
+	  info->tempfile_out=m_alloc(strlen(info->tempdir)
+                                     +strlen(DIRSEP_S)+7+strlen(EXTSEP_S)+3+1);
 	  sprintf(info->tempfile_out,"%s" DIRSEP_S "dataout" EXTSEP_S "%s",
 		  info->tempdir,info->binary?"bin":"txt");
 	}

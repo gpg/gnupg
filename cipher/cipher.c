@@ -253,15 +253,29 @@ load_cipher_modules(void)
 int
 string_to_cipher_algo( const char *string )
 {
-    int i;
-    const char *s;
+  int i;
+  const char *s;
 
-    do {
-	for(i=0; (s=cipher_table[i].name); i++ )
-	    if( !ascii_strcasecmp( s, string ) )
-		return cipher_table[i].algo;
+  /* kludge to alias RIJNDAEL to AES */
+  if ( *string == 'R' || *string == 'r')
+    {
+      if (!ascii_strcasecmp (string, "RIJNDAEL"))
+        string = "AES";
+      else if (!ascii_strcasecmp (string, "RIJNDAEL192"))
+        string = "AES192";
+      else if (!ascii_strcasecmp (string, "RIJNDAEL256"))
+        string = "AES256";
+    }
+
+  do
+    {
+      for(i=0; (s=cipher_table[i].name); i++ ) 
+        {
+          if( !ascii_strcasecmp( s, string ) )
+            return cipher_table[i].algo;
+        }
     } while( load_cipher_modules() );
-    return 0;
+  return 0;
 }
 
 /****************

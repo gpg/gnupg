@@ -1,6 +1,6 @@
 # Glossary for GnuPG german translation
 # Zusammenstellung der Liste:
-# Copyright (C) 1998, 1999, 2000, 20001 Free Software Foundation, Inc.
+# Copyright (C) 1998 Free Software Foundation, Inc.
 # Walter Koch <koch@hsp.de>, 1998.
 #
 # This is just a textfile for your information.
@@ -18,15 +18,16 @@
 # 5. (*) Uneinheitlich verwendet
 # 6.  - Gefällt mir (Walter Koch) nicht so toll
 # 7. Die erste genannte Übersetzung ist die in de.po verwendete
+# 8. # - Wurde in früherere de.po-Version verwendet
 
 
-
-Agent			Agent 
+agent			Agent 
 aka			alias
 algorithm		Verfahren          
 anonymous		ungenannter
 argument    		> Argument
 armor			ASCII-Hülle
+assigned		zugewiesen
 associate with a person <einer Person zuordnen
 authentication  	Authentisierung
 available		vorhanden [besser?: verfügbar, greifbar?]
@@ -34,7 +35,7 @@ bad [MPI]		fehlerhafte MPI
 bad [signature]		falsch[e] Unterschrift 
 break (the encryption)  <(Die Verschlüsselung) aufbrechen
 bug			"Bug (Programmfehler)"
-cache   		Lager  *Zwischenspeicher
+cache   		Cache, -#Lager  *Zwischenspeicher
 can't read		nicht lesbar
 cancelled		Abbruch, abgebrochen
 casual  		>zufällig, >gelegentlich >unregelmäßig
@@ -45,11 +46,13 @@ check (verb)		prüfen, geprüft
 checking [sth.]		[sth-]-Überprüfung
 checksum		Prüfsumme
 cipher algorithm	Verschlüsselungsverfahren
+clearsign 
 clearsig header		Klartextsignatur-Einleitung
 created			erzeugt
 command			Befehl
 comment			Bemerkung
 compress algorithm      Komprimierverfahren,*Komprimierungsverfahren ?   
+compressed		komprimiert
 compromised             nicht mehr sicher
 core dump		core-dump-Datei
 , (Speicherauszug?)
@@ -61,18 +64,23 @@ created			erstellt
 creation    		<Erzeugung
 critical bit   		???
 dash escaped            mit Bindestrich \"escapte\", *m.Bindestrichen maskiert?
-decryption		Enschlüsselung
+decryption		Entschlüsselung
 default option  	<Standardoption
+default option file 	--voreingestellte Optionendatei
 DEK 			???
 delete  		entfernen, *>löschen 
 depend on   		>sich verlassen auf,>angewiesen sein auf,>abhängen von
 depreciated		- taugt nicht mehr viel
+detached [sign]		abgetrennte [Unterschrift]
 determined attacker 	>zielbewusster,>entschlossener Angreifer
 digest algorithm	Hashmethode
+direct [key sig]        -"direct key"
 disabled		abgeschaltet
+duplicated (adj.)	doppelt
 encrypted		verschlüsselte
 enviorement variable  	Umgebungsvariable
 eventually  		>schließlich, endlich  Nicht: eventuell
+expand
 expiration date 	<Verfalldatum
 expire  		<verfallen
 expires			verfällt
@@ -81,12 +89,15 @@ failed			fehlgeschlagen
 faked [RNG]             - *manipulierter Zufallszahlengenerator
 faked [certificate]     gefälscht
 fingerprint  		Fingerabdruck
+flag [verb]  		-kennzeichnen
 found [xyz found]       entdeckt [xyz entdeckt]
 for-your-eyes-only	Vertraulichkeit (\"for-your-eyes-only\")
+, Verschlußsache
 generated		erzeugter
 good certificate	Korrektes Zertifikat
-handle			benutzt
+handle [verb]		benutzen, behandeln, mit ... umgehen
 hint			Tip
+human readable          -nicht als Klartext darstellbar 
 ignored			unbeachtet
 include 		<enthalten
 init    		*initialisieren
@@ -97,10 +108,12 @@ key-ID                  Schlüssel-ID, *Schlüsselkennung ?
 
 key binding		Schlüsselanbindung
 keyblock		Schlüsselblock
-keyserver   		Schlüsselserver, -*Schlüssel-Server 
+keyserver   		Schlüsselserver, Schlü.server, -*Schlüssel-Server 
 keysize			
 keyring 		Schlüsselbund
 lifetime    		>Gültigkeitsdauer, >Geltungsdauer
+listed 
+locally                 (nur) für diesen Rechner, #(nur) auf diesem Rechner
 lookup			- Suche
 machine 		häufig: Computer, Rechner
 main key		Hauptschlüssel
@@ -115,17 +128,26 @@ merge  (to) 		>zusammenführen, >vermischen ??
 message 		Botschaft
 mode			Modus, Methode   *
 move    		schieben, *verschieben
+multiple signature	Mehrfachunterschriften
 NAI
 network error		Netzwerkfehler
+non-revocably           nicht-widerrufbar, unwiderruflich??
 note			Hinweis
 okay			in Ordnung
 Ooops			Huch
 OpenPGP 		
-original		Ursprünglicher
+option                  Option
+original		ursprünglicher
+overrides		-ersetzt
 ownertrust  		\"Owner trust\"  *Vertrauenswürdigkeit des Besitzers
 packet			Paket
 packet type		Pakettyp
+parse 			-zerlegen
 passphrase		Mantra
+permission [file]       Zugriffsrechte
+Photo-ID                Foto-ID
+policy			Richtlinie
+policy URL		Richtlinien-URL
 preference items	????
 preferences 		Einstellungen    *(die gesamten) Einstellungen
 preferred		bevorzugt
@@ -134,14 +156,15 @@ problem [to do sth.]    -Schwierigkeit
 prompt (to) 		auch: >abfragen, >anfordern, >verlangen
 protected
 protection algorithm	Schutzverfahren
-pubkey algorithm	Public-Key Verfahren	 (*)
+pubkey algorithm	Public-Key-Verfahren	 
 public key		öffentlicher Schüssel
-public key algorithm    Public-Key Verfahren *Public-Key-Verfahren
+public key algorithm    Public-Key-Verfahren 
 quit    		*(Programm) verlassen, beenden
 radix64			radix64
 random 			Zufall
 random bytes		Zufallswerte
 reason			Grund (für revocation)
+[xyz] rebuild           [xyz]-Neuaufbau, neu erzeugt
 regular file		normale Datei
 response		Antwort (Reaktion?)
 retry			???? (Wiederholung?, Wiederaufnahme?)
@@ -150,14 +173,19 @@ reveal  		auch: <jemandem zeigen, >anderen zeigen
 revocation  		Widerruf <*>Rückruf
 revocation certificate  *<Rückrufurkunde *Rückruf-Zertifikat
 revoke			widerrufen
+revocably               widerrufbar
 RNG			Zufallsgenerator
 secondary key		Zweitschlüssel
 secret key		geheimer Schlüssel
+secret keyring          geheimer Schlüsselbund, geh. Schlüsselbund
 secret parts		geheime Teile
 security need(s)	>Sicherheitsbedüfnis(se), >Sicherheitsbedarf
 self-signature		Eigenbeglaubigung     
 sender			Absender
+sensitive		- empfindlich
+set [sth.]              einstellen, festlegen
 session			Sitzung
+show			[an]zeigen, zeigen
 sign user id		User-ID beglaubigen   *
 signed			unterschriebene
 signature (files)	Unterschrift          *
@@ -167,6 +195,8 @@ skipped			übergangen, übersprungen, ignoriert
 so far 			bislang
 specify 		>spezifizieren, <angeben, ?festlegen
 stdin   		- stdin, *die Standardeingabe 
+string			Zeichenkette
+[PGP2-]style[ key]      [PGP2-] artiger [Schlüssel]
 subkey			Unterschlüssel
 superseeded		überholt, veraltet
 terminal charset        - Terminalzeichensatz *Terminal-Zeichensatz(s.o.)
@@ -178,21 +208,31 @@ trusted			- vertrauenswürdig
 trustvalues		- trustvalues >Vertrauensniveaus?? *Vertrauensmaß? >Vertrauenswerte?
 trying			Versuch
 type [message]		[Botschaft] eintippen
-ulimately [trust]	uneingeschränktes [Vertrauen]
+ulimately [trust]	uneingeschränkt [vertrauen]
+ultimate trust          uneingeschränktes Vertrauen
+unable
+unattended              unbeaufsichtigt
+unavailble
 untrusted               - nichtvertrauenswürdig, *nicht vertrauenswürdig
+unusable		unbrauchbar
 update                  Ändern, Änderung >Aktualisieren, >Aktualisierung *auf den 
+URL                     (die) URL 
+[the] use [of]           
 User    		- User, *<Benutzer, *Teilnehmer
 user ID 		User-ID
 user IDs		User-IDs
 user interface  	>Benutzer-Schnittstelle
 username    		Username, *<Benutzername,  
 used			benutzt (no loger used)
+using xyz		verwende xyz
 valid 			gültig
 validate    		-- authentifizieren (>besser authentisieren ?? So im 
 Wörterbuch der neuen Rechtschreibung)
 validation  		-- >Authentisierung 
+verbose			ausführlich
 verify  		< überprüfen
 warning			Warnung
 weak key		unsicherer Schlüssel
+writeable		schreibbarer 
 wisely                  >klug, vernünftig(erweise), >gescheit; möglichst sinnvoll
 

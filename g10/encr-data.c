@@ -148,6 +148,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	/*log_hexdump("MDC calculated:", md_read( dfx.mdc_hash, 0), datalen);*/
 	/*log_hexdump("MDC message   :", dfx.defer, 20);*/
     }
+    
 
   leave:
     cipher_close(dfx.cipher_hd);
