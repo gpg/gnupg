@@ -412,7 +412,7 @@ selftest()
 void
 blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 {
-    int i, j, k;
+    int i, j;
     u32 data, datal, datar;
     static int initialized;
 

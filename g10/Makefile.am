@@ -40,6 +40,7 @@ g10_SOURCES = g10.c		\
 	      seckey-cert.c	\
 	      seskey.c		\
 	      sign.c		\
+	      import.c		\
 	      comment.c 	\
 	      sig-check.c
 

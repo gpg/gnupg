@@ -113,7 +113,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 	    break;
     }
     if( !node )
-	log_bug(NULL); /* no user id packet in tree */
+	BUG(); /* no user id packet in tree */
     uid = node->pkt->pkt.user_id;
     /* get the pkc packet from the pub_tree */
     for( kbctx=NULL; (node=walk_kbtree( pub_root, &kbctx)) ; ) {
@@ -121,7 +121,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 	    break;
     }
     if( !node )
-	log_bug(NULL);
+	BUG();
     pkc = node->pkt->pkt.public_cert;
 
     /* and make the signature */
@@ -149,12 +149,11 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PKT_public_cert *pkc;
     ELG_public_key pk;
     ELG_secret_key sk;
-    unsigned nbytes;
 
     elg_generate( &pk, &sk, nbits );
 
-    skc = m_alloc( sizeof *skc );
-    pkc = m_alloc( sizeof *pkc );
+    skc = m_alloc_clear( sizeof *skc );
+    pkc = m_alloc_clear( sizeof *pkc );
     skc->timestamp = pkc->timestamp = make_timestamp();
     skc->valid_days = pkc->valid_days = 0; /* fixme: make it configurable*/
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_ELGAMAL;
@@ -217,8 +216,8 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io, DEK *dek,
 
     rsa_generate( &pk, &sk, nbits );
 
-    skc = m_alloc( sizeof *skc );
-    pkc = m_alloc( sizeof *pkc );
+    skc = m_alloc_clear( sizeof *skc );
+    pkc = m_alloc_clear( sizeof *pkc );
     skc->timestamp = pkc->timestamp = make_timestamp();
     skc->valid_days = pkc->valid_days = 0; /* fixme: make it configurable*/
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_RSA;
@@ -297,8 +296,6 @@ generate_keypair()
     char *pub_fname = NULL;
     char *sec_fname = NULL;
     char *uid = NULL;
-    IOBUF pub_io = NULL;
-    IOBUF sec_io = NULL;
     KBNODE pub_root = NULL;
     KBNODE sec_root = NULL;
     PKT_secret_cert *skc = NULL;
@@ -473,9 +470,14 @@ generate_keypair()
 	    p = stpcpy(stpcpy(stpcpy(p," ("), acomment),")");
 	if( *amail )
 	    p = stpcpy(stpcpy(stpcpy(p," <"), amail),">");
-      #ifndef HAVE_DEV_RANDOM
-	strcpy(p, " (INSECURE!)" );
+
+	/* append a warning if we do not have dev/random
+	 * or it is switched into  quick testmode */
+      #ifdef HAVE_DEV_RANDOM
+	if( quick_random_gen(-1) )
       #endif
+	    strcpy(p, " (INSECURE!)" );
+
 
 	tty_printf("You selected this USER-ID:\n    \"%s\"\n\n", uid);
 	for(;;) {
@@ -570,7 +572,7 @@ generate_keypair()
     else if( algo == PUBKEY_ALGO_DSA )
 	rc = gen_dsa(nbits, pub_root, sec_root, dek, &skc );
     else
-	log_bug(NULL);
+	BUG();
     if( !rc )
 	write_uid(pub_root, uid );
     if( !rc )

@@ -56,7 +56,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	    log_fatal("trust check after insert failed: %s\n",
 						      g10_errstr(rc) );
 	if( trustlevel & TRUST_NO_PUBKEY )
-	    log_bug(NULL);
+	    BUG();
     }
 
 
@@ -84,7 +84,6 @@ int
 build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
 {
     PKC_LIST pkc_list = NULL;
-    PKC_LIST pkc_rover = NULL;
     int rc;
 
     if( !remusr ) { /* ask!!! */

@@ -193,7 +193,7 @@ void mpih_sqr_n_basecase( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size );
 void mpih_sqr_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size,
 						mpi_ptr_t tspace);
 
-/*-- mpihelp-mul_1.c (or xxx/cpu/*.S) --*/
+/*-- mpihelp-mul_1.c (or xxx/cpu/ *.S) --*/
 mpi_limb_t mpihelp_mul_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,
 			  mpi_size_t s1_size, mpi_limb_t s2_limb);
 

@@ -46,7 +46,7 @@ make_session_key( DEK *dek )
 	randomize_buffer( dek->key, dek->keylen, 1 );
 	break;
 
-      default: log_bug("invalid algo %d in make_session_key()\n");
+      default: log_bug("invalid algo %d in make_session_key()\n", dek->algo);
     }
 }
 
@@ -116,9 +116,8 @@ encode_rmd160_value( byte *md, unsigned len, unsigned nbits )
 	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
 	    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
     int nframe = (nbits+7) / 8;
-    byte *p;
     MPI frame;
-    int i,n,c;
+    int i,n;
 
     if( (nbits % BITS_PER_MPI_LIMB) || nframe < 42 || len != 20 )
 	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
@@ -156,9 +155,8 @@ encode_sha1_value( byte *md, unsigned len, unsigned nbits )
 	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
 	    0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
     int nframe = (nbits+7) / 8;
-    byte *p;
     MPI frame;
-    int i,n,c;
+    int i,n;
 
     if( (nbits % BITS_PER_MPI_LIMB) || nframe < 42 || len != 20 )
 	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
@@ -197,9 +195,8 @@ encode_md5_value( byte *md, unsigned len, unsigned nbits )
 	  { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
 	    0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
     int nframe = (nbits+7) / 8;
-    byte *p;
     MPI frame;
-    int i,n,c;
+    int i,n;
 
     if( (nbits % BITS_PER_MPI_LIMB) || nframe < 38 || len != 16 )
 	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
@@ -236,7 +233,7 @@ encode_md_value( MD_HANDLE md, unsigned nbits )
       case DIGEST_ALGO_SHA1:
 	return encode_sha1_value( md_read(md, DIGEST_ALGO_SHA1), 20, nbits );
       default:
-	log_bug(NULL);
+	BUG();
     }
 }
 

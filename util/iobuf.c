@@ -40,6 +40,7 @@ typedef struct {
     int usage;
     size_t size;
     size_t count;
+    int partial;  /* 1 = partial header, 2 in last partial packet */
     int eof;
 } block_filter_ctx_t;
 
@@ -143,19 +144,63 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    rc = -1;
 	while( !rc && size ) {
 	    if( !a->size ) { /* get the length bytes */
-		c = iobuf_get(chain);
-		a->size = c << 8;
-		c = iobuf_get(chain);
-		a->size |= c;
-		if( c == -1 ) {
-		    log_error("block_filter: error reading length info\n");
-		    rc = G10ERR_READ_FILE;
-		}
-		if( !a->size ) {
+		if( a->partial == 2 ) {
 		    a->eof = 1;
 		    if( !n )
 			rc = -1;
 		    break;
+		}
+		else if( a->partial ) {
+		    if( (c = iobuf_get(chain)) == -1 ) {
+			log_error("block_filter: 1st length byte missing\n");
+			rc = G10ERR_READ_FILE;
+			break;
+		    }
+		    if( c < 192 ) {
+			a->size = c;
+			a->partial = 2;
+			if( !a->size ) {
+			    a->eof = 1;
+			    if( !n )
+				rc = -1;
+			    break;
+			}
+		    }
+		    else if( c < 224 ) {
+			a->size = (c - 192) * 256;
+			if( (c = iobuf_get(chain)) == -1 ) {
+			    log_error("block_filter: 2nd length byte missing\n");
+			    rc = G10ERR_READ_FILE;
+			    break;
+			}
+			a->size += c + 192;
+			a->partial = 2;
+			if( !a->size ) {
+			    a->eof = 1;
+			    if( !n )
+				rc = -1;
+			    break;
+			}
+		    }
+		    else { /* next partial body length */
+			a->size = 1 << (c & 0x1f);
+		    }
+		}
+		else {
+		    c = iobuf_get(chain);
+		    a->size = c << 8;
+		    c = iobuf_get(chain);
+		    a->size |= c;
+		    if( c == -1 ) {
+			log_error("block_filter: error reading length info\n");
+			rc = G10ERR_READ_FILE;
+		    }
+		    if( !a->size ) {
+			a->eof = 1;
+			if( !n )
+			    rc = -1;
+			break;
+		    }
 		}
 	    }
 
@@ -176,6 +221,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     else if( control == IOBUFCTRL_FLUSH ) {
 	size_t avail, n;
 
+	assert( !a->partial );
 	for(p=buf; !rc && size; ) {
 	    n = size;
 	    avail = a->size - a->count;
@@ -205,7 +251,9 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     else if( control == IOBUFCTRL_INIT ) {
 	if( DBG_IOBUF )
 	    log_debug("init block_filter %p\n", a );
-	if( a->usage == 1 )
+	if( a->partial )
+	    a->count = 0;
+	else if( a->usage == 1 )
 	    a->count = a->size = 0;
 	else
 	    a->count = a->size; /* force first length bytes */
@@ -216,8 +264,12 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     }
     else if( control == IOBUFCTRL_FREE ) {
 	if( a->usage == 2 ) { /* write the end markers */
-	    iobuf_writebyte(chain, 0);
-	    iobuf_writebyte(chain, 0);
+	    if( a->partial ) {
+	    }
+	    else {
+		iobuf_writebyte(chain, 0);
+		iobuf_writebyte(chain, 0);
+	    }
 	}
 	else if( a->size ) {
 	    log_error("block_filter: pending bytes!\n");
@@ -784,7 +836,10 @@ iobuf_seek( IOBUF a, ulong newpos )
 	return -1;
     }
     a->ntotal = newpos;
-    /* FIXME: flush all buffers (and remove filters?)*/
+    /* remove filters, but the last */
+    while( a->chain )
+	iobuf_pop_filter( a, a->filter, NULL );
+
 
     return 0;
 }
@@ -800,8 +855,6 @@ iobuf_seek( IOBUF a, ulong newpos )
 const char *
 iobuf_get_fname( IOBUF a )
 {
-    struct stat st;
-
     for( ; a; a = a->chain )
 	if( !a->chain && a->filter == file_filter ) {
 	    file_filter_ctx_t *b = a->filter_ov;
@@ -832,6 +885,27 @@ iobuf_set_block_mode( IOBUF a, size_t n )
     }
 }
 
+/****************
+ * enable patial block mode as descriped in the OpenPGP draft.
+ * LEN is the first length
+ */
+void
+iobuf_set_partial_block_mode( IOBUF a, size_t len )
+{
+    block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
+
+    assert( a->usage == 1 || a->usage == 2 );
+    ctx->usage = a->usage;
+    if( !len ) {
+	iobuf_pop_filter(a, block_filter, NULL );
+    }
+    else {
+	ctx->partial = 1;
+	ctx->size = len;
+	iobuf_push_filter(a, block_filter, ctx );
+    }
+}
+
 
 /****************
  * Checks wether the stream is in block mode
@@ -841,7 +915,7 @@ int
 iobuf_in_block_mode( IOBUF a )
 {
     if( a && a->filter == block_filter )
-	    return 1; /* yes */
+	return 1; /* yes */
     return 0; /* no */
 }
 

@@ -49,7 +49,6 @@ int
 build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list, int unlock )
 {
     SKC_LIST skc_list = NULL;
-    SKC_LIST skc_rover = NULL;
     int rc;
 
     if( !locusr ) { /* use the default one */

@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include "util.h"
 #include "cipher.h"
+#include "ttyio.h"
 
 struct cache {
     int len;
@@ -41,6 +42,18 @@ static struct cache cache[3];
 
 
 static void fill_buffer( byte *buffer, size_t length, int level );
+static int quick_test;
+
+
+int
+quick_random_gen( int onoff )
+{
+    int last = quick_test;
+    if( onoff != -1 )
+	quick_test = onoff;
+    return last;
+}
+
 
 /****************
  * Fill the buffer with LENGTH bytes of cryptologic strong
@@ -95,14 +108,13 @@ open_device( const char *name, int minor )
 static void
 fill_buffer( byte *buffer, size_t length, int level )
 {
-    FILE *fp;
     static int fd_urandom = -1;
     static int fd_random = -1;
     int fd;
     int n;
     int warn=0;
 
-    if( level == 2 ) {
+    if( level == 2 && !quick_test ) {
 	if( fd_random == -1 )
 	    fd_random = open_device( "/dev/random", 8 );
 	fd = fd_random;

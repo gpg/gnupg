@@ -93,6 +93,7 @@ u32 iobuf_get_filelength( IOBUF a );
 const char *iobuf_get_fname( IOBUF a );
 
 void iobuf_set_block_mode( IOBUF a, size_t n );
+void iobuf_set_partial_block_mode( IOBUF a, size_t len );
 int  iobuf_in_block_mode( IOBUF a );
 
 /* get a byte form the iobuf; must check for eof prior to this function

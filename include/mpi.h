@@ -41,7 +41,6 @@ int mpi_debug_mode;
 
 #define BITS_PER_MPI_LIMB    (8*SIZEOF_UNSIGNED_LONG)
 #define BYTES_PER_MPI_LIMB   SIZEOF_UNSIGNED_LONG
-#define BYTES_PER_MPI_LIMB2  (2*SIZEOF_UNSIGNED_LONG)
 typedef unsigned long int mpi_limb_t;
 typedef   signed long int mpi_limb_signed_t;
 

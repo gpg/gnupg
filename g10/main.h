@@ -48,7 +48,7 @@ int edit_keysigs( const char *username );
 int change_passphrase( const char *username );
 
 /*-- sig-check.c --*/
-int check_key_signature( KBNODE root, KBNODE node );
+int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 
 /*-- keygen.c --*/
 void generate_keypair(void);
@@ -76,6 +76,9 @@ void g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE md );
 /*-- rsa.c --*/
 void g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
 void g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig, MD_HANDLE md );
+
+/*-- import.c --*/
+int import_pubkeys( const char *filename );
 
 
 #endif /*G10_MAIN_H*/

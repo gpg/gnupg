@@ -106,7 +106,6 @@ static MD_HANDLE
 v3_elg_fingerprint_md_skc( PKT_secret_cert *skc )
 {
     PKT_public_cert pkc;
-    byte *p;
 
     pkc.pubkey_algo = skc->pubkey_algo;
     pkc.timestamp = skc->timestamp;

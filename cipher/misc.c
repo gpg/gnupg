@@ -67,7 +67,7 @@ string_to_cipher_algo( const char *string )
     int i;
     const char *s;
 
-    for(i=0; s=cipher_names[i].name; i++ )
+    for(i=0; (s=cipher_names[i].name); i++ )
 	if( !stricmp( s, string ) )
 	    return cipher_names[i].algo;
     return 0;
@@ -83,7 +83,7 @@ string_to_pubkey_algo( const char *string )
     int i;
     const char *s;
 
-    for(i=0; s=pubkey_names[i].name; i++ )
+    for(i=0; (s=pubkey_names[i].name); i++ )
 	if( !stricmp( s, string ) )
 	    return pubkey_names[i].algo;
     return 0;
@@ -98,7 +98,7 @@ string_to_digest_algo( const char *string )
     int i;
     const char *s;
 
-    for(i=0; s=digest_names[i].name; i++ )
+    for(i=0; (s=digest_names[i].name); i++ )
 	if( !stricmp( s, string ) )
 	    return digest_names[i].algo;
     return 0;

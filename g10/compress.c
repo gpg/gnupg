@@ -41,7 +41,6 @@ static void
 init_compress( compress_filter_context_t *zfx, z_stream *zs )
 {
     int rc;
-    byte *inbuf, *outbuf;
     int level;
 
 
@@ -102,9 +101,6 @@ static void
 init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
 {
     int rc;
-    byte *inbuf, *outbuf;
-    int level;
-
 
     /****************
      * PGP uses a windowsize of 13 bits. Using a negative value for
@@ -175,7 +171,7 @@ compress_filter( void *opaque, int control,
     size_t size = *ret_len;
     compress_filter_context_t *zfx = opaque;
     z_stream *zs = zfx->opaque;
-    int zrc, rc=0;
+    int rc=0;
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( !zfx->status ) {

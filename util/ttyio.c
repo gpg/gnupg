@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <unistd.h>
 #ifdef HAVE_TCGETATTR
   #include <termios.h>
 #endif
@@ -99,7 +100,6 @@ do_get( const char *prompt, int hidden )
     char *buf;
     byte cbuf[1];
     int c, n, i;
-    FILE *fp;
   #ifdef HAVE_TCGETATTR
     struct termios termsave;
   #endif

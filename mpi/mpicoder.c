@@ -41,36 +41,23 @@
 int
 mpi_write( IOBUF out, MPI a )
 {
-    int i;
-    unsigned nbits = a->nlimbs * BITS_PER_MPI_LIMB;
-    mpi_limb_t limb;
+    int rc;
+    unsigned nbits = mpi_get_nbits(a);
+    byte *p, *buf;
+    unsigned n;
 
-    /* fixme: use a->nbits if valid */
     if( nbits > MAX_EXTERN_MPI_BITS )
 	log_bug("mpi_encode: mpi too large (%u bits)\n", nbits);
+
     iobuf_put(out, (nbits >>8) );
     iobuf_put(out, (nbits) );
-    for(i=a->nlimbs-1; i >= 0; i-- ) {
-	limb = a->d[i];
-      #if BYTES_PER_MPI_LIMB == 4
-	iobuf_put(out, (limb >> 24) );
-	iobuf_put(out, (limb >> 16) );
-	iobuf_put(out, (limb >>  8) );
-	iobuf_put(out, (limb	  ) );
-      #elif BYTES_PER_MPI_LIMB == 8
-	iobuf_put(out, (limb >> 56) );
-	iobuf_put(out, (limb >> 48) );
-	iobuf_put(out, (limb >> 40) );
-	iobuf_put(out, (limb >> 32) );
-	iobuf_put(out, (limb >> 24) );
-	iobuf_put(out, (limb >> 16) );
-	iobuf_put(out, (limb >>  8) );
-	iobuf_put(out, (limb	  ) );
-      #else
-	#error Make this function work with other LIMB sizes
-      #endif
-    }
-    return 0;
+
+    p = buf = mpi_get_buffer( a, &n, NULL );
+    for( ; !*p && n; p++, n-- )
+	;
+    rc = iobuf_write( out, p, n );
+    m_free(buf);
+    return rc;
 }
 
 
@@ -225,13 +212,22 @@ mpi_print( FILE *fp, MPI a, int mode )
     if( a == MPI_NULL )
 	return fprintf(fp, "[MPI_NULL]");
     if( !mode )
-	n += fprintf(fp, "[%d bits]", a->nlimbs * BITS_PER_MPI_LIMB );
+	n += fprintf(fp, "[%u bits]", mpi_get_nbits(a) );
     else {
 	if( a->sign )
 	    putc('-', fp);
+       #if BYTES_PER_MPI_LIMB == 2
+	  #define X "4"
+       #elif BYTES_PER_MPI_LIMB == 4
+	  #define X "8"
+       #elif BYTES_PER_MPI_LIMB == 8
+	  #define X "16"
+       #else
+	  #error please define the format here
+       #endif
 	for(i=a->nlimbs; i > 0 ; i-- ) {
-	    n += fprintf(fp, i!=a->nlimbs? "%0" STR2(BYTES_PER_MPI_LIMB2)
-				"lX":"%lX", (unsigned long)a->d[i-1] );
+	    n += fprintf(fp, i!=a->nlimbs? "%0" X "lX":"%lX", (ulong)a->d[i-1]);
+       #undef X
 	}
 	if( !a->nlimbs )
 	    putc('0', fp );

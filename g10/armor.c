@@ -275,7 +275,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 {
     int rc = 0;
     int c;
-    size_t n = 0, nn=0, nn_limit=0;
+    size_t n = 0, nn=0;
     struct fhdr_struct fhdr;
 
     assert( DIM(afx->helpbuf) >= 50 );
@@ -339,7 +339,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 {
     int rc = 0;
     int c;
-    size_t n = 0, nn=0, nn_limit=0;
+    size_t n = 0;
     struct fhdr_struct *fhdr = afx->fake;
     byte *helpbuf = afx->helpbuf;
     int helpidx = afx->helpidx;
@@ -347,7 +347,6 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
     byte *tempbuf = afx->tempbuf;
     int tempidx = afx->tempidx;
     int templen = afx->templen;
-    int defer=1;
 
     /* FIXME: have to read one ahead or do some other mimic to
      * get rid of the lf before the "begin signed message"
@@ -417,7 +416,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     int c, c2;
     int checkcrc=0;
     int rc = 0;
-    size_t n = 0, nn=0;
+    size_t n = 0;
     int  idx, i;
     u32 crc;
 
@@ -450,7 +449,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	idx = (idx+1) % 4;
     }
     for(i=0; i < n; i++ )
-	crc = (crc << 8) ^ crc_table[(crc >> 16)&0xff ^ buf[i]];
+	crc = (crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ buf[i]];
     crc &= 0x00ffffff;
     afx->crc = crc;
     afx->idx = idx;
@@ -533,7 +532,7 @@ armor_filter( void *opaque, int control,
 {
     size_t size = *ret_len;
     armor_filter_context_t *afx = opaque;
-    int rc=0, i, c, c2;
+    int rc=0, i, c;
     byte radbuf[3];
     int  idx, idx2;
     size_t n=0;
@@ -553,7 +552,7 @@ armor_filter( void *opaque, int control,
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( size < 20 )
-	    log_bug(NULL); /* supplied buffer maybe too short */
+	    BUG(); /* supplied buffer maybe too short */
 
 	if( afx->inp_eof ) {
 	    *ret_len = 0;
@@ -608,7 +607,7 @@ armor_filter( void *opaque, int control,
 	    radbuf[i] = afx->radbuf[i];
 
 	for(i=0; i < size; i++ )
-	    crc = (crc << 8) ^ crc_table[(crc >> 16)&0xff ^ buf[i]];
+	    crc = (crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ buf[i]];
 	crc &= 0x00ffffff;
 
 	for( ; size; buf++, size-- ) {

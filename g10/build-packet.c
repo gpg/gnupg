@@ -50,7 +50,8 @@ static int calc_header_length( u32 len );
 static int write_16(IOBUF inp, u16 a);
 static int write_32(IOBUF inp, u32 a);
 static int write_header( IOBUF out, int ctb, u32 len );
-static int write_header2( IOBUF out, int ctb, u32 len, int blkmode );
+static int write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode );
+static int write_new_header( IOBUF out, int ctb, u32 len, int hdrlen );
 static int write_version( IOBUF out, int ctb );
 
 /****************
@@ -67,7 +68,10 @@ build_packet( IOBUF out, PACKET *pkt )
     if( DBG_PACKET )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
     assert( pkt->pkt.generic );
-    ctb = 0x80 | ((pkt->pkttype & 15)<<2);
+    if( pkt->pkttype > 15 ) /* new format */
+	ctb = 0xc0 | (pkt->pkttype & 0x3f);
+    else
+	ctb = 0x80 | ((pkt->pkttype & 15)<<2);
     switch( pkt->pkttype ) {
       case PKT_USER_ID:
 	rc = do_user_id( out, ctb, pkt->pkt.user_id );
@@ -164,7 +168,10 @@ do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
     int rc = 0;
     IOBUF a = iobuf_temp();
 
-    write_version( a, ctb );
+    if( !pkc->version )
+	iobuf_put( a, 3 );
+    else
+	iobuf_put( a, pkc->version );
     write_32(a, pkc->timestamp );
     write_16(a, pkc->valid_days );
     iobuf_put(a, pkc->pubkey_algo );
@@ -182,7 +189,7 @@ do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
 	goto leave;
     }
 
-    write_header(out, ctb, iobuf_get_temp_length(a) );
+    write_header2(out, ctb, iobuf_get_temp_length(a), pkc->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
@@ -202,6 +209,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     int rc = 0;
     int c;
     IOBUF a = iobuf_temp();
+    FILE *fp = fopen("dump.pkc", "a");
 
     /* build the packet */
     init_packet(&pkt);
@@ -209,9 +217,11 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     pkt.pkt.public_cert = pkc;
     if( (rc = build_packet( a, &pkt )) )
 	log_fatal("build public_cert for hashing failed: %s\n", g10_errstr(rc));
-    while( (c=iobuf_get(a)) != -1 )
+    while( (c=iobuf_get(a)) != -1 ) {
+	putc( c, fp);
 	md_putc( md, c );
-
+    }
+    fclose(fp);
     iobuf_cancel(a);
 }
 
@@ -222,7 +232,10 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
     int rc = 0;
     IOBUF a = iobuf_temp();
 
-    write_version( a, ctb );
+    if( !skc->version )
+	iobuf_put( a, 3 );
+    else
+	iobuf_put( a, skc->version );
     write_32(a, skc->timestamp );
     write_16(a, skc->valid_days );
     iobuf_put(a, skc->pubkey_algo );
@@ -262,7 +275,7 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 	goto leave;
     }
 
-    write_header(out, ctb, iobuf_get_temp_length(a) );
+    write_header2(out, ctb, iobuf_get_temp_length(a), skc->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
@@ -365,7 +378,7 @@ do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
     int rc = 0;
 
     /* we must use the old convention and don't use blockmode */
-    write_header2(out, ctb, 0, 0 );
+    write_header2(out, ctb, 0, 0, 0 );
     iobuf_put(out, cd->algorithm );
 
     /* This is all. The caller has to write the real data */
@@ -433,7 +446,6 @@ do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
-  leave:
     iobuf_close(a);
     return rc;
 }
@@ -482,20 +494,39 @@ calc_header_length( u32 len )
 static int
 write_header( IOBUF out, int ctb, u32 len )
 {
-    return write_header2( out, ctb, len, 1 );
+    return write_header2( out, ctb, len, 0, 1 );
 }
 
+/****************
+ * if HDRLEN is > 0, try to build a header of this length.
+ * we need this, so hat we can hash packets without reading them again.
+ */
 static int
-write_header2( IOBUF out, int ctb, u32 len, int blkmode )
+write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode )
 {
-    if( !len )
-	ctb |= 3;
-    else if( len < 256 )
-	;
-    else if( len < 65536 )
-	ctb |= 1;
-    else
-	ctb |= 2;
+    if( ctb & 0x40 )
+	return write_new_header( out, ctb, len, hdrlen );
+
+    if( hdrlen ) {
+	if( !len )
+	    ctb |= 3;
+	else if( hdrlen == 2 && len < 256 )
+	    ;
+	else if( hdrlen == 3 && len < 65536 )
+	    ctb |= 1;
+	else
+	    ctb |= 2;
+    }
+    else {
+	if( !len )
+	    ctb |= 3;
+	else if( len < 256 )
+	    ;
+	else if( len < 65536 )
+	    ctb |= 1;
+	else
+	    ctb |= 2;
+    }
     if( iobuf_put(out, ctb ) )
 	return -1;
     if( !len ) {
@@ -511,6 +542,36 @@ write_header2( IOBUF out, int ctb, u32 len, int blkmode )
 	    iobuf_put(out, len >> 8 );
 	if( iobuf_put(out, len ) )
 	    return -1;
+    }
+    return 0;
+}
+
+
+static int
+write_new_header( IOBUF out, int ctb, u32 len, int hdrlen )
+{
+    if( hdrlen )
+	log_bug("can't cope with hdrlen yet\n");
+
+    if( iobuf_put(out, ctb ) )
+	return -1;
+    if( !len ) {
+	log_bug("can't write partial headers yet\n");
+    }
+    else {
+	if( len < 192 ) {
+	    if( iobuf_put(out, len ) )
+		return -1;
+	}
+	else if( len < 8384 ) {
+	    len -= 192;
+	    if( iobuf_put( out, (len / 256) + 192) )
+		return -1;
+	    if( iobuf_put( out, (len % 256) )  )
+		return -1;
+	}
+	else
+	    log_bug("need a partial header to code a length %lu\n", (ulong)len);
     }
     return 0;
 }

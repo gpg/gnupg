@@ -33,6 +33,8 @@ g10_errstr( int err )
 
   #define X(n,s) case G10ERR_##n : p = s; break;
     switch( err ) {
+      case -1:		p = "eof"; break;
+      case 0:		p = "okay"; break;
       X(GENERAL,	"General error")
       X(UNKNOWN_PACKET, "Unknown packet type")
       X(UNKNOWN_VERSION,"Unknown version")
@@ -46,6 +48,7 @@ g10_errstr( int err )
       X(NO_PUBKEY      ,"Public key not found")
       X(CIPHER_ALGO    ,"Unknown cipher algorithm")
       X(KEYRING_OPEN   ,"Can't open the keyring")
+      X(INVALID_PACKET ,"Invalid packet")
       X(BAD_RING       ,"Broken keyring")
       X(NO_USER_ID     ,"No such user id found")
       X(NO_SECKEY      ,"Secret key not available")
@@ -61,8 +64,10 @@ g10_errstr( int err )
       X(NI_PUBKEY      ,"Unimplemented pubkey algorithm")
       X(NI_CIPHER      ,"Unimplemented cipher algorithm")
       X(SIG_CLASS      ,"Unknown signature class")
+      X(TRUSTDB        ,"TrustDB error")
+      X(BAD_CERT       ,"Bad certificate")
 
-      default: p = buf; sprintf(buf, "Error code %d", err); break;
+      default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X
     return p;

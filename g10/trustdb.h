@@ -34,8 +34,12 @@
 
 
 /*-- trustdb.c --*/
-int check_trustdb( int level );
+void list_trustdb(const char *username);
+void list_trust_path( int max_depth, const char *username );
+int init_trustdb( int level );
 int check_pkc_trust( PKT_public_cert *pkc, int *r_trustlevel );
+int get_ownertrust( PKT_public_cert *pkc, int *r_otrust );
+int insert_trust_record( PKT_public_cert *pkc );
 int verify_private_data(void);
 int sign_private_data(void);
 

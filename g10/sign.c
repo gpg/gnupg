@@ -52,7 +52,7 @@ complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
     else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
 	g10_rsa_sign( skc, sig, md );
     else
-	log_bug(NULL);
+	BUG();
 
     /* fixme: should we check wether the signature is okay? */
 
@@ -89,7 +89,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     PACKET pkt;
     PKT_plaintext *pt = NULL;
     u32 filesize;
-    int last_rc, rc = 0;
+    int rc = 0;
     PKC_LIST pkc_list = NULL;
     SKC_LIST skc_list = NULL;
     SKC_LIST skc_rover = NULL;
@@ -318,7 +318,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
       #endif/*HAVE_RSA_CIPHER*/
 	else
-	    log_bug(NULL);
+	    BUG();
 
 	md_close( md );
 
@@ -428,7 +428,7 @@ check_all_keysigs( KBNODE keyblock )
 	    int sigrc;
 
 	    tty_printf("sig");
-	    switch( (rc = check_key_signature( keyblock, node )) ) {
+	    switch( (rc = check_key_signature( keyblock, node,NULL)) ) {
 	      case 0:		     node->flag = 0; sigrc = '!'; break;
 	      case G10ERR_BAD_SIGN:  inv_sigs++; node->flag = 1; sigrc = '-'; break;
 	      case G10ERR_NO_PUBKEY: no_key++;	 node->flag = 2; sigrc = '?'; break;
@@ -478,7 +478,6 @@ remove_keysigs( KBNODE keyblock, int all )
 	    && node->pkt->pkttype == PKT_SIGNATURE
 	    && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
-	    int sigrc;
 
 	    if( all ) {
 		/* fixme: skip self-sig */
@@ -546,14 +545,13 @@ sign_key( const char *username, STRLIST locusr )
     KBNODE kbctx, node;
     KBPOS kbpos;
     PKT_public_cert *pkc;
-    int any;
     u32 pkc_keyid[2];
     char *answer;
 
     memset( &mfx, 0, sizeof mfx);
 
     /* search the userid */
-    rc = search_keyblock_byname( &kbpos, username );
+    rc = find_keyblock_byname( &kbpos, username );
     if( rc ) {
 	log_error("user '%s' not found\n", username );
 	goto leave;
@@ -687,12 +685,10 @@ edit_keysigs( const char *username )
     KBNODE kbctx, node;
     KBPOS kbpos;
     PKT_public_cert *pkc;
-    int any;
     u32 pkc_keyid[2];
-    char *answer;
 
     /* search the userid */
-    rc = search_keyblock_byname( &kbpos, username );
+    rc = find_keyblock_byname( &kbpos, username );
     if( rc ) {
 	log_error("user '%s' not found\n", username );
 	goto leave;
@@ -755,13 +751,12 @@ change_passphrase( const char *username )
     KBNODE kbctx, node;
     KBPOS kbpos;
     PKT_secret_cert *skc;
-    int any;
     u32 skc_keyid[2];
     char *answer;
     int changed=0;
 
     /* search the userid */
-    rc = search_secret_keyblock_byname( &kbpos, username );
+    rc = find_secret_keyblock_byname( &kbpos, username );
     if( rc ) {
 	log_error("secret key for user '%s' not found\n", username );
 	goto leave;

@@ -73,7 +73,6 @@
 #endif
 
 
-static void Init( MD5_CONTEXT *mdContext);
 static void Transform(u32 *buf,u32 *in);
 
 static byte PADDING[64] = {

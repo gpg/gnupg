@@ -265,7 +265,7 @@ encrypt_filter( void *opaque, int control,
     int rc=0;
 
     if( control == IOBUFCTRL_UNDERFLOW ) { /* decrypt */
-	log_bug(NULL); /* not used */
+	BUG(); /* not used */
     }
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	if( !efx->header_okay ) {
@@ -317,7 +317,7 @@ write_pubkey_enc_from_list( PKC_LIST pkc_list, DEK *dek, IOBUF out )
 	else if( enc->pubkey_algo == PUBKEY_ALGO_RSA )
 	    g10_rsa_encrypt( pkc, enc, dek );
 	else
-	    log_bug(NULL);
+	    BUG();
 	/* and write it */
 	init_packet(&pkt);
 	pkt.pkttype = PKT_PUBKEY_ENC;

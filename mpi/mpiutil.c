@@ -45,7 +45,7 @@ mpi_alloc( unsigned nlimbs )
     MPI a;
 
     if( DBG_MEMORY )
-	log_debug("mpi_alloc(%lu)\n", nlimbs*BITS_PER_MPI_LIMB );
+	log_debug("mpi_alloc(%u)\n", nlimbs*BITS_PER_MPI_LIMB );
   #ifdef M_DEBUG
     a = m_debug_alloc( sizeof *a, info );
     a->d = nlimbs? mpi_debug_alloc_limb_space( nlimbs, 0, info ) : NULL;
@@ -77,7 +77,7 @@ mpi_alloc_secure( unsigned nlimbs )
     MPI a;
 
     if( DBG_MEMORY )
-	log_debug("mpi_alloc_secure(%lu)\n", nlimbs*BITS_PER_MPI_LIMB );
+	log_debug("mpi_alloc_secure(%u)\n", nlimbs*BITS_PER_MPI_LIMB );
   #ifdef M_DEBUG
     a = m_debug_alloc( sizeof *a, info );
     a->d = nlimbs? mpi_debug_alloc_limb_space( nlimbs, 1, info ) : NULL;

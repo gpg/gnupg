@@ -144,7 +144,7 @@ md_read( MD_HANDLE a, int algo )
 	if( algo == DIGEST_ALGO_MD5 )
 	    return md5_read( &a->md5 );
     }
-    log_bug(NULL);
+    BUG();
 }
 
 int

@@ -50,6 +50,7 @@ static int  parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 				      byte *hdr, int hdrlen, PACKET *packet );
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
+static void parse_subkey( IOBUF inp, int pkttype, unsigned long pktlen );
 static void parse_comment( IOBUF inp, int pkttype, unsigned long pktlen );
 static void parse_trust( IOBUF inp, int pkttype, unsigned long pktlen );
 static int  parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -58,7 +59,7 @@ static int  parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static int  parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
-
+#if 0
 static u16
 checksum( byte *p )
 {
@@ -70,6 +71,7 @@ checksum( byte *p )
 	a += *p++;
     return a;
 }
+#endif
 
 static unsigned short
 read_16(IOBUF inp)
@@ -143,10 +145,11 @@ search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
 static int
 parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
 {
-    int rc, ctb, pkttype, lenbytes;
+    int rc, c, ctb, pkttype, lenbytes;
     unsigned long pktlen;
     byte hdr[5];
     int hdrlen;
+    int pgp3 = 0;
 
     *skip = 0;
     assert( !pkt->pkt.generic );
@@ -157,22 +160,49 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
     hdrlen=0;
     hdr[hdrlen++] = ctb;
     if( !(ctb & 0x80) ) {
-	log_error("invalid packet at '%s'\n", iobuf_where(inp) );
+	log_error("%s: invalid packet (ctb=%02x)\n", iobuf_where(inp), ctb );
 	return G10ERR_INVALID_PACKET;
     }
-    /* we handle the pgp 3 extensions here, so that we can skip such packets*/
-    pkttype =  ctb & 0x40 ? (ctb & 0x3f) : ((ctb>>2)&0xf);
-    lenbytes = (ctb & 0x40) || ((ctb&3)==3)? 0 : (1<<(ctb & 3));
     pktlen = 0;
-    if( !lenbytes ) {
-	pktlen = 0; /* don't know the value */
-	if( pkttype != PKT_COMPRESSED )
-	    iobuf_set_block_mode(inp, 1);
+    pgp3 = !!(ctb & 0x40);
+    if( pgp3 ) {
+	pkttype =  ctb & 0x3f;
+	if( (c = iobuf_get(inp)) == -1 ) {
+	    log_error("%s: 1st length byte missing\n", iobuf_where(inp) );
+	    return G10ERR_INVALID_PACKET;
+	}
+	hdr[hdrlen++] = c;
+	if( c < 192 )
+	    pktlen = c;
+	else if( c < 224 ) {
+	    pktlen = (c - 192) * 256;
+	    if( (c = iobuf_get(inp)) == -1 ) {
+		log_error("%s: 2nd length byte missing\n", iobuf_where(inp) );
+		return G10ERR_INVALID_PACKET;
+	    }
+	    hdr[hdrlen++] = c;
+	    pktlen += c + 192;
+	}
+	else { /* partial body length */
+	    pktlen = 1 << (c & 0x1f);
+	    log_debug("partial body length of %lu bytes\n", pktlen );
+	    iobuf_set_partial_block_mode(inp, pktlen);
+	    pktlen = 0;/* to indicate partial length */
+	}
     }
     else {
-	for( ; lenbytes; lenbytes-- ) {
-	    pktlen <<= 8;
-	    pktlen |= hdr[hdrlen++] = iobuf_get_noeof(inp);
+	pkttype = (ctb>>2)&0xf;
+	lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
+	if( !lenbytes ) {
+	    pktlen = 0; /* don't know the value */
+	    if( pkttype != PKT_COMPRESSED )
+		iobuf_set_block_mode(inp, 1);
+	}
+	else {
+	    for( ; lenbytes; lenbytes-- ) {
+		pktlen <<= 8;
+		pktlen |= hdr[hdrlen++] = iobuf_get_noeof(inp);
+	    }
 	}
     }
 
@@ -183,10 +213,10 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
     }
 
     if( DBG_PACKET )
-	log_debug("parse_packet(iob=%d): type=%d length=%lu\n",
-					    iobuf_id(inp), pkttype, pktlen );
+	log_debug("parse_packet(iob=%d): type=%d length=%lu%s\n",
+		   iobuf_id(inp), pkttype, pktlen, pgp3?" (pgp3)":"" );
     pkt->pkttype = pkttype;
-    rc = G10ERR_UNKNOWN_PACKET; /* default to no error */
+    rc = G10ERR_UNKNOWN_PACKET; /* default error */
     switch( pkttype ) {
       case PKT_PUBLIC_CERT:
 	pkt->pkt.public_cert = m_alloc_clear(sizeof *pkt->pkt.public_cert );
@@ -211,6 +241,9 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
 	break;
+      case PKT_PUBKEY_SUBCERT:
+	parse_subkey(inp, pkttype, pktlen);
+	break;
       case PKT_COMMENT:
 	parse_comment(inp, pkttype, pktlen);
 	break;
@@ -234,12 +267,43 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
     return rc;
 }
 
+static void
+dump_hex_line( int c, int *i )
+{
+    if( *i && !(*i%8) ) {
+	if( *i && !(*i%24) )
+	    printf("\n%4d:", *i );
+	else
+	    putchar(' ');
+    }
+    if( c == -1 )
+	printf(" EOF" );
+    else
+	printf(" %02x", c );
+    ++*i;
+}
+
 
 static void
 skip_packet( IOBUF inp, int pkttype, unsigned long pktlen )
 {
-    if( list_mode )
+    if( list_mode ) {
 	printf(":unknown packet: type %2d, length %lu\n", pkttype, pktlen );
+	if( pkttype ) {
+	    int c, i=0 ;
+	    printf("dump:");
+	    if( iobuf_in_block_mode(inp) ) {
+		while( (c=iobuf_get(inp)) != -1 )
+		    dump_hex_line(c, &i);
+	    }
+	    else {
+		for( ; pktlen; pktlen-- )
+		    dump_hex_line(iobuf_get(inp), &i);
+	    }
+	    putchar('\n');
+	    return;
+	}
+    }
     skip_rest(inp,pktlen);
 }
 
@@ -278,7 +342,7 @@ parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     k->keyid[1] = read_32(inp); pktlen -= 4;
     k->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
-	printf(":public key packet: keyid %08lX%08lX\n",
+	printf(":public key encoded packet: keyid %08lX%08lX\n",
 					k->keyid[0], k->keyid[1]);
     if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	n = pktlen;
@@ -394,7 +458,6 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 					     PKT_onepass_sig *ops )
 {
     int version;
-    unsigned n;
 
     if( pktlen < 13 ) {
 	log_error("packet(%d) too short\n", pkttype);
@@ -461,22 +524,27 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     timestamp = read_32(inp); pktlen -= 4;
     if( is_v4 )
 	valid_period = 0;
-    else
+    else {
 	valid_period = read_16(inp); pktlen -= 2;
+    }
     algorithm = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
-	printf(":%s key certification packet:\n"
+	printf(":%s key packet:\n"
 	       "\tversion %d, created %lu, valid for %hu days\n",
 		pkttype == PKT_PUBLIC_CERT? "public": "secret",
 		version, timestamp, valid_period );
     if( pkttype == PKT_SECRET_CERT )  {
 	pkt->pkt.secret_cert->timestamp = timestamp;
 	pkt->pkt.secret_cert->valid_days = valid_period;
+	pkt->pkt.secret_cert->hdrbytes = hdrlen;
+	pkt->pkt.secret_cert->version = version;
 	pkt->pkt.secret_cert->pubkey_algo = algorithm;
     }
     else {
 	pkt->pkt.public_cert->timestamp = timestamp;
 	pkt->pkt.public_cert->valid_days = valid_period;
+	pkt->pkt.public_cert->hdrbytes	  = hdrlen;
+	pkt->pkt.public_cert->version	  = version;
 	pkt->pkt.public_cert->pubkey_algo = algorithm;
     }
 
@@ -486,7 +554,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	n = pktlen; elg_g = mpi_read(inp, &n, 0 ); pktlen -=n;
 	n = pktlen; elg_y = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
-	    printf(  "\telg p:  ");
+	    printf(  "\telg p: ");
 	    mpi_print(stdout, elg_p, mpi_print_mode  );
 	    printf("\n\telg g: ");
 	    mpi_print(stdout, elg_g, mpi_print_mode  );
@@ -502,7 +570,6 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	else {
 	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
 	    byte temp[8];
-	    byte *mpibuf;
 
 	    pkt->pkt.secret_cert->d.elg.p = elg_p;
 	    pkt->pkt.secret_cert->d.elg.g = elg_g;
@@ -558,7 +625,6 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	else {
 	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
 	    byte temp[8];
-	    byte *mpibuf;
 
 	    pkt->pkt.secret_cert->d.rsa.rsa_n = rsa_pub_mod;
 	    pkt->pkt.secret_cert->d.rsa.rsa_e = rsa_pub_exp;
@@ -635,6 +701,39 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     }
     return 0;
 }
+
+
+static void
+parse_subkey( IOBUF inp, int pkttype, unsigned long pktlen )
+{
+    int version;
+
+    version = iobuf_get_noeof(inp); pktlen--;
+    if( pkttype == PKT_PUBKEY_SUBCERT && version == '#' ) {
+	/* early versions of G10 use old comments packets; luckily all those
+	 * comments are are started by a hash */
+	if( list_mode ) {
+	    printf(":old comment packet: \"" );
+	    for( ; pktlen; pktlen-- ) {
+		int c;
+		c = iobuf_get_noeof(inp);
+		if( c >= ' ' && c <= 'z' )
+		    putchar(c);
+		else
+		    printf("\\x%02x", c );
+	    }
+	    printf("\"\n");
+	}
+	skip_rest(inp, pktlen);
+	return;
+    }
+
+    if( list_mode )
+	printf(":public subkey packet: \"" );
+    skip_rest(inp, pktlen);
+}
+
+
 
 static void
 parse_comment( IOBUF inp, int pkttype, unsigned long pktlen )
@@ -749,7 +848,6 @@ static int
 parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 {
     PKT_compressed *zd;
-    int algorithm;
 
     /* pktlen is here 0, but data follows
      * (this should be the last object in a file or

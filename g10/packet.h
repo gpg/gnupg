@@ -42,9 +42,8 @@ typedef enum {
 	PKT_PLAINTEXT	  =11, /* plaintext data with filename and mode */
 	PKT_RING_TRUST	  =12, /* keyring trust packet */
 	PKT_USER_ID	  =13, /* user id packet */
-	PKT_COMMENT	  =14, /* comment packet */
 	PKT_PUBKEY_SUBCERT=14, /* subkey certificate (OpenPGP) */
-	PKT_NEW_COMMENT   =16  /* new comment packet (OpenPGP) */
+	PKT_COMMENT	  =16  /* new comment packet (OpenPGP) */
 } pkttype_t;
 
 typedef struct packet_struct PACKET;
@@ -74,6 +73,7 @@ typedef struct {
 
 typedef struct {
     u32     keyid[2];	    /* 64 bit keyid */
+    ulong   local_id;	    /* internal use, valid if > 0 */
     u32     timestamp;	    /* signature made */
     byte    sig_class;	    /* sig classification, append for MD calculation*/
     byte    pubkey_algo;    /* algorithm used for public key scheme */
@@ -96,9 +96,11 @@ typedef struct {
 typedef struct {
     u32     timestamp;	    /* certificate made */
     u16     valid_days;     /* valid for this number of days */
+    byte    hdrbytes;	    /* number of header bytes */
+    byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     md_filter_context_t mfx;
-    u32     local_id;	    /* internal use, valid if > 0 */
+    ulong   local_id;	    /* internal use, valid if > 0 */
     union {
       struct {
 	MPI p;		    /* prime */
@@ -115,6 +117,8 @@ typedef struct {
 typedef struct {
     u32     timestamp;	    /* certificate made */
     u16     valid_days;     /* valid for this number of days */
+    byte    hdrbytes;	    /* number of header bytes */
+    byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     union {
       struct {

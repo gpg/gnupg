@@ -188,7 +188,6 @@ int
 optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 	       ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 {
-    char *s, *s2;
     int state, i, c;
     int index=0;
     char keyword[100];

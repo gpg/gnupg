@@ -72,6 +72,17 @@ struct skc_list {
     int mark;
 };
 
+/* structure to collect all informations which can be used to
+ * identify a public key */
+typedef struct pubkey_find_info *PUBKEY_FIND_INFO;
+struct pubkey_find_info {
+    u32  keyid[2];
+    unsigned nbits;
+    byte pubkey_algo;
+    byte fingerprint[20];
+    char userid[1];
+};
+
 
 /*-- pkclist.c --*/
 void release_pkc_list( PKC_LIST pkc_list );
@@ -128,9 +139,9 @@ void clear_kbnode_flags( KBNODE n );
 /*-- ringedit.c --*/
 int add_keyblock_resource( const char *filename, int force, int secret );
 int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
-int search_keyblock( PACKET *pkt, KBPOS *kbpos, int secret );
-int search_keyblock_byname( KBPOS *kbpos, const char *username );
-int search_secret_keyblock_byname( KBPOS *kbpos, const char *username );
+int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );
+int find_keyblock_byname( KBPOS *kbpos, const char *username );
+int find_secret_keyblock_byname( KBPOS *kbpos, const char *username );
 int lock_keyblock( KBPOS *kbpos );
 void unlock_keyblock( KBPOS *kbpos );
 int read_keyblock( KBPOS *kbpos, KBNODE *ret_root );

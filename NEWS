@@ -1,4 +1,15 @@
 
+    * New option "--quick-random" which uses a much quicker random
+      number generator.  Keys generated while this option is in effect
+      are flags with "INSECURE!" in the user-id.  This is a development
+      only option.
+
+    * Read support for new version packets (OpenPGP).
+
+    * Comment packets are now of coorect OpenPGP type 16. Old comment
+      packets writen by G10 are detected because they always start with
+      a hash which is an invalid version byte.
+
     * The string "(INSECURE!)" is appended to a new user-id if this
       is generated on a system without a good random number generator.
 

@@ -52,7 +52,7 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
     mpi_ptr_t xp_marker=NULL;
     int assign_rp=0;
     mpi_ptr_t tspace = NULL;
-    mpi_size_t tsize;
+    mpi_size_t tsize=0;   /* to avoid compiler warning, fixme: check */
 
     esize = exp->nlimbs;
     msize = mod->nlimbs;

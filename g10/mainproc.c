@@ -110,7 +110,6 @@ add_secret_cert( CTX c, PACKET *pkt )
 static int
 add_user_id( CTX c, PACKET *pkt )
 {
-    u32 keyid[2];
     KBNODE node, n1, n2;
 
     if( !c->cert ) {
@@ -142,7 +141,6 @@ add_user_id( CTX c, PACKET *pkt )
 static int
 add_signature( CTX c, PACKET *pkt )
 {
-    u32 keyid[2];
     KBNODE node, n1, n2;
 
     if( !c->cert ) {
@@ -329,7 +327,7 @@ do_check_sig( CTX c, KBNODE node )
 		if( c->cert->pkt->pkt.public_cert->mfx.md )
 		    md = md_copy( c->cert->pkt->pkt.public_cert->mfx.md );
 		else
-		    log_bug(NULL);
+		    BUG();
 		md_write( md, n1->pkt->pkt.user_id->name, n1->pkt->pkt.user_id->len);
 	    }
 	    else {
@@ -356,7 +354,7 @@ static void
 print_userid( PACKET *pkt )
 {
     if( !pkt )
-	log_bug(NULL);
+	BUG();
     if( pkt->pkttype != PKT_USER_ID ) {
 	printf("ERROR: unexpected packet type %d", pkt->pkttype );
 	return;
@@ -493,9 +491,7 @@ proc_packets( IOBUF a )
 {
     CTX c = m_alloc_clear( sizeof *c );
     PACKET *pkt = m_alloc( sizeof *pkt );
-    int rc, result;
-    int lvl0, lvl1;
-    u32 keyid[2];
+    int rc;
     int newpkt;
 
     c->iobuf = a;

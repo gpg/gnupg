@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "packet.h"
@@ -35,11 +36,13 @@
 #include "cipher.h"
 #include "filter.h"
 #include "trustdb.h"
+#include "ttyio.h"
 
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
     aPrintMDs, aSignKey, aClearsig, aListPackets, aEditSig,
-    aKMode, aKModeC, aChangePass,
+    aKMode, aKModeC, aChangePass, aImport, aListTrustDB,
+    aListTrustPath,
 aTest };
 
 
@@ -86,6 +89,15 @@ strusage( int level )
       default:	p = default_strusage(level);
     }
     return p;
+}
+
+static void
+wrong_args( const char *text)
+{
+    fputs("Usage: g10 [options] ",stderr);
+    fputs(text,stderr);
+    putc('\n',stderr);
+    exit(2);
 }
 
 static void
@@ -174,11 +186,15 @@ main( int argc, char **argv )
     { 527, "cipher-algo", 2 , "select default cipher algorithm" },
     { 528, "pubkey-algo", 2 , "select default puplic key algorithm" },
     { 529, "digest-algo", 2 , "select default message digest algorithm" },
+    { 530, "import",      0 , "put public keys into the trustdb" },
+    { 531, "list-trustdb",0 , "\r"},
+    { 532, "quick-random", 0, "\r"},
+    { 533, "list-trust-path",0, "\r"},
 
     {0} };
     ARGPARSE_ARGS pargs;
     IOBUF a;
-    int rc;
+    int rc=0;
     int orig_argc;
     char **orig_argv;
     const char *fname, *fname_print;
@@ -316,9 +332,10 @@ main( int argc, char **argv )
 	  case 529:
 	    opt.def_digest_algo = string_to_digest_algo(pargs.r.ret_str);
 	    break;
-
-
-	    break;
+	  case 530: set_cmd( &cmd, aImport); break;
+	  case 531: set_cmd( &cmd, aListTrustDB); break;
+	  case 532: quick_random_gen(1); break;
+	  case 533: set_cmd( &cmd, aListTrustPath); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -393,11 +410,15 @@ main( int argc, char **argv )
 	}
     }
 
-    if( cmd != aPrimegen && cmd != aPrintMDs ) {
-	rc = check_trustdb(0);
-	if( rc )
-	    log_error("failed to initialize the TrustDB: %s\n", g10_errstr(rc));
+    switch( cmd ) {
+      case aPrimegen:
+      case aPrintMDs:
+	break;
+      case aListTrustDB: rc = init_trustdb( argc? 1:0 ); break;
+      default: rc = init_trustdb(1); break;
     }
+    if( rc )
+	log_error("failed to initialize the TrustDB: %s\n", g10_errstr(rc));
 
 
     switch( cmd ) {
@@ -487,7 +508,7 @@ main( int argc, char **argv )
 	    int i, seq=0;
 	    const char *s;
 
-	    while( s=get_keyring(seq++) ) {
+	    while( (s=get_keyring(seq++)) ) {
 		if( !(a = iobuf_open(s)) ) {
 		    log_error("can't open '%s'\n", s);
 		    continue;
@@ -553,6 +574,32 @@ main( int argc, char **argv )
 	break;
 
       case aTest: do_test( argc? atoi(*argv): 0 ); break;
+
+      case aImport:
+	if( !argc  )
+	    usage(1);
+	for( ; argc; argc--, argv++ ) {
+	    rc = import_pubkeys( *argv );
+	    if( rc )
+		log_error("import from '%s' failed: %s\n",
+						*argv, g10_errstr(rc) );
+	}
+	break;
+
+      case aListTrustDB:
+	if( !argc )
+	    list_trustdb(NULL);
+	else {
+	    for( ; argc; argc--, argv++ )
+		list_trustdb( *argv );
+	}
+	break;
+
+      case aListTrustPath:
+	if( argc != 2 )
+	    wrong_args("--list-trust-path  <maxdepth> <username>");
+	list_trust_path( atoi(*argv), argv[1] );
+	break;
 
       case aListPackets:
 	opt.list_packets=1;
@@ -631,8 +678,6 @@ print_mds( const char *fname )
     if( ferror(fp) )
 	log_error("%s: %s\n", fname, strerror(errno) );
     else {
-	byte *p;
-
 	md_final(md);
 	printf(  "%s:    MD5 =", fname ); print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
 	printf("\n%s: RMD160 =", fname ); print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );

@@ -120,15 +120,17 @@ log_bug( const char *fmt, ... )
     va_list arg_ptr ;
 
     fprintf(stderr, "\nInternal Error%s: ", pidstring  ) ;
-    if( fmt ) {
-	va_start( arg_ptr, fmt ) ;
-	vfprintf(stderr,fmt,arg_ptr) ;
-	va_end(arg_ptr);
-    }
-    else
-	fputs("Ohhh jeeee ...\n", stderr);
+    va_start( arg_ptr, fmt ) ;
+    vfprintf(stderr,fmt,arg_ptr) ;
+    va_end(arg_ptr);
     fflush(stderr);
     abort();
+}
+
+void
+log_bug0()
+{
+    log_bug("Ohhhh jeeee ...\n");
 }
 
 void

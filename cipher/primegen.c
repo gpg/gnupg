@@ -319,8 +319,6 @@ check_prime( MPI prime )
     int i;
     unsigned x;
     int count=0;
-    MPI result;
-    MPI val_2;
 
     /* check against small primes */
     for(i=0; (x = small_prime_numbers[i]); i++ ) {
@@ -431,7 +429,7 @@ m_out_of_n( char *array, int m, int n )
 		array[i] = 1;
 		return;
 	    }
-	log_bug(NULL);
+	BUG();
     }
 
     for(j=1; j < n; j++ ) {

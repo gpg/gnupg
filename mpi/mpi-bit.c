@@ -32,8 +32,7 @@
 unsigned
 mpi_get_nbits( MPI a )
 {
-    unsigned nbits;
-    unsigned n, count = 0;
+    unsigned n;
 
     if( a->nlimbs ) {
 	mpi_limb_t alimb = a->d[a->nlimbs-1];

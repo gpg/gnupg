@@ -58,20 +58,38 @@ typedef struct {
 /*-- logger.c --*/
 void log_set_pid( int pid );
 int  log_get_errorcount( int clear );
-void printstr( int level, const char *fmt, ... );
-void log_bug( const char *fmt, ... );
-void log_fatal( const char *fmt, ... );
-void log_error( const char *fmt, ... );
-void log_info( const char *fmt, ... );
-void log_debug( const char *fmt, ... );
 void log_hexdump( const char *text, char *buf, size_t len );
 void log_mpidump( const char *text, MPI a );
+
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+  void printstr( int level, const char *fmt, ... )
+			    __attribute__ ((format (printf,2,3)));
+  void log_bug( const char *fmt, ... )
+			    __attribute__ ((noreturn, format (printf,1,2)));
+  void log_bug0( void ) __attribute__ ((noreturn));
+  void log_fatal( const char *fmt, ... )
+			    __attribute__ ((noreturn, format (printf,1,2)));
+  void log_error( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+  void log_info( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
+  void log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+#else
+  void printstr( int level, const char *fmt, ... );
+  void log_bug( const char *fmt, ... );
+  void log_bug0( void );
+  void log_fatal( const char *fmt, ... );
+  void log_error( const char *fmt, ... );
+  void log_info( const char *fmt, ... );
+  void log_debug( const char *fmt, ... );
+#endif
+
 
 /*-- errors.c --*/
 const char * g10_errstr( int no );
 
 /*-- argparse.c --*/
 int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
+int optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
+		   ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
 void usage( int level );
 const char *default_strusage( int level );
 
@@ -112,5 +130,6 @@ char *strlwr(char *a);
 #define STR2(v) STR(v)
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
+#define BUG() log_bug0()
 
 #endif /*G10_UTIL_H*/

@@ -60,7 +60,7 @@ static int
 check_elg( PKT_secret_cert *cert )
 {
     byte *buffer;
-    u16 n, csum=0;
+    u16 csum=0;
     int res;
     unsigned nbytes;
     u32 keyid[2];
@@ -73,7 +73,7 @@ check_elg( PKT_secret_cert *cert )
 	BLOWFISH_context *blowfish_ctx=NULL;
 
 	switch( cert->d.elg.protect_algo ) {
-	  case CIPHER_ALGO_NONE: log_bug(NULL); break;
+	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    keyid_from_skc( cert, keyid );
 	    dek = get_passphrase_hash( keyid, NULL );
@@ -142,7 +142,7 @@ protect_elg( PKT_secret_cert *cert, DEK *dek )
 	BLOWFISH_context *blowfish_ctx=NULL;
 
 	switch( cert->d.elg.protect_algo ) {
-	  case CIPHER_ALGO_NONE: log_bug(NULL); break;
+	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
 	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
@@ -171,7 +171,7 @@ static int
 check_rsa( PKT_secret_cert *cert )
 {
     byte *buffer;
-    u16 n, csum=0;
+    u16 csum=0;
     int res;
     unsigned nbytes;
     u32 keyid[2];
@@ -183,7 +183,7 @@ check_rsa( PKT_secret_cert *cert )
 
 	switch( cert->d.rsa.protect_algo ) {
 	    /* FIXME: use test variables to check for the correct key */
-	  case CIPHER_ALGO_NONE: log_bug(NULL); break;
+	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    keyid_from_skc( cert, keyid );
 	    dek = get_passphrase_hash( keyid, NULL );

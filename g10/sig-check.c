@@ -143,7 +143,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 		md_putc( digest,  a	   & 0xff );
 	    }
 	    md_final( digest );
-	    dp = md_read( digest, 0 );
+	    dp = md_read( digest, DIGEST_ALGO_RMD160 );
 	    for(i=19; i >= 0; i--, dp++ )
 		if( mpi_getbyte( result, i ) != *dp ) {
 		    rc = G10ERR_BAD_SIGN;
@@ -187,7 +187,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 		md_putc( digest,  a	   & 0xff );
 	    }
 	    md_final( digest );
-	    dp = md_read( digest, 0 );
+	    dp = md_read( digest, DIGEST_ALGO_MD5 );
 	    for(i=15; i >= 0; i--, dp++ )
 		if( mpi_getbyte( result, i ) != *dp ) {
 		    rc = G10ERR_BAD_SIGN;
@@ -220,7 +220,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
  * check the signature pointed to by NODE. This is a key signatures
  */
 int
-check_key_signature( KBNODE root, KBNODE node )
+check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
     KBNODE unode;
     MD_HANDLE md;
@@ -229,6 +229,8 @@ check_key_signature( KBNODE root, KBNODE node )
     int algo;
     int rc;
 
+    if( is_selfsig )
+	*is_selfsig = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( (node->pkt->pkt.signature->sig_class&~3) == 0x10 );
     assert( root->pkt->pkttype == PKT_PUBLIC_CERT );
@@ -250,6 +252,13 @@ check_key_signature( KBNODE root, KBNODE node )
     if( unode && unode->pkt->pkttype == PKT_USER_ID ) {
 	PKT_user_id *uid = unode->pkt->pkt.user_id;
 
+	if( is_selfsig ) {
+	    u32 keyid[2];
+
+	    keyid_from_pkc( pkc, keyid );
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+		*is_selfsig = 1;
+	}
 	md = md_open( algo, 0 );
 	hash_public_cert( md, pkc );
 	md_write( md, uid->name, uid->len );
