@@ -236,7 +236,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
                 }
             }
           if (!rc)
-            rc = gpgsm_validate_path (ctrl, cert, NULL);
+            rc = gpgsm_validate_chain (ctrl, cert, NULL);
           if (!rc)
             {
               CERTLIST cl = xtrycalloc (1, sizeof *cl);
@@ -271,7 +271,7 @@ gpgsm_release_certlist (CERTLIST list)
 
 
 /* Like gpgsm_add_to_certlist, but look only for one certificate.  No
-   path validation is done */
+   chain validation is done */
 int
 gpgsm_find_cert (const char *name, KsbaCert *r_cert)
 {

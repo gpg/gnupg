@@ -67,7 +67,7 @@ struct {
   char *local_user;       /* NULL or argument to -u */
 
   int always_trust;       /* Trust the given keys even if there is no
-                             valid certification path */
+                             valid certification chain */
   int skip_verify;        /* do not check signatures on data */
 
   int lock_once;          /* Keep lock once they are set */
@@ -78,7 +78,7 @@ struct {
 
   char *policy_file;        /* full pathname of policy file */
   int no_policy_check;      /* ignore certificate policies */
-  int no_path_validation;   /* Bypass all cert path validity tests */
+  int no_chain_validation;  /* Bypass all cert chain validity tests */
 
   int auto_issuer_key_retrieve; /* try to retrieve a missing issuer key. */
 } opt;
@@ -189,7 +189,7 @@ int gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
 /*-- certpath.c --*/
 int gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next);
 int gpgsm_is_root_cert (KsbaCert cert);
-int gpgsm_validate_path (CTRL ctrl, KsbaCert cert, time_t *r_exptime);
+int gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime);
 int gpgsm_basic_cert_check (KsbaCert cert);
 
 /*-- certlist.c --*/

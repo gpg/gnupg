@@ -698,7 +698,12 @@ learn_cb (void *opaque, const void *buffer, size_t length)
     }
 
   rc = gpgsm_basic_cert_check (cert);
-  if (rc)
+  if (rc == GNUPG_Missing_Certificate)
+    { /* For later use we store it in the ephemeral database. */
+      log_info ("issuer certificate missing - storing as ephemeral\n");
+      keydb_store_cert (cert, 1, NULL);
+    }
+  else if (rc)
     log_error ("invalid certificate: %s\n", gnupg_strerror (rc));
   else
     {

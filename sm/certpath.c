@@ -1,5 +1,5 @@
-/* certpath.c - path validation
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+/* certpath.c - certificate chain validation
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -68,12 +68,12 @@ unknown_criticals (KsbaCert cert)
 }
 
 static int
-allowed_ca (KsbaCert cert, int *pathlen)
+allowed_ca (KsbaCert cert, int *chainlen)
 {
   KsbaError err;
   int flag;
 
-  err = ksba_cert_is_ca (cert, &flag, pathlen);
+  err = ksba_cert_is_ca (cert, &flag, chainlen);
   if (err)
     return map_ksba_err (err);
   if (!flag)
@@ -388,10 +388,10 @@ gpgsm_is_root_cert (KsbaCert cert)
 }
 
 
-/* Validate a path and optionally return the nearest expiration time
+/* Validate a chain and optionally return the nearest expiration time
    in R_EXPTIME */
 int
-gpgsm_validate_path (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
+gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
 {
   int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;
@@ -409,9 +409,9 @@ gpgsm_validate_path (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
   if (r_exptime)
     *r_exptime = 0;
 
-  if (opt.no_path_validation)
+  if (opt.no_chain_validation)
     {
-      log_info ("WARNING: bypassing path validation\n");
+      log_info ("WARNING: bypassing certificate chain validation\n");
       return 0;
     }
   
@@ -576,7 +576,7 @@ gpgsm_validate_path (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
       depth++;
       if (depth > maxdepth)
         {
-          log_error (_("certificate path too long\n"));
+          log_error (_("certificate chain too long\n"));
           rc = GNUPG_Bad_Certificate_Path;
           goto leave;
         }
@@ -621,15 +621,15 @@ gpgsm_validate_path (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
         }
 
       {
-        int pathlen;
-        rc = allowed_ca (issuer_cert, &pathlen);
+        int chainlen;
+        rc = allowed_ca (issuer_cert, &chainlen);
         if (rc)
           goto leave;
-        if (pathlen >= 0 && (depth - 1) > pathlen)
+        if (chainlen >= 0 && (depth - 1) > chainlen)
           {
-            log_error (_("certificate path longer than allowed by CA (%d)\n"),
-                       pathlen);
-            rc = GNUPG_Bad_Certificate_Path;
+            log_error (_("certificate chain longer than allowed by CA (%d)\n"),
+                       chainlen);
+            rc = GNUPG_Bad_Certificate_Chain;
             goto leave;
           }
       }
@@ -695,7 +695,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
   KEYDB_HANDLE kh = keydb_new (0);
   KsbaCert issuer_cert = NULL;
 
-  if (opt.no_path_validation)
+  if (opt.no_chain_validation)
     {
       log_info ("WARNING: bypassing basic certificate checks\n");
       return 0;

@@ -75,7 +75,7 @@ check_and_store (CTRL ctrl, KsbaCert cert, int depth)
           /* Now lets walk up the chain and import all certificates up
              the chain.*/
           if ( depth >= 50 )
-            log_error (_("certificate path too long\n"));
+            log_error (_("certificate chain too long\n"));
           else if (!gpgsm_walk_cert_chain (cert, &next))
             {
               check_and_store (ctrl, next, depth+1);

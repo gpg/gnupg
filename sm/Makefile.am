@@ -24,7 +24,7 @@ INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 bin_PROGRAMS = gpgsm
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl \
-	       $(LIBGCRYPT_CFLAGS) $(LIBKSBA_CFLAGS)
+	       $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
 
 gpgsm_SOURCES = \
@@ -52,6 +52,6 @@ gpgsm_SOURCES = \
 
 
 gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a ../kbx/libkeybox.a \
-              ../common/libcommon.a $(LIBGCRYPT_LIBS) $(LIBKSBA_LIBS)
+              ../common/libcommon.a $(LIBGCRYPT_LIBS) $(KSBA_LIBS)
 
 

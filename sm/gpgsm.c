@@ -82,7 +82,7 @@ enum cmd_and_opt_values {
   oDebug,
   oDebugAll,
   oDebugWait,
-  oDebugNoPathValidation,
+  oDebugNoChainValidation,
   oLogFile,
 
   oEnableSpecialFilenames,
@@ -305,7 +305,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oDebugWait, "debug-wait" ,1, "@"},
-    { oDebugNoPathValidation, "debug-no-path-validation" ,0, "@"},
+    { oDebugNoChainValidation, "debug-no-chain-validation" ,0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
     { aDummy, "no-comment", 0,   "@"},
     { aDummy, "completes-needed", 1, "@"},
@@ -618,10 +618,10 @@ main ( int argc, char **argv)
       log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
                  NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
     }
-  if (!ksba_check_version (NEED_LIBKSBA_VERSION) )
+  if (!ksba_check_version (NEED_KSBA_VERSION) )
     {
       log_fatal( _("libksba is too old (need %s, have %s)\n"),
-                 NEED_LIBKSBA_VERSION, ksba_check_version (NULL) );
+                 NEED_KSBA_VERSION, ksba_check_version (NULL) );
     }
 
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
@@ -851,8 +851,7 @@ main ( int argc, char **argv)
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
-        case oDebugNoPathValidation: opt.no_path_validation = 1; break;
-
+        case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
 
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;

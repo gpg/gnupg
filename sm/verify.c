@@ -417,7 +417,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (DBG_X509)
         log_debug ("signature okay - checking certs\n");
-      rc = gpgsm_validate_path (ctrl, cert, &keyexptime);
+      rc = gpgsm_validate_chain (ctrl, cert, &keyexptime);
       if (rc == GNUPG_Certificate_Expired)
         {
           gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);
@@ -440,9 +440,9 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         xfree (buf);
       }
 
-      if (rc) /* of validate_path */
+      if (rc) /* of validate_chain */
         {
-          log_error ("invalid certification path: %s\n", gnupg_strerror (rc));
+          log_error ("invalid certification chain: %s\n", gnupg_strerror (rc));
           if (rc == GNUPG_Bad_Certificate_Path
               || rc == GNUPG_Bad_Certificate
               || rc == GNUPG_Bad_CA_Certificate

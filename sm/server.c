@@ -470,8 +470,8 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
 
   Import the certificates read form the input-fd, return status
   message for each imported one.  The import checks the validity of
-  the certificate but not of the path.  It is possible to import
-  expired certificates.  */
+  the certificate but not of the entire chain.  It is possible to
+  import expired certificates.  */
 static int 
 cmd_import (ASSUAN_CONTEXT ctx, char *line)
 {

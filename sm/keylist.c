@@ -281,7 +281,7 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
   char *dn;
   time_t t;
   int idx;
-  int is_ca, pathlen;
+  int is_ca, chainlen;
   unsigned int kusage;
   char *string, *p;
 
@@ -340,7 +340,7 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
           if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT)) 
             fputs (" keyEncipherment", fp);
           if ( (kusage & KSBA_KEYUSAGE_DATA_ENCIPHERMENT))
-            fputs (" dataEncripherment", fp);
+            fputs (" dataEncipherment", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))    
             fputs (" keyAgreement", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_CERT_SIGN))
@@ -374,16 +374,16 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
       putc ('\n', fp);
     }
 
-  kerr = ksba_cert_is_ca (cert, &is_ca, &pathlen);
+  kerr = ksba_cert_is_ca (cert, &is_ca, &chainlen);
   if (kerr || is_ca)
     {
-      fputs ("  path length: ", fp);
+      fputs (" chain length: ", fp);
       if (kerr)
         fprintf (fp, "[error: %s]", ksba_strerror (kerr));
-      else if (pathlen == -1)
+      else if (chainlen == -1)
         fputs ("unlimited", fp);
       else
-        fprintf (fp, "%d", pathlen);
+        fprintf (fp, "%d", chainlen);
       putc ('\n', fp);
     }
 
