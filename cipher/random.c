@@ -311,9 +311,9 @@ mix_pool(byte *pool)
     RMD160_CONTEXT md;
 
     rmd160_init( &md );
- #if DIGESTLEN != 20
+#if DIGESTLEN != 20
     #error must have a digest length of 20 for ripe-md-160
- #endif
+#endif
     /* loop over the pool */
     pend = pool + POOLSIZE;
     memcpy(hashbuf, pend - DIGESTLEN, DIGESTLEN );
@@ -367,11 +367,11 @@ read_seed_file(void)
     if( !seed_file_name )
 	return 0;
 
-  #ifdef HAVE_DOSISH_SYSTEM
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
     fd = open( seed_file_name, O_RDONLY | O_BINARY );
-  #else
+#else
     fd = open( seed_file_name, O_RDONLY );
-  #endif
+#endif
     if( fd == -1 && errno == ENOENT) {
 	allow_seed_file_update = 1;
 	return 0;
@@ -457,12 +457,12 @@ update_random_seed_file()
     mix_pool(rndpool); rndstats.mixrnd++;
     mix_pool(keypool); rndstats.mixkey++;
 
-  #ifdef HAVE_DOSISH_SYSTEM
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
     fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,
 							S_IRUSR|S_IWUSR );
-  #else
+#else
     fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR );
-  #endif
+#endif
     if( fd == -1 ) {
 	log_info(_("can't create `%s': %s\n"), seed_file_name, strerror(errno) );
 	return;
