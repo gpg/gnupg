@@ -1,3 +1,7 @@
+2004-02-13  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Require libksba 0.9.4 and libgcrypt 1.1.92.
+
 2004-02-12  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: Removed cruft from debugging.
