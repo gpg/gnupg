@@ -1,3 +1,9 @@
+2002-09-03  Werner Koch  <wk@gnupg.org>
+
+	* mpicoder.c (mpi_set_buffer): Cast all left operands of a shift
+	to a larger type so that 16 bit CPUs don't suffer from an
+	overflow.  Suggested by TOGAWA Satoshi.
+
 2002-08-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* longlong.h: Remove space between \ and newline. gcc is

@@ -405,10 +405,10 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
 
     for(i=0, p = buffer+nbytes-1; p >= buffer+BYTES_PER_MPI_LIMB; ) {
       #if BYTES_PER_MPI_LIMB == 4
-	alimb  = *p--	    ;
-	alimb |= *p-- <<  8 ;
-	alimb |= *p-- << 16 ;
-	alimb |= *p-- << 24 ;
+	alimb  = (mpi_limb_t)*p-- ;
+	alimb |= (mpi_limb_t)*p-- <<  8 ;
+	alimb |= (mpi_limb_t)*p-- << 16 ;
+	alimb |= (mpi_limb_t)*p-- << 24 ;
       #elif BYTES_PER_MPI_LIMB == 8
 	alimb  = (mpi_limb_t)*p--	;
 	alimb |= (mpi_limb_t)*p-- <<  8 ;
@@ -426,9 +426,9 @@ mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign )
     if( p >= buffer ) {
       #if BYTES_PER_MPI_LIMB == 4
 	alimb  = *p--	    ;
-	if( p >= buffer ) alimb |= *p-- <<  8 ;
-	if( p >= buffer ) alimb |= *p-- << 16 ;
-	if( p >= buffer ) alimb |= *p-- << 24 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- <<  8 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 16 ;
+	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- << 24 ;
       #elif BYTES_PER_MPI_LIMB == 8
 	alimb  = (mpi_limb_t)*p-- ;
 	if( p >= buffer ) alimb |= (mpi_limb_t)*p-- <<	8 ;
