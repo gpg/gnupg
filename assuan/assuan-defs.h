@@ -77,6 +77,9 @@ struct assuan_context_s {
                      In socket mode, the pid of the server */
   int listen_fd;  /* The fd we are listening on (used by socket servers) */
 
+  pid_t client_pid; /* for a socket server the PID of the client or -1
+                       if not available */
+
   void (*deinit_handler)(ASSUAN_CONTEXT);  
   int (*accept_handler)(ASSUAN_CONTEXT);
   int (*finish_handler)(ASSUAN_CONTEXT);
@@ -91,7 +94,6 @@ struct assuan_context_s {
   int  (*option_handler_fnc)(ASSUAN_CONTEXT,const char*, const char*);
   void (*input_notify_fnc)(ASSUAN_CONTEXT, const char *);
   void (*output_notify_fnc)(ASSUAN_CONTEXT, const char *);
-
 
   int input_fd;   /* set by INPUT command */
   int output_fd;  /* set by OUTPUT command */
@@ -134,10 +136,4 @@ void _assuan_log_sanitized_string (const char *string);
 
 
 #endif /*ASSUAN_DEFS_H*/
-
-
-
-
-
-
 

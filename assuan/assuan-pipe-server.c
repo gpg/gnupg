@@ -64,6 +64,7 @@ _assuan_new_context (ASSUAN_CONTEXT *r_ctx)
   ctx->outbound.fd = -1;
 
   ctx->listen_fd = -1;
+  ctx->client_pid = (pid_t)-1;
   /* use the pipe server handler as a default */
   ctx->deinit_handler = deinit_pipe_server;
   ctx->accept_handler = accept_connection;

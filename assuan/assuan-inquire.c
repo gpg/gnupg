@@ -126,9 +126,10 @@ free_membuf (struct membuf *mb)
  * @keyword: The keyword used for the inquire
  * @r_buffer: Returns an allocated buffer
  * @r_length: Returns the length of this buffer
- * @maxlen: If no 0, the size limit of the inquired data.
+ * @maxlen: If not 0, the size limit of the inquired data.
  * 
- * A Server may use this to Send an inquire
+ * A Server may use this to Send an inquire.  r_buffer, r_length and
+ * maxlen may all be NULL/0 to indicate that no real data is expected.
  * 
  * Return value: 0 on success or an ASSUAN error code
  **/
@@ -141,9 +142,12 @@ assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
   char cmdbuf[100];
   unsigned char *line, *p;
   int linelen;
+  int nodataexpected;
 
-  if (!ctx || !keyword || (10 + strlen (keyword) >= sizeof (cmdbuf))
-      || !r_buffer || !r_length )
+  if (!ctx || !keyword || (10 + strlen (keyword) >= sizeof (cmdbuf)))
+    return ASSUAN_Invalid_Value;
+  nodataexpected = !r_buffer && !r_length && !maxlen;
+  if (!nodataexpected && (!r_buffer || !r_length))
     return ASSUAN_Invalid_Value;
   if (!ctx->is_server)
     return ASSUAN_Not_A_Server;
@@ -151,7 +155,10 @@ assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
     return ASSUAN_Nested_Commands;
   
   ctx->in_inquire = 1;
-  init_membuf (&mb, maxlen? maxlen:1024, maxlen);
+  if (nodataexpected)
+    memset (&mb, 0, sizeof mb); /* avoid compiler warnings */
+  else
+    init_membuf (&mb, maxlen? maxlen:1024, maxlen);
 
   strcpy (stpcpy (cmdbuf, "INQUIRE "), keyword);
   rc = assuan_write_line (ctx, cmdbuf);
@@ -172,7 +179,12 @@ assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
       if (line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
           && (!line[3] || line[3] == ' '))
         break; /* END command received*/
-      if (line[0] != 'D' || line[1] != ' ')
+      if (line[0] == 'C' && line[1] == 'A' && line[2] == 'N')
+        {
+          rc = ASSUAN_Canceled;
+          goto leave;
+        }
+      if (line[0] != 'D' || line[1] != ' ' || nodataexpected)
         {
           rc = ASSUAN_Unexpected_Command;
           goto leave;
@@ -205,13 +217,17 @@ assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
           goto leave;
         }
     }
-  
-  *r_buffer = get_membuf (&mb, r_length);
-  if (!*r_buffer)
-    rc = ASSUAN_Out_Of_Core;
+
+  if (!nodataexpected)
+    {
+      *r_buffer = get_membuf (&mb, r_length);
+      if (!*r_buffer)
+        rc = ASSUAN_Out_Of_Core;
+    }
 
  leave:
-  free_membuf (&mb);
+  if (!nodataexpected)
+    free_membuf (&mb);
   ctx->in_inquire = 0;
   return rc;
 }

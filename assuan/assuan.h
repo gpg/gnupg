@@ -74,6 +74,8 @@ typedef enum {
   ASSUAN_Inquire_Error = 121,
   ASSUAN_Invalid_Option = 122,
 
+  ASSUAN_Not_Confirmed = 128,
+
   ASSUAN_Bad_Certificate = 201,
   ASSUAN_Bad_Certificate_Path = 202,
   ASSUAN_Missing_Certificate = 203,
@@ -88,6 +90,11 @@ typedef enum {
   ASSUAN_No_CRL_For_Cert = 302,
   ASSUAN_CRL_Too_Old = 303,
   ASSUAN_Not_Trusted = 304,
+
+  ASSUAN_Card_Error = 401,
+  ASSUAN_Invalid_Card = 402,
+  ASSUAN_No_PKCS15_App = 403,
+  ASSUAN_Card_Not_Present = 404
 
 } AssuanError;
 

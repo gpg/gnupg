@@ -1,3 +1,16 @@
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* assuan-inquire.c (assuan_inquire): Check for a cancel command
+	and return ASSUAN_Canceled.  Allow for non-data inquiry.
+
+	* assuan.h: Add a few token specific error codes.
+
+2002-02-13  Werner Koch  <wk@gnupg.org>
+
+	* assuan-defs.h (assuan_context_s): New var CLIENT_PID.
+	* assuan-pipe-server.c (_assuan_new_context): set default value.
+	* assuan-socket-server.c (accept_connection): get the actual pid.
+
 2002-02-12  Werner Koch  <wk@gnupg.org>
 
 	* assuan-buffer.c (writen,readline) [USE_GNU_PT]: Use pth_read/write.
