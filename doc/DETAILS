@@ -364,6 +364,10 @@ more arguments in future versions.
     NO_SECKEY  <long keyid>
 	The key is not available
 
+    IMPORT_CHECK <long keyid> <fingerprint> <user ID>
+        This status is emitted in interactive mode right before
+        the "import.okay" prompt.
+
     IMPORTED   <long keyid>  <username>
 	The keyid and name of the signature just imported
 
