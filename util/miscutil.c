@@ -293,18 +293,20 @@ make_printable_string( const byte *p, size_t n, int delim )
 int
 answer_is_yes_no_default( const char *s, int def_answer )
 {
-    const char *long_yes = _("yes");
+    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    const char *long_yes = _("yes|yes");
     const char *short_yes = _("yY");
-    const char *long_no = _("no");
+    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    const char *long_no = _("no|no");
     const char *short_no = _("nN");
 
     /* Note: we have to use the local dependent strcasecmp here */
-    if( !strcasecmp(s, long_yes ) )
+    if( match_multistr(long_yes,s) )
 	return 1;
     if( *s && strchr( short_yes, *s ) && !s[1] )
 	return 1;
     /* test for no strings to catch ambiguities for the next test */
-    if( !strcasecmp(s, long_no ) )
+    if( match_multistr(long_no,s) )
 	return 0;
     if( *s && strchr( short_no, *s ) && !s[1] )
 	return 0;
@@ -328,19 +330,21 @@ answer_is_yes( const char *s )
 int
 answer_is_yes_no_quit( const char *s )
 {
-    const char *long_yes = _("yes");
-    const char *long_no = _("no");
-    const char *long_quit = _("quit");
+    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    const char *long_yes = _("yes|yes");
+    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    const char *long_no = _("no|no");
+    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    const char *long_quit = _("quit|quit");
     const char *short_yes = _("yY");
     const char *short_no = _("nN");
     const char *short_quit = _("qQ");
 
-    /* Note: We have to use the locale dependent strcasecmp */
-    if( !strcasecmp(s, long_no ) )
+    if( match_multistr(long_no,s) )
 	return 0;
-    if( !strcasecmp(s, long_yes ) )
+    if( match_multistr(long_yes,s) )
 	return 1;
-    if( !strcasecmp(s, long_quit ) )
+    if( match_multistr(long_quit,s) )
 	return -1;
     if( *s && strchr( short_no, *s ) && !s[1] )
 	return 0;
@@ -358,4 +362,25 @@ answer_is_yes_no_quit( const char *s )
     if( *s && strchr( "qQ", *s ) && !s[1] )
 	return -1;
     return 0;
+}
+
+/* Try match against each substring of multistr, delimited by | */
+int
+match_multistr(const char *multistr,const char *match)
+{
+  do
+    {
+      size_t seglen=strcspn(multistr,"|");
+      if(!seglen)
+	break;
+      /* Using the localized strncasecmp */
+      if(strncasecmp(multistr,match,seglen)==0)
+	return 1;
+      multistr+=seglen;
+      if(*multistr=='|')
+	multistr++;
+    }
+  while(*multistr);
+
+  return 0;
 }

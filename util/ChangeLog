@@ -1,3 +1,10 @@
+2003-11-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* miscutil.c (match_multistr): New.  Match against each segment in
+	a string with tokens separated by |.
+	(answer_is_yes_no_default, answer_is_yes_no_quit): Use it here to
+	enable alternate translations.
+
 2003-10-23  Werner Koch  <wk@gnupg.org>
 
 	* secmem.c (lock_pool) [_AIX]: Don't use plock.
