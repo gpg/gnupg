@@ -776,6 +776,263 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   return rc;
 }
 
+/* Retrieve the fingerprint from the card inserted in SLOT and write
+   the according hex representation (40 hex digits plus NUL character)
+   to FPR.   */
+static gpg_error_t
+retrieve_fpr_from_card (int slot, char *fpr)
+{
+  const unsigned char *value;
+  unsigned char *data;
+  size_t data_n;
+  gpg_error_t err;
+  size_t value_n;
+  unsigned int i;
+
+  data = NULL;
+
+  err = iso7816_get_data (slot, 0x6E, &data, &data_n);
+  if (err)
+    /* FIXME */
+    goto out;
+
+  value = find_tlv (data, data_n, 0x00C5, &value_n);
+  if (! (value
+	 && (! (value_n > (data_n - (value - data))))
+	 && (value_n >= 60))) /* FIXME: Shouldn't this be "== 60"?  */
+    {
+      /* FIXME? */
+      err = gpg_error (GPG_ERR_CARD); /*  */
+      goto out;
+    }
+
+  /* Copy out third key FPR.  */
+  for (i = 0; i < 20; i++)
+    sprintf (fpr + (i * 2), "%02X", (value + (2 * 20))[i]);
+
+ out:
+
+  xfree (data);
+
+  return err;
+}
+
+/* Retrieve the next token from S, using ":" as delimiter.  */
+static char *
+retrieve_next_token (char *s)
+{
+  char *p;
+
+  p = strtok (s, ":");
+  if (! p)
+    log_error ("error while extracting token\n");
+
+  return p;
+}
+
+/* Retrieve the secret key material for the key, whose fingerprint is
+   FPR, from gpg output, which can be read through the stream FP.  The
+   RSA modulus will be stored in m/mlen, the secret exponent in
+   e/elen.  Return zero on success, one on failure.  */
+static int
+retrieve_key_material (FILE *fp, const char *fpr,
+		       const unsigned char **m, size_t *mlen,
+		       const unsigned char **e, size_t *elen)
+{
+  size_t line_size;
+  ssize_t line_ret;
+  char *line;
+  int ret;
+  int found_key;
+  char *token;
+  int pkd_n;
+  unsigned char *m_new;
+  unsigned char *e_new;
+  size_t m_new_n;
+  size_t e_new_n;
+  int is_rsa;
+  gcry_mpi_t mpi;
+  gcry_error_t err;
+  size_t max_length;
+
+  line_size = 0;
+  line = NULL;
+  found_key = 0;
+  pkd_n = 0;
+  m_new = NULL;
+  e_new = NULL;
+  mpi = NULL;
+  ret = 0;
+
+  while (1)
+    {
+      /* FIXME?  */
+      max_length = 1024;
+      line_ret = read_line (fp, &line, &line_size, &max_length);
+      if (line_ret < 0)
+	{
+	  ret = 1;
+	  break;
+	}
+      if (! line_ret)
+	/* EOF.  */
+	/* FIXME?  */
+	break;
+
+      token = retrieve_next_token (line);
+      if (! found_key)
+	{
+	  /* Key not found yet, search for key entry.  */
+	  if ((! strcmp (token, "pub")) || (! strcmp (token, "sub")))
+	    {
+	      /* Reached next key entry, parse it.  */
+
+	      /* This is the trust level (right, FIXME?).  */
+	      token = retrieve_next_token (NULL);
+	      if (! token)
+		{
+		  ret = 1;
+		  break;
+		}
+
+	      /* This is the size.  */
+	      token = retrieve_next_token (NULL);
+	      if (! token)
+		{
+		  ret = 1;
+		  break;
+		}
+
+	      /* This is the algorithm (right, FIXME?).  */
+	      token = retrieve_next_token (NULL);
+	      if (! token)
+		{
+		  ret = 1;
+		  break;
+		}
+	      is_rsa = ! strcmp (token, "1");
+
+	      /* This is the fingerprint.  */
+	      token = retrieve_next_token (NULL);
+	      if (! token)
+		{
+		  ret = 1;
+		  break;
+		}
+
+	      if (! strcmp (token, fpr))
+		{
+		  /* Found our key.  */
+		  if (! is_rsa)
+		    {
+		      /* FIXME.  */
+		      ret = 1;
+		      break;
+		    }
+		  found_key = 1;
+		}
+	    }
+	}
+      else
+	{
+	  if (! strcmp (token, "sub"))
+	    /* Next key entry, break.  */
+	    break;
+
+	  if (! strcmp (token, "pkd"))
+	    {
+	      if ((pkd_n == 0) || (pkd_n == 1))
+		{
+		  /* This is the pkd index.  */
+		  token = retrieve_next_token (NULL);
+		  if (! token)
+		    {
+		      /* FIXME.  */
+		      ret = 1;
+		      break;
+		    }
+
+		  /* This is the pkd size.  */
+		  token = retrieve_next_token (NULL);
+		  if (! token)
+		    {
+		      /* FIXME.  */
+		      ret = 1;
+		      break;
+		    }
+
+		  /* This is the pkd mpi.  */
+		  token = retrieve_next_token (NULL);
+		  if (! token)
+		    {
+		      /* FIXME.  */
+		      ret = 1;
+		      break;
+		    }
+
+		  err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_HEX, token, 0, NULL);
+		  if (err)
+		    {
+		      log_error ("error while converting pkd %i from hex: %s\n",
+				 pkd_n, gcry_strerror (err));
+		      ret = 1;
+		      break;
+		    }
+
+		  if (pkd_n == 0)
+		    err = gcry_mpi_aprint (GCRYMPI_FMT_STD,
+					   &m_new, &m_new_n, mpi);
+		  else
+		    err = gcry_mpi_aprint (GCRYMPI_FMT_STD,
+					   &e_new, &e_new_n, mpi);
+		  if (err)
+		    {
+		      log_error ("error while converting pkd %i to std: %s\n",
+				 pkd_n, gcry_strerror (err));
+		      ret = 1;
+		      break;
+		    }
+		  gcry_mpi_release (mpi);
+		  mpi = NULL;
+		  pkd_n++;
+		}
+	      else
+		{
+		  /* Too many pkd entries.  */
+		  /* FIXME */
+		  ret = 1;
+		  break;
+		}
+	    }
+	}
+    }
+  if (ret)
+    goto out;
+
+  if (pkd_n < 2)
+    {
+      /* Not enough pkds retrieved.  */
+      ret = 1;
+      goto out;
+    }
+
+  *m = m_new;
+  *mlen = m_new_n;
+  *e = e_new;
+  *elen = e_new_n;
+
+ out:
+
+  if (ret)
+    {
+      gcry_free (m_new);
+      gcry_free (e_new);
+    }
+  gcry_mpi_release (mpi);
+  gcry_free (line);
+
+  return ret;
+}
 
 /* Get the public key for KEYNO and store it as an S-expresion with
    the APP handle.  On error that field gets cleared.  If we already
@@ -875,30 +1132,75 @@ get_public_key (app_t app, int keyno)
           e = ebuf;
         }
 
-
-      err = gcry_sexp_build (&sexp, NULL,
-                             "(public-key (rsa (n %b) (e %b)))",
-                             (int)mlen, m,(int)elen, e);
-      if (err)
-        {
-          log_error ("error formatting the key into an S-expression: %s\n",
-                     gpg_strerror (err));
-          goto leave;
-        }
-      app->app_local->pk[keyno].key = sexp;
-
     }
   else
     {
       /* Due to a design problem in v1.0 cards we can't get the public
          key out of these cards without doing a verify on CHV3.
          Clearly that is not an option and thus we try to locate the
-         key using an external helper.  */
+         key using an external helper.
+
+	 The helper we use here is gpg itself, which should know about
+	 the key in any case.  */
+
+      char fpr_long[41];
+      char *fpr = fpr_long + 24;
+      char *command;
+      FILE *fp;
+      int ret;
+
+      command = NULL;
+
+      err = retrieve_fpr_from_card (app->slot, fpr_long);
+      if (err)
+	{
+	  log_error ("error while retrieving fpr from card: %s\n",
+		     gpg_strerror (err));
+	  goto leave;
+	}
+
+      ret = asprintf (&command,
+		      "gpg --list-keys --with-colons --with-key-data '%s'",
+		      fpr_long);
+      if (ret < 0)
+	{
+	  err = gpg_error_from_errno (errno);
+	  log_error ("error while creating pipe command "
+		     "for retrieving key: %s\n", gpg_strerror (err));
+	  goto leave;
+	}
+
+      fp = popen (command, "r");
+      if (! fp)
+	{
+	  err = gpg_error_from_errno (errno);
+	  log_error ("error while creating pipe: %s\n", gpg_strerror (err));
+	  goto leave;
+	}
+
+      ret = retrieve_key_material (fp, fpr, &m, &mlen, &e, &elen);
+      fclose (fp);
+      if (ret)
+	{
+	  /* FIXME?  */
+	  err = gpg_error (GPG_ERR_INTERNAL);
+	  log_error ("error while retrieving key material through pipe\n");
+	  goto leave;
+	}
 
       buffer = NULL;
-      /* FIXME */
-
     }
+
+  err = gcry_sexp_build (&sexp, NULL,
+			 "(public-key (rsa (n %b) (e %b)))",
+			 (int)mlen, m,(int)elen, e);
+  if (err)
+    {
+      log_error ("error formatting the key into an S-expression: %s\n",
+		 gpg_strerror (err));
+      goto leave;
+    }
+  app->app_local->pk[keyno].key = sexp;
 
  leave:
   /* Set a flag to indicate that we tried to read the key.  */

@@ -1,3 +1,11 @@
+2005-03-29  Moritz Schulte  <moritz@g10code.com>
+
+	* app-openpgp.c (retrieve_fpr_from_card): New function.
+	(retrieve_next_token): New function.
+	(retrieve_key_material): New function.
+	(get_public_key): Implement retrival of key through expernal
+	helper (gpg) in case the openpgp card is not cooperative enough.
+
 2005-02-25  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (get_public_key): Make sure not to return negative
