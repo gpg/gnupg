@@ -1,3 +1,7 @@
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* tools.texi (Helper Tools): Document gpgsm-gencert.sh.
+
 2004-10-05  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.texi (Invoking GPG-AGENT): Tell that GPG_TTY needs to

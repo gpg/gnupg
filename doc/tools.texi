@@ -11,6 +11,7 @@ GnuPG comes with a couple of smaller tools:
 * watchgnupg::            Read logs from a socket.
 * addgnupghome::          Create .gnupg home directories.
 * gpgconf::               Modify .gnupg home directories.
+* gpgsm-gencert.sh::      Generate an X.509 certificate request.
 @end menu
 
 @c
@@ -575,3 +576,20 @@ $ echo 'force:16:' | gpgconf --change-options dirmngr
 
 The @code{--runtime} option can influence when the changes take
 effect.
+
+@c
+@c    GPGSM-GENCERT.SH
+@c
+@node gpgsm-gencert.sh
+@section Generate an X.509 certificate request
+
+This is a simple tool to interactivly generate a certificate request
+whicl will be printed to stdout.
+
+@noindent
+@command{gpgsm-gencert.sh} is invoked as:
+
+@samp{gpgsm-cencert.sh}
+
+
+
