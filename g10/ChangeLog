@@ -1,5 +1,8 @@
 2002-10-01  David Shaw  <dshaw@jabberwocky.com>
 
+	* seckey-cert.c (do_check): Don't give the IDEA warning unless the
+	cipher in question is in fact IDEA.
+
 	* import.c (import_one): Make sure that a newly imported key
 	starts with a clean ownertrust.
 	(import_revoke_cert): Remove ultimate trust when revoking an
