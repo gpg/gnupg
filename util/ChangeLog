@@ -1,3 +1,10 @@
+2004-02-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* mkdtemp.c: New (moved from g10/), setenv.c: New, unsetenv.c:
+	New.
+
+	* Makefile.am: Include @LIBOBJS@ for replacement functions.
+
 2004-01-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c (default_strusage): Update copyright date.

@@ -29,8 +29,9 @@ libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c  \
 		     ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c \
 		     dotlock.c http.c srv.h srv.c simple-gettext.c w32reg.c
 
-libutil_a_DEPENDENCIES = @REGEX_O@
-libutil_a_LIBADD = @REGEX_O@
+libutil_a_DEPENDENCIES = @LIBOBJS@ @REGEX_O@
+# LIBOBJS is for the replacement functions
+libutil_a_LIBADD = @LIBOBJS@ @REGEX_O@
 
 http-test:  http.c
 	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
