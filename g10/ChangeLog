@@ -1,5 +1,10 @@
 2003-12-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (strip_leading_space, get_arg): New.
+	(parse_keyserver_options): Use them here to allow arguments to
+	keyserver-options.  Since none of our options need arguments yet,
+	just pass them through whole to the keyserver helper.
+
 	* main.h, misc.c (parse_options): Add a "noisy" flag to enable and
 	disable the messages about which option didn't match or matched
 	ambiguously.  Change all callers (g10.c, keyserver.c).

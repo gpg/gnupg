@@ -74,6 +74,33 @@ struct kopts
 static int keyserver_work(int action,STRLIST list,
 			  KEYDB_SEARCH_DESC *desc,int count);
 
+static void
+strip_leading_space(char **stringp)
+{
+  while(**stringp)
+    {
+      if(ascii_isspace(**stringp))
+	(*stringp)++;
+      else
+	return;
+    }
+}
+
+static char *
+get_arg(char **stringp)
+{
+  strip_leading_space(stringp);
+
+  if(**stringp=='=')
+    {
+      (*stringp)++;
+      strip_leading_space(stringp);
+      return strsep(stringp," ,");
+    }
+
+  return NULL;
+}
+
 void 
 parse_keyserver_options(char *options)
 {
@@ -127,7 +154,24 @@ parse_keyserver_options(char *options)
 	       &&
 	       !parse_export_options(tok,
 				     &opt.keyserver_options.export_options,0))
-	      add_to_strlist(&opt.keyserver_options.other,tok);
+	      {
+		char *arg;
+		if(options && (arg=get_arg(&options)))
+		  {
+		    char *joined;
+
+		    joined=m_alloc(strlen(tok)+1+strlen(arg)+1);
+		    /* Make a canonical name=value form with no
+		       spaces */
+		    strcpy(joined,tok);
+		    strcat(joined,"=");
+		    strcat(joined,arg);
+		    add_to_strlist(&opt.keyserver_options.other,joined);
+		    m_free(joined);
+		  }
+		else
+		  add_to_strlist(&opt.keyserver_options.other,tok);
+	      }
 	}
     }
 }
