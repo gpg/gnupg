@@ -1,11 +1,14 @@
-GnuPG 1.9 is a temporary protect to work on GnuPG extensions.  It will
-eventually lead to a GnuPG 2.0 release.
+GnuPG 1.9 is a temporary project to work on GnuPG extensions; it is a
+merke fo gnupg 1.3 and the old newpg package.  It will eventually lead
+to a GnuPG 2.0 release.
 
 jnlib/  utility functions
 kbx/    keybox library
+g10/    the gpg program here called gpg2
 sm/     the gpgsm program
 agent/  the gpg-agent
 scd/    the smartcard daemon
+
 
 You need the libgpg-error package.  Libassuan, Libksba and Libgcrypt
 are also required to build it.
@@ -24,14 +27,14 @@ gpgsm:
 
 --learn-card
 
-   Read tinformation about the private keys from the smartcard and
+   Read information about the private keys from the smartcard and
    import the certificates from there.
 
 --export
 
-    Export all certificates storein the Keybox or those specified on
-    the commandline.  When using --armor a few informational lines are
-    prepended before each block.
+   Export all certificates stored in the Keybox or those specified on
+   the command line.  When using --armor a few informational lines are
+   prepended before each block.
 
 
 gpg2:
@@ -94,7 +97,7 @@ gpgsm:
 
   Specify a dirmngr program to be used for CRL checks.  The default
   value is "/usr/sbin/dirmngr".  This is only used as a fallback when
-  the envrionment varaibale DIRMNGR_INFO is not set or a running
+  the environment varaibale DIRMNGR_INFO is not set or a running
   dirmngr can't be connected.
 
 --no-secmem-warning
@@ -148,12 +151,11 @@ gpg-agent:
 --pinentry-program <path_to_pinentry_program>
 
   Specify the PINentry program.  The default value is
-  "../../pinentry/kpinentry/kpinentry" so you most likely want to
-  specify it. 
+  "<prefix>/bin/pinentry" so you most likely want to specify it.
 
 --no-grab
 
-  Tel the pinentry not to grab keybourd and mouse.  You most likely
+  Tell the pinentry not to grab keybourd and mouse.  You most likely
   want to give this option during testing and development to avoid
   lockups in case of bugs.
 

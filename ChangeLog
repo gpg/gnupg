@@ -1,6 +1,9 @@
 2003-12-23  Werner Koch  <wk@gnupg.org>
 
-	* configure.ac, Makefile.am: Enable the tests directory.
+	Released 1.9.3.
+
+	* README-alpha: Removed.
+	* configure.ac, Makefile.am: Add the tests and tools directories.
 
 2003-12-19  Werner Koch  <wk@gnupg.org>
 
@@ -11,7 +14,6 @@
 
 	* configure.ac: Requires now libassuan 0.6.2.
 	(CFLAGS): Add --Wformat-noliteral in gcc mode.
-	
 
 2003-12-16  Werner Koch  <wk@gnupg.org>
 
