@@ -77,9 +77,9 @@ show_policy_url(PKT_signature *sig,int indent)
 {
   const byte *p;
   size_t len;
-  int seq=0;
+  int seq=0,crit;
 
-  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len,&seq)))
+  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len,&seq,&crit)))
     {
       int i;
 
@@ -87,7 +87,10 @@ show_policy_url(PKT_signature *sig,int indent)
 	putchar(' ');
 
       /* This isn't UTF8 as it is a URL(?) */
-      printf(_("Signature policy: "));
+      if(crit)
+	printf(_("Critical signature policy: "));
+      else
+	printf(_("Signature policy: "));
       print_string(stdout,p,len,0);
       printf("\n");
     }
@@ -98,11 +101,11 @@ show_notation(PKT_signature *sig,int indent)
 {
   const byte *p;
   size_t len;
-  int seq=0;
+  int seq=0,crit;
 
   /* There may be multiple notations in the same sig. */
 
-  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq)))
+  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq,&crit)))
     if(len>=8)
       {
 	int n1,n2,i;
@@ -120,7 +123,10 @@ show_notation(PKT_signature *sig,int indent)
 	  putchar(' ');
 
 	/* This is UTF8 */
-	printf(_("Signature notation: "));
+	if(crit)
+	  printf(_("Critical signature notation: "));
+	else
+	  printf(_("Signature notation: "));
 	print_utf8_string(stdout,p+8,n1);
 	printf("=");
 

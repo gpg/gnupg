@@ -999,16 +999,19 @@ can_handle_critical( const byte *buffer, size_t n, int type )
 
 const byte *
 enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
-		 size_t *ret_n, int *start )
+		 size_t *ret_n, int *start, int *critical )
 {
     const byte *buffer;
     int buflen;
     int type;
-    int critical;
+    int critical_dummy;
     int offset;
     size_t n;
     int seq = 0;
     int reqseq = start? *start: 0;
+
+    if(!critical)
+      critical=&critical_dummy;
 
     if( !pktbuf || reqseq == -1 ) {
 	/* return some value different from NULL to indicate that
@@ -1040,14 +1043,14 @@ enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
 	type = *buffer;
 	if( type & 0x80 ) {
 	    type &= 0x7f;
-	    critical = 1;
+	    *critical = 1;
 	}
 	else
-	    critical = 0;
+	    *critical = 0;
 	if( !(++seq > reqseq) )
 	    ;
 	else if( reqtype == SIGSUBPKT_TEST_CRITICAL ) {
-	    if( critical ) {
+	    if( *critical ) {
 		if( n-1 > buflen+1 )
 		    goto too_short;
 		if( !can_handle_critical(buffer+1, n-1, type ) ) {
@@ -1061,7 +1064,7 @@ enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
 	}
 	else if( reqtype < 0 ) /* list packets */
 	    dump_sig_subpkt( reqtype == SIGSUBPKT_LIST_HASHED,
-				    type, critical, buffer, buflen, n );
+				    type, *critical, buffer, buflen, n );
 	else if( type == reqtype ) { /* found */
 	    buffer++;
 	    n--;
@@ -1106,7 +1109,7 @@ const byte *
 parse_sig_subpkt (const subpktarea_t *buffer, sigsubpkttype_t reqtype,
                   size_t *ret_n)
 {
-    return enum_sig_subpkt( buffer, reqtype, ret_n, NULL );
+    return enum_sig_subpkt( buffer, reqtype, ret_n, NULL, NULL );
 }
 
 const byte *
@@ -1134,7 +1137,7 @@ void parse_revkeys(PKT_signature *sig)
   while((revkey=
 	 (struct revocation_key *)enum_sig_subpkt(sig->hashed,
 						  SIGSUBPKT_REV_KEY,
-						  &len,&seq)))
+						  &len,&seq,NULL)))
     {
       if(len==sizeof(struct revocation_key) &&
 	 (revkey->class&0x80)) /* 0x80 bit must be set */

@@ -389,7 +389,7 @@ int skip_some_packets( IOBUF inp, unsigned n );
 
 const byte *enum_sig_subpkt ( const subpktarea_t *subpkts,
                               sigsubpkttype_t reqtype,
-                              size_t *ret_n, int *start );
+                              size_t *ret_n, int *start, int *critical );
 const byte *parse_sig_subpkt ( const subpktarea_t *buffer,
                                sigsubpkttype_t reqtype,
                                size_t *ret_n );

@@ -721,7 +721,7 @@ print_notation_data( PKT_signature *sig )
     const byte *p;
     int seq = 0;
 
-    while( (p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_NOTATION, &n, &seq))) {
+    while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&n,&seq,NULL))) {
 	if( n < 8 ) {
 	    log_info(_("WARNING: invalid notation data found\n"));
 	    return;
@@ -746,7 +746,7 @@ print_notation_data( PKT_signature *sig )
 
     seq=0;
 
-    while( (p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_POLICY, &n, &seq) )) {
+    while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&n,&seq,NULL))) {
 	log_info(_("Policy: ") );
 	print_string( log_stream(), p, n, 0 );
 	putc( '\n', log_stream() );
