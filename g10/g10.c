@@ -46,6 +46,7 @@
 #include "status.h"
 #include "g10defs.h"
 #include "keyserver-internal.h"
+#include "exec.h"
 
 enum cmd_and_opt_values { aNull = 0,
     oArmor	  = 'a',
@@ -1331,15 +1332,10 @@ main( int argc, char **argv )
 	    break;
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oExecPath:
-	    {
-	      /* Notice that path is never freed.  That is
-		 intentional due to the way putenv() works. */
-	      char *path=m_alloc(5+strlen(pargs.r.ret_str)+1);
-	      strcpy(path,"PATH=");
-	      strcat(path,pargs.r.ret_str);
-	      if(putenv(path)!=0)
-		log_error(_("unable to set exec-path to %s\n"),path);
-	    }
+#ifndef USE_EXEC_PATH
+	    if(set_exec_path(pargs.r.ret_str))
+	      log_error(_("unable to set exec-path to %s\n"),pargs.r.ret_str);
+#endif
 	    break;
 	  case oNotation:
 	    add_notation_data( pargs.r.ret_str, 0 );

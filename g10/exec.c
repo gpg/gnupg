@@ -51,6 +51,7 @@ int exec_write(struct exec_info **info,const char *program,
 
 int exec_read(struct exec_info *info) { return G10ERR_GENERAL; }
 int exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
+int set_exec_path(const char *path) { return G10ERR_GENERAL; }
 
 #else /* ! NO_EXEC */
 
@@ -89,6 +90,19 @@ static int win_system(const char *command)
   return 0;
 }
 #endif
+
+int set_exec_path(const char *path)
+{
+  /* Notice that path is never freed.  That is intentional due to the
+     way putenv() works. */
+  char *p=m_alloc(5+strlen(path)+1);
+  strcpy(p,"PATH=");
+  strcat(p,path);
+  if(putenv(p)!=0)
+    return G10ERR_GENERAL;
+  else
+    return 0;
+}
 
 /* Makes a temp directory and filenames */
 static int make_tempdir(struct exec_info *info)
@@ -297,6 +311,10 @@ int exec_write(struct exec_info **info,const char *program,
 
   if(program==NULL && args_in==NULL)
     BUG();
+
+#ifdef USE_EXEC_PATH
+  set_exec_path(USE_EXEC_PATH);
+#endif
 
   *info=m_alloc_clear(sizeof(struct exec_info));
 

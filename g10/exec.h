@@ -18,5 +18,6 @@ int exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary);
 int exec_read(struct exec_info *info);
 int exec_finish(struct exec_info *info);
+int set_exec_path(const char *path);
 
 #endif /* !_EXEC_H_ */
