@@ -38,10 +38,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#ifdef	HAVE_GETHRTIME
+#ifdef HAVE_GETHRTIME
   #include <sys/times.h>
 #endif
 #ifdef HAVE_GETTIMEOFDAY
+  #include <sys/times.h>
+#endif
+#ifdef HAVE_TIMES
   #include <sys/times.h>
 #endif
 #ifdef HAVE_GETRUSAGE
@@ -650,13 +653,12 @@ fast_random_poll()
 	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
 	add_randomness( &tv.tv_nsec, sizeof(tv.tv_nsec), 1 );
     }
-  #else /* use times */
-    #ifndef HAVE_DOSISH_SYSTEM
+  #elif defined (HAVE_TIMES)
     {	struct tms buf;
-	times( &buf );
+        if( times( &buf ) == -1 )
+	    BUG();
 	add_randomness( &buf, sizeof buf, 1 );
     }
-    #endif
   #endif
   #ifdef HAVE_GETRUSAGE
     #ifndef RUSAGE_SELF
