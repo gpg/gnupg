@@ -55,10 +55,29 @@ release_sk_list( SK_LIST sk_list )
 static int
 is_insecure( PKT_secret_key *sk )
 {
+    u32 keyid[2];
+    KBNODE node = NULL, u;
+    int insecure = 0;
 
-    return 0;  /* FIXME!! */
+    keyid_from_sk( sk, keyid );
+    node = get_pubkeyblock( keyid );
+    for ( u = node; u; u = u->next ) {
+        if ( u->pkt->pkttype == PKT_USER_ID ) {
+            PKT_user_id *id = u->pkt->pkt.user_id;
+            if ( id->attrib_data )
+                continue; /* skip attribute packets */
+            if ( strstr( id->name, "(insecure!)" )
+                 || strstr( id->name, "not secure" )
+                 || strstr( id->name, "do not use" ) ) {
+                insecure = 1;
+                break;
+            }
+        }
+    }
+    release_kbnode( node );
+    
+    return insecure;
 }
-
 
 static int
 key_present_in_sk_list(SK_LIST sk_list, PKT_secret_key *sk)

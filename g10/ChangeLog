@@ -1,3 +1,7 @@
+2002-06-14  Timo Schulz  <ts@winpt.org>
+
+	* skclist.c (is_insecure): Implemented.
+	
 2002-06-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Properly handle PROGRAM responses
