@@ -1,3 +1,12 @@
+2003-07-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (do_add_key_flags): Don't set the certify flag for
+	subkeys.
+	(ask_algo): Provide key flags for DSA, Elgamal_e, and Elgamal
+	subkeys.
+	(generate_keypair): Provide key flags for the default DSA/Elgamal
+	keys.
+
 2003-07-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (pct_expando): Minor performance tweak.  Don't bother to
