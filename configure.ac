@@ -323,6 +323,13 @@ dnl LDAP is defined only after we confirm the library is available later
       try_finger=$enableval, try_finger=yes)
     AC_MSG_RESULT($try_finger)
 
+    AC_MSG_CHECKING([whether ftp key fetching support is requested])
+    AC_ARG_ENABLE(ftp,
+      AC_HELP_STRING([--enable-ftp],
+        [enable ftp key fetching interface only]),
+      try_ftp=$enableval, try_ftp=no)
+    AC_MSG_RESULT($try_ftp)
+
     AC_MSG_CHECKING([whether email keyserver support is requested])
     AC_ARG_ENABLE(mailto,
       AC_HELP_STRING([--disable-mailto],
@@ -640,6 +647,14 @@ fi
 AC_SUBST(GPGKEYS_LDAP)
 AC_SUBST(LDAPLIBS)
 AM_CONDITIONAL(GPGKEYS_LDAP, test "$GPGKEYS_LDAP" != "")
+
+if test "$try_ftp" = yes ; then
+  GNUPG_CHECK_LIBCURL
+
+  if test x"$have_libcurl" = xyes ; then
+     AC_SUBST(GPGKEYS_FTP,"gpgkeys_ftp$EXEEXT")
+  fi
+fi
 
 dnl This isn't necessarily sendmail itself, but anything that gives a
 dnl sendmail-ish interface to the outside world.  That includes qmail,
