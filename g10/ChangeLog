@@ -1,3 +1,16 @@
+2003-05-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_key): Clear disabled flag when parsing a
+	new key.  Just in case someone forgets to clear the whole key.
+
+	* getkey.c (merge_selfsigs_main): Add an "if all else fails" path
+	for setting a single user ID primary when there are multiple set
+	primaries all at the same second, or no primaries set and the most
+	recent user IDs are at the same second, or no signed user IDs at
+	all. This is arbitrary, but deterministic.
+
+	* exec.h, photoid.h: Add copyright message.
+
 2003-05-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): New --gnupg option to disable the various

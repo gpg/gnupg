@@ -1,5 +1,6 @@
 /* parse-packet.c  - read packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1521,6 +1522,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	pk->req_usage = 0; 
 	pk->pubkey_usage = 0; /* not yet used */
         pk->is_revoked = 0;
+	pk->is_disabled = 0;
 	pk->keyid[0] = 0;
 	pk->keyid[1] = 0;
     }
