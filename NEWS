@@ -11,7 +11,8 @@
     * Secret keys are no longer imported unless you use the new option
       --allow-secret-key-import.
 
-    * Support for the gpg-agent from gpg 1.1
+    * Support for the gpg-agent from gpg 1.1 and other changes needed by
+      gpgme.
 
     * Better LFS support.
 

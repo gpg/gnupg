@@ -507,6 +507,23 @@ cpr_enabled()
 }
 
 char *
+cpr_get_no_help( const char *keyword, const char *prompt )
+{
+    char *p;
+
+    if( opt.command_fd != -1 )
+	return do_get_from_fd ( keyword, 0, 0 );
+  #ifdef USE_SHM_COPROCESSING
+    if( opt.shm_coprocess )
+	return do_shm_get( keyword, 0, 0 );
+  #endif
+    for(;;) {
+	p = tty_get( prompt );
+        return p;
+    }
+}
+
+char *
 cpr_get( const char *keyword, const char *prompt )
 {
     char *p;
@@ -527,6 +544,7 @@ cpr_get( const char *keyword, const char *prompt )
 	    return p;
     }
 }
+
 
 char *
 cpr_get_utf8( const char *keyword, const char *prompt )

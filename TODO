@@ -1,9 +1,9 @@
 
+  * Can we output things like the preferences?      
+
   * Add Dave's UTS patches
 
   * Fix revoked subkey problem - see key 621cc013
-
-  * Don't display the "no secret for decryption available"
 
   ** Check whether the use of -u and --clearsign created 2 signatures.
      removed dups from the skclist.
@@ -19,10 +19,6 @@
 
   * If there is no secure memory, allocate more memory for the secure
     memory block or do it in all cases.
-
-  * for detached signatures:  Allow to specify a filedescriptor (maybe
-    we can use a generic way to specify filedescriptors - "-" is already
-    used to specify 0/1).
 
   * List all UserID with GOODSIG?
 
@@ -41,8 +37,6 @@
   * at least an option to prefer DSA keys over RSA when selecting the key to
     use.  Depending on creation time would be nice too.  I think this is
     already done for the subkeys - check it.
-
-  * Fix localtime() in W32.
 
   * No TCP support yet for W32? arggg - should go into a separate program
     anyway.
@@ -87,7 +81,7 @@ Scheduled for 1.1
   * Delay the read of the passphrase-fd after a NEED_PASSPHRASE.  But this
     may break some scripts.
 
-  * Get new assembler stuff from gmgp 3.1
+  * Get new assembler stuff from gmp 3.1
 
 
 Nice to have

@@ -1,3 +1,21 @@
+2000-12-19  Werner Koch  <wk@gnupg.org>
+
+	* status.c, status.h (cpr_get_no_help): New.
+	* keyedit.c (keyedit_menu): Use it here because we have our own
+	help list here.
+
+2000-12-18  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (print_failed_pkenc): Don't print the sometimes
+	confusing message about unavailabe secret key.  Renamed ...
+	(print_pkenc_list): ... to this and introduced failed arg.
+	(proc_encrypted): Print the failed encryption keys and then
+	the one to be used.
+	(proc_pubkey_enc): Store also the key we are going to use.
+
+	* mainproc.c (check_sig_and_print): Don't list revoked user IDs.
+	(is_uid_revoked): New.
+
 2000-12-08  Werner Koch  <wk@gnupg.org>
 
 	* pipemode.c: Made the command work.  Currently only for

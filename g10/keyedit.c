@@ -695,7 +695,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    have_commands = 0;
 	    }
 	    if( !have_commands ) {
-		answer = cpr_get("keyedit.prompt", _("Command> "));
+		answer = cpr_get_no_help("keyedit.prompt", _("Command> "));
 		cpr_kill_prompt();
 	    }
 	    trim_spaces(answer);

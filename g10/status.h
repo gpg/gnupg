@@ -103,6 +103,7 @@ void write_status_buffer ( int no,
 
 int cpr_enabled(void);
 char *cpr_get( const char *keyword, const char *prompt );
+char *cpr_get_no_help( const char *keyword, const char *prompt );
 char *cpr_get_utf8( const char *keyword, const char *prompt );
 char *cpr_get_hidden( const char *keyword, const char *prompt );
 void cpr_kill_prompt(void);

@@ -9,3 +9,5 @@ gpg: NOTE: secret key 439F02CA is NOT protected.
 gpg: WARNING: using insecure random number generator
 gpg: NOTE: signature key expired
 NOTE: this is a development version!
+gpg: encrypted with 
+"test two (no pp) <two@test.nowhere.nil>"

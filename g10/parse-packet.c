@@ -1734,6 +1734,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 	/* fixme: add some pktlen sanity checks */
 	int version;
 
+#warning decrementing pktlen here is bad as it gives a bad valie in the listing
 	version = iobuf_get_noeof(inp); pktlen--;
 	if( version != 1 ) {
 	    log_error("encrypted_mdc packet with unknown version %d\n",

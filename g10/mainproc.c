@@ -70,8 +70,7 @@ struct mainproc_context {
     IOBUF iobuf;    /* used to get the filename etc. */
     int trustletter; /* temp usage in list_node */
     ulong local_id;    /* ditto */
-    struct kidlist_item *failed_pkenc;	/* list of packets for which
-					   we do not have a secret key */
+    struct kidlist_item *pkenc_list;	/* list of encryption packets */
     struct {
         int op;
         int stop_now;
@@ -92,12 +91,12 @@ release_list( CTX c )
 	return;
     proc_tree(c, c->list );
     release_kbnode( c->list );
-    while( c->failed_pkenc ) {
-	struct kidlist_item *tmp = c->failed_pkenc->next;
-	m_free( c->failed_pkenc );
-	c->failed_pkenc = tmp;
+    while( c->pkenc_list ) {
+	struct kidlist_item *tmp = c->pkenc_list->next;
+	m_free( c->pkenc_list );
+	c->pkenc_list = tmp;
     }
-    c->failed_pkenc = NULL;
+    c->pkenc_list = NULL;
     c->list = NULL;
     c->have_data = 0;
     c->last_was_session_key = 0;
@@ -310,27 +309,30 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 
     if( result == -1 )
 	;
-    else if( !result ) {
-	if( opt.verbose > 1 )
-	    log_info( _("public key encrypted data: good DEK\n") );
-	if ( opt.show_session_key ) {
-	    int i;
-	    char *buf = m_alloc ( c->dek->keylen*2 + 20 );
-	    sprintf ( buf, "%d:", c->dek->algo );
-	    for(i=0; i < c->dek->keylen; i++ )
-		sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
-	    log_info( "session key: \"%s\"\n", buf );
-	    write_status_text ( STATUS_SESSION_KEY, buf );
-	}
-    }
-    else { /* store it for later display */
-	struct kidlist_item *x = m_alloc( sizeof *x );
-	x->kid[0] = enc->keyid[0];
-	x->kid[1] = enc->keyid[1];
-	x->pubkey_algo = enc->pubkey_algo;
-	x->reason = result;
-	x->next = c->failed_pkenc;
-	c->failed_pkenc = x;
+    else {
+        if( !result ) {
+            if( opt.verbose > 1 )
+                log_info( _("public key encrypted data: good DEK\n") );
+            if ( opt.show_session_key ) {
+                int i;
+                char *buf = m_alloc ( c->dek->keylen*2 + 20 );
+                sprintf ( buf, "%d:", c->dek->algo );
+                for(i=0; i < c->dek->keylen; i++ )
+                    sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
+                log_info( "session key: \"%s\"\n", buf );
+                write_status_text ( STATUS_SESSION_KEY, buf );
+            }
+        }
+        /* store it for later display */
+        {
+            struct kidlist_item *x = m_alloc( sizeof *x );
+            x->kid[0] = enc->keyid[0];
+            x->kid[1] = enc->keyid[1];
+            x->pubkey_algo = enc->pubkey_algo;
+            x->reason = result;
+            x->next = c->pkenc_list;
+            c->pkenc_list = x;
+        }
     }
     free_packet(pkt);
 }
@@ -342,11 +344,19 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
  * not decrypt.
  */
 static void
-print_failed_pkenc( struct kidlist_item *list )
+print_pkenc_list( struct kidlist_item *list, int failed )
 {
     for( ; list; list = list->next ) {
-	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-	const char *algstr = pubkey_algo_to_string( list->pubkey_algo );
+	PKT_public_key *pk;
+	const char *algstr;
+        
+        if ( failed && !list->reason )
+            continue;
+        if ( !failed && list->reason )
+            continue;
+
+        algstr = pubkey_algo_to_string( list->pubkey_algo );
+        pk = m_alloc_clear( sizeof *pk );
 
 	if( !algstr )
 	    algstr = "[?]";
@@ -370,7 +380,6 @@ print_failed_pkenc( struct kidlist_item *list )
 	free_public_key( pk );
 
 	if( list->reason == G10ERR_NO_SECKEY ) {
-	    log_info(_("no secret key for decryption available\n"));
 	    if( is_status_enabled() ) {
 		char buf[20];
 		sprintf(buf,"%08lX%08lX", (ulong)list->kid[0],
@@ -378,7 +387,7 @@ print_failed_pkenc( struct kidlist_item *list )
 		write_status_text( STATUS_NO_SECKEY, buf );
 	    }
 	}
-	else
+	else if (list->reason)
 	    log_error(_("public key decryption failed: %s\n"),
 						g10_errstr(list->reason));
     }
@@ -390,7 +399,8 @@ proc_encrypted( CTX c, PACKET *pkt )
 {
     int result = 0;
 
-    print_failed_pkenc( c->failed_pkenc );
+    print_pkenc_list( c->pkenc_list, 1 );
+    print_pkenc_list( c->pkenc_list, 0 );
 
     write_status( STATUS_BEGIN_DECRYPTION );
 
@@ -1150,6 +1160,68 @@ do_proc_packets( CTX c, IOBUF a )
 }
 
 
+/* fixme: This code is a duplicate fro keylist.c and should be replaced
+ * by flags set in getkey.c.  gpg 1.1 already does this */
+static int
+is_uid_revoked ( KBNODE keyblock, KBNODE uidnode, u32 *mainkid )
+{
+    KBNODE node;
+    PKT_signature *selfsig = NULL; /* the latest valid self signature */
+
+    assert ( uidnode->pkt->pkttype == PKT_USER_ID );
+
+    /* first find out about the latest valid self-signature */
+    for ( node = uidnode->next; node; node = node->next ) {
+	PKT_signature *sig;
+
+	if ( node->pkt->pkttype == PKT_USER_ID
+	     || node->pkt->pkttype == PKT_PHOTO_ID
+	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	     || node->pkt->pkttype == PKT_SECRET_SUBKEY )
+	    break;
+	if ( node->pkt->pkttype != PKT_SIGNATURE )
+	    continue;
+	sig = node->pkt->pkt.signature;
+	if ( mainkid[0] != sig->keyid[0] || mainkid[1] != sig->keyid[1] )
+	    continue; /* we only care about self-signatures for now */
+
+	if ( (sig->sig_class&~3) == 0x10 ) { /* regular self signature */
+	    if ( !check_key_signature( keyblock, node, NULL ) ) {
+		if ( !selfsig )
+		    selfsig = sig; /* use the first valid sig */
+		else if ( sig->timestamp > selfsig->timestamp
+			  && sig->sig_class >= selfsig->sig_class )
+		    selfsig = sig; /* but this one is newer */
+	    }
+	}
+    }
+
+    /* watch out for a newer revocation */
+    for ( node = uidnode->next; node; node = node->next ) {
+	PKT_signature *sig;
+
+	if ( node->pkt->pkttype == PKT_USER_ID
+	     || node->pkt->pkttype == PKT_PHOTO_ID
+	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	     || node->pkt->pkttype == PKT_SECRET_SUBKEY )
+	    break;
+	if ( node->pkt->pkttype != PKT_SIGNATURE )
+	    continue;
+	sig = node->pkt->pkt.signature;
+	if ( mainkid[0] != sig->keyid[0] || mainkid[1] != sig->keyid[1] )
+	    continue; /* we only care about self-signatures */
+
+	if ( sig->sig_class == 0x30
+	     && (!selfsig || sig->timestamp >= selfsig->timestamp) ) {
+	    if ( !check_key_signature( keyblock, node, NULL ) )
+		return 1;
+	}
+    }
+    return 0;
+}
+
+
+
 static int
 check_sig_and_print( CTX c, KBNODE node )
 {
@@ -1207,6 +1279,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	KBNODE un, keyblock;
 	char *us;
 	int count=0;
+        u32 mainkid[2];
+        int mainkid_ok = 0;
 
 	keyblock = get_pubkeyblock( sig->keyid );
 
@@ -1218,8 +1292,15 @@ check_sig_and_print( CTX c, KBNODE node )
 	 *	  about the trustworthiness of each user id, sort them.
 	 *	  Integrate this with check_signatures_trust(). */
 	for( un=keyblock; un; un = un->next ) {
-	    if( un->pkt->pkttype != PKT_USER_ID )
+            if ( !mainkid_ok && un->pkt->pkttype == PKT_PUBLIC_KEY ) {
+                keyid_from_pk( un->pkt->pkt.public_key, mainkid );
+                mainkid_ok = 1;
+            }
+	    if( !mainkid_ok || un->pkt->pkttype != PKT_USER_ID )
 		continue;
+            if ( is_uid_revoked (keyblock, un, mainkid ) )
+                continue;
+
 	    if( !count++ )
 		log_info(rc? _("BAD signature from \"")
 			   : _("Good signature from \""));
