@@ -184,6 +184,7 @@ gpgsm_dump_string (const char *string)
 }
 
 
+/* This simple dump function is mainly used for debugging purposes. */
 void 
 gpgsm_dump_cert (const char *text, ksba_cert_t cert)
 {

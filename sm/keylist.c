@@ -43,6 +43,7 @@ struct list_external_parm_s {
   int print_header;
   int with_colons;
   int with_chain;
+  int raw_mode;
 };
 
 
@@ -324,6 +325,175 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
 }
 
 
+/* List one certificate in raw mode useful to have a closer look at
+   the certificate.  This one does not beautification and only minimal
+   output sanitation.  It is mainly useful for debugging. */
+static void
+list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
+               int with_validation)
+{
+  gpg_error_t err;
+  ksba_sexp_t sexp;
+  char *dn;
+  ksba_isotime_t t;
+  int idx, i;
+  int is_ca, chainlen;
+  unsigned int kusage;
+  char *string, *p, *pend;
+
+  sexp = ksba_cert_get_serial (cert);
+  fputs ("Serial number: ", fp);
+  gpgsm_print_serial (fp, sexp);
+  ksba_free (sexp);
+  putc ('\n', fp);
+
+  dn = ksba_cert_get_issuer (cert, 0);
+  fputs ("       Issuer: ", fp);
+  gpgsm_print_name (fp, dn);
+  ksba_free (dn);
+  putc ('\n', fp);
+  for (idx=1; (dn = ksba_cert_get_issuer (cert, idx)); idx++)
+    {
+      fputs ("          aka: ", fp);
+      gpgsm_print_name (fp, dn);
+      ksba_free (dn);
+      putc ('\n', fp);
+    }
+
+  dn = ksba_cert_get_subject (cert, 0);
+  fputs ("      Subject: ", fp);
+  gpgsm_print_name (fp, dn);
+  ksba_free (dn);
+  putc ('\n', fp);
+  for (idx=1; (dn = ksba_cert_get_subject (cert, idx)); idx++)
+    {
+      fputs ("          aka: ", fp);
+      gpgsm_print_name (fp, dn);
+      ksba_free (dn);
+      putc ('\n', fp);
+    }
+
+  ksba_cert_get_validity (cert, 0, t);
+  fputs ("     validity: ", fp);
+  gpgsm_print_time (fp, t);
+  fputs (" through ", fp);
+  ksba_cert_get_validity (cert, 1, t);
+  gpgsm_print_time (fp, t);
+  putc ('\n', fp);
+
+  err = ksba_cert_get_key_usage (cert, &kusage);
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
+    {
+      fputs ("    key usage:", fp);
+      if (err)
+        fprintf (fp, " [error: %s]", gpg_strerror (err));
+      else
+        {
+          if ( (kusage & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
+            fputs (" digitalSignature", fp);
+          if ( (kusage & KSBA_KEYUSAGE_NON_REPUDIATION))  
+            fputs (" nonRepudiation", fp);
+          if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT)) 
+            fputs (" keyEncipherment", fp);
+          if ( (kusage & KSBA_KEYUSAGE_DATA_ENCIPHERMENT))
+            fputs (" dataEncipherment", fp);
+          if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))    
+            fputs (" keyAgreement", fp);
+          if ( (kusage & KSBA_KEYUSAGE_KEY_CERT_SIGN))
+            fputs (" certSign", fp);
+          if ( (kusage & KSBA_KEYUSAGE_CRL_SIGN))  
+            fputs (" crlSign", fp);
+          if ( (kusage & KSBA_KEYUSAGE_ENCIPHER_ONLY))
+            fputs (" encipherOnly", fp);
+          if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))  
+            fputs (" decipherOnly", fp);
+        }
+      putc ('\n', fp);
+    }
+
+  err = ksba_cert_get_ext_key_usages (cert, &string);
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
+    { 
+      fputs ("ext key usage: ", fp);
+      if (err)
+        fprintf (fp, "[error: %s]", gpg_strerror (err));
+      else
+        {
+          p = string;
+          while (p && (pend=strchr (p, ':')))
+            {
+              *pend++ = 0;
+              for (i=0; key_purpose_map[i].oid; i++)
+                if ( !strcmp (key_purpose_map[i].oid, p) )
+                  break;
+              fputs (key_purpose_map[i].oid?key_purpose_map[i].name:p, fp);
+              p = pend;
+              if (*p != 'C')
+                fputs (" (suggested)", fp);
+              if ((p = strchr (p, '\n')))
+                {
+                  p++;
+                  fputs (", ", fp);
+                }
+            }
+          xfree (string);
+        }
+      putc ('\n', fp);
+    }
+
+  err = ksba_cert_get_cert_policies (cert, &string);
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
+    {
+      fputs ("     policies: ", fp);
+      if (err)
+        fprintf (fp, "[error: %s]", gpg_strerror (err));
+      else
+        {
+          for (p=string; *p; p++)
+            {
+              if (*p == '\n')
+                *p = ',';
+            }
+          print_sanitized_string (fp, string, 0);
+          xfree (string);
+        }
+      putc ('\n', fp);
+    }
+
+  err = ksba_cert_is_ca (cert, &is_ca, &chainlen);
+  if (err || is_ca)
+    {
+      fputs (" chain length: ", fp);
+      if (err)
+        fprintf (fp, "[error: %s]", gpg_strerror (err));
+      else if (chainlen == -1)
+        fputs ("unlimited", fp);
+      else
+        fprintf (fp, "%d", chainlen);
+      putc ('\n', fp);
+    }
+
+  dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_MD5);
+  fprintf (fp, "      md5 fpr: %s\n", dn?dn:"error");
+  xfree (dn);
+
+  dn = gpgsm_get_fingerprint_string (cert, 0);
+  fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
+  xfree (dn);
+
+  if (with_validation)
+    {
+      err = gpgsm_validate_chain (ctrl, cert, NULL, 1, fp, 0);
+      if (!err)
+        fprintf (fp, "  [certificate is good]\n");
+      else
+        fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
+    }
+}
+
+
+
+
 /* List one certificate in standard mode */
 static void
 list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
@@ -494,17 +664,24 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
 
 /* Same as standard mode mode list all certifying certs too. */
 static void
-list_cert_chain (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int with_validation)
+list_cert_chain (ctrl_t ctrl, ksba_cert_t cert, int raw_mode,
+                 FILE *fp, int with_validation)
 {
   ksba_cert_t next = NULL;
 
-  list_cert_std (ctrl, cert, fp, 0, with_validation);
+  if (raw_mode)
+    list_cert_raw (ctrl, cert, fp, 0, with_validation);
+  else
+    list_cert_std (ctrl, cert, fp, 0, with_validation);
   ksba_cert_ref (cert);
   while (!gpgsm_walk_cert_chain (cert, &next))
     {
       ksba_cert_release (cert);
       fputs ("Certified by\n", fp);
-      list_cert_std (ctrl, next, fp, 0, with_validation);
+      if (raw_mode)
+        list_cert_raw (ctrl, next, fp, 0, with_validation);
+      else
+        list_cert_std (ctrl, next, fp, 0, with_validation);
       cert = next;
     }
   ksba_cert_release (cert);
@@ -513,10 +690,14 @@ list_cert_chain (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int with_validation)
 
 
 
-/* List all internal keys or just the key given as NAMES.
+/* List all internal keys or just the keys given as NAMES.  MODE is a
+   bit vector to specify what keys are to be included; see
+   gpgsm_list_keys (below) for details.  If RAW_MODE is true, the raw
+   output mode will be used intead of the standard beautified one.
  */
 static gpg_error_t
-list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
+list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp,
+                    unsigned int mode, int raw_mode)
 {
   KEYDB_HANDLE hd;
   KEYDB_SEARCH_DESC *desc = NULL;
@@ -637,11 +818,15 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
           if (ctrl->with_colons)
             list_cert_colon (ctrl, cert, validity, fp, have_secret);
           else if (ctrl->with_chain)
-            list_cert_chain (ctrl, cert, fp, ctrl->with_validation);
+            list_cert_chain (ctrl, cert, raw_mode, fp, ctrl->with_validation);
           else
             {
-              list_cert_std (ctrl, cert, fp, have_secret,
-                             ctrl->with_validation);
+              if (raw_mode)
+                list_cert_raw (ctrl, cert, fp, have_secret,
+                               ctrl->with_validation);
+              else
+                list_cert_std (ctrl, cert, fp, have_secret,
+                               ctrl->with_validation);
               putc ('\n', fp);
             }
         }
@@ -685,10 +870,13 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
   if (parm->with_colons)
     list_cert_colon (parm->ctrl, cert, 0, parm->fp, 0);
   else if (parm->with_chain)
-    list_cert_chain (parm->ctrl, cert, parm->fp, 0);
+    list_cert_chain (parm->ctrl, cert, parm->raw_mode, parm->fp, 0);
   else
     {
-      list_cert_std (parm->ctrl, cert, parm->fp, 0, 0);
+      if (parm->raw_mode)
+        list_cert_raw (parm->ctrl, cert, parm->fp, 0, 0);
+      else
+        list_cert_std (parm->ctrl, cert, parm->fp, 0, 0);
       putc ('\n', parm->fp);
     }
 }
@@ -698,7 +886,7 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
    make sense here because it would be unwise to list external secret
    keys */
 static gpg_error_t
-list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
+list_external_keys (CTRL ctrl, STRLIST names, FILE *fp, int raw_mode)
 {
   int rc;
   struct list_external_parm_s parm;
@@ -708,6 +896,7 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
   parm.print_header = ctrl->no_server;
   parm.with_colons = ctrl->with_colons;
   parm.with_chain = ctrl->with_chain;
+  parm.raw_mode  = raw_mode;
 
   rc = gpgsm_dirmngr_lookup (ctrl, names, list_external_cb, &parm);
   if (rc)
@@ -724,6 +913,7 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
       3 = list secret and public keys
     Bit 6: list internal keys
     Bit 7: list external keys
+    Bit 8: Do a raw format dump.
  */
 gpg_error_t
 gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
@@ -731,8 +921,8 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
   gpg_error_t err = 0;
 
   if ((mode & (1<<6)))
-    err = list_internal_keys (ctrl, names, fp, (mode & 3));
+    err = list_internal_keys (ctrl, names, fp, (mode & 3), (mode&256));
   if (!err && (mode & (1<<7)))
-    err = list_external_keys (ctrl, names, fp); 
+    err = list_external_keys (ctrl, names, fp, (mode&256)); 
   return err;
 }

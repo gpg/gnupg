@@ -1,3 +1,8 @@
+2004-04-22  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): New commands --dump-keys, --dump-external-keys,
+	--dump-secret-keys.
+
 2004-04-13  Werner Koch  <wk@gnupg.org>
 
 	* misc.c (setup_pinentry_env): New.

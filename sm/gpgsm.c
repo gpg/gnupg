@@ -82,6 +82,9 @@ enum cmd_and_opt_values {
   aCallProtectTool,
   aPasswd,
   aGPGConfList,
+  aDumpKeys,
+  aDumpSecretKeys,
+  aDumpExternalKeys,
 
   oOptions,
   oDebug,
@@ -245,6 +248,10 @@ static ARGPARSE_OPTS opts[] = {
                                    N_("invoke gpg-protect-tool")},
     { aPasswd, "passwd",      256, N_("change a passphrase")},
     { aGPGConfList, "gpgconf-list", 256, "@" },
+
+    { aDumpKeys, "dump-keys", 256, "@"},
+    { aDumpExternalKeys, "dump-external-keys", 256, "@"},
+    { aDumpSecretKeys, "dump-secret-keys", 256, "@"},
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -878,6 +885,9 @@ main ( int argc, char **argv)
         case aRecvKeys: 
         case aExport: 
         case aExportSecretKeyP12: 
+        case aDumpKeys:
+        case aDumpExternalKeys: 
+        case aDumpSecretKeys: 
         case aListKeys:
         case aListExternalKeys: 
         case aListSecretKeys: 
@@ -1416,6 +1426,13 @@ main ( int argc, char **argv)
       free_strlist(sl);
       break;
 
+    case aDumpKeys:
+      for (sl=NULL; argc; argc--, argv++)
+        add_to_strlist (&sl, *argv);
+      gpgsm_list_keys (&ctrl, sl, stdout, (256 | (1<<6)));
+      free_strlist(sl);
+      break;
+
     case aListExternalKeys:
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
@@ -1424,10 +1441,25 @@ main ( int argc, char **argv)
       free_strlist(sl);
       break;
 
+    case aDumpExternalKeys:
+      for (sl=NULL; argc; argc--, argv++)
+        add_to_strlist (&sl, *argv);
+      gpgsm_list_keys (&ctrl, sl, stdout,
+                       (256 | (1<<7)));
+      free_strlist(sl);
+      break;
+
     case aListSecretKeys:
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
       gpgsm_list_keys (&ctrl, sl, stdout, (2 | (1<<6)));
+      free_strlist(sl);
+      break;
+
+    case aDumpSecretKeys:
+      for (sl=NULL; argc; argc--, argv++)
+        add_to_strlist (&sl, *argv);
+      gpgsm_list_keys (&ctrl, sl, stdout, (256 | 2 | (1<<6)));
       free_strlist(sl);
       break;
 
