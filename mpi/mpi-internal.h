@@ -1,6 +1,6 @@
 /* mpi-internal.h  -  Internal to the Multi Precision Integers
  *	Copyright (C) 1998 Free Software Foundation, Inc.
- *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+ *	Copyright (C) 1994, 1996, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -186,6 +186,17 @@ mpi_limb_t mpihelp_sub(mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr, mpi_size_t s1_size,
 int mpihelp_cmp( mpi_ptr_t op1_ptr, mpi_ptr_t op2_ptr, mpi_size_t size );
 
 /*-- mpihelp-mul.c --*/
+
+struct karatsuba_ctx {
+    struct karatsuba_ctx *next;
+    mpi_ptr_t tspace;
+    mpi_size_t tspace_size;
+    mpi_ptr_t tp;
+    mpi_size_t tp_size;
+};
+
+void mpihelp_release_karatsuba_ctx( struct karatsuba_ctx *ctx );
+
 mpi_limb_t mpihelp_addmul_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,
 			     mpi_size_t s1_size, mpi_limb_t s2_limb);
 mpi_limb_t mpihelp_submul_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,
@@ -197,6 +208,12 @@ mpi_limb_t mpihelp_mul( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t usize,
 void mpih_sqr_n_basecase( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size );
 void mpih_sqr_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size,
 						mpi_ptr_t tspace);
+
+void mpihelp_mul_karatsuba_case( mpi_ptr_t prodp,
+				 mpi_ptr_t up, mpi_size_t usize,
+				 mpi_ptr_t vp, mpi_size_t vsize,
+				 struct karatsuba_ctx *ctx );
+
 
 /*-- mpihelp-mul_1.c (or xxx/cpu/ *.S) --*/
 mpi_limb_t mpihelp_mul_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,

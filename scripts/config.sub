@@ -12,7 +12,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -34,7 +34,7 @@
 # and recognize all the CPU types, system types and aliases
 # that are meaningful with *any* GNU software.
 # Each package is responsible for reporting which valid configurations
-# it does not support.  The user should be able to distinguish
+# it does not support.	The user should be able to distinguish
 # a failure to support a valid configuration from a meaningless
 # configuration.
 
@@ -166,7 +166,7 @@ case $basic_machine in
 		| arme[lb] | pyramid | mn10200 | mn10300 | tron | a29k \
 		| 580 | i960 | h8300 \
 		| hppa | hppa1.0 | hppa1.1 | hppa2.0 | hppa2.0w | hppa2.0n \
-		| alpha | alphaev[4-7] | alphaev56 | alphapca5[67] \
+		| alpha | alphaev[4-7] | alphaev56 | alphapca5[67] | s390 \
 		| we32k | ns16k | clipper | i370 | sh | powerpc | powerpcle \
 		| 1750a | dsp16xx | pdp11 | mips16 | mips64 | mipsel | mips64el \
 		| mips64orion | mips64orionel | mipstx39 | mipstx39el \
@@ -184,6 +184,12 @@ case $basic_machine in
 	# (2) the word "unknown" tends to confuse beginning users.
 	i[34567]86)
 	  basic_machine=$basic_machine-pc
+	  ;;
+	s390 | s390-ibm)
+	  basic_machine=s390-ibm
+	  ;;
+	s390-redhat)
+	  basic_machine=s390-redhat
 	  ;;
 	# Object if more than one company name word.
 	*-*-*)
@@ -600,7 +606,7 @@ case $basic_machine in
 	pbb)
 		basic_machine=m68k-tti
 		;;
-        pc532 | pc532-*)
+	pc532 | pc532-*)
 		basic_machine=ns32k-pc532
 		;;
 	pentium | p5 | k5 | k6 | nexen)
@@ -627,12 +633,12 @@ case $basic_machine in
 	power)	basic_machine=rs6000-ibm
 		;;
 	ppc)	basic_machine=powerpc-unknown
-	        ;;
+		;;
 	ppc-*)	basic_machine=powerpc-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	ppcle | powerpclittle | ppc-le | powerpc-little)
 		basic_machine=powerpcle-unknown
-	        ;;
+		;;
 	ppcle-* | powerpclittle-*)
 		basic_machine=powerpcle-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
@@ -756,8 +762,8 @@ case $basic_machine in
 		os=-vms
 		;;
 	vpp*|vx|vx-*)
-               basic_machine=f301-fujitsu
-               ;;
+	       basic_machine=f301-fujitsu
+	       ;;
 	vxworks960)
 		basic_machine=i960-wrs
 		os=-vxworks
@@ -782,7 +788,7 @@ case $basic_machine in
 		basic_machine=xmp-cray
 		os=-unicos
 		;;
-        xps | xps100)
+	xps | xps100)
 		basic_machine=xps100-honeywell
 		;;
 	z8k-*-coff)
@@ -830,7 +836,7 @@ case $basic_machine in
 	sparc | sparcv9)
 		basic_machine=sparc-sun
 		;;
-        cydra)
+	cydra)
 		basic_machine=cydra-cydrome
 		;;
 	orion)
@@ -872,14 +878,17 @@ esac
 if [ x"$os" != x"" ]
 then
 case $os in
-        # First match some system type aliases
-        # that might get confused with valid system types.
+	# First match some system type aliases
+	# that might get confused with valid system types.
 	# -solaris* is a basic system type, with this one exception.
 	-solaris1 | -solaris1.*)
 		os=`echo $os | sed -e 's|solaris1|sunos4|'`
 		;;
 	-solaris)
 		os=-solaris2
+		;;
+	-qnx)
+		os=-qnx
 		;;
 	-svr4*)
 		os=-sysv4
@@ -948,7 +957,7 @@ case $os in
 		os=-sysv
 		;;
 	-ns2 )
-	        os=-nextstep2
+		os=-nextstep2
 		;;
 	# Preserve the version number of sinix5.
 	-sinix5.*)
@@ -984,8 +993,8 @@ case $os in
 	-xenix)
 		os=-xenix
 		;;
-        -*mint | -*MiNT)
-	        os=-mint
+	-*mint | -*MiNT)
+		os=-mint
 		;;
 	-none)
 		;;
@@ -1018,7 +1027,7 @@ case $basic_machine in
 	arm*-semi)
 		os=-aout
 		;;
-        pdp11-*)
+	pdp11-*)
 		os=-none
 		;;
 	*-dec | vax-*)
@@ -1108,19 +1117,19 @@ case $basic_machine in
 	*-next)
 		os=-nextstep3
 		;;
-        *-gould)
+	*-gould)
 		os=-sysv
 		;;
-        *-highlevel)
+	*-highlevel)
 		os=-bsd
 		;;
 	*-encore)
 		os=-bsd
 		;;
-        *-sgi)
+	*-sgi)
 		os=-irix
 		;;
-        *-siemens)
+	*-siemens)
 		os=-sysv4
 		;;
 	*-masscomp)

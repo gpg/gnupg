@@ -1,5 +1,5 @@
 /* mpihelp-mul.c  -  MPI helper functions
- * Copyright (C) 1994, 1996, 1998, 1999 Free Software Foundation, Inc.
+ * Copyright (C) 1994, 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,10 +29,10 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mpi-internal.h"
 #include "longlong.h"
-#include "g10lib.h" /* for g10_is_secure() */
-
+#include "g10lib.h" /* g10_is_secure() */
 
 
 #define MPN_MUL_N_RECURSE(prodp, up, vp, size, tspace) \
@@ -373,6 +373,86 @@ mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp, mpi_size_t size)
 }
 
 
+
+void
+mpihelp_mul_karatsuba_case( mpi_ptr_t prodp,
+			    mpi_ptr_t up, mpi_size_t usize,
+			    mpi_ptr_t vp, mpi_size_t vsize,
+			    struct karatsuba_ctx *ctx )
+{
+    mpi_limb_t cy;
+
+    if( !ctx->tspace || ctx->tspace_size < vsize ) {
+	if( ctx->tspace )
+	    mpi_free_limb_space( ctx->tspace );
+	ctx->tspace = mpi_alloc_limb_space( 2 * vsize,
+				       g10_is_secure( up ) || g10_is_secure( vp ) );
+	ctx->tspace_size = vsize;
+    }
+
+    MPN_MUL_N_RECURSE( prodp, up, vp, vsize, ctx->tspace );
+
+    prodp += vsize;
+    up += vsize;
+    usize -= vsize;
+    if( usize >= vsize ) {
+	if( !ctx->tp || ctx->tp_size < vsize ) {
+	    if( ctx->tp )
+		mpi_free_limb_space( ctx->tp );
+	    ctx->tp = mpi_alloc_limb_space( 2 * vsize, g10_is_secure( up )
+						      || g10_is_secure( vp ) );
+	    ctx->tp_size = vsize;
+	}
+
+	do {
+	    MPN_MUL_N_RECURSE( ctx->tp, up, vp, vsize, ctx->tspace );
+	    cy = mpihelp_add_n( prodp, prodp, ctx->tp, vsize );
+	    mpihelp_add_1( prodp + vsize, ctx->tp + vsize, vsize, cy );
+	    prodp += vsize;
+	    up += vsize;
+	    usize -= vsize;
+	} while( usize >= vsize );
+    }
+
+    if( usize ) {
+	if( usize < KARATSUBA_THRESHOLD ) {
+	    mpihelp_mul( ctx->tspace, vp, vsize, up, usize );
+	}
+	else {
+	    if( !ctx->next ) {
+		ctx->next = g10_xcalloc( 1, sizeof *ctx );
+	    }
+	    mpihelp_mul_karatsuba_case( ctx->tspace,
+					vp, vsize,
+					up, usize,
+					ctx->next );
+	}
+
+	cy = mpihelp_add_n( prodp, prodp, ctx->tspace, vsize);
+	mpihelp_add_1( prodp + vsize, ctx->tspace + vsize, usize, cy );
+    }
+}
+
+
+void
+mpihelp_release_karatsuba_ctx( struct karatsuba_ctx *ctx )
+{
+    struct karatsuba_ctx *ctx2;
+
+    if( ctx->tp )
+	mpi_free_limb_space( ctx->tp );
+    if( ctx->tspace )
+	mpi_free_limb_space( ctx->tspace );
+    for( ctx=ctx->next; ctx; ctx = ctx2 ) {
+	ctx2 = ctx->next;
+	if( ctx->tp )
+	    mpi_free_limb_space( ctx->tp );
+	if( ctx->tspace )
+	    mpi_free_limb_space( ctx->tspace );
+	g10_free( ctx );
+    }
+}
+
 /* Multiply the natural numbers u (pointed to by UP, with USIZE limbs)
  * and v (pointed to by VP, with VSIZE limbs), and store the result at
  * PRODP.  USIZE + VSIZE limbs are always stored, but if the input
@@ -394,7 +474,7 @@ mpihelp_mul( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t usize,
 {
     mpi_ptr_t prod_endp = prodp + usize + vsize - 1;
     mpi_limb_t cy;
-    mpi_ptr_t tspace;
+    struct karatsuba_ctx ctx;
 
     if( vsize < KARATSUBA_THRESHOLD ) {
 	mpi_size_t i;
@@ -438,34 +518,9 @@ mpihelp_mul( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t usize,
 	return cy;
     }
 
-    tspace = mpi_alloc_limb_space( 2 * vsize,
-				   g10_is_secure( up ) || g10_is_secure( vp ) );
-    MPN_MUL_N_RECURSE( prodp, up, vp, vsize, tspace );
-
-    prodp += vsize;
-    up += vsize;
-    usize -= vsize;
-    if( usize >= vsize ) {
-	mpi_ptr_t tp = mpi_alloc_limb_space( 2 * vsize, g10_is_secure( up )
-							|| g10_is_secure( vp ) );
-	do {
-	    MPN_MUL_N_RECURSE( tp, up, vp, vsize, tspace );
-	    cy = mpihelp_add_n( prodp, prodp, tp, vsize );
-	    mpihelp_add_1( prodp + vsize, tp + vsize, vsize, cy );
-	    prodp += vsize;
-	    up += vsize;
-	    usize -= vsize;
-	} while( usize >= vsize );
-	mpi_free_limb_space( tp );
-    }
-
-    if( usize ) {
-	mpihelp_mul( tspace, vp, vsize, up, usize );
-	cy = mpihelp_add_n( prodp, prodp, tspace, vsize);
-	mpihelp_add_1( prodp + vsize, tspace + vsize, usize, cy );
-    }
-
-    mpi_free_limb_space( tspace );
+    memset( &ctx, 0, sizeof ctx );
+    mpihelp_mul_karatsuba_case( prodp, up, usize, vp, vsize, &ctx );
+    mpihelp_release_karatsuba_ctx( &ctx );
     return *prod_endp;
 }
 

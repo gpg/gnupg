@@ -666,9 +666,9 @@ gather_faked( void (*add)(const void*, size_t, int), int requester,
       #endif
 	initialized=1;
       #ifdef HAVE_RAND
-	srand(make_timestamp()*getpid());
+	srand( time(NULL)*getpid());
       #else
-	srandom(make_timestamp()*getpid());
+	srandom( time(NULL)*getpid());
       #endif
     }
 

@@ -88,7 +88,7 @@ kbxutil_SOURCES = kbxutil.c   \
 #	       $(common_source)
 
 
-LDADD =  $(needed_libs) @ZLIBS@ @INTLLIBS@
+LDADD =  $(needed_libs)  @ZLIBS@ @INTLLIBS@
 
 
 $(PROGRAMS): $(needed_libs)

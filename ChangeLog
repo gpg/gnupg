@@ -1,3 +1,7 @@
+Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
+
+  * configure.in (mingw32): Changes to allow for mingw32msvc
+
 Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
 
   The big merge between this one and the stable branch 1.0.  Still need

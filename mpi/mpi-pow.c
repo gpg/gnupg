@@ -1,6 +1,6 @@
 /* mpi-pow.c  -  MPI functions
  *	Copyright (C) 1998 Free Software Foundation, Inc.
- *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+ *	Copyright (C) 1994, 1996, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,9 +30,10 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <string.h>
 #include "mpi-internal.h"
 #include "longlong.h"
+#include <assert.h>
 
 
 /****************
@@ -159,7 +160,9 @@ gcry_mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 	int c;
 	mpi_limb_t e;
 	mpi_limb_t carry_limb;
+	struct karatsuba_ctx karactx;
 
+	memset( &karactx, 0, sizeof karactx );
 	negative_result = (ep[0] & 1) && base->sign;
 
 	i = esize - 1;
@@ -177,6 +180,7 @@ gcry_mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 	 * by RP (==RES->d), and with 50% probability in the area originally
 	 * pointed to by XP.
 	 */
+
 	for(;;) {
 	    while( c ) {
 		mpi_ptr_t tp;
@@ -194,7 +198,6 @@ gcry_mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 			mpi_free_limb_space( tspace );
 			tsize = 2 * rsize;
 			tspace = mpi_alloc_limb_space( tsize, 0 );
-
 		    }
 		    mpih_sqr_n( xp, rp, rsize, tspace );
 		}
@@ -209,7 +212,15 @@ gcry_mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 		rsize = xsize;
 
 		if( (mpi_limb_signed_t)e < 0 ) {
-		    mpihelp_mul( xp, rp, rsize, bp, bsize );
+		    /*mpihelp_mul( xp, rp, rsize, bp, bsize );*/
+		    if( bsize < KARATSUBA_THRESHOLD ) {
+			mpihelp_mul( xp, rp, rsize, bp, bsize );
+		    }
+		    else {
+			mpihelp_mul_karatsuba_case(
+				     xp, rp, rsize, bp, bsize, &karactx );
+		    }
+
 		    xsize = rsize + bsize;
 		    if( xsize > msize ) {
 			mpihelp_divrem(xp + msize, 0, xp, xsize, mp, msize);
@@ -258,6 +269,8 @@ gcry_mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 	if( mod_shift_cnt )
 	    mpihelp_rshift( rp, rp, rsize, mod_shift_cnt);
 	MPN_NORMALIZE (rp, rsize);
+
+	mpihelp_release_karatsuba_ctx( &karactx );
     }
 
     if( negative_result && rsize ) {

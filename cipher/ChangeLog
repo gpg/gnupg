@@ -1,3 +1,7 @@
+Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
+
+  * random.c (gather_faked): Replaced make_timestamp by time(2) again.
+
 Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
 
   * md.c (gcry_md_ctl): Support GCRYCTL_{START,STOP}_DUMP.

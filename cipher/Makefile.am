@@ -1,4 +1,4 @@
-## Process this file with automake to produce Makefile.in
+# Process this file with automake to produce Makefile.in
 
 
 INCLUDES = -I$(top_srcdir)/gcrypt
@@ -56,9 +56,8 @@ libcipher_la_SOURCES = cipher.c  \
 # configure creates the constructor file
 BUILT_SOURCES = construct.c
 
-
 libcipher_la_DEPENDENCIES = @STATIC_CIPHER_OBJS@
-libcipher_la_LIBADD =	    @STATIC_CIPHER_OBJS@
+libcipher_la_LIBADD =	  @STATIC_CIPHER_OBJS@
 
 
 # If I remember it correct, automake 1.4 has a feature to set

@@ -1,4 +1,4 @@
-# sourced my ../configure to get the list of files to link
+# sourced by ../configure to get the list of files to link
 # this should set $mpi_ln_src and mpi_ln_dst.
 # Note: this is called from the above directory.
 
@@ -12,23 +12,40 @@ echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 if test "$try_asm_modules" = "yes" ; then
 case "${target}" in
-    i[34]86*-*-freebsd*-elf | i[34]86*-*-freebsd[3-9]* | i[34]86*-*-freebsdelf*)
+    i[34]86*-*-freebsd*-elf  | \
+    i[34]86*-*-freebsd[3-9]* | \
+    i[34]86*-*-freebsdelf*   | \
+    i[34]86*-*-netbsd* )
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i386"
        ;;
-    i[56]86*-*-freebsd*-elf | i[56]86*-*-freebsd[3-9]* | i[56]86*-*-freebsdelf*)
+    i[56]86*-*-freebsd*-elf  | \
+    i[56]86*-*-freebsd[3-9]* | \
+    i[56]86*-*-freebsdelf*   | \
+    i[56]86*-*-netbsd*	     | \
+    pentium-*-netbsd*	     | \
+    pentiumpro-*-netbsd*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i586 i386"
        ;;
-    i[34]86*-*-linuxaout* | i[34]86*-*-linuxoldld* | i[34]86*-*-*bsd*)
+    i[34]86*-*-bsdi4*)
+       echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
+       cat  $srcdir/mpi/i386/syntax.h	 >>./mpi/asm-syntax.h
+       path="i386"
+       ;;
+    i[34]86*-*-linuxaout*  | \
+    i[34]86*-*-linuxoldld* | \
+    i[34]86*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
 	echo '#define X86_BROKEN_ALIGN' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i386"
 	;;
-    i[56]86*-*-linuxaout* | i[56]86*-*-linuxoldld* | i[56]86*-*-*bsd*)
+    i[56]86*-*-linuxaout*  | \
+    i[56]86*-*-linuxoldld* | \
+    i[56]86*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
 	echo '#define X86_BROKEN_ALIGN' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
@@ -49,7 +66,9 @@ case "${target}" in
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i386"
 	;;
-    i[56]86*-*-* | pentium-*-* | pentiumpro-*-*)
+    i[56]86*-*-*  | \
+    pentium-*-*   | \
+    pentiumpro-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i586 i386"
@@ -74,13 +93,23 @@ case "${target}" in
 	path="pa7100 hppa1.1 hppa"
 	mpi_extra_modules="udiv-qrnnd"
 	;;
-    sparc9*-*-* | sparc64*-*-* | ultrasparc*-*-*)
+    sparc64-*-linux-gnu)
+	# An extra rule because we have an report for this one only.
+	# Should be compared against the next GMP version
+	echo '/* configured for sparc64-*-linux-gnu */' >>./mpi/asm-syntax.h
+	path="sparc32v8 sparc32"
+	mpi_extra_modules="udiv"
+	;;
+    sparc9*-*-*     | \
+    sparc64*-*-*    | \
+    ultrasparc*-*-* )
 	echo '/* configured for sparc9 or higher */' >>./mpi/asm-syntax.h
 	path="sparc32v8 sparc32"
 	;;
-    sparc8*-*-* | microsparc*-*-*)
+    sparc8*-*-*     | \
+    microsparc*-*-*)
 	echo '/* configured for sparc8 */' >>./mpi/asm-syntax.h
-	path="sparc32v8"
+	path="sparc32v8 sparc32"
 	;;
     supersparc*-*-*)
 	echo '/* configured for supersparc */' >>./mpi/asm-syntax.h
@@ -92,7 +121,8 @@ case "${target}" in
 	path="sparc32"
 	mpi_extra_modules="udiv"
 	;;
-    mips[34]*-*-* | mips*-*-irix6*)
+    mips[34]*-*-* | \
+    mips*-*-irix6*)
        echo '/* configured for MIPS3 */' >>./mpi/asm-syntax.h
        path="mips3"
        ;;
@@ -103,7 +133,8 @@ case "${target}" in
 
     # Motorola 68k configurations.  Let m68k mean 68020-68040.
     # mc68000 or mc68060 configurations need to be specified explicitly
-    m680[234]0*-*-linuxaout* | m68k*-*-linuxaout*)
+    m680[234]0*-*-linuxaout* | \
+    m68k*-*-linuxaout*)
 	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k/mc68020 m68k"
@@ -113,7 +144,8 @@ case "${target}" in
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k"
 	;;
-    m680[234]0*-*-linux* | m68k*-*-linux*)
+    m680[234]0*-*-linux* | \
+    m68k*-*-linux*)
 	echo '#define ELF_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	;;
@@ -127,12 +159,14 @@ case "${target}" in
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k/mc68020 m68k"
 	;;
-    m68000*-*-* | m68060*-*-*)
+    m68000*-*-* | \
+    m68060*-*-*)
 	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k/mc68000"
 	;;
-    m680[234]0*-*-* | m68k*-*-*)
+    m680[234]0*-*-* | \
+    m68k*-*-*)
 	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k/mc68020 m68k"
@@ -144,13 +178,23 @@ case "${target}" in
 	cat   $srcdir/mpi/powerpc32/syntax.h	>>./mpi/asm-syntax.h
 	path="powerpc32"
 	;;
-    rs6000-*-aix[456789]* | rs6000-*-aix3.2.[456789])
+    rs6000-*-aix[456789]*    | \
+    rs6000-*-aix3.2.[456789])
 	mpi_sflags="-Wa,-mpwr"
 	path="power"
 	mpi_extra_modules="udiv-w-sdiv"
 	;;
-    rs6000-*-* | power-*-* | power2-*-*)
+    rs6000-*-* | \
+    power-*-*  | \
+    power2-*-*)
 	mpi_sflags="-Wa,-mppc"
+	path="power"
+	mpi_extra_modules="udiv-w-sdiv"
+	;;
+    powerpc-ibm-aix4.2.* )
+	# I am not sure about this one but a machine identified by
+	# powerpc-ibm-aix4.2.1.0 cannot use the powerpc32 code.
+	mpi_sflags="-Wa,-mpwr"
 	path="power"
 	mpi_extra_modules="udiv-w-sdiv"
 	;;
@@ -158,11 +202,13 @@ case "${target}" in
 	mpi_sflags="-Wa,-mppc"
 	path="power powerpc32"
 	;;
-    ppc60[234]*-*-* | powerpc*-*-*)
+    ppc60[234]*-*-* | \
+    powerpc*-*-*)
 	mpi_sflags="-Wa,-mppc"
 	path="powerpc32"
 	;;
-    ppc620-*-* | powerpc64*-*-*)
+    ppc620-*-*	    | \
+    powerpc64*-*-*)
 	mpi_sflags="-Wa,-mppc"
 	path="powerpc64"
 	;;

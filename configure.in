@@ -134,7 +134,7 @@ dnl
 dnl Setup some stuff depending on host/target.
 dnl
 case "${target}" in
-    *-*-mingw32)
+    *-*-mingw32*)
         # special stuff for Windoze NT
         # Do we need to set cross_compiling here or is it sufficient
         # to rely on AC_PROG_CC which is called later?
@@ -170,8 +170,7 @@ dnl
 dnl Build shared libraries only when compilation of libgcrypt
 dnl has been requested
 dnl
-dnl AM_DISABLE_STATIC
-dnl enable_shared="$compile_libgcrypt"
+AM_DISABLE_STATIC
 AM_PROG_LIBTOOL
 
 
@@ -181,7 +180,7 @@ MPI_OPT_FLAGS=""
 try_gettext=yes
 try_gdbm=yes
 case "${target}" in
-    *-*-mingw32)
+    *-*-mingw32*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3)
@@ -243,7 +242,7 @@ fi
 
 
 case "${target}" in
-    *-*-mingw32)
+    *-*-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
@@ -500,7 +499,7 @@ if test "$use_static_rnd" = default; then
       static_random_module="rndlinux"
   else
       case "${target}" in
-          *-*-mingw32)
+          *-*-mingw32*)
               static_random_module="rndw32"
               AC_DEFINE(USE_STATIC_RNDW32)
               ;;
@@ -576,7 +575,7 @@ for name in $MODULES_IN_CIPHER; do
         done;
         if test $x = yes; then
             STATIC_CIPHER_NAMES="$STATIC_CIPHER_NAMES $name"
-            STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.o"
+            STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.lo"
         else
             DYNAMIC_CIPHER_MODS="$DYNAMIC_CIPHER_MODS $name"
             GNUPG_MSG_PRINT([$name])

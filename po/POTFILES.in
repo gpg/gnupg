@@ -2,15 +2,19 @@
 # Copyright (c) 1998 by Werner Koch (dd9jn)
 
 # utility
-gcrypt/secmem.c
-jnlib/argparse.c
 util/miscutil.c
 util/errors.c
 util/logger.c
 
+# jnlib
+jnlib/argparse.c
+
 # cipher
 cipher/random.c
 cipher/rndlinux.c
+
+# gcrypt
+gcrypt/secmem.c
 
 # main program
 
@@ -49,4 +53,3 @@ g10/seskey.c
 g10/delkey.c
 g10/helptext.c
 
-#---end--

@@ -1,3 +1,8 @@
+Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
+
+  * mail-signed-keys: New.
+  * ring-a-party: New.
+
 Mon Jan 31 17:46:35 CET 2000  Werner Koch  <wk@>
 
 	* Makefile.am: Add libjnlib.
@@ -9,7 +14,6 @@ Thu Jul  8 16:21:27 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	* lspgpot: New
 
 Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* Makefile.am: Support for libtool.
 
@@ -29,5 +33,4 @@ Mon May 18 15:39:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
 Tue Apr  7 19:50:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* bftest.c: Now supports all availabe ciphers.
-
 

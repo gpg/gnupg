@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = lspgpot
+EXTRA_DIST = lspgpot mail-signed-keys ring-a-party
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 # we need to add libutil.la a second time because we have to resolve
 # gpg_log_ in some libjnlib modules. - very ugly - should be removed soon.

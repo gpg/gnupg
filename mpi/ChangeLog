@@ -1,3 +1,30 @@
+Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
+
+  * power/: Add all files from GMP for this CPU. Converted comments to
+  CPP comments because some ASes complain about ' in comments.
+
+  * config.links:  Support for BSDI 4.x; by Wayne Chapeskie. Add support
+  for FreeBSD 5 and made the case stmt looking nicer; by Jun Kuriyama.
+  Add support for NetBSD.
+  (sparc8): Made the search path the same as sparc9
+  (sparc64-unknown-linux-gnu): use udiv module; by Adam Mitchell.
+
+  * Makefile.am: c/SFLAGS/ASFLAGS/. This has only been used by the
+  powerpc and actually never passed the -Wa,foo to the cc.
+
+  * mpih-div.c (mpihelp_divrem): The MPN_COPY_DECR copied one element
+  too many.  This is a gmp2.0.2p9.txt patch.
+
+  * longlong.h (umul_ppmm): Fixes for ARM-4. By Sean MacLennan.
+
+  * mpi-internal.h (karatsuba_ctx): New.
+  * mpih-mul.c (mpihelp_release_karatsuba_ctx): New.
+  (mpihelp_mul_karatsuba_case): New.
+  (mpihelp_mul): Splitted to make use of the new functions.
+  * mpi-pow.c (mpi_powm): Make use of the new splitted function to avoid
+  multiple allocation of temporary memory during the karatsuba operations.
+  * mpi_mpow.c: Removed the unused Barrett code.
+
 2000-03-21 16:17:30  Werner Koch  (wk@habibti.openit.de)
 
 	* config.links: Add support for FreeBSD 5.

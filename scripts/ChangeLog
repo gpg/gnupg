@@ -1,3 +1,8 @@
+Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
+
+  * config.gues, config.sub: Support for s390-ibm-linux-gnu; thanks
+  to Holger Smolinski.	Add support for QNX; by Sam Roberts.
+
 Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* commit: Remove leading and trailing empty lines when copying

@@ -3,12 +3,13 @@
 
 INCLUDES =  -I$(top_srcdir)/gcrypt
 CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
-SFLAGS = @MPI_SFLAGS@
+ASFLAGS = @MPI_SFLAGS@
 
 EXTRA_DIST = config.links
 DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
 		 mpih-lshift.S mpih-rshift.S mpih-sub1.S asm-syntax.h sysdep.h
 # Note: we only use .S files so we should delete all left over .s
+# CLEANFILES = _*.s
 CLEANFILES = *.s
 
 noinst_LTLIBRARIES = libmpi.la
@@ -56,4 +57,9 @@ libmpi_la_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 .S.s:
 	 $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' >$*.s
 
+# Hmmm, we should use this, so that OSes which do not distinguish
+# filename case still work.  We have to see how libtool can handle this
+#   $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' > _$*.s
+#   $(COMPILE) -c _$*.s
+#   mv -f _$*.o $*.o
 
