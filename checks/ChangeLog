@@ -1,3 +1,7 @@
+2003-05-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* defs.inc: Fix shell warning messages.
+
 2003-05-01  Werner Koch  <wk@gnupg.org>
 
 	* defs.inc (pgmname): Make sure there is a valid options file. 

@@ -99,9 +99,9 @@ pgmname=`basename $0`
 [ -z "$srcdir" ] && fatal "not called from make"
 
 # Make sure we have a valid option files even with VPATH builds.
-if [ -f ./options]; then
+if [ -f ./options ]; then
   :
-elif [ -f ./gpg.conf]; then
+elif [ -f ./gpg.conf ]; then
   :
 elif [ -f $srcdir/options ]; then
   cat $srcdir/options >gpg.conf
