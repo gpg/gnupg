@@ -21,7 +21,7 @@ aclocal_vers=1.5
 DIE=no
 if test "$1" = "--build-w32"; then
     tmp=`dirname $0`
-    tsdir=`cd "$tmp"`; cd ..; pwd)
+    tsdir=`cd "$tmp"; cd ..; pwd`
     shift
     host=i386--mingw32
     if [ ! -f $tsdir/scripts/config.guess ]; then
