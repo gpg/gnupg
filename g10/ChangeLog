@@ -1,5 +1,8 @@
 2002-05-21  Werner Koch  <wk@gnupg.org>
 
+	* g10.c (main): Removed the undef of USE_SHM_COPROCESSING which
+	was erroneously introduced on 2002-01-09.
+
 	* signal.c (got_fatal_signal): Don't write the Nul to stderr.
 	Reported by David Hollenberg.
 

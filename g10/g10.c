@@ -879,7 +879,6 @@ main( int argc, char **argv )
         opt.homedir = buf;
     }
 #endif
-#undef USE_SHM_COPROCESSING	 /* huh? */
 #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess ) {
 	init_shm_coprocessing(requested_shm_size, 1 );
