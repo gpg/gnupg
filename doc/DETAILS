@@ -445,6 +445,20 @@ more arguments in future versions.
 		0x02 = this attribute packet is revoked
 		0x04 = this attribute packet is expired
 
+    PLAINTEXT <format> <timestamp>
+        This indicates the format of the plaintext that is about to be
+        written.  The format is a 1 byte hex code that shows the
+        format of the plaintext: 62 ('b') is binary data, 74 ('t') is
+        text data with no character set specified, and 75 ('u') is
+        text data encoded in the UTF-8 character set.  The timestamp
+        is in seconds since the epoch.
+
+    PLAINTEXT_LENGTH <length>
+        This indicates the length of the plaintext that is about to be
+        written.  Note that if the plaintext packet has partial length
+        encoding it is not possible to know the length ahead of time.
+        In that case, this status tag does not appear.
+
 
 Format of the "--attribute-fd" output
 =====================================
