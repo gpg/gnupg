@@ -81,7 +81,7 @@ int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
 /*-- sig-check.c --*/
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 int check_key_signature2( KBNODE root, KBNODE node,
-			  int *is_selfsig, u32 *r_expire );
+			  int *is_selfsig, u32 *r_expiredate, int *r_expired );
 
 /*-- delkey.c --*/
 int delete_key( const char *username, int secure );

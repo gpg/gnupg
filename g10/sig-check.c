@@ -41,9 +41,9 @@ struct cmp_help_context_s {
 
 
 static int do_signature_check( PKT_signature *sig, MD_HANDLE digest,
-						      u32 *r_expire );
+					 u32 *r_expiredate, int *r_expired );
 static int do_check( PKT_public_key *pk, PKT_signature *sig,
-						MD_HANDLE digest );
+					 MD_HANDLE digest, int *r_expired );
 
 
 /****************
@@ -55,11 +55,13 @@ int
 signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     u32 dummy;
-    return do_signature_check( sig, digest, &dummy );
+    int dum2;
+    return do_signature_check( sig, digest, &dummy, &dum2 );
 }
 
 static int
-do_signature_check( PKT_signature *sig, MD_HANDLE digest, u32 *r_expire )
+do_signature_check( PKT_signature *sig, MD_HANDLE digest,
+					u32 *r_expiredate, int *r_expired )
 {
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
@@ -67,12 +69,12 @@ do_signature_check( PKT_signature *sig, MD_HANDLE digest, u32 *r_expire )
     if( is_RSA(sig->pubkey_algo) )
 	write_status(STATUS_RSA_OR_IDEA);
 
-    *r_expire = 0;
+    *r_expiredate = 0;
     if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
     else {
-	*r_expire = pk->expiredate;
-	rc = do_check( pk, sig, digest );
+	*r_expiredate = pk->expiredate;
+	rc = do_check( pk, sig, digest, r_expired );
     }
 
     free_public_key( pk );
@@ -285,13 +287,15 @@ cmp_help( void *opaque, MPI result )
 
 
 static int
-do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
+do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
+						    int *r_expired )
 {
     MPI result = NULL;
     int rc=0;
     struct cmp_help_context_s ctx;
     u32 cur_time;
 
+    *r_expired = 0;
     if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	log_info(_("this is a PGP generated "
 		  "ElGamal key which is NOT secure for signatures!\n"));
@@ -323,6 +327,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 	log_info(_("NOTE: signature key expired %s\n"),
 					asctimestamp( pk->expiredate ) );
 	write_status(STATUS_SIGEXPIRED);
+	*r_expired = 1;
     }
 
 
@@ -428,11 +433,13 @@ int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
     u32 dummy;
-    return check_key_signature2(root, node, is_selfsig, &dummy );
+    int dum2;
+    return check_key_signature2(root, node, is_selfsig, &dummy, &dum2 );
 }
 
 int
-check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
+check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
+				       u32 *r_expiredate, int *r_expired )
 {
     MD_HANDLE md;
     PKT_public_key *pk;
@@ -442,7 +449,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 
     if( is_selfsig )
 	*is_selfsig = 0;
-    *r_expire = 0;
+    *r_expiredate = 0;
+    *r_expired = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
@@ -462,7 +470,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
     if( sig->sig_class == 0x20 ) {
 	md = md_open( algo, 0 );
 	hash_public_key( md, pk );
-	rc = do_check( pk, sig, md );
+	rc = do_check( pk, sig, md, r_expired );
 	md_close(md);
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
@@ -472,7 +480,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md );
+	    rc = do_check( pk, sig, md, r_expired );
 	    md_close(md);
 	}
 	else {
@@ -494,7 +502,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md );
+	    rc = do_check( pk, sig, md, r_expired );
 	    md_close(md);
 	}
 	else {
@@ -515,10 +523,10 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 		if( is_selfsig )
 		    *is_selfsig = 1;
-		rc = do_check( pk, sig, md );
+		rc = do_check( pk, sig, md, r_expired );
 	    }
 	    else
-		rc = do_signature_check( sig, md, r_expire );
+		rc = do_signature_check( sig, md, r_expiredate, r_expired );
 	    md_close(md);
 	}
 	else {

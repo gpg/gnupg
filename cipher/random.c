@@ -361,7 +361,7 @@ update_random_seed_file()
     ulong *sp, *dp;
     int fd, i;
 
-    if( !seed_file_name || !is_initialized )
+    if( !seed_file_name || !is_initialized || !pool_filled )
 	return;
     if( !allow_seed_file_update ) {
 	log_info(_("note: random_seed file not updated\n"));

@@ -1,3 +1,13 @@
+Mon Feb 14 14:30:20 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* sig-check.c (check_key_signature2): Add new arg r_expired.
+	(do_signature_check): New arg to pass it down to ...
+	(do_check): New arg r-expire which is set when the signature
+	has expired.
+	* trustdb.c (check_sig_record): Set SIGF_EXPIRED flag and set
+	the expiretime to zero so that thi signature will not be checked
+	anymore.
+
 Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* g10.c (g10_exit): Update the random seed_file.

@@ -110,7 +110,6 @@ static int alloced_tns;
 static int max_alloced_tns;
 
 
-
 static LOCAL_ID_TABLE new_lid_table(void);
 static int ins_lid_table_item( LOCAL_ID_TABLE tbl, ulong lid, unsigned flag );
 static int qry_lid_table_flag( LOCAL_ID_TABLE tbl, ulong lid, unsigned *flag );
@@ -1127,17 +1126,17 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid,
 static unsigned int
 check_sig_record( KBNODE keyblock, KBNODE signode,
 		  ulong siglid, int sigidx, u32 *keyid, ulong lid,
-				  u32 *r_expire, int *mod_down, int *mod_up )
+		  u32 *r_expiretime, int *mod_down, int *mod_up )
 {
     PKT_signature *sig = signode->pkt->pkt.signature;
     unsigned int sigflag = 0;
     TRUSTREC tmp;
-    int revocation=0, rc;
+    int revocation=0, expired=0, rc;
 
     if( DBG_TRUST )
 	log_debug("check_sig_record: %08lX.%lu %lu[%d]\n",
 			    (ulong)keyid[1], lid, siglid, sigidx );
-    *r_expire = 0;
+    *r_expiretime = 0;
     if( (sig->sig_class&~3) == 0x10 ) /* regular certification */
 	;
     else if( sig->sig_class == 0x30 ) /* cert revocation */
@@ -1148,7 +1147,8 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
     read_record( siglid, &tmp, 0 );
     if( tmp.rectype == RECTYPE_DIR ) {
 	/* the public key is in the trustdb: check sig */
-	rc = check_key_signature2( keyblock, signode, NULL, r_expire );
+	rc = check_key_signature2( keyblock, signode, NULL,
+					     r_expiretime, &expired );
 	if( !rc ) { /* valid signature */
 	    if( opt.verbose )
 		log_info("sig %08lX.%lu/%lu[%d]/%08lX: %s\n",
@@ -1157,6 +1157,13 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
 			revocation? _("Valid certificate revocation")
 				  : _("Good certificate") );
 	    sigflag |= SIGF_CHECKED | SIGF_VALID;
+	    if( expired ) {
+		sigflag |= SIGF_EXPIRED;
+		/* We have to reset the expiretime, so that this signature
+		 * does not get checked over and over due to the reached
+		 * expiretime */
+		*r_expiretime = 0;
+	    }
 	    if( revocation ) {
 		sigflag |= SIGF_REVOKED;
 		*mod_down = 1;
@@ -1221,7 +1228,7 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
     PKT_signature *sig;
     ulong sigrecno, siglid;
     int i, sigidx = 0;
-    u32 expire;
+    u32 expiretime;
 
     srecs = NULL; s_end = &srecs;
     for( node=uidnode->next; node; node = node->next ) {
@@ -1264,7 +1271,7 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
 	s->r.sig.sig[sigidx].lid = siglid;
 	s->r.sig.sig[sigidx].flag= check_sig_record( keyblock, node,
 						     siglid, sigidx,
-						     mainkid, lid, &expire,
+						     mainkid, lid, &expiretime,
 						     mod_down, mod_up );
 
 	sigidx++;
@@ -1275,8 +1282,8 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
 	    sigidx = 0;
 	}
 	/* keep track of signers pk expire time */
-	if( expire && (!*min_expire || *min_expire > expire ) )
-	    *min_expire = expire;
+	if( expiretime && (!*min_expire || *min_expire > expiretime ) )
+	    *min_expire = expiretime;
     }
     if( sigidx ) {
        s->recnum = tdbio_new_recnum();
@@ -1475,7 +1482,7 @@ do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
     int mod_up = 0;
     int mod_down = 0;
     ulong recno, r2;
-    u32 expire;
+    u32 expiretime;
 
     primary_pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )->pkt->pkt.public_key;
     if( !primary_pk->local_id )
@@ -1517,9 +1524,9 @@ do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
     drec->r.dir.keylist = make_key_records( keyblock, drec->recnum, keyid, &i );
     if( i ) /* primary key has been revoked */
 	drec->r.dir.dirflags |= DIRF_REVOKED;
-    expire = 0;
+    expiretime = 0;
     drec->r.dir.uidlist = make_uid_records( keyblock, drec->recnum, keyid,
-					    &expire, &mod_down, &mod_up );
+					    &expiretime, &mod_down, &mod_up );
     if( rc )
 	rc = tdbio_cancel_transaction();
     else {
@@ -1527,7 +1534,7 @@ do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
 	    *modified = 1;
 	drec->r.dir.dirflags |= DIRF_CHECKED;
 	drec->r.dir.valcheck = 0;
-	drec->r.dir.checkat = expire;
+	drec->r.dir.checkat = expiretime;
 	write_record( drec );
 	tdbio_write_modify_stamp( mod_up, mod_down );
 	rc = tdbio_end_transaction();
@@ -1851,10 +1858,12 @@ build_cert_tree( ulong lid, int depth, int max_depth, TN helproot )
 	return NULL;
     }
 
-    if( dirrec.r.dir.checkat && dirrec.r.dir.checkat <= make_timestamp() )
+    if( dirrec.r.dir.checkat && dirrec.r.dir.checkat <= make_timestamp() ) {
 	check_trust_record( &dirrec, 0 );
-    else if( (dirrec.r.dir.dirflags & DIRF_NEWKEYS) )
+    }
+    else if( (dirrec.r.dir.dirflags & DIRF_NEWKEYS) ) {
 	check_trust_record( &dirrec, 1 );
+    }
 
     keynode->n.k.ownertrust = dirrec.r.dir.ownertrust & TRUST_MASK;
 

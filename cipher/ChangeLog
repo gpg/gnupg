@@ -1,3 +1,8 @@
+Mon Feb 14 14:30:20 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	(update_random_seed_file): Silently ignore update request when pool
+	is not filled.
+
 Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* random.c (read_seed_file): New.
