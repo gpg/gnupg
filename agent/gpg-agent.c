@@ -77,8 +77,9 @@ enum cmd_and_opt_values
   oLCctype,
   oLCmessages,
   oScdaemonProgram,
-  oDefCacheTTL,
   oDisablePth,
+  oDefCacheTTL,
+  oMaxCacheTTL,
 
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
@@ -127,6 +128,7 @@ static ARGPARSE_OPTS opts[] = {
 
   { oDefCacheTTL, "default-cache-ttl", 4,
                                N_("|N|expire cached PINs after N seconds")},
+  { oMaxCacheTTL, "max-cache-ttl", 4, "@" },
   { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
                                N_("do not use the PIN cache when signing")},
   { oAllowMarkTrusted, "allow-mark-trusted", 0,
@@ -135,7 +137,8 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
-#define DEFAULT_CACHE_TTL (10*60) /* 10 minutes */
+#define DEFAULT_CACHE_TTL (10*60)  /* 10 minutes */
+#define MAX_CACHE_TTL     (120*60) /* 2 hours */
 
 static volatile int caught_fatal_sig = 0;
 
@@ -342,6 +345,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.pinentry_program = NULL;
       opt.scdaemon_program = NULL;
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
+      opt.max_cache_ttl = MAX_CACHE_TTL;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
       return 1;
@@ -372,6 +376,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
 
     case oDefCacheTTL: opt.def_cache_ttl = pargs->r.ret_ulong; break;
+    case oMaxCacheTTL: opt.max_cache_ttl = pargs->r.ret_ulong; break;
       
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
 

@@ -103,10 +103,11 @@ housekeeping (void)
      that the user has to enter it from time to time.  We do this every hour */
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount && r->pw && r->created + 60*60 < current)
+      if (!r->lockcount && r->pw && r->created + opt.max_cache_ttl < current)
         {
           if (DBG_CACHE)
-            log_debug ("  expired `%s' (1h after creation)\n", r->key);
+            log_debug ("  expired `%s' (%lus after creation)\n",
+                       r->key, opt.max_cache_ttl);
           release_data (r->pw);
           r->pw = NULL;
           r->accessed = current;

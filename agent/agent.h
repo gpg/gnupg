@@ -54,6 +54,7 @@ struct {
   const char *scdaemon_program; 
   int no_grab;      /* don't let the pinentry grab the keyboard */
   unsigned long def_cache_ttl;
+  unsigned long max_cache_ttl;
 
   int running_detached; /* we are running detached from the tty. */
 
