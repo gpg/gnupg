@@ -369,8 +369,6 @@
 /* define if compiled symbols have a leading underscore */
 #define WITH_SYMBOL_UNDERSCORE
 
-#define getpid riscos_getpid
-#define kill(pid, sig) riscos_kill(pid, sig)
 #ifdef IS_DEVELOPMENT_VERSION
   #define M_GUARD
 #endif

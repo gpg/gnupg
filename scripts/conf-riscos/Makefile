@@ -4,9 +4,11 @@ LINK=link
 AS=objasm
 MAKE=amu
 DEPEND=-depend !Depend
+DEBUG=
 CC_FLAGS=-Wp -apcs 3/26bit -throwback -Otime -IUnix:,include.,mpi.,intl.,zlib. -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
 AS_FLAGS=-apcs 3/26bit -throwback -predefine "ARMv4 SETA 0"
 LD_FLAGS=Unix:o.unixlib
+LIBLDAP=^.^.openldap-2/0/18.libraries.libldap.libldap
 CIPHER_OBJS=cipher.blowfish.o \
 	cipher.cast5.o \
 	cipher.cipher.o \
@@ -94,6 +96,7 @@ G10_OBJS=g10.armor.o \
 	g10.delkey.o \
 	g10.encode.o \
 	g10.encr-data.o \
+	g10.exec.o \
 	g10.export.o \
 	g10.free-packet.o \
 	g10.g10.o \
@@ -102,22 +105,26 @@ G10_OBJS=g10.armor.o \
 	g10.hkp.o \
 	g10.import.o \
 	g10.kbnode.o \
+	g10.keydb.o \
 	g10.keyedit.o \
 	g10.keygen.o \
 	g10.keyid.o \
 	g10.keylist.o \
+	g10.keyring.o \
+	g10.keyserver.o \
 	g10.mainproc.o \
 	g10.mdfilter.o \
 	g10.misc.o \
+	g10.mkdtemp.o \
 	g10.openfile.o \
 	g10.parse-packet.o \
 	g10.passphrase.o \
+	g10.photoid.o \
 	g10.pipemode.o \
 	g10.pkclist.o \
 	g10.plaintext.o \
 	g10.pubkey-enc.o \
 	g10.revoke.o \
-	g10.ringedit.o \
 	g10.seckey-cert.o \
 	g10.seskey.o \
 	g10.sig-check.o \
@@ -136,15 +143,17 @@ GPGV_OBJS=g10.armor.o \
 	g10.free-packet.o \
 	g10.getkey.o \
 	g10.gpgv.o \
+	g10.keydb.o \
+	g10.keylist.o \
 	g10.kbnode.o \
 	g10.keyid.o \
+	g10.keyring.o \
 	g10.mainproc.o \
 	g10.mdfilter.o \
 	g10.misc.o \
 	g10.openfile.o \
 	g10.parse-packet.o \
 	g10.plaintext.o \
-	g10.ringedit.o \
 	g10.seskey.o \
 	g10.sig-check.o \
 	g10.signal.o \
@@ -179,7 +188,7 @@ GPGV_OBJS=g10.armor.o \
 .SUFFIXES:	.c .o .s
 
 .c.o:
-	$(CC) $(CC_FLAGS) $(DEPEND) -c -o $@ $<
+	$(CC) $(CC_FLAGS) $(DEPEND) $(DEBUG) -c -o $@ $<
 
 .s.o:
 	$(AS) $(AS_FLAGS) $(DEPEND) $< $@
@@ -201,8 +210,20 @@ intl.gettext: $(GETTEXT_OBJS)
 mpi.mpi: $(MPI_OBJS)
 	$(LINK) -aof $(MPI_OBJS) -o mpi.mpi
 
-tools.gpgsplit: tools.o.gpgsplit util.util intl.gettext
-	$(LINK) $(LD_FLAGS) tools.o.gpgsplit util.util intl.gettext -o tools.gpgsplit
+tools.gpgsplit: tools.o.gpgsplit util.util intl.gettext zlib.zlib
+	$(LINK) $(LD_FLAGS) tools.o.gpgsplit util.util intl.gettext zlib.zlib -o tools.gpgsplit
+	-squeeze tools.gpgsplit
+	-copy tools.gpgsplit ADFS::A5.$.tmp.!GnuPG.gpgsplit ~CF~V
+
+keyserver.gpgkeys_ldap: keyserver.o.gpgkeys_ldap $(LIBLDAP)
+	$(LINK) $(LD_FLAGS) keyserver.o.gpgkeys_ldap $(LIBLDAP) -o keyserver.gpgkeys_ldap
+	-squeeze keyserver.gpgkeys_ldap
+	-copy keyserver.gpgkeys_ldap ADFS::A5.$.tmp.!GnuPG.gpgkeys_ldap ~CF~V
+
+riscos.jpegview.jpegview:
+	-dir riscos.jpegview
+	-$(MAKE)
+	-back
 
 util.util: $(UTIL_OBJS)
 	$(LINK) -aof $(UTIL_OBJS) -o util.util
@@ -230,25 +251,30 @@ select-gpl-src:
 	$(CC) $(CC_FLAGS) $(DEPEND) -c -o cipher.o.idea cipher.c.idea
 
 distrib.gnupgsrc/zip: select-gpl-src
-	-zip -9@ distrib.gnupgsrc/zip < distrib.resources.srcfiles
+	-stripdepnd
+	-zip -9@ distrib.gnupgsrc/zip < distrib.resources.distfiles
 
-distrib.gnupg/zip: distrib.gpl-bin.!GnuPG.gpg distrib.gpl-bin.!GnuPG.gpgv select-gpl-src
+distrib.gnupg/zip: distrib.gpl-bin.!GnuPG.JPEGview distrib.gpl-bin.!GnuPG.gpgsplit distrib.gpl-bin.!GnuPG.gpg distrib.gpl-bin.!GnuPG.gpgv select-gpl-src
 	-copy distrib.resources.History distrib.gpl-bin.History ~CFR~V
 	-copy distrib.resources.Upgrading distrib.gpl-bin.Upgrading ~CFR~V
 	-copy distrib.resources.ReadMe_bin distrib.gpl-bin.!ReadMe1st ~CFR~V
 	-copy distrib.resources.!GnuPG distrib.gpl-bin.!GnuPG ~CFR~V
 	-copy distrib.resources.!GnuPGUser distrib.gpl-bin.!GnuPGUser ~CFR~V
+	-copy distrib.resources.!System distrib.gpl-bin.!System ~CFR~V
 	-copy distrib.resources.orig_docs distrib.gpl-bin.orig_docs ~CFR~V
 	-dir distrib.gpl-bin
 	-zip -r9 ^.gnupg/zip *
 	-back
 
-distrib.gnupgdev/zip: distrib.private.!GnuPG.gpg distrib.private.!GnuPG.gpgv select-idea-src
+distrib.gnupgdev/zip: distrib.private.!GnuPG.JPEGview distrib.private.!GnuPG.gpgsplit distrib.private.!GnuPG.gpgkeys_ldap distrib.private.!GnuPG.gpg distrib.private.!GnuPG.gpgv select-idea-src
+	-ifthere distrib.private.!GnuPG.locale then wipe distrib.private.!GnuPG.locale ~CFR~V
+	-copy distrib.intl.!GnuPG.locale distrib.private.!GnuPG.locale ~CFR~V
 	-copy distrib.resources.History distrib.private.History ~CFR~V
 	-copy distrib.resources.Upgrading distrib.private.Upgrading ~CFR~V
 	-copy distrib.resources.ReadMe_bin distrib.private.!ReadMe1st ~CFR~V
 	-copy distrib.resources.!GnuPG distrib.private.!GnuPG ~CFR~V
 	-copy distrib.resources.!GnuPGUser distrib.private.!GnuPGUser ~CFR~V
+	-copy distrib.resources.!System distrib.private.!System ~CFR~V
 	-copy distrib.resources.orig_docs distrib.private.orig_docs ~CFR~V
 	-dir distrib.private
 	-zip -r9 ^.gnupgdev/zip *
@@ -268,6 +294,13 @@ distrib.gnupgpart/zip: g10.gpgpart select-idea-src
 	-zip -r9 ^.gnupgpart/zip *
 	-back
 
+distrib.gnupgldap/zip: keyserver.gpgkeys_ldap
+	-copy distrib.resources.ReadMe_ldap distrib.ldap.!ReadMe ~CFR~V
+	-copy keyserver.gpgkeys_ldap distrib.ldap.!GnuPG.gpgkeys_ldap ~CFR~V
+	-dir distrib.ldap
+	-zip -r9 ^.gnupgldap/zip *
+	-back
+
 distrib.gnupgintl/zip:
 	-dir distrib.intl
 	-zip -r9 ^.gnupgintl/zip *
@@ -281,6 +314,13 @@ distrib.gpl-bin.!GnuPG.gpgv: g10.gpgv
 	-copy g10.gpgv distrib.gpl-bin.!GnuPG.gpgv ~CFR~V
 	-squeeze distrib.gpl-bin.!GnuPG.gpgv
 
+distrib.gpl-bin.!GnuPG.gpgsplit: tools.gpgsplit
+	-copy tools.gpgsplit distrib.gpl-bin.!GnuPG.gpgsplit ~CFR~V
+	-squeeze distrib.gpl-bin.!GnuPG.gpgsplit
+
+distrib.gpl-bin.!GnuPG.JPEGview: riscos.jpegview.jpegview
+	-copy riscos.jpegview.jpegview distrib.gpl-bin.!GnuPG.JPEGview ~CFR~V
+
 distrib.private.!GnuPG.gpg: g10.gpg
 	-copy g10.gpg distrib.private.!GnuPG.gpg ~CFR~V
 	-squeeze distrib.private.!GnuPG.gpg
@@ -288,6 +328,17 @@ distrib.private.!GnuPG.gpg: g10.gpg
 distrib.private.!GnuPG.gpgv: g10.gpgv
 	-copy g10.gpgv distrib.private.!GnuPG.gpgv ~CFR~V
 	-squeeze distrib.private.!GnuPG.gpgv
+
+distrib.private.!GnuPG.gpgsplit: tools.gpgsplit
+	-copy tools.gpgsplit distrib.private.!GnuPG.gpgsplit ~CFR~V
+	-squeeze distrib.private.!GnuPG.gpgsplit
+
+distrib.private.!GnuPG.gpgkeys_ldap: keyserver.gpgkeys_ldap
+	-copy keyserver.gpgkeys_ldap distrib.private.!GnuPG.gpgkeys_ldap ~CFR~V
+	-squeeze distrib.private.!GnuPG.gpgkeys_ldap
+
+distrib.private.!GnuPG.JPEGview: riscos.jpegview.jpegview
+	-copy riscos.jpegview.jpegview distrib.private.!GnuPG.JPEGview ~CFR~V
 
 clean-cipher:
 	-ifthere cipher.o.* then wipe cipher.o.* ~CFR~V
@@ -319,6 +370,15 @@ clean-g10:
 	-ifthere g10.gpgpart then wipe g10.gpgpart ~CFR~V
 	-ifthere g10.o.* then wipe g10.o.* ~CFR~V
 
+clean-keyserver:
+	-ifthere keyserver.gpgkeys_ldap then wipe keyserver.gpgkeys_ldap ~CFR~V
+
+clean-tools:
+	-ifthere tools.gpgsplit then wipe tools.gpgsplit ~CFR~V
+
+clean-riscos:
+	-ifthere riscos.jpegview.jpegview then wipe riscos.jpegview.jpegview ~CFR~V
+
 clean-version:
 	-ifthere g10.o.armor then wipe g10.o.armor ~CFR~V
 	-ifthere g10.o.encode then wipe g10.o.encode ~CFR~V
@@ -330,7 +390,7 @@ clean-version:
 	-ifthere g10.gpgv then wipe g10.gpgv ~CFR~V
 	-ifthere g10.gpgpart then wipe g10.gpgpart ~CFR~V
 
-clean: clean-dist clean-cipher clean-intl clean-mpi clean-util clean-zlib clean-g10
+clean: clean-dist clean-cipher clean-intl clean-mpi clean-util clean-zlib clean-g10 clean-keyserver clean-tools clean-riscos
 
 g10.o.armor: BUILD
 	$(CC) $(CC_FLAGS) $(DEPEND) -c -o g10.o.armor g10.c.armor
@@ -353,19 +413,17 @@ g10.o.sign: BUILD
 dev: clean-version
 	$(MAKE) fast-dev
 
-#egrep "^AC_INIT\(gnupg,.*\)$" < configure/ac { | sed "s/^AC_INIT(gnupg,\(.*\))$/\1/" }
 fast-dev: BUILD
-	setver configure/ac AC_INIT(gnupg, ) dev
+	setver configure/ac AC_INIT(gnupg, , dev
 	wipe distrib.private.!GnuPG.gpg* ~CFR~V
+	$(MAKE) tools.gpgsplit
+	-$(MAKE) keyserver.gpgkeys_ldap
 	$(MAKE) distrib.gnupgdev/zip
 	ifthere <WebServe$ServeRoot>.private.gnupgdev/zip then wipe <WebServe$ServeRoot>.private.gnupgdev/zip ~CFR~V
 	rename distrib.gnupgdev/zip <WebServe$ServeRoot>.private.gnupgdev/zip
-	unset GnuPG$DevDefine
-	unset GnuPG$Version
 
-#egrep "^AC_INIT\(gnupg,.*\)$" < configure/ac { | sed "s/^AC_INIT(gnupg,\(.*\))$/\1/" }
-dist: BUILD clean-version
-	setver configure/ac AC_INIT(gnupg, ) dist
+dist: BUILD clean-version tools.gpgsplit
+	setver configure/ac AC_INIT(gnupg, , dist
 	wipe distrib.gpl-bin.!GnuPG.gpg* ~CFR~V
 	$(MAKE) distrib.gnupg/zip
 	$(MAKE) distrib.gnupgidea/zip
@@ -374,6 +432,7 @@ dist: BUILD clean-version
 	$(MAKE) distrib.gnupgdev/zip
 	$(MAKE) distrib.gnupgsrc/zip
 	$(MAKE) distrib.gnupgintl/zip
+	$(MAKE) distrib.gnupgldap/zip
 	$(MAKE) select-idea-src
 	ifthere <WebServe$ServeRoot>.archives.gnupg/zip then wipe <WebServe$ServeRoot>.archives.gnupg/zip ~CFR~V
 	ifthere <WebServe$ServeRoot>.private.gnupgdev/zip then wipe <WebServe$ServeRoot>.private.gnupgdev/zip ~CFR~V
@@ -382,6 +441,7 @@ dist: BUILD clean-version
 	ifthere <WebServe$ServeRoot>.archives.gnupgsrc/zip then wipe <WebServe$ServeRoot>.archives.gnupgsrc/zip ~CFR~V
 	ifthere <WebServe$ServeRoot>.archives.gnupgintl/zip then wipe <WebServe$ServeRoot>.archives.gnupgintl/zip ~CFR~V
 	ifthere <WebServe$ServeRoot>.gnupg_history/txt then wipe <WebServe$ServeRoot>.gnupg_history/txt ~CFR~V
+	ifthere <WebServe$ServeRoot>.gnupg_news/txt then wipe <WebServe$ServeRoot>.gnupg_news/txt ~CFR~V
 	rename distrib.gnupgdev/zip <WebServe$ServeRoot>.private.gnupgdev/zip
 	rename distrib.gnupg/zip <WebServe$ServeRoot>.archives.gnupg/zip
 	rename distrib.gnupgidea/zip <WebServe$ServeRoot>.archives.gnupgidea/zip
@@ -389,6 +449,7 @@ dist: BUILD clean-version
 	rename distrib.gnupgsrc/zip <WebServe$ServeRoot>.archives.gnupgsrc/zip
 	rename distrib.gnupgintl/zip <WebServe$ServeRoot>.archives.gnupgintl/zip
 	copy distrib.resources.History <WebServe$ServeRoot>.gnupg_history/txt ~CFR~V
+	copy distrib.resources.orig_docs.NEWS <WebServe$ServeRoot>.gnupg_news/txt ~CFR~V
 	unset GnuPG$DevDefine
 	unset GnuPG$Version
 	updatesigs <WebServe$ServeRoot>.archives --secring adfs::ap.$.secring/gpg

@@ -1,3 +1,14 @@
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+
+	* conf-riscos/include/g10defs.h [__riscos__]: Added GNU GPL
+	header and exec code defines.
+
+	* conf-riscos/include/config.h [__riscos__]: Moved parts to
+	include/util.h where they really belong to.
+
+	* conf-riscos/Makefile [__riscos__]: Updated for new keyserver,
+	exec and photo id code.
+
 2001-12-22  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: Fixed last change.
