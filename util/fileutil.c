@@ -44,10 +44,12 @@ make_basename(const char *filepath)
     char *p;
 
     if ( !(p=strrchr(filepath, DIRSEP_C)) )
-      #ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DRIVE_LETTERS
 	if ( !(p=strrchr(filepath, '\\')) )
 	    if ( !(p=strrchr(filepath, ':')) )
-      #endif
+#elif defined(__riscos__)
+        if ( !(p=strrchr(filepath, ':')) )
+#endif
 	      {
 		return m_strdup(filepath);
 	      }

@@ -86,6 +86,8 @@
 /* Define if your locale.h file contains LC_MESSAGES.  */
 #define HAVE_LC_MESSAGES 1
 
+#define LOCALEDIR ""
+
 /* Define to 1 if NLS is requested.  */
 #define ENABLE_NLS 1
 
@@ -154,7 +156,8 @@
 #define SIZEOF_UNSIGNED_LONG 4
 
 /* The number of bytes in a unsigned long long.  */
-#define SIZEOF_UNSIGNED_LONG_LONG 0
+/* Is defined later on */
+/* #define SIZEOF_UNSIGNED_LONG_LONG 0 */
 
 /* The number of bytes in a unsigned short.  */
 #define SIZEOF_UNSIGNED_SHORT 2
@@ -361,29 +364,30 @@
 /* define if compiled symbols have a leading underscore */
 #define WITH_SYMBOL_UNDERSCORE 1
 
-#ifdef IS_DEVELOPMENT_VERSION
-  #define DEBUG 1
-/*  #define M_DEBUG */
-  #define M_GUARD 1
-#endif
-
-#define USE_RNDRISCOS 1
-
 /* RISC OS specifica */
 #if (__CC_NORCROFT == 1) /* Norcroft */
 # undef __GNUC__
 # define __GNUC_MINOR__ 0
 # define __GLIBC__ 0
 # define __attribute__(x) 
+# define SIZEOF_UNSIGNED_LONG_LONG 0
 # if (__CC_NORCROFT_VERSION < 544) /* old version of Norcroft */
 #  define inline __inline
 #  define STR(a) #a
 #  define __func__ "[" __FILE__ ":" STR(__LINE__) "]"
 # endif
 #else /* gcc */
+# define SIZEOF_UNSIGNED_LONG_LONG 8
 #endif
 
-/* #define USE_EXTERNAL_HKP */
+#define USE_RNDRISCOS 1
+#define HAVE_LDAP_GET_OPTION 1
+
+#ifdef IS_DEVELOPMENT_VERSION
+#  define DEBUG 1
+/*#  define M_DEBUG */
+#  define M_GUARD 1
+#endif
 
 #include "g10defs.h"
 

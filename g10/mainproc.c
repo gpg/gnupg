@@ -1110,7 +1110,7 @@ do_proc_packets( CTX c, IOBUF a )
 	any_data = 1;
 	if( rc ) {
 	    free_packet(pkt);
-            /* stop processing hwne an invalid packet has been encountered
+            /* stop processing when an invalid packet has been encountered
              * but don't do so when we are doing a --list-packet. */
 	    if( rc == G10ERR_INVALID_PACKET && opt.list_packets != 2 )
 		break;

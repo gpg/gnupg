@@ -1,3 +1,11 @@
+2002-10-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* build-packet.c (calc_plaintext, do_plaintext): Added filetype
+	handling for RISC OS' file types.
+
+	* plaintext.c (handle_plaintext) [__riscos__]: Added filetype
+	handling for RISC OS' file types.
+
 2002-10-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, import.c (sec_to_pub_keyblock, import_secret_one,

@@ -36,15 +36,9 @@
 
 #define __UNIXLIB_INTERNALS
 #include <unixlib/unix.h>
+#include <unixlib/swiparams.h>
 #undef __UNIXLIB_INTERNALS
 
-/* RISC OS specific defines that are not yet in UnixLib */
-
-#define MimeMap_Translate      0x50B00
-#define MMM_TYPE_RISCOS        0
-#define MMM_TYPE_RISCOS_STRING 1
-#define MMM_TYPE_MIME          2
-#define MMM_TYPE_DOT_EXTN      3
 
 /* RISC OS file open descriptor control list */
 
@@ -76,14 +70,6 @@ is_read_only(const char *filename)
     return 0;
 }
 
-static void
-riscos_set_filetype_by_number(const char *filename, int type)
-{
-    if (_swix(OS_File, _INR(0,2), 18, filename, type))
-        log_fatal("Can't set filetype for file %s!\n"
-                  "Is the file on a read-only file system?\n", filename);
-}        
-
 /* exported RISC OS functions */
 
 void
@@ -92,6 +78,38 @@ riscos_global_defaults(void)
     __riscosify_control = __RISCOSIFY_NO_PROCESS;
     __feature_imagefs_is_file = 1;
 }
+
+int
+riscos_get_filetype_from_string(const char *string, int len)
+{
+    int result = 0xfff;
+
+    if (string[len - 4] != ',')
+        return 0xfff;
+
+    sscanf(string+len-3, "%3x", &result);
+
+    return result;
+}
+
+int
+riscos_get_filetype(const char *filename)
+{
+    int result;
+
+    if (_swix(OS_File, _INR(0,1) | _OUT(6), 23, filename, &result))
+        log_fatal("Can't get filetype for file %s!\n", filename);
+
+    return result;
+}        
+
+void
+riscos_set_filetype_by_number(const char *filename, int type)
+{
+    if (_swix(OS_File, _INR(0,2), 18, filename, type))
+        log_fatal("Can't set filetype for file %s!\n"
+                  "Is the file on a read-only file system?\n", filename);
+}        
 
 void
 riscos_set_filetype(const char *filename, const char *mimetype)
