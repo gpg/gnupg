@@ -1,5 +1,5 @@
 /* g10.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1437,20 +1437,27 @@ main( int argc, char **argv )
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
 
-    /* add the keyrings, but not for some special commands and
-     * not in case of "-kvv userid keyring" */
+    /* Add the keyrings, but not for some special commands and not in
+       case of "-kvv userid keyring".  Also avoid adding the secret
+       keyring for a couple of commands to avaoid unneeded access in
+       case the secrings are stored on a floppy */
     if( cmd != aDeArmor && cmd != aEnArmor
-	&& !(cmd == aKMode && argc == 2 ) ) {
-
-	if( !sec_nrings || default_keyring )  /* add default secret rings */
-	    keydb_add_resource ("secring" EXTSEP_S "gpg", 0, 1);
-	for(sl = sec_nrings; sl; sl = sl->next )
-	    keydb_add_resource ( sl->d, 0, 1 );
+	&& !(cmd == aKMode && argc == 2 ) ) 
+      {
+        if (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
+            && cmd != aVerify && cmd != aVerifyFiles
+            && cmd != aEncr && cmd != aSym)
+          {
+            if (!sec_nrings || default_keyring) /* add default secret rings */
+              keydb_add_resource ("secring" EXTSEP_S "gpg", 0, 1);
+            for (sl = sec_nrings; sl; sl = sl->next)
+              keydb_add_resource ( sl->d, 0, 1 );
+          }
 	if( !nrings || default_keyring )  /* add default ring */
 	    keydb_add_resource ("pubring" EXTSEP_S "gpg", 0, 0);
 	for(sl = nrings; sl; sl = sl->next )
 	    keydb_add_resource ( sl->d, 0, 0 );
-    }
+      }
     FREE_STRLIST(nrings);
     FREE_STRLIST(sec_nrings);
 

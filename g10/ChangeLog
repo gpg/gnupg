@@ -1,3 +1,12 @@
+2002-01-05  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Do not register the secret keyrings for certain
+	commands.
+
+	* keydb.c (keydb_add_resource): Use access to test for keyring
+	existence.  This avoids cached opened files which are bad under
+	RISC OS.
+
 2002-01-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (sign_file, sign_symencrypt_file): always use one-pass
@@ -32,15 +41,15 @@
 
 2002-01-03  Timo Schulz <ts@winpt.org>
 
-    * g10.c: New command --encrypt-files.
+	* g10.c: New command --encrypt-files.
     
-    * verify.c (print_file_status): Removed the static because
-    encode_crypt_files also uses this function.
+	* verify.c (print_file_status): Removed the static because
+	encode_crypt_files also uses this function.
 
-    * main.h (print_files_status): New.
-    (encode_crypt_files): New.
+	* main.h (print_files_status): New.
+	(encode_crypt_files): New.
 
-    * encode.c (encode_crypt_files): New.
+	* encode.c (encode_crypt_files): New.
 
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
@@ -109,15 +118,15 @@
 
 2001-12-23  Timo Schulz <ts@winpt.org>
 
-    * misc.c (check_permissions): Do not use it for W32 systems.
+	* misc.c (check_permissions): Do not use it for W32 systems.
 
-    * tdbio.c (migrate_from_v2): Define ftruncate as chsize() for W32.
+	* tdbio.c (migrate_from_v2): Define ftruncate as chsize() for W32.
 
-    * mkdtemp.c: W32 support.
+	* mkdtemp.c: W32 support.
 
-    * photoid.c: Ditto.
+	* photoid.c: Ditto.
 
-    * exec.c: Ditto.
+	* exec.c: Ditto.
 
 2001-12-22  David Shaw  <dshaw@jabberwocky.com>
 
@@ -4748,7 +4757,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 	* pubkey-enc.c (get_session_key): rewritten
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998,1999,2000,2001,2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -4757,5 +4766,3 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

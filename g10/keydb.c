@@ -1,5 +1,5 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -85,7 +85,7 @@ keydb_add_resource (const char *url, int force, int secret)
     char *filename = NULL;
     int rc = 0;
     KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
-    const char *created_fname = NULL;
+    void *token;
 
     /* Do we have an URL?
      *	gnupg-ring:filename  := this is a plain keyring
@@ -147,74 +147,73 @@ keydb_add_resource (const char *url, int force, int secret)
 	goto leave;
 
       case KEYDB_RESOURCE_TYPE_KEYRING:
-	iobuf = iobuf_open (filename);
-	if (!iobuf && !force) {
-	    rc = G10ERR_OPEN_FILE;
-	    goto leave;
-	}
-
-	if (!iobuf) {
+        if (access(filename, F_OK))
+          { /* file does not exist */
 	    char *last_slash_in_filename;
+
+            if (!force) 
+              {
+                rc = G10ERR_OPEN_FILE;
+                goto leave;
+              }
 
 	    last_slash_in_filename = strrchr (filename, DIRSEP_C);
 	    *last_slash_in_filename = 0;
-
-	    if (access(filename, F_OK)) {
-		/* on the first time we try to create the default homedir and
-		 * in this case the process will be terminated, so that on the
-		 * next invocation it can read the options file in on startup
-		 */
+	    if (access(filename, F_OK))
+              { /* on the first time we try to create the default
+		   homedir and in this case the process will be
+		   terminated, so that on the next invocation it can
+		   read the options file in on startup */
 		try_make_homedir (filename);
 		rc = G10ERR_OPEN_FILE;
         	*last_slash_in_filename = DIRSEP_C;
 		goto leave;
-	    }
-
+              }
 	    *last_slash_in_filename = DIRSEP_C;
 
 	    iobuf = iobuf_create (filename);
-	    if (!iobuf) {
+	    if (!iobuf) 
+              {
 		log_error ( _("error creating keyring `%s': %s\n"),
                             filename, strerror(errno));
 		rc = G10ERR_OPEN_FILE;
 		goto leave;
-	    }
-	    else {
-	      #ifndef HAVE_DOSISH_SYSTEM
-		if (secret && !opt.preserve_permissions) {
-		    if (chmod (filename, S_IRUSR | S_IWUSR) ) {
-			log_error (_("changing permission of "
-                                     " `%s' failed: %s\n"),
-                                   filename, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
-			goto leave;
-		    }
-		}
-	      #endif
-		if (!opt.quiet)
-                    log_info (_("keyring `%s' created\n"), filename);
-                created_fname = filename;
-	    }
-	}
-	iobuf_close (iobuf);
-	iobuf = NULL;
-        if (created_fname) /* must invalidate that ugly cache */
-            iobuf_ioctl (NULL, 2, 0, (char*)created_fname);
-        {
-          void *token = keyring_register_filename (filename, secret);
-          if (!token)
-            ; /* already registered - ignore it */
-          else if (used_resources >= MAX_KEYDB_RESOURCES)
-              rc = G10ERR_RESOURCE_LIMIT;
-          else 
-            {
-              all_resources[used_resources].type = rt;
-              all_resources[used_resources].u.kr = NULL; /* Not used here */
-              all_resources[used_resources].token = token;
-              all_resources[used_resources].secret = secret;
-              used_resources++;
-            }
-        }
+              }
+
+#ifndef HAVE_DOSISH_SYSTEM
+            if (secret && !opt.preserve_permissions) 
+              {
+                if (chmod (filename, S_IRUSR | S_IWUSR) ) 
+                  {
+                    log_error (_("changing permission of "
+                                 " `%s' failed: %s\n"),
+                               filename, strerror(errno) );
+                    rc = G10ERR_WRITE_FILE;
+                    goto leave;
+                  }
+              }
+#endif
+            if (!opt.quiet)
+              log_info (_("keyring `%s' created\n"), filename);
+            iobuf_close (iobuf);
+            iobuf = NULL;
+            /* must invalidate that ugly cache */
+            iobuf_ioctl (NULL, 2, 0, (char*)filename);
+          } /* end file creation */
+
+        token = keyring_register_filename (filename, secret);
+        if (!token)
+          ; /* already registered - ignore it */
+        else if (used_resources >= MAX_KEYDB_RESOURCES)
+          rc = G10ERR_RESOURCE_LIMIT;
+        else 
+          {
+            all_resources[used_resources].type = rt;
+            all_resources[used_resources].u.kr = NULL; /* Not used here */
+            all_resources[used_resources].token = token;
+            all_resources[used_resources].secret = secret;
+            used_resources++;
+          }
 	break;
 
       default:
