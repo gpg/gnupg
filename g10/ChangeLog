@@ -1,3 +1,12 @@
+2002-12-22  Timo Schulz  <ts@winpt.org>
+	
+	* import.c (print_import_check): New.
+	(import_one): Use it here.
+        Use merge_keys_and_selfsig in the interactive mode to avoid
+        wrong key information.
+        * status.h: Add new status code.
+        * status.c: Ditto.
+	
 2002-12-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (do_we_trust): Tweak language to refer to the "named
