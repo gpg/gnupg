@@ -20,6 +20,10 @@
 #ifndef G10_UTIL_H
 #define G10_UTIL_H
 
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
+# include <stdarg.>
+#endif
+
 #include "types.h"
 #include "errors.h"
 #include "types.h"
@@ -220,7 +224,7 @@ int strcasecmp( const char *, const char *b);
   #define stricmp(a,b)	 strcasecmp( (a), (b) )
 #endif
 
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
 /*-- w32reg.c --*/
 char *read_w32_registry_string( const char *root,
 				const char *dir, const char *name );
