@@ -78,134 +78,130 @@ static void unlock_all (KEYDB_HANDLE hd);
 int
 keydb_add_resource (const char *url, int force, int secret)
 {
-    static int any_secret, any_public;
-    const char *resname = url;
-    char *filename = NULL;
-    int rc = 0; 
-    KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
-/*      const char *created_fname = NULL; */
+  static int any_secret, any_public;
+  const char *resname = url;
+  char *filename = NULL;
+  int rc = 0; 
+  FILE *fp;
+  KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
+  const char *created_fname = NULL;
 
-    /* Do we have an URL?
-     *	gnupg-ring:filename  := this is a plain keybox
-     *	filename := See what is is, but create as plain keybox.
-     */
-    if (strlen (resname) > 11) {
-	if (!strncmp( resname, "gnupg-kbx:", 10) ) {
-	    rt = KEYDB_RESOURCE_TYPE_KEYBOX;
-	    resname += 11;
-	}
-      #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
-	else if (strchr (resname, ':')) {
-	    log_error ("invalid key resource URL `%s'\n", url );
-	    rc = GNUPG_General_Error;
-	    goto leave;
-	}
-      #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
-    }
-
-    if (*resname != DIRSEP_C ) { /* do tilde expansion etc */
-	if (strchr(resname, DIRSEP_C) )
-	    filename = make_filename (resname, NULL);
-	else
-	    filename = make_filename (opt.homedir, resname, NULL);
-    }
-    else
-	filename = xstrdup (resname);
-
-    if (!force)
-	force = secret? !any_secret : !any_public;
-
-    /* see whether we can determine the filetype */
-    if (rt == KEYDB_RESOURCE_TYPE_NONE) {
-	FILE *fp2 = fopen( filename, "rb" );
-
-	if (fp2) {
-	    u32 magic;
-
-            /* FIXME: check for the keybox magic */
-	    if (fread( &magic, 4, 1, fp2) == 1 ) 
-              {
-		if (magic == 0x13579ace || magic == 0xce9a5713)
-                  ; /* GDBM magic - no more support */
-		else
-                  rt = KEYDB_RESOURCE_TYPE_KEYBOX;
-              }
-	    else /* maybe empty: assume ring */
-              rt = KEYDB_RESOURCE_TYPE_KEYBOX;
-	    fclose (fp2);
-	}
-	else /* no file yet: create ring */
+  /* Do we have an URL?
+     gnupg-kbx:filename := this is a plain keybox
+     filename := See what is is, but create as plain keybox.
+  */
+  if (strlen (resname) > 10) 
+    {
+      if (!strncmp (resname, "gnupg-kbx:", 10) )
+        {
           rt = KEYDB_RESOURCE_TYPE_KEYBOX;
+          resname += 10;
+	}
+#if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
+      else if (strchr (resname, ':'))
+        {
+          log_error ("invalid key resource URL `%s'\n", url );
+          rc = GNUPG_General_Error;
+          goto leave;
+	}
+#endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
     }
 
-    switch (rt) {
-      case KEYDB_RESOURCE_TYPE_NONE:
-	log_error ("unknown type of key resource `%s'\n", url );
-	rc = GNUPG_General_Error;
-	goto leave;
-
-      case KEYDB_RESOURCE_TYPE_KEYBOX:
-#if 0
-	fp = fopen (filename);
-	if (!iobuf && !force) {
-	    rc = G10ERR_OPEN_FILE;
-	    goto leave;
-	}
-
-	if (!fp) {
-	    char *last_slash_in_filename;
-
-	    last_slash_in_filename = strrchr (filename, DIRSEP_C);
-	    *last_slash_in_filename = 0;
-
-	    if (access(filename, F_OK)) {
-		/* on the first time we try to create the default
+  if (*resname != DIRSEP_C )
+    { /* do tilde expansion etc */
+      if (strchr(resname, DIRSEP_C) )
+        filename = make_filename (resname, NULL);
+      else
+        filename = make_filename (opt.homedir, resname, NULL);
+    }
+  else
+    filename = xstrdup (resname);
+  
+  if (!force)
+    force = secret? !any_secret : !any_public;
+  
+  /* see whether we can determine the filetype */
+  if (rt == KEYDB_RESOURCE_TYPE_NONE)
+    {
+      FILE *fp2 = fopen( filename, "rb" );
+      
+      if (fp2) {
+        u32 magic;
+        
+        /* FIXME: check for the keybox magic */
+        if (fread( &magic, 4, 1, fp2) == 1 ) 
+          {
+            if (magic == 0x13579ace || magic == 0xce9a5713)
+              ; /* GDBM magic - no more support */
+            else
+              rt = KEYDB_RESOURCE_TYPE_KEYBOX;
+          }
+        else /* maybe empty: assume ring */
+          rt = KEYDB_RESOURCE_TYPE_KEYBOX;
+        fclose (fp2);
+      }
+      else /* no file yet: create ring */
+        rt = KEYDB_RESOURCE_TYPE_KEYBOX;
+    }
+    
+  switch (rt)
+    {
+    case KEYDB_RESOURCE_TYPE_NONE:
+      log_error ("unknown type of key resource `%s'\n", url );
+      rc = GNUPG_General_Error;
+      goto leave;
+      
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      fp = fopen (filename, "rb");
+      if (!fp && !force)
+        {
+          rc = GNUPG_File_Open_Error;
+          goto leave;
+        }
+      
+      if (!fp)
+        { /* no file */
+#if 0 /* no autocreate of the homedirectory yet */
+          {
+            char *last_slash_in_filename;
+            
+            last_slash_in_filename = strrchr (filename, DIRSEP_C);
+            *last_slash_in_filename = 0;
+            if (access (filename, F_OK))
+              { /* on the first time we try to create the default
                    homedir and in this case the process will be
-                   terminated, so that on the next invocation it can
+                   terminated, so that on the next invocation can
                    read the options file in on startup */
-		try_make_homedir (filename);
-		rc = G10ERR_OPEN_FILE;
-        	*last_slash_in_filename = DIRSEP_C;
-		goto leave;
+                try_make_homedir (filename);
+                rc = GNUPG_File_Open_Error;
+                *last_slash_in_filename = DIRSEP_C;
+                goto leave;
+              }
+            *last_slash_in_filename = DIRSEP_C;
+          }
+#endif
+          fp = fopen (filename, "w");
+          if (!fp)
+            {
+              log_error (_("error creating keybox `%s': %s\n"),
+                         filename, strerror(errno));
+              rc = GNUPG_File_Create_Error;
+              goto leave;
 	    }
 
-	    *last_slash_in_filename = DIRSEP_C;
-
-	    iobuf = iobuf_create (filename);
-	    if (!iobuf) {
-		log_error ( _("error creating keybox `%s': %s\n"),
-                            filename, strerror(errno));
-		rc = G10ERR_OPEN_FILE;
-		goto leave;
-	    }
-	    else {
-	      #ifndef HAVE_DOSISH_SYSTEM
-		if (secret && !opt.preserve_permissionws) {
-		    if (chmod (filename, S_IRUSR | S_IWUSR) ) {
-			log_error (_("changing permission of "
-                                     " `%s' failed: %s\n"),
-                                   filename, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
-			goto leave;
-		    }
-		}
-	      #endif
-		if (!opt.quiet)
-                    log_info (_("keybox `%s' created\n"), filename);
-                created_fname = filename;
-	    }
+          if (!opt.quiet)
+            log_info (_("keybox `%s' created\n"), filename);
+          created_fname = filename;
 	}
-	iobuf_close (iobuf);
-	iobuf = NULL;
-        if (created_fname) /* must invalidate that ugly cache */
-            iobuf_ioctl (NULL, 2, 0, (char*)created_fname);
-#endif     
+	fclose (fp);
+	fp = NULL;
+        /* now regsiter the file */
         {
           void *token = keybox_register_file (filename, secret);
           if (!token)
             ; /* already registered - ignore it */
           else if (used_resources >= MAX_KEYDB_RESOURCES)
-              rc = GNUPG_Resource_Limit;
+            rc = GNUPG_Resource_Limit;
           else 
             {
               all_resources[used_resources].type = rt;
@@ -216,27 +212,24 @@ keydb_add_resource (const char *url, int force, int secret)
             }
         }
 	break;
-
-      default:
-	log_error ("resource type of `%s' not supported\n", url);
-	rc = GNUPG_General_Error;
-	goto leave;
+    default:
+      log_error ("resource type of `%s' not supported\n", url);
+      rc = GNUPG_Not_Supported;
+      goto leave;
     }
 
-    /* fixme: check directory permissions and print a warning */
+  /* fixme: check directory permissions and print a warning */
 
-  leave:
-    if (rc)
-      log_error ("keyblock resource `%s': %s\n", filename, gnupg_strerror(rc));
-    else if (secret)
-	any_secret = 1;
-    else
-	any_public = 1;
-    xfree (filename);
-    return rc;
+ leave:
+  if (rc)
+    log_error ("keyblock resource `%s': %s\n", filename, gnupg_strerror(rc));
+  else if (secret)
+    any_secret = 1;
+  else
+    any_public = 1;
+  xfree (filename);
+  return rc;
 }
-
-
 
 
 KEYDB_HANDLE

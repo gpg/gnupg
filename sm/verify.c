@@ -136,6 +136,28 @@ print_integer (unsigned char *p)
     }
 }
 
+static void
+print_time (time_t t)
+{
+
+  if (!t)
+    log_printf ("none");
+  else if ( t == (time_t)(-1) )
+    log_printf ("error");
+  else
+    {
+      struct tm *tp;
+
+      tp = gmtime (&t);
+      log_printf ("%04d-%02d-%02d %02d:%02d:%02d",
+                  1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                  tp->tm_hour, tp->tm_min, tp->tm_sec);
+      assert (!tp->tm_isdst);
+    }
+}
+
+
+
 
 static void
 hash_data (int fd, GCRY_MD_HD md)
@@ -316,6 +338,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
     {
       char *issuer = NULL;
       char *sigval = NULL;
+      time_t sigtime;
       unsigned char *serial;
       char *msgdigest = NULL;
       size_t msgdigestlen;
@@ -327,6 +350,17 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       log_debug ("signer %d - serial: ", signer);
       print_integer (serial);
       log_printf ("\n");
+
+      err = ksba_cms_get_signing_time (cms, signer, &sigtime);
+      if (err)
+        {
+          log_debug ("error getting signing time: %s\n", ksba_strerror (err));
+          sigtime = (time_t)-1;
+        }
+      log_debug ("signer %d - sigtime: ", signer);
+      print_time (sigtime);  
+      log_printf ("\n");
+
 
       err = ksba_cms_get_message_digest (cms, signer,
                                          &msgdigest, &msgdigestlen);

@@ -470,16 +470,16 @@ request_reply (const char *line, struct membuf *membuf)
           for (;len && *p != '%'; len--, p++)
             ;
           put_membuf (membuf, buf, p-buf);
-          buf = p;
           if (len>2)
             { /* handle escaping */
               unsigned char tmp[1];
-              buf++;
-              *tmp = xtoi_2 (buf);
-              buf += 2;
+              p++;
+              *tmp = xtoi_2 (p);
+              p += 2;
               len -= 3;
               put_membuf (membuf, tmp, 1);
             }
+          buf = p;
         }
       goto again;
     }

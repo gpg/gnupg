@@ -244,16 +244,16 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       gcry_md_enable (data_md, algo);
     }
 
+  signer = 0;
   if (detached)
-    { /* we hash the data right now so tha we can store the message
-         digest.  ksba_cms_build() takes this as an flag that deatched
+    { /* we hash the data right now so that we can store the message
+         digest.  ksba_cms_build() takes this as an flag that detached
          data is expected. */
       unsigned char *digest;
       size_t digest_len;
       /* Fixme do this for all signers and get the algo to use from
          the signer's certificate - does not make mich sense, bu we
          should do this consistent as we have already done it above */
-      signer = 0;
       algo = GCRY_MD_SHA1; 
       hash_data (data_fd, data_md);
       digest = gcry_md_read (data_md, algo);
@@ -274,7 +274,14 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
         }
     }
 
-
+  err = ksba_cms_set_signing_time (cms, signer, 0 /*now*/);
+  if (err)
+    {
+      log_error ("ksba_cms_set_signing_time failed: %s\n",
+                 ksba_strerror (err));
+      rc = map_ksba_err (err);
+      goto leave;
+    }
 
   do 
     {

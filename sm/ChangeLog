@@ -1,0 +1,20 @@
+2001-11-26  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (keydb_add_resource): Create keybox
+
+	* keylist.c (gpgsm_list_keys): Fixed non-server keylisting.
+
+	* server.c (rc_to_assuan_status): New.  Use it for all commands.
+
+	
+ Copyright 2001 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	
+

@@ -42,6 +42,45 @@ struct server_local_s {
   int message_fd;
 };
 
+/* Map GNUPG_xxx error codes to Assuan status codes */
+static int
+rc_to_assuan_status (int rc)
+{
+  switch (rc)
+    {
+    case 0: break;
+    case GNUPG_Bad_Certificate:   rc = ASSUAN_Bad_Certificate; break;
+    case GNUPG_Bad_Certificate_Path: rc = ASSUAN_Bad_Certificate_Path; break;
+    case GNUPG_Missing_Certificate: rc = ASSUAN_Missing_Certificate; break;
+    case GNUPG_No_Data:           rc = ASSUAN_No_Data_Available; break;
+    case GNUPG_Bad_Signature:     rc = ASSUAN_Bad_Signature; break;
+    case GNUPG_Not_Implemented:   rc = ASSUAN_Not_Implemented; break;
+    case GNUPG_No_Agent:          rc = ASSUAN_No_Agent; break;
+    case GNUPG_Agent_Error:       rc = ASSUAN_Agent_Error; break;
+    case GNUPG_No_Public_Key:     rc = ASSUAN_No_Public_Key; break;
+    case GNUPG_No_Secret_Key:     rc = ASSUAN_No_Secret_Key; break;
+
+    case GNUPG_Read_Error: 
+    case GNUPG_Write_Error:
+    case GNUPG_IO_Error: 
+      rc = ASSUAN_Server_IO_Error;
+      break;
+    case GNUPG_Out_Of_Core:    
+    case GNUPG_Resource_Limit: 
+      rc = ASSUAN_Server_Resource_Problem;
+      break;
+    case GNUPG_Bug: 
+    case GNUPG_Internal_Error:   
+      rc = ASSUAN_Server_Bug;
+      break;
+    default: 
+      rc = ASSUAN_Server_Fault;
+      break;
+    }
+  return rc;
+}
+
+
 
 
 /*  RECIPIENT <userID>
@@ -116,15 +155,17 @@ cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
 static int 
 cmd_verify (ASSUAN_CONTEXT ctx, char *line)
 {
+  int rc;
   CTRL ctrl = assuan_get_pointer (ctx);
   int fd = assuan_get_input_fd (ctx);
 
   if (fd == -1)
     return set_error (No_Input, NULL);
 
-  gpgsm_verify (assuan_get_pointer (ctx), fd, ctrl->server_local->message_fd);
+  rc = gpgsm_verify (assuan_get_pointer (ctx), fd,
+                     ctrl->server_local->message_fd);
 
-  return 0;
+  return rc_to_assuan_status (rc);
 }
 
 
@@ -139,6 +180,7 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
   int inp_fd, out_fd;
   FILE *out_fp;
   int detached;
+  int rc;
 
   inp_fd = assuan_get_input_fd (ctx);
   if (inp_fd == -1)
@@ -152,10 +194,10 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
     return set_error (General_Error, "fdopen() failed");
-  gpgsm_sign (assuan_get_pointer (ctx), inp_fd, detached, out_fp);
+  rc = gpgsm_sign (assuan_get_pointer (ctx), inp_fd, detached, out_fp);
   fclose (out_fp);
 
-  return 0;
+  return rc_to_assuan_status (rc);
 }
 
 
@@ -168,14 +210,15 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
 static int 
 cmd_import (ASSUAN_CONTEXT ctx, char *line)
 {
+  int rc;
   int fd = assuan_get_input_fd (ctx);
 
   if (fd == -1)
     return set_error (No_Input, NULL);
 
-  gpgsm_import (assuan_get_pointer (ctx), fd);
+  rc = gpgsm_import (assuan_get_pointer (ctx), fd);
 
-  return 0;
+  return rc_to_assuan_status (rc);
 }
 
 /* MESSAGE FD=<n>
@@ -211,7 +254,8 @@ cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
 
   ctrl->with_colons = 1;
   /* fixme: check that the returned data_fp is not NULL */
-  gpgsm_list_keys (assuan_get_pointer (ctx), NULL, assuan_get_data_fp (ctx));
+  gpgsm_list_keys (assuan_get_pointer (ctx), NULL,
+                        assuan_get_data_fp (ctx));
 
   return 0;
 }

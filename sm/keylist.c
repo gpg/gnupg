@@ -168,13 +168,13 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp)
               putc ('\n', fp);
               lastresname = resname;
             }
-          if (ctrl->with_colons)
-            list_cert_colon (cert, fp);
-          else
-            list_cert_colon (cert, fp);
-          ksba_cert_release (cert); 
-          cert = NULL;
-        } 
+        }
+      if (ctrl->with_colons)
+        list_cert_colon (cert, fp);
+      else
+        list_cert_colon (cert, fp);
+      ksba_cert_release (cert); 
+      cert = NULL;
     }
   while (!(rc = keydb_search_next (hd)));
   if (rc && rc != -1)
