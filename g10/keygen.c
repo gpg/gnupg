@@ -2820,6 +2820,24 @@ do_generate_keypair( struct para_data_s *para,
                                get_parameter_uint (para, pKEYUSAGE));
     }
 
+    /* Write the auth key to the card before the encryption key.  This
+       is a partial workaround for a PGP bug (as of this writing, all
+       versions including 8.1), that causes it to try and encrypt to
+       the most recent subkey regardless of whether that subkey is
+       actually an encryption type.  In this case, the auth key is an
+       RSA key so it succeeds. */
+
+    if (!rc && card && get_parameter (para, pAUTHKEYTYPE))
+      {
+        rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root,
+                           get_parameter_u32 (para, pKEYEXPIRE), para);
+        
+        if (!rc)
+          rc = write_keybinding (pub_root, pub_root, pri_sk, sub_sk, PUBKEY_USAGE_AUTH);
+        if (!rc)
+          rc = write_keybinding (sec_root, pub_root, pri_sk, sub_sk, PUBKEY_USAGE_AUTH);
+      }
+
     if( !rc && get_parameter( para, pSUBKEYTYPE ) )
       {
         if (!card)
@@ -2859,17 +2877,6 @@ do_generate_keypair( struct para_data_s *para,
         did_sub = 1;
       }
 
-    if (!rc && card && get_parameter (para, pAUTHKEYTYPE))
-      {
-        rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root,
-                           get_parameter_u32 (para, pKEYEXPIRE), para);
-        
-        if (!rc)
-          rc = write_keybinding (pub_root, pub_root, pri_sk, sub_sk, PUBKEY_USAGE_AUTH);
-        if (!rc)
-          rc = write_keybinding (sec_root, pub_root, pri_sk, sub_sk, PUBKEY_USAGE_AUTH);
-      }
-    
     if( !rc && outctrl->use_files ) { /* direct write to specified files */
 	rc = write_keyblock( outctrl->pub.stream, pub_root );
 	if( rc )
