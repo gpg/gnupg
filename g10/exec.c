@@ -93,10 +93,12 @@ static int win_system(const char *command)
 /* Makes a temp directory and filenames */
 static int make_tempdir(struct exec_info *info)
 {
-  char *tmp=opt.temp_dir,*name=info->name;
+  char *tmp=opt.temp_dir,*namein=info->name,*nameout;
 
-  if(!name)
-    name=info->binary?"tempfile" EXTSEP_S "bin":"tempfile" EXTSEP_S "txt";
+  if(!namein)
+    namein=info->binary?"tempin" EXTSEP_S "bin":"tempin" EXTSEP_S "txt";
+
+  nameout=info->binary?"tempout" EXTSEP_S "bin":"tempout" EXTSEP_S "txt";
 
   /* Make up the temp dir and files in case we need them */
 
@@ -151,14 +153,14 @@ static int make_tempdir(struct exec_info *info)
       info->madedir=1;
 
       info->tempfile_in=m_alloc(strlen(info->tempdir)+
-				strlen(DIRSEP_S)+strlen(name)+1);
-      sprintf(info->tempfile_in,"%s" DIRSEP_S "%s",info->tempdir,name);
+				strlen(DIRSEP_S)+strlen(namein)+1);
+      sprintf(info->tempfile_in,"%s" DIRSEP_S "%s",info->tempdir,namein);
 
       if(!info->writeonly)
 	{
 	  info->tempfile_out=m_alloc(strlen(info->tempdir)+
-				     strlen(DIRSEP_S)+strlen(name)+1);
-	  sprintf(info->tempfile_out,"%s" DIRSEP_S "%s",info->tempdir,name);
+				     strlen(DIRSEP_S)+strlen(nameout)+1);
+	  sprintf(info->tempfile_out,"%s" DIRSEP_S "%s",info->tempdir,nameout);
 	}
     }
 

@@ -1,3 +1,21 @@
+2002-06-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (hash_for, sign_file): When encrypting and signing at the
+	same time, consult the various hash prefs to pick a hash algorithm
+	to use.  Pass in a 160-bit hint if any of the signing keys are
+	DSA.
+
+	* keydb.h, pkclist.c (select_algo_from_prefs, algo_available):
+	Pass a "hints" opaque pointer in to let the caller give hints as
+	to what algorithms would be acceptable.  The only current hint is
+	for PREFTYPE_HASH to require a 160-bit hash for DSA.  Change all
+	callers in encode.c (encode_crypt, encrypt_filter) and sign.c
+	(sign_file).  If we settle on MD5 as the best algorithm based
+	solely on recepient keys and SHA1 is also a possibility, use SHA1
+	unless the user intentionally chose MD5.  This is as per 2440:13.
+
+	* exec.c (make_tempdir): Fix duplicated filename problem.
+
 2002-06-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, parse-packet.c (enum_sig_subpkt): Report back from

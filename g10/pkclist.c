@@ -970,7 +970,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
    such a broken preference list, so I'm including it. -dms */
 
 static int
-algo_available( int preftype, int algo )
+algo_available( int preftype, int algo, void *hint )
 {
     if( preftype == PREFTYPE_SYM ) {
         if( opt.pgp6 && ( algo != 1 && algo != 2 && algo != 3) )
@@ -983,6 +983,14 @@ algo_available( int preftype, int algo )
 	return algo && !check_cipher_algo( algo );
     }
     else if( preftype == PREFTYPE_HASH ) {
+        int bits=0;
+
+	if(hint)
+	  bits=*(int *)hint;
+
+	if(bits && (bits != md_digest_length(algo)))
+	  return 0;
+
         if( (opt.pgp6 || opt.pgp7 ) && ( algo != 1 && algo != 2 && algo != 3) )
 	  return 0;
 
@@ -1004,7 +1012,7 @@ algo_available( int preftype, int algo )
  * Return -1 if we could not find an algorithm.
  */
 int
-select_algo_from_prefs( PK_LIST pk_list, int preftype )
+select_algo_from_prefs( PK_LIST pk_list, int preftype, void *hint )
 {
     PK_LIST pkr;
     u32 bits[8];
@@ -1022,9 +1030,9 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 
 	memset( mask, 0, 8 * sizeof *mask );
 	if( preftype == PREFTYPE_SYM ) {
-	  if( pkr->pk->version < 4 &&
-	      pkr->pk->selfsigversion < 4 &&
-	      opt.pgp2 )
+	  if( opt.pgp2 &&
+	      pkr->pk->version < 4 &&
+	      pkr->pk->selfsigversion < 4 )
 	    mask[0] |= (1<<1); /* IDEA is implicitly there for v3 keys
 				  with v3 selfsigs (rfc2440:12.1) if
 				  --pgp2 mode is on.  This doesn't
@@ -1032,6 +1040,21 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 				  course. */
 	  else
 	    mask[0] |= (1<<2); /* 3DES is implicitly there for everyone else */
+	}
+	else if( preftype == PREFTYPE_HASH ) {
+	  /* While I am including this code for completeness, note
+	     that currently --pgp2 mode locks the hash at MD5, so this
+	     function will never even be called.  Even if the hash
+	     wasn't locked at MD5, we don't support sign+encrypt in
+	     --pgp2 mode, and that's the only time PREFTYPE_HASH is
+	     used anyway. -dms */
+	  if( opt.pgp2 &&
+	      pkr->pk->version < 4 &&
+	      pkr->pk->selfsigversion < 4 )
+	    mask[0] |= (1<<1); /* MD5 is there for v3 keys with v3
+				  selfsigs when --pgp2 is on. */
+	  else
+	    mask[0] |= (1<<2); /* SHA1 is there for everyone else */
 	}
 	else if( preftype == PREFTYPE_ZIP )
 	  mask[0] |= (1<<0); /* Uncompressed is implicit */
@@ -1086,7 +1109,7 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	for(j=0; prefs[j].type; j++ ) {
 	    if( prefs[j].type == preftype ) {
                 if( (bits[prefs[j].value/32] & (1<<(prefs[j].value%32))) ) {
-		    if( algo_available( preftype, prefs[j].value ) ) {
+		    if( algo_available( preftype, prefs[j].value, hint ) ) {
 			any = 1;
 			i = prefs[j].value;
 			break;
@@ -1098,7 +1121,7 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
     if( !prefs || !any ) {
 	for(j=0; j < 256; j++ )
 	    if( (bits[j/32] & (1<<(j%32))) ) {
-		if( algo_available( preftype, j ) ) {
+		if( algo_available( preftype, j, hint ) ) {
 		    i = j;
 		    break;
 		}
@@ -1114,6 +1137,29 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	if( bits[0] & (1<<1) )
 	    i = 1;  /* yep; we can use compression algo 1 */
     }
+
+    /* "If you are building an authentication system, the recipient
+       may specify a preferred signing algorithm. However, the signer
+       would be foolish to use a weak algorithm simply because the
+       recipient requests it." RFC2440:13.  If we settle on MD5, and
+       SHA1 is also available, use SHA1 instead.  Of course, if the
+       user intentinally chose MD5 (by putting it in their personal
+       prefs), then we should do what they say. */
+
+    if(preftype==PREFTYPE_HASH &&
+       i==DIGEST_ALGO_MD5 && (bits[0] & (1<<DIGEST_ALGO_SHA1)))
+      {
+	i=DIGEST_ALGO_SHA1;
+
+	if(opt.personal_prefs)
+	  for(j=0; prefs[j].type; j++ )
+	    if(opt.personal_prefs[j].type==PREFTYPE_HASH &&
+	       opt.personal_prefs[j].value==DIGEST_ALGO_MD5)
+	      {
+		i=DIGEST_ALGO_MD5;
+		break;
+	      }
+      }
 
     return i;
 }
@@ -1138,7 +1184,7 @@ select_mdc_from_pklist (PK_LIST pk_list)
         else
             mdc = pkr->pk->mdc_feature;
         if (!mdc)
-            return 0; /* at least on recipeint does not support it */
+            return 0; /* at least one recipient does not support it */
     }
     return 1; /* can be used */
 }

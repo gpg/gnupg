@@ -49,6 +49,8 @@
   #define LF "\n"
 #endif
 
+static int recipient_digest_algo=0;
+
 /****************
  * Create a notation.  It is assumed that the stings in STRLIST
  * are already checked to contain only printable data and have a valid
@@ -332,6 +334,8 @@ hash_for(int pubkey_algo, int packet_version )
 {
     if( opt.def_digest_algo )
 	return opt.def_digest_algo;
+    if( recipient_digest_algo )
+        return recipient_digest_algo;
     if( pubkey_algo == PUBKEY_ALGO_DSA )
 	return DIGEST_ALGO_SHA1;
     if( pubkey_algo == PUBKEY_ALGO_RSA && packet_version < 4 )
@@ -673,6 +677,28 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( inp, text_filter, &tfx );
     mfx.md = md_open(0, 0);
 
+   /* If we're encrypting and signing, it is reasonable to pick the
+       hash algorithm to use out of the recepient key prefs. */
+    if(pk_list && !opt.def_digest_algo)
+      {
+	int hashlen=0,algo;
+
+	/* Of course, if the recipient asks for something unreasonable
+	   (like a non-160-bit hash for DSA, for example), then don't
+	   do it.  Check all sk's - if any are DSA, then the hash must
+	   be 160-bit.  In the future this can be more complex with
+	   different hashes for each sk, but so long as there is only
+	   one signing algorithm with hash restrictions, this is
+	   ok. -dms */
+
+	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+	  if(sk_rover->sk->pubkey_algo==PUBKEY_ALGO_DSA)
+	    hashlen=20;
+
+	if((algo=select_algo_from_prefs(pk_list,PREFTYPE_HASH,&hashlen))>0)
+	  recipient_digest_algo=algo;
+      }
+
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(mfx.md, hash_for(sk->pubkey_algo, sk->version ));
@@ -707,7 +733,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
                Still, if it did fail, we'll also end up with the
                default. */
 
-	    if((compr_algo=select_algo_from_prefs( pk_list, PREFTYPE_ZIP))==-1)
+	    if((compr_algo=
+		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,NULL))==-1)
 	      compr_algo=DEFAULT_COMPRESS_ALGO;
 	  }
 
@@ -788,6 +815,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     md_close( mfx.md );
     release_sk_list( sk_list );
     release_pk_list( pk_list );
+    recipient_digest_algo=0;
     return rc;
 }
 
