@@ -26,7 +26,8 @@ Noteworthy changes in version 1.1.92
       extension specified with --load-extension are checked, along
       with their enclosing directories.
 
-    * The default configuration file is now ~/.gnupg/gpg.conf.  If an
+    * IMPORTANT: 
+      The default configuration file is now ~/.gnupg/gpg.conf.  If an
       old ~/.gnupg/options is found it will still be used.  This
       change is required to have a more consistent naming scheme with
       forthcoming tools.
