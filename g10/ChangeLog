@@ -1,3 +1,9 @@
+2004-03-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (no_primary_warning): Cleanup.
+	(menu_expire): Don't give primary warning for subkey expiration
+	changes.  These cannot reorder primaries.
+
 2004-03-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, getkey.c (fixup_uidnode, merge_selfsigs_subkey): Keep

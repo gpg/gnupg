@@ -2075,13 +2075,10 @@ show_key_and_fingerprint( KBNODE keyblock )
 /* Show a warning if no uids on the key have the primary uid flag
    set. */
 static void
-no_primary_warning(KBNODE keyblock, int uids)
+no_primary_warning(KBNODE keyblock)
 {
   KBNODE node;
-  int select_all=1,have_uid=0,uid_count=0;
-
-  if(uids)
-    select_all=!count_selected_uids(keyblock);
+  int have_primary=0,uid_count=0;
 
   /* TODO: if we ever start behaving differently with a primary or
      non-primary attribute ID, we will need to check for attributes
@@ -2094,17 +2091,18 @@ no_primary_warning(KBNODE keyblock, int uids)
 	{
 	  uid_count++;
 
-	  if((select_all || (node->flag & NODFLG_SELUID))
-	     && node->pkt->pkt.user_id->is_primary==2)
-	    have_uid|=2;
-	  else
-	    have_uid|=1;
+	  if(node->pkt->pkt.user_id->is_primary==2)
+	    {
+	      have_primary=1;
+	      break;
+	    }
 	}
     }
 
-  if(uid_count>1 && have_uid&1 && !(have_uid&2))
-    log_info(_("WARNING: no user ID has been marked as primary.  This command "
-	       "may\n              cause a different user ID to become the assumed primary.\n"));
+  if(uid_count>1 && !have_primary)
+    log_info(_("WARNING: no user ID has been marked as primary.  This command"
+	       " may\n              cause a different user ID to become"
+	       " the assumed primary.\n"));
 }
 
 /****************
@@ -2603,12 +2601,12 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
     else if( n1 )
 	tty_printf(_("Changing expiration time for a secondary key.\n"));
-    else {
+    else
+      {
 	tty_printf(_("Changing expiration time for the primary key.\n"));
 	mainkey=1;
-    }
-
-    no_primary_warning(pub_keyblock,0);
+	no_primary_warning(pub_keyblock);
+      }
 
     expiredate = ask_expiredate();
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
@@ -2864,7 +2862,7 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
     int selected, select_all;
     int modified = 0;
 
-    no_primary_warning(pub_keyblock,1);
+    no_primary_warning(pub_keyblock);
 
     select_all = !count_selected_uids (pub_keyblock);
 
