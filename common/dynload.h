@@ -18,12 +18,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef GNUPG_DYNLOAD_H
+#define GNUPG_DYNLOAD_H
 #ifndef __MINGW32__
-#include <dlfcn.h> /* include the actual header file */
+#include <dlfcn.h>
 #else
-#ifndef W32_DLFCN_H
-#define W32_DLFCN_H
-
 #include <windows.h>
 
 static __inline__ void *
@@ -66,6 +65,5 @@ dlclose (void * hd)
     }
   return -1;
 }  
-
-#endif /*W32_DLFCN_H*/
-#endif
+#endif /*__MINGW32__*/
+#endif /*GNUPG_DYNLOAD_H*/

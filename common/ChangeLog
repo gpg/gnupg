@@ -1,6 +1,6 @@
 2003-08-14  Timo Schulz  <twoaday@freakmail.de>
 
-	* dlfcn.h. New. W32 wrapper around the dynload mechanism.
+	* dynload.h. New. W32 wrapper around the dynload mechanism.
 	
 2003-07-15  Werner Koch  <wk@gnupg.org>
 
