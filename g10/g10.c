@@ -422,7 +422,7 @@ static ARGPARSE_OPTS opts[] = {
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
     { oCompress, NULL, 1, N_("|N|set compress level N (0 disables)") },
     { oCompressLevel, "compress-level", 1, "@" },
-    { oBZ2CompressLevel, "bz2-compress-level", 1, "@" },
+    { oBZ2CompressLevel, "bzip2-compress-level", 1, "@" },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
     { oNoTextmode, "no-textmode",  0, "@"},

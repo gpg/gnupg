@@ -41,12 +41,10 @@ init_compress( compress_filter_context_t *zfx, bz_stream *bzs )
   int rc;
   int level;
 
-  if( opt.bz2_compress_level >= 0 && opt.bz2_compress_level <= 9 )
+  if( opt.bz2_compress_level >= 1 && opt.bz2_compress_level <= 9 )
     level = opt.bz2_compress_level;
   else if( opt.bz2_compress_level == -1 )
     level = 6; /* no particular reason, but it seems reasonable */
-  else if( opt.bz2_compress_level == 10 ) /* remove this ! */
-    level = 0;
   else
     {
       log_error("invalid compression level; using default level\n");

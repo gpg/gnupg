@@ -1,5 +1,13 @@
 2003-11-15  David Shaw  <dshaw@jabberwocky.com>
 
+	* compress.c (init_compress): Remove compress level 10 trick,
+	since it is no longer needed.
+
+	* g10.c: Fix typoed option name.
+
+	* compress-bz2.c (init_compress): Compression level 0 is not
+	meaningful for bzip2.
+
 	* options.h, g10.c (main), compress.c (init_compress),
 	compress-bz2.c (init_compress): Add --compress-level and
 	--bzip2-compress-level.  -z sets them both.  Change various
