@@ -754,7 +754,7 @@ main(int argc,char *argv[])
 	return KEYSERVER_OK;
 
       case 'V':
-	fprintf(stdout,"0\n%s\n",VERSION);
+	fprintf(stdout,"%d\n%s\n",KEYSERVER_PROTO_VERSION,VERSION);
 	return KEYSERVER_OK;
 
       case 'o':

@@ -1,3 +1,8 @@
+2002-11-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main), gpgkeys_hkp.c (main): Use new keyserver
+	protocol version.
+
 2002-11-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (get_key): The deduping code requires
