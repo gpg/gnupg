@@ -68,7 +68,12 @@ enum {
   GNUPG_Bad_Secret_Key = 39,
   GNUPG_Bad_Data = 40,
   GNUPG_Invalid_Parameter = 41,
-  GNUPG_Tribute_to_D_A = 42
+  GNUPG_Tribute_to_D_A = 42,
+  GNUPG_No_Dirmngr = 43,
+  GNUPG_Dirmngr_Error = 44,
+  GNUPG_Certificate_Revoked = 45,
+  GNUPG_No_CRL_Known = 46,
+  GNUPG_CRL_Too_Old = 47,
 };
 
 /* Status codes - fixme: should go into another file */

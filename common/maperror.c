@@ -140,6 +140,10 @@ map_assuan_err (int err)
     case ASSUAN_No_Public_Key:   err = GNUPG_No_Public_Key; break;
     case ASSUAN_No_Secret_Key:   err = GNUPG_No_Secret_Key; break;
 
+    case ASSUAN_Cert_Revoked:    err = GNUPG_Certificate_Revoked; break;
+    case ASSUAN_No_CRL_For_Cert: err = GNUPG_No_CRL_Known; break;       
+    case ASSUAN_CRL_Too_Old:     err = GNUPG_CRL_Too_Old; break;        
+
     default:
       err = err < 100? GNUPG_Assuan_Server_Fault : GNUPG_Assuan_Error;
       break;

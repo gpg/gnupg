@@ -1,3 +1,7 @@
+2002-01-11  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_assuan_err): Codes for CRL
+
 2002-01-08  Werner Koch  <wk@gnupg.org>
 
 	* util.h (spacep): New.
