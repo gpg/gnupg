@@ -116,7 +116,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
       parse_attribute_subpkts(uid);
       make_attribute_uidname(uid);
 
-      show_photo(uid->attribs,pk);
+      show_photos(uid->attribs,uid->numattribs,pk);
       switch(cpr_get_answer_yes_no_quit("photoid.jpeg.okay",
 					_("Is this photo correct (y/N/q)? ")))
 	{
@@ -147,31 +147,113 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
   return uid;
 }
 
-void show_photo(const struct user_attribute *attr,PKT_public_key *pk)
+/* Returns 0 for error, 1 for valid */
+int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len)
 {
-  char *command;
-  struct exec_info *spawn;
+  int headerlen;
 
-  /* make command grow */
-  command=
-    pct_expando(opt.photo_viewer?opt.photo_viewer:DEFAULT_PHOTO_COMMAND,pk);
+  if(attr->len<3)
+    return 0;
 
-  if(!command)
-    goto fail;
+  /* For historical reasons (i.e. "oops!"), the header length is
+     little endian. */
+  headerlen=(attr->data[1]<<8) | attr->data[0];
 
-  if(exec_write(&spawn,NULL,command,1,1)!=0)
-    goto fail;
+  if(headerlen>attr->len)
+    return 0;
 
-  fwrite(attr->data,attr->len,1,spawn->tochild);
-
-  if(exec_read(spawn)!=0)
+  if(type && attr->len>=4)
     {
-      exec_finish(spawn);
-      goto fail;
+      if(attr->data[2]==1) /* header version 1 */
+	*type=attr->data[3];
+      else
+	*type=0;
     }
 
-  if(exec_finish(spawn)!=0)
-    goto fail;
+  *len=attr->len-headerlen;
+
+  if(*len==0)
+    return 0;
+
+  return 1;
+}
+
+/* style==0 for extension, 1 for name, 2 for MIME type.  Remember that
+   the "name" style string could be used in a user ID name field, so
+   make sure it is not too big (see
+   parse-packet.c:parse_attribute). */
+char *image_type_to_string(byte type,int style)
+{
+  char *string;
+
+  switch(type)
+    {
+    case 1: /* jpeg */
+      if(style==0)
+	string="jpg";
+      else if(style==1)
+	string="jpeg";
+      else
+	string="image/jpeg";
+      break;
+
+    default:
+      if(style==0)
+	string="bin";
+      else if(style==1)
+	string="unknown";
+      else
+	string="image/x-unknown";
+      break;
+    }
+
+  return string;
+}
+
+void show_photos(const struct user_attribute *attrs,
+		 int count,PKT_public_key *pk)
+{
+  int i;
+  struct expando_args args;
+  u32 len;
+
+  memset(&args,0,sizeof(args));
+  args.pk=pk;
+
+  for(i=0;i<count;i++)
+    if(attrs[i].type==ATTRIB_IMAGE &&
+       parse_image_header(&attrs[i],&args.imagetype,&len))
+      {
+	char *command;
+	struct exec_info *spawn;
+	int offset=attrs[i].len-len;
+
+	/* Notice we are not using the byte for image encoding type
+           for more than cosmetics.  Most external image viewers can
+           handle a multitude of types, and even if one cannot
+           understand a partcular type, we have no way to know which.
+           The spec specifically permits this, by the way. -dms */
+
+	/* make command grow */
+	command=pct_expando(opt.photo_viewer?
+			    opt.photo_viewer:DEFAULT_PHOTO_COMMAND,&args);
+	if(!command)
+	  goto fail;
+
+	if(exec_write(&spawn,NULL,command,1,1)!=0)
+	  goto fail;
+
+	fwrite(&attrs[i].data[offset],attrs[i].len-offset,1,spawn->tochild);
+
+	if(exec_read(spawn)!=0)
+	  {
+	    exec_finish(spawn);
+	    goto fail;
+	  }
+
+	if(exec_finish(spawn)!=0)
+	  goto fail;
+      }
 
   return;
 

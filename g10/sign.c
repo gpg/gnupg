@@ -62,6 +62,10 @@ mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
     byte *buf;
     unsigned n1, n2;
     STRLIST nd=NULL,pu=NULL;
+    struct expando_args args;
+
+    memset(&args,0,sizeof(args));
+    args.pk=pk;
 
     /* notation data */
     if(IS_SIG(sig) && opt.sig_notation_data)
@@ -124,18 +128,13 @@ mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
       {
         string = pu->d;
 
-	if(pk)
+	s=pct_expando(string,&args);
+	if(!s)
 	  {
-	    s=pct_expando(string,pk);
-	    if(!s)
-	      {
-		log_error(_("WARNING: unable to %%-expand policy url "
-			    "(too large).  Using unexpanded.\n"));
-		s=m_strdup(string);
-	      }
+	    log_error(_("WARNING: unable to %%-expand policy url "
+			"(too large).  Using unexpanded.\n"));
+	    s=m_strdup(string);
 	  }
-	else
-	  s=m_strdup(string);
 
 	build_sig_subpkt(sig,SIGSUBPKT_POLICY|
 			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),

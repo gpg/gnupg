@@ -148,15 +148,11 @@ typedef struct {
     MPI  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
 
-typedef enum
-{
-  ATTRIB_UNKNOWN,
-  ATTRIB_JPEG
-} attribtype_t;
+#define ATTRIB_IMAGE 1
 
 /* This is the cooked form of attributes */
 struct user_attribute {
-  attribtype_t type;
+  byte type;
   const byte *data;
   unsigned long len;
 };

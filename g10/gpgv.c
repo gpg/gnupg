@@ -301,8 +301,10 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     return NULL;
 }
 
-/* Stub to avoid linking to photoid.c */
-void show_photo(const struct user_attribute *attr,PKT_public_key *pk) {}
+/* Stubs to avoid linking to photoid.c */
+void show_photos(const struct user_attribute *attrs,int count,PKT_public_key *pk) {}
+int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len) {return 0;}
+char *image_type_to_string(byte type,int string) {return NULL;}
 
 /* Stubs to void linking to ../cipher/cipher.c */
 int string_to_cipher_algo( const char *string ) { return 0; }

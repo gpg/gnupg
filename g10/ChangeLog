@@ -1,5 +1,26 @@
 2002-05-02  David Shaw  <dshaw@jabberwocky.com>
 
+	* photoid.h, photoid.c (parse_image_header, image_type_to_string):
+	Useful functions to return data about an image.
+
+	* packet.h, parse-packet.c (make_attribute_uidname,
+	parse_attribute_subpkts, parse_attribute), photoid.h, photoid.c
+	(show_photos): Handle multiple images in a single attribute
+	packet.
+
+	* main.h, misc.c (pct_expando), sign.c (mk_notation_and_policy),
+	photoid.c (show_photos): Simpler expando code that does not
+	require using compile-time string sizes.  Call
+	image_type_to_string to get image strings (i.e. "jpg",
+	"image/jpeg").  Change all callers.
+
+	* keyedit.c (menu_showphoto), keylist.c (list_keyblock_print):
+	Allow viewing multiple images within a single attribute packet.
+
+	* gpgv.c: Various stubs for link happiness.
+
+2002-05-02  David Shaw  <dshaw@jabberwocky.com>
+
 	* build-packet.c (build_sig_subpkt), keyedit.c (sign_uids),
 	options.h, sign.c (mk_notation_and_policy), g10.c (main,
 	add_notation_data, add_policy_url (new), check_policy_url

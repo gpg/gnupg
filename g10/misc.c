@@ -38,6 +38,7 @@
 #endif
 #include "util.h"
 #include "main.h"
+#include "photoid.h"
 #include "options.h"
 #include "i18n.h"
 
@@ -439,55 +440,56 @@ idea_cipher_warn(int show)
     }
 }
 
-/* The largest string we have an expando for. */
-#define LARGEST_EXPANDO (MAX_FINGERPRINT_LEN*2)
-
 /* Expand %-strings.  Returns a string which must be m_freed.  Returns
    NULL if the string cannot be expanded (too large). */
 char *
-pct_expando(const char *string,PKT_public_key *pk)
+pct_expando(const char *string,struct expando_args *args)
 {
   const char *ch=string;
-  int idx=0,maxlen;
+  int idx=0,maxlen=0,done=0;
   u32 keyid[2]={0,0};
-  char *ret;
+  char *ret=NULL;
 
-  keyid_from_pk(pk,keyid);
-
-  maxlen=LARGEST_EXPANDO*2;
-  ret=m_alloc(maxlen+1);  /* one more to leave room for the trailing \0 */
-
-  ret[0]='\0';
+  if(args->pk)
+    keyid_from_pk(args->pk,keyid);
 
   while(*ch!='\0')
     {
-      /* 8192 is way bigger than we'll need here */
-      if(maxlen-idx<LARGEST_EXPANDO && maxlen<8192)
+      char *str=NULL;
+
+      if(!done)
 	{
-	  maxlen+=LARGEST_EXPANDO*2;
-	  ret=m_realloc(ret,maxlen+1);
+	  /* 8192 is way bigger than we'll need here */
+	  if(maxlen>=8192)
+	    goto fail;
+
+	  maxlen+=1024;
+	  ret=m_realloc(ret,maxlen);
 	}
+
+      done=0;
 
       if(*ch=='%')
 	{
-	  ch++;
-
-	  switch(*ch)
+	  switch(*(ch+1))
 	    {
 	    case 'k': /* short key id */
-	      if(idx+8>maxlen)
-		goto fail;
-
-	      sprintf(&ret[idx],"%08lX",(ulong)keyid[1]);
-	      idx+=8;
+	      if(idx+8<maxlen)
+		{
+		  sprintf(&ret[idx],"%08lX",(ulong)keyid[1]);
+		  idx+=8;
+		  done=1;
+		}
 	      break;
 
 	    case 'K': /* long key id */
-	      if(idx+16>maxlen)
-		goto fail;
-
-	      sprintf(&ret[idx],"%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
-	      idx+=16;
+	      if(idx+16<maxlen)
+		{
+		  sprintf(&ret[idx],"%08lX%08lX",
+			  (ulong)keyid[0],(ulong)keyid[1]);
+		  idx+=16;
+		  done=1;
+		}
 	      break;
 
 	    case 'f': /* fingerprint */
@@ -496,43 +498,46 @@ pct_expando(const char *string,PKT_public_key *pk)
 		size_t len;
 		int i;
 
-		fingerprint_from_pk(pk,array,&len);
+		if(args->pk)
+		  fingerprint_from_pk(args->pk,array,&len);
+		else
+		  memset(array,0,MAX_FINGERPRINT_LEN);
 
-		if(idx+(len*2)>maxlen)
-		  goto fail;
-
-		for(i=0;i<len;i++)
+		if(idx+(len*2)<maxlen)
 		  {
-		    sprintf(&ret[idx],"%02X",array[i]);
-		    idx+=2;
+		    for(i=0;i<len;i++)
+		      {
+			sprintf(&ret[idx],"%02X",array[i]);
+			idx+=2;
+		      }
+		    done=1;
 		  }
 	      }
 	      break;
 
-	      /* photo types. For now, it's always jpeg so this is
-                 easy! */
-	    case 't':
-	      if(idx+3>maxlen)
-		goto fail;
+	    case 't': /* e.g. "jpg" */
+	      str=image_type_to_string(args->imagetype,1);
+	      /* fall through */
 
-	      strcpy(&ret[idx],"jpg");
-	      idx+=3;
-	      break;
+	    case 'T': /* e.g. "image/jpeg" */
+	      if(str==NULL)
+		str=image_type_to_string(args->imagetype,2);
 
-	    case 'T':
-	      if(idx+10>maxlen)
-		goto fail;
-
-	      strcpy(&ret[idx],"image/jpeg");
-	      idx+=10;
+	      if(idx+strlen(str)<maxlen)
+		{
+		  strcpy(&ret[idx],str);
+		  idx+=strlen(str);
+		  done=1;
+		}
 	      break;
 
 	    case '%':
-	      if(idx+1>maxlen)
-		goto fail;
-
-	      ret[idx++]='%';
-	      ret[idx]='\0';
+	      if(idx+1<maxlen)
+		{
+		  ret[idx++]='%';
+		  ret[idx]='\0';
+		  done=1;
+		}
 	      break;
 
 	      /* Any unknown %-keys (like %i, %o, %I, and %O) are
@@ -541,25 +546,31 @@ pct_expando(const char *string,PKT_public_key *pk)
 		 string is a '%' - the terminating \0 will end up here
 		 and properly terminate the string. */
 	    default:
-	      if(idx+2>maxlen)
-		goto fail;
-
-	      ret[idx++]='%';
-	      ret[idx++]=*ch;
-	      ret[idx]='\0';
+	      if(idx+2<maxlen)
+		{
+		  ret[idx++]='%';
+		  ret[idx++]=*(ch+1);
+		  ret[idx]='\0';
+		  done=1;
+		}
 	      break;
-	    }
+	      }
+
+	  if(done)
+	    ch++;
 	}
       else
 	{
-	  if(idx+1>maxlen)
-	    goto fail;
-
-	  ret[idx++]=*ch;
-	  ret[idx]='\0';
+	  if(idx+1<maxlen)
+	    {
+	      ret[idx++]=*ch;
+	      ret[idx]='\0';
+	      done=1;
+	    }
 	}
 
-      ch++;
+      if(done)
+	ch++;
     }
 
   return ret;

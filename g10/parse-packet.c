@@ -31,6 +31,7 @@
 #include "cipher.h"
 #include "memory.h"
 #include "filter.h"
+#include "photoid.h"
 #include "options.h"
 #include "main.h"
 #include "i18n.h"
@@ -1739,23 +1740,7 @@ parse_attribute_subpkts(PKT_user_id *uid)
       buflen--;
       n--;
 
-      /* In order: is it an image, is it large enough to carry the
-         image header, is it version 1, and is it a JPEG? */
-      if(type==1 && n>=16 && buffer[2]==1 && buffer[3]==1)
-	{
-	  /* For historical reasons (i.e. "oops!"), headerlen is
-             little endian. */
-	  u16 headerlen=(buffer[1]<<8) | buffer[0];
-
-	  attribs[count].type=ATTRIB_JPEG;
-
-	  buffer+=headerlen;
-	  buflen-=headerlen;
-	  n-=headerlen;
-	}
-      else
-	attribs[count].type=ATTRIB_UNKNOWN;
-
+      attribs[count].type=type;
       attribs[count].data=buffer;
       attribs[count].len=n;
       buffer+=n;
@@ -1821,14 +1806,29 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 void
 make_attribute_uidname(PKT_user_id *uid)
 {
-  /* List the first attribute as the "user id" */
-  if(uid->attribs)
-    sprintf( uid->name, "[%s of size %lu]",
-	     uid->attribs->type==ATTRIB_JPEG?"image":"unknown attribute",
-	     uid->attribs->len);
+  if(uid->numattribs<=0)
+    sprintf(uid->name,"[bad attribute packet of size %lu]",uid->attrib_len);
+  else if(uid->numattribs>1)
+    sprintf(uid->name,"[%d attributes of size %lu]",
+	    uid->numattribs,uid->attrib_len);
   else
-    sprintf( uid->name, "[bad attribute of size %lu]",
-	     uid->attrib_len );
+    {
+      /* Only one attribute, so list it as the "user id" */
+
+      if(uid->attribs->type==ATTRIB_IMAGE)
+	{
+	  u32 len;
+	  byte type;
+
+	  if(parse_image_header(uid->attribs,&type,&len))
+	    sprintf(uid->name,"[%s image of size %lu]",
+		    image_type_to_string(type,1),(ulong)len);
+	  else
+	    sprintf(uid->name,"[invalid image]");
+	}
+      else
+	sprintf(uid->name,"[unknown attribute of size %lu]",uid->attribs->len);
+    }
 
   uid->len = strlen(uid->name);
 }
@@ -1838,7 +1838,7 @@ parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id + 50);
+    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id + 70);
 
     setup_user_id(packet);
 

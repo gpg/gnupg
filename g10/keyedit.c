@@ -2131,7 +2131,7 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
                     action = selected? 0 : -1;
                 else /* no */
                     action = selected? 1 : 0;
-                
+
                 if (action) {
                     int rc = update_keysig_packet (&newsig, sig,
                                                main_pk, uid, 
@@ -2684,30 +2684,36 @@ menu_showphoto( KBNODE keyblock )
   for( node = keyblock; node; node = node->next )
     {
       if( node->pkt->pkttype == PKT_PUBLIC_KEY )
-       pk = node->pkt->pkt.public_key;
-    }
+	{
+	  pk = node->pkt->pkt.public_key;
+	  keyid_from_pk(pk, keyid);
+	}
+      else if( node->pkt->pkttype == PKT_USER_ID )
+	{
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+	  count++;
 
-  for( node = keyblock; node; node = node->next )
-    {
-      if( node->pkt->pkttype == PKT_USER_ID )
-       {
-         PKT_user_id *uid = node->pkt->pkt.user_id;
-         count++;
+	  if((select_all || (node->flag & NODFLG_SELUID)) &&
+	     uid->attribs!=NULL)
+	    {
+	      int i;
 
-         if((select_all || (node->flag & NODFLG_SELUID)) &&
-            uid->attribs!=NULL)
-           {
-             /* Can this really ever happen? */
-             if(pk==NULL)
-               keyid[1]=0;
-             else
-               keyid_from_pk(pk, keyid);
+	      for(i=0;i<uid->numattribs;i++)
+		{
+		  byte type;
+		  u32 size;
 
-             tty_printf(_("Displaying %s photo ID of size %ld "
-			  "for key 0x%08lX (uid %d)\n"),
-			"jpeg",uid->attribs->len,(ulong)keyid[1],count);
-             show_photo(uid->attribs,pk);
-           }
-       }
+		  if(uid->attribs[i].type==ATTRIB_IMAGE &&
+		     parse_image_header(&uid->attribs[i],&type,&size))
+		    {
+		      tty_printf(_("Displaying %s photo ID of size %ld for "
+				   "key 0x%08lX (uid %d)\n"),
+				 image_type_to_string(type,1),
+				 (ulong)size,(ulong)keyid[1],count);
+		      show_photos(&uid->attribs[i],1,pk);
+		    }
+		}
+	    }
+	}
     }
 }

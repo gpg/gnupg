@@ -67,7 +67,14 @@ int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
 int check_permissions(const char *path,int extension,int checkonly);
 void idea_cipher_warn( int show );
-char *pct_expando(const char *string,PKT_public_key *pk);
+
+struct expando_args
+{
+  PKT_public_key *pk;
+  byte imagetype;
+};
+
+char *pct_expando(const char *string,struct expando_args *args);
 int hextobyte( const char *s );
 
 /*-- helptext.c --*/
