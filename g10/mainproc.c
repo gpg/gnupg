@@ -609,8 +609,10 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     }
     else if( (sig->sig_class&~3) == 0x10
 	     || sig->sig_class == 0x18
+             || sig->sig_class == 0x1f
 	     || sig->sig_class == 0x20
-	     || sig->sig_class == 0x30	) { /* classes 0x10..0x17,0x20,0x30 */
+	     || sig->sig_class == 0x28
+	     || sig->sig_class == 0x30	) { 
 	if( c->list->pkt->pkttype == PKT_PUBLIC_KEY
 	    || c->list->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    return check_key_signature( c->list, node, is_selfsig );

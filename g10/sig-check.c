@@ -550,7 +550,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    rc = G10ERR_SIG_CLASS;
 	}
     }
-    else if( sig->sig_class == 0x18 ) {
+    else if( sig->sig_class == 0x18 ) { /* key binding */
 	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );
 
 	if( snode ) {
@@ -573,7 +573,14 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    rc = G10ERR_SIG_CLASS;
 	}
     }
-    else {
+    else if( sig->sig_class == 0x1f ) { /* direct key signature */
+	md = md_open( algo, 0 );
+	hash_public_key( md, pk );
+	rc = do_check( pk, sig, md, r_expired );
+        cache_selfsig_result ( sig, rc );
+	md_close(md);
+    }
+    else { /* all other classes */
 	KBNODE unode = find_prev_kbnode( root, node, PKT_USER_ID );
 
 	if( unode ) {
@@ -595,7 +602,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    md_close(md);
 	}
 	else {
-	    log_error("no user ID for key signature packet\n");
+	    log_error("no user ID for key signature packet of class %02x\n",
+                      sig->sig_class );
 	    rc = G10ERR_SIG_CLASS;
 	}
     }

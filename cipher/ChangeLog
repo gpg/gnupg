@@ -1,3 +1,12 @@
+2001-03-28  Werner Koch  <wk@gnupg.org>
+
+	* md5.c (md5_final): Fixed calculation of hashed length.  Thanks
+	to disastry@saiknes.lv for pointing out that it was horrible wrong
+	for more than 512MB of input.
+	* sha1.c (sha1_final): Ditto.
+	* rmd160.c (rmd160_final): Ditto.
+	* tiger.c (tiger_final): Ditto.
+
 2001-03-19  Werner Koch  <wk@gnupg.org>
 
 	* blowfish.c (encrypt,do_encrypt): Changed name to do_encrypt to

@@ -258,18 +258,19 @@ md5_final( MD5_CONTEXT *hd )
 
     md5_write(hd, NULL, 0); /* flush */;
 
-    msb = 0;
     t = hd->nblocks;
-    if( (lsb = t << 6) < t ) /* multiply by 64 to make a byte count */
-	msb++;
-    msb += t >> 26;
+    /* multiply by 64 to make a byte count */
+    lsb = t << 6;
+    msb = t >> 26;
+    /* add the count */
     t = lsb;
-    if( (lsb = t + hd->count) < t ) /* add the count */
+    if( (lsb += hd->count) < t )
 	msb++;
+    /* multiply by 8 to make a bit count */
     t = lsb;
-    if( (lsb = t << 3) < t ) /* multiply by 8 to make a bit count */
-	msb++;
-    msb += t >> 29;
+    lsb <<= 3;
+    msb <<= 3;
+    msb |= t >> 29;
 
     if( hd->count < 56 ) { /* enough room */
 	hd->buf[hd->count++] = 0x80; /* pad */

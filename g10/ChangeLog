@@ -1,3 +1,10 @@
+2001-03-28  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (do_check_sig): Allow direct key and subkey
+	revocation signature.
+	* sig-check.c (check_key_signature2): Check direct key signatures.
+	Print the signature class along with an error.
+
 2001-03-27  Werner Koch  <wk@gnupg.org>
 
 	* packet.h: Add a missing typedef to an enum.  Thanks to Stefan Bellon.
