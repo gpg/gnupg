@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 1.1[H p]
-Last-Modified: Mar 16, 2001[H p]
+Version: 1.2[H p]
+Last-Modified: Apr 4, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -641,6 +641,15 @@ in it - why?
     list. Otherwise, use the GUUG bug tracking system 
     [H a href=http://bugs.guug.de/Reporting.html]
     http://bugs.guug.de/Reporting.html[H /a].   
+
+<Q> Why doesn't GnuPG support X509 certificates?
+
+    GnuPG, first and foremost, is an implementation of the OpenPGP
+    standard (RFC 2440), which is a competing infrastructure, different
+    from X509.
+
+    They are both public-key cryptosystems, but how the public keys are
+    actually handled is different.
 
 <S> ADVANCED TOPICS
 
