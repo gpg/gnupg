@@ -1,3 +1,13 @@
+Mon Jul 31 10:04:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * encode.c, sign.c, keygen.c, pubkey-enc.c: Replaced all
+  gcry_sexp_{car,cdr}_{data,mpi} by the new gcry_sexp_nth_{data,mpi} functions.
+
+  * keygen.c (gen_dsa,gen_elg): Changed the way the factors are stored.
+  (factors_from_sexp): Removed.
+  * comment.c (make_mpi_comment_node): Removed.
+  (make_comment_node_from_buffer): New.
+
 Fri Jul 28 18:19:11 CEST 2000  Werner Koch  <wk@openit.de>
 
   * sig-check.c (pk_verify): Fixed the S-Exp withe the pkey.

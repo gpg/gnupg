@@ -704,7 +704,7 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
     l2 = gcry_sexp_cadr( list );
     gcry_sexp_release ( list );
     list = l2;
-    name = gcry_sexp_car_data( list, &n );
+    name = gcry_sexp_nth_data( list, 0, &n );
     if( !name ) {
 	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* invalid structure of object */
@@ -737,7 +737,7 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
 	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
-	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	array[idx] = gcry_sexp_nth_mpi( l2, 1, GCRYMPI_FMT_USG );
 	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    for(i=0; i<idx; i++)
@@ -756,7 +756,7 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
 	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
-	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	array[idx] = gcry_sexp_nth_mpi( l2, 1, GCRYMPI_FMT_USG );
 	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    for(i=0; i<idx; i++)
@@ -790,17 +790,12 @@ sexp_to_sig( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
     list = gcry_sexp_find_token( sexp, "sig-val" , 0 );
     if( !list )
 	return GCRYERR_INV_OBJ; /* Does not contain a signature value object */
-    l2 = gcry_sexp_cdr( list );
+    l2 = gcry_sexp_cadr( list );
     gcry_sexp_release ( list );
     list = l2;
     if( !list )
-	return GCRYERR_NO_OBJ; /* no cdr for the sig object */
-    l2 = gcry_sexp_car( list );
-    gcry_sexp_release ( list );
-    list = l2;
-    if( !list )
-	return GCRYERR_NO_OBJ; /* no car for the key object */
-    name = gcry_sexp_car_data( list, &n );
+	return GCRYERR_NO_OBJ; /* no cadr for the sig object */
+    name = gcry_sexp_nth_data( list, 0, &n );
     if( !name ) {
 	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* invalid structure of object */
@@ -829,7 +824,7 @@ sexp_to_sig( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
 	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
-	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	array[idx] = gcry_sexp_nth_mpi( l2, 1, GCRYMPI_FMT_USG );
 	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    g10_free( array );
@@ -873,7 +868,7 @@ sexp_to_enc( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
 	gcry_sexp_release ( list );
 	return GCRYERR_NO_OBJ; /* no cdr for the data object */
     }
-    name = gcry_sexp_car_data( list, &n );
+    name = gcry_sexp_nth_data( list, 0, &n );
     if( !name ) {
 	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* invalid structure of object */
@@ -903,7 +898,7 @@ sexp_to_enc( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
 	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
-	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	array[idx] = gcry_sexp_nth_mpi( l2, 1, GCRYMPI_FMT_USG );
 	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    g10_free( array );
@@ -964,7 +959,7 @@ gcry_pk_encrypt( GCRY_SEXP *r_ciph, GCRY_SEXP s_data, GCRY_SEXP s_pkey )
     algo_elems = enc_info_table[i].elements;
 
     /* get the stuff we want to encrypt */
-    data = gcry_sexp_car_mpi( s_data, 0 );
+    data = gcry_sexp_nth_mpi( s_data, 0, 0 );
     if( !data ) {
 	release_mpi_array( pkey );
 	return GCRYERR_INV_OBJ;
@@ -1139,7 +1134,7 @@ gcry_pk_sign( GCRY_SEXP *r_sig, GCRY_SEXP s_hash, GCRY_SEXP s_skey )
     algo_elems = sig_info_table[i].elements;
 
     /* get the stuff we want to sign */
-    hash = gcry_sexp_car_mpi( s_hash, 0 );
+    hash = gcry_sexp_nth_mpi( s_hash, 0, 0 );
     if( !hash ) {
 	release_mpi_array( skey );
 	return -1; /* fixme: get a real errorcode for this */
@@ -1232,7 +1227,7 @@ gcry_pk_verify( GCRY_SEXP s_sig, GCRY_SEXP s_hash, GCRY_SEXP s_pkey )
 	return -1; /* fixme: add real errornumber - algo does not match */
     }
 
-    hash = gcry_sexp_car_mpi( s_hash, 0 );
+    hash = gcry_sexp_nth_mpi( s_hash, 0, 0 );
     if( !hash ) {
 	release_mpi_array( pkey );
 	release_mpi_array( sig );
@@ -1330,7 +1325,7 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
     list = l2;
     if( !list )
 	return GCRYERR_NO_OBJ; /* no cdr for the genkey */
-    name = gcry_sexp_car_data( list, &n );
+    name = gcry_sexp_nth_data( list, 0, &n );
     if( !name ) {
 	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* algo string missing */
@@ -1355,8 +1350,8 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
     gcry_sexp_release ( list );
     list = l2;
     if( !list )
-	return GCRYERR_NO_OBJ; /* no nbits aparemter */
-    name = gcry_sexp_cdr_data( list, &n );
+	return GCRYERR_NO_OBJ; /* no nbits parameter */
+    name = gcry_sexp_nth_data( list, 1, &n );
     if( !name ) {
 	gcry_sexp_release ( list );
 	return GCRYERR_INV_OBJ; /* nbits without a cdr */
@@ -1416,6 +1411,8 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 	    mpis[nelem++] = skey[i];
 	}
 	p = stpcpy ( p, "))" );
+	/* Very ugly hack to make release_mpi_array() work FIXME */
+	skey[i] = NULL;
 
 	p = stpcpy ( p, "(misc-key-info(pm1-factors" );
 	for(i=0; factors[i]; i++ ) {
@@ -1432,7 +1429,6 @@ gcry_pk_genkey( GCRY_SEXP *r_key, GCRY_SEXP s_parms )
 	 * we have. which normally should be no problem as only those
 	 * with a corresponding %m are used
 	 */
-	 log_debug ("retstr=`%s'\n", string);
 	if ( gcry_sexp_build ( r_key, NULL, string,
 		   mpis[0], mpis[1], mpis[2], mpis[3], mpis[4], mpis[5],
 		   mpis[6], mpis[7], mpis[8], mpis[9], mpis[10], mpis[11],

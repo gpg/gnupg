@@ -124,8 +124,8 @@ MPI encode_md_value( int pubkey_algo,  GCRY_MD_HD md,
 		     int hash_algo, unsigned nbits, int v3compathack );
 
 /*-- comment.c --*/
+KBNODE make_comment_node_from_buffer( const char *s, size_t n );
 KBNODE make_comment_node( const char *s );
-KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
 void import_keys( char **fnames, int nnames, int fast );

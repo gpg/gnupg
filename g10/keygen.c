@@ -271,7 +271,7 @@ key_from_sexp( GCRY_MPI *array,
 	    gcry_sexp_release ( list );
 	    return GCRYERR_NO_OBJ; /* required parameter not found */
 	}
-	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	array[idx] = gcry_sexp_nth_mpi( l2, 1, GCRYMPI_FMT_USG );
 	gcry_sexp_release ( l2 );
 	if( !array[idx] ) {
 	    for(i=0; i<idx; i++) {
@@ -288,67 +288,6 @@ key_from_sexp( GCRY_MPI *array,
 }
 
 
-static int
-factors_from_sexp( MPI **retarray, GCRY_SEXP sexp )
-{
-    GCRY_SEXP list, l2;
-    size_t n;
-    int i;
-    GCRY_MPI *array;
-    void *ctx;
-
-    list = gcry_sexp_find_token( sexp, "misc-key-info", 0 );
-    if( !list )
-	return GCRYERR_INV_OBJ;
-    l2 = gcry_sexp_cdr( list );
-    gcry_sexp_release ( list );
-    list = l2;
-    if( !list )
-	return GCRYERR_NO_OBJ;
-    l2 = gcry_sexp_find_token( list, "pm1-factors", 0 );
-    gcry_sexp_release ( list );
-    list = l2;
-    if( !list )
-	return GCRYERR_NO_OBJ;
-
-  #if 0
-    /* count factors */
-    ctx = NULL;
-    for( n=0; (l2 = gcry_sexp_enum( list, &ctx, 0 )); n++ )
-	gcry_sexp_release ( l2 );
-
-    array = gcry_xcalloc( n, sizeof *array );
-    if( !array ) {
-	gcry_sexp_release ( list );
-	return GCRYERR_NO_MEM;
-    }
-    /* retrieve factors */
-    ctx = NULL;
-    if( (l2 = gcry_sexp_enum( list, &ctx, 0 )) ) {
-	gcry_sexp_release ( l2 ); /* skip the car */
-	for( n=0; (l2 = gcry_sexp_enum( list, &ctx, 0 )); n++ ) {
-	    array[n] = gcry_sexp_car_mpi( l2, 0 );
-	    gcry_sexp_release ( l2 );
-	    if( !array[n] ) {
-		for(i=0; i < n; i++ )
-		    gcry_mpi_release( array[i] );
-		gcry_free(array);
-		gcry_sexp_release ( list );
-		return GCRYERR_INV_OBJ;
-	    }
-	}
-    }
-  #else
-    array = gcry_xcalloc( 1, sizeof *array );
-    #warning dummy code here
-  #endif
-
-     gcry_sexp_release ( list );
-    *retarray = array;
-    return 0;
-}
-
-
 
 static int
 gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
@@ -359,7 +298,7 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
-    MPI *factors;
+    GCRY_SEXP misc_key_info;
     GCRY_SEXP s_parms, s_key;
 
     assert( is_ELGAMAL(algo) );
@@ -380,7 +319,6 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 			   algo == GCRY_PK_ELG	 ? "elg" : "x-oops" ,
 			   (int)nbits ) )
 	BUG ();
-
     rc = gcry_pk_genkey( &s_key, s_parms );
     gcry_sexp_release( s_parms );
     if( rc ) {
@@ -408,11 +346,8 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	log_error("key_from_sexp failed: rc=%d\n", rc );
 	return rc;
     }
-    rc = factors_from_sexp( &factors, s_key );
-    if( rc ) {
-	log_error("factors_from_sexp failed: rc=%d\n", rc );
-	return rc;
-    }
+    misc_key_info = gcry_sexp_find_token( s_key, "misc-key-info", 0 );
+    gcry_sexp_release ( s_key );
 
     sk->is_protected = 0;
     sk->protect.algo = 0;
@@ -444,9 +379,20 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
-    for(i=0; factors[i]; i++ ) {
-	add_kbnode( sec_root,
-		    make_mpi_comment_node("#:ELG_factor:", factors[i] ));
+    if ( misc_key_info ) {
+	size_t n;
+	char *buf;
+
+	n = gcry_sexp_sprint ( misc_key_info, 0, NULL, 0 );
+	buf = gcry_xmalloc ( n+4 );
+	strcpy ( buf, "#::" );
+	n = gcry_sexp_sprint ( misc_key_info, 0, buf+3, n );
+	if ( n ) {
+	    n += 3;
+	    add_kbnode( sec_root, make_comment_node_from_buffer( buf, n ));
+	}
+	gcry_free ( buf );
+	gcry_sexp_release (misc_key_info);
     }
 
     return 0;
@@ -465,7 +411,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
-    MPI *factors;
+    GCRY_SEXP misc_key_info;
     GCRY_SEXP s_parms, s_key;
 
     if( nbits > 1024 || nbits < 512 ) {
@@ -509,11 +455,8 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	log_error("key_from_sexp failed: rc=%d\n", rc );
 	return rc;
     }
-    rc = factors_from_sexp( &factors, s_key );
-    if( rc ) {
-	log_error("factors_from_sexp failed: rc=%d\n", rc );
-	return rc;
-    }
+    misc_key_info = gcry_sexp_find_token( s_key, "misc-key-info", 0 );
+    gcry_sexp_release ( s_key );
 
     sk->is_protected = 0;
     sk->protect.algo = 0;
@@ -530,6 +473,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	    log_error("protect_secret_key failed: %s\n", gpg_errstr(rc) );
 	    free_public_key(pk);
 	    free_secret_key(sk);
+	    gcry_sexp_release (misc_key_info);
 	    return rc;
 	}
     }
@@ -541,18 +485,26 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     /* don't know whether it makes sense to have the factors, so for now
      * we store them in the secret keyring (but they are not secret)
-     * p = 2 * q * f1 * f2 * ... * fn
-     * We store only f1 to f_n-1;  fn can be calculated because p and q
-     * are known.
      */
     pkt = gcry_xcalloc( 1,sizeof *pkt);
     pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
-    for(i=1; factors[i]; i++ )	/* the first one is q */
-	add_kbnode( sec_root,
-		    make_mpi_comment_node("#:DSA_factor:", factors[i] ));
+    if ( misc_key_info ) {
+	size_t n;
+	char *buf;
 
+	n = gcry_sexp_sprint ( misc_key_info, 0, NULL, 0 );
+	buf = gcry_xmalloc ( n+4 );
+	strcpy ( buf, "#::" );
+	n = gcry_sexp_sprint ( misc_key_info, 0, buf+3, n );
+	if ( n ) {
+	    n += 3;
+	    add_kbnode( sec_root, make_comment_node_from_buffer( buf, n ));
+	}
+	gcry_free ( buf );
+	gcry_sexp_release (misc_key_info);
+    }
     /* fixme: Merge this with the elg-generate function and release
      * some more stuff (memory-leak) */
     return 0;

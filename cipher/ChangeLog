@@ -1,3 +1,8 @@
+Mon Jul 31 10:04:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * pubkey.c: Replaced all gcry_sexp_{car,cdr}_{data,mpi} by the new
+  gcry_sexp_nth_{data,mpi} functions.
+
 Tue Jul 25 17:44:15 CEST 2000  Werner Koch  <wk@openit.de>
 
   * pubkey.c (exp_to_key,sexp_to_sig,sexp_to_enc,gcry_pk_encrypt,

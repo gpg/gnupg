@@ -87,7 +87,7 @@ pk_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
     if( rc )
 	return rc;
 
-    *result = gcry_sexp_car_mpi( s_plain, 0 );
+    *result = gcry_sexp_nth_mpi( s_plain, 0, 0 );
     gcry_sexp_release( s_plain );
     if( !*result )
 	return -1; /* oops */

@@ -86,13 +86,13 @@ pk_sign( int algo, MPI *data, MPI hash, MPI *skey )
     else {
 	list = gcry_sexp_find_token( s_sig, "r" , 0 );
 	assert( list );
-	data[0] = gcry_sexp_cdr_mpi( list, 0 );
+	data[0] = gcry_sexp_nth_mpi( list, 1, 0 );
 	assert( data[0] );
 	gcry_sexp_release (list);
 
 	list = gcry_sexp_find_token( s_sig, "s" , 0 );
 	assert( list );
-	data[1] = gcry_sexp_cdr_mpi( list, 0 );
+	data[1] = gcry_sexp_nth_mpi( list, 1, 0 );
 	assert( data[1] );
 	gcry_sexp_release (list);
     }

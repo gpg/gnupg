@@ -78,13 +78,13 @@ pk_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
     else { /* add better error handling or make gnupg use S-Exp directly */
 	GCRY_SEXP list = gcry_sexp_find_token( s_ciph, "a" , 0 );
 	assert( list );
-	resarr[0] = gcry_sexp_cdr_mpi( list, 0 );
+	resarr[0] = gcry_sexp_nth_mpi( list, 1, 0 );
 	assert( resarr[0] );
 	gcry_sexp_release ( list );
 
 	list = gcry_sexp_find_token( s_ciph, "b" , 0 );
 	assert( list );
-	resarr[1] = gcry_sexp_cdr_mpi( list, 0 );
+	resarr[1] = gcry_sexp_nth_mpi( list, 1, 0 );
 	assert( resarr[1] );
 	gcry_sexp_release ( list );
     }

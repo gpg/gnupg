@@ -79,3 +79,8 @@ lock-once
 # Use "host -l pgp.net | grep www" to figure out a keyserver.
 #keyserver wwwkeys.eu.pgp.net
 
+# The environment variable http_proxy is only used when the
+# this option is set.
+
+honor-http-proxy
+

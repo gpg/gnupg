@@ -63,10 +63,9 @@ write_comment( IOBUF out, const char *s )
 
 
 KBNODE
-make_comment_node( const char *s )
+make_comment_node_from_buffer( const char *s, size_t n )
 {
     PACKET *pkt;
-    size_t n = strlen(s);
 
     pkt = gcry_xcalloc( 1, sizeof *pkt );
     pkt->pkttype = PKT_COMMENT;
@@ -76,26 +75,11 @@ make_comment_node( const char *s )
     return new_kbnode( pkt );
 }
 
-
 KBNODE
-make_mpi_comment_node( const char *s, MPI a )
+make_comment_node( const char *s )
 {
-    PACKET *pkt;
-    char *buf, *pp;
-    unsigned n1;
-    size_t n = strlen(s);
-
-    if( gcry_mpi_aprint( GCRYMPI_FMT_PGP, &buf, &n1, a ) )
-	BUG();
-    pkt = gcry_xcalloc( 1, sizeof *pkt );
-    pkt->pkttype = PKT_COMMENT;
-    pkt->pkt.comment = gcry_xmalloc( sizeof *pkt->pkt.comment + n + 1 + n1 );
-    pkt->pkt.comment->len = n+1+2+n1;
-    pp = pkt->pkt.comment->data;
-    memcpy(pp, s, n+1);
-    memcpy(pp+n+1, buf, n1 );
-    gcry_free(buf);
-    return new_kbnode( pkt );
+    return make_comment_node_from_buffer ( s, strlen (s) );
 }
+
 
 
