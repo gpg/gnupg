@@ -64,7 +64,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 
     free_public_key( pk );
 
-    if( !rc && is_status_enabled() ) {
+    if( !rc && sig->sig_class < 2 && is_status_enabled() ) {
 	/* This signature id works best with DLP algorithms because
 	 * they use a random parameter for every signature.  Instead of
 	 * this sig-id we could have also used the hash of the document

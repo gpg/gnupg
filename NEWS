@@ -1,7 +1,7 @@
 
-    * New option --interactive to prompt before overwriting files.
+    * New option --interactive to prompt before creating files.
 
-    * Add a work around for a bug in pgp 2 which led to bad signatures
+    * Add some work arounds for a bugs in pgp 2 which led to bad signatures
       when used with canoncial texts in some cases.
 
 

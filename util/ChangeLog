@@ -1,3 +1,9 @@
+Thu May 20 14:04:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* memory.c (membug): Nanu, there was a const instead of a static.
+
+	* strgutil.c (trim_trailing_chars): New.
+
 Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* logger.c (g10_log_hexdump): Made 2nd arg a const.

@@ -44,6 +44,7 @@ typedef struct {
     int faked;		    /* we are faking a literal data packet */
     int truncated;	    /* number of truncated lines */
     int qp_detected;
+    int pgp2mode;
 
     byte *buffer;	    /* malloced buffer */
     unsigned buffer_size;   /* and size of this buffer */
@@ -119,7 +120,7 @@ int cipher_filter( void *opaque, int control,
 int text_filter( void *opaque, int control,
 		 IOBUF chain, byte *buf, size_t *ret_len);
 int copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
-			  int escape_dash, int escape_from );
+			  int escape_dash, int escape_from, int pgp2mode );
 
 
 

@@ -48,7 +48,7 @@
   #define EXTRA_ALIGN 0
 #endif
 
-const void membug( const char *fmt, ... );
+static void membug( const char *fmt, ... );
 
 #ifdef M_DEBUG
   #ifndef M_GUARD
@@ -320,7 +320,7 @@ check_allmem( const char *info )
 
 #endif /* M_DEBUG */
 
-const void
+static void
 membug( const char *fmt, ... )
 {
     va_list arg_ptr ;

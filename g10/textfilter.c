@@ -37,14 +37,14 @@
 			  /* to make sure that a warning is displayed while */
 			  /* creating a message */
 
-unsigned
-len_without_trailing_ws( byte *line, unsigned len )
+static unsigned
+len_without_trailing_chars( byte *line, unsigned len, const char *trimchars )
 {
     byte *p, *mark;
     unsigned n;
 
     for(mark=NULL, p=line, n=0; n < len; n++, p++ ) {
-	if( strchr(" \t\r\n", *p ) ) {
+	if( strchr( trimchars, *p ) ) {
 	    if( !mark )
 		mark = p;
 	}
@@ -53,6 +53,12 @@ len_without_trailing_ws( byte *line, unsigned len )
     }
 
     return mark? (mark - line) : len;
+}
+
+unsigned
+len_without_trailing_ws( byte *line, unsigned len )
+{
+    return len_without_trailing_chars( line, len, " \t\r\n" );
 }
 
 
@@ -136,7 +142,7 @@ text_filter( void *opaque, int control,
  */
 int
 copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
-			       int escape_dash, int escape_from )
+		    int escape_dash, int escape_from, int pgp2mode )
 {
     unsigned maxlen;
     byte *buffer = NULL;    /* malloced buffer */
@@ -163,7 +169,9 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 		md_putc( md, '\r' );
 		md_putc( md, '\n' );
 	    }
-	    md_write( md, buffer, len_without_trailing_ws( buffer, n ) );
+	    md_write( md, buffer,
+		     len_without_trailing_chars( buffer, n,
+						 pgp2mode? " \r\n":" \t\r\n"));
 	}
 	else
 	    md_write( md, buffer, n );

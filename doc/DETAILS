@@ -64,7 +64,7 @@ more arguments in future versions.
 	status lines ere emitted for a good signature.
 
     SIG_ID  <radix64_string>  <sig_creation_date>
-	This is emitted only for signatures which
+	This is emitted only for signatures of class 0 or 1 which
 	have been verified okay.  The string is a signature id
 	and may be used in applications to detect replay attacks
 	of signed messages.  Note that only DLP algorithms give

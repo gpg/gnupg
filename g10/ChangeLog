@@ -1,3 +1,16 @@
+Thu May 20 14:04:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* misc.c (pull_in_libs): do the volatile only for gcc
+
+	* sig-check (signature_check): Emit SIG_iD only for classes 0 and 1.
+
+	* armor.c (armor_filter): Add detection of PGP2 created clearsigs.
+	(fake_packet): A tab is not a WS for pgp2 - handle this.
+	* textfilter.c (len_without_trailing_chars): New.
+	(copy_clearsig_text): Add pgp2mode arg.
+	* sign.c (clearsign_file): pass old_style to the above fnc.
+
+
 Wed May 19 16:04:30 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* g10.c: New option --interactive.

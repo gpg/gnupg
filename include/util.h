@@ -163,6 +163,7 @@ STRLIST strlist_last( STRLIST node );
 const char *memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
+unsigned trim_trailing_chars( byte *line, unsigned len, const char *trimchars);
 unsigned trim_trailing_ws( byte *line, unsigned len );
 int string_count_chr( const char *string, int c );
 int set_native_charset( const char *newset );

@@ -548,7 +548,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     }
     /*md_start_debug( textmd, "sign" );*/
     copy_clearsig_text( out, inp, textmd,
-			!opt.not_dash_escaped, opt.escape_from );
+			!opt.not_dash_escaped, opt.escape_from, old_style );
     /* fixme: check for read errors */
 
     /* now write the armor */

@@ -425,9 +425,8 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 
     if( rc )
 	invalid_armor();
-    else if( afx->in_cleartext ) {
+    else if( afx->in_cleartext )
 	afx->faked = 1;
-    }
     else {
 	afx->inp_checked = 1;
 	afx->crc = CRCINIT;
@@ -480,7 +479,10 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	if( !maxlen )
 	    afx->truncated++;
 	if( !afx->not_dash_escaped ) {
-	    afx->buffer_len = trim_trailing_ws( afx->buffer, afx->buffer_len );
+	    /* PGP2 does not treat a tab as white space character */
+	    afx->buffer_len =
+		    trim_trailing_chars( afx->buffer, afx->buffer_len,
+					 afx->pgp2mode ? " \r\n" : " \t\r\n");
 	    /* the buffer is always allocated with enough space to append
 	     * a CR, LF, Nul */
 	    afx->buffer[afx->buffer_len++] = '\r';
@@ -809,8 +811,10 @@ armor_filter( void *opaque, int control,
 		 * is easy to construct the packets */
 
 		hashes &= 1|2|4|8;
-		if( !hashes )
+		if( !hashes ) {
 		    hashes |= 4;  /* default to MD 5 */
+		    afx->pgp2mode = 1;
+		}
 		n=0;
 		do {
 		    /* first some onepass signature packets */
