@@ -1,3 +1,10 @@
+2004-09-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* mpicoder.c (mpi_read): If we must fail due to a oversize
+	(generally corrupt) MPI, make sure the number of bytes we read is
+	valid so we can skip the rest of the bad packet (in hopes the
+	whole stream isn't invalid).
+
 2004-05-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* longlong.h: Typo.

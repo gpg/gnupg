@@ -80,15 +80,16 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 
     if( (c = iobuf_get(inp)) == -1 )
 	goto leave;
+    nread++;
     nbits = c << 8;
     if( (c = iobuf_get(inp)) == -1 )
 	goto leave;
+    nread++;
     nbits |= c;
     if( nbits > MAX_EXTERN_MPI_BITS ) {
 	log_error("mpi too large (%u bits)\n", nbits);
 	goto leave;
     }
-    nread = 2;
 
     nbytes = (nbits+7) / 8;
     nlimbs = (nbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB;
