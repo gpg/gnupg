@@ -32,6 +32,7 @@ typedef struct keydb_handle *KEYDB_HANDLE;
 int keydb_add_resource (const char *url, int force, int secret);
 KEYDB_HANDLE keydb_new (int secret);
 void keydb_release (KEYDB_HANDLE hd);
+int keydb_set_ephemeral (KEYDB_HANDLE hd, int yes);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);
 
 #if 0 /* pgp stuff */
@@ -62,7 +63,7 @@ int keydb_search_subject (KEYDB_HANDLE hd, const char *issuer);
 
 int keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc);
 
-int keydb_store_cert (KsbaCert cert);
+int keydb_store_cert (KsbaCert cert, int ephemeral);
 
 
 #endif /*GNUPG_KEYDB_H*/

@@ -59,6 +59,7 @@ struct keydb_handle {
   int locked;
   int found;
   int current;
+  int ephemeral;
   int used; /* items in active */
   struct resource_item active[MAX_KEYDB_RESOURCES];
 };
@@ -329,6 +330,29 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
     }
   
   return s? s: "";
+}
+
+int
+keydb_set_ephemeral (KEYDB_HANDLE hd, int yes)
+{
+  int i;
+
+  if (!hd)
+    return GNUPG_Invalid_Value;
+
+  for (i=0; i < hd->used; i++)
+    {
+      switch (hd->active[i].type) 
+        {
+        case KEYDB_RESOURCE_TYPE_NONE:
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          keybox_set_ephemeral (hd->active[i].u.kr, yes);
+          break;
+        }
+    }
+
+  return 0;
 }
 
 
@@ -1147,7 +1171,7 @@ keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc)
 /* Store the certificate in the key Db but make sure that it does not
    already exists.  We do this simply by comparing the fingerprint */
 int
-keydb_store_cert (KsbaCert cert)
+keydb_store_cert (KsbaCert cert, int ephemeral)
 {
   KEYDB_HANDLE kh;
   int rc;
@@ -1166,6 +1190,9 @@ keydb_store_cert (KsbaCert cert)
       return GNUPG_Out_Of_Core;
     }
 
+  if (ephemeral)
+    keydb_set_ephemeral (kh, 1);
+  
   rc = keydb_search_fpr (kh, fpr);
   if (rc != -1)
     {

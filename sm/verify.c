@@ -242,7 +242,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
          certificate first before entering it into the DB.  This way
          we would avoid cluttering the DB with invalid
          certificates. */
-      keydb_store_cert (cert);
+      keydb_store_cert (cert, 0);
       ksba_cert_release (cert);
     }
 

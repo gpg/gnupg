@@ -50,6 +50,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
   KsbaCert cert = NULL;
   int rc=0;
   int count = 0;
+  int i;
 
   hd = keydb_new (0);
   if (!hd)
@@ -91,7 +92,23 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
         }
     }
 
+  /* If all specifications are done by fingerprint, we switch to
+     ephemeral mode so that _all_ currently available and matching
+     certificates are exported. 
 
+     fixme: we should in this case keep a list of certificates to
+     avoid accidential export of duplicate certificates. */
+  if (names && ndesc)
+    {
+      for (i=0; (i < ndesc
+                 && (desc[i].mode == KEYDB_SEARCH_MODE_FPR
+                     || desc[i].mode == KEYDB_SEARCH_MODE_FPR20
+                     || desc[i].mode == KEYDB_SEARCH_MODE_FPR16)); i++)
+        ;
+      if (i == ndesc)
+        keydb_set_ephemeral (hd, 1);
+    }
+      
   while (!(rc = keydb_search (hd, desc, ndesc)))
     {
       const unsigned char *image;

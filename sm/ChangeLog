@@ -1,3 +1,15 @@
+2002-06-19  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (learn_cb): Use log_info instead of log_error on
+	successful import.
+
+	* keydb.c (keydb_set_ephemeral): New.
+	(keydb_store_cert): New are ephemeral, changed all callers.
+	* keylist.c (list_external_cb): Store cert as ephemeral.
+	* export.c (gpgsm_export): Kludge to export epehmeral certificates.
+
+	* gpgsm.c (main): New command --list-external-keys.
+	
 2002-06-17  Werner Koch  <wk@gnupg.org>
 
 	* certreqgen.c (read_parameters): Improved error handling.

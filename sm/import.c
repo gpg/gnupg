@@ -104,7 +104,7 @@ gpgsm_import (CTRL ctrl, int in_fd)
         {
           if ( !gpgsm_basic_cert_check (cert) )
             {
-              if (!keydb_store_cert (cert))
+              if (!keydb_store_cert (cert, 0))
                 {
                   if (opt.verbose)
                     log_info ("certificate imported\n");
@@ -139,7 +139,7 @@ gpgsm_import (CTRL ctrl, int in_fd)
       
       if ( !gpgsm_basic_cert_check (cert) )
         {
-          if (!keydb_store_cert (cert))
+          if (!keydb_store_cert (cert, 0))
             {
               if (opt.verbose)
                 log_info ("certificate imported\n");

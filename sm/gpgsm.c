@@ -68,6 +68,7 @@ enum cmd_and_opt_values {
   aVerify,
   aVerifyFiles,
   aListKeys,
+  aListExternalKeys,
   aListSigs,
   aListSecretKeys,
   aSendKeys,
@@ -212,7 +213,8 @@ static ARGPARSE_OPTS opts[] = {
     { aVerify, "verify"   , 256, N_("verify a signature")},
     { aVerifyFiles, "verify-files" , 256, "@" },
     { aListKeys, "list-keys", 256, N_("list keys")},
-    { aListKeys, "list-public-keys", 256, "@" },
+    { aListKeys, "list-keys", 256, N_("list keys")},
+    { aListExternalKeys, "list-external-keys", 256, N_("list external keys")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aListSigs,   "list-sigs", 256, N_("list certificate chain")}, 
     { aListSigs,   "check-sigs",256, "@"},
@@ -730,6 +732,7 @@ main ( int argc, char **argv)
         case aRecvKeys: set_cmd (&cmd, aRecvKeys); break;
         case aExport: set_cmd (&cmd, aExport); break;
         case aListKeys: set_cmd (&cmd, aListKeys); break;
+        case aListExternalKeys: set_cmd (&cmd, aListExternalKeys); break;
         case aListSecretKeys: set_cmd (&cmd, aListSecretKeys); break;
         case aListSigs: set_cmd (&cmd, aListSigs); break;
 
@@ -1211,6 +1214,13 @@ main ( int argc, char **argv)
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
       gpgsm_list_keys (&ctrl, sl, stdout, (0 | (1<<6)));
+      free_strlist(sl);
+      break;
+
+    case aListExternalKeys:
+      for (sl=NULL; argc; argc--, argv++)
+        add_to_strlist (&sl, *argv);
+      gpgsm_list_keys (&ctrl, sl, stdout, (0 | (1<<7)));
       free_strlist(sl);
       break;
 
