@@ -1,3 +1,7 @@
+2004-01-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* util.h: Add prototype for print_string2().
+
 2003-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.h: Pass the http proxy from outside rather than pulling it
