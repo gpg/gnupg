@@ -45,31 +45,41 @@ if test "$1" = "--build-w32"; then
     tmp=`dirname $0`
     tsdir=`cd "$tmp"; cd ..; pwd`
     shift
-    host=i386--mingw32
     if [ ! -f $tsdir/scripts/config.guess ]; then
         echo "$tsdir/scripts/config.guess not found" >&2
         exit 1
     fi
     build=`$tsdir/scripts/config.guess`
-        
-    if ! mingw32 --version >/dev/null; then
-        echo "We need at least version 0.3 of MingW32/CPD" >&2
-        exit 1
-    fi
 
+    # See whether we have the Debian cross compiler package or the
+    # old mingw32/cpd system
+    if i586-mingw32msvc-gcc --version >/dev/null 2>&1 ; then
+       host=i586-mingw32msvc
+       crossbindir=/usr/$host/bin
+       conf_CC="CC=${host}-gcc"
+    else
+       host=i386--mingw32
+       if ! mingw32 --version >/dev/null; then
+          echo "We need at least version 0.3 of MingW32/CPD" >&2
+          exit 1
+       fi
+       crossbindir=`mingw32 --install-dir`/bin
+       # Old autoconf version required us to setup the environment
+       # with the proper tool names.
+       CC=`mingw32 --get-path gcc`
+       CPP=`mingw32 --get-path cpp`
+       AR=`mingw32 --get-path ar`
+       RANLIB=`mingw32 --get-path ranlib`
+       export CC CPP AR RANLIB 
+       conf_CC=""
+    fi
+   
     if [ -f "$tsdir/config.log" ]; then
-        if ! head $tsdir/config.log | grep i386--mingw32 >/dev/null; then
+        if ! head $tsdir/config.log | grep "$host" >/dev/null; then
             echo "Pease run a 'make distclean' first" >&2
             exit 1
         fi
     fi
-
-    crossbindir=`mingw32 --install-dir`/bin
-    CC=`mingw32 --get-path gcc`
-    CPP=`mingw32 --get-path cpp`
-    AR=`mingw32 --get-path ar`
-    RANLIB=`mingw32 --get-path ranlib`
-    export CC CPP AR RANLIB 
 
     disable_foo_tests=""
     if [ -n "$lib_config_files" ]; then
@@ -87,7 +97,7 @@ if test "$1" = "--build-w32"; then
     fi
     [ $DIE = yes ] && exit 1
 
-    $tsdir/configure --build=${build} --host=${host} \
+    $tsdir/configure ${conf_CC} --build=${build} --host=${host} \
                 ${disable_foo_tests}  $*
 
     # Ugly hack to overcome a gettext problem.  Someone should look into

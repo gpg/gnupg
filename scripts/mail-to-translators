@@ -6,7 +6,10 @@
 SENDMAIL=": /usr/sbin/sendmail"
 
 for file in *.po; do
+    addr=$(head -100 $file | awk '/^# ?Designated-Translator:/ { printf "%s", $0; exit 0}' | sed 's/.*\(<.*>\).*/\1/')
+    if [ -z "$addr" ]; then
     addr=$(awk '/Last-Translator:/ { printf "%s", $0; exit 0}' $file | sed 's/.*\(<.*>\).*/\1/')
+    fi
     ll=$(basename $file .po)    
 
     if ! msgfmt -vc $file 2>&1| egrep -q 'fuzzy|untranslated|error'; then
@@ -23,6 +26,7 @@ for file in *.po; do
     ( cat <<EOF
 From: translations@gnupg.org
 To: $addr
+Mail-Followup-To: translations@gnupg.org
 Subject: GnuPG translation ($ll)
 Mime-Version: 1.0
 Content-Type: multipart/mixed; boundary="=-=-="
@@ -31,22 +35,33 @@ Content-Type: multipart/mixed; boundary="=-=-="
 
 Hi!
 
-Please find attached the latest version of the PO file for your GnuPG
-translation ($file).  I would appreciate if you can fix any remaining
-fuzzy or untranslated entries.  If you need access to the code
-please use http://cvs.gnupg.org or get the latest snapshot at
-ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-1.1.92.tar.gz
+We are preparing for the 1.4 release of GnuPG and like you to ask to
+start with the translation.  The recent release 1.3.91
+(ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-1.3.91.tar.bz2) won't be
+the last one before 1.4 and experience has shown that we will still
+need to change some strings on the way to 1.4.  However due to a lot
+of fuzzy entries and about 110 new strings it would be good to start
+translating right now but wait with sending the translation back.  We
+will tell when we think that we are ready and provide a new POT file
+for merging with your current translation.
+
+Please find attached the very latest version of the PO file for your
+GnuPG translation ($file) from 1.3.91.
 
 IMHO it is important to have a basic understanding of GnuPG's
 functionality to do a correct translation.  A false translation might
-need to security problems.  This is the reason why I prefer to contact
-you directly and not to work only with the TP Robot.
+lead to security problems.  Furthermore the TP Robot is not able to
+handle more than one version of a project (we have 1.2, 1.3 and also
+1.9) and thus I'd ask you *not to use the TP Robot* for 1.3.x or
+1.4.x.
 
 Output of msgfmt is:
 $(msgfmt --check --statistics $file 2>&1 | head)
 
 If you are not able to continue the translation work, I suggest to
-pass this message on to another translator and drop me a short note.
+pass this message on to another translator and drop a a short note to
+gnupg-hackers@gnupg.org .
+
 
 Thanks,
 
@@ -68,3 +83,4 @@ echo ""
     ) | $SENDMAIL -oi "$addr"
 
 done
+
