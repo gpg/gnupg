@@ -1,3 +1,9 @@
+2004-09-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c, keylist.c, keyserver.c, mainproc.c: Reduce the many
+	variations of "revoked" ("revoked", "[revoked]", " [revoked]",
+	"[revoked] ") "and" expired down to two to simplify translation.
+
 2004-09-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (print_and_check_one_sig): Account for the extra space

@@ -361,17 +361,20 @@ print_keyrec(int number,struct keyrec *keyrec)
     }
 
   if(keyrec->createtime>0)
-    printf(", created %s",strtimestamp(keyrec->createtime));
+    {
+      printf(", ");
+      printf(_("created: %s"),strtimestamp(keyrec->createtime));
+    }
 
   if(keyrec->expiretime>0)
-    printf(", expires %s",strtimestamp(keyrec->expiretime));
+    printf(", %s: %s",_("expires"),strtimestamp(keyrec->expiretime));
 
   if(keyrec->flags&1)
-    printf(" (%s)",("revoked"));
+    printf(" (%s)",_("revoked"));
   if(keyrec->flags&2)
-    printf(" (%s)",("disabled"));
+    printf(" (%s)",_("disabled"));
   if(keyrec->flags&4)
-    printf(" (%s)",("expired"));
+    printf(" (%s)",_("expired"));
 
   printf("\n");
 }

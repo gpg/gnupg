@@ -2237,11 +2237,11 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    tty_printf(_("created: %s"),datestr_from_pk(pk));
 	    tty_printf("  ");
 	    if(pk->is_revoked)
-	      tty_printf(_("revoked: %s"),revokestr_from_pk(pk));
+	      tty_printf("%s: %s",_("revoked"),revokestr_from_pk(pk));
 	    else if(pk->has_expired)
-	      tty_printf(_("expired: %s"),expirestr_from_pk(pk));
+	      tty_printf("%s: %s",_("expired"),expirestr_from_pk(pk));
 	    else
-	      tty_printf(_("expires: %s"),expirestr_from_pk(pk));
+	      tty_printf("%s: %s",_("expires"),expirestr_from_pk(pk));
 	    tty_printf("  ");
             tty_printf(_("usage: %s"),usagestr_from_pk(pk));
 	    tty_printf("\n");
@@ -2292,7 +2292,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		       keystr_from_sk(sk));
 	    tty_printf(_("created: %s"),datestr_from_sk(sk));
 	    tty_printf("  ");
-	    tty_printf(_("expires: %s"),expirestr_from_sk(sk));
+	    tty_printf("%s: %s",_("expires"),expirestr_from_sk(sk));
 	    tty_printf("\n");
             if (sk->is_protected && sk->protect.s2k.mode == 1002)
               {
@@ -2418,7 +2418,7 @@ show_basic_key_info ( KBNODE keyblock )
                       keystr_from_pk(pk));
 	  tty_printf(_("created: %s"),datestr_from_pk(pk));
 	  tty_printf("  ");
-	  tty_printf(_("expires: %s"),expirestr_from_pk(pk));
+	  tty_printf("%s: %s",_("expires"),expirestr_from_pk(pk));
           tty_printf("\n");
           print_fingerprint ( pk, NULL, 3 );
           tty_printf("\n");
@@ -2433,7 +2433,7 @@ show_basic_key_info ( KBNODE keyblock )
                      keystr_from_sk(sk));
 	  tty_printf(_("created: %s"),datestr_from_sk(sk));
 	  tty_printf("  ");
-	  tty_printf(_("expires: %s"),expirestr_from_sk(sk));
+	  tty_printf("%s: %s",_("expires"),expirestr_from_sk(sk));
           tty_printf("\n");
           print_fingerprint (NULL, sk, 3 );
           tty_printf("\n");
@@ -2450,9 +2450,9 @@ show_basic_key_info ( KBNODE keyblock )
      
           tty_printf ("     ");
           if (uid->is_revoked)
-            tty_printf (_("[revoked] "));
+            tty_printf("[%s] ",_("revoked"));
           else if ( uid->is_expired )
-            tty_printf (_("[expired] "));
+            tty_printf("[%s] ",_("expired"));
           tty_print_utf8_string (uid->name, uid->len);
           tty_printf ("\n");
         }

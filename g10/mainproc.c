@@ -927,9 +927,9 @@ list_node( CTX c, KBNODE node )
 	  {
 	    /* of subkey */
 	    if( pk->is_revoked )
-	      printf(" %s",_("[revoked] "));
+	      printf(" [%s]",_("revoked"));
 	    else if( pk->expiredate )
-	      printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
+	      printf(" [%s:%s]",_("expires"), expirestr_from_pk( pk ) );
 	  }
 
 	if( !any )

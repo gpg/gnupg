@@ -668,9 +668,9 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	       keystr_from_sk(sk),datestr_from_sk( sk ));
 
 	if(sk->has_expired)
-	  printf(_(" [expired: %s]"), expirestr_from_sk( sk ) );
+	  printf(" [%s: %s]",_("expired"),expirestr_from_sk( sk ) );
 	else if(sk->expiredate )
-	  printf(_(" [expires: %s]"), expirestr_from_sk( sk ) );
+	  printf(" [%s: %s]",_("expires"),expirestr_from_sk( sk ) );
 
 	printf("\n");
       }
@@ -689,11 +689,11 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	   is room in the new format, so why not? */
 
 	if(pk->is_revoked)
-	  printf(_(" [revoked: %s]"), revokestr_from_pk( pk ) );
+	  printf(" [%s: %s]",_("revoked"),revokestr_from_pk( pk ) );
 	else if(pk->has_expired)
-	  printf(_(" [expired: %s]"), expirestr_from_pk( pk ) );
+	  printf(" [%s: %s]",_("expired"),expirestr_from_pk( pk ) );
 	else if(pk->expiredate)
-	  printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
+	  printf(" [%s: %s]",_("expires"),expirestr_from_pk( pk ) );
 
 #if 0
 	/* I need to think about this some more.  It's easy enough to
@@ -787,11 +787,11 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		   nbits_from_pk( pk2 ),pubkey_letter( pk2->pubkey_algo ),
 		   keystr_from_pk(pk2),datestr_from_pk(pk2));
 	    if( pk2->is_revoked )
-	      printf(_(" [revoked: %s]"), revokestr_from_pk(pk2));
+	      printf(" [%s: %s]",_("revoked"),revokestr_from_pk(pk2));
 	    else if( pk2->has_expired )
-	      printf(_(" [expired: %s]"), expirestr_from_pk( pk2 ) );
+	      printf(" [%s: %s]",_("expired"),expirestr_from_pk(pk2));
 	    else if( pk2->expiredate )
-	      printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
+	      printf(" [%s: %s]",_("expires"),expirestr_from_pk(pk2));
             putchar('\n');
 	    if( fpr > 1 )
 	      print_fingerprint( pk2, NULL, 0 );
@@ -817,7 +817,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		   nbits_from_sk( sk2 ),pubkey_letter( sk2->pubkey_algo ),
 		   keystr_from_sk(sk2),datestr_from_sk( sk2 ) );
             if( sk2->expiredate )
-	      printf(_(" [expires: %s]"), expirestr_from_sk( sk2 ) );
+	      printf(" [%s: %s]",_("expires"), expirestr_from_sk( sk2 ) );
 	    putchar('\n');
 	    if( fpr > 1 )
               {
