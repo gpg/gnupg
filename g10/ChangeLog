@@ -1,3 +1,14 @@
+2005-03-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c: Stubs for tty_enable_completion() &
+	tty_disable_completion().
+
+	* openfile.c (ask_outfile_name): Enable readline completion when
+	prompting for an output filename.
+
+	* plaintext.c (ask_for_detached_datafile): Enable readline
+	completion when prompting for a detached sig datafile.
+
 2005-03-21  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (command_generator, keyedit_completion): Changed

@@ -1,5 +1,6 @@
 /* openfile.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -147,8 +148,10 @@ ask_outfile_name( const char *name, size_t namelen )
 	sprintf(prompt, "%s [%s]: ", s, defname );
     else
 	sprintf(prompt, "%s: ", s );
+    tty_enable_completion(NULL);
     fname = cpr_get("openfile.askoutname", prompt );
     cpr_kill_prompt();
+    tty_disable_completion();
     m_free(prompt);
     if( !*fname ) {
 	m_free( fname ); fname = NULL;

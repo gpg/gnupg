@@ -29,6 +29,10 @@
 #ifdef HAVE_DOSISH_SYSTEM
 #include <fcntl.h> /* for setmode() */
 #endif
+#ifdef HAVE_LIBREADLINE
+#include <stdio.h>
+#include <readline/readline.h>
+#endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
@@ -389,6 +393,10 @@ char *tty_get_hidden( const char *prompt ) {return NULL; }
 void tty_kill_prompt(void) {}
 int tty_get_answer_is_yes( const char *prompt ) {return 0;}
 int tty_no_terminal(int onoff) {return 0;}
+#ifdef HAVE_LIBREADLINE
+void tty_enable_completion(rl_completion_func_t *completer) {}
+void tty_disable_completion(void) {}
+#endif
 
 /* We do not do any locking, so use these stubs here */
 void disable_dotlock(void) {}

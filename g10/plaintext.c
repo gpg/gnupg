@@ -1,6 +1,6 @@
 /* plaintext.c -  process plaintext packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -446,8 +446,10 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 	tty_printf(_("Detached signature.\n"));
 	do {
 	    m_free(answer);
+	    tty_enable_completion(NULL);
 	    answer = cpr_get("detached_signature.filename",
 			   _("Please enter name of data file: "));
+	    tty_disable_completion();
 	    cpr_kill_prompt();
 	    if( any && !*answer ) {
 		rc = G10ERR_READ_FILE;
