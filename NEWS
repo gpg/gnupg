@@ -38,6 +38,8 @@
       was just wrong, so you might notice bad signature in some very
       big files.  It may be wise to keep an old copy of GnuPG around.
 
+    * New --charset=utf-8 to bypass all internal translations.
+
 
 Noteworthy changes in version 1.0.4 (2000-10-17)
 ------------------------------------------------

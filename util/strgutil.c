@@ -67,7 +67,7 @@ static ushort latin2_unicode[128] = {
 
 static const char *active_charset_name = "iso-8859-1";
 static ushort *active_charset = NULL;
-
+static int no_translation = 0;
 
 void
 free_strlist( STRLIST sl )
@@ -327,15 +327,23 @@ set_native_charset( const char *newset )
 {
     if( !stricmp( newset, "iso-8859-1" ) ) {
 	active_charset_name = "iso-8859-1";
+        no_translation = 0;
 	active_charset = NULL;
     }
     else if( !stricmp( newset, "iso-8859-2" ) ) {
 	active_charset_name = "iso-8859-2";
+        no_translation = 0;
 	active_charset = latin2_unicode;
     }
     else if( !stricmp( newset, "koi8-r" ) ) {
 	active_charset_name = "koi8-r";
+        no_translation = 0;
 	active_charset = koi8_unicode;
+    }
+    else if( !stricmp (newset, "utf8" ) || !stricmp(newset, "utf-8") ) {
+	active_charset_name = "utf-8";
+        no_translation = 1;
+	active_charset = NULL;
     }
     else
 	return G10ERR_GENERAL;
@@ -360,7 +368,10 @@ native_to_utf8( const char *string )
     byte *p;
     size_t length=0;
 
-    if( active_charset ) {
+    if (no_translation) {
+        buffer = m_strdup (string);
+    }
+    else if( active_charset ) {
 	for(s=string; *s; s++ ) {
 	    length++;
 	    if( *s & 0x80 )
@@ -423,6 +434,13 @@ utf8_to_native( const char *string, size_t length )
     unsigned long val = 0;
     size_t slen;
     int resync = 0;
+
+    if (no_translation) {
+        buffer = m_alloc (length+1);
+        memcpy (buffer, string, length);
+        buffer[length] = 0; /* make sure it is a string */
+        return buffer;
+    }
 
     /* 1. pass (p==NULL): count the extended utf-8 characters */
     /* 2. pass (p!=NULL): create string */

@@ -1,6 +1,10 @@
+2001-04-20  Werner Koch  <wk@gnupg.org>
+
+	* options.skel: Add some more comments.
+
 2001-04-19  Werner Koch  <wk@gnupg.org>
 
-	* keyid.c (mk_datestr): New.  Handles negative times.  we must do
+	* keyid.c (mk_datestr): New.  Handles negative times.  We must do
 	this because Windoze segvs on negative times passed to gmtime().
 	Changed all datestr_from function to use this one.
 

@@ -31,6 +31,18 @@ $Id$
 
 #default-key 621CC013
 
+# GnuPG ultimately trusts all keys in the secret keyring.  If you do
+# not have all your secret keys online available you should use this
+# option to tell GnuPG about ultimately trusted keys.
+# You have to give the long keyID here which can be obtained by using
+# the --list-key command along with the option --with-colons; you will
+# get a line similiar to this one:
+#    pub:u:1024:17:5DE249965B0358A2:1999-03-15:2006-02-04:59:f:
+# the 5th field is what you want.
+
+#trusted-key 12345678ABCDEF01
+
+
 # If you do not pass a recipient to gpg, it will ask for one.
 # Using this option you can encrypt to a default key.  key validation
 # will not be done in this case.
@@ -55,8 +67,8 @@ escape-from-lines
 
 # If you do not use the Latin-1 (ISO-8859-1) charset, you should
 # tell GnuPG which is the native character set.  Please check
-# the man page for supported character sets.
-#charset koi8-r
+# the man page for supported character sets. 
+#charset utf-8
 
 
 # You may define aliases like this:
@@ -92,4 +104,3 @@ lock-once
 # this option is set.
 
 honor-http-proxy
-

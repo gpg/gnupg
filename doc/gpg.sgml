@@ -367,7 +367,8 @@ assigned owner trust and the second is the calculated
 trust value.  Letters are used for the values:</para>
     <variablelist>
       <varlistentry><term>-</term><listitem><para>No ownertrust assigned / not yet calculated.</para></listitem></varlistentry>
-      <varlistentry><term>e</term><listitem><para>Trust calculation has failed.</para></listitem></varlistentry>
+      <varlistentry><term>e</term><listitem><para>Trust
+calculation has failed; probably due to an expired key.</para></listitem></varlistentry>
       <varlistentry><term>q</term><listitem><para>Not enough information for calculation.</para></listitem></varlistentry>
       <varlistentry><term>n</term><listitem><para>Never trust this key.</para></listitem></varlistentry>
       <varlistentry><term>m</term><listitem><para>Marginally trusted.</para></listitem></varlistentry>
@@ -845,6 +846,10 @@ Valid values for &ParmName; are:</para>
 </varlistentry>
 <varlistentry>
 <term>koi8-r</term><listitem><para>The usual Russian set (rfc1489).</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>utf-8</term><listitem><para>Bypass all translations and assume
+that the OS uses native UTF-8 encoding.</para></listitem>
 </varlistentry>
 </variablelist>
 </listitem></varlistentry>

@@ -1,3 +1,10 @@
+2001-04-20  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (set_native_charset): Allow utf-8 by introducing the
+	new no_translation variable.
+	(native_to_utf8): Handle no_translation.
+	(utf8_to_native): Ditto.
+
 2001-04-19  Werner Koch  <wk@gnupg.org>
 
 	* miscutil.c (asctimestamp): Handle negative times.  We must do
