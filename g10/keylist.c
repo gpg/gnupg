@@ -107,12 +107,11 @@ show_policy_url(PKT_signature *sig,int indent)
       for(i=0;i<indent;i++)
 	putchar(' ');
 
-      /* This isn't UTF8 as it is a URL(?) */
       if(crit)
 	printf(_("Critical signature policy: "));
       else
 	printf(_("Signature policy: "));
-      print_string(stdout,p,len,0);
+      print_utf8_string(stdout,p,len);
       printf("\n");
     }
 }

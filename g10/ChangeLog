@@ -1,5 +1,7 @@
 2003-08-30  David Shaw  <dshaw@jabberwocky.com>
 
+	* keylist.c (show_policy_url): Policy URLs might be UTF8.
+
 	* keyedit.c (menu_addrevoker): Fix leaking a few bytes.
 
 2003-08-28  David Shaw  <dshaw@jabberwocky.com>
