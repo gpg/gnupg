@@ -114,6 +114,9 @@ typedef enum
     /* The GPG Agent.  */
     GC_BACKEND_GPG_AGENT,
 
+    /* The GnuPG SCDaemon.  */
+    GC_BACKEND_SCDAEMON,
+
     /* The Aegypten directory manager.  */
     GC_BACKEND_DIRMNGR,
 
@@ -152,6 +155,7 @@ static struct
     { "GnuPG", "gpg", "gpgconf-gpg.conf" },
     { "GPGSM", "gpgsm", "gpgconf-gpgsm.conf" },
     { "GPG Agent", "gpg-agent", "gpgconf-gpg-agent.conf" },
+    { "SCDaemon", "scdaemon", "gpgconf-scdaemon.conf" },
     { "DirMngr", "dirmngr", "gpgconf-dirmngr.conf" },
     { "DirMngr LDAP Server List", NULL, "ldapserverlist-file", "LDAP Server" },
   };
@@ -467,6 +471,64 @@ static gc_option_t gc_options_gpg_agent[] =
 /* The options of the GC_COMPONENT_SCDAEMON component.  */
 static gc_option_t gc_options_scdaemon[] =
  {
+   /* The configuration file to which we write the changes.  */
+   { "gpgconf-scdaemon.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
+
+   { "Monitor",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     NULL, "Options controlling the diagnostic output" },
+   { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
+     "gnupg", "verbose",
+     GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
+   { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "be somewhat more quiet",
+     GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
+   { "no-greeting", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
+
+   { "Configuration",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
+     NULL, "Options controlling the configuration" },
+   { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", "|FILE|read options from FILE",
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
+   { "reader-port", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "|N|connect to reader at port N",
+     GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
+   { "ctapi-driver", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "|NAME|use NAME as ct-API driver",
+     GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
+   { "pcsc-driver", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "|NAME|use NAME as PC/SC driver",
+     GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
+   { "disable-opensc", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", "do not use the OpenSC layer",
+     GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
+   { "disable-ccid", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", "do not use the internal CCID driver",
+     GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
+
+
+   { "Debug",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
+     "gnupg", "Options useful for debugging" },
+   { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
+     "gnupg", "|LEVEL|set the debugging level to LEVEL",
+     GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
+   { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "|FILE|write logs to FILE",
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
+
+   { "Security",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     NULL, "Options controlling the security" },
+   { "allow-admin", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "allow the use of admin card commands",
+     GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
+
+
    GC_OPTION_NULL
  };
 
@@ -474,6 +536,62 @@ static gc_option_t gc_options_scdaemon[] =
 /* The options of the GC_COMPONENT_GPGSM component.  */
 static gc_option_t gc_options_gpgsm[] =
  {
+   /* The configuration file to which we write the changes.  */
+   { "gpgconf-gpgsm.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPGSM },
+
+   { "Monitor",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     NULL, "Options controlling the diagnostic output" },
+   { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
+     "gnupg", "verbose",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+   { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "be somewhat more quiet",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+   { "no-greeting", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+
+   { "Configuration",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
+     NULL, "Options controlling the configuration" },
+   { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", "|FILE|read options from FILE",
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPGSM },
+
+   { "Debug",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
+     "gnupg", "Options useful for debugging" },
+   { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
+     "gnupg", "|LEVEL|set the debugging level to LEVEL",
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
+   { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "|FILE|write logs to FILE",
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPGSM },
+   { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPGSM },
+
+   { "Security",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     NULL, "Options controlling the security" },
+   { "disable-crl-checks", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "never consult a CRL",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+   { "enable-ocsp", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "check validity using OCSP",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+   { "include-certs", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", "|N|number of certificates to include",
+     GC_ARG_TYPE_INT32, GC_BACKEND_GPGSM },
+   { "disable-policy-checks", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "do not check certificate policies",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+   { "auto-issuer-key-retrieve", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "fetch missing issuer certificates",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+
    GC_OPTION_NULL
  };
 
@@ -518,12 +636,9 @@ static gc_option_t gc_options_dirmngr[] =
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
      "dirmngr", "Options useful for debugging" },
-   { "debug", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
-     "dirmngr", "|FLAGS|set the debugging FLAGS",
-     GC_ARG_TYPE_UINT32, GC_BACKEND_DIRMNGR },
-   { "debug-all", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
-     "dirmngr", "set all debugging flags",
-     GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
+   { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
+     "dirmngr", "|LEVEL|set the debugging level to LEVEL",
+     GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
    { "no-detach", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "dirmngr", "do not detach from the console",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },

@@ -1,6 +1,8 @@
 2004-03-16  Werner Koch  <wk@gnupg.org>
 
 	* gpgconf-comp.c (gc_options_gpg_agent): Implemented.
+	(gc_options_gpgsm, gc_options_scdaemon): Implemented.
+	(gc_backend_t): Add GC_BACKEND_SCDAEMON.
 
 2004-03-12  Marcus Brinkmann  <marcus@g10code.de>
 
