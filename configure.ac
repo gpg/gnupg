@@ -522,13 +522,13 @@ AC_CHECK_HEADERS(unistd.h langinfo.h termio.h locale.h)
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
+AC_C_VOLATILE
 AC_TYPE_SIZE_T
 AC_TYPE_MODE_T
 AC_TYPE_SIGNAL
 AC_DECL_SYS_SIGLIST
 
 GNUPG_CHECK_ENDIAN
-
 
 GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(ushort, HAVE_USHORT_TYPEDEF)
