@@ -1,3 +1,7 @@
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* mk-w32-dist: Do not convert zh_CN. 
+
 2003-12-23  Werner Koch  <wk@gnupg.org>
 
 	* mk-w32-dist: Convert hu.po to CP852 as suggested by Nagy Ferenc

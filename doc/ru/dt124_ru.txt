@@ -1,0 +1,1545 @@
+(c)GnuPG Developments Team
+(c)2003 Translation from English into Russian UTF-8 by Maxim Britov <maxbritov@tut.by>
+Thanks a lot to Pavel Shaido, Andrew Kavko.
+
+Russian team: <gnupg-ru@gnupg.org>
+
+GnuPG version: 1.2.4-cvs
+Last revision by: MaxBritov
+Last revision date: 18 Sep 2003 15:00
+Used codepage: UTF-8
+-------------------------------------
+
+Format of colon listings
+Специальный формат вывода с разделителем ":"
+для использования Вашими программами 
+============================================
+Первоначальный пример:
+
+$ gpg --fixed-list-mode --with-colons --list-keys \
+   --with-fingerprint --with-fingerprint wk@gnupg.org
+
+pub:f:1024:17:6C7EE1B8621CC013:899817715:1055898235::m:::scESC:
+fpr:::::::::ECAF7590EB3443B5C7CF3ACB6C7EE1B8621CC013:
+uid:f::::::::Werner Koch <wk@g10code.com>:
+uid:f::::::::Werner Koch <wk@gnupg.org>:
+sub:f:1536:16:06AD222CADF6A6E1:919537416:1036177416:::::e:
+fpr:::::::::CF8BCC4B18DE08FCD8A1615906AD222CADF6A6E1:
+sub:r:1536:20:5CE086B5B5A18FF4:899817788:1025961788:::::esc:
+fpr:::::::::AB059359A3B81F410FCFF97F5CE086B5B5A18FF4:
+
+The double --with-fingerprint prints the fingerprint for the subkeys
+too, --fixed-list-mode is themodern listing way printing dates in
+seconds since Epoch and does not merge the first userID with the pub
+record.
+Двукратное использование опции --with-fingerprint выводит также
+и отпечатки подключей, --fixed-list-mode задает вывод дат в секундах
+от начала Epoch(?) и не объединяет первый User ID с записью pub.
+
+ 1. Поле:  Type of record
+	   pub = public key
+	   pub = открытый ключ
+           crt = X.509 certificate
+	   crt = X.509 сертификат
+           crs = X.509 certificate and private key available
+	   crs = X.509 сертификат и секретный ключ доступен
+	   sub = subkey (secondary key)
+	   sub = подключ (вторичный ключ)
+	   sec = secret key
+	   sec = секретный ключ
+	   ssb = secret subkey (secondary key)
+	   ssb = секретный подключ (вторичный ключ)
+	   uid = user id (only field 10 is used)
+	   uid = User Id (используется только поле 10)
+	   uat = user attribute (same as user id except for field 10)
+	   uat = пользовательские атрибуты (также как User Id кроме поля 10)
+           sig = signature
+	   sig = подпись
+           rev = revocation signature
+	   rev = отзывающая подпись
+	   fpr = fingerprint: (fingerprint is in field 10)
+	   fpr = отпечаток (отпечаток в поле 10)
+	   pkd = public key data (special field format, see below)
+	   pkd = данные открытого ключа (поле имет спец. формат, см. далее)
+           grp = reserved for gpgsm
+	   grp = зарезервировано для gpgsm
+           rvk = revocation key
+	   rvk = ключ отзыва
+           tru = trust database information
+	   tru = информация из таблицы доверий
+
+ 2. Поле:  A letter describing the calculated trust. This is a single
+	   letter, but be prepared that additional information may follow
+	   in some future versions. (not used for secret keys)
+	   Буква описывающая вычисленное доверие. Это однобуквенное значение,
+	   но будьте готовы, что в будущих версиях может появиться
+	   и дополнительная информация (не используется для секретных ключей).
+		o = Unknown (this key is new to the system)
+		o = Неизвестно (данный ключ нов для программы)
+                i = The key is invalid (e.g. due to a missing self-signature)
+		i = Неправильный ключ (напр. отсутствует самоподпись)
+		d = The key has been disabled
+		    (deprecated - use the 'D' in field 12 instead)
+		d = Ключ отключен.
+		    (устарело - взамен используется 'D' в поле 12)
+		r = The key has been revoked
+		r = Ключ отозван
+		e = The key has expired
+		e = Ключ просрочен
+		- = Unknown trust (i.e. no value assigned)
+		- = Степень доверия неизвестна (т.е. не назначена)
+		q = Undefined trust
+	            '-' and 'q' may safely be treated as the same
+		    value for most purposes
+		q = Неопределенная степень доверия
+		    '-' и 'q' в большинстве случаем могут безопасно
+		    трактоваться как одинаковые
+		n = Don't trust this key at all
+		n = Полное недоверие ключу
+		m = There is marginal trust in this key
+		m = Ограниченное (marginal) доверие ключу
+		f = The key is fully trusted
+		f = Полностью доверенный ключ
+		u = The key is ultimately trusted.  This often means
+		    that the secret key is available, but any key may
+		    be marked as ultimately trusted.
+		u = Абсолютное доверие ключу. Обычно это означает, что
+                    имеется в наличии и секретный ключ, но абсолютно
+                    доверяемым может быть назначен любой ключ.
+ 3. Поле:  длина ключа в битах.
+ 4. Поле:  Алгоритм:	1 = RSA
+			2 = RSA (только шифрование)
+			3 = RSA (только подпись)
+		       16 = ElGamal (только шифрование)
+		       17 = DSA (иногда называемый DH, только подпись)
+		       20 = ElGamal (подпись и шифрование)
+	   (другие ID см. в include/cipher.h)
+ 5. Поле:  Какой-либо KeyID
+ 6. Поле:  Дата создание (в UTC)
+ 7. Поле:  Дата окончания срока годности ключа или пустая, если неограничен.
+ 8. Поле:  Used for serial number in crt records (used to be the Local-ID)
+	   Используется для серийного номера в crt записях (хранит Local ID)
+ 9. Поле:  Доверие владельцу (только для главных ключей)
+	   Это однобуквенное значение, но будьте готовы, что в следующих
+           версиях может появиться дополнительная информация.
+10. Поле:  User-ID.  Значение кодируется наподобие C-строк для хранения
+	   управляющих символов (двоеточие кодируется "\x3a").
+	   Не используется с --fixed-list-mode в gpg.
+           A UAT record puts the attribute subpacket count here, a
+	   space, and then the total attribute subpacket size.
+           In gpgsm the issuer name comes here
+           An FPR record stores the fingerprint here.
+           The fingerprint of an revocation key is stored here.
+	   UAT показывает здесь количестиво подпакетов атрибутов, пробел,
+	   и затем общий размер подпакета атрибутов.
+	   В gpgsm здесь имя издателя.
+	   FRP показывает здесь отпечаток ключа.
+	   Отпечаток ключа отзыва показывается здесь.
+11. Поле:  Класс подписи.  Это 2 две шестнадцатеричных цифры с
+           последующей буквой 'x' для экспортируемой подписи или
+           буквой 'l' для локальной подписи.
+	   Байт класса ключа отзыва также дается здесь,
+	   причем 'x' и 'l' имеют тоже значение.
+	   Класс (см. g10/keydb.h):
+		1f = IS_KEY_SIG
+		10 = IS_UID_SIG
+		18 = IS_SUBKEY_SIG
+		20 = IS_KEY_REV
+		30 = IS_UID_REV
+		28 = IS_SUBKEY_REV
+12. Поле:  Совместимость ключей:
+                e = шифрование
+                s = подпись (подпись данных)
+                c = сертификация (подпись ключей)
+	   Ключ может иметь любую их комбинацию в любом порядке.
+	   В дополнение к данным буквам, главный ключ имеет заглавные
+	   версии букв для указания возможностей ключа в целом,
+           а также заглавную букву 'D' - ключ отключен.
+13. Поле:  Used in FPR records for S/MIME keys to store the fingerprint of
+           the issuer certificate.  This is useful to build the
+           certificate path based on certificates stored in the local
+           keyDB; it is only filled if the issue certificate is
+           available. The advantage of using this value is that it is
+           guaranteed to have been been build by the same lookup
+           algorithm as gpgsm uses.
+           For "uid" recods this lists the preferences n the sameway the 
+           -edit menu does.
+	   Используется в FRP записях для S/MIME ключей для хранения
+	   отпечатка сертификата издателя. Это полезно для построения
+	   пути сертификата на основе сертификатов хранимых в keyDB;
+	   это заполнено, если сертификат издателя доступен.
+	   Полезность этого в том, что гарантируется использование
+	   того же алгоритма поиска, как в gpgsm.
+14. Поле:  Flag field used in the --edit menu output:
+	   Поле флага используемого в выводе --edit меню:
+
+
+All dates are displayed in the format yyyy-mm-dd unless you use the
+option --fixed-list-mode in which case they are displayed as seconds
+since Epoch.  More fields may be added later, so parsers should be
+prepared for this. When parsing a number the parser should stop at the
+first non-number character so that additional information can later be
+added.
+Все даты показываются в формате yyy-mm-dd до тех пор, пока не
+используется опция --fixed-list-mode при испоьзовании которой,
+даты отображаются в секундах с начала Epoch. В будущем могут
+появиться новые поля, так что программы разбирающие данный
+формат должны быть готовы к этому. При разборе количества полей
+следует остановиться на первом не цифровом символе так, чтобы
+позднее могла добавиться дополнительная информация.
+
+Если поле 1 имеет тэг "pkd", листинг выглядит подобно этому:
+pkd:0:1024:B665B1435F4C2 .... FF26ABB:
+    !  !   !-- значение
+    !  !------ число битов в значении
+    !--------- индекс (напр. DSA имеет от 0 до 3: p,q,g,y)
+
+
+The "tru" trust database records have the fields:
+Запись таблицы доверий "tru" имеет следующие поля:
+
+ 1: Reason for staleness of trust.  If this field is empty, then the
+    trustdb is not stale.  This field may have multiple flags in it:
+    Причина устаревания таблицы. Если поле пусто, таблица не устарела.
+    Данное поле может иметь несколько флагов:
+
+    o: Trustdb устарела
+    t: Trustdb была создана при иной модели доверий, чем текущая.
+
+ 2: Модель доверия.  Это всегда ноль (т.е. "Classic")
+    в данной версии GnuPG.
+ 3: Дата создания trustdb в секундах с 1/1/1970.
+ 4: Срок годности trustdb в секундах с 1/1/1970.
+
+ 
+
+Формат вывода параметра "--status-fd"
+=====================================
+Every line is prefixed with "[GNUPG:] ", followed by a keyword with
+the type of the status line and a some arguments depending on the
+type (maybe none); an application should always be prepared to see
+more arguments in future versions.
+Каждая строка начинается с "[GNUPG:] ", далее следует ключевое слово
+с типом строки статуса и некоторыми (необязательно) аргументами,
+основанными на типе; приложениям следует всегда быть готовыми
+получить больше аргументов в будущих версиях.
+
+    GOODSIG	<long keyid>  <username>
+	The signature with the keyid is good.  For each signature only
+        one of the three codes GOODSIG, BADSIG or ERRSIG will be
+        emitted and they may be used as a marker for a new signature.
+        The username is the primary one encoded in UTF-8 and %XX
+        escaped.
+	Подпись с <long keyid> достоверна. Для каждой подписи будет
+	только один из трех кодов GOODSIG, BADSIG или ERRSIG и они могут
+	использоваться как маркер для новой подписи.
+	<username> есть главный User ID в кодировке UTF-8 и %XX.	
+
+    EXPSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature is
+	expired. The username is the primary one encoded in UTF-8 and
+	%XX escaped.
+	Подпись с <long keyid> достоверна, но просрочена.
+	<username> есть главный User ID в кодировке UTF-8 и %XX.
+
+    EXPKEYSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature was
+	made by an expired key. The username is the primary one
+	encoded in UTF-8 and %XX escaped.
+	Подпись с <long keyid> достоверна, но создана просроченным ключом.
+	<username> есть главный User ID в кодировке UTF-8 и %XX.
+
+    REVKEYSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature was
+	made by a revoked key. The username is the primary one
+	encoded in UTF-8 and %XX escaped.
+	Подпись с <long keyid> достоверна, но создана отозванным ключом.
+	<username> есть главный User ID в кодировке UTF-8 и %XX.
+
+    BADSIG	<long keyid>  <username>
+	The signature with the keyid has not been verified okay.
+        The username is the primary one encoded in UTF-8 and %XX
+        escaped.
+	Подпись с <long keyid> недостоверна после проверки.
+	<username> есть главный User ID в кодировке UTF-8 и %XX.
+
+    ERRSIG  <long keyid>  <pubkey_algo> <hash_algo> \
+	    <sig_class> <timestamp> <rc>
+	It was not possible to check the signature.  This may be
+	caused by a missing public key or an unsupported algorithm.
+	A RC of 4 indicates unknown algorithm, a 9 indicates a missing
+	public key. The other fields give more information about
+	this signature.  sig_class is a 2 byte hex-value.
+	Нет возможности проверить подпись. Это может быть вызвано
+	отсутствием открытого ключа или неизвестным алгоритмом.
+	<rc>: 4 - неизвестный алгоритм, 9 - отстутствует открытый
+	ключ. Другие поля дают больше информации о данной подписи.
+	<sig_class> двухбайтное шестнадцатеричное значение.
+	
+
+    VALIDSIG	<fingerprint in hex> <sig_creation_date> <sig-timestamp>
+		<expire-timestamp> <sig-version> <reserved> <pubkey-algo>
+		<hash-algo> <sig-class> <primary-key-fpr>
+
+	The signature with the keyid is good. This is the same as
+	GOODSIG but has the fingerprint as the argument. Both status
+	lines are emitted for a good signature.  All arguments here
+	are on one long line.  sig-timestamp is the signature creation
+	time in seconds after the epoch. expire-timestamp is the
+	signature expiration time in seconds after the epoch (zero
+	means "does not expire"). sig-version, pubkey-algo, hash-algo,
+	and sig-class (a 2-byte hex value) are all straight from the
+	signature packet.  PRIMARY-KEY-FPR is the fingerprint of the
+	primary key or identical to the first argument.  This is
+	useful to get back to the primary key without running gpg
+	again for this purpose.
+	Подпись с <keyid> достоверна. Это то же, что и GOODSIG, но
+	имеет отпечаток ключа в качестве аргумента. Обе строки статуса
+	будут присутствовать при достоверной подписи. Все аргументы
+	передаются одной длинной строкой. <sig-timestamp> время создания
+	подиси с 01/01/1970. <expire-timestamp> время окончания срока
+	действия подписи в секундах (0 - без ограничения срока).
+	<sig-version>, <pubkey-algo>, <hash-algo> и <sig-class> (двухбайтное
+	шестнадцатеричное значение) берутся из пакета подписи.
+	<primary_key_frp> отпечаток гланого ключа или идентичен первому
+	аргументу. Это полезно для получения гланого ключа без запуска
+	gpg для этой цели.
+
+    SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
+	This is emitted only for signatures of class 0 or 1 which
+	have been verified okay.  The string is a signature id
+	and may be used in applications to detect replay attacks
+	of signed messages.  Note that only DLP algorithms give
+	unique ids - others may yield duplicated ones when they
+	have been created in the same second.
+	Выдается только для подписей класса 00 или 01, достоверных
+	после проверки. <radix64_string> идентификатор подписи
+	и может использоваться приложением для обнаружения
+	атак с повторной отправкой подписанных сообщений. Заметим, что только
+	DLP алгоритмы дают уникальные идентификаторы, в то время как
+	другие могут давать одинаковые, если создают их в ту же секунду.
+
+    ENC_TO  <long keyid>  <keytype>  <keylength>
+	The message is encrypted to this keyid.
+	keytype is the numerical value of the public key algorithm,
+	keylength is the length of the key or 0 if it is not known
+	(which is currently always the case).
+	Сообщение зашифровано для данного <long_keyid>.
+	<keytype> цифровое обозначение алгоритма шифрования с
+	открытым ключом. <keylength> длина ключа, или 0 если неизвестно
+	(что сейчас всегда).
+
+    NODATA  <what>
+	No data has been found. Codes for what are:
+	    1 - No armored data.
+	    2 - Expected a packet but did not found one.
+	    3 - Invalid packet found, this may indicate a non OpenPGP message.
+	You may see more than one of these status lines.
+	Данные не найдены. Код:
+	    1 - Нет защищенных данных.
+	    2 - Ожидался пакет, но не обнаружен.
+	    3 - Неправильный пакет найден, это может быть не OpenPGP
+	    сообщение.
+	Вы можете получить несколько таких строк.
+
+    UNEXPECTED <what>
+        Unexpected data has been encountered
+            0 - not further specified               1       
+	Получены неожиданные данные
+	    0 - нет иных уточнений
+
+    TRUST_UNDEFINED <error token>
+    TRUST_NEVER  <error token>
+    TRUST_MARGINAL
+    TRUST_FULLY
+    TRUST_ULTIMATE
+	For good signatures one of these status lines are emitted
+	to indicate how trustworthy the signature is.  The error token
+        values are currently only emiited by gpgsm.
+	Для достоверных подписей одна из этих строк статуса означает
+	степень доверия подписавшему. <error_token> в настоящий
+	момент выдается только gpgsm.
+
+    SIGEXPIRED
+	This is deprecated in favor of KEYEXPIRED.
+	Устарело. Заменено на KEYEXPIRED.
+
+    KEYEXPIRED <expire-timestamp>
+	The key has expired.  expire-timestamp is the expiration time
+	in seconds after the epoch.
+	Ключ просрочен. <expire_timestamp> время окончания срокадействия
+	в секундах с 01/01/1970.
+
+    KEYREVOKED
+	The used key has been revoked by its owner.  No arguments yet.
+	Использованный ключ отозван владельцем. Пока нет имеет аргументов.
+
+    BADARMOR
+	The ASCII armor is corrupted.  No arguments yet.
+	ASCII упаковка повреждена. Пока нет аргументов.
+
+    RSA_OR_IDEA
+	The IDEA algorithms has been used in the data.  A
+	program might want to fallback to another program to handle
+	the data if GnuPG failed.  This status message used to be emitted
+        also for RSA but this has been dropped after the RSA patent expired.
+        However we can't change the name of the message.
+	Алгоритм IDEA  использован в данных. Вашей программе может
+	потребоваться обратиться к другой программе для, если GnuPG не
+	работает, для получения данных. Для RSA данное сообщение больше не
+	применяется после окончания срока патента на алгоритм RSA.
+	Однако мы не можем изменить имя сообщения.
+
+    SHM_INFO
+    SHM_GET
+    SHM_GET_BOOL
+    SHM_GET_HIDDEN
+
+    GET_BOOL
+    GET_LINE
+    GET_HIDDEN
+    GOT_IT
+
+    NEED_PASSPHRASE <long main keyid> <long keyid> <keytype> <keylength>
+	Issued whenever a passphrase is needed.
+	keytype is the numerical value of the public key algorithm
+	or 0 if this is not applicable, keylength is the length
+	of the key or 0 if it is not known (this is currently always the case).
+	Выдается когда необходим ввод пароля.
+	<keytype> цифровое значение алгоритма шифрования с открытым ключом или
+	0 если это не применимо. <keylenght> длина ключа или 0 если неизвестно
+	(всегда на данный момент).
+
+    NEED_PASSPHRASE_SYM <cipher_algo> <s2k_mode> <s2k_hash>
+	Issued whenever a passphrase for symmetric encryption is needed.
+	Выдвется, если необходим пароль для симметричного шифрования.
+
+    MISSING_PASSPHRASE
+	No passphrase was supplied.  An application which encounters this
+	message may want to stop parsing immediately because the next message
+	will probably be a BAD_PASSPHRASE.  However, if the application
+	is a wrapper around the key edit menu functionality it might not
+	make sense to stop parsing but simply ignoring the following
+	BAD_PASSPHRASE.
+	Не предоставлен пароль. Приложение может захотеть прекратить
+	дальнейший разбор немедленно, т.к. следующим сообщением должно быть
+	BAD_PASSPHRASE. Однако, если приложение обрабатывает вывод работы
+	с меню редактирования ключа может не иметь смысла прекращать разбор,
+	а просто игнорировать последующий BAD_PASSPHRASE.
+
+    BAD_PASSPHRASE <long keyid>
+	The supplied passphrase was wrong or not given.  In the latter case
+	you may have seen a MISSING_PASSPHRASE.
+	Пароль неверен или не задан. В последнем случай сначала будет выдано
+	сообшение MISSING_PASSPHRASE.
+
+    GOOD_PASSPHRASE
+	The supplied passphrase was good and the secret key material
+	is therefore usable.
+	Переданный пароль принят и секретный ключ готов к применению.
+
+    DECRYPTION_FAILED
+	The symmetric decryption failed - one reason could be a wrong
+	passphrase for a symmetrical encrypted message.
+	Сбой расшифровка симметричным алгоритмом. Единствено возможная
+	причина - неверный пароль.
+
+    DECRYPTION_OKAY
+	The decryption process succeeded.  This means, that either the
+	correct secret key has been used or the correct passphrase
+	for a conventional encrypted message was given.  The program
+	itself may return an errorcode because it may not be possible to
+	verify a signature for some reasons.
+	Расшифровано успешно. Это означает, что был использован правильный
+	секретный ключ или правильный пароль дан. Программа может вернуть
+	ошибку потому, что невозможно проверить подпись по некоторым причинам.
+
+    NO_PUBKEY  <long keyid>
+    NO_SECKEY  <long keyid>
+	The key is not available
+	Ключ недоступен.
+
+    IMPORTED   <long keyid>  <username>
+	The keyid and name of the signature just imported
+	<long keyid> и <username> подписи только-что импортированы.
+
+    IMPORT_OK  <reason> [<fingerprint>]
+        The key with the primary key's FINGERPRINT has been imported.
+        Reason flags:
+          0 := Not actually changed
+          1 := Entirely new key.
+          2 := New user IDs
+          4 := New signatures
+          8 := New subkeys 
+         16 := Contains private key.
+        The flags may be ORed.
+	Ключ с главным ключом <fingerprint> импортирован.
+	<reason>:
+	  0 := Не произведено изменений.
+	  1 := Внесен новый ключ.
+	  2 := Новый User ID.
+	  4 := Новая подпись.
+	  8 := Новый подключ.
+	 16 := Получен секретный ключ.
+	 Флаги можно объединять логическим ИЛИ.
+
+    IMPORT_PROBLEM <reason> [<fingerprint>]
+        Issued for each import failure.  Reason codes are:
+          0 := "No specific reason given".
+          1 := "Invalid Certificate".
+          2 := "Issuer Certificate missing".
+          3 := "Certificate Chain too long".
+          4 := "Error storing certificate".
+	Выдается для каждой ошибки импорта.
+	<reason>:
+	  0 := Нет особых признаков.
+	  1 := Неверный Сертификат.
+	  2 := Отсутствует владелец Сертификата.
+	  3 := Цепочка Сертификатов слишком длинна.
+	  4 := Ошибка сохранения Сертификата.
+
+    IMPORT_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
+	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported> <sec_dups> <not_imported>
+	Final statistics on import process (this is one long line)
+	Окончательная статистика процесса импорта (одной длинной строкой)
+
+    FILE_START <what> <filename>
+	Start processing a file <filename>.  <what> indicates the performed
+	operation:
+	    1 - verify
+            2 - encrypt
+            3 - decrypt
+	Начало обработки файла <filename>. <what> выполняемая операция:
+	    1 - проверка.
+	    2 - шифрование.
+	    3 - расшифрование.
+
+    FILE_DONE
+	Marks the end of a file processing which has been started
+	by FILE_START.
+	Означает окончание обработки файла, которая обозначалась FILE_START.
+
+    BEGIN_DECRYPTION
+    END_DECRYPTION
+	Mark the start and end of the actual decryption process.  These
+	are also emitted when in --list-only mode.
+	Означает начало и конец текущего процесса расшифрования. Это также
+	выдается в --list-only режиме.
+
+    BEGIN_ENCRYPTION  <mdc_method> <sym_algo>
+    END_ENCRYPTION
+	Mark the start and end of the actual encryption process.
+	Означает начало и конец текущего процесса шифрования.
+
+    DELETE_PROBLEM reason_code
+	Deleting a key failed.	Reason codes are:
+	    1 - No such key
+	    2 - Must delete secret key first
+            3 - Ambigious specification
+	Сбой удаления. <reason_code>:
+	    1 - нет такого ключа.
+	    2 - Сперва надо удалить секретный ключ.
+	    3 - двусмысленное задание.
+
+    PROGRESS what char cur total
+	Used by the primegen and Public key functions to indicate progress.
+	"char" is the character displayed with no --status-fd enabled, with
+	the linefeed replaced by an 'X'.  "cur" is the current amount
+	done and "total" is amount to be done; a "total" of 0 indicates that
+	the total amount is not known.	100/100 may be used to detect the
+	end of operation.
+	Используется при создании главного ключа и функций с открытым ключом
+	для обозначения процесса. "char" символ отображаемый при не заданной
+	--status-fs, с переводом строки замененным на 'X'. "cur" текущая
+	степень выполнения и "total" всего выполнить; 0 в "total" означает,
+	что общее число не известно. 100/100 может использоваться для
+	определения конца операции.
+
+    SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
+	A signature has been created using these parameters.
+	    type:  'D' = detached
+		   'C' = cleartext
+		   'S' = standard
+		   (only the first character should be checked)
+	    class: 2 hex digits with the signature class
+	Подпись создана с использованием данных параметров.
+	   <type>: 'D' = отделенная.
+	   	   'C' = прозрачная подпись.
+		   'S' = стандартная.
+		   (только первый символ следует проверять)
+	    <class>: две шестнадцатеричные цифры класса подписи.
+        
+    KEY_CREATED <type> <fingerprint>
+        A key has been created
+            type: 'B' = primary and subkey
+                  'P' = primary
+                  'S' = subkey
+        The fingerprint is one of the primary key for type B and P and
+        the one of the subkey for S.
+	Ключ был создан:
+	  <type>: 'B' = главный ключ и подключ.
+		  'P' = главный ключ.
+		  'S' = подключ.
+	<fingerprint> отпечаток главного ключа для типов B и P либо отпечаток
+	подключа для типа S.
+
+    SESSION_KEY  <algo>:<hexdigits>
+	The session key used to decrypt the message.  This message will
+	only be emmited when the special option --show-session-key
+	is used.  The format is suitable to be passed to the option
+	--override-session-key
+	Сесионный ключ использованный для расшифрования сообщения. Это
+	сообщение выдается только при задании опции --show-session-key.
+	Формат пригодный для использования в --override-session-key.
+
+    NOTATION_NAME <name> 
+    NOTATION_DATA <string>
+        name and string are %XX escaped; the data may be splitted
+        among several notation_data lines.
+	<name> и <string> %XX кодировка; данные могут быть разделены
+	на несколько NOTATION_DATA строк.
+
+    USERID_HINT <long main keyid> <string>
+        Give a hint about the user ID for a certain keyID. 
+	Дается как подсказка о User ID для KeyID.
+
+    POLICY_URL <string>
+        string is %XX escaped
+	строка в %XX кодировке.
+
+    BEGIN_STREAM
+    END_STREAM
+        Issued by pipemode.
+	Выдается при использовании каналов (pipemode).
+
+    INV_RECP <reason> <requested_recipient>
+        Issued for each unusable recipient. The reasons codes
+        currently in use are:
+          0 := "No specific reason given".
+          1 := "Not Found"
+          2 := "Ambigious specification"
+          3 := "Wrong key usage"
+          4 := "Key revoked"
+          5 := "Key expired"
+          6 := "No CRL known"
+          7 := "CRL too old"
+          8 := "Policy mismatch"
+          9 := "Not a secret key"
+	 10 := "Key not trusted"
+
+        Note that this status is also used for gpgsm's SIGNER command
+        where it relates to signer's of course.
+	Выдается на каждого недопустимого получателя.
+	<reason>:
+	  0 := Нет особых признаков;
+	  1 := Не найден;
+	  2 := Двусмысленное задание;
+	  3 := Неправильно использованный ключ;
+	  4 := Ключ отозван;
+	  5 := Ключ просрочен;
+	  6 := Неизвестный CRL;
+	  7 := CRL слишком старый;
+	  8 := Несоответствует правилам (Policy mismatch);
+	  9 := Нет секретного ключа;
+	 10 := Ключ не доверенный.
+	 Учтите, что данный статус также используется в gpgsm командой SIGNER,
+	 где ссылается на подписавшего (to signer's of course).
+
+    NO_RECP <reserved>
+        Issued when no recipients are usable.
+	Выдается когда не задан получатель.
+
+    ALREADY_SIGNED <long-keyid>
+        Warning: This is experimental and might be removed at any time.
+	Внимание: Это экспериментальное и может быть удалено.
+
+    TRUNCATED <maxno>
+        The output was truncated to MAXNO items.  This status code is issued
+        for certain external requests
+	Вывод обреза до <maxno> пунктов. Выдается для некоторых внешних
+	запросов.
+
+    ERROR <error location> <error code> 
+        This is a generic error status message, it might be followed
+        by error location specific data. <error token> and
+        <error_location> should not contain a space.
+	Это общий формат ошибки и может следствием ошибки расположения
+	некторых данных. <error_token> и <error_location> не должны содержать
+	пробелов.
+
+    ATTRIBUTE <fpr> <octets> <type> <index> <count>
+	      <timestamp> <expiredate> <flags>
+	This is one long line issued for each attribute subpacket when
+	an attribute packet is seen during key listing.  <fpr> is the
+	fingerprint of the key. <octets> is the length of the
+	attribute subpacket. <type> is the attribute type
+	(1==image). <index>/<count> indicates that this is the Nth
+	indexed subpacket of count total subpackets in this attribute
+	packet.  <timestamp> and <expiredate> are from the
+	self-signature on the attribute packet.  If the attribute
+	packet does not have a valid self-signature, then the
+	timestamp is 0.  <flags> are a bitwise OR of:
+		0x01 = this attribute packet is a primary uid
+		0x02 = this attribute packet is revoked
+		0x04 = this attribute packet is expired
+	Это одна длинная строка выдаваемая для каждого атрибута подпакета,
+	когда атрибут пакета просматривается в процессе просмотра ключей.
+	<fpr>  отпечаток ключа. <octets> длина атрибута подпакета.
+	<type> атрибут типа (1==image). <index>/<count> показывают, что это
+	N-ный подпакет из общего количества подпакетов в данном пакете
+	атрибутов. <timestamp> и <expiredate> берутся из самоподписи на
+	пакете атрибута. Если пакет атрибута не имеет правильной самоподписи,
+	тогда <timestamp>=0.
+	<flags> объединенные логическим ИЛИ:
+		0x01 = данный пакет атрибута - главный User ID;
+		0x02 = данный пакет атрибута - отозван;
+		0x03 = данный пакет атрибута - просрочен.
+
+
+Формат вывода параметра "--attribute-fd"
+========================================
+
+When --attribute-fd is set, during key listings (--list-keys,
+--list-secret-keys) GnuPG dumps each attribute packet to the file
+descriptor specified.  --attribute-fd is intended for use with
+--status-fd as part of the required information is carried on the
+ATTRIBUTE status tag (see above).
+Когда установлен --attribute-fd, в процессе вывода списка ключей
+(--list-keys, --list-secret-keys) GnuPG выводит для каждого пакета атрибут
+в файл заданный дескриптором. --attribute-fd предназначен для
+использования с --status-fd как часть необходимой информации
+дополняемой тегом ATTRIBUTE (см. выше).
+
+The contents of the attribute data is specified by 2440bis, but for
+convenience, here is the Photo ID format, as it is currently the only
+attribute defined:
+Содержимое данных атрибута соответствует 2440bis, но для удобства,
+здесь показан Фото ID формат, т.к. это единственный определенный
+в настоящее время атрибут:
+
+   Byte 0-1:  The length of the image header.  Due to a historical
+              accident (i.e. oops!) back in the NAI PGP days, this is
+              a little-endian number.  Currently 16 (0x10 0x00).
+              Длина заголовка изображения. По историческим причинам
+              (со времен NAI PGP) это число с обратным порядком байтов.
+              В настоящее время 16 (т.е. 0x10 0x00).
+
+   Byte 2:    The image header version.  Currently 0x01.
+              Версия заголовка изображения. Сейчас 0x01.
+
+   Byte 3:    Encoding format.  0x01 == JPEG.
+              Формат. 0x01 == JPEG.
+
+   Byte 4-15: Reserved, and currently unused.
+              Зарезервировано. Пока не используется.
+
+   All other data after this header is raw image (JPEG) data.
+   Все последующие данные являются данными изображения в формате JPEG.
+
+
+Создание ключей
+===============
+    Key generation shows progress by printing different characters to
+    stderr:
+    Процедура генерации ключей выдает последовательность из следующих символов
+    в поток stderr:
+	     "."  Last 10 Miller-Rabin tests failed
+                  Последние 10 тестов Миллера-Рабина не пройдены
+	     "+"  Miller-Rabin test succeeded
+                  Успешный тест Миллера-Рабина
+	     "!"  Reloading the pool with fresh prime numbers
+                  Перезагрузка пула свежими простыми числами
+	     "^"  Checking a new value for the generator
+                  Проверка нового значения для генератора
+	     "<"  Size of one factor decreased
+                  Размер одного множителя уменьшен
+	     ">"  Size of one factor increased
+                  Размер одного множителя увеличен
+
+    The prime number for ElGamal is generated this way:
+    Простое число для ключа ElGamal создается следующим образом:
+
+    1) Make a prime number q of 160, 200, 240 bits (depending on the keysize)
+       Создается простое число q из 160, 200, 240 бит (основываясь на размере
+ключа)
+    2) Select the length of the other prime factors to be at least the size
+       of q and calculate the number of prime factors needed
+       Выбирается длина других простых множителей, как минимум равных размеру q
+       и вычисляется число необходимых простых множителей
+    3) Make a pool of prime numbers, each of the length determined in step 2
+       Создается пул простых чисел, каждое длиной определенной в п.2
+    4) Get a new permutation out of the pool or continue with step 3
+       if we have tested all permutations.
+       Получаем новый перестановкой пула или продолжаем с п.3
+       если провериди уже все перестановки.
+    5) Calculate a candidate prime p = 2 * q * p[1] * ... * p[n] + 1
+       Вычисляется кандидат простого числа p=2 * q * p[1] * ... * p[n] + 1
+    6) Check that this prime has the correct length (this may change q if
+       it seems not to be possible to make a prime of the desired length)
+       Проверяется, что данное простое число имеет правильную длину (это может
+       изменить q, если невозможно получить простое число необходимой длины)
+    7) Check whether this is a prime using trial divisions and the
+       Miller-Rabin test.
+       Проверяется, что найденное число является простым числом попыткой
+       проверочных делений и с помощью теста Миллера-Рабина
+    8) Continue with step 4 if we did not find a prime in step 7.
+       Возврат к п.4, если число в п.7 не является простым.
+    9) Find a generator for that prime.
+       Поиск числа-генератора для данного простого числа.
+
+    This algorithm is based on Lim and Lee's suggestion from the
+    Crypto '97 proceedings p. 260.
+    Данный алгоритм основан на предложениях Lim и Lee.
+    (Доклады Crupto '97 стр. 260)
+
+Unattended key generation
+Автоматическое создание ключа
+=============================
+This feature allows unattended generation of keys controlled by a
+parameter file.  To use this feature, you use --gen-key together with
+--batch and feed the parameters either from stdin or from a file given
+on the commandline.
+Данная возможность позволяет Вам создавать ключи в автоматическом режиме
+контролируемом файлом параметров. Для использовния данной возможности
+следует использовать --gen-key вместе с --batch и передать параметры
+через stdin или из файла заданного в командной строке.
+
+The format of this file is as follows:
+Формат файла следующий:
+  o Text only, line length is limited to about 1000 chars.
+    Только текст, длина строки ограничена около 1000 символов.
+  o You must use UTF-8 encoding to specify non-ascii characters.
+    Вы должны использовать UTF-8 для не ASCII символов.
+  o Empty lines are ignored.
+    Пустые строки игнорируются
+  o Leading and trailing spaces are ignored.
+    Лидирующие и концевые пробелы игнорируются
+  o A hash sign as the first non white space character indicates a comment line.
+    Знак решетки, как первый непустой симовол в строке, начинает комментарий
+  o Control statements are indicated by a leading percent sign, the
+    arguments are separated by white space from the keyword.
+    Управляющие операторы предваряются символом процента, аргументы
+    отделяются пробелом от ключевых слов.
+  o Parameters are specified by a keyword, followed by a colon.  Arguments
+    are separated by white space.
+    Параметры задаются ключевым словом с двоеточием. Аргументы
+    отделяются пробелом.
+  o The first parameter must be "Key-Type", control statements
+    may be placed anywhere.
+    Первый параметр должен быть "Key-Type", управлящие операторы могут
+    распологаться в любом месте
+  o Key generation takes place when either the end of the parameter file
+    is reached, the next "Key-Type" parameter is encountered or at the
+    control statement "%commit"
+    Генерация ключа начинается с места, где или заканчивается файл
+    параметров, или при обнаружении следующего "Key-Type",
+    или управляющий оператор "%commit"
+  o Control statements:
+    Управляющие операторы
+    %echo <text>
+	Print <text>.
+        Вывести <text>.
+    %dry-run
+	Suppress actual key generation (useful for syntax checking).
+        Производит только имитацию процесса (полезно для проверки синтаксиса).
+    %commit
+	Perform the key generation.  An implicit commit is done
+	at the next "Key-Type" parameter.
+        Произвести генерацию ключа. Выполнится также при встрече
+        следующего параметра "Key-Type".
+    %pubring <filename>
+    %secring <filename>
+	Do not write the key to the default or commandline given
+	keyring but to <filename>.  This must be given before the first
+	commit to take place, duplicate specification of the same filename
+	is ignored, the last filename before a commit is used.
+	The filename is used until a new filename is used (at commit points)
+	and all keys are written to that file.	If a new filename is given,
+	this file is created (and overwrites an existing one).
+	Both control statements must be given.
+        Не сохранять ключ в таблицу ключей по умолчанию или заданную
+        командной строкой, а сохранять в <filename>. Должно быть
+        задано до места начала генерации ключа (см.выше). Используется
+        только последнее втреченное значение для каждого генерируемого ключа.
+        Если файл новый, он создается (перезаписывается).
+        Должный быть заданы оба этих управляющих оператора.
+   o The order of the parameters does not matter except for "Key-Type"
+     which must be the first parameter.  The parameters are only for the
+     generated keyblock and parameters from previous key generations are not
+     used. Some syntactically checks may be performed.
+     Порядок параметров не имеет значения, за исключением "Key-Type",
+     который должен быть первым. Параметры действуют только на генерируемый
+     блок ключей и параметры из предыдущей генерации не используются.
+     Может производиться частичная проверка синтаксиса.
+     The currently defined parameters are:
+     На данный момент определены следующие параметры:
+     Key-Type: <algo-number>|<algo-string>
+	Starts a new parameter block by giving the type of the
+	primary key. The algorithm must be capable of signing.
+	This is a required parameter.
+        Начинает новый блок параметров, задавая тип главного ключа.
+        Алгоритм должен поддерживать подпись.
+        Это необходимый параметр.
+     Key-Length: <length-in-bits>
+	Length of the key in bits.  Default is 1024.
+        Длина ключа в битах. По умолчанию 1024.
+     Key-Usage: <usage-list>
+        Space or comma delimited list of key usage, allowed values are
+        "encrypt" and "sign".  This is used to generate the key flags.
+        Please make sure that the algorithm is capable of this usage.
+        Список применений ключа разделенный пробелом или двоеточием.
+        Допустимые значения "encrypt" и "sign". Используются для
+        создания флагов ключа. Не забудьте, что алгоритм должен
+        поддерживать такое применение.
+     Subkey-Type: <algo-number>|<algo-string>
+	This generates a secondary key.  Currently only one subkey
+	can be handled.
+        Создание вторичного подключа. Пока только один подключ
+        может быть создан.
+     Subkey-Length: <length-in-bits>
+	Length of the subkey in bits.  Default is 1024.
+        Длина подключа в битах. По умолчанию 1024.
+     Subkey-Usage: <usage-list>
+        Similar to Key-Usage.
+        Аналогично "Key-Usage".
+     Passphrase: <string>
+	If you want to specify a passphrase for the secret key,
+	enter it here.	Default is not to use any passphrase.
+        Если Вы задать пароль для секретного ключа, введите его здесь.
+        По умолчанию пароль не используется.
+     Name-Real: <string>
+     Name-Comment: <string>
+     Name-Email: <string>
+	The 3 parts of a key. Remember to use UTF-8 here.
+	If you don't give any of them, no user ID is created.
+        Три части ключа. Используйте UTF-8!
+        Если задан ни один из них, то User ID не создается.
+     Expire-Date: <iso-date>|(<number>[d|w|m|y])
+	Set the expiration date for the key (and the subkey).  It
+	may either be entered in ISO date format (2000-08-15) or as
+	number of days, weeks, month or years. Without a letter days
+	are assumed.
+        Установить срок действия ключа (и подключа). Может быть задано
+        или датой в ISO формате (ГГГГ-ММ-ДД), или как число дней, недель,
+        месяцев или лет. Без буквы считается, что указано дней.
+     Preferences: <string>
+        Set the cipher, hash, and compression preference values for
+	this key.  This expects the same type of string as "setpref"
+	in the --edit menu.
+        Установить предпочтения шифрования, хэша и сжатия для
+        данного ключа. Теже значения, что и в "setpref" в --edit.
+     Revoker: <algo>:<fpr> [sensitive]
+        Add a designated revoker to the generated key.  Algo is the
+	public key algorithm of the designated revoker (i.e. RSA=1,
+	DSA=17, etc.)  Fpr is the fingerprint of the designated
+	revoker.  The optional "sensitive" flag marks the designated
+	revoker as sensitive information.  Only v4 keys may be
+	designated revokers.
+        Добавить к создаваемому ключу - ключ назначенный отзывающим.
+        <algo> - алгоритм шифрования с открытым ключом из ключа
+        назначенного отзывающим (например RSA=1, DSA=17 и т.д.).
+        <fpr> - отпечаток ключа назначаемого отзывающим.
+        Необязательное <sensitive> помечает отзывающий ключ,
+        как несущий важную (неэкспортируемую) информацию.
+        Только ключи v4 могут быть назначены отзывающими.
+
+Пример:
+$ cat >foo <<EOF
+     %echo Создаем стандартный ключ
+     Key-Type: DSA
+     Key-Length: 1024
+     Subkey-Type: ELG-E
+     Subkey-Length: 1024
+     Name-Real: Joe Tester
+     Name-Comment: с дурацким паролем
+     Name-Email: joe@foo.bar
+     Expire-Date: 0
+     Passphrase: abc
+     %pubring foo.pub
+     %secring foo.sec
+     # Здесь начинаем создание и поэтому мы сможем затем выдать "выполнено" :-)
+     %commit
+     %echo выполнено
+EOF
+$ gpg --batch --gen-key foo
+ [...]
+$ gpg --no-default-keyring --secret-keyring ./foo.sec \
+				  --keyring ./foo.pub --list-secret-keys
+/home/wk/work/gnupg-stable/scratch/foo.sec
+------------------------------------------
+sec  1024D/915A878D 2000-03-09 Joe Tester (с дурацким паролем) <joe@foo.bar>
+ssb  1024g/8F70E2C0 2000-03-09
+
+
+
+Layout of the TrustDB
+Устройство таблицы доверий TrustDB
+==================================
+The TrustDB is built from fixed length records, where the first byte
+describes the record type.  All numeric values are stored in network
+byte order. The length of each record is 40 bytes. The first record of
+the DB is always of type 1 and this is the only record of this type.
+Таблица TrustDB состоит из записей фиксированной длины и первый байт
+каждой записи указывает ее тип. Все численнык значения хранятся в
+последовательном байтовом порядке (network byte order).
+Длина каждой записи равна 40 байт. Первая запись всегда имеет
+тип 1 и только этот тип!
+
+
+FIXME:  The layout changed, document it here.
+
+  Тип записи 0:
+  -------------
+    Unused record, can be reused for any purpose.
+    Неиспользуемая запись, можно использовать заново для любых целей.
+
+  Тип записи 1:
+  -------------
+    Информация о версии таблицы TrustDB.  Это всегда первая запись в таблице
+    и только с типом 1.
+     1 байт  Содержит 1
+     3 байта волшебное слово 'gpg'
+     1 байт  Версия таблицы TrustDB (2)
+     1 байт  marginals needed
+     1 байт  completes needed
+     1 байт  max_cert_depth
+	    The three items are used to check whether the cached
+	    validity value from the dir record can be used.
+            Эти три параметра используются длфя проверки того,
+            что закешированное значение из dir записи можно использовать.
+     1 u32  locked flags
+            флаги блокировок
+     1 u32  отметка времени создания таблицы TrustDB
+     1 u32  timestamp of last modification which may affect the validity
+	    of keys in the trustdb.  This value is checked against the
+	    validity timestamp in the dir records.
+            отметка времени последней модификации таблицы, которая могла
+            затронуть действительность ключей в таблице TrustDB.
+     1 u32  timestamp of last validation
+	    (Used to keep track of the time, when this TrustDB was checked
+	     against the pubring)
+            отметка о времени последней ревизии доверий
+            (Используется для хранения связи со временем, когда таблица
+            была проверена относительно таблицы открытых ключей)
+     1 u32  record number of keyhashtable
+            номер записи keyhashtable
+     1 u32  first free record
+            первая свободная запись
+     1 u32  record number of shadow directory hash table
+	    It does not make sense to combine this table with the key table
+	    because the keyid is not in every case a part of the fingerprint.
+            номер записи теневого каталога таблицы хешей.
+            
+     1 u32  record number of the trusthashtbale
+            номер записи trusthashtable
+
+
+  Тип записи 2: (запись каталога) (directory record)
+  -------------
+    Informations about a public key certificate.
+    These are static values which are never changed without user interaction.
+    Информация о сертификате публичного ключа.
+    Это постоянное значение, которое не изменяется без участия пользователя.
+
+     1 байт  значение 2
+     1 байт  зарезервирован
+     1 u32   LID. (This is simply the record number of this record.)
+             LID. (Уникальный внутренний идентификатор для записей данного типа)
+     1 u32   List of key-records (the first one is the primary key)
+             Список записей о ключах (первый - для главного ключа)
+     1 u32   List of uid-records -- Список записей о UID
+     1 u32   cache record -- запись кеша
+     1 байт  ownertrust -- доверие владельцу
+     1 байт  dirflag
+     1 байт  maximum validity of all the user ids
+             максимальная достоверность для всех User ID
+     1 u32   time of last validity check.
+             отметка времени послдней проверки действительности
+     1 u32   Must check when this time has been reached.
+	     (0 = no check required)
+             Нужно проверить, когда данная отметка времени устареет
+             (0 - ничего проверять не требуется)
+
+  Тип записи 3:  (запись о ключе) (key record)
+  -------------
+    Informations about a primary public key.
+    (This is mainly used to lookup a trust record)
+
+     1 байт  значение 3
+     1 байт  зарезервирован
+     1 u32   LID
+     1 u32   следующая запись о ключе
+     7 байт  зарезервированы
+     1 байт  keyflags
+     1 байт  алогитм шифрования открытым ключом
+     1 байт  length of the fingerprint (in bytes)
+             длина отпечатка в байтах
+     20 байт fingerprint of the public key
+	     (This is the value we use to identify a key)
+             отпечаток открытого ключа
+             (Значение, которое мы используем для идентификации ключа)
+
+  Тип записи 4: (запись о UID) (uid record)
+  -------------
+    Informations about a userid
+    We do not store the userid but the hash value of the userid because that
+    is sufficient.
+    Информация о User ID
+    Мы не храним User ID, но используем хеш значение User ID,
+    т.к. этого достаточно.
+
+     1 байт значение 4
+     1 байт зарезервирован
+     1 u32  LID
+     1 u32  следующая запись о User ID
+     1 u32  указатель на запись со списком предпочтений
+     1 u32  siglist list of valid signatures
+            siglist список действительных подписей
+     1 байт uidflags
+     1 байт validity of the key calculated over this user id
+            действительность ключа вычисленного для данного User ID
+     20 байт ripemd160 хеш данного User ID
+
+  Тип записи 5: (запись о предпочтениях) (pref record)
+  -------------
+    This record type is not anymore used.
+    Данная запись не используется где-либо
+
+     1 байт значение 5
+     1 байт зарезервирован
+     1 u32  LID; points to the directory record (and not to the uid record!).
+	    (or 0 for standard preference record)
+            LID; указывает на запись каталога (не на UID запись!).
+            (0 для записи стандартных предпочтений)
+     1 u32  следующая запись о предпочтениях
+     30 байт данные о предпочтениях
+
+  Тип записи 6  (sigrec)
+  ------------
+    Used to keep track of key signatures. Self-signatures are not
+    stored.  If a public key is not in the DB, the signature points to
+    a shadow dir record, which in turn has a list of records which
+    might be interested in this key (and the signature record here
+    is one).
+    Используется для хранения пути подписей ключа. Самоподписи
+    не хранятся. Если открытого ключа нет в таблице, то подпись
+    ссылается на запись теневого каталога, где имеется список записей,
+    которые возможно интересны для данного ключа (и данная запись тоже)
+
+     1 байт   значение 6
+     1 байт   зарезервирован
+     1 u32    LID. указатель на запись каталога
+     1 u32    next next sigrec of this uid or 0 to indicate the last sigrec.
+              следующая sigrec данного UID или 0 для последней sigrec.
+     6 раз
+       1 u32  Local_id of signatures dir or shadow dir record
+              Local_ID каталога подписей или записи теневого каталога
+       1 byte Флаг: Бит 0 = checked: Bit 1 is valid (we have a real
+                            directory record for this)
+                            проверено: Бит 1 действителен (мы имеем
+                            запись каталога для данного ID)
+                        1 = valid is set (but may be revoked)
+                            действительность установлена (но возможно отозван)?
+
+
+  Тип записи 8: (запись теневого каталога) (shadow directory record)
+  -------------
+    This record is used to reserve a LID for a public key.  We
+    need this to create the sig records of other keys, even if we
+    do not yet have the public key of the signature.
+    This record (the record number to be more precise) will be reused
+    as the dir record when we import the real public key.
+    Данная запись используется, чтобы зарезервировать LID для
+    открытого ключа. Нам это необходимо для создания sigrec других
+    ключей, даже если мы не имеем пока открытого ключа подписи.
+    Данная запись (точнее номер записи) будет затем использована,
+    как запись каталога, когда мы импортируем открытый ключ.
+
+     1 байт  значение
+     1 байт  зарезервирован
+     1 u32   LID
+     2 u32   keyid
+     1 байт  алгоритм шифрования открытым ключом
+     3 байт  зарезервированы
+     1 u32   hintlist	A list of records which have references to
+			this key.  This is used for fast access to
+			signature records which are not yet checked.
+			Note, that this is only a hint and the actual records
+			may not anymore hold signature records for that key
+			but that the code cares about this.
+                        Список записей, которые ссылаются на данный ключ.
+                        Используется для быстрого доступа к записям sigrec,
+                        которые еще не проверены.
+                        Заметьте, что на самом деле записи, указанные в
+                        списке, могут уже не содержать sigrec для данного
+                        ключа, но об этом позаботится?
+    18 byte зарезервированы
+
+
+
+  Тип записи 10 (таблица хешей) (hash table)
+  -------------
+    Due to the fact that we use fingerprints to lookup keys, we can
+    implement quick access by some simple hash methods, and avoid
+    the overhead of gdbm.  A property of fingerprints is that they can be
+    used directly as hash values.  (They can be considered as strong
+    random numbers.)
+      What we use is a dynamic multilevel architecture, which combines
+    hashtables, record lists, and linked lists.
+    В следствие того, что мы используем отпечатки ключей для их поиска,
+    мы можем реализовать быстрый доступ простыми хеш методами и избежать
+    перегрузки gdbm. Особенность отпечатков
+    ключей то, что они сами могут быть использованы непосредственно,
+    как хеш-значения. (Их можно рассматривать, как *сильные* числа).
+      Мы используем динамическую многоуровневую архитектуру, которая
+    совмещает таблицы хешей, списки записей и списки ссылок.
+
+    This record is a hashtable of 256 entries; a special property
+    is that all these records are stored consecutively to make one
+    big table. The hash value is simple the 1st, 2nd, ... byte of
+    the fingerprint (depending on the indirection level).
+    Данная запись - таблица хешей из 256 записей; особенность
+    в том, что все эти записи хранятся последовательно для получения
+    одной большой таблицы. Значение хеша это просто 1-й, 2-й, ... байты
+    отпечатка (основываясь на indirection level)
+
+    When used to hash shadow directory records, a different table is used
+    and indexed by the keyid.
+    Когда используется записи каталога теневых хешей, другая таблица
+    используется и индексируется по KeyID.
+
+     1 байт значение 10
+     1 байт зарезервирован
+     n u32  recnum; n depends on the record length:
+	    n = (reclen-2)/4  which yields 9 for the current record length
+	    of 40 bytes.
+	    recnum; n вычисляется на основе длины записи:
+	    n = (reclen-2)/4 которое равно 9 для текущей длины записи в 40 байт.
+
+    the total number of such record which makes up the table is:
+	 m = (256+n-1) / n
+    which is 29 for a record length of 40.
+    общее число таких записей из которых состоит таблица:
+         m = (256+n-1) / n
+    которое равняется 29 для текущей длины в 40 байт.
+
+    To look up a key we use the first byte of the fingerprint to get
+    the recnum from this hashtable and look up the addressed record:
+       - If this record is another hashtable, we use 2nd byte
+	 to index this hash table and so on.
+       - if this record is a hashlist, we walk all entries
+	 until we found one a matching one.
+       - if this record is a key record, we compare the
+	 fingerprint and to decide whether it is the requested key;
+    Для поиска ключа мы используем первый байт отпечатка для получения recnum
+    из данной таблицы хешей и ищем адресуемую запись:
+       - Если данная запись - другая таблица, мы используем второй байт как
+         индекс в данной хеш таблице и т.д.
+       - если данная запись - список хешей, мы просматриваем весь список,
+         до тех пор, пока мы не найдем соотвествие.
+       - если данная запись - запись ключа, мы сравниваем отпечаток и решаем
+	 является ли данный ключ искомым.
+
+
+  Тип записи 11 (список хешей) (hash list)
+  -------------
+    см. таблицу хешей для разъяснений.
+    Это также используется и для других целей.
+
+    1 байт значение 11
+    1 байт зарезервирован
+    1 u32  следующий   следующая запись хеш списка
+    n раз		 n = (reclen-5)/5
+	1 u32  recnum
+
+    Для используемой в настоящее время длины записи в 40 байт, n = 7.
+
+
+
+  Тип записи 254 (свободная запись) (free record)
+  --------------
+    All these records form a linked list of unused records.
+    Все эти записи являются неиспользуемыми.
+     1 байт  значение 254
+     1 байт  зарезервирован (0)
+     1 u32   следующая свободная
+
+
+
+Packet Headers
+Заголовки пакета
+================
+
+GNUPG uses PGP 2 packet headers and also understands OpenPGP packet header.
+There is one enhancement used with the old style packet headers:
+GnuPG использует PGP 2 заголовки пакета и понимает также заголовок OpenPGP
+пакета. Со старым стилем заголовков пакета используется одно расширение:
+
+   CTB bits 10, the "packet-length length bits", have values listed in
+   the following table:
+   CTB биты 10, биты длины "packet-length", имеют ниже описанные значения:
+
+      00 - 1-byte packet-length field
+      01 - 2-byte packet-length field
+      10 - 4-byte packet-length field
+      11 - no packet length supplied, unknown packet length
+      00 - 1-байтовое поле packet-length
+      01 - 2-байтовое поле packet-length
+      10 - 4-байтовое поле packet-length
+      11 - не указана длина пакета, неизвестная длина пакета.
+
+   As indicated in this table, depending on the packet-length length
+   bits, the remaining 1, 2, 4, or 0 bytes of the packet structure field
+   are a "packet-length field".  The packet-length field is a whole
+   number field.  The value of the packet-length field is defined to be
+   the value of the whole number field.
+   Как показано в таблице, в зависимости от битов длины packet-lenght,
+   оставшиеся 1, 2, 4 или 0 байт поля структуры пакета
+   это поле "packed-length". Поле packed-length - целочисленное поле.
+   Значение поля packet-length должно быть целочисленным значением
+   числа полей.
+
+   A value of 11 is currently used in one place: on compressed data.
+   That is, a compressed data block currently looks like <A3 01 . .  .>,
+   where <A3>, binary 10 1000 11, is an indefinite-length packet. The
+   proper interpretation is "until the end of the enclosing structure",
+   although it should never appear outermost (where the enclosing
+   structure is a file).
+   Значение 11 в настоящее время используется в одном месте: сжатые данные.
+   Сжатые данные в настоящее время выглядят примерно так <A3 01 . .  .>,
+   где <A3> есть двоичное <10 1000 11>, т.е. пакет неопределенной длины.
+   Правильная интерпретация "до завершения вложенной структуры",
+   хотя она и не является истиной в последней инстанции 
+   (где вложенная структура - файл).
+
++  This will be changed with another version, where the new meaning of
++  the value 11 (see below) will also take place.
++  Это будет изменео в другой версии, где новый смысл значения 11 (см. ниже)
++  будет иметь место.
++
++  A value of 11 for other packets enables a special length encoding,
++  which is used in case, where the length of the following packet can
++  not be determined prior to writing the packet; especially this will
++  be used if large amounts of data are processed in filter mode.
++  Значение 11 для других пакетов позволяет особое кодирование длины,
++  используемое в тех случаях, когда невозможно определить длину
++  следующего пакета до записи пакета; это особенно будет использоваться при
++  обработке большого объема данных через фильтр.
++
++  It works like this: After the CTB (with a length field of 11) a
++  marker field is used, which gives the length of the following datablock.
++  This is a simple 2 byte field (MSB first) containing the amount of data
++  following this field, not including this length field. After this datablock
++  another length field follows, which gives the size of the next datablock.
++  A value of 0 indicates the end of the packet. The maximum size of a
++  data block is limited to 65534, thereby reserving a value of 0xffff for
++  future extensions. These length markers must be inserted into the data
++  stream just before writing the data out.
++  Это работает так: После CTB (с полем длины 11) используется поле маркера,
++  которое дает длину последующего блока данных. Это простое двухбайтовое поле
++  (сперва MSB) содержащее объем данных следующих за этим полем, не включая
++  размер самого поля. После блока данных следует другое поле длины, которое
++  дает объем следующего блока данных. Значение 0 указывает на конец пакета.
++  Максимальный размер блока данных ограничен 65534, этим резервируется
++  значение 0xFFFF для будущих расширений. Эти маркеры длины должны быть
++  внедрены в поток данных непосредственно перед записью этих данных.
++
++  This 2 byte field is large enough, because the application must buffer
++  this amount of data to prepend the length marker before writing it out.
++  Data block sizes larger than about 32k doesn't make any sense. Note
++  that this may also be used for compressed data streams, but we must use
++  another packet version to tell the application that it can not assume,
++  that this is the last packet.
++  Это двухбайтовое поле достаточно большое потому, что приложение должно
++  иметь буффер данного размера для хранения данных перед их выводом. Блоки
++  данных больше 32К не имеет смысла делать. Учтите, что это может также
++  использоваться для потоков сжатых данных, но мы должны пользоваться другой
++  версией пакета, что бы указать приложению, что нельзя предполагать, что
++  это последний пакет.
+
+GNU extensions to the S2K algorithm
+GNU расширения в S2K алгоритме
+==============================
+S2K mode 101 is used to identify these extensions.
+After the hash algorithm the 3 bytes "GNU" are used to make
+clear that these are extensions for GNU, the next bytes gives the
+GNU protection mode - 1000.  Defined modes are:
+S2K режим 101 импользован для идентификации данных расширений.
+После хеш алгоритма 3 байта "GNU" используются, что бы дать понять, что данные
+расширения для GNU, следующие байты дают режим защиты GNU - 1000.
+Определены следующие режимы:
+  1001 - do not store the secret part at all
+  1001 - не хранить секретную часть совсем
+  1002 - a stub to access smartcards (not used in 1.2.x)
+  1002 - корешок для доступа смарткарт (не используется в 1.2.x)
+
+
+Pipemode
+Каналы
+======
+NOTE:  This is deprecated and will be removed in future versions.
+ЗАМЕЧАНИЕ: Это устарело и будет удалено в следующих версиях.
+
+This mode can be used to perform multiple operations with one call to
+gpg. It comes handy in cases where you have to verify a lot of
+signatures. Currently we support only detached signatures.  This mode
+is a kludge to avoid running gpg n daemon mode and using Unix Domain
+Sockets to pass the data to it.  There is no easy portable way to do
+this under Windows, so we use plain old pipes which do work well under
+Windows.  Because there is no way to signal multiple EOFs in a pipe we
+have to embed control commands in the data stream: We distinguish
+between a data state and a control state.  Initially the system is in
+data state but it won't accept any data.  Instead it waits for
+transition to control state which is done by sending a single '@'
+character.  While in control state the control command os expected and
+this command is just a single byte after which the system falls back
+to data state (but does not necesary accept data now).  The simplest
+control command is a '@' which just inserts this character into the
+data stream.
+
+Here is the format we use for detached signatures:
+"@<"  - Begin of new stream
+"@B"  - Detached signature follows.
+        This emits a control packet (1,'B')
+<detached_signature>
+"@t"  - Signed text follows. 
+        This emits the control packet (2, 'B')
+<signed_text>
+"@."  - End of operation. The final control packet forces signature
+        verification
+"@>"  - End of stream   
+
+
+
+
+
+
+Other Notes
+Другие замечания
+================
+    * For packet version 3 we calculate the keyids this way:
+    * Для пакета 3 версии мы вычисляем keyid-ы таким методом:
+	RSA	:= low 64 bits of n
+	           нижние 64 бита n
+	ELGAMAL := build a v3 pubkey packet (with CTB 0x99) and calculate
+		   a rmd160 hash value from it. This is used as the
+		   fingerprint and the low 64 bits are the keyid.
+		   создать v3 пакет открытого ключа (с CTB 0x99) и
+		   вычислить rmd160 значение хеша из него. Это используется
+		   как отпечаток и нижние 64 бита используются как KeyId.
+
+    * Revocation certificates consist only of the signature packet;
+      "import" knows how to handle this.  The rationale behind it is
+      to keep them small.
+      Сертификаты отзыва включают только пакет подписи; "import" знает
+      как это обрабатывать. Целесообразно сохранять размер сертификатов
+      небольшим.
+
+
+
+Keyserver Message Format
+Формат сообщений сервера ключей
+===============================
+
+The keyserver may be contacted by a Unix Domain socket or via TCP.
+Соединение с сервером ключей может производится через Unix Domain сокет или
+посредством TCP.
+The format of a request is:
+Формат запроса следующий:
+
+====
+command-tag
+Команда
+"Content-length:" digits
+CRLF
+=======
+
+Where command-tag is
+Где "Команда":
+
+NOOP
+GET <user-name>
+PUT
+DELETE <user-name>
+
+
+The format of a response is:
+Формат ответа:
+
+======
+"GNUPG/1.0" status-code status-text
+"Content-length:" digits
+CRLF
+============
+followed by <digits> bytes of data
+с последующей передачей <digits> байт данных
+
+
+Status codes are:
+Коды статуса:
+
+     o	1xx: Informational - Request received, continuing process
+             Информационные - Запрос принят, процесс продолжается
+
+     o	2xx: Success - The action was successfully received, understood,
+	and accepted
+             Успешно - Команда принята успешно, распознана и принята к
+             исполнению.
+
+     o	4xx: Client Error - The request contains bad syntax or cannot be
+	fulfilled
+             Ошибка клиента - Запрос имеет неправильный синтаксис или
+             не может быть выполнен.
+
+     o	5xx: Server Error - The server failed to fulfill an apparently
+	valid request
+             Ошибка сервера - Сервер дал сбой при исполнении кажущегося
+             правильным значением запроса.
+
+Documentation on HKP (the http keyserver protocol):
+Описание HKP (протокол http сервера ключей):
+
+A minimalistic HTTP server on port 11371 recognizes a GET for /pks/lookup.
+Минимальный HTTP сервер на порте 11371 понимает GET для /pks/lookup.
+The standard http URL encoded query parameters are this (always key=value):
+Стандартный http URL содержит параметры запроса (всегда ключ=значение)
+
+- op=index (like pgp -kv), op=vindex (like pgp -kvv) and op=get (like
+  pgp -kxa)
+  op=index (типа pgp -kv), op=vindex (типа pgp -kvv) и op=get (типа pgp -kxa)
+
+- search=<stringlist>. This is a list of words that must occur in the key.
+  The words are delimited with space, points, @ and so on. The delimiters
+  are not searched for and the order of the words doesn't matter (but see
+  next option).
+  search=<stringlist>. Это список слов, которые могжет содержать ключ. Слова
+  разделены пробелом, точкой, @ и т.п. Разделители не ищутся и порядок слов не
+  имеет значения (но см. следующий параметр).
+
+- exact=on. This switch tells the hkp server to only report exact matching
+  keys back. In this case the order and the "delimiters" are important.
+  exact=on. Это заставляет сервер ключей искать полные соотвествия. В данном
+  случае порядок слов и "разделители" важны.
+
+- fingerprint=on. Also reports the fingerprints when used with 'index' or
+  'vindex'
+  fingerprint=on. Также выдавать отпечатки, когда используется с 'index' или
+  'vindex'.
+
+The keyserver also recognizes http-POSTs to /pks/add. Use this to upload
+keys.
+Сервер ключей также понимает http POST к /pks/add. Это используется для
+загрузки ключей на сервер.
+
+A better way to do this would be a request like:
+Наилучший способ сделать это - воспользоваться запросом типа:
+
+   /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
+
+This can be implemented using Hurd's translator mechanism.
+However, I think the whole key server stuff has to be re-thought;
+I have some ideas and probably create a white paper.
+Это может быть реализовано с использованием механизмов транслятора Hurd.
+Однако я думая, что весь материал по серверу ключей должен быть переосмыслен;
+у меня имеются некторые идеи и, возможно я напишу по этому поводу отдельный
+документ.

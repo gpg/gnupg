@@ -32,7 +32,7 @@
 #include <lber.h>
 #endif
 
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (__MINGW32_CPD__)
 #include <winsock2.h>
 #include <winldap.h>
 #else

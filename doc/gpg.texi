@@ -18,22 +18,27 @@
 @end menu
 
 @majorheading Name
-gpg ---- encryption and signing tool</>
+gpg ---- encryption and signing tool
 
 @majorheading Synopsis
 
 @majorheading DESCRIPTION
 @code{gpg} is the main program for the GnuPG system.
 
-This man page only lists the commands and options available.
-For more verbose documentation get the GNU Privacy Handbook (GPH) or
-one of the other documents at http://www.gnupg.org/docs.html .
+This man page only lists the commands and options available. For more
+verbose documentation get the GNU Privacy Handbook (GPH) or one of the
+other documents at http://www.gnupg.org/documentation/ .
 
 Please remember that option parsing stops as soon as a non option is
 encountered, you can explicitly stop option parsing by using the
 special option "---".
 
 @majorheading COMMANDS
+@code{gpg} may be run with no commands, in which case it will
+perform a reasonable action depending on the type of file it is given
+as input (an encrypted message is decrypted, a signature is verified,
+a file containing keys is listed).
+
 @code{gpg} recognizes these commands:
 
 @table @asis
@@ -83,21 +88,22 @@ stuff from stdin, use @samp{-} as the second filename.
 For security reasons a detached signature cannot read the signed
 material from stdin without denoting it in the above way.
 
+@item ---multifile
+This modifies certain other commands to accept multiple files for
+processing on the command line or read from stdin with each filename
+on a separate line. This allows for many files to be processed at
+once. ---multifile may currently be used along with --verify,
+---encrypt, and --decrypt. Note that `--multifile --verify' may not be
+used with detached signatures.
+
 @item ---verify-files @code{files}
-This is a special version of the ---verify command which does not work with
-detached signatures. The command expects the files to be verified either
-on the command line or reads the filenames from stdin; each name must be on
-separate line. The command is intended for quick checking of many files.
+Identical to `---multifile --verify'.
 
 @item ---encrypt-files @code{files}
-This is a special version of the ---encrypt command. The command expects
-the files to be encrypted either on the command line or reads the filenames
-from stdin; each name must be on separate line. The command is intended
-for a quick encryption of multiple files.
+Identical to `---multifile --encrypt'.
 
 @item ---decrypt-files @code{files}
-The same as ---encrypt-files with the difference that files will be
-decrypted. The syntax or the filenames is the same.
+Identical to `---multifile --decrypt'.
 
 @item ---list-keys @code{names}
 @itemx ---list-public-keys @code{names}
@@ -121,12 +127,12 @@ Same as ---list-keys, but the signatures are listed too.
 For each signature listed, there are several flags in between the
 "sig" tag and keyid. These flags give additional information about
 each signature. From left to right, they are the numbers 1-3 for
-certificate check level (see ---default-cert-check-level), "L" for a
-local or non-exportable signature (see ---lsign-key), "R" for a
-nonRevocable signature (see ---nrsign-key), "P" for a signature that
-contains a policy URL (see ---cert-policy-url), "N" for a signature
-that contains a notation (see ---cert-notation), and "X" for an eXpired
-signature (see ---ask-cert-expire).
+certificate check level (see ---ask-cert-level), "L" for a local or
+non-exportable signature (see ---lsign-key), "R" for a nonRevocable
+signature (see ---nrsign-key), "P" for a signature that contains a
+policy URL (see ---cert-policy-url), "N" for a signature that contains
+a notation (see ---cert-notation), and "X" for an eXpired signature
+(see ---ask-cert-expire).
 
 @item ---check-sigs @code{names}
 Same as ---list-sigs, but the signatures are verified.
@@ -200,11 +206,14 @@ Create an alternate user id.
 
 @item addphoto
 Create a photographic user id. This will prompt for a JPEG file that
-will be embedded into the user ID. A very large JPEG will make for a
-very large key.
+will be embedded into the user ID. Note that a very large JPEG will
+make for a very large key.
 
 @item deluid
 Delete a user id.
+
+@item delsig
+Delete a signature.
 
 @item revuid
 Revoke a user id.
@@ -215,7 +224,7 @@ Add a subkey to this key.
 @item delkey
 Remove a subkey.
 
-@item addrevoker
+@item addrevoker sensitive
 Add a designated revoker. This takes one optional argument:
 "sensitive". If a designated revoker is marked as sensitive, it will
 not be exported by default (see
@@ -403,7 +412,8 @@ Import the keys with the given key IDs from a keyserver. Option
 @item ---refresh-keys @code{key IDs}
 Request updates from a keyserver for keys that already exist on the
 local keyring. This is useful for updating a key with the latest
-signatures, user IDs, etc. Option ---keyserver must be used to give
+signatures, user IDs, etc. Calling this with no arguments will
+refresh the entire keyring. Option ---keyserver must be used to give
 the name of this keyserver.
 
 @item ---search-keys @code{names}
@@ -496,6 +506,16 @@ Create ASCII armored output.
 @item -o, ---output @code{file}
 Write output to @code{file}.
 
+@item ---max-output @code{n}
+This option sets a limit on the number of bytes that will be generated
+when processing a file. Since OpenPGP supports various levels of
+compression, it is possible that the plaintext of a given message may
+be significantly larger than the original OpenPGP message. While
+GnuPG works properly with such messages, there is often a desire to
+set a maximum file size that will be generated before processing is
+forced to stop by the OS limits. Defaults to 0, which means "no
+limit".
+
 @item ---mangle-dos-filenames
 @itemx ---no-mangle-dos-filenames
 The Windows version of GnuPG replaces the extension of an output
@@ -506,14 +526,13 @@ have GnuPG append the new extension. This option has no effect on
 non-Windows platforms.
 
 @item -u, ---local-user @code{name}
-Use @code{name} as the user ID to sign with. This option is silently
-ignored for the list commands, so that it can be used in an options
-file.
+Use @code{name} as the key to sign with. Note that this option
+overrides ---default-key.
 
 @item ---default-key @code{name}
-Use @code{name} as default user ID for signatures. If this
-is not used the default user ID is the first user ID
-found in the secret keyring.
+Use @code{name} as the default key to sign with. If this option is not
+used, the default key is the first key found in the secret keyring.
+Note that -u or ---local-user overrides this option.
 
 @item -r, ---recipient @code{name}
 @itemx 
@@ -552,17 +571,33 @@ twice, the input data is listed in detail.
 Try to be as quiet as possible.
 
 @item -z @code{n}, ---compress-level @code{n}
-Set compression level to @code{n}. A value of 0 for @code{n}
-disables compression. Default is to use the default
-compression level of zlib (normally 6).
+Set compression level to @code{n}. A value of 0 for @code{n} disables
+compression. The default is to use the default compression level of
+zlib (normally 6).
+
+@item ---bzip2-decompress-lowmem
+Use a different decompression method for BZIP2 compressed files. This
+alternate method uses a bit more than half the memory, but also runs
+at half the speed. This is useful under extreme low memory
+circumstances when the file was originally compressed at a very high
+compression level.
 
 @item -t, ---textmode
 @itemx ---no-textmode
-Use canonical text mode. ---no-textmode disables this option. If -t
-(but not ---textmode) is used together with armoring and signing, this
-enables clearsigned messages. This kludge is needed for command-line
-compatibility with command-line versions of PGP; normally you would
-use ---sign or --clearsign to select the type of the signature.
+Treat input files as text and store them in the OpenPGP canonical text
+form with standard "CRLF" line endings. This also sets the necessary
+flags to inform the recipient that the encrypted or signed data is
+text and may need its line endings converted back to whatever the
+local system uses. This option is useful when communicating between
+two platforms that have different line ending conventions (UNIX-like
+to Mac, Mac to Windows, etc). ---no-textmode disables this option, and
+is the default.
+
+If -t (but not ---textmode) is used together with armoring and signing,
+this enables clearsigned messages. This kludge is needed for
+command-line compatibility with command-line versions of PGP; normally
+you would use ---sign or --clearsign to select the type of the
+signature.
 
 @item -n, ---dry-run
 Don't make any changes (this is not completely implemented).
@@ -586,7 +621,20 @@ Assume "yes" on most questions.
 @item ---no
 Assume "no" on most questions.
 
-@item ---default-cert-check-level @code{n}
+@item ---ask-cert-level
+@itemx ---no-ask-cert-level
+When making a key signature, prompt for a certification level. If
+this option is not specified, the certification level used is set via
+---default-cert-level. See --default-cert-level for information on the
+specific levels and how they are used. ---no-ask-cert-level disables
+this option. This option defaults to yes.
+
+@item ---min-cert-level
+When building the trust database, disregard any signatures with a
+certification level below this. Defaults to 1, which accepts all
+signatures.
+
+@item ---default-cert-level @code{n}
 The default to use for the check level when signing a key.
 
 0 means you make no particular claim as to how carefully you verified
@@ -613,7 +661,7 @@ Note that the examples given above for levels 2 and 3 are just that:
 examples. In the end, it is up to you to decide just what "casual"
 and "extensive" mean to you.
 
-This option defaults to 0.
+This option defaults to 0 (no particular claim).
 
 @item ---trusted-key @code{long key ID}
 Assume that the specified key (which must be given
@@ -669,9 +717,12 @@ keyserver types, some common options are:
 @table @asis
 @item include-revoked
 When searching for a key with ---search-keys, include keys that are
-marked on the keyserver as revoked. Note that this option is always
-set when using the NAI HKP keyserver, as this keyserver does not
-differentiate between revoked and unrevoked keys.
+marked on the keyserver as revoked. Note that not all keyservers
+differentiate between revoked and unrevoked keys, and for such
+keyservers this option is meaningless. Note also that most keyservers
+do not have cryptographic verification of key revocations, and so
+turning this option off may result in skipping keys that are
+incorrectly marked as revoked. Defaults to on.
 
 @item include-disabled
 When searching for a key with ---search-keys, include keys that are
@@ -796,36 +847,38 @@ useful when you're listing a specific key or set of keys. It has no
 effect when listing all keys.
 
 @item ---keyring @code{file}
-Add @code{file} to the list of keyrings. If @code{file} begins with a
-tilde and a slash, these are replaced by the HOME directory. If the
-filename does not contain a slash, it is assumed to be in the GnuPG
-home directory ("~/.gnupg" if ---homedir is not used). The filename
-may be prefixed with a scheme:
+Add @code{file} to the current list of keyrings. If @code{file} begins
+with a tilde and a slash, these are replaced by the $HOME
+directory. If the filename does not contain a slash, it is assumed to
+be in the GnuPG home directory ("~/.gnupg" if ---homedir or $GNUPGHOME
+is not used).
 
-"gnupg-ring:" is the default one.
-
-It might make sense to use it together with ---no-default-keyring.
+Note that this adds a keyring to the current list. If the intent is
+to use the specified keyring alone, use ---keyring along with
+---no-default-keyring.
 
 @item ---secret-keyring @code{file}
 Same as ---keyring but for the secret keyrings.
 
 @item ---trustdb-name @code{file}
 Use @code{file} instead of the default trustdb. If @code{file} begins
-with a tilde and a slash, these are replaced by the HOME directory. If
-the filename does not contain a slash, it is assumed to be in the
-GnuPG home directory ("~/.gnupg" if ---homedir is not used).
+with a tilde and a slash, these are replaced by the $HOME
+directory. If the filename does not contain a slash, it is assumed to
+be in the GnuPG home directory ("~/.gnupg" if ---homedir or $GNUPGHOME
+is not used).
 
 @item ---homedir @code{directory}
-Set the name of the home directory to @code{directory} If this
-option is not used it defaults to "~/.gnupg". It does
-not make sense to use this in a options file. This
-also overrides the environment variable "GNUPGHOME".
+Set the name of the home directory to @code{directory} If this option is not
+used it defaults to "~/.gnupg". It does not make sense to use this in
+a options file. This also overrides the environment variable
+$GNUPGHOME.
 
-@item ---charset @code{name}
-Set the name of the native character set. This is used
-to convert some strings to proper UTF-8 encoding. If this option is not used, the default character set is determined
-from the current locale. A verbosity level of 3 shows the used one.
-Valid values for @code{name} are:
+@item ---display-charset @code{name}
+Set the name of the native character set. This is used to convert
+some informational strings like user IDs to the proper UTF-8
+encoding. If this option is not used, the default character set is
+determined from the current locale. A verbosity level of 3 shows the
+chosen set. Valid values for @code{name} are:
 
 @table @asis
 @item iso-8859-1
@@ -849,11 +902,11 @@ that the OS uses native UTF-8 encoding.
 
 @item ---utf8-strings
 @itemx ---no-utf8-strings
-Assume that the arguments are already given as UTF8 strings. The default
-(---no-utf8-strings)
-is to assume that arguments are encoded in the character set as specified
-by ---charset. These options affect all following arguments. Both options may
-be used multiple times.
+Assume that command line arguments are given as UTF8 strings. The
+default (---no-utf8-strings) is to assume that arguments are encoded in
+the character set as specified by ---display-charset. These options
+affect all following arguments. Both options may be used multiple
+times.
 
 @item ---options @code{file}
 Read options from @code{file} and do not try to read
@@ -911,8 +964,8 @@ See ---no-sk-comments. This option is deprecated and may be removed
 soon.
 
 @item ---comment @code{string}
-Use @code{string} as the comment string in clear text signatures. The
-default behavior is not to use a comment string.
+Use @code{string} as the comment string in ASCII armored or clearsigned
+messages. The default behavior is to not use a comment string.
 
 @item ---default-comment
 Force to write the standard comment string in clear
@@ -933,9 +986,9 @@ Put the name value pair into the signature as notation data.
 must contain a '@@' character. This is to help prevent pollution of
 the IETF reserved notation namespace. The ---expert flag overrides the
 '@@' check. @code{value} may be any printable string; it will be
-encoded in UTF8, so you should check that your ---charset is set
-correctly. If you prefix @code{name} with an exclamation mark (!), the
-notation data will be flagged as critical (rfc2440:5.2.3.15).
+encoded in UTF8, so you should check that your ---display-charset is
+set correctly. If you prefix @code{name} with an exclamation mark (!),
+the notation data will be flagged as critical (rfc2440:5.2.3.15).
 ---sig-notation sets a notation for data signatures. --cert-notation
 sets a notation for key signatures (certifications). ---set-notation
 sets both.
@@ -959,11 +1012,11 @@ as well as when verifying a signature with a notation in it.
 @item ---sig-policy-url @code{string}
 @itemx ---cert-policy-url @code{string}
 @itemx ---set-policy-url @code{string}
-Use @code{string} as Policy URL for signatures (rfc2440:5.2.3.19). If
-you prefix it with an exclamation mark (!), the policy URL packet will
-be flagged as critical. ---sig-policy-url sets a a policy url for data
-signatures. ---cert-policy-url sets a policy url for key signatures
-(certifications). ---set-policy-url sets both.
+Use @code{string} as a Policy URL for signatures (rfc2440:5.2.3.19).
+If you prefix it with an exclamation mark (!), the policy URL packet
+will be flagged as critical. ---sig-policy-url sets a policy url for
+data signatures. ---cert-policy-url sets a policy url for key
+signatures (certifications). ---set-policy-url sets both.
 
 The same %-expandos used for notation data are available here as well.
 
@@ -987,8 +1040,9 @@ display the message. This option overrides ---set-filename.
 ---no-for-your-eyes-only disables this option.
 
 @item ---use-embedded-filename
-Try to create a file with a name as embedded in the data.
-This can be a dangerous option as it allows to overwrite files.
+@itemx ---no-use-embedded-filename
+Try to create a file with a name as embedded in the data. This can be
+a dangerous option as it allows to overwrite files. Defaults to no.
 
 @item ---completes-needed @code{n}
 Number of completely trusted users to introduce a new
@@ -1038,14 +1092,14 @@ conventional encryption.
 
 @item ---simple-sk-checksum
 Secret keys are integrity protected by using a SHA-1 checksum. This
-method will be part of an enhanced OpenPGP specification but GnuPG
-already uses it as a countermeasure against certain attacks. Old
-applications don't understand this new format, so this option may be
-used to switch back to the old behaviour. Using this this option
-bears a security risk. Note that using this option only takes effect
-when the secret key is encrypted - the simplest way to make this
-happen is to change the passphrase on the key (even changing it to the
-same value is acceptable).
+method is part of the upcoming enhanced OpenPGP specification but
+GnuPG already uses it as a countermeasure against certain attacks.
+Old applications don't understand this new format, so this option may
+be used to switch back to the old behaviour. Using this option bears
+a security risk. Note that using this option only takes effect when
+the secret key is encrypted - the simplest way to make this happen is
+to change the passphrase on the key (even changing it to the same
+value is acceptable).
 
 @item ---compress-algo @code{n}
 Use compression algorithm @code{n}. The value 2 is RFC1950 ZLIB
@@ -1322,8 +1376,11 @@ Suppress the warning about missing MDC integrity protection.
 Assume the input data is not in ASCII armored format.
 
 @item ---no-default-keyring
-Do not add the default keyrings to the list of
-keyrings.
+Do not add the default keyrings to the list of keyrings. Note that
+GnuPG will not operate without any keyrings, so if you use this option
+and do not provide alternate keyrings via ---keyring or
+---secret-keyring, then GnuPG will still use the default public or
+secret keyrings.
 
 @item ---skip-verify
 Skip the signature verification step. This may be
@@ -1332,11 +1389,11 @@ verification is not needed.
 
 @item ---with-colons
 Print key listings delimited by colons. Note that the output will be
-encoded in UTF-8 regardless of any ---charset setting. This format is
-useful when GnuPG is called from scripts and other programs as it is
-easily machine parsed. The details of this format are documented in
-the file doc/DETAILS, which is included in the GnuPG source
-distribution.
+encoded in UTF-8 regardless of any ---display-charset setting. This
+format is useful when GnuPG is called from scripts and other programs
+as it is easily machine parsed. The details of this format are
+documented in the file doc/DETAILS, which is included in the GnuPG
+source distribution.
 
 @item ---with-key-data
 Print key listings delimited by colons (like ---with-colons) and print the public key data.
@@ -1369,19 +1426,20 @@ This is not for normal use. Use the source to see for what it might be useful.
 This is not for normal use. Use the source to see for what it might be useful.
 
 @item ---emulate-md-encode-bug
-GnuPG versions prior to 1.0.2 had a bug in the way a signature was encoded.
-This options enables a workaround by checking faulty signatures again with
-the encoding used in old versions. This may only happen for ElGamal signatures
-which are not widely used.
+GnuPG versions prior to 1.0.2 had a bug in the way a signature was
+encoded. This options enables a workaround by checking faulty
+signatures again with the encoding used in old versions. This may
+only happen for Elgamal signatures which are not widely used.
 
 @item ---show-session-key
 Display the session key used for one message. See ---override-session-key
 for the counterpart of this option.
 
-We think that Key-Escrow is a Bad Thing; however the user should
-have the freedom to decide whether to go to prison or to reveal the content of
-one specific message without compromising all messages ever encrypted for one
-secret key. DON'T USE IT UNLESS YOU ARE REALLY FORCED TO DO SO.
+We think that Key Escrow is a Bad Thing; however the user should have
+the freedom to decide whether to go to prison or to reveal the content
+of one specific message without compromising all messages ever
+encrypted for one secret key. DON'T USE IT UNLESS YOU ARE REALLY
+FORCED TO DO SO.
 
 @item ---override-session-key @code{string} 
 Don't use the public key but the session key @code{string}. The format of this
@@ -1434,8 +1492,9 @@ Experimental use only.
 
 @item ---group @code{name=value1 value2 value3 ...}
 Sets up a named group, which is similar to aliases in email programs.
-Any time the group name is a recipient (-r or ---recipient), it will
-be expanded to the values specified.
+Any time the group name is a recipient (-r or ---recipient), it will be
+expanded to the values specified. Multiple groups with the same name
+are automatically merged into a single group.
 
 The values are @code{key IDs} or fingerprints, but any key description
 is accepted. Note that a value with spaces in it will be treated as
@@ -1445,8 +1504,11 @@ from the command line, it may be necessary to quote the argument to
 this option to prevent the shell from treating it as multiple
 arguments.
 
+@item ---ungroup @code{name}
+Remove a given entry from the ---group list.
+
 @item ---no-groups
-Clear the ---group list.
+Remove all entries from the ---group list.
 
 @item ---preserve-permissions
 Don't change the permissions of a secret keyring back to user
@@ -1477,6 +1539,14 @@ Set the list of default preferences to @code{string}, this list should
 be a string similar to the one printed by the command "pref" in the
 edit menu. This affects both key generation and "updpref" in the edit
 menu.
+
+@item ---list-config @code{names}
+Display various internal configuration parameters of GnuPG. This
+option is intended for external programs that call GnuPG to perform
+tasks, and is thus not generally useful. See the file
+@file{doc/DETAILS} in the source distribution for the
+details of which configuration items may be listed. ---list-config is
+only usable with ---with-colons set.
 
 @end table
 
@@ -1528,9 +1598,9 @@ in front.
 @end table
 
 Note that you can append an exclamation mark (!) to key IDs or
-fingerprints. This flag tells GnuPG to use exactly the given primary
-or secondary key and not to try to figure out which secondary or
-primary key to use.
+fingerprints. This flag tells GnuPG to use the specified primary or
+secondary key and not to try and calculate which primary or secondary
+key to use.
 
 @majorheading RETURN VALUE
 The program returns 0 if everything was fine, 1 if at least
@@ -1651,25 +1721,27 @@ forcing their use via the ---cipher-algo, --digest-algo,
 possible to create a perfectly valid OpenPGP message, but one that
 cannot be read by the intended recipient.
 
-For example, as of this writing, no version of official PGP supports
+For example, as of this writing, no (unhacked) version of PGP supports
 the BLOWFISH cipher algorithm. If you use it, no PGP user will be
 able to decrypt your message. The same thing applies to the ZLIB
-compression algorithm. By default, GnuPG uses the OpenPGP preferences
-system that will always do the right thing and create messages that
-are usable by all recipients, regardless of which OpenPGP program they
-use. Only override this safe default if you know what you are doing.
+compression algorithm. By default, GnuPG uses the standard OpenPGP
+preferences system that will always do the right thing and create
+messages that are usable by all recipients, regardless of which
+OpenPGP program they use. Only override this safe default if you know
+what you are doing.
 
 If you absolutely must override the safe default, or if the
 preferences on a given key are invalid for some reason, you are far
-better off using the ---pgp2, --pgp6, --pgp7, or --pgp8 options. These
-options are safe as they do not force any particular algorithms in
-violation of OpenPGP, but rather reduce the available algorithms to a
-"PGP-safe" list.
+better off using the ---pgp6, --pgp7, or --pgp8 options. These options
+are safe as they do not force any particular algorithms in violation
+of OpenPGP, but rather reduce the available algorithms to a "PGP-safe"
+list.
 
 @majorheading BUGS
 On many systems this program should be installed as setuid(root). This
 is necessary to lock memory pages. Locking memory pages prevents the
-operating system from writing memory pages to disk. If you get no
+operating system from writing memory pages (which may contain
+passphrases or other sensitive material) to disk. If you get no
 warning message about insecure memory your operating system supports
 locking without being root. The program drops root privileges as soon
 as locked memory is allocated.

@@ -1,3 +1,8 @@
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* plaintext.c (handle_plaintext): Make number buffer larger.  With
+	64 bits longs we might need to print 20 digits.
+
 2004-07-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (update_keysig_packet): Revert change of 2004-05-18.  It

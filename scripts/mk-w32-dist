@@ -74,7 +74,7 @@ for i in ${srcdir}/po/*.po; do
      tr) toset="CP1254" ;;   # DOS: CP857
      el) toset="CP1253" ;;   # same as latin-7?
      ru|be) toset="CP1251" ;;   # same as latin-7?
-     el|eo|et|ja|pl|sk|zh_TW) toset="" ;;
+     el|eo|et|ja|pl|sk|zh_TW|zh_CN) toset="" ;;
       *) toset="CP850" ;;
    esac
    if [ -n "$toset" ]; then

@@ -18,7 +18,7 @@
 @end menu
 
 @majorheading Name
-gpgv ---- signature verification tool</>
+gpgv ---- signature verification tool
 
 @majorheading Synopsis
 
@@ -58,8 +58,6 @@ home-directory ("~/.gnupg" if ---homedir is not used).
 The filename may be prefixed with a scheme:
 
 "gnupg-ring:" is the default one.
-
-It might make sense to use it together with ---no-default-keyring.
 
 @item ---homedir @code{directory}
 Set the name of the home directory to @code{directory} If this

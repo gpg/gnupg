@@ -15,4 +15,3 @@ getopt.h
 readme.txt
 rijndael2.c
 unistd.h
-distfiles

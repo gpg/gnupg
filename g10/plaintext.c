@@ -63,7 +63,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
        the format code (say, recode UTF-8 to local). */
     if(!nooutput && is_status_enabled())
       {
-	char status[20];
+	char status[50];
 
 	sprintf(status,"%X %lu ",(byte)pt->mode,(ulong)pt->timestamp);
 	write_status_text_and_buffer(STATUS_PLAINTEXT,
