@@ -555,7 +555,7 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 	}
 	n += nbytes;
     }
-    memset(buf,0,1000); /* at least burn the buffer */
+    wipememory(buf,1000); /* burn the buffer */
     if( !pt->len )
 	iobuf_set_block_mode(out, 0 ); /* write end marker */
     else if( n != pt->len )

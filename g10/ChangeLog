@@ -1,3 +1,10 @@
+2002-10-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (do_plaintext), encode.c (encode_sesskey,
+	encode_simple, encode_crypt), sign.c (write_plaintext_packet): Use
+	wipememory() instead of memset() to wipe sensitive memory as the
+	memset() might be optimized away.
+
 2002-10-23  Werner Koch  <wk@gnupg.org>
 
 	* pubkey-enc.c (get_it): Fix segv, test for revoked only when PK
