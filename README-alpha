@@ -2,8 +2,14 @@ The 1.1 series are the current development branch of GnuPG.
 
        DO NOT USE IN A PRODUCTION ENVIRONMENT!
 
+        THERE MIGHT EVEN BE SECURITY PROBLEMS!
+
 The source may change quite often and may have serious
 problems; it may even not compile on some machines.
+
+It will probably needs GCC and GLIBC to build due to
+some debugging code.  Please don't complain if it does not 
+work on other machines.  We will make it work again later.
 
 Use GnuPG from the stable 1.0.x series for real work.
 
