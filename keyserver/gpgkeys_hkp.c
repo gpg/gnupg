@@ -39,8 +39,8 @@
 
 int verbose=0,include_disabled=0,include_revoked=0;
 char *basekeyspacedn=NULL;
-char host[80];
-char portstr[10];
+char host[80]={'\0'};
+char portstr[10]={'\0'};
 FILE *input=NULL,*output=NULL,*console=NULL,*server=NULL;
 
 struct keylist
@@ -290,7 +290,7 @@ int get_key(char *getkey)
 
   if(verbose)
     fprintf(console,"gpgkeys: requesting key 0x%s from hkp://%s%s%s\n",
-	    getkey,host,portstr?":":"",portstr?portstr:"");
+	    getkey,host,portstr[0]?":":"",portstr[0]?portstr:"");
 
   err=http_get("get",search);
   if(err!=0)
@@ -404,19 +404,19 @@ int parse_hkp_index(char *line,char **buffer)
   static unsigned int bits,createtime;
   int ret=0;
 
-  /* printf("Open %d, LINE: %s, uid: %s\n",open,line,uid); */
+  /*  printf("Open %d, LINE: %s, uid: %s\n",open,line,uid); */
 
   /* Try and catch some bastardization of HKP.  If we don't have
      certain unchanging landmarks, we can't reliably parse the
      response. */
 
   if(open && strncasecmp(line,"</pre>",6)!=0 &&
-     strncasecmp(line,"pub ",5)!=0 &&
-     strncasecmp(line,"     ",5)!=0)
+     strncasecmp(line,"pub ",4)!=0 &&
+     strncasecmp(line,"    ",4)!=0)
     {
       free(key);
       free(uid);
-      fprintf(console,"gpgkeys; this keyserver is not fully HKP compatible\n");
+      fprintf(console,"gpgkeys: this keyserver is not fully HKP compatible\n");
       return -1;
     }
 
@@ -464,7 +464,7 @@ int parse_hkp_index(char *line,char **buffer)
 	  ret=1;
 	}
 
-      if(strncmp(line,"     ",5)!=0)
+      if(strncmp(line,"    ",4)!=0)
 	{
 	  revoked=0;
 	  free(key);
@@ -474,7 +474,7 @@ int parse_hkp_index(char *line,char **buffer)
 	}
     }
 
-  if(strncasecmp(line,"pub  ",5)==0)
+  if(strncasecmp(line,"pub ",4)==0)
     {
       char *tok,*temp;
 

@@ -42,8 +42,8 @@
 
 int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
 char *basekeyspacedn=NULL;
-char host[80];
-char portstr[10];
+char host[80]={'\0'};
+char portstr[10]={'\0'};
 char *pgpkeystr="pgpKey";
 FILE *input=NULL,*output=NULL,*console=NULL;
 LDAP *ldap=NULL;
@@ -242,7 +242,7 @@ int get_key(char *getkey)
 
   if(verbose)
     fprintf(console,"gpgkeys: requesting key 0x%s from ldap://%s%s%s\n",
-	    getkey,host,portstr?":":"",portstr?portstr:"");
+	    getkey,host,portstr[0]?":":"",portstr[0]?portstr:"");
 
   err=ldap_search_s(ldap,basekeyspacedn,
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
