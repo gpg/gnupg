@@ -1,3 +1,12 @@
+2005-01-21  David Shaw  <dshaw@grover.jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Add "check-cert" option to disable SSL
+	certificate checking (which is on by default).
+
+	* gpgkeys_curl.c (main): Add "debug" option to match the LDAP
+	helper.  Add "check-cert" option to disable SSL certificate
+	checking (which is on by default).
+
 2005-01-18  David Shaw  <dshaw@grover.jabberwocky.com>
 
 	* gpgkeys_curl.c: Fix typo.

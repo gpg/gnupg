@@ -82,12 +82,6 @@ get_key(char *getkey)
   curl_easy_setopt(curl,CURLOPT_FILE,output);
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 
-  if(verbose>1)
-    {
-      curl_easy_setopt(curl,CURLOPT_STDERR,console);
-      curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
-    }
-
   res=curl_easy_perform(curl);
   if(res!=0)
     {
@@ -116,7 +110,7 @@ main(int argc,char *argv[])
   char line[MAX_LINE];
   char *thekey=NULL;
   unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
-  long follow_redirects=5;
+  long follow_redirects=5,debug=0,check_cert=1;
 
   console=stderr;
 
@@ -287,6 +281,22 @@ main(int argc,char *argv[])
 	      else if(start[16]=='\0')
 		follow_redirects=-1;
 	    }
+	  else if(strncasecmp(start,"debug",5)==0)
+	    {
+	      if(no)
+		debug=0;
+	      else if(start[5]=='=')
+		debug=atoi(&start[6]);
+	      else if(start[5]=='\0')
+		debug=1;
+	    }
+	  else if(strcasecmp(start,"check-cert")==0)
+	    {
+	      if(no)
+		check_cert=0;
+	      else
+		check_cert=1;
+	    }
 
 	  continue;
 	}
@@ -336,6 +346,14 @@ main(int argc,char *argv[])
       if(follow_redirects>0)
 	curl_easy_setopt(curl,CURLOPT_MAXREDIRS,follow_redirects);
     }
+
+  if(debug)
+    {
+      curl_easy_setopt(curl,CURLOPT_STDERR,console);
+      curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
+    }
+
+  curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,check_cert);
 
   if(proxy[0])
     curl_easy_setopt(curl,CURLOPT_PROXY,proxy);

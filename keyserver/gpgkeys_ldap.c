@@ -1534,7 +1534,7 @@ main(int argc,char *argv[])
 {
   int debug=0,port=0,arg,err,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
-  int version,failed=0,use_ssl=0,use_tls=0,bound=0;
+  int version,failed=0,use_ssl=0,use_tls=0,bound=0,check_cert=1;
   struct keylist *keylist=NULL,*keyptr=NULL;
   unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
 
@@ -1719,6 +1719,13 @@ main(int argc,char *argv[])
 	      else if(start[3]=='\0')
 		use_tls=1;
 	    }
+	  else if(strcasecmp(start,"check-cert")==0)
+	    {
+	      if(no)
+		check_cert=0;
+	      else
+		check_cert=1;
+	    }
 	  else if(strncasecmp(start,"debug",5)==0)
 	    {
 	      if(no)
@@ -1868,12 +1875,26 @@ main(int argc,char *argv[])
 
   if(use_ssl)
     {
-#if defined(LDAP_OPT_X_TLS_HARD) && defined(HAVE_LDAP_SET_OPTION)
+#if defined(LDAP_OPT_X_TLS) && defined(HAVE_LDAP_SET_OPTION)
       int ssl=LDAP_OPT_X_TLS_HARD;
+
       err=ldap_set_option(ldap,LDAP_OPT_X_TLS,&ssl);
       if(err!=LDAP_SUCCESS)
 	{
 	  fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
+		  ldap_err2string(err));
+	  fail_all(keylist,action,ldap_err_to_gpg_err(err));
+	  goto fail;
+	}
+
+      if(!check_cert)
+	ssl=LDAP_OPT_X_TLS_NEVER;
+
+      err=ldap_set_option(NULL,LDAP_OPT_X_TLS_REQUIRE_CERT,&ssl);
+      if(err!=LDAP_SUCCESS)
+	{
+	  fprintf(console,
+		  "gpgkeys: unable to set certificate validation: %s\n",
 		  ldap_err2string(err));
 	  fail_all(keylist,action,ldap_err_to_gpg_err(err));
 	  goto fail;
@@ -1915,15 +1936,22 @@ main(int argc,char *argv[])
 #if defined(HAVE_LDAP_START_TLS_S) && defined(HAVE_LDAP_SET_OPTION)
 	  int ver=LDAP_VERSION3;
 
-	  err=LDAP_SUCCESS;
-
 	  err=ldap_set_option(ldap,LDAP_OPT_PROTOCOL_VERSION,&ver);
 	  if(err==LDAP_SUCCESS)
-	    err=ldap_start_tls_s(ldap,NULL,NULL);
+	    {
+	      if(check_cert)
+		ver=LDAP_OPT_X_TLS_HARD;
+	      else
+		ver=LDAP_OPT_X_TLS_NEVER;
+
+	      err=ldap_set_option(ldap,LDAP_OPT_X_TLS_REQUIRE_CERT,&ver);
+	      if(err==LDAP_SUCCESS)
+		err=ldap_start_tls_s(ldap,NULL,NULL);
+	    }
 
 	  if(err!=LDAP_SUCCESS)
 	    {
-	      if(use_tls==2 || verbose>2)
+	      if(use_tls>=2 || verbose>2)
 		fprintf(console,"gpgkeys: unable to start TLS: %s\n",
 			ldap_err2string(err));
 	      /* Are we forcing it? */
@@ -1952,7 +1980,7 @@ main(int argc,char *argv[])
   /* The LDAP keyserver doesn't require this, but it might be useful
      if someone stores keys on a V2 LDAP server somewhere.  (V3
      doesn't require a bind).  Leave this out for now since it is not
-     clear if anyone server we're likely to use really cares, plus
+     clear if anyone's server we're likely to use really cares, plus
      there are some servers that don't allow it. */
 
   err=ldap_simple_bind_s(ldap,NULL,NULL);
