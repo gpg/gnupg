@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include "assuan.h"
 
-#define LINELENGTH 1002 /* 1000 + [CR,]LF */
+#define LINELENGTH 102 /* 1000 + [CR,]LF */
 
 struct cmdtbl_s {
   const char *name;
@@ -45,6 +45,10 @@ struct assuan_context_s {
     int linelen;  /* w/o CR, LF - might not be the same as
                      strlen(line) due to embedded nuls. However a nul
                      is always written at this pos */
+    struct {
+      char line[LINELENGTH];
+      int linelen ;
+    } attic;
   } inbound;
 
   struct {

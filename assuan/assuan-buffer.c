@@ -78,7 +78,7 @@ readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
       for (; n && *p != '\n'; n--, p++)
         ;
       if (n)
-        break;
+        break; /* at least one full line available - that's enough for now */
     }
 
   return 0;
@@ -95,7 +95,26 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
   if (ctx->inbound.eof)
     return -1;
 
-  rc = readline (ctx->inbound.fd, line, LINELENGTH, &nread, &ctx->inbound.eof);
+  if (ctx->inbound.attic.linelen)
+    {
+      memcpy (line, ctx->inbound.attic.line, ctx->inbound.attic.linelen);
+      nread = ctx->inbound.attic.linelen;
+      ctx->inbound.attic.linelen = 0;
+      for (n=0; n < nread && line[n] != '\n'; n++)
+        ;
+      if (n < nread)
+        rc = 0; /* found another line in the attic */
+      else
+        { /* read the rest */
+          n = nread;
+          assert (n < LINELENGTH);
+          rc = readline (ctx->inbound.fd, line + n, LINELENGTH - n,
+                         &nread, &ctx->inbound.eof);
+        }
+    }
+  else
+    rc = readline (ctx->inbound.fd, line, LINELENGTH,
+                   &nread, &ctx->inbound.eof);
   if (rc)
     return ASSUAN_Read_Error;
   if (!nread)
@@ -104,15 +123,18 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
       return -1; 
     }
 
-  for (n=nread-1; n>=0 ; n--)
+  for (n=0; n < nread; n++)
     {
       if (line[n] == '\n')
         {
-          if (n != nread-1)
+          if (n+1 < nread)
             {
-              fprintf (stderr, "DBG-assuan: %d bytes left over after read\n",
-                       nread-1 - n);
-              /* fixme: store them for the next read */
+              n++;
+              /* we have to copy the rest because the handlers are
+                 allowed to modify the passed buffer */
+              memcpy (ctx->inbound.attic.line, line+n, nread-n);
+              ctx->inbound.attic.linelen = nread-n;
+              n--;
             }
           if (n && line[n-1] == '\r')
             n--;
