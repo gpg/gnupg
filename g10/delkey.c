@@ -95,6 +95,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 	if( !rc ) {
             *r_sec_avail = 1;
             rc = -1;
+            goto leave;
 	}
 	else if( rc != G10ERR_NO_SECKEY ) {
 	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );

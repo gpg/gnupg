@@ -1,3 +1,9 @@
+2001-01-29  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): --batch dioes now set nogreeting.
+
+	* delkey.c (do_delete_key): Fixed delete-both functionality.
+
 2001-01-22  Werner Koch  <wk@gnupg.org>
 
 	* g10.c: New command --delete-secret-and-public-key.

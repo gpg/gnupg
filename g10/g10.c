@@ -803,7 +803,7 @@ main( int argc, char **argv )
 		    opt.verbose++; opt.list_sigs=1; break;
 	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
-	  case oBatch: opt.batch = 1; greeting = 0; break;
+	  case oBatch: opt.batch = 1; nogreeting = 1; break;
           case oUseAgent: opt.use_agent = 1; break;
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
