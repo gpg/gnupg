@@ -1245,20 +1245,21 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	if(p && *p==0)
 	  sig->flags.revocable=0;
 
-	/* We accept this subpacket from either the hashed or unhashed
-	   areas as older versions of gpg put it in the unhashed area.
-	   In theory, anyway, we should never see this packet off of a
-	   local keyring. */
+	/* We accept the exportable subpacket from either the hashed
+	   or unhashed areas as older versions of gpg put it in the
+	   unhashed area.  In theory, anyway, we should never see this
+	   packet off of a local keyring. */
 
 	p=parse_sig_subpkt2(sig,SIGSUBPKT_EXPORTABLE,NULL);
 	if(p && *p==0)
 	  sig->flags.exportable=0;
 
-	/* Find all revokation keys */
+	/* Find all revokation keys. Back to hashed area only. */
 	if(sig->sig_class==0x1F)
 	  {
 	    struct revocation_key *revkey;
-	    int len,seq=0;
+	    int seq=0;
+	    size_t len;
 
 	    while((revkey=
 		   (struct revocation_key *)enum_sig_subpkt(sig->hashed,

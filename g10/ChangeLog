@@ -1,3 +1,8 @@
+2002-03-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_signature): variable type tweak for RISC
+	OS (from Stefan)
+
 2002-02-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (check_revocation_keys): New function to check a
