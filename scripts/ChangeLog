@@ -1,3 +1,8 @@
+2001-08-21  Stefan Bellon  <sbellon@sbellon.de>
+
+	* build-riscos [__riscos__]: New.
+	* conf-riscos [__riscos__]: Ditto.
+
 2001-08-13  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: Test on gettext 0.10.38. By Michael Engels.
