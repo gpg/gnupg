@@ -40,6 +40,7 @@ void gpg_log_print_prefix(const char *text);
 void log_set_name( const char *name );
 const char *log_get_name(void);
 void log_set_pid( int pid );
+void log_inc_errorcount(void);
 int  log_get_errorcount( int clear );
 void gpg_log_hexdump( const char *text, const char *buf, size_t len );
 

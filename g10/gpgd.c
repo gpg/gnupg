@@ -1,4 +1,4 @@
-/* gpg.c - The GnuPG daemon (keyserver)
+/* ggpd.c - The GnuPG daemon (keyserver)
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -38,6 +38,7 @@
 #include <sys/stat.h>
 
 #include "util.h"
+#include "cipher.h"
 #include "options.h"
 #include "main.h"
 
@@ -84,7 +85,7 @@ strusage( int level )
       case 33:
 	if( !pubkeys )
 	    pubkeys = build_list("Supported pubkeys: ", pubkey_algo_to_string,
-							openpgp_pk_test_algo );
+							check_pubkey_algo );
 	p = pubkeys;
 	break;
       case 34:
@@ -137,7 +138,7 @@ set_debug(void)
     if( opt.debug & DBG_MPI_VALUE )
 	mpi_debug_mode = 1;
     if( opt.debug & DBG_CIPHER_VALUE )
-	gpgc_debug_mode = 1;
+	g10c_debug_mode = 1;
     if( opt.debug & DBG_IOBUF_VALUE )
 	iobuf_debug_mode = 1;
 }

@@ -1,5 +1,5 @@
 /* encode.c - encode data
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,6 +40,7 @@
 
 static int encode_simple( const char *filename, int mode );
 static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
+
 
 /****************
  * Emulate our old PK interface here - sometime in the future we might
@@ -162,7 +163,7 @@ encode_simple( const char *filename, int mode )
     }
 
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
-	iobuf_close(inp);
+	iobuf_cancel(inp);
 	gcry_free(cfx.dek);
 	gcry_free(s2k);
 	return rc;
@@ -510,7 +511,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	 * number of bits we have to use.  We then encode the session
 	 * key in some way and we get it back in the big intger value
 	 * FRAME.  Then we use FRAME, the public key PK->PKEY and the
-	 * algorithm number PK->PUBKEY_ALGO and pass it to pk_encrypt
+	 * algorithm number PK->PUBKEY_ALGO and pass it to pubkey_encrypt
 	 * which returns the encrypted value in the array ENC->DATA.
 	 * This array has a size which depends on the used algorithm
 	 * (e.g. 2 for ElGamal).  We don't need frame anymore because we
@@ -525,7 +526,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	    log_error("pubkey_encrypt failed: %s\n", gpg_errstr(rc) );
 	else {
 	    if( opt.verbose ) {
-		char *ustr = get_user_id_string( enc->keyid );
+		char *ustr = get_user_id_string_native( enc->keyid );
 		log_info(_("%s/%s encrypted for: %s\n"),
 		    gcry_pk_algo_name(enc->pubkey_algo),
 		    gcry_cipher_algo_name(dek->algo), ustr );

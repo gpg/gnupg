@@ -8,7 +8,7 @@ noinst_LTLIBRARIES = libutil.la
 libutil_la_LDFLAGS =
 libutil_la_SOURCES = logger.c fileutil.c miscutil.c strgutil.c	\
 		     ttyio.c  errors.c iobuf.c \
-		     http.c simple-gettext.c
+		     http.c simple-gettext.c w32reg.c
 
 
 http-test:  http.c

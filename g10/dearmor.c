@@ -1,5 +1,5 @@
 /* dearmor.c - Armor utility
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,9 +25,9 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include "errors.h"
 #include "iobuf.h"
-#include <gcrypt.h>
 #include "util.h"
 #include "filter.h"
 #include "packet.h"

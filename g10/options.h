@@ -1,5 +1,5 @@
 /* options.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,11 +28,12 @@
 struct {
     int verbose;
     int quiet;
-    unsigned debug;
+    unsigned int debug;
     int armor;
     int compress;
     char *outfile;
     int dry_run;
+    int list_only;
     int textmode;
     int batch;	    /* run in batch mode */
     int answer_yes; /* answer yes on most questions */
@@ -63,7 +64,9 @@ struct {
     int compress_sigs;
     int always_trust;
     int rfc1991;
-    unsigned emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
+    int rfc2440;
+    int pgp2_workarounds;
+    unsigned int emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
     const char *set_filename;
     const char *comment_string;
@@ -83,8 +86,16 @@ struct {
     int allow_non_selfsigned_uid;
     int no_literal;
     ulong set_filesize;
+    int honor_http_proxy;
+    int fast_list_mode;
+    int ignore_time_conflict;
+    int command_fd;
+    int auto_key_retrieve;
 } opt;
 
+
+#define EMUBUG_3DESS2K	  2
+#define EMUBUG_MDENCODE   4
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
@@ -96,6 +107,7 @@ struct {
 #define DBG_CACHE_VALUE   64	/* debug the cacheing */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_TRUST_VALUE   256	/* debug the trustdb */
+#define DBG_HASHING_VALUE 512	/* debug hashing operations */
 
 
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
@@ -104,6 +116,6 @@ struct {
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)
 #define DBG_CIPHER (opt.debug & DBG_CIPHER_VALUE)
-
+#define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 
 #endif /*GPG_OPTIONS_H*/

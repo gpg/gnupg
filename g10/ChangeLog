@@ -1,231 +1,710 @@
-Thu May 25 18:39:11 CEST 2000  Werner Koch  <wk@openit.de>
+Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
 
-  * kbxio.c: New.
+  Replaced everything with the code from the STABLE-BRANCH-1-0 and
+  started to backport the changes from the 1.1 development branch
+  which are dated according to the ChangeLog of the 1.1 from
+  Sat Sep 18 12:16:08 CEST 1999  to  Thu May 25 18:39:11 CEST 2000.
+  Here are those changes, some of them are duplicates because they
+  have been done on both branch simultaneously.
 
-  * kbxfile.c (print_kbxfile): Add a loop
-  (do_print_kbxfile): Fixed passing to kbx_dump_blob.
+  * gpg.c (print_mds): Add arg keys as a kludge to print hmacs
+  (main): New option --print-hmac.
 
-Fri Mar 24 11:25:45 CET 2000  Werner Koch  <wk@openit.de>
+  * trustdb.c (verify_own_keys): Do not print warning about unprotected
+  key when in quiet mode.
 
-	* gpg.c (print_mds): Add arg keys as a kludge to print hmacs
-	(main): New option --print-hmac.
+  * build-paket.c (do_user_id): Save offset where name has been stored.
+
+  * ringedit.c : Add new access method KBXF
+
+  * kbxfile.c: New.
+
+  * kbx.h: New.
+  * kbxblob.c: Started to work on the keybox stuff.
+
+  * keygen.c (gen_dsa): Modified to work with gcry_pk_genkey.
+
+  * Removed dummy-cipher.h from all files.
+
+  * keygen.c (gen_elg): Modified to work with gcry_pk_genkey.
+  (key_from_sexp): New.
+  (factors_from_sexp): New.
+
+  * g10.c : Renamed to ...
+  * gpg.c : ... this
+  * Makefile.am: And fixed it here.
+
+  * Changed all "g10_"/"GPG_" prefixes to "gpg_"/"GPG_".
+
+  * misc.c (mpi_read_opaque): Fixed double counting.
+
+  * seckey-cert.c (do_check): Removed buffer and the unmotivated free
+  on it.
+
+  * pubkey-enc.c (pk_decrypt): New wrapper for the gcry_ function.
+  * seckey-cert.c (pk_check_secret_key): Likewise.
+  * encode.c (pk_encrypt): Likewise.
+
+  * parse-packet.c (parse_key): Fixed case of unencrypted secret keys.
+
+  * misc.c (mpi_print): Use gcry_mpi_aprint.
+  (pubkey_nbits): Kludge to use the gcry_pk_ API.
+
+  * seskey.c (encode_session_key): Replaced mpi_set_buffer by *_scan.
+  (do_encode_md): Ditto.
+  (encode_md_value): Ditto.
+  * seckey-cert.c (protect_secret_key): Ditto.
+  * comment.c (make_mpi_comment_node): Replaced mpi_get_buffer by _print.
+  * pubkey-enc.c (get_it): Ditto.
+  * sig-check.c (do_signature_check): Ditto.
+
+  * keyid.c (do_fingerprint_md): Replaced mpi_get_buffer by gcry_mpi_print.
+  (v3_keyid): New.
+  (keyid_from_sk): And use it here.
+  (keyid_from_pk): Ditto.
+  (fingerprint_from_sk): Ditto.
+  (fingerprint_from_pk): Ditto.
+
+  * misc.c (mpi_print): New.
+
+  * misc.c (checksum_mpi): Now uses gcry_mpi_print to get the data.
+
+  * seckey-cert.c (do_check): Replaced mpi_read_from_buffer.
+
+  * armor.c (armor_filter): Made the "Comment:" header translatable.
+
+  * seckey-cert.c: Removed obsolete mpi_*_protect_flag.
+  * parse-packet.c: Ditto.
+
+  * misc.c (mpi_read): Removed the secure argumet becuase it is
+  never used.  Changed all Callers.
+  (mpi_read_opaque): New.
+  (mpi_write_opaque): New.
+  * parse-packet.c (parse_key): Use the opaque method also for
+  v3 keys.
+  * build-packet.c (do_secret_key): Likewise.
+
+  * g10.c (main): Check libgcrypt version.
+
+  * packet.h: replaced inclusion of mpi.h by a plain typeedef of the
+  gcry_mpi structure and removed all inclusions of "mpi.h" in all
+  sources.
+
+  * g10.c: Add --delete-secret-key to the help page.
+
+  * g10.c (main): Changed the default homedir to "~/.gnupg-test" so
+  that we don't mess up with the stable version.
+
+  * misc.c (mpi_write): New.
+  (mpi_write): New.
+
+  * misc.c (checksum_u16_nobug): Removed.
+  (checksum_mpi_counted_nbits): Renamed to ...
+  (checksum_mpi): ... this to superseed the old one. Changed all
+  callers. This is because we do not emulate the old gpg bug anymore.
+  * g10.c (oEmuChecksumBug): Removed.
+
+  * g10.c (register_extension): New...
+  (main): Use it here instead of register_cipher_extesnion.
+  (strusage): s/strusage/my_strusage/ . Made static.
+  (main): Use set_strusage().
+
+  * tdbdump.c (HEXTOBIN): Changed the name of the argument, so that
+  traditional cpp don't mess up the macros. Suggested by Jos Backus.
+
+  * armor.c (parse_header_line): Stop parsing on a only WS line too.
+  Suggested by Aric Cyr.
+
+  * misc.c (pull_in_libs): Removed.
+
+  * mainproc.c (list_node): Print the PK algo in the --with-colon mode.
+  * keylist.c (list_keyblock): Ditto.
+
+  * misc.c (pull_in_libs): Removed pull in of g10c.
+
+  * misc.c (map_gcry_rc): Removed here and chnaged all users.
+
+  * getkey.c: Replaced check_pubkey_algo by openpgp_pk_test_algo.
+  * import.c (delete_inv_parts): Ditto.
+  * pkclist.c: Ditto.
+  * skclist.c: Ditto.
+  * pubkey-enc.c: Ditto.
+
+  * g10.c (main): Replaced the function to diable PK algos.
+
+  * g10.c (main): Replaced get_random_bits by gcry_random_bytes.
+  * seskey.c (encode_session_key): Likewise.
+  (make_session_key): Renamed randomize_buffer to gcry_randomize
+  and use the GCRY_xxx_RANDOM constants.
+  * cipher.c (write_header): Ditto.
+  * passphrase.c (hash_passphrase): Ditto.
+  * seckey-cert.c (protect_secret_key): Ditto.
+
+  * getkey.c (find_by_name): Replaced rmd160_hash_buffer
+  by gcry_md_hash_buffer.
+  * keyedit.c (show_prefs): Ditto.
+  * keylist.c (list_keyblock): Ditto.
+  * trustdb.c (print_uid_from_keyblock): Ditto.
+  (make_uid_records): Ditto.
+
+  * skclist.c (build_sk_list): Removed the test on faked RNGs.
+  (is_insecure): Removed.
+  * g10.c (--quick-random): Removed this option.
+
+  * Replaced all PUBKEY_ALGO_xxx by GCRY_PK_xxxx.
+
+  * misc.c (pubkey_algo_npkey): New as a wrapper around the gcry fucntion.
+  (pubkey_algo_nskey): Ditto.
+  (pubkey_algo_nsig): Ditto.
+  (pubkey_algo_nenc): Ditto.
+
+  * Makefile.am (basicdefs.h): Added.
+  (install-data-local): Removed the handling for historic gpgm.
+
+  * misc.c (openpgp_cipher_test_algo): New.
+  (openpgp_pk_test_algo): New.
+  (openpgp_md_test_algo): New.
+
+  * g10.c (build_list): Changed to use the new functions from libgcrypt.
+
+  * ringedit.c (enum_keyblocks): Set .rt to 0 on open.
+
+  * encode.c (encode_simple): Use new CTB when we don't have the
+  length of the file.  This is somewhat strange as the comment above
+  indicates that this part is actually fixed for PGP 5 - maybe I simply
+  lost the source line, tsss.
+
+  * sign.c (clearsign_file): Avoid duplicated Entries in the "Hash:"
+  line.  Those headers are now only _not_ printed when there are
+  only old-style keys _and_ all hashs are MD5.
+
+  (clearsign_file): Use gcry_md_test_algo() and gcry_md_algo_name().
+
+  * openfile.c (make_outfile_name): Use case-insenstive compare for
+  DOS systems.	Add ".pgp" to the list of know extensions.
+  (open_outfile): For DOS systems try to replace the suffix instead of
+  appending it.
+
+  * encr-data.c (decrypt_data): Reset error on a weak key.
+
+  * cipher.c: Replaced the cipher and digest functions by the gcry_ ones.
+  * seckey-cert.c: Ditto.
+  * seskey.c: Ditto.
+  * g10.c (print_mds): Replaced digst functions with the new gcry_ ones.
+  * keyid.c: Ditto.
+  * mainproc.c: Ditto.
+  * passphrase.c: Ditto.
+  * sig-check.c: Ditto.
+  * sign.c: Ditto.
+
+  * pkclist.c (do_edit_ownertrust): Made the answer string const.
+
+  * basicdefs.h: New.  Move some defs and decl to this header.
+
+  * openfile.c (open_outfile): Fixed the 8dot3 handling.
+
+  * passphrase.c (passphrase_to_dek): Print uid using utf8 func.
+  * delkey.c (delete_key): Ditto.
+  * pkclist.c (show_paths,do_edit_ownertrust,do_we_trust): Ditto
+  (do_we_trust_pre): Ditto.
+  * trustdb.c (print_user_id,check_uidsigs): Ditto.
+  * revoke.c (gen_revoke,ask_revoke_sig): Ditto.
+
+  * filter.h: Changed cipher handle types to the the GCRY_xxx ones.
+  replaces include cipher by system header include gcrypt.h.
+  * cipher.c: replaced the cipher functions by the gcry_ ones.
+  Ditto for the md functions.
+
+  * misc.c (map_gcry_rc): New.
+
+Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@>
+
+  * armor.c (armor_filter): Set sigclass to 0 in case of non-dash-escaped
+  clearsig.  This makes this mode work again.
+
+  * mainproc.c (proc_tree): Fixed handling of one-pass-sig packets in textmode.
+  Disabled the ugly workaround for PGP 5 - let's see whether thi breaks less
+  cases. Found by Ted Cabeen.
+
+  * options.h (DBG_HASHING): New.  All commented md_start_debug are now
+  controlled by this debug option.
+
+  * sign.c (print_status_sig_created): New and called from 2 places.
+
+  * keygen.c (gen_rsa): New, but commented.
+  (ask_algo): Commented support for RSA.
+
+  * seckey-cert.c (protect_secret_key): Started to fix the code for v4 RSA
+  keys - it is not solved yet. However, we have time until, Sep 20th ;)
+
+Wed Jun 14 12:27:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * status.c (init_shm_coprocessing): Changed the sequence of the get,attach
+  to cope with the changes in newer Linux kernels.  This bug has been found
+  by <dmitri@advantrix.com> who also proposed this solution.  Hopefully
+  this does not break gpg on to many systems.
+
+  * cipher.c (write_header): Protect the IV with the MDC too.
+  * encr-data.c (decrypt_data): Likewise.
+
+Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * g10.c: New options --no-auto-key-retrieve
+  * options.h (auto_key_retrieve): New.
+  * mainproc.c (check_sig_and_print): Implemented that.
+
+Wed Jun  7 19:19:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * sig-check.c (do_check): Use EMULATE_MDENCODE also on v4 paclets.
+
+Wed Jun  7 17:25:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * cipher.c (write_header): Use plain CFB mode for MDC encrypted packets.
+  * encr-data.c (decrypt_data): Ditto.
+
+Mon Jun  5 23:41:54 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * seskey.c (do_encode_md, encode_md_value): Add new arg v3compathack to work
+  around a bug in old versions.
+  * sig-check.c (do_check): use the aboved workaround when enabled.
+  * g10.c: New option --emulate-md-decode-bug
+
+Mon Jun  5 12:37:43 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * build-packet.c (do_mdc): New.
+  (do_encrypted_mdc): Changed for the new proposal.
+  * parse-packet.c (parse_mdc): New.
+  (parse_encrypted): Fixed for the new proposal.
+  * packet.h (PKT_MDC): New.
+  * cipher.c (cipher_filter): Build the MDC packet here.
+  * g10.c (main): Enable --force-mdc.
+  * encr-data.c (mdc_decode_filter): Fixed for new MDC method
+
+  * options.h(rfc2440): New.
+  * g10.c (main): Changed the selected values for --openpgp to not include
+  optional algorithms.
+
+Thu May 18 11:38:54 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* keyedit.c (keyedit_menu): Add a keyword arg to the prompt.
+
+	* status.c, status.h: Added 3 new status tokens.
+	* status.c (do_get_from_fd): New.
+	(cpr_enabled,cpr_get,cpr_get_hidden,cpr_kill_prompt,
+	 cpr_get_answer_is_yes,cpr_get_answer_yes_no_quit): Modified to work
+	 with the new function.
+	* g10.c: Add new option --command-fd.
+
+	* status.c (progress_cb): New.
+	(set_status_fd): Register progress functions
+
+Fri May 12 14:01:20 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* delkey.c (delete_key): Add 2 new status messages
+	* status.c, status.h (STATUS_DELETE_PROBLEM): New.
+
+	Fixed years of copyright in all source files.
+
+Mon May  1 17:08:14 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* trustdb.c (propagate_validity): Fixed the bug that only one uid
+	gets fully trusted even when all are signed by an ultimate key.
+
+Mon May  1 15:38:04 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* getkey.c (key_byname): Always returned a defined context.  Fixed
+	a segv for invalid user id specifications. Reported by Walter Koch.
+
+	* getkey.c (get_user_id): I18ned "no user id" string. By Walter.
+
+	* pkclist.c (do_show_revocation_reason): Typo fixes.
+	* helptext.c: Ditto.
+
+	* armor.c (armor_filter): Fixed some CRLF issues.  By Mike McEwan.
+
+Fri Apr 14 19:37:08 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* pkclist.c (do_show_revocation_reason): New.
+	(show_revocation_reason): New and called at various places.
+
+	* g10.c (main): Fixed small typo.
+
+	* pkclist.c (do_we_trust): Act on always_trust but not for revoked
+	keys. Suggested by Chip Salzenberg.
+
+	* g10.c: New option --lock-never.
+
+	* ringedit.c (get_writable_keyblock_file): New.
+	* keygen.c (do_generate_keypair): Use this instead of the hardwired one.
+
+	* keygen.c (ask_user_id): Check that the email address is in the
+	correct field.	Suggested by Christian Kurz.
+
+Mon Apr 10 13:34:19 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* keyedit.c (show_key_with_all_names): s/sbb/ssb/
+
+Tue Mar 28 14:26:58 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* trustdb.c (verify_own_keys): Do not print warning about unprotected
 	key when in quiet mode.
 
-Mon Mar 13 19:22:46 CET 2000  Werner Koch  <wk@openit.de>
+Wed Mar 22 13:50:24 CET 2000  Werner Koch  <wk@openit.de>
 
-	* build-paket.c (do_user_id): Save offset where name has been stored.
+	* mainproc.c (print_userid): Do UTF8 conversion before printing.
+	* import.c (import_one): Ditto.
+	(import_secret_one): Ditto.
+	(delete_inv_parts): Ditto.
 
-	* ringedit.c : Add new access method KBXF
+Thu Mar 16 16:20:23 CET 2000  Werner Koch  <wk@openit.de>
 
-	* kbxfile.c: New.
+	* keylist.c (print_key_data): Handle a NULL pk gracefully.
 
-Mon Feb 21 22:43:01 CET 2000  Werner Koch  <wk@>
+	* getkey.c (merge_one_pk_and_selfsig): Fixed silly code for
+	getting the primary keys keyID but kept using the one from the
+	subkey.
+	* pubkey-enc.c (get_it): Print a note for expired subkeys.
 
-	* kbx.h: New.
-	* kbxblob.c: Started to work on the keybox stuff.
+	* getkey.c (has_expired): New.
+	(subkeys_expiretime): New.
+	(finish_lookup): Check for expired subkeys needed for encryption.
+	(merge_keys_and_selfsig): Fixed expiration date merging for subkeys.
 
-Mon Jan 31 16:37:34 CET 2000  Werner Koch  <wk@gnupg.de>
+	* keylist.c (list_keyblock): Print expiration time for "sub".
+	(list_one): Add missing merging for public keys.
+	* mainproc.c (list_node): Ditto.
 
-	* keygen.c (gen_dsa): Modified to work with gcry_pk_genkey.
+2000-03-14 13:49:38  Werner Koch  (wk@habibti.openit.de)
 
-	* Removed dummy-cipher.h from all files.
+	* keygen.c (keyedit_menu): Do not allow to use certain commands
+	while the secret key is selected.
 
-Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
+2000-03-09 12:53:09  Werner Koch  (wk@habibti.openit.de)
 
-	* keygen.c (gen_elg): Modified to work with gcry_pk_genkey.
-	(key_from_sexp): New.
-	(factors_from_sexp): New.
+	* keygen.c (ask_expire_interval): Movede parsig to ...
+	(parse_expire_string): ... this new function. And some new control
+	commands.
+	(proc_parameter_file): Add expire date parsing.
+	(do_generate_keypair): Allow the use of specified output files.
 
-	* g10.c : Renamed to ...
-	* gpg.c : ... this
-	* Makefile.am: And fixed it here.
+2000-03-08 10:38:38  Werner Koch  (wk@habibti.openit.de)
 
-	* Changed all "g10_"/"GPG_" prefixes to "gpg_"/"GPG_".
+	* keygen.c (ask_algo): Removed is_v4 return value and the commented
+	code to create Elg keys in a v3 packet. Removed the rounding
+	of key sizes here.
+	(do_create): Likewise removed arg v4_packet.
+	(gen_elg): Likewise removed arg version. Now rounding keysizes here.
+	(gen_dsa): Rounding keysize now here.
+	(release_parameter_list): New
+	(get_parameter*): New.
+	(proc_parameter_file): New.
+	(read_parameter_file): New.
+	(generate_keypair): Splitted. Now uses read_parameter_file when in
+	batch mode.  Additional argument to specify a parameter file.
+	(do_generate_keypair): Main bulk of above fucntion and uses the
+	parameter list.
+	(do_create): Don't print long notice in batch mode.
+	* g10.c (main): Allow batched key generation.
 
-Mon Jan 24 22:24:38 CET 2000  Werner Koch  <wk@gnupg.de>
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
 
-	* misc.c (mpi_read_opaque): Fixed double counting.
+	* pubkey-enc.c (get_it): Print a note about unknown cipher algos.
 
-	* seckey-cert.c (do_check): Removed buffer and the unmotivated free
-	on it.
+	* g10.c (opts): Add a note to the help listing about the man page
+	and removed some options from the help listing.
 
-	* pubkey-enc.c (pk_decrypt): New wrapper for the gcry_ function.
-	* seckey-cert.c (pk_check_secret_key): Likewise.
-	* encode.c (pk_encrypt): Likewise.
+	* keyedit.c (print_and_check_one_sig): Use a new function to truncate
+	the output of the user ID.  Suggested by Jan-Benedict Glaw.
 
-	* parse-packet.c (parse_key): Fixed case of unencrypted secret keys.
+Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
 
-Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
+	* helptext.c: typo fix.
 
-	* misc.c (mpi_print): Use gcry_mpi_aprint.
-	(pubkey_nbits): Kludge to use the gcry_pk_ API.
+Thu Feb 17 13:39:32 CET 2000  Werner Koch  <wk@gnupg.de>
 
-	* seskey.c (encode_session_key): Replaced mpi_set_buffer by *_scan.
-	(do_encode_md): Ditto.
-	(encode_md_value): Ditto.
-	* seckey-cert.c (protect_secret_key): Ditto.
-	* comment.c (make_mpi_comment_node): Replaced mpi_get_buffer by _print.
-	* pubkey-enc.c (get_it): Ditto.
-	* sig-check.c (do_signature_check): Ditto.
+	* revoke.c: Removed a bunch of commented code.
 
-Fri Dec 31 12:48:31 CET 1999  Werner Koch  <wk@gnupg.de>
+	* packet.h (SIGSUBPKT_REVOC_REASON): New.
+	* build-packet.c (build_sig_subpkt): Support new sub packet.
+	* parse-packet.c (parse_one_sig_subpkt): Ditto.
+	(dump_sig_subpkt): Ditto.
+	* revoke.c (ask_revocation_reason): New.
+	(release_revocation_reason_info): New.
+	(revocation_reason_build_cb): New.
+	(gen_revoke): Ask for reason.
+	* main.h (struct revocation_reason_info): Add declaration.
+	* keyedit.c (menu_revsig): Add support for revocation reason.
+	(menu_revkey): Ditto.
+	(sign_uid_mk_attrib): Renamed to ...
+	(sign_mk_attrib): ... this, made static and add support for reasons.
 
-	* keyid.c (do_fingerprint_md): Replaced mpi_get_buffer by gcry_mpi_print.
-	(v3_keyid): New.
-	(keyid_from_sk): And use it here.
-	(keyid_from_pk): Ditto.
-	(fingerprint_from_sk): Ditto.
-	(fingerprint_from_pk): Ditto.
+Tue Feb 15 08:48:13 CET 2000  Werner Koch  <wk@gnupg.de>
 
-	* misc.c (mpi_print): New.
+	* build-packet.c (build_packet): Fixed fixing of old comment packets.
 
-	* misc.c (checksum_mpi): Now uses gcry_mpi_print to get the data.
+	* import.c (import_keys): Fixed importing from stdin when called with
+	nnames set to zero as it normally happens.
 
-	* seckey-cert.c (do_check): Replaced mpi_read_from_buffer.
+Mon Feb 14 14:30:20 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* sig-check.c (check_key_signature2): Add new arg r_expired.
+	(do_signature_check): New arg to pass it down to ...
+	(do_check): New arg r-expire which is set when the signature
+	has expired.
+	* trustdb.c (check_sig_record): Set SIGF_EXPIRED flag and set
+	the expiretime to zero so that thi signature will not be checked
+	anymore.
+
+Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* g10.c (g10_exit): Update the random seed_file.
+	(main): Set the random seed file.  New option --no-random-seed-file.
+
+Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* keyedit.c (menu_expire): Fixed segv due to unitialized sub_pk.
+	By Rémi.
+
+Thu Feb 10 11:39:41 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* keylist.c (list_keyblock): Don't print warnings in the middle of
+	regulat output lines.  By Rémi.
+
+	* sig-check.c: Include options.h
+
+Wed Feb  9 15:33:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* gpg.c: New option --ignore-time-conflict
+	* sig-check.c (do_check): Implemented this option.
+	* trustdb.c (check_trust): Ditto.
+	* sign.c (do_sign): Ditto.
+	* keygen.c (generate_subkeypair): Ditto.
+
+	* encode.c (encode_simple): use iobuf_cancel after open failure.
+	Reported by Huy Le.
+
+Fri Jan 14 18:32:01 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* packet.h (STRING2KEY): Changed mode from byte to int.
+	* parse-packet.c (parse_key): Add the special GNU protection stuff
+	* build-packet.c (so_secret_key): Ditto.
+	* seckey-cert.c (do_check): Ditto.
+	* keyedit.c (change_passphrase): Ditto.
+	* export.c (export_secsubkeys): New.
+	(do_export_stream): Hack to export the primary key using mode 1001.
+	* g10.c: New command --export-secret-subkeys
+
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* armor.c (is_armored): Check for 1-pass-sig packets. Reported by
+	David Hallinan <hallinan@rtd.com>.
+	(armor_filter): Replaced one LF by the LF macro.  Reported by
+	Wolfgang Redtenbacher.
+
+Wed Jan  5 11:51:17 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* g10.c (main): Reset new global flag opt.pgp2_workarounds
+	when --openpgp is used.
+	* mainproc.c (proc_plaintext): Do the PGP2,5 workarounds only
+	when the global flag is set.
+	(proc_tree): Ditto.
+	* textfilter.c (copy_clearsig_text): Ditto.
+	* armor.c (armor_filter): Ditto.
+
+	* g10.c: New option --list-only
+	* mainproc.c (proc_tree): Don't do it if opt.list_only is active.
+	(proc_pubkey_enc): Implement option.
+
+	* status.h, status.c ({BEGIN,END}_{EN,DE}CRYPTION): New.
+	* cipher.c (cipher_filter): New status outputs.
+	* mainproc.c (proc_encrypted): New status outputs.
+
+Fri Dec 31 14:08:15 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* armor.c (armor_filter): Made the "Comment:" header translatable.
 
-Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
+	* hkp.c (hkp_import): Make sure that the program does not return
+	success when there is a connection problem.  Reported by Phillip Jones.
 
-	* seckey-cert.c: Removed obsolete mpi_*_protect_flag.
-	* parse-packet.c: Ditto.
+Sun Dec 19 15:22:26 CET 1999  Werner Koch  <wk@gnupg.de>
 
-	* misc.c (mpi_read): Removed the secure argumet becuase it is
-	never used.  Changed all Callers.
-	(mpi_read_opaque): New.
-	(mpi_write_opaque): New.
-	* parse-packet.c (parse_key): Use the opaque method also for
-	v3 keys.
-	* build-packet.c (do_secret_key): Likewise.
+	* armor.c (LF): Use this new macro at all places where a line LF
+	is needed.  This way DOSish textfiles should be created when the
+	input data is also in dos mode.
+	* sign.c (LF): Ditto.
+	* textfilter.c (LF): Ditto.
+	(copy_clearsig_text): Disabled the forcing of CR,LF sequences
+	for DOS systems.
 
-	* g10.c (main): Check libgcrypt version.
+	* plaintext.c (handle_plaintext): Fixes for line endings on DOS.
+	and react on a LF in cleartext.
+	* armor.c (fake_packet): Restore the original line ending after
+	removing trailing spaces.
 
-	* packet.h: replaced inclusion of mpi.h by a plain typeedef of the
-	gcry_mpi structure and removed all inclusions of "mpi.h" in all
-	sources.
+	* signal.c (got_fatal_signal): DOS fix.
+
+Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* mainproc.c (print_failed_pkenc): Fix for unknown algorithm.
+	Found by fygrave@epr0.org.
+
+Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* hkp.c: i18n the strings.
+
+Sat Dec  4 15:32:20 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* trustdb.c (verify_key): Shortcut for ultimately trusted keys.
+
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* pkclist.c (build_pk_list): Validate the trust using the namehash
+	if this one has been set by the key lookup.
 
 	* g10.c: Add --delete-secret-key to the help page.
 
-	* g10.c (main): Changed the default homedir to "~/.gnupg-test" so
-	that we don't mess up with the stable version.
+	* openfile.c (copy_options_file): Made static.
+	(try_make_homedir): New.
+	* ringedit.c (add_keyblock_resource): Use the try_make_hoemdir logic.
+	* tdbio.c (tdbio_set_dbname): Likewise.
 
-	* misc.c (mpi_write): New.
-	(mpi_write): New.
+	* keygen.c (generate_user_id): Use m_alloc_clear() here. We should
+	better use an allocation function specific to the user_id packet.
 
-	* misc.c (checksum_u16_nobug): Removed.
-	(checksum_mpi_counted_nbits): Renamed to ...
-	(checksum_mpi): ... this to superseed the old one. Changed all
-	callers. This is because we do not emulate the old gpg bug anymore.
-	* g10.c (oEmuChecksumBug): Removed.
+	* keygen.c (keygen_add_std_prefs): Changed symmetric preferences
+	to include Blowfish again.  This is due to it's better speed compared
+	to CAST5.
 
-Fri Nov 19 17:15:20 CET 1999  Werner Koch  <wk@gnupg.de>
+	* g10.c (strusage): Print the home directory.
 
-	* g10.c (register_extension): New...
-	(main): Use it here instead of register_cipher_extesnion.
-	(strusage): s/strusage/my_strusage/ . Made static.
-	(main): Use set_strusage().
+	* armor.c (armor_filter): Take action on the cancel control msg.
+	* filter.h (armor_filter_context_t): Add cancel flag.
+
+Mon Nov 29 21:52:11 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* g10.c: New option --fast-list-mode ..
+	* keylist.c (list_keyblock): .. and implemented.
+	* mainproc.c (list_node): Ditto.
+
+	* import.c (mark_non_selfsigned_uids_valid): Fixed the case that there
+	is a uid without any packet following.
+
+Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* mainproc.c (proc_plaintext): Never enable the hash processing
+	when skip_verify is active.
+
+	* armor.c (parse_header_line): Stop parsing on a WS line too.
+	Suggested by Aric Cyr.
 
 	* tdbdump.c (HEXTOBIN): Changed the name of the argument, so that
 	traditional cpp don't mess up the macros. Suggested by Jos Backus.
 
-	* armor.c (parse_header_line): Stop parsing on a only WS line too.
-	Suggested by Aric Cyr.
-
-Mon Nov 15 21:36:02 CET 1999  Werner Koch  <wk@gnupg.de>
-
-	* misc.c (pull_in_libs): Removed.
-
-Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
-
 	* mainproc.c (list_node): Print the PK algo in the --with-colon mode.
 	* keylist.c (list_keyblock): Ditto.
 
-	* misc.c (pull_in_libs): Removed pull in of g10c.
+	* signal.c (got_fatal_signal): Found the reason why exit(8) did not
+	work - it is better to set the disposition back to default before
+	raising the signal.  Print the notice on stderr always.
 
-	* misc.c (map_gcry_rc): Removed here and chnaged all users.
+Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
 
-	* getkey.c: Replaced check_pubkey_algo by openpgp_pk_test_algo.
-	* import.c (delete_inv_parts): Ditto.
-	* pkclist.c: Ditto.
-	* skclist.c: Ditto.
-	* pubkey-enc.c: Ditto.
+	* g10.c (make_username): Swapped the logic.
+	* keylist.c (public_key_list): Now takes a STRLIST as arg and moved
+	the creation ot this list to the caller, so that he can copy with
+	UTF-conversion of user IDs.  Changed all callers.
+	(secret_key_list): Likewise.
 
-	* g10.c (main): Replaced the function to diable PK algos.
+	* getkey.c (get_user_id_string_native): New and ...
+	* encode.c (write_pubkey_enc_from_list): ... use it here.
 
-	* g10.c (main): Replaced get_random_bits by gcry_random_bytes.
-	* seskey.c (encode_session_key): Likewise.
-	(make_session_key): Renamed randomize_buffer to gcry_randomize
-	and use the GCRY_xxx_RANDOM constants.
-	* cipher.c (write_header): Ditto.
-	* passphrase.c (hash_passphrase): Ditto.
-	* seckey-cert.c (protect_secret_key): Ditto.
+	* pubring.asc: Updated.
 
-	* getkey.c (find_by_name): Replaced rmd160_hash_buffer
-	by gcry_md_hash_buffer.
+	* packet.h (PKT_PHOTO_ID): New.
+	* parse-packet.c (parse_photo_id): New.
+	* build-packet.c (do_user_id: Handle photo IDs.
+	(build_packet): Change CTB for photo IDs
+	* free-packet.c (free_user_id): Release memory used for photo IDs
+	* sig-check.c (hash_uid_node): Handle photo IDs too.
+	* trustdb.c (print_uid_from_keyblock): Hash photo ID.
+	(make_uid_records): Ditto.
+	* getkey.c (find_by_name): Ditto.
 	* keyedit.c (show_prefs): Ditto.
 	* keylist.c (list_keyblock): Ditto.
-	* trustdb.c (print_uid_from_keyblock): Ditto.
-	(make_uid_records): Ditto.
 
-	* skclist.c (build_sk_list): Removed the test on faked RNGs.
-	(is_insecure): Removed.
-	* g10.c (--quick-random): Removed this option.
+Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
 
-	* Replaced all PUBKEY_ALGO_xxx by GCRY_PK_xxxx.
+	* keygen.c (ask_expire_interval): Print a warning for systems
+	with a signed 32 time_t if the exiration time is beyoind 2038.
 
-	* misc.c (pubkey_algo_npkey): New as a wrapper around the gcry fucntion.
-	(pubkey_algo_nskey): Ditto.
-	(pubkey_algo_nsig): Ditto.
-	(pubkey_algo_nenc): Ditto.
+Fri Oct  8 20:40:50 CEST 1999  Werner Koch  <wk@gnupg.de>
 
-Tue Oct 26 20:03:44 CEST 1999  Werner Koch  <wk@gnupg.de>
+	* ringedit.c (enum_keyblocks): The last fix way really stupid;
+	reverted and set rt to Unknown.
 
-	* Makefile.am (basicdefs.h): Added.
-	(install-data-local): Removed the handling for historic gpgm.
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
 
-Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
+	* ringedit.c (enum_keyblocks): Zero the entire kbpos out on open.
 
-	* misc.c (openpgp_cipher_test_algo): New.
-	(openpgp_pk_test_algo): New.
-	(openpgp_md_test_algo): New.
+	* g10.c (oEntropyDLL): Removed option.
+	(main): Made the warning on development versions more verbose.
 
-	* g10.c (build_list): Changed to use the new functions from libgcrypt.
+	* g10.c (oHonorHttpProxy): New option.
+	* hkp.c (hkp_ask_import,hkp_export): Implement this option.
+	* options.skel: Enable this option for new installations
 
-	* ringedit.c (enum_keyblocks): Set .rt to 0 on open.
+Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* import.c (import_keys): Changed calling interface, adjusted caller.
+	(import): Moved printing of stats out ...
+	(print_stats): New. ... to here.
+	(import_keys_stream): Call stats print here.
+	(import_keys): Print stats as totals for all files.
+
+	* tdbio.h (DIRF_NEWKEYS): New
+	* tdbio.c (tdbio_dump_record): Print the new flag.
+	* trustdb.c (check_trust_record): New arg sigs_only.  Adapted all
+	callers.
+	(do_update_trust_record): Removed recheck arg and add a new sigs_only
+	do we can later improve on the performance.  Changed all callers too.
+	(check_trustdb): Evalutate the new flag and add a status output.
+	Do a check when the dir record has not been checked.
+	(build_cert_tree): Evaluate the new flag.
+	(check_trust): Ditto.  Do a trust_record check, when the dir record
+	is not marked as checked.
+	(mark_fresh_keys): New.
+	(clear_lid_table): New.
+	(sync_trustdb): New.
+	* import.c (import_keys): Call sync_trustdb() after processing.
+	(import_keys_stream): Ditto.
+	* tdbdump.c (import_ownertrust): Ditto.
+
+	* import.c (import_revoke_cert): Notify the trust DB.
+	(do_update_trust_record): Use |= to set the REVOKED bit and not &=;
+	shame on me for this bad copy+paste introduced bug.
+	(do_we_trust): Add trustmask to allow revoked key override to work.
+	Chnaged are to allow return of a mofified trustlevel. Adapted the
+	one caller.
+
+	* g10.c: New options --emulate-3des-s2k-bug
+	* passphrase.c (hash_passphrase): Implemented above.
+
+	* mainproc.c (proc_tree): Check for standalone signatures.
+	(do_check_sig): Print a notice for a standalone revocation
+	(check_sig_and_print): Do not print an error for unchecked standalone
+	revocations.
+
+Tue Sep 28 20:54:37 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* encode.c (encode_simple): Use new CTB when we don't have the
 	length of the file.  This is somewhat strange as the comment above
 	indicates that this part is actually fixed for PGP 5 - maybe I simply
 	lost the source line, tsss.
 
-	* sign.c (clearsign_file): Avoid duplicated Entries in the "Hash:"
-	line.  Those headers are now only _not_ printed when there are
-	only old-style keys _and_ all hashs are MD5.
+	* armor.c (armor_filter): Set a flag if no OpenPGP data has been found.
+	* verify.c (verify_signatures): Add an error helptext.
 
-	(clearsign_file): Use gcry_md_test_algo() and gcry_md_algo_name().
-
-	* openfile.c (make_outfile_name): Use case-insenstive compare for
-	DOS systems.  Add ".pgp" to the list of know extensions.
-	(open_outfile): For DOS systems try to replace the suffix instead of
-	appending it.
-
-	* encr-data.c (decrypt_data): Reset error on a weak key.
-
-	* cipher.c: Replaced the cipher and digest functions by the gcry_ ones.
-	* seckey-cert.c: Ditto.
-	* seskey.c: Ditto.
-	* g10.c (print_mds): Replaced digst functions with the new gcry_ ones.
-	* keyid.c: Ditto.
-	* mainproc.c: Ditto.
-	* passphrase.c: Ditto.
-	* sig-check.c: Ditto.
-	* sign.c: Ditto.
-
-	* pkclist.c (do_edit_ownertrust): Made the answer string const.
-
-	* basicdefs.h: New.  Move some defs and decl to this header.
+Thu Sep 23 19:24:30 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* openfile.c (open_outfile): Fixed the 8dot3 handling.
 
@@ -236,17 +715,33 @@ Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
 	* trustdb.c (print_user_id,check_uidsigs): Ditto.
 	* revoke.c (gen_revoke,ask_revoke_sig): Ditto.
 
-Sat Sep 18 12:16:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Thu Sep 23 09:52:58 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-	* filter.h: Changed cipher handle types to the the GCRY_xxx ones.
-	replaces include cipher by system header include gcrypt.h.
-	* cipher.c: replaced the cipher functions by the gcry_ ones.
-	Ditto for the md functions.
+	* verify.c (print_file_status): New.
+	(verify_one_file): Moved status print to th new fnc. Add error status.
+	* status.c, status.h (STATUS_FILE_ERROR): New
 
-	* misc.c (map_gcry_rc): New.
+Wed Sep 22 10:14:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* openfile.c (make_outfile_name): Use case-insenstive compare for
+	DOS systems.  Add ".pgp" to the list of know extensions.
+	(open_outfile): For DOS systems try to replace the suffiy instead of
+	appending it.
+
+	* status.c, status.h: Add STATUS_FILE_{START,DONE}.
+	* verify.c (verify_one_file): Emit these new stati.
+
+	* sign.c (clearsign_file): Avoid duplicated Entries in the "Hash:"
+	line.  Those headers are now only _not_ printed when there are
+	only old-style keys _and_ all hashs are MD5.
+
+Mon Sep 20 12:24:41 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* verify.c (verify_files, ferify_one_file): New.
+	* g10.c:  New command --verify-files
 
 Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* g10.c: Add UK spelling as alias for armor options ;-)
 
@@ -256,15 +751,12 @@ Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* g10.c: New option --entropy-dll-name
 
 Mon Sep 13 10:51:29 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* signal.c (got_fatal_signal): Print message using write(2) and
 	only for development versions.
-
 
 Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 

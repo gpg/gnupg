@@ -1,5 +1,5 @@
 /* encr-data.c -  process an encrypted data packet
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
 #include <gcrypt.h>
 #include "util.h"
 #include "packet.h"
@@ -30,9 +31,9 @@
 #include "i18n.h"
 
 
-static int decode_filter( void *opaque, int control, IOBUF a,
-					byte *buf, size_t *ret_len);
 static int mdc_decode_filter( void *opaque, int control, IOBUF a,
+					      byte *buf, size_t *ret_len);
+static int decode_filter( void *opaque, int control, IOBUF a,
 					byte *buf, size_t *ret_len);
 
 typedef struct {
@@ -54,8 +55,8 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     byte *p;
     int rc=0, c, i;
     byte temp[32];
-    int blocksize;
-    unsigned nprefix;
+    unsigned int blocksize;
+    unsigned int nprefix;
 
     memset( &dfx, 0, sizeof dfx );
     if( gcry_cipher_test_algo( dek->algo ) ) {
@@ -68,7 +69,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	log_info(_("%s encrypted data\n"), gcry_cipher_algo_name( dek->algo ) );
 
     blocksize = gcry_cipher_get_algo_blklen( dek->algo );
-    if( blocksize < 1 || blocksize > 16 )
+    if( !blocksize || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
     nprefix = blocksize;
     if( ed->len && ed->len < (nprefix+2) )
@@ -76,13 +77,13 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
     if( ed->mdc_method ) {
 	dfx.mdc_hash = gcry_md_open( ed->mdc_method, 0 );
-	if( !dfx.mdc_hash )
-	    BUG();
+	if ( DBG_HASHING )
+	    gcry_md_start_debug(dfx.mdc_hash, "checkmdc");
     }
     if( !(dfx.cipher_hd = gcry_cipher_open( dek->algo,
 				      GCRY_CIPHER_MODE_CFB,
 				      GCRY_CIPHER_SECURE
-				      | (dek->algo >= 100 ?
+				      | ((ed->mdc_method || dek->algo >= 100)?
 					   0 : GCRY_CIPHER_ENABLE_SYNC) ))
 				    ) {
 	/* we should never get an error here cause we already checked, that
@@ -122,8 +123,6 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 		temp[i] = c;
     }
     gcry_cipher_decrypt( dfx.cipher_hd, temp, nprefix+2, NULL, 0 );
-    if( dfx.mdc_hash )
-	gcry_md_write( dfx.mdc_hash, temp, nprefix+2 );
     gcry_cipher_sync( dfx.cipher_hd );
     p = temp;
 /* log_hexdump( "prefix", temp, nprefix+2 ); */
@@ -131,27 +130,36 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	rc = GPGERR_BAD_KEY;
 	goto leave;
     }
+
+    if( dfx.mdc_hash )
+	gcry_md_write( dfx.mdc_hash, temp, nprefix+2 );
+
     if( ed->mdc_method )
 	iobuf_push_filter( ed->buf, mdc_decode_filter, &dfx );
     else
 	iobuf_push_filter( ed->buf, decode_filter, &dfx );
-    proc_packets( procctx, ed->buf);
+
+    proc_packets( procctx, ed->buf );
     ed->buf = NULL;
     if( ed->mdc_method && dfx.eof_seen == 2 )
 	rc = GPGERR_INVALID_PACKET;
     else if( ed->mdc_method ) { /* check the mdc */
 	int datalen = gcry_md_get_algo_dlen( ed->mdc_method );
+
+	gcry_cipher_decrypt( dfx.cipher_hd, dfx.defer, 20, NULL, 0);
 	if( datalen != 20
 	    || memcmp(gcry_md_read( dfx.mdc_hash, 0 ), dfx.defer, datalen) )
 	    rc = GPGERR_BAD_SIGN;
-	log_hexdump("MDC calculated:", gcry_md_read( dfx.mdc_hash, 0), datalen);
-	log_hexdump("MDC message   :", dfx.defer, 20);
+	/*log_hexdump("MDC calculated:", md_read( dfx.mdc_hash, 0), datalen);*/
+	/*log_hexdump("MDC message   :", dfx.defer, 20);*/
     }
+
   leave:
     gcry_cipher_close(dfx.cipher_hd);
     gcry_md_close( dfx.mdc_hash );
     return rc;
 }
+
 
 
 /* I think we should merge this with cipher_filter */
@@ -180,11 +188,14 @@ mdc_decode_filter( void *opaque, int control, IOBUF a,
 	}
 	if( n == 40 ) {
 	    /* we have enough stuff - flush the deferred stuff */
-	    /* (we have asserted that the buffer is large enough */
-	    if( !dfx->defer_filled ) /* the first time */
+	    /* (we have asserted that the buffer is large enough) */
+	    if( !dfx->defer_filled ) { /* the first time */
 		memcpy(buf, buf+20, 20 );
-	    else
+		n = 20;
+	    }
+	    else {
 		memcpy(buf, dfx->defer, 20 );
+	    }
 	    /* now fill up */
 	    for(; n < size; n++ ) {
 		if( (c = iobuf_get(a)) == -1 )
@@ -198,7 +209,7 @@ mdc_decode_filter( void *opaque, int control, IOBUF a,
 	    dfx->defer_filled = 1;
 	}
 	else if( !dfx->defer_filled ) { /* eof seen buf empty defer */
-	    /* this is very bad because there is an incomplete hash */
+	    /* this is bad because there is an incomplete hash */
 	    n -= 20;
 	    memcpy(buf, buf+20, n );
 	    dfx->eof_seen = 2; /* eof with incomplete hash */
@@ -238,7 +249,7 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
 	n = iobuf_read( a, buf, size );
 	if( n == -1 ) n = 0;
 	if( n )
-	    gcry_cipher_decrypt( fc->cipher_hd, buf, n, NULL, 0);
+	    gcry_cipher_decrypt( fc->cipher_hd, buf, n, NULL, 0 );
 	else
 	    rc = -1; /* eof */
 	*ret_len = n;

@@ -1,5 +1,5 @@
 /* primegen.c - prime number generator
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,11 +38,24 @@ static int check_prime( MPI prime, MPI val_2 );
 static int is_prime( MPI n, int steps, int *count );
 static void m_out_of_n( char *array, int m, int n );
 
+static void (*progress_cb) ( void *, int );
+static void *progress_cb_data;
+
+void
+register_primegen_progress ( void (*cb)( void *, int), void *cb_data )
+{
+    progress_cb = cb;
+    progress_cb_data = cb_data;
+}
+
 
 static void
 progress( int c )
 {
-    fputc( c, stderr );
+    if ( progress_cb )
+	progress_cb ( progress_cb_data, c );
+    else
+	fputc( c, stderr );
 }
 
 
@@ -117,8 +130,8 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	log_debug("gen prime: pbits=%u qbits=%u fbits=%u/%u n=%d\n",
 		    pbits, req_qbits, qbits, fbits, n  );
     prime = mpi_alloc( (pbits + BITS_PER_MPI_LIMB - 1) /  BITS_PER_MPI_LIMB );
-    q = gen_prime( qbits, 0, 1 );
-    q_factor = mode==1? gen_prime( req_qbits, 0, 1 ) : NULL;
+    q = gen_prime( qbits, 0, 0 );
+    q_factor = mode==1? gen_prime( req_qbits, 0, 0 ) : NULL;
 
     /* allocate an array to hold the factors + 2 for later usage */
     factors = g10_xcalloc( n+2, sizeof *factors );
@@ -177,7 +190,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		count1 = 0;
 		qbits++;
 		progress('>');
-		q = gen_prime( qbits, 0, 1 );
+		q = gen_prime( qbits, 0, 0 );
 		goto next_try;
 	    }
 	}
@@ -188,7 +201,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		count2 = 0;
 		qbits--;
 		progress('<');
-		q = gen_prime( qbits, 0, 1 );
+		q = gen_prime( qbits, 0, 0 );
 		goto next_try;
 	    }
 	}

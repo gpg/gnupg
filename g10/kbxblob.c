@@ -511,7 +511,7 @@ kbx_create_blob ( KBXBLOB *r_blob,  KBNODE keyblock )
     KBXBLOB blob;
 
     *r_blob = NULL;
-    blob = gcry_calloc (1, sizeof *blob );
+    blob = gcry_xcalloc (1, sizeof *blob );
     if( !blob )
 	return GCRYERR_NO_MEM;
 
@@ -529,9 +529,9 @@ kbx_create_blob ( KBXBLOB *r_blob,  KBNODE keyblock )
 	  default: break;
 	}
     }
-    blob->keys = gcry_calloc ( blob->nkeys, sizeof ( *blob->keys ) );
-    blob->uids = gcry_calloc ( blob->nuids, sizeof ( *blob->uids ) );
-    blob->sigs = gcry_calloc ( blob->nsigs, sizeof ( *blob->sigs ) );
+    blob->keys = gcry_xcalloc ( blob->nkeys, sizeof ( *blob->keys ) );
+    blob->uids = gcry_xcalloc ( blob->nuids, sizeof ( *blob->uids ) );
+    blob->sigs = gcry_xcalloc ( blob->nsigs, sizeof ( *blob->sigs ) );
     if ( !blob->keys || !blob->uids || !blob->sigs ) {
 	rc = GCRYERR_NO_MEM;
 	goto leave;
@@ -581,7 +581,7 @@ kbx_new_blob ( KBXBLOB *r_blob,  char *image, size_t imagelen )
     KBXBLOB blob;
 
     *r_blob = NULL;
-    blob = gcry_calloc (1, sizeof *blob );
+    blob = gcry_xcalloc (1, sizeof *blob );
     if( !blob )
 	return GCRYERR_NO_MEM;
     blob->blob = image;

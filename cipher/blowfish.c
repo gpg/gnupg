@@ -584,9 +584,12 @@ blowfish_get_info( int algo, size_t *keylen,
     *keylen = 128;
     *blocksize = BLOWFISH_BLOCKSIZE;
     *contextsize = sizeof(BLOWFISH_context);
-    *r_setkey = FNCCAST_SETKEY(bf_setkey);
-    *r_encrypt= FNCCAST_CRYPT(encrypt_block);
-    *r_decrypt= FNCCAST_CRYPT(decrypt_block);
+    *(int  (**)(BLOWFISH_context*, byte*, unsigned))r_setkey
+							= bf_setkey;
+    *(void (**)(BLOWFISH_context*, byte*, byte*))r_encrypt
+							= encrypt_block;
+    *(void (**)(BLOWFISH_context*, byte*, byte*))r_decrypt
+							= decrypt_block;
 
     if( algo == CIPHER_ALGO_BLOWFISH )
 	return "BLOWFISH";

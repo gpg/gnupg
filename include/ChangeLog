@@ -1,3 +1,13 @@
+Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
+
+  * http.h (HTTP_FLAG_TRY_PROXY): new.
+
+  * error.h (G10ERR_NOT_PROCESSED): New.
+
+  * iobuf.h (IOBUFCTRL_CANCEL): New.
+
+  * types.h (HAVE_U64_TYPEDEF): Defined depending on configure test.
+
 Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* Changed all "g10_"/"GPG_" prefixes to "gpg_"/"GPG_".

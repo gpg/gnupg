@@ -1,5 +1,5 @@
 /* keyid.c - jeyid and fingerprint handling
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,12 +25,14 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
+
 #include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "packet.h"
 #include "options.h"
 #include "keydb.h"
+#include "i18n.h"
 
 
 int
@@ -52,7 +54,7 @@ static GCRY_MD_HD
 do_fingerprint_md( PKT_public_key *pk )
 {
     GCRY_MD_HD md;
-    unsigned n;
+    unsigned int n;
     unsigned int nn[GNUPG_MAX_NPKEY];
     byte *pp[GNUPG_MAX_NPKEY];
     int i;
@@ -339,7 +341,7 @@ expirestr_from_pk( PKT_public_key *pk )
     time_t atime;
 
     if( !pk->expiredate )
-	return "never     ";
+	return _("never     ");
     atime = pk->expiredate;
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
@@ -354,7 +356,7 @@ expirestr_from_sk( PKT_secret_key *sk )
     time_t atime;
 
     if( !sk->expiredate )
-	return "never     ";
+	return _("never     ");
     atime = sk->expiredate;
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );

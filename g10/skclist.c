@@ -1,5 +1,5 @@
 /* skclist.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -66,7 +66,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	}
 	else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo, use)) ) {
 	    SK_LIST r;
-	    if( sk->version == 4 && (use & GCRY_PK_USAGE_SIGN)
+	    if( sk->version == 4 && (use & GCRY_PK_USAGE_SIGN )
 		&& sk->pubkey_algo == GCRY_PK_ELG_E ) {
 		log_info("this is a PGP generated "
 		    "ElGamal key which is NOT secure for signatures!\n");

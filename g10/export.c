@@ -1,5 +1,5 @@
 /* export.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,11 +25,11 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "i18n.h"
@@ -69,6 +69,12 @@ int
 export_seckeys( STRLIST users )
 {
     return do_export( users, 1, 0 );
+}
+
+int
+export_secsubkeys( STRLIST users )
+{
+    return do_export( users, 2, 0 );
 }
 
 static int
@@ -168,6 +174,16 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	    }
 	}
 
+	/* we can't apply GNU mode 1001 on an unprotected key */
+	if( secret == 2
+	    && (node = find_kbnode( keyblock, PKT_SECRET_KEY ))
+	    && !node->pkt->pkt.secret_key->is_protected )
+	{
+	    log_info(_("key %08lX: not protected - skipped\n"),
+		  (ulong)keyid_from_sk( node->pkt->pkt.secret_key, NULL) );
+	    continue;
+	}
+
 	/* and write it */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
 	    /* don't export any comment packets but those in the
@@ -183,7 +199,20 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 		    continue; /* not exportable */
 	    }
 
-	    if( (rc = build_packet( out, node->pkt )) ) {
+	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY ) {
+		/* we don't want to export the secret parts of the
+		 * primary key, this is done by using GNU protection mode 1001
+		 */
+		int save_mode = node->pkt->pkt.secret_key->protect.s2k.mode;
+		node->pkt->pkt.secret_key->protect.s2k.mode = 1001;
+		rc = build_packet( out, node->pkt );
+		node->pkt->pkt.secret_key->protect.s2k.mode = save_mode;
+	    }
+	    else {
+		rc = build_packet( out, node->pkt );
+	    }
+
+	    if( rc ) {
 		log_error("build_packet(%d) failed: %s\n",
 			    node->pkt->pkttype, gpg_errstr(rc) );
 		rc = GPGERR_WRITE_FILE;

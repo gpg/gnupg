@@ -1,6 +1,69 @@
+Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
+
+  The big merge between this one and the stable branch 1.0.  Still need
+  to merge TNANKS, AUTHORS and such.  It probaly does not compile yet.
+
+  * acinclude.m4 (GNUPG_CHECK_MLOCK): Fixed syntax error in C code.
+
+  * configure.in: Add check for termio.h, wait unctiosn and sigaction.
+
+  * acinclude.m4, configure.in (GNUPG_CHECK_GNUMAKE): New.
+
+  * acinclude.m4 (MKDIR_TAKES_ONE_ARG): Check some headers. By Gaël Quéri.
+
+  * configure.in (AM_INIT_AUTOMAKE): Use this now. By Gaël.
+
+  * acinclude.m4 (GNUPG_CHECK_EXPORTDYNAMIC): Replacement for
+  GNUPG_CHECK_RDYNAMIC which should handle gcc with non GNU ld nicer.
+  Contributed by Dave Dykstra.
+  * configure.in (GNYPG_CHECK_RDYNAMIC): Replaced by the new check.
+
+  * configure.in: Add a test for unisgned long long.
+
+  * configure.in (DYNLINK_MOD_CFLAGS): Set different for NetBSD.
+
+  * configure.in: Add check for clock_gettime
+
+  * configure.in (ALL_LINGUAS): Add nl.
+  * configure.in (ALL_LINGUAS): Add Esperanto.
+  * configure.in (ALL_LINGUAS): Add sv and ja.
+
+  * configure.in: Use /usr/local for CFLAGS and LDFLAGS when
+  target is freebsd.  By Rémi.
+
+  * configure.in: Do not set development version when the version has
+  a dash in it.  Suggested by Dave Dykstra.
+
+  * configure.in: Removed substitution for doc/gph/Makefile.
+  Do all the gcc warning only in maintainer mode.
+
+  * configure.in (dlopen): Use CHECK_FUNC for a test of dlopen in libc.
+  Suggested by Alexandre Oliva.
+  (-Wall): Moved the settting of gcc warning options near to the end
+  so that tests don't get confused.  Suggested by Paul D. Smith.
+
+  * acinclude.m4 (GNUPG_SYS_NM_PARSE): Added BSDI support.
+  (GNUPG_CHECK_RDYNAMIC): Ditto.
+
+  * acinclude.m4 (GNUPG_CHECK_MLOCK): Changed the way to test for
+  librt.  Test suggested by Jeff Long.
+
+  * acinclude.m4 (GNUPG_CHECK_MLOCK): Do librt check only when
+  we can't link a test program.  This way GNU systems don't need
+  to link against linrt.
+  (GNUPG_CHECK_IPC): Fixed use of TRY_COMPILE macro.  From Tim Mooney.
+
+  * acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Add support for
+  DJGPP.
+  (GNUPG_CHECK_MLOCK): Check whether mlock sits in librt.
+
+  * acinclude.m4 (GNUPG_CHECK_RDYNAMIC): Add NetBSD. By Thomas Klausner.
+
+  * acconfig.h (HAVE_MLOCK): Added
+
 Mon Mar 13 19:22:46 CET 2000  Werner Koch  <wk@openit.de>
 
-	* configure.in: Now uses the Docbook M$s from GPH.
+	* configure.in: Now uses the Docbook M4s from GPH.
 
 Mon Jan 31 17:46:35 CET 2000  Werner Koch  <wk@>
 

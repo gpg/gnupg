@@ -562,6 +562,12 @@ gcry_md_ctl( GCRY_MD_HD hd, int cmd, byte *buffer, size_t buflen)
 	else if ( !(rc = prepare_macpads( hd, buffer, buflen )) )
 	    gcry_md_reset( hd );
     }
+    else if( cmd == GCRYCTL_START_DUMP ) {
+	md_start_debug( hd, buffer );
+    }
+    else if( cmd == GCRYCTL_STOP_DUMP ) {
+	md_stop_debug( hd );
+    }
     else
 	rc = GCRYERR_INV_OP;
     return set_lasterr( rc );
@@ -834,7 +840,7 @@ gcry_md_algo_info( int algo, int what, void *buffer, size_t *nbytes)
 
 
 
-void
+static void
 md_start_debug( GCRY_MD_HD md, const char *suffix )
 {
     static int idx=0;
@@ -851,7 +857,7 @@ md_start_debug( GCRY_MD_HD md, const char *suffix )
 	log_debug("md debug: can't open %s\n", buf );
 }
 
-void
+static void
 md_stop_debug( GCRY_MD_HD md )
 {
     if( md->ctx->debug ) {

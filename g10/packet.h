@@ -1,5 +1,5 @@
 /* packet.h - packet read/write stuff
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -54,14 +54,16 @@ typedef enum {
 	PKT_USER_ID	  =13, /* user id packet */
 	PKT_PUBLIC_SUBKEY =14, /* public subkey (OpenPGP) */
 	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
+	PKT_PHOTO_ID	  =17, /* PGP's photo ID */
+	PKT_ENCRYPTED_MDC =18, /* integrity protected encrypted data */
+	PKT_MDC 	  =19, /* manipulaion detection code packet */
 	PKT_COMMENT	  =61, /* new comment packet (private) */
-	PKT_ENCRYPTED_MDC =62, /* test: encrypted data with MDC */
 } pkttype_t;
 
 typedef struct packet_struct PACKET;
 
 typedef struct {
-    byte mode;
+    int  mode;
     byte hash_algo;
     byte salt[8];
     u32  count;
@@ -105,7 +107,7 @@ typedef struct {
     byte    version;
     byte    sig_class;	    /* sig classification, append for MD calculation*/
     byte    pubkey_algo;    /* algorithm used for public key scheme */
-			    /* (PUBKEY_ALGO_xxx) */
+			    /* (GCRY_PK_xxx) */
     byte digest_algo;	    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
     byte *hashed_data;	    /* all subpackets with hashed  data (v4 only) */
     byte *unhashed_data;    /* ditto for unhashed data */
@@ -165,6 +167,8 @@ typedef struct {
     ulong stored_at;	  /* the stream offset where it was stored
 			   * by build-packet */
     int  len;		  /* length of the name */
+    char *photo;	  /* if this is not NULL, the packet is a photo ID */
+    int photolen;	  /* and the length of the photo */
     char name[1];
 } PKT_user_id;
 
@@ -178,9 +182,13 @@ typedef struct {
 typedef struct {
     u32  len;		  /* length of encrypted data */
     byte new_ctb;	  /* uses a new CTB */
-    byte mdc_method;	  /* test: > 0: this is is an encrypted_mdc packet */
+    byte mdc_method;	  /* > 0: integrity protected encrypted data packet */
     IOBUF buf;		  /* IOBUF reference */
 } PKT_encrypted;
+
+typedef struct {
+    byte hash[20];
+} PKT_mdc;
 
 typedef struct {
     unsigned int trustval;
@@ -212,6 +220,7 @@ struct packet_struct {
 	PKT_user_id	*user_id;	/* PKT_USER_ID */
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
 	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED[_MDC] */
+	PKT_mdc 	*mdc;		/* PKT_MDC */
 	PKT_ring_trust	*ring_trust;	/* PKT_RING_TRUST */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
     } pkt;
@@ -246,6 +255,7 @@ typedef enum {
     SIGSUBPKT_POLICY	   =26, /* policy URL */
     SIGSUBPKT_KEY_FLAGS    =27, /* key flags */
     SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
+    SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
     SIGSUBPKT_PRIV_ADD_SIG =101,/* signatur is also valid for this uid */
 
     SIGSUBPKT_FLAG_CRITICAL=128
@@ -339,7 +349,6 @@ int handle_compressed( void *ctx, PKT_compressed *cd,
 
 /*-- encr-data.c --*/
 int decrypt_data( void *ctx, PKT_encrypted *ed, DEK *dek );
-int encrypt_data( PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,

@@ -1,5 +1,5 @@
 /* random.c  -	random number generator
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,14 +36,21 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 #ifdef	HAVE_GETHRTIME
   #include <sys/times.h>
 #endif
 #ifdef HAVE_GETTIMEOFDAY
   #include <sys/times.h>
 #endif
+#ifdef HAVE_CLOCK_GETTIME
+  #include <time.h>
+#endif
 #ifdef HAVE_GETRUSAGE
   #include <sys/resource.h>
+#endif
+#ifdef __MINGW32__
+  #include <process.h>
 #endif
 #include "g10lib.h"
 #include "rmd.h"
@@ -89,6 +96,9 @@ static size_t pool_writepos;
 static int pool_filled;
 static int pool_balance;
 static int just_mixed;
+static int did_initial_extra_seeding;
+static char *seed_file_name;
+static int allow_seed_file_update;
 
 static int secure_alloc;
 static int quick_test;
@@ -274,6 +284,139 @@ mix_pool(byte *pool)
     }
 }
 
+void
+set_random_seed_file( const char *name )
+{
+    if( seed_file_name )
+	BUG();
+    seed_file_name = g10_xstrdup( name );
+}
+
+/****************
+ * Read in a seed form the random_seed file
+ * and return true if this was successful
+ */
+static int
+read_seed_file()
+{
+    int fd;
+    struct stat sb;
+    unsigned char buffer[POOLSIZE];
+    int n;
+
+    if( !seed_file_name )
+	return 0;
+
+  #ifdef HAVE_DOSISH_SYSTEM
+    fd = open( seed_file_name, O_RDONLY | O_BINARY );
+  #else
+    fd = open( seed_file_name, O_RDONLY );
+  #endif
+    if( fd == -1 && errno == ENOENT) {
+	allow_seed_file_update = 1;
+	return 0;
+    }
+
+    if( fd == -1 ) {
+	log_info(_("can't open `%s': %s\n"), seed_file_name, strerror(errno) );
+	return 0;
+    }
+    if( fstat( fd, &sb ) ) {
+	log_info(_("can't stat `%s': %s\n"), seed_file_name, strerror(errno) );
+	close(fd);
+	return 0;
+    }
+    if( !S_ISREG(sb.st_mode) ) {
+	log_info(_("`%s' is not a regular file - ignored\n"), seed_file_name );
+	close(fd);
+	return 0;
+    }
+    if( !sb.st_size ) {
+	log_info(_("note: random_seed file is empty\n") );
+	close(fd);
+	allow_seed_file_update = 1;
+	return 0;
+    }
+    if( sb.st_size != POOLSIZE ) {
+	log_info(_("warning: invalid size of random_seed file - not used\n") );
+	close(fd);
+	return 0;
+    }
+    do {
+	n = read( fd, buffer, POOLSIZE );
+    } while( n == -1 && errno == EINTR );
+    if( n != POOLSIZE ) {
+	log_fatal(_("can't read `%s': %s\n"), seed_file_name,strerror(errno) );
+	close(fd);
+	return 0;
+    }
+
+    close(fd);
+
+    add_randomness( buffer, POOLSIZE, 0 );
+    /* add some minor entropy to the pool now (this will also force a mixing) */
+    {	pid_t x = getpid();
+	add_randomness( &x, sizeof(x), 0 );
+    }
+    {	time_t x = time(NULL);
+	add_randomness( &x, sizeof(x), 0 );
+    }
+    {	clock_t x = clock();
+	add_randomness( &x, sizeof(x), 0 );
+    }
+    /* And read a few bytes from our entropy source.  By using
+     * a level of 0 this will not block and might not return anything
+     * with some entropy drivers, however the rndlinux driver will use
+     * /dev/urandom and return some stuff - Do not read to much as we
+     * want to be friendly to the scare system entropy resource. */
+    read_random_source( 0, 16, 0 );
+
+    allow_seed_file_update = 1;
+    return 1;
+}
+
+void
+update_random_seed_file()
+{
+    ulong *sp, *dp;
+    int fd, i;
+
+    if( !seed_file_name || !is_initialized || !pool_filled )
+	return;
+    if( !allow_seed_file_update ) {
+	log_info(_("note: random_seed file not updated\n"));
+	return;
+    }
+
+
+    /* copy the entropy pool to a scratch pool and mix both of them */
+    for(i=0,dp=(ulong*)keypool, sp=(ulong*)rndpool;
+				    i < POOLWORDS; i++, dp++, sp++ ) {
+	*dp = *sp + ADD_VALUE;
+    }
+    mix_pool(rndpool); rndstats.mixrnd++;
+    mix_pool(keypool); rndstats.mixkey++;
+
+  #ifdef HAVE_DOSISH_SYSTEM
+    fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,
+							S_IRUSR|S_IWUSR );
+  #else
+    fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR );
+  #endif
+    if( fd == -1 ) {
+	log_info(_("can't create `%s': %s\n"), seed_file_name, strerror(errno) );
+	return;
+    }
+    do {
+	i = write( fd, keypool, POOLSIZE );
+    } while( i == -1 && errno == EINTR );
+    if( i != POOLSIZE ) {
+	log_info(_("can't write `%s': %s\n"), seed_file_name, strerror(errno) );
+    }
+    if( close(fd) )
+	log_info(_("can't close `%s': %s\n"), seed_file_name, strerror(errno) );
+}
+
 
 static void
 read_pool( byte *buffer, size_t length, int level )
@@ -281,8 +424,31 @@ read_pool( byte *buffer, size_t length, int level )
     int i;
     ulong *sp, *dp;
 
-    if( length >= POOLSIZE )
-	BUG(); /* not allowed */
+    if( length >= POOLSIZE ) {
+	log_fatal(_("too many random bits requested; the limit is %d\n"),
+		  POOLSIZE*8-1 );
+    }
+
+    if( !pool_filled ) {
+	if( read_seed_file() )
+	    pool_filled = 1;
+    }
+
+    /* For level 2 quality (key generation) we alwas make
+     * sure that the pool has been seeded enough initially */
+    if( level == 2 && !did_initial_extra_seeding ) {
+	size_t needed;
+
+	pool_balance = 0;
+	needed = length - pool_balance;
+	if( needed < POOLSIZE/2 )
+	    needed = POOLSIZE/2;
+	else if( needed > POOLSIZE )
+	    BUG();
+	read_random_source( 3, needed, 2 );
+	pool_balance += needed;
+	did_initial_extra_seeding=1;
+    }
 
     /* for level 2 make sure that there is enough random in the pool */
     if( level == 2 && pool_balance < length ) {
@@ -347,6 +513,12 @@ read_pool( byte *buffer, size_t length, int level )
 /****************
  * Add LENGTH bytes of randomness from buffer to the pool.
  * source may be used to specify the randomness source.
+ * Source is:
+ *	0 - used ony for initialization
+ *	1 - fast random poll function
+ *	2 - normal poll function
+ *	3 - used when level 2 random quality has been requested
+ *	    to do an extra pool seed.
  */
 static void
 add_randomness( const void *buffer, size_t length, int source )
@@ -410,6 +582,13 @@ fast_random_poll()
 	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
 	add_randomness( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
     }
+  #elif HAVE_CLOCK_GETTIME
+    {	struct timespec tv;
+	if( clock_gettime( CLOCK_REALTIME, &tv ) == -1 )
+	    BUG();
+	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
+	add_randomness( &tv.tv_nsec, sizeof(tv.tv_nsec), 1 );
+    }
   #else /* use times */
     #ifndef HAVE_DOSISH_SYSTEM
     {	struct tms buf;
@@ -419,13 +598,28 @@ fast_random_poll()
     #endif
   #endif
   #ifdef HAVE_GETRUSAGE
+    #ifndef RUSAGE_SELF
+      #ifdef __GCC__
+	#warning There is no RUSAGE_SELF on this system
+      #endif
+    #else
     {	struct rusage buf;
 	if( getrusage( RUSAGE_SELF, &buf ) )
 	    BUG();
 	add_randomness( &buf, sizeof buf, 1 );
 	memset( &buf, 0, sizeof buf );
     }
+    #endif
   #endif
+    /* time and clock are availabe on all systems - so
+     * we better do it just in case one of the above functions
+     * didn't work */
+    {	time_t x = time(NULL);
+	add_randomness( &x, sizeof(x), 1 );
+    }
+    {	clock_t x = clock();
+	add_randomness( &x, sizeof(x), 1 );
+    }
 }
 
 
@@ -472,9 +666,9 @@ gather_faked( void (*add)(const void*, size_t, int), int requester,
       #endif
 	initialized=1;
       #ifdef HAVE_RAND
-	srand( time(NULL) * getpid());
+	srand(make_timestamp()*getpid());
       #else
-	srandom( time(NULL) * getpid());
+	srandom(make_timestamp()*getpid());
       #endif
     }
 

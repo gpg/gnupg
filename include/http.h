@@ -49,6 +49,10 @@ typedef enum {
     HTTP_REQ_POST = 3
 } HTTP_REQ_TYPE;
 
+enum {	/* put flag values into an enum, so that gdb can display them */
+    HTTP_FLAG_TRY_PROXY = 1
+};
+
 struct http_context {
     int initialized;
     unsigned int status_code;
@@ -60,7 +64,8 @@ struct http_context {
     PARSED_URI uri;
     HTTP_REQ_TYPE req_type;
     byte *buffer;	   /* line buffer */
-    unsigned buffer_size;
+    unsigned int buffer_size;
+    unsigned int flags;
 };
 typedef struct http_context *HTTP_HD;
 

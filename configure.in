@@ -11,19 +11,17 @@ AC_PREREQ(2.13)
 AC_INIT(g10/gpg.c)
 AC_CONFIG_AUX_DIR(scripts)
 AM_CONFIG_HEADER(config.h)
+AC_CANONICAL_SYSTEM
+AM_INIT_AUTOMAKE(gnupg,`cat $srcdir/VERSION`)
 
-
-VERSION=`cat $srcdir/VERSION`
-PACKAGE=gnupg
-ALL_LINGUAS="de es_ES fr it pl pt_BR pt_PT ru"
+ALL_LINGUAS="da de eo es_ES fr id it ja nl pl pt_BR pt_PT ru sv"
 static_modules="sha1 md5 rmd160"
-AC_SUBST(VERSION)
-AC_SUBST(PACKAGE)
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
+static_random_module=""
 
-MODULES_IN_CIPHER=`awk '/# MODULES: / { for(i=3;i<=NF;i++) print $i}' \
-                                                $srcdir/cipher/Makefile.am`
+AC_PROG_AWK
+
+MODULES_IN_CIPHER=`$AWK '/^EXTRA_PROGRAMS/ { for(i=3;i<=NF;i++) print $i}' \
+                                              $srcdir/cipher/Makefile.am`
 
 dnl
 dnl  Check for random module options
@@ -132,7 +130,6 @@ AM_MAINTAINER_MODE
 
 dnl Checks for programs.
 
-AC_CANONICAL_SYSTEM
 dnl
 dnl Setup some stuff depending on host/target.
 dnl
@@ -145,8 +142,10 @@ case "${target}" in
         CC="${target}-gcc"
         CPP="${target}-gcc -E"
         RANLIB="${target}-ranlib"
+        disallowed_modules="rndunix rndlinux rndegd"
         ;;
     *)
+        disallowed_modules="rndw32"
        ;;
 esac
 
@@ -177,9 +176,6 @@ AM_PROG_LIBTOOL
 
 
 MPI_OPT_FLAGS=""
-if test "$GCC" = yes; then
-    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
-fi
 
 
 try_gettext=yes
@@ -213,6 +209,12 @@ case "${target}" in
         try_gdbm="no"
         ;;
 
+    *-*-freebsd*)
+       # FreeBSD
+       CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+       LDFLAGS="$LDFLAGS -L/usr/local/lib"
+       ;;
+
     *-*-hpux*)
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
@@ -234,7 +236,7 @@ esac
 AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE
 GNUPG_CHECK_PIC
-GNUPG_CHECK_RDYNAMIC
+GNUPG_CHECK_EXPORTDYNAMIC
 if test "$NO_PIC" = yes; then
     try_dynload=no
 fi
@@ -272,6 +274,13 @@ case "${target}" in
         NAME_OF_DEV_URANDOM="/dev/urandom"
         DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
         ;;
+
+    *-netbsd*)
+        NAME_OF_DEV_RANDOM="/dev/random"
+        NAME_OF_DEV_URANDOM="/dev/urandom"
+        DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
+        ;;
+
     *)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"
@@ -327,21 +336,21 @@ if test "$try_dynload" = yes ; then
   if test "$ac_cv_lib_dl_dlopen" = "yes"; then
     AC_DEFINE(USE_DYNAMIC_LINKING)
     AC_DEFINE(HAVE_DL_DLOPEN)
-    DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+    DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
     use_gnupg_extensions=yes
   else
-    AC_CHECK_LIB(c,dlopen)
-    if test "$ac_cv_lib_c_dlopen" = "yes"; then
+    AC_CHECK_FUNCS(dlopen)
+    if test "$ac_cv_func_dlopen" = "yes"; then
       AC_DEFINE(USE_DYNAMIC_LINKING)
       AC_DEFINE(HAVE_DL_DLOPEN)
-      DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+      DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
       use_gnupg_extensions=yes
     else
       AC_CHECK_LIB(dld,shl_load)
       if test "$ac_cv_lib_dld_shl_load" = "yes"; then
         AC_DEFINE(USE_DYNAMIC_LINKING)
         AC_DEFINE(HAVE_DL_SHL_LOAD)
-        DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+        DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
         use_gnupg_extensions=yes
 dnl -----------------
 dnl  DLD is not ready for use. So I better disable this test
@@ -350,7 +359,7 @@ dnl    AC_CHECK_LIB(dld,dld_link)
 dnl    if test "$ac_cv_lib_dld_dld_link" = "yes"; then
 dnl      AC_DEFINE(USE_DYNAMIC_LINKING)
 dnl      AC_DEFINE(HAVE_DLD_DLD_LINK)
-dnl      DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+dnl      DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
 dnl      use_gnupg_extensions=yes
 dnl ---------------
       fi
@@ -371,7 +380,7 @@ AC_SUBST(DYNLINK_MOD_CFLAGS)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h langinfo.h)
+AC_CHECK_HEADERS(unistd.h langinfo.h termio.h)
 
 
 dnl Checks for typedefs, structures, and compiler characteristics.
@@ -393,6 +402,7 @@ GNUPG_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
 AC_CHECK_SIZEOF(unsigned short, 2)
 AC_CHECK_SIZEOF(unsigned int, 4)
 AC_CHECK_SIZEOF(unsigned long, 4)
+AC_CHECK_SIZEOF(unsigned long long, 0)
 
 if test "$ac_cv_sizeof_unsigned_short" = "0" \
    || test "$ac_cv_sizeof_unsigned_int" = "0" \
@@ -405,8 +415,9 @@ fi
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror stpcpy strlwr stricmp tcgetattr rand strtoul mmap)
-AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit)
+AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask)
 
 GNUPG_CHECK_MLOCK
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
@@ -483,29 +494,27 @@ fi
 dnl
 dnl Figure out the default linkage mode for cipher modules
 dnl
-dnl (We always need a static rmd160)
 print_egd_notice=no
-static_modules="$static_modules rmd160"
 if test "$use_static_rnd" = default; then
   if test "$ac_cv_have_dev_random" = yes; then
-      static_modules="$static_modules rndlinux"
+      static_random_module="rndlinux"
   else
       case "${target}" in
           *-*-mingw32)
-              static_modules="$static_modules rndw32"
+              static_random_module="rndw32"
               AC_DEFINE(USE_STATIC_RNDW32)
               ;;
           i?86-emx-os2|i?86-*-os2*emx)
-              static_modules="$static_modules rndos2"
+              static_random_module="rndos2"
               ;;
           m68k-atari-mint)
-              static_modules="$static_modules rndatari"
+              static_random_module="rndatari"
               ;;
           i?86-*-msdosdjgpp*)
-              static_modules="$static_modules"
+              :
               ;;
           *)
-              static_modules="$static_modules rndunix"
+              static_random_module="rndunix"
               print_egd_notice=yes
              ;;
       esac
@@ -514,7 +523,7 @@ else
   if test "$use_static_rnd" = none; then
     :
   else
-    static_modules="$static_modules rnd$use_static_rnd"
+    static_random_module="rnd$use_static_rnd"
     if test "$use_static_rnd" = "unix"; then
         print_egd_notice=yes
     fi
@@ -547,23 +556,31 @@ dnl
 dnl Parse the modules list and build the list
 dnl of static and dymically linked modules
 dnl
+dnl (We always need a static rmd160)
+static_modules="$static_modules rmd160 $static_random_module"
 STATIC_CIPHER_NAMES=""
 STATIC_CIPHER_OBJS=""
 DYNAMIC_CIPHER_MODS=""
 GNUPG_MSG_PRINT([dynamically linked cipher modules:])
 for name in $MODULES_IN_CIPHER; do
-    x="no"
-    for i in $static_modules; do
-        if test "$name" = "$i" ; then
-            x="yes"
-        fi
+    x="yes"
+    for i in $disallowed_modules; do
+        if test "$name" = "$i" ; then x="no" ; fi
     done;
     if test $x = yes; then
-        STATIC_CIPHER_NAMES="$STATIC_CIPHER_NAMES $name"
-        STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.lo"
-    else
-        DYNAMIC_CIPHER_MODS="$DYNAMIC_CIPHER_MODS $name"
-        GNUPG_MSG_PRINT([$name])
+        x="no"
+        for i in $static_modules; do
+            if test "$name" = "$i" ; then
+                x="yes"
+            fi
+        done;
+        if test $x = yes; then
+            STATIC_CIPHER_NAMES="$STATIC_CIPHER_NAMES $name"
+            STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.o"
+        else
+            DYNAMIC_CIPHER_MODS="$DYNAMIC_CIPHER_MODS $name"
+            GNUPG_MSG_PRINT([$name])
+        fi
     fi
 done
 AC_MSG_RESULT()
@@ -663,6 +680,9 @@ fi
 AC_SUBST(ZLIBS)
 
 
+# Allow users to append something to the version string without
+# flagging it as development version.  The user version parts is
+# considered everything after a dash.
 changequote(,)dnl
 tmp_pat='[a-zA-Z]'
 changequote([,])dnl
@@ -678,12 +698,26 @@ AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 
 GNUPG_DO_LINK_FILES
 
+GNUPG_CHECK_GNUMAKE
+
+if test "$GCC" = yes; then
+    if test "$MAINTAINER_MODE" = "yes"; then
+        CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+    else
+        CFLAGS="$CFLAGS -Wall"
+    fi
+fi
+
 dnl
 dnl Make the version number in gcrypt/gcrypt.h the same as the one here.
 dnl (this is easier than to have a .in file just for one substitution)
 dnl
 GNUPG_FIX_HDR_VERSION(gcrypt/gcrypt.h, GCRYPT_VERSION)
 
+GCRYPT_LIBS="-L${libdir} -lgcrypt"
+GCRYPT_CFLAGS=""
+AC_SUBST(GCRYPT_LIBS)
+AC_SUBST(GCRYPT_CFLAGS)
 
 AC_OUTPUT_COMMANDS([
 chmod +x scripts/db2html

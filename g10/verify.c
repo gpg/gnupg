@@ -1,5 +1,5 @@
 /* verify.c - verify signed data
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,14 +25,15 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
+#include "status.h"
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
@@ -58,12 +59,58 @@ verify_signatures( int nfiles, char **files )
     int i, rc;
     STRLIST sl;
 
+    memset( &afx, 0, sizeof afx);
     sigfile = nfiles? *files : NULL;
 
     /* open the signature file */
     fp = iobuf_open(sigfile);
     if( !fp ) {
 	log_error(_("can't open `%s'\n"), print_fname_stdin(sigfile));
+	return GPGERR_OPEN_FILE;
+    }
+
+    if( !opt.no_armor && use_armor_filter( fp ) )
+	iobuf_push_filter( fp, armor_filter, &afx );
+
+    sl = NULL;
+    for(i=1 ; i < nfiles; i++ )
+	add_to_strlist( &sl, files[i] );
+    rc = proc_signature_packets( NULL, fp, sl, sigfile );
+    free_strlist(sl);
+    iobuf_close(fp);
+    if( afx.no_openpgp_data && rc == -1 ) {
+	log_error(_("the signature could not be verified.\n"
+		   "Please remember that the signature file (.sig or .asc)\n"
+		   "should be the first file given on the command line.\n") );
+	rc = 0;
+    }
+
+    return rc;
+}
+
+
+static void
+print_file_status( int status, const char *name, int what )
+{
+    char *p = gcry_xmalloc(strlen(name)+10);
+    sprintf(p, "%d %s", what, name );
+    write_status_text( status, p );
+    gcry_free(p);
+}
+
+
+static int
+verify_one_file( const char *name )
+{
+    IOBUF fp;
+    armor_filter_context_t afx;
+    int rc;
+
+    print_file_status( STATUS_FILE_START, name, 1 );
+    fp = iobuf_open(name);
+    if( !fp ) {
+	print_file_status( STATUS_FILE_ERROR, name, 1 );
+	log_error(_("can't open `%s'\n"), print_fname_stdin(name));
 	return GPGERR_OPEN_FILE;
     }
 
@@ -74,14 +121,44 @@ verify_signatures( int nfiles, char **files )
 	}
     }
 
-    sl = NULL;
-    for(i=1 ; i < nfiles; i++ )
-	add_to_strlist( &sl, files[i] );
-    rc = proc_signature_packets( NULL, fp, sl, sigfile );
-    free_strlist(sl);
+    rc = proc_signature_packets( NULL, fp, NULL, name );
     iobuf_close(fp);
+    write_status( STATUS_FILE_DONE );
     return rc;
 }
 
+/****************
+ * Verify each file given in the files array or read the names of the
+ * files from stdin.
+ * Note:  This function can not handle detached signatures.
+ */
+int
+verify_files( int nfiles, char **files )
+{
+    int i;
 
+    if( !nfiles ) { /* read the filenames from stdin */
+	char line[2048];
+	unsigned int lno = 0;
+
+	while( fgets(line, DIM(line), stdin) ) {
+	    lno++;
+	    if( !*line || line[strlen(line)-1] != '\n' ) {
+		log_error(_("input line %u too long or missing LF\n"), lno );
+		return GPGERR_GENERAL;
+	    }
+	    /* This code does not work on MSDOS but how cares there are
+	     * also no script languages available.  We don't strip any
+	     * spaces, so that we can process nearly all filenames */
+	    line[strlen(line)-1] = 0;
+	    verify_one_file( line );
+	}
+
+    }
+    else {  /* take filenames from the array */
+	for(i=0; i < nfiles; i++ )
+	    verify_one_file( files[i] );
+    }
+    return 0;
+}
 

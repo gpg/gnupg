@@ -77,7 +77,7 @@
 #ifndef __QNX__
 #include <sys/resource.h>
 #endif				/* __QNX__ */
-#ifdef _AIX
+#if defined( _AIX ) || defined( __QNX__ )
 #include <sys/select.h>
 #endif				/* _AIX */
 #ifndef __QNX__
@@ -91,6 +91,10 @@
 #endif				/* __hpux 9.x, after that it's in unistd.h */
 #include <sys/wait.h>
 /* #include <kitchensink.h> */
+#ifdef __QNX__
+#include <signal.h>
+#include <process.h>
+#endif		      /* __QNX__ */
 #include <errno.h>
 
 #include "types.h"  /* for byte and u32 typedefs */
@@ -100,7 +104,13 @@
 #include "g10lib.h"
 
 #ifndef EAGAIN
-  #define EAGAIN  EWOULDBLOCK
+#define EAGAIN	EWOULDBLOCK
+#endif
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
 #endif
 
 #define GATHER_BUFSIZE		49152	/* Usually about 25K are filled */
@@ -306,6 +316,32 @@ typedef struct {
     char data[500];	/* gathered data */
 } GATHER_MSG;
 
+#ifndef HAVE_WAITPID
+pid_t
+waitpid(pid_t pid, int *statptr, int options)
+{
+     #ifdef HAVE_WAIT4
+	return wait4(pid, statptr, options, NULL);
+     #else
+	/* If wait4 is also not available, try wait3 for SVR3 variants */
+	/* Less ideal because can't actually request a specific pid */
+	/* For that reason, first check to see if pid is for an */
+	/*   existing process. */
+	int tmp_pid, dummystat;;
+	if (kill(pid, 0) == -1) {
+		errno = ECHILD;
+		return -1;
+	}
+	if (statptr == NULL)
+		statptr = &dummystat;
+	while (((tmp_pid = wait3(statptr, options, 0)) != pid) &&
+		    (tmp_pid != -1) && (tmp_pid != 0) && (pid != -1))
+	    ;
+	return tmp_pid;
+     #endif
+}
+#endif
+
 /* Under SunOS popen() doesn't record the pid of the child process.  When
  * pclose() is called, instead of calling waitpid() for the correct child, it
  * calls wait() repeatedly until the right child is reaped.  The problem is
@@ -376,7 +412,9 @@ my_popen(struct RI *entry)
      * close on exec, so new children won't see it */
     close(pipedes[STDOUT_FILENO]);
 
+#ifdef FD_CLOEXEC
     fcntl(pipedes[STDIN_FILENO], F_SETFD, FD_CLOEXEC);
+#endif
 
     stream = fdopen(pipedes[STDIN_FILENO], "r");
 
@@ -616,6 +654,7 @@ start_gatherer( int pipefd )
     }
     /* close all files but the ones we need */
     {	int nmax, n1, n2, i;
+      #ifdef _SC_OPEN_MAX
 	if( (nmax=sysconf( _SC_OPEN_MAX )) < 0 ) {
 	  #ifdef _POSIX_OPEN_MAX
 	    nmax = _POSIX_OPEN_MAX;
@@ -623,6 +662,9 @@ start_gatherer( int pipefd )
 	    nmax = 20; /* assume a reasonable value */
 	  #endif
 	}
+      #else
+	nmax = 20; /* assume a reasonable value */
+      #endif
 	n1 = fileno( stderr );
 	n2 = dbgfp? fileno( dbgfp ) : -1;
 	for(i=0; i < nmax; i++ ) {
@@ -718,6 +760,10 @@ read_a_msg( int fd, GATHER_MSG *msg )
 }
 
 
+/****************
+ * Using a level of 0 should never block and better add nothing
+ * to the pool.  So this is just a dummy for this gatherer.
+ */
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
 	       size_t length, int level )
@@ -726,6 +772,9 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     static int pipedes[2];
     GATHER_MSG msg;
     size_t n;
+
+    if( !level )
+	return 0;
 
     if( !gatherer_pid ) {
 	/* make sure we are not setuid */

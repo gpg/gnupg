@@ -1,5 +1,5 @@
 /* getkey.c -  Get a key from the database
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,9 +24,10 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <gcrypt.h>
+
 #include "util.h"
 #include "packet.h"
+#include <gcrypt.h>
 #include "iobuf.h"
 #include "keydb.h"
 #include "options.h"
@@ -45,7 +46,11 @@
  * that they are all valid.
  * Note: We must use numerical values here in case that this program
  * will be converted to those little blue HAL9000s with their strange
- * EBCDIC character set (user ids are UTF-8). */
+ * EBCDIC character set (user ids are UTF-8).
+ * wk 2000-04-13: Hmmm, does this really make sense, given the fact that
+ * we can run gpg now on a S/390 running GNU/Linux, where the code
+ * translation is done by the device drivers?
+ */
 static const byte word_match_chars[256] = {
   /* 00 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   /* 08 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -154,6 +159,7 @@ static int uid_cache_entries;	/* number of entries in uid cache */
 static char* prepare_word_match( const byte *name );
 static int lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_kb );
 static int lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_kb );
+static u32 subkeys_expiretime( KBNODE node, u32 *mainkid );
 
 
 #if 0
@@ -696,6 +702,8 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     STRLIST r;
     GETKEY_CTX ctx;
 
+    if( retctx ) /* reset the returned context in case of error */
+	*retctx = NULL;
     assert( !pk ^ !sk );
 
     /* build the search context */
@@ -941,7 +949,7 @@ get_seckey_bynames( GETKEY_CTX *retctx, PKT_secret_key *sk,
 
     if( !sk ) {
 	/* Performance Hint: key_byname should not need a sk here */
-	sk = gcry_xcalloc_secure( 1,  sizeof *sk );
+	sk = gcry_xcalloc_secure( 1, sizeof *sk );
 	rc = key_byname( retctx, names, NULL, sk, ret_keyblock );
 	free_secret_key( sk );
     }
@@ -959,7 +967,7 @@ get_seckey_next( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
 
     if( !sk ) {
 	/* Performance Hint: lookup_read should not need a pk in this case */
-	sk = gcry_xcalloc_secure( 1,  sizeof *sk );
+	sk = gcry_xcalloc_secure( 1, sizeof *sk );
 	rc = lookup_sk( ctx, sk, ret_keyblock );
 	free_secret_key( sk );
     }
@@ -1150,7 +1158,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode,
 	k = find_kbnode( keyblock, PKT_PUBLIC_KEY );
 	if( !k )
 	   BUG(); /* keyblock without primary key!!! */
-	keyid_from_pk( knode->pkt->pkt.public_key, kid );
+	keyid_from_pk( k->pkt->pkt.public_key, kid );
     }
     else
 	keyid_from_pk( pk, kid );
@@ -1208,6 +1216,10 @@ merge_keys_and_selfsig( KBNODE keyblock )
 		pk = NULL; /* not needed for old keys */
 	    else if( k->pkt->pkttype == PKT_PUBLIC_KEY )
 		keyid_from_pk( pk, kid );
+	    else if( !pk->expiredate ) { /* and subkey */
+		/* insert the expiration date here */
+		pk->expiredate = subkeys_expiretime( k, kid );
+	    }
 	    sigdate = 0;
 	}
 	else if( k->pkt->pkttype == PKT_SECRET_KEY
@@ -1222,8 +1234,11 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	else if( (pk || sk ) && k->pkt->pkttype == PKT_SIGNATURE
 		 && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
 		 && sig->sig_class <= 0x30 && sig->version > 3
+		 && !(sig->sig_class == 0x18 || sig->sig_class == 0x28)
 		 && sig->keyid[0] == kid[0] && sig->keyid[1] == kid[1] ) {
 	    /* okay this is a self-signature which can be used.
+	     * This is not used for subkey binding signature, becuase this
+	     * is done above.
 	     * FIXME: We should only use this if the signature is valid
 	     *	      but this is time consuming - we must provide another
 	     *	      way to handle this
@@ -1279,9 +1294,16 @@ find_by_name( KBNODE keyblock, PKT_public_key *pk, const char *name,
 		u32 aki[2];
 		keyid_from_pk( kk->pkt->pkt.public_key, aki );
 		cache_user_id( k->pkt->pkt.user_id, aki );
-		gcry_md_hash_buffer( GCRY_MD_RMD160, namehash,
-				    k->pkt->pkt.user_id->name,
-				    k->pkt->pkt.user_id->len );
+		if( k->pkt->pkt.user_id->photo ) {
+		    gcry_md_hash_buffer( GCRY_MD_RMD160, namehash,
+					k->pkt->pkt.user_id->photo,
+					k->pkt->pkt.user_id->photolen );
+		}
+		else {
+		    gcry_md_hash_buffer( GCRY_MD_RMD160, namehash,
+					k->pkt->pkt.user_id->name,
+					k->pkt->pkt.user_id->len );
+		}
 		*use_namehash = 1;
 		return kk;
 	    }
@@ -1516,6 +1538,56 @@ find_by_fpr_sk( KBNODE keyblock, PKT_secret_key *sk,
 }
 
 
+/****************
+ * Return the expiretime of a subkey.
+ */
+static u32
+subkeys_expiretime( KBNODE node, u32 *mainkid )
+{
+    KBNODE k;
+    PKT_signature *sig;
+    u32 expires = 0, sigdate = 0;
+
+    assert( node->pkt->pkttype == PKT_PUBLIC_SUBKEY );
+    for(k=node->next; k; k = k->next ) {
+	if( k->pkt->pkttype == PKT_SIGNATURE
+	    && (sig=k->pkt->pkt.signature)->sig_class == 0x18
+	    && sig->keyid[0] == mainkid[0]
+	    && sig->keyid[1] == mainkid[1]
+	    && sig->version > 3
+	    && sig->timestamp > sigdate ) {
+	    /* okay this is a key-binding which can be used.
+	     * We use the latest self-signature.
+	     * FIXME: We should only use this if the binding signature is valid
+	     *	      but this is time consuming - we must provide another
+	     *	      way to handle this
+	     */
+	    const byte *p;
+	    u32 ed;
+
+	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
+	    ed = p? node->pkt->pkt.public_key->timestamp + buffer_to_u32(p):0;
+	    sigdate = sig->timestamp;
+	    expires = ed;
+	}
+	else if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	    break; /* stop at the next subkey */
+    }
+
+    return expires;
+}
+
+
+/****************
+ * Check whether the subkey has expired.  Node must point to the subkey
+ */
+static int
+has_expired( KBNODE node, u32 *mainkid, u32 cur_time )
+{
+    u32 expires = subkeys_expiretime( node, mainkid );
+    return expires && expires <= cur_time;
+}
+
 static void
 finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 					       int use_namehash, int primary )
@@ -1534,6 +1606,10 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 		       pk->pubkey_usage ) == GPGERR_WR_PUBKEY_ALGO ) {
 	    /* if the usage is not correct, try to use a subkey */
 	    KBNODE save_k = k;
+	    u32 mainkid[2];
+	    u32 cur_time = make_timestamp();
+
+	    keyid_from_pk( keyblock->pkt->pkt.public_key, mainkid );
 
 	    k = NULL;
 	    /* kludge for pgp 5: which doesn't accept type 20:
@@ -1545,7 +1621,8 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 			    == GCRY_PK_ELG_E
 			&& !openpgp_pk_test_algo(
 				k->pkt->pkt.public_key->pubkey_algo,
-						 pk->pubkey_usage ) )
+						 pk->pubkey_usage )
+			&& !has_expired(k, mainkid, cur_time) )
 			break;
 		}
 	    }
@@ -1555,7 +1632,10 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 		    if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
 			&& !openpgp_pk_test_algo(
 				k->pkt->pkt.public_key->pubkey_algo,
-						 pk->pubkey_usage ) )
+						 pk->pubkey_usage )
+			&& ( pk->pubkey_usage != GCRY_PK_USAGE_ENCR
+			     || !has_expired( k, mainkid, cur_time ) )
+		      )
 			break;
 		}
 	    }
@@ -1887,6 +1967,18 @@ get_user_id_string( u32 *keyid )
     return p;
 }
 
+
+char*
+get_user_id_string_native( u32 *keyid )
+{
+    char *p = get_user_id_string( keyid );
+    char *p2 = utf8_to_native( p, strlen(p) );
+
+    gcry_free(p);
+    return p2;
+}
+
+
 char*
 get_long_user_id_string( u32 *keyid )
 {
@@ -1914,6 +2006,7 @@ get_user_id( u32 *keyid, size_t *rn )
     user_id_db_t r;
     char *p;
     int pass=0;
+
     /* try it two times; second pass reads from key resources */
     do {
 	for(r=user_id_db; r; r = r->next )
@@ -1924,9 +2017,8 @@ get_user_id( u32 *keyid, size_t *rn )
 		return p;
 	    }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = gcry_xmalloc( 19 );
-    memcpy(p, "[User id not found]", 19 );
-    *rn = 19;
+    p = gcry_xstrdup( _("[User id not found]") );
+    *rn = strlen(p);
     return p;
 }
 

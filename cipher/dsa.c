@@ -1,5 +1,5 @@
 /* dsa.c  -  DSA signature scheme
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -52,11 +52,26 @@ static void generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors );
 static void sign(MPI r, MPI s, MPI input, DSA_secret_key *skey);
 static int  verify(MPI r, MPI s, MPI input, DSA_public_key *pkey);
 
+static void (*progress_cb) ( void *, int );
+static void *progress_cb_data;
+
+void
+register_pk_dsa_progress ( void (*cb)( void *, int), void *cb_data )
+{
+    progress_cb = cb;
+    progress_cb_data = cb_data;
+}
+
+
 static void
 progress( int c )
 {
-    fputc( c, stderr );
+    if ( progress_cb )
+	progress_cb ( progress_cb_data, c );
+    else
+	fputc( c, stderr );
 }
+
 
 
 /****************

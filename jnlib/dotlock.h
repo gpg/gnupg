@@ -24,6 +24,7 @@
 struct dotlock_handle;
 typedef struct dotlock_handle *DOTLOCK;
 
+void disable_dotlock(void);
 DOTLOCK create_dotlock( const char *file_to_lock );
 int make_dotlock( DOTLOCK h, long timeout );
 int release_dotlock( DOTLOCK h );

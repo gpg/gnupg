@@ -1,5 +1,5 @@
 /* textfilter.c
- *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,7 +31,13 @@
 #include "util.h"
 #include "filter.h"
 #include "i18n.h"
+#include "options.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+  #define LF "\r\n"
+#else
+  #define LF "\n"
+#endif
 
 #define MAX_LINELEN 19995 /* a little bit smaller than in armor.c */
 			  /* to make sure that a warning is displayed while */
@@ -151,6 +157,9 @@ copy_clearsig_text( IOBUF out, IOBUF inp, GCRY_MD_HD md,
     int truncated = 0;
     int pending_lf = 0;
 
+    if( !opt.pgp2_workarounds )
+	pgp2mode = 0;
+
     if( !escape_dash )
 	escape_from = 0;
 
@@ -183,12 +192,37 @@ copy_clearsig_text( IOBUF out, IOBUF inp, GCRY_MD_HD md,
 	    iobuf_put( out, '-' );
 	    iobuf_put( out, ' ' );
 	}
+
+      #if  0 /*defined(HAVE_DOSISH_SYSTEM)*/
+	/* We don't use this anymore because my interpretation of rfc2440 7.1
+	 * is that there is no conversion needed.  If one decides to
+	 * clearsign a unix file on a DOS box he will get a mixed line endings.
+	 * If at some point it turns out, that a conversion is a nice feature
+	 * we can make an option out of it.
+	 */
+	/* make sure the lines do end in CR,LF */
+	if( n > 1 && ( (buffer[n-2] == '\r' && buffer[n-1] == '\n' )
+			    || (buffer[n-2] == '\n' && buffer[n-1] == '\r'))) {
+	    iobuf_write( out, buffer, n-2 );
+	    iobuf_put( out, '\r');
+	    iobuf_put( out, '\n');
+	}
+	else if( n && buffer[n-1] == '\n' ) {
+	    iobuf_write( out, buffer, n-1 );
+	    iobuf_put( out, '\r');
+	    iobuf_put( out, '\n');
+	}
+	else
+	    iobuf_write( out, buffer, n );
+
+      #else
 	iobuf_write( out, buffer, n );
+      #endif
     }
 
     /* at eof */
     if( !pending_lf ) { /* make sure that the file ends with a LF */
-	iobuf_put( out, '\n');
+	iobuf_writestr( out, LF );
 	if( !escape_dash )
 	    gcry_md_putc( md, '\n' );
     }

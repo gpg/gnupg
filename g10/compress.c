@@ -1,5 +1,5 @@
 /* compress.c - compress filter
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,8 +27,8 @@
 #include <errno.h>
 #include <zlib.h>
 
-#include "util.h"
 #include <gcrypt.h>
+#include "util.h"
 #include "packet.h"
 #include "filter.h"
 #include "options.h"

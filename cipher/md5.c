@@ -344,10 +344,10 @@ md5_get_info( int algo, size_t *contextsize,
     *r_asnoid = asn;
     *r_asnlen = DIM(asn);
     *r_mdlen = 16;
-    *r_init  = (void (*)(void *))md5_init;
-    *r_write = (void (*)(void *, byte*, size_t))md5_write;
-    *r_final = (void (*)(void *))md5_final;
-    *r_read  = (byte *(*)(void *))md5_read;
+    *(void  (**)(MD5_CONTEXT *))r_init		       = md5_init;
+    *(void  (**)(MD5_CONTEXT *, byte*, size_t))r_write = md5_write;
+    *(void  (**)(MD5_CONTEXT *))r_final 	       = md5_final;
+    *(byte *(**)(MD5_CONTEXT *))r_read		       = md5_read;
 
     return "MD5";
 }

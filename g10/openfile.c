@@ -1,5 +1,5 @@
 /* openfile.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +24,9 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include "util.h"
 #include <gcrypt.h>
@@ -39,13 +42,16 @@
   #define SKELEXT ".skel"
 #endif
 
-
 #ifdef HAVE_DRIVE_LETTERS
   #define CMP_FILENAME(a,b) stricmp( (a), (b) )
 #else
   #define CMP_FILENAME(a,b) strcmp( (a), (b) )
 #endif
 
+#ifdef MKDIR_TAKES_ONE_ARG
+# undef mkdir
+# define mkdir(a,b) mkdir(a)
+#endif
 
 /* FIXME:  Implement opt.interactive. */
 
@@ -76,7 +82,6 @@ overwrite_filep( const char *fname )
 	return 1;
     return 0;
 }
-
 
 
 /****************
@@ -176,7 +181,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    name = opt.outfile;
 	else {
 	  #ifdef USE_ONLY_8DOT3
-	    /* It is quite common for DOS system to have only one dot in a
+	    /* It is quite common DOS system to have only one dot in a
 	     * a filename So if we have something like this, we simple
 	     * replace the suffix execpt in cases where the suffix is
 	     * larger than 3 characters and not the same as.
@@ -195,7 +200,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 		strcpy(dot, newsfx );
 	    }
 	    else if( dot && !dot[1] ) /* don't duplicate a dot */
-		strcat( dot, newsfx+1 );
+		strcpy( dot, newsfx+1 );
 	    else
 		strcat( buf, newsfx );
 	  #else
@@ -253,7 +258,7 @@ open_sigfile( const char *iname )
 /****************
  * Copy the option file skeleton to the given directory.
  */
-void
+static void
 copy_options_file( const char *destdir )
 {
     const char *datadir = GNUPG_DATADIR;
@@ -294,5 +299,25 @@ copy_options_file( const char *destdir )
     fclose( src );
     log_info(_("%s: new options file created\n"), fname );
     gcry_free(fname);
+}
+
+
+void
+try_make_homedir( const char *fname )
+{
+    if( opt.dry_run )
+	return;
+    if( strlen(fname) >= 7
+	&& !strcmp(fname+strlen(fname)-7, "/.gnupg" ) ) {
+	if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
+	    log_fatal( _("%s: can't create directory: %s\n"),
+					fname,	strerror(errno) );
+	else if( !opt.quiet )
+	    log_info( _("%s: directory created\n"), fname );
+	copy_options_file( fname );
+	log_info(_("you have to start GnuPG again, "
+		   "so it can read the new options file\n") );
+	gpg_exit(1);
+    }
 }
 

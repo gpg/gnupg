@@ -1,5 +1,5 @@
 /* build-packet.c - assemble packets and write them
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,11 +24,11 @@
 #include <string.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "util.h"
-#include <gcrypt.h>
 #include "options.h"
 #include "main.h"
 
@@ -43,6 +43,7 @@ static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
 static int do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed );
+static int do_mdc( IOBUF out, PKT_mdc *mdc );
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
@@ -66,25 +67,31 @@ int
 build_packet( IOBUF out, PACKET *pkt )
 {
     int new_ctb=0, rc=0, ctb;
+    int pkttype;
 
     if( DBG_PACKET )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
     assert( pkt->pkt.generic );
 
-    switch( pkt->pkttype ) {
-      case PKT_OLD_COMMENT: pkt->pkttype = PKT_COMMENT; break;
+    switch( (pkttype = pkt->pkttype) ) {
+      case PKT_OLD_COMMENT: pkttype = pkt->pkttype = PKT_COMMENT; break;
       case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
       case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
+      case PKT_USER_ID:
+	    if( pkt->pkt.user_id->photo )
+		pkttype = PKT_PHOTO_ID;
+	    break;
       default: break;
     }
 
-    if( new_ctb || pkt->pkttype > 15 ) /* new format */
-	ctb = 0xc0 | (pkt->pkttype & 0x3f);
+    if( new_ctb || pkttype > 15 ) /* new format */
+	ctb = 0xc0 | (pkttype & 0x3f);
     else
-	ctb = 0x80 | ((pkt->pkttype & 15)<<2);
-    switch( pkt->pkttype ) {
+	ctb = 0x80 | ((pkttype & 15)<<2);
+    switch( pkttype ) {
+      case PKT_PHOTO_ID:
       case PKT_USER_ID:
 	rc = do_user_id( out, ctb, pkt->pkt.user_id );
 	break;
@@ -113,6 +120,9 @@ build_packet( IOBUF out, PACKET *pkt )
 	break;
       case PKT_ENCRYPTED_MDC:
 	rc = do_encrypted_mdc( out, ctb, pkt->pkt.encrypted );
+	break;
+      case PKT_MDC:
+	rc = do_mdc( out, pkt->pkt.mdc );
 	break;
       case PKT_COMPRESSED:
 	rc = do_compressed( out, ctb, pkt->pkt.compressed );
@@ -148,6 +158,7 @@ calc_packet_length( PACKET *pkt )
 	n = calc_plaintext( pkt->pkt.plaintext );
 	new_ctb = pkt->pkt.plaintext->new_ctb;
 	break;
+      case PKT_PHOTO_ID:
       case PKT_USER_ID:
       case PKT_COMMENT:
       case PKT_PUBLIC_KEY:
@@ -172,11 +183,11 @@ static void
 write_fake_data( IOBUF out, MPI a )
 {
     if( a ) {
-	size_t i;
+	int i;
 	void *p;
 
-	p = gcry_mpi_get_opaque( a, &i );
-	iobuf_write( out, p, (i+7)/8 );
+	p = mpi_get_opaque( a, &i );
+	iobuf_write( out, p, i );
     }
 }
 
@@ -195,11 +206,20 @@ do_comment( IOBUF out, int ctb, PKT_comment *rem )
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
-    write_header(out, ctb, uid->len);
-    uid->stored_at = iobuf_get_temp_length ( out ); /* what a hack ... */
-	/* ... and it does only work when used with a temp iobuf */
-    if( iobuf_write( out, uid->name, uid->len ) )
-	return GPGERR_WRITE_FILE;
+    if( uid->photo ) {
+	write_header(out, ctb, uid->photolen);
+	uid->stored_at = iobuf_get_temp_length ( out ); /* what a hack ... */
+		  /* ... and it does only work when used with a temp iobuf */
+	if( iobuf_write( out, uid->photo, uid->photolen ) )
+	    return GPGERR_WRITE_FILE;
+    }
+    else {
+	write_header(out, ctb, uid->len);
+	uid->stored_at = iobuf_get_temp_length ( out ); /* what a hack ... */
+		  /* ... and it does only work when used with a temp iobuf */
+	if( iobuf_write( out, uid->name, uid->len ) )
+	    return GPGERR_WRITE_FILE;
+    }
     return 0;
 }
 
@@ -358,19 +378,30 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	else {
 	    iobuf_put(a, 0xff );
 	    iobuf_put(a, sk->protect.algo );
-	    iobuf_put(a, sk->protect.s2k.mode );
-	    iobuf_put(a, sk->protect.s2k.hash_algo );
+	    if( sk->protect.s2k.mode >= 1000 ) {
+		iobuf_put(a, 101 );
+		iobuf_put(a, sk->protect.s2k.hash_algo );
+		iobuf_write(a, "GNU", 3 );
+		iobuf_put(a, sk->protect.s2k.mode - 1000 );
+	    }
+	    else {
+		iobuf_put(a, sk->protect.s2k.mode );
+		iobuf_put(a, sk->protect.s2k.hash_algo );
+	    }
 	    if( sk->protect.s2k.mode == 1
 		|| sk->protect.s2k.mode == 3 )
 		iobuf_write(a, sk->protect.s2k.salt, 8 );
 	    if( sk->protect.s2k.mode == 3 )
 		iobuf_put(a, sk->protect.s2k.count );
-	    iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
+	    if( sk->protect.s2k.mode != 1001 )
+		iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
     }
     else
 	iobuf_put(a, 0 );
-    if( sk->is_protected && sk->version >= 4 ) {
+    if( sk->protect.s2k.mode == 1001 )
+	;
+    else if( sk->is_protected && sk->version >= 4 ) {
 	byte *p;
 	size_t n;
 	assert( gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
@@ -379,7 +410,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     }
     else {
 	for(   ; i < nskey; i++ )
-	    mpi_write_opaque(a, sk->skey[i] );
+	    mpi_write(a, sk->skey[i] );
 	write_16(a, sk->csum );
     }
 
@@ -527,11 +558,22 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
     n = ed->len ? (ed->len + 10) : 0;
     write_header(out, ctb, n );
     iobuf_put(out, 1 );  /* version */
-    iobuf_put(out, ed->mdc_method );
 
     /* This is all. The caller has to write the real data */
 
     return rc;
+}
+
+
+static int
+do_mdc( IOBUF out, PKT_mdc *mdc )
+{
+    /* This packet requires a fixed header encoding */
+    iobuf_put( out, 0xd3 ); /* packet ID and 1 byte length */
+    iobuf_put( out, 0x14 ); /* length = 20 */
+    if( iobuf_write( out, mdc->hash, sizeof(mdc->hash) ) )
+	return GPGERR_WRITE_FILE;
+    return 0;
 }
 
 static int
@@ -623,7 +665,6 @@ void
 build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 		  const byte *buffer, size_t buflen )
 {
-
     byte *data;
     size_t hlen, dlen, nlen;
     int found=0;
@@ -659,6 +700,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_KEY_EXPIRE:
       case SIGSUBPKT_NOTATION:
       case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_REVOC_REASON:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }

@@ -217,13 +217,6 @@ load_domain( const char *filename )
 	free( domain );
 	return NULL;
     }
-    /* Currently we have only a Latin-1 to IBM850 translation, so
-     * we simply mark everything mapped if we don't have this codepage. */
-    {
-	const char *s = get_native_charset();
-	if( !s || strcmp(s, "ibm850")
-	    memset( domain->mapped, 1, domain->nstrings );
-    }
 
     return domain;
 }
@@ -251,16 +244,19 @@ set_gettext_file( const char *filename )
 	    /* absolute path - use it as is */
 	    domain = load_domain( filename );
 	}
-	else { /* relative path - append ".mo" and get DIR from env */
+	else { /* relative path - append ".mo" and get DIR from the Registry */
 	    char *buf = NULL;
-	    const char *s;
+	    char *dir;
 
-	    s = getenv("MINGW32_NLS_DIR");
-	    if( s && (buf=malloc(strlen(s)+strlen(filename)+1+3+1)) ) {
-		strcpy(stpcpy(stpcpy(stpcpy( buf, s),"/"), filename),".mo");
+	    dir = read_w32_registry_string( NULL,
+					    "Control Panel\\Mingw32\\NLS",
+					    "MODir" );
+	    if( dir && (buf=malloc(strlen(dir)+strlen(filename)+1+3+1)) ) {
+		strcpy(stpcpy(stpcpy(stpcpy( buf, dir),"/"), filename),".mo");
 		domain = load_domain( buf );
 		free(buf);
 	    }
+	    free(dir);
 	}
 	if( !domain )
 	    return -1;
@@ -286,7 +282,7 @@ get_string( struct loaded_domain *domain, u32 idx )
 	byte *pp;
 
 	domain->mapped[idx] = 1;
-	/* currently we only support Latin-1 to CP 850 */
+	/* we assume Latin1 -> CP 850 for now */
 	for( pp=p; *pp; pp++ ) {
 	    if( (*pp & 0x80) ) {
 		switch( *pp ) {

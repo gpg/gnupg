@@ -1,5 +1,5 @@
 /* keylist.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -43,34 +43,24 @@ static void fingerprint( PKT_public_key *pk, PKT_secret_key *sk );
 
 /****************
  * List the keys
- * If NNAMES is 0; all available keys are listed
+ * If list is NULL, all available keys are listed
  */
 void
-public_key_list( int nnames, char **names )
+public_key_list( STRLIST list )
 {
-    if( !nnames )
+    if( !list )
 	list_all(0);
-    else { /* List by user id */
-	STRLIST list = NULL;
-	for( ; nnames ; nnames--, names++ )
-	    add_to_strlist( &list, *names );
+    else
 	list_one( list, 0 );
-	free_strlist( list );
-    }
 }
 
 void
-secret_key_list( int nnames, char **names )
+secret_key_list( STRLIST list )
 {
-    if( !nnames )
+    if( !list )
 	list_all(1);
-    else { /* List by user id */
-	STRLIST list = NULL;
-	for( ; nnames ; nnames--, names++ )
-	    add_to_strlist( &list, *names );
+    else  /* List by user id */
 	list_one( list, 1 );
-	free_strlist( list );
-    }
 }
 
 
@@ -145,6 +135,7 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
+	    merge_keys_and_selfsig( keyblock );
 	    list_keyblock( keyblock, 0 );
 	    release_kbnode( keyblock );
 	} while( !get_pubkey_next( ctx, NULL, &keyblock ) );
@@ -155,7 +146,7 @@ list_one( STRLIST names, int secret )
 static void
 print_key_data( PKT_public_key *pk, u32 *keyid )
 {
-    int n = pubkey_get_npkey( pk->pubkey_algo );
+    int n = pk ? pubkey_get_npkey( pk->pubkey_algo ) : 0;
     int i;
 
     for(i=0; i < n; i++ ) {
@@ -211,21 +202,26 @@ list_keyblock( KBNODE keyblock, int secret )
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
 	if( opt.with_colons ) {
-	    trustletter = query_trust_info( pk, NULL );
-	    if( trustletter == 'u' )
-		ulti_hack = 1;
-	    printf("pub:%c:%u:%d:%08lX%08lX:%s:%s:",
-		    trustletter,
+	    if ( opt.fast_list_mode ) {
+		fputs( "pub::", stdout );
+		trustletter = 0;
+	    }
+	    else {
+		trustletter = query_trust_info( pk, NULL );
+		if( trustletter == 'u' )
+		    ulti_hack = 1;
+		printf("pub:%c:", trustletter );
+	    }
+	    printf("%u:%d:%08lX%08lX:%s:%s:",
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    datestr_from_pk( pk ),
-		    pk->expiredate? strtimestamp(pk->expiredate):""
-					     );
+		    pk->expiredate? strtimestamp(pk->expiredate):"" );
 	    if( pk->local_id )
 		printf("%lu", pk->local_id );
 	    putchar(':');
-	    if( pk->local_id )
+	    if( pk->local_id && !opt.fast_list_mode )
 		putchar( get_ownertrust_info( pk->local_id ) );
 	    putchar(':');
 	}
@@ -237,15 +233,22 @@ list_keyblock( KBNODE keyblock, int secret )
     }
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
-	if( node->pkt->pkttype == PKT_USER_ID ) {
+	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
 	    if( any ) {
-		if( opt.with_colons ) {
+		if ( opt.with_colons ) {
 		    byte namehash[20];
 
 		    if( pk && !ulti_hack ) {
-			gcry_md_hash_buffer( GCRY_MD_RMD160, namehash,
-					node->pkt->pkt.user_id->name,
-					node->pkt->pkt.user_id->len  );
+			if( node->pkt->pkt.user_id->photo ) {
+			    gcry_md_hash_buffer( GCRY_MD_RMD160, namehash,
+					    node->pkt->pkt.user_id->name,
+					    node->pkt->pkt.user_id->len  );
+			}
+			else {
+			    gcry_md_hash_buffer( GCRY_MD_RMD160, namehash,
+					    node->pkt->pkt.user_id->name,
+					    node->pkt->pkt.user_id->len  );
+			}
 			trustletter = query_trust_info( pk, namehash );
 		    }
 		    else
@@ -288,8 +291,13 @@ list_keyblock( KBNODE keyblock, int secret )
 
 	    keyid_from_pk( pk2, keyid2 );
 	    if( opt.with_colons ) {
-		printf("sub:%c:%u:%d:%08lX%08lX:%s:%s:",
-			trustletter,
+		if ( opt.fast_list_mode ) {
+		    fputs( "sub::", stdout );
+		}
+		else {
+		    printf("sub:%c:", trustletter );
+		}
+		printf("%u:%d:%08lX%08lX:%s:%s:",
 			nbits_from_pk( pk2 ),
 			pk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
@@ -303,11 +311,16 @@ list_keyblock( KBNODE keyblock, int secret )
 		putchar(':');
 		putchar('\n');
 	    }
-	    else
-		printf("sub  %4u%c/%08lX %s\n", nbits_from_pk( pk2 ),
+	    else {
+		printf("sub  %4u%c/%08lX %s", nbits_from_pk( pk2 ),
 					   pubkey_letter( pk2->pubkey_algo ),
 					   (ulong)keyid2[1],
 					   datestr_from_pk( pk2 ) );
+		if( pk2->expiredate ) {
+		    printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
+		}
+		putchar('\n');
+	    }
 	    if( opt.fingerprint > 1 )
 		fingerprint( pk2, NULL );
 	    if( opt.with_key_data )
@@ -346,6 +359,7 @@ list_keyblock( KBNODE keyblock, int secret )
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    int sigrc;
+	   char *sigstr;
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
 		if( sig->sig_class == 0x20 )
@@ -363,11 +377,11 @@ list_keyblock( KBNODE keyblock, int secret )
 
 	    if( sig->sig_class == 0x20 || sig->sig_class == 0x28
 				       || sig->sig_class == 0x30 )
-		fputs("rev", stdout);
+	       sigstr = "rev";
 	    else if( (sig->sig_class&~3) == 0x10 )
-		fputs("sig", stdout);
+	       sigstr = "sig";
 	    else if( sig->sig_class == 0x18 )
-		fputs("sig", stdout);
+	       sigstr = "sig";
 	    else {
 		if( opt.with_colons )
 		    printf("sig::::::::::%02x:\n",sig->sig_class );
@@ -390,6 +404,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		rc = 0;
 		sigrc = ' ';
 	    }
+	   fputs( sigstr, stdout );
 	    if( opt.with_colons ) {
 		putchar(':');
 		if( sigrc != ' ' )
@@ -405,7 +420,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		printf("[%s] ", gpg_errstr(rc) );
 	    else if( sigrc == '?' )
 		;
-	    else {
+	    else if ( !opt.fast_list_mode ) {
 		size_t n;
 		char *p = get_user_id( sig->keyid, &n );
 		if( opt.with_colons )

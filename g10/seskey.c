@@ -1,5 +1,5 @@
 /* seskey.c -  make sesssion keys etc.
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -152,7 +152,7 @@ encode_session_key( DEK *dek, unsigned nbits )
 
 static MPI
 do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
-				       const byte *asn, size_t asnlen )
+	      const byte *asn, size_t asnlen, int v3compathack )
 {
     int nframe = (nbits+7) / 8;
     byte *frame;
@@ -165,7 +165,7 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
 
     /* We encode the MD in this way:
      *
-     *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
+     *	   0  1 PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
      *
      * PAD consists of FF bytes.
      */
@@ -173,7 +173,7 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
 				 : gcry_xmalloc( nframe );
     n = 0;
     frame[n++] = 0;
-    frame[n++] = algo;
+    frame[n++] = v3compathack? algo : 1; /* block type */
     i = nframe - len - asnlen -3 ;
     assert( i > 1 );
     memset( frame+n, 0xff, i ); n += i;
@@ -188,8 +188,15 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
 }
 
 
+/****************
+ * Encode a message digest into an MPI.
+ * v3compathack is used to work around a bug in old GnuPG versions
+ * which did put the algo identifier inseatd of the block type 1 into
+ * the encoded value.  setting this vare force the old behaviour.
+ */
 MPI
-encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo, unsigned nbits )
+encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo,
+		 unsigned nbits, int v3compathack )
 {
     int algo = hash_algo? hash_algo : gcry_md_get_algo(md);
     MPI frame;
@@ -211,9 +218,10 @@ encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo, unsigned nbits )
 	if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, asn, &asnlen ) )
 	    BUG();
 	frame = do_encode_md( md, algo, gcry_md_get_algo_dlen( algo ),
-						     nbits, asn, asnlen );
+					 nbits, asn, asnlen, v3compathack );
 	gcry_free( asn );
     }
     return frame;
 }
+
 

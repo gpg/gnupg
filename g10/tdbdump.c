@@ -1,5 +1,5 @@
 /* tdbdump.c
- *	Copyright (C) 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -520,5 +520,6 @@ import_ownertrust( const char *fname )
     if( !is_stdin )
 	fclose(fp);
     do_sync();
+    sync_trustdb();
 }
 

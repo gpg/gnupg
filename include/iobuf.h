@@ -32,6 +32,7 @@
 #define IOBUFCTRL_UNDERFLOW 3
 #define IOBUFCTRL_FLUSH     4
 #define IOBUFCTRL_DESC	    5
+#define IOBUFCTRL_CANCEL    6
 #define IOBUFCTRL_USER	    16
 
 typedef struct iobuf_struct *IOBUF;

@@ -1,3 +1,28 @@
+Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
+
+  * iobuf.c (iobuf_cancel): Broadcast the new Cancel message to all
+  filters.  Fix for MSDOS.
+
+  * miscutil.c (asctimestamp): Fix for possible buffer overflow by
+  a large system returned date format string.
+
+  * logger.c (log_inc_errorcount): New.
+
+  * w32reg.c: New.
+
+  * simple-gettext.c: Use the Registry to locate the mo file.
+
+  * http.c (send_request): Add support for proxys; suggested by
+  Walter Hofmann.
+  (http_open_document): Pass flags to http_open.
+
+  * ttyio.c (do_get): Replaced #if __MINGW32__ by #ifdef because
+  gcc 2.95.1 assigns a floating point value (0.2) to this macro,
+  which in turn can't be used in an expression.
+  * ttyio.c: Simulate termios with termios.  By Dave Dykstra.
+  * ttyio.c (tty_print_utf8_string): Oops.
+  * ttyio.c (tty_print_utf8_string2): New to allow a max output size.
+
 Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* Changed all "g10_"/"GPG_" prefixes to "gpg_"/"GPG_".

@@ -1,3 +1,85 @@
+Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
+
+  * md.c (gcry_md_ctl): Support GCRYCTL_{START,STOP}_DUMP.
+
+  * Makefile.am: Never compile mingw32 as module.
+
+  * Makefile.am: Tweaked module build and removed libtool
+
+  * Makefile.am:  Replaced -O1 by -O. Suggested by Alec Habig.
+
+  * elgamal.c (sign): Removed inactive code.
+
+  * rsa.c, rsa.h: New based on the old module version (only in CVS for now).
+  * pubkey.c (setup_pubkey_table): Added commented support for RSA.
+
+  * rndunix.c (waitpid): New. For UTS 2.1.  All by Dave Dykstra.
+  (my_popen): Do the FD_CLOEXEC only if it is available
+  (start_gatherer): Cope with missing _SC_OPEN_MAX
+
+  * rndunix.c: Add some more headers for QNX. By Sam Roberts.
+
+  * rndegd.c (gather_random): Shortcut level 0.
+  * rndunix.c (gather_random): Ditto.
+  * rndw32.c (gather_random): Ditto.
+
+  * rndw32.c: Replaced with code from Cryptlib and commented the old stuff.
+  * rndw32.c: Add some debuging code enabled by an environment variable.
+
+  * random.c (read_seed_file): Binary open for DOSish system
+  (update_random_seed_file): Ditto.
+  * random.c [MINGW32]: Include process.h for getpid.
+  * random.c (fast_random_poll): Add clock_gettime() as fallback for
+  system which support this POSIX.4 fucntion. By Sam Roberts.
+
+  * random.c (read_seed_file): Removed the S_ISLNK test becuase it
+  is already covered by !S_ISREG and is not defined in Unixware.
+  Reported by Dave Dykstra.
+  (update_random_seed_file): Silently ignore update request when pool
+  is not filled.
+
+  * random.c (read_seed_file): New.
+  (set_random_seed_file): New.
+  (read_pool): Try to read the seeding file.
+  (update_random_seed_file): New.
+
+  (read_pool): Do an initial extra seeding when level 2 quality random
+  is requested the first time.	This requestes at least POOLSIZE/2 bytes
+  of entropy.  Compined with the seeding file this should make normal
+  random bytes cheaper and increase the quality of the random bytes
+  used for key generation.
+
+  * random.c (read_pool): Print a more friendly error message in
+  cases when too much random is requested in one call.
+
+  * random.c (fast_random_poll): Check whether RUSAGE_SELF is defined;
+  this is not the case for some ESIX and Unixware, although they have
+  getrusage().
+
+  * primegen.c (generate_elg_prime): All primes are now generated with
+  the lowest random quality level.  Because they are public anyway we
+  don't need stronger random and by this we do not drain the systems
+  entropy so much.
+
+  * primegen.c (register_primegen_progress): New.
+  * dsa.c (register_pk_dsa_progress): New.
+  * elgamal.c (register_pk_elg_progress): New.
+
+  * elgamal.c (wiener_map): New.
+  (gen_k): Use a much smaller k.
+  (generate): Calculate the qbits using the wiener map and
+  choose an x at a size comparable to the one choosen in gen_k
+
+  * rmd160.c (rmd160_get_info): Moved casting to the left side due to a
+  problem with UTS4.3.	Suggested by Dave Dykstra.
+  * sha1.c (sha1_get_info): Ditto.
+  * tiger.c (tiger_get_info): Ditto.
+  * md5.c (md5_get_info): Ditto
+  * des.c (des_get_info): Ditto.
+  * blowfish.c (blowfish_get_info): Ditto.
+  * cast5.c (cast5_get_info): Ditto.
+  * twofish.c (twofish_get_info): Ditto.
+
 Fri Mar 24 11:25:45 CET 2000  Werner Koch  <wk@openit.de>
 
 	* md.c (md_open): Add hmac arg and allocate space for the pads.

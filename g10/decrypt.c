@@ -1,5 +1,5 @@
 /* decrypt.c - verify signed data
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,12 +25,12 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "i18n.h"

@@ -1,5 +1,5 @@
 /* filter.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,7 +26,6 @@
 #include "iobuf.h"
 
 
-
 typedef struct {
     GCRY_MD_HD md;	/* catch all */
     GCRY_MD_HD md2;	/* if we want to calculate an alternate hash */
@@ -38,6 +37,9 @@ typedef struct {
     int what;		    /* what kind of armor headers to write */
     int only_keyblocks;     /* skip all headers but ".... key block" */
     const char *hdrlines;   /* write these headerlines */
+
+    /* these fileds must be initialized to zero */
+    int no_openpgp_data;    /* output flag: "No valid OpenPGP data found" */
 
     /* the following fields must be initialized to zero */
     int inp_checked;	    /* set if the input has been checked */
@@ -60,6 +62,7 @@ typedef struct {
     u32 crc;
 
     int status; 	    /* an internal state flag */
+    int cancel;
     int any_data;	    /* any valid armored data seen */
     int pending_lf;	    /* used together with faked */
 } armor_filter_context_t;
@@ -83,6 +86,8 @@ typedef struct {
     GCRY_CIPHER_HD cipher_hd;
     int header;
     GCRY_MD_HD mdc_hash;
+    byte enchash[20];
+    int create_mdc; /* flag will be set by the cipher filter */
 } cipher_filter_context_t;
 
 
@@ -91,7 +96,6 @@ typedef struct {
     PK_LIST pk_list;
     cipher_filter_context_t cfx;
 } encrypt_filter_context_t;
-
 
 
 typedef struct {
@@ -107,8 +111,6 @@ typedef struct {
     int pending_esc;
 } text_filter_context_t;
 
-
-/* encrypt_filter_context_t defined in main.h */
 
 /*-- mdfilter.c --*/
 int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);

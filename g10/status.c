@@ -1,5 +1,5 @@
 /* status.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,12 +38,13 @@
     #include <sys/mman.h>
   #endif
 #endif
+
+#include <gcrypt.h>
 #include "util.h"
 #include "status.h"
 #include "ttyio.h"
 #include "options.h"
 #include "main.h"
-#include <gcrypt.h>
 #include "i18n.h"
 
 static int fd = -1;
@@ -54,10 +55,32 @@ static int fd = -1;
   static int shm_is_locked;
 #endif /*USE_SHM_COPROCESSING*/
 
+
+static void
+progress_cb ( void *ctx, int c )
+{
+    char buf[50];
+
+    if ( c == '\n' )
+	sprintf ( buf, "%.20s X 100 100", (char*)ctx );
+    else
+	sprintf ( buf, "%.20s %c 0 0", (char*)ctx, c );
+    write_status_text ( STATUS_PROGRESS, buf );
+}
+
+
 void
 set_status_fd ( int newfd )
 {
     fd = newfd;
+    if ( fd != -1 ) {
+      #if 0
+	#warning fixme - progress functions
+	register_primegen_progress ( progress_cb, "primegen" );
+	register_pk_dsa_progress ( progress_cb, "pk_dsa" );
+	register_pk_elg_progress ( progress_cb, "pk_elg" );
+      #endif
+    }
 }
 
 int
@@ -96,6 +119,10 @@ write_status_text ( int no, const char *text)
       case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL\n"; break;
       case STATUS_TRUST_FULLY	 : s = "TRUST_FULLY\n"; break;
       case STATUS_TRUST_ULTIMATE : s = "TRUST_ULTIMATE\n"; break;
+      case STATUS_GET_BOOL	 : s = "GET_BOOL\n"; break;
+      case STATUS_GET_LINE	 : s = "GET_LINE\n"; break;
+      case STATUS_GET_HIDDEN	 : s = "GET_HIDDEN\n"; break;
+      case STATUS_GOT_IT	 : s = "GOT_IT\n"; break;
       case STATUS_SHM_INFO	 : s = "SHM_INFO\n"; break;
       case STATUS_SHM_GET	 : s = "SHM_GET\n"; break;
       case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL\n"; break;
@@ -118,6 +145,16 @@ write_status_text ( int no, const char *text)
       case STATUS_ERRMDC	 : s = "ERRMDC\n"; break;
       case STATUS_IMPORTED	 : s = "IMPORTED\n"; break;
       case STATUS_IMPORT_RES	 : s = "IMPORT_RES\n"; break;
+      case STATUS_FILE_START	 : s = "FILE_START\n"; break;
+      case STATUS_FILE_DONE	 : s = "FILE_DONE\n"; break;
+      case STATUS_FILE_ERROR	 : s = "FILE_ERROR\n"; break;
+      case STATUS_BEGIN_DECRYPTION:s = "BEGIN_DECRYPTION\n"; break;
+      case STATUS_END_DECRYPTION : s = "END_DECRYPTION\n"; break;
+      case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION\n"; break;
+      case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION\n"; break;
+      case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM\n"; break;
+      case STATUS_PROGRESS	 : s = "PROGRESS\n"; break;
+      case STATUS_SIG_CREATED	 : s = "SIG_CREATED\n"; break;
       default: s = "?\n"; break;
     }
 
@@ -164,6 +201,10 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
     if ( shm_id == -1 )
 	log_fatal("can't get %uk of shared memory: %s\n",
 				(unsigned)shm_size/1024, strerror(errno));
+
+  #if !defined(IPC_HAVE_SHM_LOCK) \
+      && defined(HAVE_MLOCK) && !defined(HAVE_BROKEN_MLOCK)
+    /* part of the old code which uses mlock */
     shm_area = shmat( shm_id, 0, 0 );
     if ( shm_area == (char*)-1 )
 	log_fatal("can't attach %uk shared memory: %s\n",
@@ -174,28 +215,16 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
       #ifdef USE_CAPABILITIES
 	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
       #endif
-      #ifdef IPC_HAVE_SHM_LOCK
-	if ( shmctl (shm_id, SHM_LOCK, 0) )
-	    log_info("locking shared memory %d failed: %s\n",
-				shm_id, strerror(errno));
-	else
-	    shm_is_locked = 1;
-      #elif defined(HAVE_MLOCK) && !defined(HAVE_BROKEN_MLOCK)
 	/* (need the cast for Solaris with Sun's workshop compilers) */
 	if ( mlock ( (char*)shm_area, shm_size) )
 	    log_info("locking shared memory %d failed: %s\n",
 				shm_id, strerror(errno));
 	else
 	    shm_is_locked = 1;
-      #else
-	log_info("Locking shared memory %d failed: No way to do it\n", shm_id );
-      #endif
       #ifdef USE_CAPABILITIES
 	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
       #endif
     }
-
-
 
   #ifdef IPC_RMID_DEFERRED_RELEASE
     if( shmctl( shm_id, IPC_RMID, 0) )
@@ -213,12 +242,58 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 						shm_id, strerror(errno));
     }
 
+  #else /* this is the new code which handles the changes in the SHM semantics
+	 * introduced with Linux 2.4.  The changes is that we now change the
+	 * permissions and then attach to the memory.
+	 */
+
+    if( lock_mem ) {
+      #ifdef USE_CAPABILITIES
+	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
+      #endif
+      #ifdef IPC_HAVE_SHM_LOCK
+	if ( shmctl (shm_id, SHM_LOCK, 0) )
+	    log_info("locking shared memory %d failed: %s\n",
+				shm_id, strerror(errno));
+	else
+	    shm_is_locked = 1;
+      #else
+	log_info("Locking shared memory %d failed: No way to do it\n", shm_id );
+      #endif
+      #ifdef USE_CAPABILITIES
+	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
+      #endif
+    }
+
+    if( shmctl( shm_id, IPC_STAT, &shmds ) )
+	log_fatal("shmctl IPC_STAT of %d failed: %s\n",
+					    shm_id, strerror(errno));
+    if( shmds.shm_perm.uid != getuid() ) {
+	shmds.shm_perm.uid = getuid();
+	if( shmctl( shm_id, IPC_SET, &shmds ) )
+	    log_fatal("shmctl IPC_SET of %d failed: %s\n",
+						shm_id, strerror(errno));
+    }
+
+    shm_area = shmat( shm_id, 0, 0 );
+    if ( shm_area == (char*)-1 )
+	log_fatal("can't attach %uk shared memory: %s\n",
+				(unsigned)shm_size/1024, strerror(errno));
+    log_debug("mapped %uk shared memory at %p, id=%d\n",
+			    (unsigned)shm_size/1024, shm_area, shm_id );
+
+  #ifdef IPC_RMID_DEFERRED_RELEASE
+    if( shmctl( shm_id, IPC_RMID, 0) )
+	log_fatal("shmctl IPC_RMDID of %d failed: %s\n",
+					    shm_id, strerror(errno));
+  #endif
+
+  #endif
     /* write info; Protocol version, id, size, locked size */
     sprintf( buf, "pv=1 pid=%d shmid=%d sz=%u lz=%u", (int)getpid(),
 	    shm_id, (unsigned)shm_size, shm_is_locked? (unsigned)shm_size:0 );
     write_status_text( STATUS_SHM_INFO, buf );
 }
-
 
 /****************
  * Request a string from client
@@ -269,10 +344,50 @@ do_shm_get( const char *keyword, int hidden, int bool )
 #endif /* USE_SHM_COPROCESSING */
 
 
+/****************
+ * Request a string from the client over the command-fd
+ * If bool, returns static string on true (do not free) or NULL for false
+ */
+static char *
+do_get_from_fd( const char *keyword, int hidden, int bool )
+{
+    int i, len;
+    char *string;
+
+    write_status_text( bool? STATUS_GET_BOOL :
+		       hidden? STATUS_GET_HIDDEN : STATUS_GET_LINE, keyword );
+
+    for( string = NULL, i = len = 200; ; i++ ) {
+	if( i >= len-1 ) {
+	    char *save = string;
+	    len += 100;
+	    string = hidden? gcry_xmalloc_secure ( len ) : gcry_malloc ( len );
+	    if( save )
+		memcpy(string, save, i );
+	    else
+		i=0;
+	}
+	/* Hmmm: why not use our read_line function here */
+	if( read( fd, string+i, 1) != 1 || string[i] == '\n' )
+	    break;
+    }
+    string[i] = 0;
+
+    write_status( STATUS_GOT_IT );
+
+    if( bool )	 /* Fixme: is this correct??? */
+	return string[0] == 'Y' ? "" : NULL;
+
+    return string;
+}
+
+
 
 int
 cpr_enabled()
 {
+    if( opt.command_fd != -1 )
+	return 1;
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return 1;
@@ -285,6 +400,8 @@ cpr_get( const char *keyword, const char *prompt )
 {
     char *p;
 
+    if( opt.command_fd != -1 )
+	return do_get_from_fd ( keyword, 0, 0 );
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 0, 0 );
@@ -318,6 +435,8 @@ cpr_get_hidden( const char *keyword, const char *prompt )
 {
     char *p;
 
+    if( opt.command_fd != -1 )
+	return do_get_from_fd ( keyword, 1, 0 );
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 1, 0 );
@@ -336,6 +455,8 @@ cpr_get_hidden( const char *keyword, const char *prompt )
 void
 cpr_kill_prompt(void)
 {
+    if( opt.command_fd != -1 )
+	return;
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return;
@@ -350,6 +471,8 @@ cpr_get_answer_is_yes( const char *keyword, const char *prompt )
     int yes;
     char *p;
 
+    if( opt.command_fd != -1 )
+	return !!do_get_from_fd ( keyword, 0, 1 );
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return !!do_shm_get( keyword, 0, 1 );
@@ -376,6 +499,8 @@ cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt )
     int yes;
     char *p;
 
+    if( opt.command_fd != -1 )
+	return !!do_get_from_fd ( keyword, 0, 1 );
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return !!do_shm_get( keyword, 0, 1 );

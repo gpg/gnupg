@@ -34,10 +34,6 @@
 /* Prototype for the self-test function. */
 static const char *selftest(void);
 
-/* Macros used by the info function. */
-#define FNCCAST_SETKEY(f)  ((int(*)(void*, byte*, unsigned))(f))
-#define FNCCAST_CRYPT(f)   ((void(*)(void*, byte*, byte*))(f))
-
 /* Structure for an expanded Twofish key.  s contains the key-dependent
  * S-boxes composed with the MDS matrix; w contains the eight "whitening"
  * subkeys, K[0] through K[7].	k holds the remaining, "round" subkeys.  Note
@@ -990,16 +986,20 @@ twofish_get_info (int algo, size_t *keylen,
     *keylen = algo==10? 256 : 128;
     *blocksize = 16;
     *contextsize = sizeof (TWOFISH_context);
-    *r_setkey = FNCCAST_SETKEY (twofish_setkey);
-    *r_encrypt= FNCCAST_CRYPT (twofish_encrypt);
-    *r_decrypt= FNCCAST_CRYPT (twofish_decrypt);
 
-   if( algo == 10 )
-     return "TWOFISH";
-   if (algo == 102) /* This algorithm number is assigned for
-		     * experiments, so we can use it */
-     return "TWOFISH128";
-   return NULL;
+    *(int  (**)(TWOFISH_context*, const byte*, const unsigned))r_setkey
+							= twofish_setkey;
+    *(void (**)(const TWOFISH_context*, byte*, const byte*))r_encrypt
+							= twofish_encrypt;
+    *(void (**)(const TWOFISH_context*, byte*, const byte*))r_decrypt
+							= twofish_decrypt;
+
+    if( algo == 10 )
+	return "TWOFISH";
+    if (algo == 102) /* This algorithm number is assigned for
+		      * experiments, so we can use it */
+	return "TWOFISH128";
+    return NULL;
 }
 
 

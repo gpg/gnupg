@@ -1,5 +1,6 @@
-/* hkp.h  -  Horrowitz Keyserver Protocol
- *	Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* rsa.h
+ *	Copyright (C) 1997,1998 by Werner Koch (dd9jn)
+ *	Copyright (C) 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,14 +18,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+#ifndef G10_RSA_H
+#define G10_RSA_H
 
-#ifndef GPG_HKP_H
-#define GPG_HKP_H 1
+int rsa_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors );
+int rsa_check_secret_key( int algo, MPI *skey );
+int rsa_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
+int rsa_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
+int rsa_sign( int algo, MPI *resarr, MPI data, MPI *skey );
+int rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
+		    int (*cmp)(void *, MPI), void *opaquev );
+unsigned rsa_get_nbits( int algo, MPI *pkey );
+const char *rsa_get_info( int algo, int *npkey, int *nskey,
+				    int *nenc, int *nsig, int *use );
 
 
-int hkp_ask_import( u32 *keyid );
-int hkp_import( STRLIST users );
-int hkp_export( STRLIST users );
-
-
-#endif /*GPG_HKP_H*/
+#endif /*G10_RSA_H*/

@@ -1,5 +1,5 @@
 /* plaintext.c -  process an plaintext packet
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -107,8 +107,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		}
 		if( mfx->md )
 		    gcry_md_putc(mfx->md, c );
-		if( c == '\r' )
-		    continue; /* fixme: this hack might be too simple */
+	      #ifndef HAVE_DOSISH_SYSTEM
+		if( c == '\r' )  /* convert to native line ending */
+		    continue;	 /* fixme: this hack might be too simple */
+	      #endif
 		if( fp ) {
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
@@ -152,8 +154,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    while( (c = iobuf_get(pt->buf)) != -1 ) {
 		if( mfx->md )
 		    gcry_md_putc(mfx->md, c );
+	      #ifndef HAVE_DOSISH_SYSTEM
 		if( convert && c == '\r' )
 		    continue; /* fixme: this hack might be too simple */
+	      #endif
 		if( fp ) {
 		    if( putc( c, fp ) == EOF ) {
 			log_error("Error writing to `%s': %s\n",
@@ -169,10 +173,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    int eof;
 	    for( eof=0; !eof; ) {
 		/* Why do we check for len < 32768:
-		 * If we won´ we would practically read 2 EOFS but
+		 * If we won't, we would practically read 2 EOFs but
 		 * the first one has already popped the block_filter
 		 * off and therefore we don't catch the boundary.
-		 * Always assume EOF if iobuf_read returns less bytes
+		 * So, always assume EOF if iobuf_read returns less bytes
 		 * then requested */
 		int len = iobuf_read( pt->buf, buffer, 32768 );
 		if( len == -1 )
@@ -217,6 +221,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    if( !state ) {
 		if( c == '\r'  )
 		    state = 1;
+		else if( c == '\n'  )
+		    state = 2;
 		else
 		    gcry_md_putc(mfx->md, c );
 	    }

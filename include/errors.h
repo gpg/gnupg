@@ -1,5 +1,5 @@
-/* errors.h - erro code
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+/* errors.h - error codes fro GnuPG
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -74,6 +74,7 @@
 #define GPGERR_UNKNOWN_HOST    149
 #define GPGERR_SELFTEST_FAILED	50
 #define GPGERR_NOT_ENCRYPTED   151
+#define GPGERR_NOT_PROCESSED   152
 
 #ifndef HAVE_STRERROR
 char *strerror( int n );

@@ -1,5 +1,5 @@
 /* misc.c -  miscellaneous functions
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
   #include <asm/sysinfo.h>
   #include <asm/unistd.h>
@@ -32,6 +31,8 @@
   #include <sys/time.h>
   #include <sys/resource.h>
 #endif
+#include <assert.h>
+
 #include <gcrypt.h>
 #include "util.h"
 #include "main.h"
@@ -40,7 +41,6 @@
 
 
 #define MAX_EXTERN_MPI_BITS 16384
-
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
 #warning using trap_unaligned
@@ -246,6 +246,7 @@ mpi_print( FILE *fp, MPI a, int mode )
 }
 
 
+
 u16
 checksum_u16( unsigned n )
 {
@@ -287,7 +288,6 @@ checksum_mpi( MPI a )
     gcry_free( buffer );
     return csum;
 }
-
 
 
 u32
@@ -357,6 +357,7 @@ print_digest_algo_note( int algo )
     if( algo >= 100 && algo <= 110 )
 	no_exp_algo();
 }
+
 
 
 /****************

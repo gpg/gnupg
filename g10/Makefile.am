@@ -6,10 +6,11 @@ OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = -static @LDFLAGS@ @DYNLINK_LDFLAGS@
 # we need to add libutil.la a second time because we have to resolve
 # gpg_log_ in some libjnlib modules. - very ugly - should be removed soon.
-needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la ../jnlib/libjnlib.la ../util/libutil.la
+needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la \
+	      ../jnlib/libjnlib.la ../util/libutil.la
 
 #noinst_PROGRAMS = gpgd
-bin_PROGRAMS = gpg  kbxutil
+bin_PROGRAMS = gpg kbxutil
 
 common_source =  \
 	      build-packet.c	\

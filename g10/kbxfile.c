@@ -321,7 +321,7 @@ print_kbxfile( const char *filename )
     fp = fopen ( filename, "rb" );
     if( !fp ) {
 	log_error(_("can't open `%s': %s\n"), filename, strerror(errno) );
-	return 1;
+	return;
     }
 
     while ( !do_print_kbxfile( filename, fp ) )

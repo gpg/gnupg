@@ -1,5 +1,5 @@
 /* pubkey.c  -	pubkey dispatcher
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,6 +30,9 @@
 #include "cipher.h"
 #include "elgamal.h"
 #include "dsa.h"
+#if 0
+#include "rsa.h"
+#endif
 #include "dynload.h"
 
 /* FIXME: use set_lasterr() */
@@ -192,6 +195,60 @@ setup_pubkey_table(void)
     if( !pubkey_table[i].name )
 	BUG();
     i++;
+
+  #if 0
+    pubkey_table[i].algo = PUBKEY_ALGO_RSA;
+    pubkey_table[i].name = rsa_get_info( pubkey_table[i].algo,
+					 &pubkey_table[i].npkey,
+					 &pubkey_table[i].nskey,
+					 &pubkey_table[i].nenc,
+					 &pubkey_table[i].nsig,
+					 &pubkey_table[i].use );
+    pubkey_table[i].generate	     = rsa_generate;
+    pubkey_table[i].check_secret_key = rsa_check_secret_key;
+    pubkey_table[i].encrypt	     = rsa_encrypt;
+    pubkey_table[i].decrypt	     = rsa_decrypt;
+    pubkey_table[i].sign	     = rsa_sign;
+    pubkey_table[i].verify	     = rsa_verify;
+    pubkey_table[i].get_nbits	     = rsa_get_nbits;
+    if( !pubkey_table[i].name )
+	BUG();
+    i++;
+    pubkey_table[i].algo = PUBKEY_ALGO_RSA_E;
+    pubkey_table[i].name = rsa_get_info( pubkey_table[i].algo,
+					 &pubkey_table[i].npkey,
+					 &pubkey_table[i].nskey,
+					 &pubkey_table[i].nenc,
+					 &pubkey_table[i].nsig,
+					 &pubkey_table[i].use );
+    pubkey_table[i].generate	     = rsa_generate;
+    pubkey_table[i].check_secret_key = rsa_check_secret_key;
+    pubkey_table[i].encrypt	     = rsa_encrypt;
+    pubkey_table[i].decrypt	     = rsa_decrypt;
+    pubkey_table[i].sign	     = dummy_sign;
+    pubkey_table[i].verify	     = dummy_verify;
+    pubkey_table[i].get_nbits	     = rsa_get_nbits;
+    if( !pubkey_table[i].name )
+	BUG();
+    i++;
+    pubkey_table[i].algo = PUBKEY_ALGO_RSA_S;
+    pubkey_table[i].name = rsa_get_info( pubkey_table[i].algo,
+					 &pubkey_table[i].npkey,
+					 &pubkey_table[i].nskey,
+					 &pubkey_table[i].nenc,
+					 &pubkey_table[i].nsig,
+					 &pubkey_table[i].use );
+    pubkey_table[i].generate	     = rsa_generate;
+    pubkey_table[i].check_secret_key = rsa_check_secret_key;
+    pubkey_table[i].encrypt	     = dummy_encrypt;
+    pubkey_table[i].decrypt	     = dummy_decrypt;
+    pubkey_table[i].sign	     = rsa_sign;
+    pubkey_table[i].verify	     = rsa_verify;
+    pubkey_table[i].get_nbits	     = rsa_get_nbits;
+    if( !pubkey_table[i].name )
+	BUG();
+    i++;
+  #endif
 
     for( ; i < TABLE_SIZE; i++ )
 	pubkey_table[i].name = NULL;

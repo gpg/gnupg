@@ -1,5 +1,5 @@
 /* ringedit.c -  Function for key ring editing
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -51,9 +51,10 @@
 #ifdef HAVE_LIBGDBM
   #include <gdbm.h>
 #endif
+
+#include <gcrypt.h>
 #include "util.h"
 #include "packet.h"
-#include <gcrypt.h>
 #include "iobuf.h"
 #include "keydb.h"
 #include "host2net.h"
@@ -63,10 +64,6 @@
 #include "kbx.h"
 
 
-#ifdef MKDIR_TAKES_ONE_ARG
-# undef mkdir
-# define mkdir(a,b) mkdir(a)
-#endif
 
 
 struct resource_table_struct {
@@ -191,7 +188,6 @@ enum_keyblock_resources( int *sequence, int secret )
 }
 
 
-
 /****************
  * Register a resource (which currently may only be a keyring file).
  * The first keyring which is added by this function is
@@ -312,24 +308,13 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    *last_slash_in_filename = 0;
 
 	    if( access(filename, F_OK) ) {
-		if( strlen(filename) >= 7
-		    && !strcmp(filename+strlen(filename)-7, "/.gnupg") ) {
-		    if( mkdir(filename, S_IRUSR|S_IWUSR|S_IXUSR) )
-		    {
-			log_error( _("%s: can't create directory: %s\n"),
-				  filename, strerror(errno));
-			rc = GPGERR_OPEN_FILE;
-			goto leave;
-		    }
-		    else if( !opt.quiet )
-			log_info( _("%s: directory created\n"), filename );
-		    copy_options_file( filename );
-		}
-		else
-		{
-		    rc = GPGERR_OPEN_FILE;
-		    goto leave;
-		}
+		/* on the first time we try to create the default homedir and
+		 * in this case the process will be terminated, so that on the
+		 * next invocation it can read the options file in on startup
+		 */
+		try_make_homedir( filename );
+		rc = GPGERR_OPEN_FILE;
+		goto leave;
 	    }
 
 	    *last_slash_in_filename = '/';
@@ -362,7 +347,6 @@ add_keyblock_resource( const char *url, int force, int secret )
 	/* must close it again */
       #endif
 	break;
-
 
     #ifdef HAVE_LIBGDBM
       case rt_GDBM:
@@ -456,6 +440,35 @@ get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
     return -1; /* not found */
 }
 
+
+/****************
+ * Return the filename of the firstkeyblock resource which is intended
+ * for write access. This will either be the default resource or in
+ * case this is not writable one of the others.  If no writable is found,
+ * the default filename in the homedirectory will be returned.
+ * Caller must free, will never return NULL.
+ */
+char *
+get_writable_keyblock_file( int secret )
+{
+    int i = secret? default_secret_resource : default_public_resource;
+
+    if( resource_table[i].used && !resource_table[i].secret == !secret ) {
+	if( !access( resource_table[i].fname, R_OK|W_OK ) ) {
+	    return gcry_xstrdup( resource_table[i].fname );
+	}
+    }
+    for(i=0; i < MAX_RESOURCES; i++ ) {
+	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
+	    if( !access( resource_table[i].fname, R_OK|W_OK ) ) {
+		return gcry_xstrdup( resource_table[i].fname );
+	    }
+	}
+    }
+    /* Assume the home dir is always writable */
+    return  make_filename(opt.homedir, secret? "secring.gpg"
+					     : "pubring.gpg", NULL );
+}
 
 
 /****************

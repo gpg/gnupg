@@ -1,5 +1,5 @@
 /* logger.c  -	log functions
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -100,6 +100,12 @@ log_get_errorcount( int clear)
     if( clear )
 	errorcount = 0;
     return n;
+}
+
+void
+log_inc_errorcount()
+{
+    errorcount++;
 }
 
 

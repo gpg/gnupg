@@ -1,5 +1,5 @@
 /* sig-check.c -  Check a signature
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,6 +31,7 @@
 #include "main.h"
 #include "status.h"
 #include "i18n.h"
+#include "options.h"
 
 struct cmp_help_context_s {
     PKT_signature *sig;
@@ -39,9 +40,10 @@ struct cmp_help_context_s {
 
 
 static int do_signature_check( PKT_signature *sig, GCRY_MD_HD digest,
-						      u32 *r_expire );
+					 u32 *r_expiredate, int *r_expired );
 static int do_check( PKT_public_key *pk, PKT_signature *sig,
-						GCRY_MD_HD digest );
+					 GCRY_MD_HD digest, int *r_expired );
+
 
 
 /****************
@@ -131,11 +133,13 @@ int
 signature_check( PKT_signature *sig, GCRY_MD_HD digest )
 {
     u32 dummy;
-    return do_signature_check( sig, digest, &dummy );
+    int dum2;
+    return do_signature_check( sig, digest, &dummy, &dum2 );
 }
 
 static int
-do_signature_check( PKT_signature *sig, GCRY_MD_HD digest, u32 *r_expire )
+do_signature_check( PKT_signature *sig, GCRY_MD_HD digest,
+					u32 *r_expiredate, int *r_expired )
 {
     PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     int rc=0;
@@ -143,12 +147,12 @@ do_signature_check( PKT_signature *sig, GCRY_MD_HD digest, u32 *r_expire )
     if( is_RSA(sig->pubkey_algo) )
 	write_status(STATUS_RSA_OR_IDEA);
 
-    *r_expire = 0;
+    *r_expiredate = 0;
     if( get_pubkey( pk, sig->keyid ) )
 	rc = GPGERR_NO_PUBKEY;
     else {
-	*r_expire = pk->expiredate;
-	rc = do_check( pk, sig, digest );
+	*r_expiredate = pk->expiredate;
+	rc = do_check( pk, sig, digest, r_expired );
     }
 
     free_public_key( pk );
@@ -198,97 +202,6 @@ do_signature_check( PKT_signature *sig, GCRY_MD_HD digest, u32 *r_expire )
     return rc;
 }
 
-
-#if 0 /* not anymore used */
-/****************
- * Check the MDC which is contained in SIG.
- * The GCRY_MD_HD should be currently open, so that this function
- * is able to append some data, before finalizing the digest.
- */
-int
-mdc_kludge_check( PKT_signature *sig, GCRY_MD_HD digest )
-{
-    int rc=0;
-
-    if( (rc=check_digest_algo(sig->digest_algo)) )
-	return rc;
-
-    /* make sure the digest algo is enabled (in case of a detached mdc??) */
-    md_enable( digest, sig->digest_algo );
-
-    /* complete the digest */
-    if( sig->version >= 4 )
-	gcry_md_putc( digest, sig->version );
-    gcry_md_putc( digest, sig->sig_class );
-    if( sig->version < 4 ) {
-	u32 a = sig->timestamp;
-	gcry_md_putc( digest, (a >> 24) & 0xff );
-	gcry_md_putc( digest, (a >> 16) & 0xff );
-	gcry_md_putc( digest, (a >>  8) & 0xff );
-	gcry_md_putc( digest,  a	& 0xff );
-    }
-    else {
-	byte buf[6];
-	size_t n;
-	gcry_md_putc( digest, sig->pubkey_algo );
-	gcry_md_putc( digest, sig->digest_algo );
-	if( sig->hashed_data ) {
-	    n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-	    gcry_md_write( digest, sig->hashed_data, n+2 );
-	    n += 6;
-	}
-	else
-	    n = 6;
-	/* add some magic */
-	buf[0] = sig->version;
-	buf[1] = 0xff;
-	buf[2] = n >> 24;
-	buf[3] = n >> 16;
-	buf[4] = n >>  8;
-	buf[5] = n;
-	gcry_md_write( digest, buf, 6 );
-    }
-    md_final( digest );
-
-    rc = GPGERR_BAD_SIGN;
-    {	const byte *s1 = md_read( digest, sig->digest_algo );
-	int s1len = md_digest_length( sig->digest_algo );
-
-	log_hexdump( "MDC calculated", s1, s1len );
-
-	if( !sig->data[0] )
-	    log_debug("sig_data[0] is NULL\n");
-	else {
-	    unsigned s2len;
-	    char *s2;
-
-	    if( gcry_mpi_print( GCRYMPI_FMT_USG, &s2, &s2len, sig->data[0] ))
-		BUG();
-
-	    log_hexdump( "MDC stored    ", s2, s2len );
-
-	    if( s2len != s1len )
-		log_debug("MDC check: len differ: %d/%d\n", s1len, s2len);
-	    else if( memcmp( s1, s2, s1len ) )
-		log_debug("MDC check: hashs differ\n");
-	    else
-		rc = 0;
-	    gcry_free(s2);
-	}
-    }
-
-    if( !rc && sig->flags.unknown_critical ) {
-	log_info(_("assuming bad MDC due to an unknown critical bit\n"));
-	rc = GPGERR_BAD_SIGN;
-    }
-    sig->flags.checked = 1;
-    sig->flags.valid = !rc;
-
-    /* FIXME: check that we are actually in an encrypted packet */
-
-    return rc;
-}
-#endif
 
 /****************
  * This function gets called by pubkey_verify() if the algorithm needs it.
@@ -366,16 +279,18 @@ cmp_help( void *opaque, MPI result )
 
 
 static int
-do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
+do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest,
+						    int *r_expired )
 {
     MPI result = NULL;
     int rc=0;
     struct cmp_help_context_s ctx;
     u32 cur_time;
 
+    *r_expired = 0;
     if( pk->version == 4 && pk->pubkey_algo == GCRY_PK_ELG_E ) {
 	log_info(_("this is a PGP generated "
-		  "ElGamal key which is NOT secure for signatures!\n"));
+		   "ElGamal key which is NOT secure for signatures!\n"));
 	return GPGERR_PUBKEY_ALGO;
     }
 
@@ -385,7 +300,8 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
 		  ? _("public key is %lu second newer than the signature\n")
 		  : _("public key is %lu seconds newer than the signature\n"),
 		       d );
-	return GPGERR_TIME_CONFLICT; /* pubkey newer than signature */
+	if( !opt.ignore_time_conflict )
+	    return GPGERR_TIME_CONFLICT; /* pubkey newer than signature */
     }
 
     cur_time = make_timestamp();
@@ -395,13 +311,15 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	return GPGERR_TIME_CONFLICT;
+	if( !opt.ignore_time_conflict )
+	    return GPGERR_TIME_CONFLICT;
     }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {
 	log_info(_("NOTE: signature key expired %s\n"),
 					asctimestamp( pk->expiredate ) );
 	write_status(STATUS_SIGEXPIRED);
+	*r_expired = 1;
     }
 
 
@@ -448,13 +366,24 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
     gcry_md_final( digest );
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
-				      gcry_mpi_get_nbits(pk->pkey[0]));
-
+			      gcry_mpi_get_nbits(pk->pkey[0]), 0);
     ctx.sig = sig;
     ctx.md = digest;
     rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
 			cmp_help, &ctx );
     mpi_release( result );
+    if( (opt.emulate_bugs & EMUBUG_MDENCODE)
+	&& rc == GPGERR_BAD_SIGN && is_ELGAMAL(pk->pubkey_algo) ) {
+	/* In this case we try again because old GnuPG versions didn't encode
+	 * the hash right. There is no problem with DSA however  */
+	result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
+				  gcry_mpi_get_nbits(pk->pkey[0]), (sig->version < 5) );
+	ctx.sig = sig;
+	ctx.md = digest;
+	rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
+			cmp_help, &ctx );
+    }
+
     if( !rc && sig->flags.unknown_critical ) {
 	log_info(_("assuming bad signature due to an unknown critical bit\n"));
 	rc = GPGERR_BAD_SIGN;
@@ -472,16 +401,30 @@ hash_uid_node( KBNODE unode, GCRY_MD_HD md, PKT_signature *sig )
     PKT_user_id *uid = unode->pkt->pkt.user_id;
 
     assert( unode->pkt->pkttype == PKT_USER_ID );
-    if( sig->version >=4 ) {
-	byte buf[5];
-	buf[0] = 0xb4; /* indicates a userid packet */
-	buf[1] = uid->len >> 24;  /* always use 4 length bytes */
-	buf[2] = uid->len >> 16;
-	buf[3] = uid->len >>  8;
-	buf[4] = uid->len;
-	gcry_md_write( md, buf, 5 );
+    if( uid->photo ) {
+	if( sig->version >=4 ) {
+	    byte buf[5];
+	    buf[0] = 0xd1;		   /* packet of type 17 */
+	    buf[1] = uid->photolen >> 24;  /* always use 4 length bytes */
+	    buf[2] = uid->photolen >> 16;
+	    buf[3] = uid->photolen >>  8;
+	    buf[4] = uid->photolen;
+	    gcry_md_write( md, buf, 5 );
+	}
+	gcry_md_write( md, uid->photo, uid->photolen );
     }
-    gcry_md_write( md, uid->name, uid->len );
+    else {
+	if( sig->version >=4 ) {
+	    byte buf[5];
+	    buf[0] = 0xb4;	      /* indicates a userid packet */
+	    buf[1] = uid->len >> 24;  /* always use 4 length bytes */
+	    buf[2] = uid->len >> 16;
+	    buf[3] = uid->len >>  8;
+	    buf[4] = uid->len;
+	    gcry_md_write( md, buf, 5 );
+	}
+	gcry_md_write( md, uid->name, uid->len );
+    }
 }
 
 /****************
@@ -493,11 +436,13 @@ int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
     u32 dummy;
-    return check_key_signature2(root, node, is_selfsig, &dummy );
+    int dum2;
+    return check_key_signature2(root, node, is_selfsig, &dummy, &dum2 );
 }
 
 int
-check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
+check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
+				       u32 *r_expiredate, int *r_expired )
 {
     GCRY_MD_HD md;
     PKT_public_key *pk;
@@ -507,7 +452,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 
     if( is_selfsig )
 	*is_selfsig = 0;
-    *r_expire = 0;
+    *r_expiredate = 0;
+    *r_expired = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
@@ -528,7 +474,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	if( !(md = gcry_md_open( algo, 0 )) )
 	    BUG();
 	hash_public_key( md, pk );
-	rc = do_check( pk, sig, md );
+	rc = do_check( pk, sig, md, r_expired );
 	gcry_md_close(md);
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
@@ -539,7 +485,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 		BUG();
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md );
+	    rc = do_check( pk, sig, md, r_expired );
 	    gcry_md_close(md);
 	}
 	else {
@@ -562,7 +508,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 		BUG();
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md );
+	    rc = do_check( pk, sig, md, r_expired );
 	    gcry_md_close(md);
 	}
 	else {
@@ -584,10 +530,11 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 		if( is_selfsig )
 		    *is_selfsig = 1;
-		rc = do_check( pk, sig, md );
+		rc = do_check( pk, sig, md, r_expired );
 	    }
-	    else
-		rc = do_signature_check( sig, md, r_expire );
+	    else {
+		rc = do_signature_check( sig, md, r_expiredate, r_expired );
+	    }
 	    gcry_md_close(md);
 	}
 	else {

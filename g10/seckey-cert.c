@@ -1,5 +1,5 @@
 /* seckey-cert.c -  secret key certificate packet handling
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -32,6 +32,7 @@
 #include "options.h"
 #include "i18n.h"
 #include "status.h"
+
 
 /****************
  * Emulate our old PK interface here - sometime in the future we might
@@ -82,9 +83,11 @@ pk_check_secret_key( int algo, MPI *skey )
     return rc;
 }
 
+
 static int
 do_check( PKT_secret_key *sk )
 {
+    byte *buffer;
     u16 csum=0;
     int i, res;
     unsigned nbytes;
@@ -95,6 +98,10 @@ do_check( PKT_secret_key *sk )
 	GCRY_CIPHER_HD cipher_hd=NULL;
 	PKT_secret_key *save_sk;
 
+	if( sk->protect.s2k.mode == 1001 ) {
+	    log_info(_("secret key parts are not available\n"));
+	    return GPGERR_GENERAL;
+	}
 	if( sk->protect.algo == GCRY_CIPHER_NONE )
 	    BUG();
 	if( openpgp_cipher_test_algo( sk->protect.algo ) ) {
@@ -112,6 +119,7 @@ do_check( PKT_secret_key *sk )
 	}
 	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
 				 &sk->protect.s2k, 0 );
+	/* Hmmm: Do we use sync mode here even for Twofish? */
 	if( !(cipher_hd = gcry_cipher_open( sk->protect.algo,
 				      GCRY_CIPHER_MODE_CFB,
 				      GCRY_CIPHER_SECURE
@@ -198,7 +206,8 @@ do_check( PKT_secret_key *sk )
 	    free_secret_key( save_sk );
 	    return GPGERR_BAD_PASS;
 	}
-	/* the checksum may fail, so we also check the key itself */
+	/* the checksum may be correct in some cases,
+	 * so we also check the key itself */
 	res = pk_check_secret_key( sk->pubkey_algo, sk->skey );
 	if( res ) {
 	    copy_secret_key( sk, save_sk );
@@ -300,8 +309,6 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 					 ) {
 		BUG();
 	    }
-
-
 	    rc = gcry_cipher_setkey( cipher_hd, dek->key, dek->keylen );
 	    if( rc == GCRYERR_WEAK_KEY ) {
 		log_info(_("WARNING: Weak key detected"
@@ -316,18 +323,19 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		if( blocksize != 8 && blocksize != 16 )
 		    log_fatal("unsupported blocksize %d\n", blocksize );
 		sk->protect.ivlen = blocksize;
+		assert( sk->protect.ivlen <= DIM(sk->protect.iv) );
 	    }
-
-	    assert( sk->protect.ivlen <= DIM(sk->protect.iv) );
 	    gcry_randomize(sk->protect.iv, sk->protect.ivlen,
-							GCRY_STRONG_RANDOM);
+							 GCRY_STRONG_RANDOM);
 	    gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
+
 	    #warning FIXME: replace set/get buffer
 	    if( sk->version >= 4 ) {
-	      #define NMPIS (GNUPG_MAX_NSKEY - GNUPG_MAX_NPKEY)
-		byte *bufarr[NMPIS];
-		unsigned narr[NMPIS];
-		unsigned nbits[NMPIS];
+		/* FIXME: There is a bug in this function for all algorithms
+		 * where the secret MPIs are more than 1 */
+		byte *bufarr[GNUPG_MAX_NSKEY];
+		unsigned narr[GNUPG_MAX_NSKEY];
+		unsigned nbits[GNUPG_MAX_NSKEY];
 		int ndata=0;
 		byte *p, *data;
 
@@ -342,13 +350,13 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    nbits[j]  = gcry_mpi_get_nbits( sk->skey[i] );
 		    ndata += narr[j] + 2;
 		}
-		for( ; j < NMPIS; j++ )
+		for( ; j < GNUPG_MAX_NSKEY; j++ )
 		    bufarr[j] = NULL;
 		ndata += 2; /* for checksum */
 
 		data = gcry_xmalloc_secure( ndata );
 		p = data;
-		for(j=0; j < NMPIS && bufarr[j]; j++ ) {
+		for(j=0; j < GNUPG_MAX_NSKEY && bufarr[j]; j++ ) {
 		    p[0] = nbits[j] >> 8 ;
 		    p[1] = nbits[j];
 		    p += 2;
@@ -356,7 +364,6 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    p += narr[j];
 		    gcry_free(bufarr[j]);
 		}
-	      #undef NMPIS
 		csum = checksum( data, ndata-2);
 		sk->csum = csum;
 		*p++ =	csum >> 8;

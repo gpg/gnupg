@@ -1,5 +1,5 @@
 /* trustdb.h - Trust database
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -49,6 +49,7 @@ void check_trustdb( const char *username );
 void update_trustdb( void );
 int setup_trustdb( int level, const char *dbname );
 void init_trustdb( void );
+void sync_trustdb( void );
 int check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 		 const byte* nh, int (*add_fnc)(ulong), unsigned *retflgs );
 int query_trust_info( PKT_public_key *pk, const byte *nh );

@@ -1001,9 +1001,12 @@ des_get_info( int algo, size_t *keylen,
 	*keylen = 192;
 	*blocksize = 8;
 	*contextsize = sizeof(struct _tripledes_ctx);
-	*r_setkey = FNCCAST_SETKEY(do_tripledes_setkey);
-	*r_encrypt= FNCCAST_CRYPT(do_tripledes_encrypt);
-	*r_decrypt= FNCCAST_CRYPT(do_tripledes_decrypt);
+	*(int  (**)(struct _tripledes_ctx*, byte*, unsigned))r_setkey
+							= do_tripledes_setkey;
+	*(void (**)(struct _tripledes_ctx*, byte*, byte*))r_encrypt
+							= do_tripledes_encrypt;
+	*(void (**)(struct _tripledes_ctx*, byte*, byte*))r_decrypt
+							= do_tripledes_decrypt;
 	return "3DES";
     }
     return NULL;

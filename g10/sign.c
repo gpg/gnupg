@@ -1,5 +1,5 @@
 /* sign.c - sign data
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,8 +36,15 @@
 #include "filter.h"
 #include "ttyio.h"
 #include "trustdb.h"
+#include "status.h"
 #include "i18n.h"
 
+
+#ifdef HAVE_DOSISH_SYSTEM
+  #define LF "\r\n"
+#else
+  #define LF "\n"
+#endif
 
 /****************
  * Emulate our old PK interface here - sometime in the future we might
@@ -163,7 +170,8 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	return GPGERR_TIME_CONFLICT;
+	if( !opt.ignore_time_conflict )
+	    return GPGERR_TIME_CONFLICT;
     }
 
 
@@ -178,7 +186,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
     frame = encode_md_value( sk->pubkey_algo, md,
-			     digest_algo, gcry_mpi_get_nbits(sk->skey[0]));
+			     digest_algo, gcry_mpi_get_nbits(sk->skey[0]), 0 );
     rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_release(frame);
     if( rc )
@@ -239,6 +247,25 @@ only_old_style( SK_LIST sk_list )
     return old_style;
 }
 
+
+static void
+print_status_sig_created ( PKT_secret_key *sk, PKT_signature *sig, int what )
+{
+    byte array[MAX_FINGERPRINT_LEN], *p;
+    char buf[100+MAX_FINGERPRINT_LEN*2];
+    size_t i, n;
+
+    sprintf(buf, "%c %d %d %02x %lu ",
+	    what, sig->pubkey_algo, sig->digest_algo, sig->sig_class,
+	    (ulong)sig->timestamp );
+
+    fingerprint_from_sk( sk, array, &n );
+    p = buf + strlen(buf);
+    for(i=0; i < n ; i++ )
+	sprintf(p+2*i, "%02X", array[i] );
+
+    write_status_text( STATUS_SIG_CREATED, buf );
+}
 
 
 /****************
@@ -521,6 +548,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	sig->sig_class = opt.textmode && !outfile? 0x01 : 0x00;
 
 	md = gcry_md_copy( mfx.md );
+	if( !md )
+	    BUG();
 
 	if( sig->version >= 4 ) {
 	    build_sig_subpkt_from_sig( sig );
@@ -573,12 +602,16 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    pkt.pkttype = PKT_SIGNATURE;
 	    pkt.pkt.signature = sig;
 	    rc = build_packet( out, &pkt );
+	    if( !rc && is_status_enabled() ) {
+		print_status_sig_created ( sk, sig, detached ? 'D':'S');
+	    }
 	    free_packet( &pkt );
 	    if( rc )
 		log_error("build signature packet failed: %s\n", gpg_errstr(rc) );
 	}
 	if( rc )
 	    goto leave;
+
     }
 
 
@@ -640,7 +673,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     else if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;
 
-    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
+    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----" LF );
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
@@ -683,13 +716,15 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     }
 
 
-    if( !(textmd = gcry_md_open(0, 0)) )
+    textmd = gcry_md_open(0, 0);
+    if( !textmd )
 	BUG();
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
 	gcry_md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-    /*md_start_debug( textmd, "sign" );*/
+    if ( DBG_HASHING )
+	gcry_md_start_debug( textmd, "clearsign" );
     copy_clearsig_text( out, inp, textmd,
 			!opt.not_dash_escaped, opt.escape_from, old_style );
     /* fixme: check for read errors */
@@ -717,6 +752,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	sig->sig_class = 0x01;
 
 	md = gcry_md_copy( textmd );
+	if( !md )
+	    BUG();
 	if( sig->version >= 4 ) {
 	    build_sig_subpkt_from_sig( sig );
 	    gcry_md_putc( md, sig->version );
@@ -768,6 +805,9 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    pkt.pkttype = PKT_SIGNATURE;
 	    pkt.pkt.signature = sig;
 	    rc = build_packet( out, &pkt );
+	    if( !rc && is_status_enabled() ) {
+		print_status_sig_created ( sk, sig, 'C');
+	    }
 	    free_packet( &pkt );
 	    if( rc )
 		log_error("build signature packet failed: %s\n", gpg_errstr(rc) );

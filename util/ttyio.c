@@ -1,5 +1,5 @@
 /* ttyio.c -  tty i/O functions
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,6 +26,16 @@
 #include <unistd.h>
 #ifdef HAVE_TCGETATTR
   #include <termios.h>
+#else
+  #ifdef HAVE_TERMIO_H
+    /* simulate termios with termio */
+    #include <termio.h>
+    #define termios termio
+    #define tcsetattr ioctl
+    #define TCSAFLUSH TCSETAF
+    #define tcgetattr(A,B) ioctl(A,TCGETA,B)
+    #define HAVE_TCGETATTR
+  #endif
 #endif
 #ifdef __MINGW32__ /* use the odd Win32 functions */
   #include <windows.h>
@@ -237,7 +247,7 @@ tty_print_string( byte *p, size_t n )
 }
 
 void
-tty_print_utf8_string( byte *p, size_t n )
+tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
 {
     size_t i;
     char *buf;
@@ -252,13 +262,27 @@ tty_print_utf8_string( byte *p, size_t n )
     }
     if( i < n ) {
 	buf = utf8_to_native( p, n );
+	if( strlen( buf ) > max_n ) {
+	    buf[max_n] = 0;
+	}
+	/*(utf8 conversion already does the control character quoting)*/
 	tty_printf("%s", buf );
 	gcry_free( buf );
     }
-    else
+    else {
+	if( n > max_n ) {
+	    n = max_n;
+	}
 	tty_print_string( p, n );
+    }
 }
 
+
+void
+tty_print_utf8_string( byte *p, size_t n )
+{
+    tty_print_utf8_string2( p, n, n );
+}
 
 
 

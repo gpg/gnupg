@@ -1,3 +1,9 @@
+Fri Jul 14 19:38:23 CEST 2000  Werner Koch  <wk@>
+
+  * argparse.c (default_strusage): Changed year of default copyright.
+
+  * dotlock.c (disable_dotlock): New.
+
 Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* README: New.

@@ -1,5 +1,5 @@
 /* armor.c - Armor flter
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,6 +37,11 @@
 #include "status.h"
 #include "i18n.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+  #define LF "\r\n"
+#else
+  #define LF "\n"
+#endif
 
 #define MAX_LINELEN 20000
 
@@ -162,6 +167,7 @@ is_armored( const byte *buf )
     switch( pkttype ) {
       case PKT_MARKER:
       case PKT_SYMKEY_ENC:
+      case PKT_ONEPASS_SIG:
       case PKT_PUBLIC_KEY:
       case PKT_SECRET_KEY:
       case PKT_PUBKEY_ENC:
@@ -485,13 +491,26 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	if( !maxlen )
 	    afx->truncated++;
 	if( !afx->not_dash_escaped ) {
+	    int crlf;
+	    p = afx->buffer;
+	    n = afx->buffer_len;
+	    crlf = n > 1 && p[n-2] == '\r' && p[n-1]=='\n';
+
 	    /* PGP2 does not treat a tab as white space character */
-	    afx->buffer_len =
-		    trim_trailing_chars( afx->buffer, afx->buffer_len,
+	    afx->buffer_len = trim_trailing_chars( p, n,
 					 afx->pgp2mode ? " \r\n" : " \t\r\n");
 	    /* the buffer is always allocated with enough space to append
-	     * a CR, LF, Nul */
-	    afx->buffer[afx->buffer_len++] = '\r';
+	     * the removed [CR], LF and a Nul
+	     * The reason for this complicated procedure is to keep at least
+	     * the original tupe of lineending - handling of the removed
+	     * trailing spaces seems to be impossible in our method
+	     * of faking a packet; either we have to use a temporary file
+	     * or calculate the hash here in this module and somehow find
+	     * a way to send the hash down the processing line (well, a special
+	     * faked packet could do the job).
+	     */
+	    if( crlf )
+		afx->buffer[afx->buffer_len++] = '\r';
 	    afx->buffer[afx->buffer_len++] = '\n';
 	    afx->buffer[afx->buffer_len] = 0;
 	}
@@ -819,7 +838,8 @@ armor_filter( void *opaque, int control,
 		hashes &= 1|2|4|8;
 		if( !hashes ) {
 		    hashes |= 4;  /* default to MD 5 */
-		    afx->pgp2mode = 1;
+		    if( opt.pgp2_workarounds )
+			afx->pgp2mode = 1;
 		}
 		n=0;
 		do {
@@ -827,7 +847,7 @@ armor_filter( void *opaque, int control,
 		    buf[n++] = 0x90; /* old format, type 4, 1 length byte */
 		    buf[n++] = 13;   /* length */
 		    buf[n++] = 3;    /* version */
-		    buf[n++] = 0x01; /* sigclass 0x01 (canonical text mode)*/
+		    buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
 		    if( hashes & 1 ) {
 			hashes &= ~1;
 			buf[n++] = GCRY_MD_RMD160;
@@ -874,7 +894,7 @@ armor_filter( void *opaque, int control,
       #endif
 	*ret_len = n;
     }
-    else if( control == IOBUFCTRL_FLUSH ) {
+    else if( control == IOBUFCTRL_FLUSH && !afx->cancel ) {
 	if( !afx->status ) { /* write the header line */
 	    const char *s;
 
@@ -882,10 +902,10 @@ armor_filter( void *opaque, int control,
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, head_strings[afx->what] );
-	    iobuf_writestr(a, "-----\n");
+	    iobuf_writestr(a, "-----" LF );
 	    if( !opt.no_version )
 		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
-					      PRINTABLE_OS_NAME ")\n");
+					      PRINTABLE_OS_NAME ")" LF );
 
 	    /* write the comment string or a default one */
 	    s = opt.comment_string ? opt.comment_string
@@ -902,16 +922,17 @@ armor_filter( void *opaque, int control,
 		    else
 			iobuf_put(a, *s );
 		}
-		iobuf_put(a, '\n' );
+		iobuf_writestr(a, LF );
 	    }
 
 	    if( afx->hdrlines )
 		iobuf_writestr(a, afx->hdrlines);
-	    iobuf_put(a, '\n');
+	    iobuf_writestr(a, LF );
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;
 	    afx->crc = CRCINIT;
+
 	}
 	crc = afx->crc;
 	idx = afx->idx;
@@ -936,7 +957,7 @@ armor_filter( void *opaque, int control,
 		c = bintoasc[radbuf[2]&077];
 		iobuf_put(a, c);
 		if( ++idx2 >= (64/4) ) { /* pgp doesn't like 72 here */
-		    iobuf_put(a, '\n');
+		    iobuf_writestr(a, LF );
 		    idx2=0;
 		}
 	    }
@@ -951,8 +972,13 @@ armor_filter( void *opaque, int control,
 	if( !is_initialized )
 	    initialize();
     }
+    else if( control == IOBUFCTRL_CANCEL ) {
+	afx->cancel = 1;
+    }
     else if( control == IOBUFCTRL_FREE ) {
-	if( afx->status ) { /* pad, write cecksum, and bottom line */
+	if( afx->cancel )
+	    ;
+	else if( afx->status ) { /* pad, write cecksum, and bottom line */
 	    crc = afx->crc;
 	    idx = afx->idx;
 	    idx2 = afx->idx2;
@@ -975,13 +1001,13 @@ armor_filter( void *opaque, int control,
 		    iobuf_put(a, '=');
 		}
 		if( ++idx2 >= (64/4) ) { /* pgp doesn't like 72 here */
-		    iobuf_put(a, '\n');
+		    iobuf_writestr(a, LF );
 		    idx2=0;
 		}
 	    }
 	    /* may need a linefeed */
 	    if( idx2 )
-		iobuf_put(a, '\n');
+		iobuf_writestr(a, LF );
 	    /* write the CRC */
 	    iobuf_put(a, '=');
 	    radbuf[0] = crc >>16;
@@ -995,16 +1021,17 @@ armor_filter( void *opaque, int control,
 	    iobuf_put(a, c);
 	    c = bintoasc[radbuf[2]&077];
 	    iobuf_put(a, c);
-	    iobuf_put(a, '\n');
+	    iobuf_writestr(a, LF );
 	    /* and the the trailer */
 	    if( afx->what >= DIM(tail_strings) )
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, tail_strings[afx->what] );
-	    iobuf_writestr(a, "-----\n");
+	    iobuf_writestr(a, "-----" LF );
 	}
 	else if( !afx->any_data && !afx->inp_bypass ) {
 	    log_error(_("no valid OpenPGP data found.\n"));
+	    afx->no_openpgp_data = 1;
 	    write_status_text( STATUS_NODATA, "1" );
 	}
 	if( afx->truncated )

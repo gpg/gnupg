@@ -1,5 +1,5 @@
 /* iobuf.c  -  file handling
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -81,6 +81,8 @@ static int underflow(IOBUF a);
  * IOBUFCTRL_FLUSH: called by iobuf_flush() to write out the collected stuff.
  *		    *RET_LAN is the number of bytes in BUF.
  *
+ * IOBUFCTRL_CANCEL: send to all filters on behalf of iobuf_cancel.  The
+ *		    filter may take appropriate action on this message.
  */
 static int
 file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
@@ -494,19 +496,47 @@ iobuf_close( IOBUF a )
     return rc;
 }
 
+
 int
 iobuf_cancel( IOBUF a )
 {
     const char *s;
+    IOBUF a2;
+    int rc;
+  #ifdef HAVE_DOSISH_SYSTEM
+    char *remove_name = NULL;
+  #endif
 
     if( a && a->use == 2 ) {
 	s = iobuf_get_real_fname(a);
-	if( s && *s )
-	    remove(s);	/* remove the file. Fixme: this will fail for MSDOZE*/
-    }			/* because the file is still open */
-    return iobuf_close(a);
-}
+	if( s && *s ) {
+	  #ifdef HAVE_DOSISH_SYSTEM
+	    remove_name = m_strdup ( s );
+	  #else
+	    remove(s);
+	  #endif
+	}
+    }
 
+    /* send a cancel message to all filters */
+    for( a2 = a; a2 ; a2 = a2->chain ) {
+	size_t dummy;
+	if( a2->filter )
+	    a2->filter( a2->filter_ov, IOBUFCTRL_CANCEL, a2->chain,
+							 NULL, &dummy );
+    }
+
+    rc = iobuf_close(a);
+  #ifdef HAVE_DOSISH_SYSTEM
+    if ( remove_name ) {
+	/* Argg, MSDOS does not allow to remove open files.  So
+	 * we have to do it here */
+	remove ( remove_name );
+	m_free ( remove_name );
+    }
+  #endif
+    return rc;
+}
 
 /****************
  * create a temporary iobuf, which can be used to collect stuff

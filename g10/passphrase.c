@@ -1,5 +1,5 @@
 /* passphrase.c -  Get a passphrase
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,8 +24,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
-#include "util.h"
+
 #include <gcrypt.h>
+#include "util.h"
 #include "options.h"
 #include "ttyio.h"
 #include "keydb.h"
@@ -163,9 +164,9 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	tty_printf("\"\n");
 
 	if( !get_pubkey( pk, keyid ) ) {
+	    const char *s = gcry_pk_algo_name( pk->pubkey_algo );
 	    tty_printf( _("%u-bit %s key, ID %08lX, created %s"),
-		       nbits_from_pk( pk ),
-		       gcry_pk_algo_name( pk->pubkey_algo ), (ulong)keyid[1],
+		       nbits_from_pk( pk ), s?s:"?", (ulong)keyid[1],
 		       strtimestamp(pk->timestamp) );
 	    if( keyid[2] && keyid[3] && keyid[0] != keyid[2]
 				     && keyid[1] != keyid[3] )
