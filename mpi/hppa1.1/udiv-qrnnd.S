@@ -39,6 +39,7 @@
  */
 
 	.code
+	.align		8
 	.label L$0000
 	.word		0x43f00000
 	.word		0x0
