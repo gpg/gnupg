@@ -1463,6 +1463,11 @@ handle_connections (int listen_fd, int listen_fd_ssh)
       ret = pth_select_ev (FD_SETSIZE, &read_fdset, NULL, NULL, NULL, ev);
       if (ret == -1)
 	{
+          if (pth_event_occurred (ev))
+            {
+              handle_signal (signo);
+              continue;
+            }
           log_error (_("pth_select failed: %s - waiting 1s\n"),
                      strerror (errno));
           pth_sleep (1);

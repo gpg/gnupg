@@ -45,10 +45,24 @@ static ctrl_t primary_connection;
 
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
 
+
+/* Macro to flag a a removed card.  */
+#define TEST_CARD_REMOVAL(c,r)                              \
+       do {                                                 \
+          int _r = (r);                                     \
+          if (gpg_err_code (_r) == GPG_ERR_CARD_NOT_PRESENT \
+              || gpg_err_code (_r) == GPG_ERR_CARD_REMOVED) \
+            (c)->server_local->card_removed = 1;            \
+       } while (0)
+
+
 /* Data used to associate an Assuan context with local server data */
 struct server_local_s {
-  ASSUAN_CONTEXT assuan_ctx;
+  assuan_context_t assuan_ctx;
   int event_signal;        /* Or 0 if not used. */
+  int card_removed;        /* True if the card has been removed and a
+                              reset is required to continue
+                              operation. */
 };
 
 
@@ -89,6 +103,7 @@ do_reset (ctrl_t ctrl, int do_close)
           ctrl->reader_slot = -1;
         }
     }
+  ctrl->server_local->card_removed = 0;
 }
 
 
@@ -122,10 +137,17 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 /* If the card has not yet been opened, do it.  Note that this
    function returns an Assuan error, so don't map the error a second
    time */
-static AssuanError
+static assuan_error_t
 open_card (ctrl_t ctrl, const char *apptype)
 {
+  gpg_error_t err;
   int slot;
+
+  /* If we ever got a card not present error code, return that.  Only
+     the SERIALNO command and a reset are able to clear from that
+     state. */
+  if (ctrl->server_local->card_removed)
+    return map_to_assuan_status (gpg_error (GPG_ERR_CARD_REMOVED));
 
   if (ctrl->app_ctx)
     return 0; /* Already initialized for one specific application. */
@@ -137,24 +159,28 @@ open_card (ctrl_t ctrl, const char *apptype)
   else
     slot = apdu_open_reader (opt.reader_port);
   ctrl->reader_slot = slot;
-  if (slot != -1)
-    ctrl->app_ctx = select_application (ctrl, slot, apptype);
-  if (!ctrl->app_ctx)
-    { /* No application found - fall back to old mode. */
+  if (slot == -1)
+    err = gpg_error (GPG_ERR_CARD);
+  else
+    err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
+  if (!ctrl->app_ctx
+      && gpg_err_code (err) != GPG_ERR_CARD_NOT_PRESENT)
+    { 
+      /* No application found - fall back to old mode. */
       /* Note that we should rework the old code to use the
          application paradigma too. */
-      int rc;
-      
       /* If an APPTYPE was requested and it is not pkcs#15, we return
          an error here. */
       if (apptype && !(!strcmp (apptype, "P15") || !strcmp (apptype, "p15")))
-        rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+        err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       else 
-        rc = card_open (&ctrl->card_ctx);
-      if (rc)
-        return map_to_assuan_status (rc);
+        err = card_open (&ctrl->card_ctx);
     }
-  return 0;
+
+  if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
+    ctrl->server_local->card_removed = 1;
+
+  return map_to_assuan_status (err);
 }
 
 
@@ -215,11 +241,14 @@ percent_plus_unescape (unsigned char *string)
 static int
 cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
   char *serial_and_stamp;
   char *serial;
   time_t stamp;
+
+  /* Clear the remove flag so that the open_card is able to reread it.  */
+  ctrl->server_local->card_removed = 0;
 
   if ((rc = open_card (ctrl, *line? line:NULL)))
     return rc;
@@ -443,6 +472,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   if (rc == -1)
     rc = 0;
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -485,6 +515,7 @@ cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
         return rc;
     }
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -575,6 +606,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
  leave:
   ksba_cert_release (kc);
   xfree (cert);
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -697,6 +729,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
         return rc; /* that is already an assuan error code */
     }
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -743,6 +776,7 @@ cmd_pkauth (ASSUAN_CONTEXT ctx, char *line)
         return rc; /* that is already an assuan error code */
     }
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -789,6 +823,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
         return rc; /* that is already an assuan error code */
     }
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -824,6 +859,7 @@ cmd_getattr (ASSUAN_CONTEXT ctx, char *line)
 
   rc = app_getattr (ctrl->app_ctx, ctrl, keyword);
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -871,6 +907,7 @@ cmd_setattr (ASSUAN_CONTEXT ctx, char *orig_line)
   rc = app_setattr (ctrl->app_ctx, keyword, pin_cb, ctx, line, nbytes);
   xfree (linebuf);
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -927,6 +964,8 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
     return ASSUAN_Out_Of_Core;
   rc = app_genkey (ctrl->app_ctx, ctrl, keyno, force? 1:0, pin_cb, ctx);
   xfree (keyno);
+
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -966,6 +1005,7 @@ cmd_random (ASSUAN_CONTEXT ctx, char *line)
     }
   xfree (buffer);
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -1010,6 +1050,8 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     log_error ("command passwd failed: %s\n", gpg_strerror (rc));
   xfree (chvnostr);
+
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -1044,6 +1086,7 @@ cmd_checkpin (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     log_error ("app_check_pin failed: %s\n", gpg_strerror (rc));
 
+  TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
 }
 
@@ -1226,7 +1269,9 @@ send_status_info (CTRL ctrl, const char *keyword, ...)
 }
 
 
-
+/* This fucntion is called by the ticker thread to check for changes
+   of the reader stati.  It updates the reader status files and if
+   requested by the caller also send a signal to the caller.  */
 void
 scd_update_reader_status_file (void)
 {
@@ -1239,10 +1284,10 @@ scd_update_reader_status_file (void)
   int used;
   unsigned int status, changed;
 
-  /* Note, that we only try to get the status, becuase it does not
+  /* Note, that we only try to get the status, because it does not
      make sense to wait here for a operation to complete.  If we are
-     so busy working with the card, delays in the status file updated
-     are should be acceptable. */
+     busy working with a card, delays in the status file update should
+     be acceptable. */
   for (slot=0; (slot < DIM(last)
                 &&!apdu_enum_reader (slot, &used)); slot++)
     if (used && !apdu_get_status (slot, 0, &status, &changed))

@@ -104,7 +104,8 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 
 
 /*-- app.c --*/
-app_t select_application (ctrl_t ctrl, int slot, const char *name);
+gpg_error_t select_application (ctrl_t ctrl, int slot, const char *name,
+                                app_t *r_app);
 void release_application (app_t app);
 int app_munge_serialno (app_t app);
 int app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);

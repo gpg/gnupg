@@ -59,10 +59,10 @@
       Print VALUE.
 
    openfile <filename>
-      Open file FILENAME for read access and retrun the file descriptor.
+      Open file FILENAME for read access and return the file descriptor.
 
    createfile <filename>
-      Create file FILENAME, open for write access and retrun the file
+      Create file FILENAME, open for write access and return the file
       descriptor.
 
    pipeserver <program>

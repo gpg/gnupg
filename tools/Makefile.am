@@ -24,15 +24,13 @@ EXTRA_DIST = Manifest watchgnupg.c \
 AM_CPPFLAGS =  -I$(top_srcdir)/intl -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
 
-# Note, that we require GPG_ERROR_CFLAGS only because some share header files
-# require that file.  It is not actually used in gpgconf.
-AM_CFLAGS = @GPG_ERROR_CFLAGS@
+AM_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 sbin_SCRIPTS = addgnupghome
 
 bin_SCRIPTS = gpgsm-gencert.sh
 
-bin_PROGRAMS = gpgconf
+bin_PROGRAMS = gpgconf gpg-connect-agent
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg
 endif
@@ -41,4 +39,9 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a @LIBINTL@
 
-watchgnupg_SOURCES = watchgnupg.c
+watchgnupg_SOURCES = watchgnupg.c 
+
+gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
+gpg_connect_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+                          $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
+

@@ -306,23 +306,33 @@ flush_cache (app_t app)
    NULL if not found or a pointer which must be used to release the
    buffer holding value. */
 static void *
-get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
+get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
+            int *r_rc)
 {
   int rc, i;
   unsigned char *buffer;
   size_t buflen;
   unsigned char *value;
   size_t valuelen;
+  int dummyrc;
+
+  if (!r_rc)
+    r_rc = &dummyrc;
 
   *result = NULL;
   *nbytes = 0;
+  *r_rc = 0;
   for (i=0; data_objects[i].tag && data_objects[i].tag != tag; i++)
     ;
 
   if (app->card_version > 0x0100 && data_objects[i].get_immediate_in_v11)
     {
-      if( iso7816_get_data (app->slot, tag, &buffer, &buflen))
-        return NULL;
+      rc = iso7816_get_data (app->slot, tag, &buffer, &buflen);
+      if (rc)
+        {
+          *r_rc = rc;
+          return NULL;
+        }
       *result = buffer;
       *nbytes = buflen;
       return buffer;
@@ -334,7 +344,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
     {
       rc = get_cached_data (app, data_objects[i].get_from,
                             &buffer, &buflen,
-                            data_objects[i].get_immediate_in_v11);
+                            (data_objects[i].dont_cache 
+                             || data_objects[i].get_immediate_in_v11));
       if (!rc)
         {
           const unsigned char *s;
@@ -356,7 +367,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
   if (!value) /* Not in a constructed DO, try simple. */
     {
       rc = get_cached_data (app, tag, &buffer, &buflen,
-                            data_objects[i].get_immediate_in_v11);
+                            (data_objects[i].dont_cache 
+                             || data_objects[i].get_immediate_in_v11));
       if (!rc)
         {
           value = buffer;
@@ -370,6 +382,7 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
       *result = value;
       return buffer;
     }
+  *r_rc = rc;
   return NULL;
 }
 
@@ -488,7 +501,7 @@ parse_login_data (app_t app)
   app->app_local->flags.def_chv2 = 0;
 
   /* Read the DO.  */
-  relptr = get_one_do (app, 0x005E, &buffer, &buflen);
+  relptr = get_one_do (app, 0x005E, &buffer, &buflen, NULL);
   if (!relptr)
     return; /* Ooops. */
   for (; buflen; buflen--, buffer++)
@@ -678,7 +691,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "PRIVATE-DO-4", 0x0104 },
     { NULL, 0 }
   };
-  int idx, i;
+  int idx, i, rc;
   void *relptr;
   unsigned char *value;
   size_t valuelen;
@@ -723,7 +736,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       return 0;
     }
 
-  relptr = get_one_do (app, table[idx].tag, &value, &valuelen);
+  relptr = get_one_do (app, table[idx].tag, &value, &valuelen, &rc);
   if (relptr)
     {
       if (table[idx].special == 1)
@@ -760,7 +773,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
       xfree (relptr);
     }
-  return 0;
+  return rc;
 }
 
 
@@ -1075,7 +1088,7 @@ verify_chv3 (app_t app,
       unsigned char *value;
       size_t valuelen;
 
-      relptr = get_one_do (app, 0x00C4, &value, &valuelen);
+      relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
       if (!relptr || valuelen < 7)
         {
           log_error (_("error retrieving CHV status from card\n"));
@@ -1442,7 +1455,7 @@ get_sig_counter (app_t app)
   size_t valuelen;
   unsigned long ul;
 
-  relptr = get_one_do (app, 0x0093, &value, &valuelen);
+  relptr = get_one_do (app, 0x0093, &value, &valuelen, NULL);
   if (!relptr)
     return 0;
   ul = convert_sig_counter_value (value, valuelen);
@@ -1880,7 +1893,7 @@ app_select_openpgp (app_t app)
           goto leave;
         }
 
-      relptr = get_one_do (app, 0x00C4, &buffer, &buflen);
+      relptr = get_one_do (app, 0x00C4, &buffer, &buflen, NULL);
       if (!relptr)
         {
           log_error (_("can't access %s - invalid OpenPGP card?\n"),
@@ -1890,7 +1903,7 @@ app_select_openpgp (app_t app)
       app->force_chv1 = (buflen && *buffer == 0);
       xfree (relptr);
 
-      relptr = get_one_do (app, 0x00C0, &buffer, &buflen);
+      relptr = get_one_do (app, 0x00C0, &buffer, &buflen, NULL);
       if (!relptr)
         {
           log_error (_("can't access %s - invalid OpenPGP card?\n"),
@@ -1973,7 +1986,7 @@ app_openpgp_cardinfo (app_t app,
   if (disp_name)
     {
       *disp_name = NULL;
-      relptr = get_one_do (app, 0x005B, &value, &valuelen);
+      relptr = get_one_do (app, 0x005B, &value, &valuelen, NULL);
       if (relptr)
         {
           *disp_name = make_printable_string (value, valuelen, 0);
@@ -1984,7 +1997,7 @@ app_openpgp_cardinfo (app_t app,
   if (pubkey_url)
     {
       *pubkey_url = NULL;
-      relptr = get_one_do (app, 0x5F50, &value, &valuelen);
+      relptr = get_one_do (app, 0x5F50, &value, &valuelen, NULL);
       if (relptr)
         {
           *pubkey_url = make_printable_string (value, valuelen, 0);
@@ -1998,7 +2011,7 @@ app_openpgp_cardinfo (app_t app,
     *fpr2 = NULL;
   if (fpr3)
     *fpr3 = NULL;
-  relptr = get_one_do (app, 0x00C5, &value, &valuelen);
+  relptr = get_one_do (app, 0x00C5, &value, &valuelen, NULL);
   if (relptr && valuelen >= 60)
     {
       if (fpr1)

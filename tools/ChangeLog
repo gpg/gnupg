@@ -1,3 +1,8 @@
+2005-02-24  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c: New.
+	* Makefile.am: Add it. 
+
 2004-12-21  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (get_config_pathname) [DOSISH]: Detect absolute

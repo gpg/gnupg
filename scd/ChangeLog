@@ -1,3 +1,26 @@
+2005-02-24  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (get_one_do): Never try to get a non cacheable
+	object from the cache.
+	(get_one_do): Add new arg to return an error code.  Changed all
+	callers.
+	(do_getattr): Let it return a proper error code.
+
+	* app.c (select_application): Return an error code and the
+	application context in an new arg.
+	* command.c (open_card): Adjusted for that.  Don't use the
+	fallback if no card is present.  Return an error if the card has
+	been removed without a reset.
+	(do_reset, cmd_serialno): Clear that error flag.
+	(TEST_CARD_REMOVAL): New. Use it with all command handlers.
+
+	* scdaemon.c (ticker_thread): Termintate if a shutdown is pending.
+
+	* apdu.c: Added some PCSC error codes.
+	(pcsc_error_to_sw): New.
+	(reset_pcsc_reader, pcsc_get_status, pcsc_send_apdu) 
+	(open_pcsc_reader): Do proper error code mapping.
+
 2005-02-22  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (app_local_s): New field PK.

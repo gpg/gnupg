@@ -1,5 +1,5 @@
 /* app.c - Application selection.
- *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -49,21 +49,23 @@ is_app_allowed (const char *name)
 /* If called with NAME as NULL, select the best fitting application
    and return a context; otherwise select the application with NAME
    and return a context.  SLOT identifies the reader device. Returns
-   NULL if no application was found or no card is present. */
-APP
-select_application (ctrl_t ctrl, int slot, const char *name)
+   an error code and stores NULL at R_APP if no application was found
+   or no card is present. */
+gpg_error_t
+select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
 {
   int rc;
-  APP app;
+  app_t app;
   unsigned char *result = NULL;
   size_t resultlen;
 
+  *r_app = NULL;
   app = xtrycalloc (1, sizeof *app);
   if (!app)
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_errno (errno);
       log_info ("error allocating context: %s\n", gpg_strerror (rc));
-      return NULL;
+      return rc;
     }
   app->slot = slot;
 
@@ -75,7 +77,7 @@ select_application (ctrl_t ctrl, int slot, const char *name)
   if (!rc)
     rc = iso7816_select_file (slot, 0x2F02, 0, NULL, NULL);
   if (!rc)
-    rc = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
+     rc = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
   if (!rc)
     {
       size_t n;
@@ -111,7 +113,12 @@ select_application (ctrl_t ctrl, int slot, const char *name)
       result = NULL;
     }
 
+  /* For certain error codes, there is no need to try more.  */
+  if (gpg_err_code (rc) == GPG_ERR_CARD_NOT_PRESENT)
+    goto leave;
   
+
+  /* Figure out the application to use.  */
   rc = gpg_error (GPG_ERR_NOT_FOUND);
 
   if (rc && is_app_allowed ("openpgp") && (!name || !strcmp (name, "openpgp")))
@@ -135,11 +142,12 @@ select_application (ctrl_t ctrl, int slot, const char *name)
         log_info ("no supported card application found: %s\n",
                   gpg_strerror (rc));
       xfree (app);
-      return NULL;
+      return rc;
     }
 
   app->initialized = 1;
-  return app;
+  *r_app = app;
+  return 0;
 }
 
 

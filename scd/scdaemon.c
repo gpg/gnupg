@@ -936,7 +936,7 @@ ticker_thread (void *dummy_arg)
   sigs_ev = NULL;
 #endif
   
-  for (;;)
+  while (!shutdown_pending)
     {
       if (!time_ev)
         {
@@ -968,6 +968,7 @@ ticker_thread (void *dummy_arg)
     }
 
   pth_event_free (sigs_ev, PTH_FREE_ALL);
+  return NULL;
 }
 #endif /*USE_GNU_PTH*/
 #endif /*!HAVE_OPENSC*/

@@ -1,3 +1,7 @@
+2005-02-24  Werner Koch  <wk@g10code.com>
+
+	* tools.texi (gpg-connect-agent): New.
+
 2005-02-14  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.texi (Certificate Management): Document --import.

@@ -13,6 +13,7 @@ GnuPG comes with a couple of smaller tools:
 * gpgconf::               Modify .gnupg home directories.
 * gpgsm-gencert.sh::      Generate an X.509 certificate request.
 * gpg-preset-passphrase:: Put a passphrase into the cache.
+* gpg-connect-agent::     Communicate with a running agent.
 @end menu
 
 @c
@@ -660,6 +661,67 @@ Output additional information while running.
 Instead of reading the passphrase from @code{stdin}, use the supplied
 @var{string} as passphrase.  Note that this makes the passphrase visible
 for other users.
+@end table
+
+
+
+
+
+@c
+@c   GPG-CONNECT-AGENT
+@c
+@node gpg-connect-agent
+@section Communicate with a runnig agent.
+
+The @command{gpg-connect-agent} is a utility to communicate with a
+running @command{gpg-agent}.  It is useful to check out the commands
+gpg-agent provides using the Assuan interface.  It might also be useful
+for scripting simple applications.  Inputis expected at stdin and out
+put gets printed to stdout.
+
+It is very similar to running @command{gpg-agent} in server mode; but
+here we connect to a running instance.
+
+@menu
+* Invoking gpg-connect-agent::   List of all commands and options.
+@end menu
+
+
+@node Invoking gpg-connect-agent
+@subsection List of all commands and options.
+
+@noindent
+@command{gpg-connect-agent} is invoked this way:
+
+@example
+gpg-connect-agent [options]
+@end example
+
+@noindent
+The following options may be used:
+
+@table @gnupgtabopt
+@item -v
+@itemx --verbose
+@opindex verbose
+Output additional information while running.  
+
+@item -q
+@item --quiet
+@opindex q
+@opindex quiet
+Try to be as quiet as possible.
+
+@item --homedir @var{dir}
+@opindex homedir
+Set the name of the home directory to @var{dir}. If his option is not
+used, the home directory defaults to @file{~/.gnupg}.  It is only
+recognized when given on the command line.  It also overrides any home
+directory stated through the environment variable @env{GNUPGHOME} or
+(on W32 systems) by means on the Registry entry
+@var{HKCU\Software\GNU\GnuPG:HomeDir}.
+
+
 @end table
 
 

@@ -1,3 +1,8 @@
+2005-02-24  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (handle_connections): Need to check for events if
+	select returns with -1.
+
 2005-02-23  Werner Koch  <wk@g10code.com>
 
 	* command-ssh.c (get_passphrase): Removed.
