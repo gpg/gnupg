@@ -1,3 +1,22 @@
+2002-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap: Clarify the notion of a partial failure.  This is
+	possible if more than one key is being handled in a batch, and one
+	fails while the other succeeds.  Note that a search that comes up
+	with no results is not a failure - that is a valid response of "no
+	answer".
+
+	* gpgkeys_ldap.c (get_key): Allow GnuPG to send us full v4
+	fingerprints, long key ids, or short key ids while fetching.
+	Since the LDAP server doesn't actually handle fingerprints, chop
+	them down to long key ids for actual use.
+
+	* gpgkeys_ldap.c (main, get_key): When searching for a keyid,
+	search for subkeys as well as primary keys.  This is mostly
+	significant when automatically fetching the key based on the id in
+	a header (i.e. "signature made by....").  "no-include-subkeys"
+	disables.
+
 2002-02-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c: Fix compiler warning.
