@@ -1,3 +1,8 @@
+2004-08-05  Werner Koch  <wk@g10code.de>
+
+	* configure.ac: Changed tests for libusb to also suuport the
+	stable version 0.1.x.
+
 2004-07-22  Werner Koch  <wk@g10code.de>
 
 	Released 1.9.10.

@@ -451,15 +451,13 @@ AM_PATH_KSBA("$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
 #
 # libusb allows us to use the integrated CCID smartcard reader driver.
 #
-# Note, that we need the CVS version.  FIXME: libusb should have a
-# regular check as the other libraries do.
-#
-AC_CHECK_LIB(usb, usb_find_device,
+AC_CHECK_LIB(usb, usb_bulk_write,
               [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
                 AC_DEFINE(HAVE_LIBUSB,1,
                          [defined if libusb is available])
              ])
 AC_SUBST(LIBUSB_LIBS)
+AC_CHECK_FUNCS(usb_create_match)
 
 #
 # Check wether it is necessary to link against libdl.

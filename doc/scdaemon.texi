@@ -10,7 +10,7 @@
 
 @c man begin DESCRIPTION
 
-The @sc{scdaeon} is a daemon to manage smartcards.  It is usually
+The @sc{scdaemon} is a daemon to manage smartcards.  It is usually
 invoked by gpg-agent and in general not used directly.
 
 @c man end
@@ -20,6 +20,7 @@ invoked by gpg-agent and in general not used directly.
 @menu
 * Scdaemon Commands::      List of all commands.
 * Scdaemon Options::       List of all options.
+* Card applications::      Description of card applications.
 * Scdaemon Examples::      Some usage examples.
 * Scdaemon Protocol::      The protocol the daemon uses.
 @end menu
@@ -176,16 +177,68 @@ is @code{libtowitoko.so}.
 @itemx --deny-admin
 @opindex allow-admin
 @opindex deny-admin
-This enables the use of Admin class commands for card application
+This enables the use of Admin class commands for card applications
 where this is supported.  Currently we support it for the OpenPGP
 card.  Deny is the default.  This commands is useful to inhibit
 accidental access to admin class command which could ultimately lock
 the card through worng PIN numbers.
 
+@item --disable-application @var{name}
+@opindex disable-application
+This option disables the use of the card application named
+@var{name}.  This is mainly useful for debugging or if a application
+with lower priority should be used by default.
+
 @end table
 
 All the long options may also be given in the configuration file after
 stripping off the two leading dashes.
+
+
+@c man begin CARD APPLICATIONS
+
+@node Card applications
+@section Description of card applications
+
+@sc{scdaemon} supports the card applications as described below.
+
+@menu
+* OpenPGP Card::          The OpenPGP card application
+* NKS Card::              The Telesec NetKey card application
+* DINSIG Card::           The DINSIG card application
+* PKCS#15 Card::          The PKCS#15 card application
+@end menu
+
+@node OpenPGP Card
+@subsection The OpenPGP card application ``openpgp''
+
+This application is currently only used by @sc{gpg} but may in
+future also be useful with @sc{gpgsm}. 
+
+The specification for such a card is available at
+@uref{http://g10code.com/docs/openpgp-card-1.0.pdf}.
+
+@node NKS Card
+@subsection The Telesec NetKey card ``nks''
+
+This is the main application of the Telesec cards as available in
+Germany.  It is a superset of the German DINSIG card.  The card is
+used by @sc{gpgsm}.
+
+@node DINSIG Card
+@subsection The DINSIG card application ``dinsig''
+
+This is an application as described in the German draft standard
+@emph{DIN V 66291-1}.  It is intended to be used by cards supporteing
+the German signature law and its bylaws (SigG and SigV).
+
+@node PKCS#15 Card
+@subsection The PKCS#15 card application ``p15''
+
+This is common fraqmework for smart card applications; support is only
+available if compiled with support for the OpenSC library.  It is used
+by @sc{gpgsm}.
+
 
 
 @c 

@@ -79,3 +79,25 @@ might want to have an agent context for each service request
 * doc/
 ** Explain how to setup a root CA key as trusted
 ** Explain how trustlist.txt might be managed.
+
+
+* Requirements by the BSI
+** Support authorityKeyIdentifier.keyIdentifier
+   This needs support in libksba/src/cert.c as well as in sm/*.c.
+   Need test certs as well.  Same goes for CRL authorityKeyIdentifier.
+
+** For pkcs#10 request header.
+   We use "NEW CERTIFICATE REQUEST" the specs say "CERTIFICATE
+   REQUEST" should be used.  However it seems that their CA software
+   is also able to use our header.  Binary pkcs#10 request are not
+   allowed.
+
+** Dirmngr:  name subordination (nameRelativeToCRLIssuer) 
+   is not yet supported by Dirmngr.
+
+** Dirmngr: CRL DP URI
+  The CRL DP shall use an URI for LDAP without a host name.  The host
+  name shall be looked by using the DN in the URI.  We don't implement
+  this yet.  Solution is to have a mapping DN->host in our ldapservers
+  configuration file.
+

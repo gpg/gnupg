@@ -52,6 +52,8 @@ struct {
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
   int allow_admin;     /* Allow the use of admin commands for certain
                           cards. */
+  strlist_t disabled_applications;  /* card applications we do not
+                                       want to use. */
 } opt;
 
 

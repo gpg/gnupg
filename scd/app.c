@@ -32,6 +32,19 @@
 #include "tlv.h"
 
 
+/* Check wether the application NAME is allowed.  This does not mean
+   we have support for it though.  */
+static int
+is_app_allowed (const char *name)
+{
+  strlist_t l;
+
+  for (l=opt.disabled_applications; l; l = l->next)
+    if (!strcmp (l->d, name))
+      return 0; /* no */
+  return 1; /* yes */
+}
+
 /* If called with NAME as NULL, select the best fitting application
    and return a context; otherwise select the application with NAME
    and return a context.  SLOT identifies the reader device. Returns
@@ -84,11 +97,11 @@ select_application (ctrl_t ctrl, int slot, const char *name)
 
   rc = gpg_error (GPG_ERR_NOT_FOUND);
 
-  if (!name || !strcmp (name, "openpgp"))
+  if (rc && is_app_allowed ("openpgp") && (!name || !strcmp (name, "openpgp")))
     rc = app_select_openpgp (app);
-  if (rc && (!name || !strcmp (name, "nks")))
+  if (rc && is_app_allowed ("nks") && (!name || !strcmp (name, "nks")))
     rc = app_select_nks (app);
-  if (rc && (!name || !strcmp (name, "dinsig")))
+  if (rc && is_app_allowed ("dinsig") && (!name || !strcmp (name, "dinsig")))
     rc = app_select_dinsig (app);
   if (rc && name)
     rc = gpg_error (GPG_ERR_NOT_SUPPORTED);

@@ -70,7 +70,7 @@
 #define CCID_DRIVER_ERR_CARD_IO_ERROR  0x1000a
 #define CCID_DRIVER_ERR_GENERAL_ERROR  0x1000b
 #define CCID_DRIVER_ERR_NO_READER      0x1000c
-
+#define CCID_DRIVER_ERR_ABORTED        0x1000d
 
 struct ccid_driver_s;
 typedef struct ccid_driver_s *ccid_driver_t;

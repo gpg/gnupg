@@ -19,7 +19,6 @@
  */
 
 #include <config.h>
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -296,6 +295,7 @@ host_sw_string (long err)
     case SW_HOST_CARD_IO_ERROR: return "card I/O error";
     case SW_HOST_GENERAL_ERROR: return "general error";
     case SW_HOST_NO_READER: return "no reader";
+    case SW_HOST_ABORTED: return "aborted";
     default: return "unknown host status error";
     }
 }
@@ -1633,7 +1633,42 @@ reset_rapdu_reader (int slot)
 static int
 my_rapdu_get_status (int slot, unsigned int *status)
 {
-  return SW_HOST_NOT_SUPPORTED;
+  int err;
+  reader_table_t slotp;
+  rapdu_msg_t msg = NULL;
+  int oldslot;
+
+  slotp = reader_table + slot;
+
+  oldslot = rapdu_set_reader (slotp->rapdu.handle, slot);
+  err = rapdu_send_cmd (slotp->rapdu.handle, RAPDU_CMD_GET_STATUS);
+  rapdu_set_reader (slotp->rapdu.handle, oldslot);
+  if (err)
+    {
+      log_error ("sending rapdu command GET_STATUS failed: %s\n",
+                err < 0 ? strerror (errno): rapdu_strerror (err));
+      return rapdu_status_to_sw (err);
+    }
+  err = rapdu_read_msg (slotp->rapdu.handle, &msg);
+  if (err)
+    {
+      log_error ("receiving rapdu message failed: %s\n",
+                err < 0 ? strerror (errno): rapdu_strerror (err));
+      rapdu_msg_release (msg);
+      return rapdu_status_to_sw (err);
+    }
+  if (msg->cmd != RAPDU_STATUS_SUCCESS || !msg->datalen)
+    {
+      int sw = rapdu_status_to_sw (msg->cmd);
+      log_error ("rapdu command GET_STATUS failed: %s\n",
+                 rapdu_strerror (msg->cmd));
+      rapdu_msg_release (msg);
+      return sw;
+    }
+  *status = msg->data[0];
+
+  rapdu_msg_release (msg);
+  return 0;
 }
 
 

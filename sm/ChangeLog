@@ -1,3 +1,8 @@
+2004-07-23  Werner Koch  <wk@g10code.de>
+
+	* certreqgen.c (proc_parameters): Do not allow key length below
+	1024.
+
 2004-07-22  Werner Koch  <wk@g10code.de>
 
 	* keylist.c (list_cert_raw): Print the keygrip.

@@ -1,3 +1,16 @@
+2004-08-05  Werner Koch  <wk@g10code.de>
+
+	* scdaemon.c (main): New option --disable-application.
+	* app.c (is_app_allowed): New.
+	(select_application): Use it to check for disabled applications.
+
+	* ccid-driver.h (CCID_DRIVER_ERR_ABORTED): New.
+	* ccid-driver.c (ccid_open_reader): Support the stable 0.1 version
+	of libusb.
+	(ccid_get_atr): Handle short messages.
+
+	* apdu.c (my_rapdu_get_status): Implemented.
+
 2004-07-27  Moritz Schulte  <moritz@g10code.com>
 
 	* apdu.c: Include <signal.h>.

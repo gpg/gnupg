@@ -444,7 +444,7 @@ proc_parameters (ctrl_t ctrl,
   if (i < 1 || i != GCRY_PK_RSA )
     {
       r = get_parameter (para, pKEYTYPE);
-      log_error ("line %d: invalid algorithm\n", r->lnr);
+      log_error (_("line %d: invalid algorithm\n"), r->lnr);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
   
@@ -453,11 +453,12 @@ proc_parameters (ctrl_t ctrl,
     nbits = 1024;
   else
     nbits = get_parameter_uint (para, pKEYLENGTH);
-  if (nbits < 512 || nbits > 4096)
+  if (nbits < 1024 || nbits > 4096)
     {
+      /* The BSI specs dated 2002-11-25 don't allow lengths below 1024. */
       r = get_parameter (para, pKEYTYPE);
-      log_error ("line %d: invalid key length %u (valid are 512 to 4096)\n",
-                 r->lnr, nbits);
+      log_error (_("line %d: invalid key length %u (valid are %d to %d)\n"),
+                 r->lnr, nbits, 1024, 4096);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
     
@@ -470,7 +471,7 @@ proc_parameters (ctrl_t ctrl,
   if (!(s=get_parameter_value (para, pNAMEDN)))
     {
       r = get_parameter (para, pKEYTYPE);
-      log_error ("line %d: no subject name given\n", r->lnr);
+      log_error (_("line %d: no subject name given\n"), r->lnr);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
   /* fixme check s */
@@ -485,7 +486,7 @@ proc_parameters (ctrl_t ctrl,
           || strstr(s, ".."))
         {
           r = get_parameter (para, pKEYTYPE);
-          log_error ("line %d: not a valid email address\n", r->lnr);
+          log_error (_("line %d: not a valid email address\n"), r->lnr);
           return gpg_error (GPG_ERR_INV_PARAMETER);
         }
     }
@@ -497,7 +498,7 @@ proc_parameters (ctrl_t ctrl,
   if (rc)
     {
       r = get_parameter (para, pKEYTYPE);
-      log_error ("line %d: key generation failed: %s\n",
+      log_error (_("line %d: key generation failed: %s\n"),
                  r->lnr, gpg_strerror (rc));
       return rc;
     }

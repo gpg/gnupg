@@ -80,6 +80,7 @@ enum cmd_and_opt_values
   oDisableOpenSC,
   oAllowAdmin,
   oDenyAdmin,
+  oDisableApplication,
 
 aTest };
 
@@ -124,6 +125,7 @@ static ARGPARSE_OPTS opts[] = {
                                          /* end --disable-opensc */},
   { oAllowAdmin, "allow-admin", 0, N_("allow the use of admin card commands")},
   { oDenyAdmin,  "deny-admin",  0, "@" },  
+  { oDisableApplication, "disable-application", 2, "@"},
 
   {0}
 };
@@ -492,6 +494,10 @@ main (int argc, char **argv )
 
         case oAllowAdmin: opt.allow_admin = 1; break;
         case oDenyAdmin: opt.allow_admin = 0; break;
+
+        case oDisableApplication:
+          add_to_strlist (&opt.disabled_applications, pargs.r.ret_str); 
+          break;
 
         default : pargs.err = configfp? 1:2; break;
 	}
