@@ -1615,7 +1615,7 @@ show_key_with_all_names_colon (KBNODE keyblock)
                 {
                   byte *p;
 
-                  printf ("rev:::%d::::::", pk->revkey[i].algid);
+                  printf ("rvk:::%d::::::", pk->revkey[i].algid);
                   p = pk->revkey[i].fpr;
                   for (j=0; j < 20; j++, p++ )
                     printf ("%02X", *p);

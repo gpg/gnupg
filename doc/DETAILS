@@ -30,10 +30,11 @@ record.
 	    ssb = secret subkey (secondary key)
 	    uid = user id (only field 10 is used).
             sig = signature
+            rev = revocation signature
 	    fpr = fingerprint: (fingerprint is in field 10)
 	    pkd = public key data (special field format, see below)
             grp = reserved for gpgsm
-            rev = revocation key
+            rvk = revocation key
 
  2. Field:  A letter describing the calculated trust. This is a single
 	    letter, but be prepared that additional information may follow
