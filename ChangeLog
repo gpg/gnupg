@@ -1,3 +1,8 @@
+2005-03-03  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4 (GNUPG_PTH_VERSION_CHECK): Accidently used
+	--ldflags instead of --cflags. Reported by Kazu Yamamoto.
+
 2005-02-03  Werner Koch  <wk@g10code.com>
 
 	* AUTHORS: Copied from 1.4 and edited to refelct the changes in

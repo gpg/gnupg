@@ -246,7 +246,7 @@ AC_DEFUN([GNUPG_PTH_VERSION_CHECK],
          _gnupg_pth_save_cflags=$CFLAGS
          _gnupg_pth_save_ldflags=$LDFLAGS
          _gnupg_pth_save_libs=$LIBS
-         CFLAGS="$CFLAGS `$PTH_CONFIG --ldflags`"
+         CFLAGS="$CFLAGS `$PTH_CONFIG --cflags`"
          LDFLAGS="$LDFLAGS `$PTH_CONFIG --ldflags`"
          LIBS="$LIBS `$PTH_CONFIG --libs`"
          AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <pth.h>

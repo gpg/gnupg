@@ -104,3 +104,5 @@ might want to have an agent context for each service request
 ** No card status notifications.
 
 
+* [scdaemon] release the card after use so that gpg 1.4 is abale to access it
+

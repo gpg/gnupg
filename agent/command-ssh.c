@@ -1550,7 +1550,7 @@ key_secret_to_public (gcry_sexp_t *key_public,
    key.  Store a copy of that key at R_PK and return 0.  If no key is
    available store NULL at R_PK and return an error code.  If CARDSN
    is no NULL, a string with the serial number of the card will be
-   amalloced and stored there. */
+   a malloced and stored there. */
 static gpg_error_t
 card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 {
