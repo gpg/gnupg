@@ -1023,8 +1023,10 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	rc = G10ERR_TIME_CONFLICT;
-	goto leave;
+	if( !opt.ignore_time_conflict ) {
+	    rc = G10ERR_TIME_CONFLICT;
+	    goto leave;
+	}
     }
 
 

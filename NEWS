@@ -1,6 +1,8 @@
 Noteworthy changes in the current test release
 ----------------------------------------------
 
+    * New option --ignore-time-conflict.
+
     * Some fixes for the W32 version
 
     * Encryption is now much faster: About 2 times for 1k bit keys

@@ -2326,7 +2326,8 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 	log_info(_("key %08lX.%lu: created in future "
 		   "(time warp or clock problem)\n"),
 					  (ulong)keyid[1], pk->local_id );
-	return G10ERR_TIME_CONFLICT;
+	if( !opt.ignore_time_conflict )
+	    return G10ERR_TIME_CONFLICT;
     }
 
     if( !(rec.r.dir.dirflags & DIRF_CHECKED) )

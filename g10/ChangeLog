@@ -1,3 +1,14 @@
+Wed Feb  9 15:33:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* gpg.c: New option --ignore-time-conflict
+	* sig-check.c (do_check): Implemented this option.
+	* trustdb.c (check_trust): Ditto.
+	* sign.c (do_sign): Ditto.
+	* keygen.c (generate_subkeypair): Ditto.
+
+	* encode.c (encode_simple): use iobuf_cancel after open failure.
+	Reported by Huy Le.
+
 Fri Jan 14 18:32:01 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* packet.h (STRING2KEY): Changed mode from byte to int.

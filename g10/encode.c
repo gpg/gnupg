@@ -116,7 +116,7 @@ encode_simple( const char *filename, int mode )
     }
 
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
-	iobuf_close(inp);
+	iobuf_cancel(inp);
 	m_free(cfx.dek);
 	m_free(s2k);
 	return rc;

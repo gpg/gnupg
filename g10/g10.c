@@ -182,6 +182,7 @@ enum cmd_and_opt_values { aNull = 0,
     oHonorHttpProxy,
     oFastListMode,
     oListOnly,
+    oIgnoreTimeConflict,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
 aTest };
 
@@ -354,6 +355,7 @@ static ARGPARSE_OPTS opts[] = {
     { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
     { oFastListMode,"fast-list-mode", 0, "@" },
     { oListOnly, "list-only", 0, "@"},
+    { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
 {0} };
 
@@ -890,6 +892,7 @@ main( int argc, char **argv )
 	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oListOnly: opt.list_only=1; break;
+	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

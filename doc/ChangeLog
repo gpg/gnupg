@@ -1,3 +1,9 @@
+Wed Feb  9 15:33:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* gpg.sgml: Describe --ignore-time-conflict.
+
+	* gpg.sgml: Fixed a few typos.	Thanks to Holger Trapp.
+
 Wed Jan  5 11:51:17 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* FAQ: Enhanced answer for the 3des-s2k bug.

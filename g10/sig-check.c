@@ -303,7 +303,8 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 		  ? _("public key is %lu second newer than the signature\n")
 		  : _("public key is %lu seconds newer than the signature\n"),
 		       d );
-	return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
+	if( !opt.ignore_time_conflict )
+	    return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
     }
 
     cur_time = make_timestamp();
@@ -313,7 +314,8 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	return G10ERR_TIME_CONFLICT;
+	if( !opt.ignore_time_conflict )
+	    return G10ERR_TIME_CONFLICT;
     }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {

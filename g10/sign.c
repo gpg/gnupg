@@ -112,7 +112,8 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	return G10ERR_TIME_CONFLICT;
+	if( !opt.ignore_time_conflict )
+	    return G10ERR_TIME_CONFLICT;
     }
 
 
