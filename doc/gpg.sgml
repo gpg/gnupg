@@ -706,7 +706,7 @@ all options.
 <refsect1>
 <title>OPTIONS</title>
 <para>
-Long options can be put in an options file (default "~/.gnupg/options").
+Long options can be put in an options file (default "~/.gnupg/gpg.conf").
 Do not write the 2 dashes, but simply the name of the option and any
 required arguments. Lines with a hash as the first non-white-space
 character are ignored. Commands may be put in this file too, but that
@@ -2361,8 +2361,14 @@ be used to overide it.</para></listitem>
 </varlistentry>
 
 <varlistentry>
+<term>~/.gnupg/gpg.conf</term>
+<listitem><para>Default configuration file</para></listitem>
+</varlistentry>
+
+<varlistentry>
 <term>~/.gnupg/options</term>
-<listitem><para>May contain options</para></listitem>
+<listitem><para>Old style configuration file; only used when gpg.conf
+is not found</para></listitem>
 </varlistentry>
 
 <varlistentry>

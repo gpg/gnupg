@@ -1,5 +1,7 @@
 2002-08-06  Werner Koch  <wk@gnupg.org>
 
+	* options.skel: Changed comments.
+
 	* g10.c (main): Try to use "gpg.conf" as default option file.
 	* openfile.c (copy_options_file): Changed name of created file.
 

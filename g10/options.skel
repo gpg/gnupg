@@ -1,4 +1,4 @@
-These first three lines are not copied to the options file in
+These first three lines are not copied to the gpg.conf file in
 the users home directory.
 $Id$
 # Options for GnuPG
@@ -14,7 +14,7 @@ $Id$
 #
 # Unless you you specify which option file to use (with the
 # command line option "--options filename"), GnuPG uses the
-# file ~/.gnupg/options by default.
+# file ~/.gnupg/gpg.conf by default.
 #
 # An option file can contain all long options which are
 # available in GnuPG. If the first non white space character of
