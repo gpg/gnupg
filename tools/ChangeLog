@@ -1,3 +1,7 @@
+2005-03-09  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <dirmngr>: Add honor-http-proxy.
+
 2005-02-25  Werner Koch  <wk@g10code.com>
 
 	* no-libgcrypt.c (gcry_strdup): New.

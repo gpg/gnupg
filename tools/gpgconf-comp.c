@@ -746,6 +746,9 @@ static gc_option_t gc_options_dirmngr[] =
    { "http-proxy", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "dirmngr", "|URL|redirect all HTTP requests to URL",
      GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
+   { "honor-http-proxy", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "dirmngr", N_("use system's HTTP proxy setting"),
+     GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
 
    { "LDAP",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
