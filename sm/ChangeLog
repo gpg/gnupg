@@ -1,3 +1,10 @@
+2004-08-06  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: New option --with-ephemeral-keys.
+	* keylist.c (list_internal_keys): Set it here.
+	(list_cert_raw): And indicate those keys.  Changed all our callers
+	to pass the new arg HD through.
+
 2004-07-23  Werner Koch  <wk@g10code.de>
 
 	* certreqgen.c (proc_parameters): Do not allow key length below

@@ -65,6 +65,9 @@ struct {
   int with_md5_fingerprint; /* Also print an MD5 fingerprint for
                                standard key listings. */
 
+  int with_ephemeral_keys;  /* Include ephemeral flagged keys in the
+                               keylisting. */
+
   int armor;        /* force base64 armoring (see also ctrl.with_base64) */
   int no_armor;     /* don't try to figure out whether data is base64 armored*/
 

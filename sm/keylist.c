@@ -503,7 +503,8 @@ print_names_raw (FILE *fp, int indent, ksba_name_t name)
    the certificate.  This one does no beautification and only minimal
    output sanitation.  It is mainly useful for debugging. */
 static void
-list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
+list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
+               ksba_cert_t cert, FILE *fp, int have_secret,
                int with_validation)
 {
   gpg_error_t err;
@@ -807,6 +808,18 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
       else
         fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
     }
+
+  if (opt.with_ephemeral_keys && hd)
+    {
+      unsigned int blobflags;
+
+      err = keydb_get_flags (hd, KEYBOX_FLAG_BLOB, 0, &blobflags);
+      if (err)
+        fprintf (fp, "  [error getting keyflags: %s]\n", gpg_strerror (err));
+      else if ((blobflags & 2))
+        fprintf (fp, "  [stored as ephemeral]\n");
+    }
+
 }
 
 
@@ -992,13 +1005,14 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
 
 /* Same as standard mode mode list all certifying certs too. */
 static void
-list_cert_chain (ctrl_t ctrl, ksba_cert_t cert, int raw_mode,
+list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
+                 ksba_cert_t cert, int raw_mode,
                  FILE *fp, int with_validation)
 {
   ksba_cert_t next = NULL;
 
   if (raw_mode)
-    list_cert_raw (ctrl, cert, fp, 0, with_validation);
+    list_cert_raw (ctrl, hd, cert, fp, 0, with_validation);
   else
     list_cert_std (ctrl, cert, fp, 0, with_validation);
   ksba_cert_ref (cert);
@@ -1007,7 +1021,7 @@ list_cert_chain (ctrl_t ctrl, ksba_cert_t cert, int raw_mode,
       ksba_cert_release (cert);
       fputs ("Certified by\n", fp);
       if (raw_mode)
-        list_cert_raw (ctrl, next, fp, 0, with_validation);
+        list_cert_raw (ctrl, hd, next, fp, 0, with_validation);
       else
         list_cert_std (ctrl, next, fp, 0, with_validation);
       cert = next;
@@ -1079,6 +1093,9 @@ list_internal_keys (ctrl_t ctrl, STRLIST names, FILE *fp,
       
     }
 
+  if (opt.with_ephemeral_keys)
+    keydb_set_ephemeral (hd, 1);
+
   /* It would be nice to see which of the given users did actually
      match one in the keyring.  To implement this we need to have a
      found flag for each entry in desc and to set this we must check
@@ -1146,11 +1163,12 @@ list_internal_keys (ctrl_t ctrl, STRLIST names, FILE *fp,
           if (ctrl->with_colons)
             list_cert_colon (ctrl, cert, validity, fp, have_secret);
           else if (ctrl->with_chain)
-            list_cert_chain (ctrl, cert, raw_mode, fp, ctrl->with_validation);
+            list_cert_chain (ctrl, hd, cert,
+                             raw_mode, fp, ctrl->with_validation);
           else
             {
               if (raw_mode)
-                list_cert_raw (ctrl, cert, fp, have_secret,
+                list_cert_raw (ctrl, hd, cert, fp, have_secret,
                                ctrl->with_validation);
               else
                 list_cert_std (ctrl, cert, fp, have_secret,
@@ -1198,11 +1216,11 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
   if (parm->with_colons)
     list_cert_colon (parm->ctrl, cert, 0, parm->fp, 0);
   else if (parm->with_chain)
-    list_cert_chain (parm->ctrl, cert, parm->raw_mode, parm->fp, 0);
+    list_cert_chain (parm->ctrl, NULL, cert, parm->raw_mode, parm->fp, 0);
   else
     {
       if (parm->raw_mode)
-        list_cert_raw (parm->ctrl, cert, parm->fp, 0, 0);
+        list_cert_raw (parm->ctrl, NULL, cert, parm->fp, 0, 0);
       else
         list_cert_std (parm->ctrl, cert, parm->fp, 0, 0);
       putc ('\n', parm->fp);

@@ -381,7 +381,7 @@ values include up to @var{n} certificates starting with the signer cert.
 
 
 @node Esoteric Options
-@subsection Doing things one usually don't want todo.
+@subsection Doing things one usually don't want to do.
 
 
 @table @gnupgtabopt
@@ -391,6 +391,10 @@ values include up to @var{n} certificates starting with the signer cert.
 This option is only useful for testing; it sets the system time back or
 forth to @var{epoch} which is the number of seconds elapsed since the year
 1970.
+
+@item --with-ephemeral-keys
+@opindex with-ephemeral-keys
+Include ephemeral flagged keys in the output of key listings.
 
 @item --debug-level @var{level}
 @opindex debug-level

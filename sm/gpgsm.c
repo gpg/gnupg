@@ -170,6 +170,7 @@ enum cmd_and_opt_values {
   oWithColons,
   oWithKeyData,
   oWithValidation,
+  oWithEphemeralKeys,
   oSkipVerify,
   oCompressKeys,
   oCompressSigs,
@@ -404,6 +405,7 @@ static ARGPARSE_OPTS opts[] = {
     { oWithKeyData,"with-key-data", 0, "@"},
     { oWithValidation, "with-validation", 0, "@"},
     { oWithMD5Fingerprint, "with-md5-fingerprint", 0, "@"},
+    { oWithEphemeralKeys,  "with-ephemeral-keys", 0, "@"},
     { aListKeys, "list-key", 0, "@" }, /* alias */
     { aListSigs, "list-sig", 0, "@" }, /* alias */
     { aListSigs, "check-sig",0, "@" }, /* alias */
@@ -1078,6 +1080,7 @@ main ( int argc, char **argv)
         case oWithKeyData: opt.with_key_data=1; /* fall thru */
         case oWithColons: ctrl.with_colons = 1; break;
         case oWithValidation: ctrl.with_validation=1; break;
+        case oWithEphemeralKeys: opt.with_ephemeral_keys=1; break;
 
         case oSkipVerify: opt.skip_verify=1; break;
 
