@@ -42,7 +42,7 @@ static int urlencode_filter( void *opaque, int control,
 static void
 not_implemented(void)
 {
-    log_error("keyserver access ist not yet available for MS-Windows\n");
+    log_error("keyserver access is not yet available for MS-Windows\n");
 }
 #endif
 

@@ -38,10 +38,12 @@ casual  		>zufällig, >gelegentlich >unregelmäßig
 certificate		Zertifikat
 , (Urkunde)
 character set		Zeichensatz
-check (verb)		pr|fen, gepr|ft
+check (verb)		prüfen, geprüft
+checking [sth.]		[sth-]-Überprüfung
 checksum		Prüfsumme
 cipher algorithm	Verschlüsselungsverfahren
 clearsig header		Klartextsignatur-Einleitung
+created			erzeugt
 command			Befehl
 comment			Bemerkung
 compress algorithm      Komprimierverfahren,*Komprimierungsverfahren ?   
@@ -52,6 +54,7 @@ core function    	<wesentliche Funktion
 correct			beseitigen (please correct the error first)
 corrupted		beschädigter
 cover   		>behandeln, <erläutern
+created			erstellt
 creation    		<Erzeugung
 critical bit   		???
 dash escaped            mit Bindestrich \"escapte\", *m.Bindestrichen maskiert?
@@ -68,10 +71,13 @@ encrypted		verschlüsselte
 eventually  		>schließlich, endlich  Nicht: eventuell
 expiration date 	<Verfalldatum
 expire  		<verfallen
+expires			verfällt
 expire date		Verfallsdatum
 failed			fehlgeschlagen
 faked [RNG]             - *manipulierter Zufallszahlengenerator
+faked [certificate]     gefälscht
 fingerprint  		Fingerabdruck
+found [xyz found]       entdeckt [xyz entdeckt]
 for-your-eyes-only	Vertraulichkeit (\"for-your-eyes-only\")
 generated		erzeugter
 good certificate	Korrektes Zertifikat
@@ -87,8 +93,9 @@ key-ID                  Schlüssel-ID, *Schlüsselkennung ?
 
 key binding		Schlüsselanbindung
 keyblock		Schlüsselblock
-keyring 		Schlüsselbund
 keyserver   		Schlüsselserver, -*Schlüssel-Server 
+keysize			
+keyring 		Schlüsselbund
 lifetime    		>Gültigkeitsdauer, >Geltungsdauer
 lookup			- Suche
 machine 		häufig: Computer, Rechner
@@ -119,6 +126,7 @@ preference items	????
 preferences 		Einstellungen    *(die gesamten) Einstellungen
 preferred		bevorzugt
 primary keys		Hauptschlüssel
+problem [to do sth.]    -Schwierigkeit
 prompt (to) 		auch: >abfragen, >anfordern, >verlangen
 protected
 protection algorithm	Schutzverfahren
@@ -148,6 +156,7 @@ signature (files)	Unterschrift          *
 signature (keys)	Beglaubigung          *
 simple S2K mode		????
 skipped			übergangen, übersprungen, ignoriert
+so far 			bislang
 specify 		>spezifizieren, <angeben, ?festlegen
 stdin   		- stdin, *die Standardeingabe 
 subkey			Unterschlüssel
@@ -155,6 +164,7 @@ superseeded		überholt, veraltet
 terminal charset        - Terminalzeichensatz *Terminal-Zeichensatz(s.o.)
 throw			verwerfe
 Timestamp conflict	Zeitangaben differieren
+trust			Vertrauen
 Trust-DB    		'Trust'-Datenbank, *Vertrauensdatenbank ?
 trusted			- vertrauenswürdig
 trustvalues		- trustvalues >Vertrauensniveaus?? *Vertrauensmaß? >Vertrauenswerte?
@@ -177,3 +187,4 @@ verify  		< überprüfen
 warning			Warnung
 weak key		unsicherer Schlüssel
 wisely                  >klug, vernünftig(erweise), >gescheit; möglichst sinnvoll
+

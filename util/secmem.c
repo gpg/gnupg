@@ -100,6 +100,9 @@ lock_pool( void *p, size_t n )
 	  #ifdef ENOSYS  /* Some SCOs return this (function not implemented) */
 	    && errno != ENOSYS
 	  #endif
+          #ifdef ENOMEM  /* Linux can return this */
+            && errno != ENOMEM
+          #endif
 	  )
 	    log_error("can't lock memory: %s\n", strerror(err));
 	show_warning = 1;
@@ -142,6 +145,9 @@ lock_pool( void *p, size_t n )
 	  #ifdef ENOSYS  /* Some SCOs return this (function not implemented) */
 	    && errno != ENOSYS
 	  #endif
+          #ifdef ENOMEM  /* Linux can return this */
+            && errno != ENOMEM
+          #endif
 	  )
 	    log_error("can't lock memory: %s\n", strerror(err));
 	show_warning = 1;

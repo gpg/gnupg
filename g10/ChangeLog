@@ -1,5 +1,9 @@
 2000-10-16  Werner Koch  <wk@gnupg.org>
 
+	* mainproc.c (do_proc_packets): Hack to fix the problem that
+	signatures are not detected when there is a MDC packet but no
+	compression packet.
+	
 	* g10.c (print_hashline): New.
 	(print_mds): Use above func with --with-colons.
 

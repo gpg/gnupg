@@ -1072,7 +1072,15 @@ do_proc_packets( CTX c, IOBUF a )
 	      default: newpkt = 0; break;
 	    }
 	}
-	if( pkt->pkttype != PKT_SIGNATURE )
+        /* This is a very ugly construct and frankly, I don't remember why
+         * I used it.  Adding the MDC check here is a hack.
+         * The right solution is to initiate another context for encrypted
+         * packet and not to reuse the current one ...  It works right
+         * when there is a compression packet inbetween which adds just
+         * an extra layer.
+         * Hmmm: Rewrite this whole module here?? 
+         */
+	if( pkt->pkttype != PKT_SIGNATURE && pkt->pkttype != PKT_MDC )
 	    c->have_data = pkt->pkttype == PKT_PLAINTEXT;
 
 	if( newpkt == -1 )

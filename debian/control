@@ -2,22 +2,23 @@ Source: gnupg
 Section: utils
 Priority: optional
 Maintainer: James Troup <james@nocrew.org>
-Standards-Version: 2.5.0.0
+Standards-Version: 3.1.1.1
+Build-Depends: gettext, libgdbmg1-dev, libz-dev
 
 Package: gnupg
 Architecture: any
 Depends: ${shlibs:Depends}, makedev (>= 2.3.1-13)
+Suggests: gnupg-doc
+Conflicts: gpg-rsa, gpg-rsaref
+Replaces: gpg-rsa, gpg-rsaref
+Provides: gpg-rsa, gpg-rsaref
 Description: GNU privacy guard - a free PGP replacement.
- GnuPG is the GNU encryption and signing tool.  As you can see from the
- version number, the program may have some bugs and some features may not
- work at all.
+ GnuPG is GNU's tool for secure communication and data storage.
+ It can be used to encrypt data and to create digital signatures.
+ It includes an advanced key management facility and is compliant
+ with the proposed OpenPGP Internet standard as described in RFC2440.
  .
- Due to the fact that GnuPG does not use use any patented algorithm,
- it cannot be compatible to old PGP versions, because those use
- IDEA (which is worldwide patented) and RSA (which is patented in
- the United States until Sep 20, 2000).
- .
- GnuPG is in almost all aspects compatible with other OpenPGP
- implementations. The default algorithms are DSA and ELGamal.
- Symmetric algorithms are: Blowfish and CAST5, Digest algorithms are
- MD5, RIPEMD160, SHA1 and TIGER/192.
+ GnuPG does not use use any patented algorithms so it cannot be
+ compatible with PGP2 because it uses IDEA (which is patented
+ worldwide) and RSA.  RSA's patent expired on the 20th September 2000,
+ and it is now included in GnuPG.

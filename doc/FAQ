@@ -2,7 +2,7 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 Version: 0.2
-Last-Modified: Oct 01, 2000
+Last-Modified: Oct 14, 2000
 Maintained-by: Nils Ellmenreich <nils 'at' infosun.fmi.uni-passau.de>
 
 This is the GnuPG FAQ. The latest HTML version is available  
@@ -69,6 +69,8 @@ to be included here.
    6.4) Old versions of GnuPG can't verify ElGamal signatures
    6.5) When I use --clearsign, the plain text has sometimes extra dashes 
 	in it - why?
+   6.6) I have multiple signatures in a file and GnuPG says, the signatures are
+	bad.
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -490,6 +492,16 @@ in it - why?
     Good mail clients remove those extra dashes when displaying such a 
     message.      
 
+6.6) I have multiple signatures in a file and GnuPG says, the signatures are
+    bad.
+
+    Due to different message formats GnuPG is not always able to split such a
+    file unambiguously into the it's parts.  The result is that GnuPG claims 
+    the signature(s) is bad.  
+
+    The only way to have multiple signatures in a file is by using the 
+    OpenPGP format with one-pass-signature packets (which is GnuPG's
+    default) or the cleartext signed format.
 
 
 7. ADVANCED TOPICS

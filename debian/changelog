@@ -1,3 +1,91 @@
+gnupg (1.0.3b-1) unstable; urgency=low
+
+  * New upstream snapshot version.
+
+ -- James Troup <james@nocrew.org>  Fri, 13 Oct 2000 18:08:14 +0100
+
+gnupg (1.0.3-2) unstable; urgency=low
+
+  * debian/control: Conflict, Replace and Provide gpg-rsa & gpg-rsaref.
+    Fix long description to reflect the fact that RSA is no longer
+    patented and now included. [#72177]
+  * debian/rules: move faq.html to /usr/share/doc/gnupg/ and remove FAQ
+    from /usr/share/gnupg/.  Thanks to Robert Luberda
+    <robert@pingu.ii.uj.edu.pl> for noticing. [#72151]
+  * debian/control: Suggest new package gnupg-doc. [#64323, #65560]
+  * utils/secmem.c (lock_pool): don't bomb out if mlock() returns ENOMEM,
+    as Linux will do this if resource limits (or other reasons) prevent
+    memory from being locked, instead treat it like permission was denied
+    and warn but continue.  Thanks to Topi Miettinen
+    <Topi.Miettinen@nic.fi>. [#70446]
+  * g10/hkp.c (not_implemented): s/ist/is/ in error message.
+  * debian/README.Debian: add a note about GDBM support and why it is
+    disabled.  Upstream already fixed the manpage.  [#65913]
+  * debian/rules (binary-arch): fix the Spanish translation to be 'es' not
+    'es_ES' at Nicolás Lichtmaier <nick@debian.org>'s request. [#57314]
+
+ -- James Troup <james@nocrew.org>  Sun,  1 Oct 2000 14:55:03 +0100
+
+gnupg (1.0.3-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- James Troup <james@nocrew.org>  Mon, 18 Sep 2000 15:56:54 +0100
+
+gnupg (1.0.2-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- James Troup <james@nocrew.org>  Thu, 13 Jul 2000 20:26:50 +0100
+
+gnupg (1.0.1-2) unstable; urgency=low
+
+  * debian/control (Build-Depends): added.
+  * debian/copyright: corrected location of copyright file.  Removed
+    references to Linux.  Removed warnings about beta nature of GnuPG.
+  * debian/rules (binary-arch): install documentation into
+    /usr/share/doc/gnupg/ and pass mandir to make install to ensure the
+    manpages go to /usr/share/man/.
+  * debian/postinst: create /usr/doc/gnupg symlink.
+  * debian/prerm: new file; remove /usr/doc/gnupg symlink.
+  * debian/rules (binary-arch): install prerm.
+  * debian/control (Standards-Version): updated to 3.1.1.1.
+
+ -- James Troup <james@nocrew.org>  Thu, 30 Dec 1999 16:16:49 +0000
+
+gnupg (1.0.1-1) unstable; urgency=low
+
+  * New upstream version.
+  * doc/gpg.1: updated to something usable from
+    ftp://ftp.gnupg.org/pub/gcrypt/gnupg/gpg.1.gz.
+
+ -- James Troup <james@nocrew.org>  Sun, 19 Dec 1999 23:47:10 +0000
+
+gnupg (1.0.0-3) unstable; urgency=low
+
+  * debian/rules (build): remove the stunningly ill-advised --host option
+    to configure.  [#44698, #48212, #48281]
+
+ -- James Troup <james@nocrew.org>  Tue, 26 Oct 1999 01:12:59 +0100
+
+gnupg (1.0.0-2) unstable; urgency=low
+
+  * debian/rules (binary-arch): fix the permissions on the
+    modules. [#47280]
+  * debian/postinst, debian/postrm: fix the package name passed to
+    suidregister. [#45013]
+  * debian/control: update long description. [#44636]
+  * debian/rules (build): pass the host explicitly to configure to avoid
+    problems on sparc64. [(Should fix) #44698].
+
+ -- James Troup <james@nocrew.org>  Wed, 20 Oct 1999 23:39:05 +0100
+
+gnupg (1.0.0-1) unstable; urgency=low
+
+  * New upstream release. [#44545]
+
+ -- James Troup <james@nocrew.org>  Wed,  8 Sep 1999 00:53:02 +0100
+
 gnupg (0.9.10-2) unstable; urgency=low
 
   * debian/rules (binary-arch): install lspgpot.  Requested by Kai
