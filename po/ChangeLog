@@ -2,10 +2,6 @@
 
 	* Makefile.in.in: Upgrade to gettext-0.10.40.
 
-2001-10-23  gettextize  <bug-gnu-utils@gnu.org>
-
-	* Makefile.in.in: Upgrade to gettext-0.10.40.
-
 2001-09-07  Werner Koch  <wk@gnupg.org>
 
 	* POTFILES.in: Added new files.
