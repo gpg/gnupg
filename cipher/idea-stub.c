@@ -1,5 +1,5 @@
 /* idea-stub.c - Dummy module for the deprecated IDEA cipher.
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -41,7 +41,7 @@
 #ifdef HAVE_DL_DLOPEN
 #include <dlfcn.h>
 #endif
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #include "util.h"
@@ -52,7 +52,7 @@
 #endif
 
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #define HAVE_DL_DLOPEN
 #define USE_DYNAMIC_LINKING
 
@@ -101,7 +101,7 @@ dlsym ( void *handle, const char *name )
     }
   return h;
 }
-#endif /*__MINGW32__*/
+#endif /*_WIN32*/
 
 /* We do only support dlopen and the Windows emulation of it. */
 #ifndef HAVE_DL_DLOPEN
@@ -117,7 +117,7 @@ load_module (const char *name)
   void *handle;
   void *sym;
 
-#ifndef __MINGW32__
+#ifndef _WIN32
   /* Make sure we are not setuid. */
   if (getuid() != geteuid())
     log_bug("trying to load an extension while still setuid\n");

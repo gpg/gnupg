@@ -1,3 +1,9 @@
+2003-08-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* idea-stub.c, random.c; s/__MINGW32__/_WIN32/ to help building on
+	native Windows compilers.  Requested by Brian Gladman.  From
+	Werner on stable branch.
+
 2003-08-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* random.c (getfnc_gather_random): Don't check NAME_OF_DEV_RANDOM
