@@ -855,16 +855,31 @@ gpg_agent_runtime_change (void)
 }
 
 
-/* Robust version of dgettext.  */
+/* More or less Robust version of dgettext.  It has the sidefeect of
+   switching the codeset to utf-8 becuase this is what we want to
+   output.  In theory it is posible to keep the orginal code set and
+   switch back for regular disgnostic output (redefine "_(" for that)
+   but given the natur of this tool, being something invoked from
+   other pograms, it does not make much sense.  */
 static const char *
 my_dgettext (const char *domain, const char *msgid)
 {
+#ifdef ENABLE_NLS
   if (domain)
     {
-      char *text = dgettext (domain, msgid);
+      static int switched_codeset;
+      char *text;
+      
+      if (!switched_codeset)
+        {
+          bind_textdomain_codeset (PACKAGE_GT, "utf-8");
+          switched_codeset = 1;
+        }
+      text = dgettext (domain, msgid);
       return text ? text : msgid;
     }
   else
+#endif
     return msgid;
 }
 
