@@ -1,3 +1,10 @@
+2002-10-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_one): Make sure that a newly imported key
+	starts with a clean ownertrust.
+	(import_revoke_cert): Remove ultimate trust when revoking an
+	ultimately trusted key.
+
 2002-10-01  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (get_pubkey_direct): New.
