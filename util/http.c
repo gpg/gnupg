@@ -26,7 +26,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <unistd.h>
@@ -53,7 +53,7 @@
 #define HTTP_PROXY_ENV_PRINTABLE "$http_proxy"
 #endif
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #define sock_close(a)  closesocket(a)
 #else
 #define sock_close(a)  close(a)
@@ -83,7 +83,7 @@ static int parse_response( HTTP_HD hd );
 static int connect_server(const char *server, ushort port, unsigned int flags);
 static int write_server( int sock, const char *data, size_t length );
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 static void
 deinit_sockets (void)
 {
@@ -113,7 +113,7 @@ init_sockets (void)
     atexit ( deinit_sockets );
     initialized = 1;
 }
-#endif /*__MINGW32__*/
+#endif /*_WIN32*/
 
 
 int
@@ -713,7 +713,7 @@ connect_server( const char *server, ushort port, unsigned int flags )
   int sock=-1,srv,srvcount=0,connected=0;
   struct srventry *srvlist=NULL;
 
-#ifdef __MINGW32__
+#ifdef _WIN32
   in_addr_t inaddr;
 #warning check the windoze type
 
@@ -787,6 +787,7 @@ connect_server( const char *server, ushort port, unsigned int flags )
 	  if((sock=socket(ai->ai_family,ai->ai_socktype,ai->ai_protocol))==-1)
 	    {
 	      log_error("error creating socket: %s\n",strerror(errno));
+	      freeaddrinfo(res);
 	      return -1;
 	    }
 
@@ -796,6 +797,8 @@ connect_server( const char *server, ushort port, unsigned int flags )
 	      break;
 	    }
 	}
+
+      freeaddrinfo(res);
 
       if(ai)
 	break;
@@ -846,7 +849,7 @@ connect_server( const char *server, ushort port, unsigned int flags )
 
   if(!connected)
     {
-#ifdef __MINGW32__
+#ifdef _WIN32
       log_error("%s: host not found: ec=%d\n",server,(int)WSAGetLastError());
 #else
       log_error("%s: host not found\n",server);
@@ -867,7 +870,7 @@ write_server( int sock, const char *data, size_t length )
 
     nleft = length;
     while( nleft > 0 ) {
-#ifdef __MINGW32__  
+#ifdef _WIN32  
         int nwritten;
 
         nwritten = send (sock, data, nleft, 0);

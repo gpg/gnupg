@@ -20,7 +20,7 @@
 
 #include <config.h>
 #ifdef USE_DNS_SRV
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <netinet/in.h>

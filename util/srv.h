@@ -21,7 +21,7 @@
 #ifndef _SRV_H_
 #define _SRV_H_
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <netinet/in.h>

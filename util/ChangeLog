@@ -1,3 +1,12 @@
+2003-08-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* dotlock.c, http.c, iobuf.c, simple-gettext.c, srv.c, srv.h,
+	strgutil.c, ttyio.c, w32reg.c: s/__MINGW32__/_WIN32/ to help
+	building on native Windows compilers.  Requested by Brian Gladman.
+	From Werner on stable branch.
+	
+	* http.c (connect_server): Oops - forgot to freeaddrinfo().
+
 2003-08-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (connect_server): Try and use getaddrinfo if it is

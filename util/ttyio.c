@@ -37,10 +37,10 @@
 #define HAVE_TCGETATTR
 #endif
 #endif
-#ifdef __MINGW32__ /* use the odd Win32 functions */
+#ifdef _WIN32 /* use the odd Win32 functions */
 #include <windows.h>
 #ifdef HAVE_TCGETATTR
-#error mingw32 and termios
+#error windows and termios
 #endif
 #endif
 #include <errno.h>
@@ -51,7 +51,7 @@
 
 #define CONTROL_D ('D' - 'A' + 1)
 
-#ifdef __MINGW32__ /* use the odd Win32 functions */
+#ifdef _WIN32 /* use the odd Win32 functions */
 static struct {
     HANDLE in, out;
 } con;
@@ -99,8 +99,8 @@ tty_get_ttyname (void)
       got_name = 1;
     }
 #endif
-  /* Assume the staandrd tty on memory error or when tehre is no
-     certmid. */
+  /* Assume the standard tty on memory error or when there is no
+     ctermid. */
   return name? name : "/dev/tty";
 }
 
@@ -123,7 +123,7 @@ init_ttyfp(void)
     if( initialized )
 	return;
 
-#if defined(__MINGW32__)
+#if defined(_WIN32)
     {
 	SECURITY_ATTRIBUTES sa;
 
@@ -192,7 +192,7 @@ tty_printf( const char *fmt, ... )
 	init_ttyfp();
 
     va_start( arg_ptr, fmt ) ;
-#ifdef __MINGW32__
+#ifdef _WIN32
     {   
         char *buf = NULL;
         int n;
@@ -229,7 +229,7 @@ tty_print_string( byte *p, size_t n )
     if( !initialized )
 	init_ttyfp();
 
-#ifdef __MINGW32__
+#ifdef _WIN32
     /* not so effective, change it if you want */
     for( ; n; n--, p++ )
 	if( iscntrl( *p ) ) {
@@ -323,7 +323,7 @@ do_get( const char *prompt, int hidden )
     buf = m_alloc(n=50);
     i = 0;
 
-#ifdef __MINGW32__ /* windoze version */
+#ifdef _WIN32 /* windoze version */
     if( hidden )
 	SetConsoleMode(con.in, HID_INPMODE );
 
@@ -478,7 +478,7 @@ tty_kill_prompt()
 	last_prompt_len = 0;
     if( !last_prompt_len )
 	return;
-#ifdef __MINGW32__
+#ifdef _WIN32
     tty_printf("\r%*s\r", last_prompt_len, "");
 #else
     {

@@ -860,7 +860,7 @@ strncasecmp( const char *a, const char *b, size_t n )
 #endif
 
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 /* 
  * Like vsprintf but provides a pointer to malloc'd storage, which
  * must be freed by the caller (m_free).  Taken from libiberty as
@@ -954,5 +954,4 @@ vasprintf ( char **result, const char *format, va_list args)
     return 0;
 }
 
-#endif /*__MINGW32__*/
-
+#endif /*_WIN32*/
