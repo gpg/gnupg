@@ -1,3 +1,11 @@
+2003-12-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* pubkey.c (setup_pubkey_table): Don't allow signatures to and
+	from encrypt-only Elgamal keys.
+	(pubkey_get_npkey, pubkey_get_nskey, pubkey_get_nsig,
+	pubkey_get_nenc, pubkey_nbits): Wrap the RSA cheats in !USE_RSA.
+	Add cheats for sign+encrypt Elgamal.
+
 2003-11-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* pubkey.c (setup_pubkey_table): Only include RSA if USE_RSA is

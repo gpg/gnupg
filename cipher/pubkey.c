@@ -97,9 +97,8 @@ dummy_get_nbits( int algo, MPI *pkey )
 static void
 setup_pubkey_table(void)
 {
-    int i;
+    int i=0;
 
-    i = 0;
     pubkey_table[i].algo = PUBKEY_ALGO_ELGAMAL;
     pubkey_table[i].name = elg_get_info( pubkey_table[i].algo,
 					 &pubkey_table[i].npkey,
@@ -128,8 +127,8 @@ setup_pubkey_table(void)
     pubkey_table[i].check_secret_key = elg_check_secret_key;
     pubkey_table[i].encrypt	     = elg_encrypt;
     pubkey_table[i].decrypt	     = elg_decrypt;
-    pubkey_table[i].sign	     = elg_sign;
-    pubkey_table[i].verify	     = elg_verify;
+    pubkey_table[i].sign	     = dummy_sign;
+    pubkey_table[i].verify	     = dummy_verify;
     pubkey_table[i].get_nbits	     = elg_get_nbits;
     if( !pubkey_table[i].name )
 	BUG();
@@ -327,8 +326,15 @@ pubkey_get_npkey( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].npkey;
     } while( load_pubkey_modules() );
+
+#ifndef USE_RSA
     if( is_RSA(algo) )	  /* special hack, so that we are able to */
 	return 2;	  /* see the RSA keyids */
+#endif /* USE_RSA */
+
+    if(algo==PUBKEY_ALGO_ELGAMAL)
+      return 3;
+
     return 0;
 }
 
@@ -344,8 +350,15 @@ pubkey_get_nskey( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nskey;
     } while( load_pubkey_modules() );
+
+#ifndef USE_RSA
     if( is_RSA(algo) )	  /* special hack, so that we are able to */
 	return 6;	  /* see the RSA keyids */
+#endif /* USE_RSA */
+
+    if(algo==PUBKEY_ALGO_ELGAMAL)
+      return 4;
+
     return 0;
 }
 
@@ -361,8 +374,15 @@ pubkey_get_nsig( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nsig;
     } while( load_pubkey_modules() );
+
+#ifndef USE_RSA
     if( is_RSA(algo) )	  /* special hack, so that we are able to */
 	return 1;	  /* see the RSA keyids */
+#endif /* USE_RSA */
+
+    if(algo==PUBKEY_ALGO_ELGAMAL)
+      return 2;
+
     return 0;
 }
 
@@ -378,8 +398,15 @@ pubkey_get_nenc( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].nenc;
     } while( load_pubkey_modules() );
+
+#ifndef USE_RSA
     if( is_RSA(algo) )	  /* special hack, so that we are able to */
 	return 1;	  /* see the RSA keyids */
+#endif /* USE_RSA */
+
+    if(algo==PUBKEY_ALGO_ELGAMAL)
+      return 2;
+
     return 0;
 }
 
@@ -396,8 +423,15 @@ pubkey_nbits( int algo, MPI *pkey )
 	    if( pubkey_table[i].algo == algo )
 		return (*pubkey_table[i].get_nbits)( algo, pkey );
     } while( load_pubkey_modules() );
+
+#ifndef USE_RSA
     if( is_RSA(algo) )	/* we always wanna see the length of a key :-) */
 	return mpi_get_nbits( pkey[0] );
+#endif /* USE_RSA */
+
+    if(algo==PUBKEY_ALGO_ELGAMAL)
+      return mpi_get_nbits(pkey[0]);
+
     return 0;
 }
 
@@ -521,9 +555,6 @@ pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 	    log_mpidump("  skey:", skey[i] );
 	log_mpidump("  data:", data );
     }
-
-    if (is_ELGAMAL (algo))
-      return G10ERR_UNU_SECKEY;
 
     do {
 	for(i=0; pubkey_table[i].name; i++ )
