@@ -1,5 +1,11 @@
 2004-09-28  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (print_and_check_one_sig): Account for the extra space
+	that show-sig-expire takes up so we do not wrap lines.
+	(show_key_with_all_names): No need to show subkey revocations as a
+	seperate line since we now show revocation date in the main subkey
+	line.
+
 	* signal.c (got_fatal_signal): HAVE_DECL_SYS_SIGLIST is defined,
 	but zero if not found.  Noted by John Clizbe.
 

@@ -257,7 +257,8 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	  {
 	    size_t n;
 	    char *p = get_user_id( sig->keyid, &n );
-	    tty_print_utf8_string2( p, n, opt.screen_columns-keystrlen()-26 );
+	    tty_print_utf8_string2(p, n, opt.screen_columns-keystrlen()-26-
+			       ((opt.list_options&LIST_SHOW_SIG_EXPIRE)?11:0));
 	    m_free(p);
 	  }
 	tty_printf("\n");
@@ -2164,7 +2165,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 			 int with_fpr, int with_subkeys, int with_prefs )
 {
     KBNODE node;
-    int i, rc;
+    int i;
     int do_warn = 0, indent=0;
     byte pk_version=0;
     PKT_public_key *primary=NULL;
@@ -2315,20 +2316,6 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                 tty_printf ("\n");
               }
 	  }
-	else if( with_subkeys && node->pkt->pkttype == PKT_SIGNATURE
-		 && node->pkt->pkt.signature->sig_class == 0x28       ) {
-	    PKT_signature *sig = node->pkt->pkt.signature;
-
-	    rc = check_key_signature( keyblock, node, NULL );
-	    if( !rc )
-		tty_printf( _("rev! subkey has been revoked: %s\n"),
-			    datestr_from_sig( sig ) );
-	    else if( rc == G10ERR_BAD_SIGN )
-		tty_printf( _("rev- faked revocation found\n") );
-	    else if( rc )
-		tty_printf( _("rev? problem checking revocation: %s\n"),
-							 g10_errstr(rc) );
-	}
     }
     
     /* the user ids */
