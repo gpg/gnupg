@@ -219,7 +219,11 @@ parse_hkp_index(IOBUF buffer,char *line)
 {
   static int open=0,revoked=0;
   static char *key;
+#ifdef __riscos__
+  static char *uid;
+#else
   static unsigned char *uid;
+#endif
   static u32 bits,createtime;
   int ret=0;
 
@@ -379,8 +383,13 @@ int hkp_search(STRLIST tokens)
 {
   int rc=0,len=0,first=1;
   unsigned int maxlen=1024,buflen=0;
+#ifndef __riscos__
   unsigned char *searchstr=NULL,*searchurl=NULL;
   unsigned char *request;
+#else
+  char *searchstr=NULL,*searchurl=NULL;
+  char *request;
+#endif
   struct http_context hd;
   unsigned int hflags=opt.honor_http_proxy?HTTP_FLAG_TRY_PROXY:0;
   byte *line=NULL;
