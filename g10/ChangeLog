@@ -1,3 +1,13 @@
+2002-12-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_refresh): Don't print the "refreshing..."
+	line if there are no keys to refresh or if there is no keyserver
+	set.
+
+	* getkey.c (merge_selfsigs_main): Any valid user ID should make a
+	key valid, not just the last one.  This also fixes Debian bug
+	#174276.
+
 2002-12-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (keygen_add_key_expire): Properly handle updating a key

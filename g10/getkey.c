@@ -1504,7 +1504,10 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next ) {
 	if ( k->pkt->pkttype == PKT_USER_ID ) {
             if ( uidnode && signode ) 
+	      {
                 fixup_uidnode ( uidnode, signode, keytimestamp );
+		pk->is_valid=1;
+	      }
             uidnode = k;
             signode = NULL;
             if ( sigdate > uiddate )
