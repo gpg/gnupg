@@ -1,3 +1,7 @@
+2003-07-31  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (DISTCLEANFILES): Add g10defs.h
+
 2003-06-18  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (GNUPG_DEFAULT_HOMEDIR): Changed temporary to

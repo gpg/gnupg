@@ -1018,9 +1018,9 @@ sm/Makefile
 agent/Makefile
 scd/Makefile
 doc/Makefile
-tests/Makefile
 ])
 AC_OUTPUT
+#tests/Makefile
 
 
 echo "
