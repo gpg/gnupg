@@ -196,7 +196,7 @@ write_fake_data( IOBUF out, MPI a )
 static int
 do_comment( IOBUF out, int ctb, PKT_comment *rem )
 {
-    if( !opt.no_comment ) {
+    if( opt.sk_comments ) {
 	write_header(out, ctb, rem->len);
 	if( iobuf_write( out, rem->data, rem->len ) )
 	    return G10ERR_WRITE_FILE;

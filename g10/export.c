@@ -152,6 +152,9 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 
 
     while (!(rc = keydb_search (kdbhd, desc, ndesc))) {
+        int sha1_warned=0;
+	u32 sk_keyid[2];
+
 	if (!users) 
             desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
@@ -172,23 +175,29 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	    }
 	}
 
-	/* we can't apply GNU mode 1001 on an unprotected key */
-	if( secret == 2
-	    && (node = find_kbnode( keyblock, PKT_SECRET_KEY ))
-	    && !node->pkt->pkt.secret_key->is_protected )
-	{
-	    log_info(_("key %08lX: not protected - skipped\n"),
-		  (ulong)keyid_from_sk( node->pkt->pkt.secret_key, NULL) );
-	    continue;
-	}
+	node=find_kbnode( keyblock, PKT_SECRET_KEY );
+	if(node)
+	  {
+	    PKT_secret_key *sk=node->pkt->pkt.secret_key;
 
-	/* no v3 keys with GNU mode 1001 */
-	if( secret == 2 && node->pkt->pkt.secret_key->version == 3 )
-	{
-	    log_info(_("key %08lX: PGP 2.x style key - skipped\n"),
-		  (ulong)keyid_from_sk( node->pkt->pkt.secret_key, NULL) );
-	    continue;
-	}
+	    keyid_from_sk(sk,sk_keyid);
+
+	    /* we can't apply GNU mode 1001 on an unprotected key */
+	    if( secret == 2 && !sk->is_protected )
+	      {
+		log_info(_("key %08lX: not protected - skipped\n"),
+			 (ulong)sk_keyid[1]);
+		continue;
+	      }
+
+	    /* no v3 keys with GNU mode 1001 */
+	    if( secret == 2 && sk->version == 3 )
+	      {
+		log_info(_("key %08lX: PGP 2.x style key - skipped\n"),
+			 (ulong)sk_keyid[1]);
+		continue;
+	      }
+	  }
 
 	/* and write it */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
@@ -232,6 +241,21 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 		node->pkt->pkt.secret_key->protect.s2k.mode = save_mode;
 	    }
 	    else {
+	      /* Warn the user if the secret key or any of the secret
+                 subkeys are protected with SHA1 and we have
+                 simple_sk_checksum set. */
+	      if(!sha1_warned && opt.simple_sk_checksum &&
+		 (node->pkt->pkttype==PKT_SECRET_KEY ||
+		  node->pkt->pkttype==PKT_SECRET_SUBKEY) &&
+		 node->pkt->pkt.secret_key->protect.sha1chk)
+		{
+		  /* I hope this warning doesn't confuse people. */
+		  log_info("Warning: secret key %08lX does not have a "
+			   "simple SK checksum\n",(ulong)sk_keyid[1]);
+
+		  sha1_warned=1;
+		}
+
 		rc = build_packet( out, node->pkt );
 	    }
 

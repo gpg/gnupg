@@ -150,7 +150,8 @@ enum cmd_and_opt_values { aNull = 0,
 #ifdef __riscos__
     oStatusFile,
 #endif /* __riscos__ */
-    oNoComment,
+    oSKComments,
+    oNoSKComments,
     oNoVersion,
     oEmitVersion,
     oCompletesNeeded,
@@ -405,7 +406,9 @@ static ARGPARSE_OPTS opts[] = {
 #ifdef __riscos__
     { oStatusFile, "status-file" ,2, N_("|[file]|write status info to file") },
 #endif /* __riscos__ */
-    { oNoComment, "no-comment", 0,   "@"},
+    { oNoSKComments, "no-comment", 0,   "@"},
+    { oNoSKComments, "no-sk-comments", 0,   "@"},
+    { oSKComments, "sk-comments", 0,   "@"},
     { oCompletesNeeded, "completes-needed", 1, "@"},
     { oMarginalsNeeded, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
@@ -1045,7 +1048,8 @@ main( int argc, char **argv )
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
 	  case oQuickRandom: quick_random_gen(1); break;
-	  case oNoComment: opt.no_comment=1; break;
+	  case oSKComments: opt.sk_comments=1; break;
+	  case oNoSKComments: opt.sk_comments=0; break;
 	  case oNoVersion: opt.no_version=1; break;
 	  case oEmitVersion: opt.no_version=0; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
@@ -1089,7 +1093,7 @@ main( int argc, char **argv )
 	    opt.rfc1991 = 1;
 	    opt.rfc2440 = 0;
 	    opt.force_v4_certs = 0;
-	    opt.no_comment = 1;
+	    opt.sk_comments = 0;
 	    opt.escape_from = 1;
 	    break;
 	  case oOpenPGP:
@@ -1447,7 +1451,7 @@ main( int argc, char **argv )
 		opt.force_mdc = 0;
 		opt.disable_mdc = 1;
 		opt.force_v4_certs = 0;
-		opt.no_comment = 1;
+		opt.sk_comments = 0;
 		opt.escape_from = 1;
 		opt.force_v3_sigs = 1;
 		opt.pgp2_workarounds = 1;
@@ -1463,7 +1467,7 @@ main( int argc, char **argv )
 	  {
 	    opt.force_mdc=0;
 	    opt.disable_mdc=1;
-	    opt.no_comment=1;
+	    opt.sk_comments=0;
 	    opt.escape_from=1;
 	    opt.force_v3_sigs=1;
 	    opt.ask_sig_expire=0;

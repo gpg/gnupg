@@ -69,7 +69,7 @@ struct {
     char *def_recipient;
     int def_recipient_self;
     int def_cert_check_level;
-    int no_comment;
+    int sk_comments;
     int no_version;
     int marginals_needed;
     int completes_needed;

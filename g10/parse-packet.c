@@ -1561,7 +1561,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		if( list_mode ) {
 		    printf(", algo: %d,%s hash: %d",
 				     sk->protect.algo,
-                                     sk->protect.sha1chk? ""
+                                     sk->protect.sha1chk?" SHA1 protection,"
                                                         :" simple checksum,",
 				     sk->protect.s2k.hash_algo );
 		    if( sk->protect.s2k.mode == 1

@@ -1,3 +1,16 @@
+2002-05-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* export.c (do_export_stream): Warn the user when exporting a
+	secret key if it or any of its secret subkeys are protected with
+	SHA1 while simple_sk_checksum is set.
+
+	* parse-packet.c (parse_key): Show when the SHA1 protection is
+	used in --list-packets.
+
+	* options.h, build-packet.c (do_comment), g10.c (main): Rename
+	--no-comment as --sk-comments/--no-sk-comments (--no-comment still
+	works) and make the default be --no-sk-comments.
+
 2002-05-07  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (get_parameter_algo): Never allow generation of the
@@ -8,7 +21,7 @@
 
 2002-05-07  David Shaw  <dshaw@jabberwocky.com>
 
-	* keyedit.c (sign_uids): If --expert it set, allow re-signing a
+	* keyedit.c (sign_uids): If --expert is set, allow re-signing a
 	uid to promote a v3 self-sig to a v4 one.  This essentially
 	deletes the old v3 self-sig and replaces it with a v4 one.
 
