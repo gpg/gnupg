@@ -145,7 +145,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
     KEYDB_SEARCH_DESC *desc = NULL;
     KEYDB_HANDLE kdbhd;
     STRLIST sl;
-    u32 pk_keyid[2];
+    u32 keyid[2];
 
     *any = 0;
     init_packet( &pkt );
@@ -220,10 +220,13 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 			 keystr(sk_keyid));
 		continue;
 	      }
+
+	    if(options&EXPORT_MINIMAL)
+	      keyid_from_sk(sk,keyid);
 	  }
 	else if((options&EXPORT_MINIMAL)
 		&& (node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
-	  keyid_from_pk(node->pkt->pkt.public_key,pk_keyid);
+	  keyid_from_pk(node->pkt->pkt.public_key,keyid);
 
 	/* and write it */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
@@ -317,8 +320,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		   0x13).  A designated revocation is not stripped. */
 		if((options&EXPORT_MINIMAL)
 		   && IS_UID_SIG(node->pkt->pkt.signature)
-		   && (node->pkt->pkt.signature->keyid[0]!=pk_keyid[0]
-		       || node->pkt->pkt.signature->keyid[1]!=pk_keyid[1]))
+		   && (node->pkt->pkt.signature->keyid[0]!=keyid[0]
+		       || node->pkt->pkt.signature->keyid[1]!=keyid[1]))
 		  continue;
 
 		/* do not export packets which are marked as not exportable */
