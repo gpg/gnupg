@@ -1,0 +1,64 @@
+#!/bin/sh
+# mail a compressed version of the current translation to the Last-Translator
+#
+
+SENDMAIL="/usr/sbin/sendmail"
+
+for file in *.po; do
+    addr=$(awk '/Last-Translator:/ { printf "%s", $0; exit 0}' $file | sed 's/.*\(<.*>\).*/\1/')
+    ll=$(basename $file .po)    
+
+    if ! msgfmt -vc $file 2>&1| egrep -q 'fuzzy|untranslated|error'; then
+        echo "$file: okay" >&2
+        continue;
+    fi    
+
+    if [ -z "$addr" ]; then
+        echo "$file: no translator known" >&2
+        continue;
+    fi
+
+    echo "$file: sending to $addr"
+    ( cat <<EOF
+From: translations@gnupg.org
+To: $addr
+Subject: GnuPG translation ($ll)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-=-="
+
+--=-=-=
+
+Hi!
+
+Please find attached the latest version of the PO file for your GnuPG
+translation ($file).  I would appreciate if you can fix any remaining
+fuzzy or untranslated entries.  If you need access to the code
+please use http://cvs.gnupg.org or get the latest snapshot from
+ftp://ftp.gnupg.org/gcrypt/devel/.
+
+Output of msgfmt is:
+$(msgfmt --check --statistics $file 2>&1 | head)
+
+If you are not able to continue the translation work, I suggest to
+pass this message on to another translator and drop me a short note.
+
+Thanks,
+
+  Werner
+
+
+--=-=-=
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=gnupg-${file}.gz
+Content-Transfer-Encoding: base64
+
+EOF
+
+gzip <$file | mimencode 
+
+echo ""
+echo "--=-=-=--"
+echo ""
+    ) | $SENDMAIL -oi "$addr"
+
+done
