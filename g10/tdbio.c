@@ -77,6 +77,7 @@ struct cmp_sdir_struct {
 
 
 static char *db_name;
+static const char *lockname;
 static int  db_fd = -1;
 static int in_transaction;
 
@@ -235,6 +236,10 @@ put_record_into_cache( ulong recno, const char *data )
 	int n = dirty_count / 5; /* discard some dirty entries */
 	if( !n )
 	    n = 1;
+	if( !lockname )
+	    lockname = make_dotlock( db_name, -1 );
+	if( !lockname )
+	    log_fatal("can't get a lock - giving up\n");
 	for( unused = NULL, r = cache_list; r; r = r->next ) {
 	    if( r->flags.used && r->flags.dirty ) {
 		int rc = write_cache_item( r );
@@ -247,6 +252,10 @@ put_record_into_cache( ulong recno, const char *data )
 		if( !--n )
 		    break;
 	    }
+	}
+	if( !opt.lock_once ) {
+	    release_dotlock( lockname );
+	    lockname=NULL;
 	}
 	assert( unused );
 	r = unused;
@@ -276,6 +285,7 @@ int
 tdbio_sync()
 {
     CACHE_CTRL r;
+    int did_lock = 0;
 
     if( in_transaction )
 	log_bug("tdbio: syncing while in transaction\n");
@@ -283,6 +293,12 @@ tdbio_sync()
     if( !cache_is_dirty )
 	return 0;
 
+    if( !lockname ) {
+	lockname = make_dotlock( db_name, -1 );
+	did_lock = 1;
+	if( !lockname )
+	    log_fatal("can't get a lock - giving up\n");
+    }
     for( r = cache_list; r; r = r->next ) {
 	if( r->flags.used && r->flags.dirty ) {
 	    int rc = write_cache_item( r );
@@ -291,6 +307,10 @@ tdbio_sync()
 	}
     }
     cache_is_dirty = 0;
+    if( did_lock && !opt.lock_once ) {
+	release_dotlock( lockname );
+	lockname=NULL;
+    }
     return 0;
 }
 
@@ -324,10 +344,18 @@ tdbio_end_transaction()
 
     if( !in_transaction )
 	log_bug("tdbio: no active transaction\n");
+    if( !lockname )
+	lockname = make_dotlock( db_name, -1 );
+    if( !lockname )
+	log_fatal("can't get a lock - giving up\n");
     block_all_signals();
     in_transaction = 0;
     rc = tdbio_sync();
     unblock_all_signals();
+    if( !opt.lock_once ) {
+	release_dotlock( lockname );
+	lockname=NULL;
+    }
     return rc;
 }
 
@@ -452,6 +480,14 @@ tdbio_get_dbname()
 }
 
 
+static void
+cleanup(void)
+{
+    if( lockname ) {
+	release_dotlock(lockname);
+	lockname = NULL;
+    }
+}
 
 static void
 open_db()
@@ -468,7 +504,7 @@ open_db()
 	log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
     if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
 	log_fatal( _("%s: invalid trust-db\n"), db_name );
-    /* fixme: check ->locked and other stuff */
+    atexit( cleanup );
 }
 
 

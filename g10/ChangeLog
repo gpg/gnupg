@@ -1,3 +1,15 @@
+Fri Nov 27 21:37:41 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* g10.c: New option --lock-once
+	* tdbio.c (open_db): Add an atexit
+	(cleanup): New.
+	(tdbio_sync): Add locking.
+	(tdbio_end_transaction): Ditto.
+	(put_record_into_cache): Ditto.
+	* ringedit.c (keyring_copy): Ditto.
+	(cleanup): New.
+	(add_keyblock_resource): Add an atexit.
+
 Fri Nov 27 15:30:24 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	 * armor.c (find_header): Another fix for clearsigs.

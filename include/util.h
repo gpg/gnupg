@@ -126,6 +126,13 @@ const char *default_strusage( int level );
 const char *strusage( int level );
 
 
+/*-- dotlock.c --*/
+const char *make_dotlock( const char *file_to_lock, long timeout );
+int	    release_dotlock( const char *lockfile );
+
+
+
+
 /*-- fileutil.c --*/
 char * make_basename(const char *filepath);
 char * make_dirname(const char *filepath);

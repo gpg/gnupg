@@ -1,7 +1,7 @@
 
-    *
-
-
+    * The keyrings and the trustdb is now locked, so that
+      other GnuPG processes won't damage these files. You
+      may want to put the option --lock-once into your options file.
 
 
 Noteworthy changes in version 0.4.4

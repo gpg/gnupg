@@ -23,14 +23,20 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "types.h"
 #include "util.h"
 #include "memory.h"
 
 
+static int read_lockfile( const char *name );
 
-
-#if 0
 /****************
  * Create a lockfile with the given name. A TIMEOUT of 0
  * returns immediately, -1 waits forever (hopefully not), other
@@ -40,67 +46,122 @@
  *
  * Notes: This function creates a lock file in the same directory
  *	  as file_to_lock with the name "file_to_lock.lock"
- *	  A temporary file ".#lk.<pid>.<hostname> is used.
+ *	  A temporary file ".#lk.<hostname>.pid[.threadid] is used.
  *	  This function does nothing for Windoze.
  */
 const char *
 make_dotlock( const char *file_to_lock, long timeout )
 {
-    int rc=-1, fd=-1, pid;
+    int  fd=-1, pid;
     char pidstr[16];
+    const char *handle = NULL;
+    char *lockname = NULL;
     char *tname = NULL;
-    char *p;
+    int have_tfile = 0;
+    struct utsname uts;
+    const char *dirpart;
+    int dirpartlen;
 
-    log_debug("dotlock_make: lock='%s'\n", lockfile );
     sprintf( pidstr, "%10d\n", getpid() );
-    /* add the hostname to the second line (FQDN or IP addr?) */
+    /* fixme: add the hostname to the second line (FQDN or IP addr?) */
 
     /* create a temporary file */
-    tname = CreateTmpFile2( p, ".#lk" );
-    free(p);
-    if( !tname )
-	log_fatal( "could not create temporary lock file '%s'\n");
-    log_debug( "dotlock_make: tmpname='%s'\n", tname );
-    chmod( tname, 0644 ); /* just in case an umask is set */
-    if( !(fd = open( tname, O_WRONLY )) )
-	log_fatal( "could not open temporary lock file '%s'\n", tname);
-    if( write(fd, pidstr, 11 ) != 11 )
-	log_fatal( "error writing to temporary lock file '%s'\n", tname);
+  #if SYS_NMLN < 8
+    #error Aiiih
+  #endif
+    if( uname( &uts ) )
+	strcpy( uts.nodename, "unknown" );
+
+    if( !(dirpart = strrchr( file_to_lock, '/' )) ) {
+	dirpart = ".";
+	dirpartlen = 1;
+    }
+    else {
+	dirpartlen = dirpart - file_to_lock;
+	dirpart = file_to_lock;
+    }
+
+  #ifdef _THREAD_SAFE
+    tname = m_alloc( dirpartlen + 6 + strlen(uts.nodename) + 11+ 20 );
+    sprintf( tname, "%.*s/.#lk.%s.%d.%p",
+		    dirpartlen, dirpart, uts.nodename, getpid(), &pid );
+  #else
+    tname = m_alloc( dirpartlen + 6 + strlen(uts.nodename) + 11 );
+    sprintf( tname, "%.*s/.#lk.%s.%d",
+		    dirpartlen, dirpart, uts.nodename, getpid() );
+  #endif
+    do {
+	errno = 0;
+	fd = open( tname, O_WRONLY|O_CREAT|O_EXCL,
+			  S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR );
+    } while( fd == -1 && errno == EINTR );
+    if( fd == -1 ) {
+	log_error( "failed to create temporary file '%s': %s\n",
+					      tname, strerror(errno));
+	goto leave;
+    }
+    have_tfile = 1;
+    if( write(fd, pidstr, 11 ) != 11 ) {
+	log_fatal( "error writing to '%s': %s\n", tname, strerror(errno) );
+	goto leave;
+    }
     if( close(fd) ) {
-	log_fatal( "error closing '%s'\n", tname);
+	log_error( "error closing '%s': %s\n", tname, strerror(errno));
+	goto leave;
+    }
+    fd = -1;
+
+    lockname = m_alloc( strlen(file_to_lock) + 6 );
+    strcpy(stpcpy(lockname, file_to_lock), ".lock");
 
   retry:
-    if( !link(tname, lockfile) )
-	rc = 0; /* okay */
-    else if( errno != EEXIST )
-	log_error( "lock not made: link() failed: %s\n", strerror(errno) );
-    else { /* lock file already there */
-	if( (pid = read_lockfile(lockfile)) == -1 ) {
+    if( !link(tname, lockname) ) {/* fixme: better use stat to check the link count */
+	handle = lockname;
+	lockname = NULL;
+    }
+    else if( errno == EEXIST ) {
+	if( (pid = read_lockfile(lockname)) == -1 ) {
 	    if( errno == ENOENT ) {
-		log_debug( "lockfile disappeared\n");
+		log_info( "lockfile disappeared\n");
 		goto retry;
 	    }
-	    log_debug("cannot read lockfile\n");
+	    log_info("cannot read lockfile\n");
 	}
 	else if( pid == getpid() ) {
 	    log_info( "Oops: lock already hold by us\n");
-	    rc = 0;  /* okay */
+	    handle = lockname;
+	    lockname = NULL;
 	}
+      #if 0 /* we should not do this without checking the permissions */
+	    /* and the hostname */
 	else if( kill(pid, 0) && errno == ESRCH ) {
-	    log_info( "removing stale lockfile (created by %d)", (int)pid );
-	    remove( lockfile );
+	    log_info( "removing stale lockfile (created by %d)", pid );
+	    remove( lockname );
 	    goto retry;
 	}
-	log_debug( "lock not made: lock file exists\n" );
+      #endif
+	if( timeout == -1 ) {
+	    struct timeval tv;
+	    log_info( "waiting for lock (hold by %d) ...\n", pid );
+	    /* can't use sleep, cause signals may be blocked */
+	    tv.tv_sec = 1;
+	    tv.tv_usec = 0;
+	    select(0, NULL, NULL, NULL, &tv);
+	    goto retry;
+	}
+	/* fixme: implement timeouts */
     }
+    else
+	log_error( "lock not made: link() failed: %s\n", strerror(errno) );
 
-    if( tname ) {
+  leave:
+    if( fd != -1 )
+	close(fd);
+    if( have_tfile )
 	remove(tname);
-	free(tname);
-    }
-    if( !rc )
-	log_debug( "lock made\n");
-    return rc;
+    m_free(tname);
+    m_free(lockname);
+    return handle;
 }
 
 /****************
@@ -140,7 +201,7 @@ release_dotlock( const char *lockfile )
 							    lockfile);
 	return -1;
     }
-    log_debug( "release_dotlock: released lockfile '%s'", lockfile);
+    m_free( (char*)lockfile );
     return 0;
 }
 
@@ -156,7 +217,7 @@ read_lockfile( const char *name )
 
     if( (fd = open(name, O_RDONLY)) == -1 ) {
 	int e = errno;
-	log_debug("error opening lockfile '%s'", name );
+	log_debug("error opening lockfile '%s': %s\n", name, strerror(errno) );
 	errno = e;
 	return -1;
     }
@@ -175,4 +236,4 @@ read_lockfile( const char *name )
     }
     return pid;
 }
-#endif
+

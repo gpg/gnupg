@@ -46,3 +46,9 @@ compress-algo 1
 # everytime you use --mynames, it will be expanded to the options
 # in the above defintion.  The name of the alias may not be abbreviated.
 
+# lock tthe file only once for the lifetime of a process.
+# if you do not define this, the lock will be obtained and released
+# every time it is needed - normally this is not needed.
+lock-once
+
+

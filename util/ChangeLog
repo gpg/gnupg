@@ -1,3 +1,7 @@
+Fri Nov 27 21:37:41 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* dotlock.c: Implemented
+
 Wed Nov 25 11:30:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* iobuf.c (iobuf_pop_filter): Fixed sigsegv after error.

@@ -77,6 +77,7 @@ typedef struct resource_table_struct RESTBL;
 
 #define MAX_RESOURCES 10
 static RESTBL resource_table[MAX_RESOURCES];
+static const char *keyring_lock;
 
 static int search( PACKET *pkt, KBPOS *kbpos, int secret );
 
@@ -116,6 +117,15 @@ fatal_gdbm_error( const char *string )
 
 #endif /* HAVE_LIBGDBM */
 
+static void
+cleanup( void )
+{
+    if( keyring_lock )	{
+	release_dotlock( keyring_lock );
+	keyring_lock = NULL;
+    }
+}
+
 /****************************************************************
  ****************** public functions ****************************
  ****************************************************************/
@@ -152,6 +162,7 @@ enum_keyblock_resources( int *sequence, int secret )
 int
 add_keyblock_resource( const char *url, int force, int secret )
 {
+    static int initialized = 0;
     static int any_secret, any_public;
     const char *resname = url;
     IOBUF iobuf = NULL;
@@ -159,6 +170,11 @@ add_keyblock_resource( const char *url, int force, int secret )
     char *filename = NULL;
     int rc = 0;
     enum resource_type rt = rt_UNKNOWN;
+
+    if( !initialized ) {
+	initialized = 1;
+	atexit( cleanup );
+    }
 
     /* Do we have an URL?
      *	gnupg-gdbm:filename  := this is a GDBM resource
@@ -843,7 +859,7 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
  *
  * A string "GnuPG user db", a \n.
  * user ids of one key, delimited by \t,
- * a # or ^ followed by a 20 byte fingerprint, followed by an \n 
+ * a # or ^ followed by a 20 byte fingerprint, followed by an \n
  * The literal characters =, \n, \t, #, ^ must be replaced by a equal sign
  * and their hex value.
  *
@@ -1224,6 +1240,11 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     if( kbpos->fp )
 	BUG(); /* not allowed with such a handle */
 
+    if( !keyring_lock );
+	keyring_lock = make_dotlock( rentry->fname, -1 );
+    if( !keyring_lock )
+	log_fatal("can't lock '%s'\n", rentry->fname );
+
     /* open the source file */
     fp = iobuf_fopen( rentry->fname, "rb" );
     if( mode == 1 && !fp && errno == ENOENT ) { /* no file yet */
@@ -1233,6 +1254,10 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	newfp = iobuf_create( rentry->fname );
 	if( !newfp ) {
 	    log_error(_("%s: can't create: %s\n"), rentry->fname, strerror(errno));
+	    if( !opt.lock_once ) {
+		release_dotlock( keyring_lock );
+		keyring_lock = NULL;
+	    }
 	    return G10ERR_OPEN_FILE;
 	}
 	else
@@ -1244,16 +1269,28 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 		log_error("build_packet(%d) failed: %s\n",
 			    node->pkt->pkttype, g10_errstr(rc) );
 		iobuf_cancel(newfp);
+		if( !opt.lock_once ) {
+		    release_dotlock( keyring_lock );
+		    keyring_lock = NULL;
+		}
 		return G10ERR_WRITE_FILE;
 	    }
 	}
 	if( iobuf_close(newfp) ) {
 	    log_error("%s: close failed: %s\n", rentry->fname, strerror(errno));
+	    if( !opt.lock_once ) {
+		release_dotlock( keyring_lock );
+		keyring_lock = NULL;
+	    }
 	    return G10ERR_CLOSE_FILE;
 	}
 	if( chmod( rentry->fname, S_IRUSR | S_IWUSR ) ) {
 	    log_error("%s: chmod failed: %s\n",
 				    rentry->fname, strerror(errno) );
+	    if( !opt.lock_once ) {
+		release_dotlock( keyring_lock );
+		keyring_lock = NULL;
+	    }
 	    return G10ERR_WRITE_FILE;
 	}
 	return 0;
@@ -1418,6 +1455,10 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     }
 
   leave:
+    if( !opt.lock_once ) {
+	release_dotlock( keyring_lock );
+	keyring_lock = NULL;
+    }
     m_free(bakfname);
     m_free(tmpfname);
     return rc;

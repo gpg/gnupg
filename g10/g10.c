@@ -147,6 +147,7 @@ enum cmd_and_opt_values { aNull = 0,
     oS2KCipher,
     oCharset,
     oNotDashEscaped,
+    oLockOnce,
 aTest };
 
 
@@ -295,6 +296,7 @@ static ARGPARSE_OPTS opts[] = {
     { oSetFilename, "set-filename", 2, "@" },
     { oComment, "comment", 2, "@" },
     { oNotDashEscaped, "not-dash-escaped", 0, "@" },
+    { oLockOnce, "lock-once", 0, "@" },
 {0} };
 
 
@@ -768,6 +770,7 @@ main( int argc, char **argv )
 						    pargs.r.ret_str);
 	    break;
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
+	  case oLockOnce: opt.lock_once = 1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
