@@ -86,6 +86,7 @@ case "${target}" in
 	RANLIB="i386--mingw32-ranlib"
 	ac_cv_have_dev_random=no
 	AC_DEFINE(USE_RAND_W32)
+	GNUPG_LIBDIR="c:/lib/gnupg"
 	;;
     *)
 AC_PROG_RANLIB
@@ -93,8 +94,10 @@ AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_CPP
 	AC_DEFINE(USE_RAND_UNIX)
+	GNUPG_LIBDIR="$g10_prefix/lib/gnupg"
        ;;
 esac
+AC_DEFINE_UNQUOTED(GNUPG_LIBDIR, "$GNUPG_LIBDIR")
 
 case "${target}" in
     i386--mingw32)

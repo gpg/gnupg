@@ -27,12 +27,6 @@
 #include "cipher.h"
 #include "filter.h"
 
-#ifndef HAVE_RSA_CIPHER
-/* although we don't have RSA we need these structures to handle keyrings */
-typedef struct { MPI e, n;	       } RSA_public_key;
-typedef struct { MPI e, n, p, q, d, u; } RSA_secret_key;
-#endif
-
 typedef enum {
 	PKT_NONE	   =0,
 	PKT_PUBKEY_ENC	   =1, /* public key encrypted packet */
@@ -74,14 +68,8 @@ typedef struct {
     u32     keyid[2];	    /* 64 bit keyid */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
-    union {
-      struct {
-	MPI  a, b;	    /* integers with the encrypteded DEK */
-      } elg;
-      struct {
-	MPI  rsa_integer;   /* integer containing the DEK */
-      } rsa;
-    } d;
+    int     mpi_count;	    /* 1 for rsa, 2 for ELG */
+    MPI     material[2];    /* (ELG needs 2)
 } PKT_pubkey_enc;
 
 

@@ -47,6 +47,7 @@ struct {
     int skip_verify;
     int compress_keys;
     int always_trust;
+    int rfc1991;
 } opt;
 
 

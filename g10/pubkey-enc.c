@@ -46,10 +46,11 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     u16 csum, csum2;
     PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
 
-  #ifndef HAVE_RSA_CIPHER
-    if( is_RSA(k->pubkey_algo) )
+    if( is_RSA(k->pubkey_algo) ) /* warn about that */
 	write_status(STATUS_RSA_OR_IDEA);
-  #endif
+    rc=check_pubkey_algo( k->pubkey_algo );
+    if( rc )
+	goto leave;
 
     skc->pubkey_algo = k->pubkey_algo;	 /* we want a pubkey with this algo*/
     if( (rc = get_seckey( skc, k->keyid )) )
@@ -63,7 +64,6 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skc->d.elg.p) );
 	elg_decrypt( plain_dek, k->d.elg.a, k->d.elg.b, &skc->d.elg );
     }
-  #ifdef HAVE_RSA_CIPHER
     else if( is_RSA(k->pubkey_algo) ) {
 	if( DBG_CIPHER )
 	    log_mpidump("Encr DEK frame:", k->d.rsa.rsa_integer );
@@ -71,8 +71,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skc->d.rsa.n) );
 	rsa_secret( plain_dek, k->d.rsa.rsa_integer, &skc->d.rsa );
     }
-  #endif/*HAVE_RSA_CIPHER*/
     else {
+	log_info("need some glue code for pubkey algo %d\n", k->pubkey_algo);
 	rc = G10ERR_PUBKEY_ALGO; /* unsupported algorithm */
 	goto leave;
     }

@@ -101,6 +101,7 @@ const char *strusage( int level );
 
 /*-- fileutil.c --*/
 char *make_filename( const char *first_part, ... );
+int compare_filenames( const char *a, const char *b );
 const char *print_fname_stdin( const char *s );
 const char *print_fname_stdout( const char *s );
 

@@ -33,6 +33,7 @@
 #undef PACKAGE
 #undef G10_LOCALEDIR
 #undef PRINTABLE_OS_NAME
+#undef GNUPG_LIBDIR
 
 /* Define if your locale.h file contains LC_MESSAGES.  */
 #undef HAVE_LC_MESSAGES

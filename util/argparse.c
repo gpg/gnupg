@@ -72,6 +72,7 @@
  *     Bit 3 : Do not use -- to stop option processing.
  *     Bit 4 : Do not skip the first arg.
  *     Bit 5 : allow usage of long option with only one dash
+ *     Bit 6 : ignore --version
  *     all other bits must be set to zero, this value is modified by the function
  *     so assume this is write only.
  *  Local flags (for each option):
@@ -377,8 +378,10 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	if( !opts[i].short_opt && !strcmp( "help", s+2) )
 	    show_help(opts, arg->flags);
 	else if( !opts[i].short_opt && !strcmp( "version", s+2) ) {
-	    show_version();
-	    exit(0);
+	    if( !(arg->flags & (1<<6)) ) {
+		show_version();
+		exit(0);
+	    }
 	}
 	else if( !opts[i].short_opt && !strcmp( "warranty", s+2) ) {
 	    puts( strusage(16) );

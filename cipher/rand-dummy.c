@@ -69,7 +69,7 @@ fast_random_poll()
 {
   #if HAVE_GETHRTIME
     {	hrtime_t tv;
-	tv = gethrtime(void);
+	tv = gethrtime();
 	add_randomness( &tv, sizeof(tv), 1 );
     }
   #elif HAVE_GETTIMEOFTIME

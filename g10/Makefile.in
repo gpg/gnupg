@@ -93,6 +93,7 @@ l = @l@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
+LDFLAGS = -rdynamic
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 noinst_PROGRAMS = gpgd
@@ -170,7 +171,6 @@ PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
-LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 gpg_OBJECTS =  g10.o build-packet.o compress.o free-packet.o getkey.o \
 pkclist.o skclist.o ringedit.o kbnode.o mainproc.o armor.o mdfilter.o \

@@ -1,3 +1,8 @@
+Wed Jun 10 07:52:08 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* dynload.c: New
+	* cipher.c: Major changes to allow  extensions.
+
 Mon Jun  8 22:43:00 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* cipher.c: Major internal chnages to support extensions.

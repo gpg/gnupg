@@ -89,7 +89,7 @@ encode_simple( const char *filename, int mode )
     cfx.dek = NULL;
     if( mode ) {
 	s2k = m_alloc_clear( sizeof *s2k );
-	s2k->mode = 1;
+	s2k->mode = opt.rfc1991? 0:1;
 	s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
 					     : DEFAULT_DIGEST_ALGO;
 	cfx.dek = passphrase_to_dek( NULL, opt.def_cipher_algo, s2k, 2 );
@@ -116,7 +116,7 @@ encode_simple( const char *filename, int mode )
 	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
 
-    if( s2k ) {
+    if( s2k && !opt.rfc1991 ) {
 	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;

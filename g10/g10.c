@@ -111,6 +111,8 @@ static ARGPARSE_OPTS opts[] = {
     { 534, "no-comment", 0,   N_("do not write comment packets")},
     { 535, "completes-needed", 1, N_("(default is 1)")},
     { 536, "marginals-needed", 1, N_("(default is 3)")},
+    { 560, "load-extension" ,2, N_("|file|load extension module")},
+    { 561, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
   #ifdef IS_G10
     { 527, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
     { 528, "pubkey-algo", 2 , N_("|NAME|use public key algorithm NAME")},
@@ -427,7 +429,7 @@ main( int argc, char **argv )
     orig_argv = argv;
     pargs.argc = &argc;
     pargs.argv = &argv;
-    pargs.flags=  1;  /* do not remove the args */
+    pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
     while( arg_parse( &pargs, opts) ) {
 	if( pargs.r_opt == 510 || pargs.r_opt == 511 )
 	    parse_debug++;
@@ -586,6 +588,8 @@ main( int argc, char **argv )
 	  case 557: opt.compress_keys = 1; break;
 	  case 558: set_cmd( &cmd, aListSecretKeys); break;
 	  case 559: opt.always_trust = 1; break;
+	  case 560: register_cipher_extension(pargs.r.ret_str); break;
+	  case 561: opt.rfc1991 = 1; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }

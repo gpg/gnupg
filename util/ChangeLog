@@ -1,3 +1,9 @@
+Wed Jun 10 07:39:41 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* fileutil.c (compare_filenames): New.
+
+	* argparse.c (arg_parse): New flag bit 6 to ignore --version
+
 Thu May 14 16:45:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* argparse.c (show_help): Add some formatting stuff

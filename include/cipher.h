@@ -86,6 +86,9 @@ struct cipher_handle_s { char does_not_matter[1]; };
 
 int cipher_debug_mode;
 
+/*-- dynload.c --*/
+void register_cipher_extension( const char *fname );
+
 /*-- cipher.c --*/
 int string_to_cipher_algo( const char *string );
 const char * cipher_algo_to_string( int algo );

@@ -183,7 +183,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( out, compress_filter, &zfx );
 
 
-    if( !detached ) {
+    if( !detached && !opt.rfc1991 ) {
 	/* loop over the secret certificates and build headers */
 	for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
 	    PKT_secret_cert *skc;
@@ -254,6 +254,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	     * data, it is not possible to know the used length
 	     * without a double read of the file - to avoid that
 	     * we simple use partial length packets.
+	     * FIXME: We have to do the double read when opt.rfc1991
+	     *	      is active.
 	     */
 	    if( opt.textmode && !outfile )
 		filesize = 0;
@@ -449,9 +451,10 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	goto leave;
     }
 
-    /* FIXME: This stuff is not correct if mutliplehash algos are used*/
+    /* FIXME: This stuff is not correct if mutliple hash algos are used*/
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
-    if( (opt.def_digest_algo?opt.def_digest_algo:DEFAULT_DIGEST_ALGO)
+    if( opt.rfc1991
+	|| (opt.def_digest_algo?opt.def_digest_algo:DEFAULT_DIGEST_ALGO)
 			      == DIGEST_ALGO_MD5 )
 	iobuf_writestr(out, "\n" );
     else {

@@ -1,3 +1,7 @@
+Wed Jun 10 07:22:02 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* g10.c ("load-extension"): New option.
+
 Mon Jun  8 22:23:37 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* seckey-cert.c (do_check): Removed cipher constants

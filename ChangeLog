@@ -1,3 +1,7 @@
+Wed Jun 10 07:48:59 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* configure.in (GNUPG_LIBDIR): New.
+
 Mon May 25 19:10:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* rand-unix.c (fast_random_poll): fixed syntax bug.

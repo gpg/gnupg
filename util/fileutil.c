@@ -65,6 +65,20 @@ make_filename( const char *first_part, ... )
 }
 
 
+int
+compare_filenames( const char *a, const char *b )
+{
+    /* ? check whether this is an absolute filename and
+     * resolve symlinks?
+     */
+  #ifdef __MINGW32__
+    return stricmp(a,b);
+  #else
+    return strcmp(a,b);
+  #endif
+}
+
+
 /****************
  * A simple function to decide whether the filename is stdout
  * or a real filename.

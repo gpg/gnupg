@@ -32,21 +32,23 @@
 #include "blowfish.h"
 #include "cast5.h"
 #include "des.h"
+#include "dynload.h"
 
-#include <dlfcn.h>
 
 #define STD_BLOCKSIZE 8
 #define TABLE_SIZE 20
 
-static struct {
+struct cipher_table_s {
     const char *name;
     int algo;
-    int keylen;
-    int contextsize; /* allocate this amount of context */
+    size_t keylen;
+    size_t contextsize; /* allocate this amount of context */
     void (*setkey)( void *c, byte *key, unsigned keylen );
     void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
     void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
-} cipher_table[TABLE_SIZE];
+};
+
+static struct cipher_table_s cipher_table[TABLE_SIZE];
 
 
 struct cipher_handle_s {
@@ -142,56 +144,54 @@ static int
 load_cipher_modules()
 {
     static int done = 0;
+    void *context = NULL;
+    struct cipher_table_s *ct;
+    int ct_idx;
+    size_t blocksize;
+    int i;
+    const char *name;
+    int any = 0;
 
-    if( !done ) {
-	void *handle;
-	char **name;
-	void *sym;
-	void * (*enumfunc)(int, int*, int*, int*);
-	const char *err;
+    if( done )
+	return 0;
+    done = 1;
 
-	log_debug("load_cipher_modules\n");
-	handle = dlopen("/sahara/proj/psst+g10/non-free-src/rsa+idea.so", RTLD_LAZY);
-	if( !handle )
-	    log_bug("dlopen(rsa+idea) failed: %s\n", dlerror() );
-	name = (char**)dlsym(handle, "gnupgext_version");
-	if( (err=dlerror()) )
-	    log_error("dlsym: gnupgext_version not found: %s\n", err );
-	else {
-	    log_debug("dlsym: gnupgext_version='%s'\n", *name );
-	    sym = dlsym(handle, "gnupgext_enum_func");
-	    if( (err=dlerror()) )
-		log_error("dlsym: gnupgext_enum_func not found: %s\n", err );
-	    else {
-		int seq = 0;
-		int class, vers;
-
-		enumfunc = (void *(*)(int,int*,int*,int*))sym;
-		while( (sym = enumfunc(0, &seq, &class, &vers)) ) {
-		    if( vers != 1 ) {
-			log_debug("ignoring extfunc with version %d\n", vers);
-			continue;
-		    }
-		    switch( class ) {
-		      case 11:
-		      case 21:
-		      case 31:
-			log_info("provides %s algorithm %d\n",
-					class == 11? "md"     :
-					class == 21? "cipher" : "pubkey",
-							       *(int*)sym);
-			break;
-		      default:
-			log_debug("skipping class %d\n", class);
-		    }
-		}
-	    }
-	}
-	dlclose(handle);
-	done = 1;
+    for(ct_idx=0, ct = cipher_table; ct_idx < TABLE_SIZE; ct_idx++,ct++ ) {
+	if( !ct->name )
+	    break;
     }
-
-    return 0;
+    if( ct_idx >= TABLE_SIZE-1 )
+	BUG(); /* table already full */
+    /* now load all extensions */
+    while( (name = enum_gnupgext_ciphers( &context, &ct->algo,
+				&ct->keylen, &blocksize, &ct->contextsize,
+				&ct->setkey, &ct->encrypt, &ct->decrypt)) ) {
+	if( blocksize != STD_BLOCKSIZE ) {
+	    log_info("skipping cipher %d: unsupported blocksize\n", ct->algo);
+	    continue;
+	}
+	for(i=0; cipher_table[i].name; i++ )
+	    if( cipher_table[i].algo == ct->algo )
+		break;
+	if( cipher_table[i].name ) {
+	    log_info("skipping cipher %d: already loaded\n", ct->algo );
+	    continue;
+	}
+	/* put it into the table */
+	log_info("loaded cipher %d (%s)\n", ct->algo, name);
+	ct->name = name;
+	ct_idx++;
+	ct++;
+	any = 1;
+	/* check whether there are more available table slots */
+	if( ct_idx >= TABLE_SIZE-1 ) {
+	    log_info("cipher table full; ignoring other extensions\n");
+	    break;
+	}
+    }
+    enum_gnupgext_ciphers( &context, NULL, NULL, NULL, NULL,
+					   NULL, NULL, NULL );
+    return any;
 }
 
 
