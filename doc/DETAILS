@@ -522,6 +522,55 @@ attribute defined:
    All other data after this header is raw image (JPEG) data.
 
 
+Format of the "--list-config" output
+====================================
+
+--list-config outputs information about the GnuPG configuration for
+the benefit of frontends or other programs that call GnuPG.  There are
+several list-config items, all colon delimited like the rest of the
+--with-colons output.  The first field is always "cfg" to indicate
+configuration information.  The second field is one of (with
+examples):
+
+version: the third field contains the version of GnuPG.
+
+   cfg:version:1.3.5
+
+pubkey: the third field contains the public key algorithmdcaiphers
+	this version of GnuPG supports, separated by semicolons.  The
+	algorithm numbers are as specified in RFC-2440.
+
+   cfg:pubkey:1;2;3;16;17
+
+cipher: the third field contains the symmetric ciphers this version of
+	GnuPG supports, separated by semicolons.  The cipher numbers
+	are as specified in RFC-2440.
+
+   cfg:cipher:2;3;4;7;8;9;10
+
+digest: the third field contains the digest (hash) algorithms this
+	version of GnuPG supports, separated by semicolons.  The
+	digest numbers are as specified in RFC-2440.
+
+   cfg:digest:1;2;3;8;9;10
+
+compress: the third field contains the compression algorithms this
+	  version of GnuPG supports, separated by semicolons.  The
+	  algorithm numbers are as specified in RFC-2440.
+
+   cfg:compress:0;1;2;3
+
+group: the third field contains the name of the group, and the fourth
+       field contains the values that the group expands to, separated
+       by semicolons.
+
+For example, a group of:
+   group mynames = paige 0x12345678 joe patti
+
+would result in:
+   cfg:group:mynames:patti;joe;0x12345678;paige
+
+
 Key generation
 ==============
     Key generation shows progress by printing different characters to

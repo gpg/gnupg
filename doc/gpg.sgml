@@ -204,7 +204,7 @@ for a quick encryption of multiple files.
 <term>--decrypt-files <optional><parameter/files/</optional></term>
 <listitem><para>
 The same as --encrypt-files with the difference that files will be
-decrypted. The syntax or the filenames is the same.
+decrypted. The syntax of the filenames is the same.
 </para></listitem></varlistentry>
 
 <!--
@@ -908,15 +908,17 @@ Try to be as quiet as possible.
 
 
 <varlistentry>
-<term>-z &ParmN;, --compress-level &ParmN;</term>
+<term>-z &ParmN;</term>
+<term>--compress-level &ParmN;</term>
 <term>--bzip2-compress-level &ParmN;</term>
 <listitem><para>
 Set compression level to &ParmN; for the ZIP and ZLIB compression
 algorithms.  The default is to use the default compression level of
 zlib (normally 6).  --bzip2-compress-level sets the compression level
 for the BZIP2 compression algorithm (defaulting to 6 as well).  This
-is a different option since BZIP2 uses a significant amount of memory
-for each additional compression level.  -z sets both.
+is a different option from --compress-level since BZIP2 uses a
+significant amount of memory for each additional compression level.
+-z sets both.  A value of 0 for &ParmN; disables compression.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2439,8 +2441,9 @@ Experimental use only.
 <term>--group &ParmNameValues;</term>
 <listitem><para>
 Sets up a named group, which is similar to aliases in email programs.
-Any time the group name is a recipient (-r or --recipient), it will
-be expanded to the values specified.
+Any time the group name is a recipient (-r or --recipient), it will be
+expanded to the values specified.  Multiple groups with the same name
+are automatically merged into a single group.
 </para><para>
 The values are &ParmKeyIDs; or fingerprints, but any key description
 is accepted.  Note that a value with spaces in it will be treated as
@@ -2452,9 +2455,15 @@ arguments.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--ungroup &ParmName;</term>
+<listitem><para>
+Remove a given entry from the --group list.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--no-groups</term>
 <listitem><para>
-Clear the --group list.
+Remove all entries from the --group list.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2507,6 +2516,16 @@ edit menu.  This affects both key generation and "updpref" in the edit
 menu.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--list-config &OptParmNames;</term>
+<listitem><para>
+Display various internal configuration parameters of GnuPG.  This
+option is intended for external programs that call GnuPG to perform
+tasks, and is thus not generally useful.  See the file
+<filename>doc/DETAILS</filename> in the source distribution for the
+details of which configuration items may be listed.  --list-config is
+only useful with --with-colons set.
+</para></listitem></varlistentry>
 
 </variablelist>
 </refsect1>
