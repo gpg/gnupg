@@ -398,4 +398,11 @@
 	   revoke all the subkeys installed on that machine and install new
 	   subkeys.
 
+  Q: In the edit meu the trust values is not displayed correctly after
+     signing uids - why?
+  A: This happens because the some informations are stored immediately
+     in the trustdb, but the actual trust calculation can be done after
+     the save command.	This is a not easy to fix design bug which will be
+     addressed in GnuPG 1.1
+
 

@@ -1243,6 +1243,12 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
 
 	siglid = find_or_create_lid( sig );
 	/* smash dups */
+	/* FIXME: Here we have a problem:
+	 *  We can't distinguish between a certification and a certification
+	 *  revocation without looking at class of the signature - we have
+	 *  to see how we can store the sigclass in the sigrecord..
+	 *  Argg- I hope I can get rid of this ugly trustdb ASAP.
+	 */
 	for( s2 = s; s2 ; s2 = s2->next ) {
 	    for(i=0; i < sigidx; i++ ) {
 		if( s2->r.sig.sig[i].lid == siglid )
@@ -2014,10 +2020,10 @@ propagate_validity( TN root, TN node, int (*add_fnc)(ulong), unsigned *retflgs )
     }
 
     /* loop over all user ids */
-    for( ur=node->list; ur && max_validity < TRUST_FULLY; ur = ur->next ) {
+    for( ur=node->list; ur && max_validity <= TRUST_FULLY; ur = ur->next ) {
 	assert( ur->is_uid );
 	/* loop over all signators */
-	for(kr=ur->list; kr && max_validity < TRUST_FULLY; kr = kr->next ) {
+	for(kr=ur->list; kr && max_validity <= TRUST_FULLY; kr = kr->next ) {
 	    if( propagate_validity( root, kr, add_fnc, retflgs ) )
 		return -1; /* quit */
 	    if( kr->n.k.validity == TRUST_ULTIMATE ) {

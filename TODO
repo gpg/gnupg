@@ -1,4 +1,6 @@
 
+  * g10/trustdb.c (make_sig_records): fix the fixme.
+
   * at least an option to prefer DSA keys over RSA when selecting the key to
     use.  Depending on creation time would be nice too.  I think this is
     already done for the subkeys - check it.

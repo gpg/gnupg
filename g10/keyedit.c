@@ -783,6 +783,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    if( !sign_uids( keyblock, locusr, &modified, cmd == cmdLSIGN )
 		&& sign_mode )
 		goto do_cmd_save;
+	    /* Actually we should do a update_trust_record() here so that
+	     * the trust gets displayed correctly. however this is not possible
+	     * because we would have to save the keyblock first - something
+	     * we don't want to do without an explicit save command.
+	     */
 	    break;
 
 	  case cmdDEBUG:
