@@ -1,3 +1,8 @@
+2002-10-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Handle --strict and --no-strict from the command
+	line before the options file is loaded.
+
 2002-10-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Disable --textmode when encrypting (symmetric or

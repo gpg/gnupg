@@ -1166,6 +1166,16 @@ main( int argc, char **argv )
 	    set_homedir ( pargs.r.ret_str );
 	else if( pargs.r_opt == oNoPermissionWarn )
 	    opt.no_perm_warn=1;
+	else if (pargs.r_opt == oStrict )
+	  {
+	    opt.strict=1;
+	    log_set_strict(1);
+	  }
+	else if (pargs.r_opt == oNoStrict )
+	  {
+	    opt.strict=0;
+	    log_set_strict(0);
+	  }
       #ifdef USE_SHM_COPROCESSING
 	else if( pargs.r_opt == oRunAsShmCP ) {
 	    /* does not make sense in a options file, we do it here,
