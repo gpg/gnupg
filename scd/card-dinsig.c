@@ -79,9 +79,9 @@
 
 #ifdef HAVE_OPENSC
 #include <opensc/pkcs15.h>
+#include "scdaemon.h"
 #include <ksba.h>
 
-#include "scdaemon.h"
 #include "card-common.h"
 
 static int dinsig_read_cert (CARD card, const char *certidstr,
@@ -113,12 +113,11 @@ dinsig_enum_keypairs (CARD card, int idx,
   if (rc)
     return rc;
 
-  cert = ksba_cert_new ();
-  if (!cert)
+  rc = ksba_cert_new (&cert);
+  if (rc)
     {
-      gpg_error_t tmperr = out_of_core ();
       xfree (buf);
-      return tmperr;
+      return rc;
     }
 
   krc = ksba_cert_init_from_mem (cert, buf, buflen); 
@@ -126,9 +125,9 @@ dinsig_enum_keypairs (CARD card, int idx,
   if (krc)
     {
       log_error ("failed to parse the certificate at idx %d: %s\n",
-                 idx, ksba_strerror (krc));
+                 idx, gpg_strerror (krc));
       ksba_cert_release (cert);
-      return gpg_error (GPG_ERR_CARD);
+      return krc;
     }
   if (card_help_get_keygrip (cert, keygrip))
     {

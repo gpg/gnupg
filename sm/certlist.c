@@ -45,7 +45,7 @@ cert_usage_p (KsbaCert cert, int mode)
   unsigned int use;
 
   err = ksba_cert_get_key_usage (cert, &use);
-  if (err == KSBA_No_Data)
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     {
       if (opt.verbose && mode < 2)
         log_info (mode? 
@@ -56,8 +56,8 @@ cert_usage_p (KsbaCert cert, int mode)
   if (err)
     { 
       log_error (_("error getting key usage information: %s\n"),
-                 ksba_strerror (err));
-      return map_ksba_err (err);
+                 gpg_strerror (err));
+      return err;
     } 
 
   if (mode == 4)

@@ -70,7 +70,7 @@ gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len)
   rc = ksba_cert_hash (cert, 0, HASH_FNC, md);
   if (rc)
     {
-      log_error ("ksba_cert_hash failed: %s\n", ksba_strerror (rc));
+      log_error ("ksba_cert_hash failed: %s\n", gpg_strerror (rc));
       gcry_md_close (md);
       memset (array, 0xff, len); /* better return an invalid fpr than NULL */
       return array;
@@ -204,7 +204,7 @@ gpgsm_get_keygrip_hexstring (KsbaCert cert)
    serial number for this.  In most cases the serial number is not
    that large and the resulting string can be passed on an assuan
    command line.  Everything is hexencoded with the serialnumber
-   delimted from the has by a dot. 
+   delimited from the hash by a dot. 
 
    The caller must free the string.
 */

@@ -155,7 +155,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
       rc = ksba_writer_write (writer, image, imagelen);
       if (rc)
         {
-          log_error ("write error: %s\n", ksba_strerror (rc));
+          log_error ("write error: %s\n", gpg_strerror (rc));
           goto leave;
         }
 

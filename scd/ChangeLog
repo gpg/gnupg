@@ -1,3 +1,7 @@
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for API changes in Libksba.
+
 2003-10-30  Werner Koch  <wk@gnupg.org>
 
 	* apdu.c (close_ct_reader, close_pcsc_reader): Implemented.

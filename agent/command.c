@@ -329,7 +329,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
   CTRL ctrl = assuan_get_pointer (ctx);
-  char *value;
+  unsigned char *value;
   size_t valuelen;
 
   /* First inquire the data to decrypt */
@@ -365,7 +365,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
-  char *value;
+  unsigned char *value;
   size_t valuelen;
 
   /* First inquire the parameters */

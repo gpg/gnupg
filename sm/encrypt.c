@@ -330,16 +330,14 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-  reader = ksba_reader_new ();
-  if (!reader)
-      rc = KSBA_Out_Of_Core;
+  err = ksba_reader_new (&reader);
+  if (err)
+      rc = err;
   if (!rc)
     rc = ksba_reader_set_cb (reader, encrypt_cb, &encparm);
   if (rc)
-    {
-      rc = map_ksba_err (rc);
       goto leave;
-    }
+
   encparm.fp = data_fp;
 
   ctrl->pem_name = "ENCRYPTED MESSAGE";
@@ -350,10 +348,10 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-  cms = ksba_cms_new ();
-  if (!cms)
+  err = ksba_cms_new (&cms);
+  if (err)
     {
-      rc = gpg_error (GPG_ERR_ENOMEM);
+      rc = err;
       goto leave;
     }
 
@@ -361,8 +359,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   if (err)
     {
       log_debug ("ksba_cms_set_reader_writer failed: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
 
@@ -374,8 +372,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   if (err)
     {
       log_debug ("ksba_cms_set_content_type failed: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
 
@@ -399,8 +397,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   if (err)
     {
       log_error ("ksba_cms_set_content_enc_algo failed: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
 
@@ -432,8 +430,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
       if (err)
         {
           log_error ("ksba_cms_add_recipient failed: %s\n",
-                     ksba_strerror (err));
-          rc = map_ksba_err (err);
+                     gpg_strerror (err));
+          rc = err;
           xfree (encval);
           goto leave;
         }
@@ -443,8 +441,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
       if (err)
         {
           log_error ("ksba_cms_set_enc_val failed: %s\n",
-                     ksba_strerror (err));
-          rc = map_ksba_err (err);
+                     gpg_strerror (err));
+          rc = err;
           goto leave;
         }
   }
@@ -456,8 +454,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
       err = ksba_cms_build (cms, &stopreason);
       if (err)
         {
-          log_debug ("ksba_cms_build failed: %s\n", ksba_strerror (err));
-          rc = map_ksba_err (err);
+          log_debug ("ksba_cms_build failed: %s\n", gpg_strerror (err));
+          rc = err;
           goto leave;
         }
     }

@@ -26,7 +26,8 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#include "gpgsm.h"
+
 #include <ksba.h>
 
-#include "gpgsm.h"
 

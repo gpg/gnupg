@@ -513,9 +513,9 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
   int rc = 0;
   const char *s;
 
-  cr = ksba_certreq_new ();
-  if (!cr)
-    return gpg_error (GPG_ERR_ENOMEM);
+  err = ksba_certreq_new (&cr);
+  if (err)
+    return err;
 
   rc = gcry_md_open (&md, GCRY_MD_SHA1, 0);
   if (rc)
@@ -533,8 +533,8 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
   if (err)
     {
       log_error ("error setting the subject's name: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
 
@@ -557,8 +557,8 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
       if (err)
         {
           log_error ("error setting the subject's alternate name: %s\n",
-                     ksba_strerror (err));
-          rc = map_ksba_err (err);
+                     gpg_strerror (err));
+          rc = err;
           goto leave;
         }
     }
@@ -568,8 +568,8 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
   if (err)
     {
       log_error ("error setting the public key: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
                
@@ -578,8 +578,8 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
       err = ksba_certreq_build (cr, &stopreason);
       if (err)
         {
-          log_error ("ksba_certreq_build failed: %s\n", ksba_strerror (err));
-          rc = map_ksba_err (err);
+          log_error ("ksba_certreq_build failed: %s\n", gpg_strerror (err));
+          rc = err;
           goto leave;
         }
       if (stopreason == KSBA_SR_NEED_SIG)
@@ -630,8 +630,8 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
           if (err)
             {
               log_error ("failed to store the sig_val: %s\n",
-                         ksba_strerror (err));
-              rc = map_ksba_err (err);
+                         gpg_strerror (err));
+              rc = err;
               goto leave;
             }
         }

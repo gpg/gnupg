@@ -25,11 +25,11 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <ksba.h>
 
 #include <assuan.h>
 
 #include "scdaemon.h"
+#include <ksba.h>
 #include "app-common.h"
 
 /* maximum length aloowed as a PIN; used for INQUIRE NEEDPIN */
@@ -453,18 +453,16 @@ cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
       goto leave;
     }
       
-  kc = ksba_cert_new ();
-  if (!kc)
+  rc = ksba_cert_new (&kc);
+  if (rc)
     {
-      rc = out_of_core ();
       xfree (cert);
       goto leave;
     }
   rc = ksba_cert_init_from_mem (kc, cert, ncert);
   if (rc)
     {
-      log_error ("failed to parse the certificate: %s\n", ksba_strerror (rc));
-      rc = map_ksba_err (rc);
+      log_error ("failed to parse the certificate: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -531,7 +529,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
   ASSUAN_CONTEXT ctx = opaque;
   char *command;
   int rc;
-  char *value;
+  unsigned char *value;
   size_t valuelen;
 
   *retstr = NULL;

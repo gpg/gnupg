@@ -622,18 +622,18 @@ learn_cb (void *opaque, const void *buffer, size_t length)
 
 
   /* FIXME: this should go into import.c */
-  cert = ksba_cert_new ();
-  if (!cert)
+  rc = ksba_cert_new (&cert);
+  if (rc)
     {
-      parm->error = gpg_error (GPG_ERR_ENOMEM);
+      parm->error = rc;
       return 0;
     }
   rc = ksba_cert_init_from_mem (cert, buf, len);
   if (rc)
     {
-      log_error ("failed to parse a certificate: %s\n", ksba_strerror (rc));
+      log_error ("failed to parse a certificate: %s\n", gpg_strerror (rc));
       ksba_cert_release (cert);
-      parm->error = map_ksba_err (rc);
+      parm->error = rc;
       return 0;
     }
 

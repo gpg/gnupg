@@ -1,3 +1,7 @@
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for API changes in Libksba.
+
 2003-10-31  Werner Koch  <wk@gnupg.org>
 
 	* certchain.c (gpgsm_validate_chain): Changed to use ksba_isotime_t.

@@ -159,10 +159,10 @@ decrypt_filter (void *arg,
 
   /* fixme: Should we issue an error when we have not seen one full block? */
   if (!inlen)
-    return KSBA_Bug;
+    return gpg_error (GPG_ERR_BUG);
 
   if (maxoutlen < 2*parm->blklen)
-    return KSBA_Bug;
+    return gpg_error (GPG_ERR_BUG);
   /* make some space becuase we will later need an extra block at the end */
   maxoutlen -= blklen;
 
@@ -174,7 +174,7 @@ decrypt_filter (void *arg,
         parm->helpblock[i] = ((const char*)inbuf)[j];
       inlen -= j;
       if (blklen > maxoutlen)
-        return KSBA_Bug;
+        return gpg_error (GPG_ERR_BUG);
       if (i < blklen)
         {
           parm->helpblocklen = i;
@@ -285,10 +285,10 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
-  cms = ksba_cms_new ();
-  if (!cms)
+  err = ksba_cms_new (&cms);
+  if (err)
     {
-      rc = gpg_error (GPG_ERR_ENOMEM);
+      rc = err;
       goto leave;
     }
 
@@ -296,8 +296,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
   if (err)
     {
       log_debug ("ksba_cms_set_reader_writer failed: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
 
@@ -307,8 +307,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
       err = ksba_cms_parse (cms, &stopreason);
       if (err)
         {
-          log_debug ("ksba_cms_parse failed: %s\n", ksba_strerror (err));
-          rc = map_ksba_err (err);
+          log_debug ("ksba_cms_parse failed: %s\n", gpg_strerror (err));
+          rc = err;
           goto leave;
         }
 
@@ -352,8 +352,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                                             &dfparm.ivlen);
           if (rc)
             {
-              log_error ("error getting IV: %s\n", ksba_strerror (err));
-              rc = map_ksba_err (err);
+              log_error ("error getting IV: %s\n", gpg_strerror (err));
+              rc = err;
               goto leave;
             }
           
@@ -369,7 +369,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                 break; /* no more recipients */
               if (err)
                 log_error ("recp %d - error getting info: %s\n",
-                           recp, ksba_strerror (err));
+                           recp, gpg_strerror (err));
               else
                 {
                   KsbaCert cert = NULL;
@@ -461,10 +461,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                                       dfparm.lastblock, 
                                       dfparm.blklen - npadding);
               if (rc)
-                {
-                  rc = map_ksba_err (rc);
                   goto leave;
-                }
+
               for (i=dfparm.blklen - npadding; i < dfparm.blklen; i++)
                 {
                   if (dfparm.lastblock[i] != npadding)

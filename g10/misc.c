@@ -246,7 +246,9 @@ openpgp_pk_test_algo( int algo, unsigned int usage_flags )
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+#ifdef __GNUC__
 #warning need to handle the usage here?
+#endif
   if (algo < 0 || algo > 110)
     return GPG_ERR_PUBKEY_ALGO;
   return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &value);

@@ -32,49 +32,6 @@
 #include "util.h"
 #include "errors.h"
 
-/* Note: we might want to wrap this in a macro to get our hands on
-   the line and file where the error occured */
-int
-map_ksba_err (int err)
-{
-  switch (err)
-    {
-    case 0: 
-      break;
-
-    case -1: err = GPG_ERR_EOF; break;
-    case KSBA_Out_Of_Core: err = GPG_ERR_ENOMEM; break;
-    case KSBA_Invalid_Value: err = GPG_ERR_INV_VALUE; break;
-    case KSBA_Not_Implemented: err = GPG_ERR_NOT_IMPLEMENTED; break;
-    case KSBA_Conflict: err = GPG_ERR_CONFLICT; break;
-    case KSBA_Read_Error: err = GPG_ERR_EIO; break;
-    case KSBA_Write_Error: err = GPG_ERR_EIO; break;
-    case KSBA_No_Data: err = GPG_ERR_NO_DATA; break;
-    case KSBA_Bug: err = GPG_ERR_BUG; break;
-    case KSBA_Unsupported_Algorithm: err = GPG_ERR_UNSUPPORTED_ALGORITHM; break;
-    case KSBA_Invalid_Index: err = GPG_ERR_INV_INDEX; break;
-    case KSBA_Invalid_Sexp: err = GPG_ERR_INV_SEXP; break;
-    case KSBA_Unknown_Sexp: err = GPG_ERR_UNKNOWN_SEXP; break;
-      
-    default:
-      err = GPG_ERR_GENERAL;
-      break;
-    }
-  return gpg_err_make (GPG_ERR_SOURCE_GPGSM, err);
-}
-
-
-int 
-map_gcry_err (int err)
-{
-  return err;
-}
-
-int 
-map_kbx_err (int err)
-{
-  return err;
-}
 
 /* Map Assuan error code ERR to an GPG_ERR_ code.  We need to
    distinguish between genuine (and legacy) Assuan error codes and

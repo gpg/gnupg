@@ -137,7 +137,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
     {
       log_error ("key generation failed: %s\n", gpg_strerror (rc));
       xfree (pi);
-      return map_gcry_err (rc);
+      return rc;
     }
 
   /* break out the parts */

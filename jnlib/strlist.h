@@ -26,17 +26,22 @@ struct string_list {
   unsigned int flags;
   char d[1];
 };
-typedef struct string_list *STRLIST;
+typedef struct string_list *STRLIST; /* Deprecated. */
+typedef struct string_list *strlist_t;
 
+void    free_strlist (strlist_t sl);
+strlist_t add_to_strlist (strlist_t *list, const char *string);
 
-void    free_strlist( STRLIST sl );
-STRLIST add_to_strlist( STRLIST *list, const char *string );
-/*STRLIST add_to_strlist2( STRLIST *list, const char *string, int is_utf8 );*/
-STRLIST append_to_strlist( STRLIST *list, const char *string );
-/*STRLIST append_to_strlist2( STRLIST *list, const char *string, int is_utf8 );*/
-STRLIST strlist_prev( STRLIST head, STRLIST node );
-STRLIST strlist_last( STRLIST node );
-char * strlist_pop (STRLIST *list);
+/*strlist_t add_to_strlist2( strlist_t *list,
+                             const char *string, int is_utf8);*/
+
+strlist_t append_to_strlist (strlist_t *list, const char *string);
+
+/*strlist_t append_to_strlist2( strlist_t *list, const char *string,
+                              int is_utf8);*/
+strlist_t strlist_prev (strlist_t head, strlist_t node);
+strlist_t strlist_last (strlist_t node);
+char * strlist_pop (strlist_t *list);
 
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 

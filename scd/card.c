@@ -28,9 +28,10 @@
 #ifdef HAVE_OPENSC
 #include <opensc/pkcs15.h>
 #endif
-#include <ksba.h>
 
 #include "scdaemon.h"
+#include <ksba.h>
+
 #include "card-common.h"
 
 /* Map the SC error codes to the GNUPG ones */

@@ -39,7 +39,9 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
   char * p, tmp[16];
   int i, rc;
 
-#warning I do do like that stuff - libgcrypt provides easier interfaces. -wk
+#ifdef __GNUC__
+#warning I do not like that stuff - libgcrypt provides easier interfaces. -wk
+#endif
   /* FIXME: Either use the build function or create canonical encoded
      S-expressions. */
 
@@ -128,7 +130,6 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
       if (rc)
         {
           log_error ("signing failed: %s\n", gpg_strerror (rc));
-          rc = map_gcry_err (rc);
           goto leave;
         }
 

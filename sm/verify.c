@@ -135,8 +135,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
     }
 
-  cms = ksba_cms_new ();
-  if (!cms)
+  err = ksba_cms_new (&cms);
+  if (err)
     {
       rc = gpg_error (GPG_ERR_ENOMEM);
       goto leave;
@@ -146,8 +146,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   if (err)
     {
       log_error ("ksba_cms_set_reader_writer failed: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
 
@@ -166,8 +166,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       err = ksba_cms_parse (cms, &stopreason);
       if (err)
         {
-          log_error ("ksba_cms_parse failed: %s\n", ksba_strerror (err));
-          rc = map_ksba_err (err);
+          log_error ("ksba_cms_parse failed: %s\n", gpg_strerror (err));
+          rc = err;
           goto leave;
         }
 
@@ -250,7 +250,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       char *ctattr;
 
       err = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
-      if (!signer && err == KSBA_No_Data && data_fd == -1 && is_detached)
+      if (!signer && gpg_err_code (err) == GPG_ERR_NO_DATA
+          && data_fd == -1 && is_detached)
         {
           log_info ("certs-only message accepted\n");
           err = 0;
@@ -272,11 +273,11 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
 
       err = ksba_cms_get_signing_time (cms, signer, sigtime);
-      if (err == KSBA_No_Data)
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         *sigtime = 0;
       else if (err)
         {
-          log_error ("error getting signing time: %s\n", ksba_strerror (err));
+          log_error ("error getting signing time: %s\n", gpg_strerror (err));
           *sigtime = 0; /* FIXME: we can't encode an error in the time
                            string. */
         }
@@ -295,7 +296,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
               goto next_signer;
             }
         }
-      else if (err == KSBA_No_Data)
+      else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         {
           assert (!msgdigest);
           err = 0;
@@ -328,7 +329,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       else if (err != -1)
         {
           log_error ("error getting content-type attribute: %s\n",
-                     ksba_strerror (err));
+                     gpg_strerror (err));
           goto next_signer;
         }
       err = 0;
@@ -420,7 +421,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           if (rc)
             {
               log_error ("hashing signed attrs failed: %s\n",
-                         ksba_strerror (rc));
+                         gpg_strerror (rc));
               gcry_md_close (md);
               goto next_signer;
             }
@@ -514,9 +515,9 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
     }
   rc = 0;
   if (err)
-    {
-      log_error ("ksba error: %s\n", ksba_strerror (err));
-      rc = map_ksba_err (rc);
+    { /* FIXME: still needed? */
+      log_error ("ksba error: %s\n", gpg_strerror (err));
+      rc = err;
     }    
 
 

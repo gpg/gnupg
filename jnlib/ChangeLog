@@ -1,3 +1,7 @@
+2003-11-06  Werner Koch  <wk@gnupg.org>
+
+	* strlist.h (strlist_t): New. STRLIST is now deprecated.
+
 2003-06-18  Werner Koch  <wk@gnupg.org>
 
 	* strlist.c (strlist_pop): New.

@@ -68,7 +68,7 @@ print_capabilities (KsbaCert cert, FILE *fp)
   unsigned int use;
 
   err = ksba_cert_get_key_usage (cert, &use);
-  if (err == KSBA_No_Data)
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     {
       putc ('e', fp);
       putc ('s', fp);
@@ -81,7 +81,7 @@ print_capabilities (KsbaCert cert, FILE *fp)
   if (err)
     { 
       log_error (_("error getting key usage information: %s\n"),
-                 ksba_strerror (err));
+                 gpg_strerror (err));
       return;
     } 
 
@@ -328,11 +328,11 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
   putc ('\n', fp);
 
   kerr = ksba_cert_get_key_usage (cert, &kusage);
-  if (kerr != KSBA_No_Data)
+  if (gpg_err_code (kerr) != GPG_ERR_NO_DATA)
     {
       fputs ("    key usage:", fp);
       if (kerr)
-        fprintf (fp, " [error: %s]", ksba_strerror (kerr));
+        fprintf (fp, " [error: %s]", gpg_strerror (kerr));
       else
         {
           if ( (kusage & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
@@ -358,11 +358,11 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
     }
 
   kerr = ksba_cert_get_cert_policies (cert, &string);
-  if (kerr != KSBA_No_Data)
+  if (gpg_err_code (kerr) != GPG_ERR_NO_DATA)
     {
       fputs ("     policies: ", fp);
       if (kerr)
-        fprintf (fp, "[error: %s]", ksba_strerror (kerr));
+        fprintf (fp, "[error: %s]", gpg_strerror (kerr));
       else
         {
           for (p=string; *p; p++)
@@ -381,7 +381,7 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
     {
       fputs (" chain length: ", fp);
       if (kerr)
-        fprintf (fp, "[error: %s]", ksba_strerror (kerr));
+        fprintf (fp, "[error: %s]", gpg_strerror (kerr));
       else if (chainlen == -1)
         fputs ("unlimited", fp);
       else

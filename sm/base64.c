@@ -27,9 +27,10 @@
 #include <time.h>
 #include <assert.h>
 
+#include "gpgsm.h"
+
 #include <ksba.h>
 
-#include "gpgsm.h"
 #include "i18n.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
@@ -427,7 +428,7 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
   parm->base64.idx = idx;
   parm->base64.quad_count = quad_count;
 
-  return ferror (fp) ? KSBA_Write_Error:0;
+  return ferror (fp) ? gpg_error_from_errno (errno) : 0;
 }
 
 static int
@@ -506,11 +507,11 @@ gpgsm_create_reader (Base64Context *ctx,
   if (!*ctx)
     return OUT_OF_CORE (errno);
 
-  r = ksba_reader_new ();
-  if (!r)
+  rc = ksba_reader_new (&r);
+  if (rc)
     {
       xfree (*ctx); *ctx = NULL;
-      return gpg_error (GPG_ERR_ENOMEM);
+      return rc;
     }
 
   (*ctx)->u.rparm.fp = fp;
@@ -537,7 +538,7 @@ gpgsm_create_reader (Base64Context *ctx,
     {
       ksba_reader_release (r);
       xfree (*ctx); *ctx = NULL;
-      return map_ksba_err (rc);
+      return rc;
     }
 
   *r_reader = r;
@@ -571,11 +572,11 @@ gpgsm_create_writer (Base64Context *ctx,
   if (!*ctx)
     return OUT_OF_CORE (errno);
 
-  w = ksba_writer_new ();
-  if (!w)
+  rc = ksba_writer_new (&w);
+  if (rc)
     {
       xfree (*ctx); *ctx = NULL;
-      return gpg_error (GPG_ERR_ENOMEM);
+      return rc;
     }
 
   if (ctrl->create_pem || ctrl->create_base64)
@@ -593,7 +594,7 @@ gpgsm_create_writer (Base64Context *ctx,
     {
       ksba_writer_release (w);
       xfree (*ctx); *ctx = NULL;
-      return map_ksba_err (rc);
+      return rc;
     }
 
   *r_writer = w;

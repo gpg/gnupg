@@ -221,19 +221,15 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
       KsbaStopReason stopreason;
       int i;
 
-      cms = ksba_cms_new ();
-      if (!cms)
-        {
-          rc = gpg_error (GPG_ERR_ENOMEM);
-          goto leave;
-        }
+      rc = ksba_cms_new (&cms);
+      if (rc)
+        goto leave;
 
       rc = ksba_cms_set_reader_writer (cms, reader, NULL);
       if (rc)
         {
           log_error ("ksba_cms_set_reader_writer failed: %s\n",
-                     ksba_strerror (rc));
-          rc = map_ksba_err (rc);
+                     gpg_strerror (rc));
           goto leave;
         }
 
@@ -243,8 +239,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
           rc = ksba_cms_parse (cms, &stopreason);
           if (rc)
             {
-              log_error ("ksba_cms_parse failed: %s\n", ksba_strerror (rc));
-              rc = map_ksba_err (rc);
+              log_error ("ksba_cms_parse failed: %s\n", gpg_strerror (rc));
               goto leave;
             }
 
@@ -265,19 +260,13 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
   else if (ct == KSBA_CT_NONE)
     { /* Failed to identify this message - assume a certificate */
 
-      cert = ksba_cert_new ();
-      if (!cert)
-        {
-          rc = gpg_error (GPG_ERR_ENOMEM);
-          goto leave;
-        }
+      rc = ksba_cert_new (&cert);
+      if (rc)
+        goto leave;
 
       rc = ksba_cert_read_der (cert, reader);
       if (rc)
-        {
-          rc = map_ksba_err (rc);
-          goto leave;
-        }
+        goto leave;
 
       check_and_store (ctrl, stats, cert, 0);
     }

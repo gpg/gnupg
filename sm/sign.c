@@ -88,8 +88,8 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, KsbaWriter writer)
           err = ksba_writer_write_octet_string (writer, buffer, nread, 0);
           if (err)
             {
-              log_error ("write failed: %s\n", ksba_strerror (err));
-              rc = map_ksba_err (err);
+              log_error ("write failed: %s\n", gpg_strerror (err));
+              rc = err;
             }
         }
     }
@@ -114,8 +114,8 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, KsbaWriter writer)
       err = ksba_writer_write_octet_string (writer, NULL, 0, 1);
       if (err)
         {
-          log_error ("write failed: %s\n", ksba_strerror (err));
-          rc = map_ksba_err (err);
+          log_error ("write failed: %s\n", gpg_strerror (err));
+          rc = err;
         }
     }
 
@@ -278,8 +278,8 @@ add_certificate_list (CTRL ctrl, KsbaCMS cms, KsbaCert cert)
 
  ksba_failure:
   ksba_cert_release (cert);
-  log_error ("ksba_cms_add_cert failed: %s\n", ksba_strerror (err));
-  return map_ksba_err (err);
+  log_error ("ksba_cms_add_cert failed: %s\n", gpg_strerror (err));
+  return err;
 }
 
 
@@ -326,10 +326,10 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       goto leave;
     }
 
-  cms = ksba_cms_new ();
-  if (!cms)
+  err = ksba_cms_new (&cms);
+  if (err)
     {
-      rc = gpg_error (GPG_ERR_ENOMEM);
+      rc = err;
       goto leave;
     }
 
@@ -337,8 +337,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   if (err)
     {
       log_debug ("ksba_cms_set_reader_writer failed: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
 
@@ -349,8 +349,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   if (err)
     {
       log_debug ("ksba_cms_set_content_type failed: %s\n",
-                 ksba_strerror (err));
-      rc = map_ksba_err (err);
+                 gpg_strerror (err));
+      rc = err;
       goto leave;
     }
 
@@ -386,8 +386,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       err = ksba_cms_add_signer (cms, cl->cert);
       if (err)
         {
-          log_error ("ksba_cms_add_signer failed: %s\n",  ksba_strerror (err));
-          rc = map_ksba_err (err);
+          log_error ("ksba_cms_add_signer failed: %s\n", gpg_strerror (err));
+          rc = err;
           goto leave;
         }
       rc = add_certificate_list (ctrl, cms, cl->cert);
@@ -402,8 +402,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       if (err)
         {
           log_debug ("ksba_cms_add_digest_algo failed: %s\n",
-                     ksba_strerror (err));
-          rc = map_ksba_err (err);
+                     gpg_strerror (err));
+          rc = err;
           goto leave;
         }
     }
@@ -455,8 +455,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
           if (err)
             {
               log_error ("ksba_cms_set_message_digest failed: %s\n",
-                         ksba_strerror (err));
-              rc = map_ksba_err (err);
+                         gpg_strerror (err));
+              rc = err;
               goto leave;
             }
         }
@@ -469,8 +469,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       if (err)
         {
           log_error ("ksba_cms_set_signing_time failed: %s\n",
-                     ksba_strerror (err));
-          rc = map_ksba_err (err);
+                     gpg_strerror (err));
+          rc = err;
           goto leave;
         }
     }
@@ -480,8 +480,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       err = ksba_cms_build (cms, &stopreason);
       if (err)
         {
-          log_debug ("ksba_cms_build failed: %s\n", ksba_strerror (err));
-          rc = map_ksba_err (err);
+          log_debug ("ksba_cms_build failed: %s\n", gpg_strerror (err));
+          rc = err;
           goto leave;
         }
 
@@ -515,8 +515,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
               if (err)
                 {
                   log_error ("ksba_cms_set_message_digest failed: %s\n",
-                             ksba_strerror (err));
-                  rc = map_ksba_err (err);
+                             gpg_strerror (err));
+                  rc = err;
                   goto leave;
                 }
             }
@@ -546,7 +546,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
               if (rc)
                 {
                   log_debug ("hashing signed attrs failed: %s\n",
-                             ksba_strerror (rc));
+                             gpg_strerror (rc));
                   gcry_md_close (md);
                   goto leave;
                 }
@@ -563,8 +563,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
               if (err)
                 {
                   log_error ("failed to store the signature: %s\n",
-                             ksba_strerror (err));
-                  rc = map_ksba_err (err);
+                             gpg_strerror (err));
+                  rc = err;
                   gcry_md_close (md);
                   goto leave;
                 }

@@ -778,9 +778,9 @@ keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
   if (cert_off+cert_len > length)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
-  reader = ksba_reader_new ();
-  if (!reader)
-    return gpg_error (GPG_ERR_ENOMEM);
+  rc = ksba_reader_new (&reader);
+  if (rc)
+    return rc;
   rc = ksba_reader_set_mem (reader, buffer+cert_off, cert_len);
   if (rc)
     {
@@ -789,11 +789,11 @@ keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  cert = ksba_cert_new ();
-  if (!cert)
+  rc = ksba_cert_new (&cert);
+  if (rc)
     {
       ksba_reader_release (reader);
-      return gpg_error (GPG_ERR_ENOMEM);
+      return rc;
     }
 
   rc = ksba_cert_read_der (cert, reader);

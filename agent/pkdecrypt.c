@@ -105,7 +105,6 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       if (rc)
         {
           log_error ("decryption failed: %s\n", gpg_strerror (rc));
-          rc = map_gcry_err (rc);
           goto leave;
         }
 

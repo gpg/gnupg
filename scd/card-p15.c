@@ -27,9 +27,9 @@
 
 #ifdef HAVE_OPENSC
 #include <opensc/pkcs15.h>
-#include <ksba.h>
 
 #include "scdaemon.h"
+#include <ksba.h>
 #include "card-common.h"
 
 
@@ -148,21 +148,20 @@ p15_enum_keypairs (CARD card, int idx,
       return gpg_error (GPG_ERR_CARD);
     }
 
-  cert = ksba_cert_new ();
-  if (!cert)
+  rc = ksba_cert_new (&cert);
+  if (rc)
     {
-      gpg_error_t tmperr = out_of_core ();
       sc_pkcs15_free_certificate (certder);
-      return tmperr;
+      return rc;
     }
   krc = ksba_cert_init_from_mem (cert, certder->data, certder->data_len);
   sc_pkcs15_free_certificate (certder);
   if (krc)
     {
       log_error ("failed to parse the certificate for private key %d: %s\n",
-                 idx, ksba_strerror (krc));
+                 idx, gpg_strerror (krc));
       ksba_cert_release (cert);
-      return gpg_error (GPG_ERR_CARD);
+      return krc;
     }
   if (card_help_get_keygrip (cert, keygrip))
     {

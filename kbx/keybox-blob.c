@@ -110,6 +110,7 @@ X.509 specific are noted like [X.509: xxx]
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <time.h>
 
 #include "keybox-defs.h"
 #include <gcrypt.h>

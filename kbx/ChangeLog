@@ -1,3 +1,9 @@
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for API changes in Libksba.
+
+	* keybox-blob.c: Include time.h
+
 2003-06-03  Werner Koch  <wk@gnupg.org>
 	
 	Changed all error codes in all files to the new libgpg-error scheme.

@@ -62,7 +62,7 @@ unknown_criticals (KsbaCert cert)
         }
     }
   if (err && err != -1)
-    rc = map_ksba_err (err);
+    rc = err;
 
   return rc;
 }
@@ -75,7 +75,7 @@ allowed_ca (KsbaCert cert, int *chainlen)
 
   err = ksba_cert_is_ca (cert, &flag, chainlen);
   if (err)
-    return map_ksba_err (err);
+    return err;
   if (!flag)
     {
       log_error (_("issuer certificate is not marked as a CA\n"));
@@ -94,10 +94,10 @@ check_cert_policy (KsbaCert cert)
   int any_critical;
 
   err = ksba_cert_get_cert_policies (cert, &policies);
-  if (err == KSBA_No_Data)
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     return 0; /* no policy given */
   if (err)
-    return map_ksba_err (err);
+    return err;
 
   /* STRING is a line delimited list of certifiate policies as stored
      in the certificate.  The line itself is colon delimited where the
@@ -471,7 +471,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, ksba_isotime_t r_exptime)
         if (rc)
           {
             log_error (_("certificate with invalid validity: %s\n"),
-                       ksba_strerror (rc));
+                       gpg_strerror (rc));
             rc = gpg_error (GPG_ERR_BAD_CERT);
             goto leave;
           }
@@ -522,7 +522,7 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, ksba_isotime_t r_exptime)
           rc = gpgsm_dirmngr_isvalid (subject_cert);
           if (rc)
             {
-              switch (rc)
+              switch (gpg_err_code (rc))
                 {
                 case GPG_ERR_CERT_REVOKED:
                   log_error (_("the certificate has been revoked\n"));

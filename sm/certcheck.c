@@ -129,9 +129,9 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   rc = ksba_cert_hash (cert, 1, HASH_FNC, md);
   if (rc)
     {
-      log_error ("ksba_cert_hash failed: %s\n", ksba_strerror (rc));
+      log_error ("ksba_cert_hash failed: %s\n", gpg_strerror (rc));
       gcry_md_close (md);
-      return map_ksba_err (rc);
+      return rc;
     }
   gcry_md_final (md);
 
