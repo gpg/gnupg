@@ -1,5 +1,12 @@
 2001-12-04  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (sign_uids): If the user tries to sign a
+	locally-signed key, allow the cert to be promoted to a full
+	exportable signature.  This essentially deletes the old
+	non-exportable sig, and replaces it with a new exportable one.
+
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
 	* keyedit.c (keyedit_menu): Do not allow signing a revoked key
 	unless --expert is set, and ask even then.
 

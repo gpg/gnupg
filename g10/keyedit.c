@@ -69,6 +69,7 @@ static int enable_disable_key( KBNODE keyblock, int disable );
 #define NODFLG_SIGERR (1<<2)  /* other sig error */
 
 #define NODFLG_MARK_A (1<<4)  /* temporary mark */
+#define NODFLG_DELSIG (1<<5)  /* to be deleted */
 
 #define NODFLG_SELUID (1<<8)  /* indicate the selected userid */
 #define NODFLG_SELKEY (1<<9)  /* indicate the selected key */
@@ -333,12 +334,36 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		    && sk_keyid[1] == node->pkt->pkt.signature->keyid[1] ) {
                     char buf[50];
 
+		    if(!node->pkt->pkt.signature->flags.exportable && !local)
+		      {
+			/* It's a local sig, and we want to make a
+                           exportable sig. */
+			tty_printf(_("Your current signature on \"%s\"\n"
+				     "is a local signature.\n\n"
+				     "Do you want to promote it to a full "
+				     "exportable signature?\n"),
+				   uidnode->pkt->pkt.user_id->name);
+			if(cpr_get_answer_is_yes("sign_uid.promote",
+						 "Promote? (y/n) "))
+			  {
+			    /* Mark these for later deletion.  We
+                               don't want to delete them here, just in
+                               case the replacement signature doesn't
+                               happen for some reason.  We only delete
+                               these after the replacement is already
+                               in place. */
+
+			    node->flag|=NODFLG_DELSIG;
+			    continue;
+			  }
+		      }
+
 		    /* Fixme: see whether there is a revocation in which
 		     * case we should allow to sign it again. */
-		    tty_printf(_("User ID \"%s\" is already signed "
-				 "by key %08lX\n"),
+		    tty_printf(_("\"%s\" was already %ssigned by key %08lX\n"),
 			       uidnode->pkt->pkt.user_id->name,
-			       (ulong)sk_keyid[1] );
+			       (!node->pkt->pkt.signature->flags.exportable &&
+				local)?"locally ":"",(ulong)sk_keyid[1] );
                     sprintf (buf, "%08lX%08lX",
                              (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
                     write_status_text (STATUS_ALREADY_SIGNED, buf);
@@ -463,6 +488,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
 		    goto leave;
 		}
+
 		*ret_modified = 1; /* we changed the keyblock */
 		upd_trust = 1;
 
@@ -473,6 +499,11 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		goto reloop;
 	    }
 	}
+
+	/* Delete any local sigs that got promoted */
+	for( node=keyblock; node; node = node->next )
+	  if( node->flag & NODFLG_DELSIG)
+	    delete_kbnode(node);
     } /* end loop over signators */
     if( upd_trust && primary_pk ) {
 	revalidation_mark ();
