@@ -1,3 +1,4 @@
+# Generated automatically from Makefile.in by configure.
 # Makefile.in generated automatically by automake 1.2f from Makefile.am
 
 # Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
@@ -10,44 +11,48 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+# Process this file with automake to produce Makefile.in
+# Copyright (C) 1995-1996 Jean-loup Gailly.
+# For conditions of distribution and use, see copyright notice in zlib.h
+# This is used if a systems lacks support of zlib
+
 
 SHELL = /bin/sh
 
-srcdir = @srcdir@
-top_srcdir = @top_srcdir@
-VPATH = @srcdir@
-prefix = @prefix@
-exec_prefix = @exec_prefix@
+srcdir = .
+top_srcdir = ..
+prefix = /usr/local
+exec_prefix = ${prefix}
 
-bindir = @bindir@
-sbindir = @sbindir@
-libexecdir = @libexecdir@
-datadir = @datadir@
-sysconfdir = @sysconfdir@
-sharedstatedir = @sharedstatedir@
-localstatedir = @localstatedir@
-libdir = @libdir@
-infodir = @infodir@
-mandir = @mandir@
-includedir = @includedir@
+bindir = ${exec_prefix}/bin
+sbindir = ${exec_prefix}/sbin
+libexecdir = ${exec_prefix}/libexec
+datadir = ${prefix}/share
+sysconfdir = ${prefix}/etc
+sharedstatedir = ${prefix}/com
+localstatedir = ${prefix}/var
+libdir = ${exec_prefix}/lib
+infodir = ${prefix}/info
+mandir = ${prefix}/man
+includedir = ${prefix}/include
 oldincludedir = /usr/include
 
-pkgdatadir = $(datadir)/@PACKAGE@
-pkglibdir = $(libdir)/@PACKAGE@
-pkgincludedir = $(includedir)/@PACKAGE@
+pkgdatadir = $(datadir)/gnupg
+pkglibdir = $(libdir)/gnupg
+pkgincludedir = $(includedir)/gnupg
 
 top_builddir = ..
 
-ACLOCAL = @ACLOCAL@
-AUTOCONF = @AUTOCONF@
-AUTOMAKE = @AUTOMAKE@
-AUTOHEADER = @AUTOHEADER@
+ACLOCAL = aclocal
+AUTOCONF = autoconf
+AUTOMAKE = automake
+AUTOHEADER = autoheader
 
-INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA = @INSTALL_DATA@
+INSTALL = /usr/bin/install -c
+INSTALL_PROGRAM = ${INSTALL}
+INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
-transform = @program_transform_name@
+transform = s,x,x,
 
 NORMAL_INSTALL = :
 PRE_INSTALL = :
@@ -55,85 +60,97 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_alias = @build_alias@
-build_triplet = @build@
-host_alias = @host_alias@
-host_triplet = @host@
-target_alias = @target_alias@
-target_triplet = @target@
-CATALOGS = @CATALOGS@
-CATOBJEXT = @CATOBJEXT@
-CC = @CC@
-CIPHER_EXTRA_DIST = @CIPHER_EXTRA_DIST@
-CIPHER_EXTRA_OBJS = @CIPHER_EXTRA_OBJS@
-CPP = @CPP@
-DATADIRNAME = @DATADIRNAME@
-G10_LOCALEDIR = @G10_LOCALEDIR@
-GENCAT = @GENCAT@
-GMOFILES = @GMOFILES@
-GMSGFMT = @GMSGFMT@
-GT_NO = @GT_NO@
-GT_YES = @GT_YES@
-INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
-INSTOBJEXT = @INSTOBJEXT@
-INTLDEPS = @INTLDEPS@
-INTLLIBS = @INTLLIBS@
-INTLOBJS = @INTLOBJS@
-MKINSTALLDIRS = @MKINSTALLDIRS@
-MPI_EXTRA_ASM_OBJS = @MPI_EXTRA_ASM_OBJS@
-MSGFMT = @MSGFMT@
-PACKAGE = @PACKAGE@
-POFILES = @POFILES@
-POSUB = @POSUB@
-RANLIB = @RANLIB@
-USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
-USE_NLS = @USE_NLS@
-VERSION = @VERSION@
-ZLIBS = @ZLIBS@
-l = @l@
+build_alias = i586-pc-linux-gnu
+build_triplet = i586-pc-linux-gnu
+host_alias = i586-pc-linux-gnu
+host_triplet = i586-pc-linux-gnu
+target_alias = i586-pc-linux-gnu
+target_triplet = i586-pc-linux-gnu
+CATALOGS =  de.gmo it.gmo
+CATOBJEXT = .gmo
+CC = gcc
+CIPHER_EXTRA_DIST = 
+CIPHER_EXTRA_OBJS = 
+CPP = gcc -E
+DATADIRNAME = share
+G10_LOCALEDIR = /usr/local/share/locale
+GENCAT = 
+GMOFILES =  de.gmo it.gmo
+GMSGFMT = /usr/local/bin/msgfmt
+GT_NO = 
+GT_YES = #YES#
+INCLUDE_LOCALE_H = #include <locale.h>
+INSTOBJEXT = .mo
+INTLDEPS = $(top_builddir)/intl/libintl.a
+INTLLIBS = $(top_builddir)/intl/libintl.a
+INTLOBJS = $(GETTOBJS)
+MKINSTALLDIRS = scripts/mkinstalldirs
+MPI_EXTRA_ASM_OBJS = 
+MSGFMT = /usr/local/bin/msgfmt
+PACKAGE = gnupg
+POFILES =  de.po it.po
+POSUB = po
+RANLIB = ranlib
+USE_INCLUDED_LIBINTL = yes
+USE_NLS = yes
+VERSION = 0.2.16
+ZLIBS = 
+l = 
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
+CFLAGS = -O -Wall
 
-noinst_LIBRARIES = libutil.a
+EXTRA_DIST = README algorithm.doc ChangeLog  example.c
 
-libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c  \
-		    ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c
+# I found no other easy way to use this only if zlib is neede
+# doing this with SUBDIR = @xxx@  in the top Makefile.am does not
+# work because automake doesn't scan this Makefile.am here.
+#noinst_LIBRARIES = libzlib.a
+
+libzlib_a_SOURCES = adler32.c compress.c crc32.c gzio.c \
+		    uncompr.c deflate.c trees.c zutil.c \
+		    inflate.c infblock.c inftrees.c \
+		    infcodes.c infutil.c inffast.c \
+		    zlib.h zconf.h deflate.h infblock.h  \
+		    infcodes.h inffast.h inftrees.h infutil.h zutil.h
+
+CLEANFILES = example foo.gz
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 LIBRARIES =  $(noinst_LIBRARIES)
 
 
-DEFS = @DEFS@ -I. -I$(srcdir) -I..
-CPPFLAGS = @CPPFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
-libutil_a_LIBADD = 
-libutil_a_OBJECTS =  logger.o fileutil.o miscutil.o strgutil.o ttyio.o \
-argparse.o memory.o secmem.o errors.o iobuf.o
+DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
+CPPFLAGS = 
+LDFLAGS = 
+LIBS = -lz
+libzlib_a_LIBADD = 
+libzlib_a_OBJECTS =  adler32.o compress.o crc32.o gzio.o uncompr.o \
+deflate.o trees.o zutil.o inflate.o infblock.o inftrees.o infcodes.o \
+infutil.o inffast.o
 AR = ar
-CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
-DIST_COMMON =  ChangeLog Makefile.am Makefile.in
+DIST_COMMON =  README ChangeLog Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/argparse.P .deps/errors.P .deps/fileutil.P \
-.deps/iobuf.P .deps/logger.P .deps/memory.P .deps/miscutil.P \
-.deps/secmem.P .deps/strgutil.P .deps/ttyio.P
-SOURCES = $(libutil_a_SOURCES)
-OBJECTS = $(libutil_a_OBJECTS)
+DEP_FILES =  .deps/adler32.P .deps/compress.P .deps/crc32.P \
+.deps/deflate.P .deps/gzio.P .deps/infblock.P .deps/infcodes.P \
+.deps/inffast.P .deps/inflate.P .deps/inftrees.P .deps/infutil.P \
+.deps/trees.P .deps/uncompr.P .deps/zutil.P
+SOURCES = $(libzlib_a_SOURCES)
+OBJECTS = $(libzlib_a_OBJECTS)
 
 default: all
 
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu util/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu zlib/Makefile
 
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -165,10 +182,10 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-libutil.a: $(libutil_a_OBJECTS) $(libutil_a_DEPENDENCIES)
-	-rm -f libutil.a
-	$(AR) cru libutil.a $(libutil_a_OBJECTS) $(libutil_a_LIBADD)
-	$(RANLIB) libutil.a
+libzlib.a: $(libzlib_a_OBJECTS) $(libzlib_a_DEPENDENCIES)
+	-rm -f libzlib.a
+	$(AR) cru libzlib.a $(libzlib_a_OBJECTS) $(libzlib_a_LIBADD)
+	$(RANLIB) libzlib.a
 
 tags: TAGS
 
@@ -197,14 +214,14 @@ maintainer-clean-tags:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = util
+subdir = zlib
 
 distdir: $(DISTFILES)
 	here=`cd $(top_builddir) && pwd`; \
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu util/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu zlib/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \

@@ -41,15 +41,15 @@
 #endif
 
 
-static struct { const char *name; int algo;} cipher_names[] = {
-    { "IDEA",        CIPHER_ALGO_IDEA        },
-    { "3DES",        CIPHER_ALGO_3DES        },
-    { "CAST",        CIPHER_ALGO_CAST        },
-    { "BLOWFISH128", CIPHER_ALGO_BLOWFISH128 },
-    { "ROT_N",       CIPHER_ALGO_ROT_N       },
-    { "SAFER_SK128", CIPHER_ALGO_SAFER_SK128 },
-    { "DES_SK",      CIPHER_ALGO_DES_SK      },
-    { "BLOWFISH",    CIPHER_ALGO_BLOWFISH    },
+static struct { const char *name; int algo; int keylen; } cipher_names[] = {
+    { "IDEA",        CIPHER_ALGO_IDEA        ,0   },
+    { "3DES",        CIPHER_ALGO_3DES        ,0   },
+    { "CAST",        CIPHER_ALGO_CAST        ,128 },
+    { "BLOWFISH160", CIPHER_ALGO_BLOWFISH160 ,160 },
+    { "ROT_N",       CIPHER_ALGO_ROT_N       ,0   },
+    { "SAFER_SK128", CIPHER_ALGO_SAFER_SK128 ,0   },
+    { "DES_SK",      CIPHER_ALGO_DES_SK      ,0   },
+    { "BLOWFISH",    CIPHER_ALGO_BLOWFISH    ,128 },
     {NULL} };
 
 
@@ -112,13 +112,30 @@ int
 check_cipher_algo( int algo )
 {
     switch( algo ) {
-      case CIPHER_ALGO_BLOWFISH128:
+      case CIPHER_ALGO_BLOWFISH160:
       case CIPHER_ALGO_BLOWFISH:
       case CIPHER_ALGO_CAST:
 	return 0;
       default:
 	return G10ERR_CIPHER_ALGO;
     }
+}
+
+
+unsigned
+cipher_get_keylen( int algo )
+{
+    int i;
+    unsigned len = 0;
+
+    for(i=0; cipher_names[i].name; i++ )
+	if( cipher_names[i].algo == algo ) {
+	    len = cipher_names[i].keylen;
+	    break;
+	}
+    if( !len )
+	log_bug("cipher %d w/o key length\n", algo );
+    return len;
 }
 
 
@@ -138,7 +155,7 @@ cipher_open( int algo, int mode, int secure )
 		: m_alloc_clear( sizeof *hd );
     hd->algo = algo;
     if( mode == CIPHER_MODE_AUTO_CFB ) {
-	if( algo == CIPHER_ALGO_CAST )
+	if( algo != CIPHER_ALGO_BLOWFISH160 )
 	    hd->mode = CIPHER_MODE_PHILS_CFB;
 	else
 	    hd->mode = CIPHER_MODE_CFB;
@@ -147,7 +164,7 @@ cipher_open( int algo, int mode, int secure )
 	hd->mode = mode;
     switch( algo )  {
       case CIPHER_ALGO_BLOWFISH:
-      case CIPHER_ALGO_BLOWFISH128:
+      case CIPHER_ALGO_BLOWFISH160:
 	hd->setkey  = FNCCAST_SETKEY(blowfish_setkey);
 	hd->encrypt = FNCCAST_CRYPT(blowfish_encrypt_block);
 	hd->decrypt = FNCCAST_CRYPT(blowfish_decrypt_block);
@@ -178,6 +195,7 @@ cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen )
 {
     (*c->setkey)( &c->c.context, key, keylen );
 }
+
 
 
 void

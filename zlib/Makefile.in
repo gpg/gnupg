@@ -10,6 +10,11 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+# Process this file with automake to produce Makefile.in
+# Copyright (C) 1995-1996 Jean-loup Gailly.
+# For conditions of distribution and use, see copyright notice in zlib.h
+# This is used if a systems lacks support of zlib
+
 
 SHELL = /bin/sh
 
@@ -92,12 +97,23 @@ VERSION = @VERSION@
 ZLIBS = @ZLIBS@
 l = @l@
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
+CFLAGS = -O -Wall
 
-noinst_LIBRARIES = libutil.a
+EXTRA_DIST = README algorithm.doc ChangeLog  example.c
 
-libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c  \
-		    ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c
+# I found no other easy way to use this only if zlib is neede
+# doing this with SUBDIR = @xxx@  in the top Makefile.am does not
+# work because automake doesn't scan this Makefile.am here.
+@ENABLE_LOCAL_ZLIB_TRUE@noinst_LIBRARIES = libzlib.a
+
+libzlib_a_SOURCES = adler32.c compress.c crc32.c gzio.c \
+		    uncompr.c deflate.c trees.c zutil.c \
+		    inflate.c infblock.c inftrees.c \
+		    infcodes.c infutil.c inffast.c \
+		    zlib.h zconf.h deflate.h infblock.h  \
+		    infcodes.h inffast.h inftrees.h infutil.h zutil.h
+
+CLEANFILES = example foo.gz
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -108,32 +124,33 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libutil_a_LIBADD = 
-libutil_a_OBJECTS =  logger.o fileutil.o miscutil.o strgutil.o ttyio.o \
-argparse.o memory.o secmem.o errors.o iobuf.o
+libzlib_a_LIBADD = 
+libzlib_a_OBJECTS =  adler32.o compress.o crc32.o gzio.o uncompr.o \
+deflate.o trees.o zutil.o inflate.o infblock.o inftrees.o infcodes.o \
+infutil.o inffast.o
 AR = ar
-CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
-DIST_COMMON =  ChangeLog Makefile.am Makefile.in
+DIST_COMMON =  README ChangeLog Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/argparse.P .deps/errors.P .deps/fileutil.P \
-.deps/iobuf.P .deps/logger.P .deps/memory.P .deps/miscutil.P \
-.deps/secmem.P .deps/strgutil.P .deps/ttyio.P
-SOURCES = $(libutil_a_SOURCES)
-OBJECTS = $(libutil_a_OBJECTS)
+DEP_FILES =  .deps/adler32.P .deps/compress.P .deps/crc32.P \
+.deps/deflate.P .deps/gzio.P .deps/infblock.P .deps/infcodes.P \
+.deps/inffast.P .deps/inflate.P .deps/inftrees.P .deps/infutil.P \
+.deps/trees.P .deps/uncompr.P .deps/zutil.P
+SOURCES = $(libzlib_a_SOURCES)
+OBJECTS = $(libzlib_a_OBJECTS)
 
 default: all
 
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu util/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu zlib/Makefile
 
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -165,10 +182,10 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-libutil.a: $(libutil_a_OBJECTS) $(libutil_a_DEPENDENCIES)
-	-rm -f libutil.a
-	$(AR) cru libutil.a $(libutil_a_OBJECTS) $(libutil_a_LIBADD)
-	$(RANLIB) libutil.a
+libzlib.a: $(libzlib_a_OBJECTS) $(libzlib_a_DEPENDENCIES)
+	-rm -f libzlib.a
+	$(AR) cru libzlib.a $(libzlib_a_OBJECTS) $(libzlib_a_LIBADD)
+	$(RANLIB) libzlib.a
 
 tags: TAGS
 
@@ -197,14 +214,14 @@ maintainer-clean-tags:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = util
+subdir = zlib
 
 distdir: $(DISTFILES)
 	here=`cd $(top_builddir) && pwd`; \
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu util/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu zlib/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \

@@ -64,6 +64,13 @@ md_enable( MD_HANDLE h, int algo )
 	    sha1_init( &h->sha1 );
 	h->use_sha1 = 1;
     }
+  #ifdef WITH_TIGER_HASH
+    else if( algo == DIGEST_ALGO_TIGER ) {
+	if( !h->use_tiger )
+	    tiger_init( &h->tiger );
+	h->use_tiger = 1;
+    }
+  #endif
     else
 	log_bug("md_enable(%d)", algo );
 }
@@ -107,6 +114,12 @@ md_write( MD_HANDLE a, byte *inbuf, size_t inlen)
 	sha1_write( &a->sha1, a->buffer, a->bufcount );
 	sha1_write( &a->sha1, inbuf, inlen  );
     }
+  #ifdef WITH_TIGER_HASH
+    if( a->use_tiger ) {
+	tiger_write( &a->tiger, a->buffer, a->bufcount );
+	tiger_write( &a->tiger, inbuf, inlen  );
+    }
+  #endif
     if( a->use_md5 ) {
 	md5_write( &a->md5, a->buffer, a->bufcount );
 	md5_write( &a->md5, inbuf, inlen  );
@@ -121,13 +134,14 @@ md_final(MD_HANDLE a)
 {
     if( a->bufcount )
 	md_write( a, NULL, 0 );
-    if( a->use_rmd160 ) {
-	byte *p;
+    if( a->use_rmd160 )
 	rmd160_final( &a->rmd160 );
-	p = rmd160_read( &a->rmd160 );
-    }
     if( a->use_sha1 )
 	sha1_final( &a->sha1 );
+  #ifdef WITH_TIGER_HASH
+    if( a->use_tiger )
+	tiger_final( &a->tiger );
+  #endif
     if( a->use_md5 )
 	md5_final( &a->md5 );
 }
@@ -144,6 +158,10 @@ md_read( MD_HANDLE a, int algo )
 	    return rmd160_read( &a->rmd160 );
 	if( a->use_sha1 )
 	    return sha1_read( &a->sha1 );
+      #ifdef WITH_TIGER_HASH
+	if( a->use_tiger )
+	    return tiger_read( &a->tiger );
+      #endif
 	if( a->use_md5 )
 	    return md5_read( &a->md5 );
     }
@@ -152,6 +170,10 @@ md_read( MD_HANDLE a, int algo )
 	    return rmd160_read( &a->rmd160 );
 	if( algo == DIGEST_ALGO_SHA1 )
 	    return sha1_read( &a->sha1 );
+      #ifdef WITH_TIGER_HASH
+	if( algo == DIGEST_ALGO_TIGER )
+	    return tiger_read( &a->tiger );
+      #endif
 	if( algo == DIGEST_ALGO_MD5 )
 	    return md5_read( &a->md5 );
     }
@@ -165,6 +187,10 @@ md_get_algo( MD_HANDLE a )
 	return DIGEST_ALGO_RMD160;
     if( a->use_sha1 )
 	return DIGEST_ALGO_SHA1;
+  #ifdef WITH_TIGER_HASH
+    if( a->use_tiger )
+	return DIGEST_ALGO_TIGER;
+  #endif
     if( a->use_md5 )
 	return DIGEST_ALGO_MD5;
     return 0;
@@ -177,6 +203,8 @@ int
 md_digest_length( int algo )
 {
     switch( algo ) {
+      case DIGEST_ALGO_TIGER:
+	return 24;
       case DIGEST_ALGO_RMD160:
       case DIGEST_ALGO_SHA1:
 	return 20;
@@ -203,6 +231,12 @@ md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
 	    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
 	mlen = 20; alen = DIM(asn); p = asn;
+    }
+    else if( algo == DIGEST_ALGO_TIGER ) {
+	static byte asn[15] = /* FIXME: Object ID is ???????????? */
+	  { 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
+	    0x42, 0x42, 0x42, 0x42, 0x42, 0x42 };
+	mlen = 24; alen = DIM(asn); p = asn;
     }
     else if( algo == DIGEST_ALGO_SHA1 ) {
 	static byte asn[15] = /* Objet ID is 1.3.14.3.2.26 */

@@ -1,3 +1,11 @@
+Mon Apr 27 14:41:58 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* cipher.c (cipher_get_keylen): New.
+
+Sun Apr 26 14:44:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* tiger.c, tiger.h: New.
+
 Wed Apr  8 14:57:11 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* misc.c (check_pubkey_algo2): New.

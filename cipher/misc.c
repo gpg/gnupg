@@ -43,6 +43,7 @@ static struct { const char *name; int algo;} digest_names[] = {
     { "RMD160",        DIGEST_ALGO_RMD160 },
     { "RMD-160",       DIGEST_ALGO_RMD160 },
     { "RIPE-MD-160",   DIGEST_ALGO_RMD160 },
+    { "TIGER",         DIGEST_ALGO_TIGER  },
     {NULL} };
 
 
@@ -149,6 +150,9 @@ int
 check_digest_algo( int algo )
 {
     switch( algo ) {
+    #ifdef WITH_TIGER_HASH
+      case DIGEST_ALGO_TIGER:
+    #endif
       case DIGEST_ALGO_MD5:
       case DIGEST_ALGO_RMD160:
       case DIGEST_ALGO_SHA1:

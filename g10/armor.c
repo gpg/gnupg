@@ -976,7 +976,7 @@ armor_filter( void *opaque, int control,
 		iobuf_put(a, c);
 		c = bintoasc[radbuf[2]&077];
 		iobuf_put(a, c);
-		if( ++idx2 > (72/4) ) {
+		if( ++idx2 >= (72/4) ) {
 		    iobuf_put(a, '\n');
 		    idx2=0;
 		}
@@ -1015,10 +1015,13 @@ armor_filter( void *opaque, int control,
 		    iobuf_put(a, c);
 		    iobuf_put(a, '=');
 		}
-		++idx2;
+		if( ++idx2 >= (72/4) ) {
+		    iobuf_put(a, '\n');
+		    idx2=0;
+		}
 	    }
 	    /* may need a linefeed */
-	    if( idx2 <= (72/4) )
+	    if( idx2 )
 		iobuf_put(a, '\n');
 	    /* write the CRC */
 	    iobuf_put(a, '=');

@@ -1,3 +1,17 @@
+Noteworthy changes in version 0.2.16
+------------------------------------
+
+    * Add experimental support for the TIGER/192 message diigest algorithm.
+      (But there is only a dummy ASN OID).
+
+    * Standard cipher is now Blowfish with 128 bit key in OpenPGP's CFB
+      mode. I renamed the old cipher to Blowfish160. Because the OpenPGP
+      group refused to assign me a number for Blowfish160, I have to
+      drop support for this in the future. You should use
+      "--change-passphrase" to recode your current passphrase with 128
+      bit Blowfish.
+
+
 Noteworthy changes in version 0.2.15
 ------------------------------------
 

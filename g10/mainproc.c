@@ -696,6 +696,11 @@ check_sig_and_print( CTX c, KBNODE node )
     PKT_signature *sig = node->pkt->pkt.signature;
     int rc;
 
+    if( opt.skip_verify ) {
+	log_info("signature verification suppressed\n");
+	return 0;
+    }
+
     rc = do_check_sig(c, node );
     if( !rc || rc == G10ERR_BAD_SIGN ) {
 	char *p, *buf;

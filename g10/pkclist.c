@@ -172,7 +172,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	char *answer;
 	int yes;
 
-	log_info("key has beed revoked!\n");
+	log_info("key has been revoked!\n");
 	if( opt.batch )
 	    return 0;
 

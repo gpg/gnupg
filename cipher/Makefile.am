@@ -20,6 +20,8 @@ libcipher_a_SOURCES = cipher.c	\
 		 random.c	\
 		 rmd.h		\
 		 rmd160.c	\
+		 tiger.h	\
+		 tiger.c	\
 		 sha1.h 	\
 		 sha1.c 	\
 		 dsa.h		\

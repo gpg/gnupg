@@ -35,19 +35,8 @@
 void
 make_session_key( DEK *dek )
 {
-    switch( dek->algo ) {
-      case CIPHER_ALGO_BLOWFISH:
-	dek->keylen = 20;
-	randomize_buffer( dek->key, dek->keylen, 1 );
-	break;
-      case CIPHER_ALGO_BLOWFISH128:
-      case CIPHER_ALGO_CAST:
-	dek->keylen = 16;
-	randomize_buffer( dek->key, dek->keylen, 1 );
-	break;
-
-      default: log_bug("invalid algo %d in make_session_key()\n", dek->algo);
-    }
+    dek->keylen = cipher_get_keylen( dek->algo ) / 8;
+    randomize_buffer( dek->key, dek->keylen, 1 );
 }
 
 
@@ -84,7 +73,7 @@ encode_session_key( DEK *dek, unsigned nbits )
      * RND are non-zero random bytes.
      * A   is the cipher algorithm
      * DEK is the encryption key (session key) length k depends on the
-     *	   cipher algorithm (20 is used with blowfish).
+     *	   cipher algorithm (20 is used with blowfish160).
      * CSUM is the 16 bit checksum over the DEK
      */
     csum = 0;

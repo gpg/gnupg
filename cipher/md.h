@@ -25,6 +25,7 @@
 #include "rmd.h"
 #include "sha1.h"
 #include "md5.h"
+#include "tiger.h"
 
 #define MD_BUFFER_SIZE 512
 
@@ -33,6 +34,10 @@ typedef struct {
     RMD160_CONTEXT rmd160;
     int use_sha1;
     SHA1_CONTEXT sha1;
+  #ifdef WITH_TIGER_HASH
+    int use_tiger;
+    TIGER_CONTEXT tiger;
+  #endif
     int use_md5;
     MD5_CONTEXT md5;
     byte buffer[MD_BUFFER_SIZE]; /* primary buffer */

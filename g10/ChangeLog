@@ -1,3 +1,22 @@
+Tue Apr 28 14:27:42 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* parse-packet.c (parse_subpkt): Some new types.
+
+Mon Apr 27 12:53:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): Add option --skip-verify.
+	* mainproc.c (check_sig_and_print): Ditto.
+
+	* g10.c (print_mds): Add output for Tiger.
+
+	* sign.c (sign_file): Now uses partial length headers if used
+	in canonical textmode (kludge to fix a bug).
+
+	* parse-packet.c (parse_certificate): Changed BLOWFISH id.
+	* pubkey-enc.c (get_session_key): Ditto.
+	* seskey.c (make_session_key): Ditto.
+	* seckey-cert.c (protect_secret_key,do_check): Add BLOWFISH160.
+
 Fri Apr 24 17:38:48 1998  Werner Koch,mobil,,,	(wk@tobold)
 
 	* sig-check.c (check_key_signature): Add sig-class 0x14..0x17

@@ -107,6 +107,8 @@ const char *print_fname_stdout( const char *s );
 
 /*-- miscutil.c --*/
 u32 make_timestamp(void);
+u32 add_days_to_timestamp( u32 stamp, u16 days );
+const char *strtimestamp( u32 stamp );
 void print_string( FILE *fp, byte *p, size_t n, int delim );
 int answer_is_yes( const char *s );
 
@@ -116,6 +118,7 @@ void free_strlist( STRLIST sl );
 void add_to_strlist( STRLIST *list, const char *string );
 STRLIST strlist_prev( STRLIST head, STRLIST node );
 STRLIST strlist_last( STRLIST node );
+int memicmp( const char *a, const char *b, size_t n );
 const char *memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );

@@ -41,22 +41,25 @@
 #define CIPHER_ALGO_IDEA	 1
 #define CIPHER_ALGO_3DES	 2
 #define CIPHER_ALGO_CAST	 3
-#define CIPHER_ALGO_BLOWFISH128  4  /* blowfish 128 bit key */
+#define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
 #define CIPHER_ALGO_ROT_N	 5
 #define CIPHER_ALGO_SAFER_SK128  6
 #define CIPHER_ALGO_DES_SK	 7
-#define CIPHER_ALGO_BLOWFISH	42  /* blowfish 160 bit key (not in OpenPGP)*/
+#define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
 
 #define PUBKEY_ALGO_RSA        1
 #define PUBKEY_ALGO_RSA_E      2     /* RSA encrypt only */
 #define PUBKEY_ALGO_RSA_S      3     /* RSA sign only */
 #define PUBKEY_ALGO_ELGAMAL   16
 #define PUBKEY_ALGO_DSA       17
+/*#define PUBKEY_ALGO_ELGAMAL	20  sign and encrypt elgamal */
 
 #define DIGEST_ALGO_MD5       1
 #define DIGEST_ALGO_SHA1      2
 #define DIGEST_ALGO_RMD160    3
-
+#ifdef WITH_TIGER_HASH
+#define DIGEST_ALGO_TIGER     101
+#endif
 
 typedef struct {
     int algo;
@@ -82,6 +85,7 @@ int cipher_debug_mode;
 int string_to_cipher_algo( const char *string );
 const char * cipher_algo_to_string( int algo );
 int check_cipher_algo( int algo );
+unsigned cipher_get_keylen( int algo );
 CIPHER_HANDLE cipher_open( int algo, int mode, int secure );
 void cipher_close( CIPHER_HANDLE c );
 void cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen );

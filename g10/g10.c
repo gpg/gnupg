@@ -160,7 +160,7 @@ static ARGPARSE_OPTS opts[] = {
     { 551, "list-key", 0, "\r" }, /* alias */
     { 552, "list-sig", 0, "\r" }, /* alias */
     { 508, "check-sig",0, "\r" }, /* alias */
-
+    { 553, "skip-verify",0, "\r" },
 
 {0} };
 
@@ -258,11 +258,11 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
     size_t n=strlen(text)+2;
     char *list, *p;
 
-    for(i=1; i < 100; i++ )
+    for(i=1; i < 110; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
 	    n += strlen(s) + 2;
     list = m_alloc( 21 + n ); *list = 0;
-    for(p=NULL, i=1; i < 100; i++ ) {
+    for(p=NULL, i=1; i < 110; i++ ) {
 	if( !chkf(i) && (s=mapf(i)) ) {
 	    if( !p )
 		p = stpcpy( list, text );
@@ -573,6 +573,7 @@ main( int argc, char **argv )
 	  case 549: opt.with_colons=':'; break;
 	  case 551: set_cmd( &cmd, aListKeys); break;
 	  case 552: set_cmd( &cmd, aListSigs); break;
+	  case 553: opt.skip_verify=1; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -994,6 +995,13 @@ print_hex( byte *p, size_t n )
 	    printf(" %02X%02X", *p, p[1] );
 	}
     }
+    else if( n == 24 ) {
+	for(i=0; i < n ; i += 4, p += 4 ) {
+	    if( i == 12 )
+		putchar(' ');
+	    printf(" %02X%02X%02X%02X", *p, p[1], p[2], p[3] );
+	}
+    }
     else {
 	for(i=0; i < n ; i++, p++ ) {
 	    if( i && !(i%8) )
@@ -1023,8 +1031,11 @@ print_mds( const char *fname )
     }
 
     md = md_open( DIGEST_ALGO_MD5, 0 );
-    md_enable( md, DIGEST_ALGO_RMD160 );
     md_enable( md, DIGEST_ALGO_SHA1 );
+    md_enable( md, DIGEST_ALGO_RMD160 );
+  #ifdef WITH_TIGER_HASH
+    md_enable( md, DIGEST_ALGO_TIGER );
+  #endif
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
 	md_write( md, buf, n );
@@ -1033,8 +1044,11 @@ print_mds( const char *fname )
     else {
 	md_final(md);
 	printf(  "%s:    MD5 =", fname ); print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
-	printf("\n%s: RMD160 =", fname ); print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
 	printf("\n%s:   SHA1 =", fname ); print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
+	printf("\n%s: RMD160 =", fname ); print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
+      #ifdef WITH_TIGER_HASH
+	printf("\n%s:  TIGER =", fname ); print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
+      #endif
 	putchar('\n');
     }
 

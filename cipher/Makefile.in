@@ -61,16 +61,36 @@ host_alias = @host_alias@
 host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CIPHER_EXTRA_DIST = @CIPHER_EXTRA_DIST@
 CIPHER_EXTRA_OBJS = @CIPHER_EXTRA_OBJS@
 CPP = @CPP@
+DATADIRNAME = @DATADIRNAME@
 G10_LOCALEDIR = @G10_LOCALEDIR@
+GENCAT = @GENCAT@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
+GT_NO = @GT_NO@
+GT_YES = @GT_YES@
+INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
+INSTOBJEXT = @INSTOBJEXT@
+INTLDEPS = @INTLDEPS@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+MKINSTALLDIRS = @MKINSTALLDIRS@
 MPI_EXTRA_ASM_OBJS = @MPI_EXTRA_ASM_OBJS@
+MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
+POFILES = @POFILES@
+POSUB = @POSUB@
 RANLIB = @RANLIB@
+USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
+USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 ZLIBS = @ZLIBS@
+l = @l@
 
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 EXTRA_DIST = @CIPHER_EXTRA_DIST@
@@ -91,6 +111,8 @@ libcipher_a_SOURCES = cipher.c	\
 		 random.c	\
 		 rmd.h		\
 		 rmd160.c	\
+		 tiger.h	\
+		 tiger.c	\
 		 sha1.h 	\
 		 sha1.c 	\
 		 dsa.h		\
@@ -113,7 +135,8 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libcipher_a_OBJECTS =  cipher.o blowfish.o cast5.o elgamal.o md5.o \
-primegen.o random.o rmd160.o sha1.o dsa.o md.o misc.o smallprime.o
+primegen.o random.o rmd160.o tiger.o sha1.o dsa.o md.o misc.o \
+smallprime.o
 AR = ar
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
@@ -127,7 +150,8 @@ TAR = tar
 GZIP = --best
 DEP_FILES =  .deps/blowfish.P .deps/cast5.P .deps/cipher.P .deps/dsa.P \
 .deps/elgamal.P .deps/md.P .deps/md5.P .deps/misc.P .deps/primegen.P \
-.deps/random.P .deps/rmd160.P .deps/sha1.P .deps/smallprime.P
+.deps/random.P .deps/rmd160.P .deps/sha1.P .deps/smallprime.P \
+.deps/tiger.P
 SOURCES = $(libcipher_a_SOURCES)
 OBJECTS = $(libcipher_a_OBJECTS)
 

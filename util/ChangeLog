@@ -1,3 +1,7 @@
+Mon Apr 27 11:01:32 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* strgutil.c (memicmp): New.
+
 Thu Mar 19 11:29:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* strgutil.c (memistr): Add const to return and first arg.

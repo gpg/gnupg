@@ -490,7 +490,7 @@ parse_subpkt( const byte *buffer, int reqtype )
 	    critical = 0;
 	if( reqtype < 0 ) { /* list packets */
 	    printf("\t%ssubpacket %d of length %u (%s)\n",
-		    reqtype == -1 ? "hashed ":"", type, n,
+		    reqtype == -1 ? "hashed ":"", type, (unsigned)n,
 		    type == 2 ? "signature creation time"
 		  : type == 3 ? "signature expiration time"
 		  : type == 4 ? "exportable"
@@ -507,6 +507,10 @@ parse_subpkt( const byte *buffer, int reqtype )
 		  : type ==22 ? "preferred compression algorithms"
 		  : type ==23 ? "key server preferences"
 		  : type ==24 ? "preferred key server"
+		  : type ==25 ? "primary user id"
+		  : type ==26 ? "policy URL"
+		  : type ==27 ? "key flags"
+		  : type ==28 ? "signer's user id"
 			      : "?");
 	}
 	else if( type == reqtype )
@@ -904,7 +908,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 		    cert->protect.s2k = 0;
 		    /* We need this kludge to cope with old GNUPG versions */
 		    cert->protect.hash =
-			 cert->protect.algo == CIPHER_ALGO_BLOWFISH?
+			 cert->protect.algo == CIPHER_ALGO_BLOWFISH160?
 				      DIGEST_ALGO_RMD160 : DIGEST_ALGO_MD5;
 		}
 		if( pktlen < 8 ) {
@@ -1106,7 +1110,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 			printf(" %02x", temp[i] );
 		    putchar('\n');
 		}
-		if( cert->protect.algo == CIPHER_ALGO_BLOWFISH )
+		if( cert->protect.algo == CIPHER_ALGO_BLOWFISH160 )
 		    memcpy(cert->protect.iv, temp, 8 );
 	    }
 	    else

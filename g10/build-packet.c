@@ -289,8 +289,6 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 	mpi_write(a, skc->d.rsa.n );
 	mpi_write(a, skc->d.rsa.e );
 	if( skc->is_protected ) {
-	    assert( skc->protect.algo == CIPHER_ALGO_BLOWFISH
-		    || skc->protect.algo == CIPHER_ALGO_CAST );
 	    iobuf_put(a, skc->protect.algo );
 	    iobuf_write(a, skc->protect.iv, 8 );
 	}

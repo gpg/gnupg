@@ -72,6 +72,18 @@ strlist_last( STRLIST node )
 }
 
 
+
+
+int
+memicmp( const char *a, const char *b, size_t n )
+{
+    for( ; n; n--, a++, b++ )
+	if( *a != *b  && toupper(*(const byte*)a) != toupper(*(const byte*)b) )
+	    return *(const byte *)a - *(const byte*)b;
+    return 0;
+}
+
+
 /****************
  * look for the substring SUB in buffer and return a pointer to that
  * substring in BUF or NULL if not found.

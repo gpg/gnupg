@@ -135,7 +135,7 @@ B<--import>
 
 Long options can be put in an options file (default F<~/.gnupg/options>);
 do not write the 2 dashes, but simply the name of the option and any
-arguments if required.  Lines with a hash as the first non-white-space
+arguments if required.	Lines with a hash as the first non-white-space
 character are ignored. Commands may be put in this file too, but that
 does not make sense.
 
@@ -270,6 +270,11 @@ B<--no-armor>
 B<--no-default-keyring>
     Do not add the default key-rings to the list of
     key-rings.
+
+B<--skip-verify>
+    Skip the signature verification step.  This may be used to
+    make the encryption faster if the signature verification
+    is not needed.
 
 B<--version>
     Print version information along with a list

@@ -231,6 +231,14 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    memcpy(pt->name, fname, pt->namelen );
 	    if( !(filesize = iobuf_get_filelength(inp)) )
 		log_info("warning: '%s' is an empty file\n", fname );
+
+	    /* because the text_filter modifies the length of the
+	     * data, it is not possible to know the used length
+	     * without a double read of the file - to avoid that
+	     * we simple use partial length packets.
+	     */
+	    if( opt.textmode && !outfile )
+		filesize = 0;
 	}
 	else { /* no filename */
 	    pt = m_alloc( sizeof *pt - 1 );

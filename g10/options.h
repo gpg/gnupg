@@ -43,7 +43,7 @@ struct {
     int marginals_needed;
     int completes_needed;
     const char *homedir;
-    int reserved13;
+    int skip_verify;
     int reserved14;
     int reserved15;
 } opt;

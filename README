@@ -37,9 +37,9 @@
     about unsupported algorithms.
 
     The default algorithms used by GNUPG are ElGamal for public-key
-    encryption and signing; Blowfish with a 160 bit key for protecting
+    encryption and signing; Blowfish with a 128 bit key for protecting
     the secret-key components, conventional and session encryption;
-    RIPE MD-160 to create message digest.  DSA, SHA-1 and CAST are
+    RIPE MD-160 to create message digest.  DSA, SHA-1, CAST and TIGER are
     also implemented, but not used by default.	I decided not
     to use DSA as the default signing algorithm, because it allows only
     for 1024 bit keys and this may not be enough in a couple of years.
@@ -126,7 +126,7 @@
     whether you want to sign this key.
 
     You may remove a signature at any time using the option "--edit-sig",
-    which asks for the sigs to remove.  Self-signatures are not removable.
+    which asks for the sigs to remove.	Self-signatures are not removable.
 
 
 
@@ -347,7 +347,7 @@
     The primary WWW page is "http://www.d.shuttle.de/isil/crypt/gnupg.html"
 
     If you like, send your keys to <gnupg-keys@isil.d.shuttle.de>; use
-    "gnupg --export --armor | mail gnupg-keys@isil.d.shuttle.de" to do this.
+    "gpg --export --armor | mail gnupg-keys@isil.d.shuttle.de" to do this.
 
     Please direct bug reports to <gnupg-bugs@isil.d.shuttle.de> or better
     post them to the mailing list <g10@net.lut.ac.uk>.

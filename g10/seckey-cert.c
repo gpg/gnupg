@@ -50,6 +50,7 @@ do_check( PKT_secret_cert *cert )
 
 	switch( cert->protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
+	  case CIPHER_ALGO_BLOWFISH160:
 	  case CIPHER_ALGO_BLOWFISH:
 	  case CIPHER_ALGO_CAST:
 	    keyid_from_skc( cert, keyid );
@@ -290,6 +291,7 @@ protect_secret_key( PKT_secret_cert *cert, DEK *dek )
 
 	switch( cert->protect.algo ) {
 	  case CIPHER_ALGO_NONE: BUG(); break;
+	  case CIPHER_ALGO_BLOWFISH160:
 	  case CIPHER_ALGO_BLOWFISH:
 	  case CIPHER_ALGO_CAST:
 	    cipher_hd = cipher_open( cert->protect.algo,

@@ -115,21 +115,15 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
       case CIPHER_ALGO_IDEA:
 	rc = G10ERR_NI_CIPHER;
 	goto leave;
-      case CIPHER_ALGO_BLOWFISH:
+      case CIPHER_ALGO_BLOWFISH160:
 	if( dek->keylen != 20 )
 	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
 	break;
-      case CIPHER_ALGO_BLOWFISH128:
+      case CIPHER_ALGO_BLOWFISH:
       case CIPHER_ALGO_CAST:
 	if( dek->keylen != 16 )
 	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
 	break;
-    #if 0
-      case CIPHER_ALGO_CAST:
-	if( dek->keylen < 5 || dek->keylen > 16 )
-	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
-	break;
-    #endif
       default:
 	dek->algo = 0;
 	rc = G10ERR_CIPHER_ALGO;

@@ -9,6 +9,8 @@ usrname1="one"
 usrpass1="def"
 usrname2="two"
 usrpass2=""
+usrname3="three"
+usrpass3="abc"
 
 
 dsa_usrname1="pgp5"
