@@ -423,6 +423,9 @@ int exec_read(struct exec_info *info)
 	      ret=G10ERR_READ_FILE;
 	      goto fail;
 	    }
+
+	  /* Do not cache this iobuf on close */
+	  iobuf_ioctl(info->fromchild,3,1,NULL);
 	}
     }
 
@@ -447,13 +450,8 @@ int exec_finish(struct exec_info *info)
     }
 #endif
 
-  if(info->fromchild) {
+  if(info->fromchild)
     iobuf_close(info->fromchild);
-#ifdef __riscos__
-    /* invalidate close cache, as otherwise unlink() below won't work */
-    iobuf_ioctl(NULL, 2, 0, info->tempfile_out);
-#endif
-  }
 
   if(info->tochild)
     fclose(info->tochild);

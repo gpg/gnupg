@@ -128,7 +128,6 @@ enum cmd_and_opt_values { aNull = 0,
     oAnswerYes,
     oAnswerNo,
     oDefCheckLevel,
-    oNoDefCheckLevel,
     oKeyring,
     oSecretKeyring,
     oShowKeyring,
@@ -438,7 +437,6 @@ static ARGPARSE_OPTS opts[] = {
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
     { oDefCheckLevel, "default-check-level", 1, "@"},
-    { oNoDefCheckLevel, "no-default-check-level", 0, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
@@ -982,7 +980,6 @@ main( int argc, char **argv )
 	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
-	  case oNoDefCheckLevel: opt.def_check_level=0; break;
           case oDefCheckLevel: opt.def_check_level=pargs.r.ret_int; break;
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;

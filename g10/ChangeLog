@@ -1,3 +1,17 @@
+2002-01-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Removed --no-default-check-level option, as it is
+	not consistent with other "default" options.  Plus, it is the same
+	as saying --default-check-level 0.
+
+	* exec.c (exec_read): Disallow caching tempfile from child
+	process, as this keeps the file handle open and can cause unlink
+	problems on some platforms.
+
+	* keyserver.c (keyserver_search_prompt): Minor tweak - don't
+	bother to transform keyids into textual form if they're just going
+	to be transformed back to numbers.
+
 2002-01-03  Timo Schulz <ts@winpt.org>
 
     * g10.c: New command --encrypt-files.

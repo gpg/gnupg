@@ -844,7 +844,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 
 	      while((num=strsep(&split," ,"))!=NULL)
 		if(atoi(num)>=1 && atoi(num)<=i)
-		  keyserver_import_keyid(keyids[atoi(num)-1]);
+		  keyserver_work(GET,NULL,&keyids[atoi(num)-1],1);
 
 	      m_free(answer);
 	      break;
