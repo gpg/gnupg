@@ -563,6 +563,23 @@ rsa_key_check (struct rsa_secret_key_s *skey)
 }
 
 
+/* A callback used by p12_parse to return a certificate.  */
+static void
+import_p12_cert_cb (void *opaque, const unsigned char *cert, size_t certlen)
+{
+  struct b64state state;
+  gpg_error_t err, err2;
+
+  err = b64enc_start (&state, stdout, "CERTIFICATE");
+  if (!err)
+    err = b64enc_write (&state, cert, certlen);
+  err2 = b64enc_finish (&state);
+  if (!err)
+    err = err2;
+  if (err)
+    log_error ("error writing armored certificate: %s\n", gpg_strerror (err));
+}
+
 static void
 import_p12_file (const char *fname)
 {
@@ -583,11 +600,12 @@ import_p12_file (const char *fname)
   if (!buf)
     return;
 
-  kparms = p12_parse (buf, buflen, get_passphrase ());
+  kparms = p12_parse (buf, buflen, get_passphrase (),
+                      import_p12_cert_cb, NULL);
   xfree (buf);
   if (!kparms)
     {
-      log_error ("error parsing or decrypting the PKCS-1 file\n");
+      log_error ("error parsing or decrypting the PKCS-12 file\n");
       return;
     }
   for (i=0; kparms[i]; i++)

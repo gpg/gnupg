@@ -1,5 +1,5 @@
 /* minip12.c - A minimal pkcs-12 implementation.
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,7 +27,12 @@
 #include <assert.h>
 #include <gcrypt.h>
 
-#undef TEST 
+#ifdef __GCC__
+#warning Remove this kludge and set the libgcrypt required version higher.
+#endif
+#ifndef GCRY_CIPHER_RFC2268_40
+#define GCRY_CIPHER_RFC2268_40 307
+#endif
 
 #ifdef TEST
 #include <sys/stat.h>
@@ -97,6 +102,9 @@ static unsigned char const oid_pbeWithSHAAnd3_KeyTripleDES_CBC[10] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x03 };
 static unsigned char const oid_pbeWithSHAAnd40BitRC2_CBC[10] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x06 };
+static unsigned char const oid_x509Certificate_for_pkcs_12[10] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x09, 0x16, 0x01 };
+
 
 static unsigned char const oid_rsaEncryption[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };
@@ -303,14 +311,16 @@ string_to_key (int id, char *salt, int iter, const char *pw,
 
 
 static int 
-set_key_iv (gcry_cipher_hd_t chd, char *salt, int iter, const char *pw)
+set_key_iv (gcry_cipher_hd_t chd, char *salt, int iter, const char *pw,
+            int keybytes)
 {
   unsigned char keybuf[24];
   int rc;
 
-  if (string_to_key (1, salt, iter, pw, 24, keybuf))
+  assert (keybytes == 5 || keybytes == 24);
+  if (string_to_key (1, salt, iter, pw, keybytes, keybuf))
     return -1;
-  rc = gcry_cipher_setkey (chd, keybuf, 24);
+  rc = gcry_cipher_setkey (chd, keybuf, keybytes);
   if (rc)
     {
       log_error ( "gcry_cipher_setkey failed: %s\n", gpg_strerror (rc));
@@ -331,18 +341,19 @@ set_key_iv (gcry_cipher_hd_t chd, char *salt, int iter, const char *pw)
 
 static void
 crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
-             const char *pw, int encrypt)
+             const char *pw, int cipher_algo, int encrypt)
 {
   gcry_cipher_hd_t chd;
   int rc;
 
-  rc = gcry_cipher_open (&chd, GCRY_CIPHER_3DES, GCRY_CIPHER_MODE_CBC, 0);
+  rc = gcry_cipher_open (&chd, cipher_algo, GCRY_CIPHER_MODE_CBC, 0); 
   if (rc)
     {
-      log_error ( "gcry_cipher_open failed: %s\n", gpg_strerror(-1));
+      log_error ( "gcry_cipher_open failed: %s\n", gpg_strerror(rc));
       return;
     }
-  if (set_key_iv (chd, salt, iter, pw))
+  if (set_key_iv (chd, salt, iter, pw,
+                  cipher_algo == GCRY_CIPHER_RFC2268_40? 5:24))
     goto leave;
 
   rc = encrypt? gcry_cipher_encrypt (chd, buffer, length, NULL, 0)
@@ -354,12 +365,6 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
       goto leave;
     }
 
-/*    { */
-/*      FILE *fp = fopen("inner.der", "wb"); */
-/*      fwrite (buffer, 1, length, fp); */
-/*      fclose (fp); */
-/*    } */
-
  leave:
   gcry_cipher_close (chd);
 }
@@ -369,12 +374,18 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
 
 static int
 parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
-                          int startoffset)
+                          int startoffset, const char *pw,
+                          void (*certcb)(void*, const unsigned char*, size_t),
+                          void *certcbarg)
 {
   struct tag_info ti;
   const unsigned char *p = buffer;
   size_t n = length;
   const char *where;
+  char salt[8];
+  unsigned int iter;
+  unsigned char *plain = NULL;
+
 
   where = "start";
   if (parse_tag (&p, &n, &ti))
@@ -406,18 +417,17 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   p += DIM(oid_data);
   n -= DIM(oid_data);
 
-#if 0
-  where = "bag.encryptedData.keyinfo"
+  where = "bag.encryptedData.keyinfo";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class || ti.tag != TAG_SEQUENCE)
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (!ti.class && ti.tag == TAG_OBJECT_ID
+  if (!ti.class && ti.tag == TAG_OBJECT_ID 
       && ti.length == DIM(oid_pbeWithSHAAnd40BitRC2_CBC)
-      && memcmp (p, oid_pbeWithSHAAnd40BitRC2_CBC,
-                 DIM(oid_pbeWithSHAAnd40BitRC2_CBC)))
+      && !memcmp (p, oid_pbeWithSHAAnd40BitRC2_CBC,
+                  DIM(oid_pbeWithSHAAnd40BitRC2_CBC)))
     {
       p += DIM(oid_pbeWithSHAAnd40BitRC2_CBC);
       n -= DIM(oid_pbeWithSHAAnd40BitRC2_CBC);
@@ -451,16 +461,118 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   where = "rc2-ciphertext";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class || ti.tag != TAG_OCTET_STRING || !ti.length )
+  if (ti.class != CONTEXT || ti.tag != 0 || !ti.length )
     goto bailout;
   
   log_info ("%lu bytes of RC2 encrypted text\n", ti.length);
-#endif
 
+  plain = gcry_malloc_secure (ti.length);
+  if (!plain)
+    {
+      log_error ("error allocating decryption buffer\n");
+      goto bailout;
+    }
+  memcpy (plain, p, ti.length);
+  crypt_block (plain, ti.length, salt, iter, pw, GCRY_CIPHER_RFC2268_40, 0);
+  n = ti.length;
+  startoffset = 0;
+  buffer = p = plain;
 
+  where = "outer.outer.seq";
+  if (parse_tag (&p, &n, &ti))
+    goto bailout;
+  if (ti.class || ti.tag != TAG_SEQUENCE)
+    goto bailout;
+
+  if (parse_tag (&p, &n, &ti))
+    goto bailout;
+
+  /* Loop over all certificates inside the bab. */
+  while (n)
+    {
+      where = "certbag.nextcert";
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+
+      where = "certbag.objectidentifier";
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_OBJECT_ID
+          || ti.length != DIM(oid_pkcs_12_CertBag)
+          || memcmp (p, oid_pkcs_12_CertBag,
+                     DIM(oid_pkcs_12_CertBag)))
+        goto bailout;
+      p += DIM(oid_pkcs_12_CertBag);
+      n -= DIM(oid_pkcs_12_CertBag);
+
+      where = "certbag.before.certheader";
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class != CONTEXT || ti.tag)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_OBJECT_ID
+          || ti.length != DIM(oid_x509Certificate_for_pkcs_12)
+          || memcmp (p, oid_x509Certificate_for_pkcs_12,
+                     DIM(oid_x509Certificate_for_pkcs_12)))
+        goto bailout;
+      p += DIM(oid_x509Certificate_for_pkcs_12);
+      n -= DIM(oid_x509Certificate_for_pkcs_12);
+
+      where = "certbag.before.octetstring";
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class != CONTEXT || ti.tag)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_OCTET_STRING || ti.ndef)
+        goto bailout;
+
+      /* Return the certificate. */
+      if (certcb)
+        certcb (certcbarg, p, ti.length);
+   
+      p += ti.length;
+      n -= ti.length;
+
+      /* Ugly hack to cope with the padding: Forget about a rest of
+         sie les than the cipher's block length. */
+      if (n < 8)
+        n = 0;  
+
+      /* Skip the optional SET with the pkcs12 cert attributes. */
+      if (n)
+        {
+          where = "certbag.attributes";
+          if (parse_tag (&p, &n, &ti))
+            goto bailout;
+          if (!ti.class && ti.tag == TAG_SEQUENCE)
+            ; /* No attributes. */
+          else if (!ti.class && ti.tag == TAG_SET && !ti.ndef)
+            { /* The optional SET. */
+              p += ti.length;
+              n -= ti.length;
+              if (n < 8)
+                n = 0;
+              if (n && parse_tag (&p, &n, &ti))
+                goto bailout;
+            }
+          else
+            goto bailout;
+        }
+    }
+  
+  gcry_free (plain);
 
   return 0;
  bailout:
+  gcry_free (plain);
   log_error ("encryptedData error at \"%s\", offset %u\n",
              where, (p - buffer)+startoffset);
   return -1;
@@ -574,7 +686,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
       goto bailout;
     }
   memcpy (plain, p, ti.length);
-  crypt_block (plain, ti.length, salt, iter, pw, 0);
+  crypt_block (plain, ti.length, salt, iter, pw, GCRY_CIPHER_3DES, 0);
   n = ti.length;
   startoffset = 0;
   buffer = p = plain;
@@ -673,9 +785,12 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
    secret key parameters.  This is a very limited implementation in
    that it is only able to look for 3DES encoded encryptedData and
    tries to extract the first private key object it finds.  In case of
-   an error NULL is returned. */
+   an error NULL is returned. CERTCB and CERRTCBARG are used to pass
+   X.509 certificates back to the caller. */
 gcry_mpi_t *
-p12_parse (const unsigned char *buffer, size_t length, const char *pw)
+p12_parse (const unsigned char *buffer, size_t length, const char *pw,
+           void (*certcb)(void*, const unsigned char*, size_t),
+           void *certcbarg)
 {
   struct tag_info ti;
   const unsigned char *p = buffer;
@@ -751,7 +866,8 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw)
           n -= DIM(oid_encryptedData);
           len -= DIM(oid_encryptedData);
           where = "bag.encryptedData";
-          if (parse_bag_encrypted_data (p, n, (p - buffer)))
+          if (parse_bag_encrypted_data (p, n, (p - buffer), pw,
+                                        certcb, certcbarg))
             goto bailout;
         }
       else if (ti.tag == TAG_OBJECT_ID && ti.length == DIM(oid_data)
@@ -1034,7 +1150,7 @@ p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
 
   /* Encrypt it and prepend a lot of stupid things. */
   gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
-  crypt_block (plain, plainlen, salt, 1024, pw, 1);
+  crypt_block (plain, plainlen, salt, 1024, pw, GCRY_CIPHER_3DES, 1);
   /* the data goes into an octet string. */
   needed = compute_tag_length (plainlen);
   needed += plainlen;
@@ -1128,14 +1244,21 @@ p12_build (gcry_mpi_t *kparms, const char *pw, size_t *r_length)
 
 
 #ifdef TEST
+
+static void 
+cert_cb (void *opaque, const unsigned char *cert, size_t certlen)
+{
+  printf ("got a certificate of %u bytes length\n", certlen);
+}
+
 int
 main (int argc, char **argv)
 {
   FILE *fp;
   struct stat st;
-  char *buf;
+  unsigned char *buf;
   size_t buflen;
-  GcryMPI *result;
+  gcry_mpi_t *result;
 
   if (argc != 3)
     {
@@ -1168,23 +1291,23 @@ main (int argc, char **argv)
     }
   fclose (fp);
 
-  result = p12_parse (buf, buflen, argv[2]);
+  result = p12_parse (buf, buflen, argv[2], cert_cb, NULL);
   if (result)
     {
       int i, rc;
-      char *buf;
+      unsigned char *tmpbuf;
 
       for (i=0; result[i]; i++)
         {
-          rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, (void**)&buf,
+          rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, &tmpbuf,
                                 NULL, result[i]);
           if (rc)
             printf ("%d: [error printing number: %s]\n",
                     i, gpg_strerror (rc));
           else
             {
-              printf ("%d: %s\n", i, buf);
-              gcry_free (buf);
+              printf ("%d: %s\n", i, tmpbuf);
+              gcry_free (tmpbuf);
             }
         }
     }
@@ -1192,4 +1315,10 @@ main (int argc, char **argv)
   return 0;
 
 }
+
+/*
+Local Variables:
+compile-command: "gcc -Wall -O -g -DTEST=1 -o minip12 minip12.c ../jnlib/libjnlib.a -L /usr/local/lib -lgcrypt -lgpg-error"
+End:
+*/
 #endif /* TEST */

@@ -24,7 +24,9 @@
 #include <gcrypt.h>
 
 gcry_mpi_t *p12_parse (const unsigned char *buffer, size_t length,
-                       const char *pw);
+                       const char *pw,
+                       void (*certcb)(void*, const unsigned char*, size_t),
+                       void *certcbarg);
 
 unsigned char *p12_build (gcry_mpi_t *kparms, const char *pw,
                           size_t *r_length);

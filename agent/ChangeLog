@@ -1,3 +1,15 @@
+2004-02-10  Werner Koch  <wk@gnupg.org>
+
+	* minip12.c (parse_bag_encrypted_data): Finished implementation.
+	(p12_parse): Add callback args.
+	* protect-tool.c (import_p12_cert_cb): New.
+	(import_p12_file): Use it.
+
+2004-02-06  Werner Koch  <wk@gnupg.org>
+
+	* minip12.c (crypt_block): Add arg CIPHER_ALGO; changed all callers.
+	(set_key_iv): Add arg KEYBYTES; changed caller.
+
 2004-02-03  Werner Koch  <wk@gnupg.org>
 
 	* findkey.c (agent_key_from_file): Extra paranoid wipe.
