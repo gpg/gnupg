@@ -1420,7 +1420,7 @@ Force inclusion of the version string in ASCII armored output.
 <varlistentry>
 <term>--sig-notation &ParmNameValue;</term>
 <term>--cert-notation &ParmNameValue;</term>
-<term>-N, --notation-data &ParmNameValue;</term>
+<term>-N, --set-notation &ParmNameValue;</term>
 <listitem><para>
 Put the name value pair into the signature as notation data.
 &ParmName; must consist only of printable characters or spaces, and
@@ -1431,7 +1431,7 @@ encoded in UTF8, so you should check that your --charset is set
 correctly.  If you prefix &ParmName; with an exclamation mark, the
 notation data will be flagged as critical (rfc2440:5.2.3.15).
 --sig-notation sets a notation for data signatures.  --cert-notation
-sets a notation for key signatures (certifications).  --notation-data
+sets a notation for key signatures (certifications).  --set-notation
 sets both.
 </para>
 
@@ -1974,11 +1974,18 @@ Suppress the warning about "using insecure memory".
 <varlistentry>
 <term>--no-permission-warning</term>
 <listitem><para>
-Suppress the warning about unsafe file permissions.  Note that the
-file permission checks that GnuPG performs are not intended to be
-authoritative, rather they simply warn about certain common permission
-problems.  Do not assume that the lack of a warning means that your
-system is secure.
+
+Suppress the warning about unsafe file and home directory (--homedir)
+permissions.  Note that the permission checks that GnuPG performs are
+not intended to be authoritative, but rather they simply warn about
+certain common permission problems.  Do not assume that the lack of a
+warning means that your system is secure.
+</para><para>
+Note that the warning for unsafe --homedir permissions cannot be
+supressed in the gpg.conf file, as this would allow an attacker to
+place an unsafe gpg.conf file in place, and use this file to supress
+warnings about itself.  The --homedir permissions warning may only be
+supressed on the command line.
 </para></listitem></varlistentry>
 
 <varlistentry>
