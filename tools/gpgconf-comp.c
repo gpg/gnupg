@@ -1219,6 +1219,9 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 {
   char *arg;
 
+  if (!option->active)
+    gc_error (1, 0, "option %s not supported by backend", option->name);
+      
   if (option->new_flags || option->new_value)
     gc_error (1, 0, "option %s already changed", option->name);
 
@@ -1320,8 +1323,290 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 		     char **src_filenamep, char **dest_filenamep,
 		     char **orig_filenamep)
 {
-  /* FIXME.  */
-  assert (!"Not implemented.");
+  static const char marker[] = "###+++--- GPGConf ---+++###";
+  /* True if we are within the marker in the config file.  */
+  int in_marker = 0;
+  gc_option_t *option;
+  char *line = NULL;
+  size_t line_len;
+  ssize_t length;
+  int res;
+  int fd;
+  FILE *src_file = NULL;
+  FILE *dest_file = NULL;
+  char *src_filename;
+  char *dest_filename;
+  char *orig_filename;
+  char *arg;
+  char *cur_arg = NULL;
+
+  option = find_option (component,
+			gc_backend[backend].option_name, GC_BACKEND_ANY);
+  assert (option);
+  assert (option->active);
+  assert (gc_arg_type[option->arg_type].fallback != GC_ARG_TYPE_NONE);
+  assert (!(option->flags & GC_OPT_FLAG_ARG_OPT));
+
+  /* FIXME.  Throughout the function, do better error reporting.  */
+  /* Note that get_config_pathname() calls percent_deescape(), so we
+     call this before processing the arguments.  */
+  dest_filename = xstrdup (get_config_pathname (component, backend));
+  src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, getpid ());
+  orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
+
+  arg = option->new_value;
+  if (arg)
+    {
+      char *end;
+
+      arg++;
+      end = strchr (arg, ',');
+      if (end)
+	*end = '\0';
+
+      cur_arg = percent_deescape (arg);
+      if (end)
+	{
+	  *end = ',';
+	  arg = end + 1;
+	}
+      else
+	arg = NULL;
+    }
+
+  res = link (dest_filename, orig_filename);
+  if (res < 0 && errno != ENOENT)
+    return -1;
+  if (res < 0)
+    {
+      xfree (orig_filename);
+      orig_filename = NULL;
+    }
+
+  /* We now initialize the return strings, so the caller can do the
+     cleanup for us.  */
+  *src_filenamep = src_filename;
+  *dest_filenamep = dest_filename;
+  *orig_filenamep = orig_filename;
+
+  /* Use open() so that we can use O_EXCL.  */
+  fd = open (src_filename, O_CREAT | O_EXCL | O_WRONLY, 0644);
+  if (fd < 0)
+    return -1;
+  src_file = fdopen (fd, "w");
+  res = errno;
+  if (!src_file)
+    {
+      errno = res;
+      return -1;
+    }
+
+  /* Only if ORIG_FILENAME is not NULL did the configuration file
+     exist already.  In this case, we will copy its content into the
+     new configuration file, changing it to our liking in the
+     process.  */
+  if (orig_filename)
+    {
+      dest_file = fopen (dest_filename, "r");
+      if (!dest_file)
+	goto change_file_one_err;
+
+      while ((length = getline (&line, &line_len, dest_file)) > 0)
+	{
+	  int disable = 0;
+	  char *start;
+
+	  if (!strncmp (marker, line, sizeof (marker) - 1))
+	    {
+	      if (!in_marker)
+		in_marker = 1;
+	      else
+		break;
+	    }
+
+	  start = line;
+	  while (*start == ' ' || *start == '\t')
+	    start++;
+	  if (*start && *start != '\r' && *start != '\n' && *start != '#')
+	    {
+	      char *end;
+	      char *endp;
+	      char saved_end;
+
+	      endp = start;
+	      end = endp;
+
+	      /* Search for the end of the line.  */
+	      while (*endp && *endp != '#' && *endp != '\r' && *endp != '\n')
+		{
+		  endp++;
+		  if (*endp && *endp != ' ' && *endp != '\t'
+		      && *endp != '\r' && *endp != '\n' && *endp != '#')
+		    end = endp + 1;
+		}
+	      saved_end = *end;
+	      *end = '\0';
+
+	      if ((option->new_flags & GC_OPT_FLAG_DEFAULT)
+		  || !cur_arg || strcmp (start, cur_arg))
+		disable = 1;
+	      else
+		{
+		  /* Find next argument.  */
+		  if (arg)
+		    {
+		      char *arg_end;
+
+		      arg++;
+		      arg_end = strchr (arg, ',');
+		      if (arg_end)
+			*arg_end = '\0';
+
+		      cur_arg = percent_deescape (arg);
+		      if (arg_end)
+			{
+			  *arg_end = ',';
+			  arg = arg_end + 1;
+			}
+		      else
+			arg = NULL;
+		    }
+		  else
+		    cur_arg = NULL;
+		}
+
+	      *end = saved_end;
+	    }
+
+	  if (disable)
+	    {
+	      if (!in_marker)
+		{
+		  fprintf (src_file,
+			   "# GPGConf disabled this option here at %s\n",
+			   asctimestamp (gnupg_get_time ()));
+		  if (ferror (src_file))
+		    goto change_file_one_err;
+		  fprintf (src_file, "# %s", line);
+		  if (ferror (src_file))
+		    goto change_file_one_err;
+		}
+	    }
+	  else
+	    {
+	      fprintf (src_file, "%s", line);
+	      if (ferror (src_file))
+		goto change_file_one_err;
+	    }
+	}
+      if (ferror (dest_file))
+	goto change_file_one_err;
+    }
+
+  if (!in_marker)
+    {
+      /* There was no marker.  This is the first time we edit the
+	 file.  We add our own marker at the end of the file and
+	 proceed.  Note that we first write a newline, this guards us
+	 against files which lack the newline at the end of the last
+	 line, while it doesn't hurt us in all other cases.  */
+      fprintf (src_file, "\n%s\n", marker);
+      if (ferror (src_file))
+	goto change_file_one_err;
+    }
+
+  /* At this point, we have copied everything up to the end marker
+     into the new file, except for the arguments we are going to add.
+     Now, dump the new arguments and write the end marker, possibly
+     followed by the rest of the original file.  */
+  while (cur_arg)
+    {
+      fprintf (src_file, "%s\n", cur_arg);
+
+      /* Find next argument.  */
+      if (arg)
+	{
+	  char *end;
+
+	  arg++;
+	  end = strchr (arg, ',');
+	  if (end)
+	    *end = '\0';
+
+	  cur_arg = percent_deescape (arg);
+	  if (end)
+	    {
+	      *end = ',';
+	      arg = end + 1;
+	    }
+	  else
+	    arg = NULL;
+	}
+      else
+	cur_arg = NULL;
+    }
+
+  fprintf (src_file, "%s %s\n", marker, asctimestamp (gnupg_get_time ()));
+  if (ferror (src_file))
+    goto change_file_one_err;
+
+  if (!in_marker)
+    {
+      fprintf (src_file, "# GPGConf edited this configuration file.\n");
+      if (ferror (src_file))
+	goto change_file_one_err;
+      fprintf (src_file, "# It will disable options before this marked "
+	       "block, but it will\n");
+      if (ferror (src_file))
+	goto change_file_one_err;
+      fprintf (src_file, "# never change anything below these lines.\n");
+      if (ferror (src_file))
+	goto change_file_one_err;
+    }
+  if (dest_file)
+    {
+      while ((length = getline (&line, &line_len, dest_file)) > 0)
+	{
+	  fprintf (src_file, "%s", line);
+	  if (ferror (src_file))
+	    goto change_file_one_err;
+	}
+      if (ferror (dest_file))
+	goto change_file_one_err;
+    }
+  if (line)
+    free (line);
+  res = fclose (src_file);
+  if (res)
+    {
+      res = errno;
+      close (fd);
+      if (dest_file)
+	fclose (dest_file);
+      errno = res;
+      return -1;
+    }
+  close (fd);
+  if (dest_file)
+    {
+      res = fclose (dest_file);
+      if (res)
+	return -1;
+    }
+  return 0;
+
+ change_file_one_err:
+  if (line)
+    free (line);
+  res = errno;
+  if (src_file)
+    {
+      fclose (src_file);
+      close (fd);
+    }
+  if (dest_file)
+    fclose (dest_file);
+  errno = res;
   return -1;
 }
 
@@ -1394,7 +1679,6 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 	{
 	  int disable = 0;
 	  char *start;
-	  char *end;
 
 	  if (!strncmp (marker, line, sizeof (marker) - 1))
 	    {
@@ -1409,6 +1693,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 	    start++;
 	  if (*start && *start != '\r' && *start != '\n' && *start != '#')
 	    {
+	      char *end;
 	      char saved_end;
 
 	      end = start;
