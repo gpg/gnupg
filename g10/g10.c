@@ -175,6 +175,8 @@ enum cmd_and_opt_values { aNull = 0,
     oNoPGP6,
     oPGP7,
     oNoPGP7,
+    oPGP8,
+    oNoPGP8,
     oCipherAlgo,
     oDigestAlgo,
     oCertDigestAlgo,
@@ -458,6 +460,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoPGP6, "no-pgp6", 0, "@"},
     { oPGP7, "pgp7", 0, "@"},
     { oNoPGP7, "no-pgp7", 0, "@"},
+    { oPGP8, "pgp8", 0, "@"},
+    { oNoPGP8, "no-pgp8", 0, "@"},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
     { oS2KDigest, "s2k-digest-algo",2,
 		N_("|NAME|use message digest algorithm NAME for passphrases")},
@@ -1526,6 +1530,8 @@ main( int argc, char **argv )
 	  case oNoPGP6: opt.pgp6 = 0; break;
 	  case oPGP7: opt.pgp7 = 1; break;
 	  case oNoPGP7: opt.pgp7 = 0; break;
+	  case oPGP8: opt.pgp8 = 1; break;
+	  case oNoPGP8: opt.pgp8 = 0; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
@@ -1846,9 +1852,9 @@ main( int argc, char **argv )
     set_debug();
 
     /* Do these after the switch(), so they can override settings. */
-    if(opt.pgp2 && (opt.pgp6 || opt.pgp7))
+    if(opt.pgp2 && (opt.pgp6 || opt.pgp7 || opt.pgp8))
       log_error(_("%s not allowed with %s!\n"),
-		"--pgp2",opt.pgp6?"--pgp6":"--pgp7");
+		"--pgp2",opt.pgp6?"--pgp6":opt.pgp7?"--pgp7":"--pgp8");
     else
       {
 	if(opt.pgp2)
@@ -1929,20 +1935,28 @@ main( int argc, char **argv )
 		opt.def_compress_algo = 1;
 	      }
 	  }
-
-	if(opt.pgp6 || opt.pgp7)
+	else if(opt.pgp6)
 	  {
 	    opt.sk_comments=0;
 	    opt.escape_from=1;
 	    opt.force_v3_sigs=1;
 	    opt.ask_sig_expire=0;
 	    opt.def_compress_algo=1;
-
-	    if(opt.pgp6) /* pgp7 has MDC */
-	      {
-		opt.force_mdc=0;
-		opt.disable_mdc=1;
-	      }
+	    opt.force_mdc=0;
+	    opt.disable_mdc=1;
+	  }
+	else if(opt.pgp7)
+	  {
+	    opt.sk_comments=0;
+	    opt.escape_from=1;
+	    opt.force_v3_sigs=1;
+	    opt.ask_sig_expire=0;
+	    opt.def_compress_algo=1;
+	  }
+	else if(opt.pgp8)
+	  {
+	    opt.escape_from=1;
+	    opt.def_compress_algo=1;
 	  }
       }
 
@@ -2830,7 +2844,7 @@ add_notation_data( const char *string, int which )
     for( s=string ; *s != '='; s++ )
       {
 	if( *s=='@')
-	  saw_at=0;
+	  saw_at=1;
 
 	if( !*s || (*s & 0x80) || (!isgraph(*s) && !isspace(*s)) )
 	  {

@@ -204,6 +204,7 @@ void release_revocation_reason_info( struct revocation_reason_info *reason );
 /*-- keylist.c --*/
 void public_key_list( STRLIST list );
 void secret_key_list( STRLIST list );
+void reorder_keyblock (KBNODE keyblock);
 void list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque );
 void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
 void show_policy_url(PKT_signature *sig,int indent);

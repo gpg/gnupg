@@ -1,3 +1,19 @@
+2002-12-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), encode.c (write_pubkey_enc_from_list),
+	pkclist.c (algo_available), revoke.c (gen_revoke): Add --pgp8
+	mode.  This is basically identical to --pgp7 in all ways except
+	that signing subkeys, v4 data sigs (including expiration), and SK
+	comments are allowed.
+
+	* getkey.c (finish_lookup): Comment.
+
+	* main.h, keylist.c (reorder_keyblock), keyedit.c (keyedit_menu):
+	Reorder user ID display in the --edit-key menu to match that of
+	the --list-keys display.
+
+	* g10.c (add_notation_data): Fix initialization.
+
 2002-12-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_expire): Don't lose key flags when changing the

@@ -92,8 +92,8 @@ struct {
     unsigned int force_ownertrust;
     int pgp2;
     int pgp6;
-    int pgp7; /* if we get any more of these, it's time to look at a
-		 special emulate_pgp variable... */
+    int pgp7;
+    int pgp8;
     int rfc1991;
     int rfc2440;
     int pgp2_workarounds;
