@@ -22,7 +22,7 @@ info_TEXINFOS = gnupg.texi
 
 gnupg_TEXINFOS = \
 	gpgsm.texi gpg-agent.texi scdaemon.texi assuan.texi\
-	contrib.texi gpl.texi fdl.texi
+	debugging.texi contrib.texi gpl.texi fdl.texi
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops
 

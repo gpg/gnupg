@@ -1,3 +1,8 @@
+2004-06-18  Werner Koch  <wk@gnupg.org>
+
+	* debugging.texi: New.
+	* gnupg.texi: Include it.
+
 2004-05-11  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.texi (Esoteric Options): Add --debug-allow-core-dump.

@@ -126,6 +126,7 @@ Developer information
 
 Miscellaneous
 
+* Debugging::           How to solve problems
 * Copying::             GNU General Public License says
                         how you can copy and share GnuPG
 * GNU Free Documentation License:: How you can copy and share this manual.
@@ -142,6 +143,8 @@ Indices
 @include scdaemon.texi
 
 @include assuan.texi
+
+@include debugging.texi
 
 @include gpl.texi
 @include fdl.texi
