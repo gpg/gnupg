@@ -1,3 +1,19 @@
+Noteworthy changes in version 0.2.19
+------------------------------------
+
+    * Replaced /dev/urandom in checks with new tool mk-tdata.
+
+    * Some assembler file cleanups; some more functions for the Alpha.
+
+    * Tiger has now the OpenPGP assigned number 6.  Because the OID has
+      changed, old signatures using this algorithm can't be verified.
+
+    * gnupg now encrypts the compressed packed and not any longer in the
+      reverse order; anyway it can decrypt both versions. Thanks to Tom
+      for telling me this (not security related) bug.
+
+    * --add-key works and you are now able to generate subkeys.
+
 Noteworthy changes in version 0.2.18
 ------------------------------------
 

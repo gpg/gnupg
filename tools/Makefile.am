@@ -4,13 +4,14 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 needed_libs = ../cipher/libcipher.a  ../util/libutil.a \
 	      ../mpi/libmpi.a ../util/libutil.a
 
-noinst_PROGRAMS = mpicalc bftest clean-sat
+noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata
 
 mpicalc_SOURCES = mpicalc.c
 
 bftest_SOURCES = bftest.c
 
 clean_sat_SOURCES  = clean-sat.c
+mk_tdata_SOURCES = mk-tdata.c
 
 
 mpicalc_LDADD = @INTLLIBS@  $(needed_libs)

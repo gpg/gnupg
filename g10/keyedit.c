@@ -169,10 +169,6 @@ remove_keysigs( KBNODE keyblock, u32 *keyid, int all )
 	    && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 
-	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
-		/* fixme: skip self-sig */
-	    }
-
 	    tty_printf("\n \"%08lX %s   ",
 			sig->keyid[1], datestr_from_sig(sig));
 	    if( node->flag & 6 )
@@ -349,6 +345,7 @@ sign_key( const char *username, STRLIST locusr )
 
 		    rc = make_keysig_packet( &sig, pkc,
 						   node->pkt->pkt.user_id,
+						   NULL,
 						   skc_rover->skc,
 						   0x10, 0 );
 		    if( rc ) {
@@ -568,9 +565,10 @@ change_passphrase( const char *username )
     KBNODE node;
     KBPOS kbpos;
     PKT_secret_cert *skc;
-    u32 skc_keyid[2];
+    u32 keyid[2];
     char *answer;
     int changed=0;
+    char *passphrase = NULL;
 
     /* find the userid */
     rc = find_secret_keyblock_byname( &kbpos, username );
@@ -595,17 +593,27 @@ change_passphrase( const char *username )
     }
 
     skc = node->pkt->pkt.secret_cert;
-    keyid_from_skc( skc, skc_keyid );
+    keyid_from_skc( skc, keyid );
     tty_printf("sec  %4u%c/%08lX %s   ",
 	      nbits_from_skc( skc ),
 	      pubkey_letter( skc->pubkey_algo ),
-	      skc_keyid[1], datestr_from_skc(skc) );
+	      keyid[1], datestr_from_skc(skc) );
     {
 	size_t n;
-	char *p = get_user_id( skc_keyid, &n );
+	char *p = get_user_id( keyid, &n );
 	tty_print_string( p, n );
 	m_free(p);
 	tty_printf("\n");
+    }
+    for(node=keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
+	    PKT_secret_cert *subskc = node->pkt->pkt.secret_cert;
+	    keyid_from_skc( subskc, keyid );
+	    tty_printf("sub  %4u%c/%08lX %s\n",
+		      nbits_from_skc( subskc ),
+		      pubkey_letter( subskc->pubkey_algo ),
+		      keyid[1], datestr_from_skc(subskc) );
+	}
     }
 
     clear_kbnode_flags( keyblock );
@@ -619,10 +627,21 @@ change_passphrase( const char *username )
       default:
 	tty_printf("Key is protected.\n");
 	rc = check_secret_key( skc );
+	if( !rc )
+	    passphrase = get_last_passphrase();
 	break;
     }
 
-    /* fixme: unprotect all subkeys */
+    /* unprotect all subkeys (use the supplied passphrase or ask)*/
+    for(node=keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
+	    PKT_secret_cert *subskc = node->pkt->pkt.secret_cert;
+	    set_next_passphrase( passphrase );
+	    rc = check_secret_key( subskc );
+	    if( rc )
+		break;
+	}
+    }
 
     if( rc )
 	tty_printf("Can't edit this key: %s\n", g10_errstr(rc));
@@ -632,6 +651,7 @@ change_passphrase( const char *username )
 
 	tty_printf(_("Enter the new passphrase for this secret key.\n\n") );
 
+	set_next_passphrase( NULL );
 	for(;;) {
 	    s2k->mode = 1;
 	    s2k->hash_algo = DIGEST_ALGO_RMD160;
@@ -651,10 +671,17 @@ change_passphrase( const char *username )
 		break;
 	    }
 	    else { /* okay */
-		/* fixme: protect all subkeys too */
 		skc->protect.algo = dek->algo;
 		skc->protect.s2k = *s2k;
 		rc = protect_secret_key( skc, dek );
+		for(node=keyblock; !rc && node; node = node->next ) {
+		    if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
+			PKT_secret_cert *subskc = node->pkt->pkt.secret_cert;
+			subskc->protect.algo = dek->algo;
+			subskc->protect.s2k = *s2k;
+			rc = protect_secret_key( subskc, dek );
+		    }
+		}
 		if( rc )
 		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
 		else
@@ -676,7 +703,9 @@ change_passphrase( const char *username )
     }
 
   leave:
+    m_free( passphrase );
     release_kbnode( keyblock );
+    set_next_passphrase( NULL );
     return rc;
 }
 
@@ -689,14 +718,16 @@ change_passphrase( const char *username )
  */
 int
 make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
-		    PKT_user_id *uid, PKT_secret_cert *skc,
+		    PKT_user_id *uid, PKT_public_cert *subpkc,
+		    PKT_secret_cert *skc,
 		    int sigclass, int digest_algo )
 {
     PKT_signature *sig;
     int rc=0;
     MD_HANDLE md;
 
-    assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x20 );
+    assert( (sigclass >= 0x10 && sigclass <= 0x13)
+	    || sigclass == 0x20 || sigclass == 0x18 );
     if( !digest_algo ) {
 	switch( skc->pubkey_algo ) {
 	  case PUBKEY_ALGO_DSA: digest_algo = DIGEST_ALGO_SHA1; break;
@@ -706,11 +737,13 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 	}
     }
     md = md_open( digest_algo, 0 );
-    /*md_start_debug( md, "make" );*/
 
     /* hash the public key certificate and the user id */
     hash_public_cert( md, pkc );
-    if( sigclass != 0x20 ) {
+    if( sigclass == 0x18 ) { /* subkey binding */
+	hash_public_cert( md, subpkc );
+    }
+    else if( sigclass != 0x20 ) {
 	if( skc->version >=4 ) {
 	    byte buf[5];
 	    buf[0] = 0xb4;	      /* indicates a userid packet */
@@ -759,7 +792,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 	/* add some magic */
 	buf[0] = sig->version;
 	buf[1] = 0xff;
-	buf[2] = n >> 24; /* hmmm, n is only 16 bit, so tthis is always 0 */
+	buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
 	buf[3] = n >> 16;
 	buf[4] = n >>  8;
 	buf[5] = n;

@@ -170,16 +170,18 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
-    write_comment( out, "#created by GNUPG v" VERSION " ("
+    else
+	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
-    if( opt.compress && !outfile )
-	iobuf_push_filter( out, compress_filter, &zfx );
-
     if( encrypt ) {
 	efx.pkc_list = pkc_list;
 	/* fixme: set efx.cfx.datalen if known */
 	iobuf_push_filter( out, encrypt_filter, &efx );
     }
+
+    if( opt.compress && !outfile )
+	iobuf_push_filter( out, compress_filter, &zfx );
+
 
     if( !detached ) {
 	/* loop over the secret certificates and build headers */
@@ -410,7 +412,6 @@ int
 clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 {
     armor_filter_context_t afx;
-    compress_filter_context_t zfx;
     text_filter_context_t tfx;
     MD_HANDLE textmd = NULL;
     IOBUF inp = NULL, out = NULL;
@@ -420,7 +421,6 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     SKC_LIST skc_rover = NULL;
 
     memset( &afx, 0, sizeof afx);
-    memset( &zfx, 0, sizeof zfx);
     memset( &tfx, 0, sizeof tfx);
     init_packet( &pkt );
 

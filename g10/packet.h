@@ -308,7 +308,8 @@ int write_comment( IOBUF out, const char *s );
 
 /*-- sign.c --*/
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
-			PKT_user_id *uid, PKT_secret_cert *skc,
+			PKT_user_id *uid, PKT_public_cert *subpkc,
+			PKT_secret_cert *skc,
 			int sigclass, int digest_algo );
 
 #endif /*G10_PACKET_H*/

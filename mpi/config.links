@@ -150,7 +150,7 @@ fi
 
 # fixme: grep these modules from Makefile.in
 mpi_ln_modules="${mpi_extra_modules} mpih-add1 mpih-mul1 mpih-mul2 mpih-mul3 \
-		 mpih-shift mpih-sub1"
+		 mpih-lshift mpih-rshift mpih-sub1"
 
 mpi_ln_objects=
 mpi_ln_src=

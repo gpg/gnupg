@@ -216,35 +216,48 @@ md_digest_length( int algo )
 }
 
 
+/* fixme: put the oids in a table and add a mode to enumerate the OIDs
+ * to make g10/sig-check.c more portable */
 const byte *
 md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 {
-    size_t alen, mlen;
+    size_t alen;
     byte *p;
 
     if( algo == DIGEST_ALGO_MD5 ) {
 	static byte asn[18] = /* Object ID is 1.2.840.113549.2.5 */
 		    { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
 		      0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
-	mlen = 16; alen = DIM(asn); p = asn;
+	alen = DIM(asn); p = asn;
     }
     else if( algo == DIGEST_ALGO_RMD160 ) {
 	static byte asn[15] = /* Object ID is 1.3.36.3.2.1 */
 	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
 	    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
-	mlen = 20; alen = DIM(asn); p = asn;
+	alen = DIM(asn); p = asn;
     }
     else if( algo == DIGEST_ALGO_TIGER ) {
-	static byte asn[15] = /* FIXME: Object ID is ???????????? */
-	  { 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
-	    0x42, 0x42, 0x42, 0x42, 0x42, 0x42 };
-	mlen = 24; alen = DIM(asn); p = asn;
+	/* 40: SEQUENCE {
+	 * 12:	 SEQUENCE {
+	 *  8:	   OCTET STRING   :54 49 47 45 52 31 39 32
+	 *  0:	   NULL
+	 *   :	   }
+	 * 24:	 OCTET STRING
+	 *   :	 }
+	 *
+	 * By replacing the 5th byte (0x04) with 0x16 we would have;
+	 *	  8:	 IA5String 'TIGER192'
+	 */
+	static byte asn[18] =
+		    { 0x30, 0x28, 0x30, 0x0c, 0x04, 0x08, 0x54, 0x49, 0x47,
+		      0x45, 0x52, 0x31, 0x39, 0x32, 0x05, 0x00, 0x04, 0x18 };
+	alen = DIM(asn); p = asn;
     }
     else if( algo == DIGEST_ALGO_SHA1 ) {
-	static byte asn[15] = /* Objet ID is 1.3.14.3.2.26 */
+	static byte asn[15] = /* Object ID is 1.3.14.3.2.26 */
 		    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
 		      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
-	mlen = 20; alen = DIM(asn); p = asn;
+	alen = DIM(asn); p = asn;
     }
     else
 	log_bug("md_asn_oid(%d)", algo );
@@ -252,7 +265,7 @@ md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
     if( asnlen )
 	*asnlen = alen;
     if( mdlen )
-	*mdlen = mlen;
+	*mdlen = p[alen-1];
     return p;
 }
 

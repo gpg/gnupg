@@ -98,7 +98,7 @@ SUFFIXES = .S .s
 
 EXTRA_DIST = config.links
 DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
-		 mpih-shift.S mpih-sub1.S asm-syntax.h sysdep.h
+		 mpih-lshift.S mpih-rshift.S mpih-sub1.S asm-syntax.h sysdep.h
 
 noinst_LIBRARIES = libmpi.a
 # noinst_HEADERS   =
@@ -131,7 +131,8 @@ common_asm_objects = mpih-mul1.o    \
 		     mpih-mul3.o    \
 		     mpih-add1.o    \
 		     mpih-sub1.o    \
-		     mpih-shift.o
+		     mpih-lshift.o  \
+		     mpih-rshift.o
 
 libmpi_a_DEPENDENCIES = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@

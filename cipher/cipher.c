@@ -46,10 +46,10 @@ static struct { const char *name; int algo; int keylen; } cipher_names[] = {
     { "3DES",        CIPHER_ALGO_3DES        ,0   },
     { "CAST",        CIPHER_ALGO_CAST        ,128 },
     { "BLOWFISH160", CIPHER_ALGO_BLOWFISH160 ,160 },
-    { "ROT_N",       CIPHER_ALGO_ROT_N       ,0   },
     { "SAFER_SK128", CIPHER_ALGO_SAFER_SK128 ,0   },
     { "DES_SK",      CIPHER_ALGO_DES_SK      ,0   },
     { "BLOWFISH",    CIPHER_ALGO_BLOWFISH    ,128 },
+    { "DUMMY"   ,    CIPHER_ALGO_DUMMY       ,128 },
     {NULL} };
 
 
@@ -74,6 +74,14 @@ struct cipher_handle_s {
 	CAST5_context cast5;
     } c;
 };
+
+
+static void
+dummy_setkey( void *c, byte *key, unsigned keylen ) { }
+static void
+dummy_encrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
+static void
+dummy_decrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
 
 
 /****************
@@ -115,6 +123,7 @@ check_cipher_algo( int algo )
       case CIPHER_ALGO_BLOWFISH160:
       case CIPHER_ALGO_BLOWFISH:
       case CIPHER_ALGO_CAST:
+      case CIPHER_ALGO_DUMMY:
 	return 0;
       default:
 	return G10ERR_CIPHER_ALGO;
@@ -154,7 +163,9 @@ cipher_open( int algo, int mode, int secure )
     hd = secure ? m_alloc_secure_clear( sizeof *hd )
 		: m_alloc_clear( sizeof *hd );
     hd->algo = algo;
-    if( mode == CIPHER_MODE_AUTO_CFB ) {
+    if( algo == CIPHER_ALGO_DUMMY )
+	hd->mode = CIPHER_MODE_DUMMY;
+    else if( mode == CIPHER_MODE_AUTO_CFB ) {
 	if( algo != CIPHER_ALGO_BLOWFISH160 )
 	    hd->mode = CIPHER_MODE_PHILS_CFB;
 	else
@@ -174,6 +185,12 @@ cipher_open( int algo, int mode, int secure )
 	hd->setkey  = FNCCAST_SETKEY(cast5_setkey);
 	hd->encrypt = FNCCAST_CRYPT(cast5_encrypt_block);
 	hd->decrypt = FNCCAST_CRYPT(cast5_decrypt_block);
+	break;
+
+      case CIPHER_ALGO_DUMMY:
+	hd->setkey  = FNCCAST_SETKEY(dummy_setkey);
+	hd->encrypt = FNCCAST_CRYPT(dummy_encrypt_block);
+	hd->decrypt = FNCCAST_CRYPT(dummy_decrypt_block);
 	break;
 
       default: log_fatal("cipher_open: invalid algo %d\n", algo );
@@ -217,8 +234,8 @@ do_ecb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
 
     for(n=0; n < nblocks; n++ ) {
 	(*c->encrypt)( &c->c.context, outbuf, inbuf );
-	inbuf  += CAST5_BLOCKSIZE;;
-	outbuf += CAST5_BLOCKSIZE;
+	inbuf  += STD_BLOCKSIZE;;
+	outbuf += STD_BLOCKSIZE;
     }
 }
 
@@ -229,8 +246,8 @@ do_ecb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
 
     for(n=0; n < nblocks; n++ ) {
 	(*c->decrypt)( &c->c.context, outbuf, inbuf );
-	inbuf  += CAST5_BLOCKSIZE;;
-	outbuf += CAST5_BLOCKSIZE;
+	inbuf  += STD_BLOCKSIZE;;
+	outbuf += STD_BLOCKSIZE;
     }
 }
 
@@ -397,6 +414,10 @@ cipher_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
       case CIPHER_MODE_PHILS_CFB:
 	do_cfb_encrypt(c, outbuf, inbuf, nbytes );
 	break;
+      case CIPHER_MODE_DUMMY:
+	if( inbuf != outbuf )
+	    memmove( outbuf, inbuf, nbytes );
+	break;
       default: log_fatal("cipher_encrypt: invalid mode %d\n", c->mode );
     }
 }
@@ -419,6 +440,10 @@ cipher_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
       case CIPHER_MODE_PHILS_CFB:
 	do_cfb_decrypt(c, outbuf, inbuf, nbytes );
 	break;
+      case CIPHER_MODE_DUMMY:
+	if( inbuf != outbuf )
+	    memmove( outbuf, inbuf, nbytes );
+	break;
       default: log_fatal("cipher_decrypt: invalid mode %d\n", c->mode );
     }
 }
@@ -433,8 +458,8 @@ void
 cipher_sync( CIPHER_HANDLE c )
 {
     if( c->mode == CIPHER_MODE_PHILS_CFB && c->unused ) {
-	memmove(c->iv + c->unused, c->iv, CAST5_BLOCKSIZE - c->unused );
-	memcpy(c->iv, c->lastiv + CAST5_BLOCKSIZE - c->unused, c->unused);
+	memmove(c->iv + c->unused, c->iv, STD_BLOCKSIZE - c->unused );
+	memcpy(c->iv, c->lastiv + STD_BLOCKSIZE - c->unused, c->unused);
 	c->unused = 0;
     }
 }

@@ -284,3 +284,30 @@ Status codes are:
 
 
 
+Ich werde jetzt doch das HKP Protokoll implementieren:
+
+Naja, die Doku ist so gut wie nichtexistent, da gebe ich Dir recht.
+In kurzen Worten:
+
+(Minimal-)HTTP-Server auf Port 11371, versteht ein GET auf /pks/lookup,
+wobei die Query-Parameter (Key-Value-Paare mit = zwischen Key und
+Value; die Paare sind hinter ? und durch & getrennt). Gültige
+Operationen sind:
+
+- - op (Operation) mit den Möglichkeiten index (gleich wie -kv bei
+  PGP), vindex (-kvv) und get (-kxa)
+- - search: Liste der Worte, die im Key vorkommen müssen. Worte sind
+  mit Worttrennzeichen wie Space, Punkt, @, ... getrennt, Worttrennzeichen
+  werden nicht betrachtet, die Reihenfolge der Worte ist egal.
+- - exact: (on=aktiv, alles andere inaktiv) Nur die Schlüssel
+  zurückgeben, die auch den "search"-String beinhalten (d.h.
+  Wortreihenfolge und Sonderzeichen sind wichtig)
+- - fingerprint (Bei [v]index auch den Fingerprint ausgeben), "on"
+  für aktiv, alles andere inaktiv
+
+Neu (wird von GNUPG benutzt):
+   /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
+
+Zusätzlich versteht der Keyserver auch ein POST auf /pks/add, womit
+man Keys hochladen kann.
+

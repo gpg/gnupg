@@ -1,5 +1,6 @@
 syntax.h
-mpih-shift.S
+mpih-lshift.S
+mpih-rshift.S
 mpih-add1.S
 mpih-sub1.S
 

@@ -1,5 +1,6 @@
 
-    * make --add-key work (to add an ElGamal key to a DSA key).
+    * add usage arguments to get_key_byname or return a PKC_LIST with
+      all keys and add a selection.
 
     * add readline support. Must enhance libreadline - Anyone?
 

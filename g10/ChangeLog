@@ -1,3 +1,35 @@
+Tue May 26 11:24:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* passphrase.c (get_last_passphrase): New
+	(set_next_passphrase): New.
+	(passphrase_to_dek): add support for the above functions.
+	* keyedit.c (make_keysig_packet): Add sigclass 0x18,
+	changed all callers due to a new argument.
+	* keygen.c (write_keybinding): New
+	(generate_subkeypair): Add functionality
+	(ask_algo, ask_keysize, ask_valid_days): Broke out of generate_keypair
+	(ask_user_id, ask_passphrase): Ditto.
+
+Thu May 21 11:26:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c,gpgd.c (main): Does now return an int, so that egcs does
+	not complain.
+
+	* armor.c (fake_packet): Removed erro message and add a noticed
+	that this part should be fixed.
+
+	* sign.c (sign_file): Compression now comes in front of encryption.
+	* encode.c (encode_simple): Ditto.
+	(encode_crypt): Ditto.
+
+Tue May 19 16:18:19 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (fake_packet): Changed assertion to log_error
+
+Sat May 16 16:02:06 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* build-packet.c (build_packet): Add SUBKEY packets.
+
 Fri May 15 17:57:23 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* sign.c (hash_for): New and used in all places here.

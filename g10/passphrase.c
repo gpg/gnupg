@@ -33,6 +33,8 @@
 #include "main.h"
 
 static int pwfd = -1;
+static char *next_pw = NULL;
+static char *last_pw = NULL;
 
 static void hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create );
 
@@ -46,6 +48,34 @@ int
 get_passphrase_fd()
 {
     return pwfd;
+}
+
+/****************
+ * Set the passphrase to be used for the next query and only for the next
+ * one.
+ */
+void
+set_next_passphrase( const char *s )
+{
+    m_free(next_pw);
+    next_pw = NULL;
+    if( s ) {
+	next_pw = m_alloc_secure( strlen(s)+1 );
+	strcpy(next_pw, s );
+    }
+}
+
+/****************
+ * Get the last passphrase used in passphrase_to_dek.
+ * Note: This removes the passphrase from this modules and
+ * the caller must free the result.  May return NULL:
+ */
+char *
+get_last_passphrase()
+{
+    char *p = last_pw;
+    last_pw = NULL;
+    return p;
 }
 
 
@@ -62,7 +92,7 @@ get_passphrase_fd()
 DEK *
 passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 {
-    char *pw;
+    char *pw = NULL;
     DEK *dek;
     STRING2KEY help_s2k;
 
@@ -77,7 +107,7 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 					    :DEFAULT_DIGEST_ALGO;
     }
 
-    if( keyid && !opt.batch ) {
+    if( keyid && !opt.batch && !next_pw ) {
 	char *ustr;
 	tty_printf("Need a pass phrase to unlock the secret key for:\n");
 	tty_printf("  \"" );
@@ -87,7 +117,11 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	tty_printf("\"\n\n");
 
     }
-    if( pwfd != -1 ) { /* read the passphrase from the given descriptor */
+    if( next_pw ) {
+	pw = next_pw;
+	next_pw = NULL;
+    }
+    else if( pwfd != -1 ) { /* read the passphrase from the file */
 	int i, len;
 
 	if( !opt.batch )
@@ -130,7 +164,8 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	dek->keylen = 0;
     else
 	hash_passphrase( dek, pw, s2k, mode==2 );
-    m_free(pw); /* is allocated in secure memory, so it will be burned */
+    m_free(last_pw);
+    last_pw = pw;
     return dek;
 }
 

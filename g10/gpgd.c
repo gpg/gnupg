@@ -58,7 +58,7 @@ strusage( int level )
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
       case 19: p =
-	    "Please report bugs to <gnupg-bugs@isil.d.shuttle.de>.\n";
+	    "Please report bugs to <gnupg-bugs@gnu.org>.\n";
 	break;
       case 1:
       case 40:	p = "Usage: gpgd [options] (-h for help)";
@@ -135,7 +135,7 @@ set_debug(void)
 }
 
 
-void
+int
 main( int argc, char **argv )
 {
     ARGPARSE_ARGS pargs;
@@ -236,9 +236,8 @@ main( int argc, char **argv )
 	become_daemon();
 
 
-
-
     g10_exit(0);
+    return 8; /*NEVER REACHED*/
 }
 
 

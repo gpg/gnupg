@@ -1,8 +1,6 @@
-/* alpha  add_n -- Add two limb vectors of the same length > 0 and store
- *		   sum in a third limb vector.
- *
- *	Copyright (C) 1995 Free Software Foundation, Inc.
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+/* Alpha  sub_n -- Subtract two limb vectors of the same length > 0 and
+ *		  store difference in a third limb vector.
+ * Copyright (C) 1995, 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -22,23 +20,21 @@
  */
 
 
-
 /*******************
  *  mpi_limb_t
- *  mpihelp_add_n( mpi_ptr_t res_ptr,	($16)
- *		   mpi_ptr_t s1_ptr,	($17)
- *		   mpi_ptr_t s2_ptr,	($18)
- *		   mpi_size_t size)	($19)
+ *  mpihelp_sub_n( mpi_ptr_t res_ptr,	(r16)
+ *		   mpi_ptr_t s1_ptr,	(r17)
+ *		   mpi_ptr_t s2_ptr,	(r18)
+ *		   mpi_size_t size)	(r19)
  */
-
 
 	.set	noreorder
 	.set	noat
 .text
 	.align	3
-	.globl	mpihelp_add_n
-	.ent	mpihelp_add_n
-mpihelp_add_n:
+	.globl	mpihelp_sub_n
+	.ent	mpihelp_sub_n
+mpihelp_sub_n:
 	.frame	$30,0,$26,0
 
 	ldq	$3,0($17)
@@ -56,8 +52,8 @@ mpihelp_add_n:
 	addq	$4,$0,$4
 	ldq	$6,8($18)
 	cmpult	$4,$0,$1
-	addq	$3,$4,$4
-	cmpult	$4,$3,$0
+	subq	$3,$4,$4
+	cmpult	$3,$4,$0
 	stq	$4,0($16)
 	or	$0,$1,$0
 
@@ -77,8 +73,8 @@ mpihelp_add_n:
 	addq	$4,$0,$4
 	ldq	$6,8($18)
 	cmpult	$4,$0,$1
-	addq	$3,$4,$4
-	cmpult	$4,$3,$0
+	subq	$3,$4,$4
+	cmpult	$3,$4,$0
 	stq	$4,0($16)
 	or	$0,$1,$0
 
@@ -86,8 +82,8 @@ mpihelp_add_n:
 	addq	$6,$0,$6
 	ldq	$4,16($18)
 	cmpult	$6,$0,$1
-	addq	$5,$6,$6
-	cmpult	$6,$5,$0
+	subq	$5,$6,$6
+	cmpult	$5,$6,$0
 	stq	$6,8($16)
 	or	$0,$1,$0
 
@@ -95,8 +91,8 @@ mpihelp_add_n:
 	addq	$4,$0,$4
 	ldq	$6,24($18)
 	cmpult	$4,$0,$1
-	addq	$3,$4,$4
-	cmpult	$4,$3,$0
+	subq	$3,$4,$4
+	cmpult	$3,$4,$0
 	stq	$4,16($16)
 	or	$0,$1,$0
 
@@ -104,8 +100,8 @@ mpihelp_add_n:
 	addq	$6,$0,$6
 	ldq	$4,32($18)
 	cmpult	$6,$0,$1
-	addq	$5,$6,$6
-	cmpult	$6,$5,$0
+	subq	$5,$6,$6
+	cmpult	$5,$6,$0
 	stq	$6,24($16)
 	or	$0,$1,$0
 
@@ -116,11 +112,12 @@ mpihelp_add_n:
 
 .Lend:	addq	$4,$0,$4
 	cmpult	$4,$0,$1
-	addq	$3,$4,$4
-	cmpult	$4,$3,$0
+	subq	$3,$4,$4
+	cmpult	$3,$4,$0
 	stq	$4,0($16)
 	or	$0,$1,$0
 	ret	$31,($26),1
 
-	.end	mpihelp_add_n
+	.end	mpihelp_sub_n
+
 

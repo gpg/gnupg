@@ -1,3 +1,9 @@
+Mon May 18 13:47:06 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* config.links: split mpih-shift into mpih-[lr]shift and
+	changed all implementations.
+	* mpi/alpha: add some new assembler stuff.
+
 Wed May 13 11:04:29 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* config.links: Add support for MIPS

@@ -82,9 +82,11 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_COMMENT:
 	rc = do_comment( out, ctb, pkt->pkt.comment );
 	break;
+      case PKT_PUBKEY_SUBCERT:
       case PKT_PUBLIC_CERT:
 	rc = do_public_cert( out, ctb, pkt->pkt.public_cert );
 	break;
+      case PKT_SECKEY_SUBCERT:
       case PKT_SECRET_CERT:
 	rc = do_secret_cert( out, ctb, pkt->pkt.secret_cert );
 	break;

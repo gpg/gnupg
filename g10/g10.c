@@ -201,7 +201,7 @@ strusage( int level )
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
       case 19: p =
-	    _("Please report bugs to <gnupg-bugs@isil.d.shuttle.de>.\n");
+	    _("Please report bugs to <gnupg-bugs@gnu.org>.\n");
 	break;
       case 1:
       case 40:	p =
@@ -364,7 +364,7 @@ check_opts(void)
 
 
 
-void
+int
 main( int argc, char **argv )
 {
     ARGPARSE_ARGS pargs;
@@ -1005,6 +1005,7 @@ main( int argc, char **argv )
     FREE_STRLIST(remusr);
     FREE_STRLIST(locusr);
     g10_exit(0);
+    return 8; /*NEVER REACHED*/
 }
 
 

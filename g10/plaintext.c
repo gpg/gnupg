@@ -77,7 +77,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
     if( pt->len ) {
 	for( ; pt->len; pt->len-- ) {
 	    if( (c = iobuf_get(pt->buf)) == -1 ) {
-		log_error("Problem reading source\n");
+		log_error("Problem reading source (%u bytes remaining)\n",
+							 (unsigned)pt->len);
 		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }

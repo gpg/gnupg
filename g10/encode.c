@@ -112,12 +112,9 @@ encode_simple( const char *filename, int mode )
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
-
-    write_comment( out, "#created by GNUPG v" VERSION " ("
+    else
+	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
-
-    if( opt.compress )
-	iobuf_push_filter( out, compress_filter, &zfx );
 
     if( s2k ) {
 	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
@@ -150,11 +147,14 @@ encode_simple( const char *filename, int mode )
     pt->buf = inp;
     pkt.pkttype = PKT_PLAINTEXT;
     pkt.pkt.plaintext = pt;
-    cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;
+    cfx.datalen = filesize && !opt.compress ? calc_packet_length( &pkt ) : 0;
 
     /* register the cipher filter */
     if( mode )
 	iobuf_push_filter( out, cipher_filter, &cfx );
+    /* register the compress filter */
+    if( opt.compress )
+	iobuf_push_filter( out, compress_filter, &zfx );
 
     /* do the work */
     if( (rc = build_packet( out, &pkt )) )
@@ -211,12 +211,9 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
-
-    write_comment( out, "#created by GNUPG v" VERSION " ("
+    else
+	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
-
-    if( opt.compress )
-	iobuf_push_filter( out, compress_filter, &zfx );
 
     /* create a session key */
     cfx.dek = m_alloc_secure( sizeof *cfx.dek );
@@ -249,10 +246,13 @@ encode_crypt( const char *filename, STRLIST remusr )
     init_packet(&pkt);
     pkt.pkttype = PKT_PLAINTEXT;
     pkt.pkt.plaintext = pt;
-    cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;
+    cfx.datalen = filesize && !opt.compress? calc_packet_length( &pkt ) : 0;
 
     /* register the cipher filter */
     iobuf_push_filter( out, cipher_filter, &cfx );
+    /* register the compress filter */
+    if( opt.compress )
+	iobuf_push_filter( out, compress_filter, &zfx );
 
     /* do the work */
     if( (rc = build_packet( out, &pkt )) )

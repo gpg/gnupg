@@ -703,8 +703,13 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    break;
 
 	  case fhdrENDClearsig:
-	    assert( emplines );
-	    emplines--; /* don't count the last one */
+	    /* FIXME: this is wrong: Only the last CRLF should
+	     * not be included in the hash, muts rewrite the FSM again
+	     * This proble does only occur if the last line does not end
+	     * in with a LF?
+	     */
+	    if( emplines )
+		emplines--; /* don't count the last one */
 	    state = fhdrENDClearsigHelp;
 	    afx->helplen = n;
 	    break;

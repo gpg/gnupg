@@ -42,12 +42,12 @@ secring.skr: secring.skr.asc
 	../g10/gpgm --yes --dearmor -o secring.skr secring.skr.asc
 
 data-500:
-	head -c 500 /dev/urandom >data-500
+	../tools/mk-tdata   500 /dev/urandom >data-500
 data-9000:
-	head -c 9000 /dev/urandom >data-9000
+	../tools/mk-tdata  9000 /dev/urandom >data-9000
 data-32000:
-	head -c 32000 /dev/urandom >data-32000
+	../tools/mk-tdata 32000 /dev/urandom >data-32000
 data-80000:
-	head -c 80000 /dev/urandom >data-80000
+	../tools/mk-tdata 80000 /dev/urandom >data-80000
 
 

@@ -55,7 +55,7 @@ do_check( PKT_secret_cert *cert )
 	  case CIPHER_ALGO_CAST:
 	    keyid_from_skc( cert, keyid );
 	    dek = passphrase_to_dek( keyid, cert->protect.algo,
-					      &cert->protect.s2k, 0 );
+				     &cert->protect.s2k, 0 );
 	    cipher_hd = cipher_open( cert->protect.algo,
 				     CIPHER_MODE_AUTO_CFB, 1);
 	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
@@ -227,7 +227,7 @@ check_secret_key( PKT_secret_cert *cert )
 	  case PUBKEY_ALGO_ELGAMAL:
 	  case PUBKEY_ALGO_DSA:
 	    rc = do_check( cert );
-	  #if 1 /* set to 0 to disable the workaround */
+	  #if 0 /* set to 1 to enable the workaround */
 	    if( rc == G10ERR_BAD_PASS && cert->is_protected
 		&& cert->protect.algo == CIPHER_ALGO_BLOWFISH
 		&& cert->pubkey_algo != PUBKEY_ALGO_ELGAMAL ) {
@@ -243,11 +243,19 @@ check_secret_key( PKT_secret_cert *cert )
 	    }
 	  #endif
 	    break;
+	#ifdef HAVE_RSA_CIPHER
+	  case PUBKEY_ALGO_RSA:
+	  case PUBKEY_ALGO_RSA_E:
+	  case PUBKEY_ALGO_RSA_S:
+	    rc = do_check( cert );
+	    break;
+	#endif
 	  default: rc = G10ERR_PUBKEY_ALGO;
 	}
 	if( get_passphrase_fd() != -1 )
 	    break;
     }
+
     return rc;
 }
 

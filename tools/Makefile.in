@@ -96,13 +96,14 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 needed_libs = ../cipher/libcipher.a  ../util/libutil.a \
 	      ../mpi/libmpi.a ../util/libutil.a
 
-noinst_PROGRAMS = mpicalc bftest clean-sat
+noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata
 
 mpicalc_SOURCES = mpicalc.c
 
 bftest_SOURCES = bftest.c
 
 clean_sat_SOURCES  = clean-sat.c
+mk_tdata_SOURCES = mk-tdata.c
 
 mpicalc_LDADD = @INTLLIBS@  $(needed_libs)
 bftest_LDADD = @INTLLIBS@  $(needed_libs)
@@ -128,6 +129,10 @@ clean_sat_OBJECTS =  clean-sat.o
 clean_sat_LDADD = $(LDADD)
 clean_sat_DEPENDENCIES = 
 clean_sat_LDFLAGS = 
+mk_tdata_OBJECTS =  mk-tdata.o
+mk_tdata_LDADD = $(LDADD)
+mk_tdata_DEPENDENCIES = 
+mk_tdata_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
@@ -138,9 +143,10 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/bftest.P .deps/clean-sat.P .deps/mpicalc.P
-SOURCES = $(mpicalc_SOURCES) $(bftest_SOURCES) $(clean_sat_SOURCES)
-OBJECTS = $(mpicalc_OBJECTS) $(bftest_OBJECTS) $(clean_sat_OBJECTS)
+DEP_FILES =  .deps/bftest.P .deps/clean-sat.P .deps/mk-tdata.P \
+.deps/mpicalc.P
+SOURCES = $(mpicalc_SOURCES) $(bftest_SOURCES) $(clean_sat_SOURCES) $(mk_tdata_SOURCES)
+OBJECTS = $(mpicalc_OBJECTS) $(bftest_OBJECTS) $(clean_sat_OBJECTS) $(mk_tdata_OBJECTS)
 
 default: all
 
@@ -190,6 +196,10 @@ bftest: $(bftest_OBJECTS) $(bftest_DEPENDENCIES)
 clean-sat: $(clean_sat_OBJECTS) $(clean_sat_DEPENDENCIES)
 	@rm -f clean-sat
 	$(LINK) $(clean_sat_LDFLAGS) $(clean_sat_OBJECTS) $(clean_sat_LDADD) $(LIBS)
+
+mk-tdata: $(mk_tdata_OBJECTS) $(mk_tdata_DEPENDENCIES)
+	@rm -f mk-tdata
+	$(LINK) $(mk_tdata_LDFLAGS) $(mk_tdata_OBJECTS) $(mk_tdata_LDADD) $(LIBS)
 
 tags: TAGS
 

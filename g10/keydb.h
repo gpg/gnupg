@@ -98,6 +98,8 @@ int  build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list,
 void set_passphrase_fd( int fd );
 int  get_passphrase_fd(void);
 DEK *passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode);
+void set_next_passphrase( const char *s );
+char *get_last_passphrase(void);
 
 /*-- getkey.c --*/
 void add_keyring( const char *name );

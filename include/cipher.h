@@ -42,10 +42,10 @@
 #define CIPHER_ALGO_3DES	 2
 #define CIPHER_ALGO_CAST	 3
 #define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
-#define CIPHER_ALGO_ROT_N	 5
-#define CIPHER_ALGO_SAFER_SK128  6
-#define CIPHER_ALGO_DES_SK	 7
+#define CIPHER_ALGO_SAFER_SK128  5
+#define CIPHER_ALGO_DES_SK	 6
 #define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
+#define CIPHER_ALGO_DUMMY      110  /* no encryption at all */
 
 #define PUBKEY_ALGO_RSA        1
 #define PUBKEY_ALGO_RSA_E      2     /* RSA encrypt only */
@@ -58,7 +58,7 @@
 #define DIGEST_ALGO_SHA1      2
 #define DIGEST_ALGO_RMD160    3
 #ifdef WITH_TIGER_HASH
-#define DIGEST_ALGO_TIGER     101
+#define DIGEST_ALGO_TIGER     6
 #endif
 
 #define is_RSA(a)     ((a)==PUBKEY_ALGO_RSA || (a)==PUBKEY_ALGO_RSA_E \
@@ -81,6 +81,7 @@ struct cipher_handle_s { char does_not_matter[1]; };
 #define CIPHER_MODE_CFB       2
 #define CIPHER_MODE_PHILS_CFB 3
 #define CIPHER_MODE_AUTO_CFB  4
+#define CIPHER_MODE_DUMMY     5  /* used with algo DUMMY for no encryption */
 
 
 int cipher_debug_mode;

@@ -43,7 +43,8 @@ static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_cert *pkc, u32 *keyid );
 static int delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid );
 static int merge_blocks( const char *fname, KBNODE keyblock_orig,
-		       KBNODE keyblock, u32 *keyid, int *n_uids, int *n_sigs );
+			 KBNODE keyblock, u32 *keyid,
+			 int *n_uids, int *n_sigs, int *n_subk );
 static int append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
 			     const char *fname, u32 *keyid );
 static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
@@ -103,7 +104,7 @@ import_pubkeys( const char *fname )
 	return G10ERR_OPEN_FILE;
     }
 
-    if( !opt.no_armor ) /* armored reading is not diabled */
+    if( !opt.no_armor ) /* armored reading is not disabled */
 	iobuf_push_filter( inp, armor_filter, &afx );
 
     while( !(rc = read_block( inp, &cfx, &pending_pkt, &keyblock) )) {
@@ -305,7 +306,7 @@ import_one( const char *fname, KBNODE keyblock )
 	log_info("%s: key %08lX imported\n", fname, (ulong)keyid[1]);
     }
     else { /* merge */
-	int n_uids, n_sigs;
+	int n_uids, n_sigs, n_subk;
 
 	/* Compare the original against the new key; just to be sure nothing
 	 * weird is going on */
@@ -335,12 +336,13 @@ import_one( const char *fname, KBNODE keyblock )
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
 	clear_kbnode_flags( keyblock );
-	n_uids = n_sigs = 0;
+	n_uids = n_sigs = n_subk = 0;
 	rc = merge_blocks( fname, keyblock_orig, keyblock,
-				keyid, &n_uids, &n_sigs );
+				keyid, &n_uids, &n_sigs, &n_subk );
 	if( rc )
 	    goto leave;
-	if( n_uids || n_sigs ) { /* keyblock_orig has been updated; write */
+	if( n_uids || n_sigs || n_subk ) {
+	    /* keyblock_orig has been updated; write */
 	    if( opt.verbose > 1 )
 		log_info("%s: writing to '%s'\n",
 				    fname, keyblock_resource_name(&kbpos) );
@@ -364,6 +366,12 @@ import_one( const char *fname, KBNODE keyblock )
 	    else if( n_sigs )
 		log_info("%s: key %08lX, %d new signatures\n",
 					 fname, (ulong)keyid[1], n_sigs );
+	    if( n_subk == 1 )
+		log_info("%s: key %08lX, 1 new subkey\n",
+					 fname, (ulong)keyid[1]);
+	    else if( n_subk )
+		log_info("%s: key %08lX, %d new subkeys\n",
+					 fname, (ulong)keyid[1], n_subk );
 	}
 	else
 	    log_info("%s: key %08lX, not changed\n", fname, (ulong)keyid[1] );
@@ -593,7 +601,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
  */
 static int
 merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
-				   u32 *keyid, int *n_uids, int *n_sigs )
+	      u32 *keyid, int *n_uids, int *n_sigs, int *n_subk )
 {
     KBNODE onode, node;
     int rc, found;
@@ -666,6 +674,9 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	    }
 	}
     }
+
+    /* 4th: add new subkeys */
+    /* FIXME */
 
     return 0;
 }
