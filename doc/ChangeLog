@@ -1,3 +1,11 @@
+2002-07-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Clarify the differences between "pref" and "showpref".
+	Note in "setpref" that a list of available algorithms can be
+	printed with "gpg -v --version".  Note in "updpref" that we don't
+	select keys via attribute uids, so preferences there will be
+	ignored.
+
 2002-07-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Clarify "group".

@@ -397,27 +397,37 @@ id.</para></listitem></varlistentry>
     <varlistentry>
     <term>pref</term>
     <listitem><para>
-List preferences.</para></listitem></varlistentry>
+List preferences from the selected user ID.  This shows the actual
+preferences, without including any implied preferences.
+</para></listitem></varlistentry>
     <varlistentry>
     <term>showpref</term>
     <listitem><para>
-More verbose preferences listing.</para></listitem></varlistentry>
+More verbose preferences listing for the selected user ID.  This shows
+the preferences in effect by including the implied preferences of
+3DES (cipher), SHA-1 (digest), and Uncompressed (compression) if they
+are not already included in the preference list.
+</para></listitem></varlistentry>
     <varlistentry>
     <term>setpref &ParmString;</term>
     <listitem><para>
-Set the list of user ID preferences to &ParmString;, this should be 
-a string similar to the one printed by "pref".  Using an empty string
-will set the default preference string, using "none" will set the 
-preferences to nil.  Only available algorithms are allowed.  This
-command just initializes an internal list and does not change anything
-unless another command which changes the self-signatures is used.
+Set the list of user ID preferences to &ParmString;, this should be a
+string similar to the one printed by "pref".  Using an empty string
+will set the default preference string, using "none" will set the
+preferences to nil.  Use "gpg -v --version" to get a list of available
+algorithms.  This command just initializes an internal list and does
+not change anything unless another command (such as "updpref") which
+changes the self-signatures is used.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>updpref</term>
     <listitem><para>
 Change the preferences of all user IDs (or just of the selected ones
 to the current list of preferences.  The timestamp of all affected
-self-signatures fill be advanced by one second.
+self-signatures will be advanced by one second.  Note that while you
+can change the preferences on an attribute user ID (aka "photo ID"),
+GnuPG does not select keys via attribute user IDs so these preferences
+will not be used by GnuPG.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>toggle</term>
