@@ -96,6 +96,9 @@
 
   * See po/ca.po for remarks on the used strings. 
 
+  * Write a test to check the correct behaviour of creating new
+    keyrings, copying the opion files and creating the home directory.
+
 
 Things we won't do
 ------------------

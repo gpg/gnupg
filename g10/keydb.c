@@ -76,7 +76,7 @@ static void unlock_all (KEYDB_HANDLE hd);
 static int
 maybe_create_keyring (char *filename, int force)
 {
-  DOTLOCK lockhd;
+  DOTLOCK lockhd = NULL;
   IOBUF iobuf;
   int rc;
   mode_t oldmask;
@@ -90,6 +90,32 @@ maybe_create_keyring (char *filename, int force)
      go any further - bail out right here.  */
   if (!force) 
     return G10ERR_OPEN_FILE;
+
+  /* First of all we try to create the home directory.  Note, that we
+     don't do any locking here because any sane application of gpg
+     would create the home directory by itself and not rely on gpg's
+     tricky auto-creation which is anyway only done for some home
+     directory name patterns. */
+  last_slash_in_filename = strrchr (filename, DIRSEP_C);
+  *last_slash_in_filename = 0;
+  if (access(filename, F_OK))
+    { 
+      static int tried;
+      
+      if (!tried)
+        {
+          tried = 1;
+          try_make_homedir (filename);
+        }
+      if (access (filename, F_OK))
+        {
+          rc = G10ERR_OPEN_FILE;
+          *last_slash_in_filename = DIRSEP_C;
+          goto leave;
+        }
+    }
+  *last_slash_in_filename = DIRSEP_C;
+
 
   /* To avoid races with other instances of gpg trying to create or
      update the keyring (it is removed during an update for a short
@@ -126,28 +152,6 @@ maybe_create_keyring (char *filename, int force)
     }
 
   /* The file does not yet exist, create it now. */
-
-  last_slash_in_filename = strrchr (filename, DIRSEP_C);
-  *last_slash_in_filename = 0;
-  if (access(filename, F_OK))
-    { /* On the first time we try to create the default
-         homedir and check again. */
-      static int tried;
-      
-      if (!tried)
-        {
-          tried = 1;
-          try_make_homedir (filename);
-        }
-      if (access (filename, F_OK))
-        {
-          rc = G10ERR_OPEN_FILE;
-          *last_slash_in_filename = DIRSEP_C;
-          goto leave;
-        }
-    }
-  *last_slash_in_filename = DIRSEP_C;
-
   oldmask = umask (077);
   iobuf = iobuf_create (filename);
   umask (oldmask);
@@ -168,8 +172,11 @@ maybe_create_keyring (char *filename, int force)
   rc = 0;
 
  leave:
-  release_dotlock (lockhd);
-  destroy_dotlock (lockhd);
+  if (lockhd)
+    {
+      release_dotlock (lockhd);
+      destroy_dotlock (lockhd);
+    }
   return rc;
 }
 
