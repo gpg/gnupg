@@ -68,7 +68,8 @@ vasprintf (char **result, const char *format, va_list *args)
 	    }
 	  while (strchr ("hlL", *p))
 	    ++p;
-	  /* Should be big enough for any format specifier except %s and floats.  */
+	  /* Should be big enough for any format specifier except %s
+             and floats.  */
 	  total_width += 30;
 	  switch (*p)
 	    {
@@ -92,7 +93,13 @@ vasprintf (char **result, const char *format, va_list *args)
 	      total_width += 307;
 	      break;
 	    case 's':
-	      total_width += strlen (va_arg (ap, char *));
+              {
+                char *tmp = va_arg (ap, char *);
+                if (tmp)
+                  total_width += strlen (tmp);
+                else /* in case the vsprintf does prints a text */
+                  total_width += 25; /* e.g. "(null pointer reference)" */
+              }
 	      break;
 	    case 'p':
 	    case 'n':
