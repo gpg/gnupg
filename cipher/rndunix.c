@@ -391,10 +391,17 @@ my_popen(struct RI *entry)
 
     if (entry->pid == (pid_t) 0) {
 	struct passwd *passwd;
+	int fd;
 
 	/* We are the child.  Make the read side of the pipe be stdout */
 	if (dup2(pipedes[STDOUT_FILENO], STDOUT_FILENO) < 0)
 	    exit(127);
+	/* Connect the other standard handles to the bit bucket. */
+	if ((fd = open ("/dev/null", O_RDWR)) != -1) {
+           dup2 (fd, STDIN_FILENO);
+           dup2 (fd, STDERR_FILENO);
+           close (fd);
+	}
 
 	/* Now that everything is set up, give up our permissions to make
 	 * sure we don't read anything sensitive.  If the getpwnam() fails,
@@ -405,7 +412,7 @@ my_popen(struct RI *entry)
 
 	setuid(gatherer_uid);
 
-	/* Close the pipe descriptors */
+	/* Close the pipe descriptors. */
 	close(pipedes[STDIN_FILENO]);
 	close(pipedes[STDOUT_FILENO]);
 
@@ -659,28 +666,6 @@ start_gatherer( int pipefd )
 	}
 	dbgall = !!getenv("GNUPG_RNDUNIX_DBGALL");
     }
-    /* close all files but the ones we need */
-    {	int nmax, n1, n2, i;
-      #ifdef _SC_OPEN_MAX
-	if( (nmax=sysconf( _SC_OPEN_MAX )) < 0 ) {
-	  #ifdef _POSIX_OPEN_MAX
-	    nmax = _POSIX_OPEN_MAX;
-	  #else
-	    nmax = 20; /* assume a reasonable value */
-	  #endif
-	}
-      #else
-	nmax = 20; /* assume a reasonable value */
-      #endif
-	n1 = fileno( stderr );
-	n2 = dbgfp? fileno( dbgfp ) : -1;
-	for(i=0; i < nmax; i++ ) {
-	    if( i != n1 && i != n2 && i != pipefd )
-		close(i);
-	}
-	errno = 0;
-    }
-
 
 
     /* Set up the buffer */
@@ -705,7 +690,39 @@ start_gatherer( int pipefd )
     signal(SIGCHLD, SIG_DFL);
   #endif
 
-    fclose(stderr);		/* Arrghh!!  It's Stuart code!! */
+    fflush (stderr);
+    /* Arrghh!!  It's Stuart code!! */
+    /* (close all files but the ones we need) */
+    {	int nmax, n1, i;
+      #ifdef _SC_OPEN_MAX
+	if( (nmax=sysconf( _SC_OPEN_MAX )) < 0 ) {
+	  #ifdef _POSIX_OPEN_MAX
+	    nmax = _POSIX_OPEN_MAX;
+	  #else
+	    nmax = 20; /* assume a reasonable value */
+	  #endif
+	}
+      #else
+	nmax = 20; /* assume a reasonable value */
+      #endif
+	{  
+	  int fd;
+	  if ((fd = open ("/dev/null", O_RDWR)) != -1) {
+	    dup2 (fd, STDIN_FILENO);
+	    dup2 (fd, STDOUT_FILENO);
+	    dup2 (fd, STDERR_FILENO);
+	    close (fd);
+	  }
+	}
+	n1 = dbgfp? fileno (dbgfp) : -1;
+	for(i=0; i < nmax; i++ ) {
+	    if (i != STDIN_FILENO && i != STDOUT_FILENO && i != STDERR_FILENO
+		&& i != n1 && i != pipefd )
+	      close(i);
+	}
+	errno = 0;
+    }
+
 
     for(;;) {
 	GATHER_MSG msg;

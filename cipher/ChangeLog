@@ -1,3 +1,11 @@
+2002-10-12  Werner Koch  <wk@gnupg.org>
+
+	* rndunix.c (my_popen): Make sure that stdin and stderr are
+	connected to a file.  This is to avoid NetBSD to complain about
+	set{u,g}id programs invoked with fd 0, 2 closed.  Reported by
+	Cristian Biere.
+	(start_gatherer): Likewise. Reordered code.
+
 2002-10-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* tiger.c (tiger_get_info): Select the OID to use for TIGER at
