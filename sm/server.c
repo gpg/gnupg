@@ -353,7 +353,7 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
   rc = 0;
   if (!opt.no_encrypt_to)
     {
-      for (cl=ctrl->server_local->recplist; !rc && cl; cl = cl->next)
+      for (cl=ctrl->server_local->default_recplist; !rc && cl; cl = cl->next)
         if (cl->is_encrypt_to)
           rc = gpgsm_add_cert_to_certlist (ctrl, cl->cert,
                                            &ctrl->server_local->recplist, 1);

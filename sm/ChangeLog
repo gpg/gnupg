@@ -1,3 +1,8 @@
+2004-08-16  Werner Koch  <wk@g10code.de>
+
+	* server.c (cmd_encrypt): Use DEFAULT_RECPLIST and not recplist
+	for encrypt-to keys.
+
 2004-08-06  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c: New option --with-ephemeral-keys.
