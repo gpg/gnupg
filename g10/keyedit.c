@@ -71,6 +71,7 @@ static int enable_disable_key( KBNODE keyblock, int disable );
 static void menu_showphoto( KBNODE keyblock );
 
 static int update_trust=0;
+static int columns=80;
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -164,7 +165,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	else {
 	    size_t n;
 	    char *p = get_user_id( sig->keyid, &n );
-	    tty_print_utf8_string2( p, n, 40 );
+	    tty_print_utf8_string2( p, n, columns-37 );
 	    m_free(p);
 	}
 	tty_printf("\n");
@@ -1187,6 +1188,15 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	log_error(_("can't do that in batchmode\n"));
 	goto leave;
     }
+
+#ifndef _WIN32
+    if(getenv("COLUMNS"))
+      {
+	columns=atoi(getenv("COLUMNS"));
+	if(columns<80 || columns>255)
+	  columns=80;
+      }
+#endif
 
     if( sign_mode ) {
 	commands = NULL;

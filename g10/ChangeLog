@@ -1,3 +1,10 @@
+2004-01-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (print_and_check_one_sig, keyedit_menu): Use the
+	COLUMNS environment variable (if any) to hint how wide the
+	terminal is.  Disabled on _WIN32.  Suggested by Janusz
+	A. Urbanowicz.
+
 2004-01-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (set_attrib_fd): Open attribute fd in binary
