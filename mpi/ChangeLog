@@ -1,5 +1,7 @@
 2003-04-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* config.links: Put back proper copyright line.
+
 	* config.links: Re-disable assembler on Darwin.  Darwin 6.5 broke
 	it again.
 
