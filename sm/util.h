@@ -24,7 +24,7 @@
 #include <gcrypt.h> /* we need this for the memory function protos */
 
 /* to pass the fucntion to libksba we need to cast it */
-#define HASH_FNC ((void (*)(void *, const byte*,size_t))gcry_md_write)
+#define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
 
 
 #include "../jnlib/logging.h"

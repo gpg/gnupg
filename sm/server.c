@@ -109,7 +109,7 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
   if (fd == -1)
     return set_error (No_Input, NULL);
 
-  gpgsm_verify (fd);
+  gpgsm_verify (fd, -1);
 
   return 0;
 }

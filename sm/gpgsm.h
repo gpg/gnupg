@@ -37,7 +37,10 @@ enum {
   GPGSM_Bad_Certificate = 7,
   GPGSM_Bad_Certificate_Path = 8,
   GPGSM_Missing_Certificate = 9,
-
+  GPGSM_No_Data = 10,
+  GPGSM_Bad_Signature = 11,
+  GPGSM_Not_Implemented = 12,
+  GPGSM_Conflict = 13,
 };
 
 #define MAX_DIGEST_LEN 24 
@@ -124,7 +127,7 @@ int gpgsm_validate_path (KsbaCert cert);
 int gpgsm_import (int in_fd);
 
 /*-- verify.c --*/
-int gpgsm_verify (int in_fd);
+int gpgsm_verify (int in_fd, int data_fd);
 
 
 

@@ -112,11 +112,37 @@ print_integer (unsigned char *p)
 }
 
 
+static void
+hash_data (int fd, GCRY_MD_HD md)
+{
+  FILE *fp;
+  char buffer[4096];
+  int nread;
+
+  fp = fdopen ( dup (fd), "rb");
+  if (!fp)
+    {
+      log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
+      return;
+    }
+
+  do 
+    {
+      nread = fread (buffer, 1, DIM(buffer), fp);
+      gcry_md_write (md, buffer, nread);
+    }
+  while (nread);
+  if (ferror (fp))
+      log_error ("read error on fd %d: %s\n", fd, strerror (errno));
+  fclose (fp);
+}
 
 
 
+/* Perform a verify operation.  To verify detached signatures, data_fd
+   must be different than -1 */
 int
-gpgsm_verify (int in_fd)
+gpgsm_verify (int in_fd, int data_fd)
 {
   int i, rc;
   KsbaError err;
@@ -210,7 +236,11 @@ gpgsm_verify (int in_fd)
           log_debug ("Detached signature\n");
         }
       if (stopreason == KSBA_SR_BEGIN_DATA)
-        log_error ("error: only detached signatuires are supportted\n");
+        {
+          log_error ("error: only detached signatures are supportted\n");
+          rc = GPGSM_Not_Implemented;
+          goto leave;
+        }
 
       if (stopreason == KSBA_SR_NEED_HASH
           || stopreason == KSBA_SR_BEGIN_DATA)
@@ -220,11 +250,26 @@ gpgsm_verify (int in_fd)
               if (algo)
                 gcry_md_enable (data_md, algo);
             }
+          if (is_detached)
+            {
+              if (data_fd == -1)
+                {
+                  log_error ("detached signature but no data given\n");
+                  rc = GPGSM_Bad_Signature;
+                  goto leave;
+                }
+              hash_data (data_fd, data_md);  
+            }
         }
-
-
     }
   while (stopreason != KSBA_SR_READY);   
+
+  if (data_fd != -1 && !is_detached)
+    {
+      log_error ("data given for a non-detached signature");
+      rc = GPGSM_Conflict;
+      goto leave;
+    }
 
   for (i=0; (cert=ksba_cms_get_cert (cms, i)); i++)
     {
@@ -301,7 +346,7 @@ gpgsm_verify (int in_fd)
             {
               log_error ("message digest attribute does not "
                          "match calculated one\n");
-              /*goto next_signer; FIXME: only for debugging commented*/
+              goto next_signer; 
             }
             
           md = gcry_md_open (algo, 0);
@@ -310,7 +355,7 @@ gpgsm_verify (int in_fd)
               log_error ("md_open failed: %s\n", gcry_strerror (-1));
               goto next_signer;
             }
-          ksba_cms_set_hash_function (cms, HASH_FNC, md);
+          ksba_cms_set_hash_function (cms, gcry_md_write, md);
           rc = ksba_cms_hash_signed_attrs (cms, signer);
           if (rc)
             {
@@ -332,8 +377,7 @@ gpgsm_verify (int in_fd)
           log_error ("invalid signature: %s\n", gpgsm_strerror (rc));
           goto next_signer;
         }
-      log_debug ("signature is good - checking certs\n");
-      /* FIXME: validate_path */
+      log_debug ("signature okay - checking certs\n");
       rc = gpgsm_validate_path (cert);
       if (rc)
         {

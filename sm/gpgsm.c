@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <gcrypt.h>
 #include "gpgsm.h"
@@ -74,6 +75,9 @@ enum cmd_and_opt_values {
   aExportAll,
   aCheckKeys,
   aServer,                        
+
+  oEnableSpecialFilenames,
+
 
   oTextmode,
   oFingerprint,
@@ -263,6 +267,10 @@ static ARGPARSE_OPTS opts[] = {
 
   /* hidden options */
     { oNoVerbose, "no-verbose", 0, "@"},
+
+    { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
+
+
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
     { oNoArmor, "no-armor",   0, "@"},
@@ -299,12 +307,19 @@ static ARGPARSE_OPTS opts[] = {
 
 int gpgsm_errors_seen = 0;
 
+/* It is possible that we are currentlu running under setuid permissions */
 static int maybe_setuid = 1;
+
+/* Option --enable-special-filenames */
+static int allow_special_filenames;
+
 
 static char *build_list (const char *text,
 			 const char *(*mapf)(int), int (*chkf)(int));
 static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
+
+static int open_read (const char *filename);
 
 
 static int
@@ -747,6 +762,8 @@ main ( int argc, char **argv)
 
         case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
         case oNoRandomSeedFile: use_random_seed = 0; break;
+
+        case oEnableSpecialFilenames: allow_special_filenames =1; break;
           
         default: 
           pargs.err = configfp? 1:2; 
@@ -912,9 +929,14 @@ main ( int argc, char **argv)
       break;
 
     case aVerify:
-      gpgsm_verify (0);
-/*        if ((rc = verify_signatures( argc, argv ) )) */
-/*          log_error ("verify signatures failed: %s\n", gpg_errstr(rc) ); */
+      if (!argc)
+        gpgsm_verify (0, -1); /* normal signature from stdin */
+      else if (argc == 1)
+        gpgsm_verify (open_read (*argv), -1); /* normal signature */
+      else if (argc == 2) /* detached signature (sig, detached) */
+        gpgsm_verify (open_read (*argv), open_read (argv[1])); 
+      else
+        wrong_args (_("--verify [signature [detached_data]]"));
       break;
 
     case aVerifyFiles:
@@ -1037,4 +1059,47 @@ gpgsm_exit (int rc)
   gcry_control (GCRYCTL_TERM_SECMEM );
   rc = rc? rc : log_get_errorcount(0)? 2 : gpgsm_errors_seen? 1 : 0;
   exit (rc);
+}
+
+
+/* Check whether the filename has the form "-&nnnn", where n is a
+   non-zero number.  Returns this number or -1 if it is not the case.  */
+static int
+check_special_filename (const char *fname)
+{
+  if (allow_special_filenames
+      && fname && *fname == '-' && fname[1] == '&' ) {
+    int i;
+    
+    fname += 2;
+    for (i=0; isdigit (fname[i]); i++ )
+      ;
+    if ( !fname[i] ) 
+      return atoi (fname);
+  }
+  return -1;
+}
+
+
+
+/* Open the FILENAME for read and return the fieldescriptor.  Stop
+   with an error message in case of problems.  "-" denotes stdin and
+   if special filenames are allowed the given fd is opend instead. */
+static int 
+open_read (const char *filename)
+{
+  int fd;
+
+  if (filename[0] == '-' && !filename[1])
+    return 0; /* stdin */
+  fd = check_special_filename (filename);
+  if (fd != -1)
+    return fd;
+  fd = open (filename, O_RDONLY);
+  if (fd == -1)
+    {
+      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
+      gpgsm_exit (2);
+    }
+  return fd;
 }
