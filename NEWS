@@ -24,11 +24,15 @@
     * Merged Stefan's patches for RISC OS in.  See comments in
       scripts/build-riscos. 
 
-    * It is now possible to sign and convenional encrypt a message (-cs).
+    * It is now possible to sign and conventional encrypt a message (-cs).
 
     * The MDC feature flag is supported and can be set by using
       the "updpref" edit command.
- 
+
+    * The status messages GOODSIG and BADSIG are now returning the primary
+      UID, encoded using %XX escaping (but with spaces left as spaces,
+      so that it should not break too much)
+
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------
@@ -96,8 +100,8 @@ Noteworthy changes in version 1.0.5 (2001-04-29)
     * The verification status of self-signatures are now cached. To
       increase the speed of key list operations for existing keys you
       can do the following in your GnuPG homedir (~/.gnupg):
-         $ cp pubring.gpg pubring.gpg.save && $ gpg --export-all >x && \
-          rm pubring.gpg && gpg --import x
+         cp pubring.gpg pubring.gpg.save && gpg --export-all >x && \
+         rm pubring.gpg && gpg --import x
       Only v4 keys (i.e not the old RSA keys) benefit from this caching.
 
     * New translations: Estonian, Turkish.

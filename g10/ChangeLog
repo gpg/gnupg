@@ -1,3 +1,13 @@
+2001-08-31  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_key,parse_pubkeyenc)
+	(parse_signature): Return error on reading bad MPIs.
+	
+	* mainproc.c (check_sig_and_print): Always print the user ID even
+	if it is not bound by a signature.  Use the primary UID in the
+	status messages and encode them in UTF-8
+	* status.c (write_status_text_and_buffer): New.
+
 2001-08-30  Werner Koch  <wk@gnupg.org>
 
 	* packet.h (sigsubpkttype_t): Add SIGSUBPKT_FEATURES.

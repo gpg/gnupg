@@ -1275,14 +1275,13 @@ check_sig_and_print( CTX c, KBNODE node )
     }
     if( !rc || rc == G10ERR_BAD_SIGN ) {
 	KBNODE un, keyblock;
-	char *us;
 	int count=0;
+        char keyid_str[50];
 
 	keyblock = get_pubkeyblock( sig->keyid );
 
-	us = get_long_user_id_string( sig->keyid );
-	write_status_text( rc? STATUS_BADSIG : STATUS_GOODSIG, us );
-	m_free(us);
+        sprintf (keyid_str, "%08lX%08lX [uncertain] ",
+                 (ulong)sig->keyid[0], (ulong)sig->keyid[1]);
 
         /* find and print the primary user ID */
 	for( un=keyblock; un; un = un->next ) {
@@ -1293,6 +1292,13 @@ check_sig_and_print( CTX c, KBNODE node )
             if ( !un->pkt->pkt.user_id->is_primary )
                 continue;
             
+            keyid_str[17] = 0; /* cut off the "[uncertain]" part */
+            write_status_text_and_buffer (rc? STATUS_BADSIG:STATUS_GOODSIG,
+                                          keyid_str, 
+                                          un->pkt->pkt.user_id->name,
+                                          un->pkt->pkt.user_id->len, 
+                                          -1 );
+
             log_info(rc? _("BAD signature from \"")
                        : _("Good signature from \""));
 	    print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
@@ -1301,9 +1307,30 @@ check_sig_and_print( CTX c, KBNODE node )
             count++;
 	}
 	if( !count ) {	/* just in case that we have no userid */
+            for( un=keyblock; un; un = un->next ) {
+                if( un->pkt->pkttype == PKT_USER_ID )
+                    break;
+            }
+
+            if (opt.always_trust || !un)
+                keyid_str[17] = 0; /* cut off the "[uncertain]" part */
+
+            write_status_text_and_buffer (rc? STATUS_BADSIG:STATUS_GOODSIG,
+                                          keyid_str, 
+                                          un? un->pkt->pkt.user_id->name:"[?]",
+                                          un? un->pkt->pkt.user_id->len:3, 
+                                          -1 );
+
 	    log_info(rc? _("BAD signature from \"")
 		       : _("Good signature from \""));
-	    fputs("[?]\"\n", log_stream() );
+            if (!opt.always_trust && un) {
+                fputs(_("[uncertain]"), log_stream() );
+                putc(' ', log_stream() );
+            }
+            print_utf8_string( log_stream(),
+                               un? un->pkt->pkt.user_id->name:"[?]",
+                               un? un->pkt->pkt.user_id->len:3 );
+	    fputs("\"\n", log_stream() );
 	}
 
         /* If we have a good signature and already printed 

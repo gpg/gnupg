@@ -1,6 +1,4 @@
 
-  * need a BAD_PASSPHRASE status for -c
-
   * add listing of notation data
 
   * Check the changes to the gpg random gatherer on all W32 platforms.
@@ -11,8 +9,6 @@
   * Show more info does not work from edit->trust
 
   * set default charset from nl_langinfo.
-
-  * check all mpi_read() for error returns.
 
   * Check that no secret temporary results are stored in the result parameter
     of the mpi functions.  We have already done this for mpi-mul.c 
@@ -81,11 +77,6 @@
 
   * Add option to put the list of recipients (from the encryption
     layer) into the signatures notation data.
-
-  * v3 RSA keys do work but the user IDs are shown as [?] which
-    cheking the signatures.  Reported by Dave Dykstra.  Print
-    "[uncertain]" + user ID
-
 
 Scheduled for 1.1
 -----------------

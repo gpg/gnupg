@@ -83,13 +83,16 @@ more arguments in future versions.
 
 
     GOODSIG	<long keyid>  <username>
-	The signature with the keyid is good.
-        For each signature only one of the three codes GOODSIG, BADSIG
-        or ERRSIG will be emitted and they may be used as a marker for
-        a new signature.
+	The signature with the keyid is good.  For each signature only
+        one of the three codes GOODSIG, BADSIG or ERRSIG will be
+        emitted and they may be used as a marker for a new signature.
+        The username is the primary one encoded in UTF-8 and %XX
+        escaped.
 
     BADSIG	<long keyid>  <username>
 	The signature with the keyid has not been verified okay.
+        The username is the primary one encoded in UTF-8 and %XX
+        escaped.
 
     ERRSIG  <long keyid>  <pubkey_algo> <hash_algo> \
 	    <sig_class> <timestamp> <rc>

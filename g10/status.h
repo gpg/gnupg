@@ -98,6 +98,8 @@ void write_status ( int no );
 void write_status_text ( int no, const char *text );
 void write_status_buffer ( int no,
                            const char *buffer, size_t len, int wrap );
+void write_status_text_and_buffer ( int no, const char *text,
+                                    const char *buffer, size_t len, int wrap );
 
 #ifdef USE_SHM_COPROCESSING
   void init_shm_coprocessing ( ulong requested_shm_size, int lock_mem );

@@ -703,6 +703,8 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 		mpi_print(stdout, k->data[i], mpi_print_mode );
 		putchar('\n');
 	    }
+            if (!k->data[i])
+                rc = G10ERR_INVALID_PACKET;
 	}
     }
 
@@ -1237,6 +1239,8 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 		mpi_print(stdout, sig->data[i], mpi_print_mode );
 		putchar('\n');
 	    }
+            if (!sig->data[i])
+                rc = G10ERR_INVALID_PACKET;
 	}
     }
 
@@ -1404,7 +1408,11 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		mpi_print(stdout, sk->skey[i], mpi_print_mode  );
 		putchar('\n');
 	    }
+            if (!sk->skey[i])
+                rc = G10ERR_INVALID_PACKET;
 	}
+        if (rc) /* one of the MPIs were bad */
+            goto leave;
 	sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
 	if( sk->protect.algo ) {
 	    sk->is_protected = 1;
@@ -1551,7 +1559,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	else { /* v3 method: the mpi length is not encrypted */
 	    for(i=npkey; i < nskey; i++ ) {
 		n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
-		if( sk->is_protected )
+		if( sk->is_protected && sk->skey[i] )
 		    mpi_set_protect_flag(sk->skey[i]);
 		if( list_mode ) {
 		    printf(  "\tskey[%d]: ", i);
@@ -1562,7 +1570,11 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 			putchar('\n');
 		    }
 		}
+                if (!sk->skey[i])
+                    rc = G10ERR_INVALID_PACKET;
 	    }
+            if (rc)
+                goto leave;
 
 	    sk->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
@@ -1587,7 +1599,11 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		mpi_print(stdout, pk->pkey[i], mpi_print_mode  );
 		putchar('\n');
 	    }
+            if (!pk->pkey[i])
+                rc = G10ERR_INVALID_PACKET;
 	}
+        if (rc)
+            goto leave;
     }
 
   leave:

@@ -788,7 +788,10 @@ Assume "yes" on most questions.
 <term>--always-trust</term>
 <listitem><para>
 Skip key validation and assume that used keys are always fully trusted.
-You won't use this unless you have installed some external validation scheme.
+You won't use this unless you have installed some external validation
+scheme.  This option also suppresses the "[uncertain]" tag printed
+with signature checks when there is no evidence that the user ID
+is bound to the key.
 </para></listitem></varlistentry>
 
 
