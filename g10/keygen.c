@@ -50,6 +50,7 @@ enum para_name {
   pNAMEEMAIL,
   pNAMECOMMENT,
   pPREFERENCES,
+  pREVOKER,
   pUSERID,
   pEXPIREDATE,
   pKEYEXPIRE, /* in n seconds */
@@ -67,7 +68,8 @@ struct para_data_s {
         DEK *dek;
         STRING2KEY *s2k;
         u32 expire;
-        unsigned int usage; 
+        unsigned int usage;
+        struct revocation_key revkey;
         char value[1];
     } u;
 };
@@ -383,6 +385,68 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     return 0;
 }
 
+int
+keygen_add_revkey(PKT_signature *sig, void *opaque)
+{
+  struct revocation_key *revkey=opaque;
+  byte buf[2+MAX_FINGERPRINT_LEN];
+
+  buf[0]=revkey->class;
+  buf[1]=revkey->algid;
+  memcpy(&buf[2],revkey->fpr,MAX_FINGERPRINT_LEN);
+
+  build_sig_subpkt(sig,SIGSUBPKT_REV_KEY,buf,2+MAX_FINGERPRINT_LEN);
+
+  sig->revkey=m_realloc(sig->revkey,
+			sizeof(struct revocation_key *)*(sig->numrevkeys+1));
+
+  /* All sigs with revocation keys set are nonrevocable */
+  sig->flags.revocable=0;
+  buf[0] = 0;
+  build_sig_subpkt( sig, SIGSUBPKT_REVOCABLE, buf, 1 );
+
+  parse_revkeys(sig);
+
+  return 0;
+}
+
+static int
+write_direct_sig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
+		  struct revocation_key *revkey )
+{
+    PACKET *pkt;
+    PKT_signature *sig;
+    int rc=0;
+    KBNODE node;
+    PKT_public_key *pk;
+
+    if( opt.verbose )
+	log_info(_("writing direct signature\n"));
+
+    /* get the pk packet from the pub_tree */
+    node = find_kbnode( pub_root, PKT_PUBLIC_KEY );
+    if( !node )
+	BUG();
+    pk = node->pkt->pkt.public_key;
+
+    /* we have to cache the key, so that the verification of the signature
+     * creation is able to retrieve the public key */
+    cache_public_key (pk);
+
+    /* and make the signature */
+    rc = make_keysig_packet(&sig,pk,NULL,NULL,sk,0x1F,0,0,0,0,
+			    keygen_add_revkey,revkey);
+    if( rc ) {
+	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
+	return rc;
+    }
+
+    pkt = m_alloc_clear( sizeof *pkt );
+    pkt->pkttype = PKT_SIGNATURE;
+    pkt->pkt.signature = sig;
+    add_kbnode( root, new_kbnode( pkt ) );
+    return rc;
+}
 
 static int
 write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
@@ -1385,6 +1449,59 @@ parse_parameter_usage (const char *fname,
     return 0;
 }
 
+static int
+parse_revocation_key (const char *fname,
+		      struct para_data_s *para, enum para_name key)
+{
+  struct para_data_s *r = get_parameter( para, key );
+  struct revocation_key revkey;
+  char *pn;
+  int i;
+
+  if( !r )
+    return 0; /* none (this is an optional parameter) */
+
+  pn = r->u.value;
+
+  revkey.class=0x80;
+  revkey.algid=atoi(pn);
+  if(!revkey.algid)
+    goto fail;
+
+  /* Skip to the fpr */
+  while(*pn && *pn!=':')
+    pn++;
+
+  if(*pn!=':')
+    goto fail;
+
+  pn++;
+
+  for(i=0;i<MAX_FINGERPRINT_LEN && *pn;i++,pn+=2)
+    {
+      int c=hextobyte(pn);
+      if(c==-1)
+	goto fail;
+
+      revkey.fpr[i]=c;
+    }
+
+  /* skip to the tag */
+  while(*pn && *pn!='s' && *pn!='S')
+    pn++;
+
+  if(ascii_strcasecmp(pn,"sensitive")==0)
+    revkey.class|=0x40;
+
+  memcpy(&r->u.revkey,&revkey,sizeof(struct revocation_key));
+
+  return 0;
+
+  fail:
+  log_error("%s:%d: invalid revocation key\n", fname, r->lnr );
+  return -1; /* error */
+}
+
 
 static u32
 get_parameter_u32( struct para_data_s *para, enum para_name key )
@@ -1421,6 +1538,12 @@ get_parameter_s2k( struct para_data_s *para, enum para_name key )
     return r? r->u.s2k : NULL;
 }
 
+static struct revocation_key *
+get_parameter_revkey( struct para_data_s *para, enum para_name key )
+{
+    struct para_data_s *r = get_parameter( para, key );
+    return r? &r->u.revkey : NULL;
+}
 
 static int
 proc_parameter_file( struct para_data_s *para, const char *fname,
@@ -1477,6 +1600,10 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 
     /* Set preferences, if any. */
     keygen_set_std_prefs(get_parameter_value( para, pPREFERENCES ));
+
+    /* Set revoker, if any. */
+    if (parse_revocation_key (fname, para, pREVOKER))
+      return -1;
 
     /* make DEK and S2K from the Passphrase */
     r = get_parameter( para, pPASSPHRASE );
@@ -1559,6 +1686,7 @@ read_parameter_file( const char *fname )
 	{ "Expire-Date",    pEXPIREDATE },
 	{ "Passphrase",     pPASSPHRASE },
 	{ "Preferences",    pPREFERENCES },
+	{ "Revoker",        pREVOKER },
 	{ NULL, 0 }
     };
     FILE *fp;
@@ -1845,6 +1973,7 @@ do_generate_keypair( struct para_data_s *para,
     KBNODE sec_root = NULL;
     PKT_secret_key *sk = NULL;
     const char *s;
+    struct revocation_key *revkey;
     int rc;
     int did_sub = 0;
 
@@ -1917,6 +2046,14 @@ do_generate_keypair( struct para_data_s *para,
 		    get_parameter_s2k( para, pPASSPHRASE_S2K ),
 		    &sk,
 		    get_parameter_u32( para, pKEYEXPIRE ) );
+
+    if(!rc && (revkey=get_parameter_revkey(para,pREVOKER)))
+      {
+	rc=write_direct_sig(pub_root,pub_root,sk,revkey);
+	if(!rc)
+	  write_direct_sig(sec_root,pub_root,sk,revkey);
+      }
+
     if( !rc && (s=get_parameter_value(para, pUSERID)) ) {
 	write_uid(pub_root, s );
 	if( !rc )
@@ -2170,4 +2307,3 @@ write_keyblock( IOBUF out, KBNODE node )
     }
     return 0;
 }
-

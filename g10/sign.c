@@ -1097,7 +1097,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     int rc=0;
     MD_HANDLE md;
 
-    assert( (sigclass >= 0x10 && sigclass <= 0x13)
+    assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
 	    || sigclass == 0x20 || sigclass == 0x18
 	    || sigclass == 0x30 || sigclass == 0x28 );
 
@@ -1140,7 +1140,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     if( sigclass == 0x18 || sigclass == 0x28 ) { /* subkey binding/revocation*/
 	hash_public_key( md, subpk );
     }
-    else if( sigclass != 0x20 ) {
+    else if( sigclass != 0x1F && sigclass != 0x20 ) {
         hash_uid (md, sigversion, uid);
     }
     /* and make the signature packet */
@@ -1241,5 +1241,3 @@ update_keysig_packet( PKT_signature **ret_sig,
 	*ret_sig = sig;
     return rc;
 }
-
-

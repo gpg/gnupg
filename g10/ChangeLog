@@ -1,3 +1,28 @@
+2002-05-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, keygen.c (keygen_add_revkey): Add revocation key
+	subpackets to a signature (callable by
+	make_keysig_packet). (write_direct_sig): Write a 1F direct key
+	signature. (parse_revocation_key): Parse a string in
+	algo:fpr:sensitive format into a revocation
+	key. (get_parameter_revkey, do_generate_keypair): Call above
+	functions when prompted from a batch key generation file.
+
+	* build-packet.c (build_sig_subpkt): Allow multiple revocation key
+	subpackets in a single sig.
+
+	* keydb.h, getkey.c (get_seckey_byfprint): Same as
+	get_pubkey_byfprint, except for secret keys.  We only know the
+	fingerprint of a revocation key, so this is needed to retrieve the
+	secret key needed to issue a revokation.
+
+	* packet.h, parse-packet.c (parse_signature, parse_revkeys): Split
+	revkey parsing off into a new function that can be used to reparse
+	after manipulating the revkey list.
+
+	* sign.c (make_keysig_packet): Ability to make 1F direct key
+	signatures.
+
 2002-05-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.skel: keyserver.pgp.com is gone, so list pgp.surfnet.nl

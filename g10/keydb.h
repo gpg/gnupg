@@ -206,6 +206,8 @@ int seckey_available( u32 *keyid );
 int get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock );
 int get_seckey_bynames( GETKEY_CTX *rx, PKT_secret_key *sk,
 			STRLIST names, KBNODE *ret_keyblock );
+int get_seckey_byfprint( PKT_secret_key *sk,
+			 const byte *fprint, size_t fprint_len);
 int get_seckey_next( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock );
 void get_seckey_end( GETKEY_CTX ctx );
 int enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys );

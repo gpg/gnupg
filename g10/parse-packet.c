@@ -1121,6 +1121,31 @@ parse_sig_subpkt2 (PKT_signature *sig, sigsubpkttype_t reqtype,
     return p;
 }
 
+/* Find all revocation keys. Look in hashed area only. */
+void parse_revkeys(PKT_signature *sig)
+{
+  struct revocation_key *revkey;
+  int seq=0;
+  size_t len;
+
+  if(sig->sig_class!=0x1F)
+    return;
+
+  while((revkey=
+	 (struct revocation_key *)enum_sig_subpkt(sig->hashed,
+						  SIGSUBPKT_REV_KEY,
+						  &len,&seq)))
+    {
+      if(len==sizeof(struct revocation_key) &&
+	 (revkey->class&0x80)) /* 0x80 bit must be set */
+	{
+	  sig->revkey=m_realloc(sig->revkey,
+			  sizeof(struct revocation_key *)*(sig->numrevkeys+1));
+	  sig->revkey[sig->numrevkeys]=revkey;
+	  sig->numrevkeys++;
+	}
+    }
+}
 
 static int
 parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -1261,28 +1286,9 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	if(p && *p==0)
 	  sig->flags.exportable=0;
 
-	/* Find all revocation keys. Back to hashed area only. */
+	/* Find all revocation keys. */
 	if(sig->sig_class==0x1F)
-	  {
-	    struct revocation_key *revkey;
-	    int seq=0;
-	    size_t len;
-
-	    while((revkey=
-		   (struct revocation_key *)enum_sig_subpkt(sig->hashed,
-							    SIGSUBPKT_REV_KEY,
-							    &len,&seq)))
-	      {
-		if(len==sizeof(struct revocation_key) &&
-		   (revkey->class&0x80)) /* 0x80 bit must be set */
-		  {
-		    sig->revkey=m_realloc(sig->revkey,
-			  sizeof(struct revocation_key *)*(sig->numrevkeys+1));
-		    sig->revkey[sig->numrevkeys]=revkey;
-		    sig->numrevkeys++;
-		  }
-	      }
-	  }
+	  parse_revkeys(sig);
     }
 
     if( list_mode ) {
