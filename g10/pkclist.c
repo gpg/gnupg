@@ -967,11 +967,14 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 
 	memset( mask, 0, 8 * sizeof *mask );
 	if( preftype == PREFTYPE_SYM ) {
-	  if( pkr->pk->version < 4 && pkr->pk->selfsigversion < 4 )
+	  if( pkr->pk->version < 4 &&
+	      pkr->pk->selfsigversion < 4 &&
+	      opt.pgp2 )
 	    mask[0] |= (1<<1); /* IDEA is implicitly there for v3 keys
-				  with v3 selfsigs (rfc2440:12.1).
-				  This doesn't mean it's actually
-				  available, of course. */
+				  with v3 selfsigs (rfc2440:12.1) if
+				  --pgp2 mode is on.  This doesn't
+				  mean it's actually available, of
+				  course. */
 	  else
 	    mask[0] |= (1<<2); /* 3DES is implicitly there for everyone else */
 	}

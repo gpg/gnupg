@@ -1286,7 +1286,8 @@ check_sig_and_print( CTX c, KBNODE node )
                                           -1 );
 
             log_info(rc? _("BAD signature from \"")
-                       : _("Good signature from \""));
+                       : sig->flags.expired ? _("Expired signature from \"")
+		       : _("Good signature from \""));
 	    print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
 					     un->pkt->pkt.user_id->len );
 	    fputs("\"\n", log_stream() );
@@ -1307,7 +1308,8 @@ check_sig_and_print( CTX c, KBNODE node )
                                           un? un->pkt->pkt.user_id->len:3, 
                                           -1 );
 
-	    log_info(rc? _("BAD signature from \"")
+            log_info(rc? _("BAD signature from \"")
+                       : sig->flags.expired ? _("Expired signature from \"")
 		       : _("Good signature from \""));
             if (!opt.always_trust && un) {
                 fputs(_("[uncertain]"), log_stream() );

@@ -46,14 +46,6 @@ is_algo_in_prefs ( KBNODE keyblock, preftype_t type, int algo )
     KBNODE k;
 
     for (k=keyblock; k; k=k->next) {
-      /* Fake IDEA preference for v3 keys with v3 selfsigs */
-        if (k->pkt->pkttype == PKT_PUBLIC_KEY &&
-	    k->pkt->pkt.public_key->version < 4 &&
-	    k->pkt->pkt.public_key->selfsigversion < 4 &&
-	    type==PREFTYPE_SYM &&
-	    algo==CIPHER_ALGO_IDEA)
-	  return 1;
-
         if (k->pkt->pkttype == PKT_USER_ID) {
             PKT_user_id *uid = k->pkt->pkt.user_id;
             prefitem_t *prefs = uid->prefs;
@@ -216,7 +208,8 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
             rc = -1;
 	    log_error("oops: public key not found for preference check\n");
         }
-	else if( dek->algo != CIPHER_ALGO_3DES
+	else if( pkb->pkt->pkt.public_key->selfsigversion > 3
+            && dek->algo != CIPHER_ALGO_3DES
 	    && !is_algo_in_prefs( pkb, PREFTYPE_SYM, dek->algo ) ) {
 	    /* Don't print a note while we are not on verbose mode,
 	     * the cipher is blowfish and the preferences have twofish

@@ -1,3 +1,16 @@
+2002-01-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* pubkey-enc.c (is_algo_in_prefs, get_it): Only check preferences
+	against keys with v4 self sigs - there is really little point in
+	warning for every single non-IDEA message encrypted to an old key.
+
+	* pkclist.c (select_algo_from_prefs): Only put in the fake IDEA
+	preference if --pgp2 is on.
+
+	* mainproc.c (check_sig_and_print): Print "Expired" for expired
+	but good signatures (this still prints "BAD" for expired but bad
+	signatures).
+
 2002-01-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (ask_keysize): Cosmetic: don't present a RSA signing
