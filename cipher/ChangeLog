@@ -1,3 +1,18 @@
+Mon Mar  9 12:59:08 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* dsa.c, dsa.h: Removed some unused code.
+
+Wed Mar  4 10:39:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* md.c (md_open): Add call to fast_random_poll.
+	blowfish.c (blowfish_setkey): Ditto.
+
+Tue Mar  3 13:32:54 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* rmd160.c (rmd160_mixblock): New.
+	* random.c: Restructured to start with a new RNG implementation.
+	* random.h: New.
+
 Mon Mar  2 19:21:46 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* gost.c, gost.h: Removed because they did only conatin trash.

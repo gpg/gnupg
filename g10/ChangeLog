@@ -1,3 +1,49 @@
+Mon Mar  9 12:43:42 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* dsa.c: New
+	* packet.h, free-packet.c, parse-packet.c : Add support for DSA
+	* sig-check.c, getkey.c, keyid.c, ringedit.c: Ditto.
+	* seckey-cert.c: Ditto.
+
+	* packet.h : Moved .digest_algo of signature packets to outer
+	structure. Changed all references
+
+Sun Mar  8 13:06:42 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* openfile.c : Support for stdout filename "-".
+
+	* mainproc.c (check_sig_and_print): Enhanced status output:
+	* status.c (write_status_text): New.
+
+Fri Mar  6 16:10:54 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* kbnode.c (clone_kbnode): Fixed private_flag.
+
+	* mainproc.c (list_node): Output of string "Revoked" as user-id.
+
+Fri Mar  6 14:26:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): Add userids to "-kv" and cleaned up this stuff.
+
+Fri Mar  6 12:45:58 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): Changed semantics of the list-... commands
+	and added a new one. Removed option "-d"
+
+	* decrypt.c: New.
+
+	* trustdb.c (init_trustdb): Autocreate directory only if it ends
+	in "/.gnupg".
+
+Thu Mar  5 12:12:11 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mainproc.c (do_proc_packets): New. Common part of proc_packet.
+	(proc_signature_packets): special version to handle signature data.
+	* verify.c: New.
+	* g10.c (aVerify): New.
+	* plaintext.c (hash_datafiles): New.
+	* compress.c (handle_compressed): Add callback arg, changed caller.
+
 Thu Mar  5 10:20:06 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* g10.c: Is nom the common source for gpg and gpgm

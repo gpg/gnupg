@@ -21,6 +21,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "packet.h"
@@ -45,6 +46,9 @@ typedef struct {
     PKT_secret_cert *last_seckey;
     PKT_user_id     *last_user_id;
     md_filter_context_t mfx;
+    int sigs_only;   /* process only signatures and reject all other stuff */
+    int encrypt_only; /* process onyl encrytion messages */
+    STRLIST signed_data;
     DEK *dek;
     int last_was_pubkey_enc;
     KBNODE list;   /* the current list of packets */
@@ -53,6 +57,7 @@ typedef struct {
 } *CTX;
 
 
+static int do_proc_packets( CTX c, IOBUF a );
 
 static void list_node( CTX c, KBNODE node );
 static void proc_tree( CTX c, KBNODE node );
@@ -155,6 +160,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     enc = pkt->pkt.pubkey_enc;
     /*printf("enc: encrypted by a pubkey with keyid %08lX\n", enc->keyid[1] );*/
     if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| enc->pubkey_algo == PUBKEY_ALGO_RSA	) {
 	m_free(c->dek ); /* paranoid: delete a pending DEK */
 	c->dek = m_alloc_secure( sizeof *c->dek );
@@ -234,6 +240,18 @@ proc_plaintext( CTX c, PACKET *pkt )
 }
 
 
+static int
+proc_compressed_cb( IOBUF a, void *info )
+{
+    return proc_signature_packets( a, ((CTX)info)->signed_data );
+}
+
+static int
+proc_encrypt_cb( IOBUF a, void *info )
+{
+    return proc_encryption_packets( a );
+}
+
 static void
 proc_compressed( CTX c, PACKET *pkt )
 {
@@ -241,7 +259,12 @@ proc_compressed( CTX c, PACKET *pkt )
     int rc;
 
     /*printf("zip: compressed data packet\n");*/
-    rc = handle_compressed( zd );
+    if( c->sigs_only )
+	rc = handle_compressed( zd, proc_compressed_cb, c );
+    else if( c->encrypt_only )
+	rc = handle_compressed( zd, proc_encrypt_cb, c );
+    else
+	rc = handle_compressed( zd, NULL, NULL );
     if( rc )
 	log_error("uncompressing failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
@@ -337,7 +360,8 @@ print_userid( PACKET *pkt )
 	printf("ERROR: unexpected packet type %d", pkt->pkttype );
 	return;
     }
-    print_string( stdout,  pkt->pkt.user_id->name, pkt->pkt.user_id->len );
+    print_string( stdout,  pkt->pkt.user_id->name, pkt->pkt.user_id->len,
+							opt.with_colons );
 }
 
 
@@ -349,19 +373,27 @@ print_fingerprint( PKT_public_cert *pkc, PKT_secret_cert *skc )
 
     p = array = skc? fingerprint_from_skc( skc, &n )
 		   : fingerprint_from_pkc( pkc, &n );
-    printf("     Key fingerprint =");
-    if( n == 20 ) {
-	for(i=0; i < n ; i++, i++, p += 2 ) {
-	    if( i == 10 )
-		putchar(' ');
-	    printf(" %02X%02X", *p, p[1] );
-	}
+    if( opt.with_colons ) {
+	printf("fpr::::::::");
+	for(i=0; i < n ; i++, p++ )
+	    printf("%02X", *p );
+	putchar(':');
     }
     else {
-	for(i=0; i < n ; i++, p++ ) {
-	    if( i && !(i%8) )
-		putchar(' ');
-	    printf(" %02X", *p );
+	printf("     Key fingerprint =");
+	if( n == 20 ) {
+	    for(i=0; i < n ; i++, i++, p += 2 ) {
+		if( i == 10 )
+		    putchar(' ');
+		printf(" %02X%02X", *p, p[1] );
+	    }
+	}
+	else {
+	    for(i=0; i < n ; i++, p++ ) {
+		if( i && !(i%8) )
+		    putchar(' ');
+		printf(" %02X", *p );
+	    }
 	}
     }
     putchar('\n');
@@ -383,24 +415,47 @@ list_node( CTX c, KBNODE node )
     else if( node->pkt->pkttype == PKT_PUBLIC_CERT ) {
 	PKT_public_cert *pkc = node->pkt->pkt.public_cert;
 
-	printf("pub  %4u%c/%08lX %s ", nbits_from_pkc( pkc ),
+	if( opt.with_colons ) {
+	    u32 keyid[2];
+	    keyid_from_pkc( pkc, keyid );
+	    printf("pub::%u:%d:%08lX%08lX:%s:::",
+		    /* fixme: add trust value here */
+		    nbits_from_pkc( pkc ),
+		    pkc->pubkey_algo,
+		    (ulong)keyid[0],(ulong)keyid[1],
+		    datestr_from_pkc( pkc )
+		    /* fixme: add LID and ownertrust here */
+					    );
+	}
+	else
+	    printf("pub  %4u%c/%08lX %s ", nbits_from_pkc( pkc ),
 				      pubkey_letter( pkc->pubkey_algo ),
 				      (ulong)keyid_from_pkc( pkc, NULL ),
 				      datestr_from_pkc( pkc )	  );
 	/* and now list all userids with their signatures */
 	for( node = node->next; node; node = node->next ) {
 	    if( any != 2 && node->pkt->pkttype == PKT_SIGNATURE ) {
-		if( !any )
-		    putchar('\n');
+		if( !any ) {
+		    if( node->pkt->pkt.signature->sig_class == 0x20 )
+			puts("[revoked]");
+		    else
+			putchar('\n');
+		}
 		list_node(c,  node );
 		any = 1;
 	    }
 	    else if( node->pkt->pkttype == PKT_USER_ID ) {
 		KBNODE n;
 
-		if( any )
-		    printf( "%*s", 31, "" );
+		if( any ) {
+		    if( opt.with_colons )
+			printf("uid::::::::");
+		    else
+			printf( "uid%*s", 28, "" );
+		}
 		print_userid( node->pkt );
+		if( opt.with_colons )
+		    putchar(':');
 		putchar('\n');
 		if( opt.fingerprint && !any )
 		    print_fingerprint( pkc, NULL );
@@ -457,17 +512,27 @@ list_node( CTX c, KBNODE node )
 	      default:		       sigrc = '%'; break;
 	    }
 	}
-	printf("%c       %08lX %s   ",
-		sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
+	if( opt.with_colons ) {
+	    putchar(':');
+	    if( sigrc != ' ' )
+		putchar(sigrc);
+	    printf(":::%08lX%08lX:%s:::", (ulong)sig->keyid[0],
+		       (ulong)sig->keyid[1], datestr_from_sig(sig));
+	}
+	else
+	    printf("%c       %08lX %s   ",
+		    sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
 	    printf("[%s] ", g10_errstr(rc2) );
 	else if( sigrc == '?' )
 	    ;
 	else {
 	    p = get_user_id( sig->keyid, &n );
-	    print_string( stdout, p, n );
+	    print_string( stdout, p, n, opt.with_colons );
 	    m_free(p);
 	}
+	if( opt.with_colons )
+	    printf(":%02x:", sig->sig_class );
 	putchar('\n');
     }
     else
@@ -479,8 +544,40 @@ int
 proc_packets( IOBUF a )
 {
     CTX c = m_alloc_clear( sizeof *c );
-    PACKET *pkt = m_alloc( sizeof *pkt );
+    int rc = do_proc_packets( c, a );
+    m_free( c );
+    return rc;
+}
+
+int
+proc_signature_packets( IOBUF a, STRLIST signedfiles )
+{
+    CTX c = m_alloc_clear( sizeof *c );
     int rc;
+    c->sigs_only = 1;
+    c->signed_data = signedfiles;
+    rc = do_proc_packets( c, a );
+    m_free( c );
+    return rc;
+}
+
+int
+proc_encryption_packets( IOBUF a )
+{
+    CTX c = m_alloc_clear( sizeof *c );
+    int rc;
+    c->encrypt_only = 1;
+    rc = do_proc_packets( c, a );
+    m_free( c );
+    return rc;
+}
+
+
+int
+do_proc_packets( CTX c, IOBUF a )
+{
+    PACKET *pkt = m_alloc( sizeof *pkt );
+    int rc=0;
     int newpkt;
 
     c->iobuf = a;
@@ -504,6 +601,38 @@ proc_packets( IOBUF a )
 	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
 	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      default: newpkt = 0; break;
+	    }
+	}
+	else if( c->sigs_only ) {
+	    switch( pkt->pkttype ) {
+	      case PKT_PUBLIC_CERT:
+	      case PKT_SECRET_CERT:
+	      case PKT_USER_ID:
+	      case PKT_PUBKEY_ENC:
+	      case PKT_ENCRYPTED:
+		rc = G10ERR_UNEXPECTED;
+		goto leave;
+	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
+	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
+	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
+	      default: newpkt = 0; break;
+	    }
+	}
+	else if( c->encrypt_only ) {
+	    switch( pkt->pkttype ) {
+	      case PKT_PUBLIC_CERT:
+	      case PKT_SECRET_CERT:
+	      case PKT_USER_ID:
+		rc = G10ERR_UNEXPECTED;
+		goto leave;
+	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
+	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
+	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
+	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
+	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
 	      default: newpkt = 0; break;
 	    }
 	}
@@ -533,14 +662,15 @@ proc_packets( IOBUF a )
 	else
 	    free_packet(pkt);
     }
+    rc = 0;
 
+  leave:
     release_list( c );
     m_free(c->dek);
     free_packet( pkt );
     m_free( pkt );
     free_md_filter_context( &c->mfx );
-    m_free( c );
-    return 0;
+    return rc;
 }
 
 
@@ -549,7 +679,7 @@ print_keyid( FILE *fp, u32 *keyid )
 {
     size_t n;
     char *p = get_user_id( keyid, &n );
-    print_string( fp, p, n );
+    print_string( fp, p, n, opt.with_colons );
     m_free(p);
 }
 
@@ -562,15 +692,18 @@ check_sig_and_print( CTX c, KBNODE node )
     int rc;
 
     rc = do_check_sig(c, node );
-    if( !rc ) {
-	write_status( STATUS_GOODSIG );
-	log_info("Good signature from ");
-	print_keyid( stderr, sig->keyid );
-	putc('\n', stderr);
-    }
-    else if( rc == G10ERR_BAD_SIGN ) {
-	write_status( STATUS_BADSIG );
-	log_error("BAD signature from ");
+    if( !rc || rc == G10ERR_BAD_SIGN ) {
+	char *p, *buf;
+
+	p = get_user_id_string( sig->keyid );
+	buf = m_alloc( 20 + strlen(p) );
+	sprintf(buf, "%lu %s", (ulong)sig->timestamp, p );
+	m_free(p);
+	if( (p=strchr(buf,'\n')) )
+	    *p = 0; /* just in case ... */
+	write_status_text( rc? STATUS_BADSIG : STATUS_GOODSIG, buf );
+	m_free(buf);
+	log_info("%s signature from ", rc? "BAD":"Good");
 	print_keyid( stderr, sig->keyid );
 	putc('\n', stderr);
 	if( opt.batch )
@@ -607,12 +740,17 @@ proc_tree( CTX c, KBNODE node )
 	    free_md_filter_context( &c->mfx );
 	    /* prepare to create all requested message digests */
 	    c->mfx.md = md_open(0, 0);
+	    /* fixme: why looking for the signature packet and not 1passpacket*/
 	    for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); ) {
 		md_enable( c->mfx.md,
 			   digest_algo_from_sig(n1->pkt->pkt.signature));
 	    }
 	    /* ask for file and hash it */
-	    rc = ask_for_detached_datafile( &c->mfx,
+	    if( c->sigs_only )
+		rc = hash_datafiles( c->mfx.md, c->signed_data,
+			    n1->pkt->pkt.onepass_sig->sig_class == 0x01 );
+	    else
+		rc = ask_for_detached_datafile( &c->mfx,
 					    iobuf_get_fname(c->iobuf));
 	    if( rc ) {
 		log_error("can't hash datafile: %s\n", g10_errstr(rc));
@@ -629,7 +767,11 @@ proc_tree( CTX c, KBNODE node )
 	if( !c->have_data ) {
 	    free_md_filter_context( &c->mfx );
 	    c->mfx.md = md_open(digest_algo_from_sig(sig), 0);
-	    rc = ask_for_detached_datafile( &c->mfx,
+	    if( c->sigs_only )
+		rc = hash_datafiles( c->mfx.md, c->signed_data,
+				     sig->sig_class == 0x01 );
+	    else
+		rc = ask_for_detached_datafile( &c->mfx,
 					    iobuf_get_fname(c->iobuf));
 	    if( rc ) {
 		log_error("can't hash datafile: %s\n", g10_errstr(rc));

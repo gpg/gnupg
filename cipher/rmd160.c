@@ -300,6 +300,27 @@ rmd160_write( RMD160_CONTEXT *hd, byte *inbuf, size_t inlen)
 }
 
 
+/****************
+ * Apply the rmd160 transform function on the buffer which must have
+ * a length 64 bytes. Do not use this function together with the
+ * other functions, use rmd160_init to initialize intzernal variables.
+ * Returns: 16 bytes in buffer with the mixed contentes of buffer.
+ */
+void
+rmd160_mixblock( RMD160_CONTEXT *hd, char *buffer )
+{
+    char *p = buffer;
+    transform( hd, buffer );
+  #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
+    X(0);
+    X(1);
+    X(2);
+    X(3);
+    X(4);
+  #undef X
+}
+
+
 /* The routine terminates the computation
  */
 

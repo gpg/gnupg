@@ -105,6 +105,60 @@ v3_elg_fingerprint_md( PKT_public_cert *pkc )
     return md;
 }
 
+static MD_HANDLE
+dsa_fingerprint_md( PKT_public_cert *pkc )
+{
+    MD_HANDLE md;
+    byte *buf1, *buf2, *buf3, *buf4 ;
+    byte *p1, *p2, *p3, *p4;
+    unsigned n1, n2, n3, n4;
+    unsigned nb1, nb2, nb3, nb4;
+    unsigned n;
+
+    nb1 = mpi_get_nbits(pkc->d.dsa.p);
+    p1 = buf1 = mpi_get_buffer( pkc->d.dsa.p, &n1, NULL );
+    for( ; !*p1 && n1; p1++, n1-- )  /* skip leading null bytes */
+	;
+    nb2 = mpi_get_nbits(pkc->d.dsa.q);
+    p2 = buf2 = mpi_get_buffer( pkc->d.dsa.q, &n2, NULL );
+    for( ; !*p2 && n2; p2++, n2-- )
+	;
+    nb3 = mpi_get_nbits(pkc->d.dsa.g);
+    p3 = buf3 = mpi_get_buffer( pkc->d.dsa.g, &n3, NULL );
+    for( ; !*p3 && n3; p3++, n3-- )
+	;
+    nb4 = mpi_get_nbits(pkc->d.dsa.y);
+    p4 = buf4 = mpi_get_buffer( pkc->d.dsa.y, &n4, NULL );
+    for( ; !*p4 && n4; p4++, n4-- )
+	;
+
+    /* calculate length of packet */
+    n = 14 + n1 + n2 + n3 +n4 ;
+    md = md_open( DIGEST_ALGO_SHA1, 0);
+
+    md_putc( md, 0x99 );     /* ctb */
+    md_putc( md, n >> 8 );   /* 2 byte length header */
+    md_putc( md, n );
+    md_putc( md, 4 );	     /* version */
+    {	u32 a = pkc->timestamp;
+	md_putc( md, a >> 24 );
+	md_putc( md, a >> 16 );
+	md_putc( md, a >>  8 );
+	md_putc( md, a	     );
+    }
+    md_putc( md, pkc->pubkey_algo );
+    md_putc( md, nb1>>8); md_putc( md, nb1 ); md_write( md, p1, n1 );
+    md_putc( md, nb2>>8); md_putc( md, nb2 ); md_write( md, p2, n2 );
+    md_putc( md, nb3>>8); md_putc( md, nb3 ); md_write( md, p3, n3 );
+    md_putc( md, nb4>>8); md_putc( md, nb4 ); md_write( md, p4, n4 );
+    m_free(buf1);
+    m_free(buf2);
+    m_free(buf3);
+    m_free(buf4);
+    md_final( md );
+
+    return md;
+}
 
 static MD_HANDLE
 v3_elg_fingerprint_md_skc( PKT_secret_cert *skc )
@@ -119,6 +173,21 @@ v3_elg_fingerprint_md_skc( PKT_secret_cert *skc )
     pkc.d.elg.g = skc->d.elg.g;
     pkc.d.elg.y = skc->d.elg.y;
     return v3_elg_fingerprint_md( &pkc );
+}
+
+static MD_HANDLE
+dsa_fingerprint_md_skc( PKT_secret_cert *skc )
+{
+    PKT_public_cert pkc;
+
+    pkc.pubkey_algo = skc->pubkey_algo;
+    pkc.timestamp = skc->timestamp;
+    pkc.pubkey_algo = skc->pubkey_algo;
+    pkc.d.dsa.p = skc->d.dsa.p;
+    pkc.d.dsa.q = skc->d.dsa.q;
+    pkc.d.dsa.g = skc->d.dsa.g;
+    pkc.d.dsa.y = skc->d.dsa.y;
+    return dsa_fingerprint_md( &pkc );
 }
 
 
@@ -140,6 +209,16 @@ keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
 	MD_HANDLE md;
 	md = v3_elg_fingerprint_md_skc(skc);
 	dp = md_read( md, DIGEST_ALGO_RMD160 );
+	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
+	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	lowbits = keyid[1];
+	md_close(md);
+    }
+    else if( skc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	const byte *dp;
+	MD_HANDLE md;
+	md = dsa_fingerprint_md_skc(skc);
+	dp = md_read( md, DIGEST_ALGO_SHA1 );
 	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
 	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
 	lowbits = keyid[1];
@@ -178,6 +257,16 @@ keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid )
 	lowbits = keyid[1];
 	md_close(md);
     }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	const byte *dp;
+	MD_HANDLE md;
+	md = dsa_fingerprint_md(pkc);
+	dp = md_read( md, DIGEST_ALGO_SHA1 );
+	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
+	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	lowbits = keyid[1];
+	md_close(md);
+    }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	lowbits = mpi_get_keyid( pkc->d.rsa.rsa_n, keyid );
     }
@@ -208,6 +297,9 @@ nbits_from_pkc( PKT_public_cert *pkc )
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	return mpi_get_nbits( pkc->d.elg.p );
     }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	return mpi_get_nbits( pkc->d.dsa.p );
+    }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	return mpi_get_nbits( pkc->d.rsa.rsa_n );
     }
@@ -223,6 +315,9 @@ nbits_from_skc( PKT_secret_cert *skc )
 {
     if( skc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	return mpi_get_nbits( skc->d.elg.p );
+    }
+    else if( skc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	return mpi_get_nbits( skc->d.dsa.p );
     }
     else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	return mpi_get_nbits( skc->d.rsa.rsa_n );
@@ -293,6 +388,15 @@ fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len )
 	pkc.d.elg.g = skc->d.elg.g;
 	pkc.d.elg.y = skc->d.elg.y;
     }
+    else if( pkc.pubkey_algo == PUBKEY_ALGO_DSA ) {
+	pkc.timestamp = skc->timestamp;
+	pkc.valid_days = skc->valid_days;
+	pkc.pubkey_algo = skc->pubkey_algo;
+	pkc.d.dsa.p = skc->d.dsa.p;
+	pkc.d.dsa.q = skc->d.dsa.q;
+	pkc.d.dsa.g = skc->d.dsa.g;
+	pkc.d.dsa.y = skc->d.dsa.y;
+    }
     else if( pkc.pubkey_algo == PUBKEY_ALGO_RSA ) {
 	pkc.d.rsa.rsa_n = skc->d.rsa.rsa_n;
 	pkc.d.rsa.rsa_e = skc->d.rsa.rsa_e;
@@ -317,6 +421,15 @@ fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
 	MD_HANDLE md;
 	md = v3_elg_fingerprint_md(pkc);
 	dp = md_read( md, DIGEST_ALGO_RMD160 );
+	array = m_alloc( 20 );
+	len = 20;
+	memcpy(array, dp, 20 );
+	md_close(md);
+    }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	MD_HANDLE md;
+	md = dsa_fingerprint_md(pkc);
+	dp = md_read( md, DIGEST_ALGO_SHA1 );
 	array = m_alloc( 20 );
 	len = 20;
 	memcpy(array, dp, 20 );

@@ -33,6 +33,7 @@ typedef struct {
 void rmd160_init( RMD160_CONTEXT *c );
 void rmd160_write( RMD160_CONTEXT *hd, byte *inbuf, size_t inlen);
 void rmd160_final(RMD160_CONTEXT *hd);
+void rmd160_mixblock( RMD160_CONTEXT *hd, char *buffer );
 #define rmd160_read(h) ( (h)->buf )
 
 #endif /*G10_RMD_H*/

@@ -37,13 +37,21 @@ make_timestamp()
  * Print a string to FP, but filter all control characters out.
  */
 void
-print_string( FILE *fp, byte *p, size_t n )
+print_string( FILE *fp, byte *p, size_t n, int delim )
 {
     for( ; n; n--, p++ )
-	if( iscntrl( *p ) ) {
+	if( iscntrl( *p ) || *p == delim ) {
 	    putc('\\', fp);
 	    if( *p == '\n' )
 		putc('n', fp);
+	    else if( *p == '\r' )
+		putc('r', fp);
+	    else if( *p == '\f' )
+		putc('f', fp);
+	    else if( *p == '\v' )
+		putc('v', fp);
+	    else if( *p == '\b' )
+		putc('b', fp);
 	    else if( !*p )
 		putc('0', fp);
 	    else

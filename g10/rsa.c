@@ -77,9 +77,9 @@ g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
 
     dp = md_read( md, digest_algo );
     keyid_from_skc( skc, sig->keyid );
-    sig->d.rsa.digest_algo = digest_algo;
-    sig->d.rsa.digest_start[0] = dp[0];
-    sig->d.rsa.digest_start[1] = dp[1];
+    sig->digest_algo = digest_algo;
+    sig->digest_start[0] = dp[0];
+    sig->digest_start[1] = dp[1];
     sig->d.rsa.rsa_integer =
 		   encode_md_value( md, mpi_get_nbits(skc->d.rsa.rsa_n));
     skey.e = skc->d.rsa.rsa_e;

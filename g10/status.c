@@ -37,6 +37,12 @@ set_status_fd( int newfd )
 void
 write_status( int no )
 {
+    write_status_text( no, NULL );
+}
+
+void
+write_status_text( int no, const char *text)
+{
     const char *s;
 
     if( fd == -1 )
@@ -53,7 +59,13 @@ write_status( int no )
       default: s = "?\n"; break;
     }
 
-    write( fd, s, strlen(s) );
-
+    if( text ) {
+	write( fd, s, strlen(s)-1 );
+	write( fd, " ", 1 );
+	write( fd, text, strlen(text) );
+	write( fd, "\n", 1 );
+    }
+    else
+	write( fd, s, strlen(s) );
 }
 

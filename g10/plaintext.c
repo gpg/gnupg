@@ -30,6 +30,7 @@
 #include "ttyio.h"
 #include "filter.h"
 #include "main.h"
+#include "i18n.h"
 
 
 /****************
@@ -58,7 +59,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 	fname[pt->namelen] = 0;
     }
 
-    if( !*fname ) { /* no filename given; write to stdout */
+    if( !*fname || (*fname=='-' && !fname[1])) {
+	/* no filename or "-" given; write to stdout */
 	fp = stdout;
     }
     else if( overwrite_filep( fname ) )
@@ -178,6 +180,47 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
   leave:
     m_free(answer);
     return rc;
+}
+
+
+/****************
+ * Hash the given files and append the hash to hash context md.
+ * If FILES is NULL, hash stdin.
+ */
+int
+hash_datafiles( MD_HANDLE md, STRLIST files, int textmode )
+{
+    IOBUF fp;
+    STRLIST sl=NULL;
+    text_filter_context_t tfx;
+    int c;
+
+    if( !files )
+	add_to_strlist( &sl, "-");
+    else
+	sl = files;
+
+    for( ; sl; sl = sl->next ) {
+	fp = iobuf_open( sl->d );
+	if( !fp ) {
+	    log_error(_("can't open signed data '%s'\n"),
+						print_fname_stdin(sl->d));
+	    if( !files )
+		free_strlist(sl);
+	    return G10ERR_OPEN_FILE;
+	}
+	if( textmode ) {
+	    memset( &tfx, 0, sizeof tfx);
+	    iobuf_push_filter( fp, text_filter, &tfx );
+	}
+	while( (c = iobuf_get(fp)) != -1 )
+	    md_putc(md, c );
+	iobuf_close(fp);
+    }
+
+    if( !files )
+	free_strlist(sl);
+    return 0;
 }
 
 

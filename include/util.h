@@ -101,10 +101,13 @@ const char *strusage( int level );
 
 /*-- fileutil.c --*/
 char *make_filename( const char *first_part, ... );
+const char *print_fname_stdin( const char *s );
+const char *print_fname_stdout( const char *s );
+
 
 /*-- miscutil.c --*/
 u32 make_timestamp(void);
-void print_string( FILE *fp, byte *p, size_t n );
+void print_string( FILE *fp, byte *p, size_t n, int delim );
 int answer_is_yes( const char *s );
 
 /*-- strgutil.c --*/

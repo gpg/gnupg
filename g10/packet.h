@@ -75,18 +75,22 @@ typedef struct {
     u32     keyid[2];	    /* 64 bit keyid */
     ulong   local_id;	    /* internal use, valid if > 0 */
     u32     timestamp;	    /* signature made */
+    byte    version;
     byte    sig_class;	    /* sig classification, append for MD calculation*/
     byte    pubkey_algo;    /* algorithm used for public key scheme */
 			    /* (PUBKEY_ALGO_xxx) */
+    byte digest_algo;	    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
+    byte *hashed_data;	    /* all subpackets with hashed  data (v4 only) */
+    byte *unhashed_data;    /* ditto for unhashed data */
+    byte digest_start[2];   /* first 2 bytes of the digest */
     union {
       struct {
-	byte digest_algo;     /* algorithm used for digest (DIGEST_ALGO_xxxx) */
-	byte digest_start[2]; /* first 2 byte of the digest */
 	MPI  a, b;	      /* integers with the digest */
       } elg;
       struct {
-	byte digest_algo;     /* algorithm used for digest (DIGEST_ALGO_xxxx) */
-	byte digest_start[2]; /* first 2 byte of the digest */
+	MPI  r, s;	      /* integers with the digest */
+      } dsa;
+      struct {
 	MPI  rsa_integer;     /* the encrypted digest */
       } rsa;
     } d;
@@ -106,6 +110,12 @@ typedef struct {
 	MPI g;		    /* group generator */
 	MPI y;		    /* g^x mod p */
       } elg;
+      struct {
+	MPI p;		    /* prime */
+	MPI q;		    /* group order */
+	MPI g;		    /* group generator */
+	MPI y;		    /* g^x mod p */
+      } dsa;
       struct {
 	MPI rsa_n;	    /* public modulus */
 	MPI rsa_e;	    /* public exponent */
@@ -138,6 +148,25 @@ typedef struct {
 	} protect;	    /* when protected, the MPIs above are pointers
 			     * to plain storage */
       } elg;
+      struct {
+	MPI p;		    /* prime */
+	MPI q;		    /* group order */
+	MPI g;		    /* group generator */
+	MPI y;		    /* g^x mod p */
+	MPI x;		    /* secret exponent */
+	u16 csum;	    /* checksum */
+	byte is_protected;  /* The above infos are protected and must */
+			    /* be decrypteded before use. */
+	struct {
+	    byte algo;	/* cipher used to protect the secret informations*/
+	    byte s2k;
+	    byte hash;
+	    byte salt[8];
+	    byte count;
+	    byte iv[8]; /* initialization vector for CFB mode */
+	} protect;	    /* when protected, the MPIs above are pointers
+			     * to plain storage */
+      } dsa;
       struct {
 	MPI rsa_n;	    /* public modulus */
 	MPI rsa_e;	    /* public exponent */
@@ -215,6 +244,8 @@ struct packet_struct {
 
 /*-- mainproc.c --*/
 int proc_packets( IOBUF a );
+int proc_signature_packets( IOBUF a, STRLIST signedfiles );
+int proc_encryption_packets( IOBUF a );
 int list_packets( IOBUF a );
 
 /*-- parse-packet.c --*/
@@ -260,7 +291,8 @@ int protect_secret_key( PKT_secret_cert *cert, DEK *dek );
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );
 
 /*-- compress.c --*/
-int handle_compressed( PKT_compressed *zd );
+int handle_compressed( PKT_compressed *cd,
+		       int (*callback)(IOBUF, void *), void *passthru );
 
 /*-- encr-data.c --*/
 int decrypt_data( PKT_encrypted *ed, DEK *dek );

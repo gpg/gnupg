@@ -66,11 +66,11 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	ELG_public_key pkey;
 
-	if( (rc=check_digest_algo(sig->d.elg.digest_algo)) )
+	if( (rc=check_digest_algo(sig->digest_algo)) )
 	    goto leave;
 	/* make sure the digest algo is enabled (in case of a detached
 	 * signature */
-	md_enable( digest, sig->d.elg.digest_algo );
+	md_enable( digest, sig->digest_algo );
 	/* complete the digest */
 	md_putc( digest, sig->sig_class );
 	{   u32 a = sig->timestamp;
@@ -85,6 +85,59 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	pkey.g = pkc->d.elg.g;
 	pkey.y = pkc->d.elg.y;
 	if( !elg_verify( sig->d.elg.a, sig->d.elg.b, result, &pkey ) )
+	    rc = G10ERR_BAD_SIGN;
+    }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	DSA_public_key pkey;
+
+	if( (rc=check_digest_algo(sig->digest_algo)) )
+	    goto leave;
+	/* make sure the digest algo is enabled (in case of a detached
+	 * signature */
+	md_enable( digest, sig->digest_algo );
+
+	assert( sig->digest_algo == DIGEST_ALGO_SHA1 );
+
+	/* complete the digest */
+	if( sig->version >= 4 )
+	    md_putc( digest, sig->version );
+	md_putc( digest, sig->sig_class );
+	if( sig->version < 4 ) {
+	    u32 a = sig->timestamp;
+	    md_putc( digest, (a >> 24) & 0xff );
+	    md_putc( digest, (a >> 16) & 0xff );
+	    md_putc( digest, (a >>  8) & 0xff );
+	    md_putc( digest,  a        & 0xff );
+	}
+	else {
+	    byte buf[6];
+	    size_t n;
+	    md_putc( digest, sig->pubkey_algo );
+	    md_putc( digest, sig->digest_algo );
+	    if( sig->hashed_data ) {
+		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
+		md_write( digest, sig->hashed_data, n+2 );
+		n += 4;
+	    }
+	    else
+		n = 4;
+	    /* add some magic */
+	    buf[0] = sig->version;
+	    buf[1] = 0xff;
+	    buf[2] = n >> 24;
+	    buf[3] = n >> 16;
+	    buf[4] = n >>  8;
+	    buf[5] = n;
+	    md_write( digest, buf, 6 );
+	}
+	md_final( digest );
+	log_hexdump("digest is: ", md_read(digest, DIGEST_ALGO_SHA1), 20);
+	result = encode_md_value( digest, mpi_get_nbits(pkc->d.dsa.p));
+	pkey.p = pkc->d.dsa.p;
+	pkey.q = pkc->d.dsa.q;
+	pkey.g = pkc->d.dsa.g;
+	pkey.y = pkc->d.dsa.y;
+	if( !dsa_verify( sig->d.dsa.r, sig->d.dsa.s, result, &pkey ) )
 	    rc = G10ERR_BAD_SIGN;
     }
  #ifdef HAVE_RSA_CIPHER
@@ -125,10 +178,10 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    goto leave;
 	}
 
-	if( (rc=check_digest_algo(sig->d.rsa.digest_algo)) )
+	if( (rc=check_digest_algo(sig->digest_algo)) )
 	    goto leave; /* unsupported algo */
-	md_enable( digest, sig->d.rsa.digest_algo );
-	asn = md_asn_oid( sig->d.rsa.digest_algo, &asnlen, &mdlen );
+	md_enable( digest, sig->digest_algo );
+	asn = md_asn_oid( sig->digest_algo, &asnlen, &mdlen );
 
 	for(i=mdlen,j=asnlen-1; (c=mpi_getbyte(result, i)) != -1 && j >= 0;
 							       i++, j-- )
@@ -142,7 +195,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    if( c != 0xff  )
 		break;
 	i++;
-	if( c != sig->d.rsa.digest_algo || mpi_getbyte(result, i) ) {
+	if( c != sig->digest_algo || mpi_getbyte(result, i) ) {
 	    /* Padding or leading bytes in signature is wrong */
 	    rc = G10ERR_BAD_PUBKEY;
 	    goto leave;
@@ -163,7 +216,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    md_putc( digest,  a        & 0xff );
 	}
 	md_final( digest );
-	dp = md_read( digest, sig->d.rsa.digest_algo );
+	dp = md_read( digest, sig->digest_algo );
 	for(i=mdlen-1; i >= 0; i--, dp++ ) {
 	    if( mpi_getbyte( result, i ) != *dp ) {
 		rc = G10ERR_BAD_SIGN;
@@ -188,7 +241,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 
 /****************
  * check the signature pointed to by NODE. This is a key signatures.
- * If the function detects a elf signature, it uses the PKC from
+ * If the function detects a self-signature, it uses the PKC from
  * NODE and does not read the any public key.
  */
 int
@@ -210,9 +263,11 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
     sig = node->pkt->pkt.signature;
 
     if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	algo = sig->d.elg.digest_algo;
+	algo = sig->digest_algo;
+    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
+	algo = sig->digest_algo;
     else if(sig->pubkey_algo == PUBKEY_ALGO_RSA )
-	algo = sig->d.rsa.digest_algo;
+	algo = sig->digest_algo;
     else
 	return G10ERR_PUBKEY_ALGO;
     if( (rc=check_digest_algo(algo)) )
@@ -233,7 +288,18 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 
 	    keyid_from_pkc( pkc, keyid );
 	    md = md_open( algo, 0 );
+     if( sig->sig_class== 16 )
+	 md->debug = fopen("dsahashsig","w");
 	    hash_public_cert( md, pkc );
+	    if( sig->version >=4 ) {
+		byte buf[5];
+		buf[0] = 0xb4; /* indicates a userid packet */
+		buf[1] = uid->len >> 24;  /* but use 4 length bytes */
+		buf[2] = uid->len >> 16;
+		buf[3] = uid->len >>  8;
+		buf[4] = uid->len;
+		md_write( md, buf, 5 );
+	    }
 	    md_write( md, uid->name, uid->len );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 		if( is_selfsig )
@@ -243,6 +309,8 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 	    else
 		rc = signature_check( sig, md );
 	    md_close(md);
+     if( sig->sig_class== 16 )
+	 fclose(md->debug);
 	}
 	else {
 	    log_error("no user id for key signature packet\n");

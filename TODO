@@ -13,9 +13,7 @@
     * complete cipher/cast.c
     * complete cipher/dsa.c
 
-    * add g10 stuff to Mutt's pgpinvoke.c
-
-    * Burn the buffers used by fopen().
+    * Burn the buffers used by fopen(), or use read(2).
 
     * bug: g10/trustdb.c#build_sigrecs called to often by do_list_path
       and remove the bad kludge. Maybe we should put all sigs into the trustdb
@@ -34,4 +32,11 @@
       them to your key and because the user id which is signed by others has
       also be signed by you, all user-ids are bound together.
 
+    * add an option to re-create a public key from a secret key
+
+    * should we have a simple menu for all the key management options?
+
+    * cleanup mainproc.c, much stuff is duplicated.
+
+    * remove key management stuff from sign.c.
 

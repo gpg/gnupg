@@ -81,6 +81,10 @@ void g10_elg_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
 void g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig,
 					 MD_HANDLE md, int digest_algo );
 
+/*-- dsa.c --*/
+void g10_dsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
+					 MD_HANDLE md, int digest_algo );
+
 /*-- rsa.c --*/
 void g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
 void g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
@@ -98,6 +102,15 @@ int enarmor_file( const char *fname );
 int gen_revoke( const char *uname );
 
 /*-- keylist.c --*/
-void ext_key_list( STRLIST names );
+void std_key_list( int nnames, char **names );
+
+/*-- verify.c --*/
+int verify_signatures( int nfiles, char **files );
+
+/*-- decrypt.c --*/
+int decrypt_message( const char *filename );
+
+/*-- plaintext.c --*/
+int hash_datafiles( MD_HANDLE md, STRLIST files, int textmode );
 
 #endif /*G10_MAIN_H*/

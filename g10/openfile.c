@@ -42,6 +42,8 @@
 int
 overwrite_filep( const char *fname )
 {
+    if( !fname || (*fname == '-' && !fname[1]) )
+	return 0; /* stdout */
     if( !access( fname, F_OK ) ) {
 	char *p;
 	int okay;
@@ -55,7 +57,6 @@ overwrite_filep( const char *fname )
 	    okay = 0;
 
 	while( !okay ) {
-	if( !okay )
 	    if( first ) {
 		tty_printf("File '%s' exists. ", fname);
 		first = 0;
@@ -91,7 +92,7 @@ open_outfile( const char *iname, int mode )
     IOBUF a = NULL;
     int rc;
 
-    if( !iname && !opt.outfile ) {
+    if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
 	if( !(a = iobuf_create(NULL)) )
 	    log_error("can't open [stdout]: %s\n", strerror(errno) );
 	else if( opt.verbose )
@@ -133,7 +134,7 @@ open_sigfile( const char *iname )
     IOBUF a = NULL;
     size_t len;
 
-    if( iname ) {
+    if( iname && !(*iname == '-' && !iname[1]) ) {
 	len = strlen(iname);
 	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")
 			|| !strcmp(iname + len - 4, ".asc")) ) {

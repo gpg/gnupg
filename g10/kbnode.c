@@ -48,8 +48,8 @@ clone_kbnode( KBNODE node )
     KBNODE n = m_alloc( sizeof *n );
     n->next = NULL;
     n->pkt = node->pkt;
-    n->private_flag |= 2; /* mark cloned */
     n->flag = 0;
+    n->private_flag = node->private_flag | 2; /* mark cloned */
     return n;
 }
 
@@ -268,7 +268,7 @@ dump_kbnode( KBNODE node )
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    fputs("  \"", stderr);
 	    print_string( stderr, node->pkt->pkt.user_id->name,
-				  node->pkt->pkt.user_id->len );
+				  node->pkt->pkt.user_id->len, 0 );
 	    fputs("\"\n", stderr);
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {

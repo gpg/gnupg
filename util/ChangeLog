@@ -1,3 +1,16 @@
+Sat Mar  7 11:54:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* miscutil.c (print_string): New arg delim; changed all callers.
+
+Thu Mar  5 12:19:30 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* errors.c: New strings.
+
+Thu Mar  5 12:06:31 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* iobuf.c (iobuf_open): A name of "-" now opens stdin.
+	* fileutil.c (print_fname_stdout, print_fname_stdin): New.
+
 Fri Feb 27 10:20:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* memory.c (m_is_secure): Removed.

@@ -322,7 +322,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 			    buf[--n] = 0;
 			if( opt.verbose ) {
 			    log_info("armor header: ");
-			    print_string( stderr, buf, n );
+			    print_string( stderr, buf, n, 0 );
 			    putc('\n', stderr);
 			}
 			if( clearsig && !parse_hash_header( buf ) ) {
@@ -348,7 +348,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		}
 		else {
 		    log_error("invalid armor header: ");
-		    print_string( stderr, buf, n );
+		    print_string( stderr, buf, n, 0 );
 		    putc('\n', stderr);
 		    state = fhdrERROR;
 		}
@@ -357,7 +357,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		if( strchr( buf, ':') ) { /* buffer to short, but this is okay*/
 		    if( opt.verbose ) {
 			log_info("armor header: ");
-			print_string( stderr, buf, n );
+			print_string( stderr, buf, n, 0 );
 			fputs("[...]\n", stderr);  /* indicate it is truncated */
 		    }
 		    state = fhdrSKIPHeader;  /* skip rest of line */
@@ -462,7 +462,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    }
 	    else {
 		log_error("invalid dash escaped line: ");
-		print_string( stderr, buf, n );
+		print_string( stderr, buf, n, 0 );
 		putc('\n', stderr);
 		state = fhdrERROR;
 	    }
@@ -531,7 +531,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 
 	  case fhdrERRORShow:
 	    log_error("invalid clear text header: ");
-	    print_string( stderr, buf, n );
+	    print_string( stderr, buf, n, 0 );
 	    putc('\n', stderr);
 	    state = fhdrERROR;
 	    break;

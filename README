@@ -3,8 +3,6 @@
 		 -------------------------------
 
     THIS IS ALPHA SOFTWARE, EXPECT BUGS AND UNIMPLEMENTED STUFF.
-    IT MAY HAPPEN THAT SOME DATA FORMATS OR PROGRAMM OPTIONS
-    CHANGE WITH THE NEXT VERSION.
 
     On a Linux box (version 2.x.x, alpha or x86 CPU) it should
     work reliable. You may create your key on such a machine and
@@ -105,7 +103,7 @@
     8) Continue with step 4 if we did not find a prime in step 7.
     9) Find a generator for that prime.
 
-    You should make a revocation certificate in cases someone gets
+    You should make a revocation certificate in case someone gets
     knowledge of your secret key or you forgot your passphrase:
 
 	gpg --gen-revoke your_user_id
@@ -208,12 +206,14 @@
 	"234567C4"
 	"0F34E556E"
 	"01347A56A"
+	"0xAB123456
 
     * By a complete keyid:
 
 	"234AABBCC34567C4"
 	"0F323456784E56EAB"
 	"01AB3FED1347A5612"
+	"0x234AABBCC34567C4"
 
     * By a fingerprint (not yet implemented):
 
@@ -279,11 +279,6 @@
     Use this to list the contents of a data file. If the file is encrypted
     you are asked for the passphrase, so that GNUPG is able to look at the
     inner structure of a encrypted packet.
-
-	gpgm --quick-random
-
-    Do not use the stroing random generator but a faster one.  This can be
-    used to generate keys for tests; those are marked as insecure.
 
 	gpgm --list-trustdb
 

@@ -259,7 +259,7 @@ import_one( const char *fname, KBNODE keyblock )
 		  (ulong)keyid[1], datestr_from_pkc(pkc) );
 	if( uidnode )
 	    print_string( stderr, uidnode->pkt->pkt.user_id->name,
-				  uidnode->pkt->pkt.user_id->len );
+				  uidnode->pkt->pkt.user_id->len, 0 );
 	putc('\n', stderr);
     }
     if( !uidnode ) {
@@ -532,7 +532,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		    log_info("%s: key %08lX, removed userid '",
 						  fname, (ulong)keyid[1]);
 		    print_string( stderr, node->pkt->pkt.user_id->name,
-				      node->pkt->pkt.user_id->len );
+				      node->pkt->pkt.user_id->len, 0 );
 		    fputs("'\n", stderr );
 		}
 		delete_kbnode( node ); /* the user-id */

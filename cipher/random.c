@@ -18,6 +18,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+
+/****************
+ * How it works:
+ *
+ * See Peter Gutmann's Paper: "Software Generation of Practically
+ * Strong Random Numbers"
+ *
+ * fixme!
+ */
+
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,26 +37,87 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef HAVE_GETTIMEOFTIME
+  #include <sys/times.h>
+#endif
+#ifdef HAVE_GETRUSAGE
+  #include <sys/resource.h>
+#endif
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "util.h"
-#include "cipher.h"
+#include "random.h"
+#include "rmd.h"
 #include "ttyio.h"
 #include "i18n.h"
 
+
+#define BLOCKLEN  64   /* hash this amount of bytes */
+#define DIGESTLEN 20   /* into a digest of this length (rmd160) */
+/* poolblocks is the number of digests which make up the pool
+ * and poolsize must be a multiple of the digest length
+ * to make the AND operations faster, the size should also be
+ * a multiple of ulong
+ */
+#define POOLBLOCKS 30
+#define POOLSIZE (POOLBLOCKS*DIGESTLEN)
+#if (POOLSIZE % SIZEOF_UNSIGNED_LONG)
+  #error Please make sure that poolsize is a multiple of ulong
+#endif
+#define POOLWORDS (POOLSIZE / SIZEOF_UNSIGNED_LONG)
+#if SIZEOF_UNSIGNED_LONG == 8
+  #define ADD_VALUE 0xa5a5a5a5a5a5a5a5
+#elif SIZEOF_UNSIGNED_LONG == 4
+  #define ADD_VALUE 0xa5a5a5a5
+#else
+  #error weird size for an unsigned long
+#endif
+
 struct cache {
     int len;
-    byte buffer[100]; /* fixme: should be allocated with m_alloc_secure()*/
+    int size;
+    byte *buffer;
 };
 
+
+static int is_initialized;
 static struct cache cache[3];
 #define MASK_LEVEL(a) do {if( a > 2 ) a = 2; else if( a < 0 ) a = 0; } while(0)
+static char *rndpool;	/* allocated size is POOLSIZE+BLOCKLEN */
+static char *keypool;	/* allocated size is POOLSIZE+BLOCKLEN */
+static size_t pool_readpos;
+static size_t pool_writepos;
+static int pool_filled;
+static int just_mixed;
 
-
-static void fill_buffer( byte *buffer, size_t length, int level );
+static int secure_alloc;
 static int quick_test;
 
+
+
+static void read_pool( byte *buffer, size_t length, int level );
+static void read_dev_random( byte *buffer, size_t length, int level );
+
+
+static void
+initialize()
+{
+    /* The data buffer is allocated somewhat larger, so that
+     * we can use this extra space (which is allocated in secure memory)
+     * as a temporary hash buffer */
+    rndpool = secure_alloc ? m_alloc_secure_clear(POOLSIZE+BLOCKLEN)
+			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
+    keypool = secure_alloc ? m_alloc_secure_clear(POOLSIZE+BLOCKLEN)
+			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
+    is_initialized = 1;
+}
+
+void
+secure_random_alloc()
+{
+    secure_alloc = 1;
+}
 
 int
 quick_random_gen( int onoff )
@@ -78,13 +150,173 @@ get_random_byte( int level )
 {
     MASK_LEVEL(level);
     if( !cache[level].len ) {
-	fill_buffer(cache[level].buffer, DIM(cache[level].buffer), level );
-	cache[level].len = DIM(cache[level].buffer);
+	if( !is_initialized )
+	    initialize();
+	if( !cache[level].buffer ) {
+	    cache[level].size = 100;
+	    cache[level].buffer = level && secure_alloc?
+					 m_alloc_secure( cache[level].size )
+				       : m_alloc( cache[level].size );
+	}
+	read_pool(cache[level].buffer, cache[level].size, level );
+	cache[level].len = cache[level].size;
     }
 
     return cache[level].buffer[--cache[level].len];
 }
 
+
+/****************
+ * Mix the pool
+ */
+static void
+mix_pool(byte *pool)
+{
+    char *hashbuf = pool + POOLSIZE;
+    char *p, *pend;
+    int i, n;
+    RMD160_CONTEXT md;
+
+    rmd160_init( &md );
+ #if DIGESTLEN != 20
+    #error must have a digest length of 20 for ripe-md-160
+ #endif
+    /* loop over the pool */
+    pend = pool + POOLSIZE;
+    memcpy(hashbuf, pend - DIGESTLEN, DIGESTLEN );
+    memcpy(hashbuf+DIGESTLEN, pool, BLOCKLEN-DIGESTLEN);
+    rmd160_mixblock( &md, hashbuf);
+    memcpy(pool, hashbuf, 20 );
+
+    p = pool;
+    for( n=1; n < POOLBLOCKS; n++ ) {
+	memcpy(hashbuf, p, DIGESTLEN );
+
+	p += DIGESTLEN;
+	if( p+DIGESTLEN+BLOCKLEN < pend )
+	    memcpy(hashbuf+DIGESTLEN, p+DIGESTLEN, BLOCKLEN-DIGESTLEN);
+	else {
+	    char *pp = p+DIGESTLEN;
+	    for(i=DIGESTLEN; i < BLOCKLEN; i++ ) {
+		if( pp >= pend )
+		    pp = pool;
+		hashbuf[i] = *pp++;
+	    }
+	}
+
+	rmd160_mixblock( &md, hashbuf);
+	memcpy(p, hashbuf, 20 );
+    }
+}
+
+
+static void
+read_pool( byte *buffer, size_t length, int level )
+{
+    int i;
+    ulong *sp, *dp;
+
+    if( length >= POOLSIZE )
+	BUG(); /* not allowed */
+    if( !level ) { /* read simple random bytes */
+	read_dev_random( buffer, length, level );
+	return;
+    }
+
+    /* always do a random poll if we need strong numbers */
+    if( pool_filled && level == 2 )
+	random_poll();
+    /* make sure the pool is filled */
+    while( !pool_filled )
+	random_poll();
+    /* do always a fast random poll */
+    fast_random_poll();
+
+    /* mix the pool (if add_randomness() didn't it) */
+    if( !just_mixed )
+	mix_pool(rndpool);
+
+    /* create a new pool */
+    for(i=0,dp=(ulong*)keypool, sp=(ulong*)rndpool;
+				i < POOLWORDS; i++, dp++, sp++ )
+	*dp = *sp + ADD_VALUE;
+    /* and mix both pools */
+    mix_pool(rndpool);
+    mix_pool(keypool);
+    /* read the required data
+     * we use a readpoiter to read from a different postion each
+     * time */
+    while( length-- ) {
+	*buffer++ = keypool[pool_readpos++];
+	if( pool_readpos >= POOLSIZE )
+	    pool_readpos = 0;
+    }
+    /* and clear the keypool */
+    memset( keypool, 0, POOLSIZE );
+}
+
+
+/****************
+ * Add LENGTH bytes of randomness from buffer to the pool.
+ * source may be used to specify the randomeness source.
+ */
+void
+add_randomness( const void *buffer, size_t length, int source )
+{
+    if( !is_initialized )
+	initialize();
+    while( length-- ) {
+	rndpool[pool_writepos++] = *((byte*)buffer)++;
+	if( pool_writepos >= POOLSIZE ) {
+	    pool_filled = 1;
+	    pool_writepos = 0;
+	    mix_pool(rndpool);
+	    just_mixed = !length;
+	}
+    }
+}
+
+
+
+/********************
+ *  FIXME: move these functions to rand_unix.c
+ */
+
+void
+random_poll()
+{
+    char buf[POOLSIZE/5];
+    read_dev_random( buf, POOLSIZE/5, 1 ); /* read /dev/urandom */
+    add_randomness( buf, POOLSIZE/5, 2);
+    memset( buf, 0, POOLSIZE/5);
+}
+
+
+void
+fast_random_poll()
+{
+  #ifdef HAVE_GETTIMEOFTIME
+    {	struct timeval tv;
+	if( gettimeofday( &tv, NULL ) )
+	    BUG();
+	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
+	add_randomness( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
+    }
+  #else /* use times */
+    {	struct tms buf;
+	times( &buf );
+	add_randomness( &buf, sizeof buf, 1 );
+    }
+  #endif
+  #ifdef HAVE_GETRUSAGE
+    {	struct rusage buf;
+	if( getrusage( RUSAGE_SELF, &buf ) )
+	    BUG();
+	add_randomness( &buf, sizeof buf, 1 );
+	memset( &buf, 0, sizeof buf );
+    }
+  #endif
+}
 
 
 #ifdef HAVE_DEV_RANDOM
@@ -111,7 +343,7 @@ open_device( const char *name, int minor )
 
 
 static void
-fill_buffer( byte *buffer, size_t length, int level )
+read_dev_random( byte *buffer, size_t length, int level )
 {
     static int fd_urandom = -1;
     static int fd_random = -1;
@@ -125,6 +357,9 @@ fill_buffer( byte *buffer, size_t length, int level )
 	fd = fd_random;
     }
     else {
+	/* fixme: we should use a simpler one for level 0,
+	 * because reading from /dev/urandom removes entropy
+	 * and the next read on /dev/random may have to wait */
 	if( fd_urandom == -1 )
 	    fd_urandom = open_device( "/dev/urandom", 9 );
 	fd = fd_urandom;
@@ -154,7 +389,7 @@ fill_buffer( byte *buffer, size_t length, int level )
 	    continue;
 	}
 
-	assert( length < 200 );
+	assert( length < 500 );
 	do {
 	    n = read(fd, buffer, length );
 	    if( n >= 0 && n > length ) {
@@ -178,7 +413,7 @@ fill_buffer( byte *buffer, size_t length, int level )
 #endif
 
 static void
-fill_buffer( byte *buffer, size_t length, int level )
+read_dev_random( byte *buffer, size_t length, int level )
 {
     static int initialized=0;
 

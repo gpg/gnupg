@@ -32,13 +32,30 @@ B<-c>, B<--symmetric>
     This command asks for a passphrase.
 
 B<--store>
-    store only (make a RFC1991 packet).
+    store only (make a simple RFC1991 packet).
 
-B<-d>, B<--decrypt>
-    Decrypt data. This is the default operation for data
-    files.
+B<--decrypt> [I<file>]
+    Decrypt file (or stdin if no file is specified) and
+    write it to stdout (or the file specified with
+    B<--output>). If the decrypted file is signed, the
+    signature is also verified. This command differs
+    from the default operation, as it never write to the
+    filename which is included in the file and that it
+    rejects files which don't begin with an encrypted
+    message.
 
-B<-k> [I<keyring>]
+B<--verify> [[I<sigfile>] {I<signed-files>}]
+    Assume that I<filename> is a signature and verify it
+    without generating any output.  With no arguments,
+    the signature packet is read from stdin (it may be a
+    detached signature when not used in batch mode). If
+    only a sigfile is given, is maybe a complete signature
+    or a detached signature in which case the signed stuff
+    is expected from stdin. With more than 1 argument, the
+    first should be a detached signature and the remaining
+    files are the signed stuff.
+
+B<-k> [I<username>] [I<keyring>]
     Kludge to be somewhat compatibe to PGP.
     Without arguments, all public key-rings are listed,
     with one argument, only I<keyring> is listed.
@@ -50,15 +67,21 @@ B<-k> [I<keyring>]
     B<-kvc>   List fingerprints
     B<-kvvc>  List fingerprints and signatures
 
-B<--list-keys>
-    List all keys in all public key-rings and check the
-    signatures.
+B<--list-keys>	[I<names>]
+    List all keys from the default public keyring or just the ones
+    given on the commandline.
 
-B<--check-keys>
-    Check signatures on a key in the keyring
+B<--list-sigs>	[I<names>]
+    Same as B<--list-keys>, but the signatures are listed too.
 
-B<--fingerprint>
-    Show the fingerprints
+B<--check-sigs> [I<names>]
+    Same as B<--list-sigs>, but the signatures are verified.
+
+B<--fingerprint> [I<names>]
+    List all keys with their fingerprints. This is the
+    same output as B<list-keys> but with the additonal output
+    of a line with the fingerprint. May also be combined
+    with B<--list-sigs> or B<--check-sigs>.
 
 B<--list-packets>
     List only the sequence of packets. This is mainly
@@ -84,7 +107,10 @@ B<--sign-key> I<name>
 B<--delete-key>
     Remove key from the public keyring
 
-B<--edit-sig>
+B<--delete-secret-key>
+    Remove key from the secret and public keyring
+
+B<--edit-key>
     Edit/remove a key signature.
 
 B<--change-passphrase>
@@ -124,9 +150,13 @@ B<-o> I<file>, B<--output> I<file>
 
 B<-u> I<name>, B<--local-user> I<name>
     Use I<name> as the user-id to sign.
+    This option is silently ignored for the list commands,
+    so that it can be used in an options file.
 
 B<-r>  I<name>, B<--remote-user>  I<name>
-    Use  I<name> as the user-id for encryption.
+    Use I<name> as the user-id for encryption.
+    This option is silently ignored for the list commands,
+    so that it can be used in an options file.
 
 B<-v>, B<--verbose>
     Give more informations during processing. If used
@@ -181,7 +211,7 @@ B<--options> I<file>
     (see B<--homedir>). This option is ignored when used
     in an options file.
 
-B<no-options>
+B<--no-options>
     Shortcut for B<--options> I</dev/null>.  This option is
     detected before an attempt to open an option file.
 
@@ -227,23 +257,26 @@ B<--passphrase-fd> I<n>
     can only be used if only one passphrase is supplied.
     B<Don't use this option if you can avoid it>
 
-B<no-verbose>
+B<--no-verbose>
     Reset verbose level to 0.
 
-B<no-greeting>
+B<--no-greeting>
     Suppress the initial copyright message but do not
     enter batch mode.
 
-B<no-armor>
+B<--no-armor>
     Assume the input data is not in ASCCI armored format.
 
-B<no-default-keyring>
+B<--no-default-keyring>
     Do not add the default key-rings to the list of
     key-rings.
 
 B<--version>
     Print version information along with a list
     of supported algorithms.
+
+B<--with-colons>
+    Print key listings delimited by colons.
 
 B<--warranty>
     Print warranty information.

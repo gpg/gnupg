@@ -64,9 +64,13 @@ g10_errstr( int err )
       X(NI_PUBKEY      ,"Unimplemented pubkey algorithm")
       X(NI_CIPHER      ,"Unimplemented cipher algorithm")
       X(SIG_CLASS      ,"Unknown signature class")
-      X(TRUSTDB        ,"TrustDB error")
+      X(TRUSTDB        ,"Trust database error")
       X(BAD_CERT       ,"Bad certificate")
-      X(INV_USER_ID    ,"malformed user id")
+      X(INV_USER_ID    ,"Malformed user id")
+      X(CLOSE_FILE     ,"File close error")
+      X(RENAME_FILE    ,"File rename error")
+      X(DELETE_FILE    ,"File delete error")
+      X(UNEXPECTED     ,"Unexpected data")
 
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }

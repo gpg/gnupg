@@ -1,3 +1,7 @@
+Wed Mar  4 10:32:40 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in (getrusage,gettimeofday): New tests.
+
 Fri Feb 27 13:14:17 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* configure.in (--disable-m-guard): New.

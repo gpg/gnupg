@@ -63,9 +63,13 @@ static ARGPARSE_OPTS opts[] = {
     { 'c', "symmetric", 0, N_("encryption only with symmetric cipher")},
     { 507, "store",     0, N_("store only")},
     { 'd', "decrypt",   0, N_("decrypt data (default)")},
-    { 'k', "list-keys", 0, N_("list keys")},
-    { 508, "check-keys",0, N_("check signatures on a key in the keyring")},
-    { 515, "fingerprint", 0, N_("show the fingerprints")},
+    { 550, "verify"   , 0, N_("verify a signature")},
+  #endif
+    { 551, "list-keys", 0, N_("list keys")},
+    { 552, "list-sigs", 0, N_("list keys and signatures")},
+    { 508, "check-sigs",0, N_("check key signatures")},
+    { 515, "fingerprint", 0, N_("list keys and fingerprints")},
+  #ifdef IS_G10
     { 503, "gen-key",   0, N_("generate a new key pair")},
     { 506, "sign-key"  ,0, N_("make a signature on a key in the keyring")},
     { 505, "delete-key",0, N_("remove key from the public keyring")},
@@ -82,7 +86,6 @@ static ARGPARSE_OPTS opts[] = {
     { 516, "print-mds" , 0, N_("print all message digests")},
     { 513, "gen-prime" , 0, "\r" },
     { 548, "gen-random" , 0, "\r" },
-    { 549, "ext-list-keys", 0, "Print a parsable list of keys" },
   #endif
 
     { 301, NULL, 0, N_("\v\nOptions:\n ") },
@@ -132,6 +135,7 @@ static ARGPARSE_OPTS opts[] = {
     { 533, "list-trust-path",0, "\r"},
   #endif
   #ifdef IS_G10
+    { 'k', NULL,        0, "\r"},
     { 504, "delete-secret-key",0, "\r" },
     { 524, "edit-sig"  ,0, "\r"}, /* alias for edit-key */
     { 523, "passphrase-fd",1, "\r" },
@@ -147,6 +151,10 @@ static ARGPARSE_OPTS opts[] = {
     { 543, "no-options", 0, "\r" }, /* shortcut for --options /dev/null */
     { 544, "homedir", 2, "\r" },   /* defaults to "~/.gnupg" */
     { 545, "no-batch", 0, "\r" },
+    { 549, "with-colons", 0, "\r"},
+    { 551, "list-key", 0, "\r" }, /* alias */
+    { 552, "list-sig", 0, "\r" }, /* alias */
+    { 508, "check-sig",0, "\r" }, /* alias */
 
 
 {0} };
@@ -157,8 +165,9 @@ static ARGPARSE_OPTS opts[] = {
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
     aSignKey, aClearsign, aListPackets, aEditSig, aDeleteKey, aDeleteSecretKey,
-    aKMode, aKModeC, aChangePass, aImport,
-    aExport, aCheckKeys, aGenRevoke, aPrimegen, aPrintMDs, aExtKeyList,
+    aKMode, aKModeC, aChangePass, aImport, aVerify, aDecrypt, aListKeys,
+    aListSigs,
+    aExport, aCheckKeys, aGenRevoke, aPrimegen, aPrintMDs,
     aListTrustDB, aListTrustPath, aDeArmor, aEnArmor, aGenRandom, aTest,
 aNOP };
 
@@ -358,7 +367,7 @@ main( int argc, char **argv )
     int rc=0;
     int orig_argc;
     char **orig_argv;
-    const char *fname, *fname_print;
+    const char *fname;
     STRLIST sl, remusr= NULL, locusr=NULL;
     int nrings=0, sec_nrings=0;
     armor_filter_context_t afx;
@@ -458,11 +467,10 @@ main( int argc, char **argv )
 
 	#ifdef IS_G10
 	  case 'a': opt.armor = 1; opt.no_armor=0; break;
-	  case 'b': detached_sig = 1; /* fall trough */
-	  case 'c': set_cmd( &cmd , aSym); break;
-	  case 'd': break; /* it is default */
+	  case 'b': detached_sig = 1; set_cmd( &cmd, aSign ); break;
+	  case 'c': set_cmd( &cmd, aSym); break;
+	  case 'd': set_cmd( &cmd, aDecrypt); break;
 	  case 'e': set_cmd( &cmd, aEncr); break;
-	  case 'k': set_cmd( &cmd, aKMode ); break;
 	  case 'r': /* store the remote users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
@@ -483,9 +491,6 @@ main( int argc, char **argv )
 	  case 505: set_cmd( &cmd, aDeleteKey); break;
 	  case 506: set_cmd( &cmd, aSignKey); break;
 	  case 507: set_cmd( &cmd, aStore); break;
-	  case 508: set_cmd( &cmd, aCheckKeys);
-		    opt.check_sigs = 1; opt.list_sigs = 1; break;
-	  case 515: opt.fingerprint = 1; break;
 	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
 	  case 524: set_cmd( &cmd, aEditSig); break;
 	  case 525: set_cmd( &cmd, aChangePass); break;
@@ -501,6 +506,7 @@ main( int argc, char **argv )
 	  case 539: set_cmd( &cmd, aClearsign); break;
 	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case 542: set_cmd( &cmd, aGenRevoke); break;
+	  case 550: set_cmd( &cmd, aVerify); break;
 	#endif /* IS_G10 */
 
 	#ifdef IS_G10MAINT
@@ -513,19 +519,21 @@ main( int argc, char **argv )
 	  case 546: set_cmd( &cmd, aDeArmor); break;
 	  case 547: set_cmd( &cmd, aEnArmor); break;
 	  case 548: set_cmd( &cmd, aGenRandom); break;
-	  case 549: set_cmd( &cmd, aExtKeyList); break;
 	#endif /* IS_G10MAINT */
 
 	  case 'o': opt.outfile = pargs.r.ret_str; break;
 	  case 'v': opt.verbose++; opt.list_sigs=1; break;
+	  case 'k': set_cmd( &cmd, aKMode ); break;
 
 	  case 500: opt.batch = 1; greeting = 0; break;
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
+	  case 508: set_cmd( &cmd, aCheckKeys); break;
 	  case 509: add_keyring(pargs.r.ret_str); nrings++; break;
 	  case 510: opt.debug |= pargs.r.ret_ulong; break;
 	  case 511: opt.debug = ~0; break;
 	  case 512: set_status_fd( pargs.r.ret_int ); break;
+	  case 515: opt.fingerprint = 1; break;
 	  case 517: add_secret_keyring(pargs.r.ret_str); sec_nrings++; break;
 	  case 518:
 	    /* config files may not be nested (silently ignore them) */
@@ -551,6 +559,9 @@ main( int argc, char **argv )
 	  case 543: break; /* no-options */
 	  case 544: opt.homedir = pargs.r.ret_str; break;
 	  case 545: opt.batch = 0; break;
+	  case 549: opt.with_colons=':'; break;
+	  case 551: set_cmd( &cmd, aListKeys); break;
+	  case 552: set_cmd( &cmd, aListSigs); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -576,9 +587,12 @@ main( int argc, char **argv )
     /* Okay, we are now working under our real uid */
   #endif
 
-    write_status( STATUS_ENTER );
+    /*write_status( STATUS_ENTER );*/
 
     set_debug();
+    if( !cmd && opt.fingerprint )
+	set_cmd( &cmd, aListKeys);
+
     if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */
 	if( cmd == aKModeC ) {
 	    opt.fingerprint = 1;
@@ -593,6 +607,7 @@ main( int argc, char **argv )
 	opt.verbose = opt.verbose > 1;
     }
 
+
     /* kludge to let -sat generate a clear text signature */
     if( opt.textmode && !detached_sig && opt.armor && cmd == aSign )
 	cmd = aClearsign;
@@ -600,23 +615,24 @@ main( int argc, char **argv )
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
 
-    if( cmd != aDeArmor && cmd != aEnArmor ) {
+    /* add the keyrings, but not for some special commands and
+     * not in case of "-kvv userid keyring" */
+    if( cmd != aDeArmor && cmd != aEnArmor
+	&& !(cmd == aKMode && argc == 2 ) ) {
 	if( !sec_nrings || default_keyring )  /* add default secret rings */
 	    add_secret_keyring("secring.gpg");
 	if( !nrings || default_keyring )  /* add default ring */
 	    add_keyring("pubring.gpg");
     }
 
-    if( argc ) {
-	fname_print = fname = *argv;
-    }
+    if( argc )
+	fname = *argv;
     else {
-	fname_print = "[stdin]";
 	fname = NULL;
 	if( get_passphrase_fd() == 0 ) {
 	    /* reading data and passphrase form stdin:
 	     * we assume the first line is the passphrase, so
-	     * we read it now
+	     * we better should read it now.
 	     */
 	    /* FIXME: doit */
 	}
@@ -628,6 +644,10 @@ main( int argc, char **argv )
       case aGenRandom:
       case aDeArmor:
       case aEnArmor:
+	break;
+      case aKMode:
+      case aListKeys:
+      case aCheckKeys:
 	break;
       case aListTrustDB: rc = init_trustdb( argc? 1:0, trustdb_name ); break;
       default: rc = init_trustdb(1, trustdb_name ); break;
@@ -642,21 +662,22 @@ main( int argc, char **argv )
 	    wrong_args(_("--store [filename]"));
 	if( (rc = encode_store(fname)) )
 	    log_error("%s: store failed: %s\n",
-				    fname_print, g10_errstr(rc) );
+				 print_fname_stdin(fname), g10_errstr(rc) );
 	break;
     #ifdef IS_G10
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
 	if( (rc = encode_symmetric(fname)) )
-	    log_error("%s: symmetric encryption failed: %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: symmetric encryption failed: %s\n",
+			    print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
       case aEncr: /* encrypt the given file */
 	if( argc > 1 )
 	    wrong_args(_("--encrypt [filename]"));
 	if( (rc = encode_crypt(fname,remusr)) )
-	    log_error("%s: encryption failed: %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: encryption failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
       case aSign: /* sign the given file */
@@ -688,7 +709,7 @@ main( int argc, char **argv )
 	else
 	    sl = NULL;
 	if( (rc = sign_file(sl, detached_sig, locusr, 1, remusr, NULL)) )
-	    log_error("%s: sign+encrypt failed: %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: sign+encrypt failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	free_strlist(sl);
 	break;
 
@@ -696,7 +717,19 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("--clearsign [filename]"));
 	if( (rc = clearsign_file(fname, locusr, NULL)) )
-	    log_error("%s: clearsign failed: %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: clearsign failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	break;
+
+      case aVerify:
+	if( (rc = verify_signatures( argc, argv ) ))
+	    log_error("verify signatures failed: %s\n", g10_errstr(rc) );
+	break;
+
+      case aDecrypt:
+	if( argc > 1 )
+	    wrong_args(_("--decrypt [filename]"));
+	if( (rc = decrypt_message( fname ) ))
+	    log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
 	break;
 
 
@@ -705,7 +738,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--sign-key username"));
 	/* note: fname is the user id! */
 	if( (rc = sign_key(fname, locusr)) )
-	    log_error("%s: sign key failed: %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: sign key failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
       case aEditSig: /* Edit a key signature */
@@ -713,7 +746,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--edit-sig username"));
 	/* note: fname is the user id! */
 	if( (rc = edit_keysigs(fname)) )
-	    log_error("%s: edit signature failed: %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: edit signature failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
       case aDeleteSecretKey:
@@ -724,7 +757,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--delete-key username"));
 	/* note: fname is the user id! */
 	if( (rc = delete_key(fname, cmd==aDeleteSecretKey)) )
-	    log_error("%s: delete key failed: %s\n", fname_print, g10_errstr(rc) );
+	    log_error("%s: delete key failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
       case aChangePass: /* Change the passphrase */
@@ -732,51 +765,36 @@ main( int argc, char **argv )
 	    wrong_args(_("--change-passphrase [username]"));
 	/* note: fname is the user id! */
 	if( (rc = change_passphrase(fname)) )
-	    log_error("%s: change passphrase failed: %s\n", fname_print,
+	    log_error("%s: change passphrase failed: %s\n", print_fname_stdin(fname),
 						       g10_errstr(rc) );
 	break;
       #endif /* IS_G10 */
 
       case aCheckKeys:
+	opt.check_sigs = 1;
+      case aListSigs:
+	opt.list_sigs = 1;
+      case aListKeys:
+	std_key_list( argc, argv );
+	break;
+
       case aKMode: /* list keyring */
-	if( !argc ) { /* list the default public keyrings */
-	    int i, seq=0;
-	    const char *s;
-
-	    while( (s=get_keyring(seq++)) ) {
-		if( !(a = iobuf_open(s)) ) {
-		    log_error(_("can't open '%s'\n"), s);
-		    continue;
-		}
-		if( seq > 1 )
-		    putchar('\n');
-		printf("%s\n", s );
-		for(i=strlen(s); i; i-- )
-		    putchar('-');
-		putchar('\n');
-
-		proc_packets( a );
-		iobuf_close(a);
+	if( argc < 2 )	/* -kv [userid] */
+	    std_key_list( (argc && **argv)? 1:0, argv );
+	else if( argc == 2 ) { /* -kv userid keyring */
+	    if( access( argv[1], R_OK ) ) {
+		log_error(_("can't open %s: %s\n"),
+			       print_fname_stdin(argv[1]), strerror(errno));
 	    }
-
-	}
-	else if( cmd == aCheckKeys ) {
-	    log_error("will be soon: --check-keys user-ids\n");
-	}
-	else if( argc == 1) { /* list the given keyring */
-	    if( !(a = iobuf_open(fname)) )
-		log_error(_("can't open '%s'\n"), fname_print);
 	    else {
-		if( !opt.no_armor ) {
-		    memset( &afx, 0, sizeof afx);
-		    iobuf_push_filter( a, armor_filter, &afx );
-		}
-		proc_packets( a );
-		iobuf_close(a);
+		/* add keyring (default keyrings are not registered in this
+		 * special case */
+		add_keyring( argv[1] );
+		std_key_list( **argv?1:0, argv );
 	    }
 	}
 	else
-	    wrong_args(_("-k[v][v][v][c] [keyring]") );
+	    wrong_args(_("-k[v][v][v][c] [userid] [keyring]") );
 	break;
 
     #ifdef IS_G10
@@ -901,13 +919,6 @@ main( int argc, char **argv )
 	list_trust_path( atoi(*argv), argv[1] );
 	break;
 
-      case aExtKeyList:
-	sl = NULL;
-	for( ; argc; argc--, argv++ )
-	    add_to_strlist( &sl, *argv );
-	ext_key_list( sl );
-	free_strlist(sl);
-	break;
      #endif /* IS_G10MAINT */
 
 
@@ -921,7 +932,7 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));
 	if( !(a = iobuf_open(fname)) )
-	    log_error(_("can't open '%s'\n"), fname_print);
+	    log_error(_("can't open '%s'\n"), print_fname_stdin(fname));
 	else {
 	    if( !opt.no_armor ) {
 		if( use_armor_filter( a ) ) {
@@ -953,7 +964,7 @@ g10_exit( int rc )
 	secmem_dump_stats();
     secmem_term();
     rc = rc? rc : log_get_errorcount(0)? 2:0;
-    write_status( STATUS_LEAVE );
+    /*write_status( STATUS_LEAVE );*/
     exit(rc );
 }
 

@@ -168,6 +168,7 @@ cache_public_cert( PKT_public_cert *pkc )
     u32 keyid[2];
 
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+	|| pkc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	keyid_from_pkc( pkc, keyid );
     }
@@ -545,6 +546,7 @@ scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 	else if( keyid && pkt.pkttype == PKT_PUBLIC_CERT ) {
 	    switch( pkt.pkt.public_cert->pubkey_algo ) {
 	      case PUBKEY_ALGO_ELGAMAL:
+	      case PUBKEY_ALGO_DSA:
 	      case PUBKEY_ALGO_RSA:
 		keyid_from_pkc( pkt.pkt.public_cert, akeyid );
 		if( (shortkeyid || akeyid[0] == keyid[0])
@@ -596,6 +598,7 @@ scan_keyring( PKT_public_cert *pkc, u32 *keyid,
 			    pkt.pkt.user_id->len, pkt.pkt.user_id->name);
 	    else {
 		if( last_pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+		    || last_pk->pubkey_algo == PUBKEY_ALGO_DSA
 		    || last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
 		     keyid_from_pkc( last_pk, akeyid );
 		     cache_user_id( pkt.pkt.user_id, akeyid );
@@ -657,6 +660,7 @@ scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
 	else if( keyid && pkt.pkttype == PKT_SECRET_CERT ) {
 	    switch( pkt.pkt.secret_cert->pubkey_algo ) {
 	      case PUBKEY_ALGO_ELGAMAL:
+	      case PUBKEY_ALGO_DSA:
 	      case PUBKEY_ALGO_RSA:
 		if( get_first ) {
 		    copy_secret_cert( skc, pkt.pkt.secret_cert );
@@ -712,6 +716,7 @@ scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
 			    pkt.pkt.user_id->len, pkt.pkt.user_id->name);
 	    else {
 		if( last_pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+		   || last_pk->pubkey_algo == PUBKEY_ALGO_DSA
 		   || last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
 		    keyid_from_skc( last_pk, akeyid );
 		    cache_user_id( pkt.pkt.user_id, akeyid );

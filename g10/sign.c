@@ -50,6 +50,8 @@ complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
 	;
     else if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
 	g10_elg_sign( skc, sig, md, 0 );
+    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
+	g10_dsa_sign( skc, sig, md, 0 );
     else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
 	g10_rsa_sign( skc, sig, md, 0 );
     else
@@ -274,6 +276,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
 	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
 	    g10_elg_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
+	    g10_dsa_sign( skc, sig, md, DIGEST_ALGO_SHA1 );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
 	    g10_rsa_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
 	else
@@ -428,6 +432,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
 	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
 	    g10_elg_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
+	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
+	    g10_dsa_sign( skc, sig, md, DIGEST_ALGO_SHA1 );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
 	    g10_rsa_sign( skc, sig, md, DIGEST_ALGO_RMD160 );
 	else
@@ -1066,6 +1072,7 @@ change_passphrase( const char *username )
 		break;
 	    }
 	    else { /* okay */
+		/* FIXME: what about dsa */
 		skc->d.elg.protect.algo = CIPHER_ALGO_BLOWFISH;
 		skc->d.elg.protect.s2k	= 1;
 		skc->d.elg.protect.hash = DIGEST_ALGO_RMD160;

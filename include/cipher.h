@@ -34,6 +34,8 @@
 #endif
 #include "../cipher/blowfish.h"
 #include "../cipher/elgamal.h"
+#include "../cipher/dsa.h"
+#include "../cipher/random.h"
 
 
 #define CIPHER_ALGO_NONE	 0
@@ -78,10 +80,6 @@ int check_cipher_algo( int algo );
 int check_pubkey_algo( int algo );
 int check_digest_algo( int algo );
 
-/*-- random.c --*/
-int  quick_random_gen( int onoff );
-void randomize_buffer( byte *buffer, size_t length, int level );
-byte get_random_byte( int level );
 
 /*-- smallprime.c --*/
 extern ushort small_prime_numbers[];

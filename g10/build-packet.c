@@ -175,12 +175,19 @@ do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
     else
 	iobuf_put( a, pkc->version );
     write_32(a, pkc->timestamp );
-    write_16(a, pkc->valid_days );
+    if( pkc->version < 4 )
+	write_16(a, pkc->valid_days );
     iobuf_put(a, pkc->pubkey_algo );
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	mpi_write(a, pkc->d.elg.p );
 	mpi_write(a, pkc->d.elg.g );
 	mpi_write(a, pkc->d.elg.y );
+    }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	mpi_write(a, pkc->d.dsa.p );
+	mpi_write(a, pkc->d.dsa.q );
+	mpi_write(a, pkc->d.dsa.g );
+	mpi_write(a, pkc->d.dsa.y );
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	mpi_write(a, pkc->d.rsa.rsa_n );
@@ -253,7 +260,8 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
     else
 	iobuf_put( a, skc->version );
     write_32(a, skc->timestamp );
-    write_16(a, skc->valid_days );
+    if( skc->version < 4 )
+	write_16(a, skc->valid_days );
     iobuf_put(a, skc->pubkey_algo );
     if( skc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	mpi_write(a, skc->d.elg.p );
@@ -416,24 +424,35 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     int rc = 0;
     IOBUF a = iobuf_temp();
 
-    write_version( a, ctb );
-    iobuf_put(a, 5 ); /* constant */
+    if( !sig->version )
+	iobuf_put( a, 3 );
+    else
+	iobuf_put( a, sig->version );
+    if( sig->version < 4 )
+	iobuf_put(a, 5 ); /* constant */
     iobuf_put(a, sig->sig_class );
-    write_32(a, sig->timestamp );
-    write_32(a, sig->keyid[0] );
-    write_32(a, sig->keyid[1] );
+    if( sig->version < 4 ) {
+	write_32(a, sig->timestamp );
+	write_32(a, sig->keyid[0] );
+	write_32(a, sig->keyid[1] );
+    }
     iobuf_put(a, sig->pubkey_algo );
+    iobuf_put(a, sig->digest_algo );
+    if( sig->version >= 4 ) {
+	/* fixme: write v4 subpackets here */
+	log_error("WARNING: note writing of v4 subpackets is not implemented\n");
+    }
+    iobuf_put(a, sig->digest_start[0] );
+    iobuf_put(a, sig->digest_start[1] );
     if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	iobuf_put(a, sig->d.elg.digest_algo );
-	iobuf_put(a, sig->d.elg.digest_start[0] );
-	iobuf_put(a, sig->d.elg.digest_start[1] );
 	mpi_write(a, sig->d.elg.a );
 	mpi_write(a, sig->d.elg.b );
     }
+    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	mpi_write(a, sig->d.dsa.r );
+	mpi_write(a, sig->d.dsa.s );
+    }
     else if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	iobuf_put(a, sig->d.rsa.digest_algo );
-	iobuf_put(a, sig->d.rsa.digest_start[0] );
-	iobuf_put(a, sig->d.rsa.digest_start[1] );
 	mpi_write(a, sig->d.rsa.rsa_integer );
     }
     else {

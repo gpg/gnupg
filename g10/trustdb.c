@@ -912,7 +912,7 @@ print_user_id( const char *text, u32 *keyid )
 	putchar(' ');
     }
     putchar('\"');
-    print_string( stdout, p, n );
+    print_string( stdout, p, n, 0 );
     putchar('\"');
     putchar('\n');
     m_free(p);
@@ -1520,13 +1520,18 @@ init_trustdb( int level, const char *dbname )
 		assert(p);
 		*p = 0;
 		if( access( fname, F_OK ) ) {
-		  #if __MINGW32__
-		    if( mkdir( fname ) )
-		  #else
-		    if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
-		  #endif
-			log_fatal("can't create directory '%s': %s\n",
-				    fname, strerror(errno) );
+		    if( strlen(fname) >= 7
+			&& !strcmp(fname+strlen(fname)-7, "/.gnupg" ) ) {
+		      #if __MINGW32__
+			if( mkdir( fname ) )
+		      #else
+			if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
+		      #endif
+			    log_fatal("can't create directory '%s': %s\n",
+					fname, strerror(errno) );
+		    }
+		    else
+			log_fatal("directory '%s' does not exist!\n", fname );
 		}
 		*p = '/';
 		create_db( fname );
@@ -1539,7 +1544,7 @@ init_trustdb( int level, const char *dbname )
 	    return 0;
 
 	/* we can verify a signature about our local data (secring and trustdb)
-	 * in ~/.g10/ here */
+	 * in ~/.gnupg/ here */
 	rc = verify_private_data();
 	if( !rc ) {
 	    /* verify, that our own certificates are in the trustDB

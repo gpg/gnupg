@@ -45,31 +45,41 @@ free_pubkey_enc( PKT_pubkey_enc *enc )
 }
 
 void
-free_seckey_enc( PKT_signature *enc )
+free_seckey_enc( PKT_signature *sig )
 {
-    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	mpi_free( enc->d.elg.a );
-	mpi_free( enc->d.elg.b );
+    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	mpi_free( sig->d.elg.a );
+	mpi_free( sig->d.elg.b );
     }
-    else if( enc->pubkey_algo == PUBKEY_ALGO_RSA )
-	mpi_free( enc->d.rsa.rsa_integer );
-    m_free(enc);
+    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	mpi_free( sig->d.dsa.r );
+	mpi_free( sig->d.dsa.s );
+    }
+    else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
+	mpi_free( sig->d.rsa.rsa_integer );
+    m_free(sig->hashed_data);
+    m_free(sig->unhashed_data);
+    m_free(sig);
 }
 
 
 /****************
- * Return the digest algorith from the signature packet.
+ * Return the digest algorithm from the signature packet.
  * We need this function because the digeste algo depends on the
  * used pubkey algorithm.
  */
 int
 digest_algo_from_sig( PKT_signature *sig )
 {
+  #if 0 /* not used anymore */
     switch( sig->pubkey_algo ) {
       case PUBKEY_ALGO_ELGAMAL: return sig->d.elg.digest_algo;
+      case PUBKEY_ALGO_DSA:	return sig->d.dsa.digest_algo;
       case PUBKEY_ALGO_RSA:	return sig->d.rsa.digest_algo;
       default: return 0;
     }
+  #endif
+    return sig->digest_algo;
 }
 
 
@@ -82,6 +92,12 @@ release_public_cert_parts( PKT_public_cert *cert )
 	mpi_free( cert->d.elg.p ); cert->d.elg.p = NULL;
 	mpi_free( cert->d.elg.g ); cert->d.elg.g = NULL;
 	mpi_free( cert->d.elg.y ); cert->d.elg.y = NULL;
+    }
+    else if( cert->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	mpi_free( cert->d.dsa.p ); cert->d.dsa.p = NULL;
+	mpi_free( cert->d.dsa.q ); cert->d.dsa.q = NULL;
+	mpi_free( cert->d.dsa.g ); cert->d.dsa.g = NULL;
+	mpi_free( cert->d.dsa.y ); cert->d.dsa.y = NULL;
     }
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	mpi_free( cert->d.rsa.rsa_n ); cert->d.rsa.rsa_n = NULL;
@@ -107,6 +123,12 @@ copy_public_cert( PKT_public_cert *d, PKT_public_cert *s )
 	d->d.elg.g = mpi_copy( s->d.elg.g );
 	d->d.elg.y = mpi_copy( s->d.elg.y );
     }
+    else if( s->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	d->d.dsa.p = mpi_copy( s->d.dsa.p );
+	d->d.dsa.q = mpi_copy( s->d.dsa.q );
+	d->d.dsa.g = mpi_copy( s->d.dsa.g );
+	d->d.dsa.y = mpi_copy( s->d.dsa.y );
+    }
     else if( s->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
 	d->d.rsa.rsa_e = mpi_copy( s->d.rsa.rsa_e );
@@ -122,6 +144,13 @@ release_secret_cert_parts( PKT_secret_cert *cert )
 	mpi_free( cert->d.elg.g ); cert->d.elg.g = NULL;
 	mpi_free( cert->d.elg.y ); cert->d.elg.y = NULL;
 	mpi_free( cert->d.elg.x ); cert->d.elg.x = NULL;
+    }
+    else if( cert->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	mpi_free( cert->d.dsa.p ); cert->d.dsa.p = NULL;
+	mpi_free( cert->d.dsa.q ); cert->d.dsa.q = NULL;
+	mpi_free( cert->d.dsa.g ); cert->d.dsa.g = NULL;
+	mpi_free( cert->d.dsa.y ); cert->d.dsa.y = NULL;
+	mpi_free( cert->d.dsa.x ); cert->d.dsa.x = NULL;
     }
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	mpi_free( cert->d.rsa.rsa_n ); cert->d.rsa.rsa_n = NULL;
@@ -151,6 +180,13 @@ copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s )
 	d->d.elg.g = mpi_copy( s->d.elg.g );
 	d->d.elg.y = mpi_copy( s->d.elg.y );
 	d->d.elg.x = mpi_copy( s->d.elg.x );
+    }
+    else if( s->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	d->d.dsa.p = mpi_copy( s->d.dsa.p );
+	d->d.dsa.q = mpi_copy( s->d.dsa.q );
+	d->d.dsa.g = mpi_copy( s->d.dsa.g );
+	d->d.dsa.y = mpi_copy( s->d.dsa.y );
+	d->d.dsa.x = mpi_copy( s->d.dsa.x );
     }
     else if( s->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	d->d.rsa.rsa_n = mpi_copy( s->d.rsa.rsa_n );
@@ -290,6 +326,16 @@ cmp_public_certs( PKT_public_cert *a, PKT_public_cert *b )
 	if( mpi_cmp( a->d.elg.y , b->d.elg.y ) )
 	    return -1;
     }
+    else if( a->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	if( mpi_cmp( a->d.dsa.p , b->d.dsa.p ) )
+	    return -1;
+	if( mpi_cmp( a->d.dsa.q , b->d.dsa.q ) )
+	    return -1;
+	if( mpi_cmp( a->d.dsa.g , b->d.dsa.g ) )
+	    return -1;
+	if( mpi_cmp( a->d.dsa.y , b->d.dsa.y ) )
+	    return -1;
+    }
     else if( a->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	if( mpi_cmp( a->d.rsa.rsa_n , b->d.rsa.rsa_n ) )
 	    return -1;
@@ -319,6 +365,16 @@ cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc )
 	if( mpi_cmp( pkc->d.elg.g , skc->d.elg.g ) )
 	    return -1;
 	if( mpi_cmp( pkc->d.elg.y , skc->d.elg.y ) )
+	    return -1;
+    }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	if( mpi_cmp( pkc->d.dsa.p , skc->d.dsa.p ) )
+	    return -1;
+	if( mpi_cmp( pkc->d.dsa.q , skc->d.dsa.q ) )
+	    return -1;
+	if( mpi_cmp( pkc->d.dsa.g , skc->d.dsa.g ) )
+	    return -1;
+	if( mpi_cmp( pkc->d.dsa.y , skc->d.dsa.y ) )
 	    return -1;
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {

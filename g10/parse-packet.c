@@ -96,6 +96,17 @@ read_32(IOBUF inp)
     return a;
 }
 
+static unsigned long
+buffer_to_u32( const byte *buffer )
+{
+    unsigned long a;
+    a =  *buffer << 24;
+    a |= buffer[1] << 16;
+    a |= buffer[2] << 8;
+    a |= buffer[3];
+    return a;
+}
+
 int
 set_packet_list_mode( int mode )
 {
@@ -466,49 +477,210 @@ parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 }
 
 
+static const byte *
+parse_subpkt( const byte *buffer, int reqtype )
+{
+    int buflen = (*buffer << 8) | buffer[1];
+    int type;
+    int critical;
+    size_t n;
+
+    buffer += 2;
+    for(;;) {
+	if( !buflen )
+	    return NULL; /* end of packets; not found */
+	n = *buffer++; buflen--;
+	if( n >= 192 ) {
+	    if( buflen < 2 )
+		goto too_short;
+	    n = (( n - 192 ) << 8) + *buffer + 192;
+	    buflen--;
+	}
+	if( buflen < n )
+	    goto too_short;
+	type = *buffer;
+	if( type & 0x80 ) {
+	    type &= 0x7f;
+	    critical = 1;
+	}
+	else
+	    critical = 0;
+	if( reqtype < 0 ) { /* list packets */
+	    printf("\t%ssubpacket %d of length %u (%s)\n",
+		    reqtype == -1 ? "hashed ":"", type, n,
+		    type == 2 ? "signature creation time"
+		  : type == 3 ? "signature expiration time"
+		  : type == 4 ? "exportable"
+		  : type == 5 ? "trust signature"
+		  : type == 6 ? "regular expression"
+		  : type == 7 ? "revocable"
+		  : type == 9 ? "key expiration time"
+		  : type ==10 ? "additional recipient request"
+		  : type ==11 ? "preferred symmetric algorithms"
+		  : type ==12 ? "revocation key"
+		  : type ==16 ? "issuer key ID"
+		  : type ==20 ? "notation data"
+		  : type ==21 ? "preferred hash algorithms"
+		  : type ==22 ? "preferred compression algorithms"
+		  : type ==23 ? "key server preferences"
+		  : type ==24 ? "preferred key server"
+			      : "?");
+	}
+	else if( type == reqtype )
+	    break; /* found */
+	buffer += n; buflen -=n;
+    }
+    buffer++;
+    n--;
+    if( n > buflen )
+	goto too_short;
+    switch( type ) {
+      case 2: /* signature creation time */
+	if( n < 4 )
+	    break;
+	return buffer;
+      case 16:/* issuer key ID */
+	if( n < 8 )
+	    break;
+	return buffer;
+      case 3: /* signature expiration time */
+      case 4: /* exportable */
+      case 5: /* trust signature */
+      case 6: /* regular expression */
+      case 7: /* revocable */
+      case 9: /* key expiration time */
+      case 10:/* additional recipient request */
+      case 11:/* preferred symmetric algorithms */
+      case 12:/* revocation key */
+      case 20:/* notation data */
+      case 21:/* preferred hash algorithms */
+      case 22:/* preferred compression algorithms */
+      case 23:/* key server preferences */
+      case 24:/* preferred key server */
+      default: BUG(); /* not yet needed */
+    }
+    log_error("subpacket of type %d too short\n", type);
+    return NULL;
+
+  too_short:
+    log_error("buffer shorter than subpacket\n");
+    return NULL;
+}
+
+
 static int
 parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 					  PKT_signature *sig )
 {
-    int version, md5_len;
+    int md5_len=0;
     unsigned n;
+    int is_v4=0;
+    int rc=0;
 
     if( pktlen < 16 ) {
 	log_error("packet(%d) too short\n", pkttype);
 	goto leave;
     }
-    version = iobuf_get_noeof(inp); pktlen--;
-    if( version != 2 && version != 3 ) {
-	log_error("packet(%d) with unknown version %d\n", pkttype, version);
+    sig->version = iobuf_get_noeof(inp); pktlen--;
+    if( sig->version == 4 )
+	is_v4=1;
+    else if( sig->version != 2 && sig->version != 3 ) {
+	log_error("packet(%d) with unknown version %d\n", pkttype, sig->version);
 	goto leave;
     }
-    md5_len = iobuf_get_noeof(inp); pktlen--;
+
+    if( !is_v4 ) {
+	md5_len = iobuf_get_noeof(inp); pktlen--;
+    }
     sig->sig_class = iobuf_get_noeof(inp); pktlen--;
-    sig->timestamp = read_32(inp); pktlen -= 4;
-    sig->keyid[0] = read_32(inp); pktlen -= 4;
-    sig->keyid[1] = read_32(inp); pktlen -= 4;
+    if( !is_v4 ) {
+	sig->timestamp = read_32(inp); pktlen -= 4;
+	sig->keyid[0] = read_32(inp); pktlen -= 4;
+	sig->keyid[1] = read_32(inp); pktlen -= 4;
+    }
     sig->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
-    if( list_mode )
-	printf(":signature packet: keyid %08lX%08lX\n"
-	       "\tversion %d, created %lu, md5len %d, sigclass %02x\n",
-		(ulong)sig->keyid[0], (ulong)sig->keyid[1],
-		version, (ulong)sig->timestamp, md5_len, sig->sig_class );
-    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	if( pktlen < 5 ) {
-	    log_error("packet(%d) too short\n", pkttype);
+    sig->digest_algo = iobuf_get_noeof(inp); pktlen--;
+    if( is_v4 ) { /* read subpackets */
+	n = read_16(inp); pktlen -= 2; /* length of hashed data */
+	if( n > 10000 ) {
+	    log_error("signature packet: hashed data too long\n");
+	    rc = G10ERR_INVALID_PACKET;
 	    goto leave;
 	}
-	sig->d.elg.digest_algo = iobuf_get_noeof(inp); pktlen--;
-	sig->d.elg.digest_start[0] = iobuf_get_noeof(inp); pktlen--;
-	sig->d.elg.digest_start[1] = iobuf_get_noeof(inp); pktlen--;
+	if( n ) {
+	    sig->hashed_data = m_alloc( n + 2 );
+	    sig->hashed_data[0] = n << 8;
+	    sig->hashed_data[1] = n;
+	    if( iobuf_read(inp, sig->hashed_data+2, n ) != n ) {
+		log_error("premature eof while reading hashed signature data\n");
+		rc = -1;
+		goto leave;
+	    }
+	    pktlen -= n;
+	}
+	n = read_16(inp); pktlen -= 2; /* length of unhashed data */
+	if( n > 10000 ) {
+	    log_error("signature packet: unhashed data too long\n");
+	    rc = G10ERR_INVALID_PACKET;
+	    goto leave;
+	}
+	if( n ) {
+	    sig->unhashed_data = m_alloc( n + 2 );
+	    sig->unhashed_data[0] = n << 8;
+	    sig->unhashed_data[1] = n;
+	    if( iobuf_read(inp, sig->unhashed_data+2, n ) != n ) {
+		log_error("premature eof while reading unhashed signature data\n");
+		rc = -1;
+		goto leave;
+	    }
+	    pktlen -= n;
+	}
+    }
+
+    if( pktlen < 5 ) { /* sanity check */
+	log_error("packet(%d) too short\n", pkttype);
+	rc = G10ERR_INVALID_PACKET;
+	goto leave;
+    }
+
+    sig->digest_start[0] = iobuf_get_noeof(inp); pktlen--;
+    sig->digest_start[1] = iobuf_get_noeof(inp); pktlen--;
+
+    if( is_v4 ) { /*extract required informations */
+	const byte *p;
+	p = parse_subpkt( sig->hashed_data, 2 );
+	if( !p )
+	    log_error("signature packet without timestamp\n");
+	else
+	    sig->timestamp = buffer_to_u32(p);
+	p = parse_subpkt( sig->unhashed_data, 16 );
+	if( !p )
+	    log_error("signature packet without keyid\n");
+	else {
+	    sig->keyid[0] = buffer_to_u32(p);
+	    sig->keyid[1] = buffer_to_u32(p+4);
+	}
+    }
+
+    if( list_mode ) {
+	printf(":signature packet: keyid %08lX%08lX\n"
+	       "\tversion %d, created %lu, md5len %d, sigclass %02x\n"
+	       "\tdigest algo %d, begin of digest %02x %02x\n",
+		(ulong)sig->keyid[0], (ulong)sig->keyid[1],
+		sig->version, (ulong)sig->timestamp, md5_len, sig->sig_class,
+		sig->digest_algo,
+		sig->digest_start[0], sig->digest_start[1] );
+	if( is_v4 ) {
+	    parse_subpkt( sig->hashed_data, -1 );
+	    parse_subpkt( sig->unhashed_data, -2 );
+	}
+    }
+    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	n = pktlen;
 	sig->d.elg.a = mpi_read(inp, &n, 0 ); pktlen -=n;
 	n = pktlen;
 	sig->d.elg.b = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
-	    printf("\tdigest algo %d, begin of digest %02x %02x\n",
-		    sig->d.elg.digest_algo,
-		    sig->d.elg.digest_start[0], sig->d.elg.digest_start[1] );
 	    printf("\telg a: ");
 	    mpi_print(stdout, sig->d.elg.a, mpi_print_mode );
 	    printf("\n\telg b: ");
@@ -516,20 +688,23 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    putchar('\n');
 	}
     }
-    else if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	if( pktlen < 5 ) {
-	    log_error("packet(%d) too short\n", pkttype);
-	    goto leave;
+    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	n = pktlen;
+	sig->d.dsa.r = mpi_read(inp, &n, 0 ); pktlen -=n;
+	n = pktlen;
+	sig->d.dsa.s = mpi_read(inp, &n, 0 ); pktlen -=n;
+	if( list_mode ) {
+	    printf("\tdsa r: ");
+	    mpi_print(stdout, sig->d.elg.a, mpi_print_mode );
+	    printf("\n\tdsa s: ");
+	    mpi_print(stdout, sig->d.elg.b, mpi_print_mode );
+	    putchar('\n');
 	}
-	sig->d.rsa.digest_algo = iobuf_get_noeof(inp); pktlen--;
-	sig->d.rsa.digest_start[0] = iobuf_get_noeof(inp); pktlen--;
-	sig->d.rsa.digest_start[1] = iobuf_get_noeof(inp); pktlen--;
+    }
+    else if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
 	n = pktlen;
 	sig->d.rsa.rsa_integer = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
-	    printf("\tdigest algo %d, begin of digest %02x %02x\n",
-		    sig->d.rsa.digest_algo,
-		    sig->d.rsa.digest_start[0], sig->d.rsa.digest_start[1] );
 	    printf("\trsa integer: ");
 	    mpi_print(stdout, sig->d.rsa.rsa_integer, mpi_print_mode );
 	    putchar('\n');
@@ -541,7 +716,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
   leave:
     skip_rest(inp, pktlen);
-    return 0;
+    return rc;
 }
 
 
@@ -759,6 +934,137 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    log_mpidump("elg g=", cert->d.elg.g );
 	    log_mpidump("elg y=", cert->d.elg.y );
 	    log_mpidump("elg x=", cert->d.elg.x ); */
+	}
+    }
+    else if( algorithm == PUBKEY_ALGO_DSA ) {
+	MPI dsa_p, dsa_q, dsa_g, dsa_y;
+	n = pktlen; dsa_p = mpi_read(inp, &n, 0 ); pktlen -=n;
+	n = pktlen; dsa_q = mpi_read(inp, &n, 0 ); pktlen -=n;
+	n = pktlen; dsa_g = mpi_read(inp, &n, 0 ); pktlen -=n;
+	n = pktlen; dsa_y = mpi_read(inp, &n, 0 ); pktlen -=n;
+	if( list_mode ) {
+	    printf(  "\tdsa p: ");
+	    mpi_print(stdout, dsa_p, mpi_print_mode  );
+	    printf("\n\tdsa q: ");
+	    mpi_print(stdout, dsa_q, mpi_print_mode  );
+	    printf("\n\tdsa g: ");
+	    mpi_print(stdout, dsa_g, mpi_print_mode  );
+	    printf("\n\tdsa y: ");
+	    mpi_print(stdout, dsa_y, mpi_print_mode  );
+	    putchar('\n');
+	}
+	if( pkttype == PKT_PUBLIC_CERT ) {
+	    pkt->pkt.public_cert->d.dsa.p = dsa_p;
+	    pkt->pkt.public_cert->d.dsa.q = dsa_q;
+	    pkt->pkt.public_cert->d.dsa.g = dsa_g;
+	    pkt->pkt.public_cert->d.dsa.y = dsa_y;
+	}
+	else {
+	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
+	    byte temp[8];
+
+	    pkt->pkt.secret_cert->d.dsa.p = dsa_p;
+	    pkt->pkt.secret_cert->d.dsa.q = dsa_q;
+	    pkt->pkt.secret_cert->d.dsa.g = dsa_g;
+	    pkt->pkt.secret_cert->d.dsa.y = dsa_y;
+	    cert->d.dsa.protect.algo = iobuf_get_noeof(inp); pktlen--;
+	    if( cert->d.dsa.protect.algo ) {
+		cert->d.dsa.is_protected = 1;
+		cert->d.dsa.protect.count = 0;
+		if( cert->d.dsa.protect.algo == 255 ) {
+		    if( pktlen < 3 ) {
+			rc = G10ERR_INVALID_PACKET;
+			goto leave;
+		    }
+		    cert->d.dsa.protect.algo = iobuf_get_noeof(inp); pktlen--;
+		    cert->d.dsa.protect.s2k  = iobuf_get_noeof(inp); pktlen--;
+		    cert->d.dsa.protect.hash = iobuf_get_noeof(inp); pktlen--;
+		    switch( cert->d.dsa.protect.s2k ) {
+		      case 1:
+		      case 3:
+			for(i=0; i < 8 && pktlen; i++, pktlen-- )
+			    temp[i] = iobuf_get_noeof(inp);
+			memcpy(cert->d.dsa.protect.salt, temp, 8 );
+			break;
+		    }
+		    switch( cert->d.dsa.protect.s2k ) {
+		      case 0: if( list_mode ) printf(  "\tsimple S2K" );
+			break;
+		      case 1: if( list_mode ) printf(  "\tsalted S2K" );
+			break;
+		      case 3: if( list_mode ) printf(  "\titer+salt S2K" );
+			break;
+		      default:
+			if( list_mode )
+			    printf(  "\tunknown S2K %d\n",
+						cert->d.dsa.protect.s2k );
+			rc = G10ERR_INVALID_PACKET;
+			goto leave;
+		    }
+
+		    if( list_mode ) {
+			printf(", algo: %d, hash: %d",
+					 cert->d.dsa.protect.algo,
+					 cert->d.dsa.protect.hash );
+			if( cert->d.dsa.protect.s2k == 1
+			    || cert->d.dsa.protect.s2k == 3 ) {
+			    printf(", salt: ");
+			    for(i=0; i < 8; i++ )
+				printf("%02x", cert->d.dsa.protect.salt[i]);
+			}
+			putchar('\n');
+		    }
+
+		    if( cert->d.dsa.protect.s2k == 3 ) {
+			if( !pktlen ) {
+			    rc = G10ERR_INVALID_PACKET;
+			    goto leave;
+			}
+			cert->d.dsa.protect.count = iobuf_get_noeof(inp);
+			pktlen--;
+		    }
+
+		}
+		else {
+		    if( list_mode )
+			printf(  "\tprotect algo: %d\n",
+						cert->d.dsa.protect.algo);
+		    /* old version, we don't have a S2K, so we fake one */
+		    cert->d.dsa.protect.s2k = 0;
+		    cert->d.dsa.protect.hash = DIGEST_ALGO_MD5;
+		}
+		if( pktlen < 8 ) {
+		    rc = G10ERR_INVALID_PACKET;
+		    goto leave;
+		}
+		for(i=0; i < 8 && pktlen; i++, pktlen-- )
+		    temp[i] = iobuf_get_noeof(inp);
+		if( list_mode ) {
+		    printf(  "\tprotect IV: ");
+		    for(i=0; i < 8; i++ )
+			printf(" %02x", temp[i] );
+		    putchar('\n');
+		}
+		memcpy(cert->d.dsa.protect.iv, temp, 8 );
+	    }
+	    else
+		cert->d.dsa.is_protected = 0;
+	    /* It does not make sense to read it into secure memory.
+	     * If the user is so careless, not to protect his secret key,
+	     * we can assume, that he operates an open system :=(.
+	     * So we put the key into secure memory when we unprotect him. */
+	    n = pktlen; cert->d.dsa.x = mpi_read(inp, &n, 0 ); pktlen -=n;
+
+	    cert->d.dsa.csum = read_16(inp); pktlen -= 2;
+	    if( list_mode ) {
+		printf("\t[secret value x is not shown]\n"
+		       "\tchecksum: %04hx\n", cert->d.dsa.csum);
+	    }
+	  /*log_mpidump("dsa p=", cert->d.dsa.p );
+	    log_mpidump("dsa q=", cert->d.dsa.q );
+	    log_mpidump("dsa g=", cert->d.dsa.g );
+	    log_mpidump("dsa y=", cert->d.dsa.y );
+	    log_mpidump("dsa x=", cert->d.dsa.x ); */
 	}
     }
     else if( algorithm == PUBKEY_ALGO_RSA ) {
@@ -1021,5 +1327,6 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
   leave:
     return 0;
 }
+
 
 

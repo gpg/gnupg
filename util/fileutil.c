@@ -64,3 +64,26 @@ make_filename( const char *first_part, ... )
     return name;
 }
 
+
+/****************
+ * A simple function to decide, wether the filename ist stdout
+ * or a real filename.
+ */
+const char *
+print_fname_stdout( const char *s )
+{
+    if( !s || (*s == '-' && !s[1]) )
+	return "[stdout]";
+    return s;
+}
+
+
+const char *
+print_fname_stdin( const char *s )
+{
+    if( !s || (*s == '-' && !s[1]) )
+	return "[stdin]";
+    return s;
+}
+
+

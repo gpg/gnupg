@@ -42,6 +42,7 @@ md_open( int algo, int secure )
     hd->secure = secure;
     if( algo )
 	md_enable( hd, algo );
+    fast_random_poll();
     return hd;
 }
 

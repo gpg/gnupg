@@ -26,6 +26,7 @@ common_source =  \
 	      textfilter.c	\
 	      cipher.c		\
 	      elg.c		\
+	      dsa.c		\
 	      rsa.c		\
 	      options.h 	\
 	      openfile.c	\
@@ -48,16 +49,18 @@ common_source =  \
 	      encr-data.c	\
 	      encode.c		\
 	      revoke.c		\
+	      keylist.c 	\
 	      sig-check.c
 
 gpg_SOURCES  = g10.c		\
 	      $(common_source)	\
+	      verify.c		\
+	      decrypt.c 	\
 	      keygen.c
 
 
 gpgm_SOURCES = g10maint.c   \
 	      dearmor.c     \
-	      keylist.c     \
 	      $(common_source)
 
 LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@

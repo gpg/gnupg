@@ -37,6 +37,7 @@
 #include "util.h"
 #include "types.h"
 #include "blowfish.h"
+#include "random.h"
 
 /* precomputed S boxes */
 static const u32 ks0[256] = {
@@ -420,6 +421,8 @@ blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 	initialized = 1;
 	selftest();
     }
+
+    fast_random_poll();
 
     for(i=0; i < BLOWFISH_ROUNDS+2; i++ )
 	c->p[i] = ps[i];

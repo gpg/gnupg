@@ -1,3 +1,17 @@
+Noteworthy changes in version 0.2.12
+------------------------------------
+
+    * --delete-key checks that there is no secret key. The new
+      option --delete-secret-key maybe used to delete a secret key.
+
+    * "-kv" now works as expected. Options "--list-{keys,sigs]"
+      and "--check-sigs" are now working.
+
+    * New options "--verify" and "--decrypt" to better support integration
+      into MUAs (partly done for Mutt).
+
+    * New option "--with-colons" to make parsing of key lists easier.
+
 Noteworthy changes in version 0.2.11
 ------------------------------------
 

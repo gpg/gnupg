@@ -174,6 +174,7 @@ check_pubkey_algo( int algo )
 {
     switch( algo ) {
       case PUBKEY_ALGO_ELGAMAL:
+      case PUBKEY_ALGO_DSA:
     #ifdef HAVE_RSA_CIPHER
       case PUBKEY_ALGO_RSA:
     #endif

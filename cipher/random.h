@@ -1,4 +1,4 @@
-/* status.h
+/* random.h - random functions
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -17,27 +17,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_STATUS_H
-#define G10_STATUS_H
+#ifndef G10_RANDOM_H
+#define G10_RANDOM_H
+
+#include "types.h"
+
+/*-- random.c --*/
+void secure_random_alloc(void);
+int  quick_random_gen( int onoff );
+void randomize_buffer( byte *buffer, size_t length, int level );
+byte get_random_byte( int level );
+void add_randomness( const void *buffer, size_t length, int source );
 
 
-#define STATUS_ENTER	 1
-#define STATUS_LEAVE	 2
-#define STATUS_ABORT	 3
-
-#define STATUS_GOODSIG	 4
-#define STATUS_BADSIG	 5
-#define STATUS_ERRSIG	 6
+/*-- the next two functions are implemented by all the system
+     specific source files rand_xxxx.s --*/
+void random_poll(void);
+void fast_random_poll(void);
 
 
-#define STATUS_BADARMOR  7
-
-
-
-/*-- status.c --*/
-void set_status_fd( int fd );
-void write_status( int no );
-void write_status_text( int no, const char *text);
-
-
-#endif /*G10_STATUS_H*/
+#endif /*G10_RANDOM_H*/

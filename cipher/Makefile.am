@@ -13,6 +13,7 @@ libcipher_a_SOURCES = blowfish.c     \
 		 md5.c		\
 		 md5.h		\
 		 primegen.c	\
+		 random.h	\
 		 random.c	\
 		 rmd.h		\
 		 rmd160.c	\

@@ -371,7 +371,7 @@ iobuf_open( const char *fname )
     file_filter_ctx_t *fcx;
     size_t len;
 
-    if( !fname ) {
+    if( !fname || (*fname=='-' && !fname[1])  ) {
 	fp = stdin; /* fixme: set binary mode for msdoze */
 	fname = "[stdin]";
     }

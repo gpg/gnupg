@@ -230,9 +230,11 @@ compress_filter( void *opaque, int control,
  * Handle a compressed packet
  */
 int
-handle_compressed( PKT_compressed *cd )
+handle_compressed( PKT_compressed *cd,
+		   int (*callback)(IOBUF, void *), void *passthru )
 {
     compress_filter_context_t cfx;
+    int rc;
 
     memset( &cfx, 0, sizeof cfx );
     if( cd->algorithm == 1 )
@@ -241,7 +243,10 @@ handle_compressed( PKT_compressed *cd )
 	return G10ERR_COMPR_ALGO;
 
     iobuf_push_filter( cd->buf, compress_filter, &cfx );
-    proc_packets(cd->buf);
+    if( callback )
+	rc = callback(cd->buf, passthru );
+    else
+	rc = proc_packets(cd->buf);
     iobuf_pop_filter( cd->buf, compress_filter, &cfx );
   #if 0
     if( cd->len )
@@ -250,6 +255,6 @@ handle_compressed( PKT_compressed *cd )
 	iobuf_clear_eof( cd->buf );
   #endif
     cd->buf = NULL;
-    return 0;
+    return rc;
 }
 
