@@ -656,7 +656,8 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     MD_HANDLE md;
 
     assert( (sigclass >= 0x10 && sigclass <= 0x13)
-	    || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x30 );
+	    || sigclass == 0x20 || sigclass == 0x18
+	    || sigclass == 0x30 || sigclass == 0x28 );
     if( !digest_algo ) {
 	switch( sk->pubkey_algo ) {
 	  case PUBKEY_ALGO_DSA: digest_algo = DIGEST_ALGO_SHA1; break;
@@ -669,7 +670,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
     /* hash the public key certificate and the user id */
     hash_public_key( md, pk );
-    if( sigclass == 0x18 ) { /* subkey binding */
+    if( sigclass == 0x18 || sigclass == 0x28 ) { /* subkey binding/revocation*/
 	hash_public_key( md, subpk );
     }
     else if( sigclass != 0x20 ) {

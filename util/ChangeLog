@@ -1,3 +1,7 @@
+Wed Apr 28 13:03:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* miscutil.c (asctimestamp): Use nl_langinfo (Gaël Quéri).
+
 Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* argparse.c (store_alias): Disabled becuase it is not used.

@@ -307,7 +307,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
-  #if 0
+  #if 1
     #warning md_start_debug is enabled
     md_start_debug( c->mfx.md, "verify" );
   #endif

@@ -120,6 +120,11 @@ B<--edit-key> I<name>
       non-exportbale and will therefore never be used
       by others.  This may be used to make keys valid
       only in the local environment.
+    B<revsig>
+      Revoke a signature.  GnuPG asks for every
+      every signature which has been done by one of
+      teh secret keys, whether a revocation
+      certificate should be generated.
     B<trust>
       Change the owner trust value. This updates the
       trust-db immediately and no save is required.
@@ -131,6 +136,8 @@ B<--edit-key> I<name>
        Add a subkey to this key.
     B<delkey>
        Remove a subkey.
+    B<revkey>
+       Revoke a subkey.
     B<expire>
        Change the key expiration time.  If a key is
        selected, the time of this key will be changed.

@@ -1,3 +1,9 @@
+Wed Apr 28 13:03:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* keyedit.c (keyedit_menu): Add new command revkey.
+	* (menu_revkey): New.
+
+
 Mon Apr 26 17:48:15 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* parse-packet.c (parse_signature): Add the MDC hack.

@@ -57,6 +57,7 @@ static int count_keys_with_flag( KBNODE keyblock, unsigned flag );
 static int count_selected_uids( KBNODE keyblock );
 static int count_selected_keys( KBNODE keyblock );
 static int menu_revsig( KBNODE keyblock );
+static int menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -523,7 +524,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-	   cmdLSIGN, cmdREVSIG,
+	   cmdLSIGN, cmdREVSIG, cmdREVKEY,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdNOP };
@@ -560,6 +561,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	{ N_("passwd")  , cmdPASSWD , 1, N_("change the passphrase") },
 	{ N_("trust")   , cmdTRUST , 0, N_("change the ownertrust") },
 	{ N_("revsig")  , cmdREVSIG , 0, N_("revoke signatures") },
+	{ N_("revkey")  , cmdREVKEY , 1, N_("revoke a secondary key") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd;
@@ -826,6 +828,28 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		    modified = 1;
 		    if( sec_keyblock )
 		       sec_modified = 1;
+		}
+	    }
+	    break;
+
+	  case cmdREVKEY: {
+		int n1;
+
+		if( !(n1=count_selected_keys( keyblock )) )
+		    tty_printf(_("You must select at least one key.\n"));
+		else if( sec_keyblock && !cpr_get_answer_is_yes(
+			    "keyedit.revoke.subkey.okay",
+		       n1 > 1?
+			_("Do you really want to revoke the selected keys? "):
+			_("Do you really want to revoke this key? ")
+		       ))
+		    ;
+		else {
+		    if( menu_revkey( keyblock, sec_keyblock ) ) {
+			modified = 1;
+			/*sec_modified = 1;*/
+		    }
+		    redisplay = 1;
 		}
 	    }
 	    break;
@@ -1659,6 +1683,58 @@ menu_revsig( KBNODE keyblock )
 
     if( upd_trust )
 	clear_trust_checked_flag( primary_pk );
+
+    return changed;
+}
+
+/****************
+ * Revoke some of the secondary keys.
+ * Hmmm: Should we add a revocation to the secret keyring too?
+ *	 Does its all make sense to duplicate most of the information?
+ */
+static int
+menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+    PKT_public_key *mainpk;
+    KBNODE node;
+    int changed = 0;
+    int upd_trust = 0;
+    int rc;
+
+  reloop: /* (better this way becuase we are modifing the keyring) */
+    mainpk = pub_keyblock->pkt->pkt.public_key;
+    for( node = pub_keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	    && (node->flag & NODFLG_SELKEY) ) {
+	    PACKET *pkt;
+	    PKT_signature *sig;
+	    PKT_secret_key *sk;
+	    PKT_public_key *subpk = node->pkt->pkt.public_key;
+
+	    node->flag &= ~NODFLG_SELKEY;
+	    sk = copy_secret_key( NULL, sec_keyblock->pkt->pkt.secret_key );
+	    rc = make_keysig_packet( &sig, mainpk, NULL, subpk, sk, 0x28, 0,
+				     NULL, NULL );
+	    free_secret_key(sk);
+	    if( rc ) {
+		log_error(_("signing failed: %s\n"), g10_errstr(rc));
+		return changed;
+	    }
+	    changed = 1; /* we changed the keyblock */
+	    upd_trust = 1;
+
+	    pkt = m_alloc_clear( sizeof *pkt );
+	    pkt->pkttype = PKT_SIGNATURE;
+	    pkt->pkt.signature = sig;
+	    insert_kbnode( node, new_kbnode(pkt), PKT_SIGNATURE );
+	    goto reloop;
+	}
+    }
+    commit_kbnode( &pub_keyblock );
+    /*commit_kbnode( &sec_keyblock );*/
+
+    if( upd_trust )
+	clear_trust_checked_flag( mainpk );
 
     return changed;
 }

@@ -329,6 +329,8 @@ list_keyblock( KBNODE keyblock, int secret )
 		    puts("[revoked]");
 		else if( sig->sig_class == 0x18 )
 		    puts("[key binding]");
+		else if( sig->sig_class == 0x28 )
+		    puts("[subkey revoked]");
 		else
 		    putchar('\n');
 		if( opt.fingerprint )
@@ -336,7 +338,8 @@ list_keyblock( KBNODE keyblock, int secret )
 		any=1;
 	    }
 
-	    if( sig->sig_class == 0x20 || sig->sig_class == 0x30 )
+	    if( sig->sig_class == 0x20 || sig->sig_class == 0x28
+				       || sig->sig_class == 0x30 )
 		fputs("rev", stdout);
 	    else if( (sig->sig_class&~3) == 0x10 )
 		fputs("sig", stdout);

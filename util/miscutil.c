@@ -1,5 +1,5 @@
 /* miscutil.c -  miscellaneous utilities
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,6 +23,9 @@
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+#ifdef HAVE_LANGINFO_H
+  #include <langinfo.h>
+#endif
 #include "types.h"
 #include "util.h"
 #include "i18n.h"
@@ -91,16 +94,26 @@ const char *
 asctimestamp( u32 stamp )
 {
     static char buffer[50];
+    #if defined (HAVE_STRFTIME) && defined (HAVE_NL_LANGINFO)
+      static char fmt[50];
+    #endif
     struct tm *tp;
     time_t atime = stamp;
 
     tp = localtime( &atime );
   #ifdef HAVE_STRFTIME
-    /* fixme: we should check whether the locale apppends a " %Z"
-     * These locales from glibc don't put the " %Z":
-     * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
-     */
-    strftime( buffer, DIM(buffer)-1, "%c %Z", tp );
+    #if defined(HAVE_NL_LANGINFO)
+      mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt) );
+      if( strstr( fmt, "%Z" ) == NULL )
+	strcat( fmt, " %Z");
+      strftime( buffer, DIM(buffer)-1, fmt, tp );
+    #else
+      /* fixme: we should check whether the locale appends a " %Z"
+       * These locales from glibc don't put the " %Z":
+       * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
+       */
+      strftime( buffer, DIM(buffer)-1, "%c %Z", tp );
+    #endif
     buffer[DIM(buffer)-1] = 0;
   #else
     mem2str( buffer, asctime(tp), DIM(buffer) );

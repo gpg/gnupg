@@ -23,11 +23,11 @@ don't complain. CVS may put a high load on a server, so please don't poll
 poll for new updates but wait for an announcement; to receive this you may
 want to subscribe to:
 
-    gnupg-commit-watchers@isil.d.shuttle.de
+    gnupg-commit-watchers@gnupg.org
 
-by sending a mail with "subscribe" in the body to
+by sending a mail with subject "subscribe" to
 
-    gnupg-commit-watchers-request@isil.d.shuttle.de
+    gnupg-commit-watchers-request@gnupg.org
 
 
 Please run scripts/autogen.sh to create some required files.
