@@ -49,6 +49,10 @@ enum {
   GNUPG_Agent_Error = 20,
   GNUPG_No_Public_Key = 21,
   GNUPG_No_Secret_Key = 22,
+  GNUPG_File_Open_Error = 23,
+  GNUPG_File_Create_Error = 24,
+  GNUPG_File_Error = 25,
+  GNUPG_Not_Supported = 26,
 };
 
 /* Status codes - fixme: should go into another file */

@@ -67,7 +67,7 @@ typedef enum {
   ASSUAN_No_Agent = 205,
   ASSUAN_Agent_Error = 206,
   ASSUAN_No_Public_Key = 207,
-  ASSUNA_No_Secret_Key = 208,
+  ASSUAN_No_Secret_Key = 208,
 
   ASSUAN_Cert_Revoked = 301,
   ASSUAN_No_CRL_For_Cert = 302,
