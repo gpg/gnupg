@@ -425,6 +425,8 @@ do_getattr (APP app, CTRL ctrl, const char *name)
     { "CA-FPR",       0x00C6, 3 },
     { "CHV-STATUS",   0x00C4, 1 },
     { "SIG-COUNTER",  0x0093, 2 },
+    { "SERIALNO",     0x004F, -1 },
+    { "AID",          0x004F },
     { NULL, 0 }
   };
   int idx, i;
@@ -437,6 +439,29 @@ do_getattr (APP app, CTRL ctrl, const char *name)
   if (!table[idx].name)
     return gpg_error (GPG_ERR_INV_NAME); 
   
+  if (table[idx].special == -1)
+    {
+      /* The serial number is very special.  We could have used the
+         AID DO to retrieve it, but we have it already in the app
+         context and the stanmp argument is required anyway which we
+         can't by other means. The AID DO is available anyway but not
+         hex formatted. */
+      char *serial;
+      time_t stamp;
+      char tmp[50];
+
+      if (!app_get_serial_and_stamp (app, &serial, &stamp))
+        {
+          sprintf (tmp, "%lu", (unsigned long)stamp);
+          send_status_info (ctrl, "SERIALNO",
+                            serial, strlen (serial),
+                            tmp, strlen (tmp),
+                            NULL, 0);
+          xfree (serial);
+        }
+      return 0;
+    }
+
   relptr = get_one_do (app->slot, table[idx].tag, &value, &valuelen);
   if (relptr)
     {

@@ -67,6 +67,7 @@ typedef struct app_ctx_s *APP;
 typedef struct ctrl_ctx_s *CTRL;
 
 
+#define GPG_ERR_GENERAL           G10ERR_GENERAL
 #define GPG_ERR_BAD_PIN           G10ERR_BAD_PASS
 #define GPG_ERR_CARD              G10ERR_GENERAL
 #define GPG_ERR_EEXIST            G10ERR_FILE_EXISTS
@@ -107,6 +108,8 @@ typedef int gpg_err_code_t;
 #define gnupg_get_time() make_timestamp ()
 
 
+void card_set_reader_port (const char *portstr);
+
 char *serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
                                 PKT_secret_key *sk);
 void send_status_info (CTRL ctrl, const char *keyword, ...);
@@ -143,7 +146,7 @@ int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force);
 /* Send a PKSIGN command to the SCdaemon. */
 int agent_scd_pksign (const char *keyid, int hashalgo,
                       const unsigned char *indata, size_t indatalen,
-                      char **r_buf, size_t *r_buflen);
+                      unsigned char **r_buf, size_t *r_buflen);
 
 /* Send a PKDECRYPT command to the SCdaemon. */
 int agent_scd_pkdecrypt (const char *serialno,

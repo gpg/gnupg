@@ -142,12 +142,16 @@ install-data-local:
 
 # Helper to update some source files.
 update-source-from-gnupg-2:
-	test -d ../../gnupg-1.9/scd
-	@for i in $(card_support_source_scd); do \
-           cp ../../gnupg-1.9/scd/$$i $$i; echo $$i; \
-	done
-	@for i in $(card_support_source_g10); do \
-           cp ../../gnupg-1.9/g10/$$i $$i; echo $$i; \
-	done
-	@echo "Please remember to update the ChangeLog accordingly!"
+	@set -e; \
+	 if test -d ../../gnupg-1.9/scd; then dir="../../gnupg-1.9"; \
+	 elif test -d ../../gnupg/scd; then dir="../../gnupg"; \
+	 else exit 1; \
+	 fi; \
+	 for i in $(card_support_source_scd); do \
+           cp $$dir/scd/$$i $$i; echo $$i; \
+	 done ;\
+	 for i in $(card_support_source_g10); do \
+           cp $$dir/g10/$$i $$i; echo $$i; \
+	 done ; \
+	 echo "Please remember to update the ChangeLog accordingly!"
 

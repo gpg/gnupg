@@ -51,6 +51,7 @@
 #include "g10defs.h"
 #include "keyserver-internal.h"
 #include "exec.h"
+#include "cardglue.h"
 
 enum cmd_and_opt_values
   {
@@ -1425,7 +1426,7 @@ main( int argc, char **argv )
           case aCardEdit: set_cmd (&cmd, aCardEdit); break;
           case aChangePIN: set_cmd (&cmd, aChangePIN); break;
           case oReaderPort:
-            app_set_default_reader_port (pargs.r.ret_str);
+            card_set_reader_port (pargs.r.ret_str);
             break;
           case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
           case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
@@ -2603,12 +2604,12 @@ main( int argc, char **argv )
 	if( opt.batch ) {
 	    if( argc > 1 )
 		wrong_args("--gen-key [parameterfile]");
-	    generate_keypair( argc? *argv : NULL );
+	    generate_keypair( argc? *argv : NULL, NULL );
 	}
 	else {
 	    if( argc )
 		wrong_args("--gen-key");
-	    generate_keypair(NULL);
+	    generate_keypair(NULL, NULL);
 	}
 	break;
 

@@ -309,7 +309,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 #ifdef ENABLE_CARD_SUPPORT
     if (sk->is_protected && sk->protect.s2k.mode == 1002) 
       { 
-        char *rbuf;
+        unsigned char *rbuf;
         size_t rbuflen;
         char *snbuf;
         

@@ -1,3 +1,23 @@
+2003-10-08  Werner Koch  <wk@gnupg.org>
+
+	* cardglue.c (pin_cb): Detect whether an admin or regular PIN is
+	requested.
+	(genkey_status_cb): New.
+	(agent_scd_genkey): Implemented.
+
+	* keygen.c (generate_keypair): New arg CARD_SERIALNO and prepare
+	parameters for on card key generation. Changed all callers.
+	(do_generate_keypair): Add new arg card and merged casrd specific
+	changes from 1.9.
+	(proc_parameter_file): New arg card, apss it down to
+	do_generate_keypair and changed all callers.
+	(gen_card_key): New.
+
+	* g10.c: Include cardclue.h.
+	(main): s/app_set_default_reader_port/card_set_reader_port/.
+	* cardglue.c (card_set_reader_port): New to address include file
+	issues.
+
 2003-10-02  Werner Koch  <wk@gnupg.org>
 
 	* cardglue.c (learn_status_cb): Release values before assignment

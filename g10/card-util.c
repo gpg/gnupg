@@ -241,6 +241,17 @@ print_isoname (FILE *fp, const char *text, const char *tag, const char *name)
     tty_fprintf (fp, "\n");
 }
 
+/* Return true if the SHA1 fingerprint FPR consists only of zeroes. */
+static int
+fpr_is_zero (const char *fpr)
+{
+  int i;
+
+  for (i=0; i < 20 && !fpr[i]; i++)
+    ;
+  return (i == 20);
+}
+
 
 /* Print all available information about the current card. */
 void
@@ -569,6 +580,76 @@ toggle_forcesig (void)
 }
 
 
+static void
+generate_card_keys (void)
+{
+  struct agent_card_info_s info;
+  int rc;
+  int forced_chv1;
+
+  memset (&info, 0, sizeof info);
+  rc = agent_scd_getattr ("KEY-FPR", &info);
+  if (!rc)
+    rc = agent_scd_getattr ("SERIALNO", &info);
+  if (!rc)
+    rc = agent_scd_getattr ("CHV-STATUS", &info);
+  if (!rc)
+    rc = agent_scd_getattr ("DISP-NAME", &info);
+  if (rc)
+    {
+      log_error ("error getting current key info: %s\n", gpg_strerror (rc));
+      return;
+    }
+  if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
+       || (info.fpr2valid && !fpr_is_zero (info.fpr2))
+       || (info.fpr3valid && !fpr_is_zero (info.fpr3)))
+    {
+      tty_printf ("\n");
+      log_info ("NOTE: keys are already stored on the card!\n");
+      tty_printf ("\n");
+      if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_keys",
+                                  _("Replace existing keys? ")))
+        {
+          agent_release_card_info (&info);
+          return;
+        }
+    }
+  else if (!info.disp_name || !*info.disp_name)
+    {
+      tty_printf ("\n");
+      tty_printf (_("Please note that the factory settings of the PINs are\n"
+                    "   PIN = \"%s\"     Admin PIN = \"%s\"\n"
+                    "You should change them using the command --change-pin\n"),
+                  "123456", "12345678");
+      tty_printf ("\n");
+    }
+
+  forced_chv1 = !info.chv1_cached;
+  if (forced_chv1)
+    { /* Switch of the forced mode so that during key generation we
+         don't get bothered with PIN queries for each
+         self-signature. */
+      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
+      if (rc)
+        {
+          log_error ("error clearing forced signature PIN flag: %s\n",
+                     gpg_strerror (rc));
+          return;
+        }
+    }
+  generate_keypair (NULL, info.serialno);
+  agent_release_card_info (&info);
+  if (forced_chv1)
+    { /* Switch back to forced state. */
+      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
+      if (rc)
+        {
+          log_error ("error setting forced signature PIN flag: %s\n",
+                     gpg_strerror (rc));
+          return;
+        }
+    }
+}
 
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
@@ -579,7 +660,7 @@ card_edit (STRLIST commands)
     cmdNOP = 0,
     cmdQUIT, cmdHELP, cmdLIST, cmdDEBUG,
     cmdNAME, cmdURL, cmdLOGIN, cmdLANG, cmdSEX,
-    cmdFORCESIG,
+    cmdFORCESIG, cmdGENERATE,
     cmdINVCMD
   };
 
@@ -601,6 +682,7 @@ card_edit (STRLIST commands)
     { N_("lang")  , cmdLANG  , N_("change the language preferences") },
     { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
     { N_("forcesig"), cmdFORCESIG, N_("toggle the signature force PIN flag") },
+    { N_("generate"), cmdGENERATE, N_("generate new keys") },
     { NULL, cmdINVCMD } 
   };
  
@@ -723,6 +805,10 @@ card_edit (STRLIST commands)
 
         case cmdFORCESIG:
           toggle_forcesig ();
+          break;
+
+        case cmdGENERATE:
+          generate_card_keys ();
           break;
 
         case cmdQUIT:

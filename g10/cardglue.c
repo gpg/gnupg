@@ -184,6 +184,13 @@ app_set_default_reader_port (const char *portstr)
 }
 
 
+void
+card_set_reader_port (const char *portstr)
+{
+  app_set_default_reader_port (portstr);
+}
+
+
 /* Retrieve the serial number and the time of the last update of the
    card.  The serial number is returned as a malloced string (hex
    encoded) in SERIAL and the time of update is returned in STAMP.  If
@@ -493,7 +500,10 @@ pin_cb (void *opaque, const char *info, char **retstr)
   *retstr = NULL;
   log_debug ("asking for PIN '%s'\n", info);
 
-  value = ask_passphrase (info, "Enter PIN: ", &canceled);
+  value = ask_passphrase (info, 
+                          info && strstr (info, "dmin")?
+                           _("Enter Admin PIN: ") : _("Enter PIN: "),
+                          &canceled);
   if (!value && canceled)
     return -1;
   else if (!value)
@@ -519,19 +529,86 @@ agent_scd_setattr (const char *name,
   return app->fnc.setattr (app, name, pin_cb, NULL, value, valuelen);
 }
 
+
+static int
+genkey_status_cb (void *opaque, const char *line)
+{
+  struct agent_card_genkey_s *parm = opaque;
+  const char *keyword = line;
+  int keywordlen;
+
+  log_debug ("got status line `%s'\n", line);
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 7 && !memcmp (keyword, "KEY-FPR", keywordlen))
+    {
+      parm->fprvalid = unhexify_fpr (line, parm->fpr);
+    }
+  if (keywordlen == 8 && !memcmp (keyword, "KEY-DATA", keywordlen))
+    {
+      MPI a;
+      const char *name = line;
+      char *buf;
+
+      while (!spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+
+      buf = xmalloc ( 2 + strlen (line) + 1);
+      strcpy (stpcpy (buf, "0x"), line);
+      a = mpi_alloc (300);
+      if( mpi_fromstr (a, buf) )
+        log_error ("error parsing received key data\n");
+      else if (*name == 'n' && spacep (name+1))
+        parm->n = a;
+      else if (*name == 'e' && spacep (name+1))
+        parm->e = a;
+      else
+        {
+          log_info ("unknown parameter name in received key data\n");
+          mpi_free (a);
+        }
+      xfree (buf);
+    }
+  else if (keywordlen == 14 && !memcmp (keyword,"KEY-CREATED-AT", keywordlen))
+    {
+      parm->created_at = (u32)strtoul (line, NULL, 10);
+    }
+
+  return 0;
+}
+
 /* Send a GENKEY command to the SCdaemon. */
 int 
 agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
 {
+  APP app;
+  char keynostr[20];
+  struct ctrl_ctx_s ctrl;
 
-  return gpg_error (GPG_ERR_CARD);
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  memset (info, 0, sizeof *info);
+  sprintf (keynostr, "%d", keyno);
+  ctrl.status_cb = genkey_status_cb;
+  ctrl.status_cb_arg = info;
+
+  return app->fnc.genkey (app, &ctrl, keynostr,
+                           force? 1:0,
+                           pin_cb, NULL);
 }
 
 /* Send a PKSIGN command to the SCdaemon. */
 int 
 agent_scd_pksign (const char *serialno, int hashalgo,
                   const unsigned char *indata, size_t indatalen,
-                  char **r_buf, size_t *r_buflen)
+                  unsigned char **r_buf, size_t *r_buflen)
 {
   APP app;
 

@@ -143,7 +143,7 @@ void show_basic_key_info (KBNODE keyblock);
 /*-- keygen.c --*/
 u32 ask_expire_interval(int object);
 u32 ask_expiredate(void);
-void generate_keypair( const char *fname );
+void generate_keypair( const char *fname, const char *card_serialno );
 int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
@@ -240,5 +240,12 @@ void init_signals(void);
 void pause_on_sigusr( int which );
 void block_all_signals(void);
 void unblock_all_signals(void);
+
+#ifdef ENABLE_CARD_SUPPORT
+/*-- card-util.c --*/
+void change_pin (int no);
+void card_status (FILE *fp);
+void card_edit (STRLIST commands);
+#endif
 
 #endif /*G10_MAIN_H*/
