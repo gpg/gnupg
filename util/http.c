@@ -786,11 +786,11 @@ write_server( int sock, const char *data, size_t length )
     nleft = length;
     while( nleft > 0 ) {
       #ifdef __MINGW32__  
-        unsigned long nwritten;
-        HANDLE sock_fd = (HANDLE)sock;
+        int nwritten;
 
-        if ( !WriteFile ( sock_fd, data, nleft, &nwritten, NULL)) {
-	    log_info ("write failed: ec=%d\n", (int)GetLastError ());
+        nwritten = send (sock, data, nleft, 0);
+        if ( nwritten == SOCKET_ERROR ) {
+	    log_info ("write failed: ec=%d\n", (int)WSAGetLastError ());
 	    return G10ERR_NETWORK;
         }
       #else

@@ -1,3 +1,8 @@
+2002-05-04  Werner Koch  <wk@gnupg.org>
+
+	* http.c (write_server) [__MINGW32__]: Replaced WriteFile by send
+	because sockets don't work with WriteFile under NT anymore.
+
 2002-05-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c (optfile_parse): Remove quotes only if they totally
