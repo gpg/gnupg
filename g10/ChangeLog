@@ -1,3 +1,11 @@
+2000-12-07  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New option --allow-secret-key-import.
+	* import.c (import_keys,import_keys_stream): Honor this option.
+	(import): New arg allow_secret and pass that arg down to ...
+	(import_secret_one): to this and print a warnign if secret key
+	importing is not allowed.
+
 2000-12-05  Werner Koch  <wk@gnupg.org>
 
 	* cipher.c (cipher_filter): Moved the end_encryption status ...

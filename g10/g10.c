@@ -183,6 +183,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDisablePubkeyAlgo,
     oAllowNonSelfsignedUID,
     oAllowFreeformUID,
+    oAllowSecretKeyImport,                      
     oEnableSpecialFilenames,
     oNoLiteral,
     oSetFilesize,
@@ -389,6 +390,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
     { oMergeOnly,	  "merge-only", 0, "@" },
+    { oAllowSecretKeyImport, "allow-secret-key-import", 0, "@" },
     { oTryAllSecrets,  "try-all-secrets", 0, "@" },
     { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
@@ -954,6 +956,7 @@ main( int argc, char **argv )
 		opt.override_session_key = pargs.r.ret_str;
 		break;
 	  case oMergeOnly: opt.merge_only = 1; break;
+	  case oAllowSecretKeyImport: opt.allow_secret_key_import = 1; break;
 	  case oTryAllSecrets: opt.try_all_secrets = 1; break;
           case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
           case oEnableSpecialFilenames:

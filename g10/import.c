@@ -54,11 +54,11 @@ static struct {
 } stats;
 
 
-static int import( IOBUF inp, int fast, const char* fname );
+static int import( IOBUF inp, int fast, const char* fname, int allow_secret );
 static void print_stats(void);
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static int import_one( const char *fname, KBNODE keyblock, int fast );
-static int import_secret_one( const char *fname, KBNODE keyblock );
+static int import_secret_one( const char *fname, KBNODE keyblock, int allow );
 static int import_revoke_cert( const char *fname, KBNODE node );
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_key *pk, u32 *keyid );
@@ -127,7 +127,7 @@ import_keys( char **fnames, int nnames, int fast )
 	if( !inp )
 	    log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	else {
-	    int rc = import( inp, fast, fname );
+	    int rc = import( inp, fast, fname, opt.allow_secret_key_import );
 	    iobuf_close(inp);
 	    if( rc )
 		log_error("import from `%s' failed: %s\n", fname,
@@ -148,7 +148,7 @@ import_keys_stream( IOBUF inp, int fast )
 
     /* fixme: don't use static variables */
     memset( &stats, 0, sizeof( stats ) );
-    rc = import( inp, fast, "[stream]" );
+    rc = import( inp, fast, "[stream]", opt.allow_secret_key_import );
     print_stats();
     if( !fast )
 	sync_trustdb();
@@ -156,7 +156,7 @@ import_keys_stream( IOBUF inp, int fast )
 }
 
 static int
-import( IOBUF inp, int fast, const char* fname )
+import( IOBUF inp, int fast, const char* fname, int allow_secret )
 {
     PACKET *pending_pkt = NULL;
     KBNODE keyblock;
@@ -173,8 +173,8 @@ import( IOBUF inp, int fast, const char* fname )
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
 	    rc = import_one( fname, keyblock, fast );
-	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
-	    rc = import_secret_one( fname, keyblock );
+	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
+                rc = import_secret_one( fname, keyblock, allow_secret );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
 	    rc = import_revoke_cert( fname, keyblock );
@@ -556,9 +556,12 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 
 /****************
  * Ditto for secret keys.  Handling is simpler than for public keys.
+ * We allow secret key importing only when allow is true, this is so
+ * that a secret key can not be imported accidently and thereby tampering
+ * with the trust calculation.
  */
 static int
-import_secret_one( const char *fname, KBNODE keyblock )
+import_secret_one( const char *fname, KBNODE keyblock, int allow )
 {
     PKT_secret_key *sk;
     KBNODE node, uidnode;
@@ -586,6 +589,13 @@ import_secret_one( const char *fname, KBNODE keyblock )
 	putc('\n', stderr);
     }
     stats.secret_read++;
+    if (!allow) {
+        log_info ( _("secret key %08lX not imported "
+                    "(use %s to allow for it)\n"),
+                   (ulong)keyid[1], "--allow-secret-key-import");
+        return 0;
+    }
+
     if( !uidnode ) {
 	log_error( _("key %08lX: no user ID\n"), (ulong)keyid[1]);
 	return 0;

@@ -8,6 +8,9 @@
       !  and make sure that they don't pipe the signed material to stdin  !
       !  without using a filename and "-" on the the command line.        !
 
+    * Secret keys are no longer imported unless you use the new option
+      --allow-secret-key-import.
+
     * Support for the gpg-agent from gpg 1.1
 
     * Better LFS support.

@@ -97,6 +97,7 @@ struct {
     int show_session_key;
     int use_agent;
     int merge_only;
+    int allow_secret_key_import;
     int try_all_secrets;
 } opt;
 

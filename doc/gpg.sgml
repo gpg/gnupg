@@ -479,6 +479,7 @@ command --update-trustdb.
 There are a few other options which control how this command works.
 Most notable here is the --merge-only options which does not insert new keys
 but does only the merging of new signatures, user-IDs and subkeys.
+See also the option --allow-secret-key-import.
 </para></listitem></varlistentry>
 
 
@@ -1402,6 +1403,14 @@ handing out the secret key.
 <term>--merge-only</term>
 <listitem><para>
 Don't insert new keys into the keyrings while doing an import.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--allow-secret-key-import</term>
+<listitem><para>
+Allow import of secret keys.  The import command normally skips secret
+keys because a secret key can otherwise be used to attack the trust
+calculation.
 </para></listitem></varlistentry>
 
 <varlistentry>
