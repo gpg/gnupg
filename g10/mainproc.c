@@ -796,6 +796,15 @@ print_notation_data( PKT_signature *sig )
         write_status_buffer ( STATUS_POLICY_URL, p, n, 0 );
     }
 
+    seq=0;
+
+    while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL))) {
+	log_info(_("Preferred keyserver: ") );
+	print_string( log_stream(), p, n, 0 );
+	putc( '\n', log_stream() );
+	/* TODO: put in a status-fd tag for preferred keyservers */
+    }
+
     /* Now check whether the key of this signature has some
      * notation data */
 

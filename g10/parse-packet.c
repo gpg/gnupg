@@ -861,7 +861,8 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	  printf(" %02X", buffer[i]);
 	break;
       case SIGSUBPKT_PREF_KS:
-	p = "preferred key server";
+	fputs("preferred key server: ", stdout );
+	print_string( stdout, buffer, length, ')' );
 	break;
       case SIGSUBPKT_PRIMARY_UID:
 	p = "primary user ID";
@@ -937,6 +938,7 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
       case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_PREF_KS:
       case SIGSUBPKT_FEATURES:
 	return 0;
       case SIGSUBPKT_EXPORTABLE:
@@ -988,7 +990,9 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_KEY_FLAGS:
       case SIGSUBPKT_PRIMARY_UID:
       case SIGSUBPKT_FEATURES:
-      case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
+	/* Is it enough to show the policy or keyserver? */
+      case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_PREF_KS:
 	return 1;
 
       default:

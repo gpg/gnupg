@@ -69,7 +69,7 @@ enum cmd_and_opt_values { aNull = 0,
     oUser	  = 'u',
     oVerbose	  = 'v',
     oCompress	  = 'z',
-    oNotation	  = 'N',
+    oSetNotation  = 'N',
     oBatch	  = 500,
     oSigNotation,
     oCertNotation,
@@ -461,9 +461,10 @@ static ARGPARSE_OPTS opts[] = {
     { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
     { oNoShowPhotos, "no-show-photos", 0, N_("Don't show Photo IDs")},
     { oPhotoViewer,  "photo-viewer", 2, N_("Set command line to view Photo IDs")},
-    { oNotation,   "notation-data", 2, "@" },
-    { oSigNotation,   "sig-notation", 2, "@" },
-    { oCertNotation,  "cert-notation", 2, "@" },
+    { oSetNotation,  "set-notation", 2, "@" },
+    { oSetNotation,  "notation-data", 2, "@" }, /* Alias */
+    { oSigNotation,  "sig-notation", 2, "@" },
+    { oCertNotation, "cert-notation", 2, "@" },
 
     { 302, NULL, 0, N_(
   "@\n(See the man page for a complete listing of all commands and options)\n"
@@ -1605,7 +1606,7 @@ main( int argc, char **argv )
 	    else
 	      opt.exec_path_set=1;
 	    break;
-	  case oNotation:
+	  case oSetNotation:
 	    add_notation_data( pargs.r.ret_str, 0 );
 	    add_notation_data( pargs.r.ret_str, 1 );
 	    break;
