@@ -1,3 +1,8 @@
+2002-11-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* util.h: Add wipememory2() macro (same as wipememory, but can
+	specify the byte to wipe with).
+
 2002-10-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Add wipememory() macro.
