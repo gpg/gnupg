@@ -20,6 +20,7 @@
 #ifndef G10_TTYIO_H
 #define G10_TTYIO_H
 
+const char *tty_get_ttyname (void);
 int tty_batchmode( int onoff );
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
  void tty_printf (const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
