@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 1.5.2[H p]
-Last-Modified: Jun 22, 2001[H p]
+Version: 1.5.3[H p]
+Last-Modified: Jul 10, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -71,10 +71,13 @@ you could search in the mailing list archive.
     document about how to convert from PGP 2.x to GnuPG.
 
     [H LI] On [H a href=http://lists.gnupg.org]<http://lists.gnupg.org>[H/a] 
-    you'll find a searchable online archive of the GnuPG mailing
-    lists. Most interesting should be gnupg-users for all user-related
-    issues and gnupg-devel if you want to get in touch with the
-    developers.
+    you'll find an online archive of the GnuPG mailing lists. Most
+    interesting should be gnupg-users for all user-related issues and
+    gnupg-devel if you want to get in touch with the developers.
+
+    In addition, searchable archives can be found on MARC, e.g.: 
+    GnuPG-users: [H a href=http://marc.theaimsgroup.com/?l=gnupg-users&r=1&w=2]<http://marc.theaimsgroup.com/?l=gnupg-users&r=1&w=2>[H/a], 
+    GnuPG-devel: [H a href=http://marc.theaimsgroup.com/?l=gnupg-devel&r=1&w=2]<http://marc.theaimsgroup.com/?l=gnupg-devel&r=1&w=2>[H/a].
 
     [H B]PLEASE:[H/B]
     Before posting to a list, read this FAQ and the available
