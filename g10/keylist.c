@@ -58,10 +58,46 @@ static FILE *attrib_fp=NULL;
 void
 public_key_list( STRLIST list )
 {
-    if( !list )
-	list_all(0);
-    else
-	list_one( list, 0 );
+  if(opt.with_colons)
+    {
+      byte trust_model,marginals,completes,cert_depth;
+      ulong created,nextcheck;
+
+      read_trust_options(&trust_model,&created,&nextcheck,
+			 &marginals,&completes,&cert_depth);
+
+      printf("tru:");
+
+      if(nextcheck && nextcheck <= make_timestamp())
+	printf("o");
+      if(trust_model!=opt.trust_model)
+	printf("t");
+      if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
+	{
+	  if(marginals!=opt.marginals_needed)
+	    printf("m");
+	  if(completes!=opt.completes_needed)
+	    printf("c");
+	  if(cert_depth!=opt.max_cert_depth)
+	    printf("d");
+	}
+
+      printf(":%d:%lu:%lu",trust_model,created,nextcheck);
+
+      /* Only show marginals, completes, and cert_depth in the classic
+	 or PGP trust models since they are not meaningful
+	 otherwise. */
+
+      if(trust_model==TM_PGP || trust_model==TM_CLASSIC)
+	printf(":%d:%d:%d",marginals,completes,cert_depth);
+
+      printf("\n");
+    }
+
+  if( !list )
+    list_all(0);
+  else
+    list_one( list, 0 );
 }
 
 void
@@ -1070,15 +1106,13 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	    }
 	    if( opt.check_sigs ) {
 	        PKT_public_key *signer_pk=NULL;
-	        u32 dummy;
-		int dum2;
 
 		fflush(stdout);
 		if(opt.no_sig_cache)
 		  signer_pk=m_alloc_clear(sizeof(PKT_public_key));
 
 		rc = check_key_signature2( keyblock, node, NULL, signer_pk,
-					   NULL, &dummy, &dum2);
+					   NULL, NULL, NULL );
 		switch( rc ) {
 		  case 0:		   sigrc = '!'; break;
 		  case G10ERR_BAD_SIGN:    sigrc = '-'; break;

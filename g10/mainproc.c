@@ -665,7 +665,6 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
     PKT_signature *sig;
     MD_HANDLE md = NULL, md2 = NULL;
     int algo, rc, dum2;
-    u32 dummy;
 
     if(!is_expkey)
       is_expkey=&dum2;
@@ -722,9 +721,9 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
     }
     else
 	return G10ERR_SIG_CLASS;
-    rc = signature_check2( sig, md, &dummy, is_expkey, NULL );
+    rc = signature_check2( sig, md, NULL, is_expkey, NULL );
     if( rc == G10ERR_BAD_SIGN && md2 )
-	rc = signature_check2( sig, md2, &dummy, is_expkey, NULL );
+	rc = signature_check2( sig, md2, NULL, is_expkey, NULL );
     md_close(md);
     md_close(md2);
 

@@ -590,7 +590,30 @@ trustdb_pending_check(void)
   return pending_check_trustdb;
 }
 
-
+void
+read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
+		   byte *marginals,byte *completes,byte *cert_depth)
+{
+  TRUSTREC opts;
+
+  init_trustdb();
+
+  read_record(0,&opts,RECTYPE_VER);
+
+  if(trust_model)
+    *trust_model=opts.r.ver.trust_model;
+  if(created)
+    *created=opts.r.ver.created;
+  if(nextcheck)
+    *nextcheck=opts.r.ver.nextcheck;
+  if(marginals)
+    *marginals=opts.r.ver.marginals;
+  if(completes)
+    *completes=opts.r.ver.completes;
+  if(cert_depth)
+    *cert_depth=opts.r.ver.cert_depth;
+}
+
 /***********************************************
  ***********  Ownertrust et al. ****************
  ***********************************************/

@@ -50,9 +50,7 @@ static int do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 int
 signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
-    u32 dummy;
-    int dum2;
-    return signature_check2( sig, digest, &dummy, &dum2, NULL );
+    return signature_check2( sig, digest, NULL, NULL, NULL );
 }
 
 int
@@ -61,8 +59,6 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
 {
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
-
-    *r_expiredate = 0;
 
     /* Sanity check that the md has a context for the hash that the
        sig is expecting.  This can happen if a onepass sig header does
@@ -79,7 +75,8 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
         rc=G10ERR_BAD_PUBKEY; /* you cannot have a good sig from an
 				 invalid subkey */
     else {
-	*r_expiredate = pk->expiredate;
+        if(r_expiredate)
+	  *r_expiredate = pk->expiredate;
 	rc = do_check( pk, sig, digest, r_expired, ret_pk );
     }
 
@@ -208,7 +205,8 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 {
     u32 cur_time;
 
-    *r_expired = 0;
+    if(r_expired)
+      *r_expired = 0;
     if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	log_info(_("key %08lX: this is a PGP generated "
 		   "ElGamal key which is NOT secure for signatures!\n"),
@@ -251,7 +249,8 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 	sprintf(buf,"%lu",(ulong)pk->expiredate);
 	write_status_text(STATUS_KEYEXPIRED,buf);
 	write_status(STATUS_SIGEXPIRED);
-	*r_expired = 1;
+	if(r_expired)
+	  *r_expired = 1;
     }
 
     return 0;
@@ -476,10 +475,7 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
 int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
-    u32 dummy;
-    int dum2;
-    return check_key_signature2(root, node, NULL, NULL,
-				is_selfsig, &dummy, &dum2 );
+  return check_key_signature2(root, node, NULL, NULL, is_selfsig, NULL, NULL );
 }
 
 /* If check_pk is set, then use it to check the signature in node
@@ -499,8 +495,10 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 
     if( is_selfsig )
 	*is_selfsig = 0;
-    *r_expiredate = 0;
-    *r_expired = 0;
+    if( r_expiredate )
+        *r_expiredate = 0;
+    if( r_expired )
+        *r_expired = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
@@ -518,6 +516,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    *is_selfsig = 1;
 	    }
+	    /* TODO: should set r_expiredate here as well */
 	    if((rc=do_check_messages(pk,sig,r_expired)))
 	      return rc;
             return sig->flags.valid? 0 : G10ERR_BAD_SIGN;

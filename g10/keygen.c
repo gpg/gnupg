@@ -137,7 +137,12 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
 
     buf[0] = 0;
     if (use & PUBKEY_USAGE_SIG)
-        buf[0] |= 0x01 | 0x02;
+      {
+	if(sig->sig_class==0x18)
+	  buf[0] |= 0x02; /* Don't set the certify flag for subkeys */
+	else
+	  buf[0] |= 0x01 | 0x02;
+      }
     if (use & PUBKEY_USAGE_ENC)
         buf[0] |= 0x04 | 0x08;
     build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
@@ -1074,15 +1079,18 @@ ask_algo (int addmode, unsigned int *r_usage)
 				      _("Create anyway? ")))
 	      {
 		algo = PUBKEY_ALGO_ELGAMAL;
+		*r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG;
 		break;
 	      }
 	}
 	else if( algo == 3 && addmode ) {
 	    algo = PUBKEY_ALGO_ELGAMAL_E;
+            *r_usage = PUBKEY_USAGE_ENC;
 	    break;
 	}
 	else if( algo == 2 ) {
 	    algo = PUBKEY_ALGO_DSA;
+            *r_usage = PUBKEY_USAGE_SIG;
 	    break;
 	}
 	else
@@ -2082,11 +2090,21 @@ generate_keypair( const char *fname )
 	strcpy( r->u.value, "1024" );
 	r->next = para;
 	para = r;
+	r = m_alloc_clear( sizeof *r + 20 );
+	r->key = pKEYUSAGE;
+	strcpy( r->u.value, "sign" );
+	r->next = para;
+	para = r;
 
 	algo = PUBKEY_ALGO_ELGAMAL_E;
 	r = m_alloc_clear( sizeof *r + 20 );
 	r->key = pSUBKEYTYPE;
 	sprintf( r->u.value, "%d", algo );
+	r->next = para;
+	para = r;
+	r = m_alloc_clear( sizeof *r + 20 );
+	r->key = pSUBKEYUSAGE;
+	strcpy( r->u.value, "encrypt" );
 	r->next = para;
 	para = r;
     }
