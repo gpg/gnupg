@@ -1,5 +1,10 @@
 2001-12-20  Werner Koch  <wk@gnupg.org>
 
+	* verify.c (gpgsm_verify): Implemented non-detached signature
+	verification.  Add OUT_FP arg, initialize a writer and changed all
+	callers.
+	* server.c (cmd_verify): Pass an out_fp if one has been set.
+
 	* base64.c (base64_reader_cb): Try to detect an S/MIME body part.
 
 	* certdump.c (print_sexp): Renamed to gpgsm_dump_serial, made

@@ -83,9 +83,7 @@ store_cert (KsbaCert cert)
 }
 
 
-
-
-
+/* Hash the data for a detached signature */
 static void
 hash_data (int fd, GCRY_MD_HD md)
 {
@@ -112,16 +110,20 @@ hash_data (int fd, GCRY_MD_HD md)
 }
 
 
+
 
 /* Perform a verify operation.  To verify detached signatures, data_fd
-   must be different than -1 */
+   must be different than -1.  With OUT_FP given and a non-detached
+   signature, the signed material is written to that stream. */
 int
-gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
+gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 {
   int i, rc;
   Base64Context b64reader = NULL;
+  Base64Context b64writer = NULL;
   KsbaError err;
   KsbaReader reader;
+  KsbaWriter writer = NULL;
   KsbaCMS cms = NULL;
   KsbaStopReason stopreason;
   KsbaCert cert;
@@ -157,6 +159,16 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       goto leave;
     }
 
+  if (out_fp)
+    {
+      rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
+      if (rc)
+        {
+          log_error ("can't create writer: %s\n", gnupg_strerror (rc));
+          goto leave;
+        }
+    }
+
   cms = ksba_cms_new ();
   if (!cms)
     {
@@ -164,7 +176,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       goto leave;
     }
 
-  err = ksba_cms_set_reader_writer (cms, reader, NULL);
+  err = ksba_cms_set_reader_writer (cms, reader, writer);
   if (err)
     {
       log_debug ("ksba_cms_set_reader_writer failed: %s\n",
@@ -199,12 +211,6 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
           is_detached = 1;
           log_debug ("Detached signature\n");
         }
-      if (stopreason == KSBA_SR_BEGIN_DATA)
-        {
-          log_error ("error: only detached signatures are supportted\n");
-          rc = GNUPG_Not_Implemented;
-          goto leave;
-        }
 
       if (stopreason == KSBA_SR_NEED_HASH
           || stopreason == KSBA_SR_BEGIN_DATA)
@@ -228,9 +234,27 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
                 }
               hash_data (data_fd, data_md);  
             }
+          else
+            {
+              ksba_cms_set_hash_function (cms, HASH_FNC, data_md);
+            }
+        }
+      else if (stopreason == KSBA_SR_END_DATA)
+        { /* The data bas been hashed */
+
         }
     }
   while (stopreason != KSBA_SR_READY);   
+
+  if (b64writer)
+    {
+      rc = gpgsm_finish_writer (b64writer);
+      if (rc) 
+        {
+          log_error ("write failed: %s\n", gnupg_strerror (rc));
+          goto leave;
+        }
+    }
 
   if (data_fd != -1 && !is_detached)
     {
@@ -418,6 +442,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
  leave:
   ksba_cms_release (cms);
   gpgsm_destroy_reader (b64reader);
+  gpgsm_destroy_writer (b64writer);
   keydb_release (kh); 
   gcry_md_close (data_md);
   if (fp)

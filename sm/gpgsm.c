@@ -1044,11 +1044,11 @@ main ( int argc, char **argv)
 
     case aVerify:
       if (!argc)
-        gpgsm_verify (&ctrl, 0, -1); /* normal signature from stdin */
+        gpgsm_verify (&ctrl, 0, -1, NULL); /* normal signature from stdin */
       else if (argc == 1)
-        gpgsm_verify (&ctrl, open_read (*argv), -1); /* normal signature */
+        gpgsm_verify (&ctrl, open_read (*argv), -1, NULL); /* std signature */
       else if (argc == 2) /* detached signature (sig, detached) */
-        gpgsm_verify (&ctrl, open_read (*argv), open_read (argv[1])); 
+        gpgsm_verify (&ctrl, open_read (*argv), open_read (argv[1]), NULL); 
       else
         wrong_args (_("--verify [signature [detached_data]]"));
       break;

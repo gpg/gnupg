@@ -262,12 +262,24 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
   int rc;
   CTRL ctrl = assuan_get_pointer (ctx);
   int fd = assuan_get_input_fd (ctx);
+  int out_fd = assuan_get_output_fd (ctx);
+  FILE *out_fp = NULL;
 
   if (fd == -1)
     return set_error (No_Input, NULL);
 
+  if (out_fd != -1)
+    {
+      out_fp = fdopen ( dup(out_fd), "w");
+      if (!out_fp)
+        return set_error (General_Error, "fdopen() failed");
+    }
+
   rc = gpgsm_verify (assuan_get_pointer (ctx), fd,
-                     ctrl->server_local->message_fd);
+                     ctrl->server_local->message_fd, out_fp);
+  if (out_fp)
+    fclose (out_fp);
+
   if (!rc)
     {
       /* close and reset the fd */

@@ -164,7 +164,7 @@ void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp);
 int gpgsm_import (CTRL ctrl, int in_fd);
 
 /*-- verify.c --*/
-int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd);
+int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp);
 
 /*-- sign.c --*/
 int gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp);
