@@ -1,0 +1,74 @@
+#!/bin/sh
+
+set -e
+
+curr_ver=$(ls g10-*.tar.gz | sort -r -t '.' -n +0.4 -1 +1 -2 +2 \
+           | head -1 | sed -e 's/g10-\(.*\).tar.gz/\1/' )
+prev_ver=$(ls g10-*.tar.gz | sort -r -t '.' -n +0.4 -1 +1 -2 +2 \
+           | head -2 | tail -1 | sed -e 's/g10-\(.*\).tar.gz/\1/' )
+
+echo "Current  is: $curr_ver"
+echo "Previous is: $prev_ver"
+
+echo "Removing old directories"
+[ -d "g10-$curr_ver" ] && rm -rf "g10-$curr_ver"
+[ -d "g10-$prev_ver" ] && rm -rf "g10-$prev_ver"
+ 
+echo "Unpacking previous and current tar" 
+tar xzf "g10-$curr_ver.tar.gz"
+tar xzf "g10-$prev_ver.tar.gz"
+
+echo "Diffing"
+tmp_name="g10-$curr_ver.diff.tmp"
+diff_name="g10-$curr_ver.diff"
+
+diff -urN "g10-$prev_ver/" "g10-$curr_ver/"  > $tmp_name || true
+
+echo "Making patch file"
+
+cat <<EOF > $diff_name
+
+This is a patch file against $prev_ver.
+
+Change to directory g10-$prev_ver (or however you renamed it)
+and give this command:
+
+     zcat somepath/g10-$curr_ver.diff.gz | patch -p1
+
+It is a good idea to rename your current directory to g10-$curr_ver now.
+
+
+
+Prereq: $prev_ver
+
+EOF
+
+sed -ne '/^diff.*VERSION/,/^+[0-9][0-9]*/ p' $tmp_name >> $diff_name
+sed -e '/^diff.*VERSION/,/^+[0-9][0-9]*/ d'  $tmp_name >> $diff_name
+
+rm $tmp_name
+
+echo "Compressing patch file"
+gzip -9 $diff_name
+
+echo "Checking patch file"
+cd g10-$prev_ver
+zcat ../$diff_name.gz | patch -s -p1 
+rm $(find . -name "*.orig")
+cd ..
+
+if ! diff -urN "g10-$prev_ver/" "g10-$curr_ver/" >/dev/null ; then
+   echo "compare failed"
+   exit 1
+fi
+
+
+echo "cleaning up"
+
+rm -rf "g10-$curr_ver"
+rm -rf "g10-$prev_ver"
+
+echo "Patch file $diff_name.gz is good."
+
+
+
