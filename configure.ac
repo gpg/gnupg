@@ -120,7 +120,7 @@ use_cast5=yes
 use_blowfish=yes
 use_aes=yes
 use_twofish=yes
-use_tiger192=yes
+use_tiger192=no
 use_sha256=yes
 use_sha512=yes
 use_exec=yes
@@ -132,7 +132,6 @@ AC_ARG_ENABLE(minimal,
    use_blowfish=no
    use_aes=no
    use_twofish=no
-   use_tiger192=no
    use_sha256=no
    use_sha512=no
    use_exec=no)
@@ -200,12 +199,26 @@ if test x"$use_twofish" = xyes ; then
    AC_DEFINE(USE_TWOFISH,1,[Define to include the TWOFISH cipher])
 fi
 
-dnl TIGER192 is defined only after we confirm 64-bit support later
+dnl this is because the stable branch calls it just "tiger".
+AC_ARG_ENABLE(tiger,,use_tiger192=$enableval)
+
+dnl TIGER192 is actually defined only after we confirm 64-bit support
+dnl later
 AC_MSG_CHECKING([whether to enable the TIGER/192 digest])
 AC_ARG_ENABLE(tiger192,
-   AC_HELP_STRING([--disable-tiger192],[disable the TIGER/192 digest]),
+   AC_HELP_STRING([--enable-tiger192],[enable the TIGER/192 digest]),
    use_tiger192=$enableval)
 AC_MSG_RESULT($use_tiger192)
+
+if test x"$use_tiger192" = xyes ; then
+   AC_MSG_WARN([[
+***
+*** The TIGER/192 digest is in the process of being removed from the
+*** OpenPGP standard.  While it hasn't been removed from GnuPG yet, it
+*** will be removed in a future version.  For the sake of future
+*** compatibility, please do not use this digest.
+***]])
+fi
 
 AC_MSG_CHECKING([whether to enable the SHA-256 digest])
 AC_ARG_ENABLE(sha256,

@@ -3,7 +3,8 @@
 		   -------------------------------
 			    Version 1.3.2
 
-	  Copyright 1998-2003 Free Software Foundation, Inc.
+	     Copyright 1998, 1999, 2000, 2001, 2002, 2003
+		    Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author gives
     unlimited permission to copy and/or distribute it, with or without
@@ -528,7 +529,6 @@
      --disable-blowfish
      --disable-aes
      --disable-twofish
-     --disable-tiger192
      --disable-sha256
      --disable-sha512
 		    Removes support for the selected algorithm.  This
