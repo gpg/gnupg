@@ -926,17 +926,40 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 }
 
 
+/* In pgp6 mode, disallow all ciphers except IDEA (1), 3DES (2), and
+   CAST5 (3), all hashes except MD5 (1), SHA1 (2), and RIPEMD160 (3),
+   and all compressions except none (0) and ZIP (1).  For a true PGP6
+   key all of this is unneeded as they are the only items present in
+   the preferences subpacket, but checking here covers the weird case
+   of encrypting to a key that had preferences from a different
+   implementation which was then used with PGP6.  I am not completely
+   comfortable with this as the right thing to do, as it slightly
+   alters the list of what the user is supposedly requesting.  It is
+   not against the RFC however, as the preference chosen will never be
+   one that the user didn't specify somewhere ("The implementation may
+   use any mechanism to pick an algorithm in the intersection"), and
+   PGP6 has no mechanism to fix such a broken preference list, so I'm
+   including it. -dms */
 
 static int
 algo_available( int preftype, int algo )
 {
     if( preftype == PREFTYPE_SYM ) {
+        if( opt.pgp6 && ( algo != 1 && algo != 2 && algo != 3) )
+	  return 0;
+
 	return algo && !check_cipher_algo( algo );
     }
     else if( preftype == PREFTYPE_HASH ) {
+        if( opt.pgp6 && ( algo != 1 && algo != 2 && algo != 3) )
+	  return 0;
+
 	return algo && !check_digest_algo( algo );
     }
     else if( preftype == PREFTYPE_ZIP ) {
+        if ( opt.pgp6 && ( algo !=0 && algo != 1) )
+	  return 0;
+
 	return !algo || algo == 1 || algo == 2;
     }
     else
@@ -1080,5 +1103,3 @@ select_mdc_from_pklist (PK_LIST pk_list)
     }
     return 1; /* can be used */
 }
-
-

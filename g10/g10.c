@@ -158,6 +158,8 @@ enum cmd_and_opt_values { aNull = 0,
     oOpenPGP,
     oPGP2,
     oNoPGP2,
+    oPGP6,
+    oNoPGP6,
     oCipherAlgo,
     oDigestAlgo,
     oCompressAlgo,
@@ -388,6 +390,8 @@ static ARGPARSE_OPTS opts[] = {
     { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
     { oPGP2, "pgp2", 0, N_("set all packet, cipher and digest options to PGP 2.x behavior")},
     { oNoPGP2, "no-pgp2", 0, "@"},
+    { oPGP6, "pgp6", 0, "@"},
+    { oNoPGP6, "no-pgp6", 0, "@"},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
     { oS2KDigest, "s2k-digest-algo",2,
 		N_("|NAME|use message digest algorithm NAME for passphrases")},
@@ -1064,6 +1068,8 @@ main( int argc, char **argv )
 	    break;
 	  case oPGP2: opt.pgp2 = 1; break;
 	  case oNoPGP2: opt.pgp2 = 0; break;
+	  case oPGP6: opt.pgp6 = 1; break;
+	  case oNoPGP6: opt.pgp6 = 0; break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
@@ -1295,67 +1301,82 @@ main( int argc, char **argv )
     set_debug();
     g10_opt_homedir = opt.homedir;
 
-    /* Do this after the switch(), so it can override settings. */
-    if(opt.pgp2)
+    /* Do these after the switch(), so they can override settings. */
+    if(opt.pgp2 && opt.pgp6)
+      log_error(_("%s not allowed with %s!\n"),"--pgp2","--pgp6");
+    else
       {
-	int unusable=0;
+	if(opt.pgp2)
+	  {
+	    int unusable=0;
 
-	if(cmd==aSign && !detached_sig)
-	  {
-	    log_info(_("you can only make detached or clear signatures "
-		       "while in --pgp2 mode\n"));
-	    unusable=1;
-	  }
-	else if(cmd==aSignEncr || cmd==aSignSym)
-	  {
-	    log_info(_("you can't sign and encrypt at the "
-		       "same time while in --pgp2 mode\n"));
-	    unusable=1;
-	  }
-	else if(argc==0 && (cmd==aSign || cmd==aEncr || cmd==aSym))
-	  {
-	    log_info(_("you must use files (and not a pipe) when "
-		       "working with --pgp2 enabled.\n"));
-	    unusable=1;
-	  }
-	else if(cmd==aEncr || cmd==aSym)
-	  {
-	    /* Everything else should work without IDEA (except using
-	       a secret key encrypted with IDEA and setting an IDEA
-	       preference, but those have their own error
-	       messages). */
-
-	    if(check_cipher_algo(CIPHER_ALGO_IDEA))
+	    if(cmd==aSign && !detached_sig)
 	      {
-		log_info(_("encrypting a message in --pgp2 mode requires "
-			   "the IDEA cipher\n"));
-		idea_cipher_warn(1);
+		log_info(_("you can only make detached or clear signatures "
+			   "while in --pgp2 mode\n"));
 		unusable=1;
 	      }
-	    else if(cmd==aSym)
+	    else if(cmd==aSignEncr || cmd==aSignSym)
 	      {
-		m_free(def_cipher_string);
-		def_cipher_string = m_strdup("idea");
+		log_info(_("you can't sign and encrypt at the "
+			   "same time while in --pgp2 mode\n"));
+		unusable=1;
+	      }
+	    else if(argc==0 && (cmd==aSign || cmd==aEncr || cmd==aSym))
+	      {
+		log_info(_("you must use files (and not a pipe) when "
+			   "working with --pgp2 enabled.\n"));
+		unusable=1;
+	      }
+	    else if(cmd==aEncr || cmd==aSym)
+	      {
+		/* Everything else should work without IDEA (except using
+		   a secret key encrypted with IDEA and setting an IDEA
+		   preference, but those have their own error
+		   messages). */
+
+		if(check_cipher_algo(CIPHER_ALGO_IDEA))
+		  {
+		    log_info(_("encrypting a message in --pgp2 mode requires "
+			       "the IDEA cipher\n"));
+		    idea_cipher_warn(1);
+		    unusable=1;
+		  }
+		else if(cmd==aSym)
+		  {
+		    m_free(def_cipher_string);
+		    def_cipher_string = m_strdup("idea");
+		  }
+	      }
+
+	    if(unusable)
+	      {
+		log_info(_("this message may not be usable by PGP 2.x\n"));
+		opt.pgp2=0;
+	      }
+	    else
+	      {
+		opt.rfc1991 = 1;
+		opt.rfc2440 = 0;
+		opt.force_mdc = 0;
+		opt.force_v4_certs = 0;
+		opt.no_comment = 1;
+		opt.escape_from = 1;
+		opt.force_v3_sigs = 1;
+		opt.pgp2_workarounds = 1;
+		m_free(def_digest_string);
+		def_digest_string = m_strdup("md5");
+		opt.def_compress_algo = 1;
 	      }
 	  }
 
-	if(unusable)
+	if(opt.pgp6)
 	  {
-	    log_info(_("this message may not be usable by PGP 2.x\n"));
-	    opt.pgp2=0;
-	  }
-	else
-	  {
-	    opt.rfc1991 = 1;
-	    opt.rfc2440 = 0;
-	    opt.force_v4_certs = 0;
-	    opt.no_comment = 1;
-	    opt.escape_from = 1;
-	    opt.force_v3_sigs = 1;
-	    opt.pgp2_workarounds = 1;
-	    m_free(def_digest_string);
-	    def_digest_string = m_strdup("md5");
-	    opt.def_compress_algo = 1;
+	    opt.force_mdc=0;
+	    opt.no_comment=1;
+	    opt.escape_from=1;
+	    opt.force_v3_sigs=1;
+	    opt.def_compress_algo=1;
 	  }
       }
 

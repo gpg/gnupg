@@ -1,3 +1,13 @@
+2002-01-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main), options.h, pkclist.c (algo_available): --pgp6
+	flag.  This is not nearly as involved as --pgp2.  In short, it
+	turns off force_mdc, turns on no_comment, escape_from, and
+	force_v3_sigs, and sets compression to 1.  It also restricts the
+	user to IDEA (if present), 3DES, CAST5, MD5, SHA1, and RIPEMD160.
+	See the comments above algo_available() for lots of discussion on
+	why you would want to do this.
+
 2002-01-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (keygen_set_std_prefs): Comment

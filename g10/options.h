@@ -79,6 +79,7 @@ struct {
     int compress_sigs;
     int always_trust;
     int pgp2;
+    int pgp6;
     int rfc1991;
     int rfc2440;
     int pgp2_workarounds;
