@@ -1,5 +1,8 @@
 2003-12-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyid.c (do_fingerprint_md): Remove the rules to hash the old v3
+	Elgamal keys.  They are no longer needed.
+
 	* keyid.c (keyid_from_sk, keyid_from_pk, fingerprint_from_pk,
 	fingerprint_from_sk): Enforce the v3-is-only-RSA rule.  Anything
 	that isn't RSA gets a zero keyid and fingerprint.

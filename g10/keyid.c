@@ -51,15 +51,15 @@ static MD_HANDLE
 do_fingerprint_md( PKT_public_key *pk )
 {
     MD_HANDLE md;
-    unsigned n;
+    unsigned n=6;
     unsigned nb[PUBKEY_MAX_NPKEY];
     unsigned nn[PUBKEY_MAX_NPKEY];
     byte *pp[PUBKEY_MAX_NPKEY];
     int i;
     int npkey = pubkey_get_npkey( pk->pubkey_algo );
 
-    md = md_open( pk->version < 4 ? DIGEST_ALGO_RMD160 : DIGEST_ALGO_SHA1, 0);
-    n = pk->version < 4 ? 8 : 6;
+    md = md_open( DIGEST_ALGO_SHA1, 0);
+
     if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
       {
 	pp[0]=mpi_get_opaque(pk->pkey[0],&nn[0]);
@@ -74,29 +74,16 @@ do_fingerprint_md( PKT_public_key *pk )
 	}
 
     md_putc( md, 0x99 );     /* ctb */
+    /* What does it mean if n is greater than than 0xFFFF ? */
     md_putc( md, n >> 8 );   /* 2 byte length header */
     md_putc( md, n );
-    if( pk->version < 4 )
-	md_putc( md, 3 );
-    else
-	md_putc( md, 4 );
+    md_putc( md, 4 );
 
-    {	u32 a = pk->timestamp;
-	md_putc( md, a >> 24 );
-	md_putc( md, a >> 16 );
-	md_putc( md, a >>  8 );
-	md_putc( md, a	     );
-    }
-    if( pk->version < 4 ) {
-	u16 a;
+    md_putc( md, pk->timestamp >> 24 );
+    md_putc( md, pk->timestamp >> 16 );
+    md_putc( md, pk->timestamp >>  8 );
+    md_putc( md, pk->timestamp       );
 
-	if( pk->expiredate )
-	    a = (u16)((pk->expiredate - pk->timestamp) / 86400L);
-	else
-	    a = 0;
-	md_putc( md, a >> 8 );
-	md_putc( md, a	    );
-    }
     md_putc( md, pk->pubkey_algo );
 
     if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
@@ -109,6 +96,7 @@ do_fingerprint_md( PKT_public_key *pk )
 	  md_write( md, pp[i], nn[i] );
 	  m_free(pp[i]);
 	}
+
     md_final( md );
 
     return md;
