@@ -1,3 +1,12 @@
+2004-09-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (pop_filter): Make static.
+
+	* dotlock.c (destroy_dotlock): New.  Remove the handle from the
+	list of locks.
+	(release_dotlock): Don't act if we don't have any locks at all.
+	From Werner on stable branch.
+
 2004-09-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (make_radix64_string, do_parse_uri, send_request): Add

@@ -1354,7 +1354,7 @@ iobuf_push_filter2( IOBUF a,
 /****************
  * Remove an i/o filter.
  */
-int
+static int
 pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 		      IOBUF chain, byte *buf, size_t *len), void *ov )
 {

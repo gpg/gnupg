@@ -1,5 +1,5 @@
 /* dotlock.c - dotfile locking
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -197,6 +197,45 @@ create_dotlock( const char *file_to_lock )
     return h;
 }
 
+
+void
+destroy_dotlock ( DOTLOCK h )
+{
+#if !defined (HAVE_DOSISH_SYSTEM)
+    if ( h )
+      {
+        DOTLOCK hprev, htmp;
+
+        /* First remove the handle from our global list of all locks. */
+        for (hprev=NULL, htmp=all_lockfiles; htmp; hprev=htmp, htmp=htmp->next)
+          if (htmp == h)
+            {
+              if (hprev)
+                hprev->next = htmp->next;
+              else
+                all_lockfiles = htmp->next;
+              h->next = NULL;
+              break;
+            }
+
+        /* Second destroy the lock. */
+	if (!h->disable)
+          {
+	    if (h->locked && h->lockname)
+              unlink (h->lockname);
+            if (h->tname)
+              unlink (h->tname);
+	    m_free (h->tname);
+	    m_free (h->lockname);
+          }
+	m_free(h);
+
+      }
+#endif
+}
+
+
+
 static int
 maybe_deadlock( DOTLOCK h )
 {
@@ -317,9 +356,15 @@ release_dotlock( DOTLOCK h )
 #else
     int pid;
 
-    if( h->disable ) {
+    /* To avoid atexit race conditions we first check whether there
+       are any locks left.  It might happen that another atexit
+       handler tries to release the lock while the atexit handler of
+       this module already ran and thus H is undefined.  */
+    if(!all_lockfiles)
+        return 0;
+
+    if( h->disable ) 
 	return 0;
-    }
 
     if( !h->locked ) {
 	log_debug("oops, `%s' is not locked\n", h->lockname );
@@ -407,14 +452,7 @@ remove_lockfiles()
 
     while( h ) {
 	h2 = h->next;
-	if( !h->disable ) {
-	    if( h->locked )
-		unlink( h->lockname );
-	    unlink(h->tname);
-	    m_free(h->tname);
-	    m_free(h->lockname);
-	}
-	m_free(h);
+        destroy_dotlock (h);
 	h = h2;
     }
 #endif
