@@ -11,8 +11,9 @@ cd $HOME/pub
 extract_date () {
     # This strange construct is to speed up things.  Grouping a "s" and a "q"
     # does not work. Anyway we should use awk instead.
-    sed '/^.*\$\[I\]d:.*\$.*$/q' $1 |
-    sed -n 's!^.*\$\[I\]d: [^ ]\+ [^ ]\+ \([0-9]*\)/\([0-9]*\)/\([0-9]*\) [^ ]\+ \([^ ]\+\).*$!\1-\2-\3 \4!p'
+    # Have to quote the I from $Id so that CVS does not expand it
+    sed '/^.*\$[I]d:.*\$.*$/q' $1 |
+    sed -n 's!^.*\$[I]d: [^ ]\+ [^ ]\+ \([0-9]*\)/\([0-9]*\)/\([0-9]*\) [^ ]\+ \([^ ]\+\).*$!\1-\2-\3 \4!p'
 }
 
 # We have to edit most files
