@@ -129,6 +129,8 @@ typedef struct gpg_stream_spec_mem
   char *memory;
   size_t memory_size;
   unsigned int grow: 1;
+  void *(*func_realloc) (void *mem, size_t size);
+  void (*func_free) (void *mem);
 } gpg_stream_spec_mem_t;
 
 extern gpg_stream_functions_t gpg_stream_functions_mem;

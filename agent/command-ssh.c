@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <dirent.h>
-//#include <stdio.h>
+#include <stdio.h>
 
 #include "agent.h"
 
@@ -227,7 +227,7 @@ gpg_stream_write_uint32 (gpg_stream_t stream, uint32_t uint32)
 }
 
 static gpg_err_code_t
-gpg_stream_read_string (gpg_stream_t stream,
+gpg_stream_read_string (gpg_stream_t stream, unsigned int secure,
 			unsigned char **string, uint32_t *string_size)
 {
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
@@ -241,7 +241,10 @@ gpg_stream_read_string (gpg_stream_t stream,
     goto out;
 
   /* Allocate space.  */
-  buffer = malloc (length + 1);
+  if (secure)
+    buffer = gcry_malloc_secure (length + 1);
+  else
+    buffer = gcry_malloc (length + 1);
   if (! buffer)
     {
       err = gpg_err_code_from_errno (errno);
@@ -268,7 +271,7 @@ gpg_stream_read_string (gpg_stream_t stream,
     }
   else
     if (buffer)
-      free (buffer);
+      gcry_free (buffer);
 
   return err;
 }
@@ -303,8 +306,8 @@ gpg_stream_write_cstring (gpg_stream_t stream, char *string)
 }			  
 
 static gpg_err_code_t
-gpg_stream_read_mpint (gpg_stream_t stream, mpint_t *mpint,
-		       unsigned int mpi_type)
+gpg_stream_read_mpint (gpg_stream_t stream, unsigned int secure,
+		       mpint_t *mpint, unsigned int mpi_type)
 {
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
   unsigned char *mpi_data = NULL;
@@ -314,7 +317,8 @@ gpg_stream_read_mpint (gpg_stream_t stream, mpint_t *mpint,
   if (! mpi_type)
     mpi_type = GCRYMPI_FMT_STD;
 
-  err = gpg_stream_read_string (stream, &mpi_data, &mpi_data_size);
+  err = gpg_stream_read_string (stream, secure,
+				&mpi_data, &mpi_data_size);
   if (err)
     goto out;
 
@@ -324,7 +328,7 @@ gpg_stream_read_mpint (gpg_stream_t stream, mpint_t *mpint,
 
  out:
 
-  free (mpi_data);
+  gcry_free (mpi_data);
 
   if (! err)
     *mpint = mpi;
@@ -333,8 +337,8 @@ gpg_stream_read_mpint (gpg_stream_t stream, mpint_t *mpint,
 }
 
 static gpg_err_code_t
-gpg_stream_write_mpint (gpg_stream_t stream, mpint_t mpint,
-			unsigned int mpi_type)
+gpg_stream_write_mpint (gpg_stream_t stream,
+			mpint_t mpint, unsigned int mpi_type)
 {
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
   unsigned char *mpi_buffer = NULL;
@@ -376,7 +380,7 @@ gpg_stream_read_file (const char *filename,
   if (err)
     goto out;
 
-  buffer_new = malloc (buffer_new_n);
+  buffer_new = gcry_malloc (buffer_new_n);
   if (! buffer_new)
     {
       err = gpg_err_code_from_errno (errno);
@@ -436,7 +440,7 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
   unsigned char *key_type = NULL;
   gcry_mpi_t mpi_iqmp = NULL;
 	
-  err = gpg_stream_read_string (stream, &key_type, NULL);
+  err = gpg_stream_read_string (stream, 0, &key_type, NULL);
   if (err)
     goto out;
 
@@ -448,22 +452,22 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
     {
     case SSH_KEY_TYPE_RSA:
       {
-	err = gpg_stream_read_mpint (stream, &key.material.rsa.n, 0);
+	err = gpg_stream_read_mpint (stream, 0, &key.material.rsa.n, 0);
 	if (err)
 	  break;
-	err = gpg_stream_read_mpint (stream, &key.material.rsa.e, 0);
+	err = gpg_stream_read_mpint (stream, 0, &key.material.rsa.e, 0);
 	if (err)
 	  break;
-	err = gpg_stream_read_mpint (stream, &key.material.rsa.d, 0);
+	err = gpg_stream_read_mpint (stream, 1, &key.material.rsa.d, 0);
 	if (err)
 	  break;
-	err = gpg_stream_read_mpint (stream, &mpi_iqmp, 0);
+	err = gpg_stream_read_mpint (stream, 1, &mpi_iqmp, 0);
 	if (err)
 	  break;
-	err = gpg_stream_read_mpint (stream, &key.material.rsa.p, 0);
+	err = gpg_stream_read_mpint (stream, 1, &key.material.rsa.p, 0);
 	if (err)
 	  break;
-	err = gpg_stream_read_mpint (stream, &key.material.rsa.q, 0);
+	err = gpg_stream_read_mpint (stream, 1, &key.material.rsa.q, 0);
 	if (err)
 	  break;
 
@@ -483,7 +487,7 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
 	  {
 	    /* u has to be recomputed.  */
 
-	    key.material.rsa.u = gcry_mpi_new (0);
+	    key.material.rsa.u = gcry_mpi_snew (0);
 	    gcry_mpi_invm (key.material.rsa.u,
 			   key.material.rsa.p, key.material.rsa.q);
 	  }
@@ -501,19 +505,27 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
 
  out:
 
-  free (key_type);
+  gcry_free (key_type);
   gcry_mpi_release (mpi_iqmp);
 
   if (! err)
     *key_secret = key;
   else
     {
-      gcry_mpi_release (key.material.rsa.n);
-      gcry_mpi_release (key.material.rsa.e);
-      gcry_mpi_release (key.material.rsa.d);
-      gcry_mpi_release (key.material.rsa.p);
-      gcry_mpi_release (key.material.rsa.q);
-      gcry_mpi_release (key.material.rsa.u);
+      switch (key.type)
+	{
+	case SSH_KEY_TYPE_RSA:
+	  gcry_mpi_release (key.material.rsa.n);
+	  gcry_mpi_release (key.material.rsa.e);
+	  gcry_mpi_release (key.material.rsa.d);
+	  gcry_mpi_release (key.material.rsa.p);
+	  gcry_mpi_release (key.material.rsa.q);
+	  gcry_mpi_release (key.material.rsa.u);
+	  break;
+
+	case SSH_KEY_TYPE_NONE:
+	  break;
+	}
     }
 
   return err;
@@ -558,7 +570,7 @@ ssh_receive_key_public (gpg_stream_t stream, ssh_key_public_t *key_public)
   ssh_key_public_t key = { 0 };
   unsigned char *key_type = NULL;
 
-  err = gpg_stream_read_string (stream, &key_type, NULL);
+  err = gpg_stream_read_string (stream, 0, &key_type, NULL);
   if (err)
     goto out;
 
@@ -570,10 +582,10 @@ ssh_receive_key_public (gpg_stream_t stream, ssh_key_public_t *key_public)
    {
     case SSH_KEY_TYPE_RSA:
       {
-	err = gpg_stream_read_mpint (stream, &key.material.rsa.e, 0);
+	err = gpg_stream_read_mpint (stream, 0, &key.material.rsa.e, 0);
 	if (err)
 	  break;
-	err = gpg_stream_read_mpint (stream, &key.material.rsa.n, 0);
+	err = gpg_stream_read_mpint (stream, 0, &key.material.rsa.n, 0);
 	if (err)
 	  break;
 	break;
@@ -589,7 +601,7 @@ ssh_receive_key_public (gpg_stream_t stream, ssh_key_public_t *key_public)
 
  out:
 
-  free (key_type);
+  gcry_free (key_type);
 
   if (! err)
     *key_public = key;
@@ -670,7 +682,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   if (err)
     goto out;
 
-  blob_new = malloc (blob_new_size);
+  blob_new = gcry_malloc (blob_new_size);
   if (! blob_new)
     {
       err = gpg_err_code_from_errno (errno);
@@ -721,7 +733,7 @@ ssh_key_grip (ssh_key_public_t *public, ssh_key_secret_t *secret,
 			     : secret->material.rsa.n,
 			     public
 			     ? public->material.rsa.e
-			     : secret->material.rsa.n);
+			     : secret->material.rsa.e);
       break;
 
     case SSH_KEY_TYPE_NONE:
@@ -867,7 +879,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
     }
   key_directory_n = strlen (key_directory);
   
-  key_path = malloc (key_directory_n + 46);
+  key_path = gcry_malloc (key_directory_n + 46);
   if (! key_path)
     {
       err = gpg_err_code_from_errno (errno);
@@ -903,7 +915,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
 	      /* Convert it into a public key.   */
 	      err = ssh_key_public_from_stored_key (buffer, buffer_n, &key);
-	      free (buffer);
+	      gcry_free (buffer);
 	      buffer = NULL;
 	      if (err)
 		goto out;
@@ -915,7 +927,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
 	      /* Add key blob to buffer stream.  */
 	      err = gpg_stream_write_string (key_blobs, key_blob, key_blob_n);
-	      free (key_blob);
+	      gcry_free (key_blob);
 	      key_blob = NULL;
 	      if (err)
 		goto out;
@@ -949,8 +961,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
   gpg_stream_destroy (key_blobs);
   closedir (dir);
   free (key_directory);
-  free (key_path);
-  free (key_blob);
+  gcry_free (key_path);
+  gcry_free (key_blob);
 }
 
 static gpg_err_code_t
@@ -984,7 +996,7 @@ data_sign (CTRL ctrl, unsigned char **sig, size_t *sig_n)
   unsigned int i = 0;
 
   for (i = 0; i < 20; i++)
-    sprintf (&key_grip[i * 2], "%02X", ctrl->keygrip[i]);
+    sprintf (&key_grip[i * 2], "%02X", (unsigned char) ctrl->keygrip[i]);
   strncpy (strchr (description, '0'), key_grip, 40);
 	   
   err = agent_pksign_do (ctrl, description, &signature_sexp, 0);
@@ -1039,7 +1051,7 @@ data_sign (CTRL ctrl, unsigned char **sig, size_t *sig_n)
   if (err)
     goto out;
 
-  sig_blob = malloc (sig_blob_n);
+  sig_blob = gcry_malloc (sig_blob_n);
   if (! sig_blob)
     {
       err = gpg_err_code_from_errno (errno);
@@ -1048,7 +1060,7 @@ data_sign (CTRL ctrl, unsigned char **sig, size_t *sig_n)
 
   err = gpg_stream_read (stream, sig_blob, sig_blob_n, &bytes_read);
   if ((! err) && (sig_blob_n != bytes_read))
-    err = GPG_ERR_INTERNAL; 	/* violation */
+    err = GPG_ERR_EOF;
   if (err)
     goto out;
 
@@ -1067,7 +1079,7 @@ data_sign (CTRL ctrl, unsigned char **sig, size_t *sig_n)
     {
       gcry_sexp_release (signature_sexp);
       gcry_sexp_release (sublist);
-      free (sig_blob);
+      gcry_free (sig_blob);
     }
 
   return err;
@@ -1095,7 +1107,7 @@ ssh_handler_sign_request (ctrl_t ctrl,
 
   /* Receive key.  */
   
-  err = gpg_stream_read_string (request, &key_blob, &key_blob_size);
+  err = gpg_stream_read_string (request, 0, &key_blob, &key_blob_size);
   if (err)
     goto out;
   
@@ -1105,7 +1117,7 @@ ssh_handler_sign_request (ctrl_t ctrl,
 
   /* Receive data to sign.  */
   
-  err = gpg_stream_read_string (request, &data, &data_size);
+  err = gpg_stream_read_string (request, 0, &data, &data_size);
   if (err)
     goto out;
 
@@ -1161,9 +1173,9 @@ ssh_handler_sign_request (ctrl_t ctrl,
   else
     gpg_stream_write_byte (response, SSH_RESPONSE_FAILURE);
 
-  free (key_blob);
-  free (data);
-  free (sig);
+  gcry_free (key_blob);
+  gcry_free (data);
+  gcry_free (sig);
 }
 
 static gpg_err_code_t
@@ -1194,7 +1206,7 @@ ssh_key_to_sexp_buffer (ssh_key_secret_t *key, const char *passphrase,
     goto out;
 
   buffer_new_n = gcry_sexp_sprint (key_sexp, GCRYSEXP_FMT_CANON, NULL, 0);
-  buffer_new = malloc (buffer_new_n);
+  buffer_new = gcry_malloc (buffer_new_n);
   if (! buffer_new)
     {
       err = gpg_err_code_from_errno (errno);
@@ -1209,10 +1221,8 @@ ssh_key_to_sexp_buffer (ssh_key_secret_t *key, const char *passphrase,
 
  out:
 
-  if (key_sexp)
-    gcry_sexp_release (key_sexp);
-  if (buffer_new)
-    free (buffer_new);
+  gcry_sexp_release (key_sexp);
+  gcry_free (buffer_new);
 
   return err;
 }
@@ -1254,24 +1264,35 @@ static gpg_err_code_t
 ssh_identity_register (ssh_key_secret_t *key, int ttl)
 {
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
-  unsigned char key_grip[21] = { 0 };
+  unsigned char key_grip_raw[21] = { 0 };
   unsigned char *buffer = NULL;
   unsigned int buffer_n = 0;
   char passphrase[100] = { 0 };
+  char description[] =
+    "Please provide the passphrase, which should  "
+    "be used for protecting the received secret key "
+    "`0123456789012345678901234567890123456789':";
+  unsigned int i = 0;
+  char key_grip[41];
   int ret = 0;
 
   if (DBG_COMMAND)
     log_debug ("[ssh-agent] registering identity `%s'\n", key_grip);
 
-  err = ssh_key_grip (NULL, key, key_grip);
+  err = ssh_key_grip (NULL, key, key_grip_raw);
   if (err)
     goto out;
 
-  ret = agent_key_available (key_grip);
+  ret = agent_key_available (key_grip_raw);
   if (! ret)
     goto out;
 
-  err = get_passphrase ("foo", sizeof (passphrase), passphrase);
+  for (i = 0; i < 20; i++)
+    sprintf (&key_grip[i * 2], "%02X", key_grip_raw[i]);
+  strncpy (strchr (description, '0'), key_grip, 40);
+
+  err = get_passphrase (description,
+			sizeof (passphrase), passphrase);
   if (err)
     goto out;
 
@@ -1279,11 +1300,11 @@ ssh_identity_register (ssh_key_secret_t *key, int ttl)
   if (err)
     goto out;
 
-  err = agent_write_private_key (key_grip, buffer, buffer_n, 0);
+  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0);
   if (err)
     goto out;
 
-  err = agent_put_cache (key_grip, passphrase, ttl);
+  err = agent_put_cache (key_grip_raw, passphrase, ttl);
   if (err)
     goto out;
 
@@ -1332,7 +1353,7 @@ ssh_handler_add_identity (ctrl_t ctrl,
   if (err)
     goto out;
 
-  err = gpg_stream_read_string (request, &comment, NULL);
+  err = gpg_stream_read_string (request, 0, &comment, NULL);
   if (err)
     goto out;
   
@@ -1382,8 +1403,21 @@ ssh_handler_add_identity (ctrl_t ctrl,
  out:
 
   free (comment);
-  
-  //ssh_key_destroy (key); FIXME
+
+  switch (key.type)
+    {
+    case SSH_KEY_TYPE_RSA:
+      gcry_mpi_release (key.material.rsa.n);
+      gcry_mpi_release (key.material.rsa.e);
+      gcry_mpi_release (key.material.rsa.d);
+      gcry_mpi_release (key.material.rsa.p);
+      gcry_mpi_release (key.material.rsa.q);
+      gcry_mpi_release (key.material.rsa.u);
+      break;
+
+    case SSH_KEY_TYPE_NONE:
+      break;
+    }
 
   gpg_stream_write_byte (response,
 			 err
@@ -1405,7 +1439,7 @@ ssh_handler_remove_identity (ctrl_t ctrl,
   if (DBG_COMMAND)
     log_debug ("[ssh-agent] remove identity\n");
   
-  err = gpg_stream_read_string (request, &key_blob, NULL);
+  err = gpg_stream_read_string (request, 0, &key_blob, NULL);
   if (err)
     goto out;
 
@@ -1419,7 +1453,7 @@ ssh_handler_remove_identity (ctrl_t ctrl,
 
  out:
 
-  free (key_blob);
+  gcry_free (key_blob);
   
   err = gpg_stream_write_byte (response,
 			       err
@@ -1567,9 +1601,25 @@ gpg_stream_eof_p (gpg_stream_t stream, unsigned int *eof)
   return err;
 }
 
+/* FIXME: Libgcrypt should provide this function.  */
+static void *
+gcry_realloc_secure (void *mem, size_t size)
+{
+  if (! mem)
+    return gcry_malloc_secure (size);
+  else
+    return gcry_realloc (mem, size);
+}
+  
 void
 start_command_handler_ssh (int sock_client)
 {
+  gpg_stream_spec_mem_t stream_spec_secure = { NULL, 0, 1,
+					       gcry_realloc_secure,
+					       gcry_free };
+  gpg_stream_spec_mem_t stream_spec = { NULL, 0, 1,
+					gcry_realloc,
+					gcry_free };
   struct server_control_s ctrl =  { NULL };
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
   gpg_stream_t stream_sock = NULL;
@@ -1598,24 +1648,28 @@ start_command_handler_ssh (int sock_client)
       if (err || eof)
 	break;
 
-      /* Create memory streams for request/response data.  */
+      /* Create memory streams for request/response data.  The entire
+	 request will be stored in secure memory, since it might
+	 contain secret key material.  The response does not have to
+	 be stored in secure memory, since we never give out secret
+	 keys.  */
       stream_request = NULL;
-      err = gpg_stream_create (&stream_request, NULL,
+      err = gpg_stream_create (&stream_request, &stream_spec_secure,
 			       GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
 			       gpg_stream_functions_mem);
       if (err)
 	break;
       stream_response = NULL;
-      err = gpg_stream_create (&stream_response, NULL,
+      err = gpg_stream_create (&stream_response, &stream_spec,
 			       GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
 			       gpg_stream_functions_mem);
       if (err)
 	break;
 
       /* Retrieve request length.  */
-      free (request);
+      gcry_free (request);
       request = NULL;
-      err = gpg_stream_read_string (stream_sock, &request, &request_size);
+      err = gpg_stream_read_string (stream_sock, 1, &request, &request_size);
       if (err)
 	break;
 
@@ -1666,7 +1720,7 @@ start_command_handler_ssh (int sock_client)
   gpg_stream_destroy (stream_sock);
   gpg_stream_destroy (stream_request);
   gpg_stream_destroy (stream_response);
-  free (request);
+  gcry_free (request);
 
   if (DBG_COMMAND)
     log_debug ("[ssh-agent] Leaving ssh command handler: %s\n", gpg_strerror (err));

@@ -1,3 +1,16 @@
+2004-07-27  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c: Use gcrypt memory allocators, use secure memory
+	where necessary.
+
+2004-07-26  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (data_sign): Do not forget to unsigned char when
+	constructing human-readable key grip.
+
+	* Makefile.am (gpg_agent_SOURCES): Removed: buffer.c, buffer.h;
+	updated Libgpg-stream.
+
 2004-07-24  Moritz Schulte  <moritz@g10code.com>
 
 	* gpg-stream-config.h: New file (was missing before).
