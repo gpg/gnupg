@@ -647,7 +647,6 @@ agent_get_passphrase ( u32 *keyid, int mode )
           for (i=3; i < nread && hexdigitp (pw+i); i+=2)
             pw[pwlen++] = xtoi_2 (pw+i);
           pw[pwlen] = 0; /* make a C String */
-          log_debug ("passphrase=`%s'\n", pw);
           agent_close (fd);
           free_public_key( pk );
           return pw;

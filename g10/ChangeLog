@@ -4,7 +4,8 @@
 	gpg-agent.  New arg to return the used protocol version.
 	(agent_get_passphrase): Implemented new protocol here.
 	(passphrase_clear_cache): Ditto.
-
+	(readline): New.
+	
 2002-01-15  Timo Schulz  <ts@winpt.org>
 
 	* encode.c (encode_crypt_files): Fail if --output is used.
