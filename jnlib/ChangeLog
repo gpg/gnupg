@@ -1,3 +1,8 @@
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (writen, fun_writer, fun_closer): New.
+	(log_set_file): Add feature to log to a socket.
+
 2003-11-13  Werner Koch  <wk@gnupg.org>
 
 	* strlist.c (strlist_copy): New.

@@ -1,3 +1,8 @@
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for funopen and fopencookie as part of the
+	jnlib checks.
+
 2003-12-09  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Add a min_automake_version.

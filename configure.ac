@@ -698,7 +698,7 @@ AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 # These are needed by libjnlib - fixme: we should have macros for them
 AC_CHECK_FUNCS(memicmp stpcpy strlwr strtoul memmove stricmp strtol)
 AC_CHECK_FUNCS(getrusage setrlimit stat setlocale)
-AC_CHECK_FUNCS(flockfile funlockfile)
+AC_CHECK_FUNCS(flockfile funlockfile fopencookie funopen)
 
 AC_REPLACE_FUNCS(vasprintf)
 AC_REPLACE_FUNCS(fopencookie)
@@ -706,6 +706,7 @@ AC_REPLACE_FUNCS(mkdtemp)
 AC_REPLACE_FUNCS(fseeko ftello)
 AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(putc_unlocked)
+
 
 
 

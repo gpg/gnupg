@@ -29,12 +29,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <errno.h>
 #include <time.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <unistd.h>
 #ifdef __MINGW32__
-  #include <io.h>
+#  include <io.h>
 #endif
 
 #define JNLIB_NEED_LOG_LOGV 1
@@ -84,22 +87,173 @@ log_inc_errorcount (void)
    errorcount++;
 }
 
-void
-log_set_file( const char *name )
-{
-    FILE *fp = (name && strcmp(name,"-"))? fopen(name, "a") : stderr;
-    if( !fp ) {
-	fprintf(stderr, "failed to open log file `%s': %s\n",
-						name, strerror(errno));
-	return;
-    }
-    setvbuf( fp, NULL, _IOLBF, 0 );
 
-    if (logstream && logstream != stderr && logstream != stdout)
-      fclose( logstream );
-    logstream = fp;
-    missing_lf = 0;
+/* The follwing 3 functions are used by funopen to write logs to a
+   socket. */
+#if defined (HAVE_FOPENCOOKIE) || defined (HAVE_FUNOPEN)
+struct fun_cookie_s {
+  int fd;
+  int quiet;
+  char name[1];
+};
+
+/* Write NBYTES of BUF to file descriptor FD. */
+static int
+writen (int fd, const unsigned char *buf, size_t nbytes)
+{
+  size_t nleft = nbytes;
+  int nwritten;
+  
+  while (nleft > 0)
+    {
+      nwritten = write (fd, buf, nleft);
+      if (nwritten < 0 && errno == EINTR)
+        continue;
+      if (nwritten < 0)
+        return -1;
+      nleft -= nwritten;
+      buf = buf + nwritten;
+    }
+  
+  return 0;
 }
+
+
+static int 
+fun_writer (void *cookie_arg, const char *buffer, size_t size)
+{
+  struct fun_cookie_s *cookie = cookie_arg;
+
+  /* Note that we always try to reconnect to the socket but print error
+     messages only the first time an error occured. */
+  if (cookie->fd == -1 )
+    {
+      /* Note yet open or meanwhile closed due to an error. */
+      struct sockaddr_un addr;
+      size_t addrlen;
+
+      cookie->fd = socket (PF_LOCAL, SOCK_STREAM, 0);
+      if (cookie->fd == -1)
+        {
+          if (!cookie->quiet)
+            fprintf (stderr, "failed to create socket for logging: %s\n",
+                     strerror(errno));
+          goto failure;
+        }
+      
+      memset (&addr, 0, sizeof addr);
+      addr.sun_family = PF_LOCAL;
+      strncpy (addr.sun_path, cookie->name, sizeof (addr.sun_path)-1);
+      addr.sun_path[sizeof (addr.sun_path)-1] = 0;
+      addrlen = (offsetof (struct sockaddr_un, sun_path)
+                 + strlen (addr.sun_path) + 1);
+      
+      if (connect (cookie->fd, (struct sockaddr *) &addr, addrlen) == -1)
+        {
+          if (!cookie->quiet)
+            fprintf (stderr, "can't connect to `%s': %s\n",
+                     cookie->name, strerror(errno));
+          close (cookie->fd);
+          cookie->fd = -1;
+          goto failure;
+        }
+      /* Connection established. */
+      cookie->quiet = 0;
+    }
+  
+  if (!writen (cookie->fd, buffer, size))
+    return size; /* Okay. */ 
+
+  fprintf (stderr, "error writing to `%s': %s\n",
+           cookie->name, strerror(errno));
+  close (cookie->fd);
+  cookie->fd = -1;
+
+ failure: 
+  if (!cookie->quiet)
+    {
+      fputs ("switching logging to stderr\n", stderr);
+      cookie->quiet = 1;
+    }
+
+  fwrite (buffer, size, 1, stderr);
+  return size;
+}
+
+static int
+fun_closer (void *cookie_arg)
+{
+  struct fun_cookie_s *cookie = cookie_arg;
+
+  if (cookie->fd != -1)
+    close (cookie->fd);
+  jnlib_free (cookie);
+  return 0;
+}
+#endif /* HAVE_FOPENCOOKIE || HAVE_FUNOPEN */
+
+
+
+
+/* Set the file to write log to.  The sepcial names NULL and "_" may
+   be used to select stderr and names formatted like
+   "socket:///home/foo/mylogs" may be used to write the logging to the
+   socket "/home/foo/mylogs".  If the connection to the socket fails
+   or a write error is detected, the function writes to stderr and
+   tries the next time again to connect the socket.
+  */
+void
+log_set_file (const char *name) 
+{
+  FILE *fp;
+
+  if (name && !strncmp (name, "socket://", 9) && name[9])
+    {
+#if defined (HAVE_FOPENCOOKIE)||  defined (HAVE_FUNOPEN)
+      struct fun_cookie_s *cookie;
+
+      cookie = jnlib_xmalloc (sizeof *cookie + strlen (name+9));
+      cookie->fd = -1;
+      cookie->quiet = 0;
+      strcpy (cookie->name, name+9);
+
+#ifdef HAVE_FOPENCOOKIE
+      {
+        cookie_io_functions_t io = { NULL };
+        io.write = fun_writer;
+        io.close = fun_closer;
+
+        fp = fopencookie (cookie, "w", io);
+      }
+#else /*!HAVE_FOPENCOOKIE*/
+      {
+        fp = funopen (cookie, NULL, fun_writer, NULL, fun_closer);
+      }
+#endif /*!HAVE_FOPENCOOKIE*/
+#else /* Neither fopencookie nor funopen. */
+      {
+        fprintf (stderr, "system does not support logging to a socket - "
+                 "using stderr\n");
+        fp = stderr;
+      }
+#endif /* Neither fopencookie nor funopen. */
+    }
+  else
+    fp = (name && strcmp(name,"-"))? fopen (name, "a") : stderr;
+  if (!fp)
+    {
+      fprintf (stderr, "failed to open log file `%s': %s\n",
+               name? name:"[stderr]", strerror(errno));
+      return;
+    }
+  setvbuf (fp, NULL, _IOLBF, 0);
+  
+  if (logstream && logstream != stderr && logstream != stdout)
+    fclose (logstream);
+  logstream = fp;
+  missing_lf = 0;
+}
+
 
 void
 log_set_fd (int fd)
@@ -220,6 +374,7 @@ do_logv( int level, const char *fmt, va_list arg_ptr )
     case JNLIB_LOG_DEBUG: fputs("DBG: ", logstream ); break;
     default: fprintf(logstream,"[Unknown log level %d]: ", level ); break;
     }
+
 
   if (fmt)
     {
