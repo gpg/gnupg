@@ -290,9 +290,8 @@ make_printable_string( const byte *p, size_t n, int delim )
     return buffer;
 }
 
-
 int
-answer_is_yes( const char *s )
+answer_is_yes_no_default( const char *s, int def_answer )
 {
     const char *long_yes = _("yes");
     const char *short_yes = _("yY");
@@ -314,9 +313,14 @@ answer_is_yes( const char *s )
 	return 1;
     if( *s && strchr( "yY", *s ) && !s[1] )
 	return 1;
-    return 0;
+    return def_answer;
 }
 
+int
+answer_is_yes( const char *s )
+{
+  return answer_is_yes_no_default(s,0);
+}
 
 /****************
  * Return 1 for yes, -1 for quit, or 0 for no
