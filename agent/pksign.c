@@ -44,7 +44,7 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
   asnlen = DIM(asn);
   if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
     {
-      log_error ("No object identifier for algo %d\n", algo);
+      log_error ("no object identifier for algo %d\n", algo);
       return GNUPG_Internal_Error;
     }
 
@@ -106,28 +106,37 @@ agent_pksign (CTRL ctrl, FILE *outfp)
       goto leave;
     }
 
-  /* put the hash into a sexp FIXME: this belongs into libgcrypt/divert-scd.c*/
-  rc = do_encode_md (ctrl->digest.value,
-                     ctrl->digest.valuelen,
-                     ctrl->digest.algo,
-                     gcry_pk_get_nbits (s_skey),
-                     &frame);
-  if (rc)
-    goto leave;
-  if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
-    BUG ();
-
   if (!s_skey)
     { /* divert operation to the smartcard */
-      rc = divert_pksign (&s_sig, s_hash, shadow_info);
+      unsigned char *sigbuf;
+
+      rc = divert_pksign (ctrl->digest.value, 
+                          ctrl->digest.valuelen,
+                          ctrl->digest.algo,
+                          shadow_info, &sigbuf);
       if (rc)
         {
           log_error ("smartcard signing failed: %s\n", gnupg_strerror (rc));
           goto leave;
         }
+      len = gcry_sexp_canon_len (sigbuf, 0, NULL, NULL);
+      assert (len);
+      buf = sigbuf;
     }
   else
     { /* no smartcard, but a private key */
+
+      /* put the hash into a sexp */
+      rc = do_encode_md (ctrl->digest.value,
+                         ctrl->digest.valuelen,
+                         ctrl->digest.algo,
+                         gcry_pk_get_nbits (s_skey),
+                         &frame);
+      if (rc)
+        goto leave;
+      if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
+        BUG ();
+
       if (DBG_CRYPTO)
         {
           log_debug ("skey: ");
@@ -142,19 +151,19 @@ agent_pksign (CTRL ctrl, FILE *outfp)
           rc = map_gcry_err (rc);
           goto leave;
         }
-    }
 
-  if (DBG_CRYPTO)
-    {
-      log_debug ("result: ");
-      gcry_sexp_dump (s_sig);
-    }
+      if (DBG_CRYPTO)
+        {
+          log_debug ("result: ");
+          gcry_sexp_dump (s_sig);
+        }
 
-  len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
-  buf = xmalloc (len);
-  len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, buf, len);
-  assert (len);
+      len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, NULL, 0);
+      assert (len);
+      buf = xmalloc (len);
+      len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, buf, len);
+      assert (len);
+    }
 
   /* FIXME: we must make sure that no buffering takes place or we are
      in full control of the buffer memory (easy to do) - should go

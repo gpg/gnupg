@@ -1,3 +1,15 @@
+2002-03-05  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (inq_needpin): New.
+	(agent_card_pksign): Add getpin_cb args.
+
+2002-03-04  Werner Koch  <wk@gnupg.org>
+
+	* pksign.c (agent_pksign): Changed how the diversion is done.
+	* divert-scd.c (divert_pksign): Change interface and implemented it.
+	(encode_md_for_card): New.
+	* call-scd.c (agent_card_pksign): New.
+
 2002-02-28  Werner Koch  <wk@gnupg.org>
 
 	* pksign.c (agent_pksign): Detect whether a Smartcard is to be

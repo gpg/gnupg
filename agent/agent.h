@@ -151,14 +151,19 @@ int agent_marktrusted (const char *name, const char *fpr, int flag);
 
 
 /*-- divert-scd.c --*/
-int divert_pksign (GCRY_SEXP *s_sig, GCRY_SEXP s_hash,
-                   const char *shadow_info);
+int divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
+                   const char *shadow_info, unsigned char **r_sig);
 int divert_pkdecrypt (GCRY_SEXP *s_plain, GCRY_SEXP s_cipher,
                       const char *shadow_info);
 
 /*-- call-scd.c --*/
 int agent_card_learn (void);
 int agent_card_serialno (char **r_serialno);
+int agent_card_pksign (const char *keyid,
+                       int (*getpin_cb)(void *, const char *, char*, size_t),
+                       void *getpin_cb_arg,
+                       const unsigned char *indata, size_t indatalen,
+                       char **r_buf, size_t *r_buflen);
 
 
 #endif /*AGENT_H*/

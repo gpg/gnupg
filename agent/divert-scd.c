@@ -126,20 +126,135 @@ ask_for_card (const unsigned char *shadow_info, char **r_kid)
 }
 
 
+/* fixme: this should be moved to libgcrypt and only be used if the
+   smartcard does not support pkcs-1 itself */
+static int
+encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
+                    unsigned int nbits, unsigned char **r_val, size_t *r_len)
+{
+  int nframe = (nbits+7) / 8;
+  byte *frame;
+  int i, n;
+  byte asn[100];
+  size_t asnlen;
+
+  asnlen = DIM(asn);
+  if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
+    {
+      log_error ("no object identifier for algo %d\n", algo);
+      return GNUPG_Internal_Error;
+    }
+
+  if (digestlen + asnlen + 4  > nframe )
+    {
+      log_error ("can't encode a %d bit MD into a %d bits frame\n",
+                 (int)(digestlen*8), (int)nbits);
+      return GNUPG_Internal_Error;
+    }
+  
+  /* We encode the MD in this way:
+   *
+   *	   0  1 PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
+   *
+   * PAD consists of FF bytes.
+   */
+  frame = xtrymalloc (nframe);
+  if (!frame)
+    return GNUPG_Out_Of_Core;
+  n = 0;
+  frame[n++] = 0;
+  frame[n++] = 1; /* block type */
+  i = nframe - digestlen - asnlen -3 ;
+  assert ( i > 1 );
+  memset ( frame+n, 0xff, i ); n += i;
+  frame[n++] = 0;
+  memcpy ( frame+n, asn, asnlen ); n += asnlen;
+  memcpy ( frame+n, digest, digestlen ); n += digestlen;
+  assert ( n == nframe );
+  if (DBG_CRYPTO)
+    log_printhex ("encoded hash:", frame, nframe);
+      
+  *r_val = frame;
+  *r_len = nframe;
+  return 0;
+}
+
+
+/* Callback used to ask for the PIN which should be set into BUF.  The
+   buf has been allocated by the caller and is of size MAXBUF which
+   includes the terminating null.  The function should return an UTF-8
+   string with the passphrase, the buffer may optioanlly be padded
+   with arbitrary characters */
+static int 
+getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
+{
+  struct pin_entry_info_s *pi;
+  int rc;
+  int tries = 0;
+  const char *errtext;
+  
+  assert (!opaque);
+
+  if (maxbuf < 2)
+    return GNUPG_Invalid_Value;
+
+  /* FIXME: keep PI and TRIES in OPAQUE */
+  pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
+  pi->max_length = maxbuf-1;
+  pi->min_digits = 0;  /* we want a real passphrase */
+  pi->max_digits = 8;
+  pi->max_tries = 3;
+
+  errtext = NULL;
+  do
+    {
+      rc = agent_askpin (info, errtext, pi);
+      if (!rc)
+        {
+          strncpy (buf, pi->pin, maxbuf-1);
+          buf[maxbuf-1] = 0;
+          xfree (pi);
+          return 0;
+        }
+      errtext = pi->min_digits? trans ("Bad PIN") : trans ("Bad Passphrase");
+    }
+  while ((rc == GNUPG_Bad_Passphrase || rc == GNUPG_Bad_PIN)
+         && tries++ < 3);
+  xfree (pi);
+  return rc;
+}
+
+
+
 
 int
-divert_pksign (GCRY_SEXP *s_sig, GCRY_SEXP s_hash, const char *shadow_info)
+divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
+               const char *shadow_info, unsigned char **r_sig)
 {
   int rc;
   char *kid;
+  size_t siglen;
+  char *sigval;
+  unsigned char *data;
+  size_t ndata;
 
   rc = ask_for_card (shadow_info, &kid);
   if (rc)
     return rc;
 
- 
+  rc = encode_md_for_card (digest, digestlen, algo, 1024 /* fixme*/,
+                           &data, &ndata);
+  if (rc)
+    return rc;
+
+  rc = agent_card_pksign (kid, getpin_cb, NULL,
+                          data, ndata, &sigval, &siglen);
+  if (!rc)
+    *r_sig = sigval;
+  xfree (data);
   xfree (kid);
-  return GNUPG_Not_Implemented;
+  
+  return rc;
 }
 
 

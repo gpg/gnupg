@@ -46,6 +46,80 @@ struct learn_parm_s {
   char *buffer;
 };
 
+struct inq_needpin_s {
+  ASSUAN_CONTEXT ctx;
+  int (*getpin_cb)(void *, const char *, char*, size_t);
+  void *getpin_cb_arg;
+};
+
+struct membuf {
+  size_t len;
+  size_t size;
+  char *buf;
+  int out_of_core;
+};
+
+
+
+/* A simple implemnation of a dynamic buffer.  Use init_membuf() to
+   create a buffer, put_membuf to append bytes and get_membuf to
+   release and return the buffer.  Allocation errors are detected but
+   only returned at the final get_membuf(), this helps not to clutter
+   the code with out of core checks.  */
+
+static void
+init_membuf (struct membuf *mb, int initiallen)
+{
+  mb->len = 0;
+  mb->size = initiallen;
+  mb->out_of_core = 0;
+  mb->buf = xtrymalloc (initiallen);
+  if (!mb->buf)
+      mb->out_of_core = 1;
+}
+
+static void
+put_membuf (struct membuf *mb, const void *buf, size_t len)
+{
+  if (mb->out_of_core)
+    return;
+
+  if (mb->len + len >= mb->size)
+    {
+      char *p;
+      
+      mb->size += len + 1024;
+      p = xtryrealloc (mb->buf, mb->size);
+      if (!p)
+        {
+          mb->out_of_core = 1;
+          return;
+        }
+      mb->buf = p;
+    }
+  memcpy (mb->buf + mb->len, buf, len);
+  mb->len += len;
+}
+
+static void *
+get_membuf (struct membuf *mb, size_t *len)
+{
+  char *p;
+
+  if (mb->out_of_core)
+    {
+      xfree (mb->buf);
+      mb->buf = NULL;
+      return NULL;
+    }
+
+  p = mb->buf;
+  *len = mb->len;
+  mb->buf = NULL;
+  mb->out_of_core = 1; /* don't allow a reuse */
+  return p;
+}
+
 
 
 
@@ -216,6 +290,116 @@ agent_card_serialno (char **r_serialno)
   return 0;
 }
 
+
+static AssuanError
+membuf_data_cb (void *opaque, const void *buffer, size_t length)
+{
+  struct membuf *data = opaque;
+
+  put_membuf (data, buffer, length);
+  return 0;
+}
+  
+/* Handle the NEEDPIN inquiry. */
+static AssuanError
+inq_needpin (void *opaque, const char *line)
+{
+  struct inq_needpin_s *parm = opaque;
+  char *pin;
+  size_t pinlen;
+  int rc;
+
+  if (!(!strncmp (line, "NEEDPIN", 7) && (line[7] == ' ' || !line[7])))
+    {
+      log_error ("unsupported inquiry `%s'\n", line);
+      return ASSUAN_Inquire_Unknown;
+    }
+  line += 7;
+
+  pinlen = 90;
+  pin = gcry_malloc_secure (pinlen);
+  if (!pin)
+    return ASSUAN_Out_Of_Core;
+
+  rc = parm->getpin_cb (parm->getpin_cb_arg, line, pin, pinlen);
+  if (rc)
+    rc = ASSUAN_Canceled;
+  if (!rc)
+    rc = assuan_send_data (parm->ctx, pin, pinlen);
+  xfree (pin);
+
+  return rc;
+}
 
 
+
+/* Create a signature using the current card */
+int
+agent_card_pksign (const char *keyid,
+                   int (*getpin_cb)(void *, const char *, char*, size_t),
+                   void *getpin_cb_arg,
+                   const unsigned char *indata, size_t indatalen,
+                   char **r_buf, size_t *r_buflen)
+{
+  int rc, i;
+  char *p, line[ASSUAN_LINELENGTH];
+  struct membuf data;
+  struct inq_needpin_s inqparm;
+  size_t len;
+  unsigned char *sigbuf;
+  size_t sigbuflen;
+
+  *r_buf = NULL;
+  rc = start_scd ();
+  if (rc)
+    return rc;
+
+  if (indatalen*2 + 50 > DIM(line))
+    return seterr (General_Error);
+
+  sprintf (line, "SETDATA ");
+  p = line + strlen (line);
+  for (i=0; i < indatalen ; i++, p += 2 )
+    sprintf (p, "%02X", indata[i]);
+  rc = assuan_transact (scd_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  init_membuf (&data, 1024);
+  inqparm.ctx = scd_ctx;
+  inqparm.getpin_cb = getpin_cb;
+  inqparm.getpin_cb_arg = getpin_cb_arg;
+  snprintf (line, DIM(line)-1, "PKSIGN %s", keyid);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (scd_ctx, line,
+                        membuf_data_cb, &data,
+                        inq_needpin, &inqparm,
+                        NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return map_assuan_err (rc);
+    }
+  sigbuf = get_membuf (&data, &sigbuflen);
+
+  /* create an S-expression from it which is formatted like this:
+     "(7:sig-val(3:rsa(1:sSIGBUFLEN:SIGBUF)))" */
+  *r_buflen = 21 + 11 + sigbuflen + 4;
+  *r_buf = xtrymalloc (*r_buflen);
+  if (!*r_buf)
+    {
+      xfree (*r_buf);
+      return GNUPG_Out_Of_Core;
+    }
+  p = stpcpy (*r_buf, "(7:sig-val(3:rsa(1:s" );
+  sprintf (p, "%u:", (unsigned int)sigbuflen);
+  p += strlen (p);
+  memcpy (p, sigbuf, sigbuflen);
+  p += sigbuflen;
+  strcpy (p, ")))");
+  xfree (sigbuf);
+
+  assert (gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL));
+  return 0;
+}
 
