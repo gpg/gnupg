@@ -1625,6 +1625,30 @@ proc_tree( CTX c, KBNODE node )
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
+	int multiple_ok=1;
+
+	n1=find_next_kbnode(node, PKT_SIGNATURE);
+	if(n1)
+	  {
+	    byte class=sig->sig_class;
+	    byte hash=sig->digest_algo;
+
+	    for(; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE)))
+	      {
+		/* We can't currently handle multiple signatures of
+		   different classes or digests (we'd pretty much have
+		   to run a different hash context for each), but if
+		   they are all the same, make an exception. */
+		if(n1->pkt->pkt.signature->sig_class!=class
+		   || n1->pkt->pkt.signature->digest_algo!=hash)
+		  {
+		    multiple_ok=0;
+		    log_info(_("WARNING: multiple signatures detected.  "
+			       "Only the first will be checked.\n"));
+		    break;
+		  }
+	      }
+	  }
 
 	if( sig->sig_class != 0x00 && sig->sig_class != 0x01 )
 	    log_info(_("standalone signature of class 0x%02x\n"),
@@ -1686,8 +1710,11 @@ proc_tree( CTX c, KBNODE node )
 	else if (!opt.quiet)
 	    log_info(_("old style (PGP 2.x) signature\n"));
 
-	for( n1 = node; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )) )
+	if(multiple_ok)
+	  for( n1 = node; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )) )
 	    check_sig_and_print( c, n1 );
+	else
+	  check_sig_and_print( c, node );
     }
     else {
         dump_kbnode (c->list);

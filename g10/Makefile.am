@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
@@ -27,7 +27,7 @@ libexecdir = @libexecdir@/@PACKAGE@
 if ! HAVE_DOSISH_SYSTEM
 AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
 endif
-needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a @CAPLIBS@
+needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgv
@@ -95,14 +95,9 @@ gpg_SOURCES  = g10.c		\
 	      photoid.c photoid.h \
 	      exec.c exec.h
 
-
-
 gpgv_SOURCES = gpgv.c           \
 	      $(common_source)  \
 	      verify.c          
-
-
-
 
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \
@@ -111,9 +106,9 @@ gpgv_SOURCES = gpgv.c           \
 #	       ks-db.h \
 #	       $(common_source)
 
-LDADD =  $(needed_libs) @ZLIBS@ @INTLLIBS@
+LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@
 # gpg gets LIBOBJS to add in mkdtemp if the platform doesn't have it
-gpg_LDADD = @LIBOBJS@ $(LDADD) @EGDLIBS@
+gpg_LDADD = @LIBOBJS@ $(LDADD) @DLLIBS@ @EGDLIBS@
 
 $(PROGRAMS): $(needed_libs)
 
