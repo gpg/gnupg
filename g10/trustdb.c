@@ -2054,7 +2054,7 @@ upd_pref_record( PKT_signature *sig, TRUSTREC *drec,
 
 
 /****************
- * Note: A signature made with a secondayr key is not considered a
+ * Note: A signature made with a secondary key is not considered a
  *	 self-signature.
  */
 static void
@@ -2067,11 +2067,21 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
     ulong lid = drec->recnum;
 
     if( !*uidrecno ) {
-	/* fixme: handle direct key signatures */
-	log_error("key %08lX: signature without user id\n", (ulong)keyid[1] );
-	return;
+	switch( sig->sig_class ) {
+	  case 0x20:
+	  case 0x28: /* We do not need uids for [sub]key revications */
+	  case 0x18: /* or subkey binding */
+	    memset( &urec, 0, sizeof urec ); /* to catch errors */
+	    break;
+
+	  default:
+	    log_error("key %08lX: signature (class %02x) without user id\n",
+					 (ulong)keyid[1], sig->sig_class );
+	    return;
+	}
     }
-    read_record( *uidrecno, &urec, RECTYPE_UID );
+    else
+	read_record( *uidrecno, &urec, RECTYPE_UID );
 
     if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 	if( (sig->sig_class&~3) == 0x10 ) {
@@ -2099,12 +2109,19 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 		urec.dirty = 1;
 	    }
 	}
-	else {/* is revocation sig etc */
+	else if( sig->sig_class == 0x18 ) { /* key binding */
+	    /* FIXME */
+	}
+	else if( sig->sig_class == 0x20 ) { /* key revocation */
+	    /* FIXME */
+	}
+	else if( sig->sig_class == 0x28 ) { /* subkey revocation */
+	    /* FIXME */
+	}
+	else if( sig->sig_class == 0x30 ) { /* cert revocation */
 	    /* FIXME */
 	}
     }
-    else if( !*uidrecno )
-	; /* skip record with direct key signatures here */
     else if( (sig->sig_class&~3) == 0x10 ) {
 	/* We simply insert the signature into the sig records but
 	 * avoid duplicate ones.  We do not check them here because
@@ -2365,8 +2382,20 @@ upd_sig_record( PKT_signature *sig, TRUSTREC *drec,
 	}
 
     }
-    else {
-	/* handle other sig classes */
+    else if( sig->sig_class == 0x18 ) { /* key binding */
+	log_info(_("key %08lX: bogus key binding by %08lX\n"),
+				 (ulong)keyid[1], (ulong)sig->keyid[1] );
+    }
+    else if( sig->sig_class == 0x20 ) { /* key revocation */
+	log_info(_("key %08lX: bogus key revocation by %08lX\n"),
+				 (ulong)keyid[1], (ulong)sig->keyid[1] );
+    }
+    else if( sig->sig_class == 0x28 ) { /* subkey revocation */
+	log_info(_("key %08lX: bogus subkey revocation by %08lX\n"),
+				 (ulong)keyid[1], (ulong)sig->keyid[1] );
+    }
+    else if( sig->sig_class == 0x30 ) { /* cert revocation */
+	/* FIXME: a signator wants to revoke his certification signature */
     }
 
   leave:

@@ -128,6 +128,11 @@ B<--edit-key> I<name>
        Add a subkey to this key.
     B<delkey>
        Remove a subkey.
+    B<expire>
+       Change the key expiration time.	If a key is
+       select, the time of this key will be changed.
+       With no selection the key expiration of the
+       primary key is changed.
     B<passwd>
        Change the passphrase of the secret key.
     B<uid> I<n>
@@ -303,7 +308,16 @@ B<--status-fd> I<n>
     Write special status strings to the file descriptor I<n>.
 
 B<--no-comment>
-    Do not write comment packets.
+    Do not write comment packets.  This option affects only
+    the generation of secret keys.  Output of option packets
+    is disabled since version 0.4.2.
+
+B<--comment> I<string>
+    Use I<string> as comment string in clear text signatures.
+
+B<--set-filename> I<string>
+    Use I<string> as the name of file which is stored in
+    messages.
 
 B<--completes-needed> I<n>
     Number of completely trusted users to introduce a new
@@ -372,6 +386,15 @@ B<--passphrase-fd> I<n>
     0 for I<n>, the passphrase will be read from stdin.  This
     can only be used if only one passphrase is supplied.
     B<Don't use this option if you can avoid it>
+
+B<--rfc1991>
+    Try to be more RFC1991 (PGP 2.x) compliant.
+
+B<--force-v3-sigs>
+    OpenPGP states that a implemenation should generate
+    v4 signatures but PGP 5.x does only recognize such
+    signatures on key material.  This options forces
+    v3 signatures for signatures on data.
 
 B<--no-verbose>
     Reset verbose level to 0.

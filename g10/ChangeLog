@@ -1,3 +1,15 @@
+Sun Oct 18 11:49:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* sign.c (only_old_style): Add option force_v3_sigs
+	(sign_file): Fixed a bug in sig->version
+	(clearsign_file): Ditto.
+
+	* parse-packet.c (dump_sig_subpkt): New
+
+	* keyedit.c (menu_expire): New.
+	* free-packet.c (cmp_signatures): New
+
+
 Sat Oct 17 10:22:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* armor.c: changed output line length from 72 to 64.

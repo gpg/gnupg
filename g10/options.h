@@ -41,7 +41,7 @@ struct {
     int no_armor;
     int list_packets; /* list-packets mode */
     int def_cipher_algo;
-    int reserved1;
+    int force_v3_sigs;
     int def_digest_algo;
     int def_compress_algo;
     const char *def_secret_key;

@@ -78,7 +78,9 @@ int delete_key( const char *username, int secure );
 void keyedit_menu( const char *username, STRLIST locusr );
 
 /*-- keygen.c --*/
+u32 ask_expiredate(void);
 void generate_keypair(void);
+int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 

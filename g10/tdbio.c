@@ -962,7 +962,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	    rc = G10ERR_TRUSTDB;
 	}
 	break;
-      case RECTYPE_CACH:   /* cache record (FIXME)*/
+      case RECTYPE_CACH:   /* cache record */
 	rec->r.cache.lid    = buftoulong(p); p += 4;
 	memcpy(rec->r.cache.blockhash, p, 20); p += 20;
 	rec->r.cache.trustlevel = *p++;
@@ -990,7 +990,6 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 
 /****************
  * Write the record at RECNUM
- * FIXME: create/update keyhash record.
  */
 int
 tdbio_write_record( TRUSTREC *rec )
@@ -1081,7 +1080,7 @@ tdbio_write_record( TRUSTREC *rec )
 	ulongtobuf( p, rec->r.sdir.hintlist );
 	break;
 
-      case RECTYPE_CACH:   /* FIXME*/
+      case RECTYPE_CACH:
 	ulongtobuf(p, rec->r.cache.lid); p += 4;
 	memcpy(p, rec->r.cache.blockhash, 20); p += 20;
 	*p++ = rec->r.cache.trustlevel;

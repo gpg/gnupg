@@ -35,7 +35,7 @@
  * Create a lockfile with the given name. A TIMEOUT of 0
  * returns immediately, -1 waits forever (hopefully not), other
  * values are timeouts in milliseconds.
- * Returns: a char pointer used as handle for reelase lock
+ * Returns: a char pointer used as handle for release lock
  *	    or NULL in case of an error.
  *
  * Notes: This function creates a lock file in the same directory
@@ -43,7 +43,7 @@
  *	  A temporary file ".#lk.<pid>.<hostname> is used.
  *	  This function does nothing for Windoze.
  */
-int
+const char *
 make_dotlock( const char *file_to_lock, long timeout )
 {
     int rc=-1, fd=-1, pid;
@@ -61,7 +61,7 @@ make_dotlock( const char *file_to_lock, long timeout )
     if( !tname )
 	log_fatal( "could not create temporary lock file '%s'\n");
     log_debug( "dotlock_make: tmpname='%s'\n", tname );
-    chmod( tname, 0644 ); /* just in case an "umask" is set */
+    chmod( tname, 0644 ); /* just in case an umask is set */
     if( !(fd = open( tname, O_WRONLY )) )
 	log_fatal( "could not open temporary lock file '%s'\n", tname);
     if( write(fd, pidstr, 11 ) != 11 )
@@ -126,21 +126,21 @@ make_dotlock( const char *file_to_lock, long timeout )
 int
 release_dotlock( const char *lockfile )
 {
-    int pid = ReadLockfile( lockfile );
+    int pid = rad_lockfile( lockfile );
     if( pid == -1 ) {
-	Log_printf( LERROR, "ReleaseLock: lockfile error");
+	log_error( "release_dotlock: lockfile error");
 	return -1;
     }
     if( pid != getpid() ) {
-	Log_printf( LERROR, "ReleaseLock: not our lock (pid=%d)", pid);
+	log_error( "release_dotlock: not our lock (pid=%d)", pid);
 	return -1;
     }
-    if( remove(lockfile) ) {
-	Log_printf( LERROR, "ReleaseLock: error removing lockfile '%s'",
+    if( remove( lockfile ) ) {
+	log_error( "release_dotlock: error removing lockfile '%s'",
 							    lockfile);
 	return -1;
     }
-    Log_printf( LMESG, "ReleaseLock: released lockfile '%s'", lockfile);
+    log_debug( "release_dotlock: released lockfile '%s'", lockfile);
     return 0;
 }
 
@@ -156,12 +156,12 @@ read_lockfile( const char *name )
 
     if( (fd = open(name, O_RDONLY)) == -1 ) {
 	int e = errno;
-	Log_printf(LJUNK, "error opening lockfile '%s'", name );
-	errno = e;  /* restore errno */
+	log_debug("error opening lockfile '%s'", name );
+	errno = e;
 	return -1;
     }
     if( read(fd, pidstr, 10 ) != 10 ) {
-	Log_printf(LNOISE, "error reading lockfile '%s'", name );
+	log_debug("error reading lockfile '%s'", name );
 	close(fd);
 	errno = 0;
 	return -1;
@@ -169,7 +169,7 @@ read_lockfile( const char *name )
     close(fd);
     pid = atoi(pidstr);
     if( !pid || pid == -1 ) {
-	Log_printf(LERROR, "invalid pid %d in lockfile '%s'", pid, name );
+	log_error("invalid pid %d in lockfile '%s'", pid, name );
 	errno = 0;
 	return -1;
     }

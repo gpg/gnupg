@@ -137,6 +137,7 @@ enum cmd_and_opt_values { aNull = 0,
     oSetFilename,
     oComment,
     oThrowKeyid,
+    oForceV3Sigs,
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
@@ -205,6 +206,7 @@ static ARGPARSE_OPTS opts[] = {
   #endif
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
+    { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
  /* { oDryRun, "dry-run",   0, N_("do not make any changes") }, */
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
@@ -714,6 +716,7 @@ main( int argc, char **argv )
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
+	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;

@@ -273,6 +273,7 @@ PKT_secret_key *copy_secret_key( PKT_secret_key *d, PKT_secret_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *copy_user_id( PKT_user_id *d, PKT_user_id *s );
 int cmp_public_keys( PKT_public_key *d, PKT_public_key *s );
+int cmp_signatures( PKT_signature *a, PKT_signature *b );
 int cmp_public_secret_key( PKT_public_key *pk, PKT_secret_key *sk );
 int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 

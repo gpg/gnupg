@@ -610,7 +610,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
     for(k=keyblock; k; k = k->next ) {
 	if( k->pkt->pkttype == PKT_SIGNATURE
 	    && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
-	    && sig->sig_class <= 0x13
+	    && sig->sig_class <= 0x30
 	    && sig->keyid[0] == kid[0]
 	    && sig->keyid[1] == kid[1]
 	    && sig->version > 3 ) {
@@ -660,7 +660,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	}
 	else if( (pk || sk ) && k->pkt->pkttype == PKT_SIGNATURE
 		 && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
-		 && sig->sig_class <= 0x13 && sig->version > 3
+		 && sig->sig_class <= 0x30 && sig->version > 3
 		 && sig->keyid[0] == kid[0] && sig->keyid[1] == kid[1] ) {
 	    /* okay this is (the first) self-signature which can be used
 	     * FIXME: We should only use this if the signature is valid

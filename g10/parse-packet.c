@@ -608,6 +608,97 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 }
 
 
+static void
+dump_sig_subpkt( int hashed, int type, int critical,
+		 const char * buffer, size_t buflen, size_t length )
+{
+    const char *p=NULL;
+
+    printf("\t%s%ssubpkt %d len %u (", /*)*/
+	      critical ? "critical ":"",
+	      hashed ? "hashed ":"", type, (unsigned)length );
+    buffer++;
+    length--;
+    if( length > buflen ) {
+	printf("too short: buffer is only %u)\n", (unsigned)buflen );
+	return;
+    }
+    switch( type ) {
+      case SIGSUBPKT_SIG_CREATED:
+	if( length >= 4 )
+	    printf("sig created %s", strtimestamp( buffer_to_u32(buffer) ) );
+	break;
+      case SIGSUBPKT_SIG_EXPIRE:
+	if( length >= 4 )
+	    printf("sig expires %s", strtimestamp( buffer_to_u32(buffer) ) );
+	break;
+      case SIGSUBPKT_EXPORTABLE:
+	p = "exportable";
+	break;
+      case SIGSUBPKT_TRUST:
+	p = "trust signature";
+	break;
+      case SIGSUBPKT_REGEXP:
+	p = "regular expression";
+	break;
+      case SIGSUBPKT_REVOCABLE:
+	p = "revocable";
+	break;
+      case SIGSUBPKT_KEY_EXPIRE:
+	if( length >= 4 )
+	    printf("key expires %s", strtimestamp( buffer_to_u32(buffer) ) );
+	break;
+      case SIGSUBPKT_ARR:
+	p = "additional recipient request";
+	break;
+      case SIGSUBPKT_PREF_SYM:
+	p = "preferred symmetric algorithms";
+	break;
+      case SIGSUBPKT_REV_KEY:
+	p = "revocation key";
+	break;
+      case SIGSUBPKT_ISSUER:
+	if( length >= 8 )
+	    printf("issuer key ID %08lX%08lX",
+		      (ulong)buffer_to_u32(buffer),
+		      (ulong)buffer_to_u32(buffer+4) );
+	break;
+      case SIGSUBPKT_NOTATION:
+	p = "notation data";
+	break;
+      case SIGSUBPKT_PREF_HASH:
+	p = "preferred hash algorithms";
+	break;
+      case SIGSUBPKT_PREF_COMPR:
+	p = "preferred compression algorithms";
+	break;
+      case SIGSUBPKT_KS_FLAGS:
+	p = "key server preferences";
+	break;
+      case SIGSUBPKT_PREF_KS:
+	p = "preferred key server";
+	break;
+      case SIGSUBPKT_PRIMARY_UID:
+	p = "primary user id";
+	break;
+      case SIGSUBPKT_POLICY:
+	p = "policy URL";
+	break;
+      case SIGSUBPKT_KEY_FLAGS:
+	p = "key flags";
+	break;
+      case SIGSUBPKT_SIGNERS_UID:
+	p = "signer's user id";
+	break;
+      case SIGSUBPKT_PRIV_ADD_SIG:
+	p = "signs additional user id";
+	break;
+      default: p = "?"; break;
+    }
+
+    printf("%s)\n", p? p: "");
+}
+
 const byte *
 parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 {
@@ -648,32 +739,9 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	}
 	else
 	    critical = 0;
-	if( reqtype < 0 ) { /* list packets */
-	    printf("\t%ssubpacket %d of length %u (%s)\n",
-	    reqtype == SIGSUBPKT_LIST_HASHED ? "hashed ":"", type, (unsigned)n,
-	     type == SIGSUBPKT_SIG_CREATED ? "signature creation time"
-	   : type == SIGSUBPKT_SIG_EXPIRE  ? "signature expiration time"
-	   : type == SIGSUBPKT_EXPORTABLE  ? "exportable"
-	   : type == SIGSUBPKT_TRUST	   ? "trust signature"
-	   : type == SIGSUBPKT_REGEXP	   ? "regular expression"
-	   : type == SIGSUBPKT_REVOCABLE   ? "revocable"
-	   : type == SIGSUBPKT_KEY_EXPIRE  ? "key expiration time"
-	   : type == SIGSUBPKT_ARR	   ? "additional recipient request"
-	   : type == SIGSUBPKT_PREF_SYM    ? "preferred symmetric algorithms"
-	   : type == SIGSUBPKT_REV_KEY	   ? "revocation key"
-	   : type == SIGSUBPKT_ISSUER	   ? "issuer key ID"
-	   : type == SIGSUBPKT_NOTATION    ? "notation data"
-	   : type == SIGSUBPKT_PREF_HASH   ? "preferred hash algorithms"
-	   : type == SIGSUBPKT_PREF_COMPR  ? "preferred compression algorithms"
-	   : type == SIGSUBPKT_KS_FLAGS    ? "key server preferences"
-	   : type == SIGSUBPKT_PREF_KS	   ? "preferred key server"
-	   : type == SIGSUBPKT_PRIMARY_UID ? "primary user id"
-	   : type == SIGSUBPKT_POLICY	   ? "policy URL"
-	   : type == SIGSUBPKT_KEY_FLAGS   ? "key flags"
-	   : type == SIGSUBPKT_SIGNERS_UID ? "signer's user id"
-	   : type == SIGSUBPKT_PRIV_ADD_SIG? "signs additional user id"
-			      : "?");
-	}
+	if( reqtype < 0 ) /* list packets */
+	    dump_sig_subpkt( reqtype == SIGSUBPKT_LIST_HASHED,
+				    type, critical, buffer, buflen, n );
 	else if( type == reqtype )
 	    break; /* found */
 	buffer += n; buflen -=n;

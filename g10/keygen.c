@@ -51,8 +51,8 @@ write_uid( KBNODE root, const char *s )
 
 
 
-static int
-add_key_expire( PKT_signature *sig, void *opaque )
+int
+keygen_add_key_expire( PKT_signature *sig, void *opaque )
 {
     PKT_secret_key *sk = opaque;
     byte buf[8];
@@ -80,7 +80,7 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 {
     byte buf[8];
 
-    add_key_expire( sig, opaque );
+    keygen_add_key_expire( sig, opaque );
 
     buf[0] = CIPHER_ALGO_BLOWFISH;
     buf[1] = CIPHER_ALGO_CAST5;
@@ -176,7 +176,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 
     /* and make the signature */
     rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0,
-				    add_key_expire, sk );
+				    keygen_add_key_expire, sk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -481,7 +481,7 @@ ask_keysize( int algo )
 }
 
 
-static u32
+u32
 ask_expiredate()
 {
     char *answer;
@@ -495,7 +495,7 @@ ask_expiredate()
 		 "      <n>m = key expires in n months\n"
 		 "      <n>y = key expires in n years\n"));
     /* Note: The elgamal subkey for DSA has no exiration date because
-     * is must be signed with the DSA key and this one has the expiration
+     * it must be signed with the DSA key and this one has the expiration
      * date */
 
     answer = NULL;

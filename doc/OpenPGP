@@ -1,4 +1,4 @@
-		    GNUPG and OpenPGP
+		    GnuPG and OpenPGP
 		    =================
 
    The current OpenPGP draft expires 1999-02.
@@ -22,17 +22,21 @@
 
   Compatibility Notes
   ===================
-   GNUPG (>=0.4.1) is in compliance with OpenPGP despite these exeptions:
+   GnuPG (>=0.4.1) is in compliance with OpenPGP despite these exeptions:
 
     * (5.1) The critical bit in signature subpackets is currently
       ignored.	This will be fixed soon.
 
-    * (5.3) GNUPG has an option to use simple S2K for "Symmetric-Key
+
+    * (5.2) GnuPG generates V4 signatures for all V4 keys.  The option
+      --force-v3-sigs allows to override.
+
+    * (5.3) GnuPG has an option to use simple S2K for "Symmetric-Key
       Encrypted Session-Key Packets"; however a warning message is
       issued if this option is active.
 
     * (5.5.2) states that an implementaion MUST NOT create a v3 key
-      with an algorithm other than RSA.  GNUPG has an option to
+      with an algorithm other than RSA.  GnuPG has an option to
       create an ElGamal key in a v3 packet; the properties of such
       a key are as good as a v4 key.  RFC1991 does not specifiy how
       to create fingerprints for algorithms other than RSA and so it
@@ -46,7 +50,7 @@
       due to patent problems.
 
     * (12.1) states that an implementaion MUST NOT use a symmetric
-      algorithm which is not in the preference list.  GNUPG has an
+      algorithm which is not in the preference list.  GnuPG has an
       option to override this.
 
     * A special format of partial packet length exists for v3 packets

@@ -215,7 +215,7 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
 	    ndays = (u16)((pk->expiredate - pk->timestamp) / 86400L);
 	else
 	    ndays = 0;
-	write_16(a, 0 );
+	write_16(a, ndays );
     }
     iobuf_put(a, pk->pubkey_algo );
     n = pubkey_get_npkey( pk->pubkey_algo );

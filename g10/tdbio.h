@@ -55,7 +55,8 @@
 			   but we mark it to avoid duplicate checks */
 #define DIRF_REVOKED  8 /* the complete key has been revoked */
 
-#define KEYF_REVOKED  8 /* this key has been revoked (only useful on subkeys)*/
+#define KEYF_EXPIRED  4 /* this key is expired */
+#define KEYF_REVOKED  8 /* this key has been revoked */
 
 #define UIDF_CHECKED  1 /* user id has been checked - other bits are valid */
 #define UIDF_VALID    2 /* this is a valid user id */

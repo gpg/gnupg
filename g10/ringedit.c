@@ -62,6 +62,8 @@
 #include "options.h"
 #include "i18n.h"
 
+#undef HAVE_LIBGDBM  /* <--- not ready */
+
 struct resource_table_struct {
     int used;
     int secret; /* this is a secret keyring */
@@ -275,6 +277,7 @@ get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
 	    if( !filename || !strcmp( resource_table[i].fname, filename ) ) {
 		memset( kbpos, 0, sizeof *kbpos );
 		kbpos->resno = i;
+		kbpos->rt = resource_table[i].rt;
 		return 0;
 	    }
 	}

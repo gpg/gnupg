@@ -1,33 +1,15 @@
-    * change ringedit:
-	- avoid all copy operations
-	- delete for update by changing the packet type to a
-	  special unused packet. (export most know about this)
-	- do an append instead of an update or insert
-	- export may be used to compress a keyring.
-	- keep track of all offset in the trustbd and index them
-	  by keyid.
-	- If the lookup does not find a public key block at the
-	  stored offset disable this keyid.
-	- If the keyid was not found or is disabled, walk thru
-	  the pubring.
-	- use ftruncate to recover from keyring errors.
-	   maybe a new option to do this or simply mark the
-	   wrong part as unused.
-      This makes signature checks and imports much faster; only keys
-      given by a userid or a fingerprint (RSA only) have to walk tru
-      the ring.
 
-    * There is a new memory leak in update-trustdb
+    * There is a new memory leak in update-trustdb :-(
+
+    * Fix ;) revocation and expire stuff.
 
     * OpenBSD: dynamic loading with dlopen works on OpenBSD, but:
 	OpenBSD binaries are a.out, so every symbol begins with "_"
 
-    * use dld if we don't have dlopen.
-
     * should we flush the getkey.c caches while doing an import?
 
     * prefer a type 16 subkey for encryption because pgp cannot handle
-      type 20.
+      type 20?
 
     * calculation of marginals never yields a completely trusted key.
 
@@ -35,6 +17,11 @@
       it is ignored.
 
     * Exportable Certification Flag is ignored
+
+    * We need a maintainence pass over the trustdb which flags
+      signatures as expired if the key used to make the signature has
+      expired.	Maybe it is a good idea to store the exiration time
+      in the key record of the trustdb.
 
     * write a tool to extract selected keys from a file.
 
@@ -70,8 +57,6 @@
 
     * add an option to re-create a public key from a secret key; we
       can do this in trustdb.c:verify_own_keys.
-
-    * OpenBSD has sometimes problems reading from /dev/random.
 
     * change the fake_data stuff to mpi_set_opaque
 

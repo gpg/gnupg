@@ -1,5 +1,8 @@
 Noteworthy changes in version 0.4.2
 -----------------------------------
+
+    * This is only a snapshot: There are still a few bugs.
+
     * Fixed this huge memory leak.
 
     * Redesigned the trust database:  You should run "gpgm --check-trustdb".
@@ -25,6 +28,15 @@ Noteworthy changes in version 0.4.2
     * Some keyblocks created with old releases have a wrong sequence
       of packets, so that the keyservers don't accept these keys.
       Simply using "--edit-key" fixes the problem.
+
+    * New option --force-v3-sigs to generate signed messages which are
+      compatible to PGP 5.
+
+    * Add some code to support DLD (for non ELF systems) - but this is
+      not tested because my BSD box is currently broken.
+
+    * New command "expire" in the edit-key menu.
+
 
 
 Noteworthy changes in version 0.4.1

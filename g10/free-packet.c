@@ -395,6 +395,30 @@ cmp_public_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
     return 0;
 }
 
+
+
+int
+cmp_signatures( PKT_signature *a, PKT_signature *b )
+{
+    int n, i;
+
+    if( a->keyid[0] != b->keyid[0] )
+	return -1;
+    if( a->keyid[1] != b->keyid[1] )
+	return -1;
+    if( a->pubkey_algo != b->pubkey_algo )
+	return -1;
+
+    n = pubkey_get_nsig( a->pubkey_algo );
+    if( !n )
+	return -1; /* can't compare due to unknown algorithm */
+    for(i=0; i < n; i++ ) {
+	if( mpi_cmp( a->data[i] , b->data[i] ) )
+	    return -1;
+    }
+    return 0;
+}
+
 int
 cmp_user_ids( PKT_user_id *a, PKT_user_id *b )
 {

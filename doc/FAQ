@@ -103,6 +103,12 @@
     is choosen.  You may add an type 16 ElGamal key to your public
     key which is easy as your key signatures are still valid.
 
+ Q: Why is PGP 5.x not able to verify my messages.
+ A: PGP 5.x does not accept V4 signatures for data material but
+    OpenPGP requires generation of V3 signatures for all kind of
+    data.  Use the option "--force-v3-sigs" to generate V3 signatures
+    for data.
+
  Q: I can't delete a user id because it is already deleted on my
     public keyring.
  A: Because you can only select from the public key ring, there is

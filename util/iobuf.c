@@ -431,7 +431,7 @@ iobuf_close( IOBUF a )
     size_t dummy_len;
     int rc=0;
 
-    if( a->directfp ) {
+    if( a && a->directfp ) {
 	fclose( a->directfp );
 	if( DBG_IOBUF )
 	    log_debug("iobuf-close -> %p\n", a->directfp );

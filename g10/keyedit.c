@@ -48,6 +48,7 @@ static void show_fingerprint( PKT_public_key *pk );
 static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_select_uid( KBNODE keyblock, int index );
 static int menu_select_key( KBNODE keyblock, int index );
 static int count_uids( KBNODE keyblock );
@@ -478,7 +479,7 @@ keyedit_menu( const char *username, STRLIST locusr )
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
-	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
+	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
@@ -504,6 +505,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 	{ N_("deluid")  , cmdDELUID , 0, N_("delete user id") },
 	{ N_("addkey")  , cmdADDKEY , 1, N_("add a secondary key") },
 	{ N_("delkey")  , cmdDELKEY , 0, N_("delete a secondary key") },
+	{ N_("expire")  , cmdEXPIRE , 1, N_("change the expire date") },
 	{ N_("toggle")  , cmdTOGGLE , 1, N_("toggle between secret "
 					    "and public key listing") },
 	{ N_("t"     )  , cmdTOGGLE , 1, NULL },
@@ -758,6 +760,16 @@ keyedit_menu( const char *username, STRLIST locusr )
 		    if( sec_keyblock )
 		       sec_modified = 1;
 		}
+	    }
+	    break;
+
+	  case cmdEXPIRE:
+	    if( menu_expire( keyblock, sec_keyblock ) ) {
+		merge_keys_and_selfsig( sec_keyblock );
+		merge_keys_and_selfsig( keyblock );
+		sec_modified = 1;
+		modified = 1;
+		redisplay = 1;
 	    }
 	    break;
 
@@ -1146,6 +1158,117 @@ menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     commit_kbnode( &pub_keyblock );
     if( sec_keyblock )
 	commit_kbnode( &sec_keyblock );
+}
+
+
+
+static int
+menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+    int n1, rc;
+    u32 expiredate;
+    int mainkey=0;
+    PKT_secret_key *sk;    /* copy of the main sk */
+    PKT_public_key *main_pk, *sub_pk;
+    PKT_user_id *uid;
+    KBNODE node;
+    u32 keyid[2];
+
+    if( count_selected_keys( sec_keyblock ) ) {
+	tty_printf(_("Please remove selections from the secret keys.\n"));
+	return 0;
+    }
+
+    n1 = count_selected_keys( pub_keyblock );
+    if( n1 > 1 ) {
+	tty_printf(_("Please select at most one secondary key.\n"));
+	return 0;
+    }
+    else if( n1 )
+	tty_printf(_("Changing exiration time for a secondary key.\n"));
+    else {
+	tty_printf(_("Changing exiration time for the primary key.\n"));
+	mainkey=1;
+    }
+
+    expiredate = ask_expiredate();
+    /* fixme: check that expiredate is > key creation date */
+
+    /* get the secret key , make a copy and set the expiration time into
+     * that key (because keygen_add-key-expire expects it there)
+     */
+    node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
+    sk->expiredate = expiredate;
+
+    /* Now we can actually change the self signature(s) */
+    main_pk = sub_pk = NULL;
+    uid = NULL;
+    for( node=pub_keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+	    main_pk = node->pkt->pkt.public_key;
+	    keyid_from_pk( main_pk, keyid );
+	}
+	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		 && (node->flag & NODFLG_SELKEY ) )
+	    sub_pk = node->pkt->pkt.public_key;
+	else if( node->pkt->pkttype == PKT_USER_ID )
+	    uid = node->pkt->pkt.user_id;
+	else if( main_pk && node->pkt->pkttype == PKT_SIGNATURE ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+		&& (	(mainkey && uid && (sig->sig_class&~3) == 0x10)
+		     || (!mainkey && sig->sig_class == 0x18)  ) ) {
+		/* this is a selfsignature which should be replaced */
+		PKT_signature *newsig;
+		PACKET *newpkt;
+		KBNODE sn;
+
+		/* find the corresponding secret self-signature */
+		for( sn=sec_keyblock; sn; sn = sn->next ) {
+		    if( sn->pkt->pkttype == PKT_SIGNATURE
+			&& !cmp_signatures( sn->pkt->pkt.signature, sig ) )
+			break;
+		}
+		if( !sn )
+		    log_info(_("No corresponding signature in secret ring\n"));
+
+		/* create new self signature */
+		if( mainkey )
+		    rc = make_keysig_packet( &newsig, main_pk, uid, NULL,
+					     sk, 0x13, 0,
+					     keygen_add_std_prefs, sk );
+		else
+		    rc = make_keysig_packet( &newsig, main_pk, NULL, sub_pk,
+					     sk, 0x18, 0,
+					     keygen_add_key_expire, sk );
+		if( rc ) {
+		    log_error("make_keysig_packet failed: %s\n",
+						    g10_errstr(rc));
+		    free_secret_key( sk );
+		    return 0;
+		}
+		/* replace the packet */
+		newpkt = m_alloc_clear( sizeof *newpkt );
+		newpkt->pkttype = PKT_SIGNATURE;
+		newpkt->pkt.signature = newsig;
+		free_packet( node->pkt );
+		m_free( node->pkt );
+		node->pkt = newpkt;
+		if( sn ) {
+		    newpkt = m_alloc_clear( sizeof *newpkt );
+		    newpkt->pkttype = PKT_SIGNATURE;
+		    newpkt->pkt.signature = copy_signature( NULL, newsig );
+		    free_packet( sn->pkt );
+		    m_free( sn->pkt );
+		    sn->pkt = newpkt;
+		}
+	    }
+	}
+    }
+
+    free_secret_key( sk );
+    return 1;
 }
 
 
