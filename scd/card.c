@@ -359,6 +359,28 @@ card_enum_keypairs (CARD card, int idx,
 
 
 
+static int
+idstr_to_id (const char *idstr, struct sc_pkcs15_id *id)
+{
+  const char *s;
+  int n;
+
+  /* For now we only support the standard DF */
+  if (strncmp (idstr, "3F005015.", 9) ) 
+    return GNUPG_Invalid_Id;
+  for (s=idstr+9, n=0; hexdigitp (s); s++, n++)
+    ;
+  if (*s || (n&1))
+    return GNUPG_Invalid_Id; /* invalid or odd number of digits */
+  n /= 2;
+  if (!n || n > SC_PKCS15_MAX_ID_SIZE)
+    return GNUPG_Invalid_Id; /* empty or too large */
+  for (s=idstr+9, n=0; *s; s += 2, n++)
+    id->value[n] = xtoi_2 (s);
+  id->len = n;
+  return 0;
+}
+
 /* Read the certificate identified by CERTIDSTR which is the
    hexadecimal encoded ID of the certificate, prefixed with the string
    "3F005015.". The certificate is return in DER encoded form in CERT
@@ -370,25 +392,14 @@ card_read_cert (CARD card, const char *certidstr,
   struct sc_pkcs15_id certid;
   struct sc_pkcs15_cert_info *certinfo;
   struct sc_pkcs15_cert      *certder;
-  const char *s;
-  int rc, n;
+  int rc;
 
   if (!card || !certidstr || !card->p15card || !cert || !ncert)
     return GNUPG_Invalid_Value;
 
-  /* For now we only support the standard DF */
-  if (strncmp (certidstr, "3F005015.", 9) ) 
-    return GNUPG_Invalid_Id;
-  for (s=certidstr+9, n=0; hexdigitp (s); s++, n++)
-    ;
-  if (*s || (n&1))
-    return GNUPG_Invalid_Id; /* invalid or odd number of digits */
-  n /= 2;
-  if (!n || n > SC_PKCS15_MAX_ID_SIZE)
-    return GNUPG_Invalid_Id; /* empty or too large */
-  for (s=certidstr+9, n=0; *s; s += 2, n++)
-    certid.value[n] = xtoi_2 (s);
-  certid.len = n;
+  rc = idstr_to_id (certidstr, &certid);
+  if (rc)
+    return rc;
 
   rc = sc_pkcs15_find_cert_by_id (card->p15card, &certid, &certinfo);
   if (rc)
@@ -418,6 +429,75 @@ card_read_cert (CARD card, const char *certidstr,
 }
 
 
+
+/* Create the signature and return the allocated result in OUTDATA. */
+int 
+card_create_signature (CARD card, const char *keyidstr, int hashalgo,
+                       const void *indata, size_t indatalen,
+                       void **outdata, size_t *outdatalen )
+{
+  unsigned int cryptflags = 0;
+  struct sc_pkcs15_id keyid;
+  struct sc_pkcs15_prkey_info *key;
+  /*  struct sc_pkcs15_pin_info *pin;*/
+  int rc;
+  unsigned char *outbuf = NULL;
+  size_t outbuflen;
 
+  if (!card || !card->p15card || !indata || !indatalen
+      || !outdata || !outdatalen)
+    return GNUPG_Invalid_Value;
+  
+  if (hashalgo != GCRY_MD_SHA1)
+    return GNUPG_Unsupported_Algorithm;
+
+  rc = idstr_to_id (keyidstr, &keyid);
+  if (rc)
+    return rc;
+
+  rc = sc_pkcs15_find_prkey_by_id (card->p15card, &keyid, &key);
+  if (rc < 0)
+    {
+      log_error ("private key not found: %s\n", sc_strerror(rc));
+      rc = GNUPG_No_Secret_Key;
+      goto leave;
+    }
+  rc = 0;
+  key = card->p15card->prkey_info;
+
+
+  /* FIXME: Handle PIN via callback */
+
+  cryptflags |= SC_PKCS15_HASH_SHA1;
+  cryptflags |= SC_PKCS15_PAD_PKCS1_V1_5;
+
+  outbuflen = 1024; 
+  outbuf = xtrymalloc (outbuflen);
+  if (!outbuf)
+    return GNUPG_Out_Of_Core;
+  
+  rc = sc_pkcs15_compute_signature (card->p15card, key,
+                                    cryptflags,
+                                    indata, indatalen,
+                                    outbuf, outbuflen );
+  if (rc < 0)
+    {
+      log_error ("failed to create signature: %s\n", sc_strerror (rc));
+      rc = GNUPG_Card_Error;
+    }
+  else
+    {
+      *outdatalen = rc;
+      *outdata = outbuf;
+      outbuf = NULL;
+      rc = 0;
+    }
+
+
+
+leave:
+  xfree (outbuf);
+  return rc;
+}
 
 

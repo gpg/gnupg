@@ -61,6 +61,10 @@ struct card_ctx_s;
 struct server_control_s {
   struct server_local_s *server_local;
   struct card_ctx_s *card_ctx;
+  struct {
+    unsigned char *value;  
+    int valuelen;
+  } in_data;  /* helper to store the value we are going to sign */
 
 };
 typedef struct server_control_s *CTRL;
