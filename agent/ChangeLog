@@ -1,3 +1,8 @@
+2002-03-11  Werner Koch  <wk@gnupg.org>
+
+	* learncard.c (kpinfo_cb): Remove the content restrictions from
+	the keyID.
+
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
 	* learncard.c: New.

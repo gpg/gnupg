@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 
 #include "agent.h"
-#include "../assuan/assuan.h" /* fixme: nned a way to avoid assuna
+#include "../assuan/assuan.h" /* fixme: need a way to avoid assuan
                                  calls here */
 
 static const char headerblurb[] =

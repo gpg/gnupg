@@ -178,7 +178,7 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
           if (c == '\n')
             {
               parm->have_lf = 1;
-              /* FIXME: we need to skip overlong lines while detecting
+              /* Fixme: we need to skip overlong lines while detecting
                  the dashed lines */
               break;
             }

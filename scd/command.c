@@ -212,12 +212,10 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   for (idx=0; !rc; idx++)
     {
       unsigned char keygrip[20];
-      unsigned char *keyid;
-      size_t nkeyid;
+      char *keyid;
       int no_cert = 0;
 
-      rc = card_enum_keypairs (ctrl->card_ctx, idx, 
-                               keygrip, &keyid, &nkeyid);
+      rc = card_enum_keypairs (ctrl->card_ctx, idx, keygrip, &keyid);
       if (rc == GNUPG_Missing_Certificate && keyid)
         {
           /* this does happen with an incomplete personalized
@@ -232,7 +230,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
         {
           char *buf, *p;
 
-          buf = p = xtrymalloc (40+1+9+2*nkeyid+1);
+          buf = p = xtrymalloc (40 + 1 + strlen (keyid) + 1);
           if (!buf)
             rc = GNUPG_Out_Of_Core;
           else
@@ -247,11 +245,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
                     sprintf (p, "%02X", keygrip[i]);
                 }
               *p++ = ' ';
-              /* fixme: we need to get the pkcs-15 DF from the card function */
-              p = stpcpy (p, "3F005015.");
-              for (i=0; i < nkeyid; i++, p += 2)
-                sprintf (p, "%02X", keyid[i]);
-              *p = 0;
+              strcpy (p, keyid);
               assuan_write_status (ctx, "KEYPAIRINFO", buf);
               xfree (buf);
             }
@@ -440,14 +434,14 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  rc = card_create_signature (ctrl->card_ctx,
-                              line, GCRY_MD_SHA1,
-                              pin_cb, ctx,
-                              ctrl->in_data.value, ctrl->in_data.valuelen,
-                              &outdata, &outdatalen);
+  rc = card_sign (ctrl->card_ctx,
+                  line, GCRY_MD_SHA1,
+                  pin_cb, ctx,
+                  ctrl->in_data.value, ctrl->in_data.valuelen,
+                  &outdata, &outdatalen);
   if (rc)
     {
-      log_error ("card_create_signature failed: %s\n", gnupg_strerror (rc));
+      log_error ("card_sign failed: %s\n", gnupg_strerror (rc));
     }
   else
     {

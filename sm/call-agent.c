@@ -553,7 +553,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
     }
 
 
-  /* FIXME: this shoudl go inot import.c */
+  /* FIXME: this should go into import.c */
   cert = ksba_cert_new ();
   if (!cert)
     {

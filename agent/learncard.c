@@ -84,7 +84,7 @@ kpinfo_cb (void *opaque, const char *line)
       p++;
     }
   else if ((p - item->hexgrip) != 40 || !spacep (p))
-    { /* not a 20 byte hex keygrip or now followed by a space */
+    { /* not a 20 byte hex keygrip or not followed by a space */
       parm->error = GNUPG_Invalid_Response;
       xfree (item);
       return;
@@ -93,9 +93,9 @@ kpinfo_cb (void *opaque, const char *line)
   while (spacep (p))
     p++;
   item->id = p;
-  for (; hexdigitp (p) || *p == '.'; p++)
-    ;
-  if (!(spacep (p) || !*p))
+  while (*p && !spacep (p))
+    p++;
+  if (p == item->id)
     { /* invalid ID string */
       parm->error = GNUPG_Invalid_Response;
       xfree (item);

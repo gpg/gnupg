@@ -1,3 +1,9 @@
+2002-03-10  Werner Koch  <wk@gnupg.org>
+
+	* card-p15.c, card-dinsig.c, card-common.h: New.
+	* card.c: Factored most code out to the new modules, so that we
+	can better support different types of card applications.
+
 2002-01-26  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c scdaemon.h, command.c: New. Based on the code from

@@ -213,7 +213,7 @@ agent_get_cache (const char *key)
     log_debug ("agent_get_cache `%s'...\n", key);
   housekeeping ();
 
-  /* FIXME: Returning pointers is not thread safe - add a referencense
+  /* FIXME: Returning pointers is not thread safe - add a reference
      counter */
   for (r=thecache; r; r = r->next, count++)
     {

@@ -580,7 +580,7 @@ main ( int argc, char **argv)
   struct server_control_s ctrl;
   CERTLIST recplist = NULL;
 
-  /* fixme: trap_unaligned ();*/
+  /* trap_unaligned ();*/
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
@@ -1048,7 +1048,7 @@ main ( int argc, char **argv)
     case aSign: /* sign the given file */
       /* FIXME: we can only do detached sigs for now and we don't
          handle --output yet. We should also allow to concatenate
-         multiple files for signins because that is what gpg does.*/
+         multiple files for signing because that is what gpg does.*/
       if (!argc)
         gpgsm_sign (&ctrl, 0, 1, stdout); /* create from stdin */
       else if (argc == 1)
