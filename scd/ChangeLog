@@ -1,4 +1,12 @@
+2003-10-30  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (close_ct_reader, close_pcsc_reader): Implemented.
+	(get_ccid_error_string): New.  Not very useful messages, though.
+
 2003-10-25  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (ccid_open_reader): Return an error if no USB
+	devices are found.
 
 	* command.c (cmd_genkey, cmd_passwd): Fixed faulty use of
 	!spacep().
