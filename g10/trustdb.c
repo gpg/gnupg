@@ -1048,8 +1048,6 @@ get_validity_info (PKT_public_key *pk, const byte *namehash)
     int c;
 
     trustlevel = get_validity (pk, namehash);
-    if( trustlevel & TRUST_FLAG_DISABLED )
-	return 'd';
     if( trustlevel & TRUST_FLAG_REVOKED )
 	return 'r';
     c = trust_letter ( (trustlevel & TRUST_MASK) );

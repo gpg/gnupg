@@ -1,5 +1,8 @@
 2003-01-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* trustdb.c (get_validity_info): 'd' for disabled is not a
+	validity value any more.
+
 	* packet.h, tdbio.h, tdbio.c (tdbio_read_record,
 	tdbio_write_record), trustdb.c (update_validity): Store temporary
 	full & marginal counts in the trustdb.
