@@ -348,8 +348,6 @@ enum cmd_and_opt_values
     octapiDriver,
     opcscDriver,
     oDisableCCID,
-    oAllowAdmin,
-    oDenyAdmin,
 
     aTest
   };
@@ -534,10 +532,6 @@ static ARGPARSE_OPTS opts[] = {
     { oSetNotation,  "notation-data", 2, "@" }, /* Alias */
     { oSigNotation,  "sig-notation", 2, "@" },
     { oCertNotation, "cert-notation", 2, "@" },
-#ifdef ENABLE_CARD_SUPPORT
-    { oAllowAdmin, "allow-admin",0,N_("allow the use of admin card commands")},
-    { oDenyAdmin,  "deny-admin",0,"@"},
-#endif
 
     { 302, NULL, 0, N_(
   "@\n(See the man page for a complete listing of all commands and options)\n"
@@ -1863,8 +1857,6 @@ main( int argc, char **argv )
           case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
           case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
           case oDisableCCID: opt.disable_ccid = 1; break;
-          case oAllowAdmin: opt.allow_admin = 1; break;
-          case oDenyAdmin: opt.allow_admin = 0; break;
 #endif /* ENABLE_CARD_SUPPORT*/
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
@@ -3473,9 +3465,9 @@ main( int argc, char **argv )
 
       case aChangePIN:
         if (!argc)
-            change_pin (0);
+            change_pin (0,1);
         else if (argc == 1)
-            change_pin ( atoi (*argv));
+            change_pin (atoi (*argv),1);
         else
         wrong_args ("--change-pin [no]");
         break;

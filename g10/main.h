@@ -265,7 +265,7 @@ void unblock_all_signals(void);
 
 #ifdef ENABLE_CARD_SUPPORT
 /*-- card-util.c --*/
-void change_pin (int no);
+void change_pin (int no, int allow_admin);
 void card_status (FILE *fp, char *serialno, size_t serialnobuflen);
 void card_edit (STRLIST commands);
 int  card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock);

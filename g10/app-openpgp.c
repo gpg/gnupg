@@ -667,17 +667,29 @@ verify_chv3 (APP app,
              int (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
-  int rc = 0;
+  int rc=0;
 
-  if (!opt.allow_admin)
-    {
-      log_info ("access to admin commands is not configured\n");
-      return gpg_error (GPG_ERR_EACCES);
-    }
-      
   if (!app->did_chv3) 
     {
+      struct agent_card_info_s info;
       char *pinvalue;
+
+      memset(&info,0,sizeof(info));
+      rc=agent_scd_getattr("CHV-STATUS",&info);
+      if(rc)
+	log_error("error retrieving CHV status from card: %s\n",
+		  gpg_strerror(rc));
+      else
+	{
+	  if(info.chvretry[2]==0)
+	    {
+	      log_info("card is locked!\n");
+	      return gpg_error (GPG_ERR_BAD_PIN);
+	    }
+	  else
+	    log_info("%d Admin PIN attempts remaining before card"
+		     " is permanently locked\n",info.chvretry[2]);
+	}
 
       rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
       if (rc)
@@ -688,7 +700,7 @@ verify_chv3 (APP app,
 
       if (strlen (pinvalue) < 6)
         {
-          log_error ("prassphrase (CHV3) is too short; minimum length is 6\n");
+          log_error ("passphrase (CHV3) is too short; minimum length is 6\n");
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }

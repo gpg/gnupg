@@ -47,7 +47,7 @@
 /* Change the PIN of a an OpenPGP card.  This is an interactive
    function. */
 void
-change_pin (int chvno)
+change_pin (int chvno, int allow_admin)
 {
   struct agent_card_info_s info;
   int rc;
@@ -71,52 +71,61 @@ change_pin (int chvno)
       return;
     }
 
-  for (;;)
+  if(!allow_admin)
     {
-      char *answer;
-
-      tty_printf ("\n");
-      tty_printf ("1 - change PIN\n"
-                  "2 - unblock PIN\n"
-                  "3 - change Admin PIN\n"
-                  "Q - quit\n");
-      tty_printf ("\n");
-
-      answer = cpr_get("cardutil.change_pin.menu",_("Your selection? "));
-      cpr_kill_prompt();
-      if (strlen (answer) != 1)
-        continue;
-
-      rc = 0;
-      if (*answer == '1')
-        {
-          rc = agent_scd_change_pin (1);
-          if (rc)
-            tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
-          else
-            tty_printf ("PIN changed.\n");
-        }
-      else if (*answer == '2')
-        {
-          rc = agent_scd_change_pin (101);
-          if (rc)
-            tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
-          else
-            tty_printf ("PIN unblocked and new PIN set.\n");
-        }
-      else if (*answer == '3')
-        {
-          rc = agent_scd_change_pin (3);
-          if (rc)
-            tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
-          else
-            tty_printf ("PIN changed.\n");
-        }
-      else if (*answer == 'q' || *answer == 'Q')
-        {
-          break;
-        }
+      rc = agent_scd_change_pin (1);
+      if (rc)
+	tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
+      else
+	tty_printf ("PIN changed.\n");
     }
+  else
+    for (;;)
+      {
+	char *answer;
+
+	tty_printf ("\n");
+	tty_printf ("1 - change PIN\n"
+		    "2 - unblock PIN\n"
+		    "3 - change Admin PIN\n"
+		    "Q - quit\n");
+	tty_printf ("\n");
+
+	answer = cpr_get("cardutil.change_pin.menu",_("Your selection? "));
+	cpr_kill_prompt();
+	if (strlen (answer) != 1)
+	  continue;
+
+	rc = 0;
+	if (*answer == '1')
+	  {
+	    rc = agent_scd_change_pin (1);
+	    if (rc)
+	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
+	    else
+	      tty_printf ("PIN changed.\n");
+	  }
+	else if (*answer == '2')
+	  {
+	    rc = agent_scd_change_pin (101);
+	    if (rc)
+	      tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
+	    else
+	      tty_printf ("PIN unblocked and new PIN set.\n");
+	  }
+	else if (*answer == '3')
+	  {
+	    rc = agent_scd_change_pin (3);
+	    if (rc)
+	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
+	    else
+	      tty_printf ("PIN changed.\n");
+	  }
+	else if (*answer == 'q' || *answer == 'Q')
+	  {
+	    break;
+	  }
+      }
 }
 
 static const char *
@@ -1092,7 +1101,6 @@ card_store_subkey (KBNODE node, int use)
 }
 
 
-
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
 void
@@ -1100,7 +1108,7 @@ card_edit (STRLIST commands)
 {
   enum cmdids {
     cmdNOP = 0,
-    cmdQUIT, cmdHELP, cmdLIST, cmdDEBUG,
+    cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD,
     cmdINVCMD
@@ -1109,35 +1117,38 @@ card_edit (STRLIST commands)
   static struct {
     const char *name;
     enum cmdids id;
+    int admin_only;
     const char *desc;
   } cmds[] = {
-    { N_("quit")  , cmdQUIT  , N_("quit this menu") },
-    { N_("q")     , cmdQUIT  , NULL   },
-    { N_("help")  , cmdHELP  , N_("show this help") },
-    {    "?"      , cmdHELP  , NULL   },
-    { N_("list")  , cmdLIST  , N_("list all available data") },
-    { N_("l")     , cmdLIST  , NULL   },
-    { N_("debug") , cmdDEBUG , NULL },
-    { N_("name")  , cmdNAME  , N_("change card holder's name") },
-    { N_("url")   , cmdURL   , N_("change URL to retrieve key") },
-    { N_("fetch") , cmdFETCH , N_("fetch the key specified in the card URL") },
-    { N_("login") , cmdLOGIN , N_("change the login name") },
-    { N_("lang")  , cmdLANG  , N_("change the language preferences") },
-    { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
-    { N_("cafpr"),  cmdCAFPR,  N_("change a CA fingerprint") },
+    { N_("quit")  , cmdQUIT  , 0, N_("quit this menu") },
+    { N_("q")     , cmdQUIT  , 0, NULL   },
+    { N_("admin") , cmdADMIN , 0, N_("show admin commands") },
+    { N_("help")  , cmdHELP  , 0, N_("show this help") },
+    {    "?"      , cmdHELP  , 0, NULL   },
+    { N_("list")  , cmdLIST  , 0, N_("list all available data") },
+    { N_("l")     , cmdLIST  , 0, NULL   },
+    { N_("debug") , cmdDEBUG , 0, NULL },
+    { N_("name")  , cmdNAME  , 1, N_("change card holder's name") },
+    { N_("url")   , cmdURL   , 1, N_("change URL to retrieve key") },
+    { N_("fetch") , cmdFETCH , 0,
+                               N_("fetch the key specified in the card URL") },
+    { N_("login") , cmdLOGIN , 1, N_("change the login name") },
+    { N_("lang")  , cmdLANG  , 1, N_("change the language preferences") },
+    { N_("sex")   , cmdSEX   , 1, N_("change card holder's sex") },
+    { N_("cafpr"),  cmdCAFPR,  1, N_("change a CA fingerprint") },
     { N_("forcesig"),
-                  cmdFORCESIG, N_("toggle the signature force PIN flag") },
+                  cmdFORCESIG, 1, N_("toggle the signature force PIN flag") },
     { N_("generate"),
-                  cmdGENERATE, N_("generate new keys") },
-    { N_("passwd"), cmdPASSWD, N_("menu to change or unblock the PIN") },
-    { NULL, cmdINVCMD } 
+                  cmdGENERATE, 1, N_("generate new keys") },
+    { N_("passwd"), cmdPASSWD, 0, N_("menu to change or unblock the PIN") },
+    { NULL, cmdINVCMD, 0, NULL } 
   };
  
   enum cmdids cmd = cmdNOP;
   int have_commands = !!commands;
   int redisplay = 1;
   char *answer = NULL;
-  int did_checkpin = 0;
+  int did_checkpin = 0, allow_admin=0;
   char serialnobuf[50];
 
 
@@ -1220,26 +1231,47 @@ card_edit (STRLIST commands)
 
         cmd = cmds[i].id;
       }
-      
+
+      if(!allow_admin)
+	switch(cmd)
+	  {
+	  case cmdNAME:
+	  case cmdURL:
+	  case cmdLOGIN:
+	  case cmdLANG:
+	  case cmdCAFPR:
+	  case cmdFORCESIG:
+	  case cmdGENERATE:
+	    tty_printf ("\n");
+	    tty_printf (_("Admin-only command\n"));
+	    continue;
+	  default:
+	    break;
+	  }
 
       switch (cmd)
         {
         case cmdHELP:
           for (i=0; cmds[i].name; i++ )
-            if (cmds[i].desc)
+            if(cmds[i].desc
+	       && (!cmds[i].admin_only || (cmds[i].admin_only && allow_admin)))
               tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
           break;
+
+	case cmdADMIN:
+	  allow_admin=!allow_admin;
+	  break;
 
         case cmdLIST:
           redisplay = 1;
           break;
 
         case cmdNAME:
-          change_name ();
+	  change_name ();
           break;
 
         case cmdURL:
-          change_url ();
+	  change_url ();
           break;
 
 	case cmdFETCH:
@@ -1247,15 +1279,15 @@ card_edit (STRLIST commands)
 	  break;
 
         case cmdLOGIN:
-          change_login (arg_string);
+	  change_login (arg_string);
           break;
 
         case cmdLANG:
-          change_lang ();
+	  change_lang ();
           break;
 
         case cmdSEX:
-          change_sex ();
+	  change_sex ();
           break;
 
         case cmdCAFPR:
@@ -1275,7 +1307,7 @@ card_edit (STRLIST commands)
           break;
 
         case cmdPASSWD:
-          change_pin (0);
+          change_pin (0, allow_admin);
           did_checkpin = 0; /* Need to reset it of course. */
           break;
 
