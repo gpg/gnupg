@@ -1309,7 +1309,7 @@ reset_osc_reader (int slot)
 
 
 static int
-ocsc_get_status (int slot, unsigned int *status)
+osc_get_status (int slot, unsigned int *status)
 {
   return SW_HOST_NOT_SUPPORTED;
 }

@@ -1,3 +1,8 @@
+2004-06-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (osc_get_status): Fixed type in function name. Noted by
+	Axel Thimm.  Yes, I didn't tested it with OpenSC :-(.
+
 2004-04-28  Werner Koch  <wk@gnupg.org>
 
 	* app-openpgp.c (do_setattr): Sync FORCE_CHV1.
