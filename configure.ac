@@ -645,11 +645,19 @@ AC_SUBST(GPGKEYS_LDAP)
 AC_SUBST(LDAPLIBS)
 AM_CONDITIONAL(GPGKEYS_LDAP, test "$GPGKEYS_LDAP" != "")
 
-# If we have neither FTP or HTTP defined, then don't bother to check
-# for curl.
+AC_ARG_ENABLE(fake-curl,
+   AC_HELP_STRING([--enable-fake-curl],[enable EXPERIMENTAL no-curl HTTP code]),fake_curl=$enableval,fake_curl=no)
 
-if test "$try_ftp" = yes || test "$try_http" = yes ; then
-   LIBCURL_CHECK_CONFIG([no],,[have_libcurl=yes])
+AM_CONDITIONAL(FAKE_CURL,test x"$fake_curl" = xyes)
+
+if test x"$fake_curl" = xyes ; then
+   libcurl_protocol_HTTP=yes
+else
+   # If we have neither FTP or HTTP defined, then don't bother to check
+   # for curl.
+   if test x"$try_ftp" = xyes || test x"$try_http" = xyes ; then
+      LIBCURL_CHECK_CONFIG([no])
+   fi
 fi
 
 # Are we doing HTTP?

@@ -5,7 +5,7 @@ Noteworthy changes in version 1.4.1
       signatures.  This is in response to some problems seen with
       certain PGP/MIME mail clients and GnuPG version 1.4.0.  More
       details about this are available at
-      <http://lists.gnupg.org/pipermail/gnupg-users/2005-January/024408.html>
+      <http://lists.gnupg.org/pipermail/gnupg-users/2005-January/024408.html>.
 
     * New "import-unusable-sigs" and "export-unusable-sigs" tags for
       --import-options and --export-options.  These are off by
@@ -23,8 +23,11 @@ Noteworthy changes in version 1.4.1
       available, missing secret key stubs will be created on the fly.
       Details of the key are listed too.
 
-    * The implicit packet dumping in double verbose mode is now send
+    * The implicit packet dumping in double verbose mode is now sent
       to stderr and not to stdout.
+
+    * Added countermeasures against the Mister/Zuccherato CFB attack
+      <http://eprint.iacr.org/2005/033>.
 
     * [W32] The algorithm for the default home directory changed:
       First we look at the environment variable GNUPGHOME, if this one
@@ -38,7 +41,7 @@ Noteworthy changes in version 1.4.1
 
     * [W32] The locale selection under Windows changed. You need to
       enter the locale in the registry at HKCU\Software\GNU\GnuPG:Lang. 
-      For German you would use "de".  If it is not set, GnupG falls
+      For German you would use "de".  If it is not set, GnuPG falls
       back to HKLM.  The languages files "*.mo" are expected in a
       directory named "gnupg.nls" below the installation directory;
       that directory must be stored in the registry at the same key as
