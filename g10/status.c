@@ -139,6 +139,7 @@ get_status_string ( int no )
       case STATUS_END_STREAM     : s = "END_STREAM"; break;
       case STATUS_KEY_CREATED    : s = "KEY_CREATED"; break;
       case STATUS_USERID_HINT    : s = "USERID_HINT"; break;
+      case STATUS_UNEXPECTED     : s = "UNEXPECTED"; break;
       default: s = "?"; break;
     }
     return s;

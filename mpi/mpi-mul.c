@@ -120,6 +120,7 @@ mpi_mul( MPI w, MPI u, MPI v)
     int assign_wp=0;
     mpi_ptr_t tmp_limb=NULL;
 
+
     if( u->nlimbs < v->nlimbs ) { /* Swap U and V. */
 	usize = v->nlimbs;
 	usign = v->sign;
@@ -145,7 +146,15 @@ mpi_mul( MPI w, MPI u, MPI v)
 
     /* Ensure W has space enough to store the result.  */
     wsize = usize + vsize;
-    if( w->alloced < wsize ) {
+    if ( !mpi_is_secure (w) && (mpi_is_secure (u) || mpi_is_secure (v)) ) {
+        /* w is not allocated in secure space but u or v is.  To make sure
+         * that no temporray results are stored in w, we temporary use 
+         * a newly allocated limb space for w */
+        wp = mpi_alloc_limb_space( wsize, 1 );
+        assign_wp = 2; /* mark it as 2 so that we can later copy it back to
+                        * mormal memory */
+    }
+    else if( w->alloced < wsize ) {
 	if( wp == up || wp == vp ) {
 	    wp = mpi_alloc_limb_space( wsize, mpi_is_secure(w) );
 	    assign_wp = 1;
@@ -180,8 +189,16 @@ mpi_mul( MPI w, MPI u, MPI v)
 	wsize -= cy? 0:1;
     }
 
-    if( assign_wp )
+    if( assign_wp ) {
+        if (assign_wp == 2) {
+            /* copy the temp wp from secure memory back to normal memory */
+	    mpi_ptr_t tmp_wp = mpi_alloc_limb_space (wsize, 0);
+	    MPN_COPY (tmp_wp, wp, wsize);
+            mpi_free_limb_space (wp);
+            wp = tmp_wp;
+        }
 	mpi_assign_limb_space( w, wp, wsize );
+    }
     w->nlimbs = wsize;
     w->sign = sign_product;
     if( tmp_limb )

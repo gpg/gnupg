@@ -1,4 +1,7 @@
 
+  * Check that no secret temporary results are stored in the result parameter
+    of the mpi functions.  We have already done this for mpi-mul.c 
+
   * Dlopen does not yet work under W32.
 
   * check whether we can remove all the expire stuff in trustdb because this
@@ -41,6 +44,8 @@
   * New option --file-remove path-to-wipe-program ?
 
   * Add an is_valid flag to each user ID.
+
+  * Make --pipemode work.
 
 Scheduled for 1.1
 -----------------

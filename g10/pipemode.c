@@ -108,7 +108,7 @@ pipemode_filter( void *opaque, int control,
             /* FIXME: we have to make sure that we have a large enough
              * buffer for a control packet even after we already read 
              * something. The easest way to do this is probably by ungetting
-             * the control sequenceand and returning the buffer we have
+             * the control sequence and returning the buffer we have
              * already assembled */
             int c = iobuf_get (a);
             if (c == -1) {

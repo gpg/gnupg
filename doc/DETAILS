@@ -119,6 +119,11 @@ more arguments in future versions.
 	    3 - Invalid packet found, this may indicate a non OpenPGP message.
 	You may see more than one of these status lines.
 
+    UNEXPECTED <what>
+        Unexpected data has been encountered
+            0 - not further specified               1       
+  
+
     TRUST_UNDEFINED
     TRUST_NEVER
     TRUST_MARGINAL

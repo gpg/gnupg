@@ -1,3 +1,8 @@
+2001-03-24  Werner Koch  <wk@gnupg.org>
+
+	* mpi-mul.c (mpi_mul): Make sure that secret temporary results are
+	not stored in w.  Suggested by Florian Weimer.
+
 2001-03-18  Werner Koch  <wk@gnupg.org>
 
 	* config.links (mpi_sflags): Use i386 code for i386.  According to

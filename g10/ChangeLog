@@ -1,3 +1,12 @@
+2001-03-24  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (do_sign): Verify the signature right after creation.
+
+2001-03-23  Werner Koch  <wk@gnupg.org>
+
+	* status.c, status.h (STATUS_UNEXPECTED): New.
+	* mainproc.c (do_proc_packets): And emit it here.
+
 2001-03-21  Werner Koch  <wk@gnupg.org>
 
 	* status.c: Add sys/types.h so that it runs on Ultrix.  Reported

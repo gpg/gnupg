@@ -1067,6 +1067,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PUBKEY_ENC:
 	      case PKT_ENCRYPTED:
 	      case PKT_ENCRYPTED_MDC:
+                write_status_text( STATUS_UNEXPECTED, "0" );
 		rc = G10ERR_UNEXPECTED;
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
@@ -1082,6 +1083,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PUBLIC_KEY:
 	      case PKT_SECRET_KEY:
 	      case PKT_USER_ID:
+                write_status_text( STATUS_UNEXPECTED, "0" );
 		rc = G10ERR_UNEXPECTED;
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;

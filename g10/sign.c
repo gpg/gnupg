@@ -132,6 +132,27 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 			     digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
     rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_free(frame);
+    if (!rc) {
+        /* check that the signature verification worked and nothing is
+         * fooling us e.g. by a bug in the signature create
+         * code or by deliberately introduced faults. */
+        PKT_public_key *pk = m_alloc_clear (sizeof *pk);
+
+        if( get_pubkey( pk, sig->keyid ) )
+            rc = G10ERR_NO_PUBKEY;
+        else {
+            frame = encode_md_value (pk->pubkey_algo, md,
+                                     sig->digest_algo,
+                                     mpi_get_nbits(pk->pkey[0]), 0);
+            rc = pubkey_verify (pk->pubkey_algo, frame, sig->data, pk->pkey,
+                                NULL, NULL );
+            mpi_free (frame);
+        }
+        if (rc)
+            log_error (_("checking created signature failed: %s\n"),
+                         g10_errstr (rc));
+        free_public_key (pk);
+    }
     if( rc )
 	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
     else {
@@ -154,10 +175,6 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
 
     if( !(rc=check_secret_key( sk, 0 )) )
 	rc = do_sign( sk, sig, md, 0 );
-
-    /* fixme: should we check whether the signature is okay?
-     * maybe by using an option */
-
     return rc;
 }
 
