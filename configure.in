@@ -130,12 +130,6 @@ dnl Setup some stuff depending on host/target.
 dnl
 case "${target}" in
     *-*-mingw32*)
-        # special stuff for Windoze NT
-        # Do we need to set cross_compiling here or is it sufficient
-        # to rely on AC_PROG_CC which is called later?
-        CC="${target}-gcc"
-        CPP="${target}-gcc -E"
-        RANLIB="${target}-ranlib"
         disallowed_modules="rndunix rndlinux rndegd"
         ;;
     *)

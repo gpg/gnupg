@@ -1,3 +1,12 @@
+2001-01-18  Werner Koch  <wk@gnupg.org>
+
+	* rndw32.c: Fixed typo and wrong ifdef for VER_PLATFORM* macro
+
+2001-01-12  Werner Koch  <wk@gnupg.org>
+
+	* cipher.c (cipher_encrypt,cipher_encrypt): Use blocksize and
+	not 8 for CBC mode (However: we don't use CBS in OpenPGP).
+
 2000-11-22  Werner Koch  <wk@gnupg.org>
 
 	* rndegd.c (gather_random): Fixed default socket to be '=entropy'.

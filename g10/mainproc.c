@@ -408,9 +408,11 @@ proc_encrypted( CTX c, PACKET *pkt )
     if( opt.list_only )
 	result = -1;
     else if( !c->dek && !c->last_was_session_key ) {
+        int def_algo;
 	/* assume this is old conventional encrypted data
-	 * Actually we should use IDEA and MD5 in this case, but because
-	 * IDEA is patented we can't do so */
+	 * We use IDEA here if it is installed */
+        def_algo = check_cipher_algo (CIPHER_ALGO_IDEA)?
+                                      DEFAULT_CIPHER_ALGO : CIPHER_ALGO_IDEA;
 	c->dek = passphrase_to_dek( NULL, 0,
 		    opt.def_cipher_algo ? opt.def_cipher_algo
 					: DEFAULT_CIPHER_ALGO, NULL, 0 );

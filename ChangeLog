@@ -1,3 +1,7 @@
+2001-01-18  Werner Koch  <wk@gnupg.org>
+
+	* configure.in: Removed tool definitions for MingW32
+
 2000-11-17  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4 (GNUPG_CHECK_FAQPROG): Do not prinnt the warning.

@@ -311,8 +311,8 @@ gather_random_fast( void (*add)(const void*, size_t, int), int requester )
 #ifndef IOCTL_DISK_PERFORMANCE
 #define IOCTL_DISK_PERFORMANCE	0x00070020
 #endif
-#ifndef IOCTL_DISK_PERFORMANCE
-#define VER_PLATFORM_WIN32_WINDOWSw 1
+#ifndef VER_PLATFORM_WIN32_WINDOWS
+#define VER_PLATFORM_WIN32_WINDOWS 1
 #endif
 
 typedef struct {

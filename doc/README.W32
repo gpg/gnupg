@@ -69,19 +69,18 @@ Instructions are at the top of this file.
 
 To build it, you need the MingW32/CPD kit, which is available at
 
-  ftp://ftp.openit.de/pub/cpd/mingw32-cpd-0.2.4.tar.gz
-  ftp://ftp.openit.de/pub/cpd/gcc-core-2.95.2.tar.gz
-  ftp://ftp.openit.de/pub/cpd/binutils-2.9.1.tar.gz
-  ftp://ftp.openit.de/pub/cpd/windows32api-0.1.2.tar.gz
+  ftp://ftp.guug.de/members/wkoch/cpd/mingw32-cpd-0.3.0.tar.gz
+  ftp://ftp.guug.de/members/wkoch/cpd/gcc-core-2.95.2.tar.gz
+  ftp://ftp.guug.de/members/wkoch/cpd/binutils-2.9.1.tar.gz
 
-gcc, binutils and windows32api are stock GNU source which are available
-at every GNU mirror.
+gcc and binutils are stock GNU source which are available
+at every GNU mirror. 
 
 After you have installed this environment you should be able to do this:
 
- $ ./configure --target=i386--mingw32
+ $ scripts/autogen.sh --build-w32
  $ make
- $ i386--mingw32-strip g10/gpg
+ $ mingw32 strip g10/gpg
  $ cp g10/gpg  /some_windows_drive/gpg.exe
 
 And everything hopefully works.
@@ -93,4 +92,5 @@ you can switch to a GNU system ;-)
 Be the source always with you.
 
     Werner
+
 

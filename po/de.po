@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2001-01-11 13:11+0100\n"
-"PO-Revision-Date: 2000-10-15 14:30+0200\n"
+"POT-Creation-Date: 2001-01-13 02:25+0000\n"
+"PO-Revision-Date: 2001-01-13 17:10+0100\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -551,7 +551,7 @@ msgstr "Keine wirklichen Änderungen durchführen"
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
 #: g10/g10.c:287
 msgid "use the gpg-agent"
-msgstr ""
+msgstr "verwende den GPG-Agent"
 
 #: g10/g10.c:288
 msgid "batch mode: never ask"
@@ -1085,7 +1085,7 @@ msgid ""
 "No path leading to one of our keys found.\n"
 "\n"
 msgstr ""
-"Kein Pfad führt zu einen unserer Schlüsseln.\n"
+"Kein Pfad führt zu einem unserer Schlüsseln.\n"
 "\n"
 
 #: g10/pkclist.c:437
@@ -1093,7 +1093,7 @@ msgid ""
 "No certificates with undefined trust found.\n"
 "\n"
 msgstr ""
-"Keine Zertifikate mit undefinierten Vertrauen gefunden.\n"
+"Keine Zertifikate mit undefiniertem Vertrauen gefunden.\n"
 "\n"
 
 #: g10/pkclist.c:439
@@ -1895,7 +1895,7 @@ msgstr "Schlüssel %08lX: Nicht geändert\n"
 #: g10/import.c:593
 #, c-format
 msgid "secret key %08lX not imported (use %s to allow for it)\n"
-msgstr ""
+msgstr "Geheimer Schlüssel %08lX nicht importiert (%s verwenden, um das zu ermöglichen)\n"
 
 #: g10/import.c:623
 #, c-format
@@ -2686,9 +2686,8 @@ msgid "Can't check signature: %s\n"
 msgstr "Unterschrift kann nicht geprüft werden: %s\n"
 
 #: g10/mainproc.c:1421 g10/mainproc.c:1436 g10/mainproc.c:1498
-#, fuzzy
 msgid "not a detached signature\n"
-msgstr "Eine abgetrennte Unterschrift erzeugen"
+msgstr "keine abgetrennte Unterschrift\n"
 
 #: g10/mainproc.c:1447
 #, c-format
@@ -2713,11 +2712,9 @@ msgid "Experimental algorithms should not be used!\n"
 msgstr "Experimentiermethoden sollten nicht benutzt werden!\n"
 
 #: g10/misc.c:237
-#, fuzzy
-msgid "this cipher algorithm is deprecated; please use a more standard one!x\n"
+msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
 msgstr ""
-"Diese Verschlüsselungsmethode taugt nicht mehr viel; verwenden Sie eine "
-"stärker standardisierte Methode!\n"
+"Es ist davon abzuraten, diese Verschlüsselungsmethode zu benutzen!\n"
 
 #: g10/parse-packet.c:119
 #, c-format
@@ -2731,11 +2728,11 @@ msgstr "Im Unterpaket des Typs %d ist das \"critical bit\" gesetzt\n"
 
 #: g10/passphrase.c:223
 msgid "gpg-agent is not available in this session\n"
-msgstr ""
+msgstr "GPG-Agent ist in dieser Sitzung nicht vorhanden\n"
 
 #: g10/passphrase.c:229
 msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr ""
+msgstr "fehlerhaft aufgebaute GPG_AGENT_INFO - Umgebungsvariable\n"
 
 #: g10/hkp.c:170 g10/passphrase.c:248
 #, c-format
@@ -2748,42 +2745,41 @@ msgid " (main key ID %08lX)"
 msgstr " (Hauptschlüssel-ID %08lX)"
 
 #: g10/passphrase.c:323
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
 "\"%.*s\"\n"
 "%u-bit %s key, ID %08lX, created %s%s\n"
 msgstr ""
-"\n"
 "Sie benötigen ein Mantra, um den geheimen Schlüssel zu entsperren.\n"
 "Benutzer: \""
+"\"%.*s\"\n"
+"%u-bit %s Schlüssel, ID %08lX, erzeugt %s%s\n"
 
 #: g10/passphrase.c:344
-#, fuzzy
 msgid "Enter passphrase\n"
-msgstr "Geben Sie das Mantra ein: "
+msgstr "Geben Sie das Mantra ein\n"
 
 #: g10/passphrase.c:346
-#, fuzzy
 msgid "Repeat passphrase\n"
-msgstr "Geben Sie das Mantra nochmal ein: "
+msgstr "Geben Sie das Mantra nochmal ein\n"
 
 #: g10/passphrase.c:384
 msgid "passphrase too long\n"
-msgstr ""
+msgstr "Mantra ist zu lang\n"
 
 #: g10/passphrase.c:396
 msgid "invalid response from agent\n"
-msgstr ""
+msgstr "Falsche Antwort des Agenten\n"
 
 #: g10/passphrase.c:405
 msgid "cancelled by user\n"
-msgstr ""
+msgstr "Abbruch durch Benutzer\n"
 
 #: g10/passphrase.c:408 g10/passphrase.c:477
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
-msgstr ""
+msgstr "Schwierigkeiten mit dem Agenten: Agent antwortet 0x%lx\n"
 
 #: g10/passphrase.c:560
 msgid ""
@@ -2830,9 +2826,8 @@ msgid "reading stdin ...\n"
 msgstr "lese stdin ...\n"
 
 #: g10/plaintext.c:383
-#, fuzzy
 msgid "no signed data\n"
-msgstr "kann signierte Datei '%s' nicht öffnen.\n"
+msgstr "keine unterschriebene Daten\n"
 
 #: g10/plaintext.c:391
 #, c-format
@@ -2946,9 +2941,9 @@ msgstr ""
 "Öffentlicher Schlüssel ist um %lu Sekunden jünger als die Unterschrift\n"
 
 #: g10/sig-check.c:328
-#, fuzzy, c-format
+#, c-format
 msgid "NOTE: signature key %08lX expired %s\n"
-msgstr "Hinweis: Schlüssel der Signatur ist verfallen am %s.\n"
+msgstr "Hinweis: Signaturschlüssel %08lX ist am %s verfallen.\n"
 
 #: g10/sig-check.c:398
 msgid "assuming bad signature due to an unknown critical bit\n"
@@ -3866,13 +3861,6 @@ msgstr "Keine Hilfe für '%s' vorhanden."
 
 #~ msgid "no secret key for decryption available\n"
 #~ msgstr "kein geheimer Schlüssel zur Entschlüsselung vorhanden\n"
-
-#~ msgid ""
-#~ "RSA keys are deprecated; please consider creating a new key and use this key "
-#~ "in the future\n"
-#~ msgstr ""
-#~ "RSA Schlüssel sind nicht erwünscht; bitte denken Sie darüber nach, einen\n"
-#~ "neuen Schlüssel zu erzeugen und diesen in Zukunft zu benutzen\n"
 
 #~ msgid "   (%d) ElGamal in a v3 packet\n"
 #~ msgstr "   (%d) ElGamal in einem v3-Paket\n"

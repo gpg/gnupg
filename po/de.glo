@@ -20,6 +20,8 @@
 # 7. Die erste genannte Übersetzung ist die in de.po verwendete
 
 
+
+Agent			Agent 
 aka			alias
 algorithm		Verfahren          
 anonymous		ungenannter
@@ -27,13 +29,14 @@ argument    		> Argument
 armor			ASCII-Hülle
 associate with a person <einer Person zuordnen
 authentication  	Authentisierung
-available		vorhanden [besser?: verfügbar]
+available		vorhanden [besser?: verfügbar, greifbar?]
 bad [MPI]		fehlerhafte MPI 
 bad [signature]		falsch[e] Unterschrift 
 break (the encryption)  <(Die Verschlüsselung) aufbrechen
 bug			"Bug (Programmfehler)"
 cache   		Lager  *Zwischenspeicher
 can't read		nicht lesbar
+cancelled		Abbruch, abgebrochen
 casual  		>zufällig, >gelegentlich >unregelmäßig
 certificate		Zertifikat
 , (Urkunde)
@@ -63,11 +66,12 @@ default option  	<Standardoption
 DEK 			???
 delete  		entfernen, *>löschen 
 depend on   		>sich verlassen auf,>angewiesen sein auf,>abhängen von
-depreciated		taugt nicht mehr viel
+depreciated		- taugt nicht mehr viel
 determined attacker 	>zielbewusster,>entschlossener Angreifer
 digest algorithm	Hashmethode
 disabled		abgeschaltet
 encrypted		verschlüsselte
+enviorement variable  	Umgebungsvariable
 eventually  		>schließlich, endlich  Nicht: eventuell
 expiration date 	<Verfalldatum
 expire  		<verfallen
@@ -139,7 +143,9 @@ random 			Zufall
 random bytes		Zufallswerte
 reason			Grund (für revocation)
 regular file		normale Datei
+response		Antwort (Reaktion?)
 retry			???? (Wiederholung?, Wiederaufnahme?)
+returns			gibt zurück / antwortet
 reveal  		auch: <jemandem zeigen, >anderen zeigen 
 revocation  		Widerruf <*>Rückruf
 revocation certificate  *<Rückrufurkunde *Rückruf-Zertifikat
@@ -151,7 +157,9 @@ secret parts		geheime Teile
 security need(s)	>Sicherheitsbedüfnis(se), >Sicherheitsbedarf
 self-signature		Eigenbeglaubigung     
 sender			Absender
+session			Sitzung
 sign user id		User-ID beglaubigen   *
+signed			unterschriebene
 signature (files)	Unterschrift          *
 signature (keys)	Beglaubigung          *
 simple S2K mode		????

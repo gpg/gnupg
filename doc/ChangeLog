@@ -1,3 +1,7 @@
+2001-01-18  Werner Koch  <wk@gnupg.org>
+
+	* README.W32: Changed building instructions for MinGW32/CPD 0.3 
+
 2001-01-09  Werner Koch  <wk@gnupg.org>
 
 	* DETAILS: Fixed docs for NEED_PASSPHRASE and added USERID_HINT.

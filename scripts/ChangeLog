@@ -1,3 +1,8 @@
+2001-01-18  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: New options --build-w32
+	* build-w32: Does now call autogen.sh
+
 2000-11-24  Werner Koch  <wk@gnupg.org>
 
 	* build-w32: New script to build the W32 version.

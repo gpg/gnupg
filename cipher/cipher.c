@@ -619,12 +619,12 @@ cipher_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 {
     switch( c->mode ) {
       case CIPHER_MODE_ECB:
-	assert(!(nbytes%8));
-	do_ecb_encrypt(c, outbuf, inbuf, nbytes/8 );
+	assert(!(nbytes%c->blocksize));
+	do_ecb_encrypt(c, outbuf, inbuf, nbytes/c->blocksize );
 	break;
       case CIPHER_MODE_CBC:
-	assert(!(nbytes%8));  /* fixme: should be blocksize */
-	do_cbc_encrypt(c, outbuf, inbuf, nbytes/8 );
+	assert(!(nbytes%c->blocksize));  
+	do_cbc_encrypt(c, outbuf, inbuf, nbytes/c->blocksize );
 	break;
       case CIPHER_MODE_CFB:
       case CIPHER_MODE_PHILS_CFB:
@@ -649,12 +649,12 @@ cipher_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 {
     switch( c->mode ) {
       case CIPHER_MODE_ECB:
-	assert(!(nbytes%8));
-	do_ecb_decrypt(c, outbuf, inbuf, nbytes/8 );
+	assert(!(nbytes%c->blocksize));
+	do_ecb_decrypt(c, outbuf, inbuf, nbytes/c->blocksize );
 	break;
       case CIPHER_MODE_CBC:
-	assert(!(nbytes%8));	/* fixme: should assert on blocksize */
-	do_cbc_decrypt(c, outbuf, inbuf, nbytes/8 );
+	assert(!(nbytes%c->blocksize));
+	do_cbc_decrypt(c, outbuf, inbuf, nbytes/c->blocksize );
 	break;
       case CIPHER_MODE_CFB:
       case CIPHER_MODE_PHILS_CFB:

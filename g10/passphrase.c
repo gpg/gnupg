@@ -509,14 +509,16 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     STRING2KEY help_s2k;
 
     if( !s2k ) {
+        int def_algo;
+
 	s2k = &help_s2k;
 	s2k->mode = 0;
-	/* this should be MD5 if cipher is IDEA, but because we do
-	 * not have IDEA, we use the default one, the user
-	 * can select it from the commandline
-	 */
-	s2k->hash_algo = opt.def_digest_algo?opt.def_digest_algo
-					    :DEFAULT_DIGEST_ALGO;
+	/* If we have IDEA installed we use MD5 otherwise the default
+	 * hash algorithm.  This can always be overriden from the
+	 * commandline */
+        def_algo = check_cipher_algo (CIPHER_ALGO_IDEA)?
+                                    DEFAULT_DIGEST_ALGO : DIGEST_ALGO_MD5;
+	s2k->hash_algo = opt.def_digest_algo? opt.def_digest_algo : def_algo;
     }
 
     if( !next_pw && is_status_enabled() ) {
