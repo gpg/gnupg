@@ -39,7 +39,8 @@ fi
 
 
 version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.a-z-]*\)\"/\1/p' $bindir/config.h)
-echo "building version $version"
+prod_version=$(echo "$version"|awk -F'[^0-9]' '{print $1 "." $2 "." $3 ".1"}')
+echo "building version $version ($prod_version)"
 
 rm * >/dev/null 2>/dev/null || true
 
@@ -93,7 +94,12 @@ for i in ${srcdir}/po/*.po; do
        ;;
    esac
 done
-zip -9 "gnupg-w32cli-${version}.zip" *
+
 if makensis -version >/dev/null 2>&1 ; then
-  makensis -v2 -nocd -DVERSION="${version}" ${srcdir}/scripts/w32installer.nsi
+  makensis -v3 -nocd -DVERSION="${version}" \
+           -DPROD_VERSION="${prod_version}" ${srcdir}/scripts/w32installer.nsi
+  echo "Installer created" >&2
+else
+  zip -9 "gnupg-w32cli-${version}.zip" *
+  echo "ZIP archive created" >&2
 fi

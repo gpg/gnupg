@@ -41,6 +41,23 @@ SetCompressor lzma
 
 ReserveFile "COPYING.txt"
 
+VIProductVersion "${PROD_VERSION}"
+VIAddVersionKey "ProductName" "GNU Privacy Guard (${VERSION})"
+VIAddVersionKey "Comments" \
+   "GnuPG is Free Software; you can redistribute it and/or modify  \
+    it under the terms of the GNU General Public License. You should  \
+    have received a copy of the GNU General Public License along with  \
+    this software; if not, write to the Free Software Foundation, Inc.,  \
+    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA"
+VIAddVersionKey "CompanyName" "Free Software Foundation"
+VIAddVersionKey "LegalTrademarks" ""
+VIAddVersionKey "LegalCopyright" \
+    "Copyright (C) 2005 Free Software Foundation, Inc."
+VIAddVersionKey "FileDescription" \
+    "GnuPG: Encryption and digital signature tool"
+VIAddVersionKey "FileVersion" "${PROD_VERSION}"
+
+
 ; ------------------
 ; Interface Settings
 ; ------------------
@@ -164,6 +181,42 @@ Section "Source" SecSource
 
 SectionEnd ; Section Source
 !endif
+
+
+;----------------------
+Section "-Finish" 
+
+  ClearErrors
+  GetDllVersion "iconv.dll" $R0 $R1
+  IfErrors 0 +3
+    MessageBox MB_OK \
+       "iconv.dll is not installed.$\r$\n \
+        It is highy suggested to install  \
+        this DLL to help with character set conversion.$\r$\n$\r$\n \
+        See http://www.gnupg.org/download/iconv.html  for instructions."
+    Return
+
+  IntOp $R2 $R0 / 0x00010000
+  IntOp $R3 $R0 & 0x0000FFFF
+  IntOp $R4 $R1 / 0x00010000
+  IntOp $R5 $R1 & 0x0000FFFF
+  StrCpy $0 "$R2.$R3.$R4.$R5"
+
+  DetailPrint "iconv.dll version is $0"
+
+  IntCmp $R2 1 0 IconvTooOld
+  IntCmp $R3 9 0 IconvTooOld
+  goto +3
+ IconvTooOld:
+    MessageBox MB_OK \
+      "The installed iconv.dll is too old.$\r$\n \
+       We require at least version 1.9.0.0  (installed: $0).$\r$\n \
+       It is highly suggested to install an updated DLL to help  \
+       with character set conversion.$\r$\n$\r$\n \
+       See http://www.gnupg.org/download/iconv.html  for instructions."
+
+
+SectionEnd
 
 
 ;------------------

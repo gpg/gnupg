@@ -482,6 +482,7 @@ set_native_charset( const char *newset )
 #ifdef _WIN32
         static char codepage[30];
         unsigned int cpno;
+        const char *aliases;
 
         /* We are a console program thus we need to use the
            GetConsoleOutputCP function and not the the GetACP which
@@ -494,14 +495,35 @@ set_native_charset( const char *newset )
         if (!cpno)
           cpno = GetACP ();
         sprintf (codepage, "CP%u", cpno );
-        /* If it is the Windows name for Latin-1 we use the standard
-           name instead to avoid loading of iconv.dll.  Unfortunately
-           it is often CP850 and we don't have a custom translation
-           for it. */
-        if (!strcmp (codepage, "CP1252"))
-            newset = "iso-8859-1";
-        else
-            newset = codepage;
+        /* Resolve alias.  We use a long string string and not the
+           usual array to optimize if the code is taken to a DSO.
+           Taken from libiconv 1.9.2. */
+        newset = codepage;
+        for (aliases = ("CP936"   "\0" "GBK" "\0"
+                        "CP1361"  "\0" "JOHAB" "\0"
+                        "CP20127" "\0" "ASCII" "\0"
+                        "CP20866" "\0" "KOI8-R" "\0"
+                        "CP21866" "\0" "KOI8-RU" "\0"
+                        "CP28591" "\0" "ISO-8859-1" "\0"
+                        "CP28592" "\0" "ISO-8859-2" "\0"
+                        "CP28593" "\0" "ISO-8859-3" "\0"
+                        "CP28594" "\0" "ISO-8859-4" "\0"
+                        "CP28595" "\0" "ISO-8859-5" "\0"
+                        "CP28596" "\0" "ISO-8859-6" "\0"
+                        "CP28597" "\0" "ISO-8859-7" "\0"
+                        "CP28598" "\0" "ISO-8859-8" "\0"
+                        "CP28599" "\0" "ISO-8859-9" "\0"
+                        "CP28605" "\0" "ISO-8859-15" "\0");
+             *aliases;
+             aliases += strlen (aliases) + 1, aliases += strlen (aliases) + 1)
+          {
+            if (!strcmp (codepage, aliases) ||(*aliases == '*' && !aliases[1]))
+              {
+                newset = aliases + strlen (aliases) + 1;
+                break;
+              }
+          }
+
 #else
 #ifdef HAVE_LANGINFO_CODESET
         newset = nl_langinfo (CODESET);

@@ -1080,7 +1080,7 @@ if test "$use_regex" = yes ; then
   AC_MSG_CHECKING([whether the included regex lib is requested])
   AC_ARG_WITH(included-regex,
       [  --with-included-regex   use the included GNU regex library],
-      [gnupg_cv_included_regex=yes],[gnupg_cv_included_regex=no])
+      [gnupg_cv_included_regex="$withval"],[gnupg_cv_included_regex=no])
   AC_MSG_RESULT($gnupg_cv_included_regex)
 
   if test $gnupg_cv_included_regex = no ; then
