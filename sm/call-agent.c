@@ -710,9 +710,11 @@ gpgsm_agent_learn ()
 }
 
 
-/* Ask the agent to change the passphrase of the key identified by HEXKEYGRIP. */
+/* Ask the agent to change the passphrase of the key identified by
+   HEXKEYGRIP. If DESC is not NULL, display instead of the default
+   description message. */
 int
-gpgsm_agent_passwd (const char *hexkeygrip)
+gpgsm_agent_passwd (const char *hexkeygrip, const char *desc)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -723,6 +725,16 @@ gpgsm_agent_passwd (const char *hexkeygrip)
 
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (desc)
+    {
+      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (agent_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        return map_assuan_err (rc);
+    }
 
   snprintf (line, DIM(line)-1, "PASSWD %s", hexkeygrip);
   line[DIM(line)-1] = 0;

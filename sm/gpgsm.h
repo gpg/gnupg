@@ -239,7 +239,8 @@ void gpgsm_release_certlist (certlist_t list);
 int gpgsm_find_cert (const char *name, ksba_cert_t *r_cert);
 
 /*-- keylist.c --*/
-void gpgsm_list_keys (ctrl_t ctrl, STRLIST names, FILE *fp, unsigned int mode);
+gpg_error_t gpgsm_list_keys (ctrl_t ctrl, STRLIST names,
+                             FILE *fp, unsigned int mode);
 
 /*-- import.c --*/
 int gpgsm_import (ctrl_t ctrl, int in_fd);
@@ -284,7 +285,7 @@ int gpgsm_agent_istrusted (ksba_cert_t cert);
 int gpgsm_agent_havekey (const char *hexkeygrip);
 int gpgsm_agent_marktrusted (ksba_cert_t cert);
 int gpgsm_agent_learn (void);
-int gpgsm_agent_passwd (const char *hexkeygrip);
+int gpgsm_agent_passwd (const char *hexkeygrip, const char *desc);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (ksba_cert_t cert, int use_ocsp);

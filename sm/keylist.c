@@ -496,7 +496,7 @@ list_cert_chain (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int with_validation)
 
 /* List all internal keys or just the key given as NAMES.
  */
-static void
+static gpg_error_t
 list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
 {
   KEYDB_HANDLE hd;
@@ -504,7 +504,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
   STRLIST sl;
   int ndesc;
   ksba_cert_t cert = NULL;
-  int rc=0;
+  gpg_error_t rc = 0;
   const char *lastresname, *resname;
   int have_secret;
 
@@ -512,6 +512,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
   if (!hd)
     {
       log_error ("keydb_new failed\n");
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
@@ -526,6 +527,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
   desc = xtrycalloc (ndesc, sizeof *desc);
   if (!ndesc)
     {
+      rc = gpg_error_from_errno (errno);
       log_error ("out of core\n");
       goto leave;
     }
@@ -599,8 +601,12 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
           char *p = gpgsm_get_keygrip_hexstring (cert);
           if (p)
             {
-              if (!gpgsm_agent_havekey (p))
+              rc = gpgsm_agent_havekey (p);
+              if (!rc)
                 have_secret = 1;
+              else if ( gpg_err_code (rc) != GPG_ERR_NO_SECKEY)
+                goto leave;
+              rc = 0;
               xfree (p);
             }
         }
@@ -623,13 +629,16 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
       ksba_cert_release (cert); 
       cert = NULL;
     }
-  if (rc && rc != -1)
+  if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1 )
+    rc = 0;
+  if (rc)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
   
  leave:
   ksba_cert_release (cert);
   xfree (desc);
   keydb_release (hd);
+  return rc;
 }
 
 
@@ -669,7 +678,7 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
 /* List external keys similar to internal one.  Note: mode does not
    make sense here because it would be unwise to list external secret
    keys */
-static void
+static gpg_error_t
 list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
 {
   int rc;
@@ -684,6 +693,7 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
   rc = gpgsm_dirmngr_lookup (ctrl, names, list_external_cb, &parm);
   if (rc)
     log_error ("listing external keys failed: %s\n", gpg_strerror (rc));
+  return rc;
 }
 
 /* List all keys or just the key given as NAMES.
@@ -696,11 +706,14 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
     Bit 6: list internal keys
     Bit 7: list external keys
  */
-void
+gpg_error_t
 gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
 {
+  gpg_error_t err = 0;
+
   if ((mode & (1<<6)))
-      list_internal_keys (ctrl, names, fp, (mode & 3));
-  if ((mode & (1<<7)))
-      list_external_keys (ctrl, names, fp); 
+    err = list_internal_keys (ctrl, names, fp, (mode & 3));
+  if (!err && (mode & (1<<7)))
+    err = list_external_keys (ctrl, names, fp); 
+  return err;
 }

@@ -1,3 +1,12 @@
+2004-02-21  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_internal_keys): Return error codes.
+	(list_external_keys, gpgsm_list_keys): Ditto.
+	* server.c (do_listkeys): Ditto.
+
+	* gpgsm.c (main): Display a key description for --passwd.
+	* call-agent.c (gpgsm_agent_passwd): New arg DESC.
+
 2004-02-20  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): New option --debug-ignore-expiration.

@@ -651,6 +651,7 @@ do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
   char *p;
   STRLIST list, sl;
   unsigned int listmode;
+  gpg_error_t err;
 
   if (!fp)
     return set_error (General_Error, "no data stream");
@@ -684,9 +685,9 @@ do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
     listmode |= (1<<6);
   if (ctrl->server_local->list_external)
     listmode |= (1<<7);
-  gpgsm_list_keys (assuan_get_pointer (ctx), list, fp, listmode);
+  err = gpgsm_list_keys (assuan_get_pointer (ctx), list, fp, listmode);
   free_strlist (list);
-  return 0;
+  return map_to_assuan_status (err);
 }
 
 static int 

@@ -1452,7 +1452,11 @@ main ( int argc, char **argv)
           else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))
             rc = gpg_error (GPG_ERR_BUG);
           else 
-            rc = gpgsm_agent_passwd (grip);
+            {
+              char *desc = gpgsm_format_keydesc (cert);
+              rc = gpgsm_agent_passwd (grip, desc);
+              xfree (desc);
+            }
           if (rc)
             log_error ("error changing passphrase: %s\n", gpg_strerror (rc));
           xfree (grip);
