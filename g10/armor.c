@@ -249,16 +249,12 @@ parse_hash_header( const char *line )
 	    found |= 2;
 	else if( !strncmp( s, "MD5", s2-s ) )
 	    found |= 4;
-	else if( !strncmp( s, "TIGER192", s2-s ) )
-	    found |= 8;
-	else if( !strncmp( s, "TIGER", s2-s ) ) /* used by old versions */
-	    found |= 8;
 	else if( !strncmp( s, "SHA256", s2-s ) )
-	    found |= 16;
+	    found |= 8;
 	else if( !strncmp( s, "SHA384", s2-s ) )
-	    found |= 32;
+	    found |= 16;
 	else if( !strncmp( s, "SHA512", s2-s ) )
-	    found |= 64;
+	    found |= 32;
 	else
 	    return 0;
 	for(; *s2 && (*s2==' ' || *s2 == '\t'); s2++ )
@@ -899,12 +895,10 @@ armor_filter( void *opaque, int control,
                 if( hashes & 4 )
                     buf[n++] = DIGEST_ALGO_MD5;
                 if( hashes & 8 )
-                    buf[n++] = DIGEST_ALGO_TIGER;
-                if( hashes & 16 )
                     buf[n++] = DIGEST_ALGO_SHA256;
-                if( hashes & 32 )
+                if( hashes & 16 )
                     buf[n++] = DIGEST_ALGO_SHA384;
-                if( hashes & 64 )
+                if( hashes & 32 )
                     buf[n++] = DIGEST_ALGO_SHA512;
                 buf[1] = n - 2;
 
@@ -932,6 +926,7 @@ armor_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH && !afx->cancel ) {
 	if( !afx->status ) { /* write the header line */
 	    const char *s;
+            STRLIST comment = opt.comments;
 
 	    if( afx->what >= DIM(head_strings) )
 		log_bug("afx->what=%d", afx->what);
@@ -942,22 +937,24 @@ armor_filter( void *opaque, int control,
 		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
 					      PRINTABLE_OS_NAME ")" LF );
 
-	    /* write the comment string or a default one */
-	    s = opt.comment_string;
-	    if( s && *s ) {
+	    /* Write the comment string. */
+	    for(s=comment? comment->d:NULL; comment;
+                comment=comment->next,s=comment->d)
+	      {
 		iobuf_writestr(a, "Comment: " );
-		for( ; *s; s++ ) {
+		for ( ; *s; s++ )
+                  {
 		    if( *s == '\n' )
-			iobuf_writestr(a, "\\n" );
+                      iobuf_writestr(a, "\\n" );
 		    else if( *s == '\r' )
-			iobuf_writestr(a, "\\r" );
+                      iobuf_writestr(a, "\\r" );
 		    else if( *s == '\v' )
-			iobuf_writestr(a, "\\v" );
+                      iobuf_writestr(a, "\\v" );
 		    else
-			iobuf_put(a, *s );
-		}
+                      iobuf_put(a, *s );
+                  }
 		iobuf_writestr(a, LF );
-	    }
+              }
 
 	    if ( afx->hdrlines ) {
                 for ( s = afx->hdrlines; *s; s++ ) {

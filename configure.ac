@@ -647,7 +647,17 @@ AC_CHECK_SIZEOF(unsigned short)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
-AC_CHECK_SIZEOF(uint64_t)
+# Ensure that we have UINT64_C before we bother to check for uint64_t
+# fixme: really needed in gnupg?  I think it is only useful in libcgrypt.
+AC_CACHE_CHECK([for UINT64_C],[gnupg_cv_uint64_c_works],
+   AC_COMPILE_IFELSE(AC_LANG_PROGRAM([#include <inttypes.h>
+uint64_t foo=UINT64_C(42);]),gnupg_cv_uint64_c_works=yes,gnupg_cv_uint64_c_works=no))
+if test "$gnupg_cv_uint64_c_works" = "yes" ; then
+   AC_CHECK_SIZEOF(uint64_t)
+fi
+ 
+
+
 
 if test "$ac_cv_sizeof_unsigned_short" = "0" \
    || test "$ac_cv_sizeof_unsigned_int" = "0" \
@@ -660,19 +670,8 @@ if test "$ac_cv_sizeof_unsigned_int" != "8" \
    && test "$ac_cv_sizeof_unsigned_long" != "8" \
    && test "$ac_cv_sizeof_unsigned_long_long" != "8" \
    && test "$ac_cv_sizeof_uint64_t" != "8"; then
-    AC_MSG_WARN([No 64-bit types.  Disabling TIGER/192, SHA-384, and SHA-512])
+    AC_MSG_WARN([No 64-bit types.  Disabling SHA-384, and SHA-512])
 else
-  if test x"$use_tiger192" = xyes ; then
-     AC_SUBST(TIGER_O,tiger.o)
-     AC_DEFINE(USE_TIGER192,1,[Define to include the TIGER/192 digest])
-  fi
-
-  if test "$use_old_tiger192" = yes ; then
-     AC_SUBST(TIGER_O,tiger.o)
-     AC_DEFINE(USE_TIGER192,1,[Define to include the TIGER/192 digest])
-     AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER/192 digest support])
-  fi
-
   if test x"$use_sha512" = xyes ; then
      AC_SUBST(SHA512_O,sha512.o)
      AC_DEFINE(USE_SHA512,1,[Define to include the SHA-384 and SHA-512 digests])
@@ -689,9 +688,11 @@ AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
 AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
-AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat getaddrinfo)
 
-# These are needed by libjnlib - fixme: we should have a macros for them
+AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
+
+# These are needed by libjnlib - fixme: we should have macros for them
 AC_CHECK_FUNCS(memicmp stpcpy strlwr strtoul memmove stricmp strtol)
 AC_CHECK_FUNCS(getrusage setrlimit stat setlocale)
 AC_CHECK_FUNCS(flockfile funlockfile)
@@ -702,6 +703,8 @@ AC_REPLACE_FUNCS(mkdtemp)
 AC_REPLACE_FUNCS(fseeko ftello)
 AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(putc_unlocked)
+
+
 
 #
 # check for gethrtime and run a testprogram to see whether
@@ -877,7 +880,7 @@ GNUPG_CHECK_GNUMAKE
 # mysterious reasons - the final link step should bail out. 
 case "${target}" in
     *-*-mingw32*)
-        LIBS="$LIBS -lwsock32"
+        W32LIBS="-lwsock32"
         ;;
     *)
        ;;
@@ -893,6 +896,7 @@ if test "$GCC" = yes; then
 fi
 
 AC_SUBST(NETLIBS)
+AC_SUBST(W32LIBS)
 
 
 # We use jnlib, so tell other modules about it

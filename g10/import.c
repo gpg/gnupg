@@ -1,5 +1,6 @@
-/* import.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+/* import.c - Import OpenPGP key material
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -168,6 +169,8 @@ import_keys_internal( iobuf_t inp, char **fnames, int nnames,
 	    else {
 	        rc = import( inp2, fname, stats, options );
 	        iobuf_close(inp2);
+                /* Must invalidate that ugly cache to actually close it. */
+                iobuf_ioctl (NULL, 2, 0, (char*)fname);
 	        if( rc )
 		    log_error("import from `%s' failed: %s\n", fname,
        	                      gpg_strerror (rc) );
@@ -589,7 +592,8 @@ import_one( const char *fname, KBNODE keyblock,
 
     clear_kbnode_flags( keyblock );
 
-    if((options&IMPORT_REPAIR_PKS_SUBKEY_BUG) && fix_pks_corruption(keyblock))
+    if((options&IMPORT_REPAIR_PKS_SUBKEY_BUG) && fix_pks_corruption(keyblock)
+       && opt.verbose)
       log_info(_("key %08lX: PKS subkey corruption repaired\n"),
 	       (ulong)keyid[1]);
 
@@ -611,11 +615,9 @@ import_one( const char *fname, KBNODE keyblock,
 	  }
 
     if( !delete_inv_parts( fname, keyblock, keyid, options ) ) {
-	if( !opt.quiet ) {
-	    log_info( _("key %08lX: no valid user IDs\n"),
-							(ulong)keyid[1]);
+        log_error ( _("key %08lX: no valid user IDs\n"), (ulong)keyid[1]);
+	if( !opt.quiet )
 	    log_info(_("this may be caused by a missing self-signature\n"));
-	}
 	stats->no_user_id++;
 	return 0;
     }
@@ -979,8 +981,8 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     pk = xcalloc (1, sizeof *pk );
     rc = get_pubkey( pk, keyid );
     if( gpg_err_code (rc) == GPG_ERR_NO_PUBKEY ) {
-	log_info( _("key %08lX: no public key - "
-		 "can't apply revocation certificate\n"), (ulong)keyid[1]);
+	log_error ( _("key %08lX: no public key - "
+                      "can't apply revocation certificate\n"), (ulong)keyid[1]);
 	rc = 0;
 	goto leave;
     }
@@ -1030,12 +1032,12 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
 	if( onode->pkt->pkttype == PKT_USER_ID )
 	    break;
 	else if( onode->pkt->pkttype == PKT_SIGNATURE
-		 && onode->pkt->pkt.signature->sig_class == 0x20
-		 && keyid[0] == onode->pkt->pkt.signature->keyid[0]
-		 && keyid[1] == onode->pkt->pkt.signature->keyid[1] ) {
-	    rc = 0;
-	    goto leave; /* yes, we already know about it */
-	}
+                 && !cmp_signatures(node->pkt->pkt.signature,
+                                    onode->pkt->pkt.signature))
+          {
+            rc = 0;
+            goto leave; /* yes, we already know about it */
+          }
     }
 
 
@@ -1125,17 +1127,20 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		  rc = check_key_signature( keyblock, n, NULL);
 		  if( rc )
 		    {
-		      char *p=utf8_to_native(unode->pkt->pkt.user_id->name,
-				      strlen(unode->pkt->pkt.user_id->name),0);
-		      log_info( gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
-				_("key %08lX: unsupported public key "
-				  "algorithm on user id \"%s\"\n"):
-				_("key %08lX: invalid self-signature "
-				  "on user id \"%s\"\n"),
-				(ulong)keyid[1],p);
-		      xfree (p);
-		    }
-		  else
+                      if (opt.verbose)
+                        {
+                          char *p=utf8_to_native(unode->pkt->pkt.user_id->name,
+                                       strlen(unode->pkt->pkt.user_id->name),0);
+                          log_info( gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
+                                    _("key %08lX: unsupported public key "
+                                      "algorithm on user id \"%s\"\n"):
+                                    _("key %08lX: invalid self-signature "
+                                      "on user id \"%s\"\n"),
+                                    (ulong)keyid[1],p);
+                          xfree (p);
+                        }
+                    }
+                  else
 		    unode->flag |= 1; /* mark that signature checked */
 		}
 	    }
@@ -1144,39 +1149,49 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		 like the rest of gpg.  If the standard gets
 		 revocation targets, this may need to be revised. */
 
-		if( !knode ) {
-		    log_info( _("key %08lX: no subkey for subkey "
-				"binding signature\n"),(ulong)keyid[1]);
-		    n->flag |= 4; /* delete this */
-		}
-		else {
-		  rc = check_key_signature( keyblock, n, NULL);
-		  if( rc ) {
-		    log_info(  gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
-			    _("key %08lX: unsupported public key algorithm\n"):
+		if( !knode )
+                  {
+                    if (opt.verbose)
+                      log_info( _("key %08lX: no subkey for subkey "
+                                  "binding signature\n"),(ulong)keyid[1]);
+                    n->flag |= 4; /* delete this */
+                  }
+		else
+                  {
+                    rc = check_key_signature( keyblock, n, NULL);
+                    if( rc )
+                      {
+                        if (opt.verbose)
+                          log_info(  gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
+                            _("key %08lX: unsupported public key algorithm\n"):
 		            _("key %08lX: invalid subkey binding\n"),
-		            (ulong)keyid[1]);
-		    n->flag|=4;
-		  }
-		  else {
-		    /* It's valid, so is it newer? */
-		    if(sig->timestamp>=bsdate) {
-		      knode->flag |= 1;  /* the subkey is valid */
-		      if(bsnode) {
-			bsnode->flag|=4; /* Delete the last binding
-					    sig since this one is
-					    newer */
-			log_info(_("key %08lX: removed multiple subkey "
-				   "binding\n"),(ulong)keyid[1]);
-		      }
-
-		      bsnode=n;
-		      bsdate=sig->timestamp;
-		    }
-		    else
-		      n->flag|=4; /* older */
-		  }
-		}
+                                     (ulong)keyid[1]);
+                        n->flag|=4;
+                      }
+                    else
+                      {
+                        /* It's valid, so is it newer? */
+                        if(sig->timestamp>=bsdate) 
+                          {
+                            knode->flag |= 1;  /* the subkey is valid */
+                            if(bsnode)
+                              {
+                                bsnode->flag|=4; /* Delete the last binding
+                                                    sig since this one is
+                                                    newer */
+                                if (opt.verbose)
+                                  log_info(_("key %08lX: removed multiple "
+                                             "subkey binding\n"),
+                                           (ulong)keyid[1]);
+                              }
+                            
+                            bsnode=n;
+                            bsdate=sig->timestamp;
+                          }
+                        else
+                          n->flag|=4; /* older */
+                      }
+                  }
 	    }
 	    else if( sig->sig_class == 0x28 ) {
 	      /* We don't actually mark the subkey as revoked right
@@ -1186,14 +1201,16 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
                  See the comment in getkey.c:merge_selfsigs_subkey for
                  more */
 		if( !knode ) {
+                  if (opt.verbose)
 		    log_info( _("key %08lX: no subkey for subkey "
 				"revocation signature\n"),(ulong)keyid[1]);
-		    n->flag |= 4; /* delete this */
+                  n->flag |= 4; /* delete this */
 		}
 		else {
 		  rc = check_key_signature( keyblock, n, NULL);
 		  if( rc ) {
-		    log_info(  gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
+                    if (opt.verbose)
+                      log_info(  gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
 			    _("key %08lX: unsupported public key algorithm\n"):
 		            _("key %08lX: invalid subkey revocation\n"),
 			       (ulong)keyid[1]);
@@ -1206,8 +1223,10 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 			rsnode->flag|=4; /* Delete the last revocation
 					    sig since this one is
 					    newer */
-			log_info(_("key %08lX: removed multiple subkey "
-				   "revocation signatures\n"),(ulong)keyid[1]);
+                        if (opt.verbose)
+                          log_info(_("key %08lX: removed multiple subkey "
+                                     "revocation signatures\n"),
+                                   (ulong)keyid[1]);
 		      }
 
 		      rsnode=n;
@@ -1291,23 +1310,25 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 		 !node->pkt->pkt.signature->flags.exportable &&
 		 !(options&IMPORT_ALLOW_LOCAL_SIGS) &&
 		 seckey_available( node->pkt->pkt.signature->keyid ) ) {
-	    /* here we violate the rfc a bit by still allowing
+	    /* Here we violate the rfc a bit by still allowing
 	     * to import non-exportable signature when we have the
 	     * the secret key used to create this signature - it
-	     * seems that this makes sense */
+	     * seems that this makes sense. */
+          if (opt.verbose)
 	    log_info( _("key %08lX: non exportable signature "
 				    "(class %02x) - skipped\n"),
-				    (ulong)keyid[1],
+                      (ulong)keyid[1],
 				     node->pkt->pkt.signature->sig_class );
-	    delete_kbnode( node );
+          delete_kbnode( node );
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
 	    if( uid_seen ) {
+              if (opt.verbose)
 		log_error( _("key %08lX: revocation certificate "
-				     "at wrong place - skipped\n"),
+                             "at wrong place - skipped\n"),
 				    (ulong)keyid[1]);
-		delete_kbnode( node );
+              delete_kbnode( node );
 	    }
 	    else {
 	      /* If the revocation cert is from a different key than
@@ -1321,9 +1342,10 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 		  int rc = check_key_signature( keyblock, node, NULL);
 		  if( rc )
 		    {
-		      log_error( _("key %08lX: invalid revocation "
-				   "certificate: %s - skipped\n"),
-				 (ulong)keyid[1], gpg_strerror (rc));
+                      if (opt.verbose)
+                        log_info ( _("key %08lX: invalid revocation "
+                                     "certificate: %s - skipped\n"),
+                                   (ulong)keyid[1], gpg_strerror (rc));
 		      delete_kbnode( node );
 		    }
 		}
@@ -1333,17 +1355,19 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 		 (node->pkt->pkt.signature->sig_class == 0x18 ||
 		  node->pkt->pkt.signature->sig_class == 0x28) &&
 		 !subkey_seen ) {
-	    log_error( _("key %08lX: subkey signature "
+          if (opt.verbose)
+	    log_info ( _("key %08lX: subkey signature "
 			 "in wrong place - skipped\n"),
 		       (ulong)keyid[1]);
-	    delete_kbnode( node );
+          delete_kbnode( node );
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && !IS_CERT(node->pkt->pkt.signature))
 	  {
-	    log_error(_("key %08lX: unexpected signature class (0x%02X) -"
-			" skipped\n"),(ulong)keyid[1],
-		      node->pkt->pkt.signature->sig_class);
+            if (opt.verbose)
+              log_info (_("key %08lX: unexpected signature class (0x%02X) -"
+                          " skipped\n"),(ulong)keyid[1],
+                        node->pkt->pkt.signature->sig_class);
 	    delete_kbnode(node);
 	  }
 	else if( (node->flag & 4) ) /* marked for deletion */
@@ -1439,8 +1463,9 @@ collapse_uids( KBNODE *keyblock )
 	kid1 = keyid_from_sk( n->pkt->pkt.secret_key, NULL );
     else
 	kid1 = 0;
-    log_info(_("key %08lX: duplicated user ID detected - merged\n"),
-								 (ulong)kid1);
+    if (!opt.quiet)
+      log_info (_("key %08lX: duplicated user ID detected - merged\n"),
+                (ulong)kid1);
 
     return 1;
 }
@@ -1557,23 +1582,27 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		    break;
 		else if( onode->pkt->pkttype == PKT_SIGNATURE
 			 && onode->pkt->pkt.signature->sig_class == 0x20
-			 && node->pkt->pkt.signature->keyid[0]
-			    == onode->pkt->pkt.signature->keyid[0]
-			 && node->pkt->pkt.signature->keyid[1]
-			    == onode->pkt->pkt.signature->keyid[1] ) {
-		    found = 1;
-		    break;
-		}
+			 && !cmp_signatures(onode->pkt->pkt.signature,
+					    node->pkt->pkt.signature))
+                  {
+                    found = 1;
+                    break;
+                  }
 	    }
 	    if( !found ) {
-	        char *p=get_user_id_printable (keyid);
 		KBNODE n2 = clone_kbnode(node);
 		insert_kbnode( keyblock_orig, n2, 0 );
 		n2->flag |= 1;
                 ++*n_sigs;
-		log_info(_("key %08lX: \"%s\" revocation certificate added\n"),
-					 (ulong)keyid[1],p);
-		xfree (p);
+
+                if (!opt.quiet)
+                  {
+                    char *p=get_user_id_printable (keyid);
+                    log_info(_("key %08lX: \"%s\" "
+                               "revocation certificate added\n"),
+                             (ulong)keyid[1],p);
+                    xfree (p);
+                  }
 	    }
 	}
     }
@@ -1602,8 +1631,9 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		insert_kbnode( keyblock_orig, n2, 0 );
 		n2->flag |= 1;
                 ++*n_sigs;
-		log_info( _("key %08lX: direct key signature added\n"),
-					 (ulong)keyid[1]);
+                if (!opt.quiet)
+                  log_info( _("key %08lX: direct key signature added\n"),
+                            (ulong)keyid[1]);
 	    }
 	}
     }
@@ -1771,20 +1801,12 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 	    || n->pkt->pkt.signature->sig_class == 0x28 )
 	    continue; /* skip signatures which are only valid on subkeys */
 	found = 0;
-	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next){
-	    if( n2->pkt->pkttype == PKT_SIGNATURE
-		&& n->pkt->pkt.signature->keyid[0]
-		   == n2->pkt->pkt.signature->keyid[0]
-		&& n->pkt->pkt.signature->keyid[1]
-		   == n2->pkt->pkt.signature->keyid[1]
-		&& n->pkt->pkt.signature->timestamp
-		   <= n2->pkt->pkt.signature->timestamp
-		&& n->pkt->pkt.signature->sig_class
-		   == n2->pkt->pkt.signature->sig_class ) {
-		found++;
-		break;
-	    }
-	}
+	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next)
+	  if(!cmp_signatures(n->pkt->pkt.signature,n2->pkt->pkt.signature))
+	    {
+	      found++;
+	      break;
+ 	    }	
 	if( !found ) {
 	    /* This signature is new or newer, append N to DST.
 	     * We add a clone to the original keyblock, because this

@@ -1,6 +1,6 @@
-/* keylist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+/* keylist.c - List all or selected keys
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -58,10 +58,46 @@ static FILE *attrib_fp=NULL;
 void
 public_key_list( STRLIST list )
 {
-    if( !list )
-	list_all(0);
-    else
-	list_one( list, 0 );
+  if(opt.with_colons)
+    {
+      byte trust_model,marginals,completes,cert_depth;
+      ulong created,nextcheck;
+
+      read_trust_options(&trust_model,&created,&nextcheck,
+			 &marginals,&completes,&cert_depth);
+
+      printf("tru:");
+
+      if(nextcheck && nextcheck <= make_timestamp())
+	printf("o");
+      if(trust_model!=opt.trust_model)
+	printf("t");
+      if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
+	{
+	  if(marginals!=opt.marginals_needed)
+	    printf("m");
+	  if(completes!=opt.completes_needed)
+	    printf("c");
+	  if(cert_depth!=opt.max_cert_depth)
+	    printf("d");
+	}
+
+      printf(":%d:%lu:%lu",trust_model,created,nextcheck);
+
+      /* Only show marginals, completes, and cert_depth in the classic
+	 or PGP trust models since they are not meaningful
+	 otherwise. */
+
+      if(trust_model==TM_PGP || trust_model==TM_CLASSIC)
+	printf(":%d:%d:%d",marginals,completes,cert_depth);
+
+      printf("\n");
+    }
+
+  if( !list )
+    list_all(0);
+  else
+    list_one( list, 0 );
 }
 
 void
@@ -152,7 +188,6 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
 	  for(i=0;i<indent;i++)
 	    putchar(' ');
 
-	  /* This isn't UTF8 as it is a URL(?) */
 	  if(crit)
 	    str=_("Critical signature policy: ");
 	  else
@@ -161,7 +196,7 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
 	    log_info("%s",str);
 	  else
 	    printf("%s",str);
-	  print_string(fp,p,len,0);
+	  print_utf8_string(fp,p,len);
 	  fprintf(fp,"\n");
 	}
 
@@ -169,6 +204,48 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
 	write_status_buffer ( STATUS_POLICY_URL, p, len, 0 );
     }
 }
+
+
+/*
+  mode=0 for stdout.
+  mode=1 for log_info + status messages
+  mode=2 for status messages only
+*/
+/* TODO: use this */
+void
+show_keyserver_url(PKT_signature *sig,int indent,int mode)
+{
+  const byte *p;
+  size_t len;
+  int seq=0,crit;
+  FILE *fp=mode?log_get_stream():stdout;
+
+  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&len,&seq,&crit)))
+    {
+      if(mode!=2)
+	{
+	  int i;
+	  char *str;
+
+	  for(i=0;i<indent;i++)
+	    putchar(' ');
+
+	  if(crit)
+	    str=_("Critical preferred keyserver: ");
+	  else
+	    str=_("Preferred keyserver: ");
+	  if(mode)
+	    log_info("%s",str);
+	  else
+	    printf("%s",str);
+	  print_utf8_string(fp,p,len);
+	  fprintf(fp,"\n");
+	}
+
+      /* TODO: put in a status-fd tag for preferred keyservers */
+    }
+}
+
 
 /*
   mode=0 for stdout.
@@ -788,6 +865,9 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATION))
 	      show_notation(sig,3,0);
 
+	    if(sig->flags.pref_ks && (opt.list_options&LIST_SHOW_KEYSERVER))
+	      show_keyserver_url(sig,3,0);
+
 	    /* fixme: check or list other sigs here */
 	}
     }
@@ -820,7 +900,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	pk = NULL;
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
-        printf("sec:u:%u:%d:%08lX%08lX:%s:%s:::",
+        printf("sec::%u:%d:%08lX%08lX:%s:%s:::",
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
@@ -886,13 +966,17 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	    if( any ) {
 	        int i;
 	        char *str=uid->attrib_data?"uat":"uid";
-                if ( uid->is_revoked )
+		/* If we're listing a secret key, leave out the
+		   validity values for now.  FIXME: This should be
+		   handled better in 1.9. */
+		if ( sk )
+        	    printf("%s:::::",str);
+                else if ( uid->is_revoked )
         	    printf("%s:r::::",str);
                 else if ( uid->is_expired )
         	    printf("%s:e::::",str);
-		else if ( opt.no_expensive_trust_checks ) {
+		else if ( opt.no_expensive_trust_checks )
         	    printf("%s:::::",str);
-	        }
                 else {
 		    int uid_validity;
 
@@ -1010,8 +1094,10 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
-	    int sigrc;
+	    int sigrc, fprokay=0;
             char *sigstr;
+	    size_t fplen;
+	    byte fparray[MAX_FINGERPRINT_LEN];
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
 		if( sig->sig_class == 0x20 )
@@ -1045,8 +1131,14 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		continue;
 	    }
 	    if( opt.check_sigs ) {
+	        PKT_public_key *signer_pk=NULL;
+
 		fflush(stdout);
-		rc = check_key_signature( keyblock, node, NULL );
+		if(opt.no_sig_cache)
+		  signer_pk = xcalloc (1, sizeof(PKT_public_key));
+
+		rc = check_key_signature2( keyblock, node, NULL, signer_pk,
+					   NULL, NULL, NULL );
 		switch( gpg_err_code (rc) ) {
 		  case 0:		   sigrc = '!'; break;
 		  case GPG_ERR_BAD_SIGNATURE:    sigrc = '-'; break;
@@ -1054,6 +1146,16 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		  case GPG_ERR_UNUSABLE_PUBKEY:  sigrc = '?'; break;
 		  default:		   sigrc = '%'; break;
 		}
+
+		if(opt.no_sig_cache)
+		  {
+		    if(!rc)
+		      {
+			fingerprint_from_pk (signer_pk, fparray, &fplen);
+			fprokay=1;
+		      }
+		    free_public_key(signer_pk);
+		  }
 	    }
 	    else {
 		rc = 0;
@@ -1087,7 +1189,20 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
                 print_string( stdout, p, n, ':' );
 		xfree (p);
 	    }
-            printf(":%02x%c:\n", sig->sig_class,sig->flags.exportable?'x':'l');
+            printf(":%02x%c:", sig->sig_class,sig->flags.exportable?'x':'l');
+	    if(opt.no_sig_cache && opt.check_sigs && fprokay)
+	      {
+		size_t i;
+
+		printf(":");
+
+		for (i=0; i < fplen ; i++ )
+		  printf ("%02X", fparray[i] );
+
+		printf(":");
+	      }
+
+	    printf("\n");
 	    /* fixme: check or list other sigs here */
 	}
     }

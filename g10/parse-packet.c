@@ -367,9 +367,29 @@ parse( iobuf_t inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
 	if( !lenbytes ) {
 	    pktlen = 0; /* don't know the value */
-	    if( pkttype != PKT_COMPRESSED )
-		iobuf_set_block_mode(inp, 1);
-	}
+            switch (pkttype) {
+              case PKT_ENCRYPTED:
+              case PKT_PLAINTEXT:
+                /* These partial length encodings are from an very
+		   early GnuPG release and deprecated.  However we
+		   still support them read-wise.  Note, that we should
+		   not allow them for any key related packets, because
+		   this might render a keyring unusable if an errenous
+		   packet indicated this mode but not complying to it
+		   gets imported. */
+                iobuf_set_block_mode(inp, 1);
+		break;
+
+              case PKT_COMPRESSED:
+                break; /* the orginal pgp 2 way. */
+
+              default:
+                log_error ("%s: old style partial length "
+                           "for invalid packet type\n", iobuf_where(inp) );
+                rc = gpg_error (GPG_ERR_INV_PACKET);
+                goto leave;
+            }
+       }
 	else {
 	    for( ; lenbytes; lenbytes-- ) {
 		pktlen <<= 8;
@@ -860,7 +880,8 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	  printf(" %02X", buffer[i]);
 	break;
       case SIGSUBPKT_PREF_KS:
-	p = "preferred key server";
+	fputs("preferred key server: ", stdout );
+	print_string( stdout, buffer, length, ')' );
 	break;
       case SIGSUBPKT_PRIMARY_UID:
 	p = "primary user ID";
@@ -936,6 +957,7 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
       case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_PREF_KS:
       case SIGSUBPKT_FEATURES:
       case SIGSUBPKT_REGEXP:
 	return 0;
@@ -992,9 +1014,11 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_KEY_FLAGS:
       case SIGSUBPKT_PRIMARY_UID:
       case SIGSUBPKT_FEATURES:
-      case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
       case SIGSUBPKT_TRUST:
       case SIGSUBPKT_REGEXP:
+	/* Is it enough to show the policy or keyserver? */
+      case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_PREF_KS:
 	return 1;
 
       default:
@@ -1220,11 +1244,8 @@ parse_signature( iobuf_t inp, int pkttype, unsigned long pktlen,
 	    goto leave;
 	}
 	if( n ) {
-            /* we add 8 extra bytes so that we have space for the signature
-             * status cache.  Well we are wasting this if there is a cache
-             * packet already, but in the other case it avoids an realloc */
-	    sig->unhashed = xmalloc (sizeof(*sig->unhashed) + n + 8 - 1 );
-            sig->unhashed->size = n + 8;
+	    sig->unhashed = xmalloc (sizeof(*sig->unhashed) + n - 1 );
+            sig->unhashed->size = n;
 	    sig->unhashed->len = n;
 	    if( iobuf_read(inp, sig->unhashed->data, n ) != n ) {
 		log_error("premature eof while reading "
@@ -1259,17 +1280,19 @@ parse_signature( iobuf_t inp, int pkttype, unsigned long pktlen,
 	}
 
 	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_CREATED, NULL );
-	if( !p )
-	    log_error("signature packet without timestamp\n");
-	else
-	    sig->timestamp = buffer_to_u32(p);
+	if(p)
+	  sig->timestamp = buffer_to_u32(p);
+	else if(!(sig->pubkey_algo>=100 && sig->pubkey_algo<=110))
+	  log_error("signature packet without timestamp\n");
+
 	p = parse_sig_subpkt2( sig, SIGSUBPKT_ISSUER, NULL );
-	if( !p )
-	    log_error("signature packet without keyid\n");
-	else {
-	    sig->keyid[0] = buffer_to_u32(p);
-	    sig->keyid[1] = buffer_to_u32(p+4);
+	if( p )
+	{
+          sig->keyid[0] = buffer_to_u32(p);
+          sig->keyid[1] = buffer_to_u32(p+4);
 	}
+	else if(!(sig->pubkey_algo>=100 && sig->pubkey_algo<=110))
+	  log_error("signature packet without keyid\n");
 
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_SIG_EXPIRE,NULL);
 	if(p)
@@ -1280,6 +1303,10 @@ parse_signature( iobuf_t inp, int pkttype, unsigned long pktlen,
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,NULL);
 	if(p)
 	  sig->flags.policy_url=1;
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,NULL);
+	if(p)
+	  sig->flags.pref_ks=1;
 
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,NULL);
 	if(p)

@@ -1382,6 +1382,13 @@ keyring_rebuild_cache (void *token)
         {
           if (node->pkt->pkttype == PKT_SIGNATURE)
             {
+	      /* Note that this doesn't cache the result of a
+		 revocation issued by a designated revoker.  This is
+		 because the pk in question does not carry the revkeys
+		 as we haven't merged the key and selfsigs.  It is
+		 questionable whether this matters very much since
+		 there are very very few designated revoker revocation
+		 packets out there. */
               check_key_signature (keyblock, node, NULL);
               sigcount++;
             }

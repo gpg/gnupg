@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                               Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -147,7 +147,12 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
 
     buf[0] = 0;
     if (use & PUBKEY_USAGE_SIG)
-        buf[0] |= 0x01 | 0x02;
+      {
+	if(sig->sig_class==0x18)
+	  buf[0] |= 0x02; /* Don't set the certify flag for subkeys */
+	else
+	  buf[0] |= 0x01 | 0x02;
+      }
     if (use & PUBKEY_USAGE_ENC)
         buf[0] |= 0x04 | 0x08;
     if (use & PUBKEY_USAGE_AUTH)
@@ -586,6 +591,18 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 
     return 0;
 }
+
+
+int
+keygen_add_keyserver_url(PKT_signature *sig, void *opaque)
+{
+  const char *url=opaque;
+
+  build_sig_subpkt(sig,SIGSUBPKT_PREF_KS,url,strlen(url));
+
+  return 0;
+}
+
 
 int
 keygen_add_revkey(PKT_signature *sig, void *opaque)
@@ -1138,10 +1155,10 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 static int
 check_valid_days( const char *s )
 {
-    if( !isdigit(*s) )
+    if( !digitp(s) )
 	return 0;
     for( s++; *s; s++)
-	if( !isdigit(*s) )
+	if( !digitp(s) )
 	    break;
     if( !*s )
 	return 1;
@@ -1219,15 +1236,18 @@ ask_algo (int addmode, unsigned int *r_usage)
 				      _("Create anyway? ")))
 	      {
 		algo = PUBKEY_ALGO_ELGAMAL;
+                *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG;
 		break;
 	      }
 	}
 	else if( algo == 3 && addmode ) {
 	    algo = PUBKEY_ALGO_ELGAMAL_E;
+            *r_usage = PUBKEY_USAGE_ENC;
 	    break;
 	}
 	else if( algo == 2 ) {
 	    algo = PUBKEY_ALGO_DSA;
+            *r_usage = PUBKEY_USAGE_SIG;
 	    break;
 	}
 	else
@@ -1489,7 +1509,7 @@ ask_user_id( int mode )
 
 		if( strpbrk( aname, "<>" ) )
 		    tty_printf(_("Invalid character in name\n"));
-		else if( isdigit(*aname) )
+		else if( digitp(aname) )
 		    tty_printf(_("Name may not start with a digit\n"));
 		else if( strlen(aname) < 5 )
 		    tty_printf(_("Name must be at least 5 characters long\n"));
@@ -1503,7 +1523,7 @@ ask_user_id( int mode )
 		amail = cpr_get("keygen.email",_("Email address: "));
 		trim_spaces(amail);
 		cpr_kill_prompt();
-		if( !*amail )
+		if( !*amail || opt.allow_freeform_uid )
 		    break;   /* no email address is okay */
 		else if( has_invalid_email_chars(amail)
 			 || count_chr(amail,'@') != 1
@@ -1551,7 +1571,8 @@ ask_user_id( int mode )
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */
-	if( !*amail && (strchr( aname, '@' ) || strchr( acomment, '@'))) {
+	if( !*amail && !opt.allow_freeform_uid
+            && (strchr( aname, '@' ) || strchr( acomment, '@'))) {
 	    fail = 1;
 	    tty_printf(_("Please don't put the email address "
 			  "into the real name or the comment\n") );
@@ -1608,7 +1629,7 @@ ask_user_id( int mode )
 	}
 	xfree (answer);
 	if( !amail && !acomment && !amail )
-	    break;
+          break;
 	xfree (uid); uid = NULL;
     }
     if( uid ) {
@@ -1754,7 +1775,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key )
     struct para_data_s *r = get_parameter( para, key );
     if( !r )
 	return -1;
-    if( isdigit( *r->u.value ) )
+    if( digitp( r->u.value ) )
 	i = atoi( r->u.value );
     else
         i = openpgp_pk_map_name ( r->u.value );
@@ -2295,11 +2316,22 @@ generate_keypair( const char *fname )
           strcpy( r->u.value, "1024" );
           r->next = para;
           para = r;
+          r = xcalloc (1, sizeof *r + 20 );
+          r->key = pKEYUSAGE;
+          strcpy( r->u.value, "sign" );
+          r->next = para;
+          para = r;
           
           algo = PUBKEY_ALGO_ELGAMAL_E;
           r = xcalloc (1, sizeof *r + 20 );
           r->key = pSUBKEYTYPE;
           sprintf( r->u.value, "%d", algo );
+          r->next = para;
+          para = r;
+          r = xcalloc (1, sizeof *r + 20 );
+          r->key = pSUBKEYUSAGE;
+          strcpy( r->u.value, "encrypt" );
+          r->next = para;
           r->next = para;
           para = r;
         }

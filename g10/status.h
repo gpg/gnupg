@@ -99,6 +99,7 @@
 #define STATUS_ATTRIBUTE        67
 #define STATUS_IMPORT_OK 	68
 #define STATUS_IMPORT_CHECK     69
+#define STATUS_REVKEYSIG        70
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

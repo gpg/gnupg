@@ -109,7 +109,7 @@ gpgv2_SOURCES = gpgv.c           \
 #	       ks-db.h \
 #	       $(common_source)
 
-LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@ 
+LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@ @W32LIBS@
 gpg2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
 gpgv2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
 

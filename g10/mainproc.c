@@ -668,15 +668,12 @@ proc_compressed( CTX c, PACKET *pkt )
  * Returns: 0 = valid signature or an error code
  */
 static int
-do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
+do_check_sig( CTX c, KBNODE node, int *is_selfsig,
+              int *is_expkey, int *is_revkey )
 {
     PKT_signature *sig;
     MD_HANDLE md = NULL, md2 = NULL;
-    int algo, rc, dum2;
-    u32 dummy;
-
-    if(!is_expkey)
-      is_expkey=&dum2;
+    int algo, rc;
 
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     if( is_selfsig )
@@ -732,9 +729,9 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
     }
     else
 	return GPG_ERR_SIG_CLASS;
-    rc = signature_check2( sig, md, &dummy, is_expkey );
+    rc = signature_check2( sig, md, NULL, is_expkey, is_revkey, NULL );
     if( gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2 )
-	rc = signature_check2( sig, md2, &dummy, is_expkey );
+	rc = signature_check2( sig, md2, NULL, is_expkey, is_revkey, NULL );
     gcry_md_close (md);
     gcry_md_close (md2);
 
@@ -958,7 +955,8 @@ list_node( CTX c, KBNODE node )
 	if( opt.check_sigs ) {
 	    fflush(stdout);
 	    switch( gpg_err_code (rc2=do_check_sig( c, node,
-                                                    &is_selfsig, NULL )) ) {
+                                                    &is_selfsig,
+                                                    NULL, NULL )) ) {
 	      case 0:		          sigrc = '!'; break;
 	      case GPG_ERR_BAD_SIGNATURE: sigrc = '-'; break;
 	      case GPG_ERR_NO_PUBKEY: 
@@ -1217,7 +1215,7 @@ check_sig_and_print( CTX c, KBNODE node )
 {
     PKT_signature *sig = node->pkt->pkt.signature;
     const char *astr, *tstr;
-    int rc, is_expkey=0;
+    int rc, is_expkey=0, is_revkey=0;
 
     if( opt.skip_verify ) {
 	log_info(_("signature verification suppressed\n"));
@@ -1281,19 +1279,51 @@ check_sig_and_print( CTX c, KBNODE node )
 
     tstr = asctimestamp(sig->timestamp);
     astr = gcry_pk_algo_name (sig->pubkey_algo);
-    log_info(_("Signature made %.*s using %s key ID %08lX\n"),
-	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
+    if(opt.verify_options&VERIFY_SHOW_LONG_KEYID)
+      {
+	log_info(_("Signature made %.*s\n"),(int)strlen(tstr), tstr);
+	log_info(_("               using %s key %08lX%08lX\n"),
+		 astr? astr: "?",(ulong)sig->keyid[0],(ulong)sig->keyid[1] );
+      }
+    else
+      log_info(_("Signature made %.*s using %s key ID %08lX\n"),
+	       (int)strlen(tstr), tstr, astr? astr: "?",
+	       (ulong)sig->keyid[1] );
 
-    rc = do_check_sig(c, node, NULL, &is_expkey );
+    rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
     if( gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
         && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
 	if( keyserver_import_keyid ( sig->keyid )==0 )
-	    rc = do_check_sig(c, node, NULL, &is_expkey );
+	    rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
     }
+
+
+    /* If the key still isn't found, try to inform the user where it
+       can be found. */
+    if(gpg_err_code (rc)==GPG_ERR_NO_PUBKEY && sig->flags.pref_ks)
+      {
+	const byte *p;
+	int seq=0;
+	size_t n;
+
+	while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL)))
+	  {
+	    /* According to my favorite copy editor, in English
+	       grammar, you say "at" if the key is located on a web
+	       page, but "from" if it is located on a keyserver.  I'm
+	       not going to even try to make two strings here :) */
+	    log_info(_("Key available at: ") );
+	    print_string( log_get_stream(), p, n, 0 );
+	    putc( '\n', log_get_stream() );
+	  }
+      }
+
+
     if( !rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE ) {
 	KBNODE un, keyblock;
 	int count=0, statno;
         char keyid_str[50];
+       	PKT_public_key *pk=NULL;
 
 	if(rc)
 	  statno=STATUS_BADSIG;
@@ -1301,6 +1331,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	  statno=STATUS_EXPSIG;
 	else if(is_expkey)
 	  statno=STATUS_EXPKEYSIG;
+	else if(is_revkey)
+	  statno=STATUS_REVKEYSIG;
 	else
 	  statno=STATUS_GOODSIG;
 
@@ -1311,6 +1343,13 @@ check_sig_and_print( CTX c, KBNODE node )
 
         /* find and print the primary user ID */
 	for( un=keyblock; un; un = un->next ) {
+	    int valid;
+
+	    if(un->pkt->pkttype==PKT_PUBLIC_KEY)
+	      {
+	        pk=un->pkt->pkt.public_key;
+		continue;
+	      }
 	    if( un->pkt->pkttype != PKT_USER_ID )
 		continue;
 	    if ( !un->pkt->pkt.user_id->created )
@@ -1325,6 +1364,13 @@ check_sig_and_print( CTX c, KBNODE node )
 	    if ( un->pkt->pkt.user_id->attrib_data )
 	        continue;
             
+	    assert(pk);
+
+	    /* Get it before we print anything to avoid interrupting
+	       the output with the "please do a --check-trustdb"
+	       line. */
+	    valid=get_validity(pk,un->pkt->pkt.user_id);
+
             keyid_str[17] = 0; /* cut off the "[uncertain]" part */
             write_status_text_and_buffer (statno, keyid_str,
                                           un->pkt->pkt.user_id->name,
@@ -1336,7 +1382,11 @@ check_sig_and_print( CTX c, KBNODE node )
 		       : _("Good signature from \""));
 	    print_utf8_string( log_get_stream(), un->pkt->pkt.user_id->name,
 					     un->pkt->pkt.user_id->len );
-	    fputs("\"\n", log_get_stream() );
+	    if(opt.verify_options&VERIFY_SHOW_VALIDITY)
+	      fprintf (log_get_stream(),
+                       "\" [%s]\n",trust_value_to_string(valid));
+	    else
+	      fputs("\"\n", log_get_stream() );
             count++;
 	}
 	if( !count ) {	/* just in case that we have no valid textual
@@ -1380,10 +1430,7 @@ check_sig_and_print( CTX c, KBNODE node )
         /* If we have a good signature and already printed 
          * the primary user ID, print all the other user IDs */
         if ( count && !rc ) {
-	    PKT_public_key *pk=NULL;
             for( un=keyblock; un; un = un->next ) {
-	        if(un->pkt->pkttype==PKT_PUBLIC_KEY)
-  		    pk=un->pkt->pkt.public_key;
                 if( un->pkt->pkttype != PKT_USER_ID )
                     continue;
                 if ( un->pkt->pkt.user_id->is_revoked )
@@ -1407,28 +1454,46 @@ check_sig_and_print( CTX c, KBNODE node )
 		log_info(    _("                aka \""));
                 print_utf8_string( log_get_stream(), un->pkt->pkt.user_id->name,
                                                  un->pkt->pkt.user_id->len );
-                fputs("\"\n", log_get_stream() );
+		if(opt.verify_options&VERIFY_SHOW_VALIDITY)
+		  fprintf (log_get_stream(), "\" [%s]\n",
+			  trust_value_to_string(get_validity(pk,
+							     un->pkt->
+							     pkt.user_id)));
+		else
+		  fputs("\"\n", log_get_stream() );
             }
 	}
 	release_kbnode( keyblock );
 
 	if( !rc )
 	  {
-	    show_notation(sig,0,1);
-	    show_policy_url(sig,0,1);
-	  }
+	    if(opt.verify_options&VERIFY_SHOW_POLICY)
+	      show_policy_url(sig,0,1);
+	    else
+	      show_policy_url(sig,0,2);
+
+	    if(opt.verify_options&VERIFY_SHOW_KEYSERVER)
+	      show_keyserver_url(sig,0,1);
+	    else
+	      show_keyserver_url(sig,0,2);
+
+	    if(opt.verify_options&VERIFY_SHOW_NOTATION)
+	      show_notation(sig,0,1);
+	    else
+	      show_notation(sig,0,2);
+         }
 
 	if( !rc && is_status_enabled() ) {
 	    /* print a status response with the fingerprint */
-	    PKT_public_key *pk = xcalloc (1, sizeof *pk );
+	    PKT_public_key *vpk = xcalloc (1, sizeof *vpk );
 
-	    if( !get_pubkey( pk, sig->keyid ) ) {
+	    if( !get_pubkey( vpk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;
 		char buf[MAX_FINGERPRINT_LEN*4+90], *bufp;
 		size_t i, n;
 
                 bufp = buf;
-		fingerprint_from_pk( pk, array, &n );
+		fingerprint_from_pk( vpk, array, &n );
 		p = array;
 		for(i=0; i < n ; i++, p++, bufp += 2)
                     sprintf(bufp, "%02X", *p );
@@ -1442,27 +1507,27 @@ check_sig_and_print( CTX c, KBNODE node )
 			sig->version,sig->pubkey_algo,sig->digest_algo,
 			sig->sig_class);
                 bufp = bufp + strlen (bufp);
-                if (!pk->is_primary) {
+                if (!vpk->is_primary) {
                    u32 akid[2];
  
-                   akid[0] = pk->main_keyid[0];
-                   akid[1] = pk->main_keyid[1];
-                   free_public_key (pk);
-                   pk = xcalloc (1, sizeof *pk );
-                   if (get_pubkey (pk, akid)) {
+                   akid[0] = vpk->main_keyid[0];
+                   akid[1] = vpk->main_keyid[1];
+                   free_public_key (vpk);
+                   vpk = xcalloc (1, sizeof *vpk );
+                   if (get_pubkey (vpk, akid)) {
                      /* impossible error, we simply return a zeroed out fpr */
                      n = MAX_FINGERPRINT_LEN < 20? MAX_FINGERPRINT_LEN : 20;
                      memset (array, 0, n);
                    }
                    else
-                     fingerprint_from_pk( pk, array, &n );
+                     fingerprint_from_pk( vpk, array, &n );
                 }
 		p = array;
 		for(i=0; i < n ; i++, p++, bufp += 2)
                     sprintf(bufp, "%02X", *p );
 		write_status_text( STATUS_VALIDSIG, buf );
 	    }
-	    free_public_key( pk );
+	    free_public_key( vpk );
 	}
 
 	if( !rc )

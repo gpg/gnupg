@@ -43,8 +43,9 @@ struct cmp_help_context_s {
     MD_HANDLE md;
 };
 
-static int do_check( PKT_public_key *pk, PKT_signature *sig,
-					 MD_HANDLE digest, int *r_expired );
+
+static int do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
+		     int *r_expired, int *r_revoked, PKT_public_key *ret_pk);
 
 /****************
  * Check the signature which is contained in SIG.
@@ -54,19 +55,15 @@ static int do_check( PKT_public_key *pk, PKT_signature *sig,
 int
 signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
-    u32 dummy;
-    int dum2;
-    return signature_check2( sig, digest, &dummy, &dum2 );
+    return signature_check2( sig, digest, NULL, NULL, NULL, NULL );
 }
 
 int
-signature_check2( PKT_signature *sig, MD_HANDLE digest,
-		  u32 *r_expiredate, int *r_expired )
+signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate, 
+		  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
 {
     PKT_public_key *pk = xcalloc (1, sizeof *pk );
     int rc=0;
-
-    *r_expiredate = 0;
 
     /* Sanity check that the md has a context for the hash that the
        sig is expecting.  This can happen if a onepass sig header does
@@ -83,8 +80,9 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
         rc=GPG_ERR_BAD_PUBKEY; /* you cannot have a good sig from an
 				 invalid subkey */
     else {
-	*r_expiredate = pk->expiredate;
-	rc = do_check( pk, sig, digest, r_expired );
+        if (r_expiredate)
+	    *r_expiredate = pk->expiredate;
+	rc = do_check( pk, sig, digest, r_expired, r_revoked, ret_pk );
     }
 
     free_public_key( pk );
@@ -135,11 +133,15 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
 
 
 static int
-do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
+do_check_messages( PKT_public_key *pk, PKT_signature *sig,
+                   int *r_expired, int *r_revoked )
 {
     u32 cur_time;
 
-    *r_expired = 0;
+    if (r_expired)
+      *r_expired = 0;
+    if (r_revoked)
+      *r_revoked = 0;
     if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	log_info(_("key %08lX: this is a PGP generated "
 		   "ElGamal key which is NOT secure for signatures!\n"),
@@ -182,8 +184,12 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 	sprintf(buf,"%lu",(ulong)pk->expiredate);
 	write_status_text(STATUS_KEYEXPIRED,buf);
 	write_status(STATUS_SIGEXPIRED);
-	*r_expired = 1;
+        if (r_expired)
+          *r_expired = 1;
     }
+
+    if(pk->is_revoked && r_revoked)
+      *r_revoked=1;
 
     return 0;
 }
@@ -191,13 +197,13 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 
 static int
 do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
-						    int *r_expired )
+	  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
 {
     gcry_mpi_t result = NULL;
     int rc=0;
     struct cmp_help_context_s ctx;
 
-    if( (rc=do_check_messages(pk,sig,r_expired)) )
+    if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
     if( (rc=gcry_md_test_algo(sig->digest_algo)) )
 	return rc;
@@ -279,6 +285,9 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
                (ulong)keyid_from_pk(pk,NULL));
 	rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
     }
+
+    if(!rc && ret_pk)
+      copy_public_key(ret_pk,pk);
 
     return rc;
 }
@@ -406,16 +415,19 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
 int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
-    u32 dummy;
-    int dum2;
-    return check_key_signature2(root, node, NULL, is_selfsig, &dummy, &dum2 );
+    return check_key_signature2(root, node, NULL, NULL, is_selfsig, NULL, NULL);
 }
 
 /* If check_pk is set, then use it to check the signature in node
-   rather than getting it from root or the keydb. */
+   rather than getting it from root or the keydb.  If ret_pk is set,
+   fill in the public key that was used to verify the signature.
+   ret_pk is only meaningful when the verification was successful. */
+/* TODO: add r_revoked here as well.  It has the same problems as
+   r_expiredate and r_expired and the cache. */
 int
 check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
-		      int *is_selfsig, u32 *r_expiredate, int *r_expired )
+		      PKT_public_key *ret_pk, int *is_selfsig,
+                      u32 *r_expiredate, int *r_expired )
 {
     MD_HANDLE md;
     PKT_public_key *pk;
@@ -425,8 +437,10 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 
     if( is_selfsig )
 	*is_selfsig = 0;
-    *r_expiredate = 0;
-    *r_expired = 0;
+    if( r_expiredate )
+        *r_expiredate = 0;
+    if( r_expired )
+        *r_expired = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
@@ -444,7 +458,9 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    *is_selfsig = 1;
 	    }
-	    if((rc=do_check_messages(pk,sig,r_expired)))
+	    /* BUG: This is wrong for non-self-sigs. Needs to be the
+	       actual pk */
+	    if((rc=do_check_messages(pk,sig,r_expired,NULL)))
 	      return rc;
             return sig->flags.valid? 0 : gpg_error (GPG_ERR_BAD_SIGNATURE);
         }
@@ -464,7 +480,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	  {
 	    gcry_md_open (&md, algo, 0 );
 	    hash_public_key( md, pk );
-	    rc = do_check( pk, sig, md, r_expired );
+	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
 	    cache_sig_result ( sig, rc );
 	    gcry_md_close(md);
 	  }
@@ -476,12 +492,12 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    gcry_md_open (&md, algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md, r_expired );
+	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
             cache_sig_result ( sig, rc );
 	    gcry_md_close(md);
 	}
 	else {
-            if (!opt.quiet)
+            if (opt.verbose)
                 log_info (_("key %08lX: no subkey for subkey "
 			    "revocation signature\n"),
                           (ulong)keyid_from_pk (pk, NULL));
@@ -502,7 +518,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    gcry_md_open (&md, algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md, r_expired );
+	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
             cache_sig_result ( sig, rc );
 	    gcry_md_close(md);
 	}
@@ -517,7 +533,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
     else if( sig->sig_class == 0x1f ) { /* direct key signature */
 	gcry_md_open (&md, algo, 0 );
 	hash_public_key( md, pk );
-	rc = do_check( pk, sig, md, r_expired );
+	rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
         cache_sig_result ( sig, rc );
 	gcry_md_close(md);
     }
@@ -535,12 +551,13 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	      {
 		if( is_selfsig )
 		  *is_selfsig = 1;
-		rc = do_check( pk, sig, md, r_expired );
+		rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
 	      }
 	    else if (check_pk)
-	      rc=do_check(check_pk,sig,md,r_expired);
+	      rc=do_check(check_pk,sig,md,r_expired, NULL, ret_pk);
 	    else
-	      rc = signature_check2( sig, md, r_expiredate, r_expired );
+	      rc = signature_check2( sig, md, r_expiredate, r_expired,
+                                     NULL, ret_pk);
 
             cache_sig_result ( sig, rc );
 	    gcry_md_close(md);

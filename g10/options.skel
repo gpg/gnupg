@@ -90,10 +90,10 @@
 # support).
 #
 # Example HKP keyserver:
-#      x-hkp://pgp.mit.edu
+#      hkp://subkeys.pgp.net
 #
 # Example email keyserver:
-#      mailto:pgp-public-keys@keys.nl.pgp.net
+#      mailto:pgp-public-keys@keys.pgp.net
 #
 # Example LDAP keyservers:
 #      ldap://pgp.surfnet.nl:11370
@@ -101,7 +101,7 @@
 #
 # Regular URL syntax applies, and you can set an alternate port
 # through the usual method:
-#      x-hkp://keyserver.example.net:22742
+#      hkp://keyserver.example.net:22742
 #
 # If you have problems connecting to a HKP server through a buggy http
 # proxy, you can use keyserver option broken-http-proxy (see below),
@@ -109,10 +109,14 @@
 # regarding proxies (keyserver option honor-http-proxy)
 #
 # Most users just set the name and type of their preferred keyserver.
-# Most servers do synchronize with each other and DNS round-robin may
-# give you a quasi-random server each time.
+# Note that most servers (with the notable exception of
+# ldap://keyserver.pgp.com) synchronize changes with each other.  Note
+# also that a single server name may actually point to multiple
+# servers via DNS round-robin.  hkp://subkeys.pgp.net is an example of
+# such a "server", which spreads the load over a number of physical
+# servers.
 
-#keyserver x-hkp://pgp.mit.edu
+keyserver hkp://subkeys.pgp.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 #keyserver ldap://pgp.surfnet.nl:11370
 #keyserver ldap://keyserver.pgp.com

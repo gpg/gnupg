@@ -59,7 +59,6 @@ enum cmd_and_opt_values { aNull = 0,
     aSym	  = 'c',
     aDecrypt	  = 'd',
     aEncr	  = 'e',
-    aEncrFiles,
     oInteractive  = 'i',
     aListKeys	  = 'k',
     aListSecretKeys = 'K',
@@ -73,12 +72,13 @@ enum cmd_and_opt_values { aNull = 0,
     oUser	  = 'u',
     oVerbose	  = 'v',
     oCompress	  = 'z',
-    oNotation	  = 'N',
+    oSetNotation  = 'N',
     oBatch	  = 500,
     oSigNotation,
     oCertNotation,
     oShowNotation,
     oNoShowNotation,
+    aEncrFiles,
     aDecryptFiles,                          
     aClearsign,
     aStore,
@@ -172,6 +172,7 @@ enum cmd_and_opt_values { aNull = 0,
     oLoadExtension,
     oGnuPG,
     oRFC1991,
+    oRFC2440,
     oOpenPGP,
     oPGP2,
     oPGP6,
@@ -219,9 +220,11 @@ enum cmd_and_opt_values { aNull = 0,
     oCertPolicyURL,
     oShowPolicyURL,
     oNoShowPolicyURL,
+    oSigKeyserverURL,
     oUseEmbeddedFilename,
     oComment,
     oDefaultComment,
+    oNoComments,
     oThrowKeyid,
     oNoThrowKeyid,
     oShowPhotos,
@@ -315,6 +318,7 @@ enum cmd_and_opt_values { aNull = 0,
     oMangleDosFilenames,
     oNoMangleDosFilenames,
     oEnableProgressFilter,                          
+    oMultifile,
 aTest };
 
 
@@ -326,17 +330,17 @@ static ARGPARSE_OPTS opts[] = {
     { aClearsign, "clearsign", 256, N_("|[file]|make a clear text signature") },
     { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
     { aEncr, "encrypt",   256, N_("encrypt data")},
-    { aEncrFiles, "encrypt-files", 256, N_("|[files]|encrypt files")},
+    { aEncrFiles, "encrypt-files", 256, "@"},
     { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
-    { aStore, "store",     256, N_("store only")},
+    { aStore, "store",     256, "@"},
     { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
-    { aDecryptFiles, "decrypt-files", 256, N_("|[files]|decrypt files")},
+    { aDecryptFiles, "decrypt-files", 256, "@"},
     { aVerify, "verify"   , 256, N_("verify a signature")},
     { aVerifyFiles, "verify-files" , 256, "@" },
     { aListKeys, "list-keys", 256, N_("list keys")},
     { aListKeys, "list-public-keys", 256, "@" },
     { aListSigs, "list-sigs", 256, N_("list keys and signatures")},
-    { aCheckKeys, "check-sigs",256, N_("check key signatures")},
+    { aCheckKeys, "check-sigs",256, N_("list and check key signatures")},
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
@@ -345,8 +349,8 @@ static ARGPARSE_OPTS opts[] = {
 				    N_("remove keys from the secret keyring")},
     { aSignKey,  "sign-key"   ,256, N_("sign a key")},
     { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
-    { aNRSignKey, "nrsign-key"  ,256, N_("sign a key non-revocably")},
-    { aNRLSignKey, "nrlsign-key"  ,256, N_("sign a key locally and non-revocably")},
+    { aNRSignKey, "nrsign-key"  ,256, "@"},
+    { aNRLSignKey, "nrlsign-key"  ,256, "@"},
     { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
     { aDesigRevoke, "desig-revoke",256, "@" },
@@ -366,19 +370,15 @@ static ARGPARSE_OPTS opts[] = {
     { aCardEdit,   "card-edit",  256, N_("change data on a card")},
     { aChangePIN,  "change-pin", 256, N_("change a card's PIN")},
 
-    { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
-    { aExportOwnerTrust,
-	      "export-ownertrust", 256, N_("export the ownertrust values")},
-    { aImportOwnerTrust,
-	      "import-ownertrust", 256, N_("import ownertrust values")},
-    { aUpdateTrustDB,
-	      "update-trustdb",0 , N_("update the trust database")},
-    { aCheckTrustDB,
-	      "check-trustdb",0 , N_("unattended trust database update")},
+    { aListPackets, "list-packets",256, "@"},
+    { aExportOwnerTrust, "export-ownertrust", 256, "@"},
+    { aImportOwnerTrust, "import-ownertrust", 256, "@"},
+    { aUpdateTrustDB, "update-trustdb",0 , N_("update the trust database")},
+    { aCheckTrustDB,  "check-trustdb",0 , "@"},
     { aFixTrustDB, "fix-trustdb",0 , N_("fix a corrupted trust database")},
-    { aDeArmor, "dearmor", 256, N_("De-Armor a file or stdin") },
+    { aDeArmor, "dearmor", 256, "@" },
     { aDeArmor, "dearmour", 256, "@" },
-    { aEnArmor, "enarmor", 256, N_("En-Armor a file or stdin") },
+    { aEnArmor, "enarmor", 256, "@" },
     { aEnArmor, "enarmour", 256, "@" },
     { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
     { aPrimegen, "gen-prime" , 256, "@" },
@@ -391,10 +391,8 @@ static ARGPARSE_OPTS opts[] = {
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
     { oHiddenRecipient, "hidden-recipient", 2, "@" },
     { oRecipient, "remote-user", 2, "@"},  /* old option name */
-    { oDefRecipient, "default-recipient" ,2,
-				  N_("|NAME|use NAME as default recipient")},
-    { oDefRecipientSelf, "default-recipient-self" ,0,
-				N_("use the default key as default recipient")},
+    { oDefRecipient, "default-recipient" ,2, "@" },
+    { oDefRecipientSelf, "default-recipient-self" ,0, "@" },
     { oNoDefRecipient, "no-default-recipient", 0, "@" },
     { oTempDir, "temp-directory", 2, "@" },
     { oExecPath, "exec-path", 2, "@" },
@@ -414,82 +412,82 @@ static ARGPARSE_OPTS opts[] = {
     { oNoAskCertExpire, "no-ask-cert-expire",   0, "@"},
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
-    { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
-    { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
-    { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
-    { oNoForceV3Sigs, "no-force-v3-sigs", 0, N_("do not force v3 signatures") },
-    { oForceV4Certs, "force-v4-certs", 0, N_("force v4 key signatures") },
-    { oNoForceV4Certs, "no-force-v4-certs", 0, N_("do not force v4 key signatures") },
-    { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
+    { oQuiet,	"quiet",     0, "@" },
+    { oNoTTY,   "no-tty",    0, "@" },
+    { oForceV3Sigs, "force-v3-sigs", 0, "@" },
+    { oNoForceV3Sigs, "no-force-v3-sigs", 0, "@" },
+    { oForceV4Certs, "force-v4-certs", 0, "@" },
+    { oNoForceV4Certs, "no-force-v4-certs", 0, "@" },
+    { oForceMDC, "force-mdc", 0, "@" },
     { oNoForceMDC, "no-force-mdc", 0, "@" },
-    { oDisableMDC, "disable-mdc", 0, N_("never use a MDC for encryption") },
+    { oDisableMDC, "disable-mdc", 0, "@" },
     { oNoDisableMDC, "no-disable-mdc", 0, "@" },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
     { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-    { oUseAgent, "use-agent",0, N_("use the gpg-agent")},
+    { oUseAgent, "use-agent",0, "@"},
     { oNoUseAgent, "no-use-agent",0, "@"},
     { oGpgAgentInfo, "gpg-agent-info",2, "@"},
-    { oBatch, "batch",     0, N_("batch mode: never ask")},
-    { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
-    { oAnswerNo,  "no",        0, N_("assume no on most questions")},
-    { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
+    { oBatch, "batch",     0, "@"},
+    { oAnswerYes, "yes",       0, "@"},
+    { oAnswerNo,  "no",        0, "@"},
+    { oKeyring, "keyring"   ,  2, "@"},
     { oPrimaryKeyring, "primary-keyring",2, "@" },
-    { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
-    { oShowKeyring, "show-keyring", 0, N_("show which keyring a listed key is on")},
-    { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
-    { oKeyServer, "keyserver",2, N_("|HOST|use this keyserver to lookup keys")},
+    { oSecretKeyring, "secret-keyring" ,2, "@"},
+    { oShowKeyring, "show-keyring", 0, "@"},
+    { oDefaultKey, "default-key" ,  2, "@"},
+    { oKeyServer, "keyserver",      2, "@"},
     { oKeyServerOptions, "keyserver-options",2,"@"},
     { oImportOptions, "import-options",2,"@"},
     { oExportOptions, "export-options",2,"@"},
     { oListOptions, "list-options",2,"@"},
-    { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
-    { oOptions, "options"   , 2, N_("read options from file")},
+    { oVerifyOptions, "verify-options",2,"@"},
+    { oCharset, "charset"   , 2, "@" },
+    { oOptions, "options"   , 2, "@"},
 
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
-    { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
+    { oStatusFD, "status-fd" ,1, "@" },
 #ifdef __riscos__
-    { oStatusFile, "status-file" ,2, N_("|[file]|write status info to file") },
+    { oStatusFile, "status-file" ,2, "@" },
 #endif /* __riscos__ */
     { oAttributeFD, "attribute-fd" ,1, "@" },
 #ifdef __riscos__
     { oAttributeFile, "attribute-file" ,2, "@" },
 #endif /* __riscos__ */
-    { oNoSKComments, "no-comment", 0,   "@"},
     { oNoSKComments, "no-sk-comments", 0,   "@"},
     { oSKComments, "sk-comments", 0,   "@"},
     { oCompletesNeeded, "completes-needed", 1, "@"},
     { oMarginalsNeeded, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
-    { oTrustedKey, "trusted-key", 2, N_("|KEYID|ultimately trust this key")},
-    { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
+    { oTrustedKey, "trusted-key", 2, "@"},
+    { oLoadExtension, "load-extension" ,2, "@"},
     { oGnuPG, "gnupg",   0, "@"},
     { oGnuPG, "no-pgp2", 0, "@"},
     { oGnuPG, "no-pgp6", 0, "@"},
     { oGnuPG, "no-pgp7", 0, "@"},
     { oGnuPG, "no-pgp8", 0, "@"},
-    { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
-    { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
-    { oPGP2, "pgp2", 0, N_("set all packet, cipher and digest options to PGP 2.x behavior")},
+    { oRFC1991, "rfc1991",   0, "@"},
+    { oRFC2440, "rfc2440",   0, "@"},
+    { oOpenPGP, "openpgp", 0, N_("use strict OpenPGP behavior")},
+    { oPGP2, "pgp2", 0, N_("generate PGP 2.x compatible messages")},
     { oPGP6, "pgp6", 0, "@"},
     { oPGP7, "pgp7", 0, "@"},
     { oPGP8, "pgp8", 0, "@"},
-    { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
-    { oS2KDigest, "s2k-digest-algo",2,
-		N_("|NAME|use message digest algorithm NAME for passphrases")},
-    { oS2KCipher, "s2k-cipher-algo",2,
-		N_("|NAME|use cipher algorithm NAME for passphrases")},
+    { oS2KMode, "s2k-mode",  1, "@"},
+    { oS2KDigest, "s2k-digest-algo",2, "@"},
+    { oS2KCipher, "s2k-cipher-algo",2, "@"},
     { oSimpleSKChecksum, "simple-sk-checksum", 0, "@"},
-    { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
-    { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
+    { oCipherAlgo, "cipher-algo", 2 , "@"},
+    { oDigestAlgo, "digest-algo", 2 , "@"},
     { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
-    { oCompressAlgo,"compress-algo",2,N_("|NAME|use compression algorithm NAME")},
-    { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
+    { oCompressAlgo,"compress-algo",2, "@"},
+    { oThrowKeyid, "throw-keyid", 0,  "@"},
     { oNoThrowKeyid, "no-throw-keyid", 0, "@" },
     { oShowPhotos,   "show-photos", 0, "@" },
     { oNoShowPhotos, "no-show-photos", 0, "@" },
     { oPhotoViewer,  "photo-viewer", 2, "@" },
-    { oNotation,   "notation-data", 2, "@" },
+    { oSetNotation,  "set-notation", 2, "@" },
+    { oSetNotation,  "notation-data", 2, "@" }, /* Alias */
     { oSigNotation,   "sig-notation", 2, "@" },
     { oCertNotation,  "cert-notation", 2, "@" },
 
@@ -556,8 +554,10 @@ static ARGPARSE_OPTS opts[] = {
     { oNoShowPolicyURL, "no-show-policy-url", 0, "@" },
     { oShowNotation, "show-notation", 0, "@" },
     { oNoShowNotation, "no-show-notation", 0, "@" },
+    { oSigKeyserverURL, "sig-keyserver-url", 2, "@" },
     { oComment, "comment", 2, "@" },
     { oDefaultComment, "default-comment", 0, "@" },
+    { oNoComments, "no-comments", 0, "@" },
     { oEmitVersion, "emit-version", 0, "@"},
     { oNoEmitVersion, "no-emit-version", 0, "@"},
     { oNoEmitVersion, "no-version", 0, "@"}, /* alias */
@@ -625,6 +625,7 @@ static ARGPARSE_OPTS opts[] = {
     { oMangleDosFilenames, "mangle-dos-filenames", 0, "@" },
     { oNoMangleDosFilenames, "no-mangle-dos-filenames", 0, "@" },
     { oEnableProgressFilter, "enable-progress-filter", 0, "@" },
+    { oMultifile, "multifile", 0, "@" },
 {0} };
 
 
@@ -641,6 +642,7 @@ static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 static void print_mds( const char *fname, int algo );
 static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
+static void add_keyserver_url( const char *string, int which );
 static void emergency_cleanup (void);
 
 #ifdef __riscos__
@@ -1158,6 +1160,7 @@ main( int argc, char **argv )
     char *pers_digest_list = NULL;
     char *pers_compress_list = NULL;
     int eyes_only=0;
+    int multifile=0;
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
@@ -1222,12 +1225,13 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.keyserver_options.try_dns_srv=1;
-    opt.verify_options=VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION;
+    opt.verify_options=
+      VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION|VERIFY_SHOW_KEYSERVER;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames = 1;
     opt.use_agent = 1;
 
-#if defined (__MINGW32__)
+#if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
 #else
@@ -1389,11 +1393,15 @@ main( int argc, char **argv )
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case aSym: set_cmd( &cmd, aSym); break;
 
+          case aDecryptFiles: multifile=1; /* fall through */
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
-          case aDecryptFiles: set_cmd( &cmd, aDecryptFiles); break;
 
+	  case aEncrFiles: multifile=1; /* fall through */
 	  case aEncr: set_cmd( &cmd, aEncr); break;
-	  case aEncrFiles: set_cmd( &cmd, aEncrFiles ); break;
+
+	  case aVerifyFiles: multifile=1; /* fall through */
+	  case aVerify: set_cmd( &cmd, aVerify); break;
+
 	  case aSign: set_cmd( &cmd, aSign );  break;
 	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
 	  case aSignKey: set_cmd( &cmd, aSignKey); break;
@@ -1405,8 +1413,7 @@ main( int argc, char **argv )
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
 	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
 	  case aDesigRevoke: set_cmd( &cmd, aDesigRevoke); break;
-	  case aVerify: set_cmd( &cmd, aVerify); break;
-	  case aVerifyFiles: set_cmd( &cmd, aVerifyFiles); break;
+
 	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
 	  case aGenRandom: set_cmd( &cmd, aGenRandom); break;
 	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
@@ -1564,7 +1571,7 @@ main( int argc, char **argv )
 	    break;
 	  case oLoadExtension:
 #ifndef __riscos__
-#if defined(USE_DYNAMIC_LINKING) || defined(__MINGW32__)
+#if defined(USE_DYNAMIC_LINKING) || defined(_WIN32)
 	    if(check_permissions(pargs.r.ret_str,2))
 	      log_info(_("cipher extension \"%s\" not loaded due to "
 			 "unsafe permissions\n"),pargs.r.ret_str);
@@ -1579,14 +1586,13 @@ main( int argc, char **argv )
 	  case oRFC1991:
 	    opt.compliance = CO_RFC1991;
 	    opt.force_v4_certs = 0;
-	    opt.disable_mdc = 1;
 	    opt.escape_from = 1;
 	    break;
+          case oRFC2440:
 	  case oOpenPGP:
 	    /* TODO: When 2440bis becomes a RFC, these may need
                changing. */
 	    opt.compliance = CO_RFC2440;
-	    opt.disable_mdc = 1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
@@ -1627,9 +1633,19 @@ main( int argc, char **argv )
 	    opt.list_options&=~LIST_SHOW_POLICY;
 	    opt.verify_options&=~VERIFY_SHOW_POLICY;
 	    break;
+	  case oSigKeyserverURL: add_keyserver_url(pargs.r.ret_str,0); break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
-	  case oComment: opt.comment_string = pargs.r.ret_str; break;
-	  case oDefaultComment: opt.comment_string = NULL; break;
+
+	  case oComment: add_to_strlist(&opt.comments,pargs.r.ret_str); break;
+	  case oDefaultComment:
+	    deprecated_warning(configname,configlineno,
+			       "--default-comment","--no-comments","");
+	    /* fall through */
+	  case oNoComments:
+	    free_strlist(opt.comments);
+	    opt.comments=NULL;
+	    break;
+
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oNoThrowKeyid: opt.throw_keyid = 0; break;
 	  case oShowPhotos: 
@@ -1686,6 +1702,7 @@ main( int argc, char **argv )
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
+            opt.use_agent = 0;
             break;
 #ifdef __riscos__
 	  case oPasswdFile:
@@ -1784,9 +1801,11 @@ main( int argc, char **argv )
 		  {"show-photos",LIST_SHOW_PHOTOS},
 		  {"show-policy-url",LIST_SHOW_POLICY},
 		  {"show-notation",LIST_SHOW_NOTATION},
-		  {"show-keyring",LIST_SHOW_KEYRING},
+                  {"show-keyserver-url",LIST_SHOW_KEYSERVER},
 		  {"show-validity",LIST_SHOW_VALIDITY},
 		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
+		  {"show-keyring",LIST_SHOW_KEYRING},
+                  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE},
 		  {NULL,0}
 		};
 
@@ -1807,6 +1826,9 @@ main( int argc, char **argv )
 		  {"show-photos",VERIFY_SHOW_PHOTOS},
 		  {"show-policy-url",VERIFY_SHOW_POLICY},
 		  {"show-notation",VERIFY_SHOW_NOTATION},
+		  {"show-keyserver-url",VERIFY_SHOW_KEYSERVER},
+		  {"show-validity",VERIFY_SHOW_VALIDITY},
+		  {"show-long-keyid",VERIFY_SHOW_LONG_KEYID},
 		  {NULL,0}
 		};
 
@@ -1827,7 +1849,7 @@ main( int argc, char **argv )
 	    else
 	      opt.exec_path_set=1;
 	    break;
-	  case oNotation:
+	  case oSetNotation:
 	    add_notation_data( pargs.r.ret_str, 0 );
 	    add_notation_data( pargs.r.ret_str, 1 );
 	    break;
@@ -1931,6 +1953,7 @@ main( int argc, char **argv )
           case oNoMangleDosFilenames: opt.mangle_dos_filenames = 0; break;
 
           case oEnableProgressFilter: opt.enable_progress_filter = 1; break;
+          case oMultifile: multifile=1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -2053,8 +2076,6 @@ main( int argc, char **argv )
 	  compliance_failure();
 	else
 	  {
-	    opt.force_mdc = 0;
-	    opt.disable_mdc = 1;
 	    opt.force_v4_certs = 0;
 	    opt.sk_comments = 0;
 	    opt.escape_from = 1;
@@ -2073,8 +2094,6 @@ main( int argc, char **argv )
 	opt.escape_from=1;
 	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;
-	opt.force_mdc=0;
-	opt.disable_mdc=1;
       }
     else if(PGP7)
       {
@@ -2170,6 +2189,37 @@ main( int argc, char **argv )
        keygen_set_std_prefs(pers_compress_list,PREFTYPE_ZIP))
       log_error(_("invalid personal compress preferences\n"));
 
+    /* We don't support all possible commands with multifile yet */
+    if(multifile)
+      {
+	char *cmdname;
+        
+	switch(cmd)
+	  {
+	  case aSign:
+	    cmdname="--sign";
+	    break;
+	  case aClearsign:
+	    cmdname="--clearsign";
+	    break;
+	  case aDetachedSign:
+	    cmdname="--detach-sign";
+	    break;
+	  case aSym:
+	    cmdname="--symmetric";
+	    break;
+	  case aStore:
+	    cmdname="--store";
+	    break;
+	  default:
+	    cmdname=NULL;
+	    break;
+	  }
+
+	if(cmdname)
+	  log_error(_("%s does not yet work with %s\n"),cmdname,"--multifile");
+      }
+
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
@@ -2262,8 +2312,7 @@ main( int argc, char **argv )
     if( cmd != aDeArmor && cmd != aEnArmor )
       {
         if (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
-            && cmd != aVerify && cmd != aVerifyFiles
-            && cmd != aSym)
+            && cmd != aVerify && cmd != aSym)
           {
             if (!sec_nrings || default_keyring) /* add default secret rings */
               keydb_add_resource ("secring" EXTSEP_S "gpg", 0, 1);
@@ -2335,17 +2384,18 @@ main( int argc, char **argv )
 	break;
 
       case aEncr: /* encrypt the given file */
-	if( argc > 1 )
-	    wrong_args(_("--encrypt [filename]"));
-	if( (rc = encode_crypt(fname,remusr)) )
-	    log_error("%s: encryption failed: %s\n",
-                      print_fname_stdin(fname), gpg_strerror (rc) );
+	if(multifile)
+	  encode_crypt_files(argc, argv, remusr);
+	else
+	  {
+            if( argc > 1 )
+              wrong_args(_("--encrypt [filename]"));
+            if( (rc = encode_crypt(fname,remusr)) )
+              log_error("%s: encryption failed: %s\n",
+                        print_fname_stdin(fname), gpg_strerror (rc) );
+          }
 	break;
 
-      case aEncrFiles: /* encrypt the given files */
-        encode_crypt_files(argc, argv, remusr);
-    	break;
-          
       case aSign: /* sign the given file */
 	sl = NULL;
 	if( detached_sig ) { /* sign all files */
@@ -2397,26 +2447,30 @@ main( int argc, char **argv )
 	break;
 
       case aVerify:
-	if( (rc = verify_signatures( argc, argv ) ))
-	    log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
-	break;
-
-      case aVerifyFiles:
-	if( (rc = verify_files( argc, argv ) ))
-	    log_error("verify files failed: %s\n", gpg_strerror (rc) );
+        if(multifile)
+	  {
+	    if( (rc = verify_files( argc, argv ) ))
+	      log_error("verify files failed: %s\n", gpg_strerror (rc) );
+	  }
+        else
+          {
+            if( (rc = verify_signatures( argc, argv ) ))
+              log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
+          }
 	break;
 
       case aDecrypt:
-	if( argc > 1 )
-	    wrong_args(_("--decrypt [filename]"));
-	if( (rc = decrypt_message( fname ) ))
-	    log_error("decrypt_message failed: %s\n", gpg_strerror (rc) );
+        if(multifile)
+	  decrypt_messages(argc, argv);
+	else
+          {
+            if( argc > 1 )
+              wrong_args(_("--decrypt [filename]"));
+            if( (rc = decrypt_message( fname ) ))
+              log_error("decrypt_message failed: %s\n", gpg_strerror (rc) );
+          }
 	break;
 
-      case aDecryptFiles:
-        decrypt_messages(argc, argv);
-        break;
-            
       case aSignKey: /* sign the key given as argument */
 	if( argc != 1 )
 	    wrong_args(_("--sign-key user-id"));
@@ -2900,8 +2954,6 @@ print_hex( MD_HANDLE md, int algo, const char *fname )
 
   if(algo==DIGEST_ALGO_RMD160)
     indent+=printf("RMD160 = ");
-  else if(algo==DIGEST_ALGO_TIGER)
-    indent+=printf(" TIGER = ");
   else if(algo>0)
     indent+=printf("%6s = ", gcry_md_algo_name (algo));
   else
@@ -3018,9 +3070,6 @@ print_mds( const char *fname, int algo )
 	gcry_md_enable (md, GCRY_MD_MD5 );
 	gcry_md_enable (md, GCRY_MD_SHA1 );
 	gcry_md_enable (md, GCRY_MD_RMD160 );
-#ifdef USE_TIGER192
-	gcry_md_enable (md, GCRY_MD_TIGER );
-#endif
 #ifdef USE_SHA256
 	gcry_md_enable (md, GCRY_MD_SHA256 );
 #endif
@@ -3043,9 +3092,6 @@ print_mds( const char *fname, int algo )
                 print_hashline( md, GCRY_MD_MD5, fname );
                 print_hashline( md, GCRY_MD_SHA1, fname );
                 print_hashline( md, GCRY_MD_RMD160, fname );
-#ifdef USE_TIGER192
-		print_hashline( md, GCRY_MD_TIGER, fname );
-#endif
 #ifdef USE_SHA256
                 print_hashline( md, GCRY_MD_SHA256, fname );
 #endif
@@ -3062,9 +3108,6 @@ print_mds( const char *fname, int algo )
                 print_hex( md, GCRY_MD_MD5, fname );
                 print_hex( md, GCRY_MD_SHA1, fname );
                 print_hex( md, GCRY_MD_RMD160, fname );
-#ifdef USE_TIGER192
-		print_hex( md, GCRY_MD_TIGER, fname );
-#endif
 #ifdef USE_SHA256
                 print_hex( md, GCRY_MD_SHA256, fname );
 #endif
@@ -3132,13 +3175,13 @@ add_notation_data( const char *string, int which )
     /* we only support printable text - therefore we enforce the use
      * of only printable characters (an empty value is valid) */
     for( s++; *s ; s++ ) {
-	if( iscntrl(*s) ) {
+	if( *s & 0x80 )
+	    highbit = 1;
+	else if( iscntrl(*s) ) {
 	    log_error(_("a notation value must not use "
 			"any control characters\n") );
 	    return;
 	}
-	else if( *s & 0x80 )
-	    highbit = 1;
     }
 
     if( highbit )   /* must use UTF8 encoding */
@@ -3183,3 +3226,39 @@ add_policy_url( const char *string, int which )
   if(critical)
     sl->flags |= 1;    
 }
+
+
+static void
+add_keyserver_url( const char *string, int which )
+{
+  int i,critical=0;
+  STRLIST sl;
+
+  if(*string=='!')
+    {
+      string++;
+      critical=1;
+    }
+
+  for(i=0;i<strlen(string);i++)
+    if(string[i]&0x80 || iscntrl(string[i]))
+      break;
+
+  if(i==0 || i<strlen(string))
+    {
+      if(which)
+	BUG();
+      else
+	log_error(_("the given signature preferred"
+		    " keyserver URL is invalid\n"));
+    }
+
+  if(which)
+    BUG();
+  else
+    sl=add_to_strlist( &opt.sig_keyserver_url, string );
+
+  if(critical)
+    sl->flags |= 1;    
+}
+

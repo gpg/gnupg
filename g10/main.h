@@ -151,7 +151,8 @@ int sign_symencrypt_file (const char *fname, STRLIST locusr);
 int check_revocation_keys (PKT_public_key *pk, PKT_signature *sig);
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
-			  int *is_selfsig, u32 *r_expiredate, int *r_expired );
+                          PKT_public_key *ret_pk, int *is_selfsig,
+                          u32 *r_expiredate, int *r_expired );
 
 /*-- delkey.c --*/
 int delete_keys( STRLIST names, int secret, int allow_both );
@@ -170,6 +171,7 @@ PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
+int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 
@@ -232,6 +234,7 @@ void reorder_keyblock (KBNODE keyblock);
 void list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque );
 void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
 void show_policy_url(PKT_signature *sig,int indent,int mode);
+void show_keyserver_url(PKT_signature *sig,int indent,int mode);
 void show_notation(PKT_signature *sig,int indent,int mode);
 void dump_attribs(const PKT_user_id *uid,
 		  PKT_public_key *pk,PKT_secret_key *sk);

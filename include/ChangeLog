@@ -1,3 +1,14 @@
+2003-09-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.h: Drop TIGER/192 support.
+
+	* types.h: Prefer using uint64_t when creating a 64-bit unsigned
+	type. This avoids a warning on compilers that support but complain
+	about unsigned long long.
+
+	* util.h: Make sure that only ascii is passed to isfoo
+	functions. (From Werner on stable branch).
+
 2003-09-04  Werner Koch  <wk@gnupg.org>
 
 	* cipher.h (PUBKEY_USAGE_AUTH): Added.

@@ -1,5 +1,6 @@
 /* gpgv.c - The GnuPG signature verify utility
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -155,8 +156,9 @@ main( int argc, char **argv )
     opt.trust_model = TM_ALWAYS;
     opt.batch = 1;
 
-#if defined (__MINGW32__)
-    opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
+#if defined (_WIN32)
+    opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG",
+                                            "HomeDir" );
 #else
     opt.homedir = getenv("GNUPGHOME");
 #endif
@@ -218,6 +220,14 @@ g10_exit( int rc )
     rc = rc? rc : log_get_errorcount(0)? 2 :
 			g10_errors_seen? 1 : 0;
     exit(rc );
+}
+
+
+
+void
+read_trust_options (byte *trust_model,ulong *created,ulong *nextcheck,
+		    byte *marginals,byte *completes,byte *cert_depth) 
+{
 }
 
 

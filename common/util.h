@@ -107,6 +107,10 @@ int asprintf (char **result, const char *format, ...);
 #define hexdigitp(a) (digitp (a)                     \
                       || (*(a) >= 'A' && *(a) <= 'F')  \
                       || (*(a) >= 'a' && *(a) <= 'f'))
+  /* Note this isn't identical to a C locale isspace() without \f and
+     \v, but works for the purposes used here. */
+#define ascii_isspace(a) ((a)==' ' || (a)=='\n' || (a)=='\r' || (a)=='\t')
+
 /* the atoi macros assume that the buffer has only valid digits */
 #define atoi_1(p)   (*(p) - '0' )
 #define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))

@@ -337,6 +337,9 @@ tdbio_sync()
 }
 
 
+#if 0
+/* The transaction code is disabled in the 1.2.x branch, as it is not
+   yet used.  It will be enabled in 1.3.x. */
 
 /****************
  * Simple transactions system:
@@ -407,6 +410,8 @@ tdbio_cancel_transaction()
     in_transaction = 0;
     return 0;
 }
+
+#endif /* transaction code */
 
 
 

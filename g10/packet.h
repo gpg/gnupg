@@ -132,8 +132,9 @@ typedef struct {
 	unsigned unknown_critical:1;
         unsigned exportable:1;
         unsigned revocable:1;
-        unsigned policy_url:1; /* Policy URL is present */
-        unsigned notation:1; /* At least one notation is present */
+        unsigned policy_url:1; /* At least one policy URL is present */
+        unsigned notation:1;   /* At least one notation is present */
+        unsigned pref_ks:1;    /* At least one preferred keyserver is present */
         unsigned expired:1;
     } flags;
     u32     keyid[2];	    /* 64 bit keyid */
@@ -463,8 +464,8 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 /*-- sig-check.c --*/
 int signature_check( PKT_signature *sig, MD_HANDLE digest );
-int signature_check2( PKT_signature *sig, MD_HANDLE digest,
-		      u32 *r_expiredate, int *r_expired );
+int signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
+		      int *r_expired, int *r_revoked, PKT_public_key *ret_pk );
 
 /*-- seckey-cert.c --*/
 int is_secret_key_protected( PKT_secret_key *sk );

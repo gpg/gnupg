@@ -56,6 +56,7 @@ static int menu_addrevoker( KBNODE pub_keyblock,
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_set_keyserver_url (KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_select_uid( KBNODE keyblock, int idx );
 static int menu_select_key( KBNODE keyblock, int idx );
 static int count_uids( KBNODE keyblock );
@@ -135,7 +136,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	break;
     }
     if( sigrc != '?' || print_without_key ) {
-        tty_printf("%s%c%c %c%c%c%c%c%c %08lX %s   ",
+        tty_printf("%s%c%c %c%c%c%c%c%c ",
 		   is_rev? "rev":"sig",sigrc,
 		   (sig->sig_class-0x10>0 &&
 		    sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
@@ -145,8 +146,15 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 		   sig->flags.notation?'N':' ',
                    sig->flags.expired?'X':' ',
 		   (sig->trust_depth>9)?'T':
-		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ',
-		   (ulong)sig->keyid[1], datestr_from_sig(sig));
+		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ');
+	if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	  tty_printf("%08lX%08lX",(ulong)sig->keyid[0],(ulong)sig->keyid[1]);
+	else
+	  tty_printf("%08lX",(ulong)sig->keyid[1]);
+	tty_printf(" %s", datestr_from_sig(sig));
+	if(opt.list_options&LIST_SHOW_SIG_EXPIRE)
+	  tty_printf(" %s",expirestr_from_sig(sig));
+	tty_printf("  ");
 	if( sigrc == '%' )
 	    tty_printf("[%s] ", gpg_strerror (rc) );
 	else if( sigrc == '?' )
@@ -168,6 +176,9 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 
 	if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATION))
 	  show_notation(sig,3,0);
+
+	if(sig->flags.pref_ks && (opt.list_options&LIST_SHOW_KEYSERVER))
+	  show_keyserver_url(sig,3,0);
     }
 
     return (sigrc == '!');
@@ -500,12 +511,47 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			    tty_printf(_("  Unable to sign.\n"));
 			  }
 		      }
-		    else if(!uidnode->pkt->pkt.user_id->created)
+		    else if(uidnode->pkt->pkt.user_id->is_expired)
 		      {
-			tty_printf(_("WARNING: user ID \"%s\" is not "
-				     "self-signed.\n"),user);
-		      }
+			tty_printf(_("User ID \"%s\" is expired."),user);
 
+			if(opt.expert)
+			  {
+			    tty_printf("\n");
+			    /* No, so remove the mark and continue */
+			    if(!cpr_get_answer_is_yes("sign_uid.expire_okay",
+						      _("Are you sure you "
+							"still want to sign "
+							"it? (y/N) ")))
+			      uidnode->flag &= ~NODFLG_MARK_A;
+			  }
+			else
+			  {
+			    uidnode->flag &= ~NODFLG_MARK_A;
+			    tty_printf(_("  Unable to sign.\n"));
+			  }
+		      }
+		    else if(!uidnode->pkt->pkt.user_id->created && !selfsig)
+		      {
+			tty_printf(_("User ID \"%s\" is not self-signed."),
+				   user);
+
+			if(opt.expert)
+			  {
+			    tty_printf("\n");
+			    /* No, so remove the mark and continue */
+			    if(!cpr_get_answer_is_yes("sign_uid.nosig_okay",
+						      _("Are you sure you "
+							"still want to sign "
+							"it? (y/N) ")))
+			      uidnode->flag &= ~NODFLG_MARK_A;
+			  }
+			else
+			  {
+			    uidnode->flag &= ~NODFLG_MARK_A;
+			    tty_printf(_("  Unable to sign.\n"));
+			  }
+                      }
 		    xfree (user);
 		  }
 	    }
@@ -739,7 +785,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 		while(class==0)
 		  {
-		    answer = cpr_get("sign_uid.class",_("Your selection? "));
+		    answer = cpr_get("sign_uid.class",_("Your selection? "
+					"(enter '?' for more information): "));
 
 		    if(answer[0]=='\0')
 		      class=0x10+opt.def_cert_check_level; /* Default */
@@ -970,8 +1017,10 @@ change_passphrase( KBNODE keyblock )
 			    " this is probably a *bad* idea!\n\n"));
 		if( cpr_get_answer_is_yes("change_passwd.empty.okay",
 			       _("Do you really want to do this? ")))
+                  {
 		    changed++;
-		break;
+                    break;
+                  }
 	    }
 	    else { /* okay */
 		rc = 0;
@@ -1067,7 +1116,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	   cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY, cmdADDREVOKER,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF,
-	   cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST, cmdNOP };
+ 	   cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
+	   cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
@@ -1108,10 +1158,14 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("toggle")  , cmdTOGGLE    , 1,0,0, N_("toggle between secret "
 						   "and public key listing") },
 	{ N_("t"     )  , cmdTOGGLE    , 1,0,0, NULL },
-	{ N_("pref")    , cmdPREF      , 0,1,0, N_("list preferences (expert)") },
-	{ N_("showpref"), cmdSHOWPREF  , 0,1,0, N_("list preferences (verbose)") },
+	{ N_("pref")    , cmdPREF      , 0,1,0,
+                                         N_("list preferences (expert)")},
+	{ N_("showpref"), cmdSHOWPREF  , 0,1,0,
+                                         N_("list preferences (verbose)")},
 	{ N_("setpref") , cmdSETPREF   , 1,1,0, N_("set preference list") },
 	{ N_("updpref") , cmdUPDPREF   , 1,1,0, N_("updated preferences") },
+	{ N_("keyserver"),cmdPREFKS    , 1,1,0,
+                                         N_("set preferred keyserver URL")},
 	{ N_("passwd")  , cmdPASSWD    , 1,1,0, N_("change the passphrase") },
 	{ N_("trust")   , cmdTRUST     , 0,1,0, N_("change the ownertrust") },
 	{ N_("revsig")  , cmdREVSIG    , 0,1,0, N_("revoke signatures") },
@@ -1238,7 +1292,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    cmd = cmdLIST;
 	else if( *answer == CONTROL_D )
 	    cmd = cmdQUIT;
-	else if( isdigit( *answer ) ) {
+	else if( digitp( answer ) ) {
 	    cmd = cmdSELUID;
 	    arg_number = atoi(answer);
 	}
@@ -1563,6 +1617,14 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
                     redisplay = 1;
                 }
             }
+	    break;
+
+	  case cmdPREFKS:
+	    if( menu_set_keyserver_url ( keyblock, sec_keyblock ) ) {
+		merge_keys_and_selfsig( keyblock );
+		modified = 1;
+		redisplay = 1;
+	    }
 	    break;
 
 	  case cmdNOP:
@@ -1950,6 +2012,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
     int i, rc;
     int do_warn = 0;
     byte pk_version=0;
+    PKT_public_key *primary=NULL;
 
     if (opt.with_colons)
       {
@@ -1979,7 +2042,8 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                     do_warn = 1;
                 }
 
-		pk_version=pk->version;
+		pk_version = pk->version;
+                primary = pk;
 	    }
 
 	    if(with_revoker) {
@@ -2006,19 +2070,27 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                       }
             }
 
-	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
-			  node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
-			  (node->flag & NODFLG_SELKEY)? '*':' ',
-			  nbits_from_pk( pk ),
-			  pubkey_letter( pk->pubkey_algo ),
-			  (ulong)keyid_from_pk(pk,NULL),
-			  datestr_from_pk(pk),
-			  expirestr_from_pk(pk) );
+	    keyid_from_pk(pk,NULL);
+	    tty_printf("%s%c %4u%c/",
+		       node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
+		       (node->flag & NODFLG_SELKEY)? '*':' ',
+		       nbits_from_pk( pk ),
+		       pubkey_letter( pk->pubkey_algo ));
+
+	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	      tty_printf("%08lX",(ulong)pk->keyid[0]);
+
+	    tty_printf("%08lX  ",(ulong)pk->keyid[1]);
+	    tty_printf(_("created: %s expires: %s"),
+		       datestr_from_pk(pk),
+		       expirestr_from_pk(pk) );
 	    tty_printf("\n");
 
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY )
 	      {
 		tty_printf("                     ");
+		if(opt.list_options&LIST_SHOW_LONG_KEYID)
+		  tty_printf("        ");
 		tty_printf(_("trust: %-13s"), otrust);
 		tty_printf(_("validity: %s"), trust );
 		tty_printf("\n");
@@ -2072,6 +2144,9 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 	    ++i;
 	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A))){
+                if(opt.list_options&LIST_SHOW_VALIDITY && primary)
+		  tty_printf("[%8.8s] ",
+			     trust_value_to_string(get_validity(primary,uid)));
 		if( only_marked )
 		   tty_printf("     ");
 		else if( node->flag & NODFLG_SELUID )
@@ -2599,15 +2674,22 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       answer=cpr_get_utf8("keyedit.add_revoker",
 			  _("Enter the user ID of the designated revoker: "));
       if(answer[0]=='\0' || answer[0]=='\004')
-	goto fail;
-
+	{
+	  xfree(answer); answer = NULL;
+	  goto fail;
+	}
+      
       rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1);
 
       if(rc)
 	{
 	  log_error (_("key `%s' not found: %s\n"),answer,gpg_strerror (rc));
+          xfree (answer); answer = NULL;
 	  continue;
 	}
+
+      xfree (answer); answer = NULL;
+      
 
       fingerprint_from_pk(revoker_pk,revkey.fpr,&fprlen);
       if(fprlen!=20)
@@ -2788,7 +2870,8 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		 && ( mainkey || sub_pk ) ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-		&& (	(mainkey && uid && (sig->sig_class&~3) == 0x10)
+		&& (	(mainkey && uid
+                         && uid->created && (sig->sig_class&~3) == 0x10)
 		     || (!mainkey && sig->sig_class == 0x18)  ) ) {
 		/* this is a selfsignature which is to be replaced */
 		PKT_signature *newsig;
@@ -3079,6 +3162,101 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
 	}
     }
     
+    free_secret_key( sk );
+    return modified;
+}
+
+
+
+static int
+menu_set_keyserver_url (KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+    PKT_secret_key *sk;    /* copy of the main sk */
+    PKT_public_key *main_pk;
+    PKT_user_id *uid;
+    KBNODE node;
+    u32 keyid[2];
+    int selected, select_all;
+    int modified = 0;
+    char *answer;
+
+    no_primary_warning(pub_keyblock,1);
+
+    answer=cpr_get_utf8("keyedit.add_keyserver",
+			_("Enter your preferred keyserver URL: "));
+    if(answer[0]=='\0' || answer[0]=='\004')
+      {
+	xfree(answer);
+	return 0;
+      }
+
+    select_all = !count_selected_uids (pub_keyblock);
+
+    node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
+
+    /* Now we can actually change the self signature(s) */
+    main_pk = NULL;
+    uid = NULL;
+    selected = 0;
+    for ( node=pub_keyblock; node; node = node->next ) {
+	if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+            break; /* ready */
+
+	if ( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+	    main_pk = node->pkt->pkt.public_key;
+	    keyid_from_pk( main_pk, keyid );
+	}
+	else if ( node->pkt->pkttype == PKT_USER_ID ) {
+	    uid = node->pkt->pkt.user_id;
+       	    selected = select_all || (node->flag & NODFLG_SELUID);
+        }
+	else if ( main_pk && uid && selected
+                  && node->pkt->pkttype == PKT_SIGNATURE ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+		 && (uid && (sig->sig_class&~3) == 0x10) ) {
+	      if( sig->version < 4 ) {
+		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+
+		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+			 user);
+		xfree(user);
+	      }
+	      else {
+		/* This is a selfsignature which is to be replaced 
+                 * We have to ignore v3 signatures because they are
+                 * not able to carry the preferences */
+		PKT_signature *newsig;
+		PACKET *newpkt;
+                int rc;
+
+                rc = update_keysig_packet (&newsig, sig,
+                                           main_pk, uid, NULL,
+                                           sk,
+                                           keygen_add_keyserver_url,
+                                           answer );
+                if( rc ) {
+                    log_error ("update_keysig_packet failed: %s\n",
+                               gpg_strerror (rc));
+		    xfree(answer);
+		    free_secret_key( sk );
+                    return 0;
+                }
+                /* replace the packet */
+                newpkt = xcalloc (1, sizeof *newpkt );
+                newpkt->pkttype = PKT_SIGNATURE;
+                newpkt->pkt.signature = newsig;
+                free_packet( node->pkt );
+                xfree (node->pkt);
+                node->pkt = newpkt;
+                modified = 1;
+	      }
+            }
+	}
+    }
+
+    xfree(answer);
     free_secret_key( sk );
     return modified;
 }

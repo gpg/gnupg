@@ -101,7 +101,7 @@ struct {
     unsigned int emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
     const char *set_filename;
-    const char *comment_string;
+    STRLIST comments;
     int throw_keyid;
     const char *photo_viewer;
     int s2k_mode;
@@ -153,6 +153,7 @@ struct {
     STRLIST cert_notation_data;
     STRLIST sig_policy_url;
     STRLIST cert_policy_url;
+    STRLIST sig_keyserver_url;
     int use_embedded_filename;
     int allow_non_selfsigned_uid;
     int allow_freeform_uid;
@@ -230,16 +231,22 @@ struct {
 #define EXPORT_SEXP_FORMAT               16
 
 
-#define LIST_SHOW_PHOTOS      1
-#define LIST_SHOW_POLICY      2
-#define LIST_SHOW_NOTATION    4
-#define LIST_SHOW_KEYRING     8
-#define LIST_SHOW_VALIDITY   16
-#define LIST_SHOW_LONG_KEYID 32
+#define LIST_SHOW_PHOTOS        1
+#define LIST_SHOW_POLICY        2
+#define LIST_SHOW_NOTATION      4
+#define LIST_SHOW_KEYSERVER     8
+#define LIST_SHOW_VALIDITY     16
+#define LIST_SHOW_LONG_KEYID   32
+#define LIST_SHOW_KEYRING      64
+#define LIST_SHOW_SIG_EXPIRE  128
 
-#define VERIFY_SHOW_PHOTOS   1
-#define VERIFY_SHOW_POLICY   2
-#define VERIFY_SHOW_NOTATION 4
+
+#define VERIFY_SHOW_PHOTOS      1
+#define VERIFY_SHOW_POLICY      2
+#define VERIFY_SHOW_NOTATION    4
+#define VERIFY_SHOW_KEYSERVER   8
+#define VERIFY_SHOW_VALIDITY   16
+#define VERIFY_SHOW_LONG_KEYID 32
 
 #endif /*G10_OPTIONS_H*/
 

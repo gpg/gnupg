@@ -1,3 +1,17 @@
+2003-09-23  Werner Koch  <wk@gnupg.org>
+
+	Merged most of David Shaw's changes in 1.3 since 2003-06-03.
+	
+	* configure.ac: Drop all TIGER/192 support.
+	(uint64_t): Check for UINT64_C to go along with uint64_t.
+	(getaddrinfo): Check for it.
+	(sigset_t): Check for sigset_t and struct sigaction.  This is for
+	Forte c89 on Solaris which seems to define only the function call
+	half of the two pairs by default.
+	(W32LIBS): Include wsock32 in W32LIBS.  This is different from
+	NETLIBS so we don't need to force other platforms to pull in the
+	netlibs when they aren't actually needed.
+
 2003-09-06  Werner Koch  <wk@gnupg.org>
 
 	Released 1.9.1.

@@ -122,6 +122,10 @@ use_mdc (PK_LIST pk_list,int algo)
     CIPHER_ALGO_TWOFISH
   };
   int i;
+
+  /* RFC-1991 and 2440 don't have MDC */
+  if(RFC1991 || RFC2440)
+    return 0;
   
   /* --force-mdc overrides --disable-mdc */
   if (opt.force_mdc)

@@ -1164,10 +1164,6 @@ algo_available( preftype_t preftype, int algo, void *hint )
 		  && algo != DIGEST_ALGO_SHA256))
 	return 0;
 
-      /* TIGER is not allowed any longer according to 2440bis. */
-      if( RFC2440 && algo == DIGEST_ALGO_TIGER )
-	return 0;
-
       return algo && !gcry_md_test_algo( algo );
     }
   else if( preftype == PREFTYPE_ZIP )

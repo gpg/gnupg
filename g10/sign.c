@@ -55,12 +55,12 @@ void __stdcall Sleep(ulong);
 static int recipient_digest_algo=0;
 
 /****************
- * Create a notation.  It is assumed that the stings in STRLIST
- * are already checked to contain only printable data and have a valid
- * NAME=VALUE format.
+ * Create a notation.  We assume thIt is assumed that the strings in
+ * the STRLISTs of the opt struct are already checked to contain only
+ * printable data and have a valid NAME=VALUE format.
  */
 static void
-mk_notation_and_policy( PKT_signature *sig,
+mk_notation_policy_etc( PKT_signature *sig,
 			PKT_public_key *pk, PKT_secret_key *sk )
 {
     const char *string;
@@ -74,18 +74,25 @@ mk_notation_and_policy( PKT_signature *sig,
     args.pk=pk;
     args.sk=sk;
 
+    /* It is actually impossible to get here when making a v3 key
+       signature since keyedit.c:sign_uids will automatically bump a
+       signature with a notation or policy url up to v4, but it is
+       good to do these checks anyway. */
+
     /* notation data */
     if(IS_SIG(sig) && opt.sig_notation_data)
       {
 	if(sig->version<4)
-	  log_info("can't put notation data into v3 signatures\n");
+	  log_error(_("can't put notation data into v3 (PGP 2.x style) "
+		      "signatures\n"));
 	else
 	  nd=opt.sig_notation_data;
       }
     else if( IS_CERT(sig) && opt.cert_notation_data )
       {
 	if(sig->version<4)
-	  log_info("can't put notation data into v3 key signatures\n");
+	  log_error(_("can't put notation data into v3 (PGP 2.x style) "
+		      "key signatures\n"));
 	else
 	  nd=opt.cert_notation_data;
       }
@@ -125,21 +132,20 @@ mk_notation_and_policy( PKT_signature *sig,
 	xfree (buf);
     }
 
-    if(opt.list_options&LIST_SHOW_NOTATION)
-      show_notation(sig,0,0);
-
     /* set policy URL */
     if( IS_SIG(sig) && opt.sig_policy_url )
       {
 	if(sig->version<4)
-	  log_info("can't put a policy URL into v3 signatures\n");
+	  log_error(_("can't put a policy URL into v3 (PGP 2.x style) "
+		      "signatures\n"));
 	else
 	  pu=opt.sig_policy_url;
       }
     else if( IS_CERT(sig) && opt.cert_policy_url )
       {
 	if(sig->version<4)
-	  log_info("can't put a policy URL into v3 key signatures\n");
+	  log_error(_("can't put a policy URL into v3 key (PGP 2.x style) "
+		      "signatures\n"));
 	else
 	  pu=opt.cert_policy_url;
       }
@@ -163,8 +169,34 @@ mk_notation_and_policy( PKT_signature *sig,
 	xfree (s);
       }
 
-    if(opt.list_options&LIST_SHOW_POLICY)
-      show_policy_url(sig,0,0);
+    /* preferred keyserver URL */
+    if( IS_SIG(sig) && opt.sig_keyserver_url )
+      {
+	if(sig->version<4)
+	  log_info (_("can't put a preferred keyserver URL "
+                      "into v3 signatures\n"));
+	else
+	  pu=opt.sig_keyserver_url;
+      }
+
+    for(;pu;pu=pu->next)
+      {
+        string = pu->d;
+
+	s=pct_expando(string,&args);
+	if(!s)
+	  {
+	    log_error(_("WARNING: unable to %%-expand preferred keyserver URL"
+			" (too large).  Using unexpanded.\n"));
+	    s=xstrdup(string);
+	  }
+
+	build_sig_subpkt(sig,SIGSUBPKT_PREF_KS|
+			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),
+			 s,strlen(s));
+
+	xfree(s);
+      }
 }
 
 
@@ -621,7 +653,8 @@ write_signature_packets (SK_LIST sk_list, iobuf_t out, MD_HANDLE hash,
 	sig = xcalloc (1,sizeof *sig);
 	if(opt.force_v3_sigs || RFC1991)
 	  sig->version=3;
-	else if(duration || opt.sig_policy_url || opt.sig_notation_data)
+	else if(duration || opt.sig_policy_url
+		|| opt.sig_notation_data || opt.sig_keyserver_url)
 	  sig->version=4;
 	else
 	  sig->version=sk->version;
@@ -640,7 +673,7 @@ write_signature_packets (SK_LIST sk_list, iobuf_t out, MD_HANDLE hash,
 
 	if (sig->version >= 4)
 	    build_sig_subpkt_from_sig (sig);
-	mk_notation_and_policy (sig, NULL, sk);
+	mk_notation_policy_etc (sig, NULL, sk);
 
         hash_sigversion_to_magic (md, sig);
 	gcry_md_final (md);
@@ -1308,7 +1341,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     sig->sig_class = sigclass;
     if( sig->version >= 4 )
 	build_sig_subpkt_from_sig( sig );
-    mk_notation_and_policy( sig, pk, sk );
+    mk_notation_policy_etc ( sig, pk, sk );
 
     /* Crucial that the call to mksubpkt comes LAST before the calls
        to finalize the sig as that makes it possible for the mksubpkt

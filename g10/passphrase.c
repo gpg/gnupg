@@ -29,7 +29,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (_WIN32) || defined (__CYGWIN32__)
 # include <windows.h>
 #endif
 #include <errno.h>
@@ -101,7 +101,7 @@ static char *fd_passwd = NULL;
 static char *next_pw = NULL;
 static char *last_pw = NULL;
 
-#if defined (__MINGW32__)
+#if defined (_WIN32)
 static int read_fd = 0;
 static int write_fd = 0;
 #endif
@@ -191,7 +191,7 @@ read_passphrase_from_fd( int fd )
 static int
 writen ( int fd, const void *buf, size_t nbytes )
 {
-#if defined (__MINGW32__)
+#if defined (_WIN32)
     DWORD nwritten, nleft = nbytes;
     
     while (nleft > 0) {
@@ -234,7 +234,7 @@ writen ( int fd, const void *buf, size_t nbytes )
 static int
 readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
 {
-#if defined (__MINGW32__)
+#if defined (_WIN32)
     DWORD nread, nleft = buflen;
     
     while (nleft > 0) {
@@ -328,7 +328,7 @@ readline (int fd, char *buf, size_t buflen)
 
 #if !defined (__riscos__)
 
-#if !defined (__MINGW32__)
+#if !defined (_WIN32)
 /* For the new Assuan protocol we may have to send options */
 static int
 agent_send_option (int fd, const char *name, const char *value)
@@ -376,7 +376,11 @@ agent_send_all_options (int fd)
     }
 
   if (!opt.ttyname)
-    dft_ttyname = tty_get_ttyname ();
+    {
+      dft_ttyname = getenv ("GPG_TTY");
+      if ((!dft_ttyname || !*dft_ttyname) && tty_get_ttyname ())
+        dft_ttyname = tty_get_ttyname ();
+    }
   if (opt.ttyname || dft_ttyname)
     {
       if (agent_send_option (fd, "ttyname",
@@ -433,7 +437,7 @@ agent_send_all_options (int fd)
 #endif
   return rc;
 }
-#endif /*!__MINGW32__*/
+#endif /*!_WIN32*/
 
 
 /*
@@ -444,7 +448,7 @@ agent_send_all_options (int fd)
 static int
 agent_open (int *ret_prot)
 {
-#if defined (__MINGW32__)
+#if defined (_WIN32)
     int fd;
     char *infostr, *p;
     HANDLE h;
@@ -589,7 +593,7 @@ agent_open (int *ret_prot)
 static void
 agent_close ( int fd )
 {
-#if defined (__MINGW32__)
+#if defined (_WIN32)
     HANDLE h = OpenEvent(EVENT_ALL_ACCESS, FALSE, "gpg_agent");
     ResetEvent(h);
 #else

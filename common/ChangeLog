@@ -1,3 +1,11 @@
+2003-09-23  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (check_special_filename): Replaced is isdigit by digitp
+	to avoid passing negative values and potential locale problems.
+	Problem noted by Christian Biere.
+
+	* util.h (ascii_isspace): New.
+
 2003-09-18  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.c (tty_fprintf): New.

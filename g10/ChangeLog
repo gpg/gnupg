@@ -1,3 +1,267 @@
+2003-09-23  Werner Koch  <wk@gnupg.org>
+
+	Merged most of David Shaw's changes in 1.3 since 2003-06-03.
+	
+	* Makefile.am: Include W32LIBS where appropriate.
+
+	* armor.c (parse_hash_header,armor_filter): Drop TIGER/192 support.
+	* g10.c (print_hex,print_mds): Ditto.
+	* pkclist.c (algo_available): Ditto.
+
+	* armor.c (armor_filter): Allow using --comment multiple times to
+	get multiple Comment header lines.  --no-comments resets list.
+	* options.h, g10.c (main): Ditto. Deprecate --default-comment in
+	favor of --no-comments.
+
+	* g10.c (main): Trim --help to commonly used options.  Remove -f.
+
+	* g10.c (main): Add --multifile as an alias to turn --encrypt into
+	--encrypt-files (plus --verify-files, --decrypt-files).  Error out
+	if --multifile is used with the commands that don't support it yet.
+
+	* encode.c (use_mdc), g10.c (main): Use RFC1991 and RFC2440
+	directly to check for MDC usability.  Do not set the force_mdc or
+	disable_mdc flags since there is no point any longer.
+	
+	* g10.c (main): Use "keyserver-url" instead of
+	"preferred-keyserver" for the sake of short and simple commands.
+	(add_keyserver_url): Clarify a few strings.  It's a
+	"preferred keyserver URL".
+	* keyedit.c (keyedit_menu): Ditto.
+	* sign.c (mk_notation_policy_etc): Ditto. 
+
+	* main.h, keygen.c (keygen_add_keyserver_url): Signature callback
+	for adding a keyserver URL.
+	* keyedit.c (keyedit_menu, menu_set_keyserver_url): New command to
+	set preferred keyserver to specified (or all) user IDs.
+	* build-packet.c (build_sig_subpkt): Set preferred keyserver flag
+	while building a preferred keyserver subpacket.
+
+	* keylist.c (show_policy_url, show_keyserver_url): URLs might be
+	UTF8.
+
+	* keyedit.c (menu_addrevoker): Fix leaking a few bytes.
+
+	* keyedit.c (show_key_with_all_names): Use list-option
+	show-long-keyid in main --edit-key display.
+
+	* keyedit.c (print_and_check_one_sig): Use list-option
+	show-long-keyid in --edit-key "check" function.
+
+	* passphrase.c (agent_send_all_options): Make use of $GPG_TTY.
+
+	* g10.c (main): Disable use-agent if passphrase-fd is given
+	later. Suggested by Kurt Garloff.
+
+	* exec.c, g10.c, gpgv.c, passphrase.c, photoid.c:
+	s/__MINGW32__/_WIN32/ to help building on native Windows
+	compilers.  Requested by Brian Gladman.  From Werner on stable
+	branch.
+
+	* options.h, g10.c (main): Add list-option
+	list-preferred-keyserver.
+
+	* keyedit.c (change_passphrase): When responding 'no' to the blank
+	passphrase question, re-prompt for a new passphrase.  This is bug
+	#202.
+
+	* mainproc.c (check_sig_and_print): Use two different preferred
+	keyserver displays - one if the key is not present (to tell the
+	user where to get the key), the other if it is present (to tell
+	the user where the key can be refreshed).
+
+	* packet.h, parse-packet.c (parse_signature): Set flag if a
+	preferred keyserver is present.
+
+	* keylist.c (list_keyblock_print): Show keyserver url in listings
+	with list-option show-keyserver-url.
+
+	* mainproc.c (check_sig_and_print): Get the uid validity before
+	printing any sig results to avoid munging the output with trustdb
+	warnings.
+
+	* g10.c (main): Don't include --show-keyring in --help as it is
+	deprecated.
+
+	* options.skel: Note that keyserver.pgp.com isn't synchronized,
+	and explain the roundrobin a bit better.
+
+	* sig-check.c (check_key_signature2), import.c (import_one,
+	import_revoke_cert, chk_self_sigs, delete_inv_parts,
+	collapse_uids, merge_blocks): Make much quieter during import of
+	slightly munged, but recoverable, keys. Use log_error for
+	unrecoverable import failures.
+
+	* keyring.c (keyring_rebuild_cache): Comment.
+
+	* sign.c (mk_notation_and_policy): Making a v3 signature with
+	notations or policy urls is an error, not an info (i.e. increment
+	the errorcount). Don't print the notation or policy url to stdout
+	since it can be mixed into the output stream when piping and munge
+	the stream.
+
+	* packet.h, sig-check.c (signature_check2, do_check,
+	do_check_messages): Provide a signing-key-is-revoked flag.  Change
+	all callers.
+
+	* status.h, status.c (get_status_string): New REVKEYSIG status tag
+	for a good signature from a revoked key.
+
+	* mainproc.c (do_check_sig, check_sig_and_print): Use it here.
+
+	* import.c (import_revoke_cert, merge_blocks, merge_sigs): Compare
+	actual signatures on import rather than using keyid or class
+	matching.  This does not change actual behavior with a key, but
+	does mean that all sigs are imported whether they will be used or
+	not.
+
+	* parse-packet.c (parse_signature): Don't give "signature packet
+	without xxxx" warnings for experimental pk algorithms.  An
+	experimental algorithm may not have a notion of (for example) a
+	keyid (i.e. PGP's x.509 stuff).
+
+	* options.h, g10.c (main), keylist.c (list_keyblock_print),
+	keyedit.c (print_and_check_one_sig): New "show-sig-expire"
+	list-option to show signature expiration dates (if any).
+
+	* options.h, g10.c (main, add_keyserver_url): Add
+	--sig-preferred-keyserver to implant a "where to get my key"
+	subpacket into a signature.
+
+	* sign.c (mk_notation_and_policy): Rename to
+	mk_notation_policy_etc and add preferred keyserver support for
+	signatures.
+
+	* keygen.c (do_add_key_flags): Don't set the certify flag for
+	subkeys.
+	(ask_algo): Provide key flags for DSA, Elgamal_e, and Elgamal
+	subkeys.
+	(generate_keypair): Provide key flags for the default DSA/Elgamal
+	keys.
+
+	* sig-check.c (signature_check, signature_check2,
+	check_key_signature, check_key_signature2): Allow passing NULLs
+	for unused parameters in the x2 form of each function to avoid the
+	need for dummy variables. getkey.c, mainproc.c: Change all
+	callers.
+
+	* trustdb.h, trustdb.c (read_trust_options): New.  Returns items
+	from the trustdb version record.
+	* keylist.c (public_key_list): Use it here for the new "tru"
+	record.
+	* gpgv.c (read_trust_options): Stub.
+
+	* keyedit.c (show_key_with_all_names): Use list-option
+	show-validity in --edit-key interface as well.
+
+	* options.h, g10.c (main), mainproc.c (check_sig_and_print): Add
+	verify-options "show-validity" and "show-long-keyid" to show
+	trustdb validity and long keyids during (file) signature
+	verification.
+
+	* packet.h, main.h, sig-check.c (signature_check2)
+	(check_key_signature2, do_check): If ret_pk is set, fill in the pk
+	used to verify the signature.  Change all callers in getkey.c,
+	mainproc.c, and sig-check.c.
+
+	* keylist.c (list_keyblock_colon): Use the ret_pk from above to
+	put the fingerprint of the signing key in "sig" records during a
+	--with-colons --check-sigs.  This requires --no-sig-cache as well
+	since we don't cache fingerprints.
+
+	* parse-packet.c (parse_signature): No need to reserve 8 bytes for
+	the unhashed signature cache any longer.
+
+	* misc.c (pct_expando): Add two new expandos - signer's
+	fingerprint (%g), and signer's primary fingerprint (%p).
+
+	* g10.c (main): Add --rfc2440 alias for --openpgp since in a few
+	months, they won't be the same thing.
+
+	* keyserver.c (parse_keyserver_uri): Accept "http" as an alias for
+	"hkp", since it is occasionally written that way.
+	(keyserver_spawn): Use ascii_isspace to avoid locale issues.
+
+	* keygen.c (ask_user_id): Make --allow-freeform-uid apply to the
+	email field as well as the name field, and allow mixing fields
+	when it is set.
+
+	* trustdb.c (validate_one_keyblock): Certifications on revoked or
+	expired uids do not count in the web of trust.
+
+	* signal.c (init_one_signal, pause_on_sigusr, do_block): Only use
+	sigprocmask() if we have sigset_t, and only use sigaction() if we
+	have struct sigaction.  This is for Forte c89 on Solaris which
+	seems to define only the function call half of the two pairs by
+	default.
+	(pause_on_sigusr): Typo.
+	(do_block): If we can't use sigprocmask() and sigset_t, try to get
+	the number of signals from NSIG as well as MAXSIG, and if we
+	can't, fail with an explanation.
+
+	* signal.c, tdbio.c: Comment out the transaction code.  It was not
+	used in this version, and was causing some build problems on
+	quasi-posix platforms (Solaris and Forte c89).
+
+	* keylist.c (list_keyblock_colon): Don't include validity values
+	when listing secret keys since they can be incorrect and/or
+	misleading.  This is a temporary kludge, and will be handled
+	properly in 1.9/2.0.
+
+	* mainproc.c (check_sig_and_print): Only show the "key available
+	from" preferred keyserver line if the key is not currently
+	present.
+
+	* keyedit.c (sign_uids): Do not sign expired uids without --expert
+	(same behavior as revoked uids).  Do not allow signing a user ID
+	without a self-signature.  --expert overrides.  Add additional
+	prompt to the signature level question.
+	(menu_expire): When changing expiration dates, don't replace
+	selfsigs on revoked uids since this would effectively unrevoke
+	them. There is also no point in replacing expired selfsigs.  This
+	is bug #181
+
+	* g10.c (add_notation_data): Make sure that only ascii is passed
+	to iscntrl.  Noted by Christian Biere.
+	* getkey.c (classify_user_id2): Replaced isspace by spacep
+	* keygen.c (ask_user_id): Ditto.
+	(get_parameter_algo): Ditto.
+	* keyedit.c (keyedit_menu): Ditto.
+	* tdbdump.c (import_ownertrust): Ditto.  s/isxdigit/hexdigitp/.
+	* revoke.c (ask_revocation_reason): 
+	* keyserver.c (keyserver_spawn): Dito.
+
+	* parse-packet.c (parse): Disallow old style partial length for
+	all key material packets to avoid possible corruption of keyrings.
+
+	* import.c (import_keys_internal): Invalidate the cache so that
+	the file descriptor gets closed.  Fixes bug reported by Juan
+	F. Codagnone.
+
+	* options.h, g10.c (main), main.h, keylist.c (show_keyserver_url),
+	mainproc.c (check_sig_and_print), parse-packet.c (dump_sig_subpkt,
+	parse_one_sig_subpkt, can_handle_critical): Add read-only support
+	for preferred keyserver subpackets.  They're basically policy URLs
+	with a different name.  Add a verify-option
+	"show-preferred-keyserver" to turn them on and off (on by default,
+	as per stable branch).
+
+	* g10.c (main): Add "--set-notation" as alias to "--notation-data"
+	this is to make things consistent with --set-policy-url meaning
+	both sigs and certs.
+
+	* options.h, g10.c (main), keylist.c (list_keyblock_print): Add
+	"show-validity" and "show-long-keyid" list-options.
+
+	* gpgv.c (get_validity, trust_value_to_string): Stubs.
+
+	* g10.c (main): Use SAFE_VERSION instead of VERSION in the
+	version-specific gpg.conf file so it can be overridden on RISCOS.
+
+	* keyedit.c (show_key_with_all_names): Fix assertion failure when
+	using toggle to see a secret key.  Reported by Maxim Britov.
+
+
 2003-09-22  Timo Schulz  <twoaday@freakmail.de>
 
 	* card-util.c (card_status): Free pk in case of an error

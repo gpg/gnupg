@@ -369,6 +369,8 @@ pct_expando(const char *string,struct expando_args *args)
   if(args->sk)
     keyid_from_sk(args->sk,sk_keyid);
 
+  /* This is used so that %k works in photoid command strings in
+     --list-secret-keys (which of course has a sk, but no pk). */
   if(!args->pk && args->sk)
     keyid_from_sk(args->sk,pk_keyid);
 
@@ -430,16 +432,37 @@ pct_expando(const char *string,struct expando_args *args)
 		}
 	      break;
 
-	    case 'f': /* fingerprint */
+	    case 'p': /* primary pk fingerprint of a sk */
+	    case 'f': /* pk fingerprint */
+	    case 'g': /* sk fingerprint */
 	      {
 		byte array[MAX_FINGERPRINT_LEN];
 		size_t len;
 		int i;
 
-		if(args->pk)
+		if( ch[1]=='p' && args->sk)
+		  {
+		    if(args->sk->is_primary)
+		      fingerprint_from_sk(args->sk,array,&len);
+		    else if(args->sk->main_keyid[0] || args->sk->main_keyid[1])
+		      {
+			PKT_public_key *pk= xcalloc(1, sizeof(PKT_public_key));
+
+			if(get_pubkey_fast(pk,args->sk->main_keyid)==0)
+			  fingerprint_from_pk(pk,array,&len);
+			else
+			  memset(array,0,(len=MAX_FINGERPRINT_LEN));
+			free_public_key(pk);
+		      }
+		    else
+		      memset(array,0,(len=MAX_FINGERPRINT_LEN));
+		  }
+		else if( ch[1]=='f' && args->pk)
 		  fingerprint_from_pk(args->pk,array,&len);
+		else if( ch[1]=='g' && args->sk)
+		  fingerprint_from_sk(args->sk,array,&len);
 		else
-		  memset(array,0, (len=MAX_FINGERPRINT_LEN));
+		  memset(array, 0, (len=MAX_FINGERPRINT_LEN));
 
 		if(idx+(len*2)<maxlen)
 		  {

@@ -63,3 +63,5 @@ might want to have an agent context for each service request
 
 * ALL
 ** Return IMPORT_OK status.
+
+* Where is http.c, regcomp.c, srv.c, w32reg.c  ?
