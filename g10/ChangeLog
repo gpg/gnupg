@@ -1,3 +1,11 @@
+2004-11-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (parse_key_usage): New function to parse out key usage
+	flags.  Set PUBKEY_USAGE_UNKNOWN to handle flags that we don't
+	understand.
+	(fixup_uidnode, merge_selfsigs_main, merge_selfsigs_subkey): Call
+	it from here to remove duplicate code.
+
 2004-11-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* export.c (do_export_stream): Allow export-minimal to work with
@@ -782,9 +790,10 @@
 	(keystr_from_desc): Handle short keyids and warn on v3
 	fingerprints.
 
-	* keydb.h, getkey.c (get_user_id_printable): Rename to
-	get_user_id_native and remove the printable stuff since we're
-	print-ifying valid utf8 characters.  Change all callers in
+	* keydb.h, getkey.c (get_user_id_printable,
+	get_user_id_string_printable): Rename to get_user_id_native and
+	get_user_id_string_native and remove the printable stuff since
+	we're print-ifying valid utf8 characters.  Change all callers in
 	import.c, sign.c, keylist.c, and encode.c.
 
 	* keyserver.c (keyserver_search_prompt): Make sure the search

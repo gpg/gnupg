@@ -1242,6 +1242,51 @@ merge_keys_and_selfsig( KBNODE keyblock )
     }
 }
 
+static int
+parse_key_usage(PKT_signature *sig)
+{
+  int key_usage=0;
+  const byte *p;
+  size_t n;
+  byte flags;
+
+  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_KEY_FLAGS,&n);
+  if(p && n)
+    {
+      /* first octet of the keyflags */
+      flags=*p;
+
+      if(flags & 3)
+	{
+	  key_usage |= PUBKEY_USAGE_SIG;
+	  flags&=~3;
+	}
+
+      if(flags & 12)
+	{
+	  key_usage |= PUBKEY_USAGE_ENC;
+	  flags&=~12;
+	}
+
+      if(flags & 0x20)
+	{
+	  key_usage |= PUBKEY_USAGE_AUTH;
+	  flags&=~0x20;
+	}
+
+      if(flags)
+	key_usage |= PUBKEY_USAGE_UNKNOWN;
+    }
+
+  /* We set PUBKEY_USAGE_UNKNOWN to indicate that this key has a
+     capability that we do not handle.  This serves to distinguish
+     between a zero key usage which we handle as the default
+     capabilities for that algorithm, and a usage that we do not
+     handle. */
+
+  return key_usage;
+}
+
 /*
  * Apply information from SIGNODE (which is the valid self-signature
  * associated with that UID) to the UIDNODE:
@@ -1274,19 +1319,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     uid->expiredate = sig->expiredate;
 
     /* store the key flags in the helper variable for later processing */
-    uid->help_key_usage = 0;
-    p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
-    if ( p && n ) {
-        /* first octet of the keyflags */   
-        if ( (*p & 3) )
-            uid->help_key_usage |= PUBKEY_USAGE_SIG;
-        if ( (*p & 12) )    
-            uid->help_key_usage |= PUBKEY_USAGE_ENC;
-        /* Note: we do not set the CERT flag here because it can be assumed
-         * that thre is no real policy to set it. */
-        if ( (*p & 0x20) )    
-            uid->help_key_usage |= PUBKEY_USAGE_AUTH;
-    }
+    uid->help_key_usage=parse_key_usage(sig);
 
     /* ditto or the key expiration */
     uid->help_key_expire = 0;
@@ -1484,35 +1517,27 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked, u32 *r_revokedate )
 			       pk->numrevkeys*sizeof(struct revocation_key));
       }
 
-    if ( signode ) {
+    if ( signode )
+      {
         /* some information from a direct key signature take precedence
          * over the same information given in UID sigs.
          */
         PKT_signature *sig = signode->pkt->pkt.signature;
         const byte *p;
-        size_t n;
-        
-        p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
-        if ( p && n ) {
-            /* first octet of the keyflags */   
-            if ( (*p & 3) )
-                key_usage |= PUBKEY_USAGE_SIG;
-            if ( (*p & 12) )    
-                key_usage |= PUBKEY_USAGE_ENC;
-            if ( (*p & 0x20) )    
-                key_usage |= PUBKEY_USAGE_AUTH;
-        }
+
+	key_usage=parse_key_usage(sig);
 
 	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-	if ( p ) {
-	  key_expire = keytimestamp + buffer_to_u32(p);
-	  key_expire_seen = 1;
-        }
+	if ( p )
+	  {
+	    key_expire = keytimestamp + buffer_to_u32(p);
+	    key_expire_seen = 1;
+	  }
 
         /* mark that key as valid: one direct key signature should 
          * render a key as valid */
         pk->is_valid = 1;
-    }
+      }
 
     /* pass 1.5: look for key revocation signatures that were not made
        by the key (i.e. did a revocation key issue a revocation for
@@ -1835,7 +1860,6 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     u32 keytimestamp = 0;
     u32 key_expire = 0;
     const byte *p;
-    size_t n;
 
     if ( subnode->pkt->pkttype != PKT_PUBLIC_SUBKEY )
         BUG ();
@@ -1893,25 +1917,21 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 
     sig = signode->pkt->pkt.signature;
     sig->flags.chosen_selfsig=1; /* so we know which selfsig we chose later */
-        
-    p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
-    if ( p && n ) {
-        /* first octet of the keyflags */   
-        if ( (*p & 3) )
-            key_usage |= PUBKEY_USAGE_SIG;
-        if ( (*p & 12) )    
-            key_usage |= PUBKEY_USAGE_ENC;
-        if ( (*p & 0x20) )    
-            key_usage |= PUBKEY_USAGE_AUTH;
-    }
-    if ( !key_usage ) { /* no key flags at all: get it from the algo */
+
+    key_usage=parse_key_usage(sig);
+    if ( !key_usage )
+      {
+	/* no key flags at all: get it from the algo */
         key_usage = openpgp_pk_algo_usage ( subpk->pubkey_algo );
-    }
-    else { /* check that the usage matches the usage as given by the algo */
+      }
+    else
+      {
+	/* check that the usage matches the usage as given by the algo */
         int x = openpgp_pk_algo_usage ( subpk->pubkey_algo );
         if ( x ) /* mask it down to the actual allowed usage */
-            key_usage &= x; 
-    }
+	  key_usage &= x; 
+      }
+
     subpk->pubkey_usage = key_usage;
     
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
