@@ -1,3 +1,7 @@
+2004-11-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* acinclude.m4: aclocal 1.9 wants quoting on AC_DEFUN arguments.
+
 2004-08-25  Werner Koch  <wk@g10code.de>
 
 	Released 1.2.6.
@@ -1439,7 +1443,8 @@ Fri Feb 13 19:43:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	* Makefile.am: Likewise
 
 
- Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+	   2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

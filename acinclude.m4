@@ -28,7 +28,7 @@ define(GNUPG_MSG_PRINT,
 dnl GNUPG_CHECK_TYPEDEF(TYPE, HAVE_NAME)
 dnl Check whether a typedef exists and create a #define $2 if it exists
 dnl
-AC_DEFUN(GNUPG_CHECK_TYPEDEF,
+AC_DEFUN([GNUPG_CHECK_TYPEDEF],
   [ AC_MSG_CHECKING(for $1 typedef)
     AC_CACHE_VAL(gnupg_cv_typedef_$1,
     [AC_TRY_COMPILE([#define _GNU_SOURCE 1
@@ -46,7 +46,7 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
 
 dnl GNUPG_CHECK_GNUMAKE
 dnl
-AC_DEFUN(GNUPG_CHECK_GNUMAKE,
+AC_DEFUN([GNUPG_CHECK_GNUMAKE],
   [ 
     if ${MAKE-make} --version 2>/dev/null | grep '^GNU ' >/dev/null 2>&1; then
         :
@@ -64,7 +64,7 @@ AC_DEFUN(GNUPG_CHECK_GNUMAKE,
 
 dnl GNUPG_CHECK_FAQPROG
 dnl
-AC_DEFUN(GNUPG_CHECK_FAQPROG,
+AC_DEFUN([GNUPG_CHECK_FAQPROG],
   [ AC_MSG_CHECKING(for faqprog.pl)
     if faqprog.pl -V 2>/dev/null | grep '^faqprog.pl ' >/dev/null 2>&1; then
         working_faqprog=yes
@@ -91,7 +91,7 @@ dnl     fi
 
 dnl GNUPG_CHECK_DOCBOOK_TO_TEXI
 dnl
-AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
+AC_DEFUN([GNUPG_CHECK_DOCBOOK_TO_TEXI],
   [
     AC_CHECK_PROG(DOCBOOK_TO_TEXI, docbook2texi, yes, no)
     AC_MSG_CHECKING(for sgml to texi tools)
@@ -459,7 +459,7 @@ define(GNUPG_CHECK_MLOCK,
 
 ################################################################
 # GNUPG_PROG_NM - find the path to a BSD-compatible name lister
-AC_DEFUN(GNUPG_PROG_NM,
+AC_DEFUN([GNUPG_PROG_NM],
 [AC_MSG_CHECKING([for BSD-compatible nm])
 AC_CACHE_VAL(ac_cv_path_NM,
 [if test -n "$NM"; then
@@ -493,7 +493,7 @@ AC_SUBST(NM)
 
 # GNUPG_SYS_NM_PARSE - Check for command ro grab the raw symbol name followed
 # by C symbol name from nm.
-AC_DEFUN(GNUPG_SYS_NM_PARSE,
+AC_DEFUN([GNUPG_SYS_NM_PARSE],
 [AC_REQUIRE([AC_CANONICAL_HOST])dnl
 AC_REQUIRE([GNUPG_PROG_NM])dnl
 # Check for command to grab the raw symbol name followed by C symbol from nm.
@@ -660,14 +660,14 @@ AC_MSG_RESULT($ac_result)
 ])
 
 # GNUPG_SYS_LIBTOOL_CYGWIN32 - find tools needed on cygwin32
-AC_DEFUN(GNUPG_SYS_LIBTOOL_CYGWIN32,
+AC_DEFUN([GNUPG_SYS_LIBTOOL_CYGWIN32],
 [AC_CHECK_TOOL(DLLTOOL, dlltool, false)
 AC_CHECK_TOOL(AS, as, false)
 ])
 
 # GNUPG_SYS_SYMBOL_UNDERSCORE - does the compiler prefix global symbols
 #                              with an underscore?
-AC_DEFUN(GNUPG_SYS_SYMBOL_UNDERSCORE,
+AC_DEFUN([GNUPG_SYS_SYMBOL_UNDERSCORE],
 [tmp_do_check="no"
 case "${target}" in
     i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp)
@@ -728,7 +728,7 @@ fi
 dnl Stolen from gcc
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
-AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
+AC_DEFUN([GNUPG_FUNC_MKDIR_TAKES_ONE_ARG],
 [AC_CHECK_HEADERS(sys/stat.h unistd.h direct.h)
 AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
 [AC_TRY_COMPILE([
@@ -748,4 +748,3 @@ if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
             [Defined if mkdir() does not take permission flags])
 fi
 ])
-
