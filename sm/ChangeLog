@@ -1,6 +1,7 @@
 2004-12-21  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Use default_homedir().
+	(main) [W32]: Default to disabled CRL checks.
 
 2004-12-20  Werner Koch  <wk@g10code.com>
 

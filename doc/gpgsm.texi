@@ -241,7 +241,7 @@ below the home directory of the user.
 Set the name of the home directory to @var{dir}. If his option is not
 used, the home directory defaults to @file{~/.gnupg}.  It is only
 recognized when given on the command line.  It also overrides any home
-directory stated through the environment variable @var{GNUPGHOME} or
+directory stated through the environment variable @env{GNUPGHOME} or
 (on W32 systems) by means on the Registry entry
 @var{HKCU\Software\GNU\GnuPG:HomeDir}.
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2002 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -18,11 +18,14 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg
+
 info_TEXINFOS = gnupg.texi
 
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi assuan.texi \
-	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi
+	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
+	sysnotes.texi
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops
 

@@ -1,8 +1,33 @@
 2004-12-21  Werner Koch  <wk@g10code.com>
 
+	* preset-passphrase.c (preset_passphrase): Handle --passphrase.
+
+	* Makefile.am (gpg_preset_passphrase_LDADD): Reorder libs so that
+	pwquery may use stuff from jnlib.  Conditionally add -lwsock2
+	(gpg_protect_tool_LDADD): Ditto.
+
+	* preset-passphrase.c (main): Use default_homedir().
+	(main) [W32]: Initialize sockets.
+
+2004-12-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libexec_PROGRAMS): Add gpg-preset-passphrase.
+	(gpg_preset_passphrase_SOURCES, gpg_preset_passphrase_LDADD): New
+	targets.
+	* agent.h (opt): New member allow_cache_passphrase.
+	* cache.c (housekeeping): Check if R->ttl is not negative.
+	(agent_put_cache): Allow ttl to be negative.
+	* command.c (parse_hexstring): Allow something to follow the
+	hexstring.
+	(cmd_cache_passphrase): New function.
+	(register_commands): Add it.
+	* gpg-agent.c: Handle --allow-preset-passphrase.
+	* preset-passphrase.c: New file.
+
+2004-12-21  Werner Koch  <wk@g10code.com>
+
 	* gpg-agent.c (main): Use default_homedir().
-	* protect-tool.c (main): Ditto.
-	
+	* protect-tool.c (main): Ditto.	
 
 2004-12-20  Werner Koch  <wk@g10code.com>
 

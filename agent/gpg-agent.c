@@ -89,6 +89,7 @@ enum cmd_and_opt_values
 
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
+  oAllowPresetPassphrase,
   oKeepTTY,
   oKeepDISPLAY
 };
@@ -141,6 +142,8 @@ static ARGPARSE_OPTS opts[] = {
                                N_("do not use the PIN cache when signing")},
   { oAllowMarkTrusted, "allow-mark-trusted", 0,
                              N_("allow clients to mark keys as \"trusted\"")},
+  { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
+                             N_("allow presetting passphrase")},
   {0}
 };
 
@@ -391,6 +394,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
 
     case oAllowMarkTrusted: opt.allow_mark_trusted = 1; break;
+
+    case oAllowPresetPassphrase: opt.allow_preset_passphrase = 1; break;
 
     default:
       return 0; /* not handled */

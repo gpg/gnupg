@@ -1,0 +1,107 @@
+@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node System Notes
+@chapter Notes pertaining to certain OSes.
+
+GnuPG has been developed on GNU/Linux systems and is know to work on
+almost all Free OSes.  All modern POSIX systems should be supproted
+right now, however there are probably a lot of smaller glitches we need
+to fix first.  The major problem areas are:
+
+@itemize
+@item 
+For logging to sockets and other internal operations the
+@code{fopencookie} function (@code{funopen} under *BSD) is used.  This
+is a very convient function which makes it possible to create outputs in
+a structures and easy maintainable way.  The drawback however is that
+most proprietary OSes don't support this function.  At g10@tie{}Code we
+have looked into several ways on how to overcome this limitation but no
+sufficiently easy and maintainable way has been found.  Porting
+@emph{glibc} to a general POSIX system is of course an option and would
+make writing portable software much easier; this it has not yet been
+done and the system administrator wouldneed to cope with the GNU
+specific admin things in addition to the generic ones of his system.
+
+We have now settled to use explicit stdio wrappers with a functionality
+similar to funopen.  Although the code for this has already been written
+(@emph{libestream}), we have not yet changed GnuPG to use it.
+
+This means that on systems not supporting either @code{funopen} or
+@code{fopencookie}, logging to a socket won't work, prompts are not
+formatted as pretty as theyshould be and @command{gpgsm}'s
+@code{LISTKEYS} Assuan command does not work.
+
+@item
+We are planning to use file descriptor passing for interprocess
+communication.  This will allow us save a lot of resources and improve
+performance of certain operations a lot.  Systems not supporting this
+won't gain these benefits but we try to keep them working the satndard
+way as it is done today.
+
+@item
+We require more or less full POSIX compatibility.  This has been
+arround for 15 years now and thus we don't believe it makes sense to
+support non POSIX systems anymore.  Well, we of course the usual
+workarounds for near POSIX systems well be applied.
+
+There is one exception of this rule: Systems based the Microsoft Windows
+API (called here @emph{W32}) will be supported to some extend.
+
+@end itemize
+
+
+@menu
+* W32 Notes::             Microsoft Windows Notes
+@end menu
+
+
+@node W32 Notes
+@section Microsoft Windows Notes
+
+The port to Microsoft Windows based OSes is pretty new and has some
+limitations we might remove over time.  Note, that we have not yet done
+any security audit and you should not use any valuable private key.  In
+particular, @strong{using it on a box with more than one user, might
+lead to a key compromise}.
+
+@noindent
+Current limitations are:
+
+@itemize
+@item
+The @code{LISTKEYS} Assuan command of @command{gpgsm} is not supported.
+Using the command line options @option{--list-keys} or
+@option{--list-secret-keys} does however work.
+
+@item 
+No support for CRL checks.  By default the option
+@option{--disable-crl-checks} has been turned on and the log will show
+an appropriate warning message.  The reason for this is that the
+separate CRL checking daemin (@command{dirmngr}) has not been ported to
+W32.
+
+@item
+@command{gpgconf} does not create backup files, so in case of trouble
+your configuration file might get lost.
+
+@item
+@command{watchgnupg} is not available.  Logging to sockets is not
+possible.
+
+@item
+The periodical smartcard status checking done by @command{scdaemon} is
+not yet supported.
+
+@item
+Detached running of the gpg-agent is not directly supported.  It needs
+to be started in a console and left alone then.
+
+@end itemize
+
+
+
+
+
+

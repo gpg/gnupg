@@ -82,7 +82,15 @@ Boston, MA 02111-1307 USA
 @title Using the GNU Privacy Guard
 @subtitle Version @value{VERSION}
 @subtitle @value{UPDATED}
+
+@sp 6
+
+@image{gnupg-badge-openpgp,8cm,,The GnuPG Logo}
+
+@sp 6
+
 @author Werner Koch @code{(wk@@gnupg.org)}
+
 
 @page
 @vskip 0pt plus 1filll
@@ -111,6 +119,7 @@ the administration and the architecture.
 Developer information
 
 * Assuan::              Description of the Assuan protocol.
+* System Notes::        Notes pertaining to certain OSes.
 
 Miscellaneous
 
@@ -133,6 +142,7 @@ Indices
 @include scdaemon.texi
 
 @include assuan.texi
+@include sysnotes.texi
 
 @include tools.texi
 @include debugging.texi

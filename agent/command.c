@@ -141,7 +141,7 @@ parse_hexstring (ASSUAN_CONTEXT ctx, const char *string, size_t *len)
   /* parse the hash value */
   for (p=string, n=0; hexdigitp (p); p++, n++)
     ;
-  if (*p)
+  if (*p != ' ' && *p != '\t' && *p)
     return set_error (Parameter_Error, "invalid hexstring");
   if ((n&1))
     return set_error (Parameter_Error, "odd number of digits");
@@ -741,6 +741,64 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   return map_to_assuan_status (rc);
 }
 
+/* PRESET_PASSPHRASE <hexstring_with_keygrip> <timeout> <passwd>
+  
+   Set the cached passphrase/PIN for the key identified by the keygrip
+   to passwd for the given time, where -1 means infinite and 0 means
+   the default (currently only a timeout of -1 is allowed, which means
+   to never expire it).  If passwd is not provided, ask for it via the
+   pinentry module.  */
+static int
+cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
+{
+  int rc;
+  unsigned char grip[20];
+  char *grip_clear = NULL;
+  char *passphrase = NULL;
+  int ttl;
+
+  if (!opt.allow_preset_passphrase)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  rc = parse_keygrip (ctx, line, grip);
+  if (rc)
+    return rc;
+
+  /* FIXME: parse_keygrip should return a tail pointer.  */
+  grip_clear = line;
+  while (*line && (*line != ' ' && *line != '\t'))
+    line++;
+  if (!*line)
+    return map_to_assuan_status (gpg_error (GPG_ERR_MISSING_VALUE));
+  *line = '\0';
+  line++;
+  while (*line && (*line == ' ' || *line == '\t'))
+    line++;
+  
+  /* Currently, only infinite timeouts are allowed.  */
+  ttl = -1;
+  if (line[0] != '-' || line[1] != '1')
+    return map_to_assuan_status (gpg_error (GPG_ERR_NOT_IMPLEMENTED));
+  line++;
+  line++;
+  while (!(*line != ' ' && *line != '\t'))
+    line++;
+
+  /* If there is a passphrase, use it.  Currently, a passphrase is
+     required.  */
+  if (*line)
+    passphrase = line;
+  else
+    return map_to_assuan_status (gpg_error (GPG_ERR_NOT_IMPLEMENTED));
+
+  rc = agent_put_cache (grip_clear, passphrase, ttl);
+
+  if (rc)
+    log_error ("command preset_passwd failed: %s\n", gpg_strerror (rc));
+
+  return map_to_assuan_status (rc);
+}
+
 
 /* SCD <commands to pass to the scdaemon>
   
@@ -837,6 +895,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "PKDECRYPT",      cmd_pkdecrypt },
     { "GENKEY",         cmd_genkey },
     { "GET_PASSPHRASE", cmd_get_passphrase },
+    { "PRESET_PASSPHRASE", cmd_preset_passphrase },
     { "CLEAR_PASSPHRASE", cmd_clear_passphrase },
     { "GET_CONFIRMATION", cmd_get_confirmation },
     { "LISTTRUSTED",    cmd_listtrusted },

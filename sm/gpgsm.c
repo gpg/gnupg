@@ -757,6 +757,9 @@ main ( int argc, char **argv)
   opt.def_cipher_algoid = "1.2.840.113549.3.7";  /*des-EDE3-CBC*/
 
   opt.homedir = default_homedir ();
+#ifdef HAVE_W32_SYSTEM
+  opt.no_crl_checks = 1;
+#endif
 
   /* First check whether we have a config file on the commandline */
   orig_argc = argc;

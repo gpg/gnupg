@@ -49,17 +49,18 @@ _w32_sock_connect (int sockfd, struct sockaddr * addr, int addrlen)
   struct sockaddr_in myaddr;
   struct sockaddr_un * unaddr;
   FILE * fp;
-  int port = 0;
+  int port;
   
   unaddr = (struct sockaddr_un *)addr;
   fp = fopen (unaddr->sun_path, "rb");
   if (!fp)
-      return -1;
+    return -1;
   fscanf (fp, "%d", &port);
   fclose (fp);
+
   /* XXX: set errno in this case */
   if (port < 0 || port > 65535)
-      return -1;
+    return -1;
   
   myaddr.sin_family = AF_INET;
   myaddr.sin_port = port; 

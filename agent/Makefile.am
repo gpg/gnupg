@@ -19,7 +19,7 @@
 ## Process this file with automake to produce Makefile.in
 
 bin_PROGRAMS = gpg-agent
-libexec_PROGRAMS = gpg-protect-tool
+libexec_PROGRAMS = gpg-protect-tool gpg-preset-passphrase
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
@@ -53,8 +53,20 @@ gpg_protect_tool_SOURCES = \
 	protect.c \
 	minip12.c minip12.h 
 
-gpg_protect_tool_LDADD = ../jnlib/libjnlib.a \
-        ../common/libcommon.a ../common/libsimple-pwquery.a \
+gpg_protect_tool_LDADD = ../common/libsimple-pwquery.a \
+	../jnlib/libjnlib.a  ../common/libcommon.a  \
 	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
+if HAVE_W32_SYSTEM
+gpg_protect_tool_LDADD += -lwsock32
+endif
 
+gpg_preset_passphrase_SOURCES = \
+	preset-passphrase.c
+
+gpg_preset_passphrase_LDADD = ../common/libsimple-pwquery.a \
+	../jnlib/libjnlib.a ../common/libcommon.a \
+	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
+if HAVE_W32_SYSTEM
+gpg_preset_passphrase_LDADD += -lwsock32
+endif
 

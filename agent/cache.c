@@ -39,7 +39,7 @@ struct cache_item_s {
   ITEM next;
   time_t created;
   time_t accessed;
-  int  ttl;  /* max. lifetime given in seonds */
+  int ttl;  /* max. lifetime given in seonds, -1 one means infinite */
   int lockcount;
   struct secret_data_s *pw;
   char key[1];
@@ -88,7 +88,8 @@ housekeeping (void)
   /* first expire the actual data */
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount && r->pw && r->accessed + r->ttl < current)
+      if (!r->lockcount && r->pw
+	  && r->ttl >= 0 && r->accessed + r->ttl < current)
         {
           if (DBG_CACHE)
             log_debug ("  expired `%s' (%ds after last access)\n",
@@ -118,7 +119,7 @@ housekeeping (void)
      Expire old and unused entries after 30 minutes */
   for (rprev=NULL, r=thecache; r; )
     {
-      if (!r->pw && r->accessed + 60*30 < current)
+      if (!r->pw && r->ttl >= 0 && r->accessed + 60*30 < current)
         {
           if (r->lockcount)
             {
@@ -194,7 +195,7 @@ agent_put_cache (const char *key, const char *data, int ttl)
     log_debug ("agent_put_cache `%s'\n", key);
   housekeeping ();
 
-  if (ttl < 1)
+  if (ttl == 1)
     ttl = opt.def_cache_ttl;
   if (!ttl)
     return 0;

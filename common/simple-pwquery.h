@@ -57,6 +57,9 @@ char *simple_pwquery (const char *cacheid,
                       const char *description,
                       int *errorcode);
 
+/* Perform the simple query QUERY (which must be new-line and 0
+   terminated) and return the error code.  */
+int simple_query (const char *query);
 
 #define SPWQ_OUT_OF_CORE 1
 #define SPWQ_IO_ERROR 2

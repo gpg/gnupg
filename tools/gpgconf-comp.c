@@ -1272,7 +1272,13 @@ get_config_pathname (gc_component_t component, gc_backend_t backend)
   else
     pathname = "";
 
+#ifdef HAVE_DOSISH_SYSTEM
+  if (!(pathname[0] 
+        && pathname[1] == ':'
+        && (pathname[2] == '/' || pathname[2] == '\\')))
+#else
   if (pathname[0] != '/')
+#endif
     gc_error (1, 0, "Option %s, needed by backend %s, is not absolute",
 	      gc_backend[backend].option_config_filename,
 	      gc_backend[backend].name);

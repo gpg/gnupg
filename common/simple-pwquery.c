@@ -1,5 +1,5 @@
 /* simple-pwquery.c - A simple password query cleint for gpg-agent
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,6 +40,10 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
+#ifdef HAVE_W32_SYSTEM
+#include "../jnlib/w32-afunix.h"
+#endif
+
 
 #define SIMPLE_PWQUERY_IMPLEMENTATION 1
 #include "simple-pwquery.h"
@@ -63,6 +67,25 @@
 #endif
 
 
+
+
+
+
+#ifndef HAVE_STPCPY
+static char *
+my_stpcpy(char *a,const char *b)
+{
+    while( *b )
+	*a++ = *b++;
+    *a = 0;
+
+    return (char*)a;
+}
+#define stpcpy(a,b)  my_stpcpy((a), (b))
+#endif
+
+
+
 /* Write NBYTES of BUF to file descriptor FD. */
 static int
 writen (int fd, const void *buf, size_t nbytes)
@@ -72,7 +95,11 @@ writen (int fd, const void *buf, size_t nbytes)
   
   while (nleft > 0)
     {
-      nwritten = write( fd, buf, nleft );
+#ifdef HAVE_W32_SYSTEM
+      nwritten = send (fd, buf, nleft, 0);
+#else
+      nwritten = write (fd, buf, nleft);
+#endif
       if (nwritten < 0)
         {
           if (errno == EINTR)
@@ -102,7 +129,11 @@ readline (int fd, char *buf, size_t buflen)
 
   while (nleft > 0)
     {
+#ifdef HAVE_W32_SYSTEM
+      int n = recv (fd, buf, nleft, 0);
+#else
       int n = read (fd, buf, nleft);
+#endif
       if (n < 0)
         {
           if (errno == EINTR)
@@ -182,8 +213,10 @@ agent_send_all_options (int fd)
     }
 
   dft_ttyname = getenv ("GPG_TTY");
+#ifndef HAVE_W32_SYSTEM
   if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
     dft_ttyname = ttyname (0);
+#endif
   if (dft_ttyname && *dft_ttyname)
     {
       if ((rc=agent_send_option (fd, "ttyname", dft_ttyname)))
@@ -259,9 +292,6 @@ agent_send_all_options (int fd)
 static int
 agent_open (int *rfd)
 {
-#ifdef HAVE_W32_SYSTEM
-  return SPWQ_NO_AGENT;  /* FIXME */
-#else
   int rc;
   int fd;
   char *infostr, *p;
@@ -286,7 +316,7 @@ agent_open (int *rfd)
   strcpy (p, infostr);
   infostr = p;
 
-  if ( !(p = strchr ( infostr, ':')) || p == infostr
+  if ( !(p = strchr ( infostr, PATHSEP_C)) || p == infostr
        || (p-infostr)+1 >= sizeof client_addr.sun_path ) 
     {
 #ifdef SPWQ_USE_LOGGING
@@ -296,7 +326,7 @@ agent_open (int *rfd)
     }
   *p++ = 0;
 
-  while (*p && *p != ':')
+  while (*p && *p != PATHSEP_C)
     p++;
   prot = *p? atoi (p+1) : 0;
   if ( prot != 1)
@@ -306,8 +336,13 @@ agent_open (int *rfd)
 #endif
       return SPWQ_PROTOCOL_ERROR;
     }
-       
-  if( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 ) 
+
+#ifdef HAVE_W32_SYSTEM       
+  fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
+#else
+  fd = socket (AF_UNIX, SOCK_STREAM, 0);
+#endif
+  if (fd == -1) 
     {
 #ifdef SPWQ_USE_LOGGING
       log_error ("can't create socket: %s\n", strerror(errno) );
@@ -321,7 +356,12 @@ agent_open (int *rfd)
   len = (offsetof (struct sockaddr_un, sun_path)
          + strlen(client_addr.sun_path) + 1);
     
-  if (connect (fd, (struct sockaddr*)&client_addr, len ) == -1)
+#ifdef HAVE_W32_SYSTEM       
+  rc = _w32_sock_connect (fd, (struct sockaddr*)&client_addr, len );
+#else
+  rc = connect (fd, (struct sockaddr*)&client_addr, len );
+#endif
+  if (rc == -1)
     {
 #ifdef SPWQ_USE_LOGGING
       log_error ( _("can't connect to `%s': %s\n"), infostr, strerror (errno));
@@ -353,12 +393,11 @@ agent_open (int *rfd)
 
   *rfd = fd;
   return 0;
-#endif
 }
 
 
 /* Copy text to BUFFER and escape as required.  Return a pointer to
-   the end of the new buffer.  NOte that BUFFER must be large enough
+   the end of the new buffer.  Note that BUFFER must be large enough
    to keep the entire text; allocataing it 3 times the size of TEXT
    is sufficient. */
 static char *
@@ -504,4 +543,65 @@ simple_pwquery (const char *cacheid,
   if (pw)
     spwq_free (pw);
   return result;
+}
+
+
+/* Perform the simple query QUERY (which must be new-line and 0
+   terminated) and return the error code.  */
+int
+simple_query (const char *query)
+{
+  int fd = -1;
+  int nread;
+  char response[500];
+  int rc;
+
+  rc = agent_open (&fd);
+  if (rc)
+    goto leave;
+
+  rc = writen (fd, query, strlen (query));
+  if (rc)
+    goto leave;
+
+  /* get response */
+  nread = readline (fd, response, 499);
+  if (nread < 0)
+    {
+      rc = -nread;
+      goto leave;
+    }
+  if (nread < 3)
+    {
+      rc = SPWQ_PROTOCOL_ERROR;
+      goto leave;
+    }
+      
+  if (response[0] == 'O' && response[1] == 'K') 
+    /* OK, do nothing.  */;
+  else if ((nread > 7 && !memcmp (response, "ERR 111", 7)
+            && (response[7] == ' ' || response[7] == '\n') )
+           || ((nread > 4 && !memcmp (response, "ERR ", 4)
+                && (strtoul (response+4, NULL, 0) & 0xffff) == 99)) ) 
+    {
+      /* 111 is the old Assuan code for canceled which might still
+         be in use by old installations. 99 is GPG_ERR_CANCELED as
+         used by modern gpg-agents; 0xffff is used to mask out the
+         error source.  */
+#ifdef SPWQ_USE_LOGGING
+      log_info (_("canceled by user\n") );
+#endif
+    }
+  else 
+    {
+#ifdef SPWQ_USE_LOGGING
+      log_error (_("problem with the agent\n"));
+#endif
+      rc = SPWQ_ERR_RESPONSE;
+    }
+        
+ leave:
+  if (fd != -1)
+    close (fd);
+  return rc;
 }

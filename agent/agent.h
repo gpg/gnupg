@@ -63,6 +63,7 @@ struct {
 
   int ignore_cache_for_signing;
   int allow_mark_trusted;
+  int allow_preset_passphrase;
   int keep_tty;  /* don't switch the TTY (for pinentry) on request */
   int keep_display;  /* don't switch the DISPLAY (for pinentry) on request */
 } opt;
