@@ -1,3 +1,7 @@
+2003-04-15  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Document --enable-progress-filter.
+
 2003-04-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Allow CVS version to build without faqprog.pl.

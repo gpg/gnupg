@@ -1322,6 +1322,14 @@ be given in C syntax (e.g. 0x0042).
  Set all useful debugging flags.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--enable-progress-filter</term>
+<listitem><para>
+Enable certain PROGRESS status outputs.  This option allows frontends
+to display a progress indicator while gpg is processing larger files.
+There is a slight performance overhead using it.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--status-fd &ParmN;</term>
