@@ -8,7 +8,7 @@ AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_HEADER(config.h)
 
 
-VERSION=`cat ./VERSION`
+VERSION=`cat $srcdir/VERSION`
 PACKAGE=g10
 AC_SUBST(VERSION)
 AC_SUBST(PACKAGE)
@@ -90,10 +90,6 @@ dnl Checks for libraries.
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)
-AC_CHECK_HEADERS(zlib.h,
-		 [LIBS="$LIBS -lz"],
-		 AC_MSG_WARN([zlib missing - creating without ZLIB support!])
-		)
 
 
 dnl Checks for typedefs, structures, and compiler characteristics.
@@ -150,12 +146,20 @@ AC_CHECK_SIZEOF(unsigned short, 2)
 AC_CHECK_SIZEOF(unsigned int, 4)
 AC_CHECK_SIZEOF(unsigned long, 4)
 
+if test "$ac_cv_sizeof_unsigned_short" = "0" \
+   || test "$ac_cv_sizeof_unsigned_int" = "0" \
+   || test "$ac_cv_sizeof_unsigned_long" = "0"; then
+    AC_MSG_WARN([Hmmm, something is wrong with the sizes - using defaults]);
+fi
 
 
 
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr)
+AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr rand strtoul)
+
+
+
 
 dnl check wether we have a random device
 AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
@@ -175,8 +179,8 @@ if test "$ac_cv_mpi_config_done" = yes; then
     AC_MSG_RESULT(done)
 else
 ac_cv_mpi_config_done=""
-if test -f ./mpi/config.links ; then
-    . ./mpi/config.links
+if test -f $srcdir/mpi/config.links ; then
+    . $srcdir/mpi/config.links
     ac_cv_mpi_extra_asm_modules="$mpi_extra_modules"
     AC_LINK_FILES( ${mpi_ln_src}, ${mpi_ln_dst} )
     ac_cv_mpi_config_done="yes"
@@ -198,11 +202,18 @@ fi
 AC_SUBST(MPI_EXTRA_ASM_OBJS)
 
 
+dnl Do we have zlib? Must do it here because Solaris failed
+dnl when compiling a conftest (due to the "-lz" from LIBS).
+AC_CHECK_HEADERS(zlib.h,
+		 [LIBS="$LIBS -lz"],
+		 AC_MSG_WARN([zlib missing - creating without ZLIB support!])
+		)
+
 dnl checking whether we have other cipher source files
 CIPHER_EXTRA_OBJS=""
 CIPHER_EXTRA_DIST=""
 AC_CACHE_CHECK(for extra cipher modules, ac_cv_have_rsa_cipher,
-[if test -f cipher/rsa.c && test -f cipher/rsa.h; then
+[if test -f $srcdir/cipher/rsa.c && test -f $srcdir/cipher/rsa.h; then
   ac_cv_have_rsa_cipher=yes; else ac_cv_have_rsa_cipher=no; fi])
 if test $ac_cv_have_rsa_cipher = yes; then
     AC_DEFINE(HAVE_RSA_CIPHER)

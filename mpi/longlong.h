@@ -1,4 +1,5 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
+   Note: I added some stuff for use with g10
 
 Copyright (C) 1991, 1992, 1993, 1994, 1996 Free Software Foundation, Inc.
 
@@ -1440,6 +1441,7 @@ extern
 const
 #endif
 unsigned char __clz_tab[];
+#define MPI_INTERNAL_NEED_CLZ_TAB 1
 #define count_leading_zeros(count, x) \
   do {									\
     UWtype __xr = (x);							\

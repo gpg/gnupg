@@ -286,7 +286,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 	else if( state == 3 ) { /* skip leading spaces of the argument */
 	    if( !isspace(c) ) {
 		i = 0;
-		keyword[i] = c;
+		keyword[i++] = c;
 		state = 4;
 	    }
 	}

@@ -110,13 +110,26 @@ struct local_id_info {
 };
 
 
+typedef struct trust_info TRUST_INFO;
+struct trust_info {
+    ulong    lid;
+    unsigned trust;
+};
+
+
 typedef struct trust_seg_list *TRUST_SEG_LIST;
 struct trust_seg_list {
     TRUST_SEG_LIST next;
     int   nseg;     /* number of segmens */
     int   dup;
-    ulong seg[1];   /* segment list */
+    TRUST_INFO seg[1];	 /* segment list */
 };
+
+
+typedef struct {
+    TRUST_SEG_LIST tsl;
+    int index;
+} ENUM_TRUST_WEB_CONTEXT;
 
 
 static void create_db( const char *fname );
@@ -134,11 +147,12 @@ static int qry_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned *flag );
 static void upd_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag );
 
 static void print_user_id( const char *text, u32 *keyid );
-static int do_list_path( ulong *stack, int depth, int max_depth,
+static int do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 			 LOCAL_ID_INFO *lids, TRUST_SEG_LIST *tslist );
 
 static int list_sigs( ulong pubkey_id );
-static int do_check( ulong pubkeyid, int *trustlevel );
+static int propagate_trust( TRUST_SEG_LIST tslist );
+static int do_check( ulong pubkeyid, unsigned *trustlevel );
 
 
 static char *db_name;
@@ -146,6 +160,9 @@ static int  db_fd = -1;
 /* a table used to keep track of ultimately trusted keys
  * which are the ones from our secrings */
 static LOCAL_ID_INFO *ultikey_table;
+
+static ulong last_trust_web_key;
+static TRUST_SEG_LIST last_trust_web_tslist;
 
 #define buftoulong( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \
 		       (*((byte*)(p)+2) << 8) | (*((byte*)(p)+3)))
@@ -642,13 +659,15 @@ void
 list_trust_path( int max_depth, const char *username )
 {
     int rc;
+    int wipe=0;
     int i;
     TRUSTREC rec;
     PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
 
-    if( max_depth < 0 )
-	max_depth = MAX_LIST_SIGS_DEPTH+1;
-
+    if( max_depth < 0 ) {
+	wipe = 1;
+	max_depth = -max_depth;
+    }
 
     if( (rc = get_pubkey_byname( pkc, username )) )
 	log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
@@ -658,37 +677,53 @@ list_trust_path( int max_depth, const char *username )
     else if( rc == -1 )
 	log_error("user '%s' not in trustdb\n", username);
     else {
-	LOCAL_ID_INFO *lids;
-	LOCAL_ID_INFO *work;
-	ulong stack[MAX_LIST_SIGS_DEPTH];
 	TRUST_SEG_LIST tsl, tslist = NULL;
 
-	lids = new_lid_table();
-	stack[0] = pkc->local_id;
-	rc = do_list_path( stack, 1, max_depth, lids, &tslist );
-	/* wipe out duplicates */
-	work = new_lid_table();
-	for( tsl=tslist; tsl; tsl = tsl->next ) {
-	    for(i=1; i < tsl->nseg-1; i++ ) {
-		if( ins_lid_table_item( work, tsl->seg[i], 0 ) ) {
-		    tsl->dup = 1; /* mark as duplicate */
-		    break;
-		}
-	    }
+	if( !qry_lid_table_flag( ultikey_table, pkc->local_id, NULL ) ) {
+	    tslist = m_alloc( sizeof *tslist );
+	    tslist->nseg = 1;
+	    tslist->dup = 0;
+	    tslist->seg[0].lid = pkc->local_id;
+	    tslist->seg[0].trust = 0;
+	    tslist->next = NULL;
+	    rc = 0;
 	}
-	release_lid_table(work);
+	else {
+	    LOCAL_ID_INFO *lids = new_lid_table();
+	    TRUST_INFO stack[MAX_LIST_SIGS_DEPTH];
 
-	release_lid_table(lids);
+	    stack[0].lid = pkc->local_id;
+	    stack[0].trust = 0;
+	    rc = do_list_path( stack, 1, max_depth, lids, &tslist );
+	    if( wipe ) { /* wipe out duplicates */
+		LOCAL_ID_INFO *work;
+
+		work = new_lid_table();
+		for( tsl=tslist; tsl; tsl = tsl->next ) {
+		    for(i=1; i < tsl->nseg-1; i++ ) {
+			if( ins_lid_table_item( work, tsl->seg[i].lid, 0 ) ) {
+			    tsl->dup = 1; /* mark as duplicate */
+			    break;
+			}
+		    }
+		}
+		release_lid_table(work);
+	    }
+	    release_lid_table(lids);
+	}
 	if( rc )
 	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
+	rc = propagate_trust( tslist );
+	if( rc )
+	    log_error("user '%s' trust problem: %s\n", username, g10_errstr(rc));
 	for(tsl = tslist; tsl; tsl = tsl->next ) {
 	    int i;
 
 	    if( tsl->dup )
 		continue;
-	    printf("tslist segs:" );
+	    printf("trust path:" );
 	    for(i=0; i < tsl->nseg; i++ )
-		printf("  %lu", tsl->seg[i]);
+		printf("  %lu/%02x", tsl->seg[i].lid, tsl->seg[i].trust );
 	    putchar('\n');
 	}
     }
@@ -855,8 +890,7 @@ keyid_from_local_id( ulong lid, u32 *keyid )
 
 
 /****************
- * Verify, that all our public keys are in the trustDB and marked as
- * ultimately trusted.
+ * Verify, that all our public keys are in the trustDB.
  */
 static int
 verify_own_certs()
@@ -866,7 +900,6 @@ verify_own_certs()
     PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
     PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
     u32 keyid[2];
-    int trust;
 
     while( !(rc=enum_secret_keys( &enum_context, skc) ) ) {
 	/* fixed: to be sure that it is a secret key of our own,
@@ -895,23 +928,21 @@ verify_own_certs()
 	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
-	/* look into the trustdb */
-	rc = check_trust( pkc, &trust );
-	if( rc ) {
-	    log_info("keyid %08lX: problem in trustdb: %s\n", (ulong)keyid[1],
-							      g10_errstr(rc) );
-	    goto leave;
-	}
-	if( trust == TRUST_UNKNOWN ) {
+
+	/* make sure that the pubkey is in the trustdb */
+	rc = query_trust_record( pkc );
+	if( rc == -1 ) { /* put it into the trustdb */
 	    rc = insert_trust_record( pkc );
-	    if( rc )
-		log_error("keyid %08lX: insert failed: %s\n",
-					    (ulong)keyid[1], g10_errstr(rc) );
-	    else
-		log_info("keyid %08lX: inserted\n", (ulong)keyid[1] );
+	    if( rc ) {
+		log_error("keyid %08lX: can't put it into the trustdb\n",
+							    (ulong)keyid[1] );
+		goto leave;
+	    }
 	}
-	else {
-	    /* FIXME: we should chek the other values */
+	else if( rc ) {
+	    log_error("keyid %08lX: query record failed\n", (ulong)keyid[1] );
+	    goto leave;
+
 	}
 
 	if( DBG_TRUST )
@@ -920,6 +951,7 @@ verify_own_certs()
 	if( ins_lid_table_item( ultikey_table, pkc->local_id, 0 ) )
 	    log_error("keyid %08lX: already in ultikey_table\n",
 							(ulong)keyid[1]);
+
 
 	release_secret_cert_parts( skc );
 	release_public_cert_parts( pkc );
@@ -1042,7 +1074,7 @@ list_sigs( ulong pubkey_id )
 
 
 static int
-do_list_path( ulong *stack, int depth, int max_depth,
+do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 	      LOCAL_ID_INFO *lids, TRUST_SEG_LIST *tslist )
 {
     SIGREC_CONTEXT sx;
@@ -1057,12 +1089,13 @@ do_list_path( ulong *stack, int depth, int max_depth,
 	return 0;
     }
     memset( &sx, 0, sizeof sx );
-    sx.pubkey_id = stack[depth-1];
+    sx.pubkey_id = stack[depth-1].lid;
     while( !(rc = walk_sigrecs( &sx )) ) {
 	TRUST_SEG_LIST tsl, t2, tl;
 	int i;
 
-	stack[depth] = sx.sig_id;
+	stack[depth].lid = sx.sig_id;
+	stack[depth].trust = 0;
 	if( qry_lid_table_flag( lids, sx.sig_id, &last_depth) ) {
 	    /*printf("%2lu/%d: marked\n", sx.sig_id, depth );*/
 	    ins_lid_table_item( lids, sx.sig_id, depth);
@@ -1078,7 +1111,7 @@ do_list_path( ulong *stack, int depth, int max_depth,
 	    /*printf("%2lu/%d: already visited\n", sx.sig_id, depth)*/;
 	else if( !qry_lid_table_flag( ultikey_table, sx.sig_id, NULL ) ) {
 	    /* found end of path; store it, ordered by path length */
-	    tsl = m_alloc( sizeof *tsl + depth*sizeof(ulong) );
+	    tsl = m_alloc( sizeof *tsl + depth*sizeof(TRUST_INFO) );
 	    tsl->nseg = depth+1;
 	    tsl->dup = 0;
 	    for(i=0; i <= depth; i++ )
@@ -1268,19 +1301,110 @@ build_sigrecs( ulong pubkeyid )
     return rc;
 }
 
+/****************
+ * Make a list of trust paths
+ */
+static int
+make_tsl( ulong pubkey_id, TRUST_SEG_LIST *ret_tslist )
+{
+    int i, rc;
+    LOCAL_ID_INFO *lids = new_lid_table();
+    TRUST_INFO stack[MAX_LIST_SIGS_DEPTH];
+    TRUST_SEG_LIST tsl, tslist;
+    int max_depth = 4;
 
+    tslist = *ret_tslist = NULL;
 
+    if( !qry_lid_table_flag( ultikey_table, pubkey_id, NULL ) ) {
+	tslist = m_alloc( sizeof *tslist );
+	tslist->nseg = 1;
+	tslist->dup = 0;
+	tslist->seg[0].lid = pubkey_id;
+	tslist->seg[0].trust = 0;
+	tslist->next = NULL;
+	rc = 0;
+    }
+    else {
+	stack[0].lid = pubkey_id;
+	stack[0].trust = 0;
+	rc = do_list_path( stack, 1, max_depth, lids, &tslist );
+    }
+    if( !rc ) { /* wipe out duplicates */
+	LOCAL_ID_INFO *work = new_lid_table();
+	for( tsl=tslist; tsl; tsl = tsl->next ) {
+	    for(i=1; i < tsl->nseg-1; i++ ) {
+		if( ins_lid_table_item( work, tsl->seg[i].lid, 0 ) ) {
+		    tsl->dup = 1; /* mark as duplicate */
+		    break;
+		}
+	    }
+	}
+	release_lid_table(work);
+	*ret_tslist = tslist;
+    }
+    else
+	; /* FIXME: release tslist */
+    release_lid_table(lids);
+    return rc;
+}
 
 
 /****************
+ * Given a trust segment list tslist, walk over all paths and fill in
+ * the trust information for each segment.  What this function does is
+ * to assign a trustvalue to the first segment (which is the requested key)
+ * of each path.
  *
+ * FIXME: We have to do more thinks here. e.g. we should never increase
+ *	  the trust value.
+ *
+ * Do not do it for duplicates.
  */
 static int
-do_check( ulong pubkeyid, int *trustlevel )
+propagate_trust( TRUST_SEG_LIST tslist )
 {
-    int rc=0;
+    int i, rc;
+    unsigned trust;
+    TRUST_SEG_LIST tsl;
+
+    for(tsl = tslist; tsl; tsl = tsl->next ) {
+	if( tsl->dup )
+	    continue;
+	assert( tsl->nseg );
+	/* the last segment is always a ultimately trusted one, so we can
+	 * assign a fully trust to the next one */
+	i = tsl->nseg-1;
+	tsl->seg[i].trust = TRUST_ULTIMATE;
+	trust = TRUST_FULLY;
+	for(i-- ; i >= 0; i-- ) {
+	    tsl->seg[i].trust = trust;
+	    if( i > 0 ) {
+		/* get the trust of this pubkey */
+		rc = get_ownertrust( tsl->seg[i].lid, &trust );
+		if( rc )
+		    return rc;
+	    }
+	}
+    }
+    return 0;
+}
+
+
+/****************
+ * we have the pubkey record but nothing more is known
+ */
+static int
+do_check( ulong pubkeyid, unsigned *trustlevel )
+{
+    int i, rc=0;
     ulong rnum;
     TRUSTREC rec;
+    TRUST_SEG_LIST tsl, tsl2, tslist;
+    int marginal, fully;
+    int fully_needed = 4;
+    int marginal_needed = 6;
+
+    *trustlevel = TRUST_UNDEFINED;
 
     /* verify the cache */
 
@@ -1294,9 +1418,62 @@ do_check( ulong pubkeyid, int *trustlevel )
     if( rc )
 	return rc;  /* error while looking for sigrec or building sigrecs */
 
+    /* fixme: take it from the cache if it is valid */
+
+    /* Make a list of all possible trust-paths */
+    rc = make_tsl( pubkeyid, &tslist );
+    if( rc )
+	return rc;
+    rc = propagate_trust( tslist );
+    if( rc )
+	return rc;
+    for(tsl = tslist; tsl; tsl = tsl->next ) {
+	if( tsl->dup )
+	    continue;
+
+	log_debug("tslist segs:" );
+	for(i=0; i < tsl->nseg; i++ )
+	    fprintf(stderr, "  %lu/%02x", tsl->seg[i].lid, tsl->seg[i].trust );
+	putc('\n',stderr);
+    }
+
+    /* and look wether there is a trusted path.
+     * We only have to look at the first segment, because
+     * propagate_trust has investigated all other segments */
+    marginal = fully = 0;
+    for(tsl = tslist; tsl; tsl = tsl->next ) {
+	if( tsl->dup )
+	    continue;
+	if( tsl->seg[0].trust == TRUST_ULTIMATE ) {
+	    *trustlevel = TRUST_ULTIMATE; /* our own key */
+	    break;
+	}
+	if( tsl->seg[0].trust == TRUST_FULLY ) {
+	    marginal++;
+	    fully++;
+	}
+	else if( tsl->seg[0].trust == TRUST_MARGINAL )
+	    marginal++;
+
+	if( fully >= fully_needed ) {
+	    *trustlevel = TRUST_FULLY;
+	    break;
+	}
+    }
+    if( !tsl && marginal >= marginal_needed )
+	*trustlevel = TRUST_MARGINAL;
+
+    /* cache the tslist */
+    if( last_trust_web_key ) {
+	for( tsl = last_trust_web_tslist; tsl; tsl = tsl2 ) {
+	    tsl2 = tsl->next;
+	    m_free(tsl);
+	}
+    }
+    last_trust_web_key = pubkeyid;
+    last_trust_web_tslist = tslist;
     return 0;
 }
-
 
 
 /*********************************************************
@@ -1375,10 +1552,10 @@ init_trustdb( int level )
  *	     is not necessary to check this if we use a local pubring. Hmmmm.
  */
 int
-check_trust( PKT_public_cert *pkc, int *r_trustlevel )
+check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 {
     TRUSTREC rec;
-    int trustlevel = TRUST_UNKNOWN;
+    unsigned trustlevel = TRUST_UNKNOWN;
     int rc=0;
 
     if( DBG_TRUST )
@@ -1409,10 +1586,6 @@ check_trust( PKT_public_cert *pkc, int *r_trustlevel )
 	log_error("check_trust: do_check failed: %s\n", g10_errstr(rc));
 	return rc;
     }
-    if( !rec.r.pubkey.ownertrust )
-	trustlevel = TRUST_UNDEFINED;
-    else
-	trustlevel = TRUST_EXPIRED;
 
 
   leave:
@@ -1423,29 +1596,109 @@ check_trust( PKT_public_cert *pkc, int *r_trustlevel )
 }
 
 
+
+
+/****************
+ * Enumerate all keys, which are needed to build all trust paths for
+ * the given key.  This function dies not return the key itself or
+ * the ultimate key.
+ *
+ *  1) create a void pointer and initialize it to NULL
+ *  2) pass this void pointer by reference to this function.
+ *     Set lid to the key you want to enumerate and pass it by reference.
+ *  3) call this function as long as it does not return -1
+ *     to indicate EOF. LID does contain the next key used to build the web
+ *  4) Always call this function a last time with LID set to NULL,
+ *     so that it can free it's context.
+ */
 int
-get_ownertrust( PKT_public_cert *pkc, int *r_otrust )
+enum_trust_web( void **context, ulong *lid )
+{
+    ENUM_TRUST_WEB_CONTEXT *c = *context;
+
+    if( !c ) { /* make a new context */
+	c = m_alloc_clear( sizeof *c );
+	*context = c;
+	if( *lid != last_trust_web_key )
+	    log_bug("enum_trust_web: nyi\n");
+	c->tsl = last_trust_web_tslist;
+	c->index = 1;
+    }
+
+    if( !lid ) { /* free the context */
+	m_free( c );
+	*context = NULL;
+	return 0;
+    }
+
+    while( c->tsl ) {
+	if( !c->tsl->dup && c->index < c->tsl->nseg-1 ) {
+	    *lid = c->tsl->seg[c->index].lid;
+	    c->index++;
+	    return 0;
+	}
+	c->index = 1;
+	c->tsl = c->tsl->next;
+    }
+    return -1; /* eof */
+}
+
+
+/****************
+ * Return the assigned ownertrust value for the given LID
+ */
+int
+get_ownertrust( ulong lid, unsigned *r_otrust )
 {
     TRUSTREC rec;
-    int rc;
 
-    /* get the pubkey record */
+    if( read_record( lid, &rec ) ) {
+	log_error("get_ownertrust: read record failed\n");
+	return G10ERR_TRUSTDB;
+    }
+    if( r_otrust )
+	*r_otrust = rec.r.pubkey.ownertrust;
+    return 0;
+}
+
+int
+keyid_from_trustdb( ulong lid, u32 *keyid )
+{
+    TRUSTREC rec;
+
+    if( read_record( lid, &rec ) ) {
+	log_error("keyid_from_trustdb: read record failed\n");
+	return G10ERR_TRUSTDB;
+    }
+    if( keyid ) {
+	keyid[0] = rec.r.pubkey.keyid[0];
+	keyid[1] = rec.r.pubkey.keyid[1];
+    }
+    return 0;
+}
+
+
+int
+query_trust_record( PKT_public_cert *pkc )
+{
+    TRUSTREC rec;
+    int rc=0;
+
     if( pkc->local_id ) {
 	if( read_record( pkc->local_id, &rec ) ) {
-	    log_error("get_ownertrust: read record failed\n");
+	    log_error("query_trust_record: read record failed\n");
 	    return G10ERR_TRUSTDB;
 	}
     }
     else { /* no local_id: scan the trustdb */
 	if( (rc=scan_record_by_pkc( pkc, &rec, 2 )) && rc != -1 ) {
-	    log_error("get_ownertrust: scan_record_by_pkc(2) failed: %s\n",
+	    log_error("query_trust_record: scan_record_by_pkc(2) failed: %s\n",
 							    g10_errstr(rc));
 	    return rc;
 	}
 	else if( rc == -1 )
 	    return rc;
     }
-    *r_otrust = rec.r.pubkey.ownertrust;
     return 0;
 }
 
@@ -1494,23 +1747,23 @@ insert_trust_record( PKT_public_cert *pkc )
 
 
 int
-update_trust_record( PKT_public_cert *pkc, int new_trust )
+update_ownertrust( ulong lid, unsigned new_trust )
 {
     TRUSTREC rec;
-    ulong recnum;
 
-
-    assert( pkc->local_id );
-
-    if( read_record( pkc->local_id, &rec ) ) {
-	log_error("update_trust_record: read failed\n");
+    if( read_record( lid, &rec ) ) {
+	log_error("update_ownertrust: read failed\n");
 	return G10ERR_TRUSTDB;
     }
     /* check keyid, fingerprint etc ? */
+    if( rec.rectype != 2 ) {
+	log_error("update_ownertrust: invalid record type\n");
+	return G10ERR_TRUSTDB;
+    }
 
-    rec.r.pubkey.ownertrust = 0;
-    if( write_record( recnum, &rec ) ) {
-	log_error("insert_trust_record: write failed\n");
+    rec.r.pubkey.ownertrust = new_trust;
+    if( write_record( lid, &rec ) ) {
+	log_error("update_ownertrust: write failed\n");
 	return G10ERR_TRUSTDB;
     }
 

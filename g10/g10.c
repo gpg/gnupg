@@ -190,6 +190,7 @@ main( int argc, char **argv )
     { 531, "list-trustdb",0 , "\r"},
     { 532, "quick-random", 0, "\r"},
     { 533, "list-trust-path",0, "\r"},
+    { 534, "no-comment", 0,   "do not write comment packets"},
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -336,6 +337,7 @@ main( int argc, char **argv )
 	  case 531: set_cmd( &cmd, aListTrustDB); break;
 	  case 532: quick_random_gen(1); break;
 	  case 533: set_cmd( &cmd, aListTrustPath); break;
+	  case 534: opt.no_comment=1; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }

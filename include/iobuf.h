@@ -54,7 +54,7 @@ struct iobuf_struct {
     IOBUF chain;	/* next iobuf used for i/o if any (passed to filter) */
     int no, subno;
     const char *desc;
-    void *opaque;      /* can be used to old any information	*/
+    void *opaque;      /* can be used to hold any information	 */
 		       /* this value is copied to all instances */
 };
 

@@ -57,13 +57,8 @@
 
     4) You end up with a binary "g10" in /usr/local/bin
 
+    5) create a directory ".g10" under your hoem directory ("mkdir ~/.g10")
 
-
-
-    Resources
-    ---------
-    G10 needs a directory "~/.g10" to store the default keyrings
-    and other files.
 
 
     Key Generation
@@ -75,8 +70,9 @@
     good random numbers for prime number generation, it uses a /dev/random
     which will emit only bytes if the kernel can gather enough entropy.
     If you see no progress, you should start some other activities such
-    as mouse moves or a "find /".  Because we have no hardware device
-    to generate random we have to use this method.
+    as mouse moves, "find /" or using the keyboard (on another window).
+    Because we have no hardware device to generate random we have to use
+    this method.
 
     Key generation shows progress by printing different characters to
     stderr:
@@ -109,17 +105,18 @@
 
 	g10 --sign-key Donald
 
-    To sign the key of of "Donald" with your default userid
+    This let you sign the key of "Donald" with your default userid.
 
 	g10 --sign-key -u Karl -u Joe Donald
 
-    To sign the key of of "Donald" with the userids of "Karl" and "Joe".
+    This let you sign the key of of "Donald" with the userids of "Karl"
+    and "Joe".
     All existing signatures are checked, if some are invalid, a menu is
     offered to delete some of them, and the you are asked for every user
     wether you want to sign this key.
 
-    You may remove a signature at any time by usiing the option "--edit-sig",
-    which also asks for the sigs to remove.
+    You may remove a signature at any time using the option "--edit-sig",
+    which asks for the sigs to remove.
 
 
     Sign
@@ -166,17 +163,6 @@
     Ditto, but sign the file with the user id "Suttner"
 
 
-
-    Examine a data or key file
-    --------------------------
-
-	g10 --list-packets datafile
-
-    Use this to list the contents of a data file. If the file is encrypted
-    you are asked for the passphrase, so that G10 is able to look at the
-    inner structure of a encrypted packet.
-
-
     Batch mode
     ----------
     If you use the option "--batch", G10 runs in non-interactive mode and
@@ -185,7 +171,7 @@
     you can use the option "--passhrase-fd n", which works like PGPs
     PGPPASSFD.
 
-    Batch mode also causes PGP to terminate as soon as a BAD signature is
+    Batch mode also causes G10 to terminate as soon as a BAD signature is
     detected.
 
 
@@ -195,6 +181,56 @@
     has been detected or 2 or higher for all other errors.  You should parse
     stderr to get detailed informations about the errors.
 
+
+    Esoteric commands
+    -----------------
+
+	g10 --list-packets datafile
+
+    Use this to list the contents of a data file. If the file is encrypted
+    you are asked for the passphrase, so that G10 is able to look at the
+    inner structure of a encrypted packet.
+
+	--quick-random
+
+    Do not use the stroing random generator but a faster one.  This can be
+    used to generate keys for tests; those are marked as insecure.
+
+	--list-trustdb
+
+    List the contents of the trustdb in a human readable format
+
+	--list-trustdb	<usernames>
+
+    List the tree of certificates for the given usernames
+
+	--list-trust-path  depth  username
+
+    List the possible trust paths for the given username, up to the specified
+    depth.  If depth is negative, duplicate introducers are not listed,
+    because those would increase the trust probabilty only minimal.
+    (you must use the special option "--" to stop option parsing when
+     using a negative number)
+
+	--print-mds  filenames
+
+    List all available message digest values for the fiven filenames
+
+	--gen-prime n
+
+    Generate and print a simple prime number of size n
+
+	--gen-prime n q
+
+    Generate a prime number suitable for ElGamal signatures of size n with
+    a q as largest primefactor of n-1.
+
+	--gen-prime n q 1
+
+    Ditto, but calculate a generator too.
+
+
+    For more options/commands see the file g10/OPTIONS.
 
 
     Debug Flags
@@ -213,7 +249,7 @@
 	  32	memory allocation stuff
 	  64	caching
 	  128	show memory statistics at exit
-
+	  256	trust verification stuff
 
 
     Other Notes

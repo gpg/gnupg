@@ -147,9 +147,11 @@ calc_packet_length( PACKET *pkt )
 static int
 do_comment( IOBUF out, int ctb, PKT_comment *rem )
 {
-    write_header(out, ctb, rem->len);
-    if( iobuf_write( out, rem->data, rem->len ) )
-	return G10ERR_WRITE_FILE;
+    if( !opt.no_comment ) {
+	write_header(out, ctb, rem->len);
+	if( iobuf_write( out, rem->data, rem->len ) )
+	    return G10ERR_WRITE_FILE;
+    }
     return 0;
 }
 

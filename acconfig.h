@@ -50,4 +50,20 @@
 @BOTTOM@
 
 
+/* The AC_CHECK_SIZEOF() fails for some machines.
+ * we provide some fallback values here */
+#if !SIZEOF_UNSIGNED_SHORT
+  #undef SIZEOF_UNSIGNED_SHORT
+  #define SIZEOF_UNSIGNED_SHORT 2
+#endif
+#if !SIZEOF_UNSIGNED_INT
+  #undef SIZEOF_UNSIGNED_INT
+  #define SIZEOF_UNSIGNED_INT 4
+#endif
+#if !SIZEOF_UNSIGNED_LONG
+  #undef SIZEOF_UNSIGNED_LONG
+  #define SIZEOF_UNSIGNED_LONG 4
+#endif
+
+
 #endif /*G10_CONFIG_H*/

@@ -121,7 +121,9 @@ char *stpcpy(char *a,const char *b);
 #ifndef HAVE_STRLWR
 char *strlwr(char *a);
 #endif
-
+#ifndef HAVE_STRTOUL
+  #define strtoul(a,b,c)  ((unsigned long)strtol((a),(b),(c)))
+#endif
 
 /******** some macros ************/
 #ifndef STR

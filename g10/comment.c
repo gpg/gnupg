@@ -57,9 +57,10 @@ write_comment( IOBUF out, const char *s )
 KBNODE
 make_comment_node( const char *s )
 {
-    PACKET *pkt = m_alloc_clear( sizeof *pkt );
+    PACKET *pkt;
     size_t n = strlen(s);
 
+    pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_COMMENT;
     pkt->pkt.comment = m_alloc( sizeof *pkt->pkt.comment + n - 1 );
     pkt->pkt.comment->len = n;

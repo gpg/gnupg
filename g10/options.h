@@ -39,7 +39,7 @@ struct {
     int def_cipher_algo;
     int def_pubkey_algo;
     int def_digest_algo;
-    int reserved9;
+    int no_comment;
     int reserved10;
     int reserved11;
     int reserved12;

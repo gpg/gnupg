@@ -34,16 +34,35 @@
 #include "trustdb.h"
 #include "ttyio.h"
 
+/****************
+ * Returns true if a ownertrust has changed.
+ */
 static int
-query_ownertrust( PKT_public_cert *pkc )
+query_ownertrust( ulong lid )
 {
     char *p;
+    int rc;
     size_t n;
     u32 keyid[2];
+    PKT_public_cert *pkc ;
+    int changed=0;
 
-    keyid_from_pkc( pkc, keyid );
-    tty_printf("No ownertrust specified for:\n"
-	       "%4u%c/%08lX %s \"",
+    rc = keyid_from_trustdb( lid, keyid );
+    if( rc ) {
+	log_error("ooops: can't get keyid for lid %lu\n", lid);
+	return 0;
+    }
+
+    pkc = m_alloc_clear( sizeof *pkc );
+    rc = get_pubkey( pkc, keyid );
+    if( rc ) {
+	log_error("keyid %08lX: pubkey not found: %s\n",
+				(ulong)keyid[1], g10_errstr(rc) );
+	return 0;
+    }
+
+    tty_printf("No ownertrust defined for %lu:\n"
+	       "%4u%c/%08lX %s \"", lid,
 	      nbits_from_pkc( pkc ), pubkey_letter( pkc->pubkey_algo ),
 	      (ulong)keyid[1], datestr_from_pkc( pkc ) );
     p = get_user_id( keyid, &n );
@@ -72,7 +91,16 @@ query_ownertrust( PKT_public_cert *pkc )
 "to do with the (implicitly created) web-of-certificates.\n");
 	}
 	else if( !p[1] && (*p >= '1' && *p <= '4') ) {
-	    /* okay */
+	    unsigned trust;
+	    switch( *p ) {
+	      case '1': trust = TRUST_UNDEFINED; break;
+	      case '2': trust = TRUST_NEVER    ; break;
+	      case '3': trust = TRUST_MARGINAL ; break;
+	      case '4': trust = TRUST_FULLY    ; break;
+	      default: BUG();
+	    }
+	    if( !update_ownertrust( lid, trust ) )
+		changed++;
 	    break;
 	}
 	else if( *p == 's' || *p == 'S' ) {
@@ -81,9 +109,52 @@ query_ownertrust( PKT_public_cert *pkc )
 	m_free(p); p = NULL;
     }
     m_free(p);
-    return 0;
+    m_free(pkc);
+    return changed;
 }
 
+
+/****************
+ * Try to add some more owner trusts (interactive)
+ * Returns: -1 if no ownertrust were added.
+ */
+static int
+add_ownertrust( PKT_public_cert *pkc )
+{
+    int rc;
+    void *context = NULL;
+    ulong lid;
+    unsigned trust;
+    int any=0;
+
+    tty_printf(
+"Could not find a valid trust path to the key.  Lets see, wether we\n"
+"can assign some missing owner trust values.\n\n");
+
+    rc = query_trust_record( pkc );
+    if( rc ) {
+	log_error("Ooops: not in trustdb\n");
+	return -1;
+    }
+
+    lid = pkc->local_id;
+    while( !(rc=enum_trust_web( &context, &lid )) ) {
+	rc = get_ownertrust( lid, &trust );
+	if( rc )
+	    log_fatal("Ooops: couldn't get ownertrust for %lu\n", lid);
+	if( trust == TRUST_UNDEFINED || trust == TRUST_EXPIRED ||
+	    trust == TRUST_UNKNOWN ) {
+	    if( query_ownertrust( lid ) )
+		any=1;
+	}
+    }
+    if( rc == -1 )
+	rc = 0;
+    enum_trust_web( &context, NULL ); /* close */
+
+
+    return rc? rc : any? 0:-1;
+}
 
 
 /****************
@@ -119,7 +190,15 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	if( opt.batch || opt.answer_no )
 	    log_info("no info to calculate a trust probability\n");
 	else {
-	    query_ownertrust( pkc );
+	    rc = add_ownertrust( pkc );
+	    if( !rc ) {
+		rc = check_trust( pkc, &trustlevel );
+		if( rc )
+		    log_fatal("trust check after add_ownertrust failed: %s\n",
+							      g10_errstr(rc) );
+		/* FIXME: this is recursive; we better should unroll it */
+		return do_we_trust( pkc, trustlevel );
+	    }
 	}
 	return 0; /* no */
 
@@ -137,7 +216,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	return 1; /* yes */
 
       case TRUST_ULTIMATE:
-	log_info("Our own key is always good.\n");
+	log_info("Our own keys is always good.\n");
 	return 1; /* yes */
 
       default: BUG();
