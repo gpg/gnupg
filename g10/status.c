@@ -98,6 +98,7 @@ write_status_text ( int no, const char *text)
       case STATUS_SHM_GET_HIDDEN : s = "SHM_GET_HIDDEN\n"; break;
       case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE\n"; break;
       case STATUS_VALIDSIG	 : s = "VALIDSIG\n"; break;
+      case STATUS_SIG_ID	 : s = "SIG_ID\n"; break;
       default: s = "?\n"; break;
     }
 

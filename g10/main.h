@@ -49,6 +49,9 @@ void print_pubkey_algo_note( int algo );
 void print_cipher_algo_note( int algo );
 void print_digest_algo_note( int algo );
 
+/*-- armor.c --*/
+char *make_radix64_string( const byte *data, size_t len );
+
 /*-- misc.c --*/
 void trap_unaligned(void);
 void disable_core_dumps(void);

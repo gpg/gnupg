@@ -79,6 +79,8 @@ typedef struct resource_table_struct RESTBL;
 
 #define MAX_RESOURCES 10
 static RESTBL resource_table[MAX_RESOURCES];
+static int default_public_resource;
+static int default_secret_resource;
 
 static int search( PACKET *pkt, KBPOS *kbpos, int secret );
 
@@ -348,11 +350,17 @@ add_keyblock_resource( const char *url, int force, int secret )
 	goto leave;
     }
 
+    /* fixme: avoid duplicate resources */
     resource_table[i].used = 1;
     resource_table[i].secret = !!secret;
     resource_table[i].fname = m_strdup(filename);
     resource_table[i].iobuf = iobuf;
     resource_table[i].rt    = rt;
+    if( secret )
+	default_secret_resource = i;
+    else
+	default_public_resource = i;
+
   leave:
     if( rc )
 	log_error("keyblock resource `%s': %s\n", filename, g10_errstr(rc) );
@@ -386,9 +394,12 @@ keyblock_resource_name( KBPOS *kbpos )
 int
 get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
 {
-    int i;
+    int i = 0;
 
-    for(i=0; i < MAX_RESOURCES; i++ )
+    if( !filename )
+	i = secret? default_secret_resource : default_public_resource;
+
+    for(; i < MAX_RESOURCES; i++ ) {
 	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
 	    /* fixme: dos needs case insensitive file compare */
 	    if( !filename || !strcmp( resource_table[i].fname, filename ) ) {
@@ -398,6 +409,7 @@ get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
 		return 0;
 	    }
 	}
+    }
     return -1; /* not found */
 }
 

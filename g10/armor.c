@@ -1007,4 +1007,31 @@ armor_filter( void *opaque, int control,
 }
 
 
+/****************
+ * create a radix64 encoded string.
+ */
+char *
+make_radix64_string( const byte *data, size_t len )
+{
+    char *buffer, *p;
+
+    buffer = p = m_alloc( (len+2)/3*4 + 1 );
+    for( ; len >= 3 ; len -= 3, data += 3 ) {
+	*p++ = bintoasc[(data[0] >> 2) & 077];
+	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
+	*p++ = bintoasc[(((data[1]<<2)&074)|((data[2]>>6)&03))&077];
+	*p++ = bintoasc[data[2]&077];
+    }
+    if( len == 2 ) {
+	*p++ = bintoasc[(data[0] >> 2) & 077];
+	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
+	*p++ = bintoasc[((data[1]<<2)&074)];
+    }
+    else if( len == 1 ) {
+	*p++ = bintoasc[(data[0] >> 2) & 077];
+	*p++ = bintoasc[(data[0] <<4)&060];
+    }
+    *p = 0;
+    return buffer;
+}
 

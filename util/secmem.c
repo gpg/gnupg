@@ -47,8 +47,7 @@ struct memblock_struct {
     unsigned size;
     union {
 	MEMBLOCK *next;
-	long align_dummy;
-	char d[1];
+	PROPERLY_ALIGNED_TYPE aligned;
     } u;
 };
 
@@ -291,7 +290,7 @@ secmem_malloc( size_t size )
 	max_alloced = cur_alloced;
     if( cur_blocks > max_blocks )
 	max_blocks = cur_blocks;
-    return &mb->u.d;
+    return &mb->u.aligned.c;
 }
 
 
@@ -302,7 +301,7 @@ secmem_realloc( void *p, size_t newsize )
     size_t size;
     void *a;
 
-    mb = (MEMBLOCK*)((char*)p - ((size_t) &((MEMBLOCK*)0)->u.d));
+    mb = (MEMBLOCK*)((char*)p - ((size_t) &((MEMBLOCK*)0)->u.aligned.c));
     size = mb->size;
     if( newsize < size )
 	return p; /* it is easier not to shrink the memory */
@@ -323,7 +322,7 @@ secmem_free( void *a )
     if( !a )
 	return;
 
-    mb = (MEMBLOCK*)((char*)a - ((size_t) &((MEMBLOCK*)0)->u.d));
+    mb = (MEMBLOCK*)((char*)a - ((size_t) &((MEMBLOCK*)0)->u.aligned.c));
     size = mb->size;
     memset(mb, 0xff, size );
     memset(mb, 0xaa, size );

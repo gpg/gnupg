@@ -64,6 +64,12 @@ more arguments in future versions.
 	as GOODSIG but has the fingerprint as the argument. Both
 	status lines ere emitted for a good signature.
 
+    SIG_ID  <radix64_string>
+	This is emitted only for DSA or ElGamal signatures which
+	have been verified okay.  The strings is a signature id
+	and maybe used in applications to detect replay attacks
+	of signed messages.
+
     TRUST_UNDEFINED
     TRUST_NEVER
     TRUST_MARGINAL

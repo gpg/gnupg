@@ -1,3 +1,18 @@
+Fri Feb 26 17:55:41 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* pkclist.c (build_pk_list): Return error if there are no recipients.
+
+	* sig-check.c (signature_check): New signature id feature.
+	* armor.c (make_radic64_string): New.
+
+	* mainproc.c (proc_pubkey_enc): early check for seckey availability.
+
+	* pkclist.c (do_we_trust_pre): print user id before asking.
+
+	* ringedit.c (add_keyblock_resource,get_keyblock_handle): Cleaner
+	handling of default resource.
+
+
 Thu Feb 25 18:47:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pkclist.c (algo_available): New.

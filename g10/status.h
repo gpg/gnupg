@@ -49,6 +49,7 @@
 
 #define STATUS_NEED_PASSPHRASE 20
 #define STATUS_VALIDSIG        21
+#define STATUS_SIG_ID	       22
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

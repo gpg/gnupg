@@ -64,6 +64,34 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	rc = do_check( pk, sig, digest );
 
     free_public_key( pk );
+
+    if( !rc && is_status_enabled()
+	&& (   sig->pubkey_algo == PUBKEY_ALGO_DSA
+	    || sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL	) ) {
+	/* If we are using these public key algorithms we can
+	 * calculate an unique signature id, which may be useful
+	 * in an application to prevent replac attacks */
+	MD_HANDLE md;
+	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
+	byte *p;
+
+	md = md_open( DIGEST_ALGO_RMD160, 0);
+	for(i=0; i < nsig; i++ ) {
+	    unsigned n = mpi_get_nbits( sig->data[i]);
+
+	    md_putc( md, n>>8);
+	    md_putc( md, n );
+	    p = mpi_get_buffer( sig->data[i], &n, NULL );
+	    md_write( md, p, n );
+	    m_free(p);
+	}
+	md_final( md );
+	p = make_radix64_string( md_read( md, 0 ), 20 );
+	write_status_text( STATUS_SIG_ID, p );
+	m_free(p);
+	md_close(md);
+    }
+
     return rc;
 }
 

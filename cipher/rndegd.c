@@ -125,7 +125,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 "\n"
 "Not enough random bytes available.  Please do some other work to give\n"
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"), length );
-	    warn = 0; /*  <--- set to 1 to display the message only once */
+	    warn = 1;
 	    continue;
 	}
 	else if( rc == -1 ) {
@@ -140,17 +140,23 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	/* process reply */
 	if( n == -1 )
 	    g10_log_error("read error on EGD: %s\n", strerror(errno));
-	else if( n < 2 )
+	else if( cmd == 2 && n != nbytes  ) {
+	    g10_log_error("bad EGD reply: too short %d/%d\n", nbytes, n );
+	}
+	else if( cmd == 2 ) {
+	    (*add)( buffer, n, requester );
+	    length -= n;
+	}
+	else if( !n )
 	    g10_log_error("bad EGD reply: too short\n");
-	else if( buffer[0] != cmd )
-	    g10_log_error("bad EGD reply: cmd mismatch %d/%d\n",
-							cmd, *buffer );
-	else if( buffer[1] != nbytes )
+	else if( buffer[0] != n-1 )
 	    g10_log_error("bad EGD reply: count mismatch %d/%d\n",
-						      nbytes, buffer[1] );
+						      n-1, buffer[0] );
+	else if( n==1 )
+	    g10_log_info("no data from EGD\n");
 	else {
-	    n -= 2;
-	    (*add)( buffer+2, n, requester );
+	    n -= 1;
+	    (*add)( buffer+1, n, requester );
 	    length -= n;
 	}
     }

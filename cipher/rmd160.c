@@ -173,8 +173,6 @@ rol(int n, u32 x)
 static void
 transform( RMD160_CONTEXT *hd, byte *data )
 {
-
-
     u32 a,b,c,d,e,aa,bb,cc,dd,ee,t;
   #ifdef BIG_ENDIAN_HOST
     u32 x[16];

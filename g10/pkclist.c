@@ -230,6 +230,7 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
     }
 
     lid = pk->local_id;
+  #if 0  /* FIXME: enable this when trustdb stuff works again */
     while( enum_cert_paths( &context, &lid, &otrust, &validity ) != -1 ) {
 	if( lid == pk->local_id )
 	    continue;
@@ -256,6 +257,7 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 	}
     }
     enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
+  #endif
 
     if( !any )
 	tty_printf(_("No path leading to one of our keys found.\n\n") );
@@ -374,6 +376,19 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
     if( (trustlevel & TRUST_FLAG_REVOKED) && !rc )
 	return 0;
     else if( !opt.batch && !rc ) {
+	char *p;
+	u32 keyid[2];
+	size_t n;
+
+	keyid_from_pk( pk, keyid);
+	tty_printf( "%4u%c/%08lX %s \"",
+		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
+		  (ulong)keyid[1], datestr_from_pk( pk ) );
+	p = get_user_id( keyid, &n );
+	tty_print_string( p, n ),
+	m_free(p);
+	tty_printf("\"\n\n");
+
 	tty_printf(_(
 "It is NOT certain that the key belongs to its owner.\n"
 "If you *really* know what you are doing, you may answer\n"
@@ -382,6 +397,10 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 	if( cpr_get_answer_is_yes("untrusted_key.override",
 				  _("Use this key anyway? "))  )
 	    rc = 1;
+
+	/* Hmmm: Should we set a flag to tell the user the user about
+	 *	 his decision the next time he encrypts for this recipient?
+	 */
     }
     else if( opt.always_trust && !rc ) {
 	log_info(_("WARNING: Using untrusted key!\n"));
@@ -598,6 +617,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	}
     }
     else {
+	any_recipients = 0;
 	for(; remusr; remusr = remusr->next ) {
 	    if( (remusr->flags & 1) )
 		continue; /* encrypt-to keys are already handled */

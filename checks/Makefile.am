@@ -64,5 +64,7 @@ data-32000:
 data-80000:
 	../tools/mk-tdata 80000  >data-80000
 plain-large:
-	cat ../doc/HACKING ../doc/DETAILS ../doc/FAQ >plain-large
+	cat $(srcdir)/../doc/HACKING \
+	    $(srcdir)/../doc/DETAILS \
+	    $(srcdir)/../doc/FAQ	 >plain-large
 

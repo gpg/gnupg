@@ -1,3 +1,7 @@
+Fri Feb 26 17:55:41 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* md.c: Nearly a total rewrote.
+
 Wed Feb 24 11:07:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* cipher.c (context): Fixed alignment

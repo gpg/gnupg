@@ -1,3 +1,7 @@
+Fri Feb 26 17:55:41 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* secmem.c (memblock_struct): Force align (Rémi Guyomarch)
+
 Wed Feb 24 11:07:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* iobuf.c (block_filter): Fixed the oscillating partial packet chunks.

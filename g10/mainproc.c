@@ -178,10 +178,13 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     c->last_was_session_key = 1;
     enc = pkt->pkt.pubkey_enc;
     /*printf("enc: encrypted by a pubkey with keyid %08lX\n", enc->keyid[1] );*/
+    /* Hmmm: why do I have this algo check here - anyway there is
+     * function to check it. */
     if( is_ELGAMAL(enc->pubkey_algo)
 	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| is_RSA(enc->pubkey_algo)  ) {
-	if ( !c->dek ) {
+	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
+			  || !seckey_available( enc->keyid )) ) {
 	    c->dek = m_alloc_secure( sizeof *c->dek );
 	    if( (result = get_session_key( enc, c->dek )) ) {
 		/* error: delete the DEK */

@@ -150,7 +150,13 @@ encode_simple( const char *filename, int mode )
 	pt = m_alloc( sizeof *pt - 1 );
 	pt->namelen = 0;
     }
-    if( filename ) {
+    /* pgp5 has problems to decrypt symmetrically encrypted data from
+     * GnuPOG if the filelength is in the inner packet.  It works
+     * when only partial length headers are use.  Until we have
+     * tracked this problem down. We use this temporary fix
+     * (fixme: remove the && !mode )
+     */
+    if( filename && !mode ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
     }
