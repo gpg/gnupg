@@ -1,3 +1,7 @@
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (add_certificate_list): Decrement N for the first cert.
+
 2004-01-29  Werner Koch  <wk@gnupg.org>
 
 	* certdump.c (parse_dn_part): Map common OIDs to human readable

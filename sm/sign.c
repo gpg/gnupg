@@ -244,6 +244,7 @@ add_certificate_list (CTRL ctrl, ksba_cms_t cms, ksba_cert_t cert)
   ksba_cert_ref (cert);
 
   n = ctrl->include_certs;
+  log_debug ("adding certificates at level %d\n", n);
   if (n == -2)
     {
       not_root = 1;
@@ -252,6 +253,8 @@ add_certificate_list (CTRL ctrl, ksba_cms_t cms, ksba_cert_t cert)
   if (n < 0 || n > 50)
     n = 50; /* We better apply an upper bound */
 
+  /* First add my own certificate unless we don't want any certificate
+     included at all. */
   if (n)
     {
       if (not_root && gpgsm_is_root_cert (cert))
@@ -260,7 +263,12 @@ add_certificate_list (CTRL ctrl, ksba_cms_t cms, ksba_cert_t cert)
         err = ksba_cms_add_cert (cms, cert);
       if (err)
         goto ksba_failure;
+      if (n>0)
+        n--;
     }
+  /* Walk the chain to include all other certificates.  Note that a -1
+     used for N makes sure that there is no limit and all certs get
+     included. */
   while ( n-- && !(rc = gpgsm_walk_cert_chain (cert, &next)) )
     {
       if (not_root && gpgsm_is_root_cert (next))

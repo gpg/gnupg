@@ -1,5 +1,5 @@
 /* gpgparsemail.c - Standalone crypto mail parser
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

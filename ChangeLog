@@ -1,3 +1,9 @@
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.4.
+
+	* configure.ac: Require libksba 0.9.3 due to another bug fix there.
+
 2004-01-29  Werner Koch  <wk@gnupg.org>
 
 	* README: Updated.

@@ -1,3 +1,9 @@
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (sbin_SCRIPTS): New, to install addgnupghome.
+	(EXTRA_DIST): Added rfc822parse.c rfc822parse.h gpgparsemail.c
+	which might be useful for debugging.
+
 2004-01-29  Werner Koch  <wk@gnupg.org>
 
 	* addgnupghome: New.
@@ -32,7 +38,7 @@
 	* watchgnupg.c: New.
 
 
- Copyright 2003 Free Software Foundation, Inc.
+ Copyright 2003, 2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
