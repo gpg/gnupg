@@ -1,3 +1,8 @@
+2004-04-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* scdaemon.c (main): For now, always print default filename for
+	--gpgconf-list, and never /dev/null.
+
 2004-04-21  Werner Koch  <wk@gnupg.org>
 
 	* command.c (scd_update_reader_status_file): Send a signal back to
