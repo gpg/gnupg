@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 1.4[H p]
-Last-Modified: Jun 2, 2001[H p]
+Version: 1.5[H p]
+Last-Modified: Jun 13, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -671,6 +671,21 @@ in it - why?
 
     They are both public-key cryptosystems, but how the public keys are
     actually handled is different.
+
+
+<Q> Why do national characters in my user ID look funny?
+
+    According to OpenPGP, GnuPG encodes user id strings (and other
+    things) using UTF-8.  In this encoding of Unicode, most national
+    characters get encoded as two- or three-byte sequences.  For
+    example, &aring; (0xE5 in ISO-8859-1) becomes &Atilde;&yen; (0xC3,
+    0xA5). This might also be the reason why keyservers can't find
+    your key.
+
+<Q> I get 'sed' errors when running ./configure on OS X ...
+
+    Please install GNU sed and use it instead of the broken OS X sed.
+
 
 <S> ADVANCED TOPICS
 

@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 1.4
-Last-Modified: Jun 2, 2001
+Version: 1.5
+Last-Modified: Jun 13, 2001
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -88,6 +88,8 @@ you could search in the mailing list archive.
    6.14) Some dates are displayed as ????-??-??, why?
    6.15) I still have a problem. How do I report a bug?
    6.16) Why doesn't GnuPG support X509 certificates?
+   6.17) Why do national characters in my user ID look funny?
+   6.18) I get 'sed' errors when running ./configure on OS X ...
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -702,6 +704,21 @@ in it - why?
 
     They are both public-key cryptosystems, but how the public keys are
     actually handled is different.
+
+
+6.17) Why do national characters in my user ID look funny?
+
+    According to OpenPGP, GnuPG encodes user id strings (and other
+    things) using UTF-8.  In this encoding of Unicode, most national
+    characters get encoded as two- or three-byte sequences.  For
+    example, &aring; (0xE5 in ISO-8859-1) becomes &Atilde;&yen; (0xC3,
+    0xA5). This might also be the reason why keyservers can't find
+    your key.
+
+6.18) I get 'sed' errors when running ./configure on OS X ...
+
+    Please install GNU sed and use it instead of the broken OS X sed.
+
 
 7. ADVANCED TOPICS
 
