@@ -1,3 +1,8 @@
+2004-04-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (parse_keyserver_uri): Do not accept "http" as an
+	alias for "hkp".  They are not the same thing.
+
 2004-04-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main): Add keyserver-option

@@ -184,8 +184,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
       scheme="hkp";
       add_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
     }
-  else if(ascii_strcasecmp(scheme,"x-hkp")==0
-	  || ascii_strcasecmp(scheme,"http")==0)
+  else if(ascii_strcasecmp(scheme,"x-hkp")==0)
     {
       /* Canonicalize this to "hkp" so it works with both the internal
 	 and external keyserver interface. */
