@@ -59,10 +59,24 @@ fi
 dnl Checks for programs.
 
 AC_PROG_MAKE_SET
+
+case "${target}" in
+    i386--mingw32)
+	# special stuff for Windoze NT
+	cross_compiling=yes
+	CC="i386--mingw32-gcc"
+	CPP="i386--mingw32-gcc -E"
+	RANLIB="i386--mingw32-ranlib"
+	ac_cv_have_dev_random=no
+	;;
+    *)
 AC_PROG_RANLIB
 AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_CPP
+       ;;
+esac
+
 
 AC_ARG_PROGRAM
 
@@ -136,18 +150,36 @@ AC_CHECK_SIZEOF(unsigned long, 32)
 
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strerror strtol strtoul)
+AC_CHECK_FUNCS(strerror strtol strtoul stpcpy tcgetattr)
 
+dnl check wether we have a random device
+AC_CACHE_CHECK(for random device, ac_cv_have_dev_random,
+[if test -c /dev/random && test -c /dev/urandom ; then
+  ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])
+if test "$ac_cv_have_dev_random" = yes; then
+    AC_DEFINE(HAVE_DEV_RANDOM)
+fi
 
 
 dnl setup assembler stuff
+AC_MSG_CHECKING(configure mpi)
+mpi_config_done="no"
+AC_CACHE_VAL(ac_cv_mpi_config_done,
+	     [ ac_cv_mpi_config_done="$mpi_config_done" ])
+if test "$ac_cv_mpi_config_done" = yes; then
+    AC_MSG_RESULT(done)
+else
+ac_cv_mpi_config_done=""
 if test -f ./mpi/config.links ; then
     . ./mpi/config.links
     AC_LINK_FILES( ${mpi_ln_src}, ${mpi_ln_dst} )
+    ac_cv_mpi_config_done="yes"
+    AC_MSG_RESULT(done)
 else
+    AC_MSG_RESULT(failed)
     AC_MSG_ERROR([mpi/config.links missing!])
 fi
-
+fi
 
 
 dnl checking whether we have the RSA source

@@ -11,20 +11,16 @@
 #
 # Here is a list of all possible options. Not of all them make
 # sense in an option file; consider this as a complete option
-# reference
+# reference. Before the options you find a list of commands.
+
+
+#-----------------------------------------------
+#------------------- Commands ------------------
+#-----------------------------------------------
+# With some expections, those cannot be combined
 
 add-key
 # add key to the public keyring
-
-armor
-# create ascii armored output
-
-
-batch
-# batch mode: never ask
-
-cache-all
-# hold everything in memory
 
 change-passphrase
 # change the passphrase of your secret keyring
@@ -32,35 +28,25 @@ change-passphrase
 check
 # check a signature
 
-check-key
-# check signatures on a key in the keyring
-
-debug  value|hexvalue
-#  set debugging flags,
-
-debug-all
-# enable full debugging
-
 decrypt
 # decrypt data (default)
 
 delete-key
 # remove key from public keyring,
 
-detach-sign
-# make a detached signature,
-
-dry-run
-# don't make any changes
+edit-sig
+# edit a key signature. Currently you have only the option to delete
+# some signatures.
 
 encrypt
+# (Can be combined with a "sign")
 # encrypt data
 
 fingerprint
 # show the fingerprints,
 
 gen-key
-# generate a new key pair,
+# generate a new key pair, this is an interactive command.
 
 gen-prime
 # Generate a prime.
@@ -68,40 +54,17 @@ gen-prime
 #		      this size
 # With two arguments: Generate a prime, usable for DL algorithms.
 # With three arguments: same as above, but a third argument indicates
-#			taht a generator should also be calculated.
+#			that a generator should also be calculated.
 
-keyring  filename
-# add this filename to the list of keyrings
+list-packets
+# List only the sequence of packets"},
 
-local-user user-string
-#  use this user-string to sign or decrypt
-
-no
-# assume no on most questions
-
-no-armor
-# Assume the input data is not in ascii armored format.
-
-no-default-keyring
-# Do not add the default keyrings to the list of keyrings
-
-options filename
-#  Ignored in option files.
-
-output filename
-# use filename for output
 
 print-mds
 # print all message digests of all give filenames
 
-remote-user
-# use this user-id for encryption"
-
-
-secret-keyring filename
-# add filename to the list of secret keyrings
-
 sign
+# (Can be combined with a "encrypt")
 # make a signature
 
 sign-key
@@ -122,8 +85,103 @@ symmetric
 # encrypt the input only with the symmetric (conventional) cipher.
 # This asks for a passphrase.
 
+
 test
 # Used for testing some parts of the program
+
+#----------------------------------------------
+#------  Options without a long form ----------
+#----------------------------------------------
+
+-k
+# List keyrings.
+# Without arguments, all default public keyrings are listed
+# With one argument, this keyring is listed.
+#
+# -kv	 is the same as -k
+# -kvv	 list the signatures with every key
+# -kvvv  additional checks all signatures
+# -kvc	 list fingerprints
+# -kvvc  list fingerprints and signatures
+# Note that this is a kludge, to emulate the strange pgp syntax;
+# combining it with other options may give other outputs.
+
+
+
+-z n
+# Set compress level to n.
+# n = 0 disables compresson. Default compress level depends on
+# the local zlib (6).
+
+
+#-----------------------------------------------
+#------------------- Options -------------------
+#-----------------------------------------------
+
+
+armor
+# create ascii armored output
+
+
+batch
+# batch mode: never ask
+
+cache-all
+# hold everything in memory
+
+
+check-key
+# check signatures on a key in the keyring
+
+debug  value|hexvalue
+#  set debugging flags,
+
+debug-all
+# enable full debugging
+
+
+detach-sign
+# make a detached signature,
+
+dry-run
+# don't make any changes
+
+
+keyring  filename
+# add this filename to the list of keyrings
+
+local-user user-string
+#  use this user-string to sign or decrypt
+
+no
+# assume no on most questions
+
+no-armor
+# Assume the input data is not in ascii armored format.
+
+no-default-keyring
+# Do not add the default keyrings to the list of keyrings
+
+no-greeting
+# suppress the initial copyright etc. messages but do not enter batch mode.
+
+options filename
+#  Ignored in option files.
+
+output filename
+# use filename for output
+
+passphrase-fd n
+# Read the passphrase from file with the descriptor n.	If you use
+# 0 for n, the passphrase will be read from stdin.  This can only be used
+# if only one passphrase is supplied.
+
+
+remote-user
+# use this user-id for encryption"
+
+secret-keyring filename
+# add filename to the list of secret keyrings
 
 verbose
 # Give more informations suring processing. If used 2 times, the input data
@@ -131,5 +189,4 @@ verbose
 
 yes
 # assume yes on most questions
-
 

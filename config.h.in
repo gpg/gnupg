@@ -54,6 +54,9 @@
 #undef HAVE_U16_TYPEDEF
 #undef HAVE_U32_TYPEDEF
 
+/* defined if we have a /dev/random and /dev/urandom */
+#undef HAVE_DEV_RANDOM
+
 /* RSA is only compiled in if you have these files. You can use
  * RSA without any restrictions, if your not in the U.S. or
  * wait until sep 20, 2000
@@ -69,6 +72,9 @@
 /* The number of bytes in a unsigned short.  */
 #undef SIZEOF_UNSIGNED_SHORT
 
+/* Define if you have the stpcpy function.  */
+#undef HAVE_STPCPY
+
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
 
@@ -77,6 +83,9 @@
 
 /* Define if you have the strtoul function.  */
 #undef HAVE_STRTOUL
+
+/* Define if you have the tcgetattr function.  */
+#undef HAVE_TCGETATTR
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H

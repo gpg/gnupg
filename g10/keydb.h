@@ -89,6 +89,7 @@ int make_dek_from_passphrase( DEK *dek, int mode );
 
 /*-- getkey.c --*/
 void add_keyring( const char *name );
+const char *get_keyring( int sequence );
 void add_secret_keyring( const char *name );
 void cache_public_cert( PKT_public_cert *pkc );
 void cache_user_id( PKT_user_id *uid, u32 *keyid );

@@ -6,8 +6,6 @@
     THIS IS VERSION IS ONLY A TEST VERSION !  YOU SHOULD NOT
     USE IT FOR OTHER PURPOSES THAN EVALUATING THE CURRENT CODE.
 
-    * Only some parts work.
-
     * The data format may change in the next version!
 
     * Some features are not yet implemented
@@ -41,6 +39,7 @@
     also implemented, but not used on default.	I decided not
     to use DSA as default signing algorithm, because it allows only for
     1024 bit keys and this may be not enough in a couple of years.
+
 
 
     Resources

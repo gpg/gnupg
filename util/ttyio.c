@@ -23,7 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <termios.h>
+#ifdef HAVE_TCGETATTR
+  #include <termios.h>
+#endif
 #include <errno.h>
 #include <ctype.h>
 #include "util.h"
@@ -94,7 +96,9 @@ do_get( const char *prompt, int hidden )
     byte cbuf[1];
     int c, n, i;
     FILE *fp;
+  #ifdef HAVE_TCGETATTR
     struct termios termsave;
+  #endif
 
     if( !ttyfp )
 	init_ttyfp();
@@ -105,6 +109,7 @@ do_get( const char *prompt, int hidden )
     i = 0;
 
     if( hidden ) {
+      #ifdef HAVE_TCGETATTR
 	struct termios term;
 
 	if( tcgetattr(fileno(ttyfp), &termsave) )
@@ -113,6 +118,7 @@ do_get( const char *prompt, int hidden )
 	term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
 	if( tcsetattr( fileno(ttyfp), TCSAFLUSH, &term ) )
 	    log_fatal("tcsetattr() failed: %s\n", strerror(errno) );
+      #endif
     }
 
     /* fixme: How can we avoid that the \n is echoed w/o disabling
@@ -132,9 +138,12 @@ do_get( const char *prompt, int hidden )
 	buf[i++] = c;
     }
 
+
     if( hidden ) {
+      #ifdef HAVE_TCGETATTR
 	if( tcsetattr(fileno(ttyfp), TCSAFLUSH, &termsave) )
 	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
+      #endif
     }
     buf[i] = 0;
     return buf;

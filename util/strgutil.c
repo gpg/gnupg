@@ -61,3 +61,20 @@ memistr( char *buf, size_t buflen, const char *sub )
     return NULL ;
 }
 
+
+/*********************************************
+ ********** missing string functions *********
+ *********************************************/
+
+#ifndef HAVE_STPCPY
+char *
+stpcpy(char *a,const char *b)
+{
+    while( *b )
+	*a++ = *b++;
+    *a = 0;
+
+    return (char*)a;
+}
+#endif
+

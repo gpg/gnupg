@@ -93,6 +93,9 @@ void free_strlist( STRLIST sl );
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 char *memistr( char *buf, size_t buflen, const char *sub );
 #define stricmp(a,b) strcasecmp((a),(b))
+#ifndef HAVE_STPCPY
+char *stpcpy(char *a,const char *b);
+#endif
 
 
 /******** some macros ************/

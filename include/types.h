@@ -44,9 +44,9 @@
 
 #ifndef HAVE_U16_TYPEDEF
   #undef u16	    /* maybe there is a macro with this name */
-  #if SIZEOF_UNSIGNED_INT == 2
+  #if SIZEOF_UNSIGNED_INT == 16
     typedef unsigned int   u16;
-  #elif SIZEOF_UNSIGNED_SHORT == 2
+  #elif SIZEOF_UNSIGNED_SHORT == 16
     typedef unsigned short u16;
   #else
     #error no typedef for u16
@@ -56,9 +56,9 @@
 
 #ifndef HAVE_U32_TYPEDEF
   #undef u32	    /* maybe there is a macro with this name */
-  #if SIZEOF_UNSIGNED_INT == 4
+  #if SIZEOF_UNSIGNED_INT == 32
     typedef unsigned long u32;
-  #elif SIZEOF_UNSIGNED_LONG == 4
+  #elif SIZEOF_UNSIGNED_LONG == 32
     typedef unsigned int u32;
   #else
     #error no typedef for u32

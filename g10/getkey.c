@@ -88,6 +88,21 @@ add_keyring( const char *name )
 	log_error("keyblock resource '%s': %s\n", name, g10_errstr(rc) );
 }
 
+
+/****************
+ * Get the name of the keyrings, start with a sequence number of 0.
+ */
+const char *
+get_keyring( int sequence )
+{
+    STRLIST sl;
+
+    for(sl = keyrings; sl && sequence; sl = sl->next, sequence-- )
+	;
+    return sl? sl->d : NULL;
+}
+
+
 void
 add_secret_keyring( const char *name )
 {

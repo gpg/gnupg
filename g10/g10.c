@@ -35,6 +35,15 @@
 #include "cipher.h"
 #include "filter.h"
 
+enum cmd_values { aNull = 0,
+    aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
+    aPrintMDs, aSignKey, aClearsig, aListPackets, aEditSig,
+    aKMode, aKModeC,
+aTest };
+
+
+static void set_cmd( enum cmd_values *ret_cmd,
+			enum cmd_values new_cmd );
 static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname );
 static void do_test(int);
@@ -94,6 +103,27 @@ set_debug(void)
 }
 
 
+static void
+set_cmd( enum cmd_values *ret_cmd, enum cmd_values new_cmd )
+{
+    enum cmd_values cmd = *ret_cmd;
+
+    if( !cmd || cmd == new_cmd )
+	cmd = new_cmd;
+    else if( cmd == aSign && new_cmd == aEncr )
+	cmd = aSignEncr;
+    else if( cmd == aEncr && new_cmd == aSign )
+	cmd = aSignEncr;
+    else if( cmd == aKMode && new_cmd == aSym )
+	cmd = aKModeC;
+    else {
+	log_error("conflicting commands\n");
+	exit(2);
+    }
+
+    *ret_cmd = cmd;
+}
+
 
 int
 main( int argc, char **argv )
@@ -120,9 +150,9 @@ main( int argc, char **argv )
     { 'b', "detach-sign", 0, "make a detached signature"},
     { 'e', "encrypt",   0, "encrypt data" },
     { 'd', "decrypt",   0, "decrypt data (default)" },
-  /*{ 'c', "check",     0, "check a signature (default)" }, */
     { 'u', "local-user",2, "use this user-id to sign or decrypt" },
     { 'r', "remote-user", 2, "use this user-id for encryption" },
+    { 'k', NULL      , 0, "list keys" },
     { 510, "debug"     ,4|16, "set debugging flags" },
     { 511, "debug-all" ,0, "enable full debugging"},
     { 512, "cache-all" ,0, "hold everything in memory"},
@@ -144,9 +174,6 @@ main( int argc, char **argv )
     ARGPARSE_ARGS pargs;
     IOBUF a;
     int rc;
-    enum { aNull, aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
-	   aTest, aPrintMDs, aSignKey, aClearsig, aListPackets, aEditSig,
-    } action = aNull;
     int orig_argc;
     char **orig_argv;
     const char *fname, *fname_print;
@@ -163,6 +190,7 @@ main( int argc, char **argv )
     int errors=0;
     int default_keyring = 1;
     int greeting = 1;
+    enum cmd_values cmd = 0;
 
 
     opt.compress = -1; /* defaults to standard compress level */
@@ -219,13 +247,13 @@ main( int argc, char **argv )
 		    break;
 	  case 'z': opt.compress = pargs.r.ret_int; break;
 	  case 'a': opt.armor = 1; opt.no_armor=0; break;
-	  case 'c': action = aSym; break;
+	  case 'c': set_cmd( &cmd , aSym); break;
 	  case 'o': opt.outfile = pargs.r.ret_str; break;
-	  case 'e': action = action == aSign? aSignEncr : aEncr; break;
+	  case 'e': set_cmd( &cmd, aEncr); break;
 	  case 'b': detached_sig = 1;
 	       /* fall trough */
-	  case 's': action = action == aEncr? aSignEncr : aSign;  break;
-	  case 't': action = aClearsig;  break;
+	  case 's': set_cmd( &cmd, aSign );  break;
+	  case 't': set_cmd( &cmd , aClearsig);  break;
 	  case 'u': /* store the local users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
@@ -238,21 +266,22 @@ main( int argc, char **argv )
 	    sl->next = remusr;
 	    remusr = sl;
 	    break;
+	  case 'k': set_cmd( &cmd, aKMode ); break;
 	  case 500: opt.batch = 1; greeting = 0; break;
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
-	  case 503: action = aKeygen; break;
-	  case 506: action = aSignKey; break;
-	  case 507: action = aStore; break;
+	  case 503: set_cmd( &cmd, aKeygen); break;
+	  case 506: set_cmd( &cmd, aSignKey); break;
+	  case 507: set_cmd( &cmd, aStore); break;
 	  case 508: opt.check_sigs = 1; opt.list_sigs = 1; break;
 	  case 509: add_keyring(pargs.r.ret_str); nrings++; break;
 	  case 510: opt.debug |= pargs.r.ret_ulong; break;
 	  case 511: opt.debug = ~0; break;
 	  case 512: opt.cache_all = 1; break;
-	  case 513: action = aPrimegen; break;
-	  case 514: action = aTest; break;
+	  case 513: set_cmd( &cmd, aPrimegen); break;
+	  case 514: set_cmd( &cmd, aTest); break;
 	  case 515: opt.fingerprint = 1; break;
-	  case 516: action = aPrintMDs; break;
+	  case 516: set_cmd( &cmd, aPrintMDs); break;
 	  case 517: add_secret_keyring(pargs.r.ret_str); sec_nrings++; break;
 	  case 518:
 	    /* config files may not be nested (silently ignore them) */
@@ -264,10 +293,10 @@ main( int argc, char **argv )
 	    break;
 	  case 519: opt.no_armor=1; opt.armor=0; break;
 	  case 520: default_keyring = 0; break;
-	  case 521: action = aListPackets; break;
+	  case 521: set_cmd( &cmd, aListPackets); break;
 	  case 522: greeting = 0; break;
 	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
-	  case 524: action = aEditSig; break;
+	  case 524: set_cmd( &cmd, aEditSig); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -282,6 +311,19 @@ main( int argc, char **argv )
 	exit(2);
 
     set_debug();
+    if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */
+	if( cmd == aKModeC ) {
+	    opt.fingerprint = 1;
+	    cmd = aKMode;
+	}
+	opt.list_sigs = 0;
+	if( opt.verbose > 2 )
+	    opt.check_sigs++;
+	if( opt.verbose > 1 )
+	    opt.list_sigs++;
+
+	opt.verbose = opt.verbose > 1;
+    }
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
     if( greeting ) {
@@ -310,7 +352,7 @@ main( int argc, char **argv )
 	fname = NULL;
     }
 
-    switch( action ) {
+    switch( cmd ) {
       case aStore: /* only store the file */
 	if( argc > 1 )
 	    usage(1);
@@ -364,6 +406,37 @@ main( int argc, char **argv )
 	    log_error("edit_keysig('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
 
+      case aKMode: /* list keyring */
+	if( !argc ) { /* list the default public keyrings */
+	    int i, seq=0;
+	    const char *s;
+
+	    while( s=get_keyring(seq++) ) {
+		if( !(a = iobuf_open(s)) ) {
+		    log_error("can't open '%s'\n", s);
+		    continue;
+		}
+		if( seq > 1 )
+		    putchar('\n');
+		printf("%s\n", s );
+		for(i=strlen(s); i; i-- )
+		    putchar('-');
+		putchar('\n');
+
+		proc_packets( a );
+		iobuf_close(a);
+	    }
+
+	}
+	else if( argc == 1) { /* list the given keyring */
+	    if( !(a = iobuf_open(fname)) )
+		log_fatal("can't open '%s'\n", fname_print);
+	    proc_packets( a );
+	    iobuf_close(a);
+	}
+	else
+	    usage(1);
+	break;
 
       case aPrimegen:
 	if( argc == 1 ) {
@@ -417,7 +490,7 @@ main( int argc, char **argv )
 	    memset( &afx, 0, sizeof afx);
 	    iobuf_push_filter( a, armor_filter, &afx );
 	}
-	if( action == aListPackets ) {
+	if( cmd == aListPackets ) {
 	    set_packet_list_mode(1);
 	    opt.list_packets=1;
 	}
