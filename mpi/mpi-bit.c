@@ -212,3 +212,51 @@ mpi_rshift( MPI x, MPI a, unsigned n )
     x->nlimbs = xsize;
 }
 
+
+/****************
+ * Shift A by COUNT limbs to the left
+ * This is used only within the MPI library
+ */
+void
+mpi_lshift_limbs( MPI a, unsigned int count )
+{
+    mpi_ptr_t ap = a->d;
+    int n = a->nlimbs;
+    int i;
+
+    if( !count || !n )
+	return;
+
+    RESIZE_IF_NEEDED( a, n+count );
+
+    for( i = n-1; i >= 0; i-- )
+	ap[i+count] = ap[i];
+    for(i=0; i < count; i++ )
+	ap[i] = 0;
+    a->nlimbs += count;
+}
+
+
+/****************
+ * Shift A by COUNT limbs to the right
+ * This is used only within the MPI library
+ */
+void
+mpi_rshift_limbs( MPI a, unsigned int count )
+{
+    mpi_ptr_t ap = a->d;
+    mpi_size_t n = a->nlimbs;
+    unsigned int i;
+
+    if( count >= n ) {
+	a->nlimbs = 0;
+	return;
+    }
+
+    for( i = 0; i < n - count; i++ )
+	ap[i] = ap[i+count];
+    ap[i] = 0;
+    a->nlimbs -= count;
+}
+
+

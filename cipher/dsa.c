@@ -66,30 +66,49 @@ static MPI
 gen_k( MPI q )
 {
     MPI k = mpi_alloc_secure( mpi_get_nlimbs(q) );
-    unsigned nbits = mpi_get_nbits(q);
+    unsigned int nbits = mpi_get_nbits(q);
+    unsigned int nbytes = (nbits+7)/8;
+    char *rndbuf = NULL;
 
     if( DBG_CIPHER )
 	log_debug("choosing a random k ");
     for(;;) {
 	if( DBG_CIPHER )
 	    progress('.');
-	{   char *p = get_random_bits( nbits, 1, 1 );
-	    mpi_set_buffer( k, p, (nbits+7)/8, 0 );
-	    m_free(p);
-	    /* make sure that the number is of the exact lenght */
-	    if( mpi_test_bit( k, nbits-1 ) )
-		mpi_set_highbit( k, nbits-1 );
-	    else {
-		mpi_set_highbit( k, nbits-1 );
-		mpi_clear_bit( k, nbits-1 );
-	    }
+
+	if( !rndbuf || nbits < 32 ) {
+	    m_free(rndbuf);
+	    rndbuf = get_random_bits( nbits, 1, 1 );
 	}
-	if( !(mpi_cmp( k, q ) < 0) )  /* check: k < q */
+	else { /* change only some of the higher bits */
+	    /* we could imporove this by directly requesting more memory
+	     * at the first call to get_random_bits() and use this the here
+	     * maybe it is easier to do this directly in random.c */
+	    char *pp = get_random_bits( 32, 1, 1 );
+	    memcpy( rndbuf,pp, 4 );
+	    m_free(pp);
+	}
+	mpi_set_buffer( k, rndbuf, nbytes, 0 );
+	if( mpi_test_bit( k, nbits-1 ) )
+	    mpi_set_highbit( k, nbits-1 );
+	else {
+	    mpi_set_highbit( k, nbits-1 );
+	    mpi_clear_bit( k, nbits-1 );
+	}
+
+	if( !(mpi_cmp( k, q ) < 0) ) {	/* check: k < q */
+	    if( DBG_CIPHER )
+		progress('+');
 	    continue; /* no  */
-	if( !(mpi_cmp_ui( k, 0 ) > 0) ) /* check: k > 0 */
+	}
+	if( !(mpi_cmp_ui( k, 0 ) > 0) ) { /* check: k > 0 */
+	    if( DBG_CIPHER )
+		progress('-');
 	    continue; /* no */
+	}
 	break;	/* okay */
     }
+    m_free(rndbuf);
     if( DBG_CIPHER )
 	progress('\n');
 

@@ -39,6 +39,8 @@ struct cmp_help_context_s {
 };
 
 
+static int do_signature_check( PKT_signature *sig, MD_HANDLE digest,
+						      u32 *r_expire );
 static int do_check( PKT_public_key *pk, PKT_signature *sig,
 						MD_HANDLE digest );
 
@@ -51,16 +53,26 @@ static int do_check( PKT_public_key *pk, PKT_signature *sig,
 int
 signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
+    u32 dummy;
+    return do_signature_check( sig, digest, &dummy );
+}
+
+static int
+do_signature_check( PKT_signature *sig, MD_HANDLE digest, u32 *r_expire )
+{
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
 
     if( is_RSA(sig->pubkey_algo) )
 	write_status(STATUS_RSA_OR_IDEA);
 
+    *r_expire = 0;
     if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
-    else
+    else {
+	*r_expire = pk->expiredate;
 	rc = do_check( pk, sig, digest );
+    }
 
     free_public_key( pk );
 
@@ -398,6 +410,13 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
+    u32 dummy;
+    return check_key_signature2(root, node, is_selfsig, &dummy );
+}
+
+int
+check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
+{
     MD_HANDLE md;
     PKT_public_key *pk;
     PKT_signature *sig;
@@ -406,6 +425,7 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 
     if( is_selfsig )
 	*is_selfsig = 0;
+    *r_expire = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
@@ -479,7 +499,7 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 		rc = do_check( pk, sig, md );
 	    }
 	    else
-		rc = signature_check( sig, md );
+		rc = do_signature_check( sig, md, r_expire );
 	    md_close(md);
 	}
 	else {

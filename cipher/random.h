@@ -23,6 +23,7 @@
 #include "types.h"
 
 /*-- random.c --*/
+void random_dump_stats(void);
 void secure_random_alloc(void);
 int  quick_random_gen( int onoff );
 int  random_is_faked(void);

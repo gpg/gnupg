@@ -1142,9 +1142,15 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid )
     PKT_signature *selfsig = NULL; /* the latest valid self signature */
     int rc;
 
-    if( DBG_TRUST )
-	log_debug("check_uidsigs: %08lX.%lu\n",
+    if( DBG_TRUST ) {
+	PKT_user_id *uid;
+	log_debug("check_uidsigs: %08lX.%lu \"",
 			    (ulong)mainkid[1], lid );
+	assert(keynode->pkt->pkttype == PKT_USER_ID );
+	uid = keynode->pkt->pkt.user_id;
+	print_string( log_stream(), uid->name, uid->len, '\"' );
+	fputs("\"\n", log_stream());
+    }
 
     /* first we check only the selfsignatures */
     for( node=keynode->next; node; node = node->next ) {
@@ -1222,7 +1228,8 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid )
 
 static unsigned int
 check_sig_record( KBNODE keyblock, KBNODE signode,
-		  ulong siglid, int sigidx, u32 *keyid, ulong lid )
+		  ulong siglid, int sigidx, u32 *keyid, ulong lid,
+							u32 *r_expire )
 {
     PKT_signature *sig = signode->pkt->pkt.signature;
     unsigned int sigflag = 0;
@@ -1232,7 +1239,7 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
     if( DBG_TRUST )
 	log_debug("check_sig_record: %08lX.%lu %lu[%d]\n",
 			    (ulong)keyid[1], lid, siglid, sigidx );
-
+    *r_expire = 0;
     if( (sig->sig_class&~3) == 0x10 ) /* regular certification */
 	;
     else if( sig->sig_class == 0x30 ) /* cert revocation */
@@ -1243,7 +1250,7 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
     read_record( siglid, &tmp, 0 );
     if( tmp.rectype == RECTYPE_DIR ) {
 	/* the public key is in the trustdb: check sig */
-	rc = check_key_signature( keyblock, signode, NULL );
+	rc = check_key_signature2( keyblock, signode, NULL, r_expire );
 	if( !rc ) { /* valid signature */
 	    if( opt.verbose )
 		log_info("sig %08lX.%lu/%lu[%d]/%08lX: %s\n",
@@ -1307,13 +1314,15 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
  * happen latter.
  */
 static ulong
-make_sig_records( KBNODE keyblock, KBNODE uidnode, ulong lid, u32 *mainkid )
+make_sig_records( KBNODE keyblock, KBNODE uidnode,
+		  ulong lid, u32 *mainkid, u32 *min_expire )
 {
     TRUSTREC *srecs, **s_end, *s=NULL, *s2;
     KBNODE  node;
     PKT_signature *sig;
     ulong sigrecno, siglid;
     int i, sigidx = 0;
+    u32 expire;
 
     srecs = NULL; s_end = &srecs;
     for( node=uidnode->next; node; node = node->next ) {
@@ -1356,7 +1365,8 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode, ulong lid, u32 *mainkid )
 	s->r.sig.sig[sigidx].lid = siglid;
 	s->r.sig.sig[sigidx].flag= check_sig_record( keyblock, node,
 						     siglid, sigidx,
-						     mainkid, lid );
+						     mainkid, lid, &expire );
+
 	sigidx++;
 	if( sigidx == SIGS_PER_RECORD ) {
 	    s->recnum = tdbio_new_recnum();
@@ -1364,6 +1374,9 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode, ulong lid, u32 *mainkid )
 	    s_end = &s->next;
 	    sigidx = 0;
 	}
+	/* keep track of signers pk expire time */
+	if( expire && (!*min_expire || *min_expire > expire ) )
+	    *min_expire = expire;
     }
     if( sigidx ) {
        s->recnum = tdbio_new_recnum();
@@ -1385,7 +1398,7 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode, ulong lid, u32 *mainkid )
 
 
 static ulong
-make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid )
+make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 {
     TRUSTREC *urecs, **uend, *u, *u2;
     KBNODE  node;
@@ -1414,7 +1427,8 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid )
 	    && (u->r.uid.uidflags & UIDF_VALID) )
 	    /*make_pref_record( &urec, keyid, selfsig )*/;
 	/* create the list of signatures */
-	u->r.uid.siglist = make_sig_records( keyblock, node, lid, keyid );
+	u->r.uid.siglist = make_sig_records( keyblock, node,
+					     lid, keyid, min_expire );
     }
 
     uidrecno = urecs? urecs->recnum : 0;
@@ -1443,9 +1457,10 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     TRUSTREC drec, krec, urec, prec, helprec;
     int rc = 0;
     u32 keyid[2]; /* keyid of primary key */
-    int mod_up = 0;
-    int mod_down = 0;
+/*    int mod_up = 0;
+    int mod_down = 0; */
     ulong recno, r2;
+    u32 expire;
 
     if( opt.dry_run )
 	return 0;
@@ -1494,7 +1509,9 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     /* insert new stuff */
     drec.r.dir.dirflags &= ~DIRF_REVOKED;
     drec.r.dir.keylist = make_key_records( keyblock, drec.recnum, keyid );
-    drec.r.dir.uidlist = make_uid_records( keyblock, drec.recnum, keyid );
+    expire = 0;
+    drec.r.dir.uidlist = make_uid_records( keyblock, drec.recnum, keyid,
+								 &expire );
     #if 0
 	if( orig_uidflags != urec.r.uid.uidflags ) {
 	    write_record( &urec );
@@ -1515,7 +1532,7 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
 	    *modified = 1;
 	drec.r.dir.dirflags |= DIRF_CHECKED;
 	drec.r.dir.valcheck = 0;
-	drec.r.dir.checkat = make_timestamp();
+	drec.r.dir.checkat = expire;
 	write_record( &drec );
 	/*tdbio_write_modify_stamp( mod_up, mod_down );*/
 	rc = tdbio_end_transaction();

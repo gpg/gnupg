@@ -161,6 +161,11 @@ typedef int mpi_size_t;        /* (must be a signed type) */
 #endif
 void mpi_assign_limb_space( MPI a, mpi_ptr_t ap, unsigned nlimbs );
 
+/*-- mpi-bit.c --*/
+void mpi_rshift_limbs( MPI a, unsigned int count );
+void mpi_lshift_limbs( MPI a, unsigned int count );
+
+
 /*-- mpihelp-add.c --*/
 mpi_limb_t mpihelp_add_1(mpi_ptr_t res_ptr,  mpi_ptr_t s1_ptr,
 			 mpi_size_t s1_size, mpi_limb_t s2_limb );

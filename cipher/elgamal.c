@@ -108,7 +108,9 @@ gen_k( MPI p )
     MPI k = mpi_alloc_secure( 0 );
     MPI temp = mpi_alloc( mpi_get_nlimbs(p) );
     MPI p_1 = mpi_copy(p);
-    unsigned nbits = mpi_get_nbits(p);
+    unsigned int nbits = mpi_get_nbits(p);
+    unsigned int nbytes = (nbits+7)/8;
+    char *rndbuf = NULL;
 
     if( DBG_CIPHER )
 	log_debug("choosing a random k ");
@@ -116,9 +118,21 @@ gen_k( MPI p )
     for(;;) {
 	if( DBG_CIPHER )
 	    progress('.');
-	{   char *pp = get_random_bits( nbits, 1, 1 );
-	    mpi_set_buffer( k, pp, (nbits+7)/8, 0 );
+	if( !rndbuf || nbits < 32 ) {
+	    m_free(rndbuf);
+	    rndbuf = get_random_bits( nbits, 1, 1 );
+	}
+	else { /* change only some of the higher bits */
+	    /* we could imporove this by directly requesting more memory
+	     * at the first call to get_random_bits() and use this the here
+	     * maybe it is easier to do this directly in random.c */
+	    char *pp = get_random_bits( 32, 1, 1 );
+	    memcpy( rndbuf,pp, 4 );
 	    m_free(pp);
+	}
+	mpi_set_buffer( k, rndbuf, nbytes, 0 );
+
+	for(;;) {
 	    /* make sure that the number is of the exact lenght */
 	    if( mpi_test_bit( k, nbits-1 ) )
 		mpi_set_highbit( k, nbits-1 );
@@ -126,14 +140,23 @@ gen_k( MPI p )
 		mpi_set_highbit( k, nbits-1 );
 		mpi_clear_bit( k, nbits-1 );
 	    }
+	    if( !(mpi_cmp( k, p_1 ) < 0) ) {  /* check: k < (p-1) */
+		if( DBG_CIPHER )
+		    progress('+');
+		break; /* no  */
+	    }
+	    if( !(mpi_cmp_ui( k, 0 ) > 0) ) { /* check: k > 0 */
+		if( DBG_CIPHER )
+		    progress('-');
+		break; /* no */
+	    }
+	    if( mpi_gcd( temp, k, p_1 ) )
+		goto found;  /* okay, k is relatively prime to (p-1) */
+	    mpi_add_ui( k, k, 1 );
 	}
-	if( !(mpi_cmp( k, p_1 ) < 0) )	/* check: k < (p-1) */
-	    continue; /* no  */
-	if( !(mpi_cmp_ui( k, 0 ) > 0) ) /* check: k > 0 */
-	    continue; /* no */
-	if( mpi_gcd( temp, k, p_1 ) )
-	    break;  /* okay, k is relatively prime to (p-1) */
     }
+  found:
+    m_free(rndbuf);
     if( DBG_CIPHER )
 	progress('\n');
     mpi_free(p_1);

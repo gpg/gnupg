@@ -1326,8 +1326,10 @@ main( int argc, char **argv )
 void
 g10_exit( int rc )
 {
-    if( opt.debug & DBG_MEMSTAT_VALUE )
+    if( opt.debug & DBG_MEMSTAT_VALUE ) {
 	m_print_stats("on exit");
+	random_dump_stats();
+    }
     if( opt.debug )
 	secmem_dump_stats();
     secmem_term();

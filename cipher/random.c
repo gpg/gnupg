@@ -104,6 +104,18 @@ static void read_random_source( int requester, size_t length, int level);
 static int gather_faked( void (*add)(const void*, size_t, int), int requester,
 						    size_t length, int level );
 
+static struct {
+    ulong mixrnd;
+    ulong mixkey;
+    ulong slowpolls;
+    ulong fastpolls;
+    ulong getbytes1;
+    ulong ngetbytes1;
+    ulong getbytes2;
+    ulong ngetbytes2;
+    ulong addbytes;
+    ulong naddbytes;
+} rndstats;
 
 static void
 initialize(void)
@@ -117,6 +129,19 @@ initialize(void)
 			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
     is_initialized = 1;
     cipher_modules_constructor();
+}
+
+
+void
+random_dump_stats()
+{
+    fprintf(stderr,
+	    "random usage: poolsize=%d mixed=%lu polls=%lu/%lu added=%lu/%lu\n"
+	    "              outmix=%lu getlvl1=%lu/%lu getlvl2=%lu/%lu\n",
+	POOLSIZE, rndstats.mixrnd, rndstats.slowpolls, rndstats.fastpolls,
+		  rndstats.naddbytes, rndstats.addbytes,
+	rndstats.mixkey, rndstats.ngetbytes1, rndstats.getbytes1,
+		    rndstats.ngetbytes2, rndstats.getbytes2 );
 }
 
 void
@@ -175,6 +200,15 @@ get_random_bits( size_t nbits, int level, int secure )
     if( quick_test && level > 1 )
 	level = 1;
     MASK_LEVEL(level);
+    if( level == 1 ) {
+	rndstats.getbytes1 += nbytes;
+	rndstats.ngetbytes1++;
+    }
+    else if( level >= 2 ) {
+	rndstats.getbytes2 += nbytes;
+	rndstats.ngetbytes2++;
+    }
+
     buf = secure && secure_alloc ? m_alloc_secure( nbytes ) : m_alloc( nbytes );
     for( p = buf; nbytes > 0; ) {
 	size_t n = nbytes > POOLSIZE? POOLSIZE : nbytes;
@@ -265,21 +299,23 @@ read_pool( byte *buffer, size_t length, int level )
 				    i < POOLWORDS; i++, dp++, sp++ )
 	    *dp = *sp + ADD_VALUE;
 	/* must mix both pools */
-	mix_pool(rndpool);
-	mix_pool(keypool);
+	mix_pool(rndpool); rndstats.mixrnd++;
+	mix_pool(keypool); rndstats.mixkey++;
 	memcpy( buffer, keypool, length );
     }
     else {
 	/* mix the pool (if add_randomness() didn't it) */
-	if( !just_mixed )
+	if( !just_mixed ) {
 	    mix_pool(rndpool);
+	    rndstats.mixrnd++;
+	}
 	/* create a new pool */
 	for(i=0,dp=(ulong*)keypool, sp=(ulong*)rndpool;
 				    i < POOLWORDS; i++, dp++, sp++ )
 	    *dp = *sp + ADD_VALUE;
 	/* and mix both pools */
-	mix_pool(rndpool);
-	mix_pool(keypool);
+	mix_pool(rndpool); rndstats.mixrnd++;
+	mix_pool(keypool); rndstats.mixkey++;
 	/* read the required data
 	 * we use a readpoiter to read from a different postion each
 	 * time */
@@ -308,13 +344,15 @@ add_randomness( const void *buffer, size_t length, int source )
 
     if( !is_initialized )
 	initialize();
+    rndstats.addbytes += length;
+    rndstats.naddbytes++;
     while( length-- ) {
 	rndpool[pool_writepos++] = *p++;
 	if( pool_writepos >= POOLSIZE ) {
 	    if( source > 1 )
 		pool_filled = 1;
 	    pool_writepos = 0;
-	    mix_pool(rndpool);
+	    mix_pool(rndpool); rndstats.mixrnd++;
 	    just_mixed = !length;
 	}
     }
@@ -325,6 +363,7 @@ add_randomness( const void *buffer, size_t length, int source )
 static void
 random_poll()
 {
+    rndstats.slowpolls++;
     read_random_source( 2, POOLSIZE/5, 1 );
 }
 
@@ -335,6 +374,7 @@ fast_random_poll()
     static void (*fnc)( void (*)(const void*, size_t, int), int) = NULL;
     static int initialized = 0;
 
+    rndstats.fastpolls++;
     if( !initialized ) {
 	if( !is_initialized )
 	    initialize();

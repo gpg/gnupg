@@ -1,3 +1,11 @@
+Fri Jul  2 11:45:54 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* dsa.c (gen_k): Changed algorithm to consume less random bytes
+	* elgamal.c (gen_k): Ditto.
+
+	* random.c (random_dump_stats): New.
+
 Thu Jul  1 12:47:31 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 
