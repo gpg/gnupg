@@ -468,7 +468,7 @@ static gc_option_t gc_options_gpg_agent[] =
      GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
    { "ignore-cache-for-signing", GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "do not use the PIN cache when signing",
-     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
    { "no-grab", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "do not grab keyboard and mouse",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },

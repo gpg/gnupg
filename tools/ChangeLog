@@ -1,3 +1,8 @@
+2004-04-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c (gc_options_gpg_agent): Change type of
+	ignore-cache-for-signing option to GC_ARG_TYPE_NONE.
+
 2004-04-07  Werner Koch  <wk@gnupg.org>
 
 	* gpgconf-comp.c (my_dgettext): Switch the codeset once to utf-8.
