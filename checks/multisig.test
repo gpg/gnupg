@@ -130,19 +130,15 @@ done
 #    echo "$i" | $srcdir/run-gpg --dearmor >x
 #    ../g10/gpg --homedir . --verify <x 2>/dev/null || error "valid is invalid"
 #done
+
+# without the +e ksh seems to terminate the for loop
+set +e
 for i in "$sig_1lsls_invalid" "$sig_lsls_invalid" \
          "$sig_lss_invalid" "$sig_slsl_invalid" ; do
     echo "$i" | $srcdir/run-gpg --dearmor >x
     ../g10/gpg --homedir . --verify <x 2>/dev/null && error "invalid is valid"
 done
 IFS="${save_IFS}"
-
-
-
-
-
-
-
 
 
 

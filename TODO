@@ -1,4 +1,6 @@
 
+  * --preserve-perms so that permissions set on a secring don't get changed.
+
   * Check that no secret temporary results are stored in the result parameter
     of the mpi functions.  We have already done this for mpi-mul.c 
 
