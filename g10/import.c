@@ -795,9 +795,12 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
                    keydb_get_resource_name (hd), g10_errstr(rc) );
     keydb_release (hd); hd = NULL;
     /* we are ready */
-    if( !opt.quiet )
-	log_info( _("key %08lX: revocation certificate imported\n"),
-					(ulong)keyid[1]);
+    if( !opt.quiet ) {
+        char *p=get_user_id_native(keyid);
+	log_info( _("key %08lX: \"%s\" revocation certificate imported\n"),
+					(ulong)keyid[1],p);
+	m_free(p);
+    }
     stats->n_revoc++;
     revalidation_mark ();
 
@@ -1202,12 +1205,14 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		}
 	    }
 	    if( !found ) {
+	        char *p=get_user_id_native(keyid);
 		KBNODE n2 = clone_kbnode(node);
 		insert_kbnode( keyblock_orig, n2, 0 );
 		n2->flag |= 1;
                 ++*n_sigs;
-		log_info( _("key %08lX: revocation certificate added\n"),
-					 (ulong)keyid[1]);
+		log_info(_("key %08lX: \"%s\" revocation certificate added\n"),
+					 (ulong)keyid[1],p);
+		m_free(p);
 	    }
 	}
     }

@@ -513,21 +513,30 @@ cmp_signatures( PKT_signature *a, PKT_signature *b )
 }
 
 
-
 /****************
  * Returns: true if the user ids do not match
  */
 int
 cmp_user_ids( PKT_user_id *a, PKT_user_id *b )
 {
-    int res;
+    int res=1;
 
-    if ( a == b )
+    if( a == b )
         return 0;
 
-    res = a->len - b->len;
-    if( !res )
-	res = memcmp( a->name, b->name, a->len );
+    if( a->attrib_data && b->attrib_data )
+      {
+	res = a->attrib_len - b->attrib_len;
+	if( !res )
+	  res = memcmp( a->attrib_data, b->attrib_data, a->attrib_len );
+      }
+    else if( !a->attrib_data && !b->attrib_data )
+      {
+	res = a->len - b->len;
+	if( !res )
+	  res = memcmp( a->name, b->name, a->len );
+      }
+
     return res;
 }
 

@@ -1821,8 +1821,14 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                     tty_printf ("[revoked] ");
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
-		if( with_prefs && (pk_version>3 || uid->selfsigversion>3))
-		    show_prefs (uid, with_prefs == 2);
+		if( with_prefs )
+		  {
+		    if(pk_version>3 || uid->selfsigversion>3)
+		      show_prefs (uid, with_prefs == 2);
+		    else
+		      tty_printf(_("There are no preferences on a "
+				   "PGP 2.x-style key.\n"));
+		  }
 	    }
 	}
     }

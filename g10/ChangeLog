@@ -1,5 +1,15 @@
 2002-06-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (show_key_with_all_names): Display warning if a user
+	tries to show prefs on a v3 key with a v3 selfsig.
+
+	* kbnode.c (dump_kbnode): Show if a uid is expired.
+
+	* import.c (merge_blocks, import_revoke_cert): Show user ID
+	receiving a revocation certificate.
+
+	* free-packet.c (cmp_user_ids): Properly compare attribute ids.
+
 	* pkclist.c (expand_groups): Maintain the strlist flags while
 	expanding.  Members of an expansion inherit their flags from the
 	expansion key.

@@ -365,8 +365,8 @@ dump_kbnode( KBNODE node )
             PKT_user_id *uid = node->pkt->pkt.user_id;
 	    fputs("  \"", stderr);
 	    print_string( stderr, uid->name, uid->len, 0 );
-	    fprintf (stderr, "\" .%c%c%c\n",
-                     /* we don't have a expired flag */
+	    fprintf (stderr, "\" %c%c%c%c\n",
+                     uid->is_expired? 'e':'.',
                      uid->is_revoked? 'r':'.',
                      uid->created?    'v':'.',
                      uid->is_primary? 'p':'.' );
