@@ -1,3 +1,14 @@
+2003-12-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* clearsig.test, conventional-mdc.test, conventional.test,
+	defs.inc, encrypt-dsa.test, encrypt.test, genkey1024.test,
+	plain-1.asc, plain-1-pgp.asc, plain-2.asc, plain-3.asc,
+	pubring.asc, secring.asc, sigs.test: Rework tests to work properly
+	with a gpg binary that doesn't have all ciphers and all pk algos.
+	Basically, we test for the ciphers we have, only test signing with
+	non-160-bit hashes with RSA (we test all hashes as hashes).  Test
+	all key lengths of AES.
+
 2003-12-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Reenable tests now that the Elgamal signature keys

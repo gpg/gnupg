@@ -13,6 +13,10 @@ Name-Email: hh@@ddorf.de
 Expire-Date: 1
 Passphrase: abc
 %commit
+EOF
+
+if have_pubkey_algo "RSA"; then
+../g10/gpg --quiet --batch --quick-random --homedir . --gen-key <<EOF
 Key-Type: RSA
 Key-Length: 1024
 Key-Usage: sign,encrypt
@@ -23,4 +27,4 @@ Expire-Date: 2
 Passphrase: abc
 %commit
 EOF
-
+fi

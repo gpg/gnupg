@@ -9,6 +9,8 @@ usrname1="one"
 usrpass1="def"
 usrname2="two"
 usrpass2=""
+usrname3="three"
+usrpass3=""
 
 
 dsa_usrname1="pgp5"
@@ -80,6 +82,23 @@ echo_n () {
 #    cleanup_files="$cleanup_files $*"
 #}
 
+have_pubkey_algo () {
+  if  ../g10/gpg --homedir .  --version | grep "Pubkey:.*$1" >/dev/null
+  then
+	true
+  else
+	false
+  fi
+}
+
+have_cipher_algo () {
+  if  ../g10/gpg --homedir .  --version | grep "Cipher:.*$1" >/dev/null
+  then
+	true
+  else
+	false
+  fi
+}
 
 have_hash_algo () {
   if  ../g10/gpg --homedir .  --version | grep "Hash:.*$1" >/dev/null
