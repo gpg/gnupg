@@ -30,7 +30,6 @@
 #include "../assuan/assuan.h"
 
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
-#define digitp(a) ((a) >= '0' && (a) <= '9')
 
 
 /* The filepointer for status message used in non-server mode */

@@ -68,15 +68,23 @@ get_default_signer (void)
   const char key[] =
     "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE";
 
+  KEYDB_SEARCH_DESC desc;
   KsbaCert cert = NULL;
   KEYDB_HANDLE kh = NULL;
   int rc;
+
+  rc = keydb_classify_name (key, &desc);
+  if (rc)
+    {
+      log_error ("failed to find default signer: %s\n", gnupg_strerror (rc));
+      return NULL;
+    }
 
   kh = keydb_new (0);
   if (!kh)
     return NULL;
 
-  rc = keydb_search_subject (kh, key);
+  rc = keydb_search (kh, &desc, 1);
   if (rc)
     {
       log_debug ("failed to find default certificate: rc=%d\n", rc);
