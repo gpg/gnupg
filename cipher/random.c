@@ -607,7 +607,7 @@ fast_random_poll()
         /* QNX/Neutrino does return ENOSYS - so we just ignore it and
          * add whatever is in buf.  In a chroot environment it might not
          * work at all (i.e. because /proc/ is not accessible), so we better 
-         * ognore all error codes and hope for the best
+         * ignore all error codes and hope for the best
          */
         getrusage( RUSAGE_SELF, &buf );
         
@@ -616,7 +616,7 @@ fast_random_poll()
     }
     #endif
   #endif
-    /* time and clock are availabe on all systems - so
+    /* time and clock are available on all systems - so
      * we better do it just in case one of the above functions
      * didn't work */
     {	time_t x = time(NULL);
