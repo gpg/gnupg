@@ -35,25 +35,36 @@ version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.]*\)\"/\1/p' $bind
 echo "building version $version"
 
 rm * || true
-ln ${bindir}/g10/gpg.exe gpg.exe
-ln ${bindir}/g10/gpgv.exe gpgv.exe
+
+cp ${bindir}/g10/gpg.exe gpg.exe
 mingw32 strip gpg.exe
+cp ${bindir}/g10/gpgv.exe gpgv.exe
 mingw32 strip gpgv.exe
-if [ -f ${srcdir}/doc/gpg.man ] ; then
-  sed `printf "s/\b.//g"` ../doc/gpg.man >gpg.man
-else
-  man -Tlatin1 -l ${srcdir}/doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
-fi
+cp ${bindir}/tools/gpgsplit.exe gpgsplit.exe
+mingw32 strip gpgsplit.exe
+
+for i in FAQ; do
+  cp ${bindir}/doc/$i .
+  todos $i
+done
+man -Tlatin1 -l ${srcdir}/doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
 todos gpg.man
-cp ${srcdir}/README .
-todos README
-cp ${srcdir}/COPYING .
-todos COPYING
-ln ${srcdir}/doc/README.W32 .
-todos README.W32
-ln ${srcdir}/doc/FAQ .
-todos FAQ
+man -Tlatin1 -l ${srcdir}/doc/gpgv.1 | sed `printf "s/\b.//g"`  >gpgv.man
+todos gpgv.man
+man -Tlatin1 -l ${srcdir}/doc/gnupg.7 | sed `printf "s/\b.//g"`  >gnupg.man
+todos gnupg.man
+for i in README COPYING; do
+  cp ${srcdir}/$i .
+  todos $i
+done
+for i in README.W32 gnupg-w32.reg; do
+  cp ${srcdir}/doc/$i .
+  todos $i
+done
+
 for i in ${srcdir}/po/*.gmo; do ln $i "$(basename $i .gmo).mo" ; done
-zip "gnupg-w32-${version}.zip" *
+zip -9 "gnupg-w32cli-${version}.zip" *
+
+
 
 

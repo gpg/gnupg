@@ -1,3 +1,8 @@
+2002-09-02  Werner Koch  <wk@gnupg.org>
+
+	* mk-w32-dist: Include more man pages and gpg split.  Changed name
+	of ZIP file to better indicate that this is a command line version.
+
 2002-08-23  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh : Don't run gettextize.
