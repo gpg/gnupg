@@ -1,3 +1,4 @@
+# 
 # Turkish translations for GnuPG messages.
 # Copyright (C) 2003 Free Software Foundation, Inc.
 # Nilgün Belma Bugüner <nilgun@superonline.com>, 2001, ...,2003.
@@ -5,14 +6,14 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
-"POT-Creation-Date: 2003-12-03 16:04+0100\n"
-"PO-Revision-Date: 2003-05-21 11:08+0300\n"
+"POT-Creation-Date: 2003-12-23 19:22+0100\n"
+"PO-Revision-Date: 2003-12-11 02:00+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 0.9.6\n"
+"X-Generator: KBabel 1.0\n"
 
 #: util/secmem.c:88
 msgid "WARNING: using insecure memory!\n"
@@ -34,7 +35,6 @@ msgstr "(bu görev için yanlış program kullanmış olabilirsiniz)\n"
 
 #. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
 #: util/miscutil.c:297 util/miscutil.c:334
-#, fuzzy
 msgid "yes"
 msgstr "evet"
 
@@ -369,6 +369,8 @@ msgstr "bu dağıtımda özümleme algoritması %s salt-okunurdur\n"
 #, c-format
 msgid "WARNING: digest `%s' is not part of OpenPGP.  Use at your own risk!\n"
 msgstr ""
+"Uyarı: özümleme algoritması `%s' OpenPGP'nin parçası değildir. "
+"Kullanırsanız, riski size ait!\n"
 
 #: cipher/rndegd.c:204
 msgid ""
@@ -382,7 +384,7 @@ msgstr ""
 #: cipher/primegen.c:310
 #, c-format
 msgid "can't generate a prime with less than %d bits\n"
-msgstr ""
+msgstr "%d bitten daha küçük bir asal sayı üretilemiyor\n"
 
 #: g10/g10.c:313
 msgid ""
@@ -961,9 +963,9 @@ msgid "selected certification digest algorithm is invalid\n"
 msgstr "seçilen sertifikalama özümleme algoritması geçersiz\n"
 
 #: g10/g10.c:1944
-#, fuzzy, c-format
+#, c-format
 msgid "compress algorithm `%s' is read-only in this release\n"
-msgstr "bu dağıtımda özümleme algoritması %s salt-okunurdur\n"
+msgstr "bu dağıtımda sıkıştırma algoritması %s salt-okunurdur\n"
 
 #: g10/g10.c:1948
 #, c-format
@@ -1011,24 +1013,24 @@ msgid "invalid personal compress preferences\n"
 msgstr "kişisel sıkıştırma tercihleri geçersiz\n"
 
 #: g10/g10.c:2017
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not yet work with %s\n"
-msgstr "%s, %s ile etkisiz olur!\n"
+msgstr "%s henüz %s ile çalışmıyor\n"
 
 #: g10/g10.c:2061
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use cipher algorithm \"%s\" while in %s mode\n"
-msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
+msgstr "%2$s kipindeyken %1$s şifreleme algoritması kullanılamayabilir.\n"
 
 #: g10/g10.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use digest algorithm \"%s\" while in %s mode\n"
-msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
+msgstr "%2$s kipindeyken %1$s özümleme algoritması kullanılamayabilir.\n"
 
 #: g10/g10.c:2071
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use compression algorithm \"%s\" while in %s mode\n"
-msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
+msgstr "%2$s kipindeyken %1$s sıkıştırma algoritması kullanılamayabilir.\n"
 
 #: g10/g10.c:2163
 #, c-format
@@ -1102,29 +1104,29 @@ msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [kullanıcı-kimliği] [anahtar-zinciri]"
 
 #: g10/g10.c:2426
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver send failed: %s\n"
-msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
+msgstr "keyserver send başarısızlığa uğradı: %s\n"
 
 #: g10/g10.c:2428
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver receive failed: %s\n"
-msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
+msgstr "keyserver receive başarısızlığa uğradı: %s\n"
 
 #: g10/g10.c:2430
-#, fuzzy, c-format
+#, c-format
 msgid "key export failed: %s\n"
-msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
+msgstr "key export başarısızlığa uğradı: %s\n"
 
 #: g10/g10.c:2441
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver search failed: %s\n"
-msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
+msgstr "keyserver search başarısızlığa uğradı: %s\n"
 
 #: g10/g10.c:2451
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver refresh failed: %s\n"
-msgstr "gizliyi güncelleme başarısız: %s\n"
+msgstr "keyserver refresh başarısız: %s\n"
 
 #: g10/g10.c:2492
 #, c-format
@@ -2096,29 +2098,29 @@ msgstr "pk belleğinde çok fazla girdi - iptal edildi\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2600
+#: g10/getkey.c:187 g10/getkey.c:2611
 msgid "[User id not found]"
 msgstr "[Kullanıcı kimliği bulunamadı]"
 
-#: g10/getkey.c:1582
+#: g10/getkey.c:1590
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Geçersiz %08lX anahtarı --allow-non-selfsigned-uid kullanılarak geçerli "
 "oldu\n"
 
-#: g10/getkey.c:2088
+#: g10/getkey.c:2099
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr ""
 "yardımcı genel anahtar %08lX için bir gizli anahtar yok - yoksayılıyor\n"
 
-#: g10/getkey.c:2316
+#: g10/getkey.c:2327
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "yardımcı anahtar %08lX, asıl anahtar %08lX yerine kullanılıyor\n"
 
-#: g10/getkey.c:2363
+#: g10/getkey.c:2374
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "%08lX anahtarı: genel anahtarsız gizli anahtar - atlandı\n"
@@ -2537,14 +2539,14 @@ msgid "  Unable to sign.\n"
 msgstr "  İmzalanamıyor.\n"
 
 #: g10/keyedit.c:382
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is expired."
-msgstr "Kullanıcı kimliği \"%s\" yürürlükten kaldırıldı."
+msgstr "Kullanıcı kimliği \"%s\" zamanaşımına uğradı."
 
 #: g10/keyedit.c:402
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is not self-signed."
-msgstr "UYARI: kullanıcı kimliği \"%s\" öz-imzalı değil.\n"
+msgstr "Kullanıcı kimliği \"%s\" öz-imzalı değil."
 
 #: g10/keyedit.c:437
 #, c-format
@@ -2668,7 +2670,7 @@ msgstr "   (3) Çok dikkatli bir denetim yaptım.%s\n"
 
 #: g10/keyedit.c:652
 msgid "Your selection? (enter '?' for more information): "
-msgstr ""
+msgstr "Seçiminiz? (bilgi için '?' giriniz): "
 
 #: g10/keyedit.c:672
 msgid ""
@@ -3285,6 +3287,9 @@ msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
+"UYARI: birincil olarak imli bir kullanıcı kimliği yok. Bu komut\n"
+"       başka bir kullanıcı kimliğinin birincil varsayılmasına sebep "
+"olabilir.\n"
 
 #: g10/keyedit.c:2168
 msgid ""
@@ -3582,14 +3587,14 @@ msgstr "bir şifreli oturum anahtarı (%d) için tuhaf uzunluk\n"
 #. There is no way to tell the difference here between a bad
 #. passphrase and a cipher algorithm that we don't have.
 #: g10/mainproc.c:263
-#, fuzzy, c-format
+#, c-format
 msgid "bad passphrase or unknown cipher algorithm (%d)\n"
-msgstr "bilinmeyen şifre algoritması"
+msgstr "anahtar parolası yanlış ya da bilinmeyen şifre algoritması (%d)\n"
 
 #: g10/mainproc.c:300
-#, fuzzy, c-format
+#, c-format
 msgid "%s encrypted session key\n"
-msgstr "bir şifreli oturum anahtarı (%d) için tuhaf uzunluk\n"
+msgstr "%s şifreli oturum anahtarı\n"
 
 #: g10/mainproc.c:302 g10/encr-data.c:66
 #, c-format
@@ -3628,14 +3633,13 @@ msgid "public key decryption failed: %s\n"
 msgstr "genel anahtar şifre çözümü başarısız: %s\n"
 
 #: g10/mainproc.c:488
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %lu passphrases\n"
-msgstr "Parolayı tekrar yazınız\n"
+msgstr "%lu anahtar parolası ile şifreli\n"
 
 #: g10/mainproc.c:490
-#, fuzzy
 msgid "encrypted with 1 passphrase\n"
-msgstr "Parolayı tekrar yazınız\n"
+msgstr "1 anahtar parolası ile şifreli\n"
 
 #: g10/mainproc.c:506 g10/mainproc.c:525
 #, c-format
@@ -3697,20 +3701,17 @@ msgid "can't handle these multiple signatures\n"
 msgstr "bu çoklu imzalar elde edilemiyor\n"
 
 #: g10/mainproc.c:1345
-#, fuzzy, c-format
+#, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
-msgstr ""
-"%.*s imzası, %s anahtarı ve\n"
-"     %08lX kullanıcı kimliği ile yapılmış\n"
+msgstr "%.*s imzası, %s anahtarı ve %08lX kullanıcı kimliği ile yapılmış\n"
 
 #. According to my favorite copy editor, in English
 #. grammar, you say "at" if the key is located on a web
 #. page, but "from" if it is located on a keyserver.  I'm
 #. not going to even try to make two strings here :)
 #: g10/mainproc.c:1368
-#, fuzzy
 msgid "Key available at: "
-msgstr "yardım mevcut değil"
+msgstr "Anahtar burada: "
 
 #: g10/mainproc.c:1417 g10/mainproc.c:1450
 msgid "BAD signature from \""
@@ -3824,9 +3825,8 @@ msgid "please use \"%s%s\" instead\n"
 msgstr "lütfen yerine \"%s%s\" kullanınız\n"
 
 #: g10/misc.c:550
-#, fuzzy
 msgid "Uncompressed"
-msgstr "işlenemedi"
+msgstr "Sıkıştırılmamış"
 
 #: g10/misc.c:628
 #, c-format
@@ -3840,7 +3840,7 @@ msgstr "%d genel anahtar algoritması kullanılamadı\n"
 
 #: g10/parse-packet.c:690
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
-msgstr ""
+msgstr "UYARI: simetrik şifreli oturum anahtarı potansiyel olarak güvensiz\n"
 
 #: g10/parse-packet.c:1096
 #, c-format
@@ -4044,7 +4044,7 @@ msgstr "\"%s\" adresine gönderme işlemi başarısız (durum=%u)\n"
 
 #: g10/hkp.c:369
 msgid "this keyserver does not support --search-keys\n"
-msgstr ""
+msgstr "bu anahtar sunucusu --search-keys seçeneğini desteklemiyor\n"
 
 #: g10/hkp.c:519
 #, c-format
@@ -4146,9 +4146,9 @@ msgstr ""
 "anahtar %08lX: anahtarı yürürlükten kaldıracak yardımcı anahtar paketi yok\n"
 
 #: g10/sig-check.c:588
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no subkey for subkey binding signature\n"
-msgstr "anahtar %08lX: anahtarı garantilemek için yardımcı anahtar yok\n"
+msgstr "anahtar %08lX: yardımcı anahtarı bağlamak için yardımcı anahtar yok\n"
 
 #: g10/sign.c:84
 msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
@@ -4238,12 +4238,12 @@ msgstr "%d karakterden daha uzun metin satırları okunamıyor\n"
 msgid "input line longer than %d characters\n"
 msgstr "girdi satırı %d karakterden daha uzun\n"
 
-#: g10/tdbio.c:128 g10/tdbio.c:1411
+#: g10/tdbio.c:128 g10/tdbio.c:1410
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "güvence veritabanı %lu kaydı: erişim başarısız: %s\n"
 
-#: g10/tdbio.c:134 g10/tdbio.c:1418
+#: g10/tdbio.c:134 g10/tdbio.c:1417
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "güvence veritabanı %lu kaydı: yazma başarısız (n=%d): %s\n"
@@ -4312,7 +4312,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: sürüm kaydının güncellenmesinde hata: %s\n"
 
 #: g10/tdbio.c:638 g10/tdbio.c:674 g10/tdbio.c:688 g10/tdbio.c:724
-#: g10/tdbio.c:1344 g10/tdbio.c:1371
+#: g10/tdbio.c:1343 g10/tdbio.c:1370
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: sürüm kaydının okunmasında hata: %s\n"
@@ -4322,52 +4322,52 @@ msgstr "%s: sürüm kaydının okunmasında hata: %s\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: sürüm kaydının yazılmasında hata: %s\n"
 
-#: g10/tdbio.c:1142
+#: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "güvence veritabanı: erişim başarısız: %s\n"
 
-#: g10/tdbio.c:1150
+#: g10/tdbio.c:1149
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "güvence veritabanı: okuma başarısız (n=%d): %s\n"
 
-#: g10/tdbio.c:1171
+#: g10/tdbio.c:1170
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: bir güvence veritabanı dosyası değil\n"
 
-#: g10/tdbio.c:1189
+#: g10/tdbio.c:1188
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: %lu kayıt numarası ile sürüm kaydı\n"
 
-#: g10/tdbio.c:1194
+#: g10/tdbio.c:1193
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: dosya sürümü %d geçersiz\n"
 
-#: g10/tdbio.c:1377
+#: g10/tdbio.c:1376
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: serbest kaydı okuma hatası: %s\n"
 
-#: g10/tdbio.c:1385
+#: g10/tdbio.c:1384
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: dizin kaydını yazma hatası: %s\n"
 
-#: g10/tdbio.c:1395
+#: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: kayıt sıfırlama başarısız: %s\n"
 
-#: g10/tdbio.c:1425
+#: g10/tdbio.c:1424
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: kayıt ekleme başarısız: %s\n"
 
-#: g10/tdbio.c:1470
+#: g10/tdbio.c:1469
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
 "güvence veritabanı bozulmuş; lütfen \"gpg --fix-trustdb\" çalıştırın.\n"
@@ -4442,12 +4442,12 @@ msgstr "%08lX genel anahtarı yok: %s\n"
 #: g10/trustdb.c:1200
 #, c-format
 msgid "signature from Elgamal signing key %08lX to %08lX skipped\n"
-msgstr ""
+msgstr "%08lX Elgamal imzalama anahtarından  %08lX'e  imza atlandı\n"
 
 #: g10/trustdb.c:1208
 #, c-format
 msgid "signature from %08lX to Elgamal signing key %08lX skipped\n"
-msgstr ""
+msgstr "%08lX den  %08lX Elgamal imzalama anahtarına imza atlandı\n"
 
 #: g10/trustdb.c:1605
 #, c-format

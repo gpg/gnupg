@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.3\n"
-"POT-Creation-Date: 2003-12-03 16:04+0100\n"
-"PO-Revision-Date: 2003-07-31 23:11+0200\n"
+"POT-Creation-Date: 2003-12-23 19:22+0100\n"
+"PO-Revision-Date: 2003-12-07 01:29+0100\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Nagy Ferenc László <nfl@nfllab.com>\n"
 "MIME-Version: 1.0\n"
@@ -31,7 +31,6 @@ msgstr "(Lehet, hogy nem a megfelelõ programot használja a feladatra.)\n"
 
 #. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
 #: util/miscutil.c:297 util/miscutil.c:334
-#, fuzzy
 msgid "yes"
 msgstr "igen"
 
@@ -171,7 +170,7 @@ msgstr "nem megvalósított rejtjelezõ algoritmus"
 
 #: util/errors.c:82
 msgid "unknown signature class"
-msgstr "ismretlen aláírásosztály"
+msgstr "ismeretlen aláírásosztály"
 
 #: util/errors.c:83
 msgid "trust database error"
@@ -381,7 +380,7 @@ msgstr ""
 #: cipher/primegen.c:310
 #, c-format
 msgid "can't generate a prime with less than %d bits\n"
-msgstr ""
+msgstr "Nem tudok létrehozni %d bitesnél kisebb prímszámot.\n"
 
 #: g10/g10.c:313
 msgid ""
@@ -775,9 +774,7 @@ msgstr ""
 
 #: g10/g10.c:646 g10/gpgv.c:95
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
-msgstr ""
-"A hibákat (angolul) a <gnupg-bugs@gnu.org> címre írja meg!\n"
-"Fordítással kapcsolatban az <nfl@nfllab.com> címre írjon!\n"
+msgstr "A hibákat (angolul) a <gnupg-bugs@gnu.org> címre írja meg!\n"
 
 #: g10/g10.c:663
 msgid "Usage: gpg [options] [files] (-h for help)"
@@ -960,9 +957,9 @@ msgid "selected certification digest algorithm is invalid\n"
 msgstr "Az igazoláshoz kiválasztott kivonatoló algoritmus érvénytelen!\n"
 
 #: g10/g10.c:1944
-#, fuzzy, c-format
+#, c-format
 msgid "compress algorithm `%s' is read-only in this release\n"
-msgstr "\"%s\" kivonatoló algoritmus csak olvasható ebben a kiadásban\n"
+msgstr "\"%s\" tömörítõalgoritmus csak olvasható ebben a kiadásban.\n"
 
 #: g10/g10.c:1948
 #, c-format
@@ -1010,9 +1007,9 @@ msgid "invalid personal compress preferences\n"
 msgstr "Érvénytelen személyes tömörítõpreferenciák!\n"
 
 #: g10/g10.c:2017
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not yet work with %s\n"
-msgstr "%s értelmetlen %s mellett!\n"
+msgstr "%s és %s egyelõre nem használható együtt!\n"
 
 #: g10/g10.c:2061
 #, c-format
@@ -1423,7 +1420,7 @@ msgid ""
 "%08lX: It is not sure that this key really belongs to the owner\n"
 "but it is accepted anyway\n"
 msgstr ""
-"%08lX: Nem biztos, hogy ez a klucs valóban a jelzett tulajdonoshoz\n"
+"%08lX: Nem biztos, hogy ez a kulcs valóban a jelzett tulajdonoshoz\n"
 "tartozik, ennek ellenére elfogadtuk.\n"
 
 #: g10/pkclist.c:497
@@ -1848,12 +1845,12 @@ msgstr "NnMmEeRrKk"
 
 #: g10/keygen.c:1332
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
-msgstr "(N)év, (M)egjegyzés, (E)-mail megváltozatása vagy (K)ilépés? "
+msgstr "(N)év, (M)egjegyzés, (E)-mail megváltoztatása vagy (K)ilépés? "
 
 #: g10/keygen.c:1333
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr ""
-"(N)év, (M)egjegyzés, (E)-mail megváltozatása vagy (R)endben/(K)ilépés? "
+"(N)év, (M)egjegyzés, (E)-mail megváltoztatása vagy (R)endben/(K)ilépés? "
 
 #: g10/keygen.c:1352
 msgid "Please correct the error first\n"
@@ -2088,30 +2085,29 @@ msgstr "Túl sok bejegyzés van a nyilvánoskulcs-gyorsítótárban - letiltom.\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2600
+#: g10/getkey.c:187 g10/getkey.c:2611
 msgid "[User id not found]"
 msgstr "[ismeretlen kulcs]"
 
-#: g10/getkey.c:1582
+#: g10/getkey.c:1590
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "%08lX érvénytelen kulcsot érvényesítettük az\n"
 "--allow-non-selfsigned-uid opcióval.\n"
 
-#: g10/getkey.c:2088
+#: g10/getkey.c:2099
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr ""
-"Nincs titkos alkulcs a \"%s\" nyilvános alkulcshoz - figyelmen kívül "
-"hagyom.\n"
+"Nincs titkos alkulcs a %08lX nyilvános alkulcshoz - figyelmen kívül hagyom.\n"
 
-#: g10/getkey.c:2316
+#: g10/getkey.c:2327
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "A %08lX másodlagos kulcsot használjuk a %08lX elsõdleges helyett.\n"
 
-#: g10/getkey.c:2363
+#: g10/getkey.c:2374
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
@@ -2352,7 +2348,7 @@ msgstr "%08lX kulcs: \"%s\" visszavonó igazolást importáltam.\n"
 #: g10/import.c:1035
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
-msgstr "%08lX kulcs: Nincs felhasználói azonsító ehhez az aláíráshoz!\n"
+msgstr "%08lX kulcs: Nincs felhasználói azonosító ehhez az aláíráshoz!\n"
 
 #: g10/import.c:1050
 #, c-format
@@ -3252,7 +3248,7 @@ msgstr "[lejárt]     "
 
 #: g10/keyedit.c:1969
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
-msgstr "Nincsenek preferenicák egy PGP 2.x felhasználóazonosítón!\n"
+msgstr "Nincsenek preferenciák egy PGP 2.x felhasználóazonosítón!\n"
 
 #: g10/keyedit.c:1977
 msgid ""
@@ -3368,7 +3364,7 @@ msgstr "Maximum egy másodlagos kulcsot jelöljön ki, kérem!\n"
 
 #: g10/keyedit.c:2606
 msgid "Changing expiration time for a secondary key.\n"
-msgstr "Másodlagos kulcs lejárati idejének változatása.\n"
+msgstr "Másodlagos kulcs lejárati idejének változtatása.\n"
 
 #: g10/keyedit.c:2608
 msgid "Changing expiration time for the primary key.\n"
@@ -3510,7 +3506,7 @@ msgstr "Kritikus aláírás-jelölés: "
 
 #: g10/keylist.c:149
 msgid "Signature notation: "
-msgstr "Aláírásjelölés: "
+msgstr "Aláírás-jelölés: "
 
 #: g10/keylist.c:156
 msgid "not human readable"
@@ -3528,19 +3524,19 @@ msgstr " [lejár: %s]"
 
 #: g10/keylist.c:1048
 msgid "Primary key fingerprint:"
-msgstr "Elsõdleges kulcs ujjlenyomata:"
+msgstr "Elsõdlegeskulcs-ujjlenyomat:"
 
 #: g10/keylist.c:1050
 msgid "     Subkey fingerprint:"
-msgstr "         Alkulcs ujjlenyomata:"
+msgstr "        Alkulcs-ujjlenyomat:"
 
 #: g10/keylist.c:1057
 msgid " Primary key fingerprint:"
-msgstr " Elsõdleges kulcs ujjlenyomata:"
+msgstr "Elsõdlegeskulcs-ujjlenyomat:"
 
 #: g10/keylist.c:1059
 msgid "      Subkey fingerprint:"
-msgstr "          Alkulcs ujjlenyomata:"
+msgstr "        Alkulcs-ujjlenyomat:"
 
 #. use tty
 #: g10/keylist.c:1063 g10/keylist.c:1067
@@ -3555,14 +3551,14 @@ msgstr "Furcsa méretû (%d) titkosított munkafolyamatkulcs.\n"
 #. There is no way to tell the difference here between a bad
 #. passphrase and a cipher algorithm that we don't have.
 #: g10/mainproc.c:263
-#, fuzzy, c-format
+#, c-format
 msgid "bad passphrase or unknown cipher algorithm (%d)\n"
-msgstr "ismeretlen rejtjelezõ algoritmus"
+msgstr "Rossz jelszó vagy ismeretlen rejtjelezõ algoritmus (%d).\n"
 
 #: g10/mainproc.c:300
-#, fuzzy, c-format
+#, c-format
 msgid "%s encrypted session key\n"
-msgstr "Furcsa méretû (%d) titkosított munkafolyamatkulcs.\n"
+msgstr "%s titkosított munkafolyamatkulcs\n"
 
 #: g10/mainproc.c:302 g10/encr-data.c:66
 #, c-format
@@ -3599,19 +3595,18 @@ msgid "public key decryption failed: %s\n"
 msgstr "Nyilvános kulcsú visszafejtés sikertelen: %s\n"
 
 #: g10/mainproc.c:488
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %lu passphrases\n"
-msgstr "Ismételje meg a jelszót!\n"
+msgstr "%lu jelszóval rejtjelezve\n"
 
 #: g10/mainproc.c:490
-#, fuzzy
 msgid "encrypted with 1 passphrase\n"
-msgstr "Ismételje meg a jelszót!\n"
+msgstr "1 jelszóval rejtjelezve\n"
 
 #: g10/mainproc.c:506 g10/mainproc.c:525
 #, c-format
 msgid "assuming %s encrypted data\n"
-msgstr "%s titkosítot adatot feltételezek.\n"
+msgstr "%s titkosított adatot feltételezek.\n"
 
 #: g10/mainproc.c:513
 #, c-format
@@ -3661,7 +3656,7 @@ msgstr "Eljárásmód: "
 
 #: g10/mainproc.c:1284
 msgid "signature verification suppressed\n"
-msgstr "Aláírásellenõrzés elnyomva.\n"
+msgstr "Aláírás-ellenõrzés elnyomva.\n"
 
 #. plaintext before signatures but no one-pass packets
 #: g10/mainproc.c:1326 g10/mainproc.c:1336
@@ -3669,11 +3664,9 @@ msgid "can't handle these multiple signatures\n"
 msgstr "Nem tudom kezelni ezeket a többszörös aláírásokat!\n"
 
 #: g10/mainproc.c:1345
-#, fuzzy, c-format
+#, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
-msgstr ""
-"Aláírás létrehozva %.*s idõpontban,\n"
-"kulcs típusa: %s, azonosító: %08lX.\n"
+msgstr "Aláírva: %.*s; kulcs: %s, %08lX.\n"
 
 #. According to my favorite copy editor, in English
 #. grammar, you say "at" if the key is located on a web
@@ -3793,9 +3786,8 @@ msgid "please use \"%s%s\" instead\n"
 msgstr "Kérem, ezt használja helyette: \"%s%s\"\n"
 
 #: g10/misc.c:550
-#, fuzzy
 msgid "Uncompressed"
-msgstr "nem feldolgozott"
+msgstr "Tömörítetlen"
 
 #: g10/misc.c:628
 #, c-format
@@ -3810,6 +3802,7 @@ msgstr "Nem tudom kezelni a(z) %d. számú nyilvános kulcsú algoritmust!\n"
 #: g10/parse-packet.c:690
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
+"FIGYELEM: A rejtjelezett munkafolyamat-kulcs lehet, hogy nem biztonságos!\n"
 
 #: g10/parse-packet.c:1096
 #, c-format
@@ -3960,11 +3953,11 @@ msgstr "Nem tudom megnyitni a(z) \"%s\" aláírt adatot!\n"
 #: g10/pubkey-enc.c:101
 #, c-format
 msgid "anonymous recipient; trying secret key %08lX ...\n"
-msgstr "Anoním címzett. A %08lX titkos kulcsot próbálom...\n"
+msgstr "Anonim címzett. A %08lX titkos kulcsot próbálom...\n"
 
 #: g10/pubkey-enc.c:107
 msgid "okay, we are the anonymous recipient.\n"
-msgstr "Rendben, mi vagyunk az anoním címzett.\n"
+msgstr "Rendben, mi vagyunk az anonim címzett.\n"
 
 #: g10/pubkey-enc.c:159
 msgid "old encoding of the DEK is not supported\n"
@@ -4039,7 +4032,7 @@ msgstr "%d%s védõ algoritmus nem támogatott.\n"
 
 #: g10/seckey-cert.c:233
 msgid "Invalid passphrase; please try again"
-msgstr "Érvénytelen jelszó. Próbálja újra!"
+msgstr "Érvénytelen jelszó. Próbálja újra"
 
 #: g10/seckey-cert.c:234
 #, c-format
@@ -4208,12 +4201,12 @@ msgstr "Nem tudok %d karakternél hosszabb szövegsorokat kezelni!\n"
 msgid "input line longer than %d characters\n"
 msgstr "A bemeneti sor hosszabb, mint %d karakter.\n"
 
-#: g10/tdbio.c:128 g10/tdbio.c:1411
+#: g10/tdbio.c:128 g10/tdbio.c:1410
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "Bizalmi adatbázis %lu. rekord: lseek sikertelen: %s.\n"
 
-#: g10/tdbio.c:134 g10/tdbio.c:1418
+#: g10/tdbio.c:134 g10/tdbio.c:1417
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "Bizalmi adatbázis %lu. rekord: írás sikertelen (n=%d): %s.\n"
@@ -4282,7 +4275,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: Hiba a verziórekord frissítésekor: %s.\n"
 
 #: g10/tdbio.c:638 g10/tdbio.c:674 g10/tdbio.c:688 g10/tdbio.c:724
-#: g10/tdbio.c:1344 g10/tdbio.c:1371
+#: g10/tdbio.c:1343 g10/tdbio.c:1370
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: Hiba a verziórekord olvasásakor: %s.\n"
@@ -4292,52 +4285,52 @@ msgstr "%s: Hiba a verziórekord olvasásakor: %s.\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: Hiba a verziórekord írásakor: %s.\n"
 
-#: g10/tdbio.c:1142
+#: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "Bizalmi adatbázis: lseek sikertelen: %s.\n"
 
-#: g10/tdbio.c:1150
+#: g10/tdbio.c:1149
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "Bizalmi adatbázis: olvasás sikertelen (n=%d): %s.\n"
 
-#: g10/tdbio.c:1171
+#: g10/tdbio.c:1170
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: Nem bizalmi adatbázis.\n"
 
-#: g10/tdbio.c:1189
+#: g10/tdbio.c:1188
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: Verziórekord, rekordszám: %lu.\n"
 
-#: g10/tdbio.c:1194
+#: g10/tdbio.c:1193
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: Érvénytelen állományverzió (%d).\n"
 
-#: g10/tdbio.c:1377
+#: g10/tdbio.c:1376
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: Hiba szabad rekord olvasásakor: %s.\n"
 
-#: g10/tdbio.c:1385
+#: g10/tdbio.c:1384
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: Hiba könyvtárrekord írásakor: %s.\n"
 
-#: g10/tdbio.c:1395
+#: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: Nem sikerült egy rekord nullázása: %s.\n"
 
-#: g10/tdbio.c:1425
+#: g10/tdbio.c:1424
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: Nem sikerült egy rekord hozzáadása: %s.\n"
 
-#: g10/tdbio.c:1470
+#: g10/tdbio.c:1469
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "Bizalmi adatbázis sérült. Kérem, futtassa: \"gpg --fix-trustdb\".\n"
 
@@ -4413,11 +4406,13 @@ msgstr "A(z) %08lX nyilvános kulcsot nem találom: %s.\n"
 #, c-format
 msgid "signature from Elgamal signing key %08lX to %08lX skipped\n"
 msgstr ""
+"%08lX Elgamal aláírókulccsal %08lX kulcshoz készült aláírást kihagytam.\n"
 
 #: g10/trustdb.c:1208
 #, c-format
 msgid "signature from %08lX to Elgamal signing key %08lX skipped\n"
 msgstr ""
+"%08lX kulccsal %08lX Elgamal aláírókulcshoz készült aláírást kihagytam.\n"
 
 #: g10/trustdb.c:1605
 #, c-format
@@ -4461,7 +4456,7 @@ msgstr "A bemeneti sor (%u) túl hosszú, vagy hiányzik a soremelés.\n"
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
 "A kulcs nincs \"nem biztonságosnak\" jelölve,\n"
-"nem tudom a pótló véletlenszámgenerátorral használni!\n"
+"nem tudom a pótló véletlenszám-generátorral használni!\n"
 
 #: g10/skclist.c:157
 #, c-format
@@ -4663,7 +4658,7 @@ msgstr ""
 "használható. Az OpenPGP az algoritmus két fajtáját különbözteti meg:\n"
 "egy csak titkosítót, és egy aláírót és titkosítót. Tulajdonképpen ez\n"
 "a kettõ ugyanaz, de néhány paramétert speciálisan kell megválasztani\n"
-"ahhoz, hogy a kulcs biztonságos legyen aláíráskészítéshez. Ez a program\n"
+"ahhoz, hogy a kulcs biztonságos legyen aláírás-készítéshez. Ez a program\n"
 "megteszi ezt, de más OpenPGP megvalósításoknak nem kötelezõ érteni a\n"
 "az aláíró+titkosító fajtát.\n"
 "\n"
@@ -4795,7 +4790,7 @@ msgstr ""
 "\"1\" azt jelenti, hogy Ön hiszi, hogy a kulcs annak a személynek a\n"
 "    tulajdona, aki azt állítja, hogy az övé, de Ön nem tudta ezt\n"
 "    ellenõrizni, vagy egyszerûen nem ellenõrizte ezt. Ez hasznos egy\n"
-"    \"persona\" típusú ellenõrzéshez, mikor Ön egy pszeudoním felhasználó\n"
+"    \"persona\" típusú ellenõrzéshez, mikor Ön egy pszeudonim felhasználó\n"
 "    kulcsát írja alá.\n"
 "\n"
 "\"2\" azt jelenti, hogy Ön a kulcsot hétköznapi alapossággal ellenõrizte.\n"
@@ -5005,7 +5000,7 @@ msgstr "%lu kulcsot ellenõriztem eddig (%lu aláírással).\n"
 #: g10/keyring.c:1399
 #, c-format
 msgid "%lu keys checked (%lu signatures)\n"
-msgstr "%lu kulcsot ellenõroztem (%lu aláírással).\n"
+msgstr "%lu kulcsot ellenõriztem (%lu aláírással).\n"
 
 #: g10/keyring.c:1465
 #, c-format
@@ -5274,7 +5269,6 @@ msgstr "Hiba bizalmi rekord keresésekor: %s.\n"
 msgid "read error: %s\n"
 msgstr "Olvasási hiba: %s.\n"
 
-#, fuzzy
 #~ msgid "quit|quit"
 #~ msgstr "kilépés"
 

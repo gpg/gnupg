@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
-"POT-Creation-Date: 2003-12-03 16:04+0100\n"
+"POT-Creation-Date: 2003-12-23 19:22+0100\n"
 "PO-Revision-Date: 2003-05-11 12:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <buzdugan@voyager.net>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -36,7 +36,6 @@ msgstr "(aþi folosit probabil un program nepotrivit pentru aceastã sarcinã)\n"
 
 #. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
 #: util/miscutil.c:297 util/miscutil.c:334
-#, fuzzy
 msgid "yes"
 msgstr "da"
 
@@ -375,6 +374,8 @@ msgstr "algoritm rezumat `%s' este numai-citire în acestã ediþie\n"
 #, c-format
 msgid "WARNING: digest `%s' is not part of OpenPGP.  Use at your own risk!\n"
 msgstr ""
+"AVERTISMENT: rezumat `%s' nu este parte din OpenPGP.  Folosiþi pe riscul "
+"dvs.!\n"
 
 #: cipher/rndegd.c:204
 msgid ""
@@ -388,7 +389,7 @@ msgstr ""
 #: cipher/primegen.c:310
 #, c-format
 msgid "can't generate a prime with less than %d bits\n"
-msgstr ""
+msgstr "nu pot genera un numãr prim cu mai puþin de %d biþi\n"
 
 #: g10/g10.c:313
 msgid ""
@@ -980,9 +981,9 @@ msgid "selected certification digest algorithm is invalid\n"
 msgstr "algoritm rezumat certificare selectat este invalid\n"
 
 #: g10/g10.c:1944
-#, fuzzy, c-format
+#, c-format
 msgid "compress algorithm `%s' is read-only in this release\n"
-msgstr "algoritm rezumat `%s' este numai-citire în acestã ediþie\n"
+msgstr "algoritm compresie `%s' este numai-citire în acestã ediþie\n"
 
 #: g10/g10.c:1948
 #, c-format
@@ -1030,24 +1031,25 @@ msgid "invalid personal compress preferences\n"
 msgstr "preferinþe compresie personale invalide\n"
 
 #: g10/g10.c:2017
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not yet work with %s\n"
-msgstr "%s nu are sens cu %s!\n"
+msgstr "%s nu merge încã cu %s!\n"
 
 #: g10/g10.c:2061
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use cipher algorithm \"%s\" while in %s mode\n"
-msgstr "nu puteþi folosi %s câtã vreme în modul %s\n"
+msgstr "nu puteþi folosi algoritmul de cifrare \"%s\" câtã vreme în modul %s\n"
 
 #: g10/g10.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use digest algorithm \"%s\" while in %s mode\n"
-msgstr "nu puteþi folosi %s câtã vreme în modul %s\n"
+msgstr "nu puteþi folosi algorimul de rezumat \"%s\" câtã vreme în modul %s\n"
 
 #: g10/g10.c:2071
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use compression algorithm \"%s\" while in %s mode\n"
-msgstr "nu puteþi folosi %s câtã vreme în modul %s\n"
+msgstr ""
+"nu puteþi folosi algoritmul de compresie \"%s\" câtã vreme în modul %s\n"
 
 #: g10/g10.c:2163
 #, c-format
@@ -1122,29 +1124,29 @@ msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [id-utilizator] [inel_chei]"
 
 #: g10/g10.c:2426
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver send failed: %s\n"
-msgstr "Generarea cheii a eºuat: %s\n"
+msgstr "trimitere server de chei eºuatã: %s\n"
 
 #: g10/g10.c:2428
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver receive failed: %s\n"
-msgstr "Generarea cheii a eºuat: %s\n"
+msgstr "recepþie server de chei eºuatã: %s\n"
 
 #: g10/g10.c:2430
-#, fuzzy, c-format
+#, c-format
 msgid "key export failed: %s\n"
-msgstr "Generarea cheii a eºuat: %s\n"
+msgstr "export cheie eºuat: %s\n"
 
 #: g10/g10.c:2441
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver search failed: %s\n"
-msgstr "Generarea cheii a eºuat: %s\n"
+msgstr "cãutare server de chei eºuatã: %s\n"
 
 #: g10/g10.c:2451
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver refresh failed: %s\n"
-msgstr "actualizarea secretului a eºuat: %s\n"
+msgstr "actualizare server de chei eºuatã: %s\n"
 
 #: g10/g10.c:2492
 #, c-format
@@ -2114,26 +2116,26 @@ msgstr "prea multe intrãri în cache-ul pk - deactivat\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2600
+#: g10/getkey.c:187 g10/getkey.c:2611
 msgid "[User id not found]"
 msgstr "[ID utilizator nu a fost gãsit]"
 
-#: g10/getkey.c:1582
+#: g10/getkey.c:1590
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr "Cheia invalidã %08lX fãcutã validã de --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2088
+#: g10/getkey.c:2099
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr "nici o subcheie secretã pentru subcheia publicã %08lX - ignoratã\n"
 
-#: g10/getkey.c:2316
+#: g10/getkey.c:2327
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "folosim cheia secundarã %08lX în loc de cheia primarã %08lX\n"
 
-#: g10/getkey.c:2363
+#: g10/getkey.c:2374
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "cheia %08lX: cheie secretã fãrã cheie publicã - sãritã\n"
@@ -2546,14 +2548,14 @@ msgid "  Unable to sign.\n"
 msgstr "  Nu pot semna.\n"
 
 #: g10/keyedit.c:382
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is expired."
-msgstr "ID utilizator \"%s\" a fost revocat."
+msgstr "ID utilizator \"%s\" este expirat."
 
 #: g10/keyedit.c:402
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is not self-signed."
-msgstr "AVERISMENT: ID-ul utilizator \"%s\" nu este auto-semnat.\n"
+msgstr "ID-ul utilizator \"%s\" nu este auto-semnat."
 
 #: g10/keyedit.c:437
 #, c-format
@@ -2678,7 +2680,7 @@ msgstr "   (3) Am fãcut verificãri foarte atente.%s\n"
 
 #: g10/keyedit.c:652
 msgid "Your selection? (enter '?' for more information): "
-msgstr ""
+msgstr "Selecþia dvs.? (introduceþi '?' pentru informaþii suplimentare): "
 
 #: g10/keyedit.c:672
 msgid ""
@@ -3294,6 +3296,9 @@ msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
+"AVERTISMENT: nici un ID utilizator a fost marcat ca primar.  Aceastã comandã "
+"poate\n"
+"              cauza ca un alt ID utilizator sã devinã presupus primar.\n"
 
 #: g10/keyedit.c:2168
 msgid ""
@@ -3581,14 +3586,14 @@ msgstr "dimensiune ciudatã pentru o cheie de sesiune cifratã (%d)\n"
 #. There is no way to tell the difference here between a bad
 #. passphrase and a cipher algorithm that we don't have.
 #: g10/mainproc.c:263
-#, fuzzy, c-format
+#, c-format
 msgid "bad passphrase or unknown cipher algorithm (%d)\n"
-msgstr "algoritm cifrare necunoscut"
+msgstr "frazã=parolã greºitã sau algoritm cifrare necunoscut (%d)\n"
 
 #: g10/mainproc.c:300
-#, fuzzy, c-format
+#, c-format
 msgid "%s encrypted session key\n"
-msgstr "dimensiune ciudatã pentru o cheie de sesiune cifratã (%d)\n"
+msgstr "%s cheie de sesiune cifratã\n"
 
 #: g10/mainproc.c:302 g10/encr-data.c:66
 #, c-format
@@ -3625,14 +3630,13 @@ msgid "public key decryption failed: %s\n"
 msgstr "decriptarea cu cheie publicã a eºuat: %s\n"
 
 #: g10/mainproc.c:488
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %lu passphrases\n"
-msgstr "Repetaþi fraza-parolã\n"
+msgstr "cifratã cu %lu fraze-parolã\n"
 
 #: g10/mainproc.c:490
-#, fuzzy
 msgid "encrypted with 1 passphrase\n"
-msgstr "Repetaþi fraza-parolã\n"
+msgstr "cifratã cu 1 frazã-parolã\n"
 
 #: g10/mainproc.c:506 g10/mainproc.c:525
 #, c-format
@@ -3692,7 +3696,7 @@ msgid "can't handle these multiple signatures\n"
 msgstr "nu pot mânui aceste semnãturi multiple\n"
 
 #: g10/mainproc.c:1345
-#, fuzzy, c-format
+#, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Semnãtura a fãcut %.*s folosind cheia %s ID %08lX\n"
 
@@ -3701,9 +3705,8 @@ msgstr "Semnãtura a fãcut %.*s folosind cheia %s ID %08lX\n"
 #. page, but "from" if it is located on a keyserver.  I'm
 #. not going to even try to make two strings here :)
 #: g10/mainproc.c:1368
-#, fuzzy
 msgid "Key available at: "
-msgstr "Nici un ajutor disponibil"
+msgstr "Cheie disponibilã la: "
 
 #: g10/mainproc.c:1417 g10/mainproc.c:1450
 msgid "BAD signature from \""
@@ -3817,9 +3820,8 @@ msgid "please use \"%s%s\" instead\n"
 msgstr "vã rugãm folosiþi \"%s%s\" în loc\n"
 
 #: g10/misc.c:550
-#, fuzzy
 msgid "Uncompressed"
-msgstr "neprocesat"
+msgstr "Necompresat"
 
 #: g10/misc.c:628
 #, c-format
@@ -3834,6 +3836,8 @@ msgstr "nu pot mânui algoritmul cu cheie publicã %d\n"
 #: g10/parse-packet.c:690
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
+"AVERTISMENT: cheie de sesiune cifratã simetric potenþial nesigurã "
+"(insecure)\n"
 
 #: g10/parse-packet.c:1096
 #, c-format
@@ -4037,7 +4041,7 @@ msgstr "a eºuat trimiterea la `%s': stare=%u\n"
 
 #: g10/hkp.c:369
 msgid "this keyserver does not support --search-keys\n"
-msgstr ""
+msgstr "acest sercer de chei nu suportã --search-keys\n"
 
 #: g10/hkp.c:519
 #, c-format
@@ -4136,9 +4140,9 @@ msgid "key %08lX: no subkey for subkey revocation packet\n"
 msgstr "cheia %08lX: nici o subcheie pentru pachetul de revocare a subcheii\n"
 
 #: g10/sig-check.c:588
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no subkey for subkey binding signature\n"
-msgstr "cheia %08lX: nici o subcheie legatã de cheie\n"
+msgstr "cheia %08lX: nici o subcheie pentru semnare legatã de cheie\n"
 
 #: g10/sign.c:84
 msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
@@ -4224,12 +4228,12 @@ msgstr "nu pot mânui linii de text mai lungi de %d caractere\n"
 msgid "input line longer than %d characters\n"
 msgstr "linii de intrare mai lungi de %d caractere\n"
 
-#: g10/tdbio.c:128 g10/tdbio.c:1411
+#: g10/tdbio.c:128 g10/tdbio.c:1410
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek a eºuat: %s\n"
 
-#: g10/tdbio.c:134 g10/tdbio.c:1418
+#: g10/tdbio.c:134 g10/tdbio.c:1417
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: scrierea a eºuat (n=%d): %s\n"
@@ -4298,7 +4302,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: eroare actualizare înregistrare versiune: %s\n"
 
 #: g10/tdbio.c:638 g10/tdbio.c:674 g10/tdbio.c:688 g10/tdbio.c:724
-#: g10/tdbio.c:1344 g10/tdbio.c:1371
+#: g10/tdbio.c:1343 g10/tdbio.c:1370
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: eroare citire înregistrare versiune: %s\n"
@@ -4308,52 +4312,52 @@ msgstr "%s: eroare citire înregistrare versiune: %s\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: eroare scriere înregistrare versiune: %s\n"
 
-#: g10/tdbio.c:1142
+#: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "trustdb: lseek a eºuat: %s\n"
 
-#: g10/tdbio.c:1150
+#: g10/tdbio.c:1149
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "trustdb: citirea a eºuat (n=%d): %s\n"
 
-#: g10/tdbio.c:1171
+#: g10/tdbio.c:1170
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: nu e un fiºier trustdb\n"
 
-#: g10/tdbio.c:1189
+#: g10/tdbio.c:1188
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: înregistrare versiune cu recnum %lu\n"
 
-#: g10/tdbio.c:1194
+#: g10/tdbio.c:1193
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: versiune fiºier invalidã %d\n"
 
-#: g10/tdbio.c:1377
+#: g10/tdbio.c:1376
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: eroare citire înregistrare liberã: %s\n"
 
-#: g10/tdbio.c:1385
+#: g10/tdbio.c:1384
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: eroare scriere înregistrare dir: %s\n"
 
-#: g10/tdbio.c:1395
+#: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: eroare setere la zero a înregistrãrii: %s\n"
 
-#: g10/tdbio.c:1425
+#: g10/tdbio.c:1424
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: adãugarea unei înregistrãri a eºuat: %s\n"
 
-#: g10/tdbio.c:1470
+#: g10/tdbio.c:1469
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "trustdb este coruptã; rulaþi \"gpg --fix-trustdb\".\n"
 
@@ -4427,12 +4431,12 @@ msgstr "cheia publicã %08lX nu a fost gãsitã: %s\n"
 #: g10/trustdb.c:1200
 #, c-format
 msgid "signature from Elgamal signing key %08lX to %08lX skipped\n"
-msgstr ""
+msgstr "semnãturã de la cheia de semnare Elgamal %08lX la %08lX sãritã\n"
 
 #: g10/trustdb.c:1208
 #, c-format
 msgid "signature from %08lX to Elgamal signing key %08lX skipped\n"
-msgstr ""
+msgstr "semnãturã de la %08lX la cheia de semnare Elgamal %08lX sãritã\n"
 
 #: g10/trustdb.c:1605
 #, c-format
@@ -5290,31 +5294,3 @@ msgstr "eroare gãsire înregistrare încredere: %s\n"
 #, c-format
 msgid "read error: %s\n"
 msgstr "eroare citire: %s\n"
-
-#, fuzzy
-#~ msgid "quit|quit"
-#~ msgstr "terminã"
-
-#~ msgid "   (%d) ElGamal (sign and encrypt)\n"
-#~ msgstr "   (%d) ElGamal (semnãturã ºi cifrare)\n"
-
-#~ msgid ""
-#~ "The use of this algorithm is only supported by GnuPG.  You will not be\n"
-#~ "able to use this key to communicate with PGP users.  This algorithm is "
-#~ "also\n"
-#~ "very slow, and may not be as secure as the other choices.\n"
-#~ msgstr ""
-#~ "Folosirea acestui algoritm este suportatã numai de GnuPG.  Nu veþi putea\n"
-#~ "folosi aceastã cheie pentru a comunica cu alþi utilizatori PGP.  Mai "
-#~ "mult,\n"
-#~ "acest algoritm este foarte lent ºi ar putea fi mai puþin sigur decât\n"
-#~ "celelalte opþiuni.\n"
-
-#~ msgid "Create anyway? "
-#~ msgstr "Creaþi oricum? "
-
-#~ msgid "invalid symkey algorithm detected (%d)\n"
-#~ msgstr "am detectat un algoritm symkey invalid (%d)\n"
-
-#~ msgid "this keyserver is not fully HKP compatible\n"
-#~ msgstr "acest server de chei nu este în totalitate compatibil cu HKP\n"

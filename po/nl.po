@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2003-12-03 16:04+0100\n"
+"POT-Creation-Date: 2003-12-23 19:22+0100\n"
 "PO-Revision-Date: 2003-12-03 16:10+0100\n"
 "Last-Translator: Ivo Timmermans <itimmermans@bigfoot.com>\n"
 "Language-Team: Dutch <nl@li.org>\n"
@@ -2147,27 +2147,27 @@ msgstr "te veel ingangen in de pk cache - uitgezet\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2600
+#: g10/getkey.c:187 g10/getkey.c:2611
 #, fuzzy
 msgid "[User id not found]"
 msgstr "[gebruiker niet gevonden]"
 
-#: g10/getkey.c:1582
+#: g10/getkey.c:1590
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 
-#: g10/getkey.c:2088
+#: g10/getkey.c:2099
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr "er is een geheime sleutel voor deze openbare sleutel!\n"
 
-#: g10/getkey.c:2316
+#: g10/getkey.c:2327
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "gebruik secundaire sleutel %08lx in plaats van de primaire %08lx\n"
 
-#: g10/getkey.c:2363
+#: g10/getkey.c:2374
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr ""
@@ -4285,12 +4285,12 @@ msgid "input line longer than %d characters\n"
 msgstr "invoerregel langer dan %d tekens\n"
 
 # Untranslated.
-#: g10/tdbio.c:128 g10/tdbio.c:1411
+#: g10/tdbio.c:128 g10/tdbio.c:1410
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseed failed: %s\n"
 
-#: g10/tdbio.c:134 g10/tdbio.c:1418
+#: g10/tdbio.c:134 g10/tdbio.c:1417
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: write failed (n=%d): %s\n"
@@ -4359,7 +4359,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: fout bij het bijwerken van versieveld: %s\n"
 
 #: g10/tdbio.c:638 g10/tdbio.c:674 g10/tdbio.c:688 g10/tdbio.c:724
-#: g10/tdbio.c:1344 g10/tdbio.c:1371
+#: g10/tdbio.c:1343 g10/tdbio.c:1370
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: fout bij het lezen van het versieveld: %s\n"
@@ -4369,53 +4369,53 @@ msgstr "%s: fout bij het lezen van het versieveld: %s\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: fout bij het schrijven van het versieveld: %s\n"
 
-#: g10/tdbio.c:1142
+#: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "vertrouwensdatabase: lseek mislukte: %s\n"
 
-#: g10/tdbio.c:1150
+#: g10/tdbio.c:1149
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "vertrouwensdatabase: lezen mislukte (n=%d): %s\n"
 
-#: g10/tdbio.c:1171
+#: g10/tdbio.c:1170
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: is geen vertrouwensdatabasebestand\n"
 
-#: g10/tdbio.c:1189
+#: g10/tdbio.c:1188
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: versieveld met recnr %lu\n"
 
-#: g10/tdbio.c:1194
+#: g10/tdbio.c:1193
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: ongeldige bestandsversie %d\n"
 
-#: g10/tdbio.c:1377
+#: g10/tdbio.c:1376
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: fout bij het lezen van een beschikbaar veld: %s\n"
 
 # dir?
-#: g10/tdbio.c:1385
+#: g10/tdbio.c:1384
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: fout bij het schrijven van indexveld: %s\n"
 
-#: g10/tdbio.c:1395
+#: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: veld met nullen vullen lukte niet: %s\n"
 
-#: g10/tdbio.c:1425
+#: g10/tdbio.c:1424
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: kon geen veld toevoegen: %s\n"
 
-#: g10/tdbio.c:1470
+#: g10/tdbio.c:1469
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
 "de vertrouwensdatabase is beschadigd; draai a.u.b. \"gpg --fix-trustdb\".\n"

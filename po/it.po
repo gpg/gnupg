@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.1.92\n"
-"POT-Creation-Date: 2003-12-03 16:04+0100\n"
-"PO-Revision-Date: 2003-12-03 16:11+0100\n"
+"POT-Creation-Date: 2003-12-23 19:22+0100\n"
+"PO-Revision-Date: 2003-12-03 21:18+0100\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
 "MIME-Version: 1.0\n"
@@ -32,7 +32,7 @@ msgstr "(potresti avere usato il programma sbagliato per questa funzione)\n"
 #. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
 #: util/miscutil.c:297 util/miscutil.c:334
 msgid "yes"
-msgstr "sì"
+msgstr "si|sì"
 
 #: util/miscutil.c:298 util/miscutil.c:339
 msgid "yY"
@@ -368,6 +368,8 @@ msgstr "in questa versione l'algoritmo digest `%s' è in sola lettura\n"
 #, c-format
 msgid "WARNING: digest `%s' is not part of OpenPGP.  Use at your own risk!\n"
 msgstr ""
+"ATTENZIONE: il digest `%s' non fa parte di OpenPGP.\n"
+"Da usare a proprio rischio!\n"
 
 #: cipher/rndegd.c:204
 msgid ""
@@ -382,7 +384,7 @@ msgstr ""
 #: cipher/primegen.c:310
 #, c-format
 msgid "can't generate a prime with less than %d bits\n"
-msgstr ""
+msgstr "impossibile generare un numero primo di meno di %d bit\n"
 
 #: g10/g10.c:313
 msgid ""
@@ -644,11 +646,11 @@ msgstr "modo batch: non fa domande"
 
 #: g10/g10.c:418
 msgid "assume yes on most questions"
-msgstr "assumi \"sì\" per quasi tutte le domande"
+msgstr "risponde \"sì\" a quasi tutte le domande"
 
 #: g10/g10.c:419
 msgid "assume no on most questions"
-msgstr "assumi \"no\" per quasi tutte le domande"
+msgstr "risponde \"no\" a quasi tutte le domande"
 
 #: g10/g10.c:420
 msgid "add this keyring to the list of keyrings"
@@ -966,9 +968,10 @@ msgid "selected certification digest algorithm is invalid\n"
 msgstr "l'algoritmo di digest selezionato non è valido\n"
 
 #: g10/g10.c:1944
-#, fuzzy, c-format
+#, c-format
 msgid "compress algorithm `%s' is read-only in this release\n"
-msgstr "in questa versione l'algoritmo digest `%s' è in sola lettura\n"
+msgstr ""
+"in questa versione l'algoritmo di compressione `%s' è in sola lettura\n"
 
 #: g10/g10.c:1948
 #, c-format
@@ -1016,24 +1019,25 @@ msgid "invalid personal compress preferences\n"
 msgstr "preferenze personali di compressione non valide\n"
 
 #: g10/g10.c:2017
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not yet work with %s\n"
-msgstr "Non ha senso usare %s con %s!\n"
+msgstr "%s non funziona ancora con %s\n"
 
 #: g10/g10.c:2061
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use cipher algorithm \"%s\" while in %s mode\n"
-msgstr "non è possibile usare %s in modalità %s\n"
+msgstr "non è possibile usare l'algoritmo di cifratura \"%s\" in modalità %s\n"
 
 #: g10/g10.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use digest algorithm \"%s\" while in %s mode\n"
-msgstr "non è possibile usare %s in modalità %s\n"
+msgstr "non è possibile usare l'algoritmo di digest \"%s\" in modalità %s\n"
 
 #: g10/g10.c:2071
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use compression algorithm \"%s\" while in %s mode\n"
-msgstr "non è possibile usare %s in modalità %s\n"
+msgstr ""
+"non è possibile usare l'algoritmo di compressione \"%s\" in modalità %s\n"
 
 #: g10/g10.c:2163
 #, c-format
@@ -1108,29 +1112,29 @@ msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [user-id] [portachiavi]"
 
 #: g10/g10.c:2426
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver send failed: %s\n"
-msgstr "Generazione della chiave fallita: %s\n"
+msgstr "invio al keyserver fallito: %s\n"
 
 #: g10/g10.c:2428
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver receive failed: %s\n"
-msgstr "Generazione della chiave fallita: %s\n"
+msgstr "ricezione dal keyserver fallita: %s\n"
 
 #: g10/g10.c:2430
-#, fuzzy, c-format
+#, c-format
 msgid "key export failed: %s\n"
-msgstr "Generazione della chiave fallita: %s\n"
+msgstr "esportazione della chiave fallita: %s\n"
 
 #: g10/g10.c:2441
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver search failed: %s\n"
-msgstr "Generazione della chiave fallita: %s\n"
+msgstr "ricerca nel keyserver fallita: %s\n"
 
 #: g10/g10.c:2451
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver refresh failed: %s\n"
-msgstr "aggiornamento della chiave segreta fallito: %s\n"
+msgstr "aggiornamento del keyserver fallito: %s\n"
 
 #: g10/g10.c:2492
 #, c-format
@@ -1981,7 +1985,7 @@ msgstr ""
 
 #: g10/keygen.c:2369
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
-msgstr "NB: la creazione di sottochiavi per chiavi v3 non rispetta OpenPGP.\n"
+msgstr "NB: la creazione di subchiavi per chiavi v3 non rispetta OpenPGP.\n"
 
 #: g10/keygen.c:2398
 msgid "Really create? "
@@ -2088,7 +2092,7 @@ msgstr "chiave %08lX: chiave in stile PGP 2.x - saltata\n"
 #: g10/export.c:284
 #, c-format
 msgid "WARNING: secret key %08lX does not have a simple SK checksum\n"
-msgstr ""
+msgstr "ATTENZIONE: la chiave segreta %08lX non ha un checksum SK semplice\n"
 
 #: g10/export.c:310
 msgid "WARNING: nothing exported\n"
@@ -2100,26 +2104,27 @@ msgstr "troppe voci nella pk cache - disabilitata\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2600
+#: g10/getkey.c:187 g10/getkey.c:2611
 msgid "[User id not found]"
 msgstr "[User ID non trovato]"
 
-#: g10/getkey.c:1582
+#: g10/getkey.c:1590
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr "Chiave %08lX non valida resa valida da --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2088
-#, fuzzy, c-format
+#: g10/getkey.c:2099
+#, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
-msgstr "c'è una chiave segreta per la chiave pubblica \"%s\"!\n"
+msgstr ""
+"manca una subchiave segreta per la subchiave pubblica %08lX - ignorata\n"
 
-#: g10/getkey.c:2316
+#: g10/getkey.c:2327
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "uso la chiave secondaria %08lX invece della chiave primaria %08lX\n"
 
-#: g10/getkey.c:2363
+#: g10/getkey.c:2374
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "chiave %08lX: chiave segreta senza chiave pubblica - saltata\n"
@@ -2218,7 +2223,7 @@ msgstr "chiave %08lX: nessun user ID\n"
 #: g10/import.c:587
 #, c-format
 msgid "key %08lX: HKP subkey corruption repaired\n"
-msgstr "chiave %08lX: riparati i danni di HKP alla sottochiave\n"
+msgstr "chiave %08lX: riparati i danni di HKP alla subchiave\n"
 
 #: g10/import.c:602
 #, c-format
@@ -2436,7 +2441,7 @@ msgstr "chiave %08lX: certificato di revoca non valido: %s - saltata\n"
 #: g10/import.c:1262
 #, c-format
 msgid "key %08lX: subkey signature in wrong place - skipped\n"
-msgstr "chiave %08lX: firma della sottochiave nel posto sbagliato - saltata\n"
+msgstr "chiave %08lX: firma della subchiave nel posto sbagliato - saltata\n"
 
 #: g10/import.c:1270
 #, c-format
@@ -2532,14 +2537,14 @@ msgid "  Unable to sign.\n"
 msgstr "  Impossibile firmarla.\n"
 
 #: g10/keyedit.c:382
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is expired."
-msgstr "L'user ID \"%s\" è stato revocato."
+msgstr "L'user ID \"%s\" è scaduto."
 
 #: g10/keyedit.c:402
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is not self-signed."
-msgstr "ATTENZIONE: l'user ID \"%s\" non è autofirmato.\n"
+msgstr "L'user ID \"%s\" non è autofirmato."
 
 #: g10/keyedit.c:437
 #, c-format
@@ -2662,7 +2667,7 @@ msgstr "   (3) L'ho controllata molto attentamente.%s\n"
 
 #: g10/keyedit.c:652
 msgid "Your selection? (enter '?' for more information): "
-msgstr ""
+msgstr "Cosa scegli? (inserisci '?' per ulteriori informazioni): "
 
 #: g10/keyedit.c:672
 msgid ""
@@ -3252,14 +3257,12 @@ msgid "rev? problem checking revocation: %s\n"
 msgstr "rev? problema controllando la revoca: %s\n"
 
 #: g10/keyedit.c:1959
-#, fuzzy
 msgid "[revoked] "
-msgstr "revkey"
+msgstr "[revocata]"
 
 #: g10/keyedit.c:1961
-#, fuzzy
 msgid "[expired] "
-msgstr "expire"
+msgstr "[scaduta]"
 
 #: g10/keyedit.c:1969
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
@@ -3279,6 +3282,9 @@ msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
+"ATTENZIONE: nessun user ID è stato indicato come primario. Questo comando\n"
+"            potrebbe fare diventare un altro user ID il primario "
+"predefinito.\n"
 
 #: g10/keyedit.c:2168
 msgid ""
@@ -3362,17 +3368,16 @@ msgstr ""
 "impossibile nominare una chiave come revocatore designato di sè stessa\n"
 
 #: g10/keyedit.c:2525
-#, fuzzy
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
-"impossibile nominare una chiave come revocatore designato di sè stessa\n"
+"ATTENZIONE: la nomina di una chiave a revocatrice designata non può essere\n"
+"annullata.\n"
 
 #: g10/keyedit.c:2531
-#, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N): "
 msgstr ""
-"impossibile nominare una chiave come revocatore designato di sè stessa\n"
+"Sei sicuro di volere nominare questa chiave revocatrice designata? (s/N):"
 
 #: g10/keyedit.c:2596
 msgid "Please remove selections from the secret keys.\n"
@@ -3551,7 +3556,7 @@ msgstr "Impronta digitale della chiave primaria:"
 
 #: g10/keylist.c:1050
 msgid "     Subkey fingerprint:"
-msgstr "    Impronta digitale della sottochiave:"
+msgstr "    Impronta digitale della subchiave:"
 
 #: g10/keylist.c:1057
 msgid " Primary key fingerprint:"
@@ -3559,7 +3564,7 @@ msgstr " Impronta digitale della chiave primaria:"
 
 #: g10/keylist.c:1059
 msgid "      Subkey fingerprint:"
-msgstr "     Impronta digitale della sottochiave:"
+msgstr "     Impronta digitale della subchiave:"
 
 #. use tty
 #: g10/keylist.c:1063 g10/keylist.c:1067
@@ -3574,14 +3579,14 @@ msgstr "la chiave di sessione cifrata ha dimensioni strane (%d)\n"
 #. There is no way to tell the difference here between a bad
 #. passphrase and a cipher algorithm that we don't have.
 #: g10/mainproc.c:263
-#, fuzzy, c-format
+#, c-format
 msgid "bad passphrase or unknown cipher algorithm (%d)\n"
-msgstr "algoritmo di cifratura sconosciuto"
+msgstr "passphrase errata o algoritmo di cifratura sconosciuto (%d)\n"
 
 #: g10/mainproc.c:300
-#, fuzzy, c-format
+#, c-format
 msgid "%s encrypted session key\n"
-msgstr "la chiave di sessione cifrata ha dimensioni strane (%d)\n"
+msgstr "chiave di sessione cifrata con %s\n"
 
 #: g10/mainproc.c:302 g10/encr-data.c:66
 #, c-format
@@ -3618,14 +3623,13 @@ msgid "public key decryption failed: %s\n"
 msgstr "decifratura della chiave pubblica fallita: %s\n"
 
 #: g10/mainproc.c:488
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %lu passphrases\n"
-msgstr "Ripeti la passphrase\n"
+msgstr "cifratto con %lu passphrase\n"
 
 #: g10/mainproc.c:490
-#, fuzzy
 msgid "encrypted with 1 passphrase\n"
-msgstr "Ripeti la passphrase\n"
+msgstr "cifratto con 1 passphrase\n"
 
 #: g10/mainproc.c:506 g10/mainproc.c:525
 #, c-format
@@ -3685,18 +3689,17 @@ msgid "can't handle these multiple signatures\n"
 msgstr "impossibile gestire queste firme multiple\n"
 
 #: g10/mainproc.c:1345
-#, fuzzy, c-format
+#, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
-msgstr "Firma fatta %.*s usando la chiave %s con ID %08lX\n"
+msgstr "Firma fatta %.*s usando %s con ID %08lX\n"
 
 #. According to my favorite copy editor, in English
 #. grammar, you say "at" if the key is located on a web
 #. page, but "from" if it is located on a keyserver.  I'm
 #. not going to even try to make two strings here :)
 #: g10/mainproc.c:1368
-#, fuzzy
 msgid "Key available at: "
-msgstr "Non è disponibile un aiuto"
+msgstr "Chiave disponibile presso: "
 
 #: g10/mainproc.c:1417 g10/mainproc.c:1450
 msgid "BAD signature from \""
@@ -3715,33 +3718,31 @@ msgid "[uncertain]"
 msgstr "[incerta]"
 
 #: g10/mainproc.c:1553
-#, fuzzy, c-format
+#, c-format
 msgid "Signature expired %s\n"
-msgstr "Questa chiave è scaduta il %s.\n"
+msgstr "Firma scaduta il %s\n"
 
 #: g10/mainproc.c:1558
-#, fuzzy, c-format
+#, c-format
 msgid "Signature expires %s\n"
-msgstr "Questa chiave è scaduta il %s.\n"
+msgstr "Questa firma scadrà il %s\n"
 
 #: g10/mainproc.c:1561
-#, fuzzy, c-format
+#, c-format
 msgid "%s signature, digest algorithm %s\n"
-msgstr "Firma %s da: \"%s\"\n"
+msgstr "Firma %s, algoritmo di digest %s\n"
 
 #: g10/mainproc.c:1562
-#, fuzzy
 msgid "binary"
-msgstr "primary"
+msgstr "binario"
 
 #: g10/mainproc.c:1563
 msgid "textmode"
-msgstr ""
+msgstr "modo testo"
 
 #: g10/mainproc.c:1563
-#, fuzzy
 msgid "unknown"
-msgstr "versione sconosciuta"
+msgstr "sconosciuto"
 
 #: g10/mainproc.c:1583
 #, c-format
@@ -3809,11 +3810,9 @@ msgstr "ATTENZIONE: \"%s\" è una opzione deprecata\n"
 msgid "please use \"%s%s\" instead\n"
 msgstr "usa al suo posto \"%s%s\"\n"
 
-# ??? (Md)
 #: g10/misc.c:550
-#, fuzzy
 msgid "Uncompressed"
-msgstr "non esaminato"
+msgstr "Non compresso"
 
 #: g10/misc.c:628
 #, c-format
@@ -3828,6 +3827,8 @@ msgstr "impossibile gestire l'algoritmo a chiave pubblica %d\n"
 #: g10/parse-packet.c:690
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
+"ATTENZIONE: la chiave di sessione cifrata simmetricamente è potenzialmente\n"
+"non sicura\n"
 
 #: g10/parse-packet.c:1096
 #, c-format
@@ -4031,7 +4032,7 @@ msgstr "invio a `%s' fallito: status=%u\n"
 
 #: g10/hkp.c:369
 msgid "this keyserver does not support --search-keys\n"
-msgstr ""
+msgstr "questo keyserver non gestisce --search-keys\n"
 
 #: g10/hkp.c:519
 #, c-format
@@ -4134,21 +4135,20 @@ msgstr ""
 "subchiave\n"
 
 #: g10/sig-check.c:588
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no subkey for subkey binding signature\n"
-msgstr "chiave %08lX: non ci sono subchiavi per il legame con la chiave\n"
+msgstr ""
+"chiave %08lX: non c'è una subchiave per la firma di collegamento della "
+"subchiave\n"
 
 #: g10/sign.c:84
-#, fuzzy
 msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
-msgstr ""
-"impossibile nominare come revocatore designato una chiave in stile PGP 2.x\n"
+msgstr "impossibile inserire notation data nelle firme v3 (stile PGP 2.x)\n"
 
 #: g10/sign.c:92
-#, fuzzy
 msgid "can't put notation data into v3 (PGP 2.x style) key signatures\n"
 msgstr ""
-"impossibile nominare come revocatore designato una chiave in stile PGP 2.x\n"
+"impossibile inserire notation data nelle firme di chiavi v3 (stile PGP 2.x)\n"
 
 #: g10/sign.c:111
 #, c-format
@@ -4158,14 +4158,15 @@ msgstr ""
 "inespansa.\n"
 
 #: g10/sign.c:137
-#, fuzzy
 msgid "can't put a policy URL into v3 (PGP 2.x style) signatures\n"
 msgstr ""
-"impossibile nominare come revocatore designato una chiave in stile PGP 2.x\n"
+"impossibile inserire l'URL di una policy nelle firme v3 (stile PGP 2.x)\n"
 
 #: g10/sign.c:145
 msgid "can't put a policy URL into v3 key (PGP 2.x style) signatures\n"
 msgstr ""
+"impossibile inserire l'URL di una policy nelle firme di chiavi v3 (stile\n"
+"PGP 2.x)\n"
 
 #: g10/sign.c:158
 #, c-format
@@ -4232,12 +4233,12 @@ msgstr "impossibile gestire linee di testo più lunghe di %d caratteri\n"
 msgid "input line longer than %d characters\n"
 msgstr "linea di input più lunga di %d caratteri\n"
 
-#: g10/tdbio.c:128 g10/tdbio.c:1411
+#: g10/tdbio.c:128 g10/tdbio.c:1410
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek fallita: %s\n"
 
-#: g10/tdbio.c:134 g10/tdbio.c:1418
+#: g10/tdbio.c:134 g10/tdbio.c:1417
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: scrittura fallita (n=%d): %s\n"
@@ -4306,7 +4307,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: errore durante l'aggiornamento del record di versione: %s\n"
 
 #: g10/tdbio.c:638 g10/tdbio.c:674 g10/tdbio.c:688 g10/tdbio.c:724
-#: g10/tdbio.c:1344 g10/tdbio.c:1371
+#: g10/tdbio.c:1343 g10/tdbio.c:1370
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: errore durante la lettura del record di versione: %s\n"
@@ -4316,52 +4317,52 @@ msgstr "%s: errore durante la lettura del record di versione: %s\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: errore durante la scrittura del record di versione: %s\n"
 
-#: g10/tdbio.c:1142
+#: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "trustdb: lseek fallita: %s\n"
 
-#: g10/tdbio.c:1150
+#: g10/tdbio.c:1149
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "trustdb: read fallita (n=%d): %s\n"
 
-#: g10/tdbio.c:1171
+#: g10/tdbio.c:1170
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: non è un file di trustdb\n"
 
-#: g10/tdbio.c:1189
+#: g10/tdbio.c:1188
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: record di versione con recnum %lu\n"
 
-#: g10/tdbio.c:1194
+#: g10/tdbio.c:1193
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: versione %d del file non valida\n"
 
-#: g10/tdbio.c:1377
+#: g10/tdbio.c:1376
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: errore durante la lettura del record libero: %s\n"
 
-#: g10/tdbio.c:1385
+#: g10/tdbio.c:1384
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: errore durante la scrittura del dir record: %s\n"
 
-#: g10/tdbio.c:1395
+#: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: azzeramento di un record fallito: %s\n"
 
-#: g10/tdbio.c:1425
+#: g10/tdbio.c:1424
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: accodatura a un record fallita: %s\n"
 
-#: g10/tdbio.c:1470
+#: g10/tdbio.c:1469
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "Il trustdb è danneggiato; eseguire \"gpg --fix-trust-db\".\n"
 
@@ -4422,7 +4423,7 @@ msgstr "il prossimoi controllo del trustdb sarà fatto il %s\n"
 
 #: g10/trustdb.c:835
 msgid "please do a --check-trustdb\n"
-msgstr ""
+msgstr "per favore usa --check-trustdb\n"
 
 #: g10/trustdb.c:839
 msgid "checking the trustdb\n"
@@ -4436,22 +4437,21 @@ msgstr "chiave pubblica %08lX non trovata: %s\n"
 #: g10/trustdb.c:1200
 #, c-format
 msgid "signature from Elgamal signing key %08lX to %08lX skipped\n"
-msgstr ""
+msgstr "ignorata la firma dalla chiave per firme Elgamal %08lX a %08lX\n"
 
 #: g10/trustdb.c:1208
 #, c-format
 msgid "signature from %08lX to Elgamal signing key %08lX skipped\n"
-msgstr ""
+msgstr "ignorata la firma da %08lX alla chiave per firme Elgamal %08lX\n"
 
 #: g10/trustdb.c:1605
 #, c-format
 msgid "%d keys processed (%d validity counts cleared)\n"
-msgstr ""
+msgstr "%d chiavi processate (%d conteggi di validità azzerati)\n"
 
 #: g10/trustdb.c:1663
-#, fuzzy
 msgid "no ultimately trusted keys found\n"
-msgstr "chiave pubblica definitivamente affidabile %08lX non trovata\n"
+msgstr "non è stata trovata alcuna chiave definitivamente affidabile\n"
 
 #: g10/trustdb.c:1677
 #, c-format
@@ -5086,9 +5086,8 @@ msgid "Is this photo correct (y/N/q)? "
 msgstr "Questa foto è giusta? (s/N/q) "
 
 #: g10/photoid.c:331
-#, fuzzy
 msgid "unable to display photo ID!\n"
-msgstr "impossibile impostare exec-path a %s\n"
+msgstr "impossibile mostrare l'ID fotografico\n"
 
 #: g10/exec.c:48
 msgid "no remote program execution supported\n"
@@ -5313,31 +5312,3 @@ msgstr "errore cercando il record della fiducia: %s\n"
 #, c-format
 msgid "read error: %s\n"
 msgstr "errore di lettura: %s\n"
-
-#, fuzzy
-#~ msgid "quit|quit"
-#~ msgstr "quit"
-
-#~ msgid "   (%d) ElGamal (sign and encrypt)\n"
-#~ msgstr "   (%d) ElGamal (firma e cifra)\n"
-
-#~ msgid ""
-#~ "The use of this algorithm is only supported by GnuPG.  You will not be\n"
-#~ "able to use this key to communicate with PGP users.  This algorithm is "
-#~ "also\n"
-#~ "very slow, and may not be as secure as the other choices.\n"
-#~ msgstr ""
-#~ "L'uso di questo algoritmo è gestito solo da GnuPG. Non sarà possibile "
-#~ "usare\n"
-#~ "questa chiave per comunicare con utenti di PGP. Inoltre questo algoritmo "
-#~ "è\n"
-#~ "molto lento e potrebbe non essere sicuro come gli altri.\n"
-
-#~ msgid "Create anyway? "
-#~ msgstr "La creo lo stesso? "
-
-#~ msgid "invalid symkey algorithm detected (%d)\n"
-#~ msgstr "trovato un algoritmo della simkey non valido (%d)\n"
-
-#~ msgid "this keyserver is not fully HKP compatible\n"
-#~ msgstr "questo keyserver non è completamente compatibile con HKP\n"

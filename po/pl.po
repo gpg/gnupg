@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.2.2\n"
-"POT-Creation-Date: 2003-12-03 16:04+0100\n"
+"POT-Creation-Date: 2003-12-23 19:22+0100\n"
 "PO-Revision-Date: 2003-06-19 18:58+0200\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -2123,27 +2123,27 @@ msgstr "zbyt wiele wpisów w buforze kluczy publicznych - wy³±czony\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2600
+#: g10/getkey.c:187 g10/getkey.c:2611
 msgid "[User id not found]"
 msgstr "[brak identyfikatora u¿ytkownika]"
 
-#: g10/getkey.c:1582
+#: g10/getkey.c:1590
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Opcja --allow-non-selfsigned-uid wymusi³a uznanie za poprawny klucza %08lX.\n"
 
-#: g10/getkey.c:2088
+#: g10/getkey.c:2099
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr "brak prywatnego odpowiednika podklucza publicznego %08lX - pominiêty\n"
 
-#: g10/getkey.c:2316
+#: g10/getkey.c:2327
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "u¿ywany jest podklucz %08lX zamiast klucza g³ównego %08lX\n"
 
-#: g10/getkey.c:2363
+#: g10/getkey.c:2374
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "klucz %08lX: klucz tajny bez klucza jawnego - pominiêty\n"
@@ -4236,12 +4236,12 @@ msgstr "nie mo¿na obs³u¿yæ linii tekstu d³u¿szej ni¿ %d znaków\n"
 msgid "input line longer than %d characters\n"
 msgstr "linia d³u¿sza ni¿ %d znaków\n"
 
-#: g10/tdbio.c:128 g10/tdbio.c:1411
+#: g10/tdbio.c:128 g10/tdbio.c:1410
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "baza zaufania, wpis %lu: funkcja lseek() nie powiod³a siê: %s\n"
 
-#: g10/tdbio.c:134 g10/tdbio.c:1418
+#: g10/tdbio.c:134 g10/tdbio.c:1417
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "baza zaufania, wpis %lu: zapis nie powiód³ siê (n=%d): %s\n"
@@ -4310,7 +4310,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: b³±d przy uaktualnianiu numeru wersji: %s\n"
 
 #: g10/tdbio.c:638 g10/tdbio.c:674 g10/tdbio.c:688 g10/tdbio.c:724
-#: g10/tdbio.c:1344 g10/tdbio.c:1371
+#: g10/tdbio.c:1343 g10/tdbio.c:1370
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: b³±d odczytu numeru wersji: %s\n"
@@ -4320,52 +4320,52 @@ msgstr "%s: b³±d odczytu numeru wersji: %s\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: b³±d zapisu numeru wersji: %s\n"
 
-#: g10/tdbio.c:1142
+#: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "baza zaufania: funkcja lseek() zawiod³a: %s\n"
 
-#: g10/tdbio.c:1150
+#: g10/tdbio.c:1149
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "baza zaufania: funkcja read() (n=%d) zawiod³a: %s\n"
 
-#: g10/tdbio.c:1171
+#: g10/tdbio.c:1170
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: to nie jest plik bazy zaufania\n"
 
-#: g10/tdbio.c:1189
+#: g10/tdbio.c:1188
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: wpis wersji z numerem %lu\n"
 
-#: g10/tdbio.c:1194
+#: g10/tdbio.c:1193
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: niew³a¶ciwa wersja pliku %d\n"
 
-#: g10/tdbio.c:1377
+#: g10/tdbio.c:1376
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: b³±d odczytu pustego wpisu: %s\n"
 
-#: g10/tdbio.c:1385
+#: g10/tdbio.c:1384
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: b³±d zapisu wpisu katalogowego: %s\n"
 
-#: g10/tdbio.c:1395
+#: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: zerowanie rekordu nie powiod³o siê: %s\n"
 
-#: g10/tdbio.c:1425
+#: g10/tdbio.c:1424
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: dopisanie rekordu nie powiod³o siê: %s\n"
 
-#: g10/tdbio.c:1470
+#: g10/tdbio.c:1469
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
 "Baza zaufania jest uszkodzona; proszê uruchomiæ ,,gpg --fix-trustdb''.\n"

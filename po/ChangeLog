@@ -1,3 +1,8 @@
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	* ru.po, it.po, et.po, ro.po, id.po, gl.po, es.po, el.po, ca.po
+	* hu.po, cs.po, sk.po, ja.po, tr.po, fr.po: Updated from upstream.
+
 2003-12-03  Werner Koch  <wk@gnupg.org>
 
 	* zh_TW.po, fi.po: Updated from upstream.

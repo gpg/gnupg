@@ -1,12 +1,12 @@
 # Estonian translations for gnupg.
 # Copyright (C) 2001, 2002 Free Software Foundation, Inc.
-# Toomas Soome <tsoome@ut.ee>, 2002.
+# Toomas Soome <Toomas.Soome@microlink.ee>, 2003.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
-"POT-Creation-Date: 2003-12-03 16:04+0100\n"
-"PO-Revision-Date: 2003-05-18 18:13+0300\n"
+"POT-Creation-Date: 2003-12-23 19:22+0100\n"
+"PO-Revision-Date: 2003-12-03 23:00+0200\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -31,7 +31,6 @@ msgstr "(te kasutasite vahest selle töö jaoks valet programmi)\n"
 
 #. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
 #: util/miscutil.c:297 util/miscutil.c:334
-#, fuzzy
 msgid "yes"
 msgstr "jah"
 
@@ -365,6 +364,7 @@ msgstr "sõnumilühendi algoritm `%s' ei ole selles versioonis muudetav\n"
 #, c-format
 msgid "WARNING: digest `%s' is not part of OpenPGP.  Use at your own risk!\n"
 msgstr ""
+"HOIATUS: sõnumilühend `%s' ei ole OpenPGP osa.  Kasutamine omal vastutusel!\n"
 
 #: cipher/rndegd.c:204
 msgid ""
@@ -378,7 +378,7 @@ msgstr ""
 #: cipher/primegen.c:310
 #, c-format
 msgid "can't generate a prime with less than %d bits\n"
-msgstr ""
+msgstr "vähem kui %d bitiga ei saa algarvu genereerida\n"
 
 #: g10/g10.c:313
 msgid ""
@@ -956,9 +956,9 @@ msgid "selected certification digest algorithm is invalid\n"
 msgstr "valitud sertifikaadi lühendi algoritm ei ole lubatud\n"
 
 #: g10/g10.c:1944
-#, fuzzy, c-format
+#, c-format
 msgid "compress algorithm `%s' is read-only in this release\n"
-msgstr "sõnumilühendi algoritm `%s' ei ole selles versioonis muudetav\n"
+msgstr "pakkimise algoritm `%s' on selles versioonis ainult lugemiseks\n"
 
 #: g10/g10.c:1948
 #, c-format
@@ -1006,24 +1006,24 @@ msgid "invalid personal compress preferences\n"
 msgstr "vigased isikliku pakkimise eelistused\n"
 
 #: g10/g10.c:2017
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not yet work with %s\n"
-msgstr "%s ja %s ei oma koos mõtet!\n"
+msgstr "%s ei tööta veel koos %s-ga\n"
 
 #: g10/g10.c:2061
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use cipher algorithm \"%s\" while in %s mode\n"
-msgstr "%s ei ole moodis %s lubatud.\n"
+msgstr "¨ifri algoritm \"%s\" ei ole moodis %s lubatud\n"
 
 #: g10/g10.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use digest algorithm \"%s\" while in %s mode\n"
-msgstr "%s ei ole moodis %s lubatud.\n"
+msgstr "sõnumilühendi algoritm \"%s\" ei ole moodis %s lubatud\n"
 
 #: g10/g10.c:2071
-#, fuzzy, c-format
+#, c-format
 msgid "you may not use compression algorithm \"%s\" while in %s mode\n"
-msgstr "%s ei ole moodis %s lubatud.\n"
+msgstr "pakkimise algoritm \"%s\" ei ole moodis %s lubatud\n"
 
 #: g10/g10.c:2163
 #, c-format
@@ -1097,29 +1097,29 @@ msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [kasutaja-id] [võtmehoidla]"
 
 #: g10/g10.c:2426
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver send failed: %s\n"
-msgstr "Võtme genereerimine ebaõnnestus: %s\n"
+msgstr "võtmeserverile saatmine ebaõnnestus: %s\n"
 
 #: g10/g10.c:2428
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver receive failed: %s\n"
-msgstr "Võtme genereerimine ebaõnnestus: %s\n"
+msgstr "võtmeserverilt lugemine ebaõnnestus: %s\n"
 
 #: g10/g10.c:2430
-#, fuzzy, c-format
+#, c-format
 msgid "key export failed: %s\n"
-msgstr "Võtme genereerimine ebaõnnestus: %s\n"
+msgstr "võtme eksport ebaõnnestus: %s\n"
 
 #: g10/g10.c:2441
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver search failed: %s\n"
-msgstr "Võtme genereerimine ebaõnnestus: %s\n"
+msgstr "võtmeserveri otsing ebaõnnestus: %s\n"
 
 #: g10/g10.c:2451
-#, fuzzy, c-format
+#, c-format
 msgid "keyserver refresh failed: %s\n"
-msgstr "salajase võtme uuendamine ebaõnnestus: %s\n"
+msgstr "võtmeserveri uuendamine ebaõnnestus: %s\n"
 
 #: g10/g10.c:2492
 #, c-format
@@ -2076,28 +2076,28 @@ msgstr "avalike võtmete puhvris on liiga palju võtmeid - blokeerin\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2600
+#: g10/getkey.c:187 g10/getkey.c:2611
 msgid "[User id not found]"
 msgstr "[Kasutaja id puudub]"
 
-#: g10/getkey.c:1582
+#: g10/getkey.c:1590
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Vigane võti %08lX muudeti kehtivaks võtme --allow-non-selfsigned-uid "
 "kasutamisega\n"
 
-#: g10/getkey.c:2088
+#: g10/getkey.c:2099
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr "avalikul alamvõtmel %08lX puudub salajane alamvõti - ignoreerin\n"
 
-#: g10/getkey.c:2316
+#: g10/getkey.c:2327
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "kasutan sekundaarset võtit %08lX primaarse võtme %08lX asemel\n"
 
-#: g10/getkey.c:2363
+#: g10/getkey.c:2374
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "võti %08lX: salajane võti avaliku võtmeta - jätsin vahele\n"
@@ -2507,14 +2507,14 @@ msgid "  Unable to sign.\n"
 msgstr "  Ei saa allkirjastada.\n"
 
 #: g10/keyedit.c:382
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is expired."
-msgstr "Kasutaja ID \"%s\" on tühistatud."
+msgstr "Kasutaja ID \"%s\" on aegunud."
 
 #: g10/keyedit.c:402
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is not self-signed."
-msgstr "HOIATUS: kasutaja ID \"%s\" pole ise allkirjastatud.\n"
+msgstr "Kasutaja ID \"%s\" ei ole ise allkirjastatud."
 
 #: g10/keyedit.c:437
 #, c-format
@@ -2636,7 +2636,7 @@ msgstr "   (3) Ma olen kontrollinud väga hoolikalt.%s\n"
 
 #: g10/keyedit.c:652
 msgid "Your selection? (enter '?' for more information): "
-msgstr ""
+msgstr "Teie valik? (lisainfo saamiseks vajutage '?'): "
 
 #: g10/keyedit.c:672
 msgid ""
@@ -3250,6 +3250,8 @@ msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
+"HOIATUS: ühtegi kasutaja ID pole märgitud primaarseks.  See käsklus võib\n"
+"              põhjustada muu kasutaja ID primaarseks määramist.\n"
 
 #: g10/keyedit.c:2168
 msgid ""
@@ -3532,14 +3534,14 @@ msgstr "veider suurus krüptitud sessiooni võtme jaoks (%d)\n"
 #. There is no way to tell the difference here between a bad
 #. passphrase and a cipher algorithm that we don't have.
 #: g10/mainproc.c:263
-#, fuzzy, c-format
+#, c-format
 msgid "bad passphrase or unknown cipher algorithm (%d)\n"
-msgstr "tundmatu ¨ifri algoritm"
+msgstr "halb parool või tundmatu ¨ifri algoritm (%d)\n"
 
 #: g10/mainproc.c:300
-#, fuzzy, c-format
+#, c-format
 msgid "%s encrypted session key\n"
-msgstr "veider suurus krüptitud sessiooni võtme jaoks (%d)\n"
+msgstr "%s krüpteeritud sessiooni võti\n"
 
 #: g10/mainproc.c:302 g10/encr-data.c:66
 #, c-format
@@ -3576,14 +3578,13 @@ msgid "public key decryption failed: %s\n"
 msgstr "avaliku võtmega lahtikrüpteerimine ebaõnnestus: %s\n"
 
 #: g10/mainproc.c:488
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %lu passphrases\n"
-msgstr "Korrake parooli\n"
+msgstr "krüpteeritud kasutades %lu parooli\n"
 
 #: g10/mainproc.c:490
-#, fuzzy
 msgid "encrypted with 1 passphrase\n"
-msgstr "Korrake parooli\n"
+msgstr "krüpteeritud ühe parooliga\n"
 
 #: g10/mainproc.c:506 g10/mainproc.c:525
 #, c-format
@@ -3643,7 +3644,7 @@ msgid "can't handle these multiple signatures\n"
 msgstr "neid allkirju ei õnnestu töödelda\n"
 
 #: g10/mainproc.c:1345
-#, fuzzy, c-format
+#, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Allkirja lõi %.*s kasutades %s võtit ID %08lX\n"
 
@@ -3652,9 +3653,8 @@ msgstr "Allkirja lõi %.*s kasutades %s võtit ID %08lX\n"
 #. page, but "from" if it is located on a keyserver.  I'm
 #. not going to even try to make two strings here :)
 #: g10/mainproc.c:1368
-#, fuzzy
 msgid "Key available at: "
-msgstr "Abiinfo puudub"
+msgstr "Võtme leiate: "
 
 #: g10/mainproc.c:1417 g10/mainproc.c:1450
 msgid "BAD signature from \""
@@ -3765,9 +3765,8 @@ msgid "please use \"%s%s\" instead\n"
 msgstr "palun kasutage selle asemel \"%s%s\"\n"
 
 #: g10/misc.c:550
-#, fuzzy
 msgid "Uncompressed"
-msgstr "ei töödeldud"
+msgstr "Pakkimata"
 
 #: g10/misc.c:628
 #, c-format
@@ -3782,6 +3781,8 @@ msgstr "ei oska käsitleda avaliku võtme algoritmi %d\n"
 #: g10/parse-packet.c:690
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
+"HOIATUS: tõenäoliselt ebaturvaline sümmeetriliselt krüpteeritud sessiooni "
+"võti\n"
 
 #: g10/parse-packet.c:1096
 #, c-format
@@ -3983,7 +3984,7 @@ msgstr "teate saatmine serverile `%s' ebaõnnestus: olek=%u\n"
 
 #: g10/hkp.c:369
 msgid "this keyserver does not support --search-keys\n"
-msgstr ""
+msgstr "see võtmeserver ei toeta --search-keys\n"
 
 #: g10/hkp.c:519
 #, c-format
@@ -4075,9 +4076,9 @@ msgid "key %08lX: no subkey for subkey revocation packet\n"
 msgstr "võti %08lX: alamvõtme tühistamise paketile puudub alamvõti\n"
 
 #: g10/sig-check.c:588
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no subkey for subkey binding signature\n"
-msgstr "võti %08lX: võtmeseosel puudub alamvõti\n"
+msgstr "võti %08lX: alamvõtme allkirjaga sidumiseks puudub alamvõti\n"
 
 #: g10/sign.c:84
 msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
@@ -4165,12 +4166,12 @@ msgstr "ei suuda käsitleda tekstiridu mis on pikemad, kui %d sümbolit\n"
 msgid "input line longer than %d characters\n"
 msgstr "sisendrida on pikem, kui %d sümbolit\n"
 
-#: g10/tdbio.c:128 g10/tdbio.c:1411
+#: g10/tdbio.c:128 g10/tdbio.c:1410
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb kirje %lu: lseek ebaõnnestus: %s\n"
 
-#: g10/tdbio.c:134 g10/tdbio.c:1418
+#: g10/tdbio.c:134 g10/tdbio.c:1417
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: write failed (n=%d): %s\n"
@@ -4239,7 +4240,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: viga versioonikirje uuendamisel: %s\n"
 
 #: g10/tdbio.c:638 g10/tdbio.c:674 g10/tdbio.c:688 g10/tdbio.c:724
-#: g10/tdbio.c:1344 g10/tdbio.c:1371
+#: g10/tdbio.c:1343 g10/tdbio.c:1370
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: viga versioonikirje lugemisel: %s\n"
@@ -4249,52 +4250,52 @@ msgstr "%s: viga versioonikirje lugemisel: %s\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: viga versioonikirje kirjutamisel: %s\n"
 
-#: g10/tdbio.c:1142
+#: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "trustdb: lseek ebaõnnestus: %s\n"
 
-#: g10/tdbio.c:1150
+#: g10/tdbio.c:1149
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "trustdb: lugemine ebaõnnestus (n=%d): %s\n"
 
-#: g10/tdbio.c:1171
+#: g10/tdbio.c:1170
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: ei ole trustdb fail\n"
 
-#: g10/tdbio.c:1189
+#: g10/tdbio.c:1188
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: versioonikirje kirje numbriga %lu\n"
 
-#: g10/tdbio.c:1194
+#: g10/tdbio.c:1193
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: vigane faili versioon %d\n"
 
-#: g10/tdbio.c:1377
+#: g10/tdbio.c:1376
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: viga vaba kirje lugemisel: %s\n"
 
-#: g10/tdbio.c:1385
+#: g10/tdbio.c:1384
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: viga kataloogikirje kirjutamisel: %s\n"
 
-#: g10/tdbio.c:1395
+#: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: kirje nullimine ebaõnnestus: %s\n"
 
-#: g10/tdbio.c:1425
+#: g10/tdbio.c:1424
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: kirje lisamine ebaõnnestus: %s\n"
 
-#: g10/tdbio.c:1470
+#: g10/tdbio.c:1469
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "trustdb on vigane; palun käivitage \"gpg --fix-trustdb\".\n"
 
@@ -4368,12 +4369,12 @@ msgstr "ei leia avalikku võtit %08lX: %s\n"
 #: g10/trustdb.c:1200
 #, c-format
 msgid "signature from Elgamal signing key %08lX to %08lX skipped\n"
-msgstr ""
+msgstr "jätsin Elgamal allkirjastamise võtme %08lX allkirja %08lX-le vahele\n"
 
 #: g10/trustdb.c:1208
 #, c-format
 msgid "signature from %08lX to Elgamal signing key %08lX skipped\n"
-msgstr ""
+msgstr "jätsin %08lX allkirja Elgamal allkirjastamise võtmele %08lX vahele\n"
 
 #: g10/trustdb.c:1605
 #, c-format
@@ -5220,67 +5221,3 @@ msgstr "viga usalduse kirje otsimisel: %s\n"
 #, c-format
 msgid "read error: %s\n"
 msgstr "viga lugemisel: %s\n"
-
-#, fuzzy
-#~ msgid "quit|quit"
-#~ msgstr "välju"
-
-#~ msgid "   (%d) ElGamal (sign and encrypt)\n"
-#~ msgstr "   (%d) ElGamal (allkirjastamiseks ja krüptimiseks)\n"
-
-#~ msgid ""
-#~ "The use of this algorithm is only supported by GnuPG.  You will not be\n"
-#~ "able to use this key to communicate with PGP users.  This algorithm is "
-#~ "also\n"
-#~ "very slow, and may not be as secure as the other choices.\n"
-#~ msgstr ""
-#~ "Seda algoritmi saab kasutada ainult GnuPG programmiga. Seda võtit ei saa\n"
-#~ "kasutada suhtlemisel PGP kasutajatega. Lisak on see algoritm väga "
-#~ "aeglane\n"
-#~ "ja ei pruugi olla nii turvaline, kui teised.\n"
-
-#~ msgid "Create anyway? "
-#~ msgstr "Loon ikka? "
-
-#~ msgid "invalid symkey algorithm detected (%d)\n"
-#~ msgstr "tuvastasin vigase sümmeetrilise võtme algoritmi (%d)\n"
-
-#~ msgid "this keyserver is not fully HKP compatible\n"
-#~ msgstr "see võtmeserver pole täiesti HKP ühilduv\n"
-
-#~ msgid "The use of this algorithm is deprecated - create anyway? "
-#~ msgstr "Selle algoritmi kasutamine ei ole soovitatav - loon ikkagi? "
-
-#~ msgid "|NAME=VALUE|use this notation data"
-#~ msgstr "|NIMI=VÄÄRTUS|kasuta neid noteerimise andmeid"
-
-#~ msgid ""
-#~ "the first character of a notation name must be a letter or an underscore\n"
-#~ msgstr "esimene sümbol noteerimise nimes peab olema täht või alakriips\n"
-
-#~ msgid "dots in a notation name must be surrounded by other characters\n"
-#~ msgstr ""
-#~ "punktid noteerimise nimes peavad olema ümbritsetud muude sümbolitega\n"
-
-#~ msgid ""
-#~ "WARNING: This key already has a photo ID.\n"
-#~ "         Adding another photo ID may confuse some versions of PGP.\n"
-#~ msgstr ""
-#~ "HOIATUS: Selles võtmes on foto ID. Järgmise foto ID lisamine võib\n"
-#~ "         tekitada mõningates PGP versioonides segadust.\n"
-
-#~ msgid "You may only have one photo ID on a key.\n"
-#~ msgstr "Võtmega võib olla seotud ainult üks foto ID.\n"
-
-#~ msgid "Fingerprint:"
-#~ msgstr "Sõrmejälg:"
-
-#~ msgid "             Fingerprint:"
-#~ msgstr "               Sõrmejälg:"
-
-#~ msgid "you have to start GnuPG again, so it can read the new options file\n"
-#~ msgstr ""
-#~ "te peate GnuPG uuesti käivitama, siis võetakse uued võtmed arvesse\n"
-
-#~ msgid "changing permission of  `%s' failed: %s\n"
-#~ msgstr "`%s' õiguste muutmine ebaõnnestus: %s\n"

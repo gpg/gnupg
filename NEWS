@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.2.4 (unreleased)
+Noteworthy changes in version 1.2.4 (2003-12-23)
 ------------------------------------------------
 
     * Added read-only support for BZIP2 compression.  This should be

@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.2.2\n"
-"POT-Creation-Date: 2003-12-03 16:04+0100\n"
+"POT-Creation-Date: 2003-12-23 19:22+0100\n"
 "PO-Revision-Date: 2003-12-03 16:09+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -2126,29 +2126,29 @@ msgstr "zu viele Einträge im pk-Cache - abgeschaltet\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2600
+#: g10/getkey.c:187 g10/getkey.c:2611
 msgid "[User id not found]"
 msgstr "[User-ID nicht gefunden]"
 
-#: g10/getkey.c:1582
+#: g10/getkey.c:1590
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Ungültiger Schlüssel %08lX, gültig gemacht per --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2088
+#: g10/getkey.c:2099
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
 msgstr ""
 "Kein privater Schlüssel zum öffentlichen Schlüssel %08lX - übergangen\n"
 
-#: g10/getkey.c:2316
+#: g10/getkey.c:2327
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "der Zweitschlüssel %08lX wird anstelle des Hauptschlüssels %08lX verwendet\n"
 
-#: g10/getkey.c:2363
+#: g10/getkey.c:2374
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr ""
@@ -4289,12 +4289,12 @@ msgstr "Textzeilen länger als %d Zeichen können nicht benutzt werden\n"
 msgid "input line longer than %d characters\n"
 msgstr "Eingabezeile ist länger als %d Zeichen\n"
 
-#: g10/tdbio.c:128 g10/tdbio.c:1411
+#: g10/tdbio.c:128 g10/tdbio.c:1410
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb Satz %lu: lseek fehlgeschlagen: %s\n"
 
-#: g10/tdbio.c:134 g10/tdbio.c:1418
+#: g10/tdbio.c:134 g10/tdbio.c:1417
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb Satz %lu: write fehlgeschlagen (n=%d): %s\n"
@@ -4363,7 +4363,7 @@ msgid "%s: error updating version record: %s\n"
 msgstr "%s: Fehler beim Ändern des Versionsatzes: %s\n"
 
 #: g10/tdbio.c:638 g10/tdbio.c:674 g10/tdbio.c:688 g10/tdbio.c:724
-#: g10/tdbio.c:1344 g10/tdbio.c:1371
+#: g10/tdbio.c:1343 g10/tdbio.c:1370
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: Fehler beim Lesen des Versionsatzes: %s\n"
@@ -4373,52 +4373,52 @@ msgstr "%s: Fehler beim Lesen des Versionsatzes: %s\n"
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: Fehler beim Schreiben des Versionsatzes: %s\n"
 
-#: g10/tdbio.c:1142
+#: g10/tdbio.c:1141
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "trustdb: lseek fehlgeschlagen: %s\n"
 
-#: g10/tdbio.c:1150
+#: g10/tdbio.c:1149
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "trustdb: read failed (n=%d): %s\n"
 
-#: g10/tdbio.c:1171
+#: g10/tdbio.c:1170
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: keine trustdb Datei\n"
 
-#: g10/tdbio.c:1189
+#: g10/tdbio.c:1188
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: version record with recnum %lu\n"
 
-#: g10/tdbio.c:1194
+#: g10/tdbio.c:1193
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: invalid file version %d\n"
 
-#: g10/tdbio.c:1377
+#: g10/tdbio.c:1376
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: Fehler beim Lesen eines freien Satzes: %s\n"
 
-#: g10/tdbio.c:1385
+#: g10/tdbio.c:1384
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: Fehler beim Schreiben eines Verzeichnis-Satzes: %s\n"
 
-#: g10/tdbio.c:1395
+#: g10/tdbio.c:1394
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: konnte einen Satz nicht Nullen: %s\n"
 
-#: g10/tdbio.c:1425
+#: g10/tdbio.c:1424
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: konnte Satz nicht anhängen: %s\n"
 
-#: g10/tdbio.c:1470
+#: g10/tdbio.c:1469
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
 "Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpg --fix-trustdb"
