@@ -1,3 +1,9 @@
+2004-02-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (do_user_id): Do not force a header for attribute
+	packets as they require a new CTB, and we don't support forced
+	headers for new CTBs yet.
+
 2004-02-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (write_header2): If a suggested header length is
