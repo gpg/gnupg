@@ -34,12 +34,12 @@
 #include "errors.h"
 #include "memory.h"
 #include "util.h"
-#include "i18n.h"
 #include "cardglue.h"
 #else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */
 
+#include "i18n.h"
 #include "iso7816.h"
 #include "app-common.h"
 #include "tlv.h"
@@ -52,27 +52,33 @@ static struct {
   int binary;
   int dont_cache;
   int flush_on_error;
+  int get_immediate_in_v11; /* Enable a hack to bypass the cache of
+                               this data object if it is used in 1.1
+                               and later versions of the card.  This
+                               does not work with composite DO and is
+                               currently only useful for the CHV
+                               status bytes. */
   char *desc;
 } data_objects[] = {
-  { 0x005E, 0,    0, 1, 0, 0, "Login Data" },
-  { 0x5F50, 0,    0, 0, 0, 0, "URL" },
-  { 0x0065, 1,    0, 1, 0, 0, "Cardholder Related Data"},
-  { 0x005B, 0, 0x65, 0, 0, 0, "Name" },
-  { 0x5F2D, 0, 0x65, 0, 0, 0, "Language preferences" },
-  { 0x5F35, 0, 0x65, 0, 0, 0, "Sex" },
-  { 0x006E, 1,    0, 1, 0, 0, "Application Related Data" },
-  { 0x004F, 0, 0x6E, 1, 0, 0, "AID" },
-  { 0x0073, 1,    0, 1, 0, 0, "Discretionary Data Objects" },
-  { 0x0047, 0, 0x6E, 1, 0, 0, "Card Capabilities" },
-  { 0x00C0, 0, 0x6E, 1, 0, 0, "Extended Card Capabilities" },
-  { 0x00C1, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Signature" },
-  { 0x00C2, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Decryption" },
-  { 0x00C3, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Authentication" },
-  { 0x00C4, 0, 0x6E, 1, 0, 1, "CHV Status Bytes" },
-  { 0x00C5, 0, 0x6E, 1, 0, 0, "Fingerprints" },
-  { 0x00C6, 0, 0x6E, 1, 0, 0, "CA Fingerprints" },
-  { 0x007A, 1,    0, 1, 0, 0, "Security Support Template" },
-  { 0x0093, 0, 0x7A, 1, 1, 0, "Digital Signature Counter" },
+  { 0x005E, 0,    0, 1, 0, 0, 0, "Login Data" },
+  { 0x5F50, 0,    0, 0, 0, 0, 0, "URL" },
+  { 0x0065, 1,    0, 1, 0, 0, 0, "Cardholder Related Data"},
+  { 0x005B, 0, 0x65, 0, 0, 0, 0, "Name" },
+  { 0x5F2D, 0, 0x65, 0, 0, 0, 0, "Language preferences" },
+  { 0x5F35, 0, 0x65, 0, 0, 0, 0, "Sex" },
+  { 0x006E, 1,    0, 1, 0, 0, 0, "Application Related Data" },
+  { 0x004F, 0, 0x6E, 1, 0, 0, 0, "AID" },
+  { 0x0073, 1,    0, 1, 0, 0, 0, "Discretionary Data Objects" },
+  { 0x0047, 0, 0x6E, 1, 1, 0, 0, "Card Capabilities" },
+  { 0x00C0, 0, 0x6E, 1, 1, 0, 0, "Extended Card Capabilities" },
+  { 0x00C1, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Signature" },
+  { 0x00C2, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Decryption" },
+  { 0x00C3, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Authentication" },
+  { 0x00C4, 0, 0x6E, 1, 0, 1, 1, "CHV Status Bytes" },
+  { 0x00C5, 0, 0x6E, 1, 0, 0, 0, "Fingerprints" },
+  { 0x00C6, 0, 0x6E, 1, 0, 0, 0, "CA Fingerprints" },
+  { 0x007A, 1,    0, 1, 0, 0, 0, "Security Support Template" },
+  { 0x0093, 0, 0x7A, 1, 1, 0, 0, "Digital Signature Counter" },
   { 0 }
 };
 
@@ -86,6 +92,13 @@ struct cache_s {
 
 struct app_local_s {
   struct cache_s *cache;
+  struct 
+  {
+    unsigned int get_challenge:1;
+    unsigned int key_import:1;
+    unsigned int change_force_chv:1;
+    unsigned int private_dos:1;
+  } extcap;
 };
 
 
@@ -124,24 +137,26 @@ get_cached_data (app_t app, int tag,
   size_t len;
   struct cache_s *c;
 
-
   *result = NULL;
   *resultlen = 0;
 
-  if (app->app_local)
-    {
-      for (c=app->app_local->cache; c; c = c->next)
-        if (c->tag == tag)
+  for (c=app->app_local->cache; c; c = c->next)
+    if (c->tag == tag)
+      {
+        if(c->length)
           {
-              p = xtrymalloc (c->length);
-              if (!p)
-                return gpg_error (gpg_err_code_from_errno (errno));
-              memcpy (p, c->data, c->length);
-              *resultlen = c->length;
-              *result = p;
-              return 0;
+            p = xtrymalloc (c->length);
+            if (!p)
+              return gpg_error (gpg_err_code_from_errno (errno));
+            memcpy (p, c->data, c->length);
+            *result = p;
           }
-    }
+
+        *resultlen = c->length;
+
+        return 0;
+      }
+ 
   
   err = iso7816_get_data (app->slot, tag, &p, &len);
   if (err)
@@ -159,24 +174,18 @@ get_cached_data (app_t app, int tag,
       }
 
   /* No, cache it. */
-  if (!app->app_local)
-    app->app_local = xtrycalloc (1, sizeof *app->app_local);
 
-  /* Note that we can safely ignore out of core errors. */
-  if (app->app_local)
+  for (c=app->app_local->cache; c; c = c->next)
+    assert (c->tag != tag);
+  
+  c = xtrymalloc (sizeof *c + len);
+  if (c)
     {
-      for (c=app->app_local->cache; c; c = c->next)
-        assert (c->tag != tag);
-      
-      c = xtrymalloc (sizeof *c + len);
-      if (c)
-        {
-          memcpy (c->data, p, len);
-          c->length = len;
-          c->tag = tag;
-          c->next = app->app_local->cache;
-          app->app_local->cache = c;
-        }
+      memcpy (c->data, p, len);
+      c->length = len;
+      c->tag = tag;
+      c->next = app->app_local->cache;
+      app->app_local->cache = c;
     }
 
   return 0;
@@ -202,7 +211,9 @@ flush_cache_item (app_t app, int tag)
         xfree (c);
 
         for (c=app->app_local->cache; c ; c = c->next)
-          assert (c->tag != tag); /* Oops: duplicated entry. */
+          {
+            assert (c->tag != tag); /* Oops: duplicated entry. */
+          }
         return;
       }
 
@@ -261,6 +272,15 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
   *nbytes = 0;
   for (i=0; data_objects[i].tag && data_objects[i].tag != tag; i++)
     ;
+
+  if (app->card_version > 0x0100 && data_objects[i].get_immediate_in_v11)
+    {
+      if( iso7816_get_data (app->slot, tag, &buffer, &buflen))
+        return NULL;
+      *result = buffer;
+      *nbytes = buflen;
+      return buffer;
+    }
 
   value = NULL;
   rc = -1;
@@ -428,7 +448,6 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   *p++ = nbits;
   memcpy (p, e, elen); p += elen;
     
-  log_printhex ("fprbuf:", buffer, n+3);
   gcry_md_hash_buffer (GCRY_MD_SHA1, fpr, buffer, n+3);
 
   xfree (buffer);
@@ -436,7 +455,22 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   rc = iso7816_put_data (slot, (card_version > 0x0007? 0xC7 : 0xC6)
                                + keynumber, fpr, 20);
   if (rc)
-    log_error ("failed to store the fingerprint: %s\n",gpg_strerror (rc));
+    log_error (_("failed to store the fingerprint: %s\n"),gpg_strerror (rc));
+
+  if (!rc && card_version > 0x0100)
+    {
+      unsigned char buf[4];
+
+      buf[0] = timestamp >> 24;
+      buf[1] = timestamp >> 16;
+      buf[2] = timestamp >>  8;
+      buf[3] = timestamp;
+
+      rc = iso7816_put_data (slot, 0xCE + keynumber, buf, 4);
+      if (rc)
+        log_error (_("failed to store the creation date: %s\n"),
+                   gpg_strerror (rc));
+    }
 
   return rc;
 }
@@ -502,6 +536,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
     { "SIG-COUNTER",  0x0093, 2 },
     { "SERIALNO",     0x004F, -1 },
     { "AID",          0x004F },
+    { "EXTCAP",       0x0000, -2 },
     { NULL, 0 }
   };
   int idx, i;
@@ -534,6 +569,18 @@ do_getattr (APP app, CTRL ctrl, const char *name)
                             NULL, 0);
           xfree (serial);
         }
+      return 0;
+    }
+  if (table[idx].special == -2)
+    {
+      char tmp[50];
+
+      sprintf (tmp, "gc=%d ki=%d fc=%d pd=%d", 
+               app->app_local->extcap.get_challenge,
+               app->app_local->extcap.key_import,
+               app->app_local->extcap.change_force_chv,
+               app->app_local->extcap.private_dos);
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }
 
@@ -575,6 +622,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
 static int
 do_learn_status (APP app, CTRL ctrl)
 {
+  do_getattr (app, ctrl, "EXTCAP");
   do_getattr (app, ctrl, "DISP-NAME");
   do_getattr (app, ctrl, "DISP-LANG");
   do_getattr (app, ctrl, "DISP-SEX");
@@ -605,13 +653,14 @@ verify_chv2 (app_t app,
       rc = pincb (pincb_arg, "PIN", &pinvalue); 
       if (rc)
         {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
           return rc;
         }
 
       if (strlen (pinvalue) < 6)
         {
-          log_error ("prassphrase (CHV2) is too short; minimum length is 6\n");
+          log_error (_("prassphrase (CHV%d) is too short;"
+                       " minimum length is %d\n"), 2, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
@@ -619,7 +668,7 @@ verify_chv2 (app_t app,
       rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
       if (rc)
         {
-          log_error ("verify CHV2 failed: %s\n", gpg_strerror (rc));
+          log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
           xfree (pinvalue);
           flush_cache_after_error (app);
           return rc;
@@ -633,7 +682,7 @@ verify_chv2 (app_t app,
             rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
           if (rc)
             {
-              log_error ("verify CHV1 failed: %s\n", gpg_strerror (rc));
+              log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
               xfree (pinvalue);
               flush_cache_after_error (app);
               return rc;
@@ -653,26 +702,54 @@ verify_chv3 (APP app,
 {
   int rc = 0;
 
+#if GNUPG_MAJOR_VERSION != 1
   if (!opt.allow_admin)
     {
-      log_info ("access to admin commands is not configured\n");
+      log_info (_("access to admin commands is not configured\n"));
       return gpg_error (GPG_ERR_EACCES);
     }
+#endif
       
   if (!app->did_chv3) 
     {
       char *pinvalue;
+      void *relptr;
+      unsigned char *value;
+      size_t valuelen;
+      int reread_chv_status;
+      
 
-      rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
+      relptr = get_one_do (app, 0x00C4, &value, &valuelen);
+      if (!relptr || valuelen < 7)
+        {
+          log_error (_("error retrieving CHV status from card\n"));
+          xfree (relptr);
+          return gpg_error (GPG_ERR_CARD);
+        }
+      if (value[6] == 0)
+        {
+          log_info (_("card is permanently locked!\n"));
+          xfree (relptr);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+
+      reread_chv_status = (value[6] < 3);
+
+      log_info(_("%d Admin PIN attempts remaining before card"
+                 " is permanently locked\n"), value[6]);
+      xfree (relptr);
+
+      rc = pincb (pincb_arg, _("Admin PIN"), &pinvalue); 
       if (rc)
         {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
           return rc;
         }
 
       if (strlen (pinvalue) < 6)
         {
-          log_error ("prassphrase (CHV3) is too short; minimum length is 6\n");
+          log_error (_("prassphrase (CHV%d) is too short;"
+                       " minimum length is %d\n"), 3, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
@@ -681,11 +758,18 @@ verify_chv3 (APP app,
       xfree (pinvalue);
       if (rc)
         {
-          log_error ("verify CHV3 failed: %s\n", gpg_strerror (rc));
+          log_error (_("verify CHV%d failed: %s\n"), 3, gpg_strerror (rc));
           flush_cache_after_error (app);
           return rc;
         }
       app->did_chv3 = 1;
+      /* If the PIN has been entered wrongly before, we need to flush
+         the cached value so that the next read correctly reflects the
+         resetted retry counter.  Note that version 1.1 of the specs
+         allow direct reading of that DO, so that we could actually
+         flush it in all cases. */
+      if (reread_chv_status)
+        flush_cache_item (app, 0x00C4);
     }
   return rc;
 }
@@ -1149,7 +1233,8 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
 
       if (strlen (pinvalue) < 6)
         {
-          log_error ("prassphrase (CHV1) is too short; minimum length is 6\n");
+          log_error (_("prassphrase (CHV%d) is too short;"
+                       " minimum length is %d\n"), 1, 6);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
@@ -1157,7 +1242,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
       rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
       if (rc)
         {
-          log_error ("verify CHV1 failed\n");
+          log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
           xfree (pinvalue);
           flush_cache_after_error (app);
           return rc;
@@ -1171,7 +1256,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
             rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
           if (rc)
             {
-              log_error ("verify CHV2 failed\n");
+              log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
               xfree (pinvalue);
               flush_cache_after_error (app);
               return rc;
@@ -1375,11 +1460,14 @@ app_select_openpgp (APP app)
   rc = iso7816_select_application (slot, aid, sizeof aid);
   if (!rc)
     {
+      unsigned int manufacturer;
+
       app->apptype = "OPENPGP";
 
       app->did_chv1 = 0;
       app->did_chv2 = 0;
       app->did_chv3 = 0;
+      app->app_local = NULL;
 
       /* The OpenPGP card returns the serial number as part of the
          AID; because we prefer to use OpenPGP serial numbers, we
@@ -1391,33 +1479,57 @@ app_select_openpgp (APP app)
         goto leave;
       if (opt.verbose)
         {
-          log_info ("got AID: ");
+          log_info ("AID: ");
           log_printhex ("", buffer, buflen);
         }
-#if GNUPG_MAJOR_VERSION != 1
-      /* A valid OpenPGP card should never need this but well the test
-         is cheap. */
-      rc = app_munge_serialno (app);
-      if (rc)
-        goto leave;
-#endif
 
       app->card_version = buffer[6] << 8;
       app->card_version |= buffer[7];
+      manufacturer = (buffer[8]<<8 | buffer[9]);
+
       xfree (app->serialno);
       app->serialno = buffer;
       app->serialnolen = buflen;
       buffer = NULL;
+      app->app_local = xtrycalloc (1, sizeof *app->app_local);
+      if (!app->app_local)
+        {
+          rc = gpg_error (gpg_err_code_from_errno (errno));
+          goto leave;
+        }
 
       relptr = get_one_do (app, 0x00C4, &buffer, &buflen);
       if (!relptr)
         {
-          log_error ("can't access CHV Status Bytes - invalid OpenPGP card?\n");
+          log_error (_("can't access CHV Status Bytes "
+                       "- invalid OpenPGP card?\n"));
           goto leave;
         }
       app->force_chv1 = (buflen && *buffer == 0);
       xfree (relptr);
-        
+
+      relptr = get_one_do (app, 0x00C0, &buffer, &buflen);
+      if (!relptr)
+        {
+          log_error (_("can't access Extended Capability Flags - "
+                       "invalid OpenPGP card?\n"));
+          goto leave;
+        }
+      if (buflen)
+        {
+          app->app_local->extcap.get_challenge    = !!(*buffer & 0x40);
+          app->app_local->extcap.key_import       = !!(*buffer & 0x20);
+          app->app_local->extcap.change_force_chv = !!(*buffer & 0x10);
+          app->app_local->extcap.private_dos      = !!(*buffer & 0x08);
+        }
+      xfree (relptr);
+      
+      /* Some of the first cards accidently don't set the
+         CHANGE_FORCE_CHV bit but allow it anyway. */
+      if (app->card_version <= 0x0100 && manufacturer == 1)
+        app->app_local->extcap.change_force_chv = 1;
+
+
       if (opt.verbose > 1)
         dump_all_do (slot);
 
@@ -1435,6 +1547,8 @@ app_select_openpgp (APP app)
    }
 
 leave:
+  if (rc)
+    do_deinit (app);
   return rc;
 }
 
@@ -1467,7 +1581,8 @@ app_openpgp_cardinfo (APP app,
       rc = app_get_serial_and_stamp (app, serialno, &dummy);
       if (rc)
         {
-          log_error ("error getting serial number: %s\n", gpg_strerror (rc));
+          log_error (_("error getting serial number: %s\n"),
+                     gpg_strerror (rc));
           return rc;
         }
     }
@@ -1554,13 +1669,14 @@ app_openpgp_storekey (APP app, int keyno,
   if (rc)
     goto leave;
 
+  flush_cache (app);
 
   rc = iso7816_put_data (app->slot,
                          (app->card_version > 0x0007? 0xE0 : 0xE9) + keyno,
                          template, template_len);
   if (rc)
     {
-      log_error ("failed to store the key: rc=%s\n", gpg_strerror (rc));
+      log_error (_("failed to store the key: %s\n"), gpg_strerror (rc));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
@@ -1602,14 +1718,14 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   if (rc)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("reading key failed\n");
+      log_error (_("reading the key failed\n"));
       goto leave;
     }
 
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
-      log_error ("response does not contain the public key data\n");
+      log_error (_("response does not contain the public key data\n"));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
@@ -1617,7 +1733,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   a = find_tlv (keydata, keydatalen, 0x0081, &alen);
   if (!a)
     {
-      log_error ("response does not contain the RSA modulus\n");
+      log_error (_("response does not contain the RSA modulus\n"));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
@@ -1628,7 +1744,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   a = find_tlv (keydata, keydatalen, 0x0082, &alen);
   if (!a)
     {
-      log_error ("response does not contain the RSA public exponent\n");
+      log_error (_("response does not contain the RSA public exponent\n"));
       rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }

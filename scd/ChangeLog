@@ -1,3 +1,74 @@
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_sign): Add the error string to the verify
+	failed messages.
+
+2004-09-27  Werner Koch  <wk@g10code.com>
+
+        From gnupg 1.3
+
+	* app-openpgp.c: Made all strings translatable.
+	(verify_chv3) [GNUPG_MAJOR_VERSION]: Make opt.allow_admin
+	available for use in gnupg 2. 
+	(verify_chv3): Reimplemented countdown showing to use only
+	functions from this module.  Flush the CVH status cache on a
+	successful read.
+	(get_one_do): Hack to bypass the cache for cards versions > 1.0.
+	(store_fpr): Store the creation date for card version > 1.0.
+
+	* app-openpgp.c (app_openpgp_storekey): Call flush_cache.
+	(get_cached_data): Move local data initialization to ..
+	(app_select_openpgp): .. here. Read some flags for later use.
+	(do_getattr): New read-only attribute EXTCAP.
+	
+	* apdu.c (open_pcsc_reader): Do not print empty reader string.
+
+	* ccid-driver.c (do_close_reader): Factored some code out from ...
+	(ccid_close_reader): ..here.
+	(ccid_shutdown_reader): New.
+
+	* apdu.c (apdu_shutdown_reader): New.
+	(shutdown_ccid_reader): New.
+
+	* apdu.c (open_ccid_reader): New arg PORTSTR.  Pass it to
+	ccid_open_reader.
+	(apdu_open_reader): Pass portstr to open_ccid_reader.
+	(apdu_open_reader): No fallback if a full CCID reader id has been
+	given.
+
+	* ccid-driver.c (ccid_get_reader_list): New.
+	(ccid_open_reader): Changed API to take a string for the reader.
+	Removed al the cruft for the libusb development vesion which seems
+	not to be maintained anymore and there are no packages anyway.
+	The stable library works just fine.
+	(struct ccid_reader_id_s): Deleted and replaced everywhere by a
+	simple string.
+	(usb_get_string_simple): Removed.
+	(bulk_in): Do valgrind hack here and not just everywhere.
+
+	* ccid-driver.c (read_device_info): Removed.
+	(make_reader_id, scan_or_find_devices): New.
+	(ccid_open_reader): Simplified by make use of the new functions.
+	(ccid_set_debug_level): New.  Changed the macros to make use of
+	it.  It has turned out that it is often useful to enable debugging
+	at runtime so I added this option.
+
+        From gnupg 1.3 - David Shaw  <dshaw@jabberwocky.com>
+
+	* app-openpgp.c (verify_chv3): Show a countdown of how many wrong
+	admin PINs can be entered before the card is locked.
+
+	* app-openpgp.c (get_cached_data): Avoid mallocing zero since it
+	breaks us when using --enable-m-guard.
+
+	* ccid-driver.c (usb_get_string_simple): Replacement function to
+	work with older libusb.
+
+	* ccid-driver.c (read_device_info): Fix segfault when usb device
+	is not accessible.
+	(ccid_open_reader): Allow working with an even older version of
+	libusb (usb_busses global instead of usb_get_busses()).
+
 2004-09-11  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (app_select_openpgp): Its app_munge_serialno and

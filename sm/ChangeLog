@@ -1,3 +1,8 @@
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_cert_colon): Make sure that the expired flag has
+	a higher precedence than the invalid flag. 
+
 2004-09-29  Werner Koch  <wk@g10code.com>
 
 	* import.c (parse_p12): Write an error status line for bad

@@ -15,6 +15,8 @@ jnlib/logging.c
 kbx/kbxutil.c
 
 scd/scdaemon.c
+scd/sc-investigate.c
+scd/app-openpgp.c
 
 sm/base64.c
 sm/call-agent.c

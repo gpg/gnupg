@@ -333,6 +333,9 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
 
 
   fputs (have_secret? "crs:":"crt:", fp);
+
+  /* Note: We can't use multiple flags, like "ei", because the
+     validation check does only return one error.  */
   truststring[0] = 0;
   truststring[1] = 0;
   if ((validity & VALIDITY_REVOKED)
@@ -340,8 +343,6 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     *truststring = 'r';
   else if (gpg_err_code (valerr) == GPG_ERR_CERT_EXPIRED)
     *truststring = 'e';
-  else if (valerr)
-    *truststring = 'i';
   else 
     {
       /* Lets also check whether the certificate under question
@@ -354,6 +355,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
           && !ksba_cert_get_validity (cert, 1, not_after)
           && *not_after && strcmp (current_time, not_after) > 0 )
         *truststring = 'e';
+      else if (valerr)
+        *truststring = 'i';
     }
 
   /* Is we have no truststring yet (i.e. the certificate might be

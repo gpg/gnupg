@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-09-29 18:01+0200\n"
-"PO-Revision-Date: 2004-09-29 18:10+0200\n"
+"POT-Creation-Date: 2004-09-30 15:22+0200\n"
+"PO-Revision-Date: 2004-09-30 15:23+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
@@ -100,12 +100,12 @@ msgid "allow clients to mark keys as \"trusted\""
 msgstr "erlaube Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
 
 #: agent/gpg-agent.c:195 agent/protect-tool.c:134 scd/scdaemon.c:168
-#: sm/gpgsm.c:485 tools/gpgconf.c:85
+#: scd/sc-investigate.c:113 sm/gpgsm.c:485 tools/gpgconf.c:85
 msgid "Please report bugs to <"
 msgstr "Fehlerberichte bitte an <"
 
 #: agent/gpg-agent.c:195 agent/protect-tool.c:134 scd/scdaemon.c:168
-#: sm/gpgsm.c:485 tools/gpgconf.c:85
+#: scd/sc-investigate.c:113 sm/gpgsm.c:485 tools/gpgconf.c:85
 msgid ">.\n"
 msgstr ">.\n"
 
@@ -127,7 +127,7 @@ msgid "invalid debug-level `%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
 
 #: agent/gpg-agent.c:446 agent/protect-tool.c:1050 kbx/kbxutil.c:436
-#: scd/scdaemon.c:357 sm/gpgsm.c:731
+#: scd/scdaemon.c:357 scd/sc-investigate.c:181 sm/gpgsm.c:731
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
@@ -432,6 +432,103 @@ msgstr ""
 "Bitte die Option `--daemon' nutzen um das Programm im Hintergund "
 "auszuführen\n"
 
+#: scd/sc-investigate.c:116
+msgid "Usage: sc-investigate [options] (-h for help)\n"
+msgstr "Gebrauch: sc-investigate [Optionen] (-h für Hilfe)\n"
+
+#: scd/sc-investigate.c:118
+msgid ""
+"Syntax: sc-investigate [options] [args]]\n"
+"Have a look at smartcards\n"
+msgstr ""
+"Gebrauch: sc-investigate [Optionen] [Argumente]\n"
+"Den Inhalt einer Smartcard inspizieren\n"
+
+#: scd/app-openpgp.c:458
+#, c-format
+msgid "failed to store the fingerprint: %s\n"
+msgstr "Der Fingerprint kann nicht gespeichert werden: %s\n"
+
+#: scd/app-openpgp.c:471
+#, c-format
+msgid "failed to store the creation date: %s\n"
+msgstr "Das Erzeugungsdatum kann nicht gespeichert werden: %s\n"
+
+#: scd/app-openpgp.c:656 scd/app-openpgp.c:745
+#, c-format
+msgid "PIN callback returned error: %s\n"
+msgstr "Fehler vom PIN \"callback\": %s\n"
+
+#: scd/app-openpgp.c:662 scd/app-openpgp.c:751 scd/app-openpgp.c:1236
+#, c-format
+msgid "prassphrase (CHV%d) is too short; minimum length is %d\n"
+msgstr "Die Passphrase (CHV%d) ist zu kurz; Mindestlänge ist %d\n"
+
+#: scd/app-openpgp.c:671 scd/app-openpgp.c:685 scd/app-openpgp.c:761
+#: scd/app-openpgp.c:1245 scd/app-openpgp.c:1259
+#, c-format
+msgid "verify CHV%d failed: %s\n"
+msgstr "Prüfen von CHV%d fehlgeschlagen: %s\n"
+
+#: scd/app-openpgp.c:708
+msgid "access to admin commands is not configured\n"
+msgstr "Zugriff auf Admin Kommandos ist nicht konfiguriert\n"
+
+#: scd/app-openpgp.c:725
+msgid "error retrieving CHV status from card\n"
+msgstr "Fehler beim Holen des CHV Status von der Karte\n"
+
+#: scd/app-openpgp.c:731
+msgid "card is permanently locked!\n"
+msgstr "Die Karte ist dauerhaft gesperrt!\n"
+
+#: scd/app-openpgp.c:738
+#, c-format
+msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
+msgstr ""
+"Noch %d Admin PIN Versuche möglich bevor die Karte dauerhaft gesperrt wird\n"
+
+#: scd/app-openpgp.c:742
+msgid "Admin PIN"
+msgstr "Admin PIN"
+
+#: scd/app-openpgp.c:1504
+msgid "can't access CHV Status Bytes - invalid OpenPGP card?\n"
+msgstr ""
+"Zugriff auf die CHV Status Bytes nicht möglich - ungültige OpenPGP Karte?\n"
+
+#: scd/app-openpgp.c:1514
+msgid "can't access Extended Capability Flags - invalid OpenPGP card?\n"
+msgstr ""
+"Zugriff auf die Extended Capability Flags nicht möglich - ungültige OpenPGP "
+"Karte?\n"
+
+#: scd/app-openpgp.c:1584
+#, c-format
+msgid "error getting serial number: %s\n"
+msgstr "Fehler beim Holen der Seriennummer: %s\n"
+
+#: scd/app-openpgp.c:1679
+#, c-format
+msgid "failed to store the key: %s\n"
+msgstr "Fehler beim Speichern des Schlüssels: %s\n"
+
+#: scd/app-openpgp.c:1721
+msgid "reading the key failed\n"
+msgstr "Fehler beim Lesen des Schlüssels: %s\n"
+
+#: scd/app-openpgp.c:1728
+msgid "response does not contain the public key data\n"
+msgstr "Die Antwort enthält keine Public Key Daten\n"
+
+#: scd/app-openpgp.c:1736
+msgid "response does not contain the RSA modulus\n"
+msgstr "Die Antwort enthält keinen RSA Modulus\n"
+
+#: scd/app-openpgp.c:1747
+msgid "response does not contain the RSA public exponent\n"
+msgstr "Die Antwort enthält keinen öffenlichen RSA Exponent\n"
+
 #: sm/base64.c:315
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
@@ -488,7 +585,7 @@ msgstr "[Fehler - Ungültige Kodierung]"
 msgid "[Error - invalid DN]"
 msgstr "[Fehler - Ungültiger DN]"
 
-#: sm/certdump.c:652
+#: sm/certdump.c:655
 #, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
@@ -496,7 +593,7 @@ msgid ""
 "S/N %s, ID %08lX, created %s"
 msgstr ""
 "Bitte geben Sie die Passphrase an, um den \n"
-"geheimen Schlüssels von\n"
+"geheimen Schlüssel von\n"
 "\"%s\"\n"
 "S/N %s, ID %08lX, erzeugt %s\n"
 "zu entsperren"
@@ -999,32 +1096,32 @@ msgstr "Verschlüsseln für `%s' nicht möglich: %s\n"
 msgid "libksba is too old (need %s, have %s)\n"
 msgstr "Die Bibliothek Libksba is nicht aktuell (benötige %s, habe %s)\n"
 
-#: sm/gpgsm.c:1182
+#: sm/gpgsm.c:1183
 msgid "WARNING: program may create a core file!\n"
 msgstr "WARNUNG: Programm könnte eine core-dump-Datei schreiben!\n"
 
-#: sm/gpgsm.c:1194
+#: sm/gpgsm.c:1195
 msgid "WARNING: running with faked system time: "
 msgstr "WARNUNG: Ausführung mit gefälschter Systemzeit: "
 
-#: sm/gpgsm.c:1220
+#: sm/gpgsm.c:1221
 msgid "selected cipher algorithm is invalid\n"
 msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
 
-#: sm/gpgsm.c:1228
+#: sm/gpgsm.c:1229
 msgid "selected digest algorithm is invalid\n"
 msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
 
-#: sm/gpgsm.c:1258
+#: sm/gpgsm.c:1259
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "Signieren mit `%s' nicht möglich: %s\n"
 
-#: sm/gpgsm.c:1422
+#: sm/gpgsm.c:1423
 msgid "this command has not yet been implemented\n"
 msgstr "Diee Kommando wurde noch nicht implementiert\n"
 
-#: sm/gpgsm.c:1645 sm/gpgsm.c:1678
+#: sm/gpgsm.c:1646 sm/gpgsm.c:1679
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
