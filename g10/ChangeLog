@@ -1,3 +1,9 @@
+2003-10-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Enhance the version-specific config file code to
+	try for more specific matches before giving up (e.g. 1.3.3-cvs,
+	1.3.3, 1.3, 1).
+
 2003-10-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Add --symmetric --encrypt command.  This generates

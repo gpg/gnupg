@@ -1299,17 +1299,37 @@ main( int argc, char **argv )
 
     set_native_charset (NULL); /* Try to auto set the character set */
 
+    /* Try for a version specific config file first */
     if( default_config )
       {
-       /* Try for a version specific config file first */
-	configname = make_filename(opt.homedir,
-				   "gpg" EXTSEP_S "conf-" SAFE_VERSION, NULL );
-	if(access(configname,R_OK))
+	char *name=m_strdup("gpg" EXTSEP_S "conf-" SAFE_VERSION);
+	char *ver=&name[strlen("gpg" EXTSEP_S "conf-")];
+
+	do
 	  {
-	    m_free(configname);
-	    configname = make_filename(opt.homedir,
-				       "gpg" EXTSEP_S "conf", NULL );
+	    if(configname)
+	      {
+		char *tok;
+
+		m_free(configname);
+		configname=NULL;
+
+		if((tok=strrchr(ver,SAFE_VERSION_DASH)))
+		  *tok='\0';
+		else if((tok=strrchr(ver,SAFE_VERSION_DOT)))
+		  *tok='\0';
+		else
+		  break;
+	      }
+
+	    configname = make_filename(opt.homedir,name,NULL);
 	  }
+	while(access(configname,R_OK));
+
+	m_free(name);
+
+	if(!configname)
+	  configname=make_filename(opt.homedir, "gpg" EXTSEP_S "conf", NULL );
         if (!access (configname, R_OK))
           { /* Print a warning when both config files are present. */
             char *p = make_filename(opt.homedir, "options", NULL );
