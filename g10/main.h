@@ -85,7 +85,7 @@ int check_key_signature2( KBNODE root, KBNODE node,
 			  int *is_selfsig, u32 *r_expiredate, int *r_expired );
 
 /*-- delkey.c --*/
-int delete_key( const char *username, int secure );
+int delete_key( const char *username, int secret, int allow_both );
 
 /*-- keyedit.c --*/
 void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,

@@ -76,6 +76,7 @@ enum cmd_and_opt_values { aNull = 0,
     aEditKey,
     aDeleteKey,
     aDeleteSecretKey,
+    aDeleteSecretAndPublicKey,
     aKMode,
     aKModeC,
     aImport,
@@ -395,6 +396,7 @@ static ARGPARSE_OPTS opts[] = {
     { oTryAllSecrets,  "try-all-secrets", 0, "@" },
     { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
     { oNoExpensiveTrustChecks, "no-expensive-trust-checks", 0, "@" },
+    { aDeleteSecretAndPublicKey, "delete-secret-and-public-key",256, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
 {0} };
@@ -754,6 +756,10 @@ main( int argc, char **argv )
 	  case aExportSecretSub: set_cmd( &cmd, aExportSecretSub); break;
 	  case aDeleteSecretKey: set_cmd( &cmd, aDeleteSecretKey);
 							greeting=1; break;
+	  case aDeleteSecretAndPublicKey:
+            set_cmd( &cmd, aDeleteSecretAndPublicKey);
+            greeting=1; 
+            break;
 	  case aDeleteKey: set_cmd( &cmd, aDeleteKey); greeting=1; break;
 
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
@@ -1280,8 +1286,16 @@ main( int argc, char **argv )
 	if( argc != 1 )
 	    wrong_args(_("--delete-key user-id"));
 	username = make_username( fname );
-	if( (rc = delete_key(username, cmd==aDeleteSecretKey)) )
+	if( (rc = delete_key(username, cmd==aDeleteSecretKey, 0)) )
 	    log_error("%s: delete key failed: %s\n", username, g10_errstr(rc) );
+	m_free(username);
+	break;
+      case aDeleteSecretAndPublicKey:
+	if( argc != 1 )
+	    wrong_args(_("--delete-secret-and-public-key user-id"));
+	username = make_username( fname );
+	if( (rc = delete_key(username, 0, 1)) )
+	    log_error("%s: delete key failed: %s\n", username, g10_errstr(rc));
 	m_free(username);
 	break;
 

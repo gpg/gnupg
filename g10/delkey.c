@@ -43,9 +43,11 @@
 
 /****************
  * Delete a public or secret key from a keyring.
+ * r_sec_avail will be set if a secret key is available and the public
+ * key can't be deleted for that reason.
  */
-int
-delete_key( const char *username, int secret )
+static int
+do_delete_key( const char *username, int secret, int *r_sec_avail )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
@@ -57,6 +59,7 @@ delete_key( const char *username, int secret )
     int okay=0;
     int yes;
 
+    *r_sec_avail = 0;
     /* search the userid */
     rc = secret? find_secret_keyblock_byname( &kbpos, username )
 	       : find_keyblock_byname( &kbpos, username );
@@ -90,12 +93,8 @@ delete_key( const char *username, int secret )
 	keyid_from_pk( pk, keyid );
 	rc = seckey_available( keyid );
 	if( !rc ) {
-	    log_error(_(
-	    "there is a secret key for this public key!\n"));
-	    log_info(_(
-	    "use option \"--delete-secret-key\" to delete it first.\n"));
-	    write_status_text( STATUS_DELETE_PROBLEM, "2" );
-	    rc = -1;
+            *r_sec_avail = 1;
+            rc = -1;
 	}
 	else if( rc != G10ERR_NO_SECKEY ) {
 	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
@@ -161,3 +160,29 @@ delete_key( const char *username, int secret )
     return rc;
 }
 
+/****************
+ * Delete a public or secret key from a keyring.
+ */
+int
+delete_key( const char *username, int secret, int allow_both )
+{
+    int rc, avail;
+
+    rc = do_delete_key (username, secret, &avail );
+    if ( rc && avail ) { 
+        assert (secret);
+        if ( allow_both ) {
+            rc = do_delete_key (username, 1, &avail );
+            if ( !rc )
+                rc = do_delete_key (username, 0, &avail );
+        }
+        else {
+            log_error(_(
+                "there is a secret key for this public key!\n"));
+            log_info(_(
+                "use option \"--delete-secret-key\" to delete it first.\n"));
+            write_status_text( STATUS_DELETE_PROBLEM, "2" );
+        }
+    }
+    return rc;
+}

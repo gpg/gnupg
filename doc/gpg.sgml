@@ -414,6 +414,12 @@ Remove key from the secret and public keyring
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--delete-secret-and-public-key  &ParmName;</term>
+<listitem><para>
+Same as --delete-key, but if a secret key exists, it will be removed first.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--gen-revoke</term>
 <listitem><para>
 Generate a revocation certificate for the complete key. To revoke
