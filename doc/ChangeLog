@@ -1,3 +1,7 @@
+2004-10-28  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (EXTRA_DIST): Add gpg.ru.1.
+
 2004-10-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Minor language tweaks.
