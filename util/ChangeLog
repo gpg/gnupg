@@ -1,4 +1,15 @@
+2002-09-09  Werner Koch  <wk@gnupg.org>
+
+	* w32reg.c (read_w32_registry_string): Handle REG_EXPAND_SZ.
+	Suggested by Ryan Malayter.
+
+	* strgutil.c (ascii_strcasecmp): Replaced by code from gnulib.
+	(ascii_strncasecmp): New.
+
 2002-09-02  Werner Koch  <wk@gnupg.org>
+
+	* simple-gettext.c (set_gettext_file): Make sure that we only use
+	backslashes.
 
 	* strgutil.c (set_native_charset): Allow NULL as argument to use
 	nl_langinfo for selection.  Mapped latin-15 to latin-1.

@@ -58,7 +58,7 @@ get_root_key(const char *root)
 
 /****************
  * Return a string from the Win32 Registry or NULL in case of
- * error.  Caller must release the return value.   A NUKK for root
+ * error.  Caller must release the return value.   A NULL for root
  * is an alias fro HKEY_CURRENT_USER
  * NOTE: The value is allocated with a plain malloc() - use free() and not
  * the usual m_free()!!!
@@ -67,7 +67,7 @@ char *
 read_w32_registry_string( const char *root, const char *dir, const char *name )
 {
     HKEY root_key, key_handle;
-    DWORD n1, nbytes;
+    DWORD n1, nbytes, type;
     char *result = NULL;
 
     if ( !(root_key = get_root_key(root) ) )
@@ -82,11 +82,48 @@ read_w32_registry_string( const char *root, const char *dir, const char *name )
     result = malloc( (n1=nbytes+1) );
     if( !result )
 	goto leave;
-    if( RegQueryValueEx( key_handle, name, 0, NULL, result, &n1 ) ) {
+    if( RegQueryValueEx( key_handle, name, 0, &type, result, &n1 ) ) {
 	free(result); result = NULL;
 	goto leave;
     }
     result[nbytes] = 0; /* make sure it is really a string  */
+    if (type == REG_EXPAND_SZ && strchr (result, '%')) {
+        char *tmp;
+        
+        n1 += 1000;
+        tmp = malloc (n1+1);
+        if (!tmp)
+            goto leave;
+        nbytes = ExpandEnvironmentStrings (result, tmp, n1);
+        if (nbytes && nbytes > n1) {
+            free (tmp);
+            tmp = malloc (n1 + 1);
+            if (!tmp)
+                goto leave;
+            nbytes = ExpandEnvironmentStrings (result, tmp, n1);
+            if (nbytes && nbytes > n1) {
+                free (tmp); /* oops - truncated, better don't expand at all */
+                goto leave;
+            }
+            tmp[nbytes] = 0;
+            free (result);
+            result = tmp;
+        }
+        else if (nbytes) { /* okay, reduce the length */
+            tmp[nbytes] = 0;
+            free (result);
+            result = malloc (strlen (tmp)+1);
+            if (!result)
+                result = tmp;
+            else {
+                strcpy (result, tmp);
+                free (tmp);
+            }
+        }
+        else {  /* error - don't expand */
+            free (tmp);
+        }
+    }
 
   leave:
     RegCloseKey( key_handle );

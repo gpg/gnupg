@@ -28,7 +28,7 @@
 #include <config.h>
 #ifdef USE_SIMPLE_GETTEXT
 #if !defined (__MINGW32__) && !defined (__CYGWIN32__)
-  #error This file can only be used with MingW32 or Cygwin32
+#error This file can only be used with MingW32 or Cygwin32
 #endif
 
 #include <stdio.h>
@@ -247,12 +247,21 @@ set_gettext_file( const char *filename )
 	else { /* relative path - append ".mo" and get dir from the environment */
 	    char *buf = NULL;
 	    char *dir;
+            char *p;
 
 	    dir = read_w32_registry_string( NULL,
 					    "Control Panel\\Mingw32\\NLS",
 					    "MODir" );
 	    if( dir && (buf=malloc(strlen(dir)+strlen(filename)+1+3+1)) ) {
-		strcpy(stpcpy(stpcpy(stpcpy( buf, dir),"/"), filename),".mo");
+		strcpy(stpcpy(stpcpy(stpcpy( buf, dir),"\\"), filename),".mo");
+                /* Better make sure that we don't mix forward and
+                   backward slashes.  It seems that some Windoze
+                   versions don't accept this. */
+                for (p=buf; *p; p++)
+                  {
+                    if (*p == '/')
+                      *p = '\\';
+                  }
 		domain = load_domain( buf );
 		free(buf);
 	    }
