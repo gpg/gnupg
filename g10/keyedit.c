@@ -562,13 +562,13 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			 "above?  If you don't know what to answer, enter \"0\".\n"));
 	    tty_printf("\n");
 	    tty_printf(_("   (0) I will not answer.%s\n"),
-		       opt.def_cert_check_level==0?" (default)":"");
+		       opt.def_cert_check_level==0?_(" (default)"):"");
 	    tty_printf(_("   (1) I have not checked at all.%s\n"),
-		       opt.def_cert_check_level==1?" (default)":"");
+		       opt.def_cert_check_level==1?_(" (default)"):"");
 	    tty_printf(_("   (2) I have done casual checking.%s\n"),
-		       opt.def_cert_check_level==2?" (default)":"");
+		       opt.def_cert_check_level==2?_(" (default)"):"");
 	    tty_printf(_("   (3) I have done very careful checking.%s\n"),
-		       opt.def_cert_check_level==3?" (default)":"");
+		       opt.def_cert_check_level==3?_(" (default)"):"");
 	    tty_printf("\n");
 
 	    while(class==0)

@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <assert.h>
 #ifdef HAVE_DOSISH_SYSTEM
   #include <fcntl.h> /* for setmode() */
 #endif
@@ -850,13 +851,15 @@ check_permissions(const char *path,int item)
 {
 #if defined(HAVE_STAT) && !defined(HAVE_DOSISH_SYSTEM)
   static int homedir_cache=-1;
-  char *tmppath,*isa,*dir;
+  char *tmppath,*dir;
   struct stat statbuf,dirbuf;
   int homedir=0,ret=0,checkonly=0;
   int perm=0,own=0,enc_dir_perm=0,enc_dir_own=0;
 
   if(opt.no_perm_warn)
     return 0;
+
+  assert(item==0 || item==1 || item==2);
 
   /* extensions may attach a path */
   if(item==2 && path[0]!=DIRSEP_C)
@@ -907,8 +910,6 @@ check_permissions(const char *path,int item)
 
   if(item==0)
     {
-      isa="homedir";
-
       /* The homedir must be x00, a directory, and owned by the user. */
 
       if(S_ISDIR(statbuf.st_mode))
@@ -928,11 +929,6 @@ check_permissions(const char *path,int item)
     }
   else if(item==1 || item==2)
     {
-      if(item==1)
-	isa="configuration file";
-      else
-	isa="extension";
-
       /* The options or extension file.  Okay unless it or its
 	 containing directory is group or other writable or not owned
 	 by us or root. */
@@ -980,19 +976,53 @@ check_permissions(const char *path,int item)
   if(!checkonly)
     {
       if(own)
-	log_info(_("WARNING: unsafe ownership on %s \"%s\"\n"),
-		 isa,tmppath);
+	{
+	  if(item==0)
+	    log_info(_("WARNING: unsafe ownership on "
+		       "homedir \"%s\"\n"),tmppath);
+	  else if(item==1)
+	    log_info(_("WARNING: unsafe ownership on "
+		       "configuration file \"%s\"\n"),tmppath);
+	  else
+	    log_info(_("WARNING: unsafe ownership on "
+		       "extension \"%s\"\n"),tmppath);
+	}
       if(perm)
-	log_info(_("WARNING: unsafe permissions on %s \"%s\"\n"),
-		 isa,tmppath);
+	{
+	  if(item==0)
+	    log_info(_("WARNING: unsafe permissions on "
+		       "homedir \"%s\"\n"),tmppath);
+	  else if(item==1)
+	    log_info(_("WARNING: unsafe permissions on "
+		       "configuration file \"%s\"\n"),tmppath);
+	  else
+	    log_info(_("WARNING: unsafe permissions on "
+		       "extension \"%s\"\n"),tmppath);
+	}
       if(enc_dir_own)
-	log_info(_("WARNING: unsafe enclosing directory "
-		   "ownership on %s \"%s\"\n"),
-		 isa,tmppath);
+	{
+	  if(item==0)
+	    log_info(_("WARNING: unsafe enclosing directory ownership on "
+		       "homedir \"%s\"\n"),tmppath);
+	  else if(item==1)
+	    log_info(_("WARNING: unsafe enclosing directory ownership on "
+		       "configuration file \"%s\"\n"),tmppath);
+	  else
+	    log_info(_("WARNING: unsafe enclosing directory ownership on "
+		       "extension \"%s\"\n"),tmppath);
+	}
       if(enc_dir_perm)
-	log_info(_("WARNING: unsafe enclosing directory "
-		   "permissions on %s \"%s\"\n"),
-		 isa,tmppath);
+	{
+	  if(item==0)
+	    log_info(_("WARNING: unsafe enclosing directory permissions on "
+		       "homedir \"%s\"\n"),tmppath);
+	  else if(item==1)
+	    log_info(_("WARNING: unsafe enclosing directory permissions on "
+		       "configuration file \"%s\"\n"),tmppath);
+	  else
+	    log_info(_("WARNING: unsafe enclosing directory permissions on "
+		       "extension \"%s\"\n"),tmppath);
+	}
     }
 
  end:
