@@ -21,28 +21,36 @@
 #ifndef ISO7816_H
 #define ISO7816_H
 
-int iso7816_select_application (int slot, const char *aid, size_t aidlen);
-int iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen);
-int iso7816_get_data (int slot, int tag,
-                      unsigned char **result, size_t *resultlen);
-int iso7816_put_data (int slot, int tag,
-                      const unsigned char *data, size_t datalen);
-int iso7816_compute_ds (int slot,
-                            const unsigned char *data, size_t datalen,
-                            unsigned char **result, size_t *resultlen);
-int iso7816_decipher (int slot,
-                          const unsigned char *data, size_t datalen,
-                          unsigned char **result, size_t *resultlen);
-int iso7816_internal_authenticate (int slot,
-                                   const unsigned char *data, size_t datalen,
-                                   unsigned char **result, size_t *resultlen);
-int iso7816_generate_keypair (int slot,
+gpg_error_t iso7816_select_application (int slot,
+                                        const char *aid, size_t aidlen);
+gpg_error_t iso7816_verify (int slot,
+                            int chvno, const char *chv, size_t chvlen);
+gpg_error_t iso7816_change_reference_data (int slot, int chvno,
+                               const char *oldchv, size_t oldchvlen,
+                               const char *newchv, size_t newchvlen);
+gpg_error_t iso7816_reset_retry_counter (int slot, int chvno,
+                                         const char *newchv, size_t newchvlen);
+gpg_error_t iso7816_get_data (int slot, int tag,
+                              unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_put_data (int slot, int tag,
+                              const unsigned char *data, size_t datalen);
+gpg_error_t iso7816_compute_ds (int slot,
+                                const unsigned char *data, size_t datalen,
+                                unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_decipher (int slot,
                               const unsigned char *data, size_t datalen,
                               unsigned char **result, size_t *resultlen);
-int iso7816_read_public_key (int slot,
-                             const unsigned char *data, size_t datalen,
-                             unsigned char **result, size_t *resultlen);
-int iso1816_get_challenge (int slot, int length, unsigned char *buffer);
+gpg_error_t iso7816_internal_authenticate (int slot,
+                                   const unsigned char *data, size_t datalen,
+                                   unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_generate_keypair (int slot,
+                                   const unsigned char *data, size_t datalen,
+                                   unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_read_public_key (int slot,
+                                   const unsigned char *data, size_t datalen,
+                                   unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_get_challenge (int slot,
+                                   int length, unsigned char *buffer);
 
 
 #endif /*ISO7816_H*/

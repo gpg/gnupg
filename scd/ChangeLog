@@ -1,3 +1,39 @@
+2003-07-23  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_pkauth): New.
+	(cmd_setdata): Check whether data was given at all to avoid
+	passing 0 to malloc.
+
+	* app.c (app_auth): New.
+	* app-openpgp.c (do_auth): New.
+
+2003-07-22  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_passwd): New.
+	* app.c (app_change_pin): New.
+	* app-openpgp.c (do_change_pin): New.
+	* iso7816.c (iso7816_reset_retry_counter): Implemented.
+
+	* sc-investigate.c (main): New option --gen-random.
+	* iso7816.c (iso7816_get_challenge): Don't create APDUs with a
+	length larger than 255.
+
+2003-07-17  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_random): New command RANDOM.
+
+	* iso7816.c (map_sw): New. Use it in this file to return
+	meaningful error messages.  Changed all public fucntions to return
+	a gpg_error_t.
+	(iso7816_change_reference_data): New.
+	* apdu.c (apdu_open_reader): Use faked status words for soem
+	system errors.
+
+2003-07-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (apdu_send_simple): Use apdu_send_le so that we can
+	specify not to send Le as it should be.
+
 2003-07-15  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Add sc-copykeys program.

@@ -213,7 +213,7 @@ ct_activate_card (int reader)
 
 /* Open a reader and return an internal handle for it.  PORT is a
    non-negative value with the port number of the reader. USB readers
-   do habe port numbers starting at 32769. */
+   do have port numbers starting at 32769. */
 static int
 open_ct_reader (int port)
 {
@@ -244,7 +244,7 @@ open_ct_reader (int port)
 }
 
 
-/* Actuall send the APDU of length APDULEN to SLOT and return a
+/* Actually send the APDU of length APDULEN to SLOT and return a
    maximum of *BUFLEN data in BUFFER, the actual retruned size will be
    set to BUFLEN.  Returns: CT API error code. */
 static int
@@ -356,9 +356,9 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 #ifdef HAVE_CTAPI
   return ct_send_apdu (slot, apdu, apdulen, buffer, buflen);
 #elif defined(HAVE_PCSC)
-  return -1;
+  return SW_HOST_NO_DRIVER;
 #else
-  return -1;
+  return SW_HOST_NO_DRIVER;
 #endif
 }
 
@@ -369,7 +369,7 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
    or -1 for an invalid SLOT or other non card related error.  If
    RETBUF is not NULL, it will receive an allocated buffer with the
    returned data.  The length of that data will be put into
-   *RETBUFLEN.  The caller is reposnible for releasing the buffer even
+   *RETBUFLEN.  The caller is reponsible for releasing the buffer even
    in case of errors.  */
 int 
 apdu_send_le(int slot, int class, int ins, int p0, int p1,
@@ -391,7 +391,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
   if (le != -1 && (le > 256 || le < 1))
     return SW_WRONG_LENGTH; 
   if ((!data && lc != -1) || (data && lc == -1))
-    return -1;
+    return SW_HOST_INV_VALUE;
 
   apdulen = 0;
   apdu[apdulen++] = class;
@@ -414,7 +414,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
     {
       log_error ("apdu_send_simple(%d) failed: %s\n",
                  slot, error_string (slot, rc));
-      return -1;
+      return SW_HOST_INCOMPLETE_CARD_RESPONSE;
     }
   sw = (result[resultlen-2] << 8) | result[resultlen-1];
   /* store away the returned data but strip the statusword. */
@@ -432,7 +432,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
         {
           *retbuf = xtrymalloc (resultlen? resultlen : 1);
           if (!*retbuf)
-            return -1; /* fixme: this is actually out of core. */
+            return SW_HOST_OUT_OF_CORE;
           *retbuflen = resultlen;
           memcpy (*retbuf, result, resultlen);
         }
@@ -448,7 +448,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
         {
           *retbuf = p = xtrymalloc (bufsize);
           if (!*retbuf)
-            return -1; /* fixme: this is actually out of core. */
+            return SW_HOST_OUT_OF_CORE;
           assert (resultlen < bufsize);
           memcpy (p, result, resultlen);
           p += resultlen;
@@ -472,7 +472,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
             {
               log_error ("apdu_send_simple(%d) for get response failed: %s\n",
                          slot, error_string (slot, rc));
-              return -1;
+              return SW_HOST_INCOMPLETE_CARD_RESPONSE;
             }
           sw = (result[resultlen-2] << 8) | result[resultlen-1];
           resultlen -= 2;
@@ -492,7 +492,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
                       bufsize += resultlen > 4096? resultlen: 4096;
                       tmp = xtryrealloc (*retbuf, bufsize);
                       if (!tmp)
-                        return -1; /* fixme: actually this is out of core */
+                        return SW_HOST_OUT_OF_CORE;
                       p = tmp + (p - *retbuf);
                       *retbuf = tmp;
                     }
@@ -531,8 +531,8 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
    caller is reponsible for releasing the buffer even in case of
    errors.  */
 int 
-apdu_send(int slot, int class, int ins, int p0, int p1,
-          int lc, const char *data, unsigned char **retbuf, size_t *retbuflen)
+apdu_send (int slot, int class, int ins, int p0, int p1,
+           int lc, const char *data, unsigned char **retbuf, size_t *retbuflen)
 {
   return apdu_send_le (slot, class, ins, p0, p1, lc, data, 256, 
                        retbuf, retbuflen);
@@ -548,5 +548,9 @@ int
 apdu_send_simple (int slot, int class, int ins, int p0, int p1,
                   int lc, const char *data)
 {
-  return apdu_send (slot, class, ins, p0, p1, lc, data, NULL, NULL);
+  return apdu_send_le (slot, class, ins, p0, p1, lc, data, -1, NULL, NULL);
 }
+
+
+
+

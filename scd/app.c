@@ -28,6 +28,7 @@
 #include "scdaemon.h"
 #include "app-common.h"
 #include "apdu.h"
+#include "iso7816.h"
 
 /* The select the best fitting application and return a context.
    Returns NULL if no application was found or no card is present. */
@@ -157,6 +158,34 @@ app_sign (APP app, const char *keyidstr, int hashalgo,
   return rc;
 }
 
+/* Create the signature using the INTERNAL AUTHENTICATE command and
+   return the allocated result in OUTDATA.  If a PIN is required the
+   PINCB will be used to ask for the PIN; it should return the PIN in
+   an allocated buffer and put it into PIN.  */
+int 
+app_auth (APP app, const char *keyidstr,
+          int (pincb)(void*, const char *, char **),
+          void *pincb_arg,
+          const void *indata, size_t indatalen,
+          unsigned char **outdata, size_t *outdatalen )
+{
+  int rc;
+
+  if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!app->initialized)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if (!app->fnc.auth)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+  rc = app->fnc.auth (app, keyidstr,
+                      pincb, pincb_arg,
+                      indata, indatalen,
+                      outdata, outdatalen);
+  if (opt.verbose)
+    log_info ("operation auth result: %s\n", gpg_strerror (rc));
+  return rc;
+}
+
 
 /* Decrypt the data in INDATA and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
@@ -205,4 +234,45 @@ app_genkey (APP app, CTRL ctrl, const char *keynostr, unsigned int flags,
     log_info ("operation genkey result: %s\n", gpg_strerror (rc));
   return rc;
 }
+
+
+/* Perform a GET CHALLENGE operation.  This fucntion is special as it
+   directly accesses the card without any application specific
+   wrapper. */
+int
+app_get_challenge (APP app, size_t nbytes, unsigned char *buffer)
+{
+  if (!app || !nbytes || !buffer)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!app->initialized)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  return iso7816_get_challenge (app->slot, nbytes, buffer);
+}
+
+
+
+/* Perform a CHANGE REFERENCE DATA or RESET RETRY COUNTER operation.  */
+int 
+app_change_pin (APP app, CTRL ctrl, const char *chvnostr, int reset_mode,
+                int (*pincb)(void*, const char *, char **),
+                void *pincb_arg)
+{
+  int rc;
+
+  if (!app || !chvnostr || !*chvnostr || !pincb)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!app->initialized)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if (!app->fnc.change_pin)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+  rc = app->fnc.change_pin (app, ctrl, chvnostr, reset_mode, pincb, pincb_arg);
+  if (opt.verbose)
+    log_info ("operation change_pin result: %s\n", gpg_strerror (rc));
+  return rc;
+}
+
+
+
+
+
 

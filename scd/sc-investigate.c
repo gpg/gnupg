@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #define JNLIB_NEED_LOG_LOGV
 #include "scdaemon.h"
@@ -41,6 +42,8 @@ enum cmd_and_opt_values
   oDebug,
   oDebugAll,
 
+  oGenRandom,
+
 aTest };
 
 
@@ -52,6 +55,7 @@ static ARGPARSE_OPTS opts[] = {
   { oReaderPort, "reader-port", 1, "|N|connect to reader at port N"},
   { oDebug,	"debug"     ,4|16, "set debugging flags"},
   { oDebugAll, "debug-all" ,0, "enable full debugging"},
+  { oGenRandom, "gen-random", 4, "|N|generate N bytes of random"},
   {0}
 };
 
@@ -106,6 +110,7 @@ main (int argc, char **argv )
   int slot, rc;
   int reader_port = 32768; /* First USB reader. */
   struct app_ctx_s appbuf;
+  unsigned long gen_random = 0;
 
   memset (&appbuf, 0, sizeof appbuf);
 
@@ -134,6 +139,7 @@ main (int argc, char **argv )
         case oVerbose: opt.verbose++; break;
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
+        case oGenRandom: gen_random = pargs.r.ret_ulong; break;
         default : pargs.err = 2; break;
 	}
     }
@@ -149,20 +155,49 @@ main (int argc, char **argv )
   slot = apdu_open_reader (reader_port);
   if (slot == -1)
     exit (1);
-
-  rc = atr_dump (slot, stdout); 
-  if (rc)
-    log_error ("can't dump ATR: %s\n", gpg_strerror (rc));
+  
+  if (!gen_random)
+    {
+      rc = atr_dump (slot, stdout); 
+      if (rc)
+        log_error ("can't dump ATR: %s\n", gpg_strerror (rc));
+    }
 
   appbuf.slot = slot;
   rc = app_select_openpgp (&appbuf, NULL, NULL);
   if (rc)
     log_error ("selecting openpgp failed: %s\n", gpg_strerror (rc));
   else
-    log_info ("openpgp application selected\n");
+    {
+      appbuf.initialized = 1;
+      log_info ("openpgp application selected\n");
 
+      if (gen_random)
+        {
+          size_t nbytes;
+          unsigned char *buffer;
+          
+          buffer = xmalloc (4096);
+          do 
+            {
+              nbytes = gen_random > 4096? 4096 : gen_random;
+              rc = app_get_challenge (&appbuf, nbytes, buffer);
+              if (rc)
+                log_error ("app_get_challenge failed: %s\n",gpg_strerror (rc));
+              else
+                {
+                  if (fwrite (buffer, nbytes, 1, stdout) != 1)
+                    log_error ("writing to stdout failed: %s\n",
+                               strerror (errno));
+                  gen_random -= nbytes;
+                }
+            }
+          while (gen_random && !log_get_errorcount (0));
+          xfree (buffer);
+        }
+    }
 
-  return 0;
+  return log_get_errorcount (0)? 2:0;
 }
 
 

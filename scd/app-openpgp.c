@@ -561,6 +561,100 @@ do_setattr (APP app, const char *name,
   return rc;
 }
 
+/* Handle the PASSWD command. */
+static int 
+do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
+               int (*pincb)(void*, const char *, char **),
+               void *pincb_arg)
+{
+  int rc = 0;
+  int chvno = atoi (chvnostr);
+  char *pinvalue;
+
+  if (reset_mode && chvno == 3)
+    {
+      rc = gpg_error (GPG_ERR_INV_ID);
+      goto leave;
+    }
+  else if (reset_mode || chvno == 3)
+    {
+      rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
+      if (rc)
+        {
+          log_error ("error getting PIN: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+      rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
+      xfree (pinvalue);
+      if (rc)
+        {
+          log_error ("verify CHV3 failed: rc=%04X\n", rc);
+          goto leave;
+        }
+    }
+  else if (chvno == 1)
+    {
+      rc = pincb (pincb_arg, "Signature PIN", &pinvalue); 
+      if (rc)
+        {
+          log_error ("error getting PIN: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+      rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
+      xfree (pinvalue);
+      if (rc)
+        {
+          log_error ("verify CHV1 failed: rc=%04X\n", rc);
+          goto leave;
+        }
+    }
+  else if (chvno == 2)
+    {
+      rc = pincb (pincb_arg, "Decryption PIN", &pinvalue); 
+      if (rc)
+        {
+          log_error ("error getting PIN: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+      rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
+      xfree (pinvalue);
+      if (rc)
+        {
+          log_error ("verify CHV2 failed: rc=%04X\n", rc);
+          goto leave;
+        }
+    }
+  else
+    {
+      rc = gpg_error (GPG_ERR_INV_ID);
+      goto leave;
+    }
+
+  
+  rc = pincb (pincb_arg, chvno == 1? "New Signature PIN" :
+                         chvno == 2? "New Decryption PIN" :
+                         chvno == 3? "New Admin PIN" : "?", &pinvalue); 
+  if (rc)
+    {
+      log_error ("error getting new PIN: %s\n", gpg_strerror (rc));
+      goto leave;
+    }
+
+  if (reset_mode)
+    rc = iso7816_reset_retry_counter (app->slot, 0x80 + chvno,
+                                      pinvalue, strlen (pinvalue));
+  else
+    rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,
+                                        NULL, 0,
+                                        pinvalue, strlen (pinvalue));
+  xfree (pinvalue);
+
+
+ leave:
+  return rc;
+}
+
+
 
 /* Handle the GENKEY command. */
 static int 
@@ -630,7 +724,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
     }
 
   xfree (buffer); buffer = NULL;
-#if 0
+#if 1
   log_info ("please wait while key is being generated ...\n");
   start_at = time (NULL);
   rc = iso7816_generate_keypair 
@@ -816,7 +910,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
      the card.  This is allows for a meaningful error message in case
      the key on the card has been replaced but the shadow information
      known to gpg was not updated.  If there is no fingerprint, gpg
-     will detect the bodus signature anyway die to the
+     will detect a bogus signature anyway due to the
      verify-after-signing feature. */
   if (fpr)
     {
@@ -880,6 +974,107 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
     }
 
   rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
+  return rc;
+}
+
+/* Compute a digital signature using the INTERNAL AUTHENTICATE command
+   on INDATA which is expected to be the raw message digest. For this
+   application the KEYIDSTR consists of the serialnumber and the
+   fingerprint delimited by a slash.
+
+   Note that this fucntion may return the error code
+   GPG_ERR_WRONG_CARD to indicate that the card currently present does
+   not match the one required for the requested action (e.g. the
+   serial number does not match). */
+static int 
+do_auth (APP app, const char *keyidstr,
+         int (*pincb)(void*, const char *, char **),
+         void *pincb_arg,
+         const void *indata, size_t indatalen,
+         unsigned char **outdata, size_t *outdatalen )
+{
+  int rc;
+  unsigned char tmp_sn[20]; /* actually 16 but we use it also for the fpr. */
+  const char *s;
+  int n;
+  const char *fpr = NULL;
+
+  if (!keyidstr || !*keyidstr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (indatalen > 50) /* For a 1024 bit key. */
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Check whether an OpenPGP card of any version has been requested. */
+  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
+    return gpg_error (GPG_ERR_INV_ID);
+  
+  for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+    ;
+  if (n != 32)
+    return gpg_error (GPG_ERR_INV_ID);
+  else if (!*s)
+    ; /* no fingerprint given: we allow this for now. */
+  else if (*s == '/')
+    fpr = s + 1; 
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+
+  for (s=keyidstr, n=0; n < 16; s += 2, n++)
+    tmp_sn[n] = xtoi_2 (s);
+
+  if (app->serialnolen != 16)
+    return gpg_error (GPG_ERR_INV_CARD);
+  if (memcmp (app->serialno, tmp_sn, 16))
+    return gpg_error (GPG_ERR_WRONG_CARD);
+
+  /* If a fingerprint has been specified check it against the one on
+     the card.  This is allows for a meaningful error message in case
+     the key on the card has been replaced but the shadow information
+     known to gpg was not updated.  If there is no fingerprint, gpg
+     will detect a bogus signature anyway due to the
+     verify-after-signing feature. */
+  if (fpr)
+    {
+      for (s=fpr, n=0; hexdigitp (s); s++, n++)
+        ;
+      if (n != 40)
+        return gpg_error (GPG_ERR_INV_ID);
+      else if (!*s)
+        ; /* okay */
+      else
+        return gpg_error (GPG_ERR_INV_ID);
+
+      for (s=fpr, n=0; n < 20; s += 2, n++)
+        tmp_sn[n] = xtoi_2 (s);
+      rc = compare_fingerprint (app, 3, tmp_sn);
+      if (rc)
+        return rc;
+    }
+
+  if (!app->did_chv2) 
+    {
+      char *pinvalue;
+
+      rc = pincb (pincb_arg, "Authentication/Decryption PIN", &pinvalue); 
+      if (rc)
+        {
+          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+
+      rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
+      xfree (pinvalue);
+      if (rc)
+        {
+          log_error ("verify CHV2 failed\n");
+          rc = gpg_error (GPG_ERR_GENERAL);
+          return rc;
+        }
+      app->did_chv2 = 1;
+    }
+
+  rc = iso7816_internal_authenticate (app->slot, indata, indatalen,
+                                      outdata, outdatalen);
   return rc;
 }
 
@@ -1017,7 +1212,9 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
       app->fnc.setattr = do_setattr;
       app->fnc.genkey = do_genkey;
       app->fnc.sign = do_sign;
+      app->fnc.auth = do_auth;
       app->fnc.decipher = do_decipher;
+      app->fnc.change_pin = do_change_pin;
    }
 
 leave:

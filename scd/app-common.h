@@ -44,6 +44,11 @@ struct app_ctx_s {
                  void *pincb_arg,
                  const void *indata, size_t indatalen,
                  unsigned char **outdata, size_t *outdatalen );
+    int (*auth) (APP app, const char *keyidstr,
+                 int (*pincb)(void*, const char *, char **),
+                 void *pincb_arg,
+                 const void *indata, size_t indatalen,
+                 unsigned char **outdata, size_t *outdatalen);
     int (*decipher) (APP app, const char *keyidstr,
                      int (pincb)(void*, const char *, char **),
                      void *pincb_arg,
@@ -53,6 +58,10 @@ struct app_ctx_s {
                    const char *keynostr, unsigned int flags,
                    int (*pincb)(void*, const char *, char **),
                    void *pincb_arg);
+    int (*change_pin) (APP app, CTRL ctrl,
+                       const char *chvnostr, int reset_mode,
+                       int (*pincb)(void*, const char *, char **),
+                       void *pincb_arg);
   } fnc;
 
 
@@ -71,6 +80,11 @@ int app_sign (APP app, const char *keyidstr, int hashalgo,
               void *pincb_arg,
               const void *indata, size_t indatalen,
               unsigned char **outdata, size_t *outdatalen );
+int app_auth (APP app, const char *keyidstr,
+              int (*pincb)(void*, const char *, char **),
+              void *pincb_arg,
+              const void *indata, size_t indatalen,
+              unsigned char **outdata, size_t *outdatalen);
 int app_decipher (APP app, const char *keyidstr,
                   int (pincb)(void*, const char *, char **),
                   void *pincb_arg,
@@ -79,6 +93,11 @@ int app_decipher (APP app, const char *keyidstr,
 int app_genkey (APP app, CTRL ctrl, const char *keynostr, unsigned int flags,
                 int (*pincb)(void*, const char *, char **),
                 void *pincb_arg);
+int app_get_challenge (APP app, size_t nbytes, unsigned char *buffer);
+int app_change_pin (APP app, CTRL ctrl, const char *chvnostr, int reset_mode,
+                    int (*pincb)(void*, const char *, char **),
+                    void *pincb_arg);
+
 
 /*-- app-openpgp.c --*/
 int app_select_openpgp (APP app, unsigned char **sn, size_t *snlen);

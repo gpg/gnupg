@@ -507,6 +507,8 @@ cmd_setdata (ASSUAN_CONTEXT ctx, char *line)
     ;
   if (*p)
     return set_error (Parameter_Error, "invalid hexstring");
+  if (!n)
+    return set_error (Parameter_Error, "no data given");
   if ((n&1))
     return set_error (Parameter_Error, "odd number of digits");
   n /= 2;
@@ -595,6 +597,52 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     {
       log_error ("card_sign failed: %s\n", gpg_strerror (rc));
+    }
+  else
+    {
+      rc = assuan_send_data (ctx, outdata, outdatalen);
+      xfree (outdata);
+      if (rc)
+        return rc; /* that is already an assuan error code */
+    }
+
+  return map_to_assuan_status (rc);
+}
+
+/* PKAUTH <hexified_id>
+
+ */
+static int
+cmd_pkauth (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  unsigned char *outdata;
+  size_t outdatalen;
+  char *keyidstr;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  if (!ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  /* We have to use a copy of the key ID because the function may use
+     the pin_cb which in turn uses the assuan line buffer and thus
+     overwriting the original line with the keyid */
+  keyidstr = strdup (line);
+  if (!keyidstr)
+    return ASSUAN_Out_Of_Core;
+  
+  rc = app_auth (ctrl->app_ctx,
+                 keyidstr,
+                 pin_cb, ctx,
+                 ctrl->in_data.value, ctrl->in_data.valuelen,
+                 &outdata, &outdatalen);
+  free (keyidstr);
+  if (rc)
+    {
+      log_error ("app_auth_sign failed: %s\n", gpg_strerror (rc));
     }
   else
     {
@@ -746,6 +794,85 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+/* RANDOM <nbytes>
+
+   Get NBYTES of random from the card and send them back as data. 
+*/
+static int
+cmd_random (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  size_t nbytes;
+  unsigned char *buffer;
+
+  if (!*line)
+    return set_error (Parameter_Error, "number of requested bytes missing");
+  nbytes = strtoul (line, NULL, 0);
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  if (!ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  buffer = xtrymalloc (nbytes);
+  if (!buffer)
+    return ASSUAN_Out_Of_Core;
+
+  rc = app_get_challenge (ctrl->app_ctx, nbytes, buffer);
+  if (!rc)
+    {
+      rc = assuan_send_data (ctx, buffer, nbytes);
+      xfree (buffer);
+      return rc; /* that is already an assuan error code */
+    }
+  xfree (buffer);
+
+  return map_to_assuan_status (rc);
+}
+
+
+/* PASSWD [--reset] <chvno>
+  
+   Change the PIN or reset thye retry counter of the card holder
+   verfication vector CHVNO. */
+static int
+cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *chvnostr;
+  int reset_mode = has_option (line, "--reset");
+
+  /* Skip over options. */
+  while (*line == '-' && line[1] == '-')
+    {
+      while (!spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  if (!*line)
+    return set_error (Parameter_Error, "no CHV number given");
+  chvnostr = line;
+  while (!spacep (line))
+    line++;
+  *line = 0;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  if (!ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  rc = app_change_pin (ctrl->app_ctx, ctrl, chvnostr, reset_mode, pin_cb, ctx
+);
+  if (rc)
+    log_error ("command passwd failed: %s\n", gpg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
 
 
 
@@ -763,11 +890,14 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "READKEY",      cmd_readkey },
     { "SETDATA",      cmd_setdata },
     { "PKSIGN",       cmd_pksign },
+    { "PKAUTH",       cmd_pkauth },
     { "PKDECRYPT",    cmd_pkdecrypt },
     { "INPUT",        NULL }, 
     { "OUTPUT",       NULL }, 
     { "SETATTR",      cmd_setattr },
     { "GENKEY",       cmd_genkey },
+    { "RANDOM",       cmd_random },
+    { "PASSWD",       cmd_passwd },
     { NULL }
   };
   int i, rc;
