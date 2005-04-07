@@ -1,3 +1,13 @@
+2005-04-07  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (ccid_slot_status): Fixed debug messages.
+
+	* card-util.c (card_edit): Add command "verify".  Enhanced admin
+	command to allow optional arguments "on", "off" and "verify".
+	(card_status): Print private DOs in colon mode.
+	* app-openpgp.c (do_check_pin): Add hack to allow verification of
+	CHV3.
+
 2005-04-01  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (keygen_set_std_prefs): Explain the chosen order of

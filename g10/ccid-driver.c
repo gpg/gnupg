@@ -1303,12 +1303,12 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
     {
       if (!retries)
         {
-          fprintf (stderr, "CALLING USB_CLEAR_HALT\n");
+          DEBUGOUT ("USB: CALLING USB_CLEAR_HALT\n");
           usb_clear_halt (handle->idev, handle->ep_bulk_in);
           usb_clear_halt (handle->idev, handle->ep_bulk_out);
         }
       else
-          fprintf (stderr, "RETRYING AGIAN\n");
+          DEBUGOUT ("USB: RETRYING bulk_in AGAIN\n");
       retries++;
       goto retry;
     }

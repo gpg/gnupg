@@ -1545,7 +1545,12 @@ do_decipher (app_t app, const char *keyidstr,
    cheap check on the PIN: If there is something wrong with the PIN
    entry system, only the regular CHV will get blocked and not the
    dangerous CHV3.  KEYIDSTR is the usual card's serial number; an
-   optional fingerprint part will be ignored. */
+   optional fingerprint part will be ignored. 
+
+   There is a special mode if the keyidstr is "<serialno>[CHV3]" with
+   the "[CHV3]" being a literal string:  The Admin Pin is checked if
+   and only if the retry counter is still at 3.
+*/
 static int 
 do_check_pin (app_t app, const char *keyidstr,
               int (pincb)(void*, const char *, char **),
@@ -1554,6 +1559,7 @@ do_check_pin (app_t app, const char *keyidstr,
   unsigned char tmp_sn[20]; 
   const char *s;
   int n;
+  int admin_pin = 0;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1570,6 +1576,8 @@ do_check_pin (app_t app, const char *keyidstr,
     ; /* No fingerprint given: we allow this for now. */
   else if (*s == '/')
     ; /* We ignore a fingerprint. */
+  else if (!strcmp (s, "[CHV3]") )
+    admin_pin = 1;
   else
     return gpg_error (GPG_ERR_INV_ID);
 
@@ -1585,7 +1593,40 @@ do_check_pin (app_t app, const char *keyidstr,
      problem and the check above is merely for a graceful failure
      between operations. */
 
-  return verify_chv2 (app, pincb, pincb_arg);
+  if (admin_pin)
+    {
+      void *relptr;
+      unsigned char *value;
+      size_t valuelen;
+      int count;
+      
+      relptr = get_one_do (app, 0x00C4, &value, &valuelen);
+      if (!relptr || valuelen < 7)
+        {
+          log_error (_("error retrieving CHV status from card\n"));
+          xfree (relptr);
+          return gpg_error (GPG_ERR_CARD);
+        }
+      count = value[6];
+      xfree (relptr);
+
+      if (!count)
+        {
+          log_info (_("card is permanently locked!\n"));
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+      else if (value[6] < 3)
+        {
+          log_info (_("verification of Admin PIN is currently prohibited "
+                      "through this command\n"));
+          return gpg_error (GPG_ERR_GENERAL);
+        }
+
+      app->did_chv3 = 0; /* Force verification.  */
+      return verify_chv3 (app, pincb, pincb_arg);
+    }
+  else
+    return verify_chv2 (app, pincb, pincb_arg);
 }
 
 

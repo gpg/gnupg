@@ -287,6 +287,7 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
   int rc;
   unsigned int uval;
   const unsigned char *thefpr;
+  int i;
 
   if (serialno && serialnobuflen)
     *serialno = 0;
@@ -362,6 +363,17 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       fprintf (fp, "pinretry:%d:%d:%d:\n",
                    info.chvretry[0], info.chvretry[1], info.chvretry[2]);
       fprintf (fp, "sigcount:%lu:::\n", info.sig_counter);
+
+      for (i=0; i < 4; i++)
+        {
+          if (info.private_do[i])
+            {
+              fprintf (fp, "private_do:%d:", i+1);
+              print_string (fp, info.private_do[i],
+                            strlen (info.private_do[i]), ':');
+              fputs (":\n", fp);
+            }
+        }
 
       fputs ("cafpr:", fp);
       print_sha1_fpr_colon (fp, info.cafpr1valid? info.cafpr1:NULL);
@@ -1282,7 +1294,7 @@ card_store_subkey (KBNODE node, int use)
 enum cmdids
   {
     cmdNOP = 0,
-    cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG,
+    cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO,
     cmdINVCMD
@@ -1314,6 +1326,7 @@ static struct
     { "forcesig", cmdFORCESIG, 1, N_("toggle the signature force PIN flag")},
     { "generate", cmdGENERATE, 1, N_("generate new keys")},
     { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
+    { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
     /* Note, that we do not announce this command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { NULL, cmdINVCMD, 0, NULL } 
@@ -1485,12 +1498,32 @@ card_edit (STRLIST commands)
           break;
 
 	case cmdADMIN:
-	  allow_admin=!allow_admin;
+          if ( !strcmp (arg_string, "on") )
+            allow_admin = 1;
+          else if ( !strcmp (arg_string, "off") )
+            allow_admin = 0;
+          else if ( !strcmp (arg_string, "verify") )
+            {
+              /* Force verification of the Admin Command.  However,
+                 this is only done if the retry counter is at initial
+                 state.  */
+              char *tmp = xmalloc (strlen (serialnobuf) + 6 + 1);
+              strcpy (stpcpy (tmp, serialnobuf), "[CHV3]");
+              allow_admin = !agent_scd_checkpin (tmp);
+              xfree (tmp);
+            }
+          else /* Toggle. */
+            allow_admin=!allow_admin;
 	  if(allow_admin)
 	    tty_printf(_("Admin commands are allowed\n"));
 	  else
 	    tty_printf(_("Admin commands are not allowed\n"));
 	  break;
+
+        case cmdVERIFY:
+          agent_scd_checkpin (serialnobuf);
+          redisplay = 1;
+          break;
 
         case cmdLIST:
           redisplay = 1;
