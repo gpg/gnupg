@@ -107,6 +107,7 @@ typedef struct ssh_request_spec
   unsigned char type;
   ssh_request_handler_t handler;
   const char *identifier;
+  unsigned int secret_input;
 } ssh_request_spec_t;
 
 /* Type for "key modifier functions", which are necessary since
@@ -160,26 +161,26 @@ typedef struct ssh_key_type_spec
 
 /* Prototypes.  */
 static gpg_error_t ssh_handler_request_identities (ctrl_t ctrl,
-                                                   estream_t request,
-                                                   estream_t response);
+						   estream_t request,
+						   estream_t response);
 static gpg_error_t ssh_handler_sign_request (ctrl_t ctrl,
-                                             estream_t request,
-                                             estream_t response);
+					     estream_t request,
+					     estream_t response);
 static gpg_error_t ssh_handler_add_identity (ctrl_t ctrl,
-                                             estream_t request,
-                                             estream_t response);
+					     estream_t request,
+					     estream_t response);
 static gpg_error_t ssh_handler_remove_identity (ctrl_t ctrl,
-                                                estream_t request,
-                                                estream_t response);
+						estream_t request,
+						estream_t response);
 static gpg_error_t ssh_handler_remove_all_identities (ctrl_t ctrl,
-                                                      estream_t request,
-                                                      estream_t response);
+						      estream_t request,
+						      estream_t response);
 static gpg_error_t ssh_handler_lock (ctrl_t ctrl,
-                                     estream_t request,
-                                     estream_t response);
+				     estream_t request,
+				     estream_t response);
 static gpg_error_t ssh_handler_unlock (ctrl_t ctrl,
-                                     estream_t request,
-                                     estream_t response);
+				       estream_t request,
+				       estream_t response);
 
 static gpg_error_t ssh_key_modifier_rsa (const char *elems, gcry_mpi_t *mpis);
 static gpg_error_t ssh_signature_encoder_rsa (estream_t signature_blob,
@@ -195,19 +196,19 @@ static gpg_error_t ssh_signature_encoder_dsa (estream_t signature_blob,
 /* Associating request types with the corresponding request
    handlers.  */
 
-#define REQUEST_SPEC_DEFINE(id, name) \
-  { SSH_REQUEST_##id, ssh_handler_##name, #name }
+#define REQUEST_SPEC_DEFINE(id, name, secret_input) \
+  { SSH_REQUEST_##id, ssh_handler_##name, #name, secret_input }
 
 static ssh_request_spec_t request_specs[] =
   {
-    REQUEST_SPEC_DEFINE (REQUEST_IDENTITIES,    request_identities),
-    REQUEST_SPEC_DEFINE (SIGN_REQUEST,          sign_request),
-    REQUEST_SPEC_DEFINE (ADD_IDENTITY,          add_identity),
-    REQUEST_SPEC_DEFINE (ADD_ID_CONSTRAINED,    add_identity),
-    REQUEST_SPEC_DEFINE (REMOVE_IDENTITY,       remove_identity),
-    REQUEST_SPEC_DEFINE (REMOVE_ALL_IDENTITIES, remove_all_identities),
-    REQUEST_SPEC_DEFINE (LOCK,                  lock),
-    REQUEST_SPEC_DEFINE (UNLOCK,                unlock)
+    REQUEST_SPEC_DEFINE (REQUEST_IDENTITIES,    request_identities,    1),
+    REQUEST_SPEC_DEFINE (SIGN_REQUEST,          sign_request,          0),
+    REQUEST_SPEC_DEFINE (ADD_IDENTITY,          add_identity,          1),
+    REQUEST_SPEC_DEFINE (ADD_ID_CONSTRAINED,    add_identity,          1),
+    REQUEST_SPEC_DEFINE (REMOVE_IDENTITY,       remove_identity,       0),
+    REQUEST_SPEC_DEFINE (REMOVE_ALL_IDENTITIES, remove_all_identities, 0),
+    REQUEST_SPEC_DEFINE (LOCK,                  lock,                  0),
+    REQUEST_SPEC_DEFINE (UNLOCK,                unlock,                0)
   };
 #undef REQUEST_SPEC_DEFINE
 
@@ -1733,12 +1734,14 @@ ssh_handler_request_identities (ctrl_t ctrl,
   gcry_sexp_t key_public;
   DIR *dir;
   gpg_error_t err;
-  gpg_error_t ret_err;
   int ret;
   FILE *ctrl_fp = NULL;
   char *cardsn;
+  gpg_error_t ret_err;
 
   /* Prepare buffer stream.  */
+
+  sleep (5);
 
   key_directory = NULL;
   key_secret = NULL;
@@ -2460,8 +2463,10 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 
   gcry_sexp_release (key);
 
-  ret_err = stream_write_byte (response,
-			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+  if (! err)
+    ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
+  else
+    ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
 
   return ret_err;
 }
@@ -2496,8 +2501,10 @@ ssh_handler_remove_identity (ctrl_t ctrl, estream_t request,
   xfree (key_blob);
   gcry_sexp_release (key);
 
-  ret_err = stream_write_byte (response,
-			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+  if (! err)
+    ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
+  else
+    ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
 
   return ret_err;
 }
@@ -2523,8 +2530,11 @@ ssh_handler_remove_all_identities (ctrl_t ctrl, estream_t request,
   gpg_error_t err;
   
   err = ssh_identities_remove_all ();
-  ret_err = stream_write_byte (response,
-			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+
+  if (! err)
+    ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
+  else
+    ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
 
   return ret_err;
 }
@@ -2559,8 +2569,11 @@ ssh_handler_lock (ctrl_t ctrl, estream_t request, estream_t response)
   gpg_error_t err;
   
   err = ssh_lock ();
-  ret_err = stream_write_byte (response,
-			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+
+  if (! err)
+    ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
+  else
+    ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
 
   return ret_err;
 }
@@ -2572,22 +2585,45 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
   gpg_error_t err;
   
   err = ssh_unlock ();
-  ret_err = stream_write_byte (response,
-			   err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
+
+  if (! err)
+    ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
+  else
+    ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
 
   return ret_err;
 }
 
 
 
+static ssh_request_spec_t *
+request_spec_lookup (int type)
+{
+  ssh_request_spec_t *spec;
+  unsigned int i;
+
+  for (i = 0; i < DIM (request_specs); i++)
+    if (request_specs[i].type == type)
+      break;
+  if (i == DIM (request_specs))
+    {
+      log_info ("ssh request %u is not supported\n", type);
+      spec = NULL;
+    }
+  else
+    spec = request_specs + i;
+
+  return spec;
+}
+
 static int
 ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 {
+  ssh_request_spec_t *spec;
   estream_t response;
   estream_t request;
   unsigned char request_type;
   gpg_error_t err;
-  unsigned int i;
   int send_err;
   int ret;
   unsigned char *request_data;
@@ -2617,7 +2653,26 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
     log_info ("received ssh request of length %u\n",
               (unsigned int)request_data_size);
 
-  request = es_mopen (NULL, 0, 0, 1, realloc_secure, gcry_free, "r+");
+  if (! request_data_size)
+    {
+      send_err = 1;
+      goto out;
+      /* Broken request; FIXME.  */
+    }
+
+  request_type = request_data[0];
+  spec = request_spec_lookup (request_type);
+  if (! spec)
+    {
+      send_err = 1;
+      goto out;
+      /* Unknown request; FIXME.  */
+    }
+
+  if (spec->secret_input)
+    request = es_mopen (NULL, 0, 0, 1, realloc_secure, gcry_free, "r+");
+  else
+    request = es_mopen (NULL, 0, 0, 1, gcry_realloc, gcry_free, "r+");
   if (! request)
     {
       err = gpg_error_from_errno (errno);
@@ -2629,7 +2684,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
       err = gpg_error_from_errno (errno);
       goto out;
     }
-  err = stream_write_data (request, request_data, request_data_size);
+  err = stream_write_data (request, request_data + 1, request_data_size - 1);
   if (err)
     goto out;
   es_rewind (request);
@@ -2641,38 +2696,20 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
       goto out;
     }
 
-  err = stream_read_byte (request, &request_type);
-  if (err)
-    {
-      send_err = 1;
-      goto out;
-    }
-
-  for (i = 0; i < DIM (request_specs); i++)
-    if (request_specs[i].type == request_type)
-      break;
-  if (i == DIM (request_specs))
-    {
-      log_info ("ssh request %u is not supported\n", request_type);
-      send_err = 1;
-      goto out;
-    }
-
   if (opt.verbose)
     log_info ("ssh request handler for %s (%u) started\n",
-	       request_specs[i].identifier, request_specs[i].type);
+	       spec->identifier, spec->type);
 
-  err = (*request_specs[i].handler) (ctrl, request, response);
+  err = (*spec->handler) (ctrl, request, response);
 
   if (opt.verbose)
     {
       if (err)
         log_info ("ssh request handler for %s (%u) failed: %s\n",
-                  request_specs[i].identifier, request_specs[i].type,
-                  gpg_strerror (err));
+                  spec->identifier, spec->type, gpg_strerror (err));
       else
         log_info ("ssh request handler for %s (%u) ready\n",
-                  request_specs[i].identifier, request_specs[i].type);
+                  spec->identifier, spec->type);
     }
 
   if (err)

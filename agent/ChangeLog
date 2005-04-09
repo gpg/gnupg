@@ -1,3 +1,12 @@
+2005-04-03  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_request_spec): New member: secret_input.
+	(REQUEST_SPEC_DEFINE): New argument: secret_input.
+	(request_specs): Add secret_input flag.
+	(request_spec_lookup): New function ...
+	(ssh_request_process): ... use it here; depending on secret_input
+	flag allocate secure or non-secure memory.
+
 2005-03-02  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (sexp_key_extract): Removed FIXME, since
