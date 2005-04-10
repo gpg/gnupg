@@ -541,7 +541,7 @@ simple_pwquery (const char *cacheid,
   if (fd != -1)
     close (fd);
   if (pw)
-    spwq_free (pw);
+    spwq_secure_free (pw);
   return result;
 }
 
