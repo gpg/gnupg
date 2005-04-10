@@ -30,7 +30,7 @@ sbin_SCRIPTS = addgnupghome
 
 bin_SCRIPTS = gpgsm-gencert.sh
 
-bin_PROGRAMS = gpgconf gpg-connect-agent
+bin_PROGRAMS = gpgconf gpg-connect-agent symcryptrun
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg
 endif
@@ -38,6 +38,11 @@ endif
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a @LIBINTL@
+
+symcryptrun_SOURCES = symcryptrun.c
+symcryptrun_LDADD = -lutil ../jnlib/libjnlib.a ../common/libcommon.a \
+		    ../common/libsimple-pwquery.a $(LIBGCRYPT_LIBS) \
+		    $(GPG_ERROR_LIBS) $(LIBINTL)
 
 watchgnupg_SOURCES = watchgnupg.c 
 

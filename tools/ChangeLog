@@ -1,3 +1,9 @@
+2005-04-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (bin_PROGRAMS): Add symcryptrun.
+	(symcryptrun_SOURCES, symcryptrun_LDADD): New variables.
+	* symcryptrun.c: New file.
+
 2005-03-09  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c <dirmngr>: Add honor-http-proxy.
