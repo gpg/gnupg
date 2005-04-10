@@ -1,5 +1,7 @@
 2005-04-11  Marcus Brinkmann  <marcus@g10code.de>
 
+	* symcryptrun.c: Implement config file parsing.
+	
 	* Makefile.am (bin_PROGRAMS): Add symcryptrun.
 	(symcryptrun_SOURCES, symcryptrun_LDADD): New variables.
 	* symcryptrun.c: New file.

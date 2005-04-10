@@ -115,6 +115,8 @@ enum cmd_and_opt_values
     oVerbose	= 'v',
 
     oNoVerbose	= 500,
+    oOptions,
+    oNoOptions,
     oLogFile,
     oHomedir,
     oClass,
@@ -143,10 +145,12 @@ static ARGPARSE_OPTS opts[] =
     { oVerbose, "verbose",  0, N_("verbose") },
     { oQuiet, "quiet",      0, N_("quiet") },
     { oLogFile, "log-file", 2, N_("use a log file for the server")},
+    { oOptions,  "options"  , 2, N_("|FILE|read options from FILE")},
 
     /* Hidden options.  */
     { oNoVerbose, "no-verbose",  0, "@"},
     { oHomedir, "homedir", 2, "@" },   
+    { oNoOptions, "no-options", 0, "@" },/* shortcut for --options /dev/null */
 
     {0}
   };
@@ -771,10 +775,15 @@ int
 main (int argc, char **argv)
 {
   ARGPARSE_ARGS pargs;
-  int no_more_options = 0;
+  int orig_argc;
+  char **orig_argv;
+  FILE *configfp = NULL;
+  char *configname = NULL;
+  unsigned configlineno; 
   int mode = 0;
   int res;
   char *logfile = NULL;
+  int default_config = 1;
 
   set_strusage (my_strusage);
   log_set_prefix ("symcryptrun", 1);
@@ -786,11 +795,55 @@ main (int argc, char **argv)
 
   opt.homedir = default_homedir ();
 
+  /* Check whether we have a config file given on the commandline */
+  orig_argc = argc;
+  orig_argv = argv;
+  pargs.argc = &argc;
+  pargs.argv = &argv;
+  pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
+  while (arg_parse( &pargs, opts))
+    {
+      if (pargs.r_opt == oOptions)
+        { /* Yes there is one, so we do not try the default one, but
+	     read the option file when it is encountered at the
+	     commandline */
+          default_config = 0;
+	}
+      else if (pargs.r_opt == oNoOptions)
+        default_config = 0; /* --no-options */
+      else if (pargs.r_opt == oHomedir)
+	opt.homedir = pargs.r.ret_str;
+    }
+
+  if (default_config)
+    configname = make_filename (opt.homedir, "symcryptrun.conf", NULL );
+  
+  argc = orig_argc;
+  argv = orig_argv;
+  pargs.argc = &argc;
+  pargs.argv = &argv;
+  pargs.flags= 1;  /* do not remove the args */
+ next_pass:
+  if (configname)
+    {
+      configlineno = 0;
+      configfp = fopen (configname, "r");
+      if (!configfp)
+        {
+          if (!default_config)
+            {
+              log_error (_("option file `%s': %s\n"),
+                         configname, strerror(errno) );
+              exit(1);
+	    }
+          xfree (configname); 
+          configname = NULL;
+	}
+      default_config = 0;
+    }
+
   /* Parse the command line. */
-  pargs.argc  = &argc;
-  pargs.argv  = &argv;
-  pargs.flags =  1;  /* Do not remove the args.  */
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, &pargs, opts))
+  while (optfile_parse (configfp, configname, &configlineno, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -800,7 +853,6 @@ main (int argc, char **argv)
 	case oQuiet:     opt.quiet = 1; break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
-        case oHomedir:   opt.homedir = pargs.r.ret_str; break;
 	  
 	case oClass:	opt.class = pargs.r.ret_str; break;
 	case oProgram:	opt.program = pargs.r.ret_str; break;
@@ -808,9 +860,30 @@ main (int argc, char **argv)
 
         case oLogFile:  logfile = pargs.r.ret_str; break;
 
-        default: pargs.err = 2; break;
+        case oOptions:
+          /* Config files may not be nested (silently ignore them) */
+          if (!configfp)
+            {
+		xfree(configname);
+		configname = xstrdup(pargs.r.ret_str);
+		goto next_pass;
+	    }
+          break;
+        case oNoOptions: break; /* no-options */
+        case oHomedir: /* Ignore this option here. */; break;
+
+        default : pargs.err = configfp? 1:2; break;
 	}
     }
+  if (configfp)
+    {
+      fclose( configfp );
+      configfp = NULL;
+      configname = NULL;
+      goto next_pass;
+    }
+  xfree (configname);
+  configname = NULL;
 
   if (!mode)
     log_error (_("either %s or %s must be given\n"),
