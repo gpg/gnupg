@@ -1,3 +1,8 @@
+2005-03-31  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (start_dirmngr): Use PATHSEP_C instead of ':'.
+	* call-agent.c (start_agent): Ditto.
+
 2005-03-17  Werner Koch  <wk@g10code.com>
 
 	* certcheck.c: Fixed use of DBG_CRYPTO and DBG_X509.

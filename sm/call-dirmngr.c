@@ -218,7 +218,7 @@ start_dirmngr (void)
             }
           *p++ = 0;
           pid = atoi (p);
-          while (*p && *p != ':')
+          while (*p && *p != PATHSEP_C)
             p++;
           prot = *p? atoi (p+1) : 0;
           if (prot != 1)
