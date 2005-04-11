@@ -6,6 +6,10 @@
 	(symcryptrun_SOURCES, symcryptrun_LDADD): New variables.
 	* symcryptrun.c: New file.
 
+2005-03-31  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (start_agent): Use PATHSEP_C instead of ':'.
+
 2005-03-09  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c <dirmngr>: Add honor-http-proxy.

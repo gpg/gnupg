@@ -325,7 +325,7 @@ read_and_print_response (assuan_context_t ctx)
 
 
 
-/* Connect to teh agebnt and send the standard options.  */
+/* Connect to the agent and send the standard options.  */
 static assuan_context_t
 start_agent (void)
 {
@@ -357,7 +357,7 @@ start_agent (void)
         }
       *p++ = 0;
       pid = atoi (p);
-      while (*p && *p != ':')
+      while (*p && *p != PATHSEP_C)
         p++;
       prot = *p? atoi (p+1) : 0;
       if (prot != 1)
