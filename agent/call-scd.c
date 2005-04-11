@@ -87,7 +87,7 @@ struct inq_needpin_s {
 /* This function must be called once to initialize this module.  This
    has to be done before a second thread is spawned.  We can't do the
    static initialization because Pth emulation code might not be able
-   to do a static init; in particualr, it is not possible for W32. */
+   to do a static init; in particular, it is not possible for W32. */
 void
 initialize_module_call_scd (void)
 {
