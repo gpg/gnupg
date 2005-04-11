@@ -489,7 +489,7 @@ app_change_pin (APP app, CTRL ctrl, const char *chvnostr, int reset_mode,
 
 
 /* Perform a VERIFY operation without doing anything lese.  This may
-   be used to initialze a the PION cache for long lasting other
+   be used to initialze a the PIN cache for long lasting other
    operations.  Its use is highly application dependent. */
 int 
 app_check_pin (APP app, const char *keyidstr,

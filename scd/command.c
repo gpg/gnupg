@@ -108,7 +108,7 @@ do_reset (ctrl_t ctrl, int do_close)
 
 
 static void
-reset_notify (ASSUAN_CONTEXT ctx)
+reset_notify (assuan_context_t ctx)
 {
   CTRL ctrl = assuan_get_pointer (ctx); 
 
@@ -117,7 +117,7 @@ reset_notify (ASSUAN_CONTEXT ctx)
 
 
 static int
-option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
+option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
@@ -248,6 +248,10 @@ cmd_serialno (assuan_context_t ctx, char *line)
   time_t stamp;
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
+
+  /* FIXME: We can't do that if we are in a locked state.  Retrun an
+     appropriate erro r in that case.  IF the card has not been
+     removed we may very well continue.  */
   if (ctrl->server_local->card_removed)
     do_reset (ctrl, 0);
 
@@ -333,9 +337,10 @@ cmd_serialno (assuan_context_t ctx, char *line)
 
    The URL to be used for locating the entire public key.
      
+   Note, that this function may be even be used on a locked card.
 */
 static int
-cmd_learn (ASSUAN_CONTEXT ctx, char *line)
+cmd_learn (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc = 0;
@@ -481,9 +486,10 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 
 /* READCERT <hexified_certid>
 
+   Note, that this function may be even be used on a locked card.
  */
 static int
-cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
+cmd_readcert (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -524,7 +530,10 @@ cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
 /* READKEY <hexified_certid>
 
    Return the public key for the given cert or key ID as an standard
-   S-Expression.  */
+   S-Expression.
+
+   Note, that this function may be even be used on a locked card.
+  */
 static int
 cmd_readkey (assuan_context_t ctx, char *line)
 {
@@ -619,14 +628,16 @@ cmd_readkey (assuan_context_t ctx, char *line)
    The client should use this command to tell us the data he want to
    sign.  */
 static int
-cmd_setdata (ASSUAN_CONTEXT ctx, char *line)
+cmd_setdata (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int n;
   char *p;
   unsigned char *buf;
 
-  /* parse the hexstring */
+  /* FIXME: If we are locked return an error.  */
+
+  /* Parse the hexstring. */
   for (p=line,n=0; hexdigitp (p); p++, n++)
     ;
   if (*p)
@@ -652,7 +663,7 @@ cmd_setdata (ASSUAN_CONTEXT ctx, char *line)
 static int 
 pin_cb (void *opaque, const char *info, char **retstr)
 {
-  ASSUAN_CONTEXT ctx = opaque;
+  assuan_context_t ctx = opaque;
   char *command;
   int rc;
   unsigned char *value;
@@ -687,13 +698,15 @@ pin_cb (void *opaque, const char *info, char **retstr)
 
  */
 static int
-cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
+cmd_pksign (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
+
+  /* FIXME: If we are locked return an error.  */
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -738,13 +751,15 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 
  */
 static int
-cmd_pkauth (ASSUAN_CONTEXT ctx, char *line)
+cmd_pkauth (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
+
+  /* FIXME: If we are locked return an error.  */
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -785,13 +800,15 @@ cmd_pkauth (ASSUAN_CONTEXT ctx, char *line)
 
  */
 static int
-cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
+cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
+
+  /* FIXME: If we are locked return an error.  */
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -834,14 +851,15 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
    This command is used to retrieve data from a smartcard.  The
    allowed names depend on the currently selected smartcard
    application.  NAME must be percent and '+' escaped.  The value is
-   returned through status message, see the LESRN command for details.
+   returned through status message, see the LEARN command for details.
 
    However, the current implementation assumes that Name is not escaped;
    this works as long as noone uses arbitrary escaping. 
  
+   Note, that this function may even be used on a locked card.
 */
 static int
-cmd_getattr (ASSUAN_CONTEXT ctx, char *line)
+cmd_getattr (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -858,6 +876,8 @@ cmd_getattr (ASSUAN_CONTEXT ctx, char *line)
 
   /* (We ignore any garbage for now.) */
 
+  /* FIXME: Applications should not return sensistive data if the card
+     is locked.  */
   rc = app_getattr (ctrl->app_ctx, ctrl, keyword);
 
   TEST_CARD_REMOVAL (ctrl, rc);
@@ -878,7 +898,7 @@ cmd_getattr (ASSUAN_CONTEXT ctx, char *line)
    setattr function of the actually used application (app-*.c) for
    details.  */
 static int
-cmd_setattr (ASSUAN_CONTEXT ctx, char *orig_line)
+cmd_setattr (assuan_context_t ctx, char *orig_line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -886,6 +906,8 @@ cmd_setattr (ASSUAN_CONTEXT ctx, char *orig_line)
   int keywordlen;
   size_t nbytes;
   char *line, *linebuf;
+
+  /* FIXME: If we are locked return an error.  */
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -932,12 +954,14 @@ cmd_setattr (ASSUAN_CONTEXT ctx, char *orig_line)
 
  */
 static int
-cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
+cmd_genkey (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   char *keyno;
   int force = has_option (line, "--force");
+
+  /* FIXME: If we are locked return an error.  */
 
   /* Skip over options. */
   while ( *line == '-' && line[1] == '-' )
@@ -974,9 +998,11 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 /* RANDOM <nbytes>
 
    Get NBYTES of random from the card and send them back as data. 
+
+   Note, that this function may be even be used on a locked card.
 */
 static int
-cmd_random (ASSUAN_CONTEXT ctx, char *line)
+cmd_random (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -1016,12 +1042,14 @@ cmd_random (ASSUAN_CONTEXT ctx, char *line)
    Change the PIN or reset thye retry counter of the card holder
    verfication vector CHVNO. */
 static int
-cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
+cmd_passwd (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   char *chvnostr;
   int reset_mode = has_option (line, "--reset");
+
+  /* FIXME: If we are locked return an error.  */
 
   /* Skip over options. */
   while (*line == '-' && line[1] == '-')
@@ -1061,11 +1089,13 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
 
  */
 static int
-cmd_checkpin (ASSUAN_CONTEXT ctx, char *line)
+cmd_checkpin (assuan_context_t ctx, char *line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   char *keyidstr;
+
+  /* FIXME: If we are locked return an error.  */
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;

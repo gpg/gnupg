@@ -1,3 +1,11 @@
+2005-04-07  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_check_pin): Add hack to allow verification of
+	CHV3.
+	(get_public_key): Don't use gcry functions to create S-expressions.
+	(do_deinit, do_readkey, do_genkey, send_keypair_info): Adjust for
+	above change.
+
 2005-03-29  Moritz Schulte  <moritz@g10code.com>
 
 	* app-openpgp.c (retrieve_fpr_from_card): New function.
@@ -5,6 +13,19 @@
 	(retrieve_key_material): New function.
 	(get_public_key): Implement retrival of key through expernal
 	helper (gpg) in case the openpgp card is not cooperative enough.
+
+2005-03-16  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (parse_ccid_descriptor): Make SCM workaround
+	reader type specific.
+	(scan_or_find_devices): Do not check the interface subclass in the
+	SPR532 kludge, as this depends on the firmware version.
+	(ccid_get_atr): Get the Slot status first.  This solves the
+	problem with readers hanging on recent Linux 2.6.x.
+	(bulk_in): Add argument TIMEOUT and changed all callers to pass an
+	appropriate one.  Change the standard timeout from 10 to 5 seconds.
+	(ccid_slot_status): Add a retry code with an initial short timeout.
+	(do_close_reader): Do an usb_reset before closing the reader.
 
 2005-02-25  Werner Koch  <wk@g10code.com>
 
@@ -41,6 +62,15 @@
 	(pcsc_error_to_sw): New.
 	(reset_pcsc_reader, pcsc_get_status, pcsc_send_apdu) 
 	(open_pcsc_reader): Do proper error code mapping.
+
+2005-03-16  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (parse_ccid_descriptor): Make SCM workaround
+	reader type specific.
+	(scan_or_find_devices): Do not check the interface subclass in the
+	SPR532 kludge, as this depends on the firmware version.
+	(ccid_get_atr): Get the Slot status first.  This solves the
+	problem with readers hanging on recent Linux 2.6.x.
 
 2005-02-22  Werner Koch  <wk@g10code.com>
 
