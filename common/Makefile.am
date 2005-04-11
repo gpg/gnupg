@@ -27,6 +27,7 @@ libcommon_a_SOURCES = \
 	util.h i18n.h \
 	errors.h \
 	sexp-parse.h \
+	sexputil.c \
 	maperror.c \
 	sysutils.c sysutils.h \
 	homedir.c \

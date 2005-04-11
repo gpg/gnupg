@@ -120,6 +120,9 @@ gpg_error_t b64enc_write (struct b64state *state,
                           const void *buffer, size_t nbytes);
 gpg_error_t b64enc_finish (struct b64state *state);
 
+/*-- sexputil.c */
+gpg_error_t keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,
+                                     unsigned char *grip);
 
 /*-- homedir. c --*/
 const char *default_homedir (void);
