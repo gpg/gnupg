@@ -1,3 +1,7 @@
+2005-04-11  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c (confucius_mktmpdir): Changed to use mkdtmp(3).
+
 2005-04-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* symcryptrun.c: Implement config file parsing.

@@ -227,32 +227,17 @@ i18n_init(void)
 static char *
 confucius_mktmpdir (void)
 {
-  int res;
-  char *tmpdir;
+  char *name;
 
-  tmpdir = tmpnam (NULL);
-  if (!tmpdir)
+  name = strdup ("/tmp/gpg-XXXXXX");
+  if (!name || !mkdtemp (name))
     {
-      log_error (_("cannot create temporary directory name: %s\n"),
-		 strerror (errno));
-      return NULL;
-    }
-  tmpdir = strdup (tmpdir);
-  if (!tmpdir)
-    {
-      log_error (_("cannot copy temporary directory name: %s\n"),
-		 strerror (errno));
-      return NULL;
-    }
-  res = mkdir (tmpdir, 0700);
-  if (res < 0)
-    {
-      log_error (_("cannot create temporary directory %s: %s\n"),
-		 tmpdir, strerror (errno));
+      log_error (_("can't create temporary directory `%s': %s\n"),
+                 name?name:"", strerror (errno));
       return NULL;
     }
 
-  return tmpdir;
+  return name;
 }
 
 
@@ -702,7 +687,7 @@ confucius_main (int mode)
   tmpdir = confucius_mktmpdir ();
   if (!tmpdir)
     return 1;
-
+  
   /* TMPDIR + "/" + "in" + "\0".  */
   infile = malloc (strlen (tmpdir) + 1 + 2 + 1);
   if (!infile)
