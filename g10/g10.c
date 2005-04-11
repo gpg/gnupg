@@ -1919,7 +1919,11 @@ main( int argc, char **argv )
 			       "--list-ownertrust","--export-ownertrust","");
 	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
 	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
-          case aPipeMode: set_cmd( &cmd, aPipeMode); break;
+          case aPipeMode:
+	    deprecated_command ("--pipemode");
+            set_cmd( &cmd, aPipeMode);
+            break;
+
           case aRebuildKeydbCaches: set_cmd( &cmd, aRebuildKeydbCaches); break;
 
 #ifdef ENABLE_CARD_SUPPORT
@@ -2266,7 +2270,7 @@ main( int argc, char **argv )
 	      char *pt=pargs.r.ret_str;
 	      while(*pt)
 		{
-		  if(!isdigit(*pt))
+		  if (!isascii (*pt) || !isdigit (*pt))
 		    break;
 
 		  pt++;
@@ -3856,7 +3860,7 @@ add_notation_data( const char *string, int which )
 	if( *s=='@')
 	  saw_at=1;
 
-	if( !*s || (*s & 0x80) || (!isgraph(*s) && !isspace(*s)) )
+	if( !*s || !isascii (*s) || (!isgraph(*s) && !isspace(*s)) )
 	  {
 	    log_error(_("a notation name must have only printable characters "
 			"or spaces, and end with an '='\n") );
@@ -3873,7 +3877,7 @@ add_notation_data( const char *string, int which )
     /* we only support printable text - therefore we enforce the use
      * of only printable characters (an empty value is valid) */
     for( s++; *s ; s++ ) {
-	if ((*s & 0x80))
+	if ( isascii (*s) )
           highbit = 1;
 	else if (iscntrl(*s)) {
 	    log_error(_("a notation value must not use"
@@ -3904,7 +3908,7 @@ add_policy_url( const char *string, int which )
     }
 
   for(i=0;i<strlen(string);i++)
-    if(string[i]&0x80 || iscntrl(string[i]))
+    if( !isascii (string[i]) || iscntrl(string[i]))
       break;
 
   if(i==0 || i<strlen(string))
@@ -3937,7 +3941,7 @@ add_keyserver_url( const char *string, int which )
     }
 
   for(i=0;i<strlen(string);i++)
-    if(string[i]&0x80 || iscntrl(string[i]))
+    if( !isascii (string[i]) || iscntrl(string[i]))
       break;
 
   if(i==0 || i<strlen(string))

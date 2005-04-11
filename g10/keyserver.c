@@ -261,7 +261,8 @@ parse_keyserver_uri(const char *uri,int require_scheme,
       if(*uri=='[')
 	{
 	  for(idx=uri+1,count=1;*idx
-		&& (isxdigit(*idx) || *idx==':' || *idx=='.');idx++)
+		&& ((isascii (*idx) && isxdigit(*idx))
+                    || *idx==':' || *idx=='.');idx++)
 	    count++;
 
 	  /* Is the ipv6 literal address terminated? */

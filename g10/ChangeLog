@@ -1,4 +1,15 @@
+2005-04-11  Werner Koch  <wk@g10code.com>
+
+	* g10.c (main, add_notation_data, add_policy_url)
+	(add_keyserver_url): Use isascii() to protect the isfoo macros and
+	to replace direct tests.  Possible problems noted by Christian
+	Biere.
+	* keyserver.c (parse_keyserver_uri): Ditto.
+
 2005-04-07  Werner Koch  <wk@g10code.com>
+
+	* g10.c (main): Declare --pipemode deprecated.
+	* misc.c (deprecated_command): New.
 
 	* ccid-driver.c (ccid_slot_status): Fixed debug messages.
 

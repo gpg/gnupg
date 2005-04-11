@@ -686,6 +686,15 @@ deprecated_warning(const char *configname,unsigned int configlineno,
   log_info(_("please use \"%s%s\" instead\n"),repl1,repl2);
 }
 
+
+void
+deprecated_command (const char *name)
+{
+  log_info(_("WARNING: \"%s\" is a deprecated command - do not use it\n"),
+           name);
+}
+
+
 const char *
 compress_algo_to_string(int algo)
 {
