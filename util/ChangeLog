@@ -1,3 +1,11 @@
+2005-04-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* assuan-client.c: Fix warning on OSX.
+
+	* memrchr.c: New replacement function.
+
+	* assuan-buffer.c: Use it here.
+
 2005-04-04  Werner Koch  <wk@g10code.com>
 
 	* memory.c (xcalloc, xcalloc_secure): New wrappers.

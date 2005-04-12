@@ -34,6 +34,10 @@
 #endif
 #include "assuan-defs.h"
 
+#ifndef HAVE_MEMRCHR
+void *memrchr(const void *s, int c, size_t n);
+#endif
+
 static int
 writen (assuan_context_t ctx, const char *buffer, size_t length)
 {
