@@ -784,266 +784,149 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 }
 
 /* Retrieve the fingerprint from the card inserted in SLOT and write
-   the according hex representation (40 hex digits plus NUL character)
-   to FPR.   */
+   the according hex representation to FPR.  Caller must have provide
+   a buffer at FPR of least 41 bytes.  Returns 0 on success or an
+   error code. */
+#if GNUPG_MAJOR_VERSION > 1
 static gpg_error_t
-retrieve_fpr_from_card (int slot, char *fpr)
+retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
 {
-  const unsigned char *value;
-  unsigned char *data;
-  size_t data_n;
-  gpg_error_t err;
-  size_t value_n;
-  unsigned int i;
+  gpg_error_t err = 0;
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+  int i;
 
-  data = NULL;
+  assert (keyno >=0 && keyno <= 2);
 
-  err = iso7816_get_data (slot, 0x6E, &data, &data_n);
-  if (err)
-    /* FIXME */
-    goto out;
-
-  value = find_tlv (data, data_n, 0x00C5, &value_n);
-  if (! (value
-	 && (! (value_n > (data_n - (value - data))))
-	 && (value_n >= 60))) /* FIXME: Shouldn't this be "== 60"?  */
+  relptr = get_one_do (app, 0x00C5, &value, &valuelen, NULL);
+  if (relptr && valuelen >= 60)
     {
-      /* FIXME? */
-      err = gpg_error (GPG_ERR_CARD); /*  */
-      goto out;
+      for (i = 0; i < 20; i++)
+        sprintf (fpr + (i * 2), "%02X", value[(keyno*20)+i]);
     }
-
-  /* Copy out third key FPR.  */
-  for (i = 0; i < 20; i++)
-    sprintf (fpr + (i * 2), "%02X", (value + (2 * 20))[i]);
-
- out:
-
-  xfree (data);
-
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  xfree (relptr);
   return err;
 }
+#endif /*GNUPG_MAJOR_VERSION > 1*/
 
-/* Retrieve the next token from S, using ":" as delimiter.  */
-static char *
-retrieve_next_token (char *s)
-{
-  char *p;
 
-  p = strtok (s, ":");
-  if (! p)
-    log_error ("error while extracting token\n");
-
-  return p;
-}
-
-/* Retrieve the secret key material for the key, whose fingerprint is
-   FPR, from gpg output, which can be read through the stream FP.  The
-   RSA modulus will be stored in m/mlen, the secret exponent in
-   e/elen.  Return zero on success, one on failure.  */
-static int
-retrieve_key_material (FILE *fp, const char *fpr,
+/* Retrieve the public key material for the RSA key, whose fingerprint
+   is FPR, from gpg output, which can be read through the stream FP.
+   The RSA modulus will be stored at the address of M and MLEN, the
+   public exponent at E and ELEN.  Returns zero on success, an error
+   code on failure.  Caller must release the allocated buffers at M
+   and E if the function returns success.  */
+#if GNUPG_MAJOR_VERSION > 1
+static gpg_error_t
+retrieve_key_material (FILE *fp, const char *hexkeyid,
 		       const unsigned char **m, size_t *mlen,
 		       const unsigned char **e, size_t *elen)
 {
-  size_t line_size;
-  ssize_t line_ret;
-  char *line;
-  int ret;
-  int found_key;
-  char *token;
-  int pkd_n;
-  unsigned char *m_new;
-  unsigned char *e_new;
-  size_t m_new_n;
-  size_t e_new_n;
-  int is_rsa;
-  gcry_mpi_t mpi;
-  gcry_error_t err;
-  size_t max_length;
+  gcry_error_t err = 0;
+  char *line = NULL;    /* read_line() buffer. */
+  size_t line_size = 0; /* Helper for for read_line. */
+  int found_key = 0;    /* Helper to find a matching key. */
+  unsigned char *m_new = NULL;
+  unsigned char *e_new = NULL;
+  size_t m_new_n = 0;
+  size_t e_new_n = 0;
 
-  line_size = 0;
-  line = NULL;
-  found_key = 0;
-  pkd_n = 0;
-  m_new = NULL;
-  e_new = NULL;
-  mpi = NULL;
-  ret = 0;
-
-#warning This part should get rewritten for clarity
-  /* We should use an algorithm similar to the one used by gpgme.
-     This will reduce the size of the code at least by 50%.  [wk] */
-
-  while (1)
+  /* Loop over all records until we have found the subkey
+     corresponsing to the fingerprint. Inm general the first record
+     should be the pub record, but we don't rely on that.  Given that
+     we only need to look at one key, it is sufficient to compare the
+     keyid so that we don't need to look at "fpr" records. */
+  for (;;)
     {
-      /* FIXME?  */
-      max_length = 1024;
-      line_ret = read_line (fp, &line, &line_size, &max_length);
-      if (line_ret < 0)
+      char *p;
+      char *fields[6];
+      int nfields;
+      size_t max_length;
+      gcry_mpi_t mpi;
+      int i;
+
+      max_length = 4096;
+      i = read_line (fp, &line, &line_size, &max_length);
+      if (!i)
+        break; /* EOF. */
+      if (i < 0)
 	{
-	  ret = 1;
-	  break;
+	  err = gpg_error_from_errno (errno);
+	  goto leave; /* Error. */
 	}
-      if (! line_ret)
-	/* EOF.  */
-	/* FIXME?  */
-	break;
+      if (!max_length)
+        {
+          err = gpg_error (GPG_ERR_TRUNCATED);
+          goto leave;  /* Line truncated - we better stop processing.  */
+        }
 
-      token = retrieve_next_token (line);
-      if (! found_key)
-	{
-	  /* Key not found yet, search for key entry.  */
-	  if ((! strcmp (token, "pub")) || (! strcmp (token, "sub")))
-	    {
-	      /* Reached next key entry, parse it.  */
+      /* Parse the line into fields. */
+      for (nfields=0, p=line; p && nfields < DIM (fields); nfields++)
+        {
+          fields[nfields] = p;
+          p = strchr (p, ':');
+          if (p)
+            *(p++) = 0;
+        }
+      if (!nfields)
+        continue; /* No fields at all - skip line.  */
 
-	      /* This is the trust level (right, FIXME?).  */
-	      token = retrieve_next_token (NULL);
-	      if (! token)
-		{
-		  ret = 1;
-		  break;
-		}
+      if (!found_key)
+        {
+          if ( (!strcmp (fields[0], "sub") || !strcmp (fields[0], "pub") )
+               && nfields > 4 && !strcmp (fields[4], hexkeyid))
+            found_key = 1;
+          continue;
+      	}
+      
+      if ( !strcmp (fields[0], "sub") || !strcmp (fields[0], "pub") )
+        break; /* Next key - stop.  */
 
-	      /* This is the size.  */
-	      token = retrieve_next_token (NULL);
-	      if (! token)
-		{
-		  ret = 1;
-		  break;
-		}
-
-	      /* This is the algorithm (right, FIXME?).  */
-	      token = retrieve_next_token (NULL);
-	      if (! token)
-		{
-		  ret = 1;
-		  break;
-		}
-	      is_rsa = ! strcmp (token, "1");
-
-	      /* This is the fingerprint.  */
-	      token = retrieve_next_token (NULL);
-	      if (! token)
-		{
-		  ret = 1;
-		  break;
-		}
-
-	      if (! strcmp (token, fpr))
-		{
-		  /* Found our key.  */
-		  if (! is_rsa)
-		    {
-		      /* FIXME.  */
-		      ret = 1;
-		      break;
-		    }
-		  found_key = 1;
-		}
-	    }
-	}
+      if ( strcmp (fields[0], "pkd") )
+        continue; /* Not a key data record.  */
+      i = 0; /* Avoid erroneous compiler warning. */
+      if ( nfields < 4 || (i = atoi (fields[1])) < 0 || i > 1
+           || (!i && m_new) || (i && e_new))
+        {
+          err = gpg_error (GPG_ERR_GENERAL);
+          goto leave; /* Error: Invalid key data record or not an RSA key.  */
+        }
+      
+      err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_HEX, fields[3], 0, NULL);
+      if (err)
+        mpi = NULL;
+      else if (!i)
+        err = gcry_mpi_aprint (GCRYMPI_FMT_STD, &m_new, &m_new_n, mpi);
       else
-	{
-	  if (! strcmp (token, "sub"))
-	    /* Next key entry, break.  */
-	    break;
-
-	  if (! strcmp (token, "pkd"))
-	    {
-	      if ((pkd_n == 0) || (pkd_n == 1))
-		{
-		  /* This is the pkd index.  */
-		  token = retrieve_next_token (NULL);
-		  if (! token)
-		    {
-		      /* FIXME.  */
-		      ret = 1;
-		      break;
-		    }
-
-		  /* This is the pkd size.  */
-		  token = retrieve_next_token (NULL);
-		  if (! token)
-		    {
-		      /* FIXME.  */
-		      ret = 1;
-		      break;
-		    }
-
-		  /* This is the pkd mpi.  */
-		  token = retrieve_next_token (NULL);
-		  if (! token)
-		    {
-		      /* FIXME.  */
-		      ret = 1;
-		      break;
-		    }
-
-		  err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_HEX, token, 0, NULL);
-		  if (err)
-		    {
-		      log_error ("error while converting pkd %i from hex: %s\n",
-				 pkd_n, gcry_strerror (err));
-		      ret = 1;
-		      break;
-		    }
-
-		  if (pkd_n == 0)
-		    err = gcry_mpi_aprint (GCRYMPI_FMT_STD,
-					   &m_new, &m_new_n, mpi);
-		  else
-		    err = gcry_mpi_aprint (GCRYMPI_FMT_STD,
-					   &e_new, &e_new_n, mpi);
-		  if (err)
-		    {
-		      log_error ("error while converting pkd %i to std: %s\n",
-				 pkd_n, gcry_strerror (err));
-		      ret = 1;
-		      break;
-		    }
-		  gcry_mpi_release (mpi);
-		  mpi = NULL;
-		  pkd_n++;
-		}
-	      else
-		{
-		  /* Too many pkd entries.  */
-		  /* FIXME */
-		  ret = 1;
-		  break;
-		}
-	    }
-	}
+        err = gcry_mpi_aprint (GCRYMPI_FMT_STD, &e_new, &e_new_n, mpi);
+      gcry_mpi_release (mpi);
+      if (err)
+        goto leave;
     }
-  if (ret)
-    goto out;
-
-  if (pkd_n < 2)
+  
+  if (m_new && e_new)
     {
-      /* Not enough pkds retrieved.  */
-      ret = 1;
-      goto out;
+      *m = m_new;
+      *mlen = m_new_n;
+      m_new = NULL;
+      *e = e_new;
+      *elen = e_new_n;
+      e_new = NULL;
     }
+  else
+    err = gpg_error (GPG_ERR_GENERAL);
 
-  *m = m_new;
-  *mlen = m_new_n;
-  *e = e_new;
-  *elen = e_new_n;
-
- out:
-
-  if (ret)
-    {
-      gcry_free (m_new);
-      gcry_free (e_new);
-    }
-  gcry_mpi_release (mpi);
-  gcry_free (line);
-
-  return ret;
+ leave:
+  xfree (m_new);
+  xfree (e_new);
+  xfree (line);
+  return err;
 }
+#endif /*GNUPG_MAJOR_VERSION > 1*/
+
 
 /* Get the public key for KEYNO and store it as an S-expresion with
    the APP handle.  On error that field gets cleared.  If we already
@@ -1158,52 +1041,49 @@ get_public_key (app_t app, int keyno)
 	 The helper we use here is gpg itself, which should know about
 	 the key in any case.  */
 
-      char fpr_long[41];
-      char *fpr = fpr_long + 24;
-      char *command;
+      char fpr[41];
+      char *hexkeyid;
+      char *command = NULL;
       FILE *fp;
       int ret;
 
-      command = NULL;
+      buffer = NULL; /* We don't need buffer.  */
 
-      err = retrieve_fpr_from_card (app->slot, fpr_long);
+      err = retrieve_fpr_from_card (app, keyno, fpr);
       if (err)
 	{
 	  log_error ("error while retrieving fpr from card: %s\n",
 		     gpg_strerror (err));
 	  goto leave;
 	}
+      hexkeyid = fpr + 24;
 
       ret = asprintf (&command,
 		      "gpg --list-keys --with-colons --with-key-data '%s'",
-		      fpr_long);
+		      fpr);
       if (ret < 0)
 	{
 	  err = gpg_error_from_errno (errno);
-	  log_error ("error while creating pipe command "
-		     "for retrieving key: %s\n", gpg_strerror (err));
 	  goto leave;
 	}
 
       fp = popen (command, "r");
-      if (! fp)
+      free (command);
+      if (!fp)
 	{
 	  err = gpg_error_from_errno (errno);
-	  log_error ("error while creating pipe: %s\n", gpg_strerror (err));
+	  log_error ("running gpg failed: %s\n", gpg_strerror (err));
 	  goto leave;
 	}
 
-      ret = retrieve_key_material (fp, fpr, &m, &mlen, &e, &elen);
+      err = retrieve_key_material (fp, hexkeyid, &m, &mlen, &e, &elen);
       fclose (fp);
-      if (ret)
+      if (err)
 	{
-	  /* FIXME?  */
-	  err = gpg_error (GPG_ERR_INTERNAL);
-	  log_error ("error while retrieving key material through pipe\n");
+	  log_error ("error while retrieving key material through pipe: %s\n",
+                     gpg_strerror (err));
 	  goto leave;
 	}
-
-      buffer = NULL;
     }
 
   /* Allocate a buffer to construct the S-expression.  */
@@ -1216,11 +1096,11 @@ get_public_key (app_t app, int keyno)
       goto leave;
     }
   
-  sprintf (keybuf, "(10:public-key(3:rsa(1:n%u", (unsigned int) mlen);
+  sprintf (keybuf, "(10:public-key(3:rsa(1:n%u:", (unsigned int) mlen);
   keybuf_p = keybuf + strlen (keybuf);
   memcpy (keybuf_p, m, mlen);
   keybuf_p += mlen;
-  sprintf (keybuf_p, ")(1:e%u", (unsigned int)elen);
+  sprintf (keybuf_p, ")(1:e%u:", (unsigned int)elen);
   keybuf_p += strlen (keybuf_p);
   memcpy (keybuf_p, e, elen);
   keybuf_p += elen;

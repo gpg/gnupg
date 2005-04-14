@@ -1,3 +1,31 @@
+2005-04-14  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (retrieve_key_material): Rewritten.  Return a
+	proper error code.
+	(retrieve_next_token): Removed.
+	(retrieve_fpr_from_card): Rewritten to make use of DO caching and
+	to take the KEYNO as arg.
+	(get_public_key): Renamed variable for clarity.
+
+2005-04-12  Werner Koch  <wk@g10code.com>
+
+	Basic support for several sessions.
+	
+	* command.c (scd_command_handler): Replace the primary_connection
+	stuff by a real connection list.  Release the local context on
+	exit.
+	(scd_update_reader_status_file): Update accordingly.  Send signal
+	to all connections who registered an event signal.
+	(cmd_lock, cmd_unlock, register_commands): New commands LOCK and
+	UNLOCK.
+	(cmd_setdata, cmd_pksign, cmd_pkauth, cmd_pkdecrypt, cmd_setattr) 
+	(cmd_genkey, cmd_passwd, cmd_checkpin): Return an error if reader
+	is locked.
+	(do_reset): Handle locking.
+	(open_card): Ditto.  Share the reader slot with other sessions.
+	(get_reader_slot): New.
+	(update_card_removed): New.  Use it in the TEST_CARD_REMOVAL macro.
+
 2005-04-07  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_check_pin): Add hack to allow verification of

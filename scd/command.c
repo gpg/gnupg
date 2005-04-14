@@ -26,6 +26,9 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <signal.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+#endif
 
 #include <assuan.h>
 
@@ -38,11 +41,6 @@
 #define MAXLEN_PIN 100
 
 
-/* We keep track of the primary client using scdaemon.  This one will
-   for example receive signal on card change. */
-static ctrl_t primary_connection;
-
-
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
 
 
@@ -52,18 +50,63 @@ static ctrl_t primary_connection;
           int _r = (r);                                     \
           if (gpg_err_code (_r) == GPG_ERR_CARD_NOT_PRESENT \
               || gpg_err_code (_r) == GPG_ERR_CARD_REMOVED) \
-            (c)->server_local->card_removed = 1;            \
+            update_card_removed ((c)->reader_slot, 1);      \
        } while (0)
 
+#define IS_LOCKED(c)                                                     \
+     (locked_session && locked_session != (c)->server_local              \
+      && (c)->reader_slot != -1 && locked_session->ctrl_backlink         \
+      && (c)->reader_slot == locked_session->ctrl_backlink->reader_slot)
 
-/* Data used to associate an Assuan context with local server data */
+
+/* Data used to associate an Assuan context with local server data.
+   This object describes the local properties of one session.  */
 struct server_local_s {
+  /* We keep a list of all active sessions with the anchor at
+     SESSION_LIST (see below).  This field is used for linking. */
+  struct server_local_s *next_session; 
+
+  /* This object is usually assigned to a CTRL object (which is
+     globally visible).  While enumeratin all sessions we sometimes
+     need to access data of the CTRL object; thus we keep a
+     backpointer here. */
+  ctrl_t ctrl_backlink;
+
+  /* The Assuan context used by this session/server. */
   assuan_context_t assuan_ctx;
+
   int event_signal;        /* Or 0 if not used. */
-  int card_removed;        /* True if the card has been removed and a
-                              reset is required to continue
-                              operation. */
+
+  /* True if the card has been removed and a reset is required to
+     continue operation. */
+  int card_removed;        
 };
+
+
+/* To keep track of all running sessions, we link all active server
+   contexts and the anchor in this variable.  */
+static struct server_local_s *session_list;
+
+/* If a session has been locked we store a link to its server object
+   in this variable. */
+static struct server_local_s *locked_session;
+
+
+
+
+/* Update the CARD_REMOVED element of all sessions using the reader
+   given by SLOT to VALUE  */
+static void
+update_card_removed (int slot, int value)
+{
+  struct server_local_s *sl;
+
+  for (sl=session_list; sl; sl = sl->next_session)
+    if (sl->ctrl_backlink
+        && sl->ctrl_backlink->reader_slot == slot)
+      sl->card_removed = value;
+}
+
 
 
 /* Check whether the option NAME appears in LINE */
@@ -79,10 +122,13 @@ has_option (const char *line, const char *name)
 
 
 /* Reset the card and free the application context.  With DO_CLOSE set
-   to true, close the reader and don't do just a reset. */
+   to true and this is the last session with a reference to teh
+   reader, close the reader and don't do just a reset. */
 static void
 do_reset (ctrl_t ctrl, int do_close)
 {
+  int slot = ctrl->reader_slot;
+
   if (ctrl->card_ctx)
     {
       card_close (ctrl->card_ctx);
@@ -97,20 +143,61 @@ do_reset (ctrl_t ctrl, int do_close)
     }
   if (ctrl->reader_slot != -1)
     {
-      if (do_close || apdu_reset (ctrl->reader_slot))
+      struct server_local_s *sl;
+
+      /* If we are the only session with the reader open we may close
+         it.  If not, do a reset unless the a lock is held on the
+         reader.  */
+      for (sl=session_list; sl; sl = sl->next_session)
+        if (sl != ctrl->server_local
+            && sl->ctrl_backlink->reader_slot == ctrl->reader_slot)
+          break;
+      if (sl) /* There is another session with the reader open. */
         {
-          apdu_close_reader (ctrl->reader_slot);
-          ctrl->reader_slot = -1;
+          if ( IS_LOCKED (ctrl) ) /* If it is locked, release it. */
+            ctrl->reader_slot = -1;
+          else
+            {
+              if (do_close) /* Always mark reader unused. */
+                ctrl->reader_slot = -1;
+              else if (apdu_reset (ctrl->reader_slot)) /* Reset only if
+                                                          not locked */
+                {
+                  /* The reset failed.  Mark the reader as closed. */
+                  ctrl->reader_slot = -1;
+                }
+
+              if (locked_session && ctrl->server_local == locked_session)
+                {
+                  locked_session = NULL;
+                  log_debug ("implicitly unlocking due to RESET\n");
+                }
+            }
+        }
+      else /* No other session has the reader open.  */
+        {
+          if (do_close || apdu_reset (ctrl->reader_slot))
+            {
+              apdu_close_reader (ctrl->reader_slot);
+              ctrl->reader_slot = -1;
+            }
+          if ( IS_LOCKED (ctrl) )
+            {
+              log_debug ("WARNING: cleaning up stale session lock\n");
+              locked_session =  NULL;
+            }
         }
     }
-  ctrl->server_local->card_removed = 0;
+
+  /* Reset card removed flag for the current reader.  */
+  update_card_removed (slot, 0);
 }
 
 
 static void
 reset_notify (assuan_context_t ctx)
 {
-  CTRL ctrl = assuan_get_pointer (ctx); 
+  ctrl_t ctrl = assuan_get_pointer (ctx); 
 
   do_reset (ctrl, 0);
 }
@@ -134,6 +221,27 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 }
 
 
+/* Return the slot of the current reader or open the reader if no
+   other sessions are using a reader.  Note, that we currently support
+   only one reader but most of the code (except for this function)
+   should be able to cope with several readers.  */
+static int
+get_reader_slot (void)
+{
+  struct server_local_s *sl;
+  int slot= -1;
+
+  for (sl=session_list; sl; sl = sl->next_session)
+    if (sl->ctrl_backlink
+        && (slot = sl->ctrl_backlink->reader_slot) != -1)
+      break;
+
+  if (slot == -1)
+    slot = apdu_open_reader (opt.reader_port);
+
+  return slot;
+}
+
 /* If the card has not yet been opened, do it.  Note that this
    function returns an Assuan error, so don't map the error a second
    time */
@@ -154,10 +262,13 @@ open_card (ctrl_t ctrl, const char *apptype)
   if (ctrl->card_ctx)
     return 0; /* Already initialized using a card context. */
 
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_EBUSY);
+
   if (ctrl->reader_slot != -1)
     slot = ctrl->reader_slot;
   else
-    slot = apdu_open_reader (opt.reader_port);
+    slot = get_reader_slot ();
   ctrl->reader_slot = slot;
   if (slot == -1)
     err = gpg_error (GPG_ERR_CARD);
@@ -177,9 +288,7 @@ open_card (ctrl_t ctrl, const char *apptype)
         err = card_open (&ctrl->card_ctx);
     }
 
-  if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
-    ctrl->server_local->card_removed = 1;
-
+  TEST_CARD_REMOVAL (ctrl, err);
   return map_to_assuan_status (err);
 }
 
@@ -248,12 +357,12 @@ cmd_serialno (assuan_context_t ctx, char *line)
   time_t stamp;
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
-
-  /* FIXME: We can't do that if we are in a locked state.  Retrun an
-     appropriate erro r in that case.  IF the card has not been
-     removed we may very well continue.  */
   if (ctrl->server_local->card_removed)
-    do_reset (ctrl, 0);
+    {
+      if ( IS_LOCKED (ctrl) )
+        return gpg_error (GPG_ERR_EBUSY);
+      do_reset (ctrl, 0);
+    }
 
   if ((rc = open_card (ctrl, *line? line:NULL)))
     return rc;
@@ -342,7 +451,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
 static int
 cmd_learn (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
   int idx;
 
@@ -491,7 +600,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 static int
 cmd_readcert (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *cert;
   size_t ncert;
@@ -630,12 +739,13 @@ cmd_readkey (assuan_context_t ctx, char *line)
 static int
 cmd_setdata (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int n;
   char *p;
   unsigned char *buf;
 
-  /* FIXME: If we are locked return an error.  */
+  if (locked_session && locked_session != ctrl->server_local)
+    return gpg_error (GPG_ERR_EBUSY);
 
   /* Parse the hexstring. */
   for (p=line,n=0; hexdigitp (p); p++, n++)
@@ -700,13 +810,14 @@ pin_cb (void *opaque, const char *info, char **retstr)
 static int
 cmd_pksign (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
 
-  /* FIXME: If we are locked return an error.  */
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_EBUSY);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -753,13 +864,14 @@ cmd_pksign (assuan_context_t ctx, char *line)
 static int
 cmd_pkauth (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
 
-  /* FIXME: If we are locked return an error.  */
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_EBUSY);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -802,13 +914,14 @@ cmd_pkauth (assuan_context_t ctx, char *line)
 static int
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
 
-  /* FIXME: If we are locked return an error.  */
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_EBUSY);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -861,7 +974,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 static int
 cmd_getattr (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *keyword;
 
@@ -900,14 +1013,15 @@ cmd_getattr (assuan_context_t ctx, char *line)
 static int
 cmd_setattr (assuan_context_t ctx, char *orig_line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *keyword;
   int keywordlen;
   size_t nbytes;
   char *line, *linebuf;
 
-  /* FIXME: If we are locked return an error.  */
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_EBUSY);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -956,12 +1070,13 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
 static int
 cmd_genkey (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *keyno;
   int force = has_option (line, "--force");
 
-  /* FIXME: If we are locked return an error.  */
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_EBUSY);
 
   /* Skip over options. */
   while ( *line == '-' && line[1] == '-' )
@@ -1004,7 +1119,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 static int
 cmd_random (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   size_t nbytes;
   unsigned char *buffer;
@@ -1044,12 +1159,13 @@ cmd_random (assuan_context_t ctx, char *line)
 static int
 cmd_passwd (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *chvnostr;
   int reset_mode = has_option (line, "--reset");
 
-  /* FIXME: If we are locked return an error.  */
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_EBUSY);
 
   /* Skip over options. */
   while (*line == '-' && line[1] == '-')
@@ -1091,11 +1207,12 @@ cmd_passwd (assuan_context_t ctx, char *line)
 static int
 cmd_checkpin (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *keyidstr;
 
-  /* FIXME: If we are locked return an error.  */
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_EBUSY);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -1122,15 +1239,83 @@ cmd_checkpin (assuan_context_t ctx, char *line)
 }
 
 
+/* LOCK [--wait]
+
+   Grant exclusive card access to this session.  Note that there is
+   no lock counter used and a second lock from the same session will
+   get ignore.  A single unlock (or RESET) unlocks the session.
+   Return GPG_ERR_EBUSY if another session has locked the reader.
+
+   If the option --wait is given the command will wait until a
+   lock has been released.
+ */
+static int
+cmd_lock (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int rc = 0;
+
+ retry:
+  if (locked_session)
+    {
+      if (locked_session != ctrl->server_local)
+        rc = gpg_error (GPG_ERR_EBUSY);
+    }
+  else
+    locked_session = ctrl->server_local;
+
+#ifdef USE_GNU_PTH
+  if (rc && has_option (line, "--wait"))
+    {
+      pth_sleep (1); /* Better implement an event mechanism. However,
+                        for card operations this should be
+                        sufficient. */
+      goto retry;
+    }
+#endif /*USE_GNU_PTH*/
+  
+  if (rc)
+    log_error ("cmd_lock failed: %s\n", gpg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
+
+/* UNLOCK
+
+   Release exclusive card access.
+ */
+static int
+cmd_unlock (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int rc = 0;
+
+  if (locked_session)
+    {
+      if (locked_session != ctrl->server_local)
+        rc = gpg_error (GPG_ERR_EBUSY);
+      else
+        locked_session = NULL;
+    }
+  else
+    rc = gpg_error (GPG_ERR_NOT_LOCKED);
+
+  if (rc)
+    log_error ("cmd_unlock failed: %s\n", gpg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
+
+
 
 
 /* Tell the assuan library about our commands */
 static int
-register_commands (ASSUAN_CONTEXT ctx)
+register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    int (*handler)(ASSUAN_CONTEXT, char *line);
+    int (*handler)(assuan_context_t, char *line);
   } table[] = {
     { "SERIALNO",     cmd_serialno },
     { "LEARN",        cmd_learn },
@@ -1148,6 +1333,8 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "RANDOM",       cmd_random },
     { "PASSWD",       cmd_passwd },
     { "CHECKPIN",     cmd_checkpin },
+    { "LOCK",         cmd_lock },
+    { "UNLOCK",       cmd_unlock },
     { NULL }
   };
   int i, rc;
@@ -1172,7 +1359,7 @@ void
 scd_command_handler (int listen_fd)
 {
   int rc;
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   struct server_control_s ctrl;
 
   memset (&ctrl, 0, sizeof ctrl);
@@ -1204,20 +1391,24 @@ scd_command_handler (int listen_fd)
       scd_exit (2);
     }
   assuan_set_pointer (ctx, &ctrl);
+
+  /* Allocate and initialize the server object.  Put it into the list
+     of active sessions. */
   ctrl.server_local = xcalloc (1, sizeof *ctrl.server_local);
+  ctrl.server_local->next_session = session_list;
+  session_list = ctrl.server_local;
+  ctrl.server_local->ctrl_backlink = &ctrl;
   ctrl.server_local->assuan_ctx = ctx;
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
 
-  /* Store the primary connection's assuan context. */
-  if (!primary_connection)
-    primary_connection = &ctrl;
-
   /* We open the reader right at startup so that the ticker is able to
      update the status file. */
   if (ctrl.reader_slot == -1)
-    ctrl.reader_slot = apdu_open_reader (opt.reader_port);
+    {
+      ctrl.reader_slot = get_reader_slot ();
+    }
 
   /* Command processing loop. */
   for (;;)
@@ -1241,13 +1432,26 @@ scd_command_handler (int listen_fd)
         }
     }
 
-  /* The next client will be the primary conenction if this one
-     terminates. */
-  if (primary_connection == &ctrl)
-    primary_connection = NULL;
+  /* Cleanup.  */
+  do_reset (&ctrl, 1); 
 
-  do_reset (&ctrl, 1); /* Cleanup. */
+  /* Release the server object.  */
+  if (session_list == ctrl.server_local)
+    session_list = ctrl.server_local->next_session;
+  else
+    {
+      struct server_local_s *sl;
+      
+      for (sl=session_list; sl->next_session; sl = sl->next_session)
+        if (sl->next_session == ctrl.server_local)
+          break;
+      if (!sl->next_session)
+          BUG ();
+      sl->next_session = ctrl.server_local->next_session;
+    }
+  xfree (ctrl.server_local);
 
+  /* Release the Assuan context.  */
   assuan_deinit_server (ctx);
 }
 
@@ -1256,14 +1460,14 @@ scd_command_handler (int listen_fd)
    buffers. The variable elements are pairs of (char *, size_t),
    terminated with a (NULL, 0). */
 void
-send_status_info (CTRL ctrl, const char *keyword, ...)
+send_status_info (ctrl_t ctrl, const char *keyword, ...)
 {
   va_list arg_ptr;
   const unsigned char *value;
   size_t valuelen;
   char buf[950], *p;
   size_t n;
-  ASSUAN_CONTEXT ctx = ctrl->server_local->assuan_ctx;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
   
   va_start (arg_ptr, keyword);
 
@@ -1299,7 +1503,7 @@ send_status_info (CTRL ctrl, const char *keyword, ...)
 }
 
 
-/* This fucntion is called by the ticker thread to check for changes
+/* This function is called by the ticker thread to check for changes
    of the reader stati.  It updates the reader status files and if
    requested by the caller also send a signal to the caller.  */
 void
@@ -1328,6 +1532,7 @@ scd_update_reader_status_file (void)
             char *fname;
             char templ[50];
             FILE *fp;
+            struct server_local_s *sl;
 
             log_info ("updating status of slot %d to 0x%04X\n", slot, status);
             
@@ -1344,33 +1549,31 @@ scd_update_reader_status_file (void)
               }
             xfree (fname);
 
-            /* Set the card removed flag.  We will set this on any
-               card change because a reset or SERIALNO request must be
-               done in any case.  */
-            if (primary_connection && primary_connection->server_local
-                && last[slot].any )
-              primary_connection->server_local->card_removed = 1;
+            /* Set the card removed flag for all current sessions.  We
+               will set this on any card change because a reset or
+               SERIALNO request must be done in any case.  */
+            if (last[slot].any)
+              update_card_removed (slot, 1);
 
             last[slot].any = 1;
             last[slot].status = status;
             last[slot].changed = changed;
 
 
-            /* Send a signal to the primary client, if any.  */
-            if (primary_connection && primary_connection->server_local
-                && primary_connection->server_local->assuan_ctx)
-              {
-                pid_t pid = assuan_get_pid (primary_connection
-                                            ->server_local->assuan_ctx);
-                int signo = primary_connection->server_local->event_signal;
+            /* Send a signal to all clients who applied for it.  */
+            for (sl=session_list; sl; sl = sl->next_session)
+              if (sl->event_signal && sl->assuan_ctx)
+                {
+                  pid_t pid = assuan_get_pid (sl->assuan_ctx);
+                  int signo = sl->event_signal;
 
-                log_info ("client pid is %d, sending signal %d\n", pid, signo);
-
+                  log_info ("client pid is %d, sending signal %d\n",
+                            pid, signo);
 #ifndef HAVE_W32_SYSTEM
-                if (pid != (pid_t)(-1) && pid && signo > 0)
-                  kill (pid, signo);
+                  if (pid != (pid_t)(-1) && pid && signo > 0)
+                    kill (pid, signo);
 #endif
-              }
+                }
           }
       }
 }
