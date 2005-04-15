@@ -1,5 +1,7 @@
 2005-04-15  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Check for /usr/bin/shred and define SHRED.
+	
 	* configure.ac: Add --enable-symcryptrun, disabled by default.
 	Define automake variable BUILD_SYMCRYPTRUN.
 	Check for openpty -lutil, define LIBUTIL_LIBS.

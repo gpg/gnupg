@@ -470,8 +470,18 @@ AC_SUBST(LIBUSB_LIBS)
 AC_CHECK_FUNCS(usb_create_match)
 
 #
-# libutil has openpty() and login_tty().
+# Check wether it is necessary to link against libdl.
 #
+LIBS=""
+AC_SEARCH_LIBS(dlopen, c dl,,,)
+DL_LIBS=$LIBS
+AC_SUBST(DL_LIBS)
+
+#
+# Checks for symcryptrun:
+#
+
+# libutil has openpty() and login_tty().
 AC_CHECK_LIB(util, openpty,
               [ LIBUTIL_LIBS="$LIBUTIL_LIBS -lutil"
                 AC_DEFINE(HAVE_LIBUTIL,1,
@@ -479,13 +489,10 @@ AC_CHECK_LIB(util, openpty,
              ])
 AC_SUBST(LIBUTIL_LIBS)
 
-#
-# Check wether it is necessary to link against libdl.
-#
-LIBS=""
-AC_SEARCH_LIBS(dlopen, c dl,,,)
-DL_LIBS=$LIBS
-AC_SUBST(DL_LIBS)
+# shred is used to clean temporary plain text files.
+AC_PATH_PROG(SHRED, shred, /usr/bin/shred)
+AC_DEFINE_UNQUOTED(SHRED,
+	"${SHRED}", [defines the filename of the shred program])
 
 #
 # OpenSC is needed by the SCdaemon - if it is not availbale we can only

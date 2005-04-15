@@ -1,5 +1,9 @@
 2005-04-15  Marcus Brinkmann  <marcus@g10code.de>
 
+	* symcryptrun.c (remove_file): New function.
+	(confucius_copy_file): Accept new argument PLAIN and shred the
+	file if it is set on error.
+
 	* Makefile.am: Define symcryptrun make variable depending on
 	BUILD_SYMCRYPTUN.
 	(bin_PROGRAMS): Add ${symcryptrun} instead symcryptrun.

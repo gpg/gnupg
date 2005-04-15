@@ -217,6 +217,61 @@ i18n_init(void)
 }
 
 
+/* Unlink a file, and shred it if SHRED is true.  */
+int
+remove_file (char *name, int shred)
+{
+  if (!shred)
+    return unlink (name);
+  else
+    {
+      int status;
+      pid_t pid;
+
+      pid = fork ();
+      if (pid == 0)
+	{
+	  /* Child.  */
+	  
+	  /* -f forces file to be writable, and -u unlinks it afterwards.  */
+	  char *args[] = { SHRED, "-uf", name, NULL };
+	  
+	  execv (SHRED, args);
+	  _exit (127);
+	}
+      else if (pid < 0)
+	{
+	  /* Fork failed.  */
+	  status = -1;
+	}
+      else
+	{
+	  /* Parent.  */
+	  
+	  if (TEMP_FAILURE_RETRY (waitpid (pid, &status, 0)) != pid)
+	    status = -1;
+	}
+      
+      if (!WIFEXITED (status))
+	{
+	  log_error (_("%s on %s aborted with status %i\n"),
+		     SHRED, name, status);
+	  unlink (name);
+	  return 1;
+	}
+      else if (WEXITSTATUS (status))
+	{
+	  log_error (_("%s on %s failed with status %i\n"), SHRED, name,
+		     WEXITSTATUS (status));
+	  unlink (name);
+	  return 1;
+	}
+
+      return 0;
+    }
+}
+
+
 /* Class Confucius.
 
    "Don't worry that other people don't know you;
@@ -248,9 +303,11 @@ confucius_mktmpdir (void)
 #define CONFUCIUS_LINESIZE 4096
 
 
-/* Copy the file IN to OUT, either of which may be "-".  */
+/* Copy the file IN to OUT, either of which may be "-".  If PLAIN is
+   true, and the copying fails, and OUT is not STDOUT, then shred the
+   file instead unlinking it.  */
 static int
-confucius_copy_file (const char *infile, const char *outfile)
+confucius_copy_file (char *infile, char *outfile, int plain)
 {
   FILE *in;
   int in_is_stdin = 0;
@@ -327,7 +384,8 @@ confucius_copy_file (const char *infile, const char *outfile)
 
  copy_err:
   if (!out_is_stdout)
-    unlink (outfile);
+    remove_file (outfile, plain);
+
   return 1;
 }
 
@@ -712,7 +770,7 @@ confucius_main (int mode)
   strcat (outfile, "/out");
 
   /* Create INFILE and fill it with content.  */
-  res = confucius_copy_file ("-", infile);
+  res = confucius_copy_file ("-", infile, mode == oEncrypt);
   if (res)
     {
       free (outfile);
@@ -726,8 +784,8 @@ confucius_main (int mode)
   res = confucius_process (mode, infile, outfile);
   if (res)
     {
-      unlink (outfile);
-      unlink (infile);
+      remove_file (outfile, mode == oDecrypt);
+      remove_file (infile, mode == oEncrypt);
       free (outfile);
       free (infile);
       rmdir (tmpdir);
@@ -735,19 +793,19 @@ confucius_main (int mode)
     }
 
   /* Dump the output file to stdout.  */
-  res = confucius_copy_file (outfile, "-");
+  res = confucius_copy_file (outfile, "-", mode == oDecrypt);
   if (res)
     {
-      unlink (outfile);
-      unlink (infile);
+      remove_file (outfile, mode == oDecrypt);
+      remove_file (infile, mode == oEncrypt);
       free (outfile);
       free (infile);
       rmdir (tmpdir);
       return res;
     }
   
-  unlink (outfile);
-  unlink (infile);
+  remove_file (outfile, mode == oDecrypt);
+  remove_file (infile, mode == oEncrypt);
   free (outfile);
   free (infile);
   rmdir (tmpdir);
