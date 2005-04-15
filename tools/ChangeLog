@@ -1,5 +1,7 @@
 2005-04-15  Marcus Brinkmann  <marcus@g10code.de>
 
+	* symcryptrun.c (TEMP_FAILURE_RETRY): Define if not defined.
+
 	* symcryptrun.c (remove_file): New function.
 	(confucius_copy_file): Accept new argument PLAIN and shred the
 	file if it is set on error.

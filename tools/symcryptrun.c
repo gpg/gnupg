@@ -217,6 +217,21 @@ i18n_init(void)
 }
 
 
+/* This is in the GNU C library in unistd.h.  */
+
+#ifndef TEMP_FAILURE_RETRY
+/* Evaluate EXPRESSION, and repeat as long as it returns -1 with `errno'
+   set to EINTR.  */
+
+# define TEMP_FAILURE_RETRY(expression) \
+  (__extension__                                                              \
+    ({ long int __result;                                                     \
+       do __result = (long int) (expression);                                 \
+       while (__result == -1L && errno == EINTR);                             \
+       __result; }))
+#endif
+
+
 /* Unlink a file, and shred it if SHRED is true.  */
 int
 remove_file (char *name, int shred)
