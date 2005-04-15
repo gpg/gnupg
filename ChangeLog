@@ -1,3 +1,9 @@
+2005-04-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add --enable-symcryptrun, disabled by default.
+	Define automake variable BUILD_SYMCRYPTRUN.
+	Check for openpty -lutil, define LIBUTIL_LIBS.
+
 2005-03-03  Werner Koch  <wk@g10code.com>
 
 	* acinclude.m4 (GNUPG_PTH_VERSION_CHECK): Accidently used

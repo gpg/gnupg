@@ -1,3 +1,10 @@
+2005-04-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am: Define symcryptrun make variable depending on
+	BUILD_SYMCRYPTUN.
+	(bin_PROGRAMS): Add ${symcryptrun} instead symcryptrun.
+	(symcryptrun_LDADD): Use $(LIBUTIL_LIBS) instead of -lutil.
+
 2005-04-11  Werner Koch  <wk@g10code.com>
 
 	* symcryptrun.c (confucius_mktmpdir): Changed to use mkdtmp(3).

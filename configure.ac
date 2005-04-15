@@ -66,6 +66,7 @@ GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 GNUPG_BUILD_PROGRAM(agent, yes)
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
+GNUPG_BUILD_PROGRAM(symcryptrun, no)
 
 
 AC_SUBST(PACKAGE)
@@ -467,6 +468,16 @@ AC_CHECK_LIB(usb, usb_bulk_write,
              ])
 AC_SUBST(LIBUSB_LIBS)
 AC_CHECK_FUNCS(usb_create_match)
+
+#
+# libutil has openpty() and login_tty().
+#
+AC_CHECK_LIB(util, openpty,
+              [ LIBUTIL_LIBS="$LIBUTIL_LIBS -lutil"
+                AC_DEFINE(HAVE_LIBUTIL,1,
+                         [defined if libutil is available])
+             ])
+AC_SUBST(LIBUTIL_LIBS)
 
 #
 # Check wether it is necessary to link against libdl.
@@ -1046,6 +1057,7 @@ AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
 AM_CONDITIONAL(BUILD_GPGSM, test "$build_gpgsm" = "yes")
 AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
+AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 
 
 
