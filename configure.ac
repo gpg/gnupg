@@ -635,6 +635,8 @@ fi
 
 # Are we doing HTTP?
 
+old_hkp=yes
+
 if test x"$try_http" = xyes ; then
    if test x$libcurl_protocol_HTTP = xyes ; then
       AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
@@ -642,10 +644,16 @@ if test x"$try_http" = xyes ; then
       if test x$libcurl_protocol_HTTPS = xyes ; then
          AC_DEFINE(HTTPS_VIA_LIBCURL,1,[Define if HTTPS is handled via libcurl])
       fi
+
+     AC_ARG_ENABLE(old-hkp,
+        AC_HELP_STRING([--disable-old-hkp],[disable old HKP processing code and use the new]),old_hkp=$enableval)
+
    else
       AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
    fi
 fi
+
+AM_CONDITIONAL(OLD_HKP,test x"$old_hkp" != xno)
 
 # Are we doing FTP?  We only do FTP if we have libcurl.
 
