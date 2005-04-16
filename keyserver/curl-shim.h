@@ -68,5 +68,7 @@ CURL *curl_easy_init(void);
 CURLcode curl_easy_setopt(CURL *curl,CURLoption option,...);
 CURLcode curl_easy_perform(CURL *curl);
 void curl_easy_cleanup(CURL *curl);
+char *curl_escape(char *str,int len);
+void curl_free(char *ptr);
 
 #endif /* !_CURL_SHIM_H_ */

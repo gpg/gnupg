@@ -1,5 +1,8 @@
 2005-04-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* curl-shim.h, curl-shim.c (curl_escape, curl_free): Emulate
+	curl_escape and curl_free.
+
 	* gpgkeys_curl.c (main): If the http-proxy option is given without
 	any arguments, try to get the proxy from the environment.
 

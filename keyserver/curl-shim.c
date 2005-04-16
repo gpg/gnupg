@@ -151,3 +151,64 @@ CURLcode curl_easy_perform(CURL *curl)
 
   return handle_error(curl,err,errstr);
 }
+
+/* This is not the same exact set that is allowed according to
+   RFC-2396, but it is what the real curl uses. */
+#define VALID_URI_CHARS "abcdefghijklmnopqrstuvwxyz" \
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+                        "0123456789"
+
+char *curl_escape(char *str,int length)
+{
+  int len,max,idx,enc_idx=0;
+  char *enc;
+
+  if(length)
+    len=length;
+  else
+    len=strlen(str);
+
+  enc=malloc(len+1);
+  if(!enc)
+    return enc;
+
+  max=len;
+
+  for(idx=0;idx<len;idx++)
+    {
+      if(enc_idx+3>max)
+	{
+	  char *tmp;
+
+	  max+=100;
+
+	  tmp=realloc(enc,max+1);
+	  if(!tmp)
+	    {
+	      free(enc);
+	      return NULL;
+	    }
+
+	  enc=tmp;
+	}
+
+      if(strchr(VALID_URI_CHARS,str[idx]))
+	enc[enc_idx++]=str[idx];
+      else
+	{
+	  char numbuf[5];
+	  sprintf(numbuf,"%%%02X",str[idx]);
+	  strcpy(&enc[enc_idx],numbuf);
+	  enc_idx+=3;
+	}
+    }
+
+  enc[enc_idx]='\0';
+
+  return enc;
+}
+
+void curl_free(char *ptr)
+{
+  free(ptr);
+}
