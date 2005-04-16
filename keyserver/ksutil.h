@@ -21,6 +21,12 @@
 #ifndef _KSUTIL_H_
 #define _KSUTIL_H_
 
+#ifdef FAKE_CURL
+#include "curl-shim.h"
+#else
+#include <curl/curl.h>
+#endif
+
 #define GET    0
 #define SEND   1
 #define SEARCH 2
@@ -46,6 +52,12 @@
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
 #define END   "-----END PGP PUBLIC KEY BLOCK-----"
+
+#ifdef __riscos__
+#define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
+#else
+#define HTTP_PROXY_ENV           "http_proxy"
+#endif
 
 struct keylist
 {
@@ -88,5 +100,7 @@ void free_ks_options(struct ks_options *opt);
 int parse_ks_options(char *line,struct ks_options *opt);
 const char *ks_action_to_string(enum ks_action action);
 void print_nocr(FILE *stream,const char *str);
+int curl_err_to_gpg_err(CURLcode error);
+size_t curl_writer(const void *ptr,size_t size,size_t nmemb,void *stream);
 
 #endif /* !_KSUTIL_H_ */

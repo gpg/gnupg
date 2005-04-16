@@ -1,3 +1,13 @@
+2005-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (main): If the http-proxy option is given without
+	any arguments, try to get the proxy from the environment.
+
+	* ksutil.h, ksutil.c (curl_err_to_gpg_err, curl_writer): Copy from
+	gpgkeys_curl.c.
+
+	* gpgkeys_oldhkp.c: Copy from gpgkeys_hkp.c.
+
 2005-03-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c, ksutil.h, ksutil.c (print_nocr): Moved from

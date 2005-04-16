@@ -24,6 +24,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef FAKE_CURL
+#include "curl-shim.h"
+#else
+#include <curl/curl.h>
+#endif
 #include "keyserver.h"
 #include "ksutil.h"
 
@@ -311,4 +316,65 @@ print_nocr(FILE *stream,const char *str)
 	fputc(*str,stream);
       str++;
     }
+}
+
+int
+curl_err_to_gpg_err(CURLcode error)
+{
+  switch(error)
+    {
+    case CURLE_FTP_COULDNT_RETR_FILE: return KEYSERVER_KEY_NOT_FOUND;
+    default: return KEYSERVER_INTERNAL_ERROR;
+    }
+}
+
+size_t
+curl_writer(const void *ptr,size_t size,size_t nmemb,void *stream)
+{
+  const char *buf=ptr;
+  size_t i;
+  static int markeridx=0,begun=0,done=0;
+  static const char *marker=BEGIN;
+
+  /* scan the incoming data for our marker */
+  for(i=0;!done && i<(size*nmemb);i++)
+    {
+      if(buf[i]==marker[markeridx])
+	{
+	  markeridx++;
+	  if(marker[markeridx]=='\0')
+	    {
+	      if(begun)
+		done=1;
+	      else
+		{
+		  /* We've found the BEGIN marker, so now we're looking
+		     for the END marker. */
+		  begun=1;
+		  marker=END;
+		  markeridx=0;
+		  fprintf(stream,BEGIN);
+		  continue;
+		}
+	    }
+	}
+      else
+	markeridx=0;
+
+      if(begun)
+	{
+	  /* Canonicalize CRLF to just LF by stripping CRs.  This
+	     actually makes sense, since on Unix-like machines LF is
+	     correct, and on win32-like machines, our output buffer is
+	     opened in textmode and will re-canonicalize line endings
+	     back to CRLF.  Since we only need to handle armored keys,
+	     we don't have to worry about odd cases like CRCRCR and
+	     the like. */
+
+	  if(buf[i]!='\r')
+	    fputc(buf[i],stream);
+	}
+    }
+
+  return size*nmemb;
 }

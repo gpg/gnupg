@@ -38,71 +38,9 @@
 extern char *optarg;
 extern int optind;
 
-static char proxy[MAX_PROXY+1];
 static FILE *input,*output,*console;
 static CURL *curl;
 static struct ks_options *opt;
-
-static int
-curl_err_to_gpg_err(CURLcode error)
-{
-  switch(error)
-    {
-    case CURLE_FTP_COULDNT_RETR_FILE: return KEYSERVER_KEY_NOT_FOUND;
-    default: return KEYSERVER_INTERNAL_ERROR;
-    }
-}
-
-static size_t
-writer(const void *ptr,size_t size,size_t nmemb,void *stream)
-{
-  const char *buf=ptr;
-  size_t i;
-  static int markeridx=0,begun=0,done=0;
-  static const char *marker=BEGIN;
-
-  /* scan the incoming data for our marker */
-  for(i=0;!done && i<(size*nmemb);i++)
-    {
-      if(buf[i]==marker[markeridx])
-	{
-	  markeridx++;
-	  if(marker[markeridx]=='\0')
-	    {
-	      if(begun)
-		done=1;
-	      else
-		{
-		  /* We've found the BEGIN marker, so now we're looking
-		     for the END marker. */
-		  begun=1;
-		  marker=END;
-		  markeridx=0;
-		  fprintf(output,BEGIN);
-		  continue;
-		}
-	    }
-	}
-      else
-	markeridx=0;
-
-      if(begun)
-	{
-	  /* Canonicalize CRLF to just LF by stripping CRs.  This
-	     actually makes sense, since on Unix-like machines LF is
-	     correct, and on win32-like machines, our output buffer is
-	     opened in textmode and will re-canonicalize line endings
-	     back to CRLF.  Since we only need to handle armored keys,
-	     we don't have to worry about odd cases like CRCRCR and
-	     the like. */
-
-	  if(buf[i]!='\r')
-	    fputc(buf[i],output);
-	}
-    }
-
-  return size*nmemb;
-}
 
 static int
 get_key(char *getkey)
@@ -123,7 +61,7 @@ get_key(char *getkey)
 	  opt->path?opt->path:"/");
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
-  curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,writer);
+  curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_writer);
   curl_easy_setopt(curl,CURLOPT_FILE,output);
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 
@@ -155,6 +93,7 @@ main(int argc,char *argv[])
   char line[MAX_LINE];
   char *thekey=NULL;
   long follow_redirects=5;
+  char proxy[MAX_PROXY+1];
 
   console=stderr;
 
@@ -255,6 +194,15 @@ main(int argc,char *argv[])
 		{
 		  strncpy(proxy,&start[11],MAX_PROXY);
 		  proxy[MAX_PROXY]='\0';
+		}
+	      else if(start[10]=='\0')
+		{
+		  char *http_proxy=getenv(HTTP_PROXY_ENV);
+		  if(http_proxy)
+		    {
+		      strncpy(proxy,http_proxy,MAX_PROXY);
+		      proxy[MAX_PROXY]='\0';
+		    }
 		}
 	    }
 	  else if(strncasecmp(start,"follow-redirects",16)==0)
