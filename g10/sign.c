@@ -391,6 +391,20 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
     return rc;
 }
 
+/*
+  First try --digest-algo.  If that isn't set, see if the recipient
+  has a preferred algorithm (which is also filtered through
+  --preferred-digest-prefs).  If we're making a signature without a
+  particular recipient (i.e. signing, rather than signing+encrypting)
+  then take the first algorithm in --preferred-digest-prefs that is
+  usable for the pubkey algorithm.  If --preferred-digest-prefs isn't
+  set, then take the OpenPGP default (i.e. SHA-1).
+
+  Possible improvement: Use the highest-ranked usable algorithm from
+  the signing key prefs either before or after using the personal
+  list?
+*/
+
 static int
 hash_for(int pubkey_algo, int packet_version )
 {

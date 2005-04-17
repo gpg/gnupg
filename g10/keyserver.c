@@ -800,6 +800,14 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
     }
 
  notfound:
+  /* Leave this commented out or now, and perhaps for a very long
+     time.  All HKPish servers return HTML error messages for
+     no-key-found. */
+  /* 
+     if(!started)
+     log_info(_("keyserver does not support searching\n"));
+     else
+  */
   if(count==0)
     {
       if(localstr)
@@ -851,7 +859,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
   unsigned int maxlen,buflen;
-  char *command=NULL,*searchstr=NULL;
+  char *command,*searchstr=NULL;
   byte *line=NULL;
   struct parse_options *kopts;
   struct exec_info *spawn;
@@ -919,6 +927,8 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
     }
   else
     ret=exec_write(&spawn,command,NULL,NULL,0,0);
+
+  m_free(command);
 
   if(ret)
     return ret;
