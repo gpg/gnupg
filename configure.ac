@@ -628,14 +628,14 @@ if test x"$fake_curl" = xyes ; then
 else
    # If we have neither FTP or HTTP defined, then don't bother to check
    # for curl.
-   if test x"$try_ftp" = xyes || test x"$try_http" = xyes ; then
-      LIBCURL_CHECK_CONFIG([no])
+   if test x"$try_hkp" = xyes || test x"$try_ftp" = xyes || test x"$try_http" = xyes ; then
+      LIBCURL_CHECK_CONFIG([no],,[with_curl=yes])
    fi
 fi
 
-# Are we doing HTTP?
+AM_CONDITIONAL(WITH_CURL,test x"$with_curl" = xyes || test x"$fake_curl" = xyes)
 
-old_hkp=yes
+# Are we doing HTTP?
 
 if test x"$try_http" = xyes ; then
    if test x$libcurl_protocol_HTTP = xyes ; then
@@ -644,16 +644,10 @@ if test x"$try_http" = xyes ; then
       if test x$libcurl_protocol_HTTPS = xyes ; then
          AC_DEFINE(HTTPS_VIA_LIBCURL,1,[Define if HTTPS is handled via libcurl])
       fi
-
-     AC_ARG_ENABLE(old-hkp,
-        AC_HELP_STRING([--disable-old-hkp],[disable old HKP processing code and use the new]),old_hkp=$enableval)
-
    else
       AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
    fi
 fi
-
-AM_CONDITIONAL(OLD_HKP,test x"$old_hkp" != xno)
 
 # Are we doing FTP?  We only do FTP if we have libcurl.
 
