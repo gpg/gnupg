@@ -21,80 +21,72 @@
 #include <config.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
-#define INCLUDED_BY_MAIN_MODULE 1
-#include "util.h"
-#include "http.h"
+#ifdef FAKE_CURL
+#include "curl-shim.h"
+#else
+#include <curl/curl.h>
+#endif
 #include "keyserver.h"
 #include "ksutil.h"
 
 extern char *optarg;
 extern int optind;
 
-static int verbose=0,include_revoked=0,include_disabled=0;
-static unsigned int http_flags=0;
-static char host[MAX_HOST+1]={'\0'},proxy[MAX_PROXY+1]={'\0'},port[MAX_PORT+1]={'\0'};
-static FILE *input=NULL,*output=NULL,*console=NULL;
+static char proxy[MAX_PROXY+1];
+static FILE *input,*output,*console;
+static CURL *curl;
+static struct ks_options *opt;
+static char errorbuffer[CURL_ERROR_SIZE];
 
-#ifdef __riscos__
-#define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
-#else
-#define HTTP_PROXY_ENV           "http_proxy"
-#endif
-
-int
-urlencode_filter( void *opaque, int control,
-		  IOBUF a, byte *buf, size_t *ret_len)
+static size_t
+curl_mrindex_writer(const void *ptr,size_t size,size_t nmemb,void *stream)
 {
-    size_t size = *ret_len;
-    int rc=0;
+  static int checked=0,swallow=0;
 
-    if( control == IOBUFCTRL_FLUSH ) {
-	const byte *p;
-	for(p=buf; size; p++, size-- ) {
-	    if( isalnum(*p) || *p == '-' )
-		iobuf_put( a, *p );
-	    else if( *p == ' ' )
-		iobuf_put( a, '+' );
-	    else {
-		char numbuf[5];
-		sprintf(numbuf, "%%%02X", *p );
-		iobuf_writestr(a, numbuf );
-	    }
-	}
+  if(!checked)
+    {
+      /* If the document begins with a '<', assume it's a HTML
+	 response, which we don't support.  Discard the whole message
+	 body.  GPG can handle it, but this is an optimization to deal
+	 with it on this side of the pipe.  */
+      const char *buf=ptr;
+      if(buf[0]=='<')
+	swallow=1;
+
+      checked=1;
     }
-    else if( control == IOBUFCTRL_DESC )
-	*(char**)buf = "urlencode_filter";
-    return rc;
+
+  if(swallow || fwrite(ptr,size,nmemb,stream)==nmemb)
+    return size*nmemb;
+  else
+    return 0;
 }
 
 int
 send_key(int *eof)
 {
-  int rc,begin=0,end=0,ret=KEYSERVER_INTERNAL_ERROR;
+  CURLcode res;
+  char request[MAX_URL+100];
+  int begin=0,end=0,ret=KEYSERVER_INTERNAL_ERROR;
   char keyid[17];
-  char *request;
-  struct http_context hd;
-  unsigned int status;
-  IOBUF temp = iobuf_temp();
   char line[MAX_LINE];
+  char *key,*encoded_key=NULL;
+  size_t keylen=8,keymax=8;
 
-  memset(&hd,0,sizeof(hd));
-
-  request=malloc(strlen(host)+100);
-  if(!request)
+  key=malloc(9);
+  strcpy(key,"keytext=");
+  if(!key)
     {
       fprintf(console,"gpgkeys: out of memory\n");
-      return KEYSERVER_NO_MEMORY;
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
     }
-
-  iobuf_push_filter(temp,urlencode_filter,NULL);
 
   /* Read and throw away input until we see the BEGIN */
 
@@ -123,11 +115,27 @@ send_key(int *eof)
 	break;
       }
     else
-      if(iobuf_writestr(temp,line))
-	{
-	  fprintf(console,"gpgkeys: internal iobuf error\n");
-	  goto fail;
-	}
+      {
+	if(strlen(line)+keylen>keymax)
+	  {
+	    char *tmp;
+
+	    keymax+=200;
+	    tmp=realloc(key,keymax+1);
+	    if(!tmp)
+	      {
+		free(key);
+		fprintf(console,"gpgkeys: out of memory\n");
+		ret=KEYSERVER_NO_MEMORY;
+		goto fail;
+	      }
+
+	    key=tmp;
+	  }
+
+	strcpy(&key[keylen],line);
+	keylen+=strlen(line);
+      }
 
   if(!end)
     {
@@ -137,57 +145,45 @@ send_key(int *eof)
       goto fail;
     }
 
-  iobuf_flush_temp(temp);
+  encoded_key=curl_escape(key,keylen);
+  if(!encoded_key)
+    {
+      fprintf(console,"gpgkeys: out of memory\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
 
-  sprintf(request,"hkp://%s%s%s/pks/add",host,port[0]?":":"",port[0]?port:"");
+  strcpy(request,"http://");
+  strcat(request,opt->host);
+  strcat(request,":");
+  if(opt->port)
+    strcat(request,opt->port);
+  else
+    strcat(request,"11371");
+  strcat(request,"/pks/add");
 
-  if(verbose>2)
+  if(opt->verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
-  rc=http_open(&hd,HTTP_REQ_POST,request,http_flags,proxy[0]?proxy:NULL);
-  if(rc)
+  curl_easy_setopt(curl,CURLOPT_URL,request);
+  curl_easy_setopt(curl,CURLOPT_POST,1);
+  curl_easy_setopt(curl,CURLOPT_POSTFIELDS,encoded_key);
+  curl_easy_setopt(curl,CURLOPT_FAILONERROR,1);
+
+  res=curl_easy_perform(curl);
+  if(res!=0)
     {
-      fprintf(console,"gpgkeys: unable to connect to `%s'\n",host);
-      goto fail;
+      fprintf(console,"gpgkeys: HTTP post error %d: %s\n",res,errorbuffer);
+      ret=curl_err_to_gpg_err(res);
     }
-
-  /* Some keyservers require this Content-Type (e.g. CryptoEx). */
-  iobuf_writestr(hd.fp_write,
-                 "Content-Type: application/x-www-form-urlencoded\r\n");
-
-  sprintf(request,"Content-Length: %u\r\n",
-	  (unsigned)iobuf_get_temp_length(temp)+9);
-  iobuf_writestr(hd.fp_write,request);
-
-  http_start_data(&hd);
-
-  iobuf_writestr(hd.fp_write,"keytext=");
-  iobuf_write(hd.fp_write,
-	      iobuf_get_temp_buffer(temp),iobuf_get_temp_length(temp));
-  iobuf_put(hd.fp_write,'\n');
-
-  rc=http_wait_response(&hd,&status);
-  if(rc)
-    {
-      fprintf(console,"gpgkeys: error sending to `%s': %s\n",
-	      host,g10_errstr(rc));
-      goto fail;
-    }
-
-  if((status/100)!=2)
-    {
-      fprintf(console,"gpgkeys: remote server returned error %d\n",status);
-      goto fail;
-    }
-
-  fprintf(output,"KEY %s SENT\n",keyid);
+  else
+    fprintf(output,"\nKEY %s SENT\n",keyid);
 
   ret=KEYSERVER_OK;
 
  fail:
-  free(request);
-  iobuf_close(temp);
-  http_close(&hd);
+  free(key);
+  curl_free(encoded_key);
 
   if(ret!=0 && begin)
     fprintf(output,"KEY %s FAILED %d\n",keyid,ret);
@@ -195,469 +191,89 @@ send_key(int *eof)
   return ret;
 }
 
-int
+static int
 get_key(char *getkey)
 {
-  int rc,gotit=0;
-  char search[29];
-  char *request;
-  struct http_context hd;
+  CURLcode res;
+  char request[MAX_URL+100];
+  char *offset;
+  struct curl_writer_ctx ctx;
+
+  memset(&ctx,0,sizeof(ctx));
 
   /* Build the search string.  HKP only uses the short key IDs. */
 
   if(strncmp(getkey,"0x",2)==0)
     getkey+=2;
 
+  fprintf(output,"KEY 0x%s BEGIN\n",getkey);
+
   if(strlen(getkey)==32)
     {
       fprintf(console,
 	      "gpgkeys: HKP keyservers do not support v3 fingerprints\n");
-      fprintf(output,"KEY 0x%s BEGIN\n",getkey);
       fprintf(output,"KEY 0x%s FAILED %d\n",getkey,KEYSERVER_NOT_SUPPORTED);
       return KEYSERVER_NOT_SUPPORTED;
     }
 
- if(strlen(getkey)>8)
-    {
-      char *offset=&getkey[strlen(getkey)-8];
+  strcpy(request,"http://");
+  strcat(request,opt->host);
+  strcat(request,":");
+  if(opt->port)
+    strcat(request,opt->port);
+  else
+    strcat(request,"11371");
+  strcat(request,"/pks/lookup?op=get&options=mr&search=0x");
 
-      /* fingerprint or long key id.  Take the last 8 characters and
-         treat it like a short key id */
+  /* fingerprint or long key id.  Take the last 8 characters and treat
+     it like a short key id */
+  if(strlen(getkey)>8)
+    offset=&getkey[strlen(getkey)-8];
+  else
+    offset=getkey;
 
-      sprintf(search,"0x%.8s",offset);
-    }
- else
-   {
-      /* short key id */
+  strcat(request,offset);
 
-      sprintf(search,"0x%.8s",getkey);
-    }
-
-  fprintf(output,"KEY 0x%s BEGIN\n",getkey);
-
-  request=malloc(strlen(host)+100);
-  if(!request)
-    {
-      fprintf(console,"gpgkeys: out of memory\n");
-      return KEYSERVER_NO_MEMORY;
-    }
-
-  sprintf(request,"hkp://%s%s%s/pks/lookup?op=get&options=mr&search=%s",
-	  host,port[0]?":":"",port[0]?port:"", search);
-
-  if(verbose>2)
+  if(opt->verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
-  rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
-  if(rc!=0)
+  curl_easy_setopt(curl,CURLOPT_URL,request);
+  curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_writer);
+  ctx.stream=output;
+  curl_easy_setopt(curl,CURLOPT_FILE,&ctx);
+
+  res=curl_easy_perform(curl);
+  if(res!=0)
     {
-      fprintf(console,"gpgkeys: HKP fetch error: %s\n",
-	      rc==G10ERR_NETWORK?strerror(errno):g10_errstr(rc));
-      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,
-	    rc==G10ERR_NETWORK?KEYSERVER_UNREACHABLE:KEYSERVER_INTERNAL_ERROR);
+      fprintf(console,"gpgkeys: HTTP fetch error %d: %s\n",res,errorbuffer);
+      fprintf(output,"\nKEY 0x%s FAILED %d\n",getkey,curl_err_to_gpg_err(res));
     }
   else
     {
-      unsigned int maxlen=1024,buflen;
-      byte *line=NULL;
-
-      while(iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen))
-	{
-	  maxlen=1024;
-
-	  if(gotit)
-	    {
-	      print_nocr(output,line);
-	      if(strncmp(line,END,strlen(END))==0)
-		break;
-	    }
-	  else
-	    if(strncmp(line,BEGIN,strlen(BEGIN))==0)
-	      {
-		print_nocr(output,line);
-		gotit=1;
-	      }
-	}
-
-      if(gotit)
-	fprintf(output,"KEY 0x%s END\n",getkey);
+      if(ctx.done)
+	fprintf(output,"\nKEY 0x%s END\n",getkey);
       else
 	{
 	  fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
 	  fprintf(output,"KEY 0x%s FAILED %d\n",
 		  getkey,KEYSERVER_KEY_NOT_FOUND);
 	}
-
-      m_free(line);
-      http_close(&hd);
     }
-
-  free(request);
 
   return KEYSERVER_OK;
-}
-
-/* Remove anything <between brackets> and de-urlencode in place.  Note
-   that this requires all brackets to be closed on the same line.  It
-   also means that the result is never larger than the input. */
-void
-dehtmlize(char *line)
-{
-  int parsedindex=0;
-  char *parsed=line;
-
-  while(*line!='\0')
-    {
-      switch(*line)
-	{
-	case '<':
-	  while(*line!='>' && *line!='\0')
-	    line++;
-
-	  if(*line!='\0')
-	    line++;
-	  break;
-
-	case '&':
-	  if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='l') &&
-	     (*(line+2)!='\0' && ascii_tolower(*(line+2))=='t') &&
-	     (*(line+3)!='\0' && *(line+3)==';'))
-	    {
-	      parsed[parsedindex++]='<';
-	      line+=4;
-	      break;
-	    }
-	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='g') &&
-		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='t') &&
-		  (*(line+3)!='\0' && *(line+3)==';'))
-	    {
-	      parsed[parsedindex++]='>';
-	      line+=4;
-	      break;
-	    }
-	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='a') &&
-		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='m') &&
-		  (*(line+3)!='\0' && ascii_tolower(*(line+3))=='p') &&
-		  (*(line+4)!='\0' && *(line+4)==';'))
-	    {
-	      parsed[parsedindex++]='&';
-	      line+=5;
-	      break;
-	    }
-	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='q') &&
-		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='u') &&
-		  (*(line+3)!='\0' && ascii_tolower(*(line+3))=='o') &&
-		  (*(line+4)!='\0' && ascii_tolower(*(line+4))=='t') &&
-		  (*(line+5)!='\0' && *(line+5)==';'))
-	    {
-	      parsed[parsedindex++]='"';
-	      line+=6;
-	      break;
-	    }
-
-	default:
-	  parsed[parsedindex++]=*line;
-	  line++;
-	  break;
-	}
-    }
-
-  parsed[parsedindex]='\0';
-
-  /* Chop off any trailing whitespace.  Note that the HKP servers have
-     \r\n as line endings, and the NAI HKP servers have just \n. */
-
-  if(parsedindex>0)
-    {
-      parsedindex--;
-      while(isspace(((unsigned char *)parsed)[parsedindex]))
-	{
-	  parsed[parsedindex]='\0';
-	  if(parsedindex==0)
-	    break;
-	  parsedindex--;
-	}
-    }
-}
-
-int
-write_quoted(IOBUF a, const char *buf, char delim)
-{
-  while(*buf)
-    {
-      if(*buf==delim)
-	{
-	  char quoted[5];
-	  sprintf(quoted,"%%%02X",delim);
-	  if(iobuf_writestr(a,quoted))
-	    return -1;
-	}
-      else if(*buf=='%')
-	{
-	  if(iobuf_writestr(a,"%25"))
-	    return -1;
-	}
-      else
-	{
-	  if(iobuf_writebyte(a,*buf))
-	    return -1;
-	}
-
-      buf++;
-    }
-
-  return 0;
-}
-
-/* pub  2048/<a href="/pks/lookup?op=get&search=0x3CB3B415">3CB3B415</a> 1998/04/03 David M. Shaw &lt;<a href="/pks/lookup?op=get&search=0x3CB3B415">dshaw@jabberwocky.com</a>&gt; */
-
-/* Luckily enough, both the HKP server and NAI HKP interface to their
-   LDAP server are close enough in output so the same function can
-   parse them both. */
-
-int
-parse_hkp_index(IOBUF buffer,char *line)
-{
-  int ret=0;
-
-  /* printf("Open %d, LINE: `%s'\n",open,line); */
-
-  dehtmlize(line);
-
-  /* printf("Now open %d, LINE: `%s'\n",open,line); */
-
-  if(line[0]=='\0')
-    return 0;
-  else if(ascii_strncasecmp(line,"pub",3)==0)
-    {
-      char *tok,*keyid,*uid=NULL,number[15];
-      int bits=0,type=0,disabled=0,revoked=0;
-      u32 createtime=0;
-
-      line+=3;
-
-      if(*line=='-')
-	{
-	  disabled=1;
-	  if(!include_disabled)
-	    return 0;
-	}
-
-      line++;
-
-      tok=strsep(&line,"/");
-      if(tok==NULL || strlen(tok)==0)
-	return ret;
-
-      if(tok[strlen(tok)-1]=='R')
-	type=1;
-      else if(tok[strlen(tok)-1]=='D')
-	type=17;
-
-      bits=atoi(tok);
-
-      keyid=strsep(&line," ");
-
-      tok=strsep(&line," ");
-      if(tok!=NULL)
-	{
-	  char *temp=tok;
-
-	  /* The date parser wants '-' instead of '/', so... */
-	  while(*temp!='\0')
-	    {
-	      if(*temp=='/')
-		*temp='-';
-
-	      temp++;
-	    }
-
-	  createtime=scan_isodatestr(tok);
-	}
-
-      if(line!=NULL)
-	{
-	  while(*line==' ' && *line!='\0')
-	    line++;
-
-	  if(*line!='\0')
-	    {
-	      if(strncmp(line,"*** KEY REVOKED ***",19)==0)
-		{
-		  revoked=1;
-		  if(!include_revoked)
-		    return 0;
-		}
-	      else
-		uid=line;
-	    }
-	}
-
-      if(keyid)
-	{
-	  iobuf_writestr(buffer,"pub:");
-
-	  write_quoted(buffer,keyid,':');
-
-	  iobuf_writestr(buffer,":");
-
-	  if(type)
-	    {
-	      sprintf(number,"%d",type);
-	      write_quoted(buffer,number,':');
-	    }
-
-	  iobuf_writestr(buffer,":");
-
-	  if(bits)
-	    {
-	      sprintf(number,"%d",bits);
-	      write_quoted(buffer,number,':');
-	    }
-
-	  iobuf_writestr(buffer,":");
-
-	  if(createtime)
-	    {
-	      sprintf(number,"%d",createtime);
-	      write_quoted(buffer,number,':');
-	    }
-
-	  iobuf_writestr(buffer,"::");
-
-	  if(revoked)
-	    write_quoted(buffer,"r",':');
-
-	  if(disabled)
-	    write_quoted(buffer,"d",':');
-
-	  if(uid)
-	    {
-	      iobuf_writestr(buffer,"\nuid:");
-	      write_quoted(buffer,uid,':');
-	    }
-
-	  iobuf_writestr(buffer,"\n");
-
-	  ret=1;
-	}
-    }
-  else if(ascii_strncasecmp(line,"   ",3)==0)
-    {
-      while(*line==' ' && *line!='\0')
-	line++;
-
-      if(*line!='\0')
-	{
-	  iobuf_writestr(buffer,"uid:");
-	  write_quoted(buffer,line,':');
-	  iobuf_writestr(buffer,"\n");
-	}
-    }
-
-#if 0
-  else if(open)
-    {
-      /* Try and catch some bastardization of HKP.  If we don't have
-	 certain unchanging landmarks, we can't reliably parse the
-	 response.  This only complains about problems within the key
-	 section itself.  Headers and footers should not matter. */
-
-      fprintf(console,"gpgkeys: this keyserver does not support searching\n");
-      ret=-1;
-    }
-#endif
-
-  return ret;
-}
-
-void
-handle_old_hkp_index(IOBUF inp)
-{
-  int ret,rc,count=0;
-  unsigned int buflen;
-  byte *line=NULL;
-  IOBUF buffer=iobuf_temp();
-
-  do
-    {
-      unsigned int maxlen=1024;
-
-      /* This is a judgement call.  Is it better to slurp up all the
-	 results before prompting the user?  On the one hand, it
-	 probably makes the keyserver happier to not be blocked on
-	 sending for a long time while the user picks a key.  On the
-	 other hand, it might be nice for the server to be able to
-	 stop sending before a large search result page is
-	 complete. */
-
-      rc=iobuf_read_line(inp,&line,&buflen,&maxlen);
-
-      ret=parse_hkp_index(buffer,line);
-      if(ret==-1)
-	break;
-
-      if(rc!=0)
-	count+=ret;
-    }
-  while(rc!=0);
-
-  m_free(line);
-
-  if(ret>-1)
-    fprintf(output,"info:1:%d\n%s",count,iobuf_get_temp_buffer(buffer));
-
-  iobuf_close(buffer);
 }
 
 int
 search_key(char *searchkey)
 {
-  int max=0,len=0,ret=KEYSERVER_INTERNAL_ERROR,rc;
-  struct http_context hd;
-  char *search=NULL,*request=NULL;
-  unsigned char *skey=(unsigned char*) searchkey;
+  CURLcode res;
+  char *request;
+  char *searchkey_encoded;
+  int ret=KEYSERVER_INTERNAL_ERROR;
 
-  fprintf(output,"SEARCH %s BEGIN\n",searchkey);
+  searchkey_encoded=curl_escape(searchkey,0);
 
-  /* Build the search string.  It's going to need url-encoding. */
-
-  while(*skey!='\0')
-    {
-      if(max-len<3)
-	{
-	  max+=100;
-	  search=realloc(search,max+1); /* Note +1 for \0 */
-          if (!search)
-            {
-              fprintf(console,"gpgkeys: out of memory\n");
-              ret=KEYSERVER_NO_MEMORY;
-	      goto fail;
-            }
-	}
-
-      if(isalnum(*skey) || *skey=='-')
-	search[len++]=*skey;
-      else if(*skey==' ')
-	search[len++]='+';
-      else
-	{
-	  sprintf(&search[len],"%%%02X",*skey);
-	  len+=3;
-	}
-
-      skey++;
-    }
-
-  if(!search)
-    {
-      fprintf(console,"gpgkeys: corrupt input?\n");
-      return -1;
-    }
-
-  search[len]='\0';
-
-  request=malloc(strlen(host)+100+strlen(search));
+  request=malloc(MAX_URL+100+strlen(searchkey_encoded));
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -665,65 +281,55 @@ search_key(char *searchkey)
       goto fail;
     }
 
-  sprintf(request,"hkp://%s%s%s/pks/lookup?op=index&options=mr&search=%s",
-	  host,port[0]?":":"",port[0]?port:"",search);
+  fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
-  if(verbose>2)
+  strcpy(request,"http://");
+  strcat(request,opt->host);
+  strcat(request,":");
+  if(opt->port)
+    strcat(request,opt->port);
+  else
+    strcat(request,"11371");
+  strcat(request,"/pks/lookup?op=index&options=mr&search=");
+  strcat(request,searchkey_encoded);
+
+  if(opt->verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
-  rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
-  if(rc)
+  curl_easy_setopt(curl,CURLOPT_URL,request);
+  curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_mrindex_writer);
+  curl_easy_setopt(curl,CURLOPT_FILE,output);
+
+  res=curl_easy_perform(curl);
+  if(res!=0)
     {
-      fprintf(console,"gpgkeys: can't search keyserver `%s': %s\n",
-	      host,rc==G10ERR_NETWORK?strerror(errno):g10_errstr(rc));
+      fprintf(console,"gpgkeys: HTTP search error %d: %s\n",res,errorbuffer);
+      ret=curl_err_to_gpg_err(res);
     }
   else
     {
-      unsigned int maxlen=1024,buflen;
-      byte *line=NULL;
-
-      /* Is it a pksd that knows how to handle machine-readable
-         format? */
-
-      rc=iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen);
-      if(line[0]=='<')
-	handle_old_hkp_index(hd.fp_read);
-      else
-	do
-	  {
-	    fprintf(output,"%s",line);
-	    maxlen=1024;
-	    rc=iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen);
-	  }
-	while(rc!=0);
-
-      m_free(line);
-
-      http_close(&hd);
-
-      fprintf(output,"SEARCH %s END\n",searchkey);
-
+      fprintf(output,"\nSEARCH %s END\n",searchkey);
       ret=KEYSERVER_OK;
     }
 
  fail:
 
+  curl_free(searchkey_encoded);
   free(request);
-  free(search);
 
   if(ret!=KEYSERVER_OK)
-    fprintf(output,"SEARCH %s FAILED %d\n",searchkey,ret);
+    fprintf(output,"\nSEARCH %s FAILED %d\n",searchkey,ret);
 
   return ret;
 }
 
 void
-fail_all(struct keylist *keylist,int action,int err)
+fail_all(struct keylist *keylist,int err)
 {
   if(!keylist)
     return;
 
-  if(action==SEARCH)
+  if(opt->action==KS_SEARCH)
     {
       fprintf(output,"SEARCH ");
       while(keylist)
@@ -752,11 +358,10 @@ show_help (FILE *fp)
 int
 main(int argc,char *argv[])
 {
-  int arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
+  int arg,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
   int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
-  unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
 
   console=stderr;
 
@@ -813,57 +418,28 @@ main(int argc,char *argv[])
   if(output==NULL)
     output=stdout;
 
+  opt=init_ks_options();
+  if(!opt)
+    return KEYSERVER_NO_MEMORY;
+
   /* Get the command and info block */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
-      int version;
-      char command[MAX_COMMAND+1];
+      int err;
       char option[MAX_OPTION+1];
-      char hash;
 
       if(line[0]=='\n')
 	break;
 
-      if(sscanf(line,"%c",&hash)==1 && hash=='#')
+      err=parse_ks_options(line,opt);
+      if(err>0)
+	{
+	  ret=err;
+	  goto fail;
+	}
+      else if(err==0)
 	continue;
-
-      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
-	{
-	  command[MAX_COMMAND]='\0';
-
-	  if(strcasecmp(command,"get")==0)
-	    action=GET;
-	  else if(strcasecmp(command,"send")==0)
-	    action=SEND;
-	  else if(strcasecmp(command,"search")==0)
-	    action=SEARCH;
-
-	  continue;
-	}
-
-      if(sscanf(line,"HOST %" MKSTRING(MAX_HOST) "s\n",host)==1)
-	{
-	  host[MAX_HOST]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"PORT %" MKSTRING(MAX_PORT) "s\n",port)==1)
-	{
-	  port[MAX_PORT]='\0';
-	  continue;
-	}
-
-      if(sscanf(line,"VERSION %d\n",&version)==1)
-	{
-	  if(version!=KEYSERVER_PROTO_VERSION)
-	    {
-	      ret=KEYSERVER_VERSION_ERROR;
-	      goto fail;
-	    }
-
-	  continue;
-	}
 
       if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "s\n",option)==1)
 	{
@@ -878,28 +454,7 @@ main(int argc,char *argv[])
 	      start=&option[3];
 	    }
 
-	  if(strcasecmp(start,"verbose")==0)
-	    {
-	      if(no)
-		verbose--;
-	      else
-		verbose++;
-	    }
-	  else if(strcasecmp(start,"include-revoked")==0)
-	    {
-	      if(no)
-		include_revoked=0;
-	      else
-		include_revoked=1;
-	    }
-	  else if(strcasecmp(start,"include-disabled")==0)
-	    {
-	      if(no)
-		include_disabled=0;
-	      else
-		include_disabled=1;
-	    }
-	  else if(strncasecmp(start,"http-proxy",10)==0)
+	  if(strncasecmp(start,"http-proxy",10)==0)
 	    {
 	      if(no)
 		proxy[0]='\0';
@@ -918,13 +473,7 @@ main(int argc,char *argv[])
 		    }
 		}
 	    }
-	  else if(strcasecmp(start,"broken-http-proxy")==0)
-	    {
-	      if(no)
-		http_flags&=~HTTP_FLAG_NO_SHUTDOWN;
-	      else
-		http_flags|=HTTP_FLAG_NO_SHUTDOWN;
-	    }
+#if 0
 	  else if(strcasecmp(start,"try-dns-srv")==0)
 	    {
 	      if(no)
@@ -932,37 +481,56 @@ main(int argc,char *argv[])
 	      else
 		http_flags|=HTTP_FLAG_TRY_SRV;
 	    }
-	  else if(strncasecmp(start,"timeout",7)==0)
-	    {
-	      if(no)
-		timeout=0;
-	      else if(start[7]=='=')
-		timeout=atoi(&start[8]);
-	      else if(start[7]=='\0')
-		timeout=DEFAULT_KEYSERVER_TIMEOUT;
-	    }
-
+#endif
 	  continue;
 	}
     }
 
-  if(timeout && register_timeout()==-1)
+  if(!opt->host)
+    {
+      fprintf(console,"gpgkeys: no keyserver host provided\n");
+      goto fail;
+    }
+
+  if(opt->timeout && register_timeout()==-1)
     {
       fprintf(console,"gpgkeys: unable to register timeout handler\n");
       return KEYSERVER_INTERNAL_ERROR;
     }
 
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+  curl=curl_easy_init();
+  if(!curl)
+    {
+      fprintf(console,"gpgkeys: unable to initialize curl\n");
+      ret=KEYSERVER_INTERNAL_ERROR;
+      goto fail;
+    }
+
+  curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
+
+  if(opt->debug)
+    {
+      curl_easy_setopt(curl,CURLOPT_STDERR,console);
+      curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
+    }
+
+  if(proxy[0])
+    curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
+
+#if 0
   /* By suggested convention, if the user gives a :port, then disable
      SRV. */
-  if(port[0])
+  if(opt->port)
     http_flags&=~HTTP_FLAG_TRY_SRV;
+#endif
 
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */
 
-  if(action==SEND)
+  if(opt->action==KS_SEND)
     while(fgets(line,MAX_LINE,input)!=NULL && line[0]!='\n');
-  else if(action==GET || action==SEARCH)
+  else if(opt->action==KS_GET || opt->action==KS_SEARCH)
     {
       for(;;)
 	{
@@ -1013,112 +581,87 @@ main(int argc,char *argv[])
   fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(output,"PROGRAM %s\n\n",VERSION);
 
-  if(verbose>1)
+  if(opt->verbose>1)
     {
-      fprintf(console,"Host:\t\t%s\n",host);
-      if(port[0])
-	fprintf(console,"Port:\t\t%s\n",port);
-      fprintf(console,"Command:\t%s\n",action==GET?"GET":
-	      action==SEND?"SEND":"SEARCH");
+      fprintf(console,"Host:\t\t%s\n",opt->host);
+      if(opt->port)
+	fprintf(console,"Port:\t\t%s\n",opt->port);
+      fprintf(console,"Command:\t%s\n",ks_action_to_string(opt->action));
     }
 
-#if 0
-  if(verbose>1)
+  if(opt->action==KS_GET)
     {
-      vals=ldap_get_values(ldap,res,"software");
-      if(vals!=NULL)
-	{
-	  fprintf(console,"Server: \t%s\n",vals[0]);
-	  ldap_value_free(vals);
-	}
-
-      vals=ldap_get_values(ldap,res,"version");
-      if(vals!=NULL)
-	{
-	  fprintf(console,"Version:\t%s\n",vals[0]);
-	  ldap_value_free(vals);
-	}
-    }
-#endif
-
-  switch(action)
-    {
-    case GET:
       keyptr=keylist;
 
       while(keyptr!=NULL)
 	{
-	  set_timeout(timeout);
+	  set_timeout(opt->timeout);
 
 	  if(get_key(keyptr->str)!=KEYSERVER_OK)
 	    failed++;
 
 	  keyptr=keyptr->next;
 	}
-      break;
-
-    case SEND:
-      {
-	int eof=0;
-
-	do
-	  {
-	    set_timeout(timeout);
-
-	    if(send_key(&eof)!=KEYSERVER_OK)
-	      failed++;
-	  }
-	while(!eof);
-      }
-      break;
-
-    case SEARCH:
-      {
-	char *searchkey=NULL;
-	int len=0;
-
-	set_timeout(timeout);
-
-	/* To search, we stick a space in between each key to search
-           for. */
-
-	keyptr=keylist;
-	while(keyptr!=NULL)
-	  {
-	    len+=strlen(keyptr->str)+1;
-	    keyptr=keyptr->next;
-	  }
-
-	searchkey=malloc(len+1);
-	if(searchkey==NULL)
-	  {
-	    ret=KEYSERVER_NO_MEMORY;
-	    fail_all(keylist,action,KEYSERVER_NO_MEMORY);
-	    goto fail;
-	  }
-
-	searchkey[0]='\0';
-
-	keyptr=keylist;
-	while(keyptr!=NULL)
-	  {
-	    strcat(searchkey,keyptr->str);
-	    strcat(searchkey," ");
-	    keyptr=keyptr->next;
-	  }
-
-	/* Nail that last space */
-	if(*searchkey)
-	  searchkey[strlen(searchkey)-1]='\0';
-
-	if(search_key(searchkey)!=KEYSERVER_OK)
-	  failed++;
-
-	free(searchkey);
-      }
-
-      break;
     }
+  else if(opt->action==KS_SEND)
+    {
+      int eof=0;
+
+      do
+	{
+	  set_timeout(opt->timeout);
+
+	  if(send_key(&eof)!=KEYSERVER_OK)
+	    failed++;
+	}
+      while(!eof);
+    }
+  else if(opt->action==KS_SEARCH)
+    {
+      char *searchkey=NULL;
+      int len=0;
+
+      set_timeout(opt->timeout);
+
+      /* To search, we stick a space in between each key to search
+	 for. */
+
+      keyptr=keylist;
+      while(keyptr!=NULL)
+	{
+	  len+=strlen(keyptr->str)+1;
+	  keyptr=keyptr->next;
+	}
+
+      searchkey=malloc(len+1);
+      if(searchkey==NULL)
+	{
+	  ret=KEYSERVER_NO_MEMORY;
+	  fail_all(keylist,KEYSERVER_NO_MEMORY);
+	  goto fail;
+	}
+
+      searchkey[0]='\0';
+
+      keyptr=keylist;
+      while(keyptr!=NULL)
+	{
+	  strcat(searchkey,keyptr->str);
+	  strcat(searchkey," ");
+	  keyptr=keyptr->next;
+	}
+
+      /* Nail that last space */
+      if(*searchkey)
+	searchkey[strlen(searchkey)-1]='\0';
+
+      if(search_key(searchkey)!=KEYSERVER_OK)
+	failed++;
+
+      free(searchkey);
+    }
+  else
+    abort();
 
   if(!failed)
     ret=KEYSERVER_OK;

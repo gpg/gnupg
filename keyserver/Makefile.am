@@ -29,7 +29,7 @@ gpglibexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h
-gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h
+gpgkeys_hkp_SOURCES = ksutil.c ksutil.h
 gpgkeys_http_SOURCES = gpgkeys_http.c ksutil.c ksutil.h
 gpgkeys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h
 gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
@@ -37,15 +37,25 @@ gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 gpgkeys_ldap_LDADD = ../util/libutil.a @LDAPLIBS@ @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
-gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_http_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 
+if WITH_CURL
+gpgkeys_hkp_SOURCES += gpgkeys_hkp.c
 if FAKE_CURL
 gpgkeys_curl_SOURCES += curl-shim.c curl-shim.h
 gpgkeys_curl_CPPFLAGS = -DFAKE_CURL
 gpgkeys_curl_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+gpgkeys_hkp_SOURCES += curl-shim.c curl-shim.h
+gpgkeys_hkp_CPPFLAGS = -DFAKE_CURL
+gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 else
 gpgkeys_curl_CPPFLAGS = @LIBCURL_CPPFLAGS@
 gpgkeys_curl_LDADD = @LIBCURL@ @GETOPT@
+gpgkeys_hkp_CPPFLAGS = @LIBCURL_CPPFLAGS@
+gpgkeys_hkp_LDADD = @LIBCURL@ @GETOPT@
+endif
+else
+gpgkeys_hkp_SOURCES += gpgkeys_oldhkp.c
+gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 endif

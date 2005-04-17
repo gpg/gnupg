@@ -1,5 +1,11 @@
 2005-04-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_hkp.c: New hkp handler that uses curl or curl-shim.
+
+	* Makefile.am: Build new gpgkeys_hkp.
+
+	* curl-shim.c (curl_easy_perform): Cleanup.
+
 	* ksutil.h, ksutil.c (curl_writer), gpgkeys_curl.c (get_key): Pass
 	a context to curl_writer so we can support multiple fetches in a
 	single session.

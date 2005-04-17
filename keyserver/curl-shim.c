@@ -30,10 +30,13 @@
 #include "util.h"
 #include "curl-shim.h"
 
-static CURLcode handle_error(CURL *curl,CURLcode err,const char *str)
+static CURLcode
+handle_error(CURL *curl,CURLcode err,const char *str)
 {
   if(curl->errorbuffer)
     {
+      /* Make sure you never exceed CURL_ERROR_SIZE, currently set to
+	 256 in curl-shim.h */
       switch(err)
 	{
 	case CURLE_OK:
@@ -67,24 +70,29 @@ static CURLcode handle_error(CURL *curl,CURLcode err,const char *str)
   return err;
 }
 
-CURLcode curl_global_init(long flags)
+CURLcode
+curl_global_init(long flags)
 {
   return CURLE_OK;
 }
 
-void curl_global_cleanup(void) {}
+void
+curl_global_cleanup(void) {}
 
-CURL *curl_easy_init(void)
+CURL *
+curl_easy_init(void)
 {
   return calloc(1,sizeof(CURL));
 }
 
-void curl_easy_cleanup(CURL *curl)
+void
+curl_easy_cleanup(CURL *curl)
 {
   free(curl);
 }
 
-CURLcode curl_easy_setopt(CURL *curl,CURLoption option,...)
+CURLcode
+curl_easy_setopt(CURL *curl,CURLoption option,...)
 {
   va_list ap;
 
@@ -124,7 +132,8 @@ CURLcode curl_easy_setopt(CURL *curl,CURLoption option,...)
   return handle_error(curl,CURLE_OK,NULL);
 }
 
-CURLcode curl_easy_perform(CURL *curl)
+CURLcode
+curl_easy_perform(CURL *curl)
 {
   int rc;
   CURLcode err=CURLE_OK;
@@ -133,16 +142,7 @@ CURLcode curl_easy_perform(CURL *curl)
   if(curl->flags.post)
     {
       rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,0,curl->proxy);
-      if(rc!=0)
-	{
-	  if(rc==G10ERR_NETWORK)
-	    errstr=strerror(errno);
-	  else
-	    errstr=g10_errstr(rc);
-
-	  err=CURLE_COULDNT_CONNECT;
-	}
-      else
+      if(rc==0)
 	{
 	  char content_len[50];
 	  unsigned int post_len=strlen(curl->postfields);
@@ -156,71 +156,56 @@ CURLcode curl_easy_perform(CURL *curl)
 	  http_start_data(&curl->hd);
 	  iobuf_write(curl->hd.fp_write,curl->postfields,post_len);
 	  rc=http_wait_response(&curl->hd,&curl->status);
-	  if(rc!=0)
-	    {
-	      if(rc==G10ERR_NETWORK)
-		errstr=strerror(errno);
-	      else
-		errstr=g10_errstr(rc);
-
-	      err=CURLE_COULDNT_CONNECT;
-	    }
-
-	  if(curl->flags.failonerror && curl->status>=300)
+	  if(rc==0 && curl->flags.failonerror && curl->status>=300)
 	    err=CURLE_HTTP_RETURNED_ERROR;
 	}
     }
   else
     {
       rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,0,curl->proxy);
-      if(rc!=0)
-	{
-	  if(rc==G10ERR_NETWORK)
-	    errstr=strerror(errno);
-	  else
-	    errstr=g10_errstr(rc);
-
-	  err=CURLE_COULDNT_CONNECT;
-	}
-      else
+      if(rc==0)
 	{
 	  rc=http_wait_response(&curl->hd,&curl->status);
-	  if(rc)
+	  if(rc==0)
 	    {
-	      http_close(&curl->hd);
-
-	      if(rc==G10ERR_NETWORK)
-		errstr=strerror(errno);
+	      if(curl->flags.failonerror && curl->status>=300)
+		err=CURLE_HTTP_RETURNED_ERROR;
 	      else
-		errstr=g10_errstr(rc);
-
-	      err=CURLE_COULDNT_CONNECT;
-	    }
-	  else if(curl->flags.failonerror && curl->status>=300)
-	    err=CURLE_HTTP_RETURNED_ERROR;
-	  else
-	    {
-	      unsigned int maxlen=1024,buflen,len;
-	      byte *line=NULL;
-
-	      while((len=iobuf_read_line(curl->hd.fp_read,
-					 &line,&buflen,&maxlen)))
 		{
-		  maxlen=1024;
-		  size_t ret;
+		  unsigned int maxlen=1024,buflen,len;
+		  byte *line=NULL;
 
-		  ret=(curl->writer)(line,len,1,curl->file);
-		  if(ret!=len)
+		  while((len=iobuf_read_line(curl->hd.fp_read,
+					     &line,&buflen,&maxlen)))
 		    {
-		      err=CURLE_WRITE_ERROR;
-		      break;
-		    }
-		}
+		      maxlen=1024;
+		      size_t ret;
 
-	      m_free(line);
-	      http_close(&curl->hd);
+		      ret=(curl->writer)(line,len,1,curl->file);
+		      if(ret!=len)
+			{
+			  err=CURLE_WRITE_ERROR;
+			  break;
+			}
+		    }
+
+		  m_free(line);
+		  http_close(&curl->hd);
+		}
 	    }
+	  else
+	    http_close(&curl->hd);
 	}
+    }
+
+  if(rc!=0)
+    {
+      if(rc==G10ERR_NETWORK)
+	errstr=strerror(errno);
+      else
+	errstr=g10_errstr(rc);
+
+      err=CURLE_COULDNT_CONNECT;
     }
 
   return handle_error(curl,err,errstr);
@@ -232,7 +217,8 @@ CURLcode curl_easy_perform(CURL *curl)
                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
                         "0123456789"
 
-char *curl_escape(char *str,int length)
+char *
+curl_escape(char *str,int length)
 {
   int len,max,idx,enc_idx=0;
   char *enc;
@@ -282,7 +268,8 @@ char *curl_escape(char *str,int length)
   return enc;
 }
 
-void curl_free(char *ptr)
+void
+curl_free(char *ptr)
 {
   free(ptr);
 }
