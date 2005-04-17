@@ -26,9 +26,10 @@
 typedef enum
   {
     CURLE_OK=0,
-    CURLE_FTP_COULDNT_RETR_FILE,
-    CURLE_COULDNT_CONNECT,
-    CURLE_WRITE_ERROR
+    CURLE_COULDNT_CONNECT=7,
+    CURLE_FTP_COULDNT_RETR_FILE=19,
+    CURLE_HTTP_RETURNED_ERROR=22,
+    CURLE_WRITE_ERROR=23
   } CURLcode;
 
 typedef enum
@@ -43,7 +44,10 @@ typedef enum
     CURLOPT_VERBOSE,
     CURLOPT_SSL_VERIFYPEER,
     CURLOPT_PROXY,
-    CURLOPT_CAINFO
+    CURLOPT_CAINFO,
+    CURLOPT_POST,
+    CURLOPT_POSTFIELDS,
+    CURLOPT_FAILONERROR
   } CURLoption;
 
 typedef size_t (*write_func)(char *buffer,size_t size,
@@ -56,6 +60,13 @@ typedef struct
   char *proxy;
   write_func writer;
   void *file;
+  char *postfields;
+  unsigned int status;
+  struct
+  {
+    unsigned int post:1;
+    unsigned int failonerror:1;
+  } flags;
   struct http_context hd;
 } CURL;
 

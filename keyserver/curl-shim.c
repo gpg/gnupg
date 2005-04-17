@@ -48,6 +48,10 @@ static CURLcode handle_error(CURL *curl,CURLcode err,const char *str)
 	  strcpy(curl->errorbuffer,"write error");
 	  break;
 
+	case CURLE_HTTP_RETURNED_ERROR:
+	  sprintf(curl->errorbuffer,"url returned error %u",curl->status);
+	  break;
+
 	default:
 	  strcpy(curl->errorbuffer,"generic error");
 	  break;
@@ -103,6 +107,15 @@ CURLcode curl_easy_setopt(CURL *curl,CURLoption option,...)
     case CURLOPT_PROXY:
       curl->proxy=va_arg(ap,char *);
       break;
+    case CURLOPT_POST:
+      curl->flags.post=va_arg(ap,unsigned int);
+      break;
+    case CURLOPT_POSTFIELDS:
+      curl->postfields=va_arg(ap,char *);
+      break;
+    case CURLOPT_FAILONERROR:
+      curl->flags.failonerror=va_arg(ap,unsigned int);
+      break;
     default:
       /* We ignore the huge majority of curl options */
       break;
@@ -117,36 +130,97 @@ CURLcode curl_easy_perform(CURL *curl)
   CURLcode err=CURLE_OK;
   const char *errstr=NULL;
 
-  rc=http_open_document(&curl->hd,curl->url,0,curl->proxy);
-  if(rc!=0)
+  if(curl->flags.post)
     {
-      if(rc==G10ERR_NETWORK)
-	errstr=strerror(errno);
-      else
-	errstr=g10_errstr(rc);
+      rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,0,curl->proxy);
+      if(rc!=0)
+	{
+	  if(rc==G10ERR_NETWORK)
+	    errstr=strerror(errno);
+	  else
+	    errstr=g10_errstr(rc);
 
-      err=CURLE_COULDNT_CONNECT;
+	  err=CURLE_COULDNT_CONNECT;
+	}
+      else
+	{
+	  char content_len[50];
+	  unsigned int post_len=strlen(curl->postfields);
+
+	  iobuf_writestr(curl->hd.fp_write,
+			 "Content-Type: application/x-www-form-urlencoded\r\n");
+	  sprintf(content_len,"Content-Length: %u\r\n",post_len);
+
+	  iobuf_writestr(curl->hd.fp_write,content_len);
+
+	  http_start_data(&curl->hd);
+	  iobuf_write(curl->hd.fp_write,curl->postfields,post_len);
+	  rc=http_wait_response(&curl->hd,&curl->status);
+	  if(rc!=0)
+	    {
+	      if(rc==G10ERR_NETWORK)
+		errstr=strerror(errno);
+	      else
+		errstr=g10_errstr(rc);
+
+	      err=CURLE_COULDNT_CONNECT;
+	    }
+
+	  if(curl->flags.failonerror && curl->status>=300)
+	    err=CURLE_HTTP_RETURNED_ERROR;
+	}
     }
   else
     {
-      unsigned int maxlen=1024,buflen,len;
-      byte *line=NULL;
-
-      while((len=iobuf_read_line(curl->hd.fp_read,&line,&buflen,&maxlen)))
+      rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,0,curl->proxy);
+      if(rc!=0)
 	{
-	  maxlen=1024;
-	  size_t ret;
+	  if(rc==G10ERR_NETWORK)
+	    errstr=strerror(errno);
+	  else
+	    errstr=g10_errstr(rc);
 
-	  ret=(curl->writer)(line,len,1,curl->file);
-	  if(ret!=len)
+	  err=CURLE_COULDNT_CONNECT;
+	}
+      else
+	{
+	  rc=http_wait_response(&curl->hd,&curl->status);
+	  if(rc)
 	    {
-	      err=CURLE_WRITE_ERROR;
-	      break;
+	      http_close(&curl->hd);
+
+	      if(rc==G10ERR_NETWORK)
+		errstr=strerror(errno);
+	      else
+		errstr=g10_errstr(rc);
+
+	      err=CURLE_COULDNT_CONNECT;
+	    }
+	  else if(curl->flags.failonerror && curl->status>=300)
+	    err=CURLE_HTTP_RETURNED_ERROR;
+	  else
+	    {
+	      unsigned int maxlen=1024,buflen,len;
+	      byte *line=NULL;
+
+	      while((len=iobuf_read_line(curl->hd.fp_read,
+					 &line,&buflen,&maxlen)))
+		{
+		  maxlen=1024;
+		  size_t ret;
+
+		  ret=(curl->writer)(line,len,1,curl->file);
+		  if(ret!=len)
+		    {
+		      err=CURLE_WRITE_ERROR;
+		      break;
+		    }
+		}
+
+	      m_free(line);
+	      http_close(&curl->hd);
 	    }
 	}
-
-      m_free(line);
-      http_close(&curl->hd);
     }
 
   return handle_error(curl,err,errstr);
