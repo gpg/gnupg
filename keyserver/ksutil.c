@@ -329,39 +329,44 @@ curl_err_to_gpg_err(CURLcode error)
 }
 
 size_t
-curl_writer(const void *ptr,size_t size,size_t nmemb,void *stream)
+curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx)
 {
+  struct curl_writer_ctx *ctx=cw_ctx;
   const char *buf=ptr;
   size_t i;
-  static int markeridx=0,begun=0,done=0;
-  static const char *marker=BEGIN;
+
+  if(!ctx->initialized)
+    {
+      ctx->marker=BEGIN;
+      ctx->initialized=1;
+    }
 
   /* scan the incoming data for our marker */
-  for(i=0;!done && i<(size*nmemb);i++)
+  for(i=0;!ctx->done && i<(size*nmemb);i++)
     {
-      if(buf[i]==marker[markeridx])
+      if(buf[i]==ctx->marker[ctx->markeridx])
 	{
-	  markeridx++;
-	  if(marker[markeridx]=='\0')
+	  ctx->markeridx++;
+	  if(ctx->marker[ctx->markeridx]=='\0')
 	    {
-	      if(begun)
-		done=1;
+	      if(ctx->begun)
+		ctx->done=1;
 	      else
 		{
 		  /* We've found the BEGIN marker, so now we're looking
 		     for the END marker. */
-		  begun=1;
-		  marker=END;
-		  markeridx=0;
-		  fprintf(stream,BEGIN);
+		  ctx->begun=1;
+		  ctx->marker=END;
+		  ctx->markeridx=0;
+		  fprintf(ctx->stream,BEGIN);
 		  continue;
 		}
 	    }
 	}
       else
-	markeridx=0;
+	ctx->markeridx=0;
 
-      if(begun)
+      if(ctx->begun)
 	{
 	  /* Canonicalize CRLF to just LF by stripping CRs.  This
 	     actually makes sense, since on Unix-like machines LF is
@@ -372,7 +377,7 @@ curl_writer(const void *ptr,size_t size,size_t nmemb,void *stream)
 	     the like. */
 
 	  if(buf[i]!='\r')
-	    fputc(buf[i],stream);
+	    fputc(buf[i],ctx->stream);
 	}
     }
 

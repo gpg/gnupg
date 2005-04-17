@@ -1,5 +1,9 @@
 2005-04-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* ksutil.h, ksutil.c (curl_writer), gpgkeys_curl.c (get_key): Pass
+	a context to curl_writer so we can support multiple fetches in a
+	single session.
+
 	* curl-shim.h, curl-shim.c (handle_error, curl_easy_setopt,
 	curl_easy_perform): Add POST functionality to the curl shim.
 

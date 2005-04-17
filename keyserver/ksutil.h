@@ -101,6 +101,14 @@ int parse_ks_options(char *line,struct ks_options *opt);
 const char *ks_action_to_string(enum ks_action action);
 void print_nocr(FILE *stream,const char *str);
 int curl_err_to_gpg_err(CURLcode error);
-size_t curl_writer(const void *ptr,size_t size,size_t nmemb,void *stream);
+
+struct curl_writer_ctx
+{
+  int initialized,markeridx,begun,done;
+  const char *marker;
+  FILE *stream;
+};
+
+size_t curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx);
 
 #endif /* !_KSUTIL_H_ */

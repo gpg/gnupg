@@ -48,6 +48,9 @@ get_key(char *getkey)
   CURLcode res;
   char errorbuffer[CURL_ERROR_SIZE];
   char request[MAX_URL];
+  struct curl_writer_ctx ctx;
+
+  memset(&ctx,0,sizeof(ctx));
 
   if(strncmp(getkey,"0x",2)==0)
     getkey+=2;
@@ -62,7 +65,8 @@ get_key(char *getkey)
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_writer);
-  curl_easy_setopt(curl,CURLOPT_FILE,output);
+  ctx.stream=output;
+  curl_easy_setopt(curl,CURLOPT_FILE,&ctx);
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 
   res=curl_easy_perform(curl);
