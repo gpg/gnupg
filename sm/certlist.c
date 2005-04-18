@@ -1,5 +1,5 @@
 /* certlist.c - build list of certificates
- *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -412,9 +412,11 @@ gpgsm_release_certlist (CERTLIST list)
 
 
 /* Like gpgsm_add_to_certlist, but look only for one certificate.  No
-   chain validation is done */
+   chain validation is done. If KEYID is not NULL it is take as an
+   additional filter value which must match the
+   subjectKeyIdentifier. */
 int
-gpgsm_find_cert (const char *name, ksba_cert_t *r_cert)
+gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
 {
   int rc;
   KEYDB_SEARCH_DESC desc;
@@ -429,10 +431,38 @@ gpgsm_find_cert (const char *name, ksba_cert_t *r_cert)
         rc = gpg_error (GPG_ERR_ENOMEM);
       else
         {
+        nextone:
           rc = keydb_search (kh, &desc, 1);
           if (!rc)
-            rc = keydb_get_cert (kh, r_cert);
-          if (!rc)
+            {
+              rc = keydb_get_cert (kh, r_cert);
+              if (!rc && keyid)
+                {
+                  ksba_sexp_t subj;
+                  
+                  rc = ksba_cert_get_subj_key_id (*r_cert, NULL, &subj);
+                  if (!rc)
+                    {
+                      if (cmp_simple_canon_sexp (keyid, subj))
+                        {
+                          xfree (subj);
+                          goto nextone;
+                        }
+                      xfree (subj);
+                      /* Okay: Here we know that the certificate's
+                         subjectKeyIdentifier matches the requested
+                         one. */
+                    }
+                  else if (gpg_err_code (rc) == GPG_ERR_NO_DATA)
+                    goto nextone;
+                }
+            }
+
+          /* If we don't have the KEYID filter we need to check for
+             ambigious search results.  Note, that it is somehwat
+             reasonable to assume that a specification of a KEYID
+             won't lead to ambiguous names. */
+          if (!rc && !keyid)
             {
               rc = keydb_search (kh, &desc, 1);
               if (rc == -1)

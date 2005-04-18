@@ -1,3 +1,18 @@
+2005-04-17  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (inq_certificate): Add new inquire SENDCERT_SKI.
+	* certlist.c (gpgsm_find_cert): Add new arg KEYID and implement
+	this filter.  Changed all callers.
+
+	* certchain.c (find_up_search_by_keyid): New helper.
+	(find_up): Also try using the AKI.keyIdentifier.
+	(find_up_external): Ditto.
+
+2005-04-15  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_cert_raw): Print the subjectKeyIdentifier as
+	well as the keyIdentifier part of the authorityKeyIdentifier.
+
 2005-03-31  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c (start_dirmngr): Use PATHSEP_C instead of ':'.

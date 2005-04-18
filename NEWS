@@ -1,6 +1,13 @@
 Noteworthy changes in version 1.9.16
 -------------------------------------------------
 
+ * gpg-agent does now support the ssh-agent protocol and thus allows
+   to use the pinentry as well as the OpenPGP smartcard with ssh.
+
+ * New tool gpg-connect-agent as a genereal client for the gpg-agent.
+
+ * New tool symcryptrun as a wrapper for certain encryption tools.
+
 
 Noteworthy changes in version 1.9.15 (2005-01-13)
 -------------------------------------------------
@@ -226,7 +233,7 @@ Noteworthy changes in version 1.9.0 (2003-08-05)
    development branch.
 
 
- Copyright 2002, 2003, 2004 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

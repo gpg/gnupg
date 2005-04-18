@@ -399,7 +399,7 @@ modes for gpgsm, here is the entire list of ways to specify a key:
 
        +Heinrich Heine duesseldorf
 
- * [NEW] Exact match by subject's DN
+ * Exact match by subject's DN
 
    This is indicated by a leading slash, directly followed by the
    rfc2253 encoded DN of the subject.  Note that you can't use the
@@ -411,7 +411,7 @@ modes for gpgsm, here is the entire list of ways to specify a key:
 
       /CN=Heinrich Heine,O=Poets,L=Paris,C=FR
 
- * [NEW] Excact match by issuer's DN
+ * Excact match by issuer's DN
 
    This is indicated by a leading hash mark, directly followed by a
    slash and then directly followed by the rfc2253 encoded DN of the
@@ -422,10 +422,10 @@ modes for gpgsm, here is the entire list of ways to specify a key:
 
       #/CN=Root Cert,O=Poets,L=Paris,C=FR
 
- * [NEW] Exact match by serial number and subject's DN
+ * Exact match by serial number and issuer's DN
 
    This is indicated by a hash mark, followed by the hexadecmal
-   representation of the serial number, the followed by a slahs and
+   representation of the serial number, the followed by a slash and
    the RFC2253 encoded DN of the issuer. See note above.
 
    Example:

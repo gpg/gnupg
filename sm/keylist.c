@@ -1,6 +1,6 @@
-/* keylist.c
+/* keylist.c - Print certificates in various formats.
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -122,7 +122,7 @@ static struct {
   { "1.3.6.1.5.5.7.1.11", "subjectInfoAccess" },
 
   /* X.509 id-ce */
-  { "2.5.29.14", "subjectKeyIdentifier"},
+  { "2.5.29.14", "subjectKeyIdentifier", 1},
   { "2.5.29.15", "keyUsage", 1 },
   { "2.5.29.16", "privateKeyUsagePeriod" },
   { "2.5.29.17", "subjectAltName", 1 },
@@ -512,7 +512,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
 {
   gpg_error_t err;
   size_t off, len;
-  ksba_sexp_t sexp;
+  ksba_sexp_t sexp, keyid;
   char *dn;
   ksba_isotime_t t;
   int idx, i;
@@ -588,9 +588,27 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
     fprintf (fp, "      keyType: %u bit %s\n",  nbits, algoname? algoname:"?");
   }
 
+  /* subjectKeyIdentifier */
+  fputs ("    subjKeyId: ", fp);
+  err = ksba_cert_get_subj_key_id (cert, NULL, &keyid);
+  if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+        fputs ("[none]\n", fp);
+      else
+        {
+          gpgsm_print_serial (fp, keyid);
+          ksba_free (keyid);
+          putc ('\n', fp);
+        }
+    }
+  else
+    fputs ("[?]\n", fp);
+
+
   /* authorityKeyIdentifier */
   fputs ("    authKeyId: ", fp);
-  err = ksba_cert_get_auth_key_id (cert, NULL, &name, &sexp);
+  err = ksba_cert_get_auth_key_id (cert, &keyid, &name, &sexp);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
     {
       if (gpg_err_code (err) == GPG_ERR_NO_DATA || !name)
@@ -602,6 +620,13 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
           putc ('\n', fp);
           print_names_raw (fp, -15, name);
           ksba_name_release (name);
+        }
+      if (keyid)
+        {
+          fputs (" authKeyId.ki: ", fp);
+          gpgsm_print_serial (fp, keyid);
+          ksba_free (keyid);
+          putc ('\n', fp);
         }
     }
   else

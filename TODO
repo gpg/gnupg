@@ -1,5 +1,9 @@
                                                               -*- outline -*-
 
+* IMPORTANT
+Check that openpty and pty.h are available and build symcryptrun only
+then.  Run shred on the temporary files.
+
 
 * src/base64
 ** Make parsing more robust

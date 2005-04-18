@@ -75,6 +75,7 @@ gpgsm_print_serial (FILE *fp, ksba_const_sexp_t p)
 }
 
 
+/* Dump the serial number or any other simple S-expression. */
 void
 gpgsm_dump_serial (ksba_const_sexp_t p)
 {

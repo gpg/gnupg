@@ -1566,7 +1566,7 @@ main ( int argc, char **argv)
           ksba_cert_t cert = NULL;
           char *grip = NULL;
 
-          rc = gpgsm_find_cert (*argv, &cert);
+          rc = gpgsm_find_cert (*argv, NULL, &cert);
           if (rc)
             ;
           else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))

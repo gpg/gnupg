@@ -1,5 +1,5 @@
 /* call-dirmngr.c - communication with the dromngr 
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -266,10 +266,24 @@ inq_certificate (void *opaque, const char *line)
   const unsigned char *der;
   size_t derlen;
   int issuer_mode = 0;
+  ksba_sexp_t ski = NULL;
 
   if (!strncmp (line, "SENDCERT", 8) && (line[8] == ' ' || !line[8]))
     {
       line += 8;
+    }
+  else if (!strncmp (line, "SENDCERT_SKI", 12) && (line[12]==' ' || !line[12]))
+    {
+      size_t n;
+
+      /* Send a certificate where a sourceKeyidentifier is included. */
+      line += 12;
+      while (*line == ' ')
+        line++;
+      ski = make_simple_sexp_from_hexstr (line, &n);
+      line += n;
+      while (*line == ' ')
+        line++;
     }
   else if (!strncmp (line, "SENDISSUERCERT", 14)
            && (line[14] == ' ' || !line[14]))
@@ -304,7 +318,7 @@ inq_certificate (void *opaque, const char *line)
       ksba_cert_t cert;
 
 
-      err = gpgsm_find_cert (line, &cert);
+      err = gpgsm_find_cert (line, ski, &cert);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
@@ -321,6 +335,7 @@ inq_certificate (void *opaque, const char *line)
         }
     }
 
+  xfree (ski);
   return rc; 
 }
 
@@ -717,7 +732,7 @@ run_command_inq_cb (void *opaque, const char *line)
       if (!*line)
         return ASSUAN_Inquire_Error;
 
-      err = gpgsm_find_cert (line, &cert);
+      err = gpgsm_find_cert (line, NULL, &cert);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));

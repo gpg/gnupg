@@ -252,7 +252,7 @@ int gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
 int gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                            certlist_t *listaddr, int is_encrypt_to);
 void gpgsm_release_certlist (certlist_t list);
-int gpgsm_find_cert (const char *name, ksba_cert_t *r_cert);
+int gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert);
 
 /*-- keylist.c --*/
 gpg_error_t gpgsm_list_keys (ctrl_t ctrl, STRLIST names,

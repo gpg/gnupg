@@ -266,6 +266,42 @@ check_cert_policy (ksba_cert_t cert, int listmode, FILE *fplist)
 }
 
 
+/* Helper fucntion for find_up.  This resets the key handle and search
+   for an issuer ISSUER with a subjectKeyIdentifier of KEYID.  Returns
+   0 obn success or -1 when not found. */
+static int
+find_up_search_by_keyid (KEYDB_HANDLE kh,
+                         const char *issuer, ksba_sexp_t keyid)
+{
+  int rc;
+  ksba_cert_t cert = NULL;
+  ksba_sexp_t subj = NULL;
+
+  keydb_search_reset (kh);
+  while (!(rc = keydb_search_subject (kh, issuer)))
+    {
+      ksba_cert_release (cert); cert = NULL;
+      rc = keydb_get_cert (kh, &cert);
+      if (rc)
+        {
+          log_error ("keydb_get_cert() failed: rc=%d\n", rc);
+          rc = -1;
+          break;
+        }
+      xfree (subj);
+      if (!ksba_cert_get_subj_key_id (cert, NULL, &subj))
+        {
+          if (!cmp_simple_canon_sexp (keyid, subj))
+            break; /* Found matching cert. */
+        }
+    }
+  
+  ksba_cert_release (cert);
+  xfree (subj);
+  return rc? -1:0;
+}
+
+
 static void
 find_up_store_certs_cb (void *cb_value, ksba_cert_t cert)
 {
@@ -275,13 +311,13 @@ find_up_store_certs_cb (void *cb_value, ksba_cert_t cert)
 }
 
 
-
 /* Helper for find_up().  Locate the certificate for ISSUER using an
    external lookup.  KH is the keydb context we are currently using.
    On success 0 is returned and the certificate may be retrieved from
-   the keydb using keydb_get_cert().*/
+   the keydb using keydb_get_cert().  KEYID is the keyIdentifier from
+   the AKI or NULL. */
 static int
-find_up_external (KEYDB_HANDLE kh, const char *issuer)
+find_up_external (KEYDB_HANDLE kh, const char *issuer, ksba_sexp_t keyid)
 {
   int rc;
   strlist_t names = NULL;
@@ -324,8 +360,13 @@ find_up_external (KEYDB_HANDLE kh, const char *issuer)
       /* The issuers are currently stored in the ephemeral key DB, so
          we temporary switch to ephemeral mode. */
       old = keydb_set_ephemeral (kh, 1);
-      keydb_search_reset (kh);
-      rc = keydb_search_subject (kh, issuer);
+      if (keyid)
+        rc = find_up_search_by_keyid (kh, issuer, keyid);
+      else
+        {
+          keydb_search_reset (kh);
+          rc = keydb_search_subject (kh, issuer);
+        }
       keydb_set_ephemeral (kh, old);
     }
   return rc;
@@ -343,9 +384,10 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
 {
   ksba_name_t authid;
   ksba_sexp_t authidno;
+  ksba_sexp_t keyid;
   int rc = -1;
 
-  if (!ksba_cert_get_auth_key_id (cert, NULL, &authid, &authidno))
+  if (!ksba_cert_get_auth_key_id (cert, &keyid, &authid, &authidno))
     {
       const char *s = ksba_name_enum (authid, 0);
       if (s && *authidno)
@@ -369,28 +411,57 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
               keydb_set_ephemeral (kh, old);
             }
 
-          /* If we didn't found it, try an external lookup.  */
-          if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-            rc = find_up_external (kh, issuer);
         }
+
+      if (rc == -1 && keyid && !find_next)
+        {
+          /* Not found by AIK.issuer_sn.  Lets try the AIY.ki
+             instead. Loop over all certificates with that issuer as
+             subject and stop for the one with a matching
+             subjectKeyIdentifier. */
+          rc = find_up_search_by_keyid (kh, issuer, keyid);
+          if (rc)
+            {
+              int old = keydb_set_ephemeral (kh, 1);
+              if (!old)
+                rc = find_up_search_by_keyid (kh, issuer, keyid);
+              keydb_set_ephemeral (kh, old);
+            }
+          if (rc) 
+            rc = -1; /* Need to make sure to have this error code. */
+        }
+
+      /* If we still didn't found it, try an external lookup.  */
+      if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
+        rc = find_up_external (kh, issuer, keyid);
 
       /* Print a note so that the user does not feel too helpless when
          an issuer certificate was found and gpgsm prints BAD
          signature because it is not the correct one. */
       if (rc == -1)
         {
-          log_info ("%sissuer certificate (#", find_next?"next ":"");
-          gpgsm_dump_serial (authidno);
-          log_printf ("/");
-          gpgsm_dump_string (s);
-          log_printf (") not found using authorityKeyIdentifier\n");
+          log_info ("%sissuer certificate ", find_next?"next ":"");
+          if (keyid)
+            {
+              log_printf ("{");
+              gpgsm_dump_serial (keyid);
+              log_printf ("} ");
+            }
+          if (authidno)
+            {
+              log_printf ("(#");
+              gpgsm_dump_serial (authidno);
+              log_printf ("/");
+              gpgsm_dump_string (s);
+              log_printf (") ");
+            }
+          log_printf ("not found using authorityKeyIdentifier\n");
         }
       else if (rc)
         log_error ("failed to find authorityKeyIdentifier: rc=%d\n", rc);
+      xfree (keyid);
       ksba_name_release (authid);
       xfree (authidno);
-      /* Fixme: There is no way to do an external lookup with
-         serial+issuer. */
     }
   
   if (rc) /* Not found via authorithyKeyIdentifier, try regular issuer name. */
@@ -409,7 +480,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
 
   /* Still not found.  If enabled, try an external lookup.  */
   if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-    rc = find_up_external (kh, issuer);
+    rc = find_up_external (kh, issuer, NULL);
 
   return rc;
 }
@@ -468,7 +539,7 @@ gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next)
   rc = keydb_get_cert (kh, r_next);
   if (rc)
     {
-      log_error ("failed to get cert: rc=%d\n", rc);
+      log_error ("keydb_get_cert() failed: rc=%d\n", rc);
       rc = gpg_error (GPG_ERR_GENERAL);
     }
 
@@ -791,7 +862,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       rc = keydb_get_cert (kh, &issuer_cert);
       if (rc)
         {
-          log_error ("failed to get cert: rc=%d\n", rc);
+          log_error ("keydb_get_cert() failed: rc=%d\n", rc);
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
@@ -818,6 +889,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                  might have been used.  This is required because some
                  CAs are reusing the issuer and subject DN for new
                  root certificates. */
+              /* FIXME: Do this only if we don't have an
+                 AKI.keyIdentifier */
               rc = find_up (kh, subject_cert, issuer, 1);
               if (!rc)
                 {
@@ -1008,7 +1081,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
       rc = keydb_get_cert (kh, &issuer_cert);
       if (rc)
         {
-          log_error ("failed to get cert: rc=%d\n", rc);
+          log_error ("keydb_get_cert() failed: rc=%d\n", rc);
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }

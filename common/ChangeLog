@@ -1,3 +1,8 @@
+2005-04-17  Werner Koch  <wk@g10code.com>
+
+	* sexputil.c (cmp_simple_canon_sexp): New.
+	(make_simple_sexp_from_hexstr): New.
+
 2005-04-07  Werner Koch  <wk@g10code.com>
 
 	* sexputil.c: New.
