@@ -1,3 +1,7 @@
+2005-04-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* symcryptrun.c: Add --input option.
+
 2005-04-15  Marcus Brinkmann  <marcus@g10code.de>
 
 	* symcryptrun.c (TEMP_FAILURE_RETRY): Define if not defined.

@@ -124,6 +124,7 @@ enum cmd_and_opt_values
     oKeyfile,
     oDecrypt,
     oEncrypt,
+    oInput,
   };
 
 
@@ -132,23 +133,23 @@ static ARGPARSE_OPTS opts[] =
   {
     { 301, NULL, 0, N_("@\nCommands:\n ") },
 
-    { oDecrypt, "decrypt", 0, N_("decryption modus")},
-    { oEncrypt, "encrypt", 0, N_("encryption modus")},
+    { oDecrypt, "decrypt", 0, N_("decryption modus") },
+    { oEncrypt, "encrypt", 0, N_("encryption modus") },
     
     { 302, NULL, 0, N_("@\nOptions:\n ") },
     
-    { oClass, "class", 2, N_("tool class (confucius)")},
-    { oProgram, "program", 2, N_("program filename")},
+    { oClass, "class", 2, N_("tool class (confucius)") },
+    { oProgram, "program", 2, N_("program filename") },
 
-    { oKeyfile, "keyfile", 2, N_("secret key file (required)")},
-
+    { oKeyfile, "keyfile", 2, N_("secret key file (required)") },
+    { oInput, "inputfile", 2, N_("input file name (default stdin)") },
     { oVerbose, "verbose",  0, N_("verbose") },
     { oQuiet, "quiet",      0, N_("quiet") },
-    { oLogFile, "log-file", 2, N_("use a log file for the server")},
-    { oOptions,  "options"  , 2, N_("|FILE|read options from FILE")},
+    { oLogFile, "log-file", 2, N_("use a log file for the server") },
+    { oOptions,  "options"  , 2, N_("|FILE|read options from FILE") },
 
     /* Hidden options.  */
-    { oNoVerbose, "no-verbose",  0, "@"},
+    { oNoVerbose, "no-verbose",  0, "@" },
     { oHomedir, "homedir", 2, "@" },   
     { oNoOptions, "no-options", 0, "@" },/* shortcut for --options /dev/null */
 
@@ -166,6 +167,7 @@ struct
   char *class;
   char *program;
   char *keyfile;
+  char *input;
 } opt;
 
 
@@ -755,22 +757,31 @@ confucius_main (int mode)
   int res;
   char *tmpdir;
   char *infile;
+  int infile_from_stdin = 0;
   char *outfile;
 
   tmpdir = confucius_mktmpdir ();
   if (!tmpdir)
     return 1;
-  
-  /* TMPDIR + "/" + "in" + "\0".  */
-  infile = malloc (strlen (tmpdir) + 1 + 2 + 1);
-  if (!infile)
+
+  if (opt.input && !(opt.input[0] == '-' && opt.input[1] == '\0'))
+    infile = xstrdup (opt.input);
+  else
     {
-      log_error (_("cannot allocate infile string: %s\n"), strerror (errno));
-      rmdir (tmpdir);
-      return 1;
+      infile_from_stdin = 1;
+
+      /* TMPDIR + "/" + "in" + "\0".  */
+      infile = malloc (strlen (tmpdir) + 1 + 2 + 1);
+      if (!infile)
+	{
+	  log_error (_("cannot allocate infile string: %s\n"),
+		     strerror (errno));
+	  rmdir (tmpdir);
+	  return 1;
+	}
+      strcpy (infile, tmpdir);
+      strcat (infile, "/in");
     }
-  strcpy (infile, tmpdir);
-  strcat (infile, "/in");
 
   /* TMPDIR + "/" + "out" + "\0".  */
   outfile = malloc (strlen (tmpdir) + 1 + 3 + 1);
@@ -784,14 +795,17 @@ confucius_main (int mode)
   strcpy (outfile, tmpdir);
   strcat (outfile, "/out");
 
-  /* Create INFILE and fill it with content.  */
-  res = confucius_copy_file ("-", infile, mode == oEncrypt);
-  if (res)
+  if (infile_from_stdin)
     {
-      free (outfile);
-      free (infile);
-      rmdir (tmpdir);
-      return res;
+      /* Create INFILE and fill it with content.  */
+      res = confucius_copy_file ("-", infile, mode == oEncrypt);
+      if (res)
+	{
+	  free (outfile);
+	  free (infile);
+	  rmdir (tmpdir);
+	  return res;
+	}
     }
 
   /* Run the engine and thus create the output file, handling
@@ -800,7 +814,8 @@ confucius_main (int mode)
   if (res)
     {
       remove_file (outfile, mode == oDecrypt);
-      remove_file (infile, mode == oEncrypt);
+      if (infile_from_stdin)
+	remove_file (infile, mode == oEncrypt);
       free (outfile);
       free (infile);
       rmdir (tmpdir);
@@ -812,7 +827,8 @@ confucius_main (int mode)
   if (res)
     {
       remove_file (outfile, mode == oDecrypt);
-      remove_file (infile, mode == oEncrypt);
+      if (infile_from_stdin)
+	remove_file (infile, mode == oEncrypt);
       free (outfile);
       free (infile);
       rmdir (tmpdir);
@@ -820,7 +836,8 @@ confucius_main (int mode)
     }
   
   remove_file (outfile, mode == oDecrypt);
-  remove_file (infile, mode == oEncrypt);
+  if (infile_from_stdin)
+    remove_file (infile, mode == oEncrypt);
   free (outfile);
   free (infile);
   rmdir (tmpdir);
@@ -915,6 +932,7 @@ main (int argc, char **argv)
 	case oClass:	opt.class = pargs.r.ret_str; break;
 	case oProgram:	opt.program = pargs.r.ret_str; break;
 	case oKeyfile:	opt.keyfile = pargs.r.ret_str; break;
+	case oInput:	opt.input = pargs.r.ret_str; break;
 
         case oLogFile:  logfile = pargs.r.ret_str; break;
 
