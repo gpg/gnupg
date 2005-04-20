@@ -1741,9 +1741,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   /* Prepare buffer stream.  */
 
-#warning Huh, sleep?  why that?  Anyway, this should be pth_sleep
-  sleep (5);
-
   key_directory = NULL;
   key_secret = NULL;
   key_public = NULL;

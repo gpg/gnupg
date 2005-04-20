@@ -1,3 +1,8 @@
+2005-04-20  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_handler_request_identities): Removed
+	debugging code (sleep call), which was commited unintenionally.
+
 2005-04-03  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_request_spec): New member: secret_input.
