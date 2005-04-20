@@ -66,6 +66,7 @@ struct {
                                    pinentry.  */
   const char *scdaemon_program; /* Filename of the program to handle
                                    smartcard tasks.  */
+  int disable_scdaemon;         /* Never use the SCdaemon. */
   int no_grab;         /* Don't let the pinentry grab the keyboard */
   unsigned long def_cache_ttl;
   unsigned long max_cache_ttl;

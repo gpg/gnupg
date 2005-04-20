@@ -94,7 +94,8 @@ enum cmd_and_opt_values
   oAllowPresetPassphrase,
   oKeepTTY,
   oKeepDISPLAY,
-  oSSHSupport
+  oSSHSupport,
+  oDisableScdaemon
 };
 
 
@@ -128,6 +129,7 @@ static ARGPARSE_OPTS opts[] = {
                                N_("|PGM|use PGM as the PIN-Entry program") },
   { oScdaemonProgram, "scdaemon-program", 2 ,
                                N_("|PGM|use PGM as the SCdaemon program") },
+  { oDisableScdaemon, "disable-scdaemon", 0, N_("do not use the SCdaemon") },
 
   { oDisplay,    "display",     2, "@" },
   { oTTYname,    "ttyname",     2, "@" },
@@ -186,6 +188,11 @@ static const char *debug_level;
 /* Keep track of the current log file so that we can avoid updating
    the log file after a SIGHUP if it didn't changed. Malloced. */
 static char *current_logfile;
+
+/* The handle_tick() function may test whether a parent is still
+   runing.  We record the PID of the parent here or -1 if it should be
+   watched. */
+static pid_t parent_pid = (pid_t)(-1);
 
 /*
    Local prototypes. 
@@ -387,6 +394,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.max_cache_ttl = MAX_CACHE_TTL;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
+      opt.disable_scdaemon = 0;
       return 1;
     }
 
@@ -415,6 +423,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       
     case oPinentryProgram: opt.pinentry_program = pargs->r.ret_str; break;
     case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
+    case oDisableScdaemon: opt.disable_scdaemon = 1; break;
 
     case oDefCacheTTL: opt.def_cache_ttl = pargs->r.ret_ulong; break;
     case oMaxCacheTTL: opt.max_cache_ttl = pargs->r.ret_ulong; break;
@@ -740,6 +749,8 @@ main (int argc, char **argv )
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("allow-mark-trusted:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      printf ("disable-scdaemon:%lu:\n",
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);
     }
@@ -819,6 +830,11 @@ main (int argc, char **argv )
       else
 	fd_ssh = -1;
 
+      /* If we are going to exec a program in the parent, we record
+         the PID, so that the child may check whether the program is
+         still alive. */
+      if (argc)
+        parent_pid = getpid ();
 
       fflush (NULL);
 #ifdef HAVE_W32_SYSTEM
@@ -878,14 +894,14 @@ main (int argc, char **argv )
                   kill (pid, SIGTERM );
                   exit (1);
                 }
-              if (putenv (infostr_ssh_sock))
+              if (opt.ssh_support && putenv (infostr_ssh_sock))
                 {
                   log_error ("failed to set environment: %s\n",
                              strerror (errno) );
                   kill (pid, SIGTERM );
                   exit (1);
                 }
-              if (putenv (infostr_ssh_pid))
+              if (opt.ssh_support && putenv (infostr_ssh_pid))
                 {
                   log_error ("failed to set environment: %s\n",
                              strerror (errno) );
@@ -922,8 +938,7 @@ main (int argc, char **argv )
 		      printf ("%s; export SSH_AGENT_PID;\n", infostr_ssh_pid);
 		    }
                 }
-              /* Note: teh standard free is here correct.  */
-              free (infostr);
+              free (infostr); /* (Note that a vanilla free is here correct.) */
 	      if (opt.ssh_support)
 		{
 		  free (infostr_ssh_sock);
@@ -1311,6 +1326,27 @@ create_directories (void)
 
 
 #ifdef USE_GNU_PTH
+/* This is the worker for the ticker.  It is called every few seconds
+   and may only do fast operations. */
+static void
+handle_tick (void)
+{
+#ifndef HAVE_W32_SYSTEM
+  if (parent_pid != (pid_t)(-1))
+    {
+      if (kill (parent_pid, 0))
+        {
+          shutdown_pending = 2;
+          log_info ("parent process died - shutting down\n");
+          log_info ("%s %s stopped\n", strusage(11), strusage(13) );
+          cleanup ();
+          agent_exit (0);
+        }
+    }
+#endif /*HAVE_W32_SYSTEM*/
+}
+
+
 static void
 handle_signal (int signo)
 {
@@ -1409,7 +1445,7 @@ static void
 handle_connections (int listen_fd, int listen_fd_ssh)
 {
   pth_attr_t tattr;
-  pth_event_t ev;
+  pth_event_t ev, time_ev;
   sigset_t sigs;
   int signo;
   struct sockaddr_un paddr;
@@ -1434,6 +1470,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 #else
   ev = NULL;
 #endif
+  time_ev = NULL;
 
   FD_ZERO (&fdset);
   FD_SET (listen_fd, &fdset);
@@ -1456,16 +1493,33 @@ handle_connections (int listen_fd, int listen_fd_ssh)
           continue;
 	}
 
+      /* Create a timeout event if needed. */
+      if (!time_ev)
+        time_ev = pth_event (PTH_EVENT_TIME, pth_timeout (2, 0));
+
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
 
+      if (time_ev)
+        pth_event_concat (ev, time_ev, NULL);
       ret = pth_select_ev (FD_SETSIZE, &read_fdset, NULL, NULL, NULL, ev);
+      if (time_ev)
+        pth_event_isolate (time_ev);
+
       if (ret == -1)
 	{
-          if (pth_event_occurred (ev))
+          if (pth_event_occurred (ev)
+              || (time_ev && pth_event_occurred (time_ev)))
             {
-              handle_signal (signo);
+              if (pth_event_occurred (ev))
+                handle_signal (signo);
+              if (time_ev && pth_event_occurred (time_ev))
+                {
+                  pth_event_free (time_ev, PTH_FREE_ALL);
+                  time_ev = NULL;
+                  handle_tick ();
+                }
               continue;
             }
           log_error (_("pth_select failed: %s - waiting 1s\n"),
@@ -1477,6 +1531,13 @@ handle_connections (int listen_fd, int listen_fd_ssh)
       if (pth_event_occurred (ev))
         {
           handle_signal (signo);
+        }
+
+      if (time_ev && pth_event_occurred (time_ev))
+        {
+          pth_event_free (time_ev, PTH_FREE_ALL);
+          time_ev = NULL;
+          handle_tick ();
         }
 
       if (FD_ISSET (listen_fd, &read_fdset))
@@ -1515,6 +1576,8 @@ handle_connections (int listen_fd, int listen_fd_ssh)
     }
 
   pth_event_free (ev, PTH_FREE_ALL);
+  if (time_ev)
+    pth_event_free (time_ev, PTH_FREE_ALL);
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
 }

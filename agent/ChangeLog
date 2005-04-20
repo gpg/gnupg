@@ -3,6 +3,18 @@
 	* command-ssh.c (ssh_handler_request_identities): Removed
 	debugging code (sleep call), which was commited unintenionally.
 
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (parse_bag_encrypted_data): Fix the unpadding hack.
+
+	* gpg-agent.c: New option --disable-scdaemon.
+	(handle_connections): Add time event to drive ...
+	(handle_tick): New function.
+	(main): Record the parent PID. Fixed segv when using ssh and a
+	command.
+
+	* call-scd.c (start_scd): Take care of this option.
+
 2005-04-03  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_request_spec): New member: secret_input.

@@ -486,6 +486,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   buffer = p = plain;
 
 /*   { */
+/* #  warning debug code is enabled */
 /*     FILE *fp = fopen ("tmp-rc2-plain.der", "wb"); */
 /*     if (!fp || fwrite (p, n, 1, fp) != 1) */
 /*       exit (2); */
@@ -586,8 +587,10 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
         }
 
       /* Ugly hack to cope with the padding: Forget about the rest if
-         that it is less than the cipher's block length. */
-      if (n < 8)
+         that is less or equal to the cipher's block length.  We can
+         reasonable assume that all valid data will be longer than
+         just one block. */
+      if (n <= 8)
         n = 0;  
 
       /* Skip the optional SET with the pkcs12 cert attributes. */
@@ -602,7 +605,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
             { /* The optional SET. */
               p += ti.length;
               n -= ti.length;
-              if (n < 8)
+              if (n <= 8)
                 n = 0;
               if (n && parse_tag (&p, &n, &ti))
                 goto bailout;

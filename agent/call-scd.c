@@ -137,6 +137,9 @@ start_scd (ctrl_t ctrl)
   int no_close_list[3];
   int i;
 
+  if (opt.disable_scdaemon)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
 #ifdef USE_GNU_PTH
   if (!pth_mutex_acquire (&scd_lock, 0, NULL))
     {
