@@ -1,3 +1,7 @@
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.texi (Agent Configuration): New section.
+
 2005-02-24  Werner Koch  <wk@g10code.com>
 
 	* tools.texi (gpg-connect-agent): New.
@@ -171,7 +175,7 @@
 
 	* Makefile.am, gpgsm.texi: New.
 	
- Copyright 2002 Free Software Foundation, Inc.
+ Copyright 2002, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

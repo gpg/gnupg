@@ -12,7 +12,7 @@
 
 @command{gpgsm} is a tool similar to @command{gpg} to provide digital
 encryption and signing servicesd on X.509 certificates and the CMS
-protocoll.  It is mainly used as a backend for S/MIME mail processing.
+protocol.  It is mainly used as a backend for S/MIME mail processing.
 @command{gpgsm} includes a full features certificate management and
 complies with all rules defined for the German Sphinx project.
 

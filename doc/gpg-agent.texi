@@ -11,7 +11,7 @@
 @c man begin DESCRIPTION
 
 @command{gpg-agent} is a daemon to manage secret (private) keys
-independelty from any protocol.  It is used as a backend for
+independently from any protocol.  It is used as a backend for
 @command{gpg} and @command{gpgsm} as well as for a couple of other
 utilities.
 
@@ -71,6 +71,7 @@ one (e.g. @file{/usr/bin/pinentry}).
 @menu
 * Agent Commands::      List of all commands.
 * Agent Options::       List of all options.
+* Agent Configuration:: Configuration files.
 * Agent Signals::       Use of some signals.
 * Agent Examples::      Some usage examples.
 * Agent Protocol::      The protocol the agent uses.
@@ -123,6 +124,7 @@ $ eval `gpg-agent --daemon`
 
 @table @gnupgtabopt
 
+@anchor{option --options}
 @item --options @var{file}
 @opindex options
 Reads configuration from @var{file} instead of from the default
@@ -130,6 +132,7 @@ per-user configuration file.  The default configuration file is named
 @file{gpg-agent.conf} and expected in the @file{.gnupg} directory directly
 below the home directory of the user.
 
+@anchor{option --homedir}
 @item --homedir @var{dir}
 @opindex homedir
 Set the name of the home directory to @var{dir}. If his option is not
@@ -255,10 +258,11 @@ seeing what the agent actually does.
 Don't allow multiple connections.  This option is in general not very
 useful. 
 
+@anchor{option --allow-mark-trusted}
 @item --allow-mark-trusted
 @opindex allow-mark-trusted
 Allow clients to mark keys as trusted, i.e. put them into the
-@code{trustlist.txt} file.  This is by default not allowed to make it
+@file{trustlist.txt} file.  This is by default not allowed to make it
 harder for users to inadvertly accept Root-CA keys.
 
 @item --ignore-cache-for-signing
@@ -288,6 +292,12 @@ dependend and can be shown with the @code{--version} command.
 Use program @var{filename} as the Smartcard daemon.  The default is
 installation dependend and can be shown with the @code{--version}
 command.
+
+@item --disable-scdaemon
+@opindex disable-scdaemon
+Do not make use of the scdaemon tool.  This option has the effect of
+disabling the ability to do smartcard operations.  Note, that enabling
+this option at runtime does not kill an already forked scdaemon.
 
 @item --use-standard-socket
 @itemx --no-use-standard-socket
@@ -326,6 +336,7 @@ Ignore requests to change change the current @sc{tty} respective the X
 window system's @code{DISPLAY} variable.  This is useful to lock the
 pinentry to pop up at the @sc{tty} or display you started the agent.
 
+@anchor{option --enable-ssh-support}
 @item --enable-ssh-support
 @opindex enable-ssh-support
 
@@ -358,6 +369,87 @@ gpg-agent has been started.
 
 All the long options may also be given in the configuration file after
 stripping off the two leading dashes.
+
+
+@c man begin FILES
+
+@node Agent Configuration
+@section Configuration
+
+There are a few configuration files needed for the operation of the
+agent. By default they may all be found in the current home directory
+(@pxref{option --homedir}).
+
+@table @file
+
+@item gpg-agent.conf
+@cindex gpg-agent.conf
+  This is the standard configuration file read by @command{gpg-agent} on
+  startup.  It may contain any valid long option; the leading
+  two dashes may not be entered and the option may not be abbreviated.
+  This file is also read after a @code{SIGHUP} however only a few
+  options will actually have an effect.  This default name may be
+  changed on the command line (@pxref{option --options}).
+
+@item trustlist.txt
+  This is the list of trusted keys.  Comment lines, indicated by a leading
+  hash mark, as well as empty lines are ignored.  To mark a key as trusted
+  you need to enter its fingerprint followed by a space and a capital
+  letter @code{S}.  Colons may optionally be used to separate the bytes of
+  a fingerprint; this allows to cut and paste the fingeperint from a key
+  listing output.
+  
+  Here is an example where two keys are marked as ultimately trusted:
+  
+  @example
+  # CN=Wurzel ZS 3,O=Intevation GmbH,C=DE
+  A6935DD34EF3087973C706FC311AA2CCF733765B S
+  
+  # CN=PCA-1-Verwaltung-02/O=PKI-1-Verwaltung/C=DE
+  DC:BD:69:25:48:BD:BB:7E:31:6E:BB:80:D3:00:80:35:D4:F8:A6:CD S 
+  @end example
+  
+  Before entering a key into this file, you need to ensure its
+  authenticity.  How to do this depends on your organisation; your
+  administrator might have already entered those keys which are deemed
+  trustworthy enough into this file.  Places where to look for the
+  fingerprint of a root certificate are letters received from the CA or
+  the website of the CA (after making 100% sure that this is indeed the
+  website of that CA).  You may want to consider allowing interactive
+  updates of this file by using the @xref{option --allow-mark-trusted}.
+  This is however not as secure as maintaining this file manually.  It is
+  even advisable to change the permissions to read-only so that this file
+  can't be changed inadvertently.
+  
+  @item sshcontrol
+
+  This file is used when support for the secure shell agent protocol has
+  been enabled (@pxref{option --enable-ssh-support}). Only keys present in
+  this file are used in the SSH protocol.  The @command{ssh-add} tool y be
+  used to add new entries to this file; you may also add them manually.
+  Comment lines, indicated by a leading hash mark, as well as empty lines
+  are ignored.  An entry starts with optional white spaces, followed by
+  the keygrip of the key given as 40 hex digits, optionally followed by
+  the caching TTL in seconds and another optional field for arbitrary
+  flags.  A @code{!} may be prepended to the keygrip to disable this
+  entry.
+    
+  The follwoing example lists exactly one key.  Note that keys available
+  through a OpenPGP smartcard in the active smartcard reader are implictly
+  added to this list; i.e. there is no need to list them.
+  
+  @example
+  # Key added on 2005-02-25 15:08:29
+  5A6592BF45DC73BD876874A28FD4639282E29B52 0
+  @end example
+@end table
+
+Note that on larger installations, it is useful to put predefined
+files into the directory @file{/etc/skel/.gnupg/} so that newly created
+users start up with a working configuration.  For existing users the
+a small helper script is provied to create these files (@pxref{addgnupghome}).
+
+
 
 @c
 @c Agent Signals
