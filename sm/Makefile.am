@@ -21,7 +21,8 @@
 
 bin_PROGRAMS = gpgsm
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS) \
+            $(PTH_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl 
 include $(top_srcdir)/am/cmacros.am

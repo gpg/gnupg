@@ -175,8 +175,9 @@ check_cert_policy (ksba_cert_t cert, int listmode, FILE *fplist)
   fp = fopen (opt.policy_file, "r");
   if (!fp)
     {
-      log_error ("failed to open `%s': %s\n",
-                 opt.policy_file, strerror (errno));
+      if (opt.verbose || errno != ENOENT)
+        log_info (_("failed to open `%s': %s\n"),
+                  opt.policy_file, strerror (errno));
       xfree (policies);
       /* With no critical policies this is only a warning */
       if (!any_critical)
@@ -816,8 +817,6 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           /* Check for revocations etc. */
           if ((flags & 1))
             rc = 0;
-          else if (any_expired)
-            ; /* Don't bother to run the expensive CRL check then. */
           else
             rc = is_cert_still_valid (ctrl, lm, fp,
                                       subject_cert, subject_cert,
@@ -953,8 +952,6 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       /* Check for revocations etc. */
       if ((flags & 1))
         rc = 0;
-      else if (any_expired)
-        ; /* Don't bother to run the expensive CRL check then. */
       else
         rc = is_cert_still_valid (ctrl, lm, fp,
                                   subject_cert, issuer_cert,
