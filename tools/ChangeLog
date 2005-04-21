@@ -1,5 +1,8 @@
 2005-04-21  Werner Koch  <wk@g10code.com>
 
+	* symcryptrun.c (main): Optionally allow the input file as command
+	line argument.
+
 	* gpgconf-comp.c: Add gpgsm option disable-trusted-cert-crl-check.
 
 2005-04-20  Werner Koch  <wk@g10code.com>

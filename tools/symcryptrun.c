@@ -190,7 +190,7 @@ my_strusage (int level)
       break;
     case 41:
       p = _("Syntax: symcryptrun --class CLASS --program PROGRAM "
-	    "--keyfile KEYFILE [options...] COMMAND\n"
+	    "--keyfile KEYFILE [options...] COMMAND [inputfile]\n"
             "Call a simple symmetric encryption tool\n");
       break;
     case 31: p = "\nHome: "; break;
@@ -960,6 +960,20 @@ main (int argc, char **argv)
     }
   xfree (configname);
   configname = NULL;
+
+  /* With --inputfile an argument is not allowed, without only one
+     optional argument is allowed. */
+  if (argc > 1)
+    log_error (_("too many arguments\n"));
+  else if (opt.input && argc)
+    log_error (_("no argument allowed when using option \"%s\"\n"),
+               "--inputfile");
+
+  if (argc)
+    {
+      opt.input = *argv;
+      argv++; argc--;
+    }
 
   if (!mode)
     log_error (_("either %s or %s must be given\n"),
