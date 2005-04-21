@@ -62,7 +62,7 @@ have_ksba=no
 have_opensc=no
 have_pth=no
 
-GNUPG_BUILD_PROGRAM(gpg, yes)
+GNUPG_BUILD_PROGRAM(gpg, no)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 GNUPG_BUILD_PROGRAM(agent, yes)
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
@@ -313,6 +313,11 @@ AH_BOTTOM([
 #define EXEC_TEMPFILE_ONLY
 #endif
 
+/* Temporary hacks to avoid requring a libgpg-error update. */
+#if !HAVE_DECL_GPG_ERR_LOCKED
+#define GPG_ERR_LOCKED  173
+#endif
+
 ])
 
 AM_MAINTAINER_MODE
@@ -437,6 +442,10 @@ AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
 #
 AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
                   have_gpg_error=yes,have_gpg_error=no)
+_tmp_gpg_error_save_cflags="$CFLAGS"
+CFLAGS="$CFLAGS $GPG_ERROR_CFLAGS"
+AC_CHECK_DECLS(GPG_ERR_LOCKED,,,[#include <gpg-error.h>])
+CFLAGS="${_tmp_gpg_error_save_cflags}"
 
 
 #

@@ -1,5 +1,8 @@
 2005-04-21  Werner Koch  <wk@g10code.com>
 
+	* gpgsm.c: New options --{enable,disable}-trusted-cert-crl-check.
+	* certchain.c (gpgsm_validate_chain): Make use of it.
+
 	* certchain.c (gpgsm_validate_chain): Check revocations even for
 	expired certificates.  This is required because on signature
 	verification an expired key is fine whereas a revoked one is not.

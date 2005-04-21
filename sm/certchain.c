@@ -752,13 +752,13 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
         }
 
 
-      /* Is this a self-signed certificate? */
+      /* Is this a self-issued certificate? */
       if (subject && !strcmp (issuer, subject))
         {  /* Yes. */
           if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
             {
               do_list (1, lm, fp,
-                       _("selfsigned certificate has a BAD signature"));
+                       _("self-signed certificate has a BAD signature"));
               if (DBG_X509)
                 {
                   gpgsm_dump_cert ("self-signing cert", subject_cert);
@@ -816,7 +816,9 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
           /* Check for revocations etc. */
           if ((flags & 1))
-            rc = 0;
+            ;
+          else if (opt.no_trusted_cert_crl_check)
+            ; 
           else
             rc = is_cert_still_valid (ctrl, lm, fp,
                                       subject_cert, subject_cert,
@@ -1045,7 +1047,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
       rc = gpgsm_check_cert_sig (cert, cert);
       if (rc)
         {
-          log_error ("selfsigned certificate has a BAD signature: %s\n",
+          log_error ("self-signed certificate has a BAD signature: %s\n",
                      gpg_strerror (rc));
           if (DBG_X509)
             {

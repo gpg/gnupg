@@ -124,7 +124,7 @@ enum cmd_and_opt_values
     oKeyfile,
     oDecrypt,
     oEncrypt,
-    oInput,
+    oInput
   };
 
 

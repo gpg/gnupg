@@ -263,7 +263,7 @@ open_card (ctrl_t ctrl, const char *apptype)
     return 0; /* Already initialized using a card context. */
 
   if ( IS_LOCKED (ctrl) )
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   if (ctrl->reader_slot != -1)
     slot = ctrl->reader_slot;
@@ -360,7 +360,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
   if (ctrl->server_local->card_removed)
     {
       if ( IS_LOCKED (ctrl) )
-        return gpg_error (GPG_ERR_EBUSY);
+        return gpg_error (GPG_ERR_LOCKED);
       do_reset (ctrl, 0);
     }
 
@@ -745,7 +745,7 @@ cmd_setdata (assuan_context_t ctx, char *line)
   unsigned char *buf;
 
   if (locked_session && locked_session != ctrl->server_local)
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   /* Parse the hexstring. */
   for (p=line,n=0; hexdigitp (p); p++, n++)
@@ -817,7 +817,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   char *keyidstr;
 
   if ( IS_LOCKED (ctrl) )
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -871,7 +871,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   char *keyidstr;
 
   if ( IS_LOCKED (ctrl) )
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -921,7 +921,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   char *keyidstr;
 
   if ( IS_LOCKED (ctrl) )
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -1021,7 +1021,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
   char *line, *linebuf;
 
   if ( IS_LOCKED (ctrl) )
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -1076,7 +1076,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   int force = has_option (line, "--force");
 
   if ( IS_LOCKED (ctrl) )
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   /* Skip over options. */
   while ( *line == '-' && line[1] == '-' )
@@ -1165,7 +1165,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
   int reset_mode = has_option (line, "--reset");
 
   if ( IS_LOCKED (ctrl) )
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   /* Skip over options. */
   while (*line == '-' && line[1] == '-')
@@ -1212,7 +1212,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
   char *keyidstr;
 
   if ( IS_LOCKED (ctrl) )
-    return gpg_error (GPG_ERR_EBUSY);
+    return gpg_error (GPG_ERR_LOCKED);
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -1244,7 +1244,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
    Grant exclusive card access to this session.  Note that there is
    no lock counter used and a second lock from the same session will
    get ignore.  A single unlock (or RESET) unlocks the session.
-   Return GPG_ERR_EBUSY if another session has locked the reader.
+   Return GPG_ERR_LOCKED if another session has locked the reader.
 
    If the option --wait is given the command will wait until a
    lock has been released.
@@ -1259,7 +1259,7 @@ cmd_lock (assuan_context_t ctx, char *line)
   if (locked_session)
     {
       if (locked_session != ctrl->server_local)
-        rc = gpg_error (GPG_ERR_EBUSY);
+        rc = gpg_error (GPG_ERR_LOCKED);
     }
   else
     locked_session = ctrl->server_local;
@@ -1293,7 +1293,7 @@ cmd_unlock (assuan_context_t ctx, char *line)
   if (locked_session)
     {
       if (locked_session != ctrl->server_local)
-        rc = gpg_error (GPG_ERR_EBUSY);
+        rc = gpg_error (GPG_ERR_LOCKED);
       else
         locked_session = NULL;
     }

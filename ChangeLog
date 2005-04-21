@@ -1,3 +1,12 @@
+2005-04-21  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Do not build gpg by default.
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test whether GPG_ERR_LOCKED is declared and
+	provide a replacement if not.
+
 2005-04-15  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Require libksba 0.9.11.

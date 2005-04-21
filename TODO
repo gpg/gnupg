@@ -1,10 +1,5 @@
                                                               -*- outline -*-
 
-* IMPORTANT
-Check that openpty and pty.h are available and build symcryptrun only
-then.  Run shred on the temporary files.
-
-
 * src/base64
 ** Make parsing more robust
 Currently we don't cope with overlong lines in the best way.
@@ -23,14 +18,7 @@ might want to have an agent context for each service request
 
 * sm/certchain.c
 ** When a certificate chain was sucessfully verified, make ephemeral certs used  in this chain permanent.
-** figure out how to auto retrieve a key by serialno+issuer.
-   Dirmngr is currently not able to parse more than the CN.
 
-* sm/certlist.c
-** ocspSigning usage is not fully implemented
-   We should review the entire CRL and OCSP validation system.
-   Okay.  This has been fixed in dirmngr when running it in system
-   daemon mode.
 
 * sm/decrypt.c
 ** replace leading zero in integer hack by a cleaner solution
@@ -58,8 +46,6 @@ might want to have an agent context for each service request
 ** A SIGHUP should also restart the scdaemon
    But do this only after all connections terminated.  As of now we
    only send a RESET.
-** Watch the child process if not invoked as a daemon
-   and terminate after the child has terminated
 
 * agent/command.c
 ** Make sure that secure memory is used where appropriate
@@ -69,7 +55,8 @@ might want to have an agent context for each service request
 ** Support DSA
 
 * agent/divert-scd.c
- Remove the agent_reset_scd kludge.
+ Remove the agent_reset_scd kludge.  We will do this after Scdaemon
+ has been changed to allow multiple sessions.  Currently in progress.
 
 * Move pkcs-1 encoding into libgcrypt.
 
@@ -93,11 +80,7 @@ might want to have an agent context for each service request
 ** Explain how to setup a root CA key as trusted
 ** Explain how trustlist.txt might be managed.
 ** Write a script to generate man pages from texi.
-
-* Requirements by the BSI
-** Support authorityKeyIdentifier.keyIdentifier
-   This needs support in libksba/src/cert.c as well as in sm/*.c.
-   Need test certs as well.  Same goes for CRL authorityKeyIdentifier.
+   In progress (yatm)
 
 
 * Windows port
@@ -108,5 +91,9 @@ might want to have an agent context for each service request
 ** No card status notifications.
 
 
-* [scdaemon] release the card after use so that gpg 1.4 is abale to access it
+* scd/
+** Release the card after use so that gpg 1.4 is able to access it
+ This won't be a sufficient change.  we need to change gpg 1.4 to make
+ use of the agent.  Work is underway.
+
 

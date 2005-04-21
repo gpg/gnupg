@@ -315,6 +315,18 @@ By default the @acronym{CRL} checks are enabled and the DirMngr is used
 to check for revoked certificates.  The disable option is most useful
 with an off-line network connection to suppress this check.
 
+@item  --enable-trusted-cert-crl-check
+@itemx --disable-trusted-cert-crl-check
+@opindex enable-trusted-cert-crl-check
+@opindex disable-trusted-cert-crl-check
+By default the @acronym{CRL} for trusted root certificates are checked
+like for any other certificates.  This allows a CA to revoke its own
+certificates voluntary without the need of putting all ever issued
+certificates into a CRL.  The disable option may be used to switch this
+extra check off.  Due to the caching done by the Dirmngr, there won't be
+any noticeable performance gain.  Note, that this also disables possible
+OCSP checks for trusted root certificates.
+
 @item --force-crl-refresh
 @opindex force-crl-refresh
 Tell the dirmngr to reload the CRL for each request.  For better

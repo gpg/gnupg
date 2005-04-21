@@ -130,6 +130,8 @@ enum cmd_and_opt_values {
 
   oDisableCRLChecks,
   oEnableCRLChecks,
+  oDisableTrustedCertCRLCheck,
+  oEnableTrustedCertCRLCheck,
   oForceCRLRefresh,
 
   oDisableOCSP,
@@ -285,6 +287,8 @@ static ARGPARSE_OPTS opts[] = {
       N_("use system's dirmngr if available")},
     { oDisableCRLChecks, "disable-crl-checks", 0, N_("never consult a CRL")},
     { oEnableCRLChecks, "enable-crl-checks", 0, "@"},
+    { oDisableTrustedCertCRLCheck, "disable-trusted-cert-crl-check", 0, "@"},
+    { oEnableTrustedCertCRLCheck, "enable-trusted-cert-crl-check", 0, "@"},
     { oForceCRLRefresh, "force-crl-refresh", 0, "@"},
 
     { oDisableOCSP, "disable-ocsp", 0, "@" },
@@ -973,6 +977,12 @@ main ( int argc, char **argv)
         case oEnableCRLChecks:
           opt.no_crl_check = 0;
           break;
+        case oDisableTrustedCertCRLCheck:
+          opt.no_trusted_cert_crl_check = 1;
+          break;
+        case oEnableTrustedCertCRLCheck:
+          opt.no_trusted_cert_crl_check = 0;
+          break;
         case oForceCRLRefresh:
           opt.force_crl_refresh = 1;
           break;
@@ -1351,6 +1361,8 @@ main ( int argc, char **argv)
                 GC_OPT_FLAG_DEFAULT,
                 GC_OPT_FLAG_NONE );
         printf ("disable-crl-checks:%lu:\n",
+                GC_OPT_FLAG_NONE );
+        printf ("disable-trusted-cert-crl-check:%lu:\n",
                 GC_OPT_FLAG_NONE );
         printf ("enable-ocsp:%lu:\n",
                 GC_OPT_FLAG_NONE );

@@ -1274,7 +1274,7 @@ ccid_poll (ccid_driver_t handle)
 }
 
 
-/* Note that this fucntion won't return the error codes NO_CARD or
+/* Note that this function won't return the error codes NO_CARD or
    CARD_INACTIVE */
 int 
 ccid_slot_status (ccid_driver_t handle, int *statusbits)
