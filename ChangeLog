@@ -1,5 +1,7 @@
 2005-04-21  Werner Koch  <wk@g10code.com>
 
+	Released 1.9.16.
+	
 	* configure.ac: Do not build gpg by default.
 
 2005-04-20  Werner Koch  <wk@g10code.com>

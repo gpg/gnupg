@@ -465,14 +465,15 @@ Here is a list of supported signals:
 
 @item SIGHUP
 @cpindex SIGHUP
-This signals flushes all chached passphrases and when the program was
+This signal flushes all chached passphrases and if the program has been
 started with a configuration file, the configuration file is read again.
 Only certain options are honored: @code{quiet}, @code{verbose},
-@code{debug}, @code{debug-all}, @code{no-grab}, @code{pinentry-program},
-@code{default-cache-ttl} and @code{ignore-cache-for-signing}.
-@code{scdaemon-program} is also supported but due to the current
-implementation, which calls the scdaemon only once, it is not of much
-use.
+@code{debug}, @code{debug-all}, @code{debug-level}, @code{no-grab},
+@code{pinentry-program}, @code{default-cache-ttl}, @code{max-cache-ttl},
+@code{ignore-cache-for-signing}, @code{allow-mark-trusted} and
+@code{disable-scdaemon}.  @code{scdaemon-program} is also supported but
+due to the current implementation, which calls the scdaemon only once,
+it is not of much use unless you manually kill the scdaemon.
 
 
 @item SIGTERM

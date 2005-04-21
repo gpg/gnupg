@@ -1,3 +1,7 @@
+2005-04-21  Werner Koch  <wk@g10code.com>
+
+	* de.po: Fixed all fuzzies and untranslated strings.
+
 2005-01-04  Werner Koch  <wk@g10code.com>
 
 	* de.po: Updated.
@@ -58,7 +62,7 @@
 	* de.po: New.
 
 	
- Copyright 2002 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
