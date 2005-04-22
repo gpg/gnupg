@@ -12,5 +12,6 @@ http.h
 keyserver.h
 _regex.h
 dynload.h
+assuan.h
 
 ChangeLog

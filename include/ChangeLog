@@ -1,3 +1,7 @@
+2005-04-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* distfiles: Add assuan.h.
+
 2005-04-04  Werner Koch  <wk@g10code.com>
 
 	* memory.h (xcalloc, xcalloc_secure): Replaced macros by functions.
