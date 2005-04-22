@@ -241,41 +241,41 @@ add_signature( CTX c, PACKET *pkt )
 static int
 symkey_decrypt_seskey( DEK *dek, byte *seskey, size_t slen )
 {
-    CIPHER_HANDLE hd;
-    unsigned int n;
+  CIPHER_HANDLE hd;
 
-    if ( slen < 17 || slen > 33 ) {
-        log_error ( _("weird size for an encrypted session key (%d)\n"),
-		    (int)slen);
-        return G10ERR_BAD_KEY;
+  if(slen < 17 || slen > 33)
+    {
+      log_error ( _("weird size for an encrypted session key (%d)\n"),
+		  (int)slen);
+      return G10ERR_BAD_KEY;
     }
-    hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
-    cipher_setkey( hd, dek->key, dek->keylen );
-    cipher_setiv( hd, NULL, 0 );
-    cipher_decrypt( hd, seskey, seskey, slen );
-    cipher_close( hd );
-    /* check first byte (the cipher algo) */
-    if(check_cipher_algo(seskey[0]))
-      {
-	/* There is no way to tell the difference here between a bad
-	   passphrase and a cipher algorithm that we don't have. */
-	log_error(_("bad passphrase or unknown cipher algorithm (%d)\n"),
-		  seskey[0]);
-	if(seskey[0]==CIPHER_ALGO_IDEA)
-	  idea_cipher_warn(0);
-	return G10ERR_PASSPHRASE;
-      }
-    n = cipher_get_keylen (seskey[0]) / 8;
-    if (n > DIM(dek->key))
-         BUG ();
-    /* now we replace the dek components with the real session key
-       to decrypt the contents of the sequencing packet. */
-    dek->keylen = cipher_get_keylen( seskey[0] ) / 8;
-    dek->algo = seskey[0];
-    memcpy( dek->key, seskey + 1, dek->keylen );
-    /*log_hexdump( "thekey", dek->key, dek->keylen );*/
 
-    return 0;
+  hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
+  cipher_setkey( hd, dek->key, dek->keylen );
+  cipher_setiv( hd, NULL, 0 );
+  cipher_decrypt( hd, seskey, seskey, slen );
+  cipher_close( hd );
+
+  /* now we replace the dek components with the real session key to
+     decrypt the contents of the sequencing packet. */
+
+  dek->keylen=slen-1;
+  dek->algo=seskey[0];
+
+  if(dek->keylen > DIM(dek->key))
+    BUG ();
+
+  /* This is not completely accurate, since a bad passphrase may have
+     resulted in a garbage algorithm byte, but it's close enough since
+     a bogus byte here will fail later. */
+  if(dek->algo==CIPHER_ALGO_IDEA)
+    idea_cipher_warn(0);
+
+  memcpy(dek->key, seskey + 1, dek->keylen);
+
+  /*log_hexdump( "thekey", dek->key, dek->keylen );*/
+
+  return 0;
 }   
 
 static void
