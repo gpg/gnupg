@@ -498,7 +498,7 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
  */
 static int
 sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
-	   int local, int nonrevocable, int trust )
+	   int local, int nonrevocable, int trust, int interactive )
 {
     int rc = 0;
     SK_LIST sk_list = NULL;
@@ -506,7 +506,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     PKT_secret_key *sk = NULL;
     KBNODE node, uidnode;
     PKT_public_key *primary_pk=NULL;
-    int select_all = !count_selected_uids(keyblock);
+    int select_all = !count_selected_uids(keyblock) || interactive;
     int all_v3=1;
 
     /* Are there any non-v3 sigs on this key already? */
@@ -575,10 +575,12 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		    force_v4=0;
 		  }
 	    }
-	    else if( node->pkt->pkttype == PKT_USER_ID ) {
+	    else if( node->pkt->pkttype == PKT_USER_ID )
+	      {
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;
 		if(uidnode)
 		  {
+		    int yesreally=0;
 		    char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
 					      uidnode->pkt->pkt.user_id->len,
 					      0);
@@ -601,6 +603,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 				uidnode->flag &= ~NODFLG_MARK_A;
 				uidnode=NULL;
 			      }
+			    else if(interactive)
+			      yesreally=1;
 			  }
 			else
 			  {
@@ -627,6 +631,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 				uidnode->flag &= ~NODFLG_MARK_A;
 				uidnode=NULL;
 			      }
+			    else if(interactive)
+			      yesreally=1;
 			  }
 			else
 			  {
@@ -652,6 +658,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 				uidnode->flag &= ~NODFLG_MARK_A;
 				uidnode=NULL;
 			      }
+			    else if(interactive)
+			      yesreally=1;
 			  }
 			else
 			  {
@@ -661,9 +669,20 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			  }
 		      }
 
+		    if(uidnode && interactive && !yesreally)
+		      {
+			tty_printf(_("User ID \"%s\" is signable.  "),user);
+			if(!cpr_get_answer_is_yes("sign_uid.sign_okay",
+						  _("Sign it? (y/N) ")))
+			  {
+			    uidnode->flag &= ~NODFLG_MARK_A;
+			    uidnode=NULL;
+			  }
+		      }
+
 		    m_free(user);
 		  }
-	    }
+	      }
 	    else if( uidnode && node->pkt->pkttype == PKT_SIGNATURE
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( sk_keyid[0] == node->pkt->pkt.signature->keyid[0]
@@ -1554,6 +1573,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 	PKT_public_key *pk=keyblock->pkt->pkt.public_key;
 
 	tty_printf("\n");
+
 	if( redisplay && !quiet )
 	  {
 	    show_key_with_all_names( cur_keyblock, 0, 1, 0, 1, 0 );
@@ -1683,7 +1703,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 
 	  case cmdSIGN: /* sign (only the public key) */
 	    {
-	      int localsig=0,nonrevokesig=0,trustsig=0;
+	      int localsig=0,nonrevokesig=0,trustsig=0,interactive=0;
 
 	      if( pk->is_revoked )
 		{
@@ -1704,17 +1724,11 @@ keyedit_menu( const char *username, STRLIST locusr,
 		    }
 		}
 
-	      if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock)
-		  && !have_commands )
-		{
-		  if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
-					     _("Really sign all user IDs?"
-					       " (y/N) ")))
-		    {
-		      tty_printf(_("Hint: Select the user IDs to sign\n"));
-		      break;
-		    }
-		}
+	      if(count_uids(keyblock) > 1 && !count_selected_uids(keyblock)
+		 && !cpr_get_answer_is_yes("keyedit.sign_all.okay",
+					   _("Really sign all user IDs?"
+					     " (y/N) ")))
+		interactive=1;
 
 	      /* What sort of signing are we doing? */
 	      if(!parse_sign_type(answer,&localsig,&nonrevokesig,&trustsig))
@@ -1724,7 +1738,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 		}
 
 	      sign_uids(keyblock, locusr, &modified,
-			localsig, nonrevokesig, trustsig);
+			localsig, nonrevokesig, trustsig, interactive);
 	    }
 	    break;
 

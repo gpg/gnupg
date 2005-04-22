@@ -1,5 +1,10 @@
 2005-04-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (sign_uids, keyedit_menu): When the user requests to
+	sign a key without specifying which user IDs to sign, and declines
+	to sign all user IDs, walk through the set of user IDs and prompt
+	for which to sign.
+
 	* mainproc.c (symkey_decrypt_seskey): There is no need to have an
 	extra check for a bad passphrase and/or unknown cipher algorithm
 	here.  We'll fail quite happily later, and usually with a better
