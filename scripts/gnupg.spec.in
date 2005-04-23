@@ -25,6 +25,10 @@ Requires(post,preun): /sbin/install-info
 BuildRoot: %{_tmppath}/rpmbuild_%{name}-%{version}
 
 %changelog
+* Fri Apr 22 2005 David Shaw <dshaw@jabberwocky.com>
+- No longer any need to override libexecdir.  The makefiles now
+  calculate this correctly internally.
+
 * Wed Feb 16 2005 David Shaw <dshaw@jabberwocky.com>
 - Fix problem with storing the gpgkeys helpers in libexec, but calling
   them in libexec/gnupg.
@@ -165,7 +169,7 @@ fi
 make
 
 %install
-%makeinstall libexecdir=$RPM_BUILD_ROOT/%{_libexecdir}/gnupg
+%makeinstall
 %find_lang %{name}
 rm %{buildroot}%{_datadir}/%{name}/FAQ
 rm %{buildroot}%{_datadir}/%{name}/faq.html
