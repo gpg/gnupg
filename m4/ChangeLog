@@ -1,3 +1,8 @@
+2005-04-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* libcurl.m4: Add a check for curl_free() since older versions of
+	libcurl don't have it.  Substitute free() as an alternative.
+
 2005-03-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* readline.m4: Check for completion functionality.

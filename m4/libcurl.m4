@@ -1,7 +1,7 @@
 # LIBCURL_CHECK_CONFIG ([DEFAULT-ACTION], [MINIMUM-VERSION],
 #                       [ACTION-IF-YES], [ACTION-IF-NO])
 # ----------------------------------------------------------
-#      David Shaw <dshaw@jabberwocky.com>   Jan-23-2005
+#      David Shaw <dshaw@jabberwocky.com>   Apr-21-2005
 #
 # Checks for libcurl.  DEFAULT-ACTION is the string yes or no to
 # specify whether to default to --with-libcurl or --without-libcurl.
@@ -155,6 +155,24 @@ x=CURLOPT_VERBOSE;
            ])
 
         if test $libcurl_cv_lib_curl_usable = yes ; then
+
+	   # Does curl_free() exist in this version of libcurl?
+	   # If not, fake it with free()
+
+           _libcurl_save_cppflags=$CPPFLAGS
+           CPPFLAGS="$CPPFLAGS $LIBCURL_CPPFLAGS"
+           _libcurl_save_libs=$LIBS
+           LIBS="$LIBS $LIBCURL"
+
+           AC_CHECK_FUNC(curl_free,,
+  	      AC_DEFINE(curl_free,free,
+		[Define curl_free() as free() if our version of curl lacks curl_free.]))
+
+           CPPFLAGS=$_libcurl_save_cppflags
+           LIBS=$_libcurl_save_libs
+           unset _libcurl_save_cppflags
+           unset _libcurl_save_libs
+
            AC_DEFINE(HAVE_LIBCURL,1,
              [Define to 1 if you have a functional curl library.])
            AC_SUBST(LIBCURL_CPPFLAGS)
