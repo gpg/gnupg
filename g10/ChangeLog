@@ -1,3 +1,9 @@
+2005-04-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.h, keyedit.c (keyedit_menu, menu_select_uid_namehash):
+	Allow specifying user ID via the namehash from --with-colons
+	--fixed-list-mode --list-keys.  Suggested by Peter Palfrader.
+
 2005-04-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids, keyedit_menu): When the user requests to

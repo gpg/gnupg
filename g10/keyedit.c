@@ -62,6 +62,7 @@ static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_keyserver_url (const char *url,
 				   KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_select_uid( KBNODE keyblock, int idx );
+static int menu_select_uid_namehash( KBNODE keyblock, const char *namehash );
 static int menu_select_key( KBNODE keyblock, int idx );
 static int count_uids( KBNODE keyblock );
 static int count_uids_with_flag( KBNODE keyblock, unsigned flag );
@@ -1685,8 +1686,10 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
 	  case cmdSELUID:
-	    if( menu_select_uid( cur_keyblock, arg_number ) )
-		redisplay = 1;
+	    if(strlen(arg_string)==NAMEHASH_LEN*2)
+	      redisplay=menu_select_uid_namehash(cur_keyblock,arg_string);
+	    else
+	      redisplay=menu_select_uid(cur_keyblock,arg_number);
 	    break;
 
 	  case cmdSELKEY:
@@ -3898,6 +3901,45 @@ menu_select_uid( KBNODE keyblock, int idx )
     }
 
     return 1;
+}
+
+/* Search in the keyblock for a uid that matches namehash */
+static int
+menu_select_uid_namehash( KBNODE keyblock, const char *namehash )
+{
+  byte hash[NAMEHASH_LEN];
+  KBNODE node;
+  int i;
+
+  assert(strlen(namehash)==NAMEHASH_LEN*2);
+
+  for(i=0;i<NAMEHASH_LEN;i++)
+    hash[i]=hextobyte(&namehash[i*2]);
+
+  for(node=keyblock->next;node;node=node->next)
+    {
+      if(node->pkt->pkttype==PKT_USER_ID)
+	{
+	  namehash_from_uid(node->pkt->pkt.user_id);
+	  if(memcmp(node->pkt->pkt.user_id->namehash,hash,NAMEHASH_LEN)==0)
+	    {
+	      if(node->flag&NODFLG_SELUID)
+		node->flag &= ~NODFLG_SELUID;
+	      else
+		node->flag |= NODFLG_SELUID;
+
+	      break;
+	    }
+	}
+    }
+
+    if(!node)
+      {
+	tty_printf(_("No user ID with hash %s\n"),namehash);
+	return 0;
+      }
+
+  return 1;
 }
 
 /****************
