@@ -1,5 +1,13 @@
 2005-04-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* trustdb.h, trustdb.c (mark_usable_uid_certs): Add flags for the
+	no-pubkey and chosen revocation cases.
+	(clean_uid): New function to clean a user ID of unusable (as
+	defined by mark_usable_uid_certs) certs.
+
+	* keyedit.c (keyedit_menu, menu_clean_uids): Call it here for new
+	"clean" command that removes unusable sigs from a key.
+
 	* trustdb.h, keyedit.c (keyedit_menu, menu_select_uid_namehash):
 	Allow specifying user ID via the namehash from --with-colons
 	--fixed-list-mode --list-keys.  Suggested by Peter Palfrader.

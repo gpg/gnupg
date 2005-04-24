@@ -1,6 +1,6 @@
 /* trustdb.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1409,8 +1409,9 @@ is_in_klist (struct key_item *k, PKT_signature *sig)
  * To do this, we first revmove all signatures which are not valid and
  * from the remain ones we look for the latest one.  If this is not a
  * certification revocation signature we mark the signature by setting
- * node flag bit 8.  Note that flag bits 9 and 10 are used for internal
- * purposes.  
+ * node flag bit 8.  Revocations are marked with flag 11, and sigs
+ * from unavailable keys are marked with flag 12.  Note that flag bits
+ * 9 and 10 are used for internal purposes.
  */
 static void
 mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
@@ -1423,34 +1424,44 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
   /* first check all signatures */
   for (node=uidnode->next; node; node = node->next)
     {
-      node->flag &= ~(1<<8 | 1<<9 | 1<<10);
+      int rc;
+
+      node->flag &= ~(1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12);
       if (node->pkt->pkttype == PKT_USER_ID
           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
         break; /* ready */
       if (node->pkt->pkttype != PKT_SIGNATURE)
         continue;
-      
       sig = node->pkt->pkt.signature;
-      if (sig->keyid[0] == main_kid[0] && sig->keyid[1] == main_kid[1])
-        continue; /* ignore self-signatures */
+      if (main_kid
+	  && sig->keyid[0] == main_kid[0] && sig->keyid[1] == main_kid[1])
+        continue; /* ignore self-signatures if we pass in a main_kid */
       if (!IS_UID_SIG(sig) && !IS_UID_REV(sig))
         continue; /* we only look at these signature classes */
       if(sig->sig_class>=0x11 && sig->sig_class<=0x13 &&
 	 sig->sig_class-0x10<opt.min_cert_level)
-	continue;
-      if (!is_in_klist (klist, sig))
+	continue; /* treat anything under our min_cert_level as an
+		     invalid signature */
+      if (klist && !is_in_klist (klist, sig))
         continue;  /* no need to check it then */
-      if (check_key_signature (keyblock, node, NULL))
-        continue; /* ignore invalid signatures */
+      if ((rc=check_key_signature (keyblock, node, NULL)))
+	{
+	  /* we ignore anything that won't verify, but tag the
+	     no_pubkey case */
+	  if(rc==G10ERR_NO_PUBKEY)
+	    node->flag |= 1<<12;
+	  continue;
+	}
       node->flag |= 1<<9;
     }      
   /* reset the remaining flags */
   for (; node; node = node->next)
-      node->flag &= ~(1<<8 | 1<<9 | 1 << 10);
+      node->flag &= ~(1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12);
 
   /* kbnode flag usage: bit 9 is here set for signatures to consider,
    * bit 10 will be set by the loop to keep track of keyIDs already
-   * processed, bit 8 will be set for the usable signatures */
+   * processed, bit 8 will be set for the usable signatures, and bit
+   * 11 will be set for usable revocations. */
 
   /* for each cert figure out the latest valid one */
   for (node=uidnode->next; node; node = node->next)
@@ -1458,7 +1469,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
       KBNODE n, signode;
       u32 kid[2];
       u32 sigdate;
-      
+
       if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
         break;
       if ( !(node->flag & (1<<9)) )
@@ -1470,6 +1481,8 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
       signode = node;
       sigdate = sig->timestamp;
       kid[0] = sig->keyid[0]; kid[1] = sig->keyid[1];
+
+      /* Now find the latest and greatest signature */
       for (n=uidnode->next; n; n = n->next)
         {
           if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
@@ -1532,6 +1545,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
               sigdate = sig->timestamp;
             }
         }
+
       sig = signode->pkt->pkt.signature;
       if (IS_UID_SIG (sig))
         { /* this seems to be a usable one which is not revoked. 
@@ -1550,11 +1564,75 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
           if (expire==0 || expire > curtime )
             {
               signode->flag |= (1<<8); /* yeah, found a good cert */
-              if (expire && expire < *next_expire)
+              if (next_expire && expire && expire < *next_expire)
                 *next_expire = expire;
             }
         }
+      else
+	signode->flag |= (1<<11);
     }
+}
+
+int
+clean_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
+{
+  int deleted=0;
+  KBNODE node;
+
+  assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+
+  /* Passing in a 0 for current time here means that we'll never weed
+     out an expired sig.  This is correct behavior since we want to
+     keep the most recent expired sig in a series. */
+  mark_usable_uid_certs(keyblock,uidnode,NULL,NULL,0,NULL);
+
+  /* What we want to do here is remove signatures that are not
+     considered as part of the trust calculations.  Thus, all invalid
+     signatures are out, as are any signatures that aren't the last of
+     a series of uid sigs or revocations It breaks down like this:
+     coming out of mark_usable_uid_certs, if a sig is unflagged, it is
+     not even a candidate.  If a sig has flag 9 or 10, that means it
+     was selected as a candidate and vetted.  If a sig has flag 8 it
+     is a usable signature.  If a sig has flag 11 it is a usable
+     revocation.  If a sig has flag 12 it was issued by an unavailable
+     key.  "Usable" here means the most recent valid
+     signature/revocation in a series from a particular signer.
+
+     Delete everything that isn't a usable uid sig (which might be
+     expired), a usable revocation, or a sig from an unavailable
+     key. */
+
+  for(node=uidnode->next;
+      node && node->pkt->pkttype==PKT_SIGNATURE;
+      node=node->next)
+    {
+      /* Keep usable uid sigs ... */
+      if(node->flag & (1<<8))
+	continue;
+
+      /* ... and usable revocations... */
+      if(node->flag & (1<<11))
+	continue;
+
+      /* ... and sigs from unavailable keys. */
+      if(node->flag & (1<<12))
+	continue;
+
+      /* Everything else we delete */
+
+      /* if 9 or 10 is set, but we get this far, it's superceded,
+	 otherwise, it's invalid */
+
+      if(noisy)
+	log_info("removing signature issued by key %s: %s\n",
+		 keystr(node->pkt->pkt.signature->keyid),
+		 node->flag&(1<<9)?"superceded":"invalid");
+
+      delete_kbnode(node);
+      deleted++;
+    }
+    
+  return deleted;
 }
 
 /* Used by validate_one_keyblock to confirm a regexp within a trust

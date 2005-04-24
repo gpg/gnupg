@@ -53,6 +53,7 @@ static void show_key_and_fingerprint( KBNODE keyblock );
 static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock, int photo );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int  menu_delsig( KBNODE pub_keyblock );
+static int menu_clean_uids(KBNODE keyblock);
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_addrevoker( KBNODE pub_keyblock,
 			    KBNODE sec_keyblock, int sensitive );
@@ -1327,7 +1328,7 @@ enum cmdids
     cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
     cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
     cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
-    cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdNOP
+    cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdCLEAN, cmdNOP
   };
 
 static struct
@@ -1426,6 +1427,7 @@ static struct
     { "enable"  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable key") },
     { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key") },
     { "showphoto",cmdSHOWPHOTO , 0, N_("show selected photo IDs") },
+    { "clean",    cmdCLEAN     , KEYEDIT_NOT_SK, NULL },
     { NULL, cmdNONE, 0, NULL }
   };
 
@@ -1952,7 +1954,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    {
 	      int sensitive=0;
 
-	      if(arg_string && ascii_strcasecmp(arg_string,"sensitive")==0)
+	      if(ascii_strcasecmp(arg_string,"sensitive")==0)
 		sensitive=1;
 	      if( menu_addrevoker( keyblock, sec_keyblock, sensitive ) ) {
 		redisplay = 1;
@@ -2123,9 +2125,27 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    }
 	    break;
 
-         case cmdSHOWPHOTO:
-           menu_showphoto(keyblock);
-           break;
+	  case cmdSHOWPHOTO:
+	    menu_showphoto(keyblock);
+	    break;
+
+	  case cmdCLEAN:
+	    {
+	      if(*arg_string)
+		{
+		  if(ascii_strcasecmp(arg_string,"sigs")!=0
+		     && ascii_strcasecmp(arg_string,"signatures")!=0
+		     && ascii_strcasecmp(arg_string,"certs")!=0
+		     && ascii_strcasecmp(arg_string,"certificates")!=0)
+		    {
+		      tty_printf(_("Unable to clean `%s'\n"),arg_string);
+		      break;
+		    }
+		}
+
+	      modified=menu_clean_uids(keyblock);
+	    }
+	    break;
 
 	  case cmdQUIT:
 	    if( have_commands )
@@ -3106,6 +3126,41 @@ menu_delsig( KBNODE pub_keyblock )
 	tty_printf( _("Nothing deleted.\n") );
 
     return changed;
+}
+
+static int
+menu_clean_uids(KBNODE keyblock)
+{
+  KBNODE uidnode;
+  int modified=0;
+  int select_all=!count_selected_uids(keyblock);
+
+  for(uidnode=keyblock;uidnode;uidnode=uidnode->next)
+    {
+      if(uidnode->pkt->pkttype==PKT_USER_ID
+	 && (uidnode->flag&NODFLG_SELUID || select_all))
+	{
+	  int deleted;
+	  char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
+				    uidnode->pkt->pkt.user_id->len,
+				    0);
+	  deleted=clean_uid(keyblock,uidnode,opt.verbose);
+	  if(deleted)
+	    {
+	      tty_printf(deleted==1?
+			 _("User ID \"%s\": %d signature removed.\n"):
+			 _("User ID \"%s\": %d signatures removed.\n"),
+			 user,deleted);
+	      modified=1;
+	    }
+	  else
+	    tty_printf(_("User ID \"%s\": already clean.\n"),user);
+
+	  m_free(user);
+	}
+    }
+
+  return modified;
 }
 
 
