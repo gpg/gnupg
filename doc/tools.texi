@@ -14,6 +14,7 @@ GnuPG comes with a couple of smaller tools:
 * gpgsm-gencert.sh::      Generate an X.509 certificate request.
 * gpg-preset-passphrase:: Put a passphrase into the cache.
 * gpg-connect-agent::     Communicate with a running agent.
+* symcryptrun::           Call a simple symmetric encryption tool.
 @end menu
 
 @c
@@ -721,9 +722,102 @@ directory stated through the environment variable @env{GNUPGHOME} or
 (on W32 systems) by means on the Registry entry
 @var{HKCU\Software\GNU\GnuPG:HomeDir}.
 
+@end table
+
+@c
+@c   SYMCRYPTRUN
+@c
+@node symcryptrun
+@section Call a simple symmetric encryption tool.
+
+Sometimes simple encryption tools are already in use for a long time and
+there might be a desire to integrate them into the GnuPG framework.  The
+protocols and encryption methods might be non-standard or not even
+properly documented, so that a full-fledged encryption tool with an
+interface like gpg is not doable.  @command{symcryptrun} provides a
+solution: It operates by calling the external encryption/decryption
+module and provides a passphrase for a key using the standard
+@command{pinentry} based mechanism through @command{gpg-agent}.
+
+Note, that @command{symcryptrun} is only available if GnuPG has been
+configured with @samp{--enable-symcryptrun} at build time.
+
+@menu
+* Invoking symcryptrun::   List of all commands and options.
+@end menu
+
+
+@node Invoking symcryptrun
+@subsection List of all commands and options.
+
+@noindent
+@command{symcryptrun} is invoked this way:
+
+@example
+symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE 
+   [--decrypt | --encrypt] [inputfile]
+@end example
+
+For encryption, the plain text must be provided on STDIN or as the
+argument @var{inputfile}, and the ciphertext will be output to STDOUT.
+For decryption vice versa.
+
+@var{CLASS} describes the calling conventions of the external tool.
+Currently it must be given as @samp{confucius}.  @var{PROGRAM} is the
+the full filename of that external tool.
+ 
+For the class @samp{confucius} the option @option{--keyfile} is
+required; @var{keyfile} is the name of a file containing the secret key,
+which may be protected by a passphrase.  For detailed calling
+conventions, see the source code.
+ 
+@noindent
+Note, that @command{gpg-agent} must be running before starting
+@command{symcryptrun}.
+
+@noindent
+The following additional options may be used:
+
+@table @gnupgtabopt
+@item -v
+@itemx --verbose
+@opindex verbose
+Output additional information while running.  
+
+@item -q
+@item --quiet
+@opindex q
+@opindex quiet
+Try to be as quiet as possible.
+
+@item --homedir @var{dir}
+@opindex homedir
+Set the name of the home directory to @var{dir}. If his option is not
+used, the home directory defaults to @file{~/.gnupg}.  It is only
+recognized when given on the command line.  It also overrides any home
+directory stated through the environment variable @env{GNUPGHOME} or
+(on W32 systems) by means on the Registry entry
+@var{HKCU\Software\GNU\GnuPG:HomeDir}.
+
+@item --log-file @var{file}
+@opindex log-file
+Append all logging output to @var{file}.  Default is to write logging
+informaton to STDERR.
 
 @end table
 
+@noindent
+The possible exit status codes of @command{symcryptrun} are:
 
+@table @code
+@item 0 
+        Success.
+@item 1 
+        Some error occured.
+@item 2 
+        No valid passphrase was provided.
+@item 3 
+        The operation was canceled by the user.
 
+@end table
 
