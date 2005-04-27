@@ -83,7 +83,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
       size_t n;
       const unsigned char *p;
 
-      p = find_tlv (result, resultlen, 0x5A, &n);
+      p = find_tlv_unchecked (result, resultlen, 0x5A, &n);
       if (p)
         resultlen -= (p-result);
       if (p && n > resultlen && n == 0x0d && resultlen+1 == n)

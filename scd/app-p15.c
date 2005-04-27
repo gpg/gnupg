@@ -59,11 +59,15 @@ static struct
         "\x90\x00\x66",
     CARD_TYPE_TCOS }, /* SLE66P */
   { 27, "\x3B\xFF\x94\x00\xFF\x80\xB1\xFE\x45\x1F\x03\x00\x68\xD2\x76\x00"
-        "\x00\x28\xFF\x05\x1E\x31\x80\x00\x90\x00\x23", 
+        "\x00\x28\xFF\x05\x1E\x31\x80\x00\x90\x00\x23",
     CARD_TYPE_MICARDO }, /* German BMI card */
+  { 19, "\x3B\x6F\x00\xFF\x00\x68\xD2\x76\x00\x00\x28\xFF\x05\x1E\x31\x80"
+        "\x00\x90\x00",
+    CARD_TYPE_MICARDO }, /* German BMI card (ATR due to reader problem) */
   { 26, "\x3B\xFE\x94\x00\xFF\x80\xB1\xFA\x45\x1F\x03\x45\x73\x74\x45\x49"
         "\x44\x20\x76\x65\x72\x20\x31\x2E\x30\x43",
     CARD_TYPE_MICARDO }, /* EstEID (Estonian Big Brother card) */
+
   { 0 }
 };
 
@@ -392,7 +396,7 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
 }
 
 
-/* This function calls select file to read a file suing a complete
+/* This function calls select file to read a file using a complete
    path which may or may not start at the master file (MF). */ 
 static gpg_error_t
 select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
@@ -2525,6 +2529,99 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+/* Micardo cards require special treatment. This is a helper for the
+   crypto functions to manage the security environment.  We expect that
+   the key file has already been selected. FID is the one of the
+   selected key. */
+static gpg_error_t
+micardo_mse (app_t app, unsigned short fid)
+{
+  gpg_error_t err;
+  int recno;
+  unsigned short refdata = 0;
+  int se_num;
+  unsigned char msebuf[10];
+
+  /* Read the KeyD file containing extra information on keys. */
+  err = iso7816_select_file (app->slot, 0x0013, 0, NULL, NULL);
+  if (err)
+    {
+      log_error ("error reading EF_keyD: %s\n", gpg_strerror (err));
+      return err;
+    }
+  
+  for (recno = 1, se_num = -1; ; recno++)
+    {
+      unsigned char *buffer;
+      size_t buflen;
+      size_t n, nn;
+      const unsigned char *p, *pp;
+      
+      err = iso7816_read_record (app->slot, recno, 1, 0, &buffer, &buflen);
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        break; /* ready */
+      if (err)
+        {
+          log_error ("error reading EF_keyD record: %s\n",
+                     gpg_strerror (err));
+          return err;
+        }
+      log_printhex ("keyD record:", buffer, buflen);
+      p = find_tlv (buffer, buflen, 0x83, &n);
+      if (p && n == 4 && ((p[2]<<8)|p[3]) == fid)
+        {
+          refdata = ((p[0]<<8)|p[1]);
+          /* Locate the SE DO and the there included sec env number. */
+          p = find_tlv (buffer, buflen, 0x7b, &n);
+          if (p && n)
+            {
+              pp = find_tlv (p, n, 0x80, &nn);
+              if (pp && nn == 1)
+                {
+                  se_num = *pp;
+                  xfree (buffer);
+                  break; /* found. */
+                }
+            }
+        }
+      xfree (buffer);
+    }
+  if (se_num == -1)
+    {
+      log_error ("CRT for keyfile %04hX not found\n", fid);
+      return gpg_error (GPG_ERR_NOT_FOUND);
+    }
+  
+  
+  /* Restore the security environment to SE_NUM if needed */
+  if (se_num)
+    {
+      err = iso7816_manage_security_env (app->slot, 0xf3, se_num, NULL, 0);
+      if (err)
+        {
+          log_error ("restoring SE to %d failed: %s\n",
+                     se_num, gpg_strerror (err));
+          return err;
+        }
+    }
+
+  /* Set the DST reference data. */
+  msebuf[0] = 0x83;
+  msebuf[1] = 0x03;
+  msebuf[2] = 0x80;
+  msebuf[3] = (refdata >> 8);
+  msebuf[4] = refdata;
+  err = iso7816_manage_security_env (app->slot, 0x41, 0xb6, msebuf, 5);
+  if (err)
+    {
+      log_error ("setting SE to reference file %04hX failed: %s\n",
+                 refdata, gpg_strerror (err));
+      return err;
+    }
+  return 0;
+}
+
+
 
 /* Handler for the PKSIGN command. 
 
@@ -2561,6 +2658,13 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
   if (err)
     return err;
+  if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover
+        ||prkdf->usageflags.non_repudiation))
+    {
+      log_error ("key %s may not be used for signing\n", keyidstr);
+      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+    }
+
   if (!prkdf->authid)
     {
       log_error ("no authentication object defined for %s\n", keyidstr);
@@ -2595,6 +2699,16 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     {
       log_error ("PIN verification requires padding but no length known\n");
       return gpg_error (GPG_ERR_INV_CARD);
+    }
+
+  /* Select the key file.  Note that this may change the security
+     environment thus we do it before PIN verification. */
+  err = select_ef_by_path (app, prkdf->path, prkdf->pathlen);
+  if (err)
+    {
+      log_error ("error selecting file for key %s: %s\n",
+                 keyidstr, gpg_strerror (errno));
+      return err;
     }
 
   /* Now that we have all the information available, prepare and run
@@ -2742,7 +2856,6 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       memcpy (data+15, indata, indatalen);
     }
 
- 
   /* Manage security environment needs to be weaked for certain cards. */
   if (app->app_local->card_type == CARD_TYPE_TCOS)
     {
@@ -2751,10 +2864,10 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
   else if (app->app_local->card_type == CARD_TYPE_MICARDO)
     {
-      /* Micardo cards are very special in that they need to restore a
-         security environment using a infomration from a special
-         file. */
-      log_error ("WARNING: support for MICARDO cards is not yet available\n");
+      if (!prkdf->pathlen)
+        err = gpg_error (GPG_ERR_BUG);
+      else
+        err = micardo_mse (app, prkdf->path[prkdf->pathlen-1]);
     }
   else if (prkdf->key_reference_valid)
     {
@@ -2767,20 +2880,17 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       err = iso7816_manage_security_env (app->slot, 
                                          0x41, 0xB6,
                                          mse, sizeof mse);
-      if (err)
-        {
-          log_error ("MSE failed: %s\n", gpg_strerror (err));
-          return err;
-        }
+    }
+  if (err)
+    {
+      log_error ("MSE failed: %s\n", gpg_strerror (err));
+      return err;
     }
 
 
   err = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
   return err;
 }
-
-
-
 
 
 
@@ -2846,7 +2956,7 @@ app_select_p15 (app_t app)
          the common APP structure. */
       app->app_local->card_type = card_type;
 
-      /* Read basic information and check whether this is a real
+      /* Read basic information and thus check whether this is a real
          card.  */
       rc = read_p15_info (app);
       if (rc)

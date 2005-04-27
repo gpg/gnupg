@@ -357,7 +357,7 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
         {
           const unsigned char *s;
 
-          s = find_tlv (buffer, buflen, tag, &valuelen);
+          s = find_tlv_unchecked (buffer, buflen, tag, &valuelen);
           if (!s)
             value = NULL; /* not found */
           else if (valuelen > buflen - (s - buffer))
@@ -433,8 +433,8 @@ dump_all_do (int slot)
                   
                   if (j==i || data_objects[i].tag != data_objects[j].get_from)
                     continue;
-                  value = find_tlv (buffer, buflen,
-                                    data_objects[j].tag, &valuelen);
+                  value = find_tlv_unchecked (buffer, buflen,
+                                              data_objects[j].tag, &valuelen);
                   if (!value)
                     ; /* not found */
                   else if (valuelen > buflen - (value - buffer))

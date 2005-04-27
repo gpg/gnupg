@@ -299,10 +299,11 @@ iso7816_manage_security_env (int slot, int p1, int p2,
 {
   int sw;
 
-  if (p1 < 0 || p1 > 255 || p2 < 0 || p2 > 255 || !data || !datalen)
+  if (p1 < 0 || p1 > 255 || p2 < 0 || p2 > 255 )
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  sw = apdu_send_simple (slot, 0x00, CMD_MSE, p1, p2, datalen, data);
+  sw = apdu_send_simple (slot, 0x00, CMD_MSE, p1, p2, 
+                         data? datalen : -1, data);
   return map_sw (sw);
 }
 
@@ -605,7 +606,7 @@ iso7816_read_record (int slot, int recno, int reccount, int short_ef,
 
   buffer = NULL;
   bufferlen = 0;
-  /* Fixme: Either the ccid driver of the TCOS cards have problems
+  /* Fixme: Either the ccid driver or the TCOS cards have problems
      with an Le of 0. */
   sw = apdu_send_le (slot, 0x00, CMD_READ_RECORD,
                      recno, 

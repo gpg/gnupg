@@ -1,5 +1,18 @@
 2005-04-27  Werner Koch  <wk@g10code.com>
 
+	* app-p15.c (micardo_mse): New.
+	(do_sign): Call it.
+	* iso7816.c (iso7816_manage_security_env): Allow passing DATA as
+	NULL to indicate an empty Lc.
+	* tlv.c (find_tlv): Check that a found object fits into the
+	buffer.
+	(find_tlv_unchecked): New as replacement for the old non-checking
+	variant.
+	* app.c (select_application): Keep on using the non-checking
+	variant.
+	* app-openpgp.c (get_one_do, dump_all_do): Ditto.
+
+	
 	Removal of the old OpenSC based code.
 	
 	* app-p15.c: New.  Basic support for pkcs15 cards without OpenSC.
