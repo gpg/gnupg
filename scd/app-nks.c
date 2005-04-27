@@ -305,7 +305,7 @@ verify_pin (app_t app,
             void *pincb_arg)
 {
   /* Note that force_chv1 is never set but we do it here anyway so
-     that other applications may euse this function.  For example it
+     that other applications may reuse this function.  For example it
      makes sense to set force_chv1 for German signature law cards.
      NKS is very similar to the DINSIG draft standard. */
   if (!app->did_chv1 || app->force_chv1 ) 
@@ -444,7 +444,7 @@ do_decipher (app_t app, const char *keyidstr,
 {
   static const unsigned char mse_parm[] = {
     0x80, 1, 0x10, /* Select algorithm RSA. */
-    0x84, 1, 0x81  /* Select locak secret key 1 for descryption. */
+    0x84, 1, 0x81  /* Select local secret key 1 for decryption. */
   };
   int rc, i;
   int fid;

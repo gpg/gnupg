@@ -175,7 +175,7 @@ int app_select_nks (app_t app);
 int app_select_dinsig (app_t app);
 
 /*-- app-p15.c --*/
-int app_select_p15 (app_t app);
+gpg_error_t app_select_p15 (app_t app);
 
 
 #endif

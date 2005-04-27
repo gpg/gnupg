@@ -1,4 +1,4 @@
-@c Copyright (C) 2002 Free Software Foundation, Inc.
+g@c Copyright (C) 2002 Free Software Foundation, Inc.
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
@@ -157,10 +157,6 @@ When running in server mode, wait @var{n} seconds before entering the
 actual processing loop and print the pid.  This gives time to attach a
 debugger.
 
-@item --debug-sc @var{n}
-@opindex debug-sc
-Set the debug level of the OpenSC library to @var{n}.
-
 @item --no-detach
 @opindex no-detach
 Don't detach the process from the console.  This is manly usefule for
@@ -172,10 +168,9 @@ Append all logging output to @var{file}.  This is very helpful in
 seeing what the agent actually does.
 
 @item --reader-port @var{number}
-When the program has been build without OpenSC support, this option must
-be used to specify the port of the card terminal.  A value of 0 refers
-to the first serial device; add 32768 to access USB devices.  The
-default is 32768 (first USB device).
+This option may be used to specify the port of the card terminal.  A
+value of 0 refers to the first serial device; add 32768 to access USB
+devices.  The default is 32768 (first USB device).
 
 @item --ctapi-driver @var{library}
 Use @var{library} to access the smartcard reader.  The current default
@@ -245,9 +240,8 @@ the German signature law and its bylaws (SigG and SigV).
 @node PKCS#15 Card
 @subsection The PKCS#15 card application ``p15''
 
-This is common fraqmework for smart card applications; support is only
-available if compiled with support for the OpenSC library.  It is used
-by @command{gpgsm}.
+This is common fraqmework for smart card applications.  It is used by
+@command{gpgsm}.
 
 
 

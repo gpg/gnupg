@@ -1,3 +1,19 @@
+2005-04-27  Werner Koch  <wk@g10code.com>
+
+	Removal of the old OpenSC based code.
+	
+	* app-p15.c: New.  Basic support for pkcs15 cards without OpenSC.
+	There are quite a couple of things missing but at least I can use
+	my old TCOS cards from the Aegypten-1 development for signing.
+	* app.c (select_application): Detect pkcs15 applications.
+	* Makefile.am (scdaemon_SOURCES): Removed card.c, card-common.h
+	and card-p15.c because they are now obsolete. Added app-p15.c.
+	Removed all OpenSC stuff.
+	* command.c (do_reset, open_card, cmd_serialno, cmd_learn) 
+	(cmd_readcert, cmd_readkey, cmd_pksign, cmd_pkdecrypt): Removed
+	all special cases for the old card.c based mechanisms.
+	* scdaemon.c, apdu.c: Removed all special cases for OpenSC.
+
 2005-04-20  Werner Koch  <wk@g10code.com>
 
 	* command.c: Use GPG_ERR_LOCKED instead of EBUSY.

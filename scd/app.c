@@ -125,8 +125,8 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     rc = app_select_openpgp (app);
   if (rc && is_app_allowed ("nks") && (!name || !strcmp (name, "nks")))
     rc = app_select_nks (app);
-/*   if (rc && is_app_allowed ("p12") && (!name || !strcmp (name, "p12"))) */
-/*     rc = app_select_p12 (app); */
+  if (rc && is_app_allowed ("p15") && (!name || !strcmp (name, "p15")))
+    rc = app_select_p15 (app);
   if (rc && is_app_allowed ("dinsig") && (!name || !strcmp (name, "dinsig")))
     rc = app_select_dinsig (app);
   if (rc && name)
@@ -177,7 +177,7 @@ release_application (app_t app)
    
      FF 00 00 = For serial numbers starting with an FF
      FF 01 00 = Some german p15 cards return an empty serial number so the
-                serial number from the EF(TokeInfo is used instead.
+                serial number from the EF(TokenInfo) is used instead.
      
      All other serial number not starting with FF are used as they are.
 */

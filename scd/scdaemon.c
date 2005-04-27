@@ -108,7 +108,6 @@ static ARGPARSE_OPTS opts[] = {
   { oDebugAll, "debug-all"     ,0, "@"},
   { oDebugLevel, "debug-level" ,2, "@"},
   { oDebugWait,"debug-wait",1, "@"},
-  { oDebugSC,  "debug-sc",  1, N_("|N|set OpenSC debug level to N")},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
   { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
@@ -121,16 +120,13 @@ static ARGPARSE_OPTS opts[] = {
                                     "@"
 #endif
                                          /* end --disable-ccid */},
-  { oDisableOpenSC, "disable-opensc", 0,
-#ifdef HAVE_OPENSC
-                                    N_("do not use the OpenSC layer")
-#else
-                                    "@"
-#endif
-                                         /* end --disable-opensc */},
   { oAllowAdmin, "allow-admin", 0, N_("allow the use of admin card commands")},
   { oDenyAdmin,  "deny-admin",  0, "@" },  
   { oDisableApplication, "disable-application", 2, "@"},
+
+  /* Dummy options to be removed at some point. */
+  { oDebugSC,  "debug-sc",  1, "@" },
+  { oDisableOpenSC, "disable-opensc", 0, "@" },
 
   {0}
 };
@@ -156,14 +152,12 @@ static int maybe_setuid = 1;
 static char socket_name[128];
 
 
-#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
 
 static void *ticker_thread (void *arg);
 #endif /*USE_GNU_PTH*/
-#endif /*!HAVE_OPENSC*/
 
 static const char *
 my_strusage (int level)
@@ -349,7 +343,6 @@ main (int argc, char **argv )
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
-#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
@@ -358,7 +351,6 @@ main (int argc, char **argv )
                  gpg_strerror (err));
     }
 #endif /*USE_GNU_PTH*/
-#endif /*!HAVE_OPENSC*/
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
@@ -469,7 +461,7 @@ main (int argc, char **argv )
         case oDebugAll: opt.debug = ~0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
-        case oDebugSC: opt.debug_sc = pargs.r.ret_int; break;
+        case oDebugSC: break;
 
         case oOptions:
           /* config files may not be nested (silently ignore them) */
@@ -495,7 +487,7 @@ main (int argc, char **argv )
         case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
         case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
         case oDisableCCID: opt.disable_ccid = 1; break;
-        case oDisableOpenSC: opt.disable_opensc = 1; break;
+        case oDisableOpenSC: break;
 
         case oAllowAdmin: opt.allow_admin = 1; break;
         case oDenyAdmin: opt.allow_admin = 0; break;
@@ -593,9 +585,6 @@ main (int argc, char **argv )
 #ifdef HAVE_LIBUSB
       printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );
 #endif
-#ifdef HAVE_LIBUSB
-      printf ("disable-opensc:%lu:\n", GC_OPT_FLAG_NONE );
-#endif
       printf ("allow-admin:%lu:\n", GC_OPT_FLAG_NONE );
 
 
@@ -612,7 +601,6 @@ main (int argc, char **argv )
 
   if (pipe_server)
     { /* This is the simple pipe based server */
-#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
       pth_attr_t tattr;
  
@@ -627,7 +615,6 @@ main (int argc, char **argv )
           scd_exit (2);
         }
 #endif /*USE_GNU_PTH*/
-#endif /*!HAVE_OPENSC*/
       scd_command_handler (-1);
     }
   else if (!is_daemon)
@@ -859,7 +846,6 @@ scd_init_default_ctrl (CTRL ctrl)
 }
 
 
-#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
 
 static void
@@ -971,4 +957,3 @@ ticker_thread (void *dummy_arg)
   return NULL;
 }
 #endif /*USE_GNU_PTH*/
-#endif /*!HAVE_OPENSC*/

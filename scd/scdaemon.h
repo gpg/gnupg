@@ -42,7 +42,6 @@
 /* A large struct name "opt" to keep global flags */
 struct {
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */
-  int debug_sc;     /* OpenSC debug level */
   int verbose;      /* verbosity level */
   int quiet;        /* be as quiet as possible */
   int dry_run;      /* don't change any persistent data */
@@ -51,7 +50,6 @@ struct {
   const char *ctapi_driver; /* Library to access the ctAPI. */
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
   const char *reader_port;  /* NULL or reder port to use. */
-  int disable_opensc;  /* Disable the use of the OpenSC framework. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
   int allow_admin;     /* Allow the use of admin commands for certain
                           cards. */
@@ -96,7 +94,6 @@ struct server_control_s {
 
 typedef struct server_control_s *CTRL;
 typedef struct server_control_s *ctrl_t;
-typedef struct card_ctx_s *CARD;
 typedef struct app_ctx_s *APP;
 typedef struct app_ctx_s *app_t;
 
@@ -108,28 +105,6 @@ void scd_init_default_ctrl (CTRL ctrl);
 void scd_command_handler (int);
 void send_status_info (CTRL ctrl, const char *keyword, ...);
 void scd_update_reader_status_file (void);
-
-/*-- card.c --*/
-int card_open (CARD *rcard);
-void card_close (CARD card);
-int card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp);
-int card_enum_keypairs (CARD card, int idx,
-                        unsigned char *keygrip,
-                        char **keyid);
-int card_enum_certs (CARD card, int idx, char **certid, int *certtype);
-int card_read_cert (CARD card, const char *certidstr,
-                    unsigned char **cert, size_t *ncert);
-int card_sign (CARD card,
-               const char *keyidstr, int hashalgo,
-               int (pincb)(void*, const char *, char **),
-               void *pincb_arg,
-               const void *indata, size_t indatalen,
-               unsigned char **outdata, size_t *outdatalen );
-int card_decipher (CARD card, const char *keyidstr,
-                   int (pincb)(void*, const char *, char **),
-                   void *pincb_arg,
-                   const void *indata, size_t indatalen,
-                   unsigned char **outdata, size_t *outdatalen);
 
 
 #endif /*SCDAEMON_H*/

@@ -129,13 +129,6 @@ do_reset (ctrl_t ctrl, int do_close)
 {
   int slot = ctrl->reader_slot;
 
-  if (ctrl->card_ctx)
-    {
-      card_close (ctrl->card_ctx);
-      ctrl->card_ctx = NULL;
-      xfree (ctrl->in_data.value);
-      ctrl->in_data.value = NULL;
-    }
   if (ctrl->app_ctx)
     {
       release_application (ctrl->app_ctx);
@@ -259,8 +252,6 @@ open_card (ctrl_t ctrl, const char *apptype)
 
   if (ctrl->app_ctx)
     return 0; /* Already initialized for one specific application. */
-  if (ctrl->card_ctx)
-    return 0; /* Already initialized using a card context. */
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -274,19 +265,6 @@ open_card (ctrl_t ctrl, const char *apptype)
     err = gpg_error (GPG_ERR_CARD);
   else
     err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
-  if (!ctrl->app_ctx
-      && gpg_err_code (err) != GPG_ERR_CARD_NOT_PRESENT)
-    { 
-      /* No application found - fall back to old mode. */
-      /* Note that we should rework the old code to use the
-         application paradigma too. */
-      /* If an APPTYPE was requested and it is not pkcs#15, we return
-         an error here. */
-      if (apptype && !(!strcmp (apptype, "P15") || !strcmp (apptype, "p15")))
-        err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-      else 
-        err = card_open (&ctrl->card_ctx);
-    }
 
   TEST_CARD_REMOVAL (ctrl, err);
   return map_to_assuan_status (err);
@@ -367,12 +345,10 @@ cmd_serialno (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl, *line? line:NULL)))
     return rc;
 
-  if (ctrl->app_ctx)
-    rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
-  else
-    rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
+  rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
   if (rc)
     return map_to_assuan_status (rc);
+
   rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
   xfree (serial);
   if (rc < 0)
@@ -453,7 +429,6 @@ cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
-  int idx;
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -467,10 +442,7 @@ cmd_learn (assuan_context_t ctx, char *line)
     char *serial;
     time_t stamp;
 
-    if (ctrl->app_ctx)
-      rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
-    else
-      rc = card_get_serial_and_stamp (ctrl->card_ctx, &serial, &stamp);
+    rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
     if (rc)
       return map_to_assuan_status (rc);
     rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
@@ -506,86 +478,10 @@ cmd_learn (assuan_context_t ctx, char *line)
     free (serial_and_stamp);
   }
 
-  /* If we are using the modern application paradigma, let the
-     application print out its collection of useful status
+  /* Let the application print out its collection of useful status
      information. */
-  if (!rc && ctrl->app_ctx)
+  if (!rc)
     rc = app_write_learn_status (ctrl->app_ctx, ctrl);
-
-  /* Return information about the certificates.  FIXME: Move this into
-     an app-p15.c*/
-  for (idx=0; !rc && !ctrl->app_ctx; idx++)
-    {
-      char *certid;
-      int certtype;
-
-      rc = card_enum_certs (ctrl->card_ctx, idx, &certid, &certtype);
-      if (!rc)
-        {
-          char *buf;
-
-          buf = xtrymalloc (40 + 1 + strlen (certid) + 1);
-          if (!buf)
-            rc = gpg_error (gpg_err_code_from_errno (errno));
-          else
-            {
-              sprintf (buf, "%d %s", certtype, certid);
-              assuan_write_status (ctx, "CERTINFO", buf);
-              xfree (buf);
-            }
-        }
-      xfree (certid);
-    }
-  if (rc == -1)
-    rc = 0;
-
-  /* Return information about the keys. FIXME: Move this into an
-     app-p15.c */
-  for (idx=0; !rc && !ctrl->app_ctx; idx++)
-    {
-      unsigned char keygrip[20];
-      char *keyid;
-      int no_cert = 0;
-
-      rc = card_enum_keypairs (ctrl->card_ctx, idx, keygrip, &keyid);
-      if (gpg_err_code (rc) == GPG_ERR_MISSING_CERT && keyid)
-        {
-          /* This does happen with an incomplete personalized
-             card; i.e. during the time we have stored the key on the
-             card but not stored the certificate; probably becuase it
-             has not yet been received back from the CA.  Note that we
-             must release KEYID in this case. */
-          rc = 0; 
-          no_cert = 1;
-        }
-      if (!rc)
-        {
-          char *buf, *p;
-
-          buf = p = xtrymalloc (40 + 1 + strlen (keyid) + 1);
-          if (!buf)
-            rc = gpg_error (gpg_err_code_from_errno (errno));
-          else
-            {
-              int i;
-              
-              if (no_cert)
-                *p++ = 'X';
-              else
-                {
-                  for (i=0; i < 20; i++, p += 2)
-                    sprintf (p, "%02X", keygrip[i]);
-                }
-              *p++ = ' ';
-              strcpy (p, keyid);
-              assuan_write_status (ctx, "KEYPAIRINFO", buf);
-              xfree (buf);
-            }
-        }
-      xfree (keyid);
-    }
-  if (rc == -1)
-    rc = 0;
 
   TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
@@ -595,7 +491,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 /* READCERT <hexified_certid>
 
-   Note, that this function may be even be used on a locked card.
+   Note, that this function may even be used on a locked card.
  */
 static int
 cmd_readcert (assuan_context_t ctx, char *line)
@@ -609,18 +505,9 @@ cmd_readcert (assuan_context_t ctx, char *line)
     return rc;
 
   line = xstrdup (line); /* Need a copy of the line. */
-  if (ctrl->app_ctx)
-    {
-      rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
-      if (rc)
-        log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
-    }
-  else
-    {
-      rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
-      if (rc)
-        log_error ("card_read_cert failed: %s\n", gpg_strerror (rc));
-    }
+  rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
+  if (rc)
+    log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
   xfree (line);
   line = NULL;
   if (!rc)
@@ -641,7 +528,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
    Return the public key for the given cert or key ID as an standard
    S-Expression.
 
-   Note, that this function may be even be used on a locked card.
+   Note, that this function may even be used on a locked card.
   */
 static int
 cmd_readkey (assuan_context_t ctx, char *line)
@@ -652,44 +539,34 @@ cmd_readkey (assuan_context_t ctx, char *line)
   size_t ncert, n;
   ksba_cert_t kc = NULL;
   ksba_sexp_t p;
+  unsigned char *pk;
+  size_t pklen;
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   line = xstrdup (line); /* Need a copy of the line. */
-  if (ctrl->app_ctx)
-    {
-      unsigned char *pk;
-      size_t pklen;
-
-      /* If the application supports the READKEY function we use that.
-         Otherwise we use the old way by extracting it from the
-         certificate.  */
-      rc = app_readkey (ctrl->app_ctx, line, &pk, &pklen);
-      if (!rc)
-        { /* Yeah, got that key - send it back.  */
-          rc = assuan_send_data (ctx, pk, pklen);
-          xfree (pk);
-          rc = map_assuan_err (rc);
-          xfree (line);
-          line = NULL;
-          goto leave;
-        }
-
-      if (gpg_err_code (rc) != GPG_ERR_UNSUPPORTED_OPERATION)
-        log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
-      else  
-        {
-          rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
-          if (rc)
-            log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
-        }
+  /* If the application supports the READKEY function we use that.
+     Otherwise we use the old way by extracting it from the
+     certificate.  */
+  rc = app_readkey (ctrl->app_ctx, line, &pk, &pklen);
+  if (!rc)
+    { /* Yeah, got that key - send it back.  */
+      rc = assuan_send_data (ctx, pk, pklen);
+      xfree (pk);
+      rc = map_assuan_err (rc);
+      xfree (line);
+      line = NULL;
+      goto leave;
     }
-  else
+
+  if (gpg_err_code (rc) != GPG_ERR_UNSUPPORTED_OPERATION)
+    log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
+  else  
     {
-      rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
+      rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
       if (rc)
-        log_error ("card_read_cert failed: %s\n", gpg_strerror (rc));
+        log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
     }
   xfree (line);
   line = NULL;
@@ -786,8 +663,8 @@ pin_cb (void *opaque, const char *info, char **retstr)
   if (rc < 0)
     return gpg_error (gpg_err_code_from_errno (errno));
 
-  /* FIXME: Write an inquire function which returns the result in
-     secure memory */
+  /* Fixme: Write an inquire function which returns the result in
+     secure memory and check all futher handling of the PIN. */
   rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
   free (command);  
   if (rc)
@@ -829,18 +706,12 @@ cmd_pksign (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
   
-  if (ctrl->app_ctx)
-    rc = app_sign (ctrl->app_ctx,
-                    keyidstr, GCRY_MD_SHA1,
-                    pin_cb, ctx,
-                    ctrl->in_data.value, ctrl->in_data.valuelen,
-                    &outdata, &outdatalen);
-  else  
-    rc = card_sign (ctrl->card_ctx,
-                    keyidstr, GCRY_MD_SHA1,
-                    pin_cb, ctx,
-                    ctrl->in_data.value, ctrl->in_data.valuelen,
-                    &outdata, &outdatalen);
+  rc = app_sign (ctrl->app_ctx,
+                 keyidstr, GCRY_MD_SHA1,
+                 pin_cb, ctx,
+                 ctrl->in_data.value, ctrl->in_data.valuelen,
+                 &outdata, &outdatalen);
+
   xfree (keyidstr);
   if (rc)
     {
@@ -929,18 +800,12 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
-  if (ctrl->app_ctx)
-    rc = app_decipher (ctrl->app_ctx,
-                        keyidstr, 
-                        pin_cb, ctx,
-                        ctrl->in_data.value, ctrl->in_data.valuelen,
-                        &outdata, &outdatalen);
-  else
-    rc = card_decipher (ctrl->card_ctx,
-                        keyidstr, 
-                        pin_cb, ctx,
-                        ctrl->in_data.value, ctrl->in_data.valuelen,
-                        &outdata, &outdatalen);
+  rc = app_decipher (ctrl->app_ctx,
+                     keyidstr, 
+                     pin_cb, ctx,
+                     ctrl->in_data.value, ctrl->in_data.valuelen,
+                     &outdata, &outdatalen);
+
   xfree (keyidstr);
   if (rc)
     {

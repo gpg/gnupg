@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -27,24 +27,15 @@ AM_CPPFLAGS = -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
-# avoid linking against Pth if we are using OpenSC.
-if HAVE_OPENSC
-pth_libs = 
-else
-pth_libs = $(PTH_LIBS)
-endif
-
-AM_CFLAGS =  $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
-	      $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
+AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) \
+	     $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 
-card_apps = app-openpgp.c app-nks.c app-dinsig.c
+card_apps = app-openpgp.c app-nks.c app-dinsig.c app-p15.c
 
 scdaemon_SOURCES = \
 	scdaemon.c scdaemon.h \
-	command.c card.c \
-	card-common.h \
-	card-p15.c  \
+	command.c \
 	apdu.c apdu.h \
 	ccid-driver.c ccid-driver.h \
 	iso7816.c iso7816.h \
@@ -53,8 +44,8 @@ scdaemon_SOURCES = \
 
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(pth_libs) $(LIBASSUAN_LIBS) \
-	$(LIBUSB_LIBS) $(OPENSC_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS)
+	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
+	$(LIBUSB_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS)
 
 sc_copykeys_SOURCES = \
 	sc-copykeys.c scdaemon.h \
@@ -68,8 +59,8 @@ sc_copykeys_SOURCES = \
 sc_copykeys_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	../common/libsimple-pwquery.a \
-	$(LIBGCRYPT_LIBS) $(pth_libs) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-	 $(LIBUSB_LIBS) $(OPENSC_LIBS) \
+	$(LIBGCRYPT_LIBS) $(PTH_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
+	 $(LIBUSB_LIBS) \
         -lgpg-error @LIBINTL@ @DL_LIBS@
 
 pcsc_wrapper_SOURCES = pcsc-wrapper.c

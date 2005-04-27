@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.9.17
 -------------------------------------------------
 
+ * [scdaemon] Support for OpenSC has been removed.  Instead a new and
+   starightforward pkcs#15 modules has been written.  As of now it
+   does allows only signing using TCOS cards but we are going to
+   enhance it to match all the old capabilities.
+
 
 Noteworthy changes in version 1.9.16 (2005-04-21)
 -------------------------------------------------

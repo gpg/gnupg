@@ -38,9 +38,6 @@ NEED_LIBASSUAN_VERSION=0.6.9
 
 NEED_KSBA_VERSION=0.9.11
 
-NEED_OPENSC_VERSION=0.8.0
-
-
 
 PACKAGE=$PACKAGE_NAME
 PACKAGE_GT=${PACKAGE_NAME}2
@@ -59,7 +56,6 @@ have_gpg_error=no
 have_libgcrypt=no 
 have_libassuan=no
 have_ksba=no
-have_opensc=no
 have_pth=no
 
 GNUPG_BUILD_PROGRAM(gpg, no)
@@ -503,16 +499,6 @@ AC_PATH_PROG(SHRED, shred, /usr/bin/shred)
 AC_DEFINE_UNQUOTED(SHRED,
 	"${SHRED}", [defines the filename of the shred program])
 
-#
-# OpenSC is needed by the SCdaemon - if it is not availbale we can only
-# build a limited SCdaemon
-#
-AM_PATH_OPENSC("$NEED_OPENSC_VERSION",have_opensc=yes,have_opensc=no)
-if test $have_opensc = yes; then
-  AC_DEFINE(HAVE_OPENSC,1,
-            [defined if the OpenSC library is available])
-fi
-AM_CONDITIONAL(HAVE_OPENSC, test "$have_opensc" = "yes")
 
 #
 # Check whether the (highly desirable) GNU Pth library is available
@@ -1052,10 +1038,6 @@ if test "$build_scdaemon" = "yes"; then
      tmp=", "
      missing_pth=yes
   fi
-  if test $have_opensc = no; then
-     build_scdaemon_extra="${build_scdaemon_extra}${tmp}no pkcs#15"
-     tmp=", "
-  fi      
   if test -n "$build_scdaemon_extra"; then
      build_scdaemon_extra="(${build_scdaemon_extra})"
   fi
