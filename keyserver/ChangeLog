@@ -1,3 +1,8 @@
+2005-05-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c, gpgkeys_oldhkp.c, ksutil.h: Some minor cleanup
+	and comments as to the size of MAX_LINE and MAX_URL.
+
 2005-04-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c: New hkp handler that uses curl or curl-shim.

@@ -72,7 +72,7 @@ int
 send_key(int *eof)
 {
   CURLcode res;
-  char request[MAX_URL+100];
+  char request[MAX_URL];
   int begin=0,end=0,ret=KEYSERVER_INTERNAL_ERROR;
   char keyid[17];
   char line[MAX_LINE];
@@ -80,13 +80,14 @@ send_key(int *eof)
   size_t keylen=8,keymax=8;
 
   key=malloc(9);
-  strcpy(key,"keytext=");
   if(!key)
     {
       fprintf(console,"gpgkeys: out of memory\n");
       ret=KEYSERVER_NO_MEMORY;
       goto fail;
     }
+
+  strcpy(key,"keytext=");
 
   /* Read and throw away input until we see the BEGIN */
 
@@ -216,6 +217,9 @@ get_key(char *getkey)
       return KEYSERVER_NOT_SUPPORTED;
     }
 
+  /* Note that the size of request is MAX_URL which already implies a
+     1024 byte PATH.  MAX_URL+100 is absurdly safe. */
+
   strcpy(request,"http://");
   strcat(request,opt->host);
   strcat(request,":");
@@ -273,7 +277,9 @@ search_key(char *searchkey)
 
   searchkey_encoded=curl_escape(searchkey,0);
 
-  request=malloc(MAX_URL+100+strlen(searchkey_encoded));
+  /* Note that MAX_URL already implies a 1024 byte PATH, so this is
+     safe. */
+  request=malloc(MAX_URL+strlen(searchkey_encoded));
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");

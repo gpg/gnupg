@@ -27,13 +27,11 @@
 #include <curl/curl.h>
 #endif
 
-#define GET    0
-#define SEND   1
-#define SEARCH 2
-
-/* MAX_LINE must be 1 larger than the largest item we expect to
-   receive. */
-#define MAX_LINE    1080
+/* MAX_LINE must be at least 1 larger than the largest item we expect
+   to receive, including the name tag ("COMMAND", "PORT", etc) and
+   space between.  In practice, that means it should be
+   strlen("OPAQUE")+1+sizeof_opaque+1 */
+#define MAX_LINE       (6+1+1024+1)
 
 #define MAX_COMMAND    6
 #define MAX_OPTION   256
