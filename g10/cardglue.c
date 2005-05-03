@@ -43,9 +43,16 @@
 #include "apdu.h"
 #include "app-common.h"
 
-struct ctrl_ctx_s {
+struct ctrl_ctx_s 
+{
   int (*status_cb)(void *opaque, const char *line);
   void *status_cb_arg;
+};
+
+
+struct pincb_parm_s
+{
+  const char *sn;
 };
 
 
@@ -333,6 +340,39 @@ card_close (void)
     }
 }
 
+
+/* Format a cache ID from the serialnumber in SN and return it as an
+   allocated string.  In case of an error NULL is returned. */
+static char *
+format_cacheid (const char *sn)
+{
+  const char *s;
+  size_t snlen;
+  char *cacheid = NULL;
+
+  /* The serialnumber we use for a card is "CARDSN:serialno".  Where
+     serialno is the BCD string (i.e. hex string) with the full
+     number.  The serial number expect here constsis of hexdigits
+     followed by other characters, we cut off these other
+     characters. */
+  if (sn)
+    {
+      for (s=sn,snlen=0; hexdigitp (s); s++, snlen++)
+        ;
+      if (snlen == 32)
+        {
+          /* Yes, this looks indeed like an OpenPGP card S/N. */
+          cacheid = xtrymalloc (7+snlen+1);
+          if (cacheid)
+            {
+              memcpy (cacheid, "CARDSN:", 7);
+              memcpy (cacheid+7, sn, snlen);
+              cacheid[7+snlen] = 0;
+            }
+        }
+    }
+  return cacheid;
+}
 
 /* Check that the serial number of the current card (as described by
    APP) matches SERIALNO.  If there is no match and we are not in
@@ -651,12 +691,14 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 static int 
 pin_cb (void *opaque, const char *info, char **retstr)
 {
+  struct pincb_parm_s *parm = opaque;
   char *value;
   int canceled;
   int isadmin = 0;
   int newpin = 0;
   const char *again_text = NULL;
   const char *ends, *s;
+  char *cacheid = NULL;
 
   *retstr = NULL;
   /*   log_debug ("asking for PIN '%s'\n", info); */
@@ -674,8 +716,22 @@ pin_cb (void *opaque, const char *info, char **retstr)
         }
       info = ends+1;
     }
-  else
+  else if (info && *info == '|')
     log_debug ("pin_cb called without proper PIN info hack\n");
+
+  /* If we are not requesting a new PIN and we are not requesting an
+     AdminPIN, compute a string to be used as the cacheID for
+     gpg-agent. */
+  if (!newpin && !isadmin && parm)
+    {
+      cacheid = format_cacheid (parm->sn);
+    }
+  else if (newpin && parm)
+    {
+      /* Make really sure that it is not cached anymore. */
+      agent_clear_pin_cache (parm->sn);
+    }
+
 
  again:
   if (is_status_enabled())
@@ -691,7 +747,10 @@ pin_cb (void *opaque, const char *info, char **retstr)
                           newpin?  _("Enter New PIN: ") :
                           isadmin? _("Enter Admin PIN: ")
                                  : _("Enter PIN: "),
+                          cacheid,
                           &canceled);
+  xfree (cacheid);
+  cacheid = NULL;
   again_text = NULL;
   if (!value && canceled)
     return -1;
@@ -702,7 +761,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
     {
       char *value2;
 
-      value2 = ask_passphrase (info, NULL,
+      value2 = ask_passphrase (info, NULL, NULL,
                                "passphrase.pin.repeat", 
                                _("Repeat this PIN: "),
                               &canceled);
@@ -837,11 +896,14 @@ agent_scd_pksign (const char *serialno, int hashalgo,
                   const unsigned char *indata, size_t indatalen,
                   unsigned char **r_buf, size_t *r_buflen)
 {
+  struct pincb_parm_s parm;
   APP app;
   int rc;
 
   *r_buf = NULL;
   *r_buflen = 0;
+  memset (&parm, 0, sizeof parm);
+  parm.sn = serialno;
  retry:
   app = current_app? current_app : open_card ();
   if (!app)
@@ -854,11 +916,14 @@ agent_scd_pksign (const char *serialno, int hashalgo,
 
   if (!rc)
     rc = app->fnc.sign (app, serialno, hashalgo,
-                        pin_cb, NULL,
+                        pin_cb, &parm,
                         indata, indatalen,
                         r_buf, r_buflen);
   if (rc)
-    write_status (STATUS_SC_OP_FAILURE);
+    {
+      write_status (STATUS_SC_OP_FAILURE);
+      agent_clear_pin_cache (serialno);
+    }
   return rc;
 }
 
@@ -869,11 +934,14 @@ agent_scd_pkdecrypt (const char *serialno,
                      const unsigned char *indata, size_t indatalen,
                      unsigned char **r_buf, size_t *r_buflen)
 {
+  struct pincb_parm_s parm;
   APP app;
   int rc;
 
   *r_buf = NULL;
   *r_buflen = 0;
+  memset (&parm, 0, sizeof parm);
+  parm.sn = serialno;
  retry:
   app = current_app? current_app : open_card ();
   if (!app)
@@ -886,11 +954,14 @@ agent_scd_pkdecrypt (const char *serialno,
 
   if (!rc)
     rc = app->fnc.decipher (app, serialno, 
-                            pin_cb, NULL,
+                            pin_cb, &parm,
                             indata, indatalen,
                             r_buf, r_buflen);
   if (rc)
-    write_status (STATUS_SC_OP_FAILURE);
+    {
+      write_status (STATUS_SC_OP_FAILURE);
+      agent_clear_pin_cache (serialno);
+    }
   return rc;
 }
 
@@ -959,4 +1030,16 @@ agent_openpgp_storekey (int keyno,
   if (rc)
     write_status (STATUS_SC_OP_FAILURE);
   return rc;
+}
+
+
+void
+agent_clear_pin_cache (const char *sn)
+{
+  char *cacheid = format_cacheid (sn);
+  if (cacheid)
+    {
+      passphrase_clear_cache (NULL, cacheid, 0);
+      xfree (cacheid);
+    }
 }

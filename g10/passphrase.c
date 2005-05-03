@@ -425,10 +425,13 @@ agent_okay_cb (void *opaque, const char *line)
  *
  * Note that TRYAGAIN_TEXT must not be translated.  If canceled is not
  * NULL, the function does set it to 1 if the user canceled the
- * operation.
+ * operation.  If CACHEID is not NULL, it will be used as the cacheID
+ * for the gpg-agent; if is NULL and a key fingerprint can be
+ * computed, this will be used as the cacheid.
  */
 static char *
-agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
+agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
+                       const char *tryagain_text,
                        const char *custom_description,
                        const char *custom_prompt, int *canceled)
 {
@@ -545,11 +548,16 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
       line = xmalloc (15 + 46 
                       + 3*strlen (atext)
                       + 3*strlen (custom_prompt? custom_prompt:"")
+                      + (cacheid? (3*strlen (cacheid)): 0)
                       + 3*strlen (tryagain_text)
                       + 1);
       strcpy (line, "GET_PASSPHRASE ");
       p = line+15;
-      if (!mode && have_fpr)
+      if (!mode && cacheid)
+        {
+          p = percent_plus_escape (p, cacheid);
+        }
+      else if (!mode && have_fpr)
         {
           for (i=0; i < 20; i++, p +=2 )
             sprintf (p, "%02X", fpr[i]);
@@ -629,10 +637,11 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
 
 
 /*
- * Clear the cached passphrase
+ * Clear the cached passphrase.  If CACHEID is not NULL, it will be
+ * used instead of a cache ID derived from KEYID.
  */
 void
-passphrase_clear_cache ( u32 *keyid, int algo )
+passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
 {
 #ifdef ENABLE_AGENT_SUPPORT
   assuan_context_t ctx = NULL;
@@ -646,17 +655,22 @@ passphrase_clear_cache ( u32 *keyid, int algo )
   if (!opt.use_agent)
     return;
   
-  pk = xcalloc (1, sizeof *pk);
-  memset (fpr, 0, MAX_FINGERPRINT_LEN );
-  if( !keyid || get_pubkey( pk, keyid ) )
+  if (!cacheid)
     {
-      goto failure; /* oops: no key for some reason */
-    }
+      pk = xcalloc (1, sizeof *pk);
+      memset (fpr, 0, MAX_FINGERPRINT_LEN );
+      if( !keyid || get_pubkey( pk, keyid ) )
+        {
+          goto failure; /* oops: no key for some reason */
+        }
   
-  {
-    size_t dummy;
-    fingerprint_from_pk( pk, fpr, &dummy );
-  }
+      {
+        size_t dummy;
+        fingerprint_from_pk( pk, fpr, &dummy );
+      }
+    }
+  else
+    pk = NULL;
     
   if ( !(ctx = agent_open ()) ) 
     goto failure;
@@ -665,11 +679,21 @@ passphrase_clear_cache ( u32 *keyid, int algo )
       char *line, *p;
       int i, rc; 
 
-      line = xmalloc (17 + 40 + 2);
-      strcpy (line, "CLEAR_PASSPHRASE ");
-      p = line+17;
-      for (i=0; i < 20; i++, p +=2 )
-        sprintf (p, "%02X", fpr[i]);
+      if (cacheid)
+        {
+          line = xmalloc (17 + 3*strlen (cacheid) + 2);
+          strcpy (line, "CLEAR_PASSPHRASE ");
+          p = line+17;
+          p = percent_plus_escape (p, cacheid);
+        }
+      else
+        {
+          line = xmalloc (17 + 40 + 2);
+          strcpy (line, "CLEAR_PASSPHRASE ");
+          p = line+17;
+          for (i=0; i < 20; i++, p +=2 )
+            sprintf (p, "%02X", fpr[i]);
+        }
       *p = 0;
 
       rc = assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -696,7 +720,8 @@ char *
 ask_passphrase (const char *description,
                 const char *tryagain_text,
                 const char *promptid,
-                const char *prompt, int *canceled)
+                const char *prompt,
+                const char *cacheid, int *canceled)
 {
   char *pw = NULL;
   
@@ -709,7 +734,7 @@ ask_passphrase (const char *description,
  agent_died:
   if ( opt.use_agent ) 
     {
-      pw = agent_get_passphrase (NULL, 0,
+      pw = agent_get_passphrase (NULL, 0, cacheid,
                                  tryagain_text, description, prompt,
                                  canceled );
       if (!pw)
@@ -853,7 +878,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     }
     else if ( opt.use_agent ) {
       /* Divert to the gpg-agent. */
-	pw = agent_get_passphrase ( keyid, mode == 2? 1: 0,
+        pw = agent_get_passphrase ( keyid, mode == 2? 1: 0, NULL,
                                     tryagain_text, NULL, NULL, canceled );
         if (!pw)
           {
@@ -862,7 +887,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
             pw = m_strdup ("");
           }
         if( *pw && mode == 2 ) {
-          char *pw2 = agent_get_passphrase ( keyid, 2, NULL, NULL,
+            char *pw2 = agent_get_passphrase ( keyid, 2, NULL, NULL, NULL,
                                                NULL, canceled );
             if (!pw2)
               {

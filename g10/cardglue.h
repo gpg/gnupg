@@ -194,6 +194,10 @@ int agent_openpgp_storekey (int keyno,
                             const unsigned char *m, size_t mlen,
                             const unsigned char *e, size_t elen);
 
+/* Clear a cached PIN. */
+void agent_clear_pin_cache (const char *sn);
+
+
 #endif /*ENABLE_CARD_SUPPORT*/
 #endif /*GNUPG_G10_CARDGLUE_H*/
 

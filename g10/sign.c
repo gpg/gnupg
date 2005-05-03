@@ -808,6 +808,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
       }
 
     mfx.md = md_open(0, 0);
+    if (DBG_HASHING)
+	md_start_debug (mfx.md, "sign");
 
    /* If we're encrypting and signing, it is reasonable to pick the
        hash algorithm to use out of the recepient key prefs. */
@@ -1217,6 +1219,8 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     if (opt.textmode)
 	iobuf_push_filter (inp, text_filter, &tfx);
     mfx.md = md_open(0, 0);
+    if ( DBG_HASHING )
+	md_start_debug (mfx.md, "symc-sign");
 
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
 	PKT_secret_key *sk = sk_rover->sk;

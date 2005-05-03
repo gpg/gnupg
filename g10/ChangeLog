@@ -1,3 +1,17 @@
+2005-05-03  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_get_passphrase): Add new arg CACHEID.
+	Changed all callers.
+	(ask_passphrase): Add new arg CACHEID and use it in agent mode.
+	Changed all callers.
+	(passphrase_clear_cache): New arg CACHEID.  Changed all callers.
+	* cardglue.c (format_cacheid): New.
+	(pin_cb): Compute a cache ID.
+	(agent_scd_pksign, agent_scd_pkdecrypt): Use it.
+	(agent_clear_pin_cache): New.
+	* card-util.c (change_pin): Clear the PIN cache.
+	(check_pin_for_key_operation): Ditto.
+
 2005-04-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.h, trustdb.c (mark_usable_uid_certs): Add flags for the
@@ -23,6 +37,11 @@
 	extra check for a bad passphrase and/or unknown cipher algorithm
 	here.  We'll fail quite happily later, and usually with a better
 	error message to boot.
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* sign.c (sign_file, sign_symencrypt_file): Allow for hash
+	debugging.
 
 2005-04-16  David Shaw  <dshaw@jabberwocky.com>
 
