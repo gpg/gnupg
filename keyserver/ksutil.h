@@ -21,10 +21,12 @@
 #ifndef _KSUTIL_H_
 #define _KSUTIL_H_
 
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#else
 #ifdef FAKE_CURL
 #include "curl-shim.h"
-#else
-#include <curl/curl.h>
+#endif
 #endif
 
 /* MAX_LINE must be at least 1 larger than the largest item we expect
@@ -98,6 +100,8 @@ void free_ks_options(struct ks_options *opt);
 int parse_ks_options(char *line,struct ks_options *opt);
 const char *ks_action_to_string(enum ks_action action);
 void print_nocr(FILE *stream,const char *str);
+
+#if defined (HAVE_LIBCURL) || defined (FAKE_CURL)
 int curl_err_to_gpg_err(CURLcode error);
 
 struct curl_writer_ctx
@@ -108,5 +112,6 @@ struct curl_writer_ctx
 };
 
 size_t curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx);
+#endif
 
 #endif /* !_KSUTIL_H_ */

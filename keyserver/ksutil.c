@@ -24,10 +24,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#else
 #ifdef FAKE_CURL
 #include "curl-shim.h"
-#else
-#include <curl/curl.h>
+#endif
 #endif
 #include "keyserver.h"
 #include "ksutil.h"
@@ -318,6 +321,7 @@ print_nocr(FILE *stream,const char *str)
     }
 }
 
+#if defined (HAVE_LIBCURL) || defined (FAKE_CURL)
 int
 curl_err_to_gpg_err(CURLcode error)
 {
@@ -383,3 +387,4 @@ curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx)
 
   return size*nmemb;
 }
+#endif

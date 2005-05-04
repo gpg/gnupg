@@ -1,3 +1,8 @@
+2005-05-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c: #ifdef so we can build without libcurl or
+	fake-curl.
+
 2005-05-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_http.c: Need GET defined.
