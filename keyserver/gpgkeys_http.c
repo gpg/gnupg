@@ -33,6 +33,8 @@
 #include "keyserver.h"
 #include "ksutil.h"
 
+#define GET    0
+
 extern char *optarg;
 extern int optind;
 
