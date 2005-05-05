@@ -1,3 +1,7 @@
+2005-05-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* miscutil.c (add_days_to_timestamp): Remove as unused.
+
 2005-04-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* assuan-client.c: Fix warning on OSX.

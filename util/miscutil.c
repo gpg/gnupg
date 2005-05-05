@@ -81,13 +81,6 @@ scan_isodatestr( const char *string )
 }
 
 
-u32
-add_days_to_timestamp( u32 stamp, u16 days )
-{
-    return stamp + days*86400L;
-}
-
-
 /****************
  * Return a string with a time value in the form: x Y, n D, n H
  */
