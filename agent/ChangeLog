@@ -3,6 +3,9 @@
 	* command-ssh.c (ssh_key_to_buffer): Rename to ...
 	(ssh_key_to_protected_buffer): ... this; change callers.
 	Improved documentation.
+	Use ssh_key_grip(), where gcry_pk_get_keygrip() has been used
+	before.
+	(ssh_handler_sign_request): Removed unusued variable P.
 
 2005-04-20  Moritz Schulte  <moritz@g10code.com>
 

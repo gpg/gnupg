@@ -1531,6 +1531,26 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
 
 
 
+/* This function calculates the key grip for the key contained in the
+   S-Expression KEY and writes it to BUFFER, which must be large
+   enough to hold it.  Returns usual error code.  */
+static gpg_error_t
+ssh_key_grip (gcry_sexp_t key, char *buffer)
+{
+  gpg_error_t err;
+  char *p;
+
+  /* FIXME: unsigned vs. signed.  */
+  
+  p = gcry_pk_get_keygrip (key, buffer);
+  if (! p)
+    err = gpg_error (GPG_ERR_INTERNAL);	/* FIXME?  */
+  else
+    err = 0;
+
+  return err;
+}
+
 /* Converts the secret key KEY_SECRET into a public key, storing it in
    KEY_PUBLIC.  SPEC is the according key specification.  Returns zero
    on success or an error code.  */
@@ -1643,14 +1663,16 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
       xfree (serialno);
       return err;
     }
-  
-  if ( !gcry_pk_get_keygrip (s_pk, grip) )
+
+  err = ssh_key_grip (s_pk, grip);
+  if (err)
     {
-      log_debug ("error computing keygrip from received card key\n");
+      log_debug ("error computing keygrip from received card key: %s\n",
+		 gcry_strerror (err));
       xfree (pkbuf);
       gcry_sexp_release (s_pk);
       xfree (serialno);
-      return gpg_error (GPG_ERR_INTERNAL);
+      return err;
     }
 
   if ( agent_key_available (grip) )
@@ -1941,26 +1963,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
   return ret_err;
 }
 
-/* This function calculates the key grip for the key contained in the
-   S-Expression KEY and writes it to BUFFER, which must be large
-   enough to hold it.  Returns usual error code.  */
-static gpg_error_t
-ssh_key_grip (gcry_sexp_t key, char *buffer)
-{
-  gpg_error_t err;
-  char *p;
-
-  /* FIXME: unsigned vs. signed.  */
-  
-  p = gcry_pk_get_keygrip (key, buffer);
-  if (! p)
-    err = gpg_error (GPG_ERR_INTERNAL);	/* FIXME?  */
-  else
-    err = 0;
-
-  return err;
-}
-
 /* This function hashes the data contained in DATA of size DATA_N
    according to the message digest algorithm specified by MD_ALGORITHM
    and writes the message digest to HASH, which needs to large enough
@@ -2151,7 +2153,6 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   size_t sig_n;
   u32 data_size;
   u32 flags;
-  void *p;
   gpg_error_t err;
   gpg_error_t ret_err;
 
@@ -2192,12 +2193,9 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
     goto out;
 
   /* Calculate key grip.  */
-  p = gcry_pk_get_keygrip (key, key_grip);
-  if (! p)
-    {
-      err = gpg_error (GPG_ERR_INTERNAL); /* FIXME?  */
-      goto out;
-    }
+  err = ssh_key_grip (key, key_grip);
+  if (err)
+    goto out;
 
   /* Sign data.  */
 
