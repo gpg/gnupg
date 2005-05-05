@@ -198,10 +198,6 @@ MPI encode_session_key( DEK *dek, unsigned nbits );
 MPI encode_md_value( int pubkey_algo, MD_HANDLE md,
 		     int hash_algo, unsigned nbits );
 
-/*-- comment.c --*/
-KBNODE make_comment_node( const char *s );
-KBNODE make_mpi_comment_node( const char *s, MPI a );
-
 /*-- import.c --*/
 int parse_import_options(char *str,unsigned int *options,int noisy);
 void import_keys( char **fnames, int nnames,

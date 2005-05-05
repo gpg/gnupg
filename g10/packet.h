@@ -503,9 +503,6 @@ int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 int ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 			       const char *inname, int textmode );
 
-/*-- comment.c --*/
-int write_comment( IOBUF out, const char *s );
-
 /*-- sign.c --*/
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_user_id *uid, PKT_public_key *subpk,

@@ -62,7 +62,6 @@ common_source =  \
 	      keyid.c		\
 	      packet.h		\
 	      parse-packet.c	\
-	      comment.c 	\
 	      status.c		\
 	      status.h		\
 	      plaintext.c	\

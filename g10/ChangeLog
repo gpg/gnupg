@@ -1,5 +1,8 @@
 2005-05-05  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am, packet.h, main.h, comment.c: Remove comment.c.  We
+	don't use any of these functions any longer.
+
 	* keygen.c (start_tree): New function to "prime" a KBNODE list.
 	(do_generate_keypair): Use it here rather than creating and
 	deleting a comment packet.
