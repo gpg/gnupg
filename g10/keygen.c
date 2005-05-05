@@ -348,7 +348,8 @@ keygen_set_std_prefs (const char *string,int personal)
             */
 
 	    /* Make sure we do not add more than 15 items here, as we
-	       could overflow the size of dummy_string. */
+	       could overflow the size of dummy_string.  We currently
+	       have at most 12. */
 	    if(!check_cipher_algo(CIPHER_ALGO_AES256))
 	      strcat(dummy_string,"S9 ");
 	    if(!check_cipher_algo(CIPHER_ALGO_AES192))
@@ -368,8 +369,23 @@ keygen_set_std_prefs (const char *string,int personal)
 	    if(!check_cipher_algo(CIPHER_ALGO_IDEA))
 	      strcat(dummy_string,"S1 ");
 
-	    /* SHA-1, RIPEMD160, ZLIB, ZIP */
-	    strcat(dummy_string,"H2 H3 Z2 Z1");
+	    /* SHA-1 */
+	    strcat(dummy_string,"H2 ");
+
+	    if(!check_digest_algo(DIGEST_ALGO_SHA256))
+	      strcat(dummy_string,"H8 ");
+
+	    /* RIPEMD160 */
+	    strcat(dummy_string,"H3 ");
+
+	    /* ZLIB */
+	    strcat(dummy_string,"Z2 ");
+
+	    if(!check_compress_algo(COMPRESS_ALGO_BZIP2))
+	      strcat(dummy_string,"Z3 ");
+
+	    /* ZIP */
+	    strcat(dummy_string,"Z1");
 
 	    string=dummy_string;
 	  }

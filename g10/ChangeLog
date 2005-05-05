@@ -1,5 +1,8 @@
 2005-05-05  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (keygen_set_std_prefs): Add SHA256 and BZip2 to default
+	preferences.
+
 	* options.h, g10.c (main): Add new --default-sig-expire and
 	--default-cert-expire options.  Suggested by Florian Weimer.
 
