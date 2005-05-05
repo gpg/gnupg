@@ -1,6 +1,6 @@
 /* sign.c - sign data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -744,8 +744,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
        && (rc=setup_symkey(&efx.symkey_s2k,&efx.symkey_dek)))
       goto leave;
 
-    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !RFC1991)
-      duration=ask_expire_interval(1);
+    if(!opt.force_v3_sigs && !opt.batch && !RFC1991)
+      {
+	if(opt.ask_sig_expire)
+	  duration=ask_expire_interval(1,opt.def_sig_expire);
+	else
+	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
+      }
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
@@ -1009,8 +1014,13 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
 
-    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !RFC1991)
-      duration=ask_expire_interval(1);
+    if(!opt.force_v3_sigs && !opt.batch && !RFC1991)
+      {
+	if(opt.ask_sig_expire)
+	  duration=ask_expire_interval(1,opt.def_sig_expire);
+	else
+	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
+      }
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
@@ -1163,8 +1173,13 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     memset( &cfx, 0, sizeof cfx);
     init_packet( &pkt );
 
-    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !RFC1991)
-      duration=ask_expire_interval(1);
+    if(!opt.force_v3_sigs && !opt.batch && !RFC1991)
+      {
+	if(opt.ask_sig_expire)
+	  duration=ask_expire_interval(1,opt.def_sig_expire);
+	else
+	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
+      }
 
     rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);
     if (rc) 

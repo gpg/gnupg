@@ -1,3 +1,15 @@
+2005-05-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main): Add new --default-sig-expire and
+	--default-cert-expire options.  Suggested by Florian Weimer.
+
+	* main.h, keygen.c (parse_expire_string, ask_expire_interval): Use
+	defaults passed in, or "0" to control what default expiration is.
+
+	* keyedit.c (sign_uids), sign.c (sign_file, clearsign_file,
+	sign_symencrypt_file): Call them here, so that default expiration
+	is used when --ask-xxxxx-expire is off.
+
 2005-05-03  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (agent_get_passphrase): Add new arg CACHEID.

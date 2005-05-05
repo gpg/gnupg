@@ -860,8 +860,13 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	/* Only ask for duration if we haven't already set it to match
            the expiration of the pk */
-	if(opt.ask_cert_expire && !duration && !selfsig)
-	  duration=ask_expire_interval(1);
+	if(!duration && !selfsig)
+	  {
+	    if(opt.ask_cert_expire)
+	      duration=ask_expire_interval(1,opt.def_cert_expire);
+	    else
+	      duration=parse_expire_string(opt.def_cert_expire)*86400L;
+	  }
 
 	if(duration)
 	  force_v4=1;

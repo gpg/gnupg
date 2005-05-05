@@ -1,6 +1,6 @@
 /* main.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -165,7 +165,8 @@ void keyedit_menu( const char *username, STRLIST locusr,
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/
-u32 ask_expire_interval(int object);
+int parse_expire_string(const char *string);
+u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
 void generate_keypair( const char *fname, const char *card_serialno,
                        const char *backup_encryption_dir );

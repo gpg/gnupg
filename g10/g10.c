@@ -1,6 +1,6 @@
 /* g10.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *               2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -157,18 +157,20 @@ enum cmd_and_opt_values
     oNoTextmode,
     oExpert,
     oNoExpert,
+    oDefSigExpire,
     oAskSigExpire,
     oNoAskSigExpire,
+    oDefCertExpire,
     oAskCertExpire,
     oNoAskCertExpire,
+    oDefCertLevel,
+    oMinCertLevel,
     oAskCertLevel,
     oNoAskCertLevel,
     oFingerprint,
     oWithFingerprint,
     oAnswerYes,
     oAnswerNo,
-    oDefCertLevel,
-    oMinCertLevel,
     oKeyring,
     oPrimaryKeyring,
     oSecretKeyring,
@@ -443,10 +445,14 @@ static ARGPARSE_OPTS opts[] = {
     { oNoTextmode, "no-textmode",  0, "@"},
     { oExpert, "expert",   0, "@"},
     { oNoExpert, "no-expert",   0, "@"},
+    { oDefSigExpire, "default-sig-expire", 2, "@"},
     { oAskSigExpire, "ask-sig-expire",   0, "@"},
     { oNoAskSigExpire, "no-ask-sig-expire",   0, "@"},
+    { oDefCertExpire, "default-cert-expire", 2, "@"},
     { oAskCertExpire, "ask-cert-expire",   0, "@"},
     { oNoAskCertExpire, "no-ask-cert-expire",   0, "@"},
+    { oDefCertLevel, "default-cert-level", 1, "@"},
+    { oMinCertLevel, "min-cert-level", 1, "@"},
     { oAskCertLevel, "ask-cert-level",   0, "@"},
     { oNoAskCertLevel, "no-ask-cert-level",   0, "@"},
     { oOutput, "output",    2, N_("use as output file")},
@@ -579,8 +585,6 @@ static ARGPARSE_OPTS opts[] = {
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
     { oDefCertLevel, "default-cert-check-level", 1, "@"}, /* Old option */
-    { oDefCertLevel, "default-cert-level", 1, "@"},
-    { oMinCertLevel, "min-cert-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
     { oForceOwnertrust, "force-ownertrust", 2, "@"},
@@ -1673,6 +1677,8 @@ main( int argc, char **argv )
     set_screen_dimensions();
     opt.keyid_format=KF_SHORT;
     opt.rfc2440_text=1;
+    opt.def_sig_expire="0";
+    opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
 
 #ifdef ENABLE_CARD_SUPPORT
@@ -2020,8 +2026,6 @@ main( int argc, char **argv )
 	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
-          case oDefCertLevel: opt.def_cert_level=pargs.r.ret_int; break;
-          case oMinCertLevel: opt.min_cert_level=pargs.r.ret_int; break;
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
@@ -2227,10 +2231,32 @@ main( int argc, char **argv )
 	  case oNoTextmode: opt.textmode=0;  break;
 	  case oExpert: opt.expert = 1; break;
 	  case oNoExpert: opt.expert = 0; break;
+	  case oDefSigExpire:
+	    if(*pargs.r.ret_str!='\0')
+	      {
+		if(parse_expire_string(pargs.r.ret_str)==-1)
+		  log_error(_("`%s' is not a valid signature expiration\n"),
+			    pargs.r.ret_str);
+		else
+		  opt.def_sig_expire=pargs.r.ret_str;
+	      }
+	    break;
 	  case oAskSigExpire: opt.ask_sig_expire = 1; break;
 	  case oNoAskSigExpire: opt.ask_sig_expire = 0; break;
+	  case oDefCertExpire:
+	    if(*pargs.r.ret_str!='\0')
+	      {
+		if(parse_expire_string(pargs.r.ret_str)==-1)
+		  log_error(_("`%s' is not a valid signature expiration\n"),
+			    pargs.r.ret_str);
+		else
+		  opt.def_cert_expire=pargs.r.ret_str;
+	      }
+	    break;
 	  case oAskCertExpire: opt.ask_cert_expire = 1; break;
 	  case oNoAskCertExpire: opt.ask_cert_expire = 0; break;
+          case oDefCertLevel: opt.def_cert_level=pargs.r.ret_int; break;
+          case oMinCertLevel: opt.min_cert_level=pargs.r.ret_int; break;
 	  case oAskCertLevel: opt.ask_cert_level = 1; break;
 	  case oNoAskCertLevel: opt.ask_cert_level = 0; break;
 	  case oUser: /* store the local users */

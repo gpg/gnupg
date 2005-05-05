@@ -50,7 +50,9 @@ struct
   int list_only;
   int textmode;
   int expert;
+  const char *def_sig_expire;
   int ask_sig_expire;
+  const char *def_cert_expire;
   int ask_cert_expire;
   int batch;	    /* run in batch mode */
   int answer_yes; /* answer yes on most questions */

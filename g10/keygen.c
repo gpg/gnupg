@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1498,7 +1498,7 @@ ask_keysize( int algo )
  * Parse an expire string and return it's value in days.
  * Returns -1 on error.
  */
-static int
+int
 parse_expire_string( const char *string )
 {
     int mult;
@@ -1530,7 +1530,7 @@ parse_expire_string( const char *string )
 
 /* object == 0 for a key, and 1 for a sig */
 u32
-ask_expire_interval(int object)
+ask_expire_interval(int object,const char *def_expire)
 {
     char *answer;
     int valid_days=0;
@@ -1539,6 +1539,8 @@ ask_expire_interval(int object)
     switch(object)
       {
       case 0:
+	if(def_expire)
+	  BUG();
 	tty_printf(_("Please specify how long the key should be valid.\n"
 		     "         0 = key does not expire\n"
 		     "      <n>  = key expires in n days\n"
@@ -1548,6 +1550,8 @@ ask_expire_interval(int object)
 	break;
 
       case 1:
+	if(!def_expire)
+	  BUG();
 	tty_printf(_("Please specify how long the signature should be valid.\n"
 		     "         0 = signature does not expire\n"
 		     "      <n>  = signature expires in n days\n"
@@ -1565,20 +1569,36 @@ ask_expire_interval(int object)
      * date */
 
     answer = NULL;
-    for(;;) {
+    for(;;)
+      {
 	u32 curtime=make_timestamp();
 
 	m_free(answer);
 	if(object==0)
 	  answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
 	else
-	  answer = cpr_get("siggen.valid",_("Signature is valid for? (0) "));
+	  {
+	    char *prompt;
+
+#define PROMPTSTRING _("Signature is valid for? (%s) ")
+	    /* This will actually end up larger than necessary because
+	       of the 2 bytes for '%s' */
+	    prompt=m_alloc(strlen(PROMPTSTRING)+strlen(def_expire)+1);
+	    sprintf(prompt,PROMPTSTRING,def_expire);
+#undef PROMPTSTRING
+
+	    answer = cpr_get("siggen.valid",prompt);
+	    m_free(prompt);
+
+	    if(*answer=='\0')
+	      answer=m_strdup(def_expire);
+	  }
 	cpr_kill_prompt();
 	trim_spaces(answer);
 	valid_days = parse_expire_string( answer );
 	if( valid_days < 0 ) {
-	    tty_printf(_("invalid value\n"));
-	    continue;
+	  tty_printf(_("invalid value\n"));
+	  continue;
 	}
 
 	if( !valid_days )
@@ -1589,24 +1609,24 @@ ask_expire_interval(int object)
 	    interval = 0;
 	  }
 	else {
-	    interval = valid_days * 86400L;
+	  interval = valid_days * 86400L;
 
-	    tty_printf(object==0
-                       ? _("Key expires at %s\n")
-		       : _("Signature expires at %s\n"),
-			asctimestamp((ulong)(curtime + interval) ) );
-            /* FIXME: This check yields warning on alhas: Write a
-               configure check and to this check here only for 32 bit
-               machines */
-	    if( (time_t)((ulong)(curtime+interval)) < 0 )
-		tty_printf(_("Your system can't display dates beyond 2038.\n"
-		    "However, it will be correctly handled up to 2106.\n"));
+	  tty_printf(object==0
+		     ? _("Key expires at %s\n")
+		     : _("Signature expires at %s\n"),
+		     asctimestamp((ulong)(curtime + interval) ) );
+	  /* FIXME: This check yields warning on alhas: Write a
+	     configure check and to this check here only for 32 bit
+	     machines */
+	  if( (time_t)((ulong)(curtime+interval)) < 0 )
+	    tty_printf(_("Your system can't display dates beyond 2038.\n"
+			 "However, it will be correctly handled up to 2106.\n"));
 	}
 
 	if( cpr_enabled() || cpr_get_answer_is_yes("keygen.valid.okay",
-					    _("Is this correct? (y/N) ")) )
-	    break;
-    }
+						   _("Is this correct? (y/N) ")) )
+	  break;
+      }
     m_free(answer);
     return interval;
 }
@@ -1614,7 +1634,7 @@ ask_expire_interval(int object)
 u32
 ask_expiredate()
 {
-    u32 x = ask_expire_interval(0);
+    u32 x = ask_expire_interval(0,NULL);
     return x? make_timestamp() + x : 0;
 }
 
@@ -2572,7 +2592,7 @@ generate_keypair (const char *fname, const char *card_serialno,
       para = r;
     }
    
-  expire = ask_expire_interval(0);
+  expire = ask_expire_interval(0,NULL);
   r = m_alloc_clear( sizeof *r + 20 );
   r->key = pKEYEXPIRE;
   r->u.expire = expire;
@@ -3085,7 +3105,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     algo = ask_algo( 1, &use );
     assert(algo);
     nbits = ask_keysize( algo );
-    expire = ask_expire_interval(0);
+    expire = ask_expire_interval(0,NULL);
     if( !cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
 						  _("Really create? (y/N) ")))
 	goto leave;
@@ -3203,7 +3223,7 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
     goto leave;
 
   algo = PUBKEY_ALGO_RSA;
-  expire = ask_expire_interval (0);
+  expire = ask_expire_interval (0,NULL);
   if (keyno == 1)
     use = PUBKEY_USAGE_SIG;
   else if (keyno == 2)
