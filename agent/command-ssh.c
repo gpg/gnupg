@@ -148,10 +148,14 @@ typedef struct ssh_key_type_spec
      is required by gpg-agent's key access layer.  */
   const char *elems_sexp_order;
 
-  /* Key modifier function.  */
+  /* Key modifier function.  Key modifier functions are necessary in
+     order to fix any inconsistencies between the representation of
+     keys on the SSH and on the GnuPG side.  */
   ssh_key_modifier_t key_modifier;
 
-  /* Signature encoder function.  */
+  /* Signature encoder function.  Signature encoder functions are
+     necessary since the encoding of signatures depends on the used
+     algorithm.  */
   ssh_signature_encoder_t signature_encoder;
 
   /* Misc flags.  */
@@ -196,11 +200,11 @@ static gpg_error_t ssh_signature_encoder_dsa (estream_t signature_blob,
 /* Associating request types with the corresponding request
    handlers.  */
 
+static ssh_request_spec_t request_specs[] =
+  {
 #define REQUEST_SPEC_DEFINE(id, name, secret_input) \
   { SSH_REQUEST_##id, ssh_handler_##name, #name, secret_input }
 
-static ssh_request_spec_t request_specs[] =
-  {
     REQUEST_SPEC_DEFINE (REQUEST_IDENTITIES,    request_identities,    1),
     REQUEST_SPEC_DEFINE (SIGN_REQUEST,          sign_request,          0),
     REQUEST_SPEC_DEFINE (ADD_IDENTITY,          add_identity,          1),
@@ -209,8 +213,8 @@ static ssh_request_spec_t request_specs[] =
     REQUEST_SPEC_DEFINE (REMOVE_ALL_IDENTITIES, remove_all_identities, 0),
     REQUEST_SPEC_DEFINE (LOCK,                  lock,                  0),
     REQUEST_SPEC_DEFINE (UNLOCK,                unlock,                0)
-  };
 #undef REQUEST_SPEC_DEFINE
+  };
 
 
 /* Table holding key type specifications.  */
@@ -816,7 +820,10 @@ mpint_list_free (gcry_mpi_t *mpi_list)
     }
 }
 
-
+/* Receive key material MPIs from STREAM according to KEY_SPEC;
+   depending on SECRET expect a public key or secret key.  The newly
+   allocated list of MPIs is stored in MPI_LIST.  Returns usual error
+   code.  */
 static gpg_error_t
 ssh_receive_mpint_list (estream_t stream, int secret,
 			ssh_key_type_spec_t key_spec, gcry_mpi_t **mpi_list)
@@ -982,7 +989,9 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
  */
 
 
-/*  */
+/* This function constructs a new S-Expression for the key identified
+   by the KEY_SPEC, SECRET, MPIS and COMMENT, which is to be stored in
+   *SEXP.  Returns usual error code.  */
 static gpg_error_t
 sexp_key_construct (gcry_sexp_t *sexp,
 		    ssh_key_type_spec_t key_spec, int secret,
@@ -1072,7 +1081,12 @@ sexp_key_construct (gcry_sexp_t *sexp,
   return err;
 }
 
-
+/* This functions breaks up the key contained in the S-Expression SEXP
+   according to KEY_SPEC.  The MPIs are bundled in a newly create
+   list, which is to be stored in MPIS; a newly allocated string
+   holding the comment will be stored in COMMENT; SECRET will be
+   filled with a boolean flag specifying what kind of key it is.
+   Returns usual error code.  */
 static gpg_error_t
 sexp_key_extract (gcry_sexp_t sexp,
 		  ssh_key_type_spec_t key_spec, int *secret,
@@ -1710,7 +1724,9 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 
 /*
 
-  Request handler.  
+  Request handler.  Each handler is provided with a CTRL context, a
+  REQUEST object and a RESPONSE object.  The actual request is to be
+  read from REQUEST, the response needs to be written to RESPONSE.
 
 */
 
@@ -1925,7 +1941,30 @@ ssh_handler_request_identities (ctrl_t ctrl,
   return ret_err;
 }
 
-/*  */
+/* This function calculates the key grip for the key contained in the
+   S-Expression KEY and writes it to BUFFER, which must be large
+   enough to hold it.  Returns usual error code.  */
+static gpg_error_t
+ssh_key_grip (gcry_sexp_t key, char *buffer)
+{
+  gpg_error_t err;
+  char *p;
+
+  /* FIXME: unsigned vs. signed.  */
+  
+  p = gcry_pk_get_keygrip (key, buffer);
+  if (! p)
+    err = gpg_error (GPG_ERR_INTERNAL);	/* FIXME?  */
+  else
+    err = 0;
+
+  return err;
+}
+
+/* This function hashes the data contained in DATA of size DATA_N
+   according to the message digest algorithm specified by MD_ALGORITHM
+   and writes the message digest to HASH, which needs to large enough
+   for the digest.  */
 static gpg_error_t
 data_hash (unsigned char *data, size_t data_n,
 	   int md_algorithm, unsigned char *hash)
@@ -1935,7 +1974,9 @@ data_hash (unsigned char *data, size_t data_n,
   return 0;
 }
 
-
+/* This function signs the data contained in CTRL, stores the created
+   signature in newly allocated memory in SIG and it's size in SIG_N;
+   SIG_ENCODER is the signature encoder to use.  */
 static gpg_error_t
 data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
 	   unsigned char **sig, size_t *sig_n)
@@ -2094,6 +2135,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   return err;
 }
 
+/* Handler for the "sign_request" command.  */
 static gpg_error_t
 ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
 {
@@ -2198,7 +2240,9 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   return ret_err;
 }
 
-
+/* This function extracts the comment contained in the key
+   S-Expression KEY and stores a copy in COMMENT.  Returns usual error
+   code.  */
 static gpg_error_t
 ssh_key_extract_comment (gcry_sexp_t key, char **comment)
 {
@@ -2239,26 +2283,12 @@ ssh_key_extract_comment (gcry_sexp_t key, char **comment)
   return err;
 }
 
+/* This function converts the key contained in the S-Expression KEY
+   into a buffer, which is protected by the passphrase PASSPHRASE.
+   Returns usual error code.  */
 static gpg_error_t
-ssh_key_grip (gcry_sexp_t key, char *buffer)
-{
-  gpg_error_t err;
-  char *p;
-
-  /* FIXME: unsigned vs. signed.  */
-  
-  p = gcry_pk_get_keygrip (key, buffer);
-  if (! p)
-    err = gpg_error (GPG_ERR_INTERNAL);	/* FIXME?  */
-  else
-    err = 0;
-
-  return err;
-}
-
-static gpg_error_t
-ssh_key_to_buffer (gcry_sexp_t key, const char *passphrase,
-		   unsigned char **buffer, size_t *buffer_n)
+ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
+			     unsigned char **buffer, size_t *buffer_n)
 {
   unsigned char *buffer_new;
   unsigned int buffer_new_n;
@@ -2287,7 +2317,7 @@ ssh_key_to_buffer (gcry_sexp_t key, const char *passphrase,
 
 
 
-/* Store the ssh KEY into our local key storage and protect him after
+/* Store the ssh KEY into our local key storage and protect it after
    asking for a passphrase.  Cache that passphrase.  TTL is the
    maximum caching time for that key.  If the key already exists in
    our key storage, don't do anything.  When entering a new key also
@@ -2345,7 +2375,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   if (err)
     goto out;
 
-  err = ssh_key_to_buffer (key, pi->pin, &buffer, &buffer_n);
+  err = ssh_key_to_protected_buffer (key, pi->pin, &buffer, &buffer_n);
   if (err)
     goto out;
 
@@ -2378,7 +2408,9 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
 }
 
 
-
+/* This function removes the key contained in the S-Expression KEY
+   from the local key storage, in case it exists there.  Returns usual
+   error code.  FIXME: this function is a stub.  */
 static gpg_error_t
 ssh_identity_drop (gcry_sexp_t key)
 {
@@ -2399,6 +2431,7 @@ ssh_identity_drop (gcry_sexp_t key)
   return err;
 }
 
+/* Handler for the "add_identity" command.  */
 static gpg_error_t
 ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 {
@@ -2469,9 +2502,10 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   return ret_err;
 }
 
+/* Handler for the "remove_identity" command.  */
 static gpg_error_t
-ssh_handler_remove_identity (ctrl_t ctrl, estream_t request,
-                             estream_t response)
+ssh_handler_remove_identity (ctrl_t ctrl,
+			     estream_t request, estream_t response)
 {
   unsigned char *key_blob;
   u32 key_blob_size;
@@ -2507,6 +2541,7 @@ ssh_handler_remove_identity (ctrl_t ctrl, estream_t request,
   return ret_err;
 }
 
+/* FIXME: stub function.  Actually useful?  */
 static gpg_error_t
 ssh_identities_remove_all (void)
 {
@@ -2520,9 +2555,10 @@ ssh_identities_remove_all (void)
   return err;
 }
 
+/* Handler for the "remove_all_identities" command.  */
 static gpg_error_t
-ssh_handler_remove_all_identities (ctrl_t ctrl, estream_t request,
-                                   estream_t response)
+ssh_handler_remove_all_identities (ctrl_t ctrl,
+				   estream_t request, estream_t response)
 {
   gpg_error_t ret_err;
   gpg_error_t err;
@@ -2537,6 +2573,7 @@ ssh_handler_remove_all_identities (ctrl_t ctrl, estream_t request,
   return ret_err;
 }
 
+/* Lock agent?  FIXME: stub function.  */
 static gpg_error_t
 ssh_lock (void)
 {
@@ -2549,6 +2586,7 @@ ssh_lock (void)
   return err;
 }
 
+/* Unock agent?  FIXME: stub function.  */
 static gpg_error_t
 ssh_unlock (void)
 {
@@ -2560,6 +2598,7 @@ ssh_unlock (void)
   return err;
 }
 
+/* Handler for the "lock" command.  */
 static gpg_error_t
 ssh_handler_lock (ctrl_t ctrl, estream_t request, estream_t response)
 {
@@ -2576,6 +2615,7 @@ ssh_handler_lock (ctrl_t ctrl, estream_t request, estream_t response)
   return ret_err;
 }
 
+/* Handler for the "unlock" command.  */
 static gpg_error_t
 ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
 {
@@ -2594,6 +2634,9 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
 
 
 
+/* Return the request specification for the request identified by TYPE
+   or NULL in case the requested request specification could not be
+   found.  */
 static ssh_request_spec_t *
 request_spec_lookup (int type)
 {
@@ -2614,6 +2657,9 @@ request_spec_lookup (int type)
   return spec;
 }
 
+/* Process a single request.  The request is read from and the
+   response is written to STREAM_SOCK.  Uses CTRL as context.  Returns
+   zero in case of success, non zero in case of failure.  */
 static int
 ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 {
@@ -2772,6 +2818,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
   return !!err;
 }
 
+/* Start serving client on SOCK_CLIENT.  */
 void
 start_command_handler_ssh (int sock_client)
 {

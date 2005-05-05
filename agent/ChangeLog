@@ -1,3 +1,9 @@
+2005-05-05  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_key_to_buffer): Rename to ...
+	(ssh_key_to_protected_buffer): ... this; change callers.
+	Improved documentation.
+
 2005-04-20  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_handler_request_identities): Removed
