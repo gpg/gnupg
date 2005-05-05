@@ -990,7 +990,6 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
 {
     int rc;
-    int i;
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
@@ -1060,9 +1059,6 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
-    for(i=0; factors[i]; i++ )
-	add_kbnode( sec_root,
-		    make_mpi_comment_node("#:ELG_factor:", factors[i] ));
 
     return 0;
 }
@@ -1076,7 +1072,6 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
 {
     int rc;
-    int i;
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
@@ -1150,9 +1145,6 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
-    for(i=1; factors[i]; i++ )	/* the first one is q */
-	add_kbnode( sec_root,
-		    make_mpi_comment_node("#:DSA_factor:", factors[i] ));
 
     return 0;
 }
@@ -1916,16 +1908,6 @@ do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
   else
     BUG();
 
-#ifdef ENABLE_COMMENT_PACKETS
-  if( !rc ) {
-    add_kbnode( pub_root,
-		make_comment_node("#created by GNUPG v" VERSION " ("
-				  PRINTABLE_OS_NAME ")"));
-    add_kbnode( sec_root,
-		make_comment_node("#created by GNUPG v" VERSION " ("
-				  PRINTABLE_OS_NAME ")"));
-  }
-#endif
   return rc;
 }
 
@@ -2732,6 +2714,17 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
 }
 #endif /* ENABLE_CARD_SUPPORT */
 
+/* Create and delete a dummy packet to start off a list of kbnodes. */
+static void
+start_tree(KBNODE *tree)
+{
+  PACKET *pkt;
+
+  pkt=m_alloc_clear(sizeof(*pkt));
+  pkt->pkttype=PKT_NONE;
+  *tree=new_kbnode(pkt);
+  delete_kbnode(*tree);
+}
 
 static void
 do_generate_keypair( struct para_data_s *para,
@@ -2745,11 +2738,11 @@ do_generate_keypair( struct para_data_s *para,
     int rc;
     int did_sub = 0;
 
-    if( outctrl->dryrun ) {
+    if( outctrl->dryrun )
+      {
 	log_info("dry-run mode - key generation skipped\n");
 	return;
-    }
-
+      }
 
     if( outctrl->use_files ) {
 	if( outctrl->pub.newfname ) {
@@ -2821,13 +2814,14 @@ do_generate_keypair( struct para_data_s *para,
     }
 
 
-    /* we create the packets as a tree of kbnodes. Because the structure
-     * we create is known in advance we simply generate a linked list
-     * The first packet is a dummy comment packet which we flag
+    /* we create the packets as a tree of kbnodes. Because the
+     * structure we create is known in advance we simply generate a
+     * linked list.  The first packet is a dummy packet which we flag
      * as deleted.  The very first packet must always be a KEY packet.
      */
-    pub_root = make_comment_node("#"); delete_kbnode(pub_root);
-    sec_root = make_comment_node("#"); delete_kbnode(sec_root);
+    
+    start_tree(&pub_root);
+    start_tree(&sec_root);
 
     if (!card)
       {

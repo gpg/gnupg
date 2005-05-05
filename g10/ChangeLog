@@ -1,5 +1,15 @@
 2005-05-05  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (start_tree): New function to "prime" a KBNODE list.
+	(do_generate_keypair): Use it here rather than creating and
+	deleting a comment packet.
+
+	* keygen.c (gen_elg, gen_dsa): Do not put public factors in secret
+	key as a comment.
+
+	* options.h, encode.c (encode_simple, encode_crypt), keygen.c
+	(do_create): Remove disabled comment packet code.
+
 	* keygen.c (keygen_set_std_prefs): Add SHA256 and BZip2 to default
 	preferences.
 

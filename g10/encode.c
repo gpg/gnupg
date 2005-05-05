@@ -1,6 +1,6 @@
 /* encode.c - encode data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -248,14 +248,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
-#ifdef ENABLE_COMMENT_PACKETS
-    else {
-	write_comment( out, "#created by GNUPG v" VERSION " ("
-					    PRINTABLE_OS_NAME ")");
-	if( opt.comment_string )
-	    write_comment( out, opt.comment_string );
-    }
-#endif
+
     if( s2k && !RFC1991 ) {
 	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc + seskeylen + 1 );
 	enc->version = 4;
@@ -504,14 +497,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
-#ifdef ENABLE_COMMENT_PACKETS
-    else {
-	write_comment( out, "#created by GNUPG v" VERSION " ("
-					    PRINTABLE_OS_NAME ")");
-	if( opt.comment_string )
-	    write_comment( out, opt.comment_string );
-    }
-#endif
+
     /* create a session key */
     cfx.dek = m_alloc_secure_clear (sizeof *cfx.dek);
     if( !opt.def_cipher_algo ) { /* try to get it from the prefs */

@@ -26,8 +26,6 @@
 #include "main.h"
 #include "packet.h"
 
-#undef ENABLE_COMMENT_PACKETS  /* don't create comment packets */
-
 #ifndef EXTERN_UNLESS_MAIN_MODULE
 /* Norcraft can't cope with common symbols */
 #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
