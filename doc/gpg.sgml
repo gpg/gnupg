@@ -1112,10 +1112,10 @@ This option defaults to 0 (no particular claim).
 <varlistentry>
 <term>--min-cert-level</term>
 <listitem><para>
-When building the trust database, disregard any signatures with a
-certification level below this.  Defaults to 2, which disregards level
-1 signatures.  Note that level 0 "no particular claim" signatures are
-always accepted.
+When building the trust database, treat any signatures with a
+certification level below this as invalid.  Defaults to 2, which
+disregards level 1 signatures.  Note that level 0 "no particular
+claim" signatures are always accepted.
 </para></listitem></varlistentry>
 
 
@@ -1771,7 +1771,7 @@ not to use a comment string.  --comment may be repeated multiple times
 to get multiple comment strings.  --no-comments removes all comments.
 It is a good idea to keep the length of a single comment below 60
 characters to avoid problems with mail programs wrapping such lines.
-Note, that those comment lines, like all other header lines, are not
+Note that comment lines, like all other header lines, are not
 protected by the signature.
 </para></listitem></varlistentry>
 
