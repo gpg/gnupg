@@ -165,7 +165,7 @@ void keyedit_menu( const char *username, STRLIST locusr,
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/
-int parse_expire_string(const char *string);
+u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
 void generate_keypair( const char *fname, const char *card_serialno,

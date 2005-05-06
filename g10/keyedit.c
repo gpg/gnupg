@@ -865,7 +865,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	    if(opt.ask_cert_expire)
 	      duration=ask_expire_interval(1,opt.def_cert_expire);
 	    else
-	      duration=parse_expire_string(opt.def_cert_expire)*86400L;
+	      duration=parse_expire_string(opt.def_cert_expire);
 	  }
 
 	if(duration)

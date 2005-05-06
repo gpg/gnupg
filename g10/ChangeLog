@@ -1,5 +1,11 @@
 2005-05-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h, keygen.c (parse_expire_string, ask_expire_interval),
+	sign.c (sign_file, clearsign_file, sign_symencrypt_file), g10.c
+	(main), keyedit.c (sign_uids): Use seconds rather than days
+	internally to calculate expiration.  We no longer need the
+	day-based code as we don't generate v3 keys.
+
 	* sign.c (sign_file, clearsign_file, sign_symencrypt_file): Use
 	the default sig expire value when signing in batchmode.
 

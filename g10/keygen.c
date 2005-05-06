@@ -1503,46 +1503,39 @@ ask_keysize( int algo )
 
 
 /****************
- * Parse an expire string and return it's value in days.
- * Returns -1 on error.
+ * Parse an expire string and return its value in seconds.
+ * Returns (u32)-1 on error.
+ * This isn't perfect since scan_isodatestr returns unix time, and
+ * OpenPGP actually allows a 32-bit time *plus* a 32-bit offset.
+ * Because of this, we only permit setting expirations up to 2106, but
+ * OpenPGP could theoretically allow up to 2242.  I think we'll all
+ * just cope for the next few years until we get a 64-bit time_t or
+ * similar.
  */
-int
+u32
 parse_expire_string( const char *string )
 {
     int mult;
-    u32 abs_date=0;
-    u32 curtime = make_timestamp();
-    int valid_days;
+    u32 seconds,abs_date=0,curtime = make_timestamp();
 
     if( !*string )
-	valid_days = 0;
-    else if( (abs_date = scan_isodatestr(string)) && abs_date > curtime ) {
-	/* This calculation is not perfectly okay because we
-	 * are later going to simply multiply by 86400 and don't
-	 * correct for leapseconds.  A solution would be to change
-	 * the whole implemenation to work with dates and not intervals
-	 * which are required for v3 keys.
-	 */
-	valid_days = abs_date/86400-curtime/86400+1;
-    }
-    else if( (mult=check_valid_days(string)) ) {
-	valid_days = atoi(string) * mult;
-	if( valid_days < 0 || valid_days > 39447 )
-	    valid_days = 0;
-    }
-    else {
-	valid_days = -1;
-    }
-    return valid_days;
+      seconds = 0;
+    else if( (abs_date = scan_isodatestr(string)) && abs_date > curtime )
+      seconds = abs_date - curtime;
+    else if( (mult=check_valid_days(string)) )
+      seconds = atoi(string) * 86400L * mult;
+    else
+      seconds=(u32)-1;
+
+    return seconds;
 }
 
 /* object == 0 for a key, and 1 for a sig */
 u32
 ask_expire_interval(int object,const char *def_expire)
 {
+    u32 interval;
     char *answer;
-    int valid_days=0;
-    u32 interval = 0;
 
     switch(object)
       {
@@ -1603,38 +1596,38 @@ ask_expire_interval(int object,const char *def_expire)
 	  }
 	cpr_kill_prompt();
 	trim_spaces(answer);
-	valid_days = parse_expire_string( answer );
-	if( valid_days < 0 ) {
-	  tty_printf(_("invalid value\n"));
-	  continue;
-	}
+	interval = parse_expire_string( answer );
+	if( interval == (u32)-1 )
+	  {
+	    tty_printf(_("invalid value\n"));
+	    continue;
+	  }
 
-	if( !valid_days )
+	if( !interval )
 	  {
             tty_printf((object==0)
                        ? _("Key does not expire at all\n")
                        : _("Signature does not expire at all\n"));
-	    interval = 0;
 	  }
-	else {
-	  interval = valid_days * 86400L;
-
-	  tty_printf(object==0
-		     ? _("Key expires at %s\n")
-		     : _("Signature expires at %s\n"),
-		     asctimestamp((ulong)(curtime + interval) ) );
-	  /* FIXME: This check yields warning on alhas: Write a
-	     configure check and to this check here only for 32 bit
-	     machines */
-	  if( (time_t)((ulong)(curtime+interval)) < 0 )
-	    tty_printf(_("Your system can't display dates beyond 2038.\n"
-			 "However, it will be correctly handled up to 2106.\n"));
-	}
+	else
+	  {
+	    tty_printf(object==0
+		       ? _("Key expires at %s\n")
+		       : _("Signature expires at %s\n"),
+		       asctimestamp((ulong)(curtime + interval) ) );
+	    /* FIXME: This check yields warning on alhas: Write a
+	       configure check and to this check here only for 32 bit
+	       machines */
+	    if( (time_t)((ulong)(curtime+interval)) < 0 )
+	      tty_printf(_("Your system can't display dates beyond 2038.\n"
+			   "However, it will be correctly handled up to 2106.\n"));
+	  }
 
 	if( cpr_enabled() || cpr_get_answer_is_yes("keygen.valid.okay",
 						   _("Is this correct? (y/N) ")) )
 	  break;
       }
+
     m_free(answer);
     return interval;
 }
@@ -2206,21 +2199,25 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 
     /* make KEYEXPIRE from Expire-Date */
     r = get_parameter( para, pEXPIREDATE );
-    if( r && *r->u.value ) {
-	i = parse_expire_string( r->u.value );
-	if( i < 0 ) {
+    if( r && *r->u.value )
+      {
+	u32 seconds;
+
+	seconds = parse_expire_string( r->u.value );
+	if( seconds == (u32)-1 )
+	  {
 	    log_error("%s:%d: invalid expire date\n", fname, r->lnr );
 	    return -1;
-	}
-	r->u.expire = i * 86400L;
+	  }
+	r->u.expire = seconds;
 	r->key = pKEYEXPIRE;  /* change hat entry */
 	/* also set it for the subkey */
 	r = m_alloc_clear( sizeof *r + 20 );
 	r->key = pSUBKEYEXPIRE;
-	r->u.expire = i * 86400L;
+	r->u.expire = seconds;
 	r->next = para;
 	para = r;
-    }
+      }
 
     if( !!outctrl->pub.newfname ^ !!outctrl->sec.newfname ) {
 	log_error("%s:%d: only one ring name is set\n", fname, outctrl->lnr );

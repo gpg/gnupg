@@ -749,7 +749,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	if(opt.ask_sig_expire && !opt.batch)
 	  duration=ask_expire_interval(1,opt.def_sig_expire);
 	else
-	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
+	  duration=parse_expire_string(opt.def_sig_expire);
       }
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
@@ -1019,7 +1019,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	if(opt.ask_sig_expire && !opt.batch)
 	  duration=ask_expire_interval(1,opt.def_sig_expire);
 	else
-	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
+	  duration=parse_expire_string(opt.def_sig_expire);
       }
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
@@ -1178,7 +1178,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 	if(opt.ask_sig_expire && !opt.batch)
 	  duration=ask_expire_interval(1,opt.def_sig_expire);
 	else
-	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
+	  duration=parse_expire_string(opt.def_sig_expire);
       }
 
     rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);
