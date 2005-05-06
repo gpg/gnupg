@@ -744,9 +744,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
        && (rc=setup_symkey(&efx.symkey_s2k,&efx.symkey_dek)))
       goto leave;
 
-    if(!opt.force_v3_sigs && !opt.batch && !RFC1991)
+    if(!opt.force_v3_sigs && !RFC1991)
       {
-	if(opt.ask_sig_expire)
+	if(opt.ask_sig_expire && !opt.batch)
 	  duration=ask_expire_interval(1,opt.def_sig_expire);
 	else
 	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
@@ -1014,9 +1014,9 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
 
-    if(!opt.force_v3_sigs && !opt.batch && !RFC1991)
+    if(!opt.force_v3_sigs && !RFC1991)
       {
-	if(opt.ask_sig_expire)
+	if(opt.ask_sig_expire && !opt.batch)
 	  duration=ask_expire_interval(1,opt.def_sig_expire);
 	else
 	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
@@ -1173,9 +1173,9 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     memset( &cfx, 0, sizeof cfx);
     init_packet( &pkt );
 
-    if(!opt.force_v3_sigs && !opt.batch && !RFC1991)
+    if(!opt.force_v3_sigs && !RFC1991)
       {
-	if(opt.ask_sig_expire)
+	if(opt.ask_sig_expire && !opt.batch)
 	  duration=ask_expire_interval(1,opt.def_sig_expire);
 	else
 	  duration=parse_expire_string(opt.def_sig_expire)*86400L;
