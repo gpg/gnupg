@@ -986,7 +986,8 @@ do_close_reader (ccid_driver_t handle)
     }
   if (handle->idev)
     {
-      usb_reset (handle->idev);
+      if (getenv ("GNUPG_CCID_DRIVER_RESET_BEFORE_CLOSE"))
+        usb_reset (handle->idev);
       usb_release_interface (handle->idev, handle->ifc_no);
       usb_close (handle->idev);
       handle->idev = NULL;

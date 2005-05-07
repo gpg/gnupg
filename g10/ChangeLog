@@ -1,3 +1,9 @@
+2005-05-07  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (do_close_reader): Don't do a reset before close.
+	Some folks reported that it makes the SCR335 hang less often.
+	Look at the source on how to re-enable it.
+
 2005-05-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, keygen.c (parse_expire_string, ask_expire_interval),
