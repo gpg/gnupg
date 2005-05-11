@@ -1,3 +1,20 @@
+2005-05-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (write_selfsigs): Rename from write_selfsig.  Write the
+	same selfsig into both the pk and sk, so that someone importing
+	their sk (which will get an autoconvert to the pk) won't end up
+	with two selfsigs.
+	(do_generate_keypair): Call it from here.
+
+	* parse-packet.c (can_handle_critical_notation): New.  Check for
+	particular notation tags that we will accept when critical.
+	Currently, that's only preferred-email-encoding@pgp.com, since we
+	know how to handle it (pass it through to a mail program).
+	(can_handle_critical): Call it from here.
+	(parse_one_sig_subpkt): Sanity check that notations are
+	well-formed in that the internal lengths add up to the size of the
+	subpacket.
+
 2005-05-07  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (do_close_reader): Don't do a reset before close.

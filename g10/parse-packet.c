@@ -1,6 +1,6 @@
 /* parse-packet.c  - read packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1016,7 +1016,10 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	break;
       return 0;
     case SIGSUBPKT_NOTATION:
-      if( n < 8 ) /* minimum length needed */
+      /* minimum length needed, and the subpacket must be well-formed
+	 where the name length and value length all fit inside the
+	 packet. */
+      if(n<8 || 8+((buffer[4]<<8)|buffer[5])+((buffer[6]<<8)|buffer[7]) != n)
 	break;
       return 0;
     case SIGSUBPKT_PRIMARY_UID:
@@ -1032,6 +1035,15 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
   return -2;
 }
 
+/* Not many critical notations we understand yet... */
+static int
+can_handle_critical_notation(const byte *name,size_t len)
+{
+  if(len==32 && memcmp(name,"preferred-email-encoding@pgp.com",32)==0)
+    return 1;
+
+  return 0;
+}
 
 static int
 can_handle_critical( const byte *buffer, size_t n, int type )
@@ -1039,10 +1051,10 @@ can_handle_critical( const byte *buffer, size_t n, int type )
   switch( type )
     {
     case SIGSUBPKT_NOTATION:
-      if( n >= 8 && (*buffer & 0x80) )
-	return 1; /* human readable is handled */
-      return 0;
-
+      if(n>=8)
+	return can_handle_critical_notation(buffer+8,(buffer[4]<<8)|buffer[5]);
+      else
+	return 0;
     case SIGSUBPKT_SIGNATURE:
     case SIGSUBPKT_SIG_CREATED:
     case SIGSUBPKT_SIG_EXPIRE:

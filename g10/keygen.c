@@ -882,8 +882,8 @@ write_direct_sig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
 }
 
 static int
-write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
-               unsigned int use )
+write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
+		unsigned int use )
 {
     PACKET *pkt;
     PKT_signature *sig;
@@ -896,7 +896,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
 	log_info(_("writing self signature\n"));
 
     /* get the uid packet from the list */
-    node = find_kbnode( root, PKT_USER_ID );
+    node = find_kbnode( pub_root, PKT_USER_ID );
     if( !node )
 	BUG(); /* no user id packet in tree */
     uid = node->pkt->pkt.user_id;
@@ -921,7 +921,12 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
     pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = sig;
-    add_kbnode( root, new_kbnode( pkt ) );
+    add_kbnode( sec_root, new_kbnode( pkt ) );
+
+    pkt = m_alloc_clear( sizeof *pkt );
+    pkt->pkttype = PKT_SIGNATURE;
+    pkt->pkt.signature = copy_signature(NULL,sig);
+    add_kbnode( pub_root, new_kbnode( pkt ) );
     return rc;
 }
 
@@ -2848,17 +2853,16 @@ do_generate_keypair( struct para_data_s *para,
 	  write_direct_sig(sec_root,pub_root,pri_sk,revkey);
       }
 
-    if( !rc && (s=get_parameter_value(para, pUSERID)) ) {
+    if( !rc && (s=get_parameter_value(para, pUSERID)) )
+      {
 	write_uid(pub_root, s );
 	if( !rc )
-	    write_uid(sec_root, s );
+	  write_uid(sec_root, s );
+
 	if( !rc )
-	    rc = write_selfsig(pub_root, pub_root, pri_sk,
-                               get_parameter_uint (para, pKEYUSAGE));
-	if( !rc )
-	    rc = write_selfsig(sec_root, pub_root, pri_sk,
-                               get_parameter_uint (para, pKEYUSAGE));
-    }
+	  rc = write_selfsigs(sec_root, pub_root, pri_sk,
+			      get_parameter_uint (para, pKEYUSAGE));
+      }
 
     /* Write the auth key to the card before the encryption key.  This
        is a partial workaround for a PGP bug (as of this writing, all
