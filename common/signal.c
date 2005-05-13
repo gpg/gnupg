@@ -76,7 +76,7 @@ get_signal_name( int signum )
 {
   /* Note that we can't use strsignal(), because it is not
      reentrant. */
-#if defined(SYS_SIGLIST_DECLARED) && defined(NSIG)
+#if defined(HAVE_DECL_SYS_SIGLIST) && defined(NSIG)
   return (signum >= 0 && signum < NSIG) ? sys_siglist[signum] : "?";
 #else
   return NULL;
@@ -101,7 +101,7 @@ got_fatal_signal (int sig)
   s = log_get_prefix (NULL);
   if (s)
     write(2, s, strlen (s));
-  write (2, ": ", 2 );
+  write (2, ": signal ", 9 );
   s = get_signal_name(sig);
   if (s)
     write (2, s, strlen(s) );
@@ -109,7 +109,6 @@ got_fatal_signal (int sig)
     {
       /* We are in a signal handler so we can't use any kind of printf
          even not sprintf.  USe a straightforward algorithm. */
-      write (2, "signal ", 7 );
       if (sig < 0 || sig >= 100000)
         write (2, "?", 1);
       else 

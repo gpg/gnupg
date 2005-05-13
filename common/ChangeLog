@@ -2,7 +2,8 @@
 
 	* signal.c (got_fatal_signal): Print the signal number if we can't
 	get a name for it.
-	(get_signal_name): Return NULL if no name is available.
+	(get_signal_name): Return NULL if no name is available. Fixed
+	conditional for sys_siglist to the correct one.
 
 2005-04-17  Werner Koch  <wk@g10code.com>
 
