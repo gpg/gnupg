@@ -1,3 +1,9 @@
+2005-05-13  Werner Koch  <wk@g10code.com>
+
+	* signal.c (got_fatal_signal): Print the signal number if we can't
+	get a name for it.
+	(get_signal_name): Return NULL if no name is available.
+
 2005-04-17  Werner Koch  <wk@g10code.com>
 
 	* sexputil.c (cmp_simple_canon_sexp): New.

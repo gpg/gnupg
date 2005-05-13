@@ -1,5 +1,6 @@
 /* signal.c - signal handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -73,10 +74,12 @@ init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
 static const char *
 get_signal_name( int signum )
 {
+  /* Note that we can't use strsignal(), because it is not
+     reentrant. */
 #if defined(SYS_SIGLIST_DECLARED) && defined(NSIG)
   return (signum >= 0 && signum < NSIG) ? sys_siglist[signum] : "?";
 #else
-  return "some signal";
+  return NULL;
 #endif
 }
 #endif /*!HAVE_DOSISH_SYSTEM*/
@@ -93,19 +96,43 @@ got_fatal_signal (int sig)
 
   if (cleanup_fnc)
     cleanup_fnc ();
-  /* better don't translate these messages */
+  /* Better don't translate these messages. */
   write (2, "\n", 1 );
   s = log_get_prefix (NULL);
   if (s)
     write(2, s, strlen (s));
   write (2, ": ", 2 );
   s = get_signal_name(sig);
-  write (2, s, strlen(s) );
+  if (s)
+    write (2, s, strlen(s) );
+  else
+    {
+      /* We are in a signal handler so we can't use any kind of printf
+         even not sprintf.  USe a straightforward algorithm. */
+      write (2, "signal ", 7 );
+      if (sig < 0 || sig >= 100000)
+        write (2, "?", 1);
+      else 
+        {
+          int i, any=0;
+
+          for (i=10000; i; i /= 10)
+            {
+              if (sig >= i || ((any || i==1) && !(sig/i)))
+                {
+                  write (2, "0123456789"+(sig/i), 1);
+                  if ((sig/i))
+                    any = 1;
+                  sig %= i;
+                }
+            }
+        }
+    }
   write (2, " caught ... exiting\n", 20);
   
-  /* reset action to default action and raise signal again */
+  /* Reset action to default action and raise signal again */
   init_one_signal (sig, SIG_DFL, 0);
-  /* fixme: remove_lockfiles ();*/
+  /* Fixme: remove_lockfiles ();*/
 #ifdef __riscos__
   close_fds ();
 #endif /* __riscos__ */
