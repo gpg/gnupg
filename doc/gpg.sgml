@@ -1,6 +1,6 @@
 <!-- gpg.sgml - the man page for GnuPG
-    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
-                  2004, 2005 Free Software Foundation, Inc.
+    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+                  2005 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -1750,18 +1750,6 @@ delivered to the file descriptor.
 
 
 <varlistentry>
-<term>--sk-comments</term>
-<term>--no-sk-comments</term>
-<listitem><para>
-Include secret key comment packets when exporting secret keys.  This
-is a GnuPG extension to the OpenPGP standard, and is off by default.
-Please note that this has nothing to do with the comments in clear
-text signatures or armor headers.  --no-sk-comments disables this
-option.
-</para></listitem></varlistentry>
-
-
-<varlistentry>
 <term>--comment &ParmString;</term>
 <term>--no-comments</term>
 <listitem><para>
@@ -1790,17 +1778,20 @@ Force inclusion of the version string in ASCII armored output.
 <term>--cert-notation &ParmNameValue;</term>
 <term>-N, --set-notation &ParmNameValue;</term>
 <listitem><para>
+
 Put the name value pair into the signature as notation data.
 &ParmName; must consist only of printable characters or spaces, and
-must contain a '@' character.  This is to help prevent pollution of
-the IETF reserved notation namespace.  The --expert flag overrides the
-'@' check.  &ParmValue; may be any printable string; it will be
-encoded in UTF8, so you should check that your --display-charset is
-set correctly.  If you prefix &ParmName; with an exclamation mark (!),
-the notation data will be flagged as critical (rfc2440:5.2.3.15).
---sig-notation sets a notation for data signatures.  --cert-notation
-sets a notation for key signatures (certifications).  --set-notation
-sets both.
+must contain a '@' character in the form keyname@domain.example.com
+(substituting the appropriate keyname and domain name, of course).
+This is to help prevent pollution of the IETF reserved notation
+namespace.  The --expert flag overrides the '@' check.  &ParmValue;
+may be any printable string; it will be encoded in UTF8, so you should
+check that your --display-charset is set correctly.  If you prefix
+&ParmName; with an exclamation mark (!), the notation data will be
+flagged as critical (rfc2440:5.2.3.15).  --sig-notation sets a
+notation for data signatures.  --cert-notation sets a notation for key
+signatures (certifications).  --set-notation sets both.
+
 </para>
 
 <para>
@@ -2522,8 +2513,19 @@ handing out the secret key.
 <term>--no-ask-sig-expire</term>
 <listitem><para>
 When making a data signature, prompt for an expiration time.  If this
-option is not specified, the expiration time is "never".
---no-ask-sig-expire disables this option.
+option is not specified, the expiration time set via
+--default-sig-expire is used.  --no-ask-sig-expire disables this
+option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--default-sig-expire</term>
+<listitem><para>
+The default expiration time to use for signature expiration.  Valid
+values are "0" for no expiration, a number followed by the letter d
+(for days), w (for weeks), m (for months), or y (for years) (for
+example "2m" for two months, or "5y" for five years), or an absolute
+date in the form YYYY-MM-DD.  Defaults to "0".
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2531,8 +2533,19 @@ option is not specified, the expiration time is "never".
 <term>--no-ask-cert-expire</term>
 <listitem><para>
 When making a key signature, prompt for an expiration time.  If this
-option is not specified, the expiration time is "never".
---no-ask-cert-expire disables this option.
+option is not specified, the expiration time set via
+--default-cert-expire is used.  --no-ask-cert-expire disables this
+option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--default-cert-expire</term>
+<listitem><para>
+The default expiration time to use for key signature expiration.
+Valid values are "0" for no expiration, a number followed by the
+letter d (for days), w (for weeks), m (for months), or y (for years)
+(for example "2m" for two months, or "5y" for five years), or an
+absolute date in the form YYYY-MM-DD.  Defaults to "0".
 </para></listitem></varlistentry>
 
 <varlistentry>

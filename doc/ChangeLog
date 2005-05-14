@@ -1,3 +1,10 @@
+2005-05-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --default-sig-expire and
+	--default-cert-expire, remove --sk-comments and --no-sk-comments,
+	and clarify the form of a non-IETF notation for --sig-notation and
+	--cert-notation.
+
 2005-05-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Clarify --min-cert-level a bit.
