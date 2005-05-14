@@ -1,6 +1,6 @@
 /* build-packet.c - assemble packets and write them
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -34,8 +34,6 @@
 #include "memory.h"
 #include "options.h"
 
-
-static int do_comment( IOBUF out, int ctb, PKT_comment *rem );
 static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
 static int do_public_key( IOBUF out, int ctb, PKT_public_key *pk );
 static int do_secret_key( IOBUF out, int ctb, PKT_secret_key *pk );
@@ -74,30 +72,38 @@ build_packet( IOBUF out, PACKET *pkt )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
     assert( pkt->pkt.generic );
 
-    switch( (pkttype = pkt->pkttype) ) {
-      case PKT_OLD_COMMENT: pkttype = pkt->pkttype = PKT_COMMENT; break;
+    switch( (pkttype = pkt->pkttype) )
+      {
       case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
       case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
       case PKT_USER_ID:
-	    if( pkt->pkt.user_id->attrib_data )
-		pkttype = PKT_ATTRIBUTE;
-	    break;
+	if( pkt->pkt.user_id->attrib_data )
+	  pkttype = PKT_ATTRIBUTE;
+	break;
       default: break;
-    }
+      }
 
     if( new_ctb || pkttype > 15 ) /* new format */
 	ctb = 0xc0 | (pkttype & 0x3f);
     else
 	ctb = 0x80 | ((pkttype & 15)<<2);
-    switch( pkttype ) {
+    switch( pkttype )
+      {
       case PKT_ATTRIBUTE:
       case PKT_USER_ID:
 	rc = do_user_id( out, ctb, pkt->pkt.user_id );
 	break;
+      case PKT_OLD_COMMENT:
       case PKT_COMMENT:
-	rc = do_comment( out, ctb, pkt->pkt.comment );
+	/*
+	  Ignore these.  Theoretically, this will never be called as
+	  we have no way to output comment packets any longer, but
+	  just in case there is some code path that would end up
+	  outputting a comment that was written before comments were
+	  dropped (in the public key?) this is a no-op.
+	*/
 	break;
       case PKT_PUBLIC_SUBKEY:
       case PKT_PUBLIC_KEY:
@@ -137,7 +143,7 @@ build_packet( IOBUF out, PACKET *pkt )
       default:
 	log_bug("invalid packet type in build_packet()\n");
 	break;
-    }
+      }
 
     return rc;
 }
@@ -188,19 +194,6 @@ write_fake_data( IOBUF out, MPI a )
 	p = mpi_get_opaque( a, &i );
 	iobuf_write( out, p, i );
     }
-}
-
-
-static int
-do_comment( IOBUF out, int ctb, PKT_comment *rem )
-{
-    if( opt.sk_comments )
-      {
-	write_header2(out, ctb, rem->len, 2);
-	if( iobuf_write( out, rem->data, rem->len ) )
-	  return G10ERR_WRITE_FILE;
-      }
-    return 0;
 }
 
 static int

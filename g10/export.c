@@ -240,10 +240,11 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		  continue;
 	      }
 
-	    /* don't export any comment packets but those in the
-	     * secret keyring */
-	    if( !secret && node->pkt->pkttype == PKT_COMMENT )
-		continue;
+	    /* We used to use comment packets, but not any longer.  In
+	       case we still have comments on a key, strip them here
+	       before we call build_packet(). */
+	    if( node->pkt->pkttype == PKT_COMMENT )
+	      continue;
 
             /* make sure that ring_trust packets never get exported */
             if (node->pkt->pkttype == PKT_RING_TRUST)
@@ -335,7 +336,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		       || node->pkt->pkt.signature->keyid[1]!=keyid[1]))
 		  continue;
 
-		/* do not export packets which are marked as not exportable */
+		/* do not export packets which are marked as not
+		   exportable */
 		if(!(options&EXPORT_LOCAL_SIGS)
 		   && !node->pkt->pkt.signature->flags.exportable)
 		  continue; /* not exportable */

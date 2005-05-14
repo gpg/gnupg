@@ -80,7 +80,6 @@ struct
   int def_cert_level;
   int min_cert_level;
   int ask_cert_level;
-  int sk_comments;
   int no_version;
   int marginals_needed;
   int completes_needed;

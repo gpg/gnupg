@@ -187,8 +187,6 @@ enum cmd_and_opt_values
     oStatusFile,
     oAttributeFD,
     oAttributeFile,
-    oSKComments,
-    oNoSKComments,
     oEmitVersion,
     oNoEmitVersion,
     oCompletesNeeded,
@@ -347,6 +345,7 @@ enum cmd_and_opt_values
     oEnableProgressFilter,
     oMultifile,
     oKeyidFormat,
+    oNoop,
 
     oReaderPort,
     octapiDriver,
@@ -496,8 +495,8 @@ static ARGPARSE_OPTS opts[] = {
     { oStatusFile, "status-file" ,2, "@"},
     { oAttributeFD, "attribute-fd" ,1, "@" },
     { oAttributeFile, "attribute-file" ,2, "@" },
-    { oNoSKComments, "no-sk-comments", 0,   "@"},
-    { oSKComments, "sk-comments", 0,   "@"},
+    { oNoop, "sk-comments", 0,   "@"},
+    { oNoop, "no-sk-comments", 0,   "@"},
     { oCompletesNeeded, "completes-needed", 1, "@"},
     { oMarginalsNeeded, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
@@ -2030,8 +2029,6 @@ main( int argc, char **argv )
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
 	  case oQuickRandom: quick_random_gen(1); break;
-	  case oSKComments: opt.sk_comments=1; break;
-	  case oNoSKComments: opt.sk_comments=0; break;
 	  case oEmitVersion: opt.no_version=0; break;
 	  case oNoEmitVersion: opt.no_version=1; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
@@ -2544,6 +2541,7 @@ main( int argc, char **argv )
 	    else
 	      log_error("unknown keyid-format `%s'\n",pargs.r.ret_str);
 	    break;
+	  case oNoop: break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	  }
@@ -2705,7 +2703,6 @@ main( int argc, char **argv )
 	else
 	  {
 	    opt.force_v4_certs = 0;
-	    opt.sk_comments = 0;
 	    opt.escape_from = 1;
 	    opt.force_v3_sigs = 1;
 	    opt.pgp2_workarounds = 1;
@@ -2720,14 +2717,12 @@ main( int argc, char **argv )
       }
     else if(PGP6)
       {
-	opt.sk_comments=0;
 	opt.escape_from=1;
 	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;
       }
     else if(PGP7)
       {
-	opt.sk_comments=0;
 	opt.escape_from=1;
 	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;

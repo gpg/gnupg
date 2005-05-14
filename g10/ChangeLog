@@ -1,3 +1,14 @@
+2005-05-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (do_comment): Removed.
+	(build_packet): Ignore comment packets.
+
+	* export.c (do_export_stream): Don't export comment packets any
+	longer.
+
+	* options.h, g10.c (main): Remove --sk-comments and
+	--no-sk-comments options, and replace with no-op.
+
 2005-05-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (write_selfsigs): Rename from write_selfsig.  Write the
