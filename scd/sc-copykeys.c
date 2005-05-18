@@ -483,7 +483,7 @@ query_card (APP app)
 
 
 /* Callback function to ask for a PIN. */
-static int 
+static gpg_error_t
 pincb (void *arg, const char *prompt, char **pinvalue)
 {
   char *pin = xstrdup ("12345678");

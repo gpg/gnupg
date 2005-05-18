@@ -99,10 +99,19 @@ struct {
 #define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
 
 struct server_local_s;
+struct scd_local_s;
 
+/* Collection of data per session (aka connection). */
 struct server_control_s {
+
+  /* Private data of the server (command.c). */
   struct server_local_s *server_local;
+
+  /* Private data of the SCdaemon (call-scd.c). */
+  struct scd_local_s *scd_local;
+
   int   connection_fd; /* -1 or an identifier for the current connection. */
+
   char *display;
   char *ttyname;
   char *ttytype;

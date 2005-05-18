@@ -541,10 +541,6 @@ fi
 AC_SUBST(PTH_CFLAGS)
 AC_SUBST(PTH_LIBS)
 
-AC_ARG_ENABLE(threads,
-    AC_HELP_STRING([--disable-threads],[allow building without Pth support])
-             )
-
 
 dnl Must check for network library requirements before doing link tests
 dnl for ldap, for example. If ldap libs are static (or dynamic and without
@@ -1106,17 +1102,14 @@ fi
 if test "$missing_pth" = "yes"; then
     AC_MSG_NOTICE([[
 ***
-*** It is strongly suggested to build with support for the
+*** It is now required to build with support for the
 *** GNU Portable Threads Library (Pth). Please install this
-*** library first or use --disable-threads to allow building
-*** anyway.  The library is for example available at
+*** library first.  The library is for example available at
 ***   ftp://ftp.gnu.org/gnu/pth/
 *** On a Debian GNU/Linux system you can install it using 
 ***   apt-get install libpth-dev
 ***]])
-  if test "$enable_threads" != "no"; then
-     die=yes
-  fi
+   die=yes
 fi
 
 if test "$die" = "yes"; then

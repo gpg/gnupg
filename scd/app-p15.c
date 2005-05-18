@@ -2366,7 +2366,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
 
 
 /* This is the handler for the LEARN command.  */
-static int  /* FIXME: change this to gpg_error_t */
+static gpg_error_t 
 do_learn_status (app_t app, ctrl_t ctrl)
 {
   gpg_error_t err;
@@ -2513,7 +2513,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
    buffer to be stored at R_CERT and its length at R_CERTLEN.  A error
    code will be returned on failure and R_CERT and R_CERTLEN will be
    set to NULL/0. */
-static int /* FIXME: change this to gpg_error_t */
+static gpg_error_t 
 do_readcert (app_t app, const char *certid,
              unsigned char **r_cert, size_t *r_certlen)
 {
@@ -2629,9 +2629,9 @@ micardo_mse (app_t app, unsigned short fid)
    If a PIN is required, the PINCB will be used to ask for the PIN;
    that callback should return the PIN in an allocated buffer and
    store that as the 3rd argument.  */
-static int 
+static gpg_error_t 
 do_sign (app_t app, const char *keyidstr, int hashalgo,
-         int (pincb)(void*, const char *, char **),
+         gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )

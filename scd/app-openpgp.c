@@ -547,7 +547,7 @@ parse_login_data (app_t app)
 }
 
 /* Note, that FPR must be at least 20 bytes. */
-static int 
+static gpg_error_t 
 store_fpr (int slot, int keynumber, u32 timestamp,
            const unsigned char *m, size_t mlen,
            const unsigned char *e, size_t elen, 
@@ -671,7 +671,7 @@ send_key_data (ctrl_t ctrl, const char *name,
 
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
-static int 
+static gpg_error_t 
 do_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   static struct {
@@ -1168,7 +1168,7 @@ send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
 
 
 /* Handle the LEARN command for OpenPGP.  */
-static int
+static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl)
 {
   do_getattr (app, ctrl, "EXTCAP");
@@ -1204,7 +1204,7 @@ do_learn_status (app_t app, ctrl_t ctrl)
    its length (for assertions) at PKLEN; the caller must release that
    buffer. On error PK and PKLEN are not changed and an error code is
    returned.  */
-static int
+static gpg_error_t
 do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
@@ -1236,9 +1236,9 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 
 /* Verify CHV2 if required.  Depending on the configuration of the
    card CHV1 will also be verified. */
-static int
+static gpg_error_t
 verify_chv2 (app_t app,
-             int (*pincb)(void*, const char *, char **),
+             gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
   int rc = 0;
@@ -1292,9 +1292,9 @@ verify_chv2 (app_t app,
 }
 
 /* Verify CHV3 if required. */
-static int
+static gpg_error_t
 verify_chv3 (app_t app,
-             int (*pincb)(void*, const char *, char **),
+             gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
   int rc = 0;
@@ -1366,9 +1366,9 @@ verify_chv3 (app_t app,
 
 /* Handle the SETATTR operation. All arguments are already basically
    checked. */
-static int 
+static gpg_error_t 
 do_setattr (app_t app, const char *name,
-            int (*pincb)(void*, const char *, char **),
+            gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg,
             const unsigned char *value, size_t valuelen)
 {
@@ -1434,9 +1434,9 @@ do_setattr (app_t app, const char *name,
 
 
 /* Handle the PASSWD command. */
-static int 
+static gpg_error_t 
 do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
-               int (*pincb)(void*, const char *, char **),
+               gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
 {
   int rc = 0;
@@ -1525,9 +1525,9 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
 
 
 /* Handle the GENKEY command. */
-static int 
+static gpg_error_t 
 do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
-          int (*pincb)(void*, const char *, char **),
+          gpg_error_t (*pincb)(void*, const char *, char **),
           void *pincb_arg)
 {
   int rc;
@@ -1691,7 +1691,7 @@ get_sig_counter (app_t app)
   return ul;
 }
 
-static int
+static gpg_error_t
 compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
 {
   const unsigned char *fpr;
@@ -1731,7 +1731,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
      the key on the card has been replaced but the shadow information
      known to gpg was not updated.  If there is no fingerprint we
      assume that this is okay. */
-static int
+static gpg_error_t
 check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
 {
   unsigned char tmp[20];
@@ -1762,9 +1762,9 @@ check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
    GPG_ERR_WRONG_CARD to indicate that the card currently present does
    not match the one required for the requested action (e.g. the
    serial number does not match). */
-static int 
+static gpg_error_t 
 do_sign (app_t app, const char *keyidstr, int hashalgo,
-         int (*pincb)(void*, const char *, char **),
+         gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
@@ -1911,9 +1911,9 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
    GPG_ERR_WRONG_CARD to indicate that the card currently present does
    not match the one required for the requested action (e.g. the
    serial number does not match). */
-static int 
+static gpg_error_t 
 do_auth (app_t app, const char *keyidstr,
-         int (*pincb)(void*, const char *, char **),
+         gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
@@ -1974,9 +1974,9 @@ do_auth (app_t app, const char *keyidstr,
 }
 
 
-static int 
+static gpg_error_t 
 do_decipher (app_t app, const char *keyidstr,
-             int (pincb)(void*, const char *, char **),
+             gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
              unsigned char **outdata, size_t *outdatalen )
@@ -2040,9 +2040,9 @@ do_decipher (app_t app, const char *keyidstr,
    There is a special mode if the keyidstr is "<serialno>[CHV3]" with
    the "[CHV3]" being a literal string:  The Admin Pin is checked if
    and only if the retry counter is still at 3. */
-static int 
+static gpg_error_t 
 do_check_pin (app_t app, const char *keyidstr,
-              int (pincb)(void*, const char *, char **),
+              gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
   unsigned char tmp_sn[20]; 
@@ -2124,7 +2124,7 @@ do_check_pin (app_t app, const char *keyidstr,
 
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
-int
+gpg_error_t
 app_select_openpgp (app_t app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
@@ -2237,7 +2237,7 @@ leave:
    LEARN command returns. All parameters return allocated strings or
    buffers or NULL if the data object is not available.  All returned
    values are sanitized. */
-int
+gpg_error_t
 app_openpgp_cardinfo (app_t app,
                       char **serialno,
                       char **disp_name,
@@ -2327,13 +2327,13 @@ app_openpgp_cardinfo (app_t app,
    create the fingerprint. M, MLEN is the RSA modulus and E, ELEN the
    RSA public exponent. This function silently overwrites an existing
    key.*/
-int 
+gpg_error_t
 app_openpgp_storekey (app_t app, int keyno,
                       unsigned char *template, size_t template_len,
                       time_t created_at,
                       const unsigned char *m, size_t mlen,
                       const unsigned char *e, size_t elen,
-                      int (*pincb)(void*, const char *, char **),
+                      gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg)
 {
   int rc;
@@ -2377,7 +2377,7 @@ app_openpgp_storekey (app_t app, int keyno,
 
 /* Utility function for external tools: Read the public RSA key at
    KEYNO and return modulus and exponent in (M,MLEN) and (E,ELEN). */
-int 
+gpg_error_t 
 app_openpgp_readkey (app_t app, int keyno, unsigned char **m, size_t *mlen,
                      unsigned char **e, size_t *elen)
 {

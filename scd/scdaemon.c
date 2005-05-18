@@ -1,5 +1,5 @@
 /* scdaemon.c  -  The GnuPG Smartcard Daemon
- *	Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,9 +35,7 @@
 #endif /*HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <signal.h>
-#ifdef USE_GNU_PTH
-# include <pth.h>
-#endif
+#include <pth.h>
 
 #define JNLIB_NEED_LOG_LOGV
 #include "scdaemon.h"
@@ -76,6 +74,7 @@ enum cmd_and_opt_values
   oNoGrab,
   oLogFile,
   oServer,
+  oMultiServer,
   oDaemon,
   oBatch,
   oReaderPort,
@@ -110,6 +109,8 @@ static ARGPARSE_OPTS opts[] = {
   { oDebugWait,"debug-wait",1, "@"},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
+  { oMultiServer, "multi-server", 0,
+                       N_("allow additional connections in server mode")},
   { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
   { octapiDriver, "ctapi-driver", 2, N_("|NAME|use NAME as ct-API driver")},
   { opcscDriver, "pcsc-driver", 2, N_("|NAME|use NAME as PC/SC driver")},
@@ -140,8 +141,6 @@ static ARGPARSE_OPTS opts[] = {
 #endif
 
 
-static volatile int caught_fatal_sig = 0;
-
 /* Flag to indicate that a shutdown was requested. */
 static int shutdown_pending;
 
@@ -149,16 +148,21 @@ static int shutdown_pending;
 static int maybe_setuid = 1;
 
 /* Name of the communication socket */
-static char socket_name[128];
+static char *socket_name;
 
+
+static char *create_socket_name (int use_standard_socket,
+                                 char *standard_name, char *template);
+static int create_server_socket (int is_standard_name, const char *name);
 
-#ifdef USE_GNU_PTH
+static void *start_connection_thread (void *arg);
+static void handle_connections (int listen_fd);
+
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
 
-static void *ticker_thread (void *arg);
-#endif /*USE_GNU_PTH*/
 
+
 static const char *
 my_strusage (int level)
 {
@@ -265,7 +269,7 @@ set_debug (const char *level)
 static void
 cleanup (void)
 {
-  if (*socket_name)
+  if (socket_name && *socket_name)
     {
       char *p;
 
@@ -282,27 +286,6 @@ cleanup (void)
 }
 
 
-static RETSIGTYPE
-cleanup_sh (int sig)
-{
-  if (caught_fatal_sig)
-    raise (sig);
-  caught_fatal_sig = 1;
-
-  /* gcry_control( GCRYCTL_TERM_SECMEM );*/
-  cleanup ();
-
-#ifndef HAVE_DOSISH_SYSTEM
-  {	/* reset action to default action and raise signal again */
-    struct sigaction nact;
-    nact.sa_handler = SIG_DFL;
-    sigemptyset( &nact.sa_mask );
-    nact.sa_flags = 0;
-    sigaction( sig, &nact, NULL);
-  }
-#endif
-  raise( sig );
-}
 
 int
 main (int argc, char **argv )
@@ -322,6 +305,7 @@ main (int argc, char **argv )
   int greeting = 0;
   int nogreeting = 0;
   int pipe_server = 0;
+  int multi_server = 0;
   int is_daemon = 0;
   int nodetach = 0;
   int csh_style = 0;
@@ -343,14 +327,12 @@ main (int argc, char **argv )
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
-#ifdef USE_GNU_PTH
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
-#endif /*USE_GNU_PTH*/
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
@@ -481,6 +463,7 @@ main (int argc, char **argv )
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;
         case oServer: pipe_server = 1; break;
+        case oMultiServer: multi_server = 1; break;
         case oDaemon: is_daemon = 1; break;
 
         case oReaderPort: opt.reader_port = pargs.r.ret_str; break;
@@ -598,24 +581,49 @@ main (int argc, char **argv )
       log_set_prefix (NULL, 1|2|4);
     }
 
-
   if (pipe_server)
-    { /* This is the simple pipe based server */
-#ifdef USE_GNU_PTH
+    { 
+      /* This is the simple pipe based server */
       pth_attr_t tattr;
- 
+      int fd = -1;
+
+      {
+        struct sigaction sa;
+        
+        sa.sa_handler = SIG_IGN;
+        sigemptyset (&sa.sa_mask);
+        sa.sa_flags = 0;
+        sigaction (SIGPIPE, &sa, NULL);
+      }
+
+      /* In multi server mode we need to listen on an additional
+         socket.  Create that socket now before starting the handler
+         for the pipe connection.  This allows that handler to send
+         back the name of that socket. */
+      if (multi_server)
+        {
+          socket_name = create_socket_name (0,
+                                            "S.scdaemon",
+                                            "/tmp/gpg-XXXXXX/S.scdaemon");
+          
+          fd = create_server_socket (0, socket_name);
+        }
+
       tattr = pth_attr_new();
       pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
       pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 512*1024);
-      pth_attr_set (tattr, PTH_ATTR_NAME, "ticker");
+      pth_attr_set (tattr, PTH_ATTR_NAME, "pipe-connection");
 
-      if (!pth_spawn (tattr, ticker_thread, NULL))
+      if (!pth_spawn (tattr, start_connection_thread, (void*)(-1)))
         {
-          log_error ("error spawning ticker thread: %s\n", strerror (errno));
+          log_error ("error spawning pipe connection handler: %s\n",
+                     strerror (errno) );
           scd_exit (2);
         }
-#endif /*USE_GNU_PTH*/
-      scd_command_handler (-1);
+
+      handle_connections (fd);
+      if (fd != -1)
+        close (fd);
     }
   else if (!is_daemon)
     {
@@ -623,87 +631,17 @@ main (int argc, char **argv )
                   " to run the program in the background\n"));
     }
   else
-    { /* regular server mode */
+    { /* Regular server mode */
       int fd;
       pid_t pid;
       int i;
-      int len;
-      struct sockaddr_un serv_addr;
-      char *p;
 
-      /* fixme: if there is already a running gpg-agent we should
-         share the same directory - and vice versa */
-      *socket_name = 0;
-      snprintf (socket_name, DIM(socket_name)-1,
-                "/tmp/gpg-XXXXXX/S.scdaemon");
-      socket_name[DIM(socket_name)-1] = 0;
-      p = strrchr (socket_name, '/');
-      if (!p)
-        BUG ();
-      *p = 0;;
+      /* Create the socket.  */
+      socket_name = create_socket_name (0,
+                                        "S.scdaemon",
+                                        "/tmp/gpg-XXXXXX/S.scdaemon");
 
-#ifndef HAVE_W32_SYSTEM
-      if (!mkdtemp(socket_name))
-        {
-          log_error ("can't create directory `%s': %s\n",
-	             socket_name, strerror(errno) );
-          exit (1);
-        }
-#endif
-      *p = '/';
-
-      if (strchr (socket_name, ':') )
-        {
-          log_error ("colons are not allowed in the socket name\n");
-          exit (1);
-        }
-      if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path ) 
-        {
-          log_error ("name of socket to long\n");
-          exit (1);
-        }
-   
-
-#ifdef HAVE_W32_SYSTEM
-      fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
-#else
-      fd = socket (AF_UNIX, SOCK_STREAM, 0);
-#endif
-      if (fd == -1)
-        {
-          log_error ("can't create socket: %s\n", strerror(errno) );
-          exit (1);
-        }
-
-      memset (&serv_addr, 0, sizeof serv_addr);
-      serv_addr.sun_family = AF_UNIX;
-      strcpy (serv_addr.sun_path, socket_name);
-      len = (offsetof (struct sockaddr_un, sun_path)
-             + strlen(serv_addr.sun_path) + 1);
-
-      if (
-#ifdef HAVE_W32_SYSTEM
-          _w32_sock_bind
-#else
-          bind 
-#endif
-          (fd, (struct sockaddr*)&serv_addr, len) == -1)
-        {
-          log_error ("error binding socket to `%s': %s\n",
-                     serv_addr.sun_path, strerror (errno) );
-          close (fd);
-          exit (1);
-        }
-  
-      if (listen (fd, 5 ) == -1)
-        {
-          log_error ("listen() failed: %s\n", strerror (errno));
-          close (fd);
-          exit (1);
-        }
-
-      if (opt.verbose)
-        log_info ("listening on socket `%s'\n", socket_name );
+      fd = create_server_socket (0, socket_name);
 
 
       fflush (NULL);
@@ -746,7 +684,7 @@ main (int argc, char **argv )
             }
           else
             {
-              /* print the environment string, so that the caller can use
+              /* Print the environment string, so that the caller can use
                  shell's eval to set it */
               if (csh_style)
                 {
@@ -763,14 +701,15 @@ main (int argc, char **argv )
           /* NOTREACHED */
         } /* end parent */
       
-      /* this is the child */
+      /* This is the child. */
 
-      /* detach from tty and put process into a new session */
+      /* Detach from tty and put process into a new session. */
       if (!nodetach )
-        {  /* close stdin, stdout and stderr unless it is the log stream */
+        {  
+          /* Close stdin, stdout and stderr unless it is the log stream. */
           for (i=0; i <= 2; i++) 
             {
-              if ( log_get_fd () != i)
+              if ( log_test_fd (i) && i != fd)
                 close (i);
             }
           if (setsid() == -1)
@@ -781,23 +720,13 @@ main (int argc, char **argv )
             }
         }
 
-      /* setup signals */
       {
-        struct sigaction oact, nact;
+        struct sigaction sa;
         
-        nact.sa_handler = cleanup_sh;
-        sigemptyset (&nact.sa_mask);
-        nact.sa_flags = 0;
-        
-        sigaction (SIGHUP, NULL, &oact);
-        if (oact.sa_handler != SIG_IGN)
-          sigaction (SIGHUP, &nact, NULL);
-        sigaction( SIGTERM, NULL, &oact );
-        if (oact.sa_handler != SIG_IGN)
-          sigaction (SIGTERM, &nact, NULL);
-        nact.sa_handler = SIG_IGN;
-        sigaction (SIGPIPE, &nact, NULL);
-        sigaction (SIGINT, &nact, NULL);
+        sa.sa_handler = SIG_IGN;
+        sigemptyset (&sa.sa_mask);
+        sa.sa_flags = 0;
+        sigaction (SIGPIPE, &sa, NULL);
       }
 
       if (chdir("/"))
@@ -808,7 +737,7 @@ main (int argc, char **argv )
 
 #endif /*!HAVE_W32_SYSTEM*/
 
-      scd_command_handler (fd);
+      handle_connections (fd);
 
       close (fd);
     }
@@ -840,13 +769,22 @@ scd_exit (int rc)
 
 
 void
-scd_init_default_ctrl (CTRL ctrl)
+scd_init_default_ctrl (ctrl_t ctrl)
 {
   ctrl->reader_slot = -1;
 }
 
 
-#ifdef USE_GNU_PTH
+/* Return the name of the socket to be used to connect to this
+   process.  If no socket is available, return NULL. */
+const char *
+scd_get_socket_name ()
+{
+  if (socket_name && *socket_name)
+    return socket_name;
+  return NULL;
+}
+
 
 static void
 handle_signal (int signo)
@@ -897,18 +835,175 @@ handle_signal (int signo)
     }
 }
 
+
 static void
 handle_tick (void)
 {
   scd_update_reader_status_file ();
 }
 
-static void *
-ticker_thread (void *dummy_arg)
+
+/* Create a name for the socket.  With USE_STANDARD_SOCKET given as
+   true using STANDARD_NAME in the home directory or if given has
+   false from the mkdir type name TEMPLATE.  In the latter case a
+   unique name in a unique new directory will be created.  In both
+   cases check for valid characters as well as against a maximum
+   allowed length for a unix domain socket is done.  The function
+   terminates the process in case of an error.  Retunrs: Pointer to an
+   allcoated string with the absolute name of the socket used.  */
+static char *
+create_socket_name (int use_standard_socket,
+		    char *standard_name, char *template)
 {
-  pth_event_t sigs_ev, time_ev = NULL;
+  char *name, *p;
+
+  if (use_standard_socket)
+    name = make_filename (opt.homedir, standard_name, NULL);
+  else
+    {
+      name = xstrdup (template);
+      p = strrchr (name, '/');
+      if (!p)
+	BUG ();
+      *p = 0;
+      if (!mkdtemp (name))
+	{
+	  log_error (_("can't create directory `%s': %s\n"),
+		     name, strerror (errno));
+	  scd_exit (2);
+	}
+      *p = '/';
+    }
+
+  if (strchr (name, PATHSEP_C))
+    {
+      log_error (("`%s' are not allowed in the socket name\n"), PATHSEP_S);
+      scd_exit (2);
+    }
+  if (strlen (name) + 1 >= DIMof (struct sockaddr_un, sun_path) )
+    {
+      log_error (_("name of socket too long\n"));
+      scd_exit (2);
+    }
+  return name;
+}
+
+
+
+/* Create a Unix domain socket with NAME.  IS_STANDARD_NAME indicates
+   whether a non-random socket is used.  Returns the file descriptor
+   or terminates the process in case of an error. */
+static int
+create_server_socket (int is_standard_name, const char *name)
+{
+  struct sockaddr_un *serv_addr;
+  socklen_t len;
+  int fd;
+  int rc;
+
+#ifdef HAVE_W32_SYSTEM
+  fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
+#else
+  fd = socket (AF_UNIX, SOCK_STREAM, 0);
+#endif
+  if (fd == -1)
+    {
+      log_error (_("can't create socket: %s\n"), strerror (errno));
+      scd_exit (2);
+    }
+
+  serv_addr = xmalloc (sizeof (*serv_addr)); 
+  memset (serv_addr, 0, sizeof *serv_addr);
+  serv_addr->sun_family = AF_UNIX;
+  assert (strlen (name) + 1 < sizeof (serv_addr->sun_path));
+  strcpy (serv_addr->sun_path, name);
+  len = (offsetof (struct sockaddr_un, sun_path)
+	 + strlen (serv_addr->sun_path) + 1);
+
+#ifdef HAVE_W32_SYSTEM
+  rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
+  if (is_standard_name && rc == -1 )
+    {
+      remove (name);
+      rc = bind (fd, (struct sockaddr*) serv_addr, len);
+    }
+#else
+  rc = bind (fd, (struct sockaddr*) serv_addr, len);
+  if (is_standard_name && rc == -1 && errno == EADDRINUSE)
+    {
+      remove (name);
+      rc = bind (fd, (struct sockaddr*) serv_addr, len);
+    }
+#endif
+  if (rc == -1)
+    {
+      log_error (_("error binding socket to `%s': %s\n"),
+		 serv_addr->sun_path, strerror (errno));
+      close (fd);
+      scd_exit (2);
+    }
+
+  if (listen (fd, 5 ) == -1)
+    {
+      log_error (_("listen() failed: %s\n"), strerror (errno));
+      close (fd);
+      scd_exit (2);
+    }
+          
+  if (opt.verbose)
+    log_info (_("listening on socket `%s'\n"), serv_addr->sun_path);
+
+  return fd;
+}
+
+
+
+/* This is the standard connection thread's main function.  */
+static void *
+start_connection_thread (void *arg)
+{
+  int fd = (int)arg;
+
+  if (opt.verbose)
+    log_info (_("handler for fd %d started\n"), fd);
+
+  scd_command_handler (fd);
+
+  if (opt.verbose)
+    log_info (_("handler for fd %d terminated\n"), fd);
+
+  /* If this thread is the pipe connection thread, flag that a
+     shutdown is required.  With the next ticker event and given that
+     no other connections are running the shutdown will then
+     happen. */
+  if (fd == -1)
+    shutdown_pending = 1;
+  
+  return NULL;
+}
+
+
+/* Connection handler loop.  Wait for connection requests and spawn a
+   thread after accepting a connection.  LISTEN_FD is allowed to be -1
+   in which case this code will only do regular timeouts and handle
+   signals. */
+static void
+handle_connections (int listen_fd)
+{
+  pth_attr_t tattr;
+  pth_event_t ev, time_ev;
   sigset_t sigs;
   int signo;
+  struct sockaddr_un paddr;
+  socklen_t plen;
+  fd_set fdset, read_fdset;
+  int ret;
+  int fd;
+
+  tattr = pth_attr_new();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 512*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "scd-connections");
 
 #ifndef HAVE_W32_SYSTEM /* fixme */
   sigemptyset (&sigs );
@@ -917,43 +1012,101 @@ ticker_thread (void *dummy_arg)
   sigaddset (&sigs, SIGUSR2);
   sigaddset (&sigs, SIGINT);
   sigaddset (&sigs, SIGTERM);
-  sigs_ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
-  sigs_ev = NULL;
+  ev = NULL;
 #endif
-  
-  while (!shutdown_pending)
+  time_ev = NULL;
+
+  FD_ZERO (&fdset);
+  if (listen_fd != -1)
+    FD_SET (listen_fd, &fdset);
+
+  for (;;)
     {
-      if (!time_ev)
+      if (shutdown_pending)
         {
-          time_ev = pth_event (PTH_EVENT_TIME, pth_timeout (2, 0));
-          if (time_ev)
-            pth_event_concat (sigs_ev, time_ev, NULL);
+          if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)
+            break; /* ready */
+
+          /* Do not accept anymore connections but wait for existing
+             connections to terminate. We do this by clearing out all
+             file descriptors to wait for, so that the select will be
+             used to just wait on a signal or timeout event. */
+          FD_ZERO (&fdset);
+	}
+
+      /* Create a timeout event if needed. */
+      if (!time_ev)
+        time_ev = pth_event (PTH_EVENT_TIME, pth_timeout (2, 0));
+
+      /* POSIX says that fd_set should be implemented as a structure,
+         thus a simple assignment is fine to copy the entire set.  */
+      read_fdset = fdset;
+
+      if (time_ev)
+        pth_event_concat (ev, time_ev, NULL);
+      ret = pth_select_ev (FD_SETSIZE, &read_fdset, NULL, NULL, NULL, ev);
+      if (time_ev)
+        pth_event_isolate (time_ev);
+
+      if (ret == -1)
+	{
+          if (pth_event_occurred (ev)
+              || (time_ev && pth_event_occurred (time_ev)))
+            {
+              if (pth_event_occurred (ev))
+                handle_signal (signo);
+              if (time_ev && pth_event_occurred (time_ev))
+                {
+                  pth_event_free (time_ev, PTH_FREE_ALL);
+                  time_ev = NULL;
+                  handle_tick ();
+                }
+              continue;
+            }
+          log_error (_("pth_select failed: %s - waiting 1s\n"),
+                     strerror (errno));
+          pth_sleep (1);
+	  continue;
+	}
+
+      if (pth_event_occurred (ev))
+        {
+          handle_signal (signo);
         }
 
-      if (pth_wait (sigs_ev) < 1)
-        continue;
-
-      if (
-#ifdef PTH_STATUS_OCCURRED     /* This is Pth 2 */
-          pth_event_status (sigs_ev) == PTH_STATUS_OCCURRED
-#else
-          pth_event_occurred (sigs_ev)
-#endif
-          )
-        handle_signal (signo);
-
-      /* Always run the ticker. */
-      if (!shutdown_pending)
+      if (time_ev && pth_event_occurred (time_ev))
         {
-          pth_event_isolate (sigs_ev);
           pth_event_free (time_ev, PTH_FREE_ALL);
           time_ev = NULL;
           handle_tick ();
         }
+
+      if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
+	{
+          plen = sizeof paddr;
+	  fd = pth_accept (listen_fd, (struct sockaddr *)&paddr, &plen);
+	  if (fd == -1)
+	    {
+	      log_error ("accept failed: %s\n", strerror (errno));
+	    }
+          else if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
+	    {
+	      log_error ("error spawning connection handler: %s\n",
+			 strerror (errno) );
+	      close (fd);
+	    }
+          fd = -1;
+	}
+
     }
 
-  pth_event_free (sigs_ev, PTH_FREE_ALL);
-  return NULL;
+  pth_event_free (ev, PTH_FREE_ALL);
+  if (time_ev)
+    pth_event_free (time_ev, PTH_FREE_ALL);
+  cleanup ();
+  log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
 }
-#endif /*USE_GNU_PTH*/
+
+

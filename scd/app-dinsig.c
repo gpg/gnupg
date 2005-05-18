@@ -85,7 +85,7 @@
 #include "tlv.h"
 
 
-static int
+static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl)
 {
   gpg_error_t err;
@@ -162,7 +162,7 @@ do_learn_status (app_t app, ctrl_t ctrl)
 
    FIXME: This needs some cleanups and caching with do_learn_status.
 */
-static int
+static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **cert, size_t *certlen)
 {
@@ -273,9 +273,9 @@ do_readcert (app_t app, const char *certid,
 
 
 /* Verify the PIN if required.  */
-static int
+static gpg_error_t
 verify_pin (app_t app,
-            int (pincb)(void*, const char *, char **),
+            gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
   if (!app->did_chv1 || app->force_chv1 ) 
@@ -326,12 +326,12 @@ verify_pin (app_t app,
    If a PIN is required the PINCB will be used to ask for the PIN;
    that callback should return the PIN in an allocated buffer and
    store that in the 3rd argument.  */
-static int 
+static gpg_error_t 
 do_sign (app_t app, const char *keyidstr, int hashalgo,
-         int (pincb)(void*, const char *, char **),
-           void *pincb_arg,
-           const void *indata, size_t indatalen,
-           unsigned char **outdata, size_t *outdatalen )
+         gpg_error_t (*pincb)(void*, const char *, char **),
+         void *pincb_arg,
+         const void *indata, size_t indatalen,
+         unsigned char **outdata, size_t *outdatalen )
 {
   static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
     { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
@@ -397,7 +397,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
 /* Select the DINSIG application on the card in SLOT.  This function
    must be used before any other DINSIG application functions. */
-int
+gpg_error_t
 app_select_dinsig (APP app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };

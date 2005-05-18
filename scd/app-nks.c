@@ -117,7 +117,7 @@ keygripstr_from_pk_file (int slot, int fid, char *r_gripstr)
 
 
 
-static int
+static gpg_error_t
 do_learn_status (APP app, CTRL ctrl)
 {
   gpg_error_t err;
@@ -175,7 +175,7 @@ do_learn_status (APP app, CTRL ctrl)
    the CERTINFO status lines) and return it in the freshly allocated
    buffer put into CERT and the length of the certificate put into
    CERTLEN. */
-static int
+static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **cert, size_t *certlen)
 {
@@ -299,9 +299,9 @@ do_readcert (app_t app, const char *certid,
 
 
 /* Verify the PIN if required.  */
-static int
+static gpg_error_t
 verify_pin (app_t app,
-            int (pincb)(void*, const char *, char **),
+            gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
   /* Note that force_chv1 is never set but we do it here anyway so
@@ -357,12 +357,12 @@ verify_pin (app_t app,
    If a PIN is required the PINCB will be used to ask for the PIN;
    that callback should return the PIN in an allocated buffer and
    store that in the 3rd argument.  */
-static int 
+static gpg_error_t 
 do_sign (app_t app, const char *keyidstr, int hashalgo,
-         int (pincb)(void*, const char *, char **),
-           void *pincb_arg,
-           const void *indata, size_t indatalen,
-           unsigned char **outdata, size_t *outdatalen )
+         gpg_error_t (*pincb)(void*, const char *, char **),
+         void *pincb_arg,
+         const void *indata, size_t indatalen,
+         unsigned char **outdata, size_t *outdatalen )
 {
   static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
     { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
@@ -435,9 +435,9 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 /* Decrypt the data in INDATA and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
-static int 
+static gpg_error_t 
 do_decipher (app_t app, const char *keyidstr,
-             int (pincb)(void*, const char *, char **),
+             gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
              unsigned char **outdata, size_t *outdatalen )
@@ -485,7 +485,7 @@ do_decipher (app_t app, const char *keyidstr,
 
 
 /* Select the NKS 2.0 application on the card in SLOT.  */
-int
+gpg_error_t
 app_select_nks (APP app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x01, 0x02 };

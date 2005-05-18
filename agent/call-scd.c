@@ -18,12 +18,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/* Fixme: For now we have serialized all access to the scdaemon which
-   make sense becuase the scdaemon can't handle concurrent connections
-   right now.  We should however keep a list of connections and lock
-   just that connection - it migth make sense to implemtn parts of
-   this in Assuan.*/
-
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>
@@ -37,9 +31,7 @@
 #ifndef HAVE_W32_SYSTEM
 #include <sys/wait.h>
 #endif
-#ifdef USE_GNU_PTH
-# include <pth.h>
-#endif
+#include <pth.h>
 
 #include "agent.h"
 #include <assuan.h>
@@ -50,24 +42,20 @@
 #define MAX_OPEN_FDS 20
 #endif
 
-static ASSUAN_CONTEXT scd_ctx = NULL;
-#ifdef USE_GNU_PTH
-static pth_mutex_t scd_lock;
-#endif
-/* We need to keep track of the connection currently using the SCD.
-   For a pipe server this is all a NOP because the connection will
-   always have the connection indicator -1.  agent_reset_scd releases
-   the active connection; i.e. sets it back to -1, so that a new
-   connection can start using the SCD.  If we eventually allow
-   multiple SCD session we will either make scdaemon multi-threaded or
-   fork of a new scdaemon and let it see how it can get access to a
-   reader. 
-*/
-static int active_connection_fd = -1;
-static int active_connection = 0;
+/* Definition of module local data of the CTRL structure.  */
+struct scd_local_s
+{
+  assuan_context_t ctx; /* NULL or session context for the SCdaemon
+                           used with this connection. */
+  int locked;           /* This flag is used to assert proper use of
+                           start_scd and unlock_scd. */
+
+};
+
 
 /* Callback parameter for learn card */
-struct learn_parm_s {
+struct learn_parm_s
+{
   void (*kpinfo_cb)(void*, const char *);
   void *kpinfo_cb_arg;
   void (*certinfo_cb)(void*, const char *);
@@ -76,11 +64,37 @@ struct learn_parm_s {
   void *sinfo_cb_arg;
 };
 
-struct inq_needpin_s {
-  ASSUAN_CONTEXT ctx;
+struct inq_needpin_s 
+{
+  assuan_context_t ctx;
   int (*getpin_cb)(void *, const char *, char*, size_t);
   void *getpin_cb_arg;
 };
+
+
+/* A Mutex used inside the start_scd function. */
+static pth_mutex_t start_scd_lock;
+
+/* A malloced string with the name of the socket to be used for
+   additional connections.  May be NULL if not provided by
+   SCdaemon. */
+static char *socket_name;
+
+/* The context of the primary connection.  This is also used as a flag
+   to indicate whether the scdaemon has been started. */
+static assuan_context_t primary_scd_ctx;
+
+/* To allow reuse of the primary connection, the following flag is set
+   to true if the primary context has been reset and is not in use by
+   any connection. */
+static int primary_scd_ctx_reusable;
+
+
+
+/* Local prototypes.  */
+static assuan_error_t membuf_data_cb (void *opaque,
+                                      const void *buffer, size_t length);
+
 
 
 
@@ -91,27 +105,35 @@ struct inq_needpin_s {
 void
 initialize_module_call_scd (void)
 {
-#ifdef USE_GNU_PTH
   static int initialized;
 
   if (!initialized)
-    if (pth_mutex_init (&scd_lock))
+    {
+      if (!pth_mutex_init (&start_scd_lock))
+        log_fatal ("error initializing mutex: %s\n", strerror (errno));
       initialized = 1;
-#endif /*USE_GNU_PTH*/
+    }
 }
 
 
+/* The unlock_scd function shall be called after having accessed the
+   SCD.  It is currently not very useful but gives an opportunity to
+   keep track of connections currently calling SCD.  Note that the
+   "lock" operation is done by the start_scd() function which must be
+   called and error checked before any SCD operation.  CTRL is the
+   usual connection context and RC the error code to be passed trhough
+   the function. */
 static int 
-unlock_scd (int rc)
+unlock_scd (ctrl_t ctrl, int rc)
 {
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_release (&scd_lock))
+  if (ctrl->scd_local->locked != 1)
     {
-      log_error ("failed to release the SCD lock\n");
+      log_error ("unlock_scd: invalid lock count (%d)\n",
+                 ctrl->scd_local->locked);
       if (!rc)
         rc = gpg_error (GPG_ERR_INTERNAL);
     }
-#endif /*USE_GNU_PTH*/
+  ctrl->scd_local->locked = 0;
   return rc;
 }
 
@@ -125,68 +147,115 @@ atfork_cb (void *opaque, int where)
 }
 
 
-/* Fork off the SCdaemon if this has not already been done.  Note that
-   this fucntion alos locks the daemon.  */
+/* Fork off the SCdaemon if this has not already been done.  Lock the
+   daemon and make sure that a proper context has been setup in CTRL.
+   Thsi fucntion might also lock the daemon, which means that the
+   caller must call unlock_scd after this fucntion has returned
+   success and the actual Assuan transaction been done. */
 static int
 start_scd (ctrl_t ctrl)
 {
-  int rc;
+  gpg_error_t err = 0;
   const char *pgmname;
-  ASSUAN_CONTEXT ctx;
-  const char *argv[3];
+  assuan_context_t ctx;
+  const char *argv[4];
   int no_close_list[3];
   int i;
+  int rc;
 
   if (opt.disable_scdaemon)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_acquire (&scd_lock, 0, NULL))
+  /* If this is the first call for this session, setup the local data
+     structure. */
+  if (!ctrl->scd_local)
     {
-      log_error ("failed to acquire the SCD lock\n");
+      ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
+      if (!ctrl->scd_local)
+        return gpg_error_from_errno (errno);
+    }
+
+
+  /* Assert that the lock count is as expected. */
+  if (ctrl->scd_local->locked)
+    {
+      log_error ("start_scd: invalid lock count (%d)\n",
+                 ctrl->scd_local->locked);
       return gpg_error (GPG_ERR_INTERNAL);
     }
-#endif
+  ctrl->scd_local->locked++;
 
-  if (scd_ctx)
+  /* If we already have a context, we better do a sanity check now to
+     see whether it has accidently died.  This avoids annoying
+     timeouts and hung connections. */
+  if (ctrl->scd_local->ctx)
     {
       pid_t pid;
-
-      /* If we are not the connection currently using the SCD, return
-         an error. */
-      if (!active_connection)
-        {
-          active_connection_fd = ctrl->connection_fd;
-          active_connection = 1;
-        }
-      else if (ctrl->connection_fd != active_connection_fd)
-        return unlock_scd (gpg_error (GPG_ERR_CONFLICT));
-      
-      /* Okay, we already started the scdaemon and it is used by us.*/
-
-      /* We better do a sanity check now to see whether it has
-         accidently died. */
 #ifndef HAVE_W32_SYSTEM 
-      pid = assuan_get_pid (scd_ctx);
+      pid = assuan_get_pid (ctrl->scd_local->ctx);
       if (pid != (pid_t)(-1) && pid
           && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
         {
-          assuan_disconnect (scd_ctx);
-          scd_ctx = NULL;
+          assuan_disconnect (ctrl->scd_local->ctx);
+          ctrl->scd_local->ctx = NULL;
         }
       else
 #endif
-        return 0; 
+        return 0; /* Okay, the context is fine. */
     }
 
+  /* We need to protect the lowwing code. */
+  if (!pth_mutex_acquire (&start_scd_lock, 0, NULL))
+    {
+      log_error ("failed to acquire the start_scd lock: %s\n",
+                 strerror (errno));
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
+
+  /* Check whether the pipe server has already been started and in
+     this case either reuse a lingering pipe connection or establish a
+     new socket based one. */
+  if (primary_scd_ctx && primary_scd_ctx_reusable)
+    {
+      ctx = primary_scd_ctx;
+      primary_scd_ctx_reusable = 0;
+      if (opt.verbose)
+        log_info ("new connection to SCdaemon established (reusing)\n");
+      goto leave;
+    }
+
+  if (socket_name)
+    {
+      rc = assuan_socket_connect (&ctx, socket_name, 0);
+      if (rc)
+        {
+          log_error ("can't connect to socket `%s': %s\n",
+                     socket_name, assuan_strerror (rc));
+          err = gpg_error (GPG_ERR_NO_SCDAEMON);
+          goto leave;
+        }
+
+      if (opt.verbose)
+        log_info ("new connection to SCdaemon established\n");
+      goto leave;
+    }
+
+  if (primary_scd_ctx)
+    {
+      log_info ("SCdaemon is running but won't accept further connections\n");
+      err = gpg_error (GPG_ERR_NO_SCDAEMON);
+      goto leave;
+    }
+
+  /* Nope, it has not been started.  Fire it up now. */
   if (opt.verbose)
     log_info ("no running SCdaemon - starting it\n");
       
   if (fflush (NULL))
     {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+      err = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("error flushing pending output: %s\n", strerror (errno));
-      return unlock_scd (tmperr);
+      goto leave;
     }
 
   if (!opt.scdaemon_program || !*opt.scdaemon_program)
@@ -198,7 +267,8 @@ start_scd (ctrl_t ctrl)
 
   argv[0] = pgmname;
   argv[1] = "--server";
-  argv[2] = NULL;
+  argv[2] = "--multi-server";
+  argv[3] = NULL;
 
   i=0;
   if (!opt.running_detached)
@@ -216,30 +286,68 @@ start_scd (ctrl_t ctrl)
     {
       log_error ("can't connect to the SCdaemon: %s\n",
                  assuan_strerror (rc));
-      return unlock_scd (gpg_error (GPG_ERR_NO_SCDAEMON));
+      err = gpg_error (GPG_ERR_NO_SCDAEMON);
+      goto leave;
     }
-  scd_ctx = ctx;
-  active_connection_fd = ctrl->connection_fd;
-  active_connection = 1;
 
-  if (DBG_ASSUAN)
-    log_debug ("connection to SCdaemon established\n");
+  if (opt.verbose)
+    log_debug ("first connection to SCdaemon established\n");
 
-  /* Tell the scdaemon that we want him to send us an event signal.
-     But only do this if we are running as a regular sever and not
-     simply as a pipe server. */
-  /* Fixme: gpg-agent does not use this signal yet.  */
-/*   if (ctrl->connection_fd != -1) */
-/*   { */
-/* #ifndef HAVE_W32_SYSTEM */
-/*     char buf[100]; */
+  /* Get the name of the additional socket opened by scdaemon. */
+  {
+    membuf_t data;
+    unsigned char *databuf;
+    size_t datalen;
 
-/*     sprintf (buf, "OPTION event-signal=%d", SIGUSR2); */
-/*     assuan_transact (scd_ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL); */
-/* #endif */
-/*   } */
+    xfree (socket_name);
+    socket_name = NULL;
+    init_membuf (&data, 256);
+    assuan_transact (ctx, "GETINFO socket_name",
+                     membuf_data_cb, &data, NULL, NULL, NULL, NULL);
 
-  return 0;
+    databuf = get_membuf (&data, &datalen);
+    if (databuf && datalen)
+      {
+        socket_name = xtrymalloc (datalen + 1);
+        if (!socket_name)
+          log_error ("warning: can't store socket name: %s\n",
+                     strerror (errno));
+        else
+          {
+            memcpy (socket_name, databuf, datalen);
+            socket_name[datalen] = 0;
+            if (DBG_ASSUAN)
+              log_debug ("additional connections at `%s'\n", socket_name);
+          }
+      }
+    xfree (databuf);
+  }
+
+  /* Tell the scdaemon we want him to send us an event signal. */
+#ifndef HAVE_W32_SYSTEM
+  {
+    char buf[100];
+
+    sprintf (buf, "OPTION event-signal=%d", SIGUSR2);
+    assuan_transact (ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
+  }
+#endif
+
+  primary_scd_ctx = ctx;
+  primary_scd_ctx_reusable = 0;
+
+ leave:
+  if (err)
+    {
+      unlock_scd (ctrl, err);
+    } 
+  else
+    {
+      ctrl->scd_local->ctx = ctx;
+    }
+  if (!pth_mutex_release (&start_scd_lock))
+    log_error ("failed to release the start_scd lock: %s\n", strerror (errno));
+  return err;
 }
 
 
@@ -248,25 +356,28 @@ start_scd (ctrl_t ctrl)
 int
 agent_reset_scd (ctrl_t ctrl)
 {
-  int rc = 0;
-
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_acquire (&scd_lock, 0, NULL))
+  if (ctrl->scd_local)
     {
-      log_error ("failed to acquire the SCD lock for reset\n");
-      return gpg_error (GPG_ERR_INTERNAL);
-    }
-#endif
-  if (active_connection && active_connection_fd == ctrl->connection_fd)
-    {
-      if (scd_ctx)
-        rc = assuan_transact (scd_ctx, "RESET", NULL, NULL,
-                              NULL, NULL, NULL, NULL);
-      active_connection_fd = -1;
-      active_connection = 0;
+      if (ctrl->scd_local->ctx)
+        {
+          /* We can't disconnect the primary context becuase libassuan
+             does a waitpid on it and thus the system would hang.
+             Instead we send a reset and keep that connection for
+             reuse. */
+          if (ctrl->scd_local->ctx == primary_scd_ctx)
+            {
+              if (!assuan_transact (primary_scd_ctx, "RESET",
+                                    NULL, NULL, NULL, NULL, NULL, NULL))
+                primary_scd_ctx_reusable = 1;
+            }
+          else
+            assuan_disconnect (ctrl->scd_local->ctx);
+        }
+      xfree (ctrl->scd_local);
+      ctrl->scd_local = NULL;
     }
 
-  return unlock_scd (map_assuan_err (rc));
+  return 0;
 }
 
 
@@ -360,13 +471,13 @@ agent_card_learn (ctrl_t ctrl,
   parm.certinfo_cb_arg = certinfo_cb_arg;
   parm.sinfo_cb = sinfo_cb;
   parm.sinfo_cb_arg = sinfo_cb_arg;
-  rc = assuan_transact (scd_ctx, "LEARN --force",
+  rc = assuan_transact (ctrl->scd_local->ctx, "LEARN --force",
                         NULL, NULL, NULL, NULL,
                         learn_status_cb, &parm);
   if (rc)
-    return unlock_scd (map_assuan_err (rc));
+    return unlock_scd (ctrl, map_assuan_err (rc));
 
-  return unlock_scd (0);
+  return unlock_scd (ctrl, 0);
 }
 
 
@@ -414,16 +525,16 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
   if (rc)
     return rc;
 
-  rc = assuan_transact (scd_ctx, "SERIALNO",
+  rc = assuan_transact (ctrl->scd_local->ctx, "SERIALNO",
                         NULL, NULL, NULL, NULL,
                         get_serialno_cb, &serialno);
   if (rc)
     {
       xfree (serialno);
-      return unlock_scd (map_assuan_err (rc));
+      return unlock_scd (ctrl, map_assuan_err (rc));
     }
   *r_serialno = serialno;
-  return unlock_scd (0);
+  return unlock_scd (ctrl, 0);
 }
 
 
@@ -495,31 +606,32 @@ agent_card_pksign (ctrl_t ctrl,
     return rc;
 
   if (indatalen*2 + 50 > DIM(line))
-    return unlock_scd (gpg_error (GPG_ERR_GENERAL));
+    return unlock_scd (ctrl, gpg_error (GPG_ERR_GENERAL));
 
   sprintf (line, "SETDATA ");
   p = line + strlen (line);
   for (i=0; i < indatalen ; i++, p += 2 )
     sprintf (p, "%02X", indata[i]);
-  rc = assuan_transact (scd_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (ctrl->scd_local->ctx, line,
+                        NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_scd (map_assuan_err (rc));
+    return unlock_scd (ctrl, map_assuan_err (rc));
 
   init_membuf (&data, 1024);
-  inqparm.ctx = scd_ctx;
+  inqparm.ctx = ctrl->scd_local->ctx;
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
   snprintf (line, DIM(line)-1, 
             ctrl->use_auth_call? "PKAUTH %s":"PKSIGN %s", keyid);
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (scd_ctx, line,
+  rc = assuan_transact (ctrl->scd_local->ctx, line,
                         membuf_data_cb, &data,
                         inq_needpin, &inqparm,
                         NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return unlock_scd (map_assuan_err (rc));
+      return unlock_scd (ctrl, map_assuan_err (rc));
     }
   sigbuf = get_membuf (&data, &sigbuflen);
 
@@ -531,7 +643,7 @@ agent_card_pksign (ctrl_t ctrl,
     {
       gpg_error_t tmperr = out_of_core ();
       xfree (*r_buf);
-      return unlock_scd (tmperr);
+      return unlock_scd (ctrl, tmperr);
     }
   p = stpcpy (*r_buf, "(7:sig-val(3:rsa(1:s" );
   sprintf (p, "%u:", (unsigned int)sigbuflen);
@@ -542,7 +654,7 @@ agent_card_pksign (ctrl_t ctrl,
   xfree (sigbuf);
 
   assert (gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL));
-  return unlock_scd (0);
+  return unlock_scd (ctrl, 0);
 }
 
 /* Decipher INDATA using the current card. Note that the returned value is */
@@ -567,36 +679,37 @@ agent_card_pkdecrypt (ctrl_t ctrl,
 
   /* FIXME: use secure memory where appropriate */
   if (indatalen*2 + 50 > DIM(line))
-    return unlock_scd (gpg_error (GPG_ERR_GENERAL));
+    return unlock_scd (ctrl, gpg_error (GPG_ERR_GENERAL));
 
   sprintf (line, "SETDATA ");
   p = line + strlen (line);
   for (i=0; i < indatalen ; i++, p += 2 )
     sprintf (p, "%02X", indata[i]);
-  rc = assuan_transact (scd_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (ctrl->scd_local->ctx, line,
+                        NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_scd (map_assuan_err (rc));
+    return unlock_scd (ctrl, map_assuan_err (rc));
 
   init_membuf (&data, 1024);
-  inqparm.ctx = scd_ctx;
+  inqparm.ctx = ctrl->scd_local->ctx;
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
   snprintf (line, DIM(line)-1, "PKDECRYPT %s", keyid);
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (scd_ctx, line,
+  rc = assuan_transact (ctrl->scd_local->ctx, line,
                         membuf_data_cb, &data,
                         inq_needpin, &inqparm,
                         NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return unlock_scd (map_assuan_err (rc));
+      return unlock_scd (ctrl, map_assuan_err (rc));
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
-    return unlock_scd (gpg_error (GPG_ERR_ENOMEM));
+    return unlock_scd (ctrl, gpg_error (GPG_ERR_ENOMEM));
 
-  return unlock_scd (0);
+  return unlock_scd (ctrl, 0);
 }
 
 
@@ -619,20 +732,20 @@ agent_card_readcert (ctrl_t ctrl,
   init_membuf (&data, 1024);
   snprintf (line, DIM(line)-1, "READCERT %s", id);
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (scd_ctx, line,
+  rc = assuan_transact (ctrl->scd_local->ctx, line,
                         membuf_data_cb, &data,
                         NULL, NULL,
                         NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return unlock_scd (map_assuan_err (rc));
+      return unlock_scd (ctrl, map_assuan_err (rc));
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
-    return unlock_scd (gpg_error (GPG_ERR_ENOMEM));
+    return unlock_scd (ctrl, gpg_error (GPG_ERR_ENOMEM));
 
-  return unlock_scd (0);
+  return unlock_scd (ctrl, 0);
 }
 
 
@@ -655,26 +768,26 @@ agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
   init_membuf (&data, 1024);
   snprintf (line, DIM(line)-1, "READKEY %s", id);
   line[DIM(line)-1] = 0;
-  rc = assuan_transact (scd_ctx, line,
+  rc = assuan_transact (ctrl->scd_local->ctx, line,
                         membuf_data_cb, &data,
                         NULL, NULL,
                         NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return unlock_scd (map_assuan_err (rc));
+      return unlock_scd (ctrl, map_assuan_err (rc));
     }
   *r_buf = get_membuf (&data, &buflen);
   if (!*r_buf)
-    return unlock_scd (gpg_error (GPG_ERR_ENOMEM));
+    return unlock_scd (ctrl, gpg_error (GPG_ERR_ENOMEM));
 
   if (!gcry_sexp_canon_len (*r_buf, buflen, NULL, NULL))
     {
       xfree (*r_buf); *r_buf = NULL;
-      return unlock_scd (gpg_error (GPG_ERR_INV_VALUE));
+      return unlock_scd (ctrl, gpg_error (GPG_ERR_INV_VALUE));
     }
 
-  return unlock_scd (0);
+  return unlock_scd (ctrl, 0);
 }
 
 
@@ -744,7 +857,7 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
   if (err)
     return err;
 
-  err = map_assuan_err (assuan_transact (scd_ctx, line,
+  err = map_assuan_err (assuan_transact (ctrl->scd_local->ctx, line,
                                          NULL, NULL, NULL, NULL,
                                          card_getattr_cb, &parm));
   if (!err && parm.error)
@@ -758,7 +871,7 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
   else
     xfree (parm.data);
 
-  return unlock_scd (err);
+  return unlock_scd (ctrl, err);
 }
 
 
@@ -810,19 +923,19 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
   if (rc)
     return rc;
 
-  inqparm.ctx = scd_ctx;
+  inqparm.ctx = ctrl->scd_local->ctx;
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
-  rc = assuan_transact (scd_ctx, cmdline,
+  rc = assuan_transact (ctrl->scd_local->ctx, cmdline,
                         pass_data_thru, assuan_context,
                         inq_needpin, &inqparm,
                         pass_status_thru, assuan_context);
   if (rc)
     {
-      return unlock_scd (map_assuan_err (rc));
+      return unlock_scd (ctrl, map_assuan_err (rc));
     }
 
-  return unlock_scd (0);
+  return unlock_scd (ctrl, 0);
 }
 
 

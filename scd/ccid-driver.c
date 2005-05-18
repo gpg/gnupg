@@ -986,7 +986,8 @@ do_close_reader (ccid_driver_t handle)
     }
   if (handle->idev)
     {
-      usb_reset (handle->idev);
+      if (getenv ("GNUPG_CCID_DRIVER_RESET_BEFORE_CLOSE"))
+        usb_reset (handle->idev);
       usb_release_interface (handle->idev, handle->ifc_no);
       usb_close (handle->idev);
       handle->idev = NULL;
@@ -1274,7 +1275,7 @@ ccid_poll (ccid_driver_t handle)
 }
 
 
-/* Note that this function won't return the error codes NO_CARD or
+/* Note that this fucntion won't return the error codes NO_CARD or
    CARD_INACTIVE */
 int 
 ccid_slot_status (ccid_driver_t handle, int *statusbits)
@@ -1303,12 +1304,12 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
     {
       if (!retries)
         {
-          fprintf (stderr, "CALLING USB_CLEAR_HALT\n");
+          DEBUGOUT ("USB: CALLING USB_CLEAR_HALT\n");
           usb_clear_halt (handle->idev, handle->ep_bulk_in);
           usb_clear_halt (handle->idev, handle->ep_bulk_out);
         }
       else
-          fprintf (stderr, "RETRYING AGIAN\n");
+          DEBUGOUT ("USB: RETRYING bulk_in AGAIN\n");
       retries++;
       goto retry;
     }

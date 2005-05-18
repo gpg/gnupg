@@ -1,3 +1,39 @@
+2005-05-17  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c: Removed non-pth code paths.
+	(create_socket_name, create_server_socket): New.  Taken from
+	../agent/gpg-agent.
+	(cleanup): Changed to adjust for SOCKET_NAME now being malloced.
+	(ticker_thread): Always use pth_event_occurred; it is again
+	defined for all decent PTH versions.
+	(handle_connections): New. Based on the gpg-agent code.
+	(start_connection_thread): Ditto.
+	(ticker_thread): Removed.
+	(cleanup_sh): Removed.
+	(main): Run the handler for the pipe server in a separate
+	thread.  This replaces the old ticker thread.
+	(scd_get_socket_name): New.
+	* command.c (cmd_getinfo): New command GETINFO.
+	(scd_command_handler): Renamed argument and changed code to use an
+	already connected FD.
+
+2005-05-15  Werner Koch  <wk@g10code.com>
+
+	* app.c, app-common.h, app-nks.c, app-p15.c, app-dinsig.c
+	* app-openpgp.c: Change most function return types from int to
+	gpg_error_t.
+	* command.c (pin_cb): Ditto.
+	* sc-copykeys.c (pincb): Ditto.
+
+	* app.c (lock_reader, unlock_reader): New.  Changed call handler
+	wrappers to make use of these functions.
+
+2005-05-07  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (do_close_reader): Don't do a reset before close.
+	Some folks reported that it makes the SCR335 hang less often.
+	Look at the source on how to re-enable it.
+
 2005-04-27  Werner Koch  <wk@g10code.com>
 
 	* app-p15.c (micardo_mse): New.

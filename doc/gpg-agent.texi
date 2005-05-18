@@ -253,11 +253,6 @@ should in general not be used to avaoid X-sniffing attacks.
 Append all logging output to @var{file}.  This is very helpful in
 seeing what the agent actually does.
 
-@item --disable-pth
-@opindex disable-pth
-Don't allow multiple connections.  This option is in general not very
-useful. 
-
 @anchor{option --allow-mark-trusted}
 @item --allow-mark-trusted
 @opindex allow-mark-trusted

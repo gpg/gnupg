@@ -122,7 +122,7 @@ has_option (const char *line, const char *name)
 
 
 /* Reset the card and free the application context.  With DO_CLOSE set
-   to true and this is the last session with a reference to teh
+   to true and this is the last session with a reference to the
    reader, close the reader and don't do just a reset. */
 static void
 do_reset (ctrl_t ctrl, int do_close)
@@ -647,7 +647,7 @@ cmd_setdata (assuan_context_t ctx, char *line)
 
 
 
-static int 
+static gpg_error_t 
 pin_cb (void *opaque, const char *info, char **retstr)
 {
   assuan_context_t ctx = opaque;
@@ -1171,6 +1171,34 @@ cmd_unlock (assuan_context_t ctx, char *line)
 }
 
 
+/* GETINFO <what>
+
+   Multi purpose command to return certain information.  
+   Supported values of WHAT are:
+
+   socket_name - Return the name of the socket.
+
+*/
+
+static int
+cmd_getinfo (assuan_context_t ctx, char *line)
+{
+  int rc = 0;
+
+  if (!strcmp (line, "socket_name"))
+    {
+      const char *s = scd_get_socket_name ();
+
+      if (s)
+        rc = assuan_send_data (ctx, s, strlen (s));
+      else
+        rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else
+    rc = set_error (Parameter_Error, "unknown value for WHAT");
+  return rc;
+}
+
 
 
 
@@ -1200,6 +1228,7 @@ register_commands (assuan_context_t ctx)
     { "CHECKPIN",     cmd_checkpin },
     { "LOCK",         cmd_lock },
     { "UNLOCK",       cmd_unlock },
+    { "GETINFO",      cmd_getinfo },
     { NULL }
   };
   int i, rc;
@@ -1218,10 +1247,10 @@ register_commands (assuan_context_t ctx)
 }
 
 
-/* Startup the server.  If LISTEN_FD is given as -1, this is simple
-   piper server, otherwise it is a regular server */
+/* Startup the server.  If FD is given as -1 this is simple pipe
+   server, otherwise it is a regular server. */
 void
-scd_command_handler (int listen_fd)
+scd_command_handler (int fd)
 {
   int rc;
   assuan_context_t ctx;
@@ -1230,7 +1259,7 @@ scd_command_handler (int listen_fd)
   memset (&ctrl, 0, sizeof ctrl);
   scd_init_default_ctrl (&ctrl);
   
-  if (listen_fd == -1)
+  if (fd == -1)
     {
       int filedes[2];
 
@@ -1240,7 +1269,7 @@ scd_command_handler (int listen_fd)
     }
   else
     {
-      rc = assuan_init_socket_server (&ctx, listen_fd);
+      rc = assuan_init_connected_socket_server (&ctx, fd);
     }
   if (rc)
     {

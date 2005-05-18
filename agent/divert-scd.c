@@ -108,13 +108,6 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
 
       if (!rc)
         {
-          /* We better reset the SCD now.  This is kludge required
-             because the scdaemon is currently not always able to
-             detect the presence of a card.  With a fully working
-             scdaemon this would not be required; i.e. the pkcs#15
-             support does not require it because OpenSC correclty
-             detects a present card. */
-          agent_reset_scd (ctrl);
           if (asprintf (&desc,
                     "%s:%%0A%%0A"
                     "  \"%.*s\"",

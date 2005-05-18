@@ -37,9 +37,7 @@
 #endif /*HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <signal.h>
-#ifdef USE_GNU_PTH
-# include <pth.h>
-#endif
+#include <pth.h>
 
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
@@ -83,7 +81,6 @@ enum cmd_and_opt_values
   oLCctype,
   oLCmessages,
   oScdaemonProgram,
-  oDisablePth,
   oDefCacheTTL,
   oMaxCacheTTL,
   oUseStandardSocket,
@@ -120,7 +117,6 @@ static ARGPARSE_OPTS opts[] = {
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
-  { oDisablePth, "disable-pth", 0, N_("do not allow multiple connections")},
   { oUseStandardSocket, "use-standard-socket", 0,
                       N_("use a standard location for the socket")},
   { oNoUseStandardSocket, "no-use-standard-socket", 0, "@"},
@@ -157,7 +153,6 @@ static ARGPARSE_OPTS opts[] = {
 #define DEFAULT_CACHE_TTL (10*60)  /* 10 minutes */
 #define MAX_CACHE_TTL     (120*60) /* 2 hours */
 
-static volatile int caught_fatal_sig = 0;
 
 /* flag to indicate that a shutdown was requested */
 static int shutdown_pending;
@@ -190,10 +185,11 @@ static const char *debug_level;
 static char *current_logfile;
 
 /* The handle_tick() function may test whether a parent is still
-   runing.  We record the PID of the parent here or -1 if it should be
+   running.  We record the PID of the parent here or -1 if it should be
    watched. */
 static pid_t parent_pid = (pid_t)(-1);
 
+
 /*
    Local prototypes. 
  */
@@ -203,17 +199,15 @@ static char *create_socket_name (int use_standard_socket,
 static int create_server_socket (int is_standard_name, const char *name);
 static void create_directories (void);
 
-#ifdef USE_GNU_PTH
 static void handle_connections (int listen_fd, int listen_fd_ssh);
-/* Pth wrapper function definitions. */
-GCRY_THREAD_OPTION_PTH_IMPL;
-#endif /*USE_GNU_PTH*/
-
 static int check_for_running_agent (int);
 
+/* Pth wrapper function definitions. */
+GCRY_THREAD_OPTION_PTH_IMPL;
 
 
 
+
 /*
    Functions. 
  */
@@ -351,28 +345,6 @@ cleanup (void)
 }
 
 
-static RETSIGTYPE
-cleanup_sh (int sig)
-{
-  if (caught_fatal_sig)
-    raise (sig);
-  caught_fatal_sig = 1;
-
-  /* gcry_control( GCRYCTL_TERM_SECMEM );*/
-  cleanup ();
-
-#ifndef HAVE_DOSISH_SYSTEM
-  {	/* reset action to default action and raise signal again */
-    struct sigaction nact;
-    nact.sa_handler = SIG_DFL;
-    sigemptyset( &nact.sa_mask );
-    nact.sa_flags = 0;
-    sigaction( sig, &nact, NULL);
-  }
-#endif
-  raise( sig );
-}
-
 
 /* Handle options which are allowed to be reset after program start.
    Return true when the current option in PARGS could be handled and
@@ -462,7 +434,6 @@ main (int argc, char **argv )
   int csh_style = 0;
   char *logfile = NULL;
   int debug_wait = 0;
-  int disable_pth = 0;
   int gpgconf_list = 0;
   int standard_socket = 0;
   gpg_error_t err;
@@ -481,14 +452,12 @@ main (int argc, char **argv )
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
-#ifdef USE_GNU_PTH
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
-#endif /*USE_GNU_PTH*/
 
 
   /* Check that the libraries are suitable.  Do it here because
@@ -634,7 +603,6 @@ main (int argc, char **argv )
         case oSh: csh_style = 0; break;
         case oServer: pipe_server = 1; break;
         case oDaemon: is_daemon = 1; break;
-        case oDisablePth: disable_pth = 1; break;
 
         case oDisplay: default_display = xstrdup (pargs.r.ret_str); break;
         case oTTYname: default_ttyname = xstrdup (pargs.r.ret_str); break;
@@ -983,45 +951,17 @@ main (int argc, char **argv )
           exit (1);
         }
 
+      {
+        struct sigaction sa;
+        
+        sa.sa_handler = SIG_IGN;
+        sigemptyset (&sa.sa_mask);
+        sa.sa_flags = 0;
+        sigaction (SIGPIPE, &sa, NULL);
+      }
 #endif /*!HAVE_W32_SYSTEM*/
 
-
-#ifdef USE_GNU_PTH
-      if (!disable_pth)
-        {
-#ifndef HAVE_W32_SYSTEM  /* FIXME */
-	  struct sigaction sa;
-
-	  sa.sa_handler = SIG_IGN;
-	  sigemptyset (&sa.sa_mask);
-	  sa.sa_flags = 0;
-	  sigaction (SIGPIPE, &sa, NULL);
-#endif
-          handle_connections (fd, opt.ssh_support ? fd_ssh : -1);
-        }
-      else
-#endif /*!USE_GNU_PTH*/
-      /* setup signals */
-        {
-#ifndef HAVE_W32_SYSTEM  /* FIXME */
-          struct sigaction oact, nact;
-          
-          nact.sa_handler = cleanup_sh;
-          sigemptyset (&nact.sa_mask);
-          nact.sa_flags = 0;
-          
-          sigaction (SIGHUP, NULL, &oact);
-          if (oact.sa_handler != SIG_IGN)
-            sigaction (SIGHUP, &nact, NULL);
-          sigaction( SIGTERM, NULL, &oact );
-          if (oact.sa_handler != SIG_IGN)
-            sigaction (SIGTERM, &nact, NULL);
-          nact.sa_handler = SIG_IGN;
-          sigaction (SIGPIPE, &nact, NULL);
-          sigaction (SIGINT, &nact, NULL);
-#endif
-          start_command_handler (fd, -1);
-        }
+      handle_connections (fd, opt.ssh_support ? fd_ssh : -1);
       close (fd);
     }
   
@@ -1127,7 +1067,7 @@ reread_configuration (void)
 
 
 /* Create a name for the socket.  With USE_STANDARD_SOCKET given as
-   true ising STANDARD_NAME in the home directory or if given has
+   true using STANDARD_NAME in the home directory or if given has
    false from the mkdir type name TEMPLATE.  In the latter case a
    unique name in a unique new directory will be created.  In both
    cases check for valid characters as well as against a maximum
@@ -1195,7 +1135,7 @@ create_server_socket (int is_standard_name, const char *name)
       agent_exit (2);
     }
 
-  serv_addr = malloc (sizeof (*serv_addr)); /* FIXME. */
+  serv_addr = xmalloc (sizeof (*serv_addr)); 
   memset (serv_addr, 0, sizeof *serv_addr);
   serv_addr->sun_family = AF_UNIX;
   assert (strlen (name) + 1 < sizeof (serv_addr->sun_path));
@@ -1325,7 +1265,6 @@ create_directories (void)
 
 
 
-#ifdef USE_GNU_PTH
 /* This is the worker for the ticker.  It is called every few seconds
    and may only do fast operations. */
 static void
@@ -1581,7 +1520,6 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
 }
-#endif /*USE_GNU_PTH*/
 
 
 /* Figure out whether an agent is available and running. Prints an

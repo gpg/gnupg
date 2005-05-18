@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+# include <pth.h>
 
 #include "scdaemon.h"
 #include "app-common.h"
@@ -31,7 +31,72 @@
 #include "iso7816.h"
 #include "tlv.h"
 
+/* This table is used to keep track of locks on a per reader base.
+   The index into the table is the slot number of the reader.  The
+   mutex will be initialized on demand (one of the advantages of a
+   userland threading system). */
+static struct
+{
+  int initialized;
+  pth_mutex_t lock;
+} lock_table[10];
 
+
+/* Lock the reader associated with the APP context.  This function
+   shall be used right before calling any of the actual application
+   functions to serialize access to the reader.  We do this always
+   even if the reader is not actually used.  This allows an actual
+   application to assume that it never shares a reader (while
+   performing one command).  Returns 0 on success; only then the
+   unlock_reader function must be called after returning from the
+   handler. */
+static gpg_error_t 
+lock_reader (app_t app)
+{
+  gpg_error_t err;
+  int slot = app->slot;
+
+  if (slot < 0 || slot >= DIM (lock_table))
+    return gpg_error (app->slot<0? GPG_ERR_INV_VALUE : GPG_ERR_RESOURCE_LIMIT);
+
+  if (!lock_table[slot].initialized)
+    {
+      if (!pth_mutex_init (&lock_table[slot].lock))
+        {
+          err = gpg_error_from_errno (errno);
+          log_error ("error initializing mutex: %s\n", strerror (errno));
+          return err;
+        }
+      lock_table[slot].initialized = 1;
+    }
+  
+  if (!pth_mutex_acquire (&lock_table[slot].lock, 0, NULL))
+    {
+      err = gpg_error_from_errno (errno);
+      log_error ("failed to acquire APP lock for slot %d: %s\n",
+                 slot, strerror (errno));
+      return err;
+    }
+
+  return 0;
+}
+
+/* Release a lock on the reader.  See lock_reader(). */
+static void
+unlock_reader (app_t app)
+{
+  int slot = app->slot;
+
+  if (slot < 0 || slot >= DIM (lock_table)
+      || !lock_table[slot].initialized)
+    log_bug ("unlock_reader called for invalid slot %d\n", slot);
+
+  if (!pth_mutex_release (&lock_table[slot].lock))
+    log_error ("failed to release APP lock for slot %d: %s\n",
+               slot, strerror (errno));
+
+}
+ 
 /* Check wether the application NAME is allowed.  This does not mean
    we have support for it though.  */
 static int
@@ -54,7 +119,7 @@ is_app_allowed (const char *name)
 gpg_error_t
 select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
 {
-  int rc;
+  gpg_error_t err;
   app_t app;
   unsigned char *result = NULL;
   size_t resultlen;
@@ -63,22 +128,26 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   app = xtrycalloc (1, sizeof *app);
   if (!app)
     {
-      rc = gpg_error_from_errno (errno);
-      log_info ("error allocating context: %s\n", gpg_strerror (rc));
-      return rc;
+      err = gpg_error_from_errno (errno);
+      log_info ("error allocating context: %s\n", gpg_strerror (err));
+      return err;
     }
   app->slot = slot;
+
+  err = lock_reader (app);
+  if (err)
+    return err;
 
   /* Fixme: We should now first check whether a card is at all
      present. */
 
   /* Try to read the GDO file first to get a default serial number. */
-  rc = iso7816_select_file (slot, 0x3F00, 1, NULL, NULL);
-  if (!rc)
-    rc = iso7816_select_file (slot, 0x2F02, 0, NULL, NULL);
-  if (!rc)
-     rc = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
-  if (!rc)
+  err = iso7816_select_file (slot, 0x3F00, 1, NULL, NULL);
+  if (!err)
+    err = iso7816_select_file (slot, 0x2F02, 0, NULL, NULL);
+  if (!err)
+     err = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
+  if (!err)
     {
       size_t n;
       const unsigned char *p;
@@ -104,8 +173,8 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
           memmove (result, p, n);
           app->serialno = result;
           app->serialnolen = n;
-          rc = app_munge_serialno (app);
-          if (rc)
+          err = app_munge_serialno (app);
+          if (err)
             goto leave;
         }
       else
@@ -114,38 +183,40 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     }
 
   /* For certain error codes, there is no need to try more.  */
-  if (gpg_err_code (rc) == GPG_ERR_CARD_NOT_PRESENT)
+  if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
     goto leave;
   
 
   /* Figure out the application to use.  */
-  rc = gpg_error (GPG_ERR_NOT_FOUND);
+  err = gpg_error (GPG_ERR_NOT_FOUND);
 
-  if (rc && is_app_allowed ("openpgp") && (!name || !strcmp (name, "openpgp")))
-    rc = app_select_openpgp (app);
-  if (rc && is_app_allowed ("nks") && (!name || !strcmp (name, "nks")))
-    rc = app_select_nks (app);
-  if (rc && is_app_allowed ("p15") && (!name || !strcmp (name, "p15")))
-    rc = app_select_p15 (app);
-  if (rc && is_app_allowed ("dinsig") && (!name || !strcmp (name, "dinsig")))
-    rc = app_select_dinsig (app);
-  if (rc && name)
-    rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+  if (err && is_app_allowed ("openpgp")
+          && (!name || !strcmp (name, "openpgp")))
+    err = app_select_openpgp (app);
+  if (err && is_app_allowed ("nks") && (!name || !strcmp (name, "nks")))
+    err = app_select_nks (app);
+  if (err && is_app_allowed ("p15") && (!name || !strcmp (name, "p15")))
+    err = app_select_p15 (app);
+  if (err && is_app_allowed ("dinsig") && (!name || !strcmp (name, "dinsig")))
+    err = app_select_dinsig (app);
+  if (err && name)
+    err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 
  leave:
-  if (rc)
+  if (err)
     {
       if (name)
         log_info ("can't select application `%s': %s\n",
-                  name, gpg_strerror (rc));
+                  name, gpg_strerror (err));
       else
         log_info ("no supported card application found: %s\n",
-                  gpg_strerror (rc));
+                  gpg_strerror (err));
       xfree (app);
-      return rc;
+      return err;
     }
 
   app->initialized = 1;
+  unlock_reader (app);
   *r_app = app;
   return 0;
 }
@@ -181,7 +252,7 @@ release_application (app_t app)
      
      All other serial number not starting with FF are used as they are.
 */
-int
+gpg_error_t
 app_munge_serialno (app_t app)
 {
   if (app->serialnolen && app->serialno[0] == 0xff)
@@ -208,7 +279,7 @@ app_munge_serialno (app_t app)
    no update time is available the returned value is 0.  Caller must
    free SERIAL unless the function returns an error.  If STAMP is not
    of interest, NULL may be passed. */
-int 
+gpg_error_t 
 app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 {
   unsigned char *buf, *p;
@@ -234,9 +305,11 @@ app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 
 /* Write out the application specifig status lines for the LEARN
    command. */
-int
-app_write_learn_status (APP app, CTRL ctrl)
+gpg_error_t
+app_write_learn_status (app_t app, CTRL ctrl)
 {
+  gpg_error_t err;
+
   if (!app)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->initialized)
@@ -247,8 +320,12 @@ app_write_learn_status (APP app, CTRL ctrl)
   if (app->apptype)
     send_status_info (ctrl, "APPTYPE",
                       app->apptype, strlen (app->apptype), NULL, 0);
-
-  return app->fnc.learn_status (app, ctrl);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.learn_status (app, ctrl);
+  unlock_reader (app);
+  return err;
 }
 
 
@@ -256,18 +333,24 @@ app_write_learn_status (APP app, CTRL ctrl)
    the CERTINFO status lines) and return it in the freshly allocated
    buffer put into CERT and the length of the certificate put into
    CERTLEN. */
-int
+gpg_error_t
 app_readcert (app_t app, const char *certid,
               unsigned char **cert, size_t *certlen)
 {
+  gpg_error_t err;
+
   if (!app)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->initialized)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.readcert)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-
-  return app->fnc.readcert (app, certid, cert, certlen);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.readcert (app, certid, cert, certlen);
+  unlock_reader (app);
+  return err;
 }
 
 
@@ -278,9 +361,11 @@ app_readcert (app_t app, const char *certid,
    code returned.
 
    This function might not be supported by all applications.  */
-int
+gpg_error_t
 app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 {
+  gpg_error_t err;
+
   if (pk)
     *pk = NULL;
   if (pklen)
@@ -292,15 +377,21 @@ app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.readkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-
-  return app->fnc.readkey (app, keyid, pk, pklen);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err= app->fnc.readkey (app, keyid, pk, pklen);
+  unlock_reader (app);
+  return err;
 }
 
 
 /* Perform a GETATTR operation.  */
-int 
-app_getattr (APP app, CTRL ctrl, const char *name)
+gpg_error_t 
+app_getattr (app_t app, CTRL ctrl, const char *name)
 {
+  gpg_error_t err;
+
   if (!app || !name || !*name)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->initialized)
@@ -328,36 +419,48 @@ app_getattr (APP app, CTRL ctrl, const char *name)
 
   if (!app->fnc.getattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  return app->fnc.getattr (app, ctrl, name);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err =  app->fnc.getattr (app, ctrl, name);
+  unlock_reader (app);
+  return err;
 }
 
 /* Perform a SETATTR operation.  */
-int 
-app_setattr (APP app, const char *name,
-             int (*pincb)(void*, const char *, char **),
+gpg_error_t 
+app_setattr (app_t app, const char *name,
+             gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const unsigned char *value, size_t valuelen)
 {
+  gpg_error_t err;
+
   if (!app || !name || !*name || !value)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->initialized)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.setattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  return app->fnc.setattr (app, name, pincb, pincb_arg, value, valuelen);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.setattr (app, name, pincb, pincb_arg, value, valuelen);
+  unlock_reader (app);
+  return err;
 }
 
 /* Create the signature and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
-int 
-app_sign (APP app, const char *keyidstr, int hashalgo,
-          int (pincb)(void*, const char *, char **),
+gpg_error_t 
+app_sign (app_t app, const char *keyidstr, int hashalgo,
+          gpg_error_t (*pincb)(void*, const char *, char **),
           void *pincb_arg,
           const void *indata, size_t indatalen,
           unsigned char **outdata, size_t *outdatalen )
 {
-  int rc;
+  gpg_error_t err;
 
   if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -365,27 +468,31 @@ app_sign (APP app, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.sign)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  rc = app->fnc.sign (app, keyidstr, hashalgo,
-                      pincb, pincb_arg,
-                      indata, indatalen,
-                      outdata, outdatalen);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.sign (app, keyidstr, hashalgo,
+                       pincb, pincb_arg,
+                       indata, indatalen,
+                       outdata, outdatalen);
+  unlock_reader (app);
   if (opt.verbose)
-    log_info ("operation sign result: %s\n", gpg_strerror (rc));
-  return rc;
+    log_info ("operation sign result: %s\n", gpg_strerror (err));
+  return err;
 }
 
 /* Create the signature using the INTERNAL AUTHENTICATE command and
    return the allocated result in OUTDATA.  If a PIN is required the
    PINCB will be used to ask for the PIN; it should return the PIN in
    an allocated buffer and put it into PIN.  */
-int 
-app_auth (APP app, const char *keyidstr,
-          int (pincb)(void*, const char *, char **),
+gpg_error_t 
+app_auth (app_t app, const char *keyidstr,
+          gpg_error_t (*pincb)(void*, const char *, char **),
           void *pincb_arg,
           const void *indata, size_t indatalen,
           unsigned char **outdata, size_t *outdatalen )
 {
-  int rc;
+  gpg_error_t err;
 
   if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -393,27 +500,31 @@ app_auth (APP app, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.auth)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  rc = app->fnc.auth (app, keyidstr,
-                      pincb, pincb_arg,
-                      indata, indatalen,
-                      outdata, outdatalen);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.auth (app, keyidstr,
+                       pincb, pincb_arg,
+                       indata, indatalen,
+                       outdata, outdatalen);
+  unlock_reader (app);
   if (opt.verbose)
-    log_info ("operation auth result: %s\n", gpg_strerror (rc));
-  return rc;
+    log_info ("operation auth result: %s\n", gpg_strerror (err));
+  return err;
 }
 
 
 /* Decrypt the data in INDATA and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
-int 
-app_decipher (APP app, const char *keyidstr,
-              int (pincb)(void*, const char *, char **),
+gpg_error_t 
+app_decipher (app_t app, const char *keyidstr,
+              gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg,
               const void *indata, size_t indatalen,
               unsigned char **outdata, size_t *outdatalen )
 {
-  int rc;
+  gpg_error_t err;
 
   if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -421,23 +532,27 @@ app_decipher (APP app, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.decipher)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  rc = app->fnc.decipher (app, keyidstr,
-                          pincb, pincb_arg,
-                          indata, indatalen,
-                          outdata, outdatalen);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.decipher (app, keyidstr,
+                           pincb, pincb_arg,
+                           indata, indatalen,
+                           outdata, outdatalen);
+  unlock_reader (app);
   if (opt.verbose)
-    log_info ("operation decipher result: %s\n", gpg_strerror (rc));
-  return rc;
+    log_info ("operation decipher result: %s\n", gpg_strerror (err));
+  return err;
 }
 
 
 /* Perform a SETATTR operation.  */
-int 
-app_genkey (APP app, CTRL ctrl, const char *keynostr, unsigned int flags,
-            int (*pincb)(void*, const char *, char **),
+gpg_error_t 
+app_genkey (app_t app, CTRL ctrl, const char *keynostr, unsigned int flags,
+            gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
-  int rc;
+  gpg_error_t err;
 
   if (!app || !keynostr || !*keynostr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -445,35 +560,46 @@ app_genkey (APP app, CTRL ctrl, const char *keynostr, unsigned int flags,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.genkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  rc = app->fnc.genkey (app, ctrl, keynostr, flags, pincb, pincb_arg);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.genkey (app, ctrl, keynostr, flags, pincb, pincb_arg);
+  unlock_reader (app);
   if (opt.verbose)
-    log_info ("operation genkey result: %s\n", gpg_strerror (rc));
-  return rc;
+    log_info ("operation genkey result: %s\n", gpg_strerror (err));
+  return err;
 }
 
 
 /* Perform a GET CHALLENGE operation.  This fucntion is special as it
    directly accesses the card without any application specific
    wrapper. */
-int
-app_get_challenge (APP app, size_t nbytes, unsigned char *buffer)
+gpg_error_t
+app_get_challenge (app_t app, size_t nbytes, unsigned char *buffer)
 {
+  gpg_error_t err;
+
   if (!app || !nbytes || !buffer)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->initialized)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  return iso7816_get_challenge (app->slot, nbytes, buffer);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = iso7816_get_challenge (app->slot, nbytes, buffer);
+  unlock_reader (app);
+  return err;
 }
 
 
 
 /* Perform a CHANGE REFERENCE DATA or RESET RETRY COUNTER operation.  */
-int 
-app_change_pin (APP app, CTRL ctrl, const char *chvnostr, int reset_mode,
-                int (*pincb)(void*, const char *, char **),
+gpg_error_t 
+app_change_pin (app_t app, CTRL ctrl, const char *chvnostr, int reset_mode,
+                gpg_error_t (*pincb)(void*, const char *, char **),
                 void *pincb_arg)
 {
-  int rc;
+  gpg_error_t err;
 
   if (!app || !chvnostr || !*chvnostr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -481,22 +607,27 @@ app_change_pin (APP app, CTRL ctrl, const char *chvnostr, int reset_mode,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.change_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  rc = app->fnc.change_pin (app, ctrl, chvnostr, reset_mode, pincb, pincb_arg);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.change_pin (app, ctrl, chvnostr, reset_mode,
+                             pincb, pincb_arg);
+  unlock_reader (app);
   if (opt.verbose)
-    log_info ("operation change_pin result: %s\n", gpg_strerror (rc));
-  return rc;
+    log_info ("operation change_pin result: %s\n", gpg_strerror (err));
+  return err;
 }
 
 
 /* Perform a VERIFY operation without doing anything lese.  This may
    be used to initialze a the PIN cache for long lasting other
    operations.  Its use is highly application dependent. */
-int 
-app_check_pin (APP app, const char *keyidstr,
-               int (*pincb)(void*, const char *, char **),
+gpg_error_t 
+app_check_pin (app_t app, const char *keyidstr,
+               gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
 {
-  int rc;
+  gpg_error_t err;
 
   if (!app || !keyidstr || !*keyidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -504,9 +635,13 @@ app_check_pin (APP app, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.check_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  rc = app->fnc.check_pin (app, keyidstr, pincb, pincb_arg);
+  err = lock_reader (app);
+  if (err)
+    return err;
+  err = app->fnc.check_pin (app, keyidstr, pincb, pincb_arg);
+  unlock_reader (app);
   if (opt.verbose)
-    log_info ("operation check_pin result: %s\n", gpg_strerror (rc));
-  return rc;
+    log_info ("operation check_pin result: %s\n", gpg_strerror (err));
+  return err;
 }
 

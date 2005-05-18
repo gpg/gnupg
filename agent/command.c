@@ -1061,5 +1061,6 @@ start_command_handler (int listen_fd, int fd)
     free (ctrl.lc_ctype);
   if (ctrl.lc_messages)
     free (ctrl.lc_messages);
+  xfree (ctrl.server_local);
 }
 

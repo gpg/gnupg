@@ -20,6 +20,10 @@
  * $Id$
  */
 
+/* NOTE: This module is also used by other software, thus the use of
+   the macro USE_GNU_PTH is mandatory.  For GnuPG this macro is
+   guaranteed to be defined true. */
+
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>

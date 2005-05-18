@@ -1,3 +1,19 @@
+2005-05-18  Werner Koch  <wk@g10code.com>
+
+	* divert-scd.c (ask_for_card): Removed the card reset kludge.
+
+2005-05-17  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (unlock_scd): Add new arg CTRL. Changed all callers.
+	(start_scd): Reoworked to allow for additional connections.
+	* agent.h (ctrl_t): Add local data for the SCdaemon.
+	* command.c (start_command_handler): Release SERVER_LOCAL.
+
+	* gpg-agent.c (create_server_socket): Use xmalloc.
+	(main): Removed option --disable-pth a dummy.  Removed non-pth
+	code path.
+	(cleanup_sh): Removed.  Not needed anymore.
+
 2005-05-05  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_key_to_buffer): Rename to ...

@@ -39,6 +39,7 @@ enum cmd_and_opt_values
     aNull = 0,
     oQuiet      = 'q',
     oVerbose	= 'v',
+    oRawSocket  = 'S',
 
     oNoVerbose	= 500,
     oHomedir,
@@ -55,6 +56,7 @@ static ARGPARSE_OPTS opts[] =
     { oVerbose, "verbose",  0, N_("verbose") },
     { oQuiet, "quiet",      0, N_("quiet") },
     { oHex,   "hex",        0, N_("print data out hex encoded") },
+    { oRawSocket, "raw-socket", 2, N_("|NAME|connect to Assuan socket NAME")},
 
     /* hidden options */
     { oNoVerbose, "no-verbose",  0, "@"},
@@ -70,6 +72,7 @@ struct
   int quiet;		/* Be extra quiet.  */
   const char *homedir;  /* Configuration directory name */
   int hex;              /* Print data lines in hex format. */
+  const char *raw_socket; /* Name of socket to connect in raw mode. */
 } opt;
 
 
@@ -159,6 +162,7 @@ main (int argc, char **argv)
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir:   opt.homedir = pargs.r.ret_str; break;
         case oHex:       opt.hex = 1; break;
+        case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
 
         default: pargs.err = 2; break;
 	}
@@ -169,7 +173,21 @@ main (int argc, char **argv)
   
   fname = argc ? *argv : NULL;
 
-  ctx = start_agent ();
+  if (opt.raw_socket)
+    {
+      rc = assuan_socket_connect (&ctx, opt.raw_socket, 0);
+      if (rc)
+        {
+          log_error ("can't connect to socket `%s': %s\n",
+                     opt.raw_socket, assuan_strerror (rc));
+          exit (1);
+        }
+
+      if (opt.verbose)
+        log_info ("connection to socket `%s' established\n", opt.raw_socket);
+    }
+  else
+    ctx = start_agent ();
   line = NULL;
   linesize = 0;
   for (;;)

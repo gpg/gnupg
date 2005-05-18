@@ -99,7 +99,8 @@ typedef struct app_ctx_s *app_t;
 
 /*-- scdaemon.c --*/
 void scd_exit (int rc);
-void scd_init_default_ctrl (CTRL ctrl);
+void scd_init_default_ctrl (ctrl_t ctrl);
+const char *scd_get_socket_name (void);
 
 /*-- command.c --*/
 void scd_command_handler (int);

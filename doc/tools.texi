@@ -722,6 +722,16 @@ directory stated through the environment variable @env{GNUPGHOME} or
 (on W32 systems) by means on the Registry entry
 @var{HKCU\Software\GNU\GnuPG:HomeDir}.
 
+
+@item -S
+@itemx --raw-socket @var{name}
+@opindex S        
+@opindex raw-socket
+Connect to socket @var{name} assuming this is an Assuan style server.
+Do not run any special initializations or environment checks.  This may
+be used to directly connect to any Assuan style socket server.
+
+
 @end table
 
 @c
