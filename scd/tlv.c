@@ -221,3 +221,76 @@ parse_ber_header (unsigned char const **buffer, size_t *size,
   *size = length;
   return 0;
 }
+
+
+/* FIXME: The following function should not go into this file but for
+   now it is easier to keep it here. */
+
+/* Return the next token of an canconical encoded S-expression.  BUF
+   is the pointer to the S-expression and BUFLEN is a pointer to the
+   length of this S-expression (used to validate the syntax).  Both
+   are updated to reflect the new position.  The token itself is
+   returned as a pointer into the orginal buffer at TOK and TOKLEN.
+   If a parentheses is the next token, TOK will be set to NULL.
+   TOKLEN is checked to be within the bounds.  On error a error code
+   is returned and all pointers should are not guaranteed to point to
+   a meanigful value. DEPTH should be initialized to 0 and will
+   reflect on return the actual depth of the tree. To detect the end
+   of the S-expression it is advisable to check DEPTH after a
+   successful return:
+
+   depth = 0;
+   while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+          && depth)
+     process_token (tok, toklen);
+   if (err)  
+     handle_error ();
+ */
+gpg_error_t
+parse_sexp (unsigned char const **buf, size_t *buflen,
+            int *depth, unsigned char const **tok, size_t *toklen)
+{
+  const unsigned char *s;
+  size_t n, vlen;
+
+  s = *buf;
+  n = *buflen;
+  *tok = NULL;
+  *toklen = 0;
+  if (!n)
+    return *depth ? gpg_error (GPG_ERR_INV_SEXP) : 0;
+  if (*s == '(')
+    {
+      s++; n--;
+      (*depth)++;
+      *buf = s;
+      *buflen = n;
+      return 0;
+    }
+  if (*s == ')')
+    {
+      if (!*depth)
+        return gpg_error (GPG_ERR_INV_SEXP);
+      *toklen = 1;
+      s++; n--;
+      (*depth)--;
+      *buf = s;
+      *buflen = n;
+      return 0;
+    }
+  for (vlen=0; n && *s && *s != ':' && (*s >= '0' && *s <= '9'); s++, n--)
+    vlen = vlen*10 + (*s - '0');
+  if (!n || *s != ':')
+    return gpg_error (GPG_ERR_INV_SEXP);
+  s++; n--;
+  if (vlen > n)
+    return gpg_error (GPG_ERR_INV_SEXP);
+  *tok = s;
+  *toklen = vlen;
+  s += vlen;
+  n -= vlen;
+  *buf = s;
+  *buflen = n;
+  return 0;
+}
+

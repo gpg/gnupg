@@ -23,9 +23,14 @@
 #ifndef GNUPG_SCD_APP_COMMON_H
 #define GNUPG_SCD_APP_COMMON_H
 
-#if GNUPG_MAJOR_VERSION != 1
-#include <ksba.h>
+#if GNUPG_MAJOR_VERSION == 1
+# ifdef ENABLE_AGENT_SUPPORT
+# include "assuan.h"
+# endif 
+#else
+# include <ksba.h>
 #endif
+
 
 struct app_local_s;  /* Defined by all app-*.c.  */
 
@@ -35,6 +40,15 @@ struct app_ctx_s {
                        unsupported operations the particular
                        function pointer is set to NULL */
   int slot;         /* Used reader. */
+
+  /* If this is used by GnuPG 1.4 we need to know the assuan context
+     in case we need to divert the operation to an already running
+     agent.  This if ASSUAN_CTX is not NULL we take this as indication
+     that all operations are diverted to gpg-agent. */
+#if GNUPG_MAJOR_VERSION == 1 && defined(ENABLE_AGENT_SUPPORT)
+  assuan_context_t assuan_ctx;
+#endif /*GNUPG_MAJOR_VERSION == 1*/
+
   unsigned char *serialno; /* Serialnumber in raw form, allocated. */
   size_t serialnolen;      /* Length in octets of serialnumber. */
   const char *apptype;
@@ -72,6 +86,11 @@ struct app_ctx_s {
                      void *pincb_arg,
                      const void *indata, size_t indatalen,
                      unsigned char **outdata, size_t *outdatalen);
+    gpg_error_t (*writekey) (app_t app, ctrl_t ctrl,
+                             const char *certid, unsigned int flags,
+                             gpg_error_t (*pincb)(void*,const char *,char **),
+                             void *pincb_arg,
+                             const unsigned char *pk, size_t pklen);
     gpg_error_t (*genkey) (app_t app, ctrl_t ctrl,
                    const char *keynostr, unsigned int flags,
                    gpg_error_t (*pincb)(void*, const char *, char **),
@@ -134,6 +153,11 @@ gpg_error_t app_decipher (app_t app, const char *keyidstr,
                   void *pincb_arg,
                   const void *indata, size_t indatalen,
                   unsigned char **outdata, size_t *outdatalen );
+gpg_error_t app_writekey (app_t app, ctrl_t ctrl,
+                          const char *keyidstr, unsigned int flags,
+                          gpg_error_t (*pincb)(void*, const char *, char **),
+                          void *pincb_arg,
+                          const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
                 const char *keynostr, unsigned int flags,
                 gpg_error_t (*pincb)(void*, const char *, char **),

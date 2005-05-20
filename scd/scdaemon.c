@@ -50,6 +50,7 @@
 #ifdef HAVE_W32_SYSTEM
 #include "../jnlib/w32-afunix.h"
 #endif
+#include "ccid-driver.h"
 
 
 enum cmd_and_opt_values 
@@ -66,7 +67,7 @@ enum cmd_and_opt_values
   oDebugAll,
   oDebugLevel,
   oDebugWait,
-  oDebugSC,
+  oDebugCCIDDriver,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -85,8 +86,8 @@ enum cmd_and_opt_values
   oAllowAdmin,
   oDenyAdmin,
   oDisableApplication,
-
-aTest };
+  oDebugDisableTicker
+};
 
 
 
@@ -97,6 +98,8 @@ static ARGPARSE_OPTS opts[] = {
   { 301, NULL, 0, N_("@Options:\n ") },
 
   { oServer,   "server",     0, N_("run in server mode (foreground)") },
+  { oMultiServer, "multi-server", 0,
+                                N_("run in multi server mode (foreground)") },
   { oDaemon,   "daemon",     0, N_("run in daemon mode (background)") },
   { oVerbose, "verbose",   0, N_("verbose") },
   { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
@@ -107,10 +110,10 @@ static ARGPARSE_OPTS opts[] = {
   { oDebugAll, "debug-all"     ,0, "@"},
   { oDebugLevel, "debug-level" ,2, "@"},
   { oDebugWait,"debug-wait",1, "@"},
+  { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
+  { oDebugDisableTicker, "debug-disable-ticker", 0, "@"},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
-  { oMultiServer, "multi-server", 0,
-                       N_("allow additional connections in server mode")},
   { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
   { octapiDriver, "ctapi-driver", 2, N_("|NAME|use NAME as ct-API driver")},
   { opcscDriver, "pcsc-driver", 2, N_("|NAME|use NAME as PC/SC driver")},
@@ -124,10 +127,6 @@ static ARGPARSE_OPTS opts[] = {
   { oAllowAdmin, "allow-admin", 0, N_("allow the use of admin card commands")},
   { oDenyAdmin,  "deny-admin",  0, "@" },  
   { oDisableApplication, "disable-application", 2, "@"},
-
-  /* Dummy options to be removed at some point. */
-  { oDebugSC,  "debug-sc",  1, "@" },
-  { oDisableOpenSC, "disable-opensc", 0, "@" },
 
   {0}
 };
@@ -149,6 +148,12 @@ static int maybe_setuid = 1;
 
 /* Name of the communication socket */
 static char *socket_name;
+
+
+/* Debug flag to disable the ticker.  The ticker is in fact not
+   disabled but it won't perform any ticker specific actions. */
+static int ticker_disabled;
+
 
 
 static char *create_socket_name (int use_standard_socket,
@@ -443,7 +448,10 @@ main (int argc, char **argv )
         case oDebugAll: opt.debug = ~0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
-        case oDebugSC: break;
+        case oDebugCCIDDriver: 
+          ccid_set_debug_level (ccid_set_debug_level (-1)+1);
+          break;
+        case oDebugDisableTicker: ticker_disabled = 1; break;
 
         case oOptions:
           /* config files may not be nested (silently ignore them) */
@@ -463,7 +471,7 @@ main (int argc, char **argv )
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;
         case oServer: pipe_server = 1; break;
-        case oMultiServer: multi_server = 1; break;
+        case oMultiServer: pipe_server = 1; multi_server = 1; break;
         case oDaemon: is_daemon = 1; break;
 
         case oReaderPort: opt.reader_port = pargs.r.ret_str; break;
@@ -839,7 +847,8 @@ handle_signal (int signo)
 static void
 handle_tick (void)
 {
-  scd_update_reader_status_file ();
+  if (!ticker_disabled)
+    scd_update_reader_status_file ();
 }
 
 

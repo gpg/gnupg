@@ -40,6 +40,9 @@
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
 
+/* Maximum allowed size of key data as used in inquiries. */
+#define MAXLEN_KEYDATA 4096
+
 
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
 
@@ -523,7 +526,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
 }
 
 
-/* READKEY <hexified_certid>
+/* READKEY <keyid>
 
    Return the public key for the given cert or key ID as an standard
    S-Expression.
@@ -913,6 +916,79 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
   return map_to_assuan_status (rc);
 }
 
+
+
+/* WRITEKEY [--force] <keyid> 
+
+   This command is used to store a secret key on a a smartcard.  The
+   allowed keyids depend on the currently selected smartcard
+   application. The actual keydata is requested using the inquiry
+   "KETDATA" and need to be provided without any protection.  With
+   --force set an existing key under this KEYID will get overwritten.
+   The keydata is expected to be the usual canonical encoded
+   S-expression.
+
+   A PIN will be requested for most NAMEs.  See the corresponding
+   writekey function of the actually used application (app-*.c) for
+   details.  */
+static int
+cmd_writekey (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *keyid;
+  int force = has_option (line, "--force");
+  unsigned char *keydata;
+  size_t keydatalen;
+
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_LOCKED);
+
+  /* Skip over options. */
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  if (!*line)
+    return set_error (Parameter_Error, "no keyid given");
+  keyid = line;
+  while (*line && !spacep (line))
+    line++;
+  *line = 0;
+
+  if ((rc = open_card (ctrl, NULL)))
+    return rc;
+
+  if (!ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  keyid = xtrystrdup (keyid);
+  if (!keyid)
+    return ASSUAN_Out_Of_Core;
+
+  /* Now get the actual keydata. */
+  rc = assuan_inquire (ctx, "KEYDATA", &keydata, &keydatalen, MAXLEN_KEYDATA);
+  if (rc)
+    {
+      xfree (keyid);
+      return rc;
+    }
+
+  /* Write the key to the card. */
+  rc = app_writekey (ctrl->app_ctx, ctrl, keyid, force? 1:0,
+                     pin_cb, ctx, keydata, keydatalen);
+  xfree (keyid);
+  xfree (keydata);
+
+  TEST_CARD_REMOVAL (ctrl, rc);
+  return map_to_assuan_status (rc);
+}
+
+
+
 /* GENKEY [--force] <no>
 
    Generate a key on-card identified by NO, which is application
@@ -924,7 +1000,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
      S KEY-DATA [p|n] <hexdata>
      
 
-   --force is required to overwriet an already existing key.  The
+   --force is required to overwrite an already existing key.  The
    KEY-CREATED-AT is required for further processing because it is
    part of the hashed key material for the fingerprint.
 
@@ -1222,6 +1298,7 @@ register_commands (assuan_context_t ctx)
     { "OUTPUT",       NULL }, 
     { "GETATTR",      cmd_getattr },
     { "SETATTR",      cmd_setattr },
+    { "WRITEKEY",     cmd_writekey },
     { "GENKEY",       cmd_genkey },
     { "RANDOM",       cmd_random },
     { "PASSWD",       cmd_passwd },

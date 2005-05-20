@@ -60,6 +60,7 @@ enum cmd_and_opt_values
   oShadow,
   oShowShadowInfo,
   oShowKeygrip,
+  oCanonical,
 
   oP12Import,
   oP12Export,
@@ -86,6 +87,7 @@ struct rsa_secret_key_s
 
 static const char *opt_homedir;
 static int opt_armor;
+static int opt_canonical;
 static int opt_store;
 static int opt_force;
 static int opt_no_fail_on_exist;
@@ -107,6 +109,7 @@ static ARGPARSE_OPTS opts[] = {
 
   { oVerbose, "verbose",   0, "verbose" },
   { oArmor,   "armor",     0, "write output in advanced format" },
+  { oCanonical, "canonical", 0, "write output in canonical format" },
   { oPassphrase, "passphrase", 2, "|STRING|use passphrase STRING" },
   { oProtect, "protect",     256, "protect a private key"},
   { oUnprotect, "unprotect", 256, "unprotect a private key"},
@@ -508,14 +511,21 @@ show_file (const char *fname)
 
   keylen = gcry_sexp_canon_len (key, 0, NULL,NULL);
   assert (keylen);
-
-  p = make_advanced (key, keylen);
-  xfree (key);
-  if (p)
+  
+  if (opt_canonical)
     {
-      fwrite (p, strlen (p), 1, stdout);
-      xfree (p);
+      fwrite (key, keylen, 1, stdout);
     }
+  else
+    {
+      p = make_advanced (key, keylen);
+      if (p)
+        {
+          fwrite (p, strlen (p), 1, stdout);
+          xfree (p);
+        }
+    }
+  xfree (key);
 }
 
 static void
@@ -1079,6 +1089,7 @@ main (int argc, char **argv )
         {
         case oVerbose: opt.verbose++; break;
         case oArmor:   opt_armor=1; break;
+        case oCanonical: opt_canonical=1; break;
         case oHomedir: opt_homedir = pargs.r.ret_str; break;
 
         case oProtect: cmd = oProtect; break;

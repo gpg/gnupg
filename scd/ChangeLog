@@ -1,3 +1,30 @@
+2005-05-20  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c: Replaced macro DEBUG_T1 by a new debug level.
+	(parse_ccid_descriptor): Mark SCR335 firmware version 5.18 good.
+	(ccid_transceive): Arghhh.  The seqno is another bit in the
+	R-block than in the I block, this was wrong at one place.
+
+	* scdaemon.c: New options --debug-ccid-driver and
+	--debug-disable-ticker.
+
+	* app-openpgp.c (do_genkey, do_writekey): Factored code to check
+	for existing key out into ..
+	(does_key_exist): .. New function.
+
+2005-05-19  Werner Koch  <wk@g10code.com>
+
+	* tlv.c (parse_sexp): New.
+
+	* command.c (cmd_writekey): New.
+	* app.c (app_writekey): New.
+	* app-common.c (app_t): Add function ptr WRITEKEY.
+	* app-openpgp.c (do_writekey): New.
+
+	* app-openpgp.c (do_readkey) [GNUPG_MAJOR_VERSION==1]: Return error.
+	* app-common.h (app_t) [GNUPG_MAJOR_VERSION==1]: Add a field to
+	store the Assuan context.
+
 2005-05-17  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c: Removed non-pth code paths.

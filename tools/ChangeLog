@@ -1,3 +1,10 @@
+2005-05-20  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (add_definq, show_definq, clear_definq)
+	(handle_inquire): New.
+	(read_and_print_response): Handle INQUIRE command.
+	(main): Implement control commands.
+
 2005-04-21  Werner Koch  <wk@g10code.com>
 
 	* symcryptrun.c (main): Optionally allow the input file as command
@@ -368,7 +375,7 @@
 	* watchgnupg.c: New.
 
 
- Copyright 2003, 2004 Free Software Foundation, Inc.
+ Copyright 2003, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

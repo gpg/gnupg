@@ -54,6 +54,12 @@ abbreviate this command.
 Run in server mode and wait for commands on the @code{stdin}.  This is
 default mode is to create a socket and listen for commands there.
 
+@item --multi-server
+@opindex multi-server
+Run in server mode and wait for commands on the @code{stdin} as well as
+on an additional Unix Domain socket.  The server command @code{GETINFO}
+may be used to get the name of that extra socket.
+
 @item --daemon
 @opindex daemon
 Run the program in the background.  This option is required to prevent
@@ -120,6 +126,13 @@ How these messages are mapped to the actual debugging flags is not
 specified and may change with newer releaes of this program. They are
 however carefully selected to best aid in debugging.
 
+@quotation Note
+All debugging options are subject to change and thus should not be used
+by any application program.  As the name says, they are only used as
+helpers to debug problems.
+@end quotation
+
+
 @item --debug @var{flags}
 @opindex debug
 This option is only useful for debugging and the behaviour may change at
@@ -128,7 +141,7 @@ usual C-Syntax. The currently defined bits are:
 
    @table @code
    @item 0  (1)
-   X.509 or OpenPGP protocol related data
+   command I/O
    @item 1  (2)  
    values of big number integers 
    @item 2  (4)
@@ -143,8 +156,8 @@ usual C-Syntax. The currently defined bits are:
    write hashed data to files named @code{dbgmd-000*}
    @item 10 (1024)
    trace Assuan protocol
-   @item 12 (4096)
-   bypass all certificate validation
+   @item 11 (2048)
+   trace APDU I/O to the card.  This may reveal sensitive data.
    @end table
 
 @item --debug-all
@@ -156,6 +169,17 @@ Same as @code{--debug=0xffffffff}
 When running in server mode, wait @var{n} seconds before entering the
 actual processing loop and print the pid.  This gives time to attach a
 debugger.
+
+@item --debug-ccid-driver
+@opindex debug-wait
+Enable debug output from the included CCID driver for smartcards.
+Using this option twice will also enable some tracing of the T=1
+protocol.  Note that this option may reveal sensitive data.
+
+@item --debug-disable-ticker
+@opindex debug-disable-ticker
+This option disables all ticker functions like checking for card
+insertions.
 
 @item --no-detach
 @opindex no-detach
@@ -286,6 +310,7 @@ syncronizing access to a token between sessions.
 * Scdaemon PKDECRYPT::    Decrypting data with a Smartcard.
 * Scdaemon GETATTR::      Read an attribute's value.
 * Scdaemon SETATTR::      Update an attribute's value.
+* Scdaemon WRITEKEY::     Write a key to a card.
 * Scdaemon GENKEY::       Generate a new key on-card.
 * Scdaemon RANDOM::       Return random bytes generate on-card.
 * Scdaemon PASSWD::       Change PINs.
@@ -419,6 +444,25 @@ TO BE WRITTEN.
 @subsection Update an attribute's value.
 
 TO BE WRITTEN.
+
+@node Scdaemon WRITEKEY
+@subsection Write a key to a card.
+
+@example
+  WRITEKEY [--force] @var{keyid}
+@end example
+
+This command is used to store a secret key on a a smartcard.  The
+allowed keyids depend on the currently selected smartcard
+application. The actual keydata is requested using the inquiry
+@code{KEYDATA} and need to be provided without any protection.  With
+@option{--force} set an existing key under this @var{keyid} will get
+overwritten.  The key data is expected to be the usual canonical encoded
+S-expression.
+
+A PIN will be requested in most saes.  This however depends on the
+actual card application.
+
 
 @node Scdaemon GENKEY
 @subsection Generate a new key on-card.

@@ -158,7 +158,7 @@ start_scd (ctrl_t ctrl)
   gpg_error_t err = 0;
   const char *pgmname;
   assuan_context_t ctx;
-  const char *argv[4];
+  const char *argv[3];
   int no_close_list[3];
   int i;
   int rc;
@@ -266,9 +266,8 @@ start_scd (ctrl_t ctrl)
     pgmname++;
 
   argv[0] = pgmname;
-  argv[1] = "--server";
-  argv[2] = "--multi-server";
-  argv[3] = NULL;
+  argv[1] = "--multi-server";
+  argv[2] = NULL;
 
   i=0;
   if (!opt.running_detached)

@@ -30,12 +30,17 @@ Libgcrypt.  Here is an example of an unprotected file:
   (q #00f7a7c..[some bytes not shown]..61#)
   (u #304559a..[some bytes not shown]..9b#)
  )
+ (created-at timestamp)
  (uri http://foo.bar x-foo:whatever_you_want)
  (comment whatever)
 )
 
-"comment" and "uri" are optional.  "comment" is currently used to keep
-track of ssh key comments.
+"comment", "created-at" and "uri" are optional.  "comment" is
+currently used to keep track of ssh key comments. "created-at" is used
+to keep track of the creation time stamp used with OpenPGP keys; it is
+optional but required for some operations to calculate the fingerprint
+of the key.  This timestamp should be a string with the number of
+seconds since Epoch or an ISO time string (yyyymmddThhmmss).
 
 Actually this form should not be used for regular purposes and only
 accepted by gpg-agent with the configuration option:

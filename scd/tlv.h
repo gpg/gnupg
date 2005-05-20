@@ -88,4 +88,21 @@ gpg_error_t parse_ber_header (unsigned char const **buffer, size_t *size,
 
 
 
+/* Return the next token of an canconical encoded S-expression.  BUF
+   is the pointer to the S-expression and BUFLEN is a pointer to the
+   length of this S-expression (used to validate the syntax).  Both
+   are updated to reflect the new position.  The token itself is
+   returned as a pointer into the orginal buffer at TOK and TOKLEN.
+   If a parentheses is the next token, TOK will be set to NULL.
+   TOKLEN is checked to be within the bounds.  On error a error code
+   is returned and all pointers should are not guaranteed to point to
+   a meanigful value. DEPTH should be initialized to 0 and will
+   reflect on return the actual depth of the tree. To detect the end
+   of the S-expression it is advisable to check DEPTH after a
+   successful return. */
+gpg_error_t parse_sexp (unsigned char const **buf, size_t *buflen,
+                        int *depth, unsigned char const **tok, size_t *toklen);
+
+
+
 #endif /* SCD_TLV_H */

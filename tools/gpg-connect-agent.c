@@ -76,6 +76,23 @@ struct
 } opt;
 
 
+
+/* Definitions for /definq commands and a global linked list with all
+   the definitions. */
+struct definq_s
+{
+  struct definq_s *next;
+  char *name;     /* Name of inquiry or NULL for any name. */
+  int is_prog;     /* True if this is a program to run. */
+  char file[1];   /* Name of file or program. */
+};
+typedef struct definq_s *definq_t;
+
+static definq_t definq_list;
+static definq_t *definq_list_tail = &definq_list;
+
+
+
 /*-- local prototypes --*/
 static int read_and_print_response (assuan_context_t ctx);
 static assuan_context_t start_agent (void);
@@ -129,6 +146,68 @@ i18n_init(void)
 #endif
 }
 
+/* Store an inquire response pattern.  Note, that this function may
+   change the content of LINE.  We assume that leading white spaces
+   are already removed. */
+static void
+add_definq (char *line, int is_prog)
+{
+  definq_t d;
+  char *name, *p;
+
+  /* Get name. */
+  name = line;
+  for (p=name; *p && !spacep (p); p++)
+    ;
+  if (*p)
+    *p++ = 0;
+  while (spacep (p))
+    p++;
+
+  d = xmalloc (sizeof *d + strlen (p) );
+  strcpy (d->file, p);
+  d->is_prog = is_prog;
+  if ( !strcmp (name, "*"))
+    d->name = NULL;
+  else
+    d->name = xstrdup (name);
+
+  d->next = NULL;
+  *definq_list_tail = d;
+  definq_list_tail = &d->next;
+}
+
+
+/* Show all inquiry defintions. */
+static void
+show_definq (void)
+{
+  definq_t d;
+
+  for (d=definq_list; d; d = d->next)
+    if (d->name)
+      printf ("%-20s %c %s\n", d->name, d->is_prog? 'p':'f', d->file);
+  for (d=definq_list; d; d = d->next)
+    if (!d->name)
+      printf ("%-20s %c %s\n", "*", d->is_prog? 'p':'f', d->file);
+}
+
+
+/* Clear all inquiry definitions. */
+static void
+clear_definq (void)
+{
+  while (definq_list)
+    { 
+      definq_t tmp = definq_list->next;
+      xfree (definq_list->name);
+      xfree (definq_list);
+      definq_list = tmp;
+    }
+  definq_list_tail = &definq_list;
+}      
+
+
 
 /* gpg-connect-agent's entry point. */
 int
@@ -138,7 +217,7 @@ main (int argc, char **argv)
   const char *fname;
   int no_more_options = 0;
   assuan_context_t ctx;
-  char *line;
+  char *line, *p;
   size_t linesize;
   int rc;
 
@@ -213,6 +292,57 @@ main (int argc, char **argv)
         log_info (_("line shortened due to embedded Nul character\n"));
       if (line[n-1] == '\n')
         line[n-1] = 0;
+      if (*line == '/')
+        {
+          /* Handle control commands. */
+          char *cmd = line+1;
+
+          for (p=cmd; *p && !spacep (p); p++)
+            ;
+          if (*p)
+            *p++ = 0;
+          while (spacep (p))
+            p++;
+          if (!strcmp (cmd, "definqfile"))
+            {
+              add_definq (p, 0);
+            }
+          else if (!strcmp (cmd, "definqprog"))
+            {
+              add_definq (p, 1);
+            }
+          else if (!strcmp (cmd, "showdef"))
+            {
+              show_definq ();
+            }
+          else if (!strcmp (cmd, "cleardef"))
+            {
+              clear_definq ();
+            }
+          else if (!strcmp (cmd, "echo"))
+            {
+              puts (p);
+            }
+          else if (!strcmp (cmd, "help"))
+            {
+              puts ("Available commands:\n"
+                    "/echo ARGS             Echo ARGS.\n"
+                    "/definqfile NAME FILE\n"
+                    "    Use content of FILE for inquiries with NAME.\n"
+                    "    NAME may be \"*\" to match any inquiry.\n"
+                    "/definqprog NAME PGM\n"
+                    "    Run PGM for inquiries matching NAME and pass the\n"
+                    "    entire line to it as arguments.\n"
+                    "/showdef               Print all definitions.\n"
+                    "/cleardef              Delete all definitions.\n"
+                    "/help                  Print this help.");
+            }
+          else
+            log_error (_("unknown command `%s'\n"), cmd );
+      
+          continue;
+        }
+      
       rc = assuan_write_line (ctx, line);
       if (rc)
         {
@@ -231,6 +361,94 @@ main (int argc, char **argv)
     log_info ("closing connection to agent\n");
   
   return 0; 
+}
+
+
+/* Handle an Inquire from the server.  Return False if it could not be
+   handled; in this case the caller shll complete the operation.  LINE
+   is the complete line as received from the server.  This function
+   may change the content of LINE. */
+static int
+handle_inquire (assuan_context_t ctx, char *line)
+{
+  const char *name;
+  definq_t d;
+  FILE *fp;
+  char buffer[1024];
+  int rc, n;
+
+  /* Skip the command and trailing spaces. */
+  for (; *line && !spacep (line); line++)
+    ;
+  while (spacep (line))
+    line++;
+  /* Get the name. */
+  name = line;
+  for (; *line && !spacep (line); line++)
+    ;
+  if (*line)
+    *line++ = 0;
+
+  /* Now match it against our list. he second loop is todetect the
+     match all entry. **/
+  for (d=definq_list; d; d = d->next)
+    if (d->name && !strcmp (d->name, name))
+        break;
+  if (!d)
+    for (d=definq_list; d; d = d->next)
+      if (!d->name)
+        break;
+  if (!d)
+    {
+      if (opt.verbose)
+        log_info ("no handler for inquiry `%s' found\n", name);
+      return 0;
+    }
+
+  if (d->is_prog)
+    {
+      fp = popen (d->file, "r");
+      if (!fp)
+        log_error ("error executing `%s': %s\n", d->file, strerror (errno));
+      else if (opt.verbose)
+        log_error ("handling inquiry `%s' by running `%s'\n", name, d->file);
+    }
+  else
+    {
+      fp = fopen (d->file, "rb");
+      if (!fp)
+        log_error ("error opening `%s': %s\n", d->file, strerror (errno));
+      else if (opt.verbose)
+        log_error ("handling inquiry `%s' by returning content of `%s'\n",
+                   name, d->file);
+    }
+  if (!fp)
+    return 0;
+
+  while ( (n = fread (buffer, 1, sizeof buffer, fp)) )
+    {
+      rc = assuan_send_data (ctx, buffer, n);
+      if (rc)
+        {
+          log_error ("sending data back failed: %s\n", assuan_strerror (rc) );
+          break;
+        }
+    }
+  if (ferror (fp))
+    log_error ("error reading from `%s': %s\n", d->file, strerror (errno));
+
+  rc = assuan_send_data (ctx, NULL, 0);
+  if (rc)
+    log_error ("sending data back failed: %s\n", assuan_strerror (rc) );
+
+  if (d->is_prog)
+    {
+      if (pclose (fp))
+        log_error ("error running `%s': %s\n", d->file, strerror (errno));
+    }
+  else
+    fclose (fp);
+  return 1;
 }
 
 
@@ -325,7 +543,8 @@ read_and_print_response (assuan_context_t ctx)
         {
           fwrite (line, linelen, 1, stdout);
           putchar ('\n');
-          return 0;
+          if (!handle_inquire (ctx, line))
+            assuan_write_line (ctx, "CANCEL");
         }
       else if (linelen >= 3
                && line[0] == 'E' && line[1] == 'N' && line[2] == 'D'

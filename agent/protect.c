@@ -60,7 +60,7 @@ hash_passphrase (const char *passphrase, int hashalgo,
 
 
 
-/* Calculate the MIC for a private key S-Exp. SHA1HASH should pint to
+/* Calculate the MIC for a private key S-Exp. SHA1HASH should point to
    a 20 byte buffer.  This function is suitable for any algorithms. */
 static int 
 calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
