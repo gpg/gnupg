@@ -278,12 +278,13 @@ agent_send_all_options (assuan_context_t ctx)
 
 /*
  * Open a connection to the agent and initializes the connection.
- * Returns: -1 on error; on success a file descriptor for that
- * connection is returned.
+ * Returns: -1 on error; on success an Assuan context for that
+ * connection is returned.  With TRY set to true, no error messages
+ * are printed and the use of the agent won't get disabled on failure.
  */
 #ifdef ENABLE_AGENT_SUPPORT
-static assuan_context_t
-agent_open (void)
+assuan_context_t
+agent_open (int try)
 {
   int rc;
   assuan_context_t ctx;
@@ -298,8 +299,11 @@ agent_open (void)
       infostr = getenv ( "GPG_AGENT_INFO" );
       if (!infostr || !*infostr) 
         {
-          log_error (_("gpg-agent is not available in this session\n"));
-          opt.use_agent = 0;
+          if (!try)
+            {
+              log_error (_("gpg-agent is not available in this session\n"));
+              opt.use_agent = 0;
+            }
           return NULL;
         }
       infostr = xstrdup ( infostr );
@@ -307,9 +311,12 @@ agent_open (void)
   
   if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
     {
-      log_error ( _("malformed GPG_AGENT_INFO environment variable\n"));
+      if (!try)
+        {
+          log_error ( _("malformed GPG_AGENT_INFO environment variable\n"));
+          opt.use_agent = 0;
+        }
       xfree (infostr);
-      opt.use_agent = 0;
       return NULL;
     }
   *p++ = 0;
@@ -319,28 +326,38 @@ agent_open (void)
   prot = *p? atoi (p+1) : 0;
   if (prot != 1)
     {
-      log_error (_("gpg-agent protocol version %d is not supported\n"), prot);
+      if (!try)
+        {
+          log_error (_("gpg-agent protocol version %d is not supported\n"),
+                     prot);
+          opt.use_agent = 0;
+        }
       xfree (infostr);
-      opt.use_agent = 0;
       return NULL;
     }
      
   rc = assuan_socket_connect (&ctx, infostr, pid);
   if (rc)
     {
-      log_error ( _("can't connect to `%s': %s\n"), 
-                  infostr, assuan_strerror (rc));
+      if (!try)
+        {
+          log_error ( _("can't connect to `%s': %s\n"), 
+                      infostr, assuan_strerror (rc));
+          opt.use_agent = 0;
+        }
       xfree (infostr );
-      opt.use_agent = 0;
       return NULL;
     }
   xfree (infostr);
 
   if (agent_send_all_options (ctx))
     {
-      log_error (_("problem with the agent - disabling agent use\n"));
+      if (!try)
+        {
+          log_error (_("problem with the agent - disabling agent use\n"));
+          opt.use_agent = 0;
+        }
       assuan_disconnect (ctx);
-      opt.use_agent = 0;
       return NULL;
     }
 
@@ -350,7 +367,7 @@ agent_open (void)
 
 
 #ifdef ENABLE_AGENT_SUPPORT
-static void
+void
 agent_close (assuan_context_t ctx)
 {
   assuan_disconnect (ctx);
@@ -474,7 +491,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
     }
 #endif
 
-  if ( !(ctx = agent_open ()) ) 
+  if ( !(ctx = agent_open (0)) ) 
     goto failure;
 
   if (custom_description)
@@ -672,7 +689,7 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
   else
     pk = NULL;
     
-  if ( !(ctx = agent_open ()) ) 
+  if ( !(ctx = agent_open (0)) ) 
     goto failure;
 
   { 

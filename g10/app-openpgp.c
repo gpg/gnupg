@@ -90,6 +90,7 @@ static struct {
 };
 
 
+/* One cache item for DOs.  */
 struct cache_s {
   struct cache_s *next;
   int tag;
@@ -97,8 +98,27 @@ struct cache_s {
   unsigned char data[1];
 };
 
+
+/* Object with application (i.e. OpenPGP card) specific data.  */
 struct app_local_s {
+  /* A linked list with cached DOs.  */
   struct cache_s *cache;
+  
+  /* Keep track of the public keys.  */
+  struct
+  {
+    int read_done;   /* True if we have at least tried to read them.  */
+    unsigned char *key; /* This is a malloced buffer with a canonical
+                           encoded S-expression encoding a public
+                           key. Might be NULL if key is not
+                           available.  */
+    size_t keylen;      /* The length of the above S-expression.  Thsi
+                           is usullay only required for corss checks
+                           because the length of an S-expression is
+                           implicitly available.  */
+  } pk[3];
+
+  /* Keep track of card capabilities.  */
   struct 
   {
     unsigned int get_challenge:1;
@@ -106,6 +126,8 @@ struct app_local_s {
     unsigned int change_force_chv:1;
     unsigned int private_dos:1;
   } extcap;
+
+  /* Flags used to control the application.  */
   struct
   {
     unsigned int no_sync:1;   /* Do not sync CHV1 and CHV2 */
@@ -114,10 +136,16 @@ struct app_local_s {
 };
 
 
+
+/***** Local prototypes  *****/
 static unsigned long convert_sig_counter_value (const unsigned char *value,
                                                 size_t valuelen);
-static unsigned long get_sig_counter (APP app);
+static unsigned long get_sig_counter (app_t app);
 
+
+
+
+
 /* Deconstructor. */
 static void
 do_deinit (app_t app)
@@ -125,11 +153,18 @@ do_deinit (app_t app)
   if (app && app->app_local)
     {
       struct cache_s *c, *c2;
+      int i;
 
       for (c = app->app_local->cache; c; c = c2)
         {
           c2 = c->next;
           xfree (c);
+        }
+
+      for (i=0; i < DIM (app->app_local->pk); i++)
+        {
+          xfree (app->app_local->pk[i].key);
+          app->app_local->pk[i].read_done = 0;
         }
       xfree (app->app_local);
       app->app_local = NULL;
@@ -278,23 +313,33 @@ flush_cache (app_t app)
    NULL if not found or a pointer which must be used to release the
    buffer holding value. */
 static void *
-get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
+get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
+            int *r_rc)
 {
   int rc, i;
   unsigned char *buffer;
   size_t buflen;
   unsigned char *value;
   size_t valuelen;
+  int dummyrc;
+
+  if (!r_rc)
+    r_rc = &dummyrc;
 
   *result = NULL;
   *nbytes = 0;
+  *r_rc = 0;
   for (i=0; data_objects[i].tag && data_objects[i].tag != tag; i++)
     ;
 
   if (app->card_version > 0x0100 && data_objects[i].get_immediate_in_v11)
     {
-      if( iso7816_get_data (app->slot, tag, &buffer, &buflen))
-        return NULL;
+      rc = iso7816_get_data (app->slot, tag, &buffer, &buflen);
+      if (rc)
+        {
+          *r_rc = rc;
+          return NULL;
+        }
       *result = buffer;
       *nbytes = buflen;
       return buffer;
@@ -306,12 +351,13 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
     {
       rc = get_cached_data (app, data_objects[i].get_from,
                             &buffer, &buflen,
-                            data_objects[i].get_immediate_in_v11);
+                            (data_objects[i].dont_cache 
+                             || data_objects[i].get_immediate_in_v11));
       if (!rc)
         {
           const unsigned char *s;
 
-          s = find_tlv (buffer, buflen, tag, &valuelen);
+          s = find_tlv_unchecked (buffer, buflen, tag, &valuelen);
           if (!s)
             value = NULL; /* not found */
           else if (valuelen > buflen - (s - buffer))
@@ -328,7 +374,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
   if (!value) /* Not in a constructed DO, try simple. */
     {
       rc = get_cached_data (app, tag, &buffer, &buflen,
-                            data_objects[i].get_immediate_in_v11);
+                            (data_objects[i].dont_cache 
+                             || data_objects[i].get_immediate_in_v11));
       if (!rc)
         {
           value = buffer;
@@ -342,6 +389,7 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
       *result = value;
       return buffer;
     }
+  *r_rc = rc;
   return NULL;
 }
 
@@ -385,8 +433,8 @@ dump_all_do (int slot)
                   
                   if (j==i || data_objects[i].tag != data_objects[j].get_from)
                     continue;
-                  value = find_tlv (buffer, buflen,
-                                    data_objects[j].tag, &valuelen);
+                  value = find_tlv_unchecked (buffer, buflen,
+                                              data_objects[j].tag, &valuelen);
                   if (!value)
                     ; /* not found */
                   else if (valuelen > buflen - (value - buffer))
@@ -460,7 +508,7 @@ parse_login_data (app_t app)
   app->app_local->flags.def_chv2 = 0;
 
   /* Read the DO.  */
-  relptr = get_one_do (app, 0x005E, &buffer, &buflen);
+  relptr = get_one_do (app, 0x005E, &buffer, &buflen, NULL);
   if (!relptr)
     return; /* Ooops. */
   for (; buflen; buflen--, buffer++)
@@ -499,7 +547,7 @@ parse_login_data (app_t app)
 }
 
 /* Note, that FPR must be at least 20 bytes. */
-static int 
+static gpg_error_t 
 store_fpr (int slot, int keynumber, u32 timestamp,
            const unsigned char *m, size_t mlen,
            const unsigned char *e, size_t elen, 
@@ -623,7 +671,7 @@ send_key_data (ctrl_t ctrl, const char *name,
 
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
-static int 
+static gpg_error_t 
 do_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   static struct {
@@ -650,7 +698,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "PRIVATE-DO-4", 0x0104 },
     { NULL, 0 }
   };
-  int idx, i;
+  int idx, i, rc;
   void *relptr;
   unsigned char *value;
   size_t valuelen;
@@ -695,7 +743,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       return 0;
     }
 
-  relptr = get_one_do (app, table[idx].tag, &value, &valuelen);
+  relptr = get_one_do (app, table[idx].tag, &value, &valuelen, &rc);
   if (relptr)
     {
       if (table[idx].special == 1)
@@ -732,11 +780,395 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
       xfree (relptr);
     }
+  return rc;
+}
+
+/* Retrieve the fingerprint from the card inserted in SLOT and write
+   the according hex representation to FPR.  Caller must have provide
+   a buffer at FPR of least 41 bytes.  Returns 0 on success or an
+   error code. */
+#if GNUPG_MAJOR_VERSION > 1
+static gpg_error_t
+retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
+{
+  gpg_error_t err = 0;
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+  int i;
+
+  assert (keyno >=0 && keyno <= 2);
+
+  relptr = get_one_do (app, 0x00C5, &value, &valuelen, NULL);
+  if (relptr && valuelen >= 60)
+    {
+      for (i = 0; i < 20; i++)
+        sprintf (fpr + (i * 2), "%02X", value[(keyno*20)+i]);
+    }
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  xfree (relptr);
+  return err;
+}
+#endif /*GNUPG_MAJOR_VERSION > 1*/
+
+
+/* Retrieve the public key material for the RSA key, whose fingerprint
+   is FPR, from gpg output, which can be read through the stream FP.
+   The RSA modulus will be stored at the address of M and MLEN, the
+   public exponent at E and ELEN.  Returns zero on success, an error
+   code on failure.  Caller must release the allocated buffers at M
+   and E if the function returns success.  */
+#if GNUPG_MAJOR_VERSION > 1
+static gpg_error_t
+retrieve_key_material (FILE *fp, const char *hexkeyid,
+		       const unsigned char **m, size_t *mlen,
+		       const unsigned char **e, size_t *elen)
+{
+  gcry_error_t err = 0;
+  char *line = NULL;    /* read_line() buffer. */
+  size_t line_size = 0; /* Helper for for read_line. */
+  int found_key = 0;    /* Helper to find a matching key. */
+  unsigned char *m_new = NULL;
+  unsigned char *e_new = NULL;
+  size_t m_new_n = 0;
+  size_t e_new_n = 0;
+
+  /* Loop over all records until we have found the subkey
+     corresponsing to the fingerprint. Inm general the first record
+     should be the pub record, but we don't rely on that.  Given that
+     we only need to look at one key, it is sufficient to compare the
+     keyid so that we don't need to look at "fpr" records. */
+  for (;;)
+    {
+      char *p;
+      char *fields[6];
+      int nfields;
+      size_t max_length;
+      gcry_mpi_t mpi;
+      int i;
+
+      max_length = 4096;
+      i = read_line (fp, &line, &line_size, &max_length);
+      if (!i)
+        break; /* EOF. */
+      if (i < 0)
+	{
+	  err = gpg_error_from_errno (errno);
+	  goto leave; /* Error. */
+	}
+      if (!max_length)
+        {
+          err = gpg_error (GPG_ERR_TRUNCATED);
+          goto leave;  /* Line truncated - we better stop processing.  */
+        }
+
+      /* Parse the line into fields. */
+      for (nfields=0, p=line; p && nfields < DIM (fields); nfields++)
+        {
+          fields[nfields] = p;
+          p = strchr (p, ':');
+          if (p)
+            *(p++) = 0;
+        }
+      if (!nfields)
+        continue; /* No fields at all - skip line.  */
+
+      if (!found_key)
+        {
+          if ( (!strcmp (fields[0], "sub") || !strcmp (fields[0], "pub") )
+               && nfields > 4 && !strcmp (fields[4], hexkeyid))
+            found_key = 1;
+          continue;
+      	}
+      
+      if ( !strcmp (fields[0], "sub") || !strcmp (fields[0], "pub") )
+        break; /* Next key - stop.  */
+
+      if ( strcmp (fields[0], "pkd") )
+        continue; /* Not a key data record.  */
+      i = 0; /* Avoid erroneous compiler warning. */
+      if ( nfields < 4 || (i = atoi (fields[1])) < 0 || i > 1
+           || (!i && m_new) || (i && e_new))
+        {
+          err = gpg_error (GPG_ERR_GENERAL);
+          goto leave; /* Error: Invalid key data record or not an RSA key.  */
+        }
+      
+      err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_HEX, fields[3], 0, NULL);
+      if (err)
+        mpi = NULL;
+      else if (!i)
+        err = gcry_mpi_aprint (GCRYMPI_FMT_STD, &m_new, &m_new_n, mpi);
+      else
+        err = gcry_mpi_aprint (GCRYMPI_FMT_STD, &e_new, &e_new_n, mpi);
+      gcry_mpi_release (mpi);
+      if (err)
+        goto leave;
+    }
+  
+  if (m_new && e_new)
+    {
+      *m = m_new;
+      *mlen = m_new_n;
+      m_new = NULL;
+      *e = e_new;
+      *elen = e_new_n;
+      e_new = NULL;
+    }
+  else
+    err = gpg_error (GPG_ERR_GENERAL);
+
+ leave:
+  xfree (m_new);
+  xfree (e_new);
+  xfree (line);
+  return err;
+}
+#endif /*GNUPG_MAJOR_VERSION > 1*/
+
+
+/* Get the public key for KEYNO and store it as an S-expresion with
+   the APP handle.  On error that field gets cleared.  If we already
+   know about the public key we will just return.  Note that this does
+   not mean a key is available; this is soley indicated by the
+   presence of the app->app_local->pk[KEYNO-1].key field.
+
+   Note that GnuPG 1.x does not need this and it would be too time
+   consuming to send it just for the fun of it. However, given that we
+   use the same code in gpg 1.4, we can't use the gcry S-expresion
+   here but need to open encode it. */
+#if GNUPG_MAJOR_VERSION > 1
+static gpg_error_t
+get_public_key (app_t app, int keyno)
+{
+  gpg_error_t err = 0;
+  unsigned char *buffer;
+  const unsigned char *keydata, *m, *e;
+  size_t buflen, keydatalen, mlen, elen;
+  unsigned char *mbuf = NULL;
+  unsigned char *ebuf = NULL;
+  unsigned char *keybuf = NULL;
+  unsigned char *keybuf_p;
+
+  if (keyno < 1 || keyno > 3)
+    return gpg_error (GPG_ERR_INV_ID);
+  keyno--;
+
+  /* Already cached? */
+  if (app->app_local->pk[keyno].read_done)
+    return 0;
+
+  xfree (app->app_local->pk[keyno].key);
+  app->app_local->pk[keyno].key = NULL;
+  app->app_local->pk[keyno].keylen = 0;
+
+  if (app->card_version > 0x0100)
+    {
+      /* We may simply read the public key out of these cards.  */
+      err = iso7816_read_public_key (app->slot, 
+                                    keyno == 0? "\xB6" :
+                                    keyno == 1? "\xB8" : "\xA4",
+                                    2,  
+                                    &buffer, &buflen);
+      if (err)
+        {
+          log_error (_("reading public key failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+
+      keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
+      if (!keydata)
+        {
+          err = gpg_error (GPG_ERR_CARD);
+          log_error (_("response does not contain the public key data\n"));
+          goto leave;
+        }
+ 
+      m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
+      if (!m)
+        {
+          err = gpg_error (GPG_ERR_CARD);
+          log_error (_("response does not contain the RSA modulus\n"));
+          goto leave;
+        }
+      
+
+      e = find_tlv (keydata, keydatalen, 0x0082, &elen);
+      if (!e)
+        {
+          err = gpg_error (GPG_ERR_CARD);
+          log_error (_("response does not contain the RSA public exponent\n"));
+          goto leave;
+        }
+
+      /* Prepend numbers with a 0 if needed.  */
+      if (mlen && (*m & 0x80))
+        {
+          mbuf = xtrymalloc ( mlen + 1);
+          if (!mbuf)
+            {
+              err = gpg_error_from_errno (errno);
+              goto leave;
+            }
+          *mbuf = 0;
+          memcpy (mbuf+1, m, mlen);
+          mlen++;
+          m = mbuf;
+        }
+      if (elen && (*e & 0x80))
+        {
+          ebuf = xtrymalloc ( elen + 1);
+          if (!ebuf)
+            {
+              err = gpg_error_from_errno (errno);
+              goto leave;
+            }
+          *ebuf = 0;
+          memcpy (ebuf+1, e, elen);
+          elen++;
+          e = ebuf;
+        }
+
+    }
+  else
+    {
+      /* Due to a design problem in v1.0 cards we can't get the public
+         key out of these cards without doing a verify on CHV3.
+         Clearly that is not an option and thus we try to locate the
+         key using an external helper.
+
+	 The helper we use here is gpg itself, which should know about
+	 the key in any case.  */
+
+      char fpr[41];
+      char *hexkeyid;
+      char *command = NULL;
+      FILE *fp;
+      int ret;
+
+      buffer = NULL; /* We don't need buffer.  */
+
+      err = retrieve_fpr_from_card (app, keyno, fpr);
+      if (err)
+	{
+	  log_error ("error while retrieving fpr from card: %s\n",
+		     gpg_strerror (err));
+	  goto leave;
+	}
+      hexkeyid = fpr + 24;
+
+      ret = asprintf (&command,
+		      "gpg --list-keys --with-colons --with-key-data '%s'",
+		      fpr);
+      if (ret < 0)
+	{
+	  err = gpg_error_from_errno (errno);
+	  goto leave;
+	}
+
+      fp = popen (command, "r");
+      free (command);
+      if (!fp)
+	{
+	  err = gpg_error_from_errno (errno);
+	  log_error ("running gpg failed: %s\n", gpg_strerror (err));
+	  goto leave;
+	}
+
+      err = retrieve_key_material (fp, hexkeyid, &m, &mlen, &e, &elen);
+      fclose (fp);
+      if (err)
+	{
+	  log_error ("error while retrieving key material through pipe: %s\n",
+                     gpg_strerror (err));
+	  goto leave;
+	}
+    }
+
+  /* Allocate a buffer to construct the S-expression.  */
+  /* FIXME: We should provide a generalized S-expression creation
+     mechanism. */
+  keybuf = xtrymalloc (50 + 2*35 + mlen + elen + 1);
+  if (!keybuf)
+    {
+      err = gpg_error_from_errno (errno);
+      goto leave;
+    }
+  
+  sprintf (keybuf, "(10:public-key(3:rsa(1:n%u:", (unsigned int) mlen);
+  keybuf_p = keybuf + strlen (keybuf);
+  memcpy (keybuf_p, m, mlen);
+  keybuf_p += mlen;
+  sprintf (keybuf_p, ")(1:e%u:", (unsigned int)elen);
+  keybuf_p += strlen (keybuf_p);
+  memcpy (keybuf_p, e, elen);
+  keybuf_p += elen;
+  strcpy (keybuf_p, ")))");
+  keybuf_p += strlen (keybuf_p);
+  
+  app->app_local->pk[keyno].key = keybuf;
+  app->app_local->pk[keyno].keylen = (keybuf_p - keybuf);
+
+ leave:
+  /* Set a flag to indicate that we tried to read the key.  */
+  app->app_local->pk[keyno].read_done = 1;
+
+  xfree (buffer);
+  xfree (mbuf);
+  xfree (ebuf);
   return 0;
+}
+#endif /* GNUPG_MAJOR_VERSION > 1 */
+
+
+
+/* Send the KEYPAIRINFO back. KEYNO needs to be in the range [1,3].
+   This is used by the LEARN command. */
+static gpg_error_t
+send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
+{
+  gpg_error_t err = 0;
+  /* Note that GnuPG 1.x does not need this and it would be too time
+     consuming to send it just for the fun of it. */
+#if GNUPG_MAJOR_VERSION > 1
+  unsigned char grip[20];
+  char gripstr[41];
+  char idbuf[50];
+  int i;
+
+  err = get_public_key (app, keyno);
+  if (err)
+    goto leave;
+  
+  assert (keyno >= 1 && keyno <= 3);
+  if (!app->app_local->pk[keyno-1].key)
+    goto leave; /* No such key - ignore. */
+
+  err = keygrip_from_canon_sexp (app->app_local->pk[keyno-1].key,
+                                 app->app_local->pk[keyno-1].keylen,
+                                 grip);
+  if (err)
+    goto leave;
+  
+  for (i=0; i < 20; i++)
+    sprintf (gripstr+i*2, "%02X", grip[i]);
+
+  sprintf (idbuf, "OPENPGP.%d", keyno);
+  send_status_info (ctrl, "KEYPAIRINFO", 
+                    gripstr, 40, 
+                    idbuf, strlen (idbuf), 
+                    NULL, (size_t)0);
+
+ leave:
+#endif /* GNUPG_MAJOR_VERSION > 1 */
+
+  return err; 
 }
 
 
-static int
+/* Handle the LEARN command for OpenPGP.  */
+static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl)
 {
   do_getattr (app, ctrl, "EXTCAP");
@@ -760,16 +1192,57 @@ do_learn_status (app_t app, ctrl_t ctrl)
       if (app->did_chv3)
         do_getattr (app, ctrl, "PRIVATE-DO-4");
     }
-
+  send_keypair_info (app, ctrl, 1);
+  send_keypair_info (app, ctrl, 2);
+  send_keypair_info (app, ctrl, 3);
   return 0;
 }
 
 
+/* Handle the READKEY command for OpenPGP.  On success a canonical
+   encoded S-expression with the public key will get stored at PK and
+   its length (for assertions) at PKLEN; the caller must release that
+   buffer. On error PK and PKLEN are not changed and an error code is
+   returned.  */
+static gpg_error_t
+do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
+{
+#if GNUPG_MAJOR_VERSION > 1
+  gpg_error_t err;
+  int keyno;
+  unsigned char *buf;
+
+  if (!strcmp (keyid, "OPENPGP.1"))
+    keyno = 1;
+  else if (!strcmp (keyid, "OPENPGP.2"))
+    keyno = 2;
+  else if (!strcmp (keyid, "OPENPGP.3"))
+    keyno = 3;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+
+  err = get_public_key (app, keyno);
+  if (err)
+    return err;
+
+  buf = app->app_local->pk[keyno-1].key;
+  if (!buf)
+    return gpg_error (GPG_ERR_NO_PUBKEY);
+  *pk = buf;
+  *pklen = app->app_local->pk[keyno-1].keylen;;
+  return 0;
+#else
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
+}
+
+
+
 /* Verify CHV2 if required.  Depending on the configuration of the
    card CHV1 will also be verified. */
-static int
+static gpg_error_t
 verify_chv2 (app_t app,
-             int (*pincb)(void*, const char *, char **),
+             gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
   int rc = 0;
@@ -823,9 +1296,9 @@ verify_chv2 (app_t app,
 }
 
 /* Verify CHV3 if required. */
-static int
+static gpg_error_t
 verify_chv3 (app_t app,
-             int (*pincb)(void*, const char *, char **),
+             gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
   int rc = 0;
@@ -845,7 +1318,7 @@ verify_chv3 (app_t app,
       unsigned char *value;
       size_t valuelen;
 
-      relptr = get_one_do (app, 0x00C4, &value, &valuelen);
+      relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
       if (!relptr || valuelen < 7)
         {
           log_error (_("error retrieving CHV status from card\n"));
@@ -897,9 +1370,9 @@ verify_chv3 (app_t app,
 
 /* Handle the SETATTR operation. All arguments are already basically
    checked. */
-static int 
+static gpg_error_t 
 do_setattr (app_t app, const char *name,
-            int (*pincb)(void*, const char *, char **),
+            gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg,
             const unsigned char *value, size_t valuelen)
 {
@@ -965,9 +1438,9 @@ do_setattr (app_t app, const char *name,
 
 
 /* Handle the PASSWD command. */
-static int 
+static gpg_error_t 
 do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
-               int (*pincb)(void*, const char *, char **),
+               gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
 {
   int rc = 0;
@@ -1056,9 +1529,9 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
 
 
 /* Handle the GENKEY command. */
-static int 
+static gpg_error_t 
 do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
-          int (*pincb)(void*, const char *, char **),
+          gpg_error_t (*pincb)(void*, const char *, char **),
           void *pincb_arg)
 {
   int rc;
@@ -1082,6 +1555,13 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
      generation.  This _might_ help a card to gather more entropy. */
   flush_cache (app);
 
+  /* Obviously we need to remove the cached public key.  */
+  xfree (app->app_local->pk[keyno].key);
+  app->app_local->pk[keyno].key = NULL;
+  app->app_local->pk[keyno].keylen = 0;
+  app->app_local->pk[keyno].read_done = 0;
+
+  /* Check whether a key already exists.  */
   rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
   if (rc)
     {
@@ -1109,11 +1589,12 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   else
     log_info (_("generating new key\n"));
 
-
+  
+  /* Prepare for key generation by verifying the ADmin PIN.  */
   rc = verify_chv3 (app, pincb, pincb_arg);
   if (rc)
     goto leave;
-
+   
   xfree (buffer); buffer = NULL;
 
 #if 1
@@ -1206,7 +1687,7 @@ get_sig_counter (app_t app)
   size_t valuelen;
   unsigned long ul;
 
-  relptr = get_one_do (app, 0x0093, &value, &valuelen);
+  relptr = get_one_do (app, 0x0093, &value, &valuelen, NULL);
   if (!relptr)
     return 0;
   ul = convert_sig_counter_value (value, valuelen);
@@ -1214,7 +1695,7 @@ get_sig_counter (app_t app)
   return ul;
 }
 
-static int
+static gpg_error_t
 compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
 {
   const unsigned char *fpr;
@@ -1254,7 +1735,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
      the key on the card has been replaced but the shadow information
      known to gpg was not updated.  If there is no fingerprint we
      assume that this is okay. */
-static int
+static gpg_error_t
 check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
 {
   unsigned char tmp[20];
@@ -1285,9 +1766,9 @@ check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
    GPG_ERR_WRONG_CARD to indicate that the card currently present does
    not match the one required for the requested action (e.g. the
    serial number does not match). */
-static int 
+static gpg_error_t 
 do_sign (app_t app, const char *keyidstr, int hashalgo,
-         int (*pincb)(void*, const char *, char **),
+         gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
@@ -1308,7 +1789,15 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen != 20)
+  if (indatalen == 20)
+    ;
+  else if (indatalen == (15 + 20) && hashalgo == GCRY_MD_SHA1
+           && !memcmp (indata, sha1_prefix, 15))
+    ;
+  else if (indatalen == (15 + 20) && hashalgo == GCRY_MD_RMD160
+           && !memcmp (indata, rmd160_prefix, 15))
+    ;
+  else
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check whether an OpenPGP card of any version has been requested. */
@@ -1419,15 +1908,16 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 /* Compute a digital signature using the INTERNAL AUTHENTICATE command
    on INDATA which is expected to be the raw message digest. For this
    application the KEYIDSTR consists of the serialnumber and the
-   fingerprint delimited by a slash.
+   fingerprint delimited by a slash.  Optionally the id OPENPGP.3 may
+   be given.
 
    Note that this fucntion may return the error code
    GPG_ERR_WRONG_CARD to indicate that the card currently present does
    not match the one required for the requested action (e.g. the
    serial number does not match). */
-static int 
+static gpg_error_t 
 do_auth (app_t app, const char *keyidstr,
-         int (*pincb)(void*, const char *, char **),
+         gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
@@ -1444,27 +1934,31 @@ do_auth (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check whether an OpenPGP card of any version has been requested. */
-  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
-    return gpg_error (GPG_ERR_INV_ID);
-  
-  for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+  if (!strcmp (keyidstr, "OPENPGP.3"))
     ;
-  if (n != 32)
+  else if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
     return gpg_error (GPG_ERR_INV_ID);
-  else if (!*s)
-    ; /* no fingerprint given: we allow this for now. */
-  else if (*s == '/')
-    fpr = s + 1; 
   else
-    return gpg_error (GPG_ERR_INV_ID);
+    {
+      for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+        ;
+      if (n != 32)
+        return gpg_error (GPG_ERR_INV_ID);
+      else if (!*s)
+        ; /* no fingerprint given: we allow this for now. */
+      else if (*s == '/')
+        fpr = s + 1; 
+      else
+        return gpg_error (GPG_ERR_INV_ID);
 
-  for (s=keyidstr, n=0; n < 16; s += 2, n++)
-    tmp_sn[n] = xtoi_2 (s);
-
-  if (app->serialnolen != 16)
-    return gpg_error (GPG_ERR_INV_CARD);
-  if (memcmp (app->serialno, tmp_sn, 16))
-    return gpg_error (GPG_ERR_WRONG_CARD);
+      for (s=keyidstr, n=0; n < 16; s += 2, n++)
+        tmp_sn[n] = xtoi_2 (s);
+      
+      if (app->serialnolen != 16)
+        return gpg_error (GPG_ERR_INV_CARD);
+      if (memcmp (app->serialno, tmp_sn, 16))
+        return gpg_error (GPG_ERR_WRONG_CARD);
+    }
 
   /* If a fingerprint has been specified check it against the one on
      the card.  This is allows for a meaningful error message in case
@@ -1484,9 +1978,9 @@ do_auth (app_t app, const char *keyidstr,
 }
 
 
-static int 
+static gpg_error_t 
 do_decipher (app_t app, const char *keyidstr,
-             int (pincb)(void*, const char *, char **),
+             gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
              unsigned char **outdata, size_t *outdatalen )
@@ -1545,15 +2039,14 @@ do_decipher (app_t app, const char *keyidstr,
    cheap check on the PIN: If there is something wrong with the PIN
    entry system, only the regular CHV will get blocked and not the
    dangerous CHV3.  KEYIDSTR is the usual card's serial number; an
-   optional fingerprint part will be ignored. 
+   optional fingerprint part will be ignored.
 
    There is a special mode if the keyidstr is "<serialno>[CHV3]" with
    the "[CHV3]" being a literal string:  The Admin Pin is checked if
-   and only if the retry counter is still at 3.
-*/
-static int 
+   and only if the retry counter is still at 3. */
+static gpg_error_t 
 do_check_pin (app_t app, const char *keyidstr,
-              int (pincb)(void*, const char *, char **),
+              gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
   unsigned char tmp_sn[20]; 
@@ -1588,6 +2081,7 @@ do_check_pin (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_CARD);
   if (memcmp (app->serialno, tmp_sn, 16))
     return gpg_error (GPG_ERR_WRONG_CARD);
+
   /* Yes, there is a race conditions: The user might pull the card
      right here and we won't notice that.  However this is not a
      problem and the check above is merely for a graceful failure
@@ -1600,7 +2094,7 @@ do_check_pin (app_t app, const char *keyidstr,
       size_t valuelen;
       int count;
       
-      relptr = get_one_do (app, 0x00C4, &value, &valuelen);
+      relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
       if (!relptr || valuelen < 7)
         {
           log_error (_("error retrieving CHV status from card\n"));
@@ -1634,7 +2128,7 @@ do_check_pin (app_t app, const char *keyidstr,
 
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
-int
+gpg_error_t
 app_select_openpgp (app_t app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
@@ -1685,7 +2179,7 @@ app_select_openpgp (app_t app)
           goto leave;
         }
 
-      relptr = get_one_do (app, 0x00C4, &buffer, &buflen);
+      relptr = get_one_do (app, 0x00C4, &buffer, &buflen, NULL);
       if (!relptr)
         {
           log_error (_("can't access %s - invalid OpenPGP card?\n"),
@@ -1695,7 +2189,7 @@ app_select_openpgp (app_t app)
       app->force_chv1 = (buflen && *buffer == 0);
       xfree (relptr);
 
-      relptr = get_one_do (app, 0x00C0, &buffer, &buflen);
+      relptr = get_one_do (app, 0x00C0, &buffer, &buflen, NULL);
       if (!relptr)
         {
           log_error (_("can't access %s - invalid OpenPGP card?\n"),
@@ -1723,7 +2217,7 @@ app_select_openpgp (app_t app)
 
       app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
-      app->fnc.readcert = NULL;
+      app->fnc.readkey = do_readkey;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = do_setattr;
       app->fnc.genkey = do_genkey;
@@ -1747,7 +2241,7 @@ leave:
    LEARN command returns. All parameters return allocated strings or
    buffers or NULL if the data object is not available.  All returned
    values are sanitized. */
-int
+gpg_error_t
 app_openpgp_cardinfo (app_t app,
                       char **serialno,
                       char **disp_name,
@@ -1778,7 +2272,7 @@ app_openpgp_cardinfo (app_t app,
   if (disp_name)
     {
       *disp_name = NULL;
-      relptr = get_one_do (app, 0x005B, &value, &valuelen);
+      relptr = get_one_do (app, 0x005B, &value, &valuelen, NULL);
       if (relptr)
         {
           *disp_name = make_printable_string (value, valuelen, 0);
@@ -1789,7 +2283,7 @@ app_openpgp_cardinfo (app_t app,
   if (pubkey_url)
     {
       *pubkey_url = NULL;
-      relptr = get_one_do (app, 0x5F50, &value, &valuelen);
+      relptr = get_one_do (app, 0x5F50, &value, &valuelen, NULL);
       if (relptr)
         {
           *pubkey_url = make_printable_string (value, valuelen, 0);
@@ -1803,7 +2297,7 @@ app_openpgp_cardinfo (app_t app,
     *fpr2 = NULL;
   if (fpr3)
     *fpr3 = NULL;
-  relptr = get_one_do (app, 0x00C5, &value, &valuelen);
+  relptr = get_one_do (app, 0x00C5, &value, &valuelen, NULL);
   if (relptr && valuelen >= 60)
     {
       if (fpr1)
@@ -1837,13 +2331,13 @@ app_openpgp_cardinfo (app_t app,
    create the fingerprint. M, MLEN is the RSA modulus and E, ELEN the
    RSA public exponent. This function silently overwrites an existing
    key.*/
-int 
+gpg_error_t
 app_openpgp_storekey (app_t app, int keyno,
                       unsigned char *template, size_t template_len,
                       time_t created_at,
                       const unsigned char *m, size_t mlen,
                       const unsigned char *e, size_t elen,
-                      int (*pincb)(void*, const char *, char **),
+                      gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg)
 {
   int rc;
@@ -1858,6 +2352,11 @@ app_openpgp_storekey (app_t app, int keyno,
     goto leave;
 
   flush_cache (app);
+
+  xfree (app->app_local->pk[keyno].key);
+  app->app_local->pk[keyno].key = NULL;
+  app->app_local->pk[keyno].keylen = 0;
+  app->app_local->pk[keyno].read_done = 0;
 
   rc = iso7816_put_data (app->slot,
                          (app->card_version > 0x0007? 0xE0 : 0xE9) + keyno,
@@ -1882,7 +2381,7 @@ app_openpgp_storekey (app_t app, int keyno,
 
 /* Utility function for external tools: Read the public RSA key at
    KEYNO and return modulus and exponent in (M,MLEN) and (E,ELEN). */
-int 
+gpg_error_t 
 app_openpgp_readkey (app_t app, int keyno, unsigned char **m, size_t *mlen,
                      unsigned char **e, size_t *elen)
 {

@@ -26,6 +26,9 @@
 #include "global.h"
 #include "packet.h"
 #include "cipher.h"
+#ifdef ENABLE_AGENT_SUPPORT
+#include "assuan.h"
+#endif
 
 /* What qualifies as a certification (rather than a signature?) */
 #define IS_CERT(s)       (IS_KEY_SIG(s) || IS_UID_SIG(s) || IS_SUBKEY_SIG(s) \
@@ -184,6 +187,10 @@ int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 					    int unlock, unsigned use );
 
 /*-- passphrase.h --*/
+#ifdef ENABLE_AGENT_SUPPORT
+assuan_context_t agent_open (int try);
+void agent_close (assuan_context_t ctx);
+#endif
 int  have_static_passphrase(void);
 void read_passphrase_from_fd( int fd );
 void passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo );

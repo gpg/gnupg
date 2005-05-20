@@ -1,3 +1,21 @@
+2005-05-20  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (ccid_transceive): Arghhh.  The seqno is another
+	bit in the R-block than in the I block, this was wrong at one
+	place. Fixes bug #419 and hopefully several others.
+
+2005-05-19  Werner Koch  <wk@g10code.com>
+
+	* app-common.h, app-openpgp.c, tlv.c, tlv.h: Updated from newer
+	version in gnupg 1.9 CVS.
+
+2005-05-18  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_open): Made global and add arg TRY.
+	(agent_close): Made global.
+
+	* app-common.h (app_t): Add a field to store the Assuan context.
+
 2005-05-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (do_comment): Removed.

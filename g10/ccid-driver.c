@@ -1814,7 +1814,7 @@ ccid_transceive (ccid_driver_t handle,
               msg = send_buffer;
               tpdulen = last_tpdulen;
             }
-          else if (sending && !!(tpdu[1] & 0x40) == handle->t1_ns)
+          else if (sending && !!(tpdu[1] & 0x10) == handle->t1_ns)
             { /* Reponse does not match our sequence number. */
               DEBUGOUT ("R-block with wrong seqno received on more bit\n");
               return CCID_DRIVER_ERR_CARD_IO_ERROR;

@@ -275,6 +275,7 @@ void pause_on_sigusr( int which );
 void block_all_signals(void);
 void unblock_all_signals(void);
 
+
 #ifdef ENABLE_CARD_SUPPORT
 /*-- card-util.c --*/
 void change_pin (int no, int allow_admin);

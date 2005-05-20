@@ -43,9 +43,16 @@
 #include "apdu.h"
 #include "app-common.h"
 
+/* If we build w/o agent support, assuan.h won't be included and thus
+   we need to define a repalcement for the assuan error type. */
+#ifndef ENABLE_AGENT_SUPPORT
+typedef int assuan_error_t;
+#endif
+
+
 struct ctrl_ctx_s 
 {
-  int (*status_cb)(void *opaque, const char *line);
+  assuan_error_t (*status_cb)(void *opaque, const char *line);
   void *status_cb_arg;
 };
 
@@ -57,10 +64,14 @@ struct pincb_parm_s
 
 
 static char *default_reader_port;
-static APP current_app;
+static app_t current_app;
 
 
+/* Local prototypes. */
+static assuan_error_t learn_status_cb (void *opaque, const char *line);
 
+
+
 /* Create a serialno/fpr string from the serial number and the secret
    key.  caller must free the returned string.  There is no error
    return. [Taken from 1.9's keyid.c]*/
@@ -135,8 +146,12 @@ send_status_info (CTRL ctrl, const char *keyword, ...)
 }
 
 
-void gcry_md_hash_buffer (int algo, void *digest,
-			  const void *buffer, size_t length)
+/* Replacement function of the Libgcrypt onewhich is used in gnupg
+   1.9.  Thus function computes the digest of ALGO from the data in
+   BUFFER of LENGTH.  ALGO must be supported. */
+void 
+gcry_md_hash_buffer (int algo, void *digest,
+                     const void *buffer, size_t length)
 {
   MD_HANDLE h = md_open (algo, 0);
   if (!h)
@@ -204,7 +219,7 @@ card_set_reader_port (const char *portstr)
    no update time is available the returned value is 0.  Caller must
    free SERIAL unless the function returns an error. */
 int 
-app_get_serial_and_stamp (APP app, char **serial, time_t *stamp)
+app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 {
   unsigned char *buf, *p;
   int i;
@@ -254,19 +269,91 @@ agent_release_card_info (struct agent_card_info_s *info)
 }
 
 
+/* Print an error message for a failed assuan-Transact and return a
+   gpg error code. No error is printed if RC is 0. */
+static gpg_error_t
+test_transact (int rc, const char *command)
+{
+  if (!rc)
+    return 0;
+  log_error ("sending command `%s' to agent failed: %s\n",
+             command, assuan_strerror (rc));
+  return gpg_error (GPG_ERR_CARD);
+}
+
+
+/* Try to open a card using an already running agent.  Prepare a
+   proper application context and return it. */
+static app_t
+open_card_via_agent (int *scd_available)
+{
+  assuan_context_t ctx;
+  app_t app;
+  struct agent_card_info_s info;
+  int rc;
+
+  *scd_available = 0;
+  ctx = agent_open (1);
+  if (!ctx)
+    return NULL;
+
+  /* Request the serialbnumber of the card.  If we get
+     NOT_SUPPORTED or NO_SCDAEMON back, the gpg-agent either has
+     disabled scdaemon or it can't be used.  We close the connection
+     in this case and use our own code.  This may happen if just the
+     gpg-agent has been installed for the sake of passphrase
+     caching. */
+  memset (&info, 0, sizeof info);
+  rc = assuan_transact (ctx, "SCD SERIALNO openpgp",
+                        NULL, NULL, NULL, NULL,
+                        learn_status_cb, &info);
+  if (rc)
+    {
+      if ((rc & 0xffff) == 60 || (rc & 0xffff) == 119)
+        ;  /* No scdaemon available to gpg-agent. */
+      else
+        {
+          write_status_text (STATUS_CARDCTRL, "4");
+          log_info ("selecting openpgp failed: %s\n", assuan_strerror (rc));
+          *scd_available = 1;
+        }
+      agent_release_card_info (&info);
+      agent_close (ctx);
+      return NULL;
+    }
+  
+  app = xcalloc (1, sizeof *app);
+  app->assuan_ctx = ctx;
+
+  return app;
+}
+
+
+
 /* Open the current card and select the openpgp application.  Return
    an APP context handle to be used for further procesing or NULL on
    error or if no OpenPGP application exists.*/
-static APP
+static app_t
 open_card (void)
 {
   int slot = -1;
   int rc;
-  APP app;
+  app_t app;
   int did_shutdown = 0;
+  int scd_available;
 
+  /* First check whether we can contact a gpg-agent and divert all
+     operation to it. This is required because gpg as well as the
+     agent require exclusive access to the reader. */
+  app = open_card_via_agent (&scd_available);
+  if (app)
+    goto ready; /* Yes, there is a agent with a usable card, go that way. */
+  if (scd_available)
+    return NULL; /* agent avilabale but card problem. */
+
+
+  /* No agent or usable agent, thus we do it on our own. */
   card_close ();
-
   
  retry:
   if (did_shutdown)
@@ -309,6 +396,7 @@ open_card (void)
       return NULL;
     }
 
+ ready:
   app->initialized = 1;
   current_app = app;
   if (is_status_enabled () )
@@ -327,15 +415,19 @@ open_card (void)
   return app;
 }
 
+
 void
 card_close (void)
 {
   if (current_app)
     {
-      APP app = current_app;
+      app_t app = current_app;
       current_app = NULL;
 
-      apdu_close_reader (app->slot);
+      if (app->assuan_ctx)
+        agent_close (app->assuan_ctx);
+      else
+        apdu_close_reader (app->slot);
       xfree (app);
     }
 }
@@ -382,7 +474,7 @@ format_cacheid (const char *sn)
    card context will be closed in all cases except for 0 as return
    value and if it was possible to merely shutdown the reader. */
 static int
-check_card_serialno (APP app, const char *serialno)
+check_card_serialno (app_t app, const char *serialno)
 {
   const char *s;
   int ask = 0;
@@ -505,7 +597,7 @@ store_serialno (const char *line)
 
 
 
-static int
+static assuan_error_t
 learn_status_cb (void *opaque, const char *line)
 {
   struct agent_card_info_s *parm = opaque;
@@ -644,7 +736,7 @@ learn_status_cb (void *opaque, const char *line)
 int 
 agent_learn (struct agent_card_info_s *info)
 {
-  APP app;
+  app_t app;
   int rc;
   struct ctrl_ctx_s ctrl;
   time_t stamp;
@@ -655,35 +747,68 @@ agent_learn (struct agent_card_info_s *info)
     return gpg_error (GPG_ERR_CARD);
 
   memset (info, 0, sizeof *info);
-  memset (&ctrl, 0, sizeof ctrl);
-  ctrl.status_cb = learn_status_cb;
-  ctrl.status_cb_arg = info;
 
-  rc = app_get_serial_and_stamp (app, &serial, &stamp);
-  if (!rc)
+  if (app->assuan_ctx)
     {
-      send_status_info (&ctrl, "SERIALNO", serial, strlen(serial), NULL, 0);
-      xfree (serial);
-      rc = app->fnc.learn_status (app, &ctrl);
+      rc = assuan_transact (app->assuan_ctx, "SCD LEARN --force",
+                            NULL, NULL, NULL, NULL,
+                            learn_status_cb, info);
+      rc = test_transact (rc, "SCD LEARN");
+    }
+  else
+    {
+      memset (&ctrl, 0, sizeof ctrl);
+      ctrl.status_cb = learn_status_cb;
+      ctrl.status_cb_arg = info;
+
+      rc = app_get_serial_and_stamp (app, &serial, &stamp);
+      if (!rc)
+        {
+          send_status_info (&ctrl, "SERIALNO",
+                            serial, strlen(serial), NULL, 0);
+          xfree (serial);
+          rc = app->fnc.learn_status (app, &ctrl);
+        }
     }
 
   return rc;
 }
 
-/* Get an attribite from the card. Make sure info is initialized. */
+
+/* Get an attribute from the card. Make sure info is initialized. */
 int 
 agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 {
-  APP app;
+  int rc;
+  app_t app;
   struct ctrl_ctx_s ctrl;
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  ctrl.status_cb = learn_status_cb;
-  ctrl.status_cb_arg = info;
-  return app->fnc.getattr (app, &ctrl, name);
+  if (app->assuan_ctx)
+    {
+      char line[ASSUAN_LINELENGTH];
+
+      /* We assume that NAME does not need escaping. */
+      if (12 + strlen (name) > DIM(line)-1)
+        return gpg_error (GPG_ERR_CARD);
+      stpcpy (stpcpy (line, "SCD GETATTR "), name); 
+
+      rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                           NULL, NULL, NULL, NULL,
+                                           learn_status_cb, info),
+                          "SCD GETATTR");
+    }
+  else
+    {
+      ctrl.status_cb = learn_status_cb;
+      ctrl.status_cb_arg = info;
+      rc = app->fnc.getattr (app, &ctrl, name);
+    }
+
+  return rc;
 }
 
 
@@ -797,14 +922,47 @@ int
 agent_scd_setattr (const char *name,
                    const unsigned char *value, size_t valuelen)
 {
-  APP app;
+  app_t app;
   int rc;
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  rc = app->fnc.setattr (app, name, pin_cb, NULL, value, valuelen);
+  if (app->assuan_ctx)
+    {
+      char line[ASSUAN_LINELENGTH];
+      char *p;
+
+      /* We assume that NAME does not need escaping. */
+      if (12 + strlen (name) > DIM(line)-1)
+        return gpg_error (GPG_ERR_CARD);
+      p = stpcpy (stpcpy (line, "SCD SETATTR "), name); 
+      *p++ = ' ';
+      for (; valuelen; value++, valuelen--)
+        {
+          if (p >= line + DIM(line)-5 )
+            return gpg_error (GPG_ERR_CARD);
+          if (*value < ' ' || *value == '+' || *value == '%')
+            {
+              sprintf (p, "%%%02X", *value);
+              p += 3;
+            }
+          else if (*value == ' ')
+            *p++ = '+';
+          else
+            *p++ = *value;
+        }
+      *p = 0;
+
+      rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                           NULL, NULL, NULL, NULL, NULL, NULL),
+                          "SCD SETATTR");
+    }
+  else
+    {
+      rc = app->fnc.setattr (app, name, pin_cb, NULL, value, valuelen);
+    }
 
   if (rc)
     write_status (STATUS_SC_OP_FAILURE);
@@ -812,7 +970,7 @@ agent_scd_setattr (const char *name,
 }
 
 
-static int
+static assuan_error_t
 genkey_status_cb (void *opaque, const char *line)
 {
   struct agent_card_genkey_s *parm = opaque;
@@ -868,8 +1026,8 @@ genkey_status_cb (void *opaque, const char *line)
 int 
 agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
 {
-  APP app;
-  char keynostr[20];
+  app_t app;
+  char line[ASSUAN_LINELENGTH];
   struct ctrl_ctx_s ctrl;
   int rc;
 
@@ -878,17 +1036,43 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
     return gpg_error (GPG_ERR_CARD);
 
   memset (info, 0, sizeof *info);
-  sprintf (keynostr, "%d", keyno);
-  ctrl.status_cb = genkey_status_cb;
-  ctrl.status_cb_arg = info;
 
-  rc = app->fnc.genkey (app, &ctrl, keynostr,
-                        force? 1:0,
-                        pin_cb, NULL);
+  if (app->assuan_ctx)
+    {
+      snprintf (line, DIM(line)-1, "SCD GENKEY %s%d",
+                force? "--force ":"", keyno);
+      line[DIM(line)-1] = 0;
+      rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                           NULL, NULL, NULL, NULL,
+                                           genkey_status_cb, info),
+                          "SCD GENKEY");
+    }
+  else
+    {
+      snprintf (line, DIM(line)-1, "%d", keyno);
+      ctrl.status_cb = genkey_status_cb;
+      ctrl.status_cb_arg = info;
+      rc = app->fnc.genkey (app, &ctrl, line,
+                            force? 1:0,
+                            pin_cb, NULL);
+    }
+
   if (rc)
     write_status (STATUS_SC_OP_FAILURE);
   return rc;
 }
+
+
+static assuan_error_t
+membuf_data_cb (void *opaque, const void *buffer, size_t length)
+{
+  membuf_t *data = opaque;
+
+  if (buffer)
+    put_membuf (data, buffer, length);
+  return 0;
+}
+  
 
 /* Send a PKSIGN command to the SCdaemon. */
 int 
@@ -897,7 +1081,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
                   unsigned char **r_buf, size_t *r_buflen)
 {
   struct pincb_parm_s parm;
-  APP app;
+  app_t app;
   int rc;
 
   *r_buf = NULL;
@@ -909,20 +1093,56 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  /* Check that the card's serialnumber is as required.*/
-  rc = check_card_serialno (app, serialno);
-  if (rc == -1)
-    goto retry;
+  if (app->assuan_ctx)
+    {
+      char *p, line[ASSUAN_LINELENGTH];
+      membuf_t data;
+      size_t len;
+      int i;
 
-  if (!rc)
-    rc = app->fnc.sign (app, serialno, hashalgo,
-                        pin_cb, &parm,
-                        indata, indatalen,
-                        r_buf, r_buflen);
+      if (indatalen*2 + 50 > DIM(line))
+        return gpg_error (GPG_ERR_GENERAL);
+
+      p = stpcpy (line, "SCD SETDATA ");
+      for (i=0; i < indatalen ; i++, p += 2 )
+        sprintf (p, "%02X", indata[i]);
+      rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                           NULL, NULL, NULL, NULL, NULL, NULL),
+                          "SCD SETDATA");
+      if (!rc)
+        {
+          init_membuf (&data, 1024);
+          snprintf (line, DIM(line)-1, "SCD PKSIGN %s", serialno);
+          line[DIM(line)-1] = 0;
+          rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                               membuf_data_cb, &data,
+                                               NULL, NULL, NULL, NULL),
+                              "SCD PKSIGN");
+          if (rc)
+            xfree (get_membuf (&data, &len));
+          else
+            *r_buf = get_membuf (&data, r_buflen);
+        }
+    }
+  else
+    {
+      /* Check that the card's serialnumber is as required.*/
+      rc = check_card_serialno (app, serialno);
+      if (rc == -1)
+        goto retry;
+
+      if (!rc)
+        rc = app->fnc.sign (app, serialno, hashalgo,
+                            pin_cb, &parm,
+                            indata, indatalen,
+                            r_buf, r_buflen);
+    }
+
   if (rc)
     {
       write_status (STATUS_SC_OP_FAILURE);
-      agent_clear_pin_cache (serialno);
+      if (!app->assuan_ctx)
+        agent_clear_pin_cache (serialno);
     }
   return rc;
 }
@@ -935,7 +1155,7 @@ agent_scd_pkdecrypt (const char *serialno,
                      unsigned char **r_buf, size_t *r_buflen)
 {
   struct pincb_parm_s parm;
-  APP app;
+  app_t app;
   int rc;
 
   *r_buf = NULL;
@@ -947,20 +1167,56 @@ agent_scd_pkdecrypt (const char *serialno,
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  /* Check that the card's serialnumber is as required.*/
-  rc = check_card_serialno (app, serialno);
-  if (rc == -1)
-    goto retry;
+  if (app->assuan_ctx)
+    {
+      char *p, line[ASSUAN_LINELENGTH];
+      membuf_t data;
+      size_t len;
+      int i;
 
-  if (!rc)
-    rc = app->fnc.decipher (app, serialno, 
-                            pin_cb, &parm,
-                            indata, indatalen,
-                            r_buf, r_buflen);
+      if (indatalen*2 + 50 > DIM(line))
+        return gpg_error (GPG_ERR_GENERAL);
+
+      p = stpcpy (line, "SCD SETDATA ");
+      for (i=0; i < indatalen ; i++, p += 2 )
+        sprintf (p, "%02X", indata[i]);
+      rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                           NULL, NULL, NULL, NULL, NULL, NULL),
+                          "SCD SETDATA");
+      if (!rc)
+        {
+          init_membuf (&data, 1024);
+          snprintf (line, DIM(line)-1, "SCD PKDECRYPT %s", serialno);
+          line[DIM(line)-1] = 0;
+          rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                               membuf_data_cb, &data,
+                                               NULL, NULL, NULL, NULL),
+                              "SCD PKDECRYPT");
+          if (rc)
+            xfree (get_membuf (&data, &len));
+          else
+            *r_buf = get_membuf (&data, r_buflen);
+        }
+    }
+  else
+    {
+      /* Check that the card's serialnumber is as required.*/
+      rc = check_card_serialno (app, serialno);
+      if (rc == -1)
+        goto retry;
+      
+      if (!rc)
+        rc = app->fnc.decipher (app, serialno, 
+                                pin_cb, &parm,
+                                indata, indatalen,
+                                r_buf, r_buflen);
+    }
+
   if (rc)
     {
       write_status (STATUS_SC_OP_FAILURE);
-      agent_clear_pin_cache (serialno);
+      if (!app->assuan_ctx)
+        agent_clear_pin_cache (serialno);
     }
   return rc;
 }
@@ -969,7 +1225,7 @@ agent_scd_pkdecrypt (const char *serialno,
 int 
 agent_scd_change_pin (int chvno)
 {
-  APP app;
+  app_t app;
   char chvnostr[20];
   int reset = 0;
   int rc;
@@ -981,9 +1237,17 @@ agent_scd_change_pin (int chvno)
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  sprintf (chvnostr, "%d", chvno);
-  rc = app->fnc.change_pin (app, NULL, chvnostr, reset,
-                            pin_cb, NULL);
+  if (app->assuan_ctx)
+    {
+      rc = gpg_error (GPG_ERR_CARD);
+    }
+  else
+    {
+      sprintf (chvnostr, "%d", chvno);
+      rc = app->fnc.change_pin (app, NULL, chvnostr, reset,
+                                pin_cb, NULL);
+    }
+
   if (rc)
     write_status (STATUS_SC_OP_FAILURE);
   return rc;
@@ -995,14 +1259,22 @@ agent_scd_change_pin (int chvno)
 int
 agent_scd_checkpin (const char *serialnobuf)
 {
-  APP app;
+  app_t app;
   int rc;
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  rc = app->fnc.check_pin (app, serialnobuf, pin_cb, NULL);
+  if (app->assuan_ctx)
+    {
+      rc = gpg_error (GPG_ERR_CARD);
+    }
+  else
+    {
+      rc = app->fnc.check_pin (app, serialnobuf, pin_cb, NULL);
+    }
+
   if (rc)
     write_status (STATUS_SC_OP_FAILURE);
   return rc;
@@ -1017,16 +1289,24 @@ agent_openpgp_storekey (int keyno,
                         const unsigned char *m, size_t mlen,
                         const unsigned char *e, size_t elen)
 {
-  APP app;
+  app_t app;
   int rc;
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  rc = app_openpgp_storekey (app, keyno, template, template_len,
-                             created_at, m, mlen, e, elen,
-                             pin_cb, NULL);
+  if (app->assuan_ctx)
+    {
+      rc = gpg_error (GPG_ERR_CARD);
+    }
+  else
+    {
+      rc = app_openpgp_storekey (app, keyno, template, template_len,
+                                 created_at, m, mlen, e, elen,
+                                 pin_cb, NULL);
+    }
+
   if (rc)
     write_status (STATUS_SC_OP_FAILURE);
   return rc;

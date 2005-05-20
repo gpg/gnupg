@@ -1,5 +1,5 @@
 /* tlv.c - Tag-Length-Value Utilities
- *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,9 +25,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "errors.h"
-#include "util.h"
-#include "packet.h"
+#include <gpg-error.h>
+
 #include "tlv.h"
 
 static const unsigned char *
@@ -114,16 +113,31 @@ do_find_tlv (const unsigned char *buffer, size_t length,
 
 /* Locate a TLV encoded data object in BUFFER of LENGTH and
    return a pointer to value as well as its length in NBYTES.  Return
-   NULL if it was not found.  Note, that the function does not check
-   whether the value fits into the provided buffer. */
+   NULL if it was not found or if the object does not fit into the buffer. */
 const unsigned char *
 find_tlv (const unsigned char *buffer, size_t length,
           int tag, size_t *nbytes)
 {
-  return do_find_tlv (buffer, length, tag, nbytes, 0);
+  const unsigned char *p;
+
+  p = do_find_tlv (buffer, length, tag, nbytes, 0);
+  if (p && *nbytes > (length - (p-buffer)))
+    p = NULL; /* Object longer than buffer. */
+  return p;
 }
 
 
+
+/* Locate a TLV encoded data object in BUFFER of LENGTH and
+   return a pointer to value as well as its length in NBYTES.  Return
+   NULL if it was not found.  Note, that the function does not check
+   whether the value fits into the provided buffer. */
+const unsigned char *
+find_tlv_unchecked (const unsigned char *buffer, size_t length,
+                    int tag, size_t *nbytes)
+{
+  return do_find_tlv (buffer, length, tag, nbytes, 0);
+}
 
 
 /* ASN.1 BER parser: Parse BUFFER of length SIZE and return the tag
