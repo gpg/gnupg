@@ -565,7 +565,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   n = 6 + 2 + mlen + 2 + elen;
   p = buffer = xtrymalloc (3 + n);
   if (!buffer)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_errno (errno);
   
   *p++ = 0x99;     /* ctb */
   *p++ = n >> 8;   /* 2 byte length header */
@@ -1527,6 +1527,318 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
 }
 
 
+/* Check whether a key already exists.  KEYIDX is the index of the key
+   (0..2).  If FORCE is TRUE a diagnositivc will be printed but no
+   error returned if the key already exists. */
+static gpg_error_t
+does_key_exist (app_t app, int keyidx, int force)
+{
+  const unsigned char *fpr;
+  unsigned char *buffer;
+  size_t buflen, n;
+  int i;
+
+  assert (keyidx >=0 && keyidx <= 2);
+
+  if (iso7816_get_data (app->slot, 0x006E, &buffer, &buflen))
+    {
+      log_error (_("error reading application data\n"));
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+  fpr = find_tlv (buffer, buflen, 0x00C5, &n);
+  if (!fpr || n < 60)
+    {
+      log_error (_("error reading fingerprint DO\n"));
+      xfree (buffer);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+  fpr += 20*keyidx;
+  for (i=0; i < 20 && !fpr[i]; i++)
+    ;
+  xfree (buffer);
+  if (i!=20 && !force)
+    {
+      log_error (_("key already exists\n"));
+      return gpg_error (GPG_ERR_EEXIST);
+    }
+  else if (i!=20)
+    log_info (_("existing key will be replaced\n"));
+  else
+    log_info (_("generating new key\n"));
+  return 0;
+}
+
+
+
+/* Handle the WRITEKEY command for OpenPGP.  This function expects a
+   canonical encoded S-expression with the secret key in KEYDATA and
+   its length (for assertions) in KEYDATALEN.  KEYID needs to be the
+   usual keyid which for OpenPGP is the string "OPENPGP.n" with
+   n=1,2,3.  Bit 0 of FLAGS indicates whether an existing key shall
+   get overwritten.  PINCB and PINCB_ARG are the usual arguments for
+   the pinentry callback.  */
+static gpg_error_t
+do_writekey (app_t app, ctrl_t ctrl,
+             const char *keyid, unsigned int flags,
+             gpg_error_t (*pincb)(void*, const char *, char **),
+             void *pincb_arg,
+             const unsigned char *keydata, size_t keydatalen)
+{
+  gpg_error_t err;
+  int force = (flags & 1);
+  int keyno;
+  const unsigned char *buf, *tok;
+  size_t buflen, toklen;
+  int depth, last_depth1, last_depth2;
+  const unsigned char *rsa_n = NULL;
+  const unsigned char *rsa_e = NULL;
+  const unsigned char *rsa_p = NULL;
+  const unsigned char *rsa_q = NULL;
+  size_t rsa_n_len, rsa_e_len, rsa_p_len, rsa_q_len;
+  unsigned int nbits;
+  unsigned char *template = NULL;
+  unsigned char *tp;
+  size_t template_len;
+  unsigned char fprbuf[20];
+  u32 created_at = 0;
+
+  if (!strcmp (keyid, "OPENPGP.1"))
+    keyno = 0;
+  else if (!strcmp (keyid, "OPENPGP.2"))
+    keyno = 1;
+  else if (!strcmp (keyid, "OPENPGP.3"))
+    keyno = 2;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+  
+  err = does_key_exist (app, keyno, force);
+  if (err)
+    return err;
+
+
+  /* 
+     Parse the S-expression
+   */
+  buf = keydata;
+  buflen = keydatalen;
+  depth = 0;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    goto leave;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    goto leave;
+  if (!tok || toklen != 11 || memcmp ("private-key", tok, toklen))
+    {
+      if (!tok)
+        ;
+      else if (toklen == 21 && !memcmp ("protected-private-key", tok, toklen))
+        log_info ("protected-private-key passed to writekey\n");
+      else if (toklen == 20 && !memcmp ("shadowed-private-key", tok, toklen))
+        log_info ("shadowed-private-key passed to writekey\n");
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    goto leave;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    goto leave;
+  if (!tok || toklen != 3 || memcmp ("rsa", tok, toklen))
+    {
+      err = gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+      goto leave;
+    }
+  last_depth1 = depth;
+  while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+         && depth && depth >= last_depth1)
+    {
+      if (tok)
+        {
+          err = gpg_error (GPG_ERR_UNKNOWN_SEXP);
+          goto leave;
+        }
+      if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+        goto leave;
+      if (tok && toklen == 1)
+        {
+          const unsigned char **mpi;
+          size_t *mpi_len;
+
+          switch (*tok)
+            {
+            case 'n': mpi = &rsa_n; mpi_len = &rsa_n_len; break; 
+            case 'e': mpi = &rsa_e; mpi_len = &rsa_e_len; break; 
+            case 'p': mpi = &rsa_p; mpi_len = &rsa_p_len; break; 
+            case 'q': mpi = &rsa_q; mpi_len = &rsa_q_len;break; 
+            default: mpi = NULL;  mpi_len = NULL; break;
+            }
+          if (mpi && *mpi)
+            {
+              err = gpg_error (GPG_ERR_DUP_VALUE);
+              goto leave;
+            }
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            goto leave;
+          if (tok && mpi)
+            {
+              /* Strip off leading zero bytes and save. */
+              for (;toklen && !*tok; toklen--, tok++)
+                ;
+              *mpi = tok;
+              *mpi_len = toklen;
+            }
+        }
+      /* Skip until end of list. */
+      last_depth2 = depth;
+      while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+             && depth && depth >= last_depth2)
+        ;
+      if (err)
+        goto leave;
+    }
+  /* Parse other attributes. */
+  last_depth1 = depth;
+  while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+         && depth && depth >= last_depth1)
+    {
+      if (tok)
+        {
+          err = gpg_error (GPG_ERR_UNKNOWN_SEXP);
+          goto leave;
+        }
+      if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+        goto leave;
+      if (tok && toklen == 10 && !memcmp ("created-at", tok, toklen))
+        {
+          if ((err = parse_sexp (&buf,&buflen,&depth,&tok,&toklen)))
+            goto leave;
+          if (tok)
+            {
+              for (created_at=0; toklen && *tok && *tok >= '0' && *tok <= '9';
+                   tok++, toklen--)
+                created_at = created_at*10 + (*tok - '0');
+            }
+        }
+      /* Skip until end of list. */
+      last_depth2 = depth;
+      while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+             && depth && depth >= last_depth2)
+        ;
+      if (err)
+        goto leave;
+    }
+
+
+  /* Check that we have all parameters and that they match the card
+     description. */
+  if (!created_at)
+    {
+      log_error (_("creation timestamp missing\n"));
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  nbits = rsa_n? count_bits (rsa_n, rsa_n_len) : 0;
+  if (nbits != 1024)
+    {
+      log_error (_("RSA modulus missing or not of size %d bits\n"), 1024);
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  nbits = rsa_e? count_bits (rsa_e, rsa_e_len) : 0;
+  if (nbits < 2 || nbits > 32)
+    {
+      log_error (_("RSA public exponent missing or largerr than %d bits\n"),
+                 32);
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  nbits = rsa_p? count_bits (rsa_p, rsa_p_len) : 0;
+  if (nbits != 512)
+    {
+      log_error (_("RSA prime %s missing or not of size %d bits\n"), "P", 512);
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  nbits = rsa_q? count_bits (rsa_q, rsa_q_len) : 0;
+  if (nbits != 512)
+    {
+      log_error (_("RSA prime %s missing or not of size %d bits\n"), "Q", 512);
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  
+
+  /* Build the private key template as described in section 4.3.3.6 of
+     the OpenPGP card specs:
+         0xC0   <length> public exponent
+         0xC1   <length> prime p 
+         0xC2   <length> prime q 
+  */
+  assert (rsa_e_len <= 4);
+  template_len = (1 + 1 + 4
+                  + 1 + 1 + rsa_p_len
+                  + 1 + 1 + rsa_q_len);
+  template = tp = xtrymalloc_secure (template_len);
+  if (!template)
+    {
+      err = gpg_error_from_errno (errno);
+      goto leave;
+    }
+  *tp++ = 0xC0;
+  *tp++ = 4;
+  memcpy (tp, rsa_e, rsa_e_len);
+  if (rsa_e_len < 4)
+    {
+      /* Right justify E. */
+      memmove (tp+4-rsa_e_len, tp, 4-rsa_e_len);
+      memset (tp, 0, 4-rsa_e_len);
+    }                 
+  tp += 4;
+
+  *tp++ = 0xC1;
+  *tp++ = rsa_p_len;
+  memcpy (tp, rsa_p, rsa_p_len);
+  tp += rsa_p_len;
+
+  *tp++ = 0xC2;
+  *tp++ = rsa_q_len;
+  memcpy (tp, rsa_q, rsa_q_len);
+  tp += rsa_q_len;
+
+  assert (tp - template == template_len);
+
+
+  /* Obviously we need to remove the cached public key.  */
+  xfree (app->app_local->pk[keyno].key);
+  app->app_local->pk[keyno].key = NULL;
+  app->app_local->pk[keyno].keylen = 0;
+  app->app_local->pk[keyno].read_done = 0;
+
+  /* Prepare for storing the key.  */
+  err = verify_chv3 (app, pincb, pincb_arg);
+  if (err)
+    goto leave;
+
+  /* Store the key. */
+  err = iso7816_put_data (app->slot,
+                         (app->card_version > 0x0007? 0xE0 : 0xE9) + keyno,
+                         template, template_len);
+  if (err)
+    {
+      log_error (_("failed to store the key: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+ 
+  err = store_fpr (app->slot, keyno, created_at,
+                  rsa_n, rsa_n_len, rsa_e, rsa_e_len,
+                  fprbuf, app->card_version);
+  if (err)
+    goto leave;
+
+
+ leave:
+  xfree (template);
+  return err;
+}
+
 
 /* Handle the GENKEY command. */
 static gpg_error_t 
@@ -1535,13 +1847,11 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
           void *pincb_arg)
 {
   int rc;
-  int i;
   char numbuf[30];
   unsigned char fprbuf[20];
-  const unsigned char *fpr;
   const unsigned char *keydata, *m, *e;
-  unsigned char *buffer;
-  size_t buflen, keydatalen, n, mlen, elen;
+  unsigned char *buffer = NULL;
+  size_t buflen, keydatalen, mlen, elen;
   time_t created_at;
   int keyno = atoi (keynostr);
   int force = (flags & 1);
@@ -1562,41 +1872,15 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   app->app_local->pk[keyno].read_done = 0;
 
   /* Check whether a key already exists.  */
-  rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
+  rc = does_key_exist (app, keyno, force);
   if (rc)
-    {
-      log_error (_("error reading application data\n"));
-      return gpg_error (GPG_ERR_GENERAL);
-    }
-  fpr = find_tlv (buffer, buflen, 0x00C5, &n);
-  if (!fpr || n != 60)
-    {
-      rc = gpg_error (GPG_ERR_GENERAL);
-      log_error (_("error reading fingerprint DO\n"));
-      goto leave;
-    }
-  fpr += 20*keyno;
-  for (i=0; i < 20 && !fpr[i]; i++)
-    ;
-  if (i!=20 && !force)
-    {
-      rc = gpg_error (GPG_ERR_EEXIST);
-      log_error (_("key already exists\n"));
-      goto leave;
-    }
-  else if (i!=20)
-    log_info (_("existing key will be replaced\n"));
-  else
-    log_info (_("generating new key\n"));
+    return rc;
 
-  
   /* Prepare for key generation by verifying the ADmin PIN.  */
   rc = verify_chv3 (app, pincb, pincb_arg);
   if (rc)
     goto leave;
    
-  xfree (buffer); buffer = NULL;
-
 #if 1
   log_info (_("please wait while key is being generated ...\n"));
   start_at = time (NULL);
@@ -2220,6 +2504,7 @@ app_select_openpgp (app_t app)
       app->fnc.readkey = do_readkey;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = do_setattr;
+      app->fnc.writekey = do_writekey;
       app->fnc.genkey = do_genkey;
       app->fnc.sign = do_sign;
       app->fnc.auth = do_auth;

@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <config.h>
-#include <stdio.h>
+#include <config.h> 
+#include <stdio.h> 
 #include <stdlib.h>
 #include "mpi-internal.h"
 #include "longlong.h"
@@ -31,6 +31,7 @@
  *
  * FIXME: This code is VERY ugly!
  */
+#if 0 /* Code is not used */
 int
 mpi_getbyte( MPI a, unsigned idx )
 {
@@ -48,14 +49,19 @@ mpi_getbyte( MPI a, unsigned idx )
     }
     return -1;
 }
+#endif /* Code is not used */
 
 
 /****************
  * Put a value at position IDX into A. idx counts from lsb to msb
  */
+/* FIXME: There is a problem with the long constants which should have
+a LL prefix or better the macros we use at other places. */
+#if 0 /* Code is not used */
 void
 mpi_putbyte( MPI a, unsigned idx, int xc )
 {
+
     int i, j;
     unsigned n;
     mpi_ptr_t ap;
@@ -104,12 +110,13 @@ mpi_putbyte( MPI a, unsigned idx, int xc )
     }
     abort(); /* index out of range */
 }
+#endif /* Code is not used */
 
 
 /****************
  * Count the number of zerobits at the low end of A
  */
-unsigned
+unsigned int
 mpi_trailing_zeros( MPI a )
 {
     unsigned n, count = 0;

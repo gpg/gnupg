@@ -57,7 +57,7 @@ X.509 specific are noted like [X.509: xxx]
    b20	The keys fingerprint
 	(fingerprints are always 20 bytes, MD5 left padded with zeroes)
    u32	offset to the n-th key's keyID (a keyID is always 8 byte)
-        or 0 if not known which is the case opnly for X509.
+        or 0 if not known which is the case only for X509.
    u16	special key flags
 	 bit 0 =
    u16	reserved
@@ -72,7 +72,7 @@ X.509 specific are noted like [X.509: xxx]
 	 bit 0 =
    byte validity
    byte reserved
-   [For X509, the first user ID is the ISsuer, the second the subject
+   [For X509, the first user ID is the issuer, the second the subject
    and the others are subjectAltNames]
  u16  number of signatures
  u16  size of signature information (4)
@@ -99,7 +99,7 @@ X.509 specific are noted like [X.509: xxx]
 
  b16	MD5 checksum  (useful for KS syncronisation), we might also want to use
     a mac here.
- b4    resevered
+ b4    reserved
 
 */
 

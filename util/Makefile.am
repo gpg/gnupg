@@ -39,7 +39,7 @@ endif
 libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c  \
 		     ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c \
 		     dotlock.c http.c srv.h srv.c simple-gettext.c \
-		     w32reg.c $(assuan_source)
+		     membuf.c w32reg.c $(assuan_source)
 
 libutil_a_DEPENDENCIES = @LIBOBJS@ @REGEX_O@
 # LIBOBJS is for the replacement functions

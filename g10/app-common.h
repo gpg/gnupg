@@ -86,6 +86,11 @@ struct app_ctx_s {
                      void *pincb_arg,
                      const void *indata, size_t indatalen,
                      unsigned char **outdata, size_t *outdatalen);
+    gpg_error_t (*writekey) (app_t app, ctrl_t ctrl,
+                             const char *certid, unsigned int flags,
+                             gpg_error_t (*pincb)(void*,const char *,char **),
+                             void *pincb_arg,
+                             const unsigned char *pk, size_t pklen);
     gpg_error_t (*genkey) (app_t app, ctrl_t ctrl,
                    const char *keynostr, unsigned int flags,
                    gpg_error_t (*pincb)(void*, const char *, char **),
@@ -148,6 +153,11 @@ gpg_error_t app_decipher (app_t app, const char *keyidstr,
                   void *pincb_arg,
                   const void *indata, size_t indatalen,
                   unsigned char **outdata, size_t *outdatalen );
+gpg_error_t app_writekey (app_t app, ctrl_t ctrl,
+                          const char *keyidstr, unsigned int flags,
+                          gpg_error_t (*pincb)(void*, const char *, char **),
+                          void *pincb_arg,
+                          const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
                 const char *keynostr, unsigned int flags,
                 gpg_error_t (*pincb)(void*, const char *, char **),

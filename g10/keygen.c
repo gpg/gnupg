@@ -128,42 +128,6 @@ static int gen_card_key_with_backup (int algo, int keyno, int is_primary,
                                      const char *backup_dir);
 
 
-#if GNUPG_MAJOR_VERSION == 1
-#define GET_NBITS(a)  mpi_get_nbits (a)
-#else
-#define GET_NBITS(a)  gcry_mpi_get_nbits (a)
-#endif
-
-#ifdef ENABLE_CARD_SUPPORT
-static int
-copy_mpi (MPI a, unsigned char *buffer, size_t len, size_t *ncopied)
-{
-  int rc;
-#if GNUPG_MAJOR_VERSION == 1
-  unsigned char *tmp;
-  unsigned int n;
-
-  tmp = mpi_get_secure_buffer (a, &n, NULL);
-  if (n > len)
-    rc = G10ERR_GENERAL;
-  else
-    {
-      rc = 0;
-      memcpy (buffer, tmp, n);
-      *ncopied = n;
-    }
-  xfree (tmp);
-#else /* GNUPG_MAJOR_VERSION != 1 */
-  rc = gcry_mpi_print (GCRYMPI_FMT_USG, buffer, len, ncopied, a);
-#endif /* GNUPG_MAJOR_VERSION != 1 */
-  if (rc)
-    log_error ("mpi_copy failed: %s\n", gpg_strerror (rc));
-  return rc;
-}
-#endif /* ENABLE_CARD_SUPPORT */
-
-
-
 static void
 print_status_key_created (int letter, PKT_public_key *pk, const char *handle)
 {
@@ -3527,104 +3491,68 @@ int
 save_unprotected_key_to_card (PKT_secret_key *sk, int keyno)
 {
   int rc;
-  size_t n;
-  MPI rsa_n, rsa_e, rsa_p, rsa_q;
-  unsigned int nbits;
-  unsigned char *template = NULL;
-  unsigned char *tp;
-  unsigned char m[128], e[4];
-  size_t mlen, elen;
+  unsigned char *rsa_n = NULL;
+  unsigned char *rsa_e = NULL;
+  unsigned char *rsa_p = NULL;
+  unsigned char *rsa_q = NULL;
+  unsigned int rsa_n_len, rsa_e_len, rsa_p_len, rsa_q_len;
+  unsigned char *sexp = NULL;
+  unsigned char *p;
+  char numbuf[55], numbuf2[50];
 
   assert (is_RSA (sk->pubkey_algo));
   assert (!sk->is_protected);
 
-  rc = -1;
-  /* Some basic checks on the key parameters. */
-  rsa_n = sk->skey[0];
-  rsa_e = sk->skey[1];
-  rsa_p = sk->skey[3];
-  rsa_q = sk->skey[4];
-
-  nbits = GET_NBITS (rsa_n);
-  if (nbits != 1024)
+  /* Copy the parameters into straight buffers. */
+  rsa_n = mpi_get_secure_buffer (sk->skey[0], &rsa_n_len, NULL);
+  rsa_e = mpi_get_secure_buffer (sk->skey[1], &rsa_e_len, NULL);
+  rsa_p = mpi_get_secure_buffer (sk->skey[3], &rsa_p_len, NULL);
+  rsa_q = mpi_get_secure_buffer (sk->skey[4], &rsa_q_len, NULL);
+  if (!rsa_n || !rsa_e || !rsa_p || !rsa_q)
     {
-      log_error (_("length of RSA modulus is not %d\n"), 1024);
-      goto leave;
-    }
-  nbits = GET_NBITS (rsa_e);
-  if (nbits < 2 || nbits > 32)
-    {
-      log_error (_("public exponent too large (more than 32 bits)\n"));
-      goto leave;
-    }
-  nbits = GET_NBITS (rsa_p);
-  if (nbits != 512)
-    {
-      log_error (_("length of an RSA prime is not %d\n"), 512);
-      goto leave;
-    }
-  nbits = GET_NBITS (rsa_q);
-  if (nbits != 512)
-    {
-      log_error (_("length of an RSA prime is not %d\n"), 512);
+      rc = G10ERR_INV_ARG;
       goto leave;
     }
 
-  
-  /* We need the modulus later to calculate the fingerprint. */
-  rc = copy_mpi (rsa_n, m, 128, &n);
-  if (rc)
-    goto leave;
-  assert (n == 128);
-  mlen = 128;
+  /* Put the key into an S-expression. */
+  sexp = p = xmalloc_secure (30
+                             + rsa_n_len + rsa_e_len + rsa_p_len + rsa_q_len
+                             + 4*sizeof (numbuf) + 25 + sizeof(numbuf) + 20);
 
-  /* Build the private key template as described in section 4.3.3.6 of
-     the OpenPGP card specs:
-         0xC0   <length> public exponent
-         0xC1   <length> prime p 
-         0xC2   <length> prime q 
-  */
-  template = tp = xmalloc_secure (1+2 + 1+1+4 + 1+1+(512/8) + 1+1+(512/8));
-  *tp++ = 0xC0;
-  *tp++ = 4;
-  rc = copy_mpi (rsa_e, tp, 4, &n);
-  if (rc)
-    goto leave;
-  assert (n <= 4);
-  memcpy (e, tp, n);  /* Save a copy of the exponent for later use.  */
-  elen = n;
-  if (n != 4)
-    {
-      memmove (tp+4-n, tp, 4-n);
-      memset (tp, 0, 4-n);
-    }                 
-  tp += 4;
+  p = stpcpy (p,"(11:private-key(3:rsa(1:n");
+  sprintf (numbuf, "%u:", rsa_n_len);
+  p = stpcpy (p, numbuf);
+  memcpy (p, rsa_n, rsa_n_len);
+  p += rsa_n_len;
 
-  *tp++ = 0xC1;
-  *tp++ = 64;
-  rc = copy_mpi (rsa_p, tp, 64, &n);
-  if (rc)
-    goto leave;
-  assert (n == 64);
-  tp += 64;
+  sprintf (numbuf, ")(1:e%u:", rsa_e_len);
+  p = stpcpy (p, numbuf);
+  memcpy (p, rsa_e, rsa_e_len);
+  p += rsa_e_len;
 
-  *tp++ = 0xC2;
-  *tp++ = 64;
-  rc = copy_mpi (rsa_q, tp, 64, &n);
-  if (rc)
-    goto leave;
-  assert (n == 64);
-  tp += 64;
-  assert (tp - template == 138);
+  sprintf (numbuf, ")(1:p%u:", rsa_p_len);
+  p = stpcpy (p, numbuf);
+  memcpy (p, rsa_p, rsa_p_len);
+  p += rsa_p_len;
 
-  rc = agent_openpgp_storekey (keyno,
-                               template, tp - template,
-                               sk->timestamp,
-                               m, mlen,
-                               e, elen);
+  sprintf (numbuf, ")(1:q%u:", rsa_q_len);
+  p = stpcpy (p, numbuf);
+  memcpy (p, rsa_q, rsa_q_len);
+  p += rsa_q_len;
+
+  p = stpcpy (p,"))(10:created-at");
+  sprintf (numbuf2, "%lu", (unsigned long)sk->timestamp);
+  sprintf (numbuf, "%d:", strlen (numbuf2));
+  p = stpcpy (stpcpy (stpcpy (p, numbuf), numbuf2), "))");
+
+  rc = agent_scd_writekey (keyno, sexp, p - sexp);
 
  leave:
-  xfree (template);
+  xfree (sexp);
+  xfree (rsa_n);
+  xfree (rsa_e);
+  xfree (rsa_p);
+  xfree (rsa_q);
   return rc;
 }
 #endif /*ENABLE_CARD_SUPPORT*/

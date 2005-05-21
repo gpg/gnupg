@@ -1,3 +1,14 @@
+2005-05-21  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (send_status_info): Make CTRL optional.
+	(agent_scd_writekey, inq_writekey_parms): New.
+	(agent_openpgp_storekey): Removed.
+	* cardglue.h: Add a few more error code mappings.
+	* keygen.c (copy_mpi): Removed.
+	(save_unprotected_key_to_card): Changed to use agent_scd_writekey.
+	* app-common.h, app-openpgp.c, tlv.c, tlv.h: Updated from newer
+	version in gnupg 1.9 CVS.
+
 2005-05-20  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (ccid_transceive): Arghhh.  The seqno is another

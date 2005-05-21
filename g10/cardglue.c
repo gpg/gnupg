@@ -63,6 +63,15 @@ struct pincb_parm_s
 };
 
 
+struct writekey_parm_s
+{
+  assuan_context_t ctx;
+  const unsigned char *keydata;
+  size_t keydatalen;
+};
+
+
+
 static char *default_reader_port;
 static app_t current_app;
 
@@ -100,7 +109,7 @@ serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
    buffers. The variable elements are pairs of (char *, size_t),
    terminated with a (NULL, 0). */
 void
-send_status_info (CTRL ctrl, const char *keyword, ...)
+send_status_info (ctrl_t ctrl, const char *keyword, ...)
 {
   va_list arg_ptr;
   const unsigned char *value;
@@ -140,7 +149,8 @@ send_status_info (CTRL ctrl, const char *keyword, ...)
         }
     }
   *p = 0;
-  ctrl->status_cb (ctrl->status_cb_arg, buf);
+  if (ctrl && ctrl->status_cb)
+    ctrl->status_cb (ctrl->status_cb_arg, buf);
 
   va_end (arg_ptr);
 }
@@ -970,6 +980,59 @@ agent_scd_setattr (const char *name,
 }
 
 
+/* Handle a KEYDATA inquiry.  Note, we only send the data,
+   assuan_transact takes care of flushing and writing the end */
+static assuan_error_t
+inq_writekey_parms (void *opaque, const char *keyword)
+{
+  struct writekey_parm_s *parm = opaque; 
+
+  return assuan_send_data (parm->ctx, parm->keydata, parm->keydatalen);
+}
+
+
+/* Send a WRITEKEY command to the SCdaemon. */
+int 
+agent_scd_writekey (int keyno, const unsigned char *keydata, size_t keydatalen)
+{
+  app_t app;
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  if (app->assuan_ctx)
+    {
+      struct writekey_parm_s parms;
+
+      snprintf (line, DIM(line)-1, "SCD WRITEKEY --force OPENPGP.%d", keyno);
+      line[DIM(line)-1] = 0;
+      parms.ctx = app->assuan_ctx;
+      parms.keydata = keydata;
+      parms.keydatalen = keydatalen;
+      rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                           NULL, NULL,
+                                           inq_writekey_parms, &parms,
+                                           NULL, NULL),
+                          "SCD WRITEKEY");
+    }
+  else
+    {
+      snprintf (line, DIM(line)-1, "OPENPGP.%d", keyno);
+      line[DIM(line)-1] = 0;
+      rc = app->fnc.writekey (app, NULL, line, 0x0001,
+                              pin_cb, NULL,
+                              keydata, keydatalen);
+    }
+
+  if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+  return rc;
+}
+
+
+
 static assuan_error_t
 genkey_status_cb (void *opaque, const char *line)
 {
@@ -1280,37 +1343,6 @@ agent_scd_checkpin (const char *serialnobuf)
   return rc;
 }
 
-
-/* Wrapper to call the store key helper function of app-openpgp.c.  */
-int 
-agent_openpgp_storekey (int keyno,
-                        unsigned char *template, size_t template_len,
-                        time_t created_at,
-                        const unsigned char *m, size_t mlen,
-                        const unsigned char *e, size_t elen)
-{
-  app_t app;
-  int rc;
-
-  app = current_app? current_app : open_card ();
-  if (!app)
-    return gpg_error (GPG_ERR_CARD);
-
-  if (app->assuan_ctx)
-    {
-      rc = gpg_error (GPG_ERR_CARD);
-    }
-  else
-    {
-      rc = app_openpgp_storekey (app, keyno, template, template_len,
-                                 created_at, m, mlen, e, elen,
-                                 pin_cb, NULL);
-    }
-
-  if (rc)
-    write_status (STATUS_SC_OP_FAILURE);
-  return rc;
-}
 
 
 void

@@ -1,6 +1,23 @@
 Noteworthy changes in version 1.4.2
 ------------------------------------------------
 
+    * New command "verify" in the card-edit menu to display
+      the Private-DO-3.  The Admin command has been enhanced to take
+      the optional arguments "on", "off" and "verify".  The latter may
+      be used to verify the ADmin Pin without modifying data; this
+      allows displayin the Private-DO-4 with the "list" command.
+
+    * Rewrote large parts of the card code to optionally make use of a
+      running gpg-agent.  If --use-agent is beeing used and a
+      gpg-agent with enabled scdaemon is active, gpg will now divert
+      all card operations to that daemon.  This is required because
+      bot, scdaemon and gpg require exclusive access to the card
+      reader. By delegating the work to scdaemon, both can peacefully
+      coexist and scdaemon is able to control the use of the reader.
+      Note that this requires at least gnupg 1.9.17.
+
+    * Fixed a couple of problems with the card reader.
+
 
 Noteworthy changes in version 1.4.1 (2005-03-15)
 ------------------------------------------------

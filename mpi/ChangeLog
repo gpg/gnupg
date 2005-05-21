@@ -1,3 +1,12 @@
+2005-05-06  Werner Koch  <wk@g10code.com>
+
+	* mpi-scan.c (mpi_putbyte, mpi_getbyte): Removed.  Not used.
+
+2005-04-21  Werner Koch  <wk@g10code.com>
+
+	* mpicoder.c (mpi_read): Changed error detection to always return
+	an error while maintaining the actual number of bytes read.
+
 2005-03-11  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (ASFLAGS): Renamed to AM_CCASFLAGS and added the

@@ -81,6 +81,7 @@ typedef struct ctrl_ctx_s *ctrl_t;
 
 #define GPG_ERR_GENERAL           G10ERR_GENERAL
 #define GPG_ERR_BAD_PIN           G10ERR_BAD_PASS
+#define GPG_ERR_BAD_KEy           G10ERR_BAD_KEY
 #define GPG_ERR_CARD              G10ERR_GENERAL
 #define GPG_ERR_EEXIST            G10ERR_FILE_EXISTS
 #define GPG_ERR_ENOMEM            G10ERR_RESOURCE_LIMIT
@@ -105,6 +106,10 @@ typedef struct ctrl_ctx_s *ctrl_t;
 #define GPG_ERR_EOF               (-1)
 #define GPG_ERR_CARD_NOT_PRESENT  G10ERR_NO_CARD
 #define GPG_ERR_CARD_RESET        G10ERR_GENERAL
+#define GPG_ERR_WRONG_PUBKEY_ALGO G10ERR_PUBKEY_ALGO
+#define GPG_ERR_UNKNOWN_SEXP      G10ERR_INV_ARG
+#define GPG_ERR_DUP_VALUE         G10ERR_INV_ARG
+#define GPG_ERR_BAD_SECKEY        G10ERR_BAD_SECKEY
 
 #define GPG_ERR_EBUSY             G10ERR_GENERAL
 #define GPG_ERR_ENOENT            G10ERR_OPEN_FILE
@@ -129,6 +134,7 @@ typedef int gpg_err_code_t;
 #define xtrymalloc(n)    xmalloc((n))
 #define xtrycalloc(n,m)  xcalloc((n),(m))
 #define xtryrealloc(n,m) xrealloc((n),(m))
+#define xtrymalloc_secure(n)  xmalloc_secure((n))
 #define out_of_core()    (-1) 
 
 #define gnupg_get_time() make_timestamp ()
@@ -168,6 +174,10 @@ int agent_scd_getattr (const char *name, struct agent_card_info_s *info);
 int agent_scd_setattr (const char *name,
                        const unsigned char *value, size_t valuelen);
 
+/* Send a WRITEKEY command to the SCdaemon. */
+int agent_scd_writekey (int keyno,
+                        const unsigned char *keydata, size_t keydatalen);
+
 /* Send a GENKEY command to the SCdaemon. */
 int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force);
 
@@ -186,13 +196,6 @@ int agent_scd_change_pin (int chvno);
 
 /* Send a CHECKPIN command. */
 int agent_scd_checkpin (const char *serialnobuf);
-
-/* Call the store key utility command. */
-int agent_openpgp_storekey (int keyno,
-                            unsigned char *template, size_t template_len,
-                            time_t created_at,
-                            const unsigned char *m, size_t mlen,
-                            const unsigned char *e, size_t elen);
 
 /* Clear a cached PIN. */
 void agent_clear_pin_cache (const char *sn);

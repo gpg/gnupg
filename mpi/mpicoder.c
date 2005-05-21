@@ -1,5 +1,5 @@
 /* mpicoder.c  -  Coder for the external representation of MPIs
- * Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -74,20 +74,23 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 #endif
 {
     int c, i, j;
+    unsigned int nmax = *ret_nread;
     unsigned nbits, nbytes, nlimbs, nread=0;
     mpi_limb_t a;
     MPI val = MPI_NULL;
 
     if( (c = iobuf_get(inp)) == -1 )
 	goto leave;
-    nread++;
+    if (++nread >= nmax)
+        goto overflow;
     nbits = c << 8;
     if( (c = iobuf_get(inp)) == -1 )
 	goto leave;
-    nread++;
+    if (++nread >= nmax)
+        goto overflow;
     nbits |= c;
     if( nbits > MAX_EXTERN_MPI_BITS ) {
-	log_error("mpi too large (%u bits)\n", nbits);
+	log_error("mpi too large for this implementation (%u bits)\n", nbits);
 	goto leave;
     }
 
@@ -108,6 +111,15 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
     for( ; j > 0; j-- ) {
 	a = 0;
 	for(; i < BYTES_PER_MPI_LIMB; i++ ) {
+            if (nread >= nmax) {
+#ifdef M_DEBUG
+                mpi_debug_free (val);
+#else
+                mpi_free (val);
+#endif
+                val = NULL;
+                goto overflow;
+            }
 	    a <<= 8;
 	    a |= iobuf_get(inp) & 0xff; nread++;
 	}
@@ -116,10 +128,11 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
     }
 
   leave:
-    if( nread > *ret_nread )
-	log_bug("mpi crosses packet border\n");
-    else
-	*ret_nread = nread;
+    *ret_nread = nread;
+    return val;
+  overflow:
+    log_error ("mpi larger than indicated length (%u bytes)\n", nmax);
+    *ret_nread = nread;
     return val;
 }
 

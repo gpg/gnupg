@@ -222,6 +222,24 @@ int strncasecmp (const char *, const char *b, size_t n);
 #define memmove(d, s, n) bcopy((s), (d), (n))
 #endif
 
+/*-- membuf.c --*/
+/* The definition of the structure is private, we only need it here,
+   so it can be allocated on the stack. */
+struct private_membuf_s {
+  size_t len;      
+  size_t size;     
+  char *buf;       
+  int out_of_core; 
+};
+
+typedef struct private_membuf_s membuf_t;
+
+void init_membuf (membuf_t *mb, int initiallen);
+void put_membuf  (membuf_t *mb, const void *buf, size_t len);
+void *get_membuf (membuf_t *mb, size_t *len);
+
+
+
 #if defined (_WIN32)
 /*-- w32reg.c --*/
 char *read_w32_registry_string( const char *root,
@@ -232,7 +250,8 @@ int write_w32_registry_string(const char *root, const char *dir,
 /*-- strgutil.c --*/
 int vasprintf (char **result, const char *format, va_list args);
 int asprintf (char **buf, const char *fmt, ...);
-#endif
+#endif /*_WIN32*/
+
 
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */
