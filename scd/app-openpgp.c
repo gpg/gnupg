@@ -1634,7 +1634,7 @@ do_writekey (app_t app, ctrl_t ctrl,
         log_info ("protected-private-key passed to writekey\n");
       else if (toklen == 20 && !memcmp ("shadowed-private-key", tok, toklen))
         log_info ("shadowed-private-key passed to writekey\n");
-      err = gpg_error (GPG_ERR_BAD_KEY);
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
       goto leave;
     }
   if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))

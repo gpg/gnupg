@@ -1,3 +1,7 @@
+2005-05-21  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (handle_signal): Print thread info on SIGUSR1.
+
 2005-05-20  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c: Replaced macro DEBUG_T1 by a new debug level.

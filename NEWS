@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.9.17
 -------------------------------------------------
 
+ * gpg-connect-agent has now features to handle Assuan INQUIRE
+   commands.
+
+ * Internal changes for OpenPGP cards. New Assuan command WRITEKEY.
+
  * GNU Pth is now a hard requirement.
 
  * [scdaemon] Support for OpenSC has been removed.  Instead a new and

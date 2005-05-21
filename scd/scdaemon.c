@@ -807,7 +807,8 @@ handle_signal (int signo)
       break;
       
     case SIGUSR1:
-      log_info ("SIGUSR1 received - no action defined\n");
+      log_info ("SIGUSR1 received - printing internal information:\n");
+      pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
       break;
 
     case SIGUSR2:

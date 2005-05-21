@@ -185,26 +185,15 @@ start_scd (ctrl_t ctrl)
     }
   ctrl->scd_local->locked++;
 
-  /* If we already have a context, we better do a sanity check now to
-     see whether it has accidently died.  This avoids annoying
-     timeouts and hung connections. */
   if (ctrl->scd_local->ctx)
-    {
-      pid_t pid;
-#ifndef HAVE_W32_SYSTEM 
-      pid = assuan_get_pid (ctrl->scd_local->ctx);
-      if (pid != (pid_t)(-1) && pid
-          && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
-        {
-          assuan_disconnect (ctrl->scd_local->ctx);
-          ctrl->scd_local->ctx = NULL;
-        }
-      else
-#endif
-        return 0; /* Okay, the context is fine. */
-    }
+    return 0; /* Okay, the context is fine.  We used to test for an
+                 alive context here and do an disconnect.  How that we
+                 have a ticker function to check for it, it is easier
+                 not to check here but to let the connection run on an
+                 error instead. */
 
-  /* We need to protect the lowwing code. */
+
+  /* We need to protect the following code. */
   if (!pth_mutex_acquire (&start_scd_lock, 0, NULL))
     {
       log_error ("failed to acquire the start_scd lock: %s\n",
@@ -350,6 +339,50 @@ start_scd (ctrl_t ctrl)
 }
 
 
+/* Check whether the Scdaemon is still alive and clean it up if not. */
+void
+agent_scd_check_aliveness (void)
+{
+  pid_t pid;
+  int rc;
+
+  /* We can do so only if there is no more active primary connection.
+     With an active primary connection, this is all no problem because
+     with the end of gpg-agent's session a disconnect is send and the
+     this function will be used at a later time. */
+  if (!primary_scd_ctx || !primary_scd_ctx_reusable)
+    return;
+
+  if (!pth_mutex_acquire (&start_scd_lock, 0, NULL))
+    {
+      log_error ("failed to acquire the start_scd lock while"
+                 " doing an aliveness check: %s\n",
+                 strerror (errno));
+      return;
+    }
+
+  if (primary_scd_ctx && primary_scd_ctx_reusable)
+    {
+      pid = assuan_get_pid (primary_scd_ctx);
+      if (pid != (pid_t)(-1) && pid
+          && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
+        {
+          /* Okay, scdaemon died.  Disconnect the primary connection now
+             but take care that it won't do another wait. */
+          assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
+          assuan_disconnect (primary_scd_ctx);
+          primary_scd_ctx = NULL;
+          primary_scd_ctx_reusable = 0;
+          xfree (socket_name);
+          socket_name = NULL;
+        }
+    }
+
+  if (!pth_mutex_release (&start_scd_lock))
+    log_error ("failed to release the start_scd lock while"
+               " doing the aliveness check: %s\n", strerror (errno));
+}
+
 
 /* Reset the SCD if it has been used. */
 int
@@ -359,15 +392,19 @@ agent_reset_scd (ctrl_t ctrl)
     {
       if (ctrl->scd_local->ctx)
         {
-          /* We can't disconnect the primary context becuase libassuan
+          /* We can't disconnect the primary context because libassuan
              does a waitpid on it and thus the system would hang.
              Instead we send a reset and keep that connection for
              reuse. */
           if (ctrl->scd_local->ctx == primary_scd_ctx)
             {
-              if (!assuan_transact (primary_scd_ctx, "RESET",
-                                    NULL, NULL, NULL, NULL, NULL, NULL))
-                primary_scd_ctx_reusable = 1;
+              /* The RESET may fail for example if the scdaemon has
+                 already been terminated.  We need to set the reusable
+                 flag anyway to make sure that the aliveness check can
+                 clean it up. */
+              assuan_transact (primary_scd_ctx, "RESET",
+                               NULL, NULL, NULL, NULL, NULL, NULL);
+              primary_scd_ctx_reusable = 1;
             }
           else
             assuan_disconnect (ctrl->scd_local->ctx);

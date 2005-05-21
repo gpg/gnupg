@@ -67,6 +67,11 @@ might want to have an agent context for each service request
 * sm/export.c
 ** Return an error code or a status info per user ID.
 
+* scd/tlv.c
+  The parse_sexp fucntion should not go into this file.  Check whether
+  we can change all S-expression handling code to make use of this
+  function.
+
 * tests
 ** Makefile.am
   We use printf(1) to setup the library path, this is not portable.
@@ -88,4 +93,14 @@ might want to have an agent context for each service request
 ** Signals are not support 
     This means we can't reread a configuration
 ** No card status notifications.
+
+
+
+* IMPORTANT:
+  Check that the PIN cache is cleared after failed card operations.
+  After receiving a HUP gpg-agent should set a flag to kill scdaemon
+  as soon as possible, w/o that scdaemon will continue running as a
+  zombie and gpg-agent won't be able to fire up a new one.
+  Implement an scd/agent option to wait for a card.
+
 

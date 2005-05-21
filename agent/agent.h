@@ -247,6 +247,7 @@ int divert_generic_cmd (ctrl_t ctrl,
 
 /*-- call-scd.c --*/
 void initialize_module_call_scd (void);
+void agent_scd_check_aliveness (void);
 int agent_reset_scd (ctrl_t ctrl);
 int agent_card_learn (ctrl_t ctrl,
                       void (*kpinfo_cb)(void*, const char *),

@@ -1,3 +1,10 @@
+2005-05-21  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (start_scd): Don't test for an alive scdaemon here.
+	(agent_scd_check_aliveness): New.
+	* gpg-agent.c (handle_tick): Test for an alive scdaemon.
+	(handle_signal): Print thread info on SIGUSR1.
+
 2005-05-20  Werner Koch  <wk@g10code.com>
 
 	* protect-tool.c: New option --canonical.

@@ -1270,6 +1270,11 @@ create_directories (void)
 static void
 handle_tick (void)
 {
+  /* Check whether the scdaemon has dies and cleanup in this case. */
+  agent_scd_check_aliveness ();
+
+  /* If we are running as a child of another process, check whether
+     the parent is still alive and shutdwon if now. */
 #ifndef HAVE_W32_SYSTEM
   if (parent_pid != (pid_t)(-1))
     {
@@ -1301,7 +1306,8 @@ handle_signal (int signo)
       break;
       
     case SIGUSR1:
-      log_info ("SIGUSR1 received - no action defined\n");
+      log_info ("SIGUSR1 received - printing internal information:\n");
+      pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
       break;
       
     case SIGUSR2:
