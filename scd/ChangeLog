@@ -1,5 +1,10 @@
 2005-05-23  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am: Do not build sc-copykeys anymore.
+
+	* app-openpgp.c (app_openpgp_storekey, app_openpgp_readkey)
+	(app_openpgp_cardinfo): Removed.
+
 	* ccid-driver.c (parse_ccid_descriptor): SCR335 FW version 5.14 is
 	good.
 	(do_close_reader): Never do a reset. The caller should instead
@@ -11,6 +16,7 @@
 	Thanks to Ludovic Rousseau for this hint and the magic numbers.
 	(print_command_failed): New.
 	(bulk_in): Use it here. Add new arg NO_DEBUG.
+	(ccid_slot_status): Disabled debugging.
 
 2005-05-21  Werner Koch  <wk@g10code.com>
 

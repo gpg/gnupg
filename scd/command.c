@@ -1095,7 +1095,7 @@ cmd_random (assuan_context_t ctx, char *line)
 
 /* PASSWD [--reset] <chvno>
   
-   Change the PIN or reset thye retry counter of the card holder
+   Change the PIN or reset the retry counter of the card holder
    verfication vector CHVNO. */
 static int
 cmd_passwd (assuan_context_t ctx, char *line)
@@ -1142,7 +1142,23 @@ cmd_passwd (assuan_context_t ctx, char *line)
 }
 
 
-/* CHECKPIN <hexified_id>
+/* CHECKPIN <idstr>
+
+   Perform a VERIFY operation without doing anything else.  This may
+   be used to initialize a the PIN cache earlier to long lasting
+   operations.  Its use is highly application dependent.
+
+   For OpenPGP:
+
+      Perform a simple verify operation for CHV1 and CHV2, so that
+      further operations won't ask for CHV2 and it is possible to do a
+      cheap check on the PIN: If there is something wrong with the PIN
+      entry system, only the regular CHV will get blocked and not the
+      dangerous CHV3.  IDSTR is the usual card's serial number in hex
+      notation; an optional fingerprint part will get ignored.  There
+      is however a special mode if the IDSTR is sffixed with the
+      literal string "[CHV3]": In this case the Admin PIN is checked
+      if and only if the retry counter is still at 3.
 
  */
 static int

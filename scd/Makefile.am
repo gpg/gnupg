@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = scdaemon sc-copykeys
+bin_PROGRAMS = scdaemon 
 if ! HAVE_W32_SYSTEM
 pkglib_PROGRAMS = pcsc-wrapper
 endif
@@ -47,22 +47,25 @@ scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
 	$(LIBUSB_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS)
 
-sc_copykeys_SOURCES = \
-	sc-copykeys.c scdaemon.h \
-	apdu.c apdu.h \
-	ccid-driver.c ccid-driver.h \
-	iso7816.c iso7816.h \
-	tlv.c tlv.h \
-	atr.c atr.h \
-	app.c app-common.h app-help.c $(card_apps)
-
-sc_copykeys_LDADD = \
-	../jnlib/libjnlib.a ../common/libcommon.a \
-	../common/libsimple-pwquery.a \
-	$(LIBGCRYPT_LIBS) $(PTH_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-	 $(LIBUSB_LIBS) \
-        -lgpg-error @LIBINTL@ @DL_LIBS@
-
+# Removed for now: We need to decide whether it makes sense to
+# continue it at all, given that gpg has now all required
+# functionality.
+#sc_copykeys_SOURCES = \
+#	sc-copykeys.c scdaemon.h \
+#	apdu.c apdu.h \
+#	ccid-driver.c ccid-driver.h \
+#	iso7816.c iso7816.h \
+#	tlv.c tlv.h \
+#	atr.c atr.h \
+#	app.c app-common.h app-help.c $(card_apps)
+#
+#sc_copykeys_LDADD = \
+#	../jnlib/libjnlib.a ../common/libcommon.a \
+#	../common/libsimple-pwquery.a \
+#	$(LIBGCRYPT_LIBS) $(PTH_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
+#	 $(LIBUSB_LIBS) \
+#        -lgpg-error @LIBINTL@ @DL_LIBS@
+#
 pcsc_wrapper_SOURCES = pcsc-wrapper.c
 pcsc_wrapper_LDADD = $(DL_LIBS)
 pcsc_wrapper_CFLAGS = 
