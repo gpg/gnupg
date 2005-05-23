@@ -1,6 +1,10 @@
 2005-05-23  Werner Koch  <wk@g10code.com>
 
+	* app-openpgp.c, app-common.h: Again updated from gnupg 1.9 CVS.
+
 	* cardglue.c (open_card): Check USE_AGENT.
+	(agent_scd_checkpin): Implemented Assuan part.
+	(agent_scd_change_pin): Ditto.
 
 	* g10.c (main): Option --debug-ccid-driver may now be given
 	several times increase the debug level.

@@ -176,23 +176,6 @@ gpg_error_t app_check_pin (app_t app, const char *keyidstr,
 /*-- app-openpgp.c --*/
 gpg_error_t app_select_openpgp (app_t app);
 
-gpg_error_t app_openpgp_cardinfo (app_t app,
-                          char **serialno,
-                          char **disp_name,
-                          char **pubkey_url,
-                          unsigned char **fpr1,
-                          unsigned char **fpr2,
-                          unsigned char **fpr3);
-gpg_error_t app_openpgp_storekey (app_t app, int keyno,
-                          unsigned char *template, size_t template_len,
-                          time_t created_at,
-                          const unsigned char *m, size_t mlen,
-                          const unsigned char *e, size_t elen,
-                          gpg_error_t (*pincb)(void*, const char *, char **),
-                          void *pincb_arg);
-gpg_error_t app_openpgp_readkey (app_t app, int keyno,
-                         unsigned char **m, size_t *mlen,
-                         unsigned char **e, size_t *elen);
 /*-- app-nks.c --*/
 gpg_error_t app_select_nks (app_t app);
 

@@ -1293,7 +1293,6 @@ int
 agent_scd_change_pin (int chvno)
 {
   app_t app;
-  char chvnostr[20];
   int reset = 0;
   int rc;
 
@@ -1306,10 +1305,19 @@ agent_scd_change_pin (int chvno)
 
   if (app->assuan_ctx)
     {
-      rc = gpg_error (GPG_ERR_CARD);
+      char line[ASSUAN_LINELENGTH];
+
+      snprintf (line, DIM(line)-1, "SCD PASSWD%s %d",
+                reset? " --reset":"", chvno);
+      line[DIM(line)-1] = 0;
+      rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                           NULL, NULL, NULL, NULL, NULL, NULL),
+                          "SCD PASSWD");
     }
   else
     {
+      char chvnostr[50];
+
       sprintf (chvnostr, "%d", chvno);
       rc = app->fnc.change_pin (app, NULL, chvnostr, reset,
                                 pin_cb, NULL);
@@ -1335,7 +1343,14 @@ agent_scd_checkpin (const char *serialnobuf)
 
   if (app->assuan_ctx)
     {
-      rc = gpg_error (GPG_ERR_CARD);
+      char line[ASSUAN_LINELENGTH];
+
+      if (15 + strlen (serialnobuf) > DIM(line)-1)
+        return gpg_error (GPG_ERR_CARD);
+      stpcpy (stpcpy (line, "SCD CHECKPIN "), serialnobuf); 
+      rc = test_transact (assuan_transact (app->assuan_ctx, line,
+                                           NULL, NULL, NULL, NULL, NULL, NULL),
+                          "SCD CHECKPIN");
     }
   else
     {
