@@ -1,3 +1,23 @@
+2005-05-23  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (open_card): Check USE_AGENT.
+
+	* g10.c (main): Option --debug-ccid-driver may now be given
+	several times increase the debug level.
+
+	* ccid-driver.c (parse_ccid_descriptor): Mark SCR335 FW version
+	5.14 as good.
+	(do_close_reader): Never do a reset. The caller should instead
+	make sure that the reader has been closed properly.  The new retry
+	code in ccid_slot_status will make sure that the readersatrts up
+	fine even if the last process didn't closed the USB connection
+	properly.
+	(ccid_get_atr): For certain readers try switching to ISO mode.
+	Thanks to Ludovic Rousseau for this hint and the magic numbers.
+	(print_command_failed): New.
+	(bulk_in): Use it here. Add new arg NO_DEBUG.
+	(ccid_slot_status): Disabled debugging.
+
 2005-05-21  Werner Koch  <wk@g10code.com>
 
 	* cardglue.c (send_status_info): Make CTRL optional.

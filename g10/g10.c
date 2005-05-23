@@ -1985,7 +1985,7 @@ main( int argc, char **argv )
 	  case oDebugAll: opt.debug = ~0; break;
           case oDebugCCIDDriver: 
 #if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
-            ccid_set_debug_level (1);
+            ccid_set_debug_level (ccid_set_debug_level (1)+1);
 #endif
             break;
 	  case oStatusFD:

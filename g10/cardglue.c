@@ -350,16 +350,20 @@ open_card (void)
   int rc;
   app_t app;
   int did_shutdown = 0;
-  int scd_available;
 
   /* First check whether we can contact a gpg-agent and divert all
      operation to it. This is required because gpg as well as the
      agent require exclusive access to the reader. */
-  app = open_card_via_agent (&scd_available);
-  if (app)
-    goto ready; /* Yes, there is a agent with a usable card, go that way. */
-  if (scd_available)
-    return NULL; /* agent avilabale but card problem. */
+  if (opt.use_agent)
+    {
+      int scd_available;
+
+      app = open_card_via_agent (&scd_available);
+      if (app)
+        goto ready; /* Yes, there is a agent with a usable card, go that way. */
+      if (scd_available)
+        return NULL; /* agent avilabale but card problem. */
+    }
 
 
   /* No agent or usable agent, thus we do it on our own. */
