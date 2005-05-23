@@ -184,9 +184,18 @@ enum {
 };
 
 
+/* Two macro to detect whether a CCID command has failed and to get
+   the error code.  These macros assume that we can access the
+   mandatory first 10 bytes of a CCID message in BUF. */
+#define CCID_COMMAND_FAILED(buf) ((buf)[7] & 0x40)
+#define CCID_ERROR_CODE(buf)     (((unsigned char *)(buf))[8])
+
+
 /* We need to know the vendor to do some hacks. */
 enum {
-  VENDOR_SCM = 0x04e6
+  VENDOR_SCM    = 0x04e6,
+  VENDOR_CHERRY = 0x046a,
+  VENDOR_GEMPC  = 0x08e6
 };
 
 
@@ -228,7 +237,8 @@ static unsigned int compute_edc (const unsigned char *data, size_t datalen,
                                  int use_crc);
 static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen);
 static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
-                    size_t *nread, int expected_type, int seqno, int timeout);
+                    size_t *nread, int expected_type, int seqno, int timeout,
+                    int no_debug);
 
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
@@ -247,6 +257,53 @@ set_msg_len (unsigned char *msg, unsigned int length)
   msg[4] = length >> 24;
 }
 
+
+/* Pint an error message for a failed CCID command including a textual
+   error code.  MSG is shall be the CCID message of at least 10 bytes. */
+static void
+print_command_failed (const unsigned char *msg)
+{
+  const char *t;
+  char buffer[100];
+  int ec;
+
+  if (!debug_level)
+    return;
+
+  ec = CCID_ERROR_CODE (msg);
+  switch (ec)
+    {
+    case 0x00: t = "Command not supported"; break;
+    
+    case 0xE0: t = "Slot busy"; break;
+    case 0xEF: t = "PIN cancelled"; break;
+    case 0xF0: t = "PIN timeout"; break;
+
+    case 0xF2: t = "Automatic sequence ongoing"; break;
+    case 0xF3: t = "Deactivated Protocol"; break;
+    case 0xF4: t = "Procedure byte conflict"; break;
+    case 0xF5: t = "ICC class not supported"; break;
+    case 0xF6: t = "ICC protocol not supported"; break;
+    case 0xF7: t = "Bad checksum in ATR"; break;
+    case 0xF8: t = "Bad TS in ATR"; break;
+
+    case 0xFB: t = "An all inclusive hardware error occurred"; break;
+    case 0xFC: t = "Overrun error while talking to the ICC"; break;
+    case 0xFD: t = "Parity error while talking to the ICC"; break;
+    case 0xFE: t = "CCID timed out while talking to the ICC"; break;
+    case 0xFF: t = "Host aborted the current activity"; break;
+
+    default:
+      if (ec > 0 && ec < 128)
+        sprintf (buffer, "Parameter error at offset %d", ec);
+      else
+        sprintf (buffer, "Error code %02X", ec);
+      t = buffer;
+      break;
+    }
+  DEBUGOUT_1 ("CCID command failed: %s\n", t);
+}
+  
 
 
 
@@ -462,7 +519,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
       && handle->max_ifsd > 48      
       && (  (handle->id_product == 0xe001 && handle->bcd_device < 0x0516)
           ||(handle->id_product == 0x5111 && handle->bcd_device < 0x0620)
-          ||(handle->id_product == 0x5115 && handle->bcd_device < 0x0518)
+          ||(handle->id_product == 0x5115 && handle->bcd_device < 0x0514)
           ||(handle->id_product == 0xe003 && handle->bcd_device < 0x0504)
           ))
     {
@@ -987,13 +1044,11 @@ do_close_reader (ccid_driver_t handle)
       rc = bulk_out (handle, msg, msglen);
       if (!rc)
         bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,
-                 seqno, 2000);
+                 seqno, 2000, 0);
       handle->powered_off = 1;
     }
   if (handle->idev)
     {
-      if (getenv ("GNUPG_CCID_DRIVER_RESET_BEFORE_CLOSE"))
-        usb_reset (handle->idev);
       usb_release_interface (handle->idev, handle->ifc_no);
       usb_close (handle->idev);
       handle->idev = NULL;
@@ -1117,10 +1172,12 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen)
    BUFFER and return the actual read number if bytes in NREAD. SEQNO
    is the sequence number used to send the request and EXPECTED_TYPE
    the type of message we expect. Does checks on the ccid
-   header. TIMEOUT is the timeout value in ms. Returns 0 on success. */
+   header. TIMEOUT is the timeout value in ms. NO_DEBUG may be set to
+   avoid debug messages in case of no error. Returns 0 on success. */
 static int
 bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
-         size_t *nread, int expected_type, int seqno, int timeout)
+         size_t *nread, int expected_type, int seqno, int timeout,
+         int no_debug)
 {
   int i, rc;
   size_t msglen;
@@ -1170,13 +1227,19 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                   buffer[7], buffer[8]);
       goto retry;
     }
-  
-  DEBUGOUT_3 ("status: %02X  error: %02X  octet[9]: %02X\n"
-              "               data:",  buffer[7], buffer[8], buffer[9] );
-  for (i=10; i < msglen; i++)
-    DEBUGOUT_CONT_1 (" %02X", buffer[i]);
-  DEBUGOUT_LF ();
 
+  if (!no_debug)
+    {
+      DEBUGOUT_3 ("status: %02X  error: %02X  octet[9]: %02X\n"
+                  "               data:",  buffer[7], buffer[8], buffer[9] );
+      for (i=10; i < msglen; i++)
+        DEBUGOUT_CONT_1 (" %02X", buffer[i]);
+      DEBUGOUT_LF ();
+    }
+  if (CCID_COMMAND_FAILED (buffer))
+    print_command_failed (buffer);
+
+  /* Check whether a card is at all available. */
   switch ((buffer[7] & 0x03))
     {
     case 0: /* no error */ break;
@@ -1220,7 +1283,7 @@ send_escape_cmd (ccid_driver_t handle,
   if (rc)
     return rc;
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Escape,
-                seqno, 5000);
+                seqno, 5000, 0);
 
   return rc;
 }
@@ -1304,8 +1367,11 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
   rc = bulk_out (handle, msg, 10);
   if (rc)
     return rc;
+  /* Note that we set the NO_DEBUG flag here, so that the logs won't
+     get cluttered up by a ticker function checking for the slot
+     status and debugging enabled. */
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,
-                seqno, retries? 1000 : 200);
+                seqno, retries? 1000 : 200, 1);
   if (rc == CCID_DRIVER_ERR_CARD_IO_ERROR && retries < 3)
     {
       if (!retries)
@@ -1341,6 +1407,7 @@ ccid_get_atr (ccid_driver_t handle,
   int use_crc = 0;
   unsigned int edc;
   int i;
+  int tried_iso = 0;
 
   /* First check whether a card is available.  */
   rc = ccid_slot_status (handle, &statusbits);
@@ -1351,6 +1418,7 @@ ccid_get_atr (ccid_driver_t handle,
 
   /* For an inactive and also for an active card, issue the PowerOn
      command to get the ATR.  */
+ again:
   msg[0] = PC_to_RDR_IccPowerOn;
   msg[5] = 0; /* slot */
   msg[6] = seqno = handle->seqno++;
@@ -1364,9 +1432,24 @@ ccid_get_atr (ccid_driver_t handle,
   if (rc)
     return rc;
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_DataBlock,
-                seqno, 5000);
+                seqno, 5000, 0);
   if (rc)
     return rc;
+  if (!tried_iso && CCID_COMMAND_FAILED (msg) && CCID_ERROR_CODE (msg) == 0xbb
+      && ((handle->id_vendor == VENDOR_CHERRY
+           && handle->id_product == 0x0005)
+          || (handle->id_vendor == VENDOR_GEMPC
+              && handle->id_product == 0x4433)
+          ))
+    {
+      tried_iso = 1;
+      /* Try switching to ISO mode. */
+      if (!send_escape_cmd (handle, "\xF1\x01", 2))
+        goto again;
+    }
+  else if (CCID_COMMAND_FAILED (msg))
+    return CCID_DRIVER_ERR_CARD_IO_ERROR;
+
 
   handle->powered_off = 0;
   
@@ -1409,7 +1492,7 @@ ccid_get_atr (ccid_driver_t handle,
     return rc;
   /* Note that we ignore the error code on purpose. */
   bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
-           seqno, 5000);
+           seqno, 5000, 0);
 
   handle->t1_ns = 0;
   handle->t1_nr = 0;
@@ -1457,7 +1540,7 @@ ccid_get_atr (ccid_driver_t handle,
 
 
       rc = bulk_in (handle, msg, sizeof msg, &msglen,
-                    RDR_to_PC_DataBlock, seqno, 5000);
+                    RDR_to_PC_DataBlock, seqno, 5000, 0);
       if (rc)
         return rc;
       
@@ -1554,7 +1637,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
 
   msg = recv_buffer;
   rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
-                RDR_to_PC_DataBlock, seqno, 5000);
+                RDR_to_PC_DataBlock, seqno, 5000, 0);
   if (rc)
     return rc;
       
@@ -1728,7 +1811,7 @@ ccid_transceive (ccid_driver_t handle,
 
       msg = recv_buffer;
       rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
-                    RDR_to_PC_DataBlock, seqno, 5000);
+                    RDR_to_PC_DataBlock, seqno, 5000, 0);
       if (rc)
         return rc;
       
@@ -2005,7 +2088,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   
   msg = recv_buffer;
   rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
-                RDR_to_PC_DataBlock, seqno, 5000);
+                RDR_to_PC_DataBlock, seqno, 5000, 0);
   if (rc)
     return rc;
   
