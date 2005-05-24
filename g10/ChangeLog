@@ -1,3 +1,7 @@
+2005-05-24  Werner Koch  <wk@g10code.com>
+
+	* g10.c (add_notation_data): Check number of at-signs.
+
 2005-05-23  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c, app-common.h: Again updated from gnupg 1.9 CVS.

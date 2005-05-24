@@ -3879,7 +3879,7 @@ add_notation_data( const char *string, int which )
     for( s=string ; *s != '='; s++ )
       {
 	if( *s=='@')
-	  saw_at=1;
+	  saw_at++;
 
 	if( !*s || !isascii (*s) || (!isgraph(*s) && !isspace(*s)) )
 	  {
@@ -3892,6 +3892,12 @@ add_notation_data( const char *string, int which )
     if(!saw_at && !opt.expert)
       {
 	log_error(_("a user notation name must contain the '@' character\n"));
+	return;
+      }
+    if (saw_at > 1)
+      {
+	log_error(_("a notation name must contain more than "
+                    "one '@' character\n"));
 	return;
       }
 
