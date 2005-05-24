@@ -1,5 +1,10 @@
 2005-05-24  Werner Koch  <wk@g10code.com>
 
+	* passphrase.c (ask_passphrase): Unescape the description string.
+	* cardglue.c (unescape_status_string): Removed.  Changed all
+	caller to use ...
+	* misc.c (unescape_percent_string): New.
+
 	* g10.c (add_notation_data): Check number of at-signs.
 
 2005-05-23  Werner Koch  <wk@g10code.com>

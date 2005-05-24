@@ -123,7 +123,7 @@ char *optsep(char **stringp);
 char *argsplit(char *string);
 int parse_options(char *str,unsigned int *options,
 		  struct parse_options *opts,int noisy);
-
+char *unescape_percent_string (const unsigned char *s);
 char *default_homedir (void);
 
 

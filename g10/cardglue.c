@@ -540,40 +540,6 @@ check_card_serialno (app_t app, const char *serialno)
 }
 
 
-
-/* Return a new malloced string by unescaping the string S.  Escaping
-   is percent escaping and '+'/space mapping.  A binary nul will
-   silently be replaced by a 0xFF.  Function returns NULL to indicate
-   an out of memory status. */
-static char *
-unescape_status_string (const unsigned char *s)
-{
-  char *buffer, *d;
-
-  buffer = d = xmalloc (strlen (s)+1);
-  while (*s)
-    {
-      if (*s == '%' && s[1] && s[2])
-        { 
-          s++;
-          *d = xtoi_2 (s);
-          if (!*d)
-            *d = '\xff';
-          d++;
-          s += 2;
-        }
-      else if (*s == '+')
-        {
-          *d++ = ' ';
-          s++;
-        }
-      else
-        *d++ = *s++;
-    }
-  *d = 0; 
-  return buffer;
-}
-
 /* Take a 20 byte hexencoded string and put it into the the provided
    20 byte buffer FPR in binary format. */
 static int
@@ -633,12 +599,12 @@ learn_status_cb (void *opaque, const char *line)
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
     {
       xfree (parm->disp_name);
-      parm->disp_name = unescape_status_string (line);
+      parm->disp_name = unescape_percent_string (line);
     }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-LANG", keywordlen))
     {
       xfree (parm->disp_lang);
-      parm->disp_lang = unescape_status_string (line);
+      parm->disp_lang = unescape_percent_string (line);
     }
   else if (keywordlen == 8 && !memcmp (keyword, "DISP-SEX", keywordlen))
     {
@@ -647,12 +613,12 @@ learn_status_cb (void *opaque, const char *line)
   else if (keywordlen == 10 && !memcmp (keyword, "PUBKEY-URL", keywordlen))
     {
       xfree (parm->pubkey_url);
-      parm->pubkey_url = unescape_status_string (line);
+      parm->pubkey_url = unescape_percent_string (line);
     }
   else if (keywordlen == 10 && !memcmp (keyword, "LOGIN-DATA", keywordlen))
     {
       xfree (parm->login_data);
-      parm->login_data = unescape_status_string (line);
+      parm->login_data = unescape_percent_string (line);
     }
   else if (keywordlen == 11 && !memcmp (keyword, "SIG-COUNTER", keywordlen))
     {
@@ -662,7 +628,7 @@ learn_status_cb (void *opaque, const char *line)
     {
       char *p, *buf;
 
-      buf = p = unescape_status_string (line);
+      buf = p = unescape_percent_string (line);
       if (buf)
         {
           while (spacep (p))
@@ -739,7 +705,7 @@ learn_status_cb (void *opaque, const char *line)
       int no = keyword[11] - '1';
       assert (no >= 0 && no <= 3);
       xfree (parm->private_do[no]);
-      parm->private_do[no] = unescape_status_string (line);
+      parm->private_do[no] = unescape_percent_string (line);
     }
  
   return 0;

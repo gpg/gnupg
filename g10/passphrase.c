@@ -746,7 +746,16 @@ ask_passphrase (const char *description,
     *canceled = 0;
 
   if (!opt.batch && description)
-    tty_printf ("\n%s\n",description);
+    {
+      if (strchr (description, '%'))
+        {
+          char *tmp = unescape_percent_string (description);
+          tty_printf ("\n%s\n", tmp);
+          xfree (tmp);
+        }
+      else
+        tty_printf ("\n%s\n",description);
+    }
                
  agent_died:
   if ( opt.use_agent ) 

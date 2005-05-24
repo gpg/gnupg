@@ -1029,6 +1029,41 @@ parse_options(char *str,unsigned int *options,
 }
 
 
+/* Return a new malloced string by unescaping the string S.  Escaping
+   is percent escaping and '+'/space mapping.  A binary nul will
+   silently be replaced by a 0xFF. */
+char *
+unescape_percent_string (const unsigned char *s)
+{
+  char *buffer, *d;
+
+  buffer = d = xmalloc (strlen (s)+1);
+  while (*s)
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          *d = xtoi_2 (s);
+          if (!*d)
+            *d = '\xff';
+          d++;
+          s += 2;
+        }
+      else if (*s == '+')
+        {
+          *d++ = ' ';
+          s++;
+        }
+      else
+        *d++ = *s++;
+    }
+  *d = 0; 
+  return buffer;
+}
+
+
+
+
 /* This is a helper function to load a Windows function from either of
    one DLLs. */
 #ifdef HAVE_W32_SYSTEM
