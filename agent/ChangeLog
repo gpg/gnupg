@@ -1,3 +1,12 @@
+2005-05-24  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (inq_needpin): Skip leading spaces in of PIN
+	description.
+	* divert-scd.c (getpin_cb): Enhanced to cope with description
+	flags.
+	* query.c (agent_askpin): Add arg PROMPT_TEXT. Changed all
+	callers.
+
 2005-05-21  Werner Koch  <wk@g10code.com>
 
 	* call-scd.c (start_scd): Don't test for an alive scdaemon here.

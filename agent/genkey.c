@@ -120,11 +120,11 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
     pi2->check_cb_arg = pi->pin;
 
   next_try:
-    rc = agent_askpin (ctrl, text1, initial_errtext, pi);
+    rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
     initial_errtext = NULL;
     if (!rc)
       {
-        rc = agent_askpin (ctrl, text2, NULL, pi2);
+        rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
         if (rc == -1)
           { /* The re-entered one did not match and the user did not
                hit cancel. */
@@ -228,10 +228,10 @@ agent_protect_and_store (CTRL ctrl, gcry_sexp_t s_skey)
     pi2->check_cb_arg = pi->pin;
 
   next_try:
-    rc = agent_askpin (ctrl, text1, initial_errtext, pi);
+    rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
     if (!rc)
       {
-        rc = agent_askpin (ctrl, text2, NULL, pi2);
+        rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
         if (rc == -1)
           { /* The re-entered one did not match and the user did not
                hit cancel. */

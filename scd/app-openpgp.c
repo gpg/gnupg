@@ -1528,7 +1528,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
 
 
 /* Check whether a key already exists.  KEYIDX is the index of the key
-   (0..2).  If FORCE is TRUE a diagnositivc will be printed but no
+   (0..2).  If FORCE is TRUE a diagnositic will be printed but no
    error returned if the key already exists. */
 static gpg_error_t
 does_key_exist (app_t app, int keyidx, int force)
@@ -2134,7 +2134,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
       {
         char *prompt;
-#define PROMPTSTRING  _("PIN [sigs done: %lu]")
+#define PROMPTSTRING  _("||Please enter the PIN%%0A[sigs done: %lu]")
 
         prompt = malloc (strlen (PROMPTSTRING) + 50);
         if (!prompt)

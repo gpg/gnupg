@@ -168,35 +168,113 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
    buf has been allocated by the caller and is of size MAXBUF which
    includes the terminating null.  The function should return an UTF-8
    string with the passphrase, the buffer may optionally be padded
-   with arbitrary characters */
+   with arbitrary characters.
+
+   INFO gets displayed as part of a generic string.  However if the
+   first character of INFO is a vertical bar all up to the next
+   verical bar are considered flags and only everything after the
+   second vertical bar gets displayed as the full prompt.
+
+   Flags:
+
+      'N' = New PIN, this requests a second prompt to repeat the the
+            PIN.  If the PIN is not correctly repeated it starts from
+            all over.
+      'A' = The PIN is an Admin PIN, SO-PIN, PUK or alike.
+
+   Example:
+
+     "|AN|Please enter the new security officer's PIN"
+     
+   The text "Please ..." will get displayed and the flags 'A' and 'N'
+   are considered.
+ */
 static int 
 getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 {
   struct pin_entry_info_s *pi;
   int rc;
-  char *desc;
-  CTRL ctrl = opaque;
+  ctrl_t ctrl = opaque;
+  const char *ends, *s;
+  int any_flags = 0;
+  int newpin = 0;
+  const char *again_text = NULL;
+  const char *prompt = "PIN";
 
   if (maxbuf < 2)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Parse the flags. */
+  if (info && *info =='|' && (ends=strchr (info+1, '|')))
+    {
+      for (s=info+1; s < ends; s++)
+        {
+          if (*s == 'A')
+            prompt = _("Admin PIN");
+          else if (*s == 'N')
+            newpin = 1;
+        }
+      info = ends+1;
+      any_flags = 1;
+    }
+  else if (info && *info == '|')
+    log_debug ("pin_cb called without proper PIN info hack\n");
 
 
   /* FIXME: keep PI and TRIES in OPAQUE.  Frankly this is a whole
      mess because we should call the card's verify function from the
      pinentry check pin CB. */
-  pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
+ again:
+  pi = gcry_calloc_secure (1, sizeof (*pi) + maxbuf + 10);
+  if (!pi)
+    return gpg_error_from_errno (errno);
   pi->max_length = maxbuf-1;
   pi->min_digits = 0;  /* we want a real passphrase */
   pi->max_digits = 8;
   pi->max_tries = 3;
 
-  if ( asprintf (&desc, _("Please enter the PIN%s%s%s to unlock the card"), 
-                 info? " (`":"",
-                 info? info:"",
-                 info? "')":"") < 0)
-    desc = NULL;
-  rc = agent_askpin (ctrl, desc?desc:info, NULL, pi);
-  free (desc);
+  if (any_flags)
+    {
+      rc = agent_askpin (ctrl, info, prompt, again_text, pi);
+      again_text = NULL;
+      if (!rc && newpin)
+        {
+          struct pin_entry_info_s *pi2;
+          pi2 = gcry_calloc_secure (1, sizeof (*pi) + maxbuf + 10);
+          if (!pi2)
+            {
+              rc = gpg_error_from_errno (errno);
+              xfree (pi);
+              return rc;
+            }
+          pi2->max_length = maxbuf-1;
+          pi2->min_digits = 0;
+          pi2->max_digits = 8;
+          pi2->max_tries = 1;
+          rc = agent_askpin (ctrl, _("Repeat this PIN"), prompt, NULL, pi2);
+          if (!rc && strcmp (pi->pin, pi2->pin))
+            {
+              again_text = N_("PIN not correctly repeated; try again");
+              xfree (pi2);
+              xfree (pi);
+              goto again;
+            }
+          xfree (pi2);
+        }
+    }
+  else
+    {
+      char *desc;
+      if ( asprintf (&desc,
+                     _("Please enter the PIN%s%s%s to unlock the card"), 
+                     info? " (`":"",
+                     info? info:"",
+                     info? "')":"") < 0)
+        desc = NULL;
+      rc = agent_askpin (ctrl, desc?desc:info, prompt, NULL, pi);
+      free (desc);
+    }
+
   if (!rc)
     {
       strncpy (buf, pi->pin, maxbuf-1);

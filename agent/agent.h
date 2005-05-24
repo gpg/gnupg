@@ -179,7 +179,8 @@ int agent_key_available (const unsigned char *grip);
 /*-- query.c --*/
 void initialize_module_query (void);
 int agent_askpin (ctrl_t ctrl,
-                  const char *desc_text, const char *inital_errtext,
+                  const char *desc_text, const char *prompt_text,
+                  const char *inital_errtext,
                   struct pin_entry_info_s *pininfo);
 int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,

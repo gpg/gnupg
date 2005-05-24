@@ -288,8 +288,9 @@ all_digitsp( const char *s)
    number here and repeat it as long as we have invalid formed
    numbers. */
 int
-agent_askpin (CTRL ctrl,
-              const char *desc_text, const char *initial_errtext,
+agent_askpin (ctrl_t ctrl,
+              const char *desc_text, const char *prompt_text,
+              const char *initial_errtext,
               struct pin_entry_info_s *pininfo)
 {
   int rc;
@@ -310,7 +311,10 @@ agent_askpin (CTRL ctrl,
     desc_text = _("Please enter your passphrase, so that the secret key "
                   "can be unlocked for this session");
 
-  is_pin = desc_text && strstr (desc_text, "PIN");
+  if (prompt_text)
+    is_pin = !!strstr (prompt_text, "PIN");
+  else
+    is_pin = desc_text && strstr (desc_text, "PIN");
 
   rc = start_pinentry (ctrl);
   if (rc)
@@ -322,10 +326,10 @@ agent_askpin (CTRL ctrl,
   if (rc)
     return unlock_pinentry (map_assuan_err (rc));
 
-  rc = assuan_transact (entry_ctx,
-                        is_pin? "SETPROMPT PIN:"
-                              : "SETPROMPT Passphrase:",
-                        NULL, NULL, NULL, NULL, NULL, NULL);
+  snprintf (line, DIM(line)-1, "SETPROMPT %s",
+            prompt_text? prompt_text : is_pin? "PIN:" : "Passphrase:");
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (map_assuan_err (rc));
 

@@ -601,6 +601,8 @@ inq_needpin (void *opaque, const char *line)
       return ASSUAN_Inquire_Unknown;
     }
   line += 7;
+  while (*line == ' ')
+    line++;
 
   pinlen = 90;
   pin = gcry_malloc_secure (pinlen);

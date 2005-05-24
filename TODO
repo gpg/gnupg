@@ -96,11 +96,3 @@ might want to have an agent context for each service request
 
 
 
-* IMPORTANT:
-  Check that the PIN cache is cleared after failed card operations.
-  After receiving a HUP gpg-agent should set a flag to kill scdaemon
-  as soon as possible, w/o that scdaemon will continue running as a
-  zombie and gpg-agent won't be able to fire up a new one.
-  Implement an scd/agent option to wait for a card.
-
-

@@ -276,7 +276,7 @@ unprotect (CTRL ctrl, const char *desc_text,
   arg.unprotected_key = NULL;
   pi->check_cb_arg = &arg;
 
-  rc = agent_askpin (ctrl, desc_text, NULL, pi);
+  rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi);
   if (!rc)
     {
       assert (arg.unprotected_key);

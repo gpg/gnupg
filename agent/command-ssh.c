@@ -2369,7 +2369,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
     }
   pi->max_length = 100;
   pi->max_tries = 1;
-  err = agent_askpin (ctrl, description, NULL, pi);
+  err = agent_askpin (ctrl, description, NULL, NULL, pi);
   if (err)
     goto out;
 
