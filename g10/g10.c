@@ -3896,7 +3896,7 @@ add_notation_data( const char *string, int which )
       }
     if (saw_at > 1)
       {
-	log_error(_("a notation name must contain more than "
+	log_error(_("a notation name must not contain more than "
                     "one '@' character\n"));
 	return;
       }
