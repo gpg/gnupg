@@ -1,3 +1,7 @@
+2005-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note command completion and the new curl-based HKP helper.
+
 2005-04-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Remove --disable-old-hkp - use new HKP handler for

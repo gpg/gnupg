@@ -18,6 +18,15 @@ Noteworthy changes in version 1.4.2
 
     * Fixed a couple of problems with the card reader.
 
+    * Command completion is now available in the --edit-key and
+      --card-edit menus.  Filename completion is available at all
+      filename prompts.  Note that completion is only available if the
+      system provides a readline library.
+
+    * New experimental HKP keyserver helper that uses the cURL
+      library.  It is enabled via the configure option --with-libcurl
+      like the other (also experimental) cURL helpers.
+
 
 Noteworthy changes in version 1.4.1 (2005-03-15)
 ------------------------------------------------
@@ -130,7 +139,7 @@ Noteworthy changes in version 1.3.91 (2004-10-15)
 Noteworthy changes in version 1.3.90 (2004-10-01)
 -------------------------------------------------
 
-    * Readline support at all prompts is now available if the systems
+    * Readline support at all prompts is now available if the system
       provides a readline library.  The build time option
       --without-readline may be used to disable this feature.
 
