@@ -1,3 +1,8 @@
+2005-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Default {export|import}-unusable-sigs to off until
+	the "clean" UI can be finished.
+
 2005-05-24  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (ask_passphrase): Unescape the description string.

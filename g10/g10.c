@@ -1663,9 +1663,9 @@ main( int argc, char **argv )
     opt.force_v3_sigs = 1;
     opt.escape_from = 1;
     opt.import_options=IMPORT_SK2PK;
-    opt.export_options=EXPORT_ATTRIBUTES;
+    opt.export_options=EXPORT_ATTRIBUTES|EXPORT_UNUSABLE_SIGS;
     opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
-    opt.keyserver_options.export_options=EXPORT_ATTRIBUTES;
+    opt.keyserver_options.export_options=EXPORT_ATTRIBUTES|EXPORT_UNUSABLE_SIGS;
     opt.keyserver_options.options=
       KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_INCLUDE_REVOKED|KEYSERVER_TRY_DNS_SRV|KEYSERVER_HONOR_KEYSERVER_URL;
     opt.verify_options=
