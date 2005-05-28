@@ -1,3 +1,8 @@
+2005-05-28  Moritz Schulte  <moritz@g10code.com>
+
+	* gpgkey2ssh.c: New file.
+	* Makefile.am (bin_PROGRAMS): Added gpgkey2ssh.
+
 2005-05-20  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (add_definq, show_definq, clear_definq)

@@ -36,7 +36,7 @@ else
   symcryptrun =
 endif
 
-bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
+bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg
 endif
@@ -56,3 +56,6 @@ gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
 gpg_connect_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
                           $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
 
+gpgkey2ssh_SOURCES = gpgkey2ssh.c
+gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
+gpgkey2ssh_LDADD = ../common/libcommon.a $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
