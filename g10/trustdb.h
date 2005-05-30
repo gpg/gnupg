@@ -81,7 +81,8 @@ const char *get_ownertrust_string (PKT_public_key *pk);
 void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
 int clear_ownertrusts (PKT_public_key *pk);
 
-int clean_uid(KBNODE keyblock,KBNODE uidnode,int noisy);
+int clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy);
+int clean_uids_from_key(KBNODE keyblock,int noisy);
 
 /*-- tdbdump.c --*/
 void list_trustdb(const char *username);

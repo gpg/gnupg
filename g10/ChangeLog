@@ -1,3 +1,13 @@
+2005-05-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.h, trustdb.c (clean_uids_from_key): New.  Walk through
+	the user IDs on a key, and mark any that aren't valid for
+	deletion.
+
+	* keyedit.c (menu_clean_uids_from_key): New function to call
+	clean_uids_from_key() on a key.
+	(keyedit_menu): Call it from here as part of the "clean" command.
+
 2005-05-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Default {export|import}-unusable-sigs to off until

@@ -53,7 +53,8 @@ static void show_key_and_fingerprint( KBNODE keyblock );
 static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock, int photo );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int  menu_delsig( KBNODE pub_keyblock );
-static int menu_clean_uids(KBNODE keyblock);
+static int menu_clean_sigs_from_uids(KBNODE keyblock);
+static int menu_clean_uids_from_key(KBNODE keyblock);
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_addrevoker( KBNODE pub_keyblock,
 			    KBNODE sec_keyblock, int sensitive );
@@ -2138,17 +2139,25 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    {
 	      if(*arg_string)
 		{
-		  if(ascii_strcasecmp(arg_string,"sigs")!=0
-		     && ascii_strcasecmp(arg_string,"signatures")!=0
-		     && ascii_strcasecmp(arg_string,"certs")!=0
-		     && ascii_strcasecmp(arg_string,"certificates")!=0)
+		  if(ascii_strcasecmp(arg_string,"sigs")==0
+		     || ascii_strcasecmp(arg_string,"signatures")==0
+		     || ascii_strcasecmp(arg_string,"certs")==0
+		     || ascii_strcasecmp(arg_string,"certificates")==0)
+		    modified=menu_clean_sigs_from_uids(keyblock);
+		  else if(ascii_strcasecmp(arg_string,"uids")==0)
+		    redisplay=modified=menu_clean_uids_from_key(keyblock);
+		  else if(ascii_strcasecmp(arg_string,"all")==0)
 		    {
-		      tty_printf(_("Unable to clean `%s'\n"),arg_string);
-		      break;
+		      modified=menu_clean_sigs_from_uids(keyblock);
+		      modified+=menu_clean_uids_from_key(keyblock);
+		      redisplay=modified;
 		    }
+		  else
+		    tty_printf(_("Unable to clean `%s'\n"),arg_string);
 		}
-
-	      modified=menu_clean_uids(keyblock);
+	      else
+		tty_printf(_("Please specify item to clean: `sigs',"
+			     " `uids', or `all'\n"));
 	    }
 	    break;
 
@@ -2699,7 +2708,8 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
     i = 0;
     for( node = keyblock; node; node = node->next )
       {
-	if( node->pkt->pkttype == PKT_USER_ID )
+	if( node->pkt->pkttype == PKT_USER_ID
+	    && !is_deleted_kbnode(node))
 	  {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 	    ++i;
@@ -3134,7 +3144,7 @@ menu_delsig( KBNODE pub_keyblock )
 }
 
 static int
-menu_clean_uids(KBNODE keyblock)
+menu_clean_sigs_from_uids(KBNODE keyblock)
 {
   KBNODE uidnode;
   int modified=0;
@@ -3149,7 +3159,7 @@ menu_clean_uids(KBNODE keyblock)
 	  char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
 				    uidnode->pkt->pkt.user_id->len,
 				    0);
-	  deleted=clean_uid(keyblock,uidnode,opt.verbose);
+	  deleted=clean_sigs_from_uid(keyblock,uidnode,opt.verbose);
 	  if(deleted)
 	    {
 	      tty_printf(deleted==1?
@@ -3168,6 +3178,42 @@ menu_clean_uids(KBNODE keyblock)
   return modified;
 }
 
+static int
+menu_clean_uids_from_key(KBNODE keyblock)
+{
+  KBNODE node;
+  int modified;
+
+  modified=clean_uids_from_key(keyblock,opt.verbose);
+
+  if(modified)
+    {
+      for(node=keyblock->next;node;node=node->next)
+	{
+	  if(node->pkt->pkttype==PKT_USER_ID && is_deleted_kbnode(node))
+	    {
+	      char *reason;
+	      char *user=utf8_to_native(node->pkt->pkt.user_id->name,
+					node->pkt->pkt.user_id->len,0);
+
+	      if(node->pkt->pkt.user_id->is_revoked)
+		reason=_("revoked");
+	      else if(node->pkt->pkt.user_id->is_expired)
+		reason=_("expired");
+	      else
+		reason=_("invalid");
+
+	      tty_printf(_("User ID \"%s\" removed: %s\n"),user,reason);
+
+	      m_free(user);
+	    }
+	}
+    }
+  else
+    tty_printf(_("No user IDs are removable.\n"));
+
+  return modified;
+}
 
 /****************
  * Remove some of the secondary keys

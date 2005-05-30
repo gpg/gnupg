@@ -1574,7 +1574,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
 }
 
 int
-clean_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
+clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
 {
   int deleted=0;
   KBNODE node;
@@ -1630,6 +1630,79 @@ clean_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
 
       delete_kbnode(node);
       deleted++;
+    }
+    
+  return deleted;
+}
+
+/* This is substantially easier than clean_sigs_from_uid since we just
+   have to establish if the uid has a valid self-sig, is not revoked,
+   and is not expired.  Note that this does not take into account
+   whether the uid has a trust path to it - just whether the keyholder
+   themselves has certified the uid.  Returns how many user IDs were
+   removed. */
+int
+clean_uids_from_key(KBNODE keyblock,int noisy)
+{
+  int uidcount=0,delete_until_next,deleted=0;
+  KBNODE node;
+
+  assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+
+  merge_keys_and_selfsig(keyblock);
+
+  /* First count how many user IDs we have.  We need to be careful
+     that we don't delete them all as some keys could actually have NO
+     valid user IDs.  2440 requires at least 1 user ID packet, valid
+     or not. */
+  for(node=keyblock->next;
+      node && node->pkt->pkttype!=PKT_PUBLIC_SUBKEY;
+      node=node->next)
+    if(node->pkt->pkttype==PKT_USER_ID)
+      uidcount++;
+
+  for(node=keyblock->next;
+      node && node->pkt->pkttype!=PKT_PUBLIC_SUBKEY && uidcount>deleted+1;
+      node=node->next)
+    {
+      if(node->pkt->pkttype==PKT_USER_ID)
+	{
+	  /* Skip valid user IDs, and non-self-signed user IDs if
+	     --allow-non-selfsigned-uid is set. */
+	  if(node->pkt->pkt.user_id->created
+	     || (!node->pkt->pkt.user_id->is_expired
+		 && !node->pkt->pkt.user_id->is_revoked
+		 && opt.allow_non_selfsigned_uid))
+	    delete_until_next=0;
+	  else
+	    {
+	      delete_until_next=1;
+	      deleted++;
+
+	      if(noisy)
+		{
+		  char *reason;
+		  char *user=utf8_to_native(node->pkt->pkt.user_id->name,
+					    node->pkt->pkt.user_id->len,0);
+
+		  if(node->pkt->pkt.user_id->is_revoked)
+		    reason=_("revoked");
+		  else if(node->pkt->pkt.user_id->is_expired)
+		    reason=_("expired");
+		  else
+		    reason=_("invalid");
+
+		  log_info("removing user ID \"%s\" from key %s: %s\n",
+			   user,keystr(keyblock->pkt->pkt.public_key->keyid),
+			   reason);
+
+		  m_free(user);
+		}
+	    }
+	}
+
+      if(delete_until_next)
+	delete_kbnode(node);
     }
     
   return deleted;
