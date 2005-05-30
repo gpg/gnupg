@@ -1,3 +1,8 @@
+2005-05-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* strgutil.c (set_native_charset) [_WIN32]: Add alias for codepage
+	CP65001 to utf-8.
+
 2005-05-19  Werner Koch  <wk@g10code.com>
 
 	* membuf.c: New.  Taken from gnupg 1.9.

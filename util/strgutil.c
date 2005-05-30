@@ -536,7 +536,8 @@ set_native_charset( const char *newset )
                         "CP28597" "\0" "ISO-8859-7" "\0"
                         "CP28598" "\0" "ISO-8859-8" "\0"
                         "CP28599" "\0" "ISO-8859-9" "\0"
-                        "CP28605" "\0" "ISO-8859-15" "\0");
+                        "CP28605" "\0" "ISO-8859-15" "\0"
+			"CP65001" "\0" "UTF-8" "\0");
              *aliases;
              aliases += strlen (aliases) + 1, aliases += strlen (aliases) + 1)
           {
