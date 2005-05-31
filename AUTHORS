@@ -50,6 +50,8 @@ Laurentiu Buzdugan <lbgnupg@rolix.org> Translations [ro]
 
 Magda Procha'zkova'  <magda@math.muni.cz> Translations [cs]
 
+Meng Jie <zuxyhere@eastday.com> Translations [zh_CN]
+
 Michael Roth  <mroth@nessie.de>  Assigns changes.
     (wrote cipher/des.c., changes and bug fixes all over the place)
 
@@ -94,7 +96,8 @@ Rafael Caetano dos Santos <rcaetano@linux.ime.usp.br> Translations [pt_BR]
 
 Toomas Soome <tsoome@ut.ee> Translations [et]
 
-Urko Lusa <ulusa@euskalnet.net> Translations [es_ES]
+Urko Lusa <ulusa@euskalnet.net> Translations [es]
+Jaime Sua'rez <jjsuarez@iname.com> Translations [es]
 
 Walter Koch <koch@u32.de>  Translations [de]
 

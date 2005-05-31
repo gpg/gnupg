@@ -16,7 +16,7 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, write to the Free
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   02110-1301 USA.  */
 
 #ifndef _REGEX_INTERNAL_H
 #define _REGEX_INTERNAL_H 1

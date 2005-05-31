@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -430,9 +431,9 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	} while( !maxlen );
     }
 
-    /* parse the header lines */
+    /* Parse the header lines.  */
     while(len) {
-	/* read the next line (skip all truncated lines) */
+	/* Read the next line (skip all truncated lines). */
 	do {
 	    maxlen = MAX_LINELEN;
 	    afx->buffer_len = iobuf_read_line( a, &afx->buffer,
@@ -443,7 +444,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 
 	i = parse_header_line( afx, line, len );
 	if( i <= 0 ) {
-	    if( i )
+	    if (i && RFC2440)
 		rc = G10ERR_INVALID_ARMOR;
 	    break;
 	}

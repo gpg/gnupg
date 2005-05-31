@@ -735,6 +735,20 @@
     rpm in /usr/src/redhat/SRPMS
 
 
+
+    GnuPG 1.4 and GnuPG 1.9
+    -----------------------
+    GnuPG 1.4 is the stable version of GnuPG; GnuPG 1.9 is the
+    development branch.  However, large parts of GnuPG 1.9 are also
+    considered to be stable and useful.  In particular the tools
+    "gpg-agent" (private key operations and passphrase caching) and
+    "gpgsm" (S/MIME cousin of "gpg") are considered stable.  Both
+    packages (1.4.x and 1.9.x) may be installed at the same time and
+    it is actually suggested to do this if you need S/MIME support or
+    want to make use of gpg-agent.
+
+
+
     How to Get More Information
     ---------------------------
 
@@ -750,10 +764,17 @@
 	gnupg-announce@gnupg.org    For important announcements like
 				    new versions and such stuff.
 				    This is a moderated list and has
-				    very low traffic.
+				    very low traffic.  Do not post to
+				    this list.
 
 	gnupg-users@gnupg.org	    For general user discussion and
-				    help.
+				    help (English).
+
+        gnupg-de@gnupg.org          German speaking counterpart of
+                                    gnupg-users.
+
+        gnupg-ru@gnupg.org          Russian speaking counterpart of
+                                    gnupg-users.
 
 	gnupg-devel@gnupg.org	    GnuPG developers main forum.
 
@@ -768,9 +789,10 @@
 
     Please direct questions about GnuPG to the users mailing list or
     one of the pgp newsgroups; please do not direct questions to one
-    of the authors directly as we are busy working on improvements
-    and bug fixes.  Both mailing lists are watched by the authors
-    and we try to answer questions when time allows us to do so.
+    of the authors directly as we are busy working on improvements and
+    bug fixes.  The English and German mailing lists are watched by
+    the authors and we try to answer questions when time allows us to
+    do so.
 
     Commercial grade support for GnuPG is available; please see
     the GNU service directory or check out http://g10code.com.

@@ -4,13 +4,13 @@ Noteworthy changes in version 1.4.2
     * New command "verify" in the card-edit menu to display
       the Private-DO-3.  The Admin command has been enhanced to take
       the optional arguments "on", "off" and "verify".  The latter may
-      be used to verify the ADmin Pin without modifying data; this
-      allows displayin the Private-DO-4 with the "list" command.
+      be used to verify the Admin Pin without modifying data; this
+      allows displaying the Private-DO-4 with the "list" command.
 
     * Rewrote large parts of the card code to optionally make use of a
       running gpg-agent.  If --use-agent is being used and a gpg-agent
       with enabled scdaemon is active, gpg will now divert all card
-      operations to that daemon.  This is required because bot,
+      operations to that daemon.  This is required because both,
       scdaemon and gpg require exclusive access to the card reader. By
       delegating the work to scdaemon, both can peacefully coexist and
       scdaemon is able to control the use of the reader.  Note that
@@ -817,7 +817,7 @@ Noteworthy changes in version 1.0.5 (2001-04-29)
     * Large File Support (LFS) is now working.
 
     * New options: --ignore-crc-error, --no-sig-create-check, 
-      --no-sig-cache, --fixed_list_mode, --no-expensive-trust-checks,
+      --no-sig-cache, --fixed-list-mode, --no-expensive-trust-checks,
       --enable-special-filenames and --use-agent.  See man page.
 
     * New command --pipemode, which can be used to run gpg as a

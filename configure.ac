@@ -16,17 +16,17 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
-dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+dnl MA 02110-1301, USA
 dnl
 dnl (Process this file with autoconf to produce a configure script.)
-dnlAC_REVISION($Revision$)dnl
 
 AC_PREREQ(2.59)
 min_automake_version="1.9.3"
 
 # Remember to change the version number immediately *after* a release
 # and remove the "-cvs" or "rc" suffix immediately *before* a release.
-AC_INIT(gnupg, 1.4.2-cvs, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.4.2rc1, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.

@@ -44,7 +44,7 @@ VIAddVersionKey "Comments" \
     it under the terms of the GNU General Public License. You should  \
     have received a copy of the GNU General Public License along with  \
     this software; if not, write to the Free Software Foundation, Inc.,  \
-    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA"
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA"
 VIAddVersionKey "CompanyName" "Free Software Foundation"
 VIAddVersionKey "LegalTrademarks" ""
 VIAddVersionKey "LegalCopyright" \
