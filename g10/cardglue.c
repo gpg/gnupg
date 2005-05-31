@@ -44,11 +44,6 @@
 #include "apdu.h"
 #include "app-common.h"
 
-/* If we build w/o agent support, assuan.h won't be included and thus
-   we need to define a repalcement for the assuan error type. */
-#ifndef ENABLE_AGENT_SUPPORT
-typedef int assuan_error_t;
-#endif
 
 
 struct ctrl_ctx_s 
@@ -80,6 +75,48 @@ static app_t current_app;
 /* Local prototypes. */
 static assuan_error_t learn_status_cb (void *opaque, const char *line);
 
+
+/* To avoid cluttering the code with bunches of ifdefs we use a few
+   dummy functions instead and defines. */
+#ifndef ENABLE_AGENT_SUPPORT
+
+#define ASSUAN_LINELENGTH 100
+
+static assuan_context_t 
+agent_open (int try)
+{
+  return NULL;
+}
+
+void 
+agent_close (assuan_context_t ctx)
+{
+}
+
+const char *
+assuan_strerror (assuan_error_t err)
+{
+  return "no Assuan support";
+}
+
+assuan_error_t 
+assuan_transact (assuan_context_t ctx,
+                 const char *command,
+                 assuan_error_t (*data_cb)(void *, const void *, size_t),
+                 void *data_cb_arg,
+                 assuan_error_t (*inquire_cb)(void*, const char *),
+                 void *inquire_cb_arg,
+                 assuan_error_t (*status_cb)(void*, const char *),
+                 void *status_cb_arg)
+{
+  return 100; /* ASSUAN_NOT_IMPLEMENTED */
+}
+assuan_error_t 
+assuan_send_data (assuan_context_t ctx, const void *buffer, size_t length)
+{
+  return 100; /* ASSUAN_NOT_IMPLEMENTED */
+}  
+#endif /*!ENABLE_AGENT_SUPPORT*/
 
 
 /* Create a serialno/fpr string from the serial number and the secret
@@ -253,9 +290,6 @@ app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 
 
 
-
-
-
 /* Release the card info structure. */
 void 
 agent_release_card_info (struct agent_card_info_s *info)
@@ -280,7 +314,7 @@ agent_release_card_info (struct agent_card_info_s *info)
 }
 
 
-/* Print an error message for a failed assuan-Transact and return a
+/* Print an error message for a failed assuan_transact and return a
    gpg error code. No error is printed if RC is 0. */
 static gpg_error_t
 test_transact (int rc, const char *command)

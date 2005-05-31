@@ -27,7 +27,11 @@
 #include <assert.h>
 
 #if GNUPG_MAJOR_VERSION == 1
-#include "cardglue.h"
+#define GPG_ERR_EOF               (-1)
+#define GPG_ERR_BAD_BER           (1)  /*G10ERR_GENERAL*/
+#define GPG_ERR_INV_SEXP          (45) /*G10ERR_INV_ARG*/
+typedef int gpg_error_t;
+#define gpg_error(n) (n)
 #else
 #include <gpg-error.h>
 #endif

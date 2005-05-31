@@ -191,6 +191,11 @@ int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 #ifdef ENABLE_AGENT_SUPPORT
 assuan_context_t agent_open (int try);
 void agent_close (assuan_context_t ctx);
+#else
+/* If we build w/o agent support, assuan.h won't get included and thus
+   we need to define a replacement for some Assuan types. */
+typedef int assuan_error_t;
+typedef void *assuan_context_t;
 #endif
 int  have_static_passphrase(void);
 void read_passphrase_from_fd( int fd );

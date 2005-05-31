@@ -1,3 +1,7 @@
+2005-05-31  Werner Koch  <wk@g10code.com>
+
+	* regcomp.c (MB_CUR_MAX) [_WIN32]: Define it only if not defined.
+
 2005-05-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* strgutil.c (set_native_charset) [_WIN32]: Add alias for codepage

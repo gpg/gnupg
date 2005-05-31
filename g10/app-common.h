@@ -46,7 +46,7 @@ struct app_ctx_s {
      in case we need to divert the operation to an already running
      agent.  This if ASSUAN_CTX is not NULL we take this as indication
      that all operations are diverted to gpg-agent. */
-#if GNUPG_MAJOR_VERSION == 1 && defined(ENABLE_AGENT_SUPPORT)
+#if GNUPG_MAJOR_VERSION == 1
   assuan_context_t assuan_ctx;
 #endif /*GNUPG_MAJOR_VERSION == 1*/
 

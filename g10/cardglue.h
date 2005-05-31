@@ -92,6 +92,7 @@ typedef struct ctrl_ctx_s *ctrl_t;
 #define GPG_ERR_INV_ID            G10ERR_GENERAL
 #define GPG_ERR_INV_NAME          G10ERR_GENERAL
 #define GPG_ERR_INV_VALUE         G10ERR_INV_ARG
+#define GPG_ERR_INV_SEXP          G10ERR_INV_ARG
 #define GPG_ERR_NOT_SUPPORTED     G10ERR_UNSUPPORTED
 #define GPG_ERR_NO_OBJ            G10ERR_GENERAL
 #define GPG_ERR_PIN_BLOCKED       G10ERR_PASSPHRASE

@@ -1,5 +1,10 @@
 2005-05-31  Werner Koch  <wk@g10code.com>
 
+	* keydb.h [!ENABLE_AGENT_SUPPORT]: Define dummy types.
+
+	* cardglue.c (assuan_strerror, assuan_transact): Dummy functions
+	if not build with agent support. 
+
 	* armor.c (check_input): Don't bail out on invalid header lines
 	unless in struict rfc2440 mode.  Suggested by Richard Patterson.
 
