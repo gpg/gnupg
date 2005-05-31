@@ -1,3 +1,16 @@
+2005-05-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.h, trustdb.c (clean_subkeys_from_key): New.  Walk
+	through the subkeys on a key, and mark any that aren't usable for
+	deletion.  Note that a signing subkey is never marked for deletion
+	since these keys are still useful after expiration or revocation.
+
+	* keyedit.c (menu_clean_subkeys_from_key): New function to call
+	clean_subkeys_from_key() on a key.  Note that the strings here are
+	not marked for translation yet.  The UI is still in flux, and
+	there is no point in annoying the translators twice.
+	(keyedit_menu): Call it here as part of the "clean" command.
+
 2005-05-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.h, trustdb.c (clean_uids_from_key): New.  Walk through
