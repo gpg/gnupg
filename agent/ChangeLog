@@ -1,3 +1,12 @@
+2005-05-31  Werner Koch  <wk@g10code.com>
+
+	* agent.h (out_of_core): s/__inline__/inine.  Noted by Ray Link.
+
+2005-05-25  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Do not unset the DISPLAY when we are
+	continuing as child.
+
 2005-05-24  Werner Koch  <wk@g10code.com>
 
 	* call-scd.c (inq_needpin): Skip leading spaces in of PIN

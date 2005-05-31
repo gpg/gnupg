@@ -37,7 +37,7 @@
 
 /* Convenience function to be used instead of returning the old
    GNUPG_Out_Of_Core. */
-static __inline__ gpg_error_t
+static inline gpg_error_t
 out_of_core (void)
 {
   return gpg_error (gpg_err_code_from_errno (errno));

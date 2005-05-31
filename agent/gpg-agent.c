@@ -490,7 +490,7 @@ main (int argc, char **argv )
 
   opt.homedir = default_homedir ();
 
-  /* Record the some original Denvironment settings. */
+  /* Record some of the original environment strings. */
   opt.startup_display = getenv ("DISPLAY");
   if (opt.startup_display)
     opt.startup_display = xstrdup (opt.startup_display);
@@ -776,9 +776,11 @@ main (int argc, char **argv )
       /* Remove the DISPLAY variable so that a pinentry does not
          default to a specific display.  There is still a default
          display when gpg-agent was started using --display or a
-         client requested this using an OPTION command. */
+         client requested this using an OPTION command.  Note, that we
+         don't do this when running in reverse daemon mode (i.e. when
+         exec the program given as arguments). */
 #ifndef HAVE_W32_SYSTEM
-      if (!opt.keep_display)
+      if (!opt.keep_display && !argc)
         unsetenv ("DISPLAY");
 #endif
 

@@ -45,6 +45,18 @@
 #define BUGREPORT_LINE ""
 #endif
 
+#ifndef PF_LOCAL
+# ifdef PF_UNIX
+#  define PF_LOCAL PF_UNIX
+# else
+#  define PF_LOCAL AF_UNIX
+# endif
+# ifndef AF_LOCAL
+#  define AF_LOCAL AF_UNIX
+# endif
+#endif
+
+
 static int verbose;
 
 

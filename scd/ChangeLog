@@ -1,3 +1,13 @@
+2005-05-31  Werner Koch  <wk@g10code.com>
+
+	* tlv.c [GNUPG_MAJOR_VERSION==1]: Define constants instead of
+	including a gnupg 1.4 header.
+
+2005-05-30  Werner Koch  <wk@g10code.com>
+
+	* tlv.c: Add hack to compile without gpg-error.h when used with
+	GnuPG 1.4.
+
 2005-05-23  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Do not build sc-copykeys anymore.

@@ -1,3 +1,7 @@
+2005-05-31  Werner Koch  <wk@g10code.com>
+
+	* dynload.h: s/__inline__/inline/.
+
 2005-05-13  Werner Koch  <wk@g10code.com>
 
 	* signal.c (got_fatal_signal): Print the signal number if we can't

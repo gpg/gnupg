@@ -27,14 +27,14 @@
 
 #define RTLD_LAZY 0
 
-static __inline__ void *
+static inline void *
 dlopen (const char * name, int flag)
 {
   void * hd = LoadLibrary (name);
   return hd;
 }
 
-static __inline__ void *
+static inline void *
 dlsym (void *hd, const char *sym)
 {
   if (hd && sym)
@@ -48,7 +48,7 @@ dlsym (void *hd, const char *sym)
 }
 
 
-static __inline__ const char *
+static inline const char *
 dlerror (void)
 {
   static char buf[32];
@@ -57,7 +57,7 @@ dlerror (void)
 }
 
 
-static __inline__ int
+static inline int
 dlclose (void * hd)
 {
   if (hd)
