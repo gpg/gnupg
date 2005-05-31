@@ -3196,7 +3196,7 @@ menu_clean_uids_from_key(KBNODE keyblock)
 	{
 	  if(node->pkt->pkttype==PKT_USER_ID && is_deleted_kbnode(node))
 	    {
-	      char *reason;
+	      const char *reason;
 	      char *user=utf8_to_native(node->pkt->pkt.user_id->name,
 					node->pkt->pkt.user_id->len,0);
 
@@ -3231,7 +3231,7 @@ menu_clean_subkeys_from_key(KBNODE keyblock)
 	{
 	  if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY && is_deleted_kbnode(node))
 	    {
-	      char *reason;
+	      const char *reason;
 
 	      if(node->pkt->pkt.public_key->is_revoked)
 		reason=_("revoked");

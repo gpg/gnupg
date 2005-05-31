@@ -1683,7 +1683,7 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 
 	      if(noisy)
 		{
-		  char *reason;
+		  const char *reason;
 		  char *user=utf8_to_native(uid->name,uid->len,0);
 
 		  if(uid->is_revoked)
@@ -1745,7 +1745,7 @@ clean_subkeys_from_key(KBNODE keyblock,int noisy)
 
 	      if(noisy)
 		{
-		  char *reason;
+		  const char *reason;
 
 		  if(pk->is_revoked)
 		    reason=_("revoked");
