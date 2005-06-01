@@ -36,6 +36,13 @@
 #include "keyserver.h"
 #include "ksutil.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+
+unsigned int set_timeout(unsigned int seconds) {return 0;}
+int register_timeout(void) {return 0;}
+
+#else
+
 static void
 catch_alarm(int foo)
 {
@@ -45,19 +52,12 @@ catch_alarm(int foo)
 unsigned int
 set_timeout(unsigned int seconds)
 {
-#ifdef HAVE_DOSISH_SYSTEM
-  return 0;
-#else
   return alarm(seconds);
-#endif
 }
 
 int
 register_timeout(void)
 {
-#ifdef HAVE_DOSISH_SYSTEM
-  return 0;
-#else
 #if defined(HAVE_SIGACTION) && defined(HAVE_STRUCT_SIGACTION)
   struct sigaction act;
 
@@ -71,8 +71,9 @@ register_timeout(void)
   else
     return 0;
 #endif
-#endif
 }
+
+#endif /* !HAVE_DOSISH_SYSTEM */
 
 struct ks_options *
 init_ks_options(void)
