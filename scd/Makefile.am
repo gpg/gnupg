@@ -23,7 +23,7 @@ if ! HAVE_W32_SYSTEM
 pkglib_PROGRAMS = pcsc-wrapper
 endif
 
-AM_CPPFLAGS = -I$(top_srcdir)/intl -I$(top_srcdir)/common
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
@@ -43,7 +43,7 @@ scdaemon_SOURCES = \
 	app.c app-common.h app-help.c $(card_apps)
 
 
-scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+scdaemon_LDADD = ../gl/libgnu.a ../jnlib/libjnlib.a ../common/libcommon.a \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
 	$(LIBUSB_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS)
 

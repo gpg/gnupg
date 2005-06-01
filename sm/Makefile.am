@@ -24,7 +24,7 @@ bin_PROGRAMS = gpgsm
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS) \
             $(PTH_CFLAGS)
 
-AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl 
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl 
 include $(top_srcdir)/am/cmacros.am
 
 
@@ -52,7 +52,7 @@ gpgsm_SOURCES = \
 	certreqgen.c 
 
 
-gpgsm_LDADD = ../jnlib/libjnlib.a ../kbx/libkeybox.a	\
+gpgsm_LDADD = ../gl/libgnu.a ../jnlib/libjnlib.a ../kbx/libkeybox.a	\
               ../common/libcommon.a \
               $(LIBGCRYPT_LIBS)  $(KSBA_LIBS) $(LIBASSUAN_LIBS) -lgpg-error \
 	      $(LIBINTL) $(PTH_LIBS)

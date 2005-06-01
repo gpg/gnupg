@@ -152,8 +152,8 @@ EOF
 fi
 
 
-echo "Running aclocal -I m4 ${ACLOCAL_FLAGS:+$ACLOCAL_FLAGS }..."
-$ACLOCAL -I m4 $ACLOCAL_FLAGS
+echo "Running aclocal -I m4 -I gl/m4 ${ACLOCAL_FLAGS:+$ACLOCAL_FLAGS }..."
+$ACLOCAL -I m4 -I gl/m4 $ACLOCAL_FLAGS
 echo "Running autoheader..."
 $AUTOHEADER
 echo "Running automake --gnu ..."

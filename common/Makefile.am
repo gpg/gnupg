@@ -21,7 +21,9 @@
 
 noinst_LIBRARIES = libcommon.a libsimple-pwquery.a
 
-AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(PTH_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/gl
+
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(PTH_CFLAGS)
 
 libcommon_a_SOURCES = \
 	util.h i18n.h \
@@ -49,18 +51,6 @@ libcommon_a_SOURCES = \
 	estream.c estream.h
 
 
-libcommon_a_LIBADD = @LIBOBJS@
-
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h
-
-libsimple_pwquery_a_LIBADD = @LIBOBJS@
-
-
-
-
-
-
-
-
 

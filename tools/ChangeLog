@@ -1,3 +1,7 @@
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c: Include mkdtemp.h. 
+
 2005-05-31  Werner Koch  <wk@g10code.com>
 
 	* watchgnupg.c: Make sure that PF_LCOAL and AF_LOCAL are defines.

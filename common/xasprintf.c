@@ -43,7 +43,7 @@ xasprintf (const char *fmt, ...)
   return p;
 }
 
-/* Same as above bit return NULL on memory failure.  */
+/* Same as above but return NULL on memory failure.  */
 char *
 xtryasprintf (const char *fmt, ...)
 {

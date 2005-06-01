@@ -1,3 +1,15 @@
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (gl_INIT): Add gnulib stuff.
+	(fseeko, ftello, ttyname, isascii): Replaced the AC_REPLACE_FUNCS
+	by a simple check.
+	(putc_unlocked): Removed check.  Not used.
+	(strsep, mkdtemp, asprintf): Replaced checks by gnulib checks.
+	(xsize): Added will probably come handy soon.
+	(CFLAGS): Use -Wformat-security instead of
+	-Wformat-nonliteral. Add --Wno-format-y2k.
+	* gl/, gl/m4/: New.
+
 2005-05-15  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Remove option --disable-threads; require the use

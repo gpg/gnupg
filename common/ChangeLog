@@ -1,3 +1,13 @@
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CPPFLAGS): Added.
+
+	* util.h: Add some includes for gnulib.
+	(ttyname, isascii): Define them inline.
+	* fseeko.c, ftello.c: Removed.
+	* strsep.c, mkdtemp.c: Removed.
+	* ttyname.c, isascii.c: Removed.
+
 2005-05-31  Werner Koch  <wk@g10code.com>
 
 	* dynload.h: s/__inline__/inline/.

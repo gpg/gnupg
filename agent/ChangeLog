@@ -1,3 +1,7 @@
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c: Include setenv.h.
+
 2005-05-31  Werner Koch  <wk@g10code.com>
 
 	* agent.h (out_of_core): s/__inline__/inine.  Noted by Ray Link.

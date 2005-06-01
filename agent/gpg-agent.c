@@ -48,6 +48,7 @@
 #ifdef HAVE_W32_SYSTEM
 #include "../jnlib/w32-afunix.h"
 #endif
+#include "setenv.h"
 
 
 enum cmd_and_opt_values 

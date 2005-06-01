@@ -21,7 +21,7 @@
 bin_PROGRAMS = gpg-agent
 libexec_PROGRAMS = gpg-protect-tool gpg-preset-passphrase
 
-AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
 include $(top_srcdir)/am/cmacros.am
 
@@ -44,7 +44,7 @@ gpg_agent_SOURCES = \
 	learncard.c
 
 
-gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+gpg_agent_LDADD = ../gl/libgnu.a ../jnlib/libjnlib.a ../common/libcommon.a \
                 $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
 	         -lgpg-error @LIBINTL@
 

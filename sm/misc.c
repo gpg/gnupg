@@ -31,6 +31,7 @@
 
 #include "gpgsm.h"
 #include "i18n.h"
+#include "setenv.h"
 
 /* Setup the environment so that the pinentry is able to get all
    required information.  This is used prior to an exec of the

@@ -337,6 +337,7 @@ AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, :)
 AC_PATH_PROG(PERL,"perl")
 AC_ISC_POSIX
+gl_EARLY
 AC_SYS_LARGEFILE
 AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
 AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
@@ -794,22 +795,20 @@ AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times gmtime_r)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat getaddrinfo)
+AC_CHECK_FUNCS(fseeko ftello ttyname isascii)
 
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
+
+# gnulib checks
+gl_SOURCE_BASE(gl)
+gl_M4_BASE(gl/m4)
+gl_MODULES(setenv strsep mkdtemp vasprintf xsize)
+gl_INIT
 
 # These are needed by libjnlib - fixme: we should have macros for them
 AC_CHECK_FUNCS(memicmp stpcpy strlwr strtoul memmove stricmp strtol)
 AC_CHECK_FUNCS(getrusage setrlimit stat setlocale)
 AC_CHECK_FUNCS(flockfile funlockfile fopencookie funopen)
-
-AC_REPLACE_FUNCS(vasprintf)
-AC_REPLACE_FUNCS(mkdtemp)
-AC_REPLACE_FUNCS(fseeko ftello)
-AC_REPLACE_FUNCS(isascii)
-AC_REPLACE_FUNCS(putc_unlocked)
-AC_REPLACE_FUNCS(strsep)
-AC_REPLACE_FUNCS(ttyname)
-
 
 
 #
@@ -989,7 +988,7 @@ fi
 if test "$GCC" = yes; then
     if test "$USE_MAINTAINER_MODE" = "yes"; then
         CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
-        CFLAGS="$CFLAGS -Wformat-nonliteral"
+        CFLAGS="$CFLAGS -Wno-format-y2k -Wformat-security"
     else
         CFLAGS="$CFLAGS -Wall"
     fi
@@ -1126,6 +1125,7 @@ AC_CONFIG_FILES([ m4/Makefile
 Makefile
 po/Makefile.in
 intl/Makefile
+gl/Makefile
 jnlib/Makefile
 common/Makefile
 kbx/Makefile

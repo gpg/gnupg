@@ -39,6 +39,7 @@
 #include "i18n.h"
 #include "iobuf.h"
 #include "util.h"
+#include "mkdtemp.h"
 #include "exec.h"
 
 #ifdef NO_EXEC
@@ -54,10 +55,6 @@ int exec_finish(struct exec_info *info) { return GPG_ERR_GENERAL; }
 int set_exec_path(const char *path,int method) { return GPG_ERR_GENERAL; }
 
 #else /* ! NO_EXEC */
-
-#ifndef HAVE_MKDTEMP
-char *mkdtemp(char *template);
-#endif
 
 #if defined (_WIN32)
 /* This is a nicer system() for windows that waits for programs to

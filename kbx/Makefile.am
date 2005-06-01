@@ -23,7 +23,7 @@ localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
 EXTRA_DIST = mkerrors
-AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl \
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl \
 	       $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 noinst_LIBRARIES = libkeybox.a
@@ -45,6 +45,7 @@ libkeybox_a_SOURCES = $(common_sources)
 
 # Note that libcommon is only required to resolve the LIBOBJS.
 kbxutil_SOURCES = kbxutil.c $(common_sources)
-kbxutil_LDADD   = ../jnlib/libjnlib.a  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
+kbxutil_LDADD   = ../gl/libgnu.a ../jnlib/libjnlib.a  \
+	          $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
                   -lgpg-error $(LIBINTL) ../common/libcommon.a
 

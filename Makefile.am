@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 -I gl/m4
 AUTOMAKE_OPTIONS = dist-bzip2
 
 EXTRA_DIST = scripts/config.rpath autogen.sh README.CVS
@@ -59,7 +59,7 @@ else
 tests = tests
 endif
 
-SUBDIRS = m4 intl jnlib common ${kbx} \
+SUBDIRS = m4 intl gl jnlib common ${kbx} \
  ${gpg} ${sm} ${agent} ${scd} tools po doc ${tests}
 
 dist-hook:

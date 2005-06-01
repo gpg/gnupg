@@ -27,6 +27,22 @@
 
 #include "keybox-defs.h"
 
+
+#if !defined(HAVE_FTELLO) && !defined(ftello)
+static off_t
+ftello (FILE *stream)
+{
+  long int off;
+
+  off = ftell (stream);
+  if (off == -1)
+    return (off_t)-1;
+  return off;
+}
+#endif /* !defined(HAVE_FTELLO) && !defined(ftello) */
+
+
+
 /* Read a block at the current postion and return it in r_blob.
    r_blob may be NULL to simply skip the current block */
 int

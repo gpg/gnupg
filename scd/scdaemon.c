@@ -51,7 +51,7 @@
 #include "../jnlib/w32-afunix.h"
 #endif
 #include "ccid-driver.h"
-
+#include "mkdtemp.h"
 
 enum cmd_and_opt_values 
 { aNull = 0,

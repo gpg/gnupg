@@ -21,14 +21,14 @@
 
 EXTRA_DIST = options.skel
 
-AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/include \
-              -I$(top_srcdir)/intl 
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
+              -I$(top_srcdir)/include -I$(top_srcdir)/intl 
 
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
 
-needed_libs = ../common/libcommon.a ../jnlib/libjnlib.a
+needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
 
 bin_PROGRAMS = gpg2 gpgv2
 

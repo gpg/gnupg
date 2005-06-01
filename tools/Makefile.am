@@ -21,7 +21,7 @@ EXTRA_DIST = Manifest watchgnupg.c \
              rfc822parse.c rfc822parse.h gpgparsemail.c \
 	     addgnupghome gpgsm-gencert.sh
 
-AM_CPPFLAGS =  -I$(top_srcdir)/intl -I$(top_srcdir)/common
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
@@ -43,19 +43,23 @@ endif
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
-gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a @LIBINTL@
+gpgconf_LDADD = ../gl/libgnu.a ../jnlib/libjnlib.a \
+                ../common/libcommon.a @LIBINTL@
 
 symcryptrun_SOURCES = symcryptrun.c
-symcryptrun_LDADD = $(LIBUTIL_LIBS) ../jnlib/libjnlib.a ../common/libcommon.a \
+symcryptrun_LDADD = $(LIBUTIL_LIBS) ../gl/libgnu.a ../jnlib/libjnlib.a \
+                    ../common/libcommon.a \
 		    ../common/libsimple-pwquery.a $(LIBGCRYPT_LIBS) \
 		    $(GPG_ERROR_LIBS) $(LIBINTL)
 
 watchgnupg_SOURCES = watchgnupg.c 
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
-gpg_connect_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+gpg_connect_agent_LDADD = ../gl/libgnu.a ../jnlib/libjnlib.a \
+                          ../common/libcommon.a \
                           $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
 
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
 gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
-gpgkey2ssh_LDADD = ../common/libcommon.a $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+gpgkey2ssh_LDADD = ../gl/libgnu.a ../common/libcommon.a \
+                   $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)

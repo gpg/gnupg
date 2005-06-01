@@ -1,3 +1,7 @@
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* misc.c: Include setenv.h.
+
 2005-04-21  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c: New options --{enable,disable}-trusted-cert-crl-check.

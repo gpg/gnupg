@@ -25,7 +25,13 @@
 #include <time.h>   /* We need time_t. */
 #include <gpg-error.h> /* we need gpg-error_t. */
 
-/* to pass hash functions to libksba we need to cast it */
+/* Common GNUlib includes (-I ../gl/). */
+#include "strpbrk.h"
+#include "strsep.h"
+#include "vasprintf.h"
+
+
+/* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
 
 /* get all the stuff from jnlib */
@@ -152,24 +158,26 @@ char *make_printable_string (const byte *p, size_t n, int delim);
 int is_file_compressed (const char *s, int *ret_rc);
 
 
-/*-- replacement functions from funcname.c --*/
-#if !HAVE_VASPRINTF
-#include <stdarg.h>
-int vasprintf (char **result, const char *format, va_list args);
-int asprintf (char **result, const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
-#endif
-#ifndef HAVE_STRSEP
-char *strsep (char **stringp, const char *delim);
-#endif
+
+/*-- Simple replacement functions. */
 #ifndef HAVE_TTYNAME
-char *ttyname (int fd);
-#endif
-#ifndef HAVE_MKDTEMP
-char *mkdtemp (char *template);
-#endif
+/* Systems without ttyname (W32) will merely return NULL. */
+static inline char *
+ttyname (int fd) 
+{
+  return NULL
+};
+#endif /* !HAVE_TTYNAME */
 
+#ifndef HAVE_ISASCII
+static inline int 
+isascii (int c)
+{
+  return (((c) & ~0x7f) == 0);
+}
+#endif /* !HAVE_ISASCII */
 
-/*-- some macros to replace ctype ones and avoid locale problems --*/
+/*-- Macros to replace ctype ones to avoid locale problems. --*/
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 #define digitp(p)   (*(p) >= '0' && *(p) <= '9')
 #define hexdigitp(a) (digitp (a)                     \
