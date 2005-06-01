@@ -1,6 +1,6 @@
 /* passphrase.c -  Get a passphrase
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -73,16 +73,9 @@
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
-
-
 static char *fd_passwd = NULL;
 static char *next_pw = NULL;
 static char *last_pw = NULL;
-
-#if defined (_WIN32)
-static int read_fd = 0;
-static int write_fd = 0;
-#endif
 
 static void hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create );
 

@@ -1,6 +1,6 @@
 /* signal.c - signal handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,13 +40,16 @@
 #include "main.h"
 #include "ttyio.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+void init_signals(void) {}
+void pause_on_sigusr(int which) {}
+#else
 static volatile int caught_fatal_sig = 0;
 static volatile int caught_sigusr1 = 0;
 
 static void
 init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
 {
-#ifndef HAVE_DOSISH_SYSTEM
 #if defined(HAVE_SIGACTION) && defined(HAVE_STRUCT_SIGACTION)
     struct sigaction oact, nact;
 
@@ -70,7 +73,6 @@ init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
         signal (sig, SIG_IGN);
     }
 #endif
-#endif /*!HAVE_DOSISH_SYSTEM*/
 }
 
 static RETSIGTYPE
@@ -129,7 +131,6 @@ got_usr_signal( int sig )
 void
 init_signals()
 {
-#ifndef HAVE_DOSISH_SYSTEM
     init_one_signal (SIGINT, got_fatal_signal, 1 );
     init_one_signal (SIGHUP, got_fatal_signal, 1 );
     init_one_signal (SIGTERM, got_fatal_signal, 1 );
@@ -137,14 +138,12 @@ init_signals()
     init_one_signal (SIGSEGV, got_fatal_signal, 1 );
     init_one_signal (SIGUSR1, got_usr_signal, 0 );
     init_one_signal (SIGPIPE, SIG_IGN, 0 );
-#endif
 }
 
 
 void
 pause_on_sigusr( int which )
 {
-#ifndef HAVE_DOSISH_SYSTEM
 #if defined(HAVE_SIGPROCMASK) && defined(HAVE_SIGSET_T)
     sigset_t mask, oldmask;
 
@@ -165,7 +164,6 @@ pause_on_sigusr( int which )
      caught_sigusr1 = 0;
      sigrelse(SIGUSR1);
 #endif /*! HAVE_SIGPROCMASK && HAVE_SIGSET_T */
-#endif
 }
 
 /* Disabled - see comment in tdbio.c:tdbio_begin_transaction() */
@@ -173,7 +171,6 @@ pause_on_sigusr( int which )
 static void
 do_block( int block )
 {
-#ifndef HAVE_DOSISH_SYSTEM
     static int is_blocked;
 #if defined(HAVE_SIGPROCMASK) && defined(HAVE_SIGSET_T)
     static sigset_t oldmask;
@@ -223,7 +220,6 @@ do_block( int block )
 	is_blocked = 0;
     }
 #endif /*! HAVE_SIGPROCMASK && HAVE_SIGSET_T */
-#endif /*HAVE_DOSISH_SYSTEM*/
 }
 
 void
@@ -238,3 +234,5 @@ unblock_all_signals()
     do_block(0);
 }
 #endif
+
+#endif /* !HAVE_DOSISH_SYSTEM */

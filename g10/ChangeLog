@@ -1,3 +1,10 @@
+2005-06-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* signal.c [HAVE_DOSISH_SYSTEM]: Fix unused function warnings on
+	mingw32.  Noted by Joe Vender.
+
+	* passphrase.c [_WIN32]: Remove unused variables.
+
 2005-05-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_clean_uids_from_key,
