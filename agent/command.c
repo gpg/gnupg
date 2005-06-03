@@ -868,6 +868,39 @@ cmd_scd (ASSUAN_CONTEXT ctx, char *line)
 
 
 
+/* UPDATESTARTUPTTY 
+  
+  Set startup TTY and X DISPLAY variables to the values of this
+  session.  This command is useful to pull future pinentries to
+  another screen.  It is only required because there is no way in the
+  ssh-agent protocol to convey this information.  */
+static int
+cmd_updatestartuptty (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  xfree (opt.startup_display); opt.startup_display = NULL;
+  xfree (opt.startup_ttyname); opt.startup_ttyname = NULL;
+  xfree (opt.startup_ttytype); opt.startup_ttytype = NULL;
+  xfree (opt.startup_lc_ctype); opt.startup_lc_ctype = NULL;
+  xfree (opt.startup_lc_messages); opt.startup_lc_messages = NULL;
+
+  if (ctrl->display)
+    opt.startup_display = xtrystrdup (ctrl->display);
+  if (ctrl->ttyname)
+    opt.startup_ttyname = xtrystrdup (ctrl->ttyname);
+  if (ctrl->ttytype)
+    opt.startup_ttytype = xtrystrdup (ctrl->ttytype);
+  if (ctrl->lc_ctype) 
+    opt.startup_lc_ctype = xtrystrdup (ctrl->lc_ctype);
+  if (ctrl->lc_messages)
+    opt.startup_lc_messages = xtrystrdup (ctrl->lc_messages);
+
+  return 0;
+}
+
+
+
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
@@ -957,6 +990,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "INPUT",          NULL }, 
     { "OUTPUT",         NULL }, 
     { "SCD",            cmd_scd },
+    { "UPDATESTARTUPTTY",  cmd_updatestartuptty },
     { NULL }
   };
   int i, rc;

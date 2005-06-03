@@ -72,6 +72,13 @@ might want to have an agent context for each service request
   we can change all S-expression handling code to make use of this
   function.
 
+* scd
+** Application context vs. reader slot
+  We have 2 concurrent method of tracking whether a read is in use:
+  Using the session_list in command.c and the lock_table in app.c.  IT
+  would be better to do this just at one place. First we need to see
+  how we can support cards with multiple applications.
+   
 * tests
 ** Makefile.am
   We use printf(1) to setup the library path, this is not portable.

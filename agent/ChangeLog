@@ -1,3 +1,20 @@
+2005-06-03  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_updatestartuptty): New.
+
+	* gpg-agent.c: New option --write-env-file.
+	
+	* gpg-agent.c (handle_connections): Make sure that the signals we
+	are handling are not blocked.Block signals while creating new
+	threads.
+
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (agent_scd_dump_state, dump_mutex_state): New.
+	* gpg-agent.c (handle_signal): Print it on SIGUSR1.
+	(handle_connections): Include the file descriptor into the
+	threadnames.
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c: Include setenv.h.

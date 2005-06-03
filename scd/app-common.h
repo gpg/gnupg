@@ -39,6 +39,11 @@ struct app_ctx_s {
                        function pointers may be used.  Note that for
                        unsupported operations the particular
                        function pointer is set to NULL */
+
+  int ref_count;    /* Number of connections currently using this
+                       application context.  fixme: We might want to
+                       merg this witghn INITIALIZED above. */
+
   int slot;         /* Used reader. */
 
   /* If this is used by GnuPG 1.4 we need to know the assuan context
@@ -123,6 +128,7 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 
 
 /*-- app.c --*/
+void app_dump_state (void);
 gpg_error_t select_application (ctrl_t ctrl, int slot, const char *name,
                                 app_t *r_app);
 void release_application (app_t app);

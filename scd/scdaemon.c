@@ -809,6 +809,7 @@ handle_signal (int signo)
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
       pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
+      app_dump_state ();
       break;
 
     case SIGUSR2:
@@ -1013,7 +1014,6 @@ handle_connections (int listen_fd)
   tattr = pth_attr_new();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 512*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "scd-connections");
 
 #ifndef HAVE_W32_SYSTEM /* fixme */
   sigemptyset (&sigs );
@@ -1022,6 +1022,7 @@ handle_connections (int listen_fd)
   sigaddset (&sigs, SIGUSR2);
   sigaddset (&sigs, SIGINT);
   sigaddset (&sigs, SIGTERM);
+  pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
   ev = NULL;
@@ -1034,6 +1035,8 @@ handle_connections (int listen_fd)
 
   for (;;)
     {
+      sigset_t oldsigs;
+      
       if (shutdown_pending)
         {
           if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)
@@ -1093,6 +1096,11 @@ handle_connections (int listen_fd)
           handle_tick ();
         }
 
+      /* We now might create new threads and because we don't want any
+         signals - we are handling here - to be delivered to a new
+         thread. Thus we need to block those signals. */
+      pth_sigmask (SIG_BLOCK, &sigs, &oldsigs);
+
       if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
 	{
           plen = sizeof paddr;
@@ -1101,14 +1109,25 @@ handle_connections (int listen_fd)
 	    {
 	      log_error ("accept failed: %s\n", strerror (errno));
 	    }
-          else if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
-	    {
-	      log_error ("error spawning connection handler: %s\n",
-			 strerror (errno) );
-	      close (fd);
-	    }
+          else
+            {
+              char threadname[50];
+              snprintf (threadname, sizeof threadname-1, "conn fd=%d", fd);
+              threadname[sizeof threadname -1] = 0;
+              pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
+              
+              if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
+                {
+                  log_error ("error spawning connection handler: %s\n",
+                             strerror (errno) );
+                  close (fd);
+                }
+            }
           fd = -1;
 	}
+
+      /* Restore the signal mask. */
+      pth_sigmask (SIG_SETMASK, &oldsigs, NULL);
 
     }
 

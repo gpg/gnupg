@@ -1,3 +1,32 @@
+2005-06-03  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (handle_connections): Make sure that the signals we
+	are handling are not blocked.Block signals while creating new
+	threads.
+	(handle_connections): Include the file descriptor into the name of
+	the thread.
+
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* app.c (app_dump_state, dump_mutex_state): New.
+	* scdaemon.c (handle_signal): Print it on SIGUSR1.
+
+	* app-openpgp.c (do_writekey): Typo fix.
+
+	* command.c (open_card): Check for locked state even if an
+	application context is available.
+
+	* app-common.h: Add REF_COUNT field.
+	* app.c (release_application, select_application): Implement
+	reference counting to share the context beween connections.
+
+	* app.c (lock_reader, unlock_reader): Take SLOT instead of APP as
+	argument.  Changed all callers.
+	(select_application): Unlock the reader on error.  This should fix
+	the hangs I noticed last week.
+
+	* scdaemon.h: Removed card_ctx_t cruft.
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c: Include mkdtemp.h.

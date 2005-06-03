@@ -22,7 +22,7 @@
 # include <estream-support.h>
 #endif
 
-#ifdef USE_CONFIG_H
+#ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
 
@@ -597,7 +597,9 @@ es_func_fd_read (void *cookie, char *buffer, size_t size)
   estream_cookie_fd_t file_cookie = cookie;
   ssize_t bytes_read;
 
-  bytes_read = ESTREAM_SYS_READ (file_cookie->fd, buffer, size);
+  do 
+    bytes_read = ESTREAM_SYS_READ (file_cookie->fd, buffer, size);
+  while (bytes_read == -1 && errno == EINTR);
 
   return bytes_read;
 }
@@ -610,7 +612,9 @@ es_func_fd_write (void *cookie, const char *buffer, size_t size)
   estream_cookie_fd_t file_cookie = cookie;
   ssize_t bytes_written;
 
-  bytes_written = ESTREAM_SYS_WRITE (file_cookie->fd, buffer, size);
+  do
+    bytes_written = ESTREAM_SYS_WRITE (file_cookie->fd, buffer, size);
+  while (bytes_written == -1 && errno == EINTR);
 
   return bytes_written;
 }

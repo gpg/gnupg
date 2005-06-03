@@ -39,25 +39,24 @@ static struct
 {
   int initialized;
   pth_mutex_t lock;
+  app_t app;        /* Application context in use or NULL. */
 } lock_table[10];
 
 
-/* Lock the reader associated with the APP context.  This function
-   shall be used right before calling any of the actual application
-   functions to serialize access to the reader.  We do this always
-   even if the reader is not actually used.  This allows an actual
-   application to assume that it never shares a reader (while
-   performing one command).  Returns 0 on success; only then the
-   unlock_reader function must be called after returning from the
-   handler. */
+/* Lock the reader SLOT.  This function shall be used right before
+   calling any of the actual application functions to serialize access
+   to the reader.  We do this always even if the reader is not
+   actually used.  This allows an actual connection to assume that it
+   never shares a reader (while performing one command).  Returns 0 on
+   success; only then the unlock_reader function must be called after
+   returning from the handler. */
 static gpg_error_t 
-lock_reader (app_t app)
+lock_reader (int slot)
 {
   gpg_error_t err;
-  int slot = app->slot;
 
   if (slot < 0 || slot >= DIM (lock_table))
-    return gpg_error (app->slot<0? GPG_ERR_INV_VALUE : GPG_ERR_RESOURCE_LIMIT);
+    return gpg_error (slot<0? GPG_ERR_INV_VALUE : GPG_ERR_RESOURCE_LIMIT);
 
   if (!lock_table[slot].initialized)
     {
@@ -68,6 +67,7 @@ lock_reader (app_t app)
           return err;
         }
       lock_table[slot].initialized = 1;
+      lock_table[slot].app = NULL;
     }
   
   if (!pth_mutex_acquire (&lock_table[slot].lock, 0, NULL))
@@ -83,10 +83,8 @@ lock_reader (app_t app)
 
 /* Release a lock on the reader.  See lock_reader(). */
 static void
-unlock_reader (app_t app)
+unlock_reader (int slot)
 {
-  int slot = app->slot;
-
   if (slot < 0 || slot >= DIM (lock_table)
       || !lock_table[slot].initialized)
     log_bug ("unlock_reader called for invalid slot %d\n", slot);
@@ -96,6 +94,39 @@ unlock_reader (app_t app)
                slot, strerror (errno));
 
 }
+
+
+static void
+dump_mutex_state (pth_mutex_t *m)
+{
+  if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
+    log_printf ("not_initialized");
+  else if (!(m->mx_state & PTH_MUTEX_LOCKED))
+    log_printf ("not_locked");
+  else
+    log_printf ("locked tid=0x%lx count=%lu", (long)m->mx_owner, m->mx_count);
+}
+
+
+/* This function may be called to print information pertaining to the
+   current state of this module to the log. */
+void
+app_dump_state (void)
+{
+  int slot;
+
+  for (slot=0; slot < DIM (lock_table); slot++)
+    if (lock_table[slot].initialized)
+      {
+        log_info ("app_dump_state: slot=%d lock=", slot);
+        dump_mutex_state (&lock_table[slot].lock);
+        if (lock_table[slot].app)
+          log_printf (" app=%p type=`%s'",
+                      lock_table[slot].app, lock_table[slot].app->apptype);
+        log_printf ("\n");
+      }
+}
+
  
 /* Check wether the application NAME is allowed.  This does not mean
    we have support for it though.  */
@@ -120,23 +151,48 @@ gpg_error_t
 select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
 {
   gpg_error_t err;
-  app_t app;
+  app_t app = NULL;
   unsigned char *result = NULL;
   size_t resultlen;
 
   *r_app = NULL;
+
+  err = lock_reader (slot);
+  if (err)
+    return err;
+
+  /* First check whether we already have an application to share. */
+  app = lock_table[slot].initialized ? lock_table[slot].app : NULL;
+  if (app && name)
+    if (!app->apptype || ascii_strcasecmp (app->apptype, name))
+      {
+        unlock_reader (slot);
+        if (app->apptype)
+          log_info ("application `%s' in use by reader %d - can't switch\n",
+                    app->apptype, slot);
+        return gpg_error (GPG_ERR_CONFLICT);
+      }
+
+  if (app)
+    {
+      if (app->slot != slot)
+        log_bug ("slot mismatch %d/%d\n", app->slot, slot);
+      app->ref_count++;
+      *r_app = app;
+      unlock_reader (slot);
+      return 0; /* Okay: We share that one. */
+    }
+
   app = xtrycalloc (1, sizeof *app);
   if (!app)
     {
       err = gpg_error_from_errno (errno);
       log_info ("error allocating context: %s\n", gpg_strerror (err));
+      unlock_reader (slot);
       return err;
     }
   app->slot = slot;
 
-  err = lock_reader (app);
-  if (err)
-    return err;
 
   /* Fixme: We should now first check whether a card is at all
      present. */
@@ -162,7 +218,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
              have some test cards with such an invalid encoding and
              therefore I use this ugly workaround to return something
              I can further experiment with. */
-          log_debug ("enabling BMI testcard workaround\n");
+          log_info ("enabling BMI testcard workaround\n");
           n--;
         }
 
@@ -212,22 +268,41 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
         log_info ("no supported card application found: %s\n",
                   gpg_strerror (err));
       xfree (app);
+      unlock_reader (slot);
       return err;
     }
 
   app->initialized = 1;
-  unlock_reader (app);
+  app->ref_count = 1;
+  lock_table[slot].app = app;
   *r_app = app;
+  unlock_reader (slot);
   return 0;
 }
 
 
+/* Free the resources associated with the application APP.  APP is
+   allowed to be NULL in which case this is a no-op.  Note that we are
+   using reference counting to track the users of the application. */
 void
 release_application (app_t app)
 {
+  int slot;
+
   if (!app)
     return;
 
+  if (app->ref_count < 1)
+    log_bug ("trying to release an already released context\n");
+  if (--app->ref_count)
+    return;
+
+  /* Clear the reference to the application from the lock table. */
+  for (slot = 0;  slot < DIM (lock_table); slot++)
+    if (lock_table[slot].initialized && lock_table[slot].app == app)
+      lock_table[slot].app = NULL;
+
+  /* Deallocate. */
   if (app->fnc.deinit)
     {
       app->fnc.deinit (app);
@@ -320,11 +395,11 @@ app_write_learn_status (app_t app, CTRL ctrl)
   if (app->apptype)
     send_status_info (ctrl, "APPTYPE",
                       app->apptype, strlen (app->apptype), NULL, 0);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.learn_status (app, ctrl);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   return err;
 }
 
@@ -345,11 +420,11 @@ app_readcert (app_t app, const char *certid,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.readcert)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.readcert (app, certid, cert, certlen);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   return err;
 }
 
@@ -377,11 +452,11 @@ app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.readkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err= app->fnc.readkey (app, keyid, pk, pklen);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   return err;
 }
 
@@ -419,11 +494,11 @@ app_getattr (app_t app, CTRL ctrl, const char *name)
 
   if (!app->fnc.getattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err =  app->fnc.getattr (app, ctrl, name);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   return err;
 }
 
@@ -442,11 +517,11 @@ app_setattr (app_t app, const char *name,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.setattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.setattr (app, name, pincb, pincb_arg, value, valuelen);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   return err;
 }
 
@@ -468,14 +543,14 @@ app_sign (app_t app, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.sign)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.sign (app, keyidstr, hashalgo,
                        pincb, pincb_arg,
                        indata, indatalen,
                        outdata, outdatalen);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   if (opt.verbose)
     log_info ("operation sign result: %s\n", gpg_strerror (err));
   return err;
@@ -500,14 +575,14 @@ app_auth (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.auth)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.auth (app, keyidstr,
                        pincb, pincb_arg,
                        indata, indatalen,
                        outdata, outdatalen);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   if (opt.verbose)
     log_info ("operation auth result: %s\n", gpg_strerror (err));
   return err;
@@ -532,14 +607,14 @@ app_decipher (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.decipher)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.decipher (app, keyidstr,
                            pincb, pincb_arg,
                            indata, indatalen,
                            outdata, outdatalen);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   if (opt.verbose)
     log_info ("operation decipher result: %s\n", gpg_strerror (err));
   return err;
@@ -562,12 +637,12 @@ app_writekey (app_t app, ctrl_t ctrl,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.writekey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.writekey (app, ctrl, keyidstr, flags,
                            pincb, pincb_arg, keydata, keydatalen);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   if (opt.verbose)
     log_info ("operation writekey result: %s\n", gpg_strerror (err));
   return err;
@@ -589,11 +664,11 @@ app_genkey (app_t app, CTRL ctrl, const char *keynostr, unsigned int flags,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.genkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.genkey (app, ctrl, keynostr, flags, pincb, pincb_arg);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   if (opt.verbose)
     log_info ("operation genkey result: %s\n", gpg_strerror (err));
   return err;
@@ -612,11 +687,11 @@ app_get_challenge (app_t app, size_t nbytes, unsigned char *buffer)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->initialized)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = iso7816_get_challenge (app->slot, nbytes, buffer);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   return err;
 }
 
@@ -636,12 +711,12 @@ app_change_pin (app_t app, CTRL ctrl, const char *chvnostr, int reset_mode,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.change_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.change_pin (app, ctrl, chvnostr, reset_mode,
                              pincb, pincb_arg);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   if (opt.verbose)
     log_info ("operation change_pin result: %s\n", gpg_strerror (err));
   return err;
@@ -664,11 +739,11 @@ app_check_pin (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.check_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app);
+  err = lock_reader (app->slot);
   if (err)
     return err;
   err = app->fnc.check_pin (app, keyidstr, pincb, pincb_arg);
-  unlock_reader (app);
+  unlock_reader (app->slot);
   if (opt.verbose)
     log_info ("operation check_pin result: %s\n", gpg_strerror (err));
   return err;

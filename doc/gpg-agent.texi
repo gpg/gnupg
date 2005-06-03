@@ -25,11 +25,11 @@ eval `gpg-agent --daemon`
 @noindent
 If you don't use an X server, you can also put this into your regular
 startup file @code{~/.profile} or @code{.bash_profile}.  It is best not
-to run multiple instance of the @command{gpg-agent}, so you should make sure that
-only is running:  @command{gpg-agent} uses an environment variable to inform
-clients about the communication parameters. You can write the
-content of this environment variable to a file so that you can test for
-a running agent.  This short script may do the job:
+to run multiple instance of the @command{gpg-agent}, so you should make
+sure that only one is running: @command{gpg-agent} uses an environment
+variable to inform clients about the communication parameters. You can
+write the content of this environment variable to a file so that you can
+test for a running agent.  This short script may do the job:
 
 @smallexample
 if test -f $HOME/.gpg-agent-info && \
@@ -41,6 +41,9 @@ else
      echo $GPG_AGENT_INFO >$HOME/.gpg-agent-info
 fi
 @end smallexample
+
+The new option @option{--write-env-file} may be used instead.
+ 
 
 @noindent
 You should always add the following lines to your @code{.bashrc} or
@@ -243,6 +246,21 @@ shell respective the C-shell . The default ist to guess it based on the
 environment variable @code{SHELL} which is in almost all cases
 sufficient.
 
+@item --write-env-file @var{file}
+@opindex write-env-file
+Often it is required to connect to the agent from a process not being an
+inferior of @command{gpg-agent} and thus the environment variable with
+the socket name is not available.  To help setting up those variables in
+other sessions, this option may be used to write the information into
+@var{file}.  The format is suitable to be evaluated by a Bourne shell
+like in this simple example:
+
+@example
+eval `cat @var{file}`
+eval `cut -d= -f 1 < @var{file} | xargs echo export`
+@end example
+
+
 @item --no-grab
 @opindex no-grab
 Tell the pinentryo not to grab the keyboard and mouse.  This option
@@ -353,12 +371,19 @@ directory.
 Once, a key has been added to the gpg-agent this way, the gpg-agent
 will be ready to use the key.
 
-Note: in case the gpg-agent receives a signature request, the user
-might need to be prompted for a passphrase, which is necessary for
-decrypting the stored key.  Since the ssh-agent protocol does not
-contain a mechanism for telling the agent on which display/terminal it
-is running, gpg-agent's ssh-support will use the TTY or X display where
-gpg-agent has been started. 
+Note: in case the gpg-agent receives a signature request, the user might
+need to be prompted for a passphrase, which is necessary for decrypting
+the stored key.  Since the ssh-agent protocol does not contain a
+mechanism for telling the agent on which display/terminal it is running,
+gpg-agent's ssh-support will use the TTY or X display where gpg-agent
+has been started.  To switch this display to the current one, the
+follwing command may be used:
+
+@smallexample
+echo UPDATESTARTUPTTY | gpg-connect-agent
+@end smallexample
+
+
 
 @end table
 
@@ -544,6 +569,7 @@ secret keys.
 * Agent HAVEKEY::         Check whether a key is available
 * Agent LEARN::           Register a smartcard
 * Agent PASSWD::          Change a Passphrase
+* Agent UPDATESTARTUPTTY:: Change the Standard Display
 @end menu
 
 @node Agent PKDECRYPT
@@ -943,5 +969,17 @@ option given the certificates are send back.
 This command is used to interactively change the passphrase of the key
 indentified by the hex string @var{keygrip}.
 
+
+@node Agent UPDATESTARTUPTTY
+@subsection Change the standard display
+
+@example
+  UPDATESTARTUPTTY
+@end example
+
+Set the startup TTY and X-DISPLAY variables to the values of this
+session.  This command is useful to direct future pinentry invocations
+to another screen.  It is only required because there is no way in the
+ssh-agent protocol to convey this information.
 
 

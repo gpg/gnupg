@@ -253,11 +253,11 @@ open_card (ctrl_t ctrl, const char *apptype)
   if (ctrl->server_local->card_removed)
     return map_to_assuan_status (gpg_error (GPG_ERR_CARD_REMOVED));
 
-  if (ctrl->app_ctx)
-    return 0; /* Already initialized for one specific application. */
-
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
+
+  if (ctrl->app_ctx)
+    return 0; /* Already initialized for one specific application. */
 
   if (ctrl->reader_slot != -1)
     slot = ctrl->reader_slot;

@@ -93,7 +93,8 @@ enum cmd_and_opt_values
   oKeepTTY,
   oKeepDISPLAY,
   oSSHSupport,
-  oDisableScdaemon
+  oDisableScdaemon,
+  oWriteEnvFile
 };
 
 
@@ -147,6 +148,8 @@ static ARGPARSE_OPTS opts[] = {
   { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
                              N_("allow presetting passphrase")},
   { oSSHSupport, "enable-ssh-support", 0, N_("enable ssh-agent emulation") },
+  { oWriteEnvFile, "write-env-file", 2,
+            N_("|FILE|write environment settings also to FILE")},
   {0}
 };
 
@@ -438,6 +441,7 @@ main (int argc, char **argv )
   int gpgconf_list = 0;
   int standard_socket = 0;
   gpg_error_t err;
+  const char *env_file_name = NULL;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -501,7 +505,7 @@ main (int argc, char **argv )
   opt.startup_ttytype = getenv ("TERM");
   if (opt.startup_ttytype)
     opt.startup_ttytype = xstrdup (opt.startup_ttytype);
-  /* Fixme: Neen to use the locale fucntion here.  */
+  /* Fixme: Better use the locale function here.  */
   opt.startup_lc_ctype = getenv ("LC_CTYPE");
   if (opt.startup_lc_ctype) 
     opt.startup_lc_ctype = xstrdup (opt.startup_lc_ctype);
@@ -619,6 +623,7 @@ main (int argc, char **argv )
         case oKeepDISPLAY: opt.keep_display = 1; break;
 
 	case oSSHSupport:  opt.ssh_support = 1; break;
+        case oWriteEnvFile: env_file_name = pargs.r.ret_str; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}
@@ -854,6 +859,29 @@ main (int argc, char **argv )
                                the child should do this from now on */
 	  if (opt.ssh_support)
 	    *socket_name_ssh = 0;
+
+          if (env_file_name)
+            {
+              FILE *fp;
+              
+              fp = fopen (env_file_name, "w");
+              if (!fp)
+                log_error (_("error creating `%s': %s\n"),
+                             env_file_name, strerror (errno));
+              else
+                {
+                  fputs (infostr, fp);
+                  putc ('\n', fp);
+                  if (opt.ssh_support)
+                    {
+                      fputs (infostr_ssh_sock, fp);
+                      putc ('\n', fp);
+                      fputs (infostr_ssh_pid, fp);
+                      putc ('\n', fp);
+                    }
+                  fclose (fp);
+                }
+            }
 
 
           if (argc) 
@@ -1273,7 +1301,7 @@ create_directories (void)
 static void
 handle_tick (void)
 {
-  /* Check whether the scdaemon has dies and cleanup in this case. */
+  /* Check whether the scdaemon has died and cleanup in this case. */
   agent_scd_check_aliveness ();
 
   /* If we are running as a child of another process, check whether
@@ -1311,6 +1339,7 @@ handle_signal (int signo)
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
       pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
+      agent_scd_dump_state ();
       break;
       
     case SIGUSR2:
@@ -1353,7 +1382,8 @@ start_connection_thread (void *arg)
   int fd = (int)arg;
 
   if (opt.verbose)
-    log_info (_("handler for fd %d started\n"), fd);
+    log_info (_("handler 0x%lx for fd %d started\n"), 
+              (long)pth_self (), fd);
 
   /* FIXME: Move this housekeeping into a ticker function.  Calling it
      for each connection should work but won't work anymore if our
@@ -1362,7 +1392,8 @@ start_connection_thread (void *arg)
 
   start_command_handler (-1, fd);
   if (opt.verbose)
-    log_info (_("handler for fd %d terminated\n"), fd);
+    log_info (_("handler 0x%lx for fd %d terminated\n"), 
+              (long)pth_self (), fd);
   
   return NULL;
 }
@@ -1375,13 +1406,15 @@ start_connection_thread_ssh (void *arg)
   int fd = (int)arg;
 
   if (opt.verbose)
-    log_info (_("ssh handler for fd %d started\n"), fd);
+    log_info (_("ssh handler 0x%lx for fd %d started\n"),
+              (long)pth_self (), fd);
 
   agent_trustlist_housekeeping ();
 
   start_command_handler_ssh (fd);
   if (opt.verbose)
-    log_info (_("ssh handler for fd %d terminated\n"), fd);
+    log_info (_("ssh handler 0x%lx for fd %d terminated\n"),
+              (long)pth_self (), fd);
   
   return NULL;
 }
@@ -1405,15 +1438,17 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   tattr = pth_attr_new();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "gpg-agent");
 
 #ifndef HAVE_W32_SYSTEM /* fixme */
+  /* Make sure that the signals we are going to handle are not blocked
+     and create an event object for them. */
   sigemptyset (&sigs );
   sigaddset (&sigs, SIGHUP);
   sigaddset (&sigs, SIGUSR1);
   sigaddset (&sigs, SIGUSR2);
   sigaddset (&sigs, SIGINT);
   sigaddset (&sigs, SIGTERM);
+  pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
   ev = NULL;
@@ -1427,6 +1462,8 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
   for (;;)
     {
+      sigset_t oldsigs;
+
       if (shutdown_pending)
         {
           if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)
@@ -1488,6 +1525,12 @@ handle_connections (int listen_fd, int listen_fd_ssh)
           handle_tick ();
         }
 
+      
+      /* We now might create new threads and because we don't want any
+         signals - we are handling here - to be delivered to a new
+         thread. Thus we need to block those signals. */
+      pth_sigmask (SIG_BLOCK, &sigs, &oldsigs);
+
       if (FD_ISSET (listen_fd, &read_fdset))
 	{
           plen = sizeof paddr;
@@ -1496,12 +1539,20 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 	    {
 	      log_error ("accept failed: %s\n", strerror (errno));
 	    }
-          else if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
-	    {
-	      log_error ("error spawning connection handler: %s\n",
-			 strerror (errno) );
-	      close (fd);
-	    }
+          else 
+            {
+              char threadname[50];
+              snprintf (threadname, sizeof threadname-1,
+                        "conn fd=%d (gpg)", fd);
+              threadname[sizeof threadname -1] = 0;
+              pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
+              if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
+                {
+                  log_error ("error spawning connection handler: %s\n",
+                             strerror (errno) );
+                  close (fd);
+                }
+            }
           fd = -1;
 	}
 
@@ -1513,14 +1564,27 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 	    {
 	      log_error ("accept failed for ssh: %s\n", strerror (errno));
 	    }
-          else if (!pth_spawn (tattr, start_connection_thread_ssh, (void*)fd))
-	    {
-	      log_error ("error spawning ssh connection handler: %s\n",
-			 strerror (errno) );
-	      close (fd);
-	    }
+          else
+            {
+              char threadname[50];
+              snprintf (threadname, sizeof threadname-1,
+                        "conn fd=%d (ssh)", fd);
+              threadname[sizeof threadname -1] = 0;
+              pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
+
+              if (!pth_spawn (tattr, start_connection_thread_ssh, (void*)fd))
+                {
+                  log_error ("error spawning ssh connection handler: %s\n",
+                             strerror (errno) );
+                  close (fd);
+                }
+            }
           fd = -1;
 	}
+
+      /* Restore the signal mask. */
+      pth_sigmask (SIG_SETMASK, &oldsigs, NULL);
+
     }
 
   pth_event_free (ev, PTH_FREE_ALL);

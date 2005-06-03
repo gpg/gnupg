@@ -77,19 +77,28 @@ struct {
 #define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
 
 struct server_local_s;
-struct card_ctx_s;
 struct app_ctx_s;
 
-struct server_control_s {
+struct server_control_s 
+{
+  /* Local data of the server; used only in command.c. */
   struct server_local_s *server_local;
-  int reader_slot;  /* Slot of the open reader or -1 if not open. */
-  struct card_ctx_s *card_ctx;
+
+  /* Slot of the open reader or -1 if not open. */
+  int reader_slot; 
+
+  /* The application context used with this connection or NULL if none
+     associated.  Note that this is shared with the other connections:
+     All connections accessing the same reader are using the same
+     application context. */
   struct app_ctx_s *app_ctx;
-  struct {
+
+  /* Helper to store the value we are going to sign */
+  struct 
+  {
     unsigned char *value;  
     int valuelen;
-  } in_data;  /* helper to store the value we are going to sign */
-
+  } in_data;  
 };
 
 typedef struct server_control_s *CTRL;

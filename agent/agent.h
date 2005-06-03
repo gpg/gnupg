@@ -54,12 +54,13 @@ struct {
   int batch;           /* Batch mode */
   const char *homedir; /* Configuration directory name */
 
-  /* Environment setting gathred at program start. */
-  const char *startup_display;
-  const char *startup_ttyname;
-  const char *startup_ttytype;
-  const char *startup_lc_ctype;
-  const char *startup_lc_messages;
+  /* Environment setting gathered at program start or hanged using the
+     Assuan command UPDATESTARTUPTTY. */
+  char *startup_display;
+  char *startup_ttyname;
+  char *startup_ttytype;
+  char *startup_lc_ctype;
+  char *startup_lc_messages;
 
 
   const char *pinentry_program; /* Filename of the program to start as
@@ -248,6 +249,7 @@ int divert_generic_cmd (ctrl_t ctrl,
 
 /*-- call-scd.c --*/
 void initialize_module_call_scd (void);
+void agent_scd_dump_state (void);
 void agent_scd_check_aliveness (void);
 int agent_reset_scd (ctrl_t ctrl);
 int agent_card_learn (ctrl_t ctrl,

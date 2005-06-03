@@ -1745,7 +1745,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   nbits = rsa_e? count_bits (rsa_e, rsa_e_len) : 0;
   if (nbits < 2 || nbits > 32)
     {
-      log_error (_("RSA public exponent missing or largerr than %d bits\n"),
+      log_error (_("RSA public exponent missing or larger than %d bits\n"),
                  32);
       err = gpg_error (GPG_ERR_BAD_SECKEY);
       goto leave;

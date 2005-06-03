@@ -13,6 +13,9 @@ Noteworthy changes in version 1.9.17
    does allows only signing using TCOS cards but we are going to
    enhance it to match all the old capabilities.
 
+ * [gpg-agent] New option --rite-env-file and Assuan command
+   UPDATESTARTUPTTY.
+
 
 Noteworthy changes in version 1.9.16 (2005-04-21)
 -------------------------------------------------

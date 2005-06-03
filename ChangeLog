@@ -1,3 +1,8 @@
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (HAVE_PTH): Define as alias for USE_GNU_PTH.  It is
+	used by common/estream.c.
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (gl_INIT): Add gnulib stuff.

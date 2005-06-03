@@ -1,3 +1,9 @@
+2005-06-03  Werner Koch  <wk@g10code.com>
+
+	* estream.c: Use HAVE_CONFIG_H and not USE_CONFIG_H!
+	(es_func_fd_read, es_func_fd_write): Protect against EINTR.
+	
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (AM_CPPFLAGS): Added.

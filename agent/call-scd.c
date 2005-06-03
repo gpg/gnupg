@@ -116,6 +116,35 @@ initialize_module_call_scd (void)
 }
 
 
+static void
+dump_mutex_state (pth_mutex_t *m)
+{
+  if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
+    log_printf ("not_initialized");
+  else if (!(m->mx_state & PTH_MUTEX_LOCKED))
+    log_printf ("not_locked");
+  else
+    log_printf ("locked tid=0x%lx count=%lu", (long)m->mx_owner, m->mx_count);
+}
+
+
+/* This function may be called to print infromation pertaining to the
+   current state of this module to the log. */
+void
+agent_scd_dump_state (void)
+{
+  log_info ("agent_scd_dump_state: scd_lock=");
+  dump_mutex_state (&start_scd_lock);
+  log_printf ("\n");
+  log_info ("agent_scd_dump_state: primary_scd_ctx=%p pid=%ld reusable=%d\n",
+            primary_scd_ctx, 
+            (long)assuan_get_pid (primary_scd_ctx),
+            primary_scd_ctx_reusable);
+  if (socket_name)
+    log_info ("agent_scd_dump_state: socket=`%s'\n", socket_name);
+}
+
+
 /* The unlock_scd function shall be called after having accessed the
    SCD.  It is currently not very useful but gives an opportunity to
    keep track of connections currently calling SCD.  Note that the
@@ -382,6 +411,7 @@ agent_scd_check_aliveness (void)
     log_error ("failed to release the start_scd lock while"
                " doing the aliveness check: %s\n", strerror (errno));
 }
+
 
 
 /* Reset the SCD if it has been used. */
