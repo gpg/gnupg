@@ -47,7 +47,8 @@ extern int optind;
 
 static int verbose=0,include_revoked=0,include_disabled=0;
 static unsigned int http_flags=0;
-static char host[MAX_HOST+1]={'\0'},proxy[MAX_PROXY+1]={'\0'},port[MAX_PORT+1]={'\0'};
+static char host[MAX_HOST+1]={'\0'},proxy[MAX_PROXY+1]={'\0'},
+  port[MAX_PORT+1]={'\0'},path[URLMAX_PATH+1];
 static FILE *input=NULL,*output=NULL,*console=NULL;
 
 int
@@ -89,7 +90,7 @@ send_key(int *eof)
 
   memset(&hd,0,sizeof(hd));
 
-  request=malloc(strlen(host)+100);
+  request=malloc(strlen(host)+strlen(port)+strlen(path)+100);
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -141,7 +142,8 @@ send_key(int *eof)
 
   iobuf_flush_temp(temp);
 
-  sprintf(request,"hkp://%s%s%s/pks/add",host,port[0]?":":"",port[0]?port:"");
+  sprintf(request,"hkp://%s%s%s%s/pks/add",
+	  host,port[0]?":":"",port[0]?port:"",path);
 
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
@@ -237,15 +239,15 @@ get_key(char *getkey)
 
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  request=malloc(strlen(host)+100);
+  request=malloc(strlen(host)+strlen(port)+strlen(path)+100);
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
       return KEYSERVER_NO_MEMORY;
     }
 
-  sprintf(request,"hkp://%s%s%s/pks/lookup?op=get&options=mr&search=%s",
-	  host,port[0]?":":"",port[0]?port:"", search);
+  sprintf(request,"hkp://%s%s%s%s/pks/lookup?op=get&options=mr&search=%s",
+	  host,port[0]?":":"",port[0]?port:"",path,search);
 
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
@@ -659,7 +661,7 @@ search_key(char *searchkey)
 
   search[len]='\0';
 
-  request=malloc(strlen(host)+100+strlen(search));
+  request=malloc(strlen(host)+strlen(port)+strlen(path)+100+strlen(search));
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -667,8 +669,8 @@ search_key(char *searchkey)
       goto fail;
     }
 
-  sprintf(request,"hkp://%s%s%s/pks/lookup?op=index&options=mr&search=%s",
-	  host,port[0]?":":"",port[0]?port:"",search);
+  sprintf(request,"hkp://%s%s%s%s/pks/lookup?op=index&options=mr&search=%s",
+	  host,port[0]?":":"",port[0]?port:"",path,search);
 
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
@@ -856,6 +858,12 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
+      if(sscanf(line,"PATH %" MKSTRING(URLMAX_PATH) "s\n",path)==1)
+	{
+	  path[URLMAX_PATH]='\0';
+	  continue;
+	}
+
       if(sscanf(line,"VERSION %d\n",&version)==1)
 	{
 	  if(version!=KEYSERVER_PROTO_VERSION)
@@ -1020,6 +1028,8 @@ main(int argc,char *argv[])
       fprintf(console,"Host:\t\t%s\n",host);
       if(port[0])
 	fprintf(console,"Port:\t\t%s\n",port);
+      if(path[0])
+	fprintf(console,"Path:\t\t%s\n",path);
       fprintf(console,"Command:\t%s\n",action==GET?"GET":
 	      action==SEND?"SEND":"SEARCH");
     }

@@ -73,7 +73,7 @@ int
 send_key(int *eof)
 {
   CURLcode res;
-  char request[MAX_URL];
+  char request[MAX_URL+15];
   int begin=0,end=0,ret=KEYSERVER_INTERNAL_ERROR;
   char keyid[17];
   char line[MAX_LINE];
@@ -162,6 +162,10 @@ send_key(int *eof)
     strcat(request,opt->port);
   else
     strcat(request,"11371");
+  if(opt->path)
+    strcat(request,opt->path);
+  /* request is MAX_URL+15 bytes long - MAX_URL covers the whole URL,
+     including any supplied path.  The 15 covers /pks/add. */
   strcat(request,"/pks/add");
 
   if(opt->verbose>2)
@@ -197,7 +201,7 @@ static int
 get_key(char *getkey)
 {
   CURLcode res;
-  char request[MAX_URL+100];
+  char request[MAX_URL+60];
   char *offset;
   struct curl_writer_ctx ctx;
 
@@ -218,9 +222,6 @@ get_key(char *getkey)
       return KEYSERVER_NOT_SUPPORTED;
     }
 
-  /* Note that the size of request is MAX_URL which already implies a
-     1024 byte PATH.  MAX_URL+100 is absurdly safe. */
-
   strcpy(request,"http://");
   strcat(request,opt->host);
   strcat(request,":");
@@ -228,6 +229,11 @@ get_key(char *getkey)
     strcat(request,opt->port);
   else
     strcat(request,"11371");
+  if(opt->path)
+    strcat(request,opt->path);
+  /* request is MAX_URL+55 bytes long - MAX_URL covers the whole URL,
+     including any supplied path.  The 60 overcovers this /pks/... etc
+     string plus the 8 bytes of key id */
   strcat(request,"/pks/lookup?op=get&options=mr&search=0x");
 
   /* fingerprint or long key id.  Take the last 8 characters and treat
@@ -278,9 +284,7 @@ search_key(char *searchkey)
 
   searchkey_encoded=curl_escape(searchkey,0);
 
-  /* Note that MAX_URL already implies a 1024 byte PATH, so this is
-     safe. */
-  request=malloc(MAX_URL+strlen(searchkey_encoded));
+  request=malloc(MAX_URL+50+strlen(searchkey_encoded));
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -297,6 +301,8 @@ search_key(char *searchkey)
     strcat(request,opt->port);
   else
     strcat(request,"11371");
+  if(opt->path)
+    strcat(request,opt->path);
   strcat(request,"/pks/lookup?op=index&options=mr&search=");
   strcat(request,searchkey_encoded);
 
@@ -593,6 +599,8 @@ main(int argc,char *argv[])
       fprintf(console,"Host:\t\t%s\n",opt->host);
       if(opt->port)
 	fprintf(console,"Port:\t\t%s\n",opt->port);
+      if(opt->path)
+	fprintf(console,"Path:\t\t%s\n",opt->path);
       fprintf(console,"Command:\t%s\n",ks_action_to_string(opt->action));
     }
 
