@@ -1,3 +1,13 @@
+2005-06-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* symcryptrun.c (main): Allow any number of arguments, don't use
+	first argument as input file name.  Pass extra arguments to
+	confucius_main.
+	(confucius_main): Accept new arguments argc and argv and pass them
+	to confucius_process.
+	(confucius_process): Accept new arguments argc and argv and pass
+	them to the confucius process.
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* symcryptrun.c: Include mkdtemp.h. 

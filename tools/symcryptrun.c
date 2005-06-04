@@ -486,15 +486,10 @@ confucius_drop_pass (char *pass)
    requested.  If it is oDecrypt, decryption is requested.  INFILE and
    OUTFILE are the temporary files used in the process.  */
 int
-confucius_process (int mode, char *infile, char *outfile)
+confucius_process (int mode, char *infile, char *outfile,
+		   int argc, char *argv[])
 {
-  char *const args[] = { opt.program,
-			 mode == oEncrypt ? "-m1" : "-m2",
-			 "-q", infile,
-			 "-z", outfile,
-			 "-s", opt.keyfile,
-			 mode == oEncrypt ? "-af" : "-f",
-			 NULL };
+  char **args;
   int cstderr[2];
   int master;
   int slave;
@@ -523,9 +518,29 @@ confucius_process (int mode, char *infile, char *outfile)
       return 1;
     }
 
+  args = malloc (sizeof (char *) * (10 + argc));
+  if (!args)
+    {
+      log_error (_("cannot allocate args vector\n"));
+      return 1;
+    }
+  args[0] = opt.program;
+  args[1] = (mode == oEncrypt) ? "-m1" : "-m2";
+  args[2] = "-q";
+  args[3] = infile;
+  args[4] = "-z";
+  args[5] = outfile;
+  args[6] = "-s";
+  args[7] = opt.keyfile;
+  args[8] = (mode == oEncrypt) ? "-af" : "-f";
+  args[9 + argc] = NULL;
+  while (argc--)
+    args[9 + argc] = argv[argc];
+
   if (pipe (cstderr) < 0)
     {
       log_error (_("could not create pipe: %s\n"), strerror (errno));
+      free (args);
       return 1;
     }
 
@@ -534,6 +549,7 @@ confucius_process (int mode, char *infile, char *outfile)
       log_error (_("could not create pty: %s\n"), strerror (errno));
       close (cstderr[0]);
       close (cstderr[1]);
+      free (args);
       return -1;
     }
 
@@ -551,6 +567,7 @@ confucius_process (int mode, char *infile, char *outfile)
       close (slave);
       close (cstderr[0]);
       close (cstderr[1]);
+      free (args);
       return 1;
     }
   else if (pid == 0) 
@@ -587,6 +604,7 @@ confucius_process (int mode, char *infile, char *outfile)
 
       close (slave);
       close (cstderr[1]);
+      free (args);
 
       /* Listen on the output FDs.  */
       do
@@ -753,7 +771,7 @@ confucius_process (int mode, char *infile, char *outfile)
    requested.  If it is oDecrypt, decryption is requested.  The other
    parameters are taken from the global option data.  */
 int
-confucius_main (int mode)
+confucius_main (int mode, int argc, char *argv[])
 {
   int res;
   char *tmpdir;
@@ -811,7 +829,7 @@ confucius_main (int mode)
 
   /* Run the engine and thus create the output file, handling
      passphrase retrieval.  */
-  res = confucius_process (mode, infile, outfile);
+  res = confucius_process (mode, infile, outfile, argc, argv);
   if (res)
     {
       remove_file (outfile, mode == oDecrypt);
@@ -962,20 +980,6 @@ main (int argc, char **argv)
   xfree (configname);
   configname = NULL;
 
-  /* With --inputfile an argument is not allowed, without only one
-     optional argument is allowed. */
-  if (argc > 1)
-    log_error (_("too many arguments\n"));
-  else if (opt.input && argc)
-    log_error (_("no argument allowed when using option \"%s\"\n"),
-               "--inputfile");
-
-  if (argc)
-    {
-      opt.input = *argv;
-      argv++; argc--;
-    }
-
   if (!mode)
     log_error (_("either %s or %s must be given\n"),
                "--decrypt", "--encrypt");
@@ -1001,7 +1005,7 @@ main (int argc, char **argv)
       res = 1;
     }
   else if (!strcmp (opt.class, "confucius"))
-    res = confucius_main (mode);
+    res = confucius_main (mode, argc, argv);
   else
     {
       log_error (_("class %s is not supported\n"), opt.class);
