@@ -87,6 +87,12 @@ init_ks_options(void)
       opt->action=KS_UNKNOWN;
       opt->flags.check_cert=1;
       opt->timeout=DEFAULT_KEYSERVER_TIMEOUT;
+      opt->path=strdup("/");
+      if(!opt->path)
+	{
+	  free(opt);
+	  opt=NULL;
+	}
     }
 
   return opt;
@@ -144,6 +150,7 @@ parse_ks_options(char *line,struct ks_options *opt)
   if(sscanf(line,"HOST %" MKSTRING(MAX_HOST) "s\n",host)==1)
     {
       host[MAX_HOST]='\0';
+      free(opt->host);
       opt->host=strdup(host);
       if(!opt->host)
 	return KEYSERVER_NO_MEMORY;
@@ -153,6 +160,7 @@ parse_ks_options(char *line,struct ks_options *opt)
   if(sscanf(line,"PORT %" MKSTRING(MAX_PORT) "s\n",port)==1)
     {
       port[MAX_PORT]='\0';
+      free(opt->port);
       opt->port=strdup(port);
       if(!opt->port)
 	return KEYSERVER_NO_MEMORY;
@@ -162,6 +170,7 @@ parse_ks_options(char *line,struct ks_options *opt)
   if(sscanf(line,"SCHEME %" MKSTRING(MAX_SCHEME) "s\n",scheme)==1)
     {
       scheme[MAX_SCHEME]='\0';
+      free(opt->scheme);
       opt->scheme=strdup(scheme);
       if(!opt->scheme)
 	return KEYSERVER_NO_MEMORY;
@@ -171,6 +180,7 @@ parse_ks_options(char *line,struct ks_options *opt)
   if(sscanf(line,"AUTH %" MKSTRING(MAX_AUTH) "s\n",auth)==1)
     {
       auth[MAX_AUTH]='\0';
+      free(opt->auth);
       opt->auth=strdup(auth);
       if(!opt->auth)
 	return KEYSERVER_NO_MEMORY;
@@ -180,6 +190,7 @@ parse_ks_options(char *line,struct ks_options *opt)
   if(sscanf(line,"PATH %" MKSTRING(URLMAX_PATH) "s\n",path)==1)
     {
       path[URLMAX_PATH]='\0';
+      free(opt->path);
       opt->path=strdup(path);
       if(!opt->path)
 	return KEYSERVER_NO_MEMORY;
@@ -189,6 +200,7 @@ parse_ks_options(char *line,struct ks_options *opt)
   if(sscanf(line,"OPAQUE %" MKSTRING(MAX_OPAQUE) "s\n",opaque)==1)
     {
       opaque[MAX_OPAQUE]='\0';
+      free(opt->opaque);
       opt->opaque=strdup(opaque);
       if(!opt->opaque)
 	return KEYSERVER_NO_MEMORY;
