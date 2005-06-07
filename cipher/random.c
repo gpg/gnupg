@@ -183,7 +183,7 @@ getfnc_gather_random (void))(void (*)(const void*, size_t, int), int,
   return NULL;
 }
 
-static void (*
+static int (*
 getfnc_fast_random_poll (void))( void (*)(const void*, size_t, int), int)
 {
 #ifdef USE_RNDW32
@@ -620,7 +620,7 @@ random_poll()
 void
 fast_random_poll()
 {
-    static void (*fnc)( void (*)(const void*, size_t, int), int) = NULL;
+    static int (*fnc)( void (*)(const void*, size_t, int), int) = NULL;
     static int initialized = 0;
 
     rndstats.fastpolls++;

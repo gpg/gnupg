@@ -1,3 +1,8 @@
+2005-06-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* random.c: Fix prototype of the fast random gatherer.  Noted by
+	Joe Vender.
+
 2005-03-23  Werner Koch  <wk@g10code.com>
 
 	* rndw32.c (rndw32_gather_random_fast): While adding data use the
