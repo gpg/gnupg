@@ -1,5 +1,9 @@
 2005-06-03  Werner Koch  <wk@g10code.com>
 
+	* debugging.texi (Architecture Details): New section, mostly empty.
+	* gnupg-card-architecture.fig: New.
+	* Makefile.am: Rules to build png and eps versions.
+
 	* gpg-agent.texi (Agent UPDATESTARTUPTTY): New.
 
 2005-05-17  Werner Koch  <wk@g10code.com>

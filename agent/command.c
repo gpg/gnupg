@@ -404,19 +404,19 @@ static int
 cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
-  int ignore_cache = 0;
+  cache_mode_t cache_mode = CACHE_MODE_NORMAL;
   ctrl_t ctrl = assuan_get_pointer (ctx);
   membuf_t outbuf;
-
+  
   if (opt.ignore_cache_for_signing)
-    ignore_cache = 1;
+    cache_mode = CACHE_MODE_IGNORE;
   else if (!ctrl->server_local->use_cache_for_signing)
-    ignore_cache = 1;
+    cache_mode = CACHE_MODE_IGNORE;
 
   init_membuf (&outbuf, 512);
 
   rc = agent_pksign (ctrl, ctrl->server_local->keydesc,
-                     &outbuf, ignore_cache);
+                     &outbuf, cache_mode);
   if (rc)
     clear_outbuf (&outbuf);
   else
@@ -623,7 +623,8 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
     desc = NULL;
 
   /* Note: we store the hexified versions in the cache. */
-  pw = cacheid ? agent_get_cache (cacheid, &cache_marker) : NULL;
+  pw = cacheid ? agent_get_cache (cacheid, CACHE_MODE_NORMAL, &cache_marker)
+               : NULL;
   if (pw)
     {
       assuan_begin_confidential (ctx);
@@ -647,7 +648,7 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
       if (!rc)
         {
           if (cacheid)
-            agent_put_cache (cacheid, response, 0);
+            agent_put_cache (cacheid, CACHE_MODE_USER, response, 0);
           assuan_begin_confidential (ctx);
           rc = assuan_set_okay_line (ctx, response);
           xfree (response);
@@ -682,7 +683,7 @@ cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
   if (!cacheid || !*cacheid || strlen (cacheid) > 50)
     return set_error (Parameter_Error, "invalid length of cacheID");
 
-  agent_put_cache (cacheid, NULL, 0);
+  agent_put_cache (cacheid, CACHE_MODE_USER, NULL, 0);
   return 0;
 }
 
@@ -772,7 +773,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
                   Assuan error code. */
 
   rc = agent_key_from_file (ctrl, ctrl->server_local->keydesc,
-                            grip, &shadow_info, 1, &s_skey);
+                            grip, &shadow_info, CACHE_MODE_IGNORE, &s_skey);
   if (rc)
     ;
   else if (!s_skey)
@@ -842,7 +843,7 @@ cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
   else
     return map_to_assuan_status (gpg_error (GPG_ERR_NOT_IMPLEMENTED));
 
-  rc = agent_put_cache (grip_clear, passphrase, ttl);
+  rc = agent_put_cache (grip_clear, CACHE_MODE_ANY, passphrase, ttl);
 
   if (rc)
     log_error ("command preset_passwd failed: %s\n", gpg_strerror (rc));

@@ -66,7 +66,8 @@ agent_pkdecrypt (CTRL ctrl, const char *desc_text,
       log_printhex ("cipher: ", ciphertext, ciphertextlen);
     }
   rc = agent_key_from_file (ctrl, desc_text,
-                            ctrl->keygrip, &shadow_info, 0, &s_skey);
+                            ctrl->keygrip, &shadow_info,
+                            CACHE_MODE_NORMAL, &s_skey);
   if (rc)
     {
       log_error ("failed to read the secret key\n");

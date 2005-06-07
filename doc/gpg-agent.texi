@@ -42,7 +42,8 @@ else
 fi
 @end smallexample
 
-The new option @option{--write-env-file} may be used instead.
+@noindent
+Note that the new option @option{--write-env-file} may be used instead.
  
 
 @noindent
@@ -289,6 +290,11 @@ control this behaviour but this command line option takes precedence.
 Set the time a cache entry is valid to @var{n} seconds.  The default are
 600 seconds.
 
+@item --default-cache-ttl-ssh @var{n}
+@opindex default-cache-ttl
+Set the time a cache entry used for SSH keys is valid to @var{n}
+seconds.  The default are 600 seconds.
+
 @item --max-cache-ttl @var{n}
 @opindex max-cache-ttl
 Set the maximum time a cache entry is valid to @var{n} seconds.  After
@@ -506,12 +512,13 @@ are still pending, a shutdown is forced.
 @cpindex SIGINT
 Shuts down the process immediately.
 
-
 @item SIGUSR1
-@itemx SIGUSR2
 @cpindex SIGUSR1
+Dump internal information to the log file.
+
+@item SIGUSR2
 @cpindex SIGUSR2
-These signals are used for internal purposes.
+This signal is used for internal purposes.
 
 @end table
 
@@ -523,12 +530,44 @@ These signals are used for internal purposes.
 
 @c man begin EXAMPLES
 
+The usual way to invoke @command{gpg-agent} is
+
 @example
 $ eval `gpg-agent --daemon`
 @end example
 
 @c man end
 
+An alternative way is by replacing @command{ssh-agent} with
+@command{gpg-agent}.  If for example @command{ssh-agent} is started as
+part of the Xsession intialization you may simply replace
+@command{ssh-agent} by a script like:
+
+@cartouche
+@example
+#!/bin/sh
+
+exec /usr/local/bin/gpg-agent --enable-ssh-support --daemon \
+      --write-env-file $@{HOME@}/.gpg-agent-info "$@@"
+@end example
+@end cartouche
+
+@noindent
+and add something like (for Bourne shells)
+
+@cartouche
+@example
+  if [ -f "$@{HOME@}/.gpg-agent-info" ]; then
+    . "$@{HOME@}/.gpg-agent-info"
+    export GPG_AGENT_INFO
+    export SSH_AUTH_SOCK
+    export SSH_AGENT_PID
+  fi
+@end example
+@end cartouche
+
+@noindent
+to your shell initialization file (e.g. @file{~/.bashrc}).
 
 @c 
 @c  Assuan Protocol

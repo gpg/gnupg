@@ -372,25 +372,33 @@ start_scd (ctrl_t ctrl)
 void
 agent_scd_check_aliveness (void)
 {
+  pth_event_t evt;
   pid_t pid;
   int rc;
 
-  /* We can do so only if there is no more active primary connection.
-     With an active primary connection, this is all no problem because
-     with the end of gpg-agent's session a disconnect is send and the
-     this function will be used at a later time. */
-  if (!primary_scd_ctx || !primary_scd_ctx_reusable)
-    return;
+  if (!primary_scd_ctx)
+    return; /* No scdaemon running. */
 
-  if (!pth_mutex_acquire (&start_scd_lock, 0, NULL))
+  /* This is not a critical function so we use a short timeout while
+     acquiring the lock.  */
+  evt = pth_event (PTH_EVENT_TIME, pth_timeout (1, 0));
+  if (!pth_mutex_acquire (&start_scd_lock, 0, evt))
     {
-      log_error ("failed to acquire the start_scd lock while"
-                 " doing an aliveness check: %s\n",
-                 strerror (errno));
+      if (pth_event_occurred (evt))
+        {
+          if (opt.verbose > 1)
+            log_info ("failed to acquire the start_scd lock while"
+                      " doing an aliveness check: %s\n", "timeout");
+        }
+      else
+        log_error ("failed to acquire the start_scd lock while"
+                   " doing an aliveness check: %s\n", strerror (errno));
+      pth_event_free (evt, PTH_FREE_THIS);
       return;
     }
+  pth_event_free (evt, PTH_FREE_THIS);
 
-  if (primary_scd_ctx && primary_scd_ctx_reusable)
+  if (primary_scd_ctx)
     {
       pid = assuan_get_pid (primary_scd_ctx);
       if (pid != (pid_t)(-1) && pid

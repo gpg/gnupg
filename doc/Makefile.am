@@ -18,14 +18,34 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg
+EXTRA_DIST = gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg \
+             gnupg-card-architecture.eps gnupg-card-architecture.png
+
+BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png
 
 info_TEXINFOS = gnupg.texi
+
+
 
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi assuan.texi \
 	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
-	sysnotes.texi
+	sysnotes.texi gnupg-card-architecture.fig
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops
+
+
+
+.fig.png:
+	fig2dev -L png `test -f '$<' || echo '$(srcdir)/'`$< $@
+
+.fig.jpg:
+	fig2dev -L jpg `test -f '$<' || echo '$(srcdir)/'`$< $@
+
+.fig.eps:
+	fig2dev -L eps `test -f '$<' || echo '$(srcdir)/'`$< $@
+
+.fig.pdf:
+	fig2dev -L pdf `test -f '$<' || echo '$(srcdir)/'`$< $@
+
 

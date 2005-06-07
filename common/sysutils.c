@@ -105,7 +105,7 @@ enable_core_dumps (void)
     setrlimit (RLIMIT_CORE, &limit);
     return 1; /* We always return true because trhis function is
                  merely a debugging aid. */
-#endif
+# endif
     return 1;
 #endif
 }

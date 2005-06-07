@@ -83,6 +83,7 @@ enum cmd_and_opt_values
   oLCmessages,
   oScdaemonProgram,
   oDefCacheTTL,
+  oDefCacheTTLSSH,
   oMaxCacheTTL,
   oUseStandardSocket,
   oNoUseStandardSocket,
@@ -140,6 +141,7 @@ static ARGPARSE_OPTS opts[] = {
 
   { oDefCacheTTL, "default-cache-ttl", 4,
                                N_("|N|expire cached PINs after N seconds")},
+  { oDefCacheTTLSSH, "default-cache-ttl-ssh", 4, "@" },
   { oMaxCacheTTL, "max-cache-ttl", 4, "@" },
   { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
                                N_("do not use the PIN cache when signing")},
@@ -367,6 +369,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.pinentry_program = NULL;
       opt.scdaemon_program = NULL;
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
+      opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL;
       opt.max_cache_ttl = MAX_CACHE_TTL;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
@@ -402,6 +405,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDisableScdaemon: opt.disable_scdaemon = 1; break;
 
     case oDefCacheTTL: opt.def_cache_ttl = pargs->r.ret_ulong; break;
+    case oDefCacheTTLSSH: opt.def_cache_ttl_ssh = pargs->r.ret_ulong; break;
     case oMaxCacheTTL: opt.max_cache_ttl = pargs->r.ret_ulong; break;
       
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
@@ -413,6 +417,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     default:
       return 0; /* not handled */
     }
+
   return 1; /* handled */
 }
 
@@ -1339,6 +1344,7 @@ handle_signal (int signo)
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
       pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
+      agent_query_dump_state ();
       agent_scd_dump_state ();
       break;
       

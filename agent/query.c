@@ -49,7 +49,7 @@
 #define LOCK_TIMEOUT  (1*60)
 
 
-static ASSUAN_CONTEXT entry_ctx = NULL;
+static assuan_context_t entry_ctx = NULL;
 #ifdef USE_GNU_PTH
 static pth_mutex_t entry_lock;
 #endif
@@ -82,6 +82,30 @@ initialize_module_query (void)
 
 
 
+static void
+dump_mutex_state (pth_mutex_t *m)
+{
+  if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
+    log_printf ("not_initialized");
+  else if (!(m->mx_state & PTH_MUTEX_LOCKED))
+    log_printf ("not_locked");
+  else
+    log_printf ("locked tid=0x%lx count=%lu", (long)m->mx_owner, m->mx_count);
+}
+
+
+/* This function may be called to print infromation pertaining to the
+   current state of this module to the log. */
+void
+agent_query_dump_state (void)
+{
+  log_info ("agent_query_dump_state: entry_lock=");
+  dump_mutex_state (&entry_lock);
+  log_printf ("\n");
+  log_info ("agent_query_dump_state: entry_ctx=%p pid=%ld\n",
+            entry_ctx, (long)assuan_get_pid (entry_ctx));
+}
+
 
 /* Unlock the pinentry so that another thread can start one and
    disconnect that pinentry - we do this after the unlock so that a
@@ -90,8 +114,9 @@ initialize_module_query (void)
 static int 
 unlock_pinentry (int rc)
 {
-  ASSUAN_CONTEXT ctx = entry_ctx;
+  assuan_context_t ctx = entry_ctx;
 
+  entry_ctx = NULL;
 #ifdef USE_GNU_PTH
   if (!pth_mutex_release (&entry_lock))
     {
@@ -100,7 +125,6 @@ unlock_pinentry (int rc)
         rc = gpg_error (GPG_ERR_INTERNAL);
     }
 #endif
-  entry_ctx = NULL;
   assuan_disconnect (ctx);
   return rc;
 }

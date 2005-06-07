@@ -79,8 +79,8 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
 /* SIGN whatever information we have accumulated in CTRL and return
    the signature S-Expression. */
 int
-agent_pksign_do (CTRL ctrl, const char *desc_text,
-		 gcry_sexp_t *signature_sexp, int ignore_cache)
+agent_pksign_do (ctrl_t ctrl, const char *desc_text,
+		 gcry_sexp_t *signature_sexp, cache_mode_t cache_mode)
 {
   gcry_sexp_t s_skey = NULL, s_sig = NULL;
   unsigned char *shadow_info = NULL;
@@ -90,16 +90,16 @@ agent_pksign_do (CTRL ctrl, const char *desc_text,
     return gpg_error (GPG_ERR_NO_SECKEY);
 
   rc = agent_key_from_file (ctrl, desc_text, ctrl->keygrip,
-                            &shadow_info, ignore_cache, &s_skey);
+                            &shadow_info, cache_mode, &s_skey);
   if (rc)
     {
       log_error ("failed to read the secret key\n");
       goto leave;
     }
 
-  if (! s_skey)
+  if (!s_skey)
     {
-      /* divert operation to the smartcard */
+      /* Divert operation to the smartcard */
 
       unsigned char *buf = NULL;
       size_t len = 0;
@@ -128,7 +128,7 @@ agent_pksign_do (CTRL ctrl, const char *desc_text,
     }
   else
     {
-      /* no smartcard, but a private key */
+      /* No smartcard, but a private key */
 
       gcry_sexp_t s_hash = NULL;
 
@@ -176,15 +176,15 @@ agent_pksign_do (CTRL ctrl, const char *desc_text,
 /* SIGN whatever information we have accumulated in CTRL and write it
    back to OUTFP. */
 int
-agent_pksign (CTRL ctrl, const char *desc_text,
-              membuf_t *outbuf, int ignore_cache) 
+agent_pksign (ctrl_t ctrl, const char *desc_text,
+              membuf_t *outbuf, cache_mode_t cache_mode) 
 {
   gcry_sexp_t s_sig = NULL;
   char *buf = NULL;
   size_t len = 0;
   int rc = 0;
 
-  rc = agent_pksign_do (ctrl, desc_text, &s_sig, ignore_cache);
+  rc = agent_pksign_do (ctrl, desc_text, &s_sig, cache_mode);
   if (rc)
     goto leave;
 

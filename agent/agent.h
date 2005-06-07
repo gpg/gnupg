@@ -69,8 +69,12 @@ struct {
                                    smartcard tasks.  */
   int disable_scdaemon;         /* Never use the SCdaemon. */
   int no_grab;         /* Don't let the pinentry grab the keyboard */
-  unsigned long def_cache_ttl;
+
+  /* The default and maximum TTL of cache entries. */
+  unsigned long def_cache_ttl;     /* Normal. */
+  unsigned long def_cache_ttl_ssh; /* SSH. */
   unsigned long max_cache_ttl;
+
 
   int running_detached; /* We are running detached from the tty. */
 
@@ -147,12 +151,26 @@ struct pin_entry_info_s {
 };
 
 
-enum {
-  PRIVATE_KEY_UNKNOWN = 0,
-  PRIVATE_KEY_CLEAR = 1,
-  PRIVATE_KEY_PROTECTED = 2,
-  PRIVATE_KEY_SHADOWED = 3
-};
+enum 
+  {
+    PRIVATE_KEY_UNKNOWN = 0,
+    PRIVATE_KEY_CLEAR = 1,
+    PRIVATE_KEY_PROTECTED = 2,
+    PRIVATE_KEY_SHADOWED = 3
+  };
+
+
+/* Values for the cache_mode arguments. */
+typedef enum 
+  {
+    CACHE_MODE_IGNORE = 0, /* Special mode to by pass the cache. */
+    CACHE_MODE_ANY,        /* Any mode except ignore matches. */
+    CACHE_MODE_NORMAL,     /* Normal cache (gpg-agent). */
+    CACHE_MODE_USER,       /* GET_PASSPHRASE related cache. */
+    CACHE_MODE_SSH         /* SSH related cache. */
+  }
+cache_mode_t;
+
 
 /*-- gpg-agent.c --*/
 void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
@@ -171,7 +189,8 @@ gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  const char *desc_text,
                                  const unsigned char *grip,
                                  unsigned char **shadow_info,
-                                 int ignore_cache, gcry_sexp_t *result);
+                                 cache_mode_t cache_mode,
+                                 gcry_sexp_t *result);
 gpg_error_t agent_public_key_from_file (ctrl_t ctrl, 
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
@@ -179,6 +198,7 @@ int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
 void initialize_module_query (void);
+void agent_query_dump_state (void);
 int agent_askpin (ctrl_t ctrl,
                   const char *desc_text, const char *prompt_text,
                   const char *inital_errtext,
@@ -191,16 +211,19 @@ int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
 
 /*-- cache.c --*/
 void agent_flush_cache (void);
-int agent_put_cache (const char *key, const char *data, int ttl);
-const char *agent_get_cache (const char *key, void **cache_id);
+int agent_put_cache (const char *key, cache_mode_t cache_mode,
+                     const char *data, int ttl);
+const char *agent_get_cache (const char *key, cache_mode_t cache_mode,
+                             void **cache_id);
 void agent_unlock_cache_entry (void **cache_id);
 
 
 /*-- pksign.c --*/
-int agent_pksign_do (CTRL ctrl, const char *desc_text,
-		     gcry_sexp_t *signature_sexp, int ignore_cache);
+int agent_pksign_do (ctrl_t ctrl, const char *desc_text,
+		     gcry_sexp_t *signature_sexp,
+                     cache_mode_t cache_mode);
 int agent_pksign (ctrl_t ctrl, const char *desc_text,
-                  membuf_t *outbuf, int ignore_cache);
+                  membuf_t *outbuf, cache_mode_t cache_mode);
 
 /*-- pkdecrypt.c --*/
 int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,

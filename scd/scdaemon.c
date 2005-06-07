@@ -67,6 +67,7 @@ enum cmd_and_opt_values
   oDebugAll,
   oDebugLevel,
   oDebugWait,
+  oDebugAllowCoreDump,
   oDebugCCIDDriver,
   oNoGreeting,
   oNoOptions,
@@ -110,6 +111,7 @@ static ARGPARSE_OPTS opts[] = {
   { oDebugAll, "debug-all"     ,0, "@"},
   { oDebugLevel, "debug-level" ,2, "@"},
   { oDebugWait,"debug-wait",1, "@"},
+  { oDebugAllowCoreDump, "debug-allow-core-dump", 0, "@" },
   { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
   { oDebugDisableTicker, "debug-disable-ticker", 0, "@"},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
@@ -318,6 +320,7 @@ main (int argc, char **argv )
   int debug_wait = 0;
   int gpgconf_list = 0;
   const char *config_filename = NULL;
+  int allow_coredump = 0;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -448,6 +451,10 @@ main (int argc, char **argv )
         case oDebugAll: opt.debug = ~0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
+        case oDebugAllowCoreDump:
+          enable_core_dumps ();
+          allow_coredump = 1;
+          break;
         case oDebugCCIDDriver: 
           ccid_set_debug_level (ccid_set_debug_level (-1)+1);
           break;
@@ -603,6 +610,17 @@ main (int argc, char **argv )
         sa.sa_flags = 0;
         sigaction (SIGPIPE, &sa, NULL);
       }
+
+      /* If --debug-allow-core-dump has been given we also need to
+         switch the working directory to a place where we can actually
+         write. */
+      if (allow_coredump)
+        {
+          if (chdir("/tmp"))
+            log_debug ("chdir to `/tmp' failed: %s\n", strerror (errno));
+          else
+            log_debug ("changed working directory to `/tmp'\n");
+        }
 
       /* In multi server mode we need to listen on an additional
          socket.  Create that socket now before starting the handler

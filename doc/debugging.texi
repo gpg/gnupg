@@ -18,6 +18,7 @@ solve the problem at hand.
 @menu
 * Debugging Tools::       Description of some useful tools
 * Common Problems::       Commonly seen problems.
+* Architecture Details::  How the whole thing works internally.
 @end menu
 
 
@@ -105,6 +106,49 @@ shell). Even for GUI based Pinentries; you should have set
 on how to do it.
 
 
+@item SSH hangs while a popping up pinentry was expected
+
+SSH has no way to tell the gpg-agent what terminal or X display it is
+running on.  So when remotely logging into a box where a gpg-agent with
+SSH support is running, the pinentry will get popped up on whatever
+display t he gpg-agent has been started.  To solve this problem you may
+issue the command
+
+@smallexample
+echo UPDATESTARTUPTTY | gpg-connect-agent
+@end smallexample
+
+and the next pinentry will pop up on your display or screen. However,
+you need to kill the running pinentry first because only one pinentry
+may be running at once.  If you plan to use ssh on a new display you
+should issue the above command before invoking ssh or any other service
+making use of ssh.
+
 
 @end itemize
+
+
+@c ********************************************
+@c ***  Architecture Details  *****************
+@c ********************************************
+@node Architecture Details
+@section How the whole thing works internally.
+
+
+@menu
+* gpg 1.4 vs. 1.9::   Relationship between the two branches.
+@end menu
+
+@node gpg 1.4 vs. 1.9
+@subsection  Relationship between the two branches.
+
+Here is a little picture showing how the components work together:
+
+@image{gnupg-card-architecture, 14cm}
+
+@noindent
+Lets try to explain it:
+
+TO BE DONE.
+
 

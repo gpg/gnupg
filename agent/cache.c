@@ -42,6 +42,7 @@ struct cache_item_s {
   int ttl;  /* max. lifetime given in seconds, -1 one means infinite */
   int lockcount;
   struct secret_data_s *pw;
+  cache_mode_t cache_mode;
   char key[1];
 };
 
@@ -78,6 +79,7 @@ new_data (const void *data, size_t length)
 }
 
 
+
 /* check whether there are items to expire */
 static void
 housekeeping (void)
@@ -85,7 +87,7 @@ housekeeping (void)
   ITEM r, rprev;
   time_t current = gnupg_get_time ();
 
-  /* first expire the actual data */
+  /* First expire the actual data */
   for (r=thecache; r; r = r->next)
     {
       if (!r->lockcount && r->pw
@@ -100,7 +102,7 @@ housekeeping (void)
         }
     }
 
-  /* second, make sure that we also remove them based on the created stamp so
+  /* Second, make sure that we also remove them based on the created stamp so
      that the user has to enter it from time to time.  We do this every hour */
   for (r=thecache; r; r = r->next)
     {
@@ -115,7 +117,7 @@ housekeeping (void)
         }
     }
 
-  /* third, make sure that we don't have too many items in the list.
+  /* Third, make sure that we don't have too many items in the list.
      Expire old and unused entries after 30 minutes */
   for (rprev=NULL, r=thecache; r; )
     {
@@ -186,19 +188,27 @@ agent_flush_cache (void)
    with a maximum lifetime of TTL seconds.  If there is already data
    under this key, it will be replaced.  Using a DATA of NULL deletes
    the entry.  A TTL of 0 is replaced by the default TTL and a TTL of
-   -1 set infinite timeout. */
+   -1 set infinite timeout. CACHE_MODE is stored with the cache entry
+   and used t select different timeouts. */
 int
-agent_put_cache (const char *key, const char *data, int ttl)
+agent_put_cache (const char *key, cache_mode_t cache_mode,
+                 const char *data, int ttl)
 {
   ITEM r;
 
   if (DBG_CACHE)
-    log_debug ("agent_put_cache `%s' requested ttl=%d\n", key, ttl);
+    log_debug ("agent_put_cache `%s' requested ttl=%d mode=%d\n",
+               key, ttl, cache_mode);
   housekeeping ();
 
   if (!ttl)
-    ttl = opt.def_cache_ttl;
-  if (!ttl)
+    {
+      if (cache_mode == CACHE_MODE_SSH)
+        ttl = opt.def_cache_ttl_ssh;
+      else
+        ttl = opt.def_cache_ttl;
+    }
+  if (!ttl || cache_mode == CACHE_MODE_IGNORE)
     return 0;
 
   for (r=thecache; r; r = r->next)
@@ -217,6 +227,7 @@ agent_put_cache (const char *key, const char *data, int ttl)
         {
           r->created = r->accessed = gnupg_get_time (); 
           r->ttl = ttl;
+          r->cache_mode = cache_mode;
           r->pw = new_data (data, strlen (data)+1);
           if (!r->pw)
             log_error ("out of core while allocating new cache item\n");
@@ -232,6 +243,7 @@ agent_put_cache (const char *key, const char *data, int ttl)
           strcpy (r->key, key);
           r->created = r->accessed = gnupg_get_time (); 
           r->ttl = ttl;
+          r->cache_mode = cache_mode;
           r->pw = new_data (data, strlen (data)+1);
           if (!r->pw)
             {
@@ -249,11 +261,15 @@ agent_put_cache (const char *key, const char *data, int ttl)
 }
 
 
-/* Try to find an item in the cache */
+/* Try to find an item in the cache.  Note that we currently don't
+   make use of CACHE_MODE.  */
 const char *
-agent_get_cache (const char *key, void **cache_id)
+agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
 {
   ITEM r;
+
+  if (cache_mode == CACHE_MODE_IGNORE)
+    return NULL;
 
   if (DBG_CACHE)
     log_debug ("agent_get_cache `%s'...\n", key);

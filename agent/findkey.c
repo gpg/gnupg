@@ -230,8 +230,9 @@ modify_description (const char *in, const char *comment, char **result)
    caching mechanism. DESC_TEXT may be set to override the default
    description used for the pinentry. */
 static int
-unprotect (CTRL ctrl, const char *desc_text,
-           unsigned char **keybuf, const unsigned char *grip, int ignore_cache)
+unprotect (ctrl_t ctrl, const char *desc_text,
+           unsigned char **keybuf, const unsigned char *grip, 
+           cache_mode_t cache_mode)
 {
   struct pin_entry_info_s *pi;
   struct try_unprotect_arg_s arg;
@@ -246,10 +247,12 @@ unprotect (CTRL ctrl, const char *desc_text,
 
   /* First try to get it from the cache - if there is none or we can't
      unprotect it, we fall back to ask the user */
-  if (!ignore_cache)
+  if (cache_mode != CACHE_MODE_IGNORE)
     {
       void *cache_marker;
-      const char *pw = agent_get_cache (hexgrip, &cache_marker);
+      const char *pw;
+      
+      pw = agent_get_cache (hexgrip, cache_mode, &cache_marker);
       if (pw)
         {
           rc = agent_unprotect (*keybuf, pw, &result, &resultlen);
@@ -280,7 +283,7 @@ unprotect (CTRL ctrl, const char *desc_text,
   if (!rc)
     {
       assert (arg.unprotected_key);
-      agent_put_cache (hexgrip, pi->pin, 0);
+      agent_put_cache (hexgrip, cache_mode, pi->pin, 0);
       xfree (*keybuf);
       *keybuf = arg.unprotected_key;
     }
@@ -360,14 +363,13 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
 /* Return the secret key as an S-Exp in RESULT after locating it using
    the grip.  Returns NULL in RESULT if the operation should be
    diverted to a token; SHADOW_INFO will point then to an allocated
-   S-Expression with the shadow_info part from the file.  With
-   IGNORE_CACHE passed as true the passphrase is not taken from the
-   cache.  DESC_TEXT may be set to present a custom description for the
-   pinentry. */
+   S-Expression with the shadow_info part from the file.  CACHE_MODE
+   defines now the cache shall be used.  DESC_TEXT may be set to
+   present a custom description for the pinentry. */
 gpg_error_t
 agent_key_from_file (ctrl_t ctrl, const char *desc_text,
                      const unsigned char *grip, unsigned char **shadow_info,
-                     int ignore_cache, gcry_sexp_t *result)
+                     cache_mode_t cache_mode, gcry_sexp_t *result)
 {
   int rc;
   unsigned char *buf;
@@ -447,7 +449,7 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
 
 	if (!rc)
 	  {
-	    rc = unprotect (ctrl, desc_text_final, &buf, grip, ignore_cache);
+	    rc = unprotect (ctrl, desc_text_final, &buf, grip, cache_mode);
 	    if (rc)
 	      log_error ("failed to unprotect the secret key: %s\n",
 			 gpg_strerror (rc));

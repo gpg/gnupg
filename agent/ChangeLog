@@ -1,3 +1,24 @@
+2005-06-06  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c: New option --default-cache-ttl-ssh.
+	* agent.h (cache_mode_t): New.
+	* pksign.c (agent_pksign_do): New arg CACHE_MODE to replace the
+	ARG IGNORE_CACHE. Changed all callers.
+	(agent_pksign): Ditto.
+	* findkey.c (agent_key_from_file): Ditto. Canged all callers.
+	(unprotect): Ditto.
+	* command-ssh.c (data_sign): Use CACHE_MODE_SSH.
+	* cache.c (agent_get_cache): New arg CACHE_MODE.
+	(agent_put_cache): Ditto.  Store it in the cache.
+
+	* query.c (agent_query_dump_state, dump_mutex_state): New.
+	(unlock_pinentry): Reset the global context before releasing the
+	mutex.
+	* gpg-agent.c (handle_signal): Dump query.c info on SIGUSR1.
+
+	* call-scd.c (agent_scd_check_aliveness): Always do a waitpid and
+	add a timeout to the locking.
+
 2005-06-03  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_updatestartuptty): New.

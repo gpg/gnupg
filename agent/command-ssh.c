@@ -2014,7 +2014,8 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   ctrl->use_auth_call = 1;
   err = agent_pksign_do (ctrl,
                          _("Please enter the passphrase "
-                           "for the ssh key%0A  %c"), &signature_sexp, 0);
+                           "for the ssh key%0A  %c"), &signature_sexp,
+                         CACHE_MODE_SSH);
   ctrl->use_auth_call = 0;
   if (err)
     goto out;
@@ -2386,7 +2387,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   for (i = 0; i < 20; i++)
     sprintf (key_grip + 2 * i, "%02X", key_grip_raw[i]);
 
-  err = agent_put_cache (key_grip, pi->pin, ttl);
+  err = agent_put_cache (key_grip, CACHE_MODE_SSH, pi->pin, ttl);
   if (err)
     goto out;
 

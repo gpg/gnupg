@@ -70,7 +70,7 @@ struct server_local_s {
   struct server_local_s *next_session; 
 
   /* This object is usually assigned to a CTRL object (which is
-     globally visible).  While enumeratin all sessions we sometimes
+     globally visible).  While enumerating all sessions we sometimes
      need to access data of the CTRL object; thus we keep a
      backpointer here. */
   ctrl_t ctrl_backlink;
@@ -860,6 +860,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
   /* FIXME: Applications should not return sensistive data if the card
      is locked.  */
   rc = app_getattr (ctrl->app_ctx, ctrl, keyword);
+  xfree (keyword);
 
   TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);

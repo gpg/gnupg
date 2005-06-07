@@ -1,3 +1,7 @@
+2005-06-06  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): New option --debug-allow-core-dump. 
+
 2005-06-03  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (handle_connections): Make sure that the signals we

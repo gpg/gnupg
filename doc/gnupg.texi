@@ -86,14 +86,15 @@ section entitled ``Copying''.
 @insertcopying
 @end titlepage
 
-
+@ifnothtml
 @summarycontents
 @contents
 @page
+@end ifnothtml
 
 @ifnottex
 @node Top
-@top The GNU Privacy Guard
+@top 
 @insertcopying
 
 This manual documents how to use the GNU Privacy Guard system as well as
@@ -119,6 +120,20 @@ the administration and the architecture.
 * Option Index::        Index to command line options.
 * Index::	        Index of concepts and symbol names.
 @end menu
+
+@ifhtml
+
+@center @image{gnupg-badge-openpgp,6cm,,The GnuPG Logo}
+
+@end ifhtml
+
+
+@ifhtml
+@page
+@summarycontents
+@contents
+@end ifhtml
+
 
 @include gpg.texi
 @include gpgsm.texi

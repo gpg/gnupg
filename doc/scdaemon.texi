@@ -181,6 +181,14 @@ protocol.  Note that this option may reveal sensitive data.
 This option disables all ticker functions like checking for card
 insertions.
 
+@item --debug-allow-core-dump
+@opindex debug-allow-core-dump
+For security reasons we won't create a core dump when the process
+aborts.  For debugging purposes it is sometimes better to allow core
+dump.  This options enables it and also changes the working directory to
+@file{/tmp} when running in @option{--server} mode.
+
+
 @item --no-detach
 @opindex no-detach
 Don't detach the process from the console.  This is manly usefule for
