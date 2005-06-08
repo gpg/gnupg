@@ -1,3 +1,11 @@
+2005-06-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), export.c (parse_export_options,
+	do_export_stream): Add export-options export-clean-sigs,
+	export-clean-uids, export-clean-subkeys, and export-clean which is
+	all of the above.  Export-minimal is the same except it also
+	removes all non-selfsigs.  export-unusable-sigs is now a noop.
+
 2005-06-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* signal.c [HAVE_DOSISH_SYSTEM]: Fix unused function warnings on

@@ -1,6 +1,6 @@
 /* export.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,6 +35,7 @@
 #include "util.h"
 #include "main.h"
 #include "i18n.h"
+#include "trustdb.h"
 
 static int do_export( STRLIST users, int secret, unsigned int options );
 static int do_export_stream( IOBUF out, STRLIST users, int secret,
@@ -49,12 +50,20 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"export-local-sigs",EXPORT_LOCAL_SIGS,NULL},
       {"export-attributes",EXPORT_ATTRIBUTES,NULL},
       {"export-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL},
-      {"export-minimal",EXPORT_MINIMAL,NULL},
-      {"export-unusable-sigs",EXPORT_UNUSABLE_SIGS,NULL},
+      {"export-minimal",
+       EXPORT_MINIMAL|EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS|EXPORT_CLEAN_SUBKEYS,
+       NULL},
+      {"export-clean",
+       EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS|EXPORT_CLEAN_SUBKEYS,NULL},
+      {"export-clean-sigs",EXPORT_CLEAN_SIGS,NULL},
+      {"export-clean-uids",EXPORT_CLEAN_UIDS,NULL},
+      {"export-clean-subkeys",EXPORT_CLEAN_SUBKEYS,NULL},
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL},
       {"include-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL},
+      /* dummy */
+      {"export-unusable-sigs",0,NULL},
       {NULL,0,NULL}
       /* add tags for include revoked and disabled? */
     };
@@ -222,13 +231,20 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 			 keystr(sk_keyid));
 		continue;
 	      }
-
-	    if(options&EXPORT_MINIMAL)
-	      keyid_from_sk(sk,keyid);
 	  }
-	else if((options&EXPORT_MINIMAL)
-		&& (node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
-	  keyid_from_pk(node->pkt->pkt.public_key,keyid);
+	else
+	  {
+	    /* It's a public key export */
+	    if((options&EXPORT_MINIMAL)
+	       && (node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
+	      keyid_from_pk(node->pkt->pkt.public_key,keyid);
+
+	    if(options&EXPORT_CLEAN_UIDS)
+	      clean_uids_from_key(keyblock,opt.verbose);
+
+	    if(options&EXPORT_CLEAN_SUBKEYS)
+	      clean_subkeys_from_key(keyblock,opt.verbose);
+	  }
 
 	/* and write it */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
@@ -315,7 +331,14 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		  continue;
 	      }
 
-	    if( node->pkt->pkttype == PKT_SIGNATURE )
+	    if(node->pkt->pkttype==PKT_USER_ID)
+	      {
+		/* Run clean_sigs_from_uid against each uid if
+		   export-clean-sigs is on. */
+		if(options&EXPORT_CLEAN_SIGS)
+		  clean_sigs_from_uid(keyblock,node,opt.verbose);
+	      }
+	    else if(node->pkt->pkttype==PKT_SIGNATURE)
 	      {
 		/* If we have export-minimal turned on, do not include
 		   any signature that isn't a selfsig.  Note that this
@@ -323,16 +346,6 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		   0x13).  A designated revocation is not stripped. */
 		if((options&EXPORT_MINIMAL)
 		   && IS_UID_SIG(node->pkt->pkt.signature)
-		   && (node->pkt->pkt.signature->keyid[0]!=keyid[0]
-		       || node->pkt->pkt.signature->keyid[1]!=keyid[1]))
-		  continue;
-
-		/* We do basically the same thing for
-		   export-unusable-sigs.  It only applies to expired
-		   uid sigs that aren't selfsigs. */
-		if(!(options&EXPORT_UNUSABLE_SIGS)
-		   && IS_UID_SIG(node->pkt->pkt.signature)
-		   && node->pkt->pkt.signature->flags.expired
 		   && (node->pkt->pkt.signature->keyid[0]!=keyid[0]
 		       || node->pkt->pkt.signature->keyid[1]!=keyid[1]))
 		  continue;
