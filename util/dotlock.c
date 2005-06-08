@@ -1,5 +1,6 @@
 /* dotlock.c - dotfile locking
- * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -52,8 +53,6 @@ struct dotlock_handle {
 static volatile DOTLOCK all_lockfiles;
 static int never_lock;
 
-static int read_lockfile( const char *name );
-
 void
 disable_dotlock(void)
 {
@@ -81,14 +80,14 @@ create_dotlock( const char *file_to_lock )
 {
     static int initialized;
     DOTLOCK h;
-    int  fd = -1;
-    char pidstr[16];
 #if !defined (HAVE_DOSISH_SYSTEM)
+    int fd = -1;
+    char pidstr[16];
     struct utsname utsbuf;
-#endif
     const char *nodename;
     const char *dirpart;
     int dirpartlen;
+#endif
 
     if( !initialized ) {
 	atexit( remove_lockfiles );
@@ -235,7 +234,7 @@ destroy_dotlock ( DOTLOCK h )
 #endif
 }
 
-
+#ifndef HAVE_DOSISH_SYSTEM
 
 static int
 maybe_deadlock( DOTLOCK h )
@@ -248,6 +247,43 @@ maybe_deadlock( DOTLOCK h )
     }
     return 0;
 }
+
+/****************
+ * Read the lock file and return the pid, returns -1 on error.
+ */
+static int
+read_lockfile( const char *name )
+{
+    int fd, pid;
+    char pidstr[16];
+
+    if( (fd = open(name, O_RDONLY)) == -1 ) {
+	int e = errno;
+	log_debug("error opening lockfile `%s': %s\n", name, strerror(errno) );
+	errno = e;
+	return -1;
+    }
+    if( read(fd, pidstr, 10 ) != 10 ) {  /* Read 10 digits w/o newline */
+	log_debug("error reading lockfile `%s'", name );
+	close(fd);
+	errno = 0;
+	return -1;
+    }
+    pidstr[10] = 0;  /* terminate pid string */
+    close(fd);
+    pid = atoi(pidstr);
+#ifndef __riscos__
+    if( !pid || pid == -1 ) {
+#else /* __riscos__ */
+    if( (!pid && riscos_getpid()) || pid == -1 ) {
+#endif /* __riscos__ */
+	log_error("invalid pid %d in lockfile `%s'", pid, name );
+	errno = 0;
+	return -1;
+    }
+    return pid;
+}
+#endif /* !HAVE_DOSISH_SYSTEM */
 
 /****************
  * Do a lock on H. A TIMEOUT of 0 returns immediately,
@@ -399,48 +435,6 @@ release_dotlock( DOTLOCK h )
     return 0;
 #endif
 }
-
-
-/****************
- * Read the lock file and return the pid, returns -1 on error.
- */
-static int
-read_lockfile( const char *name )
-{
-#if defined (HAVE_DOSISH_SYSTEM)
-    return 0;
-#else
-    int fd, pid;
-    char pidstr[16];
-
-    if( (fd = open(name, O_RDONLY)) == -1 ) {
-	int e = errno;
-	log_debug("error opening lockfile `%s': %s\n", name, strerror(errno) );
-	errno = e;
-	return -1;
-    }
-    if( read(fd, pidstr, 10 ) != 10 ) {  /* Read 10 digits w/o newline */
-	log_debug("error reading lockfile `%s'", name );
-	close(fd);
-	errno = 0;
-	return -1;
-    }
-    pidstr[10] = 0;  /* terminate pid string */
-    close(fd);
-    pid = atoi(pidstr);
-#ifndef __riscos__
-    if( !pid || pid == -1 ) {
-#else /* __riscos__ */
-    if( (!pid && riscos_getpid()) || pid == -1 ) {
-#endif /* __riscos__ */
-	log_error("invalid pid %d in lockfile `%s'", pid, name );
-	errno = 0;
-	return -1;
-    }
-    return pid;
-#endif
-}
-
 
 void
 remove_lockfiles()
