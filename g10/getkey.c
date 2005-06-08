@@ -1347,11 +1347,18 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
         return; /* has been revoked */
     }
 
+    uid->expiredate = sig->expiredate;
+
+    if(sig->flags.expired)
+      {
+	uid->is_expired = 1;
+	return; /* has expired */
+      }
+
     uid->created = sig->timestamp; /* this one is okay */
     uid->selfsigversion = sig->version;
     /* If we got this far, it's not expired :) */
     uid->is_expired = 0;
-    uid->expiredate = sig->expiredate;
 
     /* store the key flags in the helper variable for later processing */
     uid->help_key_usage=parse_key_usage(sig);
@@ -1652,19 +1659,9 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
                      * the same email address may become valid again (hired,
                      * fired, hired again).
                      */
-		    if(sig->flags.expired)
-		      {
-			uidnode->pkt->pkt.user_id->is_expired=1;
-			signode = NULL;
-		      }
-                    else
-		      {
-			uidnode->pkt->pkt.user_id->is_expired=0;
-			signode = k;
-		      }
 
 		    sigdate = sig->timestamp;
-		    uidnode->pkt->pkt.user_id->expiredate=sig->expiredate;
+		    signode = k;
 		    if( sig->version > sigversion )
 		      sigversion = sig->version;
                 }

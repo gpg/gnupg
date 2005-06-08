@@ -1,3 +1,10 @@
+2005-06-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (fixup_uidnode, merge_selfsigs_main): Handle both
+	expired and revoked uids in fixup_uidnode().  No need to special
+	case in merge_selfsigs_main().  This also means that an expired
+	uid will have its selfsig tagged with chosen_selfsig.
+
 2005-06-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), export.c (parse_export_options,
