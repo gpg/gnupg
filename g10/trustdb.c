@@ -1641,29 +1641,22 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
    and is not expired.  Note that this does not take into account
    whether the uid has a trust path to it - just whether the keyholder
    themselves has certified the uid.  Returns how many user IDs were
-   removed. */
+   removed.  To "remove" a user ID, we simply remove ALL signatures
+   except the self-sig that caused the user ID to be remove-worthy.
+   We don't actually remove the user ID packet itself since it might
+   be ressurected in a later merge. */
 int
 clean_uids_from_key(KBNODE keyblock,int noisy)
 {
-  int uidcount=0,delete_until_next=0,deleted=0;
+  int delete_until_next=0,deleted=0;
   KBNODE node;
 
   assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
 
   merge_keys_and_selfsig(keyblock);
 
-  /* First count how many user IDs we have.  We need to be careful
-     that we don't delete them all as some keys could actually have NO
-     valid user IDs.  2440 requires at least 1 user ID packet, valid
-     or not. */
   for(node=keyblock->next;
       node && node->pkt->pkttype!=PKT_PUBLIC_SUBKEY;
-      node=node->next)
-    if(node->pkt->pkttype==PKT_USER_ID)
-      uidcount++;
-
-  for(node=keyblock->next;
-      node && node->pkt->pkttype!=PKT_PUBLIC_SUBKEY && uidcount>deleted+1;
       node=node->next)
     {
       if(node->pkt->pkttype==PKT_USER_ID)
@@ -1693,7 +1686,7 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 		  else
 		    reason=_("invalid");
 
-		  log_info("removing user ID \"%s\" from key %s: %s\n",
+		  log_info("compacting user ID \"%s\" on key %s: %s\n",
 			   user,keystr(keyblock->pkt->pkt.public_key->keyid),
 			   reason);
 
@@ -1701,8 +1694,9 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 		}
 	    }
 	}
-
-      if(delete_until_next)
+      else if(node->pkt->pkttype==PKT_SIGNATURE
+	      && delete_until_next
+	      && !node->pkt->pkt.signature->flags.chosen_selfsig)
 	delete_kbnode(node);
     }
     

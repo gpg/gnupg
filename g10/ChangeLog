@@ -1,5 +1,9 @@
 2005-06-08  David Shaw  <dshaw@jabberwocky.com>
 
+	* trustdb.c (clean_uids_from_key), keyedit.c
+	(menu_clean_uids_from_key): Tweak algorithm to preserve the last
+	selfsig which helps prevent uid resurrections.
+
 	* getkey.c (fixup_uidnode, merge_selfsigs_main): Handle both
 	expired and revoked uids in fixup_uidnode().  No need to special
 	case in merge_selfsigs_main().  This also means that an expired

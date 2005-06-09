@@ -1435,7 +1435,8 @@ static struct
     { "enable"  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable key") },
     { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key") },
     { "showphoto",cmdSHOWPHOTO , 0, N_("show selected photo IDs") },
-    { "clean",    cmdCLEAN     , KEYEDIT_NOT_SK, NULL },
+    { "clean",    cmdCLEAN     , KEYEDIT_NOT_SK,
+      N_("clean unusable parts from key") },
     { NULL, cmdNONE, 0, NULL }
   };
 
@@ -2150,19 +2151,16 @@ keyedit_menu( const char *username, STRLIST locusr,
 		    redisplay=modified=menu_clean_uids_from_key(keyblock);
 		  else if(ascii_strcasecmp(arg_string,"subkeys")==0)
 		    redisplay=modified=menu_clean_subkeys_from_key(keyblock);
-		  else if(ascii_strcasecmp(arg_string,"all")==0)
-		    {
-		      modified=menu_clean_sigs_from_uids(keyblock);
-		      modified+=menu_clean_uids_from_key(keyblock);
-		      modified+=menu_clean_subkeys_from_key(keyblock);
-		      redisplay=modified;
-		    }
 		  else
 		    tty_printf("Unable to clean `%s'\n",arg_string);
 		}
 	      else
-		tty_printf("Please specify item to clean: `sigs',"
-			   " `uids', `subkeys', or `all'\n");
+		{
+		  modified=menu_clean_sigs_from_uids(keyblock);
+		  modified+=menu_clean_uids_from_key(keyblock);
+		  modified+=menu_clean_subkeys_from_key(keyblock);
+		  redisplay=modified;
+		}
 	    }
 	    break;
 
@@ -3187,34 +3185,40 @@ menu_clean_sigs_from_uids(KBNODE keyblock)
 static int
 menu_clean_uids_from_key(KBNODE keyblock)
 {
-  KBNODE node;
   int modified=clean_uids_from_key(keyblock,0);
 
   if(modified)
     {
+      KBNODE node,uidnode=NULL;
+
       for(node=keyblock->next;node;node=node->next)
 	{
-	  if(node->pkt->pkttype==PKT_USER_ID && is_deleted_kbnode(node))
+	  if(node->pkt->pkttype==PKT_USER_ID)
+	    uidnode=node;
+	  else if(uidnode && node->pkt->pkttype==PKT_SIGNATURE
+		  && is_deleted_kbnode(node))
 	    {
 	      const char *reason;
-	      char *user=utf8_to_native(node->pkt->pkt.user_id->name,
-					node->pkt->pkt.user_id->len,0);
+	      char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
+					uidnode->pkt->pkt.user_id->len,0);
 
-	      if(node->pkt->pkt.user_id->is_revoked)
+	      if(uidnode->pkt->pkt.user_id->is_revoked)
 		reason=_("revoked");
-	      else if(node->pkt->pkt.user_id->is_expired)
+	      else if(uidnode->pkt->pkt.user_id->is_expired)
 		reason=_("expired");
 	      else
 		reason=_("invalid");
 
-	      tty_printf("User ID \"%s\" removed: %s\n",user,reason);
+	      tty_printf("User ID \"%s\" compacted: %s\n",user,reason);
+
+	      uidnode=NULL;
 
 	      m_free(user);
 	    }
 	}
     }
   else
-    tty_printf("No user IDs are removable.\n");
+    tty_printf("No user IDs are compactable.\n");
 
   return modified;
 }
