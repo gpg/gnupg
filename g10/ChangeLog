@@ -1,5 +1,8 @@
 2005-06-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, import.c (parse_import_options, delete_inv_parts):
+	import-unusable-sigs is now a noop.
+
 	* options.h, export.c (do_export_stream), keyedit.c (keyedit_menu,
 	menu_clean_subkeys_from_key), trustdb.h, trustdb.c
 	(clean_subkeys_from_key): Remove subkey cleaning function.  It is

@@ -94,10 +94,11 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"fast-import",IMPORT_FAST,NULL},
       {"convert-sk-to-pk",IMPORT_SK2PK,NULL},
       {"merge-only",IMPORT_MERGE_ONLY,NULL},
-      {"import-unusable-sigs",IMPORT_UNUSABLE_SIGS,NULL},
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
+      /* dummy */
+      {"import-unusable-sigs",0,NULL},
       {NULL,0,NULL}
     };
 
@@ -1554,30 +1555,6 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 	      log_info(_("key %s: unexpected signature class (0x%02X) -"
 			 " skipped\n"),keystr(keyid),
 		       node->pkt->pkt.signature->sig_class);
-	    delete_kbnode(node);
-	  }
-	else if(node->pkt->pkttype==PKT_SIGNATURE
-		&& IS_UID_SIG(node->pkt->pkt.signature)
-		&& node->pkt->pkt.signature->flags.expired
-		&& (node->pkt->pkt.signature->keyid[0]!=keyid[0]
-		    || node->pkt->pkt.signature->keyid[1]!=keyid[1])
-		&& !(options&IMPORT_UNUSABLE_SIGS))
-	  {
-	    /* Note that we haven't necessarily checked this sig for
-	       validity.  We strip it anyway since if it was valid, it
-	       would be expired.  If it wasn't valid, it either would
-	       be expired if it was valid, or was altered to the point
-	       that it looked expired (and so doesn't matter terribly
-	       much if it is expired or not). */
-	    if(opt.verbose)
-	      {
-		char *kid=m_strdup(keystr(keyid));
-		log_info(_("key %s: expired signature from key %s -"
-			   " skipped\n"),kid,
-			 keystr(node->pkt->pkt.signature->keyid));
-		m_free(kid);
-	      }
-
 	    delete_kbnode(node);
 	  }
 	else if( (node->flag & 4) ) /* marked for deletion */
