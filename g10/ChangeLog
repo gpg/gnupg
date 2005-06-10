@@ -1,5 +1,12 @@
 2005-06-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, export.c (do_export_stream), keyedit.c (keyedit_menu,
+	menu_clean_subkeys_from_key), trustdb.h, trustdb.c
+	(clean_subkeys_from_key): Remove subkey cleaning function.  It is
+	of very limited usefulness since it cannot be used on any subkey
+	that can sign, and can only affect multiple selfsigs on
+	encryption-only subkeys.
+
 	* keydb.h, kbnode.c (undelete_kbnode): New function to undelete a
 	kbnode.
 

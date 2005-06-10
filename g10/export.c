@@ -50,14 +50,10 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"export-local-sigs",EXPORT_LOCAL_SIGS,NULL},
       {"export-attributes",EXPORT_ATTRIBUTES,NULL},
       {"export-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL},
-      {"export-minimal",
-       EXPORT_MINIMAL|EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS|EXPORT_CLEAN_SUBKEYS,
-       NULL},
-      {"export-clean",
-       EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS|EXPORT_CLEAN_SUBKEYS,NULL},
+      {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL},
+      {"export-clean",EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL},
       {"export-clean-sigs",EXPORT_CLEAN_SIGS,NULL},
       {"export-clean-uids",EXPORT_CLEAN_UIDS,NULL},
-      {"export-clean-subkeys",EXPORT_CLEAN_SUBKEYS,NULL},
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL},
@@ -241,9 +237,6 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
 	    if(options&EXPORT_CLEAN_UIDS)
 	      clean_uids_from_key(keyblock,opt.verbose);
-
-	    if(options&EXPORT_CLEAN_SUBKEYS)
-	      clean_subkeys_from_key(keyblock,opt.verbose);
 	  }
 
 	/* and write it */

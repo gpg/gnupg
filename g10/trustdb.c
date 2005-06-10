@@ -1730,66 +1730,6 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
   return deleted;
 }
 
-/* Another cleaning function.  This only cleans encrypt-only subkeys
-   since an expired/revoked encryption key is basically useless, but
-   an expired/revoked key that can sign is still needed to verify old
-   signatures. */
-int
-clean_subkeys_from_key(KBNODE keyblock,int noisy)
-{
-  int delete_until_next=0,deleted=0;
-  KBNODE node;
-  char *main_key=NULL;
-
-  assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
-
-  merge_keys_and_selfsig(keyblock);
-
-  if(noisy)
-    main_key=m_strdup(keystr(keyblock->pkt->pkt.public_key->keyid));
-
-  for(node=keyblock->next;node;node=node->next)
-    {
-      if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY)
-	{
-	  PKT_public_key *pk=node->pkt->pkt.public_key;
-
-	  /* If it is valid, not expired, and not revoked, leave it
-	     alone.  If a key can make signatures, leave it alone. */
-	  if(pk->pubkey_usage!=PUBKEY_USAGE_ENC
-	     || (pk->is_valid && !pk->has_expired && !pk->is_revoked))
-	    delete_until_next=0;
-	  else
-	    {
-	      delete_until_next=1;
-	      deleted++;
-
-	      if(noisy)
-		{
-		  const char *reason;
-
-		  if(pk->is_revoked)
-		    reason=_("revoked");
-		  else if(pk->has_expired)
-		    reason=_("expired");
-		  else
-		    reason=_("invalid");
-
-		  log_info("removing subkey %s from key %s: %s\n",
-			   keystr_from_pk(pk),main_key,reason);
-		}
-	    }
-	}
-
-      if(delete_until_next)
-	delete_kbnode(node);
-    }
-
-  m_free(main_key);
-
-  return deleted;
-}
-
 /* Used by validate_one_keyblock to confirm a regexp within a trust
    signature.  Returns 1 for match, and 0 for no match or regex
    error. */
