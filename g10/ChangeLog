@@ -1,3 +1,12 @@
+2005-06-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, kbnode.c (undelete_kbnode): New function to undelete a
+	kbnode.
+
+	* trustdb.c (clean_uids_from_key): Further tweak the algorithm so
+	that the last good selfsig is kept when the chosen selfsig is a
+	revocation.
+
 2005-06-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (clean_uids_from_key), keyedit.c

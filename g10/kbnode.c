@@ -1,5 +1,6 @@
 /* kbnode.c -  keyblock node utility functions
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -113,6 +114,11 @@ delete_kbnode( KBNODE node )
     node->private_flag |= 1;
 }
 
+void
+undelete_kbnode( KBNODE node )
+{
+    node->private_flag &= ~1;
+}
 
 
 /****************

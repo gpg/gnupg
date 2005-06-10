@@ -1644,12 +1644,18 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
    removed.  To "remove" a user ID, we simply remove ALL signatures
    except the self-sig that caused the user ID to be remove-worthy.
    We don't actually remove the user ID packet itself since it might
-   be ressurected in a later merge. */
+   be ressurected in a later merge.
+
+   If this self-sig is a revocation, we also include the most recent
+   valid regular sig since it is hard to import the user ID otherwise.
+   TODO: change the import code to allow importing a uid with only a
+   revocation if the uid already exists on the keyring. */
 int
 clean_uids_from_key(KBNODE keyblock,int noisy)
 {
   int delete_until_next=0,deleted=0;
-  KBNODE node;
+  KBNODE node,signode=NULL;
+  u32 sigdate=0;
 
   assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
 
@@ -1662,6 +1668,12 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
       if(node->pkt->pkttype==PKT_USER_ID)
 	{
 	  PKT_user_id *uid=node->pkt->pkt.user_id;
+
+	  if(signode && !signode->pkt->pkt.signature->flags.chosen_selfsig)
+	    undelete_kbnode(signode);
+
+	  sigdate=0;
+	  signode=NULL;
 
 	  /* Skip valid user IDs, and non-self-signed user IDs if
 	     --allow-non-selfsigned-uid is set. */
@@ -1694,12 +1706,27 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 		}
 	    }
 	}
-      else if(node->pkt->pkttype==PKT_SIGNATURE
-	      && delete_until_next
-	      && !node->pkt->pkt.signature->flags.chosen_selfsig)
-	delete_kbnode(node);
+      else if(node->pkt->pkttype==PKT_SIGNATURE)
+	{
+	  PKT_signature *sig=node->pkt->pkt.signature;
+
+	  /* This isn't actually slow - the key signature validation
+	     is cached from merge_keys_and_selfsig() */
+	  if(IS_UID_SIG(sig) && sig->timestamp>sigdate
+	     && check_key_signature(keyblock,node,NULL)==0)
+	    {
+	      sigdate=sig->timestamp;
+	      signode=node;
+	    }
+
+	  if(delete_until_next && !sig->flags.chosen_selfsig)
+	    delete_kbnode(node);
+	}
     }
-    
+
+  if(signode && !signode->pkt->pkt.signature->flags.chosen_selfsig)
+    undelete_kbnode(signode);
+
   return deleted;
 }
 
