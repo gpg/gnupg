@@ -55,6 +55,7 @@ struct stats_s {
     ulong secret_dups;
     ulong skipped_new_keys;
     ulong not_imported;
+    ulong n_sigs_cleaned;
 };
 
 
@@ -94,6 +95,8 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"fast-import",IMPORT_FAST,NULL},
       {"convert-sk-to-pk",IMPORT_SK2PK,NULL},
       {"merge-only",IMPORT_MERGE_ONLY,NULL},
+      {"import-clean",IMPORT_CLEAN_SIGS,NULL},
+      {"import-clean-sigs",IMPORT_CLEAN_SIGS,NULL},
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
@@ -302,6 +305,8 @@ import_print_stats (void *hd)
 	    log_info(_(" secret keys unchanged: %lu\n"), stats->secret_dups );
 	if( stats->not_imported )
 	    log_info(_("          not imported: %lu\n"), stats->not_imported );
+	if( stats->n_sigs_cleaned)
+	    log_info(_("    signatures cleaned: %lu\n"),stats->n_sigs_cleaned);
     }
 
     if( is_status_enabled() ) {
@@ -649,6 +654,20 @@ check_prefs(KBNODE keyblock)
     }
 }
 
+static int
+clean_sigs_from_all_uids(KBNODE keyblock)
+{
+  KBNODE uidnode;
+  int deleted=0;
+
+  for(uidnode=keyblock->next;uidnode;uidnode=uidnode->next)
+    if(uidnode->pkt->pkttype==PKT_USER_ID)
+      deleted+=clean_sigs_from_uid(keyblock,uidnode,opt.verbose);
+
+  return deleted;
+}
+
+
 /****************
  * Try to import one keyblock.	Return an error only in serious cases, but
  * never for an invalid keyblock.  It uses log_error to increase the
@@ -707,6 +726,13 @@ import_one( const char *fname, KBNODE keyblock,
                                     "Do you want to import this key? (y/N) "))
             return 0;
     }
+
+    /* Clean the key that we're about to import, to cut down on things
+       that we have to clean later.  This has no practical impact on
+       the end result, but does result in less logging which might
+       confuse the user. */
+    if(options&IMPORT_CLEAN_SIGS)
+      clean_sigs_from_all_uids(keyblock);
 
     clear_kbnode_flags( keyblock );
 
@@ -808,7 +834,7 @@ import_one( const char *fname, KBNODE keyblock,
     }
     else { /* merge */
         KEYDB_HANDLE hd;
-	int n_uids, n_sigs, n_subk;
+	int n_uids, n_sigs, n_subk, n_sigs_cleaned;
 
 	/* Compare the original against the new key; just to be sure nothing
 	 * weird is going on */
@@ -849,14 +875,19 @@ import_one( const char *fname, KBNODE keyblock,
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
 	clear_kbnode_flags( keyblock );
-	n_uids = n_sigs = n_subk = 0;
+	n_uids = n_sigs = n_subk = n_sigs_cleaned = 0;
 	rc = merge_blocks( fname, keyblock_orig, keyblock,
-				keyid, &n_uids, &n_sigs, &n_subk );
-	if( rc ) {
+			   keyid, &n_uids, &n_sigs, &n_subk );
+	if( rc )
+	  {
             keydb_release (hd);
 	    goto leave;
-        }
-	if( n_uids || n_sigs || n_subk ) {
+	  }
+
+	if(options&IMPORT_CLEAN_SIGS)
+	  n_sigs_cleaned=clean_sigs_from_all_uids(keyblock_orig);
+
+	if( n_uids || n_sigs || n_subk || n_sigs_cleaned) {
 	    mod_key = 1;
 	    /* keyblock_orig has been updated; write */
 	    rc = keydb_update_keyblock (hd, keyblock_orig);
@@ -888,12 +919,16 @@ import_one( const char *fname, KBNODE keyblock,
 		else if( n_subk )
 		  log_info( _("key %s: \"%s\" %d new subkeys\n"),
 			    keystr(keyid), p, n_subk );
+		if(n_sigs_cleaned)
+		  log_info(_("key %s: \"%s\" %d signatures cleaned\n"),
+			   keystr(keyid),p,n_sigs_cleaned);
 		m_free(p);
 	      }
 
 	    stats->n_uids +=n_uids;
 	    stats->n_sigs +=n_sigs;
 	    stats->n_subk +=n_subk;
+	    stats->n_sigs_cleaned +=n_sigs_cleaned;
 
             if (is_status_enabled ()) 
                  print_import_ok (pk, NULL,

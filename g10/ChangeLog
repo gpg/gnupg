@@ -1,5 +1,12 @@
 2005-06-12  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, import.c (parse_import_options,
+	clean_sigs_from_all_uids, import_one): Add import-clean-sigs
+	option to automatically clean a key when importing.  Note that
+	when importing a key that is already on the local keyring, the
+	clean applies to the merged key - i.e. existing superceded or
+	invalid signatures are removed.
+
 	* getkey.c (merge_selfsigs_main, merge_selfsigs_subkey): Make sure
 	that even after keys may be merged together, we only have one
 	chosen selfsig.
