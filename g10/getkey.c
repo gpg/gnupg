@@ -1650,7 +1650,8 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
                 if ( check_key_signature( keyblock, k, NULL ) )
                     ; /* signature did not verify */
                 else if ( (IS_UID_SIG (sig) || IS_UID_REV (sig))
-                          && sig->timestamp >= sigdate ) {
+                          && sig->timestamp >= sigdate )
+		  {
                     /* Note: we allow to invalidate cert revocations
                      * by a newer signature.  An attacker can't use this
                      * because a key should be revoced with a key revocation.
@@ -1662,9 +1663,10 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
 
 		    sigdate = sig->timestamp;
 		    signode = k;
+		    signode->pkt->pkt.signature->flags.chosen_selfsig=0;
 		    if( sig->version > sigversion )
 		      sigversion = sig->version;
-                }
+		  }
             }
         }
     }
@@ -1941,14 +1943,17 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
                      * figure out other information like the old expiration
                      * time */
                 }
-                else if ( IS_SUBKEY_SIG (sig) && sig->timestamp >= sigdate ) {
+                else if ( IS_SUBKEY_SIG (sig) && sig->timestamp >= sigdate )
+		  {
 		    if(sig->flags.expired)
-                        ; /* signature has expired - ignore it */
-                    else {
+		      ; /* signature has expired - ignore it */
+                    else
+		      {
                         sigdate = sig->timestamp;
                         signode = k;
-                    }
-                }
+			signode->pkt->pkt.signature->flags.chosen_selfsig=0;
+		      }
+		  }
             }
         }
     }

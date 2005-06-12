@@ -1,3 +1,9 @@
+2005-06-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs_main, merge_selfsigs_subkey): Make sure
+	that even after keys may be merged together, we only have one
+	chosen selfsig.
+
 2005-06-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, import.c (parse_import_options, delete_inv_parts):
