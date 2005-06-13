@@ -1214,7 +1214,7 @@ esac
 AC_SUBST(NETLIBS)
 AC_SUBST(W32LIBS)
 
-# Special options used fith gcc.
+# Special options used with gcc.
 if test "$GCC" = yes; then
     # Note that it is okay to use CFLAGS here because this are just
     # warning options and the user should have a chance of overriding
@@ -1224,6 +1224,20 @@ if test "$GCC" = yes; then
         CFLAGS="$CFLAGS -Wformat-nonliteral"
     else
         CFLAGS="$CFLAGS -Wall"
+    fi
+
+    AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
+
+    _gcc_cflags_save=$CFLAGS
+    CFLAGS="-Wno-pointer-sign"
+
+    AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_psign=yes,_gcc_psign=no)
+    AC_MSG_RESULT($_gcc_psign)
+
+    CFLAGS=$_gcc_cflags_save;
+
+    if test x"$_gcc_psign" = xyes ; then
+       CFLAGS="$CFLAGS -Wno-pointer-sign"
     fi
 
     # Non exec stack hack.  Fixme: Write a test to check whether as

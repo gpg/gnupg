@@ -1,3 +1,8 @@
+2005-06-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add check for no-pointer-sign warning keyword, and
+	disable.  This is gcc4 specific.
+
 2005-05-31  Werner Koch  <wk@g10code.com>
 
 	Released 1.4.2rc1.
