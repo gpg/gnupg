@@ -1625,8 +1625,9 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
 	 otherwise, it's invalid */
 
       if(noisy)
-	log_info("removing signature issued by key %s: %s\n",
+	log_info("removing signature from %s on uid \"%s\": %s\n",
 		 keystr(node->pkt->pkt.signature->keyid),
+		 uidnode->pkt->pkt.user_id->name,
 		 node->flag&(1<<9)?"superceded":"invalid");
 
       delete_kbnode(node);
@@ -1655,9 +1656,11 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 {
   int delete_until_next=0,deleted=0;
   KBNODE node,signode=NULL;
-  u32 sigdate=0;
+  u32 keyid[2],sigdate=0;
 
   assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+
+  keyid_from_pk(keyblock->pkt->pkt.public_key,keyid);
 
   merge_keys_and_selfsig(keyblock);
 
@@ -1713,6 +1716,7 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 	  /* This isn't actually slow - the key signature validation
 	     is cached from merge_keys_and_selfsig() */
 	  if(IS_UID_SIG(sig) && sig->timestamp>sigdate
+	     && keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1]
 	     && check_key_signature(keyblock,node,NULL)==0)
 	    {
 	      sigdate=sig->timestamp;

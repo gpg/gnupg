@@ -1,3 +1,15 @@
+2005-06-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (save_unprotected_key_to_card): Fix gcc4 warning.
+
+	* options.h, import.c (parse_import_options, import_one): Add
+	import-clean-uids option to automatically compact unusable uids
+	when importing.  Like import-clean-sigs, this may nodify the local
+	keyring.
+
+	* trustdb.c (clean_uids_from_key): Only allow selfsigs to be a
+	candidate for re-inclusion.
+
 2005-06-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, import.c (parse_import_options,
