@@ -33,7 +33,7 @@ static int
 store_key (gcry_sexp_t private, const char *passphrase, int force)
 {
   int rc;
-  char *buf;
+  unsigned char *buf;
   size_t len;
   unsigned char grip[20];
   

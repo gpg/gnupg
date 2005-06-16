@@ -1,6 +1,6 @@
 /* stringhelp.c -  standard string helper functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004  Free Software Foundation, Inc.
+ *               2004, 2005  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,45 +35,57 @@
 
 /*
  * Look for the substring SUB in buffer and return a pointer to that
- * substring in BUF or NULL if not found.
+ * substring in BUFFER or NULL if not found.
  * Comparison is case-insensitive.
  */
 const char *
-memistr( const char *buf, size_t buflen, const char *sub )
+memistr (const void *buffer, size_t buflen, const char *sub)
 {
-    const byte *t, *s ;
-    size_t n;
+  const unsigned char *buf = buffer;
+  const unsigned char *t = (const unsigned char *)buffer;
+  const unsigned char *s = (const unsigned char *)sub;
+  size_t n = buflen;
 
-    for( t=buf, n=buflen, s=sub ; n ; t++, n-- )
-	if( toupper(*t) == toupper(*s) ) {
-	    for( buf=t++, buflen = n--, s++;
-		 n && toupper(*t) == toupper(*s); t++, s++, n-- )
-		;
-	    if( !*s )
-		return buf;
-	    t = buf; n = buflen; s = sub ;
+  for ( ; n ; t++, n-- )
+    {
+      if ( toupper (*t) == toupper (*s) )
+        {
+          for ( buf=t++, buflen = n--, s++;
+                n && toupper (*t) == toupper (*s); t++, s++, n-- )
+            ;
+          if (!*s)
+            return (const char*)buf;
+          t = buf;
+          s = (const unsigned char *)sub ;
+          n = buflen;
 	}
-
-    return NULL ;
+    }
+  return NULL;
 }
 
 const char *
-ascii_memistr( const char *buf, size_t buflen, const char *sub )
+ascii_memistr ( const void *buffer, size_t buflen, const char *sub )
 {
-    const byte *t, *s ;
-    size_t n;
+  const unsigned char *buf = buffer;
+  const unsigned char *t = (const unsigned char *)buf;
+  const unsigned char *s = (const unsigned char *)sub;
+  size_t n = buflen;
 
-    for( t=buf, n=buflen, s=sub ; n ; t++, n-- )
-	if( ascii_toupper(*t) == ascii_toupper(*s) ) {
-	    for( buf=t++, buflen = n--, s++;
-		 n && ascii_toupper(*t) == ascii_toupper(*s); t++, s++, n-- )
-		;
-	    if( !*s )
-		return buf;
-	    t = buf; n = buflen; s = sub ;
+  for ( ; n ; t++, n-- )
+    {
+      if (ascii_toupper (*t) == ascii_toupper (*s) )
+        {
+          for ( buf=t++, buflen = n--, s++;
+                n && ascii_toupper (*t) == ascii_toupper (*s); t++, s++, n-- )
+            ;
+          if (!*s)
+            return (const char*)buf;
+          t = (const unsigned char *)buf;
+          s = (const unsigned char *)sub ;
+          n = buflen;
 	}
-
-    return NULL ;
+    }
+  return NULL;
 }
 
 /* This function is similar to strncpy().  However it won't copy more
@@ -402,13 +414,14 @@ print_sanitized_utf8_string (FILE *fp, const char *string, int delim)
                                               delim) : 0;
 }
 
-/* Create a string from the buffer P of length N which is suitable for
+/* Create a string from the buffer P_ARG of length N which is suitable for
    printing.  Caller must release the created string using xfree. */
 char *
-sanitize_buffer (const unsigned char *p, size_t n, int delim)
+sanitize_buffer (const void *p_arg, size_t n, int delim)
 {
+  const unsigned char *p = p_arg;
   size_t save_n, buflen;
-  const byte *save_p;
+  const unsigned char *save_p;
   char *buffer, *d;
 
   /* first count length */
@@ -552,15 +565,19 @@ ascii_strncasecmp (const char *a, const char *b, size_t n)
 
 
 int
-ascii_memcasecmp( const char *a, const char *b, size_t n )
+ascii_memcasecmp (const void *a_arg, const void *b_arg, size_t n )
 {
-    if (a == b)
-        return 0;
-    for ( ; n; n--, a++, b++ ) {
-	if( *a != *b  && ascii_toupper (*a) != ascii_toupper (*b) )
-            return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
-    }
+  const char *a = a_arg;
+  const char *b = b_arg;
+
+  if (a == b)
     return 0;
+  for ( ; n; n--, a++, b++ )
+    {
+      if( *a != *b  && ascii_toupper (*a) != ascii_toupper (*b) )
+        return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
+    }
+  return 0;
 }
 
 int
@@ -586,8 +603,8 @@ ascii_memcasemem (const void *haystack, size_t nhaystack,
     return (void*)haystack; /* finding an empty needle is really easy */
   if (nneedle <= nhaystack)
     {
-      const unsigned char *a = haystack;
-      const unsigned char *b = a + nhaystack - nneedle;
+      const char *a = haystack;
+      const char *b = a + nhaystack - nneedle;
       
       for (; a <= b; a++)
         {

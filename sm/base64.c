@@ -95,7 +95,7 @@ struct base64_context_s {
 
 
 /* The base-64 character list */
-static unsigned char bintoasc[64] = 
+static char bintoasc[64] = 
        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
        "abcdefghijklmnopqrstuvwxyz" 
        "0123456789+/"; 
@@ -202,8 +202,9 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
             {
               /* wait for the header line */
               parm->linelen = parm->readpos = 0;
-              if (!parm->have_lf || strncmp (parm->line, "-----BEGIN ", 11)
-                  || !strncmp (parm->line+11, "PGP ", 4))
+              if (!parm->have_lf 
+                  || strncmp ((char*)parm->line, "-----BEGIN ", 11)
+                  || !strncmp ((char*)parm->line+11, "PGP ", 4))
                 goto next;
               parm->is_pem = 1;
             }
@@ -220,8 +221,9 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
           /* the very first byte does pretty much look like a SEQUENCE tag*/
           parm->is_pem = 0;
         }
-      else if ( parm->have_lf && !strncmp (parm->line, "-----BEGIN ", 11)
-                && strncmp (parm->line+11, "PGP ", 4) )
+      else if ( parm->have_lf
+                && !strncmp ((char*)parm->line, "-----BEGIN ", 11)
+                && strncmp ((char *)parm->line+11, "PGP ", 4) )
         {
           /* Fixme: we must only compare if the line really starts at
              the beginning */
@@ -268,7 +270,7 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
   if (parm->is_pem || parm->is_base64)
     {  
       if (parm->is_pem && parm->have_lf
-          && !strncmp (parm->line, "-----END ", 9))
+          && !strncmp ((char*)parm->line, "-----END ", 9))
         { 
           parm->identified = 0;
           parm->linelen = parm->readpos = 0;

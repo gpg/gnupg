@@ -58,7 +58,7 @@ static pth_mutex_t entry_lock;
 struct entry_parm_s {
   int lines;
   size_t size;
-  char *buffer;
+  unsigned char *buffer;
 };
 
 
@@ -372,7 +372,7 @@ agent_askpin (ctrl_t ctrl,
     {
       memset (&parm, 0, sizeof parm);
       parm.size = pininfo->max_length;
-      parm.buffer = pininfo->pin;
+      parm.buffer = (unsigned char*)pininfo->pin;
 
       if (errtext)
         { 
@@ -444,7 +444,8 @@ agent_get_passphrase (CTRL ctrl,
   int rc;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
-  unsigned char *p, *hexstring;
+  unsigned char *p;
+  char *hexstring;
   int i;
 
   *retpass = NULL;
@@ -497,7 +498,7 @@ agent_get_passphrase (CTRL ctrl,
       return unlock_pinentry (map_assuan_err (rc));
     }
   
-  hexstring = gcry_malloc_secure (strlen (parm.buffer)*2+1);
+  hexstring = gcry_malloc_secure (strlen ((char*)parm.buffer)*2+1);
   if (!hexstring)
     {
       gpg_error_t tmperr = out_of_core ();

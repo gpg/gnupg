@@ -297,6 +297,7 @@ stream_read_byte (estream_t stream, unsigned char *b)
 	err = gpg_error_from_errno (errno);
       else
 	err = gpg_error (GPG_ERR_EOF);
+      *b = 0;
     }
   else
     {
@@ -603,6 +604,9 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
   estream_t stream;
   gpg_error_t err;
   int ret;
+
+  *buffer = NULL;
+  *buffer_n = 0;
 
   buffer_new = NULL;
   err = 0;
@@ -1381,6 +1385,9 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   gpg_error_t err;
   unsigned int i;
 
+  *blob = NULL;
+  *blob_size = 0;
+
   blob_new = NULL;
   stream = NULL;
   err = 0;
@@ -1535,20 +1542,12 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
    S-Expression KEY and writes it to BUFFER, which must be large
    enough to hold it.  Returns usual error code.  */
 static gpg_error_t
-ssh_key_grip (gcry_sexp_t key, char *buffer)
+ssh_key_grip (gcry_sexp_t key, unsigned char *buffer)
 {
-  gpg_error_t err;
-  char *p;
+  if (!gcry_pk_get_keygrip (key, buffer))
+    return gpg_error (GPG_ERR_INTERNAL);
 
-  /* FIXME: unsigned vs. signed.  */
-  
-  p = gcry_pk_get_keygrip (key, buffer);
-  if (! p)
-    err = gpg_error (GPG_ERR_INTERNAL);	/* FIXME?  */
-  else
-    err = 0;
-
-  return err;
+  return 0;
 }
 
 /* Converts the secret key KEY_SECRET into a public key, storing it in
@@ -1654,7 +1653,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
     }
 
   pkbuflen = gcry_sexp_canon_len (pkbuf, 0, NULL, NULL);
-  err = gcry_sexp_sscan (&s_pk, NULL, pkbuf, pkbuflen);
+  err = gcry_sexp_sscan (&s_pk, NULL, (char*)pkbuf, pkbuflen);
   if (err)
     {
       log_error ("failed to build S-Exp from received card key: %s\n",
@@ -1877,7 +1876,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           if (err)
             goto out;
 	      
-          err = gcry_sexp_sscan (&key_secret, NULL, buffer, buffer_n);
+          err = gcry_sexp_sscan (&key_secret, NULL, (char*)buffer, buffer_n);
           if (err)
             goto out;
 
@@ -1984,14 +1983,14 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
 	   unsigned char **sig, size_t *sig_n)
 {
   gpg_error_t err;
-  gcry_sexp_t signature_sexp;
-  estream_t stream;
-  gcry_sexp_t valuelist;
-  gcry_sexp_t sublist;
-  gcry_mpi_t sig_value;
-  unsigned char *sig_blob;
-  size_t sig_blob_n;
-  char *identifier;
+  gcry_sexp_t signature_sexp = NULL;
+  estream_t stream = NULL;
+  gcry_sexp_t valuelist = NULL;
+  gcry_sexp_t sublist = NULL;
+  gcry_mpi_t sig_value = NULL;
+  unsigned char *sig_blob = NULL;;
+  size_t sig_blob_n = 0;
+  char *identifier = NULL;
   const char *identifier_raw;
   size_t identifier_n;
   ssh_key_type_spec_t spec;
@@ -1999,17 +1998,10 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   unsigned int i;
   const char *elems;
   size_t elems_n;
-  gcry_mpi_t *mpis;
+  gcry_mpi_t *mpis = NULL;
 
-  signature_sexp = NULL;
-  identifier = NULL;
-  valuelist = NULL;
-  sublist = NULL;
-  sig_blob = NULL;
-  sig_blob_n = 0;
-  stream = NULL;
-  sig_value = NULL;
-  mpis = NULL;
+  *sig = NULL;
+  *sig_n = 0;
 
   ctrl->use_auth_call = 1;
   err = agent_pksign_do (ctrl,
@@ -2119,7 +2111,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   if (err)
     goto out;
   
-  *sig = (char *) sig_blob;
+  *sig = sig_blob;
   *sig_n = sig_blob_n;
   
  out:
@@ -2684,7 +2676,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
      secure memory, since we never give out secret keys. 
 
      FIXME: This is a pretty good DoS.  We only have a limited amount
-     of secure memory, we can't trhow hin everything we get from a
+     of secure memory, we can't throw in everything we get from a
      client -wk */
       
   /* Retrieve request.  */
@@ -2824,7 +2816,6 @@ start_command_handler_ssh (int sock_client)
   struct server_control_s ctrl;
   estream_t stream_sock;
   gpg_error_t err;
-  int bad;
   int ret;
 
   /* Setup control structure.  */
@@ -2868,15 +2859,15 @@ start_command_handler_ssh (int sock_client)
       goto out;
     }
 
-  while (1)
-    {
-      bad = ssh_request_process (&ctrl, stream_sock);
-      if (bad)
-	break;
-    };
+  /* Main processing loop. */
+  while ( !ssh_request_process (&ctrl, stream_sock) )
+    ;
+
+  /* Reset the SCD in case it has been used. */
+  agent_reset_scd (&ctrl);
+
 
  out:
-
   if (stream_sock)
     es_fclose (stream_sock);
 

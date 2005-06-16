@@ -675,10 +675,11 @@ sock_filter (void *opaque, int control, iobuf_t chain, byte * buf,
  * without a filter
  */
 static int
-block_filter (void *opaque, int control, iobuf_t chain, byte * buf,
+block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 	      size_t * ret_len)
 {
   block_filter_ctx_t *a = opaque;
+  char *buf = (char *)buffer;
   size_t size = *ret_len;
   int c, needed, rc = 0;
   char *p;
@@ -1762,7 +1763,7 @@ iobuf_flush (iobuf_t a)
 
   if (a->use == 3)
     {				/* increase the temp buffer */
-      char *newbuf;
+      unsigned char *newbuf;
       size_t newsize = a->d.size + 8192;
 
       if (DBG_IOBUF)
@@ -1829,8 +1830,9 @@ iobuf_readbyte (iobuf_t a)
 
 
 int
-iobuf_read (iobuf_t a, byte * buf, unsigned buflen)
+iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 {
+  unsigned char *buf = (unsigned char *)buffer;
   int c, n;
 
   if (a->unget.buf || a->nlimit)
@@ -1915,7 +1917,7 @@ iobuf_peek (iobuf_t a, byte * buf, unsigned buflen)
 
 
 int
-iobuf_writebyte (iobuf_t a, unsigned c)
+iobuf_writebyte (iobuf_t a, unsigned int c)
 {
   int rc;
 
@@ -1933,8 +1935,9 @@ iobuf_writebyte (iobuf_t a, unsigned c)
 
 
 int
-iobuf_write (iobuf_t a, byte * buf, unsigned buflen)
+iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
 {
+  const unsigned char *buf = (const unsigned char *)buffer;
   int rc;
 
   if (a->directfp)
@@ -2311,7 +2314,7 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 		 unsigned *length_of_buffer, unsigned *max_length)
 {
   int c;
-  char *buffer = *addr_of_buffer;
+  char *buffer = (char *)*addr_of_buffer;
   unsigned length = *length_of_buffer;
   unsigned nbytes = 0;
   unsigned maxlen = *max_length;
@@ -2321,7 +2324,7 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
     {				/* must allocate a new buffer */
       length = 256;
       buffer = xmalloc (length);
-      *addr_of_buffer = buffer;
+      *addr_of_buffer = (unsigned char *)buffer;
       *length_of_buffer = length;
     }
 
@@ -2344,7 +2347,7 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 	  length += 3;		/* correct for the reserved byte */
 	  length += length < 1024 ? 256 : 1024;
 	  buffer = xrealloc (buffer, length);
-	  *addr_of_buffer = buffer;
+	  *addr_of_buffer = (unsigned char *)buffer;
 	  *length_of_buffer = length;
 	  length -= 3;		/* and reserve again */
 	  p = buffer + nbytes;

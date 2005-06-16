@@ -134,18 +134,21 @@ calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
 
 */
 static int
-do_encryption (const char *protbegin, size_t protlen, 
+do_encryption (const unsigned char *protbegin, size_t protlen, 
                const char *passphrase,  const unsigned char *sha1hash,
                unsigned char **result, size_t *resultlen)
 {
   gcry_cipher_hd_t hd;
   const char *modestr = "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc";
   int blklen, enclen, outlen;
-  char *iv = NULL;
+  unsigned char *iv = NULL;
   int rc;
   char *outbuf = NULL;
   char *p;
   int saltpos, ivpos, encpos;
+
+  *resultlen = 0;
+  *result = NULL;
 
   rc = gcry_cipher_open (&hd, PROT_CIPHER, GCRY_CIPHER_MODE_CBC,
                          GCRY_CIPHER_SECURE);
@@ -250,7 +253,7 @@ do_encryption (const char *protbegin, size_t protlen,
       return tmperr;
     }
   *resultlen = strlen (p);
-  *result = p;
+  *result = (unsigned char*)p;
   memcpy (p+saltpos, iv+2*blklen, 8);
   memcpy (p+ivpos, iv, blklen);
   memcpy (p+encpos, outbuf, enclen);
@@ -261,7 +264,7 @@ do_encryption (const char *protbegin, size_t protlen,
 
 
 
-/* Protect the key encoded in canonical format in plainkey.  We assume
+/* Protect the key encoded in canonical format in PLAINKEY.  We assume
    a valid S-Exp here. */
 int 
 agent_protect (const unsigned char *plainkey, const char *passphrase,
@@ -469,6 +472,9 @@ merge_lists (const unsigned char *protectedkey,
   const unsigned char *startpos, *endpos;
   int i, rc;
   
+  *result = NULL;
+  *resultlen = 0;
+
   if (replacepos < 26)
     return gpg_error (GPG_ERR_BUG);
 
@@ -487,7 +493,7 @@ merge_lists (const unsigned char *protectedkey,
     return out_of_core ();
 
   /* Copy the initial segment */
-  strcpy (newlist, "(11:private-key");
+  strcpy ((char*)newlist, "(11:private-key");
   p = newlist + 15;
   memcpy (p, protectedkey+15+10, replacepos-15-10);
   p += replacepos-15-10;
@@ -669,7 +675,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
      is nothing we should worry about */
   if (s[n] != ')' )
     return gpg_error (GPG_ERR_INV_SEXP);
-  s2kcount = strtoul (s, NULL, 10);
+  s2kcount = strtoul ((const char*)s, NULL, 10);
   if (!s2kcount)
     return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
   s += n;
@@ -838,7 +844,7 @@ unsigned char *
 make_shadow_info (const char *serialno, const char *idstring)
 {
   const char *s;
-  unsigned char *info, *p;
+  char *info, *p;
   char numbuf[21];
   int n;
 
@@ -853,13 +859,13 @@ make_shadow_info (const char *serialno, const char *idstring)
   sprintf (numbuf, "%d:", n);
   p = stpcpy (p, numbuf);
   for (s=serialno; *s && s[1]; s += 2)
-    *p++ = xtoi_2 (s);
+    *(unsigned char *)p++ = xtoi_2 (s);
   sprintf (numbuf, "%d:", strlen (idstring));
   p = stpcpy (p, numbuf);
   p = stpcpy (p, idstring);
   *p++ = ')';
   *p = 0;
-  return info;
+  return (unsigned char *)info;
 }
 
 
@@ -878,7 +884,7 @@ agent_shadow_key (const unsigned char *pubkey,
   const unsigned char *point;
   size_t n;
   int depth = 0;
-  unsigned char *p;
+  char *p;
   size_t pubkey_len = gcry_sexp_canon_len (pubkey, 0, NULL,NULL);
   size_t shadow_info_len = gcry_sexp_canon_len (shadow_info, 0, NULL,NULL);
 
@@ -930,7 +936,8 @@ agent_shadow_key (const unsigned char *pubkey,
   /* Calculate required length by taking in account: the "shadowed-"
      prefix, the "shadowed", "t1-v1" as well as some parenthesis */
   n = 12 + pubkey_len + 1 + 3+8 + 2+5 + shadow_info_len + 1;
-  *result = p = xtrymalloc (n);
+  *result = xtrymalloc (n);
+  p = (char*)*result;
   if (!p)
       return out_of_core ();
   p = stpcpy (p, "(20:shadowed-private-key");

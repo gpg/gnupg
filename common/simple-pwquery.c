@@ -404,7 +404,7 @@ static char *
 copy_and_escape (char *buffer, const char *text)
 {
   int i;
-  const unsigned char *s = text;
+  const unsigned char *s = (unsigned char *)text;
   char *p = buffer;
   
 

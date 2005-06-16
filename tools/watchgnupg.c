@@ -223,7 +223,7 @@ main (int argc, char **argv)
   int force = 0;
 
   struct sockaddr_un srvr_addr;
-  int addrlen;
+  socklen_t addrlen;
   int server;
   int flags;
   client_t client_list = NULL;

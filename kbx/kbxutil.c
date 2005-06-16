@@ -386,7 +386,7 @@ import_openpgp (const char *filename)
   buffer = read_file (filename, &buflen);
   if (!buffer)
     return;
-  p = buffer;
+  p = (unsigned char *)buffer;
   for (;;)
     {
       err = _keybox_parse_openpgp (p, buflen, &nparsed, &info);

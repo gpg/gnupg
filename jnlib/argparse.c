@@ -852,7 +852,7 @@ show_version()
     /* additional program info */
     for(i=30; i < 40; i++ )
 	if( (s=strusage(i)) )
-	    fputs( (const byte*)s, stdout);
+	    fputs (s, stdout);
     fflush(stdout);
 }
 

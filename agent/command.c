@@ -168,7 +168,7 @@ parse_keygrip (ASSUAN_CONTEXT ctx, const char *string, unsigned char *buf)
   if (n != 20)
     return set_error (Parameter_Error, "invalid length of keygrip");
 
-  for (p=string, n=0; n < 20; p += 2, n++)
+  for (p=(const unsigned char*)string, n=0; n < 20; p += 2, n++)
     buf[n] = xtoi_2 (p);
 
   return 0;
@@ -494,7 +494,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 
   init_membuf (&outbuf, 512);
 
-  rc = agent_genkey (ctrl, value, valuelen, &outbuf);
+  rc = agent_genkey (ctrl, (char*)value, valuelen, &outbuf);
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);

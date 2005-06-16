@@ -1552,6 +1552,8 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
   struct buffer_s seqlist[2];
   int seqlistidx = 0;
 
+  n = buflen = 0; /* (avoid compiler warning). */
+
   if (cert && certlen)
     {
       /* Encode the certificate. */

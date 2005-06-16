@@ -67,7 +67,7 @@ delete_one (CTRL ctrl, const char *username)
     rc = keydb_get_cert (kh, &cert);
   if (!rc)
     {
-      char fpr[20];
+      unsigned char fpr[20];
 
       gpgsm_get_fingerprint (cert, 0, fpr, NULL);
 
@@ -78,7 +78,7 @@ delete_one (CTRL ctrl, const char *username)
       else if (!rc)
         {
           ksba_cert_t cert2 = NULL;
-          char fpr2[20];
+          unsigned char fpr2[20];
 
           /* We ignore all duplicated certificates which might have
              been inserted due to program bugs. */

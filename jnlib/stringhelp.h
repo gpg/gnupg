@@ -23,7 +23,7 @@
 
 #include "types.h"
 
-const char *memistr( const char *buf, size_t buflen, const char *sub );
+const char *memistr (const void *buf, size_t buflen, const char *sub);
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
 char *trim_trailing_spaces( char *string );
@@ -46,7 +46,7 @@ size_t print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
                                     size_t length, int delim);
 size_t print_sanitized_string (FILE *fp, const char *string, int delim);
 size_t print_sanitized_utf8_string (FILE *fp, const char *string, int delim);
-char *sanitize_buffer (const unsigned char *p, size_t n, int delim);
+char *sanitize_buffer (const void *p, size_t n, int delim);
 
 
 #ifdef HAVE_W32_SYSTEM
@@ -54,15 +54,14 @@ const char *w32_strerror (int ec);
 #endif
 
 
-const char *ascii_memistr( const char *buf, size_t buflen, const char *sub );
 int ascii_isupper (int c);
 int ascii_islower (int c);
 int ascii_toupper (int c);
 int ascii_tolower (int c);
 int ascii_strcasecmp( const char *a, const char *b );
 int ascii_strncasecmp (const char *a, const char *b, size_t n);
-int ascii_memcasecmp( const char *a, const char *b, size_t n );
-const char *ascii_memistr ( const char *buf, size_t buflen, const char *sub);
+int ascii_memcasecmp( const void *a, const void *b, size_t n );
+const char *ascii_memistr ( const void *buf, size_t buflen, const char *sub);
 void *ascii_memcasemem (const void *haystack, size_t nhaystack,
                         const void *needle, size_t nneedle);
 

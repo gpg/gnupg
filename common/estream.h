@@ -72,9 +72,9 @@ typedef struct es__stream *estream_t;
 
 
 typedef ssize_t (*es_cookie_read_function_t) (void *cookie,
-					      char *buffer, size_t size);
+					      void *buffer, size_t size);
 typedef ssize_t (*es_cookie_write_function_t) (void *cookie,
-					       const char *buffer,
+					       const void *buffer,
 					       size_t size);
 typedef int (*es_cookie_seek_function_t) (void *cookie,
 					  off_t *pos, int whence);
@@ -166,10 +166,10 @@ int _es_putc_overflow (int c, estream_t stream);
 int es_ungetc (int c, estream_t stream);
 
 int es_read (estream_t ES__RESTRICT stream,
-	     char *ES__RESTRICT buffer, size_t bytes_to_read,
+	     void *ES__RESTRICT buffer, size_t bytes_to_read,
 	     size_t *ES__RESTRICT bytes_read);
 int es_write (estream_t ES__RESTRICT stream,
-	      const char *ES__RESTRICT buffer, size_t bytes_to_write,
+	      const void *ES__RESTRICT buffer, size_t bytes_to_write,
 	      size_t *ES__RESTRICT bytes_written);
 
 size_t es_fread (void *ES__RESTRICT ptr, size_t size, size_t nitems,

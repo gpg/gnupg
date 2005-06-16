@@ -181,12 +181,12 @@ gpg_error_t gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
                                         gpg_err_code_t ec);
 
 /*-- fingerprint --*/
-char *gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
-                             char *array, int *r_len);
+unsigned char *gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
+                                      unsigned char *array, int *r_len);
 char *gpgsm_get_fingerprint_string (ksba_cert_t cert, int algo);
 char *gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo);
 unsigned long gpgsm_get_short_fingerprint (ksba_cert_t cert);
-char *gpgsm_get_keygrip (ksba_cert_t cert, char *array);
+unsigned char *gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array);
 char *gpgsm_get_keygrip_hexstring (ksba_cert_t cert);
 int  gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits);
 char *gpgsm_get_certid (ksba_cert_t cert);
@@ -229,7 +229,7 @@ int gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
 /* fixme: move create functions to another file */
 int gpgsm_create_cms_signature (ctrl_t ctrl,
                                 ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
-                                char **r_sigval);
+                                unsigned char **r_sigval);
 
 
 /*-- certchain.c --*/
@@ -293,7 +293,7 @@ int gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
                         unsigned char *digest,
                         size_t digestlen,
                         int digestalgo,
-                        char **r_buf, size_t *r_buflen);
+                        unsigned char **r_buf, size_t *r_buflen);
 int gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                            ksba_const_sexp_t ciphertext, 
                            char **r_buf, size_t *r_buflen);

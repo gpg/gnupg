@@ -103,10 +103,17 @@ housekeeping (void)
     }
 
   /* Second, make sure that we also remove them based on the created stamp so
-     that the user has to enter it from time to time.  We do this every hour */
+     that the user has to enter it from time to time. */
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount && r->pw && r->created + opt.max_cache_ttl < current)
+      unsigned long maxttl;
+      
+      switch (r->cache_mode)
+        {
+        case CACHE_MODE_SSH: maxttl = opt.max_cache_ttl_ssh; break;
+        default: maxttl = opt.max_cache_ttl; break;
+        }
+      if (!r->lockcount && r->pw && r->created + maxttl < current)
         {
           if (DBG_CACHE)
             log_debug ("  expired `%s' (%lus after creation)\n",
@@ -203,10 +210,11 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
 
   if (!ttl)
     {
-      if (cache_mode == CACHE_MODE_SSH)
-        ttl = opt.def_cache_ttl_ssh;
-      else
-        ttl = opt.def_cache_ttl;
+      switch(cache_mode)
+        {
+        case CACHE_MODE_SSH: ttl = opt.def_cache_ttl_ssh; break;
+        default: ttl = opt.def_cache_ttl; break;
+        }
     }
   if (!ttl || cache_mode == CACHE_MODE_IGNORE)
     return 0;

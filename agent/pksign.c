@@ -117,7 +117,7 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
       len = gcry_sexp_canon_len (buf, 0, NULL, NULL);
       assert (len);
 
-      rc = gcry_sexp_sscan (&s_sig, NULL, buf, len);
+      rc = gcry_sexp_sscan (&s_sig, NULL, (char*)buf, len);
       xfree (buf);
       if (rc)
 	{

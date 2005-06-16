@@ -39,24 +39,27 @@
 #include "../common/membuf.h"
 
 
-static ASSUAN_CONTEXT agent_ctx = NULL;
+static assuan_context_t agent_ctx = NULL;
 static int force_pipe_server = 0;
 
-struct cipher_parm_s {
-  ASSUAN_CONTEXT ctx;
-  const char *ciphertext;
+struct cipher_parm_s
+{
+  assuan_context_t ctx;
+  const unsigned char *ciphertext;
   size_t ciphertextlen;
 };
 
-struct genkey_parm_s {
-  ASSUAN_CONTEXT ctx;
-  const char *sexp;
+struct genkey_parm_s
+{
+  assuan_context_t ctx;
+  const unsigned char *sexp;
   size_t sexplen;
 };
 
-struct learn_parm_s {
+struct learn_parm_s
+{
   int error;
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   membuf_t *data;
 };
 
@@ -204,7 +207,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 int
 gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
                     unsigned char *digest, size_t digestlen, int digestalgo,
-                    char **r_buf, size_t *r_buflen )
+                    unsigned char **r_buf, size_t *r_buflen )
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];
@@ -392,7 +395,7 @@ gpgsm_agent_genkey (ctrl_t ctrl,
   struct genkey_parm_s gk_parm;
   membuf_t data;
   size_t len;
-  char *buf;
+  unsigned char *buf;
 
   *r_pubkey = NULL;
   rc = start_agent (ctrl);

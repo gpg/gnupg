@@ -48,7 +48,7 @@ ftello (FILE *stream)
 int
 _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
 {
-  char *image;
+  unsigned char *image;
   size_t imagelen = 0;
   int c1, c2, c3, c4, type;
   int rc;
@@ -118,7 +118,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
 int
 _keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
 {
-  const char *image;
+  const unsigned char *image;
   size_t length;
 
   image = _keybox_get_blob_image (blob, &length);

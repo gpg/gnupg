@@ -1,3 +1,35 @@
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* delete.c (delete_one): Changed FPR to unsigned.
+	* encrypt.c (encrypt_dek): Made ENCVAL unsigned.
+	(gpgsm_encrypt): Ditto.
+	* sign.c (gpgsm_sign): Made SIGVAL unsigned.
+	* base64.c (base64_reader_cb): Need to use some casting to get
+	around signed/unsigned char* warnings.
+	* certcheck.c (gpgsm_check_cms_signature): Ditto.
+	(gpgsm_create_cms_signature): Changed arg R_SIGVAL to unsigned char*.
+	(do_encode_md): Made NFRAME a size_t.
+	* certdump.c (gpgsm_print_serial): Fixed signed/unsigned warning.
+	(gpgsm_dump_serial): Ditto.
+	(gpgsm_format_serial): Ditto.
+	(gpgsm_dump_string): Ditto.
+	(gpgsm_dump_cert): Ditto.
+	(parse_dn_part): Ditto.
+	(gpgsm_print_name2): Ditto.
+	* keylist.c (email_kludge): Ditto.
+	* certreqgen.c (proc_parameters, create_request): Ditto.
+	(create_request): Ditto.
+	* call-agent.c (gpgsm_agent_pksign): Made arg R_BUF unsigned.
+	(struct cipher_parm_s): Made CIPHERTEXT unsigned.
+	(struct genkey_parm_s): Ditto.
+	* server.c (strcpy_escaped_plus): Made arg S signed char*.
+	* fingerprint.c (gpgsm_get_fingerprint): Made ARRAY unsigned.
+	(gpgsm_get_keygrip): Ditto.
+	* keydb.c (keydb_insert_cert): Made DIGEST unsigned.
+	(keydb_update_cert): Ditto.
+	(classify_user_id): Apply cast to signed/unsigned assignment.
+	(hextobyte): Ditto.
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* misc.c: Include setenv.h.

@@ -136,16 +136,17 @@ get_native_charset ()
  * new allocated UTF8 string.
  */
 char *
-native_to_utf8 (const char *string)
+native_to_utf8 (const char *orig_string)
 {
-  const byte *s;
+  const unsigned char *string = (const unsigned char *)orig_string;
+  const unsigned char *s;
   char *buffer;
-  byte *p;
+  unsigned char *p;
   size_t length = 0;
 
   if (no_translation)
     {
-      buffer = jnlib_xstrdup (string);
+      buffer = jnlib_xstrdup (orig_string);
     }
   else if (active_charset)
     {
@@ -156,7 +157,7 @@ native_to_utf8 (const char *string)
 	    length += 2;	/* we may need 3 bytes */
 	}
       buffer = jnlib_xmalloc (length + 1);
-      for (p = buffer, s = string; *s; s++)
+      for (p = (unsigned char *)buffer, s = string; *s; s++)
 	{
 	  if ((*s & 0x80))
 	    {
@@ -187,7 +188,7 @@ native_to_utf8 (const char *string)
 	    length++;
 	}
       buffer = jnlib_xmalloc (length + 1);
-      for (p = buffer, s = string; *s; s++)
+      for (p = (unsigned char *)buffer, s = string; *s; s++)
 	{
 	  if (*s & 0x80)
 	    {
@@ -212,11 +213,12 @@ utf8_to_native (const char *string, size_t length, int delim)
 {
   int nleft;
   int i;
-  byte encbuf[8];
+  unsigned char encbuf[8];
   int encidx;
   const byte *s;
   size_t n;
-  byte *buffer = NULL, *p = NULL;
+  char *buffer = NULL;
+  char *p = NULL;
   unsigned long val = 0;
   size_t slen;
   int resync = 0;
@@ -225,7 +227,8 @@ utf8_to_native (const char *string, size_t length, int delim)
   /* 2. pass (p!=NULL): create string */
   for (;;)
     {
-      for (slen = length, nleft = encidx = 0, n = 0, s = string; slen;
+      for (slen = length, nleft = encidx = 0, n = 0,
+             s = (const unsigned char *)string; slen;
 	   s++, slen--)
 	{
 	  if (resync)

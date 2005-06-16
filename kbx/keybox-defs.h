@@ -140,10 +140,11 @@ int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
                               unsigned char *sha1_digest, int as_ephemeral);
 #endif /*KEYBOX_WITH_X509*/
 
-int  _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen,
+int  _keybox_new_blob (KEYBOXBLOB *r_blob,
+                       unsigned char *image, size_t imagelen,
                        off_t off);
 void _keybox_release_blob (KEYBOXBLOB blob);
-const char *_keybox_get_blob_image (KEYBOXBLOB blob, size_t *n);
+const unsigned char *_keybox_get_blob_image (KEYBOXBLOB blob, size_t *n);
 off_t _keybox_get_blob_fileoffset (KEYBOXBLOB blob);
 void _keybox_update_header_blob (KEYBOXBLOB blob);
 

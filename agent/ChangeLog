@@ -1,3 +1,49 @@
+2005-06-16  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (make_advanced): Makde RESULT a plain char.
+	* call-scd.c (unescape_status_string): Need to cast unsigned char*
+	for strcpy.
+	(agent_card_pksign): Made arg R_BUF an unsigned char**.
+	* divert-scd.c (divert_pksign): Made SIGVAL unsigned char*.
+	(encode_md_for_card): Initialize R_VAL and R_LEN.
+	* genkey.c (store_key): Made BUF unsigned.
+	* protect.c (do_encryption): Ditto.
+	(do_encryption): Made arg PROTBEGIN unsigned. Initialize RESULT
+	and RESULTLEN even on error.
+	(merge_lists): Need to cast unsigned char * for strcpy. Initialize 
+	RESULTand RESULTLEN even on error.
+	(agent_unprotect): Likewise for strtoul.
+	(make_shadow_info): Made P and INFO plain char.
+	(agent_shadow_key): Made P plain char.
+
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* query.c (agent_get_passphrase): Made HEXSTRING a char*.
+	* command-ssh.c (ssh_key_grip): Made arg BUFFER unsigned.
+	(ssh_key_grip): Simplified.
+	(data_sign): Initialize variables with the definition.
+	(ssh_convert_key_to_blob): Make sure that BLOB and BLOB_SIZE
+	are set to NULL on error.  Cool, gcc-4 detects uninitialized stuff
+	beyond function boundaries; well it can't know that we do error
+	proper error handling so that this was not a real error.
+	(file_to_buffer): Likewise for BUFFER and BUFFER_N.
+	(data_sign): Likewise for SIG and SIG_N.
+	(stream_read_byte): Set B to a value even on error.
+	* command.c (cmd_genkey): Changed VALUE to char.
+	(cmd_readkey): Cast arg for gcry_sexp_sprint.
+	* agent.h (struct server_control_s): Made KEYGRIP unsigned.
+
+2005-06-13  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (start_command_handler_ssh): Reset the SCD.
+
+2005-06-09  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (create_socket_name): New option --max-cache-ttl-ssh.
+	* cache.c (housekeeping): Use it.
+	(agent_put_cache): Use a switch to get the default ttl so that it
+	is easier to add more cases.
+
 2005-06-06  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c: New option --default-cache-ttl-ssh.

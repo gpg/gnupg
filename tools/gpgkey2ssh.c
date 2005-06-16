@@ -249,6 +249,9 @@ main (int argc, char **argv)
   pkdbuf = NULL;
   pkdbuf_n = 0;
 
+  algorithm_id = 0;  /* (avoid cc warning) */
+  identifier = NULL; /* (avoid cc warning) */
+
   assert (argc == 2);
 
   keyid = argv[1];

@@ -42,8 +42,9 @@
    If there is a problem , the function does never return NULL but a
    digest of all 0xff.
  */
-char *
-gpgsm_get_fingerprint (ksba_cert_t cert, int algo, char *array, int *r_len)
+unsigned char *
+gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
+                       unsigned char *array, int *r_len)
 {
   gcry_md_hd_t md;
   int rc, len;
@@ -140,8 +141,8 @@ gpgsm_get_short_fingerprint (ksba_cert_t cert)
    key parameters expressed as an canoncial encoded S-Exp.  array must
    be 20 bytes long. returns the array or a newly allocated one if the
    passed one was NULL */
-char *
-gpgsm_get_keygrip (ksba_cert_t cert, char *array)
+unsigned char *
+gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array)
 {
   gcry_sexp_t s_pkey;
   int rc;
@@ -160,7 +161,7 @@ gpgsm_get_keygrip (ksba_cert_t cert, char *array)
       log_error ("libksba did not return a proper S-Exp\n");
       return NULL;
     }
-  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, (char*)p, n);
   xfree (p);
   if (rc)
     {
@@ -223,7 +224,7 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
       xfree (p);
       return 0;
     }
-  rc = gcry_sexp_sscan (&s_pkey, NULL, p, n);
+  rc = gcry_sexp_sscan (&s_pkey, NULL, (char *)p, n);
   xfree (p);
   if (rc)
     return 0;
@@ -272,7 +273,7 @@ char *
 gpgsm_get_certid (ksba_cert_t cert)
 {
   ksba_sexp_t serial;
-  unsigned char *p;
+  char *p;
   char *endp;
   unsigned char hash[20];
   unsigned long n;
@@ -288,7 +289,7 @@ gpgsm_get_certid (ksba_cert_t cert)
   serial = ksba_cert_get_serial (cert);
   if (!serial)
     return NULL; /* oops: no serial number */
-  p = serial;
+  p = (char *)serial;
   if (*p != '(')
     {
       log_error ("Ooops: invalid serial number\n");

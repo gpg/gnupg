@@ -294,7 +294,7 @@ es_init_do (void)
 typedef struct estream_cookie_mem
 {
   unsigned int flags;		/* Open flags.  */
-  char *memory;			/* Data.  */
+  unsigned char *memory;	/* Data.  */
   size_t memory_size;		/* Size of MEMORY.  */
   size_t offset;		/* Current offset in MEMORY.  */
   size_t data_len;		/* Length of data in MEMORY.  */
@@ -350,7 +350,7 @@ es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
 
 /* Read function for memory objects.  */
 static ssize_t
-es_func_mem_read (void *cookie, char *buffer, size_t size)
+es_func_mem_read (void *cookie, void *buffer, size_t size)
 {
   estream_cookie_mem_t mem_cookie = cookie;
   ssize_t ret;
@@ -371,11 +371,11 @@ es_func_mem_read (void *cookie, char *buffer, size_t size)
 
 /* Write function for memory objects.  */
 static ssize_t
-es_func_mem_write (void *cookie, const char *buffer, size_t size)
+es_func_mem_write (void *cookie, const void *buffer, size_t size)
 {
   estream_cookie_mem_t mem_cookie = cookie;
   func_realloc_t func_realloc = mem_cookie->func_realloc;
-  char *memory_new;
+  unsigned char *memory_new;
   size_t newsize;
   ssize_t ret;
   int err;
@@ -591,7 +591,7 @@ es_func_fd_create (void **cookie, int fd, unsigned int flags)
 
 /* Read function for fd objects.  */
 static ssize_t
-es_func_fd_read (void *cookie, char *buffer, size_t size)
+es_func_fd_read (void *cookie, void *buffer, size_t size)
 
 {
   estream_cookie_fd_t file_cookie = cookie;
@@ -606,7 +606,7 @@ es_func_fd_read (void *cookie, char *buffer, size_t size)
 
 /* Write function for fd objects.  */
 static ssize_t
-es_func_fd_write (void *cookie, const char *buffer, size_t size)
+es_func_fd_write (void *cookie, const void *buffer, size_t size)
 			   
 {
   estream_cookie_fd_t file_cookie = cookie;
@@ -1122,9 +1122,10 @@ es_read_lbf (estream_t ES__RESTRICT stream,
    *the amount of bytes read in BYTES_READ.  */
 static int
 es_readn (estream_t ES__RESTRICT stream,
-	  unsigned char *ES__RESTRICT buffer,
+	  void *ES__RESTRICT buffer_arg,
 	  size_t bytes_to_read, size_t *ES__RESTRICT bytes_read)
 {
+  unsigned char *buffer = (unsigned char *)buffer_arg;
   size_t data_read_unread, data_read;
   int err;
 
@@ -1388,7 +1389,7 @@ es_write_lbf (estream_t ES__RESTRICT stream,
    amount of bytes written in BYTES_WRITTEN.  */
 static int
 es_writen (estream_t ES__RESTRICT stream,
-	   const unsigned char *ES__RESTRICT buffer,
+	   const void *ES__RESTRICT buffer,
 	   size_t bytes_to_write, size_t *ES__RESTRICT bytes_written)
 {
   size_t data_written;
@@ -2289,7 +2290,7 @@ es_ungetc (int c, estream_t stream)
 
 int
 es_read (estream_t ES__RESTRICT stream,
-	 char *ES__RESTRICT buffer, size_t bytes_to_read,
+	 void *ES__RESTRICT buffer, size_t bytes_to_read,
 	 size_t *ES__RESTRICT bytes_read)
 {
   int err;
@@ -2309,7 +2310,7 @@ es_read (estream_t ES__RESTRICT stream,
 
 int
 es_write (estream_t ES__RESTRICT stream,
-	  const char *ES__RESTRICT buffer, size_t bytes_to_write,
+	  const void *ES__RESTRICT buffer, size_t bytes_to_write,
 	  size_t *ES__RESTRICT bytes_written)
 {
   int err;

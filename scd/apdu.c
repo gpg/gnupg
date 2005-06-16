@@ -2393,7 +2393,7 @@ apdu_activate (int slot)
 unsigned char *
 apdu_get_atr (int slot, size_t *atrlen)
 {
-  char *buf;
+  unsigned char *buf;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return NULL;

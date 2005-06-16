@@ -48,7 +48,7 @@ app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip)
   n = gcry_sexp_canon_len (p, 0, NULL, NULL);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
-  err = gcry_sexp_sscan (&s_pkey, NULL, p, n);
+  err = gcry_sexp_sscan (&s_pkey, NULL, (char*)p, n);
   xfree (p);
   if (err)
     return err; /* Can't parse that S-expression. */

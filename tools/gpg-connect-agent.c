@@ -458,7 +458,7 @@ static int
 read_and_print_response (assuan_context_t ctx)
 {
   char *line;
-  int linelen;
+  size_t linelen;
   assuan_error_t rc;
   int i, j;
 

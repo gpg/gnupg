@@ -39,7 +39,8 @@ static int
 do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
               gcry_mpi_t *r_val)
 {
-  int n, nframe;
+  int n;
+  size_t nframe;
   unsigned char *frame;
 
   if (pkalgo == GCRY_PK_DSA)
@@ -205,7 +206,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       log_printf ("\n");
     }
 
-  rc = gcry_sexp_sscan ( &s_sig, NULL, p, n);
+  rc = gcry_sexp_sscan ( &s_sig, NULL, (char*)p, n);
   ksba_free (p);
   if (rc)
     {
@@ -224,7 +225,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       gcry_sexp_release (s_sig);
       return gpg_error (GPG_ERR_BUG);
     }
-  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, (char*)p, n);
   ksba_free (p);
   if (rc)
     {
@@ -278,7 +279,7 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
       log_error ("libksba did not return a proper S-Exp\n");
       return gpg_error (GPG_ERR_BUG);
     }
-  rc = gcry_sexp_sscan (&s_sig, NULL, sigval, n);
+  rc = gcry_sexp_sscan (&s_sig, NULL, (char*)sigval, n);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
@@ -297,7 +298,7 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
   if (DBG_CRYPTO)
     log_printhex ("public key: ", p, n);
 
-  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, (char*)p, n);
   ksba_free (p);
   if (rc)
     {
@@ -333,7 +334,8 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
 
 int
 gpgsm_create_cms_signature (ctrl_t ctrl, ksba_cert_t cert,
-                            gcry_md_hd_t md, int mdalgo, char **r_sigval)
+                            gcry_md_hd_t md, int mdalgo,
+                            unsigned char **r_sigval)
 {
   int rc;
   char *grip, *desc;

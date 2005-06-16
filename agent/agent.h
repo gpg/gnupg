@@ -71,9 +71,10 @@ struct {
   int no_grab;         /* Don't let the pinentry grab the keyboard */
 
   /* The default and maximum TTL of cache entries. */
-  unsigned long def_cache_ttl;     /* Normal. */
-  unsigned long def_cache_ttl_ssh; /* SSH. */
-  unsigned long max_cache_ttl;
+  unsigned long def_cache_ttl;     /* Default. */
+  unsigned long def_cache_ttl_ssh; /* for SSH. */
+  unsigned long max_cache_ttl;     /* Default. */
+  unsigned long max_cache_ttl_ssh; /* for SSH. */
 
 
   int running_detached; /* We are running detached from the tty. */
@@ -107,8 +108,8 @@ struct server_local_s;
 struct scd_local_s;
 
 /* Collection of data per session (aka connection). */
-struct server_control_s {
-
+struct server_control_s 
+{
   /* Private data of the server (command.c). */
   struct server_local_s *server_local;
 
@@ -128,7 +129,7 @@ struct server_control_s {
     int valuelen;
     int raw_value: 1;
   } digest;
-  char keygrip[20];
+  unsigned char keygrip[20];
   int have_keygrip;
 
   int use_auth_call; /* Hack to send the PKAUTH command instead of the
@@ -289,7 +290,7 @@ int agent_card_pksign (ctrl_t ctrl,
                        int (*getpin_cb)(void *, const char *, char*, size_t),
                        void *getpin_cb_arg,
                        const unsigned char *indata, size_t indatalen,
-                       char **r_buf, size_t *r_buflen);
+                       unsigned char **r_buf, size_t *r_buflen);
 int agent_card_pkdecrypt (ctrl_t ctrl,
                           const char *keyid,
                           int (*getpin_cb)(void *, const char *, char*,size_t),

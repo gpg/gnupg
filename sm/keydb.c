@@ -681,7 +681,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
   int rc = -1;
   int idx;
-  char digest[20];
+  unsigned char digest[20];
   
   if (!hd) 
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -723,7 +723,7 @@ int
 keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
   int rc = 0;
-  char digest[20];
+  unsigned char digest[20];
   
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1010,8 +1010,9 @@ keydb_search_subject (KEYDB_HANDLE hd, const char *name)
 
 
 static int
-hextobyte (const unsigned char *s)
+hextobyte (const char *string)
 {
+  const unsigned char *s = (const unsigned char *)string;
   int c;
 
   if( *s >= '0' && *s <= '9' )
@@ -1122,7 +1123,7 @@ classify_user_id (const char *name,
                 if (!strchr("01234567890abcdefABCDEF", *si))
                   return 0; /* invalid digit in serial number*/
               }
-            desc->sn = s;
+            desc->sn = (const unsigned char*)s;
             desc->snlen = -1;
             if (!*si)
               mode = KEYDB_SEARCH_MODE_SN;

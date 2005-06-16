@@ -139,9 +139,12 @@ static int
 encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
                     unsigned char **r_val, size_t *r_len)
 {
-  byte *frame;
-  byte asn[100];
+  unsigned char *frame;
+  unsigned char asn[100];
   size_t asnlen;
+
+  *r_val = NULL;
+  *r_len = 0;
 
   asnlen = DIM(asn);
   if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
@@ -295,7 +298,7 @@ divert_pksign (CTRL ctrl,
   int rc;
   char *kid;
   size_t siglen;
-  char *sigval;
+  unsigned char *sigval;
   unsigned char *data;
   size_t ndata;
 

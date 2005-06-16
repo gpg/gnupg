@@ -66,7 +66,7 @@ print_utf8_string( FILE *fp, const byte *p, size_t n )
 }
 
 char *
-make_printable_string( const byte *p, size_t n, int delim )
+make_printable_string (const void *p, size_t n, int delim )
 {
   return sanitize_buffer (p, n, delim);
 }

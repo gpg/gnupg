@@ -1,3 +1,14 @@
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* keybox-file.c (_keybox_read_blob2): Make IMAGE unsigned.
+	(_keybox_write_blob): 
+
+	* keybox-blob.c (create_blob_finish, _keybox_create_x509_blob):
+	Fixed warnings about signed/unsigned pointer mismatches.
+	(x509_email_kludge): Ditto.
+	(_keybox_new_blob): Changed arg IMAGE to unsigned char *.
+	(_keybox_get_blob_image): Changed return type to unsigned char*.
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* keybox-file.c (ftello) [!HAVE_FSEEKO]: New replacement

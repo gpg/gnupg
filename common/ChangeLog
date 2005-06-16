@@ -1,9 +1,33 @@
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* miscellaneous.c (make_printable_string): Made P a void*.
+
+	* sexputil.c (keygrip_from_canon_sexp, cmp_simple_canon_sexp):
+	Fixed signed/unsigned pointer mismatch.
+	(make_simple_sexp_from_hexstr): Ditto.  This is all too ugly; I
+	wonder why gcc-4's default is to warn about them and forcing us to
+	use cast the warning away.
+	* iobuf.c (block_filter): Ditto.
+	(iobuf_flush): Ditto.
+	(iobuf_read_line): Ditto.
+	(iobuf_read): Make BUFFER a void *.
+	(iobuf_write): Make BUFFER a const void *.
+	* ttyio.c (tty_print_utf8_string2): Ditto.
+	* estream.c (estream_cookie_mem): Make MEMORY unsigned char*.
+	(es_write): Make BUFFER a void *.
+	(es_writen): Ditto.
+	(es_func_fd_read, es_func_fd_write, es_func_mem_read) 
+	(es_func_mem_write): Ditto.
+	(es_read, es_readn): Ditto.
+	(es_func_mem_write): Made MEMORY_NEW an unsigned char *.
+	* estream.h (es_cookie_read_function_t)
+	(es_cookie_write_function_t): Changed buffer arg to void*.
+
 2005-06-03  Werner Koch  <wk@g10code.com>
 
 	* estream.c: Use HAVE_CONFIG_H and not USE_CONFIG_H!
 	(es_func_fd_read, es_func_fd_write): Protect against EINTR.
 	
-
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (AM_CPPFLAGS): Added.

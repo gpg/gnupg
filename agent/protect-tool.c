@@ -239,9 +239,9 @@ make_advanced (const unsigned char *buf, size_t buflen)
   int rc;
   size_t erroff, len;
   gcry_sexp_t sexp;
-  unsigned char *result;
+  char *result;
 
-  rc = gcry_sexp_sscan (&sexp, &erroff, buf, buflen);
+  rc = gcry_sexp_sscan (&sexp, &erroff, (const char*)buf, buflen);
   if (rc)
     {
       log_error ("invalid canonical S-Expression (off=%u): %s\n",
@@ -378,7 +378,7 @@ read_and_protect (const char *fname)
       xfree (result);
       if (!p)
         return;
-      result = p;
+      result = (unsigned char*)p;
       resultlen = strlen (p);
     }
 
@@ -417,7 +417,7 @@ read_and_unprotect (const char *fname)
       xfree (result);
       if (!p)
         return;
-      result = p;
+      result = (unsigned char*)p;
       resultlen = strlen (p);
     }
 
@@ -434,12 +434,13 @@ read_and_shadow (const char *fname)
   unsigned char *key;
   unsigned char *result;
   size_t resultlen;
+  unsigned char dummy_info[] = "(8:313233342:43)";
   
   key = read_key (fname);
   if (!key)
     return;
 
-  rc = agent_shadow_key (key, "(8:313233342:43)", &result);
+  rc = agent_shadow_key (key, dummy_info, &result);
   xfree (key);
   if (rc)
     {
@@ -455,7 +456,7 @@ read_and_shadow (const char *fname)
       xfree (result);
       if (!p)
         return;
-      result = p;
+      result = (unsigned char*)p;
       resultlen = strlen (p);
     }
 
@@ -682,7 +683,7 @@ import_p12_file (const char *fname)
   if (!buf)
     return;
 
-  kparms = p12_parse (buf, buflen, (pw=get_passphrase (2)),
+  kparms = p12_parse ((unsigned char*)buf, buflen, (pw=get_passphrase (2)),
                       import_p12_cert_cb, NULL);
   release_passphrase (pw);
   xfree (buf);
@@ -773,7 +774,7 @@ import_p12_file (const char *fname)
       xfree (result);
       if (!p)
         return;
-      result = p;
+      result = (unsigned char*)p;
       resultlen = strlen (p);
     }
 
@@ -932,7 +933,7 @@ export_p12_file (const char *fname)
 
   if (opt_have_cert)
     {
-      cert = read_file ("-", &certlen);
+      cert = (unsigned char*)read_file ("-", &certlen);
       if (!cert)
         {
           wipememory (key, keylen_for_wipe);
@@ -1040,7 +1041,7 @@ percent_plus_unescape (unsigned char *string)
 static char *
 percent_plus_unescape_string (char *string) 
 {
-  unsigned char *p = string;
+  unsigned char *p = (unsigned char*)string;
   size_t n;
 
   n = percent_plus_unescape (p);

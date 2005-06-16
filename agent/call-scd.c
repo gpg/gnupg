@@ -465,7 +465,7 @@ unescape_status_string (const unsigned char *s)
 {
   char *buffer, *d;
 
-  buffer = d = xtrymalloc (strlen (s)+1);
+  buffer = d = xtrymalloc (strlen ((const char*)s)+1);
   if (!buffer)
     return NULL;
   while (*s)
@@ -666,7 +666,7 @@ agent_card_pksign (ctrl_t ctrl,
                    int (*getpin_cb)(void *, const char *, char*, size_t),
                    void *getpin_cb_arg,
                    const unsigned char *indata, size_t indatalen,
-                   char **r_buf, size_t *r_buflen)
+                   unsigned char **r_buf, size_t *r_buflen)
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];
@@ -714,14 +714,11 @@ agent_card_pksign (ctrl_t ctrl,
   /* Create an S-expression from it which is formatted like this:
      "(7:sig-val(3:rsa(1:sSIGBUFLEN:SIGBUF)))" */
   *r_buflen = 21 + 11 + sigbuflen + 4;
-  *r_buf = xtrymalloc (*r_buflen);
-  if (!*r_buf)
-    {
-      gpg_error_t tmperr = out_of_core ();
-      xfree (*r_buf);
-      return unlock_scd (ctrl, tmperr);
-    }
-  p = stpcpy (*r_buf, "(7:sig-val(3:rsa(1:s" );
+  p = xtrymalloc (*r_buflen);
+  *r_buf = (unsigned char*)p;
+  if (!p)
+    return unlock_scd (ctrl, out_of_core ());
+  p = stpcpy (p, "(7:sig-val(3:rsa(1:s" );
   sprintf (p, "%u:", (unsigned int)sigbuflen);
   p += strlen (p);
   memcpy (p, sigbuf, sigbuflen);
@@ -895,7 +892,7 @@ card_getattr_cb (void *opaque, const char *line)
   if (keywordlen == parm->keywordlen
       && !memcmp (keyword, parm->keyword, keywordlen))
     {
-      parm->data = unescape_status_string (line);
+      parm->data = unescape_status_string ((const unsigned char*)line);
       if (!parm->data)
         parm->error = errno;
     }

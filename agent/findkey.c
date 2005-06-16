@@ -345,7 +345,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
     }
 
   /* Convert the file into a gcrypt S-expression object.  */
-  rc = gcry_sexp_sscan (&s_skey, &erroff, buf, buflen);
+  rc = gcry_sexp_sscan (&s_skey, &erroff, (char*)buf, buflen);
   xfree (fname);
   fclose (fp);
   xfree (buf);
@@ -500,7 +500,7 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
     }
 
   buflen = gcry_sexp_canon_len (buf, 0, NULL, NULL);
-  rc = gcry_sexp_sscan (&s_skey, &erroff, buf, buflen);
+  rc = gcry_sexp_sscan (&s_skey, &erroff, (char*)buf, buflen);
   wipememory (buf, buflen);
   xfree (buf);
   if (rc)

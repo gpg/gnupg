@@ -492,7 +492,7 @@ proc_parameters (ctrl_t ctrl,
     }
 
   sprintf (numbuf, "%u", nbits);
-  snprintf (keyparms, DIM (keyparms)-1, 
+  snprintf ((char*)keyparms, DIM (keyparms)-1, 
             "(6:genkey(3:rsa(5:nbits%d:%s)))", (int)strlen (numbuf), numbuf);
   rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
   if (rc)
@@ -627,8 +627,9 @@ create_request (ctrl_t ctrl,
         {
           gcry_sexp_t s_pkey;
           size_t n;
-          unsigned char grip[20], hexgrip[41];
-          char *sigval;
+          unsigned char grip[20];
+          char hexgrip[41];
+          unsigned char *sigval;
           size_t siglen;
 
           n = gcry_sexp_canon_len (public, 0, NULL, NULL);
@@ -638,7 +639,7 @@ create_request (ctrl_t ctrl,
               err = gpg_error (GPG_ERR_BUG);
               goto leave;
             }
-          rc = gcry_sexp_sscan (&s_pkey, NULL, public, n);
+          rc = gcry_sexp_sscan (&s_pkey, NULL, (const char*)public, n);
           if (rc)
             {
               log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));

@@ -53,14 +53,14 @@ struct server_local_s {
 /* Note that it is sufficient to allocate the target string D as
    long as the source string S, i.e.: strlen(s)+1; */
 static void
-strcpy_escaped_plus (char *d, const unsigned char *s)
+strcpy_escaped_plus (char *d, const char *s)
 {
   while (*s)
     {
       if (*s == '%' && s[1] && s[2])
         { 
           s++;
-          *d++ = xtoi_2 ( s);
+          *d++ = xtoi_2 (s);
           s += 2;
         }
       else if (*s == '+')

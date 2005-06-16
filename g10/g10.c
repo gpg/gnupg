@@ -933,7 +933,7 @@ static void add_group(char *string)
       return;
     }
 
-  trim_trailing_ws(name,strlen(name));
+  trim_trailing_ws((unsigned char *)name,strlen(name));
 
   /* Break apart the values */
   while ((value= strsep(&string," \t")))
@@ -3124,7 +3124,7 @@ print_hashline( MD_HANDLE md, int algo, const char *fname )
     const byte *p;
     
     if ( fname ) {
-        for (p = fname; *p; p++ ) {
+        for (p = (const unsigned char *)fname; *p; p++ ) {
             if ( *p <= 32 || *p > 127 || *p == ':' || *p == '%' )
                 printf("%%%02X", *p );
             else 

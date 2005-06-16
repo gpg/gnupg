@@ -256,7 +256,7 @@ print_time (gnupg_isotime_t t, FILE *fp)
 static char *
 email_kludge (const char *name)
 {
-  const unsigned char *p;
+  const char *p;
   unsigned char *buf;
   int n;
 
@@ -278,7 +278,7 @@ email_kludge (const char *name)
     buf[n] = xtoi_2 (p);
   buf[n++] = '>';
   buf[n] = 0;
-  return buf;
+  return (char*)buf;
 }
 
 

@@ -52,7 +52,7 @@ keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,
 
   if (!grip)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = gcry_sexp_sscan (&sexp, NULL, key, keylen);
+  err = gcry_sexp_sscan (&sexp, NULL, (const char *)key, keylen);
   if (err)
     return err;
   if (!gcry_pk_get_keygrip (sexp, grip))
@@ -66,8 +66,11 @@ keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,
    are identical or !0 if they are not.  Not that this function can't
    be used for sorting. */
 int
-cmp_simple_canon_sexp (const unsigned char *a, const unsigned char *b)
+cmp_simple_canon_sexp (const unsigned char *a_orig,
+                       const unsigned char *b_orig)
 {
+  const char *a = (const char *)a_orig;
+  const char *b = (const char *)b_orig;
   unsigned long n1, n2;
   char *endp;
 
@@ -124,7 +127,7 @@ make_simple_sexp_from_hexstr (const char *line, size_t *nscanned)
   buf = xtrymalloc (strlen (numbuf) + len + 1 + 1);
   if (!buf)
     return NULL;
-  p = stpcpy (buf, numbuf);
+  p = (unsigned char *)stpcpy ((char *)buf, numbuf);
   s = line;
   if ((n&1))
     {

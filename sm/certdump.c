@@ -50,8 +50,9 @@ struct dn_array_s {
 
 /* print the first element of an S-Expression */
 void
-gpgsm_print_serial (FILE *fp, ksba_const_sexp_t p)
+gpgsm_print_serial (FILE *fp, ksba_const_sexp_t sn)
 {
+  const char *p = (const char *)sn;
   unsigned long n;
   char *endp;
 
@@ -77,8 +78,9 @@ gpgsm_print_serial (FILE *fp, ksba_const_sexp_t p)
 
 /* Dump the serial number or any other simple S-expression. */
 void
-gpgsm_dump_serial (ksba_const_sexp_t p)
+gpgsm_dump_serial (ksba_const_sexp_t sn)
 {
+  const char *p = (const char *)sn;
   unsigned long n;
   char *endp;
 
@@ -103,8 +105,9 @@ gpgsm_dump_serial (ksba_const_sexp_t p)
 
 
 char *
-gpgsm_format_serial (ksba_const_sexp_t p)
+gpgsm_format_serial (ksba_const_sexp_t sn)
 {
+  const char *p = (const char *)sn;
   unsigned long n;
   char *endp;
   char *buffer;
@@ -168,7 +171,7 @@ gpgsm_dump_string (const char *string)
     {
       const unsigned char *s;
 
-      for (s=string; *s; s++)
+      for (s=(const unsigned char*)string; *s; s++)
         {
           if (*s < ' ' || (*s >= 0x7f && *s <= 0xa0))
             break;
@@ -190,7 +193,7 @@ void
 gpgsm_dump_cert (const char *text, ksba_cert_t cert)
 {
   ksba_sexp_t sexp;
-  unsigned char *p;
+  char *p;
   char *dn;
   ksba_isotime_t t;
 
@@ -260,7 +263,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
   };
   const unsigned char *s, *s1;
   size_t n;
-  unsigned char *p;
+  char *p;
   int i;
 
   /* Parse attributeType */
@@ -306,7 +309,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
         return NULL;
       for (s1=string; n; s1 += 2, n--, p++)
         {
-          *p = xtoi_2 (s1);
+          *(unsigned char *)p = xtoi_2 (s1);
           if (!*p)
             *p = 0x01; /* Better print a wrong value than truncating
                           the string. */
@@ -351,7 +354,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
               s++;
               if (hexdigitp (s))
                 {
-                  *p++ = xtoi_2 (s);
+                  *(unsigned char *)p++ = xtoi_2 (s);
                   s++;
                 }
               else
@@ -485,23 +488,22 @@ print_dn_parts (FILE *fp, struct dn_array_s *dn, int translate)
 void
 gpgsm_print_name2 (FILE *fp, const char *name, int translate)
 {
-  const unsigned char *s;
+  const unsigned char *s = (const unsigned char *)name;
   int i;
 
-  s = name;
   if (!s)
     {
       fputs (_("[Error - No name]"), fp);
     }
   else if (*s == '<')
     {
-      const unsigned char *s2 = strchr (s+1, '>');
+      const char *s2 = strchr ( (char*)s+1, '>');
       if (s2)
         {
           if (translate)
-            print_sanitized_utf8_buffer (fp, s + 1, s2 - s - 1, 0);
+            print_sanitized_utf8_buffer (fp, s + 1, s2 - (char*)s - 1, 0);
           else
-            print_sanitized_buffer (fp, s + 1, s2 - s - 1, 0);
+            print_sanitized_buffer (fp, s + 1, s2 - (char*)s - 1, 0);
         }
     }
   else if (*s == '(')

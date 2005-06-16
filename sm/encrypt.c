@@ -164,10 +164,10 @@ encode_session_key (DEK dek, gcry_sexp_t * r_data)
 }
 
 
-/* encrypt the DEK under the key contained in CERT and return it as a
-   canonical S-Exp in encval */
+/* Encrypt the DEK under the key contained in CERT and return it as a
+   canonical S-Exp in encval. */
 static int
-encrypt_dek (const DEK dek, ksba_cert_t cert, char **encval)
+encrypt_dek (const DEK dek, ksba_cert_t cert, unsigned char **encval)
 {
   gcry_sexp_t s_ciph, s_data, s_pkey;
   int rc;
@@ -189,7 +189,7 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, char **encval)
       log_error ("libksba did not return a proper S-Exp\n");
       return gpg_error (GPG_ERR_BUG);
     }
-  rc = gcry_sexp_sscan (&s_pkey, NULL, buf, len);
+  rc = gcry_sexp_sscan (&s_pkey, NULL, (char*)buf, len);
   xfree (buf); buf = NULL;
   if (rc)
     {
@@ -220,7 +220,7 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, char **encval)
       gcry_sexp_release (s_ciph);
       return tmperr;
     }
-  len = gcry_sexp_sprint (s_ciph, GCRYSEXP_FMT_CANON, buf, len);
+  len = gcry_sexp_sprint (s_ciph, GCRYSEXP_FMT_CANON, (char*)buf, len);
   assert (len);
 
   *encval = buf;
@@ -437,7 +437,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
      each and store them in the CMS object */
   for (recpno = 0, cl = recplist; cl; recpno++, cl = cl->next)
     {
-      char *encval;
+      unsigned char *encval;
       
       rc = encrypt_dek (dek, cl->cert, &encval);
       if (rc)

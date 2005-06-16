@@ -948,8 +948,8 @@ get_public_key (app_t app, int keyno)
   size_t buflen, keydatalen, mlen, elen;
   unsigned char *mbuf = NULL;
   unsigned char *ebuf = NULL;
-  unsigned char *keybuf = NULL;
-  unsigned char *keybuf_p;
+  char *keybuf = NULL;
+  char *keybuf_p;
 
   if (keyno < 1 || keyno > 3)
     return gpg_error (GPG_ERR_INV_ID);
@@ -963,14 +963,16 @@ get_public_key (app_t app, int keyno)
   app->app_local->pk[keyno].key = NULL;
   app->app_local->pk[keyno].keylen = 0;
 
+  m = e = NULL; /* (avoid cc warning) */
+
   if (app->card_version > 0x0100)
     {
       /* We may simply read the public key out of these cards.  */
-      err = iso7816_read_public_key (app->slot, 
-                                    keyno == 0? "\xB6" :
-                                    keyno == 1? "\xB8" : "\xA4",
-                                    2,  
-                                    &buffer, &buflen);
+      err = iso7816_read_public_key 
+        (app->slot, (const unsigned char*)(keyno == 0? "\xB6" :
+                                           keyno == 1? "\xB8" : "\xA4"),
+         2,  
+         &buffer, &buflen);
       if (err)
         {
           log_error (_("reading public key failed: %s\n"), gpg_strerror (err));
@@ -1107,7 +1109,7 @@ get_public_key (app_t app, int keyno)
   strcpy (keybuf_p, ")))");
   keybuf_p += strlen (keybuf_p);
   
-  app->app_local->pk[keyno].key = keybuf;
+  app->app_local->pk[keyno].key = (unsigned char*)keybuf;
   app->app_local->pk[keyno].keylen = (keybuf_p - keybuf);
 
  leave:
@@ -1889,11 +1891,10 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
 #warning key generation temporary replaced by reading an existing key.
   rc = iso7816_read_public_key
 #endif
-                              (app->slot, 
-                                 keyno == 0? "\xB6" :
-                                 keyno == 1? "\xB8" : "\xA4",
-                                 2,
-                                 &buffer, &buflen);
+    (app->slot, (const unsigned char*)(keyno == 0? "\xB6" :
+                                       keyno == 1? "\xB8" : "\xA4"),
+     2,
+     &buffer, &buflen);
   if (rc)
     {
       rc = gpg_error (GPG_ERR_CARD);

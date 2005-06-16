@@ -1,3 +1,8 @@
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* g10.c (print_hashline, add_group): Fixes for signed/unsigned
+	pointer mismatch warnings.
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* mkdtemp.c: Removed.

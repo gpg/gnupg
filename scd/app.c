@@ -357,7 +357,7 @@ app_munge_serialno (app_t app)
 gpg_error_t 
 app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 {
-  unsigned char *buf, *p;
+  char *buf, *p;
   int i;
 
   if (!app || !serial)

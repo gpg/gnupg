@@ -2316,7 +2316,7 @@ gc_component_change_options (int component, FILE *in)
       char *linep;
       unsigned long flags = 0;
       char *new_value = "";
-      unsigned long new_value_nr;
+      unsigned long new_value_nr = 0;
 
       /* Strip newline and carriage return, if present.  */
       while (length > 0

@@ -390,9 +390,9 @@ handle_open (unsigned char *argbuf, size_t arglen)
   unsigned char atr[33];
 
   /* Make sure there is only the port string */
-  if (arglen != strlen (argbuf))
+  if (arglen != strlen ((char*)argbuf))
     bad_request ("OPEN");
-  portstr = argbuf;
+  portstr = (char*)argbuf;
 
   if (driver_is_open)
     {

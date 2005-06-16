@@ -322,7 +322,7 @@ tty_print_utf8_string2( const byte *p, size_t n, size_t max_n )
 	    break;
     }
     if( i < n ) {
-	buf = utf8_to_native( p, n, 0 );
+	buf = utf8_to_native( (const char *)p, n, 0 );
 	if( max_n && (strlen( buf ) > max_n )) {
 	    buf[max_n] = 0;
 	}

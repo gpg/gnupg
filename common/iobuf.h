@@ -120,12 +120,12 @@ off_t iobuf_tell (iobuf_t a);
 int iobuf_seek (iobuf_t a, off_t newpos);
 
 int iobuf_readbyte (iobuf_t a);
-int iobuf_read (iobuf_t a, byte * buf, unsigned buflen);
+int iobuf_read (iobuf_t a, void *buf, unsigned buflen);
 unsigned iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 			  unsigned *length_of_buffer, unsigned *max_length);
 int iobuf_peek (iobuf_t a, byte * buf, unsigned buflen);
 int iobuf_writebyte (iobuf_t a, unsigned c);
-int iobuf_write (iobuf_t a, byte * buf, unsigned buflen);
+int iobuf_write (iobuf_t a, const void *buf, unsigned buflen);
 int iobuf_writestr (iobuf_t a, const char *buf);
 
 void iobuf_flush_temp (iobuf_t temp);

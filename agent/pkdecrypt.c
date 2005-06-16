@@ -52,7 +52,7 @@ agent_pkdecrypt (CTRL ctrl, const char *desc_text,
       goto leave;
     }
 
-  rc = gcry_sexp_sscan (&s_cipher, NULL, ciphertext, ciphertextlen);
+  rc = gcry_sexp_sscan (&s_cipher, NULL, (char*)ciphertext, ciphertextlen);
   if (rc)
     {
       log_error ("failed to convert ciphertext: %s\n", gpg_strerror (rc));

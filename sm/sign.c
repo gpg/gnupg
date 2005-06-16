@@ -575,7 +575,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
           ksba_cms_set_hash_function (cms, HASH_FNC, md);
           for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
             {
-              char *sigval = NULL;
+              unsigned char *sigval = NULL;
               char *buf, *fpr;
 
               if (signer)

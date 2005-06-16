@@ -87,10 +87,11 @@ struct fun_cookie_s {
   char name[1];
 };
 
-/* Write NBYTES of BUF to file descriptor FD. */
+/* Write NBYTES of BUFFER to file descriptor FD. */
 static int
-writen (int fd, const unsigned char *buf, size_t nbytes)
+writen (int fd, const void *buffer, size_t nbytes)
 {
+  const char *buf = buffer;
   size_t nleft = nbytes;
   int nwritten;
   

@@ -679,7 +679,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
       xfree (value);
       return gpg_error (GPG_ERR_INV_RESPONSE);
     }
-  *retstr = value;
+  *retstr = (char*)value;
   return 0;
 }
 
@@ -844,7 +844,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-  char *keyword;
+  const char *keyword;
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -860,7 +860,6 @@ cmd_getattr (assuan_context_t ctx, char *line)
   /* FIXME: Applications should not return sensistive data if the card
      is locked.  */
   rc = app_getattr (ctrl->app_ctx, ctrl, keyword);
-  xfree (keyword);
 
   TEST_CARD_REMOVAL (ctrl, rc);
   return map_to_assuan_status (rc);
@@ -908,9 +907,10 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
       *line++ = 0;
   while (spacep (line))
     line++;
-  nbytes = percent_plus_unescape (line);
+  nbytes = percent_plus_unescape ((unsigned char*)line);
 
-  rc = app_setattr (ctrl->app_ctx, keyword, pin_cb, ctx, line, nbytes);
+  rc = app_setattr (ctrl->app_ctx, keyword, pin_cb, ctx,
+                    (const unsigned char*)line, nbytes);
   xfree (linebuf);
 
   TEST_CARD_REMOVAL (ctrl, rc);
