@@ -1,3 +1,10 @@
+2005-06-18  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (parse_signature): Use log_info for messages
+	about missing timestamp or keyid.  In case we don't use that key
+	there won't be no further error and thus gpg does not need to
+	return with an error.
+
 2005-06-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (save_unprotected_key_to_card): Fix gcc4 warning.
@@ -60,6 +67,17 @@
 	export-clean-uids, export-clean-subkeys, and export-clean which is
 	all of the above.  Export-minimal is the same except it also
 	removes all non-selfsigs.  export-unusable-sigs is now a noop.
+
+2005-06-06  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (open_card): Emit new CARDCTRL status 5 for no reader
+	available.
+
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_writekey): Typo fix.
+
+	* status.c, status.h: Removed STATUS_BAD_PASSPHRASE_PIN.
 
 2005-06-01  David Shaw  <dshaw@jabberwocky.com>
 

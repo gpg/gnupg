@@ -412,6 +412,7 @@ open_card (void)
       slot = apdu_open_reader (default_reader_port);
       if (slot == -1)
         {
+          write_status_text (STATUS_CARDCTRL, "5");
           log_error ("card reader not available\n");
           return NULL;
         }

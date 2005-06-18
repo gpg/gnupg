@@ -110,7 +110,6 @@
 
 /* Extra status codes for certain smartcard operations.  Primary
    useful to double check that change PIN worked as expected.  */
-#define STATUS_BAD_PASSPHRASE_PIN 78
 #define STATUS_SC_OP_FAILURE    79
 #define STATUS_SC_OP_SUCCESS    80
 
