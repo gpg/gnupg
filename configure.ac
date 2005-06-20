@@ -1,6 +1,6 @@
 # configure.ac - for GnuPG 1.9
 # Copyright (C) 1998, 1999, 2000, 2001, 2002,
-#               2003, 2004 Free Software Foundation, Inc.
+#               2003, 2004, 2005 Free Software Foundation, Inc.
 # 
 # This file is part of GnuPG.
 # 
@@ -24,7 +24,7 @@ min_automake_version="1.9.3"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(gnupg, 1.9.17-cvs, gnupg-devel@gnupg.org)
+AC_INIT(gnupg, 1.9.17, gnupg-devel@gnupg.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
@@ -34,7 +34,7 @@ NEED_GPG_ERROR_VERSION=1.0
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.1.94
 
-NEED_LIBASSUAN_VERSION=0.6.9
+NEED_LIBASSUAN_VERSION=0.6.10
 
 NEED_KSBA_VERSION=0.9.11
 
