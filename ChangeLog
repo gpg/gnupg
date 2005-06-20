@@ -1,3 +1,7 @@
+2005-06-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note key cleaning commands.
+
 2005-06-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add check for no-pointer-sign warning keyword, and

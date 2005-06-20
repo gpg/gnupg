@@ -27,6 +27,15 @@ Noteworthy changes in version 1.4.2
       library.  It is enabled via the configure option --with-libcurl
       like the other (also experimental) cURL helpers.
 
+    * New key cleaning options that can be used to remove unusable
+      (expired, revoked) signatures from a key.  This is available via
+      the new "clean" command in --edit-key on a key by key basis, as
+      well as via the import-clean-sigs/import-clean-uids and
+      export-clean-sigs/export-clean-uids options for --import-options
+      and --export-options.  These are currently off by default, and
+      replace the import-unusable-sigs/export-unusable-sigs options
+      from version 1.4.1.
+
 
 Noteworthy changes in version 1.4.1 (2005-03-15)
 ------------------------------------------------
