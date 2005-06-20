@@ -1,3 +1,8 @@
+2005-06-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --edit-key/clean, import-clean, and
+	export-clean.
+
 2005-06-20  Werner Koch  <wk@g10code.com>
 
 	* gpg.sgml: Document smartcard related options.

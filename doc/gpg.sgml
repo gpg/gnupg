@@ -543,6 +543,36 @@ value of "none" removes a existing preferred keyserver.
     <term>toggle</term>
     <listitem><para>
 Toggle between public and secret key listing.</para></listitem></varlistentry>
+
+<varlistentry>
+<term>clean</term>
+<listitem><para>
+Cleans keys by removing unusable pieces.  This command can be used to
+keep keys neat and clean, and it has no effect aside from that.
+
+<variablelist>
+
+<varlistentry>
+<term>sigs</term>
+<listitem><para>
+Remove any signatures that are not usable by the trust calculations.
+For example, this removes any signature that does not validate.  It
+also removes any signature that is superceded by a later signature, or
+signatures that were revoked.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>uids</term>
+<listitem><para>
+Compact (by removing all signatures except the selfsig) any user ID
+that is no longer usable (e.g. revoked, or expired).
+</para></listitem></varlistentry>
+
+</variablelist>
+
+If invoked with no arguments, both `sigs' and `uids' are cleaned.
+</para></listitem></varlistentry>
+
     <varlistentry>
     <term>save</term>
     <listitem><para>
@@ -1377,6 +1407,22 @@ During import, allow key updates to existing keys, but do not allow
 any new keys to be imported.  Defaults to no.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>import-clean-sigs</term>
+<listitem><para>
+After import, remove any signatures from the new key that are not
+usable.  This is the same as running the --edit-key command "clean
+sigs" after import.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>import-clean-uids</term>
+<listitem><para>
+After import, compact (remove all signatures from) any user IDs from
+the new key that are not usable.  This is the same as running the
+--edit-key command "clean uids" after import.  Defaults to no.
+</para></listitem></varlistentry>
+
 </variablelist>
 </para></listitem></varlistentry>
 
@@ -1416,6 +1462,22 @@ Include designated revoker information that was marked as
 <listitem><para>
 Export the smallest key possible.  Currently this is done by leaving
 out any signatures that are not self-signatures.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>export-clean-sigs</term>
+<listitem><para>
+Do not export any signatures that are not usable.  This is the same as
+running the --edit-key command "clean sigs" before export.  Defaults
+to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>export-clean-uids</term>
+<listitem><para>
+Compact (remove all signatures from) user IDs on the key being
+exported if the user IDs are not usable.  This is the same as running
+the --edit-key command "clean uids" before export.  Defaults to no.
 </para></listitem></varlistentry>
 
 </variablelist>
