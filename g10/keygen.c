@@ -3543,7 +3543,7 @@ save_unprotected_key_to_card (PKT_secret_key *sk, int keyno)
 
   p = stpcpy (p,"))(10:created-at");
   sprintf (numbuf2, "%lu", (unsigned long)sk->timestamp);
-  sprintf (numbuf, "%u:", (unsigned int)strlen (numbuf2));
+  sprintf (numbuf, "%lu:", (unsigned long)strlen (numbuf2));
   p = stpcpy (stpcpy (stpcpy (p, numbuf), numbuf2), "))");
 
   rc = agent_scd_writekey (keyno, sexp, p - sexp);
