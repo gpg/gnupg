@@ -1,3 +1,8 @@
+2005-06-20  Werner Koch  <wk@g10code.com>
+
+	* g10.c, options.h: New option --no-interactive-selection.
+	* keyedit.c (keyedit_menu): Use it.
+
 2005-06-18  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (parse_signature): Use log_info for messages

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gnupg-1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
 "POT-Creation-Date: 2005-05-31 11:45+0200\n"
-"PO-Revision-Date: 2005-03-30 10:45+0200\n"
+"PO-Revision-Date: 2005-06-15 10:51+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -55,9 +55,9 @@ msgid "note: random_seed file is empty\n"
 msgstr "Hinweis: 'random_seed'-Datei ist leer\n"
 
 #: cipher/random.c:408
+#, fuzzy
 msgid "WARNING: invalid size of random_seed file - not used\n"
-msgstr ""
-"WARNUNG: Falsche GröÂße der 'random_seed'-Datei - sie wird nicht verwendet\n"
+msgstr "WARNUNG: Falsche Größe der 'random_seed'-Datei - sie wird nicht verwendet\n"
 
 #: cipher/random.c:416
 #, c-format
@@ -110,7 +110,7 @@ msgid ""
 "keep you from getting bored, because it will improve the quality\n"
 "of the entropy.\n"
 msgstr ""
-"Zufalls wird gesammelt.  Bitte arebiten Sie an etwas anderem, da\n"
+"Zufalls wird gesammelt.  Bitte arbeiten Sie an etwas anderem, da\n"
 "so die Qualität der Zufallszahlen erhöht werden kann.\n"
 
 #: cipher/rndlinux.c:135
@@ -218,7 +218,7 @@ msgstr "Fehler beim Lesen des Fingerabdrucks DO\n"
 
 #: g10/app-openpgp.c:1562
 msgid "key already exists\n"
-msgstr "Shlüssel existiert bereits\n"
+msgstr "Schlüssel existiert bereits\n"
 
 #: g10/app-openpgp.c:1566
 msgid "existing key will be replaced\n"
@@ -569,7 +569,7 @@ msgstr "Geheime Teile des Schlüssels sind nicht vorhanden\n"
 
 #: g10/card-util.c:1245
 msgid "secret key already stored on a card\n"
-msgstr "geheimer Schlüssel ist bereits auf einer Karte gepeichert\n"
+msgstr "geheimer Schlüssel ist bereits auf einer Karte gespeichert\n"
 
 #: g10/card-util.c:1316 g10/keyedit.c:1350
 msgid "quit this menu"
@@ -851,7 +851,7 @@ msgstr ""
 
 #: g10/encr-data.c:104
 msgid "problem handling encrypted packet\n"
-msgstr "Problem beim Bearbeiten des verschlüsselten Pakets\n"
+msgstr "Problem beim Bearbeiten des verschlüsselten Packets\n"
 
 #: g10/exec.c:49
 msgid "no remote program execution supported\n"
@@ -1451,11 +1451,11 @@ msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
 
 #: g10/g10.c:2779
 msgid "completes-needed must be greater than 0\n"
-msgstr "completes-needed müssen gröÂßer als 0 sein\n"
+msgstr "completes-needed müssen größer als 0 sein\n"
 
 #: g10/g10.c:2781
 msgid "marginals-needed must be greater than 1\n"
-msgstr "marginals-needed müssen gröÂßer als 1 sein\n"
+msgstr "marginals-needed müssen größer als 1 sein\n"
 
 #: g10/g10.c:2783
 #, fuzzy
@@ -1904,12 +1904,9 @@ msgid ""
 "\n"
 "If you don't know what the right answer is, answer \"0\"."
 msgstr ""
-"Wenn Sie die User-ID eines Schlüssels beglaubigen wollen, sollten Sie "
-"zunächst\n"
-"sicherstellen, daß der Schlüssel demjenigen gehört, der in der User-ID "
-"genannt\n"
-"ist. Für Dritte ist es hilfreich zu wissen, wie gut diese Zuordnung "
-"überprüft\n"
+"Wenn Sie die User-ID eines Schlüssels beglaubigen wollen, sollten Sie zunächst\n"
+"sicherstellen, daß der Schlüssel demjenigen gehört, der in der User-ID genannt\n"
+"ist. Für Dritte ist es hilfreich zu wissen, wie gut diese Zuordnung überprüft\n"
 "wurde.\n"
 "\n"
 "\"0\" zeigt, daß Sie keine bestimmte Aussage über die Sorgfalt der \n"
@@ -1920,7 +1917,7 @@ msgstr ""
 "    Dies ist hilfreich für eine \"persona\"-Überprüfung, wobei man den\n"
 "    Schlüssel eines Pseudonym-Trägers beglaubigt\n"
 "\n"
-"\"2\" Sie nahmen eine flüchtige Überprüfung vor. Das heisst Sie haben z.B.\n"
+"\"2\" Sie nahmen eine flüchtige Überprüfung vor. Das heißt Sie haben z.B.\n"
 "    den Schlüsselfingerabdruck kontrolliert und die User-ID des Schlüssels\n"
 "    anhand des Fotos geprüft.\n"
 "\n"
@@ -1928,14 +1925,12 @@ msgstr ""
 "    Das kann z.B. die Kontrolle des Schlüsselfingerabdrucks mit dem\n"
 "    Schlüsselinhaber persönlich vorgenommen haben; daß Sie die User-ID des\n"
 "    Schlüssel anhand einer schwer zu fälschenden Urkunde mit Foto (wie z.B.\n"
-"    einem Paß) abgeglichen haben und schliesslich per E-Mail-Verkehr die\n"
+"    einem Paß) abgeglichen haben und schließlich per E-Mail-Verkehr die\n"
 "    E-Mail-Adresse als zum Schlüsselbesitzer gehörig erkannt haben.\n"
 "\n"
-"Beachten Sie, daß diese Beispiele für die Antworten 2 und 3 *nur* Beispiele "
-"sind.\n"
-"Schlußendlich ist es Ihre Sache, was Sie unter \"flüchtig\" oder "
-"\"ausführlich\"\n"
-"verstehen, wenn Sie Schlüssel Dritter beglaubigen.\n"
+"Beachten Sie, daß diese Beispiele für die Antworten 2 und 3 *nur* Beispiele\n"
+"sind.  Schlußendlich ist es Ihre Sache, was Sie unter \"flüchtig\" oder\n"
+" \"ausführlich\" verstehen, wenn Sie Schlüssel Dritter beglaubigen.\n"
 "\n"
 "Wenn Sie nicht wissen, wie Sie antworten sollen, wählen Sie \"0\"."
 
@@ -1975,11 +1970,10 @@ msgid ""
 "know which key was used because this signing key might establish\n"
 "a trust connection through another already certified key."
 msgstr ""
-"Diese Beglaubigung kann nicht geprüft werden, da Sie den passenden "
-"Schlüssel\n"
+"Diese Beglaubigung kann nicht geprüft werden, da Sie den passenden Schlüssel\n"
 "nicht besitzen. Sie sollten die Löschung der Beglaubigung verschieben, bis\n"
 "sie wissen, welcher Schlüssel verwendet wurde. Denn vielleicht würde genau\n"
-"diese Beglaubigung den \"Trust\"-Weg kompletieren."
+"diese Beglaubigung den \"Trust\"-Weg komplettieren."
 
 #: g10/helptext.c:211
 msgid ""
@@ -2600,7 +2594,7 @@ msgid ""
 "trust signatures on your behalf.\n"
 msgstr ""
 "Geben Sie bitte die Tiefe dieser \"Trust\"-Unterschrift ein.\n"
-"Eine Tiefe gröÂßer 1 erlaubt dem zu unterschreibenden Schlüssel\n"
+"Eine Tiefe größer 1 erlaubt dem zu unterschreibenden Schlüssel\n"
 "Trust-Signatures für Sie zu machen.\n"
 
 #: g10/keyedit.c:451
@@ -2617,7 +2611,7 @@ msgstr "User-ID \"%s\" ist widerrufen."
 #: g10/keyedit.c:604 g10/keyedit.c:632 g10/keyedit.c:659 g10/keyedit.c:827
 #: g10/keyedit.c:890 g10/keyedit.c:1729
 msgid "Are you sure you still want to sign it? (y/N) "
-msgstr "Wollen Sie ihn immmer noch beglaubigen? (j/N) "
+msgstr "Wollen Sie ihn immer noch beglaubigen? (j/N) "
 
 #: g10/keyedit.c:618 g10/keyedit.c:646 g10/keyedit.c:673 g10/keyedit.c:833
 #: g10/keyedit.c:1735
@@ -2698,7 +2692,7 @@ msgstr "\"%s\" wurde bereits durch Schlüssel %08lX beglaubigt\n"
 
 #: g10/keyedit.c:784
 msgid "Do you want to sign it again anyway? (y/N) "
-msgstr "Wollen Sie ihn immmer noch wieder beglaubigen? (j/N) "
+msgstr "Wollen Sie ihn immer noch wieder beglaubigen? (j/N) "
 
 #: g10/keyedit.c:806
 #, fuzzy, c-format
@@ -3180,9 +3174,8 @@ msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "Möchten Sie die ausgewählten Schlüssel wirklich widerrufen? "
 
 #: g10/keyedit.c:2015
-#, fuzzy
 msgid "Do you really want to revoke this subkey? (y/N) "
-msgstr "Möchten Sie diesen Schlüssel wirklich wiederrufen? "
+msgstr "Möchten Sie diesen Schlüssel wirklich widerrufen? "
 
 #: g10/keyedit.c:2056
 msgid ""
@@ -3206,12 +3199,10 @@ msgid "Really update the preferences? (y/N) "
 msgstr "Die Voreinstellungen wirklich ändern? "
 
 #: g10/keyedit.c:2175
-#, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Änderungen speichern? "
 
 #: g10/keyedit.c:2178
-#, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Beenden ohne zu speichern? "
 
@@ -3353,7 +3344,7 @@ msgstr ""
 
 #: g10/keyedit.c:2963 g10/keyedit.c:3342
 msgid "Are you sure you still want to add it? (y/N) "
-msgstr "Wollen Sie ihn immmer noch hinzufügen? (j/N) "
+msgstr "Wollen Sie ihn immer noch hinzufügen? (j/N) "
 
 #: g10/keyedit.c:2969
 msgid "You may not add a photo ID to a PGP2-style key.\n"
@@ -3531,7 +3522,7 @@ msgstr "Diese Unterschrift ist seit %s verfallen.\n"
 
 #: g10/keyedit.c:4237
 msgid "Are you sure you still want to revoke it? (y/N) "
-msgstr "Wollen Sie ihn immmer noch widerrufen? (j/N) "
+msgstr "Wollen Sie ihn immer noch widerrufen? (j/N) "
 
 #: g10/keyedit.c:4241
 msgid "Create a revocation certificate for this signature? (y/N) "

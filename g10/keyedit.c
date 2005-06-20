@@ -1741,8 +1741,14 @@ keyedit_menu( const char *username, STRLIST locusr,
 		 && !cpr_get_answer_is_yes("keyedit.sign_all.okay",
 					   _("Really sign all user IDs?"
 					     " (y/N) ")))
-		interactive=1;
-
+                {
+                  if (opt.no_interactive_selection)
+                    {
+                      have_commands = 0;
+                      break;
+                    }
+                  interactive=1;
+                }
 	      /* What sort of signing are we doing? */
 	      if(!parse_sign_type(answer,&localsig,&nonrevokesig,&trustsig))
 		{

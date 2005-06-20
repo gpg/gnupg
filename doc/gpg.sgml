@@ -572,11 +572,38 @@ calculation has failed; probably due to an expired key.</para></listitem></varli
     </variablelist>
 </listitem></varlistentry>
 
+
+<varlistentry>
+<term>--card-edit</term>
+<listitem><para>
+Present a menu to work with a smartcard.  The subcommand "help" provides
+an overview on available commands.  For a detailed description, please
+see the Card HOWTO at 
+http://www.gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--card-status</term>
+<listitem><para>
+Show the content of the smart card.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--change-pin</term>
+<listitem><para>
+Present a menu to allow changing the PIN of a smartcard.  This
+functionality is also available as the subcommand "passwd" with the
+--card-edit command.
+</para></listitem></varlistentry>
+
+
 <varlistentry>
 <term>--sign-key &ParmName;</term>
 <listitem><para>
 Signs a public key with your secret key. This is a shortcut version of
-the subcommand "sign" from --edit.
+the subcommand "sign" from --edit.  You may also want to consider the
+option --no-interactive-selection which will drop you into the regular
+menu when not all keys shall be signed.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1030,6 +1057,14 @@ Don't make any changes (this is not completely implemented).
 <term>-i, --interactive</term>
 <listitem><para>
 Prompt before overwriting any files.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-interactive-selection</term>
+<listitem><para>
+Do not use interactive selection mode in certain menues but require
+a selection in advance.  This is currently only used with the "sign"
+subcommand of --edit-key.
 </para></listitem></varlistentry>
 
 
@@ -1619,6 +1654,43 @@ Set the name of the home directory to &ParmDir; If this option is not
 used it defaults to "~/.gnupg". It does not make sense to use this in
 a options file. This also overrides the environment variable
 $GNUPGHOME.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--pcsc-driver &ParmFile;</term>
+<listitem><para>
+Use &ParmFile; to access the smartcard reader.  The current default
+is `libpcsclite.so'.  Instead of using this option you might also
+want to install a symbolic link to the default file name
+(e.g. from `libpcsclite.so.1').
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--ctapi-driver &ParmFile;</term>
+<listitem><para>
+Use &ParmFile; to access the smartcard reader.  The current default
+is `libtowitoko.so'.  Note that the use of this interface is
+deprecated; it may be removed in future releases.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--disable-ccid</term>
+<listitem><para>
+Disable the integrated support for CCID compliant readers.  This
+allows to fall back to one of the other drivers even if the internal
+CCID driver can handle the reader.  Note, that CCID support is only
+available if libusb was available at build time.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--reader-port <parameter>number_or_string</parameter></term>
+<listitem><para>
+This option may be used to specify the port of the card terminal.  A
+value of 0 refers to the first serial device; add 32768 to access USB
+devices.  The default is 32768 (first USB device).  PC/SC or CCID
+readers might need a string here; run the program in verbose mode to get
+a list of available readers.  The default is then the first reader
+found.
 </para></listitem></varlistentry>
 
 

@@ -349,9 +349,6 @@ more arguments in future versions.
 	The supplied passphrase was good and the secret key material
 	is therefore usable.
 
-    BAD_PASSPHRASE_PIN
-        Reserved for future use.
-
     DECRYPTION_FAILED
 	The symmetric decryption failed - one reason could be a wrong
 	passphrase for a symmetrical encrypted message.
@@ -553,6 +550,7 @@ more arguments in future versions.
            2 = Request removal of a card.
            3 = Card with serialnumber detected
            4 = No card available.
+           5 = No card reader available
 
 
     PLAINTEXT <format> <timestamp>

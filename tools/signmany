@@ -15,7 +15,7 @@ for k in $kis; do
     echo "Keyid: $k"
     answer=A
     while [ "$answer" = "A" ]; do
-        gpg $ro --lock-never --sign-key $k
+        gpg $ro --lock-never --no-interactive-selection --sign-key $k
         answer=""
         while [ "$answer" = "" ]; do
            read -p 'Okay, Again or Quit? (O/A/Q) '
