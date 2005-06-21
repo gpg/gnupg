@@ -69,6 +69,18 @@ curl_mrindex_writer(const void *ptr,size_t size,size_t nmemb,void *stream)
     return 0;
 }
 
+/* Append but avoid creating a double slash // in the path. */
+static char *
+append_path(char *dest,const char *src)
+{
+  size_t n=strlen(dest);
+
+  if(src[0]=='/' && n>0 && dest[n-1]=='/')
+    dest[n-1]='\0';
+
+  return strcat(dest,src);
+}
+
 int
 send_key(int *eof)
 {
@@ -162,11 +174,10 @@ send_key(int *eof)
     strcat(request,opt->port);
   else
     strcat(request,"11371");
-  if(opt->path)
-    strcat(request,opt->path);
+  strcat(request,opt->path);
   /* request is MAX_URL+15 bytes long - MAX_URL covers the whole URL,
      including any supplied path.  The 15 covers /pks/add. */
-  strcat(request,"/pks/add");
+  append_path(request,"/pks/add");
 
   if(opt->verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
@@ -229,12 +240,11 @@ get_key(char *getkey)
     strcat(request,opt->port);
   else
     strcat(request,"11371");
-  if(opt->path)
-    strcat(request,opt->path);
+  strcat(request,opt->path);
   /* request is MAX_URL+55 bytes long - MAX_URL covers the whole URL,
      including any supplied path.  The 60 overcovers this /pks/... etc
      string plus the 8 bytes of key id */
-  strcat(request,"/pks/lookup?op=get&options=mr&search=0x");
+  append_path(request,"/pks/lookup?op=get&options=mr&search=0x");
 
   /* fingerprint or long key id.  Take the last 8 characters and treat
      it like a short key id */
@@ -301,9 +311,8 @@ search_key(char *searchkey)
     strcat(request,opt->port);
   else
     strcat(request,"11371");
-  if(opt->path)
-    strcat(request,opt->path);
-  strcat(request,"/pks/lookup?op=index&options=mr&search=");
+  strcat(request,opt->path);
+  append_path(request,"/pks/lookup?op=index&options=mr&search=");
   strcat(request,searchkey_encoded);
 
   if(opt->verbose>2)
@@ -599,7 +608,7 @@ main(int argc,char *argv[])
       fprintf(console,"Host:\t\t%s\n",opt->host);
       if(opt->port)
 	fprintf(console,"Port:\t\t%s\n",opt->port);
-      if(opt->path)
+      if(strcmp(opt->path,"/")!=0)
 	fprintf(console,"Path:\t\t%s\n",opt->path);
       fprintf(console,"Command:\t%s\n",ks_action_to_string(opt->action));
     }

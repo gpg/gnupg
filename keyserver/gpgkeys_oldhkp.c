@@ -761,6 +761,7 @@ main(int argc,char *argv[])
   int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
   unsigned int timeout=DEFAULT_KEYSERVER_TIMEOUT;
+  size_t n;
 
   console=stderr;
 
@@ -956,6 +957,11 @@ main(int argc,char *argv[])
 	}
     }
 
+  /* Avoid the double slash // in a path */
+  n=strlen(path);
+  if(n>0 && path[n-1]=='/')
+    path[n-1]='\0';
+
   if(timeout && register_timeout()==-1)
     {
       fprintf(console,"gpgkeys: unable to register timeout handler\n");
@@ -1028,7 +1034,7 @@ main(int argc,char *argv[])
       fprintf(console,"Host:\t\t%s\n",host);
       if(port[0])
 	fprintf(console,"Port:\t\t%s\n",port);
-      if(path[0])
+      if(strcmp(path,"/")!=0)
 	fprintf(console,"Path:\t\t%s\n",path);
       fprintf(console,"Command:\t%s\n",action==GET?"GET":
 	      action==SEND?"SEND":"SEARCH");

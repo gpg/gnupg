@@ -1,3 +1,9 @@
+2005-06-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (append_path, send_key, get_key, search_key,
+	main), gpgkeys_oldhkp.c (main): Properly handle double slashes in
+	paths.
+
 2005-06-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* ksutil.c (init_ks_options, parse_ks_options): Provide a default
