@@ -349,6 +349,26 @@ value of "none" removes a existing preferred keyserver.
 @item toggle
 Toggle between public and secret key listing.
 
+@item clean
+Cleans keys by removing unusable pieces. This command can be used to
+keep keys neat and clean, and it has no effect aside from that.
+
+@table @asis
+
+@item sigs
+Remove any signatures that are not usable by the trust calculations.
+For example, this removes any signature that does not validate. It
+also removes any signature that is superceded by a later signature, or
+signatures that were revoked.
+
+@item uids
+Compact (by removing all signatures except the selfsig) any user ID
+that is no longer usable (e.g. revoked, or expired).
+@end table
+
+@noindent
+If invoked with no arguments, both `sigs' and `uids' are cleaned.
+
 @item save
 Save all changes to the key rings and quit.
 
@@ -389,9 +409,25 @@ Fully trusted.
 Ultimately trusted.
 @end table
 
+@item --card-edit
+Present a menu to work with a smartcard. The subcommand "help" provides
+an overview on available commands. For a detailed description, please
+see the Card HOWTO at 
+http://www.gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .
+
+@item --card-status
+Show the content of the smart card.
+
+@item --change-pin
+Present a menu to allow changing the PIN of a smartcard. This
+functionality is also available as the subcommand "passwd" with the
+--card-edit command.
+
 @item --sign-key @code{name}
 Signs a public key with your secret key. This is a shortcut version of
-the subcommand "sign" from --edit.
+the subcommand "sign" from --edit. You may also want to consider the
+option --no-interactive-selection which will drop you into the regular
+menu when not all keys shall be signed.
 
 @item --lsign-key @code{name}
 Signs a public key with your secret key but marks it as
@@ -678,6 +714,11 @@ Don't make any changes (this is not completely implemented).
 @item -i, --interactive
 Prompt before overwriting any files.
 
+@item --no-interactive-selection
+Do not use interactive selection mode in certain menues but require
+a selection in advance. This is currently only used with the "sign"
+subcommand of --edit-key.
+
 @item --batch
 @itemx --no-batch
 Use batch mode. Never ask, do not allow interactive commands.
@@ -732,10 +773,10 @@ and "extensive" mean to you.
 This option defaults to 0 (no particular claim).
 
 @item --min-cert-level
-When building the trust database, disregard any signatures with a
-certification level below this. Defaults to 2, which disregards level
-1 signatures. Note that level 0 "no particular claim" signatures are
-always accepted.
+When building the trust database, treat any signatures with a
+certification level below this as invalid. Defaults to 2, which
+disregards level 1 signatures. Note that level 0 "no particular
+claim" signatures are always accepted.
 
 @item --trusted-key @code{long key ID}
 Assume that the specified key (which must be given
@@ -893,6 +934,16 @@ yes for keyserver --recv-keys.
 @item merge-only
 During import, allow key updates to existing keys, but do not allow
 any new keys to be imported. Defaults to no.
+
+@item import-clean-sigs
+After import, remove any signatures from the new key that are not
+usable. This is the same as running the --edit-key command "clean
+sigs" after import. Defaults to no.
+
+@item import-clean-uids
+After import, compact (remove all signatures from) any user IDs from
+the new key that are not usable. This is the same as running the
+--edit-key command "clean uids" after import. Defaults to no.
 @end table
 
 @item --export-options @code{parameters}
@@ -919,6 +970,16 @@ Include designated revoker information that was marked as
 @item export-minimal
 Export the smallest key possible. Currently this is done by leaving
 out any signatures that are not self-signatures. Defaults to no.
+
+@item export-clean-sigs
+Do not export any signatures that are not usable. This is the same as
+running the --edit-key command "clean sigs" before export. Defaults
+to no.
+
+@item export-clean-uids
+Compact (remove all signatures from) user IDs on the key being
+exported if the user IDs are not usable. This is the same as running
+the --edit-key command "clean uids" before export. Defaults to no.
 @end table
 
 @item --list-options @code{parameters}
@@ -1073,6 +1134,31 @@ used it defaults to "~/.gnupg". It does not make sense to use this in
 a options file. This also overrides the environment variable
 $GNUPGHOME.
 
+@item --pcsc-driver @code{file}
+Use @code{file} to access the smartcard reader. The current default
+is `libpcsclite.so'. Instead of using this option you might also
+want to install a symbolic link to the default file name
+(e.g. from `libpcsclite.so.1').
+
+@item --ctapi-driver @code{file}
+Use @code{file} to access the smartcard reader. The current default
+is `libtowitoko.so'. Note that the use of this interface is
+deprecated; it may be removed in future releases.
+
+@item --disable-ccid
+Disable the integrated support for CCID compliant readers. This
+allows to fall back to one of the other drivers even if the internal
+CCID driver can handle the reader. Note, that CCID support is only
+available if libusb was available at build time.
+
+@item --reader-port @code{number_or_string}
+This option may be used to specify the port of the card terminal. A
+value of 0 refers to the first serial device; add 32768 to access USB
+devices. The default is 32768 (first USB device). PC/SC or CCID
+readers might need a string here; run the program in verbose mode to get
+a list of available readers. The default is then the first reader
+found.
+
 @item --display-charset @code{name}
 Set the name of the native character set. This is used to convert
 some informational strings like user IDs to the proper UTF-8
@@ -1155,14 +1241,6 @@ most useful for use with --status-fd, since the status messages are
 needed to separate out the various subpackets from the stream
 delivered to the file descriptor.
 
-@item --sk-comments
-@itemx --no-sk-comments
-Include secret key comment packets when exporting secret keys. This
-is a GnuPG extension to the OpenPGP standard, and is off by default.
-Please note that this has nothing to do with the comments in clear
-text signatures or armor headers. --no-sk-comments disables this
-option.
-
 @item --comment @code{string}
 @itemx --no-comments
 Use @code{string} as a comment string in clear text signatures and
@@ -1171,7 +1249,7 @@ not to use a comment string. --comment may be repeated multiple times
 to get multiple comment strings. --no-comments removes all comments.
 It is a good idea to keep the length of a single comment below 60
 characters to avoid problems with mail programs wrapping such lines.
-Note, that those comment lines, like all other header lines, are not
+Note that comment lines, like all other header lines, are not
 protected by the signature.
 
 @item --emit-version
@@ -1184,15 +1262,16 @@ Force inclusion of the version string in ASCII armored output.
 @itemx -N, --set-notation @code{name=value}
 Put the name value pair into the signature as notation data.
 @code{name} must consist only of printable characters or spaces, and
-must contain a '@@' character. This is to help prevent pollution of
-the IETF reserved notation namespace. The --expert flag overrides the
-'@@' check. @code{value} may be any printable string; it will be
-encoded in UTF8, so you should check that your --display-charset is
-set correctly. If you prefix @code{name} with an exclamation mark (!),
-the notation data will be flagged as critical (rfc2440:5.2.3.15).
---sig-notation sets a notation for data signatures. --cert-notation
-sets a notation for key signatures (certifications). --set-notation
-sets both.
+must contain a '@@' character in the form keyname@@domain.example.com
+(substituting the appropriate keyname and domain name, of course).
+This is to help prevent pollution of the IETF reserved notation
+namespace. The --expert flag overrides the '@@' check. @code{value}
+may be any printable string; it will be encoded in UTF8, so you should
+check that your --display-charset is set correctly. If you prefix
+@code{name} with an exclamation mark (!), the notation data will be
+flagged as critical (rfc2440:5.2.3.15). --sig-notation sets a
+notation for data signatures. --cert-notation sets a notation for key
+signatures (certifications). --set-notation sets both.
 
 There are special codes that may be used in notation names. "%k" will
 be expanded into the key ID of the key being signed, "%K" into the
@@ -1672,14 +1751,30 @@ handing out the secret key.
 @item --ask-sig-expire
 @itemx --no-ask-sig-expire
 When making a data signature, prompt for an expiration time. If this
-option is not specified, the expiration time is "never".
---no-ask-sig-expire disables this option.
+option is not specified, the expiration time set via
+--default-sig-expire is used. --no-ask-sig-expire disables this
+option.
+
+@item --default-sig-expire
+The default expiration time to use for signature expiration. Valid
+values are "0" for no expiration, a number followed by the letter d
+(for days), w (for weeks), m (for months), or y (for years) (for
+example "2m" for two months, or "5y" for five years), or an absolute
+date in the form YYYY-MM-DD. Defaults to "0".
 
 @item --ask-cert-expire
 @itemx --no-ask-cert-expire
 When making a key signature, prompt for an expiration time. If this
-option is not specified, the expiration time is "never".
---no-ask-cert-expire disables this option.
+option is not specified, the expiration time set via
+--default-cert-expire is used. --no-ask-cert-expire disables this
+option.
+
+@item --default-cert-expire
+The default expiration time to use for key signature expiration.
+Valid values are "0" for no expiration, a number followed by the
+letter d (for days), w (for weeks), m (for months), or y (for years)
+(for example "2m" for two months, or "5y" for five years), or an
+absolute date in the form YYYY-MM-DD. Defaults to "0".
 
 @item --expert
 @itemx --no-expert
