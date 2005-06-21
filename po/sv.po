@@ -23,7 +23,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.6\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-05-31 11:45+0200\n"
+"POT-Creation-Date: 2005-06-20 19:04+0200\n"
 "PO-Revision-Date: 2004-12-01 17:49+0100\n"
 "Last-Translator: Per Tunedal <info@clipanish.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -47,7 +47,7 @@ msgstr "ingen demon för entropisamling hittad\n"
 
 #: cipher/random.c:388 g10/card-util.c:675 g10/card-util.c:744
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:182 g10/encode.c:482
-#: g10/g10.c:970 g10/g10.c:3257 g10/import.c:179 g10/keygen.c:2252
+#: g10/g10.c:971 g10/g10.c:3262 g10/import.c:185 g10/keygen.c:2252
 #: g10/keyring.c:1525 g10/openfile.c:184 g10/openfile.c:337
 #: g10/plaintext.c:472 g10/sign.c:781 g10/sign.c:935 g10/sign.c:1048
 #: g10/sign.c:1198 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
@@ -83,7 +83,7 @@ msgstr "kan inte läsa \"%s\": %s\n"
 msgid "note: random_seed file not updated\n"
 msgstr "Obs: random_seed uppdaterades inte\n"
 
-#: cipher/random.c:474 g10/exec.c:478 g10/g10.c:969 g10/keygen.c:2731
+#: cipher/random.c:474 g10/exec.c:478 g10/g10.c:970 g10/keygen.c:2731
 #: g10/keygen.c:2761 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:261
 #: g10/openfile.c:352 g10/sign.c:799 g10/sign.c:1064 g10/tdbio.c:536
 #, c-format
@@ -259,7 +259,7 @@ msgstr ""
 
 #: g10/app-openpgp.c:1749
 #, c-format
-msgid "RSA public exponent missing or largerr than %d bits\n"
+msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 
 #: g10/app-openpgp.c:1757 g10/app-openpgp.c:1764
@@ -408,7 +408,7 @@ msgid "can't do this in batch mode\n"
 msgstr "kan inte göra detta i batch-läge\n"
 
 #: g10/card-util.c:104 g10/card-util.c:1129 g10/card-util.c:1212
-#: g10/keyedit.c:421 g10/keyedit.c:442 g10/keyedit.c:456 g10/keygen.c:1290
+#: g10/keyedit.c:420 g10/keyedit.c:441 g10/keyedit.c:455 g10/keygen.c:1290
 #: g10/keygen.c:1355
 msgid "Your selection? "
 msgstr "Vad väljer du? "
@@ -476,7 +476,7 @@ msgstr "ingen tillhörande öppen nyckel: %s\n"
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:684 g10/card-util.c:753 g10/import.c:262
+#: g10/card-util.c:684 g10/card-util.c:753 g10/import.c:268
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "fel vid läsning av \"%s\": %s\n"
@@ -586,7 +586,7 @@ msgstr "   (%d) RSA (endast kryptering)\n"
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:1140 g10/card-util.c:1223 g10/keyedit.c:940
+#: g10/card-util.c:1140 g10/card-util.c:1223 g10/keyedit.c:939
 #: g10/keygen.c:1394 g10/revoke.c:643
 msgid "Invalid selection.\n"
 msgstr "Felaktigt val.\n"
@@ -611,7 +611,7 @@ msgstr "De hemliga delarna av den huvudnyckeln är inte tillgängliga.\n"
 msgid "secret key already stored on a card\n"
 msgstr "hoppade över: hemlig nyckel finns redan\n"
 
-#: g10/card-util.c:1316 g10/keyedit.c:1350
+#: g10/card-util.c:1316 g10/keyedit.c:1349
 msgid "quit this menu"
 msgstr "avsluta denna meny"
 
@@ -620,7 +620,7 @@ msgstr "avsluta denna meny"
 msgid "show admin commands"
 msgstr "motstridiga kommandon\n"
 
-#: g10/card-util.c:1319 g10/keyedit.c:1353
+#: g10/card-util.c:1319 g10/keyedit.c:1352
 msgid "show this help"
 msgstr "visa denna hjälp"
 
@@ -699,49 +699,49 @@ msgstr ""
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Felaktigt kommando (försök med \"help\")\n"
 
-#: g10/cardglue.c:430
+#: g10/cardglue.c:431
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr ""
 
-#: g10/cardglue.c:553
+#: g10/cardglue.c:554
 #, c-format
 msgid ""
 "Please remove the current card and insert the one with serial number:\n"
 "   %.*s\n"
 msgstr ""
 
-#: g10/cardglue.c:561
+#: g10/cardglue.c:562
 msgid "Hit return when ready or enter 'c' to cancel: "
 msgstr ""
 
-#: g10/cardglue.c:886
+#: g10/cardglue.c:887
 msgid "Enter New Admin PIN: "
 msgstr ""
 
-#: g10/cardglue.c:887
+#: g10/cardglue.c:888
 msgid "Enter New PIN: "
 msgstr ""
 
-#: g10/cardglue.c:888
+#: g10/cardglue.c:889
 msgid "Enter Admin PIN: "
 msgstr ""
 
-#: g10/cardglue.c:889
+#: g10/cardglue.c:890
 msgid "Enter PIN: "
 msgstr ""
 
-#: g10/cardglue.c:906
+#: g10/cardglue.c:907
 #, fuzzy
 msgid "Repeat this PIN: "
 msgstr "Repetera lösenmeningen: "
 
-#: g10/cardglue.c:920
+#: g10/cardglue.c:921
 #, fuzzy
 msgid "PIN not correctly repeated; try again"
 msgstr "lösenmeningen upprepades inte korrekt; försök igen."
 
 # se förra kommentaren
-#: g10/decrypt.c:69 g10/decrypt.c:158 g10/g10.c:3607 g10/keyring.c:377
+#: g10/decrypt.c:69 g10/decrypt.c:158 g10/g10.c:3612 g10/keyring.c:377
 #: g10/keyring.c:663 g10/verify.c:102 g10/verify.c:155
 #, c-format
 msgid "can't open `%s'\n"
@@ -751,13 +751,13 @@ msgstr "kan inte öppna \"%s\"\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output kan inte användas för detta kommando\n"
 
-#: g10/delkey.c:75 g10/export.c:170 g10/keyedit.c:3381 g10/keyserver.c:1541
+#: g10/delkey.c:75 g10/export.c:175 g10/keyedit.c:3355 g10/keyserver.c:1541
 #: g10/revoke.c:227
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "hittade inte nyckeln  `%s': %s\n"
 
-#: g10/delkey.c:83 g10/export.c:200 g10/import.c:2301 g10/keyserver.c:1555
+#: g10/delkey.c:83 g10/export.c:205 g10/import.c:2333 g10/keyserver.c:1555
 #: g10/revoke.c:233 g10/revoke.c:440
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -956,27 +956,27 @@ msgstr "VARNING: kan inte ta bort tempfil (%s) `%s': %s\n"
 msgid "WARNING: unable to remove temp directory `%s': %s\n"
 msgstr "VARNING: kunde inte ta bort temp-katalogen `%s': %s\n"
 
-#: g10/export.c:184
+#: g10/export.c:189
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "skriver hemlig nyckel till \"%s\"\n"
 
-#: g10/export.c:213
+#: g10/export.c:218
 #, fuzzy, c-format
 msgid "key %s: not protected - skipped\n"
 msgstr "nyckeln %08lX är inte skyddad - hoppade över den\n"
 
-#: g10/export.c:221
+#: g10/export.c:226
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "nyckeln %08lX: nyckel av PGP 2.x-typ - hoppade över den\n"
 
-#: g10/export.c:398
+#: g10/export.c:404
 #, fuzzy, c-format
 msgid "WARNING: secret key %s does not have a simple SK checksum\n"
 msgstr "VARNING: hemliga nyckeln %08lX har ingen enkel SK-kontrollsumma\n"
 
-#: g10/export.c:430
+#: g10/export.c:436
 msgid "WARNING: nothing exported\n"
 msgstr "VARNING: exporterade ingenting\n"
 
@@ -1195,18 +1195,18 @@ msgstr ""
 "--list-keys [namn]          visa nycklar\n"
 "--fingerprint [namn]        visa fingeravtryck\n"
 
-#: g10/g10.c:724 g10/gpgv.c:98
+#: g10/g10.c:725 g10/gpgv.c:98
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr ""
 "Rapportera gärna fel till <gnupg-bugs@gnu.org>.\n"
 "Rapportera gärna fel eller synpunkter på översättningen till <sv@li.org>.\n"
 
-#: g10/g10.c:741
+#: g10/g10.c:742
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Användning: gpg [flaggor] [filer] (-h för hjälp)"
 
 # Om inget kommando anges (decrypt/encrypt etc) väljs åtgärd efter indata.
-#: g10/g10.c:744
+#: g10/g10.c:745
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -1216,7 +1216,7 @@ msgstr ""
 "signera, kontrollera, kryptera eller dekryptera\n"
 "vilken operation som utförs beror på programmets indata\n"
 
-#: g10/g10.c:755
+#: g10/g10.c:756
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1224,483 +1224,483 @@ msgstr ""
 "\n"
 "Stödda algoritmer:\n"
 
-#: g10/g10.c:758
+#: g10/g10.c:759
 msgid "Pubkey: "
 msgstr "öppen nyckel: "
 
-#: g10/g10.c:764 g10/keyedit.c:2252
+#: g10/g10.c:765 g10/keyedit.c:2252
 msgid "Cipher: "
 msgstr "Chiffer: "
 
-#: g10/g10.c:770
+#: g10/g10.c:771
 msgid "Hash: "
 msgstr "Kontrollsumma: "
 
-#: g10/g10.c:776 g10/keyedit.c:2298
+#: g10/g10.c:777 g10/keyedit.c:2298
 msgid "Compression: "
 msgstr "Komprimering: "
 
-#: g10/g10.c:859
+#: g10/g10.c:860
 msgid "usage: gpg [options] "
 msgstr "användning: gpg [flaggor] "
 
-#: g10/g10.c:1007
+#: g10/g10.c:1008
 msgid "conflicting commands\n"
 msgstr "motstridiga kommandon\n"
 
 # Vad betyder detta?
-#: g10/g10.c:1025
+#: g10/g10.c:1026
 #, fuzzy, c-format
 msgid "no = sign found in group definition `%s'\n"
 msgstr "no = signatur hittad i gruppdefinitionen \"%s\"\n"
 
-#: g10/g10.c:1222
+#: g10/g10.c:1223
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on homedir `%s'\n"
 msgstr "VARNING: %s osäker ägare till %s\n"
 
-#: g10/g10.c:1225
+#: g10/g10.c:1226
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "VARNING: %s osäker ägare till %s\n"
 
-#: g10/g10.c:1228
+#: g10/g10.c:1229
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on extension `%s'\n"
 msgstr "VARNING: %s osäker ägare till %s\n"
 
-#: g10/g10.c:1234
+#: g10/g10.c:1235
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "WARNING: osäkra befogenheter för %s \"%s\"\n"
 
-#: g10/g10.c:1237
+#: g10/g10.c:1238
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "WARNING: osäkra befogenheter för %s \"%s\"\n"
 
-#: g10/g10.c:1240
+#: g10/g10.c:1241
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "WARNING: osäkra befogenheter för %s \"%s\"\n"
 
-#: g10/g10.c:1246
+#: g10/g10.c:1247
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr "VARNING:  osäkert att infoga katalogägarskap till %s \"%s\"\n"
 
-#: g10/g10.c:1249
+#: g10/g10.c:1250
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr "VARNING:  osäkert att infoga katalogägarskap till %s \"%s\"\n"
 
-#: g10/g10.c:1252
+#: g10/g10.c:1253
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgstr "VARNING:  osäkert att infoga katalogägarskap till %s \"%s\"\n"
 
-#: g10/g10.c:1258
+#: g10/g10.c:1259
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "VARNING:  osäkert att infoga katalogägarskap till %s \"%s\"\n"
 
-#: g10/g10.c:1261
+#: g10/g10.c:1262
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "VARNING:  osäkert att infoga katalogägarskap till %s \"%s\"\n"
 
-#: g10/g10.c:1264
+#: g10/g10.c:1265
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "VARNING:  osäkert att infoga katalogägarskap till %s \"%s\"\n"
 
-#: g10/g10.c:1405
+#: g10/g10.c:1406
 #, fuzzy, c-format
 msgid "unknown configuration item `%s'\n"
 msgstr "okänt configurationspost \"%s\"\n"
 
-#: g10/g10.c:1802
+#: g10/g10.c:1803
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "OBS: den gamla inställningsfilen \"%s\" används inte\n"
 
-#: g10/g10.c:1844
+#: g10/g10.c:1845
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "OBS: inställningsfilen \"%s\" saknas\n"
 
-#: g10/g10.c:1848
+#: g10/g10.c:1849
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "inställningsfil \"%s\": %s\n"
 
-#: g10/g10.c:1855
+#: g10/g10.c:1856
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "läser inställningar från \"%s\"\n"
 
-#: g10/g10.c:2069 g10/g10.c:2613 g10/g10.c:2632
+#: g10/g10.c:2070 g10/g10.c:2618 g10/g10.c:2637
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "OBS: %s är inte för normal användning!\n"
 
-#: g10/g10.c:2082
+#: g10/g10.c:2083
 #, fuzzy, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr "chiffertillägget \"%s\" laddades inte pga osäkra behörigheter\n"
 
-#: g10/g10.c:2236 g10/g10.c:2248
+#: g10/g10.c:2237 g10/g10.c:2249
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "%s är ingen giltig teckentabell\n"
 
-#: g10/g10.c:2321
+#: g10/g10.c:2322
 #, fuzzy, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "%s är ingen giltig teckentabell\n"
 
-#: g10/g10.c:2340 g10/keyedit.c:3897
+#: g10/g10.c:2341 g10/keyedit.c:3871
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "kunde inte tolka nyckelserver-URI\n"
 
-#: g10/g10.c:2346
+#: g10/g10.c:2347
 #, fuzzy, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s: felaktiga exportinställningar %d\n"
 
-#: g10/g10.c:2349
+#: g10/g10.c:2350
 #, fuzzy
 msgid "invalid keyserver options\n"
 msgstr "felaktiga exportinställningar\n"
 
-#: g10/g10.c:2356
+#: g10/g10.c:2357
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s: felaktiga importinställningar %d\n"
 
-#: g10/g10.c:2359
+#: g10/g10.c:2360
 msgid "invalid import options\n"
 msgstr "felaktiga importinställningar\n"
 
-#: g10/g10.c:2366
+#: g10/g10.c:2367
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s: felaktiga exportinställningar %d\n"
 
-#: g10/g10.c:2369
+#: g10/g10.c:2370
 msgid "invalid export options\n"
 msgstr "felaktiga exportinställningar\n"
 
-#: g10/g10.c:2376
+#: g10/g10.c:2377
 #, fuzzy, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s: felaktiga importinställningar %d\n"
 
-#: g10/g10.c:2379
+#: g10/g10.c:2380
 #, fuzzy
 msgid "invalid list options\n"
 msgstr "felaktiga importinställningar\n"
 
-#: g10/g10.c:2401
+#: g10/g10.c:2402
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s: felaktiga exportinställningar %d\n"
 
-#: g10/g10.c:2404
+#: g10/g10.c:2405
 #, fuzzy
 msgid "invalid verify options\n"
 msgstr "felaktiga exportinställningar\n"
 
-#: g10/g10.c:2411
+#: g10/g10.c:2412
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "kunde inte sätta exec-sökvägen till %s\n"
 
 # Programmet skapar en avbildning (image) av minnet för att lättare kunna spåra fel.
-#: g10/g10.c:2602
+#: g10/g10.c:2607
 msgid "WARNING: program may create a core file!\n"
 msgstr "VARNING: programmet kan komma att skapa en minnesutskrift!\n"
 
-#: g10/g10.c:2606
+#: g10/g10.c:2611
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "VARNING: %s gäller istället för %s\n"
 
-#: g10/g10.c:2615
+#: g10/g10.c:2620
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s är inte tillåten tillsammans med %s!\n"
 
-#: g10/g10.c:2618
+#: g10/g10.c:2623
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "det är ingen poäng att använda %s tillsammans med %s!\n"
 
-#: g10/g10.c:2625
+#: g10/g10.c:2630
 #, fuzzy, c-format
 msgid "NOTE: %s is not available in this version\n"
 msgstr "kunde inte få tillgång till GPG-Agent i denna session\n"
 
-#: g10/g10.c:2640
+#: g10/g10.c:2645
 #, fuzzy, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "skriver hemlig nyckel till \"%s\"\n"
 
-#: g10/g10.c:2654
+#: g10/g10.c:2659
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "du kan bara göra signaturer i en separat fil eller klartextsignaturer\n"
 "i --pgp2-läge\n"
 
-#: g10/g10.c:2660
+#: g10/g10.c:2665
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "du kan inte signera och kryptera samtidigt i --pgp2-läge\n"
 
-#: g10/g10.c:2666
+#: g10/g10.c:2671
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "du måste använda filer (och inte rör) i --pgp2-läge\n"
 
 # IDEA-algoritmen är patenterat i flera länder och finns därför inte med i GnuPG som standard.
-#: g10/g10.c:2679
+#: g10/g10.c:2684
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
 "för att kryptera meddelanden i --pgp2-läge krävs IDEA-insticksprogrammet\n"
 
-#: g10/g10.c:2746 g10/g10.c:2770
+#: g10/g10.c:2751 g10/g10.c:2775
 msgid "selected cipher algorithm is invalid\n"
 msgstr "den valda krypteringsalgoritmen är felaktig\n"
 
-#: g10/g10.c:2752 g10/g10.c:2776
+#: g10/g10.c:2757 g10/g10.c:2781
 msgid "selected digest algorithm is invalid\n"
 msgstr "den valda kontrollsummealgoritmen är felaktig\n"
 
-#: g10/g10.c:2758
+#: g10/g10.c:2763
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "den valda krypteringsalgoritmen är felaktig\n"
 
-#: g10/g10.c:2764
+#: g10/g10.c:2769
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "den valda kontrollsummealgoritmen är felaktig\n"
 
 # antalet betrodda signaturer som behövs (1-3) för att du ska lita på en nyckel du inte själv verifierat.
-#: g10/g10.c:2779
+#: g10/g10.c:2784
 msgid "completes-needed must be greater than 0\n"
 msgstr "variabeln \"completes-needed\" måste ha ett värde som är större än 0\n"
 
 # antalet delvis betrodda signaturer som behövs (1-3) för att du ska lita på en nyckel du inte själv verifierat.
-#: g10/g10.c:2781
+#: g10/g10.c:2786
 msgid "marginals-needed must be greater than 1\n"
 msgstr "variabeln \"marginals-needed\" måste vara större än 1\n"
 
 # Hur djupt GnuPG ska leta i Web-of-trust.
-#: g10/g10.c:2783
+#: g10/g10.c:2788
 #, fuzzy
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "variabeln \"max-cert-depth\" måste ha ett värde mellan 1 och 255\n"
 
 # Det är nivån för hurväl du har kontrollerat att nyckeln tillhör innehavaren.
-#: g10/g10.c:2785
+#: g10/g10.c:2790
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr ""
 "felaktigt standardvärde för certifieringsnivån; måste vara 0, 1, 2 eller 3\n"
 
 # Det är nivån för hurväl du har kontrollerat att nyckeln tillhör innehavaren.
-#: g10/g10.c:2787
+#: g10/g10.c:2792
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr ""
 "felaktigt minimivärde för certifieringsnivån; måste vara 0, 1, 2 eller 3\n"
 
 # S2K har med krypteringen av hemliga nyckeln att göra
-#: g10/g10.c:2790
+#: g10/g10.c:2795
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "OBS: enkelt S2K-läge (0) rekommenderas inte\n"
 
-#: g10/g10.c:2794
+#: g10/g10.c:2799
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "felaktigt S2K-läge; måste vara 0, 1 eller 3\n"
 
-#: g10/g10.c:2801
+#: g10/g10.c:2806
 msgid "invalid default preferences\n"
 msgstr "felaktiga standardinställningar\n"
 
 # Du kan ange de algoritmer du föredrar i prioritetsordning. Då avgör inte enbart standard (symmetrisk kryptering) eller mottagarens preferenser (kryptering till öppen nyckel).
-#: g10/g10.c:2810
+#: g10/g10.c:2815
 msgid "invalid personal cipher preferences\n"
 msgstr "felaktig inställning av vilka krypteringsalgoritmer du föredrar\n"
 
-#: g10/g10.c:2814
+#: g10/g10.c:2819
 msgid "invalid personal digest preferences\n"
 msgstr "felaktig inställning av vilka checksummealgoritmer du föredrar\n"
 
-#: g10/g10.c:2818
+#: g10/g10.c:2823
 msgid "invalid personal compress preferences\n"
 msgstr "felaktig inställning av vilka kompressionsalgoritmer du föredrar\n"
 
-#: g10/g10.c:2851
+#: g10/g10.c:2856
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s fungerar ännu inte med  %s\n"
 
-#: g10/g10.c:2898
+#: g10/g10.c:2903
 #, fuzzy, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "du kan inte använda chifferalgoritmen \"%s\" när du är i %s läge\n"
 
-#: g10/g10.c:2903
+#: g10/g10.c:2908
 #, fuzzy, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "du kan inte använda sammandragsalgoritmen \"%s\" när du är i %s läge\n"
 
-#: g10/g10.c:2908
+#: g10/g10.c:2913
 #, fuzzy, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr ""
 "du kan inte använda komprimeringsalgoritmen \"%s\" när du är i %s läge\n"
 
-#: g10/g10.c:3004
+#: g10/g10.c:3009
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "misslyckades med att initialisera tillitsdatabasen: %s\n"
 
-#: g10/g10.c:3015
+#: g10/g10.c:3020
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "VARNING: Du har valt mottagare (-r) trots att symmetrisk kryptering valts\n"
 
-#: g10/g10.c:3026
+#: g10/g10.c:3031
 msgid "--store [filename]"
 msgstr "--store [filnamn]"
 
-#: g10/g10.c:3033
+#: g10/g10.c:3038
 msgid "--symmetric [filename]"
 msgstr "--symmetric [filnamn]"
 
-#: g10/g10.c:3035
+#: g10/g10.c:3040
 #, fuzzy, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "dekrypteringen misslyckades: %s\n"
 
-#: g10/g10.c:3045
+#: g10/g10.c:3050
 msgid "--encrypt [filename]"
 msgstr "--encrypt [filnamn]"
 
-#: g10/g10.c:3058
+#: g10/g10.c:3063
 #, fuzzy
 msgid "--symmetric --encrypt [filename]"
 msgstr "--sign --encrypt [filnamn]"
 
-#: g10/g10.c:3060
+#: g10/g10.c:3065
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/g10.c:3063
+#: g10/g10.c:3068
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "du kan inte använda %s när du är i %s läge\n"
 
-#: g10/g10.c:3081
+#: g10/g10.c:3086
 msgid "--sign [filename]"
 msgstr "--sign [filnamn]"
 
-#: g10/g10.c:3094
+#: g10/g10.c:3099
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnamn]"
 
-#: g10/g10.c:3109
+#: g10/g10.c:3114
 #, fuzzy
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnamn]"
 
-#: g10/g10.c:3111
+#: g10/g10.c:3116
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/g10.c:3114
+#: g10/g10.c:3119
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "du kan inte använda %s när du är i %s läge\n"
 
-#: g10/g10.c:3134
+#: g10/g10.c:3139
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [filnamn]"
 
-#: g10/g10.c:3143
+#: g10/g10.c:3148
 msgid "--clearsign [filename]"
 msgstr "--clearsign [filnamn]"
 
-#: g10/g10.c:3168
+#: g10/g10.c:3173
 msgid "--decrypt [filename]"
 msgstr "--decrypt [filnamn]"
 
-#: g10/g10.c:3176
+#: g10/g10.c:3181
 msgid "--sign-key user-id"
 msgstr "--sign-key användaridentitet"
 
-#: g10/g10.c:3180
+#: g10/g10.c:3185
 msgid "--lsign-key user-id"
 msgstr "--lsign-key användaridentitet"
 
-#: g10/g10.c:3201
+#: g10/g10.c:3206
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key användaridentitet [kommandon]"
 
-#: g10/g10.c:3272
+#: g10/g10.c:3277
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [användaridentitet] [nyckelring]"
 
-#: g10/g10.c:3309
+#: g10/g10.c:3314
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "Sändning till nyckelservern misslyckades: %s\n"
 
-#: g10/g10.c:3311
+#: g10/g10.c:3316
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "Hämtning från nyckelservern misslyckades: %s\n"
 
-#: g10/g10.c:3313
+#: g10/g10.c:3318
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "Export av nyckeln misslyckades: %s\n"
 
-#: g10/g10.c:3324
+#: g10/g10.c:3329
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "Sökning på nyckelservern misslyckades: %s\n"
 
-#: g10/g10.c:3334
+#: g10/g10.c:3339
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "Uppdatering av  nyckeln från en nyckelserver misslyckades: %s\n"
 
-#: g10/g10.c:3375
+#: g10/g10.c:3380
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "misslyckades med att ta bort ASCII-skalet: %s\n"
 
-#: g10/g10.c:3383
+#: g10/g10.c:3388
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "misslyckades med att skapa ASCII-skal: %s\n"
 
-#: g10/g10.c:3470
+#: g10/g10.c:3475
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "felaktig kontrollsummealgoritm `%s'\n"
 
-#: g10/g10.c:3593
+#: g10/g10.c:3598
 msgid "[filename]"
 msgstr "[filnamn]"
 
-#: g10/g10.c:3597
+#: g10/g10.c:3602
 msgid "Go ahead and type your message ...\n"
 msgstr "Skriv ditt meddelande här ...\n"
 
-#: g10/g10.c:3887
+#: g10/g10.c:3892
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1711,31 +1711,31 @@ msgstr ""
 # user notation name??
 # Werner:
 # That is an OpenPGP notation name not registered with IANA.
-#: g10/g10.c:3895
+#: g10/g10.c:3900
 msgid "a user notation name must contain the '@' character\n"
 msgstr "ett användarnoteringsnamn måste innehålla '@'-tecknet\n"
 
 # user notation name??
 # Werner:
 # That is an OpenPGP notation name not registered with IANA.
-#: g10/g10.c:3900
+#: g10/g10.c:3905
 #, fuzzy
 msgid "a notation name must not contain more than one '@' character\n"
 msgstr "ett användarnoteringsnamn måste innehålla '@'-tecknet\n"
 
-#: g10/g10.c:3911
+#: g10/g10.c:3916
 msgid "a notation value must not use any control characters\n"
 msgstr "ett notationsvärde får inte inehålla några kontrolltecken\n"
 
-#: g10/g10.c:3945
+#: g10/g10.c:3950
 msgid "the given certification policy URL is invalid\n"
 msgstr "den angivna URL som beskriver certifikationspolicy är felaktig\n"
 
-#: g10/g10.c:3947
+#: g10/g10.c:3952
 msgid "the given signature policy URL is invalid\n"
 msgstr "den angivna URL som beskriver signaturpolicy är felaktig\n"
 
-#: g10/g10.c:3980
+#: g10/g10.c:3985
 #, fuzzy
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "den angivna URL som beskriver signaturpolicy är felaktig\n"
@@ -1744,29 +1744,29 @@ msgstr "den angivna URL som beskriver signaturpolicy är felaktig\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "för många poster i pk-cachen - avstängd\n"
 
-#: g10/getkey.c:187 g10/getkey.c:2757
+#: g10/getkey.c:187 g10/getkey.c:2759
 #, fuzzy
 msgid "[User ID not found]"
 msgstr "[Hittade inte användaridentiteten]"
 
-#: g10/getkey.c:1684
+#: g10/getkey.c:1683
 #, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "Ogiltig nyckel %08lX  tvingat giltig med --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2235
+#: g10/getkey.c:2237
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
 "det finns ingen hemlig undernyckel tillhörande den öppna undernyckeln %08lX "
 "- hoppar över\n"
 
-#: g10/getkey.c:2466
+#: g10/getkey.c:2468
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "använder undernyckeln %08lX istället för huvudnyckeln %08lX\n"
 
-#: g10/getkey.c:2513
+#: g10/getkey.c:2515
 #, fuzzy, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "nyckel %08lX: hemlig nyckel utan öppen nyckel - hoppade över den\n"
@@ -2141,359 +2141,389 @@ msgstr "Det finns ingen hjälp tillgänglig"
 msgid "No help available for `%s'"
 msgstr "Det finns ingen hjälp tillgänglig för \"%s\""
 
-#: g10/import.c:248
+#: g10/import.c:254
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "hoppar över block av typen %d\n"
 
-#: g10/import.c:257
+#: g10/import.c:263
 #, fuzzy, c-format
 msgid "%lu keys processed so far\n"
 msgstr "har behandlat %lu nycklar hittills\n"
 
-#: g10/import.c:274
+#: g10/import.c:280
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "  Totalt antal behandlade enheter: %lu\n"
 
-#: g10/import.c:276
+#: g10/import.c:282
 #, c-format
 msgid "      skipped new keys: %lu\n"
 msgstr "          överhoppade nya nycklar: %lu\n"
 
-#: g10/import.c:279
+#: g10/import.c:285
 #, c-format
 msgid "          w/o user IDs: %lu\n"
 msgstr "         utan användaridentiteter: %lu\n"
 
-#: g10/import.c:281
+#: g10/import.c:287
 #, c-format
 msgid "              imported: %lu"
 msgstr "                      importerade: %lu"
 
-#: g10/import.c:287
+#: g10/import.c:293
 #, c-format
 msgid "             unchanged: %lu\n"
 msgstr "                      oförändrade: %lu\n"
 
-#: g10/import.c:289
+#: g10/import.c:295
 #, c-format
 msgid "          new user IDs: %lu\n"
 msgstr "          nya användaridentiteter: %lu\n"
 
-#: g10/import.c:291
+#: g10/import.c:297
 #, c-format
 msgid "           new subkeys: %lu\n"
 msgstr "                 nya undernycklar: %lu\n"
 
-#: g10/import.c:293
+#: g10/import.c:299
 #, c-format
 msgid "        new signatures: %lu\n"
 msgstr "                   nya signaturer: %lu\n"
 
-#: g10/import.c:295
+#: g10/import.c:301
 #, c-format
 msgid "   new key revocations: %lu\n"
 msgstr "  nya spärrar av nycklar: %lu\n"
 
-#: g10/import.c:297
+#: g10/import.c:303
 #, c-format
 msgid "      secret keys read: %lu\n"
 msgstr "      antal lästa hemliga nycklar: %lu\n"
 
-#: g10/import.c:299
+#: g10/import.c:305
 #, c-format
 msgid "  secret keys imported: %lu\n"
 msgstr "antal importerade hemliga nycklar: %lu\n"
 
-#: g10/import.c:301
+#: g10/import.c:307
 #, c-format
 msgid " secret keys unchanged: %lu\n"
 msgstr "antal oförändrade hemliga nycklar: %lu\n"
 
-#: g10/import.c:303
+#: g10/import.c:309
 #, c-format
 msgid "          not imported: %lu\n"
 msgstr "                   inte importerade: %lu\n"
 
-#: g10/import.c:544
+#: g10/import.c:311
+#, fuzzy, c-format
+msgid "    signatures cleaned: %lu\n"
+msgstr "                   nya signaturer: %lu\n"
+
+#: g10/import.c:313
+#, fuzzy, c-format
+msgid "      user IDs cleaned: %lu\n"
+msgstr "      antal lästa hemliga nycklar: %lu\n"
+
+#: g10/import.c:554
 #, c-format
 msgid "WARNING: key %s contains preferences for unavailable\n"
 msgstr ""
 
-#: g10/import.c:546
+#: g10/import.c:556
 #, fuzzy
 msgid "algorithms on these user IDs:\n"
 msgstr "Du har signerat följande användaridentiteter:\n"
 
-#: g10/import.c:583
+#: g10/import.c:593
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr ""
 
-#: g10/import.c:595
+#: g10/import.c:605
 #, fuzzy, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
 msgstr "%s signatur, sammandragsalgoritm %s\n"
 
-#: g10/import.c:607
+#: g10/import.c:617
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr ""
 
-#: g10/import.c:620
+#: g10/import.c:630
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr ""
 
-#: g10/import.c:622
+#: g10/import.c:632
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 
-#: g10/import.c:646
+#: g10/import.c:656
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
 msgstr ""
 
-#: g10/import.c:694 g10/import.c:1048
+#: g10/import.c:718 g10/import.c:1104
 #, fuzzy, c-format
 msgid "key %s: no user ID\n"
 msgstr "nyckel %08lX: ingen användaridentitet\n"
 
 # Undernyckeln är skadad på HKP-servern. Vanligt fel vid många undernycklar.
-#: g10/import.c:714
+#: g10/import.c:748
 #, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "nyckeln %08lX: HKP-skadad undernyckel har reparerats!\n"
 
 # vad innebär fnutten i slutet?
-#: g10/import.c:729
+#: g10/import.c:763
 #, fuzzy, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
 msgstr ""
 "nyckel %08lX: accepterade användaridentitet ID '%s' som saknar egensignatur\n"
 
-#: g10/import.c:735
+#: g10/import.c:769
 #, fuzzy, c-format
 msgid "key %s: no valid user IDs\n"
 msgstr "nyckel %08lX: inga giltiga användaridentiteter\n"
 
-#: g10/import.c:737
+#: g10/import.c:771
 msgid "this may be caused by a missing self-signature\n"
 msgstr "detta kan bero på att det saknas en egensignatur\n"
 
-#: g10/import.c:747 g10/import.c:1169
+#: g10/import.c:781 g10/import.c:1225
 #, fuzzy, c-format
 msgid "key %s: public key not found: %s\n"
 msgstr "nyckel %08lX: hittade ingen öppen nyckel: %s\n"
 
-#: g10/import.c:753
+#: g10/import.c:787
 #, fuzzy, c-format
 msgid "key %s: new key - skipped\n"
 msgstr "nyckel %08lX: ny nyckel - hoppade över den\n"
 
-#: g10/import.c:762
+#: g10/import.c:796
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "hittade ingen nyckelring som gick att skriva till: %s\n"
 
-#: g10/import.c:767 g10/openfile.c:265 g10/sign.c:804 g10/sign.c:1069
+#: g10/import.c:801 g10/openfile.c:265 g10/sign.c:804 g10/sign.c:1069
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "skriver till \"%s\"\n"
 
-#: g10/import.c:773 g10/import.c:863 g10/import.c:1088 g10/import.c:1230
-#: g10/import.c:2315 g10/import.c:2337
+#: g10/import.c:807 g10/import.c:905 g10/import.c:1144 g10/import.c:1286
+#: g10/import.c:2347 g10/import.c:2369
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "fel vid skrivning av nyckelringen \"%s\": %s\n"
 
 # fixme: I appended the %s -wk
-#: g10/import.c:792
+#: g10/import.c:826
 #, fuzzy, c-format
 msgid "key %s: public key \"%s\" imported\n"
 msgstr "nyckel %08lX: importerade öppen nyckel \"%s\"\n"
 
-#: g10/import.c:816
+#: g10/import.c:850
 #, fuzzy, c-format
 msgid "key %s: doesn't match our copy\n"
 msgstr "nyckel %08lX: matchar inte vår lokala kopia\n"
 
-#: g10/import.c:833 g10/import.c:1187
+#: g10/import.c:867 g10/import.c:1243
 #, fuzzy, c-format
 msgid "key %s: can't locate original keyblock: %s\n"
 msgstr "nyckel %08lX: kan inte hitta det ursprungliga nyckelblocket: %s\n"
 
-#: g10/import.c:841 g10/import.c:1194
+#: g10/import.c:875 g10/import.c:1250
 #, fuzzy, c-format
 msgid "key %s: can't read original keyblock: %s\n"
 msgstr "nyckel %08lX: kan inte läsa det ursprungliga nyckelblocket %s\n"
 
-#: g10/import.c:873
+#: g10/import.c:915
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "nyckel %08lX: \"%s\" 1 ny användaridentitet\n"
 
-#: g10/import.c:876
+#: g10/import.c:918
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new user IDs\n"
 msgstr "nyckel %08lX: \"%s\" %d nya användar-IDn\n"
 
-#: g10/import.c:879
+#: g10/import.c:921
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new signature\n"
 msgstr "nyckel %08lX: \"%s\" 1 ny signatur\n"
 
-#: g10/import.c:882
+#: g10/import.c:924
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new signatures\n"
 msgstr "nyckel %08lX: \"%s\" %d nya signaturer\n"
 
-#: g10/import.c:885
+#: g10/import.c:927
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new subkey\n"
 msgstr "nyckel %08lX: \"%s\" 1 ny undernyckel\n"
 
-#: g10/import.c:888
+#: g10/import.c:930
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new subkeys\n"
 msgstr "nyckel %08lX: \"%s\" %d nya undernycklar\n"
 
-#: g10/import.c:909
+#: g10/import.c:933
+#, fuzzy, c-format
+msgid "key %s: \"%s\" %d signature cleaned\n"
+msgstr "nyckel %08lX: \"%s\" %d nya signaturer\n"
+
+#: g10/import.c:936
+#, fuzzy, c-format
+msgid "key %s: \"%s\" %d signatures cleaned\n"
+msgstr "nyckel %08lX: \"%s\" %d nya signaturer\n"
+
+#: g10/import.c:939
+#, fuzzy, c-format
+msgid "key %s: \"%s\" %d user ID cleaned\n"
+msgstr "nyckel %08lX: \"%s\" %d nya användar-IDn\n"
+
+#: g10/import.c:942
+#, fuzzy, c-format
+msgid "key %s: \"%s\" %d user IDs cleaned\n"
+msgstr "nyckel %08lX: \"%s\" %d nya användar-IDn\n"
+
+#: g10/import.c:965
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "nyckel %08lX: \"%s\" inte ändrad\n"
 
-#: g10/import.c:1054
+#: g10/import.c:1110
 #, fuzzy, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr ""
 "nyckel %08lX: hemlig nyckel med ogiltig krypteringsalgoritm %d - hoppade "
 "över den\n"
 
-#: g10/import.c:1065
+#: g10/import.c:1121
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "skriver hemlig nyckel till \"%s\"\n"
 
-#: g10/import.c:1082 g10/import.c:2330
+#: g10/import.c:1138 g10/import.c:2362
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "ingen hemlig nyckelring angiven som standard: %s\n"
 
-#: g10/import.c:1093
+#: g10/import.c:1149
 #, fuzzy, c-format
 msgid "key %s: secret key imported\n"
 msgstr "nyckel %08lX: den hemliga nyckeln är importerad\n"
 
-#: g10/import.c:1122
+#: g10/import.c:1178
 #, fuzzy, c-format
 msgid "key %s: already in secret keyring\n"
 msgstr "nyckel %08lX: finns redan i den hemliga nyckelringen\n"
 
-#: g10/import.c:1132
+#: g10/import.c:1188
 #, fuzzy, c-format
 msgid "key %s: secret key not found: %s\n"
 msgstr "nyckel %08lX: hittade inte den hemliga nyckeln: %s\n"
 
-#: g10/import.c:1162
+#: g10/import.c:1218
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "nyckel %08lX: öppen nyckel saknas - kan inte spärra nyckeln med "
 "spärrcertifikatet\n"
 
-#: g10/import.c:1205
+#: g10/import.c:1261
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
 msgstr "nyckel %08lX: ogiltigt spärrcertifikat: %s - avvisat\n"
 
-#: g10/import.c:1237
+#: g10/import.c:1293
 #, fuzzy, c-format
 msgid "key %s: \"%s\" revocation certificate imported\n"
 msgstr "nyckel %08lX: \"%s\" spärrcertifikat importerat\n"
 
-#: g10/import.c:1302
+#: g10/import.c:1358
 #, fuzzy, c-format
 msgid "key %s: no user ID for signature\n"
 msgstr "nyckel %08lX: ingen användaridentitet för signaturen\n"
 
 # fixme: I appended the %s -wk
-#: g10/import.c:1317
+#: g10/import.c:1373
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
 "nyckel %08lX: algoritmen för öppna nycklar stöds inte för användar-ID  \"%s"
 "\"\n"
 
-#: g10/import.c:1319
+#: g10/import.c:1375
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "nyckel %08lX: ogiltig egensignatur på användar-id \"%s\"\n"
 
-#: g10/import.c:1337
+#: g10/import.c:1393
 #, fuzzy, c-format
 msgid "key %s: no subkey for key binding\n"
 msgstr "nyckel %08lX: ingen undernyckel för nyckelbindning\n"
 
-#: g10/import.c:1348 g10/import.c:1398
+#: g10/import.c:1404 g10/import.c:1454
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "nyckel %08lX: algoritmen för öppna nycklar stöds inte\n"
 
-#: g10/import.c:1350
+#: g10/import.c:1406
 #, fuzzy, c-format
 msgid "key %s: invalid subkey binding\n"
 msgstr "nyckel %08lX: ogiltig undernyckelbindning\n"
 
-#: g10/import.c:1365
+#: g10/import.c:1421
 #, fuzzy, c-format
 msgid "key %s: removed multiple subkey binding\n"
 msgstr "nyckel %08lX: tog bort multipla bindningar av undernyckel\n"
 
-#: g10/import.c:1387
+#: g10/import.c:1443
 #, fuzzy, c-format
 msgid "key %s: no subkey for key revocation\n"
 msgstr "nyckel %08lX: ingen undernyckel för spärr av nyckeln\n"
 
-#: g10/import.c:1400
+#: g10/import.c:1456
 #, fuzzy, c-format
 msgid "key %s: invalid subkey revocation\n"
 msgstr "nyckel %08lX: ogiltig spärr av undernyckel\n"
 
-#: g10/import.c:1415
+#: g10/import.c:1471
 #, fuzzy, c-format
 msgid "key %s: removed multiple subkey revocation\n"
 msgstr "nyckel %08lX: tog bort multipla spärrar av undernyckel\n"
 
-#: g10/import.c:1457
+#: g10/import.c:1513
 #, fuzzy, c-format
 msgid "key %s: skipped user ID \"%s\"\n"
 msgstr "nyckel %08lX: hoppade över användaridentitet '"
 
-#: g10/import.c:1478
+#: g10/import.c:1534
 #, fuzzy, c-format
 msgid "key %s: skipped subkey\n"
 msgstr "nyckel %08lX: hoppade över undernyckel\n"
 
-#: g10/import.c:1505
+#: g10/import.c:1561
 #, fuzzy, c-format
 msgid "key %s: non exportable signature (class 0x%02X) - skipped\n"
 msgstr ""
 "nyckel %08lX: icke exporterbar signatur (klass %02x) - hoppade över den\n"
 
-#: g10/import.c:1515
+#: g10/import.c:1571
 #, fuzzy, c-format
 msgid "key %s: revocation certificate at wrong place - skipped\n"
 msgstr ""
 "nyckel %08lX: spärrcertifikat på fel plats - hoppade över certifikatet\n"
 
 # nyckeln eller certifikatet??
-#: g10/import.c:1532
+#: g10/import.c:1588
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - skipped\n"
 msgstr "nyckel %08lX: ogiltigt spärrcertifikat: %s - hoppade över det\n"
 
-#: g10/import.c:1546
+#: g10/import.c:1602
 #, fuzzy, c-format
 msgid "key %s: subkey signature in wrong place - skipped\n"
 msgstr ""
@@ -2501,56 +2531,49 @@ msgstr ""
 "signaturen\n"
 
 # nyckeln eller klassen?
-#: g10/import.c:1554
+#: g10/import.c:1610
 #, fuzzy, c-format
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr ""
 "nyckel %08lX: oväntad signaturklass  (0x%02X) - hoppade över signaturen\n"
 
-# nyckeln eller klassen?
-#: g10/import.c:1575
-#, fuzzy, c-format
-msgid "key %s: expired signature from key %s - skipped\n"
-msgstr ""
-"nyckel %08lX: oväntad signaturklass  (0x%02X) - hoppade över signaturen\n"
-
-#: g10/import.c:1678
+#: g10/import.c:1710
 #, fuzzy, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr ""
 "nyckel %08lX: användaridentitet hittades flera gånger - slog ihop till en\n"
 
-#: g10/import.c:1740
+#: g10/import.c:1772
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr "VARNING: nyckeln %08lX kan ha spärrats: Hämtar spärrnyckel %08lX\n"
 
-#: g10/import.c:1754
+#: g10/import.c:1786
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr "VARNING: nyckeln %08lX kan ha spärrats: Spärrnyckeln %08lX saknas.\n"
 
-#: g10/import.c:1813
+#: g10/import.c:1845
 #, fuzzy, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "nyckel %08lX: \"%s\" spärrcertifikat importerat\n"
 
-#: g10/import.c:1847
+#: g10/import.c:1879
 #, fuzzy, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "nyckel %08lX: lagt till direkt nyckelsignatur\n"
 
-#: g10/import.c:2236
+#: g10/import.c:2268
 #, fuzzy
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "den öppna nyckel passar inte ihop med den hemliga nyckeln!\n"
 
-#: g10/import.c:2244
+#: g10/import.c:2276
 #, fuzzy
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "hoppade över: hemlig nyckel finns redan\n"
 
-#: g10/import.c:2246
+#: g10/import.c:2278
 #, fuzzy
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "hoppade över: hemlig nyckel finns redan\n"
@@ -2575,51 +2598,51 @@ msgstr "Fel vid skapande av `%s': %s\n"
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "misslyckades med att återskapa nyckelringscache: %s\n"
 
-#: g10/keyedit.c:262
+#: g10/keyedit.c:261
 msgid "[revocation]"
 msgstr "[spärrad]"
 
-#: g10/keyedit.c:263
+#: g10/keyedit.c:262
 msgid "[self-signature]"
 msgstr "[egensignatur]"
 
-#: g10/keyedit.c:341 g10/keylist.c:406
+#: g10/keyedit.c:340 g10/keylist.c:406
 msgid "1 bad signature\n"
 msgstr "1 felaktig signatur\n"
 
-#: g10/keyedit.c:343 g10/keylist.c:408
+#: g10/keyedit.c:342 g10/keylist.c:408
 #, c-format
 msgid "%d bad signatures\n"
 msgstr "%d felaktiga signaturer\n"
 
-#: g10/keyedit.c:345 g10/keylist.c:410
+#: g10/keyedit.c:344 g10/keylist.c:410
 msgid "1 signature not checked due to a missing key\n"
 msgstr "1 signatur verifierades inte eftersom nyckeln saknades\n"
 
-#: g10/keyedit.c:347 g10/keylist.c:412
+#: g10/keyedit.c:346 g10/keylist.c:412
 #, c-format
 msgid "%d signatures not checked due to missing keys\n"
 msgstr "%d signaturer verifierades inte eftersom nycklar saknades\n"
 
-#: g10/keyedit.c:349 g10/keylist.c:414
+#: g10/keyedit.c:348 g10/keylist.c:414
 msgid "1 signature not checked due to an error\n"
 msgstr "1 signatur verifierades inte eftersom ett fel uppstod\n"
 
-#: g10/keyedit.c:351 g10/keylist.c:416
+#: g10/keyedit.c:350 g10/keylist.c:416
 #, c-format
 msgid "%d signatures not checked due to errors\n"
 msgstr "%d signaturer verifierades inte eftersom fel uppstod\n"
 
-#: g10/keyedit.c:353
+#: g10/keyedit.c:352
 msgid "1 user ID without valid self-signature detected\n"
 msgstr "1 användaridentitet utan giltig egensignatur hittades\n"
 
-#: g10/keyedit.c:355
+#: g10/keyedit.c:354
 #, c-format
 msgid "%d user IDs without valid self-signatures detected\n"
 msgstr "%d användaridentiteter utan giltig egensignatur hittades\n"
 
-#: g10/keyedit.c:411 g10/pkclist.c:263
+#: g10/keyedit.c:410 g10/pkclist.c:263
 #, fuzzy
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -2633,63 +2656,63 @@ msgstr ""
 "källor...)?\n"
 "\n"
 
-#: g10/keyedit.c:415 g10/pkclist.c:275
+#: g10/keyedit.c:414 g10/pkclist.c:275
 #, fuzzy, c-format
 msgid "  %d = I trust marginally\n"
 msgstr " %d = Jag litar marginellt på denna användare\n"
 
-#: g10/keyedit.c:416 g10/pkclist.c:277
+#: g10/keyedit.c:415 g10/pkclist.c:277
 #, fuzzy, c-format
 msgid "  %d = I trust fully\n"
 msgstr " %d = Jag litar fullständigt på denna användare\n"
 
-#: g10/keyedit.c:435
+#: g10/keyedit.c:434
 msgid ""
 "Please enter the depth of this trust signature.\n"
 "A depth greater than 1 allows the key you are signing to make\n"
 "trust signatures on your behalf.\n"
 msgstr ""
 
-#: g10/keyedit.c:451
+#: g10/keyedit.c:450
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
 msgstr ""
 
-#: g10/keyedit.c:595
+#: g10/keyedit.c:594
 #, c-format
 msgid "User ID \"%s\" is revoked."
 msgstr "Användar-ID \"%s\" är spärrat."
 
-#: g10/keyedit.c:604 g10/keyedit.c:632 g10/keyedit.c:659 g10/keyedit.c:827
-#: g10/keyedit.c:890 g10/keyedit.c:1729
+#: g10/keyedit.c:603 g10/keyedit.c:631 g10/keyedit.c:658 g10/keyedit.c:826
+#: g10/keyedit.c:889 g10/keyedit.c:1729
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Vill du verkligen fortfarande signera den? (j/N)"
 
-#: g10/keyedit.c:618 g10/keyedit.c:646 g10/keyedit.c:673 g10/keyedit.c:833
+#: g10/keyedit.c:617 g10/keyedit.c:645 g10/keyedit.c:672 g10/keyedit.c:832
 #: g10/keyedit.c:1735
 msgid "  Unable to sign.\n"
 msgstr "  Kan inte signera.\n"
 
-#: g10/keyedit.c:623
+#: g10/keyedit.c:622
 #, c-format
 msgid "User ID \"%s\" is expired."
 msgstr "Giltighetstiden för nvändar-ID \"%s\" har gått ut.."
 
-#: g10/keyedit.c:651
+#: g10/keyedit.c:650
 #, c-format
 msgid "User ID \"%s\" is not self-signed."
 msgstr "Användar-ID \"%s\" saknar egensignatur."
 
-#: g10/keyedit.c:679
+#: g10/keyedit.c:678
 #, fuzzy, c-format
 msgid "User ID \"%s\" is signable.  "
 msgstr "Användar-ID \"%s\" saknar egensignatur."
 
-#: g10/keyedit.c:681
+#: g10/keyedit.c:680
 #, fuzzy
 msgid "Sign it? (y/N) "
 msgstr "Vill du verkligen signera? "
 
-#: g10/keyedit.c:703
+#: g10/keyedit.c:702
 #, c-format
 msgid ""
 "The self-signature on \"%s\"\n"
@@ -2698,11 +2721,11 @@ msgstr ""
 "Egensignaturen på \"%s\"\n"
 "är en signatur av PGP 2.x-typ.\n"
 
-#: g10/keyedit.c:712
+#: g10/keyedit.c:711
 msgid "Do you want to promote it to an OpenPGP self-signature? (y/N) "
 msgstr "Will du göra om den till en egensignatur av OpenPGP-typ? (j/N) "
 
-#: g10/keyedit.c:726
+#: g10/keyedit.c:725
 #, c-format
 msgid ""
 "Your current signature on \"%s\"\n"
@@ -2711,13 +2734,13 @@ msgstr ""
 "Giltighetstiden för din nuvarande signatur på \"%s\"\n"
 "har gått ut.\n"
 
-#: g10/keyedit.c:730
+#: g10/keyedit.c:729
 msgid "Do you want to issue a new signature to replace the expired one? (y/N) "
 msgstr ""
 "Vill du skapa en ny signatur som ersätter den vars giltighetstid gått ut? (J/"
 "n) "
 
-#: g10/keyedit.c:751
+#: g10/keyedit.c:750
 #, c-format
 msgid ""
 "Your current signature on \"%s\"\n"
@@ -2726,44 +2749,44 @@ msgstr ""
 "Din nuvarande signatur på \"%s\"\n"
 "är en lokal signatur.\n"
 
-#: g10/keyedit.c:755
+#: g10/keyedit.c:754
 msgid "Do you want to promote it to a full exportable signature? (y/N) "
 msgstr "Vill du ändra den till en fullständigt exporterbar signatur? (j/N) "
 
-#: g10/keyedit.c:776
+#: g10/keyedit.c:775
 #, fuzzy, c-format
 msgid "\"%s\" was already locally signed by key %s\n"
 msgstr "\"%s\" var redan signerad lokalt av nyckeln %08lX\n"
 
-#: g10/keyedit.c:779
+#: g10/keyedit.c:778
 #, fuzzy, c-format
 msgid "\"%s\" was already signed by key %s\n"
 msgstr "\"%s\" var redan signerad av nyckeln %08lX\n"
 
-#: g10/keyedit.c:784
+#: g10/keyedit.c:783
 msgid "Do you want to sign it again anyway? (y/N) "
 msgstr "Vill du verkligen signera den igen ändå?(j/N)"
 
-#: g10/keyedit.c:806
+#: g10/keyedit.c:805
 #, fuzzy, c-format
 msgid "Nothing to sign with key %s\n"
 msgstr "Det finns inget att signera med nyckeln %08lX\n"
 
-#: g10/keyedit.c:821
+#: g10/keyedit.c:820
 msgid "This key has expired!"
 msgstr "Giltighetstiden för denna nyckel har gått ut!"
 
-#: g10/keyedit.c:841
+#: g10/keyedit.c:840
 #, c-format
 msgid "This key is due to expire on %s.\n"
 msgstr "Denna nyckels giltighetstid går ut vid %s.\n"
 
-#: g10/keyedit.c:845
+#: g10/keyedit.c:844
 msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr ""
 "Vill du att giltighetstiden för signaturen ska upphöra vid samma tid? (J/n) "
 
-#: g10/keyedit.c:883
+#: g10/keyedit.c:882
 msgid ""
 "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
 "mode.\n"
@@ -2771,11 +2794,11 @@ msgstr ""
 "Du kan inte göra en OpenPGP-signatur på en PGP 2.x-nyckel när du är i --pgp2-"
 "läge\n"
 
-#: g10/keyedit.c:885
+#: g10/keyedit.c:884
 msgid "This would make the key unusable in PGP 2.x.\n"
 msgstr "Detta skulle göra nyckeln oanvändbar i PGP 2.x.\n"
 
-#: g10/keyedit.c:910
+#: g10/keyedit.c:909
 msgid ""
 "How carefully have you verified the key you are about to sign actually "
 "belongs\n"
@@ -2784,33 +2807,33 @@ msgstr ""
 "Hur noga har du kontrollerat att nyckeln du ska signera verkligen tillhör\n"
 "personen som nämns ovan?  Om du inte vet vad du ska svara, svara \"0\".\n"
 
-#: g10/keyedit.c:915
+#: g10/keyedit.c:914
 #, c-format
 msgid "   (0) I will not answer.%s\n"
 msgstr ""
 "     (0) Jag vill inte ange hur noga jag har kontrollerat identiteten.%s\n"
 
-#: g10/keyedit.c:917
+#: g10/keyedit.c:916
 #, c-format
 msgid "   (1) I have not checked at all.%s\n"
 msgstr "     (1) Jag har inte kontrollerat identiteten alls.%s\n"
 
-#: g10/keyedit.c:919
+#: g10/keyedit.c:918
 #, c-format
 msgid "   (2) I have done casual checking.%s\n"
 msgstr "     (2) Jag har gjort viss kontroll av identiteten.%s\n"
 
-#: g10/keyedit.c:921
+#: g10/keyedit.c:920
 #, c-format
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "     (3) Jag har gjort en noggrann kontroll av identiteten.%s\n"
 
-#: g10/keyedit.c:927
+#: g10/keyedit.c:926
 #, fuzzy
 msgid "Your selection? (enter `?' for more information): "
 msgstr "Ditt val? (skriv '?' för mer information): "
 
-#: g10/keyedit.c:951
+#: g10/keyedit.c:950
 #, fuzzy, c-format
 msgid ""
 "Are you sure that you want to sign this key with your\n"
@@ -2819,14 +2842,14 @@ msgstr ""
 "Är du verkligen säker på att du vill signera denna nyckel\n"
 "med din nyckel: \""
 
-#: g10/keyedit.c:958
+#: g10/keyedit.c:957
 #, fuzzy
 msgid "This will be a self-signature.\n"
 msgstr ""
 "\n"
 "Detta kommer att bli en egensignatur\n"
 
-#: g10/keyedit.c:964
+#: g10/keyedit.c:963
 #, fuzzy
 msgid "WARNING: the signature will not be marked as non-exportable.\n"
 msgstr ""
@@ -2834,7 +2857,7 @@ msgstr ""
 "VARNING: signaturen kommer att markeras som exporterbar.\n"
 "\n"
 
-#: g10/keyedit.c:972
+#: g10/keyedit.c:971
 #, fuzzy
 msgid "WARNING: the signature will not be marked as non-revocable.\n"
 msgstr ""
@@ -2842,7 +2865,7 @@ msgstr ""
 "VARNING: Signaturen kommer att markeras som möjlig att spärra.\n"
 "\n"
 
-#: g10/keyedit.c:982
+#: g10/keyedit.c:981
 #, fuzzy
 msgid "The signature will be marked as non-exportable.\n"
 msgstr ""
@@ -2850,7 +2873,7 @@ msgstr ""
 "Signaturen kommer att markeras som icke exporterbar.\n"
 "\n"
 
-#: g10/keyedit.c:989
+#: g10/keyedit.c:988
 #, fuzzy
 msgid "The signature will be marked as non-revocable.\n"
 msgstr ""
@@ -2858,65 +2881,65 @@ msgstr ""
 "Signaturen kommer att markeras som icke möjlig att återkalla.\n"
 "\n"
 
-#: g10/keyedit.c:996
+#: g10/keyedit.c:995
 #, fuzzy
 msgid "I have not checked this key at all.\n"
 msgstr ""
 "\n"
 "Jag har inte kontrollerat identiteten alls.\n"
 
-#: g10/keyedit.c:1001
+#: g10/keyedit.c:1000
 #, fuzzy
 msgid "I have checked this key casually.\n"
 msgstr ""
 "\n"
 "Jag har gjort viss kontroll av identiteten.\n"
 
-#: g10/keyedit.c:1006
+#: g10/keyedit.c:1005
 #, fuzzy
 msgid "I have checked this key very carefully.\n"
 msgstr ""
 "\n"
 "Jag har gjort en noggrann kontroll av identiteten.\n"
 
-#: g10/keyedit.c:1016
+#: g10/keyedit.c:1015
 #, fuzzy
 msgid "Really sign? (y/N) "
 msgstr "Vill du verkligen signera? "
 
-#: g10/keyedit.c:1061 g10/keyedit.c:4385 g10/keyedit.c:4476 g10/keyedit.c:4540
-#: g10/keyedit.c:4601 g10/sign.c:370
+#: g10/keyedit.c:1060 g10/keyedit.c:4359 g10/keyedit.c:4450 g10/keyedit.c:4514
+#: g10/keyedit.c:4575 g10/sign.c:370
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "signeringen misslyckades: %s\n"
 
-#: g10/keyedit.c:1126
+#: g10/keyedit.c:1125
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-#: g10/keyedit.c:1137 g10/keygen.c:3065
+#: g10/keyedit.c:1136 g10/keygen.c:3065
 msgid "This key is not protected.\n"
 msgstr "Denna nyckel är inte skyddad.\n"
 
-#: g10/keyedit.c:1141 g10/keygen.c:3053
+#: g10/keyedit.c:1140 g10/keygen.c:3053
 msgid "Secret parts of primary key are not available.\n"
 msgstr "De hemliga delarna av den huvudnyckeln är inte tillgängliga.\n"
 
-#: g10/keyedit.c:1145 g10/keygen.c:3068
+#: g10/keyedit.c:1144 g10/keygen.c:3068
 #, fuzzy
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "De hemliga delarna av den huvudnyckeln är inte tillgängliga.\n"
 
-#: g10/keyedit.c:1149 g10/keygen.c:3072
+#: g10/keyedit.c:1148 g10/keygen.c:3072
 msgid "Key is protected.\n"
 msgstr "Nyckeln är skyddad.\n"
 
-#: g10/keyedit.c:1173
+#: g10/keyedit.c:1172
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "Kan inte redigera denna nyckel: %s\n"
 
-#: g10/keyedit.c:1179
+#: g10/keyedit.c:1178
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
@@ -2924,11 +2947,11 @@ msgstr ""
 "Skriv in den nya lösenmening för denna hemliga nyckel.\n"
 "\n"
 
-#: g10/keyedit.c:1188 g10/keygen.c:1828
+#: g10/keyedit.c:1187 g10/keygen.c:1828
 msgid "passphrase not correctly repeated; try again"
 msgstr "lösenmeningen upprepades inte korrekt; försök igen."
 
-#: g10/keyedit.c:1193
+#: g10/keyedit.c:1192
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
@@ -2936,177 +2959,182 @@ msgstr ""
 "Du vill inte ha någon lösenmening - detta är sannolikt en *dålig* idé!\n"
 "\n"
 
-#: g10/keyedit.c:1196
+#: g10/keyedit.c:1195
 #, fuzzy
 msgid "Do you really want to do this? (y/N) "
 msgstr "Vill du verkligen göra detta? "
 
-#: g10/keyedit.c:1267
+#: g10/keyedit.c:1266
 msgid "moving a key signature to the correct place\n"
 msgstr "flyttar en nyckelsignatur till den rätta platsen\n"
 
-#: g10/keyedit.c:1352
+#: g10/keyedit.c:1351
 msgid "save and quit"
 msgstr "spara och avsluta"
 
-#: g10/keyedit.c:1355
+#: g10/keyedit.c:1354
 #, fuzzy
 msgid "show key fingerprint"
 msgstr "visa fingeravtryck"
 
-#: g10/keyedit.c:1356
+#: g10/keyedit.c:1355
 msgid "list key and user IDs"
 msgstr "visa en lista på nycklar och användaridentiteter"
 
-#: g10/keyedit.c:1358
+#: g10/keyedit.c:1357
 msgid "select user ID N"
 msgstr "välj användaridentitet N"
 
-#: g10/keyedit.c:1359
+#: g10/keyedit.c:1358
 #, fuzzy
 msgid "select subkey N"
 msgstr "välj användaridentitet N"
 
-#: g10/keyedit.c:1360
+#: g10/keyedit.c:1359
 #, fuzzy
 msgid "check signatures"
 msgstr "återkalla signaturer"
 
-#: g10/keyedit.c:1363
+#: g10/keyedit.c:1362
 msgid "sign selected user IDs [* see below for related commands]"
 msgstr ""
 
-#: g10/keyedit.c:1368
+#: g10/keyedit.c:1367
 #, fuzzy
 msgid "sign selected user IDs locally"
 msgstr "signera nyckeln lokalt"
 
-#: g10/keyedit.c:1370
+#: g10/keyedit.c:1369
 #, fuzzy
 msgid "sign selected user IDs with a trust signature"
 msgstr "Tips: Välj de användarID:n du vill signera\n"
 
-#: g10/keyedit.c:1372
+#: g10/keyedit.c:1371
 msgid "sign selected user IDs with a non-revocable signature"
 msgstr ""
 
-#: g10/keyedit.c:1376
+#: g10/keyedit.c:1375
 msgid "add a user ID"
 msgstr "lägg till en användaridentitet"
 
-#: g10/keyedit.c:1378
+#: g10/keyedit.c:1377
 msgid "add a photo ID"
 msgstr "lägg till ett foto som användaridentitet"
 
-#: g10/keyedit.c:1380
+#: g10/keyedit.c:1379
 #, fuzzy
 msgid "delete selected user IDs"
 msgstr "ta bort en användaridentitet"
 
-#: g10/keyedit.c:1385
+#: g10/keyedit.c:1384
 #, fuzzy
 msgid "add a subkey"
 msgstr "addkey"
 
-#: g10/keyedit.c:1389
+#: g10/keyedit.c:1388
 msgid "add a key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1391
+#: g10/keyedit.c:1390
 msgid "move a key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1393
+#: g10/keyedit.c:1392
 msgid "move a backup key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1397
+#: g10/keyedit.c:1396
 #, fuzzy
 msgid "delete selected subkeys"
 msgstr "ta bort en undernyckel"
 
-#: g10/keyedit.c:1399
+#: g10/keyedit.c:1398
 msgid "add a revocation key"
 msgstr "lägg till en spärrnyckel"
 
-#: g10/keyedit.c:1401
+#: g10/keyedit.c:1400
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr ""
 "Vill du verkligen ändra inställningarna för de valda användaridentiteterna? "
 
-#: g10/keyedit.c:1403
+#: g10/keyedit.c:1402
 #, fuzzy
 msgid "change the expiration date for the key or selected subkeys"
 msgstr "Du kan inte ändra giltighetsdatum för en v3-nyckel\n"
 
-#: g10/keyedit.c:1405
+#: g10/keyedit.c:1404
 #, fuzzy
 msgid "flag the selected user ID as primary"
 msgstr "markera användaridentiteten som huvudidentitet"
 
-#: g10/keyedit.c:1407
+#: g10/keyedit.c:1406
 #, fuzzy
 msgid "toggle between the secret and public key listings"
 msgstr "hoppa mellan att visa en lista på hemliga eller öppna nycklar"
 
-#: g10/keyedit.c:1410
+#: g10/keyedit.c:1409
 msgid "list preferences (expert)"
 msgstr "visa en lista på  inställningar (expertläge)"
 
-#: g10/keyedit.c:1412
+#: g10/keyedit.c:1411
 msgid "list preferences (verbose)"
 msgstr "visa en lista på inställningar (utförligt)"
 
-#: g10/keyedit.c:1414
+#: g10/keyedit.c:1413
 #, fuzzy
 msgid "set preference list for the selected user IDs"
 msgstr ""
 "Vill du verkligen ändra inställningarna för de valda användaridentiteterna? "
 
-#: g10/keyedit.c:1419
+#: g10/keyedit.c:1418
 #, fuzzy
 msgid "set preferred keyserver URL for the selected user IDs"
 msgstr "kunde inte tolka nyckelserver-URI\n"
 
-#: g10/keyedit.c:1421
+#: g10/keyedit.c:1420
 msgid "change the passphrase"
 msgstr "ändra lösenmening"
 
 # originalet borde ha ett value
-#: g10/keyedit.c:1425
+#: g10/keyedit.c:1424
 msgid "change the ownertrust"
 msgstr "ändra ägartillitsvärdet"
 
-#: g10/keyedit.c:1427
+#: g10/keyedit.c:1426
 #, fuzzy
 msgid "revoke signatures on the selected user IDs"
 msgstr "Vill du verkligen spärra alla valda användaridentiteter? "
 
-#: g10/keyedit.c:1429
+#: g10/keyedit.c:1428
 #, fuzzy
 msgid "revoke selected user IDs"
 msgstr "spärra en användaridentitet"
 
-#: g10/keyedit.c:1434
+#: g10/keyedit.c:1433
 #, fuzzy
 msgid "revoke key or selected subkeys"
 msgstr "spärra en undernyckel"
 
-#: g10/keyedit.c:1435
+#: g10/keyedit.c:1434
 #, fuzzy
 msgid "enable key"
 msgstr "aktivera en nyckel"
 
-#: g10/keyedit.c:1436
+#: g10/keyedit.c:1435
 #, fuzzy
 msgid "disable key"
 msgstr "stäng av en nyckel"
 
-#: g10/keyedit.c:1437
+#: g10/keyedit.c:1436
 #, fuzzy
 msgid "show selected photo IDs"
 msgstr "visa foto-ID"
+
+#: g10/keyedit.c:1438
+#, fuzzy
+msgid "clean unusable parts from key"
+msgstr "oanvändbar hemlig nyckel"
 
 #: g10/keyedit.c:1557
 #, fuzzy, c-format
@@ -3142,114 +3170,114 @@ msgstr "Nyckeln är spärrad."
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Vill du verkligen signera alla användaridentiteter? "
 
-#: g10/keyedit.c:1749
+#: g10/keyedit.c:1755
 #, fuzzy, c-format
 msgid "Unknown signature type `%s'\n"
 msgstr "okänd signaturklass"
 
-#: g10/keyedit.c:1772
+#: g10/keyedit.c:1778
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
 
-#: g10/keyedit.c:1794 g10/keyedit.c:1814 g10/keyedit.c:1980
+#: g10/keyedit.c:1800 g10/keyedit.c:1820 g10/keyedit.c:1986
 msgid "You must select at least one user ID.\n"
 msgstr "Du måste välja åtminstone en användaridentitet.\n"
 
-#: g10/keyedit.c:1796
+#: g10/keyedit.c:1802
 msgid "You can't delete the last user ID!\n"
 msgstr "Du kan inte ta bort den sista användaridentiteten!\n"
 
-#: g10/keyedit.c:1798
+#: g10/keyedit.c:1804
 #, fuzzy
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "Vill du verkligen ta bort alla valda användaridentiteter? "
 
-#: g10/keyedit.c:1799
+#: g10/keyedit.c:1805
 #, fuzzy
 msgid "Really remove this user ID? (y/N) "
 msgstr "Vill du verkligen ta bort denna användaridentitet? "
 
-#: g10/keyedit.c:1849
+#: g10/keyedit.c:1855
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Vill du verkligen radera denna egensignatur? (j/N)"
 
-#: g10/keyedit.c:1861
+#: g10/keyedit.c:1867
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Du måste välja åtminstone en nyckel.\n"
 
-#: g10/keyedit.c:1889
+#: g10/keyedit.c:1895
 msgid "Command expects a filename argument\n"
 msgstr ""
 
-#: g10/keyedit.c:1903
+#: g10/keyedit.c:1909
 #, fuzzy, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "kan inte öppna \"%s\": %s\n"
 
-#: g10/keyedit.c:1920
+#: g10/keyedit.c:1926
 #, fuzzy, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "fel vid skapande av nyckelringen \"%s\": %s\n"
 
-#: g10/keyedit.c:1944
+#: g10/keyedit.c:1950
 msgid "You must select at least one key.\n"
 msgstr "Du måste välja åtminstone en nyckel.\n"
 
-#: g10/keyedit.c:1947
+#: g10/keyedit.c:1953
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Vill du verkligen ta bort valda nycklar? "
 
-#: g10/keyedit.c:1948
+#: g10/keyedit.c:1954
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Vill du verkligen ta bort denna nyckel? "
 
-#: g10/keyedit.c:1983
+#: g10/keyedit.c:1989
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Vill du verkligen spärra alla valda användaridentiteter? "
 
-#: g10/keyedit.c:1984
+#: g10/keyedit.c:1990
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Vill du verkligen spärra denna användaridentitet? "
 
-#: g10/keyedit.c:2002
+#: g10/keyedit.c:2008
 #, fuzzy
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr "Vill du verkligen spärra denna nyckel? "
 
-#: g10/keyedit.c:2013
+#: g10/keyedit.c:2019
 #, fuzzy
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "Vill du verkligen spärra de valda nycklarna? "
 
-#: g10/keyedit.c:2015
+#: g10/keyedit.c:2021
 #, fuzzy
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Vill du verkligen spärra denna nyckel? "
 
-#: g10/keyedit.c:2056
+#: g10/keyedit.c:2062
 msgid ""
 "Owner trust may not be set while using an user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:2088
+#: g10/keyedit.c:2094
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "ange inställningslista"
 
-#: g10/keyedit.c:2094
+#: g10/keyedit.c:2100
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr ""
 "Vill du verkligen ändra inställningarna för de valda användaridentiteterna? "
 
-#: g10/keyedit.c:2096
+#: g10/keyedit.c:2102
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Vill du verkligen ändra inställningarna?"
@@ -3368,16 +3396,14 @@ msgstr ""
 "Obs! Den visade nyckelgiltigheten kan vara felaktig\n"
 "om du inte startar om programmet.\n"
 
-#: g10/keyedit.c:2831 g10/keyedit.c:3204 g10/keyedit.c:3237
-#: g10/keyserver.c:431 g10/mainproc.c:1594 g10/trustdb.c:1179
-#: g10/trustdb.c:1690 g10/trustdb.c:1751
+#: g10/keyedit.c:2831 g10/keyedit.c:3208 g10/keyserver.c:431
+#: g10/mainproc.c:1594 g10/trustdb.c:1179 g10/trustdb.c:1698
 #, fuzzy
 msgid "revoked"
 msgstr "[spärrad]"
 
-#: g10/keyedit.c:2833 g10/keyedit.c:3206 g10/keyedit.c:3239
-#: g10/keyserver.c:435 g10/mainproc.c:1596 g10/trustdb.c:532
-#: g10/trustdb.c:1692 g10/trustdb.c:1753
+#: g10/keyedit.c:2833 g10/keyedit.c:3210 g10/keyserver.c:435
+#: g10/mainproc.c:1596 g10/trustdb.c:532 g10/trustdb.c:1700
 #, fuzzy
 msgid "expired"
 msgstr "expire"
@@ -3401,7 +3427,7 @@ msgstr ""
 "vissa versioner\n"
 "         av PGP avvisa denna nyckel.\n"
 
-#: g10/keyedit.c:2963 g10/keyedit.c:3342
+#: g10/keyedit.c:2963 g10/keyedit.c:3316
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Vill du verkligen fortfarande lägga till den? (j/N) "
 
@@ -3445,12 +3471,12 @@ msgstr "Ingenting raderat.\n"
 msgid "User ID \"%s\": already clean.\n"
 msgstr "Användar-ID \"%s\" är redan spärrad\n"
 
-#: g10/keyedit.c:3208 g10/keyedit.c:3241 g10/trustdb.c:1694 g10/trustdb.c:1755
+#: g10/keyedit.c:3212 g10/trustdb.c:1702
 #, fuzzy
 msgid "invalid"
 msgstr "felaktigt skal"
 
-#: g10/keyedit.c:3337
+#: g10/keyedit.c:3311
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3459,33 +3485,33 @@ msgstr ""
 "VARNING: Detta är en PGP 2-nyckel. Om du anger en spärrnyckel kan denna "
 "nyckel inte användas i vissa versioner av PGP.\n"
 
-#: g10/keyedit.c:3348
+#: g10/keyedit.c:3322
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Du får inte ange en spärrnyckel för en PGP 2-nyckel.\n"
 
-#: g10/keyedit.c:3368
+#: g10/keyedit.c:3342
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Ange användar-ID för spärrnyckeln: "
 
-#: g10/keyedit.c:3391
+#: g10/keyedit.c:3365
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "det går inte att använda en PGP 2-nyckel som spärrnyckel\n"
 
-#: g10/keyedit.c:3406
+#: g10/keyedit.c:3380
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "Du kan inte ange en nyckel som sin egen spärrnyckel\n"
 
-#: g10/keyedit.c:3428
+#: g10/keyedit.c:3402
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "VARNING: Denna nyckel har spärrats med sin spärrnyckel!\n"
 
-#: g10/keyedit.c:3447
+#: g10/keyedit.c:3421
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "VARNING: det går aldrig att ändra om du utser en spärrnyckel!\n"
 
 # designated = angiven (utnämnd, utpekad, bestämd, utsedd, avsedd, angiven, designerad)
-#: g10/keyedit.c:3453
+#: g10/keyedit.c:3427
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
@@ -3493,152 +3519,152 @@ msgstr ""
 "Är du verkligen säker på att du vill utse denna nyckel till spärrnyckel? (j/"
 "N): "
 
-#: g10/keyedit.c:3514
+#: g10/keyedit.c:3488
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Tag bort markeringar från de hemliga nycklarna.\n"
 
-#: g10/keyedit.c:3520
+#: g10/keyedit.c:3494
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Välj som högst en undernyckel.\n"
 
-#: g10/keyedit.c:3524
+#: g10/keyedit.c:3498
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Ändrar giltighetstid för en undernyckel.\n"
 
-#: g10/keyedit.c:3527
+#: g10/keyedit.c:3501
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Ändrar giltighetstid för huvudnyckeln.\n"
 
-#: g10/keyedit.c:3573
+#: g10/keyedit.c:3547
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Du kan inte ändra giltighetsdatum för en v3-nyckel\n"
 
-#: g10/keyedit.c:3589
+#: g10/keyedit.c:3563
 msgid "No corresponding signature in secret ring\n"
 msgstr "Det finns ingen motsvarande signatur i den hemliga nyckelringen\n"
 
-#: g10/keyedit.c:3669
+#: g10/keyedit.c:3643
 msgid "Please select exactly one user ID.\n"
 msgstr "Du måste välja bara en användaridentitet.\n"
 
-#: g10/keyedit.c:3708 g10/keyedit.c:3818 g10/keyedit.c:3938
+#: g10/keyedit.c:3682 g10/keyedit.c:3792 g10/keyedit.c:3912
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "hoppar över v3 egensignatur på användar-id \"%s\"\n"
 
-#: g10/keyedit.c:3879
+#: g10/keyedit.c:3853
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
 # Obs! Syftar på bildfilen med ditt foto. Meddelandet visas om du valt en mycket stor fil.
-#: g10/keyedit.c:3959
+#: g10/keyedit.c:3933
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Vill du verkligen använda det (j/N)?"
 
 # Obs! Syftar på bildfilen med ditt foto. Meddelandet visas om du valt en mycket stor fil.
-#: g10/keyedit.c:3960
+#: g10/keyedit.c:3934
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Vill du verkligen använda det (j/N)?"
 
-#: g10/keyedit.c:4022
+#: g10/keyedit.c:3996
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Ingen användaridentitet med index %d\n"
 
-#: g10/keyedit.c:4080
+#: g10/keyedit.c:4054
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Ingen användaridentitet med index %d\n"
 
-#: g10/keyedit.c:4107
+#: g10/keyedit.c:4081
 #, fuzzy, c-format
 msgid "No subkey with index %d\n"
 msgstr "Ingen användaridentitet med index %d\n"
 
-#: g10/keyedit.c:4224
+#: g10/keyedit.c:4198
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "användaridentitet: \""
 
-#: g10/keyedit.c:4227 g10/keyedit.c:4291 g10/keyedit.c:4334
+#: g10/keyedit.c:4201 g10/keyedit.c:4265 g10/keyedit.c:4308
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr ""
 "\"\n"
 "signerad med din nyckel %08lX %s\n"
 
-#: g10/keyedit.c:4229 g10/keyedit.c:4293 g10/keyedit.c:4336
+#: g10/keyedit.c:4203 g10/keyedit.c:4267 g10/keyedit.c:4310
 msgid " (non-exportable)"
 msgstr "  (icke exporterbar)"
 
-#: g10/keyedit.c:4233
+#: g10/keyedit.c:4207
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Denna signatur gick ut den %s.\n"
 
 # nyckel? signatur?
-#: g10/keyedit.c:4237
+#: g10/keyedit.c:4211
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Vill du verkligen spärra denna nyckel? (j/N)"
 
-#: g10/keyedit.c:4241
+#: g10/keyedit.c:4215
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Vill du skapa ett spärrcertifikat för denna signatur? (j/N)"
 
-#: g10/keyedit.c:4268
+#: g10/keyedit.c:4242
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Du har signerat följande användaridentiteter:\n"
 
-#: g10/keyedit.c:4294
+#: g10/keyedit.c:4268
 #, fuzzy
 msgid " (non-revocable)"
 msgstr "  (icke exporterbar)"
 
-#: g10/keyedit.c:4301
+#: g10/keyedit.c:4275
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   spärrad av %08lX %s\n"
 
-#: g10/keyedit.c:4323
+#: g10/keyedit.c:4297
 msgid "You are about to revoke these signatures:\n"
 msgstr "Du står i begrepp att återkalla dessa signaturer:\n"
 
-#: g10/keyedit.c:4343
+#: g10/keyedit.c:4317
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Vill du verkligen skapa spärrcertifikatet? (y/N) "
 
-#: g10/keyedit.c:4373
+#: g10/keyedit.c:4347
 msgid "no secret key\n"
 msgstr "ingen hemlig nyckel\n"
 
-#: g10/keyedit.c:4443
+#: g10/keyedit.c:4417
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "Användar-ID \"%s\" är redan spärrad\n"
 
-#: g10/keyedit.c:4460
+#: g10/keyedit.c:4434
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "VARNING: en signatur på ett användar-ID är daterad %d sekunder in i "
 "framtiden\n"
 
-#: g10/keyedit.c:4524
+#: g10/keyedit.c:4498
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "Användar-ID \"%s\" är redan spärrad\n"
 
-#: g10/keyedit.c:4586
+#: g10/keyedit.c:4560
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "Användar-ID \"%s\" är redan spärrad\n"
 
-#: g10/keyedit.c:4681
+#: g10/keyedit.c:4655
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Visar %s foto-ID med storleken %ld för nyckeln 0x%08lX (uid %d)\n"
@@ -3992,7 +4018,7 @@ msgstr ""
 "Du behöver en lösenmening för att skydda din hemliga nyckel\n"
 "\n"
 
-#: g10/keygen.c:1829 g10/passphrase.c:786
+#: g10/keygen.c:1829 g10/passphrase.c:779
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
@@ -4719,34 +4745,34 @@ msgstr "VARNING: potentiellt osäker symmetriskt krypterad sessionsnyckel\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "underpaket av typen %d har den bit satt som markerar den som kritisk\n"
 
-#: g10/passphrase.c:305
+#: g10/passphrase.c:298
 msgid "gpg-agent is not available in this session\n"
 msgstr "kunde inte få tillgång till GPG-Agent i denna session\n"
 
-#: g10/passphrase.c:317
+#: g10/passphrase.c:310
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "miljövariabeln GPG_AGENT_INFO är felformaterad\n"
 
-#: g10/passphrase.c:332
+#: g10/passphrase.c:325
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "GPG-Agent protokoll version %d stöds inte\n"
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:338
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "kan inte ansluta till \"%s\": %s\n"
 
-#: g10/passphrase.c:358 g10/passphrase.c:634 g10/passphrase.c:721
+#: g10/passphrase.c:351 g10/passphrase.c:627 g10/passphrase.c:714
 msgid "problem with the agent - disabling agent use\n"
 msgstr "problem med GPG-Agent, stänger av den\n"
 
-#: g10/passphrase.c:511 g10/passphrase.c:890
+#: g10/passphrase.c:504 g10/passphrase.c:883
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (huvudnyckelns identitet %08lX)"
 
-#: g10/passphrase.c:525
+#: g10/passphrase.c:518
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -4757,28 +4783,28 @@ msgstr ""
 "användaren: \"%.*s\"\n"
 "%u-bitars %s-nyckel, ID %08lX, skapad %s%s\n"
 
-#: g10/passphrase.c:550
+#: g10/passphrase.c:543
 msgid "Repeat passphrase\n"
 msgstr "Repetera lösenmeningen\n"
 
-#: g10/passphrase.c:552
+#: g10/passphrase.c:545
 msgid "Enter passphrase\n"
 msgstr "Ange lösenmening\n"
 
-#: g10/passphrase.c:628
+#: g10/passphrase.c:621
 msgid "cancelled by user\n"
 msgstr "avbruten av användaren\n"
 
-#: g10/passphrase.c:781 g10/passphrase.c:944
+#: g10/passphrase.c:774 g10/passphrase.c:937
 #, fuzzy
 msgid "can't query passphrase in batch mode\n"
 msgstr "kan inte fråga efter lösenmening i batch-läge\n"
 
-#: g10/passphrase.c:788 g10/passphrase.c:949
+#: g10/passphrase.c:781 g10/passphrase.c:942
 msgid "Enter passphrase: "
 msgstr "Ange lösenmening: "
 
-#: g10/passphrase.c:871
+#: g10/passphrase.c:864
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -4788,17 +4814,17 @@ msgstr ""
 "Du behöver en lösenmening för att låsa upp den hemliga nyckeln för\n"
 "användaren: \""
 
-#: g10/passphrase.c:877
+#: g10/passphrase.c:870
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-bits  %s-nyckel, ID %08lX, skapad %s"
 
-#: g10/passphrase.c:886
+#: g10/passphrase.c:879
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
 
-#: g10/passphrase.c:953
+#: g10/passphrase.c:946
 msgid "Repeat passphrase: "
 msgstr "Repetera lösenmeningen: "
 
@@ -5838,7 +5864,7 @@ msgstr ""
 msgid "no need for a trustdb check\n"
 msgstr "det behövs ingen kontroll av tillitsdatabasen\n"
 
-#: g10/trustdb.c:583 g10/trustdb.c:2369
+#: g10/trustdb.c:583 g10/trustdb.c:2334
 #, c-format
 msgid "next trustdb check due at %s\n"
 msgstr "nästa kontroll av tillitsdatabasen kommer att äga rum %s\n"
@@ -5868,34 +5894,34 @@ msgid "checking the trustdb\n"
 msgstr "kontrollerar  tillitsdatabasen\n"
 
 # Vad är detta!?
-#: g10/trustdb.c:2113
+#: g10/trustdb.c:2078
 #, c-format
 msgid "%d keys processed (%d validity counts cleared)\n"
 msgstr "%d nycklar behandlade (%d validity counts rensade)\n"
 
-#: g10/trustdb.c:2177
+#: g10/trustdb.c:2142
 msgid "no ultimately trusted keys found\n"
 msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
 
-#: g10/trustdb.c:2191
+#: g10/trustdb.c:2156
 #, fuzzy, c-format
 msgid "public key of ultimately trusted key %s not found\n"
 msgstr ""
 "Hittar inte den öppna nyckeln tillhörande den förbehållslöst betrodda "
 "nyckeln %08lX \n"
 
-#: g10/trustdb.c:2214
+#: g10/trustdb.c:2179
 #, c-format
 msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
 msgstr ""
 
-#: g10/trustdb.c:2300
+#: g10/trustdb.c:2265
 #, c-format
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
 
-#: g10/trustdb.c:2375
+#: g10/trustdb.c:2340
 #, fuzzy, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "tillitspost: %lu, typ %d: kunde inte skriva: %s\n"
@@ -6208,6 +6234,12 @@ msgstr "operationen är inte möjlig utan tillgång till säkert minne\n"
 #: util/secmem.c:345
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(du kan ha använt fel program för denna uppgift)\n"
+
+# nyckeln eller klassen?
+#, fuzzy
+#~ msgid "key %s: expired signature from key %s - skipped\n"
+#~ msgstr ""
+#~ "nyckel %08lX: oväntad signaturklass  (0x%02X) - hoppade över signaturen\n"
 
 #, fuzzy
 #~ msgid "Unable to clean `%s'\n"
