@@ -1,3 +1,8 @@
+2005-06-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.h: Fix prototypes for http_open_document and http_open to
+	pass in auth and proxyauth.
+
 2005-05-19  Werner Koch  <wk@g10code.com>
 
 	* util.h: Add definitions for membuf functions.

@@ -36,7 +36,7 @@ typedef struct uri_tuple *URI_TUPLE;
 struct parsed_uri {
     /* all these pointers point into buffer; most stuff is not escaped */
     char *scheme;	/* pointer to the scheme string (lowercase) */
-    char *auth;         /* username/password for basic auth */
+    const char *auth;   /* username/password for basic auth */
     char *host; 	/* host (converted to lowercase) */
     ushort port;	/* port (always set if the host is set) */
     char *path; 	/* the path */
@@ -76,11 +76,13 @@ struct http_context {
 typedef struct http_context *HTTP_HD;
 
 int http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
-	       unsigned int flags, const char *proxy );
+	       const char *auth, unsigned int flags, const char *proxy,
+	       const char *proxyauth );
 void http_start_data( HTTP_HD hd );
 int  http_wait_response( HTTP_HD hd, unsigned int *ret_status );
 void http_close( HTTP_HD hd );
-int http_open_document( HTTP_HD hd, const char *document,
-			unsigned int flags, const char *proxy );
+int http_open_document( HTTP_HD hd, const char *document, const char *auth,
+			unsigned int flags, const char *proxy,
+			const char *proxyauth );
 
 #endif /*G10_HTTP_H*/
