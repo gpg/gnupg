@@ -33,7 +33,9 @@
 void *
 memrchr(const void *s, int c, size_t n)
 {
-  const unsigned char *start=s,*end=s+n-1;
+  const unsigned char *start=s,*end=s;
+
+  end+=n-1;
 
   while(end>=start)
     {

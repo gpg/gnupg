@@ -1,3 +1,9 @@
+2005-06-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* memrchr.c (memrchr): Not all compilers allow initializing based
+	on a variable that is also being initialized.  Noted by Nelson
+	H. F. Beebe.
+
 2005-06-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (send_request, http_open, http_open_document): Pass in
