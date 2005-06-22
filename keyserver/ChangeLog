@@ -1,3 +1,9 @@
+2005-06-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c (get_key), gpgkeys_oldhkp.c (send_key, get_key,
+	search_key): Fix http_open/http_open_document calls to pass NULL
+	for auth and proxyauth since these programs pass them in the URL.
+
 2005-06-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (append_path, send_key, get_key, search_key,
