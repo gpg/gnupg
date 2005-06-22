@@ -1,3 +1,8 @@
+2005-06-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (send_request): Need == after the radix64-encoded basic
+	auth string.
+
 2005-06-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* dotlock.c [HAVE_DOSISH_SYSTEM]: Fix unused function warnings on

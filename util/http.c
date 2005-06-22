@@ -530,8 +530,8 @@ send_request( HTTP_HD hd, const char *proxy )
 	if(uri->auth)
 	  {
 	    char *x=make_radix64_string(uri->auth,strlen(uri->auth));
-	    auth=m_alloc(50+strlen(x));
-	    sprintf(auth,"Proxy-Authorization: Basic %s\r\n",x);
+	    auth=m_alloc(52+strlen(x));
+	    sprintf(auth,"Proxy-Authorization: Basic %s==\r\n",x);
 	    m_free(x);
 	  }
 
@@ -543,8 +543,8 @@ send_request( HTTP_HD hd, const char *proxy )
 	if(hd->uri->auth)
 	  {
 	    char *x=make_radix64_string(hd->uri->auth,strlen(hd->uri->auth));
-	    auth=m_alloc(50+strlen(x));
-	    sprintf(auth,"Authorization: Basic %s\r\n",x);
+	    auth=m_alloc(52+strlen(x));
+	    sprintf(auth,"Authorization: Basic %s==\r\n",x);
 	    m_free(x);
 	  }
       }
