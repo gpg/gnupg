@@ -69,7 +69,7 @@ static int remove_escapes( byte *string );
 static int insert_escapes( byte *buffer, const byte *string,
 					 const byte *special );
 static URI_TUPLE parse_tuple( byte *string );
-static int send_request( HTTP_HD hd, const char *proxy );
+static int send_request( HTTP_HD hd, const char *proxy, const char *proxyauth);
 static byte *build_rel_path( PARSED_URI uri );
 static int parse_response( HTTP_HD hd );
 
@@ -146,7 +146,8 @@ make_radix64_string( const byte *data, size_t len )
 
 int
 http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
-	   unsigned int flags, const char *proxy )
+	   const char *auth, unsigned int flags, const char *proxy,
+	   const char *proxyauth )
 {
     int rc;
 
@@ -162,7 +163,9 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 
     rc = parse_uri( &hd->uri, url );
     if( !rc ) {
-	rc = send_request( hd, proxy );
+        if(auth)
+	  hd->uri->auth=auth;
+	rc = send_request( hd, proxy, proxyauth );
 	if( !rc ) {
 	    hd->fp_write = iobuf_sockopen( hd->sock , "w" );
 	    if( hd->fp_write )
@@ -225,12 +228,13 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
 
 int
-http_open_document( HTTP_HD hd, const char *document,
-		    unsigned int flags, const char *proxy )
+http_open_document( HTTP_HD hd, const char *document, const char *auth,
+		    unsigned int flags, const char *proxy,
+		    const char *proxyauth )
 {
     int rc;
 
-    rc = http_open( hd, HTTP_REQ_GET, document, flags, proxy );
+    rc = http_open(hd, HTTP_REQ_GET, document, auth, flags, proxy, proxyauth );
     if( rc )
 	return rc;
 
@@ -503,7 +507,7 @@ parse_tuple( byte *string )
  * Returns 0 if the request was successful
  */
 static int
-send_request( HTTP_HD hd, const char *proxy )
+send_request( HTTP_HD hd, const char *proxy, const char *proxyauth )
 {
     const byte *server;
     byte *request, *p;
@@ -527,6 +531,9 @@ send_request( HTTP_HD hd, const char *proxy )
 	  }
 	hd->sock = connect_server( *uri->host? uri->host : "localhost",
 				   uri->port? uri->port : 80, 0, NULL );
+	if(proxyauth)
+	  uri->auth=proxyauth;
+
 	if(uri->auth)
 	  {
 	    char *x=make_radix64_string(uri->auth,strlen(uri->auth));

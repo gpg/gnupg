@@ -1,5 +1,8 @@
 2005-06-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* http.c (send_request, http_open, http_open_document): Pass in
+	auth and proxyauth that can override the in-url auth.
+
 	* http.c (send_request): Need == after the radix64-encoded basic
 	auth string.
 
