@@ -1,7 +1,7 @@
 # LIBCURL_CHECK_CONFIG ([DEFAULT-ACTION], [MINIMUM-VERSION],
 #                       [ACTION-IF-YES], [ACTION-IF-NO])
 # ----------------------------------------------------------
-#      David Shaw <dshaw@jabberwocky.com>   Apr-21-2005
+#      David Shaw <dshaw@jabberwocky.com>   Jun-21-2005
 #
 # Checks for libcurl.  DEFAULT-ACTION is the string yes or no to
 # specify whether to default to --with-libcurl or --without-libcurl.
@@ -99,9 +99,10 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
               LIBCURL=`$_libcurl_config --libs`
 
               # This is so silly, but Apple actually has a bug in their
-	      # curl-config script!
+	      # curl-config script.  Fixed in Tiger, but there are still
+	      # lots of Panther installs around.
               case "${host}" in
-                 powerpc-apple-darwin*)
+                 powerpc-apple-darwin7*)
                     LIBCURL=`echo $LIBCURL | sed -e 's|-arch i386||g'`
                  ;;
               esac

@@ -1,3 +1,8 @@
+2005-06-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* libcurl.m4: Only do the OS X linker fix on Panther.  Tiger has a
+	clean curl-config.
+
 2005-04-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: Add a check for curl_free() since older versions of
