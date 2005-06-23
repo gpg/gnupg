@@ -1,5 +1,6 @@
 /* http.c  -  HTTP protocol handler
- * Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -69,7 +70,7 @@ static int remove_escapes( byte *string );
 static int insert_escapes( byte *buffer, const byte *string,
 					 const byte *special );
 static URI_TUPLE parse_tuple( byte *string );
-static int send_request( HTTP_HD hd, const char *proxy, const char *proxyauth);
+static int send_request( HTTP_HD hd, const char *auth, const char *proxy );
 static byte *build_rel_path( PARSED_URI uri );
 static int parse_response( HTTP_HD hd );
 
@@ -117,8 +118,8 @@ static byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
  * create a radix64 encoded string.
  */
 
-/* TODO: This is a duplicate of code in g10/armor.c.  Better to use a
-   single copy in strgutil.c */
+/* TODO: This is a duplicate of code in g10/armor.c modified to do the
+   "=" padding.  Better to use a single copy in strgutil.c ? */
 static char *
 make_radix64_string( const byte *data, size_t len )
 {
@@ -135,10 +136,13 @@ make_radix64_string( const byte *data, size_t len )
 	*p++ = bintoasc[(data[0] >> 2) & 077];
 	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
 	*p++ = bintoasc[((data[1]<<2)&074)];
+	*p++ = '=';
     }
     else if( len == 1 ) {
 	*p++ = bintoasc[(data[0] >> 2) & 077];
 	*p++ = bintoasc[(data[0] <<4)&060];
+	*p++ = '=';
+	*p++ = '=';
     }
     *p = 0;
     return buffer;
@@ -146,8 +150,7 @@ make_radix64_string( const byte *data, size_t len )
 
 int
 http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
-	   const char *auth, unsigned int flags, const char *proxy,
-	   const char *proxyauth )
+	   char *auth, unsigned int flags, const char *proxy )
 {
     int rc;
 
@@ -163,9 +166,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 
     rc = parse_uri( &hd->uri, url );
     if( !rc ) {
-        if(auth)
-	  hd->uri->auth=auth;
-	rc = send_request( hd, proxy, proxyauth );
+	rc = send_request( hd, auth, proxy );
 	if( !rc ) {
 	    hd->fp_write = iobuf_sockopen( hd->sock , "w" );
 	    if( hd->fp_write )
@@ -228,13 +229,12 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
 
 int
-http_open_document( HTTP_HD hd, const char *document, const char *auth,
-		    unsigned int flags, const char *proxy,
-		    const char *proxyauth )
+http_open_document( HTTP_HD hd, const char *document, char *auth,
+		    unsigned int flags, const char *proxy )
 {
     int rc;
 
-    rc = http_open(hd, HTTP_REQ_GET, document, auth, flags, proxy, proxyauth );
+    rc = http_open(hd, HTTP_REQ_GET, document, auth, flags, proxy );
     if( rc )
 	return rc;
 
@@ -507,13 +507,13 @@ parse_tuple( byte *string )
  * Returns 0 if the request was successful
  */
 static int
-send_request( HTTP_HD hd, const char *proxy, const char *proxyauth )
+send_request( HTTP_HD hd, const char *auth, const char *proxy )
 {
     const byte *server;
     byte *request, *p;
     ushort port;
     int rc;
-    char *auth=NULL;
+    char *proxy_authstr=NULL,*authstr=NULL;
 
     server = *hd->uri->host? hd->uri->host : "localhost";
     port   = hd->uri->port?  hd->uri->port : 80;
@@ -531,29 +531,39 @@ send_request( HTTP_HD hd, const char *proxy, const char *proxyauth )
 	  }
 	hd->sock = connect_server( *uri->host? uri->host : "localhost",
 				   uri->port? uri->port : 80, 0, NULL );
-	if(proxyauth)
-	  uri->auth=proxyauth;
-
 	if(uri->auth)
 	  {
-	    char *x=make_radix64_string(uri->auth,strlen(uri->auth));
-	    auth=m_alloc(52+strlen(x));
-	    sprintf(auth,"Proxy-Authorization: Basic %s==\r\n",x);
+	    char *x;
+	    remove_escapes(uri->auth);
+	    x=make_radix64_string(uri->auth,strlen(uri->auth));
+	    proxy_authstr=m_alloc(52+strlen(x));
+	    sprintf(proxy_authstr,"Proxy-Authorization: Basic %s\r\n",x);
 	    m_free(x);
 	  }
 
 	release_parsed_uri( uri );
       }
     else
+      hd->sock = connect_server( server, port, hd->flags, hd->uri->scheme );
+
+    if(auth || hd->uri->auth)
       {
-	hd->sock = connect_server( server, port, hd->flags, hd->uri->scheme );
-	if(hd->uri->auth)
+	char *x,*tempauth=NULL;
+
+	if(auth)
 	  {
-	    char *x=make_radix64_string(hd->uri->auth,strlen(hd->uri->auth));
-	    auth=m_alloc(52+strlen(x));
-	    sprintf(auth,"Authorization: Basic %s==\r\n",x);
-	    m_free(x);
+	    tempauth=m_strdup(auth);
+	    remove_escapes(tempauth);
 	  }
+	else if(hd->uri->auth)
+	  remove_escapes(hd->uri->auth);
+
+	x=make_radix64_string(tempauth?tempauth:hd->uri->auth,
+			      strlen(tempauth?tempauth:hd->uri->auth));
+	authstr=m_alloc(52+strlen(x));
+	sprintf(authstr,"Authorization: Basic %s\r\n",x);
+	m_free(x);
+	m_free(tempauth);
       }
 
     if( hd->sock == -1 )
@@ -561,13 +571,16 @@ send_request( HTTP_HD hd, const char *proxy, const char *proxyauth )
 
     p = build_rel_path( hd->uri );
 
-    request=m_alloc(strlen(server)*2 + strlen(p) + (auth?strlen(auth):0) + 65);
+    request=m_alloc(strlen(server)*2 + strlen(p)
+		    + (authstr?strlen(authstr):0)
+		    + (proxy_authstr?strlen(proxy_authstr):0) + 65);
     if( proxy )
-      sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n%s",
+      sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n%s%s",
 	       hd->req_type == HTTP_REQ_GET ? "GET" :
 	       hd->req_type == HTTP_REQ_HEAD? "HEAD":
 	       hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
-	       server, port,  *p == '/'? "":"/", p, auth?auth:"" );
+	       server, port,  *p == '/'? "":"/", p,
+	       authstr?authstr:"",proxy_authstr?proxy_authstr:"" );
     else
       {
 	char portstr[15];
@@ -580,14 +593,15 @@ send_request( HTTP_HD hd, const char *proxy, const char *proxyauth )
 		 hd->req_type == HTTP_REQ_HEAD? "HEAD":
 		 hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
 		 *p == '/'? "":"/", p, server, (port!=80)?portstr:"",
-		 auth?auth:"");
+		 authstr?authstr:"");
       }
 
     m_free(p);
 
     rc = write_server( hd->sock, request, strlen(request) );
     m_free( request );
-    m_free(auth);
+    m_free(proxy_authstr);
+    m_free(authstr);
 
     return rc;
 }

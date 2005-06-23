@@ -1,3 +1,10 @@
+2005-06-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (make_radix64_string): Add '=' padding as per standard.
+	(send_request, http_open, http_open_document): Clean up auth code.
+	Can now support different auth for a proxy and the file being
+	requested via that proxy.  Unescape auth strings.
+
 2005-06-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* memrchr.c (memrchr): Not all compilers allow initializing based
