@@ -36,6 +36,7 @@ typedef enum
 typedef enum
   {
     CURLOPT_URL,
+    CURLOPT_USERPWD,
     CURLOPT_WRITEFUNCTION,
     CURLOPT_FILE,
     CURLOPT_ERRORBUFFER,
@@ -57,6 +58,7 @@ typedef size_t (*write_func)(char *buffer,size_t size,
 typedef struct
 {
   char *url;
+  char *auth;
   char *errorbuffer;
   char *proxy;
   write_func writer;

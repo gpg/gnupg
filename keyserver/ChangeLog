@@ -1,5 +1,8 @@
 2005-06-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* curl-shim.h, curl-shim.c (curl_easy_setopt, curl_easy_perform):
+	Add CURLOPT_USERPWD option for HTTP auth.
+
 	* gpgkeys_http.c (get_key), gpgkeys_oldhkp (send_key, get_key,
 	search_key): No longer need to pass a proxyauth.
 

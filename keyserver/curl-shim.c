@@ -104,6 +104,9 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
     case CURLOPT_URL:
       curl->url=va_arg(ap,char *);
       break;
+    case CURLOPT_USERPWD:
+      curl->auth=va_arg(ap,char *);
+      break;
     case CURLOPT_WRITEFUNCTION:
       curl->writer=va_arg(ap,write_func);
       break;
@@ -142,7 +145,7 @@ curl_easy_perform(CURL *curl)
 
   if(curl->flags.post)
     {
-      rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,0,curl->proxy);
+      rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,curl->auth,0,curl->proxy);
       if(rc==0)
 	{
 	  char content_len[50];
@@ -163,7 +166,7 @@ curl_easy_perform(CURL *curl)
     }
   else
     {
-      rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,0,curl->proxy);
+      rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,curl->auth,0,curl->proxy);
       if(rc==0)
 	{
 	  rc=http_wait_response(&curl->hd,&curl->status);
