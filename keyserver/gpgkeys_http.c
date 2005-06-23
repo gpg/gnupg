@@ -73,10 +73,11 @@ get_key(char *getkey)
       return KEYSERVER_NO_MEMORY;
     }
 
-  sprintf(request,"http://%s%s%s%s%s%s%s",auth[0]?auth:"",auth[0]?"@":"",
-	  host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
+  sprintf(request,"http://%s%s%s%s%s",host,
+	  port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
 
-  rc=http_open_document(&hd,request,NULL,http_flags,proxy[0]?proxy:NULL,NULL);
+  rc=http_open_document(&hd,request,auth[0]?auth:NULL,
+			http_flags,proxy[0]?proxy:NULL);
   if(rc!=0)
     {
       fprintf(console,"gpgkeys: HTTP fetch error: %s\n",

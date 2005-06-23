@@ -149,7 +149,7 @@ send_key(int *eof)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
   rc=http_open(&hd,HTTP_REQ_POST,request,NULL,http_flags,
-	       proxy[0]?proxy:NULL,NULL);
+	       proxy[0]?proxy:NULL);
   if(rc)
     {
       fprintf(console,"gpgkeys: unable to connect to `%s'\n",host);
@@ -253,7 +253,7 @@ get_key(char *getkey)
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
-  rc=http_open_document(&hd,request,NULL,http_flags,proxy[0]?proxy:NULL,NULL);
+  rc=http_open_document(&hd,request,NULL,http_flags,proxy[0]?proxy:NULL);
   if(rc!=0)
     {
       fprintf(console,"gpgkeys: HKP fetch error: %s\n",
@@ -676,7 +676,7 @@ search_key(char *searchkey)
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
-  rc=http_open_document(&hd,request,NULL,http_flags,proxy[0]?proxy:NULL,NULL);
+  rc=http_open_document(&hd,request,NULL,http_flags,proxy[0]?proxy:NULL);
   if(rc)
     {
       fprintf(console,"gpgkeys: can't search keyserver `%s': %s\n",

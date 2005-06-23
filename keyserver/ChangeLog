@@ -1,3 +1,10 @@
+2005-06-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c (get_key), gpgkeys_oldhkp (send_key, get_key,
+	search_key): No longer need to pass a proxyauth.
+
+	* gpgkeys_http.c (get_key): Pass auth outside of the URL.
+
 2005-06-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_http.c (get_key), gpgkeys_oldhkp.c (send_key, get_key,
