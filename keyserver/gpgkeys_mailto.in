@@ -27,7 +27,7 @@ $sendmail="@SENDMAIL@ -t";
 
 sub VERSION_MESSAGE ()
 {
-    print STDOUT "gpgkeys_mailto (GnuPG) 1.3.91-cvs\n";
+    print STDOUT "gpgkeys_mailto (GnuPG) @VERSION@\n";
 }
 
 sub HELP_MESSAGE ()

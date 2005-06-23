@@ -48,12 +48,6 @@ static char port[MAX_PORT+1];
 static char path[URLMAX_PATH+1];
 static FILE *input,*output,*console;
 
-#ifdef __riscos__
-#define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
-#else
-#define HTTP_PROXY_ENV           "http_proxy"
-#endif
-
 static int
 get_key(char *getkey)
 {

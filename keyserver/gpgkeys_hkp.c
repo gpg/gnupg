@@ -39,7 +39,6 @@
 extern char *optarg;
 extern int optind;
 
-static char proxy[MAX_PROXY+1];
 static FILE *input,*output,*console;
 static CURL *curl;
 static struct ks_options *opt;
@@ -384,6 +383,7 @@ main(int argc,char *argv[])
   char line[MAX_LINE];
   int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
+  char *proxy=NULL;
 
   console=stderr;
 
@@ -479,19 +479,16 @@ main(int argc,char *argv[])
 	  if(strncasecmp(start,"http-proxy",10)==0)
 	    {
 	      if(no)
-		proxy[0]='\0';
+		{
+		  free(proxy);
+		  proxy=strdup("");
+		}
 	      else if(start[10]=='=')
 		{
-		  strncpy(proxy,&start[11],MAX_PROXY);
-		  proxy[MAX_PROXY]='\0';
-		}
-	      else if(start[10]=='\0')
-		{
-		  char *http_proxy=getenv(HTTP_PROXY_ENV);
-		  if(http_proxy)
+		  if(strlen(&start[11])<MAX_PROXY)
 		    {
-		      strncpy(proxy,http_proxy,MAX_PROXY);
-		      proxy[MAX_PROXY]='\0';
+		      free(proxy);
+		      proxy=strdup(&start[11]);
 		    }
 		}
 	    }
@@ -531,13 +528,16 @@ main(int argc,char *argv[])
 
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 
+  if(opt->auth)
+    curl_easy_setopt(curl,CURLOPT_USERPWD,opt->auth);
+
   if(opt->debug)
     {
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
       curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
     }
 
-  if(proxy[0])
+  if(proxy)
     curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
 
 #if 0
@@ -703,6 +703,13 @@ main(int argc,char *argv[])
 
   if(output!=stdout)
     fclose(output);
+
+  free_ks_options(opt);
+
+  if(curl)
+    curl_easy_cleanup(curl);
+
+  free(proxy);
 
   return ret;
 }

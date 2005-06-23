@@ -1,5 +1,17 @@
 2005-06-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_mailto.in, gpgkeys_test.in: Use @VERSION@ so version
+	string stays up to date.
+
+	* gpgkeys_http.c: Don't need to define HTTP_PROXY_ENV here since
+	it's in ksutil.h.
+
+	* gpgkeys_curl.c (get_key, main), gpgkeys_hkp.c (main): Pass AUTH
+	values to curl or curl-shim.
+
+	* curl-shim.c (curl_easy_perform), gpgkeys_curl.c (main),
+	gpgkeys_hkp.c (main): Use curl-style proxy semantics.
+
 	* curl-shim.h, curl-shim.c (curl_easy_setopt, curl_easy_perform):
 	Add CURLOPT_USERPWD option for HTTP auth.
 

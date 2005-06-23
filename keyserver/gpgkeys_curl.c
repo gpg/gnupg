@@ -58,11 +58,8 @@ get_key(char *getkey)
 
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  sprintf(request,"%s://%s%s%s%s%s%s",opt->scheme,
-	  opt->auth?opt->auth:"",
-	  opt->auth?"@":"",opt->host,
-	  opt->port?":":"",opt->port?opt->port:"",
-	  opt->path?opt->path:"/");
+  sprintf(request,"%s://%s%s%s%s",opt->scheme,opt->host,
+	  opt->port?":":"",opt->port?opt->port:"",opt->path?opt->path:"/");
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_writer);
@@ -98,7 +95,7 @@ main(int argc,char *argv[])
   char line[MAX_LINE];
   char *thekey=NULL;
   long follow_redirects=5;
-  char proxy[MAX_PROXY+1];
+  char *proxy=NULL;
 
   console=stderr;
 
@@ -193,20 +190,19 @@ main(int argc,char *argv[])
 
 	  if(strncasecmp(start,"http-proxy",10)==0)
 	    {
+	      /* Safe to not check the return code of strdup() here.
+		 If it fails, we simply won't use a proxy. */
 	      if(no)
-		proxy[0]='\0';
+		{
+		  free(proxy);
+		  proxy=strdup("");
+		}
 	      else if(start[10]=='=')
 		{
-		  strncpy(proxy,&start[11],MAX_PROXY);
-		  proxy[MAX_PROXY]='\0';
-		}
-	      else if(start[10]=='\0')
-		{
-		  char *http_proxy=getenv(HTTP_PROXY_ENV);
-		  if(http_proxy)
+		  if(strlen(&start[11])<MAX_PROXY)
 		    {
-		      strncpy(proxy,http_proxy,MAX_PROXY);
-		      proxy[MAX_PROXY]='\0';
+		      free(proxy);
+		      proxy=strdup(&start[11]);
 		    }
 		}
 	    }
@@ -280,6 +276,9 @@ main(int argc,char *argv[])
 	curl_easy_setopt(curl,CURLOPT_MAXREDIRS,follow_redirects);
     }
 
+  if(opt->auth)
+    curl_easy_setopt(curl,CURLOPT_USERPWD,opt->auth);
+
   if(opt->debug)
     {
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
@@ -289,7 +288,7 @@ main(int argc,char *argv[])
   curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,opt->flags.check_cert);
   curl_easy_setopt(curl,CURLOPT_CAINFO,opt->ca_cert_file);
 
-  if(proxy[0])
+  if(proxy)
     curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
 
   /* If it's a GET or a SEARCH, the next thing to come in is the
@@ -371,6 +370,8 @@ main(int argc,char *argv[])
 
   if(curl)
     curl_easy_cleanup(curl);
+
+  free(proxy);
 
   curl_global_cleanup();
 

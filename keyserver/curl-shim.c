@@ -29,6 +29,7 @@
 #include <errno.h>
 #include "http.h"
 #include "util.h"
+#include "ksutil.h"
 #include "curl-shim.h"
 
 static CURLcode
@@ -142,10 +143,24 @@ curl_easy_perform(CURL *curl)
   int rc;
   CURLcode err=CURLE_OK;
   const char *errstr=NULL;
+  char *proxy=NULL;
+
+  /* Emulate the libcurl proxy behavior.  If the calling program set a
+     proxy, use it.  If it didn't set a proxy or set it to NULL, check
+     for one in the environment.  If the calling program explicitly
+     set a null-string proxy, don't set a proxy at all. */
+
+  if(curl->proxy)
+    {
+      if(*curl->proxy)
+	proxy=curl->proxy;
+    }
+  else
+    proxy=getenv(HTTP_PROXY_ENV);
 
   if(curl->flags.post)
     {
-      rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,curl->auth,0,curl->proxy);
+      rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,curl->auth,0,proxy);
       if(rc==0)
 	{
 	  char content_len[50];
@@ -166,7 +181,7 @@ curl_easy_perform(CURL *curl)
     }
   else
     {
-      rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,curl->auth,0,curl->proxy);
+      rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,curl->auth,0,proxy);
       if(rc==0)
 	{
 	  rc=http_wait_response(&curl->hd,&curl->status);
