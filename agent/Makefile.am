@@ -20,6 +20,7 @@
 
 bin_PROGRAMS = gpg-agent
 libexec_PROGRAMS = gpg-protect-tool gpg-preset-passphrase
+noinst_PROGRAMS = $(TESTS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
@@ -69,4 +70,18 @@ gpg_preset_passphrase_LDADD = ../common/libsimple-pwquery.a \
 if HAVE_W32_SYSTEM
 gpg_preset_passphrase_LDADD += -lwsock32
 endif
+
+#
+# Module tests
+#
+TESTS = t-protect
+
+t_common_ldadd = ../jnlib/libjnlib.a ../common/libcommon.a  \
+                 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
+
+t_protect_SOURCES = t-protect.c protect.c 
+t_protect_LDADD = $(t_common_ldadd)
+
+
+
 

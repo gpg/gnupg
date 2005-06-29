@@ -1,3 +1,12 @@
+2005-06-29  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (data_sign): Removed empty statement.
+
+2005-06-21  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (create_final): Cast size_t to ulong for printf. 
+	(build_key_bag, build_cert_bag, build_cert_sequence): Ditto.
+
 2005-06-16  Werner Koch  <wk@g10code.com>
 
 	* protect-tool.c (make_advanced): Makde RESULT a plain char.

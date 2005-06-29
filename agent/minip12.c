@@ -1085,7 +1085,8 @@ create_final (struct buffer_s *sequences, size_t *r_length)
   /* Ready. */
   resultlen = p - result;
   if (needed != resultlen)
-    log_debug ("length mismatch: %u, %u\n", needed, resultlen);
+    log_debug ("length mismatch: %lu, %lu\n",
+               (unsigned long)needed, (unsigned long)resultlen);
 
   *r_length = resultlen;
   return result;
@@ -1339,7 +1340,8 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
   keybaglen = p - keybag;
   
   if (needed != keybaglen)
-    log_debug ("length mismatch: %u, %u\n", needed, keybaglen);
+    log_debug ("length mismatch: %lu, %lu\n",
+               (unsigned long)needed, (unsigned long)keybaglen);
   
   *r_length = keybaglen;
   return keybag;
@@ -1437,7 +1439,8 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
   certbaglen = p - certbag;
   
   if (needed != certbaglen)
-    log_debug ("length mismatch: %u, %u\n", needed, certbaglen);
+    log_debug ("length mismatch: %lu, %lu\n",
+               (unsigned long)needed, (unsigned long)certbaglen);
 
   *r_length = certbaglen;
   return certbag;
@@ -1527,7 +1530,8 @@ build_cert_sequence (unsigned char *buffer, size_t buflen, size_t *r_length)
   certseqlen = p - certseq;
   
   if (needed != certseqlen)
-    log_debug ("length mismatch: %u, %u\n", needed, certseqlen);
+    log_debug ("length mismatch: %lu, %lu\n",
+               (unsigned long)needed, (unsigned long)certseqlen);
   
   /* Append some pad characters; we already allocated extra space. */
   n = 8 - certseqlen % 8;
