@@ -57,6 +57,9 @@ char *simple_pwquery (const char *cacheid,
                       const char *description,
                       int *errorcode);
 
+/* Ask the gpg-agent to clear the passphrase for the cache ID CACHEID.  */
+int simple_pwclear (const char *cacheid);
+
 /* Perform the simple query QUERY (which must be new-line and 0
    terminated) and return the error code.  */
 int simple_query (const char *query);

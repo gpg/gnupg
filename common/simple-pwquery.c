@@ -546,6 +546,28 @@ simple_pwquery (const char *cacheid,
 }
 
 
+/* Ask the gpg-agent to clear the passphrase for the cache ID CACHEID.  */
+int
+simple_pwclear (const char *cacheid)
+{
+  char line[500];
+  char *p;
+
+  /* We need not more than 50 characters for the command and the
+     terminating nul.  */
+  if (strlen (cacheid) * 3 > sizeof (line) - 50)
+    return SPWQ_PROTOCOL_ERROR;
+
+  strcpy (line, "CLEAR_PASSPHRASE ");
+  p = line + 17;
+  p = copy_and_escape (p, cacheid);
+  *p++ = '\n';
+  *p++ = '\0';
+
+  return simple_query (line);
+}
+
+
 /* Perform the simple query QUERY (which must be new-line and 0
    terminated) and return the error code.  */
 int
@@ -576,7 +598,7 @@ simple_query (const char *query)
       rc = SPWQ_PROTOCOL_ERROR;
       goto leave;
     }
-      
+  
   if (response[0] == 'O' && response[1] == 'K') 
     /* OK, do nothing.  */;
   else if ((nread > 7 && !memcmp (response, "ERR 111", 7)
