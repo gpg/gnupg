@@ -56,6 +56,9 @@
 
    Other classes may be added in the future.  */
 
+#define SYMC_BAD_PASSPHRASE	2
+#define SYMC_CANCELED		3
+
 
 #include <config.h>
 
@@ -105,6 +108,37 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
     case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
     default:            level = JNLIB_LOG_ERROR; break;      }
   log_logv (level, fmt, arg_ptr);
+}
+
+
+/* From simple-gettext.c.  */
+
+/* We assume to have `unsigned long int' value with at least 32 bits.  */
+#define HASHWORDBITS 32
+
+/* The so called `hashpjw' function by P.J. Weinberger
+   [see Aho/Sethi/Ullman, COMPILERS: Principles, Techniques and Tools,
+   1986, 1987 Bell Telephone Laboratories, Inc.]  */
+
+static __inline__ ulong
+hash_string( const char *str_param )
+{
+    unsigned long int hval, g;
+    const char *str = str_param;
+
+    hval = 0;
+    while (*str != '\0')
+    {
+	hval <<= 4;
+	hval += (unsigned long int) *str++;
+	g = hval & ((unsigned long int) 0xf << (HASHWORDBITS - 4));
+	if (g != 0)
+	{
+	  hval ^= g >> (HASHWORDBITS - 8);
+	  hval ^= g;
+	}
+    }
+    return hval;
 }
 
 
@@ -413,9 +447,10 @@ confucius_copy_file (char *infile, char *outfile, int plain)
    pointer, it will be set to true or false, depending on if the user
    canceled the operation or not.  On error (including cancelation), a
    null pointer is returned.  The passphrase must be deallocated with
-   confucius_drop_pass.  */
+   confucius_drop_pass.  CACHEID is the ID to be used for passphrase
+   caching and can be NULL to disable caching.  */
 char *
-confucius_get_pass (int again, int *canceled)
+confucius_get_pass (const char *cacheid, int again, int *canceled)
 {
   int err;
   char *pw;
@@ -444,7 +479,7 @@ confucius_get_pass (int again, int *canceled)
     }
 #endif
 
-  pw = simple_pwquery (NULL,
+  pw = simple_pwquery (cacheid,
                        again ? _("does not match - try again"):NULL,
                        _("Passphrase:"), NULL, &err);
 
@@ -497,6 +532,7 @@ confucius_process (int mode, char *infile, char *outfile,
   pid_t pid;
   pid_t wpid;
   int tries = 0;
+  char cacheid[40];
 
   signal (SIGPIPE, SIG_IGN);
 
@@ -518,6 +554,10 @@ confucius_process (int mode, char *infile, char *outfile,
       return 1;
     }
 
+  /* Generate a hash from the keyfile name for caching.  */
+  snprintf (cacheid, sizeof (cacheid), "confucius:%lu",
+	    hash_string (opt.keyfile));
+  cacheid[sizeof (cacheid) - 1] = '\0';
   args = malloc (sizeof (char *) * (10 + argc));
   if (!args)
     {
@@ -708,13 +748,20 @@ confucius_process (int mode, char *infile, char *outfile,
 		      char *pass;
 		      int canceled;
 
-		      pass = confucius_get_pass (tries ? 1 : 0, &canceled);
+		      /* If this is not the first attempt, the
+			 passphrase seems to be wrong, so clear the
+			 cache.  */
+		      if (tries)
+			simple_pwclear (cacheid);
+
+		      pass = confucius_get_pass (cacheid,
+						 tries ? 1 : 0, &canceled);
 		      if (!pass)
 			{
 			  kill (pid, SIGTERM);
 			  close (master);
 			  close (cstderr[0]);
-			  return canceled ? 3 : 1;
+			  return canceled ? SYMC_CANCELED : 1;
 			}
  		      write (master, pass, strlen (pass));
  		      write (master, "\n", 1);
@@ -736,6 +783,8 @@ confucius_process (int mode, char *infile, char *outfile,
 	  log_error (_("waitpid failed: %s\n"), strerror (errno));
 
 	  kill (pid, SIGTERM);
+	  /* State of cached password is unclear.  Just remove it.  */
+	  simple_pwclear (cacheid);
 	  return 1;
 	}
       else
@@ -746,15 +795,22 @@ confucius_process (int mode, char *infile, char *outfile,
 	  if (!WIFEXITED (res))
 	    {
 	      log_error (_("child aborted with status %i\n"), res);
+
+	      /* State of cached password is unclear.  Just remove it.  */
+	      simple_pwclear (cacheid);
+
 	      return 1;
 	    }
 
 	  if (WEXITSTATUS (res))
 	    {
+	      /* The passphrase was wrong.  Remove it from the cache.  */
+	      simple_pwclear (cacheid);
+
 	      /* We probably exceeded our number of attempts at guessing
 		 the password.  */
 	      if (tries >= 3)
-		return 2;
+		return SYMC_BAD_PASSPHRASE;
 	      else
 		return 1;
 	    }
