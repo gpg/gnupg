@@ -114,13 +114,6 @@ delete_kbnode( KBNODE node )
     node->private_flag |= 1;
 }
 
-void
-undelete_kbnode( KBNODE node )
-{
-    node->private_flag &= ~1;
-}
-
-
 /****************
  * Append NODE to ROOT.  ROOT must exist!
  */

@@ -293,7 +293,6 @@ KBNODE new_kbnode( PACKET *pkt );
 KBNODE clone_kbnode( KBNODE node );
 void release_kbnode( KBNODE n );
 void delete_kbnode( KBNODE node );
-void undelete_kbnode( KBNODE node );
 void add_kbnode( KBNODE root, KBNODE node );
 void insert_kbnode( KBNODE root, KBNODE node, int pkttype );
 void move_kbnode( KBNODE *root, KBNODE node, KBNODE where );

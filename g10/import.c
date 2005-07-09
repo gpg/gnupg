@@ -1346,12 +1346,13 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	sig = n->pkt->pkt.signature;
 	if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 
-	  /* This just caches the sigs for later use.  That way we
-	     import a fully-cached key which speeds things up. */
-	  if(!opt.no_sig_cache)
-	    check_key_signature(keyblock,n,NULL);
+	    /* This just caches the sigs for later use.  That way we
+	       import a fully-cached key which speeds things up. */
+	    if(!opt.no_sig_cache)
+	      check_key_signature(keyblock,n,NULL);
 
-	    if( (sig->sig_class&~3) == 0x10 ) {
+	    if( IS_UID_SIG(sig) || IS_UID_REV(sig) )
+	      {
 		KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
 		if( !unode )
 		  {
@@ -1381,7 +1382,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		  else
 		    unode->flag |= 1; /* mark that signature checked */
 		}
-	    }
+	      }
 	    else if( sig->sig_class == 0x18 ) {
 	      /* Note that this works based solely on the timestamps
 		 like the rest of gpg.  If the standard gets

@@ -1,3 +1,16 @@
+2005-07-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (clean_uids_from_key): Don't keep a valid selfsig
+	around when compacting a uid.  There is no reason to make an
+	attacker's job easier - this way they only have a revocation which
+	is useless in bringing the uid back.
+
+	* keydb.h, kbnode.c (undelete_kbnode): Removed.  No longer needed.
+
+	* import.c (chk_self_sigs): Allow a uid revocation to be enough to
+	allow importing a particular uid (no self sig needed).  This
+	allows importing compacted uids.
+
 2005-06-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (save_unprotected_key_to_card): Better fix for gcc4

@@ -1672,9 +1672,6 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 	{
 	  PKT_user_id *uid=node->pkt->pkt.user_id;
 
-	  if(signode && !signode->pkt->pkt.signature->flags.chosen_selfsig)
-	    undelete_kbnode(signode);
-
 	  sigdate=0;
 	  signode=NULL;
 
@@ -1687,7 +1684,6 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 	  else
 	    {
 	      delete_until_next=1;
-	      deleted++;
 
 	      if(noisy)
 		{
@@ -1724,12 +1720,12 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 	    }
 
 	  if(delete_until_next && !sig->flags.chosen_selfsig)
-	    delete_kbnode(node);
+	    {
+	      delete_kbnode(node);
+	      deleted++;
+	    }
 	}
     }
-
-  if(signode && !signode->pkt->pkt.signature->flags.chosen_selfsig)
-    undelete_kbnode(signode);
 
   return deleted;
 }
