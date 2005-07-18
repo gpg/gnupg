@@ -397,13 +397,14 @@ do_get( const char *prompt, int hidden )
 	init_ttyfp();
 
     last_prompt_len = 0;
-    tty_printf( "%s", prompt );
     buf = m_alloc(n=50);
     i = 0;
 
 #ifdef _WIN32 /* windoze version */
     if( hidden )
 	SetConsoleMode(con.in, HID_INPMODE );
+
+    tty_printf( "%s", prompt );
 
     for(;;) {
 	DWORD nread;
@@ -436,6 +437,7 @@ do_get( const char *prompt, int hidden )
 	SetConsoleMode(con.in, DEF_INPMODE );
 
 #elif defined(__riscos__)
+    tty_printf( "%s", prompt );
     do {
         c = riscos_getchar();
         if (c == 0xa || c == 0xd) { /* Return || Enter */
@@ -490,6 +492,8 @@ do_get( const char *prompt, int hidden )
 #endif
     }
 
+    tty_printf( "%s", prompt );
+
     /* fixme: How can we avoid that the \n is echoed w/o disabling
      * canonical mode - w/o this kill_prompt can't work */
     while( read(fileno(ttyfp), cbuf, 1) == 1 && *cbuf != '\n' ) {
@@ -503,6 +507,11 @@ do_get( const char *prompt, int hidden )
 	else if( c > 0xa0 )
 	    ; /* we don't allow 0xa0, as this is a protected blank which may
 	       * confuse the user */
+        /* Fixme: The above assumption is not bad.  We assum a certain
+           character set and even worse, the W32 version behaves
+           differently.  It is not clear how we can hix this.  When
+           used for passphrases this code path strips off certain
+           characters so changing this might invalidate passphrases.  */
 	else if( iscntrl(c) )
 	    continue;
 	if( !(i < n-1) ) {

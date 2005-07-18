@@ -1,3 +1,8 @@
+2005-07-18  Werner Koch  <wk@g10code.com>
+
+	* ttyio.c (do_get): Move printing of the prompt after disabling
+	echo.  Suggested by Scott Worley.
+
 2005-06-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (make_radix64_string): Add '=' padding as per standard.

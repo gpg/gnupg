@@ -592,7 +592,11 @@ open_db()
     log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
   db_fd = open (db_name, O_RDWR | MY_O_BINARY );
-  if (db_fd == -1 && errno == EACCES) {
+  if (db_fd == -1 && (errno == EACCES
+#ifdef EROFS
+                      || errno == EROFS)
+#endif
+      ) {
       db_fd = open (db_name, O_RDONLY | MY_O_BINARY );
       if (db_fd != -1)
           log_info (_("NOTE: trustdb not writable\n"));

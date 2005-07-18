@@ -1,11 +1,3 @@
-  * From: Nicolas Sierro 
-    Date: Thu, 17 Jun 2004 12:31:24 +0200
-    
-    I understand your concern regarding the GNU coding standards. In
-    zlib-1.2.1, apart from several bug fixes, the inflate code is about
-    20% faster and the crc32 code about 50% faster. Some memory leaks were
-    also fixed according to the ChangeLog.
-    
   * Using an expired key for signing should give an error message
     "expired key" and not "unusable key'.  Furthermore the error should
     also be thrown when the default key has expired.  Reported by
