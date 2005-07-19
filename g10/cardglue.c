@@ -385,6 +385,7 @@ open_card (void)
   int rc;
   app_t app;
   int did_shutdown = 0;
+  int retry_count = 0;
 
   /* First check whether we can contact a gpg-agent and divert all
      operation to it. This is required because gpg as well as the
@@ -421,7 +422,10 @@ open_card (void)
   app = xcalloc (1, sizeof *app);
   app->slot = slot;
   rc = app_select_openpgp (app);
-  if (rc && !opt.batch)
+  if (opt.limit_card_insert_tries 
+      && ++retry_count >= opt.limit_card_insert_tries)
+    ;
+  else if (rc && !opt.batch)
     {
       write_status_text (STATUS_CARDCTRL, "1");
       

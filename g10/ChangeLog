@@ -1,5 +1,8 @@
 2005-07-19  Werner Koch  <wk@g10code.com>
 
+	* g10.c, options.h: New option --limit-card-insert-tries.
+	* cardglue.c (open_card): Use it.
+
 	* export.c (parse_export_options): New option
 	export-reset-subkey-passwd.
 	(do_export_stream): Implement it.

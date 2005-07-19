@@ -347,6 +347,7 @@ enum cmd_and_opt_values
     oMultifile,
     oKeyidFormat,
     oNoInteractiveSelection,
+    oLimitCardInsertTries,
 
     oReaderPort,
     octapiDriver,
@@ -677,6 +678,7 @@ static ARGPARSE_OPTS opts[] = {
     { oMultifile, "multifile", 0, "@" },
     { oKeyidFormat, "keyid-format", 2, "@" },
     { oNoInteractiveSelection, "no-interactive-selection", 0, "@" },
+    { oLimitCardInsertTries, "limit-card-insert-tries", 1, "@"},
 
     { oReaderPort, "reader-port",    2, "@"},
     { octapiDriver, "ctapi-driver",  2, "@"},
@@ -1583,7 +1585,7 @@ parse_trust_model(const char *model)
 }
 
 int
-main( int argc, char **argv )
+main (int argc, char **argv )
 {
     ARGPARSE_ARGS pargs;
     IOBUF a;
@@ -2546,6 +2548,11 @@ main( int argc, char **argv )
           case oNoInteractiveSelection:
             opt.no_interactive_selection = 1;
             break;
+
+	  case oLimitCardInsertTries: 
+            opt.limit_card_insert_tries = pargs.r.ret_int; 
+            break;
+
   
 	  case oNoop: break;
 

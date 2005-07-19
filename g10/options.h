@@ -195,6 +195,8 @@ struct
   byte *show_subpackets;
   int rfc2440_text;
 
+  int limit_card_insert_tries; /* If > 0, limit the number of card
+                                  insertion prompts to this value. */
 #ifdef ENABLE_CARD_SUPPORT
   const char *ctapi_driver; /* Library to access the ctAPI. */
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
