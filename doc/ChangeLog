@@ -1,3 +1,9 @@
+2005-07-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* samplekeys.asc: Update 99242560.
+
+	* gpg.sgml: Clarify --throw-keyid and --hidden-recipient a bit.
+
 2005-06-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --edit-key/clean, import-clean, and

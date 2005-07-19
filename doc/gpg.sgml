@@ -944,7 +944,6 @@ Note that -u or --local-user overrides this option.
 
 <varlistentry>
 <term>-r, --recipient &ParmName;</term>
-<term></term>
 <listitem><para>
 Encrypt for user id &ParmName;. If this option or --hidden-recipient
 is not specified, GnuPG asks for the user-id unless
@@ -953,13 +952,12 @@ is not specified, GnuPG asks for the user-id unless
 
 <varlistentry>
 <term>-R, --hidden-recipient &ParmName;</term>
-<term></term>
 <listitem><para>
-Encrypt for user id &ParmName;, but hide the keyid of the key.  This
-option hides the receiver of the message and is a countermeasure
-against traffic analysis.  If this option or --recipient is not
-specified, GnuPG asks for the user-id unless --default-recipient is
-given.
+Encrypt for user ID &ParmName;, but hide the key ID of this user's
+key.  This option helps to hide the receiver of the message and is a
+limited countermeasure against traffic analysis.  If this option or
+--recipient is not specified, GnuPG asks for the user ID unless
+--default-recipient is given.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2190,11 +2188,12 @@ disables this option.
 <term>--throw-keyids</term>
 <term>--no-throw-keyids</term>
 <listitem><para>
-Do not put the recipient keyid into encrypted packets.  This option
-hides the receiver of the message and is a countermeasure against
-traffic analysis.  It may slow down the decryption process because all
-available secret keys are tried.  --no-throw-keyids disables this
-option.
+Do not put the recipient key IDs into encrypted messages.  This helps
+to hide the receivers of the message and is a limited countermeasure
+against traffic analysis.  On the receiving side, it may slow down the
+decryption process because all available secret keys must be tried.
+--no-throw-keyids disables this option.  This option is essentially
+the same as using --hidden-recipient for all recipients.
 </para></listitem></varlistentry>
 
 <varlistentry>
