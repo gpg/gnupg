@@ -865,6 +865,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   struct parse_options *kopts;
   struct exec_info *spawn;
   const char *scheme;
+  const char *libexecdir = get_libexecdir ();
 
   assert(keyserver);
 
@@ -886,7 +887,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
      Unix-like systems (since we're going to give a full path to
      gpgkeys_foo), but on W32 it prevents loading any DLLs from
      directories in %PATH%. */
-  set_exec_path(GNUPG_LIBEXECDIR);
+  set_exec_path(libexecdir);
 #else
   if(opt.exec_path_set)
     {
@@ -900,9 +901,9 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 #endif
     {
       /* Specify a full path to gpgkeys_foo. */
-      command=m_alloc(strlen(GNUPG_LIBEXECDIR)+strlen(DIRSEP_S)+
+      command=m_alloc(strlen(libexecdir)+strlen(DIRSEP_S)+
 		      strlen(GPGKEYS_PREFIX)+strlen(scheme)+1);
-      strcpy(command,GNUPG_LIBEXECDIR);
+      strcpy(command,libexecdir);
       strcat(command,DIRSEP_S);
     }
 
@@ -1324,8 +1325,9 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       }
 
  fail:
-  m_free(line);
-  m_free(searchstr);
+  xfree(line);
+  xfree(searchstr);
+
 
   *prog=exec_finish(spawn);
 

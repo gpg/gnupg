@@ -261,6 +261,7 @@ struct {
 #define EXPORT_MINIMAL                   (1<<3)
 #define EXPORT_CLEAN_SIGS                (1<<4)
 #define EXPORT_CLEAN_UIDS                (1<<5)
+#define EXPORT_RESET_SUBKEY_PASSWD       (1<<6)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

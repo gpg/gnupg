@@ -1478,6 +1478,15 @@ exported if the user IDs are not usable.  This is the same as running
 the --edit-key command "clean uids" before export.  Defaults to no.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>export-reset-subkey-passwd</term>
+<listitem><para>
+When using the "--export-secret-subkeys" command, this option resets
+the passphrases for all exported subkeys to empty.  This is useful
+when the exported subkey is to be used on an unattended amchine where
+a passphrase won't make sense. Defaults to no.
+</para></listitem></varlistentry>
+
 </variablelist>
 </para></listitem></varlistentry>
 
@@ -1657,6 +1666,8 @@ Sets a list of directories to search for photo viewers and keyserver
 helpers.  If not provided, keyserver helpers use the compiled-in
 default directory, and photo viewers use the $PATH environment
 variable.
+Note, that on W32 system this value is ignored when searching for
+keyserver helpers.
 </para></listitem></varlistentry>
 
 <varlistentry>

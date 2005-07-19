@@ -54,6 +54,9 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"export-clean",EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL},
       {"export-clean-sigs",EXPORT_CLEAN_SIGS,NULL},
       {"export-clean-uids",EXPORT_CLEAN_UIDS,NULL},
+
+      {"export-reset-subkey-passwd", EXPORT_RESET_SUBKEY_PASSWD, NULL},
+
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL},
@@ -382,7 +385,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
 	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY )
 	      {
-		/* we don't want to export the secret parts of the
+		/* We don't want to export the secret parts of the
 		 * primary key, this is done by using GNU protection mode 1001
 		 */
 		int save_mode = node->pkt->pkt.secret_key->protect.s2k.mode;
@@ -390,6 +393,53 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		rc = build_packet( out, node->pkt );
 		node->pkt->pkt.secret_key->protect.s2k.mode = save_mode;
 	      }
+	    else if (secret == 2 && node->pkt->pkttype == PKT_SECRET_SUBKEY
+                     && (opt.export_options&EXPORT_RESET_SUBKEY_PASSWD))
+              {
+                /* If the subkey is protected reset the passphrase to
+                   export an unprotected subkey.  This feature is
+                   useful in cases of a subkey copied to an unattended
+                   machine where a passphrase is not required. */
+                PKT_secret_key *sk_save, *sk;
+
+                sk_save = node->pkt->pkt.secret_key;
+                sk = copy_secret_key (NULL, sk_save);
+                node->pkt->pkt.secret_key = sk;
+
+                log_info ("about to export an unprotected subkey\n");
+                switch (is_secret_key_protected (sk))
+                  {
+                  case -1:
+                    rc = G10ERR_PUBKEY_ALGO;
+                    break;
+                  case 0:
+                    break;
+                  default:
+                    if (sk->protect.s2k.mode == 1001)
+                      ; /* No secret parts. */
+                    else if( sk->protect.s2k.mode == 1002 ) 
+                      ; /* Card key stub. */
+                    else 
+                      {
+                        rc = check_secret_key( sk, 0 );
+                      }
+                    break;
+                  }
+                if (rc)
+                  {
+                    node->pkt->pkt.secret_key = sk_save;
+                    free_secret_key (sk);
+                    /* FIXME: Make translatable after releasing 1.4.2 */
+                    log_error ("failed to unprotect the subkey: %s\n",
+                               g10_errstr (rc));
+                    goto leave;
+                  }
+
+		rc = build_packet (out, node->pkt);
+
+                node->pkt->pkt.secret_key = sk_save;
+                free_secret_key (sk);
+              }
 	    else
 	      {
 		/* Warn the user if the secret key or any of the secret

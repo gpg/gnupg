@@ -36,6 +36,8 @@ Noteworthy changes in version 1.4.2
       replace the import-unusable-sigs/export-unusable-sigs options
       from version 1.4.1.
 
+    * New export option export-reset-subkey-passwd.
+
 
 Noteworthy changes in version 1.4.1 (2005-03-15)
 ------------------------------------------------

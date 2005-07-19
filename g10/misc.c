@@ -1146,3 +1146,36 @@ default_homedir (void)
 
   return dir;
 }
+
+
+/* Return the name of the libexec directory.  The name is allocated in
+   a static area on the first use.  This function won't fail. */
+const char *
+get_libexecdir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  static int got_dir;
+  static char *dir;
+
+  if (!got_dir)
+    {
+      dir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
+                                      "Software\\GNU\\GnuPG",
+                                      "Install Directory");
+      if (dir && !*dir)
+        {
+          /* To avoid problems with using an empty dir we don't allow
+             for that. */
+          free (dir);
+          dir = NULL;
+        }
+      got_dir = 1;
+    }
+
+  if (dir)
+    return dir;
+  /* Fallback to the hardwired value. */
+#endif /*HAVE_W32_SYSTEM*/
+
+  return GNUPG_LIBEXECDIR;
+}

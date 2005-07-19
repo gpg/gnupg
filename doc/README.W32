@@ -19,6 +19,9 @@ Directory".  The installer does not change the PATH environment
 variable to include this directory.  You might want to do this
 manually.
 
+Note, that this registry entry is also used to locate the keyserver
+helper programs (e.g. gpgkeys_ldap).
+
 Below the Installation directory, you will find directories named
 "Doc", "gnupg.nls" and "Src".  The latter will be used for distributed
 patched, if any, and to store the source file if they have been

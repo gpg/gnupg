@@ -153,6 +153,7 @@ use_bzip2=yes
 use_exec=yes
 card_support=yes
 agent_support=yes
+disable_keyserver_path=no
 
 AC_ARG_ENABLE(minimal,
    AC_HELP_STRING([--enable-minimal],[build the smallest gpg binary possible]),
@@ -371,7 +372,7 @@ dnl LDAP is defined only after we confirm the library is available later
       AC_HELP_STRING([--disable-keyserver-path],
         [disable the exec-path option for keyserver helpers]),
       [if test "$enableval" = no ; then
-  	 AC_DEFINE(DISABLE_KEYSERVER_PATH,1,[define to disable exec-path for keyserver helpers])
+         disable_keyserver_path=yes
       fi],enableval=yes)
     AC_MSG_RESULT($enableval)
   fi
@@ -483,6 +484,7 @@ case "${host}" in
                    we use a simplified version of gettext])
         AC_DEFINE(HAVE_W32_SYSTEM,1,
                   [Defined if we run on a W32 API based system])
+        disable_keyserver_path=yes
         have_dosish_system=yes
         need_dlopen=no
         try_gettext="no"
@@ -546,6 +548,11 @@ if test "$have_dosish_system" = yes; then
               no file modes])
 fi
 AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
+
+if test "$disable_keyserver_path" = yes; then
+    AC_DEFINE(DISABLE_KEYSERVER_PATH,1,
+              [define to disable exec-path for keyserver helpers])
+fi
 
 AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE

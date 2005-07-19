@@ -74,3 +74,5 @@
   * Add the NEWSIG status.
 
   * Delete a card key as well as a wiping.
+
+  * Make 2 strings translatable in export.c after releasing 1.4.2.
