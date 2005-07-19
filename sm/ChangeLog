@@ -1,3 +1,9 @@
+2005-07-19  Werner Koch  <wk@g10code.com>
+
+	* fingerprint.c (gpgsm_get_certid): Cast printf arg to unsigned.
+	Bug accidently introduced while solving the #$%^& gcc
+	signed/unsigned char* warnings.
+
 2005-06-15  Werner Koch  <wk@g10code.com>
 
 	* delete.c (delete_one): Changed FPR to unsigned.
