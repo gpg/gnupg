@@ -2483,6 +2483,17 @@ option may lead to data and key corruption.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--limit-card-insert-tries &ParmN;</term>
+<listitem><para>
+With &ParmN; greater than 0 the number of prompts asking to insert a
+smartcard gets limited to N-1.  Thus with a value of 1 gpg won't at
+all ask to insert a card if none has been inserted at startup. This
+option is useful in the configuration file in case an application does
+not know about the smartcard support and waits ad infinitum for an
+inserted card.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--no-random-seed-file</term>
 <listitem><para>
 GnuPG uses a file to store its internal random pool over invocations.

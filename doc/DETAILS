@@ -553,13 +553,14 @@ more arguments in future versions.
            5 = No card reader available
 
 
-    PLAINTEXT <format> <timestamp>
+    PLAINTEXT <format> <timestamp> <filename>
         This indicates the format of the plaintext that is about to be
         written.  The format is a 1 byte hex code that shows the
         format of the plaintext: 62 ('b') is binary data, 74 ('t') is
         text data with no character set specified, and 75 ('u') is
         text data encoded in the UTF-8 character set.  The timestamp
-        is in seconds since the epoch.
+        is in seconds since the epoch.  If a filename is available it
+        gets printed as the third argument, percent-escaped as usual.
 
     PLAINTEXT_LENGTH <length>
         This indicates the length of the plaintext that is about to be
