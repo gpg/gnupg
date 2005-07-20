@@ -1,3 +1,11 @@
+2005-07-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (curl_can_handle): New.  Do a runtime check against
+	libcurl to see if it can handle a particular protocol.
+	(keyserver_typemap): Call it here.
+
+	* Makefile.am: Pull in libcurl for curl_version_info() if used.
+
 2005-07-19  Werner Koch  <wk@g10code.com>
 
 	* g10.c, options.h: New option --limit-card-insert-tries.

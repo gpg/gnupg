@@ -25,6 +25,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
 #include "filter.h"
 #include "keydb.h"
 #include "status.h"
@@ -154,6 +157,10 @@ free_keyserver_spec(struct keyserver_spec *keyserver)
   m_free(keyserver->opaque);
   m_free(keyserver);
 }
+
+/* TODO: once we cut over to an all-curl world, we don't need this
+   parser any longer so it can be removed, or at least moved to
+   keyserver/ksutil.c for limited use in gpgkeys_ldap or the like. */
 
 struct keyserver_spec *
 parse_keyserver_uri(const char *uri,int require_scheme,
@@ -822,6 +829,31 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
   m_free(line);
 }
 
+static int
+curl_can_handle(const char *scheme)
+{
+#if defined(HAVE_LIBCURL)
+
+  const char * const *proto;
+  curl_version_info_data *data=curl_version_info(CURLVERSION_NOW);
+
+  assert(data);
+
+  for(proto=data->protocols;*proto;proto++)
+    if(strcasecmp(*proto,scheme)==0)
+      return 1;
+
+#elif defined(FAKE_CURL)
+
+  /* If we're faking curl, then we only support HTTP */
+  if(strcasecmp(scheme,"http")==0)
+    return 1;
+
+#endif
+
+  return 0;
+}
+
 /* We sometimes want to use a different gpgkeys_xxx for a given
    protocol (for example, ldaps is handled by gpgkeys_ldap).  Map
    these here. */
@@ -830,22 +862,8 @@ keyserver_typemap(const char *type)
 {
   if(strcmp(type,"ldaps")==0)
     return "ldap";
-#ifdef FTP_VIA_LIBCURL
-  else if(strcmp(type,"ftp")==0)
+  else if(curl_can_handle(type))
     return "curl";
-#endif
-#ifdef FTPS_VIA_LIBCURL
-  else if(strcmp(type,"ftps")==0)
-    return "curl";
-#endif
-#ifdef HTTP_VIA_LIBCURL
-  else if(strcmp(type,"http")==0)
-    return "curl";
-#endif
-#ifdef HTTPS_VIA_LIBCURL
-  else if(strcmp(type,"https")==0)
-    return "curl";
-#endif
   else
     return type;
 }
