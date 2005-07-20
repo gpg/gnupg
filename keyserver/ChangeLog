@@ -1,3 +1,16 @@
+2005-07-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (get_key, main): Don't try and be smart about
+	what protocols we handle.  Directly pass them to curl or fake-curl
+	and see if an error comes back.
+
+	* curl-shim.h, curl-shim.c (handle_error), ksutil.c
+	(curl_err_to_gpg_err): Add support for CURLE_UNSUPPORTED_PROTOCOL
+	in fake curl.
+
+	* Makefile.am: Don't need -DFAKE_CURL any longer since it's in
+	config.h.
+
 2005-06-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_mailto.in, gpgkeys_test.in: Use @VERSION@ so version

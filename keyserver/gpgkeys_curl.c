@@ -68,7 +68,7 @@ get_key(char *getkey)
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 
   res=curl_easy_perform(curl);
-  if(res!=0)
+  if(res!=CURLE_OK)
     {
       fprintf(console,"gpgkeys: %s fetch error %d: %s\n",opt->scheme,
 	      res,errorbuffer);
@@ -77,7 +77,7 @@ get_key(char *getkey)
   else
     fprintf(output,"\nKEY 0x%s END\n",getkey);
 
-  return KEYSERVER_OK;
+  return curl_err_to_gpg_err(res);
 }
 
 static void 
@@ -225,27 +225,6 @@ main(int argc,char *argv[])
       fprintf(console,"gpgkeys: no scheme supplied!\n");
       ret=KEYSERVER_SCHEME_NOT_FOUND;
       goto fail;
-    }
-#ifdef HTTP_VIA_LIBCURL
-  else if(strcasecmp(opt->scheme,"http")==0)
-    ;
-#endif /* HTTP_VIA_LIBCURL */
-#ifdef HTTPS_VIA_LIBCURL
-  else if(strcasecmp(opt->scheme,"https")==0)
-    ;
-#endif /* HTTP_VIA_LIBCURL */
-#ifdef FTP_VIA_LIBCURL
-  else if(strcasecmp(opt->scheme,"ftp")==0)
-    ;
-#endif /* FTP_VIA_LIBCURL */
-#ifdef FTPS_VIA_LIBCURL
-  else if(strcasecmp(opt->scheme,"ftps")==0)
-    ;
-#endif /* FTPS_VIA_LIBCURL */
-  else
-    {
-      fprintf(console,"gpgkeys: scheme `%s' not supported\n",opt->scheme);
-      return KEYSERVER_SCHEME_NOT_FOUND;
     }
 
   if(!opt->host)

@@ -342,6 +342,7 @@ curl_err_to_gpg_err(CURLcode error)
   switch(error)
     {
     case CURLE_FTP_COULDNT_RETR_FILE: return KEYSERVER_KEY_NOT_FOUND;
+    case CURLE_UNSUPPORTED_PROTOCOL:  return KEYSERVER_SCHEME_NOT_FOUND;
     default: return KEYSERVER_INTERNAL_ERROR;
     }
 }

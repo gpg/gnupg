@@ -45,6 +45,10 @@ handle_error(CURL *curl,CURLcode err,const char *str)
 	  strcpy(curl->errorbuffer,"okay");
 	  break;
 
+	case CURLE_UNSUPPORTED_PROTOCOL:
+	  strcpy(curl->errorbuffer,"unsupported protocol");
+	  break;
+
 	case CURLE_COULDNT_CONNECT:
 	  strcpy(curl->errorbuffer,"couldn't connect");
 	  break;
@@ -217,16 +221,26 @@ curl_easy_perform(CURL *curl)
 	}
     }
 
-  if(rc!=0)
+  switch(rc)
     {
-      if(rc==G10ERR_NETWORK)
-	errstr=strerror(errno);
-      else
-	errstr=g10_errstr(rc);
+    case 0:
+      break;
 
+    case G10ERR_INVALID_URI:
+      err=CURLE_UNSUPPORTED_PROTOCOL;
+      break;
+
+    case G10ERR_NETWORK:
+      errstr=strerror(errno);
       err=CURLE_COULDNT_CONNECT;
-    }
+      break;
 
+    default:
+      errstr=g10_errstr(rc);
+      err=CURLE_COULDNT_CONNECT;
+      break;
+    }
+      
   return handle_error(curl,err,errstr);
 }
 

@@ -44,10 +44,8 @@ if WITH_CURL
 gpgkeys_hkp_SOURCES += gpgkeys_hkp.c
 if FAKE_CURL
 gpgkeys_curl_SOURCES += curl-shim.c curl-shim.h
-gpgkeys_curl_CPPFLAGS = -DFAKE_CURL
 gpgkeys_curl_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_hkp_SOURCES += curl-shim.c curl-shim.h
-gpgkeys_hkp_CPPFLAGS = -DFAKE_CURL
 gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 else
 gpgkeys_curl_CPPFLAGS = @LIBCURL_CPPFLAGS@
