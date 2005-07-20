@@ -988,8 +988,7 @@ mpi_print( FILE *fp, gcry_mpi_t a, int mode )
 	int rc;
 	char *buffer;
 
-	rc = gcry_mpi_aprint( GCRYMPI_FMT_HEX,
-                              &(unsigned char*)buffer, NULL, a );
+	rc = gcry_mpi_aprint( GCRYMPI_FMT_HEX, &buffer, NULL, a );
 	assert( !rc );
 	fputs( buffer, fp );
 	n += strlen(buffer);
