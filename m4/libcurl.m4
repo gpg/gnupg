@@ -142,7 +142,7 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
    missing symbols or can't link. */
 int x;
 curl_easy_setopt(NULL,CURLOPT_URL,NULL);
-curl_version_info2(CURLINFO_NOW);
+curl_version_info(CURLINFO_NOW);
 x=CURL_ERROR_SIZE;
 x=CURLOPT_WRITEFUNCTION;
 x=CURLOPT_FILE;
