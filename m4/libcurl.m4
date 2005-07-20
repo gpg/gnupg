@@ -1,7 +1,7 @@
 # LIBCURL_CHECK_CONFIG ([DEFAULT-ACTION], [MINIMUM-VERSION],
 #                       [ACTION-IF-YES], [ACTION-IF-NO])
 # ----------------------------------------------------------
-#      David Shaw <dshaw@jabberwocky.com>   Jun-21-2005
+#      David Shaw <dshaw@jabberwocky.com>   Jul-20-2005
 #
 # Checks for libcurl.  DEFAULT-ACTION is the string yes or no to
 # specify whether to default to --with-libcurl or --without-libcurl.
@@ -32,7 +32,8 @@
 # found is after version 7.7.2, the first version that included the
 # curl-config script.  Note that it is very important for people
 # packaging binary versions of libcurl to include this script!
-# Without curl-config, we can only guess what protocols are available.
+# Without curl-config, we can only guess what protocols are available,
+# (or use curl_version_info to figure it out at runtime).
 
 AC_DEFUN([LIBCURL_CHECK_CONFIG],
 [
@@ -141,6 +142,7 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
    missing symbols or can't link. */
 int x;
 curl_easy_setopt(NULL,CURLOPT_URL,NULL);
+curl_version_info2(CURLINFO_NOW);
 x=CURL_ERROR_SIZE;
 x=CURLOPT_WRITEFUNCTION;
 x=CURLOPT_FILE;
