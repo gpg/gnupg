@@ -456,7 +456,9 @@ main (int argc, char **argv )
           allow_coredump = 1;
           break;
         case oDebugCCIDDriver: 
+#ifdef HAVE_LIBUSB
           ccid_set_debug_level (ccid_set_debug_level (-1)+1);
+#endif /*HAVE_LIBUSB*/
           break;
         case oDebugDisableTicker: ticker_disabled = 1; break;
 

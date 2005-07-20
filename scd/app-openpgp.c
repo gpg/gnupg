@@ -1230,8 +1230,15 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   buf = app->app_local->pk[keyno-1].key;
   if (!buf)
     return gpg_error (GPG_ERR_NO_PUBKEY);
-  *pk = buf;
   *pklen = app->app_local->pk[keyno-1].keylen;;
+  *pk = xtrymalloc (*pklen);
+  if (!*pk)
+    {
+      err = gpg_error_from_errno (errno);
+      *pklen = 0;
+      return err;
+    }
+  memcpy (*pk, buf, *pklen);
   return 0;
 #else
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);

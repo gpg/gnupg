@@ -70,7 +70,7 @@ gpgsm_print_serial (FILE *fp, ksba_const_sexp_t sn)
       else
         {
           for (p++; n; n--, p++)
-            fprintf (fp, "%02X", *p);
+            fprintf (fp, "%02X", *(const unsigned char*)p);
         }
     }
 }
@@ -98,7 +98,7 @@ gpgsm_dump_serial (ksba_const_sexp_t sn)
       else
         {
           for (p++; n; n--, p++)
-            log_printf ("%02X", *p);
+            log_printf ("%02X", *(const unsigned char *)p);
         }
     }
 }

@@ -827,7 +827,7 @@ gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,
             *p++ = '+';
           else if (!isprint (*s) || *s == '+')
             {
-              sprintf (p, "%%%02X", *s);
+              sprintf (p, "%%%02X", *(const unsigned char *)s);
               p += 3;
             }
           else

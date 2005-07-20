@@ -103,3 +103,5 @@ might want to have an agent context for each service request
 
 
 
+* sm/
+** --include-certs seems to  be a dummy option.

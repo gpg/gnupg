@@ -809,7 +809,8 @@ reset_pcsc_reader (int slot)
   len -= 4; /* Already read the error code. */
   if (len > DIM (slotp->atr))
     {
-      log_error ("PC/SC returned a too large ATR (len=%x)\n", len);
+      log_error ("PC/SC returned a too large ATR (len=%lx)\n",
+                 (unsigned long)len);
       sw = SW_HOST_GENERAL_ERROR;
       goto command_failed;
     }
@@ -1425,7 +1426,8 @@ open_pcsc_reader (const char *portstr)
   len -= 4; /* Already read the error code. */
   if (len > DIM (slotp->atr))
     {
-      log_error ("PC/SC returned a too large ATR (len=%x)\n", len);
+      log_error ("PC/SC returned a too large ATR (len=%lx)\n",
+                 (unsigned long)len);
       goto command_failed;
     }
   err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];

@@ -251,30 +251,42 @@ print_time (gnupg_isotime_t t, FILE *fp)
 }
 
 
-/* return an allocated string with the email address extracted from a
+/* Return an allocated string with the email address extracted from a
    DN */
 static char *
 email_kludge (const char *name)
 {
-  const char *p;
+  const char *p, *string;
   unsigned char *buf;
   int n;
 
-  if (strncmp (name, "1.2.840.113549.1.9.1=#", 22))
-    return NULL;
+  string = name;
+  for (;;)
+    {
+      p = strstr (string, "1.2.840.113549.1.9.1=#");
+      if (!p)
+        return NULL;
+      if (p == name || (p > string+1 && p[-1] == ',' && p[-2] != '\\'))
+        {
+          name = p + 22;
+          break;
+        }
+      string = p + 22;
+    }
+
+
   /* This looks pretty much like an email address in the subject's DN
      we use this to add an additional user ID entry.  This way,
      openSSL generated keys get a nicer and usable listing */
-  name += 22;    
   for (n=0, p=name; hexdigitp (p) && hexdigitp (p+1); p +=2, n++)
     ;
-  if (*p != '#' || !n)
+  if (!n)
     return NULL;
   buf = xtrymalloc (n+3);
   if (!buf)
     return NULL; /* oops, out of core */
   *buf = '<';
-  for (n=1, p=name; *p != '#'; p +=2, n++)
+  for (n=1, p=name; hexdigitp (p); p +=2, n++)
     buf[n] = xtoi_2 (p);
   buf[n++] = '>';
   buf[n] = 0;

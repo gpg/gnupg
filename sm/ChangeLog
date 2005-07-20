@@ -1,3 +1,11 @@
+2005-07-20  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (email_kludge): Reworked.
+
+	* certdump.c (gpgsm_print_serial, gpgsm_dump_serial): Cast printf
+	arg to unsigned.
+	* call-dirmngr.c (gpgsm_dirmngr_run_command): Ditto
+
 2005-07-19  Werner Koch  <wk@g10code.com>
 
 	* fingerprint.c (gpgsm_get_certid): Cast printf arg to unsigned.

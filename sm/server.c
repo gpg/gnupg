@@ -1109,7 +1109,7 @@ write_status_text_and_buffer ( int no, const char *string,
         if (s != buffer) 
             fwrite (buffer, s-buffer, 1, statusfp );
         if ( esc ) {
-            fprintf (statusfp, "%%%02X", *(const byte*)s );
+            fprintf (statusfp, "%%%02X", *(const unsigned char*)s );
             s++; n--;
         }
         buffer = s;
