@@ -631,6 +631,7 @@ AC_ARG_ENABLE(fake-curl,
 AM_CONDITIONAL(FAKE_CURL,test x"$fake_curl" = xyes)
 
 if test x"$fake_curl" = xyes ; then
+   AC_DEFINE(FAKE_CURL,1,[define to fake the libcurl API internally])
    libcurl_protocol_HTTP=yes
 else
    # If we have neither FTP or HTTP defined, then don't bother to check
