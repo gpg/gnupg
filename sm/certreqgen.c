@@ -1,5 +1,5 @@
 /* certreqgen.c - Generate a key and a certification request
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -71,7 +71,11 @@ The format of the native parameter file is follows:
      Name-DN: subject name
         This is the DN name of the subject in rfc2253 format.
      Name-Email: <string>
-	The ist the email address
+	The is an email address for the altSubjectName
+     Name-DNS: <string> 
+	The is an DNS name for the altSubjectName
+     Name-URI: <string> 
+	The is an URI for the altSubjectName
 
 Here is an example:
 $ cat >foo <<EOF
@@ -109,7 +113,9 @@ enum para_name {
   pKEYLENGTH,
   pKEYUSAGE,
   pNAMEDN,
-  pNAMEEMAIL
+  pNAMEEMAIL,
+  pNAMEDNS,
+  pNAMEURI
 };
 
 struct para_data_s {
@@ -155,26 +161,27 @@ release_parameter_list (struct para_data_s *r)
 }
 
 static struct para_data_s *
-get_parameter (struct para_data_s *para, enum para_name key)
+get_parameter (struct para_data_s *para, enum para_name key, int seq)
 {
   struct para_data_s *r;
   
-  for (r = para; r && r->key != key; r = r->next)
-    ;
-  return r;
+  for (r = para; r ; r = r->next)
+    if ( r->key == key && !seq--)
+      return r;
+  return NULL;
 }
 
 static const char *
-get_parameter_value (struct para_data_s *para, enum para_name key)
+get_parameter_value (struct para_data_s *para, enum para_name key, int seq)
 {
-  struct para_data_s *r = get_parameter (para, key);
+  struct para_data_s *r = get_parameter (para, key, seq);
   return (r && *r->u.value)? r->u.value : NULL;
 }
 
 static int
 get_parameter_algo (struct para_data_s *para, enum para_name key)
 {
-  struct para_data_s *r = get_parameter (para, key);
+  struct para_data_s *r = get_parameter (para, key, 0);
   if (!r)
     return -1;
   if (digitp (r->u.value))
@@ -189,7 +196,7 @@ get_parameter_algo (struct para_data_s *para, enum para_name key)
 static int
 parse_parameter_usage (struct para_data_s *para, enum para_name key)
 {
-  struct para_data_s *r = get_parameter (para, key);
+  struct para_data_s *r = get_parameter (para, key, 0);
   char *p, *pn;
   unsigned int use;
   
@@ -220,7 +227,7 @@ parse_parameter_usage (struct para_data_s *para, enum para_name key)
 static unsigned int
 get_parameter_uint (struct para_data_s *para, enum para_name key)
 {
-  struct para_data_s *r = get_parameter (para, key);
+  struct para_data_s *r = get_parameter (para, key, 0);
 
   if (!r)
     return 0;
@@ -241,12 +248,15 @@ read_parameters (ctrl_t ctrl, FILE *fp, ksba_writer_t writer)
   static struct {
     const char *name;
     enum para_name key;
+    int allow_dups;
   } keywords[] = {
     { "Key-Type",       pKEYTYPE},
     { "Key-Length",     pKEYLENGTH },
     { "Key-Usage",      pKEYUSAGE },
     { "Name-DN",        pNAMEDN },
-    { "Name-Email",     pNAMEEMAIL },
+    { "Name-Email",     pNAMEEMAIL, 1 },
+    { "Name-DNS",       pNAMEDNS, 1 },
+    { "Name-URI",       pNAMEURI, 1 },
     { NULL, 0 }
   };
   char line[1024], *p;
@@ -347,7 +357,7 @@ read_parameters (ctrl_t ctrl, FILE *fp, ksba_writer_t writer)
           release_parameter_list (para);
           para = NULL;
 	}
-      else
+      else if (!keywords[i].allow_dups)
         {
           for (r = para; r && r->key != keywords[i].key; r = r->next)
             ;
@@ -433,9 +443,10 @@ proc_parameters (ctrl_t ctrl,
   unsigned char keyparms[100];
   int rc;
   ksba_sexp_t public;
+  int seq;
   
   /* check that we have all required parameters */
-  assert (get_parameter (para, pKEYTYPE));
+  assert (get_parameter (para, pKEYTYPE, 0));
 
   /* We can only use RSA for now.  There is a with pkcs-10 on how to
      use ElGamal because it is expected that a PK algorithm can always
@@ -443,20 +454,20 @@ proc_parameters (ctrl_t ctrl,
   i = get_parameter_algo (para, pKEYTYPE);
   if (i < 1 || i != GCRY_PK_RSA )
     {
-      r = get_parameter (para, pKEYTYPE);
+      r = get_parameter (para, pKEYTYPE, 0);
       log_error (_("line %d: invalid algorithm\n"), r->lnr);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
   
   /* check the keylength */
-  if (!get_parameter (para, pKEYLENGTH))
+  if (!get_parameter (para, pKEYLENGTH, 0))
     nbits = 1024;
   else
     nbits = get_parameter_uint (para, pKEYLENGTH);
   if (nbits < 1024 || nbits > 4096)
     {
       /* The BSI specs dated 2002-11-25 don't allow lengths below 1024. */
-      r = get_parameter (para, pKEYTYPE);
+      r = get_parameter (para, pKEYLENGTH, 0);
       log_error (_("line %d: invalid key length %u (valid are %d to %d)\n"),
                  r->lnr, nbits, 1024, 4096);
       return gpg_error (GPG_ERR_INV_PARAMETER);
@@ -468,16 +479,16 @@ proc_parameters (ctrl_t ctrl,
 
   /* check that there is a subject name and that this DN fits our
      requirements */
-  if (!(s=get_parameter_value (para, pNAMEDN)))
+  if (!(s=get_parameter_value (para, pNAMEDN, 0)))
     {
-      r = get_parameter (para, pKEYTYPE);
+      r = get_parameter (para, pKEYTYPE, 0);
       log_error (_("line %d: no subject name given\n"), r->lnr);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
   /* fixme check s */
 
   /* check that the optional email address is okay */
-  if ((s=get_parameter_value (para, pNAMEEMAIL)))
+  for (seq=0; (s=get_parameter_value (para, pNAMEEMAIL, seq)); seq++)
     { 
       if (has_invalid_email_chars (s)
           || *s == '@'
@@ -485,7 +496,7 @@ proc_parameters (ctrl_t ctrl,
           || s[strlen(s)-1] == '.'
           || strstr(s, ".."))
         {
-          r = get_parameter (para, pKEYTYPE);
+          r = get_parameter (para, pNAMEEMAIL, seq);
           log_error (_("line %d: not a valid email address\n"), r->lnr);
           return gpg_error (GPG_ERR_INV_PARAMETER);
         }
@@ -497,7 +508,7 @@ proc_parameters (ctrl_t ctrl,
   rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
   if (rc)
     {
-      r = get_parameter (para, pKEYTYPE);
+      r = get_parameter (para, pKEYTYPE, 0);
       log_error (_("line %d: key generation failed: %s\n"),
                  r->lnr, gpg_strerror (rc));
       return rc;
@@ -524,6 +535,10 @@ create_request (ctrl_t ctrl,
   int rc = 0;
   const char *s;
   unsigned int use;
+  int seq;
+  char *buf, *p;
+  size_t len;
+  char numbuf[30];
 
   err = ksba_certreq_new (&cr);
   if (err)
@@ -541,7 +556,7 @@ create_request (ctrl_t ctrl,
   ksba_certreq_set_hash_function (cr, HASH_FNC, md);
   ksba_certreq_set_writer (cr, outctrl->writer);
   
-  err = ksba_certreq_add_subject (cr, get_parameter_value (para, pNAMEDN));
+  err = ksba_certreq_add_subject (cr, get_parameter_value (para, pNAMEDN, 0));
   if (err)
     {
       log_error ("error setting the subject's name: %s\n",
@@ -550,11 +565,8 @@ create_request (ctrl_t ctrl,
       goto leave;
     }
 
-  s = get_parameter_value (para, pNAMEEMAIL);
-  if (s)
+  for (seq=0; (s = get_parameter_value (para, pNAMEEMAIL, seq)); seq++)
     {
-      char *buf;
-
       buf = xtrymalloc (strlen (s) + 3);
       if (!buf)
         {
@@ -564,6 +576,60 @@ create_request (ctrl_t ctrl,
       *buf = '<';
       strcpy (buf+1, s);
       strcat (buf+1, ">");
+      err = ksba_certreq_add_subject (cr, buf);
+      xfree (buf);
+      if (err)
+        {
+          log_error ("error setting the subject's alternate name: %s\n",
+                     gpg_strerror (err));
+          rc = err;
+          goto leave;
+        }
+    }
+
+  for (seq=0; (s = get_parameter_value (para, pNAMEDNS, seq)); seq++)
+    {
+      len = strlen (s);
+      assert (len);
+      snprintf (numbuf, DIM(numbuf), "%u:", (unsigned int)len);
+      buf = p = xtrymalloc (11 + strlen (numbuf) + len + 3);
+      if (!buf)
+        {
+          rc = OUT_OF_CORE (errno);
+          goto leave;
+        }
+      p = stpcpy (p, "(8:dns-name");
+      p = stpcpy (p, numbuf);
+      p = stpcpy (p, s);
+      strcpy (p, ")");
+
+      err = ksba_certreq_add_subject (cr, buf);
+      xfree (buf);
+      if (err)
+        {
+          log_error ("error setting the subject's alternate name: %s\n",
+                     gpg_strerror (err));
+          rc = err;
+          goto leave;
+        }
+    }
+
+  for (seq=0; (s = get_parameter_value (para, pNAMEURI, seq)); seq++)
+    {
+      len = strlen (s);
+      assert (len);
+      snprintf (numbuf, DIM(numbuf), "%u:", (unsigned int)len);
+      buf = p = xtrymalloc (6 + strlen (numbuf) + len + 3);
+      if (!buf)
+        {
+          rc = OUT_OF_CORE (errno);
+          goto leave;
+        }
+      p = stpcpy (p, "(3:uri");
+      p = stpcpy (p, numbuf);
+      p = stpcpy (p, s);
+      strcpy (p, ")");
+
       err = ksba_certreq_add_subject (cr, buf);
       xfree (buf);
       if (err)

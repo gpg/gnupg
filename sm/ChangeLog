@@ -1,3 +1,11 @@
+2005-07-21  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): New options --no-log-file and --debug-none.
+
+	* certreqgen.c (get_parameter, get_parameter_value): Add SEQ arg
+	to allow enumeration.  Changed all callers.
+	(create_request): Process DNS and URI parameters.
+
 2005-07-20  Werner Koch  <wk@g10code.com>
 
 	* keylist.c (email_kludge): Reworked.

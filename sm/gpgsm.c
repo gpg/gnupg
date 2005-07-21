@@ -99,12 +99,14 @@ enum cmd_and_opt_values {
   oDebug,
   oDebugLevel,
   oDebugAll,
+  oDebugNone,
   oDebugWait,
   oDebugAllowCoreDump,
   oDebugNoChainValidation,
   oDebugIgnoreExpiration,
   oFixedPassphrase,
   oLogFile,
+  oNoLogFile,
 
   oEnableSpecialFilenames,
 
@@ -330,6 +332,7 @@ static ARGPARSE_OPTS opts[] = {
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
     { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
+    { oNoLogFile, "no-log-file" ,0, "@"},
 #if 0
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
@@ -351,6 +354,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugLevel, "debug-level" ,2, N_("|LEVEL|set the debugging level to LEVEL")},
     { oDebugAll, "debug-all" ,0, "@"},
+    { oDebugNone, "debug-none" ,0, "@"},
     { oDebugWait, "debug-wait" ,1, "@"},
     { oDebugAllowCoreDump, "debug-allow-core-dump", 0, "@" },
     { oDebugNoChainValidation, "debug-no-chain-validation", 0, "@"},
@@ -1032,7 +1036,8 @@ main ( int argc, char **argv)
           break;
 
         case oLogFile: logfile = pargs.r.ret_str; break;
-          
+        case oNoLogFile: logfile = NULL; break;          
+
         case oBatch: 
           opt.batch = 1;
           greeting = 0;
@@ -1046,6 +1051,7 @@ main ( int argc, char **argv)
 
         case oDebug: debug_value |= pargs.r.ret_ulong; break;
         case oDebugAll: debug_value = ~0; break;
+        case oDebugNone: debug_value = 0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
         case oDebugAllowCoreDump:

@@ -1,7 +1,7 @@
 #!/bin/sh
 #                                                              -*- sh -*-
 # gpgsm-gencert.c - Generate X.509 certificates through GPGSM.  
-#	Copyright (C) 2004 Free Software Foundation, Inc.
+#	Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -93,25 +93,67 @@ KEY_LENGTH=$ANSWER
 query_user_menu "Key usage" "sign, encrypt" "sign" "encrypt"
 KEY_USAGE=$ANSWER
 
-query_user "Name"
+query_user "Name (DN)"
 NAME=$ANSWER
 
-query_user "E-Mail address"
-EMAIL_ADDRESS=$ANSWER
+EMAIL_ADDRESSES=
+LF=
+while : ; do
+  query_user "E-Mail addresses (end with an empty line)"
+  [ -z "$ANSWER" ] && break
+  EMAIL_ADDRESSES="${EMAIL_ADDRESSES}${LF}Name-Email: $ANSWER"
+  LF='
+'
+done
+
+DNS_ADDRESSES=
+LF=
+while : ; do
+  query_user "DNS Names (optional; end with an empty line)"
+  [ -z "$ANSWER" ] && break
+  DNS_ADDRESSES="${DNS_ADDRESSES}${LF}Name-DNS: $ANSWER"
+  LF='
+'
+done
+
+URI_ADDRESSES=
+LF=
+while : ; do
+  query_user "URIs (optional; end with an empty line)"
+  [ -z "$ANSWER" ] && break
+  URI_ADDRESSES="${URI_ADDRESSES}${LF}Name-URI: $ANSWER"
+  LF='
+'
+done
 
 file_parameter=$(mktemp "/tmp/gpgsm.XXXXXX")
 outfile=$(mktemp "/tmp/gpgsm.XXXXXX")
 
-cat > "$file_parameter" <<EOF
+
+(
+cat <<EOF
 Key-Type: $KEY_TYPE
 Key-Length: $KEY_LENGTH
 Key-Usage: $KEY_USAGE
 Name-DN: $NAME
-Name-Email: $EMAIL_ADDRESS
 EOF
+[ -n "$EMAIL_ADDRESSES" ] && echo "$EMAIL_ADDRESSES"
+[ -n "$DNS_ADDRESSES" ] && echo "$DNS_ADDRESSES"
+[ -n "$URI_ADDRESSES" ] && echo "$URI_ADDRESSES"
+) > "$file_parameter"
+
+
+echo 'Parameters for certificate request to create:' >&2
+cat -n "$file_parameter" >&2
+echo  >&2
+
+query_user_menu "Really create such a CSR?" "yes" "no"
+[ "$ANSWER" != "yes" ] && exit 1
+    
 
 echo -e "$ASSUAN_COMMANDS" | \
-   gpgsm --server 4< "$file_parameter" 5>"$outfile" >/dev/null
+   ./gpgsm --no-log-file --debug-level none --debug-none \
+           --server 4< "$file_parameter" 5>"$outfile" >/dev/null
 
 cat "$outfile"
 
