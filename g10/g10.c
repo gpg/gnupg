@@ -346,6 +346,7 @@ enum cmd_and_opt_values
     oEnableProgressFilter,
     oMultifile,
     oKeyidFormat,
+    oExitOnStatusWriteError,
     oLimitCardInsertTries,
 
     oReaderPort,
@@ -676,6 +677,7 @@ static ARGPARSE_OPTS opts[] = {
     { oEnableProgressFilter, "enable-progress-filter", 0, "@" },
     { oMultifile, "multifile", 0, "@" },
     { oKeyidFormat, "keyid-format", 2, "@" },
+    { oExitOnStatusWriteError, "exit-on-status-write-error", 0, "@" },
     { oLimitCardInsertTries, "limit-card-insert-tries", 1, "@"},
 
     { oReaderPort, "reader-port",    2, "@"},
@@ -2543,6 +2545,11 @@ main (int argc, char **argv )
 	    else
 	      log_error("unknown keyid-format `%s'\n",pargs.r.ret_str);
 	    break;
+
+          case oExitOnStatusWriteError:
+            opt.exit_on_status_write_error = 1;
+            break;
+
 	  case oLimitCardInsertTries: 
             opt.limit_card_insert_tries = pargs.r.ret_int; 
             break;

@@ -267,6 +267,9 @@ open_outfile( const char *iname, int mode, IOBUF *a )
     m_free(buf);
   }
 
+  if (*a)
+    iobuf_ioctl (*a,3,1,NULL); /* disable fd caching */
+
   return rc;
 }
 

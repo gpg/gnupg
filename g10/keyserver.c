@@ -904,8 +904,16 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
      PATH to be GNUPG_LIBEXECDIR.  All this is not that meaningful on
      Unix-like systems (since we're going to give a full path to
      gpgkeys_foo), but on W32 it prevents loading any DLLs from
-     directories in %PATH%. */
-  set_exec_path(libexecdir);
+     directories in %PATH%.
+
+     After some more thinking about this we came to the conclusion
+     that it is better to load the helpers from the directory where
+     the program of this process lives.  Fortunately Windows provides
+     a way to retrieve this and our get_libexecdir function has been
+     modified to return just this.  Setting the exec-path is not
+     anymore required.  
+       set_exec_path(libexecdir);
+ */
 #else
   if(opt.exec_path_set)
     {

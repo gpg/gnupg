@@ -172,6 +172,8 @@ encode_simple( const char *filename, int mode, int use_seskey )
     
     /* prepare iobufs */
     inp = iobuf_open(filename);
+    if (inp)
+      iobuf_ioctl (inp,3,1,NULL); /* disable fd caching */
     if (inp && is_secured_file (iobuf_get_fd (inp)))
       {
         iobuf_close (inp);
@@ -472,6 +474,8 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 
     /* prepare iobufs */
     inp = iobuf_open(filename);
+    if (inp)
+      iobuf_ioctl (inp,3,1,NULL); /* disable fd caching */
     if (inp && is_secured_file (iobuf_get_fd (inp)))
       {
         iobuf_close (inp);
@@ -494,7 +498,6 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) )
 	goto leave;
-
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );

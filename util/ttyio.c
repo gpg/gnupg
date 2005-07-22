@@ -507,11 +507,6 @@ do_get( const char *prompt, int hidden )
 	else if( c > 0xa0 )
 	    ; /* we don't allow 0xa0, as this is a protected blank which may
 	       * confuse the user */
-        /* Fixme: The above assumption is not bad.  We assum a certain
-           character set and even worse, the W32 version behaves
-           differently.  It is not clear how we can hix this.  When
-           used for passphrases this code path strips off certain
-           characters so changing this might invalidate passphrases.  */
 	else if( iscntrl(c) )
 	    continue;
 	if( !(i < n-1) ) {

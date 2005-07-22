@@ -1,11 +1,29 @@
+2005-07-22  Werner Koch  <wk@g10code.com>
+
+	* g10.c, options.h: New option --exit-on-status-write-error.
+	* status.c (write_status_text): Make use of this option.
+
 2005-07-22  David Shaw  <dshaw@jabberwocky.com>
 
-	* options.h, g10.c (main), keyedit.c (keyedit_menu): Use
-	--interactive to enable the uid walking when signing a key with no
-	uids specified to sign.
+	* options.h, g10.c (main): Removed option --no-interactive-selection.
+	* keyedit.c (keyedit_menu): Use --interactive to enable the uid
+	walking when signing a key with no uids specified to sign.
 
 	* keylist.c (list_keyblock_print): Fix silly typo.  Noted by Greg
 	Sabino Mullane.
+
+2005-07-20  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (open_outfile): Disable FD caching for created files.
+	* encode.c (encode_simple, encode_crypt): Disable FD caching for
+	input files.
+	* verify.c (verify_one_file): Ditto.
+	* decrypt.c (decrypt_messages): Ditto. This is bug #479.
+
+	* misc.c (get_libexecdir) [W32]: Changed to return the value of
+	program used to create the process.
+	* keyserver.c (keyserver_spawn) [DISABLE_KEYSERVER_PATH]: Don't
+	change the exec-path at all.
 
 2005-07-20  David Shaw  <dshaw@jabberwocky.com>
 

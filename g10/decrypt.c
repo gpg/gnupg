@@ -147,6 +147,8 @@ decrypt_messages(int nfiles, char *files[])
       if (!output)
         goto next_file;
       fp = iobuf_open(filename);
+      if (fp)
+        iobuf_ioctl (fp,3,1,NULL); /* disable fd caching */
       if (fp && is_secured_file (iobuf_get_fd (fp)))
         {
           iobuf_close (fp);

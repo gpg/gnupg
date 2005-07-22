@@ -144,6 +144,8 @@ verify_one_file( const char *name )
 
     print_file_status( STATUS_FILE_START, name, 1 );
     fp = iobuf_open(name);
+    if (fp)
+      iobuf_ioctl (fp,3,1,NULL); /* disable fd caching */
     if (fp && is_secured_file (iobuf_get_fd (fp)))
       {
         iobuf_close (fp);

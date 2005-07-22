@@ -38,6 +38,8 @@ Noteworthy changes in version 1.4.2
 
     * New export option export-reset-subkey-passwd.
 
+    * New option --limit-card-insert-tries.
+
 
 Noteworthy changes in version 1.4.1 (2005-03-15)
 ------------------------------------------------

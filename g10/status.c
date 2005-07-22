@@ -263,7 +263,8 @@ write_status_text ( int no, const char *text)
         }
     }
     putc ('\n',statusfp);
-    fflush (statusfp);
+    if ( fflush (statusfp) && opt.exit_on_status_write_error )
+      g10_exit (0);
 }
 
 
@@ -327,7 +328,8 @@ write_status_text_and_buffer ( int no, const char *string,
     } while ( len );
 
     putc ('\n',statusfp);
-    fflush (statusfp);
+    if ( fflush (statusfp) && opt.exit_on_status_write_error )
+      g10_exit (0);
 }
 
 void

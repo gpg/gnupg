@@ -194,8 +194,13 @@ struct
   byte *show_subpackets;
   int rfc2440_text;
 
-  int limit_card_insert_tries; /* If > 0, limit the number of card
-                                  insertion prompts to this value. */
+  /* If true, let write failures on the status-fd exit the process. */
+  int exit_on_status_write_error;
+
+  /* If > 0, limit the number of card insertion prompts to this
+     value. */
+  int limit_card_insert_tries; 
+
 #ifdef ENABLE_CARD_SUPPORT
   const char *ctapi_driver; /* Library to access the ctAPI. */
   const char *pcsc_driver;  /* Library to access the PC/SC system. */

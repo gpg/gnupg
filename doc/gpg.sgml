@@ -631,9 +631,7 @@ functionality is also available as the subcommand "passwd" with the
 <term>--sign-key &ParmName;</term>
 <listitem><para>
 Signs a public key with your secret key. This is a shortcut version of
-the subcommand "sign" from --edit.  You may also want to consider the
-option --no-interactive-selection which will drop you into the regular
-menu when not all keys shall be signed.
+the subcommand "sign" from --edit.  
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1086,15 +1084,6 @@ Don't make any changes (this is not completely implemented).
 <listitem><para>
 Prompt before overwriting any files.
 </para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-interactive-selection</term>
-<listitem><para>
-Do not use interactive selection mode in certain menues but require
-a selection in advance.  This is currently only used with the "sign"
-subcommand of --edit-key.
-</para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--batch</term>
@@ -2480,6 +2469,18 @@ special environments, where it can be assured that only one process
 is accessing those files.  A bootable floppy with a stand-alone
 encryption system will probably use this.  Improper usage of this
 option may lead to data and key corruption.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--exit-on-status-write-error</term>
+<listitem><para>
+This option will cause write errors on the status FD to immediately
+terminate the process.  That should in fact be the default but it
+never worked this way and thus we need an option to enable this, so
+that the change won't break applications which close their end of a
+status fd connected pipe too early.  Using this option along with
+--enable-progress-filter may be used to cleanly cancel long running
+gpg operations.
 </para></listitem></varlistentry>
 
 <varlistentry>

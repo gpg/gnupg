@@ -1155,24 +1155,29 @@ get_libexecdir (void)
 {
 #ifdef HAVE_W32_SYSTEM
   static int got_dir;
-  static char *dir;
+  static char dir[MAX_PATH+5];
 
   if (!got_dir)
     {
-      dir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
-                                      "Software\\GNU\\GnuPG",
-                                      "Install Directory");
-      if (dir && !*dir)
+      char *p;
+
+      if ( !GetModuleFileName ( NULL, dir, MAX_PATH) )
         {
-          /* To avoid problems with using an empty dir we don't allow
-             for that. */
-          free (dir);
-          dir = NULL;
+          log_debug ("GetModuleFileName failed: %s\n", w32_strerror (0));
+          *dir = 0;
         }
       got_dir = 1;
+      p = strrchr (dir, DIRSEP_C);
+      if (p)
+        *p = 0;
+      else
+        {
+          log_debug ("bad filename `%s' returned for this process\n", dir);
+          *dir = 0; 
+        }
     }
 
-  if (dir)
+  if (*dir)
     return dir;
   /* Fallback to the hardwired value. */
 #endif /*HAVE_W32_SYSTEM*/
