@@ -1742,12 +1742,15 @@ keyedit_menu( const char *username, STRLIST locusr,
 					   _("Really sign all user IDs?"
 					     " (y/N) ")))
                 {
-                  if (opt.no_interactive_selection)
+                  if(opt.interactive)
+		    interactive=1;
+		  else
                     {
+		      tty_printf(_("Hint: Select the user IDs to sign\n"));
                       have_commands = 0;
                       break;
                     }
-                  interactive=1;
+
                 }
 	      /* What sort of signing are we doing? */
 	      if(!parse_sign_type(answer,&localsig,&nonrevokesig,&trustsig))

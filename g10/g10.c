@@ -346,7 +346,6 @@ enum cmd_and_opt_values
     oEnableProgressFilter,
     oMultifile,
     oKeyidFormat,
-    oNoInteractiveSelection,
     oLimitCardInsertTries,
 
     oReaderPort,
@@ -677,7 +676,6 @@ static ARGPARSE_OPTS opts[] = {
     { oEnableProgressFilter, "enable-progress-filter", 0, "@" },
     { oMultifile, "multifile", 0, "@" },
     { oKeyidFormat, "keyid-format", 2, "@" },
-    { oNoInteractiveSelection, "no-interactive-selection", 0, "@" },
     { oLimitCardInsertTries, "limit-card-insert-tries", 1, "@"},
 
     { oReaderPort, "reader-port",    2, "@"},
@@ -2545,10 +2543,6 @@ main (int argc, char **argv )
 	    else
 	      log_error("unknown keyid-format `%s'\n",pargs.r.ret_str);
 	    break;
-          case oNoInteractiveSelection:
-            opt.no_interactive_selection = 1;
-            break;
-
 	  case oLimitCardInsertTries: 
             opt.limit_card_insert_tries = pargs.r.ret_int; 
             break;

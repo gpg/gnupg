@@ -790,7 +790,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	else if(pk->has_expired)
 	  {
 	    printf(" [");
-	    printf(_("expired: %s)"),expirestr_from_pk(pk));
+	    printf(_("expired: %s"),expirestr_from_pk(pk));
 	    printf("]");
 	  }
 	else if(pk->expiredate)

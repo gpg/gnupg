@@ -1,3 +1,12 @@
+2005-07-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), keyedit.c (keyedit_menu): Use
+	--interactive to enable the uid walking when signing a key with no
+	uids specified to sign.
+
+	* keylist.c (list_keyblock_print): Fix silly typo.  Noted by Greg
+	Sabino Mullane.
+
 2005-07-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (curl_can_handle): New.  Do a runtime check against

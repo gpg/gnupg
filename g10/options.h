@@ -157,7 +157,6 @@ struct
   char *temp_dir;
   int no_encrypt_to;
   int interactive;
-  int no_interactive_selection;
   STRLIST sig_notation_data;
   STRLIST cert_notation_data;
   STRLIST sig_policy_url;
