@@ -1,5 +1,5 @@
 /* call-agent.c - divert operations to the agent
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -415,6 +415,51 @@ gpgsm_agent_genkey (ctrl_t ctrl,
   rc = assuan_transact (agent_ctx, "GENKEY",
                         membuf_data_cb, &data, 
                         inq_genkey_parms, &gk_parm, NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return map_assuan_err (rc);
+    }
+  buf = get_membuf (&data, &len);
+  if (!buf)
+    return gpg_error (GPG_ERR_ENOMEM);
+  if (!gcry_sexp_canon_len (buf, len, NULL, NULL))
+    {
+      xfree (buf);
+      return gpg_error (GPG_ERR_INV_SEXP);
+    }
+  *r_pubkey = buf;
+  return 0;
+}
+
+
+/* Call the agent to read the public key part for a given keygrip.  */
+int
+gpgsm_agent_readkey (ctrl_t ctrl, const char *hexkeygrip,
+                     ksba_sexp_t *r_pubkey)
+{
+  int rc;
+  membuf_t data;
+  size_t len;
+  unsigned char *buf;
+  char line[ASSUAN_LINELENGTH];
+
+  *r_pubkey = NULL;
+  rc = start_agent (ctrl);
+  if (rc)
+    return rc;
+
+  rc = assuan_transact (agent_ctx, "RESET",NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  snprintf (line, DIM(line)-1, "READKEY %s", hexkeygrip);
+  line[DIM(line)-1] = 0;
+
+  init_membuf (&data, 1024);
+  rc = assuan_transact (agent_ctx, line,
+                        membuf_data_cb, &data, 
+                        NULL, NULL, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));

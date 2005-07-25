@@ -790,8 +790,8 @@ client must provide it.
 This is used to generate a new keypair, store the secret part in the
 @acronym{PSE} and the public key in the key database.  We will probably
 add optional commands to allow the client to select whether a hardware
-token is used to store the key.  Configuration options to @command{GPGSM} can be
-used to restrict the use of this command.
+token is used to store the key.  Configuration options to
+@command{GPGSM} can be used to restrict the use of this command.
 
 @example
   GENKEY 

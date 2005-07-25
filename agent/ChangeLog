@@ -1,3 +1,8 @@
+2005-07-25  Werner Koch  <wk@g10code.com>
+
+	* findkey.c (agent_public_key_from_file): Fixed array assignment.
+	This was the cause for random segvs.
+
 2005-06-29  Werner Koch  <wk@g10code.com>
 
 	* command-ssh.c (data_sign): Removed empty statement.

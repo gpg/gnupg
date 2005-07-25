@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.9.18
 -------------------------------------------------
 
+ * [gpgsm] Now allows for more than one email address as well as URIs
+   and dnsNames in certificate request generation.  A keygrip may be
+   given to create a request from an existing key.
+
 
 Noteworthy changes in version 1.9.17 (2005-06-20)
 -------------------------------------------------

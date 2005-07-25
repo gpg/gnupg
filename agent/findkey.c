@@ -671,7 +671,7 @@ agent_public_key_from_file (ctrl_t ctrl,
       *p++ = *s;
       p = stpcpy (p, " %m)");
       assert (argidx < DIM (args));
-      args[argidx++] = array[idx];
+      args[argidx++] = &array[idx];
     }
   *p++ = ')';
   if (uri)

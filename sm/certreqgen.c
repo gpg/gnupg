@@ -63,6 +63,9 @@ The format of the native parameter file is follows:
         algorithm is "rsa".
      Key-Length: <length-in-bits>
 	Length of the key in bits.  Default is 1024.
+     Key-Grip: hexstring
+        This is optional and used to generate a request for an already
+        existsing key.  Key-Length will be ignored when given,
      Key-Usage: <usage-list>
         Space or comma delimited list of key usage, allowed values are
         "encrypt" and "sign".  This is used to generate the KeyUsage extension.
@@ -111,6 +114,7 @@ EOF
 enum para_name {
   pKEYTYPE,
   pKEYLENGTH,
+  pKEYGRIP,
   pKEYUSAGE,
   pNAMEDN,
   pNAMEEMAIL,
@@ -252,6 +256,7 @@ read_parameters (ctrl_t ctrl, FILE *fp, ksba_writer_t writer)
   } keywords[] = {
     { "Key-Type",       pKEYTYPE},
     { "Key-Length",     pKEYLENGTH },
+    { "Key-Grip",       pKEYGRIP },
     { "Key-Usage",      pKEYUSAGE },
     { "Name-DN",        pNAMEDN },
     { "Name-Email",     pNAMEEMAIL, 1 },
@@ -502,16 +507,32 @@ proc_parameters (ctrl_t ctrl,
         }
     }
 
-  sprintf (numbuf, "%u", nbits);
-  snprintf ((char*)keyparms, DIM (keyparms)-1, 
-            "(6:genkey(3:rsa(5:nbits%d:%s)))", (int)strlen (numbuf), numbuf);
-  rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
-  if (rc)
+  s = get_parameter_value (para, pKEYGRIP, 0);
+  if (s) /* Use existing key.  */
     {
-      r = get_parameter (para, pKEYTYPE, 0);
-      log_error (_("line %d: key generation failed: %s\n"),
-                 r->lnr, gpg_strerror (rc));
-      return rc;
+      rc = gpgsm_agent_readkey (ctrl, s, &public);
+      if (rc)
+        {
+          r = get_parameter (para, pKEYTYPE, 0);
+          log_error (_("line %d: error getting key by keygrip `%s': %s\n"),
+                     r->lnr, s, gpg_strerror (rc));
+          return rc;
+        }
+    }
+  else /* Generate new key.  */
+    {
+      sprintf (numbuf, "%u", nbits);
+      snprintf ((char*)keyparms, DIM (keyparms)-1, 
+                "(6:genkey(3:rsa(5:nbits%d:%s)))",
+                (int)strlen (numbuf), numbuf);
+      rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
+      if (rc)
+        {
+          r = get_parameter (para, pKEYTYPE, 0);
+          log_error (_("line %d: key generation failed: %s\n"),
+                     r->lnr, gpg_strerror (rc));
+          return rc;
+        }
     }
 
   rc = create_request (ctrl, para, public, outctrl);

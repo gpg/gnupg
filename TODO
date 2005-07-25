@@ -28,11 +28,6 @@ might want to have an agent context for each service request
 ** mark all unimplemented commands and options.
 ** Print a hint when MD2 is the cause for a problem.
 ** Implement --default-key
-** Using --export-secret-key-p12 with a non-pth agent
-   This leads to a lockup because gpgsm is still accessing the agent
-   while gpg-protect-tool wants to pop up the pinentry.  Solution is
-   to release the connection.  This is not trivial, thus we are going
-   to do that while changing gpgsm to allow concurrent operations.
 ** support the anyPolicy semantic
 ** Check that we are really following the verification procedures in rfc3280.
 ** Implement a --card-status command.
@@ -44,11 +39,6 @@ might want to have an agent context for each service request
 ** Check that all error code mapping is done.
 ** Remove the inter-module dependencies between gpgsm and keybox
 ** Add an source_of_key field
-
-* agent/gpg-agent.c
-** A SIGHUP should also restart the scdaemon
-   But do this only after all connections terminated.  As of now we
-   only send a RESET.
 
 * agent/command.c
 ** Make sure that secure memory is used where appropriate
@@ -104,4 +94,4 @@ might want to have an agent context for each service request
 
 
 * sm/
-** --include-certs seems to  be a dummy option.
+** --include-certs is as of now still a dummy command line option
