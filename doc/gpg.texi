@@ -425,9 +425,7 @@ functionality is also available as the subcommand "passwd" with the
 
 @item --sign-key @code{name}
 Signs a public key with your secret key. This is a shortcut version of
-the subcommand "sign" from --edit. You may also want to consider the
-option --no-interactive-selection which will drop you into the regular
-menu when not all keys shall be signed.
+the subcommand "sign" from --edit. 
 
 @item --lsign-key @code{name}
 Signs a public key with your secret key but marks it as
@@ -621,18 +619,16 @@ used, the default key is the first key found in the secret keyring.
 Note that -u or --local-user overrides this option.
 
 @item -r, --recipient @code{name}
-@itemx 
 Encrypt for user id @code{name}. If this option or --hidden-recipient
 is not specified, GnuPG asks for the user-id unless
 --default-recipient is given.
 
 @item -R, --hidden-recipient @code{name}
-@itemx 
-Encrypt for user id @code{name}, but hide the keyid of the key. This
-option hides the receiver of the message and is a countermeasure
-against traffic analysis. If this option or --recipient is not
-specified, GnuPG asks for the user-id unless --default-recipient is
-given.
+Encrypt for user ID @code{name}, but hide the key ID of this user's
+key. This option helps to hide the receiver of the message and is a
+limited countermeasure against traffic analysis. If this option or
+--recipient is not specified, GnuPG asks for the user ID unless
+--default-recipient is given.
 
 @item --default-recipient @code{name}
 Use @code{name} as default recipient if option --recipient is not used and
@@ -713,11 +709,6 @@ Don't make any changes (this is not completely implemented).
 
 @item -i, --interactive
 Prompt before overwriting any files.
-
-@item --no-interactive-selection
-Do not use interactive selection mode in certain menues but require
-a selection in advance. This is currently only used with the "sign"
-subcommand of --edit-key.
 
 @item --batch
 @itemx --no-batch
@@ -980,6 +971,12 @@ to no.
 Compact (remove all signatures from) user IDs on the key being
 exported if the user IDs are not usable. This is the same as running
 the --edit-key command "clean uids" before export. Defaults to no.
+
+@item export-reset-subkey-passwd
+When using the "--export-secret-subkeys" command, this option resets
+the passphrases for all exported subkeys to empty. This is useful
+when the exported subkey is to be used on an unattended amchine where
+a passphrase won't make sense. Defaults to no.
 @end table
 
 @item --list-options @code{parameters}
@@ -1096,6 +1093,8 @@ Sets a list of directories to search for photo viewers and keyserver
 helpers. If not provided, keyserver helpers use the compiled-in
 default directory, and photo viewers use the $PATH environment
 variable.
+Note, that on W32 system this value is ignored when searching for
+keyserver helpers.
 
 @item --show-keyring
 Display the keyring name at the head of key listings to show which
@@ -1446,11 +1445,12 @@ disables this option.
 
 @item --throw-keyids
 @itemx --no-throw-keyids
-Do not put the recipient keyid into encrypted packets. This option
-hides the receiver of the message and is a countermeasure against
-traffic analysis. It may slow down the decryption process because all
-available secret keys are tried. --no-throw-keyids disables this
-option.
+Do not put the recipient key IDs into encrypted messages. This helps
+to hide the receivers of the message and is a limited countermeasure
+against traffic analysis. On the receiving side, it may slow down the
+decryption process because all available secret keys must be tried.
+--no-throw-keyids disables this option. This option is essentially
+the same as using --hidden-recipient for all recipients.
 
 @item --not-dash-escaped
 This option changes the behavior of cleartext signatures
@@ -1641,6 +1641,23 @@ special environments, where it can be assured that only one process
 is accessing those files. A bootable floppy with a stand-alone
 encryption system will probably use this. Improper usage of this
 option may lead to data and key corruption.
+
+@item --exit-on-status-write-error
+This option will cause write errors on the status FD to immediately
+terminate the process. That should in fact be the default but it
+never worked this way and thus we need an option to enable this, so
+that the change won't break applications which close their end of a
+status fd connected pipe too early. Using this option along with
+--enable-progress-filter may be used to cleanly cancel long running
+gpg operations.
+
+@item --limit-card-insert-tries @code{n}
+With @code{n} greater than 0 the number of prompts asking to insert a
+smartcard gets limited to N-1. Thus with a value of 1 gpg won't at
+all ask to insert a card if none has been inserted at startup. This
+option is useful in the configuration file in case an application does
+not know about the smartcard support and waits ad infinitum for an
+inserted card.
 
 @item --no-random-seed-file
 GnuPG uses a file to store its internal random pool over invocations.
