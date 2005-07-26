@@ -625,8 +625,7 @@ check_prefs(KBNODE keyblock)
 	}
     }
 
-#warning DEBUG CODE ENABLED
-  if(problem || getenv ("FOOBAR"))
+  if(problem)
     {
       log_info(_("it is strongly suggested that you update"
 		 " your preferences and\n"));
