@@ -189,7 +189,7 @@ int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 
 /*-- passphrase.h --*/
 #ifdef ENABLE_AGENT_SUPPORT
-assuan_context_t agent_open (int try);
+assuan_context_t agent_open (int try, const char *orig_codeset);
 void agent_close (assuan_context_t ctx);
 #else
 /* If we build w/o agent support, assuan.h won't get included and thus

@@ -48,7 +48,7 @@ named "gnupg" below the application data directory of the user.  This
 directory will be created if it does not exist.  Being only a default,
 it may be changed by setting the name of the home directory into the
 Registry under the key HKEY_CURRENT_USER\Software\GNU\GnuPG using the
-name "HomeDir".  If an environment varaibale "GNUPGHOME" exists, this
+name "HomeDir".  If an environment variable "GNUPGHOME" exists, this
 even overrides the registry setting.  The command line option
 "--homedir" may be used to override all other settings of the home
 directory.

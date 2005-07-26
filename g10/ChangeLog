@@ -1,3 +1,10 @@
+2005-07-26  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_get_passphrase): Make sure to release the
+	saved codeset.
+	(agent_open): Add arg ORIG_CODESET and switch back to it in case
+	of error.  Changed all callers.
+
 2005-07-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids): Don't prompt for setting signature expiry

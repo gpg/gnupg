@@ -83,7 +83,7 @@ static assuan_error_t learn_status_cb (void *opaque, const char *line);
 #define ASSUAN_LINELENGTH 100
 
 static assuan_context_t 
-agent_open (int try)
+agent_open (int try, const char *orig_codeset)
 {
   return NULL;
 }
@@ -338,7 +338,7 @@ open_card_via_agent (int *scd_available)
   int rc;
 
   *scd_available = 0;
-  ctx = agent_open (1);
+  ctx = agent_open (1, NULL);
   if (!ctx)
     return NULL;
 
