@@ -94,7 +94,7 @@ gen_k( MPI q )
 	    progress('.');
 
 	if( !rndbuf || nbits < 32 ) {
-	    m_free(rndbuf);
+	    xfree(rndbuf);
 	    rndbuf = get_random_bits( nbits, 1, 1 );
 	}
 	else { /* change only some of the higher bits */
@@ -103,7 +103,7 @@ gen_k( MPI q )
 	     * maybe it is easier to do this directly in random.c */
 	    char *pp = get_random_bits( 32, 1, 1 );
 	    memcpy( rndbuf,pp, 4 );
-	    m_free(pp);
+	    xfree(pp);
 	}
 	mpi_set_buffer( k, rndbuf, nbytes, 0 );
 	if( mpi_test_bit( k, nbits-1 ) )
@@ -125,7 +125,7 @@ gen_k( MPI q )
 	}
 	break;	/* okay */
     }
-    m_free(rndbuf);
+    xfree(rndbuf);
     if( DBG_CIPHER )
 	progress('\n');
 
@@ -148,7 +148,7 @@ test_keys( DSA_secret_key *sk, unsigned qbits )
     /*mpi_set_bytes( test, qbits, get_random_byte, 0 );*/
     {	char *p = get_random_bits( qbits, 0, 0 );
 	mpi_set_buffer( test, p, (qbits+7)/8, 0 );
-	m_free(p);
+	xfree(p);
     }
 
     sign( out1_a, out1_b, test, sk );
@@ -219,12 +219,12 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
 	else { /* change only some of the higher bits (= 2 bytes)*/
 	    char *r = get_random_bits( 16, 2, 1 );
 	    memcpy(rndbuf, r, 16/8 );
-	    m_free(r);
+	    xfree(r);
 	}
 	mpi_set_buffer( x, rndbuf, (qbits+7)/8, 0 );
 	mpi_clear_highbit( x, qbits+1 );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, h )<0 ) );
-    m_free(rndbuf);
+    xfree(rndbuf);
     mpi_free( e );
     mpi_free( h );
 

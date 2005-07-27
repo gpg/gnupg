@@ -422,7 +422,7 @@ mpihelp_mul_karatsuba_case( mpi_ptr_t prodp,
 	}
 	else {
 	    if( !ctx->next ) {
-		ctx->next = m_alloc_clear( sizeof *ctx );
+		ctx->next = xmalloc_clear( sizeof *ctx );
 	    }
 	    mpihelp_mul_karatsuba_case( ctx->tspace,
 					vp, vsize,
@@ -451,7 +451,7 @@ mpihelp_release_karatsuba_ctx( struct karatsuba_ctx *ctx )
 	    mpi_free_limb_space( ctx->tp );
 	if( ctx->tspace )
 	    mpi_free_limb_space( ctx->tspace );
-	m_free( ctx );
+	xfree( ctx );
     }
 }
 

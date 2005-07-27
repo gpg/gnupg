@@ -96,7 +96,7 @@ create_dotlock( const char *file_to_lock )
     if( !file_to_lock )
 	return NULL;
 
-    h = m_alloc_clear( sizeof *h );
+    h = xmalloc_clear( sizeof *h );
     if( never_lock ) {
 	h->disable = 1;
 #ifdef _REENTRANT
@@ -142,7 +142,7 @@ create_dotlock( const char *file_to_lock )
     h->next = all_lockfiles;
     all_lockfiles = h;
 
-    h->tname = m_alloc( dirpartlen + 6+30+ strlen(nodename) + 11 );
+    h->tname = xmalloc( dirpartlen + 6+30+ strlen(nodename) + 11 );
 #ifndef __riscos__
     sprintf( h->tname, "%.*s/.#lk%p.%s.%d",
 	     dirpartlen, dirpart, h, nodename, (int)getpid() );
@@ -160,8 +160,8 @@ create_dotlock( const char *file_to_lock )
 	all_lockfiles = h->next;
 	log_error( "failed to create temporary file `%s': %s\n",
 					    h->tname, strerror(errno));
-	m_free(h->tname);
-	m_free(h);
+	xfree(h->tname);
+	xfree(h);
 	return NULL;
     }
     if( write(fd, pidstr, 11 ) != 11 ) {
@@ -172,8 +172,8 @@ create_dotlock( const char *file_to_lock )
 	log_fatal( "error writing to `%s': %s\n", h->tname, strerror(errno) );
 	close(fd);
 	unlink(h->tname);
-	m_free(h->tname);
-	m_free(h);
+	xfree(h->tname);
+	xfree(h);
 	return NULL;
     }
     if( close(fd) ) {
@@ -183,8 +183,8 @@ create_dotlock( const char *file_to_lock )
 #endif
 	log_error( "error closing `%s': %s\n", h->tname, strerror(errno));
 	unlink(h->tname);
-	m_free(h->tname);
-	m_free(h);
+	xfree(h->tname);
+	xfree(h);
 	return NULL;
     }
 
@@ -192,7 +192,7 @@ create_dotlock( const char *file_to_lock )
     /* release mutex */
 #endif
 #endif
-    h->lockname = m_alloc( strlen(file_to_lock) + 6 );
+    h->lockname = xmalloc( strlen(file_to_lock) + 6 );
     strcpy(stpcpy(h->lockname, file_to_lock), EXTSEP_S "lock");
     return h;
 }
@@ -225,10 +225,10 @@ destroy_dotlock ( DOTLOCK h )
               unlink (h->lockname);
             if (h->tname)
               unlink (h->tname);
-	    m_free (h->tname);
-	    m_free (h->lockname);
+	    xfree (h->tname);
+	    xfree (h->lockname);
           }
-	m_free(h);
+	xfree(h);
 
       }
 #endif

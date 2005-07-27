@@ -109,7 +109,7 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
 	md_putc( md, nb[i]>>8);
 	md_putc( md, nb[i] );
 	md_write( md, pp[i], nn[i] );
-	m_free(pp[i]);
+	xfree(pp[i]);
       }
 }
 
@@ -412,7 +412,7 @@ namehash_from_uid(PKT_user_id *uid)
 {
   if(uid->namehash==NULL)
     {
-      uid->namehash=m_alloc(20);
+      uid->namehash=xmalloc(20);
 
       if(uid->attrib_data)
 	rmd160_hash_buffer(uid->namehash,uid->attrib_data,uid->attrib_len);
@@ -650,14 +650,14 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	    if( pubkey_get_npkey( pk->pubkey_algo ) > 1 ) {
 	      p = buf = mpi_get_buffer( pk->pkey[0], &n, NULL );
 	      md_write( md, p, n );
-	      m_free(buf);
+	      xfree(buf);
 	      p = buf = mpi_get_buffer( pk->pkey[1], &n, NULL );
 	      md_write( md, p, n );
-	      m_free(buf);
+	      xfree(buf);
 	    }
 	    md_final(md);
 	    if( !array )
-	      array = m_alloc( 16 );
+	      array = xmalloc( 16 );
 	    len = 16;
 	    memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
 	    md_close(md);
@@ -665,7 +665,7 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	else
 	  {
 	    if(!array)
-	      array=m_alloc(16);
+	      array=xmalloc(16);
 	    len=16;
 	    memset(array,0,16);
 	  }
@@ -677,7 +677,7 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	len = md_digest_length( md_get_algo( md ) );
 	assert( len <= MAX_FINGERPRINT_LEN );
 	if( !array )
-	    array = m_alloc( len );
+	    array = xmalloc( len );
 	memcpy(array, dp, len );
 	pk->keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
 	pk->keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
@@ -707,14 +707,14 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	    if( pubkey_get_npkey( sk->pubkey_algo ) > 1 ) {
 	      p = buf = mpi_get_buffer( sk->skey[0], &n, NULL );
 	      md_write( md, p, n );
-	      m_free(buf);
+	      xfree(buf);
 	      p = buf = mpi_get_buffer( sk->skey[1], &n, NULL );
 	      md_write( md, p, n );
-	      m_free(buf);
+	      xfree(buf);
 	    }
 	    md_final(md);
 	    if( !array )
-	      array = m_alloc( 16 );
+	      array = xmalloc( 16 );
 	    len = 16;
 	    memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
 	    md_close(md);
@@ -722,7 +722,7 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	else
 	  {
 	    if(!array)
-	      array=m_alloc(16);
+	      array=xmalloc(16);
 	    len=16;
 	    memset(array,0,16);
 	  }
@@ -736,7 +736,7 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	    len = md_digest_length( md_get_algo( md ) );
 	    assert( len <= MAX_FINGERPRINT_LEN );
 	    if( !array )
-	      array = m_alloc( len );
+	      array = xmalloc( len );
 	    memcpy(array, dp, len );
 	    md_close(md);
 	  }
@@ -744,7 +744,7 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	  {
 	    len=MAX_FINGERPRINT_LEN;
 	    if(!array)
-	      array=m_alloc(len);
+	      array=xmalloc(len);
 	    memset(array,0,len);
 	  }
     }

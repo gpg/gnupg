@@ -81,7 +81,7 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->outbufsize = 8192;
-    zfx->outbuf = m_alloc( zfx->outbufsize );
+    zfx->outbuf = xmalloc( zfx->outbufsize );
 }
 
 static int
@@ -148,7 +148,7 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->inbufsize = 2048;
-    zfx->inbuf = m_alloc( zfx->inbufsize );
+    zfx->inbuf = xmalloc( zfx->inbufsize );
     zs->avail_in = 0;
 }
 
@@ -227,7 +227,7 @@ compress_filter( void *opaque, int control,
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( !zfx->status ) {
-	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
+	    zs = zfx->opaque = xmalloc_clear( sizeof *zs );
 	    init_uncompress( zfx, zs );
 	    zfx->status = 1;
 	}
@@ -256,7 +256,7 @@ compress_filter( void *opaque, int control,
 	    pkt.pkt.compressed = &cd;
 	    if( build_packet( a, &pkt ))
 		log_bug("build_packet(PKT_COMPRESSED) failed\n");
-	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
+	    zs = zfx->opaque = xmalloc_clear( sizeof *zs );
 	    init_compress( zfx, zs );
 	    zfx->status = 2;
 	}
@@ -272,9 +272,9 @@ compress_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FREE ) {
 	if( zfx->status == 1 ) {
 	    inflateEnd(zs);
-	    m_free(zs);
+	    xfree(zs);
 	    zfx->opaque = NULL;
-	    m_free(zfx->outbuf); zfx->outbuf = NULL;
+	    xfree(zfx->outbuf); zfx->outbuf = NULL;
 	}
 	else if( zfx->status == 2 ) {
 #ifndef __riscos__
@@ -285,9 +285,9 @@ compress_filter( void *opaque, int control,
 	    zs->avail_in = 0;
 	    do_compress( zfx, zs, Z_FINISH, a );
 	    deflateEnd(zs);
-	    m_free(zs);
+	    xfree(zs);
 	    zfx->opaque = NULL;
-	    m_free(zfx->outbuf); zfx->outbuf = NULL;
+	    xfree(zfx->outbuf); zfx->outbuf = NULL;
 	}
         if (zfx->release)
           zfx->release (zfx);
@@ -301,7 +301,7 @@ compress_filter( void *opaque, int control,
 static void
 release_context (compress_filter_context_t *ctx)
 {
-  m_free (ctx);
+  xfree (ctx);
 }
 
 /****************
@@ -316,7 +316,7 @@ handle_compressed( void *procctx, PKT_compressed *cd,
 
     if(check_compress_algo(cd->algorithm))
       return G10ERR_COMPR_ALGO;
-    cfx = m_alloc_clear (sizeof *cfx);
+    cfx = xmalloc_clear (sizeof *cfx);
     cfx->release = release_context;
     cfx->algo = cd->algorithm;
     push_compress_filter(cd->buf,cfx,cd->algorithm);

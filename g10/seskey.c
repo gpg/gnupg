@@ -100,7 +100,7 @@ encode_session_key( DEK *dek, unsigned nbits )
     for( p = dek->key, i=0; i < dek->keylen; i++ )
 	csum += *p++;
 
-    frame = m_alloc_secure( nframe );
+    frame = xmalloc_secure( nframe );
     n = 0;
     frame[n++] = 0;
     frame[n++] = 2;
@@ -126,10 +126,10 @@ encode_session_key( DEK *dek, unsigned nbits )
             if (p[j])
               j++;
         }
-	m_free(pp);
+	xfree(pp);
     }
     memcpy( frame+n, p, i );
-    m_free(p);
+    xfree(p);
     n += i;
     frame[n++] = 0;
     frame[n++] = dek->algo;
@@ -139,7 +139,7 @@ encode_session_key( DEK *dek, unsigned nbits )
     assert( n == nframe );
     a = mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
     mpi_set_buffer( a, frame, nframe, 0 );
-    m_free(frame);
+    xfree(frame);
     return a;
 }
 
@@ -163,7 +163,7 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
      *
      * PAD consists of FF bytes.
      */
-    frame = md_is_secure(md)? m_alloc_secure( nframe ) : m_alloc( nframe );
+    frame = md_is_secure(md)? xmalloc_secure( nframe ) : xmalloc( nframe );
     n = 0;
     frame[n++] = 0;
     frame[n++] = 1; /* block type */
@@ -178,7 +178,7 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 	 mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
 	 : mpi_alloc( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
     mpi_set_buffer( a, frame, nframe, 0 );
-    m_free(frame);
+    xfree(frame);
 
     /* Note that PGP before version 2.3 encoded the MD as:
      *

@@ -749,12 +749,12 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
         /*log_debug ("updating area for type %d\n", type );*/
     }
     else if (oldarea) {
-        newarea = m_realloc (oldarea, sizeof (*newarea) + n - 1);
+        newarea = xrealloc (oldarea, sizeof (*newarea) + n - 1);
         newarea->size = n;
         /*log_debug ("reallocating area for type %d\n", type );*/
     }
     else {
-        newarea = m_alloc (sizeof (*newarea) + n - 1);
+        newarea = xmalloc (sizeof (*newarea) + n - 1);
         newarea->size = n;
         /*log_debug ("allocating area for type %d\n", type );*/
     }
@@ -855,7 +855,7 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
 
   /* realloc uid->attrib_data to the right size */
 
-  uid->attrib_data=m_realloc(uid->attrib_data,
+  uid->attrib_data=xrealloc(uid->attrib_data,
 			     uid->attrib_len+idx+1+headerlen+buflen);
 
   attrib=&uid->attrib_data[uid->attrib_len];

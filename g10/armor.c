@@ -1146,7 +1146,7 @@ armor_filter( void *opaque, int control,
 	if( afx->qp_detected )
 	    log_error(_("quoted printable character in armor - "
 			"probably a buggy MTA has been used\n") );
-	m_free( afx->buffer );
+	xfree( afx->buffer );
 	afx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )
@@ -1163,7 +1163,7 @@ make_radix64_string( const byte *data, size_t len )
 {
     char *buffer, *p;
 
-    buffer = p = m_alloc( (len+2)/3*4 + 1 );
+    buffer = p = xmalloc( (len+2)/3*4 + 1 );
     for( ; len >= 3 ; len -= 3, data += 3 ) {
 	*p++ = bintoasc[(data[0] >> 2) & 077];
 	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
@@ -1223,14 +1223,14 @@ unarmor_pump_new (void)
 
     if( !is_initialized )
         initialize();
-    x = m_alloc_clear (sizeof *x);
+    x = xmalloc_clear (sizeof *x);
     return x;
 }
 
 void
 unarmor_pump_release (UnarmorPump x)
 {
-    m_free (x);
+    xfree (x);
 }
 
 /* 

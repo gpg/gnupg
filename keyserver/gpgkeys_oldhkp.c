@@ -293,7 +293,7 @@ get_key(char *getkey)
 		  getkey,KEYSERVER_KEY_NOT_FOUND);
 	}
 
-      m_free(line);
+      xfree(line);
       http_close(&hd);
     }
 
@@ -607,7 +607,7 @@ handle_old_hkp_index(IOBUF inp)
     }
   while(rc!=0);
 
-  m_free(line);
+  xfree(line);
 
   if(ret>-1)
     fprintf(output,"info:1:%d\n%s",count,iobuf_get_temp_buffer(buffer));
@@ -702,7 +702,7 @@ search_key(char *searchkey)
 	  }
 	while(rc!=0);
 
-      m_free(line);
+      xfree(line);
 
       http_close(&hd);
 

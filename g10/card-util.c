@@ -1052,7 +1052,7 @@ generate_card_keys (const char *serialno)
 
     want_backup=answer_is_yes_no_default(answer,1);
     cpr_kill_prompt();
-    m_free(answer);
+    xfree(answer);
   }
 #else
   want_backup = cpr_get_answer_is_yes 

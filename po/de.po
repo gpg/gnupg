@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2005-07-27 19:41+0200\n"
 "PO-Revision-Date: 2005-07-26 20:42+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -706,13 +706,13 @@ msgstr "'%s' kann nicht geöffnet werden\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output funktioniert nicht bei diesem Kommando\n"
 
-#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1569
+#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1571
 #: g10/revoke.c:227
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "Schlüssel \"%s\" nicht gefunden: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1583
+#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1585
 #: g10/revoke.c:233 g10/revoke.c:440
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -928,13 +928,22 @@ msgstr "Schlüssel %s: ungeschützt - übersprungen\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "Schlüssel %s: PGP 2.x-artiger Schlüssel - übersprungen\n"
 
+#: g10/export.c:409
+msgid "about to export an unprotected subkey\n"
+msgstr ""
+
+#: g10/export.c:432
+#, fuzzy, c-format
+msgid "failed to unprotect the subkey: %s\n"
+msgstr "Speichern des Schlüssels fehlgeschlagen: %s\n"
+
 # translated by wk
-#: g10/export.c:454
+#: g10/export.c:453
 #, c-format
 msgid "WARNING: secret key %s does not have a simple SK checksum\n"
 msgstr "WARNUNG: Der geheime Schlüssel %s hat keine einfache SK-Prüfsumme\n"
 
-#: g10/export.c:486
+#: g10/export.c:485
 msgid "WARNING: nothing exported\n"
 msgstr "WARNUNG: Nichts exportiert\n"
 
@@ -4204,7 +4213,7 @@ msgstr "disable"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr ""
 
-#: g10/keyserver.c:724 g10/keyserver.c:1294
+#: g10/keyserver.c:724 g10/keyserver.c:1296
 #, fuzzy, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "Ungültige export Option\n"
@@ -4219,107 +4228,107 @@ msgstr "Schlüssel `%s' nicht gefunden: %s\n"
 msgid "key not found on keyserver\n"
 msgstr "Schlüssel `%s' nicht gefunden: %s\n"
 
-#: g10/keyserver.c:1041
+#: g10/keyserver.c:1043
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "Schlüssel %08lX wird von %s angefordert\n"
 
-#: g10/keyserver.c:1045
+#: g10/keyserver.c:1047
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "Schlüssel %08lX wird von %s angefordert\n"
 
-#: g10/keyserver.c:1197
+#: g10/keyserver.c:1199
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "suche nach \"%s\" auf HKP-Server %s\n"
 
-#: g10/keyserver.c:1201
+#: g10/keyserver.c:1203
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
 msgstr ""
 "\"\n"
 "unterschrieben mit Ihrem Schlüssel %08lX um %s\n"
 
-#: g10/keyserver.c:1244
+#: g10/keyserver.c:1246
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "suche nach \"%s\" auf HKP-Server %s\n"
 
-#: g10/keyserver.c:1247
+#: g10/keyserver.c:1249
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "suche nach \"%s\" auf HKP-Server %s\n"
 
-#: g10/keyserver.c:1254 g10/keyserver.c:1349
+#: g10/keyserver.c:1256 g10/keyserver.c:1351
 #, fuzzy
 msgid "no keyserver action!\n"
 msgstr "Ungültige export Option\n"
 
-#: g10/keyserver.c:1302
+#: g10/keyserver.c:1304
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 
-#: g10/keyserver.c:1311
+#: g10/keyserver.c:1313
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
-#: g10/keyserver.c:1371
+#: g10/keyserver.c:1373
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "Kein Schlüsselserver bekannt (Option --keyserver verwenden)\n"
 
-#: g10/keyserver.c:1377
+#: g10/keyserver.c:1379
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 
-#: g10/keyserver.c:1389
+#: g10/keyserver.c:1391
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1394
+#: g10/keyserver.c:1396
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1402
+#: g10/keyserver.c:1404
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr ""
 
-#: g10/keyserver.c:1409
+#: g10/keyserver.c:1411
 #, fuzzy
 msgid "keyserver timed out\n"
 msgstr "Schlüsselserverfehler"
 
-#: g10/keyserver.c:1414
+#: g10/keyserver.c:1416
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "Schlüsselserverfehler"
 
-#: g10/keyserver.c:1423
+#: g10/keyserver.c:1425
 #, fuzzy, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "Empfangen vom Schlüsselserver fehlgeschlagen: %s\n"
 
-#: g10/keyserver.c:1448 g10/keyserver.c:1482
+#: g10/keyserver.c:1450 g10/keyserver.c:1484
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: Dies ist keine gültige Schlüssel-ID\n"
 
-#: g10/keyserver.c:1739
+#: g10/keyserver.c:1741
 #, fuzzy, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr ""
 "WARNUNG: die temporäre Datei (%s) `%s' konnte nicht entfernt werden: %s\n"
 
-#: g10/keyserver.c:1761
+#: g10/keyserver.c:1763
 #, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "Schlüssel %08lX wird von %s angefordert\n"
 
-#: g10/keyserver.c:1763
+#: g10/keyserver.c:1765
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "Schlüssel %08lX wird von %s angefordert\n"

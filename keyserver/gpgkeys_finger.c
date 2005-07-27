@@ -344,7 +344,7 @@ get_key (char *getkey)
                getkey,KEYSERVER_KEY_NOT_FOUND);
     }
 
-  m_free(line);
+  xfree(line);
   iobuf_close (fp_read);
 
   return KEYSERVER_OK;

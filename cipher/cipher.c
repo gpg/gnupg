@@ -389,10 +389,10 @@ cipher_open( int algo, int mode, int secure )
 
     /* ? perform selftest here and mark this with a flag in cipher_table ? */
 
-    hd = secure ? m_alloc_secure_clear( sizeof *hd
+    hd = secure ? xmalloc_secure_clear( sizeof *hd
 					+ cipher_table[i].contextsize
 					- sizeof(PROPERLY_ALIGNED_TYPE) )
-		: m_alloc_clear( sizeof *hd + cipher_table[i].contextsize
+		: xmalloc_clear( sizeof *hd + cipher_table[i].contextsize
 					   - sizeof(PROPERLY_ALIGNED_TYPE)  );
     hd->algo = algo;
     hd->blocksize = cipher_table[i].blocksize;
@@ -421,7 +421,7 @@ cipher_open( int algo, int mode, int secure )
 void
 cipher_close( CIPHER_HANDLE c )
 {
-    m_free(c);
+    xfree(c);
 }
 
 

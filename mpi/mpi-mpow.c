@@ -65,7 +65,7 @@ mpi_mulpowm( MPI res, MPI *basearray, MPI *exparray, MPI m)
     assert(t);
     assert( k < 10 );
 
-    G = m_alloc_clear( (1<<k) * sizeof *G );
+    G = xmalloc_clear( (1<<k) * sizeof *G );
     /* and calculate */
     tmp =  mpi_alloc( mpi_get_nlimbs(m)+1 );
     mpi_set_ui( res, 1 );
@@ -96,5 +96,5 @@ mpi_mulpowm( MPI res, MPI *basearray, MPI *exparray, MPI m)
     mpi_free(tmp);
     for(i=0; i < (1<<k); i++ )
 	mpi_free(G[i]);
-    m_free(G);
+    xfree(G);
 }

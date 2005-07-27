@@ -125,7 +125,7 @@ make_radix64_string( const byte *data, size_t len )
 {
     char *buffer, *p;
 
-    buffer = p = m_alloc( (len+2)/3*4 + 1 );
+    buffer = p = xmalloc( (len+2)/3*4 + 1 );
     for( ; len >= 3 ; len -= 3, data += 3 ) {
 	*p++ = bintoasc[(data[0] >> 2) & 077];
 	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
@@ -256,7 +256,7 @@ http_close( HTTP_HD hd )
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write );
     release_parsed_uri( hd->uri );
-    m_free( hd->buffer );
+    xfree( hd->buffer );
     hd->initialized = 0;
 }
 
@@ -270,7 +270,7 @@ http_close( HTTP_HD hd )
 static int
 parse_uri( PARSED_URI *ret_uri, const char *uri )
 {
-   *ret_uri = m_alloc_clear( sizeof(**ret_uri) + strlen(uri) );
+   *ret_uri = xmalloc_clear( sizeof(**ret_uri) + strlen(uri) );
    strcpy( (*ret_uri)->buffer, uri );
    return do_parse_uri( *ret_uri, 0 );
 }
@@ -284,9 +284,9 @@ release_parsed_uri( PARSED_URI uri )
 
 	for( r = uri->query; r; r = r2 ) {
 	    r2 = r->next;
-	    m_free( r );
+	    xfree( r );
 	}
-	m_free( uri );
+	xfree( uri );
     }
 }
 
@@ -483,7 +483,7 @@ parse_tuple( byte *string )
 	return NULL; /* bad URI */
     if( n != strlen( p ) )
        return NULL; /* name with a Nul in it */
-    tuple = m_alloc_clear( sizeof *tuple );
+    tuple = xmalloc_clear( sizeof *tuple );
     tuple->name = p;
     if( !p2 )  {
 	/* we have only the name, so we assume an empty value string */
@@ -492,7 +492,7 @@ parse_tuple( byte *string )
     }
     else { /* name and value */
 	if( (n = remove_escapes( p2 )) < 0 ) {
-	    m_free( tuple );
+	    xfree( tuple );
 	    return NULL; /* bad URI */
 	}
 	tuple->value = p2;
@@ -536,9 +536,9 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy )
 	    char *x;
 	    remove_escapes(uri->auth);
 	    x=make_radix64_string(uri->auth,strlen(uri->auth));
-	    proxy_authstr=m_alloc(52+strlen(x));
+	    proxy_authstr=xmalloc(52+strlen(x));
 	    sprintf(proxy_authstr,"Proxy-Authorization: Basic %s\r\n",x);
-	    m_free(x);
+	    xfree(x);
 	  }
 
 	release_parsed_uri( uri );
@@ -552,7 +552,7 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy )
 
 	if(auth)
 	  {
-	    tempauth=m_strdup(auth);
+	    tempauth=xstrdup(auth);
 	    remove_escapes(tempauth);
 	  }
 	else if(hd->uri->auth)
@@ -560,10 +560,10 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy )
 
 	x=make_radix64_string(tempauth?tempauth:hd->uri->auth,
 			      strlen(tempauth?tempauth:hd->uri->auth));
-	authstr=m_alloc(52+strlen(x));
+	authstr=xmalloc(52+strlen(x));
 	sprintf(authstr,"Authorization: Basic %s\r\n",x);
-	m_free(x);
-	m_free(tempauth);
+	xfree(x);
+	xfree(tempauth);
       }
 
     if( hd->sock == -1 )
@@ -571,7 +571,7 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy )
 
     p = build_rel_path( hd->uri );
 
-    request=m_alloc(strlen(server)*2 + strlen(p)
+    request=xmalloc(strlen(server)*2 + strlen(p)
 		    + (authstr?strlen(authstr):0)
 		    + (proxy_authstr?strlen(proxy_authstr):0) + 65);
     if( proxy )
@@ -596,12 +596,12 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy )
 		 authstr?authstr:"");
       }
 
-    m_free(p);
+    xfree(p);
 
     rc = write_server( hd->sock, request, strlen(request) );
-    m_free( request );
-    m_free(proxy_authstr);
-    m_free(authstr);
+    xfree( request );
+    xfree(proxy_authstr);
+    xfree(authstr);
 
     return rc;
 }
@@ -630,7 +630,7 @@ build_rel_path( PARSED_URI uri )
     n++;
 
     /* now  allocate and copy */
-    p = rel_path = m_alloc( n );
+    p = rel_path = xmalloc( n );
     n = insert_escapes( p, uri->path, "%;?&" );
     p += n;
     /* todo: add params */
@@ -845,7 +845,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
     {
       /* Either we're not using SRV, or the SRV lookup failed.  Make
 	 up a fake SRV record. */
-      srvlist=m_alloc_clear(sizeof(struct srventry));
+      srvlist=xmalloc_clear(sizeof(struct srventry));
       srvlist->port=port;
       strncpy(srvlist->target,server,MAXDNAME);
       srvlist->target[MAXDNAME-1]='\0';
@@ -948,7 +948,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
     }
 #endif /* !HAVE_GETADDRINFO */
 
-  m_free(srvlist);
+  xfree(srvlist);
 
   if(!connected)
     {

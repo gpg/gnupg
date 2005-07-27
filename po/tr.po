@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2005-07-27 19:41+0200\n"
 "PO-Revision-Date: 2005-03-16 07:30+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -700,13 +700,13 @@ msgstr "`%s' açılamadı\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output seçeneği bu komutla çalışmaz\n"
 
-#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1569
+#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1571
 #: g10/revoke.c:227
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "anahtar \"%s\" yok: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1583
+#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1585
 #: g10/revoke.c:233 g10/revoke.c:440
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -911,12 +911,21 @@ msgstr "anahtar %s: korunmamış - atlandı\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "anahtar %s: PGP 2.x tarzı bir anahtar - atlandı\n"
 
-#: g10/export.c:454
+#: g10/export.c:409
+msgid "about to export an unprotected subkey\n"
+msgstr ""
+
+#: g10/export.c:432
+#, fuzzy, c-format
+msgid "failed to unprotect the subkey: %s\n"
+msgstr "anahtarın saklanması başarısız: %s\n"
+
+#: g10/export.c:453
 #, c-format
 msgid "WARNING: secret key %s does not have a simple SK checksum\n"
 msgstr "UYARI: gizli anahtar %s basit bir SK sağlamasına sahip değil\n"
 
-#: g10/export.c:486
+#: g10/export.c:485
 msgid "WARNING: nothing exported\n"
 msgstr "UYARI: hiçbir şey dışarı aktarılmadı\n"
 
@@ -4077,7 +4086,7 @@ msgstr "iptal edildi"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "Sayıyı/sayıları girin veya S)onraki ya da Ç)ık >"
 
-#: g10/keyserver.c:724 g10/keyserver.c:1294
+#: g10/keyserver.c:724 g10/keyserver.c:1296
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "anahtar sunucu protokolü geçersiz (bizimki %d!=eylemci %d)\n"
@@ -4091,101 +4100,101 @@ msgstr "anahtar \"%s\" anahtar sunucusunda yok\n"
 msgid "key not found on keyserver\n"
 msgstr "anahtar, anahtar sunucusunda yok\n"
 
-#: g10/keyserver.c:1041
+#: g10/keyserver.c:1043
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "%1$s anahtarı %3$s sunucusunun %2$s adresinden isteniyor\n"
 
-#: g10/keyserver.c:1045
+#: g10/keyserver.c:1047
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "%s anahtarı %s adresinden isteniyor\n"
 
-#: g10/keyserver.c:1197
+#: g10/keyserver.c:1199
 #, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "anahtar %1$s, %3$s sunucusunun %2$s adresine gönderiliyor\n"
 
-#: g10/keyserver.c:1201
+#: g10/keyserver.c:1203
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "%s anahtarı %s adresine gönderiliyor\n"
 
-#: g10/keyserver.c:1244
+#: g10/keyserver.c:1246
 #, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "%3$s sunucusunun %2$s adresinde \"%1$s\" aranıyor\n"
 
-#: g10/keyserver.c:1247
+#: g10/keyserver.c:1249
 #, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "%2$s adresinde \"%1$s\" aranıyor\n"
 
-#: g10/keyserver.c:1254 g10/keyserver.c:1349
+#: g10/keyserver.c:1256 g10/keyserver.c:1351
 msgid "no keyserver action!\n"
 msgstr "bir anahtar sunucusu eylemi yok!\n"
 
-#: g10/keyserver.c:1302
+#: g10/keyserver.c:1304
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr "UYARI: GnuPG'nin başka bir sürümünün anahtar sunucusu eylemcisi (%s)\n"
 
-#: g10/keyserver.c:1311
+#: g10/keyserver.c:1313
 msgid "keyserver did not send VERSION\n"
 msgstr "anahtar sunucusu VERSION göndermiyor\n"
 
-#: g10/keyserver.c:1371
+#: g10/keyserver.c:1373
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "bilinen bir anahtar sunucusu yok (--keyserver seçeneğini kullanın)\n"
 
-#: g10/keyserver.c:1377
+#: g10/keyserver.c:1379
 msgid "external keyserver calls are not supported in this build\n"
 msgstr "harici anahtar sunucusu çağrıları bu kurulumda desteklenmiyor\n"
 
-#: g10/keyserver.c:1389
+#: g10/keyserver.c:1391
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr "`%s' anahtar sunucusu şeması için eylemci yok\n"
 
-#: g10/keyserver.c:1394
+#: g10/keyserver.c:1396
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr "`%s' eylemi `%s' anahtar sunucusu şeması ile desteklenmiyor\n"
 
-#: g10/keyserver.c:1402
+#: g10/keyserver.c:1404
 #, fuzzy, c-format
 msgid "%s does not support handler version %d\n"
 msgstr "gpgkeys_%s  %d sürümü eylemciyi desteklemiyor\n"
 
-#: g10/keyserver.c:1409
+#: g10/keyserver.c:1411
 msgid "keyserver timed out\n"
 msgstr "anahtar sunucusu zamanaşımına uğradı\n"
 
-#: g10/keyserver.c:1414
+#: g10/keyserver.c:1416
 msgid "keyserver internal error\n"
 msgstr "anahtar sunucusu iç hatası\n"
 
-#: g10/keyserver.c:1423
+#: g10/keyserver.c:1425
 #, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "anahtar sunucusuyla iletişim hatası: %s\n"
 
-#: g10/keyserver.c:1448 g10/keyserver.c:1482
+#: g10/keyserver.c:1450 g10/keyserver.c:1484
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" bir anahtar kimliği değil: atlanıyor\n"
 
-#: g10/keyserver.c:1739
+#: g10/keyserver.c:1741
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "UYARI: %s anahtarı %s üzerinden tazelenemiyor: %s\n"
 
-#: g10/keyserver.c:1761
+#: g10/keyserver.c:1763
 #, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "1 anahtar %s adresinden tazeleniyor\n"
 
-#: g10/keyserver.c:1763
+#: g10/keyserver.c:1765
 #, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "%d anahtar %s adresinden tazeleniyor\n"

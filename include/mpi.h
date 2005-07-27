@@ -73,7 +73,7 @@ struct gcry_mpi {
     int sign;	    /* indicates a negative number */
     unsigned flags; /* bit 0: array must be allocated in secure memory space */
 		    /* bit 1: not used */
-		    /* bit 2: the limb is a pointer to some m_alloced data */
+		    /* bit 2: the limb is a pointer to some xmalloced data */
     mpi_limb_t *d;  /* array with the limbs */
 };
 

@@ -482,7 +482,7 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
      * worst-case estimate which is usually nowhere near the actual amount
      * required.  For example it may report that 128K of memory is required,
      * but only return 64K of data */
-    {	pPerfData =  m_alloc (cbPerfData);
+    {	pPerfData =  xmalloc (cbPerfData);
 	for (;;) {
 	    dwSize = cbPerfData;
 	    if ( debug_me )
@@ -499,14 +499,14 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
 	    }
 	    else if (status == ERROR_MORE_DATA) {
 		cbPerfData += PERFORMANCE_BUFFER_STEP;
-		pPerfData = m_realloc (pPerfData, cbPerfData);
+		pPerfData = xrealloc (pPerfData, cbPerfData);
 	    }
 	    else {
 		g10_log_debug ( "rndw32: get performance data problem\n");
 		break;
 	    }
 	}
-	m_free (pPerfData);
+	xfree (pPerfData);
     }
     /* Although this isn't documented in the Win32 API docs, it's necessary
        to explicitly close the HKEY_PERFORMANCE_DATA key after use (it's

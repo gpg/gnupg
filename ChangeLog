@@ -1,5 +1,9 @@
 2005-07-27  Werner Koch  <wk@g10code.com>
 
+	Replaced in all directories all calls to m_free, m_alloc,
+	m_realloc, m_strdup by calls to xfoo functions.  This is to ease
+	porting to gnupg 1.9.
+
 	* README.CVS: Renamed to README.SVN.
 
 2005-07-26  David Shaw  <dshaw@jabberwocky.com>

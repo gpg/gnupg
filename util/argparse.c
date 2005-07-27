@@ -215,7 +215,7 @@ store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
      * used as lvalue
      */
 #if 0
-    ALIAS_DEF a = m_alloc( sizeof *a );
+    ALIAS_DEF a = xmalloc( sizeof *a );
     a->name = name;
     a->value = value;
     a->next = (ALIAS_DEF)arg->internal.aliases;
@@ -310,7 +310,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			    trim_spaces( p );
 			}
 			if( !p || !*p ) {
-			    m_free( buffer );
+			    xfree( buffer );
 			    arg->r_opt = -10;
 			}
 			else {
@@ -324,7 +324,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    char *p;
 		    if( !buffer ) {
 			keyword[i] = 0;
-			buffer = m_strdup(keyword);
+			buffer = xstrdup(keyword);
 		    }
 		    else
 			buffer[i] = 0;
@@ -346,7 +346,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			}
 		    }
 		    if( !set_opt_arg(arg, opts[idx].flags, p) )
-			m_free(buffer);
+			xfree(buffer);
 		}
 		break;
 	    }
@@ -401,7 +401,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    buffer[i++] = c;
 		else {
 		    buflen += 50;
-		    buffer = m_realloc(buffer, buflen);
+		    buffer = xrealloc(buffer, buflen);
 		    buffer[i++] = c;
 		}
 	    }
@@ -409,7 +409,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		keyword[i++] = c;
 	    else {
 		buflen = DIM(keyword)+50;
-		buffer = m_alloc(buflen);
+		buffer = xmalloc(buflen);
 		memcpy(buffer, keyword, i);
 		buffer[i++] = c;
 	    }

@@ -394,7 +394,7 @@ secmem_malloc( size_t size )
 
 
 void *
-secmem_realloc( void *p, size_t newsize )
+secmexrealloc( void *p, size_t newsize )
 {
     MEMBLOCK *mb;
     size_t size;

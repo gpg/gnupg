@@ -56,7 +56,7 @@ mpi_write( IOBUF out, MPI a )
 
     p = buf = mpi_get_buffer( a, &n, NULL );
     rc = iobuf_write( out, p, n );
-    m_free(buf);
+    xfree(buf);
     return rc;
 }
 
@@ -344,7 +344,7 @@ mpi_get_keyid( MPI a, u32 *keyid )
 
 
 /****************
- * Return an m_alloced buffer with the MPI (msb first).
+ * Return an xmalloced buffer with the MPI (msb first).
  * NBYTES receives the length of this buffer. Caller must free the
  * return string (This function does return a 0 byte buffer with NBYTES
  * set to zero if the value of A is zero. If sign is not NULL, it will
@@ -363,8 +363,8 @@ do_get_buffer( MPI a, unsigned *nbytes, int *sign, int force_secure )
     *nbytes = n = a->nlimbs * BYTES_PER_MPI_LIMB;
     if (!n)
       n++; /* avoid zero length allocation */
-    p = buffer = force_secure || mpi_is_secure(a) ? m_alloc_secure(n)
-						  : m_alloc(n);
+    p = buffer = force_secure || mpi_is_secure(a) ? xmalloc_secure(n)
+						  : xmalloc(n);
 
     for(i=a->nlimbs-1; i >= 0; i-- ) {
 	alimb = a->d[i];

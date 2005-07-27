@@ -168,7 +168,7 @@ free_strlist( STRLIST sl )
 
     for(; sl; sl = sl2 ) {
 	sl2 = sl->next;
-	m_free(sl);
+	xfree(sl);
     }
 }
 
@@ -178,7 +178,7 @@ add_to_strlist( STRLIST *list, const char *string )
 {
     STRLIST sl;
 
-    sl = m_alloc( sizeof *sl + strlen(string));
+    sl = xmalloc( sizeof *sl + strlen(string));
     sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = *list;
@@ -200,7 +200,7 @@ add_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
     else {
 	char *p = native_to_utf8( string );
 	sl = add_to_strlist( list, p );
-	m_free( p );
+	xfree( p );
     }
     return sl;
 }
@@ -210,7 +210,7 @@ append_to_strlist( STRLIST *list, const char *string )
 {
     STRLIST r, sl;
 
-    sl = m_alloc( sizeof *sl + strlen(string));
+    sl = xmalloc( sizeof *sl + strlen(string));
     sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = NULL;
@@ -234,7 +234,7 @@ append_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
     else {
 	char *p = native_to_utf8( string );
 	sl = append_to_strlist( list, p );
-	m_free( p );
+	xfree( p );
     }
     return sl;
 }
@@ -267,11 +267,11 @@ pop_strlist( STRLIST *list )
 
   if(sl)
     {
-      str=m_alloc(strlen(sl->d)+1);
+      str=xmalloc(strlen(sl->d)+1);
       strcpy(str,sl->d);
 
       *list=sl->next;
-      m_free(sl);
+      xfree(sl);
     }
 
   return str;
@@ -323,7 +323,7 @@ ascii_memistr( const char *buf, size_t buflen, const char *sub )
 
 /* Like strncpy() but copy at max N-1 bytes and append a '\0'.  With
  * N given as 0 nothing is copied at all. With DEST given as NULL
- * sufficient memory is allocated using m_alloc (note that m_alloc is
+ * sufficient memory is allocated using xmalloc (note that xmalloc is
  * guaranteed to succeed or to abort the process).  */
 char *
 mem2str( char *dest , const void *src , size_t n )
@@ -333,7 +333,7 @@ mem2str( char *dest , const void *src , size_t n )
 
     if( n ) {
 	if( !dest )
-	    dest = m_alloc( n ) ;
+	    dest = xmalloc( n ) ;
 	d = dest;
 	s = src ;
 	for(n--; n && *s; n-- )
@@ -677,7 +677,7 @@ native_to_utf8( const char *string )
   
   if (no_translation)
     { /* Already utf-8 encoded. */
-      buffer = m_strdup (string);
+      buffer = xstrdup (string);
     }
   else if( !active_charset && !use_iconv) /* Shortcut implementation
                                              for Latin-1.  */
@@ -688,7 +688,7 @@ native_to_utf8( const char *string )
           if( *s & 0x80 )
             length++;
 	}
-      buffer = m_alloc( length + 1 );
+      buffer = xmalloc( length + 1 );
       for(p=buffer, s=string; *s; s++ )
         {
           if( *s & 0x80 )
@@ -722,7 +722,7 @@ native_to_utf8( const char *string )
           if ((*s & 0x80))
             length += 5; /* We may need up to 6 bytes for the utf8 output. */
         }
-      buffer = m_alloc (length + 1);
+      buffer = xmalloc (length + 1);
 
       inptr = string;
       inbytes = strlen (string);
@@ -756,7 +756,7 @@ native_to_utf8( const char *string )
           if( *s & 0x80 )
             length += 2; /* We may need up to 3 bytes. */
         }
-      buffer = m_alloc( length + 1 );
+      buffer = xmalloc( length + 1 );
       for(p=buffer, s=string; *s; s++ ) {
         if( *s & 0x80 ) {
           ushort val = active_charset[ *s & 0x7f ];
@@ -978,7 +978,7 @@ utf8_to_native( const char *string, size_t length, int delim )
 	    }
 	}
 	if( !buffer ) { /* allocate the buffer after the first pass */
-	    buffer = p = m_alloc( n + 1 );
+	    buffer = p = xmalloc( n + 1 );
 	}
 #ifdef USE_GNUPG_ICONV
         else if(use_iconv) {
@@ -994,7 +994,7 @@ utf8_to_native( const char *string, size_t length, int delim )
             if (cd == (iconv_t)-1)
                 {
                     handle_iconv_error (active_charset_name, "utf-8", 1);
-                    m_free (buffer);
+                    xfree (buffer);
                     return utf8_to_native (string, length, delim);
                 }
 
@@ -1006,7 +1006,7 @@ utf8_to_native( const char *string, size_t length, int delim )
             outbytes = n * MB_LEN_MAX;
             if (outbytes / MB_LEN_MAX != n) 
                 BUG (); /* Actually an overflow. */
-            outbuf = outptr = m_alloc (outbytes);
+            outbuf = outptr = xmalloc (outbytes);
             if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
                         &outptr, &outbytes) == (size_t)-1) {
                 static int shown;
@@ -1017,9 +1017,9 @@ utf8_to_native( const char *string, size_t length, int delim )
                 shown = 1;
                 /* Didn't worked out.  Temporary disable the use of
                  * iconv and fall back to our old code. */
-                m_free (buffer);
+                xfree (buffer);
                 buffer = NULL;
-                m_free (outbuf);
+                xfree (outbuf);
                 use_iconv = 0;
                 outbuf = utf8_to_native (string, length, delim);
                 use_iconv = 1;
@@ -1029,7 +1029,7 @@ utf8_to_native( const char *string, size_t length, int delim )
                 /* We could realloc the buffer now but I doubt that it makes
                    much sense given that it will get freed anyway soon
                    after.  */
-                m_free (buffer);
+                xfree (buffer);
             }
             iconv_close (cd);
             return outbuf;
@@ -1251,7 +1251,7 @@ strncasecmp( const char *a, const char *b, size_t n )
 #ifdef _WIN32
 /* 
  * Like vsprintf but provides a pointer to malloc'd storage, which
- * must be freed by the caller (m_free).  Taken from libiberty as
+ * must be freed by the caller (xfree).  Taken from libiberty as
  * found in gcc-2.95.2 and a little bit modernized.
  * FIXME: Write a new CRT for W32.
  */
@@ -1335,7 +1335,7 @@ vasprintf (char **result, const char *format, va_list args)
 	    }
 	}
     }
-  *result = m_alloc (total_width);
+  *result = xmalloc (total_width);
   if (*result != NULL)
     return vsprintf (*result, format, args);
   else

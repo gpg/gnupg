@@ -152,7 +152,7 @@ cache_public_key( PKT_public_key *pk )
 	return;
     }
     pk_cache_entries++;
-    ce = m_alloc( sizeof *ce );
+    ce = xmalloc( sizeof *ce );
     ce->next = pk_cache;
     pk_cache = ce;
     ce->pk = copy_public_key( NULL, pk );
@@ -195,7 +195,7 @@ release_keyid_list ( keyid_list_t k )
 {
     while (  k ) {
         keyid_list_t k2 = k->next;
-        m_free (k);
+        xfree (k);
         k = k2;
     }
 }
@@ -216,7 +216,7 @@ cache_user_id( KBNODE keyblock )
     for (k=keyblock; k; k = k->next ) {
         if ( k->pkt->pkttype == PKT_PUBLIC_KEY
              || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-            keyid_list_t a = m_alloc_clear ( sizeof *a );
+            keyid_list_t a = xmalloc_clear ( sizeof *a );
             /* Hmmm: For a long list of keyids it might be an advantage
              * to append the keys */
             keyid_from_pk( k->pkt->pkt.public_key, a->keyid );
@@ -229,7 +229,7 @@ cache_user_id( KBNODE keyblock )
                         if( DBG_CACHE )
                             log_debug("cache_user_id: already in cache\n");
                         release_keyid_list ( keyids );
-                        m_free ( a );
+                        xfree ( a );
                         return;
                     }
                 }
@@ -250,10 +250,10 @@ cache_user_id( KBNODE keyblock )
 	r = user_id_db;
 	user_id_db = r->next;
         release_keyid_list ( r->keyids );
-	m_free(r);
+	xfree(r);
 	uid_cache_entries--;
     }
-    r = m_alloc( sizeof *r + uidlen-1 );
+    r = xmalloc( sizeof *r + uidlen-1 );
     r->keyids = keyids;
     r->len = uidlen;
     memcpy(r->name, uid, r->len);
@@ -273,7 +273,7 @@ getkey_disable_caches()
 	for( ce = pk_cache; ce; ce = ce2 ) {
 	    ce2 = ce->next;
 	    free_public_key( ce->pk );
-	    m_free( ce );
+	    xfree( ce );
 	}
 	pk_cache_disabled=1;
 	pk_cache_entries = 0;
@@ -338,7 +338,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 #endif
     /* more init stuff */
     if( !pk ) {
-	pk = m_alloc_clear( sizeof *pk );
+	pk = xmalloc_clear( sizeof *pk );
 	internal++;
     }
 
@@ -810,7 +810,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
 
     if(!namelist)
       {
-	ctx = m_alloc_clear (sizeof *ctx);
+	ctx = xmalloc_clear (sizeof *ctx);
 	ctx->nitems = 1;
 	ctx->items[0].mode=KEYDB_SEARCH_MODE_FIRST;
 	if(!include_unusable)
@@ -822,7 +822,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
 	for(n=0, r=namelist; r; r = r->next )
 	  n++;
 
-	ctx = m_alloc_clear (sizeof *ctx + (n-1)*sizeof ctx->items );
+	ctx = xmalloc_clear (sizeof *ctx + (n-1)*sizeof ctx->items );
 	ctx->nitems = n;
 
 	for(n=0, r=namelist; r; r = r->next, n++ )
@@ -833,7 +833,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
 	      ctx->exact = 1;
 	    if (!ctx->items[n].mode)
 	      {
-		m_free (ctx);
+		xfree (ctx);
 		return G10ERR_INV_USER_ID;
 	      }
 	    if(!include_unusable
@@ -932,7 +932,7 @@ get_pubkey_end( GETKEY_CTX ctx )
         memset (&ctx->kbpos, 0, sizeof ctx->kbpos);
         keydb_release (ctx->kr_handle);
 	if( !ctx->not_allocated )
-	    m_free( ctx );
+	    xfree( ctx );
     }
 }
 
@@ -1392,12 +1392,12 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     p = parse_sig_subpkt ( sig->hashed, SIGSUBPKT_PREF_COMPR, &n );
     zip = p; nzip = p?n:0;
     if (uid->prefs) 
-        m_free (uid->prefs);
+        xfree (uid->prefs);
     n = nsym + nhash + nzip;
     if (!n)
         uid->prefs = NULL;
     else {
-        uid->prefs = m_alloc (sizeof (*uid->prefs) * (n+1));
+        uid->prefs = xmalloc (sizeof (*uid->prefs) * (n+1));
         n = 0;
         for (; nsym; nsym--, n++) {
             uid->prefs[n].type = PREFTYPE_SYM;
@@ -1477,7 +1477,7 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
      */
 
     /* In case this key was already merged */
-    m_free(pk->revkey);
+    xfree(pk->revkey);
     pk->revkey=NULL;
     pk->numrevkeys=0;
 
@@ -1514,7 +1514,7 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
 		    int i;
 
 		    pk->revkey=
-		      m_realloc(pk->revkey,sizeof(struct revocation_key)*
+		      xrealloc(pk->revkey,sizeof(struct revocation_key)*
 				(pk->numrevkeys+sig->numrevkeys));
 
 		    for(i=0;i<sig->numrevkeys;i++)
@@ -1565,7 +1565,7 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
 	  }
 
 	if(changed)
-	  pk->revkey=m_realloc(pk->revkey,
+	  pk->revkey=xrealloc(pk->revkey,
 			       pk->numrevkeys*sizeof(struct revocation_key));
       }
 
@@ -1703,7 +1703,7 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
 		  {
 		    PKT_public_key *ultimate_pk;
 
-		    ultimate_pk=m_alloc_clear(sizeof(*ultimate_pk));
+		    ultimate_pk=xmalloc_clear(sizeof(*ultimate_pk));
 
                     /* We don't want to use the full get_pubkey to
                        avoid infinite recursion in certain cases.
@@ -2023,7 +2023,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 
 	if(p)
 	  {
-	    PKT_signature *backsig=m_alloc_clear(sizeof(PKT_signature));
+	    PKT_signature *backsig=xmalloc_clear(sizeof(PKT_signature));
 	    IOBUF backsig_buf=iobuf_temp_with_content(p,n);
 
 	    if(parse_signature(backsig_buf,PKT_SIGNATURE,n,backsig)==0)
@@ -2133,7 +2133,7 @@ merge_selfsigs( KBNODE keyblock )
              || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
             PKT_public_key *pk = k->pkt->pkt.public_key;
             if (pk->prefs)
-                m_free (pk->prefs);
+                xfree (pk->prefs);
             pk->prefs = copy_prefs (prefs);
             pk->mdc_feature = mdc_feature;
         }
@@ -2464,10 +2464,10 @@ finish_lookup (GETKEY_CTX ctx)
     if (latest_key != keyblock && opt.verbose)
       {
 	char *tempkeystr=
-	  m_strdup(keystr_from_pk(latest_key->pkt->pkt.public_key));
+	  xstrdup(keystr_from_pk(latest_key->pkt->pkt.public_key));
         log_info(_("using subkey %s instead of primary key %s\n"),
                  tempkeystr, keystr_from_pk(keyblock->pkt->pkt.public_key));
-	m_free(tempkeystr);
+	xfree(tempkeystr);
       }
 
     cache_user_id( keyblock );
@@ -2610,7 +2610,7 @@ enum_secret_keys( void **context, PKT_secret_key *sk,
 
 
     if( !c ) { /* make a new context */
-	c = m_alloc_clear( sizeof *c );
+	c = xmalloc_clear( sizeof *c );
 	*context = c;
 	c->hd = keydb_new (1);
         c->first = 1;
@@ -2621,7 +2621,7 @@ enum_secret_keys( void **context, PKT_secret_key *sk,
     if( !sk ) { /* free the context */
         keydb_release (c->hd);
         release_kbnode (c->keyblock);
-	m_free( c );
+	xfree( c );
 	*context = NULL;
 	return 0;
     }
@@ -2668,7 +2668,7 @@ enum_secret_keys( void **context, PKT_secret_key *sk,
 
 /****************
  * Return a string with a printable representation of the user_id.
- * this string must be freed by m_free.
+ * this string must be freed by xfree.
  */
 char*
 get_user_id_string( u32 *keyid )
@@ -2686,14 +2686,14 @@ get_user_id_string( u32 *keyid )
 	    {
 	      if( a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1] )
 		{
-		  p = m_alloc( keystrlen() + 1 + r->len + 1 );
+		  p = xmalloc( keystrlen() + 1 + r->len + 1 );
 		  sprintf(p, "%s %.*s", keystr(keyid), r->len, r->name );
 		  return p;
 		}
 	    }
         }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-  p = m_alloc( keystrlen() + 5 );
+  p = xmalloc( keystrlen() + 5 );
   sprintf(p, "%s [?]", keystr(keyid));
   return p;
 }
@@ -2704,7 +2704,7 @@ get_user_id_string_native ( u32 *keyid )
 {
   char *p = get_user_id_string( keyid );
   char *p2 = utf8_to_native( p, strlen(p), 0 );
-  m_free(p);
+  xfree(p);
   return p2;
 }
 
@@ -2721,7 +2721,7 @@ get_long_user_id_string( u32 *keyid )
             keyid_list_t a;
             for (a=r->keyids; a; a= a->next ) {
                 if( a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1] ) {
-                    p = m_alloc( r->len + 20 );
+                    p = xmalloc( r->len + 20 );
                     sprintf(p, "%08lX%08lX %.*s",
                             (ulong)keyid[0], (ulong)keyid[1],
                             r->len, r->name );
@@ -2730,7 +2730,7 @@ get_long_user_id_string( u32 *keyid )
             }
         }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = m_alloc( 25 );
+    p = xmalloc( 25 );
     sprintf(p, "%08lX%08lX [?]", (ulong)keyid[0], (ulong)keyid[1] );
     return p;
 }
@@ -2748,7 +2748,7 @@ get_user_id( u32 *keyid, size_t *rn )
             keyid_list_t a;
             for (a=r->keyids; a; a= a->next ) {
                 if( a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1] ) {
-                    p = m_alloc( r->len );
+                    p = xmalloc( r->len );
                     memcpy(p, r->name, r->len );
                     *rn = r->len;
                     return p;
@@ -2756,7 +2756,7 @@ get_user_id( u32 *keyid, size_t *rn )
             }
         }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = m_strdup( _("[User ID not found]") );
+    p = xstrdup( _("[User ID not found]") );
     *rn = strlen(p);
     return p;
 }
@@ -2767,7 +2767,7 @@ get_user_id_native( u32 *keyid )
   size_t rn;
   char *p = get_user_id( keyid, &rn );
   char *p2 = utf8_to_native( p, rn, 0 );
-  m_free(p);
+  xfree(p);
   return p2;
 }
 

@@ -178,12 +178,12 @@ decrypt_messages(int nfiles, char *files[])
                   g10_errstr(rc));
       p = get_last_passphrase();
       set_next_passphrase(p);
-      m_free (p);
+      xfree (p);
 
     next_file:
       /* Note that we emit file_done even after an error. */
       write_status( STATUS_FILE_DONE );
-      m_free(output);
+      xfree(output);
     }
 
   set_next_passphrase(NULL);  

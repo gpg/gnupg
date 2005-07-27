@@ -84,7 +84,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     if( nooutput )
 	;
     else if( opt.outfile ) {
-	fname = m_alloc( strlen( opt.outfile ) + 1);
+	fname = xmalloc( strlen( opt.outfile ) + 1);
 	strcpy(fname, opt.outfile );
     }
     else if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) ) {
@@ -118,11 +118,11 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	while( !overwrite_filep (fname) ) {
             char *tmp = ask_outfile_name (NULL, 0);
             if ( !tmp || !*tmp ) {
-                m_free (tmp);
+                xfree (tmp);
                 rc = G10ERR_CREATE_FILE;
                 goto leave;
             }
-            m_free (fname);
+            xfree (fname);
             fname = tmp;
         }
     }
@@ -213,7 +213,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    }
 	}
 	else { /* binary mode */
-	    byte *buffer = m_alloc( 32768 );
+	    byte *buffer = xmalloc( 32768 );
 	    while( pt->len ) {
 		int len = pt->len > 32768 ? 32768 : pt->len;
 		len = iobuf_read( pt->buf, buffer, len );
@@ -221,7 +221,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    log_error("Problem reading source (%u bytes remaining)\n",
 			      (unsigned)pt->len);
 		    rc = G10ERR_READ_FILE;
-		    m_free( buffer );
+		    xfree( buffer );
 		    goto leave;
 		}
 		if( mfx->md )
@@ -233,7 +233,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
 			rc = G10ERR_WRITE_FILE;
-			m_free( buffer );
+			xfree( buffer );
 			goto leave;
 		      }
 		    else if( fwrite( buffer, 1, len, fp ) != len )
@@ -241,13 +241,13 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
 			rc = G10ERR_WRITE_FILE;
-			m_free( buffer );
+			xfree( buffer );
 			goto leave;
 		      }
 		  }
 		pt->len -= len;
 	    }
-	    m_free( buffer );
+	    xfree( buffer );
 	}
     }
     else if( !clearsig ) {
@@ -279,7 +279,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    }
 	}
 	else { /* binary mode */
-	    byte *buffer = m_alloc( 32768 );
+	    byte *buffer = xmalloc( 32768 );
 	    int eof;
 	    for( eof=0; !eof; ) {
 		/* Why do we check for len < 32768:
@@ -302,19 +302,19 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
 			rc = G10ERR_WRITE_FILE;
-			m_free( buffer );
+			xfree( buffer );
 			goto leave;
 		      }
 		    else if( fwrite( buffer, 1, len, fp ) != len ) {
 		      log_error("Error writing to `%s': %s\n",
 				fname, strerror(errno) );
 		      rc = G10ERR_WRITE_FILE;
-		      m_free( buffer );
+		      xfree( buffer );
 		      goto leave;
 		    }
 		  }
 	    }
-	    m_free( buffer );
+	    xfree( buffer );
 	}
 	pt->buf = NULL;
     }
@@ -382,7 +382,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
   leave:
     if( fp && fp != stdout )
 	fclose(fp);
-    m_free(fname);
+    xfree(fname);
     return rc;
 }
 
@@ -446,7 +446,7 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 	int any=0;
 	tty_printf(_("Detached signature.\n"));
 	do {
-	    m_free(answer);
+	    xfree(answer);
 	    tty_enable_completion(NULL);
 	    answer = cpr_get("detached_signature.filename",
 			   _("Please enter name of data file: "));
@@ -486,7 +486,7 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     iobuf_close(fp);
 
   leave:
-    m_free(answer);
+    xfree(answer);
     return rc;
 }
 

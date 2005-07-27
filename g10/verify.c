@@ -127,10 +127,10 @@ verify_signatures( int nfiles, char **files )
 void
 print_file_status( int status, const char *name, int what )
 {
-    char *p = m_alloc(strlen(name)+10);
+    char *p = xmalloc(strlen(name)+10);
     sprintf(p, "%d %s", what, name );
     write_status_text( status, p );
-    m_free(p);
+    xfree(p);
 }
 
 

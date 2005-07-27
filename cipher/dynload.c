@@ -65,12 +65,12 @@ register_cipher_extension( const char *mainpgm, const char *fname )
 	    tmp = make_filename(fname, NULL);
 	else
 	    tmp = make_filename(GNUPG_LIBDIR, fname, NULL);
-	el = m_alloc_clear( sizeof *el + strlen(tmp) );
+	el = xmalloc_clear( sizeof *el + strlen(tmp) );
 	strcpy(el->name, tmp );
-	m_free(tmp);
+	xfree(tmp);
     }
     else {
-	el = m_alloc_clear( sizeof *el + strlen(fname) );
+	el = xmalloc_clear( sizeof *el + strlen(fname) );
 	strcpy(el->name, fname );
     }
     /* check whether we have a class hint */
@@ -82,7 +82,7 @@ register_cipher_extension( const char *mainpgm, const char *fname )
     for(r = extensions; r; r = r->next ) {
 	if( !compare_filenames(r->name, el->name) ) {
 	    log_info("extension `%s' already registered\n", el->name );
-	    m_free(el);
+	    xfree(el);
 	    return;
 	}
     }

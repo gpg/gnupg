@@ -163,13 +163,13 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
     if (!users) {
         ndesc = 1;
-        desc = m_alloc_clear ( ndesc * sizeof *desc);
+        desc = xmalloc_clear ( ndesc * sizeof *desc);
         desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
     }
     else {
         for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
             ;
-        desc = m_alloc ( ndesc * sizeof *desc);
+        desc = xmalloc ( ndesc * sizeof *desc);
         
         for (ndesc=0, sl=users; sl; sl = sl->next) {
 	    if (classify_user_id (sl->d, desc+ndesc))
@@ -406,7 +406,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
                 sk = copy_secret_key (NULL, sk_save);
                 node->pkt->pkt.secret_key = sk;
 
-                log_info ("about to export an unprotected subkey\n");
+                log_info (_("about to export an unprotected subkey\n"));
                 switch (is_secret_key_protected (sk))
                   {
                   case -1:
@@ -429,8 +429,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
                   {
                     node->pkt->pkt.secret_key = sk_save;
                     free_secret_key (sk);
-                    /* FIXME: Make translatable after releasing 1.4.2 */
-                    log_error ("failed to unprotect the subkey: %s\n",
+                    log_error (_("failed to unprotect the subkey: %s\n"),
                                g10_errstr (rc));
                     goto leave;
                   }
@@ -478,7 +477,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	rc = 0;
 
   leave:
-    m_free(desc);
+    xfree(desc);
     keydb_release (kdbhd);
     if(rc || keyblock_out==NULL)
       release_kbnode( keyblock );

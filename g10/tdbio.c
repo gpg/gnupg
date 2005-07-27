@@ -188,7 +188,7 @@ put_record_into_cache( ulong recno, const char *data )
     }
     /* see whether we reached the limit */
     if( cache_entries < MAX_CACHE_ENTRIES_SOFT ) { /* no */
-	r = m_alloc( sizeof *r );
+	r = xmalloc( sizeof *r );
 	r->flags.used = 1;
 	r->recno = recno;
 	memcpy( r->data, data, TRUST_RECORD_LEN );
@@ -231,7 +231,7 @@ put_record_into_cache( ulong recno, const char *data )
 	if( cache_entries < MAX_CACHE_ENTRIES_HARD ) { /* no */
 	    if( opt.debug && !(cache_entries % 100) )
 		log_debug("increasing tdbio cache size\n");
-	    r = m_alloc( sizeof *r );
+	    r = xmalloc( sizeof *r );
 	    r->flags.used = 1;
 	    r->recno = recno;
 	    memcpy( r->data, data, TRUST_RECORD_LEN );
@@ -491,12 +491,12 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	  fname = make_filename (opt.homedir, new_dbname, NULL);
       }
     else
-      fname = m_strdup (new_dbname);
+      fname = xstrdup (new_dbname);
 
     if( access( fname, R_OK ) ) {
 	if( errno != ENOENT ) {
 	    log_error( _("can't access `%s': %s\n"), fname, strerror(errno) );
-	    m_free(fname);
+	    xfree(fname);
 	    return G10ERR_TRUSTDB;
 	}
 	if( create ) {
@@ -514,7 +514,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    }
 	    *p = DIRSEP_C;
 
-	    m_free(db_name);
+	    xfree(db_name);
 	    db_name = fname;
 #ifdef __riscos__
 	    if( !lockhandle )
@@ -560,7 +560,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    return 0;
 	}
     }
-    m_free(db_name);
+    xfree(db_name);
     db_name = fname;
     return 0;
 }
@@ -1528,7 +1528,7 @@ migrate_from_v2 ()
   int rc, count;
 
   ottable_size = 5;
-  ottable = m_alloc (ottable_size * sizeof *ottable);
+  ottable = xmalloc (ottable_size * sizeof *ottable);
   ottable_used = 0;
 
   /* We have some restrictions here.  We can't use the version record
@@ -1558,7 +1558,7 @@ migrate_from_v2 ()
       if (ottable_used == ottable_size)
         {
           ottable_size += 1000;
-          ottable = m_realloc (ottable, ottable_size * sizeof *ottable);
+          ottable = xrealloc (ottable, ottable_size * sizeof *ottable);
         }
       ottable[ottable_used].keyrecno = buftoulong (oldbuf+6);
       ottable[ottable_used].ot = oldbuf[18];
@@ -1629,5 +1629,5 @@ migrate_from_v2 ()
   if (rc)
     log_fatal ("failed to sync `%s'\n", db_name);
   log_info ("migrated %d version 2 ownertrusts\n", count);
-  m_free (ottable);
+  xfree (ottable);
 }

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2005-07-27 19:41+0200\n"
 "PO-Revision-Date: 2005-06-23 02:36+0800\n"
 "Last-Translator: Jedi <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -696,13 +696,13 @@ msgstr "無法開啟 `%s'\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output 在這個命令中沒有作用\n"
 
-#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1569
+#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1571
 #: g10/revoke.c:227
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "金鑰 \"%s\" 找不到: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1583
+#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1585
 #: g10/revoke.c:233 g10/revoke.c:440
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -897,13 +897,22 @@ msgstr "金鑰 %s: 未被保護 - 已跳過\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "金鑰 %s: PGP 2.x 樣式的金鑰 - 已跳過\n"
 
+#: g10/export.c:409
+msgid "about to export an unprotected subkey\n"
+msgstr ""
+
+#: g10/export.c:432
+#, fuzzy, c-format
+msgid "failed to unprotect the subkey: %s\n"
+msgstr "存放金鑰失敗: %s\n"
+
 #  I hope this warning doesn't confuse people.
-#: g10/export.c:454
+#: g10/export.c:453
 #, c-format
 msgid "WARNING: secret key %s does not have a simple SK checksum\n"
 msgstr "警告: 私鑰 %s 並沒有任的何單一 SK 加總檢查\n"
 
-#: g10/export.c:486
+#: g10/export.c:485
 msgid "WARNING: nothing exported\n"
 msgstr "警告: 沒有匯出任何東西\n"
 
@@ -3986,7 +3995,7 @@ msgstr "已禁用"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "請輸入數字, N)ext, 或 Q)uit > "
 
-#: g10/keyserver.c:724 g10/keyserver.c:1294
+#: g10/keyserver.c:724 g10/keyserver.c:1296
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "無效的金鑰伺服器協定 (我們用 %d != 經手程式 %d)\n"
@@ -4000,101 +4009,101 @@ msgstr "在金鑰伺服器上找不到金鑰 \"%s\"\n"
 msgid "key not found on keyserver\n"
 msgstr "在金鑰伺服器上找不到金鑰\n"
 
-#: g10/keyserver.c:1041
+#: g10/keyserver.c:1043
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "正在請求金鑰 %s 自 %s 伺服器 %s\n"
 
-#: g10/keyserver.c:1045
+#: g10/keyserver.c:1047
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "正在請求金鑰 %s 自 %s\n"
 
-#: g10/keyserver.c:1197
+#: g10/keyserver.c:1199
 #, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "遞送金鑰 %s 至 %s 伺服器 %s\n"
 
-#: g10/keyserver.c:1201
+#: g10/keyserver.c:1203
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "遞送金鑰 %s 至 %s\n"
 
-#: g10/keyserver.c:1244
+#: g10/keyserver.c:1246
 #, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "正在搜尋 \"%s\" 於 %s 伺服器 %s\n"
 
-#: g10/keyserver.c:1247
+#: g10/keyserver.c:1249
 #, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "正在搜尋 \"%s\" 於 %s\n"
 
-#: g10/keyserver.c:1254 g10/keyserver.c:1349
+#: g10/keyserver.c:1256 g10/keyserver.c:1351
 msgid "no keyserver action!\n"
 msgstr "沒有金鑰伺服器動作!\n"
 
-#: g10/keyserver.c:1302
+#: g10/keyserver.c:1304
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr "警告: 金鑰伺服器經手程式 (handler) 係來自不同版本的 GnuPG (%s)\n"
 
-#: g10/keyserver.c:1311
+#: g10/keyserver.c:1313
 msgid "keyserver did not send VERSION\n"
 msgstr "金鑰伺服器並未送出版本 (VERSION)\n"
 
-#: g10/keyserver.c:1371
+#: g10/keyserver.c:1373
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "沒有已知的金鑰伺服器 (使用 --keyserver 選項)\n"
 
-#: g10/keyserver.c:1377
+#: g10/keyserver.c:1379
 msgid "external keyserver calls are not supported in this build\n"
 msgstr "本版並不支援外部金鑰伺服器叫用\n"
 
-#: g10/keyserver.c:1389
+#: g10/keyserver.c:1391
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr "沒有金鑰伺服器方案 (scheme) `%s' 的經手程式 (handler)\n"
 
-#: g10/keyserver.c:1394
+#: g10/keyserver.c:1396
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr "動作 `%s' 並未被金鑰伺服器方案 (scheme) `%s' 所支援\n"
 
-#: g10/keyserver.c:1402
+#: g10/keyserver.c:1404
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr "%s 並不支援經手程式 (handler) 版本 %d\n"
 
-#: g10/keyserver.c:1409
+#: g10/keyserver.c:1411
 msgid "keyserver timed out\n"
 msgstr "金鑰伺服器逾時\n"
 
-#: g10/keyserver.c:1414
+#: g10/keyserver.c:1416
 msgid "keyserver internal error\n"
 msgstr "金鑰伺服器內部出錯\n"
 
-#: g10/keyserver.c:1423
+#: g10/keyserver.c:1425
 #, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "金鑰伺服器通訊出錯: %s\n"
 
-#: g10/keyserver.c:1448 g10/keyserver.c:1482
+#: g10/keyserver.c:1450 g10/keyserver.c:1484
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" 並非金鑰 ID: 正跳過\n"
 
-#: g10/keyserver.c:1739
+#: g10/keyserver.c:1741
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "警告: 無法更新金鑰 %s 於 %s: %s\n"
 
-#: g10/keyserver.c:1761
+#: g10/keyserver.c:1763
 #, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "正從 %s 更新 1 份金鑰\n"
 
-#: g10/keyserver.c:1763
+#: g10/keyserver.c:1765
 #, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "正在更新 %d 份金鑰自 %s\n"

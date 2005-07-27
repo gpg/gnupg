@@ -72,7 +72,7 @@ static int win_system(const char *command)
 
   /* We must use a copy of the command as CreateProcess modifies this
      argument. */
-  string=m_strdup(command);
+  string=xstrdup(command);
 
   memset(&pi,0,sizeof(pi));
   memset(&si,0,sizeof(si));
@@ -86,7 +86,7 @@ static int win_system(const char *command)
 
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
-  m_free(string);
+  xfree(string);
 
   return 0;
 }
@@ -97,7 +97,7 @@ int set_exec_path(const char *path)
 {
   char *p;
 
-  p=m_alloc(5+strlen(path)+1);
+  p=xmalloc(5+strlen(path)+1);
   strcpy(p,"PATH=");
   strcat(p,path);
 
@@ -129,7 +129,7 @@ static int make_tempdir(struct exec_info *info)
   if(tmp==NULL)
     {
 #if defined (_WIN32)
-      tmp=m_alloc(256);
+      tmp=xmalloc(256);
       if(GetTempPath(256,tmp)==0)
 	strcpy(tmp,"c:\\windows\\temp");
       else
@@ -161,12 +161,12 @@ static int make_tempdir(struct exec_info *info)
 #endif
     }
 
-  info->tempdir=m_alloc(strlen(tmp)+strlen(DIRSEP_S)+10+1);
+  info->tempdir=xmalloc(strlen(tmp)+strlen(DIRSEP_S)+10+1);
 
   sprintf(info->tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
 
 #if defined (_WIN32)
-  m_free(tmp);
+  xfree(tmp);
 #endif
 
   if(mkdtemp(info->tempdir)==NULL)
@@ -176,13 +176,13 @@ static int make_tempdir(struct exec_info *info)
     {
       info->madedir=1;
 
-      info->tempfile_in=m_alloc(strlen(info->tempdir)+
+      info->tempfile_in=xmalloc(strlen(info->tempdir)+
 				strlen(DIRSEP_S)+strlen(namein)+1);
       sprintf(info->tempfile_in,"%s" DIRSEP_S "%s",info->tempdir,namein);
 
       if(!info->writeonly)
 	{
-	  info->tempfile_out=m_alloc(strlen(info->tempdir)+
+	  info->tempfile_out=xmalloc(strlen(info->tempdir)+
 				     strlen(DIRSEP_S)+strlen(nameout)+1);
 	  sprintf(info->tempfile_out,"%s" DIRSEP_S "%s",info->tempdir,nameout);
 	}
@@ -205,7 +205,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
     log_debug("expanding string \"%s\"\n",args_in);
 
   size=100;
-  info->command=m_alloc(size);
+  info->command=xmalloc(size);
   len=0;
   info->command[0]='\0';
 
@@ -262,7 +262,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 		    applen=100;
 
 		  size+=applen;
-		  info->command=m_realloc(info->command,size);
+		  info->command=xrealloc(info->command,size);
 		}
 
 	      strcat(info->command,append);
@@ -274,7 +274,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 	  if(len==size-1) /* leave room for the \0 */
 	    {
 	      size+=100;
-	      info->command=m_realloc(info->command,size);
+	      info->command=xrealloc(info->command,size);
 	    }
 
 	  info->command[len++]=*ch;
@@ -292,7 +292,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 
  fail:
 
-  m_free(info->command);
+  xfree(info->command);
   info->command=NULL;
 
   return G10ERR_GENERAL;
@@ -327,10 +327,10 @@ int exec_write(struct exec_info **info,const char *program,
   if(program==NULL && args_in==NULL)
     BUG();
 
-  *info=m_alloc_clear(sizeof(struct exec_info));
+  *info=xmalloc_clear(sizeof(struct exec_info));
 
   if(name)
-    (*info)->name=m_strdup(name);
+    (*info)->name=xstrdup(name);
   (*info)->binary=binary;
   (*info)->writeonly=writeonly;
 
@@ -611,12 +611,12 @@ int exec_finish(struct exec_info *info)
 		 info->tempdir,strerror(errno));
     }
 
-  m_free(info->command);
-  m_free(info->name);
-  m_free(info->tempdir);
-  m_free(info->tempfile_in);
-  m_free(info->tempfile_out);
-  m_free(info);
+  xfree(info->command);
+  xfree(info->name);
+  xfree(info->tempdir);
+  xfree(info->tempfile_in);
+  xfree(info->tempfile_out);
+  xfree(info);
 
   return ret;
 }

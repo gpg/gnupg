@@ -112,11 +112,11 @@ mk_notation_policy_etc( PKT_signature *sig,
 	  {
 	    log_error(_("WARNING: unable to %%-expand notation "
 			"(too large).  Using unexpanded.\n"));
-	    expanded=m_strdup(s);
+	    expanded=xstrdup(s);
 	  }
 
 	n2 = strlen(expanded);
-	buf = m_alloc( 8 + n1 + n2 );
+	buf = xmalloc( 8 + n1 + n2 );
 	buf[0] = 0x80; /* human readable */
 	buf[1] = buf[2] = buf[3] = 0;
 	buf[4] = n1 >> 8;
@@ -128,8 +128,8 @@ mk_notation_policy_etc( PKT_signature *sig,
 	build_sig_subpkt( sig, SIGSUBPKT_NOTATION
 			  | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
 			  buf, 8+n1+n2 );
-	m_free(expanded);
-	m_free(buf);
+	xfree(expanded);
+	xfree(buf);
     }
 
     /* set policy URL */
@@ -159,14 +159,14 @@ mk_notation_policy_etc( PKT_signature *sig,
 	  {
 	    log_error(_("WARNING: unable to %%-expand policy URL "
 			"(too large).  Using unexpanded.\n"));
-	    s=m_strdup(string);
+	    s=xstrdup(string);
 	  }
 
 	build_sig_subpkt(sig,SIGSUBPKT_POLICY|
 			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),
 			 s,strlen(s));
 
-	m_free(s);
+	xfree(s);
       }
 
     /* preferred keyserver URL */
@@ -187,14 +187,14 @@ mk_notation_policy_etc( PKT_signature *sig,
 	  {
 	    log_error(_("WARNING: unable to %%-expand preferred keyserver URL"
 			" (too large).  Using unexpanded.\n"));
-	    s=m_strdup(string);
+	    s=xstrdup(string);
 	  }
 
 	build_sig_subpkt(sig,SIGSUBPKT_PREF_KS|
 			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),
 			 s,strlen(s));
 
-	m_free(s);
+	xfree(s);
       }
 }
 
@@ -346,7 +346,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         /* check that the signature verification worked and nothing is
          * fooling us e.g. by a bug in the signature create
          * code or by deliberately introduced faults. */
-        PKT_public_key *pk = m_alloc_clear (sizeof *pk);
+        PKT_public_key *pk = xmalloc_clear (sizeof *pk);
 
         if( get_pubkey( pk, sig->keyid ) )
             rc = G10ERR_NO_PUBKEY;
@@ -375,7 +375,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 		     pubkey_algo_to_string(sk->pubkey_algo),
 		     digest_algo_to_string(sig->digest_algo),
 		     ustr );
-	    m_free(ustr);
+	    xfree(ustr);
 	}
     }
     return rc;
@@ -509,7 +509,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         }
 
         sk = sk_rover->sk;
-        ops = m_alloc_clear (sizeof *ops);
+        ops = xmalloc_clear (sizeof *ops);
         ops->sig_class = sigclass;
         ops->digest_algo = hash_for (sk->pubkey_algo, sk->version);
         ops->pubkey_algo = sk->pubkey_algo;
@@ -546,13 +546,13 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
             char *s = make_basename (opt.set_filename? opt.set_filename
                                                      : fname,
                                      iobuf_get_real_fname(inp));
-            pt = m_alloc (sizeof *pt + strlen(s) - 1);
+            pt = xmalloc (sizeof *pt + strlen(s) - 1);
             pt->namelen = strlen (s);
             memcpy (pt->name, s, pt->namelen);
-            m_free (s);
+            xfree (s);
         }
         else { /* no filename */
-            pt = m_alloc (sizeof *pt - 1);
+            pt = xmalloc (sizeof *pt - 1);
             pt->namelen = 0;
         }
     }
@@ -640,7 +640,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	sk = sk_rover->sk;
 
 	/* build the signature packet */
-	sig = m_alloc_clear (sizeof *sig);
+	sig = xmalloc_clear (sizeof *sig);
 	if(opt.force_v3_sigs || RFC1991)
 	  sig->version=3;
 	else if(duration || opt.sig_policy_url
@@ -1203,7 +1203,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     handle_progress (&pfx, inp, fname);
 
     /* prepare key */
-    s2k = m_alloc_clear( sizeof *s2k );
+    s2k = xmalloc_clear( sizeof *s2k );
     s2k->mode = RFC1991? 0:opt.s2k_mode;
     s2k->hash_algo = S2K_DIGEST_ALGO;
 
@@ -1252,7 +1252,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* Write the symmetric key packet */
     /*(current filters: armor)*/
     if (!RFC1991) {
-	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
+	PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
 	enc->s2k = *s2k;
@@ -1260,7 +1260,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 	pkt.pkt.symkey_enc = enc;
 	if( (rc = build_packet( out, &pkt )) )
 	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
-	m_free(enc);
+	xfree(enc);
     }
 
     /* Push the encryption filter */
@@ -1304,8 +1304,8 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     iobuf_close(inp);
     release_sk_list( sk_list );
     md_close( mfx.md );
-    m_free(cfx.dek);
-    m_free(s2k);
+    xfree(cfx.dek);
+    xfree(s2k);
     return rc;
 }
 
@@ -1386,7 +1386,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
         hash_uid (md, sigversion, uid);
       }
     /* and make the signature packet */
-    sig = m_alloc_clear( sizeof *sig );
+    sig = xmalloc_clear( sizeof *sig );
     sig->version = sigversion;
     sig->flags.exportable=1;
     sig->flags.revocable=1;

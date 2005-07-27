@@ -62,7 +62,7 @@ get_root_key(const char *root)
  * error.  Caller must release the return value.   A NULL for root
  * is an alias for HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE in turn.
  * NOTE: The value is allocated with a plain malloc() - use free() and not
- * the usual m_free()!!!
+ * the usual xfree()!!!
  */
 char *
 read_w32_registry_string( const char *root, const char *dir, const char *name )

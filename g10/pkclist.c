@@ -217,7 +217,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
                        keystr(keyid), datestr_from_pk( pk ) );
 	    p=get_user_id_native(keyid);
 	    tty_printf(_("      \"%s\"\n"),p);
-	    m_free(p);
+	    xfree(p);
 
             keyblock = get_pubkeyblock (keyid);
             if (!keyblock)
@@ -349,9 +349,9 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
         quit = 1;
         break ; /* back to the menu */
       }
-    m_free(p); p = NULL;
+    xfree(p); p = NULL;
   }
-  m_free(p);
+  xfree(p);
   return show? -2: quit? -1 : changed;
 }
 
@@ -484,7 +484,7 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 int
 check_signatures_trust( PKT_signature *sig )
 {
-  PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+  PKT_public_key *pk = xmalloc_clear( sizeof *pk );
   unsigned int trustlevel;
   int rc=0;
 
@@ -599,7 +599,7 @@ release_pk_list( PK_LIST pk_list )
     for( ; pk_list; pk_list = pk_rover ) {
 	pk_rover = pk_list->next;
 	free_public_key( pk_list->pk );
-	m_free( pk_list );
+	xfree( pk_list );
     }
 }
 
@@ -628,10 +628,10 @@ default_recipient(void)
     int i;
 
     if( opt.def_recipient )
-	return m_strdup( opt.def_recipient );
+	return xstrdup( opt.def_recipient );
     if( !opt.def_recipient_self )
 	return NULL;
-    sk = m_alloc_clear( sizeof *sk );
+    sk = xmalloc_clear( sizeof *sk );
     i = get_seckey_byname( sk, NULL, 0 );
     if( i ) {
 	free_secret_key( sk );
@@ -640,7 +640,7 @@ default_recipient(void)
     n = MAX_FINGERPRINT_LEN;
     fingerprint_from_sk( sk, fpr, &n );
     free_secret_key( sk );
-    p = m_alloc( 2*n+3 );
+    p = xmalloc( 2*n+3 );
     *p++ = '0';
     *p++ = 'x';
     for(i=0; i < n; i++ )
@@ -727,7 +727,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	      }
 	  }
 	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = xmalloc_clear( sizeof *pk );
 	    pk->req_usage = use;
 	    /* We can encrypt-to a disabled key */
 	    if( (rc = get_pubkey_byname( pk, rov->d, NULL, NULL, 1 )) ) {
@@ -747,7 +747,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		}
 		else {
 		    PK_LIST r;
-		    r = m_alloc( sizeof *r );
+		    r = xmalloc( sizeof *r );
 		    r->pk = pk; pk = NULL;
 		    r->next = pk_list;
 		    r->flags = (rov->flags&2)?1:0;
@@ -787,7 +787,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		"You did not specify a user ID. (you may use \"-r\")\n"));
 	for(;;) {
 	    rc = 0;
-	    m_free(answer);
+	    xfree(answer);
 	    if( have_def_rec ) {
 		answer = def_rec;
 		def_rec = NULL;
@@ -820,7 +820,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 			size_t n;
 			char *p = get_user_id( keyid, &n );
 			tty_print_utf8_string( p, n );
-			m_free(p);
+			xfree(p);
 		      }
 		    tty_printf("\"\n");
 		  }
@@ -831,14 +831,14 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		cpr_kill_prompt();
 	      }
 	    if( !answer || !*answer ) {
-	        m_free(answer);
+	        xfree(answer);
 		break;
 	    }
 	    if(expand_id(answer,&backlog,0))
 	      continue;
 	    if( pk )
 		free_public_key( pk );
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = xmalloc_clear( sizeof *pk );
 	    pk->req_usage = use;
 	    rc = get_pubkey_byname( pk, answer, NULL, NULL, 0 );
 	    if( rc )
@@ -851,7 +851,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 				   "already set as default recipient\n") );
 		    }
 		    else {
-			PK_LIST r = m_alloc( sizeof *r );
+			PK_LIST r = xmalloc( sizeof *r );
 			r->pk = pk; pk = NULL;
 			r->next = pk_list;
 			r->flags = 0; /* no throwing default ids */
@@ -876,7 +876,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 			}
 			else {
 			    PK_LIST r;
-			    r = m_alloc( sizeof *r );
+			    r = xmalloc( sizeof *r );
 			    r->pk = pk; pk = NULL;
 			    r->next = pk_list;
 			    r->flags = 0; /* no throwing interactive ids */
@@ -887,7 +887,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		    }
 		}
 	    }
-	    m_free(def_rec); def_rec = NULL;
+	    xfree(def_rec); def_rec = NULL;
 	    have_def_rec = 0;
 	}
 	if( pk ) {
@@ -896,7 +896,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	}
     }
     else if( !any_recipients && (def_rec = default_recipient()) ) {
-	pk = m_alloc_clear( sizeof *pk );
+	pk = xmalloc_clear( sizeof *pk );
 	pk->req_usage = use;
 	/* The default recipient may be disabled */
 	rc = get_pubkey_byname( pk, def_rec, NULL, NULL, 1 );
@@ -911,7 +911,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	  if (key_present_in_pk_list(pk_list, pk) == 0)
 	    log_info(_("skipped: public key already set as default recipient\n"));
 	  else {
-	    PK_LIST r = m_alloc( sizeof *r );
+	    PK_LIST r = xmalloc( sizeof *r );
 	    r->pk = pk; pk = NULL;
 	    r->next = pk_list;
 	    r->flags = 0; /* no throwing default ids */
@@ -922,7 +922,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    free_public_key( pk );
 	    pk = NULL;
 	}
-	m_free(def_rec); def_rec = NULL;
+	xfree(def_rec); def_rec = NULL;
     }
     else {
 	any_recipients = 0;
@@ -930,7 +930,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    if( (remusr->flags & 1) )
 		continue; /* encrypt-to keys are already handled */
 
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = xmalloc_clear( sizeof *pk );
 	    pk->req_usage = use;
 	    if( (rc = get_pubkey_byname( pk, remusr->d, NULL, NULL, 0 )) ) {
 		free_public_key( pk ); pk = NULL;
@@ -971,7 +971,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		    }
 		    else {
 			PK_LIST r;
-			r = m_alloc( sizeof *r );
+			r = xmalloc( sizeof *r );
 			r->pk = pk; pk = NULL;
 			r->next = pk_list;
 			r->flags = (remusr->flags&2)?1:0;

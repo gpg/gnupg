@@ -284,7 +284,7 @@ fd_cache_close (const char *fname, FILEP_OR_FD fp)
     /* add a new one */
     if( DBG_IOBUF )
         log_debug ("fd_cache_close (%s) new slot created\n", fname);
-    cc = m_alloc_clear (sizeof *cc + strlen (fname));
+    cc = xmalloc_clear (sizeof *cc + strlen (fname));
     strcpy (cc->fname, fname);
     cc->fp = fp;
     cc->next = close_cache;
@@ -409,7 +409,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
                 fclose(f);
 	}
 	f = NULL;
-	m_free(a); /* we can free our context now */
+	xfree(a); /* we can free our context now */
     }
 #else /* !stdio implementation */
 
@@ -531,7 +531,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	}
 	f = INVALID_FP;
 #endif
-	m_free (a); /* we can free our context now */
+	xfree (a); /* we can free our context now */
     }
 #endif /* !stdio implementation */
     return rc;
@@ -605,7 +605,7 @@ sock_filter (void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     else if ( control == IOBUFCTRL_FREE ) {
         if (!a->keep_open)
             closesocket (a->sock);
-	m_free (a); /* we can free our context now */
+	xfree (a); /* we can free our context now */
     }
     return rc;
 }
@@ -731,7 +731,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    if( nbytes < OP_MIN_PARTIAL_CHUNK ) {
 		/* not enough to write a partial block out; so we store it*/
 		if( !a->buffer )
-		    a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
+		    a->buffer = xmalloc( OP_MIN_PARTIAL_CHUNK );
 		memcpy( a->buffer + a->buflen, buf, size );
 		a->buflen += size;
 	    }
@@ -769,7 +769,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    assert( !a->buflen );
 		    assert( nbytes < OP_MIN_PARTIAL_CHUNK );
 		    if( !a->buffer )
-			a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
+			a->buffer = xmalloc( OP_MIN_PARTIAL_CHUNK );
 		    memcpy( a->buffer, p, nbytes );
 		    a->buflen = nbytes;
 		}
@@ -830,7 +830,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    log_error("block_filter: write error: %s\n",strerror(errno));
 		    rc = G10ERR_WRITE_FILE;
 		}
-		m_free( a->buffer ); a->buffer = NULL; a->buflen = 0;
+		xfree( a->buffer ); a->buffer = NULL; a->buflen = 0;
 	    }
 	    else
 	      BUG();
@@ -840,7 +840,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	}
 	if( DBG_IOBUF )
 	    log_debug("free block_filter %p\n", a );
-	m_free(a); /* we can free our context now */
+	xfree(a); /* we can free our context now */
     }
 
     return rc;
@@ -884,9 +884,9 @@ iobuf_alloc(int use, size_t bufsize)
     IOBUF a;
     static int number=0;
 
-    a = m_alloc_clear(sizeof *a);
+    a = xmalloc_clear(sizeof *a);
     a->use = use;
-    a->d.buf = m_alloc( bufsize );
+    a->d.buf = xmalloc( bufsize );
     a->d.size = bufsize;
     a->no = ++number;
     a->subno = 0;
@@ -904,7 +904,7 @@ iobuf_close ( IOBUF a )
 
     if( a && a->directfp ) {
 	fclose( a->directfp );
-	m_free( a->real_fname );
+	xfree( a->real_fname );
 	if( DBG_IOBUF )
 	    log_debug("iobuf_close -> %p\n", a->directfp );
 	return 0;
@@ -920,12 +920,12 @@ iobuf_close ( IOBUF a )
 	if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)) )
 	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
-	m_free(a->real_fname);
+	xfree(a->real_fname);
         if (a->d.buf) {
             memset (a->d.buf, 0, a->d.size); /* erase the buffer */
-            m_free(a->d.buf);
+            xfree(a->d.buf);
         }
-	m_free(a);
+	xfree(a);
     }
     return rc;
 }
@@ -944,7 +944,7 @@ iobuf_cancel( IOBUF a )
 	s = iobuf_get_real_fname(a);
 	if( s && *s ) {
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-	    remove_name = m_strdup ( s );
+	    remove_name = xstrdup ( s );
 #else
 	    remove(s);
 #endif
@@ -965,7 +965,7 @@ iobuf_cancel( IOBUF a )
 	/* Argg, MSDOS does not allow to remove open files.  So
 	 * we have to do it here */
 	remove ( remove_name );
-	m_free ( remove_name );
+	xfree ( remove_name );
     }
 #endif
     return rc;
@@ -1063,12 +1063,12 @@ iobuf_open( const char *fname )
     else if( (fp = my_fopen_ro(fname, "rb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
-    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx = xmalloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
     if( !print_only )
-	a->real_fname = m_strdup( fname );
+	a->real_fname = xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -1099,7 +1099,7 @@ iobuf_fdopen( int fd, const char *mode )
     fp = (FILEP_OR_FD)fd;
 #endif
     a = iobuf_alloc( strchr( mode, 'w')? 2:1, 8192 );
-    fcx = m_alloc( sizeof *fcx + 20 );
+    fcx = xmalloc( sizeof *fcx + 20 );
     fcx->fp = fp;
     fcx->print_only_name = 1;
     sprintf(fcx->fname, "[fd %d]", fd );
@@ -1123,7 +1123,7 @@ iobuf_sockopen ( int fd, const char *mode )
     size_t len;
 
     a = iobuf_alloc( strchr( mode, 'w')? 2:1, 8192 );
-    scx = m_alloc( sizeof *scx + 25 );
+    scx = xmalloc( sizeof *scx + 25 );
     scx->sock = fd;
     scx->print_only_name = 1;
     sprintf(scx->fname, "[sock %d]", fd );
@@ -1166,12 +1166,12 @@ iobuf_create( const char *fname )
     else if( (fp = my_fopen(fname, "wb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx = xmalloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
     if( !print_only )
-	a->real_fname = m_strdup( fname );
+	a->real_fname = xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -1201,10 +1201,10 @@ iobuf_append( const char *fname )
     else if( !(fp = my_fopen(fname, "ab")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx = xmalloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     strcpy(fcx->fname, fname );
-    a->real_fname = m_strdup( fname );
+    a->real_fname = xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -1229,10 +1229,10 @@ iobuf_openrw( const char *fname )
     else if( (fp = my_fopen(fname, "r+b")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx = xmalloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     strcpy(fcx->fname, fname );
-    a->real_fname = m_strdup( fname );
+    a->real_fname = xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -1330,12 +1330,12 @@ iobuf_push_filter2( IOBUF a,
      * The contents of the buffers are transferred to the
      * new stream.
      */
-    b = m_alloc(sizeof *b);
+    b = xmalloc(sizeof *b);
     memcpy(b, a, sizeof *b );
     /* fixme: it is stupid to keep a copy of the name at every level
      * but we need the name somewhere because the name known by file_filter
      * may have been released when we need the name of the file */
-    b->real_fname = a->real_fname? m_strdup(a->real_fname):NULL;
+    b->real_fname = a->real_fname? xstrdup(a->real_fname):NULL;
     /* remove the filter stuff from the new stream */
     a->filter = NULL;
     a->filter_ov = NULL;
@@ -1345,12 +1345,12 @@ iobuf_push_filter2( IOBUF a,
 	a->use = 2;  /* make a write stream from a temp stream */
 
     if( a->use == 2 ) { /* allocate a fresh buffer for the original stream */
-	b->d.buf = m_alloc( a->d.size );
+	b->d.buf = xmalloc( a->d.size );
 	b->d.len = 0;
 	b->d.start = 0;
     }
     else { /* allocate a fresh buffer for the new stream */
-	a->d.buf = m_alloc( a->d.size );
+	a->d.buf = xmalloc( a->d.size );
 	a->d.len = 0;
 	a->d.start = 0;
     }
@@ -1401,10 +1401,10 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
     if( !a->filter ) { /* this is simple */
 	b = a->chain;
 	assert(b);
-	m_free(a->d.buf);
-	m_free(a->real_fname);
+	xfree(a->d.buf);
+	xfree(a->real_fname);
 	memcpy(a,b, sizeof *a);
-	m_free(b);
+	xfree(b);
 	return 0;
     }
     for(b=a ; b; b = b->chain )
@@ -1425,7 +1425,7 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	return rc;
     }
     if( b->filter_ov && b->filter_ov_owner ) {
-	m_free( b->filter_ov );
+	xfree( b->filter_ov );
 	b->filter_ov = NULL;
     }
 
@@ -1438,10 +1438,10 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	 * a flush has been done on the to be removed entry
 	 */
 	b = a->chain;
-	m_free(a->d.buf);
-	m_free(a->real_fname);
+	xfree(a->d.buf);
+	xfree(a->real_fname);
 	memcpy(a,b, sizeof *a);
-	m_free(b);
+	xfree(b);
 	if( DBG_IOBUF )
 	   log_debug("iobuf-%d.%d: popped filter\n", a->no, a->subno );
     }
@@ -1476,10 +1476,10 @@ underflow(IOBUF a)
 	    if( DBG_IOBUF )
 		log_debug("iobuf-%d.%d: pop `%s' in underflow\n",
 					a->no, a->subno, a->desc );
-	    m_free(a->d.buf);
-	    m_free(a->real_fname);
+	    xfree(a->d.buf);
+	    xfree(a->real_fname);
 	    memcpy(a, b, sizeof *a);
-	    m_free(b);
+	    xfree(b);
 	    print_chain(a);
 	}
 	else
@@ -1530,7 +1530,7 @@ underflow(IOBUF a)
 			       NULL, &dummy_len)) )
 		log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
 	    if( a->filter_ov && a->filter_ov_owner ) {
-		m_free( a->filter_ov );
+		xfree( a->filter_ov );
 		a->filter_ov = NULL;
 	    }
 	    a->filter = NULL;
@@ -1542,10 +1542,10 @@ underflow(IOBUF a)
 		if( DBG_IOBUF )
 		    log_debug("iobuf-%d.%d: pop `%s' in underflow (!len)\n",
 					       a->no, a->subno, a->desc );
-		m_free(a->d.buf);
-		m_free(a->real_fname);
+		xfree(a->d.buf);
+		xfree(a->real_fname);
 		memcpy(a,b, sizeof *a);
-		m_free(b);
+		xfree(b);
 		print_chain(a);
 	    }
 	}
@@ -1586,9 +1586,9 @@ iobuf_flush(IOBUF a)
 	if( DBG_IOBUF )
 	  log_debug("increasing temp iobuf from %lu to %lu\n",
 		    (ulong)a->d.size, (ulong)newsize );
-	newbuf = m_alloc( newsize );
+	newbuf = xmalloc( newsize );
 	memcpy( newbuf, a->d.buf, a->d.len );
-	m_free(a->d.buf);
+	xfree(a->d.buf);
 	a->d.buf = newbuf;
 	a->d.size = newsize;
 	return 0;
@@ -1624,7 +1624,7 @@ iobuf_readbyte(IOBUF a)
     if( a->unget.buf ) {
 	if( a->unget.start < a->unget.len )
 	    return a->unget.buf[a->unget.start++];
-	m_free(a->unget.buf);
+	xfree(a->unget.buf);
 	a->unget.buf = NULL;
 	a->nofast &= ~2;
     }
@@ -2042,7 +2042,7 @@ iobuf_get_fname( IOBUF a )
 void
 iobuf_set_partial_block_mode( IOBUF a, size_t len )
 {
-    block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
+    block_filter_ctx_t *ctx = xmalloc_clear( sizeof *ctx );
 
     assert( a->use == 1 || a->use == 2 );
     ctx->use = a->use;
@@ -2084,7 +2084,7 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 
     if( !buffer ) { /* must allocate a new buffer */
 	length = 256;
-	buffer = m_alloc( length );
+	buffer = xmalloc( length );
 	*addr_of_buffer = buffer;
 	*length_of_buffer = length;
     }
@@ -2104,7 +2104,7 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 	    }
 	    length += 3; /* correct for the reserved byte */
 	    length += length < 1024? 256 : 1024;
-	    buffer = m_realloc( buffer, length );
+	    buffer = xrealloc( buffer, length );
 	    *addr_of_buffer = buffer;
 	    *length_of_buffer = length;
 	    length -= 3; /* and reserve again */

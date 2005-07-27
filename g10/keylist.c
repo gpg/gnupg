@@ -134,7 +134,7 @@ print_seckey_info (PKT_secret_key *sk)
 	      pubkey_letter (sk->pubkey_algo),
 	      keystr(keyid), datestr_from_sk (sk), p);
     
-  m_free (p);
+  xfree (p);
 }
 
 /* Print information about the public key.  With FP passed as NULL,
@@ -165,7 +165,7 @@ print_pubkey_info (FILE *fp, PKT_public_key *pk)
                 nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
                 keystr(keyid), datestr_from_pk (pk), p);
 
-  m_free (p);
+  xfree (p);
 }
 
 
@@ -986,7 +986,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		size_t n;
 		char *p = get_user_id( sig->keyid, &n );
                 print_utf8_string( stdout, p, n );
-		m_free(p);
+		xfree(p);
 	    }
 	    putchar('\n');
 
@@ -1293,7 +1293,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 
 		fflush(stdout);
 		if(opt.no_sig_cache)
-		  signer_pk=m_alloc_clear(sizeof(PKT_public_key));
+		  signer_pk=xmalloc_clear(sizeof(PKT_public_key));
 
 		rc = check_key_signature2( keyblock, node, NULL, signer_pk,
 					   NULL, NULL, NULL );
@@ -1345,7 +1345,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		size_t n;
 		char *p = get_user_id( sig->keyid, &n );
                 print_string( stdout, p, n, ':' );
-		m_free(p);
+		xfree(p);
 	    }
             printf(":%02x%c:", sig->sig_class,sig->flags.exportable?'x':'l');
 
@@ -1469,14 +1469,14 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
       {
 	if(sk)
 	  {
-	    PKT_secret_key *primary_sk=m_alloc_clear(sizeof(*primary_sk));
+	    PKT_secret_key *primary_sk=xmalloc_clear(sizeof(*primary_sk));
 	    get_seckey(primary_sk,sk->main_keyid);
 	    print_fingerprint(NULL,primary_sk,mode|0x80);
 	    free_secret_key(primary_sk);
 	  }
 	else
 	  {
-	    PKT_public_key *primary_pk=m_alloc_clear(sizeof(*primary_pk));
+	    PKT_public_key *primary_pk=xmalloc_clear(sizeof(*primary_pk));
 	    get_pubkey(primary_pk,pk->main_keyid);
 	    print_fingerprint(primary_pk,NULL,mode|0x80);
 	    free_public_key(primary_pk);

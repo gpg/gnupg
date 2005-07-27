@@ -174,11 +174,11 @@ print_status_key_not_created (const char *handle)
 static void
 write_uid( KBNODE root, const char *s )
 {
-    PACKET *pkt = m_alloc_clear(sizeof *pkt );
+    PACKET *pkt = xmalloc_clear(sizeof *pkt );
     size_t n = strlen(s);
 
     pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = m_alloc_clear( sizeof *pkt->pkt.user_id + n - 1 );
+    pkt->pkt.user_id = xmalloc_clear( sizeof *pkt->pkt.user_id + n - 1 );
     pkt->pkt.user_id->len = n;
     pkt->pkt.user_id->ref = 1;
     strcpy(pkt->pkt.user_id->name, s);
@@ -362,7 +362,7 @@ keygen_set_std_prefs (const char *string,int personal)
       {
 	char *tok,*prefstring;
 
-	prefstring=m_strdup(string); /* need a writable string! */
+	prefstring=xstrdup(string); /* need a writable string! */
 
 	while((tok=strsep(&prefstring," ,")))
 	  {
@@ -402,7 +402,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	      }
 	  }
 
-	m_free(prefstring);
+	xfree(prefstring);
       }
 
     if(!rc)
@@ -411,7 +411,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	  {
 	    if(personal==PREFTYPE_SYM)
 	      {
-		m_free(opt.personal_cipher_prefs);
+		xfree(opt.personal_cipher_prefs);
 
 		if(nsym==0)
 		  opt.personal_cipher_prefs=NULL;
@@ -420,7 +420,7 @@ keygen_set_std_prefs (const char *string,int personal)
 		    int i;
 
 		    opt.personal_cipher_prefs=
-		      m_alloc(sizeof(prefitem_t *)*(nsym+1));
+		      xmalloc(sizeof(prefitem_t *)*(nsym+1));
 
 		    for (i=0; i<nsym; i++)
 		      {
@@ -434,7 +434,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	      }
 	    else if(personal==PREFTYPE_HASH)
 	      {
-		m_free(opt.personal_digest_prefs);
+		xfree(opt.personal_digest_prefs);
 
 		if(nhash==0)
 		  opt.personal_digest_prefs=NULL;
@@ -443,7 +443,7 @@ keygen_set_std_prefs (const char *string,int personal)
 		    int i;
 
 		    opt.personal_digest_prefs=
-		      m_alloc(sizeof(prefitem_t *)*(nhash+1));
+		      xmalloc(sizeof(prefitem_t *)*(nhash+1));
 
 		    for (i=0; i<nhash; i++)
 		      {
@@ -457,7 +457,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	      }
 	    else if(personal==PREFTYPE_ZIP)
 	      {
-		m_free(opt.personal_compress_prefs);
+		xfree(opt.personal_compress_prefs);
 
 		if(nzip==0)
 		  opt.personal_compress_prefs=NULL;
@@ -466,7 +466,7 @@ keygen_set_std_prefs (const char *string,int personal)
 		    int i;
 
 		    opt.personal_compress_prefs=
-		      m_alloc(sizeof(prefitem_t *)*(nzip+1));
+		      xmalloc(sizeof(prefitem_t *)*(nzip+1));
 
 		    for (i=0; i<nzip; i++)
 		      {
@@ -498,14 +498,14 @@ keygen_set_std_prefs (const char *string,int personal)
 PKT_user_id *keygen_get_std_prefs(void)
 {
   int i,j=0;
-  PKT_user_id *uid=m_alloc_clear(sizeof(PKT_user_id));
+  PKT_user_id *uid=xmalloc_clear(sizeof(PKT_user_id));
 
   if(!prefs_initialized)
     keygen_set_std_prefs(NULL,0);
 
   uid->ref=1;
 
-  uid->prefs=m_alloc((sizeof(prefitem_t *)*
+  uid->prefs=xmalloc((sizeof(prefitem_t *)*
 		      (nsym_prefs+nhash_prefs+nzip_prefs+1)));
 
   for(i=0;i<nsym_prefs;i++,j++)
@@ -551,10 +551,10 @@ add_feature_mdc (PKT_signature *sig,int enabled)
 
     if (!s || !n) { /* create a new one */
         n = 1;
-        buf = m_alloc_clear (n);
+        buf = xmalloc_clear (n);
     }
     else {
-        buf = m_alloc (n);
+        buf = xmalloc (n);
         memcpy (buf, s, n);
     }
 
@@ -573,7 +573,7 @@ add_feature_mdc (PKT_signature *sig,int enabled)
     else
       build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n);
 
-    m_free (buf);
+    xfree (buf);
 }
 
 static void
@@ -595,10 +595,10 @@ add_keyserver_modify (PKT_signature *sig,int enabled)
 
   if (!s || !n) { /* create a new one */
     n = 1;
-    buf = m_alloc_clear (n);
+    buf = xmalloc_clear (n);
   }
   else {
-    buf = m_alloc (n);
+    buf = xmalloc (n);
     memcpy (buf, s, n);
   }
 
@@ -617,7 +617,7 @@ add_keyserver_modify (PKT_signature *sig,int enabled)
   else
     build_sig_subpkt (sig, SIGSUBPKT_KS_FLAGS, buf, n);
 
-  m_free (buf);
+  xfree (buf);
 }
 
 int
@@ -839,7 +839,7 @@ write_direct_sig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
 	return rc;
     }
 
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xmalloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = sig;
     add_kbnode( root, new_kbnode( pkt ) );
@@ -883,12 +883,12 @@ write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
 	return rc;
     }
 
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xmalloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = sig;
     add_kbnode( sec_root, new_kbnode( pkt ) );
 
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xmalloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = copy_signature(NULL,sig);
     add_kbnode( pub_root, new_kbnode( pkt ) );
@@ -947,7 +947,7 @@ write_keybinding( KBNODE root, KBNODE pub_root,
 	  return rc;
       }
 
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xmalloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = sig;
     add_kbnode( root, new_kbnode( pkt ) );
@@ -984,8 +984,8 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	return rc;
     }
 
-    sk = m_alloc_clear( sizeof *sk );
-    pk = m_alloc_clear( sizeof *pk );
+    sk = xmalloc_clear( sizeof *sk );
+    pk = xmalloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
     if( expireval ) {
@@ -1018,14 +1018,14 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	}
     }
 
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
     /* don't know whether it makes sense to have the factors, so for now
      * we store them in the secret keyring (but they are not secret) */
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
@@ -1064,8 +1064,8 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	return rc;
     }
 
-    sk = m_alloc_clear( sizeof *sk );
-    pk = m_alloc_clear( sizeof *pk );
+    sk = xmalloc_clear( sizeof *sk );
+    pk = xmalloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
     if( expireval ) {
@@ -1100,7 +1100,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	}
     }
 
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
@@ -1111,7 +1111,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
      * We store only f1 to f_n-1;  fn can be calculated because p and q
      * are known.
      */
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
@@ -1152,8 +1152,8 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	return rc;
     }
 
-    sk = m_alloc_clear( sizeof *sk );
-    pk = m_alloc_clear( sizeof *pk );
+    sk = xmalloc_clear( sizeof *sk );
+    pk = xmalloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
     if( expireval ) {
@@ -1190,12 +1190,12 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	}
     }
 
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
@@ -1286,7 +1286,7 @@ ask_key_flags(int algo)
       tty_printf(_("   (%c) Finished\n"),togglers[6]);
       tty_printf("\n");
 
-      m_free(answer);
+      xfree(answer);
       answer = cpr_get("keygen.flags",_("Your selection? "));
       cpr_kill_prompt();
 
@@ -1320,7 +1320,7 @@ ask_key_flags(int algo)
 	}
     }
 
-  m_free(answer);
+  xfree(answer);
 
   return current;
 }
@@ -1355,7 +1355,7 @@ ask_algo (int addmode, unsigned int *r_usage)
 	answer = cpr_get("keygen.algo",_("Your selection? "));
 	cpr_kill_prompt();
 	algo = *answer? atoi(answer): 1;
-	m_free(answer);
+	xfree(answer);
 	if( algo == 1 && !addmode ) {
 	    algo = 0;	/* create both keys */
 	    break;
@@ -1437,7 +1437,7 @@ ask_keysize( int algo )
 
 #define PROMPTSTRING _("What keysize do you want? (%u) ")
 
-      prompt=m_alloc(strlen(PROMPTSTRING)+20);
+      prompt=xmalloc(strlen(PROMPTSTRING)+20);
       sprintf(prompt,PROMPTSTRING,def);
 
 #undef PROMPTSTRING
@@ -1445,8 +1445,8 @@ ask_keysize( int algo )
       answer = cpr_get("keygen.size",prompt);
       cpr_kill_prompt();
       nbits = *answer? atoi(answer): def;
-      m_free(prompt);
-      m_free(answer);
+      xfree(prompt);
+      xfree(answer);
       
       if(nbits<min || nbits>max)
 	tty_printf(_("%s keysizes must be in the range %u-%u\n"),
@@ -1544,7 +1544,7 @@ ask_expire_interval(int object,const char *def_expire)
       {
 	u32 curtime=make_timestamp();
 
-	m_free(answer);
+	xfree(answer);
 	if(object==0)
 	  answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
 	else
@@ -1554,15 +1554,15 @@ ask_expire_interval(int object,const char *def_expire)
 #define PROMPTSTRING _("Signature is valid for? (%s) ")
 	    /* This will actually end up larger than necessary because
 	       of the 2 bytes for '%s' */
-	    prompt=m_alloc(strlen(PROMPTSTRING)+strlen(def_expire)+1);
+	    prompt=xmalloc(strlen(PROMPTSTRING)+strlen(def_expire)+1);
 	    sprintf(prompt,PROMPTSTRING,def_expire);
 #undef PROMPTSTRING
 
 	    answer = cpr_get("siggen.valid",prompt);
-	    m_free(prompt);
+	    xfree(prompt);
 
 	    if(*answer=='\0')
-	      answer=m_strdup(def_expire);
+	      answer=xstrdup(def_expire);
 	  }
 	cpr_kill_prompt();
 	trim_spaces(answer);
@@ -1598,7 +1598,7 @@ ask_expire_interval(int object,const char *def_expire)
 	  break;
       }
 
-    m_free(answer);
+    xfree(answer);
     return interval;
 }
 
@@ -1650,7 +1650,7 @@ ask_user_id( int mode )
 
 	if( !aname ) {
 	    for(;;) {
-		m_free(aname);
+		xfree(aname);
 		aname = cpr_get("keygen.name",_("Real name: "));
 		trim_spaces(aname);
 		cpr_kill_prompt();
@@ -1670,7 +1670,7 @@ ask_user_id( int mode )
 	}
 	if( !amail ) {
 	    for(;;) {
-		m_free(amail);
+		xfree(amail);
 		amail = cpr_get("keygen.email",_("Email address: "));
 		trim_spaces(amail);
 		cpr_kill_prompt();
@@ -1689,7 +1689,7 @@ ask_user_id( int mode )
 	}
 	if( !acomment ) {
 	    for(;;) {
-		m_free(acomment);
+		xfree(acomment);
 		acomment = cpr_get("keygen.comment",_("Comment: "));
 		trim_spaces(acomment);
 		cpr_kill_prompt();
@@ -1703,8 +1703,8 @@ ask_user_id( int mode )
 	}
 
 
-	m_free(uid);
-	uid = p = m_alloc(strlen(aname)+strlen(amail)+strlen(acomment)+12+10);
+	xfree(uid);
+	uid = p = xmalloc(strlen(aname)+strlen(amail)+strlen(acomment)+12+10);
 	p = stpcpy(p, aname );
 	if( *acomment )
 	    p = stpcpy(stpcpy(stpcpy(p," ("), acomment),")");
@@ -1751,7 +1751,7 @@ ask_user_id( int mode )
 	    if( strlen(ansstr) != 10 )
 		BUG();
 	    if( cpr_enabled() ) {
-		answer = m_strdup(ansstr+6);
+		answer = xstrdup(ansstr+6);
 		answer[1] = 0;
 	    }
 	    else {
@@ -1763,15 +1763,15 @@ ask_user_id( int mode )
 	    if( strlen(answer) > 1 )
 		;
 	    else if( *answer == ansstr[0] || *answer == ansstr[1] ) {
-		m_free(aname); aname = NULL;
+		xfree(aname); aname = NULL;
 		break;
 	    }
 	    else if( *answer == ansstr[2] || *answer == ansstr[3] ) {
-		m_free(acomment); acomment = NULL;
+		xfree(acomment); acomment = NULL;
 		break;
 	    }
 	    else if( *answer == ansstr[4] || *answer == ansstr[5] ) {
-		m_free(amail); amail = NULL;
+		xfree(amail); amail = NULL;
 		break;
 	    }
 	    else if( *answer == ansstr[6] || *answer == ansstr[7] ) {
@@ -1779,29 +1779,29 @@ ask_user_id( int mode )
 		    tty_printf(_("Please correct the error first\n"));
 		}
 		else {
-		    m_free(aname); aname = NULL;
-		    m_free(acomment); acomment = NULL;
-		    m_free(amail); amail = NULL;
+		    xfree(aname); aname = NULL;
+		    xfree(acomment); acomment = NULL;
+		    xfree(amail); amail = NULL;
 		    break;
 		}
 	    }
 	    else if( *answer == ansstr[8] || *answer == ansstr[9] ) {
-		m_free(aname); aname = NULL;
-		m_free(acomment); acomment = NULL;
-		m_free(amail); amail = NULL;
-		m_free(uid); uid = NULL;
+		xfree(aname); aname = NULL;
+		xfree(acomment); acomment = NULL;
+		xfree(amail); amail = NULL;
+		xfree(uid); uid = NULL;
 		break;
 	    }
-	    m_free(answer);
+	    xfree(answer);
 	}
-	m_free(answer);
+	xfree(answer);
 	if( !amail && !acomment && !amail )
 	    break;
-	m_free(uid); uid = NULL;
+	xfree(uid); uid = NULL;
     }
     if( uid ) {
 	char *p = native_to_utf8( uid );
-	m_free( uid );
+	xfree( uid );
 	uid = p;
     }
     return uid;
@@ -1818,7 +1818,7 @@ do_ask_passphrase( STRING2KEY **ret_s2k )
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
-    s2k = m_alloc_secure( sizeof *s2k );
+    s2k = xmalloc_secure( sizeof *s2k );
     for(;;) {
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = S2K_DIGEST_ALGO;
@@ -1829,8 +1829,8 @@ do_ask_passphrase( STRING2KEY **ret_s2k )
 	    tty_printf(_("%s.\n"), _(errtext));
 	}
 	else if( !dek->keylen ) {
-	    m_free(dek); dek = NULL;
-	    m_free(s2k); s2k = NULL;
+	    xfree(dek); dek = NULL;
+	    xfree(s2k); s2k = NULL;
 	    tty_printf(_(
 	    "You don't want a passphrase - this is probably a *bad* idea!\n"
 	    "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -1889,7 +1889,7 @@ generate_user_id()
     if( !p )
 	return NULL;
     n = strlen(p);
-    uid = m_alloc_clear( sizeof *uid + n - 1 );
+    uid = xmalloc_clear( sizeof *uid + n - 1 );
     uid->len = n;
     strcpy(uid->name, p);
     uid->ref = 1;
@@ -1905,11 +1905,11 @@ release_parameter_list( struct para_data_s *r )
     for( ; r ; r = r2 ) {
 	r2 = r->next;
 	if( r->key == pPASSPHRASE_DEK )
-	    m_free( r->u.dek );
+	    xfree( r->u.dek );
 	else if( r->key == pPASSPHRASE_S2K )
-	    m_free( r->u.s2k );
+	    xfree( r->u.s2k );
 
-	m_free(r);
+	xfree(r);
     }
 }
 
@@ -2115,7 +2115,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	s3 = get_parameter_value( para, pNAMEEMAIL );
 	if( s1 || s2 || s3 ) {
 	    n = (s1?strlen(s1):0) + (s2?strlen(s2):0) + (s3?strlen(s3):0);
-	    r = m_alloc_clear( sizeof *r + n + 20 );
+	    r = xmalloc_clear( sizeof *r + n + 20 );
 	    r->key = pUSERID;
 	    p = r->u.value;
 	    if( s1 )
@@ -2145,7 +2145,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	STRING2KEY *s2k;
 	DEK *dek;
 
-	s2k = m_alloc_secure( sizeof *s2k );
+	s2k = xmalloc_secure( sizeof *s2k );
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = S2K_DIGEST_ALGO;
 	set_next_passphrase( r->u.value );
@@ -2155,12 +2155,12 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	assert( dek );
 	memset( r->u.value, 0, strlen(r->u.value) );
 
-	r = m_alloc_clear( sizeof *r );
+	r = xmalloc_clear( sizeof *r );
 	r->key = pPASSPHRASE_S2K;
 	r->u.s2k = s2k;
 	r->next = para;
 	para = r;
-	r = m_alloc_clear( sizeof *r );
+	r = xmalloc_clear( sizeof *r );
 	r->key = pPASSPHRASE_DEK;
 	r->u.dek = dek;
 	r->next = para;
@@ -2182,7 +2182,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	r->u.expire = seconds;
 	r->key = pKEYEXPIRE;  /* change hat entry */
 	/* also set it for the subkey */
-	r = m_alloc_clear( sizeof *r + 20 );
+	r = xmalloc_clear( sizeof *r + 20 );
 	r->key = pSUBKEYEXPIRE;
 	r->u.expire = seconds;
 	r->next = para;
@@ -2297,8 +2297,8 @@ read_parameter_file( const char *fname )
 		if( outctrl.pub.fname && !strcmp( outctrl.pub.fname, value ) )
 		    ; /* still the same file - ignore it */
 		else {
-		    m_free( outctrl.pub.newfname );
-		    outctrl.pub.newfname = m_strdup( value );
+		    xfree( outctrl.pub.newfname );
+		    outctrl.pub.newfname = xstrdup( value );
 		    outctrl.use_files = 1;
 		}
 	    }
@@ -2306,8 +2306,8 @@ read_parameter_file( const char *fname )
 		if( outctrl.sec.fname && !strcmp( outctrl.sec.fname, value ) )
 		    ; /* still the same file - ignore it */
 		else {
-		   m_free( outctrl.sec.newfname );
-		   outctrl.sec.newfname = m_strdup( value );
+		   xfree( outctrl.sec.newfname );
+		   outctrl.sec.newfname = xstrdup( value );
 		   outctrl.use_files = 1;
 		}
 	    }
@@ -2365,7 +2365,7 @@ read_parameter_file( const char *fname )
 		break;
 	    }
 	}
-	r = m_alloc_clear( sizeof *r + strlen( value ) );
+	r = xmalloc_clear( sizeof *r + strlen( value ) );
 	r->lnr = lnr;
 	r->key = keywords[i].key;
 	strcpy( r->u.value, value );
@@ -2393,10 +2393,10 @@ read_parameter_file( const char *fname )
         if (outctrl.sec.fname)
           iobuf_ioctl (NULL, 2, 0, (char*)outctrl.sec.fname);
 
-	m_free( outctrl.pub.fname );
-	m_free( outctrl.pub.newfname );
-	m_free( outctrl.sec.fname );
-	m_free( outctrl.sec.newfname );
+	xfree( outctrl.pub.fname );
+	xfree( outctrl.pub.newfname );
+	xfree( outctrl.sec.fname );
+	xfree( outctrl.sec.newfname );
     }
 
     release_parameter_list( para );
@@ -2498,30 +2498,30 @@ generate_keypair (const char *fname, const char *card_serialno,
       if( !algo )
         { /* default: DSA with ElG subkey of the specified size */
           both = 1;
-          r = m_alloc_clear( sizeof *r + 20 );
+          r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYTYPE;
           sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
           r->next = para;
           para = r;
           tty_printf(_("DSA keypair will have %u bits.\n"),1024);
-          r = m_alloc_clear( sizeof *r + 20 );
+          r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYLENGTH;
           strcpy( r->u.value, "1024" );
           r->next = para;
           para = r;
-          r = m_alloc_clear( sizeof *r + 20 );
+          r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYUSAGE;
           strcpy( r->u.value, "sign" );
           r->next = para;
           para = r;
            
           algo = PUBKEY_ALGO_ELGAMAL_E;
-          r = m_alloc_clear( sizeof *r + 20 );
+          r = xmalloc_clear( sizeof *r + 20 );
           r->key = pSUBKEYTYPE;
           sprintf( r->u.value, "%d", algo );
           r->next = para;
           para = r;
-          r = m_alloc_clear( sizeof *r + 20 );
+          r = xmalloc_clear( sizeof *r + 20 );
           r->key = pSUBKEYUSAGE;
           strcpy( r->u.value, "encrypt" );
           r->next = para;
@@ -2529,7 +2529,7 @@ generate_keypair (const char *fname, const char *card_serialno,
         }
       else 
         {
-          r = m_alloc_clear( sizeof *r + 20 );
+          r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYTYPE;
           sprintf( r->u.value, "%d", algo );
           r->next = para;
@@ -2537,7 +2537,7 @@ generate_keypair (const char *fname, const char *card_serialno,
            
           if (use)
             {
-              r = m_alloc_clear( sizeof *r + 25 );
+              r = xmalloc_clear( sizeof *r + 25 );
               r->key = pKEYUSAGE;
               sprintf( r->u.value, "%s%s%s",
                        (use & PUBKEY_USAGE_SIG)? "sign ":"",
@@ -2550,7 +2550,7 @@ generate_keypair (const char *fname, const char *card_serialno,
         }
        
       nbits = ask_keysize( algo );
-      r = m_alloc_clear( sizeof *r + 20 );
+      r = xmalloc_clear( sizeof *r + 20 );
       r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
       sprintf( r->u.value, "%u", nbits);
       r->next = para;
@@ -2558,12 +2558,12 @@ generate_keypair (const char *fname, const char *card_serialno,
     }
    
   expire = ask_expire_interval(0,NULL);
-  r = m_alloc_clear( sizeof *r + 20 );
+  r = xmalloc_clear( sizeof *r + 20 );
   r->key = pKEYEXPIRE;
   r->u.expire = expire;
   r->next = para;
   para = r;
-  r = m_alloc_clear( sizeof *r + 20 );
+  r = xmalloc_clear( sizeof *r + 20 );
   r->key = pSUBKEYEXPIRE;
   r->u.expire = expire;
   r->next = para;
@@ -2576,7 +2576,7 @@ generate_keypair (const char *fname, const char *card_serialno,
       release_parameter_list( para );
       return;
     }
-  r = m_alloc_clear( sizeof *r + strlen(uid) );
+  r = xmalloc_clear( sizeof *r + strlen(uid) );
   r->key = pUSERID;
   strcpy( r->u.value, uid );
   r->next = para;
@@ -2585,12 +2585,12 @@ generate_keypair (const char *fname, const char *card_serialno,
   dek = card_serialno? NULL : do_ask_passphrase( &s2k );
   if( dek )
     {
-      r = m_alloc_clear( sizeof *r );
+      r = xmalloc_clear( sizeof *r );
       r->key = pPASSPHRASE_DEK;
       r->u.dek = dek;
       r->next = para;
       para = r;
-      r = m_alloc_clear( sizeof *r );
+      r = xmalloc_clear( sizeof *r );
       r->key = pPASSPHRASE_S2K;
       r->u.s2k = s2k;
       r->next = para;
@@ -2637,7 +2637,7 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
 
   dek = do_ask_passphrase (&s2k);
 
-  sk = m_alloc_clear (sizeof *sk);
+  sk = xmalloc_clear (sizeof *sk);
   sk->timestamp = created_at;
   sk->version = 4;
   sk->pubkey_algo = algo;
@@ -2675,8 +2675,8 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
  leave:
   if (sk)
     free_secret_key (sk);
-  m_free (dek);
-  m_free (s2k);
+  xfree (dek);
+  xfree (s2k);
   return rc;
 }
 #endif /* ENABLE_CARD_SUPPORT */
@@ -2687,7 +2687,7 @@ start_tree(KBNODE *tree)
 {
   PACKET *pkt;
 
-  pkt=m_alloc_clear(sizeof(*pkt));
+  pkt=xmalloc_clear(sizeof(*pkt));
   pkt->pkttype=PKT_NONE;
   *tree=new_kbnode(pkt);
   delete_kbnode(*tree);
@@ -2717,7 +2717,7 @@ do_generate_keypair( struct para_data_s *para,
 	    outctrl->pub.stream = NULL;
             if (outctrl->pub.fname)
               iobuf_ioctl (NULL, 2, 0, (char*)outctrl->pub.fname);
-	    m_free( outctrl->pub.fname );
+	    xfree( outctrl->pub.fname );
 	    outctrl->pub.fname =  outctrl->pub.newfname;
 	    outctrl->pub.newfname = NULL;
 
@@ -2745,7 +2745,7 @@ do_generate_keypair( struct para_data_s *para,
 	    outctrl->sec.stream = NULL;
             if (outctrl->sec.fname)
               iobuf_ioctl (NULL, 2, 0, (char*)outctrl->sec.fname);
-	    m_free( outctrl->sec.fname );
+	    xfree( outctrl->sec.fname );
 	    outctrl->sec.fname =  outctrl->sec.newfname;
 	    outctrl->sec.newfname = NULL;
 
@@ -3089,7 +3089,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     if (ask_pass)
         dek = do_ask_passphrase (&s2k);
     else if (passphrase) {
-	s2k = m_alloc_secure( sizeof *s2k );
+	s2k = xmalloc_secure( sizeof *s2k );
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = S2K_DIGEST_ALGO;
 	set_next_passphrase( passphrase );
@@ -3111,9 +3111,9 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
   leave:
     if( rc )
 	log_error(_("Key generation failed: %s\n"), g10_errstr(rc) );
-    m_free( passphrase );
-    m_free( dek );
-    m_free( s2k );
+    xfree( passphrase );
+    xfree( dek );
+    xfree( s2k );
     /* release the copy of the (now unprotected) secret keys */
     if( pri_sk )
 	free_secret_key(pri_sk);
@@ -3226,7 +3226,7 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
  leave:
   if (rc)
     log_error (_("Key generation failed: %s\n"), g10_errstr(rc) );
-  m_free (passphrase);
+  xfree (passphrase);
   /* Release the copy of the (now unprotected) secret keys. */
   if (pri_sk)
     free_secret_key (pri_sk);
@@ -3409,7 +3409,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
       {
 	log_error (_("can't create backup file `%s': %s\n"),
                    fname, strerror(errno) );
-        m_free (fname);
+        xfree (fname);
         free_secret_key (sk_unprotected);
         free_secret_key (sk_protected);
         return G10ERR_OPEN_FILE;
@@ -3449,8 +3449,8 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
         xfree (fprbuf);
       }
     free_packet (pkt);
-    m_free (pkt);
-    m_free (fname);
+    xfree (pkt);
+    xfree (fname);
     if (rc)
       {
         free_secret_key (sk_unprotected);

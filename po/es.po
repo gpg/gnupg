@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2005-07-27 19:41+0200\n"
 "PO-Revision-Date: 2005-03-25 16:50+0100\n"
 "Last-Translator: Jaime Suárez <jsuarez@ono.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -711,13 +711,13 @@ msgstr "no se puede abrir `%s'\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output no funciona con esta orden\n"
 
-#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1569
+#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1571
 #: g10/revoke.c:227
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "clave \"%s\" no encontrada: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1583
+#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1585
 #: g10/revoke.c:233 g10/revoke.c:440
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -924,12 +924,21 @@ msgstr "clave %s: no protegida - omitida\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "clave %s: clave estilo PGP 2.x - omitida\n"
 
-#: g10/export.c:454
+#: g10/export.c:409
+msgid "about to export an unprotected subkey\n"
+msgstr ""
+
+#: g10/export.c:432
+#, fuzzy, c-format
+msgid "failed to unprotect the subkey: %s\n"
+msgstr "fallo al almacenar la clave: %s\n"
+
+#: g10/export.c:453
 #, c-format
 msgid "WARNING: secret key %s does not have a simple SK checksum\n"
 msgstr "AVISO: la clave secreta %s no tiene suma de comprobación simple SK\n"
 
-#: g10/export.c:486
+#: g10/export.c:485
 msgid "WARNING: nothing exported\n"
 msgstr "ATENCIÓN: no se ha exportado nada\n"
 
@@ -4074,7 +4083,7 @@ msgstr "deshabilitado"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "Introduzca número(s), O)tro, o F)in >"
 
-#: g10/keyserver.c:724 g10/keyserver.c:1294
+#: g10/keyserver.c:724 g10/keyserver.c:1296
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "protocolo del servidor de claves inválido (us %d!=handler %d)\n"
@@ -4088,105 +4097,105 @@ msgstr "clave \"%s\" no encontrada en el servidor\n"
 msgid "key not found on keyserver\n"
 msgstr "clave no encontrada en el servidor\n"
 
-#: g10/keyserver.c:1041
+#: g10/keyserver.c:1043
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "solicitando clave %s de %s servidor %s\n"
 
-#: g10/keyserver.c:1045
+#: g10/keyserver.c:1047
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "solicitando clave %s de %s\n"
 
-#: g10/keyserver.c:1197
+#: g10/keyserver.c:1199
 #, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "enviando clave %s a %s servidor %s\n"
 
-#: g10/keyserver.c:1201
+#: g10/keyserver.c:1203
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "enviando clave %s a %s\n"
 
-#: g10/keyserver.c:1244
+#: g10/keyserver.c:1246
 #, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "buscando \"%s\" de %s servidor %s\n"
 
-#: g10/keyserver.c:1247
+#: g10/keyserver.c:1249
 #, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "buscando \"%s\" de %s\n"
 
-#: g10/keyserver.c:1254 g10/keyserver.c:1349
+#: g10/keyserver.c:1256 g10/keyserver.c:1351
 msgid "no keyserver action!\n"
 msgstr "¡no se solicita ninguna acción al servidor de claves!\n"
 
-#: g10/keyserver.c:1302
+#: g10/keyserver.c:1304
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 "AVISO: el manejo de claves procede de una versión diferente de GnuPG (%s)\n"
 
-#: g10/keyserver.c:1311
+#: g10/keyserver.c:1313
 msgid "keyserver did not send VERSION\n"
 msgstr "el servidor de claves no envió VERSION\n"
 
-#: g10/keyserver.c:1371
+#: g10/keyserver.c:1373
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "no hay servidores de claves conocidos (use opción --keyserver)\n"
 
-#: g10/keyserver.c:1377
+#: g10/keyserver.c:1379
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 "no se pueden realizar llamadas a un servidor externo de claves tal y\n"
 "como está compilado el programa\n"
 
-#: g10/keyserver.c:1389
+#: g10/keyserver.c:1391
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr "no hay un manejador para ese esquema de servidor de claves `%s'\n"
 
-#: g10/keyserver.c:1394
+#: g10/keyserver.c:1396
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr ""
 "la acción `%s' no es posible con este esquema de servidor de claves `%s'\n"
 
-#: g10/keyserver.c:1402
+#: g10/keyserver.c:1404
 #, fuzzy, c-format
 msgid "%s does not support handler version %d\n"
 msgstr "gpgkeys_%s no permite usar la versión %d del manejador\n"
 
-#: g10/keyserver.c:1409
+#: g10/keyserver.c:1411
 msgid "keyserver timed out\n"
 msgstr "agotado el tiempo de espera para el servidor de claves\n"
 
-#: g10/keyserver.c:1414
+#: g10/keyserver.c:1416
 msgid "keyserver internal error\n"
 msgstr "error interno del servidor de claves\n"
 
-#: g10/keyserver.c:1423
+#: g10/keyserver.c:1425
 #, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "error de comunicación con el servidor de claves: %s\n"
 
-#: g10/keyserver.c:1448 g10/keyserver.c:1482
+#: g10/keyserver.c:1450 g10/keyserver.c:1484
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" no es un identificador de clave válido: omitido\n"
 
-#: g10/keyserver.c:1739
+#: g10/keyserver.c:1741
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "AVISO: no se puede renovar la clave %s a traves de %s: %s\n"
 
-#: g10/keyserver.c:1761
+#: g10/keyserver.c:1763
 #, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "renovando 1 clave de %s\n"
 
-#: g10/keyserver.c:1763
+#: g10/keyserver.c:1765
 #, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "renovando %d claves desde %s\n"

@@ -113,13 +113,13 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 void *
 import_new_stats_handle (void)
 {
-    return m_alloc_clear ( sizeof (struct stats_s) );
+    return xmalloc_clear ( sizeof (struct stats_s) );
 }
 
 void
 import_release_stats_handle (void *p)
 {
-    m_free (p);
+    xfree (p);
 }
 
 /****************
@@ -237,7 +237,7 @@ import( IOBUF inp, const char* fname,
     getkey_disable_caches();
 
     if( !opt.no_armor ) { /* armored reading is not disabled */
-	armor_filter_context_t *afx = m_alloc_clear( sizeof *afx );
+	armor_filter_context_t *afx = xmalloc_clear( sizeof *afx );
 	afx->only_keyblocks = 1;
 	iobuf_push_filter2( inp, armor_filter, afx, 1 );
     }
@@ -356,7 +356,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
     }
     else
 	in_cert = 0;
-    pkt = m_alloc( sizeof *pkt );
+    pkt = xmalloc( sizeof *pkt );
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
@@ -389,7 +389,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 	      }
 	    else
 	      {
-		compress_filter_context_t *cfx = m_alloc_clear( sizeof *cfx );
+		compress_filter_context_t *cfx = xmalloc_clear( sizeof *cfx );
 		pkt->pkt.compressed->buf = NULL;
 		push_compress_filter2(a,cfx,pkt->pkt.compressed->algorithm,1);
 	      }
@@ -417,7 +417,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 		    root = new_kbnode( pkt );
 		else
 		    add_kbnode( root, new_kbnode( pkt ) );
-		pkt = m_alloc( sizeof *pkt );
+		pkt = xmalloc( sizeof *pkt );
 	    }
 	    init_packet(pkt);
 	    break;
@@ -432,7 +432,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
     else
 	*ret_root = root;
     free_packet( pkt );
-    m_free( pkt );
+    xfree( pkt );
     return rc;
 }
 
@@ -534,7 +534,7 @@ print_import_check (PKT_public_key * pk, PKT_user_id * id)
     u32 keyid[2];
     size_t i, pos = 0, n;
 
-    buf = m_alloc (17+41+id->len+32);
+    buf = xmalloc (17+41+id->len+32);
     keyid_from_pk (pk, keyid);
     sprintf (buf, "%08X%08X ", keyid[0], keyid[1]);
     pos = 17;
@@ -545,7 +545,7 @@ print_import_check (PKT_public_key * pk, PKT_user_id * id)
     pos += 1;
     strcat (buf, id->name);
     write_status_text (STATUS_IMPORT_CHECK, buf);
-    m_free (buf);
+    xfree (buf);
 }
 
 static void
@@ -621,7 +621,7 @@ check_prefs(KBNODE keyblock)
 		}
 	    }
 
-	  m_free(user);
+	  xfree(user);
 	}
     }
 
@@ -762,7 +762,7 @@ import_one( const char *fname, KBNODE keyblock,
 	    node->flag |= 1;
 	    log_info( _("key %s: accepted non self-signed user ID \"%s\"\n"),
 		      keystr_from_pk(pk),user);
-	    m_free(user);
+	    xfree(user);
 	  }
 
     if( !delete_inv_parts( fname, keyblock, keyid, options ) ) {
@@ -774,7 +774,7 @@ import_one( const char *fname, KBNODE keyblock,
     }
 
     /* do we have this key already in one of our pubrings ? */
-    pk_orig = m_alloc_clear( sizeof *pk_orig );
+    pk_orig = xmalloc_clear( sizeof *pk_orig );
     rc = get_pubkey_fast ( pk_orig, keyid );
     if( rc && rc != G10ERR_NO_PUBKEY && rc != G10ERR_UNU_PUBKEY )
       {
@@ -825,13 +825,13 @@ import_one( const char *fname, KBNODE keyblock,
 	    char *p=get_user_id_native (keyid);
 	    log_info( _("key %s: public key \"%s\" imported\n"),
 		      keystr(keyid),p);
-	    m_free(p);
+	    xfree(p);
 	  }
 	if( is_status_enabled() )
 	  {
 	    char *us = get_long_user_id_string( keyid );
 	    write_status_text( STATUS_IMPORTED, us );
-	    m_free(us);
+	    xfree(us);
             print_import_ok (pk,NULL, 1);
 	  }
 	stats->imported++;
@@ -941,7 +941,7 @@ import_one( const char *fname, KBNODE keyblock,
 		else if(n_uids_cleaned)
 		  log_info(_("key %s: \"%s\" %d user IDs cleaned\n"),
 			   keystr(keyid),p,n_uids_cleaned);
-		m_free(p);
+		xfree(p);
 	      }
 
 	    stats->n_uids +=n_uids;
@@ -963,7 +963,7 @@ import_one( const char *fname, KBNODE keyblock,
 	      {
 		char *p=get_user_id_native(keyid);
 		log_info( _("key %s: \"%s\" not changed\n"),keystr(keyid),p);
-		m_free(p);
+		xfree(p);
 	      }
 
 	    stats->unchanged++;
@@ -1014,8 +1014,8 @@ sec_to_pub_keyblock(KBNODE sec_keyblock)
 	     write the keyblock out. */
 
 	  PKT_secret_key *sk=secnode->pkt->pkt.secret_key;
-	  PACKET *pkt=m_alloc_clear(sizeof(PACKET));
-	  PKT_public_key *pk=m_alloc_clear(sizeof(PKT_public_key));
+	  PACKET *pkt=xmalloc_clear(sizeof(PACKET));
+	  PKT_public_key *pk=xmalloc_clear(sizeof(PKT_public_key));
 	  int n;
 
 	  if(secnode->pkt->pkttype==PKT_SECRET_KEY)
@@ -1211,7 +1211,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     keyid[0] = node->pkt->pkt.signature->keyid[0];
     keyid[1] = node->pkt->pkt.signature->keyid[1];
 
-    pk = m_alloc_clear( sizeof *pk );
+    pk = xmalloc_clear( sizeof *pk );
     rc = get_pubkey( pk, keyid );
     if( rc == G10ERR_NO_PUBKEY )
       {
@@ -1292,7 +1292,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
         char *p=get_user_id_native (keyid);
 	log_info( _("key %s: \"%s\" revocation certificate imported\n"),
 		  keystr(keyid),p);
-	m_free(p);
+	xfree(p);
       }
     stats->n_revoc++;
 
@@ -1376,7 +1376,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 				    _("key %s: invalid self-signature "
 				      "on user ID \"%s\"\n"),
 				    keystr(keyid),p);
-			  m_free(p);
+			  xfree(p);
 			}
 		    }
 		  else
@@ -1513,7 +1513,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 					   node->pkt->pkt.user_id->len,0);
 		    log_info( _("key %s: skipped user ID \"%s\"\n"),
 			      keystr(keyid),p);
-		    m_free(p);
+		    xfree(p);
 		  }
 		delete_kbnode( node ); /* the user-id */
 		/* and all following packets up to the next user-id */
@@ -1763,7 +1763,7 @@ revocation_present(KBNODE keyblock)
                                                    MAX_FINGERPRINT_LEN);
 		      if(rc==G10ERR_NO_PUBKEY || rc==G10ERR_UNU_PUBKEY)
 			{
-			  char *tempkeystr=m_strdup(keystr_from_pk(pk));
+			  char *tempkeystr=xstrdup(keystr_from_pk(pk));
 
 			  /* No, so try and get it */
 			  if(opt.keyserver
@@ -1788,7 +1788,7 @@ revocation_present(KBNODE keyblock)
 				       " revocation key %s not present.\n"),
 				     tempkeystr,keystr(keyid));
 
-			  m_free(tempkeystr);
+			  xfree(tempkeystr);
 			}
 		    }
 		}
@@ -1845,7 +1845,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		    char *p=get_user_id_native (keyid);
 		    log_info(_("key %s: \"%s\" revocation"
 			       " certificate added\n"), keystr(keyid),p);
-		    m_free(p);
+		    xfree(p);
 		  }
 	    }
 	}
@@ -2170,8 +2170,8 @@ pub_to_sec_keyblock (KBNODE pub_keyblock)
 	  /* Make a secret key.  We only need to convert enough to
 	     write the keyblock out. */
 	  PKT_public_key *pk = pubnode->pkt->pkt.public_key;
-	  PACKET *pkt = m_alloc_clear (sizeof *pkt);
-	  PKT_secret_key *sk = m_alloc_clear (sizeof *sk);
+	  PACKET *pkt = xmalloc_clear (sizeof *pkt);
+	  PKT_secret_key *sk = xmalloc_clear (sizeof *sk);
           int i, n;
           
           if (pubnode->pkt->pkttype == PKT_PUBLIC_KEY)

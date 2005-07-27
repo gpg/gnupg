@@ -101,19 +101,19 @@ make_outfile_name( const char *iname )
     size_t n;
 
     if ( iobuf_is_pipe_filename (iname) )
-	return m_strdup("-");
+	return xstrdup("-");
 
     n = strlen(iname);
     if( n > 4 && (    !CMP_FILENAME(iname+n-4, EXTSEP_S "gpg")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "pgp")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "sig")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "asc") ) ) {
-	char *buf = m_strdup( iname );
+	char *buf = xstrdup( iname );
 	buf[n-4] = 0;
 	return buf;
     }
     else if( n > 5 && !CMP_FILENAME(iname+n-5, EXTSEP_S "sign") ) {
-	char *buf = m_strdup( iname );
+	char *buf = xstrdup( iname );
 	buf[n-5] = 0;
 	return buf;
     }
@@ -144,7 +144,7 @@ ask_outfile_name( const char *name, size_t namelen )
 
     n = strlen(s) + namelen + 10;
     defname = name && namelen? make_printable_string( name, namelen, 0): NULL;
-    prompt = m_alloc(n);
+    prompt = xmalloc(n);
     if( defname )
 	sprintf(prompt, "%s [%s]: ", s, defname );
     else
@@ -153,12 +153,12 @@ ask_outfile_name( const char *name, size_t namelen )
     fname = cpr_get("openfile.askoutname", prompt );
     cpr_kill_prompt();
     tty_disable_completion();
-    m_free(prompt);
+    xfree(prompt);
     if( !*fname ) {
-	m_free( fname ); fname = NULL;
+	xfree( fname ); fname = NULL;
 	fname = defname; defname = NULL;
     }
-    m_free(defname);
+    xfree(defname);
     if (fname)
         trim_spaces (fname);
     return fname;
@@ -210,7 +210,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
           const char *newsfx = mode==1 ? ".asc" :
                                mode==2 ? ".sig" : ".gpg";
           
-          buf = m_alloc(strlen(iname)+4+1);
+          buf = xmalloc(strlen(iname)+4+1);
           strcpy(buf,iname);
           dot = strchr(buf, '.' );
           if ( dot && dot > buf && dot[1] && strlen(dot) <= 4
@@ -226,7 +226,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
       if (!buf)
 #endif /* USE_ONLY_8DOT3 */
         {
-          buf = m_alloc(strlen(iname)+4+1);
+          buf = xmalloc(strlen(iname)+4+1);
           strcpy(stpcpy(buf,iname), mode==1 ? EXTSEP_S "asc" :
 		                   mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg");
         }
@@ -239,11 +239,11 @@ open_outfile( const char *iname, int mode, IOBUF *a )
         char *tmp = ask_outfile_name (NULL, 0);
         if ( !tmp || !*tmp )
           {
-            m_free (tmp);
+            xfree (tmp);
             rc = G10ERR_FILE_EXISTS;
             break;
           }
-        m_free (buf);
+        xfree (buf);
         name = buf = tmp;
       }
     
@@ -264,7 +264,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
         else if( opt.verbose )
           log_info(_("writing to `%s'\n"), name );
       }
-    m_free(buf);
+    xfree(buf);
   }
 
   if (*a)
@@ -290,7 +290,7 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
                         || ( len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign") )
                         || !strcmp(iname + len - 4, EXTSEP_S "asc")) ) {
 	    char *buf;
-	    buf = m_strdup(iname);
+	    buf = xstrdup(iname);
 	    buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
 	    a = iobuf_open( buf );
             if (a && is_secured_file (iobuf_get_fd (a)))
@@ -303,7 +303,7 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
 		log_info(_("assuming signed data in `%s'\n"), buf );
 	    if (a && pfx)
 	      handle_progress (pfx, a, buf);
-            m_free(buf);
+            xfree(buf);
 	}
     }
     return a;
@@ -327,7 +327,7 @@ copy_options_file( const char *destdir )
     if( opt.dry_run )
 	return;
 
-    fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
+    fname = xmalloc( strlen(datadir) + strlen(destdir) + 15 );
     strcpy(stpcpy(fname, datadir), DIRSEP_S "options" SKELEXT );
     src = fopen( fname, "r" );
     if (src && is_secured_file (fileno (src)))
@@ -338,7 +338,7 @@ copy_options_file( const char *destdir )
       }
     if( !src ) {
 	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
-	m_free(fname);
+	xfree(fname);
 	return;
     }
     strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg" EXTSEP_S "conf" );
@@ -354,7 +354,7 @@ copy_options_file( const char *destdir )
     if( !dst ) {
 	log_error(_("can't create `%s': %s\n"), fname, strerror(errno) );
 	fclose( src );
-	m_free(fname);
+	xfree(fname);
 	return;
     }
 
@@ -384,7 +384,7 @@ copy_options_file( const char *destdir )
         log_info (_("WARNING: options in `%s'"
                     " are not yet active during this run\n"),
                   fname);
-    m_free(fname);
+    xfree(fname);
 }
 
 

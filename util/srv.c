@@ -89,7 +89,7 @@ getsrv(const char *name,struct srventry **list)
 	  struct srventry *srv=NULL;
 	  u16 type,class;
 
-	  *list=m_realloc(*list,(srvcount+1)*sizeof(struct srventry));
+	  *list=xrealloc(*list,(srvcount+1)*sizeof(struct srventry));
 	  memset(&(*list)[srvcount],0,sizeof(struct srventry));
 	  srv=&(*list)[srvcount];
 	  srvcount++;
@@ -216,12 +216,12 @@ getsrv(const char *name,struct srventry **list)
   return srvcount;
 
  noanswer:
-  m_free(*list);
+  xfree(*list);
   *list=NULL;
   return 0;
 
  fail:
-  m_free(*list);
+  xfree(*list);
   *list=NULL;
   return -1;
 }
@@ -246,7 +246,7 @@ main(int argc,char *argv[])
       printf("\n");
     }
 
-  m_free(srv);
+  xfree(srv);
 
   return 0;
 }

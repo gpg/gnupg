@@ -147,7 +147,7 @@ text_filter( void *opaque, int control,
 	if( tfx->truncated )
 	    log_error(_("can't handle text lines longer than %d characters\n"),
 			MAX_LINELEN );
-	m_free( tfx->buffer );
+	xfree( tfx->buffer );
 	tfx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )

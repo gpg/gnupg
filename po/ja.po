@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.3.92\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2005-07-27 19:41+0200\n"
 "PO-Revision-Date: 2004-11-23 11:14+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -702,13 +702,13 @@ msgstr "「%s」が開けません\n"
 msgid "--output doesn't work for this command\n"
 msgstr "このコマンドで--outputは機能しません\n"
 
-#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1569
+#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1571
 #: g10/revoke.c:227
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "鍵“%s”が見つかりません: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1583
+#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1585
 #: g10/revoke.c:233 g10/revoke.c:440
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -906,12 +906,21 @@ msgstr "鍵%s: 保護されていません - とばします\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "鍵%s: PGP 2.x形式の鍵です - とばします\n"
 
-#: g10/export.c:454
+#: g10/export.c:409
+msgid "about to export an unprotected subkey\n"
+msgstr ""
+
+#: g10/export.c:432
+#, fuzzy, c-format
+msgid "failed to unprotect the subkey: %s\n"
+msgstr "鍵の保管に失敗しました: %s\n"
+
+#: g10/export.c:453
 #, c-format
 msgid "WARNING: secret key %s does not have a simple SK checksum\n"
 msgstr "警告: 秘密鍵%sには、単純なSKチェックサムがありません\n"
 
-#: g10/export.c:486
+#: g10/export.c:485
 msgid "WARNING: nothing exported\n"
 msgstr "警告: 何も書き出していません\n"
 
@@ -4037,7 +4046,7 @@ msgstr "disabled"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "番号(s)、N)次、またはQ)中止を入力してください >"
 
-#: g10/keyserver.c:724 g10/keyserver.c:1294
+#: g10/keyserver.c:724 g10/keyserver.c:1296
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "無効な鍵サーバー・プロトコルです (us %d!=handler %d)\n"
@@ -4051,101 +4060,101 @@ msgstr "鍵“%s”が鍵サーバーに見つかりません\n"
 msgid "key not found on keyserver\n"
 msgstr "鍵が鍵サーバーに見つかりません\n"
 
-#: g10/keyserver.c:1041
+#: g10/keyserver.c:1043
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "鍵%sを%sからサーバー%sに要求\n"
 
-#: g10/keyserver.c:1045
+#: g10/keyserver.c:1047
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "鍵%sを%sに要求\n"
 
-#: g10/keyserver.c:1197
+#: g10/keyserver.c:1199
 #, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "鍵%sを%sサーバー%sへ送信\n"
 
-#: g10/keyserver.c:1201
+#: g10/keyserver.c:1203
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "鍵%sを%sへ送信\n"
 
-#: g10/keyserver.c:1244
+#: g10/keyserver.c:1246
 #, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "“%s”を%sサーバー%sから検索\n"
 
-#: g10/keyserver.c:1247
+#: g10/keyserver.c:1249
 #, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "“%s”をサーバー%sから検索\n"
 
-#: g10/keyserver.c:1254 g10/keyserver.c:1349
+#: g10/keyserver.c:1256 g10/keyserver.c:1351
 msgid "no keyserver action!\n"
 msgstr "鍵サーバー・アクションがありません!\n"
 
-#: g10/keyserver.c:1302
+#: g10/keyserver.c:1304
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr "警告: 別版 (%s) のGnuPGの鍵サーバー・ハンドラ\n"
 
-#: g10/keyserver.c:1311
+#: g10/keyserver.c:1313
 msgid "keyserver did not send VERSION\n"
 msgstr "鍵サーバーはVERSIONを送信しませんでした\n"
 
-#: g10/keyserver.c:1371
+#: g10/keyserver.c:1373
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "既知の鍵サーバーがありません (オプション--keyserverを使いましょう)\n"
 
-#: g10/keyserver.c:1377
+#: g10/keyserver.c:1379
 msgid "external keyserver calls are not supported in this build\n"
 msgstr "この構築では、外部鍵サーバーの呼出しはサポートしていません\n"
 
-#: g10/keyserver.c:1389
+#: g10/keyserver.c:1391
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr "鍵サーバー・スキーム「%s」用のハンドラがありません\n"
 
-#: g10/keyserver.c:1394
+#: g10/keyserver.c:1396
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr "操作「%s」は、鍵サーバー・スキーム「%s」でサポートされていません\n"
 
-#: g10/keyserver.c:1402
+#: g10/keyserver.c:1404
 #, fuzzy, c-format
 msgid "%s does not support handler version %d\n"
 msgstr "gpgkeys_%sは、ハンドラ%d版をサポートしません\n"
 
-#: g10/keyserver.c:1409
+#: g10/keyserver.c:1411
 msgid "keyserver timed out\n"
 msgstr "鍵サーバーのタイムアウト\n"
 
-#: g10/keyserver.c:1414
+#: g10/keyserver.c:1416
 msgid "keyserver internal error\n"
 msgstr "鍵サーバーの内部エラー\n"
 
-#: g10/keyserver.c:1423
+#: g10/keyserver.c:1425
 #, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "鍵サーバー通信エラー: %s\n"
 
-#: g10/keyserver.c:1448 g10/keyserver.c:1482
+#: g10/keyserver.c:1450 g10/keyserver.c:1484
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "“%s”鍵IDではありません: とばします\n"
 
-#: g10/keyserver.c:1739
+#: g10/keyserver.c:1741
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "警告: 鍵%sを%s経由で回復できません: %s\n"
 
-#: g10/keyserver.c:1761
+#: g10/keyserver.c:1763
 #, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "1本の鍵を%sから回復\n"
 
-#: g10/keyserver.c:1763
+#: g10/keyserver.c:1765
 #, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "%d本の鍵を%sから回復\n"

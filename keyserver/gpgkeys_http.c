@@ -111,7 +111,7 @@ get_key(char *getkey)
 		  getkey,KEYSERVER_KEY_NOT_FOUND);
 	}
 
-      m_free(line);
+      xfree(line);
       http_close(&hd);
     }
 

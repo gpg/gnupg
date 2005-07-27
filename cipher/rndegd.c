@@ -140,7 +140,7 @@ rndegd_connect_socket (int nofail)
       close (fd);
       fd = -1;
     }
-  m_free(name);
+  xfree(name);
   if (fd != -1)
     egd_socket = fd;
   return fd;

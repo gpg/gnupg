@@ -79,7 +79,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	goto leave;
 
     if( (k->keyid[0] || k->keyid[1]) && !opt.try_all_secrets ) {
-	sk = m_alloc_clear( sizeof *sk );
+	sk = xmalloc_clear( sizeof *sk );
 	sk->pubkey_algo = k->pubkey_algo; /* we want a pubkey with this algo*/
 	if( !(rc = get_seckey( sk, k->keyid )) )
 	    rc = get_it( k, dek, sk, k->keyid );
@@ -92,7 +92,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	for(;;) {
 	    if( sk )
 		free_secret_key( sk );
-	    sk = m_alloc_clear( sizeof *sk );
+	    sk = xmalloc_clear( sizeof *sk );
 	    rc=enum_secret_keys( &enum_context, sk, 1, 0);
 	    if( rc ) {
 		rc = G10ERR_NO_SECKEY;
@@ -108,7 +108,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	      {
 		p=get_last_passphrase();
 		set_next_passphrase(p);
-		m_free(p);
+		xfree(p);
 	      }
 
 	    rc = check_secret_key( sk, opt.try_all_secrets?1:-1 ); /* ask
@@ -302,7 +302,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 
   leave:
     mpi_free(plain_dek);
-    m_free(frame);
+    xfree(frame);
     return rc;
 }
 

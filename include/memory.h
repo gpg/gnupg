@@ -31,15 +31,15 @@
 #else /* __riscos__ */
 #define M_DBGINFO(a)	     "["__FILE__ ":"  STR(a) "]"
 #endif /* __riscos__ */
-#define m_alloc(n)		m_debug_alloc((n), M_DBGINFO( __LINE__ ) )
-#define m_alloc_clear(n)	m_debug_alloc_clear((n), M_DBGINFO(__LINE__) )
-#define m_alloc_secure(n)	m_debug_alloc((n), M_DBGINFO(__LINE__) )
-#define m_alloc_secure_clear(n) m_debug_alloc_secure_clear((n), M_DBGINFO(__LINE__) )
-#define m_realloc(n,m)		m_debug_realloc((n),(m), M_DBGINFO(__LINE__) )
-#define m_free(n)		m_debug_free((n), M_DBGINFO(__LINE__) )
+#define xmalloc(n)		m_debug_alloc((n), M_DBGINFO( __LINE__ ) )
+#define xmalloc_clear(n)	m_debug_alloc_clear((n), M_DBGINFO(__LINE__) )
+#define xmalloc_secure(n)	m_debug_alloc_secure(n), M_DBGINFO(__LINE__) )
+#define xmalloc_secure_clear(n) m_debug_alloc_secure_clear((n), M_DBGINFO(__LINE__) )
+#define xrealloc(n,m)		m_debug_realloc((n),(m), M_DBGINFO(__LINE__) )
+#define xfree(n)		m_debug_free((n), M_DBGINFO(__LINE__) )
 #define m_check(n)		m_debug_check((n), M_DBGINFO(__LINE__) )
 /*#define m_copy(a)		  m_debug_copy((a), M_DBGINFO(__LINE__) )*/
-#define m_strdup(a)		m_debug_strdup((a), M_DBGINFO(__LINE__) )
+#define xstrdup(a)		m_debug_strdup((a), M_DBGINFO(__LINE__) )
 
 void *m_debug_alloc( size_t n, const char *info );
 void *m_debug_alloc_clear( size_t n, const char *info  );
@@ -52,25 +52,30 @@ void m_debug_check( const void *a, const char *info );
 char *m_debug_strdup( const char *a, const char *info );
 
 #else
-void *m_alloc( size_t n );
-void *m_alloc_clear( size_t n );
-void *m_alloc_secure( size_t n );
-void *m_alloc_secure_clear( size_t n );
-void *m_realloc( void *a, size_t n );
-void m_free( void *p );
+void *xmalloc( size_t n );
+void *xmalloc_clear( size_t n );
+void *xmalloc_secure( size_t n );
+void *xmalloc_secure_clear( size_t n );
+void *xrealloc( void *a, size_t n );
+void xfree( void *p );
 void m_check( const void *a );
 /*void *m_copy( const void *a );*/
-char *m_strdup( const char * a);
+char *xstrdup( const char * a);
 #endif
 
 size_t m_size( const void *a );
 void m_print_stats(const char *prefix);
 
+/* The follwing functions should be preferred over xmalloc_clear. */
+void *xcalloc (size_t n, size_t m);
+void *xcalloc_secure (size_t n, size_t m);
+
+
 /*-- secmem.c --*/
 int secmem_init( size_t npool );
 void secmem_term( void );
 void *secmem_malloc( size_t size );
-void *secmem_realloc( void *a, size_t newsize );
+void *secmexrealloc( void *a, size_t newsize );
 void secmem_free( void *a );
 int  m_is_secure( const void *p );
 void secmem_dump_stats(void);
@@ -91,15 +96,6 @@ unsigned secmem_get_flags(void);
 EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
-/* To prepare a migration to the xmalloc suite of function as used in
-   1.9 we define a couple of macros. */
-#define xmalloc(n)        m_alloc ((n))
-void *xcalloc (size_t n, size_t m);
-#define xmalloc_secure(n) m_alloc_secure (n)
-void *xcalloc_secure (size_t n, size_t m);
-#define xrealloc(a,n)     m_realloc ((a),(n))
-#define xstrdup(a)        m_strdup ((a))
-#define xfree(a)          m_free (a)
 
 
 #endif /*G10_MEMORY_H*/

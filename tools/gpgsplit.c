@@ -205,7 +205,7 @@ create_filename (int pkttype)
   static char *name;
   
   if (!name) 
-    name = m_alloc (strlen (opt_prefix) + 100 );
+    name = xmalloc (strlen (opt_prefix) + 100 );
   
   assert (pkttype < 1000 && pkttype >= 0 );
   partno++;
@@ -376,9 +376,9 @@ handle_zlib(int algo,FILE *fpin,FILE *fpout)
               
   memset (&zs, 0, sizeof zs);
   inbufsize = 2048;
-  inbuf = m_alloc (inbufsize);
+  inbuf = xmalloc (inbufsize);
   outbufsize = 8192;
-  outbuf = m_alloc (outbufsize);
+  outbuf = xmalloc (outbufsize);
   zs.avail_in = 0;
   zinit_done = 0;
               
@@ -461,9 +461,9 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
               
   memset (&bzs, 0, sizeof bzs);
   inbufsize = 2048;
-  inbuf = m_alloc (inbufsize);
+  inbuf = xmalloc (inbufsize);
   outbufsize = 8192;
-  outbuf = m_alloc (outbufsize);
+  outbuf = xmalloc (outbufsize);
   bzs.avail_in = 0;
   zinit_done = 0;
               
@@ -554,7 +554,7 @@ write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
   if (opt_secret_to_public
       && (pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY))
     {
-      unsigned char *blob = m_alloc (pktlen);
+      unsigned char *blob = xmalloc (pktlen);
       int i, len;
 
       pkttype = pkttype == PKT_SECRET_KEY? PKT_PUBLIC_KEY:PKT_PUBLIC_SUBKEY;

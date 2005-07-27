@@ -1,3 +1,10 @@
+2005-07-27  Werner Koch  <wk@g10code.com>
+
+	* memory.h (m_free, m_alloc, m_realloc, m_strdup): Removed and
+	replaced all over by xfoo functions.  This is to ease porting to
+	gnupg 1.9.
+	(xmalloc_secure) [M_DEBUG]: Correctly map to m_debug_alloc_secure.
+
 2005-06-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.h: Fix prototypes for http_open_document and http_open

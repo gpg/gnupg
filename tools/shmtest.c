@@ -83,7 +83,7 @@ do_get_string( int mode, const char *keyword, byte *area, size_t areasize )
 	memcpy( area+n+2, p, len );
 	area[n] = len >> 8;
 	area[n+1] = len;
-	m_free(p);
+	xfree(p);
     }
     else { /* bool */
 	area[n] = 0;
@@ -118,7 +118,7 @@ main(int argc, char **argv)
 
     for(n=0,i=1; i < argc; i++ )
 	n += strlen(argv[i]) + 1;
-    p = m_alloc( 100 + n );
+    p = xmalloc( 100 + n );
     strcpy( p, "../g10/gpg --status-fd 1 --run-as-shm-coprocess 0");
     for(i=1; i < argc; i++ ) {
 	strcat(p, " " );
@@ -126,7 +126,7 @@ main(int argc, char **argv)
     }
 
     fp = popen( p, "r" );
-    m_free( p );
+    xfree( p );
     if( !fp )
 	log_error("popen failed: %s\n", strerror(errno));
 

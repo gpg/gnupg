@@ -138,7 +138,7 @@ static reg_errcode_t build_range_exp (re_bitset_ptr_t sbcset,
                                       bracket_elem_t *end_elem);
 static reg_errcode_t build_collating_symbol (re_bitset_ptr_t sbcset,
                                              re_charset_t *mbcset,
-                                             int *coll_sym_alloc,
+                                             int *coll_syxmalloc,
                                              const unsigned char *name);
 # else /* not RE_ENABLE_I18N */
 static reg_errcode_t build_range_exp (re_bitset_ptr_t sbcset,
@@ -2419,9 +2419,9 @@ build_range_exp (sbcset, start_elem, end_elem)
 
 static reg_errcode_t
 # ifdef RE_ENABLE_I18N
-build_collating_symbol (sbcset, mbcset, coll_sym_alloc, name)
+build_collating_symbol (sbcset, mbcset, coll_syxmalloc, name)
      re_charset_t *mbcset;
-     int *coll_sym_alloc;
+     int *coll_syxmalloc;
 # else /* not RE_ENABLE_I18N */
 build_collating_symbol (sbcset, name)
 # endif /* not RE_ENABLE_I18N */
@@ -2649,9 +2649,9 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
 
   static inline reg_errcode_t
 # ifdef RE_ENABLE_I18N
-  build_collating_symbol (sbcset, mbcset, coll_sym_alloc, name)
+  build_collating_symbol (sbcset, mbcset, coll_syxmalloc, name)
          re_charset_t *mbcset;
-         int *coll_sym_alloc;
+         int *coll_syxmalloc;
 # else /* not RE_ENABLE_I18N */
   build_collating_symbol (sbcset, name)
 # endif /* not RE_ENABLE_I18N */
@@ -2683,15 +2683,15 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
 # ifdef RE_ENABLE_I18N
           /* Got valid collation sequence, add it as a new entry.  */
           /* Check the space of the arrays.  */
-          if (*coll_sym_alloc == mbcset->ncoll_syms)
+          if (*coll_syxmalloc == mbcset->ncoll_syms)
             {
               /* Not enough, realloc it.  */
               /* +1 in case of mbcset->ncoll_syms is 0.  */
-              *coll_sym_alloc = 2 * mbcset->ncoll_syms + 1;
+              *coll_syxmalloc = 2 * mbcset->ncoll_syms + 1;
               /* Use realloc since mbcset->coll_syms is NULL
                  if *alloc == 0.  */
               mbcset->coll_syms = re_realloc (mbcset->coll_syms, int32_t,
-                                              *coll_sym_alloc);
+                                              *coll_syxmalloc);
               if (BE (mbcset->coll_syms == NULL, 0))
                 return REG_ESPACE;
             }
@@ -2716,7 +2716,7 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
   re_bitset_ptr_t sbcset;
 #ifdef RE_ENABLE_I18N
   re_charset_t *mbcset;
-  int coll_sym_alloc = 0, range_alloc = 0, mbchar_alloc = 0;
+  int coll_syxmalloc = 0, range_alloc = 0, mbchar_alloc = 0;
   int equiv_class_alloc = 0, char_class_alloc = 0;
 #else /* not RE_ENABLE_I18N */
   int non_match = 0;
@@ -2893,7 +2893,7 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
             case COLL_SYM:
               *err = build_collating_symbol (sbcset,
 #ifdef RE_ENABLE_I18N
-                                             mbcset, &coll_sym_alloc,
+                                             mbcset, &coll_syxmalloc,
 #endif /* RE_ENABLE_I18N */
 					     start_elem.opr.name);
               if (BE (*err != REG_NOERROR, 0))

@@ -59,7 +59,7 @@ mpi_alloc( unsigned nlimbs )
     a = m_debug_alloc( sizeof *a, info );
     a->d = nlimbs? mpi_debug_alloc_limb_space( nlimbs, 0, info ) : NULL;
 #else
-    a = m_alloc( sizeof *a );
+    a = xmalloc( sizeof *a );
     a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 0 ) : NULL;
 #endif
     a->alloced = nlimbs;
@@ -92,7 +92,7 @@ mpi_alloc_secure( unsigned nlimbs )
     a = m_debug_alloc( sizeof *a, info );
     a->d = nlimbs? mpi_debug_alloc_limb_space( nlimbs, 1, info ) : NULL;
 #else
-    a = m_alloc( sizeof *a );
+    a = xmalloc( sizeof *a );
     a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 1 ) : NULL;
 #endif
     a->alloced = nlimbs;
@@ -145,7 +145,7 @@ mpi_alloc_limb_space( unsigned nlimbs, int secure )
 #ifdef M_DEBUG
     p = secure? m_debug_alloc_secure(len, info):m_debug_alloc( len, info );
 #else
-    p = secure? m_alloc_secure( len ):m_alloc( len );
+    p = secure? xmalloc_secure( len ):xmalloc( len );
 #endif
 
     return p;
@@ -186,7 +186,7 @@ mpi_free_limb_space( mpi_ptr_t a )
     }
 #endif
 
-    m_free(a);
+    xfree(a);
 }
 
 
@@ -202,7 +202,7 @@ mpi_assign_limb_space( MPI a, mpi_ptr_t ap, unsigned nlimbs )
 
 /****************
  * Resize the array of A to NLIMBS. the additional space is cleared
- * (set to 0) [done by m_realloc()]
+ * (set to 0) [done by xrealloc()]
  */
 void
 #ifdef M_DEBUG
@@ -225,9 +225,9 @@ mpi_resize( MPI a, unsigned nlimbs )
 	a->d = m_debug_alloc_clear( nlimbs * sizeof(mpi_limb_t), info );
 #else
     if( a->d )
-	a->d = m_realloc(a->d, nlimbs * sizeof(mpi_limb_t) );
+	a->d = xrealloc(a->d, nlimbs * sizeof(mpi_limb_t) );
     else
-	a->d = m_alloc_clear( nlimbs * sizeof(mpi_limb_t) );
+	a->d = xmalloc_clear( nlimbs * sizeof(mpi_limb_t) );
 #endif
     a->alloced = nlimbs;
 }
@@ -253,7 +253,7 @@ mpi_free( MPI a )
     if( DBG_MEMORY )
 	log_debug("mpi_free\n" );
     if( a->flags & 4 )
-	m_free( a->d );
+	xfree( a->d );
     else {
 #ifdef M_DEBUG
 	mpi_debug_free_limb_space(a->d, info);
@@ -263,7 +263,7 @@ mpi_free( MPI a )
     }
     if( a->flags & ~7 )
 	log_bug("invalid flag value in mpi\n");
-    m_free(a);
+    xfree(a);
 }
 
 
@@ -307,7 +307,7 @@ mpi_set_opaque( MPI a, void *p, unsigned int len )
     }
 
     if( a->flags & 4 )
-	m_free( a->d );
+	xfree( a->d );
     else {
 #ifdef M_DEBUG
 	mpi_debug_free_limb_space(a->d, "alloc_opaque");
@@ -351,8 +351,8 @@ mpi_copy( MPI a )
     MPI b;
 
     if( a && (a->flags & 4) ) {
-	void *p = m_is_secure(a->d)? m_alloc_secure( a->nbits )
-				   : m_alloc( a->nbits );
+	void *p = m_is_secure(a->d)? xmalloc_secure( a->nbits )
+				   : xmalloc( a->nbits );
 	memcpy( p, a->d, a->nbits );
 	b = mpi_set_opaque( NULL, p, a->nbits );
     }
@@ -392,8 +392,8 @@ mpi_alloc_like( MPI a )
     MPI b;
 
     if( a && (a->flags & 4) ) {
-	void *p = m_is_secure(a->d)? m_alloc_secure( a->nbits )
-				   : m_alloc( a->nbits );
+	void *p = m_is_secure(a->d)? xmalloc_secure( a->nbits )
+				   : xmalloc( a->nbits );
 	memcpy( p, a->d, a->nbits );
 	b = mpi_set_opaque( NULL, p, a->nbits );
     }

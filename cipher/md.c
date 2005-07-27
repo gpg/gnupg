@@ -62,14 +62,14 @@ new_list_item (int algo,
 {
   struct md_digest_list_s *r;
 
-  r = m_alloc_clear (sizeof *r );
+  r = xmalloc_clear (sizeof *r );
   r->algo = algo;
   r->name = (*get_info)( algo, &r->contextsize,
                          &r->asnoid, &r->asnlen, &r->mdlen,
                          &r->init, &r->write, &r->final, &r->read );
   if (!r->name ) 
     {
-      m_free(r);
+      xfree(r);
       r = NULL;
     }
   if (r)
@@ -192,11 +192,11 @@ md_open( int algo, int secure )
 
     if( secure ) {
 	bufsize = 512 - sizeof( *hd );
-	hd = m_alloc_secure_clear( sizeof *hd + bufsize );
+	hd = xmalloc_secure_clear( sizeof *hd + bufsize );
     }
     else {
 	bufsize = 1024 - sizeof( *hd );
-	hd = m_alloc_clear( sizeof *hd + bufsize );
+	hd = xmalloc_clear( sizeof *hd + bufsize );
     }
 
     hd->bufsize = bufsize+1; /* hd has already one byte allocated */
@@ -226,9 +226,9 @@ md_enable( MD_HANDLE h, int algo )
 	return;
     }
     /* and allocate a new list entry */
-    ac = h->secure? m_alloc_secure( sizeof *ac + r->contextsize
+    ac = h->secure? xmalloc_secure( sizeof *ac + r->contextsize
 					       - sizeof(r->context) )
-		  : m_alloc( sizeof *ac + r->contextsize
+		  : xmalloc( sizeof *ac + r->contextsize
 					       - sizeof(r->context) );
     *ac = *r;
     ac->next = h->list;
@@ -246,17 +246,17 @@ md_copy( MD_HANDLE a )
 
     if( a->bufcount )
 	md_write( a, NULL, 0 );
-    b = a->secure ? m_alloc_secure( sizeof *b + a->bufsize - 1 )
-		  : m_alloc( sizeof *b + a->bufsize - 1 );
+    b = a->secure ? xmalloc_secure( sizeof *b + a->bufsize - 1 )
+		  : xmalloc( sizeof *b + a->bufsize - 1 );
     memcpy( b, a, sizeof *a + a->bufsize - 1 );
     b->list = NULL;
     b->debug = NULL;
     /* and now copy the complete list of algorithms */
     /* I know that the copied list is reversed, but that doesn't matter */
     for( ar=a->list; ar; ar = ar->next ) {
-	br = a->secure ? m_alloc_secure( sizeof *br + ar->contextsize
+	br = a->secure ? xmalloc_secure( sizeof *br + ar->contextsize
 					       - sizeof(ar->context) )
-		       : m_alloc( sizeof *br + ar->contextsize
+		       : xmalloc( sizeof *br + ar->contextsize
 					       - sizeof(ar->context) );
 	memcpy( br, ar, sizeof(*br) + ar->contextsize
 				    - sizeof(ar->context) );
@@ -298,9 +298,9 @@ md_close(MD_HANDLE a)
 	md_stop_debug(a);
     for(r=a->list; r; r = r2 ) {
 	r2 = r->next;
-	m_free(r);
+	xfree(r);
     }
-    m_free(a);
+    xfree(a);
 }
 
 
@@ -404,8 +404,8 @@ md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen )
 
     /* I don't want to change the interface, so I simply work on a copy
      * the context (extra overhead - should be fixed)*/
-    context = a->secure ? m_alloc_secure( r->contextsize )
-			: m_alloc( r->contextsize );
+    context = a->secure ? xmalloc_secure( r->contextsize )
+			: xmalloc( r->contextsize );
     memcpy( context, r->context.c, r->contextsize );
     (*r->final)( context );
     digest = (*r->read)( context );
@@ -414,7 +414,7 @@ md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen )
 	buflen = r->mdlen;
     memcpy( buffer, digest, buflen );
 
-    m_free(context);
+    xfree(context);
     return buflen;
 }
 

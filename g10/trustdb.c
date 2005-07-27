@@ -99,7 +99,7 @@ new_key_item (void)
 {
   struct key_item *k;
   
-  k = m_alloc_clear (sizeof *k);
+  k = xmalloc_clear (sizeof *k);
   return k;
 }
 
@@ -111,8 +111,8 @@ release_key_items (struct key_item *k)
   for (; k; k = k2)
     {
       k2 = k->next;
-      m_free (k->trust_regexp);
-      m_free (k);
+      xfree (k->trust_regexp);
+      xfree (k);
     }
 }
 
@@ -129,7 +129,7 @@ new_key_hash_table (void)
 {
   struct key_item **tbl;
 
-  tbl = m_alloc_clear (1024 * sizeof *tbl);
+  tbl = xmalloc_clear (1024 * sizeof *tbl);
   return tbl;
 }
 
@@ -142,7 +142,7 @@ release_key_hash_table (KeyHashTable tbl)
     return;
   for (i=0; i < 1024; i++)
     release_key_items (tbl[i]);
-  m_free (tbl);
+  xfree (tbl);
 }
 
 /* 
@@ -189,7 +189,7 @@ release_key_array ( struct key_array *keys )
     if (keys) {
         for (k=keys; k->keyblock; k++)
             release_kbnode (k->keyblock);
-        m_free (keys);
+        xfree (keys);
     }
 }
 
@@ -409,7 +409,7 @@ setup_trustdb( int level, const char *dbname )
     if( trustdb_args.init )
 	return 0;
     trustdb_args.level = level;
-    trustdb_args.dbname = dbname? m_strdup(dbname): NULL;
+    trustdb_args.dbname = dbname? xstrdup(dbname): NULL;
     return 0;
 }
 
@@ -832,7 +832,7 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
   TRUSTREC rec;
   int rc;
 
-  pk = m_alloc_clear (sizeof *pk);
+  pk = xmalloc_clear (sizeof *pk);
   rc = get_pubkey (pk, kid);
   if (rc)
     {
@@ -1066,14 +1066,14 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
   keyid_from_pk (pk, kid);
   if (pk->main_keyid[0] != kid[0] || pk->main_keyid[1] != kid[1])
     { /* this is a subkey - get the mainkey */
-      main_pk = m_alloc_clear (sizeof *main_pk);
+      main_pk = xmalloc_clear (sizeof *main_pk);
       rc = get_pubkey (main_pk, pk->main_keyid);
       if (rc)
         {
-	  char *tempkeystr=m_strdup(keystr(pk->main_keyid));
+	  char *tempkeystr=xstrdup(keystr(pk->main_keyid));
           log_error ("error getting main key %s of subkey %s: %s\n",
                      tempkeystr, keystr(kid), g10_errstr(rc));
-	  m_free(tempkeystr);
+	  xfree(tempkeystr);
           validity = TRUST_UNKNOWN; 
           goto leave;
 	}
@@ -1270,7 +1270,7 @@ ask_ownertrust (u32 *kid,int minimum)
   int rc;
   int ot;
 
-  pk = m_alloc_clear (sizeof *pk);
+  pk = xmalloc_clear (sizeof *pk);
   rc = get_pubkey (pk, kid);
   if (rc)
     {
@@ -1701,7 +1701,7 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 			   user,keystr(keyblock->pkt->pkt.public_key->keyid),
 			   reason);
 
-		  m_free(user);
+		  xfree(user);
 		}
 	    }
 	}
@@ -1936,14 +1936,14 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   KEYDB_SEARCH_DESC desc;
   
   maxkeys = 1000;
-  keys = m_alloc ((maxkeys+1) * sizeof *keys);
+  keys = xmalloc ((maxkeys+1) * sizeof *keys);
   nkeys = 0;
   
   rc = keydb_search_reset (hd);
   if (rc)
     {
       log_error ("keydb_search_reset failed: %s\n", g10_errstr(rc));
-      m_free (keys);
+      xfree (keys);
       return NULL;
     }
 
@@ -1960,7 +1960,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   if (rc)
     {
       log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
-      m_free (keys);
+      xfree (keys);
       return NULL;
     }
   
@@ -1973,7 +1973,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
       if (rc) 
         {
           log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
-          m_free (keys);
+          xfree (keys);
           return NULL;
         }
       
@@ -2005,7 +2005,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
 
           if (nkeys == maxkeys) {
             maxkeys += 1000;
-            keys = m_realloc (keys, (maxkeys+1) * sizeof *keys);
+            keys = xrealloc (keys, (maxkeys+1) * sizeof *keys);
           }
           keys[nkeys++].keyblock = keyblock;
 
@@ -2029,7 +2029,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   if (rc && rc != -1) 
     {
       log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
-      m_free (keys);
+      xfree (keys);
       return NULL;
     }
 
@@ -2298,7 +2298,7 @@ validate_keys (int interactive)
 			kar->keyblock->pkt->pkt.public_key->trust_value;
 		      if(kar->keyblock->pkt->pkt.public_key->trust_regexp)
 			k->trust_regexp=
-			  m_strdup(kar->keyblock->pkt->
+			  xstrdup(kar->keyblock->pkt->
 				   pkt.public_key->trust_regexp);
 		      k->next = klist;
 		      klist = k;

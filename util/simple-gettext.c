@@ -362,7 +362,7 @@ get_string( struct loaded_domain *domain, u32 idx )
           else
             p = "ERROR in GETTEXT MALLOC";
         }
-      m_free (buf);
+      xfree (buf);
     }
   else if (domain->mapped[idx] == 2) 
     { /* We need to get the string from the overflow_space. */

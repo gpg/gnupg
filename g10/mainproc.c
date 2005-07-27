@@ -95,7 +95,7 @@ release_list( CTX c )
     release_kbnode( c->list );
     while( c->pkenc_list ) {
 	struct kidlist_item *tmp = c->pkenc_list->next;
-	m_free( c->pkenc_list );
+	xfree( c->pkenc_list );
 	c->pkenc_list = tmp;
     }
     c->pkenc_list = NULL;
@@ -104,7 +104,7 @@ release_list( CTX c )
     c->last_was_session_key = 0;
     c->pipemode.op = 0;
     c->pipemode.stop_now = 0;
-    m_free(c->dek); c->dek = NULL;
+    xfree(c->dek); c->dek = NULL;
 }
 
 
@@ -318,10 +318,10 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 
 	if(opt.override_session_key)
 	  {
-	    c->dek = m_alloc_clear( sizeof *c->dek );
+	    c->dek = xmalloc_clear( sizeof *c->dek );
 	    if(get_override_session_key(c->dek, opt.override_session_key))
 	      {
-		m_free(c->dek);
+		xfree(c->dek);
 		c->dek = NULL;
 	      }
 	  }
@@ -345,7 +345,7 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 		    if(symkey_decrypt_seskey(c->dek, enc->seskey,
 					     enc->seskeylen))
 		      {
-			m_free(c->dek);
+			xfree(c->dek);
 			c->dek=NULL;
 		      }
 		  }
@@ -386,10 +386,10 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	/* It does not make much sense to store the session key in
 	 * secure memory because it has already been passed on the
 	 * command line and the GCHQ knows about it */
-	c->dek = m_alloc_clear( sizeof *c->dek );
+	c->dek = xmalloc_clear( sizeof *c->dek );
 	result = get_override_session_key ( c->dek, opt.override_session_key );
 	if ( result ) {
-	    m_free(c->dek); c->dek = NULL;
+	    xfree(c->dek); c->dek = NULL;
 	}
     }
     else if( is_ELGAMAL(enc->pubkey_algo)
@@ -401,10 +401,10 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	    if( opt.list_only )
 		result = -1;
 	    else {
-		c->dek = m_alloc_secure_clear( sizeof *c->dek );
+		c->dek = xmalloc_secure_clear( sizeof *c->dek );
 		if( (result = get_session_key( enc, c->dek )) ) {
 		    /* error: delete the DEK */
-		    m_free(c->dek); c->dek = NULL;
+		    xfree(c->dek); c->dek = NULL;
 		}
 	    }
 	}
@@ -419,7 +419,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     else
       {
         /* store it for later display */
-	struct kidlist_item *x = m_alloc( sizeof *x );
+	struct kidlist_item *x = xmalloc( sizeof *x );
 	x->kid[0] = enc->keyid[0];
 	x->kid[1] = enc->keyid[1];
 	x->pubkey_algo = enc->pubkey_algo;
@@ -453,7 +453,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
             continue;
 
         algstr = pubkey_algo_to_string( list->pubkey_algo );
-        pk = m_alloc_clear( sizeof *pk );
+        pk = xmalloc_clear( sizeof *pk );
 
 	if( !algstr )
 	    algstr = "[?]";
@@ -466,7 +466,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 		      strtimestamp(pk->timestamp) );
 	    p=get_user_id_native(list->kid);
 	    fprintf(log_stream(),_("      \"%s\"\n"),p);
-	    m_free(p);
+	    xfree(p);
 	  }
 	else
 	  log_info(_("encrypted with %s key, ID %s\n"),
@@ -515,11 +515,11 @@ proc_encrypted( CTX c, PACKET *pkt )
 
 	if(opt.override_session_key)
 	  {
-	    c->dek = m_alloc_clear( sizeof *c->dek );
+	    c->dek = xmalloc_clear( sizeof *c->dek );
 	    result=get_override_session_key(c->dek, opt.override_session_key);
 	    if(result)
 	      {
-		m_free(c->dek);
+		xfree(c->dek);
 		c->dek = NULL;
 	      }
 	  }
@@ -575,7 +575,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	if(opt.show_session_key)
 	  {
 	    int i;
-	    char *buf = m_alloc ( c->dek->keylen*2 + 20 );
+	    char *buf = xmalloc ( c->dek->keylen*2 + 20 );
 	    sprintf ( buf, "%d:", c->dek->algo );
 	    for(i=0; i < c->dek->keylen; i++ )
 	      sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
@@ -594,7 +594,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	/* Hmmm: does this work when we have encrypted using multiple
 	 * ways to specify the session key (symmmetric and PK)*/
     }
-    m_free(c->dek); c->dek = NULL;
+    xfree(c->dek); c->dek = NULL;
     free_packet(pkt);
     c->last_was_session_key = 0;
     write_status( STATUS_END_DECRYPTION );
@@ -1099,7 +1099,7 @@ list_node( CTX c, KBNODE node )
 	else if( !opt.fast_list_mode ) {
 	    p = get_user_id( sig->keyid, &n );
 	    print_string( stdout, p, n, opt.with_colons );
-	    m_free(p);
+	    xfree(p);
 	}
 	if( opt.with_colons )
 	    printf(":%02x%c:", sig->sig_class, sig->flags.exportable?'x':'l');
@@ -1115,11 +1115,11 @@ int
 proc_packets( void *anchor, IOBUF a )
 {
     int rc;
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = xmalloc_clear( sizeof *c );
 
     c->anchor = anchor;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    xfree( c );
     return rc;
 }
 
@@ -1129,7 +1129,7 @@ int
 proc_signature_packets( void *anchor, IOBUF a,
 			STRLIST signedfiles, const char *sigfilename )
 {
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = xmalloc_clear( sizeof *c );
     int rc;
 
     c->anchor = anchor;
@@ -1137,20 +1137,20 @@ proc_signature_packets( void *anchor, IOBUF a,
     c->signed_data = signedfiles;
     c->sigfilename = sigfilename;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    xfree( c );
     return rc;
 }
 
 int
 proc_encryption_packets( void *anchor, IOBUF a )
 {
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = xmalloc_clear( sizeof *c );
     int rc;
 
     c->anchor = anchor;
     c->encrypt_only = 1;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    xfree( c );
     return rc;
 }
 
@@ -1158,7 +1158,7 @@ proc_encryption_packets( void *anchor, IOBUF a )
 int
 do_proc_packets( CTX c, IOBUF a )
 {
-    PACKET *pkt = m_alloc( sizeof *pkt );
+    PACKET *pkt = xmalloc( sizeof *pkt );
     int rc=0;
     int any_data=0;
     int newpkt;
@@ -1266,7 +1266,7 @@ do_proc_packets( CTX c, IOBUF a )
 	if( newpkt == -1 )
 	    ;
 	else if( newpkt ) {
-	    pkt = m_alloc( sizeof *pkt );
+	    pkt = xmalloc( sizeof *pkt );
 	    init_packet(pkt);
 	}
 	else
@@ -1288,9 +1288,9 @@ do_proc_packets( CTX c, IOBUF a )
 
   leave:
     release_list( c );
-    m_free(c->dek);
+    xfree(c->dek);
     free_packet( pkt );
-    m_free( pkt );
+    xfree( pkt );
     free_md_filter_context( &c->mfx );
     return rc;
 }
@@ -1502,7 +1502,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	    else
 	      log_info(_("Good signature from \"%s\""),p);
 
-	    m_free(p);
+	    xfree(p);
 
 	    if(opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
 	      fprintf(log_stream()," [%s]\n",trust_value_to_string(valid));
@@ -1541,7 +1541,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	      p=utf8_to_native(un->pkt->pkt.user_id->name,
                                un->pkt->pkt.user_id->len,0);
 	    else
-	      p=m_strdup("[?]");
+	      p=xstrdup("[?]");
 
 	    if(rc)
 	      log_info(_("BAD signature from \"%s\""),p);
@@ -1585,7 +1585,7 @@ check_sig_and_print( CTX c, KBNODE node )
 		p=utf8_to_native(un->pkt->pkt.user_id->name,
 				 un->pkt->pkt.user_id->len,0);
 		log_info(_("                aka \"%s\""),p);
-		m_free(p);
+		xfree(p);
 
 		if(opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
 		  {
@@ -1628,7 +1628,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if( !rc && is_status_enabled() ) {
 	    /* print a status response with the fingerprint */
-	    PKT_public_key *vpk = m_alloc_clear( sizeof *vpk );
+	    PKT_public_key *vpk = xmalloc_clear( sizeof *vpk );
 
 	    if( !get_pubkey( vpk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;
@@ -1656,7 +1656,7 @@ check_sig_and_print( CTX c, KBNODE node )
                    akid[0] = vpk->main_keyid[0];
                    akid[1] = vpk->main_keyid[1];
                    free_public_key (vpk);
-                   vpk = m_alloc_clear( sizeof *vpk );
+                   vpk = xmalloc_clear( sizeof *vpk );
                    if (get_pubkey (vpk, akid)) {
                      /* impossible error, we simply return a zeroed out fpr */
                      n = MAX_FINGERPRINT_LEN < 20? MAX_FINGERPRINT_LEN : 20;

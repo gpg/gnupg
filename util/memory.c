@@ -63,15 +63,17 @@
 #ifndef M_GUARD
 #define M_GUARD 1
 #endif
-#undef m_alloc
-#undef m_alloc_clear
-#undef m_alloc_secure
-#undef m_alloc_secure_clear
-#undef m_realloc
-#undef m_free
+#undef xmalloc
+#undef xmalloc_clear
+#undef xmalloc_secure
+#undef xmalloc_secure_clear
+#undef xrealloc
+#undef xfree
 #undef m_check
-#undef m_strdup
-#define FNAME(a)  m_debug_ ##a
+#undef xstrdup
+#define FNAME(a)   m_debug_ ##a
+#define FNAMEX(a)  m_debug_ ##a
+#define FNAMEXM(a) m_debug_ ##a
 #define FNAMEPRT  , const char *info
 #define FNAMEARG  , info
 #ifndef __riscos__
@@ -82,7 +84,9 @@
 	          info, __func__ );  } while(0)
 #endif
 #else
-#define FNAME(a)  m_ ##a
+#define FNAME(a)   m_ ##a
+#define FNAMEX(a)  x ##a
+#define FNAMEXM(a) xm ##a
 #define FNAMEPRT
 #define FNAMEARG
 #define store_len(p,n,m) do { ((byte*)p)[EXTRA_ALIGN+0] = n;		      \
@@ -418,7 +422,7 @@ out_of_core(size_t n, int secure)
  * This function gives up if we do not have enough memory
  */
 void *
-FNAME(alloc)( size_t n FNAMEPRT )
+FNAMEXM(alloc)( size_t n FNAMEPRT )
 {
     char *p;
 
@@ -447,7 +451,7 @@ FNAME(alloc)( size_t n FNAMEPRT )
  * This function gives up if we do not have enough memory
  */
 void *
-FNAME(alloc_secure)( size_t n FNAMEPRT )
+FNAMEXM(alloc_secure)( size_t n FNAMEPRT )
 {
     char *p;
 
@@ -471,19 +475,19 @@ FNAME(alloc_secure)( size_t n FNAMEPRT )
 }
 
 void *
-FNAME(alloc_clear)( size_t n FNAMEPRT )
+FNAMEXM(alloc_clear)( size_t n FNAMEPRT )
 {
     void *p;
-    p = FNAME(alloc)( n FNAMEARG );
+    p = FNAMEXM(alloc)( n FNAMEARG );
     memset(p, 0, n );
     return p;
 }
 
 void *
-FNAME(alloc_secure_clear)( size_t n FNAMEPRT)
+FNAMEXM(alloc_secure_clear)( size_t n FNAMEPRT)
 {
     void *p;
-    p = FNAME(alloc_secure)( n FNAMEARG );
+    p = FNAMEXM(alloc_secure)( n FNAMEARG );
     memset(p, 0, n );
     return p;
 }
@@ -493,7 +497,7 @@ FNAME(alloc_secure_clear)( size_t n FNAMEPRT)
  * realloc and clear the old space
  */
 void *
-FNAME(realloc)( void *a, size_t n FNAMEPRT )
+FNAMEX(realloc)( void *a, size_t n FNAMEPRT )
 {
     void *b;
 
@@ -516,7 +520,7 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
         b = FNAME(alloc)(n FNAMEARG);
 #else
     if( m_is_secure(a) ) {
-	if( !(b = secmem_realloc( a, n )) )
+	if( !(b = secmexrealloc( a, n )) )
 	    out_of_core(n,1);
     }
     else {
@@ -534,7 +538,7 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
  * Free a pointer
  */
 void
-FNAME(free)( void *a FNAMEPRT )
+FNAMEX(free)( void *a FNAMEPRT )
 {
     byte *p = a;
 
@@ -605,16 +609,16 @@ m_size( const void *a )
 
 
 char *
-FNAME(strdup)( const char *a FNAMEPRT )
+FNAMEX(strdup)( const char *a FNAMEPRT )
 {
     size_t n = strlen(a);
-    char *p = FNAME(alloc)(n+1 FNAMEARG);
+    char *p = FNAMEXM(alloc)(n+1 FNAMEARG);
     strcpy(p, a);
     return p;
 }
 
 
-/* Wrapper around m_alloc_clear to take the usual 2 arguments of a
+/* Wrapper around xmalloc_clear to take the usual 2 arguments of a
    calloc style function. */
 void *
 xcalloc (size_t n, size_t m)
@@ -624,10 +628,10 @@ xcalloc (size_t n, size_t m)
   nbytes = n * m; 
   if (m && nbytes / m != n) 
     out_of_core (nbytes, 0);
-  return m_alloc_clear (nbytes);
+  return xmalloc_clear (nbytes);
 }
 
-/* Wrapper around m_alloc_csecure_lear to take the usual 2 arguments
+/* Wrapper around xmalloc_csecure_lear to take the usual 2 arguments
    of a calloc style function. */
 void *
 xcalloc_secure (size_t n, size_t m)
@@ -637,6 +641,6 @@ xcalloc_secure (size_t n, size_t m)
   nbytes = n * m; 
   if (m && nbytes / m != n) 
     out_of_core (nbytes, 1);
-  return m_alloc_secure_clear (nbytes);
+  return xmalloc_secure_clear (nbytes);
 }
 

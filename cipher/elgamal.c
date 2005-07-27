@@ -133,7 +133,7 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
     /*mpi_set_bytes( test, nbits, get_random_byte, 0 );*/
     {	char *p = get_random_bits( nbits, 0, 0 );
 	mpi_set_buffer( test, p, (nbits+7)/8, 0 );
-	m_free(p);
+	xfree(p);
     }
 
     do_encrypt( out1_a, out1_b, test, &pk );
@@ -183,7 +183,7 @@ gen_k( MPI p, int small_k )
     mpi_sub_ui( p_1, p, 1);
     for(;;) {
 	if( !rndbuf || nbits < 32 ) {
-	    m_free(rndbuf);
+	    xfree(rndbuf);
 	    rndbuf = get_random_bits( nbits, 1, 1 );
 	}
 	else { /* Change only some of the higher bits. */
@@ -194,7 +194,7 @@ gen_k( MPI p, int small_k )
 	     */
 	    char *pp = get_random_bits( 32, 1, 1 );
 	    memcpy( rndbuf,pp, 4 );
-	    m_free(pp);
+	    xfree(pp);
 	}
 	mpi_set_buffer( k, rndbuf, nbytes, 0 );
 
@@ -217,7 +217,7 @@ gen_k( MPI p, int small_k )
 	}
     }
   found:
-    m_free(rndbuf);
+    xfree(rndbuf);
     if( DBG_CIPHER )
 	progress('\n');
     mpi_free(p_1);
@@ -280,13 +280,13 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
 	    progress('.');
 	if( rndbuf ) { /* change only some of the higher bits */
 	    if( xbits < 16 ) {/* should never happen ... */
-		m_free(rndbuf);
+		xfree(rndbuf);
 		rndbuf = get_random_bits( xbits, 2, 1 );
 	    }
 	    else {
 		char *r = get_random_bits( 16, 2, 1 );
 		memcpy(rndbuf, r, 16/8 );
-		m_free(r);
+		xfree(r);
 	    }
 	}
 	else
@@ -294,7 +294,7 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
 	mpi_set_buffer( x, rndbuf, (xbits+7)/8, 0 );
 	mpi_clear_highbit( x, xbits+1 );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
-    m_free(rndbuf);
+    xfree(rndbuf);
 
     y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);
     mpi_powm( y, g, x, p );

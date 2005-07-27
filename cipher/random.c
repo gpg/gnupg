@@ -200,10 +200,10 @@ initialize(void)
     /* The data buffer is allocated somewhat larger, so that
      * we can use this extra space (which is allocated in secure memory)
      * as a temporary hash buffer */
-    rndpool = secure_alloc ? m_alloc_secure_clear(POOLSIZE+BLOCKLEN)
-			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
-    keypool = secure_alloc ? m_alloc_secure_clear(POOLSIZE+BLOCKLEN)
-			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
+    rndpool = secure_alloc ? xmalloc_secure_clear(POOLSIZE+BLOCKLEN)
+			   : xmalloc_clear(POOLSIZE+BLOCKLEN);
+    keypool = secure_alloc ? xmalloc_secure_clear(POOLSIZE+BLOCKLEN)
+			   : xmalloc_clear(POOLSIZE+BLOCKLEN);
     is_initialized = 1;
 }
 
@@ -231,7 +231,7 @@ random_dump_stats()
 }
 
 void
-secure_random_alloc()
+secure_randoxmalloc()
 {
     secure_alloc = 1;
 }
@@ -260,7 +260,7 @@ randomize_buffer( byte *buffer, size_t length, int level )
 {
     char *p = get_random_bits( length*8, level, 1 );
     memcpy( buffer, p, length );
-    m_free(p);
+    xfree(p);
 }
 
 
@@ -295,7 +295,7 @@ get_random_bits( size_t nbits, int level, int secure )
 	rndstats.ngetbytes2++;
     }
 
-    buf = secure && secure_alloc ? m_alloc_secure( nbytes ) : m_alloc( nbytes );
+    buf = secure && secure_alloc ? xmalloc_secure( nbytes ) : xmalloc( nbytes );
     for( p = buf; nbytes > 0; ) {
 	size_t n = nbytes > POOLSIZE? POOLSIZE : nbytes;
 	read_pool( p, n, level );
@@ -356,7 +356,7 @@ set_random_seed_file( const char *name )
 {
     if( seed_file_name )
 	BUG();
-    seed_file_name = m_strdup( name );
+    seed_file_name = xstrdup( name );
 }
 
 /****************
@@ -738,7 +738,7 @@ gather_faked( void (*add)(const void*, size_t, int), int requester,
 #endif
     }
 
-    p = buffer = m_alloc( length );
+    p = buffer = xmalloc( length );
     n = length;
 #ifdef HAVE_RAND
     while( n-- )
@@ -748,6 +748,6 @@ gather_faked( void (*add)(const void*, size_t, int), int requester,
 	*p++ = ((unsigned)(1 + (int) (256.0*random()/(RAND_MAX+1.0)))-1);
 #endif
     add_randomness( buffer, length, requester );
-    m_free(buffer);
+    xfree(buffer);
     return 0; /* okay */
 }

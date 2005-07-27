@@ -473,12 +473,12 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
     switch( pkttype ) {
       case PKT_PUBLIC_KEY:
       case PKT_PUBLIC_SUBKEY:
-	pkt->pkt.public_key = m_alloc_clear(sizeof *pkt->pkt.public_key );
+	pkt->pkt.public_key = xmalloc_clear(sizeof *pkt->pkt.public_key );
 	rc = parse_key(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_SECRET_KEY:
       case PKT_SECRET_SUBKEY:
-	pkt->pkt.secret_key = m_alloc_clear(sizeof *pkt->pkt.secret_key );
+	pkt->pkt.secret_key = xmalloc_clear(sizeof *pkt->pkt.secret_key );
 	rc = parse_key(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_SYMKEY_ENC:
@@ -488,11 +488,11 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	rc = parse_pubkeyenc(inp, pkttype, pktlen, pkt );
 	break;
       case PKT_SIGNATURE:
-	pkt->pkt.signature = m_alloc_clear(sizeof *pkt->pkt.signature );
+	pkt->pkt.signature = xmalloc_clear(sizeof *pkt->pkt.signature );
 	rc = parse_signature(inp, pkttype, pktlen, pkt->pkt.signature );
 	break;
       case PKT_ONEPASS_SIG:
-	pkt->pkt.onepass_sig = m_alloc_clear(sizeof *pkt->pkt.onepass_sig );
+	pkt->pkt.onepass_sig = xmalloc_clear(sizeof *pkt->pkt.onepass_sig );
 	rc = parse_onepass_sig(inp, pkttype, pktlen, pkt->pkt.onepass_sig );
 	break;
       case PKT_USER_ID:
@@ -627,7 +627,7 @@ read_rest( IOBUF inp, size_t pktlen, int partial )
 	p = NULL;
     }
     else {
-	p = m_alloc( pktlen );
+	p = xmalloc( pktlen );
 	for(i=0; pktlen; pktlen--, i++ )
 	    p[i] = iobuf_get(inp);
     }
@@ -682,7 +682,7 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	goto leave;
     }
     seskeylen = pktlen - minlen;
-    k = packet->pkt.symkey_enc = m_alloc_clear( sizeof *packet->pkt.symkey_enc
+    k = packet->pkt.symkey_enc = xmalloc_clear( sizeof *packet->pkt.symkey_enc
 						+ seskeylen - 1 );
     k->version = version;
     k->cipher_algo = cipher_algo;
@@ -739,7 +739,7 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     int i, ndata;
     PKT_pubkey_enc *k;
 
-    k = packet->pkt.pubkey_enc = m_alloc_clear(sizeof *packet->pkt.pubkey_enc);
+    k = packet->pkt.pubkey_enc = xmalloc_clear(sizeof *packet->pkt.pubkey_enc);
     if( pktlen < 12 ) {
 	log_error("packet(%d) too short\n", pkttype);
         rc = G10ERR_INVALID_PACKET;
@@ -1228,7 +1228,7 @@ void parse_revkeys(PKT_signature *sig)
       if(len==sizeof(struct revocation_key) &&
 	 (revkey->class&0x80)) /* 0x80 bit must be set */
 	{
-	  sig->revkey=m_realloc(sig->revkey,
+	  sig->revkey=xrealloc(sig->revkey,
 			  sizeof(struct revocation_key *)*(sig->numrevkeys+1));
 	  sig->revkey[sig->numrevkeys]=revkey;
 	  sig->numrevkeys++;
@@ -1280,7 +1280,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    goto leave;
 	}
 	if( n ) {
-	    sig->hashed = m_alloc (sizeof (*sig->hashed) + n - 1 );
+	    sig->hashed = xmalloc (sizeof (*sig->hashed) + n - 1 );
             sig->hashed->size = n;
 	    sig->hashed->len = n;
 	    if( iobuf_read (inp, sig->hashed->data, n ) != n ) {
@@ -1298,7 +1298,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    goto leave;
 	}
 	if( n ) {
-	    sig->unhashed = m_alloc (sizeof(*sig->unhashed) + n - 1 );
+	    sig->unhashed = xmalloc (sizeof(*sig->unhashed) + n - 1 );
             sig->unhashed->size = n;
 	    sig->unhashed->len = n;
 	    if( iobuf_read(inp, sig->unhashed->data, n ) != n ) {
@@ -1514,7 +1514,7 @@ read_protected_v3_mpi (IOBUF inp, unsigned long *length)
       return NULL;
     }
   nbytes = (nbits+7) / 8;
-  buf = p = m_alloc (2 + nbytes);
+  buf = p = xmalloc (2 + nbytes);
   *p++ = nbits >> 8;
   *p++ = nbits;
   for (; nbytes && length; nbytes--, --*length)
@@ -1522,7 +1522,7 @@ read_protected_v3_mpi (IOBUF inp, unsigned long *length)
   if (nbytes)
     {
       log_error ("packet shorter tham mpi\n");
-      m_free (buf);
+      xfree (buf);
       return NULL;
     }
 
@@ -1825,7 +1825,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	if( sk->protect.s2k.mode == 1001 
             || sk->protect.s2k.mode == 1002 ) {
 	    /* better set some dummy stuff here */
-	    sk->skey[npkey] = mpi_set_opaque(NULL, m_strdup("dummydata"), 10);
+	    sk->skey[npkey] = mpi_set_opaque(NULL, xstrdup("dummydata"), 10);
 	    pktlen = 0;
 	}
 	else if( is_v4 && sk->is_protected ) {
@@ -1911,7 +1911,7 @@ parse_attribute_subpkts(PKT_user_id *uid)
   int buflen=uid->attrib_len;
   byte type;
 
-  m_free(uid->attribs);
+  xfree(uid->attribs);
 
   while(buflen)
     {
@@ -1934,7 +1934,7 @@ parse_attribute_subpkts(PKT_user_id *uid)
       if( buflen < n )
 	goto too_short;
 
-      attribs=m_realloc(attribs,(count+1)*sizeof(struct user_attribute));
+      attribs=xrealloc(attribs,(count+1)*sizeof(struct user_attribute));
       memset(&attribs[count],0,sizeof(struct user_attribute));
 
       type=*buffer;
@@ -1983,7 +1983,7 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + pktlen);
+    packet->pkt.user_id = xmalloc(sizeof *packet->pkt.user_id  + pktlen);
     packet->pkt.user_id->len = pktlen;
 
     setup_user_id(packet);
@@ -2047,12 +2047,12 @@ parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     byte *p;
 
 #define EXTRA_UID_NAME_SPACE 71
-    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id
+    packet->pkt.user_id = xmalloc(sizeof *packet->pkt.user_id
                                   + EXTRA_UID_NAME_SPACE);
 
     setup_user_id(packet);
 
-    packet->pkt.user_id->attrib_data = m_alloc(pktlen);
+    packet->pkt.user_id->attrib_data = xmalloc(pktlen);
     packet->pkt.user_id->attrib_len = pktlen;
     p = packet->pkt.user_id->attrib_data;
     for( ; pktlen; pktlen--, p++ )
@@ -2077,7 +2077,7 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.comment = m_alloc(sizeof *packet->pkt.comment + pktlen - 1);
+    packet->pkt.comment = xmalloc(sizeof *packet->pkt.comment + pktlen - 1);
     packet->pkt.comment->len = pktlen;
     p = packet->pkt.comment->data;
     for( ; pktlen; pktlen--, p++ )
@@ -2108,7 +2108,7 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
     {
       c = iobuf_get_noeof(inp);
       pktlen--;
-      pkt->pkt.ring_trust = m_alloc( sizeof *pkt->pkt.ring_trust );
+      pkt->pkt.ring_trust = xmalloc( sizeof *pkt->pkt.ring_trust );
       pkt->pkt.ring_trust->trustval = c;
       pkt->pkt.ring_trust->sigcache = 0;
       if (!c && pktlen==1)
@@ -2150,7 +2150,7 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     mode = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     namelen = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
-    pt = pkt->pkt.plaintext = m_alloc(sizeof *pkt->pkt.plaintext + namelen -1);
+    pt = pkt->pkt.plaintext = xmalloc(sizeof *pkt->pkt.plaintext + namelen -1);
     pt->new_ctb = new_ctb;
     pt->mode = mode;
     pt->namelen = namelen;
@@ -2204,7 +2204,7 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
      * (this should be the last object in a file or
      *	the compress algorithm should know the length)
      */
-    zd = pkt->pkt.compressed =	m_alloc(sizeof *pkt->pkt.compressed );
+    zd = pkt->pkt.compressed =	xmalloc(sizeof *pkt->pkt.compressed );
     zd->algorithm = iobuf_get_noeof(inp);
     zd->len = 0; /* not used */ 
     zd->new_ctb = new_ctb;
@@ -2223,7 +2223,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     PKT_encrypted *ed;
     unsigned long orig_pktlen = pktlen;
 
-    ed = pkt->pkt.encrypted =  m_alloc(sizeof *pkt->pkt.encrypted );
+    ed = pkt->pkt.encrypted =  xmalloc(sizeof *pkt->pkt.encrypted );
     ed->len = pktlen;
     /* we don't know the extralen which is (cipher_blocksize+2)
        because the algorithm ist not specified in this packet.
@@ -2282,7 +2282,7 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
     PKT_mdc *mdc;
     byte *p;
 
-    mdc = pkt->pkt.mdc=  m_alloc(sizeof *pkt->pkt.mdc );
+    mdc = pkt->pkt.mdc=  xmalloc(sizeof *pkt->pkt.mdc );
     if( list_mode )
 	fprintf (listfp, ":mdc packet: length=%lu\n", pktlen);
     if( !new_ctb || pktlen != 20 ) {
@@ -2332,7 +2332,7 @@ parse_gpg_control( IOBUF inp, int pkttype,
     if ( list_mode )
         puts ("- gpg control packet");
 
-    packet->pkt.gpg_control = m_alloc(sizeof *packet->pkt.gpg_control
+    packet->pkt.gpg_control = xmalloc(sizeof *packet->pkt.gpg_control
                                       + pktlen - 1);
     packet->pkt.gpg_control->control = iobuf_get_noeof(inp); pktlen--;
     packet->pkt.gpg_control->datalen = pktlen;
@@ -2369,10 +2369,10 @@ create_gpg_control( ctrlpkttype_t type, const byte *data, size_t datalen )
     PACKET *packet;
     byte *p;
 
-    packet = m_alloc( sizeof *packet );
+    packet = xmalloc( sizeof *packet );
     init_packet(packet);
     packet->pkttype = PKT_GPG_CONTROL;
-    packet->pkt.gpg_control = m_alloc(sizeof *packet->pkt.gpg_control
+    packet->pkt.gpg_control = xmalloc(sizeof *packet->pkt.gpg_control
                                       + datalen - 1);
     packet->pkt.gpg_control->control = type;
     packet->pkt.gpg_control->datalen = datalen;

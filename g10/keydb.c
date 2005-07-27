@@ -235,7 +235,7 @@ keydb_add_resource (const char *url, int flags, int secret)
 	    filename = make_filename (opt.homedir, resname, NULL);
     }
     else
-	filename = m_strdup (resname);
+	filename = xstrdup (resname);
 
     if (!force)
 	force = secret? !any_secret : !any_public;
@@ -323,7 +323,7 @@ keydb_add_resource (const char *url, int flags, int secret)
 	any_secret = 1;
     else
 	any_public = 1;
-    m_free (filename);
+    xfree (filename);
     return rc;
 }
 
@@ -336,7 +336,7 @@ keydb_new (int secret)
   KEYDB_HANDLE hd;
   int i, j;
   
-  hd = m_alloc_clear (sizeof *hd);
+  hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;
   
   assert (used_resources <= MAX_KEYDB_RESOURCES);
@@ -354,7 +354,7 @@ keydb_new (int secret)
           hd->active[j].secret = all_resources[i].secret;
           hd->active[j].u.kr = keyring_new (all_resources[i].token, secret);
           if (!hd->active[j].u.kr) {
-            m_free (hd);
+            xfree (hd);
             return NULL; /* fixme: release all previously allocated handles*/
           }
           j++;
@@ -388,7 +388,7 @@ keydb_release (KEYDB_HANDLE hd)
         }
     }
 
-    m_free (hd);
+    xfree (hd);
 }
 
 

@@ -802,7 +802,7 @@ build_list( const char *text, char letter,
     for(i=0; i <= 110; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
 	    n += strlen(s) + 7 + 2;
-    list = m_alloc( 21 + n ); *list = 0;
+    list = xmalloc( 21 + n ); *list = 0;
     for(p=NULL, i=0; i <= 110; i++ ) {
 	if( !chkf(i) && (s=mapf(i)) ) {
 	    if( !p ) {
@@ -815,7 +815,7 @@ build_list( const char *text, char letter,
 	    if(strlen(line)>60) {
 	      int spaces=strlen(text);
 
-	      list=m_realloc(list,n+spaces+1);
+	      list=xrealloc(list,n+spaces+1);
 	      /* realloc could move the block, so find the end again */
 	      p=list;
 	      while(*p)
@@ -871,7 +871,7 @@ make_username( const char *string )
 {
     char *p;
     if( utf8_strings )
-	p = m_strdup(string);
+	p = xstrdup(string);
     else
 	p = native_to_utf8( string );
     return p;
@@ -1038,7 +1038,7 @@ add_group(char *string)
 
   if(!item)
     {
-      item=m_alloc(sizeof(struct groupitem));
+      item=xmalloc(sizeof(struct groupitem));
       item->name=name;
       item->next=opt.grouplist;
       item->values=NULL;
@@ -1071,7 +1071,7 @@ rm_group(char *name)
 	    opt.grouplist=item->next;
 
 	  free_strlist(item->values);
-	  m_free(item);
+	  xfree(item);
 	  break;
 	}
     }
@@ -1114,7 +1114,7 @@ check_permissions(const char *path,int item)
 	tmppath=make_filename(GNUPG_LIBDIR,path,NULL);
     }
   else
-    tmppath=m_strdup(path);
+    tmppath=xstrdup(path);
 
   /* If the item is located in the homedir, but isn't the homedir,
      don't continue if we already checked the homedir itself.  This is
@@ -1147,7 +1147,7 @@ check_permissions(const char *path,int item)
       goto end;
     }
 
-  m_free(dir);
+  xfree(dir);
 
   /* Assume failure */
   ret=1;
@@ -1270,7 +1270,7 @@ check_permissions(const char *path,int item)
     }
 
  end:
-  m_free(tmppath);
+  xfree(tmppath);
 
   if(homedir)
     homedir_cache=ret;
@@ -1479,8 +1479,8 @@ parse_subpacket_list(char *list)
 	}
     }
 
-  m_free(opt.show_subpackets);
-  opt.show_subpackets=m_alloc(count+1);
+  xfree(opt.show_subpackets);
+  opt.show_subpackets=xmalloc(count+1);
   opt.show_subpackets[count--]=0;
 
   for(i=1;i<128 && count>=0;i++)
@@ -1531,7 +1531,7 @@ parse_list_options(char *str)
       else if(subpackets==NULL && opt.show_subpackets)
 	{
 	  /* User did 'no-show-subpackets' */
-	  m_free(opt.show_subpackets);
+	  xfree(opt.show_subpackets);
 	  opt.show_subpackets=NULL;
 	}
 
@@ -1552,7 +1552,7 @@ collapse_args(int argc,char *argv[])
   for(i=0;i<argc;i++)
     {
       len+=strlen(argv[i])+2;
-      str=m_realloc(str,len);
+      str=xrealloc(str,len);
       if(first)
 	{
 	  str[0]='\0';
@@ -1641,7 +1641,7 @@ main (int argc, char **argv )
      * secmem_init()  somewhere after the option parsing
      */
     log_set_name("gpg");
-    secure_random_alloc(); /* put random number into secure memory */
+    secure_randoxmalloc(); /* put random number into secure memory */
     may_coredump = disable_core_dumps();
     init_signals();
     create_dotlock(NULL); /* register locking cleanup */
@@ -1740,7 +1740,7 @@ main (int argc, char **argv )
 
 #ifdef HAVE_DOSISH_SYSTEM
     if ( strchr (opt.homedir,'\\') ) {
-        char *d, *buf = m_alloc (strlen (opt.homedir)+1);
+        char *d, *buf = xmalloc (strlen (opt.homedir)+1);
         const char *s = opt.homedir;
         for (d=buf,s=opt.homedir; *s; s++)
             *d++ = *s == '\\'? '/': *s;
@@ -1770,7 +1770,7 @@ main (int argc, char **argv )
     /* Try for a version specific config file first */
     if( default_config )
       {
-	char *name=m_strdup("gpg" EXTSEP_S "conf-" SAFE_VERSION);
+	char *name=xstrdup("gpg" EXTSEP_S "conf-" SAFE_VERSION);
 	char *ver=&name[strlen("gpg" EXTSEP_S "conf-")];
 
 	do
@@ -1779,7 +1779,7 @@ main (int argc, char **argv )
 	      {
 		char *tok;
 
-		m_free(configname);
+		xfree(configname);
 		configname=NULL;
 
 		if((tok=strrchr(ver,SAFE_VERSION_DASH)))
@@ -1794,7 +1794,7 @@ main (int argc, char **argv )
 	  }
 	while(access(configname,R_OK));
 
-	m_free(name);
+	xfree(name);
 
 	if(!configname)
 	  configname=make_filename(opt.homedir, "gpg" EXTSEP_S "conf", NULL );
@@ -1803,11 +1803,11 @@ main (int argc, char **argv )
             char *p = make_filename(opt.homedir, "options", NULL );
             if (!access (p, R_OK))
               log_info (_("NOTE: old default options file `%s' ignored\n"), p);
-            m_free (p);
+            xfree (p);
           }
         else
           { /* Keep on using the old default one. */
-            m_free (configname);
+            xfree (configname);
             configname = make_filename(opt.homedir, "options", NULL );
           }
       }
@@ -1852,7 +1852,7 @@ main (int argc, char **argv )
 				    configname, strerror(errno) );
 		g10_exit(2);
 	    }
-	    m_free(configname); configname = NULL;
+	    xfree(configname); configname = NULL;
 	}
 	if( parse_debug && configname )
 	    log_info(_("reading options from `%s'\n"), configname );
@@ -2022,8 +2022,8 @@ main (int argc, char **argv )
 	  case oOptions:
 	    /* config files may not be nested (silently ignore them) */
 	    if( !configfp ) {
-		m_free(configname);
-		configname = m_strdup(pargs.r.ret_str);
+		xfree(configname);
+		configname = xstrdup(pargs.r.ret_str);
 		goto next_pass;
 	    }
 	    break;
@@ -2045,11 +2045,11 @@ main (int argc, char **argv )
 			opt.def_recipient = make_username(pargs.r.ret_str);
 		    break;
 	  case oDefRecipientSelf:
-		    m_free(opt.def_recipient); opt.def_recipient = NULL;
+		    xfree(opt.def_recipient); opt.def_recipient = NULL;
 		    opt.def_recipient_self = 1;
 		    break;
 	  case oNoDefRecipient:
-		    m_free(opt.def_recipient); opt.def_recipient = NULL;
+		    xfree(opt.def_recipient); opt.def_recipient = NULL;
 		    opt.def_recipient_self = 0;
 		    break;
 	  case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
@@ -2206,8 +2206,8 @@ main (int argc, char **argv )
 	  case oDisableMDC: opt.disable_mdc = 1; break;
 	  case oNoDisableMDC: opt.disable_mdc = 0; break;
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
-	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
-	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
+	  case oS2KDigest: s2k_digest_string = xstrdup(pargs.r.ret_str); break;
+	  case oS2KCipher: s2k_cipher_string = xstrdup(pargs.r.ret_str); break;
           case oSimpleSKChecksum: opt.simple_sk_checksum = 1; break;
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
@@ -2284,10 +2284,10 @@ main (int argc, char **argv )
             opt.command_fd = open_info_file (pargs.r.ret_str, 0);
             break;
 	  case oCipherAlgo: 
-            def_cipher_string = m_strdup(pargs.r.ret_str);
+            def_cipher_string = xstrdup(pargs.r.ret_str);
             break;
 	  case oDigestAlgo:
-            def_digest_string = m_strdup(pargs.r.ret_str);
+            def_digest_string = xstrdup(pargs.r.ret_str);
             break;
 	  case oCompressAlgo:
 	    /* If it is all digits, stick a Z in front of it for
@@ -2305,15 +2305,15 @@ main (int argc, char **argv )
 
 	      if(*pt=='\0')
 		{
-		  compress_algo_string=m_alloc(strlen(pargs.r.ret_str)+2);
+		  compress_algo_string=xmalloc(strlen(pargs.r.ret_str)+2);
 		  strcpy(compress_algo_string,"Z");
 		  strcat(compress_algo_string,pargs.r.ret_str);
 		}
 	      else
-		compress_algo_string = m_strdup(pargs.r.ret_str);
+		compress_algo_string = xstrdup(pargs.r.ret_str);
 	    }
 	    break;
-	  case oCertDigestAlgo: cert_digest_string = m_strdup(pargs.r.ret_str); break;
+	  case oCertDigestAlgo: cert_digest_string = xstrdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case oRequireSecmem: require_secmem=1; break;
 	  case oNoRequireSecmem: require_secmem=0; break;
@@ -2524,7 +2524,7 @@ main (int argc, char **argv )
 		struct groupitem *iter=opt.grouplist;
 		free_strlist(iter->values);
 		opt.grouplist=opt.grouplist->next;
-		m_free(iter);
+		xfree(iter);
 	      }
 	    break;
 	  case oStrict: opt.strict=1; log_set_strict(1); break;
@@ -2569,11 +2569,11 @@ main (int argc, char **argv )
         if (!save_configname)
           save_configname = configname;
         else
-          m_free(configname);
+          xfree(configname);
         configname = NULL;
 	goto next_pass;
     }
-    m_free( configname ); configname = NULL;
+    xfree( configname ); configname = NULL;
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
@@ -2584,7 +2584,7 @@ main (int argc, char **argv )
         gpgconf_list (save_configname);
         g10_exit (0);
       }
-    m_free (save_configname);
+    xfree (save_configname);
 
     if( nogreeting )
 	greeting = 0;
@@ -2699,8 +2699,8 @@ main (int argc, char **argv )
 		/* This only sets IDEA for symmetric encryption
 		   since it is set via select_algo_from_prefs for
 		   pk encryption. */
-		m_free(def_cipher_string);
-		def_cipher_string = m_strdup("idea");
+		xfree(def_cipher_string);
+		def_cipher_string = xstrdup("idea");
 	      }
 
 	    /* PGP2 can't handle the output from the textmode
@@ -2722,10 +2722,10 @@ main (int argc, char **argv )
 	    opt.pgp2_workarounds = 1;
 	    opt.ask_sig_expire = 0;
 	    opt.ask_cert_expire = 0;
-	    m_free(def_digest_string);
-	    def_digest_string = m_strdup("md5");
-	    m_free(s2k_digest_string);
-	    s2k_digest_string = m_strdup("md5");
+	    xfree(def_digest_string);
+	    def_digest_string = xstrdup("md5");
+	    xfree(s2k_digest_string);
+	    s2k_digest_string = xstrdup("md5");
 	    opt.compress_algo = COMPRESS_ALGO_ZIP;
 	  }
       }
@@ -2754,37 +2754,37 @@ main (int argc, char **argv )
 	   (ascii_strcasecmp(def_cipher_string,"idea")==0
 	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
 	  idea_cipher_warn(1);
-	m_free(def_cipher_string); def_cipher_string = NULL;
+	xfree(def_cipher_string); def_cipher_string = NULL;
 	if( check_cipher_algo(opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( def_digest_string ) {
 	opt.def_digest_algo = string_to_digest_algo(def_digest_string);
-	m_free(def_digest_string); def_digest_string = NULL;
+	xfree(def_digest_string); def_digest_string = NULL;
 	if( check_digest_algo(opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
     if( compress_algo_string ) {
 	opt.compress_algo = string_to_compress_algo(compress_algo_string);
-	m_free(compress_algo_string); compress_algo_string = NULL;
+	xfree(compress_algo_string); compress_algo_string = NULL;
 	if( check_compress_algo(opt.compress_algo) )
 	    log_error(_("selected compression algorithm is invalid\n"));
     }
     if( cert_digest_string ) {
 	opt.cert_digest_algo = string_to_digest_algo(cert_digest_string);
-	m_free(cert_digest_string); cert_digest_string = NULL;
+	xfree(cert_digest_string); cert_digest_string = NULL;
 	if( check_digest_algo(opt.cert_digest_algo) )
 	    log_error(_("selected certification digest algorithm is invalid\n"));
     }
     if( s2k_cipher_string ) {
 	opt.s2k_cipher_algo = string_to_cipher_algo(s2k_cipher_string);
-	m_free(s2k_cipher_string); s2k_cipher_string = NULL;
+	xfree(s2k_cipher_string); s2k_cipher_string = NULL;
 	if( check_cipher_algo(opt.s2k_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( s2k_digest_string ) {
 	opt.s2k_digest_algo = string_to_digest_algo(s2k_digest_string);
-	m_free(s2k_digest_string); s2k_digest_string = NULL;
+	xfree(s2k_digest_string); s2k_digest_string = NULL;
 	if( check_digest_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
@@ -2936,7 +2936,7 @@ main (int argc, char **argv )
 	set_random_seed_file(p);
         if (!access (p, F_OK))
           register_secured_file (p);
-	m_free(p);
+	xfree(p);
     }
 
     if( !cmd && opt.fingerprint && !with_fpr ) {
@@ -3093,7 +3093,7 @@ main (int argc, char **argv )
 	    if( argc > 1 )
 		wrong_args(_("--sign [filename]"));
 	    if( argc ) {
-		sl = m_alloc_clear( sizeof *sl + strlen(fname));
+		sl = xmalloc_clear( sizeof *sl + strlen(fname));
 		strcpy(sl->d, fname);
 	    }
 	}
@@ -3106,7 +3106,7 @@ main (int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("--sign --encrypt [filename]"));
 	if( argc ) {
-	    sl = m_alloc_clear( sizeof *sl + strlen(fname));
+	    sl = xmalloc_clear( sizeof *sl + strlen(fname));
 	    strcpy(sl->d, fname);
 	}
 	else
@@ -3130,7 +3130,7 @@ main (int argc, char **argv )
 	  {
 	    if( argc )
 	      {
-		sl = m_alloc_clear( sizeof *sl + strlen(fname));
+		sl = xmalloc_clear( sizeof *sl + strlen(fname));
 		strcpy(sl->d, fname);
 	      }
 	    else
@@ -3205,7 +3205,7 @@ main (int argc, char **argv )
 	append_to_strlist( &sl, "save" );
 	username = make_username( fname );
 	keyedit_menu(fname, locusr, sl, 0, 0 );
-	m_free(username);
+	xfree(username);
 	free_strlist(sl);
 	break;
 
@@ -3222,7 +3222,7 @@ main (int argc, char **argv )
 	}
 	else
 	    keyedit_menu(username, locusr, NULL, 0, 1 );
-	m_free(username);
+	xfree(username);
 	break;
 
       case aDeleteKeys:
@@ -3369,7 +3369,7 @@ main (int argc, char **argv )
 	    wrong_args("--gen-revoke user-id");
 	username =  make_username(*argv);
 	gen_revoke( username );
-	m_free( username );
+	xfree( username );
 	break;
 
       case aDesigRevoke:
@@ -3377,7 +3377,7 @@ main (int argc, char **argv )
 	    wrong_args("--desig-revoke user-id");
 	username =  make_username(*argv);
 	gen_desig_revoke( username );
-	m_free( username );
+	xfree( username );
 	break;
 
       case aDeArmor:
@@ -3455,7 +3455,7 @@ main (int argc, char **argv )
                 if (opt.armor) {
                     char *tmp = make_radix64_string (p, n);
                     fputs (tmp, stdout);
-                    m_free (tmp);
+                    xfree (tmp);
                     if (n%3 == 1)
                       putchar ('=');
                     if (n%3)
@@ -3463,7 +3463,7 @@ main (int argc, char **argv )
                 } else {
                     fwrite( p, n, 1, stdout );
                 }
-		m_free(p);
+		xfree(p);
 		if( !endless )
 		    count -= n;
 	    }
@@ -3534,7 +3534,7 @@ main (int argc, char **argv )
 	for( ; argc; argc--, argv++ ) {
 	    username = make_username( *argv );
 	    list_trust_path( username );
-	    m_free(username);
+	    xfree(username);
 	}
 	break;
 
@@ -3595,7 +3595,7 @@ main (int argc, char **argv )
 	{
 	  char *str=collapse_args(argc,argv);
 	  list_config(str);
-	  m_free(str);
+	  xfree(str);
 	}
 	break;
 

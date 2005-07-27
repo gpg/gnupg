@@ -72,7 +72,7 @@ encode_seskey( DEK *dek, DEK **seskey, byte *enckey )
     assert ( dek->keylen <= 32 );
     if(!*seskey)
       {
-	*seskey=m_alloc_clear(sizeof(DEK));
+	*seskey=xmalloc_clear(sizeof(DEK));
 	(*seskey)->keylen=dek->keylen;
 	(*seskey)->algo=dek->algo;
 	make_session_key(*seskey);
@@ -199,7 +199,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
     
     cfx.dek = NULL;
     if( mode ) {
-	s2k = m_alloc_clear( sizeof *s2k );
+	s2k = xmalloc_clear( sizeof *s2k );
 	s2k->mode = RFC1991? 0:opt.s2k_mode;
 	s2k->hash_algo=S2K_DIGEST_ALGO;
 	cfx.dek = passphrase_to_dek( NULL, 0,
@@ -207,8 +207,8 @@ encode_simple( const char *filename, int mode, int use_seskey )
                                      NULL, NULL);
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = G10ERR_PASSPHRASE;
-	    m_free(cfx.dek);
-	    m_free(s2k);
+	    xfree(cfx.dek);
+	    xfree(s2k);
 	    iobuf_close(inp);
 	    log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
 	    return rc;
@@ -224,7 +224,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	    DEK *dek = NULL;
             seskeylen = cipher_get_keylen( default_cipher_algo() ) / 8;
             encode_seskey( cfx.dek, &dek, enckey );
-            m_free( cfx.dek ); cfx.dek = dek;
+            xfree( cfx.dek ); cfx.dek = dek;
 	  }
 
 	if(opt.verbose)
@@ -244,8 +244,8 @@ encode_simple( const char *filename, int mode, int use_seskey )
 
     if( rc || (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
 	iobuf_cancel(inp);
-	m_free(cfx.dek);
-	m_free(s2k);
+	xfree(cfx.dek);
+	xfree(s2k);
 	return rc;
     }
 
@@ -253,7 +253,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	iobuf_push_filter( out, armor_filter, &afx );
 
     if( s2k && !RFC1991 ) {
-	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc + seskeylen + 1 );
+	PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc + seskeylen + 1 );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
 	enc->s2k = *s2k;
@@ -265,7 +265,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	pkt.pkt.symkey_enc = enc;
 	if( (rc = build_packet( out, &pkt )) )
 	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
-	m_free(enc);
+	xfree(enc);
     }
 
     if (!opt.no_literal) {
@@ -274,13 +274,13 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	    char *s = make_basename( opt.set_filename ? opt.set_filename
 						      : filename,
 				     iobuf_get_real_fname( inp ) );
-	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	    pt = xmalloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );
-	    m_free(s);
+	    xfree(s);
 	}
 	else { /* no filename */
-	    pt = m_alloc( sizeof *pt - 1 );
+	    pt = xmalloc( sizeof *pt - 1 );
 	    pt->namelen = 0;
 	}
     }
@@ -373,15 +373,15 @@ encode_simple( const char *filename, int mode, int use_seskey )
     if (pt)
 	pt->buf = NULL;
     free_packet(&pkt);
-    m_free(cfx.dek);
-    m_free(s2k);
+    xfree(cfx.dek);
+    xfree(s2k);
     return rc;
 }
 
 int
 setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
 {
-  *symkey_s2k=m_alloc_clear(sizeof(STRING2KEY));
+  *symkey_s2k=xmalloc_clear(sizeof(STRING2KEY));
   (*symkey_s2k)->mode = opt.s2k_mode;
   (*symkey_s2k)->hash_algo = S2K_DIGEST_ALGO;
 
@@ -389,8 +389,8 @@ setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
 				*symkey_s2k,2,NULL,NULL);
   if(!*symkey_dek || !(*symkey_dek)->keylen)
     {
-      m_free(*symkey_dek);
-      m_free(*symkey_s2k);
+      xfree(*symkey_dek);
+      xfree(*symkey_s2k);
       return G10ERR_PASSPHRASE;
     }
 
@@ -406,7 +406,7 @@ write_symkey_enc(STRING2KEY *symkey_s2k,DEK *symkey_dek,DEK *dek,IOBUF out)
   byte enckey[33];
   PACKET pkt;
 
-  enc=m_alloc_clear(sizeof(PKT_symkey_enc)+seskeylen+1);
+  enc=xmalloc_clear(sizeof(PKT_symkey_enc)+seskeylen+1);
   encode_seskey(symkey_dek,&dek,enckey);
 
   enc->version = 4;
@@ -421,7 +421,7 @@ write_symkey_enc(STRING2KEY *symkey_s2k,DEK *symkey_dek,DEK *dek,IOBUF out)
   if((rc=build_packet(out,&pkt)))
     log_error("build symkey_enc packet failed: %s\n",g10_errstr(rc));
 
-  m_free(enc);
+  xfree(enc);
   return rc;
 }
 
@@ -503,7 +503,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 	iobuf_push_filter( out, armor_filter, &afx );
 
     /* create a session key */
-    cfx.dek = m_alloc_secure_clear (sizeof *cfx.dek);
+    cfx.dek = xmalloc_secure_clear (sizeof *cfx.dek);
     if( !opt.def_cipher_algo ) { /* try to get it from the prefs */
 	cfx.dek->algo = select_algo_from_prefs(pk_list,PREFTYPE_SYM,-1,NULL);
 	/* The only way select_algo_from_prefs can fail here is when
@@ -575,13 +575,13 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 	    char *s = make_basename( opt.set_filename ? opt.set_filename
 						      : filename,
 				     iobuf_get_real_fname( inp ) );
-	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	    pt = xmalloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );
-	    m_free(s);
+	    xfree(s);
 	}
 	else { /* no filename */
-	    pt = m_alloc( sizeof *pt - 1 );
+	    pt = xmalloc( sizeof *pt - 1 );
 	    pt->namelen = 0;
 	}
     }
@@ -680,9 +680,9 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
     if( pt )
 	pt->buf = NULL;
     free_packet(&pkt);
-    m_free(cfx.dek);
-    m_free(symkey_dek);
-    m_free(symkey_s2k);
+    xfree(cfx.dek);
+    xfree(symkey_dek);
+    xfree(symkey_s2k);
     release_pk_list( pk_list );
     return rc;
 }
@@ -706,7 +706,7 @@ encrypt_filter( void *opaque, int control,
     }
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	if( !efx->header_okay ) {
-	    efx->cfx.dek = m_alloc_secure_clear( sizeof *efx->cfx.dek );
+	    efx->cfx.dek = xmalloc_secure_clear( sizeof *efx->cfx.dek );
 
 	    if( !opt.def_cipher_algo  ) { /* try to get it from the prefs */
 		efx->cfx.dek->algo =
@@ -758,8 +758,8 @@ encrypt_filter( void *opaque, int control,
     }
     else if( control == IOBUFCTRL_FREE )
       {
-	m_free(efx->symkey_dek);
-	m_free(efx->symkey_s2k);
+	xfree(efx->symkey_dek);
+	xfree(efx->symkey_s2k);
       }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "encrypt_filter";
@@ -785,7 +785,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	pk = pk_list->pk;
 
 	print_pubkey_algo_note( pk->pubkey_algo );
-	enc = m_alloc_clear( sizeof *enc );
+	enc = xmalloc_clear( sizeof *enc );
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
 	enc->throw_keyid = (opt.throw_keyid || (pk_list->flags&1));
@@ -822,7 +822,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 		log_info(_("%s/%s encrypted for: \"%s\"\n"),
 		    pubkey_algo_to_string(enc->pubkey_algo),
 		    cipher_algo_to_string(dek->algo), ustr );
-		m_free(ustr);
+		xfree(ustr);
 	    }
 	    /* and write it */
 	    init_packet(&pkt);

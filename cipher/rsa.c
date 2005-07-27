@@ -70,7 +70,7 @@ test_keys( RSA_secret_key *sk, unsigned nbits )
     pk.e = sk->e;
     {	char *p = get_random_bits( nbits, 0, 0 );
 	mpi_set_buffer( test, p, (nbits+7)/8, 0 );
-	m_free(p);
+	xfree(p);
     }
 
     public( out1, test, &pk );
@@ -355,7 +355,7 @@ rsa_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
     skey[5] = sk.u;
     /* make an empty list of factors */
     if (retfactors)
-      *retfactors = m_alloc_clear( 1 * sizeof **retfactors );
+      *retfactors = xmalloc_clear( 1 * sizeof **retfactors );
     return 0;
 }
 

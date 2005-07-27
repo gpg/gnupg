@@ -61,15 +61,15 @@ revocation_reason_build_cb( PKT_signature *sig, void *opaque )
 	ud = native_to_utf8( reason->desc );
 	buflen += strlen(ud);
     }
-    buffer = m_alloc( buflen );
+    buffer = xmalloc( buflen );
     *buffer = reason->code;
     if( ud ) {
 	memcpy(buffer+1, ud, strlen(ud) );
-	m_free( ud );
+	xfree( ud );
     }
 
     build_sig_subpkt( sig, SIGSUBPKT_REVOC_REASON, buffer, buflen );
-    m_free( buffer );
+    xfree( buffer );
     return 0;
 }
 
@@ -256,7 +256,7 @@ gen_desig_revoke( const char *uname )
 	if(sk)
 	  free_secret_key(sk);
 
-	sk=m_alloc_clear(sizeof(*sk));
+	sk=xmalloc_clear(sizeof(*sk));
 
 	rc=get_seckey_byfprint(sk,pk->revkey[i].fpr,MAX_FINGERPRINT_LEN);
 
@@ -452,7 +452,7 @@ gen_revoke( const char *uname )
     keyid_from_sk( sk, sk_keyid );
     print_seckey_info (sk);
 
-    pk = m_alloc_clear( sizeof *pk );
+    pk = xmalloc_clear( sizeof *pk );
 
     /* FIXME: We should get the public key direct from the secret one */
 
@@ -587,7 +587,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 
     do {
         code=-1;
-	m_free(description);
+	xfree(description);
 	description = NULL;
 
 	tty_printf(_("Please select the reason for the revocation:\n"));
@@ -618,7 +618,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
  	        n = -1;
 	    else
 		n = atoi(answer);
-	    m_free(answer);
+	    xfree(answer);
 	    if( n == 0 ) {
 	        code = 0x00; /* no particular reason */
 		code_text = text_0;
@@ -650,25 +650,25 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 	    trim_trailing_ws( answer, strlen(answer) );
 	    cpr_kill_prompt();
 	    if( !*answer ) {
-		m_free(answer);
+		xfree(answer);
 		break;
 	    }
 
 	    {
 		char *p = make_printable_string( answer, strlen(answer), 0 );
-		m_free(answer);
+		xfree(answer);
 		answer = p;
 	    }
 
 	    if( !description )
-		description = m_strdup(answer);
+		description = xstrdup(answer);
 	    else {
-		char *p = m_alloc( strlen(description) + strlen(answer) + 2 );
+		char *p = xmalloc( strlen(description) + strlen(answer) + 2 );
 		strcpy(stpcpy(stpcpy( p, description),"\n"),answer);
-		m_free(description);
+		xfree(description);
 		description = p;
 	    }
-	    m_free(answer);
+	    xfree(answer);
 	}
 
 	tty_printf(_("Reason for revocation: %s\n"), code_text );
@@ -680,7 +680,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
     } while( !cpr_get_answer_is_yes("ask_revocation_reason.okay",
 					    _("Is this okay? (y/N) "))  );
 
-    reason = m_alloc( sizeof *reason );
+    reason = xmalloc( sizeof *reason );
     reason->code = code;
     reason->desc = description;
     return reason;
@@ -690,7 +690,7 @@ void
 release_revocation_reason_info( struct revocation_reason_info *reason )
 {
     if( reason ) {
-	m_free( reason->desc );
-	m_free( reason );
+	xfree( reason->desc );
+	xfree( reason );
     }
 }

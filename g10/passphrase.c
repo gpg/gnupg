@@ -94,10 +94,10 @@ have_static_passphrase()
 void
 set_next_passphrase( const char *s )
 {
-    m_free(next_pw);
+    xfree(next_pw);
     next_pw = NULL;
     if( s ) {
-	next_pw = m_alloc_secure( strlen(s)+1 );
+	next_pw = xmalloc_secure( strlen(s)+1 );
 	strcpy(next_pw, s );
     }
 }
@@ -142,11 +142,11 @@ read_passphrase_from_fd( int fd )
         {
           char *pw2 = pw;
           len += 100;
-          pw = m_alloc_secure( len );
+          pw = xmalloc_secure( len );
           if( pw2 )
             {
               memcpy(pw, pw2, i );
-              m_free (pw2);
+              xfree (pw2);
             }
           else
             i=0;
@@ -158,7 +158,7 @@ read_passphrase_from_fd( int fd )
   if (!opt.batch)
     tty_printf("\b\b\b   \n" );
 
-  m_free( fd_passwd );
+  xfree( fd_passwd );
   fd_passwd = pw;
 }
 
@@ -229,7 +229,7 @@ agent_send_all_options (assuan_context_t ctx)
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   old_lc = setlocale (LC_CTYPE, NULL);
   if (old_lc)
-    old_lc = m_strdup (old_lc);
+    old_lc = xstrdup (old_lc);
   dft_lc = setlocale (LC_CTYPE, "");
 #endif
   if (opt.lc_ctype || (dft_ttyname && dft_lc))
@@ -241,7 +241,7 @@ agent_send_all_options (assuan_context_t ctx)
   if (old_lc)
     {
       setlocale (LC_CTYPE, old_lc);
-      m_free (old_lc);
+      xfree (old_lc);
     }
 #endif
   if (rc)
@@ -250,7 +250,7 @@ agent_send_all_options (assuan_context_t ctx)
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
   old_lc = setlocale (LC_MESSAGES, NULL);
   if (old_lc)
-    old_lc = m_strdup (old_lc);
+    old_lc = xstrdup (old_lc);
   dft_lc = setlocale (LC_MESSAGES, "");
 #endif
   if (opt.lc_messages || (dft_ttyname && dft_lc))
@@ -262,7 +262,7 @@ agent_send_all_options (assuan_context_t ctx)
   if (old_lc)
     {
       setlocale (LC_MESSAGES, old_lc);
-      m_free (old_lc);
+      xfree (old_lc);
     }
 #endif
   return rc;
@@ -472,7 +472,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
   char *atext = NULL;
   assuan_context_t ctx = NULL;
   char *pw = NULL;
-  PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+  PKT_public_key *pk = xmalloc_clear( sizeof *pk );
   byte fpr[MAX_FINGERPRINT_LEN];
   int have_fpr = 0;
   char *orig_codeset = NULL;
@@ -501,7 +501,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
 #endif
   if (orig_codeset)
     { /* We only switch when we are able to restore the codeset later. */
-      orig_codeset = m_strdup (orig_codeset);
+      orig_codeset = xstrdup (orig_codeset);
       if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
         orig_codeset = NULL; 
     }
@@ -525,7 +525,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
 
 #define KEYIDSTRING _(" (main key ID %s)")
 
-      maink = m_alloc ( strlen (KEYIDSTRING) + keystrlen() + 20 );
+      maink = xmalloc ( strlen (KEYIDSTRING) + keystrlen() + 20 );
       if( keyid[2] && keyid[3] && keyid[0] != keyid[2] 
           && keyid[1] != keyid[3] )
         sprintf( maink, KEYIDSTRING, keystr(&keyid[2]) );
@@ -542,15 +542,15 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
 		       "\"%.*s\"\n" \
 		       "%u-bit %s key, ID %s, created %s%s\n" )
 
-      atext = m_alloc ( 100 + strlen (PROMPTSTRING)  
+      atext = xmalloc ( 100 + strlen (PROMPTSTRING)  
                         + uidlen + 15 + strlen(algo_name) + keystrlen()
                         + strlen (timestr) + strlen (maink) );
       sprintf (atext, PROMPTSTRING,
                (int)uidlen, uid,
                nbits_from_pk (pk), algo_name, keystr(&keyid[0]), timestr,
                maink  );
-      m_free (uid);
-      m_free (maink);
+      xfree (uid);
+      xfree (maink);
 
 #undef PROMPTSTRING
 
@@ -562,9 +562,9 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
       
     }
   else if (mode == 2 ) 
-    atext = m_strdup ( _("Repeat passphrase\n") );
+    atext = xstrdup ( _("Repeat passphrase\n") );
   else
-    atext = m_strdup ( _("Enter passphrase\n") );
+    atext = xstrdup ( _("Enter passphrase\n") );
                 
   { 
       char *line, *p;
@@ -791,7 +791,7 @@ ask_passphrase (const char *description,
     }
   else if (fd_passwd) 
     {
-      pw = m_alloc_secure (strlen(fd_passwd)+1);
+      pw = xmalloc_secure (strlen(fd_passwd)+1);
       strcpy (pw, fd_passwd);
     }
   else if (opt.batch)
@@ -861,7 +861,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 
             us = get_long_user_id_string( keyid );
             write_status_text( STATUS_USERID_HINT, us );
-            m_free(us);
+            xfree(us);
 
 	    sprintf( buf, "%08lX%08lX %08lX%08lX %d 0",
                      (ulong)keyid[0], (ulong)keyid[1],
@@ -881,14 +881,14 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
        ignore the passphrase cache (mode!=1), print a prompt with
        information on that key. */
     if( keyid && !opt.batch && !next_pw && mode!=1 ) {
-	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	PKT_public_key *pk = xmalloc_clear( sizeof *pk );
 	char *p;
 
 	p=get_user_id_native(keyid);
 	tty_printf("\n");
 	tty_printf(_("You need a passphrase to unlock the secret key for\n"
 		     "user: \"%s\"\n"),p);
-	m_free(p);
+	xfree(p);
 
 	if( !get_pubkey( pk, keyid ) ) {
 	    const char *s = pubkey_algo_to_string( pk->pubkey_algo );
@@ -929,7 +929,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
           {
             if (!opt.use_agent)
               goto agent_died;
-            pw = m_strdup ("");
+            pw = xstrdup ("");
           }
         if( *pw && mode == 2 ) {
             char *pw2 = agent_get_passphrase ( keyid, 2, NULL, NULL, NULL,
@@ -938,29 +938,29 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
               {
                 if (!opt.use_agent)
                   {
-                    m_free (pw);
+                    xfree (pw);
                     pw = NULL;
                     goto agent_died;
                   }
-                pw2 = m_strdup ("");
+                pw2 = xstrdup ("");
               }
 	    if( strcmp(pw, pw2) ) {
-		m_free(pw2);
-		m_free(pw);
+		xfree(pw2);
+		xfree(pw);
 		return NULL;
 	    }
-	    m_free(pw2);
+	    xfree(pw2);
 	}
     }
     else if( fd_passwd ) {
         /* Return the passphrase we have store in FD_PASSWD. */
-	pw = m_alloc_secure( strlen(fd_passwd)+1 );
+	pw = xmalloc_secure( strlen(fd_passwd)+1 );
 	strcpy( pw, fd_passwd );
     }
     else if( opt.batch )
       {
 	log_error(_("can't query passphrase in batch mode\n"));
-	pw = m_strdup( "" ); /* return an empty passphrase */
+	pw = xstrdup( "" ); /* return an empty passphrase */
       }
     else {
         /* Read the passphrase from the tty or the command-fd. */
@@ -971,11 +971,11 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 				       _("Repeat passphrase: ") );
 	    tty_kill_prompt();
 	    if( strcmp(pw, pw2) ) {
-		m_free(pw2);
-		m_free(pw);
+		xfree(pw2);
+		xfree(pw);
 		return NULL;
 	    }
-	    m_free(pw2);
+	    xfree(pw2);
 	}
     }
 
@@ -985,13 +985,13 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     /* Hash the passphrase and store it in a newly allocated DEK
        object.  Keep a copy of the passphrase in LAST_PW for use by
        get_last_passphrase(). */
-    dek = m_alloc_secure_clear ( sizeof *dek );
+    dek = xmalloc_secure_clear ( sizeof *dek );
     dek->algo = cipher_algo;
     if( !*pw && mode == 2 )
 	dek->keylen = 0;
     else
 	hash_passphrase( dek, pw, s2k, mode==2 );
-    m_free(last_pw);
+    xfree(last_pw);
     last_pw = pw;
     return dek;
 }

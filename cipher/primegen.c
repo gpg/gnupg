@@ -137,7 +137,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
     q_factor = mode==1? gen_prime( req_qbits, 0, 0 ) : NULL;
 
     /* allocate an array to hold the factors + 2 for later usage */
-    factors = m_alloc_clear( (n+2) * sizeof *factors );
+    factors = xmalloc_clear( (n+2) * sizeof *factors );
 
     /* make a pool of 3n+5 primes (this is an arbitrary value) */
     m = n*3+5;
@@ -145,7 +145,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	m += 5; /* need some more for DSA */
     if( m < 25 )
 	m = 25;
-    pool = m_alloc_clear( m * sizeof *pool );
+    pool = xmalloc_clear( m * sizeof *pool );
 
     /* permutate over the pool of primes */
     count1=count2=0;
@@ -158,7 +158,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		pool[i] = NULL;
 	    }
 	    /* init m_out_of_n() */
-	    perms = m_alloc_clear( m );
+	    perms = xmalloc_clear( m );
 	    for(i=0; i < n; i++ ) {
 		perms[i] = 1;
 		pool[i] = gen_prime( fbits, 0, 0 );
@@ -174,7 +174,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		    factors[j++] = pool[i];
 		}
 	    if( i == n ) {
-		m_free(perms); perms = NULL;
+		xfree(perms); perms = NULL;
 		progress('!');
 		goto next_try;	/* allocate new primes */
 	    }
@@ -231,7 +231,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
     }
 
     if( ret_factors ) { /* caller wants the factors */
-	*ret_factors = m_alloc_clear( (n+2) * sizeof **ret_factors);
+	*ret_factors = xmalloc_clear( (n+2) * sizeof **ret_factors);
         i = 0;
 	if( mode == 1 ) {
 	    (*ret_factors)[i++] = mpi_copy( q_factor );
@@ -282,11 +282,11 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
     if( !DBG_CIPHER )
 	progress('\n');
 
-    m_free( factors );	/* (factors are shallow copies) */
+    xfree( factors );	/* (factors are shallow copies) */
     for(i=0; i < m; i++ )
 	mpi_free( pool[i] );
-    m_free( pool );
-    m_free(perms);
+    xfree( pool );
+    xfree(perms);
     mpi_free(val_2);
     mpi_free(q);
     return prime;
@@ -317,7 +317,7 @@ gen_prime( unsigned int nbits, int secret, int randomlevel )
 	for(i=0; small_prime_numbers[i]; i++ )
 	    no_of_small_prime_numbers++;
     }
-    mods = m_alloc( no_of_small_prime_numbers * sizeof *mods );
+    mods = xmalloc( no_of_small_prime_numbers * sizeof *mods );
     /* make nbits fit into MPI implementation */
     nlimbs = (nbits + BITS_PER_MPI_LIMB - 1) /	BITS_PER_MPI_LIMB;
     val_2  = mpi_alloc_set_ui( 2 );
@@ -333,7 +333,7 @@ gen_prime( unsigned int nbits, int secret, int randomlevel )
 	/* generate a random number */
 	{   char *p = get_random_bits( nbits, randomlevel, secret );
 	    mpi_set_buffer( prime, p, (nbits+7)/8, 0 );
-	    m_free(p);
+	    xfree(p);
 	}
 
 	/* Set high order bit to 1, set low order bit to 0.
@@ -382,7 +382,7 @@ gen_prime( unsigned int nbits, int secret, int randomlevel )
 		    mpi_free(result);
 		    mpi_free(pminus1);
 		    mpi_free(prime);
-		    m_free(mods);
+		    xfree(mods);
 		    return ptest;
 		}
 	    }
@@ -467,7 +467,7 @@ is_prime( MPI n, int steps, int *count )
             
             p = get_random_bits( nbits, 0, 0 );
             mpi_set_buffer( x, p, (nbits+7)/8, 0 );
-            m_free(p);
+            xfree(p);
 
 	    /* Make sure that the number is smaller than the prime
 	     * and keep the randomness of the high bit.  */

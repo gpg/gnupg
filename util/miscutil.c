@@ -255,7 +255,7 @@ print_utf8_string2 ( FILE *fp, const byte *p, size_t n, int delim )
 	buf = utf8_to_native ( p, n, delim );
 	/*(utf8 conversion already does the control character quoting)*/
 	fputs( buf, fp );
-	m_free( buf );
+	xfree( buf );
     }
     else
 	print_string( fp, p, n, delim );
@@ -269,7 +269,7 @@ print_utf8_string( FILE *fp, const byte *p, size_t n )
 
 /****************
  * This function returns a string which is suitable for printing
- * Caller must release it with m_free()
+ * Caller must release it with xfree()
  */
 char *
 make_printable_string( const byte *p, size_t n, int delim )
@@ -294,7 +294,7 @@ make_printable_string( const byte *p, size_t n, int delim )
     p = save_p;
     n = save_n;
     /* and now make the string */
-    d = buffer = m_alloc( buflen );
+    d = buffer = xmalloc( buflen );
     for( ; n; n--, p++ ) {
 	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim ||
 	    (delim && *p=='\\')) {

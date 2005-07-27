@@ -62,7 +62,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
     header[i]=0;
 
 #define EXTRA_UID_NAME_SPACE 71
-  uid=m_alloc_clear(sizeof(*uid)+71);
+  uid=xmalloc_clear(sizeof(*uid)+71);
 
   tty_printf(_("\nPick an image to use for your photo ID.  "
            "The image must be a JPEG file.\n"
@@ -75,7 +75,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
     {
       tty_printf("\n");
 
-      m_free(filename);
+      xfree(filename);
 
       filename=cpr_get("photoid.jpeg.add",
 		       _("Enter JPEG filename for photo ID: "));
@@ -109,7 +109,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 	  }
 	}
 
-      photo=m_alloc(len);
+      photo=xmalloc(len);
       iobuf_read(file,photo,len);
       iobuf_close(file);
 
@@ -118,7 +118,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 	 photo[6]!='J' || photo[7]!='F' || photo[8]!='I' || photo[9]!='F')
 	{
 	  log_error(_("`%s' is not a JPEG file\n"),filename);
-	  m_free(photo);
+	  xfree(photo);
 	  photo=NULL;
 	  continue;
 	}
@@ -140,7 +140,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 	      goto scram;
 	    case 0:
 	      free_attributes(uid);
-	      m_free(photo);
+	      xfree(photo);
 	      photo=NULL;
 	      continue;
 	    }
@@ -151,13 +151,13 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
   uid->ref=1;
 
  scram:
-  m_free(filename);
-  m_free(photo);
+  xfree(filename);
+  xfree(photo);
 
   if(error)
     {
       free_attributes(uid);
-      m_free(uid);
+      xfree(uid);
       return NULL;
     }
 
@@ -291,7 +291,7 @@ void show_photos(const struct user_attribute *attrs,
 	if(!command)
 	  goto fail;
 
-	name=m_alloc(16+strlen(EXTSEP_S)+
+	name=xmalloc(16+strlen(EXTSEP_S)+
 		     strlen(image_type_to_string(args.imagetype,0))+1);
 
 	/* Make the filename.  Notice we are not using the image
@@ -310,7 +310,7 @@ void show_photos(const struct user_attribute *attrs,
 
 	if(exec_write(&spawn,NULL,command,name,1,1)!=0)
 	  {
-	    m_free(name);
+	    xfree(name);
 	    goto fail;
 	  }
 
@@ -319,7 +319,7 @@ void show_photos(const struct user_attribute *attrs,
                                         image_type_to_string(args.imagetype,2));
 #endif
 
-	m_free(name);
+	xfree(name);
 
 	fwrite(&attrs[i].data[offset],attrs[i].len-offset,1,spawn->tochild);
 

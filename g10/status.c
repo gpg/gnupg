@@ -501,7 +501,7 @@ do_shm_get( const char *keyword, int hidden, int bool )
     if( bool )
 	return p[0]? "" : NULL;
 
-    string = hidden? m_alloc_secure( n+1 ) : m_alloc( n+1 );
+    string = hidden? xmalloc_secure( n+1 ) : xmalloc( n+1 );
     memcpy(string, p, n );
     string[n] = 0; /* make sure it is a string */
     if( hidden ) /* invalidate the memory */
@@ -559,7 +559,7 @@ do_get_from_fd( const char *keyword, int hidden, int bool )
 	if( i >= len-1 ) {
 	    char *save = string;
 	    len += 100;
-	    string = hidden? m_alloc_secure ( len ) : m_alloc ( len );
+	    string = hidden? xmalloc_secure ( len ) : xmalloc ( len );
 	    if( save )
 		memcpy(string, save, i );
 	    else
@@ -630,7 +630,7 @@ cpr_get( const char *keyword, const char *prompt )
     for(;;) {
 	p = tty_get( prompt );
 	if( *p=='?' && !p[1] && !(keyword && !*keyword)) {
-	    m_free(p);
+	    xfree(p);
 	    display_online_help( keyword );
 	}
 	else
@@ -646,7 +646,7 @@ cpr_get_utf8( const char *keyword, const char *prompt )
     p = cpr_get( keyword, prompt );
     if( p ) {
 	char *utf8 = native_to_utf8( p );
-	m_free( p );
+	xfree( p );
 	p = utf8;
     }
     return p;
@@ -666,7 +666,7 @@ cpr_get_hidden( const char *keyword, const char *prompt )
     for(;;) {
 	p = tty_get_hidden( prompt );
 	if( *p == '?' && !p[1] ) {
-	    m_free(p);
+	    xfree(p);
 	    display_online_help( keyword );
 	}
 	else
@@ -703,13 +703,13 @@ cpr_get_answer_is_yes( const char *keyword, const char *prompt )
 	p = tty_get( prompt );
 	trim_spaces(p); /* it is okay to do this here */
 	if( *p == '?' && !p[1] ) {
-	    m_free(p);
+	    xfree(p);
 	    display_online_help( keyword );
 	}
 	else {
 	    tty_kill_prompt();
 	    yes = answer_is_yes(p);
-	    m_free(p);
+	    xfree(p);
 	    return yes;
 	}
     }
@@ -731,13 +731,13 @@ cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt )
 	p = tty_get( prompt );
 	trim_spaces(p); /* it is okay to do this here */
 	if( *p == '?' && !p[1] ) {
-	    m_free(p);
+	    xfree(p);
 	    display_online_help( keyword );
 	}
 	else {
 	    tty_kill_prompt();
 	    yes = answer_is_yes_no_quit(p);
-	    m_free(p);
+	    xfree(p);
 	    return yes;
 	}
     }
@@ -763,7 +763,7 @@ cpr_get_answer_okay_cancel (const char *keyword,
   if (answer)
     {
       yes = answer_is_okay_cancel (answer, def_answer);
-      m_free (answer);
+      xfree (answer);
       return yes;
     }
 
@@ -773,14 +773,14 @@ cpr_get_answer_okay_cancel (const char *keyword,
       trim_spaces(p); /* it is okay to do this here */
       if (*p == '?' && !p[1])
         {
-          m_free(p);
+          xfree(p);
           display_online_help (keyword);
 	}
       else
         {
           tty_kill_prompt();
           yes = answer_is_okay_cancel (p, def_answer);
-          m_free(p);
+          xfree(p);
           return yes;
 	}
     }

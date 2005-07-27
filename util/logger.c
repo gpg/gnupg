@@ -71,9 +71,9 @@ log_stream()
 void
 log_set_name( const char *name )
 {
-    m_free(pgm_name);
+    xfree(pgm_name);
     if( name )
-	pgm_name = m_strdup(name);
+	pgm_name = xstrdup(name);
     else
 	pgm_name = NULL;
 }

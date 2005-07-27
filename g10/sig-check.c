@@ -59,7 +59,7 @@ int
 signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate, 
 		  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
 {
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = xmalloc_clear( sizeof *pk );
     int rc=0;
 
     if( (rc=check_digest_algo(sig->digest_algo)) )
@@ -134,16 +134,16 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
 	    md_putc( md, n );
 	    p = mpi_get_buffer( sig->data[i], &n, NULL );
 	    md_write( md, p, n );
-	    m_free(p);
+	    xfree(p);
 	}
 	md_final( md );
 	p = make_radix64_string( md_read( md, 0 ), 20 );
-	buffer = m_alloc( strlen(p) + 60 );
+	buffer = xmalloc( strlen(p) + 60 );
 	sprintf( buffer, "%s %s %lu",
 		 p, strtimestamp( sig->timestamp ), (ulong)sig->timestamp );
 	write_status_text( STATUS_SIG_ID, buffer );
-	m_free(buffer);
-	m_free(p);
+	xfree(buffer);
+	xfree(p);
 	md_close(md);
     }
 

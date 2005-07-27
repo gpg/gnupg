@@ -212,7 +212,7 @@ curl_easy_perform(CURL *curl)
 			}
 		    }
 
-		  m_free(line);
+		  xfree(line);
 		  http_close(&curl->hd);
 		}
 	    }

@@ -50,10 +50,10 @@ make_basename(const char *filepath, const char *inputpath)
 	    if ( !(p=strrchr(filepath, ':')) )
 #endif
 	      {
-		return m_strdup(filepath);
+		return xstrdup(filepath);
 	      }
 
-    return m_strdup(p+1);
+    return xstrdup(p+1);
 }
 
 
@@ -77,11 +77,11 @@ make_dirname(const char *filepath)
 	    if ( !(p=strrchr(filepath, ':')) )
 #endif
 	      {
-		return m_strdup(EXTSEP_S);
+		return xstrdup(EXTSEP_S);
 	      }
 
     dirname_length = p-filepath;
-    dirname = m_alloc(dirname_length+1);
+    dirname = xmalloc(dirname_length+1);
     strncpy(dirname, filepath, dirname_length);
     dirname[dirname_length] = 0;
 
@@ -114,7 +114,7 @@ make_filename( const char *first_part, ... )
 			   && (home = getenv("HOME")) && *home )
 	n += strlen(home);
 #endif
-    name = m_alloc(n);
+    name = xmalloc(n);
     p = home ? stpcpy(stpcpy(name,home), first_part+1)
 	     : stpcpy(name, first_part);
     va_start( arg_ptr, first_part ) ;
@@ -126,7 +126,7 @@ make_filename( const char *first_part, ... )
     return name;
 #else /* __riscos__ */
     p = riscos_gstrans(name);
-    m_free(name);
+    xfree(name);
     return p;
 #endif /* __riscos__ */
 }
@@ -153,8 +153,8 @@ compare_filenames( const char *a, const char *b )
 
     c = ascii_strcasecmp (abuf, bbuf);
 
-    m_free(abuf);
-    m_free(bbuf);
+    xfree(abuf);
+    xfree(bbuf);
 
     return c;
 #endif /* __riscos__ */

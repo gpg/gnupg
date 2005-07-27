@@ -289,7 +289,7 @@ checksum_mpi( MPI a )
     nbits = mpi_get_nbits(a);
     csum = checksum_u16( nbits );
     csum += checksum( buffer, nbytes );
-    m_free( buffer );
+    xfree( buffer );
     return csum;
 }
 
@@ -468,7 +468,7 @@ static unsigned long get_signature_count(PKT_secret_key *sk)
   return 0;
 }
 
-/* Expand %-strings.  Returns a string which must be m_freed.  Returns
+/* Expand %-strings.  Returns a string which must be xfreed.  Returns
    NULL if the string cannot be expanded (too large). */
 char *
 pct_expando(const char *string,struct expando_args *args)
@@ -500,7 +500,7 @@ pct_expando(const char *string,struct expando_args *args)
 	    goto fail;
 
 	  maxlen+=1024;
-	  ret=m_realloc(ret,maxlen);
+	  ret=xrealloc(ret,maxlen);
 	}
 
       done=0;
@@ -571,7 +571,7 @@ pct_expando(const char *string,struct expando_args *args)
 		    else if(args->sk->main_keyid[0] || args->sk->main_keyid[1])
 		      {
 			PKT_public_key *pk=
-			  m_alloc_clear(sizeof(PKT_public_key));
+			  xmalloc_clear(sizeof(PKT_public_key));
 
 			if(get_pubkey_fast(pk,args->sk->main_keyid)==0)
 			  fingerprint_from_pk(pk,array,&len);
@@ -662,7 +662,7 @@ pct_expando(const char *string,struct expando_args *args)
   return ret;
 
  fail:
-  m_free(ret);
+  xfree(ret);
   return NULL;
 }
 

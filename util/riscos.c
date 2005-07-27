@@ -238,7 +238,7 @@ riscos_fdopenfile(const char *filename, const int allow_write)
     }
 
     h = fds_list;
-    fds_list = (struct fds_item *) m_alloc(sizeof(struct fds_item));
+    fds_list = (struct fds_item *) xmalloc(sizeof(struct fds_item));
     if (!fds_list)
         log_fatal("Can't claim memory for fdopenfile() buffer!\n");
     fds_list->fd = fd;
@@ -258,7 +258,7 @@ riscos_close_fds(void)
         if (fp)
             fflush(fp);
         close(fds_list->fd);
-        m_free(fds_list);
+        xfree(fds_list);
         fds_list = h;
     }
 }
@@ -285,20 +285,20 @@ riscos_gstrans(const char *old)
     int size = 256, last;
     char *buf, *tmp;
 
-    buf = (char *) m_alloc(size);
+    buf = (char *) xmalloc(size);
     if (!buf)
         log_fatal("Can't claim memory for OS_GSTrans buffer!\n");
     while (_C & _swi(OS_GSTrans, _INR(0,2) | _OUT(2) | _RETURN(_FLAGS),
                      old, buf, size, &last)) {
         size += 256;
-        tmp = (char *) m_realloc(buf, size);
+        tmp = (char *) xrealloc(buf, size);
         if (!tmp)
              log_fatal("Can't claim memory for OS_GSTrans buffer!\n");
         buf = tmp;
     }
 
     buf[last] = '\0';
-    tmp = (char *) m_realloc(buf, last + 1);
+    tmp = (char *) xrealloc(buf, last + 1);
     if (!tmp)
         log_fatal("Can't realloc memory after OS_GSTrans!\n");
 
@@ -323,7 +323,7 @@ riscos_make_basename(const char *filepath, const char *realfname)
         p = (char*) filepath;
 
     i = strlen(p);
-    result = m_alloc(i + 5);
+    result = xmalloc(i + 5);
     if (!result)
         log_fatal("Can't claim memory for riscos_make_basename() buffer!\n");
     strcpy(result, p);
@@ -405,24 +405,24 @@ riscos_list_openfiles(void)
         if (_swix(OS_Args, _INR(0,2) | _IN(5) | _OUT(5), 7, i, 0, 0, &len))
             continue;
 
-        name = (char *) m_alloc(1-len);
+        name = (char *) xmalloc(1-len);
         if (!name)
             log_fatal("Can't claim memory for OS_Args buffer!\n");
 
         if (_swix(OS_Args, _INR(0,2) | _IN(5), 7, i, name, 1-len)) {
-            m_free(name);
+            xfree(name);
             log_fatal("Error when calling OS_Args(7)!\n");
         }
         
         if (_swix(OS_Args, _INR(0,1) | _OUT(0), 254, i, &len)) {
-            m_free(name);
+            xfree(name);
             log_fatal("Error when calling OS_Args(254)!\n");
         }
         
         printf("%3i: %s (%c%c)\n", i, name,
                                    (len & 0x40) ? 'R' : 0,
                                    (len & 0x80) ? 'W' : 0);
-        m_free(name);
+        xfree(name);
     }
 }
 #endif

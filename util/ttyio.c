@@ -238,7 +238,7 @@ tty_printf( const char *fmt, ... )
 	if( n != nwritten )
 	    log_fatal ("WriteConsole failed: %d != %d\n", n, (int)nwritten );
 	last_prompt_len += n;
-        m_free (buf);
+        xfree (buf);
     }
 #else
     last_prompt_len += vfprintf(ttyfp,fmt,arg_ptr) ;
@@ -357,7 +357,7 @@ tty_print_utf8_string2 (const byte *p, size_t n, size_t max_n )
 	}
 	/*(utf8 conversion already does the control character quoting)*/
 	tty_printf("%s", buf );
-	m_free( buf );
+	xfree( buf );
     }
     else {
 	if( max_n && (n > max_n) ) {
@@ -397,7 +397,7 @@ do_get( const char *prompt, int hidden )
 	init_ttyfp();
 
     last_prompt_len = 0;
-    buf = m_alloc(n=50);
+    buf = xmalloc(n=50);
     i = 0;
 
 #ifdef _WIN32 /* windoze version */
@@ -428,7 +428,7 @@ do_get( const char *prompt, int hidden )
 	    continue;
 	if( !(i < n-1) ) {
 	    n += 50;
-	    buf = m_realloc( buf, n );
+	    buf = xrealloc( buf, n );
 	}
 	buf[i++] = c;
     }
@@ -467,7 +467,7 @@ do_get( const char *prompt, int hidden )
         }
         if(!(i < n-1)) {
             n += 50;
-            buf = m_realloc(buf, n);
+            buf = xrealloc(buf, n);
         }
         buf[i++] = c;
         if (!hidden) {
@@ -511,7 +511,7 @@ do_get( const char *prompt, int hidden )
 	    continue;
 	if( !(i < n-1) ) {
 	    n += 50;
-	    buf = m_realloc( buf, n );
+	    buf = xrealloc( buf, n );
 	}
 	buf[i++] = c;
     }
@@ -552,7 +552,7 @@ tty_get( const char *prompt )
       /* We need to copy it to memory controlled by our malloc
          implementations; further we need to convert an EOF to our
          convention. */
-      buf = m_alloc(line? strlen(line)+1:2);
+      buf = xmalloc(line? strlen(line)+1:2);
       if (line)
         {
           strcpy (buf, line);
@@ -616,6 +616,6 @@ tty_get_answer_is_yes( const char *prompt )
     char *p = tty_get( prompt );
     tty_kill_prompt();
     yes = answer_is_yes(p);
-    m_free(p);
+    xfree(p);
     return yes;
 }

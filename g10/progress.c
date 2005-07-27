@@ -87,7 +87,7 @@ progress_filter (void *opaque, int control,
       /* Note, that we must always dealloc resources of a filter
          within the filter handler and not anywhere else.  (We set it
          to NULL and check all uses just in case.) */
-      m_free (pfx->what);
+      xfree (pfx->what);
       pfx->what = NULL;
     }
   else if (control == IOBUFCTRL_DESC)
@@ -112,7 +112,7 @@ handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
     filesize = opt.set_filesize;
 
   /* register the progress filter */
-  pfx->what = m_strdup (name ? name : "stdin");
+  pfx->what = xstrdup (name ? name : "stdin");
   pfx->total = filesize;
   iobuf_push_filter (inp, progress_filter, pfx);
 }

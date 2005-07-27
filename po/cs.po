@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2005-07-27 19:41+0200\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -701,13 +701,13 @@ msgstr "nelze otevøít `%s'\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output pro tento pøíkaz není platnı\n"
 
-#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1569
+#: g10/delkey.c:75 g10/export.c:178 g10/keyedit.c:3360 g10/keyserver.c:1571
 #: g10/revoke.c:227
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "klíè \"%s\" nenalezen: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1583
+#: g10/delkey.c:83 g10/export.c:208 g10/import.c:2334 g10/keyserver.c:1585
 #: g10/revoke.c:233 g10/revoke.c:440
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -911,12 +911,21 @@ msgstr "klíè %s: není chránìnı - pøeskoèeno\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "klíè %s: PGP 2.x klíè - pøeskoèeno\n"
 
-#: g10/export.c:454
+#: g10/export.c:409
+msgid "about to export an unprotected subkey\n"
+msgstr ""
+
+#: g10/export.c:432
+#, fuzzy, c-format
+msgid "failed to unprotect the subkey: %s\n"
+msgstr "nelze ulo¾it klíè: %s\n"
+
+#: g10/export.c:453
 #, c-format
 msgid "WARNING: secret key %s does not have a simple SK checksum\n"
 msgstr "VAROVÁNÍ: tajnı klíè %s není chránìn pomocí simple SK checksum\n"
 
-#: g10/export.c:486
+#: g10/export.c:485
 msgid "WARNING: nothing exported\n"
 msgstr "VAROVÁNÍ: nebylo nic vyexportováno\n"
 
@@ -4068,7 +4077,7 @@ msgstr "disabled"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "Vlo¾te èíslo (èísla), 'N' pro dal¹í nebo 'Q' pro konec> "
 
-#: g10/keyserver.c:724 g10/keyserver.c:1294
+#: g10/keyserver.c:724 g10/keyserver.c:1296
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "neplatnı protokol serveru klíèù (us %d!=handler %d)\n"
@@ -4082,101 +4091,101 @@ msgstr "klíè \"%s\" nebyl na serveru klíèù nalezen\n"
 msgid "key not found on keyserver\n"
 msgstr "klíè nebyl na serveru klíèù nalezen\n"
 
-#: g10/keyserver.c:1041
+#: g10/keyserver.c:1043
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "po¾aduji klíè %s ze %s server %s\n"
 
-#: g10/keyserver.c:1045
+#: g10/keyserver.c:1047
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "po¾aduji klíè %s z %s\n"
 
-#: g10/keyserver.c:1197
+#: g10/keyserver.c:1199
 #, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "posílám klíè %s na %s server %s\n"
 
-#: g10/keyserver.c:1201
+#: g10/keyserver.c:1203
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "posílám klíè %s na %s\n"
 
-#: g10/keyserver.c:1244
+#: g10/keyserver.c:1246
 #, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "vyhledávám \"%s\" na %s serveru %s\n"
 
-#: g10/keyserver.c:1247
+#: g10/keyserver.c:1249
 #, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "vyhledávám \"%s\" na serveru %s\n"
 
-#: g10/keyserver.c:1254 g10/keyserver.c:1349
+#: g10/keyserver.c:1256 g10/keyserver.c:1351
 msgid "no keyserver action!\n"
 msgstr "¾ádná operace se serverem klíèù!\n"
 
-#: g10/keyserver.c:1302
+#: g10/keyserver.c:1304
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr "VAROVÁNÍ: keyserver handler z jiné verze GnuPG (%s)\n"
 
-#: g10/keyserver.c:1311
+#: g10/keyserver.c:1313
 msgid "keyserver did not send VERSION\n"
 msgstr "server klíèù neposlal VERSION\n"
 
-#: g10/keyserver.c:1371
+#: g10/keyserver.c:1373
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "¾adnı server klíèù není znám (pou¾íjte volbu --keyserver)\n"
 
-#: g10/keyserver.c:1377
+#: g10/keyserver.c:1379
 msgid "external keyserver calls are not supported in this build\n"
 msgstr "volání externího keyserver není v této verzi podporováno\n"
 
-#: g10/keyserver.c:1389
+#: g10/keyserver.c:1391
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr "protokol serveru klíèù `%s' není podporován\n"
 
-#: g10/keyserver.c:1394
+#: g10/keyserver.c:1396
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr "akce `%s' není podporována v protokolu `%s' serveru klíèù\n"
 
-#: g10/keyserver.c:1402
+#: g10/keyserver.c:1404
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr "%s nepodporuje protokol verze  %d\n"
 
-#: g10/keyserver.c:1409
+#: g10/keyserver.c:1411
 msgid "keyserver timed out\n"
 msgstr "èasovı limit pro server klíèù vypr¹el\n"
 
-#: g10/keyserver.c:1414
+#: g10/keyserver.c:1416
 msgid "keyserver internal error\n"
 msgstr "interní chyba serveru klíèù\n"
 
-#: g10/keyserver.c:1423
+#: g10/keyserver.c:1425
 #, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "chyba komunikace se serverem klíèù: %s\n"
 
-#: g10/keyserver.c:1448 g10/keyserver.c:1482
+#: g10/keyserver.c:1450 g10/keyserver.c:1484
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" není ID klíèe: pøeskoèeno\n"
 
-#: g10/keyserver.c:1739
+#: g10/keyserver.c:1741
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "VAROVÁNÍ: nelze aktualizovat klíè %s prostøednictvím %s: %s\n"
 
-#: g10/keyserver.c:1761
+#: g10/keyserver.c:1763
 #, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "aktualizuji 1 klíè z %s\n"
 
-#: g10/keyserver.c:1763
+#: g10/keyserver.c:1765
 #, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "aktualizuji %d klíèù z %s\n"

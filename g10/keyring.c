@@ -102,7 +102,7 @@ new_offset_item (void)
 {
   struct off_item *k;
   
-  k = m_alloc_clear (sizeof *k);
+  k = xmalloc_clear (sizeof *k);
   return k;
 }
 
@@ -115,7 +115,7 @@ release_offset_items (struct off_item *k)
   for (; k; k = k2)
     {
       k2 = k->next;
-      m_free (k);
+      xfree (k);
     }
 }
 #endif
@@ -125,7 +125,7 @@ new_offset_hash_table (void)
 {
   struct off_item **tbl;
 
-  tbl = m_alloc_clear (2048 * sizeof *tbl);
+  tbl = xmalloc_clear (2048 * sizeof *tbl);
   return tbl;
 }
 
@@ -139,7 +139,7 @@ release_offset_hash_table (OffsetHashTable tbl)
     return;
   for (i=0; i < 2048; i++)
     release_offset_items (tbl[i]);
-  m_free (tbl);
+  xfree (tbl);
 }
 #endif
 
@@ -217,7 +217,7 @@ keyring_register_filename (const char *fname, int secret, void **ptr)
     if (secret)
       register_secured_file (fname);
 
-    kr = m_alloc (sizeof *kr + strlen (fname));
+    kr = xmalloc (sizeof *kr + strlen (fname));
     strcpy (kr->fname, fname);
     kr->secret = !!secret;
     kr->lockhd = NULL;
@@ -258,7 +258,7 @@ keyring_new (void *token, int secret)
 
   assert (resource && !resource->secret == !secret);
   
-  hd = m_alloc_clear (sizeof *hd);
+  hd = xmalloc_clear (sizeof *hd);
   hd->resource = resource;
   hd->secret = !!secret;
   active_handles++;
@@ -272,10 +272,10 @@ keyring_release (KEYRING_HANDLE hd)
         return;
     assert (active_handles > 0);
     active_handles--;
-    m_free (hd->word_match.name);
-    m_free (hd->word_match.pattern);
+    xfree (hd->word_match.name);
+    xfree (hd->word_match.pattern);
     iobuf_close (hd->current.iobuf);
-    m_free (hd);
+    xfree (hd);
 }
 
 
@@ -384,7 +384,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
 	return G10ERR_KEYRING_OPEN;
     }
 
-    pkt = m_alloc (sizeof *pkt);
+    pkt = xmalloc (sizeof *pkt);
     init_packet (pkt);
     hd->found.n_packets = 0;;
     lastnode = NULL;
@@ -453,7 +453,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
             }
         }
 
-        pkt = m_alloc (sizeof *pkt);
+        pkt = xmalloc (sizeof *pkt);
         init_packet(pkt);
     }
     set_packet_list_mode(save_mode);
@@ -476,7 +476,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
 	*ret_kb = keyblock;
     }
     free_packet (pkt);
-    m_free (pkt);
+    xfree (pkt);
     iobuf_close(a);
 
     /* Make sure that future search operations fail immediately when
@@ -780,7 +780,7 @@ prepare_word_match (const byte *name)
     int c;
 
     /* the original length is always enough for the pattern */
-    p = pattern = m_alloc(strlen(name)+1);
+    p = pattern = xmalloc(strlen(name)+1);
     do {
 	/* skip leading delimiters */
 	while( *name && !word_match_chars[*name] )
@@ -957,9 +957,9 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       if ( !hd->word_match.name || strcmp (hd->word_match.name, name) ) 
         {
           /* name changed */
-          m_free (hd->word_match.name);
-          m_free (hd->word_match.pattern);
-          hd->word_match.name = m_strdup (name);
+          xfree (hd->word_match.name);
+          xfree (hd->word_match.pattern);
+          hd->word_match.name = xstrdup (name);
           hd->word_match.pattern = prepare_word_match (name);
         }
       name = hd->word_match.pattern;
@@ -1162,27 +1162,27 @@ create_tmp_file (const char *template,
   if (strlen (template) > 4
       && !strcmp (template+strlen(template)-4, EXTSEP_S "gpg") )
     {
-      bakfname = m_alloc (strlen (template) + 1);
+      bakfname = xmalloc (strlen (template) + 1);
       strcpy (bakfname, template);
       strcpy (bakfname+strlen(template)-4, EXTSEP_S "bak");
 
-      tmpfname = m_alloc (strlen( template ) + 1 );
+      tmpfname = xmalloc (strlen( template ) + 1 );
       strcpy (tmpfname,template);
       strcpy (tmpfname+strlen(template)-4, EXTSEP_S "tmp");
     }
     else 
       { /* file does not end with gpg; hmmm */
-	bakfname = m_alloc (strlen( template ) + 5);
+	bakfname = xmalloc (strlen( template ) + 5);
 	strcpy (stpcpy(bakfname, template), EXTSEP_S "bak");
 
-	tmpfname = m_alloc (strlen( template ) + 5);
+	tmpfname = xmalloc (strlen( template ) + 5);
 	strcpy (stpcpy(tmpfname, template), EXTSEP_S "tmp");
     }
 # else /* Posix file names */
-    bakfname = m_alloc (strlen( template ) + 2);
+    bakfname = xmalloc (strlen( template ) + 2);
     strcpy (stpcpy (bakfname,template),"~");
 
-    tmpfname = m_alloc (strlen( template ) + 5);
+    tmpfname = xmalloc (strlen( template ) + 5);
     strcpy (stpcpy(tmpfname,template), EXTSEP_S "tmp");
 # endif /* Posix filename */
 
@@ -1199,8 +1199,8 @@ create_tmp_file (const char *template,
     if (!*r_fp)
       {
 	log_error(_("can't create `%s': %s\n"), tmpfname, strerror(errno) );
-        m_free (tmpfname);
-        m_free (bakfname);
+        xfree (tmpfname);
+        xfree (bakfname);
 	return G10ERR_OPEN_FILE;
       }
     
@@ -1367,8 +1367,8 @@ keyring_rebuild_cache (void *token,int noisy)
             }
           rc = lastresname? rename_tmp_file (bakfilename, tmpfilename, 
                                              lastresname, 0) : 0;
-          m_free (tmpfilename);  tmpfilename = NULL;
-          m_free (bakfilename);  bakfilename = NULL;
+          xfree (tmpfilename);  tmpfilename = NULL;
+          xfree (bakfilename);  bakfilename = NULL;
           if (rc)
             goto leave;
           lastresname = resname;
@@ -1447,14 +1447,14 @@ keyring_rebuild_cache (void *token,int noisy)
     }
   rc = lastresname? rename_tmp_file (bakfilename, tmpfilename,
                                      lastresname, 0) : 0;
-  m_free (tmpfilename);  tmpfilename = NULL;
-  m_free (bakfilename);  bakfilename = NULL;
+  xfree (tmpfilename);  tmpfilename = NULL;
+  xfree (bakfilename);  bakfilename = NULL;
 
  leave:
   if (tmpfp)
     iobuf_cancel (tmpfp);
-  m_free (tmpfilename);  
-  m_free (bakfilename);  
+  xfree (tmpfilename);  
+  xfree (bakfilename);  
   release_kbnode (keyblock);
   keyring_lock (hd, 0);
   keyring_release (hd);
@@ -1618,7 +1618,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     rc = rename_tmp_file (bakfname, tmpfname, fname, secret);
 
   leave:
-    m_free(bakfname);
-    m_free(tmpfname);
+    xfree(bakfname);
+    xfree(tmpfname);
     return rc;
 }

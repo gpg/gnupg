@@ -88,7 +88,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	cipher_hd = cipher_open( sk->protect.algo,
 				 CIPHER_MODE_AUTO_CFB, 1);
 	cipher_setkey( cipher_hd, dek->key, dek->keylen );
-	m_free(dek);
+	xfree(dek);
 	save_sk = copy_secret_key( NULL, sk );
 	cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	csum = 0;
@@ -102,7 +102,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    p = mpi_get_opaque( sk->skey[i], &ndata );
             if ( ndata > 1 )
                 csumc = p[ndata-2] << 8 | p[ndata-1];
-	    data = m_alloc_secure( ndata );
+	    data = xmalloc_secure( ndata );
 	    cipher_decrypt( cipher_hd, data, p, ndata );
 	    mpi_free( sk->skey[i] ); sk->skey[i] = NULL ;
 	    p = data;
@@ -168,7 +168,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 /* Note: at this point ndata should be 2 for a simple
                    checksum or 20 for the sha1 digest */
             }
-	    m_free(data);
+	    xfree(data);
 	}
 	else {
 	    for(i=pubkey_get_npkey(sk->pubkey_algo);
@@ -180,7 +180,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 p = mpi_get_opaque (sk->skey[i], &ndata);
                 assert (ndata >= 2);
                 assert (ndata == ((p[0] << 8 | p[1]) + 7)/8 + 2);
-                buffer = m_alloc_secure (ndata);
+                buffer = xmalloc_secure (ndata);
 		cipher_sync (cipher_hd);
                 buffer[0] = p[0];
                 buffer[1] = p[1];
@@ -188,7 +188,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 csum += checksum (buffer, ndata);
                 mpi_free (sk->skey[i]);
                 sk->skey[i] = mpi_read_from_buffer (buffer, &ndata, 1);
-		m_free (buffer);
+		xfree (buffer);
                 if (!sk->skey[i])
                   {
                     /* Checksum was okay, but not correctly
@@ -350,7 +350,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    bufarr[j] = NULL;
 		ndata += opt.simple_sk_checksum? 2 : 20; /* for checksum */
 
-		data = m_alloc_secure( ndata );
+		data = xmalloc_secure( ndata );
 		p = data;
 		for(j=0; j < PUBKEY_MAX_NSKEY && bufarr[j]; j++ ) {
 		    p[0] = nbits[j] >> 8 ;
@@ -358,7 +358,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    p += 2;
 		    memcpy(p, bufarr[j], narr[j] );
 		    p += narr[j];
-		    m_free(bufarr[j]);
+		    xfree(bufarr[j]);
 		}
                 
                 if (opt.simple_sk_checksum) {
@@ -404,13 +404,13 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
 		    cipher_sync (cipher_hd);
 		    assert ( !mpi_is_opaque (sk->skey[i]) );
-                    data = m_alloc (nbytes+2);
+                    data = xmalloc (nbytes+2);
                     nbits  = mpi_get_nbits (sk->skey[i]);
                     assert (nbytes == (nbits + 7)/8);
                     data[0] = nbits >> 8;
                     data[1] = nbits;
 		    cipher_encrypt (cipher_hd, data+2, buffer, nbytes);
-		    m_free( buffer );
+		    xfree( buffer );
                     
                     mpi_free (sk->skey[i]);
                     sk->skey[i] = mpi_set_opaque (NULL, data, nbytes+2);
