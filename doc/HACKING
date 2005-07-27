@@ -8,6 +8,10 @@
 
 CVS Access
 ==========
+
+NOTE: CVS access has been disabled while we are migrating to Subversion.
+Watch www.gnupg.org for instarctions on how to use the Subversion repository.
+
 Anonymous read-only CVS access is available:
 
   cvs -z3 -d :pserver:anoncvs@cvs.gnupg.org:/cvs/gnupg login
