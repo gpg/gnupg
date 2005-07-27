@@ -1,4 +1,4 @@
-If you are building from CVS, run the script
+If you are building from Subversion, run the script
 
 ./autogen.sh
 
@@ -40,11 +40,11 @@ knowledge about the actual tools used by autgen.sh.
 
 Please don't use autopoint, libtoolize or autoreconf unless you are
 the current maintainer and want to update the standard configuration
-files.  All those files should be in the CVS and only updated manually
-if the maintainer decides that newer versions are required.  The
-maintainer should also make sure that the required version of automake
-et al. are properly indicated at the top of configure.ac and take care
-to copy the files and not merely use symlinks.
+files.  All those files should be in the repository and only updated
+manually if the maintainer decides that newer versions are required.
+The maintainer should also make sure that the required version of
+automake et al. are properly indicated at the top of configure.ac and
+take care to copy the files and not merely use symlinks.
 
 
 
