@@ -339,25 +339,12 @@ dnl LDAP is defined only after we confirm the library is available later
       try_hkp=$enableval, try_hkp=yes)
     AC_MSG_RESULT($try_hkp)
 
-    AC_MSG_CHECKING([whether HTTP key fetching support is requested])
-    AC_ARG_ENABLE(http,
-      AC_HELP_STRING([--disable-http],[disable HTTP key fetching interface]),
-      try_http=$enableval, try_http=yes)
-    AC_MSG_RESULT($try_http)
-
     AC_MSG_CHECKING([whether finger key fetching support is requested])
     AC_ARG_ENABLE(finger,
       AC_HELP_STRING([--disable-finger],
         [disable finger key fetching interface only]),
       try_finger=$enableval, try_finger=yes)
     AC_MSG_RESULT($try_finger)
-
-    AC_MSG_CHECKING([whether ftp key fetching support is requested])
-    AC_ARG_ENABLE(ftp,
-      AC_HELP_STRING([--disable-ftp],
-        [disable ftp key fetching interface only]),
-      try_ftp=$enableval, try_ftp=yes)
-    AC_MSG_RESULT($try_ftp)
 
     AC_MSG_CHECKING([whether email keyserver support is requested])
     AC_ARG_ENABLE(mailto,
@@ -623,48 +610,23 @@ if test "$try_ldap" = yes ; then
    GNUPG_CHECK_LDAP($NETLIBS)
 fi
 
-# Special hack to test curl
+# Which keyserver helpers are we building?
 
-AC_ARG_ENABLE(fake-curl,
-   AC_HELP_STRING([--enable-fake-curl],[enable EXPERIMENTAL no-curl HTTP code]),fake_curl=$enableval,fake_curl=no)
+AC_ARG_ENABLE(old-keyserver-helpers,
+   AC_HELP_STRING([--enable-old-keyserver-helpers],[enable old keyserver helpers]),old_ks=$enableval,old_ks=no)
+
+if test "$old_ks" = yes ; then
+   AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
+else
+   LIBCURL_CHECK_CONFIG([yes],,[with_curl=yes],[fake_curl=yes])
+   AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
+fi
 
 AM_CONDITIONAL(FAKE_CURL,test x"$fake_curl" = xyes)
+AM_CONDITIONAL(WITH_CURL,test x"$with_curl" = xyes || test x"$fake_curl" = xyes)
 
 if test x"$fake_curl" = xyes ; then
    AC_DEFINE(FAKE_CURL,1,[define to fake the libcurl API internally])
-   libcurl_protocol_HTTP=yes
-else
-   # If we have neither FTP or HTTP defined, then don't bother to check
-   # for curl.
-   if test x"$try_hkp" = xyes || test x"$try_ftp" = xyes || test x"$try_http" = xyes ; then
-      LIBCURL_CHECK_CONFIG([no],,[with_curl=yes])
-   fi
-fi
-
-AM_CONDITIONAL(WITH_CURL,test x"$with_curl" = xyes || test x"$fake_curl" = xyes)
-
-# Are we doing HTTP?
-
-if test x"$try_http" = xyes ; then
-   if test x$libcurl_protocol_HTTP = xyes ; then
-      AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
-      AC_DEFINE(HTTP_VIA_LIBCURL,1,[Define if HTTP is handled via libcurl])
-      if test x$libcurl_protocol_HTTPS = xyes ; then
-         AC_DEFINE(HTTPS_VIA_LIBCURL,1,[Define if HTTPS is handled via libcurl])
-      fi
-   else
-      AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
-   fi
-fi
-
-# Are we doing FTP?  We only do FTP if we have libcurl.
-
-if test x"$try_ftp" = xyes && test x$libcurl_protocol_FTP = xyes ; then
-   AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
-   AC_DEFINE(FTP_VIA_LIBCURL,1,[Define if FTP is handled via libcurl])
-   if test x$libcurl_protocol_FTPS = xyes ; then
-      AC_DEFINE(FTPS_VIA_LIBCURL,1,[Define if FTPS is handled via libcurl])
-   fi
 fi
 
 dnl This isn't necessarily sendmail itself, but anything that gives a

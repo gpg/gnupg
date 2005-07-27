@@ -1,6 +1,15 @@
 Noteworthy changes in version 1.4.3
 ------------------------------------------------
 
+    * If available, cURL-based keyserver helpers are built that can
+      retrieve keys using any protocol that cURL supports.  This
+      includes HKP as well as all protocols that cURL can handle
+      (HTTP, HTTPS, FTP, FTPS, etc).  If cURL is not available, HKP
+      and HTTP are still supported using the included code.  To force
+      building the old keyserver helpers, use the configure option
+      --enable-old-keyserver-helpers.  Note that none of this affects
+      finger or LDAP support, which are unchanged.
+
 
 Noteworthy changes in version 1.4.2 (2005-07-26)
 ------------------------------------------------
