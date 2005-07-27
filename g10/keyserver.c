@@ -860,7 +860,9 @@ curl_can_handle(const char *scheme)
 static const char *
 keyserver_typemap(const char *type)
 {
-  if(strcmp(type,"ldaps")==0)
+  if(strcmp(type,"ldap")==0)
+    return "ldap";
+  else if(strcmp(type,"ldaps")==0)
     return "ldap";
   else if(curl_can_handle(type))
     return "curl";
