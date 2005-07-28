@@ -44,7 +44,7 @@
 #ifdef USE_DNS_PKA
 /* Parse the TXT resource record. Format is:
 
-   v=1;fpr=a4d94e92b0986ab5ee9dcd755de249965b0358a2;uri=string
+   v=pka1;fpr=a4d94e92b0986ab5ee9dcd755de249965b0358a2;uri=string
    
    For simplicity white spaces are not allowed.  Because we expect to
    use a new RRTYPE for this in the future we define the TXT really
@@ -66,7 +66,7 @@ parse_txt_record (char *buffer, unsigned char *fpr)
   if (!pend)
     return -1;
   *pend++ = 0;
-  if (strcmp (p, "v=1"))
+  if (strcmp (p, "v=pka1"))
     return -1; /* Wrong or missing version. */
   
   p = pend;
