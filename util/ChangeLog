@@ -1,3 +1,8 @@
+2005-07-28  Werner Koch  <wk@g10code.com>
+
+	* pka.c: New.
+	* Makefile.am (pka-test): new.
+
 2005-07-27  Werner Koch  <wk@g10code.com>
 
 	* memory.c (FNAMEX, FNAMEXM): New macros to cope with the now used

@@ -333,6 +333,13 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 }
 
 struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig) {return NULL;}
+struct keyserver_spec *parse_keyserver_uri(const char *uri,int require_scheme,
+                                           const char *configname,
+                                           unsigned int configlineno)
+{
+  return NULL;
+}
+
 void free_keyserver_spec(struct keyserver_spec *keyserver) {}
 
 /* Stubs to avoid linking to photoid.c */

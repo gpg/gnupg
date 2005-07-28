@@ -122,36 +122,56 @@ struct revocation_key {
   byte fpr[MAX_FINGERPRINT_LEN];
 };
 
-typedef struct {
-    struct {
-	unsigned checked:1; /* signature has been checked */
-	unsigned valid:1;   /* signature is good (if checked is set) */
-        unsigned chosen_selfsig:1; /* a selfsig that is the chosen one */
-	unsigned unknown_critical:1;
-        unsigned exportable:1;
-        unsigned revocable:1;
-        unsigned policy_url:1; /* At least one policy URL is present */
-        unsigned notation:1; /* At least one notation is present */
-        unsigned pref_ks:1;  /* At least one preferred keyserver is present */
-        unsigned expired:1;
-    } flags;
-    u32     keyid[2];	    /* 64 bit keyid */
-    u32     timestamp;	    /* signature made */
-    u32     expiredate;     /* expires at this date or 0 if not at all */
-    byte    version;
-    byte    sig_class;	    /* sig classification, append for MD calculation*/
-    byte    pubkey_algo;    /* algorithm used for public key scheme */
-			    /* (PUBKEY_ALGO_xxx) */
-    byte    digest_algo;    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
-    byte    trust_depth;
-    byte    trust_value;
-    const byte *trust_regexp;
-    struct revocation_key **revkey;
-    int numrevkeys;
-    subpktarea_t *hashed;    /* all subpackets with hashed  data (v4 only) */
-    subpktarea_t *unhashed;  /* ditto for unhashed data */
-    byte digest_start[2];   /* first 2 bytes of the digest */
-    MPI  data[PUBKEY_MAX_NSIG];
+
+/* Object to keep information about a PKA DNS record. */
+typedef struct
+{
+  int valid;    /* An actual PKA record exists for EMAIL. */
+  int checked;  /* Set to true if the FPR has been checked against the
+                   actual key. */
+  char *uri;    /* Malloced string with the URI. NULL if the URI is
+                   not available.*/
+  unsigned char fpr[20]; /* The fingerprint as stored in the PKA RR. */
+  char email[1];/* The email address from the notation data. */
+} pka_info_t;
+
+
+/* Object to keep information pertaining to a signature. */
+typedef struct 
+{
+  struct 
+  {
+    unsigned checked:1;         /* Signature has been checked. */
+    unsigned valid:1;           /* Signature is good (if checked is set). */
+    unsigned chosen_selfsig:1;  /* A selfsig that is the chosen one. */
+    unsigned unknown_critical:1;
+    unsigned exportable:1;
+    unsigned revocable:1;
+    unsigned policy_url:1;  /* At least one policy URL is present */
+    unsigned notation:1;    /* At least one notation is present */
+    unsigned pref_ks:1;     /* At least one preferred keyserver is present */
+    unsigned expired:1;
+    unsigned pka_tried:1;   /* Set if we tried to retrieve the PKA record. */
+  } flags;
+  u32     keyid[2];	  /* 64 bit keyid */
+  u32     timestamp;	  /* Signature made (seconds since Epoch). */
+  u32     expiredate;     /* Expires at this date or 0 if not at all. */
+  byte    version;
+  byte    sig_class;	  /* Sig classification, append for MD calculation. */
+  byte    pubkey_algo;    /* Algorithm used for public key scheme */
+                          /* (PUBKEY_ALGO_xxx) */
+  byte    digest_algo;    /* Algorithm used for digest (DIGEST_ALGO_xxxx). */
+  byte    trust_depth;
+  byte    trust_value;
+  const byte *trust_regexp;
+  struct revocation_key **revkey;
+  int numrevkeys;
+  pka_info_t *pka_info;      /* Malloced PKA data or NULL if not
+                                available.  See also flags.pka_tried. */
+  subpktarea_t *hashed;      /* All subpackets with hashed data (v4 only). */
+  subpktarea_t *unhashed;    /* Ditto for unhashed data. */
+  byte digest_start[2];      /* First 2 bytes of the digest. */
+  MPI  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
 
 #define ATTRIB_IMAGE 1

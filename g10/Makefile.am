@@ -28,7 +28,7 @@ if ! HAVE_DOSISH_SYSTEM
 AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)/@PACKAGE@\""
 endif
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
-other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
+other_libs = $(LIBICONV) $(SRVLIBS) $(LIBINTL) $(CAPLIBS)
 
 bin_PROGRAMS = gpg gpgv
 

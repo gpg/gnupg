@@ -251,3 +251,9 @@ main(int argc,char *argv[])
   return 0;
 }
 #endif /* TEST */
+
+/*
+Local Variables:
+compile-command: "cc -DTEST -I.. -I../include -Wall -g -o srv srv.c -lresolv libutil.a"
+End:
+*/

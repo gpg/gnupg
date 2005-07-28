@@ -532,6 +532,48 @@ check_signatures_trust( PKT_signature *sig )
   if ((trustlevel & TRUST_FLAG_DISABLED))
     log_info (_("Note: This key has been disabled.\n"));
 
+  /* If we have PKA information adjust the trustlevel. */
+  if (sig->pka_info && sig->pka_info->valid)
+    {
+      unsigned char fpr[MAX_FINGERPRINT_LEN];
+      PKT_public_key *primary_pk;
+      size_t fprlen;
+      int okay;
+
+      log_info (_("Note: Verified address is `%s'\n"), sig->pka_info->email);
+
+      primary_pk = xmalloc_clear (sizeof *primary_pk);
+      get_pubkey (primary_pk, pk->main_keyid);
+      fingerprint_from_pk (primary_pk, fpr, &fprlen);
+      free_public_key (primary_pk);
+
+      if ( fprlen == 20 && !memcmp (sig->pka_info->fpr, fpr, 20) )
+        okay = 1;
+      else
+        okay = 0;
+
+      switch ( (trustlevel & TRUST_MASK) ) 
+        {
+        case TRUST_UNKNOWN: 
+        case TRUST_UNDEFINED:
+        case TRUST_MARGINAL:
+          if (okay)
+            {
+              trustlevel = ((trustlevel & ~TRUST_MASK) | TRUST_FULLY);
+              log_info ("trustlevel adjusted to FULL due to valid PKA info\n");
+            }
+          /* (fall through) */
+        case TRUST_FULLY:
+          if (!okay)
+            {
+              trustlevel = ((trustlevel & ~TRUST_MASK) | TRUST_NEVER);
+              log_info ("trustlevel adjusted to NEVER due to bad PKA info\n");
+            }
+          break;
+        }
+    }
+
+  /* Now let the user know what up with the trustlevel. */
   switch ( (trustlevel & TRUST_MASK) ) 
     {
     case TRUST_EXPIRED:

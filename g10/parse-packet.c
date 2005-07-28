@@ -1042,6 +1042,8 @@ can_handle_critical_notation(const byte *name,size_t len)
 {
   if(len==32 && memcmp(name,"preferred-email-encoding@pgp.com",32)==0)
     return 1;
+  if(len==21 && memcmp(name,"pka-address@gnupg.org",21)==0)
+    return 1;
 
   return 0;
 }

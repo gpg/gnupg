@@ -563,7 +563,8 @@ AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname,
 AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 	[NETLIBS="-lsocket $NETLIBS"]))
 
-dnl Now try for the resolver functions so we can use DNS SRV
+dnl Now try for the resolver functions so we can use DNS SRV and our 
+dnl PKA feature.
 
 AC_ARG_ENABLE(dns-srv,
    AC_HELP_STRING([--disable-dns-srv],
@@ -597,6 +598,7 @@ if (test x"$try_hkp" = xyes || test x"$try_http" = xyes) && test x"$use_dns_srv"
   if test x"$use_dns_srv" = xyes ; then
      AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
      SRVLIBS=$LIBS
+     AC_DEFINE(USE_DNS_PKA,1,[define to use our experimental DNS PKA])
   fi
 
   LIBS=$_srv_save_libs

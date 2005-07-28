@@ -1,6 +1,6 @@
 /* free-packet.c - cleanup stuff for packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2005  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -62,10 +62,17 @@ free_seckey_enc( PKT_signature *sig )
     mpi_free(sig->data[0]);
   for(i=0; i < n; i++ )
     mpi_free( sig->data[i] );
-  
+
   xfree(sig->revkey);
   xfree(sig->hashed);
   xfree(sig->unhashed);
+
+  if (sig->pka_info)
+    {
+      xfree (sig->pka_info->uri);
+      xfree (sig->pka_info);
+    }
+
   xfree(sig);
 }
 
@@ -195,6 +202,21 @@ copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
     sk->keyid[1]    = pk->keyid[1];
 }
 
+
+static pka_info_t *
+cp_pka_info (const pka_info_t *s)
+{
+  pka_info_t *d = xmalloc (sizeof *s + strlen (s->email));
+  
+  d->valid = s->valid;
+  d->checked = s->checked;
+  d->uri = s->uri? xstrdup (s->uri):NULL;
+  memcpy (d->fpr, s->fpr, sizeof s->fpr);
+  strcpy (d->email, s->email);
+  return d;
+}
+
+
 PKT_signature *
 copy_signature( PKT_signature *d, PKT_signature *s )
 {
@@ -210,6 +232,7 @@ copy_signature( PKT_signature *d, PKT_signature *s )
 	for(i=0; i < n; i++ )
 	    d->data[i] = mpi_copy( s->data[i] );
     }
+    d->pka_info = s->pka_info? cp_pka_info (s->pka_info) : NULL;
     d->hashed = cp_subpktarea (s->hashed);
     d->unhashed = cp_subpktarea (s->unhashed);
     if(s->numrevkeys)

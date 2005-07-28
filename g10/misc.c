@@ -1065,6 +1065,31 @@ unescape_percent_string (const unsigned char *s)
 
 
 
+int
+has_invalid_email_chars (const char *s)
+{
+  int at_seen=0;
+  static char valid_chars[] = ("01234567890_-."
+                               "abcdefghijklmnopqrstuvwxyz"
+                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+  for ( ; *s; s++ ) 
+    {
+      if ( *s & 0x80 )
+        return 1;
+      if ( *s == '@' )
+        at_seen=1;
+      else if ( !at_seen && !( !!strchr( valid_chars, *s ) || *s == '+' ) )
+        return 1;
+      else if ( at_seen && !strchr( valid_chars, *s ) )
+        return 1;
+    }
+  return 0;
+}
+
+
+
+
 /* This is a helper function to load a Windows function from either of
    one DLLs. */
 #ifdef HAVE_W32_SYSTEM

@@ -1296,6 +1296,86 @@ do_proc_packets( CTX c, IOBUF a )
 }
 
 
+/* Helper for pka_uri_from_sig to parse the to-be-verified address out
+   of the notation data. */
+static pka_info_t *
+get_pka_address (PKT_signature *sig)
+{
+  const unsigned char *p;
+  size_t len, n1, n2;
+  int seq = 0;
+  pka_info_t *pka = NULL;
+
+  while ((p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_NOTATION,
+                               &len, &seq, NULL)))
+    {
+      if (len < 8)
+        continue; /* Notation packet is too short. */
+      n1 = (p[4]<<8)|p[5];
+      n2 = (p[6]<<8)|p[7];
+      if (8 + n1 + n2 != len)
+        continue; /* Length fields of notation packet are inconsistent. */
+      p += 8;
+      if (n1 != 21 || memcmp (p, "pka-address@gnupg.org", 21))
+        continue; /* Not the notation we want. */
+      p += n1;
+      if (n2 < 3)
+        continue; /* Impossible email address. */
+
+      if (pka)
+        break; /* For now we only use the first valid PKA notation. In
+                  future we might want to keep additional PKA
+                  notations in a linked list. */
+
+      pka = xmalloc (sizeof *pka + n2);
+      pka->valid = 0;
+      pka->checked = 0;
+      pka->uri = NULL;
+      memcpy (pka->email, p, n2);
+      pka->email[n2] = 0;
+
+      if (has_invalid_email_chars (pka->email))
+        {
+          /* We don't accept invalid mail addresses. */
+          xfree (pka);
+          pka = NULL;
+        }
+    }
+
+  return pka;
+}
+
+
+/* Return the URI from a DNS PKA record.  If this record has already
+   be retrieved for the signature we merely return it; if not we go
+   out and try to get that DNS record. */
+static const char *
+pka_uri_from_sig (PKT_signature *sig)
+{
+  if (!sig->flags.pka_tried)
+    {
+      assert (!sig->pka_info);
+      sig->flags.pka_tried = 1;
+      sig->pka_info = get_pka_address (sig);
+      if (sig->pka_info)
+        {
+          char *uri;
+
+          uri = get_pka_info (sig->pka_info->email, sig->pka_info->fpr);
+          if (uri)
+            {
+              sig->pka_info->valid = 1;
+              if (!*uri)
+                xfree (uri);
+              else
+                sig->pka_info->uri = uri;
+            }
+        }
+    }
+  return sig->pka_info? sig->pka_info->uri : NULL;
+}
+
+
 static int
 check_sig_and_print( CTX c, KBNODE node )
 {
@@ -1419,8 +1499,34 @@ check_sig_and_print( CTX c, KBNODE node )
 	  }
       }
 
-    /* If the preferred keyserver thing above didn't work, this is a
-       second try. */
+
+    /* If the preferred keyserver thing above didn't work, our second
+       try is to use the URI from a DNS PKA record. */
+    if ( rc == G10ERR_NO_PUBKEY )
+      {
+        const char *uri = pka_uri_from_sig (sig);
+        
+        if (uri)
+          {
+            int res;
+            struct keyserver_spec *spec;
+            
+            spec = parse_keyserver_uri (uri, 0, NULL, 0);
+            if (spec)
+              {
+                glo_ctrl.in_auto_key_retrieve++;
+                res = keyserver_import_keyid (sig->keyid, spec);
+                glo_ctrl.in_auto_key_retrieve--;
+                free_keyserver_spec (spec);
+                if (!res)
+                  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
+              }
+          }
+      }
+
+
+    /* If the preferred keyserver thing above didn't work and we got
+       no information from the DNS PKA, this is a third try. */
 
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver
 	&& (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
@@ -1673,8 +1779,11 @@ check_sig_and_print( CTX c, KBNODE node )
 	    free_public_key( vpk );
 	}
 
-	if( !rc )
+	if (!rc)
+          {
+            pka_uri_from_sig (sig); /* Make sure PKA info is available. */
 	    rc = check_signatures_trust( sig );
+          }
 
 	if(sig->flags.expired)
 	  {

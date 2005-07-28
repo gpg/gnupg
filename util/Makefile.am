@@ -38,7 +38,7 @@ endif
 #libutil_a_LDFLAGS =
 libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c  \
 		     ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c \
-		     dotlock.c http.c srv.h srv.c simple-gettext.c \
+		     dotlock.c http.c srv.h srv.c pka.c simple-gettext.c \
 		     membuf.c w32reg.c $(assuan_source)
 
 libutil_a_DEPENDENCIES = @LIBOBJS@ @REGEX_O@
@@ -46,9 +46,14 @@ libutil_a_DEPENDENCIES = @LIBOBJS@ @REGEX_O@
 libutil_a_LIBADD = @LIBOBJS@ @REGEX_O@
 
 http-test:  http.c
-	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
 	    -DTEST -o http-test http.c libutil.a @LIBINTL@ @SRVLIBS@ @CAPLIBS@
 
 srv-test:  srv.c
-	gcc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
 	    -DTEST -o srv-test srv.c libutil.a @LIBINTL@ @SRVLIBS@ @CAPLIBS@
+
+pka-test:  pka.c
+	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	   -DTEST -o pka-test pka.c libutil.a @LIBINTL@ @SRVLIBS@ @CAPLIBS@
+

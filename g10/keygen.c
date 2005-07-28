@@ -1609,27 +1609,6 @@ ask_expiredate()
     return x? make_timestamp() + x : 0;
 }
 
-static int
-has_invalid_email_chars( const char *s )
-{
-    int at_seen=0;
-    static char valid_chars[] = "01234567890_-."
-				"abcdefghijklmnopqrstuvwxyz"
-				"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    for( ; *s; s++ ) {
-	if( *s & 0x80 )
-	    return 1;
-	if( *s == '@' )
-	    at_seen=1;
-	else if( !at_seen && !( !!strchr( valid_chars, *s ) || *s == '+' ) )
-	    return 1;
-	else if( at_seen && !strchr( valid_chars, *s ) )
-	    return 1;
-    }
-    return 0;
-}
-
 
 static char *
 ask_user_id( int mode )

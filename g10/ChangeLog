@@ -1,3 +1,23 @@
+2005-07-28  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (other_libs): Add SRVLIBS.
+
+	* parse-packet.c (can_handle_critical_notation): We know about
+	pka-address@gnupg.org.
+	* packet.h (PKT_signature): New fields PKA_INFO and PKA_TRIED. 
+	(pka_info_t): New.
+	* free-packet.c (cp_pka_info): New.
+	(free_seckey_enc, copy_signature): Support new fields.
+	* mainproc.c (get_pka_address, pka_uri_from_sig): New.
+	(check_sig_and_print): Try to get the keyserver from the PKA
+	record.
+	* pkclist.c (check_signatures_trust): Adjust the trust based on
+	the PKA.
+	* gpgv.c (parse_keyserver_uri): New stub.
+
+	* keygen.c (has_invalid_email_chars): Moved to ..
+	* misc.c (has_invalid_email_chars): .. here and made global.
+
 2005-07-27  Werner Koch  <wk@g10code.com>
 
 	* export.c (do_export_stream): Make two strings translatable.

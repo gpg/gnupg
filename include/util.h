@@ -253,6 +253,10 @@ int vasprintf (char **result, const char *format, va_list args);
 int asprintf (char **buf, const char *fmt, ...);
 #endif /*_WIN32*/
 
+/*-- pka.c --*/
+char *get_pka_info (const char *address, unsigned char *fpr);
+
+
 
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */

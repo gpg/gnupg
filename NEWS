@@ -10,6 +10,12 @@ Noteworthy changes in version 1.4.3
       --enable-old-keyserver-helpers.  Note that none of this affects
       finger or LDAP support, which are unchanged.
 
+    * Implemented Public Key Association (PKA) trust model option.
+      This is an optional trust model on top of the standard ones.  It
+      make use of of special DNS records and notation data to
+      associate a mail address with an OpenPGP key.  See: XXXX for a
+      description.
+
 
 Noteworthy changes in version 1.4.2 (2005-07-26)
 ------------------------------------------------
