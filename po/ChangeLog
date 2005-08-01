@@ -1,3 +1,7 @@
+2005-08-01  Werner Koch  <wk@g10code.com>
+
+	* de.po: Converted to utf-8; fixed a few umlaut problems.
+
 2005-04-21  Werner Koch  <wk@g10code.com>
 
 	* de.po: Fixed all fuzzies and untranslated strings.

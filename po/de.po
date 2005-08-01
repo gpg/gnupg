@@ -1,4 +1,4 @@
-# German translation for GnuPG 1.9.x         -*-coding: latin-1;-*-
+# German translation for GnuPG 1.9.x
 # Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 # Werner Koch <wk@gnupg.org>, 2002.
 #
@@ -8,14 +8,14 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 1.9.16\n"
+"Project-Id-Version: gnupg2 1.9.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2005-06-16 09:12+0200\n"
-"PO-Revision-Date: 2005-06-20 19:12+0200\n"
+"PO-Revision-Date: 2005-08-01 14:44+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: agent/gpg-agent.c:108 agent/protect-tool.c:108 scd/scdaemon.c:99
@@ -28,16 +28,16 @@ msgstr ""
 
 #: agent/gpg-agent.c:110 scd/scdaemon.c:101
 msgid "run in server mode (foreground)"
-msgstr "Im Server Modus ausführen"
+msgstr "Im Server Modus ausfÃ¼hren"
 
 #: agent/gpg-agent.c:111 scd/scdaemon.c:104
 msgid "run in daemon mode (background)"
-msgstr "Im Daemon Modus ausführen"
+msgstr "Im Daemon Modus ausfÃ¼hren"
 
 #: agent/gpg-agent.c:112 kbx/kbxutil.c:81 scd/scdaemon.c:105 sm/gpgsm.c:329
 #: tools/gpgconf.c:62
 msgid "verbose"
-msgstr "ausführlich"
+msgstr "ausfÃ¼hrlich"
 
 #: agent/gpg-agent.c:113 kbx/kbxutil.c:82 scd/scdaemon.c:106 sm/gpgsm.c:330
 msgid "be somewhat more quiet"
@@ -45,11 +45,11 @@ msgstr "Etwas weniger Ausgaben erzeugen"
 
 #: agent/gpg-agent.c:114 scd/scdaemon.c:107
 msgid "sh-style command output"
-msgstr "Ausgabe für /bin/sh"
+msgstr "Ausgabe fÃ¼r /bin/sh"
 
 #: agent/gpg-agent.c:115 scd/scdaemon.c:108
 msgid "csh-style command output"
-msgstr "Ausgabe für /bin/csh"
+msgstr "Ausgabe fÃ¼r /bin/csh"
 
 #: agent/gpg-agent.c:116
 msgid "|FILE|read options from FILE"
@@ -69,7 +69,7 @@ msgstr "Logausgaben in eine Datei umlenken"
 
 #: agent/gpg-agent.c:125
 msgid "use a standard location for the socket"
-msgstr "Benutze einen Standardnamen für den Socket"
+msgstr "Benutze einen Standardnamen fÃ¼r den Socket"
 
 #: agent/gpg-agent.c:129
 msgid "|PGM|use PGM as the PIN-Entry program"
@@ -101,7 +101,7 @@ msgstr "benutze PINs im Cache nicht bem Signieren"
 
 #: agent/gpg-agent.c:151
 msgid "allow clients to mark keys as \"trusted\""
-msgstr "erlaube Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
+msgstr "erlaube Aufrufern SchlÃ¼ssel als \"vertrauenswÃ¼rdig\" zu markieren"
 
 #: agent/gpg-agent.c:153
 msgid "allow presetting passphrase"
@@ -127,7 +127,7 @@ msgstr ">.\n"
 
 #: agent/gpg-agent.c:238
 msgid "Usage: gpg-agent [options] (-h for help)"
-msgstr "Gebrauch: gpg-agent [Optionen] (-h für Hilfe)"
+msgstr "Gebrauch: gpg-agent [Optionen] (-h fÃ¼r Hilfe)"
 
 #: agent/gpg-agent.c:240
 msgid ""
@@ -135,19 +135,19 @@ msgid ""
 "Secret key management for GnuPG\n"
 msgstr ""
 "Syntax: gpg-agent [Optionen] [Kommando [Argumente]]\n"
-"Verwaltung von geheimen Schlüssel für GnuPG\n"
+"Verwaltung von geheimen SchlÃ¼ssel fÃ¼r GnuPG\n"
 
 #: agent/gpg-agent.c:311 scd/scdaemon.c:257 sm/gpgsm.c:632
 #, c-format
 msgid "invalid debug-level `%s' given\n"
-msgstr "ungültige Debugebene `%s' angegeben\n"
+msgstr "ungÃ¼ltige Debugebene `%s' angegeben\n"
 
 #: agent/gpg-agent.c:482 agent/protect-tool.c:1072 kbx/kbxutil.c:431
 #: scd/scdaemon.c:349 sm/gpgsm.c:753
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
-"Die Bibliothek \"libgcrypt\" is zu alt (benötigt wird %s, vorhanden ist %s)\n"
+"Die Bibliothek \"libgcrypt\" is zu alt (benÃ¶tigt wird %s, vorhanden ist %s)\n"
 
 #: agent/gpg-agent.c:574 scd/scdaemon.c:424 sm/gpgsm.c:854
 #, c-format
@@ -198,7 +198,7 @@ msgstr "Der listen() Aufruf ist fehlgeschlagen: %s\n"
 #: agent/gpg-agent.c:1218 scd/scdaemon.c:983
 #, c-format
 msgid "listening on socket `%s'\n"
-msgstr "Es wird auf Socket `%s' gehört\n"
+msgstr "Es wird auf Socket `%s' gehÃ¶rt\n"
 
 #: agent/gpg-agent.c:1246 agent/gpg-agent.c:1288
 #, c-format
@@ -208,7 +208,7 @@ msgstr "Verzeichniss `%s' wurde erstellt\n"
 #: agent/gpg-agent.c:1294
 #, c-format
 msgid "stat() failed for `%s': %s\n"
-msgstr "stat() Aufruf für `%s' fehlgeschlagen: %s\n"
+msgstr "stat() Aufruf fÃ¼r `%s' fehlgeschlagen: %s\n"
 
 #: agent/gpg-agent.c:1298
 #, c-format
@@ -218,22 +218,22 @@ msgstr "Die Datei `%s' kann nicht als Home-Verzeichniss benutzt werden\n"
 #: agent/gpg-agent.c:1396
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
-msgstr "Handhabungsroutine 0x%lx für fd %d gestartet\n"
+msgstr "Handhabungsroutine 0x%lx fÃ¼r fd %d gestartet\n"
 
 #: agent/gpg-agent.c:1406
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
-msgstr "Handhabungsroutine 0x%lx für den fd %d beendet\n"
+msgstr "Handhabungsroutine 0x%lx fÃ¼r den fd %d beendet\n"
 
 #: agent/gpg-agent.c:1420
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
-msgstr "SSH Handhabungsroutine 0x%lx für fd %d gestartet\n"
+msgstr "SSH Handhabungsroutine 0x%lx fÃ¼r fd %d gestartet\n"
 
 #: agent/gpg-agent.c:1427
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
-msgstr "SSH Handhabungsroutine 0x%lx für fd %d beendet\n"
+msgstr "SSH Handhabungsroutine 0x%lx fÃ¼r fd %d beendet\n"
 
 #: agent/gpg-agent.c:1521 scd/scdaemon.c:1099
 #, c-format
@@ -256,11 +256,11 @@ msgstr "Die Variable GPG_AGENT_INFO ist fehlerhaft\n"
 #: agent/gpg-agent.c:1648 common/simple-pwquery.c:335 sm/call-agent.c:155
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "Das gpg-agent Protocol %d wird nicht unterstützt\n"
+msgstr "Das gpg-agent Protocol %d wird nicht unterstÃ¼tzt\n"
 
 #: agent/protect-tool.c:145
 msgid "Usage: gpg-protect-tool [options] (-h for help)\n"
-msgstr "Gebrauch: gpg-protect-tool [Optionen] (-h für Hilfe)\n"
+msgstr "Gebrauch: gpg-protect-tool [Optionen] (-h fÃ¼r Hilfe)\n"
 
 #: agent/protect-tool.c:147
 msgid ""
@@ -268,7 +268,7 @@ msgid ""
 "Secret key maintenance tool\n"
 msgstr ""
 "Syntax: gpg-protect-tool [Optionen] [Argumente]\n"
-"Werkzeug zum Bearbeiten von geheimen Schlüsseln\n"
+"Werkzeug zum Bearbeiten von geheimen SchlÃ¼sseln\n"
 
 #: agent/protect-tool.c:1205
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
@@ -297,11 +297,11 @@ msgid ""
 "needed to complete this operation."
 msgstr ""
 "Die Eingabe des Mantras (Passphrase) bzw. der PIN\n"
-"wird benötigt um diese Aktion auszuführen."
+"wird benÃ¶tigt um diese Aktion auszufÃ¼hren."
 
 #: agent/protect-tool.c:1220 agent/genkey.c:131 agent/genkey.c:238
 msgid "does not match - try again"
-msgstr "Keine Übereinstimmung - bitte nochmal versuchen"
+msgstr "Keine Ãœbereinstimmung - bitte nochmal versuchen"
 
 #: agent/protect-tool.c:1221
 msgid "Passphrase:"
@@ -337,7 +337,7 @@ msgstr "Bitte geben Sie die PIN%s%s%s ein um die Karte zu entsperren"
 #, c-format
 msgid "Please enter the passphrase to%0Ato protect your new key"
 msgstr ""
-"Bitte geben Sie das Mantra (Passphrase) ein%0Aum Ihren Schlüssel zu schützen"
+"Bitte geben Sie das Mantra (Passphrase) ein%0Aum Ihren SchlÃ¼ssel zu schÃ¼tzen"
 
 #: agent/genkey.c:217
 msgid "Please enter the new passphrase"
@@ -353,7 +353,7 @@ msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr ""
-"Bitte geben Sie Ihre PIN ein, so daß der geheime Schlüssel benutzt werden "
+"Bitte geben Sie Ihre PIN ein, so daÃŸ der geheime SchlÃ¼ssel benutzt werden "
 "kann"
 
 #: agent/query.c:335
@@ -361,7 +361,7 @@ msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
 msgstr ""
-"Bitte geben Sie Ihr Mantra (Passphrase) ein, so daß der geheime Schlüssel "
+"Bitte geben Sie Ihr Mantra (Passphrase) ein, so daÃŸ der geheime SchlÃ¼ssel "
 "benutzt werden kann"
 
 #: agent/query.c:393 agent/query.c:405
@@ -374,7 +374,7 @@ msgstr "Das Matra (Passphrase) ist zu lang"
 
 #: agent/query.c:402
 msgid "Invalid characters in PIN"
-msgstr "Ungültige Zeichen in der PIN"
+msgstr "UngÃ¼ltige Zeichen in der PIN"
 
 #: agent/query.c:407
 msgid "PIN too short"
@@ -407,7 +407,7 @@ msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
 msgstr ""
-"Bitte prüfen Sie, daß das Zertifikat mit dem Namen:%%0A  \"%s\"%%0Afolgenden "
+"Bitte prÃ¼fen Sie, daÃŸ das Zertifikat mit dem Namen:%%0A  \"%s\"%%0Afolgenden "
 "Fingerabdruck hat:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended to
@@ -431,8 +431,8 @@ msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
-"Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s\"%%"
-"0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja\""
+"Wenn Sie vollstÃ¤ndiges Vertrauen haben, daÃŸ%%0A  \"%s\"%%"
+"0ABenutzerzertifikate verlÃ¤ÃŸlich zertifiziert, so antworten Sie mit \"Ja\""
 
 #: agent/trustlist.c:342
 msgid "Yes"
@@ -452,16 +452,16 @@ msgstr ""
 #: common/sysutils.c:182
 #, c-format
 msgid "Warning: unsafe ownership on %s \"%s\"\n"
-msgstr "WARNUNG: Unsichere Besitzrechte für %s \"%s\"\n"
+msgstr "WARNUNG: Unsichere Besitzrechte fÃ¼r %s \"%s\"\n"
 
 #: common/sysutils.c:214
 #, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgstr "WARNUNG: Unsichere Zugriffsrechte für %s \"%s\"\n"
+msgstr "WARNUNG: Unsichere Zugriffsrechte fÃ¼r %s \"%s\"\n"
 
 #: common/simple-pwquery.c:309
 msgid "gpg-agent is not available in this session\n"
-msgstr "Der gpg-agent ist nicht verfügbar\n"
+msgstr "Der gpg-agent ist nicht verfÃ¼gbar\n"
 
 #: common/simple-pwquery.c:367
 #, c-format
@@ -509,7 +509,7 @@ msgstr ""
 
 #: kbx/kbxutil.c:83 sm/gpgsm.c:337 tools/gpgconf.c:64
 msgid "do not make any changes"
-msgstr "Keine Änderungen durchführen"
+msgstr "Keine Ã„nderungen durchfÃ¼hren"
 
 #: kbx/kbxutil.c:85
 msgid "set debugging flags"
@@ -521,7 +521,7 @@ msgstr "Alle Debug Flags setzen"
 
 #: kbx/kbxutil.c:107
 msgid "Please report bugs to "
-msgstr "Bite richten sie Berichte über Bugs (Softwarefehler) an "
+msgstr "Bite richten sie Berichte Ã¼ber Bugs (Softwarefehler) an "
 
 #: kbx/kbxutil.c:107
 msgid ".\n"
@@ -529,7 +529,7 @@ msgstr ".\n"
 
 #: kbx/kbxutil.c:111
 msgid "Usage: kbxutil [options] [files] (-h for help)"
-msgstr "Gebrauch: kbxutil [Optionen] [Dateien] (-h für Hilfe)"
+msgstr "Gebrauch: kbxutil [Optionen] [Dateien] (-h fÃ¼r Hilfe)"
 
 #: kbx/kbxutil.c:114
 msgid ""
@@ -541,7 +541,7 @@ msgstr ""
 
 #: scd/scdaemon.c:103
 msgid "run in multi server mode (foreground)"
-msgstr "Im Multiserver Modus ausführen"
+msgstr "Im Multiserver Modus ausfÃ¼hren"
 
 #: scd/scdaemon.c:109 sm/gpgsm.c:349
 msgid "read options from file"
@@ -569,7 +569,7 @@ msgstr "Erlaube die Benutzung von \"Admin\" Kommandos"
 
 #: scd/scdaemon.c:186
 msgid "Usage: scdaemon [options] (-h for help)"
-msgstr "Gebrauch: scdaemon [Optionen] (-h für Hilfe)"
+msgstr "Gebrauch: scdaemon [Optionen] (-h fÃ¼r Hilfe)"
 
 #: scd/scdaemon.c:188
 msgid ""
@@ -577,23 +577,23 @@ msgid ""
 "Smartcard daemon for GnuPG\n"
 msgstr ""
 "Synatx: scdaemon [Optionen] [Kommando [Argumente]]\n"
-"Smartcard Daemon für GnuPG\n"
+"Smartcard Daemon fÃ¼r GnuPG\n"
 
 #: scd/scdaemon.c:656
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 "Bitte die Option `--daemon' nutzen um das Programm im Hintergund "
-"auszuführen\n"
+"auszufÃ¼hren\n"
 
 #: scd/scdaemon.c:997
 #, c-format
 msgid "handler for fd %d started\n"
-msgstr "Handhabungsroutine für fd %d gestartet\n"
+msgstr "Handhabungsroutine fÃ¼r fd %d gestartet\n"
 
 #: scd/scdaemon.c:1002
 #, c-format
 msgid "handler for fd %d terminated\n"
-msgstr "Handhabungsroutine für den fd %d beendet\n"
+msgstr "Handhabungsroutine fÃ¼r den fd %d beendet\n"
 
 #: scd/app-openpgp.c:595
 #, c-format
@@ -608,19 +608,19 @@ msgstr "Das Erzeugungsdatum kann nicht gespeichert werden: %s\n"
 #: scd/app-openpgp.c:978
 #, c-format
 msgid "reading public key failed: %s\n"
-msgstr "Fehler beim Lesen des öffentlichen Schlüssels: %s\n"
+msgstr "Fehler beim Lesen des Ã¶ffentlichen SchlÃ¼ssels: %s\n"
 
 #: scd/app-openpgp.c:986 scd/app-openpgp.c:1910
 msgid "response does not contain the public key data\n"
-msgstr "Die Antwort enthält keine Public Key Daten\n"
+msgstr "Die Antwort enthÃ¤lt keine Public Key Daten\n"
 
 #: scd/app-openpgp.c:994 scd/app-openpgp.c:1918
 msgid "response does not contain the RSA modulus\n"
-msgstr "Die Antwort enthält keinen RSA Modulus\n"
+msgstr "Die Antwort enthÃ¤lt keinen RSA Modulus\n"
 
 #: scd/app-openpgp.c:1003 scd/app-openpgp.c:1928
 msgid "response does not contain the RSA public exponent\n"
-msgstr "Die Antwort enthält keinen öffenlichen RSA Exponent\n"
+msgstr "Die Antwort enthÃ¤lt keinen Ã¶ffenlichen RSA Exponent\n"
 
 #: scd/app-openpgp.c:1259 scd/app-openpgp.c:1347 scd/app-openpgp.c:2150
 #, c-format
@@ -630,13 +630,13 @@ msgstr "Fehler vom PIN \"callback\": %s\n"
 #: scd/app-openpgp.c:1265 scd/app-openpgp.c:1353 scd/app-openpgp.c:2156
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
-msgstr "Die PIN für den CHV%d ist zu kurz; Mindestlänge ist %d\n"
+msgstr "Die PIN fÃ¼r den CHV%d ist zu kurz; MindestlÃ¤nge ist %d\n"
 
 #: scd/app-openpgp.c:1274 scd/app-openpgp.c:1288 scd/app-openpgp.c:1363
 #: scd/app-openpgp.c:2165 scd/app-openpgp.c:2179
 #, c-format
 msgid "verify CHV%d failed: %s\n"
-msgstr "Prüfen von CHV%d fehlgeschlagen: %s\n"
+msgstr "PrÃ¼fen von CHV%d fehlgeschlagen: %s\n"
 
 #: scd/app-openpgp.c:1311
 msgid "access to admin commands is not configured\n"
@@ -654,7 +654,7 @@ msgstr "Die Karte ist dauerhaft gesperrt!\n"
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr ""
-"Noch %d Admin PIN Versuche möglich bevor die Karte dauerhaft gesperrt wird\n"
+"Noch %d Admin PIN Versuche mÃ¶glich bevor die Karte dauerhaft gesperrt wird\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but
 #. keep it at the start of the string.  We need this elsewhere
@@ -689,15 +689,15 @@ msgstr "Fehler beim Lesen des Fingerabdruck Datenobjekts\n"
 
 #: scd/app-openpgp.c:1563
 msgid "key already exists\n"
-msgstr "Schlüssel existiert bereits\n"
+msgstr "SchlÃ¼ssel existiert bereits\n"
 
 #: scd/app-openpgp.c:1567
 msgid "existing key will be replaced\n"
-msgstr "Existierender Schlüssel wird ersetzt\n"
+msgstr "Existierender SchlÃ¼ssel wird ersetzt\n"
 
 #: scd/app-openpgp.c:1569
 msgid "generating new key\n"
-msgstr "Neuer Schlüssel wird erzeugt\n"
+msgstr "Neuer SchlÃ¼ssel wird erzeugt\n"
 
 #: scd/app-openpgp.c:1736
 msgid "creation timestamp missing\n"
@@ -711,7 +711,7 @@ msgstr "Der RSA Modulus fehlt oder ist nicht %d Bits lang\n"
 #: scd/app-openpgp.c:1750
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
-msgstr "Der öffentliche RSA Exponent fehlt oder ist länger als %d Bits\n"
+msgstr "Der Ã¶ffentliche RSA Exponent fehlt oder ist lÃ¤nger als %d Bits\n"
 
 #: scd/app-openpgp.c:1758 scd/app-openpgp.c:1765
 #, c-format
@@ -721,24 +721,24 @@ msgstr "Die RSA Primzahl %s fehlt oder ist nicht %d Bits lang\n"
 #: scd/app-openpgp.c:1828
 #, c-format
 msgid "failed to store the key: %s\n"
-msgstr "Fehler beim Speichern des Schlüssels: %s\n"
+msgstr "Fehler beim Speichern des SchlÃ¼ssels: %s\n"
 
 #: scd/app-openpgp.c:1887
 msgid "please wait while key is being generated ...\n"
-msgstr "Bitte warten bis der Schlüssel erzeugt wurde ...\n"
+msgstr "Bitte warten bis der SchlÃ¼ssel erzeugt wurde ...\n"
 
 #: scd/app-openpgp.c:1901
 msgid "generating key failed\n"
-msgstr "Fehler beim Erzeugen des Schlüssels\n"
+msgstr "Fehler beim Erzeugen des SchlÃ¼ssels\n"
 
 #: scd/app-openpgp.c:1904
 #, c-format
 msgid "key generation completed (%d seconds)\n"
-msgstr "Schlüsselerzeugung vollendet (%d Sekunden)\n"
+msgstr "SchlÃ¼sselerzeugung vollendet (%d Sekunden)\n"
 
 #: scd/app-openpgp.c:1961
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
-msgstr "Ungültige Struktur der OpenPGP Karte (DO 0x93)\n"
+msgstr "UngÃ¼ltige Struktur der OpenPGP Karte (DO 0x93)\n"
 
 #: scd/app-openpgp.c:2130
 #, c-format
@@ -754,18 +754,18 @@ msgstr "||Bitte geben Sie die PIN ein%%0A[Sigs bisher: %lu]"
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
-"Die Überprüfung der Admin PIN is momentan durch ein Kommando verboten "
+"Die ÃœberprÃ¼fung der Admin PIN is momentan durch ein Kommando verboten "
 "worden\n"
 
 #: scd/app-openpgp.c:2470 scd/app-openpgp.c:2480
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
-msgstr "Zugriff auf %s nicht möglich - ungültige OpenPGP Karte?\n"
+msgstr "Zugriff auf %s nicht mÃ¶glich - ungÃ¼ltige OpenPGP Karte?\n"
 
 #: sm/base64.c:317
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
-msgstr "Ungültiges Basis-64 Zeichen %02X wurde übergangen\n"
+msgstr "UngÃ¼ltiges Basis-64 Zeichen %02X wurde Ã¼bergangen\n"
 
 #: sm/call-agent.c:101
 msgid "no running gpg-agent - starting one\n"
@@ -773,7 +773,7 @@ msgstr "Kein aktiver gpg-agent - es wird einer gestarted\n"
 
 #: sm/call-agent.c:166
 msgid "can't connect to the agent - trying fall back\n"
-msgstr "Verbindung zum gpg-agent nicht möglich - Ersatzmethode wird versucht\n"
+msgstr "Verbindung zum gpg-agent nicht mÃ¶glich - Ersatzmethode wird versucht\n"
 
 #: sm/call-dirmngr.c:174
 msgid "no running dirmngr - starting one\n"
@@ -786,7 +786,7 @@ msgstr "Die Variable DIRMNGR_INFO ist fehlerhaft\n"
 #: sm/call-dirmngr.c:226
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
-msgstr "Die Dirmngr Protokollversion %d wird nicht unterstützt\n"
+msgstr "Die Dirmngr Protokollversion %d wird nicht unterstÃ¼tzt\n"
 
 #: sm/call-dirmngr.c:240
 msgid "can't connect to the dirmngr - trying fall back\n"
@@ -812,11 +812,11 @@ msgstr "[Fehler - Unbekannte Kodierung]"
 
 #: sm/certdump.c:514
 msgid "[Error - invalid encoding]"
-msgstr "[Fehler - Ungültige Kodierung]"
+msgstr "[Fehler - UngÃ¼ltige Kodierung]"
 
 #: sm/certdump.c:519
 msgid "[Error - invalid DN]"
-msgstr "[Fehler - Ungültiger DN]"
+msgstr "[Fehler - UngÃ¼ltiger DN]"
 
 #: sm/certdump.c:680
 #, c-format
@@ -826,7 +826,7 @@ msgid ""
 "S/N %s, ID %08lX, created %s"
 msgstr ""
 "Bitte geben Sie die Passphrase an, um den \n"
-"geheimen Schlüssel von\n"
+"geheimen SchlÃ¼ssel von\n"
 "\"%s\"\n"
 "S/N %s, ID %08lX, erzeugt %s\n"
 "zu entsperren"
@@ -834,16 +834,16 @@ msgstr ""
 #: sm/certlist.c:122
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
-"Schlüsselverwendungszweck nicht vorhanden - für alle Zwecke akzeptiert\n"
+"SchlÃ¼sselverwendungszweck nicht vorhanden - fÃ¼r alle Zwecke akzeptiert\n"
 
 #: sm/certlist.c:132 sm/keylist.c:224
 #, c-format
 msgid "error getting key usage information: %s\n"
-msgstr "Fehler beim holen der Schlüsselbenutzungsinformationen: %s\n"
+msgstr "Fehler beim holen der SchlÃ¼sselbenutzungsinformationen: %s\n"
 
 #: sm/certlist.c:142
 msgid "certificate should have not been used for certification\n"
-msgstr "Das Zertifikat hätte nicht zum Zertifizieren benutzt werden sollen\n"
+msgstr "Das Zertifikat hÃ¤tte nicht zum Zertifizieren benutzt werden sollen\n"
 
 #: sm/certlist.c:154
 msgid "certificate should have not been used for OCSP response signing\n"
@@ -853,7 +853,7 @@ msgstr ""
 
 #: sm/certlist.c:165
 msgid "certificate should have not been used for encryption\n"
-msgstr "Das Zertifikat hÃ¤tte nicht zum Verschlüsseln benutzt werden sollen\n"
+msgstr "Das Zertifikat hÃ¤tte nicht zum VerschlÃ¼sseln benutzt werden sollen\n"
 
 #: sm/certlist.c:166
 msgid "certificate should have not been used for signing\n"
@@ -861,7 +861,7 @@ msgstr "Das Zertifikat hÃ¤tte nicht zum Signieren benutzt werden sollen\n"
 
 #: sm/certlist.c:167
 msgid "certificate is not usable for encryption\n"
-msgstr "Das Zertifikat kann nicht zum Verschlüsseln benutzt werden\n"
+msgstr "Das Zertifikat kann nicht zum VerschlÃ¼sseln benutzt werden\n"
 
 #: sm/certlist.c:168
 msgid "certificate is not usable for signing\n"
@@ -870,11 +870,11 @@ msgstr "Das Zertifikat kann nicht zum Signieren benutzt werden\n"
 #: sm/certchain.c:109
 #, c-format
 msgid "critical certificate extension %s is not supported"
-msgstr "Die kritische Zertifikaterweiterung %s wird nicht unterstützt"
+msgstr "Die kritische Zertifikaterweiterung %s wird nicht unterstÃ¼tzt"
 
 #: sm/certchain.c:131
 msgid "issuer certificate is not marked as a CA"
-msgstr "Das Herausgeberzertifikat ist nicht für eine CA gekennzeichnet"
+msgstr "Das Herausgeberzertifikat ist nicht fÃ¼r eine CA gekennzeichnet"
 
 #: sm/certchain.c:169
 msgid "critical marked policy without configured policies"
@@ -883,7 +883,7 @@ msgstr "kritische Richtlinie ohne konfigurierte Richtlinien"
 #: sm/certchain.c:179
 #, c-format
 msgid "failed to open `%s': %s\n"
-msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
+msgstr "Datei `%s' kann nicht geÃ¶ffnet werden: %s\n"
 
 #: sm/certchain.c:186 sm/certchain.c:215
 msgid "note: non-critical certificate policy not allowed"
@@ -900,7 +900,7 @@ msgstr "Der Herausgeber wird von einer externen Stelle gesucht\n"
 #: sm/certchain.c:350
 #, c-format
 msgid "number of issuers matching: %d\n"
-msgstr "Anzahl der übereinstimmenden Heruasgeber: %d\n"
+msgstr "Anzahl der Ã¼bereinstimmenden Heruasgeber: %d\n"
 
 #: sm/certchain.c:503 sm/certchain.c:662 sm/certchain.c:1031 sm/decrypt.c:260
 #: sm/encrypt.c:341 sm/sign.c:324 sm/verify.c:106
@@ -913,7 +913,7 @@ msgstr "Das Zertifikat wurde widerrufen"
 
 #: sm/certchain.c:601
 msgid "no CRL found for certificate"
-msgstr "Keine CRL für das Zertifikat gefunden"
+msgstr "Keine CRL fÃ¼r das Zertifikat gefunden"
 
 #: sm/certchain.c:605
 msgid "the available CRL is too old"
@@ -927,7 +927,7 @@ msgstr ""
 #: sm/certchain.c:612
 #, c-format
 msgid "checking the CRL failed: %s"
-msgstr "Die CRL konnte nicht geprüft werden: %s"
+msgstr "Die CRL konnte nicht geprÃ¼ft werden: %s"
 
 #: sm/certchain.c:682
 msgid "no issuer found in certificate"
@@ -936,11 +936,11 @@ msgstr "Im Zertifikat ist kein Herausgeber enthalten"
 #: sm/certchain.c:695
 #, c-format
 msgid "certificate with invalid validity: %s"
-msgstr "Zertifikat mit unzulässiger Gültigkeit: %s"
+msgstr "Zertifikat mit unzulÃ¤ssiger GÃ¼ltigkeit: %s"
 
 #: sm/certchain.c:711
 msgid "certificate not yet valid"
-msgstr "Das Zertifikat ist noch nicht gültig"
+msgstr "Das Zertifikat ist noch nicht gÃ¼ltig"
 
 #: sm/certchain.c:724
 msgid "certificate has expired"
@@ -952,7 +952,7 @@ msgstr "Das eigenbeglaubigte Zertifikat hat eine FALSCHE Signatur"
 
 #: sm/certchain.c:779
 msgid "root certificate is not marked trusted"
-msgstr "Das Wurzelzertifikat ist nicht als vertrauenswürdig markiert"
+msgstr "Das Wurzelzertifikat ist nicht als vertrauenswÃ¼rdig markiert"
 
 #: sm/certchain.c:790
 #, c-format
@@ -961,12 +961,12 @@ msgstr "Fingerprint=%s\n"
 
 #: sm/certchain.c:795
 msgid "root certificate has now been marked as trusted\n"
-msgstr "Das Wurzelzertifikat wurde nun als vertrauenswürdig markiert\n"
+msgstr "Das Wurzelzertifikat wurde nun als vertrauenswÃ¼rdig markiert\n"
 
 #: sm/certchain.c:810
 #, c-format
 msgid "checking the trust list failed: %s\n"
-msgstr "Fehler beim Prüfen der vertrauenswürdigen Zertifikate: %s\n"
+msgstr "Fehler beim PrÃ¼fen der vertrauenswÃ¼rdigen Zertifikate: %s\n"
 
 #: sm/certchain.c:836 sm/import.c:157
 msgid "certificate chain too long\n"
@@ -983,19 +983,19 @@ msgstr "Das Zertifikat hat eine FALSCHE Signatur"
 #: sm/certchain.c:911
 msgid "found another possible matching CA certificate - trying again"
 msgstr ""
-"Eine anderes möglicherweise passendes CA-Zertifikat gefunden - versuche "
+"Eine anderes mÃ¶glicherweise passendes CA-Zertifikat gefunden - versuche "
 "nochmal"
 
 #: sm/certchain.c:934
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
-msgstr "Die Zertifikatkette ist länger als von der CA erlaubt (%d)"
+msgstr "Die Zertifikatkette ist lÃ¤nger als von der CA erlaubt (%d)"
 
 #: sm/decrypt.c:127
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
-"WARNUNG: Die Nachricht wurde mich einem schwachen Schlüssel (Weak Key) "
+"WARNUNG: Die Nachricht wurde mich einem schwachen SchlÃ¼ssel (Weak Key) "
 "erzeugt\n"
 
 #: sm/decrypt.c:325
@@ -1004,7 +1004,7 @@ msgstr "(Dies ist der RC-2 Algorithmus)\n"
 
 #: sm/decrypt.c:327
 msgid "(this does not seem to be an encrypted message)\n"
-msgstr "(dies is wahrscheinlich keine verschlüsselte Nachricht)\n"
+msgstr "(dies is wahrscheinlich keine verschlÃ¼sselte Nachricht)\n"
 
 #: sm/delete.c:51 sm/delete.c:102
 #, c-format
@@ -1019,25 +1019,25 @@ msgstr "Fehler beim Sperren der Keybox: %s\n"
 #: sm/delete.c:133
 #, c-format
 msgid "duplicated certificate `%s' deleted\n"
-msgstr "Doppeltes Zertifikat `%s' gelöscht\n"
+msgstr "Doppeltes Zertifikat `%s' gelÃ¶scht\n"
 
 #: sm/delete.c:135
 #, c-format
 msgid "certificate `%s' deleted\n"
-msgstr "Zertifikat `%s' gelöscht\n"
+msgstr "Zertifikat `%s' gelÃ¶scht\n"
 
 #: sm/delete.c:165
 #, c-format
 msgid "deleting certificate \"%s\" failed: %s\n"
-msgstr "Fehler beim Löschen des Zertifikats \"%s\": %s\n"
+msgstr "Fehler beim LÃ¶schen des Zertifikats \"%s\": %s\n"
 
 #: sm/encrypt.c:120
 msgid "weak key created - retrying\n"
-msgstr "Schwacher Schlüssel - es wird erneut versucht\n"
+msgstr "Schwacher SchlÃ¼ssel - es wird erneut versucht\n"
 
 #: sm/encrypt.c:332
 msgid "no valid recipients given\n"
-msgstr "Keine gültigen Empfänger angegeben\n"
+msgstr "Keine gÃ¼ltigen EmpfÃ¤nger angegeben\n"
 
 #: sm/gpgsm.c:239
 msgid "|[FILE]|make a signature"
@@ -1053,55 +1053,55 @@ msgstr "Erzeuge eine abgetrennte Signatur"
 
 #: sm/gpgsm.c:242
 msgid "encrypt data"
-msgstr "Verschlüssele die Daten"
+msgstr "VerschlÃ¼ssele die Daten"
 
 #: sm/gpgsm.c:243
 msgid "encryption only with symmetric cipher"
-msgstr "Verschlüsselung nur mit symmetrischem Algrithmus"
+msgstr "VerschlÃ¼sselung nur mit symmetrischem Algrithmus"
 
 #: sm/gpgsm.c:244
 msgid "decrypt data (default)"
-msgstr "Enschlüssele die Daten"
+msgstr "EnschlÃ¼ssele die Daten"
 
 #: sm/gpgsm.c:245
 msgid "verify a signature"
-msgstr "Überprüfen einer Signatur"
+msgstr "ÃœberprÃ¼fen einer Signatur"
 
 #: sm/gpgsm.c:247
 msgid "list keys"
-msgstr "Schlüssel anzeigen"
+msgstr "SchlÃ¼ssel anzeigen"
 
 #: sm/gpgsm.c:248
 msgid "list external keys"
-msgstr "Externe Schlüssel anzeigen"
+msgstr "Externe SchlÃ¼ssel anzeigen"
 
 #: sm/gpgsm.c:249
 msgid "list secret keys"
-msgstr "Geheime Schlüssel anzeigen"
+msgstr "Geheime SchlÃ¼ssel anzeigen"
 
 #: sm/gpgsm.c:250
 msgid "list certificate chain"
-msgstr "Schlüssel mit Zertifikatekette anzeigen"
+msgstr "SchlÃ¼ssel mit Zertifikatekette anzeigen"
 
 #: sm/gpgsm.c:252
 msgid "list keys and fingerprints"
-msgstr "Schlüssel und Fingerprint anzeigen"
+msgstr "SchlÃ¼ssel und Fingerprint anzeigen"
 
 #: sm/gpgsm.c:253
 msgid "generate a new key pair"
-msgstr "Neues Schlüsselpaar erzeugen"
+msgstr "Neues SchlÃ¼sselpaar erzeugen"
 
 #: sm/gpgsm.c:254
 msgid "remove key from the public keyring"
-msgstr "Schlüssel aus dem öffentlichen Schlüsselbund löschen"
+msgstr "SchlÃ¼ssel aus dem Ã¶ffentlichen SchlÃ¼sselbund lÃ¶schen"
 
 #: sm/gpgsm.c:255
 msgid "export keys to a key server"
-msgstr "Schlüssen an eine Schlüsselserver exportieren"
+msgstr "SchlÃ¼ssen an eine SchlÃ¼sselserver exportieren"
 
 #: sm/gpgsm.c:256
 msgid "import keys from a key server"
-msgstr "Schlüssel von einem Schlüsselserver importieren"
+msgstr "SchlÃ¼ssel von einem SchlÃ¼sselserver importieren"
 
 #: sm/gpgsm.c:257
 msgid "import certificates"
@@ -1117,7 +1117,7 @@ msgstr "Smartcard registrieren"
 
 #: sm/gpgsm.c:260
 msgid "run in server mode"
-msgstr "Im Server Modus ausführen"
+msgstr "Im Server Modus ausfÃ¼hren"
 
 #: sm/gpgsm.c:261
 msgid "pass a command to the dirmngr"
@@ -1129,11 +1129,11 @@ msgstr "Rufe das gpg-protect-tool auf"
 
 #: sm/gpgsm.c:264
 msgid "change a passphrase"
-msgstr "Das Mantra (Passphrase) ändern"
+msgstr "Das Mantra (Passphrase) Ã¤ndern"
 
 #: sm/gpgsm.c:274
 msgid "create ascii armored output"
-msgstr "Ausgabe mit ASCII Hülle wird erzeugt"
+msgstr "Ausgabe mit ASCII HÃ¼lle wird erzeugt"
 
 #: sm/gpgsm.c:276
 msgid "create base-64 encoded output"
@@ -1149,15 +1149,15 @@ msgstr "Eingabedaten sind im Basis-64 Format"
 
 #: sm/gpgsm.c:282
 msgid "assume input is in binary format"
-msgstr "Eingabedaten sind im Binärformat"
+msgstr "Eingabedaten sind im BinÃ¤rformat"
 
 #: sm/gpgsm.c:284
 msgid "|NAME|encrypt for NAME"
-msgstr "|NAME|Verschlüsseln für NAME"
+msgstr "|NAME|VerschlÃ¼sseln fÃ¼r NAME"
 
 #: sm/gpgsm.c:287
 msgid "use system's dirmngr if available"
-msgstr "Benutze den System Dirmngr when verfügbar"
+msgstr "Benutze den System Dirmngr when verfÃ¼gbar"
 
 #: sm/gpgsm.c:288
 msgid "never consult a CRL"
@@ -1165,7 +1165,7 @@ msgstr "Niemals eine CRL konsultieren"
 
 #: sm/gpgsm.c:295
 msgid "check validity using OCSP"
-msgstr "Die Gültigkeit mittels OCSP prüfen"
+msgstr "Die GÃ¼ltigkeit mittels OCSP prÃ¼fen"
 
 #: sm/gpgsm.c:298
 msgid "|N|number of certificates to include"
@@ -1177,7 +1177,7 @@ msgstr "|DATEI|Richtlinieninformationen DATEI entnehmen"
 
 #: sm/gpgsm.c:304
 msgid "do not check certificate policies"
-msgstr "Zertikikatrichtlinien nicht überprüfen"
+msgstr "Zertikikatrichtlinien nicht Ã¼berprÃ¼fen"
 
 #: sm/gpgsm.c:308
 msgid "fetch missing issuer certificates"
@@ -1185,15 +1185,15 @@ msgstr "Fehlende Zertifikate automatisch holen"
 
 #: sm/gpgsm.c:312
 msgid "|NAME|use NAME as default recipient"
-msgstr "|NAME|Benutze NAME als voreingestellten Empfänger"
+msgstr "|NAME|Benutze NAME als voreingestellten EmpfÃ¤nger"
 
 #: sm/gpgsm.c:314
 msgid "use the default key as default recipient"
-msgstr "Benuzte voreingestellten Schlüssel als Standardempfänger"
+msgstr "Benuzte voreingestellten SchlÃ¼ssel als StandardempfÃ¤nger"
 
 #: sm/gpgsm.c:320
 msgid "use this user-id to sign or decrypt"
-msgstr "Benuzte diese Benutzer ID zum Signieren oder Entschlüsseln"
+msgstr "Benuzte diese Benutzer ID zum Signieren oder EntschlÃ¼sseln"
 
 #: sm/gpgsm.c:323
 msgid "|N|set compress level N (0 disables)"
@@ -1209,7 +1209,7 @@ msgstr "als Ausgabedatei benutzen"
 
 #: sm/gpgsm.c:331
 msgid "don't use the terminal at all"
-msgstr "Das Terminal überhaupt nicht benutzen"
+msgstr "Das Terminal Ã¼berhaupt nicht benutzen"
 
 #: sm/gpgsm.c:334
 msgid "force v3 signatures"
@@ -1217,7 +1217,7 @@ msgstr "Version 3 Signaturen erzwingen"
 
 #: sm/gpgsm.c:335
 msgid "always use a MDC for encryption"
-msgstr "Immer das MDC Verfahren zum verschlüsseln mitbenutzen"
+msgstr "Immer das MDC Verfahren zum verschlÃ¼sseln mitbenutzen"
 
 #: sm/gpgsm.c:340
 msgid "batch mode: never ask"
@@ -1241,15 +1241,15 @@ msgstr "Diese geheimen Keyring in die Liste aufnehmen"
 
 #: sm/gpgsm.c:346
 msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|Benutze NAME als voreingestellten Schlüssel"
+msgstr "|NAME|Benutze NAME als voreingestellten SchlÃ¼ssel"
 
 #: sm/gpgsm.c:347
 msgid "|HOST|use this keyserver to lookup keys"
-msgstr "|HOST|Benutze HOST als Schlüsselserver"
+msgstr "|HOST|Benutze HOST als SchlÃ¼sselserver"
 
 #: sm/gpgsm.c:348
 msgid "|NAME|set terminal charset to NAME"
-msgstr "|NAME|Den Zeichensatz für das Terminal auf NAME setzen"
+msgstr "|NAME|Den Zeichensatz fÃ¼r das Terminal auf NAME setzen"
 
 #: sm/gpgsm.c:352
 msgid "|LEVEL|set the debugging level to LEVEL"
@@ -1265,7 +1265,7 @@ msgstr "|DATEI|Das Erweiterungsmodul DATEI laden"
 
 #: sm/gpgsm.c:372
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|Den Verschlüsselungsalgrithmus NAME benutzen"
+msgstr "|NAME|Den VerschlÃ¼sselungsalgrithmus NAME benutzen"
 
 #: sm/gpgsm.c:374
 msgid "|NAME|use message digest algorithm NAME"
@@ -1297,15 +1297,15 @@ msgstr ""
 "@\n"
 "Beispiele:\n"
 "\n"
-" -se -r Bob [Datei]         Signieren und verschlüsseln für Benutzer Bob\\n\n"
+" -se -r Bob [Datei]         Signieren und verschlÃ¼sseln fÃ¼r Benutzer Bob\\n\n"
 " --clearsign [Datei]        Eine Klartextsignatur erzeugen\\n\n"
 " --detach-sign [Datei]      Eine abgetrennte Signatur erzeugen\\n\n"
-" --list-keys [Namen]        Schlüssel anzeigenn\n"
-" --fingerprint [Namen]      \"Fingerabdrücke\" anzeigen\\n\n"
+" --list-keys [Namen]        SchlÃ¼ssel anzeigenn\n"
+" --fingerprint [Namen]      \"FingerabdrÃ¼cke\" anzeigen\\n\n"
 
 #: sm/gpgsm.c:506
 msgid "Usage: gpgsm [options] [files] (-h for help)"
-msgstr "Gebrauch: gpgsm [Optionen] [Dateien] (-h für Hilfe)"
+msgstr "Gebrauch: gpgsm [Optionen] [Dateien] (-h fÃ¼r Hilfe)"
 
 #: sm/gpgsm.c:509
 msgid ""
@@ -1314,7 +1314,7 @@ msgid ""
 "default operation depends on the input data\n"
 msgstr ""
 "Gebrauch: gpgsm [Optionen] [Dateien]\n"
-"Signieren, prüfen, ver- und entschlüsseln mittels S/MIME protocol\n"
+"Signieren, prÃ¼fen, ver- und entschlÃ¼sseln mittels S/MIME protocol\n"
 
 #: sm/gpgsm.c:516
 msgid ""
@@ -1322,7 +1322,7 @@ msgid ""
 "Supported algorithms:\n"
 msgstr ""
 "\n"
-"Unterstützte Algorithmen:\n"
+"UnterstÃ¼tzte Algorithmen:\n"
 
 #: sm/gpgsm.c:603
 msgid "usage: gpgsm [options] "
@@ -1335,33 +1335,33 @@ msgstr "Widersprechende Kommandos\n"
 #: sm/gpgsm.c:684
 #, c-format
 msgid "can't encrypt to `%s': %s\n"
-msgstr "Verschlüsseln für `%s' nicht möglich: %s\n"
+msgstr "VerschlÃ¼sseln fÃ¼r `%s' nicht mÃ¶glich: %s\n"
 
 #: sm/gpgsm.c:758
 #, c-format
 msgid "libksba is too old (need %s, have %s)\n"
-msgstr "Die Bibliothek Libksba is nicht aktuell (benötige %s, habe %s)\n"
+msgstr "Die Bibliothek Libksba is nicht aktuell (benÃ¶tige %s, habe %s)\n"
 
 #: sm/gpgsm.c:1215
 msgid "WARNING: program may create a core file!\n"
-msgstr "WARNUNG: Programm könnte eine core-dump-Datei schreiben!\n"
+msgstr "WARNUNG: Programm kÃ¶nnte eine core-dump-Datei schreiben!\n"
 
 #: sm/gpgsm.c:1227
 msgid "WARNING: running with faked system time: "
-msgstr "WARNUNG: Ausführung mit gefälschter Systemzeit: "
+msgstr "WARNUNG: AusfÃ¼hrung mit gefÃ¤lschter Systemzeit: "
 
 #: sm/gpgsm.c:1253
 msgid "selected cipher algorithm is invalid\n"
-msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
+msgstr "Das ausgewÃ¤hlte VerschlÃ¼sselungsverfahren ist ungÃ¼ltig\n"
 
 #: sm/gpgsm.c:1261
 msgid "selected digest algorithm is invalid\n"
-msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
+msgstr "Das ausgewÃ¤hlte Hashverfahren ist ungÃ¼ltig\n"
 
 #: sm/gpgsm.c:1291
 #, c-format
 msgid "can't sign using `%s': %s\n"
-msgstr "Signieren mit `%s' nicht möglich: %s\n"
+msgstr "Signieren mit `%s' nicht mÃ¶glich: %s\n"
 
 #: sm/gpgsm.c:1464
 msgid "this command has not yet been implemented\n"
@@ -1370,7 +1370,7 @@ msgstr "Diee Kommando wurde noch nicht implementiert\n"
 #: sm/gpgsm.c:1694 sm/gpgsm.c:1731
 #, c-format
 msgid "can't open `%s': %s\n"
-msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
+msgstr "Datei `%s' kann nicht geÃ¶ffnet werden: %s\n"
 
 #: sm/import.c:109
 #, c-format
@@ -1385,22 +1385,22 @@ msgstr "                 importiert: %lu"
 #: sm/import.c:116
 #, c-format
 msgid "             unchanged: %lu\n"
-msgstr "             nicht geändert: %lu\n"
+msgstr "             nicht geÃ¤ndert: %lu\n"
 
 #: sm/import.c:118
 #, c-format
 msgid "      secret keys read: %lu\n"
-msgstr " gelesene private Schlüssel: %lu\n"
+msgstr " gelesene private SchlÃ¼ssel: %lu\n"
 
 #: sm/import.c:120
 #, c-format
 msgid "  secret keys imported: %lu\n"
-msgstr "importierte priv. Schlüssel: %lu\n"
+msgstr "importierte priv. SchlÃ¼ssel: %lu\n"
 
 #: sm/import.c:122
 #, c-format
 msgid " secret keys unchanged: %lu\n"
-msgstr "ungeänderte priv. Schlüssel: %lu\n"
+msgstr "ungeÃ¤nderte priv. SchlÃ¼ssel: %lu\n"
 
 #: sm/import.c:124
 #, c-format
@@ -1413,7 +1413,7 @@ msgstr "Fehler beim speichern des Zertifikats\n"
 
 #: sm/import.c:234
 msgid "basic certificate checks failed - not imported\n"
-msgstr "Grundlegende Zertifikatprüfungen fehlgeschlagen - nicht importiert\n"
+msgstr "Grundlegende ZertifikatprÃ¼fungen fehlgeschlagen - nicht importiert\n"
 
 #: sm/import.c:420 sm/import.c:452
 #, c-format
@@ -1423,12 +1423,12 @@ msgstr "Fehler beim Importieren des Zertifikats: %s\n"
 #: sm/import.c:524 sm/import.c:549
 #, c-format
 msgid "error creating temporary file: %s\n"
-msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
+msgstr "Fehler beim Erstellen einer temporÃ¤ren Datei: %s\n"
 
 #: sm/import.c:532
 #, c-format
 msgid "error writing to temporary file: %s\n"
-msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"
+msgstr "Fehler beim Schreiben auf eine temporÃ¤re Datei: %s\n"
 
 #: sm/import.c:541
 #, c-format
@@ -1523,7 +1523,7 @@ msgstr "|KOMPONENTE|Zeige die Optionen an"
 
 #: tools/gpgconf.c:57
 msgid "|COMPONENT|change options"
-msgstr "|KOMPONENTE|Ändere die Optionen"
+msgstr "|KOMPONENTE|Ã„ndere die Optionen"
 
 #: tools/gpgconf.c:63
 msgid "quiet"
@@ -1531,11 +1531,11 @@ msgstr "Weniger Ausgaben"
 
 #: tools/gpgconf.c:65
 msgid "activate changes at runtime, if possible"
-msgstr "Aktiviere Änderungen zur Laufzeit; falls möglich"
+msgstr "Aktiviere Ã„nderungen zur Laufzeit; falls mÃ¶glich"
 
 #: tools/gpgconf.c:88
 msgid "Usage: gpgconf [options] (-h for help)"
-msgstr "Gebrauch: gpgconf [Optionen] (-h für Hilfe)"
+msgstr "Gebrauch: gpgconf [Optionen] (-h fÃ¼r Hilfe)"
 
 #: tools/gpgconf.c:91
 msgid ""
@@ -1543,7 +1543,7 @@ msgid ""
 "Manage configuration options for tools of the GnuPG system\n"
 msgstr ""
 "Syntax: gpgconf {Optionen]\n"
-"Verwalte Konfigurationsoptionen für Programme des GnuPG Systems\n"
+"Verwalte Konfigurationsoptionen fÃ¼r Programme des GnuPG Systems\n"
 
 #: tools/gpgconf.c:175
 msgid "usage: gpgconf [options] "
@@ -1551,7 +1551,7 @@ msgstr "Gebrauch: gpgconf [Optionen] "
 
 #: tools/gpgconf.c:177
 msgid "Need one component argument"
-msgstr "Benötige ein Komponenten Argument"
+msgstr "BenÃ¶tige ein Komponenten Argument"
 
 #: tools/gpgconf.c:186
 msgid "Component not found"
@@ -1570,7 +1570,7 @@ msgstr "Optionen zur Einstellung der Konfiguration"
 #: tools/gpgconf-comp.c:458 tools/gpgconf-comp.c:535 tools/gpgconf-comp.c:584
 #: tools/gpgconf-comp.c:640 tools/gpgconf-comp.c:716
 msgid "Options useful for debugging"
-msgstr "Nützliche Optionen zum Debuggen"
+msgstr "NÃ¼tzliche Optionen zum Debuggen"
 
 #: tools/gpgconf-comp.c:463 tools/gpgconf-comp.c:540 tools/gpgconf-comp.c:589
 #: tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:724
@@ -1583,11 +1583,11 @@ msgstr "Optionen zur Einstellung der Sicherheit"
 
 #: tools/gpgconf-comp.c:597
 msgid "Configuration for Keyservers"
-msgstr "Konfiguration der Schlüsselserver"
+msgstr "Konfiguration der SchlÃ¼sselserver"
 
 #: tools/gpgconf-comp.c:658
 msgid "do not check CRLs for root certificates"
-msgstr "CRL bei Wurzelzertifikaten nicht überprüfen"
+msgstr "CRL bei Wurzelzertifikaten nicht Ã¼berprÃ¼fen"
 
 #: tools/gpgconf-comp.c:699
 msgid "Options controlling the format of the output"
@@ -1595,11 +1595,11 @@ msgstr "Optionen zum Einstellen der Ausgabeformate"
 
 #: tools/gpgconf-comp.c:735
 msgid "Options controlling the interactivity and enforcement"
-msgstr "Optionen zur Einstellung der Interaktivität und Geltendmachung"
+msgstr "Optionen zur Einstellung der InteraktivitÃ¤t und Geltendmachung"
 
 #: tools/gpgconf-comp.c:745
 msgid "Configuration for HTTP servers"
-msgstr "Konfiguration für HTTP Server"
+msgstr "Konfiguration fÃ¼r HTTP Server"
 
 #: tools/gpgconf-comp.c:756
 msgid "use system's HTTP proxy setting"
@@ -1629,7 +1629,7 @@ msgstr "Konfiguration zu OCSP"
 #~ msgstr "Fehler beim Holen der Seriennummer: %s\n"
 
 #~ msgid "reading the key failed\n"
-#~ msgstr "Fehler beim Lesen des Schlüssels: %s\n"
+#~ msgstr "Fehler beim Lesen des SchlÃ¼ssels: %s\n"
 
 #~ msgid "error creating a pipe: %s\n"
 #~ msgstr "Fehler beim Erzeugen einer \"Pipe\": %s\n"
@@ -1642,13 +1642,13 @@ msgstr "Konfiguration zu OCSP"
 #~ "Das Warten auf die Beendigung des protect-tools ist fehlgeschlagen: %s\n"
 
 #~ msgid "error running `%s': probably not installed\n"
-#~ msgstr "Feler bei Ausführung von `%s': wahrscheinlich nicht installiert\n"
+#~ msgstr "Feler bei AusfÃ¼hrung von `%s': wahrscheinlich nicht installiert\n"
 
 #~ msgid "error running `%s': exit status %d\n"
-#~ msgstr "Fehler bei Ausführung von `%s': Endestatus %d\n"
+#~ msgstr "Fehler bei AusfÃ¼hrung von `%s': Endestatus %d\n"
 
 #~ msgid "Usage: sc-investigate [options] (-h for help)\n"
-#~ msgstr "Gebrauch: sc-investigate [Optionen] (-h für Hilfe)\n"
+#~ msgstr "Gebrauch: sc-investigate [Optionen] (-h fÃ¼r Hilfe)\n"
 
 #~ msgid ""
 #~ "Syntax: sc-investigate [options] [args]]\n"
@@ -1659,7 +1659,7 @@ msgstr "Konfiguration zu OCSP"
 
 #~ msgid "can't access Extended Capability Flags - invalid OpenPGP card?\n"
 #~ msgstr ""
-#~ "Zugriff auf die Extended Capability Flags nicht möglich - ungültige "
+#~ "Zugriff auf die Extended Capability Flags nicht mÃ¶glich - ungÃ¼ltige "
 #~ "OpenPGP Karte?\n"
 
 #~ msgid "Enter passphrase:"
@@ -1670,5 +1670,5 @@ msgstr "Konfiguration zu OCSP"
 
 #~ msgid "no key usage specified - accepted for encryption\n"
 #~ msgstr ""
-#~ "Schlüsselverwendungszweck nicht vorhanden - wird zum Verschlüsseln "
+#~ "SchlÃ¼sselverwendungszweck nicht vorhanden - wird zum VerschlÃ¼sseln "
 #~ "akzeptiert\n"
