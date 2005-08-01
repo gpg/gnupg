@@ -84,11 +84,20 @@ query_user_menu()
     echo "You selected: $ANSWER" >&2
 }
 
-query_user_menu "Key type" "RSA"
-KEY_TYPE=$ANSWER
+query_user_menu "Key type" "RSA" "existing key"
+if [ "$ANSWER" = "existing key" ]; then
+  # User requested to use an existing key; need to set some dummy defaults
+  KEY_TYPE=RSA 
+  KEY_LENGTH=1024
+  query_user "Keygrip "
+  KEY_GRIP=$ANSWER
+else
+  KEY_TYPE=$ANSWER
+  query_user_menu "Key length" "1024" "2048"
+  KEY_LENGTH=$ANSWER
+  KEY_GRIP=
+fi
 
-query_user_menu "Key length" "1024" "2048"
-KEY_LENGTH=$ANSWER
 
 query_user_menu "Key usage" "sign, encrypt" "sign" "encrypt"
 KEY_USAGE=$ANSWER
@@ -137,6 +146,7 @@ Key-Length: $KEY_LENGTH
 Key-Usage: $KEY_USAGE
 Name-DN: $NAME
 EOF
+[ -n "$KEY_GRIP" ] && echo "Key-Grip: $KEY_GRIP"
 [ -n "$EMAIL_ADDRESSES" ] && echo "$EMAIL_ADDRESSES"
 [ -n "$DNS_ADDRESSES" ] && echo "$DNS_ADDRESSES"
 [ -n "$URI_ADDRESSES" ] && echo "$URI_ADDRESSES"
@@ -152,7 +162,7 @@ query_user_menu "Really create such a CSR?" "yes" "no"
     
 
 echo -e "$ASSUAN_COMMANDS" | \
-   ./gpgsm --no-log-file --debug-level none --debug-none \
+    gpgsm --no-log-file --debug-level none --debug-none \
            --server 4< "$file_parameter" 5>"$outfile" >/dev/null
 
 cat "$outfile"

@@ -72,6 +72,7 @@ test_agent_private_key_type (void)
 static void
 test_make_shadow_info (void)
 {
+#if 0
   static struct 
   {
     const char *snstr; 
@@ -96,6 +97,7 @@ test_make_shadow_info (void)
       /* fixme: Need to compare the result but also need to check
          proper S-expression syntax. */
     }
+#endif
 }
 
 

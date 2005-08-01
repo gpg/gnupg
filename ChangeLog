@@ -1,3 +1,9 @@
+2005-08-01  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.18.
+	
+	* configure.ac: Require libksba 0.9.12 to match new features in gpgsm.
+
 2005-06-20  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.17.

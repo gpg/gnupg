@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gnupg2 1.9.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2005-06-16 09:12+0200\n"
-"PO-Revision-Date: 2005-08-01 14:44+0200\n"
+"PO-Revision-Date: 2005-08-01 15:09+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
@@ -521,7 +521,7 @@ msgstr "Alle Debug Flags setzen"
 
 #: kbx/kbxutil.c:107
 msgid "Please report bugs to "
-msgstr "Bite richten sie Berichte über Bugs (Softwarefehler) an "
+msgstr "Bitte richten sie Berichte über Bugs (Softwarefehler) an "
 
 #: kbx/kbxutil.c:107
 msgid ".\n"
@@ -921,8 +921,7 @@ msgstr "Die vorhandene CRL ist zu alt"
 
 #: sm/certchain.c:607
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
-msgstr ""
-"Bite vergewissern Sie sich das der \"dirmngr\" richtig installierrt ist\n"
+msgstr "Bitte vergewissern Sie sich das der \"dirmngr\" richtig installierrt ist\n"
 
 #: sm/certchain.c:612
 #, c-format
