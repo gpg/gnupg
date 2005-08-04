@@ -27,6 +27,10 @@ other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 bin_PROGRAMS    = gpgsplit
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest
 
+if HAVE_USTAR
+bin_SCRIPTS = gpg-zip
+endif
+
 gpgsplit_LDADD  = $(needed_libs) $(other_libs) @ZLIBS@
 mpicalc_LDADD   = $(needed_libs) $(other_libs) @W32LIBS@
 bftest_LDADD    = $(needed_libs) $(other_libs) @W32LIBS@ @DLLIBS@ @NETLIBS@ @LIBREADLINE@

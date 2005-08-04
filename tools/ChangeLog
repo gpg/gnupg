@@ -1,3 +1,10 @@
+2005-08-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg-zip.in: New.  Script wrapper to work with encrypted tar
+	files, a la PGP Zip.
+
+	* Makefile.am: Use it if we have a USTAR compatible tar.
+
 2004-12-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Link with readline where needed.

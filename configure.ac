@@ -425,7 +425,6 @@ AH_BOTTOM([
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
 
-
 AM_MAINTAINER_MODE
 
 dnl Checks for programs.
@@ -451,6 +450,7 @@ AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
 AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
 GNUPG_CHECK_FAQPROG
 GNUPG_CHECK_DOCBOOK_TO_TEXI
+GNUPG_CHECK_USTAR
 
 MPI_OPT_FLAGS=""
 
@@ -1322,6 +1322,7 @@ keyserver/gpgkeys_mailto
 keyserver/gpgkeys_test
 doc/Makefile
 tools/Makefile
+tools/gpg-zip
 zlib/Makefile
 checks/Makefile
 ])

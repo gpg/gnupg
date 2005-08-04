@@ -1,3 +1,8 @@
+2005-08-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* tar-ustar.m4: New.  Check for a tar that creates USTAR format
+	tar files.
+
 2005-07-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: Check that our libcurl has

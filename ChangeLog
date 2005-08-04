@@ -1,3 +1,7 @@
+2005-08-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Call GNUPG_CHECK_USTAR and generate tools/gpg-zip.
+
 2005-07-28  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (USE_DNS_PKA): Define in addition to USE_DNS_SRV.
