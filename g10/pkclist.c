@@ -540,7 +540,6 @@ check_signatures_trust( PKT_signature *sig )
       size_t fprlen;
       int okay;
 
-      log_info (_("Note: Verified address is `%s'\n"), sig->pka_info->email);
 
       primary_pk = xmalloc_clear (sizeof *primary_pk);
       get_pubkey (primary_pk, pk->main_keyid);
@@ -548,9 +547,17 @@ check_signatures_trust( PKT_signature *sig )
       free_public_key (primary_pk);
 
       if ( fprlen == 20 && !memcmp (sig->pka_info->fpr, fpr, 20) )
-        okay = 1;
+        {
+          okay = 1;
+          log_info (_("Note: Verified signer's address is `%s'\n"),
+                    sig->pka_info->email);
+        }
       else
-        okay = 0;
+        {
+          okay = 0;
+          log_info (_("Note: Signer's address `%s' "
+                      "does not match DNS entry\n"), sig->pka_info->email);
+        }
 
       switch ( (trustlevel & TRUST_MASK) ) 
         {

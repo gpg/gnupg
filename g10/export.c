@@ -230,6 +230,17 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 			 keystr(sk_keyid));
 		continue;
 	      }
+
+            /* It does not make sense to export a key with a primary
+               key on card using a non-key stub.  We simply skip those
+               keys when used with --export-secret-subkeys. */
+            if (secret == 2 && sk->is_protected
+                && sk->protect.s2k.mode == 1002 ) 
+              {
+		log_info(_("key %s: key material on-card - skipped\n"),
+			 keystr(sk_keyid));
+		continue;
+              }
 	  }
 	else
 	  {

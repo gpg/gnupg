@@ -289,13 +289,14 @@ check_secret_key( PKT_secret_key *sk, int n )
  * check whether the secret key is protected.
  * Returns: 0 not protected, -1 on error or the protection algorithm
  *                           -2 indicates a card stub.
+ *                           -3 indicates a not-online stub.
  */
 int
 is_secret_key_protected( PKT_secret_key *sk )
 {
     return sk->is_protected?
-               sk->protect.s2k.mode == 1002? -2
-                                           : sk->protect.algo : 0;
+               sk->protect.s2k.mode == 1002? -2 :
+               sk->protect.s2k.mode == 1001? -3 : sk->protect.algo : 0;
 }
 
 

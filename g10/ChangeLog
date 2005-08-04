@@ -1,3 +1,17 @@
+2005-08-04  Werner Koch  <wk@g10code.com>
+
+	* export.c (do_export_stream): Skip on-card keys when only subkeys
+	are to be exported.  It does not make sense to replace the on-card
+	key stub by a no-key stub.
+
+	* revoke.c (gen_revoke): Check for non-online keys.
+
+	* seckey-cert.c (is_secret_key_protected): Return -3 for
+	non-online key stubs.  The old code assumes that a protection
+	algorithm is still set but in some cases this one is 0 and thus it
+	won't be possible to decide whether it is unprotected or
+	protected.
+
 2005-07-28  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (other_libs): Add SRVLIBS.

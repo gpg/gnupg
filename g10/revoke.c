@@ -497,11 +497,15 @@ gen_revoke( const char *uname )
 	log_error(_("unknown protection algorithm\n"));
 	rc = G10ERR_PUBKEY_ALGO;
 	break;
+      case -3:
+	tty_printf (_("Secret parts of primary key are not available.\n"));
+        rc = G10ERR_NO_SECKEY;
+        break;
       case 0:
 	tty_printf(_("NOTE: This key is not protected!\n"));
 	break;
       default:
-	rc = check_secret_key( sk, 0 );
+        rc = check_secret_key( sk, 0 );
 	break;
     }
     if( rc )

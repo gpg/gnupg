@@ -533,7 +533,7 @@ check_card_serialno (app_t app, const char *serialno)
   const char *s;
   int ask = 0;
   int n;
-  
+
   for (s = serialno, n=0; *s != '/' && hexdigitp (s); s++, n++)
     ;
   if (n != 32)
