@@ -1,7 +1,7 @@
 2005-08-04  David Shaw  <dshaw@jabberwocky.com>
 
-	* keygen.c (start_tree): Need to use an actual packet type (which
-	we can then delete) to start the tree.
+	* keygen.c (write_keyblock): Don't try and build deleted kbnodes
+	since we start our tree with one.
 
 2005-08-04  Werner Koch  <wk@g10code.com>
 

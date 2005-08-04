@@ -3222,15 +3222,21 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
 static int
 write_keyblock( IOBUF out, KBNODE node )
 {
-    for( ; node ; node = node->next ) {
-	int rc = build_packet( out, node->pkt );
-	if( rc ) {
-	    log_error("build_packet(%d) failed: %s\n",
+  for( ; node ; node = node->next )
+    {
+      if(!is_deleted_kbnode(node))
+	{
+	  int rc = build_packet( out, node->pkt );
+	  if( rc )
+	    {
+	      log_error("build_packet(%d) failed: %s\n",
 			node->pkt->pkttype, g10_errstr(rc) );
-	    return G10ERR_WRITE_FILE;
+	      return G10ERR_WRITE_FILE;
+	    }
 	}
     }
-    return 0;
+
+  return 0;
 }
 
 
