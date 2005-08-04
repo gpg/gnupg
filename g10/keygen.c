@@ -2667,7 +2667,14 @@ start_tree(KBNODE *tree)
   PACKET *pkt;
 
   pkt=xmalloc_clear(sizeof(*pkt));
-  pkt->pkttype=PKT_NONE;
+
+  /* We're not acually using a user ID here - this is just an
+     arbitrary choice.  We delete it anyway. */
+
+  pkt->pkttype=PKT_USER_ID;
+  pkt->pkt.user_id=xmalloc_clear(sizeof *pkt->pkt.user_id);
+  pkt->pkt.user_id->ref=1;
+
   *tree=new_kbnode(pkt);
   delete_kbnode(*tree);
 }
