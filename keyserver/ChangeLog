@@ -1,3 +1,8 @@
+2005-08-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (main), gpgkeys_curl.c (main), curl-shim.h: Show
+	version of curl (or curl-shim) when debug is set.
+
 2005-07-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c (get_key, main): Don't try and be smart about

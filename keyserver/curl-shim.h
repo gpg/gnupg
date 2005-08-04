@@ -85,5 +85,6 @@ CURLcode curl_easy_perform(CURL *curl);
 void curl_easy_cleanup(CURL *curl);
 char *curl_escape(char *str,int len);
 void curl_free(char *ptr);
+#define curl_version() "GnuPG curl-shim "VERSION
 
 #endif /* !_CURL_SHIM_H_ */

@@ -260,6 +260,7 @@ main(int argc,char *argv[])
 
   if(opt->debug)
     {
+      fprintf(console,"gpgkeys: curl version = %s\n",curl_version());
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
       curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
     }
