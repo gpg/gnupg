@@ -18,14 +18,21 @@ AC_DEFUN([GNUPG_CHECK_LDAP],
 # If all else fails, the user can play guess-the-dependency by using
 # something like ./configure LDAPLIBS="-Lfoo -lbar"
 
-  AC_ARG_WITH(ldap,
-     AC_HELP_STRING([--with-ldap=DIR],[look for the LDAP library in DIR]),
-     [
-     if test -d "$withval" ; then
-        CPPFLAGS="${CPPFLAGS} -I$withval/include"
-        LDFLAGS="${LDFLAGS} -L$withval/lib"
-     fi
-     ])
+AC_ARG_WITH(ldap,
+  AC_HELP_STRING([--with-ldap=DIR],[look for the LDAP library in DIR]),
+  [_ldap_with=$withval])
+
+if test x$_ldap_with != xno ; then
+
+  if test -d "$withval" ; then
+     LDAP_CPPFLAGS="-I$withval/include"
+     LDAP_LDFLAGS="-L$withval/lib"
+  fi
+
+  _ldap_save_cppflags=$CPPFLAGS
+  CPPFLAGS="${LDAP_CPPFLAGS} ${CPPFLAGS}"
+  _ldap_save_ldflags=$LDFLAGS
+  LDFLAGS="${LDAP_LDFLAGS} ${LDFLAGS}"
 
   for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv" "-lwldap32"; do
     _ldap_save_libs=$LIBS
@@ -57,7 +64,7 @@ AC_DEFUN([GNUPG_CHECK_LDAP],
 
     if test "$gnupg_cv_func_ldap_init" = yes || \
         test "$gnupg_cv_func_ldaplber_init" = yes ; then
-       LDAPLIBS=$MY_LDAPLIBS
+       LDAPLIBS="$LDAP_LDFLAGS $MY_LDAPLIBS"
        GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
 
        AC_CHECK_FUNCS(ldap_get_option ldap_set_option ldap_start_tls_s)
@@ -82,4 +89,9 @@ AC_DEFUN([GNUPG_CHECK_LDAP],
 
   AC_SUBST(GPGKEYS_LDAP)
   AC_SUBST(LDAPLIBS)
+  AC_SUBST(LDAP_CPPFLAGS)
+
+  CPPFLAGS=$_ldap_save_cppflags
+  LDFLAGS=$_ldap_save_ldflags
+fi
 ])dnl

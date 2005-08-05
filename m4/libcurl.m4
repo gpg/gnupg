@@ -1,7 +1,7 @@
 # LIBCURL_CHECK_CONFIG ([DEFAULT-ACTION], [MINIMUM-VERSION],
 #                       [ACTION-IF-YES], [ACTION-IF-NO])
 # ----------------------------------------------------------
-#      David Shaw <dshaw@jabberwocky.com>   Jul-20-2005
+#      David Shaw <dshaw@jabberwocky.com>   Aug-5-2005
 #
 # Checks for libcurl.  DEFAULT-ACTION is the string yes or no to
 # specify whether to default to --with-libcurl or --without-libcurl.
@@ -66,11 +66,12 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
      _libcurl_try_link=yes
 
      if test -d "$_libcurl_with" ; then
-        CPPFLAGS="${CPPFLAGS} -I$withval/include"
-        LDFLAGS="${LDFLAGS} -L$withval/lib"
+        LIBCURL_CPPFLAGS="-I$withval/include"
+        _libcurl_ldflags="-L$withval/lib"
+        AC_PATH_PROG([_libcurl_config],["$withval/bin/curl-config"])
+     else
+	AC_PATH_PROG([_libcurl_config],[curl-config])
      fi
-
-     AC_PATH_PROG([_libcurl_config],[curl-config])
 
      if test x$_libcurl_config != "x" ; then
         AC_CACHE_CHECK([for the version of libcurl],
@@ -127,15 +128,15 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
 
         # we didn't find curl-config, so let's see if the user-supplied
         # link line (or failing that, "-lcurl") is enough.
-        LIBCURL=${LIBCURL-"-lcurl"}
+        LIBCURL=${LIBCURL-"$_libcurl_ldflags -lcurl"}
 
         AC_CACHE_CHECK([whether libcurl is usable],
            [libcurl_cv_lib_curl_usable],
            [
            _libcurl_save_cppflags=$CPPFLAGS
-           CPPFLAGS="$CPPFLAGS $LIBCURL_CPPFLAGS"
+           CPPFLAGS="$LIBCURL_CPPFLAGS $CPPFLAGS"
            _libcurl_save_libs=$LIBS
-           LIBS="$LIBS $LIBCURL"
+           LIBS="$LIBCURL $LIBS"
 
            AC_LINK_IFELSE(AC_LANG_PROGRAM([#include <curl/curl.h>],[
 /* Try and use a few common options to force a failure if we are
@@ -218,6 +219,7 @@ x=CURLOPT_VERBOSE;
      unset _libcurl_protocol
      unset _libcurl_protocols
      unset _libcurl_version
+     unset _libcurl_ldflags
   fi
 
   if test x$_libcurl_with = xno || test x$libcurl_cv_lib_curl_usable != xyes ; then

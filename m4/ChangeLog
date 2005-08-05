@@ -1,3 +1,15 @@
+2005-08-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* ldap.m4: If a PATH is given to --with-ldap, bias directory
+	search towards the given path for includes and libraries.  Noted
+	by Jason Harris.
+
+	* Makefile.am: Distribute tar-ustar.m4.
+
+	* libcurl.m4: If a PATH is given to --with-libcurl, look for
+	curl-config in that path.  Bias directory search towards the given
+	path for includes and libraries.
+
 2005-08-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* tar-ustar.m4: New.  Check for a tar that creates USTAR format
