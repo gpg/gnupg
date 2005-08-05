@@ -1,5 +1,8 @@
 2005-08-04  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (proc_parameter_file): Sanity check items in keygen
+	batch file.  Noted by Michael Schierl.
+
 	* pkclist.c (do_edit_ownertrust): Don't allow ownertrust level 0.
 	Noted by Michael Schierl.
 

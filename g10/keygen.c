@@ -2059,122 +2059,144 @@ static int
 proc_parameter_file( struct para_data_s *para, const char *fname,
                      struct output_control_s *outctrl, int card )
 {
-    struct para_data_s *r;
-    const char *s1, *s2, *s3;
-    size_t n;
-    char *p;
-    int i;
+  struct para_data_s *r;
+  const char *s1, *s2, *s3;
+  size_t n;
+  char *p;
+  int have_user_id=0;
 
-    /* Check that we have all required parameters. */
-    assert( get_parameter( para, pKEYTYPE ) );
-    i = get_parameter_algo( para, pKEYTYPE );
-    if( i < 1 || check_pubkey_algo2( i, PUBKEY_USAGE_SIG ) ) {
-	r = get_parameter( para, pKEYTYPE );
-	log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
+  /* Check that we have all required parameters. */
+  r = get_parameter( para, pKEYTYPE );
+  if(r)
+    {
+      if(check_pubkey_algo2(get_parameter_algo(para,pKEYTYPE),
+			    PUBKEY_USAGE_SIG))
+	{
+	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
+	  return -1;
+	}
+    }
+  else
+    {
+      log_error("%s: no Key-Type specified\n",fname);
+      return -1;
+    }
+
+  if (parse_parameter_usage (fname, para, pKEYUSAGE))
+    return -1;
+
+  r = get_parameter( para, pSUBKEYTYPE );
+  if(r)
+    {
+      if(check_pubkey_algo( get_parameter_algo( para, pSUBKEYTYPE)))
+	{
+	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
+	  return -1;
+	}
+
+      if(parse_parameter_usage (fname, para, pSUBKEYUSAGE))
 	return -1;
     }
 
-    if (parse_parameter_usage (fname, para, pKEYUSAGE))
-        return -1;
-
-    i = get_parameter_algo( para, pSUBKEYTYPE );
-    if( i > 0 && check_pubkey_algo( i ) ) {
-	r = get_parameter( para, pSUBKEYTYPE );
-	log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
-	return -1;
-    }
-    if (i > 0 && parse_parameter_usage (fname, para, pSUBKEYUSAGE))
-        return -1;
-
-
-    if( !get_parameter_value( para, pUSERID ) ) {
-	/* create the formatted user ID */
-	s1 = get_parameter_value( para, pNAMEREAL );
-	s2 = get_parameter_value( para, pNAMECOMMENT );
-	s3 = get_parameter_value( para, pNAMEEMAIL );
-	if( s1 || s2 || s3 ) {
-	    n = (s1?strlen(s1):0) + (s2?strlen(s2):0) + (s3?strlen(s3):0);
-	    r = xmalloc_clear( sizeof *r + n + 20 );
-	    r->key = pUSERID;
-	    p = r->u.value;
-	    if( s1 )
-		p = stpcpy(p, s1 );
-	    if( s2 )
-		p = stpcpy(stpcpy(stpcpy(p," ("), s2 ),")");
-	    if( s3 )
-		p = stpcpy(stpcpy(stpcpy(p," <"), s3 ),">");
-	    r->next = para;
-	    para = r;
+  if( get_parameter_value( para, pUSERID ) )
+    have_user_id=1;
+  else
+    {
+      /* create the formatted user ID */
+      s1 = get_parameter_value( para, pNAMEREAL );
+      s2 = get_parameter_value( para, pNAMECOMMENT );
+      s3 = get_parameter_value( para, pNAMEEMAIL );
+      if( s1 || s2 || s3 )
+	{
+	  n = (s1?strlen(s1):0) + (s2?strlen(s2):0) + (s3?strlen(s3):0);
+	  r = xmalloc_clear( sizeof *r + n + 20 );
+	  r->key = pUSERID;
+	  p = r->u.value;
+	  if( s1 )
+	    p = stpcpy(p, s1 );
+	  if( s2 )
+	    p = stpcpy(stpcpy(stpcpy(p," ("), s2 ),")");
+	  if( s3 )
+	    p = stpcpy(stpcpy(stpcpy(p," <"), s3 ),">");
+	  r->next = para;
+	  para = r;
+	  have_user_id=1;
 	}
     }
 
-    /* Set preferences, if any. */
-    keygen_set_std_prefs(get_parameter_value( para, pPREFERENCES ), 0);
-
-    /* Set revoker, if any. */
-    if (parse_revocation_key (fname, para, pREVOKER))
+  if(!have_user_id)
+    {
+      log_error("%s: no User-ID specified\n",fname);
       return -1;
-
-    /* make DEK and S2K from the Passphrase */
-    r = get_parameter( para, pPASSPHRASE );
-    if( r && *r->u.value ) {
-	/* we have a plain text passphrase - create a DEK from it.
-	 * It is a little bit ridiculous to keep it ih secure memory
-	 * but becuase we do this alwasy, why not here */
-	STRING2KEY *s2k;
-	DEK *dek;
-
-	s2k = xmalloc_secure( sizeof *s2k );
-	s2k->mode = opt.s2k_mode;
-	s2k->hash_algo = S2K_DIGEST_ALGO;
-	set_next_passphrase( r->u.value );
-	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2,
-                                 NULL, NULL);
-	set_next_passphrase( NULL );
-	assert( dek );
-	memset( r->u.value, 0, strlen(r->u.value) );
-
-	r = xmalloc_clear( sizeof *r );
-	r->key = pPASSPHRASE_S2K;
-	r->u.s2k = s2k;
-	r->next = para;
-	para = r;
-	r = xmalloc_clear( sizeof *r );
-	r->key = pPASSPHRASE_DEK;
-	r->u.dek = dek;
-	r->next = para;
-	para = r;
     }
 
-    /* make KEYEXPIRE from Expire-Date */
-    r = get_parameter( para, pEXPIREDATE );
-    if( r && *r->u.value )
-      {
-	u32 seconds;
+  /* Set preferences, if any. */
+  keygen_set_std_prefs(get_parameter_value( para, pPREFERENCES ), 0);
 
-	seconds = parse_expire_string( r->u.value );
-	if( seconds == (u32)-1 )
-	  {
-	    log_error("%s:%d: invalid expire date\n", fname, r->lnr );
-	    return -1;
-	  }
-	r->u.expire = seconds;
-	r->key = pKEYEXPIRE;  /* change hat entry */
-	/* also set it for the subkey */
-	r = xmalloc_clear( sizeof *r + 20 );
-	r->key = pSUBKEYEXPIRE;
-	r->u.expire = seconds;
-	r->next = para;
-	para = r;
-      }
+  /* Set revoker, if any. */
+  if (parse_revocation_key (fname, para, pREVOKER))
+    return -1;
 
-    if( !!outctrl->pub.newfname ^ !!outctrl->sec.newfname ) {
-	log_error("%s:%d: only one ring name is set\n", fname, outctrl->lnr );
-	return -1;
+  /* make DEK and S2K from the Passphrase */
+  r = get_parameter( para, pPASSPHRASE );
+  if( r && *r->u.value ) {
+    /* we have a plain text passphrase - create a DEK from it.
+     * It is a little bit ridiculous to keep it ih secure memory
+     * but becuase we do this alwasy, why not here */
+    STRING2KEY *s2k;
+    DEK *dek;
+
+    s2k = xmalloc_secure( sizeof *s2k );
+    s2k->mode = opt.s2k_mode;
+    s2k->hash_algo = S2K_DIGEST_ALGO;
+    set_next_passphrase( r->u.value );
+    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2,
+			     NULL, NULL);
+    set_next_passphrase( NULL );
+    assert( dek );
+    memset( r->u.value, 0, strlen(r->u.value) );
+
+    r = xmalloc_clear( sizeof *r );
+    r->key = pPASSPHRASE_S2K;
+    r->u.s2k = s2k;
+    r->next = para;
+    para = r;
+    r = xmalloc_clear( sizeof *r );
+    r->key = pPASSPHRASE_DEK;
+    r->u.dek = dek;
+    r->next = para;
+    para = r;
+  }
+
+  /* make KEYEXPIRE from Expire-Date */
+  r = get_parameter( para, pEXPIREDATE );
+  if( r && *r->u.value )
+    {
+      u32 seconds;
+
+      seconds = parse_expire_string( r->u.value );
+      if( seconds == (u32)-1 )
+	{
+	  log_error("%s:%d: invalid expire date\n", fname, r->lnr );
+	  return -1;
+	}
+      r->u.expire = seconds;
+      r->key = pKEYEXPIRE;  /* change hat entry */
+      /* also set it for the subkey */
+      r = xmalloc_clear( sizeof *r + 20 );
+      r->key = pSUBKEYEXPIRE;
+      r->u.expire = seconds;
+      r->next = para;
+      para = r;
     }
 
-    do_generate_keypair( para, outctrl, card );
-    return 0;
+  if( !!outctrl->pub.newfname ^ !!outctrl->sec.newfname ) {
+    log_error("%s:%d: only one ring name is set\n", fname, outctrl->lnr );
+    return -1;
+  }
+
+  do_generate_keypair( para, outctrl, card );
+  return 0;
 }
 
 
