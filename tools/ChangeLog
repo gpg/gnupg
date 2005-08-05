@@ -1,3 +1,8 @@
+2005-08-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg-zip.in: Add --decrypt functionality.  Fix quoting so
+	filenames with spaces work properly.
+
 2005-08-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg-zip.in: New.  Script wrapper to work with encrypted tar

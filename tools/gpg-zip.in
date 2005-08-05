@@ -29,7 +29,7 @@ TAR=@TAR@
 GPG=gpg
 
 usage="\
-Usage: gpg-zip [--help] [--version] [--encrypt] [--symmetric]
+Usage: gpg-zip [--help] [--version] [--encrypt] [--decrypt] [--symmetric]
        [--list-archive] [--output FILE] [--gpg GPG] [--gpg-args ARGS]
        [--tar TAR] [--tar-args ARGS] filename1 [filename2, ...]
        directory1 [directory2, ...]
@@ -45,24 +45,35 @@ while test $# -gt 0 ; do
     --list-archive)
       list=yes
       create=no
+      unpack=no
       shift
       ;;
     --encrypt | -e)
       gpg_args="$gpg_args --encrypt"
       list=no
       create=yes
+      unpack=no
+      shift
+      ;;
+    --decrypt | -d)
+      gpg_args="$gpg_args --decrypt"
+      list=no
+      create=no
+      unpack=yes
       shift
       ;;
     --symmetric | -c)
       gpg_args="$gpg_args --symmetric"
       list=no
       create=yes
+      unpack=no
       shift
       ;;
     --sign | -s)
       gpg_args="$gpg_args --sign"
       list=no
       create=yes
+      unpack=no
       shift
       ;;
     --recipient | -r)
@@ -117,11 +128,14 @@ while test $# -gt 0 ; do
 done
 
 if test x$create = xyes ; then
-#   echo "$TAR -cf - $* | $GPG --set-filename x.tar $gpg_args" >&2
-   $TAR -cf - $* | $GPG --set-filename x.tar $gpg_args
+#   echo "$TAR -cf - "$@" | $GPG --set-filename x.tar $gpg_args" 1>&2
+   $TAR -cf - "$@" | $GPG --set-filename x.tar $gpg_args
 elif test x$list = xyes ; then
-#   echo "cat $1 | $GPG $gpg_args | $TAR $tar_args -tf -" >&2
-   cat $1 | $GPG $gpg_args | $TAR $tar_args -tf -
+#   echo "cat \"$1\" | $GPG $gpg_args | $TAR $tar_args -tf -" 1>&2
+   cat "$1" | $GPG $gpg_args | $TAR $tar_args -tf -
+elif test x$unpack = xyes ; then
+#   echo "cat \"$1\" | $GPG $gpg_args | $TAR $tar_args -xvf -" 1>&2
+   cat "$1" | $GPG $gpg_args | $TAR $tar_args -xvf -
 else
    echo "$usage" 1>&2
    exit 1
