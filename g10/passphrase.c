@@ -115,6 +115,19 @@ get_last_passphrase()
     return p;
 }
 
+/* Here's an interesting question: since this passphrase was passed in
+   on the command line, is there really any point in using secure
+   memory for it?  I'm going with 'yes', since it doesn't hurt, and
+   might help in some small way (swapping). */
+
+void
+set_passphrase_from_string(const char *pass)
+{
+  xfree( fd_passwd );
+  fd_passwd = xmalloc_secure(strlen(pass)+1);
+  strcpy(fd_passwd,pass);
+}
+
 
 void
 read_passphrase_from_fd( int fd )

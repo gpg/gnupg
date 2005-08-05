@@ -211,6 +211,7 @@ enum cmd_and_opt_values
     oCompressLevel,
     oBZ2CompressLevel,
     oBZ2DecompressLowmem,
+    oPasswd,
     oPasswdFD,
     oPasswdFile,
     oCommandFD,
@@ -558,6 +559,7 @@ static ARGPARSE_OPTS opts[] = {
     /* { aListTrustPath, "list-trust-path",0, "@"}, */
     { aPipeMode,  "pipemode", 0, "@" },
     { oKOption, NULL,	 0, "@"},
+    { oPasswd, "passphrase",2, "@" },
     { oPasswdFD, "passphrase-fd",1, "@" },
     { oPasswdFile, "passphrase-file",2, "@" },
     { oCommandFD, "command-fd",1, "@" },
@@ -2270,6 +2272,9 @@ main (int argc, char **argv )
 	  case oCompressLevel: opt.compress_level = pargs.r.ret_int; break;
 	  case oBZ2CompressLevel: opt.bz2_compress_level = pargs.r.ret_int; break;
 	  case oBZ2DecompressLowmem: opt.bz2_decompress_lowmem=1; break;
+	  case oPasswd:
+	    set_passphrase_from_string(pargs.r.ret_str);
+	    break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             opt.use_agent = 0;
