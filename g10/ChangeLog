@@ -1,3 +1,21 @@
+2005-08-05  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c (keyserver_import_fprint): New stub.
+
+	* keygen.c (ask_user_id): Moved email checking code out to ..
+	* misc.c (is_valid_mailbox): .. new.
+	* mainproc.c (get_pka_address): Use it here.
+	* getkey.c (get_pubkey_byname): Add falback to auto-retrieve a key
+	via the PKA mechanism.
+
+	* options.h (KEYSERVER_AUTO_PKA_RETRIEVE): New.
+	* keyserver.c (keyserver_opts): Ditto.
+	* mainproc.c (check_sig_and_print): Use it here to retrieve keys
+	from a PKA DNS record.
+
+	* pkclist.c (build_pk_list): Add comments to this function;
+	re-indented it.
+
 2005-08-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (proc_parameter_file): Sanity check items in keygen

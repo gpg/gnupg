@@ -1088,6 +1088,20 @@ has_invalid_email_chars (const char *s)
 }
 
 
+/* Check whether NAME represents a valid mailbox according to
+   RFC822. Returns true if so. */
+int
+is_valid_mailbox (const char *name)
+{
+  return !( !name
+            || !*name
+            || has_invalid_email_chars (name)
+            || string_count_chr (name,'@') != 1
+            || *name == '@'
+            || name[strlen(name)-1] == '@'
+            || name[strlen(name)-1] == '.'
+            || strstr (name, "..") );
+}
 
 
 /* This is a helper function to load a Windows function from either of

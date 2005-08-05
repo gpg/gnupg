@@ -69,6 +69,7 @@ static struct parse_options keyserver_opts[]=
     {"keep-temp-files",KEYSERVER_KEEP_TEMP_FILES,NULL},
     {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL},
     {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL},
+    {"auto-pka-retrieve",KEYSERVER_AUTO_PKA_RETRIEVE,NULL},
     {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL},
     {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL},
     {NULL,0,NULL}

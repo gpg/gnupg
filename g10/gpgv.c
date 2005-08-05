@@ -281,6 +281,18 @@ keyserver_import_keyid( u32 *keyid, void *dummy )
 }
 
 /* Stub:
+ * Because we only work with trusted keys, it does not make sense to
+ * get them from a keyserver
+ */
+int
+keyserver_import_fprint (const byte *fprint, size_t fprint_len,
+                         struct keyserver_spec *keyserver)
+{
+    return -1;
+}
+
+
+/* Stub:
  * No encryption here but mainproc links to these functions.
  */
 int

@@ -35,6 +35,7 @@
 #include "main.h"
 #include "trustdb.h"
 #include "i18n.h"
+#include "keyserver-internal.h"
 
 #define MAX_PK_CACHE_ENTRIES   PK_UID_CACHE_SIZE
 #define MAX_UID_CACHE_ENTRIES  PK_UID_CACHE_SIZE
@@ -886,24 +887,59 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     return rc;
 }
 
-/*
- * Find a public key from NAME and returh the keyblock or the key.
- * If ret_kdb is not NULL, the KEYDB handle used to locate this keyblock is
- * returned and the caller is responsible for closing it.
- */
+
+
+/* Find a public key from NAME and return the keyblock or the key.  If
+   ret_kdb is not NULL, the KEYDB handle used to locate this keyblock
+   is returned and the caller is responsible for closing it.  If a key
+   was not found and NAME is a valid RFC822 mailbox and PKA retrieval
+   has been enabled, we try to import the pkea via the PKA
+   mechanism. */
 int
 get_pubkey_byname (PKT_public_key *pk,
 		   const char *name, KBNODE *ret_keyblock,
                    KEYDB_HANDLE *ret_kdbhd, int include_unusable )
 {
-    int rc;
-    STRLIST namelist = NULL;
+  int rc;
+  int again = 0;
+  STRLIST namelist = NULL;
 
-    add_to_strlist( &namelist, name );
-    rc = key_byname( NULL, namelist, pk, NULL, 0,
-		     include_unusable, ret_keyblock, ret_kdbhd);
-    free_strlist( namelist );
-    return rc;
+  add_to_strlist( &namelist, name );
+ retry:
+  rc = key_byname( NULL, namelist, pk, NULL, 0,
+                   include_unusable, ret_keyblock, ret_kdbhd);
+  if (rc == G10ERR_NO_PUBKEY
+      && !again
+      && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE)
+      && is_valid_mailbox (name))
+    {
+      /* If the requested name resembles a valid mailbox and
+         automatic retrieval via PKA records has been enabled, we
+         try to import the key via the URI and try again. */
+      unsigned char fpr[MAX_FINGERPRINT_LEN];
+      char *uri;
+      struct keyserver_spec *spec;
+      
+      uri = get_pka_info (name, fpr);
+      if (uri)
+        {
+          spec = parse_keyserver_uri (uri, 0, NULL, 0);
+          if (spec)
+            {
+              glo_ctrl.in_auto_key_retrieve++;
+              if (!keyserver_import_fprint (fpr, 20, spec))
+                again = 1;
+              glo_ctrl.in_auto_key_retrieve--;
+              free_keyserver_spec (spec);
+            }
+          xfree (uri);
+        }
+      if (again)
+        goto retry;
+    }
+
+  free_strlist( namelist );
+  return rc;
 }
 
 int

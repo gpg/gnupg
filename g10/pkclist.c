@@ -1,6 +1,6 @@
 /* pkclist.c
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -744,326 +744,423 @@ expand_group(STRLIST input)
   return output;
 }
 
+
+/* This is the central function to collect the keys for recipients.
+   It is thus used to prepare a public key encryption. encrypt-to
+   keys, default keys and the keys for the actual recipients are all
+   collected here.  When not in batch mode and no recipient has been
+   passed on the commandline, the function will also ask for
+   recipients.
+
+   RCPTS is a string list with the recipients; NULL is an allowed
+   value but not very useful.  Group expansion is done on these names;
+   they may be in any of the user Id formats we can handle.  The flags
+   bits for each string in the string list are used for:
+     Bit 0: This is an encrypt-to recipient.
+     Bit 1: This is a hidden recipient.
+
+   USE is the desired use for the key - usually PUBKEY_USAGE_ENC.
+   RET_PK_LIST.
+
+   On success a list of keys is stored at the address RET_PK_LIST; the
+   caller must free this list.  On error the value at this address is
+   not changed.
+ */
 int
-build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
+build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
 {
-    PK_LIST pk_list = NULL;
-    PKT_public_key *pk=NULL;
-    int rc=0;
-    int any_recipients=0;
-    STRLIST rov,remusr;
-    char *def_rec = NULL;
+  PK_LIST pk_list = NULL;
+  PKT_public_key *pk=NULL;
+  int rc=0;
+  int any_recipients=0;
+  STRLIST rov,remusr;
+  char *def_rec = NULL;
 
-    if(opt.grouplist)
-      remusr=expand_group(rcpts);
-    else
-      remusr=rcpts;
+  /* Try to expand groups if any have been defined. */
+  if (opt.grouplist)
+    remusr = expand_group (rcpts);
+  else
+    remusr = rcpts;
 
-    /* check whether there are any recipients in the list and build the
-     * list of the encrypt-to ones (we always trust them) */
-    for( rov = remusr; rov; rov = rov->next ) {
-	if( !(rov->flags & 1) )
-	  {
-	    any_recipients = 1;
+  /* Check whether there are any recipients in the list and build the
+   * list of the encrypt-to ones (we always trust them). */
+  for ( rov = remusr; rov; rov = rov->next ) 
+    {
+      if ( !(rov->flags & 1) )
+        {
+          /* This is a regular recipient; i.e. not an encrypt-to
+             one. */
+          any_recipients = 1;
 
-	    if((rov->flags&2) && (PGP2 || PGP6 || PGP7 || PGP8))
-	      {
-		log_info(_("you may not use %s while in %s mode\n"),
-			 "--hidden-recipient",
-			 compliance_option_string());
+          /* Hidden recipients are not allowed while in PGP mode,
+             issue a warning and switch into GnuPG mode. */
+          if ((rov->flags&2) && (PGP2 || PGP6 || PGP7 || PGP8))
+            {
+              log_info(_("you may not use %s while in %s mode\n"),
+                       "--hidden-recipient",
+                       compliance_option_string());
 
-		compliance_failure();
-	      }
-	  }
-	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
-	    pk = xmalloc_clear( sizeof *pk );
-	    pk->req_usage = use;
-	    /* We can encrypt-to a disabled key */
-	    if( (rc = get_pubkey_byname( pk, rov->d, NULL, NULL, 1 )) ) {
-		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
-                write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                              rov->d, strlen (rov->d), -1);
-		goto fail;
+              compliance_failure();
             }
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
-		/* Skip the actual key if the key is already present
-		 * in the list */
-		if (key_present_in_pk_list(pk_list, pk) == 0) {
-		    free_public_key(pk); pk = NULL;
-		    log_info(_("%s: skipped: public key already present\n"),
-							    rov->d);
-		}
-		else {
-		    PK_LIST r;
-		    r = xmalloc( sizeof *r );
-		    r->pk = pk; pk = NULL;
-		    r->next = pk_list;
-		    r->flags = (rov->flags&2)?1:0;
-		    pk_list = r;
+        }
+      else if ( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) 
+        {
+          /* Encryption has been requested and --encrypt-to has not
+             been disabled.  Check this encrypt-to key. */
+          pk = xmalloc_clear( sizeof *pk );
+          pk->req_usage = use;
 
-		    if(r->flags&1 && (PGP2 || PGP6 || PGP7 || PGP8))
-		      {
-			log_info(_("you may not use %s while in %s mode\n"),
-				 "--hidden-encrypt-to",
-				 compliance_option_string());
+          /* We explicitly allow encrypt-to to an disabled key; thus
+             we pass 1 as last argument. */
+          if ( (rc = get_pubkey_byname ( pk, rov->d, NULL, NULL, 1 )) ) 
+            {
+              free_public_key ( pk ); pk = NULL;
+              log_error (_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                            rov->d, strlen (rov->d), -1);
+              goto fail;
+            }
+          else if ( !(rc=check_pubkey_algo2 (pk->pubkey_algo, use )) ) 
+            {
+              /* Skip the actual key if the key is already present
+               * in the list.  Add it to our list if not. */
+              if (key_present_in_pk_list(pk_list, pk) == 0)
+                {
+                  free_public_key (pk); pk = NULL;
+                  log_info (_("%s: skipped: public key already present\n"),
+                            rov->d);
+                }
+              else
+                {
+                  PK_LIST r;
+                  r = xmalloc( sizeof *r );
+                  r->pk = pk; pk = NULL;
+                  r->next = pk_list;
+                  r->flags = (rov->flags&2)?1:0;
+                  pk_list = r;
 
-			compliance_failure();
-		      }
-		}
-	    }
-	    else {
-		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
-                write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                              rov->d, strlen (rov->d), -1);
-		goto fail;
-	    }
-	}
+                  /* Hidden encrypt-to recipients are not allowed while
+                     in PGP mode, issue a warning and switch into
+                     GnuPG mode. */
+                  if ((r->flags&1) && (PGP2 || PGP6 || PGP7 || PGP8))
+                    {
+                      log_info(_("you may not use %s while in %s mode\n"),
+                               "--hidden-encrypt-to",
+                               compliance_option_string());
+
+                      compliance_failure();
+                    }
+                }
+            }
+          else 
+            {
+              /* The public key is not usable for encryption or not
+                 available. */
+              free_public_key( pk ); pk = NULL;
+              log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                            rov->d, strlen (rov->d), -1);
+              goto fail;
+            }
+        }
     }
 
-    if( !any_recipients && !opt.batch ) { /* ask */
-	int have_def_rec;
-	char *answer=NULL;
-	STRLIST backlog=NULL;
+  /* If we don't have any recipients yet and we are not in batch mode
+     drop into interactive selection mode. */
+  if ( !any_recipients && !opt.batch ) 
+    { 
+      int have_def_rec;
+      char *answer = NULL;
+      STRLIST backlog = NULL;
 
-	if(pk_list)
-	  any_recipients = 1;
-	def_rec = default_recipient();
-	have_def_rec = !!def_rec;
-	if( !have_def_rec )
-	    tty_printf(_(
-		"You did not specify a user ID. (you may use \"-r\")\n"));
-	for(;;) {
-	    rc = 0;
-	    xfree(answer);
-	    if( have_def_rec ) {
-		answer = def_rec;
-		def_rec = NULL;
-	    }
-	    else if(backlog) {
-	      answer=pop_strlist(&backlog);
-	    }
-	    else
-	      {
-		PK_LIST iter;
+      if (pk_list)
+        any_recipients = 1;
+      def_rec = default_recipient();
+      have_def_rec = !!def_rec;
+      if ( !have_def_rec )
+        tty_printf(_("You did not specify a user ID. (you may use \"-r\")\n"));
 
-		tty_printf("\n");
-		tty_printf(_("Current recipients:\n"));
-		for(iter=pk_list;iter;iter=iter->next)
-		  {
-		    u32 keyid[2];
+      for (;;) 
+        {
+          rc = 0;
+          xfree(answer);
+          if ( have_def_rec )
+            {
+              /* A default recipient is taken as the first entry. */
+              answer = def_rec;
+              def_rec = NULL;
+            }
+          else if (backlog) 
+            {
+              /* This is part of our trick to expand and display groups. */
+              answer = pop_strlist (&backlog);
+            }
+          else
+            {
+              /* Show the list of already collected recipients and ask
+                 for more. */
+              PK_LIST iter;
 
-		    keyid_from_pk(iter->pk,keyid);
-		    tty_printf("%4u%c/%s %s \"",
-			       nbits_from_pk(iter->pk),
-			       pubkey_letter(iter->pk->pubkey_algo),
-			       keystr(keyid),
-			       datestr_from_pk(iter->pk));
+              tty_printf("\n");
+              tty_printf(_("Current recipients:\n"));
+              for (iter=pk_list;iter;iter=iter->next)
+                {
+                  u32 keyid[2];
 
-		    if(iter->pk->user_id)
-		      tty_print_utf8_string(iter->pk->user_id->name,
-					    iter->pk->user_id->len);
-		    else
-		      {
-			size_t n;
-			char *p = get_user_id( keyid, &n );
-			tty_print_utf8_string( p, n );
-			xfree(p);
-		      }
-		    tty_printf("\"\n");
-		  }
+                  keyid_from_pk(iter->pk,keyid);
+                  tty_printf("%4u%c/%s %s \"",
+                             nbits_from_pk(iter->pk),
+                             pubkey_letter(iter->pk->pubkey_algo),
+                             keystr(keyid),
+                             datestr_from_pk(iter->pk));
 
-		answer = cpr_get_utf8("pklist.user_id.enter",
-			 _("\nEnter the user ID.  End with an empty line: "));
-		trim_spaces(answer);
-		cpr_kill_prompt();
-	      }
-	    if( !answer || !*answer ) {
-	        xfree(answer);
-		break;
-	    }
-	    if(expand_id(answer,&backlog,0))
-	      continue;
-	    if( pk )
-		free_public_key( pk );
-	    pk = xmalloc_clear( sizeof *pk );
-	    pk->req_usage = use;
-	    rc = get_pubkey_byname( pk, answer, NULL, NULL, 0 );
-	    if( rc )
-		tty_printf(_("No such user ID.\n"));
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
-		if( have_def_rec ) {
-		    if (key_present_in_pk_list(pk_list, pk) == 0) {
-			free_public_key(pk); pk = NULL;
-			log_info(_("skipped: public key "
-				   "already set as default recipient\n") );
-		    }
-		    else {
-			PK_LIST r = xmalloc( sizeof *r );
-			r->pk = pk; pk = NULL;
-			r->next = pk_list;
-			r->flags = 0; /* no throwing default ids */
-			pk_list = r;
-		    }
-		    any_recipients = 1;
-		    continue;
-		}
-		else {
-		    int trustlevel;
+                  if (iter->pk->user_id)
+                    tty_print_utf8_string(iter->pk->user_id->name,
+                                          iter->pk->user_id->len);
+                  else
+                    {
+                      size_t n;
+                      char *p = get_user_id( keyid, &n );
+                      tty_print_utf8_string( p, n );
+                      xfree(p);
+                    }
+                  tty_printf("\"\n");
+                }
+
+              answer = cpr_get_utf8("pklist.user_id.enter",
+                                    _("\nEnter the user ID.  "
+                                      "End with an empty line: "));
+              trim_spaces(answer);
+              cpr_kill_prompt();
+            }
+          
+          if ( !answer || !*answer ) 
+            {
+              xfree(answer);
+              break;  /* No more recipients entered - get out of loop. */
+            }
+
+          /* Do group expand here too.  The trick here is to continue
+             the loop if any expansion occured.  The code above will
+             then list all expanded keys. */
+          if (expand_id(answer,&backlog,0))
+            continue;
+
+          /* Get and check key for the current name. */
+          if (pk)
+            free_public_key (pk);
+          pk = xmalloc_clear( sizeof *pk );
+          pk->req_usage = use;
+          rc = get_pubkey_byname( pk, answer, NULL, NULL, 0 );
+          if (rc)
+            tty_printf(_("No such user ID.\n"));
+          else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) 
+            {
+              if ( have_def_rec )
+                {
+                  /* No validation for a default recipient. */
+                  if (!key_present_in_pk_list(pk_list, pk)) 
+                    {
+                      free_public_key (pk); pk = NULL;
+                      log_info (_("skipped: public key "
+                                  "already set as default recipient\n") );
+                    }
+                  else
+                    {
+                      PK_LIST r = xmalloc (sizeof *r);
+                      r->pk = pk; pk = NULL;
+                      r->next = pk_list;
+                      r->flags = 0; /* No throwing default ids. */
+                      pk_list = r;
+                    }
+                  any_recipients = 1;
+                  continue;
+                }
+              else
+                { /* Check validity of this key. */
+                  int trustlevel;
 		    
-		    trustlevel = get_validity (pk, pk->user_id);
-		    if( (trustlevel & TRUST_FLAG_DISABLED) ) {
-			tty_printf(_("Public key is disabled.\n") );
-		    }
-		    else if( do_we_trust_pre( pk, trustlevel ) ) {
-			/* Skip the actual key if the key is already present
-			 * in the list */
-			if (key_present_in_pk_list(pk_list, pk) == 0) {
-			    free_public_key(pk); pk = NULL;
-			    log_info(_("skipped: public key already set\n") );
-			}
-			else {
-			    PK_LIST r;
-			    r = xmalloc( sizeof *r );
-			    r->pk = pk; pk = NULL;
-			    r->next = pk_list;
-			    r->flags = 0; /* no throwing interactive ids */
-			    pk_list = r;
-			}
-			any_recipients = 1;
-			continue;
-		    }
-		}
-	    }
-	    xfree(def_rec); def_rec = NULL;
-	    have_def_rec = 0;
-	}
-	if( pk ) {
-	    free_public_key( pk );
-	    pk = NULL;
-	}
+                  trustlevel = get_validity (pk, pk->user_id);
+                  if ( (trustlevel & TRUST_FLAG_DISABLED) ) 
+                    {
+                      tty_printf (_("Public key is disabled.\n") );
+                    }
+                  else if ( do_we_trust_pre (pk, trustlevel) ) 
+                    {
+                      /* Skip the actual key if the key is already
+                       * present in the list */
+                      if (!key_present_in_pk_list(pk_list, pk))
+                        {
+                          free_public_key(pk); pk = NULL;
+                          log_info(_("skipped: public key already set\n") );
+                        }
+                      else
+                        {
+                          PK_LIST r;
+                          r = xmalloc( sizeof *r );
+                          r->pk = pk; pk = NULL;
+                          r->next = pk_list;
+                          r->flags = 0; /* No throwing interactive ids. */
+                          pk_list = r;
+                        }
+                      any_recipients = 1;
+                      continue;
+                    }
+                }
+            }
+          xfree(def_rec); def_rec = NULL;
+          have_def_rec = 0;
+        }
+      if ( pk )
+        {
+          free_public_key( pk );
+          pk = NULL;
+        }
     }
-    else if( !any_recipients && (def_rec = default_recipient()) ) {
-	pk = xmalloc_clear( sizeof *pk );
-	pk->req_usage = use;
-	/* The default recipient may be disabled */
-	rc = get_pubkey_byname( pk, def_rec, NULL, NULL, 1 );
-	if( rc )
-	    log_error(_("unknown default recipient \"%s\"\n"), def_rec );
-	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
-	  /* Mark any_recipients here since the default recipient
+  else if ( !any_recipients && (def_rec = default_recipient()) ) 
+    {
+      /* We are in batch mode and have only a default recipient. */
+      pk = xmalloc_clear( sizeof *pk );
+      pk->req_usage = use;
+
+      /* The default recipient is allowed to be disabled; thus pass 1
+         as last argument. */
+      rc = get_pubkey_byname (pk, def_rec, NULL, NULL, 1);
+      if (rc)
+        log_error(_("unknown default recipient \"%s\"\n"), def_rec );
+      else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) 
+        {
+          /* Mark any_recipients here since the default recipient
              would have been used if it wasn't already there.  It
              doesn't really matter if we got this key from the default
              recipient or an encrypt-to. */
-	  any_recipients = 1;
-	  if (key_present_in_pk_list(pk_list, pk) == 0)
-	    log_info(_("skipped: public key already set as default recipient\n"));
-	  else {
-	    PK_LIST r = xmalloc( sizeof *r );
-	    r->pk = pk; pk = NULL;
-	    r->next = pk_list;
-	    r->flags = 0; /* no throwing default ids */
-	    pk_list = r;
-	  }
-	}
-	if( pk ) {
-	    free_public_key( pk );
-	    pk = NULL;
-	}
-	xfree(def_rec); def_rec = NULL;
+          any_recipients = 1;
+          if (!key_present_in_pk_list(pk_list, pk))
+            log_info (_("skipped: public key already set "
+                        "as default recipient\n"));
+          else 
+            {
+              PK_LIST r = xmalloc( sizeof *r );
+              r->pk = pk; pk = NULL;
+              r->next = pk_list;
+              r->flags = 0; /* No throwing default ids. */
+              pk_list = r;
+            }
+        }
+      if ( pk )
+        {
+          free_public_key( pk );
+          pk = NULL;
+        }
+      xfree(def_rec); def_rec = NULL;
     }
-    else {
-	any_recipients = 0;
-	for(; remusr; remusr = remusr->next ) {
-	    if( (remusr->flags & 1) )
-		continue; /* encrypt-to keys are already handled */
+  else 
+    {
+      /* General case: Check all keys. */
+      any_recipients = 0;
+      for (; remusr; remusr = remusr->next ) 
+        {
+          if ( (remusr->flags & 1) )
+            continue; /* encrypt-to keys are already handled. */
 
-	    pk = xmalloc_clear( sizeof *pk );
-	    pk->req_usage = use;
-	    if( (rc = get_pubkey_byname( pk, remusr->d, NULL, NULL, 0 )) ) {
-		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
-                write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                              remusr->d, strlen (remusr->d),
-                                              -1);
-		goto fail;
-	    }
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
-		int trustlevel;
+          pk = xmalloc_clear( sizeof *pk );
+          pk->req_usage = use;
+          if ( (rc = get_pubkey_byname( pk, remusr->d, NULL, NULL, 0 )) ) 
+            {
+              /* Key not found or other error. */
+              free_public_key( pk ); pk = NULL;
+              log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
+              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                            remusr->d, strlen (remusr->d),
+                                            -1);
+              goto fail;
+            }
+          else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) 
+            {
+              /* Key found and usable.  Check validity. */
+              int trustlevel;
+              
+              trustlevel = get_validity (pk, pk->user_id);
+              if ( (trustlevel & TRUST_FLAG_DISABLED) ) 
+                {
+                  /*Key has been disabled. */
+                  free_public_key(pk); pk = NULL;
+                  log_info(_("%s: skipped: public key is disabled\n"),
+                           remusr->d);
+                  write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                                remusr->d,
+                                                strlen (remusr->d),
+                                                -1);
+                  rc=G10ERR_UNU_PUBKEY;
+                  goto fail;
+                }
+              else if ( do_we_trust_pre( pk, trustlevel ) ) 
+                {
+                  /* Note: do_we_trust may have changed the trustlevel */
 
-		trustlevel = get_validity (pk, pk->user_id);
-		if( (trustlevel & TRUST_FLAG_DISABLED) ) {
-		    free_public_key(pk); pk = NULL;
-		    log_info(_("%s: skipped: public key is disabled\n"),
-								    remusr->d);
-                    write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                                  remusr->d,
-                                                  strlen (remusr->d),
-                                                  -1);
-		    rc=G10ERR_UNU_PUBKEY;
-		    goto fail;
-		}
-		else if( do_we_trust_pre( pk, trustlevel ) ) {
-		    /* note: do_we_trust may have changed the trustlevel */
+                  /* We have at least one valid recipient. It doesn't
+                   * matters if this recipient is already present. */
+                  any_recipients = 1;
 
-		    /* We have at least one valid recipient. It doesn't matters
-		     * if this recipient is already present. */
-		    any_recipients = 1;
-
-		    /* Skip the actual key if the key is already present
-		     * in the list */
-		    if (key_present_in_pk_list(pk_list, pk) == 0) {
-			free_public_key(pk); pk = NULL;
-			log_info(_("%s: skipped: public key already present\n"),
-								    remusr->d);
-		    }
-		    else {
-			PK_LIST r;
-			r = xmalloc( sizeof *r );
-			r->pk = pk; pk = NULL;
-			r->next = pk_list;
-			r->flags = (remusr->flags&2)?1:0;
-			pk_list = r;
-		    }
-		}
-		else { /* we don't trust this pk */
-		    free_public_key( pk ); pk = NULL;
-                    write_status_text_and_buffer (STATUS_INV_RECP, "10 ",
-                                                  remusr->d,
-                                                  strlen (remusr->d),
-                                                  -1);
-		    rc=G10ERR_UNU_PUBKEY;
-		    goto fail;
-		}
-	    }
-	    else {
-		free_public_key( pk ); pk = NULL;
-                write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                              remusr->d,
-                                              strlen (remusr->d),
-                                              -1);
-		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
-		goto fail;
-	    }
-	}
+                  /* Skip the actual key if the key is already present
+                   * in the list */
+                  if (!key_present_in_pk_list(pk_list, pk)) 
+                    {
+                      free_public_key(pk); pk = NULL;
+                      log_info(_("%s: skipped: public key already present\n"),
+                               remusr->d);
+                    }
+                  else
+                    {
+                      PK_LIST r;
+                      r = xmalloc( sizeof *r );
+                      r->pk = pk; pk = NULL;
+                      r->next = pk_list;
+                      r->flags = (remusr->flags&2)?1:0;
+                      pk_list = r;
+                    }
+                }
+              else
+                { /* We don't trust this key. */
+                  free_public_key( pk ); pk = NULL;
+                  write_status_text_and_buffer (STATUS_INV_RECP, "10 ",
+                                                remusr->d,
+                                                strlen (remusr->d),
+                                                -1);
+                  rc=G10ERR_UNU_PUBKEY;
+                  goto fail;
+                }
+            }
+          else
+            {
+              /* Key found but not usable for us (e.g. sign-only key). */
+              free_public_key( pk ); pk = NULL;
+              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                            remusr->d,
+                                            strlen (remusr->d),
+                                            -1);
+              log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
+              goto fail;
+            }
+        }
     }
-
-    if( !rc && !any_recipients ) {
-	log_error(_("no valid addressees\n"));
-        write_status_text (STATUS_NO_RECP, "0");
-	rc = G10ERR_NO_USER_ID;
+  
+  if ( !rc && !any_recipients ) 
+    {
+      log_error(_("no valid addressees\n"));
+      write_status_text (STATUS_NO_RECP, "0");
+      rc = G10ERR_NO_USER_ID;
     }
-
+  
  fail:
 
-    if( rc )
-	release_pk_list( pk_list );
-    else
-	*ret_pk_list = pk_list;
-    if(opt.grouplist)
-      free_strlist(remusr);
-    return rc;
+  if ( rc )
+    release_pk_list( pk_list );
+  else
+    *ret_pk_list = pk_list;
+  if (opt.grouplist)
+    free_strlist(remusr);
+  return rc;
 }
 
 

@@ -1334,7 +1334,7 @@ get_pka_address (PKT_signature *sig)
       memcpy (pka->email, p, n2);
       pka->email[n2] = 0;
 
-      if (has_invalid_email_chars (pka->email))
+      if (!is_valid_mailbox (pka->email))
         {
           /* We don't accept invalid mail addresses. */
           xfree (pka);
@@ -1502,12 +1502,15 @@ check_sig_and_print( CTX c, KBNODE node )
 
     /* If the preferred keyserver thing above didn't work, our second
        try is to use the URI from a DNS PKA record. */
-    if ( rc == G10ERR_NO_PUBKEY )
+    if ( rc == G10ERR_NO_PUBKEY 
+         && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE))
       {
         const char *uri = pka_uri_from_sig (sig);
         
         if (uri)
           {
+            /* FIXME: We might want to locate the key using the
+               fingerprint instead of the keyid. */
             int res;
             struct keyserver_spec *spec;
             

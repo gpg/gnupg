@@ -1655,13 +1655,8 @@ ask_user_id( int mode )
 		cpr_kill_prompt();
 		if( !*amail || opt.allow_freeform_uid )
 		    break;   /* no email address is okay */
-		else if( has_invalid_email_chars(amail)
-			 || string_count_chr(amail,'@') != 1
-			 || *amail == '@'
-			 || amail[strlen(amail)-1] == '@'
-			 || amail[strlen(amail)-1] == '.'
-			 || strstr(amail, "..") )
-		    tty_printf(_("Not a valid email address\n"));
+		else if ( !is_valid_mailbox (amail) )
+                    tty_printf(_("Not a valid email address\n"));
 		else
 		    break;
 	    }
