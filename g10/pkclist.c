@@ -182,7 +182,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 
   switch(minimum)
     {
-    default:              min_num=0; break;
+    default:
     case TRUST_UNDEFINED: min_num=1; break;
     case TRUST_NEVER:     min_num=2; break;
     case TRUST_MARGINAL:  min_num=3; break;

@@ -1,5 +1,8 @@
 2005-08-04  David Shaw  <dshaw@jabberwocky.com>
 
+	* pkclist.c (do_edit_ownertrust): Don't allow ownertrust level 0.
+	Noted by Michael Schierl.
+
 	* keygen.c (write_keyblock): Don't try and build deleted kbnodes
 	since we start our tree with one.
 
