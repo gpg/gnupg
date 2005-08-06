@@ -198,6 +198,7 @@ typedef int assuan_error_t;
 typedef void *assuan_context_t;
 #endif
 int  have_static_passphrase(void);
+void set_passphrase_from_string(const char *pass);
 void read_passphrase_from_fd( int fd );
 void passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo );
 char *ask_passphrase (const char *description,
