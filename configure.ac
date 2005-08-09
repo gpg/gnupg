@@ -495,12 +495,6 @@ case "${host}" in
         agent_support=no
         ;;
 
-    *-*-freebsd*)
-       # FreeBSD
-       CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-       LDFLAGS="$LDFLAGS -L/usr/local/lib"
-       ;;
-
     *-*-hpux*)
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"

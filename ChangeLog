@@ -1,3 +1,8 @@
+2005-08-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Remove hardcoded -I and -L for /usr/local on
+	FreeBSD.
+
 2005-08-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Call GNUPG_CHECK_USTAR and generate tools/gpg-zip.
