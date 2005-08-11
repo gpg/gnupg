@@ -536,7 +536,25 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
     }
 
-    /* now we can process complete blocks */
+    /* Now we can process complete blocks. */
+#if 0 
+    /* Experimental code.  We may only use this for standard CFB
+       because for Phil's mode we need to save the IV of before the
+       last encryption - we don't want to do this in tghe fasf CFB
+       encryption routine.  */
+    if (c->algo == CIPHER_ALGO_AES
+        && nbytes >= blocksize 
+        && c->mode != CIPHER_MODE_PHILS_CFB) {
+        size_t n;
+
+	memcpy( c->lastiv, c->iv, blocksize );
+        n = (nbytes / blocksize) * blocksize;
+        rijndael_cfb_encrypt (&c->context.c, c->iv, outbuf, inbuf, n);
+        inbuf  += n;
+        outbuf += n;
+	nbytes -= n;
+    }
+#endif
     while( nbytes >= blocksize ) {
 	int i;
 	/* encrypt the IV (and save the current one) */

@@ -1955,6 +1955,57 @@ rijndael_encrypt (void *ctx, byte *b, const byte *a)
     burn_stack (16 + 2*sizeof(int));
 }
 
+#if 0
+/* Experimental code.  Needs to be generalized and we might want to
+   have variants for all possible sizes of the largest scalar type.
+   Also need to make sure that INBUF and OUTBUF are properlu
+   aligned. */
+void
+rijndael_cfb_encrypt (void *ctx, byte *iv,
+                      byte *outbuf, const byte *inbuf, size_t nbytes)
+{
+/*   if ( ((unsigned long)inbuf & 3) || ((unsigned long)outbuf & 3) ) */
+/*     {  */
+      /* Not properly aligned, use the slow version.  Actually the
+         compiler might even optimize it this pretty well if the
+         target CPU has relaxed alignment requirements. Thus it is
+         questionable whether we should at all go into the hassles of
+         doing alignment wise optimizations by ourself.  A quick test
+         with gcc 4.0 on ia32 did showed any advantages. */
+      byte *ivp;
+      int i;
+
+      while (nbytes >= 16)
+        {
+          do_encrypt (ctx, iv, iv);
+          for (i=0, ivp = iv; i < 16; i++)
+            *outbuf++ = (*ivp++ ^= *inbuf++);
+          nbytes -= 16;
+        }
+/*     } */
+/*   else */
+/*     { */
+/*       u32 *ivp; */
+/*       u32 *ob = (u32*)outbuf; */
+/*       const u32 *ib = (const u32*)inbuf; */
+
+/*       while (nbytes >= 16) */
+/*         { */
+/*           do_encrypt (ctx, iv, iv); */
+/*           ivp = iv; */
+/*           *ob++ = (*ivp++ ^= *ib++); */
+/*           *ob++ = (*ivp++ ^= *ib++); */
+/*           *ob++ = (*ivp++ ^= *ib++); */
+/*           *ob++ = (*ivp   ^= *ib++); */
+/*           nbytes -= 16; */
+/*         } */
+/*     } */
+  burn_stack (16 + 2*sizeof(int));
+}
+#endif
+
+
+
 
 /* Decrypt one block.  a and b may be the same. */
 static void
