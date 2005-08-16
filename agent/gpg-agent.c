@@ -152,7 +152,7 @@ static ARGPARSE_OPTS opts[] = {
   { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
                              N_("allow presetting passphrase")},
   { oSSHSupport, "enable-ssh-support", 0, N_("enable ssh-agent emulation") },
-  { oWriteEnvFile, "write-env-file", 2,
+  { oWriteEnvFile, "write-env-file", 2|8,
             N_("|FILE|write environment settings also to FILE")},
   {0}
 };
@@ -633,7 +633,12 @@ main (int argc, char **argv )
         case oKeepDISPLAY: opt.keep_display = 1; break;
 
 	case oSSHSupport:  opt.ssh_support = 1; break;
-        case oWriteEnvFile: env_file_name = pargs.r.ret_str; break;
+        case oWriteEnvFile:
+          if (pargs.r_type)
+            env_file_name = pargs.r.ret_str;
+          else
+            env_file_name = make_filename ("~/.gpg-agent-info", NULL);
+          break;
 
         default : pargs.err = configfp? 1:2; break;
 	}

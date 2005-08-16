@@ -1,3 +1,7 @@
+2005-08-16  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Use a default file name for --write-env-file.
+
 2005-07-25  Werner Koch  <wk@g10code.com>
 
 	* findkey.c (agent_public_key_from_file): Fixed array assignment.
