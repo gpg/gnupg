@@ -304,7 +304,20 @@ parse_ks_options(char *line,struct ks_options *opt)
 	  if(no)
 	    opt->flags.exact_email=0;
 	  else
-	    opt->flags.exact_email=1;
+	    {
+	      opt->flags.exact_email=1;
+	      opt->flags.exact_name=0;
+	    }
+	}
+      else if(strcasecmp(start,"exact-name")==0)
+	{
+	  if(no)
+	    opt->flags.exact_name=0;
+	  else
+	    {
+	      opt->flags.exact_name=1;
+	      opt->flags.exact_email=0;
+	    }
 	}
     }
 

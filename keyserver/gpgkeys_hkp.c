@@ -291,7 +291,25 @@ search_key(char *searchkey)
   char *searchkey_encoded=NULL;
   int ret=KEYSERVER_INTERNAL_ERROR;
 
-  if(opt->flags.exact_email)
+  if(opt->flags.exact_name)
+    {
+      char *bracketed;
+
+      bracketed=malloc(strlen(searchkey)+2+1);
+      if(!bracketed)
+	{
+	  fprintf(console,"gpgkeys: out of memory\n");
+	  ret=KEYSERVER_NO_MEMORY;
+	  goto fail;
+	}
+
+      strcpy(bracketed,searchkey);
+      strcat(bracketed," <");
+
+      searchkey_encoded=curl_escape(bracketed,0);
+      free(bracketed);
+    }
+  else if(opt->flags.exact_email)
     {
       char *bracketed;
 
@@ -341,7 +359,7 @@ search_key(char *searchkey)
   append_path(request,"/pks/lookup?op=index&options=mr&search=");
   strcat(request,searchkey_encoded);
 
-  if(opt->flags.exact_email)
+  if(opt->flags.exact_name || opt->flags.exact_email)
     strcat(request,"&exact=on");
 
   if(opt->verbose>2)

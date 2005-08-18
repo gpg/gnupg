@@ -1,5 +1,12 @@
 2005-08-18  David Shaw  <dshaw@jabberwocky.com>
 
+	* ksutil.h, ksutil.c (parse_ks_options): New keyserver-option
+	exact-name.  The last of exact-name and exact-email overrides the
+	earlier.
+
+	* gpgkeys_ldap.c (search_key), gpgkeys_hkp.c (search_key): Use it
+	here to do a name-only search.
+
 	* gpgkeys_ldap.c (ldap_quote): \-quote a string for LDAP.
 
 	* gpgkeys_ldap.c (search_key): Use it here to escape reserved

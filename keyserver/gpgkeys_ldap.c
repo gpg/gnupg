@@ -1158,6 +1158,9 @@ ldap_quote(char *buffer,const char *string)
 	}
     }
 
+  if(buffer)
+    *buffer='\0';
+
   return count;
 }
 
@@ -1173,7 +1176,7 @@ search_key(char *searchkey)
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
   char *expanded_search;
-  char search[2+12+1+MAX_LINE+1+2+15+14+1+1];
+  char search[2+12+1+1+MAX_LINE+1+2+2+15+14+1+1];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
 		 "pgpkeycreatetime","pgpkeyexpiretime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
@@ -1192,11 +1195,13 @@ search_key(char *searchkey)
 
   /* Build the search string */
 
-  sprintf(search,"%s(pgpuserid=*%s%s%s*)%s%s%s",
+  sprintf(search,"%s(pgpuserid=%s%s%s%s%s*)%s%s%s",
 	  (!(opt->flags.include_disabled&&opt->flags.include_revoked))?"(&":"",
+	  opt->flags.exact_name?"":"*",
 	  opt->flags.exact_email?"<":"",
 	  expanded_search,
 	  opt->flags.exact_email?">":"",
+	  opt->flags.exact_name?" <":"",
 	  opt->flags.include_disabled?"":"(pgpdisabled=0)",
 	  opt->flags.include_revoked?"":"(pgprevoked=0)",
 	  !(opt->flags.include_disabled&&opt->flags.include_revoked)?")":"");
