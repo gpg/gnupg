@@ -1130,6 +1130,37 @@ printquoted(FILE *stream,char *string,char delim)
     }
 }
 
+#define LDAP_ESCAPE_CHARS "*()\\"
+
+static int
+ldap_quote(char *buffer,const char *string)
+{
+  int count=0;
+
+  for(;*string;string++)
+    {
+      if(strchr(LDAP_ESCAPE_CHARS,*string))
+	{
+	  if(buffer)
+	    {
+	      sprintf(buffer,"\\%02X",*string);
+	      buffer+=3;
+	    }
+
+	  count+=3;
+	}
+      else
+	{
+	  if(buffer)
+	    *buffer++=*string;
+
+	  count++;
+	}
+    }
+
+  return count;
+}
+
 /* Returns 0 on success and -1 on error.  Note that key-not-found is
    not an error! */
 static int
@@ -1141,6 +1172,7 @@ search_key(char *searchkey)
   struct keylist *dupelist=NULL;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
+  char *expanded_search;
   char search[2+12+1+MAX_LINE+1+2+15+14+1+1];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
 		 "pgpkeycreatetime","pgpkeyexpiretime","modifytimestamp",
@@ -1148,16 +1180,28 @@ search_key(char *searchkey)
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
+  expanded_search=malloc(ldap_quote(NULL,searchkey)+1);
+  if(!expanded_search)
+    {
+      fprintf(output,"SEARCH %s FAILED %d\n",searchkey,KEYSERVER_NO_MEMORY);
+      fprintf(console,"Out of memory when quoting LDAP search string\n");
+      return KEYSERVER_NO_MEMORY;
+    }
+      
+  ldap_quote(expanded_search,searchkey);
+
   /* Build the search string */
 
   sprintf(search,"%s(pgpuserid=*%s%s%s*)%s%s%s",
 	  (!(opt->flags.include_disabled&&opt->flags.include_revoked))?"(&":"",
 	  opt->flags.exact_email?"<":"",
-	  searchkey,
+	  expanded_search,
 	  opt->flags.exact_email?">":"",
 	  opt->flags.include_disabled?"":"(pgpdisabled=0)",
 	  opt->flags.include_revoked?"":"(pgprevoked=0)",
 	  !(opt->flags.include_disabled&&opt->flags.include_revoked)?")":"");
+
+  free(expanded_search);
 
   if(opt->verbose>2)
     fprintf(console,"gpgkeys: LDAP search for: %s\n",search);
@@ -1202,9 +1246,11 @@ search_key(char *searchkey)
   if(err==LDAP_SIZELIMIT_EXCEEDED)
     {
       if(count==1)
-	fprintf(console,"gpgkeys: search results exceeded server limit.  First %d result shown.\n",count);
+	fprintf(console,"gpgkeys: search results exceeded server limit."
+		"  First %d result shown.\n",count);
       else
-	fprintf(console,"gpgkeys: search results exceeded server limit.  First %d results shown.\n",count);
+	fprintf(console,"gpgkeys: search results exceeded server limit."
+		"  First %d results shown.\n",count);
     }
 
   free_keylist(dupelist);

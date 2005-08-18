@@ -1,3 +1,10 @@
+2005-08-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (ldap_quote): \-quote a string for LDAP.
+
+	* gpgkeys_ldap.c (search_key): Use it here to escape reserved
+	characters in searches.
+
 2005-08-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* ksutil.h, ksutil.c (parse_ks_options): New keyserver-option
