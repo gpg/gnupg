@@ -287,13 +287,40 @@ int
 search_key(char *searchkey)
 {
   CURLcode res;
-  char *request;
-  char *searchkey_encoded;
+  char *request=NULL;
+  char *searchkey_encoded=NULL;
   int ret=KEYSERVER_INTERNAL_ERROR;
 
-  searchkey_encoded=curl_escape(searchkey,0);
+  if(opt->flags.exact_email)
+    {
+      char *bracketed;
 
-  request=malloc(MAX_URL+50+strlen(searchkey_encoded));
+      bracketed=malloc(1+strlen(searchkey)+1+1);
+      if(!bracketed)
+	{
+	  fprintf(console,"gpgkeys: out of memory\n");
+	  ret=KEYSERVER_NO_MEMORY;
+	  goto fail;
+	}
+
+      strcpy(bracketed,"<");
+      strcat(bracketed,searchkey);
+      strcat(bracketed,">");
+
+      searchkey_encoded=curl_escape(bracketed,0);
+      free(bracketed);
+    }
+  else
+    searchkey_encoded=curl_escape(searchkey,0);
+
+  if(!searchkey_encoded)
+    {
+      fprintf(console,"gpgkeys: out of memory\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  request=malloc(MAX_URL+60+strlen(searchkey_encoded));
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -313,6 +340,9 @@ search_key(char *searchkey)
   strcat(request,opt->path);
   append_path(request,"/pks/lookup?op=index&options=mr&search=");
   strcat(request,searchkey_encoded);
+
+  if(opt->flags.exact_email)
+    strcat(request,"&exact=on");
 
   if(opt->verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);

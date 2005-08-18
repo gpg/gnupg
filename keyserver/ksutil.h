@@ -89,6 +89,7 @@ struct ks_options
     unsigned int include_revoked:1;
     unsigned int include_subkeys:1;
     unsigned int check_cert:1;
+    unsigned int exact_email:1;
   } flags;
   unsigned int verbose;
   unsigned int debug;

@@ -1141,7 +1141,7 @@ search_key(char *searchkey)
   struct keylist *dupelist=NULL;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
-  char search[2+12+MAX_LINE+2+15+14+1+1];
+  char search[2+12+1+MAX_LINE+1+2+15+14+1+1];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
 		 "pgpkeycreatetime","pgpkeyexpiretime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
@@ -1150,9 +1150,11 @@ search_key(char *searchkey)
 
   /* Build the search string */
 
-  sprintf(search,"%s(pgpuserid=*%s*)%s%s%s",
+  sprintf(search,"%s(pgpuserid=*%s%s%s*)%s%s%s",
 	  (!(opt->flags.include_disabled&&opt->flags.include_revoked))?"(&":"",
+	  opt->flags.exact_email?"<":"",
 	  searchkey,
+	  opt->flags.exact_email?">":"",
 	  opt->flags.include_disabled?"":"(pgpdisabled=0)",
 	  opt->flags.include_revoked?"":"(pgprevoked=0)",
 	  !(opt->flags.include_disabled&&opt->flags.include_revoked)?")":"");
@@ -1198,7 +1200,12 @@ search_key(char *searchkey)
     }
 
   if(err==LDAP_SIZELIMIT_EXCEEDED)
-    fprintf(console,"gpgkeys: search results exceeded server limit.  First %d results shown.\n",count);
+    {
+      if(count==1)
+	fprintf(console,"gpgkeys: search results exceeded server limit.  First %d result shown.\n",count);
+      else
+	fprintf(console,"gpgkeys: search results exceeded server limit.  First %d results shown.\n",count);
+    }
 
   free_keylist(dupelist);
   dupelist=NULL;

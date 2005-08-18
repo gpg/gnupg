@@ -298,6 +298,14 @@ parse_ks_options(char *line,struct ks_options *opt)
 		return KEYSERVER_NO_MEMORY;
 	    }
 	}
+      else if(strcasecmp(start,"exact-email")==0
+	      || strcasecmp(start,"exact-mail")==0)
+	{
+	  if(no)
+	    opt->flags.exact_email=0;
+	  else
+	    opt->flags.exact_email=1;
+	}
     }
 
   return -1;

@@ -1,3 +1,11 @@
+2005-08-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (parse_ks_options): New keyserver-option
+	exact-email.
+
+	* gpgkeys_ldap.c (search_key), gpgkeys_hkp.c (search_key): Use it
+	here to do an email-only search.
+
 2005-08-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Include LDAP_CPPFLAGS when building LDAP.
