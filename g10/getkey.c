@@ -590,11 +590,13 @@ classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
 	case 0:    /* empty string is an error */
 	    return 0;
 
+#if 0
 	case '.':  /* an email address, compare from end */
 	    mode = KEYDB_SEARCH_MODE_MAILEND;
 	    s++;
             desc->u.name = s;
 	    break;
+#endif
 
 	case '<':  /* an email address */
 	    mode = KEYDB_SEARCH_MODE_MAIL;
@@ -619,11 +621,13 @@ classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
             desc->u.name = s;
 	    break;
 
+#if 0
 	case '+':  /* compare individual words */
 	    mode = KEYDB_SEARCH_MODE_WORDS;
 	    s++;
             desc->u.name = s;
 	    break;
+#endif
 
 	case '#':  /* local user id */
             return 0; /* This is now obsolete and van't not be used anymore*/

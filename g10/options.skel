@@ -92,7 +92,6 @@
 #      mailto:pgp-public-keys@keys.pgp.net
 #
 # Example LDAP keyservers:
-#      ldap://pgp.surfnet.nl:11370
 #      ldap://keyserver.pgp.com
 #
 # Regular URL syntax applies, and you can set an alternate port
@@ -114,7 +113,6 @@
 
 keyserver hkp://subkeys.pgp.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
-#keyserver ldap://pgp.surfnet.nl:11370
 #keyserver ldap://keyserver.pgp.com
 
 # Common options for keyserver functions:

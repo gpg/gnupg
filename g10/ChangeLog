@@ -1,3 +1,11 @@
+2005-08-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Remove the surfnet LDAP keyserver from the list of
+	samples since it is being shut down.
+
+	* getkey.c (classify_user_id): Disable the '.' and '+' search
+	modes since they aren't supported yet.
+
 2005-08-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main), passphrase.c (set_passphrase_from_string): New
