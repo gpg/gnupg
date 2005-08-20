@@ -87,7 +87,7 @@ enum cmd_and_opt_values
     oHiddenRecipient = 'R',
     aSign	  = 's',
     oTextmodeShort= 't',
-    oUser	  = 'u',
+    oLocalUser	  = 'u',
     oVerbose	  = 'v',
     oCompress	  = 'z',
     oSetNotation  = 'N',
@@ -437,7 +437,7 @@ static ARGPARSE_OPTS opts[] = {
     { oEncryptTo, "encrypt-to", 2, "@" },
     { oHiddenEncryptTo, "hidden-encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
-    { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
+    { oLocalUser, "local-user",2, N_("use this user-id to sign or decrypt")},
     { oCompress, NULL, 1, N_("|N|set compress level N (0 disables)") },
     { oCompressLevel, "compress-level", 1, "@" },
     { oBZ2CompressLevel, "bzip2-compress-level", 1, "@" },
@@ -689,7 +689,12 @@ static ARGPARSE_OPTS opts[] = {
 #if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
     { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
 #endif
-
+    /* These are aliases to help users of the PGP command line product
+       use gpg with minimal pain.  Many commands are common already as
+       they seem to have borrowed commands from us.  Now I'm returning
+       the favor. */
+    { oLocalUser, "sign-with", 2, "@" },
+    { oRecipient, "user", 2, "@" },
     {0,NULL,0,NULL}
 };
 
@@ -2262,7 +2267,7 @@ main (int argc, char **argv )
           case oMinCertLevel: opt.min_cert_level=pargs.r.ret_int; break;
 	  case oAskCertLevel: opt.ask_cert_level = 1; break;
 	  case oNoAskCertLevel: opt.ask_cert_level = 0; break;
-	  case oUser: /* store the local users */
+	  case oLocalUser: /* store the local users */
 	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
 	    break;
 	  case oCompress:
