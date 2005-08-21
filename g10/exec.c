@@ -120,9 +120,9 @@ static int make_tempdir(struct exec_info *info)
   char *tmp=opt.temp_dir,*namein=info->name,*nameout;
 
   if(!namein)
-    namein=info->binary?"tempin" EXTSEP_S "bin":"tempin" EXTSEP_S "txt";
+    namein=info->flags.binary?"tempin" EXTSEP_S "bin":"tempin" EXTSEP_S "txt";
 
-  nameout=info->binary?"tempout" EXTSEP_S "bin":"tempout" EXTSEP_S "txt";
+  nameout=info->flags.binary?"tempout" EXTSEP_S "bin":"tempout" EXTSEP_S "txt";
 
   /* Make up the temp dir and files in case we need them */
 
@@ -174,13 +174,13 @@ static int make_tempdir(struct exec_info *info)
 	      info->tempdir,strerror(errno));
   else
     {
-      info->madedir=1;
+      info->flags.madedir=1;
 
       info->tempfile_in=xmalloc(strlen(info->tempdir)+
 				strlen(DIRSEP_S)+strlen(namein)+1);
       sprintf(info->tempfile_in,"%s" DIRSEP_S "%s",info->tempdir,namein);
 
-      if(!info->writeonly)
+      if(!info->flags.writeonly)
 	{
 	  info->tempfile_out=xmalloc(strlen(info->tempdir)+
 				     strlen(DIRSEP_S)+strlen(nameout)+1);
@@ -188,7 +188,7 @@ static int make_tempdir(struct exec_info *info)
 	}
     }
 
-  return info->madedir?0:G10ERR_GENERAL;
+  return info->flags.madedir?0:G10ERR_GENERAL;
 }
 
 /* Expands %i and %o in the args to the full temp files within the
@@ -198,8 +198,8 @@ static int expand_args(struct exec_info *info,const char *args_in)
   const char *ch=args_in;
   unsigned int size,len;
 
-  info->use_temp_files=0;
-  info->keep_temp_files=0;
+  info->flags.use_temp_files=0;
+  info->flags.keep_temp_files=0;
 
   if(DBG_EXTPROG)
     log_debug("expanding string \"%s\"\n",args_in);
@@ -220,31 +220,31 @@ static int expand_args(struct exec_info *info,const char *args_in)
 	  switch(*ch)
 	    {
 	    case 'O':
-	      info->keep_temp_files=1;
+	      info->flags.keep_temp_files=1;
 	      /* fall through */
 
 	    case 'o': /* out */
-	      if(!info->madedir)
+	      if(!info->flags.madedir)
 		{
 		  if(make_tempdir(info))
 		    goto fail;
 		}
 	      append=info->tempfile_out;
-	      info->use_temp_files=1;
+	      info->flags.use_temp_files=1;
 	      break;
 
 	    case 'I':
-	      info->keep_temp_files=1;
+	      info->flags.keep_temp_files=1;
 	      /* fall through */
 
 	    case 'i': /* in */
-	      if(!info->madedir)
+	      if(!info->flags.madedir)
 		{
 		  if(make_tempdir(info))
 		    goto fail;
 		}
 	      append=info->tempfile_in;
-	      info->use_temp_files=1;
+	      info->flags.use_temp_files=1;
 	      break;
 
 	    case '%':
@@ -285,8 +285,8 @@ static int expand_args(struct exec_info *info,const char *args_in)
     }
 
   if(DBG_EXTPROG)
-    log_debug("args expanded to \"%s\", use %d, keep %d\n",
-	      info->command,info->use_temp_files,info->keep_temp_files);
+    log_debug("args expanded to \"%s\", use %u, keep %u\n",info->command,
+	      info->flags.use_temp_files,info->flags.keep_temp_files);
 
   return 0;
 
@@ -331,15 +331,15 @@ int exec_write(struct exec_info **info,const char *program,
 
   if(name)
     (*info)->name=xstrdup(name);
-  (*info)->binary=binary;
-  (*info)->writeonly=writeonly;
+  (*info)->flags.binary=binary;
+  (*info)->flags.writeonly=writeonly;
 
   /* Expand the args, if any */
   if(args_in && expand_args(*info,args_in))
     goto fail;
 
 #ifdef EXEC_TEMPFILE_ONLY
-  if(!(*info)->use_temp_files)
+  if(!(*info)->flags.use_temp_files)
     {
       log_error(_("this platform requires temporary files when calling"
 		  " external programs\n"));
@@ -350,7 +350,7 @@ int exec_write(struct exec_info **info,const char *program,
 
   /* If there are no args, or there are args, but no temp files, we
      can use fork/exec/pipe */
-  if(args_in==NULL || (*info)->use_temp_files==0)
+  if(args_in==NULL || (*info)->flags.use_temp_files==0)
     {
       int to[2],from[2];
 
@@ -384,7 +384,7 @@ int exec_write(struct exec_info **info,const char *program,
 
 	  /* If the program isn't going to respond back, they get to
              keep their stdout/stderr */
-	  if(!(*info)->writeonly)
+	  if(!(*info)->flags.writeonly)
 	    {
 	      /* implied close of STDERR */
 	      if(dup2(STDOUT_FILENO,STDERR_FILENO)==-1)
@@ -494,7 +494,7 @@ int exec_read(struct exec_info *info)
   fclose(info->tochild);
   info->tochild=NULL;
 
-  if(info->use_temp_files)
+  if(info->flags.use_temp_files)
     {
       if(DBG_EXTPROG)
 	log_debug("system() command is %s\n",info->command);
@@ -537,7 +537,7 @@ int exec_read(struct exec_info *info)
 	  goto fail;
 	}
 
-      if(!info->writeonly)
+      if(!info->flags.writeonly)
 	{
 	  info->fromchild=iobuf_open(info->tempfile_out);
           if (info->fromchild
@@ -590,7 +590,7 @@ int exec_finish(struct exec_info *info)
     }
 #endif
 
-  if(info->madedir && !info->keep_temp_files)
+  if(info->flags.madedir && !info->flags.keep_temp_files)
     {
       if(info->tempfile_in)
 	{

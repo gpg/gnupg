@@ -28,7 +28,15 @@
 
 struct exec_info
 {
-  int progreturn,binary,writeonly,madedir,use_temp_files,keep_temp_files;
+  int progreturn;
+  struct
+  {
+    unsigned int binary:1;
+    unsigned int writeonly:1;
+    unsigned int madedir:1;
+    unsigned int use_temp_files:1;
+    unsigned int keep_temp_files:1;
+  } flags;
   pid_t child;
   FILE *tochild;
   IOBUF fromchild;
