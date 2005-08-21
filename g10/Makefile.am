@@ -124,8 +124,7 @@ gpgv_SOURCES = gpgv.c           \
 	      verify.c          
 
 LDADD =  $(needed_libs) $(other_libs) @ZLIBS@ @W32LIBS@ @LIBREADLINE@
-gpg_LDADD = $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB@ @LIBCURL@
-##gpg_CPPFLAGS = @LIBCURL_CPPFLAGS@
+gpg_LDADD = $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB@
 
 $(PROGRAMS): $(needed_libs)
 

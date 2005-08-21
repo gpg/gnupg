@@ -1,5 +1,18 @@
 2005-08-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: No need to link with curl any longer.
+
+	* main.h, misc.c (path_access): New.  Same as access() but does a
+	PATH search like execlp.
+
+	* keyserver.c (curl_can_handle): Removed.  Replaced by...
+	(curl_cant_handle): We are now relying on curl as the handler of
+	last resort.  This is necessary because PGP LDAP and curl LDAP are
+	apples and oranges.
+	(keyserver_typemap): Only test for ldap and ldaps.
+	(keyserver_spawn): If a given handler is unusable (as determined
+	by path_access()) then try gpgkeys_curl.
+
 	* exec.h, exec.c (make_tempdir, expand_args, exec_write,
 	exec_read): Minor cleanup to use bitfield flags instead of a bunch
 	of integers.

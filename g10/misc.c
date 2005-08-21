@@ -1,6 +1,6 @@
 /* misc.c -  miscellaneous functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1222,4 +1222,39 @@ get_libexecdir (void)
 #endif /*HAVE_W32_SYSTEM*/
 
   return GNUPG_LIBEXECDIR;
+}
+
+int
+path_access(const char *file,int mode)
+{
+  char *envpath;
+  int ret=-1;
+
+  envpath=getenv("PATH");
+
+  if(file[0]=='/' || !envpath)
+    return access(file,mode);
+  else
+    {
+      /* At least as large as, but most often larger than we need. */
+      char *buffer=xmalloc(strlen(envpath)+1+strlen(file)+1);
+      char *split,*item,*path=xstrdup(envpath);
+
+      split=path;
+
+      while((item=strsep(&split,PATHSEP_S)))
+	{
+	  strcpy(buffer,item);
+	  strcat(buffer,"/");
+	  strcat(buffer,file);
+	  ret=access(buffer,mode);
+	  if(ret==0)
+	    break;
+	}
+
+      xfree(path);
+      xfree(buffer);
+    }
+
+  return ret;
 }

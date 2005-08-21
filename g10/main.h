@@ -129,7 +129,7 @@ int has_invalid_email_chars (const char *s);
 int is_valid_mailbox (const char *name);
 char *default_homedir (void);
 const char *get_libexecdir (void);
-
+int path_access(const char *file,int mode);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );

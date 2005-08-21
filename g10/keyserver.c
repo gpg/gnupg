@@ -49,6 +49,16 @@
 
 #define GPGKEYS_PREFIX "gpgkeys_"
 
+#if defined(HAVE_LIBCURL) || defined(FAKE_CURL)
+#define GPGKEYS_CURL "gpgkeys_curl"
+#endif
+
+#ifdef GPGKEYS_CURL
+#define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_PREFIX)+strlen(GPGKEYS_CURL))
+#else
+#define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_PREFIX))
+#endif
+
 struct keyrec
 {
   KEYDB_SEARCH_DESC desc;
@@ -830,46 +840,28 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
   xfree(line);
 }
 
-static int
-curl_can_handle(const char *scheme)
-{
-#if defined(HAVE_LIBCURL)
-
-  const char * const *proto;
-  curl_version_info_data *data=curl_version_info(CURLVERSION_NOW);
-
-  assert(data);
-
-  for(proto=data->protocols;*proto;proto++)
-    if(strcasecmp(*proto,scheme)==0)
-      return 1;
-
-#elif defined(FAKE_CURL)
-
-  /* If we're faking curl, then we only support HTTP */
-  if(strcasecmp(scheme,"http")==0)
-    return 1;
-
-#endif
-
-  return 0;
-}
-
 /* We sometimes want to use a different gpgkeys_xxx for a given
    protocol (for example, ldaps is handled by gpgkeys_ldap).  Map
    these here. */
 static const char *
 keyserver_typemap(const char *type)
 {
-  if(strcmp(type,"ldap")==0)
+  if(strcmp(type,"ldaps")==0)
     return "ldap";
-  else if(strcmp(type,"ldaps")==0)
-    return "ldap";
-  else if(curl_can_handle(type))
-    return "curl";
   else
     return type;
 }
+
+#ifdef GPGKEYS_CURL
+static int
+curl_cant_handle(const char *scheme)
+{
+  if(strcmp(scheme,"ldap")==0 || strcmp(scheme,"ldaps")==0)
+    return 1;
+
+  return 0;
+}
+#endif
 
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
@@ -881,7 +873,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
   unsigned int maxlen,buflen;
-  char *command,*searchstr=NULL;
+  char *command,*end,*searchstr=NULL;
   byte *line=NULL;
   struct parse_options *kopts;
   struct exec_info *spawn;
@@ -923,7 +915,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       /* If exec-path was set, and DISABLE_KEYSERVER_PATH is
 	 undefined, then don't specify a full path to gpgkeys_foo, so
 	 that the PATH can work. */
-      command=xmalloc(strlen(GPGKEYS_PREFIX)+strlen(scheme)+1);
+      command=xmalloc(GPGKEYS_PREFIX_LEN+strlen(scheme)+1);
       command[0]='\0';
     }
   else
@@ -931,13 +923,20 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
     {
       /* Specify a full path to gpgkeys_foo. */
       command=xmalloc(strlen(libexecdir)+strlen(DIRSEP_S)+
-		      strlen(GPGKEYS_PREFIX)+strlen(scheme)+1);
+		      GPGKEYS_PREFIX_LEN+strlen(scheme)+1);
       strcpy(command,libexecdir);
       strcat(command,DIRSEP_S);
     }
 
+  end=command+strlen(command);
+
   strcat(command,GPGKEYS_PREFIX); 
   strcat(command,scheme);
+
+#ifdef GPGKEYS_CURL
+  if(!curl_cant_handle(scheme) && path_access(command,X_OK)!=0)
+    strcpy(end,GPGKEYS_CURL);
+#endif
 
   if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
     {
