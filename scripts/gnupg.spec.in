@@ -25,6 +25,9 @@ Requires(post,preun): /sbin/install-info
 BuildRoot: %{_tmppath}/rpmbuild_%{name}-%{version}
 
 %changelog
+* Sun Aug 21 2005 David Shaw <dshaw@jabberwocky.com>
+- Distribute gpg-zip.
+
 * Fri Apr 22 2005 David Shaw <dshaw@jabberwocky.com>
 - No longer any need to override libexecdir.  The makefiles now
   calculate this correctly internally.
@@ -189,6 +192,7 @@ rm -f %{buildroot}%{_infodir}/dir
 %attr (4755,root,root) %{_bindir}/gpg
 %attr (0755,root,root) %{_bindir}/gpgv
 %attr (0755,root,root) %{_bindir}/gpgsplit
+%attr (0755,root,root) %{_bindir}/gpg-zip
 %attr (0755,root,root) %{_libexecdir}/gnupg/*
 
 %post

@@ -1,3 +1,7 @@
+2005-08-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gnupg.spec.in: Distribute gpg-zip.
+
 2005-05-31  Werner Koch  <wk@g10code.com>
 
 	* config.guess, config.sub, config.rpath: Updated from todays
