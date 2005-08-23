@@ -511,23 +511,15 @@ are not already included in the preference list.
     <varlistentry>
     <term>setpref &ParmString;</term>
     <listitem><para>
-Set the list of user ID preferences to &ParmString;, this should be a
-string similar to the one printed by "pref".  Using an empty string
-will set the default preference string, using "none" will remove the
-preferences.  Use "gpg --version" to get a list of available
-algorithms.  This command just initializes an internal list and does
-not change anything unless another command (such as "updpref") which
-changes the self-signatures is used.
-</para></listitem></varlistentry>
-    <varlistentry>
-    <term>updpref</term>
-    <listitem><para>
-Change the preferences of all user IDs (or just of the selected ones
-to the current list of preferences.  The timestamp of all affected
-self-signatures will be advanced by one second.  Note that while you
-can change the preferences on an attribute user ID (aka "photo ID"),
-GnuPG does not select keys via attribute user IDs so these preferences
-will not be used by GnuPG.
+Set the list of user ID preferences to &ParmString; for all (or just
+the selected) user IDs.  Calling setpref with no arguments sets the
+preference list to the default (either built-in or set via
+--default-preference-list), and calling setpref with "none" as the
+argument sets an empty preference list.  Use "gpg --version" to get a
+list of available algorithms.  Note that while you can change the
+preferences on an attribute user ID (aka "photo ID"), GnuPG does not
+select keys via attribute user IDs so these preferences will not be
+used by GnuPG.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>keyserver</term>
@@ -1410,6 +1402,12 @@ the new key that are not usable.  This is the same as running the
 --edit-key command "clean uids" after import.  Defaults to no.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>import-clean</term>
+<listitem><para>
+Identical to "import-clean-sigs import-clean-uids".
+</para></listitem></varlistentry>
+
 </variablelist>
 </para></listitem></varlistentry>
 
@@ -1864,6 +1862,12 @@ Write special status strings to the file descriptor &ParmN;.
 See the file DETAILS in the documentation for a listing of them.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--status-file &ParmFile;</term>
+<listitem><para>
+Same as --status-fd, except the status data is written to file
+&ParmFile;.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--logger-fd &ParmN;</term>
@@ -1871,6 +1875,12 @@ See the file DETAILS in the documentation for a listing of them.
 Write log output to file descriptor &ParmN; and not to stderr.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--logger-file &ParmFile;</term>
+<listitem><para>
+Same as --logger-fd, except the logger data is written to file
+&ParmFile;.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--attribute-fd &ParmN;</term>
@@ -1879,6 +1889,13 @@ Write attribute subpackets to the file descriptor &ParmN;.  This is
 most useful for use with --status-fd, since the status messages are
 needed to separate out the various subpackets from the stream
 delivered to the file descriptor.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--attribute-file &ParmFile;</term>
+<listitem><para>
+Same as --attribute-fd, except the attribute data is written to file
+&ParmFile;.
 </para></listitem></varlistentry>
 
 
@@ -2231,6 +2248,23 @@ Don't use this option if you can avoid it.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--passphrase-file &ParmFile;</term>
+<listitem><para>
+Read the passphrase from file &ParmFile;.  This can only be used if
+only one passphrase is supplied.  Obviously, a passphrase stored in a
+file is of questionable security.  Don't use this option if you can
+avoid it.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--passphrase &ParmString;</term>
+<listitem><para>
+Use &ParmString; as the passphrase.  This can only be used if only one
+passphrase is supplied.  Obviously, this is of very questionable
+security.  Don't use this option if you can avoid it.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--command-fd &ParmN;</term>
 <listitem><para>
 This is a replacement for the deprecated shared-memory IPC mode.
@@ -2238,6 +2272,13 @@ If this option is enabled, user input on questions is not expected
 from the TTY but from the given file descriptor.  It should be used
 together with --status-fd. See the file doc/DETAILS in the source
 distribution for details on how to use it.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--command-file &ParmFile;</term>
+<listitem><para>
+Same as --command-fd, except the commands are read out of file
+&ParmFile;
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2821,10 +2862,9 @@ used when there are no recipient keys to consider (e.g. --symmetric).
 <varlistentry>
 <term>--default-preference-list &ParmString;</term>
 <listitem><para>
-Set the list of default preferences to &ParmString;, this list should
-be a string similar to the one printed by the command "pref" in the
-edit menu.  This affects both key generation and "updpref" in the edit
-menu.
+Set the list of default preferences to &ParmString;.  This preference
+list is used for new keys and becomes the default for "setpref" in the
+edit menu.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2903,6 +2943,7 @@ indicates this email address mode.
 </para></listitem>
 </varlistentry>
 
+<!-- we don't do this
 <varlistentry>
 <term>+Heinrich Heine duesseldorf</term>
 <listitem><para>
@@ -2911,6 +2952,7 @@ any order in the user ID.  Words are any sequences of letters,
 digits, the underscore and all characters with bit 7 set.
 </para></listitem>
 </varlistentry>
+-->
 
 <varlistentry>
 <term>Heine</term>
