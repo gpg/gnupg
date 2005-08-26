@@ -1167,7 +1167,7 @@ ldap_quote(char *buffer,const char *string)
 /* Returns 0 on success and -1 on error.  Note that key-not-found is
    not an error! */
 static int
-search_key(char *searchkey)
+search_key(const char *searchkey)
 {
   char **vals;
   LDAPMessage *res,*each;
@@ -1176,12 +1176,19 @@ search_key(char *searchkey)
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
   char *expanded_search;
-  char search[2+12+1+1+MAX_LINE+1+2+2+15+14+1+1];
+  char search[2+11+3+MAX_LINE+2+15+14+1+1+20];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
 		 "pgpkeycreatetime","pgpkeyexpiretime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
+  enum ks_search_type search_type;
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
+
+  search_type=classify_ks_search(&searchkey);
+
+  if(opt->debug)
+    fprintf(console,"search type is %d, and key is \"%s\"\n",
+	    search_type,searchkey);
 
   expanded_search=malloc(ldap_quote(NULL,searchkey)+1);
   if(!expanded_search)
@@ -1190,18 +1197,19 @@ search_key(char *searchkey)
       fprintf(console,"Out of memory when quoting LDAP search string\n");
       return KEYSERVER_NO_MEMORY;
     }
-      
+
   ldap_quote(expanded_search,searchkey);
 
   /* Build the search string */
 
-  sprintf(search,"%s(pgpuserid=%s%s%s%s%s*)%s%s%s",
+  sprintf(search,"%s(pgpuserid=%s%s%s)%s%s%s",
 	  (!(opt->flags.include_disabled&&opt->flags.include_revoked))?"(&":"",
-	  opt->flags.exact_name?"":"*",
-	  opt->flags.exact_email?"<":"",
+	  (search_type==KS_SEARCH_EXACT)?"":
+	  (search_type==KS_SEARCH_MAILSUB)?"*<*":"*",
 	  expanded_search,
-	  opt->flags.exact_email?">":"",
-	  opt->flags.exact_name?" <":"",
+	  (search_type==KS_SEARCH_EXACT
+	   || search_type==KS_SEARCH_MAIL)?"":
+	  (search_type==KS_SEARCH_MAILSUB)?"*>":"*",
 	  opt->flags.include_disabled?"":"(pgpdisabled=0)",
 	  opt->flags.include_revoked?"":"(pgprevoked=0)",
 	  !(opt->flags.include_disabled&&opt->flags.include_revoked)?")":"");

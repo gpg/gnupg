@@ -1,3 +1,13 @@
+2005-08-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (parse_ks_options): Remove exact-name and
+	exact-email.
+	(classify_ks_search): Mimic the gpg search modes instead with *,
+	=, <, and @.
+
+	* gpgkeys_ldap.c (search_key), gpgkeys_hkp.c (search_key): Call
+	them here.  Suggested by Jason Harris.
+
 2005-08-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* ksutil.h, ksutil.c (parse_ks_options): New keyserver-option

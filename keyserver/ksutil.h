@@ -74,6 +74,9 @@ int register_timeout(void);
 
 enum ks_action {KS_UNKNOWN=0,KS_GET,KS_SEND,KS_SEARCH};
 
+enum ks_search_type {KS_SEARCH_SUBSTR,KS_SEARCH_EXACT,
+		     KS_SEARCH_MAIL,KS_SEARCH_MAILSUB};
+
 struct ks_options
 {
   enum ks_action action;
@@ -89,8 +92,6 @@ struct ks_options
     unsigned int include_revoked:1;
     unsigned int include_subkeys:1;
     unsigned int check_cert:1;
-    unsigned int exact_name:1;
-    unsigned int exact_email:1;
   } flags;
   unsigned int verbose;
   unsigned int debug;
@@ -103,6 +104,7 @@ void free_ks_options(struct ks_options *opt);
 int parse_ks_options(char *line,struct ks_options *opt);
 const char *ks_action_to_string(enum ks_action action);
 void print_nocr(FILE *stream,const char *str);
+enum ks_search_type classify_ks_search(const char **search);
 
 #if defined (HAVE_LIBCURL) || defined (FAKE_CURL)
 int curl_err_to_gpg_err(CURLcode error);

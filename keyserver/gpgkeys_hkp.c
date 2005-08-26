@@ -283,54 +283,22 @@ get_key(char *getkey)
   return KEYSERVER_OK;
 }
 
-int
-search_key(char *searchkey)
+static int
+search_key(const char *searchkey)
 {
   CURLcode res;
   char *request=NULL;
   char *searchkey_encoded=NULL;
   int ret=KEYSERVER_INTERNAL_ERROR;
+  enum ks_search_type search_type;
 
-  if(opt->flags.exact_name)
-    {
-      char *bracketed;
+  search_type=classify_ks_search(&searchkey);
 
-      bracketed=malloc(strlen(searchkey)+2+1);
-      if(!bracketed)
-	{
-	  fprintf(console,"gpgkeys: out of memory\n");
-	  ret=KEYSERVER_NO_MEMORY;
-	  goto fail;
-	}
+  if(opt->debug)
+    fprintf(console,"gpgkeys: search type is %d, and key is \"%s\"\n",
+	    search_type,searchkey);
 
-      strcpy(bracketed,searchkey);
-      strcat(bracketed," <");
-
-      searchkey_encoded=curl_escape(bracketed,0);
-      free(bracketed);
-    }
-  else if(opt->flags.exact_email)
-    {
-      char *bracketed;
-
-      bracketed=malloc(1+strlen(searchkey)+1+1);
-      if(!bracketed)
-	{
-	  fprintf(console,"gpgkeys: out of memory\n");
-	  ret=KEYSERVER_NO_MEMORY;
-	  goto fail;
-	}
-
-      strcpy(bracketed,"<");
-      strcat(bracketed,searchkey);
-      strcat(bracketed,">");
-
-      searchkey_encoded=curl_escape(bracketed,0);
-      free(bracketed);
-    }
-  else
-    searchkey_encoded=curl_escape(searchkey,0);
-
+  searchkey_encoded=curl_escape(searchkey,0);
   if(!searchkey_encoded)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -359,7 +327,7 @@ search_key(char *searchkey)
   append_path(request,"/pks/lookup?op=index&options=mr&search=");
   strcat(request,searchkey_encoded);
 
-  if(opt->flags.exact_name || opt->flags.exact_email)
+  if(search_type!=KS_SEARCH_SUBSTR)
     strcat(request,"&exact=on");
 
   if(opt->verbose>2)

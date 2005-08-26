@@ -298,27 +298,6 @@ parse_ks_options(char *line,struct ks_options *opt)
 		return KEYSERVER_NO_MEMORY;
 	    }
 	}
-      else if(strcasecmp(start,"exact-email")==0
-	      || strcasecmp(start,"exact-mail")==0)
-	{
-	  if(no)
-	    opt->flags.exact_email=0;
-	  else
-	    {
-	      opt->flags.exact_email=1;
-	      opt->flags.exact_name=0;
-	    }
-	}
-      else if(strcasecmp(start,"exact-name")==0)
-	{
-	  if(no)
-	    opt->flags.exact_name=0;
-	  else
-	    {
-	      opt->flags.exact_name=1;
-	      opt->flags.exact_email=0;
-	    }
-	}
     }
 
   return -1;
@@ -353,6 +332,27 @@ print_nocr(FILE *stream,const char *str)
       if(*str!='\r')
 	fputc(*str,stream);
       str++;
+    }
+}
+
+enum ks_search_type
+classify_ks_search(const char **search)
+{
+  switch(**search)
+    {
+    default:
+      return KS_SEARCH_SUBSTR;
+    case '*':
+      (*search)++;
+      return KS_SEARCH_SUBSTR;
+    case '=':
+      (*search)++;
+      return KS_SEARCH_EXACT;
+    case '<':
+      return KS_SEARCH_MAIL;
+    case '@':
+      (*search)++;
+      return KS_SEARCH_MAILSUB;
     }
 }
 
