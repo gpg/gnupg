@@ -407,19 +407,19 @@ openpgp_pk_algo_usage ( int algo )
     /* they are hardwired in gpg 1.0 */
     switch ( algo ) {    
       case PUBKEY_ALGO_RSA:
-          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
+          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
           break;
       case PUBKEY_ALGO_RSA_E:
           use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_RSA_S:
-          use = PUBKEY_USAGE_SIG;
+          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL_E:
           use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_DSA:  
-          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
       default:
           break;
@@ -1224,6 +1224,7 @@ get_libexecdir (void)
   return GNUPG_LIBEXECDIR;
 }
 
+/* Similar to access(2), but uses PATH to find the file. */
 int
 path_access(const char *file,int mode)
 {

@@ -529,8 +529,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
      * be one which is capable of signing keys.  I can't see a reason
      * why to sign keys using a subkey.  Implementation of USAGE_CERT
      * is just a hack in getkey.c and does not mean that a subkey
-     * marked as certification capable will be used */
-    rc=build_sk_list( locusr, &sk_list, 0, PUBKEY_USAGE_SIG|PUBKEY_USAGE_CERT);
+     * marked as certification capable will be used. */
+    rc=build_sk_list( locusr, &sk_list, 0, PUBKEY_USAGE_CERT);
     if( rc )
 	goto leave;
 

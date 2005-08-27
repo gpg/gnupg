@@ -1331,16 +1331,24 @@ parse_key_usage(PKT_signature *sig)
       /* first octet of the keyflags */
       flags=*p;
 
-      if(flags & 3)
+      if(flags & 1)
 	{
-	  key_usage |= PUBKEY_USAGE_SIG;
-	  flags&=~3;
+	  key_usage |= PUBKEY_USAGE_CERT;
+	  flags&=~1;
 	}
 
-      if(flags & 12)
+      if(flags & 2)
+	{
+	  key_usage |= PUBKEY_USAGE_SIG;
+	  flags&=~2;
+	}
+
+      /* We do not distinguish between encrypting communications and
+	 encrypting storage. */
+      if(flags & (0x04|0x08))
 	{
 	  key_usage |= PUBKEY_USAGE_ENC;
-	  flags&=~12;
+	  flags&=~(0x04|0x08);
 	}
 
       if(flags & 0x20)

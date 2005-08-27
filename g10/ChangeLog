@@ -1,5 +1,22 @@
 2005-08-26  David Shaw  <dshaw@jabberwocky.com>
 
+	* misc.c (openpgp_pk_algo_usage): Default to allowing CERT for
+	signing algorithms.
+
+	* keyedit.c (sign_uids): Don't request a signing key to make a
+	certification.
+
+	* keygen.c (do_add_key_flags): Force the certify flag on for all
+	primary keys, as the spec requires primary keys must be able to
+	certify (if nothing else, which key is going to issue the user ID
+	signature?)
+	(print_key_flags): Show certify flag.
+	(ask_key_flags, ask_algo): Don't allow setting the C flag for
+	subkeys.
+	
+	* keyid.c (usagestr_from_pk), getkey.c (parse_key_usage):
+	Distinguish between a sign/certify key and a certify-only key.
+
 	* keyedit.c (ask_revoke_sig): Add a revsig --with-colons mode.
 	Suggested by Michael Schierl.
 

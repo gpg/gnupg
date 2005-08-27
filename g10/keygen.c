@@ -190,9 +190,6 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
 {
     byte buf[1];
 
-    if (!use) 
-        return;
-
     buf[0] = 0;
 
     /* The spec says that all primary keys MUST be able to certify. */
@@ -205,6 +202,10 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
         buf[0] |= 0x04 | 0x08;
     if (use & PUBKEY_USAGE_AUTH)
         buf[0] |= 0x20;
+
+    if (!buf[0]) 
+        return;
+
     build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
 }
 
@@ -1238,6 +1239,9 @@ print_key_flags(int flags)
   if(flags&PUBKEY_USAGE_SIG)
     tty_printf("%s ",_("Sign"));
 
+  if(flags&PUBKEY_USAGE_CERT)
+    tty_printf("%s ",_("Certify"));
+
   if(flags&PUBKEY_USAGE_ENC)
     tty_printf("%s ",_("Encrypt"));
 
@@ -1248,7 +1252,7 @@ print_key_flags(int flags)
 
 /* Returns the key flags */
 static unsigned int
-ask_key_flags(int algo)
+ask_key_flags(int algo,int subkey)
 {
   const char *togglers=_("SsEeAaQq");
   char *answer=NULL;
@@ -1257,6 +1261,10 @@ ask_key_flags(int algo)
 
   if(strlen(togglers)!=8)
     BUG();
+
+  /* Only primary keys may certify. */
+  if(subkey)
+    possible&=~PUBKEY_USAGE_CERT;
 
   /* Preload the current set with the possible set, minus
      authentication, since nobody really uses auth yet. */
@@ -1291,7 +1299,7 @@ ask_key_flags(int algo)
       cpr_kill_prompt();
 
       if(strlen(answer)>1)
-	continue;
+	tty_printf(_("Invalid selection.\n"));
       else if(*answer=='\0' || *answer==togglers[6] || *answer==togglers[7])
 	break;
       else if((*answer==togglers[0] || *answer==togglers[1])
@@ -1318,6 +1326,8 @@ ask_key_flags(int algo)
 	  else
 	    current|=PUBKEY_USAGE_AUTH;
 	}
+      else
+	tty_printf(_("Invalid selection.\n"));
     }
 
   xfree(answer);
@@ -1362,7 +1372,7 @@ ask_algo (int addmode, unsigned int *r_usage)
 	}
 	else if( algo == 7 && opt.expert ) {
 	    algo = PUBKEY_ALGO_RSA;
-	    *r_usage=ask_key_flags(algo);
+	    *r_usage=ask_key_flags(algo,addmode);
 	    break;
 	}
 	else if( algo == 6 && addmode ) {
@@ -1382,7 +1392,7 @@ ask_algo (int addmode, unsigned int *r_usage)
 	}
 	else if( algo == 3 && opt.expert ) {
 	    algo = PUBKEY_ALGO_DSA;
-	    *r_usage=ask_key_flags(algo);
+	    *r_usage=ask_key_flags(algo,addmode);
 	    break;
 	}
 	else if( algo == 2 ) {

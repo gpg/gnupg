@@ -853,6 +853,8 @@ keyserver_typemap(const char *type)
 }
 
 #ifdef GPGKEYS_CURL
+/* The PGP LDAP and the curl fetch-a-LDAP-object methodologies are
+   sufficiently different that we can't use curl to do LDAP. */
 static int
 curl_cant_handle(const char *scheme)
 {

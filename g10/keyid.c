@@ -547,9 +547,12 @@ usagestr_from_pk( PKT_public_key *pk )
   if ( use & PUBKEY_USAGE_SIG )
     {
       if (pk->is_primary)
-        buffer[i++] = 'C';
+        use|=PUBKEY_USAGE_CERT;
       buffer[i++] = 'S';
     }
+
+  if ( use & PUBKEY_USAGE_CERT )
+    buffer[i++] = 'C';
 
   if ( use & PUBKEY_USAGE_ENC )
     buffer[i++] = 'E';
