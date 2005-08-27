@@ -2377,7 +2377,6 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
     }
 }
 
-
 /* This is the version of show_key_with_all_names used when
    opt.with_colons is used.  It prints all available data in a easy to
    parse format and does not translate utf8 */
@@ -4189,7 +4188,7 @@ static void
 ask_revoke_sig( KBNODE keyblock, KBNODE node )
 {
     int doit=0;
-    char *p;
+    PKT_user_id *uid;
     PKT_signature *sig = node->pkt->pkt.signature;
     KBNODE unode = find_prev_kbnode( keyblock, node, PKT_USER_ID );
 
@@ -4198,15 +4197,33 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
 	return;
     }
 
-    p=utf8_to_native(unode->pkt->pkt.user_id->name,
-		     unode->pkt->pkt.user_id->len,0);
-    tty_printf(_("user ID: \"%s\"\n"),p);
-    xfree(p);
+    uid=unode->pkt->pkt.user_id;
 
-    tty_printf(_("signed by your key %s on %s%s%s\n"),
-	       keystr(sig->keyid),datestr_from_sig(sig),
-	       sig->flags.exportable?"":_(" (non-exportable)"),"");
+    if(opt.with_colons)
+      {
+	if(uid->attrib_data)
+	  printf("uat:::::::::%u %lu",uid->numattribs,uid->attrib_len);
+	else
+	  {
+	    printf("uid:::::::::");
+	    print_string (stdout, uid->name, uid->len, ':');
+	  }
 
+	printf("\n");
+
+	print_and_check_one_sig_colon(keyblock,node,NULL,NULL,NULL,NULL,1);
+      }
+    else
+      {
+	char *p=utf8_to_native(unode->pkt->pkt.user_id->name,
+			 unode->pkt->pkt.user_id->len,0);
+	tty_printf(_("user ID: \"%s\"\n"),p);
+	xfree(p);
+
+	tty_printf(_("signed by your key %s on %s%s%s\n"),
+		   keystr(sig->keyid),datestr_from_sig(sig),
+		   sig->flags.exportable?"":_(" (non-exportable)"),"");
+      }
     if(sig->flags.expired)
       {
 	tty_printf(_("This signature expired on %s.\n"),
