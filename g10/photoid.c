@@ -1,5 +1,5 @@
 /* photoid.c - photo ID handling code
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -43,7 +43,8 @@
 #include "ttyio.h"
 
 /* Generate a new photo id packet, or return NULL if canceled */
-PKT_user_id *generate_photo_id(PKT_public_key *pk)
+PKT_user_id *
+generate_photo_id(PKT_public_key *pk)
 {
   PKT_user_id *uid;
   int error=1,i;
@@ -73,12 +74,22 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 
   while(photo==NULL)
     {
+      char *tempname;
+
       tty_printf("\n");
 
       xfree(filename);
 
-      filename=cpr_get("photoid.jpeg.add",
+      tty_enable_completion(NULL);
+
+      tempname=cpr_get("photoid.jpeg.add",
 		       _("Enter JPEG filename for photo ID: "));
+
+      tty_disable_completion();
+
+      filename=make_filename(tempname,(void *)NULL);
+
+      xfree(tempname);
 
       if(strlen(filename)==0)
 	goto scram;

@@ -1,3 +1,8 @@
+2005-08-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* photoid.c (generate_photo_id): Enable readline completion and
+	tilde expansion for the JPEG prompt.
+
 2005-08-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (openpgp_pk_algo_usage): Default to allowing CERT for
