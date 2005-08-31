@@ -765,7 +765,7 @@ AM_CONDITIONAL(ENABLE_AGENT_SUPPORT, test "$agent_support" = yes)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([unistd.h langinfo.h termio.h locale.h getopt.h])
+AC_CHECK_HEADERS([unistd.h langinfo.h termio.h locale.h getopt.h pwd.h])
 
 # Note that we do not check for iconv here because this is done anyway
 # by the gettext checks and thus it allows us to disable the use of
@@ -827,7 +827,7 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
-AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times unsetenv)
+AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times unsetenv getpwnam getpwuid)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat getaddrinfo)

@@ -1,5 +1,5 @@
 /* fileutil.c -  file utilities
- *	Copyright (C) 1998, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 2003, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,6 +26,10 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#include <sys/types.h>
+#ifdef HAVE_PWD_H
+#include <pwd.h>
+#endif
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
@@ -88,7 +92,62 @@ make_dirname(const char *filepath)
     return dirname;
 }
 
+/* Expand tildes.  Handles both the ~/foo and ~username/foo cases.
+   Returns what the tilde expands to.  *name is advanced to be past
+   the tilde expansion. */
+static char *
+untilde(const char **name)
+{
+  char *home=NULL;
 
+  assert((*name)[0]=='~');
+
+  if((*name)[1]==DIRSEP_C || (*name)[1]=='\0')
+    {
+      /* This is the "~/foo" or "~" case. */
+      char *tmp=getenv("HOME");
+      if(tmp)
+	home=xstrdup(tmp);
+
+#ifdef HAVE_GETPWUID
+      if(!home)
+	{
+	  struct passwd *pwd;
+
+	  pwd=getpwuid(getuid());
+	  if(pwd)
+	    home=xstrdup(pwd->pw_dir);
+	}
+#endif
+      if(home)
+	(*name)++;
+    }
+#ifdef HAVE_GETPWNAM
+  else
+    {
+      /* This is the "~username" case. */
+      char *user,*sep;
+      struct passwd *pwd;
+
+      user=xstrdup((*name)+1);
+
+      sep=strchr(user,DIRSEP_C);
+      if(sep)
+	*sep='\0';
+
+      pwd=getpwnam(user);
+      if(pwd)
+	{
+	  home=xstrdup(pwd->pw_dir);
+	  (*name)+=1+strlen(user);
+	}
+
+      xfree(user);
+    }
+#endif
+
+  return home;
+}
 
 /*
   Construct a filename from the NULL terminated list of parts.  Tilde
@@ -100,7 +159,7 @@ make_filename( const char *first_part, ... )
     va_list arg_ptr ;
     size_t n;
     const char *s;
-    char *name, *home, *p;
+    char *name, *p, *home=NULL;
 
     va_start( arg_ptr, first_part ) ;
     n = strlen(first_part)+1;
@@ -108,19 +167,22 @@ make_filename( const char *first_part, ... )
 	n += strlen(s) + 1;
     va_end(arg_ptr);
 
-    home = NULL;
 #ifndef __riscos__
-    if( *first_part == '~' && first_part[1] == DIRSEP_C
-			   && (home = getenv("HOME")) && *home )
-	n += strlen(home);
+    if(*first_part=='~')
+      {
+	home=untilde(&first_part);
+	if(home)
+	  n+=strlen(home);
+      }
 #endif
     name = xmalloc(n);
-    p = home ? stpcpy(stpcpy(name,home), first_part+1)
+    p = home ? stpcpy(stpcpy(name,home), first_part)
 	     : stpcpy(name, first_part);
     va_start( arg_ptr, first_part ) ;
     while( (s=va_arg(arg_ptr, const char *)) )
 	p = stpcpy(stpcpy(p, DIRSEP_S), s);
     va_end(arg_ptr);
+    xfree(home);
 
 #ifndef __riscos__
     return name;

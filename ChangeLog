@@ -1,3 +1,7 @@
+2005-08-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Check for getpwnam, getpwuid, and pwd.h.
+
 2005-08-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Remove hardcoded -I and -L for /usr/local on

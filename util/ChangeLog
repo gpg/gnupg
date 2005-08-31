@@ -1,3 +1,10 @@
+2005-08-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* fileutil.c (untilde): New.  Expand ~/foo and ~username/foo
+	filenames into full paths using $HOME if possible, or
+	getpwuid/getpwnam if necessary.
+	(make_filename): Use it here.
+
 2005-07-28  Werner Koch  <wk@g10code.com>
 
 	* pka.c: New.
