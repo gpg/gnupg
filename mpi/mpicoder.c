@@ -80,16 +80,20 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
     mpi_limb_t a;
     MPI val = MPI_NULL;
 
+    if (nread == nmax)
+        goto overflow;
     if( (c = iobuf_get(inp)) == -1 )
 	goto leave;
-    if (++nread >= nmax)
-        goto overflow;
+    nread++;
     nbits = c << 8;
+
+    if (nread == nmax)
+        goto overflow;
     if( (c = iobuf_get(inp)) == -1 )
 	goto leave;
-    if (++nread >= nmax)
-        goto overflow;
+    nread++;
     nbits |= c;
+
     if( nbits > MAX_EXTERN_MPI_BITS ) {
 	log_error("mpi too large for this implementation (%u bits)\n", nbits);
 	goto leave;
@@ -112,7 +116,7 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
     for( ; j > 0; j-- ) {
 	a = 0;
 	for(; i < BYTES_PER_MPI_LIMB; i++ ) {
-            if (nread >= nmax) {
+            if (nread == nmax) {
 #ifdef M_DEBUG
                 mpi_debug_free (val);
 #else

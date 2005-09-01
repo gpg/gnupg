@@ -1,3 +1,8 @@
+2005-09-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* mpicoder.c (mpi_read): Fix minor bug in reading a zero-length
+	MPI (was failing unnecessarily).
+
 2005-05-06  Werner Koch  <wk@g10code.com>
 
 	* mpi-scan.c (mpi_putbyte, mpi_getbyte): Removed.  Not used.
