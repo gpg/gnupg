@@ -44,12 +44,12 @@
 
 /* Generate a new photo id packet, or return NULL if canceled */
 PKT_user_id *
-generate_photo_id(PKT_public_key *pk)
+generate_photo_id(PKT_public_key *pk,const char *photo_name)
 {
   PKT_user_id *uid;
   int error=1,i;
   unsigned int len;
-  char *filename=NULL;
+  char *filename;
   byte *photo=NULL;
   byte header[16];
   IOBUF file;
@@ -65,34 +65,43 @@ generate_photo_id(PKT_public_key *pk)
 #define EXTRA_UID_NAME_SPACE 71
   uid=xmalloc_clear(sizeof(*uid)+71);
 
-  tty_printf(_("\nPick an image to use for your photo ID.  "
-           "The image must be a JPEG file.\n"
-	   "Remember that the image is stored within your public key.  "
-	   "If you use a\n"
-	   "very large picture, your key will become very large as well!\n"
-	   "Keeping the image close to 240x288 is a good size to use.\n"));
+  if(photo_name && *photo_name)
+    filename=make_filename(photo_name,(void *)NULL);
+  else
+    {
+      tty_printf(_("\nPick an image to use for your photo ID."
+		   "  The image must be a JPEG file.\n"
+		   "Remember that the image is stored within your public key."
+		   "  If you use a\n"
+		   "very large picture, your key will become very large"
+		   " as well!\n"
+		   "Keeping the image close to 240x288 is a good size"
+		   " to use.\n"));
+      filename=NULL;
+    }
 
   while(photo==NULL)
     {
-      char *tempname;
+      if(filename==NULL)
+	{
+	  char *tempname;
 
-      tty_printf("\n");
+	  tty_printf("\n");
 
-      xfree(filename);
+	  tty_enable_completion(NULL);
 
-      tty_enable_completion(NULL);
+	  tempname=cpr_get("photoid.jpeg.add",
+			   _("Enter JPEG filename for photo ID: "));
 
-      tempname=cpr_get("photoid.jpeg.add",
-		       _("Enter JPEG filename for photo ID: "));
+	  tty_disable_completion();
 
-      tty_disable_completion();
+	  filename=make_filename(tempname,(void *)NULL);
 
-      filename=make_filename(tempname,(void *)NULL);
+	  xfree(tempname);
 
-      xfree(tempname);
-
-      if(strlen(filename)==0)
-	goto scram;
+	  if(strlen(filename)==0)
+	    goto scram;
+	}
 
       file=iobuf_open(filename);
       if (file && is_secured_file (iobuf_get_fd (file)))
@@ -105,6 +114,8 @@ generate_photo_id(PKT_public_key *pk)
 	{
 	  log_error(_("unable to open JPEG file `%s': %s\n"),
 		    filename,strerror(errno));
+	  xfree(filename);
+	  filename=NULL;
 	  continue;
 	}
 
@@ -116,6 +127,8 @@ generate_photo_id(PKT_public_key *pk)
 			    _("Are you sure you want to use it? (y/N) ")))
 	  {
 	    iobuf_close(file);
+	    xfree(filename);
+	    filename=NULL;
 	    continue;
 	  }
 	}
@@ -131,6 +144,8 @@ generate_photo_id(PKT_public_key *pk)
 	  log_error(_("`%s' is not a JPEG file\n"),filename);
 	  xfree(photo);
 	  photo=NULL;
+	  xfree(filename);
+	  filename=NULL;
 	  continue;
 	}
 
@@ -153,6 +168,8 @@ generate_photo_id(PKT_public_key *pk)
 	      free_attributes(uid);
 	      xfree(photo);
 	      photo=NULL;
+	      xfree(filename);
+	      filename=NULL;
 	      continue;
 	    }
 	}

@@ -51,7 +51,8 @@ static void show_prefs( PKT_user_id *uid, PKT_signature *selfsig, int verbose);
 static void show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    int with_revoker, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
-static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock, int photo );
+static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock,
+			int photo, const char *photo_name );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_delsig( KBNODE pub_keyblock );
 static int menu_clean_sigs_from_uids(KBNODE keyblock);
@@ -1788,7 +1789,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    /* fall through */
 
 	  case cmdADDUID:
-	    if( menu_adduid( keyblock, sec_keyblock, photo ) )
+	    if( menu_adduid( keyblock, sec_keyblock, photo, arg_string ) )
 	      {
 	        update_trust = 1;
 		redisplay = 1;
@@ -2910,7 +2911,8 @@ no_primary_warning(KBNODE keyblock)
  * Return true if there is a new user id
  */
 static int
-menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
+menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock,
+	     int photo, const char *photo_name)
 {
     PKT_user_id *uid;
     PKT_public_key *pk=NULL;
@@ -2976,7 +2978,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 	    }
 	}
 
-      uid = generate_photo_id(pk);
+      uid = generate_photo_id(pk,photo_name);
     } else
       uid = generate_user_id();
     if( !uid )
