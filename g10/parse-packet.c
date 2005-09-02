@@ -1186,7 +1186,8 @@ enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
     return NULL; /* end of packets; not found */
 
   too_short:
-    log_error("buffer shorter than subpacket\n");
+    if(opt.verbose)
+      log_info("buffer shorter than subpacket\n");
     if( start )
 	*start = -1;
     return NULL;
@@ -1322,23 +1323,23 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     sig->digest_start[0] = iobuf_get_noeof(inp); pktlen--;
     sig->digest_start[1] = iobuf_get_noeof(inp); pktlen--;
 
-    if( is_v4 && sig->pubkey_algo ) { /*extract required information */
+    if( is_v4 && sig->pubkey_algo )
+      { /*extract required information */
 	const byte *p;
 	size_t len;
 
 	/* set sig->flags.unknown_critical if there is a
 	 * critical bit set for packets which we do not understand */
 	if( !parse_sig_subpkt (sig->hashed, SIGSUBPKT_TEST_CRITICAL, NULL)
-	   || !parse_sig_subpkt (sig->unhashed, SIGSUBPKT_TEST_CRITICAL,
-									NULL) )
-	{
-	    sig->flags.unknown_critical = 1;
-	}
+	    || !parse_sig_subpkt (sig->unhashed, SIGSUBPKT_TEST_CRITICAL,
+				  NULL) )
+	  sig->flags.unknown_critical = 1;
 
 	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_CREATED, NULL );
 	if(p)
 	  sig->timestamp = buffer_to_u32(p);
-	else if(!(sig->pubkey_algo>=100 && sig->pubkey_algo<=110))
+	else if(!(sig->pubkey_algo>=100 && sig->pubkey_algo<=110)
+		&& opt.verbose)
 	  log_info ("signature packet without timestamp\n");
 
 	p = parse_sig_subpkt2( sig, SIGSUBPKT_ISSUER, NULL );
@@ -1347,14 +1348,15 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    sig->keyid[0] = buffer_to_u32(p);
 	    sig->keyid[1] = buffer_to_u32(p+4);
 	  }
-	else if(!(sig->pubkey_algo>=100 && sig->pubkey_algo<=110))
+	else if(!(sig->pubkey_algo>=100 && sig->pubkey_algo<=110)
+		&& opt.verbose)
 	  log_info ("signature packet without keyid\n");
 
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_SIG_EXPIRE,NULL);
 	if(p)
 	  sig->expiredate=sig->timestamp+buffer_to_u32(p);
 	if(sig->expiredate && sig->expiredate<=make_timestamp())
- 	    sig->flags.expired=1;
+	  sig->flags.expired=1;
 
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,NULL);
 	if(p)
@@ -1401,7 +1403,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	/* Find all revocation keys. */
 	if(sig->sig_class==0x1F)
 	  parse_revkeys(sig);
-    }
+      }
 
     if( list_mode ) {
 	fprintf (listfp, ":signature packet: algo %d, keyid %08lX%08lX\n"
@@ -1957,7 +1959,8 @@ parse_attribute_subpkts(PKT_user_id *uid)
   return count;
 
  too_short:
-  log_error("buffer shorter than attribute subpacket\n");
+  if(opt.verbose)
+    log_info("buffer shorter than attribute subpacket\n");
   uid->attribs=attribs;
   uid->numattribs=count;
   return count;

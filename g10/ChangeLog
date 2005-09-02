@@ -1,3 +1,10 @@
+2005-09-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (enum_sig_subpkt, parse_signature,
+	parse_attribute_subpkts): Make a number of warnings verbose items.
+	These fire on many slightly mangled keys in the field, so the
+	warning is becoming burdensome.
+
 2005-09-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* photoid.h, photoid.c (generate_photo_id): Allow passing in a
