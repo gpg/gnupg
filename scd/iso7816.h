@@ -33,6 +33,9 @@ gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen);
 gpg_error_t iso7816_select_file (int slot, int tag, int is_dir,
                                  unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_select_path (int slot,
+                                 const unsigned short *path, size_t pathlen,
+                                 unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_list_directory (int slot, int list_dirs,
                                     unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_verify (int slot,

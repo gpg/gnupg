@@ -77,6 +77,7 @@ map_sw (int sw)
     case SW_RECORD_NOT_FOUND:ec= GPG_ERR_NOT_FOUND; break;
     case SW_REF_NOT_FOUND:  ec = GPG_ERR_NO_OBJ; break;
     case SW_BAD_P0_P1:      ec = GPG_ERR_INV_VALUE; break;
+    case SW_EXACT_LENGTH:   ec = GPG_ERR_INV_VALUE; break;
     case SW_INS_NOT_SUP:    ec = GPG_ERR_CARD; break;
     case SW_CLA_NOT_SUP:    ec = GPG_ERR_CARD; break;
     case SW_SUCCESS:        ec = 0; break;
@@ -158,6 +159,39 @@ iso7816_select_file (int slot, int tag, int is_dir,
     }
 
   return 0;
+}
+
+
+/* Do a select file command with a direct path. */
+gpg_error_t
+iso7816_select_path (int slot, const unsigned short *path, size_t pathlen,
+                     unsigned char **result, size_t *resultlen)
+{
+  int sw, p0, p1;
+  unsigned char buffer[100];
+  int buflen;
+  
+  if (result || resultlen)
+    {
+      *result = NULL;
+      *resultlen = 0;
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+  
+  if (pathlen/2 >= sizeof buffer)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+  
+  for (buflen = 0; pathlen; pathlen--, path++)
+    {
+      buffer[buflen++] = (*path >> 8);
+      buffer[buflen++] = *path;
+    }
+
+  p0 = 0x08;
+  p1 = 0x0c; /* No FC return. */
+  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE,
+                         p0, p1, buflen, (char*)buffer );
+  return map_sw (sw);
 }
 
 
@@ -524,8 +558,10 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
     {
       buffer = NULL;
       bufferlen = 0;
-      /* Fixme: Either the ccid driver or the TCOS cards have problems
-         with an Le of 0. */
+      /* Note, that we to set N to 254 due to problems either with the
+         ccid driver or some TCOS cards.  It actually should be 0
+         which is the official ISO value to read a variable length
+         object. */
       if (read_all || nmax > 254)
         n = 254;
       else
@@ -533,6 +569,21 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
       sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
                          ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                          n, &buffer, &bufferlen);
+      if ( SW_EXACT_LENGTH_P(sw) )
+        {
+          n = (sw & 0x00ff);
+          sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
+                             ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
+                             n, &buffer, &bufferlen);
+        }
+
+      if (*result && sw == SW_BAD_P0_P1)
+        {
+          /* Bad Parameter means that the offset is outside of the
+             EF. When reading all data we take this as an indication
+             for EOF.  */
+          break;
+        }
 
       if (sw != SW_SUCCESS && sw != SW_EOF_REACHED)
         {

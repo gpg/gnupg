@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 /*
@@ -587,6 +588,11 @@ handle_status (unsigned char *argbuf, size_t arglen)
   buf[5] = (rdrstates[0].event_state >> 16);
   buf[6] = (rdrstates[0].event_state >>  8);
   buf[7] = (rdrstates[0].event_state >>  0);
+  /* The third word is the protocol. */
+  buf[8]  = (pcsc_protocol >> 24);
+  buf[9]  = (pcsc_protocol >> 16);
+  buf[10] = (pcsc_protocol >> 8);
+  buf[11] = (pcsc_protocol);
 
   request_succeeded (buf, 8);
 }

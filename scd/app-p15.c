@@ -74,7 +74,17 @@ static struct
 #undef X
 
 
-/* The Pin Types as defined in pkcs#15 v1.1 */
+/* The AID of PKCS15. */
+static char const pkcs15_aid[] = { 0xA0, 0, 0, 0, 0x63,
+                                   0x50, 0x4B, 0x43, 0x53, 0x2D, 0x31, 0x35 };
+
+/* The Belgian eID variant - they didn't understood why a shared AID
+   is useful for a standard.  Oh well. */
+static char const pkcs15be_aid[] = { 0xA0, 0, 0, 0x01, 0x77,
+                                   0x50, 0x4B, 0x43, 0x53, 0x2D, 0x31, 0x35 };
+
+
+/* The PIN types as defined in pkcs#15 v1.1 */
 typedef enum 
   {
     PIN_TYPE_BCD = 0,
@@ -261,6 +271,9 @@ struct app_local_s
   /* The type of the card. */
   card_type_t card_type;
 
+  /* Flag indicating whether we may use direct path selection. */
+  int direct_path_selection;
+
   /* Structure with the EFIDs of the objects described in the ODF
      file. */
   struct
@@ -275,6 +288,10 @@ struct app_local_s
     unsigned short data_objects;
     unsigned short auth_objects;
   } odf;  
+
+  /* The PKCS#15 serialnumber from EF(TokeiNFo) or NULL.  Malloced. */
+  unsigned char *serialno;
+  size_t serialnolen;
 
   /* Information on all certificates. */
   cdf_object_t certificate_info;
@@ -363,6 +380,7 @@ do_deinit (app_t app)
       release_cdflist (app->app_local->useful_certificate_info);
       release_prkdflist (app->app_local->private_key_info);
       release_aodflist (app->app_local->auth_object_info);
+      xfree (app->app_local->serialno);
       xfree (app->app_local);
       app->app_local = NULL;
     }
@@ -406,24 +424,42 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
   gpg_error_t err;
   int i, j;
 
-  /* FIXME: Need code to remember the last PATH so that we can decide
-     what select commands to send in case the path does not start off
-     with 3F00.  We might also want to use direct path selection if
-     supported by the card. */
+  if (!pathlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   if (pathlen && *path != 0x3f00 )
     log_debug ("WARNING: relative path selection not yet implemented\n");
-
-  for (i=0; i < pathlen; i++)
+      
+  if (app->app_local->direct_path_selection)
     {
-      err = iso7816_select_file (app->slot, path[i],
-                                 !(i+1 == pathlen), NULL, NULL);
+      err = iso7816_select_path (app->slot, path+1, pathlen-1, NULL, NULL);
       if (err)
         {
-          log_error ("error selecting part %d from path ", i);
+          log_error ("error selecting path ");
           for (j=0; j < pathlen; j++)
             log_printf ("%04hX", path[j]);
           log_printf (": %s\n", gpg_strerror (err));
           return err;
+        }
+    }
+  else
+    {
+      /* FIXME: Need code to remember the last PATH so that we can decide
+         what select commands to send in case the path does not start off
+         with 3F00.  We might also want to use direct path selection if
+         supported by the card. */
+      for (i=0; i < pathlen; i++)
+        {
+          err = iso7816_select_file (app->slot, path[i],
+                                     !(i+1 == pathlen), NULL, NULL);
+          if (err)
+            {
+              log_error ("error selecting part %d from path ", i);
+              for (j=0; j < pathlen; j++)
+                log_printf ("%04hX", path[j]);
+              log_printf (": %s\n", gpg_strerror (err));
+              return err;
+            }
         }
     }
   return 0;
@@ -586,12 +622,13 @@ read_ef_odf (app_t app, unsigned short odf_fid)
         }
       else if ( buflen >= 12 
                 && (p[0] & 0xf0) == 0xA0
-                && !memcmp (p+1, "\x0a\x30\x08\x04\x06\x3F\x00\x50\x15", 9)
-                && app->app_local->home_df == 0x5015 )
+                && !memcmp (p+1, "\x0a\x30\x08\x04\x06\x3F\x00", 7)
+                && app->app_local->home_df == ((p[8]<<8)|p[9]) )
         {
-          /* This format using a full path is used by a self-created
-             test card of mine.  I have not checked whether this is
-             legal.  We assume a home DF of 0x5015 here. */
+          /* We only allow a full path if all files are at the same
+             level and below the home directory.  The extend this we
+             would need to make use of new data type capable of
+             keeping a full path. */
           offset = 10;
         }
       else
@@ -2158,12 +2195,81 @@ TokenFlags ::= BIT STRING {
 
 
  */
-/* static gpg_error_t */
-/* read_ef_tokeninfo (app_t app) */
-/* { */
-/*   unsigned short efid = 0x5032; */
-/*   return 0; */
-/* } */
+static gpg_error_t
+read_ef_tokeninfo (app_t app)
+{
+  gpg_error_t err;
+  unsigned char *buffer = NULL;
+  size_t buflen;
+  const unsigned char *p;
+  size_t n, objlen, hdrlen;
+  int class, tag, constructed, ndef;
+  unsigned long ul;
+  
+  err = select_and_read_binary (app->slot, 0x5032, "TokenInfo",
+                                &buffer, &buflen);
+  if (err)
+    return err;
+  
+  p = buffer;
+  n = buflen;
+
+  err = parse_ber_header (&p, &n, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > n || tag != TAG_SEQUENCE))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    {
+      log_error ("error parsing TokenInfo: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  n = objlen;
+
+  /* Version.  */
+  err = parse_ber_header (&p, &n, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > n || tag != TAG_INTEGER))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  for (ul=0; objlen; objlen--)
+    {
+      ul <<= 8;
+      ul |= (*p++) & 0xff; 
+      n--;
+    }
+  if (ul)
+    {
+      log_error ("invalid version %lu in TokenInfo\n", ul);
+      err = gpg_error (GPG_ERR_INV_OBJ);
+      goto leave;
+    }
+
+  /* serialNumber.  */
+  err = parse_ber_header (&p, &n, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > n || tag != TAG_OCTET_STRING || !objlen))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+  
+  xfree (app->app_local->serialno);
+  app->app_local->serialno = xtrymalloc (objlen);
+  if (!app->app_local->serialno)
+    {
+      err = gpg_error_from_errno (errno);
+      goto leave;
+    }
+  memcpy (app->app_local->serialno, p, objlen);
+  app->app_local->serialnolen = objlen;
+  log_printhex ("Serialnumber from EF(TokenInfo) is:", p, objlen);
+
+ leave:
+  xfree (buffer);
+  return err;
+}
 
 
 /* Get all the basic information from the pkcs#15 card, check the
@@ -2174,11 +2280,25 @@ read_p15_info (app_t app)
 {
   gpg_error_t err;
 
-  /* Fixme: We might need to read the tokeninfo to get a non-standard
-     ODF FID.  */
-
+  if (!read_ef_tokeninfo (app))
+    {
+      /* If we don't have a serial number yet but the TokenInfo provides
+         one, use that. */
+      if (!app->serialno && app->app_local->serialno)
+        {
+          app->serialno = app->app_local->serialno;
+          app->serialnolen = app->app_local->serialnolen;
+          app->app_local->serialno = NULL;
+          app->app_local->serialnolen = 0;
+          err = app_munge_serialno (app);
+          if (err)
+            return err;
+        }
+    }
+  
   /* Read the ODF so that we know the location of all directory
      files. */
+  /* Fixme: We might need to get a non-standard ODF FID from TokenInfo. */
   err = read_ef_odf (app, 0x5031);
   if (err)
     return err;
@@ -2895,22 +3015,88 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 }
 
 
+
+/* Assume that EF(DIR) has been selected.  Read its content and figure
+   out the home EF of pkcs#15.  Return that home DF or 0 if not
+   found. */
+static unsigned short
+read_home_df (int slot)
+{
+  gpg_error_t err;
+  unsigned char *buffer;
+  const unsigned char *p, *pp;
+  size_t buflen, n, nn;
+  unsigned short result = 0;
+
+  err = iso7816_read_binary (slot, 0, 0, &buffer, &buflen);
+  if (err)
+    {
+      log_error ("error reading EF{DIR}: %s\n", gpg_strerror (err));
+      return 0;
+    }
+
+  /* FIXME: We need to scan all records. */
+  p = find_tlv (buffer, buflen, 0x61, &n);
+  if (p && n)
+    {
+      pp = find_tlv (p, n, 0x4f, &nn);
+      if (pp 
+          && ((nn == sizeof pkcs15_aid && !memcmp (pp, pkcs15_aid, nn))
+              ||(nn == sizeof pkcs15be_aid && !memcmp (pp, pkcs15be_aid, nn))))
+        {
+          pp = find_tlv (p, n, 0x50, &nn);
+          if (pp) /* fixme: Filter log value? */
+            log_info ("pkcs#15 application label from EF(DIR) is `%.*s'\n",
+                      (int)nn, pp);
+          pp = find_tlv (p, n, 0x51, &nn);
+          if (pp && nn == 4 && *pp == 0x3f && !pp[1])
+            {
+              result = ((pp[2] << 8) | pp[3]);
+              log_info ("pkcs#15 application directory is 0x%04hX\n", result);
+            }
+        }
+    }
+  xfree (buffer);
+  return result;
+}
 
 
-/* Select the PKCS#15 application on the card in SLOT.  */
+/* 
+   Select the PKCS#15 application on the card in SLOT. 
+ */
 gpg_error_t
 app_select_p15 (app_t app)
 {
-  static char const aid[] = { 0xA0, 0, 0, 0, 0x63,
-                              0x50, 0x4B, 0x43, 0x53, 0x2D, 0x31, 0x35 };
   int slot = app->slot;
   int rc;
   unsigned short def_home_df = 0;
   card_type_t card_type = CARD_TYPE_UNKNOWN;
+  int direct = 0;
   
-  rc = iso7816_select_application (slot, aid, sizeof aid);
+  rc = iso7816_select_application (slot, pkcs15_aid, sizeof pkcs15_aid);
   if (rc)
-    {
+    rc = iso7816_select_application (slot, pkcs15be_aid, sizeof pkcs15be_aid);
+  if (rc)
+    { /* Not found: Try to locate it from 2F00.  We use direct path
+         selection here because it seems that the Belgian eID card
+         does only allow for that.  Many other cards supports this
+         selection method too. */
+      unsigned short path[1] = { 0x2f00 };
+
+      rc = iso7816_select_path (app->slot, path, 1, NULL, NULL);
+      if (!rc)
+        {
+          direct = 1;
+          def_home_df = read_home_df (slot);
+          if (def_home_df)
+            {
+              path[0] = def_home_df;
+              rc = iso7816_select_path (app->slot, path, 1, NULL, NULL);
+            }
+        }
+    }
+  if (rc)
+    { /* Still not found:  Try the default DF. */
       def_home_df = 0x5015;
       rc = iso7816_select_file (slot, def_home_df, 1, NULL, NULL);
     }
@@ -2958,6 +3144,9 @@ app_select_p15 (app_t app)
          the common APP structure. */
       app->app_local->card_type = card_type;
 
+      /* Store whether we may and should use direct path selection. */
+      app->app_local->direct_path_selection = direct;
+
       /* Read basic information and thus check whether this is a real
          card.  */
       rc = read_p15_info (app);
@@ -2989,8 +3178,6 @@ app_select_p15 (app_t app)
               app->serialno = p;
             }
         }
-      else /* Use standard munging code. */
-        rc = app_munge_serialno (app);
 
       app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
