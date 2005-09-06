@@ -3,31 +3,31 @@
  *      Copyright (C) 2003, 2004 g10 Code GmbH
  *
  * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is is distributed in the hope that it will be useful,
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
  */
 
 
-/* According to RFC822 binary 0 are allowed at many places. We
- * do not handle this correct especially in the field parsing code.  It
- * should be easy to fix and the API provides a interfcaes which returns
- * the length but in addition makes sure that returned strings are always
- * ended by a \0.  
+/* According to RFC822 binary zeroes are allowed at many places. We do
+ * not handle this correct especially in the field parsing code.  It
+ * should be easy to fix and the API provides a interfaces which
+ * returns the length but in addition makes sure that returned strings
+ * are always ended by a \0.
  *
  * Furthermore, the case of field names is changed and thus it is not
  * always a good idea to use these modified header
  * lines (e.g. signatures may break).
- * 
  */
 
 #ifdef HAVE_CONFIG_H
@@ -44,13 +44,13 @@
 #include "rfc822parse.h"
 
 enum token_type
-{
-  tSPACE,
-  tATOM,
-  tQUOTED,
-  tDOMAINLIT,
-  tSPECIAL
-};
+  {
+    tSPACE,
+    tATOM,
+    tQUOTED,
+    tDOMAINLIT,
+    tSPECIAL
+  };
 
 /* For now we directly use our TOKEN as the parse context */
 typedef struct rfc822parse_field_context *TOKEN;
