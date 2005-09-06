@@ -253,13 +253,15 @@ Often it is required to connect to the agent from a process not being an
 inferior of @command{gpg-agent} and thus the environment variable with
 the socket name is not available.  To help setting up those variables in
 other sessions, this option may be used to write the information into
-@var{file}.  The format is suitable to be evaluated by a Bourne shell
-like in this simple example:
+@var{file}.  If @var{file} is not specified the default name
+@file{$@{HOME@}/.gpg-agent-info} will be used.  The format is suitable
+to be evaluated by a Bourne shell like in this simple example:
 
 @example
 eval `cat @var{file}`
 eval `cut -d= -f 1 < @var{file} | xargs echo export`
 @end example
+
 
 
 @item --no-grab

@@ -20,19 +20,29 @@ GnuPG comes with a couple of smaller tools:
 @c
 @c  WATCHGNUPG
 @c
+@manpage watchgnupg.1
 @node watchgnupg
 @section Read logs from a socket
+@ifset manverb
+ watchgnupg \-  Read and print logs from a socket
+@end ifset
 
+@mansect description
 Most of the main utilities are able to write there log files to a
 Unix Domain socket if configured that way.  @command{watchgnupg} is a simple
 listener for such a socket.  It ameliorates the output with a time
 stamp and makes sure that long lines are not interspersed with log
 output from other utilities.
 
+@manpause
 @noindent
 @command{watchgnupg} is commonly invoked as
 
-@samp{watchgnupg --force ~/.gnupg/S.log}
+@mansect synopsis
+@example
+watchgnupg --force ~/.gnupg/S.log
+@end example
+@manpause
 
 @noindent
 This starts it on the current terminal for listening on the socket
@@ -42,6 +52,7 @@ This starts it on the current terminal for listening on the socket
 @command{watchgnupg} understands these options:
 
 @table @gnupgtabopt
+@mansect options
 
 @item --force 
 @opindex force
@@ -59,15 +70,21 @@ print version of the program and exit
 @opindex help
 Display a brief help page and exit
 
+@manpause
 @end table
 
 
 @c
 @c    ADDGNUPGHOME
 @c
+@manpage addgnupghome.8
 @node addgnupghome
 @section Create .gnupg home directories.
+@ifset manverb
+ addgnupghome \-  Create .gnupg home directories
+@end ifset
 
+@mansect description
 If GnuPG is installed on a system with existing user accounts, it is
 sometimes required to populate the GnuPG home directory with existing
 files.  Especially a @file{trustlist.txt} and a keybox with some
@@ -76,18 +93,27 @@ by copying all files from @file{/etc/skel/.gnupg} to the home
 directories of the accounts given on the command line.  It takes care
 not to overwrite existing GnuPG home directories.
 
+@manpause
 @noindent
 @command{addgnupghome} is invoked by root as:
 
-@samp{addgnupghome account1 account2 ... accountn}
+@mansect synopsis
+@example
+addgnupghome account1 account2 ... accountn
+@end example
 
 
 @c
 @c   GPGCONF
 @c
+@manpage gpgconf.1
 @node gpgconf
 @section Modify .gnupg home directories.
+@ifset manverb
+  gpgconf \- Modify .gnupg home directories
+@end ifset
 
+@mansect description
 The @command{gpgconf} is a utility to automatically and reasonable
 safely query and modify configuration files in the @file{.gnupg} home
 directory.  It is designed not to be invoked manually by the user, but
@@ -121,6 +147,7 @@ changes can then be made active with @command{gpgconf} again.  Such a
 program that uses @command{gpgconf} in this way will be called GUI
 throughout this section.
 
+@manpause
 @menu
 * Invoking gpgconf::      List of all commands and options.
 * Format conventions::    Formatting conventions relevant for all commands.
@@ -133,9 +160,13 @@ throughout this section.
 @node Invoking gpgconf
 @subsection Invoking gpgconf
 
+@mansect commands
 One of the following commands must be given:
 
+@manpause
 @table @gnupgtabopt
+@mancont
+
 @item --list-components
 List all components.  This is the default command used if none is
 specified.
@@ -145,11 +176,16 @@ List all options of the component @var{component}.
 
 @item --change-options @var{component}
 Change the options of the component @var{component}.
+@manpause
 @end table
+
+@mansect options
 
 The following options may be used:
 
+@manpause
 @table @gnupgtabopt
+@mancont
 @c FIXME: Not yet supported.
 @c @item -o @var{file}
 @c @itemx --output @var{file}
@@ -176,6 +212,7 @@ changing.
 This means that the changes will take effect at run-time, as far as
 this is possible.  Otherwise, they will take effect at the next start
 of the respective backend programs.
+@manpause
 @end table
 
 
@@ -295,6 +332,7 @@ the locale environment of the @command{gpgconf} program.
 @c to change it via the command line?
 
 
+@mansect usage
 @node Listing components
 @subsection Listing components
 
@@ -580,6 +618,7 @@ $ echo 'force:16:' | gpgconf --change-options dirmngr
 The @code{--runtime} option can influence when the changes take
 effect.
 
+@manpause
 @c
 @c    GPGSM-GENCERT.SH
 @c
@@ -587,7 +626,7 @@ effect.
 @section Generate an X.509 certificate request
 
 This is a simple tool to interactivly generate a certificate request
-whicl will be printed to stdout.
+which will be printed to stdout.
 
 @noindent
 @command{gpgsm-gencert.sh} is invoked as:

@@ -39,8 +39,10 @@ typedef enum
   {
     CARD_TYPE_UNKNOWN,
     CARD_TYPE_TCOS,
-    CARD_TYPE_MICARDO
-  } card_type_t;
+    CARD_TYPE_MICARDO,
+    CARD_TYPE_BELPIC   /* Belgian eID card specs. */
+  } 
+card_type_t;
 
 /* A list card types with ATRs noticed with these cards. */
 #define X(a) ((unsigned char const *)(a))
@@ -2771,6 +2773,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
                                + the largest OID prefix above. */
   prkdf_object_t prkdf;    /* The private key object. */
   aodf_object_t aodf;      /* The associated authentication object. */
+  int no_data_padding = 0; /* True if the card want the data without padding.*/
+  int mse_done = 0;        /* Set to true if the MSE has been done. */
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -2833,6 +2837,35 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       return err;
     }
 
+
+  /* Due to the fact that the non-repudiation signature on a BELPIC
+     card requires a ver verify immediately before the DSO we set the
+     MSE before we do the verification.  Other cards might allow to do
+     this also but I don't want to break anything, thus we do it only
+     for the BELPIC card here. */
+  if (app->app_local->card_type == CARD_TYPE_BELPIC)
+    {
+      unsigned char mse[5];
+      
+      mse[0] = 4;    /* Length of the template. */
+      mse[1] = 0x80; /* Algorithm reference tag. */
+      mse[2] = 0x02; /* Algorithm: RSASSA-PKCS1-v1.5 using SHA1. */
+      mse[3] = 0x84; /* Private key reference tag. */
+      mse[4] = prkdf->key_reference_valid? prkdf->key_reference : 0x82;
+
+      err = iso7816_manage_security_env (app->slot, 
+                                         0x41, 0xB6,
+                                         mse, sizeof mse);
+      no_data_padding = 1;
+      mse_done = 1;
+    }
+  if (err)
+    {
+      log_error ("MSE failed: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+
   /* Now that we have all the information available, prepare and run
      the PIN verification.*/
   if (1)
@@ -2841,8 +2874,12 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       size_t pinvaluelen;
       const char *errstr;
       const char *s;
-      
-      err = pincb (pincb_arg, "PIN", &pinvalue);
+
+      if (prkdf->usageflags.non_repudiation
+          && app->app_local->card_type == CARD_TYPE_BELPIC)
+        err = pincb (pincb_arg, "PIN (qualified signature!)", &pinvalue);
+      else
+        err = pincb (pincb_arg, "PIN", &pinvalue);
       if (err)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (err));
@@ -2884,8 +2921,6 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       switch (aodf->pintype)
         {
         case PIN_TYPE_BCD:
-          errstr = "PIN type BCD is not supported"; 
-          break;
         case PIN_TYPE_ASCII_NUMERIC:
           for (s=pinvalue; digitp (s); s++)
             ;
@@ -2914,7 +2949,39 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
           return err? err : gpg_error (GPG_ERR_BAD_PIN_METHOD);
         }
 
-      if (aodf->pinflags.needs_padding)
+
+      if (aodf->pintype == PIN_TYPE_BCD )
+        {
+          char *paddedpin;
+          int ndigits;
+
+          for (ndigits=0, s=pinvalue; *s; ndigits++, s++)
+            ;
+          paddedpin = xtrymalloc (aodf->stored_length+1);
+          if (!paddedpin)
+            {
+              err = gpg_error_from_errno (errno);
+              xfree (pinvalue);
+              return err;
+            }
+
+          i = 0;
+          paddedpin[i++] = 0x20 | (ndigits & 0x0f);
+          for (s=pinvalue; i < aodf->stored_length && *s && s[1]; s = s+2 )
+            paddedpin[i++] = (((*s - '0') << 4) | ((s[1] - '0') & 0x0f));
+          if (i < aodf->stored_length && *s)
+            paddedpin[i++] = (((*s - '0') << 4) 
+                              |((aodf->pad_char_valid?aodf->pad_char:0)&0x0f));
+
+          if (aodf->pinflags.needs_padding)
+            while (i < aodf->stored_length)
+              paddedpin[i++] = aodf->pad_char_valid? aodf->pad_char : 0;
+
+          xfree (pinvalue);
+          pinvalue = paddedpin;
+          pinvaluelen = i;
+        }
+      else if (aodf->pinflags.needs_padding)
         {
           char *paddedpin;
 
@@ -2979,7 +3046,9 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
 
   /* Manage security environment needs to be weaked for certain cards. */
-  if (app->app_local->card_type == CARD_TYPE_TCOS)
+  if (mse_done)
+    err = 0;
+  else if (app->app_local->card_type == CARD_TYPE_TCOS)
     {
       /* TCOS creates signatures always using the local key 0.  MSE
          may not be used. */
@@ -3009,24 +3078,29 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       return err;
     }
 
-
-  err = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
+  if (no_data_padding)
+    err = iso7816_compute_ds (app->slot, data+15, 20, outdata, outdatalen);
+  else
+    err = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
   return err;
 }
 
 
 
 /* Assume that EF(DIR) has been selected.  Read its content and figure
-   out the home EF of pkcs#15.  Return that home DF or 0 if not
-   found. */
+   out the home EF of pkcs#15.  Return that home DF or 0 if not found
+   and the value at the address of BELPIC indicates whether it was
+   found by the belpic aid. */
 static unsigned short
-read_home_df (int slot)
+read_home_df (int slot, int *r_belpic)
 {
   gpg_error_t err;
   unsigned char *buffer;
   const unsigned char *p, *pp;
   size_t buflen, n, nn;
   unsigned short result = 0;
+
+  *r_belpic = 0;
 
   err = iso7816_read_binary (slot, 0, 0, &buffer, &buflen);
   if (err)
@@ -3040,9 +3114,9 @@ read_home_df (int slot)
   if (p && n)
     {
       pp = find_tlv (p, n, 0x4f, &nn);
-      if (pp 
-          && ((nn == sizeof pkcs15_aid && !memcmp (pp, pkcs15_aid, nn))
-              ||(nn == sizeof pkcs15be_aid && !memcmp (pp, pkcs15be_aid, nn))))
+      if (pp && ((nn == sizeof pkcs15_aid && !memcmp (pp, pkcs15_aid, nn))
+                 || (*r_belpic = (nn == sizeof pkcs15be_aid
+                                  && !memcmp (pp, pkcs15be_aid, nn)))))
         {
           pp = find_tlv (p, n, 0x50, &nn);
           if (pp) /* fixme: Filter log value? */
@@ -3072,10 +3146,15 @@ app_select_p15 (app_t app)
   unsigned short def_home_df = 0;
   card_type_t card_type = CARD_TYPE_UNKNOWN;
   int direct = 0;
-  
+  int is_belpic = 0;
+
   rc = iso7816_select_application (slot, pkcs15_aid, sizeof pkcs15_aid);
   if (rc)
-    rc = iso7816_select_application (slot, pkcs15be_aid, sizeof pkcs15be_aid);
+    {
+      rc = iso7816_select_application (slot, pkcs15be_aid,sizeof pkcs15be_aid);
+      if (!rc)
+        is_belpic = 1;
+    }
   if (rc)
     { /* Not found: Try to locate it from 2F00.  We use direct path
          selection here because it seems that the Belgian eID card
@@ -3087,7 +3166,7 @@ app_select_p15 (app_t app)
       if (!rc)
         {
           direct = 1;
-          def_home_df = read_home_df (slot);
+          def_home_df = read_home_df (slot, &is_belpic);
           if (def_home_df)
             {
               path[0] = def_home_df;
@@ -3102,24 +3181,33 @@ app_select_p15 (app_t app)
     }
   if (!rc)
     {
-      /* We need to know the ATR for tweaking some security operations. */
-      unsigned char *atr;
-      size_t atrlen;
-      int i;
-
-      atr = apdu_get_atr (app->slot, &atrlen);
-      if (!atr)
-        rc = gpg_error (GPG_ERR_INV_CARD);
+      /* Determine the type of the card.  The general case is to look
+         it up from the ATR table.  For the Belgian eID card we know
+         it instantly from the AID. */
+      if (is_belpic)
+        {
+          card_type = CARD_TYPE_BELPIC;
+        }
       else
         {
-          for (i=0; card_atr_list[i].atrlen; i++)
-            if (card_atr_list[i].atrlen == atrlen
-                && !memcmp (card_atr_list[i].atr, atr, atrlen))
-              {
-                card_type = card_atr_list[i].type;
-                break;
-              }
-          xfree (atr);
+          unsigned char *atr;
+          size_t atrlen;
+          int i;
+
+          atr = apdu_get_atr (app->slot, &atrlen);
+          if (!atr)
+            rc = gpg_error (GPG_ERR_INV_CARD);
+          else
+            {
+              for (i=0; card_atr_list[i].atrlen; i++)
+                if (card_atr_list[i].atrlen == atrlen
+                    && !memcmp (card_atr_list[i].atr, atr, atrlen))
+                  {
+                    card_type = card_atr_list[i].type;
+                    break;
+                  }
+              xfree (atr);
+            }
         }
     }
   if (!rc)

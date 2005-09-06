@@ -667,7 +667,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
     return gpg_error (gpg_err_code_from_errno (errno));
 
   /* Fixme: Write an inquire function which returns the result in
-     secure memory and check all futher handling of the PIN. */
+     secure memory and check all further handling of the PIN. */
   rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
   free (command);  
   if (rc)

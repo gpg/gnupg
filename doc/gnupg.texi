@@ -3,6 +3,18 @@
 @setfilename gnupg.info
 @include version.texi
 @settitle Using the GNU Privacy Guard
+
+@c A couple of macros with no effect on texinfo
+@c but used by the yat2m processor. 
+@macro manpage {a}
+@end macro
+@macro mansect {a}
+@end macro
+@macro manpause 
+@end macro
+@macro mancont
+@end macro
+
 @c Create a separate index for command line options.
 @defcodeindex op
 @c Merge the standard indexes into a single one.
@@ -13,8 +25,8 @@
 @syncodeindex tp cp
 @c %**end of header
 @copying
-This is the @cite{The GNU Privacy Guard Manual}
-(version @value{VERSION}, @value{UPDATED}).
+This is the @cite{The GNU Privacy Guard Manual} (version
+@value{VERSION}, @value{UPDATED}).
 
 @iftex
 Published by the Free Software Foundation@*
