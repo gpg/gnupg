@@ -556,7 +556,7 @@ get_escaped_usb_string (usb_dev_handle *idev, int idx,
      all in a 2 bute Unicode encoding using little endian. */
   rc = usb_control_msg (idev, USB_ENDPOINT_IN, USB_REQ_GET_DESCRIPTOR,
                         (USB_DT_STRING << 8), 0, 
-                        buf, sizeof buf, 1000 /* ms timeout */);
+                        (char*)buf, sizeof buf, 1000 /* ms timeout */);
   if (rc < 4)
     langid = 0x0409; /* English.  */
   else
@@ -564,7 +564,7 @@ get_escaped_usb_string (usb_dev_handle *idev, int idx,
 
   rc = usb_control_msg (idev, USB_ENDPOINT_IN, USB_REQ_GET_DESCRIPTOR,
                         (USB_DT_STRING << 8) + idx, langid,
-                        buf, sizeof buf, 1000 /* ms timeout */);
+                        (char*)buf, sizeof buf, 1000 /* ms timeout */);
   if (rc < 2 || buf[1] != USB_DT_STRING)
     return NULL; /* Error or not a string. */
   len = buf[0];
@@ -1156,7 +1156,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen)
 
   rc = usb_bulk_write (handle->idev, 
                        handle->ep_bulk_out,
-                       msg, msglen,
+                       (char*)msg, msglen,
                        1000 /* ms timeout */);
   if (rc == msglen)
     return 0;
@@ -1189,7 +1189,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
  retry:
   rc = usb_bulk_read (handle->idev, 
                       handle->ep_bulk_in,
-                      buffer, length,
+                      (char*)buffer, length,
                       timeout);
   if (rc < 0)
     {
@@ -1301,7 +1301,7 @@ ccid_poll (ccid_driver_t handle)
 
   rc = usb_bulk_read (handle->idev, 
                       handle->ep_intr,
-                      msg, sizeof msg,
+                      (char*)msg, sizeof msg,
                       0 /* ms timeout */ );
   if (rc < 0 && errno == ETIMEDOUT)
     return 0;
@@ -1445,7 +1445,7 @@ ccid_get_atr (ccid_driver_t handle,
     {
       tried_iso = 1;
       /* Try switching to ISO mode. */
-      if (!send_escape_cmd (handle, "\xF1\x01", 2))
+      if (!send_escape_cmd (handle, (const unsigned char*)"\xF1\x01", 2))
         goto again;
     }
   else if (CCID_COMMAND_FAILED (msg))
@@ -2027,7 +2027,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (handle->id_vendor == VENDOR_SCM)
     {
       DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
-      rc = send_escape_cmd (handle, "\x80\x02\x00", 3);
+      rc = send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3);
       if (rc)
         return rc;
     }

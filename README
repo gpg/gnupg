@@ -307,7 +307,7 @@
     certify that they know the owner of the keys they sign.  If you then
     trust all the introducers to have correctly signed other keys, you
     can be be sure that the other key really belongs to the one who
-    claims to own it..
+    claims to own it.
 
     There are 2 steps to validate a key:
 	1. First check that there is a complete chain

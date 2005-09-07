@@ -1,5 +1,20 @@
 2005-09-07  Werner Koch  <wk@g10code.com>
 
+	* cardglue.h (GPG_ERR_TOO_LARGE): New.
+
+	* apdu.c, apdu.h, iso7816.c, iso7816.h
+	* ccid-driver.c, ccid-driver.h: Updated from GnuPG 1.9 source.
+	Changes are:
+	* iso7816.c (iso7816_select_path): New.
+	* iso7816.c (iso7816_read_binary): Use Le=0 when reading all
+	data.  Handle 6C00 error and take 6B00 as indication for EOF.
+	* apdu.h (SW_EXACT_LENGTH_P): New.
+	* apdu.c (new_reader_slot, reset_pcsc_reader, pcsc_get_status) 
+	(open_pcsc_reader): Set new reader state IS_T0.
+	(apdu_send_le): When doing T=0 make sure not to send Lc and Le.
+	Problem reported by Carl Meijer.
+	(apdu_send_direct): Initialize RESULTLEN.
+
 	* misc.c (parse_options): Allow meta option "help" to list all
 	options and to exit the program.
 

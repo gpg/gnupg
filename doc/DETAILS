@@ -782,7 +782,7 @@ The format of this file is as follows:
      Handle: <string>
         This is an optional parameter only used with the status lines
         KEY_CREATED and KEY_NOT_CREATED.  STRING may be up to 100
-        characters and should not contauin spaces.  It is useful for
+        characters and should not contain spaces.  It is useful for
         batch key generation to associate a key parameter block with a
         status line.
 

@@ -42,6 +42,7 @@ enum {
   SW_RECORD_NOT_FOUND = 0x6a83,
   SW_REF_NOT_FOUND  = 0x6a88,
   SW_BAD_P0_P1      = 0x6b00,
+  SW_EXACT_LENGTH   = 0x6c00,
   SW_INS_NOT_SUP    = 0x6d00,
   SW_CLA_NOT_SUP    = 0x6e00,
   SW_SUCCESS        = 0x9000,
@@ -65,6 +66,8 @@ enum {
   SW_HOST_ABORTED       = 0x1000d
 };
 
+
+#define SW_EXACT_LENGTH_P(a) (((a)&~0xff) == SW_EXACT_LENGTH)
 
 
 /* Note , that apdu_open_reader returns no status word but -1 on error. */

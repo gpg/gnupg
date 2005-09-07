@@ -112,6 +112,7 @@ typedef struct ctrl_ctx_s *ctrl_t;
 #define GPG_ERR_UNKNOWN_SEXP      G10ERR_INV_ARG
 #define GPG_ERR_DUP_VALUE         G10ERR_INV_ARG
 #define GPG_ERR_BAD_SECKEY        G10ERR_BAD_SECKEY
+#define GPG_ERR_TOO_LARGE         G10ERR_GENERAL
 
 #define GPG_ERR_EBUSY             G10ERR_GENERAL
 #define GPG_ERR_ENOENT            G10ERR_OPEN_FILE
