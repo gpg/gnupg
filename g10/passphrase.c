@@ -314,7 +314,7 @@ agent_open (int try, const char *orig_codeset)
               if (orig_codeset)
                 bind_textdomain_codeset (PACKAGE, orig_codeset);
 #endif /*ENABLE_NLS*/
-              log_error (_("gpg-agent is not available in this session\n"));
+              log_info (_("gpg-agent is not available in this session\n"));
               opt.use_agent = 0;
             }
           return NULL;

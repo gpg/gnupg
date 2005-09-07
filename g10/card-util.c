@@ -156,6 +156,7 @@ get_manufacturer (unsigned int no)
     case 0:
     case 0xffff: return "test card";
     case 0x0001: return "PPC Card Systems";
+    case 0x0002: return "Prism";
     default: return "unknown";
     }
 }

@@ -966,6 +966,15 @@ parse_options(char *str,unsigned int *options,
 {
   char *tok;
 
+  if (str && !strcmp (str, "help"))
+    {
+      int i;
+
+      for(i=0;opts[i].name;i++)
+        printf ("%s\n", opts[i].name);
+      g10_exit (0);
+    }
+
   while((tok=optsep(&str)))
     {
       int i,rev=0;

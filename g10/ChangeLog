@@ -1,3 +1,8 @@
+2005-09-07  Werner Koch  <wk@g10code.com>
+
+	* misc.c (parse_options): Allow meta option "help" to list all
+	options and to exit the program.
+
 2005-09-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (enum_sig_subpkt, parse_signature,
@@ -17,6 +22,11 @@
 
 	* photoid.c (generate_photo_id): Enable readline completion and
 	tilde expansion for the JPEG prompt.
+
+2005-08-30  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_open): Print a warning and not an error in
+	case of a missing agent.  Should fix Debian bug #325578.
 
 2005-08-26  David Shaw  <dshaw@jabberwocky.com>
 
@@ -79,6 +89,7 @@
 	--passphrase command line option.  Only useful in very special
 	circumstances.
 
+>>>>>>> .r3884
 2005-08-05  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c (keyserver_import_fprint): New stub.
