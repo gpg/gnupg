@@ -1409,7 +1409,7 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
   p += DIM (oid_encryptedData); 
 
   /* 2. Store a [0] tag. */
-  p = store_tag_length (p, 0x80, len[2]);
+  p = store_tag_length (p, 0xa0, len[2]);
 
   /* 3. Store a sequence. */
   p = store_tag_length (p, TAG_SEQUENCE, len[3]);
@@ -1433,7 +1433,7 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
   p += DIM (data_rc2iter2048);
 
   /* 8. And finally the [0] tag with the encrypted data. */
-  p = store_tag_length (p, 0xa0, buflen);
+  p = store_tag_length (p, 0x80, buflen);
   memcpy (p, buffer, buflen);
   p += buflen;
   certbaglen = p - certbag;

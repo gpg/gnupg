@@ -2,6 +2,7 @@
 
 	* minip12.c (p12_build): Oops, array needs to be larger for the
 	certificate.
+	(build_cert_bag): Fixed yesterdays change.
 
 	* command-ssh.c (card_key_available): Let the card handler decide
 	whether the card is supported here.  Also get a short serial
