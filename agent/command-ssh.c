@@ -1583,13 +1583,13 @@ key_secret_to_public (gcry_sexp_t *key_public,
 /* Check whether a smartcard is available and whether it has a usable
    key.  Store a copy of that key at R_PK and return 0.  If no key is
    available store NULL at R_PK and return an error code.  If CARDSN
-   is no NULL, a string with the serial number of the card will be
+   is not NULL, a string with the serial number of the card will be
    a malloced and stored there. */
 static gpg_error_t
 card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 {
   gpg_error_t err;
-  char *appname;
+  char *authkeyid;
   char *serialno = NULL;
   unsigned char *pkbuf;
   size_t pkbuflen;
@@ -1602,7 +1602,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 
   /* First see whether a card is available and whether the application
      is supported.  */
-  err = agent_card_getattr (ctrl, "APPTYPE", &appname);
+  err = agent_card_getattr (ctrl, "$AUTHKEYID", &authkeyid);
   if ( gpg_err_code (err) == GPG_ERR_CARD_REMOVED )
     {
       /* Ask for the serial number to reset the card.  */
@@ -1615,40 +1615,33 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
           return err;
         }
       log_info (_("detected card with S/N: %s\n"), serialno);
-      err = agent_card_getattr (ctrl, "APPTYPE", &appname);
+      err = agent_card_getattr (ctrl, "$AUTHKEYID", &authkeyid);
     }
   if (err)
     {
-      log_error (_("error getting application type of card: %s\n"),
+      log_error (_("error getting default authentication keyID of card: %s\n"),
                  gpg_strerror (err));
       xfree (serialno);
       return err;
     }
-  if (strcmp (appname, "OPENPGP"))
-    {
-      log_info (_("card application `%s' is not supported\n"), appname);
-      xfree (appname);
-      xfree (serialno);
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
-  xfree (appname);
-  appname = NULL;
 
   /* Get the S/N if we don't have it yet.  Use the fast getattr method.  */
   if (!serialno && (err = agent_card_getattr (ctrl, "SERIALNO", &serialno)) )
     {
       log_error (_("error getting serial number of card: %s\n"),
                  gpg_strerror (err));
+      xfree (authkeyid);
       return err;
     }
 
   /* Read the public key.  */
-  err = agent_card_readkey (ctrl, "OPENPGP.3", &pkbuf);
+  err = agent_card_readkey (ctrl, authkeyid, &pkbuf);
   if (err)
     {
       if (opt.verbose)
         log_info (_("no suitable card key found: %s\n"), gpg_strerror (err));
       xfree (serialno);
+      xfree (authkeyid);
       return err;
     }
 
@@ -1660,6 +1653,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
                  gpg_strerror (err));
       xfree (pkbuf);
       xfree (serialno);
+      xfree (authkeyid);
       return err;
     }
 
@@ -1671,6 +1665,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
       xfree (pkbuf);
       gcry_sexp_release (s_pk);
       xfree (serialno);
+      xfree (authkeyid);
       return err;
     }
 
@@ -1680,13 +1675,14 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
       unsigned char *shadow_info;
       unsigned char *tmp;
       
-      shadow_info = make_shadow_info (serialno, "OPENPGP.3");
+      shadow_info = make_shadow_info (serialno, authkeyid);
       if (!shadow_info)
         {
           err = gpg_error_from_errno (errno);
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
           xfree (serialno);
+          xfree (authkeyid);
           return err;
         }
       err = agent_shadow_key (pkbuf, shadow_info, &tmp);
@@ -1697,6 +1693,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
           xfree (serialno);
+          xfree (authkeyid);
           return err;
         }
       xfree (pkbuf);
@@ -1711,18 +1708,23 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
           xfree (serialno);
+          xfree (authkeyid);
           return err;
         }
     }
 
   if (cardsn)
     {
-      size_t snlen = strlen (serialno);
+      char *dispsn;
 
-      if (snlen == 32
-          && !memcmp (serialno, "D27600012401", 12)) /* OpenPGP card. */
-        *cardsn = xtryasprintf ("cardno:%.12s", serialno+16);
-      else /* Something is wrong: Print all. */
+      /* If the card handler is able to return a short serialnumber,
+         use that one, else use the complete serialno. */
+      if (!agent_card_getattr (ctrl, "$DISPSERIALNO", &dispsn))
+        {
+          *cardsn = xtryasprintf ("cardno:%s", dispsn);
+          xfree (dispsn);
+        }
+      else
         *cardsn = xtryasprintf ("cardno:%s", serialno);
       if (!*cardsn)
         {
@@ -1730,12 +1732,14 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
           xfree (serialno);
+          xfree (authkeyid);
           return err;
         }
     }
 
   xfree (pkbuf);
   xfree (serialno);
+  xfree (authkeyid);
   *r_pk = s_pk;
   return 0;
 }

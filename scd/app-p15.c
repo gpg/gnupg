@@ -2629,7 +2629,6 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
 }
 
 
-
 /* Handler for the READCERT command.
 
    Read the certificate with id CERTID (as returned by learn_status in
@@ -2651,6 +2650,95 @@ do_readcert (app_t app, const char *certid,
     err =readcert_by_cdf (app, cdf, r_cert, r_certlen);
   return err;
 }
+
+
+
+/* Implement the GETATTR command.  This is similar to the LEARN
+   command but returns just one value via the status interface. */
+static gpg_error_t 
+do_getattr (app_t app, ctrl_t ctrl, const char *name)
+{
+  gpg_error_t err;
+  int i;
+
+  if (!strcmp (name, "$AUTHKEYID"))
+    {
+      char *buf, *p;
+      prkdf_object_t prkdf;
+
+      /* We return the ID of the first private keycapable of
+         signing. */
+      for (prkdf = app->app_local->private_key_info; prkdf;
+           prkdf = prkdf->next)
+        if (prkdf->usageflags.sign)
+          break;
+      if (prkdf)
+        {
+          buf = xtrymalloc (9 + prkdf->objidlen*2 + 1);
+          if (!buf)
+            return gpg_error_from_errno (errno);
+          p = stpcpy (buf, "P15");
+          if (app->app_local->home_df)
+            {
+              sprintf (p, "-%04hX", (app->app_local->home_df & 0xffff));
+              p += 5;
+            }
+          p = stpcpy (p, ".");
+          for (i=0; i < prkdf->objidlen; i++)
+            {
+              sprintf (p, "%02X", prkdf->objid[i]);
+              p += 2;
+            }
+
+          send_status_info (ctrl, name, buf, strlen (buf), NULL, 0);
+          xfree (buf);
+          return 0;
+        }
+    }
+  else if (!strcmp (name, "$DISPSERIALNO"))
+    {
+      /* For certain cards we return special IDs.  There is no
+         general rule for it so we need to decide case by case. */
+      if (app->app_local->card_type == CARD_TYPE_BELPIC)
+        {
+          /* The eID card has a card number printed on the fron matter
+             which seems to be a good indication. */
+          unsigned char *buffer;
+          const unsigned char *p;
+          size_t buflen, n;
+          unsigned short path[] = { 0x3F00, 0xDF01, 0x4031 };
+
+          err = select_ef_by_path (app, path, DIM(path) );
+          if (!err)
+            err = iso7816_read_binary (app->slot, 0, 0, &buffer, &buflen);
+          if (err)
+            {
+              log_error ("error accessing EF(ID): %s\n", gpg_strerror (err));
+              return err;
+            }
+
+          p = find_tlv (buffer, buflen, 1, &n);
+          if (p && n == 12)
+            {
+              char tmp[12+2+1];
+              memcpy (tmp, p, 3);
+              tmp[3] = '-';
+              memcpy (tmp+4, p+3, 7);
+              tmp[11] = '-';
+              memcpy (tmp+12, p+10, 2);
+              tmp[14] = 0;
+              send_status_info (ctrl, name, tmp, strlen (tmp), NULL, 0);
+              xfree (buffer);
+              return 0;
+            }
+          xfree (buffer);
+        }
+
+    }
+  return gpg_error (GPG_ERR_INV_NAME); 
+}
+
+
 
 
 /* Micardo cards require special treatment. This is a helper for the
@@ -3086,6 +3174,38 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 }
 
 
+/* Handler for the PKAUTH command. 
+
+   This is basically the same as the PKSIGN command but we firstcheck
+   that the requested key is suitable for authentication; that is, it
+   must match the criteria used for the attribute $AUTHKEYID.  See
+   do_sign for calling conventions; there is no HASHALGO, though. */
+static gpg_error_t 
+do_auth (app_t app, const char *keyidstr, 
+         gpg_error_t (*pincb)(void*, const char *, char **),
+         void *pincb_arg,
+         const void *indata, size_t indatalen,
+         unsigned char **outdata, size_t *outdatalen )
+{
+  gpg_error_t err;
+  prkdf_object_t prkdf;
+
+  if (!keyidstr || !*keyidstr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
+  if (err)
+    return err;
+  if (!prkdf->usageflags.sign)
+    {
+      log_error ("key %s may not be used for authentication\n", keyidstr);
+      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+    }
+  return do_sign (app, keyidstr, GCRY_MD_SHA1, pincb, pincb_arg, 
+                  indata, indatalen, outdata, outdatalen);
+}
+
+
 
 /* Assume that EF(DIR) has been selected.  Read its content and figure
    out the home EF of pkcs#15.  Return that home DF or 0 if not found
@@ -3270,11 +3390,11 @@ app_select_p15 (app_t app)
       app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
-      app->fnc.getattr = NULL;
+      app->fnc.getattr = do_getattr;
       app->fnc.setattr = NULL;
       app->fnc.genkey = NULL;
       app->fnc.sign = do_sign;
-      app->fnc.auth = NULL;
+      app->fnc.auth = do_auth;
       app->fnc.decipher = NULL;
       app->fnc.change_pin = NULL;
       app->fnc.check_pin = NULL;
@@ -3286,5 +3406,3 @@ app_select_p15 (app_t app)
 
   return rc;
 }
-
-

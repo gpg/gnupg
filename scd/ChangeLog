@@ -1,3 +1,15 @@
+2005-09-09  Werner Koch  <wk@g10code.com>
+
+	* pcsc-wrapper.c (main): Removed bogus free.
+
+	* app-p15.c (do_auth): New.
+	(do_getattr): New attribs $AUTHKEYID and $DISPSERIALNO.
+	* app-openpgp.c (do_getattr): Ditto.
+
+2005-09-08  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_getattr): New key $AUTHKEYID.
+
 2005-09-06  Werner Koch  <wk@g10code.com>
 
 	* app-p15.c (do_sign): Tweaked for BELPIC cards.
@@ -8,7 +20,7 @@
 
 	* iso7816.c (iso7816_select_path): New.
 	* app-p15.c (select_ef_by_path): Allow for direct path selection.
-	(app_select_p15): Try using the beigian variant of pkcs#15.
+	(app_select_p15): Try using the Belgian variant of pkcs#15.
 	(read_home_df): New.
 	(read_ef_odf): Generalized.
 	(read_ef_tokeninfo): New.

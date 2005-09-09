@@ -819,7 +819,6 @@ main (int argc, char **argv)
           fprintf (stderr, PGM ": invalid request 0x%02X\n", c);
           exit (1);
         }
-      free (argbuffer);
     }
   return 0;
 }

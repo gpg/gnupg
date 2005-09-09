@@ -1,3 +1,17 @@
+2005-09-09  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (p12_build): Oops, array needs to be larger for the
+	certificate.
+
+	* command-ssh.c (card_key_available): Let the card handler decide
+	whether the card is supported here.  Also get a short serial
+	number to return from the card handler.
+
+2005-09-08  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (build_cert_bag): Use a non constructed object.
+	i.e. 0x80 and not 0xa0.
+
 2005-08-16  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main): Use a default file name for --write-env-file.

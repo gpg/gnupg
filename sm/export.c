@@ -520,6 +520,7 @@ popen_protect_tool (const char *pgmname,
   argv[i++] = "--homedir";
   argv[i++] = opt.homedir;
   argv[i++] = "--p12-export";
+  argv[i++] = "--have-cert";
   argv[i++] = "--prompt";
   argv[i++] = prompt?prompt:"";
   argv[i++] = "--enable-status-msg";

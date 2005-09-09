@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2005-09-06 20:01+0200\n"
+"POT-Creation-Date: 2005-09-09 12:47+0200\n"
 "PO-Revision-Date: 2005-08-02 17:02+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
@@ -605,52 +605,52 @@ msgstr "Der Fingerprint kann nicht gespeichert werden: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "Das Erzeugungsdatum kann nicht gespeichert werden: %s\n"
 
-#: scd/app-openpgp.c:978
+#: scd/app-openpgp.c:1003
 #, c-format
 msgid "reading public key failed: %s\n"
 msgstr "Fehler beim Lesen des öffentlichen Schlüssels: %s\n"
 
-#: scd/app-openpgp.c:986 scd/app-openpgp.c:1917
+#: scd/app-openpgp.c:1011 scd/app-openpgp.c:1942
 msgid "response does not contain the public key data\n"
 msgstr "Die Antwort enthält keine Public Key Daten\n"
 
-#: scd/app-openpgp.c:994 scd/app-openpgp.c:1925
+#: scd/app-openpgp.c:1019 scd/app-openpgp.c:1950
 msgid "response does not contain the RSA modulus\n"
 msgstr "Die Antwort enthält keinen RSA Modulus\n"
 
-#: scd/app-openpgp.c:1003 scd/app-openpgp.c:1935
+#: scd/app-openpgp.c:1028 scd/app-openpgp.c:1960
 msgid "response does not contain the RSA public exponent\n"
 msgstr "Die Antwort enthält keinen öffenlichen RSA Exponent\n"
 
-#: scd/app-openpgp.c:1266 scd/app-openpgp.c:1354 scd/app-openpgp.c:2157
+#: scd/app-openpgp.c:1291 scd/app-openpgp.c:1379 scd/app-openpgp.c:2182
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "Fehler vom PIN \"callback\": %s\n"
 
-#: scd/app-openpgp.c:1272 scd/app-openpgp.c:1360 scd/app-openpgp.c:2163
+#: scd/app-openpgp.c:1297 scd/app-openpgp.c:1385 scd/app-openpgp.c:2188
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "Die PIN für den CHV%d ist zu kurz; Mindestlänge ist %d\n"
 
-#: scd/app-openpgp.c:1281 scd/app-openpgp.c:1295 scd/app-openpgp.c:1370
-#: scd/app-openpgp.c:2172 scd/app-openpgp.c:2186
+#: scd/app-openpgp.c:1306 scd/app-openpgp.c:1320 scd/app-openpgp.c:1395
+#: scd/app-openpgp.c:2197 scd/app-openpgp.c:2211
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "Prüfen von CHV%d fehlgeschlagen: %s\n"
 
-#: scd/app-openpgp.c:1318
+#: scd/app-openpgp.c:1343
 msgid "access to admin commands is not configured\n"
 msgstr "Zugriff auf Admin Kommandos ist nicht konfiguriert\n"
 
-#: scd/app-openpgp.c:1333 scd/app-openpgp.c:2392
+#: scd/app-openpgp.c:1358 scd/app-openpgp.c:2417
 msgid "error retrieving CHV status from card\n"
 msgstr "Fehler beim Holen des CHV Status von der Karte\n"
 
-#: scd/app-openpgp.c:1339 scd/app-openpgp.c:2401
+#: scd/app-openpgp.c:1364 scd/app-openpgp.c:2426
 msgid "card is permanently locked!\n"
 msgstr "Die Karte ist dauerhaft gesperrt!\n"
 
-#: scd/app-openpgp.c:1344
+#: scd/app-openpgp.c:1369
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr ""
@@ -659,105 +659,105 @@ msgstr ""
 #. TRANSLATORS: Do not translate the "|A|" prefix but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1351
+#: scd/app-openpgp.c:1376
 msgid "|A|Admin PIN"
 msgstr "|A|Admin PIN"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1500
+#: scd/app-openpgp.c:1525
 msgid "|AN|New Admin PIN"
 msgstr "|AN|Neue Admin PIN"
 
-#: scd/app-openpgp.c:1500
+#: scd/app-openpgp.c:1525
 msgid "|N|New PIN"
 msgstr "|N|Neue PIN"
 
-#: scd/app-openpgp.c:1504
+#: scd/app-openpgp.c:1529
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "Fehler beim Holen der neuen PIN: %s\n"
 
-#: scd/app-openpgp.c:1554 scd/app-openpgp.c:2003
+#: scd/app-openpgp.c:1579 scd/app-openpgp.c:2028
 msgid "error reading application data\n"
 msgstr "Fehler beim Lesen der Anwendungsdaten\n"
 
-#: scd/app-openpgp.c:1560 scd/app-openpgp.c:2010
+#: scd/app-openpgp.c:1585 scd/app-openpgp.c:2035
 msgid "error reading fingerprint DO\n"
 msgstr "Fehler beim Lesen des Fingerabdruck Datenobjekts\n"
 
-#: scd/app-openpgp.c:1570
+#: scd/app-openpgp.c:1595
 msgid "key already exists\n"
 msgstr "Schlüssel existiert bereits\n"
 
-#: scd/app-openpgp.c:1574
+#: scd/app-openpgp.c:1599
 msgid "existing key will be replaced\n"
 msgstr "Existierender Schlüssel wird ersetzt\n"
 
-#: scd/app-openpgp.c:1576
+#: scd/app-openpgp.c:1601
 msgid "generating new key\n"
 msgstr "Neuer Schlüssel wird erzeugt\n"
 
-#: scd/app-openpgp.c:1743
+#: scd/app-openpgp.c:1768
 msgid "creation timestamp missing\n"
 msgstr "Erzeugungsdatum fehlt\n"
 
-#: scd/app-openpgp.c:1750
+#: scd/app-openpgp.c:1775
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "Der RSA Modulus fehlt oder ist nicht %d Bits lang\n"
 
-#: scd/app-openpgp.c:1757
+#: scd/app-openpgp.c:1782
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "Der öffentliche RSA Exponent fehlt oder ist länger als %d Bits\n"
 
-#: scd/app-openpgp.c:1765 scd/app-openpgp.c:1772
+#: scd/app-openpgp.c:1790 scd/app-openpgp.c:1797
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "Die RSA Primzahl %s fehlt oder ist nicht %d Bits lang\n"
 
-#: scd/app-openpgp.c:1835
+#: scd/app-openpgp.c:1860
 #, c-format
 msgid "failed to store the key: %s\n"
 msgstr "Fehler beim Speichern des Schlüssels: %s\n"
 
-#: scd/app-openpgp.c:1894
+#: scd/app-openpgp.c:1919
 msgid "please wait while key is being generated ...\n"
 msgstr "Bitte warten bis der Schlüssel erzeugt wurde ...\n"
 
-#: scd/app-openpgp.c:1908
+#: scd/app-openpgp.c:1933
 msgid "generating key failed\n"
 msgstr "Fehler beim Erzeugen des Schlüssels\n"
 
-#: scd/app-openpgp.c:1911
+#: scd/app-openpgp.c:1936
 #, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "Schlüsselerzeugung vollendet (%d Sekunden)\n"
 
-#: scd/app-openpgp.c:1968
+#: scd/app-openpgp.c:1993
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "Ungültige Struktur der OpenPGP Karte (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2137
+#: scd/app-openpgp.c:2162
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "Anzahl bereits erzeugter Signaturen: %lu\n"
 
-#: scd/app-openpgp.c:2145
+#: scd/app-openpgp.c:2170
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Bitte geben Sie die PIN ein%%0A[Sigs bisher: %lu]"
 
-#: scd/app-openpgp.c:2406
+#: scd/app-openpgp.c:2431
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "Die Überprüfung der Admin PIN is momentan durch ein Kommando verboten "
 "worden\n"
 
-#: scd/app-openpgp.c:2477 scd/app-openpgp.c:2487
+#: scd/app-openpgp.c:2502 scd/app-openpgp.c:2512
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "Zugriff auf %s nicht möglich - ungültige OpenPGP Karte?\n"

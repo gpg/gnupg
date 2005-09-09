@@ -1409,7 +1409,7 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
   p += DIM (oid_encryptedData); 
 
   /* 2. Store a [0] tag. */
-  p = store_tag_length (p, 0xa0, len[2]);
+  p = store_tag_length (p, 0x80, len[2]);
 
   /* 3. Store a sequence. */
   p = store_tag_length (p, TAG_SEQUENCE, len[3]);
@@ -1553,7 +1553,7 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
   unsigned char *buffer;
   size_t n, buflen;
   char salt[8];
-  struct buffer_s seqlist[2];
+  struct buffer_s seqlist[3];
   int seqlistidx = 0;
 
   n = buflen = 0; /* (avoid compiler warning). */

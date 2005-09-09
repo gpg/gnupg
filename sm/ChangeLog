@@ -1,3 +1,9 @@
+2005-09-08  Werner Koch  <wk@g10code.com>
+
+	* export.c (popen_protect_tool): Add option --have-cert.  We
+	probably lost this option with 1.9.14 due to restructuring of
+	export.c.
+
 2005-07-21  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): New options --no-log-file and --debug-none.

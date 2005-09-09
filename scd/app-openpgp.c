@@ -696,6 +696,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "PRIVATE-DO-2", 0x0102 },
     { "PRIVATE-DO-3", 0x0103 },
     { "PRIVATE-DO-4", 0x0104 },
+    { "$AUTHKEYID",   0x0000, -3 },
+    { "$DISPSERIALNO",0x0000, -4 },
     { NULL, 0 }
   };
   int idx, i, rc;
@@ -741,6 +743,29 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                app->app_local->extcap.private_dos);
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
+    }
+  if (table[idx].special == -3)
+    {
+      char const tmp[] = "OPENPGP.3";
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
+      return 0;
+    }
+  if (table[idx].special == -4)
+    {
+      char *serial;
+      time_t stamp;
+    
+      if (!app_get_serial_and_stamp (app, &serial, &stamp))
+        {
+          if (strlen (serial) > 16+12)
+            {
+              send_status_info (ctrl, table[idx].name, serial+16, 12, NULL, 0);
+              xfree (serial);
+              return 0;
+            }
+          xfree (serial);
+        }
+      return gpg_error (GPG_ERR_INV_NAME); 
     }
 
   relptr = get_one_do (app, table[idx].tag, &value, &valuelen, &rc);
@@ -2203,7 +2228,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
    fingerprint delimited by a slash.  Optionally the id OPENPGP.3 may
    be given.
 
-   Note that this fucntion may return the error code
+   Note that this function may return the error code
    GPG_ERR_WRONG_CARD to indicate that the card currently present does
    not match the one required for the requested action (e.g. the
    serial number does not match). */
