@@ -1,3 +1,10 @@
+2005-09-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_names): Moved name display code out from
+	show_key_with_all_names.
+	(keyedit_menu): Call it here for pref and showpref so they can
+	show only the selected user ID.  Suggested by Timo Schulz.
+
 2005-09-07  Werner Koch  <wk@g10code.com>
 
 	* cardglue.h (GPG_ERR_TOO_LARGE): New.

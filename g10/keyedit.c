@@ -48,6 +48,8 @@
 #include "keyserver-internal.h"
 
 static void show_prefs( PKT_user_id *uid, PKT_signature *selfsig, int verbose);
+static void show_names(KBNODE keyblock,PKT_public_key *pk,
+		       unsigned int flag,int with_prefs);
 static void show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    int with_revoker, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
@@ -2083,11 +2085,21 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
 	  case cmdPREF:
-	    show_key_with_all_names( keyblock, 0, 0, 0, 0, 1 );
+	    {
+	      int count=count_selected_uids(keyblock);
+	      assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+	      show_names(keyblock,keyblock->pkt->pkt.public_key,
+			 count?NODFLG_SELUID:0,1);
+	    }
 	    break;
 
 	  case cmdSHOWPREF:
-	    show_key_with_all_names( keyblock, 0, 0, 0, 0, 2 );
+	    {
+	      int count=count_selected_uids(keyblock);
+	      assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+	      show_names(keyblock,keyblock->pkt->pkt.public_key,
+			 count?NODFLG_SELUID:0,2);
+	    }
 	    break;
 
           case cmdSETPREF:
@@ -2535,6 +2547,63 @@ show_key_with_all_names_colon (KBNODE keyblock)
       }
 }
 
+static void
+show_names(KBNODE keyblock,PKT_public_key *pk,unsigned int flag,int with_prefs)
+{
+  KBNODE node;
+  int i=0;
+
+  for( node = keyblock; node; node = node->next )
+    {
+      if( node->pkt->pkttype == PKT_USER_ID
+	  && !is_deleted_kbnode(node))
+	{
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+	  ++i;
+	  if(!flag || (flag && (node->flag & flag)))
+	    {
+	      if(!(flag&NODFLG_MARK_A) && pk)
+		tty_printf("%s ",uid_trust_string_fixed(pk,uid));
+
+	      if( flag & NODFLG_MARK_A )
+		tty_printf("     ");
+	      else if( node->flag & NODFLG_SELUID )
+		tty_printf("(%d)* ", i);
+	      else if( uid->is_primary )
+		tty_printf("(%d). ", i);
+	      else
+		tty_printf("(%d)  ", i);
+	      tty_print_utf8_string( uid->name, uid->len );
+	      tty_printf("\n");
+	      if(with_prefs && pk)
+		{
+		  if(pk->version>3 || uid->selfsigversion>3)
+		    {
+		      PKT_signature *selfsig=NULL;
+		      KBNODE signode;
+
+		      for(signode=node->next;
+			  signode && signode->pkt->pkttype==PKT_SIGNATURE;
+			  signode=signode->next)
+			{
+			  if(signode->pkt->pkt.signature->
+			     flags.chosen_selfsig)
+			    {
+			      selfsig=signode->pkt->pkt.signature;
+			      break;
+			    }
+			}
+
+		      show_prefs (uid, selfsig, with_prefs == 2);
+		    }
+		  else
+		    tty_printf(_("There are no preferences on a"
+				 " PGP 2.x-style user ID.\n"));
+		}
+	    }
+	}
+    }
+}
 
 /****************
  * Display the key a the user ids, if only_marked is true, do only
@@ -2713,60 +2782,8 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
               }
 	  }
     }
-    
-    /* the user ids */
 
-    i = 0;
-    for( node = keyblock; node; node = node->next )
-      {
-	if( node->pkt->pkttype == PKT_USER_ID
-	    && !is_deleted_kbnode(node))
-	  {
-	    PKT_user_id *uid = node->pkt->pkt.user_id;
-	    ++i;
-	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A)))
-	      {
-		if(!only_marked && primary)
-		  tty_printf("%s ",uid_trust_string_fixed(primary,uid));
-
-		if( only_marked )
-		  tty_printf("     ");
-		else if( node->flag & NODFLG_SELUID )
-		  tty_printf("(%d)* ", i);
-		else if( uid->is_primary )
-		  tty_printf("(%d). ", i);
-		else
-		  tty_printf("(%d)  ", i);
-		tty_print_utf8_string( uid->name, uid->len );
-		tty_printf("\n");
-		if( with_prefs )
-		  {
-		    if(pk_version>3 || uid->selfsigversion>3)
-		      {
-			PKT_signature *selfsig=NULL;
-			KBNODE signode;
-
-			for(signode=node->next;
-			    signode && signode->pkt->pkttype==PKT_SIGNATURE;
-			    signode=signode->next)
-			  {
-			    if(signode->pkt->pkt.signature->
-			       flags.chosen_selfsig)
-			      {
-				selfsig=signode->pkt->pkt.signature;
-				break;
-			      }
-			  }
-
-			show_prefs (uid, selfsig, with_prefs == 2);
-		      }
-		    else
-		      tty_printf(_("There are no preferences on a"
-				   " PGP 2.x-style user ID.\n"));
-		  }
-	      }
-	  }
-      }
+    show_names(keyblock,primary,only_marked?NODFLG_MARK_A:0,with_prefs);
 
     if (do_warn)
         tty_printf (_("Please note that the shown key validity"
@@ -2775,7 +2792,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 }
 
 
-/* Display basic key information.  This fucntion is suitable to show
+/* Display basic key information.  This function is suitable to show
    information on the key without any dependencies on the trustdb or
    any other internal GnuPG stuff.  KEYBLOCK may either be a public or
    a secret key.*/
