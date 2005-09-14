@@ -1504,20 +1504,33 @@ parse_list_options(char *str)
   char *subpackets=""; /* something that isn't NULL */
   struct parse_options lopts[]=
     {
-      {"show-photos",LIST_SHOW_PHOTOS,NULL},
-      {"show-policy-urls",LIST_SHOW_POLICY_URLS,NULL},
-      {"show-notations",LIST_SHOW_NOTATIONS,NULL},
-      {"show-std-notations",LIST_SHOW_STD_NOTATIONS,NULL},
-      {"show-standard-notations",LIST_SHOW_STD_NOTATIONS,NULL},
-      {"show-user-notations",LIST_SHOW_USER_NOTATIONS,NULL},
-      {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL},
-      {"show-uid-validity",LIST_SHOW_UID_VALIDITY,NULL},
-      {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL},
-      {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL},
-      {"show-keyring",LIST_SHOW_KEYRING,NULL},
-      {"show-sig-expire",LIST_SHOW_SIG_EXPIRE,NULL},
-      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL},
-      {NULL,0,NULL}
+      {"show-photos",LIST_SHOW_PHOTOS,NULL,
+       N_("display photo IDs during key listings")},
+      {"show-policy-urls",LIST_SHOW_POLICY_URLS,NULL,
+       N_("show policy URLs during signature listings")},
+      {"show-notations",LIST_SHOW_NOTATIONS,NULL,
+       N_("show all notations during signature listings")},
+      {"show-std-notations",LIST_SHOW_STD_NOTATIONS,NULL,
+       N_("show IETF standard notations during signature listings")},
+      {"show-standard-notations",LIST_SHOW_STD_NOTATIONS,NULL,
+       NULL},
+      {"show-user-notations",LIST_SHOW_USER_NOTATIONS,NULL,
+       N_("show user-supplied notations during signature listings")},
+      {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL,
+       N_("show preferred keyserver URLs during signature listings")},
+      {"show-uid-validity",LIST_SHOW_UID_VALIDITY,NULL,
+       N_("show user ID validity during key listings")},
+      {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL,
+       N_("show revoked and expired user IDs in key listings")},
+      {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL,
+       N_("show revoked and expired subkeys in key listings")},
+      {"show-keyring",LIST_SHOW_KEYRING,NULL,
+       N_("show the keyring name in key listings")},
+      {"show-sig-expire",LIST_SHOW_SIG_EXPIRE,NULL,
+       N_("show expiration dates during signature listings")},
+      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL,
+       NULL},
+      {NULL,0,NULL,NULL}
     };
 
   /* C99 allows for non-constant initializers, but we'd like to
@@ -2396,16 +2409,25 @@ main (int argc, char **argv )
 	    {
 	      struct parse_options vopts[]=
 		{
-		  {"show-photos",VERIFY_SHOW_PHOTOS,NULL},
-		  {"show-policy-urls",VERIFY_SHOW_POLICY_URLS,NULL},
-		  {"show-notations",VERIFY_SHOW_NOTATIONS,NULL},
-		  {"show-std-notations",VERIFY_SHOW_STD_NOTATIONS,NULL},
-		  {"show-standard-notations",VERIFY_SHOW_STD_NOTATIONS,NULL},
-		  {"show-user-notations",VERIFY_SHOW_USER_NOTATIONS,NULL},
-		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS,NULL},
-		  {"show-uid-validity",VERIFY_SHOW_UID_VALIDITY,NULL},
-		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL},
-		  {NULL,0,NULL}
+		  {"show-photos",VERIFY_SHOW_PHOTOS,NULL,
+		   N_("display photo IDs during signature verification")},
+		  {"show-policy-urls",VERIFY_SHOW_POLICY_URLS,NULL,
+		   N_("show policy URLs during signature verification")},
+		  {"show-notations",VERIFY_SHOW_NOTATIONS,NULL,
+		   N_("show all notations during signature verification")},
+		  {"show-std-notations",VERIFY_SHOW_STD_NOTATIONS,NULL,
+		   N_("show IETF standard notations during signature verification")},
+		  {"show-standard-notations",VERIFY_SHOW_STD_NOTATIONS,NULL,
+		   NULL},
+		  {"show-user-notations",VERIFY_SHOW_USER_NOTATIONS,NULL,
+		   N_("show user-supplied notations during signature verification")},
+		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS,NULL,
+		   N_("show preferred keyserver URLs during signature verification")},
+		  {"show-uid-validity",VERIFY_SHOW_UID_VALIDITY,NULL,
+		   N_("show user ID validity during signature verification")},
+		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL,
+		   N_("show revoked and expired user IDs in signature verification")},
+		  {NULL,0,NULL,NULL}
 		};
 
 	      if(!parse_options(pargs.r.ret_str,&opt.verify_options,vopts,1))

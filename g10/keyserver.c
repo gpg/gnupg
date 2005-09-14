@@ -74,15 +74,26 @@ struct keyrec
 
 static struct parse_options keyserver_opts[]=
   {
-    {"include-revoked",KEYSERVER_INCLUDE_REVOKED,NULL},      
-    {"include-subkeys",KEYSERVER_INCLUDE_SUBKEYS,NULL},
-    {"keep-temp-files",KEYSERVER_KEEP_TEMP_FILES,NULL},
-    {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL},
-    {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL},
-    {"auto-pka-retrieve",KEYSERVER_AUTO_PKA_RETRIEVE,NULL},
-    {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL},
-    {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL},
-    {NULL,0,NULL}
+    {"include-revoked",KEYSERVER_INCLUDE_REVOKED,NULL,
+     N_("include revoked keys in search results")},
+    {"include-subkeys",KEYSERVER_INCLUDE_SUBKEYS,NULL,
+     N_("include subkeys when searching by key ID")},
+    /* not a real option - just for the help message */
+    {"use-temp-files",0,NULL,
+     N_("use temporary files to pass data to keyserver helpers")},
+    {"keep-temp-files",KEYSERVER_KEEP_TEMP_FILES,NULL,
+     N_("do not delete temporary files after using them")},
+    {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL,
+     NULL},
+    {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL,
+     N_("automatically retrieve keys when verifying signatures")},
+    {"auto-pka-retrieve",KEYSERVER_AUTO_PKA_RETRIEVE,NULL,
+     NULL},
+    {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL,
+     NULL},
+    {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL,
+     N_("honor the preferred keyserver URL set on the key")},
+    {NULL,0,NULL,NULL}
   };
 
 static int keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,

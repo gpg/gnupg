@@ -118,6 +118,7 @@ struct parse_options
   char *name;
   unsigned int bit;
   char **value;
+  char *help;
 };
 
 char *optsep(char **stringp);

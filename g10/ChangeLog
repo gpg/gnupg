@@ -1,3 +1,12 @@
+2005-09-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, misc.c (parse_options): Add the ability to have help
+	strings in xxx-options commands.
+
+	* keyserver.c (keyserver_opts), import.c (parse_import_options),
+	export.c (parse_export_options), g10.c (parse_list_options, main):
+	Add help strings to xxx-options.
+
 2005-09-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_names): Moved name display code out from

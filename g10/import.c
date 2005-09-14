@@ -91,20 +91,28 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options import_opts[]=
     {
-      {"import-local-sigs",IMPORT_LOCAL_SIGS,NULL},
-      {"repair-pks-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
-      {"fast-import",IMPORT_FAST,NULL},
-      {"convert-sk-to-pk",IMPORT_SK2PK,NULL},
-      {"merge-only",IMPORT_MERGE_ONLY,NULL},
-      {"import-clean",IMPORT_CLEAN_SIGS|IMPORT_CLEAN_UIDS,NULL},
-      {"import-clean-sigs",IMPORT_CLEAN_SIGS,NULL},
-      {"import-clean-uids",IMPORT_CLEAN_UIDS,NULL},
+      {"import-local-sigs",IMPORT_LOCAL_SIGS,NULL,
+       N_("import signatures that are marked as local-only")},
+      {"repair-pks-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,
+       N_("repair damage from the pks keyserver during import")},
+      {"fast-import",IMPORT_FAST,NULL,
+       N_("do not update the trustdb after import")},
+      {"convert-sk-to-pk",IMPORT_SK2PK,NULL,
+       N_("create a public key when importing a secret key")},
+      {"merge-only",IMPORT_MERGE_ONLY,NULL,
+       N_("only accept updates to existing keys")},
+      {"import-clean-sigs",IMPORT_CLEAN_SIGS,NULL,
+       N_("remove unusable signatures after import")},
+      {"import-clean-uids",IMPORT_CLEAN_UIDS,NULL,
+       N_("remove unusable user IDs after import")},
+      {"import-clean",IMPORT_CLEAN_SIGS|IMPORT_CLEAN_UIDS,NULL,
+       N_("all import-clean-* options from above")},
       /* Aliases for backward compatibility */
-      {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL},
-      {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
+      {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
+      {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
       /* dummy */
-      {"import-unusable-sigs",0,NULL},
-      {NULL,0,NULL}
+      {"import-unusable-sigs",0,NULL,NULL},
+      {NULL,0,NULL,NULL}
     };
 
   return parse_options(str,options,import_opts,noisy);

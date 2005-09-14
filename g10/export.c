@@ -47,23 +47,30 @@ parse_export_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options export_opts[]=
     {
-      {"export-local-sigs",EXPORT_LOCAL_SIGS,NULL},
-      {"export-attributes",EXPORT_ATTRIBUTES,NULL},
-      {"export-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL},
-      {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL},
-      {"export-clean",EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL},
-      {"export-clean-sigs",EXPORT_CLEAN_SIGS,NULL},
-      {"export-clean-uids",EXPORT_CLEAN_UIDS,NULL},
-
-      {"export-reset-subkey-passwd", EXPORT_RESET_SUBKEY_PASSWD, NULL},
-
+      {"export-local-sigs",EXPORT_LOCAL_SIGS,NULL,
+       N_("export signatures that are marked as local-only")},
+      {"export-attributes",EXPORT_ATTRIBUTES,NULL,
+       N_("export attribute user IDs (generally photo IDs)")},
+      {"export-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL,
+       N_("export revocation keys that are marked as \"sensitive\"")},
+      {"export-clean-sigs",EXPORT_CLEAN_SIGS,NULL,
+       N_("remove unusable signatures during export")},
+      {"export-clean-uids",EXPORT_CLEAN_UIDS,NULL,
+       N_("remove unusable user IDs during export")},
+      {"export-clean",EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL,
+       N_("all export-clean-* options from above")},
+      {"export-minimal",
+       EXPORT_MINIMAL|EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL,
+       N_("export the smallest key possible")},
+      {"export-reset-subkey-passwd",EXPORT_RESET_SUBKEY_PASSWD,NULL,
+       N_("remove the passphrase from exported subkeys")},
       /* Aliases for backward compatibility */
-      {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL},
-      {"include-attributes",EXPORT_ATTRIBUTES,NULL},
-      {"include-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL},
+      {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL,NULL},
+      {"include-attributes",EXPORT_ATTRIBUTES,NULL,NULL},
+      {"include-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL,NULL},
       /* dummy */
-      {"export-unusable-sigs",0,NULL},
-      {NULL,0,NULL}
+      {"export-unusable-sigs",0,NULL,NULL},
+      {NULL,0,NULL,NULL}
       /* add tags for include revoked and disabled? */
     };
 

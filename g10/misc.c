@@ -968,11 +968,20 @@ parse_options(char *str,unsigned int *options,
 
   if (str && !strcmp (str, "help"))
     {
-      int i;
+      int i,maxlen=0;
+
+      /* Figure out the longest option name so we can line these up
+	 neatly. */
+      for(i=0;opts[i].name;i++)
+	if(opts[i].help && maxlen<strlen(opts[i].name))
+	  maxlen=strlen(opts[i].name);
 
       for(i=0;opts[i].name;i++)
-        printf ("%s\n", opts[i].name);
-      g10_exit (0);
+        if(opts[i].help)
+	  printf("%s%*s%s\n",opts[i].name,
+		 maxlen+2-strlen(opts[i].name),"",_(opts[i].help));
+
+      g10_exit(0);
     }
 
   while((tok=optsep(&str)))
