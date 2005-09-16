@@ -745,6 +745,15 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   startoffset = 0;
   buffer = p = plain;
 
+/*   { */
+/* #  warning debug code is enabled */
+/*     FILE *fp = fopen ("tmp-rc2-plain-key.der", "wb"); */
+/*     if (!fp || fwrite (p, n, 1, fp) != 1) */
+/*       exit (2); */
+/*     fclose (fp); */
+/*   } */
+
+
   where = "decrypted-text";
   if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
     goto bailout;
@@ -1229,7 +1238,7 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
   assert (needed == plainlen);
   /* Append some pad characters; we already allocated extra space. */
   n = 8 - plainlen % 8;
-  for (;(plainlen % 8); plainlen++)
+  for (i=0; i < n; i++, plainlen++)
     *p++ = n;
 
   *r_length = plainlen;
@@ -1453,6 +1462,7 @@ build_cert_sequence (unsigned char *buffer, size_t buflen, size_t *r_length)
   size_t len[8], needed, n;
   unsigned char *p, *certseq;
   size_t certseqlen;
+  int i;
 
   /* Walk 8 steps down to collect the info: */
 
@@ -1535,7 +1545,7 @@ build_cert_sequence (unsigned char *buffer, size_t buflen, size_t *r_length)
   
   /* Append some pad characters; we already allocated extra space. */
   n = 8 - certseqlen % 8;
-  for (;(certseqlen % 8); certseqlen++)
+  for (i=0; i < n; i++, certseqlen++)
     *p++ = n;
   
   *r_length = certseqlen;
