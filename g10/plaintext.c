@@ -446,12 +446,16 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 	int any=0;
 	tty_printf(_("Detached signature.\n"));
 	do {
+	    char *name;
 	    xfree(answer);
 	    tty_enable_completion(NULL);
-	    answer = cpr_get("detached_signature.filename",
+	    name = cpr_get("detached_signature.filename",
 			   _("Please enter name of data file: "));
 	    tty_disable_completion();
 	    cpr_kill_prompt();
+	    answer=make_filename(name,(void *)NULL);
+	    xfree(name);
+
 	    if( any && !*answer ) {
 		rc = G10ERR_READ_FILE;
 		goto leave;

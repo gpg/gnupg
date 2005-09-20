@@ -1,3 +1,11 @@
+2005-09-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (reorder_keyblock, do_reorder_keyblock): Reorder
+	attribute IDs as well as regular text IDs.
+
+	* plaintext.c (ask_for_detached_datafile): Use make_filename() on
+	filename so tilde expansion works.
+
 2005-09-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, misc.c (parse_options): Add the ability to have help
