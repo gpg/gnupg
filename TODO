@@ -75,4 +75,7 @@
 
   * Delete a card key as well as a wiping.
 
-  * Make 2 strings translatable in export.c after releasing 1.4.2.
+  * passphrase_to_dek does not return NULL after a cancel.  There is
+    no way to issue a cancel when unsing the CLI - this would however
+    be a Good Thing when used with mixed symkey/pubkey encrypted
+    messages. See comment in mainproc.c:proc_symkey_enc. 

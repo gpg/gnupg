@@ -102,8 +102,8 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
-# We don't have a test to check whetyer as(1) knows about the
-# non executable stackioption.  Thus we provide an option to enable
+# We don't have a test to check whether as(1) knows about the
+# non executable stack option.  Thus we provide an option to enable
 # it.
 AC_MSG_CHECKING([whether non excutable stack support is requested])
 AC_ARG_ENABLE(noexecstack,
