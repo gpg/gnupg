@@ -749,6 +749,10 @@ keyservers set (see --keyserver-option honor-keyserver-url).
 Search the keyserver for the given names.  Multiple names given here
 will be joined together to create the search string for the keyserver.
 Option --keyserver must be used to give the name of this keyserver.
+Keyservers that support different search methods allow using the
+syntax specified in "How to specify a user ID" below.  Note that
+different keyserver types support different search methods.  Currently
+only LDAP supports them all.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1470,8 +1474,8 @@ the --edit-key command "clean uids" before export.  Defaults to no.
 <listitem><para>
 When using the "--export-secret-subkeys" command, this option resets
 the passphrases for all exported subkeys to empty.  This is useful
-when the exported subkey is to be used on an unattended amchine where
-a passphrase won't make sense. Defaults to no.
+when the exported subkey is to be used on an unattended machine where
+a passphrase doesn't necessarily make sense.  Defaults to no.
 </para></listitem></varlistentry>
 
 </variablelist>
@@ -1756,10 +1760,12 @@ found.
 <term>--display-charset &ParmName;</term>
 <listitem><para>
 Set the name of the native character set.  This is used to convert
-some informational strings like user IDs to the proper UTF-8
-encoding. If this option is not used, the default character set is
-determined from the current locale.  A verbosity level of 3 shows the
-chosen set.  Valid values for &ParmName; are:</para>
+some informational strings like user IDs to the proper UTF-8 encoding.
+Note that this has nothing to do with the character set of data to be
+encrypted or signed; GnuPG does not recode user supplied data.  If
+this option is not used, the default character set is determined from
+the current locale.  A verbosity level of 3 shows the chosen set.
+Valid values for &ParmName; are:</para>
 <variablelist>
 <varlistentry>
 <term>iso-8859-1</term><listitem><para>This is the Latin 1 set.</para></listitem>
@@ -2939,6 +2945,14 @@ Using an exact to match string.  The equal sign indicates this.
 <term>&#60;heinrichh@uni-duesseldorf.de&#62;</term>
 <listitem><para>
 Using the email address part which must match exactly.	The left angle bracket
+indicates this email address mode.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>@heinrichh</term>
+<listitem><para>
+Match within the &#60;email.address&#62; part of a user ID.  The at sign
 indicates this email address mode.
 </para></listitem>
 </varlistentry>
