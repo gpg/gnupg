@@ -23,7 +23,8 @@ noinst_LIBRARIES = libcommon.a libsimple-pwquery.a
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(PTH_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS) \
+            $(PTH_CFLAGS)
 
 libcommon_a_SOURCES = \
 	util.h i18n.h \
