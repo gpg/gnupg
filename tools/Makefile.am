@@ -24,7 +24,7 @@ EXTRA_DIST = Manifest watchgnupg.c \
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 sbin_SCRIPTS = addgnupghome
 
