@@ -1,3 +1,7 @@
+2005-10-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac [!$try_gettext]: Invoke AM_PO_SUBDIRS.
+
 2005-08-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Check for getpwnam, getpwuid, and pwd.h.

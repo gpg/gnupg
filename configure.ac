@@ -708,6 +708,7 @@ else
   AC_SUBST(USE_NLS)
   AC_SUBST(USE_INCLUDED_LIBINTL)
   AC_SUBST(BUILD_INCLUDED_LIBINTL)
+  AM_PO_SUBDIRS
 fi
 
 if test "$try_extensions" = yes || test x"$card_support" = xyes ; then

@@ -1,3 +1,7 @@
+2005-10-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh (DIE): Remove ugly hack for po dir suppression.
+
 2005-08-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gnupg.spec.in: Distribute gpg-zip.
