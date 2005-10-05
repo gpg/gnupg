@@ -561,8 +561,10 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     if ( !iobuf_is_pipe_filename (fname) && *fname )
       {
         off_t tmpsize;
-       
-        if( !(tmpsize = iobuf_get_filelength(inp)) )
+        int overflow;
+
+        if( !(tmpsize = iobuf_get_filelength(inp, &overflow))
+            && !overflow )
 	  log_info (_("WARNING: `%s' is an empty file\n"), fname);
 
         /* We can't encode the length of very large files because

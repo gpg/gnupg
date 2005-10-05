@@ -126,7 +126,7 @@ size_t iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen );
 void iobuf_unget_and_close_temp( IOBUF a, IOBUF temp );
 
 int  iobuf_get_fd (IOBUF a);
-off_t iobuf_get_filelength( IOBUF a );
+off_t iobuf_get_filelength (IOBUF a, int *overflow);
 #define IOBUF_FILELENGTH_LIMIT 0xffffffff
 const char *iobuf_get_real_fname( IOBUF a );
 const char *iobuf_get_fname( IOBUF a );

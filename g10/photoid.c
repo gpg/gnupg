@@ -53,6 +53,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
   byte *photo=NULL;
   byte header[16];
   IOBUF file;
+  int overflow;
 
   header[0]=0x10; /* little side of photo header length */
   header[1]=0;    /* big side of photo header length */
@@ -119,8 +120,9 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
 	  continue;
 	}
 
-      len=iobuf_get_filelength(file);
-      if(len>6144)
+      
+      len=iobuf_get_filelength(file, &overflow);
+      if(len>6144 || overflow)
 	{
 	  tty_printf( _("This JPEG is really large (%d bytes) !\n"),len);
 	  if(!cpr_get_answer_is_yes("photoid.jpeg.size",

@@ -41,6 +41,7 @@
 
 #include "memory.h"
 #include "util.h"
+#include "dynload.h"
 #include "iobuf.h"
 
 #undef FILE_FILTER_USES_STDIO
@@ -1830,13 +1831,16 @@ iobuf_set_limit( IOBUF a, off_t nlimit )
 
 
 
-/****************
- * Return the length of an open file
- */
+/* Return the length of an open file A.  IF OVERFLOW is not NULL it
+   will be set to true if the file is larger than what off_t can cope
+   with.  The function return 0 on error or on overflow condition.  */
 off_t
-iobuf_get_filelength( IOBUF a )
+iobuf_get_filelength (IOBUF a, int *overflow )
 {
     struct stat st;
+
+    if (overflow)
+      *overflow = 0;
 
     if( a->directfp )  {
 	FILE *fp = a->directfp;
@@ -1855,9 +1859,46 @@ iobuf_get_filelength( IOBUF a )
 
 #if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
             ulong size;
+            static int (* __stdcall get_file_size_ex) 
+              (void *handle, LARGE_INTEGER *size);
+            static int get_file_size_ex_initialized;
 
-            if  ((size=GetFileSize (fp, NULL)) != 0xffffffff)
-                return size;
+            if (!get_file_size_ex_initialized)
+              {
+                void *handle;
+                
+                handle = dlopen ("kernel32.dll", RTLD_LAZY);
+                if (handle)
+                  {
+                    get_file_size_ex = dlsym (handle, "GetFileSizeEx");
+                    if (!get_file_size_ex)
+                    dlclose (handle);
+                  }
+                get_file_size_ex_initialized = 1;
+              }
+
+            if (get_file_size_ex)
+              {
+                /* This is a newer system with GetFileSizeEx; we use
+                   this then becuase it seem that GetFileSize won't
+                   return a proper error in case a file is larger than
+                   4GB. */
+                LARGE_INTEGER size;
+                
+                if (get_file_size_ex (fp, &size))
+                  {
+                    if (!size.u.HighPart)
+                      return size.u.LowPart;
+                    if (overflow)
+                      *overflow = 1;
+                    return 0; 
+                  }
+              }
+            else
+              {
+                if  ((size=GetFileSize (fp, NULL)) != 0xffffffff)
+                  return size;
+              }
             log_error ("GetFileSize for handle %p failed: %s\n",
                        fp, w32_strerror (0));
 #else

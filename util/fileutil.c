@@ -253,6 +253,7 @@ is_file_compressed( const char *s, int *ret_rc )
     IOBUF a;
     byte buf[4];
     int i, rc = 0;
+    int overflow;
 
     struct magic_compress_s {
         size_t len;
@@ -272,7 +273,7 @@ is_file_compressed( const char *s, int *ret_rc )
         return 0;
     }
 
-    if ( iobuf_get_filelength( a ) < 4 ) {
+    if ( iobuf_get_filelength( a, &overflow ) < 4 && !overflow) {
         *ret_rc = 0;
         goto leave;
     }

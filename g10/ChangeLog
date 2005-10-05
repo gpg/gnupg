@@ -1,3 +1,18 @@
+2005-10-05  Werner Koch  <wk@g10code.com>
+
+	* g10.c: Renamed to ..
+	* gpg.c: ..this.
+	* Makefile.am: Adjusted accordingly.
+
+2005-09-22  Werner Koch  <wk@g10code.com>
+
+	* sign.c (write_plaintext_packet): Don't print an empty file
+	warning if the file is actually too large.
+	* encode.c (encode_simple,encode_crypt): Ditto.
+	* progress.c (handle_progress): Adjusted for iobuf_get_filelength
+	change.
+	* photoid.c (generate_photo_id): Ditto.
+
 2005-09-20  Werner Koch  <wk@g10code.com>
 
 	* mainproc.c (proc_symkey_enc): Take care of a canceled passphrase
