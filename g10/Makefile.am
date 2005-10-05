@@ -70,7 +70,7 @@ common_source =  \
 	      signal.c
 
 if ENABLE_CARD_SUPPORT
-card_support_source_g10 = card-util.c 
+card_support_source_gpg = card-util.c 
 card_support_source_scd = \
 	app-common.h \
 	app-openpgp.c \
@@ -79,14 +79,14 @@ card_support_source_scd = \
 	ccid-driver.c ccid-driver.h
 card_support_source_local = cardglue.c cardglue.h tlv.c tlv.h
 else
-card_support_source_g10 =
+card_support_source_gpg =
 card_support_source_scd = 
 card_support_source_local =
 endif
 
-card_support_source = $(card_support_source_local) $(card_support_source_g10) $(card_support_source_scd)
+card_support_source = $(card_support_source_local) $(card_support_source_gpg) $(card_support_source_scd)
 
-gpg_SOURCES  = g10.c		\
+gpg_SOURCES  = gpg.c		\
 	      $(common_source)	\
 	      $(card_support_source) \
 	      pkclist.c 	\
@@ -148,7 +148,7 @@ update-source-from-gnupg-2:
 	 for i in $(card_support_source_scd); do \
            cp $$dir/scd/$$i $$i; echo $$i; \
 	 done ;\
-	 for i in $(card_support_source_g10); do \
+	 for i in $(card_support_source_gpg); do \
            cp $$dir/g10/$$i $$i; echo $$i; \
 	 done ; \
 	 echo "Please remember to update the ChangeLog accordingly!"

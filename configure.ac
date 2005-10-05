@@ -33,7 +33,7 @@ AC_INIT(gnupg, 1.4.3-cvs, bug-gnupg@gnu.org)
 development_version=no
 
 AC_CONFIG_AUX_DIR(scripts)
-AC_CONFIG_SRCDIR(g10/g10.c)
+AC_CONFIG_SRCDIR(g10/gpg.c)
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([std-options])
 AM_CONFIG_HEADER(config.h)

@@ -1,3 +1,7 @@
+2005-10-05  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Changed identification file name to g10/gpg.c
+
 2005-10-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac [!$try_gettext]: Invoke AM_PO_SUBDIRS.
