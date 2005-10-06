@@ -340,6 +340,21 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		  default:
 		    break;
 		  }
+                
+                /* XXX: before skipping a subkey, check whether any
+                   other description wants an exact macth on a subkey
+                   and include that subkey into the output too.  Need
+                   to add this subkey to a list so that it won't get
+                   processed a second time. 
+                   
+                   So the first step here is to check that list and
+                   skip in any case if the key is in that list.
+
+                   We need this whole mess becuase the import fnction
+                   is not able to merge secret key and thus it is not
+                   possible to output them as two keys and have import
+                   merge them.
+                  */
 
 		if(skip_until_subkey)
 		  continue;

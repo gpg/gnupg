@@ -19,7 +19,7 @@ g10/encode.c
 g10/encr-data.c
 g10/exec.c
 g10/export.c
-g10/g10.c
+g10/gpg.c
 g10/getkey.c
 g10/gpgv.c
 g10/helptext.c

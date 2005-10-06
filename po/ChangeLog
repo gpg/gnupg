@@ -1,3 +1,7 @@
+2005-10-06  Werner Koch  <wk@g10code.com>
+
+	* POTFILES.in: s/g10.c/gpg.c/.
+
 2005-07-26  Werner Koch  <wk@g10code.com>
 
 	* zh_TW.po, fr.po, cs.po: Updated.
