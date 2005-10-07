@@ -76,7 +76,7 @@ get_signal_name( int signum )
 {
   /* Note that we can't use strsignal(), because it is not
      reentrant. */
-#if defined(HAVE_DECL_SYS_SIGLIST) && defined(NSIG)
+#if HAVE_DECL_SYS_SIGLIST && defined(NSIG)
   return (signum >= 0 && signum < NSIG) ? sys_siglist[signum] : "?";
 #else
   return NULL;
