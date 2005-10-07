@@ -33,26 +33,7 @@ GPGSM = ../sm/gpgsm
 
 
 TESTS_ENVIRONMENT = GNUPGHOME=`pwd` GPG_AGENT_INFO= LC_ALL=C GPGSM=$(GPGSM) \
-		    LD_LIBRARY_PATH=$$(seen=0; \
-                           for i in $(LDFLAGS) $(LIBGCRYPT_LIBS) $(PTH_LIBS); \
-                           do \
-                             if echo "$$i" | egrep '^-L' >/dev/null 2>&1; \
-                             then \
-                               if test $$seen = 0; \
-                               then \
-                                 seen=1; \
-                               else \
-                                 printf ":"; \
-                               fi; \
-                               printf "%s" "$${i}" | sed 's/^-L//'; \
-                             fi; \
-                           done; \
-                           if test $$seen != 0 \
-                              && test x$${LD_LIBRARY_PATH} != x; \
-                           then \
-                             printf ":"; \
-                           fi; \
-                           printf "%s" "$${LD_LIBRARY_PATH}") $(srcdir)/runtest
+	$(srcdir)/runtest
 
 testscripts = sm-sign+verify sm-verify
 
