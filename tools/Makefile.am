@@ -43,23 +43,23 @@ endif
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
-gpgconf_LDADD = ../gl/libgnu.a ../jnlib/libjnlib.a \
-                ../common/libcommon.a @LIBINTL@
+gpgconf_LDADD = ../jnlib/libjnlib.a \
+                ../common/libcommon.a ../gl/libgnu.a @LIBINTL@
 
 symcryptrun_SOURCES = symcryptrun.c
-symcryptrun_LDADD = $(LIBUTIL_LIBS) ../gl/libgnu.a ../jnlib/libjnlib.a \
-                    ../common/libcommon.a \
+symcryptrun_LDADD = $(LIBUTIL_LIBS) ../jnlib/libjnlib.a \
+                    ../common/libcommon.a ../gl/libgnu.a \
 		    ../common/libsimple-pwquery.a $(LIBGCRYPT_LIBS) \
 		    $(GPG_ERROR_LIBS) $(LIBINTL)
 
 watchgnupg_SOURCES = watchgnupg.c 
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
-gpg_connect_agent_LDADD = ../gl/libgnu.a ../jnlib/libjnlib.a \
-                          ../common/libcommon.a \
+gpg_connect_agent_LDADD = ../jnlib/libjnlib.a \
+                          ../common/libcommon.a ../gl/libgnu.a \
                           $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
 
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
 gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
-gpgkey2ssh_LDADD = ../gl/libgnu.a ../common/libcommon.a \
+gpgkey2ssh_LDADD = ../common/libcommon.a ../gl/libgnu.a \
                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)

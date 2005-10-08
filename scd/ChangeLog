@@ -1,3 +1,8 @@
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (scdaemon_LDADD): Add ../gl/libgnu.a after
+	../common/libcommon.a.
+
 2005-09-09  Werner Koch  <wk@g10code.com>
 
 	* pcsc-wrapper.c (main): Removed bogus free.

@@ -45,7 +45,7 @@ gpg_agent_SOURCES = \
 	learncard.c
 
 
-gpg_agent_LDADD = ../gl/libgnu.a ../jnlib/libjnlib.a ../common/libcommon.a \
+gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
                 $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
 	         -lgpg-error @LIBINTL@
 
@@ -55,7 +55,7 @@ gpg_protect_tool_SOURCES = \
 	minip12.c minip12.h 
 
 gpg_protect_tool_LDADD = ../common/libsimple-pwquery.a \
-	../jnlib/libjnlib.a  ../common/libcommon.a  \
+	../jnlib/libjnlib.a  ../common/libcommon.a ../gl/libgnu.a \
 	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
 if HAVE_W32_SYSTEM
 gpg_protect_tool_LDADD += -lwsock32
@@ -65,7 +65,7 @@ gpg_preset_passphrase_SOURCES = \
 	preset-passphrase.c
 
 gpg_preset_passphrase_LDADD = ../common/libsimple-pwquery.a \
-	../jnlib/libjnlib.a ../common/libcommon.a \
+	../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
 	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
 if HAVE_W32_SYSTEM
 gpg_preset_passphrase_LDADD += -lwsock32
@@ -76,7 +76,7 @@ endif
 #
 TESTS = t-protect
 
-t_common_ldadd = ../jnlib/libjnlib.a ../common/libcommon.a  \
+t_common_ldadd = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
 
 t_protect_SOURCES = t-protect.c protect.c 
