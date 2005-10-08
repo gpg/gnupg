@@ -53,6 +53,7 @@ symcryptrun_LDADD = $(LIBUTIL_LIBS) ../jnlib/libjnlib.a \
 		    $(GPG_ERROR_LIBS) $(LIBINTL)
 
 watchgnupg_SOURCES = watchgnupg.c 
+watchgnupg_LDADD = $(NETLIBS)
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
 gpg_connect_agent_LDADD = ../jnlib/libjnlib.a \

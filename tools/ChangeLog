@@ -1,5 +1,7 @@
 2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
 
+	* Makefile.am (watchgnupg_LDADD): New variable.
+
 	* Makefile.am (gpgconf_LDADD): Add ../gl/libgnu.a after
 	../common/libcommon.a.
 	(symcryptrun_LDADD, gpg_connect_agent_LDADD, gpgkey2ssh_LDADD):
