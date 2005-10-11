@@ -100,8 +100,11 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
 	      log_info(_("WARNING: signing subkey %s is not"
 			 " cross-certified\n"),keystr_from_pk(pk));
 	    else
-	      log_info(_("WARNING: signing subkey %s has an invalid"
-			 " cross-certification\n"),keystr_from_pk(pk));
+	      {
+		log_info(_("WARNING: signing subkey %s has an invalid"
+			   " cross-certification\n"),keystr_from_pk(pk));
+		rc=G10ERR_GENERAL;
+	      }
 	  }
       }
 

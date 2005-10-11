@@ -712,25 +712,17 @@ keygen_add_revkey(PKT_signature *sig, void *opaque)
 }
 
 static int
-make_backsig(PKT_signature *sig, PKT_public_key *pk,
- 	     PKT_public_key *sub_pk, PKT_secret_key *sub_sk)
+make_backsig(PKT_signature *sig,PKT_public_key *pk,
+ 	     PKT_public_key *sub_pk,PKT_secret_key *sub_sk)
 {
   PKT_signature *backsig;
   int rc;
 
-#ifndef DO_BACKSIGS
-  /* This is not enabled yet, as I want to get a bit closer to RFC day
-     before enabling this.  I've been burned before :) */
+  cache_public_key(sub_pk);
 
-  return 0;
-#endif
-
-  cache_public_key (sub_pk);
-
-  rc=make_keysig_packet(&backsig,pk,NULL,sub_pk,sub_sk, 0x19, 0, 0, 0, 0,
- 			NULL,NULL);
-  if( rc )
-    log_error("make_keysig_packet failed for backsig: %s\n", g10_errstr(rc) );
+  rc=make_keysig_packet(&backsig,pk,NULL,sub_pk,sub_sk,0x19,0,0,0,0,NULL,NULL);
+  if(rc)
+    log_error("make_keysig_packet failed for backsig: %s\n",g10_errstr(rc));
   else
     {
       /* get it into a binary packed form. */

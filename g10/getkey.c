@@ -2043,10 +2043,6 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 
     subpk->is_valid = 1;
 
-#ifndef DO_BACKSIGS
-    /* Pretend the backsig is present and accounted for. */
-    subpk->backsig=2;
-#else
     /* Find the first 0x19 embedded signature on our self-sig. */
     if(subpk->backsig==0)
       {
@@ -2086,6 +2082,12 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 	    free_seckey_enc(backsig);
 	  }
       }
+
+#ifdef FAKE_BACKSIGS
+    /* If there is no backsig, pretend there is a valid one.  If there
+       is a backsig (or an invalid backsig), use it. */
+    if(subpk->backsig==0)
+      subpk->backsig=2;
 #endif
 }
 

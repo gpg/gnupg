@@ -129,10 +129,10 @@ AC_ARG_ENABLE(gnupg-iconv,
               gnupg_use_iconv=$enableval, gnupg_use_iconv=yes)
 AC_MSG_RESULT($gnupg_use_iconv)
 
-AC_MSG_CHECKING([whether to enable the experimental backsigs code])
+AC_MSG_CHECKING([whether to require signing subkeys to have back signatures])
 AC_ARG_ENABLE(backsigs,
               AC_HELP_STRING([--enable-backsigs],
-                             [enable the experimental backsigs code]),
+                             [require signing subkeys to have back signatures]),
               do_backsigs=$enableval, do_backsigs=no)
 AC_MSG_RESULT($do_backsigs)
 
@@ -757,8 +757,8 @@ if test "$gnupg_use_iconv" = yes ; then
   AC_DEFINE(USE_GNUPG_ICONV,1,[Define to use the new iconv based code])
 fi
 
-if test "$do_backsigs" = yes ; then
-  AC_DEFINE(DO_BACKSIGS,1,[Define to enable the experimental backsigs code])
+if test "$do_backsigs" = no ; then
+  AC_DEFINE(FAKE_BACKSIGS,1,[Define to fake missing backsigs])
 fi
 
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
