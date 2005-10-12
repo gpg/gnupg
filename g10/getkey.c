@@ -2082,13 +2082,6 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 	    free_seckey_enc(backsig);
 	  }
       }
-
-#ifdef FAKE_BACKSIGS
-    /* If there is no backsig, pretend there is a valid one.  If there
-       is a backsig (or an invalid backsig), use it. */
-    if(subpk->backsig==0)
-      subpk->backsig=2;
-#endif
 }
 
 

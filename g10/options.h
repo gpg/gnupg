@@ -162,6 +162,8 @@ struct
   STRLIST sig_policy_url;
   STRLIST cert_policy_url;
   STRLIST sig_keyserver_url;
+  STRLIST cert_subpackets;
+  STRLIST sig_subpackets;
   int use_embedded_filename;
   int allow_non_selfsigned_uid;
   int allow_freeform_uid;
@@ -206,6 +208,11 @@ struct
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
 #endif /*ENABLE_CARD_SUPPORT*/
+
+  /* If set, require an 0x19 backsig to be present on signatures made
+     by signing subkeys.  If not set, a missing backsig is not an
+     error (but an invalid backsig still is). */
+  int require_backsigs;
 
 } opt;
 

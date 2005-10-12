@@ -1,3 +1,10 @@
+2005-10-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, getkey.c (merge_selfsigs_subkey), gpg.c (main),
+	sig-check.c (signature_check2): Add --require-backsigs and
+	--no-require-backsigs.  Currently defaults to
+	--no-require-backsigs.
+
 2005-10-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs_subkey), sig-check.c

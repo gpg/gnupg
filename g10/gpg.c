@@ -355,6 +355,9 @@ enum cmd_and_opt_values
     opcscDriver,
     oDisableCCID,
 
+    oRequireBacksigs,
+    oNoRequireBacksigs,
+
     oNoop
   };
 
@@ -695,6 +698,8 @@ static ARGPARSE_OPTS opts[] = {
        the favor. */
     { oLocalUser, "sign-with", 2, "@" },
     { oRecipient, "user", 2, "@" },
+    { oRequireBacksigs, "require-backsigs", 0, "@"},
+    { oNoRequireBacksigs, "no-require-backsigs", 0, "@"},
     {0,NULL,0,NULL}
 };
 
@@ -2586,7 +2591,9 @@ main (int argc, char **argv )
             opt.limit_card_insert_tries = pargs.r.ret_int; 
             break;
 
-  
+	  case oRequireBacksigs: opt.require_backsigs=1; break;
+	  case oNoRequireBacksigs: opt.require_backsigs=0; break;
+
 	  case oNoop: break;
 
 	  default : pargs.err = configfp? 1:2; break;
