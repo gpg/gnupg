@@ -2,19 +2,23 @@ Noteworthy changes in version 1.4.3
 ------------------------------------------------
 
     * If available, cURL-based keyserver helpers are built that can
-      retrieve keys using any protocol that cURL supports.  This
-      includes HKP as well as all protocols that cURL can handle
+      retrieve keys using HKP or any protocol that cURL supports
       (HTTP, HTTPS, FTP, FTPS, etc).  If cURL is not available, HKP
-      and HTTP are still supported using the included code.  To force
-      building the old keyserver helpers, use the configure option
-      --enable-old-keyserver-helpers.  Note that none of this affects
-      finger or LDAP support, which are unchanged.
+      and HTTP are still supported using a built-in cURL emulator.  To
+      force building the old pre-cURL keyserver helpers, use the
+      configure option --enable-old-keyserver-helpers.  Note that none
+      of this affects finger or LDAP support, which are unchanged.
+      Note also that a future version of GnuPG will remove the old
+      keyserver helpers altogether.
 
     * Implemented Public Key Association (PKA) trust model option.
       This is an optional trust model on top of the standard ones.  It
       make use of of special DNS records and notation data to
       associate a mail address with an OpenPGP key.  See: XXXX for a
       description.
+
+    * Added "gpg-zip", a program to create encrypted archives that can
+      interoperate with PGP Zip.
 
 
 Noteworthy changes in version 1.4.2 (2005-07-26)
