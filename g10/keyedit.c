@@ -63,6 +63,7 @@ static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_addrevoker( KBNODE pub_keyblock,
 			    KBNODE sec_keyblock, int sensitive );
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock);
 static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_keyserver_url (const char *url,
@@ -1338,8 +1339,8 @@ enum cmdids
     cmdREVSIG, cmdREVKEY, cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG,
     cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
     cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
-    cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
-    cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
+    cmdEXPIRE, cmdBACKSIGN, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF,
+    cmdSETPREF, cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
     cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdCLEAN, cmdNOP
   };
 
@@ -1363,6 +1364,7 @@ static struct
     { "key"     , cmdSELKEY    , 0, N_("select subkey N") },
     { "check"   , cmdCHECK     , 0, N_("check signatures") },
     { "c"       , cmdCHECK     , 0, NULL },
+    { "backsign", cmdBACKSIGN  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
     { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH,
       N_("sign selected user IDs [* see below for related commands]") },
     { "s"       , cmdSIGN      , KEYEDIT_NOT_SK, NULL },
@@ -2045,6 +2047,15 @@ keyedit_menu( const char *username, STRLIST locusr,
 	      {
 		merge_keys_and_selfsig( sec_keyblock );
 		merge_keys_and_selfsig( keyblock );
+		sec_modified = 1;
+		modified = 1;
+		redisplay = 1;
+	      }
+	    break;
+
+	  case cmdBACKSIGN:
+	    if(menu_backsign(keyblock,sec_keyblock))
+	      {
 		sec_modified = 1;
 		modified = 1;
 		redisplay = 1;
@@ -3621,6 +3632,151 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
     update_trust=1;
     return 1;
 }
+
+static int
+menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
+{
+  int rc,modified=0;
+  PKT_public_key *main_pk;
+  PKT_secret_key *main_sk,*sub_sk=NULL;
+  KBNODE node;
+
+  assert(pub_keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  assert(sec_keyblock->pkt->pkttype==PKT_SECRET_KEY);
+
+  merge_keys_and_selfsig(pub_keyblock);
+  main_pk=pub_keyblock->pkt->pkt.public_key;
+  main_sk=copy_secret_key(NULL,sec_keyblock->pkt->pkt.secret_key);
+  keyid_from_pk(main_pk,NULL);
+
+  for(node=pub_keyblock;node;node=node->next)
+    {
+      PKT_public_key *sub_pk=NULL;
+      KBNODE node2,sig_pk=NULL,sig_sk=NULL;
+      char *passphrase;
+
+      if(sub_sk)
+	{
+	  free_secret_key(sub_sk);
+	  sub_sk=NULL;
+	}
+
+      /* Find a signing subkey with no backsig */
+      if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY
+         && (node->pkt->pkt.public_key->pubkey_usage&PUBKEY_USAGE_SIG)
+         && !node->pkt->pkt.public_key->backsig)
+        sub_pk=node->pkt->pkt.public_key;
+
+      if(!sub_pk)
+	continue;
+
+      /* Find the selected selfsig on this subkey */
+      for(node2=node->next;
+	  node2 && node2->pkt->pkttype==PKT_SIGNATURE;
+	  node2=node2->next)
+	if(node2->pkt->pkt.signature->version>=4
+	   && node2->pkt->pkt.signature->flags.chosen_selfsig)
+	  {
+	    sig_pk=node2;
+	    break;
+	  }
+
+      if(!sig_pk)
+	continue;
+
+      /* Find the secret subkey that matches the public subkey */
+      for(node2=sec_keyblock;node2;node2=node2->next)
+	if(node2->pkt->pkttype==PKT_SECRET_SUBKEY
+	   && !cmp_public_secret_key(sub_pk,node2->pkt->pkt.secret_key))
+	  {
+	    sub_sk=copy_secret_key(NULL,node2->pkt->pkt.secret_key);
+	    break;
+	  }
+
+      if(!sub_sk)
+	continue;
+
+      /* Now finally find the matching selfsig on the secret subkey.
+	 We can't use chosen_selfsig here (it's not set for secret
+	 keys), so we just pick the selfsig with the right class.
+	 This is what menu_expire does as well. */
+      for(node2=node2->next;
+	  node2 && node2->pkt->pkttype==PKT_SIGNATURE;
+	  node2=node2->next)
+	if(node2->pkt->pkt.signature->version>=4
+	   && node2->pkt->pkt.signature->keyid[0]==sig_pk->pkt->pkt.signature->keyid[0]
+	   && node2->pkt->pkt.signature->keyid[1]==sig_pk->pkt->pkt.signature->keyid[1]
+	   && node2->pkt->pkt.signature->sig_class==sig_pk->pkt->pkt.signature->sig_class)
+	  {
+	    sig_sk=node2;
+	    break;
+	  }
+
+      if(!sig_sk)
+	continue;
+
+      /* Now we can get to work.  We have a main key and secret part,
+	 a signing subkey with signature and secret part with
+	 signature. */
+
+      passphrase=get_last_passphrase();
+      set_next_passphrase(passphrase);
+      xfree(passphrase);
+
+      rc=make_backsig(sig_pk->pkt->pkt.signature,main_pk,sub_pk,sub_sk);
+      if(rc==0)
+	{
+	  PKT_signature *newsig;
+	  PACKET *newpkt;
+
+	  passphrase=get_last_passphrase();
+	  set_next_passphrase(passphrase);
+	  xfree(passphrase);
+
+	  rc=update_keysig_packet(&newsig,sig_pk->pkt->pkt.signature,main_pk,
+				  NULL,sub_pk,main_sk,NULL,NULL);
+	  if(rc==0)
+	    {
+	      /* Put the new sig into place on the pubkey */
+	      newpkt=xmalloc_clear(sizeof(*newpkt));
+	      newpkt->pkttype=PKT_SIGNATURE;
+	      newpkt->pkt.signature=newsig;
+	      free_packet(sig_pk->pkt);
+	      xfree(sig_pk->pkt);
+	      sig_pk->pkt=newpkt;
+
+	      /* Put the new sig into place on the seckey */
+	      newpkt=xmalloc_clear(sizeof(*newpkt));
+	      newpkt->pkttype=PKT_SIGNATURE;
+	      newpkt->pkt.signature=copy_signature(NULL,newsig);
+	      free_packet(sig_sk->pkt);
+	      xfree(sig_sk->pkt);
+	      sig_sk->pkt=newpkt;
+
+	      modified=1;
+	    }
+	  else
+	    {
+	      log_error("update_keysig_packet failed: %s\n",g10_errstr(rc));
+	      break;
+	    }
+	}
+      else
+	{
+	  log_error("make_backsig failed: %s\n",g10_errstr(rc));
+	  break;
+	}
+    }
+
+  set_next_passphrase(NULL);
+
+  free_secret_key(main_sk);
+  if(sub_sk)
+    free_secret_key(sub_sk);
+
+  return modified;
+}
+
 
 static int
 change_primary_uid_cb ( PKT_signature *sig, void *opaque )

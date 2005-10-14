@@ -2049,6 +2049,8 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 	int seq=0;
 	size_t n;
 
+	/* We do this while() since there may be other embedded
+	   signatures in the future.  We only want 0x19 here. */
 	while((p=enum_sig_subpkt(sig->hashed,
 				 SIGSUBPKT_SIGNATURE,&n,&seq,NULL)))
 	  if(n>3 && ((p[0]==3 && p[2]==0x19) || (p[0]==4 && p[1]==0x19)))
@@ -2058,7 +2060,8 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 	  {
 	    seq=0;
 	    /* It is safe to have this in the unhashed area since the
-	       0x19 is located here for convenience, not security. */
+	       0x19 is located on the selfsig for convenience, not
+	       security. */
 	    while((p=enum_sig_subpkt(sig->unhashed,SIGSUBPKT_SIGNATURE,
 				     &n,&seq,NULL)))
 	      if(n>3 && ((p[0]==3 && p[2]==0x19) || (p[0]==4 && p[1]==0x19)))

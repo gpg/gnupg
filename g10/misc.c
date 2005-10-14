@@ -979,7 +979,7 @@ parse_options(char *str,unsigned int *options,
       for(i=0;opts[i].name;i++)
         if(opts[i].help)
 	  printf("%s%*s%s\n",opts[i].name,
-		 maxlen+2-strlen(opts[i].name),"",_(opts[i].help));
+		 maxlen+2-(int)strlen(opts[i].name),"",_(opts[i].help));
 
       g10_exit(0);
     }

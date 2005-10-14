@@ -1,3 +1,12 @@
+2005-10-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu, menu_backsign): New "backsign" command
+	to add 0x19 backsigs to old keys that don't have them.
+
+	* misc.c (parse_options): Fix build warning.
+
+	* main.h, keygen.c (make_backsig): Make public.
+
 2005-10-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, getkey.c (merge_selfsigs_subkey), gpg.c (main),

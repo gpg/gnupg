@@ -711,7 +711,7 @@ keygen_add_revkey(PKT_signature *sig, void *opaque)
   return 0;
 }
 
-static int
+int
 make_backsig(PKT_signature *sig,PKT_public_key *pk,
  	     PKT_public_key *sub_pk,PKT_secret_key *sub_sk)
 {
