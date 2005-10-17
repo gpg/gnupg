@@ -1,3 +1,12 @@
+2005-10-17  Werner Koch  <wk@g10code.com>
+
+	* export.c (do_export_stream): Factored some code out to ...
+	(skip_subkey_p): .. new.
+	(subkey_in_list_p, release_subkey_list): New.
+	(new_subkey_list_item): New. 
+	(do_export_stream): Export exactly specified subkeys into one
+	keyblock.
+
 2005-10-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (keyedit_menu, menu_backsign): New "backsign" command

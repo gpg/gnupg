@@ -37,6 +37,17 @@
 #include "i18n.h"
 #include "trustdb.h"
 
+
+/* An object to keep track of subkeys. */
+struct subkey_list_s
+{
+  struct subkey_list_s *next;
+  u32 kid[2];
+};
+typedef struct subkey_list_s *subkey_list_t;
+
+
+
 static int do_export( STRLIST users, int secret, unsigned int options );
 static int do_export_stream( IOBUF out, STRLIST users, int secret,
 			     KBNODE *keyblock_out, unsigned int options,
@@ -76,6 +87,7 @@ parse_export_options(char *str,unsigned int *options,int noisy)
 
   return parse_options(str,options,export_opts,noisy);
 }
+
 
 /****************
  * Export the public keys (to standard out or --output).
@@ -147,6 +159,124 @@ do_export( STRLIST users, int secret, unsigned int options )
 }
 
 
+
+/* Release an entire subkey list. */
+static void
+release_subkey_list (subkey_list_t list)
+{
+  while (list)
+    {
+      subkey_list_t tmp = list->next;;
+      xfree (list);
+      list = tmp;
+    }
+}
+
+
+/* Returns true if NODE is a subkey and contained in LIST. */
+static int
+subkey_in_list_p (subkey_list_t list, KBNODE node)
+{
+  if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+      || node->pkt->pkttype == PKT_SECRET_SUBKEY )
+    {
+      u32 kid[2];
+
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        keyid_from_pk (node->pkt->pkt.public_key, kid);
+      else
+        keyid_from_sk (node->pkt->pkt.secret_key, kid);
+      
+      for (; list; list = list->next)
+        if (list->kid[0] == kid[0] && list->kid[1] == kid[1])
+          return 1;
+    }
+  return 0;
+}
+
+/* Allocate a new subkey list item from NODE. */
+static subkey_list_t
+new_subkey_list_item (KBNODE node)
+{
+  subkey_list_t list = xcalloc (1, sizeof *list);
+
+  if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+    keyid_from_pk (node->pkt->pkt.public_key, list->kid);
+  else if (node->pkt->pkttype == PKT_SECRET_SUBKEY)
+    keyid_from_sk (node->pkt->pkt.secret_key, list->kid);
+
+  return list;
+}
+
+
+/* Helper function to check whether the subkey at NODE actually
+   matches the description at DESC.  The function returns true if the
+   key under question has been specified by an exact specification
+   (keyID or fingerprint) and does match the one at NODE.  It is
+   assumed that the packet at NODE is either a public or secret
+   subkey. */
+static int
+exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
+{
+  u32 kid[2];
+  byte fpr[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
+  int result = 0;
+
+  switch(desc->mode)
+    {
+    case KEYDB_SEARCH_MODE_SHORT_KID:
+    case KEYDB_SEARCH_MODE_LONG_KID:
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        keyid_from_pk (node->pkt->pkt.public_key, kid);
+      else
+        keyid_from_sk (node->pkt->pkt.secret_key, kid);
+      break;
+      
+    case KEYDB_SEARCH_MODE_FPR16:
+    case KEYDB_SEARCH_MODE_FPR20:
+    case KEYDB_SEARCH_MODE_FPR:
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        fingerprint_from_pk (node->pkt->pkt.public_key, fpr,&fprlen);
+      else
+        fingerprint_from_sk (node->pkt->pkt.secret_key, fpr,&fprlen);
+      break;
+      
+    default:
+      break;
+    }
+  
+  switch(desc->mode)
+    {
+    case KEYDB_SEARCH_MODE_SHORT_KID:
+      if (desc->u.kid[1] == kid[1])
+        result = 1;
+      break;
+
+    case KEYDB_SEARCH_MODE_LONG_KID:
+      if (desc->u.kid[0] == kid[0] && desc->u.kid[1] == kid[1])
+        result = 1;
+      break;
+
+    case KEYDB_SEARCH_MODE_FPR16:
+      if (!memcmp (desc->u.fpr, fpr, 16))
+        result = 1;
+      break;
+
+    case KEYDB_SEARCH_MODE_FPR20:
+    case KEYDB_SEARCH_MODE_FPR:
+      if (!memcmp (desc->u.fpr, fpr, 20))
+        result = 1;
+      break;
+
+    default:
+      break;
+    }
+
+  return result;
+}
+
+
 /* If keyblock_out is non-NULL, AND the exit code is zero, then it
    contains a pointer to the first keyblock found and exported.  No
    other keyblocks are exported.  The caller must free it. */
@@ -160,6 +290,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
     KBNODE kbctx, node;
     size_t ndesc, descindex;
     KEYDB_SEARCH_DESC *desc = NULL;
+    subkey_list_t subkey_list = NULL;  /* Track alreay processed subkeys. */
     KEYDB_HANDLE kdbhd;
     STRLIST sl;
     u32 keyid[2];
@@ -170,7 +301,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
     if (!users) {
         ndesc = 1;
-        desc = xmalloc_clear ( ndesc * sizeof *desc);
+        desc = xcalloc ( ndesc, sizeof *desc );
         desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
     }
     else {
@@ -186,7 +317,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
                            sl->d, g10_errstr (G10ERR_INV_USER_ID));
         }
 
-        /* it would be nice to see which of the given users did
+        /* It would be nice to see which of the given users did
            actually match one in the keyring.  To implement this we
            need to have a found flag for each entry in desc and to set
            this we must check all those entries after a match to mark
@@ -209,7 +340,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	if (!users) 
             desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
-        /* read the keyblock */
+        /* Read the keyblock. */
         rc = keydb_get_keyblock (kdbhd, &keyblock );
 	if( rc ) {
             log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
@@ -222,7 +353,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
 	    keyid_from_sk(sk,sk_keyid);
 
-	    /* we can't apply GNU mode 1001 on an unprotected key */
+	    /* We can't apply GNU mode 1001 on an unprotected key. */
 	    if( secret == 2 && !sk->is_protected )
 	      {
 		log_info(_("key %s: not protected - skipped\n"),
@@ -230,7 +361,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		continue;
 	      }
 
-	    /* no v3 keys with GNU mode 1001 */
+	    /* No v3 keys with GNU mode 1001. */
 	    if( secret == 2 && sk->version == 3 )
 	      {
 		log_info(_("key %s: PGP 2.x style key - skipped\n"),
@@ -251,7 +382,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	  }
 	else
 	  {
-	    /* It's a public key export */
+	    /* It's a public key export. */
 	    if((options&EXPORT_MINIMAL)
 	       && (node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
 	      keyid_from_pk(node->pkt->pkt.public_key,keyid);
@@ -260,7 +391,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	      clean_uids_from_key(keyblock,opt.verbose);
 	  }
 
-	/* and write it */
+	/* And write it. */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
 	    if( skip_until_subkey )
 	      {
@@ -277,88 +408,58 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	    if( node->pkt->pkttype == PKT_COMMENT )
 	      continue;
 
-            /* make sure that ring_trust packets never get exported */
+            /* Make sure that ring_trust packets never get exported. */
             if (node->pkt->pkttype == PKT_RING_TRUST)
               continue;
 
 	    /* If exact is set, then we only export what was requested
 	       (plus the primary key, if the user didn't specifically
-	       request it) */
+	       request it). */
 	    if(desc[descindex].exact
 	       && (node->pkt->pkttype==PKT_PUBLIC_SUBKEY
 		   || node->pkt->pkttype==PKT_SECRET_SUBKEY))
 	      {
-		u32 kid[2];
-		byte fpr[MAX_FINGERPRINT_LEN];
-		size_t fprlen;
-
-		switch(desc[descindex].mode)
-		  {
-		  case KEYDB_SEARCH_MODE_SHORT_KID:
-		  case KEYDB_SEARCH_MODE_LONG_KID:
-		    if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY)
-		      keyid_from_pk(node->pkt->pkt.public_key,kid);
-		    else
-		      keyid_from_sk(node->pkt->pkt.secret_key,kid);
-		    break;
-
-		  case KEYDB_SEARCH_MODE_FPR16:
-		  case KEYDB_SEARCH_MODE_FPR20:
-		  case KEYDB_SEARCH_MODE_FPR:
-		    if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY)
-		      fingerprint_from_pk(node->pkt->pkt.public_key,
-					  fpr,&fprlen);
-		    else
-		      fingerprint_from_sk(node->pkt->pkt.secret_key,
-					  fpr,&fprlen);
-		    break;
-
-		  default:
-		    break;
-		  }
-
-		switch(desc[descindex].mode)
-		  {
-		  case KEYDB_SEARCH_MODE_SHORT_KID:
-		    if (desc[descindex].u.kid[1] != kid[1])
-		      skip_until_subkey=1;
-		    break;
-		  case KEYDB_SEARCH_MODE_LONG_KID:
-		    if (desc[descindex].u.kid[0] != kid[0]
-			|| desc[descindex].u.kid[1] != kid[1])
-		      skip_until_subkey=1;
-		    break;
-		  case KEYDB_SEARCH_MODE_FPR16:
-		    if (memcmp (desc[descindex].u.fpr, fpr, 16))
-		      skip_until_subkey=1;
-		    break;
-		  case KEYDB_SEARCH_MODE_FPR20:
-		  case KEYDB_SEARCH_MODE_FPR:
-		    if (memcmp (desc[descindex].u.fpr, fpr, 20))
-		      skip_until_subkey=1;
-		    break;
-		  default:
-		    break;
-		  }
-                
-                /* XXX: before skipping a subkey, check whether any
-                   other description wants an exact macth on a subkey
-                   and include that subkey into the output too.  Need
-                   to add this subkey to a list so that it won't get
-                   processed a second time. 
+                if (!exact_subkey_match_p (desc+descindex, node))
+                  {
+                    /* Before skipping this subkey, check whether any
+                       other description wants an exact match on a
+                       subkey and include that subkey into the output
+                       too.  Need to add this subkey to a list so that
+                       it won't get processed a second time.
                    
-                   So the first step here is to check that list and
-                   skip in any case if the key is in that list.
+                       So the first step here is to check that list and
+                       skip in any case if the key is in that list.
 
-                   We need this whole mess becuase the import fnction
-                   is not able to merge secret key and thus it is not
-                   possible to output them as two keys and have import
-                   merge them.
-                  */
+                       We need this whole mess because the import
+                       function is not able to merge secret keys and
+                       thus it is useless to output them as two
+                       separate keys and have import merge them.  */
+                    if (subkey_in_list_p (subkey_list, node))  
+                      skip_until_subkey = 1; /* Already processed this one. */
+                    else
+                      {
+                        size_t j;
+
+                        for (j=0; j < ndesc; j++)
+                          if (j != descindex && desc[j].exact
+                              && exact_subkey_match_p (desc+j, node))
+                            break;
+                        if (!(j < ndesc))
+                          skip_until_subkey = 1; /* No other one matching. */ 
+                      }
+                  }
 
 		if(skip_until_subkey)
 		  continue;
+
+                /* Mark this one as processed. */
+                {
+                  subkey_list_t tmp = new_subkey_list_item (node);
+                  tmp->next = subkey_list;
+                  subkey_list = tmp;
+                }
 	      }
+
 
 	    if(node->pkt->pkttype==PKT_USER_ID)
 	      {
@@ -510,6 +611,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	rc = 0;
 
   leave:
+    release_subkey_list (subkey_list);
     xfree(desc);
     keydb_release (kdbhd);
     if(rc || keyblock_out==NULL)

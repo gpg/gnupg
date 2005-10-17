@@ -322,21 +322,15 @@ the preferences in effect by including the implied preferences of
 are not already included in the preference list.
 
 @item setpref @code{string}
-Set the list of user ID preferences to @code{string}, this should be a
-string similar to the one printed by "pref". Using an empty string
-will set the default preference string, using "none" will remove the
-preferences. Use "gpg --version" to get a list of available
-algorithms. This command just initializes an internal list and does
-not change anything unless another command (such as "updpref") which
-changes the self-signatures is used.
-
-@item updpref
-Change the preferences of all user IDs (or just of the selected ones
-to the current list of preferences. The timestamp of all affected
-self-signatures will be advanced by one second. Note that while you
-can change the preferences on an attribute user ID (aka "photo ID"),
-GnuPG does not select keys via attribute user IDs so these preferences
-will not be used by GnuPG.
+Set the list of user ID preferences to @code{string} for all (or just
+the selected) user IDs. Calling setpref with no arguments sets the
+preference list to the default (either built-in or set via
+--default-preference-list), and calling setpref with "none" as the
+argument sets an empty preference list. Use "gpg --version" to get a
+list of available algorithms. Note that while you can change the
+preferences on an attribute user ID (aka "photo ID"), GnuPG does not
+select keys via attribute user IDs so these preferences will not be
+used by GnuPG.
 
 @item keyserver
 Set a preferred keyserver for the specified user ID(s). This allows
@@ -506,6 +500,10 @@ keyservers set (see --keyserver-option honor-keyserver-url).
 Search the keyserver for the given names. Multiple names given here
 will be joined together to create the search string for the keyserver.
 Option --keyserver must be used to give the name of this keyserver.
+Keyservers that support different search methods allow using the
+syntax specified in "How to specify a user ID" below. Note that
+different keyserver types support different search methods. Currently
+only LDAP supports them all.
 
 @item --update-trustdb
 Do trust database maintenance. This command iterates over all keys
@@ -935,6 +933,9 @@ sigs" after import. Defaults to no.
 After import, compact (remove all signatures from) any user IDs from
 the new key that are not usable. This is the same as running the
 --edit-key command "clean uids" after import. Defaults to no.
+
+@item import-clean
+Identical to "import-clean-sigs import-clean-uids".
 @end table
 
 @item --export-options @code{parameters}
@@ -975,8 +976,8 @@ the --edit-key command "clean uids" before export. Defaults to no.
 @item export-reset-subkey-passwd
 When using the "--export-secret-subkeys" command, this option resets
 the passphrases for all exported subkeys to empty. This is useful
-when the exported subkey is to be used on an unattended amchine where
-a passphrase won't make sense. Defaults to no.
+when the exported subkey is to be used on an unattended machine where
+a passphrase doesn't necessarily make sense. Defaults to no.
 @end table
 
 @item --list-options @code{parameters}
@@ -1160,10 +1161,12 @@ found.
 
 @item --display-charset @code{name}
 Set the name of the native character set. This is used to convert
-some informational strings like user IDs to the proper UTF-8
-encoding. If this option is not used, the default character set is
-determined from the current locale. A verbosity level of 3 shows the
-chosen set. Valid values for @code{name} are:
+some informational strings like user IDs to the proper UTF-8 encoding.
+Note that this has nothing to do with the character set of data to be
+encrypted or signed; GnuPG does not recode user supplied data. If
+this option is not used, the default character set is determined from
+the current locale. A verbosity level of 3 shows the chosen set.
+Valid values for @code{name} are:
 
 @table @asis
 
@@ -1231,14 +1234,26 @@ There is a slight performance overhead using it.
 Write special status strings to the file descriptor @code{n}.
 See the file DETAILS in the documentation for a listing of them.
 
+@item --status-file @code{file}
+Same as --status-fd, except the status data is written to file
+@code{file}.
+
 @item --logger-fd @code{n}
 Write log output to file descriptor @code{n} and not to stderr.
+
+@item --logger-file @code{file}
+Same as --logger-fd, except the logger data is written to file
+@code{file}.
 
 @item --attribute-fd @code{n}
 Write attribute subpackets to the file descriptor @code{n}. This is
 most useful for use with --status-fd, since the status messages are
 needed to separate out the various subpackets from the stream
 delivered to the file descriptor.
+
+@item --attribute-file @code{file}
+Same as --attribute-fd, except the attribute data is written to file
+@code{file}.
 
 @item --comment @code{string}
 @itemx --no-comments
@@ -1475,12 +1490,27 @@ Read the passphrase from file descriptor @code{n}. If you use
 can only be used if only one passphrase is supplied.
 Don't use this option if you can avoid it.
 
+@item --passphrase-file @code{file}
+Read the passphrase from file @code{file}. This can only be used if
+only one passphrase is supplied. Obviously, a passphrase stored in a
+file is of questionable security. Don't use this option if you can
+avoid it.
+
+@item --passphrase @code{string}
+Use @code{string} as the passphrase. This can only be used if only one
+passphrase is supplied. Obviously, this is of very questionable
+security. Don't use this option if you can avoid it.
+
 @item --command-fd @code{n}
 This is a replacement for the deprecated shared-memory IPC mode.
 If this option is enabled, user input on questions is not expected
 from the TTY but from the given file descriptor. It should be used
 together with --status-fd. See the file doc/DETAILS in the source
 distribution for details on how to use it.
+
+@item --command-file @code{file}
+Same as --command-fd, except the commands are read out of file
+@code{file}
 
 @item --use-agent
 @itemx --no-use-agent
@@ -1871,10 +1901,9 @@ preferences. The most highly ranked algorithm in this list is also
 used when there are no recipient keys to consider (e.g. --symmetric).
 
 @item --default-preference-list @code{string}
-Set the list of default preferences to @code{string}, this list should
-be a string similar to the one printed by the command "pref" in the
-edit menu. This affects both key generation and "updpref" in the edit
-menu.
+Set the list of default preferences to @code{string}. This preference
+list is used for new keys and becomes the default for "setpref" in the
+edit menu.
 
 @item --list-config 
 Display various internal configuration parameters of GnuPG. This
@@ -1921,10 +1950,9 @@ Using an exact to match string. The equal sign indicates this.
 Using the email address part which must match exactly. The left angle bracket
 indicates this email address mode.
 
-@item +Heinrich Heine duesseldorf
-All words must match exactly (not case sensitive) but can appear in
-any order in the user ID. Words are any sequences of letters,
-digits, the underscore and all characters with bit 7 set.
+@item @@heinrichh
+Match within the <email.address> part of a user ID. The at sign
+indicates this email address mode.
 
 @item Heine
 @itemx *Heine

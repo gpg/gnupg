@@ -17,6 +17,9 @@ Noteworthy changes in version 1.4.3
       associate a mail address with an OpenPGP key.  See: XXXX for a
       description.
 
+    * When exporting subkeys, those specified with a key ID or
+      fingerpint and the '!' suffix are now merged into one keyblock.
+
     * Added "gpg-zip", a program to create encrypted archives that can
       interoperate with PGP Zip.
 

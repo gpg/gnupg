@@ -22,15 +22,15 @@ gpgv
 
 @code{gpgv} is the OpenPGP signature checking tool.
 
-This program is a stripped down version of @code{gpg} which is only
-able
-to check signatures. It is somewhat smaller than the full blown
-@code{gpg} and uses a different (and more simple way) to check that
-the public keys used to made the signature are trustworth. There is
+This program is a stripped down version of @code{gpg} which is able
+only
+to check signatures. It is somewhat smaller than the fully blown
+@code{gpg} and uses a different (and simpler) way to check that
+the public keys used to make the signature are trustworthy. There are
 no options files and only very few options are implemented.
 
-@code{gpgv} assumes that all keys in the keyring are trustworty.
-It uses by default a keyring named @file{trustedkeys.gpg} which is
+@code{gpgv} assumes that all keys in the keyring are trustworthy.
+By default it uses a keyring named @file{trustedkeys.gpg} which is
 assumed to be in the home directory as defined by GnuPG or set by an
 option or an environment variable. An option may be used to specify
 another keyring or even multiple keyrings.
@@ -41,7 +41,7 @@ another keyring or even multiple keyrings.
 @table @asis
 
 @item -v, --verbose
-Give more information during processing. If used
+Gives more information during processing. If used
 twice, the input data is listed in detail.
 
 @item -q, --quiet
@@ -59,8 +59,8 @@ The filename may be prefixed with a scheme:
 
 @item --homedir @code{directory}
 Set the name of the home directory to @code{directory} If this
-option is not used it defaults to "~/.gnupg". It does
-not make sense to use this in a options file. This
+option is not used, it defaults to "~/.gnupg". It does
+not make sense to use this in an options file. This
 also overrides the environment variable "GNUPGHOME".
 
 @item --status-fd @code{n}
@@ -74,7 +74,7 @@ Write log output to file descriptor @code{n} and not to stderr.
 GnuPG normally checks that the timestamps associated with keys and
 signatures have plausible values. However, sometimes a signature seems to
 be older than the key due to clock problems. This option makes these
-checks just a warning.
+checks just warnings.
 @end table
 @chapheading RETURN VALUE
 
