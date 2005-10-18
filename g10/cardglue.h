@@ -82,7 +82,7 @@ typedef struct ctrl_ctx_s *ctrl_t;
 
 #define GPG_ERR_GENERAL           G10ERR_GENERAL
 #define GPG_ERR_BAD_PIN           G10ERR_BAD_PASS
-#define GPG_ERR_BAD_KEy           G10ERR_BAD_KEY
+#define GPG_ERR_BAD_KEY           G10ERR_BAD_KEY
 #define GPG_ERR_CARD              G10ERR_GENERAL
 #define GPG_ERR_EEXIST            G10ERR_FILE_EXISTS
 #define GPG_ERR_ENOMEM            G10ERR_RESOURCE_LIMIT
@@ -175,14 +175,16 @@ int agent_scd_getattr (const char *name, struct agent_card_info_s *info);
 
 /* Send a SETATTR command to the SCdaemon. */
 int agent_scd_setattr (const char *name,
-                       const unsigned char *value, size_t valuelen);
+                       const unsigned char *value, size_t valuelen,
+                       const char *serialno);
 
 /* Send a WRITEKEY command to the SCdaemon. */
-int agent_scd_writekey (int keyno,
+int agent_scd_writekey (int keyno, const char *serialno,
                         const unsigned char *keydata, size_t keydatalen);
 
 /* Send a GENKEY command to the SCdaemon. */
-int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force);
+int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
+                      const char *serialno);
 
 /* Send a PKSIGN command to the SCdaemon. */
 int agent_scd_pksign (const char *keyid, int hashalgo,
@@ -195,7 +197,7 @@ int agent_scd_pkdecrypt (const char *serialno,
                          unsigned char **r_buf, size_t *r_buflen);
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
-int agent_scd_change_pin (int chvno);
+int agent_scd_change_pin (int chvno, const char *serialno);
 
 /* Send a CHECKPIN command. */
 int agent_scd_checkpin (const char *serialnobuf);

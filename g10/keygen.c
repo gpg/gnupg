@@ -1492,6 +1492,8 @@ parse_expire_string( const char *string )
 
     if( !*string )
       seconds = 0;
+    else if ( !strncmp (string, "seconds=", 8) )
+      seconds = atoi (string+8);
     else if( (abs_date = scan_isodatestr(string)) && abs_date > curtime )
       seconds = abs_date - curtime;
     else if( (mult=check_valid_days(string)) )
@@ -3274,8 +3276,8 @@ gen_card_key (int algo, int keyno, int is_primary,
 
   assert (algo == PUBKEY_ALGO_RSA);
   
-
-  rc = agent_scd_genkey (&info, keyno, 1);
+  /* Fixme: We don't have the serialnumber available, thus passing NULL. */
+  rc = agent_scd_genkey (&info, keyno, 1, NULL);
 /*    if (gpg_err_code (rc) == GPG_ERR_EEXIST) */
 /*      { */
 /*        tty_printf ("\n"); */
@@ -3550,7 +3552,9 @@ save_unprotected_key_to_card (PKT_secret_key *sk, int keyno)
   sprintf (numbuf, "%lu:", (unsigned long)strlen (numbuf2));
   p = stpcpy (stpcpy (stpcpy (p, numbuf), numbuf2), "))");
 
-  rc = agent_scd_writekey (keyno, sexp, p - sexp);
+  /* Fixme: Unfortunately we don't have the serialnumber available -
+     thus we can't pass it down to the agent. */ 
+  rc = agent_scd_writekey (keyno, NULL, sexp, p - sexp);
 
  leave:
   xfree (sexp);

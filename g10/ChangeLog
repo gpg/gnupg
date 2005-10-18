@@ -1,3 +1,19 @@
+2005-10-18  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (pin_cb): Fixed prompt for repeated PIN.  Return
+	G10ERR_CANCELED and not just -1.
+	(status_sc_op_failure): New.  Use it where we issue that status.
+	(pin_cb): Append serial number to the need-pin status message.
+	(agent_scd_change_pin): Add arg SERIALNO.  Changed all callers.
+	(agent_scd_writekey): Ditto.
+	(agent_scd_setattr): Ditto.
+	(agent_scd_genkey): Ditto.
+	(agent_scd_checkpin): Pass serialno to the pin_cb.
+
+	* keygen.c (parse_expire_string): Allow setting the expire
+	interval using a "seconds=<n>" syntax.  This is useful for
+	debugging.
+
 2005-10-17  Werner Koch  <wk@g10code.com>
 
 	* export.c (do_export_stream): Factored some code out to ...

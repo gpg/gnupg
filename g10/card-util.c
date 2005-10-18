@@ -70,17 +70,16 @@ change_pin (int chvno, int allow_admin)
 
   agent_clear_pin_cache (info.serialno);
 
-  agent_release_card_info (&info);
-
   if (opt.batch)
     {
+      agent_release_card_info (&info);
       log_error (_("can't do this in batch mode\n"));
       return;
     }
 
   if(!allow_admin)
     {
-      rc = agent_scd_change_pin (1);
+      rc = agent_scd_change_pin (1, info.serialno);
       if (rc)
 	tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
       else
@@ -109,7 +108,7 @@ change_pin (int chvno, int allow_admin)
 	rc = 0;
 	if (*answer == '1')
 	  {
-	    rc = agent_scd_change_pin (1);
+	    rc = agent_scd_change_pin (1, info.serialno);
 	    if (rc)
 	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
 	    else
@@ -120,7 +119,7 @@ change_pin (int chvno, int allow_admin)
 	  }
 	else if (*answer == '2')
 	  {
-	    rc = agent_scd_change_pin (101);
+	    rc = agent_scd_change_pin (101, info.serialno);
 	    if (rc)
 	      tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
 	    else
@@ -131,7 +130,7 @@ change_pin (int chvno, int allow_admin)
           }
 	else if (*answer == '3')
 	  {
-	    rc = agent_scd_change_pin (3);
+	    rc = agent_scd_change_pin (3, info.serialno);
 	    if (rc)
 	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
 	    else
@@ -145,6 +144,8 @@ change_pin (int chvno, int allow_admin)
 	    break;
 	  }
       }
+
+  agent_release_card_info (&info);
 }
 
 static const char *
@@ -561,7 +562,7 @@ change_name (void)
       return -1;
     }
 
-  rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname) );
+  rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname), NULL );
   if (rc)
     log_error ("error setting Name: %s\n", gpg_strerror (rc));
 
@@ -590,7 +591,7 @@ change_url (void)
       return -1;
     }
 
-  rc = agent_scd_setattr ("PUBKEY-URL", url, strlen (url) );
+  rc = agent_scd_setattr ("PUBKEY-URL", url, strlen (url), NULL );
   if (rc)
     log_error ("error setting URL: %s\n", gpg_strerror (rc));
   xfree (url);
@@ -706,7 +707,7 @@ change_login (const char *args)
       return -1;
     }
 
-  rc = agent_scd_setattr ("LOGIN-DATA", data, n );
+  rc = agent_scd_setattr ("LOGIN-DATA", data, n, NULL );
   if (rc)
     log_error ("error setting login data: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -775,7 +776,7 @@ change_private_do (const char *args, int nr)
       return -1;
     }
 
-  rc = agent_scd_setattr (do_name, data, n );
+  rc = agent_scd_setattr (do_name, data, n, NULL );
   if (rc)
     log_error ("error setting private DO: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -811,7 +812,7 @@ change_lang (void)
       return -1;
     }
 
-  rc = agent_scd_setattr ("DISP-LANG", data, strlen (data) );
+  rc = agent_scd_setattr ("DISP-LANG", data, strlen (data), NULL );
   if (rc)
     log_error ("error setting lang: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -846,7 +847,7 @@ change_sex (void)
       return -1;
     }
      
-  rc = agent_scd_setattr ("DISP-SEX", str, 1 );
+  rc = agent_scd_setattr ("DISP-SEX", str, 1, NULL );
   if (rc)
     log_error ("error setting sex: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -891,7 +892,7 @@ change_cafpr (int fprno)
 
   rc = agent_scd_setattr (fprno==1?"CA-FPR-1":
                           fprno==2?"CA-FPR-2":
-                          fprno==3?"CA-FPR-3":"x", fpr, 20 );
+                          fprno==3?"CA-FPR-3":"x", fpr, 20, NULL );
   if (rc)
     log_error ("error setting cafpr: %s\n", gpg_strerror (rc));
   return rc;
@@ -916,7 +917,7 @@ toggle_forcesig (void)
   newstate = !info.chv1_cached;
   agent_release_card_info (&info);
 
-  rc = agent_scd_setattr ("CHV-STATUS-1", newstate? "\x01":"", 1);
+  rc = agent_scd_setattr ("CHV-STATUS-1", newstate? "\x01":"", 1, NULL);
   if (rc)
     log_error ("error toggling signature PIN flag: %s\n", gpg_strerror (rc));
 }
@@ -961,7 +962,7 @@ check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
     { /* Switch of the forced mode so that during key generation we
          don't get bothered with PIN queries for each
          self-signature. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
+      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1, info->serialno);
       if (rc)
         {
           log_error ("error clearing forced signature PIN flag: %s\n",
@@ -989,7 +990,7 @@ restore_forced_chv1 (int *forced_chv1)
 
   if (*forced_chv1)
     { /* Switch back to forced state. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
+      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1, NULL);
       if (rc)
         {
           log_error ("error setting forced signature PIN flag: %s\n",

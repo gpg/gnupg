@@ -330,7 +330,7 @@ more arguments in future versions.
     NEED_PASSPHRASE_SYM <cipher_algo> <s2k_mode> <s2k_hash>
 	Issued whenever a passphrase for symmetric encryption is needed.
 
-    NEED_PASSPHRASE_PIN <card_type> <chvno>
+    NEED_PASSPHRASE_PIN <card_type> <chvno> [<serialno>]
         Issued whenever a PIN is requested to unlock a card.
 
     MISSING_PASSPHRASE
@@ -572,10 +572,14 @@ more arguments in future versions.
         This indicates that a signature subpacket was seen.  The
         format is the same as the "spk" record above.
 
-    SC_OP_FAILURE
+    SC_OP_FAILURE [<code>]
         An operation on a smartcard definitely failed.  Currently
         there is no indication of the actual error code, but
         application should be prepared to later accept more arguments.
+        Defined values for CODE are:
+           0 - unspecified error (identically to a missing CODE)
+           1 - canceled
+           2 - bad PIN
 
     SC_OP_SUCCESS
         A smart card operaion succeeded.  This status is only printed

@@ -520,6 +520,20 @@ format_cacheid (const char *sn)
   return cacheid;
 }
 
+
+/* If RC is not 0, write an appropriate status message. */
+static void
+status_sc_op_failure (int rc)
+{
+  if (rc == G10ERR_CANCELED)
+    write_status_text (STATUS_SC_OP_FAILURE, "1");
+  else if (rc == G10ERR_BAD_PASS)
+    write_status_text (STATUS_SC_OP_FAILURE, "2");
+  else if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+}  
+
+
 /* Check that the serial number of the current card (as described by
    APP) matches SERIALNO.  If there is no match and we are not in
    batch mode, present a prompt to insert the desired card.  The
@@ -880,8 +894,18 @@ pin_cb (void *opaque, const char *info, char **retstr)
 
  again:
   if (is_status_enabled())
-    write_status_text (STATUS_NEED_PASSPHRASE_PIN,
-                       isadmin? "OPENPGP 3" : "OPENPGP 1");
+    {
+      if (parm && parm->sn && *parm->sn)
+        {
+          char *buf = xmalloc ( 10 + strlen (parm->sn) + 1);
+          strcpy (stpcpy (buf, isadmin? "OPENPGP 3 ":"OPENPGP 1 "), parm->sn);
+          write_status_text (STATUS_NEED_PASSPHRASE_PIN, buf);
+          xfree (buf);
+        }
+      else  
+        write_status_text (STATUS_NEED_PASSPHRASE_PIN,
+                           isadmin? "OPENPGP 3" : "OPENPGP 1");
+    }
 
   value = ask_passphrase (info, again_text,
                           newpin && isadmin? "passphrase.adminpin.new.ask" :
@@ -898,7 +922,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
   cacheid = NULL;
   again_text = NULL;
   if (!value && canceled)
-    return -1;
+    return G10ERR_CANCELED;
   else if (!value)
     return G10ERR_GENERAL;
 
@@ -906,16 +930,17 @@ pin_cb (void *opaque, const char *info, char **retstr)
     {
       char *value2;
 
-      value2 = ask_passphrase (info, NULL, NULL,
+      value2 = ask_passphrase (info, NULL,
                                "passphrase.pin.repeat", 
                                _("Repeat this PIN: "),
-                              &canceled);
-      if (!value && canceled)
+                               NULL,
+                               &canceled);
+      if (!value2 && canceled)
         {
           xfree (value);
-          return -1;
+          return G10ERR_CANCELED;
         }
-      else if (!value)
+      else if (!value2)
         {
           xfree (value);
           return G10ERR_GENERAL;
@@ -940,10 +965,15 @@ pin_cb (void *opaque, const char *info, char **retstr)
 /* Send a SETATTR command to the SCdaemon. */
 int 
 agent_scd_setattr (const char *name,
-                   const unsigned char *value, size_t valuelen)
+                   const unsigned char *value, size_t valuelen,
+                   const char *serialno)
 {
   app_t app;
   int rc;
+  struct pincb_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  parm.sn = serialno;
 
   app = current_app? current_app : open_card ();
   if (!app)
@@ -981,11 +1011,10 @@ agent_scd_setattr (const char *name,
     }
   else
     {
-      rc = app->fnc.setattr (app, name, pin_cb, NULL, value, valuelen);
+      rc = app->fnc.setattr (app, name, pin_cb, &parm, value, valuelen);
     }
 
-  if (rc)
-    write_status (STATUS_SC_OP_FAILURE);
+  status_sc_op_failure (rc);
   return rc;
 }
 
@@ -1003,11 +1032,17 @@ inq_writekey_parms (void *opaque, const char *keyword)
 
 /* Send a WRITEKEY command to the SCdaemon. */
 int 
-agent_scd_writekey (int keyno, const unsigned char *keydata, size_t keydatalen)
+agent_scd_writekey (int keyno, const char *serialno,
+                    const unsigned char *keydata, size_t keydatalen)
 {
   app_t app;
   int rc;
   char line[ASSUAN_LINELENGTH];
+  struct pincb_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  parm.sn = serialno;
+
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
@@ -1032,12 +1067,11 @@ agent_scd_writekey (int keyno, const unsigned char *keydata, size_t keydatalen)
       snprintf (line, DIM(line)-1, "OPENPGP.%d", keyno);
       line[DIM(line)-1] = 0;
       rc = app->fnc.writekey (app, NULL, line, 0x0001,
-                              pin_cb, NULL,
+                              pin_cb, &parm,
                               keydata, keydatalen);
     }
 
-  if (rc)
-    write_status (STATUS_SC_OP_FAILURE);
+  status_sc_op_failure (rc);
   return rc;
 }
 
@@ -1097,12 +1131,17 @@ genkey_status_cb (void *opaque, const char *line)
 
 /* Send a GENKEY command to the SCdaemon. */
 int 
-agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
+agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
+                  const char *serialno)
 {
   app_t app;
   char line[ASSUAN_LINELENGTH];
   struct ctrl_ctx_s ctrl;
   int rc;
+  struct pincb_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  parm.sn = serialno;
 
   app = current_app? current_app : open_card ();
   if (!app)
@@ -1127,11 +1166,10 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
       ctrl.status_cb_arg = info;
       rc = app->fnc.genkey (app, &ctrl, line,
                             force? 1:0,
-                            pin_cb, NULL);
+                            pin_cb, &parm);
     }
 
-  if (rc)
-    write_status (STATUS_SC_OP_FAILURE);
+  status_sc_op_failure (rc);
   return rc;
 }
 
@@ -1213,7 +1251,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
 
   if (rc)
     {
-      write_status (STATUS_SC_OP_FAILURE);
+      status_sc_op_failure (rc);
       if (!app->assuan_ctx)
         agent_clear_pin_cache (serialno);
     }
@@ -1287,20 +1325,26 @@ agent_scd_pkdecrypt (const char *serialno,
 
   if (rc)
     {
-      write_status (STATUS_SC_OP_FAILURE);
+      status_sc_op_failure (rc);
       if (!app->assuan_ctx)
         agent_clear_pin_cache (serialno);
     }
   return rc;
 }
 
-/* Change the PIN of an OpenPGP card or reset the retry counter. */
+/* Change the PIN of an OpenPGP card or reset the retry
+   counter. SERIALNO may be NULL or a hex string finally passed to the
+   passphrase callback. */
 int 
-agent_scd_change_pin (int chvno)
+agent_scd_change_pin (int chvno, const char *serialno)
 {
   app_t app;
   int reset = 0;
   int rc;
+  struct pincb_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  parm.sn = serialno;
 
   reset = (chvno >= 100);
   chvno %= 100;
@@ -1326,11 +1370,10 @@ agent_scd_change_pin (int chvno)
 
       sprintf (chvnostr, "%d", chvno);
       rc = app->fnc.change_pin (app, NULL, chvnostr, reset,
-                                pin_cb, NULL);
+                                pin_cb, &parm);
     }
 
-  if (rc)
-    write_status (STATUS_SC_OP_FAILURE);
+  status_sc_op_failure (rc);
   return rc;
 }
 
@@ -1342,6 +1385,10 @@ agent_scd_checkpin (const char *serialnobuf)
 {
   app_t app;
   int rc;
+  struct pincb_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  parm.sn = serialnobuf;
 
   app = current_app? current_app : open_card ();
   if (!app)
@@ -1360,11 +1407,10 @@ agent_scd_checkpin (const char *serialnobuf)
     }
   else
     {
-      rc = app->fnc.check_pin (app, serialnobuf, pin_cb, NULL);
+      rc = app->fnc.check_pin (app, serialnobuf, pin_cb, &parm);
     }
 
-  if (rc)
-    write_status (STATUS_SC_OP_FAILURE);
+  status_sc_op_failure (rc);
   return rc;
 }
 
