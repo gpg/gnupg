@@ -1,5 +1,5 @@
 dnl Check for readline and dependencies
-dnl Copyright (C) 2004 Free Software Foundation, Inc.
+dnl Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 dnl
 dnl This file is free software, distributed under the terms of the GNU
 dnl General Public License.  As a special exception to the GNU General
@@ -35,10 +35,12 @@ AC_DEFUN([GNUPG_CHECK_READLINE],
 #include <readline/readline.h>
 #include <readline/history.h>
 ],[
+rl_completion_func_t *completer;
 add_history("foobar");
 rl_catch_signals=0;
 rl_inhibit_completion=0;
 rl_attempted_completion_function=NULL;
+rl_completion_matches(NULL,NULL);
 ]),_found_readline=yes,_found_readline=no)
 
         AC_MSG_RESULT([$_found_readline])
