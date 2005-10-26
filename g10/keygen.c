@@ -1955,7 +1955,7 @@ parse_parameter_usage (const char *fname,
         }
     }
     r->u.usage = use;
-    return 0;
+    return 1;
 }
 
 static int
@@ -2062,14 +2062,14 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   const char *s1, *s2, *s3;
   size_t n;
   char *p;
-  int have_user_id=0;
+  int have_user_id=0,err,algo;
 
   /* Check that we have all required parameters. */
   r = get_parameter( para, pKEYTYPE );
   if(r)
     {
-      if(check_pubkey_algo2(get_parameter_algo(para,pKEYTYPE),
-			    PUBKEY_USAGE_SIG))
+      algo=get_parameter_algo(para,pKEYTYPE);
+      if(check_pubkey_algo2(algo,PUBKEY_USAGE_SIG))
 	{
 	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
 	  return -1;
@@ -2081,19 +2081,41 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
       return -1;
     }
 
-  if (parse_parameter_usage (fname, para, pKEYUSAGE))
+  err=parse_parameter_usage (fname, para, pKEYUSAGE);
+  if(err==0)
+    {
+      /* Default to algo capabilities if key-usage is not provided */
+      r=xmalloc_clear(sizeof(*r));
+      r->key=pKEYUSAGE;
+      r->u.usage=openpgp_pk_algo_usage(algo);
+      r->next=para;
+      para=r;
+    }
+  else if(err==-1)
     return -1;
 
   r = get_parameter( para, pSUBKEYTYPE );
   if(r)
     {
-      if(check_pubkey_algo( get_parameter_algo( para, pSUBKEYTYPE)))
+      algo=get_parameter_algo( para, pSUBKEYTYPE);
+      if(check_pubkey_algo(algo))
 	{
 	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
 	  return -1;
 	}
 
-      if(parse_parameter_usage (fname, para, pSUBKEYUSAGE))
+      err=parse_parameter_usage (fname, para, pSUBKEYUSAGE);
+      if(err==0)
+	{
+	  /* Default to algo capabilities if subkey-usage is not
+	     provided */
+	  r=xmalloc_clear(sizeof(*r));
+	  r->key=pSUBKEYUSAGE;
+	  r->u.usage=openpgp_pk_algo_usage(algo);
+	  r->next=para;
+	  para=r;
+	}
+      else if(err==-1)
 	return -1;
     }
 

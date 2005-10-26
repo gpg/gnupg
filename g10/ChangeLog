@@ -1,3 +1,9 @@
+2005-10-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (proc_parameter_file): Default key and subkey usage
+	flags to algo capabilities if parameter file doesn't specify them.
+	Noted by Timo Schulz.
+
 2005-10-18  Werner Koch  <wk@g10code.com>
 
 	* cardglue.c (pin_cb): Fixed prompt for repeated PIN.  Return
