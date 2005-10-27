@@ -1,3 +1,10 @@
+2005-10-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document backsign, --require-backsigs, and
+	--no-require-backsigs.
+
+	* DETAILS: Clarify Key-Usage.
+
 2005-10-07  Werner Koch  <wk@g10code.com>
 
 	* gpgv.sgml: Small spelling corrections by Mike Dowling.

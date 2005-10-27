@@ -587,7 +587,7 @@ more arguments in future versions.
         PIN change really worked.
 
     BACKUP_KEY_CREATED fingerprint fname
-        A backup key named FNAME has been created for the key wityh
+        A backup key named FNAME has been created for the key with
         KEYID.
 
 
@@ -750,8 +750,13 @@ The format of this file is as follows:
 	Length of the key in bits.  Default is 1024.
      Key-Usage: <usage-list>
         Space or comma delimited list of key usage, allowed values are
-        "encrypt" and "sign".  This is used to generate the key flags.
-        Please make sure that the algorithm is capable of this usage.
+        "encrypt", "sign", and "auth".  This is used to generate the
+        key flags.  Please make sure that the algorithm is capable of
+        this usage.  Note that OpenPGP requires that all primary keys
+        are capable of certification, so no matter what usage is given
+        here, the "cert" flag will be on.  If no Key-Usage is
+        specified, all the allowed usages for that particular
+        algorithm are used.
      Subkey-Type: <algo-number>|<algo-string>
 	This generates a secondary key.  Currently only one subkey
 	can be handled.

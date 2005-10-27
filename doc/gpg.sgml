@@ -565,6 +565,14 @@ that is no longer usable (e.g. revoked, or expired).
 If invoked with no arguments, both `sigs' and `uids' are cleaned.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>backsign</term>
+<listitem></para>
+Add back signatures to signing subkeys that may not currently have
+back signatures.  Back signatures protect against a subtle attack
+against signing subkeys.  See --require-backsigs.
+</para></listitem></varlistentry>
+
     <varlistentry>
     <term>save</term>
     <listitem><para>
@@ -2710,6 +2718,17 @@ string is the same as the one printed by --show-session-key.  This option
 is normally not used but comes handy in case someone forces you to reveal the
 content of an encrypted message; using this option you can do this without
 handing out the secret key.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--require-backsigs</term>
+<term>--no-require-backsigs</term>
+<listitem><para>
+When verifying a signature made from a subkey, ensure that the "back
+signature" on the subkey is present and valid.  This protects against
+a subtle attack against subkeys that can sign.  Currently defaults to
+--no-require-backsigs, but will be changed to --require-backsigs in
+the future.
 </para></listitem></varlistentry>
 
 <varlistentry>
