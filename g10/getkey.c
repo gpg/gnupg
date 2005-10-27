@@ -2345,7 +2345,7 @@ finish_lookup (GETKEY_CTX ctx)
     KBNODE k;
     KBNODE foundk = NULL;
     PKT_user_id *foundu = NULL;
-#define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC)
+#define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC|PUBKEY_USAGE_CERT)
     unsigned int req_usage = ( ctx->req_usage & USAGE_MASK );
     /* Request the primary if we're certifying another key, and also
        if signing data while --pgp6 or --pgp7 is on since pgp 6 and 7

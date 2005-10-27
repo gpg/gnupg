@@ -3380,9 +3380,11 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 	  goto fail;
 	}
 
-      /* Note that I'm requesting SIG here and not CERT.  We're making
-	 a certification, but it is okay to be a subkey. */
-      revoker_pk->req_usage=PUBKEY_USAGE_SIG;
+      /* Note that I'm requesting CERT here, which usually implies
+	 primary keys only, but some casual testing shows that PGP and
+	 GnuPG both can handle a designated revokation from a
+	 subkey. */
+      revoker_pk->req_usage=PUBKEY_USAGE_CERT;
       rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1);
       if(rc)
 	{
