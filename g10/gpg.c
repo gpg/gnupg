@@ -1710,7 +1710,7 @@ main (int argc, char **argv )
     set_homedir ( default_homedir () );
 
 #ifdef ENABLE_CARD_SUPPORT
-# ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
     opt.pcsc_driver = "winscard.dll"; 
 #else
     opt.pcsc_driver = "libpcsclite.so"; 

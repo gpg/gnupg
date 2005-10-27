@@ -1,3 +1,26 @@
+2005-10-27  Werner Koch  <wk@g10code.com>
+
+	* gpg.c [__CYGWIN__]: Set default driver to winscard.dll.
+
+	* apdu.c, apdu.h: Updated from gnupg 1.9.  Changes are:
+	* apdu.c [__CYGWIN__]: Make cygwin environment similar to _WIN32.
+	Suggested by John P. Clizbe.
+	* apdu.h (SW_HOST_NO_KEYPAD): New.
+	* apdu.c (host_sw_string): Support new code. 
+	(reader_table_s): New field CHECK_KEYPAD.
+	(new_reader_slot, open_ct_reader, open_pcsc_reader) 
+	(open_ccid_reader, open_rapdu_reader): Initialize it.
+	(check_ccid_keypad): New.
+	(apdu_check_keypad): New.
+	(apdu_send_le): Factored all code out to ...
+	(send_le): .. new.  Takes an additional arg; changed all callers
+	of the orginal function to use this one with a NULL for the new
+	arg.
+	(apdu_send_simple_kp): New.
+	(ct_send_apdu, pcsc_send_apdu, my_rapdu_send_apdu) 
+	(send_apdu_ccid): New arg PININFO.
+	(send_apdu_ccid): Use the new arg.
+
 2005-10-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (proc_parameter_file): Default key and subkey usage

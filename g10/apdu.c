@@ -66,10 +66,10 @@
 #include "ccid-driver.h"
 
 
-/* To to conflicting use of threading libraries we usually can't link
+/* Due to conflicting use of threading libraries we usually can't link
    against libpcsclite.   Instead we use a wrapper program.  */
 #ifdef USE_GNU_PTH
-#ifndef HAVE_W32_SYSTEM
+#if !defined(HAVE_W32_SYSTEM) && !defined(__CYGWIN__)
 #define NEED_PCSC_WRAPPER 1
 #endif
 #endif
@@ -78,7 +78,7 @@
 #define MAX_READER 4 /* Number of readers we support concurrently. */
 
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 #define DLSTDCALL __stdcall
 #else
 #define DLSTDCALL
@@ -90,6 +90,14 @@
 #define MAX_OPEN_FDS 20
 #endif
 
+/* Helper to pass patrameters related to keypad based operations. */
+struct pininfo_s
+{
+  int mode;
+  int minlen;
+  int maxlen;
+  int padlen;
+};
 
 /* A structure to collect information pertaining to one reader
    slot. */
@@ -103,7 +111,8 @@ struct reader_table_s {
   int (*reset_reader)(int);
   int (*get_status_reader)(int, unsigned int *);
   int (*send_apdu_reader)(int,unsigned char *,size_t,
-                          unsigned char *, size_t *);
+                          unsigned char *, size_t *, struct pininfo_s *);
+  int (*check_keypad)(int, int, int, int, int, int);
   void (*dump_status_reader)(int);
 
   struct {
@@ -320,6 +329,7 @@ new_reader_slot (void)
   reader_table[reader].reset_reader = NULL;
   reader_table[reader].get_status_reader = NULL;
   reader_table[reader].send_apdu_reader = NULL;
+  reader_table[reader].check_keypad = NULL;
   reader_table[reader].dump_status_reader = NULL;
 
   reader_table[reader].used = 1;
@@ -372,6 +382,7 @@ host_sw_string (long err)
     case SW_HOST_GENERAL_ERROR: return "general error";
     case SW_HOST_NO_READER: return "no reader";
     case SW_HOST_ABORTED: return "aborted";
+    case SW_HOST_NO_KEYPAD: return "no keypad"; 
     default: return "unknown host status error";
     }
 }
@@ -533,7 +544,7 @@ ct_get_status (int slot, unsigned int *status)
    set to BUFLEN.  Returns: CT API error code. */
 static int
 ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-              unsigned char *buffer, size_t *buflen)
+              unsigned char *buffer, size_t *buflen, struct pininfo_s *pininfo)
 {
   int rc;
   unsigned char dad[1], sad[1];
@@ -596,6 +607,7 @@ open_ct_reader (int port)
   reader_table[reader].reset_reader = reset_ct_reader;
   reader_table[reader].get_status_reader = ct_get_status;
   reader_table[reader].send_apdu_reader = ct_send_apdu;
+  reader_table[reader].check_keypad = NULL;
   reader_table[reader].dump_status_reader = ct_dump_reader_status;
 
   dump_reader_status (reader);
@@ -1082,7 +1094,8 @@ pcsc_get_status (int slot, unsigned int *status)
    set to BUFLEN.  Returns: CT API error code. */
 static int
 pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-                unsigned char *buffer, size_t *buflen)
+                unsigned char *buffer, size_t *buflen, 
+                struct pininfo_s *pininfo)
 {
 #ifdef NEED_PCSC_WRAPPER
   long err;
@@ -1479,6 +1492,7 @@ open_pcsc_reader (const char *portstr)
   reader_table[slot].reset_reader = reset_pcsc_reader;
   reader_table[slot].get_status_reader = pcsc_get_status;
   reader_table[slot].send_apdu_reader = pcsc_send_apdu;
+  reader_table[slot].check_keypad = NULL;
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
 
   /* Read the status so that IS_T0 will be set. */
@@ -1625,6 +1639,7 @@ open_pcsc_reader (const char *portstr)
   reader_table[slot].reset_reader = reset_pcsc_reader;
   reader_table[slot].get_status_reader = pcsc_get_status;
   reader_table[slot].send_apdu_reader = pcsc_send_apdu;
+  reader_table[slot].check_keypad = NULL;
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
 
 /*   log_debug ("state    from pcsc_status: 0x%lx\n", card_state); */
@@ -1713,7 +1728,8 @@ get_status_ccid (int slot, unsigned int *status)
    set to BUFLEN.  Returns: Internal CCID driver error code. */
 static int
 send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
-                unsigned char *buffer, size_t *buflen)
+                unsigned char *buffer, size_t *buflen,
+                struct pininfo_s *pininfo)
 {
   long err;
   size_t maxbuflen;
@@ -1727,15 +1743,42 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
     log_printhex ("  APDU_data:", apdu, apdulen);
 
   maxbuflen = *buflen;
-  err = ccid_transceive (reader_table[slot].ccid.handle,
-                         apdu, apdulen,
-                         buffer, maxbuflen, buflen);
+  if (pininfo)
+    err = ccid_transceive_secure (reader_table[slot].ccid.handle,
+                                  apdu, apdulen,
+                                  pininfo->mode,
+                                  pininfo->minlen,
+                                  pininfo->maxlen,
+                                  pininfo->padlen,
+                                  buffer, maxbuflen, buflen);
+  else
+    err = ccid_transceive (reader_table[slot].ccid.handle,
+                           apdu, apdulen,
+                           buffer, maxbuflen, buflen);
   if (err)
     log_error ("ccid_transceive failed: (0x%lx)\n",
                err);
 
   return err;
 }
+
+
+/* Check whether the CCID reader supports the ISO command code COMMAND
+   on the keypad.  Return 0 on success.  For a description of the pin
+   parameters, see ccid-driver.c */
+static int
+check_ccid_keypad (int slot, int command, int pin_mode,
+                   int pinlen_min, int pinlen_max, int pin_padlen)
+{
+  unsigned char apdu[] = { 0, 0, 0, 0x81 };
+
+  apdu[1] = command;
+  return ccid_transceive_secure (reader_table[slot].ccid.handle,
+                                 apdu, sizeof apdu,
+                                 pin_mode, pinlen_min, pinlen_max, pin_padlen,
+                                 NULL, 0, NULL);
+}
+
 
 /* Open the reader and try to read an ATR.  */
 static int
@@ -1776,6 +1819,7 @@ open_ccid_reader (const char *portstr)
   reader_table[slot].reset_reader = reset_ccid_reader;
   reader_table[slot].get_status_reader = get_status_ccid;
   reader_table[slot].send_apdu_reader = send_apdu_ccid;
+  reader_table[slot].check_keypad = check_ccid_keypad;
   reader_table[slot].dump_status_reader = dump_ccid_reader_status;
 
   dump_reader_status (slot);
@@ -1932,7 +1976,8 @@ my_rapdu_get_status (int slot, unsigned int *status)
    set to BUFLEN.  Returns: APDU error code. */
 static int
 my_rapdu_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-                    unsigned char *buffer, size_t *buflen)
+                    unsigned char *buffer, size_t *buflen,
+                    struct pininfo_s *pininfo)
 {
   int err;
   reader_table_t slotp;
@@ -2063,6 +2108,7 @@ open_rapdu_reader (int portno,
   reader_table[slot].reset_reader = reset_rapdu_reader;
   reader_table[slot].get_status_reader = my_rapdu_get_status;
   reader_table[slot].send_apdu_reader = my_rapdu_send_apdu;
+  reader_table[slot].check_keypad = NULL;
   reader_table[slot].dump_status_reader = NULL;
 
   dump_reader_status (slot);
@@ -2198,28 +2244,28 @@ apdu_open_reader (const char *portstr)
       pcsc_establish_context = dlsym (handle, "SCardEstablishContext");
       pcsc_release_context   = dlsym (handle, "SCardReleaseContext");
       pcsc_list_readers      = dlsym (handle, "SCardListReaders");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
       if (!pcsc_list_readers)
         pcsc_list_readers    = dlsym (handle, "SCardListReadersA");
 #endif
       pcsc_get_status_change = dlsym (handle, "SCardGetStatusChange");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
       if (!pcsc_get_status_change)
         pcsc_get_status_change = dlsym (handle, "SCardGetStatusChangeA");
 #endif
       pcsc_connect           = dlsym (handle, "SCardConnect");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
       if (!pcsc_connect)
         pcsc_connect         = dlsym (handle, "SCardConnectA");
 #endif
       pcsc_reconnect         = dlsym (handle, "SCardReconnect");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
       if (!pcsc_reconnect)
         pcsc_reconnect       = dlsym (handle, "SCardReconnectA");
 #endif
       pcsc_disconnect        = dlsym (handle, "SCardDisconnect");
       pcsc_status            = dlsym (handle, "SCardStatus");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
       if (!pcsc_status)
         pcsc_status          = dlsym (handle, "SCardStatusA");
 #endif
@@ -2492,11 +2538,30 @@ apdu_get_status (int slot, int hang,
 }
 
 
+/* Check whether the reader supports the ISO command code COMMAND on
+   the keypad.  Return 0 on success.  For a description of the pin
+   parameters, see ccid-driver.c */
+int
+apdu_check_keypad (int slot, int command, int pin_mode,
+                   int pinlen_min, int pinlen_max, int pin_padlen)
+{
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
+  if (reader_table[slot].check_keypad)
+    return reader_table[slot].check_keypad (slot, command,
+                                            pin_mode, pinlen_min, pinlen_max,
+                                            pin_padlen);
+  else
+    return SW_HOST_NOT_SUPPORTED;
+}
+
+
 /* Dispatcher for the actual send_apdu function. Note, that this
    function should be called in locked state. */
 static int
 send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-           unsigned char *buffer, size_t *buflen)
+           unsigned char *buffer, size_t *buflen, struct pininfo_s *pininfo)
 {
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
@@ -2504,24 +2569,20 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   if (reader_table[slot].send_apdu_reader)
     return reader_table[slot].send_apdu_reader (slot,
                                                 apdu, apdulen,
-                                                buffer, buflen);
+                                                buffer, buflen, pininfo);
   else
     return SW_HOST_NOT_SUPPORTED;
 }
 
-/* Send an APDU to the card in SLOT.  The APDU is created from all
-   given parameters: CLASS, INS, P0, P1, LC, DATA, LE.  A value of -1
-   for LC won't sent this field and the data field; in this case DATA
-   must also be passed as NULL.  The return value is the status word
-   or -1 for an invalid SLOT or other non card related error.  If
-   RETBUF is not NULL, it will receive an allocated buffer with the
-   returned data.  The length of that data will be put into
-   *RETBUFLEN.  The caller is reponsible for releasing the buffer even
-   in case of errors.  */
-int
-apdu_send_le(int slot, int class, int ins, int p0, int p1,
-             int lc, const char *data, int le,
-             unsigned char **retbuf, size_t *retbuflen)
+
+/* Core APDU trabceiver function. Parameters are described at
+   apdu_send_le with the exception of PININFO which indicates keypad
+   related operations if not NULL. */
+static int
+send_le (int slot, int class, int ins, int p0, int p1,
+         int lc, const char *data, int le,
+         unsigned char **retbuf, size_t *retbuflen,
+         struct pininfo_s *pininfo)
 {
 #define RESULTLEN 256
   unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
@@ -2570,7 +2631,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
   /* As safeguard don't pass any garbage from the stack to the driver. */
   memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
   resultlen = RESULTLEN;
-  rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
+  rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
   if (rc || resultlen < 2)
     {
       log_error ("apdu_send_simple(%d) failed: %s\n",
@@ -2638,7 +2699,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
           apdu[apdulen++] = len;
           memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
           resultlen = RESULTLEN;
-          rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
+          rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
           if (rc || resultlen < 2)
             {
               log_error ("apdu_send_simple(%d) for get response failed: %s\n",
@@ -2704,6 +2765,27 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
 }
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all
+   given parameters: CLASS, INS, P0, P1, LC, DATA, LE.  A value of -1
+   for LC won't sent this field and the data field; in this case DATA
+   must also be passed as NULL.  The return value is the status word
+   or -1 for an invalid SLOT or other non card related error.  If
+   RETBUF is not NULL, it will receive an allocated buffer with the
+   returned data.  The length of that data will be put into
+   *RETBUFLEN.  The caller is reponsible for releasing the buffer even
+   in case of errors.  */
+int
+apdu_send_le(int slot, int class, int ins, int p0, int p1,
+             int lc, const char *data, int le,
+             unsigned char **retbuf, size_t *retbuflen)
+{
+  return send_le (slot, class, ins, p0, p1,
+                  lc, data, le,
+                  retbuf, retbuflen,
+                  NULL);
+}
+
+
+/* Send an APDU to the card in SLOT.  The APDU is created from all
    given parameters: CLASS, INS, P0, P1, LC, DATA.  A value of -1 for
    LC won't sent this field and the data field; in this case DATA must
    also be passed as NULL. The return value is the status word or -1
@@ -2716,8 +2798,8 @@ int
 apdu_send (int slot, int class, int ins, int p0, int p1,
            int lc, const char *data, unsigned char **retbuf, size_t *retbuflen)
 {
-  return apdu_send_le (slot, class, ins, p0, p1, lc, data, 256,
-                       retbuf, retbuflen);
+  return send_le (slot, class, ins, p0, p1, lc, data, 256,
+                  retbuf, retbuflen, NULL);
 }
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all
@@ -2730,7 +2812,25 @@ int
 apdu_send_simple (int slot, int class, int ins, int p0, int p1,
                   int lc, const char *data)
 {
-  return apdu_send_le (slot, class, ins, p0, p1, lc, data, -1, NULL, NULL);
+  return send_le (slot, class, ins, p0, p1, lc, data, -1, NULL, NULL, NULL);
+}
+
+
+/* Same as apdu_send_simple but uses the keypad of the reader. */
+int
+apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
+                     int lc, const char *data,  
+                     int pin_mode,
+                     int pinlen_min, int pinlen_max, int pin_padlen)
+{
+  struct pininfo_s pininfo;
+
+  pininfo.mode = pin_mode;
+  pininfo.minlen = pinlen_min;
+  pininfo.maxlen = pinlen_max;
+  pininfo.padlen = pin_padlen;
+  return send_le (slot, class, ins, p0, p1, lc, data, -1,
+                  NULL, NULL, &pininfo);
 }
 
 
@@ -2771,7 +2871,7 @@ apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
   class = apdulen? *apdu : 0;
 
   resultlen = RESULTLEN;
-  rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
+  rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
   if (rc || resultlen < 2)
     {
       log_error ("apdu_send_direct(%d) failed: %s\n",
@@ -2825,7 +2925,7 @@ apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
           apdu[apdulen++] = len;
           memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
           resultlen = RESULTLEN;
-          rc = send_apdu (slot, apdu, apdulen, result, &resultlen);
+          rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
           if (rc || resultlen < 2)
             {
               log_error ("apdu_send_direct(%d) for get response failed: %s\n",
