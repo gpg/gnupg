@@ -1616,19 +1616,25 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
 	continue;
 
       /* ... and sigs from unavailable keys. */
-      if(node->flag & (1<<12))
+      /* disabled for now since more people seem to want sigs from
+	 unavailable keys removed altogether.  */
+      /*
+	if(node->flag & (1<<12))
 	continue;
+      */
 
       /* Everything else we delete */
 
-      /* if 9 or 10 is set, but we get this far, it's superceded,
-	 otherwise, it's invalid */
+      /* At this point, if 12 is set, the signing key was unavailable.
+	 If 9 or 10 is set, it's superceded.  Otherwise, it's
+	 invalid. */
 
       if(noisy)
-	log_info("removing signature from %s on uid \"%s\": %s\n",
+	log_info("removing signature from key %s on user ID \"%s\": %s\n",
 		 keystr(node->pkt->pkt.signature->keyid),
 		 uidnode->pkt->pkt.user_id->name,
-		 node->flag&(1<<9)?"superceded":"invalid");
+		 node->flag&(1<<12)?"key unavailable":
+		 node->flag&(1<<9)?"signature superceded":"invalid signature");
 
       delete_kbnode(node);
       deleted++;
