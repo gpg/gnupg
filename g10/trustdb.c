@@ -1654,7 +1654,7 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
 int
 clean_uids_from_key(KBNODE keyblock,int noisy)
 {
-  int delete_until_next=0,deleted=0;
+  int delete_until_next=0,deleting=0,deleted=0;
   KBNODE node,signode=NULL;
   u32 keyid[2],sigdate=0;
 
@@ -1684,6 +1684,7 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 	  else
 	    {
 	      delete_until_next=1;
+	      deleting=1;
 
 	      if(noisy)
 		{
@@ -1722,7 +1723,11 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 	  if(delete_until_next && !sig->flags.chosen_selfsig)
 	    {
 	      delete_kbnode(node);
-	      deleted++;
+	      if(deleting)
+		{
+		  deleted++;
+		  deleting=0;
+		}
 	    }
 	}
     }

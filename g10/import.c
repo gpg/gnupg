@@ -101,12 +101,12 @@ parse_import_options(char *str,unsigned int *options,int noisy)
        N_("create a public key when importing a secret key")},
       {"merge-only",IMPORT_MERGE_ONLY,NULL,
        N_("only accept updates to existing keys")},
+      {"import-clean",IMPORT_CLEAN_SIGS|IMPORT_CLEAN_UIDS,NULL,
+       N_("all import-clean-* options from above")},
       {"import-clean-sigs",IMPORT_CLEAN_SIGS,NULL,
        N_("remove unusable signatures after import")},
       {"import-clean-uids",IMPORT_CLEAN_UIDS,NULL,
        N_("remove unusable user IDs after import")},
-      {"import-clean",IMPORT_CLEAN_SIGS|IMPORT_CLEAN_UIDS,NULL,
-       N_("all import-clean-* options from above")},
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -739,6 +739,8 @@ import_one( const char *fname, KBNODE keyblock,
             return 0;
     }
 
+    collapse_uids(&keyblock);
+
     /* Clean the key that we're about to import, to cut down on things
        that we have to clean later.  This has no practical impact on
        the end result, but does result in less logging which might
@@ -807,8 +809,6 @@ import_one( const char *fname, KBNODE keyblock,
 	}
 	if( opt.verbose > 1 )
 	    log_info (_("writing to `%s'\n"), keydb_get_resource_name (hd) );
-
-	collapse_uids(&keyblock);
 
 	rc = keydb_insert_keyblock (hd, keyblock );
         if (rc)
@@ -886,7 +886,6 @@ import_one( const char *fname, KBNODE keyblock,
 	    goto leave;
 	  }
 
-	collapse_uids( &keyblock );
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
 	clear_kbnode_flags( keyblock );

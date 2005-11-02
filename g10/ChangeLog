@@ -1,3 +1,18 @@
+2005-11-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_one): Do collapse_uids() before we do any
+	cleaning so keyserver mangled keys with doubled user IDs can be
+	properly cleaned - possibly sigs on the different user IDs cancel
+	each other out.
+
+	* import.c (parse_import_options), export.c
+	(parse_export_options): List "xxx-clean" before the longer options
+	so we don't end up with a partial match on the longer options.
+
+	* trustdb.c (clean_uids_from_key): Return proper number of cleaned
+	user IDs.  Don't count user IDs as cleaned unless we actually
+	delete something.
+
 2005-10-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_addrevoker), getkey.c (finish_lookup): Fix
