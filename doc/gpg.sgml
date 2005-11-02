@@ -548,9 +548,9 @@ keep keys neat and clean, and it has no effect aside from that.
 <term>sigs</term>
 <listitem><para>
 Remove any signatures that are not usable by the trust calculations.
-For example, this removes any signature that does not validate.  It
-also removes any signature that is superceded by a later signature, or
-signatures that were revoked.
+Specifically, this removes any signature that does not validate, any
+signature that is superceded by a later signature, revoked signatures,
+and signatures issued by keys that are not present on the keyring.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -567,7 +567,7 @@ If invoked with no arguments, both `sigs' and `uids' are cleaned.
 
 <varlistentry>
 <term>backsign</term>
-<listitem></para>
+<listitem><para>
 Add back signatures to signing subkeys that may not currently have
 back signatures.  Back signatures protect against a subtle attack
 against signing subkeys.  See --require-backsigs.
@@ -1402,8 +1402,9 @@ any new keys to be imported.  Defaults to no.
 <term>import-clean-sigs</term>
 <listitem><para>
 After import, remove any signatures from the new key that are not
-usable.  This is the same as running the --edit-key command "clean
-sigs" after import.  Defaults to no.
+usable.  This includes signatures that were issued by keys that are
+not present on the keyring.  This option is the same as running the
+--edit-key command "clean sigs" after import.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1464,9 +1465,10 @@ out any signatures that are not self-signatures.  Defaults to no.
 <varlistentry>
 <term>export-clean-sigs</term>
 <listitem><para>
-Do not export any signatures that are not usable.  This is the same as
-running the --edit-key command "clean sigs" before export.  Defaults
-to no.
+Do not export any signatures that are not usable.  This includes
+signatures that were issued by keys that are not present on the
+keyring.  This option is the same as running the --edit-key command
+"clean sigs" before export.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
