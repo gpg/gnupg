@@ -1,3 +1,7 @@
+2005-11-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Check for a getpagesize() declaration.
+
 2005-10-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Clarify the cURL keyserver changes, and add a note about

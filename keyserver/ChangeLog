@@ -1,3 +1,8 @@
+2005-11-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (search_key): Fix warning with typecast (though
+	curl should really have defined that char * as const).
+
 2005-08-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* ksutil.h, ksutil.c (parse_ks_options): Remove exact-name and

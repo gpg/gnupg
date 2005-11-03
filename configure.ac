@@ -813,6 +813,7 @@ else
 fi
 
 dnl Checks for library functions.
+AC_CHECK_DECLS(getpagesize)
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK

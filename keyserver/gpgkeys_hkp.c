@@ -298,7 +298,7 @@ search_key(const char *searchkey)
     fprintf(console,"gpgkeys: search type is %d, and key is \"%s\"\n",
 	    search_type,searchkey);
 
-  searchkey_encoded=curl_escape(searchkey,0);
+  searchkey_encoded=curl_escape((char *)searchkey,0);
   if(!searchkey_encoded)
     {
       fprintf(console,"gpgkeys: out of memory\n");

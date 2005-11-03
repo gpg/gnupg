@@ -43,6 +43,12 @@
 #include "util.h"
 #include "i18n.h"
 
+/* MinGW doesn't seem to prototype getpagesize, though it does have
+   it. */
+#if !HAVE_DECL_GETPAGESIZE
+int getpagesize(void);
+#endif
+
 #if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
 #define MAP_ANONYMOUS MAP_ANON
 #endif
