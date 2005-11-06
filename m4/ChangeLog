@@ -1,3 +1,9 @@
+2005-11-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* libusb.m4: Check for libusb-config and if we find it, use --libs
+	and --cflags.  This is needed for OS X since libusb brings in
+	dependencies to various Apple libraries.
+
 2005-10-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* readline.m4: Check for rl_completion_func_t and

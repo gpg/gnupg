@@ -1,5 +1,5 @@
 dnl Check for libusb
-dnl Copyright (C) 2004 Free Software Foundation, Inc.
+dnl Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 dnl
 dnl This file is free software, distributed under the terms of the GNU
 dnl General Public License.  As a special exception to the GNU General
@@ -22,10 +22,24 @@ AC_DEFUN([GNUPG_CHECK_LIBUSB],
      if test -d "$withval" ; then
         CPPFLAGS="${CPPFLAGS} -I$withval/include"
         LDFLAGS="${LDFLAGS} -L$withval/lib"
+        AC_PATH_PROG([_usb_config],["$_do_libusb/bin/libusb-config"])
+     else
+        AC_PATH_PROG([_usb_config],[libusb-config])
      fi
 
      _libusb_save_libs=$LIBS
-     LIBS="$LIBS -lusb"
+     _libusb_save_cflags=$CFLAGS
+
+     if test x$_usb_config != "x" ; then
+        _libusb_try_libs=`$LIBS $_usb_config --libs`
+        _libusb_try_cflags=`$LIBS $_usb_config --cflags`
+     else
+        _libusb_try_libs="-lusb"
+        _libusb_try_cflags=""
+     fi
+
+     LIBS="$LIBS $_libusb_try_libs"
+     CFLAGS="$CFLAGS $_libusb_try_cflags"
 
      AC_MSG_CHECKING([whether libusb is present and sane])
 
@@ -38,13 +52,18 @@ usb_bulk_write(NULL,0,NULL,0,0);
      if test $_found_libusb = yes ; then
         AC_DEFINE(HAVE_LIBUSB,1,
 	   [Define to 1 if you have a fully functional libusb library.])
-        AC_SUBST(LIBUSB,"-lusb")
+        AC_SUBST(LIBUSB_CPPFLAGS,$_libusb_try_cflags)
+        AC_SUBST(LIBUSB,$_libusb_try_libs)
         AC_CHECK_FUNCS(usb_get_busses)
      fi
 
      LIBS=$_libusb_save_libs
+     CFLAGS=$_libusb_save_cflags
 
      unset _libusb_save_libs
+     unset _libusb_save_cflags
+     unset _libusb_try_libs
+     unset _libusb_try_cflags
      unset _found_libusb
   fi
 ])dnl
