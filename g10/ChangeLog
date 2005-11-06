@@ -1,3 +1,8 @@
+2005-11-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Add a section for --encrypt-to.  This is Debian
+	bug 336211 by Javier Fernández-Sanguino Peña.
+
 2005-11-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Include @LIBUSB_CPPFLAGS@ in our CPPFLAGS.

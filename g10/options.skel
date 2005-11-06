@@ -39,6 +39,14 @@
 #default-recipient some-user-id
 #default-recipient-self
 
+# Use --encrypt-to to add the specified key as a recipient to all
+# messages.  This is useful, for example, when sending mail through a
+# mail client that does not automatically encrypt mail to your key.
+# In the example, this option allows you to read your local copy of
+# encrypted mail that you've sent to others.
+
+#encrypt-to some-key-id
+
 # By default GnuPG creates version 3 signatures for data files.  This
 # is not strictly OpenPGP compliant but PGP 6 and most versions of PGP
 # 7 require them.  To disable this behavior, you may use this option
