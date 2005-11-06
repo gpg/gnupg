@@ -1,3 +1,14 @@
+2005-11-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Include @LIBUSB_CPPFLAGS@ in our CPPFLAGS.
+	Strictly speaking this should be only in gpg_CPPFLAGS, but then we
+	have to compile everything twice for gpg and gpgv.
+
+	* apdu.c (open_pcsc_reader): Fix double free.
+
+	* gpg.c (main) [__APPLE__]: Default the PCSC driver to the OS X
+	location.  Suggested by Patty A. Hardy.
+
 2005-11-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (clean_sigs_from_uid): Include sigs from unavailable

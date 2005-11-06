@@ -1711,7 +1711,9 @@ main (int argc, char **argv )
 
 #ifdef ENABLE_CARD_SUPPORT
 #if defined(_WIN32) || defined(__CYGWIN__)
-    opt.pcsc_driver = "winscard.dll"; 
+    opt.pcsc_driver = "winscard.dll";
+#elif defined(__APPLE__)
+    opt.pcsc_driver = "/System/Library/Frameworks/PCSC.framework/PCSC";
 #else
     opt.pcsc_driver = "libpcsclite.so"; 
 #endif

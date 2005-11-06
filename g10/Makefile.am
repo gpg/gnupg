@@ -19,14 +19,16 @@
 
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/intl @LIBUSB_CPPFLAGS@
+
 EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
 
 if ! HAVE_DOSISH_SYSTEM
-AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)/@PACKAGE@\""
+AM_CPPFLAGS += -DGNUPG_LIBEXECDIR="\"$(libexecdir)/@PACKAGE@\""
 endif
+
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 other_libs = $(LIBICONV) $(SRVLIBS) $(LIBINTL) $(CAPLIBS)
 

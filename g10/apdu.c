@@ -1603,7 +1603,6 @@ open_pcsc_reader (const char *portstr)
       xfree (reader_table[slot].rdrname);
       reader_table[slot].rdrname = NULL;
       reader_table[slot].used = 0;
-      xfree (list);
       return -1 /*pcsc_error_to_sw (err)*/;
     }
 
