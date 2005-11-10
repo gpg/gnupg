@@ -208,6 +208,7 @@ typedef struct
     /* TODO: Move more flags here */
     unsigned mdc:1;
     unsigned ks_modify:1;
+    unsigned compacted:1;
   } flags;
   char name[1];
 } PKT_user_id;

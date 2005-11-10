@@ -1,5 +1,9 @@
 2005-11-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* packet.h, keyedit.c (menu_clean_uids_from_key), trustdb.c
+	(clean_uids_from_key): Fix display bug where sigs cleaned for
+	other reasons caused a uid to appear as if it had been compacted.
+
 	* packet.h: Move some flags to a bitfield.  Change all callers.
 
 	* options.h, import.c (parse_import_options,

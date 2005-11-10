@@ -3225,29 +3225,25 @@ menu_clean_uids_from_key(KBNODE keyblock)
 
   if(modified)
     {
-      KBNODE node,uidnode=NULL;
+      KBNODE node;
 
       for(node=keyblock->next;node;node=node->next)
 	{
-	  if(node->pkt->pkttype==PKT_USER_ID)
-	    uidnode=node;
-	  else if(uidnode && node->pkt->pkttype==PKT_SIGNATURE
-		  && is_deleted_kbnode(node))
+	  if(node->pkt->pkttype==PKT_USER_ID
+	     && node->pkt->pkt.user_id->flags.compacted)
 	    {
 	      const char *reason;
-	      char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
-					uidnode->pkt->pkt.user_id->len,0);
+	      char *user=utf8_to_native(node->pkt->pkt.user_id->name,
+					node->pkt->pkt.user_id->len,0);
 
-	      if(uidnode->pkt->pkt.user_id->is_revoked)
+	      if(node->pkt->pkt.user_id->is_revoked)
 		reason=_("revoked");
-	      else if(uidnode->pkt->pkt.user_id->is_expired)
+	      else if(node->pkt->pkt.user_id->is_expired)
 		reason=_("expired");
 	      else
 		reason=_("invalid");
 
 	      tty_printf("User ID \"%s\" compacted: %s\n",user,reason);
-
-	      uidnode=NULL;
 
 	      xfree(user);
 	    }

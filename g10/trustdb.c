@@ -1667,8 +1667,9 @@ int
 clean_uids_from_key(KBNODE keyblock,int noisy)
 {
   int delete_until_next=0,deleting=0,deleted=0;
-  KBNODE node,signode=NULL;
+  KBNODE node;
   u32 keyid[2],sigdate=0;
+  PKT_user_id *uid=NULL;
 
   assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
 
@@ -1682,10 +1683,8 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
     {
       if(node->pkt->pkttype==PKT_USER_ID)
 	{
-	  PKT_user_id *uid=node->pkt->pkt.user_id;
-
+	  uid=node->pkt->pkt.user_id;
 	  sigdate=0;
-	  signode=NULL;
 
 	  /* Skip valid user IDs, and non-self-signed user IDs if
 	     --allow-non-selfsigned-uid is set. */
@@ -1718,7 +1717,7 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 		}
 	    }
 	}
-      else if(node->pkt->pkttype==PKT_SIGNATURE)
+      else if(node->pkt->pkttype==PKT_SIGNATURE && uid)
 	{
 	  PKT_signature *sig=node->pkt->pkt.signature;
 
@@ -1727,13 +1726,11 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
 	  if(IS_UID_SIG(sig) && sig->timestamp>sigdate
 	     && keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1]
 	     && check_key_signature(keyblock,node,NULL)==0)
-	    {
-	      sigdate=sig->timestamp;
-	      signode=node;
-	    }
+	    sigdate=sig->timestamp;
 
 	  if(delete_until_next && !sig->flags.chosen_selfsig)
 	    {
+	      uid->flags.compacted=1;
 	      delete_kbnode(node);
 	      if(deleting)
 		{
