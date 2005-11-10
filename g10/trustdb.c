@@ -1659,8 +1659,6 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only)
    We don't actually remove the user ID packet itself since it might
    be ressurected in a later merge.
 
-   If this self-sig is a revocation, we also include the most recent
-   valid regular sig since it is hard to import the user ID otherwise.
    TODO: change the import code to allow importing a uid with only a
    revocation if the uid already exists on the keyring. */
 int

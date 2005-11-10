@@ -57,7 +57,7 @@ static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock,
 			int photo, const char *photo_name );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_delsig( KBNODE pub_keyblock );
-static int menu_clean_sigs_from_uids(KBNODE keyblock);
+static int menu_clean_sigs_from_uids(KBNODE keyblock,int self_only);
 static int menu_clean_uids_from_key(KBNODE keyblock);
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_addrevoker( KBNODE pub_keyblock,
@@ -1341,7 +1341,7 @@ enum cmdids
     cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
     cmdEXPIRE, cmdBACKSIGN, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF,
     cmdSETPREF, cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
-    cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdCLEAN, cmdNOP
+    cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdCLEAN, cmdMINIMIZE, cmdNOP
   };
 
 static struct
@@ -1443,6 +1443,8 @@ static struct
     { "showphoto",cmdSHOWPHOTO , 0, N_("show selected photo IDs") },
     { "clean",    cmdCLEAN     , KEYEDIT_NOT_SK,
       N_("clean unusable parts from key") },
+    { "minimize", cmdMINIMIZE  , KEYEDIT_NOT_SK,
+      N_("clean unusable parts from key and remove all signatures") },
     { NULL, cmdNONE, 0, NULL }
   };
 
@@ -2180,7 +2182,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 		     || ascii_strcasecmp(arg_string,"signatures")==0
 		     || ascii_strcasecmp(arg_string,"certs")==0
 		     || ascii_strcasecmp(arg_string,"certificates")==0)
-		    modified=menu_clean_sigs_from_uids(keyblock);
+		    modified=menu_clean_sigs_from_uids(keyblock,0);
 		  else if(ascii_strcasecmp(arg_string,"uids")==0)
 		    redisplay=modified=menu_clean_uids_from_key(keyblock);
 		  else
@@ -2188,11 +2190,17 @@ keyedit_menu( const char *username, STRLIST locusr,
 		}
 	      else
 		{
-		  modified=menu_clean_sigs_from_uids(keyblock);
+		  modified=menu_clean_sigs_from_uids(keyblock,0);
 		  modified+=menu_clean_uids_from_key(keyblock);
 		  redisplay=modified;
 		}
 	    }
+	    break;
+
+	  case cmdMINIMIZE:
+	    modified=menu_clean_sigs_from_uids(keyblock,1);
+	    modified+=menu_clean_uids_from_key(keyblock);
+	    redisplay=modified;
 	    break;
 
 	  case cmdQUIT:
@@ -3184,7 +3192,7 @@ menu_delsig( KBNODE pub_keyblock )
 }
 
 static int
-menu_clean_sigs_from_uids(KBNODE keyblock)
+menu_clean_sigs_from_uids(KBNODE keyblock,int self_only)
 {
   KBNODE uidnode;
   int modified=0;
@@ -3199,7 +3207,7 @@ menu_clean_sigs_from_uids(KBNODE keyblock)
 	  char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
 				    uidnode->pkt->pkt.user_id->len,
 				    0);
-	  deleted=clean_sigs_from_uid(keyblock,uidnode,opt.verbose,0);
+	  deleted=clean_sigs_from_uid(keyblock,uidnode,opt.verbose,self_only);
 	  if(deleted)
 	    {
 	      tty_printf(deleted==1?

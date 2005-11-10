@@ -1,5 +1,8 @@
 2005-11-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (keyedit_menu, menu_clean_sigs_from_uids): Add
+	"minimize" command.
+
 	* packet.h, keyedit.c (menu_clean_uids_from_key), trustdb.c
 	(clean_uids_from_key): Fix display bug where sigs cleaned for
 	other reasons caused a uid to appear as if it had been compacted.
@@ -13,8 +16,8 @@
 	* trustdb.h, trustdb.c (clean_sigs_from_uid): Add flag to remove
 	all non-selfsigs from key during cleaning.  Change all callers.
 
-	* export.c (do_export_stream): Use it here so we don't need
-	additional minimize code in the export path.
+	* export.c (do_export_stream): Use it here for export-minimal so
+	we don't need additional minimize code in the export path.
 
 2005-11-06  David Shaw  <dshaw@jabberwocky.com>
 
