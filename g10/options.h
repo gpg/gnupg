@@ -265,8 +265,9 @@ struct {
 #define IMPORT_FAST                      (1<<2)
 #define IMPORT_SK2PK                     (1<<3)
 #define IMPORT_MERGE_ONLY                (1<<4)
-#define IMPORT_CLEAN_SIGS                (1<<5)
-#define IMPORT_CLEAN_UIDS                (1<<6)
+#define IMPORT_MINIMAL                   (1<<5)
+#define IMPORT_CLEAN_SIGS                (1<<6)
+#define IMPORT_CLEAN_UIDS                (1<<7)
 
 #define EXPORT_LOCAL_SIGS                (1<<0)
 #define EXPORT_ATTRIBUTES                (1<<1)

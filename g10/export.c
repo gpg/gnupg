@@ -72,7 +72,7 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("remove unusable user IDs during export")},
       {"export-minimal",
        EXPORT_MINIMAL|EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL,
-       N_("export the smallest key possible")},
+       N_("remove unusable user IDs and all signatures during export")},
       {"export-reset-subkey-passwd",EXPORT_RESET_SUBKEY_PASSWD,NULL,
        N_("remove the passphrase from exported subkeys")},
       /* Aliases for backward compatibility */

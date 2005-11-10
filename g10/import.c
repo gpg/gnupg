@@ -107,6 +107,9 @@ parse_import_options(char *str,unsigned int *options,int noisy)
        N_("remove unusable signatures after import")},
       {"import-clean-uids",IMPORT_CLEAN_UIDS,NULL,
        N_("remove unusable user IDs after import")},
+      {"import-minimal",
+       IMPORT_MINIMAL|IMPORT_CLEAN_SIGS|IMPORT_CLEAN_UIDS,NULL,
+       N_("remove unusable user IDs and all signatures after import")},
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -667,14 +670,14 @@ check_prefs(KBNODE keyblock)
 }
 
 static int
-clean_sigs_from_all_uids(KBNODE keyblock)
+clean_sigs_from_all_uids(KBNODE keyblock,int self_only)
 {
   KBNODE uidnode;
   int deleted=0;
 
   for(uidnode=keyblock->next;uidnode;uidnode=uidnode->next)
     if(uidnode->pkt->pkttype==PKT_USER_ID)
-      deleted+=clean_sigs_from_uid(keyblock,uidnode,opt.verbose,0);
+      deleted+=clean_sigs_from_uid(keyblock,uidnode,opt.verbose,self_only);
 
   return deleted;
 }
@@ -746,7 +749,7 @@ import_one( const char *fname, KBNODE keyblock,
        the end result, but does result in less logging which might
        confuse the user. */
     if(options&IMPORT_CLEAN_SIGS)
-      clean_sigs_from_all_uids(keyblock);
+      clean_sigs_from_all_uids(keyblock,options&IMPORT_MINIMAL);
 
     if(options&IMPORT_CLEAN_UIDS)
       clean_uids_from_key(keyblock,opt.verbose);
@@ -899,7 +902,8 @@ import_one( const char *fname, KBNODE keyblock,
 	  }
 
 	if(options&IMPORT_CLEAN_SIGS)
-	  n_sigs_cleaned=clean_sigs_from_all_uids(keyblock_orig);
+	  n_sigs_cleaned=clean_sigs_from_all_uids(keyblock_orig,
+						  options&IMPORT_MINIMAL);
 
         if(options&IMPORT_CLEAN_UIDS)
 	  n_uids_cleaned=clean_uids_from_key(keyblock_orig,opt.verbose);
