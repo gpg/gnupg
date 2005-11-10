@@ -530,8 +530,8 @@ PKT_user_id *keygen_get_std_prefs(void)
   uid->prefs[j].type=PREFTYPE_NONE;
   uid->prefs[j].value=0;
 
-  uid->mdc_feature=mdc_available;
-  uid->ks_modify=ks_modify;
+  uid->flags.mdc=mdc_available;
+  uid->flags.ks_modify=ks_modify;
 
   return uid;
 }

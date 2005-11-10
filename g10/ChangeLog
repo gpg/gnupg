@@ -1,5 +1,7 @@
 2005-11-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* packet.h: Move some flags to a bitfield.  Change all callers.
+
 	* options.h, import.c (parse_import_options,
 	clean_sigs_from_all_uids, import_one): Add import-minimal option.
 	Similar to export-minimal, except it works on the way in.

@@ -1421,7 +1421,7 @@ select_mdc_from_pklist (PK_LIST pk_list)
         int mdc;
 
         if (pkr->pk->user_id) /* selected by user ID */
-            mdc = pkr->pk->user_id->mdc_feature;
+            mdc = pkr->pk->user_id->flags.mdc;
         else
             mdc = pkr->pk->mdc_feature;
         if (!mdc)

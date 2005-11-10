@@ -1464,16 +1464,16 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     }
 
     /* see whether we have the MDC feature */
-    uid->mdc_feature = 0;
+    uid->flags.mdc = 0;
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n);
     if (p && n && (p[0] & 0x01))
-        uid->mdc_feature = 1;
+        uid->flags.mdc = 1;
 
     /* and the keyserver modify flag */
-    uid->ks_modify = 1;
+    uid->flags.ks_modify = 1;
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KS_FLAGS, &n);
     if (p && n && (p[0] & 0x80))
-        uid->ks_modify = 0;
+        uid->flags.ks_modify = 0;
 }
 
 static void
@@ -2170,7 +2170,7 @@ merge_selfsigs( KBNODE keyblock )
 	    && !k->pkt->pkt.user_id->attrib_data
             && k->pkt->pkt.user_id->is_primary) {
             prefs = k->pkt->pkt.user_id->prefs;
-            mdc_feature = k->pkt->pkt.user_id->mdc_feature;
+            mdc_feature = k->pkt->pkt.user_id->flags.mdc;
             break;
         }
     }    

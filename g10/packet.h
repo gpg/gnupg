@@ -183,28 +183,33 @@ struct user_attribute {
   u32 len;
 };
 
-typedef struct {
-    int ref;              /* reference counter */
-    int len;		  /* length of the name */
-    struct user_attribute *attribs;
-    int numattribs;
-    byte *attrib_data;    /* if this is not NULL, the packet is an attribute */
-    unsigned long attrib_len;
-    byte *namehash;
-    int help_key_usage;
-    u32 help_key_expire;
-    int help_full_count;
-    int help_marginal_count;
-    int is_primary;       /* 2 if set via the primary flag, 1 if calculated */
-    int is_revoked;
-    int is_expired;
-    u32 expiredate;       /* expires at this date or 0 if not at all */
-    prefitem_t *prefs;    /* list of preferences (may be NULL)*/
-    int mdc_feature;
-    int ks_modify;
-    u32 created;          /* according to the self-signature */
-    byte selfsigversion;
-    char name[1];
+typedef struct
+{
+  int ref;              /* reference counter */
+  int len;	        /* length of the name */
+  struct user_attribute *attribs;
+  int numattribs;
+  byte *attrib_data;    /* if this is not NULL, the packet is an attribute */
+  unsigned long attrib_len;
+  byte *namehash;
+  int help_key_usage;
+  u32 help_key_expire;
+  int help_full_count;
+  int help_marginal_count;
+  int is_primary;       /* 2 if set via the primary flag, 1 if calculated */
+  int is_revoked;
+  int is_expired;
+  u32 expiredate;       /* expires at this date or 0 if not at all */
+  prefitem_t *prefs;    /* list of preferences (may be NULL)*/
+  u32 created;          /* according to the self-signature */
+  byte selfsigversion;
+  struct
+  {
+    /* TODO: Move more flags here */
+    unsigned mdc:1;
+    unsigned ks_modify:1;
+  } flags;
+  char name[1];
 } PKT_user_id;
 
 struct revoke_info

@@ -2350,17 +2350,17 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 	    }
 	    tty_printf ("%s",compress_algo_to_string(COMPRESS_ALGO_NONE));
         }
-	if(uid->mdc_feature || !uid->ks_modify)
+	if(uid->flags.mdc || !uid->flags.ks_modify)
 	  {
 	    tty_printf ("\n     ");
 	    tty_printf (_("Features: "));
 	    any=0;
-	    if(uid->mdc_feature)
+	    if(uid->flags.mdc)
 	      {
 		tty_printf ("MDC");
 		any=1;
 	      }
-	    if(!uid->ks_modify)
+	    if(!uid->flags.ks_modify)
 	      {
 		if(any)
 		  tty_printf (", ");
@@ -2393,9 +2393,9 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
                                  prefs[i].type == PREFTYPE_ZIP ? 'Z':'?',
                                  prefs[i].value);
         }
-        if (uid->mdc_feature)
+        if (uid->flags.mdc)
             tty_printf (" [mdc]");
-        if (!uid->ks_modify)
+        if (!uid->flags.ks_modify)
             tty_printf (" [no-ks-modify]");
         tty_printf("\n");
     }
@@ -2534,9 +2534,9 @@ show_key_with_all_names_colon (KBNODE keyblock)
                             prefs[j].type == PREFTYPE_ZIP ? 'Z':'?',
                             prefs[j].value);
                   } 
-                if (uid->mdc_feature)
+                if (uid->flags.mdc)
                   printf (",mdc");
-                if (!uid->ks_modify)
+                if (!uid->flags.ks_modify)
                   printf (",no-ks-modify");
               } 
             putchar (':');
