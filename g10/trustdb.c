@@ -1575,12 +1575,15 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
 }
 
 int
-clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
+clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only)
 {
   int deleted=0;
   KBNODE node;
+  u32 keyid[2];
 
   assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+
+  keyid_from_pk(keyblock->pkt->pkt.public_key,keyid);
 
   /* Passing in a 0 for current time here means that we'll never weed
      out an expired sig.  This is correct behavior since we want to
@@ -1607,12 +1610,15 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy)
       node && node->pkt->pkttype==PKT_SIGNATURE;
       node=node->next)
     {
+      int keep=self_only?(node->pkt->pkt.signature->keyid[0]==keyid[0]
+			  && node->pkt->pkt.signature->keyid[1]==keyid[1]):1;
+
       /* Keep usable uid sigs ... */
-      if(node->flag & (1<<8))
+      if((node->flag & (1<<8)) && keep)
 	continue;
 
       /* ... and usable revocations... */
-      if(node->flag & (1<<11))
+      if((node->flag & (1<<11)) && keep)
 	continue;
 
       /* ... and sigs from unavailable keys. */

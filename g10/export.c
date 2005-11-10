@@ -293,7 +293,6 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
     subkey_list_t subkey_list = NULL;  /* Track alreay processed subkeys. */
     KEYDB_HANDLE kdbhd;
     STRLIST sl;
-    u32 keyid[2];
 
     *any = 0;
     init_packet( &pkt );
@@ -383,10 +382,6 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	else
 	  {
 	    /* It's a public key export. */
-	    if((options&EXPORT_MINIMAL)
-	       && (node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
-	      keyid_from_pk(node->pkt->pkt.public_key,keyid);
-
 	    if(options&EXPORT_CLEAN_UIDS)
 	      clean_uids_from_key(keyblock,opt.verbose);
 	  }
@@ -460,26 +455,20 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
                 }
 	      }
 
-
 	    if(node->pkt->pkttype==PKT_USER_ID)
 	      {
 		/* Run clean_sigs_from_uid against each uid if
-		   export-clean-sigs is on. */
+		   export-clean-sigs is on.  export-minimal causes it
+		   to remove all non-selfsigs as well.  Note that
+		   export-minimal only applies to UID sigs (0x10,
+		   0x11, 0x12, and 0x13).  A designated revocation is
+		   not stripped. */
 		if(options&EXPORT_CLEAN_SIGS)
-		  clean_sigs_from_uid(keyblock,node,opt.verbose);
+		  clean_sigs_from_uid(keyblock,node,
+				      opt.verbose,options&EXPORT_MINIMAL);
 	      }
 	    else if(node->pkt->pkttype==PKT_SIGNATURE)
 	      {
-		/* If we have export-minimal turned on, do not include
-		   any signature that isn't a selfsig.  Note that this
-		   only applies to uid sigs (0x10, 0x11, 0x12, and
-		   0x13).  A designated revocation is not stripped. */
-		if((options&EXPORT_MINIMAL)
-		   && IS_UID_SIG(node->pkt->pkt.signature)
-		   && (node->pkt->pkt.signature->keyid[0]!=keyid[0]
-		       || node->pkt->pkt.signature->keyid[1]!=keyid[1]))
-		  continue;
-
 		/* do not export packets which are marked as not
 		   exportable */
 		if(!(options&EXPORT_LOCAL_SIGS)

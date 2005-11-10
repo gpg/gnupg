@@ -3199,7 +3199,7 @@ menu_clean_sigs_from_uids(KBNODE keyblock)
 	  char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
 				    uidnode->pkt->pkt.user_id->len,
 				    0);
-	  deleted=clean_sigs_from_uid(keyblock,uidnode,opt.verbose);
+	  deleted=clean_sigs_from_uid(keyblock,uidnode,opt.verbose,0);
 	  if(deleted)
 	    {
 	      tty_printf(deleted==1?

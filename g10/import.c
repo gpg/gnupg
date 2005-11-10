@@ -674,7 +674,7 @@ clean_sigs_from_all_uids(KBNODE keyblock)
 
   for(uidnode=keyblock->next;uidnode;uidnode=uidnode->next)
     if(uidnode->pkt->pkttype==PKT_USER_ID)
-      deleted+=clean_sigs_from_uid(keyblock,uidnode,opt.verbose);
+      deleted+=clean_sigs_from_uid(keyblock,uidnode,opt.verbose,0);
 
   return deleted;
 }
