@@ -1653,91 +1653,74 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only)
    have to establish if the uid has a valid self-sig, is not revoked,
    and is not expired.  Note that this does not take into account
    whether the uid has a trust path to it - just whether the keyholder
-   themselves has certified the uid.  Returns how many user IDs were
-   removed.  To "remove" a user ID, we simply remove ALL signatures
+   themselves has certified the uid.  Returns true if the uid was
+   compacted.  To "compact" a user ID, we simply remove ALL signatures
    except the self-sig that caused the user ID to be remove-worthy.
    We don't actually remove the user ID packet itself since it might
-   be ressurected in a later merge.
+   be ressurected in a later merge.  Note that this function requires
+   that the caller has already done a merge_keys_and_selfsig().
 
    TODO: change the import code to allow importing a uid with only a
    revocation if the uid already exists on the keyring. */
+
+static int
+clean_uid_from_key(KBNODE keyblock,KBNODE uidnode,int noisy)
+{
+  KBNODE node;
+  PKT_user_id *uid=uidnode->pkt->pkt.user_id;
+
+  assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  assert(uidnode->pkt->pkttype==PKT_USER_ID);
+
+  /* Skip valid user IDs, and non-self-signed user IDs if
+     --allow-non-selfsigned-uid is set. */
+  if(uid->created || (!uid->is_expired && !uid->is_revoked
+		      && opt.allow_non_selfsigned_uid))
+    return 0;
+
+  for(node=uidnode->next;
+      node && node->pkt->pkttype==PKT_SIGNATURE;
+      node=node->next)
+    if(!node->pkt->pkt.signature->flags.chosen_selfsig)
+      delete_kbnode(node);
+
+  uid->flags.compacted=1;
+
+  if(noisy)
+    {
+      const char *reason;
+      char *user=utf8_to_native(uid->name,uid->len,0);
+
+      if(uid->is_revoked)
+	reason=_("revoked");
+      else if(uid->is_expired)
+	reason=_("expired");
+      else
+	reason=_("invalid");
+
+      log_info("compacting user ID \"%s\" on key %s: %s\n",
+	       user,keystr_from_pk(keyblock->pkt->pkt.public_key),
+	       reason);
+
+      xfree(user);
+    }
+
+  return 1;
+}
+
 int
 clean_uids_from_key(KBNODE keyblock,int noisy)
 {
-  int delete_until_next=0,deleting=0,deleted=0;
-  KBNODE node;
-  u32 keyid[2],sigdate=0;
-  PKT_user_id *uid=NULL;
-
-  assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
-
-  keyid_from_pk(keyblock->pkt->pkt.public_key,keyid);
+  KBNODE uidnode;
+  int deleted=0;
 
   merge_keys_and_selfsig(keyblock);
 
-  for(node=keyblock->next;
-      node && node->pkt->pkttype!=PKT_PUBLIC_SUBKEY;
-      node=node->next)
-    {
-      if(node->pkt->pkttype==PKT_USER_ID)
-	{
-	  uid=node->pkt->pkt.user_id;
-	  sigdate=0;
-
-	  /* Skip valid user IDs, and non-self-signed user IDs if
-	     --allow-non-selfsigned-uid is set. */
-	  if(uid->created
-	     || (!uid->is_expired && !uid->is_revoked 
-		 && opt.allow_non_selfsigned_uid))
-	    delete_until_next=0;
-	  else
-	    {
-	      delete_until_next=1;
-	      deleting=1;
-
-	      if(noisy)
-		{
-		  const char *reason;
-		  char *user=utf8_to_native(uid->name,uid->len,0);
-
-		  if(uid->is_revoked)
-		    reason=_("revoked");
-		  else if(uid->is_expired)
-		    reason=_("expired");
-		  else
-		    reason=_("invalid");
-
-		  log_info("compacting user ID \"%s\" on key %s: %s\n",
-			   user,keystr(keyblock->pkt->pkt.public_key->keyid),
-			   reason);
-
-		  xfree(user);
-		}
-	    }
-	}
-      else if(node->pkt->pkttype==PKT_SIGNATURE && uid)
-	{
-	  PKT_signature *sig=node->pkt->pkt.signature;
-
-	  /* This isn't actually slow - the key signature validation
-	     is cached from merge_keys_and_selfsig() */
-	  if(IS_UID_SIG(sig) && sig->timestamp>sigdate
-	     && keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1]
-	     && check_key_signature(keyblock,node,NULL)==0)
-	    sigdate=sig->timestamp;
-
-	  if(delete_until_next && !sig->flags.chosen_selfsig)
-	    {
-	      uid->flags.compacted=1;
-	      delete_kbnode(node);
-	      if(deleting)
-		{
-		  deleted++;
-		  deleting=0;
-		}
-	    }
-	}
-    }
+  for(uidnode=keyblock->next;
+      uidnode && uidnode->pkt->pkttype!=PKT_PUBLIC_SUBKEY;
+      uidnode=uidnode->next)
+    if(uidnode->pkt->pkttype==PKT_USER_ID)
+      deleted+=clean_uid_from_key(keyblock,uidnode,noisy);
 
   return deleted;
 }

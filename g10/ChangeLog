@@ -1,3 +1,8 @@
+2005-11-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (clean_uid_from_key, clean_uids_from_key):
+	Significantly simpler implementation.
+
 2005-11-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (keyedit_menu, menu_clean_sigs_from_uids): Add
