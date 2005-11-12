@@ -1,5 +1,15 @@
 2005-11-11  David Shaw  <dshaw@jabberwocky.com>
 
+	* trustdb.h, trustdb.c (clean_key): New function to handle key
+	cleaning from one convenient place.
+
+	* options.h, import.c (parse_import_options,
+	clean_sigs_from_all_uids, import_one): Reduce clean options to
+	two: clean and minimize.
+
+	* parse-packet.c (setup_user_id): Remove.
+	(parse_user_id, parse_attribute): Just use xmalloc_clear instead.
+
 	* trustdb.c (clean_uid_from_key, clean_uids_from_key):
 	Significantly simpler implementation.
 

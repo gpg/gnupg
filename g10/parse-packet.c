@@ -1966,32 +1966,15 @@ parse_attribute_subpkts(PKT_user_id *uid)
   return count;
 }
 
-static void setup_user_id(PACKET *packet)
-{
-  packet->pkt.user_id->ref = 1;
-  packet->pkt.user_id->attribs = NULL;
-  packet->pkt.user_id->attrib_data = NULL;
-  packet->pkt.user_id->attrib_len = 0;
-  packet->pkt.user_id->is_primary = 0;
-  packet->pkt.user_id->is_revoked = 0;
-  packet->pkt.user_id->is_expired = 0;
-  packet->pkt.user_id->expiredate = 0;
-  packet->pkt.user_id->created = 0;
-  packet->pkt.user_id->help_key_usage = 0;
-  packet->pkt.user_id->help_key_expire = 0;
-  packet->pkt.user_id->prefs = NULL;
-  packet->pkt.user_id->namehash = NULL;
-}
 
 static int
 parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.user_id = xmalloc(sizeof *packet->pkt.user_id  + pktlen);
+    packet->pkt.user_id = xmalloc_clear(sizeof *packet->pkt.user_id + pktlen);
     packet->pkt.user_id->len = pktlen;
-
-    setup_user_id(packet);
+    packet->pkt.user_id->ref=1;
 
     p = packet->pkt.user_id->name;
     for( ; pktlen; pktlen--, p++ )
@@ -2052,13 +2035,12 @@ parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     byte *p;
 
 #define EXTRA_UID_NAME_SPACE 71
-    packet->pkt.user_id = xmalloc(sizeof *packet->pkt.user_id
-                                  + EXTRA_UID_NAME_SPACE);
-
-    setup_user_id(packet);
-
+    packet->pkt.user_id = xmalloc_clear(sizeof *packet->pkt.user_id
+					+ EXTRA_UID_NAME_SPACE);
+    packet->pkt.user_id->ref=1;
     packet->pkt.user_id->attrib_data = xmalloc(pktlen);
     packet->pkt.user_id->attrib_len = pktlen;
+
     p = packet->pkt.user_id->attrib_data;
     for( ; pktlen; pktlen--, p++ )
 	*p = iobuf_get_noeof(inp);

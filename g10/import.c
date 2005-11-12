@@ -101,15 +101,14 @@ parse_import_options(char *str,unsigned int *options,int noisy)
        N_("create a public key when importing a secret key")},
       {"merge-only",IMPORT_MERGE_ONLY,NULL,
        N_("only accept updates to existing keys")},
-      {"import-clean",IMPORT_CLEAN_SIGS|IMPORT_CLEAN_UIDS,NULL,
-       N_("all import-clean-* options from above")},
-      {"import-clean-sigs",IMPORT_CLEAN_SIGS,NULL,
-       N_("remove unusable signatures after import")},
-      {"import-clean-uids",IMPORT_CLEAN_UIDS,NULL,
-       N_("remove unusable user IDs after import")},
-      {"import-minimal",
-       IMPORT_MINIMAL|IMPORT_CLEAN_SIGS|IMPORT_CLEAN_UIDS,NULL,
+      {"import-clean",IMPORT_CLEAN,NULL,
+       N_("remove unusable user IDs and signatures after import")},
+      {"import-clean-sigs",0,NULL,NULL},
+      {"import-clean-uids",0,NULL,NULL},
+      {"import-minimal",IMPORT_MINIMAL|IMPORT_CLEAN,NULL,
        N_("remove unusable user IDs and all signatures after import")},
+      /* Alias */
+      {"import-minimize",IMPORT_MINIMAL|IMPORT_CLEAN,NULL,NULL},
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -669,20 +668,6 @@ check_prefs(KBNODE keyblock)
     }
 }
 
-static int
-clean_sigs_from_all_uids(KBNODE keyblock,int self_only)
-{
-  KBNODE uidnode;
-  int deleted=0;
-
-  for(uidnode=keyblock->next;uidnode;uidnode=uidnode->next)
-    if(uidnode->pkt->pkttype==PKT_USER_ID)
-      deleted+=clean_sigs_from_uid(keyblock,uidnode,opt.verbose,self_only);
-
-  return deleted;
-}
-
-
 /****************
  * Try to import one keyblock.	Return an error only in serious cases, but
  * never for an invalid keyblock.  It uses log_error to increase the
@@ -748,11 +733,8 @@ import_one( const char *fname, KBNODE keyblock,
        that we have to clean later.  This has no practical impact on
        the end result, but does result in less logging which might
        confuse the user. */
-    if(options&IMPORT_CLEAN_SIGS)
-      clean_sigs_from_all_uids(keyblock,options&IMPORT_MINIMAL);
-
-    if(options&IMPORT_CLEAN_UIDS)
-      clean_uids_from_key(keyblock,opt.verbose);
+    if(options&IMPORT_CLEAN)
+      clean_key(keyblock,opt.verbose,options&IMPORT_MINIMAL,NULL,NULL);
 
     clear_kbnode_flags( keyblock );
 
@@ -901,12 +883,9 @@ import_one( const char *fname, KBNODE keyblock,
 	    goto leave;
 	  }
 
-	if(options&IMPORT_CLEAN_SIGS)
-	  n_sigs_cleaned=clean_sigs_from_all_uids(keyblock_orig,
-						  options&IMPORT_MINIMAL);
-
-        if(options&IMPORT_CLEAN_UIDS)
-	  n_uids_cleaned=clean_uids_from_key(keyblock_orig,opt.verbose);
+	if(options&IMPORT_CLEAN)
+	  clean_key(keyblock_orig,opt.verbose,options&IMPORT_MINIMAL,
+		    &n_uids_cleaned,&n_sigs_cleaned);
 
 	if( n_uids || n_sigs || n_subk || n_sigs_cleaned || n_uids_cleaned) {
 	    mod_key = 1;

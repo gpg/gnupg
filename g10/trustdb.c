@@ -1668,23 +1668,27 @@ clean_uid_from_key(KBNODE keyblock,KBNODE uidnode,int noisy)
 {
   KBNODE node;
   PKT_user_id *uid=uidnode->pkt->pkt.user_id;
+  int deleted=0;
 
   assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
   assert(uidnode->pkt->pkttype==PKT_USER_ID);
 
-  /* Skip valid user IDs, and non-self-signed user IDs if
-     --allow-non-selfsigned-uid is set. */
-  if(uid->created || (!uid->is_expired && !uid->is_revoked
-		      && opt.allow_non_selfsigned_uid))
+  /* Skip valid user IDs, compacted user IDs, and non-self-signed user
+     IDs if --allow-non-selfsigned-uid is set. */
+  if(uid->created || uid->flags.compacted
+     || (!uid->is_expired && !uid->is_revoked
+	 && opt.allow_non_selfsigned_uid))
     return 0;
 
   for(node=uidnode->next;
       node && node->pkt->pkttype==PKT_SIGNATURE;
       node=node->next)
     if(!node->pkt->pkt.signature->flags.chosen_selfsig)
-      delete_kbnode(node);
-
-  uid->flags.compacted=1;
+      {
+	delete_kbnode(node);
+	deleted=1;
+	uidnode->pkt->pkt.user_id->flags.compacted=1;
+      }
 
   if(noisy)
     {
@@ -1705,7 +1709,7 @@ clean_uid_from_key(KBNODE keyblock,KBNODE uidnode,int noisy)
       xfree(user);
     }
 
-  return 1;
+  return deleted;
 }
 
 int
@@ -1723,6 +1727,34 @@ clean_uids_from_key(KBNODE keyblock,int noisy)
       deleted+=clean_uid_from_key(keyblock,uidnode,noisy);
 
   return deleted;
+}
+
+void
+clean_key(KBNODE keyblock,int noisy,int self_only,
+	  int *uids_cleaned,int *sigs_cleaned)
+{
+  KBNODE uidnode;
+  int dummy;
+
+  if(!uids_cleaned)
+    uids_cleaned=&dummy;
+
+  if(!sigs_cleaned)
+    sigs_cleaned=&dummy;
+
+  merge_keys_and_selfsig(keyblock);
+
+  for(uidnode=keyblock->next;
+      uidnode && uidnode->pkt->pkttype!=PKT_PUBLIC_SUBKEY;
+      uidnode=uidnode->next)
+    if(uidnode->pkt->pkttype==PKT_USER_ID)
+      {
+	/* Do clean_uid_from_key first since if it fires off, we don't
+	   have to bother with the other */
+	*uids_cleaned+=clean_uid_from_key(keyblock,uidnode,noisy);
+	if(!uidnode->pkt->pkt.user_id->flags.compacted)
+	  *sigs_cleaned+=clean_sigs_from_uid(keyblock,uidnode,noisy,self_only);
+      }
 }
 
 /* Used by validate_one_keyblock to confirm a regexp within a trust
