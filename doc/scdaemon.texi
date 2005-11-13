@@ -229,6 +229,10 @@ readers might need a string here; run the program in verbose mode to get
 a list of available readers.  The default is then the first reader
 found.
 
+@item --disable-keypad
+@opindex disable-keypad
+Even if a card reader features a keypad, do not try to use it.
+
 
 @item --allow-admin
 @itemx --deny-admin

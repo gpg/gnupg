@@ -25,7 +25,7 @@ BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png
 
 info_TEXINFOS = gnupg.texi
 
-
+dist_pkgdata_DATA = qualified.txt
 
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi assuan.texi \

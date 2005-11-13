@@ -1,3 +1,8 @@
+2005-11-13  Werner Koch  <wk@g10code.com>
+
+	* qualified.txt: New.
+	* Makefile.am (dist_pkgdata_DATA): New.
+
 2005-08-16  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.texi (Agent Options): Note default file name for

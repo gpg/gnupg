@@ -1,0 +1,17 @@
+# This is the list of root certificates used for qualified
+# certificates.  They are defined as certificates capable of creating
+# legally binding signatures in the same way as a handwritten
+# signatures are.  Comments like this one and empty lines are allowed
+# Lines do have a length limit but this is not a serious limitation as
+# the format of the entries is fixed and checked by gpgsm: A
+# non-comment line starts with optional white spaces, followed by
+# exactly 40 hex character, white space and a lowercased 2 letter
+# country code.  Additional data delimited with by a white space is
+# current ignored but might late be used for other pusposes.
+
+# CN=Wurzel ZS 3,O=Intevation GmbH,C=DE
+A6935DD34EF3087973C706FC311AA2CCF733765B de
+
+# CN=SPECIMEN Belgium Root CA,C=BE
+6A5FFD257E85DC6081828DD169AA304E7E37DD3B  be
+
