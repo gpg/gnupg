@@ -693,3 +693,24 @@ gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
   return map_assuan_err (rc);
 }
 
+
+
+/* Ask the agent to pop up a confirmation dialog with the text DESC
+   and an okay and cancel button.  */
+gpg_error_t
+gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
+{
+  int rc;
+  char *fpr;
+  char line[ASSUAN_LINELENGTH];
+
+  rc = start_agent (ctrl);
+  if (rc)
+    return rc;
+
+  snprintf (line, DIM(line)-1, "GET_CONFIRMATION %s", desc);
+  line[DIM(line)-1] = 0;
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  return map_assuan_err (rc);
+}

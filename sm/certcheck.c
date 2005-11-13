@@ -168,6 +168,10 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   if (!algo)
     {
       log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
+      if (algoid
+          && (  !strcmp (algoid, "1.2.840.113549.1.1.2")
+                ||!strcmp (algoid, "1.2.840.113549.2.2")))
+        log_info (_("(this is the MD2 algorithm)\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
   rc = gcry_md_open (&md, algo, 0);

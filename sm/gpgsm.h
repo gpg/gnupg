@@ -288,6 +288,10 @@ int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);
 /*-- certreqgen.c --*/
 int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp);
 
+/*-- qualified.c --*/
+gpg_error_t gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert);
+gpg_error_t gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert);
+
 /*-- call-agent.c --*/
 int gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
                         unsigned char *digest,
@@ -306,6 +310,7 @@ int gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip);
 int gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert);
 int gpgsm_agent_learn (ctrl_t ctrl);
 int gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc);
+gpg_error_t gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (ctrl_t ctrl,

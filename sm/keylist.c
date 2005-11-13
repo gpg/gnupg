@@ -66,6 +66,9 @@ struct {
   { "1.3.6.1.5.5.7.3.11", "sbgpCertAAServerAuth" },
   { "1.3.6.1.5.5.7.3.13", "eapOverPPP" },
   { "1.3.6.1.5.5.7.3.14", "wlanSSID" },       
+
+  { "2.16.840.1.113730.4.1", "serverGatedCrypto.ns" }, /* Netscape. */
+  { "1.3.6.1.4.1.311.10.3.3", "serverGatedCrypto.ms"}, /* Microsoft. */
   { NULL, NULL }
 };
 
@@ -160,6 +163,9 @@ static struct {
   { "2.16.840.1.113730.1.12", "netscape-ssl-server-name" },
   { "2.16.840.1.113730.1.13", "netscape-comment" },
 
+  /* GnuPG extensions */
+  { "1.3.6.1.4.1.11591.2.1.1", "pkaAddress" },
+
   { NULL }
 };
 
@@ -207,6 +213,21 @@ print_capabilities (ksba_cert_t cert, FILE *fp)
 {
   gpg_error_t err;
   unsigned int use;
+  size_t buflen;
+  char buffer[1];
+
+  err = ksba_cert_get_user_data (cert, "is_qualified", 
+                                 &buffer, sizeof (buffer), &buflen);
+  if (!err && buflen)
+    {
+      if (*buffer)
+        putc ('q', fp);
+    }    
+  else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+    ; /* Don't know - will not get marked as 'q' */
+  else
+    log_debug ("get_user_data(is_qualified) failed: %s\n",
+               gpg_strerror (err)); 
 
   err = ksba_cert_get_key_usage (cert, &use);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -1032,9 +1053,28 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
   fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
   xfree (dn);
 
+
+
   if (with_validation)
     {
+      gpg_error_t tmperr;
+      size_t buflen;
+      char buffer[1];
+      
       err = gpgsm_validate_chain (ctrl, cert, NULL, 1, fp, 0);
+      tmperr = ksba_cert_get_user_data (cert, "is_qualified", 
+                                        &buffer, sizeof (buffer), &buflen);
+      if (!tmperr && buflen)
+        {
+          if (*buffer)
+            fputs ("  [qualified]\n", fp);
+        }    
+      else if (gpg_err_code (tmperr) == GPG_ERR_NOT_FOUND)
+        ; /* Don't know - will not get marked as 'q' */
+      else
+        log_debug ("get_user_data(is_qualified) failed: %s\n",
+                   gpg_strerror (tmperr)); 
+
       if (!err)
         fprintf (fp, "  [certificate is good]\n");
       else

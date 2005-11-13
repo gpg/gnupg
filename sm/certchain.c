@@ -643,6 +643,9 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   int any_no_crl = 0;
   int any_crl_too_old = 0;
   int any_no_policy_match = 0;
+  int is_qualified = -1; /* Indicates whether the certificate stems
+                            from a qualified root certificate.
+                            -1 = unknown, 0 = no, 1 = yes. */
   int lm = listmode;
 
   gnupg_get_isotime (current_time);
@@ -771,6 +774,53 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           if (rc)
             goto leave;
 
+          
+          /* Set the flag for qualified signatures.  This flag is
+             deduced from a list of root certificates allowed for
+             qualified signatures. */
+          if (is_qualified == -1)
+            {
+              gpg_error_t err;
+              size_t buflen;
+              char buf[1];
+              
+              if (!ksba_cert_get_user_data (cert, "is_qualified", 
+                                            &buf, sizeof (buf),
+                                            &buflen) && buflen)
+                {
+                  /* We already checked this for this certificate,
+                     thus we simply take it from the user data. */
+                  is_qualified = !!*buf;
+                }    
+              else
+                {
+                  /* Need to consult the list of root certificates for
+                     qualified signatures. */
+                  err = gpgsm_is_in_qualified_list (ctrl, subject_cert);
+                  if (!err)
+                    is_qualified = 1;
+                  else if ( gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+                    is_qualified = 0;
+                  else
+                    log_error ("checking the list of qualified "
+                               "root certificates failed: %s\n",
+                               gpg_strerror (err));
+                  if ( is_qualified != -1 )
+                    {
+                      /* Cache the result but don't care toomuch about
+                         an error. */
+                      buf[0] = !!is_qualified;
+                      err = ksba_cert_set_user_data (subject_cert,
+                                                     "is_qualified", buf, 1);
+                      if (err)
+                        log_error ("set_user_data(is_qualified) failed: %s\n",
+                                   gpg_strerror (err)); 
+                    }
+                }
+            }
+
+
+          /* Check whether we really trust this root certificate. */
           rc = gpgsm_agent_istrusted (ctrl, subject_cert);
           if (!rc)
             ;
@@ -968,7 +1018,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       keydb_search_reset (kh);
       subject_cert = issuer_cert;
       issuer_cert = NULL;
-    }
+    } /* End chain traversal. */
 
   if (!listmode)
     {
@@ -996,6 +1046,27 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
     }
   
  leave:
+  if (is_qualified != -1)
+    {
+      /* We figured something about the qualified signature capability
+         of the certificate under question.  Store the result as user
+         data in the certificate object.  We do this even if the
+         validation itself failed. */
+      /* Fixme: We should set this flag for all certificates in the
+         chain for optimizing reasons. */
+      char buf[1];
+      gpg_error_t err;
+
+      buf[0] = !!is_qualified;
+      err = ksba_cert_set_user_data (cert, "is_qualified", buf, 1);
+      if (err)
+        {
+          log_error ("set_user_data(is_qualified) failed: %s\n",
+                     gpg_strerror (err)); 
+          if (!rc)
+            rc = err;
+        }
+    }
   if (r_exptime)
     gnupg_copy_time (r_exptime, exptime);
   xfree (issuer);
@@ -1017,7 +1088,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
   int rc = 0;
   char *issuer = NULL;
   char *subject = NULL;
-  KEYDB_HANDLE kh = keydb_new (0);
+  KEYDB_HANDLE kh;
   ksba_cert_t issuer_cert = NULL;
   
   if (opt.no_chain_validation)
@@ -1026,6 +1097,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
       return 0;
     }
 
+  kh = keydb_new (0);
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));

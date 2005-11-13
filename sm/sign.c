@@ -426,6 +426,35 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
           goto leave;
         }
     }
+
+
+  /* Check whether one of the certificates is qualified.  Note that we
+     already validated the certificate and thus the user data stored
+     flag must be available. */
+  for (cl=signerlist; cl; cl = cl->next)
+    {
+      size_t buflen;
+      char buffer[1];
+      
+      err = ksba_cert_get_user_data (cl->cert, "is_qualified", 
+                                     &buffer, sizeof (buffer), &buflen);
+      if (err || !buflen)
+        {
+          log_error (_("checking for qualified certificate failed: %s\n"),
+                     gpg_strerror (err)); 
+          rc = err;
+          goto leave;
+        }
+      if (*buffer)
+        {
+          err = gpgsm_qualified_consent (ctrl, cl->cert);
+          if (err)
+            {
+              rc = err;
+              goto leave;
+            }
+        }
+    }
   
   /* Prepare hashing (actually we are figuring out what we have set above)*/
   rc = gcry_md_open (&data_md, 0, 0);
@@ -443,6 +472,10 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       if (!algo)
         {
           log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
+          if (algoid
+              && (  !strcmp (algoid, "1.2.840.113549.1.1.2")
+                    ||!strcmp (algoid, "1.2.840.113549.2.2")))
+            log_info (_("(this is the MD2 algorithm)\n"));
           rc = gpg_error (GPG_ERR_BUG);
           goto leave;
         }

@@ -276,7 +276,7 @@ inq_certificate (void *opaque, const char *line)
     {
       size_t n;
 
-      /* Send a certificate where a sourceKeyidentifier is included. */
+      /* Send a certificate where a sourceKeyIdentifier is included. */
       line += 12;
       while (*line == ' ')
         line++;

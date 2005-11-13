@@ -484,6 +484,51 @@ print_dn_parts (FILE *fp, struct dn_array_s *dn, int translate)
 }
 
 
+/* Print the S-Expression in BUF, which has a valid length of BUFLEN,
+   as a human readable string in one line to FP. */
+static void
+pretty_print_sexp (FILE *fp, const unsigned char *buf, size_t buflen)
+{
+  size_t len;
+  gcry_sexp_t sexp;
+  char *result, *p;
+
+  if ( gcry_sexp_sscan (&sexp, NULL, (const char*)buf, buflen) )
+    {
+      fputs (_("[Error - invalid encoding]"), fp);
+      return;
+    }
+  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
+  assert (len);
+  result = xtrymalloc (len);
+  if (!result)
+    {
+      fputs (_("[Error - out of core]"), fp);
+      gcry_sexp_release (sexp);
+      return;
+    }
+  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, result, len);
+  assert (len);
+  for (p = result; len; len--, p++)
+    {
+      if (*p == '\n')
+        {
+          if (len > 1) /* Avoid printing the trailing LF. */
+            fputs ("\\n", fp);
+        }
+      else if (*p == '\r')
+        fputs ("\\r", fp);
+      else if (*p == '\v')
+        fputs ("\\v", fp);
+      else if (*p == '\t')
+        fputs ("\\t", fp);
+      else
+        putc (*p, fp);
+    }
+  xfree (result);
+  gcry_sexp_release (sexp);
+}
+
 
 void
 gpgsm_print_name2 (FILE *fp, const char *name, int translate)
@@ -507,7 +552,9 @@ gpgsm_print_name2 (FILE *fp, const char *name, int translate)
         }
     }
   else if (*s == '(')
-    fputs (_("[Error - unknown encoding]"), fp);
+    {
+      pretty_print_sexp (fp, s, gcry_sexp_canon_len (s, 0, NULL, NULL));
+    }
   else if (!((*s >= '0' && *s < '9')
              || (*s >= 'A' && *s <= 'Z')
              || (*s >= 'a' && *s <= 'z')))
@@ -576,7 +623,7 @@ format_name_writer (void *cookie, const char *buffer, size_t size)
 /* Format NAME which is expected to be in rfc2253 format into a better
    human readable format. Caller must free the returned string.  NULL
    is returned in case of an error.  With TRANSLATE set to true the
-   name will be translated to the native encodig.  Note that NAME is
+   name will be translated to the native encoding.  Note that NAME is
    internally always UTF-8 encoded. */
 char *
 gpgsm_format_name2 (const char *name, int translate)
@@ -658,7 +705,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
 
 
 #ifdef ENABLE_NLS
-  /* The Assuan agent protol requires us to transmit utf-8 strings */
+  /* The Assuan agent protocol requires us to transmit utf-8 strings */
   orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
 #ifdef HAVE_LANGINFO_CODESET
   if (!orig_codeset)

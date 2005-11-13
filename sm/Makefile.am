@@ -49,7 +49,8 @@ gpgsm_SOURCES = \
 	import.c \
 	export.c \
 	delete.c \
-	certreqgen.c 
+	certreqgen.c \
+	qualified.c
 
 
 gpgsm_LDADD = ../jnlib/libjnlib.a ../kbx/libkeybox.a	\

@@ -1,7 +1,40 @@
+2005-11-13  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (gpgsm_agent_get_confirmation): New.
+
+	* keylist.c (list_cert_std): Print qualified status.
+	* qualified.c: New.
+	* certchain.c (gpgsm_validate_chain): Check for qualified
+	certificates.
+
+	* certchain.c (gpgsm_basic_cert_check): Release keydb handle when
+	no-chain-validation is used.
+
+2005-11-11  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (print_capabilities): Print is_qualified status.
+
+2005-10-28  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (pretty_print_sexp): New.
+	(gpgsm_print_name2): Use it here.  This allows proper printing of
+	DNS names as used with server certificates.
+
+2005-10-10  Werner Koch  <wk@g10code.com>
+
+	* keylist.c: Add pkaAdress OID as reference.
+
 2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (gpgsm_LDADD): Add ../gl/libgnu.a after
 	../common/libcommon.a.
+
+2005-09-13  Werner Koch  <wk@g10code.com>
+
+	* verify.c (gpgsm_verify): Print a note if the unknown algorithm
+	is MD2.
+	* sign.c (gpgsm_sign): Ditto.
+	* certcheck.c (gpgsm_check_cert_sig): Ditto.
 
 2005-09-08  Werner Koch  <wk@g10code.com>
 

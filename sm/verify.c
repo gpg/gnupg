@@ -179,8 +179,14 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
             {
               algo = gcry_md_map_name (algoid);
               if (!algo)
-                log_error ("unknown hash algorithm `%s'\n",
-                           algoid? algoid:"?");
+                {
+                  log_error ("unknown hash algorithm `%s'\n",
+                             algoid? algoid:"?");
+                  if (algoid
+                      && (  !strcmp (algoid, "1.2.840.113549.1.1.2")
+                          ||!strcmp (algoid, "1.2.840.113549.2.2")))
+                    log_info (_("(this is the MD2 algorithm)\n"));
+                }
               else
                 gcry_md_enable (data_md, algo);
             }
