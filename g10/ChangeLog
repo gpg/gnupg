@@ -1,3 +1,9 @@
+2005-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.c (parse_header_line): A fussy bit of 2440: header lines
+	are delimited with a colon-space pair.  Therefore a line such as
+	"Comment: " is actually legal, albeit not particularly useful.
+
 2005-11-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.h, trustdb.c (clean_key): New function to handle key

@@ -339,16 +339,30 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
         afx->buffer_pos = len2;  /* (it is not the fine way to do it here) */
 	return 0; /* WS only: same as empty line */
     }
-    len = len2;
-    line[len2] = 0;
+
+    /*
+      This is fussy.  The spec says that a header line is delimited
+      with a colon-space pair.  This means that a line such as
+      "Comment: " (with nothing else) is actually legal as an empty
+      string comment.  However, email and cut-and-paste being what it
+      is, that trailing space may go away.  Therefore, we accept empty
+      headers delimited with only a colon.  --rfc2440, as always,
+      makes this strict and enforces the colon-space pair. -dms
+    */
 
     p = strchr( line, ':');
-    if( !p || !p[1] ) {
+    if( !p || (RFC2440 && p[1]!=' ')
+	|| (!RFC2440 && p[1]!=' ' && p[1]!='\n' && p[1]!='\r'))
+      {
 	log_error(_("invalid armor header: "));
 	print_string( stderr, line, len, 0 );
 	putc('\n', stderr);
 	return -1;
-    }
+      }
+
+    /* Chop off the whitespace we detected before */
+    len=len2;
+    line[len2]='\0';
 
     if( opt.verbose ) {
 	log_info(_("armor header: "));
