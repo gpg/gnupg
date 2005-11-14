@@ -11,6 +11,14 @@
 #
 # $Id$
 
+
+
+#*******************************************
+#
+#                 Germany
+#
+#*******************************************
+
 #Serial number: 32D18D
 #       Issuer: /CN=6R-Ca 1:PN/NameDistinguisher=1/O=RegulierungsbehÈorde
 #               fÈur Telekommunikation und Post/C=DE
@@ -19,6 +27,7 @@
 #     validity: 2001-02-01 09:52:17 through 2005-06-01 09:52:17
 #     key type: 1024 bit RSA
 #    key usage: certSign crlSign
+#[checked: 2005-11-14]
 EA:8D:99:DD:36:AA:2D:07:1A:3C:7B:69:00:9E:51:B9:4A:2E:E7:60  de
 
 
@@ -30,6 +39,7 @@ EA:8D:99:DD:36:AA:2D:07:1A:3C:7B:69:00:9E:51:B9:4A:2E:E7:60  de
 #     validity: 2001-10-15 11:15:15 through 2006-02-15 11:15:15
 #     key type: 1024 bit RSA
 #    key usage: certSign crlSign
+#[checked: 2005-11-14]
 DB:45:3D:1B:B0:1A:F3:23:10:6B:DE:D0:09:61:57:AA:F4:25:E0:5B  de
 
 
@@ -43,6 +53,7 @@ DB:45:3D:1B:B0:1A:F3:23:10:6B:DE:D0:09:61:57:AA:F4:25:E0:5B  de
 #    key usage: certSign
 #     policies: 1.3.36.8.1.1:N:
 # chain length: unlimited
+#[checked: 2005-11-14]
 42:6A:F6:78:30:E9:CE:24:5B:EF:41:A2:C1:A8:51:DA:C5:0A:6D:F5  de
 
 
@@ -56,6 +67,7 @@ DB:45:3D:1B:B0:1A:F3:23:10:6B:DE:D0:09:61:57:AA:F4:25:E0:5B  de
 #    key usage: certSign
 #     policies: 1.3.36.8.1.1:N:
 # chain length: unlimited
+#[checked: 2005-11-14]
 75:9A:4A:CE:7C:DA:7E:89:1B:B2:72:4B:E3:76:EA:47:3A:96:97:24  de
 
 
@@ -67,6 +79,7 @@ DB:45:3D:1B:B0:1A:F3:23:10:6B:DE:D0:09:61:57:AA:F4:25:E0:5B  de
 #    key usage: certSign
 #     policies: 1.3.36.8.1.1:N:
 # chain length: unlimited
+#[checked: 2005-11-14]
 31:C9:D2:E6:31:4D:0B:CC:2C:1A:45:00:A6:6B:97:98:27:18:8E:CD  de
 
 
@@ -78,5 +91,6 @@ DB:45:3D:1B:B0:1A:F3:23:10:6B:DE:D0:09:61:57:AA:F4:25:E0:5B  de
 #    key usage: certSign
 #     policies: 1.3.36.8.1.1:N:
 # chain length: unlimited
+#[checked: 2005-11-14]
 A0:8B:DF:3B:AA:EE:3F:9D:64:6C:47:81:23:21:D4:A6:18:81:67:1D  de
 
