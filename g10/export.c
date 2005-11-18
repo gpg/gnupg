@@ -47,7 +47,6 @@ struct subkey_list_s
 typedef struct subkey_list_s *subkey_list_t;
 
 
-
 static int do_export( STRLIST users, int secret, unsigned int options );
 static int do_export_stream( IOBUF out, STRLIST users, int secret,
 			     KBNODE *keyblock_out, unsigned int options,
@@ -63,24 +62,21 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"export-attributes",EXPORT_ATTRIBUTES,NULL,
        N_("export attribute user IDs (generally photo IDs)")},
       {"export-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL,
-       N_("export revocation keys that are marked as \"sensitive\"")},
-      {"export-clean",EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL,
-       N_("all export-clean-* options from above")},
-      {"export-clean-sigs",EXPORT_CLEAN_SIGS,NULL,
-       N_("remove unusable signatures during export")},
-      {"export-clean-uids",EXPORT_CLEAN_UIDS,NULL,
-       N_("remove unusable user IDs during export")},
-      {"export-minimal",
-       EXPORT_MINIMAL|EXPORT_CLEAN_SIGS|EXPORT_CLEAN_UIDS,NULL,
-       N_("remove unusable user IDs and all signatures during export")},
+       N_("export revocation keys marked as \"sensitive\"")},
       {"export-reset-subkey-passwd",EXPORT_RESET_SUBKEY_PASSWD,NULL,
        N_("remove the passphrase from exported subkeys")},
+      {"export-clean",EXPORT_CLEAN,NULL,
+       N_("remove unusable parts from key during export")},
+      {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
+       N_("remove as much as possible from key during export")},
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL,NULL},
       {"include-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL,NULL},
       /* dummy */
       {"export-unusable-sigs",0,NULL,NULL},
+      {"export-clean-sigs",0,NULL,NULL},
+      {"export-clean-uids",0,NULL,NULL},
       {NULL,0,NULL,NULL}
       /* add tags for include revoked and disabled? */
     };
@@ -381,9 +377,14 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	  }
 	else
 	  {
-	    /* It's a public key export. */
-	    if(options&EXPORT_CLEAN_UIDS)
-	      clean_uids_from_key(keyblock,opt.verbose);
+	    /* It's a public key export, so do the cleaning if
+	       requested.  Note that both export-clean and
+	       export-minimal only apply to UID sigs (0x10, 0x11,
+	       0x12, and 0x13).  A designated revocation is never
+	       stripped, even with export-minimal set. */
+
+	    if(options&EXPORT_CLEAN)
+	      clean_key(keyblock,opt.verbose,options&EXPORT_MINIMAL,NULL,NULL);
 	  }
 
 	/* And write it. */
@@ -455,19 +456,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
                 }
 	      }
 
-	    if(node->pkt->pkttype==PKT_USER_ID)
-	      {
-		/* Run clean_sigs_from_uid against each uid if
-		   export-clean-sigs is on.  export-minimal causes it
-		   to remove all non-selfsigs as well.  Note that
-		   export-minimal only applies to UID sigs (0x10,
-		   0x11, 0x12, and 0x13).  A designated revocation is
-		   not stripped. */
-		if(options&EXPORT_CLEAN_SIGS)
-		  clean_sigs_from_uid(keyblock,node,
-				      opt.verbose,options&EXPORT_MINIMAL);
-	      }
-	    else if(node->pkt->pkttype==PKT_SIGNATURE)
+	    if(node->pkt->pkttype==PKT_SIGNATURE)
 	      {
 		/* do not export packets which are marked as not
 		   exportable */

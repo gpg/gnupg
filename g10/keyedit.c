@@ -57,8 +57,7 @@ static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock,
 			int photo, const char *photo_name );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_delsig( KBNODE pub_keyblock );
-static int menu_clean_sigs_from_uids(KBNODE keyblock,int self_only);
-static int menu_clean_uids_from_key(KBNODE keyblock);
+static int menu_clean(KBNODE keyblock,int self_only);
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_addrevoker( KBNODE pub_keyblock,
 			    KBNODE sec_keyblock, int sensitive );
@@ -1442,12 +1441,11 @@ static struct
     { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key") },
     { "showphoto",cmdSHOWPHOTO , 0, N_("show selected photo IDs") },
     { "clean",    cmdCLEAN     , KEYEDIT_NOT_SK,
-      N_("clean unusable parts from key") },
+      N_("compact unusable user IDs and remove unusable signatures from key")},
     { "minimize", cmdMINIMIZE  , KEYEDIT_NOT_SK,
-      N_("clean unusable parts from key and remove all signatures") },
+      N_("compact unusable user IDs and remove all signatures from key") },
     { NULL, cmdNONE, 0, NULL }
   };
-
 
 #ifdef HAVE_LIBREADLINE
 
@@ -2175,32 +2173,11 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
 	  case cmdCLEAN:
-	    {
-	      if(*arg_string)
-		{
-		  if(ascii_strcasecmp(arg_string,"sigs")==0
-		     || ascii_strcasecmp(arg_string,"signatures")==0
-		     || ascii_strcasecmp(arg_string,"certs")==0
-		     || ascii_strcasecmp(arg_string,"certificates")==0)
-		    modified=menu_clean_sigs_from_uids(keyblock,0);
-		  else if(ascii_strcasecmp(arg_string,"uids")==0)
-		    redisplay=modified=menu_clean_uids_from_key(keyblock);
-		  else
-		    tty_printf("Unable to clean `%s'\n",arg_string);
-		}
-	      else
-		{
-		  modified=menu_clean_sigs_from_uids(keyblock,0);
-		  modified+=menu_clean_uids_from_key(keyblock);
-		  redisplay=modified;
-		}
-	    }
+	    redisplay=modified=menu_clean(keyblock,0);
 	    break;
 
 	  case cmdMINIMIZE:
-	    modified=menu_clean_sigs_from_uids(keyblock,1);
-	    modified+=menu_clean_uids_from_key(keyblock);
-	    redisplay=modified;
+	    redisplay=modified=menu_clean(keyblock,1);
 	    break;
 
 	  case cmdQUIT:
@@ -3192,73 +3169,54 @@ menu_delsig( KBNODE pub_keyblock )
 }
 
 static int
-menu_clean_sigs_from_uids(KBNODE keyblock,int self_only)
+menu_clean(KBNODE keyblock,int self_only)
 {
   KBNODE uidnode;
-  int modified=0;
-  int select_all=!count_selected_uids(keyblock);
+  int modified=0,select_all=!count_selected_uids(keyblock);
 
-  for(uidnode=keyblock->next;uidnode;uidnode=uidnode->next)
+  for(uidnode=keyblock->next;
+      uidnode && uidnode->pkt->pkttype!=PKT_PUBLIC_SUBKEY;
+      uidnode=uidnode->next)
     {
       if(uidnode->pkt->pkttype==PKT_USER_ID
 	 && (uidnode->flag&NODFLG_SELUID || select_all))
 	{
-	  int deleted;
+	  int uids=0,sigs=0;
 	  char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
 				    uidnode->pkt->pkt.user_id->len,
 				    0);
-	  deleted=clean_sigs_from_uid(keyblock,uidnode,opt.verbose,self_only);
-	  if(deleted)
-	    {
-	      tty_printf(deleted==1?
-			 "User ID \"%s\": %d signature removed.\n":
-			 "User ID \"%s\": %d signatures removed.\n",
-			 user,deleted);
-	      modified=1;
-	    }
-	  else
-	    tty_printf(_("User ID \"%s\": already clean.\n"),user);
 
-	  xfree(user);
-	}
-    }
-
-  return modified;
-}
-
-static int
-menu_clean_uids_from_key(KBNODE keyblock)
-{
-  int modified=clean_uids_from_key(keyblock,0);
-
-  if(modified)
-    {
-      KBNODE node;
-
-      for(node=keyblock->next;node;node=node->next)
-	{
-	  if(node->pkt->pkttype==PKT_USER_ID
-	     && node->pkt->pkt.user_id->flags.compacted)
+	  clean_one_uid(keyblock,uidnode,opt.verbose,self_only,&uids,&sigs);
+	  if(uids)
 	    {
 	      const char *reason;
-	      char *user=utf8_to_native(node->pkt->pkt.user_id->name,
-					node->pkt->pkt.user_id->len,0);
 
-	      if(node->pkt->pkt.user_id->is_revoked)
+	      if(uidnode->pkt->pkt.user_id->is_revoked)
 		reason=_("revoked");
-	      else if(node->pkt->pkt.user_id->is_expired)
+	      else if(uidnode->pkt->pkt.user_id->is_expired)
 		reason=_("expired");
 	      else
 		reason=_("invalid");
 
 	      tty_printf("User ID \"%s\" compacted: %s\n",user,reason);
 
-	      xfree(user);
+	      modified=1;
 	    }
+	  else if(sigs)
+	    {
+	      tty_printf(sigs==1?
+			 "User ID \"%s\": %d signature removed\n":
+			 "User ID \"%s\": %d signatures removed\n",
+			 user,sigs);
+
+	      modified=1;
+	    }
+	  else
+	    tty_printf(_("User ID \"%s\": already clean\n"),user);
+
+	  xfree(user);
 	}
     }
-  else
-    tty_printf("No user IDs are compactable.\n");
 
   return modified;
 }

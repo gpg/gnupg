@@ -1,3 +1,17 @@
+2005-11-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu, menu_clean): Simplify clean options to
+	just "clean", and add "minimize".
+
+	* import.c (parse_import_options): Make help text match the export
+	versions of the options.
+
+	* options.h, export.c (parse_export_options, do_export_stream):
+	Reduce clean options to two: clean and minimize.
+
+	* trustdb.h, trustdb.c (clean_one_uid): New function that joins
+	uid and sig cleaning into one for a simple API outside trustdb.
+
 2005-11-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* armor.c (parse_header_line): A fussy bit of 2440: header lines

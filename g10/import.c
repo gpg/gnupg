@@ -102,18 +102,16 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"merge-only",IMPORT_MERGE_ONLY,NULL,
        N_("only accept updates to existing keys")},
       {"import-clean",IMPORT_CLEAN,NULL,
-       N_("remove unusable user IDs and signatures after import")},
-      {"import-clean-sigs",0,NULL,NULL},
-      {"import-clean-uids",0,NULL,NULL},
+       N_("remove unusable parts from key after import")},
       {"import-minimal",IMPORT_MINIMAL|IMPORT_CLEAN,NULL,
-       N_("remove unusable user IDs and all signatures after import")},
-      /* Alias */
-      {"import-minimize",IMPORT_MINIMAL|IMPORT_CLEAN,NULL,NULL},
+       N_("remove as much as possible from key after import")},
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
       /* dummy */
       {"import-unusable-sigs",0,NULL,NULL},
+      {"import-clean-sigs",0,NULL,NULL},
+      {"import-clean-uids",0,NULL,NULL},
       {NULL,0,NULL,NULL}
     };
 

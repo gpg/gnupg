@@ -1574,7 +1574,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
     }
 }
 
-int
+static int
 clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only)
 {
   int deleted=0;
@@ -1712,29 +1712,15 @@ clean_uid_from_key(KBNODE keyblock,KBNODE uidnode,int noisy)
   return deleted;
 }
 
-int
-clean_uids_from_key(KBNODE keyblock,int noisy)
-{
-  KBNODE uidnode;
-  int deleted=0;
-
-  merge_keys_and_selfsig(keyblock);
-
-  for(uidnode=keyblock->next;
-      uidnode && uidnode->pkt->pkttype!=PKT_PUBLIC_SUBKEY;
-      uidnode=uidnode->next)
-    if(uidnode->pkt->pkttype==PKT_USER_ID)
-      deleted+=clean_uid_from_key(keyblock,uidnode,noisy);
-
-  return deleted;
-}
-
+/* Needs to be called after a merge_keys_and_selfsig() */
 void
-clean_key(KBNODE keyblock,int noisy,int self_only,
-	  int *uids_cleaned,int *sigs_cleaned)
+clean_one_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only,
+	      int *uids_cleaned,int *sigs_cleaned)
 {
-  KBNODE uidnode;
   int dummy;
+
+  assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  assert(uidnode->pkt->pkttype==PKT_USER_ID);
 
   if(!uids_cleaned)
     uids_cleaned=&dummy;
@@ -1742,19 +1728,27 @@ clean_key(KBNODE keyblock,int noisy,int self_only,
   if(!sigs_cleaned)
     sigs_cleaned=&dummy;
 
+  /* Do clean_uid_from_key first since if it fires off, we don't
+     have to bother with the other */
+  *uids_cleaned+=clean_uid_from_key(keyblock,uidnode,noisy);
+  if(!uidnode->pkt->pkt.user_id->flags.compacted)
+    *sigs_cleaned+=clean_sigs_from_uid(keyblock,uidnode,noisy,self_only);
+}
+
+void
+clean_key(KBNODE keyblock,int noisy,int self_only,
+	  int *uids_cleaned,int *sigs_cleaned)
+{
+  KBNODE uidnode;
+
   merge_keys_and_selfsig(keyblock);
 
   for(uidnode=keyblock->next;
       uidnode && uidnode->pkt->pkttype!=PKT_PUBLIC_SUBKEY;
       uidnode=uidnode->next)
     if(uidnode->pkt->pkttype==PKT_USER_ID)
-      {
-	/* Do clean_uid_from_key first since if it fires off, we don't
-	   have to bother with the other */
-	*uids_cleaned+=clean_uid_from_key(keyblock,uidnode,noisy);
-	if(!uidnode->pkt->pkt.user_id->flags.compacted)
-	  *sigs_cleaned+=clean_sigs_from_uid(keyblock,uidnode,noisy,self_only);
-      }
+      clean_one_uid(keyblock,uidnode,noisy,self_only,
+		    uids_cleaned,sigs_cleaned);
 }
 
 /* Used by validate_one_keyblock to confirm a regexp within a trust

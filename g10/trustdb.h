@@ -82,8 +82,8 @@ const char *get_ownertrust_string (PKT_public_key *pk);
 void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
 int clear_ownertrusts (PKT_public_key *pk);
 
-int clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only);
-int clean_uids_from_key(KBNODE keyblock,int noisy);
+void clean_one_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only,
+		   int *uids_cleaned,int *sigs_cleaned);
 void clean_key(KBNODE keyblock,int noisy,int self_only,
 	       int *uids_cleaned,int *sigs_cleaned);
 
