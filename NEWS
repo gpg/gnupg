@@ -23,6 +23,25 @@ Noteworthy changes in version 1.4.3
     * Added "gpg-zip", a program to create encrypted archives that can
       interoperate with PGP Zip.
 
+    * Added support for signing subkey "back signatures".  Requiring
+      back signatures to be present is currently off by default, but
+      will be changed to on by default in the future, once more keys
+      contain the back signature.  A new "backsign" command in the
+      --edit-key menu can be used to update signing subkeys with back
+      signatures.
+
+    * The key cleaning options for --import-options and
+      --export-options have been further polished.  "import-clean" and
+      "export-clean" replace the older
+      import-clean-sigs/import-clean-uids and
+      export-clean-sigs/export-clean-uids option pairs.
+
+    * New "minimize" command in the --edit-key menu removes everything
+      that can be removed from a key, rendering it as small as
+      possible.  There are corresponding "export-minimal" and
+      "import-minimal" commands for --export-options and
+      --import-options.
+
 
 Noteworthy changes in version 1.4.2 (2005-07-26)
 ------------------------------------------------

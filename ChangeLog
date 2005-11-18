@@ -1,3 +1,8 @@
+2005-11-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note backsigs, the xxxxx-clean options, and the
+	xxxxx-minimal options.
+
 2005-11-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Check for a getpagesize() declaration.
