@@ -285,7 +285,7 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
     int n, i;
 
     if( !d )
-	d = xmalloc(sizeof *d);
+	d = xmalloc_secure(sizeof *d);
     else
         release_secret_key_parts (d);
     memcpy( d, s, sizeof *d );

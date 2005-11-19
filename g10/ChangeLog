@@ -1,3 +1,12 @@
+2005-11-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* free-packet.c (copy_secret_key): Copy secret key into secure
+	memory since we may unprotect it.
+
+	* main.h, g10.c (main), revoke.c (gen_desig_revoke): Add local
+	user support so users can use -u with --desig-revoke.  This
+	bypasses the interactive walk over the revocation keys.
+
 2005-11-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (keyedit_menu, menu_clean): Simplify clean options to
@@ -16,7 +25,8 @@
 
 	* armor.c (parse_header_line): A fussy bit of 2440: header lines
 	are delimited with a colon-space pair.  Therefore a line such as
-	"Comment: " is actually legal, albeit not particularly useful.
+	"Comment: " (with a trailing space) is actually legal, albeit not
+	particularly useful.
 
 2005-11-11  David Shaw  <dshaw@jabberwocky.com>
 

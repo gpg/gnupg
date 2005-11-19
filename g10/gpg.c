@@ -3417,7 +3417,7 @@ main (int argc, char **argv )
 	if( argc != 1 )
 	    wrong_args("--desig-revoke user-id");
 	username =  make_username(*argv);
-	gen_desig_revoke( username );
+	gen_desig_revoke( username, locusr );
 	xfree( username );
 	break;
 

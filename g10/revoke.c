@@ -197,7 +197,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
  * Generate a revocation certificate for UNAME via a designated revoker
  */
 int
-gen_desig_revoke( const char *uname )
+gen_desig_revoke( const char *uname, STRLIST locusr )
 {
     int rc = 0;
     armor_filter_context_t afx;
@@ -211,6 +211,7 @@ gen_desig_revoke( const char *uname )
     KBNODE keyblock=NULL,node;
     u32 keyid[2];
     int i,any=0;
+    SK_LIST sk_list=NULL;
 
     if( opt.batch )
       {
@@ -246,6 +247,13 @@ gen_desig_revoke( const char *uname )
 
     keyid_from_pk(pk,keyid);
 
+    if(locusr)
+      {
+	rc=build_sk_list(locusr,&sk_list,0,PUBKEY_USAGE_CERT);
+	if(rc)
+	  goto leave;
+      }
+
     /* Are we a designated revoker for this key? */
 
     if(!pk->revkey && pk->numrevkeys)
@@ -253,12 +261,39 @@ gen_desig_revoke( const char *uname )
 
     for(i=0;i<pk->numrevkeys;i++)
       {
+	SK_LIST list;
+
 	if(sk)
 	  free_secret_key(sk);
 
-	sk=xmalloc_clear(sizeof(*sk));
+	if(sk_list)
+	  {
+	    for(list=sk_list;list;list=list->next)
+	      {
+		byte fpr[MAX_FINGERPRINT_LEN];
+		size_t fprlen;
 
-	rc=get_seckey_byfprint(sk,pk->revkey[i].fpr,MAX_FINGERPRINT_LEN);
+		fingerprint_from_sk(list->sk,fpr,&fprlen);
+
+		/* Don't get involved with keys that don't have 160
+		   bit fingerprints */
+		if(fprlen!=20)
+		  continue;
+
+		if(memcmp(fpr,pk->revkey[i].fpr,20)==0)
+		  break;
+	      }
+
+	    if(list)
+	      sk=copy_secret_key(NULL,list->sk);
+	    else
+	      continue;
+	  }
+	else
+	  {
+	    sk=xmalloc_secure_clear(sizeof(*sk));
+	    rc=get_seckey_byfprint(sk,pk->revkey[i].fpr,MAX_FINGERPRINT_LEN);
+	  }
 
 	/* We have the revocation key */
 	if(!rc)
@@ -297,7 +332,8 @@ gen_desig_revoke( const char *uname )
 	      goto leave;
 
 	    afx.what = 1;
-	    afx.hdrlines = "Comment: A designated revocation certificate should follow\n";
+	    afx.hdrlines = "Comment: A designated revocation certificate"
+	      " should follow\n";
 	    iobuf_push_filter( out, armor_filter, &afx );
 
 	    /* create it */
@@ -383,6 +419,8 @@ gen_desig_revoke( const char *uname )
 	free_secret_key( sk );
     if( sig )
 	free_seckey_enc( sig );
+
+    release_sk_list(sk_list);
 
     if( rc )
 	iobuf_cancel(out);

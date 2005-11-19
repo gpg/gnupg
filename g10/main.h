@@ -237,7 +237,7 @@ int enarmor_file( const char *fname );
 /*-- revoke.c --*/
 struct revocation_reason_info;
 int gen_revoke( const char *uname );
-int gen_desig_revoke( const char *uname );
+int gen_desig_revoke( const char *uname, STRLIST locusr);
 int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
 struct revocation_reason_info *
 		ask_revocation_reason( int key_rev, int cert_rev, int hint );
