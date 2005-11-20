@@ -2442,24 +2442,7 @@ show_key_with_all_names_colon (KBNODE keyblock)
           putchar('\n');
           
           print_fingerprint (pk, NULL, 0);
-
-          /* print the revoker record */
-          if( !pk->revkey && pk->numrevkeys )
-            BUG();
-          else
-            {
-              for (i=0; i < pk->numrevkeys; i++)
-                {
-                  byte *p;
-
-                  printf ("rvk:::%d::::::", pk->revkey[i].algid);
-                  p = pk->revkey[i].fpr;
-                  for (j=0; j < 20; j++, p++ )
-                    printf ("%02X", *p);
-                  printf (":%02x%s:\n", pk->revkey[i].class,
-                          (pk->revkey[i].class&0x40)?"s":"");
-                }
-            }
+	  print_revokers(pk);
         }
     }
   

@@ -1,3 +1,13 @@
+2005-11-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, keylist.c (print_revokers): New.  Print the "rvk"
+	designated revoker record.  Moved from
+	keyedit.c:show_key_with_all_names_colon.
+
+	* keylist.c (list_keyblock_colon): Use it here ...
+
+	* keyedit.c (show_key_with_all_names_colon): ... and here.
+
 2005-11-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* free-packet.c (copy_secret_key): Copy secret key into secure

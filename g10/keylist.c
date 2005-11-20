@@ -1009,6 +1009,29 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     putchar('\n');
 }
 
+void
+print_revokers(PKT_public_key *pk)
+{
+  /* print the revoker record */
+  if( !pk->revkey && pk->numrevkeys )
+    BUG();
+  else
+    {
+      int i,j;
+
+      for (i=0; i < pk->numrevkeys; i++)
+	{
+	  byte *p;
+
+	  printf ("rvk:::%d::::::", pk->revkey[i].algid);
+	  p = pk->revkey[i].fpr;
+	  for (j=0; j < 20; j++, p++ )
+	    printf ("%02X", *p);
+	  printf (":%02x%s:\n", pk->revkey[i].class,
+		  (pk->revkey[i].class&0x40)?"s":"");
+	}
+    }
+}
 
 static void
 list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
@@ -1073,7 +1096,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
             putchar( get_ownertrust_info(pk) );
 	    putchar(':');
     }
-    
+
     if (opt.fixed_list_mode) {
         /* do not merge the first uid with the primary key */
         putchar(':');
@@ -1094,13 +1117,14 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
           putchar(':'); /* End of field 15. */
         }
         putchar('\n');
+	if(pk)
+	  print_revokers(pk);
         if( fpr )
             print_fingerprint( pk, sk, 0 );
         if( opt.with_key_data )
             print_key_data( pk );
         any = 1;
     }
-
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
