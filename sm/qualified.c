@@ -221,8 +221,8 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
                 subject? subject:"?",
                 opt.qualsig_approval? 
                 "":
-                "Note that this software is not officially approved "
-                "to create or verify such signatures.\n",
+                _("Note, that this software is not officially approved "
+                  "to create or verify such signatures.\n"),
                 opt.qualsig_approval? "":"\n"
                 ) < 0 )
     err = gpg_error_from_errno (errno);
