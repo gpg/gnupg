@@ -446,13 +446,13 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
           goto leave;
         }
       if (*buffer)
+        err = gpgsm_qualified_consent (ctrl, cl->cert);
+      else
+        err = gpgsm_not_qualified_warning (ctrl, cl->cert);
+      if (err)
         {
-          err = gpgsm_qualified_consent (ctrl, cl->cert);
-          if (err)
-            {
-              rc = err;
-              goto leave;
-            }
+          rc = err;
+          goto leave;
         }
     }
   

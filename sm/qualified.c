@@ -216,10 +216,105 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
                   "certificate:\n"
                   "\"%s\"\n"
                   "This will create a qualified signature by law "
-                  "equated to a handwritten signature.\n\n"
+                  "equated to a handwritten signature.\n\n%s%s"
                   "Are you really sure that you want to do this?"),
-                subject? subject:"?"
+                subject? subject:"?",
+                opt.qualsig_approval? 
+                "":
+                "Note that this software is not officially approved "
+                "to create or verify such signatures.\n",
+                opt.qualsig_approval? "":"\n"
                 ) < 0 )
+    err = gpg_error_from_errno (errno);
+  else
+    err = 0;
+
+#ifdef ENABLE_NLS
+  if (orig_codeset)
+    bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
+#endif
+  xfree (orig_codeset);
+  xfree (subject);
+
+  if (err)
+    return err;
+
+  buffer = p = xtrymalloc (strlen (name) * 3 + 1);
+  if (!buffer)
+    {
+      err = gpg_error_from_errno (errno);
+      free (name);
+      return err;
+    }
+  for (s=name; *s; s++)
+    {
+      if (*s < ' ' || *s == '+')
+        {
+          sprintf (p, "%%%02X", *(unsigned char *)s);
+          p += 3;
+        }
+      else if (*s == ' ')
+        *p++ = '+';
+      else
+        *p++ = *s;
+    }
+  *p = 0;
+  free (name); 
+
+
+  err = gpgsm_agent_get_confirmation (ctrl, buffer);
+
+  xfree (buffer);
+  return err;
+}
+
+
+/* Popup a prompt to inform the user that the signature created is not
+   a qualified one.  This is of course only doen if we know that we
+   have been approved. */
+gpg_error_t
+gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
+{
+  gpg_error_t err;
+  char *name, *subject, *buffer, *p;
+  const char *s;
+  char *orig_codeset = NULL;
+
+  if (!opt.qualsig_approval)
+    return 0;
+
+  name = ksba_cert_get_subject (cert, 0);
+  if (!name)
+    return gpg_error (GPG_ERR_GENERAL);
+  subject = gpgsm_format_name2 (name, 0);
+  ksba_free (name); name = NULL;
+
+
+#ifdef ENABLE_NLS
+  /* The Assuan agent protocol requires us to transmit utf-8 strings */
+  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
+#ifdef HAVE_LANGINFO_CODESET
+  if (!orig_codeset)
+    orig_codeset = nl_langinfo (CODESET);
+#endif
+  if (orig_codeset)
+    { /* We only switch when we are able to restore the codeset later.
+         Note that bind_textdomain_codeset does only return on memory
+         errors but not if a codeset is not available.  Thus we don't
+         bother printing a diagnostic here. */
+      orig_codeset = xstrdup (orig_codeset);
+      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
+        orig_codeset = NULL; 
+    }
+#endif
+
+  if (asprintf (&name,
+                _("You are about to create a signature using your "
+                  "certificate:\n"
+                  "\"%s\"\n"
+                  "Note, that this certificate will NOT create a "
+                  "qualified signature!"),
+                subject? subject:"?") < 0 )
     err = gpg_error_from_errno (errno);
   else
     err = 0;

@@ -108,6 +108,13 @@ struct {
   char *fixed_passphrase;   /* Passphrase used by regression tests.  */
 
   int auto_issuer_key_retrieve; /* try to retrieve a missing issuer key. */
+
+  int qualsig_approval;     /* Set to true if this software has
+                               officially been approved to create an
+                               verify qualified signatures.  This is a
+                               runtime option in case we want to check
+                               the integrity of the software at
+                               runtime. */
 } opt;
 
 
@@ -291,6 +298,7 @@ int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp);
 /*-- qualified.c --*/
 gpg_error_t gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert);
 gpg_error_t gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert);
+gpg_error_t gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert);
 
 /*-- call-agent.c --*/
 int gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,

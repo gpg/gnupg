@@ -1,3 +1,14 @@
+2005-11-23  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.h: New member QUALSIG_APPROVAL.
+	* sign.c (gpgsm_sign): Print a warning if a certificate is not
+	qualified.
+	* qualified.c (gpgsm_qualified_consent): Include a note that this
+	is not approved software.
+	(gpgsm_not_qualified_warning): New.
+	* gpgsm.c (main): Prepared to print a note whether the software
+	has been approved.
+
 2005-11-13  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (gpgsm_agent_get_confirmation): New.

@@ -701,7 +701,6 @@ gpg_error_t
 gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
 {
   int rc;
-  char *fpr;
   char line[ASSUAN_LINELENGTH];
 
   rc = start_agent (ctrl);
