@@ -3268,18 +3268,15 @@ app_select_p15 (app_t app)
   int direct = 0;
   int is_belpic = 0;
 
-  rc = iso7816_select_application (slot, pkcs15_aid, sizeof pkcs15_aid);
-  if (rc)
-    {
-      rc = iso7816_select_application (slot, pkcs15be_aid,sizeof pkcs15be_aid);
-      if (!rc)
-        is_belpic = 1;
-    }
+  rc = iso7816_select_application (slot, pkcs15_aid, sizeof pkcs15_aid, 0);
   if (rc)
     { /* Not found: Try to locate it from 2F00.  We use direct path
          selection here because it seems that the Belgian eID card
          does only allow for that.  Many other cards supports this
-         selection method too. */
+         selection method too.  Note, that we don't use
+         select_application above for the Belgian card - the call
+         works but it seems that it did not switch to the correct DF.
+         Using the 2f02 just works. */
       unsigned short path[1] = { 0x2f00 };
 
       rc = iso7816_select_path (app->slot, path, 1, NULL, NULL);

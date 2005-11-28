@@ -511,7 +511,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       goto bailout;
     }
 
-  /* Loop over all certificates inside the bab. */
+  /* Loop over all certificates inside the bag. */
   while (n)
     {
       int isbag = 0;
@@ -860,6 +860,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   size_t n = length;
   const char *where;
   int bagseqlength, len;
+  gcry_mpi_t *result = NULL;
 
   where = "pfx";
   if (parse_tag (&p, &n, &ti))
@@ -936,10 +937,17 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
       else if (ti.tag == TAG_OBJECT_ID && ti.length == DIM(oid_data)
           && !memcmp (p, oid_data, DIM(oid_data)))
         {
-          p += DIM(oid_data);
-          n -= DIM(oid_data);
-          len -= DIM(oid_data);
-          return parse_bag_data (p, n, (p-buffer), pw);
+          if (result)
+            log_info ("already got an data object, skipping next one\n");
+          else
+            {
+              p += DIM(oid_data);
+              n -= DIM(oid_data);
+              len -= DIM(oid_data);
+              result = parse_bag_data (p, n, (p-buffer), pw);
+              if (!result)
+                goto bailout;
+            }
         }
       else
         log_info ( "unknown bag type - skipped\n");
@@ -950,9 +958,10 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
       n -= len;
     }
   
-  return NULL;
+  return result;
  bailout:
   log_error ("error at \"%s\", offset %u\n", where, (p - buffer));
+  /* fixme: need to release RESULT. */
   return NULL;
 }
 

@@ -61,7 +61,7 @@ X.509 specific are noted like [X.509: xxx]
    u32	offset to the n-th key's keyID (a keyID is always 8 byte)
         or 0 if not known which is the case only for X509.
    u16	special key flags
-	 bit 0 =
+	 bit 0 = qualified signature (not yet implemented}
    u16	reserved
  u16  size of serialnumber(may be zero) 
    n  u16 (see above) bytes of serial number

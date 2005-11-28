@@ -528,7 +528,9 @@ static gc_option_t gc_options_scdaemon[] =
    { "disable-ccid", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "do not use the internal CCID driver",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
-
+   { "disable-keypad", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "do not use a reader's keypad",
+     GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
@@ -2447,7 +2449,8 @@ gc_component_change_options (int component, FILE *in)
 		{
 #ifdef HAVE_W32_SYSTEM
                   /* FIXME: Won't work becuase W32 doesn't silently
-                     overwrite. */
+                     overwrite. Fix it by creating a backup copy and
+                     deliting the orginal file first. */
                   err = rename (src_pathname[i], dest_pathname[i]);
 #else /*!HAVE_W32_SYSTEM*/
 		  /* This is a bit safer than rename() because we

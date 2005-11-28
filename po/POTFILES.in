@@ -17,6 +17,7 @@ kbx/kbxutil.c
 
 scd/scdaemon.c
 scd/app-openpgp.c
+scd/app-nks.c
 
 sm/base64.c
 sm/call-agent.c

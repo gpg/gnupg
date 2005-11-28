@@ -1,7 +1,62 @@
+2005-11-23  Werner Koch  <wk@g10code.com>
+
+	* app-nks.c (verify_pin): Give a special error message for a Nullpin.
+
+2005-10-29  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (send_escape_cmd): New args RESULT, RESULTLEN and
+	RESULTMAX.  Changed all callers.
+	(ccid_transceive_escape): New.
+
+2005-10-27  Werner Koch  <wk@g10code.com>
+
+	* apdu.c [__CYGWIN__]: Make cygwin environment similar to _WIN32.
+	Suggested by John P. Clizbe.
+	* scdaemon.c [__CYGWIN__]: Set default PC/SC driver to winscard.dll.
+
+2005-10-19  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.h (CCID_DRIVER_ERR_NO_KEYPAD): New.
+	* apdu.h (SW_HOST_NO_KEYPAD): New.
+	* iso7816.h (struct iso7816_pininfo_s): New.
+	* iso7816.c (map_sw): Support new code.
+	(iso7816_check_keypad): New.
+	(iso7816_verify_kp, iso7816_change_reference_data_kp) 
+	(iso7816_reset_retry_counter_kp): New.  Extended versions of the
+	original functions.
+	* apdu.c (host_sw_string): Support new code. 
+	(reader_table_s): New field CHECK_KEYPAD.
+	(new_reader_slot, open_ct_reader, open_pcsc_reader) 
+	(open_ccid_reader, open_rapdu_reader): Initialize it.
+	(check_ccid_keypad): New.
+	(apdu_check_keypad): New.
+	(apdu_send_le): Factored all code out to ...
+	(send_le): .. new.  Takes an additional arg; changed all callers
+	of the orginal function to use this one with a NULL for the new
+	arg.
+	(apdu_send_simple_kp): New.
+	(ct_send_apdu, pcsc_send_apdu, my_rapdu_send_apdu) 
+	(send_apdu_ccid): New arg PININFO.
+	(send_apdu_ccid): Use the new arg.
+
+	* scdaemon.c: New option --disable-keypad.
+
 2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (scdaemon_LDADD): Add ../gl/libgnu.a after
 	../common/libcommon.a.
+
+2005-09-20  Werner Koch  <wk@g10code.com>
+
+	* app-dinsig.c (verify_pin): Try ISO 9564 BCD encoding.
+
+	* iso7816.c (iso7816_select_application): Add arg FLAGS.  Changed
+	all callers to pass 0.
+	* app-openpgp.c (app_select_openpgp): But this one requires a
+	special flag.
+
+	* app-p15.c (app_select_p15): Don't use select application for the
+	BELPIC.
 
 2005-09-09  Werner Koch  <wk@g10code.com>
 

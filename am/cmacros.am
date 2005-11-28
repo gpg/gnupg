@@ -25,7 +25,8 @@ if ! HAVE_DOSISH_SYSTEM
 AM_CPPFLAGS += -DGNUPG_BINDIR="\"$(bindir)\""            \
                -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""    \
                -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
-               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\""
+               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
+               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
 endif
 
 if GNUPG_AGENT_PGM

@@ -47,9 +47,9 @@
 
 
 #define CMD_SELECT_FILE 0xA4
-#define CMD_VERIFY      0x20
-#define CMD_CHANGE_REFERENCE_DATA 0x24
-#define CMD_RESET_RETRY_COUNTER   0x2C
+#define CMD_VERIFY                ISO7816_VERIFY
+#define CMD_CHANGE_REFERENCE_DATA ISO7816_CHANGE_REFERENCE_DATA
+#define CMD_RESET_RETRY_COUNTER   ISO7816_RESET_RETRY_COUNTER
 #define CMD_GET_DATA    0xCA
 #define CMD_PUT_DATA    0xDA
 #define CMD_MSE         0x22
@@ -95,6 +95,7 @@ map_sw (int sw)
     case SW_HOST_GENERAL_ERROR:  ec = GPG_ERR_GENERAL; break;
     case SW_HOST_NO_READER:      ec = GPG_ERR_ENODEV; break;
     case SW_HOST_ABORTED:        ec = GPG_ERR_CANCELED; break;
+    case SW_HOST_NO_KEYPAD:      ec = GPG_ERR_NOT_SUPPORTED; break;
 
     default:
       if ((sw & 0x010000))
@@ -124,12 +125,15 @@ iso7816_map_sw (int sw)
    requested application ID.  The function can't be used to enumerate
    AIDs and won't return the AID on success.  The return value is 0
    for okay or a GPG error code.  Note that ISO error codes are
-   internally mapped. */
+   internally mapped.  Bit 0 of FLAGS should be set if the card does
+   not understand P2=0xC0. */
 gpg_error_t
-iso7816_select_application (int slot, const char *aid, size_t aidlen)
+iso7816_select_application (int slot, const char *aid, size_t aidlen,
+                            unsigned int flags)
 {
   int sw;
-  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4, 0, aidlen, aid);
+  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4,
+                         (flags&1)? 0 :0x0c, aidlen, aid);
   return map_sw (sw);
 }
 
@@ -221,27 +225,59 @@ iso7816_list_directory (int slot, int list_dirs,
 }
 
 
+/* Check whether the reader supports the ISO command code COMMAND on
+   the keypad.  Returns 0 on success.  */
+gpg_error_t
+iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
+{
+  int sw;
+
+  sw = apdu_check_keypad (slot, command, 
+                          pininfo->mode, pininfo->minlen, pininfo->maxlen,
+                          pininfo->padlen);
+  return map_sw (sw);
+}
+
+
+/* Perform a VERIFY command on SLOT using the card holder verification
+   vector CHVNO with a CHV of lenght CHVLEN.  With PININFO non-NULL
+   the keypad of the reader will be used.  Returns 0 on success. */
+gpg_error_t
+iso7816_verify_kp (int slot, int chvno, const char *chv, size_t chvlen,
+                   iso7816_pininfo_t *pininfo)
+{
+  int sw;
+
+  if (pininfo && pininfo->mode)
+    sw = apdu_send_simple_kp (slot, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv,
+                              pininfo->mode,
+                              pininfo->minlen,
+                              pininfo->maxlen,
+                              pininfo->padlen);
+  else
+    sw = apdu_send_simple (slot, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv);
+  return map_sw (sw);
+}
 
 /* Perform a VERIFY command on SLOT using the card holder verification
    vector CHVNO with a CHV of lenght CHVLEN.  Returns 0 on success. */
 gpg_error_t
 iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen)
 {
-  int sw;
-
-  sw = apdu_send_simple (slot, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv);
-  return map_sw (sw);
+  return iso7816_verify_kp (slot, chvno, chv, chvlen, NULL);
 }
 
 /* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
    verification vector CHVNO.  If the OLDCHV is NULL (and OLDCHVLEN
    0), a "change reference data" is done, otherwise an "exchange
    reference data".  The new reference data is expected in NEWCHV of
-   length NEWCHVLEN.  */
+   length NEWCHVLEN.  With PININFO non-NULL the keypad of the reader
+   will be used.  */
 gpg_error_t
-iso7816_change_reference_data (int slot, int chvno,
-                               const char *oldchv, size_t oldchvlen,
-                               const char *newchv, size_t newchvlen)
+iso7816_change_reference_data_kp (int slot, int chvno,
+                                  const char *oldchv, size_t oldchvlen,
+                                  const char *newchv, size_t newchvlen,
+                                  iso7816_pininfo_t *pininfo)
 {
   int sw;
   char *buf;
@@ -258,26 +294,67 @@ iso7816_change_reference_data (int slot, int chvno,
     memcpy (buf, oldchv, oldchvlen);
   memcpy (buf+oldchvlen, newchv, newchvlen);
 
-  sw = apdu_send_simple (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
-                         oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
+  if (pininfo && pininfo->mode)
+    sw = apdu_send_simple_kp (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
+                           oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf,
+                           pininfo->mode,
+                           pininfo->minlen,
+                           pininfo->maxlen,
+                           pininfo->padlen);
+  else
+    sw = apdu_send_simple (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
+                           oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
   xfree (buf);
   return map_sw (sw);
 
 }
 
+/* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
+   verification vector CHVNO.  If the OLDCHV is NULL (and OLDCHVLEN
+   0), a "change reference data" is done, otherwise an "exchange
+   reference data".  The new reference data is expected in NEWCHV of
+   length NEWCHVLEN.  */
 gpg_error_t
-iso7816_reset_retry_counter (int slot, int chvno,
-                             const char *newchv, size_t newchvlen)
+iso7816_change_reference_data (int slot, int chvno,
+                               const char *oldchv, size_t oldchvlen,
+                               const char *newchv, size_t newchvlen)
+{
+  return iso7816_change_reference_data_kp (slot, chvno, oldchv, oldchvlen,
+                                           newchv, newchvlen, NULL);
+}
+
+
+gpg_error_t
+iso7816_reset_retry_counter_kp (int slot, int chvno,
+                                const char *newchv, size_t newchvlen,
+                                iso7816_pininfo_t *pininfo)
 {
   int sw;
 
   if (!newchv || !newchvlen )
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  sw = apdu_send_simple (slot, 0x00, CMD_RESET_RETRY_COUNTER,
-                         2, chvno, newchvlen, newchv);
+  if (pininfo && pininfo->mode)
+    sw = apdu_send_simple_kp (slot, 0x00, CMD_RESET_RETRY_COUNTER,
+                           2, chvno, newchvlen, newchv,
+                           pininfo->mode,
+                           pininfo->minlen,
+                           pininfo->maxlen,
+                           pininfo->padlen);
+  else
+    sw = apdu_send_simple (slot, 0x00, CMD_RESET_RETRY_COUNTER,
+                           2, chvno, newchvlen, newchv);
   return map_sw (sw);
 }
+
+
+gpg_error_t
+iso7816_reset_retry_counter (int slot, int chvno,
+                             const char *newchv, size_t newchvlen)
+{
+  return iso7816_reset_retry_counter_kp (slot, chvno, newchv, newchvlen, NULL);
+}
+
 
 
 /* Perform a GET DATA command requesting TAG and storing the result in

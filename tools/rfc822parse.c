@@ -766,6 +766,7 @@ parse_field (HDR_LINE hdr)
   } tspecial_header[] = {
     { "Content-Type", 12},
     { "Content-Transfer-Encoding", 25},
+    { "Content-Disposition", 19},
     { NULL, 0}
   };
   const char *delimiters;

@@ -84,6 +84,7 @@ enum cmd_and_opt_values
   opcscDriver,
   oDisableCCID,
   oDisableOpenSC,
+  oDisableKeypad,
   oAllowAdmin,
   oDenyAdmin,
   oDisableApplication,
@@ -126,6 +127,7 @@ static ARGPARSE_OPTS opts[] = {
                                     "@"
 #endif
                                          /* end --disable-ccid */},
+  { oDisableKeypad, "disable-keypad", 0, N_("do not use a reader's keypad")},
   { oAllowAdmin, "allow-admin", 0, N_("allow the use of admin card commands")},
   { oDenyAdmin,  "deny-admin",  0, "@" },  
   { oDisableApplication, "disable-application", 2, "@"},
@@ -135,7 +137,7 @@ static ARGPARSE_OPTS opts[] = {
 
 
 /* The card dirver we use by default for PC/SC.  */
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) || defined(__CYGWIN__)
 #define DEFAULT_PCSC_DRIVER "winscard.dll"
 #else
 #define DEFAULT_PCSC_DRIVER "libpcsclite.so"
@@ -488,6 +490,8 @@ main (int argc, char **argv )
         case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
         case oDisableCCID: opt.disable_ccid = 1; break;
         case oDisableOpenSC: break;
+
+        case oDisableKeypad: opt.disable_keypad = 1; break;
 
         case oAllowAdmin: opt.allow_admin = 1; break;
         case oDenyAdmin: opt.allow_admin = 0; break;

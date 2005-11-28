@@ -26,7 +26,6 @@ might want to have an agent context for each service request
 * sm/gpgsm.c
 ** Support --output for all commands
 ** mark all unimplemented commands and options.
-** Print a hint when MD2 is the cause for a problem.
 ** Implement --default-key
 ** support the anyPolicy semantic
 ** Check that we are really following the verification procedures in rfc3280.

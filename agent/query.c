@@ -27,9 +27,10 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#ifdef USE_GNU_PTH
-# include <pth.h>
+#ifndef HAVE_W32_SYSTEM
+#include <sys/wait.h>
 #endif
+#include <pth.h>
 
 #include "agent.h"
 #include "i18n.h"
@@ -48,14 +49,30 @@
    time. */
 #define LOCK_TIMEOUT  (1*60)
 
+/* The assuan context of the current pinentry. */
+static assuan_context_t entry_ctx;
 
-static assuan_context_t entry_ctx = NULL;
-#ifdef USE_GNU_PTH
+/* The control variable of the connection owning the current pinentry.
+   This is only valid if ENTRY_CTX is not NULL.  Note, that we care
+   only about the value of the pointer and that it should never be
+   dereferenced.  */
+static ctrl_t entry_owner;
+
+/* A mutex used to serialize access to the pinentry. */
 static pth_mutex_t entry_lock;
-#endif
 
-/* data to be passed to our callbacks */
-struct entry_parm_s {
+/* The thread ID of the popup working thread. */
+static pth_t  popup_tid;
+
+/* A flag used in communication between the popup working thread and
+   its stop function. */
+static int popup_finished;
+
+
+
+/* Data to be passed to our callbacks, */
+struct entry_parm_s
+{
   int lines;
   size_t size;
   unsigned char *buffer;
@@ -67,17 +84,17 @@ struct entry_parm_s {
 /* This function must be called once to initialize this module.  This
    has to be done before a second thread is spawned.  We can't do the
    static initialization because Pth emulation code might not be able
-   to do a static init; in particualr, it is not possible for W32. */
+   to do a static init; in particular, it is not possible for W32. */
 void
 initialize_module_query (void)
 {
-#ifdef USE_GNU_PTH
   static int initialized;
 
   if (!initialized)
-    if (pth_mutex_init (&entry_lock))
-      initialized = 1;
-#endif /*USE_GNU_PTH*/
+    {
+      if (pth_mutex_init (&entry_lock))
+        initialized = 1;
+    }
 }
 
 
@@ -102,8 +119,19 @@ agent_query_dump_state (void)
   log_info ("agent_query_dump_state: entry_lock=");
   dump_mutex_state (&entry_lock);
   log_printf ("\n");
-  log_info ("agent_query_dump_state: entry_ctx=%p pid=%ld\n",
-            entry_ctx, (long)assuan_get_pid (entry_ctx));
+  log_info ("agent_query_dump_state: entry_ctx=%p pid=%ld popup_tid=%p\n",
+            entry_ctx, (long)assuan_get_pid (entry_ctx), popup_tid);
+}
+
+/* Called to make sure that a popup window owned by the current
+   connection gets closed. */
+void
+agent_reset_query (ctrl_t ctrl)
+{
+  if (entry_ctx && popup_tid && entry_owner == ctrl)
+    {
+      agent_popup_message_stop (ctrl);
+    }
 }
 
 
@@ -117,14 +145,12 @@ unlock_pinentry (int rc)
   assuan_context_t ctx = entry_ctx;
 
   entry_ctx = NULL;
-#ifdef USE_GNU_PTH
   if (!pth_mutex_release (&entry_lock))
     {
       log_error ("failed to release the entry lock\n");
       if (!rc)
         rc = gpg_error (GPG_ERR_INTERNAL);
     }
-#endif
   assuan_disconnect (ctx);
   return rc;
 }
@@ -145,7 +171,7 @@ atfork_cb (void *opaque, int where)
    pinentry - we will serialize _all_ pinentry calls.
  */
 static int
-start_pinentry (CTRL ctrl)
+start_pinentry (ctrl_t ctrl)
 {
   int rc;
   const char *pgmname;
@@ -153,13 +179,10 @@ start_pinentry (CTRL ctrl)
   const char *argv[5];
   int no_close_list[3];
   int i;
+  pth_event_t evt;
 
-#ifdef USE_GNU_PTH
- {
-   pth_event_t evt;
-
-   evt = pth_event (PTH_EVENT_TIME, pth_timeout (LOCK_TIMEOUT, 0));
-   if (!pth_mutex_acquire (&entry_lock, 0, evt))
+  evt = pth_event (PTH_EVENT_TIME, pth_timeout (LOCK_TIMEOUT, 0));
+  if (!pth_mutex_acquire (&entry_lock, 0, evt))
     {
       if (pth_event_occurred (evt))
         rc = gpg_error (GPG_ERR_TIMEOUT);
@@ -170,9 +193,9 @@ start_pinentry (CTRL ctrl)
                  gpg_strerror (rc));
       return rc;
     }
-   pth_event_free (evt, PTH_FREE_THIS);
- }
-#endif
+  pth_event_free (evt, PTH_FREE_THIS);
+
+  entry_owner = ctrl;
 
   if (entry_ctx)
     return 0; 
@@ -436,7 +459,7 @@ agent_askpin (ctrl_t ctrl,
    passphrase is returned in RETPASS as an hex encoded string to be
    freed by the caller */
 int 
-agent_get_passphrase (CTRL ctrl,
+agent_get_passphrase (ctrl_t ctrl,
                       char **retpass, const char *desc, const char *prompt,
                       const char *errtext)
 {
@@ -517,11 +540,11 @@ agent_get_passphrase (CTRL ctrl,
 
 
 /* Pop up the PIN-entry, display the text and the prompt and ask the
-   user to confirm this.  We return 0 for success, ie. the used
+   user to confirm this.  We return 0 for success, ie. the user
    confirmed it, GPG_ERR_NOT_CONFIRMED for what the text says or an
    other error. */
 int 
-agent_get_confirmation (CTRL ctrl,
+agent_get_confirmation (ctrl_t ctrl,
                         const char *desc, const char *ok, const char *cancel)
 {
   int rc;
@@ -561,5 +584,120 @@ agent_get_confirmation (CTRL ctrl,
   return unlock_pinentry (map_assuan_err (rc));
 }
 
+
+/* The thread running the popup message. */
+static void *
+popup_message_thread (void *arg)
+{
+  assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL, NULL, NULL);
+  popup_finished = 1;
+  return NULL;
+}
+
+
+/* Pop up a message window similar to the confirm one but keep it open
+   until agent_popup_message_stop has been called.  It is crucial for
+   the caller to make sure that the stop function gets called as soon
+   as the message is not anymore required becuase the message is
+   system modal and all other attempts to use the pinentry will fail
+   (after a timeout). */
+int 
+agent_popup_message_start (ctrl_t ctrl, const char *desc,
+                           const char *ok_btn, const char *cancel_btn)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  pth_attr_t tattr;
+
+  rc = start_pinentry (ctrl);
+  if (rc)
+    return rc;
+
+  if (desc)
+    snprintf (line, DIM(line)-1, "SETDESC %s", desc);
+  else
+    snprintf (line, DIM(line)-1, "RESET");
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return unlock_pinentry (map_assuan_err (rc));
+
+  if (ok_btn)
+    {
+      snprintf (line, DIM(line)-1, "SETOK %s", ok_btn);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (entry_ctx, line, NULL,NULL,NULL,NULL,NULL,NULL);
+      if (rc)
+        return unlock_pinentry (map_assuan_err (rc));
+    }
+  if (cancel_btn)
+    {
+      snprintf (line, DIM(line)-1, "SETCANCEL %s", cancel_btn);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (entry_ctx, line, NULL,NULL,NULL,NULL,NULL,NULL);
+      if (rc)
+        return unlock_pinentry (map_assuan_err (rc));
+    }
+
+  tattr = pth_attr_new();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "popup-message");
+
+  popup_finished = 0;
+  popup_tid = pth_spawn (tattr, popup_message_thread, NULL);
+  if (!popup_tid)
+    {
+      rc = gpg_error_from_errno (errno);
+      log_error ("error spawning popup message handler: %s\n",
+                 strerror (errno) );
+      pth_attr_destroy (tattr);
+      return unlock_pinentry (rc);
+    }
+  pth_attr_destroy (tattr);
+
+  return 0;
+}
+
+/* Close a popup window. */
+void
+agent_popup_message_stop (ctrl_t ctrl)
+{
+  int rc;
+  pid_t pid;
+
+  if (!popup_tid || !entry_ctx)
+    {
+      log_debug ("agent_popup_message_stop called with no active popup\n");
+      return; 
+    }
+
+  pid = assuan_get_pid (entry_ctx);
+  if (pid == (pid_t)(-1))
+    ; /* No pid available can't send a kill. */
+  else if (popup_finished)
+    ; /* Already finished and ready for joining. */
+  else if (pid && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
+    { /* The daemon already died.  No need to send a kill.  However
+         because we already waited for the process, we need to tell
+         assuan that it should not wait again (done by
+         unlock_pinentry). */
+      if (rc == pid)
+        assuan_set_flag (entry_ctx, ASSUAN_NO_WAITPID, 1);
+    }
+  else
+    kill (pid, SIGINT);
+
+  /* Now wait for the thread to terminate. */
+  rc = pth_join (popup_tid, NULL);
+  if (!rc)
+    log_debug ("agent_popup_message_stop: pth_join failed: %s\n",
+               strerror (errno));
+  popup_tid = NULL;
+  entry_owner = NULL;
+
+  /* Now we can close the connection. */
+  unlock_pinentry (0);
+}
 
 

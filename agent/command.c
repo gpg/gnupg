@@ -316,11 +316,11 @@ cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
    this command is not used a default text will be used.  Note, that
    this description implictly selects the label used for the entry
    box; if the string contains the string PIN (which in general will
-   not be translated), "PIN" is used, other wiese the translation of
+   not be translated), "PIN" is used, otherwise the translation of
    'passphrase" is used.  The description string should not contain
    blanks unless they are percent or '+' escaped.
 
-   The descrition is only valid for the next PKSIGN or PKDECRYPT
+   The description is only valid for the next PKSIGN or PKDECRYPT
    operation.
 */
 static int
@@ -399,7 +399,7 @@ cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
 /* PKSIGN <options>
 
    Perform the actual sign operation. Neither input nor output are
-   sensitive to eavesdropping */
+   sensitive to eavesdropping. */
 static int
 cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 {
@@ -1084,6 +1084,9 @@ start_command_handler (int listen_fd, int fd)
 
   /* Reset the SCD if needed. */
   agent_reset_scd (&ctrl);
+
+  /* Reset the pinentry (in case of popup messages). */
+  agent_reset_query (&ctrl);
 
   assuan_deinit_server (ctx);
   if (ctrl.display)

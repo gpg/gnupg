@@ -39,21 +39,22 @@
 
 #define MAX_DIGEST_LEN 24 
 
-/* A large struct name "opt" to keep global flags */
+/* A large struct name "opt" to keep global flags. */
 struct {
-  unsigned int debug; /* debug flags (DBG_foo_VALUE) */
-  int verbose;      /* verbosity level */
-  int quiet;        /* be as quiet as possible */
-  int dry_run;      /* don't change any persistent data */
-  int batch;        /* batch mode */
-  const char *homedir; /* configuration directory name */
+  unsigned int debug; /* Debug flags (DBG_foo_VALUE). */
+  int verbose;        /* Verbosity level. */
+  int quiet;          /* Be as quiet as possible. */
+  int dry_run;        /* Don't change any persistent data. */
+  int batch;          /* Batch mode. */
+  const char *homedir;      /* Configuration directory name. */
   const char *ctapi_driver; /* Library to access the ctAPI. */
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
   const char *reader_port;  /* NULL or reder port to use. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
+  int disable_keypad;  /* Do not use a keypad. */
   int allow_admin;     /* Allow the use of admin commands for certain
                           cards. */
-  strlist_t disabled_applications;  /* card applications we do not
+  strlist_t disabled_applications;  /* Card applications we do not
                                        want to use. */
 } opt;
 

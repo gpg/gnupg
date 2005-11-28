@@ -133,7 +133,7 @@ struct server_control_s
   int have_keygrip;
 
   int use_auth_call; /* Hack to send the PKAUTH command instead of the
-                        PKSIGN command tro scdaemon.  */
+                        PKSIGN command to the scdaemon.  */
 };
 typedef struct server_control_s *CTRL;
 typedef struct server_control_s *ctrl_t;
@@ -200,6 +200,7 @@ int agent_key_available (const unsigned char *grip);
 /*-- query.c --*/
 void initialize_module_query (void);
 void agent_query_dump_state (void);
+void agent_reset_query (ctrl_t ctrl);
 int agent_askpin (ctrl_t ctrl,
                   const char *desc_text, const char *prompt_text,
                   const char *inital_errtext,
@@ -209,6 +210,10 @@ int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *errtext);
 int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
 			    const char *cancel);
+int agent_popup_message_start (ctrl_t ctrl, const char *desc,
+                               const char *ok_btn, const char *cancel_btn);
+void agent_popup_message_stop (ctrl_t ctrl);
+
 
 /*-- cache.c --*/
 void agent_flush_cache (void);

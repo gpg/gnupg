@@ -1240,7 +1240,9 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (CCID_COMMAND_FAILED (buffer))
     print_command_failed (buffer);
 
-  /* Check whether a card is at all available. */
+  /* Check whether a card is at all available.  Note: If you add new
+     error codes here, check whether they need to be ignored in
+     send_escape_cmd. */
   switch ((buffer[7] & 0x03))
     {
     case 0: /* no error */ break;
@@ -1253,15 +1255,22 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
 
 
 /* Note that this function won't return the error codes NO_CARD or
-   CARD_INACTIVE */
+   CARD_INACTIVE.  IF RESULT is not NULL, the result from the
+   operation will get returned in RESULT and its length in RESULTLEN.
+   If the response is larger than RESULTMAX, an error is returned and
+   the required buffer length returned in RESULTLEN.  */
 static int 
 send_escape_cmd (ccid_driver_t handle,
-                 const unsigned char *data, size_t datalen)
+                 const unsigned char *data, size_t datalen,
+                 unsigned char *result, size_t resultmax, size_t *resultlen)
 {
   int i, rc;
   unsigned char msg[100];
   size_t msglen;
   unsigned char seqno;
+
+  if (resultlen)
+    *resultlen = 0;
 
   if (datalen > sizeof msg - 10)
     return CCID_DRIVER_ERR_INV_VALUE; /* Escape data too large.  */
@@ -1285,9 +1294,40 @@ send_escape_cmd (ccid_driver_t handle,
     return rc;
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Escape,
                 seqno, 5000, 0);
-
+  if (result)
+    switch (rc)
+      {
+        /* We need to ignore certain errorcode here. */
+      case 0:
+      case CCID_DRIVER_ERR_CARD_INACTIVE:
+      case CCID_DRIVER_ERR_NO_CARD:
+        {
+          if (msglen > resultmax)
+            rc = CCID_DRIVER_ERR_INV_VALUE; /* Response too large. */
+          else
+            {
+              memcpy (result, msg, msglen);
+              *resultlen = msglen;
+            }
+          rc = 0;
+        }
+        break;
+      default:
+        break;
+      }
+  
   return rc;
 }
+
+
+int
+ccid_transceive_escape (ccid_driver_t handle,
+                        const unsigned char *data, size_t datalen,
+                        unsigned char *resp, size_t maxresplen, size_t *nresp)
+{
+  return send_escape_cmd (handle, data, datalen, resp, maxresplen, nresp);
+}
+
 
 
 /* experimental */
@@ -1445,7 +1485,8 @@ ccid_get_atr (ccid_driver_t handle,
     {
       tried_iso = 1;
       /* Try switching to ISO mode. */
-      if (!send_escape_cmd (handle, (const unsigned char*)"\xF1\x01", 2))
+      if (!send_escape_cmd (handle, (const unsigned char*)"\xF1\x01", 2,
+                            NULL, 0, NULL))
         goto again;
     }
   else if (CCID_COMMAND_FAILED (msg))
@@ -1957,14 +1998,16 @@ ccid_transceive (ccid_driver_t handle,
 }
 
 
-/* Send the CCID Secure command to the reader.  APDU_BUF should contain the APDU   template.  PIN_MODE defines now the pin gets formatted:
+/* Send the CCID Secure command to the reader.  APDU_BUF should
+   contain the APDU template.  PIN_MODE defines how the pin gets
+   formatted:
    
      1 := The PIN is ASCII encoded and of variable length.  The
           length of the PIN entered will be put into Lc by the reader.
           The APDU should me made up of 4 bytes without Lc.
 
    PINLEN_MIN and PINLEN_MAX define the limits for the pin length. 0
-   may be used t enable usbale defaults.  PIN_PADLEN should be 0
+   may be used t enable reasonable defaults.  PIN_PADLEN should be 0.
    
    When called with RESP and NRESP set to NULL, the function will
    merely check whether the reader supports the secure command for the
@@ -1996,7 +2039,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   else if (apdu_buflen >= 4 && apdu_buf[1] == 0x24 && (handle->has_pinpad & 2))
     return CCID_DRIVER_ERR_NOT_SUPPORTED; /* Not yet by our code. */
   else
-    return CCID_DRIVER_ERR_NOT_SUPPORTED;
+    return CCID_DRIVER_ERR_NO_KEYPAD;
     
   if (pin_mode != 1)
     return CCID_DRIVER_ERR_NOT_SUPPORTED;
@@ -2027,7 +2070,8 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (handle->id_vendor == VENDOR_SCM)
     {
       DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
-      rc = send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3);
+      rc = send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
+                            NULL, 0, NULL);
       if (rc)
         return rc;
     }
@@ -2044,7 +2088,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (handle->id_vendor == VENDOR_SCM)
     {
       /* For the SPR532 the next 2 bytes need to be zero.  We do this
-         for all SCM product. Kudos to to Martin Paljak for this
+         for all SCM product. Kudos to Martin Paljak for this
          hint.  */
       msg[13] = msg[14] = 0;
     }

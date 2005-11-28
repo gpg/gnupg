@@ -204,7 +204,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   const char *again_text = NULL;
   const char *prompt = "PIN";
 
-  if (maxbuf < 2)
+  if (buf && maxbuf < 2)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Parse the flags. */
@@ -223,6 +223,23 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   else if (info && *info == '|')
     log_debug ("pin_cb called without proper PIN info hack\n");
 
+  /* If BUF has been passed as NULL, we are in keypad mode: The
+     callback opens the popup and immediatley returns. */
+  if (!buf)
+    {
+      if (maxbuf == 0) /* Close the pinentry. */
+        {
+          agent_popup_message_stop (ctrl);
+          rc = 0;
+        }
+      else if (maxbuf == 1)  /* Open the pinentry. */
+        {
+          rc = agent_popup_message_start (ctrl, info, NULL, NULL);
+        }
+      else
+        rc = gpg_error (GPG_ERR_INV_VALUE);
+      return rc;
+    }
 
   /* FIXME: keep PI and TRIES in OPAQUE.  Frankly this is a whole
      mess because we should call the card's verify function from the

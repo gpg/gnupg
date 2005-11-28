@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2005-11-23 13:00+0100\n"
-"PO-Revision-Date: 2005-11-23 13:02+0100\n"
+"POT-Creation-Date: 2005-11-28 12:14+0100\n"
+"PO-Revision-Date: 2005-11-28 12:16+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
@@ -766,6 +766,10 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "Zugriff auf %s nicht möglich - ungültige OpenPGP Karte?\n"
 
+#: scd/app-nks.c:344
+msgid "the NullPIN has not yet been changed\n"
+msgstr "Die Nullpin wurde noch nicht geändert\n"
+
 #: sm/base64.c:317
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
@@ -1369,7 +1373,7 @@ msgstr "Signieren mit `%s' nicht möglich: %s\n"
 
 #: sm/gpgsm.c:1475
 msgid "this command has not yet been implemented\n"
-msgstr "Diee Kommando wurde noch nicht implementiert\n"
+msgstr "Dieses Kommando wurde noch nicht implementiert\n"
 
 #: sm/gpgsm.c:1705 sm/gpgsm.c:1742 sm/qualified.c:73
 #, c-format
@@ -1548,10 +1552,10 @@ msgid ""
 msgstr ""
 "Sie sind dabei, eine Signatur mit dem Zertifikat:\n"
 "\"%s\"\n"
-"zu erzeugen.  Dies wird einen qualifizierte Signatur erzeugen, \n"
-"die gesetzlich einer handgeschriebene gleichgestellt ist.\n"
+"zu erzeugen.  Dies wird eine qualifizierte Signatur erzeugen, \n"
+"die gesetzlich einer handgeschriebenen gleichgestellt ist.\n"
 "\n"
-"%s%sSind Sie wirklich sicher, da Sie dies möchten?"
+"%s%sSind Sie wirklich sicher, daß Sie dies möchten?"
 
 #: sm/qualified.c:224
 msgid ""

@@ -633,26 +633,43 @@ inq_needpin (void *opaque, const char *line)
   size_t pinlen;
   int rc;
 
-  if (!(!strncmp (line, "NEEDPIN", 7) && (line[7] == ' ' || !line[7])))
+  if (!strncmp (line, "NEEDPIN", 7) && (line[7] == ' ' || !line[7]))
+    {
+      line += 7;
+      while (*line == ' ')
+        line++;
+      
+      pinlen = 90;
+      pin = gcry_malloc_secure (pinlen);
+      if (!pin)
+        return ASSUAN_Out_Of_Core;
+
+      rc = parm->getpin_cb (parm->getpin_cb_arg, line, pin, pinlen);
+      if (rc)
+        rc = ASSUAN_Canceled;
+      if (!rc)
+        rc = assuan_send_data (parm->ctx, pin, pinlen);
+      xfree (pin);
+    }
+  else if (!strncmp (line, "KEYPADINFO", 10) && (line[10] == ' ' || !line[10]))
+    {
+      size_t code;
+      char *endp;
+
+      code = strtoul (line+10, &endp, 10);
+      line = endp;
+      while (*line == ' ')
+        line++;
+      
+      rc = parm->getpin_cb (parm->getpin_cb_arg, line, NULL, code);
+      if (rc)
+        rc = ASSUAN_Canceled;
+    }
+  else
     {
       log_error ("unsupported inquiry `%s'\n", line);
-      return ASSUAN_Inquire_Unknown;
+      rc = ASSUAN_Inquire_Unknown;
     }
-  line += 7;
-  while (*line == ' ')
-    line++;
-
-  pinlen = 90;
-  pin = gcry_malloc_secure (pinlen);
-  if (!pin)
-    return ASSUAN_Out_Of_Core;
-
-  rc = parm->getpin_cb (parm->getpin_cb_arg, line, pin, pinlen);
-  if (rc)
-    rc = ASSUAN_Canceled;
-  if (!rc)
-    rc = assuan_send_data (parm->ctx, pin, pinlen);
-  xfree (pin);
 
   return rc;
 }

@@ -1,3 +1,11 @@
+2005-10-19  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gc_options_scdaemon): New option --disable-keypad.
+
+2005-09-22  Werner Koch  <wk@g10code.com>
+
+	* rfc822parse.c (parse_field): Tread Content-Disposition special.
+
 2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (watchgnupg_LDADD): New variable.

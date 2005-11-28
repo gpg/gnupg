@@ -27,7 +27,7 @@
 #include <time.h>
 
 #include "scdaemon.h"
-
+#include "i18n.h"
 #include "iso7816.h"
 #include "app-common.h"
 #include "tlv.h"
@@ -320,7 +320,7 @@ verify_pin (app_t app,
           return rc;
         }
 
-      /* The follwoing limits are due to TCOS but also defined in the
+      /* The following limits are due to TCOS but also defined in the
          NKS specs. */
       if (strlen (pinvalue) < 6)
         {
@@ -340,7 +340,10 @@ verify_pin (app_t app,
       rc = iso7816_verify (app->slot, 0, pinvalue, strlen (pinvalue));
       if (rc)
         {
-          log_error ("verify PIN failed\n");
+          if ( gpg_error (rc) == GPG_ERR_USE_CONDITIONS )
+            log_error (_("the NullPIN has not yet been changed\n"));
+          else
+            log_error ("verify PIN failed\n");
           xfree (pinvalue);
           return rc;
         }
@@ -492,7 +495,7 @@ app_select_nks (APP app)
   int slot = app->slot;
   int rc;
   
-  rc = iso7816_select_application (slot, aid, sizeof aid);
+  rc = iso7816_select_application (slot, aid, sizeof aid, 0);
   if (!rc)
     {
       app->apptype = "NKS";

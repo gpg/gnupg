@@ -58,7 +58,7 @@
 #ifndef CCID_DRIVER_H
 #define CCID_DRIVER_H
 
-/* The CID driver returns the same error codes as the statsu words
+/* The CID driver returns the same error codes as the status words
    used by GnuPG's apdu.h.  For ease of maintenance they should always
    match.  */
 #define CCID_DRIVER_ERR_OUT_OF_CORE    0x10001 
@@ -74,6 +74,7 @@
 #define CCID_DRIVER_ERR_GENERAL_ERROR  0x1000b
 #define CCID_DRIVER_ERR_NO_READER      0x1000c
 #define CCID_DRIVER_ERR_ABORTED        0x1000d
+#define CCID_DRIVER_ERR_NO_KEYPAD      0x1000e
 
 struct ccid_driver_s;
 typedef struct ccid_driver_s *ccid_driver_t;
@@ -94,6 +95,10 @@ int ccid_transceive_secure (ccid_driver_t handle,
                      int pin_mode, 
                      int pinlen_min, int pinlen_max, int pin_padlen, 
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
+int ccid_transceive_escape (ccid_driver_t handle,
+                            const unsigned char *data, size_t datalen,
+                            unsigned char *resp, size_t maxresplen,
+                            size_t *nresp);
 
 
 

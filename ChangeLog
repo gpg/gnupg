@@ -1,3 +1,19 @@
+2005-11-28  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Append the revision to the version string.
+
+2005-11-13  Werner Koch  <wk@g10code.com>
+
+	* am/cmacros.am (-DGNUPG_SYSCONFDIR): Define it.
+
+2005-11-11  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (NEED_KSBA_VERSION: Require 0.9.13.
+
+2005-09-12  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.19.
+
 2005-08-01  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.18.

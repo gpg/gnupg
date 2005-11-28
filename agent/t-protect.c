@@ -173,7 +173,8 @@ test_agent_protect (void)
 
   for (i = 0; i < DIM (specs); i++)
     {
-      ret = agent_protect (specs[i].key, specs[i].passphrase,
+      ret = agent_protect ((const unsigned char*)specs[i].key,
+                           specs[i].passphrase,
 			   &specs[i].result, &specs[i].resultlen);
       if (gpg_err_code (ret) != specs[i].ret_expected)
 	{

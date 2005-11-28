@@ -63,7 +63,8 @@ enum {
   SW_HOST_CARD_IO_ERROR = 0x1000a,
   SW_HOST_GENERAL_ERROR = 0x1000b,
   SW_HOST_NO_READER     = 0x1000c,
-  SW_HOST_ABORTED       = 0x1000d
+  SW_HOST_ABORTED       = 0x1000d,
+  SW_HOST_NO_KEYPAD     = 0x1000e
 };
 
 
@@ -96,8 +97,14 @@ int apdu_activate (int slot);
 int apdu_reset (int slot);
 int apdu_get_status (int slot, int hang,
                      unsigned int *status, unsigned int *changed);
+int apdu_check_keypad (int slot, int command, int pin_mode,
+                       int pinlen_min, int pinlen_max, int pin_padlen);
 int apdu_send_simple (int slot, int class, int ins, int p0, int p1,
                       int lc, const char *data);
+int apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
+                         int lc, const char *data,  
+                         int pin_mode,
+                         int pinlen_min, int pinlen_max, int pin_padlen);
 int apdu_send (int slot, int class, int ins, int p0, int p1,
                int lc, const char *data,
                unsigned char **retbuf, size_t *retbuflen);

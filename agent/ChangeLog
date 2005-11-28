@@ -1,3 +1,20 @@
+2005-11-24  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (p12_parse): Fixed for case that the key object comes
+	prior to the certificate.
+
+2005-10-19  Werner Koch  <wk@g10code.com>
+
+	* divert-scd.c (getpin_cb): Hack to use it for a keypad message.
+
+	* call-scd.c (inq_needpin): Reworked to support the new KEYPADINFO.
+
+	* query.c (start_pinentry): Keep track of the owner.
+	(popup_message_thread, agent_popup_message_start) 
+	(agent_popup_message_stop, agent_reset_query): New.
+	* command.c (start_command_handler): Make sure a popup window gets
+	closed.
+
 2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (gpg_protect_tool_LDADD): Add ../gl/libgnu.a.

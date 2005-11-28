@@ -1,5 +1,5 @@
 /* app-dinsig.c - The DINSIG (DIN V 66291-1) card application.
- *	Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -280,10 +280,11 @@ verify_pin (app_t app,
 {
   if (!app->did_chv1 || app->force_chv1 ) 
     {
+      const char *s;
       char *pinvalue;
       int rc;
 
-      rc = pincb (pincb_arg, "PIN", &pinvalue); 
+      rc = pincb (pincb_arg, "PIN", &pinvalue);
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -291,8 +292,16 @@ verify_pin (app_t app,
         }
 
       /* We require the PIN to be at least 6 and at max 8 bytes.
-         According to the specs, this should all be ASCII but we don't
-         check this. */
+         According to the specs, this should all be ASCII.  */
+      for (s=pinvalue; digitp (s); s++)
+        ;
+      if (*s)
+        {
+          log_error ("Non-numeric digits found in PIN\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+
       if (strlen (pinvalue) < 6)
         {
           log_error ("PIN is too short; minimum length is 6\n");
@@ -307,6 +316,28 @@ verify_pin (app_t app,
         }
 
       rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
+      if (gpg_err_code (rc) == GPG_ERR_INV_VALUE)
+        {
+          /* We assume that ISO 9564-1 encoding is used and we failed
+             because the first nibble we passed was 3 and not 2.  DIN
+             says something about looking up such an encoding in the
+             SSD but I was not able to find any tag relevant to
+             this. */
+          char paddedpin[8];
+          int i, ndigits;
+
+          for (ndigits=0, s=pinvalue; *s; ndigits++, s++)
+            ;
+          i = 0;
+          paddedpin[i++] = 0x20 | (ndigits & 0x0f);
+          for (s=pinvalue; i < sizeof paddedpin && *s && s[1]; s = s+2 )
+            paddedpin[i++] = (((*s - '0') << 4) | ((s[1] - '0') & 0x0f));
+          if (i < sizeof paddedpin && *s)
+            paddedpin[i++] = (((*s - '0') << 4) | 0x0f);
+          while (i < sizeof paddedpin)
+              paddedpin[i++] = 0xff;
+          rc = iso7816_verify (app->slot, 0x81, paddedpin, sizeof paddedpin);
+        }
       if (rc)
         {
           log_error ("verify PIN failed\n");
@@ -404,7 +435,7 @@ app_select_dinsig (APP app)
   int slot = app->slot;
   int rc;
   
-  rc = iso7816_select_application (slot, aid, sizeof aid);
+  rc = iso7816_select_application (slot, aid, sizeof aid, 0);
   if (!rc)
     {
       app->apptype = "DINSIG";

@@ -1284,6 +1284,11 @@ verify_chv2 (app_t app,
   if (!app->did_chv2) 
     {
       char *pinvalue;
+      iso7816_pininfo_t pininfo;
+
+      memset (&pininfo, 0, sizeof pininfo);
+      pininfo.mode = 1;
+      pininfo.minlen = 6;
 
       rc = pincb (pincb_arg, "PIN", &pinvalue); 
       if (rc)
@@ -2455,7 +2460,9 @@ app_select_openpgp (app_t app)
   size_t buflen;
   void *relptr;
   
-  rc = iso7816_select_application (slot, aid, sizeof aid);
+  /* Note that the card can't cope with P2=0xCO, thus we need to pass a
+     special flag value. */
+  rc = iso7816_select_application (slot, aid, sizeof aid, 0x0001);
   if (!rc)
     {
       unsigned int manufacturer;

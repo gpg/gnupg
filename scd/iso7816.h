@@ -28,10 +28,30 @@
 #include "cardglue.h"
 #endif
 
+/* Command codes used by iso7816_check_keypad. */
+#define ISO7816_VERIFY                0x20
+#define ISO7816_CHANGE_REFERENCE_DATA 0x24
+#define ISO7816_RESET_RETRY_COUNTER   0x2C
+
+
+/* Information to be passed to keypad equipped readers.  See
+   ccid-driver.c for details. */
+struct iso7816_pininfo_s
+{
+  int mode;    /* A mode of 0 means: Do not use the keypad. */
+  int minlen;
+  int maxlen;
+  int padlen;
+  int padchar;
+};
+typedef struct iso7816_pininfo_s iso7816_pininfo_t;
+
+
 gpg_error_t iso7816_map_sw (int sw);
 
 gpg_error_t iso7816_select_application (int slot,
-                                        const char *aid, size_t aidlen);
+                                        const char *aid, size_t aidlen,
+                                        unsigned int flags);
 gpg_error_t iso7816_select_file (int slot, int tag, int is_dir,
                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_select_path (int slot,
@@ -39,13 +59,26 @@ gpg_error_t iso7816_select_path (int slot,
                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_list_directory (int slot, int list_dirs,
                                     unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_check_keypad (int slot, int command,
+                                  iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_verify (int slot,
                             int chvno, const char *chv, size_t chvlen);
+gpg_error_t iso7816_verify_kp (int slot,
+                               int chvno, const char *chv, size_t chvlen,
+                               iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_change_reference_data (int slot, int chvno,
                                const char *oldchv, size_t oldchvlen,
                                const char *newchv, size_t newchvlen);
+gpg_error_t iso7816_change_reference_data_kp (int slot, int chvno,
+                               const char *oldchv, size_t oldchvlen,
+                               const char *newchv, size_t newchvlen,
+                               iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_reset_retry_counter (int slot, int chvno,
                                          const char *newchv, size_t newchvlen);
+gpg_error_t iso7816_reset_retry_counter_kp (int slot, int chvno,
+                                            const char *newchv,
+                                            size_t newchvlen,
+                                            iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_get_data (int slot, int tag,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_put_data (int slot, int tag,
