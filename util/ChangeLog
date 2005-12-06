@@ -1,5 +1,9 @@
 2005-12-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Some cleanup so we don't build files that are
+	completely ifdeffed out.  This causes a warning on Sun's cc.  Do
+	the internal regex code as well for consistency.
+
 	* mkdtemp.c (mkdtemp): Fix warning.
 
 	* secmem.c, assuan-buffer.c, dotlock.c: Fix a few warnings from

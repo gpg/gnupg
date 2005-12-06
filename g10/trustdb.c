@@ -28,7 +28,7 @@
 
 #ifndef DISABLE_REGEX
 #include <sys/types.h>
-#ifdef USE_GNU_REGEX
+#ifdef USE_INTERNAL_REGEX
 #include "_regex.h"
 #else
 #include <regex.h>

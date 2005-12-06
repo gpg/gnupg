@@ -469,6 +469,8 @@ case "${host}" in
         need_dlopen=no
         try_gettext="no"
         agent_support=no
+	use_simple_gettext=yes
+	have_w32_system=yes
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -522,6 +524,9 @@ if test "$have_dosish_system" = yes; then
               no file modes])
 fi
 AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
+
+AM_CONDITIONAL(USE_SIMPLE_GETTEXT, test x"$use_simple_gettext" = xyes)
+AM_CONDITIONAL(HAVE_W32_SYSTEM, test x"$have_w32_system" = xyes)
 
 if test "$disable_keyserver_path" = yes; then
     AC_DEFINE(DISABLE_KEYSERVER_PATH,1,
@@ -786,7 +791,7 @@ AC_CHECK_SIZEOF(unsigned long long)
 # Ensure that we have UINT64_C before we bother to check for uint64_t
 gt_HEADER_INTTYPES_H
 AC_CACHE_CHECK([for UINT64_C], [gnupg_cv_uint64_c_works],
-               AC_COMPILE_IFELSE(AC_LANG_PROGRAM([
+               AC_COMPILE_IFELSE(AC_LANG_PROGRAM([#include <inttypes.h>],[
 uint64_t foo=UINT64_C(42);]),gnupg_cv_uint64_c_works=yes,gnupg_cv_uint64_c_works=no))
 
 if test "$gnupg_cv_uint64_c_works" = "yes" ; then
@@ -1070,13 +1075,13 @@ main() { regex_t blah ; regmatch_t p; p.rm_eo = p.rm_eo; return regcomp(&blah, "
   fi
 
   if test $gnupg_cv_included_regex = yes; then
-     AC_DEFINE(USE_GNU_REGEX,1,[ Define if you want to use the included regex lib ])
-     AC_SUBST(REGEX_O,regex.o)
+     AC_DEFINE(USE_INTERNAL_REGEX,1,[ Define if you want to use the included regex lib ])
   fi
 else
-
   AC_DEFINE(DISABLE_REGEX,1,[ Define to disable regular expression support ])
 fi
+
+AM_CONDITIONAL(USE_INTERNAL_REGEX, test x"$gnupg_cv_included_regex" = xyes)
 
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
