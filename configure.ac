@@ -800,17 +800,20 @@ if test "$ac_cv_sizeof_unsigned_short" = "0" \
 fi
 
 dnl Do we have any 64-bit data types?
-if test "$ac_cv_sizeof_unsigned_int" != "8" \
+if test x"$use_sha512" = xyes \
+   && test "$ac_cv_sizeof_unsigned_int" != "8" \
    && test "$ac_cv_sizeof_unsigned_long" != "8" \
    && test "$ac_cv_sizeof_unsigned_long_long" != "8" \
    && test x"$ac_cv_sizeof_uint64_t" != "x8"; then
     AC_MSG_NOTICE([No 64-bit types.  Disabling SHA-384 and SHA-512.])
-else
-  if test x"$use_sha512" = xyes ; then
-     AC_SUBST(SHA512_O,sha512.o)
-     AC_DEFINE(USE_SHA512,1,[Define to include the SHA-384 and SHA-512 digests])
-  fi
+    use_sha512=no
 fi
+
+if test x"$use_sha512" ; then
+    AC_DEFINE(USE_SHA512,1,[Define to include the SHA-384 and SHA-512 digests])
+fi
+
+AM_CONDITIONAL(USE_SHA512, test x"$use_sha512" = xyes)
 
 dnl Checks for library functions.
 AC_CHECK_DECLS(getpagesize)
@@ -978,22 +981,31 @@ for rndmod in $random_modules "" ; do
     rndlinux)
          AC_DEFINE(USE_RNDLINUX,1, 
                   [Defined if the /dev/random based RNG should be used.])
+         use_rndlinux=yes
          ;;
     rndunix)
          AC_DEFINE(USE_RNDUNIX,1, 
                   [Defined if the default Unix RNG should be used.])
          print_egd_warning=yes
+         use_rndunix=yes
           ;;
     rndegd)
          AC_DEFINE(USE_RNDEGD,1, 
                   [Defined if the EGD based RNG should be used.])
+         use_rndegd=yes
          ;;
     rndw32)
          AC_DEFINE(USE_RNDW32,1, 
                   [Defined if the Windows specific RNG should be used.])
+         use_rndw32=yes
         ;;
    esac
 done
+
+AM_CONDITIONAL(USE_RNDLINUX, test "$use_rndlinux" = yes)
+AM_CONDITIONAL(USE_RNDUNIX,  test "$use_rndunix" = yes)
+AM_CONDITIONAL(USE_RNDEGD,   test "$use_rndegd" = yes)
+AM_CONDITIONAL(USE_RNDW32,   test "$use_rndw32" = yes)
 
 dnl setup assembler stuff
 AC_MSG_CHECKING(for mpi assembler functions)

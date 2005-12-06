@@ -1,4 +1,5 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+#               2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -44,16 +45,31 @@ libcipher_a_SOURCES = cipher.c	\
 		 dsa.c		\
 		 smallprime.c	\
 		 algorithms.h   \
-		 rndlinux.c	\
-		 rndunix.c 	\
-		 rndegd.c  	\
-		 rndw32.c  	\
 		 md5.c     	\
 		 rmd160.c  	\
 		 sha1.c         \
 		 sha256.c
 
-EXTRA_libcipher_a_SOURCES = idea-stub.c sha512.c
+if USE_RNDLINUX
+libcipher_a_SOURCES+=rndlinux.c
+endif
 
-libcipher_a_DEPENDENCIES = @IDEA_O@ @SHA512_O@
-libcipher_a_LIBADD = @IDEA_O@ @SHA512_O@
+if USE_RNDUNIX
+libcipher_a_SOURCES+=rndunix.c
+endif
+
+if USE_RNDEGD
+libcipher_a_SOURCES+=rndegd.c
+endif
+
+if USE_RNDW32
+libcipher_a_SOURCES+=rndw32.c
+endif
+
+if USE_SHA512
+libcipher_a_SOURCES+=sha512.c
+endif
+
+EXTRA_libcipher_a_SOURCES=idea-stub.c
+libcipher_a_DEPENDENCIES=@IDEA_O@
+libcipher_a_LIBADD=@IDEA_O@

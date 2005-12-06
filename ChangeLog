@@ -1,3 +1,9 @@
+2005-12-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Some cleanup so we don't build files that are
+	completely ifdeffed out.  This causes a warning on Sun's cc.  Do
+	sha512.c as well for consistency.
+
 2005-11-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note backsigs, the xxxxx-clean options, and the
