@@ -138,7 +138,7 @@ load_module (const char *name)
   if ((err=dlerror())) 
     goto failure;
 
-  return sym;
+  return (INFO_FNC)sym;
   
  failure:
   log_info ("invalid module `%s': %s\n", name?name:"???", err?err:"???");

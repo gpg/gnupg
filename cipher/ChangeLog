@@ -1,8 +1,12 @@
 2005-12-06  David Shaw  <dshaw@jabberwocky.com>
 
-	* Makefile.am: Some cleanup so we don't build files that are
-	completely ifdeffed out.  This causes a warning on Sun's cc.  Do
-	sha512.c as well for consistency.
+	* idea-stub.c (load_module): Not legal to return a void * as a
+	function pointer.
+
+	* Makefile.am, rndegd.c, rndlinux.c, rndunix.c, rndw32.c: Some
+	cleanup so we don't build files that are completely ifdeffed out.
+	This causes a warning on Sun's cc.  Do sha512.c as well for
+	consistency.
 
 2005-08-11  Werner Koch  <wk@g10code.com>
 

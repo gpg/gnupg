@@ -48,9 +48,6 @@
 /* General includes */
 
 #include <config.h>
-
-#ifdef USE_RNDUNIX
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -870,5 +867,3 @@ rndunix_gather_random( void (*add)(const void*, size_t, int), int requester,
 
     return 0;
 }
-
-#endif /*USE_RNDUNIX*/

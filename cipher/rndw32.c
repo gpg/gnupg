@@ -61,9 +61,6 @@
  */
 
 #include <config.h>
-
-#ifdef USE_RNDW32
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -700,5 +697,3 @@ rndw32_gather_random_fast( void (*add)(const void*, size_t, int), int requester 
 
     return 0;
 }
-
-#endif /*USE_RNDW32*/

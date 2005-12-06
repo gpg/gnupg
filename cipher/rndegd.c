@@ -20,9 +20,6 @@
  */
 
 #include <config.h>
-
-#ifdef USE_RNDEGD
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -226,5 +223,3 @@ rndegd_gather_random( void (*add)(const void*, size_t, int), int requester,
 
     return 0; /* success */
 }
-
-#endif /*USE_RNDEGD*/

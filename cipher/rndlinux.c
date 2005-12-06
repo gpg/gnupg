@@ -21,9 +21,6 @@
 
 
 #include <config.h>
-
-#ifdef USE_RNDLINUX
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -161,5 +158,3 @@ _("\n"
 
     return 0; /* success */
 }
-
-#endif /*USE_RNDLINUX*/
