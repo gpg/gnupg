@@ -1,8 +1,10 @@
 2005-12-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: UINT64_C test needs #include <inttypes.h>.
+
 	* configure.ac: Some cleanup so we don't build files that are
 	completely ifdeffed out.  This causes a warning on Sun's cc.  Do
-	sha512.c as well for consistency.
+	sha512.c and the internal regex code as well for consistency.
 
 2005-11-17  David Shaw  <dshaw@jabberwocky.com>
 
