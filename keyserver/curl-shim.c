@@ -201,8 +201,9 @@ curl_easy_perform(CURL *curl)
 		  while((len=iobuf_read_line(curl->hd.fp_read,
 					     &line,&buflen,&maxlen)))
 		    {
-		      maxlen=1024;
 		      size_t ret;
+
+		      maxlen=1024;
 
 		      ret=(curl->writer)(line,len,1,curl->file);
 		      if(ret!=len)

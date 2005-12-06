@@ -1,3 +1,8 @@
+2005-12-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.c (curl_easy_perform): Fix build warning (code before
+	declaration).
+
 2005-11-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (search_key): Fix warning with typecast (though
