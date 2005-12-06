@@ -145,10 +145,10 @@ create_dotlock( const char *file_to_lock )
     h->tname = xmalloc( dirpartlen + 6+30+ strlen(nodename) + 11 );
 #ifndef __riscos__
     sprintf( h->tname, "%.*s/.#lk%p.%s.%d",
-	     dirpartlen, dirpart, h, nodename, (int)getpid() );
+	     dirpartlen, dirpart, (void *)h, nodename, (int)getpid() );
 #else /* __riscos__ */
     sprintf( h->tname, "%.*s.lk%p/%s/%d",
-	     dirpartlen, dirpart, h, nodename, (int)getpid() );
+	     dirpartlen, dirpart, (void *)h, nodename, (int)getpid() );
 #endif /* __riscos__ */
 
     do {

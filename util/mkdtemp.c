@@ -40,7 +40,7 @@
 char *mkdtemp(char *template)
 {
   unsigned int attempts,idx,count=0;
-  byte *ch;
+  char *ch;
 
   idx=strlen(template);
 

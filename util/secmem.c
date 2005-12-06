@@ -409,7 +409,7 @@ secmexrealloc( void *p, size_t newsize )
     mb = (MEMBLOCK*)((char*)p - ((size_t) &((MEMBLOCK*)0)->u.aligned.c));
     size = mb->size;
     if (size < sizeof(MEMBLOCK))
-      log_bug ("secure memory corrupted at block %p\n", mb);
+      log_bug ("secure memory corrupted at block %p\n", (void *)mb);
     size -= ((size_t) &((MEMBLOCK*)0)->u.aligned.c);
 
     if( newsize <= size )

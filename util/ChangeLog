@@ -1,3 +1,10 @@
+2005-12-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* mkdtemp.c (mkdtemp): Fix warning.
+
+	* secmem.c, assuan-buffer.c, dotlock.c: Fix a few warnings from
+	printf-ing %p where the arg wasn't void *.
+
 2005-11-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.c [!HAVE_DECL_GETPAGESIZE]: Prototype getpagesize() if
