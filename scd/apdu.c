@@ -1328,6 +1328,14 @@ open_pcsc_reader (const char *portstr)
   int err;
   unsigned int dummy_status;
   int sw = SW_HOST_CARD_IO_ERROR;
+  const char *wrapperpgm = GNUPG_LIBDIR "/pcsc-wrapper";
+
+  if (access (wrapperpgm, X_OK))
+    {
+      log_error ("can't run PC/SC access module `%s': %s\n",
+                 wrapperpgm, strerror (errno));
+      return -1;
+    }
 
   slot = new_reader_slot ();
   if (slot == -1)
@@ -1400,7 +1408,7 @@ open_pcsc_reader (const char *portstr)
         close(i);
       errno = 0;
 
-      execl (GNUPG_LIBDIR "/pcsc-wrapper",
+      execl (wrapperpgm,
              "pcsc-wrapper",
              "--",
              "1", /* API version */
