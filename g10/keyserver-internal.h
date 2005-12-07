@@ -40,5 +40,6 @@ int keyserver_import_fprint(const byte *fprint,size_t fprint_len,
 int keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver);
 int keyserver_refresh(STRLIST users);
 int keyserver_search(STRLIST tokens);
+int keyserver_fetch(STRLIST urilist);
 
 #endif /* !_KEYSERVER_INTERNAL_H_ */

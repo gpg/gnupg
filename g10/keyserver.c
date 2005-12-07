@@ -883,7 +883,7 @@ static int
 keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		int count,int *prog,struct keyserver_spec *keyserver)
 {
-  int ret=0,i,gotversion=0,outofband=0;
+  int ret=0,i,gotversion=0,outofband=0,quiet=0;
   STRLIST temp;
   unsigned int maxlen,buflen;
   char *command,*end,*searchstr=NULL;
@@ -1047,18 +1047,26 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	    else if(desc[i].mode==KEYDB_SEARCH_MODE_SHORT_KID)
 	      fprintf(spawn->tochild,"0x%08lX\n",
 		      (ulong)desc[i].u.kid[1]);
+	    else if(desc[i].mode==KEYDB_SEARCH_MODE_EXACT)
+	      {
+		fprintf(spawn->tochild,"0x0000000000000000\n");
+		quiet=1;
+	      }
 	    else if(desc[i].mode==KEYDB_SEARCH_MODE_NONE)
 	      continue;
 	    else
 	      BUG();
 
-	    if(keyserver->host)
-	      log_info(_("requesting key %s from %s server %s\n"),
-		       keystr_from_desc(&desc[i]),
-		       keyserver->scheme,keyserver->host);
-	    else
-	      log_info(_("requesting key %s from %s\n"),
-		       keystr_from_desc(&desc[i]),keyserver->uri);
+	    if(!quiet)
+	      {
+		if(keyserver->host)
+		  log_info(_("requesting key %s from %s server %s\n"),
+			   keystr_from_desc(&desc[i]),
+			   keyserver->scheme,keyserver->host);
+		else
+		  log_info(_("requesting key %s from %s\n"),
+			   keystr_from_desc(&desc[i]),keyserver->uri);
+	      }
 	  }
 
 	fprintf(spawn->tochild,"\n");
@@ -1705,7 +1713,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 /* Note this is different than the original HKP refresh.  It allows
    usernames to refresh only part of the keyring. */
 
-int 
+int
 keyserver_refresh(STRLIST users)
 {
   int rc,count,numdesc,fakev3=0;
@@ -1801,4 +1809,35 @@ keyserver_search(STRLIST tokens)
     return keyserver_work(SEARCH,tokens,NULL,0,opt.keyserver);
   else
     return 0;
+}
+
+int
+keyserver_fetch(STRLIST urilist)
+{
+  KEYDB_SEARCH_DESC desc;
+  STRLIST sl;
+
+  /* A dummy desc since we're not actually fetching a particular key
+     ID */
+  memset(&desc,0,sizeof(desc));
+  desc.mode=KEYDB_SEARCH_MODE_EXACT;
+
+  for(sl=urilist;sl;sl=sl->next)
+    {
+      struct keyserver_spec *spec;
+
+      spec=parse_keyserver_uri(sl->d,1,NULL,0);
+      if(spec)
+	{
+	  int rc=keyserver_work(GET,NULL,&desc,1,spec);
+	  if(rc)
+	    log_info("WARNING: unable to fetch URI %s: %s\n",
+		     sl->d,g10_errstr(rc));
+	  free_keyserver_spec(spec);
+	}
+      else
+	log_info("WARNING: unable to parse URI %s\n",sl->d);
+    }
+
+  return 0;
 }

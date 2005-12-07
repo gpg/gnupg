@@ -127,6 +127,8 @@ enum cmd_and_opt_values
     aSendKeys,
     aRecvKeys,
     aSearchKeys,
+    aRefreshKeys,
+    aFetchKeys,
     aExport,
     aExportSecret,
     aExportSecretSub,
@@ -149,7 +151,6 @@ enum cmd_and_opt_values
     aGenRandom,
     aPipeMode,
     aRebuildKeydbCaches,
-    aRefreshKeys,
     aCardStatus,
     aCardEdit,
     aChangePIN,
@@ -399,6 +400,7 @@ static ARGPARSE_OPTS opts[] = {
                                     N_("search for keys on a key server") },
     { aRefreshKeys, "refresh-keys", 256,
                                     N_("update all keys from a keyserver")},
+    { aFetchKeys, "fetch-keys" , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
@@ -1901,6 +1903,7 @@ main (int argc, char **argv )
 	  case aRecvKeys: 
 	  case aSearchKeys:
 	  case aRefreshKeys:
+	  case aFetchKeys:
 	  case aExport: 
             set_cmd (&cmd, pargs.r_opt);
             break;
@@ -3386,6 +3389,16 @@ main (int argc, char **argv )
 	rc=keyserver_refresh(sl);
 	if(rc)
 	  log_error(_("keyserver refresh failed: %s\n"),g10_errstr(rc));
+	free_strlist(sl);
+	break;
+
+      case aFetchKeys:
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist2( &sl, *argv, utf8_strings );
+	rc=keyserver_fetch(sl);
+	if(rc)
+	  log_error("key fetch failed: %s\n",g10_errstr(rc));
 	free_strlist(sl);
 	break;
 
