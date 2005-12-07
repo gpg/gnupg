@@ -339,9 +339,9 @@ get_key (char *getkey)
     fprintf (output,"KEY 0x%s END\n", getkey);
   else
     {
-      fprintf (console,"gpgkeys: key %s not found on keyserver\n",getkey);
-      fprintf (output,"KEY 0x%s FAILED %d\n",
-               getkey,KEYSERVER_KEY_NOT_FOUND);
+      fprintf(console,"gpgkeys: no key data found for finger:%s\n",
+	      opt->opaque);
+      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,KEYSERVER_KEY_NOT_FOUND);
     }
 
   xfree(line);

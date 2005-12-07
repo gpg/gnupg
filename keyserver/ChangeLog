@@ -1,5 +1,8 @@
 2005-12-07  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_finger.c (get_key), gpgkeys_curl.c (get_key): Better
+	language for the key-not-found error.
+
 	* ksutil.c (curl_err_to_gpg_err): Add CURLE_OK and
 	CURLE_COULDNT_CONNECT.
 
