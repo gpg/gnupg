@@ -1,3 +1,11 @@
+2005-12-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.c (curl_err_to_gpg_err): Add CURLE_OK and
+	CURLE_COULDNT_CONNECT.
+
+	* gpgkeys_curl.c (get_key): Give key-not-found error if no data is
+	found (or file itself is not found) during a fetch.
+
 2005-12-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* curl-shim.c (curl_easy_perform): Fix build warning (code before

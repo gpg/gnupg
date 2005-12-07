@@ -46,6 +46,7 @@ int register_timeout(void) {return 0;}
 static void
 catch_alarm(int foo)
 {
+  (void)foo;
   _exit(KEYSERVER_TIMEOUT);
 }
 
@@ -362,8 +363,10 @@ curl_err_to_gpg_err(CURLcode error)
 {
   switch(error)
     {
-    case CURLE_FTP_COULDNT_RETR_FILE: return KEYSERVER_KEY_NOT_FOUND;
+    case CURLE_OK:                    return KEYSERVER_OK;
     case CURLE_UNSUPPORTED_PROTOCOL:  return KEYSERVER_SCHEME_NOT_FOUND;
+    case CURLE_COULDNT_CONNECT:       return KEYSERVER_UNREACHABLE;
+    case CURLE_FTP_COULDNT_RETR_FILE: return KEYSERVER_KEY_NOT_FOUND;
     default: return KEYSERVER_INTERNAL_ERROR;
     }
 }

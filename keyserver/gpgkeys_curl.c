@@ -50,6 +50,7 @@ get_key(char *getkey)
   char errorbuffer[CURL_ERROR_SIZE];
   char request[MAX_URL];
   struct curl_writer_ctx ctx;
+  int ret=KEYSERVER_OK;
 
   memset(&ctx,0,sizeof(ctx));
 
@@ -70,14 +71,21 @@ get_key(char *getkey)
   res=curl_easy_perform(curl);
   if(res!=CURLE_OK)
     {
-      fprintf(console,"gpgkeys: %s fetch error %d: %s\n",opt->scheme,
-	      res,errorbuffer);
-      fprintf(output,"\nKEY 0x%s FAILED %d\n",getkey,curl_err_to_gpg_err(res));
+      fprintf(console,"gpgkeys: unable to fetch %s: %s\n",request,errorbuffer);
+      ret=curl_err_to_gpg_err(res);
     }
+  else if(!ctx.done)
+    {
+      fprintf(console,"gpgkeys: no key data found for %s\n",request);
+      ret=KEYSERVER_KEY_NOT_FOUND;
+    }
+
+  if(ret)
+    fprintf(output,"\nKEY 0x%s FAILED %d\n",getkey,ret);
   else
     fprintf(output,"\nKEY 0x%s END\n",getkey);
 
-  return curl_err_to_gpg_err(res);
+  return ret;
 }
 
 static void 
