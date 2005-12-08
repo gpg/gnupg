@@ -42,6 +42,12 @@ Noteworthy changes in version 1.4.3
       "import-minimal" commands for --export-options and
       --import-options.
 
+    * New --fetch-keys command to retrieve keys by specifying a URI.
+      This allows direct key retrieval from a web page or other
+      location that can be specified in a URI.  Available protocols
+      are HTTP and finger, plus anything that cURL supplies, if built
+      with cURL support.
+
 
 Noteworthy changes in version 1.4.2 (2005-07-26)
 ------------------------------------------------

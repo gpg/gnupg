@@ -1,3 +1,7 @@
+2005-12-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note --fetch-keys.
+
 2005-12-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: UINT64_C test needs #include <inttypes.h>.
