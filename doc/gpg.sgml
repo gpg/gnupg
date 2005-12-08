@@ -105,7 +105,7 @@ a file containing keys is listed).
 <variablelist>
 
 <varlistentry>
-<term>-s, --sign</term>
+<term>-s, --sign &OptParmFile;</term>
 <listitem><para>
 Make a signature. This command may be combined with --encrypt (for a
 signed and encrypted message), --symmetric (for a signed and
@@ -116,21 +116,21 @@ or a passphrase).
 
 
 <varlistentry>
-<term>--clearsign</term>
+<term>--clearsign &OptParmFile;</term>
 <listitem><para>
 Make a clear text signature.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
-<term>-b, --detach-sign</term>
+<term>-b, --detach-sign &OptParmFile;</term>
 <listitem><para>
 Make a detached signature.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
-<term>-e, --encrypt</term>
+<term>-e, --encrypt &OptParmFile;</term>
 <listitem><para>
 Encrypt data. This option may be combined with --sign (for a signed
 and encrypted message), --symmetric (for a message that may be
@@ -141,7 +141,7 @@ or a passphrase).
 
 
 <varlistentry>
-<term>-c, --symmetric</term>
+<term>-c, --symmetric &OptParmFile;</term>
 <listitem><para>
 Encrypt with a symmetric cipher using a passphrase.  The default
 symmetric cipher used is CAST5, but may be chosen with the
@@ -154,14 +154,14 @@ secret key or a passphrase).
 
 
 <varlistentry>
-<term>--store</term>
+<term>--store &OptParmFile;</term>
 <listitem><para>
 Store only (make a simple RFC1991 packet).
 </para></listitem></varlistentry>
 
 
 <varlistentry>
-<term>--decrypt &OptParmFile;</term>
+<term>-d, --decrypt &OptParmFile;</term>
 <listitem><para>
 Decrypt &ParmFile; (or stdin if no file is specified) and
 write it to stdout (or the file specified with
