@@ -44,6 +44,7 @@
 <!entity ParmN	    "<parameter>n</parameter>">
 <!entity ParmFlags  "<parameter>flags</parameter>">
 <!entity ParmString "<parameter>string</parameter>">
+<!entity ParmURIs "<parameter>URIs</parameter>">
 <!entity ParmValue  "<parameter>value</parameter>">
 <!entity ParmNameValue	"<parameter>name=value</parameter>">
 <!entity ParmNameValues	"<parameter>name=value1 <optional>value2 value3 ...</optional></parameter>">
@@ -741,7 +742,7 @@ keyservers set (see --keyserver-option honor-keyserver-url).
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--search-keys &OptParmNames;</term>
+<term>--search-keys &ParmNames;</term>
 <listitem><para>
 Search the keyserver for the given names.  Multiple names given here
 will be joined together to create the search string for the keyserver.
@@ -750,6 +751,14 @@ Keyservers that support different search methods allow using the
 syntax specified in "How to specify a user ID" below.  Note that
 different keyserver types support different search methods.  Currently
 only LDAP supports them all.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--fetch-keys &ParmURIs;</term>
+<listitem><para>
+Retrieve keys located at the specified URIs.  Note that different
+installations of GnuPG may support different protocols (HTTP, FTP,
+LDAP, etc.)
 </para></listitem></varlistentry>
 
 <varlistentry>
