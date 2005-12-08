@@ -1,4 +1,4 @@
-; w32installer.nsi                         -*- mode: lisp; coding: latin-1; -*-
+; w32installer.nsi                                  -*- coding: latin-1; -*-
 ;                   W32 Installer script
 ; Copyright (C) 2005 Free Software Foundation, Inc.
 ;

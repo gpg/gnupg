@@ -1,3 +1,7 @@
+2005-12-08  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c (keyserver_fetch): Made strings translatable.
+
 2005-12-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, keyserver.c (curl_cant_handle, keyserver_spawn,
@@ -14,6 +18,10 @@
 	an arbitrary URI using the keyserver helpers.
 
 	* gpg.c (main): Call it from here for --fetch-keys.
+
+2005-12-07  Werner Koch  <wk@g10code.com>
+
+	* pkclist.c (do_we_trust): Add NOTREACHED comment.
 
 2005-11-20  David Shaw  <dshaw@jabberwocky.com>
 
@@ -363,7 +371,6 @@
 	--passphrase command line option.  Only useful in very special
 	circumstances.
 
->>>>>>> .r3884
 2005-08-05  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c (keyserver_import_fprint): New stub.

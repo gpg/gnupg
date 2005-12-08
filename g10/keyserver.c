@@ -1848,13 +1848,13 @@ keyserver_fetch(STRLIST urilist)
 
 	  rc=keyserver_work(GET,NULL,&desc,1,spec);
 	  if(rc)
-	    log_info("WARNING: unable to fetch URI %s: %s\n",
+	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
 		     sl->d,g10_errstr(rc));
 
 	  free_keyserver_spec(spec);
 	}
       else
-	log_info("WARNING: unable to parse URI %s\n",sl->d);
+	log_info (_("WARNING: unable to parse URI %s\n"),sl->d);
     }
 
   return 0;

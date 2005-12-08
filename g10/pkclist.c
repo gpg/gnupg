@@ -436,7 +436,7 @@ do_we_trust( PKT_public_key *pk, unsigned int trustlevel )
       return 1; /* yes */
     }
 
-  return 1; /* yes */
+  return 1; /*NOTREACHED*/
 }
 
 

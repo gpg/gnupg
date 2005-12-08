@@ -62,7 +62,7 @@ struct mainproc_context {
     PKT_user_id     *last_user_id;
     md_filter_context_t mfx;
     int sigs_only;   /* process only signatures and reject all other stuff */
-    int encrypt_only; /* process only encrytion messages */
+    int encrypt_only; /* process only encryption messages */
     STRLIST signed_data;
     const char *sigfilename;
     DEK *dek;
