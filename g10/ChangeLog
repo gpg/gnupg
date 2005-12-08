@@ -1,3 +1,10 @@
+2005-12-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, keyserver.c (curl_cant_handle, keyserver_spawn,
+	keyserver_fetch): Set a flag to indicate that we're doing a direct
+	URI fetch so we can differentiate between a keyserver operation
+	and a URI fetch for protocols like LDAP that can do either.
+
 2005-12-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Don't print "searching for key

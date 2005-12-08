@@ -867,9 +867,9 @@ keyserver_typemap(const char *type)
 /* The PGP LDAP and the curl fetch-a-LDAP-object methodologies are
    sufficiently different that we can't use curl to do LDAP. */
 static int
-curl_cant_handle(const char *scheme)
+curl_cant_handle(const char *scheme,unsigned int direct_uri)
 {
-  if(strcmp(scheme,"ldap")==0 || strcmp(scheme,"ldaps")==0)
+  if(!direct_uri && (strcmp(scheme,"ldap")==0 || strcmp(scheme,"ldaps")==0))
     return 1;
 
   return 0;
@@ -883,7 +883,7 @@ static int
 keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		int count,int *prog,struct keyserver_spec *keyserver)
 {
-  int ret=0,i,gotversion=0,outofband=0,quiet=0;
+  int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
   unsigned int maxlen,buflen;
   char *command,*end,*searchstr=NULL;
@@ -928,7 +928,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       /* If exec-path was set, and DISABLE_KEYSERVER_PATH is
 	 undefined, then don't specify a full path to gpgkeys_foo, so
 	 that the PATH can work. */
-      command=xmalloc(GPGKEYS_PREFIX_LEN+strlen(scheme)+1);
+      command=xmalloc(GPGKEYS_PREFIX_LEN+strlen(scheme)+3+1);
       command[0]='\0';
     }
   else
@@ -936,7 +936,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
     {
       /* Specify a full path to gpgkeys_foo. */
       command=xmalloc(strlen(libexecdir)+strlen(DIRSEP_S)+
-		      GPGKEYS_PREFIX_LEN+strlen(scheme)+1);
+		      GPGKEYS_PREFIX_LEN+strlen(scheme)+3+1);
       strcpy(command,libexecdir);
       strcat(command,DIRSEP_S);
     }
@@ -946,8 +946,12 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   strcat(command,GPGKEYS_PREFIX); 
   strcat(command,scheme);
 
+  if(keyserver->flags.direct_uri)
+    strcat(command,"uri");
+
 #ifdef GPGKEYS_CURL
-  if(!curl_cant_handle(scheme) && path_access(command,X_OK)!=0)
+  if(!curl_cant_handle(scheme,keyserver->flags.direct_uri)
+     && path_access(command,X_OK)!=0)
     strcpy(end,GPGKEYS_CURL);
 #endif
 
@@ -1018,6 +1022,8 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 	for(i=0;i<count;i++)
 	  {
+	    int quiet=0;
+
 	    if(desc[i].mode==KEYDB_SEARCH_MODE_FPR20)
 	      {
 		int f;
@@ -1829,10 +1835,22 @@ keyserver_fetch(STRLIST urilist)
       spec=parse_keyserver_uri(sl->d,1,NULL,0);
       if(spec)
 	{
-	  int rc=keyserver_work(GET,NULL,&desc,1,spec);
+	  int rc;
+
+	  /*
+	    Set the direct_uri flag so we know later to call a direct
+	    handler instead of the keyserver style.  This lets us use
+	    gpgkeys_curl or gpgkeys_ldapuri instead of gpgkeys_ldap to
+	    fetch things like
+	    ldap://keyserver.pgp.com/o=PGP%20keys?pgpkey?sub?pgpkeyid=99242560
+	  */
+	  spec->flags.direct_uri=1;
+
+	  rc=keyserver_work(GET,NULL,&desc,1,spec);
 	  if(rc)
 	    log_info("WARNING: unable to fetch URI %s: %s\n",
 		     sl->d,g10_errstr(rc));
+
 	  free_keyserver_spec(spec);
 	}
       else

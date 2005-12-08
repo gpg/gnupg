@@ -134,6 +134,10 @@ struct
     char *port;
     char *path;
     char *opaque;
+    struct
+    {
+      unsigned int direct_uri:1;
+    } flags;
   } *keyserver;
   struct
   {
