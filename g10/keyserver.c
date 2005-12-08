@@ -1822,6 +1822,12 @@ keyserver_fetch(STRLIST urilist)
 {
   KEYDB_SEARCH_DESC desc;
   STRLIST sl;
+  unsigned int options=opt.keyserver_options.import_options;
+
+  /* Switch on fast-import, since fetch can handle more than one
+     import and we don't want each set to rebuild the trustdb.
+     Instead we do it once at the end. */
+  opt.keyserver_options.import_options|=IMPORT_FAST;
 
   /* A dummy desc since we're not actually fetching a particular key
      ID */
@@ -1856,6 +1862,13 @@ keyserver_fetch(STRLIST urilist)
       else
 	log_info (_("WARNING: unable to parse URI %s\n"),sl->d);
     }
+
+  opt.keyserver_options.import_options=options;
+
+  /* If the original options didn't have fast import, and the trustdb
+     is dirty, rebuild. */
+  if(!(opt.keyserver_options.import_options&IMPORT_FAST))
+    trustdb_check_or_update();
 
   return 0;
 }

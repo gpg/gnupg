@@ -1,3 +1,8 @@
+2005-12-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_fetch): Switch on fast-import before we
+	--fetch-keys so we don't rebuild the trustdb after each fetch.
+
 2005-12-08  Werner Koch  <wk@g10code.com>
 
 	* keyserver.c (keyserver_fetch): Made strings translatable.
