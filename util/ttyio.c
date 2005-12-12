@@ -179,8 +179,12 @@ init_ttyfp(void)
 void
 tty_enable_completion(rl_completion_func_t *completer)
 {
+  if( no_terminal )
+    return;
+
   if( !initialized )
     init_ttyfp();
+
   rl_attempted_completion_function=completer;
   rl_inhibit_completion=0;
 }
@@ -188,8 +192,12 @@ tty_enable_completion(rl_completion_func_t *completer)
 void
 tty_disable_completion(void)
 {
+  if( no_terminal )
+    return;
+
   if( !initialized )
     init_ttyfp();
+
   rl_inhibit_completion=1;
 }
 #endif /*HAVE_LIBREADLINE*/
