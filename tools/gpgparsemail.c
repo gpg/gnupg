@@ -60,13 +60,17 @@ struct parse_info_s {
   int show_boundary;
   int nesting_level;
 
+  int is_pkcs7;                /* Old style S/MIME message. */
+
   int gpgsm_mime;              /* gpgsm shall be used from S/MIME. */
   char *signing_protocol;
   int hashing_level;           /* The nesting level we are hashing. */
   int hashing;                 
   FILE *hash_file;
-  FILE *sig_file;
-  int  verify_now;             /* Falg set when all signature data is
+
+  FILE *sig_file;              /* Signature part with MIME or full
+                                  pkcs7 data if IS_PCKS7 is set. */
+  int  verify_now;             /* Flag set when all signature data is
                                   available. */
 };
 
@@ -183,7 +187,10 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
         }
       
       /* Keep our data fd and format it for gpg/gpgsm use. */
-      sprintf (data_fd_buf, "-&%d", data_fd);
+      if (data_fd == -1)
+        *data_fd_buf = 0;
+      else
+        sprintf (data_fd_buf, "-&%d", data_fd);
 
       /* Send stdout to the bit bucket. */
       fd = open ("/dev/null", O_WRONLY);
@@ -214,7 +221,7 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
               "--assume-base64",
               "--verify",
               "--",
-              "-", data_fd_buf,
+              "-", data_fd == -1? NULL : data_fd_buf,
               NULL);
 
       die ("failed to exec the crypto command: %s", strerror (errno));
@@ -287,10 +294,19 @@ verify_signature (struct parse_info_s *info)
 {
   int close_list[10];
 
-  assert (info->hash_file);
-  assert (info->sig_file);
-  rewind (info->hash_file);
-  rewind (info->sig_file);
+  if (info->is_pkcs7)
+    {
+      assert (!info->hash_file);
+      assert (info->sig_file);
+      rewind (info->sig_file);
+    }
+  else
+    {
+      assert (info->hash_file);
+      assert (info->sig_file);
+      rewind (info->hash_file);
+      rewind (info->sig_file);
+    }
 
 /*   printf ("# Begin hashed data\n"); */
 /*   while ( (c=getc (info->hash_file)) != EOF) */
@@ -304,7 +320,8 @@ verify_signature (struct parse_info_s *info)
 /*   rewind (info->sig_file); */
 
   close_list[0] = -1;
-  run_gnupg (1, fileno (info->sig_file), fileno (info->hash_file), close_list);
+  run_gnupg (1, fileno (info->sig_file),
+             info->hash_file ? fileno (info->hash_file) : -1, close_list);
 }
 
 
@@ -352,6 +369,30 @@ mime_encrypted_begin (struct parse_info_s *info, rfc822parse_t msg,
     printf ("h encrypted.protocol: %s\n", s);
 }
 
+
+/* Prepare for old-style pkcs7 messages. */
+static void
+pkcs7_begin (struct parse_info_s *info, rfc822parse_t msg,
+             rfc822parse_field_t field_ctx)
+{
+  const char *s;
+  s = rfc822parse_query_parameter (field_ctx, "name", 0);
+  if (s)
+    printf ("h pkcs7.name: %s\n", s);
+  if (info->is_pkcs7)
+    err ("note: ignoring nested pkcs7 data");
+  else
+    {
+      info->is_pkcs7 = 1;
+      if (opt_crypto)
+        {
+          assert (!info->sig_file);
+          info->sig_file = tmpfile ();
+          if (!info->sig_file)
+            die ("error creating temp file: %s", strerror (errno));
+        }
+    }
+}
 
 
 /* Print the event received by the parser for debugging as comment
@@ -439,6 +480,10 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
                   else if (!strcmp (s2, "encrypted"))
                     mime_encrypted_begin (info, msg, ctx);
                 }
+              else if (!strcmp (s1, "application")
+                       && (!strcmp (s2, "pkcs7-mime")
+                           || !strcmp (s2, "x-pkcs7-mime")))
+                pkcs7_begin (info, msg, ctx);
             }
           else
             printf ("h media: %*s none\n", info->nesting_level*2, "");
@@ -581,11 +626,13 @@ parse_message (FILE *fp)
           if (info.verify_now)
             {
               verify_signature (&info);
-              fclose (info.hash_file);
+              if (info.hash_file)
+                fclose (info.hash_file);
               info.hash_file = NULL;
               fclose (info.sig_file);
               info.sig_file = NULL;
               info.gpgsm_mime = 0;
+              info.is_pkcs7 = 0;
             }
           else
             {
@@ -619,6 +666,14 @@ parse_message (FILE *fp)
       else if (info.show_header && !opt_no_header)
         printf (".%s\n", line);
 
+    }
+
+  if (info.sig_file && opt_crypto && info.is_pkcs7)
+    {
+      verify_signature (&info);
+      fclose (info.sig_file);
+      info.sig_file = NULL;
+      info.is_pkcs7 = 0;
     }
 
   rfc822parse_close (msg);

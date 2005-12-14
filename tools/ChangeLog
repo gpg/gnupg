@@ -1,3 +1,8 @@
+2005-12-14  Werner Koch  <wk@g10code.com>
+
+	* gpgparsemail.c (pkcs7_begin): New.
+	(parse_message, message_cb): Add support of direct pkcs signatures.
+
 2005-10-19  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gc_options_scdaemon): New option --disable-keypad.
