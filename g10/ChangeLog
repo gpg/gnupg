@@ -1,3 +1,10 @@
+2005-12-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.c (main): Don't default to import-options convert-sk-to-pk.
+	It causes confusing warning messages when importing a PGP-exported
+	key that contains a secret key without selfsigs followed by the
+	public key.
+
 2005-12-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_fetch): Switch on fast-import before we
