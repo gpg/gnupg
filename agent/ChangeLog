@@ -1,3 +1,13 @@
+2005-12-16  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (cram_octet_string): New
+	(p12_parse): Use it for NDEFed bags.
+	(parse_bag_data): Ditto.
+	(string_to_key, set_key_iv, crypt_block): New arg SALTLEN.
+	(p12_build): Use old value 8 for new arg.
+	(parse_bag_encrypted_data, parse_bag_data): Allow for salts of 8
+	to 16 bytes.  Add new arg R_CONSUMED.
+
 2005-11-24  Werner Koch  <wk@g10code.com>
 
 	* minip12.c (p12_parse): Fixed for case that the key object comes

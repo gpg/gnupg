@@ -1,5 +1,7 @@
 2005-12-14  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am (bin_PROGRAMS): Build gpgparsemail.
+
 	* gpgparsemail.c (pkcs7_begin): New.
 	(parse_message, message_cb): Add support of direct pkcs signatures.
 

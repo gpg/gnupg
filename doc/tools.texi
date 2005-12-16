@@ -14,6 +14,7 @@ GnuPG comes with a couple of smaller tools:
 * gpgsm-gencert.sh::      Generate an X.509 certificate request.
 * gpg-preset-passphrase:: Put a passphrase into the cache.
 * gpg-connect-agent::     Communicate with a running agent.
+* gpgparsemail::          Parse a mail message into an annotated format
 * symcryptrun::           Call a simple symmetric encryption tool.
 @end menu
 
@@ -772,6 +773,17 @@ be used to directly connect to any Assuan style socket server.
 
 
 @end table
+
+@c
+@c   GPGPARSEMAIL
+@c
+@node gpgparsemail
+@section Parse a mail message into an annotated format
+
+The @command{gpgparsemail} is a utility currentlu only useful for
+debugging.  Run it with @code{--help} for usage information.
+
+
 
 @c
 @c   SYMCRYPTRUN

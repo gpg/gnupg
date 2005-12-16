@@ -18,7 +18,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 EXTRA_DIST = Manifest watchgnupg.c \
-             rfc822parse.c rfc822parse.h gpgparsemail.c \
 	     addgnupghome gpgsm-gencert.sh
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
@@ -36,7 +35,7 @@ else
   symcryptrun =
 endif
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun}
+bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun} gpgparsemail
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg
 endif
@@ -45,6 +44,9 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 gpgconf_LDADD = ../jnlib/libjnlib.a \
                 ../common/libcommon.a ../gl/libgnu.a @LIBINTL@
+
+gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
+gpgparsemail_LDADD = 
 
 symcryptrun_SOURCES = symcryptrun.c
 symcryptrun_LDADD = $(LIBUTIL_LIBS) ../jnlib/libjnlib.a \

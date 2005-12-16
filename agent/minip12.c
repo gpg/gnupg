@@ -141,7 +141,8 @@ struct tag_info
 
 /* Parse the buffer at the address BUFFER which is of SIZE and return
    the tag and the length part from the TLV triplet.  Update BUFFER
-   and SIZE on success. */
+   and SIZE on success.  Checks that the encoded length does not
+   exhaust the length of the provided buffer. */
 static int 
 parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
 {
@@ -221,8 +222,76 @@ parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
 }
 
 
+/* Given an ASN.1 chunk of a structure like:
+
+     24 NDEF:       OCTET STRING  -- This is not passed to us
+     04    1:         OCTET STRING  -- INPUT point s to here
+            :           30
+     04    1:         OCTET STRING
+            :           80
+          [...]
+     04    2:         OCTET STRING
+            :           00 00
+            :         } -- This denotes a Null tag and are the last 
+                        -- two bytes in INPUT.
+   
+   Create a new buffer with the content of that octet string.  INPUT
+   is the orginal buffer with a length as stored at LENGTH.  Returns
+   NULL on error or a new malloced buffer with the length of this new
+   buffer stored at LENGTH and the number of bytes parsed from input
+   are added to the value stored at INPUT_CONSUMED.  INPUT_CONSUMED is
+   allowed to be passed as NULL if the caller is not interested in
+   this value. */
+static unsigned char *
+cram_octet_string (const unsigned char *input, size_t *length,
+                   size_t *input_consumed)
+{
+  const unsigned char *s = input;
+  size_t n = *length;
+  unsigned char *output, *d;
+  struct tag_info ti;
+
+  /* Allocate output buf.  We know that it won't be longer than the
+     input buffer. */
+  d = output = gcry_malloc (n);
+  if (!output)
+    goto bailout;
+
+  for (;;)
+    {
+      if (parse_tag (&s, &n, &ti))
+        goto bailout;
+      if (ti.class == UNIVERSAL && ti.tag == TAG_OCTET_STRING 
+          && !ti.ndef && !ti.is_constructed)
+        {
+          memcpy (d, s, ti.length);
+          s += ti.length;
+          d += ti.length;
+          n -= ti.length;
+        }
+      else if (ti.class == UNIVERSAL && !ti.tag && !ti.is_constructed)
+        break; /* Ready */ 
+      else
+        goto bailout;
+    }
+
+
+  *length = d - output;
+  if (input_consumed)
+    *input_consumed += s - input;
+  return output;
+
+ bailout:
+  if (input_consumed)
+    *input_consumed += s - input;
+  gcry_free (output);
+  return NULL;
+}
+
+
+
 static int 
-string_to_key (int id, char *salt, int iter, const char *pw,
+string_to_key (int id, char *salt, size_t saltlen, int iter, const char *pw,
                int req_keylen, unsigned char *keybuf)
 {
   int rc, i, j;
@@ -241,10 +310,16 @@ string_to_key (int id, char *salt, int iter, const char *pw,
       return -1;
     }
 
+  if (saltlen < 8)
+    {
+      log_error ("salt too short\n");
+      return -1;
+    }
+  
   /* Store salt and password in BUF_I */
   p = buf_i;
   for(i=0; i < 64; i++)
-    *p++ = salt [i%8];
+    *p++ = salt [i%saltlen];
   for(i=j=0; i < 64; i += 2)
     {
       *p++ = 0;
@@ -314,14 +389,14 @@ string_to_key (int id, char *salt, int iter, const char *pw,
 
 
 static int 
-set_key_iv (gcry_cipher_hd_t chd, char *salt, int iter, const char *pw,
-            int keybytes)
+set_key_iv (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
+            const char *pw, int keybytes)
 {
   unsigned char keybuf[24];
   int rc;
 
   assert (keybytes == 5 || keybytes == 24);
-  if (string_to_key (1, salt, iter, pw, keybytes, keybuf))
+  if (string_to_key (1, salt, saltlen, iter, pw, keybytes, keybuf))
     return -1;
   rc = gcry_cipher_setkey (chd, keybuf, keybytes);
   if (rc)
@@ -330,7 +405,7 @@ set_key_iv (gcry_cipher_hd_t chd, char *salt, int iter, const char *pw,
       return -1;
     }
 
-  if (string_to_key (2, salt, iter, pw, 8, keybuf))
+  if (string_to_key (2, salt, saltlen, iter, pw, 8, keybuf))
     return -1;
   rc = gcry_cipher_setiv (chd, keybuf, 8);
   if (rc)
@@ -343,8 +418,8 @@ set_key_iv (gcry_cipher_hd_t chd, char *salt, int iter, const char *pw,
 
 
 static void
-crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
-             const char *pw, int cipher_algo, int encrypt)
+crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
+             int iter, const char *pw, int cipher_algo, int encrypt)
 {
   gcry_cipher_hd_t chd;
   int rc;
@@ -356,7 +431,7 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
       wipememory (buffer, length);
       return;
     }
-  if (set_key_iv (chd, salt, iter, pw,
+  if (set_key_iv (chd, salt, saltlen, iter, pw,
                   cipher_algo == GCRY_CIPHER_RFC2268_40? 5:24))
     {
       wipememory (buffer, length);
@@ -381,18 +456,22 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, int iter,
 
 static int
 parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
-                          int startoffset, const char *pw,
+                          int startoffset, size_t *r_consumed, const char *pw,
                           void (*certcb)(void*, const unsigned char*, size_t),
                           void *certcbarg)
 {
   struct tag_info ti;
   const unsigned char *p = buffer;
+  const unsigned char *p_start = buffer;
   size_t n = length;
   const char *where;
-  char salt[8];
+  char salt[16];
+  size_t saltlen;
   unsigned int iter;
   unsigned char *plain = NULL;
   int bad_pass = 0;
+  unsigned char *cram_buffer = NULL;
+  size_t consumed = 0; /* Number of bytes consumed from the orginal buffer. */
   
   where = "start";
   if (parse_tag (&p, &n, &ti))
@@ -449,11 +528,13 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class || ti.tag != TAG_OCTET_STRING || ti.length != 8 )
+  if (ti.class || ti.tag != TAG_OCTET_STRING
+      || ti.length < 8 || ti.length > 16 )
     goto bailout;
-  memcpy (salt, p, 8);
-  p += 8;
-  n -= 8;
+  saltlen = ti.length;
+  memcpy (salt, p, saltlen);
+  p += saltlen;
+  n -= saltlen;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class || ti.tag != TAG_INTEGER || !ti.length )
@@ -468,7 +549,25 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   where = "rc2-ciphertext";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class != CONTEXT || ti.tag != 0 || !ti.length )
+
+  consumed = p - p_start;
+  if (ti.class == CONTEXT && ti.tag == 0 && ti.is_constructed && ti.ndef)
+    {
+      /* Mozilla exported certs now come with single byte chunks of
+         octect strings.  (Mozilla Firefox 1.0.4).  Arghh. */
+      where = "cram-rc2-ciphertext";
+      cram_buffer = cram_octet_string ( p, &n, &consumed);
+      if (!cram_buffer)
+        goto bailout;
+      p = p_start = cram_buffer;
+      if (r_consumed)
+        *r_consumed = consumed;
+      r_consumed = NULL; /* Ugly hack to not update that value any further. */
+      ti.length = n;
+    }
+  else if (ti.class == CONTEXT && ti.tag == 0 && ti.length )
+    ;
+  else
     goto bailout;
   
   log_info ("%lu bytes of RC2 encrypted text\n", ti.length);
@@ -480,10 +579,11 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       goto bailout;
     }
   memcpy (plain, p, ti.length);
-  crypt_block (plain, ti.length, salt, iter, pw, GCRY_CIPHER_RFC2268_40, 0);
+  crypt_block (plain, ti.length, salt, saltlen,
+               iter, pw, GCRY_CIPHER_RFC2268_40, 0);
   n = ti.length;
   startoffset = 0;
-  buffer = p = plain;
+  p_start = p = plain;
 
 /*   { */
 /* #  warning debug code is enabled */
@@ -615,13 +715,19 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
         }
     }
   
+  if (r_consumed)
+    *r_consumed = consumed;
   gcry_free (plain);
-
+  gcry_free (cram_buffer);
   return 0;
+
  bailout:
+  if (r_consumed)
+    *r_consumed = consumed;
   gcry_free (plain);
+  gcry_free (cram_buffer);
   log_error ("encryptedData error at \"%s\", offset %u\n",
-             where, (p - buffer)+startoffset);
+             where, (p - p_start)+startoffset);
   if (bad_pass)
     {
       /* Note, that the following string might be used by other programs
@@ -634,19 +740,23 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
 
 static gcry_mpi_t *
 parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
-                const char *pw)
+                size_t *r_consumed, const char *pw)
 {
   int rc;
   struct tag_info ti;
   const unsigned char *p = buffer;
+  const unsigned char *p_start = buffer;
   size_t n = length;
   const char *where;
-  char salt[8];
+  char salt[16];
+  size_t saltlen;
   unsigned int iter;
   int len;
   unsigned char *plain = NULL;
   gcry_mpi_t *result = NULL;
   int result_count, i;
+  unsigned char *cram_buffer = NULL;
+  size_t consumed = 0; /* Number of bytes consumed from the orginal buffer. */
 
   where = "start";
   if (parse_tag (&p, &n, &ti))
@@ -657,6 +767,22 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
     goto bailout;
   if (ti.class || ti.tag != TAG_OCTET_STRING)
     goto bailout;
+
+  consumed = p - p_start;
+  if (ti.is_constructed && ti.ndef)
+    {
+      /* Mozilla exported certs now come with single byte chunks of
+         octect strings.  (Mozilla Firefox 1.0.4).  Arghh. */
+      where = "cram-data.outersegs";
+      cram_buffer = cram_octet_string ( p, &n, &consumed);
+      if (!cram_buffer)
+        goto bailout;
+      p = p_start = cram_buffer;
+      if (r_consumed)
+        *r_consumed = consumed;
+      r_consumed = NULL; /* Ugly hack to not update that value any further. */
+    }
+  
 
   where = "data.outerseqs";
   if (parse_tag (&p, &n, &ti))
@@ -709,11 +835,13 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class || ti.tag != TAG_OCTET_STRING || ti.length != 8 )
+  if (ti.class || ti.tag != TAG_OCTET_STRING
+      || ti.length < 8 || ti.length > 16)
     goto bailout;
-  memcpy (salt, p, 8);
-  p += 8;
-  n -= 8;
+  saltlen = ti.length;
+  memcpy (salt, p, saltlen);
+  p += saltlen;
+  n -= saltlen;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class || ti.tag != TAG_INTEGER || !ti.length )
@@ -740,10 +868,11 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
       goto bailout;
     }
   memcpy (plain, p, ti.length);
-  crypt_block (plain, ti.length, salt, iter, pw, GCRY_CIPHER_3DES, 0);
+  consumed += p - p_start + ti.length;
+  crypt_block (plain, ti.length, salt, saltlen, iter, pw, GCRY_CIPHER_3DES, 0);
   n = ti.length;
   startoffset = 0;
-  buffer = p = plain;
+  p_start = p = plain;
 
 /*   { */
 /* #  warning debug code is enabled */
@@ -828,6 +957,9 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   if (len)
     goto bailout;
 
+  gcry_free (cram_buffer);
+  if (r_consumed)
+    *r_consumed = consumed;
   return result;
 
  bailout:
@@ -838,8 +970,11 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
         gcry_mpi_release (result[i]);
       gcry_free (result);
     }
+  gcry_free (cram_buffer);
   log_error ( "data error at \"%s\", offset %u\n",
               where, (p - buffer) + startoffset);
+  if (r_consumed)
+    *r_consumed = consumed;
   return NULL;
 }
 
@@ -857,10 +992,13 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
 {
   struct tag_info ti;
   const unsigned char *p = buffer;
+  const unsigned char *p_start = buffer;
   size_t n = length;
   const char *where;
   int bagseqlength, len;
+  int bagseqndef, lenndef;
   gcry_mpi_t *result = NULL;
+  unsigned char *cram_buffer = NULL;
 
   where = "pfx";
   if (parse_tag (&p, &n, &ti))
@@ -897,71 +1035,121 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   if (ti.class != UNIVERSAL || ti.tag != TAG_OCTET_STRING)
     goto bailout;
 
+  if (ti.is_constructed && ti.ndef)
+    {
+      /* Mozilla exported certs now come with single byte chunks of
+         octect strings.  (Mozilla Firefox 1.0.4).  Arghh. */
+      where = "cram-bags";
+      cram_buffer = cram_octet_string ( p, &n, NULL);
+      if (!cram_buffer)
+        goto bailout;
+      p = p_start = cram_buffer;
+    }
+
   where = "bags";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class != UNIVERSAL || ti.tag != TAG_SEQUENCE)
     goto bailout;
+  bagseqndef = ti.ndef;
   bagseqlength = ti.length;
-  while (bagseqlength)
+  while (bagseqlength || bagseqndef)
     {
-      /*log_debug ( "at offset %u\n", (p - buffer));*/
+      log_debug ( "at offset %u\n", (p - p_start));
       where = "bag-sequence";
       if (parse_tag (&p, &n, &ti))
         goto bailout;
+      if (bagseqndef && ti.class == UNIVERSAL && !ti.tag && !ti.is_constructed)
+        break; /* Ready */ 
       if (ti.class != UNIVERSAL || ti.tag != TAG_SEQUENCE)
         goto bailout;
 
-      if (bagseqlength < ti.nhdr)
-        goto bailout;
-      bagseqlength -= ti.nhdr;
-      if (bagseqlength < ti.length)
-        goto bailout;
-      bagseqlength -= ti.length;
+      if (!bagseqndef)
+        {
+          if (bagseqlength < ti.nhdr)
+            goto bailout;
+          bagseqlength -= ti.nhdr;
+          if (bagseqlength < ti.length)
+            goto bailout;
+          bagseqlength -= ti.length;
+        }
+      lenndef = ti.ndef;
       len = ti.length;
 
       if (parse_tag (&p, &n, &ti))
         goto bailout;
-      len -= ti.nhdr;
+      if (lenndef)
+        len = ti.nhdr; 
+      else
+        len -= ti.nhdr; 
+
       if (ti.tag == TAG_OBJECT_ID && ti.length == DIM(oid_encryptedData)
           && !memcmp (p, oid_encryptedData, DIM(oid_encryptedData)))
         {
+          size_t consumed = 0;
+
           p += DIM(oid_encryptedData);
           n -= DIM(oid_encryptedData);
-          len -= DIM(oid_encryptedData);
+          if (!lenndef)
+            len -= DIM(oid_encryptedData);
           where = "bag.encryptedData";
-          if (parse_bag_encrypted_data (p, n, (p - buffer), pw,
+          if (parse_bag_encrypted_data (p, n, (p - p_start), &consumed, pw,
                                         certcb, certcbarg))
             goto bailout;
+          if (lenndef)
+            len += consumed;
         }
       else if (ti.tag == TAG_OBJECT_ID && ti.length == DIM(oid_data)
-          && !memcmp (p, oid_data, DIM(oid_data)))
+               && !memcmp (p, oid_data, DIM(oid_data)))
         {
           if (result)
-            log_info ("already got an data object, skipping next one\n");
+            {
+              log_info ("already got an data object, skipping next one\n");
+              p += ti.length;
+              n -= ti.length;
+            }
           else
             {
+              size_t consumed = 0;
+
               p += DIM(oid_data);
               n -= DIM(oid_data);
-              len -= DIM(oid_data);
-              result = parse_bag_data (p, n, (p-buffer), pw);
+              if (!lenndef)
+                len -= DIM(oid_data);
+              result = parse_bag_data (p, n, (p - p_start), &consumed, pw);
               if (!result)
                 goto bailout;
+              if (lenndef)
+                len += consumed;
             }
         }
       else
-        log_info ( "unknown bag type - skipped\n");
+        {
+          log_info ("unknown bag type - skipped\n");
+          p += ti.length;
+          n -= ti.length;
+        }
 
       if (len < 0 || len > n)
         goto bailout;
       p += len;
       n -= len;
+      if (lenndef)
+        {
+          /* Need to skip the Null Tag. */
+          if (parse_tag (&p, &n, &ti))
+            goto bailout;
+          if (!(ti.class == UNIVERSAL && !ti.tag && !ti.is_constructed))
+            goto bailout;
+        }
     }
   
+  gcry_free (cram_buffer);
   return result;
  bailout:
-  log_error ("error at \"%s\", offset %u\n", where, (p - buffer));
+  log_error ("error at \"%s\", offset %u\n", where, (p - p_start));
   /* fixme: need to release RESULT. */
+  gcry_free (cram_buffer);
   return NULL;
 }
 
@@ -1586,7 +1774,8 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
 
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
-      crypt_block (buffer, buflen, salt, 2048, pw, GCRY_CIPHER_RFC2268_40, 1);
+      crypt_block (buffer, buflen, salt, 8, 2048, pw,
+                   GCRY_CIPHER_RFC2268_40, 1);
       
       /* Encode the encrypted stuff into a bag. */
       seqlist[seqlistidx].buffer = build_cert_bag (buffer, buflen, salt, &n);
@@ -1607,7 +1796,7 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
       
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
-      crypt_block (buffer, buflen, salt, 2048, pw, GCRY_CIPHER_3DES, 1);
+      crypt_block (buffer, buflen, salt, 8, 2048, pw, GCRY_CIPHER_3DES, 1);
 
       /* Encode the encrypted stuff into a bag. */
       seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt, &n);

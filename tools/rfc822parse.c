@@ -155,7 +155,7 @@ capitalize_header_name (unsigned char *name)
       *name = *name - 'A' + 'a';
 }
 
-
+#ifndef HAVE_STPCPY
 static char *
 stpcpy (char *a,const char *b)
 {
@@ -165,6 +165,7 @@ stpcpy (char *a,const char *b)
   
   return (char*)a;
 }
+#endif
 
 
 /* If a callback has been registerd, call it for the event of type
@@ -474,7 +475,7 @@ insert_body (rfc822parse_t msg, const unsigned char *line, size_t length)
           msg->boundary = NULL; /* No current boundary anymore. */
           set_current_part_to_parent (msg);
 
-          /* Fixme: The next should acctually be sent right before the
+          /* Fixme: The next should actually be send right before the
              next boundary, so that we can mark the epilogue. */
           if (!rc)
             rc = do_callback (msg, RFC822PARSE_LEVEL_UP);
@@ -523,7 +524,8 @@ rfc822parse_finish (rfc822parse_t msg)
  * available.
  * 
  * If VALUEOFF is not NULL it will receive the offset of the first non
- * space character in th value of the line.
+ * space character in the value part of the line (i.e. after the first
+ * colon).
  */
 char *
 rfc822parse_get_field (rfc822parse_t msg, const char *name, int which,
@@ -758,7 +760,8 @@ parse_field (HDR_LINE hdr)
   static const char specials[] = "<>@.,;:\\[]\"()";
   static const char specials2[] = "<>@.,;:";
   static const char tspecials[] = "/?=<>@,;:\\[]\"()";
-  static const char tspecials2[] = "/?=<>@.,;:";
+  static const char tspecials2[] = "/?=<>@.,;:";  /* FIXME: really
+                                                     include '.'?*/
   static struct 
   {
     const unsigned char *name;

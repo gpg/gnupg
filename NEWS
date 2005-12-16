@@ -4,6 +4,11 @@ Noteworthy changes in version 1.9.20
  * [scdaemon] Support for keypads of some readers.  Tested only with
    SPR532. New option --disable-keypad.
 
+ * New debug tool gpgparsemail. 
+
+ * Importing pkcs#12 files created be recent versions of Mozilla works
+   again.
+
 
 Noteworthy changes in version 1.9.19 (2005-09-12)
 -------------------------------------------------

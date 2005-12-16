@@ -94,3 +94,7 @@ might want to have an agent context for each service request
 
 * sm/
 ** --include-certs is as of now still a dummy command line option
+** check that we issue NO_SECKEY xxx if a -u key was not found
+
+* gpg/
+** issue a NO_SECKEY xxxx if a -u key was not found.

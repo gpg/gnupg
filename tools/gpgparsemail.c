@@ -21,8 +21,8 @@
 
 /* This utility prints an RFC8222, possible MIME structured, message
    in an annotated format with the first column having an indicator
-   for the content of the line..  Several options are available to
-   scrutinize the message.  S/MIME and OpenPGP suuport is included. */
+   for the content of the line.  Several options are available to
+   scrutinize the message.  S/MIME and OpenPGP support is included. */
 
 
 #include <stdio.h>
@@ -708,6 +708,8 @@ main (int argc, char **argv)
                 "  --debug     enable additional debug output\n"
                 "  --help      display this help and exit\n\n"
                 "With no FILE, or when FILE is -, read standard input.\n\n"
+                "WARNING: This tool is under development.\n"
+                "         The semantics may change without notice\n\n"
                 "Report bugs to <bug-gnupg@gnu.org>.");
           exit (0);
         }
