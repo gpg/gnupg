@@ -1812,7 +1812,9 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
         if ( x ) /* mask it down to the actual allowed usage */
             key_usage &= x; 
     }
-    pk->pubkey_usage = key_usage;
+
+    /* Whatever happens, it's a primary key, so it can certify. */
+    pk->pubkey_usage = key_usage|PUBKEY_USAGE_CERT;
 
     if ( !key_expire_seen ) {
         /* find the latest valid user ID with a key expiration set 
