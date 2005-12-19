@@ -111,12 +111,24 @@ int curl_err_to_gpg_err(CURLcode error);
 
 struct curl_writer_ctx
 {
-  int initialized,markeridx,begun,done;
+  struct
+  {
+    unsigned int initialized:1;
+    unsigned int begun:1;
+    unsigned int done:1;
+    unsigned int armor:1;
+  } flags;
+
+  int armor_remaining;
+  unsigned char armor_ctx[3];
+  int markeridx,linelen;
   const char *marker;
   FILE *stream;
 };
 
 size_t curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx);
+void curl_writer_finalize(struct curl_writer_ctx *ctx);
+
 #endif
 
 #endif /* !_KSUTIL_H_ */

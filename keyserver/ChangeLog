@@ -1,3 +1,11 @@
+2005-12-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (curl_armor_writer, curl_writer,
+	curl_writer_finalize): New functionality to handle binary format
+	keys by armoring them for input to GPG.
+
+	* gpgkeys_curl.c (get_key), gpgkeys_hkp.c (get_key): Call it here.
+
 2005-12-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_finger.c (get_key), gpgkeys_curl.c (get_key): Better

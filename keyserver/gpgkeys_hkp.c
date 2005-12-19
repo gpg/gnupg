@@ -263,21 +263,22 @@ get_key(char *getkey)
   curl_easy_setopt(curl,CURLOPT_FILE,&ctx);
 
   res=curl_easy_perform(curl);
-  if(res!=0)
+  if(res!=CURLE_OK)
     {
       fprintf(console,"gpgkeys: HTTP fetch error %d: %s\n",res,errorbuffer);
       fprintf(output,"\nKEY 0x%s FAILED %d\n",getkey,curl_err_to_gpg_err(res));
     }
   else
     {
-      if(ctx.done)
-	fprintf(output,"\nKEY 0x%s END\n",getkey);
-      else
+      curl_writer_finalize(&ctx);
+      if(!ctx.flags.done)
 	{
 	  fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
-	  fprintf(output,"KEY 0x%s FAILED %d\n",
+	  fprintf(output,"\nKEY 0x%s FAILED %d\n",
 		  getkey,KEYSERVER_KEY_NOT_FOUND);
 	}
+      else
+	fprintf(output,"\nKEY 0x%s END\n",getkey);
     }
 
   return KEYSERVER_OK;

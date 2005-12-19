@@ -371,6 +371,47 @@ curl_err_to_gpg_err(CURLcode error)
     }
 }
 
+#define B64 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+static void
+curl_armor_writer(const unsigned char *buf,size_t size,void *cw_ctx)
+{
+  struct curl_writer_ctx *ctx=cw_ctx;
+  size_t idx=0;
+
+  while(idx<size)
+    {
+      for(;ctx->armor_remaining<3 && idx<size;ctx->armor_remaining++,idx++)
+	ctx->armor_ctx[ctx->armor_remaining]=buf[idx];
+
+      if(ctx->armor_remaining==3)
+	{
+	  /* Top 6 bytes of ctx->armor_ctx[0] */
+	  fputc(B64[(ctx->armor_ctx[0]>>2)&0x3F],ctx->stream);
+	  /* Bottom 2 bytes of ctx->armor_ctx[0] and top 4 bytes of
+	     ctx->armor_ctx[1] */
+	  fputc(B64[(((ctx->armor_ctx[0]<<4)&0x30)
+		     |((ctx->armor_ctx[1]>>4)&0x0F))&0x3F],ctx->stream);
+	  /* Bottom 4 bytes of ctx->armor_ctx[1] and top 2 bytes of
+	     ctx->armor_ctx[2] */
+	  fputc(B64[(((ctx->armor_ctx[1]<<2)&0x3C)
+		     |((ctx->armor_ctx[2]>>6)&0x03))&0x3F],ctx->stream);
+	  /* Bottom 6 bytes of ctx->armor_ctx[2] */
+	  fputc(B64[(ctx->armor_ctx[2]&0x3F)],ctx->stream);
+
+	  ctx->linelen+=4;
+	  if(ctx->linelen>=70)
+	    {
+	      fputc('\n',ctx->stream);
+	      ctx->linelen=0;
+	    }
+
+	  ctx->armor_remaining=0;
+	}
+    }
+
+}
+
 size_t
 curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx)
 {
@@ -378,52 +419,103 @@ curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx)
   const char *buf=ptr;
   size_t i;
 
-  if(!ctx->initialized)
+  if(!ctx->flags.initialized)
     {
-      ctx->marker=BEGIN;
-      ctx->initialized=1;
-    }
+      if(size*nmemb==0)
+	return 0;
 
-  /* scan the incoming data for our marker */
-  for(i=0;!ctx->done && i<(size*nmemb);i++)
-    {
-      if(buf[i]==ctx->marker[ctx->markeridx])
+      /* The object we're fetching is in binary form */
+      if(*buf&0x80)
 	{
-	  ctx->markeridx++;
-	  if(ctx->marker[ctx->markeridx]=='\0')
-	    {
-	      if(ctx->begun)
-		ctx->done=1;
-	      else
-		{
-		  /* We've found the BEGIN marker, so now we're looking
-		     for the END marker. */
-		  ctx->begun=1;
-		  ctx->marker=END;
-		  ctx->markeridx=0;
-		  fprintf(ctx->stream,BEGIN);
-		  continue;
-		}
-	    }
+	  ctx->flags.armor=1;
+	  fprintf(ctx->stream,BEGIN"\n\n");
 	}
       else
-	ctx->markeridx=0;
+	ctx->marker=BEGIN;
 
-      if(ctx->begun)
+      ctx->flags.initialized=1;
+    }
+
+  if(ctx->flags.armor)
+    curl_armor_writer(ptr,size*nmemb,cw_ctx);
+  else
+    {
+      /* scan the incoming data for our marker */
+      for(i=0;!ctx->flags.done && i<(size*nmemb);i++)
 	{
-	  /* Canonicalize CRLF to just LF by stripping CRs.  This
-	     actually makes sense, since on Unix-like machines LF is
-	     correct, and on win32-like machines, our output buffer is
-	     opened in textmode and will re-canonicalize line endings
-	     back to CRLF.  Since we only need to handle armored keys,
-	     we don't have to worry about odd cases like CRCRCR and
-	     the like. */
+	  if(buf[i]==ctx->marker[ctx->markeridx])
+	    {
+	      ctx->markeridx++;
+	      if(ctx->marker[ctx->markeridx]=='\0')
+		{
+		  if(ctx->flags.begun)
+		    ctx->flags.done=1;
+		  else
+		    {
+		      /* We've found the BEGIN marker, so now we're
+			 looking for the END marker. */
+		      ctx->flags.begun=1;
+		      ctx->marker=END;
+		      ctx->markeridx=0;
+		      fprintf(ctx->stream,BEGIN);
+		      continue;
+		    }
+		}
+	    }
+	  else
+	    ctx->markeridx=0;
 
-	  if(buf[i]!='\r')
-	    fputc(buf[i],ctx->stream);
+	  if(ctx->flags.begun)
+	    {
+	      /* Canonicalize CRLF to just LF by stripping CRs.  This
+		 actually makes sense, since on Unix-like machines LF
+		 is correct, and on win32-like machines, our output
+		 buffer is opened in textmode and will re-canonicalize
+		 line endings back to CRLF.  Since this code is just
+		 for handling armored keys, we don't have to worry
+		 about odd cases like CRCRCR and the like. */
+
+	      if(buf[i]!='\r')
+		fputc(buf[i],ctx->stream);
+	    }
 	}
     }
 
   return size*nmemb;
+}
+
+void
+curl_writer_finalize(struct curl_writer_ctx *ctx)
+{
+  if(ctx->flags.armor)
+    {
+      if(ctx->armor_remaining==2)
+	{
+	  /* Top 6 bytes of ctx->armorctx[0] */
+	  fputc(B64[(ctx->armor_ctx[0]>>2)&0x3F],ctx->stream);
+	  /* Bottom 2 bytes of ctx->armor_ctx[0] and top 4 bytes of
+	     ctx->armor_ctx[1] */
+	  fputc(B64[(((ctx->armor_ctx[0]<<4)&0x30)
+		     |((ctx->armor_ctx[1]>>4)&0x0F))&0x3F],ctx->stream);
+	  /* Bottom 4 bytes of ctx->armor_ctx[1] */
+	  fputc(B64[((ctx->armor_ctx[1]<<2)&0x3C)],ctx->stream);
+	  /* Pad */
+	  fputc('=',ctx->stream);
+	}
+      else if(ctx->armor_remaining==1)
+	{
+	  /* Top 6 bytes of ctx->armor_ctx[0] */
+	  fputc(B64[(ctx->armor_ctx[0]>>2)&0x3F],ctx->stream);
+	  /* Bottom 2 bytes of ctx->armor_ctx[0] */
+	  fputc(B64[((ctx->armor_ctx[0]<<4)&0x30)],ctx->stream);
+	  /* Pad */
+	  fputc('=',ctx->stream);
+	  /* Pad */
+	  fputc('=',ctx->stream);
+	}
+
+      fprintf(ctx->stream,"\n"END);
+      ctx->flags.done=1;
+    }
 }
 #endif

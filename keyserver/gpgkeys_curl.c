@@ -74,13 +74,18 @@ get_key(char *getkey)
 	      res,errorbuffer);
       fprintf(output,"\nKEY 0x%s FAILED %d\n",getkey,curl_err_to_gpg_err(res));
     }
-  else if(!ctx.done)
-    {
-      fprintf(console,"gpgkeys: no key data found for %s\n",request);
-      fprintf(output,"\nKEY 0x%s FAILED %d\n",getkey,KEYSERVER_KEY_NOT_FOUND);
-    }
   else
-    fprintf(output,"\nKEY 0x%s END\n",getkey);
+    {
+      curl_writer_finalize(&ctx);
+      if(!ctx.flags.done)
+	{
+	  fprintf(console,"gpgkeys: no key data found for %s\n",request);
+	  fprintf(output,"\nKEY 0x%s FAILED %d\n",
+		  getkey,KEYSERVER_KEY_NOT_FOUND);
+	}
+      else
+	fprintf(output,"\nKEY 0x%s END\n",getkey);
+    }
 
   return curl_err_to_gpg_err(res);
 }
