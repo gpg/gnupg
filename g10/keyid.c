@@ -543,13 +543,9 @@ usagestr_from_pk( PKT_public_key *pk )
   static char buffer[10];
   int i = 0;
   unsigned int use = pk->pubkey_usage;
-    
+
   if ( use & PUBKEY_USAGE_SIG )
-    {
-      if (pk->is_primary)
-        use|=PUBKEY_USAGE_CERT;
-      buffer[i++] = 'S';
-    }
+    buffer[i++] = 'S';
 
   if ( use & PUBKEY_USAGE_CERT )
     buffer[i++] = 'C';
