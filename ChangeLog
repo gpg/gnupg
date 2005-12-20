@@ -1,3 +1,7 @@
+2005-12-20  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.20.
+
 2005-11-28  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Append the revision to the version string.

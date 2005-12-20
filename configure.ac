@@ -25,7 +25,7 @@ min_automake_version="1.9.3"
 # Remember to change the version number immediately *after* a release.
 # Uncomment the my_iscvs macro for non-released code.
 m4_define(my_version, [1.9.20])
-m4_define(my_iscvs, yes)
+#m4_define(my_iscvs, yes)
 AC_INIT([gnupg], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
                  [$Revision$],[Ra-z $:])]), [gnupg-devel@gnupg.org])
 # Set development_version to yes if the minor number is odd or you
