@@ -1372,7 +1372,7 @@ pka_uri_from_sig (PKT_signature *sig)
       assert (!sig->pka_info);
       sig->flags.pka_tried = 1;
       sig->pka_info = get_pka_address (sig);
-      if (sig->pka_info)
+      if (sig->pka_info && opt.allow_pka_lookup)
         {
           char *uri;
 

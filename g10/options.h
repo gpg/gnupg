@@ -103,6 +103,8 @@ struct
       TM_CLASSIC=0, TM_PGP=1, TM_EXTERNAL=2, TM_ALWAYS, TM_DIRECT, TM_AUTO
     } trust_model;
   int force_ownertrust;
+  int pka_trust_increase;  /* Valid PKA information increases the trust. */
+  int allow_pka_lookup;    /* PKA lookups are only done if this is set. */
   enum
     {
       CO_GNUPG=0, CO_RFC2440, CO_RFC1991, CO_PGP2, CO_PGP6, CO_PGP7, CO_PGP8

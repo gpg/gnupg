@@ -914,6 +914,7 @@ get_pubkey_byname (PKT_public_key *pk,
                    include_unusable, ret_keyblock, ret_kdbhd);
   if (rc == G10ERR_NO_PUBKEY
       && !again
+      && opt.allow_pka_lookup
       && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE)
       && is_valid_mailbox (name))
     {

@@ -88,7 +88,7 @@ static struct parse_options keyserver_opts[]=
     {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL,
      N_("automatically retrieve keys when verifying signatures")},
     {"auto-pka-retrieve",KEYSERVER_AUTO_PKA_RETRIEVE,NULL,
-     NULL},
+     N_("automatically retrieve keys from DNS")},
     {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL,
      NULL},
     {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL,

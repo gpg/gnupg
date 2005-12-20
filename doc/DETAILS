@@ -287,6 +287,12 @@ more arguments in future versions.
 	to indicate how trustworthy the signature is.  The error token
         values are currently only emiited by gpgsm.
 
+    PKA_TRUST_GOOD <mailbox>
+    PKA_TRUST_BAD  <mailbox>
+        Depending on the outcome of the PKA check one of the above
+        status codes is emitted in addition to a TRUST_* status.
+        Without PKA info available or 
+
     SIGEXPIRED
 	This is deprecated in favor of KEYEXPIRED.
 

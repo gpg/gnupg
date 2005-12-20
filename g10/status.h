@@ -115,6 +115,9 @@
 
 #define STATUS_BACKUP_KEY_CREATED 81
 
+#define STATUS_PKA_TRUST_BAD    82
+#define STATUS_PKA_TRUST_GOOD   83
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

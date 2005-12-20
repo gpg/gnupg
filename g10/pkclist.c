@@ -549,12 +549,14 @@ check_signatures_trust( PKT_signature *sig )
       if ( fprlen == 20 && !memcmp (sig->pka_info->fpr, fpr, 20) )
         {
           okay = 1;
+          write_status_text (STATUS_PKA_TRUST_GOOD, sig->pka_info->email);
           log_info (_("Note: Verified signer's address is `%s'\n"),
                     sig->pka_info->email);
         }
       else
         {
           okay = 0;
+          write_status_text (STATUS_PKA_TRUST_BAD, sig->pka_info->email);
           log_info (_("Note: Signer's address `%s' "
                       "does not match DNS entry\n"), sig->pka_info->email);
         }
@@ -564,17 +566,19 @@ check_signatures_trust( PKT_signature *sig )
         case TRUST_UNKNOWN: 
         case TRUST_UNDEFINED:
         case TRUST_MARGINAL:
-          if (okay)
+          if (okay && opt.pka_trust_increase)
             {
               trustlevel = ((trustlevel & ~TRUST_MASK) | TRUST_FULLY);
-              log_info ("trustlevel adjusted to FULL due to valid PKA info\n");
+              log_info (_("trustlevel adjusted to FULL"
+                          " due to valid PKA info\n"));
             }
           /* (fall through) */
         case TRUST_FULLY:
           if (!okay)
             {
               trustlevel = ((trustlevel & ~TRUST_MASK) | TRUST_NEVER);
-              log_info ("trustlevel adjusted to NEVER due to bad PKA info\n");
+              log_info (_("trustlevel adjusted to NEVER"
+                          " due to bad PKA info\n"));
             }
           break;
         }

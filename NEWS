@@ -11,11 +11,14 @@ Noteworthy changes in version 1.4.3
       Note also that a future version of GnuPG will remove the old
       keyserver helpers altogether.
 
-    * Implemented Public Key Association (PKA) trust model option.
-      This is an optional trust model on top of the standard ones.  It
-      make use of of special DNS records and notation data to
-      associate a mail address with an OpenPGP key.  See: XXXX for a
-      description.
+    * Implemented Public Key Association (PKA) trust sub model.  This
+      is an optional trust model on top of the standard ones.  It make
+      use of special DNS records and notation data to associate a mail
+      address with an OpenPGP key. It is by default not used.  To use
+      it you need to set the new option --allow-pka-lookup and an
+      appropriate trust-model.  Also added new keyserver option
+      auto-pka-retrieve which is enabled by default but only working
+      if --allow-pka-lookup is also used.
 
     * When exporting subkeys, those specified with a key ID or
       fingerpint and the '!' suffix are now merged into one keyblock.

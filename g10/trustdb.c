@@ -450,7 +450,12 @@ init_trustdb()
 	}
 
       if(opt.verbose)
-	log_info(_("using %s trust model\n"),trust_model_string());
+        {
+          log_info(_("using %s trust model\n"),trust_model_string());
+          if (opt.pka_trust_increase)
+            log_info(_("PKA verification is allowed to"
+                       " leverage trust to full\n"));
+        }
     }
 
   if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
@@ -2156,7 +2161,8 @@ validate_keys (int interactive)
    * here when needed */
   if (!utk_list)
     {
-      log_info (_("no ultimately trusted keys found\n"));
+      if (!opt.quiet)
+        log_info (_("no ultimately trusted keys found\n"));
       goto leave;
     }
 

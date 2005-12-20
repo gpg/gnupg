@@ -163,6 +163,8 @@ get_status_string ( int no )
     case STATUS_SC_OP_SUCCESS  : s = "SC_OP_SUCCESS"; break;
     case STATUS_SC_OP_FAILURE  : s = "SC_OP_FAILURE"; break;
     case STATUS_BACKUP_KEY_CREATED:s="BACKUP_KEY_CREATED"; break;
+    case STATUS_PKA_TRUST_BAD  : s = "PKA_TRUST_BAD"; break;
+    case STATUS_PKA_TRUST_GOOD : s = "PKA_TRUST_GOOD"; break;
     default: s = "?"; break;
     }
   return s;

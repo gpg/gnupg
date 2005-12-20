@@ -1,3 +1,20 @@
+2005-12-20  Werner Koch  <wk@g10code.com>
+
+	* gpg.c: New option --allow-pka-lookup.
+	(parse_trust_model): Add "+pka" variants.
+	(main): Make KEYSERVER_AUTO_PKA_RETRIEVE teh default.
+	* options.h (opt): New fields PKA_TRUST_INCREASE and
+	ALLOW_PKA_LOOKUP.
+	* status.h (STATUS_PKA_TRUST_BAD, STATUS_PKA_TRUST_GOOD): New.
+	* pkclist.c (check_signatures_trust): Increase trust due to valid
+	PKA only if that new option has been set.  Issue new status lines.
+	* trustdb.c (init_trustdb): Print info if this option is active.
+	* getkey.c (get_pubkey_byname): Honor allow-pka-lookup.
+	* mainproc.c (pka_uri_from_sig): Ditto.
+	
+	* trustdb.c (validate_keys): Print no "ultimately trusted keys
+	found" only in non-quiet mode.
+
 2005-12-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs_main): All primary keys can certify.
@@ -22,6 +39,9 @@
 	--fetch-keys so we don't rebuild the trustdb after each fetch.
 
 2005-12-08  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): Check for DBCS lead byte when converting the
+	homedir.  By Kazuyoshi Kakihara. Fixes PR561.
 
 	* keyserver.c (keyserver_fetch): Made strings translatable.
 

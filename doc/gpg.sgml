@@ -1186,7 +1186,7 @@ recipient's or signator's key.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--trust-model <parameter>pgp|classic|always</parameter></term>
+<term>--trust-model <parameter>pgp|classic|direct|always</parameter></term>
 <listitem><para>
 
 Set what trust model GnuPG should follow.  The models are:
@@ -1195,7 +1195,14 @@ Set what trust model GnuPG should follow.  The models are:
 
 <varlistentry><term>pgp</term><listitem><para>
 This is the Web of Trust combined with trust signatures as used in PGP
-5.x and later.  This is the default trust model.
+5.x and later.  This is the default trust model when creating a new
+trust database.
+</para></listitem></varlistentry>
+
+<varlistentry><term>pgp+pka</term><listitem><para>
+Same as <term>pka</term> but a valid PKA will increase the trust to full.
+Note, that the option <term>--allow-pka-lookup</term> needs to be
+enabled to actually make this work.
 </para></listitem></varlistentry>
 
 <varlistentry><term>classic</term><listitem><para>
@@ -1207,6 +1214,10 @@ Key validity is set directly by the user and not calculated via the
 Web of Trust.
 </para></listitem></varlistentry>
 
+<varlistentry><term>direct+pka</term><listitem><para>
+Same as <term>direct</term> but a valid PKA will increase the trust to full.
+</para></listitem></varlistentry>
+
 <varlistentry><term>always</term><listitem><para>
 Skip key validation and assume that used keys are always fully
 trusted.  You won't use this unless you have installed some external
@@ -1215,12 +1226,33 @@ printed with signature checks when there is no evidence that the user
 ID is bound to the key.
 </para></listitem></varlistentry>
 
+<varlistentry><term>auto</term><listitem><para>
+Select the trust model depending on whatever the internal trust
+database says. This is the default model if such a database already
+exists.  Note, this won't enable the PKA sub model.
+</para></listitem></varlistentry>
+
+<varlistentry><term>auto+pka</term><listitem><para>
+Select the trust model depending on whatever the internal trust
+database says and enable the PKA sub model.
+</para></listitem></varlistentry>
+
+
 </variablelist></para></listitem></varlistentry>
 
 <varlistentry>
 <term>--always-trust</term>
 <listitem><para>
 Identical to `--trust-model always'.  This option is deprecated.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--allow-pka-lookup</term>
+<listitem><para>
+This option enables PKA lookups.  PKA is based on DNS; thus enabling
+this option may disclose information on when and what signatures are verified
+or to whom data is encrypted.  This is similar to the "web bug"
+described for the auto-key-retrieve feature.
 </para></listitem></varlistentry>
 
 
@@ -1357,6 +1389,18 @@ Keyserver operators can see which keys you request, so by sending you
 a message signed by a brand new key (which you naturally will not have
 on your local keyring), the operator can tell both your IP address and
 the time when you verified the signature.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>auto-pka-retrieve</term>
+<listitem><para>
+This option enables the automatic retrieving of missing keys through
+information taken from PKA records in the DNS. Defaults to yes.
+Note, that the option <term>--allow-pka-lookup</term> needs to be
+enabled to actually make this work.  
+</para><para>
+By using this option, one may unintentionally disclose information
+similar to the one described for <term>auto-key-retrieve</term>.
 </para></listitem></varlistentry>
 
 </variablelist>

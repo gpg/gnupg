@@ -35,6 +35,9 @@
 #include <sys/stat.h> /* for stat() */
 #endif
 #include <fcntl.h>
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
@@ -240,6 +243,7 @@ enum cmd_and_opt_values
     oAlwaysTrust,
     oTrustModel,
     oForceOwnertrust,
+    oAllowPkaLookup,
     oRunAsShmCP,
     oSetFilename,
     oForYourEyesOnly,
@@ -596,6 +600,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
     { oForceOwnertrust, "force-ownertrust", 2, "@"},
+    { oAllowPkaLookup,  "allow-pka-lookup", 0, "@" },
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
     { oForYourEyesOnly, "for-your-eyes-only", 0, "@" },
@@ -1442,6 +1447,7 @@ gpgconf_list (const char *configfile)
   printf ("quiet:%lu:\n",   GC_OPT_FLAG_NONE);
   printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
+  printf ("allow-pka-lookup:%lu:\n", GC_OPT_FLAG_NONE);
 }
 
 
@@ -1597,19 +1603,46 @@ collapse_args(int argc,char *argv[])
 static void
 parse_trust_model(const char *model)
 {
+  opt.pka_trust_increase = 0;
   if(ascii_strcasecmp(model,"pgp")==0)
-    opt.trust_model=TM_PGP;
+    {
+      opt.trust_model=TM_PGP;
+    }
+  else if(ascii_strcasecmp(model,"pgp+pka")==0)
+    {
+      opt.trust_model=TM_PGP;
+      opt.pka_trust_increase = 1;
+    }
   else if(ascii_strcasecmp(model,"classic")==0)
-    opt.trust_model=TM_CLASSIC;
+    {
+      opt.trust_model=TM_CLASSIC;
+    }
   else if(ascii_strcasecmp(model,"always")==0)
-    opt.trust_model=TM_ALWAYS;
+    {
+      opt.trust_model=TM_ALWAYS;
+    }
   else if(ascii_strcasecmp(model,"direct")==0)
-    opt.trust_model=TM_DIRECT;
+    {
+      opt.trust_model=TM_DIRECT;
+    }
+  else if(ascii_strcasecmp(model,"direct+pka")==0)
+    {
+      opt.trust_model=TM_DIRECT;
+      opt.pka_trust_increase = 1;
+    }
   else if(ascii_strcasecmp(model,"auto")==0)
-    opt.trust_model=TM_AUTO;
+    {
+      opt.trust_model=TM_AUTO;
+    }
+  else if(ascii_strcasecmp(model,"auto+pka")==0)
+    {
+      opt.trust_model=TM_AUTO;
+      opt.pka_trust_increase = 1;
+    }
   else
     log_error("unknown trust model `%s'\n",model);
 }
+
 
 int
 main (int argc, char **argv )
@@ -1698,10 +1731,11 @@ main (int argc, char **argv )
     opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
     opt.keyserver_options.export_options=EXPORT_ATTRIBUTES;
     opt.keyserver_options.options=
-      KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_INCLUDE_REVOKED|KEYSERVER_TRY_DNS_SRV|KEYSERVER_HONOR_KEYSERVER_URL;
+      KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_INCLUDE_REVOKED|KEYSERVER_TRY_DNS_SRV|KEYSERVER_HONOR_KEYSERVER_URL|KEYSERVER_AUTO_PKA_RETRIEVE;
     opt.verify_options=
       VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_STD_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
+    opt.pka_trust_increase=0;
     opt.mangle_dos_filenames=0;
     opt.min_cert_level=2;
     set_screen_dimensions();
@@ -1772,7 +1806,13 @@ main (int argc, char **argv )
         char *d, *buf = xmalloc (strlen (opt.homedir)+1);
         const char *s = opt.homedir;
         for (d=buf,s=opt.homedir; *s; s++)
+          {
             *d++ = *s == '\\'? '/': *s;
+#ifdef HAVE_W32_SYSTEM
+            if (s[1] && IsDBCSLeadByte (*s))
+              *d++ = *++s;
+#endif
+          }
         *d = 0;
         set_homedir (buf);
     }
@@ -2108,6 +2148,9 @@ main (int argc, char **argv )
 		opt.force_ownertrust=0;
 	      }
 	    break;
+          case oAllowPkaLookup:
+            opt.allow_pka_lookup = 1;
+            break;
 	  case oLoadExtension:
 #ifndef __riscos__
 #if defined(USE_DYNAMIC_LINKING) || defined(_WIN32)
