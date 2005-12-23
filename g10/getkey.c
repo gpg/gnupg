@@ -905,7 +905,7 @@ get_pubkey_byname (PKT_public_key *pk,
                    KEYDB_HANDLE *ret_kdbhd, int include_unusable )
 {
   int rc;
-  int tried_ks=0, tried_pka=0;
+  int tried_cert=0, tried_pka=0, tried_ks=0;
   STRLIST namelist = NULL;
 
   add_to_strlist( &namelist, name );
@@ -915,6 +915,25 @@ get_pubkey_byname (PKT_public_key *pk,
 
   if (rc == G10ERR_NO_PUBKEY && is_valid_mailbox(name))
     {
+      int res;
+
+      if(!tried_cert
+	 && (opt.keyserver_options.options&KEYSERVER_AUTO_CERT_RETRIEVE))
+	{
+	  tried_cert=1;
+
+	  glo_ctrl.in_auto_key_retrieve++;
+	  res=keyserver_import_cert(name);
+	  glo_ctrl.in_auto_key_retrieve--;
+
+	  if(res==0)
+	    {
+	      log_info(_("Automatically retrieved `%s' via %s\n"),
+		       name,"DNS CERT");
+	      goto retry;
+	    }
+	}
+
       if(!tried_pka
 	 && opt.allow_pka_lookup
 	 && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE))
@@ -922,28 +941,19 @@ get_pubkey_byname (PKT_public_key *pk,
 	  /* If the requested name resembles a valid mailbox and
 	     automatic retrieval via PKA records has been enabled, we
 	     try to import the key via the URI and try again. */
-	  unsigned char fpr[MAX_FINGERPRINT_LEN];
-	  char *uri;
-	  struct keyserver_spec *spec;
-	  int try=1;
 
 	  tried_pka=1;
-      
-	  uri = get_pka_info (name, fpr);
-	  if (uri)
+
+	  glo_ctrl.in_auto_key_retrieve++;
+	  res=keyserver_import_pka(name);
+	  glo_ctrl.in_auto_key_retrieve--;
+
+	  if(res==0)
 	    {
-	      spec = parse_keyserver_uri (uri, 0, NULL, 0);
-	      if (spec)
-		{
-		  glo_ctrl.in_auto_key_retrieve++;
-		  try=keyserver_import_fprint (fpr, 20, spec);
-		  glo_ctrl.in_auto_key_retrieve--;
-		  free_keyserver_spec (spec);
-		}
-	      xfree (uri);
+	      log_info(_("Automatically retrieved `%s' via %s\n"),
+		       name,"PKA");
+	      goto retry;
 	    }
-	  if (try==0)
-	    goto retry;
 	}
 
       /* Try keyserver last as it is likely to be the slowest.
@@ -952,12 +962,21 @@ get_pubkey_byname (PKT_public_key *pk,
 	 with searching for something like "john" and getting a lot of
 	 keys back. */
       if(!tried_ks
+	 && opt.keyserver
 	 && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
 	{
 	  tried_ks=1;
 
-	  if(keyserver_getname(name)==0)
-	    goto retry;
+	  glo_ctrl.in_auto_key_retrieve++;
+	  res=keyserver_import_name(name);
+	  glo_ctrl.in_auto_key_retrieve--;
+
+	  if(res==0)
+	    {
+	      log_info(_("Automatically retrieved `%s' via %s\n"),
+		       name,opt.keyserver->uri);
+	      goto retry;
+	    }
 	}
     }
 

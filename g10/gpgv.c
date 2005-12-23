@@ -270,7 +270,7 @@ get_ownertrust (PKT_public_key *pk)
 }
 
 
-/* Stub:
+/* Stubs:
  * Because we only work with trusted keys, it does not make sense to
  * get them from a keyserver
  */
@@ -280,19 +280,14 @@ keyserver_import_keyid( u32 *keyid, void *dummy )
     return -1;
 }
 
-/* Stub:
- * Because we only work with trusted keys, it does not make sense to
- * get them from a keyserver
- */
 int
-keyserver_import_fprint (const byte *fprint, size_t fprint_len,
-                         struct keyserver_spec *keyserver)
-{
-    return -1;
-}
+keyserver_import_cert(const char *name) { return -1; }
 
 int
-keyserver_getname(const char *name) { return -1; }
+keyserver_import_pka(const char *name) { return -1; }
+
+int
+keyserver_import_name(const char *name) { return -1; }
 
 /* Stub:
  * No encryption here but mainproc links to these functions.

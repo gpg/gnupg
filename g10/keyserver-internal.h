@@ -41,6 +41,8 @@ int keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver);
 int keyserver_refresh(STRLIST users);
 int keyserver_search(STRLIST tokens);
 int keyserver_fetch(STRLIST urilist);
-int keyserver_getname(const char *name);
+int keyserver_import_cert(const char *name);
+int keyserver_import_pka(const char *name);
+int keyserver_import_name(const char *name);
 
 #endif /* !_KEYSERVER_INTERNAL_H_ */

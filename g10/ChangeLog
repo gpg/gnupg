@@ -1,6 +1,18 @@
 2005-12-23  David Shaw  <dshaw@jabberwocky.com>
 
-	* gpgv.c: Stub.
+	* keyserver.c (keyserver_import_pka): New.  Moved from
+	getkey.c:get_pubkey_byname which was getting crowded.
+
+	* keyserver.c (keyserver_import_cert): Import a key found in DNS
+	via CERT records.  Can handle both the PGP (actual key) and IPGP
+	(URL) CERT types.
+
+	* getkey.c (get_pubkey_byname): Call them both here.
+
+	* options.h, keyserver.c (parse_keyserver_options): Add
+	"auto-cert-retrieve" option with optional max size argument.
+
+	* gpgv.c: Stubs.
 
 	* keyserver-internal.h, keyserver.c (keyserver_spawn,
 	keyserver_work, keygerver_getname): New keyserver_getname function

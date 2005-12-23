@@ -86,6 +86,8 @@ static struct parse_options keyserver_opts[]=
     {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL,
      N_("automatically retrieve keys when verifying signatures")},
     {"auto-pka-retrieve",KEYSERVER_AUTO_PKA_RETRIEVE,NULL,
+     N_("automatically retrieve keys from PKA records")},
+    {"auto-cert-retrieve",KEYSERVER_AUTO_CERT_RETRIEVE,NULL,
      N_("automatically retrieve keys from DNS")},
     {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL,
      NULL},
@@ -98,11 +100,19 @@ static int keyserver_work(enum ks_action action,STRLIST list,
 			  KEYDB_SEARCH_DESC *desc,int count,
 			  struct keyserver_spec *keyserver);
 
+/* Reasonable guess */
+#define DEFAULT_MAX_CERT_SIZE 16384
+
+static size_t max_cert_size=DEFAULT_MAX_CERT_SIZE;
+
 int
 parse_keyserver_options(char *options)
 {
   int ret=1;
   char *tok;
+  char *max_cert;
+
+  keyserver_opts[7].value=&max_cert;
 
   while((tok=optsep(&options)))
     {
@@ -161,6 +171,15 @@ parse_keyserver_options(char *options)
 	  else
 	    add_to_strlist(&opt.keyserver_options.other,tok);
 	}
+    }
+
+  if(opt.keyserver_options.options&KEYSERVER_AUTO_CERT_RETRIEVE)
+    {
+      if(max_cert)
+	max_cert_size=strtoul(max_cert,(char **)NULL,10);
+
+      if(max_cert_size==0)
+	max_cert_size=DEFAULT_MAX_CERT_SIZE;
     }
 
   return ret;
@@ -1895,8 +1914,86 @@ keyserver_fetch(STRLIST urilist)
   return 0;
 }
 
+/* Import key in a CERT or pointed to by a CERT */
 int
-keyserver_getname(const char *name)
+keyserver_import_cert(const char *name)
+{
+  char *domain,*look,*url;
+  IOBUF key;
+  int type,rc=-1;
+
+  look=xstrdup(name);
+
+  domain=strrchr(look,'@');
+  if(domain)
+    *domain='.';
+
+  type=get_cert(look,max_cert_size,&key,&url);
+  if(type==1)
+    {
+      int armor_status=opt.no_armor;
+
+      /* CERTs are always in binary format */
+      opt.no_armor=1;
+
+      rc=import_keys_stream(key,NULL,opt.keyserver_options.import_options);
+
+      opt.no_armor=armor_status;
+
+      iobuf_close(key);
+    }
+  else if(type==2)
+    {
+      struct keyserver_spec *spec;
+
+      spec=parse_keyserver_uri(url,1,NULL,0);
+      if(spec)
+	{
+	  STRLIST list=NULL;
+
+	  add_to_strlist(&list,url);
+
+	  rc=keyserver_fetch(list);
+
+	  free_strlist(list);
+	  free_keyserver_spec(spec);
+	}
+
+      xfree(url);
+    }
+
+  xfree(look);
+
+  return rc;
+}
+
+/* Import key pointed to by a PKA record */
+int
+keyserver_import_pka(const char *name)
+{
+  unsigned char fpr[MAX_FINGERPRINT_LEN];
+  char *uri;
+  int rc=-1;
+      
+  uri = get_pka_info (name, fpr);
+  if (uri)
+    {
+      struct keyserver_spec *spec;
+      spec = parse_keyserver_uri (uri, 0, NULL, 0);
+      if (spec)
+	{
+	  rc=keyserver_import_fprint (fpr, 20, spec);
+	  free_keyserver_spec (spec);
+	}
+      xfree (uri);
+    }
+
+  return rc;
+}
+
+/* Import all keys that match name */
+int
+keyserver_import_name(const char *name)
 {
   STRLIST list=NULL;
   int rc;
