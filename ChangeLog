@@ -1,3 +1,9 @@
+2005-12-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Split PKA checking off from DNS SRV checking.
+	Currently PKA is only enabled if HTTP or HKP is enabled which is
+	not necessary.
+
 2005-12-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note --fetch-keys.

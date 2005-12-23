@@ -558,12 +558,19 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 dnl Now try for the resolver functions so we can use DNS SRV and our 
 dnl PKA feature.
 
-AC_ARG_ENABLE(dns-srv,
-   AC_HELP_STRING([--disable-dns-srv],
-	[disable the use of DNS SRV in HKP and HTTP]),
-   use_dns_srv=$enableval,use_dns_srv=yes)
+if test x"$try_hkp" = xyes || test x"$try_http" = xyes ; then
+   AC_ARG_ENABLE(dns-srv,
+      AC_HELP_STRING([--disable-dns-srv],
+   	[disable the use of DNS SRV in HKP and HTTP]),
+      use_dns_srv=$enableval,use_dns_srv=yes)
+fi
 
-if (test x"$try_hkp" = xyes || test x"$try_http" = xyes) && test x"$use_dns_srv" = xyes ; then
+AC_ARG_ENABLE(dns-pka,
+   AC_HELP_STRING([--disable-dns-pka],
+	[disable the use of PKA records in DNS]),
+   use_dns_pka=$enableval,use_dns_pka=yes)
+
+if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes ; then
   _srv_save_libs=$LIBS
   LIBS=""
   # the double underscore thing is a glibc-ism?
@@ -574,29 +581,37 @@ if (test x"$try_hkp" = xyes || test x"$try_http" = xyes) && test x"$use_dns_srv"
   AC_SEARCH_LIBS(dn_skipname,resolv bind,,
                  AC_SEARCH_LIBS(__dn_skipname,resolv bind,,use_dns_srv=no))
 
-  if test x"$use_dns_srv" = xyes ; then
+  # Make sure that the BIND 4 resolver interface is workable before
+  # enabling any code that calls it.  At some point I'll rewrite the
+  # code to use the BIND 8 resolver API.
 
-    # Make sure that the BIND 4 resolver interface is workable before
-    # enabling SRVs.  At some point I'll rewrite the code to use the
-    # BIND 8 resolver API.
-
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>],
-[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);]])],,use_dns_srv=no)
-  fi
+[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);]])],have_resolver=yes)
 
-  if test x"$use_dns_srv" = xyes ; then
-     AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
+  if test x"$have_resolver" = xyes ; then
      SRVLIBS=$LIBS
-     AC_DEFINE(USE_DNS_PKA,1,[define to use our experimental DNS PKA])
+
+     if test x"$use_dns_srv" = xyes ; then
+        AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
+     fi
+
+     if test x"$use_dns_pka" = xyes ; then
+        AC_DEFINE(USE_DNS_PKA,1,[define to use our experimental DNS PKA])
+     fi
+  else
+     use_dns_srv=no
+     use_dns_pka=no
   fi
 
   LIBS=$_srv_save_libs
 fi
 
 AC_SUBST(SRVLIBS)
+
+AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
 
 # Check for LDAP
 
