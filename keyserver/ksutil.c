@@ -140,6 +140,8 @@ parse_ks_options(char *line,struct ks_options *opt)
 
       if(strcasecmp(command,"get")==0)
 	opt->action=KS_GET;
+      else if(strcasecmp(command,"getname")==0)
+	opt->action=KS_GETNAME;
       else if(strcasecmp(command,"send")==0)
 	opt->action=KS_SEND;
       else if(strcasecmp(command,"search")==0)
@@ -311,6 +313,7 @@ ks_action_to_string(enum ks_action action)
     {
     case KS_UNKNOWN: return "UNKNOWN";
     case KS_GET:     return "GET";
+    case KS_GETNAME: return "GETNAME";
     case KS_SEND:    return "SEND";
     case KS_SEARCH:  return "SEARCH";
     }

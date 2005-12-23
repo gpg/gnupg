@@ -36,7 +36,7 @@
    strlen("OPAQUE")+1+sizeof_opaque+1 */
 #define MAX_LINE       (6+1+1024+1)
 
-#define MAX_COMMAND    6
+#define MAX_COMMAND    7
 #define MAX_OPTION   256
 #define MAX_SCHEME    20
 #define MAX_OPAQUE  1024
@@ -72,7 +72,7 @@ struct keylist
 unsigned int set_timeout(unsigned int seconds);
 int register_timeout(void);
 
-enum ks_action {KS_UNKNOWN=0,KS_GET,KS_SEND,KS_SEARCH};
+enum ks_action {KS_UNKNOWN=0,KS_GET,KS_GETNAME,KS_SEND,KS_SEARCH};
 
 enum ks_search_type {KS_SEARCH_SUBSTR,KS_SEARCH_EXACT,
 		     KS_SEARCH_MAIL,KS_SEARCH_MAILSUB};

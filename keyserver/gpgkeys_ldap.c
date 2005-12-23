@@ -1116,20 +1116,6 @@ get_key(char *getkey)
   return ret;
 }
 
-static void
-printquoted(FILE *stream,char *string,char delim)
-{
-  while(*string)
-    {
-      if(*string==delim || *string=='%')
-	fprintf(stream,"%%%02x",*string);
-      else
-	fputc(*string,stream);
-
-      string++;
-    }
-}
-
 #define LDAP_ESCAPE_CHARS "*()\\"
 
 static int
@@ -1164,6 +1150,132 @@ ldap_quote(char *buffer,const char *string)
   return count;
 }
 
+/* Note that key-not-found is not a fatal error */
+static int
+get_name(char *getkey)
+{
+  LDAPMessage *res,*each;
+  int ret=KEYSERVER_INTERNAL_ERROR,err,count;
+  char *expanded_search;
+  /* The maximum size of the search, including the optional stuff and
+     the trailing \0 */
+  char search[2+11+3+MAX_LINE+2+15+14+1+1+20];
+  /* This ordering is significant - specifically, "pgpcertid" needs to
+     be the second item in the list, since everything after it may be
+     discarded if the user isn't in verbose mode. */
+  char *attrs[]={"replaceme","pgpcertid","pgpuserid","pgpkeyid","pgprevoked",
+		 "pgpdisabled","pgpkeycreatetime","modifytimestamp",
+		 "pgpkeysize","pgpkeytype",NULL};
+  attrs[0]=pgpkeystr; /* Some compilers don't like using variables as
+                         array initializers. */
+
+  expanded_search=malloc(ldap_quote(NULL,getkey)+1);
+  if(!expanded_search)
+    {
+      fprintf(output,"NAME %s FAILED %d\n",getkey,KEYSERVER_NO_MEMORY);
+      fprintf(console,"Out of memory when quoting LDAP search string\n");
+      return KEYSERVER_NO_MEMORY;
+    }
+
+  ldap_quote(expanded_search,getkey);
+
+  /* Build the search string */
+
+  sprintf(search,"%s(pgpuserid=*%s*)%s%s%s",
+	  (!(opt->flags.include_disabled&&opt->flags.include_revoked))?"(&":"",
+	  expanded_search,
+	  opt->flags.include_disabled?"":"(pgpdisabled=0)",
+	  opt->flags.include_revoked?"":"(pgprevoked=0)",
+	  !(opt->flags.include_disabled&&opt->flags.include_revoked)?")":"");
+
+  free(expanded_search);
+
+  if(opt->verbose>2)
+    fprintf(console,"gpgkeys: LDAP fetch for: %s\n",search);
+
+  if(!opt->verbose)
+    attrs[2]=NULL; /* keep only pgpkey(v2) and pgpcertid */
+
+  err=ldap_search_s(ldap,basekeyspacedn,
+		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
+  if(err!=0)
+    {
+      int errtag=ldap_err_to_gpg_err(err);
+
+      fprintf(console,"gpgkeys: LDAP search error: %s\n",ldap_err2string(err));
+      fprintf(output,"NAME %s BEGIN\n",getkey);
+      fprintf(output,"NAME %s FAILED %d\n",getkey,errtag);
+      return errtag;
+    }
+
+  count=ldap_count_entries(ldap,res);
+  if(count<1)
+    {
+      fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
+      fprintf(output,"NAME %s BEGIN\n",getkey);
+      fprintf(output,"NAME %s FAILED %d\n",getkey,KEYSERVER_KEY_NOT_FOUND);
+    }
+  else
+    {
+      /* There may be more than one result, but we return them all. */
+
+      each=ldap_first_entry(ldap,res);
+      while(each!=NULL)
+	{
+	  char **vals,**certid;
+
+	  certid=ldap_get_values(ldap,each,"pgpcertid");
+	  if(certid!=NULL)
+	    {
+	      build_info(certid[0],each);
+
+	      fprintf(output,"NAME %s BEGIN\n",getkey);
+
+	      vals=ldap_get_values(ldap,each,pgpkeystr);
+	      if(vals==NULL)
+		{
+		  int errtag=ldap_to_gpg_err(ldap);
+
+		  fprintf(console,"gpgkeys: unable to retrieve key %s "
+			  "from keyserver\n",getkey);
+		  fprintf(output,"NAME %s FAILED %d\n",getkey,errtag);
+		}
+	      else
+		{
+		  print_nocr(output,vals[0]);
+		  fprintf(output,"\nNAME %s END\n",getkey);
+
+		  ldap_value_free(vals);
+		}
+
+	      ldap_value_free(certid);
+	    }
+
+	  each=ldap_next_entry(ldap,each);
+	}
+    }
+
+  ret=KEYSERVER_OK;
+
+  ldap_msgfree(res);
+
+  return ret;
+}
+
+static void
+printquoted(FILE *stream,char *string,char delim)
+{
+  while(*string)
+    {
+      if(*string==delim || *string=='%')
+	fprintf(stream,"%%%02x",*string);
+      else
+	fputc(*string,stream);
+
+      string++;
+    }
+}
+
 /* Returns 0 on success and -1 on error.  Note that key-not-found is
    not an error! */
 static int
@@ -1173,9 +1285,9 @@ search_key(const char *searchkey)
   LDAPMessage *res,*each;
   int err,count=0;
   struct keylist *dupelist=NULL;
+  char *expanded_search;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
-  char *expanded_search;
   char search[2+11+3+MAX_LINE+2+15+14+1+1+20];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
 		 "pgpkeycreatetime","pgpkeyexpiretime","modifytimestamp",
@@ -1794,7 +1906,8 @@ main(int argc,char *argv[])
 
   if(opt->action==KS_SEND)
     while(fgets(line,MAX_LINE,input)!=NULL && line[0]!='\n');
-  else if(opt->action==KS_GET || opt->action==KS_SEARCH)
+  else if(opt->action==KS_GET
+	  || opt->action==KS_GETNAME || opt->action==KS_SEARCH)
     {
       for(;;)
 	{
@@ -2013,6 +2126,20 @@ main(int argc,char *argv[])
 	  set_timeout(opt->timeout);
 
 	  if(get_key(keyptr->str)!=KEYSERVER_OK)
+	    failed++;
+
+	  keyptr=keyptr->next;
+	}
+    }
+  else if(opt->action==KS_GETNAME)
+    {
+      keyptr=keylist;
+
+      while(keyptr!=NULL)
+	{
+	  set_timeout(opt->timeout);
+
+	  if(get_name(keyptr->str)!=KEYSERVER_OK)
 	    failed++;
 
 	  keyptr=keyptr->next;

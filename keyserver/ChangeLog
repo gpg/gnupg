@@ -1,3 +1,11 @@
+2005-12-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (parse_ks_options): New keyserver command
+	"getname".
+
+	* gpgkeys_hkp.c (main, get_name), gpgkeys_ldap.c (main, get_name):
+	Use it here to do direct name (rather than key ID) fetches.
+
 2005-12-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* ksutil.h, ksutil.c (curl_armor_writer, curl_writer,

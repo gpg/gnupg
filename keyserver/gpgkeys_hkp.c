@@ -285,11 +285,90 @@ get_key(char *getkey)
 }
 
 static int
+get_name(const char *getkey)
+{
+  CURLcode res;
+  char *request=NULL;
+  char *searchkey_encoded;
+  int ret=KEYSERVER_INTERNAL_ERROR;
+  struct curl_writer_ctx ctx;
+
+  memset(&ctx,0,sizeof(ctx));
+
+  searchkey_encoded=curl_escape((char *)getkey,0);
+  if(!searchkey_encoded)
+    {
+      fprintf(console,"gpgkeys: out of memory\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  request=malloc(MAX_URL+60+strlen(searchkey_encoded));
+  if(!request)
+    {
+      fprintf(console,"gpgkeys: out of memory\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  fprintf(output,"NAME %s BEGIN\n",getkey);
+
+  strcpy(request,"http://");
+  strcat(request,opt->host);
+  strcat(request,":");
+  if(opt->port)
+    strcat(request,opt->port);
+  else
+    strcat(request,"11371");
+  strcat(request,opt->path);
+  append_path(request,"/pks/lookup?op=get&options=mr&search=");
+  strcat(request,searchkey_encoded);
+
+  if(opt->verbose>2)
+    fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
+
+  curl_easy_setopt(curl,CURLOPT_URL,request);
+  curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_writer);
+  ctx.stream=output;
+  curl_easy_setopt(curl,CURLOPT_FILE,&ctx);
+
+  res=curl_easy_perform(curl);
+  if(res!=CURLE_OK)
+    {
+      fprintf(console,"gpgkeys: HTTP fetch error %d: %s\n",res,errorbuffer);
+      ret=curl_err_to_gpg_err(res);
+    }
+  else
+    {
+      curl_writer_finalize(&ctx);
+      if(!ctx.flags.done)
+	{
+	  fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
+	  ret=KEYSERVER_KEY_NOT_FOUND;
+	}
+      else
+	{
+	  fprintf(output,"\nNAME %s END\n",getkey);
+	  ret=KEYSERVER_OK;
+	}
+    }
+
+ fail:
+  curl_free(searchkey_encoded);
+  free(request);
+
+  if(ret!=KEYSERVER_OK)
+    fprintf(output,"\nNAME %s FAILED %d\n",getkey,ret);
+
+  return ret;
+}
+
+static int
 search_key(const char *searchkey)
 {
   CURLcode res;
   char *request=NULL;
-  char *searchkey_encoded=NULL;
+  char *searchkey_encoded;
   int ret=KEYSERVER_INTERNAL_ERROR;
   enum ks_search_type search_type;
 
@@ -570,7 +649,8 @@ main(int argc,char *argv[])
 
   if(opt->action==KS_SEND)
     while(fgets(line,MAX_LINE,input)!=NULL && line[0]!='\n');
-  else if(opt->action==KS_GET || opt->action==KS_SEARCH)
+  else if(opt->action==KS_GET
+	  || opt->action==KS_GETNAME || opt->action==KS_SEARCH)
     {
       for(;;)
 	{
@@ -640,6 +720,20 @@ main(int argc,char *argv[])
 	  set_timeout(opt->timeout);
 
 	  if(get_key(keyptr->str)!=KEYSERVER_OK)
+	    failed++;
+
+	  keyptr=keyptr->next;
+	}
+    }
+  else if(opt->action==KS_GETNAME)
+    {
+      keyptr=keylist;
+
+      while(keyptr!=NULL)
+	{
+	  set_timeout(opt->timeout);
+
+	  if(get_name(keyptr->str)!=KEYSERVER_OK)
 	    failed++;
 
 	  keyptr=keyptr->next;
