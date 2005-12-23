@@ -43,10 +43,6 @@
 #include "keyserver-internal.h"
 #include "util.h"
 
-#define GET    0
-#define SEND   1
-#define SEARCH 2
-
 #define GPGKEYS_PREFIX "gpgkeys_"
 
 #if defined(HAVE_LIBCURL) || defined(FAKE_CURL)
@@ -68,6 +64,8 @@ struct keyrec
   IOBUF uidbuf;
   unsigned int lines;
 };
+
+enum ks_action {KS_UNKNOWN=0,KS_GET,KS_GETNAME,KS_SEND,KS_SEARCH};
 
 /* Tell remote processes about these options */
 #define REMOTE_TELL (KEYSERVER_INCLUDE_REVOKED|KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_TRY_DNS_SRV)
@@ -96,8 +94,9 @@ static struct parse_options keyserver_opts[]=
     {NULL,0,NULL,NULL}
   };
 
-static int keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
-			  int count,struct keyserver_spec *keyserver);
+static int keyserver_work(enum ks_action action,STRLIST list,
+			  KEYDB_SEARCH_DESC *desc,int count,
+			  struct keyserver_spec *keyserver);
 
 int
 parse_keyserver_options(char *options)
@@ -679,7 +678,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
       while((num=strsep(&split," ,"))!=NULL)
 	if(atoi(num)>=1 && atoi(num)<=numdesc)
-	  keyserver_work(GET,NULL,&desc[atoi(num)-1],1,opt.keyserver);
+	  keyserver_work(KS_GET,NULL,&desc[atoi(num)-1],1,opt.keyserver);
 
       xfree(answer);
       return 1;
@@ -880,7 +879,7 @@ curl_cant_handle(const char *scheme,unsigned int direct_uri)
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
 static int 
-keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		int count,int *prog,struct keyserver_spec *keyserver)
 {
   int ret=0,i,gotversion=0,outofband=0;
@@ -1014,7 +1013,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
   switch(action)
     {
-    case GET:
+    case KS_GET:
       {
 	fprintf(spawn->tochild,"COMMAND GET\n\n");
 
@@ -1080,7 +1079,29 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	break;
       }
 
-    case SEND:
+    case KS_GETNAME:
+      {
+	STRLIST key;
+
+	fprintf(spawn->tochild,"COMMAND GETNAME\n\n");
+
+	/* Which names do we want? */
+
+	for(key=list;key!=NULL;key=key->next)
+	  fprintf(spawn->tochild,"%s\n",key->d);
+
+	fprintf(spawn->tochild,"\n");
+
+	if(keyserver->host)
+	  log_info(_("searching for names from %s server %s\n"),
+		   keyserver->scheme,keyserver->host);
+	else
+	  log_info(_("searching for names from %s\n"),keyserver->uri);
+
+	break;
+      }
+
+    case KS_SEND:
       {
 	STRLIST key;
 
@@ -1240,7 +1261,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	break;
       }
 
-    case SEARCH:
+    case KS_SEARCH:
       {
 	STRLIST key;
 
@@ -1344,7 +1365,8 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   if(!outofband)
     switch(action)
       {
-      case GET:
+      case KS_GET:
+      case KS_GETNAME:
 	{
 	  void *stats_handle;
 
@@ -1367,10 +1389,10 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	}
 
 	/* Nothing to do here */
-      case SEND:
+      case KS_SEND:
 	break;
 
-      case SEARCH:
+      case KS_SEARCH:
 	keyserver_search_prompt(spawn->fromchild,searchstr);
 	break;
 
@@ -1390,7 +1412,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 }
 
 static int 
-keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+keyserver_work(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	       int count,struct keyserver_spec *keyserver)
 {
   int rc=0,ret=0;
@@ -1422,8 +1444,8 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	case KEYSERVER_NOT_SUPPORTED:
 	  log_error(_("action `%s' not supported with keyserver "
 		      "scheme `%s'\n"),
-		    action==GET?"get":action==SEND?"send":
-		    action==SEARCH?"search":"unknown",
+		    action==KS_GET?"get":action==KS_SEND?"send":
+		    action==KS_SEARCH?"search":"unknown",
 		    keyserver->scheme);
 	  break;
 
@@ -1483,7 +1505,7 @@ keyserver_export(STRLIST users)
 
   if(sl)
     {
-      rc=keyserver_work(SEND,sl,NULL,0,opt.keyserver);
+      rc=keyserver_work(KS_SEND,sl,NULL,0,opt.keyserver);
       free_strlist(sl);
     }
 
@@ -1521,7 +1543,7 @@ keyserver_import(STRLIST users)
     }
 
   if(count>0)
-    rc=keyserver_work(GET,NULL,desc,count,opt.keyserver);
+    rc=keyserver_work(KS_GET,NULL,desc,count,opt.keyserver);
 
   xfree(desc);
 
@@ -1545,7 +1567,7 @@ keyserver_import_fprint(const byte *fprint,size_t fprint_len,
 
   memcpy(desc.u.fpr,fprint,fprint_len);
 
-  return keyserver_work(GET,NULL,&desc,1,keyserver);
+  return keyserver_work(KS_GET,NULL,&desc,1,keyserver);
 }
 
 int 
@@ -1559,7 +1581,7 @@ keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_work(GET,NULL,&desc,1,keyserver);
+  return keyserver_work(KS_GET,NULL,&desc,1,keyserver);
 }
 
 /* code mostly stolen from do_export_stream */
@@ -1763,7 +1785,7 @@ keyserver_refresh(STRLIST users)
 		 Note that a preferred keyserver without a scheme://
 		 will be interpreted as hkp:// */
 
-	      rc=keyserver_work(GET,NULL,&desc[i],1,keyserver);
+	      rc=keyserver_work(KS_GET,NULL,&desc[i],1,keyserver);
 	      if(rc)
 		log_info(_("WARNING: unable to refresh key %s"
 			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
@@ -1793,7 +1815,7 @@ keyserver_refresh(STRLIST users)
 		     count,opt.keyserver->uri);
 	}
 
-      rc=keyserver_work(GET,NULL,desc,numdesc,opt.keyserver);
+      rc=keyserver_work(KS_GET,NULL,desc,numdesc,opt.keyserver);
     }
 
   xfree(desc);
@@ -1812,7 +1834,7 @@ int
 keyserver_search(STRLIST tokens)
 {
   if(tokens)
-    return keyserver_work(SEARCH,tokens,NULL,0,opt.keyserver);
+    return keyserver_work(KS_SEARCH,tokens,NULL,0,opt.keyserver);
   else
     return 0;
 }
@@ -1852,7 +1874,7 @@ keyserver_fetch(STRLIST urilist)
 	  */
 	  spec->flags.direct_uri=1;
 
-	  rc=keyserver_work(GET,NULL,&desc,1,spec);
+	  rc=keyserver_work(KS_GET,NULL,&desc,1,spec);
 	  if(rc)
 	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
 		     sl->d,g10_errstr(rc));
@@ -1871,4 +1893,19 @@ keyserver_fetch(STRLIST urilist)
     trustdb_check_or_update();
 
   return 0;
+}
+
+int
+keyserver_getname(const char *name)
+{
+  STRLIST list=NULL;
+  int rc;
+
+  append_to_strlist(&list,name);
+
+  rc=keyserver_work(KS_GETNAME,list,NULL,0,opt.keyserver);
+
+  free_strlist(list);
+
+  return rc;
 }

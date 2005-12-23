@@ -1,3 +1,15 @@
+2005-12-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c: Stub.
+
+	* keyserver-internal.h, keyserver.c (keyserver_spawn,
+	keyserver_work, keygerver_getname): New keyserver_getname function
+	to fetch keys by name.
+
+	* getkey.c (get_pubkey_byname): Call it here to enable locating
+	keys by full mailbox from a keyserver a la PKA.  Try PKA first,
+	though, as it is likely to be faster.
+
 2005-12-20  Werner Koch  <wk@g10code.com>
 
 	* gpg.c: New option --allow-pka-lookup.

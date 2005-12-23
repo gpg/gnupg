@@ -905,42 +905,60 @@ get_pubkey_byname (PKT_public_key *pk,
                    KEYDB_HANDLE *ret_kdbhd, int include_unusable )
 {
   int rc;
-  int again = 0;
+  int tried_ks=0, tried_pka=0;
   STRLIST namelist = NULL;
 
   add_to_strlist( &namelist, name );
  retry:
   rc = key_byname( NULL, namelist, pk, NULL, 0,
                    include_unusable, ret_keyblock, ret_kdbhd);
-  if (rc == G10ERR_NO_PUBKEY
-      && !again
-      && opt.allow_pka_lookup
-      && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE)
-      && is_valid_mailbox (name))
+
+  if (rc == G10ERR_NO_PUBKEY && is_valid_mailbox(name))
     {
-      /* If the requested name resembles a valid mailbox and
-         automatic retrieval via PKA records has been enabled, we
-         try to import the key via the URI and try again. */
-      unsigned char fpr[MAX_FINGERPRINT_LEN];
-      char *uri;
-      struct keyserver_spec *spec;
+      if(!tried_pka
+	 && opt.allow_pka_lookup
+	 && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE))
+	{
+	  /* If the requested name resembles a valid mailbox and
+	     automatic retrieval via PKA records has been enabled, we
+	     try to import the key via the URI and try again. */
+	  unsigned char fpr[MAX_FINGERPRINT_LEN];
+	  char *uri;
+	  struct keyserver_spec *spec;
+	  int try=1;
+
+	  tried_pka=1;
       
-      uri = get_pka_info (name, fpr);
-      if (uri)
-        {
-          spec = parse_keyserver_uri (uri, 0, NULL, 0);
-          if (spec)
-            {
-              glo_ctrl.in_auto_key_retrieve++;
-              if (!keyserver_import_fprint (fpr, 20, spec))
-                again = 1;
-              glo_ctrl.in_auto_key_retrieve--;
-              free_keyserver_spec (spec);
-            }
-          xfree (uri);
-        }
-      if (again)
-        goto retry;
+	  uri = get_pka_info (name, fpr);
+	  if (uri)
+	    {
+	      spec = parse_keyserver_uri (uri, 0, NULL, 0);
+	      if (spec)
+		{
+		  glo_ctrl.in_auto_key_retrieve++;
+		  try=keyserver_import_fprint (fpr, 20, spec);
+		  glo_ctrl.in_auto_key_retrieve--;
+		  free_keyserver_spec (spec);
+		}
+	      xfree (uri);
+	    }
+	  if (try==0)
+	    goto retry;
+	}
+
+      /* Try keyserver last as it is likely to be the slowest.
+	 Strictly speaking, we don't need to only use a valid mailbox
+	 for the getname search, but it helps cut down on a problem
+	 with searching for something like "john" and getting a lot of
+	 keys back. */
+      if(!tried_ks
+	 && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
+	{
+	  tried_ks=1;
+
+	  if(keyserver_getname(name)==0)
+	    goto retry;
+	}
     }
 
   free_strlist( namelist );

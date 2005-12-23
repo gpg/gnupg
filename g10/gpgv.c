@@ -291,6 +291,8 @@ keyserver_import_fprint (const byte *fprint, size_t fprint_len,
     return -1;
 }
 
+int
+keyserver_getname(const char *name) { return -1; }
 
 /* Stub:
  * No encryption here but mainproc links to these functions.
