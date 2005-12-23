@@ -1,3 +1,7 @@
+2005-12-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* cert.c, Makefile.am: New code to do DNS CERT queries.
+
 2005-12-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* srv.c, Makefile.am: Only build srv.c if we need to.

@@ -256,7 +256,8 @@ int asprintf (char **buf, const char *fmt, ...);
 /*-- pka.c --*/
 char *get_pka_info (const char *address, unsigned char *fpr);
 
-
+/*-- cert.c --*/
+int get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url);
 
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */

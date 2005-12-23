@@ -1,3 +1,7 @@
+2005-12-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add switch for DNS CERT.
+
 2005-12-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Split PKA checking off from DNS SRV checking.

@@ -24,7 +24,7 @@ noinst_LIBRARIES = libutil.a
 
 libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c \
 		    ttyio.c argparse.c memory.c secmem.c errors.c iobuf.c \
-		    dotlock.c http.c pka.c membuf.c
+		    dotlock.c http.c pka.c membuf.c cert.c
 
 if USE_SIMPLE_GETTEXT
 libutil_a_SOURCES+=simple-gettext.c
@@ -67,3 +67,7 @@ srv-test:  srv.c
 pka-test:  pka.c
 	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
 	   -DTEST -o pka-test pka.c libutil.a @LIBINTL@ @SRVLIBS@ @CAPLIBS@
+
+cert-test:  cert.c
+	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	   -DTEST -o cert-test cert.c libutil.a @LIBINTL@ @SRVLIBS@ @CAPLIBS@

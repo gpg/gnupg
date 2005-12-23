@@ -555,8 +555,8 @@ AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname,
 AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 	[NETLIBS="-lsocket $NETLIBS"]))
 
-dnl Now try for the resolver functions so we can use DNS SRV and our 
-dnl PKA feature.
+dnl Now try for the resolver functions so we can use DNS for SRV, PKA,
+dnl and CERT.
 
 if test x"$try_hkp" = xyes || test x"$try_http" = xyes ; then
    AC_ARG_ENABLE(dns-srv,
@@ -570,7 +570,12 @@ AC_ARG_ENABLE(dns-pka,
 	[disable the use of PKA records in DNS]),
    use_dns_pka=$enableval,use_dns_pka=yes)
 
-if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes ; then
+AC_ARG_ENABLE(dns-cert,
+   AC_HELP_STRING([--disable-dns-cert],
+	[disable the use of CERT records in DNS]),
+   use_dns_cert=$enableval,use_dns_cert=yes)
+
+if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
   _srv_save_libs=$LIBS
   LIBS=""
   # the double underscore thing is a glibc-ism?
@@ -601,9 +606,14 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes ; then
      if test x"$use_dns_pka" = xyes ; then
         AC_DEFINE(USE_DNS_PKA,1,[define to use our experimental DNS PKA])
      fi
+
+     if test x"$use_dns_cert" = xyes ; then
+        AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
+     fi
   else
      use_dns_srv=no
      use_dns_pka=no
+     use_dns_cert=no
   fi
 
   LIBS=$_srv_save_libs

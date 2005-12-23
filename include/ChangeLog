@@ -1,3 +1,7 @@
+2005-12-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* util.h: Prototype get_cert().
+
 2005-07-27  Werner Koch  <wk@g10code.com>
 
 	* memory.h (m_free, m_alloc, m_realloc, m_strdup): Removed and
