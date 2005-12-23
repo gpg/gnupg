@@ -20,7 +20,6 @@
  */
 
 #include <config.h>
-#ifdef USE_DNS_SRV
 #include <sys/types.h>
 #ifdef _WIN32
 #include <windows.h>
@@ -225,8 +224,6 @@ getsrv(const char *name,struct srventry **list)
   *list=NULL;
   return -1;
 }
-
-#endif /* USE_DNS_SRV */
 
 #ifdef TEST
 int

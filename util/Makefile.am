@@ -24,7 +24,7 @@ noinst_LIBRARIES = libutil.a
 
 libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c \
 		    ttyio.c argparse.c memory.c secmem.c errors.c iobuf.c \
-		    dotlock.c http.c srv.h srv.c pka.c membuf.c
+		    dotlock.c http.c pka.c membuf.c
 
 if USE_SIMPLE_GETTEXT
 libutil_a_SOURCES+=simple-gettext.c
@@ -42,6 +42,10 @@ endif
 
 if USE_INTERNAL_REGEX
 libutil_a_SOURCES+=regex.c
+endif
+
+if USE_DNS_SRV
+libutil_a_SOURCES+=srv.c srv.h
 endif
 
 # The internal regex code #includes these.
