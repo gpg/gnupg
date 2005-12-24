@@ -96,9 +96,6 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 
 	  type=*pt++ << 8;
 	  type|=*pt++;
-	  /* We asked for CERT and got something else !? */
-	  if(type!=T_CERT)
-	    break;
 
 	  class=*pt++ << 8;
 	  class|=*pt++;
@@ -113,6 +110,14 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 	  dlen=*pt++ << 8;
 	  dlen|=*pt++;
 
+	  /* We asked for CERT and got something else - might be a
+	     CNAME, so loop around again. */
+	  if(type!=T_CERT)
+	    {
+	      pt+=dlen;
+	      continue;
+	    }
+
 	  /* The CERT type */
 	  ctype=*pt++ << 8;
 	  ctype|=*pt++;
@@ -125,7 +130,7 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 	  if(ctype==3 && iobuf)
 	    {
 	      /* PGP type */
-	      *iobuf=iobuf_temp_with_content(pt,dlen);
+	      *iobuf=iobuf_temp_with_content((char *)pt,dlen);
 	      ret=1;
 	      break;
 	    }
@@ -136,6 +141,7 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 
 	      *url=xmalloc(dlen+1);
 	      memcpy(*url,pt,dlen);
+	      (*url)[dlen]='\0';
 	      ret=2;
 	      break;
 	    }
