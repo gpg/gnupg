@@ -2083,7 +2083,11 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
            && !memcmp (indata, rmd160_prefix, 15))
     ;
   else
-    return gpg_error (GPG_ERR_INV_VALUE);
+    {
+      log_error(_("card does not support digest algorithm %s\n"),
+		digest_algo_to_string(hashalgo));
+      return gpg_error (GPG_ERR_INV_VALUE);
+    }
 
   /* Check whether an OpenPGP card of any version has been requested. */
   if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))

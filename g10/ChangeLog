@@ -1,3 +1,15 @@
+2006-01-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (hash_for): Add code to detect if the sk lives on a smart
+	card.  If it does, only allow 160-bit hashes, a la DSA.  This
+	involves passing the *sk in, so change all callers.  This is
+	correct for today, given the current 160-bit q in DSA, and the
+	current SHA-1/RIPEMD160 support in the openpgp card.  It will
+	almost certainly need changing down the road.
+
+	* app-openpgp.c (do_sign): Give user error if hash algorithm is
+	not supported by the card.
+
 2005-12-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_import_pka): New.  Moved from

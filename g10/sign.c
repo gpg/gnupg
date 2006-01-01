@@ -407,21 +407,20 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
 */
 
 static int
-hash_for(int pubkey_algo, int packet_version )
+hash_for(PKT_secret_key *sk)
 {
   if( opt.def_digest_algo )
     return opt.def_digest_algo;
   else if( recipient_digest_algo )
     return recipient_digest_algo;
-  else if(PGP2 && pubkey_algo == PUBKEY_ALGO_RSA && packet_version < 4 )
+  else if(sk->pubkey_algo==PUBKEY_ALGO_DSA
+	  || (sk->is_protected && sk->protect.s2k.mode==1002))
     {
-      /* Old-style PGP only understands MD5 */
-      return DIGEST_ALGO_MD5;
-    }
-  else if( pubkey_algo == PUBKEY_ALGO_DSA )
-    {
-      /* We need a 160-bit hash for DSA, so we can't just take the first
-	 in the pref list */
+      /* The sk lives on a smartcard, or it's a DSA key.  DSA requires
+	 a 160-bit hash, and current smartcards only handle SHA-1 and
+	 RIPEMD/160 (i.e. 160-bit hashes).  This is correct now, but
+	 may need revision as the cards add algorithms and/or DSA is
+	 expanded to use larger hashes. */
 
       if(opt.personal_digest_prefs)
 	{
@@ -433,6 +432,11 @@ hash_for(int pubkey_algo, int packet_version )
 	}
 
       return DIGEST_ALGO_SHA1;
+    }
+  else if(PGP2 && sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
+    {
+      /* Old-style PGP only understands MD5 */
+      return DIGEST_ALGO_MD5;
     }
   else if( opt.personal_digest_prefs )
     {
@@ -511,7 +515,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         sk = sk_rover->sk;
         ops = xmalloc_clear (sizeof *ops);
         ops->sig_class = sigclass;
-        ops->digest_algo = hash_for (sk->pubkey_algo, sk->version);
+        ops->digest_algo = hash_for (sk);
         ops->pubkey_algo = sk->pubkey_algo;
         keyid_from_sk (sk, ops->keyid);
         ops->last = (skcount == 1);
@@ -651,7 +655,6 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	else
 	  sig->version=sk->version;
 	keyid_from_sk (sk, sig->keyid);
-	sig->digest_algo = hash_for (sk->pubkey_algo, sk->version);
 	sig->pubkey_algo = sk->pubkey_algo;
 	if(timestamp)
 	  sig->timestamp = timestamp;
@@ -670,7 +673,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
         hash_sigversion_to_magic (md, sig);
 	md_final (md);
 
-	rc = do_sign( sk, sig, md, hash_for (sig->pubkey_algo, sk->version) );
+	rc = do_sign( sk, sig, md, hash_for (sk) );
 	md_close (md);
 
 	if( !rc ) { /* and write it */
@@ -846,8 +849,14 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       sk, but so long as there is only one signing algorithm
 	       with hash restrictions, this is ok. -dms */
 
+	    /* Current smartcards only do 160-bit hashes as well.
+	       Note that this may well have to change as the cards add
+	       algorithms. */
+
 	    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
-	      if(sk_rover->sk->pubkey_algo==PUBKEY_ALGO_DSA)
+	      if(sk_rover->sk->pubkey_algo==PUBKEY_ALGO_DSA
+		 || (sk_rover->sk->is_protected
+		     && sk_rover->sk->protect.s2k.mode==1002))
 		hashlen=20;
 
 	    if((algo=
@@ -859,7 +868,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(mfx.md, hash_for(sk->pubkey_algo, sk->version ));
+	md_enable(mfx.md, hash_for(sk));
     }
 
     if( !multifile )
@@ -1077,7 +1086,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	if( hash_for(sk->pubkey_algo, sk->version) == DIGEST_ALGO_MD5 )
+	if( hash_for(sk) == DIGEST_ALGO_MD5 )
 	    only_md5 = 1;
 	else {
 	    only_md5 = 0;
@@ -1094,7 +1103,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	iobuf_writestr(out, "Hash: " );
 	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	    PKT_secret_key *sk = sk_rover->sk;
-	    int i = hash_for(sk->pubkey_algo, sk->version);
+	    int i = hash_for(sk);
 
 	    if( !hashs_seen[ i & 0xff ] ) {
 		s = digest_algo_to_string( i );
@@ -1119,7 +1128,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     textmd = md_open(0, 0);
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(textmd, hash_for(sk->pubkey_algo, sk->version));
+	md_enable(textmd, hash_for(sk));
     }
     if ( DBG_HASHING )
 	md_start_debug( textmd, "clearsign" );
@@ -1242,7 +1251,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable (mfx.md, hash_for (sk->pubkey_algo, sk->version ));
+	md_enable (mfx.md, hash_for (sk));
     }
 
     iobuf_push_filter (inp, md_filter, &mfx);
