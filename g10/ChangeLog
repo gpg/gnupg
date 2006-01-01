@@ -1,5 +1,7 @@
 2006-01-01  David Shaw  <dshaw@jabberwocky.com>
 
+	* sign.c (write_signature_packets): Lost a digest_algo line.
+
 	* sign.c (hash_for): Add code to detect if the sk lives on a smart
 	card.  If it does, only allow 160-bit hashes, a la DSA.  This
 	involves passing the *sk in, so change all callers.  This is

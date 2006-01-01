@@ -655,6 +655,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	else
 	  sig->version=sk->version;
 	keyid_from_sk (sk, sig->keyid);
+	sig->digest_algo = hash_for(sk);
 	sig->pubkey_algo = sk->pubkey_algo;
 	if(timestamp)
 	  sig->timestamp = timestamp;
