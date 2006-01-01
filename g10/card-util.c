@@ -623,7 +623,7 @@ fetch_url(void)
 		  gpg_strerror(rc));
       else if (info.pubkey_url && *info.pubkey_url)
 	{
-	  spec=parse_keyserver_uri(info.pubkey_url,0,NULL,0);
+	  spec=parse_keyserver_uri(info.pubkey_url,1,NULL,0);
 	  if(spec && info.fpr1valid)
 	    {
 	      /* This is not perfectly right.  Currently, all card

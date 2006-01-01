@@ -1979,7 +1979,7 @@ keyserver_import_pka(const char *name)
   if (uri)
     {
       struct keyserver_spec *spec;
-      spec = parse_keyserver_uri (uri, 0, NULL, 0);
+      spec = parse_keyserver_uri (uri, 1, NULL, 0);
       if (spec)
 	{
 	  rc=keyserver_import_fprint (fpr, 20, spec);

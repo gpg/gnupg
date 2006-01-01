@@ -1,5 +1,10 @@
 2006-01-01  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (check_sig_and_print), keyserver.c
+	(keyserver_import_pka), card-util.c (fetch_url): Always require a
+	scheme:// for keyserver URLs except when used as part of the
+	--keyserver command for backwards compatibility.
+
 	* sign.c (write_signature_packets): Lost a digest_algo line.
 
 	* sign.c (hash_for): Add code to detect if the sk lives on a smart
