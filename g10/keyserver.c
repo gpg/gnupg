@@ -1794,7 +1794,7 @@ keyserver_refresh(STRLIST users)
       int i;
 
       /* Try to handle preferred keyserver keys first */
-      for(i=0;i<count;i++)
+      for(i=0;i<numdesc;i++)
 	{
 	  if(desc[i].skipfncvalue)
 	    {

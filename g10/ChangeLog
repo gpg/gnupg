@@ -1,3 +1,9 @@
+2006-01-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_refresh): Fix problem when more than one
+	key in a refresh batch has a preferred keyserver set.  Noted by
+	Nicolas Rachinsky.
+
 2006-01-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (check_sig_and_print), keyserver.c
