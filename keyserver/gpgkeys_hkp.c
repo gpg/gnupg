@@ -88,18 +88,8 @@ send_key(int *eof)
   int begin=0,end=0,ret=KEYSERVER_INTERNAL_ERROR;
   char keyid[17];
   char line[MAX_LINE];
-  char *key,*encoded_key=NULL;
-  size_t keylen=8,keymax=8;
-
-  key=malloc(9);
-  if(!key)
-    {
-      fprintf(console,"gpgkeys: out of memory\n");
-      ret=KEYSERVER_NO_MEMORY;
-      goto fail;
-    }
-
-  strcpy(key,"keytext=");
+  char *key=NULL,*encoded_key=NULL;
+  size_t keylen=0,keymax=0;
 
   /* Read and throw away input until we see the BEGIN */
 
@@ -166,6 +156,19 @@ send_key(int *eof)
       goto fail;
     }
 
+  free(key);
+
+  key=malloc(8+strlen(encoded_key)+1);
+  if(!key)
+    {
+      fprintf(console,"gpgkeys: out of memory\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  strcpy(key,"keytext=");
+  strcat(key,encoded_key);
+
   strcpy(request,"http://");
   strcat(request,opt->host);
   strcat(request,":");
@@ -183,7 +186,7 @@ send_key(int *eof)
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_POST,1);
-  curl_easy_setopt(curl,CURLOPT_POSTFIELDS,encoded_key);
+  curl_easy_setopt(curl,CURLOPT_POSTFIELDS,key);
   curl_easy_setopt(curl,CURLOPT_FAILONERROR,1);
 
   res=curl_easy_perform(curl);

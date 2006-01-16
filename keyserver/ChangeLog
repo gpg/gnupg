@@ -1,3 +1,8 @@
+2006-01-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key): Do not escape the '=' in the HTTP POST
+	when uploading a key.
+
 2005-12-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* ksutil.h, ksutil.c (parse_ks_options): New keyserver command
