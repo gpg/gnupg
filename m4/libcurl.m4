@@ -1,7 +1,7 @@
 # LIBCURL_CHECK_CONFIG ([DEFAULT-ACTION], [MINIMUM-VERSION],
 #                       [ACTION-IF-YES], [ACTION-IF-NO])
 # ----------------------------------------------------------
-#      David Shaw <dshaw@jabberwocky.com>   Aug-5-2005
+#      David Shaw <dshaw@jabberwocky.com>   Jan-16-2006
 #
 # Checks for libcurl.  DEFAULT-ACTION is the string yes or no to
 # specify whether to default to --with-libcurl or --without-libcurl.
@@ -33,7 +33,7 @@
 # curl-config script.  Note that it is very important for people
 # packaging binary versions of libcurl to include this script!
 # Without curl-config, we can only guess what protocols are available,
-# (or use curl_version_info to figure it out at runtime).
+# or use curl_version_info to figure it out at runtime.
 
 AC_DEFUN([LIBCURL_CHECK_CONFIG],
 [
@@ -47,7 +47,6 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
   AH_TEMPLATE([LIBCURL_PROTOCOL_HTTPS],[Defined if libcurl supports HTTPS])
   AH_TEMPLATE([LIBCURL_PROTOCOL_FTP],[Defined if libcurl supports FTP])
   AH_TEMPLATE([LIBCURL_PROTOCOL_FTPS],[Defined if libcurl supports FTPS])
-  AH_TEMPLATE([LIBCURL_PROTOCOL_GOPHER],[Defined if libcurl supports GOPHER])
   AH_TEMPLATE([LIBCURL_PROTOCOL_FILE],[Defined if libcurl supports FILE])
   AH_TEMPLATE([LIBCURL_PROTOCOL_TELNET],[Defined if libcurl supports TELNET])
   AH_TEMPLATE([LIBCURL_PROTOCOL_LDAP],[Defined if libcurl supports LDAP])
@@ -191,7 +190,7 @@ x=CURLOPT_VERBOSE;
 
 	      # We don't have --protocols, so just assume that all
 	      # protocols are available
-	      _libcurl_protocols="HTTP FTP GOPHER FILE TELNET LDAP DICT"
+	      _libcurl_protocols="HTTP FTP FILE TELNET LDAP DICT"
 
 	      if test x$libcurl_feature_SSL = xyes ; then
 	         _libcurl_protocols="$_libcurl_protocols HTTPS"
