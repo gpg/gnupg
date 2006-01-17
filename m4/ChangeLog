@@ -1,3 +1,7 @@
+2006-01-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* libcurl.m4: Add IDN, SSPI, NTLM, and TFTP defines.
+
 2006-01-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: Remove GOPHER, as that is not supported in libcurl

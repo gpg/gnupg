@@ -1,7 +1,7 @@
 # LIBCURL_CHECK_CONFIG ([DEFAULT-ACTION], [MINIMUM-VERSION],
 #                       [ACTION-IF-YES], [ACTION-IF-NO])
 # ----------------------------------------------------------
-#      David Shaw <dshaw@jabberwocky.com>   Jan-16-2006
+#      David Shaw <dshaw@jabberwocky.com>   Jan-17-2006
 #
 # Checks for libcurl.  DEFAULT-ACTION is the string yes or no to
 # specify whether to default to --with-libcurl or --without-libcurl.
@@ -13,10 +13,10 @@
 # ACTION-IF-NO is a list of shell commands that are run otherwise.
 # Note that using --without-libcurl does run ACTION-IF-NO.
 #
-# This macro defines HAVE_LIBCURL if a working libcurl setup is found,
-# and sets @LIBCURL@ and @LIBCURL_CPPFLAGS@ to the necessary values.
-# Other useful defines are LIBCURL_FEATURE_xxx where xxx are the
-# various features supported by libcurl, and LIBCURL_PROTOCOL_yyy
+# This macro #defines HAVE_LIBCURL if a working libcurl setup is
+# found, and sets @LIBCURL@ and @LIBCURL_CPPFLAGS@ to the necessary
+# values.  Other useful defines are LIBCURL_FEATURE_xxx where xxx are
+# the various features supported by libcurl, and LIBCURL_PROTOCOL_yyy
 # where yyy are the various protocols supported by libcurl.  Both xxx
 # and yyy are capitalized.  See the list of AH_TEMPLATEs at the top of
 # the macro for the complete list of possible defines.  Shell
@@ -42,6 +42,9 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
   AH_TEMPLATE([LIBCURL_FEATURE_IPV6],[Defined if libcurl supports IPv6])
   AH_TEMPLATE([LIBCURL_FEATURE_LIBZ],[Defined if libcurl supports libz])
   AH_TEMPLATE([LIBCURL_FEATURE_ASYNCHDNS],[Defined if libcurl supports AsynchDNS])
+  AH_TEMPLATE([LIBCURL_FEATURE_IDN],[Defined if libcurl supports IDN])
+  AH_TEMPLATE([LIBCURL_FEATURE_SSPI],[Defined if libcurl supports SSPI])
+  AH_TEMPLATE([LIBCURL_FEATURE_NTLM],[Defined if libcurl supports NTLM])
 
   AH_TEMPLATE([LIBCURL_PROTOCOL_HTTP],[Defined if libcurl supports HTTP])
   AH_TEMPLATE([LIBCURL_PROTOCOL_HTTPS],[Defined if libcurl supports HTTPS])
@@ -51,6 +54,7 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
   AH_TEMPLATE([LIBCURL_PROTOCOL_TELNET],[Defined if libcurl supports TELNET])
   AH_TEMPLATE([LIBCURL_PROTOCOL_LDAP],[Defined if libcurl supports LDAP])
   AH_TEMPLATE([LIBCURL_PROTOCOL_DICT],[Defined if libcurl supports DICT])
+  AH_TEMPLATE([LIBCURL_PROTOCOL_TFTP],[Defined if libcurl supports TFTP])
 
   AC_ARG_WITH(libcurl,
      AC_HELP_STRING([--with-libcurl=DIR],[look for the curl library in DIR]),
@@ -142,7 +146,6 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
    missing symbols or can't link. */
 int x;
 curl_easy_setopt(NULL,CURLOPT_URL,NULL);
-curl_version_info(CURLVERSION_NOW);
 x=CURL_ERROR_SIZE;
 x=CURLOPT_WRITEFUNCTION;
 x=CURLOPT_FILE;
