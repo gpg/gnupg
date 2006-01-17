@@ -1,3 +1,17 @@
+2006-01-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, passphrase.c (next_to_last_passphrase): New.  "Touch" a
+	passphrase as if it was used (move from next_pw to last_pw).
+
+	* pubkey-enc.c (get_session_key): Use it here to handle the case
+	where a passphrase happens to be correct for a secret key, but yet
+	that key isn't the anonymous recipient (i.e. the secret key could
+	be decrypted, but not the session key).  This also handles the
+	case where a secret key is located on a card and a secret key with
+	no passphrase.  Note this does not fix bug 594 (anonymous
+	recipients on smartcard do not work) - it just prevents the
+	anonymous search from stopping when the card is encountered.
+
 2006-01-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_refresh): Fix problem when more than one

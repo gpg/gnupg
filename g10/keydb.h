@@ -211,6 +211,7 @@ DEK *passphrase_to_dek( u32 *keyid, int pubkey_algo,
                         const char *tryagain_text, int *canceled);
 void set_next_passphrase( const char *s );
 char *get_last_passphrase(void);
+void next_to_last_passphrase(void);
 
 /*-- getkey.c --*/
 int classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc);

@@ -55,24 +55,6 @@
 #include "assuan.h"
 #endif /*ENABLE_AGENT_SUPPORT*/
 
-
-#define buftou32( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \
-		       (*((byte*)(p)+2) << 8) | (*((byte*)(p)+3)))
-#define u32tobuf( p, a ) do { 			                \
-			    ((byte*)p)[0] = (byte)((a) >> 24);	\
-			    ((byte*)p)[1] = (byte)((a) >> 16);	\
-			    ((byte*)p)[2] = (byte)((a) >>  8);	\
-			    ((byte*)p)[3] = (byte)((a) 	    );	\
-			} while(0)
-
-#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
-#define hexdigitp(a) (digitp (a)                     \
-                      || (*(a) >= 'A' && *(a) <= 'F')  \
-                      || (*(a) >= 'a' && *(a) <= 'f'))
-#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
-                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
-#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
-
 static char *fd_passwd = NULL;
 static char *next_pw = NULL;
 static char *last_pw = NULL;
@@ -113,6 +95,17 @@ get_last_passphrase()
     char *p = last_pw;
     last_pw = NULL;
     return p;
+}
+
+/* As if we had used the passphrase - make it the last_pw. */
+void
+next_to_last_passphrase(void)
+{
+  if(next_pw)
+    {
+      last_pw=next_pw;
+      next_pw=NULL;
+    }
 }
 
 /* Here's an interesting question: since this passphrase was passed in

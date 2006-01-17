@@ -115,11 +115,26 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 								      only
 								      once */
 	    if( !rc )
+	      {
 		rc = get_it( k, dek, sk, keyid );
-	    if( !rc ) {
+		/* Successfully checked the secret key (either it was
+		   a card, had no passphrase, or had the right
+		   passphrase) but couldn't decrypt the session key,
+		   so thus that key is not the anonymous recipient.
+		   Move the next passphrase into last for the next
+		   round.  We only do this if the secret key was
+		   successfully checked as in the normal case,
+		   check_secret_key handles this for us via
+		   passphrase_to_dek */
+		if(rc)
+		  next_to_last_passphrase();
+	      }
+
+	    if( !rc )
+	      {
 		log_info(_("okay, we are the anonymous recipient.\n") );
 		break;
-	    }
+	      }
 	}
 	enum_secret_keys( &enum_context, NULL, 0, 0 ); /* free context */
     }
