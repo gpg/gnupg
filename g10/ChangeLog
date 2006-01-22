@@ -1,3 +1,11 @@
+2006-01-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Include the EXEEXT so we can find
+	keyserver helpers on systems that use extensions.
+
+	* misc.c (path_access) [HAVE_DRIVE_LETTERS]: Do the right thing
+	with drive letter systems.
+
 2006-01-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* keydb.h, passphrase.c (next_to_last_passphrase): New.  "Touch" a

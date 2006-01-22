@@ -1251,7 +1251,15 @@ path_access(const char *file,int mode)
 
   envpath=getenv("PATH");
 
-  if(file[0]=='/' || !envpath)
+  if(!envpath
+#ifdef HAVE_DRIVE_LETTERS
+     || (((file[0]>='A' && file[0]<='Z')
+	  || (file[0]>='a' && file[0]<='z'))
+	 && file[1]==':')
+#else
+     || file[0]=='/'
+#endif
+     )
     return access(file,mode);
   else
     {

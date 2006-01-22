@@ -946,7 +946,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       /* If exec-path was set, and DISABLE_KEYSERVER_PATH is
 	 undefined, then don't specify a full path to gpgkeys_foo, so
 	 that the PATH can work. */
-      command=xmalloc(GPGKEYS_PREFIX_LEN+strlen(scheme)+3+1);
+      command=xmalloc(GPGKEYS_PREFIX_LEN+strlen(scheme)+3+strlen(EXEEXT)+1);
       command[0]='\0';
     }
   else
@@ -954,7 +954,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
     {
       /* Specify a full path to gpgkeys_foo. */
       command=xmalloc(strlen(libexecdir)+strlen(DIRSEP_S)+
-		      GPGKEYS_PREFIX_LEN+strlen(scheme)+3+1);
+		      GPGKEYS_PREFIX_LEN+strlen(scheme)+3+strlen(EXEEXT)+1);
       strcpy(command,libexecdir);
       strcat(command,DIRSEP_S);
     }
@@ -966,6 +966,8 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
   if(keyserver->flags.direct_uri)
     strcat(command,"uri");
+
+  strcat(command,EXEEXT);
 
 #ifdef GPGKEYS_CURL
   if(!curl_cant_handle(scheme,keyserver->flags.direct_uri)
