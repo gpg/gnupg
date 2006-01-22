@@ -1,3 +1,8 @@
+2006-01-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add define for EXEEXT so we can find keyserver
+	helpers on systems that use extensions.
+
 2005-12-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add switch for DNS CERT.

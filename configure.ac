@@ -537,6 +537,9 @@ AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE
 
 dnl These need to go after AC_PROG_CC so that $EXEEXT is defined
+
+AC_DEFINE_UNQUOTED(EXEEXT,"$EXEEXT",[The executable file extension, if any])
+
 if test x"$try_hkp" = xyes ; then
   AC_SUBST(GPGKEYS_HKP,"gpgkeys_hkp$EXEEXT")
 fi
