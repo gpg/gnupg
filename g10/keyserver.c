@@ -362,6 +362,9 @@ parse_keyserver_uri(const char *uri,int require_scheme,
 	keyserver->path=xstrdup(uri);
       else
 	keyserver->path=xstrdup("/");
+
+      if(keyserver->path[1]!='\0')
+	keyserver->flags.direct_uri=1;
     }
   else if(uri[0]!='/')
     {

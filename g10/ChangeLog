@@ -1,3 +1,8 @@
+2006-01-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (parse_keyserver_uri): If there is a path present,
+	set the direct_uri flag so the right keyserver helper is run.
+
 2006-01-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Include the EXEEXT so we can find
