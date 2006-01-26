@@ -134,6 +134,7 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 	      ret=1;
 	      break;
 	    }
+#if 0
 	  else if(ctype==6 && dlen<1023 && url)
 	    {
 	      /* Sanity check the IPGP URL type that the URL isn't too
@@ -145,6 +146,7 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 	      ret=2;
 	      break;
 	    }
+#endif
 
 	  /* Neither type matches, so go around to the next answer. */
 	  pt+=dlen;

@@ -42,7 +42,8 @@
 #define T_SRV 33
 #endif
 
-static int priosort(const void *a,const void *b)
+static int
+priosort(const void *a,const void *b)
 {
   const struct srventry *sa=a,*sb=b;
   if(sa->priority>sb->priority)
@@ -64,7 +65,7 @@ getsrv(const char *name,struct srventry **list)
   *list=NULL;
 
   r=res_query(name,C_IN,T_SRV,answer,PACKETSZ);
-  if(r<sizeof(HEADER))
+  if(r<sizeof(HEADER) || r>PACKETSZ)
     return -1;
 
   if((((HEADER *)answer)->rcode)==NOERROR &&
