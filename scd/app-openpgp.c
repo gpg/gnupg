@@ -484,7 +484,7 @@ count_bits (const unsigned char *a, size_t len)
    Everything up to a LF is considered a mailbox or account name.  If
    the first LF is followed by DC4 (0x14) control sequence are
    expected up to the next LF.  Control sequences are separated by FS
-   (0x28) and consist of key=value pairs.  There is one key defined:
+   (0x18) and consist of key=value pairs.  There is one key defined:
 
     F=<flags>
 
@@ -2084,7 +2084,7 @@ check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
    raw message digest. For this application the KEYIDSTR consists of
    the serialnumber and the fingerprint delimited by a slash.
 
-   Note that this fucntion may return the error code
+   Note that this function may return the error code
    GPG_ERR_WRONG_CARD to indicate that the card currently present does
    not match the one required for the requested action (e.g. the
    serial number does not match). */
@@ -2120,7 +2120,11 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
            && !memcmp (indata, rmd160_prefix, 15))
     ;
   else
-    return gpg_error (GPG_ERR_INV_VALUE);
+    {
+      log_error (_("card does not support digest algorithm %s\n"),
+                 gcry_md_algo_name (hashalgo));
+      return gpg_error (GPG_ERR_INV_VALUE);
+    }
 
   /* Check whether an OpenPGP card of any version has been requested. */
   if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))

@@ -1,3 +1,18 @@
+2006-02-02  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (special_transport): New
+	(ccid_open_reader, do_close_reader, ccid_shutdown_reader)
+	(bulk_out, bulk_in): Add support for CardMan 4040 reader.
+
+	* ccid-driver.c (scan_or_find_devices): Factored most code out to
+	(scan_or_find_usb_device): .. new.
+	(make_reader_id): Fixed vendor mask.
+
+2006-01-01  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_sign): Give user error if hash algorithm is
+	not supported by the card.
+
 2005-12-06  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (open_pcsc_reader): Check that pcsc-wrapper is actually
