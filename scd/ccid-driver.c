@@ -1,5 +1,5 @@
 /* ccid-driver.c - USB ChipCardInterfaceDevices driver
- *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
  *      Written by Werner Koch.
  *
  * This file is part of GnuPG.

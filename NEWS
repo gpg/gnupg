@@ -4,6 +4,8 @@ Noteworthy changes in version 1.9.21
  * [scdaemon] Support for keypads of some readers.  Tested only with
    SPR532. New option --disable-keypad.
 
+ * Support for CardMan 4040 PCMCIA reader.
+
 
 Noteworthy changes in version 1.9.20 (2005-12-20)
 -------------------------------------------------

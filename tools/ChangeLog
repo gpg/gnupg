@@ -1,3 +1,7 @@
+2005-12-20  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gc_options_gpg): Add allow-pka-lookup.
+
 2005-12-14  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (bin_PROGRAMS): Build gpgparsemail.
