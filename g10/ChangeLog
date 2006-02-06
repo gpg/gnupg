@@ -1,3 +1,17 @@
+2006-02-06  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c, ccid-driver.h: Updated from GnuPG 1.9.  Changes:
+	* ccid-driver.h (CCID_DRIVER_ERR_NO_KEYPAD): New.
+	* ccid-driver.c (send_escape_cmd): New args RESULT, RESULTLEN and
+	RESULTMAX.  Changed all callers.
+	(ccid_transceive_escape): New.
+	* ccid-driver.c (special_transport): New
+	(ccid_open_reader, do_close_reader, ccid_shutdown_reader)
+	(bulk_out, bulk_in): Add support for CardMan 4040 reader.
+	* ccid-driver.c (scan_or_find_devices): Factored most code out to
+	(scan_or_find_usb_device): .. new.
+	(make_reader_id): Fixed vendor mask.
+
 2006-01-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (parse_keyserver_uri): If there is a path present,
