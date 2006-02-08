@@ -1,3 +1,9 @@
+2006-02-08  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (ccid_get_atr): Read Parameter and select T=1
+	using these parameters.
+	(scan_or_find_devices): Check for NULL r_fd.
+
 2006-02-02  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (special_transport): New
