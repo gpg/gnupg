@@ -347,10 +347,6 @@ prepare_special_transport (ccid_driver_t handle)
     {
     case TRANSPORT_CM4040:
       DEBUGOUT ("setting up transport for CardMan 4040\n");
-      /* Most values are guessed. */
-      handle->nonnull_nad = 1;
-      handle->auto_ifsd = 1;
-      handle->max_ifsd = 254;
       handle->apdu_level = 1;
       break;
 
@@ -877,8 +873,6 @@ scan_or_find_usb_device (int scan_mode,
    The function returns 0 if a reader has been found or when a scan
    returned without error.
 
-   FIXME!!
-
    With READERNO = -1 and READERID is NULL, scan mode is used and
    R_RID should be the address where to store the list of reader_ids
    we found.  If on return this list is empty, no CCID device has been
@@ -1037,7 +1031,8 @@ scan_or_find_devices (int readerno, const char *readerid,
             *r_rid = rid;
           else
             free (rid);
-          *r_fd = fd;
+          if (r_fd)
+            *r_fd = fd;
           return 0; /* Okay, found device */
         }
       else /* This is not yet the reader we want. */
@@ -1708,6 +1703,7 @@ ccid_get_atr (ccid_driver_t handle,
   unsigned int edc;
   int i;
   int tried_iso = 0;
+  int got_param;
 
   /* First check whether a card is available.  */
   rc = ccid_slot_status (handle, &statusbits);
@@ -1716,6 +1712,7 @@ ccid_get_atr (ccid_driver_t handle,
   if (statusbits == 2)
     return CCID_DRIVER_ERR_NO_CARD;
 
+    
   /* For an inactive and also for an active card, issue the PowerOn
      command to get the ATR.  */
  again:
@@ -1764,6 +1761,44 @@ ccid_get_atr (ccid_driver_t handle,
       *atrlen = n;
     }
 
+  got_param = 0;
+  msg[0] = PC_to_RDR_GetParameters;
+  msg[5] = 0; /* slot */
+  msg[6] = seqno = handle->seqno++;
+  msg[7] = 0; /* RFU */
+  msg[8] = 0; /* RFU */
+  msg[9] = 0; /* RFU */
+  set_msg_len (msg, 0);
+  msglen = 10;
+  rc = bulk_out (handle, msg, msglen);
+  if (!rc)
+    rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
+                  seqno, 2000, 0);
+  if (rc)
+    DEBUGOUT ("GetParameters failed\n");
+  else
+    {
+      DEBUGOUT ("GetParametes returned");
+      for (i=0; i < msglen; i++)
+        DEBUGOUT_CONT_1 (" %02X", msg[i]);
+      DEBUGOUT_LF ();
+      if (msglen >= 10)
+        {
+          DEBUGOUT_1 ("  protocol ..........: T=%d\n", msg[9]);
+          if (msglen == 17 && msg[9] == 1)
+            {
+              DEBUGOUT_1 ("  bmFindexDindex ....: %02X\n", msg[10]);
+              DEBUGOUT_1 ("  bmTCCKST1 .........: %02X\n", msg[11]);
+              DEBUGOUT_1 ("  bGuardTimeT1 ......: %02X\n", msg[12]);
+              DEBUGOUT_1 ("  bmWaitingIntegersT1: %02X\n", msg[13]);
+              DEBUGOUT_1 ("  bClockStop ........: %02X\n", msg[14]);
+              DEBUGOUT_1 ("  bIFSC .............: %d\n", msg[15]);
+              DEBUGOUT_1 ("  bNadValue .........: %d\n", msg[16]);
+              got_param = 1;
+            }
+        }
+    }
+
   /* Setup parameters to select T=1. */
   msg[0] = PC_to_RDR_SetParameters;
   msg[5] = 0; /* slot */
@@ -1772,14 +1807,17 @@ ccid_get_atr (ccid_driver_t handle,
   msg[8] = 0; /* RFU */
   msg[9] = 0; /* RFU */
 
-  /* FIXME: Get those values from the ATR. */
-  msg[10]= 0x01; /* Fi/Di */
-  msg[11]= 0x10; /* LRC, direct convention. */
-  msg[12]= 0;    /* Extra guardtime. */
-  msg[13]= 0x41; /* BWI/CWI */
-  msg[14]= 0;    /* No clock stoppping. */
-  msg[15]= 254;  /* IFSC */
-  msg[16]= 0;    /* Does not support non default NAD values. */
+  if (!got_param)
+    {
+      /* FIXME: Get those values from the ATR. */
+      msg[10]= 0x01; /* Fi/Di */
+      msg[11]= 0x10; /* LRC, direct convention. */
+      msg[12]= 0;    /* Extra guardtime. */
+      msg[13]= 0x41; /* BWI/CWI */
+      msg[14]= 0;    /* No clock stoppping. */
+      msg[15]= 254;  /* IFSC */
+      msg[16]= 0;    /* Does not support non default NAD values. */
+    }
   set_msg_len (msg, 7);
   msglen = 10 + 7;
 
@@ -1791,15 +1829,16 @@ ccid_get_atr (ccid_driver_t handle,
   rc = bulk_out (handle, msg, msglen);
   if (rc)
     return rc;
-  /* Note that we ignore the error code on purpose. */
-  bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
-           seqno, 5000, 0);
+  rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
+                seqno, 5000, 0);
+  if (rc)
+    DEBUGOUT ("SetParameters failed (ignored)\n");
 
   handle->t1_ns = 0;
   handle->t1_nr = 0;
 
-  /* Send an S-Block with our maximun IFSD to the CCID.  */
-  if (!handle->auto_ifsd)
+  /* Send an S-Block with our maximum IFSD to the CCID.  */
+  if (!handle->apdu_level && !handle->auto_ifsd)
     {
       tpdu = msg+10;
       /* NAD: DAD=1, SAD=0 */
