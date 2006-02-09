@@ -2404,7 +2404,10 @@ main (int argc, char **argv )
 	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oNoEscapeFrom: opt.escape_from = 0; break;
 	  case oLockOnce: opt.lock_once = 1; break;
-	  case oLockNever: disable_dotlock(); break;
+	  case oLockNever:
+            disable_dotlock ();
+            random_disable_locking ();
+            break;
 	  case oLockMultiple:
 #ifndef __riscos__
 	    opt.lock_once = 0;

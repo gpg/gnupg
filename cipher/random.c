@@ -1,6 +1,6 @@
 /* random.c  -	random number generator
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ *               2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -70,6 +70,14 @@
 #endif
 
 
+/* Check whether we can lock the seed file read write. */
+#if defined(HAVE_FCNTL) && defined(HAVE_FTRUNCATE) && !defined(HAVE_W32_SYSTEM)
+#define LOCK_SEED_FILE 1
+#else
+#define LOCK_SEED_FILE 0
+#endif
+
+
 #if SIZEOF_UNSIGNED_LONG == 8
 #define ADD_VALUE 0xa5a5a5a5a5a5a5a5
 #elif SIZEOF_UNSIGNED_LONG == 4
@@ -105,6 +113,7 @@ static int just_mixed;
 static int did_initial_extra_seeding;
 static char *seed_file_name;
 static int allow_seed_file_update;
+static int no_seed_file_locking;
 
 static int secure_alloc;
 static int quick_test;
@@ -272,6 +281,13 @@ random_is_faked()
     return faked_rng || quick_test;
 }
 
+/* Disable locking of seed files. */
+void 
+random_disable_locking ()
+{
+  no_seed_file_locking = 1;
+}
+
 /****************
  * Return a pointer to a randomized buffer of level 0 and LENGTH bits
  * caller must free the buffer.
@@ -359,6 +375,50 @@ set_random_seed_file( const char *name )
     seed_file_name = xstrdup( name );
 }
 
+
+/* Lock an open file identified by file descriptor FD and wait a
+   reasonable time to succeed.  With FOR_WRITE set to true a Rite lock
+   will be taken.  FNAME is used only for diagnostics. Returns 0 on
+   success or -1 on error. */
+#if LOCK_SEED_FILE
+static int
+lock_seed_file (int fd, const char *fname, int for_write)
+{
+  struct flock lck;
+  struct timeval tv;
+  int backoff=0;
+
+  if (no_seed_file_locking)
+    return 0;
+  
+  /* We take a lock on the entire file. */
+  memset (&lck, 0, sizeof lck);
+  lck.l_type = for_write? F_WRLCK : F_RDLCK;
+  lck.l_whence = SEEK_SET;
+
+  while (fcntl (fd, F_SETLK, &lck) == -1)
+    {
+      if (errno != EAGAIN && errno != EACCES)
+        {
+          log_info (_("can't lock `%s': %s\n"), fname, strerror (errno));
+          return -1;
+        }
+
+      if (backoff > 2) /* Show the first message after ~2.25 seconds. */
+        log_info( _("waiting for lock on `%s'...\n"), fname);
+      
+      tv.tv_sec = backoff;
+      tv.tv_usec = 250000;
+      select (0, NULL, NULL, NULL, &tv);
+      if (backoff < 10)
+        backoff++ ;
+    }
+  return 0;
+}
+#endif /*LOCK_SEED_FILE*/
+
+
+
 /****************
  * Read in a seed form the random_seed file
  * and return true if this was successful
@@ -388,6 +448,12 @@ read_seed_file(void)
 	log_info(_("can't open `%s': %s\n"), seed_file_name, strerror(errno) );
 	return 0;
     }
+    if (lock_seed_file (fd, seed_file_name, 0))
+      {
+        close (fd);
+        return 0;
+      }
+
     if( fstat( fd, &sb ) ) {
 	log_info(_("can't stat `%s': %s\n"), seed_file_name, strerror(errno) );
 	close(fd);
@@ -468,12 +534,31 @@ update_random_seed_file()
     fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,
 							S_IRUSR|S_IWUSR );
 #else
+# if LOCK_SEED_FILE
+    fd = open( seed_file_name, O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR );
+# else
     fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR );
+# endif
 #endif
     if( fd == -1 ) {
 	log_info(_("can't create `%s': %s\n"), seed_file_name, strerror(errno) );
 	return;
     }
+
+    if (lock_seed_file (fd, seed_file_name, 1))
+      {
+        close (fd);
+        return;
+      }
+#if LOCK_SEED_FILE
+    if (ftruncate (fd, 0))
+      {
+	log_info(_("can't write `%s': %s\n"), seed_file_name, strerror(errno));
+        close (fd);
+        return;
+      }
+#endif /*LOCK_SEED_FILE*/
+
     do {
 	i = write( fd, keypool, POOLSIZE );
     } while( i == -1 && errno == EINTR );

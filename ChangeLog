@@ -1,3 +1,7 @@
+2006-02-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Check for fcntl and ftruncate.
+
 2006-01-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add define for EXEEXT so we can find keyserver

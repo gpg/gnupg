@@ -1,3 +1,9 @@
+2006-02-09  Werner Koch  <wk@g10code.com>
+
+	* random.c (lock_seed_file): New.
+	(read_seed_file, update_random_seed_file): Use it.
+	(random_disable_locking): New.
+
 2005-12-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* idea-stub.c (load_module): Not legal to return a void * as a

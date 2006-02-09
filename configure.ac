@@ -858,6 +858,7 @@ AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times unsetenv getpwnam getpwuid)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat getaddrinfo)
+AC_CHECK_FUNCS(fcntl ftruncate)
 AC_REPLACE_FUNCS(mkdtemp timegm isascii memrchr)
 
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
