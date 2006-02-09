@@ -45,6 +45,16 @@
 /* Definition of module local data of the CTRL structure.  */
 struct scd_local_s
 {
+  /* We keep a list of all allocated context with a an achnor at
+     SCD_LOCAL_LIST (see below). */
+  struct scd_local_s *next_local;
+
+  /* We need to get back to the ctrl object actually referencing this
+     structure.  This is really an awkward way of enumerint the lcoal
+     contects.  A much cleaner way would be to keep a global list of
+     ctrl objects to enumerate them.  */
+  ctrl_t ctrl_backlink;
+
   assuan_context_t ctx; /* NULL or session context for the SCdaemon
                            used with this connection. */
   int locked;           /* This flag is used to assert proper use of
@@ -71,6 +81,10 @@ struct inq_needpin_s
   void *getpin_cb_arg;
 };
 
+
+/* To keep track of all active SCD contexts, we keep a linked list
+   anchored at this variable. */
+static struct scd_local_s *scd_local_list;
 
 /* A Mutex used inside the start_scd function. */
 static pth_mutex_t start_scd_lock;
@@ -202,6 +216,9 @@ start_scd (ctrl_t ctrl)
       ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
       if (!ctrl->scd_local)
         return gpg_error_from_errno (errno);
+      ctrl->scd_local->ctrl_backlink = ctrl;
+      ctrl->scd_local->next_local = scd_local_list;
+      scd_local_list = ctrl->scd_local;
     }
 
 
@@ -216,7 +233,7 @@ start_scd (ctrl_t ctrl)
 
   if (ctrl->scd_local->ctx)
     return 0; /* Okay, the context is fine.  We used to test for an
-                 alive context here and do an disconnect.  How that we
+                 alive context here and do an disconnect.  Now that we
                  have a ticker function to check for it, it is easier
                  not to check here but to let the connection run on an
                  error instead. */
@@ -404,12 +421,30 @@ agent_scd_check_aliveness (void)
       if (pid != (pid_t)(-1) && pid
           && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
         {
-          /* Okay, scdaemon died.  Disconnect the primary connection now
-             but take care that it won't do another wait. */
+          /* Okay, scdaemon died.  Disconnect the primary connection
+             now but take care that it won't do another wait. Also
+             cleanup all other connections and release their
+             resources.  The next use will start a new daemon then.
+             Due to the use of the START_SCD_LOCAL we are sure that
+             none of these context are actually in use. */
+          struct scd_local_s *sl;
+
           assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
           assuan_disconnect (primary_scd_ctx);
+
+          for (sl=scd_local_list; sl; sl = sl->next_local)
+            {
+              if (sl->ctx)
+                {
+                  if (sl->ctx != primary_scd_ctx)
+                    assuan_disconnect (sl->ctx);
+                  sl->ctx = NULL;
+                }
+            }
+          
           primary_scd_ctx = NULL;
           primary_scd_ctx_reusable = 0;
+
           xfree (socket_name);
           socket_name = NULL;
         }
@@ -422,7 +457,8 @@ agent_scd_check_aliveness (void)
 
 
 
-/* Reset the SCD if it has been used. */
+/* Reset the SCD if it has been used.  Actually it is not a reset but
+   a cleanup of resources used by the current connection. */
 int
 agent_reset_scd (ctrl_t ctrl)
 {
@@ -436,16 +472,40 @@ agent_reset_scd (ctrl_t ctrl)
              reuse. */
           if (ctrl->scd_local->ctx == primary_scd_ctx)
             {
-              /* The RESET may fail for example if the scdaemon has
-                 already been terminated.  We need to set the reusable
-                 flag anyway to make sure that the aliveness check can
-                 clean it up. */
-              assuan_transact (primary_scd_ctx, "RESET",
+              /* Send a RESTART to the SCD.  This is required for the
+                 primary connection as a kind of virtual EOF; we don't
+                 have another way to tell it that the next command
+                 should be viewed as if a new connection has been
+                 made.  For the non-primary connections this is not
+                 needed as we simply close the socket.  We don't check
+                 for an error here because the RESTART may fail for
+                 example if the scdaemon has already been terminated.
+                 Anyway, we need to set the reusable flag to make sure
+                 that the aliveness check can clean it up. */
+              assuan_transact (primary_scd_ctx, "RESTART",
                                NULL, NULL, NULL, NULL, NULL, NULL);
               primary_scd_ctx_reusable = 1;
             }
           else
             assuan_disconnect (ctrl->scd_local->ctx);
+          ctrl->scd_local->ctx = NULL;
+        }
+      
+      /* Remove the local context from our list and release it. */
+      if (!scd_local_list)
+        BUG ();
+      else if (scd_local_list == ctrl->scd_local)
+        scd_local_list = ctrl->scd_local->next_local;
+      else
+        {
+          struct scd_local_s *sl;
+      
+          for (sl=scd_local_list; sl->next_local; sl = sl->next_local)
+            if (sl->next_local == ctrl->scd_local)
+              break;
+          if (!sl->next_local)
+            BUG ();
+          sl->next_local = ctrl->scd_local->next_local;
         }
       xfree (ctrl->scd_local);
       ctrl->scd_local = NULL;

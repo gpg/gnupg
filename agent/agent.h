@@ -54,7 +54,7 @@ struct {
   int batch;           /* Batch mode */
   const char *homedir; /* Configuration directory name */
 
-  /* Environment setting gathered at program start or hanged using the
+  /* Environment setting gathered at program start or changed using the
      Assuan command UPDATESTARTUPTTY. */
   char *startup_display;
   char *startup_ttyname;

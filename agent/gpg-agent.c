@@ -1320,7 +1320,7 @@ handle_tick (void)
   agent_scd_check_aliveness ();
 
   /* If we are running as a child of another process, check whether
-     the parent is still alive and shutdwon if now. */
+     the parent is still alive and shutdown if not. */
 #ifndef HAVE_W32_SYSTEM
   if (parent_pid != (pid_t)(-1))
     {

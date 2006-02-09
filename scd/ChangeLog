@@ -1,3 +1,17 @@
+2006-02-09  Werner Koch  <wk@g10code.com>
+
+	* app.c (release_application): Factored code out to ..
+	(deallocate_app): new function.
+	(select_application): Introduce new saved application stuff.
+	(application_notify_card_removed): New.
+	* command.c (update_card_removed): Call it.
+
+	* app.c (check_application_conflict): New.
+	* command.c (open_card): Use it here.
+	(cmd_restart): New command.
+
+	* command.c (cmd_lock): Fixed --wait option to actually terminate.
+
 2006-02-08  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (ccid_get_atr): Read Parameter and select T=1

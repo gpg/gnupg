@@ -1,3 +1,13 @@
+2006-02-09  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (struct scd_local_s): New field next_local.
+	(scd_local_list): New.
+	(start_scd): Put new local into list.
+	(agent_reset_scd): Remove it from the list.
+	(agent_scd_check_aliveness): Here is the actual reason why we need
+	all this stuff.
+	(agent_reset_scd): Send the new command RESTART instead of RESET.
+
 2005-12-16  Werner Koch  <wk@g10code.com>
 
 	* minip12.c (cram_octet_string): New

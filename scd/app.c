@@ -40,9 +40,15 @@ static struct
   int initialized;
   pth_mutex_t lock;
   app_t app;        /* Application context in use or NULL. */
+  app_t last_app;   /* Last application object used as this slot or NULL. */
 } lock_table[10];
 
 
+
+static void deallocate_app (app_t app);
+
+
+
 /* Lock the reader SLOT.  This function shall be used right before
    calling any of the actual application functions to serialize access
    to the reader.  We do this always even if the reader is not
@@ -68,6 +74,7 @@ lock_reader (int slot)
         }
       lock_table[slot].initialized = 1;
       lock_table[slot].app = NULL;
+      lock_table[slot].last_app = NULL;
     }
   
   if (!pth_mutex_acquire (&lock_table[slot].lock, 0, NULL))
@@ -121,13 +128,21 @@ app_dump_state (void)
         log_info ("app_dump_state: slot=%d lock=", slot);
         dump_mutex_state (&lock_table[slot].lock);
         if (lock_table[slot].app)
-          log_printf (" app=%p type=`%s'",
-                      lock_table[slot].app, lock_table[slot].app->apptype);
+          {
+            log_printf (" app=%p", lock_table[slot].app);
+            if (lock_table[slot].app->apptype)
+              log_printf (" type=`%s'", lock_table[slot].app->apptype);
+          }
+        if (lock_table[slot].last_app)
+          {
+            log_printf (" lastapp=%p", lock_table[slot].last_app);
+            if (lock_table[slot].last_app->apptype)
+              log_printf (" type=`%s'", lock_table[slot].last_app->apptype);
+          }
         log_printf ("\n");
       }
 }
 
- 
 /* Check wether the application NAME is allowed.  This does not mean
    we have support for it though.  */
 static int
@@ -139,6 +154,46 @@ is_app_allowed (const char *name)
     if (!strcmp (l->d, name))
       return 0; /* no */
   return 1; /* yes */
+}
+
+
+/* This may be called to tell this module about a removed card. */
+void
+application_notify_card_removed (int slot)
+{
+  if (slot < 0 || slot >= DIM (lock_table))
+    return;
+
+  /* Deallocate a saved application for that slot, so that we won't
+     try to reuse it. */
+  if (lock_table[slot].initialized && lock_table[slot].last_app)
+    {
+      app_t app = lock_table[slot].last_app;
+
+      lock_table[slot].last_app = NULL;
+      deallocate_app (app);
+    }
+}
+
+ 
+/* This fucntion is used by the serialno command to check for an
+   application conflict which may appear if the serialno command is
+   used to request a specific application and the connection has
+   already done a select_application. */
+gpg_error_t
+check_application_conflict (ctrl_t ctrl, const char *name)
+{
+  int slot = ctrl->reader_slot;
+  app_t app;
+
+  if (slot < 0 || slot >= DIM (lock_table))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  app = lock_table[slot].initialized ? lock_table[slot].app : NULL;
+  if (app && app->apptype && name)
+    if ( ascii_strcasecmp (app->apptype, name))
+        return gpg_error (GPG_ERR_CONFLICT);
+  return 0;
 }
 
 
@@ -173,6 +228,32 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
         return gpg_error (GPG_ERR_CONFLICT);
       }
 
+  /* If we don't have an app, check whether we have a saved
+     application for that slot.  This is useful so that a card does
+     not get reset even if only one session is using the card - so the
+     PIN cache and other cached data are preserved. */
+  if (!app && lock_table[slot].initialized && lock_table[slot].last_app)
+    {
+      app = lock_table[slot].last_app;
+      if (!name || (app->apptype && !ascii_strcasecmp (app->apptype, name)) )
+        {
+          /* Yes, we can reuse this application - either the caller
+             requested an unspecific one or the requested one matches
+             the saved one. */
+          lock_table[slot].app = app;
+          lock_table[slot].last_app = NULL;
+        }
+      else 
+        {
+          /* No, this saved application can't be used - deallocate it. */
+          lock_table[slot].last_app = NULL;
+          deallocate_app (app);
+          app = NULL;
+        }
+    }
+
+  /* If we can reuse an application, bump the reference count and
+     return it.  */
   if (app)
     {
       if (app->slot != slot)
@@ -183,6 +264,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
       return 0; /* Okay: We share that one. */
     }
 
+  /* Need to allocate a new one.  */
   app = xtrycalloc (1, sizeof *app);
   if (!app)
     {
@@ -281,9 +363,25 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
 }
 
 
+/* Deallocate the application. */
+static void
+deallocate_app (app_t app)
+{
+  if (app->fnc.deinit)
+    {
+      app->fnc.deinit (app);
+      app->fnc.deinit = NULL;
+    }
+
+  xfree (app->serialno);
+  xfree (app);
+}
+
 /* Free the resources associated with the application APP.  APP is
    allowed to be NULL in which case this is a no-op.  Note that we are
-   using reference counting to track the users of the application. */
+   using reference counting to track the users of the application and
+   actually deferiing the deallcoation to allow for a later resuse by
+   a new connection. */
 void
 release_application (app_t app)
 {
@@ -297,20 +395,19 @@ release_application (app_t app)
   if (--app->ref_count)
     return;
 
-  /* Clear the reference to the application from the lock table. */
+  /* Move the reference to the application in the lock table. */
   for (slot = 0;  slot < DIM (lock_table); slot++)
     if (lock_table[slot].initialized && lock_table[slot].app == app)
-      lock_table[slot].app = NULL;
+      {
+        if (lock_table[slot].last_app)
+          deallocate_app (lock_table[slot].last_app);
+        lock_table[slot].last_app = lock_table[slot].app;
+        lock_table[slot].app = NULL;
+        return;
+      }
 
-  /* Deallocate. */
-  if (app->fnc.deinit)
-    {
-      app->fnc.deinit (app);
-      app->fnc.deinit = NULL;
-    }
-
-  xfree (app->serialno);
-  xfree (app);
+  log_debug ("application missing in lock table - deallocating anyway\n");
+  deallocate_app (app);
 }
 
 

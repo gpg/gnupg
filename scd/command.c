@@ -47,7 +47,7 @@
 #define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
 
 
-/* Macro to flag a a removed card.  */
+/* Macro to flag a removed card.  */
 #define TEST_CARD_REMOVAL(c,r)                              \
        do {                                                 \
           int _r = (r);                                     \
@@ -108,6 +108,8 @@ update_card_removed (int slot, int value)
     if (sl->ctrl_backlink
         && sl->ctrl_backlink->reader_slot == slot)
       sl->card_removed = value;
+  if (value)
+    application_notify_card_removed (slot);
 }
 
 
@@ -142,7 +144,7 @@ do_reset (ctrl_t ctrl, int do_close)
       struct server_local_s *sl;
 
       /* If we are the only session with the reader open we may close
-         it.  If not, do a reset unless the a lock is held on the
+         it.  If not, do a reset unless a lock is held on the
          reader.  */
       for (sl=session_list; sl; sl = sl->next_session)
         if (sl != ctrl->server_local
@@ -257,7 +259,12 @@ open_card (ctrl_t ctrl, const char *apptype)
     return gpg_error (GPG_ERR_LOCKED);
 
   if (ctrl->app_ctx)
-    return 0; /* Already initialized for one specific application. */
+    {
+      /* Already initialized for one specific application.  Need to
+         check that the client didn't requested a specific application
+         different from the one in use. */
+      return check_application_conflict (ctrl, apptype);
+    }
 
   if (ctrl->reader_slot != -1)
     slot = ctrl->reader_slot;
@@ -1201,7 +1208,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
 
    Grant exclusive card access to this session.  Note that there is
    no lock counter used and a second lock from the same session will
-   get ignore.  A single unlock (or RESET) unlocks the session.
+   be ignored.  A single unlock (or RESET) unlocks the session.
    Return GPG_ERR_LOCKED if another session has locked the reader.
 
    If the option --wait is given the command will wait until a
@@ -1225,9 +1232,12 @@ cmd_lock (assuan_context_t ctx, char *line)
 #ifdef USE_GNU_PTH
   if (rc && has_option (line, "--wait"))
     {
+      rc = 0;
       pth_sleep (1); /* Better implement an event mechanism. However,
                         for card operations this should be
                         sufficient. */
+      /* FIXME: Need to check that the connection is still alive.
+         This can be done by issuing status messages. */
       goto retry;
     }
 #endif /*USE_GNU_PTH*/
@@ -1293,6 +1303,36 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 }
 
 
+/* RESTART
+
+   Restart the current connection; this is a kind of warn reset.  It
+   deletes the context used by this connection but does not send a
+   RESET to the card.  Thus the card itself won't get reset. 
+
+   This is used by gpg-agent to reuse a primary pipe connection and
+   may be used by clients to backup from a conflict in the serial
+   command; i.e. to select another application. 
+*/
+
+static int
+cmd_restart (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  if (ctrl->app_ctx)
+    {
+      release_application (ctrl->app_ctx);
+      ctrl->app_ctx = NULL;
+    }
+  if (locked_session && ctrl->server_local == locked_session)
+    {
+      locked_session = NULL;
+      log_info ("implicitly unlocking due to RESTART\n");
+    }
+  return 0;
+}
+
+
 
 
 /* Tell the assuan library about our commands */
@@ -1323,6 +1363,7 @@ register_commands (assuan_context_t ctx)
     { "LOCK",         cmd_lock },
     { "UNLOCK",       cmd_unlock },
     { "GETINFO",      cmd_getinfo },
+    { "RESTART",      cmd_restart },
     { NULL }
   };
   int i, rc;

@@ -6,6 +6,8 @@ Noteworthy changes in version 1.9.21
 
  * Support for CardMan 4040 PCMCIA reader.
 
+ * Cards are not anymore reseted at the end of a connection. 
+
 
 Noteworthy changes in version 1.9.20 (2005-12-20)
 -------------------------------------------------
