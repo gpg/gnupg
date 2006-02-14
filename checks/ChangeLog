@@ -1,3 +1,7 @@
+2006-02-14  Werner Koch  <wk@gnupg.org>
+
+	* verify.test: New.
+
 2005-06-21  Werner Koch  <wk@g10code.com>
 
 	* conventional.test (algos): Uhh ohh, cut+paste error and not

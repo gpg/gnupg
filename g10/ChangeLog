@@ -1,3 +1,11 @@
+2006-02-14  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (verify_signatures): Print warning also for NO_DATA.
+
+	* mainproc.c (struct mainproc_context): New field any_sig_seen.
+	(add_signature): Set it.
+	(proc_signature_packets): Test and return NO_DATA.
+
 2006-02-09  Werner Koch  <wk@g10code.com>
 
 	* gpg.c (main) <oLockNever>: Disable random locking.

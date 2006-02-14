@@ -108,6 +108,7 @@ g10_errstr( int err )
       X(KEYSERVER      ,N_("keyserver error"))
       X(CANCELED       ,N_("canceled"))
       X(NO_CARD        ,N_("no card"))
+      X(NO_DATA        ,N_("no data"))
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
 #undef X

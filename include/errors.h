@@ -78,6 +78,7 @@
 #define G10ERR_KEYSERVER      55
 #define G10ERR_CANCELED       56
 #define G10ERR_NO_CARD        57
+#define G10ERR_NO_DATA        58
 
 #ifndef HAVE_STRERROR
 char *strerror (int n);

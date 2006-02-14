@@ -1,3 +1,7 @@
+2006-02-14  Werner Koch  <wk@gnupg.org>
+
+	* errors.h (G10ERR_NO_DATA): New.
+
 2005-12-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Prototype get_cert().

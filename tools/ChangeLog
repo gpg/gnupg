@@ -1,3 +1,7 @@
+2006-02-14  Werner Koch  <wk@gnupg.org>
+
+	* mk-tdata.c (main): Implement option --char.
+
 2005-08-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg-zip.in: Add --decrypt functionality.  Fix quoting so

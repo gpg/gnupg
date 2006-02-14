@@ -1,3 +1,7 @@
+2006-02-14  Werner Koch  <wk@gnupg.org>
+
+	* errors.c (g10_errstr): Add NO_DATA.
+
 2006-01-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* cert.c (get_cert): Disable IPGP types for now until the format
