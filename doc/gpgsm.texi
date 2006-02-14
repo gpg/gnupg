@@ -23,6 +23,7 @@ complies with all rules defined for the German Sphinx project.
 @menu
 * GPGSM Commands::        List of all commands.
 * GPGSM Options::         List of all options.
+* GPGSM Configuration::   Configuration files.
 * GPGSM Examples::        Some usage examples.
 
 Developer information:
@@ -525,6 +526,105 @@ package and may be revised or removed at any time without notice.
 All the long options may also be given in the configuration file after
 stripping off the two leading dashes.
 
+
+@c man begin FILES
+
+@node GPGSM Configuration
+@section Configuration files
+
+There are a few configuration files to control certain aspects of
+@command{gpgsm}'s operation. Unless noted, they are expected in the
+current home directory (@pxref{option --homedir}).
+
+@table @file
+
+@item gpgsm.conf
+@cindex gpgsm.conf
+This is the standard configuration file read by @command{gpgsm} on
+startup.  It may contain any valid long option; the leading two dashes
+may not be entered and the option may not be abbreviated.  This default
+name may be changed on the command line (@pxref{option
+  --options}).
+
+@item policies.txt
+@cindex policies.txt
+This is a list of allowed CA policies.  This file should list the
+object identifiers of the policies line by line.  Empty lines and
+lines starting with a hash mark are ignored.  Policies missing in this
+file and not marked as critical in the certificate will print only a
+warning; certificates with policies marked as critical and not listed
+in this file will fail the signature verification.
+
+For example, to allow only the policy 2.289.9.9, the file should look
+like this:
+
+@example
+# Allowed policies
+2.289.9.9  
+@end example
+
+@item qualified.txt
+@cindex qualified.txt
+This is the list of root certificates used for qualified certificates.
+They are defined as certificates capable of creating legally binding
+signatures in the same way as handwritten signatures are.  Comments
+start with a hash mark and empty lines are ignored.  Lines do have a
+length limit but this is not a serious limitation as the format of the
+entries is fixed and checked by gpgsm: A non-comment line starts with
+optional white spaces, followed by exactly 40 hex character, white space
+and a lowercased 2 letter country code.  Additional data delimited with
+by a white space is current ignored but might late be used for other
+purposes.
+
+Note that even if a certificate is listed in this file, this does not
+mean that thecertificate is trusted; in general the certificates listed
+in this file need to be listed also in @file{trustlist.txt}.
+
+This is a global file an installed in the data directory
+(e.g. @file{/usr/share/gnupg/qualified.txt}).  GnuPG installs a suitable
+file with root certificates as used in Germany.  As new Root-CA
+certificates may be issued over time, these entries may need to be
+updated; new distributions of this software should come with an updated
+list but it is still the responsibility of the Administrator to check
+that this list is correct.
+
+Everytime @command{gpgsm} uses a certificate for signing or verification
+this file will be consulted to check whether the certificate under
+question has ultimately been issued by one of these CAs.  If this is the
+case the user will be informed that the verified signature represents a
+legally binding (``qualified'') signature.  When creating a signature
+using such a certificate an extra prompt will be issued to let the user
+confirm that such a legally binding signature shall really be created.
+
+Because this software has not yet been approved for use with such
+certificates, appropriate notices will be shown to indicate this fact.
+
+@end table
+
+Note that on larger installations, it is useful to put predefined files
+into the directory @file{/etc/skel/.gnupg/} so that newly created users
+start up with a working configuration.  For existing users the a small
+helper script is provided to create these files (@pxref{addgnupghome}).
+
+
+For internal purposes gpgsm creates and maintaines a few other files;
+They all live in in the current home directory (@pxref{option
+--homedir}).  Only @command{gpgsm} may modify these files.
+
+@table @file
+@item pubring.kbx
+@cindex pubring.kbx
+This a database file storing the certificates as well as meta
+information.  For debugging purposes the tool @command{kbxutil} may be
+used to show the internal structure of this file.
+      
+@item random_seed
+@cindex random_seed
+This content of this file is used to maintain the internal state of the
+random number generator accross invocations.  The same file is used by
+other programs of this software too.
+
+@end table
 
 
 @c 

@@ -270,7 +270,7 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
 
 
 /* Popup a prompt to inform the user that the signature created is not
-   a qualified one.  This is of course only doen if we know that we
+   a qualified one.  This is of course only done if we know that we
    have been approved. */
 gpg_error_t
 gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
