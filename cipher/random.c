@@ -380,10 +380,10 @@ set_random_seed_file( const char *name )
    reasonable time to succeed.  With FOR_WRITE set to true a Rite lock
    will be taken.  FNAME is used only for diagnostics. Returns 0 on
    success or -1 on error. */
-#if LOCK_SEED_FILE
 static int
 lock_seed_file (int fd, const char *fname, int for_write)
 {
+#if LOCK_SEED_FILE
   struct flock lck;
   struct timeval tv;
   int backoff=0;
@@ -413,9 +413,9 @@ lock_seed_file (int fd, const char *fname, int for_write)
       if (backoff < 10)
         backoff++ ;
     }
+#endif /*LOCK_SEED_FILE*/
   return 0;
 }
-#endif /*LOCK_SEED_FILE*/
 
 
 

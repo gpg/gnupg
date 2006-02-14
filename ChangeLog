@@ -1,3 +1,7 @@
+2006-02-14  Werner Koch  <wk@gnupg.org>
+
+	Released 1.4.3rc1.
+
 2006-02-09  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Check for fcntl and ftruncate.
@@ -1870,7 +1874,7 @@ Fri Feb 13 19:43:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2003,
-	   2004 Free Software Foundation, Inc.
+	   2004, 2005, 2006 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

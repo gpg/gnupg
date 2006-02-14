@@ -99,6 +99,7 @@ if test "$1" = "--build-w32"; then
 
     $tsdir/configure ${conf_CC} --build=${build} --host=${host} \
                 ${disable_foo_tests}  $*
+    exit $?
 fi
 
 

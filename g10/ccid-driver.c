@@ -1327,7 +1327,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
 int 
 ccid_close_reader (ccid_driver_t handle)
 {
-  if (!handle || !handle->idev)
+  if (!handle || (!handle->idev && handle->dev_fd == -1))
     return 0;
 
   do_close_reader (handle);

@@ -1,6 +1,6 @@
 dnl configure.ac script for GnuPG
 dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-dnl               2005 Free Software Foundation, Inc.
+dnl               2005, 2006 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
 dnl
@@ -26,7 +26,7 @@ min_automake_version="1.9.3"
 
 # Remember to change the version number immediately *after* a release
 # and remove the "-cvs" or "rc" suffix immediately *before* a release.
-AC_INIT(gnupg, 1.4.3-cvs, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.4.3rc1, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.

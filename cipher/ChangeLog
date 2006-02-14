@@ -1,3 +1,7 @@
+2006-02-14  Werner Koch  <wk@gnupg.org>
+
+	* random.c (lock_seed_file): Build even when not used.
+
 2006-02-09  Werner Koch  <wk@g10code.com>
 
 	* random.c (lock_seed_file): New.
