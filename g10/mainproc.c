@@ -1,6 +1,6 @@
 /* mainproc.c - handle packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ *               2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -77,6 +77,7 @@ struct mainproc_context {
         int op;
         int stop_now;
     } pipemode;
+    int any_sig_seen;  /* Set to true if a signature packet has been seen. */
 };
 
 
@@ -217,6 +218,7 @@ add_signature( CTX c, PACKET *pkt )
 {
     KBNODE node;
 
+    c->any_sig_seen = 1;
     if( pkt->pkttype == PKT_SIGNATURE && !c->list ) {
 	/* This is the first signature for the following datafile.
 	 * GPG does not write such packets; instead it always uses
@@ -1137,6 +1139,18 @@ proc_signature_packets( void *anchor, IOBUF a,
     c->signed_data = signedfiles;
     c->sigfilename = sigfilename;
     rc = do_proc_packets( c, a );
+ 
+    /* If we have not encountered any signature we print an error
+       messages, send a NODATA status back and return an error code.
+       Using log_error is required becuase verify_files does not check
+       error codes for each file but we want to terminate the process
+       with an error. */ 
+    if (!rc && !c->any_sig_seen)
+      {
+ 	write_status_text (STATUS_NODATA, "4");
+        log_error (_("no signature found\n"));
+        rc = G10ERR_NO_DATA;
+      }
     m_free( c );
     return rc;
 }

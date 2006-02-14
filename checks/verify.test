@@ -1,0 +1,11 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+#info check that verify fails for bad input data
+../tools/mk-tdata --char 0x2d 64 >x
+$GPG --verify x data-500 && error "no error code from verify"
+../tools/mk-tdata --char 0xca 64 >x
+$GPG --verify x data-500 && error "no error code from verify"
+
+exit 0

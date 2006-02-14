@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2006-02-14 11:32+0100\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -827,12 +827,12 @@ msgstr "nu puteþi folosi %s câtã vreme în modul %s\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrat pentru: \"%s\"\n"
 
-#: g10/encr-data.c:67 g10/mainproc.c:302
+#: g10/encr-data.c:67 g10/mainproc.c:304
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "%s date cifrate\n"
 
-#: g10/encr-data.c:69 g10/mainproc.c:306
+#: g10/encr-data.c:69 g10/mainproc.c:308
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "cifrat cu un algoritm necunoscut %d\n"
@@ -3203,7 +3203,7 @@ msgstr " (senzitiv)"
 msgid "created: %s"
 msgstr "creatã: %s"
 
-#: g10/keyedit.c:2636 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:948
+#: g10/keyedit.c:2636 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:950
 #, c-format
 msgid "revoked: %s"
 msgstr "revocatã: %s"
@@ -3215,7 +3215,7 @@ msgstr "expiratã: %s"
 
 #: g10/keyedit.c:2640 g10/keyedit.c:2691 g10/keyedit.c:2804 g10/keyedit.c:2819
 #: g10/keylist.c:196 g10/keylist.c:764 g10/keylist.c:799 g10/keylist.c:893
-#: g10/keylist.c:914 g10/keyserver.c:434 g10/mainproc.c:954
+#: g10/keylist.c:914 g10/keyserver.c:434 g10/mainproc.c:956
 #, c-format
 msgid "expires: %s"
 msgstr "expirã: %s"
@@ -3257,12 +3257,12 @@ msgstr ""
 
 #
 #: g10/keyedit.c:2836 g10/keyedit.c:3213 g10/keyserver.c:438
-#: g10/mainproc.c:1594 g10/trustdb.c:1179 g10/trustdb.c:1694
+#: g10/mainproc.c:1608 g10/trustdb.c:1179 g10/trustdb.c:1694
 msgid "revoked"
 msgstr "revocatã"
 
 #: g10/keyedit.c:2838 g10/keyedit.c:3215 g10/keyserver.c:442
-#: g10/mainproc.c:1596 g10/trustdb.c:532 g10/trustdb.c:1696
+#: g10/mainproc.c:1610 g10/trustdb.c:532 g10/trustdb.c:1696
 msgid "expired"
 msgstr "expiratã"
 
@@ -4211,202 +4211,207 @@ msgstr "reactualizez 1 cheie de la %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "reactualizez %d chei de la %s\n"
 
-#: g10/mainproc.c:249
+#: g10/mainproc.c:251
 #, c-format
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "dimensiune ciudatã pentru o cheie de sesiune cifratã (%d)\n"
 
-#: g10/mainproc.c:300
+#: g10/mainproc.c:302
 #, c-format
 msgid "%s encrypted session key\n"
 msgstr "%s cheie de sesiune cifratã\n"
 
-#: g10/mainproc.c:310
+#: g10/mainproc.c:312
 #, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr "fraza-parolã generatã cu un algoritm rezumat necunoscut %d\n"
 
-#: g10/mainproc.c:376
+#: g10/mainproc.c:378
 #, c-format
 msgid "public key is %s\n"
 msgstr "cheia publicã este %s\n"
 
-#: g10/mainproc.c:431
+#: g10/mainproc.c:433
 msgid "public key encrypted data: good DEK\n"
 msgstr "date cigrate cu cheie publicã: DEK bun\n"
 
-#: g10/mainproc.c:464
+#: g10/mainproc.c:466
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
 msgstr "cifrat cu cheia %u-bit %s, ID %s, creatã %s\n"
 
-#: g10/mainproc.c:468 g10/pkclist.c:219
+#: g10/mainproc.c:470 g10/pkclist.c:219
 #, c-format
 msgid "      \"%s\"\n"
 msgstr "      \"%s\"\n"
 
-#: g10/mainproc.c:472
+#: g10/mainproc.c:474
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "cifrat cu cheia %s, ID %s\n"
 
-#: g10/mainproc.c:486
+#: g10/mainproc.c:488
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "decriptarea cu cheie publicã a eºuat: %s\n"
 
-#: g10/mainproc.c:500
+#: g10/mainproc.c:502
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "cifratã cu %lu fraze-parolã\n"
 
-#: g10/mainproc.c:502
+#: g10/mainproc.c:504
 msgid "encrypted with 1 passphrase\n"
 msgstr "cifratã cu 1 frazã-parolã\n"
 
-#: g10/mainproc.c:530 g10/mainproc.c:552
+#: g10/mainproc.c:532 g10/mainproc.c:554
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "presupunem date cifrate %s\n"
 
-#: g10/mainproc.c:538
+#: g10/mainproc.c:540
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "cifru IDEA indisponibil, vom încerca sã folosim %s în loc\n"
 
-#: g10/mainproc.c:570
+#: g10/mainproc.c:572
 msgid "decryption okay\n"
 msgstr "decriptare OK\n"
 
-#: g10/mainproc.c:574
+#: g10/mainproc.c:576
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVERTISMENT: mesajul nu a avut integritatea protejatã\n"
 
-#: g10/mainproc.c:587
+#: g10/mainproc.c:589
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVERTISMENT: mesajul cifrat a fost manipulat!\n"
 
-#: g10/mainproc.c:593
+#: g10/mainproc.c:595
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "decriptarea a eºuat: %s\n"
 
-#: g10/mainproc.c:612
+#: g10/mainproc.c:614
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTÃ: expeditorul a cerut \"doar-pentru-ochii-d-voastrã\"\n"
 
-#: g10/mainproc.c:614
+#: g10/mainproc.c:616
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nume fiºier original='%.*s'\n"
 
-#: g10/mainproc.c:803
+#: g10/mainproc.c:805
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocare standalone - folosiþi \"gpg --import\" pentru a aplica\n"
 
-#: g10/mainproc.c:1307
+#: g10/mainproc.c:1151
+#, fuzzy
+msgid "no signature found\n"
+msgstr "Semnãturã bunã din \"%s\""
+
+#: g10/mainproc.c:1321
 msgid "signature verification suppressed\n"
 msgstr "verificare semnãturã eliminatã\n"
 
-#: g10/mainproc.c:1349 g10/mainproc.c:1359
+#: g10/mainproc.c:1363 g10/mainproc.c:1373
 msgid "can't handle these multiple signatures\n"
 msgstr "nu pot mânui aceste semnãturi multiple\n"
 
-#: g10/mainproc.c:1369
+#: g10/mainproc.c:1383
 #, c-format
 msgid "Signature made %s\n"
 msgstr "Semnãturã fãcutã %s\n"
 
-#: g10/mainproc.c:1370
+#: g10/mainproc.c:1384
 #, c-format
 msgid "               using %s key %s\n"
 msgstr "               folosind cheia %s %s\n"
 
-#: g10/mainproc.c:1374
+#: g10/mainproc.c:1388
 #, c-format
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Semnãturã fãcutã %s folosind cheia %s cu ID %s\n"
 
-#: g10/mainproc.c:1394
+#: g10/mainproc.c:1408
 msgid "Key available at: "
 msgstr "Cheie disponibilã la: "
 
-#: g10/mainproc.c:1499 g10/mainproc.c:1547
+#: g10/mainproc.c:1513 g10/mainproc.c:1561
 #, c-format
 msgid "BAD signature from \"%s\""
 msgstr "Semnãturã INCORECTÃ din \"%s\""
 
-#: g10/mainproc.c:1501 g10/mainproc.c:1549
+#: g10/mainproc.c:1515 g10/mainproc.c:1563
 #, c-format
 msgid "Expired signature from \"%s\""
 msgstr "Semnãturã expiratã din \"%s\""
 
-#: g10/mainproc.c:1503 g10/mainproc.c:1551
+#: g10/mainproc.c:1517 g10/mainproc.c:1565
 #, c-format
 msgid "Good signature from \"%s\""
 msgstr "Semnãturã bunã din \"%s\""
 
-#: g10/mainproc.c:1555
+#: g10/mainproc.c:1569
 msgid "[uncertain]"
 msgstr "[nesigur]"
 
-#: g10/mainproc.c:1587
+#: g10/mainproc.c:1601
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                aka \"%s\""
 
-#: g10/mainproc.c:1681
+#: g10/mainproc.c:1695
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Semnãturã expiratã %s\n"
 
-#: g10/mainproc.c:1686
+#: g10/mainproc.c:1700
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "Semnãtura expirã %s\n"
 
-#: g10/mainproc.c:1689
+#: g10/mainproc.c:1703
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "semnãturã %s, algoritm rezumat %s\n"
 
-#: g10/mainproc.c:1690
+#: g10/mainproc.c:1704
 msgid "binary"
 msgstr "binar"
 
-#: g10/mainproc.c:1691
+#: g10/mainproc.c:1705
 msgid "textmode"
 msgstr "modtext"
 
-#: g10/mainproc.c:1691 g10/trustdb.c:531
+#: g10/mainproc.c:1705 g10/trustdb.c:531
 msgid "unknown"
 msgstr "necunoscut"
 
-#: g10/mainproc.c:1711
+#: g10/mainproc.c:1725
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nu pot verifica semnãtura: %s\n"
 
-#: g10/mainproc.c:1779 g10/mainproc.c:1795 g10/mainproc.c:1881
+#: g10/mainproc.c:1793 g10/mainproc.c:1809 g10/mainproc.c:1895
 msgid "not a detached signature\n"
 msgstr "nu o semnãturã detaºatã\n"
 
-#: g10/mainproc.c:1822
+#: g10/mainproc.c:1836
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
 "AVERTISMENT: am detectat multiple semnãturi.  Numai prima va fi verificatã.\n"
 
-#: g10/mainproc.c:1830
+#: g10/mainproc.c:1844
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "semnãturã de sine stãtãtoare (standalone) de clasã 0x%02x\n"
 
-#: g10/mainproc.c:1887
+#: g10/mainproc.c:1901
 msgid "old style (PGP 2.x) signature\n"
 msgstr "semnãturã de stil vechi (PGP 2.x)\n"
 
-#: g10/mainproc.c:1897
+#: g10/mainproc.c:1911
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "pachet root invalid detectat în proc_tree()\n"
 
@@ -5914,6 +5919,11 @@ msgstr "anulatã"
 #: util/errors.c:110
 msgid "no card"
 msgstr "nici un card"
+
+#: util/errors.c:111
+#, fuzzy
+msgid "no data"
+msgstr "nici o datã semnatã\n"
 
 #: util/logger.c:158
 msgid "ERROR: "

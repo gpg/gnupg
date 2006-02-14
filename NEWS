@@ -1,3 +1,18 @@
+Noteworthy changes in version 1.4.2.1 (2006-02-14)
+--------------------------------------------------
+
+    * Security fix for a verification weakness in gpgv.  Some input
+      could lead to gpgv exiting with 0 even if the detached signature
+      file did not carry any signature.  This is not as fatal as it
+      might seem because the suggestion as always been not to rely on
+      th exit code but to parse the --status-fd messages.  However it
+      is likely that gpgv is used in that simplified way and thus we
+      do this release.  Same problem with "gpg --verify" but nobody
+      should have used this for signature verification without
+      checking the status codes anyway.  Thanks to the taviso from
+      Gentoo for reporting this problem.
+
+
 Noteworthy changes in version 1.4.2 (2005-07-26)
 ------------------------------------------------
 
@@ -1788,7 +1803,7 @@ Noteworthy changes in version 0.2.3
 
 
 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-          2005 Free Software Foundation, Inc.
+          2005, 2006 Free Software Foundation, Inc.
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without

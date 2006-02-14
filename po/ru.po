@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.4.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2006-02-14 11:32+0100\n"
 "PO-Revision-Date: 2005-06-22 02:53+0200\n"
 "Last-Translator: Maxim Britov <maxbritov@tut.by>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -816,12 +816,12 @@ msgstr "Вы не можете использовать %s в режиме %s\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s зашифровано для: \"%s\"\n"
 
-#: g10/encr-data.c:67 g10/mainproc.c:302
+#: g10/encr-data.c:67 g10/mainproc.c:304
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "Данные зашифрованы алгоритмом %s\n"
 
-#: g10/encr-data.c:69 g10/mainproc.c:306
+#: g10/encr-data.c:69 g10/mainproc.c:308
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "зашифровано неизвестным алгоритмом %d\n"
@@ -3163,7 +3163,7 @@ msgstr ""
 msgid "created: %s"
 msgstr "создан: %s"
 
-#: g10/keyedit.c:2636 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:948
+#: g10/keyedit.c:2636 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:950
 #, c-format
 msgid "revoked: %s"
 msgstr "отозван: %s"
@@ -3175,7 +3175,7 @@ msgstr "просрочен с: %s"
 
 #: g10/keyedit.c:2640 g10/keyedit.c:2691 g10/keyedit.c:2804 g10/keyedit.c:2819
 #: g10/keylist.c:196 g10/keylist.c:764 g10/keylist.c:799 g10/keylist.c:893
-#: g10/keylist.c:914 g10/keyserver.c:434 g10/mainproc.c:954
+#: g10/keylist.c:914 g10/keyserver.c:434 g10/mainproc.c:956
 #, c-format
 msgid "expires: %s"
 msgstr "годен до: %s"
@@ -3216,12 +3216,12 @@ msgstr ""
 "пока Вы не перезапустите программу.\n"
 
 #: g10/keyedit.c:2836 g10/keyedit.c:3213 g10/keyserver.c:438
-#: g10/mainproc.c:1594 g10/trustdb.c:1179 g10/trustdb.c:1694
+#: g10/mainproc.c:1608 g10/trustdb.c:1179 g10/trustdb.c:1694
 msgid "revoked"
 msgstr "отозван"
 
 #: g10/keyedit.c:2838 g10/keyedit.c:3215 g10/keyserver.c:442
-#: g10/mainproc.c:1596 g10/trustdb.c:532 g10/trustdb.c:1696
+#: g10/mainproc.c:1610 g10/trustdb.c:532 g10/trustdb.c:1696
 msgid "expired"
 msgstr "просрочен с"
 
@@ -4161,202 +4161,207 @@ msgstr "обновление 1 ключа из %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "обновление %d ключей из %s\n"
 
-#: g10/mainproc.c:249
+#: g10/mainproc.c:251
 #, c-format
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "странный размер зашифрованного сеансового ключа (%d)\n"
 
-#: g10/mainproc.c:300
+#: g10/mainproc.c:302
 #, c-format
 msgid "%s encrypted session key\n"
 msgstr "сеансовый ключ зашифрован %s \n"
 
-#: g10/mainproc.c:310
+#: g10/mainproc.c:312
 #, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr "пароль создан с незнакомой хеш-фкнкцией %d\n"
 
-#: g10/mainproc.c:376
+#: g10/mainproc.c:378
 #, c-format
 msgid "public key is %s\n"
 msgstr "открытый ключ %s\n"
 
-#: g10/mainproc.c:431
+#: g10/mainproc.c:433
 msgid "public key encrypted data: good DEK\n"
 msgstr "данные зашифрованы открытым ключом: правильный DEK\n"
 
-#: g10/mainproc.c:464
+#: g10/mainproc.c:466
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
 msgstr "зашифровано %u-битным ключом %s, с ID %s, созданным %s\n"
 
-#: g10/mainproc.c:468 g10/pkclist.c:219
+#: g10/mainproc.c:470 g10/pkclist.c:219
 #, c-format
 msgid "      \"%s\"\n"
 msgstr "      \"%s\"\n"
 
-#: g10/mainproc.c:472
+#: g10/mainproc.c:474
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "зашифровано ключом %s с ID %s\n"
 
-#: g10/mainproc.c:486
+#: g10/mainproc.c:488
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "сбой расшифрования с открытым ключом: %s\n"
 
-#: g10/mainproc.c:500
+#: g10/mainproc.c:502
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "зашифровано с %lu паролями\n"
 
-#: g10/mainproc.c:502
+#: g10/mainproc.c:504
 msgid "encrypted with 1 passphrase\n"
 msgstr "зашифровано с 1 паролем\n"
 
-#: g10/mainproc.c:530 g10/mainproc.c:552
+#: g10/mainproc.c:532 g10/mainproc.c:554
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "принятие %s зашифрованных данных\n"
 
-#: g10/mainproc.c:538
+#: g10/mainproc.c:540
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "шифр IDEA недоступен, попробуйте использовать взамен %s\n"
 
-#: g10/mainproc.c:570
+#: g10/mainproc.c:572
 msgid "decryption okay\n"
 msgstr "Расшифровано\n"
 
-#: g10/mainproc.c:574
+#: g10/mainproc.c:576
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ВНИМАНИЕ: целостность сообщения не защищена\n"
 
-#: g10/mainproc.c:587
+#: g10/mainproc.c:589
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "ВНИМАНИЕ: зашифрованное сообщение было изменено!\n"
 
-#: g10/mainproc.c:593
+#: g10/mainproc.c:595
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "сбой расшифрования: %s\n"
 
-#: g10/mainproc.c:612
+#: g10/mainproc.c:614
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "ЗАМЕТЬТЕ: отправитель требует \"только для просмотра Вами\"\n"
 
-#: g10/mainproc.c:614
+#: g10/mainproc.c:616
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "оригинальное имя файла='%.*s'\n"
 
-#: g10/mainproc.c:803
+#: g10/mainproc.c:805
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "самостоятельный сертификат отзыва: \"gpg --import\" для применения\n"
 
-#: g10/mainproc.c:1307
+#: g10/mainproc.c:1151
+#, fuzzy
+msgid "no signature found\n"
+msgstr "Действительная подпись от \"%s\""
+
+#: g10/mainproc.c:1321
 msgid "signature verification suppressed\n"
 msgstr "проверка подписи подавлена\n"
 
-#: g10/mainproc.c:1349 g10/mainproc.c:1359
+#: g10/mainproc.c:1363 g10/mainproc.c:1373
 msgid "can't handle these multiple signatures\n"
 msgstr "не могу обработать эти множественные подписи\n"
 
-#: g10/mainproc.c:1369
+#: g10/mainproc.c:1383
 #, c-format
 msgid "Signature made %s\n"
 msgstr "Подпись сделана %s\n"
 
-#: g10/mainproc.c:1370
+#: g10/mainproc.c:1384
 #, c-format
 msgid "               using %s key %s\n"
 msgstr "               ключом %s с ID %s\n"
 
-#: g10/mainproc.c:1374
+#: g10/mainproc.c:1388
 #, c-format
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Подпись создана %s ключом %s с ID %s\n"
 
-#: g10/mainproc.c:1394
+#: g10/mainproc.c:1408
 msgid "Key available at: "
 msgstr "Ключ доступен на:"
 
-#: g10/mainproc.c:1499 g10/mainproc.c:1547
+#: g10/mainproc.c:1513 g10/mainproc.c:1561
 #, c-format
 msgid "BAD signature from \"%s\""
 msgstr "ПЛОХАЯ подпись от  \"%s\""
 
-#: g10/mainproc.c:1501 g10/mainproc.c:1549
+#: g10/mainproc.c:1515 g10/mainproc.c:1563
 #, c-format
 msgid "Expired signature from \"%s\""
 msgstr "Просроченная подпись от \"%s\""
 
-#: g10/mainproc.c:1503 g10/mainproc.c:1551
+#: g10/mainproc.c:1517 g10/mainproc.c:1565
 #, c-format
 msgid "Good signature from \"%s\""
 msgstr "Действительная подпись от \"%s\""
 
-#: g10/mainproc.c:1555
+#: g10/mainproc.c:1569
 msgid "[uncertain]"
 msgstr "[сомнительно]"
 
-#: g10/mainproc.c:1587
+#: g10/mainproc.c:1601
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                aka \"%s\""
 
-#: g10/mainproc.c:1681
+#: g10/mainproc.c:1695
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Подпись просрочена %s\n"
 
-#: g10/mainproc.c:1686
+#: g10/mainproc.c:1700
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "Подпись действительна до %s\n"
 
-#: g10/mainproc.c:1689
+#: g10/mainproc.c:1703
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "%s подпись, хэш-функция %s\n"
 
-#: g10/mainproc.c:1690
+#: g10/mainproc.c:1704
 msgid "binary"
 msgstr "двоичный"
 
-#: g10/mainproc.c:1691
+#: g10/mainproc.c:1705
 msgid "textmode"
 msgstr "текстовый"
 
-#: g10/mainproc.c:1691 g10/trustdb.c:531
+#: g10/mainproc.c:1705 g10/trustdb.c:531
 msgid "unknown"
 msgstr "неизвестно"
 
-#: g10/mainproc.c:1711
+#: g10/mainproc.c:1725
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Не могу проверить подпись: %s\n"
 
-#: g10/mainproc.c:1779 g10/mainproc.c:1795 g10/mainproc.c:1881
+#: g10/mainproc.c:1793 g10/mainproc.c:1809 g10/mainproc.c:1895
 msgid "not a detached signature\n"
 msgstr "не отделенная подпись\n"
 
-#: g10/mainproc.c:1822
+#: g10/mainproc.c:1836
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
 "ВНИМАНИЕ: обнаружено множество подписей.  Только первая будет проверена.\n"
 
-#: g10/mainproc.c:1830
+#: g10/mainproc.c:1844
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "самостоятельная подпись класса 0x%02x\n"
 
-#: g10/mainproc.c:1887
+#: g10/mainproc.c:1901
 msgid "old style (PGP 2.x) signature\n"
 msgstr "старый (PGP 2.x) стиль подписи\n"
 
-#: g10/mainproc.c:1897
+#: g10/mainproc.c:1911
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "обнаружен недопустимый корневой пакет в proc_tree()\n"
 
@@ -5859,6 +5864,11 @@ msgstr "отменено"
 #: util/errors.c:110
 msgid "no card"
 msgstr "нет карты"
+
+#: util/errors.c:111
+#, fuzzy
+msgid "no data"
+msgstr "не подписанные данные\n"
 
 #: util/logger.c:158
 msgid "ERROR: "

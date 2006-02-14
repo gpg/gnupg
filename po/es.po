@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2006-02-14 11:32+0100\n"
 "PO-Revision-Date: 2005-03-25 16:50+0100\n"
 "Last-Translator: Jaime Suárez <jsuarez@ono.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -830,12 +830,12 @@ msgstr "no puede usar %s en modo %s\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrado para: \"%s\"\n"
 
-#: g10/encr-data.c:67 g10/mainproc.c:302
+#: g10/encr-data.c:67 g10/mainproc.c:304
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "datos cifrados %s\n"
 
-#: g10/encr-data.c:69 g10/mainproc.c:306
+#: g10/encr-data.c:69 g10/mainproc.c:308
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "cifrado con algoritmo desconocido %d\n"
@@ -3186,7 +3186,7 @@ msgstr "(confidencial)"
 msgid "created: %s"
 msgstr "creado: %s"
 
-#: g10/keyedit.c:2636 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:948
+#: g10/keyedit.c:2636 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:950
 #, c-format
 msgid "revoked: %s"
 msgstr "revocada: %s"
@@ -3198,7 +3198,7 @@ msgstr "caducó: %s"
 
 #: g10/keyedit.c:2640 g10/keyedit.c:2691 g10/keyedit.c:2804 g10/keyedit.c:2819
 #: g10/keylist.c:196 g10/keylist.c:764 g10/keylist.c:799 g10/keylist.c:893
-#: g10/keylist.c:914 g10/keyserver.c:434 g10/mainproc.c:954
+#: g10/keylist.c:914 g10/keyserver.c:434 g10/mainproc.c:956
 #, c-format
 msgid "expires: %s"
 msgstr "caduca: %s"
@@ -3239,12 +3239,12 @@ msgstr ""
 "correcta a menos de que reinicie el programa.\n"
 
 #: g10/keyedit.c:2836 g10/keyedit.c:3213 g10/keyserver.c:438
-#: g10/mainproc.c:1594 g10/trustdb.c:1179 g10/trustdb.c:1694
+#: g10/mainproc.c:1608 g10/trustdb.c:1179 g10/trustdb.c:1694
 msgid "revoked"
 msgstr "revocada"
 
 #: g10/keyedit.c:2838 g10/keyedit.c:3215 g10/keyserver.c:442
-#: g10/mainproc.c:1596 g10/trustdb.c:532 g10/trustdb.c:1696
+#: g10/mainproc.c:1610 g10/trustdb.c:532 g10/trustdb.c:1696
 msgid "expired"
 msgstr "caducada"
 
@@ -4191,202 +4191,207 @@ msgstr "renovando 1 clave de %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "renovando %d claves desde %s\n"
 
-#: g10/mainproc.c:249
+#: g10/mainproc.c:251
 #, c-format
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "tamaño anormal para una clave de sesión cifrada (%d)\n"
 
-#: g10/mainproc.c:300
+#: g10/mainproc.c:302
 #, c-format
 msgid "%s encrypted session key\n"
 msgstr "%s clave de sesión cifrada\n"
 
-#: g10/mainproc.c:310
+#: g10/mainproc.c:312
 #, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr "frase contraseña generada con algoritmo de resumen desconocido %d\n"
 
-#: g10/mainproc.c:376
+#: g10/mainproc.c:378
 #, c-format
 msgid "public key is %s\n"
 msgstr "la clave pública es %s\n"
 
-#: g10/mainproc.c:431
+#: g10/mainproc.c:433
 msgid "public key encrypted data: good DEK\n"
 msgstr "datos cifrados con la clave pública: DEK correcta\n"
 
-#: g10/mainproc.c:464
+#: g10/mainproc.c:466
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
 msgstr "cifrado con clave %2$s de %1$u bits, ID %3$s, creada el %4$s\n"
 
-#: g10/mainproc.c:468 g10/pkclist.c:219
+#: g10/mainproc.c:470 g10/pkclist.c:219
 #, c-format
 msgid "      \"%s\"\n"
 msgstr "      \"%s\"\n"
 
-#: g10/mainproc.c:472
+#: g10/mainproc.c:474
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "cifrado con clave %s, ID %s\n"
 
-#: g10/mainproc.c:486
+#: g10/mainproc.c:488
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "descifrado de la clave pública fallido: %s\n"
 
-#: g10/mainproc.c:500
+#: g10/mainproc.c:502
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "cifrado con %lu frases contraseña\n"
 
-#: g10/mainproc.c:502
+#: g10/mainproc.c:504
 msgid "encrypted with 1 passphrase\n"
 msgstr "cifrado con 1 frase contraseña\n"
 
-#: g10/mainproc.c:530 g10/mainproc.c:552
+#: g10/mainproc.c:532 g10/mainproc.c:554
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "suponiendo %s datos cifrados\n"
 
-#: g10/mainproc.c:538
+#: g10/mainproc.c:540
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "cifrado IDEA no disponible, confiadamente intentamos usar %s en su lugar\n"
 
-#: g10/mainproc.c:570
+#: g10/mainproc.c:572
 msgid "decryption okay\n"
 msgstr "descifrado correcto\n"
 
-#: g10/mainproc.c:574
+#: g10/mainproc.c:576
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ATENCIÓN: la intgridad del mensaje no está protegida\n"
 
-#: g10/mainproc.c:587
+#: g10/mainproc.c:589
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "ATENCIÓN: ¡el mensaje cifrado ha sido manipulado!\n"
 
-#: g10/mainproc.c:593
+#: g10/mainproc.c:595
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "descifrado fallido: %s\n"
 
-#: g10/mainproc.c:612
+#: g10/mainproc.c:614
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTA: el remitente solicitó \"sólo-para-tus-ojos\"\n"
 
-#: g10/mainproc.c:614
+#: g10/mainproc.c:616
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nombre fichero original='%.*s'\n"
 
-#: g10/mainproc.c:803
+#: g10/mainproc.c:805
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocación independiente - use \"gpg --import\" para aplicarla\n"
 
-#: g10/mainproc.c:1307
+#: g10/mainproc.c:1151
+#, fuzzy
+msgid "no signature found\n"
+msgstr "Firma correcta de \"%s\""
+
+#: g10/mainproc.c:1321
 msgid "signature verification suppressed\n"
 msgstr "suprimida la verificación de la firma\n"
 
-#: g10/mainproc.c:1349 g10/mainproc.c:1359
+#: g10/mainproc.c:1363 g10/mainproc.c:1373
 msgid "can't handle these multiple signatures\n"
 msgstr "no se puede trabajar con firmas múltiples\n"
 
-#: g10/mainproc.c:1369
+#: g10/mainproc.c:1383
 #, c-format
 msgid "Signature made %s\n"
 msgstr "Firmado el %s\n"
 
-#: g10/mainproc.c:1370
+#: g10/mainproc.c:1384
 #, c-format
 msgid "               using %s key %s\n"
 msgstr "               usando %s clave %s\n"
 
-#: g10/mainproc.c:1374
+#: g10/mainproc.c:1388
 #, c-format
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Firmado el %s usando clave %s ID %s\n"
 
-#: g10/mainproc.c:1394
+#: g10/mainproc.c:1408
 msgid "Key available at: "
 msgstr "Clave disponible en: "
 
-#: g10/mainproc.c:1499 g10/mainproc.c:1547
+#: g10/mainproc.c:1513 g10/mainproc.c:1561
 #, c-format
 msgid "BAD signature from \"%s\""
 msgstr "Firma INCORRECTA de \"%s\""
 
-#: g10/mainproc.c:1501 g10/mainproc.c:1549
+#: g10/mainproc.c:1515 g10/mainproc.c:1563
 #, c-format
 msgid "Expired signature from \"%s\""
 msgstr "Firma caducada de \"%s\""
 
-#: g10/mainproc.c:1503 g10/mainproc.c:1551
+#: g10/mainproc.c:1517 g10/mainproc.c:1565
 #, c-format
 msgid "Good signature from \"%s\""
 msgstr "Firma correcta de \"%s\""
 
-#: g10/mainproc.c:1555
+#: g10/mainproc.c:1569
 msgid "[uncertain]"
 msgstr "[incierto]"
 
-#: g10/mainproc.c:1587
+#: g10/mainproc.c:1601
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                alias \"%s\""
 
-#: g10/mainproc.c:1681
+#: g10/mainproc.c:1695
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Firma caducada en %s\n"
 
-#: g10/mainproc.c:1686
+#: g10/mainproc.c:1700
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "La firma caduca el %s\n"
 
-#: g10/mainproc.c:1689
+#: g10/mainproc.c:1703
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "firma %s, algoritmo de resumen %s\n"
 
-#: g10/mainproc.c:1690
+#: g10/mainproc.c:1704
 msgid "binary"
 msgstr "binaria"
 
-#: g10/mainproc.c:1691
+#: g10/mainproc.c:1705
 msgid "textmode"
 msgstr "modotexto"
 
-#: g10/mainproc.c:1691 g10/trustdb.c:531
+#: g10/mainproc.c:1705 g10/trustdb.c:531
 msgid "unknown"
 msgstr "desconocido"
 
-#: g10/mainproc.c:1711
+#: g10/mainproc.c:1725
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Imposible comprobar la firma: %s\n"
 
-#: g10/mainproc.c:1779 g10/mainproc.c:1795 g10/mainproc.c:1881
+#: g10/mainproc.c:1793 g10/mainproc.c:1809 g10/mainproc.c:1895
 msgid "not a detached signature\n"
 msgstr "no es una firma separada\n"
 
-#: g10/mainproc.c:1822
+#: g10/mainproc.c:1836
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr "AVISO: detectadas múltiples firmas. Sólo la primera se comprueba.\n"
 
-#: g10/mainproc.c:1830
+#: g10/mainproc.c:1844
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "firma independiente de clase 0x%02x\n"
 
-#: g10/mainproc.c:1887
+#: g10/mainproc.c:1901
 msgid "old style (PGP 2.x) signature\n"
 msgstr "firma al viejo estilo (PGP 2.x)\n"
 
-#: g10/mainproc.c:1897
+#: g10/mainproc.c:1911
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "paquete raíz inválido detectado en proc_tree()\n"
 
@@ -5914,6 +5919,11 @@ msgstr "cancelado"
 #: util/errors.c:110
 msgid "no card"
 msgstr "no hay tarjeta"
+
+#: util/errors.c:111
+#, fuzzy
+msgid "no data"
+msgstr "no hay datos firmados\n"
 
 #: util/logger.c:158
 msgid "ERROR: "

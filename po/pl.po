@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.2.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2006-02-14 11:32+0100\n"
 "PO-Revision-Date: 2004-06-23 15:54+0200\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -869,12 +869,12 @@ msgstr "%s nie jest dostêpne w trybie %s\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s zaszyfrowany dla: ,,%s''\n"
 
-#: g10/encr-data.c:67 g10/mainproc.c:302
+#: g10/encr-data.c:67 g10/mainproc.c:304
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "dane zaszyfrowano za pomoc± %s\n"
 
-#: g10/encr-data.c:69 g10/mainproc.c:306
+#: g10/encr-data.c:69 g10/mainproc.c:308
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "dane zaszyfrowano nieznanym algorytmem numer %d\n"
@@ -3287,7 +3287,7 @@ msgstr " (poufne)"
 msgid "created: %s"
 msgstr "nie mo¿na utworzyæ %s: %s\n"
 
-#: g10/keyedit.c:2636 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:948
+#: g10/keyedit.c:2636 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:950
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[uniewa¿niony]"
@@ -3299,7 +3299,7 @@ msgstr " [wygasa :%s]"
 
 #: g10/keyedit.c:2640 g10/keyedit.c:2691 g10/keyedit.c:2804 g10/keyedit.c:2819
 #: g10/keylist.c:196 g10/keylist.c:764 g10/keylist.c:799 g10/keylist.c:893
-#: g10/keylist.c:914 g10/keyserver.c:434 g10/mainproc.c:954
+#: g10/keylist.c:914 g10/keyserver.c:434 g10/mainproc.c:956
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [wygasa :%s]"
@@ -3340,13 +3340,13 @@ msgstr ""
 "dopóki program nie zostanie uruchomiony ponownie.\n"
 
 #: g10/keyedit.c:2836 g10/keyedit.c:3213 g10/keyserver.c:438
-#: g10/mainproc.c:1594 g10/trustdb.c:1179 g10/trustdb.c:1694
+#: g10/mainproc.c:1608 g10/trustdb.c:1179 g10/trustdb.c:1694
 #, fuzzy
 msgid "revoked"
 msgstr "[uniewa¿niony]"
 
 #: g10/keyedit.c:2838 g10/keyedit.c:3215 g10/keyserver.c:442
-#: g10/mainproc.c:1596 g10/trustdb.c:532 g10/trustdb.c:1696
+#: g10/mainproc.c:1610 g10/trustdb.c:532 g10/trustdb.c:1696
 #, fuzzy
 msgid "expired"
 msgstr "data"
@@ -4321,203 +4321,208 @@ msgstr "zapytanie o klucz %08lX w %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "zapytanie o klucz %08lX w %s\n"
 
-#: g10/mainproc.c:249
+#: g10/mainproc.c:251
 #, c-format
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "%d - dziwny rozmiar jak na zaszyfrowany klucz sesyjny\n"
 
-#: g10/mainproc.c:300
+#: g10/mainproc.c:302
 #, c-format
 msgid "%s encrypted session key\n"
 msgstr "klucz sesyjny zaszyfrowany %s\n"
 
-#: g10/mainproc.c:310
+#: g10/mainproc.c:312
 #, fuzzy, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr "dane zaszyfrowano nieznanym algorytmem numer %d\n"
 
-#: g10/mainproc.c:376
+#: g10/mainproc.c:378
 #, fuzzy, c-format
 msgid "public key is %s\n"
 msgstr "klucz publiczny %08lX\n"
 
-#: g10/mainproc.c:431
+#: g10/mainproc.c:433
 msgid "public key encrypted data: good DEK\n"
 msgstr "dane zaszyfrowane kluczem publicznym: poprawny klucz sesyjny\n"
 
-#: g10/mainproc.c:464
+#: g10/mainproc.c:466
 #, fuzzy, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
 msgstr "zaszyfrowano %u-bitowym kluczem %s, numer %08lX, stworzonym %s\n"
 
-#: g10/mainproc.c:468 g10/pkclist.c:219
+#: g10/mainproc.c:470 g10/pkclist.c:219
 #, fuzzy, c-format
 msgid "      \"%s\"\n"
 msgstr "                        alias \""
 
-#: g10/mainproc.c:472
+#: g10/mainproc.c:474
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "zaszyfrowano kluczem %s, o numerze %08lX\n"
 
-#: g10/mainproc.c:486
+#: g10/mainproc.c:488
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "b³±d odszyfrowywania kluczem publicznym: %s\n"
 
-#: g10/mainproc.c:500
+#: g10/mainproc.c:502
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "zaszyfrowane za pomoc± %lu hase³\n"
 
-#: g10/mainproc.c:502
+#: g10/mainproc.c:504
 msgid "encrypted with 1 passphrase\n"
 msgstr "zaszyfrowane jednym has³em\n"
 
-#: g10/mainproc.c:530 g10/mainproc.c:552
+#: g10/mainproc.c:532 g10/mainproc.c:554
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "przyjmuj±c ¿e dane zosta³y zaszyfrowane za pomoc± %s\n"
 
-#: g10/mainproc.c:538
+#: g10/mainproc.c:540
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "szyfr IDEA nie jest dostêpny, próba u¿ycia %s zamiast\n"
 
-#: g10/mainproc.c:570
+#: g10/mainproc.c:572
 msgid "decryption okay\n"
 msgstr "odszyfrowanie poprawne\n"
 
-#: g10/mainproc.c:574
+#: g10/mainproc.c:576
 msgid "WARNING: message was not integrity protected\n"
 msgstr "OSTRZE¯ENIE: wiadomo¶æ nie by³a zabezpieczona przed manipulacj±\n"
 
-#: g10/mainproc.c:587
+#: g10/mainproc.c:589
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "OSTRZE¯ENIE: zaszyfrowana wiadomo¶æ by³a manipulowana!\n"
 
-#: g10/mainproc.c:593
+#: g10/mainproc.c:595
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "b³±d odszyfrowywania: %s\n"
 
-#: g10/mainproc.c:612
+#: g10/mainproc.c:614
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "UWAGA: nadawca zaznaczy³ ¿e wiadomo¶æ nie powinna byæ zapisywana\n"
 
-#: g10/mainproc.c:614
+#: g10/mainproc.c:616
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "pierwotna nazwa pliku='%.*s'\n"
 
-#: g10/mainproc.c:803
+#: g10/mainproc.c:805
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 "osobny certyfikat uniewa¿nienia - u¿yj ,,gpg --import'' aby go wczytaæ\n"
 
-#: g10/mainproc.c:1307
+#: g10/mainproc.c:1151
+#, fuzzy
+msgid "no signature found\n"
+msgstr "Poprawny podpis z³o¿ony przez \""
+
+#: g10/mainproc.c:1321
 msgid "signature verification suppressed\n"
 msgstr "wymuszono pominiêcie sprawdzenia podpisu\n"
 
-#: g10/mainproc.c:1349 g10/mainproc.c:1359
+#: g10/mainproc.c:1363 g10/mainproc.c:1373
 msgid "can't handle these multiple signatures\n"
 msgstr "nie mo¿na obs³uzyæ tych wielokrotnych podpisów\n"
 
-#: g10/mainproc.c:1369
+#: g10/mainproc.c:1383
 #, fuzzy, c-format
 msgid "Signature made %s\n"
 msgstr "Wa¿no¶æ podpisu wygas³a %s.\n"
 
-#: g10/mainproc.c:1370
+#: g10/mainproc.c:1384
 #, fuzzy, c-format
 msgid "               using %s key %s\n"
 msgstr "                        alias \""
 
-#: g10/mainproc.c:1374
+#: g10/mainproc.c:1388
 #, fuzzy, c-format
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Podpisano w %.*s kluczem %s o numerze %08lX.\n"
 
-#: g10/mainproc.c:1394
+#: g10/mainproc.c:1408
 msgid "Key available at: "
 msgstr "Klucz dostêpny w: "
 
-#: g10/mainproc.c:1499 g10/mainproc.c:1547
+#: g10/mainproc.c:1513 g10/mainproc.c:1561
 #, fuzzy, c-format
 msgid "BAD signature from \"%s\""
 msgstr "NIEPOPRAWNY podpis z³o¿ony przez \""
 
-#: g10/mainproc.c:1501 g10/mainproc.c:1549
+#: g10/mainproc.c:1515 g10/mainproc.c:1563
 #, fuzzy, c-format
 msgid "Expired signature from \"%s\""
 msgstr "Przeterminowany podpis z³o¿ony przez \""
 
-#: g10/mainproc.c:1503 g10/mainproc.c:1551
+#: g10/mainproc.c:1517 g10/mainproc.c:1565
 #, fuzzy, c-format
 msgid "Good signature from \"%s\""
 msgstr "Poprawny podpis z³o¿ony przez \""
 
-#: g10/mainproc.c:1555
+#: g10/mainproc.c:1569
 msgid "[uncertain]"
 msgstr "[niepewne]"
 
-#: g10/mainproc.c:1587
+#: g10/mainproc.c:1601
 #, fuzzy, c-format
 msgid "                aka \"%s\""
 msgstr "                        alias \""
 
-#: g10/mainproc.c:1681
+#: g10/mainproc.c:1695
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Wa¿no¶æ podpisu wygas³a %s.\n"
 
-#: g10/mainproc.c:1686
+#: g10/mainproc.c:1700
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "Wa¿no¶æ podpisu wygasa %s.\n"
 
-#: g10/mainproc.c:1689
+#: g10/mainproc.c:1703
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "podpis %s, skrót %s\n"
 
-#: g10/mainproc.c:1690
+#: g10/mainproc.c:1704
 msgid "binary"
 msgstr "binarny"
 
-#: g10/mainproc.c:1691
+#: g10/mainproc.c:1705
 msgid "textmode"
 msgstr "tekstowy"
 
-#: g10/mainproc.c:1691 g10/trustdb.c:531
+#: g10/mainproc.c:1705 g10/trustdb.c:531
 msgid "unknown"
 msgstr "nieznany"
 
-#: g10/mainproc.c:1711
+#: g10/mainproc.c:1725
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nie mo¿na sprawdziæ podpisu: %s\n"
 
-#: g10/mainproc.c:1779 g10/mainproc.c:1795 g10/mainproc.c:1881
+#: g10/mainproc.c:1793 g10/mainproc.c:1809 g10/mainproc.c:1895
 msgid "not a detached signature\n"
 msgstr "nie jest oddzielonym podpisem.\n"
 
-#: g10/mainproc.c:1822
+#: g10/mainproc.c:1836
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
 "OSTRZE¯ENIE: wielokrotne podpisy. Tylko pierwszy zostanie sprawdzony.\n"
 
-#: g10/mainproc.c:1830
+#: g10/mainproc.c:1844
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "oddzielony podpis klasy 0x%02x.\n"
 
-#: g10/mainproc.c:1887
+#: g10/mainproc.c:1901
 msgid "old style (PGP 2.x) signature\n"
 msgstr "podpis starego typu (PGP 2.x).\n"
 
-#: g10/mainproc.c:1897
+#: g10/mainproc.c:1911
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "wykryto niepoprawny pakiet pierwotny w proc_tree()\n"
 
@@ -6047,6 +6052,11 @@ msgstr "Anuluj"
 #, fuzzy
 msgid "no card"
 msgstr "nie zaszyfrowany"
+
+#: util/errors.c:111
+#, fuzzy
+msgid "no data"
+msgstr "brak podpisanych danych\n"
 
 #: util/logger.c:158
 msgid "ERROR: "

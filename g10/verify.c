@@ -113,7 +113,7 @@ verify_signatures( int nfiles, char **files )
     rc = proc_signature_packets( NULL, fp, sl, sigfile );
     free_strlist(sl);
     iobuf_close(fp);
-    if( afx.no_openpgp_data && rc == -1 ) {
+    if( (afx.no_openpgp_data && rc == -1) || rc == G10ERR_NO_DATA ) {
 	log_error(_("the signature could not be verified.\n"
 		   "Please remember that the signature file (.sig or .asc)\n"
 		   "should be the first file given on the command line.\n") );
