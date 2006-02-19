@@ -817,9 +817,9 @@ AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
 
 # Ensure that we have UINT64_C before we bother to check for uint64_t
-gt_HEADER_INTTYPES_H
+AC_CHECK_HEADERS([inttypes.h])
 AC_CACHE_CHECK([for UINT64_C], [gnupg_cv_uint64_c_works],
-               AC_COMPILE_IFELSE(AC_LANG_PROGRAM([#include <inttypes.h>],[
+               AC_LINK_IFELSE(AC_LANG_PROGRAM([#include <inttypes.h>],[
 uint64_t foo=UINT64_C(42);]),gnupg_cv_uint64_c_works=yes,gnupg_cv_uint64_c_works=no))
 
 if test "$gnupg_cv_uint64_c_works" = "yes" ; then

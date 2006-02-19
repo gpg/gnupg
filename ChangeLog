@@ -1,3 +1,9 @@
+2006-02-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Try linking the UINT64_C test program (rather than
+	just compiling it) as UINT64_C looks like a (missing) function,
+	causing a false positive.  Noted by Claus Assmann.
+
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	Released 1.4.3rc1.
