@@ -518,7 +518,7 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy )
     server = *hd->uri->host? hd->uri->host : "localhost";
     port   = hd->uri->port?  hd->uri->port : 80;
 
-    if(proxy)
+    if(proxy && *proxy)
       {
 	PARSED_URI uri;
 

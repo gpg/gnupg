@@ -1,3 +1,8 @@
+2006-02-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (send_request): A zero length proxy is the same as no
+	proxy.
+
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	* errors.c (g10_errstr): Add NO_DATA.
