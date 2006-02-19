@@ -1,3 +1,7 @@
+2006-02-17  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (start_dirmngr): Print name of dirmngr to be started.
+
 2005-11-23  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.h: New member QUALSIG_APPROVAL.

@@ -170,8 +170,16 @@ start_dirmngr (void)
       int no_close_list[3];
       int i;
 
+      if (!opt.dirmngr_program || !*opt.dirmngr_program)
+        opt.dirmngr_program = GNUPG_DEFAULT_DIRMNGR;
+      if ( !(pgmname = strrchr (opt.dirmngr_program, '/')))
+        pgmname = opt.dirmngr_program;
+      else
+        pgmname++;
+
       if (opt.verbose)
-        log_info (_("no running dirmngr - starting one\n"));
+        log_info (_("no running dirmngr - starting `%s'\n"),
+                  opt.dirmngr_program);
       
       if (fflush (NULL))
         {
@@ -179,13 +187,6 @@ start_dirmngr (void)
           log_error ("error flushing pending output: %s\n", strerror (errno));
           return tmperr;
         }
-
-      if (!opt.dirmngr_program || !*opt.dirmngr_program)
-        opt.dirmngr_program = GNUPG_DEFAULT_DIRMNGR;
-      if ( !(pgmname = strrchr (opt.dirmngr_program, '/')))
-        pgmname = opt.dirmngr_program;
-      else
-        pgmname++;
 
       argv[0] = pgmname;
       argv[1] = "--server";
