@@ -215,8 +215,6 @@ parse_keyserver_uri(const char *uri,int require_scheme,
 
   keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
 
-  keyserver->uri=xstrdup(uri);
-
   /* Get the scheme */
 
   for(idx=uri,count=0;*idx && *idx!=':';idx++)
@@ -247,10 +245,17 @@ parse_keyserver_uri(const char *uri,int require_scheme,
       /* Assume HKP if there is no scheme */
       assume_hkp=1;
       keyserver->scheme=xstrdup("hkp");
+
+      keyserver->uri=xmalloc(strlen(keyserver->scheme)+3+strlen(uri)+1);
+      strcpy(keyserver->uri,keyserver->scheme);
+      strcat(keyserver->uri,"://");
+      strcat(keyserver->uri,uri);
     }
   else
     {
       int i;
+
+      keyserver->uri=xstrdup(uri);
 
       keyserver->scheme=xmalloc(count+1);
 

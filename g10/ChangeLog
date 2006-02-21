@@ -1,3 +1,8 @@
+2006-02-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (parse_keyserver_uri): Include the scheme in the uri
+	even when we've assumed "hkp" when there was no scheme.
+
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	* verify.c (verify_signatures): Print warning also for NO_DATA.
