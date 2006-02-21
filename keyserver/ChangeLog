@@ -1,3 +1,9 @@
+2006-02-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.h, curl-shim.c (curl_easy_init, curl_easy_setopt,
+	curl_easy_perform): Add CURLOPT_VERBOSE and CURLOPT_STDERR for
+	easier debugging.
+
 2006-01-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (send_key): Do not escape the '=' in the HTTP POST

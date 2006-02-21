@@ -1,5 +1,5 @@
 /* curl-shim.h
- * Copyright (C) 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -66,10 +66,12 @@ typedef struct
   void *file;
   char *postfields;
   unsigned int status;
+  FILE *stderr;
   struct
   {
     unsigned int post:1;
     unsigned int failonerror:1;
+    unsigned int verbose:1;
   } flags;
   struct http_context hd;
 } CURL;

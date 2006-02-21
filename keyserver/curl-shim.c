@@ -1,7 +1,7 @@
 /* curl-shim.c - Implement a small subset of the curl API in terms of
  * the iobuf HTTP API
  *
- * Copyright (C) 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -88,7 +88,13 @@ curl_global_cleanup(void) {}
 CURL *
 curl_easy_init(void)
 {
-  return calloc(1,sizeof(CURL));
+  CURL *handle;
+
+  handle=calloc(1,sizeof(CURL));
+  if(handle)
+    handle->stderr=stderr;
+
+  return handle;
 }
 
 void
@@ -133,6 +139,12 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
     case CURLOPT_FAILONERROR:
       curl->flags.failonerror=va_arg(ap,unsigned int);
       break;
+    case CURLOPT_VERBOSE:
+      curl->flags.verbose=va_arg(ap,unsigned int);
+      break;
+    case CURLOPT_STDERR:
+      curl->stderr=va_arg(ap,FILE *);
+      break;
     default:
       /* We ignore the huge majority of curl options */
       break;
@@ -161,6 +173,9 @@ curl_easy_perform(CURL *curl)
     }
   else
     proxy=getenv(HTTP_PROXY_ENV);
+
+  if(curl->flags.verbose)
+    fprintf(curl->stderr,"* HTTP proxy is \"%s\"\n",proxy?proxy:"null");
 
   if(curl->flags.post)
     {
