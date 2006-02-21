@@ -2016,3 +2016,38 @@ keyserver_import_name(const char *name)
 
   return rc;
 }
+
+/* Use the PGP Universal trick of asking ldap://keys.(maildomain) for
+   the key. */
+int
+keyserver_import_ldap(const char *name)
+{
+  char *domain;
+  struct keyserver_spec *keyserver;
+  STRLIST list=NULL;
+  int rc;
+
+  append_to_strlist(&list,name);
+
+  /* Parse out the domain */
+  domain=strrchr(name,'@');
+  if(!domain)
+    return G10ERR_GENERAL;
+
+  domain++;
+
+  keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
+
+  keyserver->scheme=xstrdup("ldap");
+  keyserver->host=xmalloc(5+strlen(domain)+1);
+  strcpy(keyserver->host,"keys.");
+  strcat(keyserver->host,domain);
+    
+  rc=keyserver_work(KS_GETNAME,list,NULL,0,keyserver);
+
+  free_strlist(list);
+
+  free_keyserver_spec(keyserver);
+
+  return rc;
+}

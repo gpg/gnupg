@@ -289,6 +289,9 @@ keyserver_import_pka(const char *name) { return -1; }
 int
 keyserver_import_name(const char *name) { return -1; }
 
+int
+keyserver_import_ldap(const char *name) { return -1; }
+
 /* Stub:
  * No encryption here but mainproc links to these functions.
  */

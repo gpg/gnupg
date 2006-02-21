@@ -44,5 +44,6 @@ int keyserver_fetch(STRLIST urilist);
 int keyserver_import_cert(const char *name);
 int keyserver_import_pka(const char *name);
 int keyserver_import_name(const char *name);
+int keyserver_import_ldap(const char *name);
 
 #endif /* !_KEYSERVER_INTERNAL_H_ */

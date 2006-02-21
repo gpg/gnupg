@@ -1,3 +1,11 @@
+2006-02-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c: Stub keyserver_import_ldap.
+
+	* keyserver-internal.h, keyserver.c (keyserver_import_ldap):
+	Import using the PGP Universal trick of asking
+	ldap://keys.(maildomain) for the key.
+
 2006-02-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (parse_keyserver_uri): Include the scheme in the uri
