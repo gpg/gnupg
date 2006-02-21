@@ -1979,12 +1979,11 @@ keyserver_import_cert(const char *name)
 
 /* Import key pointed to by a PKA record */
 int
-keyserver_import_pka(const char *name)
+keyserver_import_pka(const char *name,unsigned char *fpr)
 {
-  unsigned char fpr[MAX_FINGERPRINT_LEN];
   char *uri;
   int rc=-1;
-      
+
   uri = get_pka_info (name, fpr);
   if (uri)
     {

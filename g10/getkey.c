@@ -938,6 +938,7 @@ get_pubkey_byname (PKT_public_key *pk,
 	 && opt.allow_pka_lookup
 	 && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE))
 	{
+	  unsigned char fpr[MAX_FINGERPRINT_LEN];
 	  /* If the requested name resembles a valid mailbox and
 	     automatic retrieval via PKA records has been enabled, we
 	     try to import the key via the URI and try again. */
@@ -945,13 +946,25 @@ get_pubkey_byname (PKT_public_key *pk,
 	  tried_pka=1;
 
 	  glo_ctrl.in_auto_key_retrieve++;
-	  res=keyserver_import_pka(name);
+	  res=keyserver_import_pka(name,fpr);
 	  glo_ctrl.in_auto_key_retrieve--;
 
 	  if(res==0)
 	    {
+	      int i;
+	      char fpr_string[2+(MAX_FINGERPRINT_LEN*2)+1];
+
 	      log_info(_("Automatically retrieved `%s' via %s\n"),
 		       name,"PKA");
+
+	      free_strlist(namelist);
+	      namelist=NULL;
+
+	      for(i=0;i<MAX_FINGERPRINT_LEN;i++)
+		sprintf(fpr_string+2*i,"%02X",fpr[i]);
+
+	      add_to_strlist( &namelist, fpr_string );
+
 	      goto retry;
 	    }
 	}

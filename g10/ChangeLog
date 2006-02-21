@@ -1,5 +1,14 @@
 2006-02-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* getkey.c (get_pubkey_byname): Fix minor security problem with
+	PKA when importing at -r time.  The URL in the PKA record may
+	point to a key put in by an attacker.  Fix is to use the
+	fingerprint from the PKA record as the recipient.  This ensures
+	that the PKA record is followed.
+
+	* keyserver-internal.h, keyserver.c (keyserver_import_pka): Return
+	the fingerprint we requested.
+
 	* gpgv.c: Stub keyserver_import_ldap.
 
 	* keyserver-internal.h, keyserver.c (keyserver_import_ldap):
