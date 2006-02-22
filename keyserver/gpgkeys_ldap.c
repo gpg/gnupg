@@ -1714,7 +1714,7 @@ int
 main(int argc,char *argv[])
 {
   int port=0,arg,err,ret=KEYSERVER_INTERNAL_ERROR;
-  char line[MAX_LINE];
+  char line[MAX_LINE],*binddn=NULL,*bindpw=NULL;
   int failed=0,use_ssl=0,use_tls=0,bound=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
 
@@ -1843,6 +1843,50 @@ main(int argc,char *argv[])
 		    {
 		      fprintf(console,"gpgkeys: out of memory while creating "
 			      "base DN\n");
+		      ret=KEYSERVER_NO_MEMORY;
+		      goto fail;
+		    }
+
+		  real_ldap=1;
+		}
+	    }
+	  else if(strncasecmp(start,"binddn",6)==0)
+	    {
+	      if(no)
+		{
+		  free(binddn);
+		  binddn=NULL;
+		}
+	      else if(start[6]=='=')
+		{
+		  free(binddn);
+		  binddn=strdup(&start[7]);
+		  if(!binddn)
+		    {
+		      fprintf(console,"gpgkeys: out of memory while creating "
+			      "bind DN\n");
+		      ret=KEYSERVER_NO_MEMORY;
+		      goto fail;
+		    }
+
+		  real_ldap=1;
+		}
+	    }
+	  else if(strncasecmp(start,"bindpw",6)==0)
+	    {
+	      if(no)
+		{
+		  free(bindpw);
+		  bindpw=NULL;
+		}
+	      else if(start[6]=='=')
+		{
+		  free(bindpw);
+		  bindpw=strdup(&start[7]);
+		  if(!bindpw)
+		    {
+		      fprintf(console,"gpgkeys: out of memory while creating "
+			      "bind password\n");
 		      ret=KEYSERVER_NO_MEMORY;
 		      goto fail;
 		    }
@@ -2098,24 +2142,39 @@ main(int argc,char *argv[])
 	}
     }
 
-#if 0
-  /* The LDAP keyserver doesn't require this, but it might be useful
-     if someone stores keys on a V2 LDAP server somewhere.  (V3
-     doesn't require a bind).  Leave this out for now since it is not
-     clear if anyone's server we're likely to use really cares, plus
-     there are some servers that don't allow it. */
+  /* By default we don't bind as there is usually no need to.  For
+     cases where the server needs some authentication, the user can
+     use binddn and bindpw for auth. */
 
-  err=ldap_simple_bind_s(ldap,NULL,NULL);
-  if(err!=0)
+  if(binddn)
     {
-      fprintf(console,"gpgkeys: internal LDAP bind error: %s\n",
-	      ldap_err2string(err));
-      fail_all(keylist,ldap_err_to_gpg_err(err));
-      goto fail;
-    }
-  else
-    bound=1;
+#ifdef HAVE_LDAP_SET_OPTION
+      int ver=LDAP_VERSION3;
+
+      err=ldap_set_option(ldap,LDAP_OPT_PROTOCOL_VERSION,&ver);
+      if(err!=LDAP_SUCCESS)
+	{
+	  fprintf(console,"gpgkeys: unable to go to LDAP 3: %s\n",
+		  ldap_err2string(err));
+	  fail_all(keylist,ldap_err_to_gpg_err(err));
+	  goto fail;
+	}
 #endif
+
+      if(opt->verbose>2)
+	fprintf(console,"gpgkeys: LDAP bind to %s, pw %s\n",binddn,
+		bindpw?">not shown<":">none<");
+      err=ldap_simple_bind_s(ldap,binddn,bindpw);
+      if(err!=LDAP_SUCCESS)
+	{
+	  fprintf(console,"gpgkeys: internal LDAP bind error: %s\n",
+		  ldap_err2string(err));
+	  fail_all(keylist,ldap_err_to_gpg_err(err));
+	  goto fail;
+	}
+      else
+	bound=1;
+    }
 
   if(opt->action==KS_GET)
     {

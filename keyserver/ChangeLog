@@ -1,5 +1,8 @@
 2006-02-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_ldap.c (main): Add binddn and bindpw so users can pass
+	credentials to a remote LDAP server.
+
 	* curl-shim.h, curl-shim.c (curl_easy_init, curl_easy_setopt,
 	curl_easy_perform): Mingw has 'stderr' as a macro?
 
