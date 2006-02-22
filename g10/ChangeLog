@@ -1,3 +1,10 @@
+2006-02-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, keydb.h, g10.c (main), getkey.c
+	(parse_auto_key_locate): Parse a list of key access methods.
+	(get_pubkey_byname): Walk the list here to try and retrieve keys
+	we don't have locally.
+
 2006-02-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (get_pubkey_byname): Fix minor security problem with

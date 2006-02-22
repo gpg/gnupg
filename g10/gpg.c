@@ -354,14 +354,13 @@ enum cmd_and_opt_values
     oKeyidFormat,
     oExitOnStatusWriteError,
     oLimitCardInsertTries,
-
     oReaderPort,
     octapiDriver,
     opcscDriver,
     oDisableCCID,
-
     oRequireBacksigs,
     oNoRequireBacksigs,
+    oAutoKeyLocate,
 
     oNoop
   };
@@ -707,6 +706,7 @@ static ARGPARSE_OPTS opts[] = {
     { oRecipient, "user", 2, "@" },
     { oRequireBacksigs, "require-backsigs", 0, "@"},
     { oNoRequireBacksigs, "no-require-backsigs", 0, "@"},
+    { oAutoKeyLocate, "auto-key-locate", 2, "@"},
     {0,NULL,0,NULL}
 };
 
@@ -2644,6 +2644,17 @@ main (int argc, char **argv )
 
 	  case oRequireBacksigs: opt.require_backsigs=1; break;
 	  case oNoRequireBacksigs: opt.require_backsigs=0; break;
+
+	  case oAutoKeyLocate:
+	    if(!parse_auto_key_locate(pargs.r.ret_str))
+	      {
+		if(configname)
+		  log_error(_("%s:%d: invalid auto-key-locate list\n"),
+			    configname,configlineno);
+		else
+		  log_error(_("invalid auto-key-locate list\n"));
+	      }
+	    break;
 
 	  case oNoop: break;
 

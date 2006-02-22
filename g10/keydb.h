@@ -258,6 +258,7 @@ char*get_long_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
 char*get_user_id_native( u32 *keyid );
 KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
+int parse_auto_key_locate(char *options);
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );

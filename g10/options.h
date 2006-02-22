@@ -220,6 +220,14 @@ struct
      error (but an invalid backsig still is). */
   int require_backsigs;
 
+  /* Linked list of ways to find a key if the key isn't on the local
+     keyring. */
+  struct akl
+  {
+    enum {AKL_CERT, AKL_PKA, AKL_LDAP, AKL_KEYSERVER} type;
+    struct akl *next;
+  } *auto_key_locate;
+
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't

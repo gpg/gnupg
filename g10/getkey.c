@@ -905,91 +905,94 @@ get_pubkey_byname (PKT_public_key *pk,
                    KEYDB_HANDLE *ret_kdbhd, int include_unusable )
 {
   int rc;
-  int tried_cert=0, tried_pka=0, tried_ks=0;
   STRLIST namelist = NULL;
 
   add_to_strlist( &namelist, name );
- retry:
+
   rc = key_byname( NULL, namelist, pk, NULL, 0,
                    include_unusable, ret_keyblock, ret_kdbhd);
+
+  /* If the requested name resembles a valid mailbox and automatic
+     retrieval has been enabled, we try to import the key. */
 
   if (rc == G10ERR_NO_PUBKEY && is_valid_mailbox(name))
     {
       int res;
+      struct akl *akl;
 
-      if(!tried_cert
-	 && (opt.keyserver_options.options&KEYSERVER_AUTO_CERT_RETRIEVE))
+      for(akl=opt.auto_key_locate;akl;akl=akl->next)
 	{
-	  tried_cert=1;
-
-	  glo_ctrl.in_auto_key_retrieve++;
-	  res=keyserver_import_cert(name);
-	  glo_ctrl.in_auto_key_retrieve--;
-
-	  if(res==0)
+	  switch(akl->type)
 	    {
-	      log_info(_("Automatically retrieved `%s' via %s\n"),
-		       name,"DNS CERT");
-	      goto retry;
+	    case AKL_CERT:
+	      glo_ctrl.in_auto_key_retrieve++;
+	      res=keyserver_import_cert(name);
+	      glo_ctrl.in_auto_key_retrieve--;
+
+	      if(res==0)
+		log_info(_("Automatically retrieved `%s' via %s\n"),
+			 name,"DNS CERT");
+	      break;
+
+	    case AKL_PKA:
+	      {
+		unsigned char fpr[MAX_FINGERPRINT_LEN];
+
+		glo_ctrl.in_auto_key_retrieve++;
+		res=keyserver_import_pka(name,fpr);
+		glo_ctrl.in_auto_key_retrieve--;
+
+		if(res==0)
+		  {
+		    int i;
+		    char fpr_string[MAX_FINGERPRINT_LEN*2+1];
+
+		    log_info(_("Automatically retrieved `%s' via %s\n"),
+			     name,"PKA");
+
+		    free_strlist(namelist);
+		    namelist=NULL;
+
+		    for(i=0;i<MAX_FINGERPRINT_LEN;i++)
+		      sprintf(fpr_string+2*i,"%02X",fpr[i]);
+
+		    add_to_strlist( &namelist, fpr_string );
+		  }
+	      }
+	      break;
+
+	    case AKL_LDAP:
+	      glo_ctrl.in_auto_key_retrieve++;
+	      res=keyserver_import_ldap(name);
+	      glo_ctrl.in_auto_key_retrieve--;
+
+	      if(res==0)
+		log_info(_("Automatically retrieved `%s' via %s\n"),
+			 name,"LDAP");
+	      break;
+
+	    case AKL_KEYSERVER:
+	      /* Strictly speaking, we don't need to only use a valid
+		 mailbox for the getname search, but it helps cut down
+		 on the problem of searching for something like "john"
+		 and getting a whole lot of keys back. */
+	      if(opt.keyserver)
+		{
+		  glo_ctrl.in_auto_key_retrieve++;
+		  res=keyserver_import_name(name);
+		  glo_ctrl.in_auto_key_retrieve--;
+
+		  if(res==0)
+		    log_info(_("Automatically retrieved `%s' via %s\n"),
+			     name,opt.keyserver->uri);
+		}
+	      break;
 	    }
-	}
 
-      if(!tried_pka
-	 && opt.allow_pka_lookup
-	 && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE))
-	{
-	  unsigned char fpr[MAX_FINGERPRINT_LEN];
-	  /* If the requested name resembles a valid mailbox and
-	     automatic retrieval via PKA records has been enabled, we
-	     try to import the key via the URI and try again. */
-
-	  tried_pka=1;
-
-	  glo_ctrl.in_auto_key_retrieve++;
-	  res=keyserver_import_pka(name,fpr);
-	  glo_ctrl.in_auto_key_retrieve--;
-
-	  if(res==0)
-	    {
-	      int i;
-	      char fpr_string[2+(MAX_FINGERPRINT_LEN*2)+1];
-
-	      log_info(_("Automatically retrieved `%s' via %s\n"),
-		       name,"PKA");
-
-	      free_strlist(namelist);
-	      namelist=NULL;
-
-	      for(i=0;i<MAX_FINGERPRINT_LEN;i++)
-		sprintf(fpr_string+2*i,"%02X",fpr[i]);
-
-	      add_to_strlist( &namelist, fpr_string );
-
-	      goto retry;
-	    }
-	}
-
-      /* Try keyserver last as it is likely to be the slowest.
-	 Strictly speaking, we don't need to only use a valid mailbox
-	 for the getname search, but it helps cut down on a problem
-	 with searching for something like "john" and getting a lot of
-	 keys back. */
-      if(!tried_ks
-	 && opt.keyserver
-	 && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
-	{
-	  tried_ks=1;
-
-	  glo_ctrl.in_auto_key_retrieve++;
-	  res=keyserver_import_name(name);
-	  glo_ctrl.in_auto_key_retrieve--;
-
-	  if(res==0)
-	    {
-	      log_info(_("Automatically retrieved `%s' via %s\n"),
-		       name,opt.keyserver->uri);
-	      goto retry;
-	    }
+	  rc = key_byname( NULL, namelist, pk, NULL, 0,
+			   include_unusable, ret_keyblock, ret_kdbhd);
+	  if(rc!=G10ERR_NO_PUBKEY)
+	    break;
 	}
     }
 
@@ -2874,4 +2877,49 @@ KEYDB_HANDLE
 get_ctx_handle(GETKEY_CTX ctx)
 {
   return ctx->kr_handle;
+}
+
+int
+parse_auto_key_locate(char *options)
+{
+  char *tok;
+
+  while((tok=optsep(&options)))
+    {
+      struct akl *akl,*last;
+
+      if(tok[0]=='\0')
+	continue;
+
+      akl=xmalloc_clear(sizeof(*akl));
+
+      if(ascii_strcasecmp(tok,"cert")==0)
+	akl->type=AKL_CERT;
+      else if(ascii_strcasecmp(tok,"pka")==0)
+	akl->type=AKL_PKA;
+      else if(ascii_strcasecmp(tok,"ldap")==0)
+	akl->type=AKL_LDAP;
+      else if(ascii_strcasecmp(tok,"keyserver")==0)
+	akl->type=AKL_KEYSERVER;
+      else
+	{
+	  xfree(akl);
+	  return 0;
+	}
+
+      /* We must maintain the order the user gave us */
+      for(last=opt.auto_key_locate;last && last->next;last=last->next)
+	{
+	  /* Check for duplicates */
+	  if(last && last->type==akl->type)
+	    return 0;
+	}
+
+      if(last)
+	last->next=akl;
+      else
+	opt.auto_key_locate=akl;
+    }
+
+  return 1;
 }
