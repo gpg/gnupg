@@ -1,5 +1,5 @@
 /* gpgkeys_ldap.c - talk to a LDAP keyserver
- * Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -248,7 +248,7 @@ join_two_modlists(LDAPMod ***one,LDAPMod **two)
    the attribute in question exists or not. */
 
 static int
-make_one_attr(LDAPMod ***modlist,int unique,char *attr,const char *value)
+make_one_attr(LDAPMod ***modlist,char *attr,const char *value)
 {
   LDAPMod **m;
   int nummods=0;
@@ -270,7 +270,8 @@ make_one_attr(LDAPMod ***modlist,int unique,char *attr,const char *value)
 	  if(ptr)
 	    for(ptr=(*m)->mod_values;*ptr;ptr++)
 	      {
-		if(unique && strcmp(*ptr,value)==0)
+		/* Duplicate value */
+		if(strcmp(*ptr,value)==0)
 		  return 1;
 		numvalues++;
 	      }
@@ -363,8 +364,8 @@ build_attrs(LDAPMod ***modlist,char *line)
 
       if(strlen(tok)==16)
 	{
-	  make_one_attr(modlist,0,"pgpCertID",tok);
-	  make_one_attr(modlist,0,"pgpKeyID",&tok[8]);
+	  make_one_attr(modlist,"pgpCertID",tok);
+	  make_one_attr(modlist,"pgpKeyID",&tok[8]);
 	}
       else
 	return;
@@ -376,11 +377,11 @@ build_attrs(LDAPMod ***modlist,char *line)
       switch(atoi(tok))
 	{
 	case 1:
-	  make_one_attr(modlist,0,"pgpKeyType","RSA");
+	  make_one_attr(modlist,"pgpKeyType","RSA");
 	  break;
 
 	case 17:
-	  make_one_attr(modlist,0,"pgpKeyType","DSS/DH");
+	  make_one_attr(modlist,"pgpKeyType","DSS/DH");
 	  break;
 	}
 
@@ -398,7 +399,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  if(val<99999 && val>0)
 	    {
 	      sprintf(padded,"%05u",atoi(tok));
-	      make_one_attr(modlist,0,"pgpKeySize",padded);
+	      make_one_attr(modlist,"pgpKeySize",padded);
 	    }
 	}
 
@@ -411,7 +412,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  char *stamp=epoch2ldaptime(atoi(tok));
 	  if(stamp)
 	    {
-	      make_one_attr(modlist,0,"pgpKeyCreateTime",stamp);
+	      make_one_attr(modlist,"pgpKeyCreateTime",stamp);
 	      free(stamp);
 	    }
 	}
@@ -425,7 +426,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  char *stamp=epoch2ldaptime(atoi(tok));
 	  if(stamp)
 	    {
-	      make_one_attr(modlist,0,"pgpKeyExpireTime",stamp);
+	      make_one_attr(modlist,"pgpKeyExpireTime",stamp);
 	      free(stamp);
 	    }
 	}
@@ -455,8 +456,8 @@ build_attrs(LDAPMod ***modlist,char *line)
 	"(&(pgpUserID=*isabella*)(pgpDisabled=0))"
       */
 
-      make_one_attr(modlist,0,"pgpDisabled",disabled?"1":"0");
-      make_one_attr(modlist,0,"pgpRevoked",revoked?"1":"0");
+      make_one_attr(modlist,"pgpDisabled",disabled?"1":"0");
+      make_one_attr(modlist,"pgpRevoked",revoked?"1":"0");
     }
   else if(ascii_strcasecmp("sub",record)==0)
     {
@@ -467,7 +468,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	return;
 
       if(strlen(tok)==16)
-	make_one_attr(modlist,0,"pgpSubKeyID",tok);
+	make_one_attr(modlist,"pgpSubKeyID",tok);
       else
 	return;
 
@@ -489,7 +490,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  if(val<99999 && val>0)
 	    {
 	      sprintf(padded,"%05u",atoi(tok));
-	      make_one_attr(modlist,0,"pgpKeySize",padded);
+	      make_one_attr(modlist,"pgpKeySize",padded);
 	    }
 	}
 
@@ -531,7 +532,7 @@ build_attrs(LDAPMod ***modlist,char *line)
       /* We don't care about the other info provided in the uid: line
 	 since the LDAP schema doesn't need it. */
 
-      make_one_attr(modlist,0,"pgpUserID",userid);
+      make_one_attr(modlist,"pgpUserID",userid);
     }
   else if(ascii_strcasecmp("sig",record)==0)
     {
@@ -541,7 +542,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	return;
 
       if(strlen(tok)==16)
-	make_one_attr(modlist,1,"pgpSignerID",tok);
+	make_one_attr(modlist,"pgpSignerID",tok);
     }
 }
 
@@ -590,17 +591,17 @@ send_key(int *eof)
   /* Start by nulling out all attributes.  We try and do a modify
      operation first, so this ensures that we don't leave old
      attributes lying around. */
-  make_one_attr(&modlist,0,"pgpDisabled",NULL);
-  make_one_attr(&modlist,0,"pgpKeyID",NULL);
-  make_one_attr(&modlist,0,"pgpKeyType",NULL);
-  make_one_attr(&modlist,0,"pgpUserID",NULL);
-  make_one_attr(&modlist,0,"pgpKeyCreateTime",NULL);
-  make_one_attr(&modlist,0,"pgpSignerID",NULL);
-  make_one_attr(&modlist,0,"pgpRevoked",NULL);
-  make_one_attr(&modlist,0,"pgpSubKeyID",NULL);
-  make_one_attr(&modlist,0,"pgpKeySize",NULL);
-  make_one_attr(&modlist,0,"pgpKeyExpireTime",NULL);
-  make_one_attr(&modlist,0,"pgpCertID",NULL);
+  make_one_attr(&modlist,"pgpDisabled",NULL);
+  make_one_attr(&modlist,"pgpKeyID",NULL);
+  make_one_attr(&modlist,"pgpKeyType",NULL);
+  make_one_attr(&modlist,"pgpUserID",NULL);
+  make_one_attr(&modlist,"pgpKeyCreateTime",NULL);
+  make_one_attr(&modlist,"pgpSignerID",NULL);
+  make_one_attr(&modlist,"pgpRevoked",NULL);
+  make_one_attr(&modlist,"pgpSubKeyID",NULL);
+  make_one_attr(&modlist,"pgpKeySize",NULL);
+  make_one_attr(&modlist,"pgpKeyExpireTime",NULL);
+  make_one_attr(&modlist,"pgpCertID",NULL);
 
   /* Assemble the INFO stuff into LDAP attributes */
 
@@ -719,8 +720,8 @@ send_key(int *eof)
       goto fail;
     }
 
-  make_one_attr(&addlist,0,"objectClass","pgpKeyInfo");
-  make_one_attr(&addlist,0,"pgpKey",key);
+  make_one_attr(&addlist,"objectClass","pgpKeyInfo");
+  make_one_attr(&addlist,"pgpKey",key);
 
   /* Now append addlist onto modlist */
   if(!join_two_modlists(&modlist,addlist))

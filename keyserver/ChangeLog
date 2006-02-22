@@ -1,5 +1,8 @@
 2006-02-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_ldap.c (make_one_attr, build_attrs, send_key): Don't
+	allow duplicate attributes as OpenLDAP is now enforcing this.
+
 	* gpgkeys_ldap.c (main): Add binddn and bindpw so users can pass
 	credentials to a remote LDAP server.
 
