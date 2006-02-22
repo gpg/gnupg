@@ -66,7 +66,7 @@ typedef struct
   void *file;
   char *postfields;
   unsigned int status;
-  FILE *stderr;
+  FILE *errors;
   struct
   {
     unsigned int post:1;

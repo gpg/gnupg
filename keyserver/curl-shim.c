@@ -92,7 +92,7 @@ curl_easy_init(void)
 
   handle=calloc(1,sizeof(CURL));
   if(handle)
-    handle->stderr=stderr;
+    handle->errors=stderr;
 
   return handle;
 }
@@ -143,7 +143,7 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
       curl->flags.verbose=va_arg(ap,unsigned int);
       break;
     case CURLOPT_STDERR:
-      curl->stderr=va_arg(ap,FILE *);
+      curl->errors=va_arg(ap,FILE *);
       break;
     default:
       /* We ignore the huge majority of curl options */
@@ -175,7 +175,7 @@ curl_easy_perform(CURL *curl)
     proxy=getenv(HTTP_PROXY_ENV);
 
   if(curl->flags.verbose)
-    fprintf(curl->stderr,"* HTTP proxy is \"%s\"\n",proxy?proxy:"null");
+    fprintf(curl->errors,"* HTTP proxy is \"%s\"\n",proxy?proxy:"null");
 
   if(curl->flags.post)
     {
