@@ -320,6 +320,5 @@ struct {
 #define KEYSERVER_TRY_DNS_SRV            (1<<6)
 #define KEYSERVER_HONOR_KEYSERVER_URL    (1<<7)
 #define KEYSERVER_HONOR_PKA_RECORD       (1<<8)
-#define KEYSERVER_AUTO_CERT_RETRIEVE     (1<<9)
 
 #endif /*G10_OPTIONS_H*/

@@ -1,5 +1,10 @@
 2006-02-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, keyserver.c (parse_keyserver_options): Remove
+	auto-cert-retrieve as it is no longer meaningful.  Add
+	max-cert-size to allow users to pick a max key size retrieved via
+	CERT.
+
 	* options.h, gpg.c (main), mainproc.c (check_sig_and_print),
 	keyserver.c (keyserver_opts): Rename auto-pka-retrieve to
 	honor-pka-record to be consistent with honor-keyserver-url.

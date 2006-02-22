@@ -72,6 +72,7 @@ enum ks_action {KS_UNKNOWN=0,KS_GET,KS_GETNAME,KS_SEND,KS_SEARCH};
 
 static struct parse_options keyserver_opts[]=
   {
+    {"max-cert-size",0,NULL,NULL},
     {"include-revoked",KEYSERVER_INCLUDE_REVOKED,NULL,
      N_("include revoked keys in search results")},
     {"include-subkeys",KEYSERVER_INCLUDE_SUBKEYS,NULL,
@@ -85,8 +86,6 @@ static struct parse_options keyserver_opts[]=
      NULL},
     {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL,
      N_("automatically retrieve keys when verifying signatures")},
-    {"auto-cert-retrieve",KEYSERVER_AUTO_CERT_RETRIEVE,NULL,
-     N_("automatically retrieve keys from DNS")},
     {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL,
      NULL},
     {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL,
@@ -112,7 +111,7 @@ parse_keyserver_options(char *options)
   char *tok;
   char *max_cert;
 
-  keyserver_opts[7].value=&max_cert;
+  keyserver_opts[0].value=&max_cert;
 
   while((tok=optsep(&options)))
     {
@@ -173,10 +172,9 @@ parse_keyserver_options(char *options)
 	}
     }
 
-  if(opt.keyserver_options.options&KEYSERVER_AUTO_CERT_RETRIEVE)
+  if(max_cert)
     {
-      if(max_cert)
-	max_cert_size=strtoul(max_cert,(char **)NULL,10);
+      max_cert_size=strtoul(max_cert,(char **)NULL,10);
 
       if(max_cert_size==0)
 	max_cert_size=DEFAULT_MAX_CERT_SIZE;
