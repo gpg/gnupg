@@ -327,6 +327,9 @@ get_name(const char *getkey)
   append_path(request,"/pks/lookup?op=get&options=mr&search=");
   strcat(request,searchkey_encoded);
 
+  if(opt->action==KS_GETNAME)
+    strcat(request,"&exact=on");
+
   if(opt->verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
