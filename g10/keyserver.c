@@ -85,14 +85,14 @@ static struct parse_options keyserver_opts[]=
      NULL},
     {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL,
      N_("automatically retrieve keys when verifying signatures")},
-    {"auto-pka-retrieve",KEYSERVER_AUTO_PKA_RETRIEVE,NULL,
-     N_("automatically retrieve keys from PKA records")},
     {"auto-cert-retrieve",KEYSERVER_AUTO_CERT_RETRIEVE,NULL,
      N_("automatically retrieve keys from DNS")},
     {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL,
      NULL},
     {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL,
      N_("honor the preferred keyserver URL set on the key")},
+    {"honor-pka-record",KEYSERVER_HONOR_PKA_RECORD,NULL,
+     N_("honor the PKA record set on a key when retrieving keys")},
     {NULL,0,NULL,NULL}
   };
 
@@ -1740,7 +1740,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	      /* Try and parse the keyserver URL.  If it doesn't work,
 		 then we end up writing NULL which indicates we are
 		 the same as any other key. */
-	      if(uid && sig)
+	      if(sig)
 		(*klist)[*count].skipfncvalue=parse_preferred_keyserver(sig);
 	    }
 
@@ -1977,7 +1977,8 @@ keyserver_import_cert(const char *name)
   return rc;
 }
 
-/* Import key pointed to by a PKA record */
+/* Import key pointed to by a PKA record. Return the requested
+   fingerprint in fpr. */
 int
 keyserver_import_pka(const char *name,unsigned char *fpr)
 {
@@ -2041,6 +2042,11 @@ keyserver_import_ldap(const char *name)
   keyserver->host=xmalloc(5+strlen(domain)+1);
   strcpy(keyserver->host,"keys.");
   strcat(keyserver->host,domain);
+  keyserver->uri=xmalloc(strlen(keyserver->scheme)+
+			 3+strlen(keyserver->host)+1);
+  strcpy(keyserver->uri,keyserver->scheme);
+  strcat(keyserver->uri,"://");
+  strcat(keyserver->uri,keyserver->host);
     
   rc=keyserver_work(KS_GETNAME,list,NULL,0,keyserver);
 

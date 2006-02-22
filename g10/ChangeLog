@@ -1,5 +1,9 @@
 2006-02-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, gpg.c (main), mainproc.c (check_sig_and_print),
+	keyserver.c (keyserver_opts): Rename auto-pka-retrieve to
+	honor-pka-record to be consistent with honor-keyserver-url.
+
 	* options.h, keydb.h, g10.c (main), getkey.c
 	(parse_auto_key_locate): Parse a list of key access methods.
 	(get_pubkey_byname): Walk the list here to try and retrieve keys

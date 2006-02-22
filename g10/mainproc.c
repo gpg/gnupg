@@ -1530,11 +1530,11 @@ check_sig_and_print( CTX c, KBNODE node )
 	  }
       }
 
-
     /* If the preferred keyserver thing above didn't work, our second
        try is to use the URI from a DNS PKA record. */
     if ( rc == G10ERR_NO_PUBKEY 
-         && (opt.keyserver_options.options&KEYSERVER_AUTO_PKA_RETRIEVE))
+	 && opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
+         && opt.keyserver_options.options&KEYSERVER_HONOR_PKA_RECORD)
       {
         const char *uri = pka_uri_from_sig (sig);
         
@@ -1558,12 +1558,11 @@ check_sig_and_print( CTX c, KBNODE node )
           }
       }
 
-
     /* If the preferred keyserver thing above didn't work and we got
        no information from the DNS PKA, this is a third try. */
 
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver
-	&& (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
+	&& opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
       {
 	int res;
 
