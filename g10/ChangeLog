@@ -1,5 +1,10 @@
 2006-02-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, keyserver-internal.h, keyserver.c
+	(keyserver_import_name), getkey.c (free_akl,
+	parse_auto_key_locate, get_pubkey_byname): The obvious next step:
+	allow arbitrary keyservers in the auto-key-locate list.
+
 	* options.h, keyserver.c (parse_keyserver_options): Remove
 	auto-cert-retrieve as it is no longer meaningful.  Add
 	max-cert-size to allow users to pick a max key size retrieved via

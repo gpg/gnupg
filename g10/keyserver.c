@@ -2001,14 +2001,14 @@ keyserver_import_pka(const char *name,unsigned char *fpr)
 
 /* Import all keys that match name */
 int
-keyserver_import_name(const char *name)
+keyserver_import_name(const char *name,struct keyserver_spec *keyserver)
 {
   STRLIST list=NULL;
   int rc;
 
   append_to_strlist(&list,name);
 
-  rc=keyserver_work(KS_GETNAME,list,NULL,0,opt.keyserver);
+  rc=keyserver_work(KS_GETNAME,list,NULL,0,keyserver);
 
   free_strlist(list);
 

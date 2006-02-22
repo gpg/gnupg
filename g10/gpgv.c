@@ -287,7 +287,10 @@ int
 keyserver_import_pka(const char *name,unsigned char *fpr) { return -1; }
 
 int
-keyserver_import_name(const char *name) { return -1; }
+keyserver_import_name(const char *name,struct keyserver_spec *spec)
+{
+  return -1;
+}
 
 int
 keyserver_import_ldap(const char *name) { return -1; }

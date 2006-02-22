@@ -979,13 +979,23 @@ get_pubkey_byname (PKT_public_key *pk,
 	      if(opt.keyserver)
 		{
 		  glo_ctrl.in_auto_key_retrieve++;
-		  res=keyserver_import_name(name);
+		  res=keyserver_import_name(name,opt.keyserver);
 		  glo_ctrl.in_auto_key_retrieve--;
 
 		  if(res==0)
 		    log_info(_("Automatically retrieved `%s' via %s\n"),
 			     name,opt.keyserver->uri);
 		}
+	      break;
+
+	    case AKL_SPEC:
+	      glo_ctrl.in_auto_key_retrieve++;
+	      res=keyserver_import_name(name,akl->spec);
+	      glo_ctrl.in_auto_key_retrieve--;
+
+	      if(res==0)
+		log_info(_("Automatically retrieved `%s' via %s\n"),
+			 name,akl->spec->uri);
 	      break;
 	    }
 
@@ -2879,6 +2889,15 @@ get_ctx_handle(GETKEY_CTX ctx)
   return ctx->kr_handle;
 }
 
+static void
+free_akl(struct akl *akl)
+{
+  if(akl->spec)
+    free_keyserver_spec(akl->spec);
+
+  xfree(akl);
+}
+
 int
 parse_auto_key_locate(char *options)
 {
@@ -2901,9 +2920,11 @@ parse_auto_key_locate(char *options)
 	akl->type=AKL_LDAP;
       else if(ascii_strcasecmp(tok,"keyserver")==0)
 	akl->type=AKL_KEYSERVER;
+      else if((akl->spec=parse_keyserver_uri(tok,1,NULL,0)))
+	akl->type=AKL_SPEC;
       else
 	{
-	  xfree(akl);
+	  free_akl(akl);
 	  return 0;
 	}
 
@@ -2911,8 +2932,14 @@ parse_auto_key_locate(char *options)
       for(last=opt.auto_key_locate;last && last->next;last=last->next)
 	{
 	  /* Check for duplicates */
-	  if(last && last->type==akl->type)
-	    return 0;
+	  if(last && last->type==akl->type
+	     && (akl->type!=AKL_SPEC
+		 || (akl->type==AKL_SPEC
+		     && strcmp(last->spec->uri,akl->spec->uri)==0)))
+	    {
+	      free_akl(akl);
+	      return 0;
+	    }
 	}
 
       if(last)
