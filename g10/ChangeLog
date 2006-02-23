@@ -1,5 +1,10 @@
 2006-02-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.c, gpg.c (main), keyserver.c (keyserver_spawn): No
+	special treatment of include-revoked, include-subkeys, and
+	try-dns-srv.  These are keyserver features, and GPG shouldn't get
+	involved here.
+
 	* keyserver.c (parse_keyserver_uri, add_canonical_option): Always
 	append options to the list, as ordering may be significant to the
 	user.

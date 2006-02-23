@@ -67,17 +67,13 @@ struct keyrec
 
 enum ks_action {KS_UNKNOWN=0,KS_GET,KS_GETNAME,KS_SEND,KS_SEARCH};
 
-/* Tell remote processes about these options */
-#define REMOTE_TELL (KEYSERVER_INCLUDE_REVOKED|KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_TRY_DNS_SRV)
-
 static struct parse_options keyserver_opts[]=
   {
+    /* some of these options are not real - just for the help
+       message */
     {"max-cert-size",0,NULL,NULL},
-    {"include-revoked",KEYSERVER_INCLUDE_REVOKED,NULL,
-     N_("include revoked keys in search results")},
-    {"include-subkeys",KEYSERVER_INCLUDE_SUBKEYS,NULL,
-     N_("include subkeys when searching by key ID")},
-    /* not a real option - just for the help message */
+    {"include-revoked",0,NULL,N_("include revoked keys in search results")},
+    {"include-subkeys",0,NULL,N_("include subkeys when searching by key ID")},
     {"use-temp-files",0,NULL,
      N_("use temporary files to pass data to keyserver helpers")},
     {"keep-temp-files",KEYSERVER_KEEP_TEMP_FILES,NULL,
@@ -86,8 +82,6 @@ static struct parse_options keyserver_opts[]=
      NULL},
     {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL,
      N_("automatically retrieve keys when verifying signatures")},
-    {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL,
-     NULL},
     {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL,
      N_("honor the preferred keyserver URL set on the key")},
     {"honor-pka-record",KEYSERVER_HONOR_PKA_RECORD,NULL,
@@ -933,7 +927,6 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   unsigned int maxlen,buflen;
   char *command,*end,*searchstr=NULL;
   byte *line=NULL;
-  struct parse_options *kopts;
   struct exec_info *spawn;
   const char *scheme;
   const char *libexecdir = get_libexecdir ();
@@ -1050,14 +1043,12 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	fprintf(spawn->tochild,"PATH %s\n",keyserver->path);
     }
 
-  /* Write options */
-
-  for(i=0,kopts=keyserver_opts;kopts[i].name;i++)
-    if(opt.keyserver_options.options & kopts[i].bit & REMOTE_TELL)
-      fprintf(spawn->tochild,"OPTION %s\n",kopts[i].name);
+  /* Write global options */
 
   for(temp=opt.keyserver_options.other;temp;temp=temp->next)
     fprintf(spawn->tochild,"OPTION %s\n",temp->d);
+
+  /* Write per-keyserver options */
 
   for(temp=opt.keyserver->options;temp;temp=temp->next)
     fprintf(spawn->tochild,"OPTION %s\n",temp->d);

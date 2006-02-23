@@ -313,14 +313,11 @@ struct {
 #define VERIFY_SHOW_UID_VALIDITY         (1<<5)
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
 
-#define KEYSERVER_INCLUDE_REVOKED        (1<<0)
-#define KEYSERVER_INCLUDE_SUBKEYS        (1<<1)
-#define KEYSERVER_USE_TEMP_FILES         (1<<2)
-#define KEYSERVER_KEEP_TEMP_FILES        (1<<3)
-#define KEYSERVER_ADD_FAKE_V3            (1<<4)
-#define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<5)
-#define KEYSERVER_TRY_DNS_SRV            (1<<6)
-#define KEYSERVER_HONOR_KEYSERVER_URL    (1<<7)
-#define KEYSERVER_HONOR_PKA_RECORD       (1<<8)
+#define KEYSERVER_USE_TEMP_FILES         (1<<0)
+#define KEYSERVER_KEEP_TEMP_FILES        (1<<1)
+#define KEYSERVER_ADD_FAKE_V3            (1<<2)
+#define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<3)
+#define KEYSERVER_HONOR_KEYSERVER_URL    (1<<4)
+#define KEYSERVER_HONOR_PKA_RECORD       (1<<5)
 
 #endif /*G10_OPTIONS_H*/
