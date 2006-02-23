@@ -1,5 +1,9 @@
 2006-02-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (parse_keyserver_uri, add_canonical_option): Always
+	append options to the list, as ordering may be significant to the
+	user.
+
 	* gpg.c (add_notation_data): Fix reversed logic for isascii check
 	when adding notations.  Noted by Christian Biere.
 

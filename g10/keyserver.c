@@ -118,11 +118,11 @@ add_canonical_option(char *option,STRLIST *list)
       strcpy(joined,option);
       strcat(joined,"=");
       strcat(joined,arg);
-      add_to_strlist(list,joined);
+      append_to_strlist(list,joined);
       xfree(joined);
     }
   else
-    add_to_strlist(list,option);
+    append_to_strlist(list,option);
 }
 
 int
@@ -294,7 +294,7 @@ parse_keyserver_uri(const char *string,int require_scheme,
 			 "--keyserver-options ","broken-http-proxy");
       xfree(keyserver->scheme);
       keyserver->scheme=xstrdup("hkp");
-      add_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
+      append_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
     }
   else if(ascii_strcasecmp(keyserver->scheme,"x-hkp")==0)
     {
