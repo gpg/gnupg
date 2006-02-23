@@ -4029,7 +4029,7 @@ add_notation_data( const char *string, int which )
     /* we only support printable text - therefore we enforce the use
      * of only printable characters (an empty value is valid) */
     for( s++; *s ; s++ ) {
-	if ( isascii (*s) )
+	if ( !isascii (*s) )
           highbit = 1;
 	else if (iscntrl(*s)) {
 	    log_error(_("a notation value must not use"

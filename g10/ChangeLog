@@ -1,5 +1,8 @@
 2006-02-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.c (add_notation_data): Fix reversed logic for isascii check
+	when adding notations.  Noted by Christian Biere.
+
 	* options.h, keyserver.c (add_canonical_option): New.
 	(parse_keyserver_options): Moved from here.
 	(parse_keyserver_uri): Use it here so each keyserver can have some
