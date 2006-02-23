@@ -104,6 +104,27 @@ static int keyserver_work(enum ks_action action,STRLIST list,
 
 static size_t max_cert_size=DEFAULT_MAX_CERT_SIZE;
 
+static void
+add_canonical_option(char *option,STRLIST *list)
+{
+  char *arg=argsplit(option);
+
+  if(arg)
+    {
+      char *joined;
+
+      joined=xmalloc(strlen(option)+1+strlen(arg)+1);
+      /* Make a canonical name=value form with no spaces */
+      strcpy(joined,option);
+      strcat(joined,"=");
+      strcat(joined,arg);
+      add_to_strlist(list,joined);
+      xfree(joined);
+    }
+  else
+    add_to_strlist(list,option);
+}
+
 int
 parse_keyserver_options(char *options)
 {
@@ -152,23 +173,7 @@ parse_keyserver_options(char *options)
 	{
 	  /* All of the standard options have failed, so the option is
 	     destined for a keyserver plugin. */
-	  char *arg=argsplit(tok);
-
-	  if(arg)
-	    {
-	      char *joined;
-
-	      joined=xmalloc(strlen(tok)+1+strlen(arg)+1);
-	      /* Make a canonical name=value form with no
-		 spaces */
-	      strcpy(joined,tok);
-	      strcat(joined,"=");
-	      strcat(joined,arg);
-	      add_to_strlist(&opt.keyserver_options.other,joined);
-	      xfree(joined);
-	    }
-	  else
-	    add_to_strlist(&opt.keyserver_options.other,tok);
+	  add_canonical_option(tok,&opt.keyserver_options.other);
 	}
     }
 
@@ -193,6 +198,7 @@ free_keyserver_spec(struct keyserver_spec *keyserver)
   xfree(keyserver->port);
   xfree(keyserver->path);
   xfree(keyserver->opaque);
+  free_strlist(keyserver->options);
   xfree(keyserver);
 }
 
@@ -201,17 +207,32 @@ free_keyserver_spec(struct keyserver_spec *keyserver)
    keyserver/ksutil.c for limited use in gpgkeys_ldap or the like. */
 
 struct keyserver_spec *
-parse_keyserver_uri(const char *uri,int require_scheme,
+parse_keyserver_uri(const char *string,int require_scheme,
 		    const char *configname,unsigned int configlineno)
 {
   int assume_hkp=0;
   struct keyserver_spec *keyserver;
   const char *idx;
   int count;
+  char *uri,*options;
 
-  assert(uri!=NULL);
+  assert(string!=NULL);
 
   keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
+
+  uri=xstrdup(string);
+
+  options=strchr(uri,' ');
+  if(options)
+    {
+      char *tok;
+
+      *options='\0';
+      options++;
+
+      while((tok=optsep(&options)))
+	add_canonical_option(tok,&keyserver->options);
+    }
 
   /* Get the scheme */
 
@@ -1036,6 +1057,9 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       fprintf(spawn->tochild,"OPTION %s\n",kopts[i].name);
 
   for(temp=opt.keyserver_options.other;temp;temp=temp->next)
+    fprintf(spawn->tochild,"OPTION %s\n",temp->d);
+
+  for(temp=opt.keyserver->options;temp;temp=temp->next)
     fprintf(spawn->tochild,"OPTION %s\n",temp->d);
 
   switch(action)

@@ -1,3 +1,11 @@
+2006-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, keyserver.c (add_canonical_option): New.
+	(parse_keyserver_options): Moved from here.
+	(parse_keyserver_uri): Use it here so each keyserver can have some
+	private options in addition to the main keyserver-options
+	(e.g. per-keyserver auth).
+
 2006-02-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, keyserver-internal.h, keyserver.c

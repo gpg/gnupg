@@ -136,6 +136,7 @@ struct
     char *port;
     char *path;
     char *opaque;
+    STRLIST options;
     struct
     {
       unsigned int direct_uri:1;
