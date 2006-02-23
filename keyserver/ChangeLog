@@ -1,3 +1,8 @@
+2006-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.c (init_ks_options): Default include-revoked and
+	include-subkeys to on, as gpg isn't doing this any longer.
+
 2006-02-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (get_name): A GETNAME query turns exact=on to cut

@@ -86,6 +86,8 @@ init_ks_options(void)
   if(opt)
     {
       opt->action=KS_UNKNOWN;
+      opt->flags.include_revoked=1;
+      opt->flags.include_subkeys=1;
       opt->flags.check_cert=1;
       opt->timeout=DEFAULT_KEYSERVER_TIMEOUT;
       opt->path=strdup("/");
