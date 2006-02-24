@@ -1,5 +1,5 @@
 /* keyserver-internal.h - Keyserver internals
- * Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,6 +29,7 @@
 
 int parse_keyserver_options(char *options);
 void free_keyserver_spec(struct keyserver_spec *keyserver);
+struct keyserver_spec *keyserver_match(struct keyserver_spec *spec);
 struct keyserver_spec *parse_keyserver_uri(const char *string,
 					   int require_scheme,
 					   const char *configname,

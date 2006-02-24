@@ -1,5 +1,6 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -194,6 +195,41 @@ free_keyserver_spec(struct keyserver_spec *keyserver)
   xfree(keyserver->opaque);
   free_strlist(keyserver->options);
   xfree(keyserver);
+}
+
+/* Return 0 for match */
+static int
+cmp_keyserver_spec(struct keyserver_spec *one,struct keyserver_spec *two)
+{
+  if(ascii_strcasecmp(one->scheme,two->scheme)==0)
+    {
+      if(one->host && two->host && ascii_strcasecmp(one->host,two->host)==0)
+	{
+	  if((one->port && two->port
+	      && ascii_strcasecmp(one->port,two->port)==0)
+	     || (!one->port && !two->port))
+	    return 0;
+	}
+      else if(one->opaque && two->opaque
+	      && ascii_strcasecmp(one->opaque,two->opaque)==0)
+	return 0;
+    }
+
+  return 1;
+}
+
+/* Try and match one of our keyservers.  If we can, return that.  If
+   we can't, return our input. */
+struct keyserver_spec *
+keyserver_match(struct keyserver_spec *spec)
+{
+  struct keyserver_spec *ks;
+
+  for(ks=opt.keyserver;ks;ks=ks->next)
+    if(cmp_keyserver_spec(spec,ks)==0)
+      return ks;
+
+  return spec;
 }
 
 /* TODO: once we cut over to an all-curl world, we don't need this
@@ -1050,7 +1086,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
   /* Write per-keyserver options */
 
-  for(temp=opt.keyserver->options;temp;temp=temp->next)
+  for(temp=keyserver->options;temp;temp=temp->next)
     fprintf(spawn->tochild,"OPTION %s\n",temp->d);
 
   switch(action)

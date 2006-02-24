@@ -1,6 +1,6 @@
 /* keydb.h - Key database
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -258,6 +258,7 @@ char*get_long_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
 char*get_user_id_native( u32 *keyid );
 KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
+void release_akl(void);
 int parse_auto_key_locate(char *options);
 
 /*-- keyid.c --*/

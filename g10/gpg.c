@@ -1,6 +1,6 @@
 /* gpg.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -361,6 +361,7 @@ enum cmd_and_opt_values
     oRequireBacksigs,
     oNoRequireBacksigs,
     oAutoKeyLocate,
+    oNoAutoKeyLocate,
 
     oNoop
   };
@@ -698,15 +699,16 @@ static ARGPARSE_OPTS opts[] = {
 #if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
     { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
 #endif
-    /* These are aliases to help users of the PGP command line product
-       use gpg with minimal pain.  Many commands are common already as
-       they seem to have borrowed commands from us.  Now I'm returning
-       the favor. */
+    /* These two are aliases to help users of the PGP command line
+       product use gpg with minimal pain.  Many commands are common
+       already as they seem to have borrowed commands from us.  Now
+       I'm returning the favor. */
     { oLocalUser, "sign-with", 2, "@" },
     { oRecipient, "user", 2, "@" },
     { oRequireBacksigs, "require-backsigs", 0, "@"},
     { oNoRequireBacksigs, "no-require-backsigs", 0, "@"},
     { oAutoKeyLocate, "auto-key-locate", 2, "@"},
+    { oNoAutoKeyLocate, "no-auto-key-locate", 0, "@"},
     {0,NULL,0,NULL}
 };
 
@@ -2416,10 +2418,18 @@ main (int argc, char **argv )
 #endif /* __riscos__ */
             break;
 	  case oKeyServer:
-	    opt.keyserver=parse_keyserver_uri(pargs.r.ret_str,0,
-					      configname,configlineno);
-	    if(!opt.keyserver)
-	      log_error(_("could not parse keyserver URL\n"));
+	    {
+	      struct keyserver_spec *keyserver;
+	      keyserver=parse_keyserver_uri(pargs.r.ret_str,0,
+					    configname,configlineno);
+	      if(!keyserver)
+		log_error(_("could not parse keyserver URL\n"));
+	      else
+		{
+		  keyserver->next=opt.keyserver;
+		  opt.keyserver=keyserver;
+		}
+	    }
 	    break;
 	  case oKeyServerOptions:
 	    if(!parse_keyserver_options(pargs.r.ret_str))
@@ -2654,6 +2664,9 @@ main (int argc, char **argv )
 		else
 		  log_error(_("invalid auto-key-locate list\n"));
 	      }
+	    break;
+	  case oNoAutoKeyLocate:
+	    release_akl();
 	    break;
 
 	  case oNoop: break;

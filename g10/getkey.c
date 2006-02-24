@@ -1,6 +1,6 @@
 /* getkey.c -  Get a key from the database
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -989,13 +989,18 @@ get_pubkey_byname (PKT_public_key *pk,
 	      break;
 
 	    case AKL_SPEC:
-	      glo_ctrl.in_auto_key_retrieve++;
-	      res=keyserver_import_name(name,akl->spec);
-	      glo_ctrl.in_auto_key_retrieve--;
+	      {
+		struct keyserver_spec *keyserver;
 
-	      if(res==0)
-		log_info(_("Automatically retrieved `%s' via %s\n"),
-			 name,akl->spec->uri);
+		keyserver=keyserver_match(akl->spec);
+		glo_ctrl.in_auto_key_retrieve++;
+		res=keyserver_import_name(name,keyserver);
+		glo_ctrl.in_auto_key_retrieve--;
+
+		if(res==0)
+		  log_info(_("Automatically retrieved `%s' via %s\n"),
+			   name,akl->spec->uri);
+	      }
 	      break;
 	    }
 
@@ -2896,6 +2901,17 @@ free_akl(struct akl *akl)
     free_keyserver_spec(akl->spec);
 
   xfree(akl);
+}
+
+void
+release_akl(void)
+{
+  while(opt.auto_key_locate)
+    {
+      struct akl *akl2=opt.auto_key_locate;
+      opt.auto_key_locate=opt.auto_key_locate->next;
+      free_akl(akl2);
+    }
 }
 
 int

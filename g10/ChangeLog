@@ -1,3 +1,18 @@
+2006-02-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, getkey.c (release_akl), gpg.c (main): Add
+	--no-auto-key-locate.
+
+	* options.h, gpg.c (main): Keep track of each keyserver registered
+	so we can match on them later.
+
+	* keyserver-internal.h, keyserver.c (cmp_keyserver_spec,
+	keyserver_match), gpgv.c: New.  Find a keyserver that matches ours
+	and return its spec.
+
+	* getkey.c (get_pubkey_byname): Use it here to get the
+	per-keyserver options from an earlier keyserver.
+
 2006-02-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (parse_keyserver_options): Only change max_cert if
