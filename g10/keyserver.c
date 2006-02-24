@@ -124,7 +124,7 @@ parse_keyserver_options(char *options)
 {
   int ret=1;
   char *tok;
-  char *max_cert;
+  char *max_cert=NULL;
 
   keyserver_opts[0].value=&max_cert;
 

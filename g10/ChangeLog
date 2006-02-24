@@ -1,5 +1,8 @@
 2006-02-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (parse_keyserver_options): Only change max_cert if
+	it is used.
+
 	* options.c, gpg.c (main), keyserver.c (keyserver_spawn): No
 	special treatment of include-revoked, include-subkeys, and
 	try-dns-srv.  These are keyserver features, and GPG shouldn't get
