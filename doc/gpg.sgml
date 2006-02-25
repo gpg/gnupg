@@ -1,6 +1,6 @@
 <!-- gpg.sgml - the man page for GnuPG
-    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-                  2005 Free Software Foundation, Inc.
+    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+                  2006 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -48,6 +48,7 @@
 <!entity ParmValue  "<parameter>value</parameter>">
 <!entity ParmNameValue	"<parameter>name=value</parameter>">
 <!entity ParmNameValues	"<parameter>name=value1 <optional>value2 value3 ...</optional></parameter>">
+<!entity OptParmNameValues "<optional>name=value1 value2 value3 ...</optional>">
 <!entity OptEqualsValue	"<optional>=value</optional>">
 ]>
 
@@ -1186,7 +1187,7 @@ recipient's or signator's key.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--trust-model <parameter>pgp|classic|direct|always</parameter></term>
+<term>--trust-model <parameter>pgp|classic|direct|always|auto</parameter></term>
 <listitem><para>
 
 Set what trust model GnuPG should follow.  The models are:
@@ -1267,17 +1268,20 @@ beginning of the key ID, as in 0x99242560.
 
 
 <varlistentry>
-<term>--keyserver &ParmName;</term>
+<term>--keyserver &ParmName; &OptParmNameValues;</term>
 <listitem><para>
 Use &ParmName; as your keyserver.  This is the server that
 --recv-keys, --send-keys, and --search-keys will communicate with to
 receive keys from, send keys to, and search for keys on.  The format
 of the &ParmName; is a URI: `scheme:[//]keyservername[:port]' The
 scheme is the type of keyserver: "hkp" for the HTTP (or compatible)
-keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
-Graff email keyserver.  Note that your particular installation of
-GnuPG may have other keyserver types available as well.  Keyserver
-schemes are case-insensitive.
+keyservers, "ldap" for the LDAP keyservers, or "mailto" for the Graff
+email keyserver.  Note that your particular installation of GnuPG may
+have other keyserver types available as well.  Keyserver schemes are
+case-insensitive.  After the keyserver name, optional keyserver
+configuration options may be provided.  These are the same as the
+global --keyserver-options from below, but apply only to this
+particular keyserver.
 </para><para>
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server.  The keyserver
@@ -1286,7 +1290,7 @@ keyserver each time you use it.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--keyserver-options <parameter>parameters</parameter></term>
+<term>--keyserver-options &ParmNameValues;</term>
 <listitem><para>
 This is a space or comma delimited string that gives options for the
 keyserver.  Options can be prepended with a `no-' to give the opposite
