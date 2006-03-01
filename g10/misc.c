@@ -1081,15 +1081,12 @@ unescape_percent_string (const unsigned char *s)
 }
 
 
-
-
 int
 has_invalid_email_chars (const char *s)
 {
   int at_seen=0;
-  static char valid_chars[] = ("01234567890_-."
-                               "abcdefghijklmnopqrstuvwxyz"
-                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  const char *valid_chars=
+    "01234567890_-.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   for ( ; *s; s++ ) 
     {

@@ -2928,14 +2928,18 @@ parse_auto_key_locate(char *options)
 
       akl=xmalloc_clear(sizeof(*akl));
 
-      if(ascii_strcasecmp(tok,"cert")==0)
-	akl->type=AKL_CERT;
-      else if(ascii_strcasecmp(tok,"pka")==0)
-	akl->type=AKL_PKA;
-      else if(ascii_strcasecmp(tok,"ldap")==0)
+      if(ascii_strcasecmp(tok,"ldap")==0)
 	akl->type=AKL_LDAP;
       else if(ascii_strcasecmp(tok,"keyserver")==0)
 	akl->type=AKL_KEYSERVER;
+#ifdef USE_DNS_CERT
+      else if(ascii_strcasecmp(tok,"cert")==0)
+	akl->type=AKL_CERT;
+#endif
+#ifdef USE_DNS_PKA
+      else if(ascii_strcasecmp(tok,"pka")==0)
+	akl->type=AKL_PKA;
+#endif
       else if((akl->spec=parse_keyserver_uri(tok,1,NULL,0)))
 	akl->type=AKL_SPEC;
       else
