@@ -842,7 +842,7 @@ if test x"$use_sha512" = xyes \
     use_sha512=no
 fi
 
-if test x"$use_sha512" ; then
+if test x"$use_sha512" = xyes ; then
     AC_DEFINE(USE_SHA512,1,[Define to include the SHA-384 and SHA-512 digests])
 fi
 

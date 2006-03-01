@@ -1,3 +1,8 @@
+2006-03-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Fix accidental enabling of SHA-384/512.  Noted by
+	Nelson H. F. Beebe.
+
 2006-02-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Try linking the UINT64_C test program (rather than
