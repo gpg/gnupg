@@ -62,9 +62,26 @@
       && (c)->reader_slot == locked_session->ctrl_backlink->reader_slot)
 
 
+/* This structure is used to keep track of open readers (slots). */
+struct slot_status_s 
+{
+  int valid;  /* True if the other objects are valid. */
+  int slot;   /* Slot number of the reader or -1 if not open. */
+
+  int reset_failed; /* A reset failed. */
+
+  int any;    /* Flag indicating whether any status check has been
+                 done.  This is set once to indicate that the status
+                 tracking for the slot has been initialized.  */
+  unsigned int status;  /* Last status of the slot. */
+  unsigned int changed; /* Last change counter of teh slot. */
+};
+
+
 /* Data used to associate an Assuan context with local server data.
    This object describes the local properties of one session.  */
-struct server_local_s {
+struct server_local_s 
+{
   /* We keep a list of all active sessions with the anchor at
      SESSION_LIST (see below).  This field is used for linking. */
   struct server_local_s *next_session; 
@@ -86,6 +103,10 @@ struct server_local_s {
 };
 
 
+/* The table with information on all used slots. */
+static struct slot_status_s slot_table[10];
+
+
 /* To keep track of all running sessions, we link all active server
    contexts and the anchor in this variable.  */
 static struct server_local_s *session_list;
@@ -94,6 +115,13 @@ static struct server_local_s *session_list;
    in this variable. */
 static struct server_local_s *locked_session;
 
+/* While doing a reset we need to make sure that the ticker does not
+   call scd_update_reader_status_file while we are using it. */
+static pth_mutex_t status_file_update_lock = PTH_MUTEX_INIT;
+
+
+/*-- Local prototypes --*/
+static void update_reader_status_file (void);
 
 
 
@@ -107,7 +135,9 @@ update_card_removed (int slot, int value)
   for (sl=session_list; sl; sl = sl->next_session)
     if (sl->ctrl_backlink
         && sl->ctrl_backlink->reader_slot == slot)
-      sl->card_removed = value;
+      {
+        sl->card_removed = value;
+      }
   if (value)
     application_notify_card_removed (slot);
 }
@@ -126,69 +156,52 @@ has_option (const char *line, const char *name)
 }
 
 
-/* Reset the card and free the application context.  With DO_CLOSE set
-   to true and this is the last session with a reference to the
-   reader, close the reader and don't do just a reset. */
+/* Reset the card and free the application context.  With SEND_RESET
+   set to true actually send a RESET to the reader. */
 static void
-do_reset (ctrl_t ctrl, int do_close)
+do_reset (ctrl_t ctrl, int send_reset)
 {
   int slot = ctrl->reader_slot;
+
+  if (!(slot == -1 || (slot >= 0 && slot < DIM(slot_table))))
+    BUG ();
 
   if (ctrl->app_ctx)
     {
       release_application (ctrl->app_ctx);
       ctrl->app_ctx = NULL;
     }
-  if (ctrl->reader_slot != -1)
+
+  if (slot != -1 && send_reset && !IS_LOCKED (ctrl) )
     {
-      struct server_local_s *sl;
-
-      /* If we are the only session with the reader open we may close
-         it.  If not, do a reset unless a lock is held on the
-         reader.  */
-      for (sl=session_list; sl; sl = sl->next_session)
-        if (sl != ctrl->server_local
-            && sl->ctrl_backlink->reader_slot == ctrl->reader_slot)
-          break;
-      if (sl) /* There is another session with the reader open. */
+      if (apdu_reset (slot)) 
         {
-          if ( IS_LOCKED (ctrl) ) /* If it is locked, release it. */
-            ctrl->reader_slot = -1;
-          else
-            {
-              if (do_close) /* Always mark reader unused. */
-                ctrl->reader_slot = -1;
-              else if (apdu_reset (ctrl->reader_slot)) /* Reset only if
-                                                          not locked */
-                {
-                  /* The reset failed.  Mark the reader as closed. */
-                  ctrl->reader_slot = -1;
-                }
-
-              if (locked_session && ctrl->server_local == locked_session)
-                {
-                  locked_session = NULL;
-                  log_debug ("implicitly unlocking due to RESET\n");
-                }
-            }
-        }
-      else /* No other session has the reader open.  */
-        {
-          if (do_close || apdu_reset (ctrl->reader_slot))
-            {
-              apdu_close_reader (ctrl->reader_slot);
-              ctrl->reader_slot = -1;
-            }
-          if ( IS_LOCKED (ctrl) )
-            {
-              log_debug ("WARNING: cleaning up stale session lock\n");
-              locked_session =  NULL;
-            }
+          slot_table[slot].reset_failed = 1;
         }
     }
+  ctrl->reader_slot = -1;
 
-  /* Reset card removed flag for the current reader.  */
+  /* If we hold a lock, unlock now. */
+  if (locked_session && ctrl->server_local == locked_session)
+    {
+      locked_session = NULL;
+      log_info ("implicitly unlocking due to RESET\n");
+    }
+
+  /* Reset card removed flag for the current reader.  We need to take
+     the lock here so that the ticker thread won't concurrently try to
+     update the file.  Note that the update function will set the card
+     removed flag and we will later reset it - not a particualar nice
+     way of implementing it but it works. */
+  if (!pth_mutex_acquire (&status_file_update_lock, 0, NULL))
+    {
+      log_error ("failed to acquire status_fle_update lock\n");
+      return;
+    }
+  update_reader_status_file ();
   update_card_removed (slot, 0);
+  if (!pth_mutex_release (&status_file_update_lock))
+    log_error ("failed to release status_file_update lock\n");
 }
 
 
@@ -197,7 +210,7 @@ reset_notify (assuan_context_t ctx)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx); 
 
-  do_reset (ctrl, 0);
+  do_reset (ctrl, 1);
 }
 
 
@@ -226,18 +239,22 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 static int
 get_reader_slot (void)
 {
-  struct server_local_s *sl;
-  int slot= -1;
+  struct slot_status_s *ss;
 
-  for (sl=session_list; sl; sl = sl->next_session)
-    if (sl->ctrl_backlink
-        && (slot = sl->ctrl_backlink->reader_slot) != -1)
-      break;
+  ss = &slot_table[0]; /* One reader for now. */
 
-  if (slot == -1)
-    slot = apdu_open_reader (opt.reader_port);
+  /* Initialize the item if needed. */
+  if (!ss->valid)
+    {
+      ss->slot = -1;
+      ss->valid = 1;
+    }
 
-  return slot;
+  /* Try to open the reader. */
+  if (ss->slot == -1)
+    ss->slot = apdu_open_reader (opt.reader_port);
+
+  return ss->slot;
 }
 
 /* If the card has not yet been opened, do it.  Note that this
@@ -349,7 +366,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
     {
       if ( IS_LOCKED (ctrl) )
         return gpg_error (GPG_ERR_LOCKED);
-      do_reset (ctrl, 0);
+      do_reset (ctrl, 1);
     }
 
   if ((rc = open_card (ctrl, *line? line:NULL)))
@@ -1305,7 +1322,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 
 /* RESTART
 
-   Restart the current connection; this is a kind of warn reset.  It
+   Restart the current connection; this is a kind of warm reset.  It
    deletes the context used by this connection but does not send a
    RESET to the card.  Thus the card itself won't get reset. 
 
@@ -1462,7 +1479,7 @@ scd_command_handler (int fd)
     }
 
   /* Cleanup.  */
-  do_reset (&ctrl, 1); 
+  do_reset (&ctrl, 0); 
 
   /* Release the server object.  */
   if (session_list == ctrl.server_local)
@@ -1532,77 +1549,88 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
 }
 
 
-/* This function is called by the ticker thread to check for changes
-   of the reader stati.  It updates the reader status files and if
-   requested by the caller also send a signal to the caller.  */
-void
-scd_update_reader_status_file (void)
+/* This is the core of scd_update_reader_status_file but the caller
+   needs to take care of the locking. */
+static void
+update_reader_status_file (void)
 {
-  static struct {
-    int any;
-    unsigned int status;
-    unsigned int changed;
-  } last[10];
-  int slot;
-  int used;
+  int idx;
   unsigned int status, changed;
 
   /* Note, that we only try to get the status, because it does not
      make sense to wait here for a operation to complete.  If we are
      busy working with a card, delays in the status file update should
      be acceptable. */
-  for (slot=0; (slot < DIM(last)
-                &&!apdu_enum_reader (slot, &used)); slot++)
-    if (used && !apdu_get_status (slot, 0, &status, &changed))
-      {
-        if (!last[slot].any || last[slot].status != status
-            || last[slot].changed != changed )
-          {
-            char *fname;
-            char templ[50];
-            FILE *fp;
-            struct server_local_s *sl;
+  for (idx=0; idx < DIM(slot_table); idx++)
+    {
+      struct slot_status_s *ss = slot_table + idx;
 
-            log_info ("updating status of slot %d to 0x%04X\n", slot, status);
+      if (!ss->valid || ss->slot == -1)
+        continue; /* Not valid or reader not yet open. */
+      
+      if ( apdu_get_status (ss->slot, 0, &status, &changed) )
+        continue; /* Get status failed. */
+
+      if (!ss->any || ss->status != status || ss->changed != changed )
+        {
+          char *fname;
+          char templ[50];
+          FILE *fp;
+          struct server_local_s *sl;
+
+          log_info ("updating status of slot %d to 0x%04X\n",
+                    ss->slot, status);
             
-            sprintf (templ, "reader_%d.status", slot);
-            fname = make_filename (opt.homedir, templ, NULL );
-            fp = fopen (fname, "w");
-            if (fp)
+          sprintf (templ, "reader_%d.status", ss->slot);
+          fname = make_filename (opt.homedir, templ, NULL );
+          fp = fopen (fname, "w");
+          if (fp)
+            {
+              fprintf (fp, "%s\n",
+                       (status & 1)? "USABLE":
+                       (status & 4)? "ACTIVE":
+                       (status & 2)? "PRESENT": "NOCARD");
+              fclose (fp);
+            }
+          xfree (fname);
+            
+          /* Set the card removed flag for all current sessions.  We
+             will set this on any card change because a reset or
+             SERIALNO request must be done in any case.  */
+          if (ss->any)
+            update_card_removed (ss->slot, 1);
+          
+          ss->any = 1;
+          ss->status = status;
+          ss->changed = changed;
+
+          /* Send a signal to all clients who applied for it.  */
+          for (sl=session_list; sl; sl = sl->next_session)
+            if (sl->event_signal && sl->assuan_ctx)
               {
-                fprintf (fp, "%s\n",
-                         (status & 1)? "USABLE":
-                         (status & 4)? "ACTIVE":
-                         (status & 2)? "PRESENT": "NOCARD");
-                fclose (fp);
-              }
-            xfree (fname);
-
-            /* Set the card removed flag for all current sessions.  We
-               will set this on any card change because a reset or
-               SERIALNO request must be done in any case.  */
-            if (last[slot].any)
-              update_card_removed (slot, 1);
-
-            last[slot].any = 1;
-            last[slot].status = status;
-            last[slot].changed = changed;
-
-
-            /* Send a signal to all clients who applied for it.  */
-            for (sl=session_list; sl; sl = sl->next_session)
-              if (sl->event_signal && sl->assuan_ctx)
-                {
-                  pid_t pid = assuan_get_pid (sl->assuan_ctx);
-                  int signo = sl->event_signal;
-
-                  log_info ("client pid is %d, sending signal %d\n",
-                            pid, signo);
+                pid_t pid = assuan_get_pid (sl->assuan_ctx);
+                int signo = sl->event_signal;
+                
+                log_info ("client pid is %d, sending signal %d\n",
+                          pid, signo);
 #ifndef HAVE_W32_SYSTEM
-                  if (pid != (pid_t)(-1) && pid && signo > 0)
-                    kill (pid, signo);
+                if (pid != (pid_t)(-1) && pid && signo > 0)
+                  kill (pid, signo);
 #endif
-                }
-          }
-      }
+              }
+        }
+    }
+}
+
+/* This function is called by the ticker thread to check for changes
+   of the reader stati.  It updates the reader status files and if
+   requested by the caller also send a signal to the caller.  */
+void
+scd_update_reader_status_file (void)
+{
+  if (!pth_mutex_acquire (&status_file_update_lock, 1, NULL))
+    return; /* locked - give up. */
+  update_reader_status_file ();
+  if (!pth_mutex_release (&status_file_update_lock))
+    log_error ("failed to release status_file_update lock\n");
 }

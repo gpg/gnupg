@@ -1,10 +1,26 @@
+2006-03-01  Werner Koch  <wk@g10code.com>
+
+	* command.c (status_file_update_lock): New.
+	(scd_update_reader_status_file): Use lock and factor existing code
+	out to ..
+	(update_reader_status_file): .. this.
+	(do_reset): Use the lock and call update_reader_status_file.
+
+2006-02-20  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (open_pcsc_reader): Fixed double free.  Thanks to Moritz.
+
 2006-02-09  Werner Koch  <wk@g10code.com>
+
+	* command.c (get_reader_slot, do_reset) 
+	(scd_update_reader_status_file): Rewrote.
 
 	* app.c (release_application): Factored code out to ..
 	(deallocate_app): new function.
 	(select_application): Introduce new saved application stuff.
 	(application_notify_card_removed): New.
-	* command.c (update_card_removed): Call it.
+	* command.c (update_card_removed): Call it here.
+	(do_reset): And here.
 
 	* app.c (check_application_conflict): New.
 	* command.c (open_card): Use it here.

@@ -989,7 +989,12 @@ scan_or_find_devices (int readerno, const char *readerid,
 
       fd = open (transports[i].name, O_RDWR);
       if (fd == -1)
-        continue;
+        {
+          log_debug ("failed to open `%s': %s\n",
+                     transports[i].name, strerror (errno));
+          continue;
+        }
+      log_debug ("opened `%s': fd=%d\n", transports[i].name, fd);
 
       rid = malloc (strlen (transports[i].name) + 30 + 10);
       if (!rid)
@@ -1042,6 +1047,7 @@ scan_or_find_devices (int readerno, const char *readerid,
         }
       free (rid);
       close (fd);
+      log_debug ("closed fd %d\n", fd);
     }
 
   if (scan_mode)
@@ -1202,7 +1208,10 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
       if (idev)
         usb_close (idev);
       if (dev_fd != -1)
-        close (dev_fd);
+        {
+          close (dev_fd);
+          log_debug ("closed fd %d\n", dev_fd);
+        }
       free (*handle);
       *handle = NULL;
     }
@@ -1245,6 +1254,7 @@ do_close_reader (ccid_driver_t handle)
   if (handle->dev_fd != -1)
     {
       close (handle->dev_fd);
+      log_debug ("closed fd %d\n", handle->dev_fd);
       handle->dev_fd = -1;
     }
 }
@@ -1314,7 +1324,10 @@ ccid_shutdown_reader (ccid_driver_t handle)
         usb_close (handle->idev);
       handle->idev = NULL;
       if (handle->dev_fd != -1)
-        close (handle->dev_fd);
+        {
+          close (handle->dev_fd);
+          log_debug ("closed fd %d\n", handle->dev_fd);
+        }
       handle->dev_fd = -1;
     }
 
@@ -1327,7 +1340,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
 int 
 ccid_close_reader (ccid_driver_t handle)
 {
-  if (!handle || !handle->idev)
+  if (!handle || (!handle->idev && handle->dev_fd == -1))
     return 0;
 
   do_close_reader (handle);

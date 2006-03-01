@@ -67,7 +67,12 @@ might want to have an agent context for each service request
   Using the session_list in command.c and the lock_table in app.c.  IT
   would be better to do this just at one place. First we need to see
   how we can support cards with multiple applications.
-   
+** Detecting a removed card works only after the ticker detected it.
+ We should check the card status in open-card to make this smoother.
+ Needs to be integrated with the status file update, though.  It is
+ not a real problem because application will get a card removed status
+ and should the send a reset to try solving the problem.
+
 * tests
 ** Makefile.am
   We use printf(1) to setup the library path, this is not portable.

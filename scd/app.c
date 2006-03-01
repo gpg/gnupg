@@ -165,13 +165,17 @@ application_notify_card_removed (int slot)
     return;
 
   /* Deallocate a saved application for that slot, so that we won't
-     try to reuse it. */
-  if (lock_table[slot].initialized && lock_table[slot].last_app)
+     try to reuse it.  If there is no saved application, set a flag so
+     that we won't save the current state. */
+  if (lock_table[slot].initialized)
     {
       app_t app = lock_table[slot].last_app;
 
-      lock_table[slot].last_app = NULL;
-      deallocate_app (app);
+      if (app)
+        {
+          lock_table[slot].last_app = NULL;
+          deallocate_app (app);
+        }
     }
 }
 
@@ -380,7 +384,7 @@ deallocate_app (app_t app)
 /* Free the resources associated with the application APP.  APP is
    allowed to be NULL in which case this is a no-op.  Note that we are
    using reference counting to track the users of the application and
-   actually deferiing the deallcoation to allow for a later resuse by
+   actually deferring the deallocation to allow for a later reuse by
    a new connection. */
 void
 release_application (app_t app)

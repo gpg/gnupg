@@ -1594,6 +1594,7 @@ open_pcsc_reader (const char *portstr)
     }
   strcpy (reader_table[slot].rdrname, portstr? portstr : list);
   xfree (list);
+  list = NULL;
 
   err = pcsc_connect (reader_table[slot].pcsc.context,
                       reader_table[slot].rdrname,
@@ -1611,7 +1612,6 @@ open_pcsc_reader (const char *portstr)
       xfree (reader_table[slot].rdrname);
       reader_table[slot].rdrname = NULL;
       reader_table[slot].used = 0;
-      xfree (list);
       return -1 /*pcsc_error_to_sw (err)*/;
     }
 
@@ -2369,7 +2369,7 @@ apdu_close_reader (int slot)
 }
 
 /* Shutdown a reader; that is basically the same as a close but keeps
-   the handle ready for later use. A apdu_reset_header should be used
+   the handle ready for later use. A apdu_reset_reader should be used
    to get it active again. */
 int
 apdu_shutdown_reader (int slot)
