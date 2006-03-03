@@ -1,3 +1,8 @@
+2006-03-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Fix build problem with non-OpenLDAP LDAP
+	libraries that have TLS.
+
 2006-02-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* ksutil.c (init_ks_options): Default include-revoked and

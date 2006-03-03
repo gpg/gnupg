@@ -1928,7 +1928,8 @@ main(int argc,char *argv[])
       return KEYSERVER_INTERNAL_ERROR;
     }
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS_CACERTFILE)
+#if defined(LDAP_OPT_X_TLS_CACERTFILE) && defined(HAVE_LDAP_SET_OPTION)
+
   if(opt->ca_cert_file)
     {
       err=ldap_set_option(NULL,LDAP_OPT_X_TLS_CACERTFILE,opt->ca_cert_file);
@@ -1940,7 +1941,7 @@ main(int argc,char *argv[])
 	  goto fail;
 	}
     }
-#endif /* HAVE_LDAP_SET_OPTION && LDAP_OPT_X_TLS_CACERTFILE */
+#endif /* LDAP_OPT_X_TLS_CACERTFILE && HAVE_LDAP_SET_OPTION */
 
   /* SSL trumps TLS */
   if(use_ssl)
@@ -2104,6 +2105,8 @@ main(int argc,char *argv[])
 	  int ver=LDAP_VERSION3;
 
 	  err=ldap_set_option(ldap,LDAP_OPT_PROTOCOL_VERSION,&ver);
+
+#ifdef LDAP_OPT_X_TLS
 	  if(err==LDAP_SUCCESS)
 	    {
 	      if(opt->flags.check_cert)
@@ -2112,9 +2115,11 @@ main(int argc,char *argv[])
 		ver=LDAP_OPT_X_TLS_NEVER;
 
 	      err=ldap_set_option(ldap,LDAP_OPT_X_TLS_REQUIRE_CERT,&ver);
-	      if(err==LDAP_SUCCESS)
-		err=ldap_start_tls_s(ldap,NULL,NULL);
 	    }
+#endif
+
+	  if(err==LDAP_SUCCESS)
+	    err=ldap_start_tls_s(ldap,NULL,NULL);
 
 	  if(err!=LDAP_SUCCESS)
 	    {
@@ -2128,7 +2133,7 @@ main(int argc,char *argv[])
 		  goto fail;
 		}
 	    }
-	  else if(err==LDAP_SUCCESS && opt->verbose>1)
+	  else if(opt->verbose>1)
 	    fprintf(console,"gpgkeys: TLS started successfully.\n");
 #else
 	  if(use_tls>=2)
