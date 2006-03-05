@@ -1586,6 +1586,7 @@ open_pcsc_reader (const char *portstr)
     }
   strcpy (reader_table[slot].rdrname, portstr? portstr : list);
   xfree (list);
+  list = NULL;
 
   err = pcsc_connect (reader_table[slot].pcsc.context,
                       reader_table[slot].rdrname,

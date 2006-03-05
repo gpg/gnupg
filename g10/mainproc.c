@@ -404,7 +404,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     if( !opt.list_only && opt.override_session_key ) {
 	/* It does not make much sense to store the session key in
 	 * secure memory because it has already been passed on the
-	 * command line and the GCHQ knows about it */
+	 * command line and the GCHQ knows about it.  */
 	c->dek = xmalloc_clear( sizeof *c->dek );
 	result = get_override_session_key ( c->dek, opt.override_session_key );
 	if ( result ) {
@@ -414,6 +414,8 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     else if( is_ELGAMAL(enc->pubkey_algo)
 	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
 	|| is_RSA(enc->pubkey_algo)  ) {
+      /* FIXME:  strore this all in a list and process it later */
+
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
                           || opt.try_all_secrets
 			  || !seckey_available( enc->keyid )) ) {
@@ -522,6 +524,9 @@ proc_encrypted( CTX c, PACKET *pkt )
         print_pkenc_list ( c->pkenc_list, 1 );
         print_pkenc_list ( c->pkenc_list, 0 );
       }
+
+    /* FIXME: Figure out the session key by looking at all pkenc packets. */
+
 
     write_status( STATUS_BEGIN_DECRYPTION );
 

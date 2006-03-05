@@ -1,5 +1,5 @@
 /* cardglue.c - mainly dispatcher for card related functions.
- * Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,7 +29,6 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <assert.h>
-
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
@@ -537,7 +536,7 @@ status_sc_op_failure (int rc)
 /* Check that the serial number of the current card (as described by
    APP) matches SERIALNO.  If there is no match and we are not in
    batch mode, present a prompt to insert the desired card.  The
-   function return 0 is the present card is okay, -1 if the user
+   function returnd 0 if the present card is okay, -1 if the user
    selected to insert a new card or an error value.  Note that the
    card context will be closed in all cases except for 0 as return
    value and if it was possible to merely shutdown the reader. */
@@ -569,17 +568,20 @@ check_card_serialno (app_t app, const char *serialno)
         did_shutdown = 1;
       else
         card_close ();
-      tty_printf (_("Please remove the current card and "
-                    "insert the one with serial number:\n"
-                    "   %.*s\n"), 32, serialno);
+
+      if (!opt.batch)
+        tty_printf (_("Please remove the current card and "
+                      "insert the one with serial number:\n"
+                      "   %.*s\n"), 32, serialno);
 
       sprintf (buf, "1 %.32s", serialno);
       write_status_text (STATUS_CARDCTRL, buf);
 
-      if ( cpr_get_answer_okay_cancel ("cardctrl.change_card.okay",
-                          _("Hit return when ready "
-                            "or enter 'c' to cancel: "),
-                                       1) )
+      if ( !opt.batch
+           && cpr_get_answer_okay_cancel ("cardctrl.change_card.okay",
+                                          _("Hit return when ready "
+                                            "or enter 'c' to cancel: "),
+                                          1) )
         {
           card_close ();
           return -1;

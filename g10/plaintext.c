@@ -1,6 +1,6 @@
 /* plaintext.c -  process plaintext packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ *               2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -177,8 +177,14 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #endif /* __riscos__ */
 
     if( !pt->is_partial ) {
-        /* we have an actual length (which might be zero). */
-	assert( !clearsig );
+        /* We have an actual length (which might be zero). */
+
+        if (clearsig) {
+            log_error ("clearsig encountered while not expected\n");
+            rc = G10ERR_UNEXPECTED;
+            goto leave;
+        }
+
 	if( convert ) { /* text mode */
 	    for( ; pt->len; pt->len-- ) {
 		if( (c = iobuf_get(pt->buf)) == -1 ) {
