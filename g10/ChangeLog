@@ -1,3 +1,8 @@
+2006-03-06  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (check_sig_and_print): Check for multiple plaintexts
+	before a signature.  Reported by Tavis Ormandy.
+
 2006-03-05  Werner Koch  <wk@g10code.com>
 
 	* plaintext.c (handle_plaintext): Replace assert by explict error

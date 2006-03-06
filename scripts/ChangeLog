@@ -1,5 +1,7 @@
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
+	* w32installer.nsi: Don't use System.dll.
+
 	* autogen.sh (DIE): Add lost exit for --build-w32.
 
 2005-10-02  Marcus Brinkmann  <marcus@g10code.de>

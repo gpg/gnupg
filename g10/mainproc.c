@@ -680,7 +680,8 @@ proc_plaintext( CTX c, PACKET *pkt )
             for( data++, datalen--; datalen; datalen--, data++ )
 	      md_enable( c->mfx.md, *data );
             any = 1;
-            break;  /* no pass signature packets are expected */
+            break;  /* Stop here as one-pass signature packets are not
+                       expected.  */
 	  }
 	else if(n->pkt->pkttype==PKT_SIGNATURE)
 	  {
@@ -1164,7 +1165,7 @@ proc_signature_packets( void *anchor, IOBUF a,
 
     /* If we have not encountered any signature we print an error
        messages, send a NODATA status back and return an error code.
-       Using log_error is required becuase verify_files does not check
+       Using log_error is required because verify_files does not check
        error codes for each file but we want to terminate the process
        with an error. */ 
     if (!rc && !c->any_sig_seen)
@@ -1444,39 +1445,62 @@ check_sig_and_print( CTX c, KBNODE node )
      */
     {
         KBNODE n;
-        int n_sig=0;
+        int n_sig = 0;
+        int n_plaintext = 0;
+        int sig_seen, onepass_seen;
 
-        for (n=c->list; n; n=n->next ) {
+        for (n=c->list; n; n=n->next ) 
+          {
             if ( n->pkt->pkttype == PKT_SIGNATURE ) 
-                n_sig++;
-        }
-        if (n_sig > 1) { /* more than one signature - check sequence */
-            int tmp, onepass;
-
-            for (tmp=onepass=0,n=c->list; n; n=n->next ) {
-                if (n->pkt->pkttype == PKT_ONEPASS_SIG) 
-                    onepass++;
-                else if (n->pkt->pkttype == PKT_GPG_CONTROL
-                         && n->pkt->pkt.gpg_control->control
-                            == CTRLPKT_CLEARSIGN_START ) {
-                    onepass++; /* handle the same way as a onepass */
-                }
-                else if ( (tmp && n->pkt->pkttype != PKT_SIGNATURE) ) {
-                    log_error(_("can't handle these multiple signatures\n"));
-                    return 0;
-                }
-                else if ( n->pkt->pkttype == PKT_SIGNATURE ) 
-                    tmp = 1;
-                else if (!tmp && !onepass 
-                         && n->pkt->pkttype == PKT_GPG_CONTROL
-                         && n->pkt->pkt.gpg_control->control
-                            == CTRLPKT_PLAINTEXT_MARK ) {
-                    /* plaintext before signatures but no one-pass packets*/
-                    log_error(_("can't handle these multiple signatures\n"));
-                    return 0;
-                }
-            }
-        }
+              n_sig++;
+            else if (n->pkt->pkttype == PKT_GPG_CONTROL
+                  && (n->pkt->pkt.gpg_control->control
+                      == CTRLPKT_PLAINTEXT_MARK) )
+              n_plaintext++;
+          }
+        
+        for (sig_seen=onepass_seen=0,n=c->list; n; n=n->next ) 
+          {
+            if (n->pkt->pkttype == PKT_ONEPASS_SIG) 
+              {
+                onepass_seen++;
+              }
+            else if (n->pkt->pkttype == PKT_GPG_CONTROL
+                     && (n->pkt->pkt.gpg_control->control
+                         == CTRLPKT_CLEARSIGN_START) ) 
+              {
+                onepass_seen++; /* Handle the same way as a onepass. */
+              }
+            else if ( (sig_seen && n->pkt->pkttype != PKT_SIGNATURE) ) 
+              {
+                log_error(_("can't handle these multiple signatures\n"));
+                return 0;
+              }
+            else if ( n->pkt->pkttype == PKT_SIGNATURE ) 
+              {
+                sig_seen = 1;
+              }
+            else if (n_sig > 1 && !sig_seen && !onepass_seen 
+                     && n->pkt->pkttype == PKT_GPG_CONTROL
+                     && (n->pkt->pkt.gpg_control->control
+                            == CTRLPKT_PLAINTEXT_MARK) )
+              {
+                /* Plaintext before signatures but no onepass
+                   signature packets. */
+                log_error(_("can't handle these multiple signatures\n"));
+                return 0;
+              }
+            else if (n_plaintext > 1 && !sig_seen && !onepass_seen 
+                     && n->pkt->pkttype == PKT_GPG_CONTROL
+                     && (n->pkt->pkt.gpg_control->control
+                            == CTRLPKT_PLAINTEXT_MARK) )
+              {
+                /* More than one plaintext before a signature but no
+                   onepass packets.  */
+                log_error(_("can't handle this ambiguous signed data\n"));
+                return 0;
+              }
+          }
     }
 
     astr = pubkey_algo_to_string( sig->pubkey_algo );

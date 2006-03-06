@@ -132,7 +132,7 @@ Page custom CustomPageOptions
 ReserveFile "opt.ini" 
 ReserveFile "COPYING.txt"
 ReserveFile "README-W32.txt"
-ReserveFile "${NSISDIR}/Plugins/System.dll"
+#ReserveFile "${NSISDIR}/Plugins/System.dll"
 ReserveFile "${NSISDIR}/Plugins/UserInfo.dll"
 
 
@@ -444,11 +444,14 @@ SectionEnd ; Uninstall
 ; ---------
 
 Function .onInit
-  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "GnuPGInst") i .r1 ?e'
-  Pop $R0
-  StrCmp $R0 0 +3
-    MessageBox MB_OK "An instance of the installer is already running."
-    Abort
+  # We can't use System.dll anymore becuase it has bee removed from
+  # Debian due to an inability to build using FS.  We should use the
+  # use our own DLL as we do with gpg4win.
+  #System::Call 'kernel32::CreateMutexA(i 0, i 0, t "GnuPGInst") i .r1 ?e'
+  #Pop $R0
+  #StrCmp $R0 0 +3
+  # MessageBox MB_OK "An instance of the installer is already running."
+  # Abort
 
   ;;!define MUI_LANGDLL_ALWAYSSHOW
   !insertmacro MUI_LANGDLL_DISPLAY
