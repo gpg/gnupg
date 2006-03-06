@@ -2,12 +2,14 @@
 # Check that gpg verifies only signatures where there is no ambiguity
 # in the order of packets.  Needs the Demo Keys Lima and Mike.
 
+# Note: We do son't support multiple signaturess anymore thus thsi test is 
+# not really needed becuase verify could do the same.  We keep it anyway.
+
 . $srcdir/defs.inc || exit 3
 
-# (variable intialization was created using:
-#   for i in files; do echo "`echo $i | sed 's,[.-],_,g'`='"; \
-#   gpg --no-version --enarmor <$i | grep -v ^Comment:; echo "'" ; done 
-# )
+suspend_error
+
+
 
 sig_1ls1ls_valid='
 -----BEGIN PGP ARMORED FILE-----
@@ -119,13 +121,11 @@ cnksIEkgY2FuJ3QgZG8gdGhhdAo=
 -----END PGP ARMORED FILE-----
 '
 
-save_IFS="${IFS}"
-IFS=""
-for i in "$sig_1ls1ls_valid" "$sig_ls_valid" "$sig_sl_valid"; do
-    echo "$i" | ./gpg_dearmor >x
-    IFS="${save_IFS}"
-    $GPG --verify x 2>/dev/null || error "valid is invalid"
-    IFS=""
+
+for i in  sig_sl_valid ; do
+    eval "(IFS=; echo \"\$$i\")" | ./gpg_dearmor >x
+    $GPG --verify x 2>/dev/null || error "valid is invalid ($i)"
+    linefeed
 done
 #for i in "$sig_11lss_valid_but_is_not" "$sig_11lss11lss_valid_but_is_not" \
 #         "$sig_ssl_valid_but_is_not"; do
@@ -133,13 +133,13 @@ done
 #    $GPG --verify <x 2>/dev/null || error "valid is invalid"
 #done
 
-# without the +e ksh seems to terminate the for loop
-set +e
-for i in "$sig_1lsls_invalid" "$sig_lsls_invalid" \
-         "$sig_lss_invalid" "$sig_slsl_invalid" ; do
-    echo "$i" | ./gpg_dearmor >x
-    IFS="${save_IFS}"
-    $GPG --verify <x 2>/dev/null && error "invalid is valid"
-    IFS=""
+for i in sig_1ls1ls_valid sig_ls_valid \
+         sig_1lsls_invalid sig_lsls_invalid \
+         sig_lss_invalid sig_slsl_invalid ; do
+    eval "(IFS=; echo \"\$$i\")" | ./gpg_dearmor >x
+    $GPG --verify <x 2>/dev/null && error "invalid is valid ($i)"
+    linefeed
 done
-IFS="${save_IFS}"
+
+
+resume_error

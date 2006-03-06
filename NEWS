@@ -51,6 +51,10 @@ Noteworthy changes in version 1.4.3
       are HTTP and finger, plus anything that cURL supplies, if built
       with cURL support.
 
+    * Files containing several signed messages are not anymore allowed
+      because there is no clean way to report the status of such files
+      back to the caller.
+
 
 Noteworthy changes in version 1.4.2 (2005-07-26)
 ------------------------------------------------

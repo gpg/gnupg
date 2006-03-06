@@ -2,10 +2,126 @@
 
 . $srcdir/defs.inc || exit 3
 
-#info check that verify fails for bad input data
+suspend_error
+
+#
+# Two simple tests to check that verify fails for bad input data
+#
+info "checking bogus signature 1"
 ../tools/mk-tdata --char 0x2d 64 >x
 $GPG --verify x data-500 && error "no error code from verify"
+info "checking bogus signature 2"
 ../tools/mk-tdata --char 0xca 64 >x
 $GPG --verify x data-500 && error "no error code from verify"
 
-exit 0
+linefeed
+
+# A variable to collect the test names
+tests=""
+
+# A plain signed message created using
+#  echo abc | gpg --homedir . --passphrase-fd 0 -u Alpha -z0 -sa msg
+tests="$tests msg_ols_asc"
+msg_ols_asc='-----BEGIN PGP MESSAGE-----
+
+kA0DAAIRLXJ8x2hpdzQBrQEHYgNtc2dEDFJaSSB0aGluayB0aGF0IGFsbCByaWdo
+dC10aGlua2luZyBwZW9wbGUgaW4gdGhpcyBjb3VudHJ5IGFyZSBzaWNrIGFuZAp0
+aXJlZCBvZiBiZWluZyB0b2xkIHRoYXQgb3JkaW5hcnkgZGVjZW50IHBlb3BsZSBh
+cmUgZmVkIHVwIGluIHRoaXMKY291bnRyeSB3aXRoIGJlaW5nIHNpY2sgYW5kIHRp
+cmVkLiAgSSdtIGNlcnRhaW5seSBub3QuICBCdXQgSSdtCnNpY2sgYW5kIHRpcmVk
+IG9mIGJlaW5nIHRvbGQgdGhhdCBJIGFtLgotIE1vbnR5IFB5dGhvbgqIPwMFAEQM
+UlotcnzHaGl3NBECR4IAoJlEGTY+bHjD2HYuCixLQCmk01pbAKCIjkzLOAmkZNm0
+D8luT78c/1x45Q==
+=a29i
+-----END PGP MESSAGE-----'
+
+# A plain signed message created using
+#  echo abc | gpg --homedir . --passphrase-fd 0 -u Alpha -sa msg
+tests="$tests msg_cols_asc"
+msg_cols_asc='-----BEGIN PGP MESSAGE-----
+
+owGbwMvMwCSoW1RzPCOz3IRxLSN7EnNucboLT6Cgp0JJRmZeNpBMLFFIzMlRKMpM
+zyjRBQtm5qUrFKTmF+SkKmTmgdQVKyTnl+aVFFUqJBalKhRnJmcrJOalcJVkFqWm
+KOSnKSSlgrSU5OekQMzLL0rJzEsEKk9JTU7NK4EZBtKcBtRRWgAzlwtmbnlmSQbU
+GJjxCmDj9RQUPNVzFZJTi0oSM/NyKhXy8kuAYk6lJSBxLlTF2NziqZCYq8elq+Cb
+n1dSqRBQWZKRn8fVYc/MygAKBljYCDIFiTDMT+9seu836Q+bevyHTJ0dzPNuvCjn
+ZpgrwX38z58rJsfYDhwOSS4SkN/d6vUAAA==
+=s6sY
+-----END PGP MESSAGE-----'
+
+# A PGP 2 style message.
+tests="$tests msg_sl_asc"
+msg_sl_asc='-----BEGIN PGP MESSAGE-----
+
+iD8DBQBEDFJaLXJ8x2hpdzQRAkeCAKCZRBk2Pmx4w9h2LgosS0AppNNaWwCgiI5M
+yzgJpGTZtA/Jbk+/HP9ceOWtAQdiA21zZ0QMUlpJIHRoaW5rIHRoYXQgYWxsIHJp
+Z2h0LXRoaW5raW5nIHBlb3BsZSBpbiB0aGlzIGNvdW50cnkgYXJlIHNpY2sgYW5k
+CnRpcmVkIG9mIGJlaW5nIHRvbGQgdGhhdCBvcmRpbmFyeSBkZWNlbnQgcGVvcGxl
+IGFyZSBmZWQgdXAgaW4gdGhpcwpjb3VudHJ5IHdpdGggYmVpbmcgc2ljayBhbmQg
+dGlyZWQuICBJJ20gY2VydGFpbmx5IG5vdC4gIEJ1dCBJJ20Kc2ljayBhbmQgdGly
+ZWQgb2YgYmVpbmcgdG9sZCB0aGF0IEkgYW0uCi0gTW9udHkgUHl0aG9uCg==
+=0ukK
+-----END PGP MESSAGE-----'
+
+# An OpenPGP message lacking the onepass packet.  We used to accept
+# such messages but now consider them invalid.
+tests="$tests bad_ls_asc"
+bad_ls_asc='-----BEGIN PGP MESSAGE-----
+
+rQEHYgNtc2dEDFJaSSB0aGluayB0aGF0IGFsbCByaWdodC10aGlua2luZyBwZW9w
+bGUgaW4gdGhpcyBjb3VudHJ5IGFyZSBzaWNrIGFuZAp0aXJlZCBvZiBiZWluZyB0
+b2xkIHRoYXQgb3JkaW5hcnkgZGVjZW50IHBlb3BsZSBhcmUgZmVkIHVwIGluIHRo
+aXMKY291bnRyeSB3aXRoIGJlaW5nIHNpY2sgYW5kIHRpcmVkLiAgSSdtIGNlcnRh
+aW5seSBub3QuICBCdXQgSSdtCnNpY2sgYW5kIHRpcmVkIG9mIGJlaW5nIHRvbGQg
+dGhhdCBJIGFtLgotIE1vbnR5IFB5dGhvbgqIPwMFAEQMUlotcnzHaGl3NBECR4IA
+oJlEGTY+bHjD2HYuCixLQCmk01pbAKCIjkzLOAmkZNm0D8luT78c/1x45Q==
+=Mpiu
+-----END PGP MESSAGE-----'
+
+
+# A signed message prefixed with an unsigned literal packet.
+# (fols = faked-literal-data, one-pass, literal-data, signature)
+# This should throw an error because running gpg to extract the
+# signed data will return both literal data packets
+tests="$tests bad_fols_asc"
+bad_fols_asc='-----BEGIN PGP MESSAGE-----
+
+rF1iDG1zZy51bnNpZ25lZEQMY0x0aW1lc2hhcmluZywgbjoKCUFuIGFjY2VzcyBt
+ZXRob2Qgd2hlcmVieSBvbmUgY29tcHV0ZXIgYWJ1c2VzIG1hbnkgcGVvcGxlLgqQ
+DQMAAhEtcnzHaGl3NAGtAQdiA21zZ0QMUlpJIHRoaW5rIHRoYXQgYWxsIHJpZ2h0
+LXRoaW5raW5nIHBlb3BsZSBpbiB0aGlzIGNvdW50cnkgYXJlIHNpY2sgYW5kCnRp
+cmVkIG9mIGJlaW5nIHRvbGQgdGhhdCBvcmRpbmFyeSBkZWNlbnQgcGVvcGxlIGFy
+ZSBmZWQgdXAgaW4gdGhpcwpjb3VudHJ5IHdpdGggYmVpbmcgc2ljayBhbmQgdGly
+ZWQuICBJJ20gY2VydGFpbmx5IG5vdC4gIEJ1dCBJJ20Kc2ljayBhbmQgdGlyZWQg
+b2YgYmVpbmcgdG9sZCB0aGF0IEkgYW0uCi0gTW9udHkgUHl0aG9uCog/AwUARAxS
+Wi1yfMdoaXc0EQJHggCgmUQZNj5seMPYdi4KLEtAKaTTWlsAoIiOTMs4CaRk2bQP
+yW5Pvxz/XHjl
+=UNM4
+-----END PGP MESSAGE-----'
+
+
+
+
+#
+# Now run the tests.
+#
+for i in $tests ; do
+   info "checking: $i"
+   case "$i" in
+    msg_*_asc)
+       eval "(IFS=; echo \"\$$i\")" >x
+       $GPG --verify x || error "verify of $i failed"
+       ;;
+    bad_*_asc)
+       eval "(IFS=; echo \"\$$i\")" >x
+       $GPG --verify x && error "verify of $i succeeded but should not"
+       ;;
+    *)
+       error "No handler for test case $i"
+       ;;
+   esac
+   linefeed
+done
+
+
+resume_error

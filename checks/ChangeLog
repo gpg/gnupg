@@ -1,3 +1,13 @@
+2006-03-06  Werner Koch  <wk@g10code.com>
+
+	* defs.inc: Print error messages also to stderr.  Allow for
+	verbose environment variable.
+	(linefeed): New.
+	(suspend_error, resume_error): New.
+	* verify.test:  More tests.
+	* multisig.test: Better error printing.
+	(sig_1ls1ls_valid, sig_ls_valid):  Moved to the non-valid group.
+	
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	* verify.test: New.
