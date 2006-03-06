@@ -748,7 +748,9 @@ proc_compressed( CTX c, PACKET *pkt )
     int rc;
 
     /*printf("zip: compressed data packet\n");*/
-    if( c->sigs_only )
+    if( !zd->algorithm )
+      rc=G10ERR_COMPR_ALGO;
+    else if( c->sigs_only )
 	rc = handle_compressed( c, zd, proc_compressed_cb, c );
     else if( c->encrypt_only )
 	rc = handle_compressed( c, zd, proc_encrypt_cb, c );
