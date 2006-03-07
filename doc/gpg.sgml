@@ -35,10 +35,10 @@
 <!entity OptParmFile "<optional>&ParmFile;</optional>">
 <!entity ParmFiles "<parameter>files</parameter>">
 <!entity OptParmFiles "<optional>&ParmFiles;</optional>">
-<!entity ParmNames "<parameter>names</parameter>">
-<!entity OptParmNames "<optional>&ParmNames;</optional>">
 <!entity ParmName  "<parameter>name</parameter>">
 <!entity OptParmName  "<optional>&ParmName;</optional>">
+<!entity ParmNames "<parameter>names</parameter>">
+<!entity OptParmNames "<optional>&ParmNames;</optional>">
 <!entity ParmKeyIDs "<parameter>key IDs</parameter>">
 <!entity OptParmKeyIDs "<optional>&ParmKeyIDs</optional>">
 <!entity ParmN	    "<parameter>n</parameter>">
@@ -1238,7 +1238,6 @@ Select the trust model depending on whatever the internal trust
 database says and enable the PKA sub model.
 </para></listitem></varlistentry>
 
-
 </variablelist></para></listitem></varlistentry>
 
 <varlistentry>
@@ -1246,6 +1245,47 @@ database says and enable the PKA sub model.
 <listitem><para>
 Identical to `--trust-model always'.  This option is deprecated.
 </para></listitem></varlistentry>
+
+<varlistentry>
+<term>--auto-key-locate <parameter>parameters</parameter></term>
+
+<listitem><para>
+
+GnuPG can automatically locate and retrieve keys as needed using this
+option.  This happens when encrypting to an email address (in the
+"user@example.com" form), and there are no user@example.com keys on
+the local keyring.  This option takes any number of the following
+arguments, in the order they are to be tried:
+
+<variablelist>
+
+<varlistentry><term>cert</term><listitem><para>
+locate a key using DNS CERT, as specified in 2538bis (currently in
+draft): http://www.josefsson.org/rfc2538bis/
+</para></listitem></varlistentry>
+
+<varlistentry><term>pka</term><listitem><para>
+locate a key using DNS PKA.
+</para></listitem></varlistentry>
+
+<varlistentry><term>ldap</term><listitem><para>
+locate a key using the PGP Universal method of checking
+"ldap://keys.(thedomain)".
+</para></listitem></varlistentry>
+
+<varlistentry><term>keyserver</term><listitem><para>
+locate a key using whatever keyserver is defined using the --keyserver
+option.
+</para></listitem></varlistentry>
+
+<varlistentry><term>(keyserver URL)</term><listitem><para>
+In addition, a keyserver URL as used in the --keyserver option may be
+used here to query that particular keyserver.
+</para></listitem></varlistentry>
+
+</variablelist>
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--allow-pka-lookup</term>
@@ -1979,7 +2019,6 @@ Force inclusion of the version string in ASCII armored output.
 <term>--cert-notation &ParmNameValue;</term>
 <term>-N, --set-notation &ParmNameValue;</term>
 <listitem><para>
-
 Put the name value pair into the signature as notation data.
 &ParmName; must consist only of printable characters or spaces, and
 must contain a '@' character in the form keyname@domain.example.com
@@ -1992,7 +2031,6 @@ check that your --display-charset is set correctly.  If you prefix
 flagged as critical (rfc2440:5.2.3.15).  --sig-notation sets a
 notation for data signatures.  --cert-notation sets a notation for key
 signatures (certifications).  --set-notation sets both.
-
 </para>
 
 <para>
