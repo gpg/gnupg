@@ -51,11 +51,21 @@ Noteworthy changes in version 1.4.3
       are HTTP and finger, plus anything that cURL supplies, if built
       with cURL support.
 
-    * Files containing several signed messages are not anymore allowed
-      because there is no clean way to report the status of such files
-      back to the caller.  To partly revert to the old behaviour the
-      new option --allow-multisig-verification may be used.
+    * Files containing several signed messages are not allowed any
+      longer as there is no clean way to report the status of such
+      files back to the caller.  To partly revert to the old behaviour
+      the new option --allow-multisig-verification may be used.
 
+    * The keyserver helpers can now handle keys in either ASCII armor
+      or binary format.
+
+    * New auto-key-locate option that takes an ordered list of methods
+      to locate a key if it is not available at encryption time (-r or
+      --recipient).  Possible methods include "cert" (use DNS CERT as
+      per RFC2538bis, "pka" (use DNS PKA), "ldap" (consult the LDAP
+      server for the domain in question), "keyserver" (use the
+      currently defined keyserver), as well as arbitrary keyserver
+      URIs that will be contacted for the key.
 
 
 Noteworthy changes in version 1.4.2 (2005-07-26)
