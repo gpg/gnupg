@@ -1390,7 +1390,7 @@ pka_uri_from_sig (PKT_signature *sig)
       assert (!sig->pka_info);
       sig->flags.pka_tried = 1;
       sig->pka_info = get_pka_address (sig);
-      if (sig->pka_info && opt.allow_pka_lookup)
+      if (sig->pka_info)
         {
           char *uri;
 
@@ -1866,7 +1866,8 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if (!rc)
           {
-            pka_uri_from_sig (sig); /* Make sure PKA info is available. */
+	    if(opt.verify_options&VERIFY_PKA_LOOKUP)
+	      pka_uri_from_sig (sig); /* Make sure PKA info is available. */
 	    rc = check_signatures_trust( sig );
           }
 

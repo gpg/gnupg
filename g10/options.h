@@ -103,8 +103,6 @@ struct
       TM_CLASSIC=0, TM_PGP=1, TM_EXTERNAL=2, TM_ALWAYS, TM_DIRECT, TM_AUTO
     } trust_model;
   int force_ownertrust;
-  int pka_trust_increase;  /* Valid PKA information increases the trust. */
-  int allow_pka_lookup;    /* PKA lookups are only done if this is set. */
   enum
     {
       CO_GNUPG=0, CO_RFC2440, CO_RFC1991, CO_PGP2, CO_PGP6, CO_PGP7, CO_PGP8
@@ -316,6 +314,8 @@ struct {
 #define VERIFY_SHOW_KEYSERVER_URLS       (1<<4)
 #define VERIFY_SHOW_UID_VALIDITY         (1<<5)
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
+#define VERIFY_PKA_LOOKUP                (1<<7)
+#define VERIFY_PKA_TRUST_INCREASE        (1<<8)
 
 #define KEYSERVER_USE_TEMP_FILES         (1<<0)
 #define KEYSERVER_KEEP_TEMP_FILES        (1<<1)

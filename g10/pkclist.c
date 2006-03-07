@@ -566,7 +566,7 @@ check_signatures_trust( PKT_signature *sig )
         case TRUST_UNKNOWN: 
         case TRUST_UNDEFINED:
         case TRUST_MARGINAL:
-          if (okay && opt.pka_trust_increase)
+          if (okay && opt.verify_options&VERIFY_PKA_TRUST_INCREASE)
             {
               trustlevel = ((trustlevel & ~TRUST_MASK) | TRUST_FULLY);
               log_info (_("trustlevel adjusted to FULL"

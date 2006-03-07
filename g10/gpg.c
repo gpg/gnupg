@@ -243,7 +243,6 @@ enum cmd_and_opt_values
     oAlwaysTrust,
     oTrustModel,
     oForceOwnertrust,
-    oAllowPkaLookup,
     oRunAsShmCP,
     oSetFilename,
     oForYourEyesOnly,
@@ -601,7 +600,6 @@ static ARGPARSE_OPTS opts[] = {
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
     { oForceOwnertrust, "force-ownertrust", 2, "@"},
-    { oAllowPkaLookup,  "allow-pka-lookup", 0, "@" },
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
     { oForYourEyesOnly, "for-your-eyes-only", 0, "@" },
@@ -1452,7 +1450,6 @@ gpgconf_list (const char *configfile)
   printf ("quiet:%lu:\n",   GC_OPT_FLAG_NONE);
   printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("allow-pka-lookup:%lu:\n", GC_OPT_FLAG_NONE);
 }
 
 
@@ -1608,46 +1605,19 @@ collapse_args(int argc,char *argv[])
 static void
 parse_trust_model(const char *model)
 {
-  opt.pka_trust_increase = 0;
   if(ascii_strcasecmp(model,"pgp")==0)
-    {
-      opt.trust_model=TM_PGP;
-    }
-  else if(ascii_strcasecmp(model,"pgp+pka")==0)
-    {
-      opt.trust_model=TM_PGP;
-      opt.pka_trust_increase = 1;
-    }
+    opt.trust_model=TM_PGP;
   else if(ascii_strcasecmp(model,"classic")==0)
-    {
-      opt.trust_model=TM_CLASSIC;
-    }
+    opt.trust_model=TM_CLASSIC;
   else if(ascii_strcasecmp(model,"always")==0)
-    {
-      opt.trust_model=TM_ALWAYS;
-    }
+    opt.trust_model=TM_ALWAYS;
   else if(ascii_strcasecmp(model,"direct")==0)
-    {
-      opt.trust_model=TM_DIRECT;
-    }
-  else if(ascii_strcasecmp(model,"direct+pka")==0)
-    {
-      opt.trust_model=TM_DIRECT;
-      opt.pka_trust_increase = 1;
-    }
+    opt.trust_model=TM_DIRECT;
   else if(ascii_strcasecmp(model,"auto")==0)
-    {
-      opt.trust_model=TM_AUTO;
-    }
-  else if(ascii_strcasecmp(model,"auto+pka")==0)
-    {
-      opt.trust_model=TM_AUTO;
-      opt.pka_trust_increase = 1;
-    }
+    opt.trust_model=TM_AUTO;
   else
     log_error("unknown trust model `%s'\n",model);
 }
-
 
 int
 main (int argc, char **argv )
@@ -1740,7 +1710,6 @@ main (int argc, char **argv )
     opt.verify_options=
       VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_STD_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
-    opt.pka_trust_increase=0;
     opt.mangle_dos_filenames=0;
     opt.min_cert_level=2;
     set_screen_dimensions();
@@ -2153,9 +2122,6 @@ main (int argc, char **argv )
 		opt.force_ownertrust=0;
 	      }
 	    break;
-          case oAllowPkaLookup:
-            opt.allow_pka_lookup = 1;
-            break;
 	  case oLoadExtension:
 #ifndef __riscos__
 #if defined(USE_DYNAMIC_LINKING) || defined(_WIN32)
@@ -2496,6 +2462,10 @@ main (int argc, char **argv )
 		   N_("show user ID validity during signature verification")},
 		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL,
 		   N_("show revoked and expired user IDs in signature verification")},
+		  {"pka-lookup",VERIFY_PKA_LOOKUP,NULL,
+		   N_("validate signatures with PKA data")},
+		  {"pka-trust-increase",VERIFY_PKA_TRUST_INCREASE,NULL,
+		   N_("elevate the trust of signatures with valid PKA data")},
 		  {NULL,0,NULL,NULL}
 		};
 

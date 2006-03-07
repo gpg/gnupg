@@ -1,3 +1,10 @@
+2006-03-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, gpg.c (main, parse_trust_model), pkclist.c
+	(check_signatures_trust), mainproc.c (check_sig_and_print,
+	pka_uri_from_sig), trustdb.c (init_trustdb): Some tweaks to PKA so
+	that it is a verify-option now.
+
 2006-03-07  Werner Koch  <wk@g10code.com>
 
 	* mainproc.c (proc_signature_packets): Return any_sig_seen to caller.

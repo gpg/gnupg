@@ -450,12 +450,7 @@ init_trustdb()
 	}
 
       if(opt.verbose)
-        {
-          log_info(_("using %s trust model\n"),trust_model_string());
-          if (opt.pka_trust_increase)
-            log_info(_("PKA verification is allowed to"
-                       " leverage trust to full\n"));
-        }
+	log_info(_("using %s trust model\n"),trust_model_string());
     }
 
   if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
