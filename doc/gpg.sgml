@@ -528,7 +528,7 @@ used by GnuPG.
     <listitem><para>
 Set a preferred keyserver for the specified user ID(s).  This allows
 other users to know where you prefer they get your key from.  See
---keyserver-option honor-keyserver-url for more on how this works.
+--keyserver-options honor-keyserver-url for more on how this works.
 Note that some versions of PGP interpret the presence of a keyserver
 URL as an instruction to enable PGP/MIME mail encoding.  Setting a
 value of "none" removes a existing preferred keyserver.
@@ -557,11 +557,12 @@ each user ID except for the most recent self-signature.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>backsign</term>
+<term>cross-certify</term>
 <listitem><para>
-Add back signatures to signing subkeys that may not currently have
-back signatures.  Back signatures protect against a subtle attack
-against signing subkeys.  See --require-backsigs.
+Add cross-certification signatures to signing subkeys that may not
+currently have them.  Cross-certification signatures protect against a
+subtle attack against signing subkeys.  See
+--require-cross-certification.
 </para></listitem></varlistentry>
 
     <varlistentry>
@@ -718,7 +719,7 @@ keyring.  The fast version is currently just a synonym.
 </para>
 <para>
 There are a few other options which control how this command works.
-Most notable here is the --keyserver-option merge-only option which
+Most notable here is the --keyserver-options merge-only option which
 does not insert new keys but does only the merging of new signatures,
 user-IDs and subkeys.
 </para></listitem></varlistentry>
@@ -739,7 +740,7 @@ local keyring.  This is useful for updating a key with the latest
 signatures, user IDs, etc.  Calling this with no arguments will
 refresh the entire keyring.  Option --keyserver must be used to give
 the name of the keyserver for all keys that do not have preferred
-keyservers set (see --keyserver-option honor-keyserver-url).
+keyservers set (see --keyserver-options honor-keyserver-url).
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1399,7 +1400,7 @@ be repeated multiple times to increase the verbosity level.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>timeout</term>
+<term>timeout&OptEqualsValue;</term>
 <listitem><para>
 Tell the keyserver helper program how long (in seconds) to try and
 perform a keyserver action before giving up.  Note that performing
@@ -1415,8 +1416,15 @@ timeout applies separately to each key retrieval, and not to the
 For HTTP-like keyserver schemes that (such as HKP and HTTP itself),
 try to access the keyserver over a proxy.  If a &ParmValue; is
 specified, use this as the HTTP proxy.  If no &ParmValue; is
-specified, try to use the value of the environment variable
-"http_proxy".
+specified, the value of the environment variable "http_proxy", if any,
+will be used.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>max-cert-size&OptEqualsValue;</term>
+<listitem><para>
+When retrieving a key via DNS CERT, only accept keys up to this size.
+Defaults to 16384 bytes.
 </para></listitem></varlistentry>
 
 </variablelist>
@@ -2789,14 +2797,14 @@ handing out the secret key.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--require-backsigs</term>
-<term>--no-require-backsigs</term>
+<term>--require-cross-certification</term>
+<term>--no-require-certification</term>
 <listitem><para>
-When verifying a signature made from a subkey, ensure that the "back
-signature" on the subkey is present and valid.  This protects against
-a subtle attack against subkeys that can sign.  Currently defaults to
---no-require-backsigs, but will be changed to --require-backsigs in
-the future.
+When verifying a signature made from a subkey, ensure that the cross
+certification "back signature" on the subkey is present and valid.
+This protects against a subtle attack against subkeys that can sign.
+Currently defaults to --no-require-cross-certification, but will be
+changed to --require-cross-certification in the future.
 </para></listitem></varlistentry>
 
 <varlistentry>
