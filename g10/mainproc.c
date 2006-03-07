@@ -1163,6 +1163,13 @@ proc_signature_packets( void *anchor, IOBUF a,
         log_error (_("no signature found\n"));
         rc = G10ERR_NO_DATA;
       }
+
+    /* Propagate the signature seen flag upward. Do this only on
+       success so that we won't issue the nodata status several
+       times. */
+    if (!rc && c->anchor && c->any_sig_seen)
+      c->anchor->any_sig_seen = 1;
+
     xfree( c );
     return rc;
 }
@@ -1445,8 +1452,8 @@ check_sig_and_print( CTX c, KBNODE node )
     KBNODE n;
     int n_onepass, n_sig;
 
-    log_debug ("checking signature packet composition\n");
-    dump_kbnode (c->list);
+/*     log_debug ("checking signature packet composition\n"); */
+/*     dump_kbnode (c->list); */
 
     n = c->list;
     assert (n);
@@ -1482,7 +1489,9 @@ check_sig_and_print( CTX c, KBNODE node )
         for (n_sig=0, n = n->next;
              n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
           n_sig++;
-        if (n || !n_sig)
+        if (!n_sig)
+          goto ambiguous;
+        if (n && !opt.allow_multisig_verification)
           goto ambiguous;
         if (n_onepass != n_sig)
           {

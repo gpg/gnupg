@@ -53,7 +53,9 @@ Noteworthy changes in version 1.4.3
 
     * Files containing several signed messages are not anymore allowed
       because there is no clean way to report the status of such files
-      back to the caller.
+      back to the caller.  To partly revert to the old behaviour the
+      new option --allow-multisig-verification may be used.
+
 
 
 Noteworthy changes in version 1.4.2 (2005-07-26)

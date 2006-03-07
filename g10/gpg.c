@@ -362,6 +362,7 @@ enum cmd_and_opt_values
     oNoRequireBacksigs,
     oAutoKeyLocate,
     oNoAutoKeyLocate,
+    oAllowMultisigVerification,
 
     oNoop
   };
@@ -699,6 +700,8 @@ static ARGPARSE_OPTS opts[] = {
 #if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
     { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
 #endif
+    { oAllowMultisigVerification, "allow-multisig-verification", 0, "@"},
+
     /* These two are aliases to help users of the PGP command line
        product use gpg with minimal pain.  Many commands are common
        already as they seem to have borrowed commands from us.  Now
@@ -2668,6 +2671,10 @@ main (int argc, char **argv )
 	  case oNoAutoKeyLocate:
 	    release_akl();
 	    break;
+
+          case oAllowMultisigVerification:
+            opt.allow_multisig_verification = 1;
+            break;
 
 	  case oNoop: break;
 

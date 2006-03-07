@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-02-14 15:28+0100\n"
+"POT-Creation-Date: 2006-03-07 11:29+0100\n"
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -40,9 +40,9 @@ msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
 #: cipher/random.c:448 g10/card-util.c:677 g10/card-util.c:746
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:488
-#: g10/gpg.c:992 g10/gpg.c:3360 g10/import.c:193 g10/keygen.c:2274
+#: g10/gpg.c:997 g10/gpg.c:3391 g10/import.c:193 g10/keygen.c:2274
 #: g10/keyring.c:1525 g10/openfile.c:184 g10/openfile.c:340
-#: g10/plaintext.c:476 g10/sign.c:787 g10/sign.c:947 g10/sign.c:1060
+#: g10/plaintext.c:482 g10/sign.c:787 g10/sign.c:947 g10/sign.c:1060
 #: g10/sign.c:1210 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
 #, c-format
@@ -77,7 +77,7 @@ msgstr "Nem tudom olvasni a(z) \"%s\" állományt: %s.\n"
 msgid "note: random_seed file not updated\n"
 msgstr "Megjegyzés: random_seed állományt nem frissítettem.\n"
 
-#: cipher/random.c:544 g10/exec.c:478 g10/gpg.c:991 g10/keygen.c:2753
+#: cipher/random.c:544 g10/exec.c:478 g10/gpg.c:996 g10/keygen.c:2753
 #: g10/keygen.c:2783 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:261
 #: g10/openfile.c:355 g10/sign.c:805 g10/sign.c:1076 g10/tdbio.c:536
 #, c-format
@@ -693,48 +693,48 @@ msgstr "Írom a titkos kulcsot a %s állományba.\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Érvénytelen parancs! (Próbálja a súgót: \"help\".)\n"
 
-#: g10/cardglue.c:435
+#: g10/cardglue.c:434
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr ""
 
-#: g10/cardglue.c:572
+#: g10/cardglue.c:573
 #, c-format
 msgid ""
 "Please remove the current card and insert the one with serial number:\n"
 "   %.*s\n"
 msgstr ""
 
-#: g10/cardglue.c:580
+#: g10/cardglue.c:582
 msgid "Hit return when ready or enter 'c' to cancel: "
 msgstr ""
 
-#: g10/cardglue.c:915
+#: g10/cardglue.c:917
 msgid "Enter New Admin PIN: "
 msgstr ""
 
-#: g10/cardglue.c:916
+#: g10/cardglue.c:918
 msgid "Enter New PIN: "
 msgstr ""
 
-#: g10/cardglue.c:917
+#: g10/cardglue.c:919
 msgid "Enter Admin PIN: "
 msgstr ""
 
-#: g10/cardglue.c:918
+#: g10/cardglue.c:920
 msgid "Enter PIN: "
 msgstr ""
 
-#: g10/cardglue.c:935
+#: g10/cardglue.c:937
 #, fuzzy
 msgid "Repeat this PIN: "
 msgstr "Ismételje meg a jelszót: "
 
-#: g10/cardglue.c:950
+#: g10/cardglue.c:952
 #, fuzzy
 msgid "PIN not correctly repeated; try again"
 msgstr "Nem ismételte meg helyesen a jelszót! Próbálja újra!"
 
-#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3720 g10/keyring.c:377
+#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3751 g10/keyring.c:377
 #: g10/keyring.c:663 g10/verify.c:102 g10/verify.c:157
 #, c-format
 msgid "can't open `%s'\n"
@@ -744,13 +744,13 @@ msgstr "Nem tudom megnyitni %s-t!\n"
 msgid "--output doesn't work for this command\n"
 msgstr "Az --output opció nem mûködik ehhez a parancshoz.\n"
 
-#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3336 g10/keyserver.c:1644
+#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3336 g10/keyserver.c:1698
 #: g10/revoke.c:228
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "\"%s\" kulcs nem található: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2322 g10/keyserver.c:1658
+#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2322 g10/keyserver.c:1712
 #: g10/revoke.c:234 g10/revoke.c:478
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -860,12 +860,12 @@ msgstr "Lehet, hogy nem használhatja %s-t %s módban!\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s titkosítva \"%s\" számára\n"
 
-#: g10/encr-data.c:67 g10/mainproc.c:306
+#: g10/encr-data.c:67 g10/mainproc.c:293
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "%s titkosított adat.\n"
 
-#: g10/encr-data.c:69 g10/mainproc.c:310
+#: g10/encr-data.c:69 g10/mainproc.c:297
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "Ismeretlen algoritmussal (%d) titkosítva.\n"
@@ -1009,7 +1009,7 @@ msgstr "FIGYELEM: %08lX titkos kulcsnak nincs egyszerû SK ellenõrzõösszege.\n"
 msgid "WARNING: nothing exported\n"
 msgstr "FIGYELEM: Semmit sem exportáltam.\n"
 
-#: g10/gpg.c:372
+#: g10/gpg.c:373
 msgid ""
 "@Commands:\n"
 " "
@@ -1017,128 +1017,128 @@ msgstr ""
 "@Parancsok:\n"
 " "
 
-#: g10/gpg.c:374
+#: g10/gpg.c:375
 msgid "|[file]|make a signature"
 msgstr "|[fájl]|aláírás készítése"
 
-#: g10/gpg.c:375
+#: g10/gpg.c:376
 msgid "|[file]|make a clear text signature"
 msgstr "|[fájl]|olvasható szöveg aláírása"
 
-#: g10/gpg.c:376
+#: g10/gpg.c:377
 msgid "make a detached signature"
 msgstr "különálló aláírás készítése"
 
-#: g10/gpg.c:377
+#: g10/gpg.c:378
 msgid "encrypt data"
 msgstr "adat titkosítása"
 
-#: g10/gpg.c:379
+#: g10/gpg.c:380
 msgid "encryption only with symmetric cipher"
 msgstr "titkosítás csak szimmetrikus rejtjelezõvel"
 
-#: g10/gpg.c:381
+#: g10/gpg.c:382
 msgid "decrypt data (default)"
 msgstr "adat visszafejtése (alapértelmezés)"
 
-#: g10/gpg.c:383
+#: g10/gpg.c:384
 msgid "verify a signature"
 msgstr "aláírás ellenõrzése"
 
-#: g10/gpg.c:385
+#: g10/gpg.c:386
 msgid "list keys"
 msgstr "kulcsok listázása"
 
-#: g10/gpg.c:387
+#: g10/gpg.c:388
 msgid "list keys and signatures"
 msgstr "kulcsok és aláírások listázása"
 
-#: g10/gpg.c:388
+#: g10/gpg.c:389
 #, fuzzy
 msgid "list and check key signatures"
 msgstr "kulcsaláírások ellenõrzése"
 
-#: g10/gpg.c:389
+#: g10/gpg.c:390
 msgid "list keys and fingerprints"
 msgstr "kulcsok és ujjlenyomatok listázása"
 
-#: g10/gpg.c:390
+#: g10/gpg.c:391
 msgid "list secret keys"
 msgstr "titkos kulcsok listázása"
 
-#: g10/gpg.c:391
+#: g10/gpg.c:392
 msgid "generate a new key pair"
 msgstr "új kulcspár létrehozása"
 
-#: g10/gpg.c:392
+#: g10/gpg.c:393
 msgid "remove keys from the public keyring"
 msgstr "kulcsok eltávolítása a nyilvánoskulcs-karikáról"
 
-#: g10/gpg.c:394
+#: g10/gpg.c:395
 msgid "remove keys from the secret keyring"
 msgstr "kulcsok eltávolítása a titkoskulcs-karikáról"
 
-#: g10/gpg.c:395
+#: g10/gpg.c:396
 msgid "sign a key"
 msgstr "kulcs aláírása"
 
-#: g10/gpg.c:396
+#: g10/gpg.c:397
 msgid "sign a key locally"
 msgstr "kulcs aláírása helyileg"
 
-#: g10/gpg.c:397
+#: g10/gpg.c:398
 msgid "sign or edit a key"
 msgstr "kulcs aláírása vagy szerkesztése"
 
-#: g10/gpg.c:398
+#: g10/gpg.c:399
 msgid "generate a revocation certificate"
 msgstr "visszavonási igazolás készítése"
 
-#: g10/gpg.c:400
+#: g10/gpg.c:401
 msgid "export keys"
 msgstr "kulcsok exportálása"
 
-#: g10/gpg.c:401
+#: g10/gpg.c:402
 msgid "export keys to a key server"
 msgstr "kulcsok exportálása kulcsszerverre"
 
-#: g10/gpg.c:402
+#: g10/gpg.c:403
 msgid "import keys from a key server"
 msgstr "kulcsok importálása kulcsszerverrõl"
 
-#: g10/gpg.c:404
+#: g10/gpg.c:405
 msgid "search for keys on a key server"
 msgstr "kulcsok keresése kulcsszerveren"
 
-#: g10/gpg.c:406
+#: g10/gpg.c:407
 msgid "update all keys from a keyserver"
 msgstr "minden kulcs frissítése kulcsszerverrõl"
 
-#: g10/gpg.c:410
+#: g10/gpg.c:411
 msgid "import/merge keys"
 msgstr "kulcsok importálása/összefûzése"
 
-#: g10/gpg.c:413
+#: g10/gpg.c:414
 msgid "print the card status"
 msgstr ""
 
-#: g10/gpg.c:414
+#: g10/gpg.c:415
 msgid "change data on a card"
 msgstr ""
 
-#: g10/gpg.c:415
+#: g10/gpg.c:416
 msgid "change a card's PIN"
 msgstr ""
 
-#: g10/gpg.c:423
+#: g10/gpg.c:424
 msgid "update the trust database"
 msgstr "bizalmi adatbázis frissítése"
 
-#: g10/gpg.c:430
+#: g10/gpg.c:431
 msgid "|algo [files]|print message digests"
 msgstr "|algo [fájlok]|üzenet kivonatának kiírása"
 
-#: g10/gpg.c:434 g10/gpgv.c:71
+#: g10/gpg.c:435 g10/gpgv.c:71
 msgid ""
 "@\n"
 "Options:\n"
@@ -1148,51 +1148,51 @@ msgstr ""
 "Opciók:\n"
 " "
 
-#: g10/gpg.c:436
+#: g10/gpg.c:437
 msgid "create ascii armored output"
 msgstr "ascii páncélozott kimenet létrehozása"
 
-#: g10/gpg.c:438
+#: g10/gpg.c:439
 msgid "|NAME|encrypt for NAME"
 msgstr "|NÉV|titkosítás NÉV részére"
 
-#: g10/gpg.c:449
+#: g10/gpg.c:450
 msgid "use this user-id to sign or decrypt"
 msgstr "felh. azonosító aláíráshoz és visszafejtéshez"
 
-#: g10/gpg.c:450
+#: g10/gpg.c:451
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|tömörítési szint beállítása N-re (0: tiltás)"
 
-#: g10/gpg.c:455
+#: g10/gpg.c:456
 msgid "use canonical text mode"
 msgstr "kanonikus szöveges mód használata"
 
-#: g10/gpg.c:469
+#: g10/gpg.c:470
 msgid "use as output file"
 msgstr "kimeneti állomány megadása"
 
-#: g10/gpg.c:471 g10/gpgv.c:73
+#: g10/gpg.c:472 g10/gpgv.c:73
 msgid "verbose"
 msgstr "bõbeszédû mód"
 
-#: g10/gpg.c:482
+#: g10/gpg.c:483
 msgid "do not make any changes"
 msgstr "ne csináljon semmi változtatást"
 
-#: g10/gpg.c:483
+#: g10/gpg.c:484
 msgid "prompt before overwriting"
 msgstr "felülírás elõtt rákérdezés"
 
-#: g10/gpg.c:524
+#: g10/gpg.c:525
 msgid "use strict OpenPGP behavior"
 msgstr ""
 
-#: g10/gpg.c:525
+#: g10/gpg.c:526
 msgid "generate PGP 2.x compatible messages"
 msgstr ""
 
-#: g10/gpg.c:553
+#: g10/gpg.c:554
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1200,7 +1200,7 @@ msgstr ""
 "@\n"
 "(A parancsok és opciók teljes listáját a man oldalon tekintheti meg.)\n"
 
-#: g10/gpg.c:556
+#: g10/gpg.c:557
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1220,15 +1220,15 @@ msgstr ""
 " --list-keys [nevek]        kulcsok kiíratása\n"
 " --fingerprint [nevek]      ujjlenyomatok kiíratása\n"
 
-#: g10/gpg.c:746 g10/gpgv.c:98
+#: g10/gpg.c:751 g10/gpgv.c:98
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr "A hibákat (angolul) a <gnupg-bugs@gnu.org> címre írja meg!\n"
 
-#: g10/gpg.c:763
+#: g10/gpg.c:768
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
-#: g10/gpg.c:766
+#: g10/gpg.c:771
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -1238,7 +1238,7 @@ msgstr ""
 "Aláírás, ellenõrzés, titkosítás vagy visszafejtés.\n"
 "Az alapértelmezett mûvelet a bemeneti adattól függ.\n"
 
-#: g10/gpg.c:777
+#: g10/gpg.c:782
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1246,552 +1246,561 @@ msgstr ""
 "\n"
 "Támogatott algoritmusok:\n"
 
-#: g10/gpg.c:780
+#: g10/gpg.c:785
 msgid "Pubkey: "
 msgstr "Nyilvános kulcsú (pubkey): "
 
-#: g10/gpg.c:786 g10/keyedit.c:2266
+#: g10/gpg.c:791 g10/keyedit.c:2266
 msgid "Cipher: "
 msgstr "Rejtjelezõ (cipher): "
 
-#: g10/gpg.c:792
+#: g10/gpg.c:797
 msgid "Hash: "
 msgstr "Kivonatoló (hash): "
 
-#: g10/gpg.c:798 g10/keyedit.c:2312
+#: g10/gpg.c:803 g10/keyedit.c:2312
 msgid "Compression: "
 msgstr "Tömörítõ (compression): "
 
-#: g10/gpg.c:881
+#: g10/gpg.c:886
 msgid "usage: gpg [options] "
 msgstr "Használat: gpg [opciók] "
 
-#: g10/gpg.c:1029
+#: g10/gpg.c:1034
 msgid "conflicting commands\n"
 msgstr "Egymásnak ellentmondó parancsok!\n"
 
-#: g10/gpg.c:1047
+#: g10/gpg.c:1052
 #, fuzzy, c-format
 msgid "no = sign found in group definition `%s'\n"
 msgstr "Nem találtam = jelet a \"%s\" csoportdefinícióban!\n"
 
-#: g10/gpg.c:1244
+#: g10/gpg.c:1249
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on homedir `%s'\n"
 msgstr "FIGYELEM: Nem biztonságos tulajdonos: %s \"%s\"\n"
 
-#: g10/gpg.c:1247
+#: g10/gpg.c:1252
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "FIGYELEM: Nem biztonságos tulajdonos: %s \"%s\"\n"
 
-#: g10/gpg.c:1250
+#: g10/gpg.c:1255
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on extension `%s'\n"
 msgstr "FIGYELEM: Nem biztonságos tulajdonos: %s \"%s\"\n"
 
-#: g10/gpg.c:1256
+#: g10/gpg.c:1261
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
 
-#: g10/gpg.c:1259
+#: g10/gpg.c:1264
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
 
-#: g10/gpg.c:1262
+#: g10/gpg.c:1267
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
 
-#: g10/gpg.c:1268
+#: g10/gpg.c:1273
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtártulajdonos: %s \"%s\"\n"
 
-#: g10/gpg.c:1271
+#: g10/gpg.c:1276
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtártulajdonos: %s \"%s\"\n"
 
-#: g10/gpg.c:1274
+#: g10/gpg.c:1279
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtártulajdonos: %s \"%s\"\n"
 
-#: g10/gpg.c:1280
+#: g10/gpg.c:1285
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
 
-#: g10/gpg.c:1283
+#: g10/gpg.c:1288
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
 
-#: g10/gpg.c:1286
+#: g10/gpg.c:1291
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
 
-#: g10/gpg.c:1427
+#: g10/gpg.c:1432
 #, fuzzy, c-format
 msgid "unknown configuration item `%s'\n"
 msgstr "\"%s\": ismeretlen konfigurációs elem.\n"
 
-#: g10/gpg.c:1521
+#: g10/gpg.c:1526
 msgid "display photo IDs during key listings"
 msgstr ""
 
-#: g10/gpg.c:1523
+#: g10/gpg.c:1528
 msgid "show policy URLs during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1525
+#: g10/gpg.c:1530
 #, fuzzy
 msgid "show all notations during signature listings"
 msgstr "Nincs megfelelõ aláírás a titkoskulcs-karikán.\n"
 
-#: g10/gpg.c:1527
+#: g10/gpg.c:1532
 msgid "show IETF standard notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1531
+#: g10/gpg.c:1536
 msgid "show user-supplied notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1533
+#: g10/gpg.c:1538
 #, fuzzy
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "A megadott aláírási eljárásmód URL-je érvénytelen!\n"
 
-#: g10/gpg.c:1535
+#: g10/gpg.c:1540
 msgid "show user ID validity during key listings"
 msgstr ""
 
-#: g10/gpg.c:1537
+#: g10/gpg.c:1542
 msgid "show revoked and expired user IDs in key listings"
 msgstr ""
 
-#: g10/gpg.c:1539
+#: g10/gpg.c:1544
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
 
-#: g10/gpg.c:1541
+#: g10/gpg.c:1546
 #, fuzzy
 msgid "show the keyring name in key listings"
 msgstr "mutatja a kilistázott kulcs kulcskarikáját is"
 
-#: g10/gpg.c:1543
+#: g10/gpg.c:1548
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Nincs megfelelõ aláírás a titkoskulcs-karikán.\n"
 
-#: g10/gpg.c:1874
+#: g10/gpg.c:1879
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "MEGJEGYZÉS: Figyelmen kívül hagytam a régi opciókat (%s).\n"
 
-#: g10/gpg.c:1916
+#: g10/gpg.c:1921
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "MEGJEGYZÉS: Nincs alapértelmezett opciós fájl (%s).\n"
 
-#: g10/gpg.c:1920
+#: g10/gpg.c:1925
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "\"%s\" opciós fájl: %s\n"
 
-#: g10/gpg.c:1927
+#: g10/gpg.c:1932
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "Az opciókat a \"%s\" állományból olvasom.\n"
 
-#: g10/gpg.c:2142 g10/gpg.c:2716 g10/gpg.c:2735
+#: g10/gpg.c:2147 g10/gpg.c:2747 g10/gpg.c:2766
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "MEGJEGYZÉS: %s nem normál használatra van!\n"
 
-#: g10/gpg.c:2158
+#: g10/gpg.c:2163
 #, fuzzy, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr "A \"%s\" rejtjelezõ bõvítést rossz engedélyek miatt töltöm be.\n"
 
-#: g10/gpg.c:2312 g10/gpg.c:2324
+#: g10/gpg.c:2317 g10/gpg.c:2329
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "%s nem érvényes karakterkiosztás!\n"
 
-#: g10/gpg.c:2400
+#: g10/gpg.c:2405
 #, fuzzy, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "%s nem érvényes karakterkiosztás!\n"
 
-#: g10/gpg.c:2422 g10/keyedit.c:3997
+#: g10/gpg.c:2429 g10/keyedit.c:3997
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "Értelmezhetetlen a kulcsszerver URI-ja!\n"
 
-#: g10/gpg.c:2428
+#: g10/gpg.c:2441
 #, fuzzy, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: Érvénytelen export opciók!\n"
 
-#: g10/gpg.c:2431
+#: g10/gpg.c:2444
 #, fuzzy
 msgid "invalid keyserver options\n"
 msgstr "Érvénytelen export opciók!\n"
 
-#: g10/gpg.c:2438
+#: g10/gpg.c:2451
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: Érvénytelen import opciók!\n"
 
-#: g10/gpg.c:2441
+#: g10/gpg.c:2454
 msgid "invalid import options\n"
 msgstr "Érvénytelen import opciók!\n"
 
-#: g10/gpg.c:2448
+#: g10/gpg.c:2461
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: Érvénytelen export opciók!\n"
 
-#: g10/gpg.c:2451
+#: g10/gpg.c:2464
 msgid "invalid export options\n"
 msgstr "Érvénytelen export opciók!\n"
 
-#: g10/gpg.c:2458
+#: g10/gpg.c:2471
 #, fuzzy, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: Érvénytelen import opciók!\n"
 
-#: g10/gpg.c:2461
+#: g10/gpg.c:2474
 #, fuzzy
 msgid "invalid list options\n"
 msgstr "Érvénytelen import opciók!\n"
 
-#: g10/gpg.c:2469
+#: g10/gpg.c:2482
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2471
+#: g10/gpg.c:2484
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2473
+#: g10/gpg.c:2486
 #, fuzzy
 msgid "show all notations during signature verification"
 msgstr "%s nem érvényes karakterkiosztás!\n"
 
-#: g10/gpg.c:2475
+#: g10/gpg.c:2488
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2479
+#: g10/gpg.c:2492
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2481
+#: g10/gpg.c:2494
 #, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "A megadott aláírási eljárásmód URL-je érvénytelen!\n"
 
-#: g10/gpg.c:2483
+#: g10/gpg.c:2496
 #, fuzzy
 msgid "show user ID validity during signature verification"
 msgstr "%s nem érvényes karakterkiosztás!\n"
 
-#: g10/gpg.c:2485
+#: g10/gpg.c:2498
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2492
+#: g10/gpg.c:2505
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: Érvénytelen export opciók!\n"
 
-#: g10/gpg.c:2495
+#: g10/gpg.c:2508
 #, fuzzy
 msgid "invalid verify options\n"
 msgstr "Érvénytelen export opciók!\n"
 
-#: g10/gpg.c:2502
+#: g10/gpg.c:2515
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "Nem tudom a végrehajtási elérési utat %s értékre állítani!\n"
 
-#: g10/gpg.c:2705
+#: g10/gpg.c:2665
+#, fuzzy, c-format
+msgid "%s:%d: invalid auto-key-locate list\n"
+msgstr "%s:%d: Érvénytelen export opciók!\n"
+
+#: g10/gpg.c:2668
+msgid "invalid auto-key-locate list\n"
+msgstr ""
+
+#: g10/gpg.c:2736
 msgid "WARNING: program may create a core file!\n"
 msgstr "FIGYELEM: A program core állományt hozhat létre!\n"
 
-#: g10/gpg.c:2709
+#: g10/gpg.c:2740
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "FIGYELEM: %s hatástalanítja %s-t!\n"
 
-#: g10/gpg.c:2718
+#: g10/gpg.c:2749
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s és %s nem használható együtt!\n"
 
-#: g10/gpg.c:2721
+#: g10/gpg.c:2752
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s értelmetlen %s mellett!\n"
 
-#: g10/gpg.c:2728
+#: g10/gpg.c:2759
 #, fuzzy, c-format
 msgid "NOTE: %s is not available in this version\n"
 msgstr "GPG ügynök nem elérhetõ ebben a munkafolyamatban.\n"
 
-#: g10/gpg.c:2743
+#: g10/gpg.c:2774
 #, fuzzy, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
-#: g10/gpg.c:2757
+#: g10/gpg.c:2788
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "Csak különálló és olvashatószöveg-aláírást készíthet --pgp2 módban!\n"
 
-#: g10/gpg.c:2763
+#: g10/gpg.c:2794
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "Nem írhat alá és titkosíthat egyszerre --pgp2 módban!\n"
 
-#: g10/gpg.c:2769
+#: g10/gpg.c:2800
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "Csak állományokat (pipe-ot nem) használhat --pgp2 módban!\n"
 
-#: g10/gpg.c:2782
+#: g10/gpg.c:2813
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "Üzenet titkosítása --pgp2 módban IDEA rejtjelezõt igényel!\n"
 
-#: g10/gpg.c:2849 g10/gpg.c:2873
+#: g10/gpg.c:2880 g10/gpg.c:2904
 msgid "selected cipher algorithm is invalid\n"
 msgstr "A kiválasztott rejtjelezõ algoritmus érvénytelen!\n"
 
-#: g10/gpg.c:2855 g10/gpg.c:2879
+#: g10/gpg.c:2886 g10/gpg.c:2910
 msgid "selected digest algorithm is invalid\n"
 msgstr "A kiválasztott kivonatoló algoritmus érvénytelen!\n"
 
-#: g10/gpg.c:2861
+#: g10/gpg.c:2892
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "A kiválasztott rejtjelezõ algoritmus érvénytelen!\n"
 
-#: g10/gpg.c:2867
+#: g10/gpg.c:2898
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "Az igazoláshoz kiválasztott kivonatoló algoritmus érvénytelen!\n"
 
-#: g10/gpg.c:2882
+#: g10/gpg.c:2913
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed nagyobb kell legyen 0-nál!\n"
 
-#: g10/gpg.c:2884
+#: g10/gpg.c:2915
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed nagyobb kell legyen 1-nél!\n"
 
-#: g10/gpg.c:2886
+#: g10/gpg.c:2917
 #, fuzzy
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth 1 és 255 közé kell essen!\n"
 
-#: g10/gpg.c:2888
+#: g10/gpg.c:2919
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "Érvénytelen default-cert-level; 0, 1, 2 vagy 3 lehet.\n"
 
-#: g10/gpg.c:2890
+#: g10/gpg.c:2921
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "Érvénytelen min-cert-level; 0, 1, 2 vagy 3 lehet.\n"
 
-#: g10/gpg.c:2893
+#: g10/gpg.c:2924
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "MEGJEGYZÉS: Egyszerû S2K mód (0) erõsen ellenjavallt!\n"
 
-#: g10/gpg.c:2897
+#: g10/gpg.c:2928
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "Érvénytelen S2K mód; 0, 1 vagy 3 lehet.\n"
 
-#: g10/gpg.c:2904
+#: g10/gpg.c:2935
 msgid "invalid default preferences\n"
 msgstr "Érvénytelen alapértelmezett preferenciák!\n"
 
-#: g10/gpg.c:2913
+#: g10/gpg.c:2944
 msgid "invalid personal cipher preferences\n"
 msgstr "Érvénytelen személyes rejtjelezõ-preferenciák!\n"
 
-#: g10/gpg.c:2917
+#: g10/gpg.c:2948
 msgid "invalid personal digest preferences\n"
 msgstr "Érvénytelen személyes kivonatolópreferenciák!\n"
 
-#: g10/gpg.c:2921
+#: g10/gpg.c:2952
 msgid "invalid personal compress preferences\n"
 msgstr "Érvénytelen személyes tömörítõpreferenciák!\n"
 
-#: g10/gpg.c:2954
+#: g10/gpg.c:2985
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s és %s egyelõre nem használható együtt!\n"
 
-#: g10/gpg.c:3001
+#: g10/gpg.c:3032
 #, fuzzy, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr ""
 "Lehet, hogy nem használhatja \"%s\" rejtjelezõ algoritmust %s módban!\n"
 
-#: g10/gpg.c:3006
+#: g10/gpg.c:3037
 #, fuzzy, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr ""
 "Lehet, hogy nem használhatja \"%s\" kivonatoló algoritmust %s módban!\n"
 
-#: g10/gpg.c:3011
+#: g10/gpg.c:3042
 #, fuzzy, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "Lehet, hogy nem használhatja \"%s\" tömörítõ algoritmust %s módban!\n"
 
-#: g10/gpg.c:3107
+#: g10/gpg.c:3138
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
 
-#: g10/gpg.c:3118
+#: g10/gpg.c:3149
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "FIGYELEM: Címzett megadva (-r), de nincs nyilvános kulcsú titkosítás!\n"
 
-#: g10/gpg.c:3129
+#: g10/gpg.c:3160
 msgid "--store [filename]"
 msgstr "--store [fájlnév]"
 
-#: g10/gpg.c:3136
+#: g10/gpg.c:3167
 msgid "--symmetric [filename]"
 msgstr "--symmetric [fájlnév]"
 
-#: g10/gpg.c:3138
+#: g10/gpg.c:3169
 #, fuzzy, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "Visszafejtés sikertelen: %s.\n"
 
-#: g10/gpg.c:3148
+#: g10/gpg.c:3179
 msgid "--encrypt [filename]"
 msgstr "--encrypt [fájlnév]"
 
-#: g10/gpg.c:3161
+#: g10/gpg.c:3192
 #, fuzzy
 msgid "--symmetric --encrypt [filename]"
 msgstr "--sign --encrypt [fájlnév]"
 
-#: g10/gpg.c:3163
+#: g10/gpg.c:3194
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3166
+#: g10/gpg.c:3197
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "Lehet, hogy nem használhatja %s-t %s módban!\n"
 
-#: g10/gpg.c:3184
+#: g10/gpg.c:3215
 msgid "--sign [filename]"
 msgstr "--sign [fájlnév]"
 
-#: g10/gpg.c:3197
+#: g10/gpg.c:3228
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [fájlnév]"
 
-#: g10/gpg.c:3212
+#: g10/gpg.c:3243
 #, fuzzy
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--sign --encrypt [fájlnév]"
 
-#: g10/gpg.c:3214
+#: g10/gpg.c:3245
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3217
+#: g10/gpg.c:3248
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "Lehet, hogy nem használhatja %s-t %s módban!\n"
 
-#: g10/gpg.c:3237
+#: g10/gpg.c:3268
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [fájlnév]"
 
-#: g10/gpg.c:3246
+#: g10/gpg.c:3277
 msgid "--clearsign [filename]"
 msgstr "--clearsign [fájlnév]"
 
-#: g10/gpg.c:3271
+#: g10/gpg.c:3302
 msgid "--decrypt [filename]"
 msgstr "--decrypt [fájlnév]"
 
-#: g10/gpg.c:3279
+#: g10/gpg.c:3310
 msgid "--sign-key user-id"
 msgstr "--sign-key felh-azonosító"
 
-#: g10/gpg.c:3283
+#: g10/gpg.c:3314
 msgid "--lsign-key user-id"
 msgstr "--lsign-key felh-azonosító"
 
-#: g10/gpg.c:3304
+#: g10/gpg.c:3335
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key felh-azonosító [parancsok]"
 
-#: g10/gpg.c:3375
+#: g10/gpg.c:3406
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [felh-azonosító] [kulcskarika]"
 
-#: g10/gpg.c:3412
+#: g10/gpg.c:3443
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "Küldés a kulcsszerverre sikertelen: %s\n"
 
-#: g10/gpg.c:3414
+#: g10/gpg.c:3445
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "Vétel a kulcsszerverrõl sikertelen: %s\n"
 
-#: g10/gpg.c:3416
+#: g10/gpg.c:3447
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "Kulcsexportálás sikertelen: %s\n"
 
-#: g10/gpg.c:3427
+#: g10/gpg.c:3458
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "Keresés a kulcsszerveren sikertelen: %s\n"
 
-#: g10/gpg.c:3437
+#: g10/gpg.c:3468
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "Frissítés a kulcsszerverrõl sikertelen: %s\n"
 
-#: g10/gpg.c:3488
+#: g10/gpg.c:3519
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "Páncél eltávolítása nem sikerült: %s\n"
 
-#: g10/gpg.c:3496
+#: g10/gpg.c:3527
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "Páncélozás nem sikerült: %s\n"
 
-#: g10/gpg.c:3583
+#: g10/gpg.c:3614
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
 
-#: g10/gpg.c:3706
+#: g10/gpg.c:3737
 msgid "[filename]"
 msgstr "[fájlnév]"
 
-#: g10/gpg.c:3710
+#: g10/gpg.c:3741
 msgid "Go ahead and type your message ...\n"
 msgstr "Kezdheti gépelni az üzenetet...\n"
 
-#: g10/gpg.c:4000
+#: g10/gpg.c:4031
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1799,28 +1808,28 @@ msgstr ""
 "Egy jelölés neve csak nyomtatható karaktereket és szóközt tartalmazhat, és = "
 "jellel kell befejezõdjön.\n"
 
-#: g10/gpg.c:4008
+#: g10/gpg.c:4039
 msgid "a user notation name must contain the '@' character\n"
 msgstr "Egy felhasználójelölésnek tartalmaznia kell a \"@\" karaktert!\n"
 
-#: g10/gpg.c:4013
+#: g10/gpg.c:4044
 #, fuzzy
 msgid "a notation name must not contain more than one '@' character\n"
 msgstr "Egy felhasználójelölésnek tartalmaznia kell a \"@\" karaktert!\n"
 
-#: g10/gpg.c:4024
+#: g10/gpg.c:4055
 msgid "a notation value must not use any control characters\n"
 msgstr "Egy jelölés értékében nem szerepelhet vezérlõkarakter!\n"
 
-#: g10/gpg.c:4058
+#: g10/gpg.c:4089
 msgid "the given certification policy URL is invalid\n"
 msgstr "A megadott igazolási eljárásmód URL-je érvénytelen!\n"
 
-#: g10/gpg.c:4060
+#: g10/gpg.c:4091
 msgid "the given signature policy URL is invalid\n"
 msgstr "A megadott aláírási eljárásmód URL-je érvénytelen!\n"
 
-#: g10/gpg.c:4093
+#: g10/gpg.c:4124
 #, fuzzy
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "A megadott aláírási eljárásmód URL-je érvénytelen!\n"
@@ -1829,35 +1838,36 @@ msgstr "A megadott aláírási eljárásmód URL-je érvénytelen!\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "Túl sok bejegyzés van a nyilvánoskulcs-gyorsítótárban - letiltom.\n"
 
-#: g10/getkey.c:188 g10/getkey.c:2845
+#: g10/getkey.c:188 g10/getkey.c:2876
 #, fuzzy
 msgid "[User ID not found]"
 msgstr "[ismeretlen kulcs]"
 
-#: g10/getkey.c:931 g10/getkey.c:953 g10/getkey.c:976
+#: g10/getkey.c:933 g10/getkey.c:950 g10/getkey.c:970 g10/getkey.c:986
+#: g10/getkey.c:1001
 #, c-format
 msgid "Automatically retrieved `%s' via %s\n"
 msgstr ""
 
-#: g10/getkey.c:1769
+#: g10/getkey.c:1800
 #, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "%08lX érvénytelen kulcsot érvényesítettük az\n"
 "--allow-non-selfsigned-uid opcióval.\n"
 
-#: g10/getkey.c:2323
+#: g10/getkey.c:2354
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
 "Nincs titkos alkulcs a %08lX nyilvános alkulcshoz - figyelmen kívül hagyom.\n"
 
-#: g10/getkey.c:2554
+#: g10/getkey.c:2585
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "A %08lX másodlagos kulcsot használjuk a %08lX elsõdleges helyett.\n"
 
-#: g10/getkey.c:2601
+#: g10/getkey.c:2632
 #, fuzzy, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
@@ -3429,12 +3439,12 @@ msgid "(sensitive)"
 msgstr " (érzékeny)"
 
 #: g10/keyedit.c:2681 g10/keyedit.c:2737 g10/keyedit.c:2798 g10/keyedit.c:2813
-#: g10/keylist.c:194 g10/keyserver.c:471
+#: g10/keylist.c:194 g10/keyserver.c:525
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "%s nem hozható létre: %s\n"
 
-#: g10/keyedit.c:2684 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:967
+#: g10/keyedit.c:2684 g10/keylist.c:787 g10/keylist.c:881 g10/mainproc.c:960
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[visszavont] "
@@ -3446,7 +3456,7 @@ msgstr " [lejár: %s]"
 
 #: g10/keyedit.c:2688 g10/keyedit.c:2739 g10/keyedit.c:2800 g10/keyedit.c:2815
 #: g10/keylist.c:196 g10/keylist.c:764 g10/keylist.c:799 g10/keylist.c:893
-#: g10/keylist.c:914 g10/keyserver.c:477 g10/mainproc.c:973
+#: g10/keylist.c:914 g10/keyserver.c:531 g10/mainproc.c:966
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [lejár: %s]"
@@ -3482,14 +3492,14 @@ msgstr ""
 "Kérem, vegye figyelembe, hogy az itt látható kulcs érvényessége nem\n"
 "feltétlenül helyes, amíg újra nem indítja a programot!\n"
 
-#: g10/keyedit.c:2832 g10/keyedit.c:3178 g10/keyserver.c:481
-#: g10/mainproc.c:1734 g10/trustdb.c:1184 g10/trustdb.c:1704
+#: g10/keyedit.c:2832 g10/keyedit.c:3178 g10/keyserver.c:535
+#: g10/mainproc.c:1783 g10/trustdb.c:1184 g10/trustdb.c:1704
 #, fuzzy
 msgid "revoked"
 msgstr "[visszavont] "
 
-#: g10/keyedit.c:2834 g10/keyedit.c:3180 g10/keyserver.c:485
-#: g10/mainproc.c:1736 g10/trustdb.c:537 g10/trustdb.c:1706
+#: g10/keyedit.c:2834 g10/keyedit.c:3180 g10/keyserver.c:539
+#: g10/mainproc.c:1785 g10/trustdb.c:537 g10/trustdb.c:1706
 #, fuzzy
 msgid "expired"
 msgstr "expire"
@@ -4333,395 +4343,392 @@ msgstr "%s: Kulcskarikát létrehoztam.\n"
 msgid "include revoked keys in search results"
 msgstr ""
 
-#: g10/keyserver.c:78
+#: g10/keyserver.c:77
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-#: g10/keyserver.c:81
+#: g10/keyserver.c:79
 msgid "use temporary files to pass data to keyserver helpers"
 msgstr ""
 
-#: g10/keyserver.c:83
+#: g10/keyserver.c:81
 msgid "do not delete temporary files after using them"
 msgstr ""
 
-#: g10/keyserver.c:87
+#: g10/keyserver.c:85
 msgid "automatically retrieve keys when verifying signatures"
 msgstr ""
 
-#: g10/keyserver.c:89
-msgid "automatically retrieve keys from PKA records"
-msgstr ""
-
-#: g10/keyserver.c:91
-msgid "automatically retrieve keys from DNS"
-msgstr ""
-
-#: g10/keyserver.c:95
+#: g10/keyserver.c:87
 #, fuzzy
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "A megadott aláírási eljárásmód URL-je érvénytelen!\n"
 
-#: g10/keyserver.c:139
+#: g10/keyserver.c:89
+msgid "honor the PKA record set on a key when retrieving keys"
+msgstr ""
+
+#: g10/keyserver.c:154
 #, fuzzy, c-format
 msgid "WARNING: keyserver option `%s' is not used on this platform\n"
 msgstr ""
 "FIGYELEM: \"%s\" opciói csak a következõ futáskor lesznek érvényesek!\n"
 
-#: g10/keyserver.c:483
+#: g10/keyserver.c:537
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
 
-#: g10/keyserver.c:684
+#: g10/keyserver.c:738
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr ""
 
-#: g10/keyserver.c:767 g10/keyserver.c:1368
+#: g10/keyserver.c:821 g10/keyserver.c:1422
 #, fuzzy, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "Érvénytelen export opciók!\n"
 
-#: g10/keyserver.c:865
+#: g10/keyserver.c:919
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "\"%s\" kulcs nem található: %s\n"
 
-#: g10/keyserver.c:867
+#: g10/keyserver.c:921
 #, fuzzy
 msgid "key not found on keyserver\n"
 msgstr "\"%s\" kulcs nem található: %s\n"
 
-#: g10/keyserver.c:1092
+#: g10/keyserver.c:1146
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
 
-#: g10/keyserver.c:1096
+#: g10/keyserver.c:1150
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
 
-#: g10/keyserver.c:1120
+#: g10/keyserver.c:1174
 #, fuzzy, c-format
 msgid "searching for names from %s server %s\n"
 msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
 
-#: g10/keyserver.c:1123
+#: g10/keyserver.c:1177
 #, fuzzy, c-format
 msgid "searching for names from %s\n"
 msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
 
-#: g10/keyserver.c:1271
+#: g10/keyserver.c:1325
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
 
-#: g10/keyserver.c:1275
+#: g10/keyserver.c:1329
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
 msgstr ""
 "\"\n"
 "Aláírva az Ön %08lX kulcsával %s idõpontban.\n"
 
-#: g10/keyserver.c:1318
+#: g10/keyserver.c:1372
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
 
-#: g10/keyserver.c:1321
+#: g10/keyserver.c:1375
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
 
-#: g10/keyserver.c:1328 g10/keyserver.c:1424
+#: g10/keyserver.c:1382 g10/keyserver.c:1478
 #, fuzzy
 msgid "no keyserver action!\n"
 msgstr "Érvénytelen export opciók!\n"
 
-#: g10/keyserver.c:1376
+#: g10/keyserver.c:1430
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 
-#: g10/keyserver.c:1385
+#: g10/keyserver.c:1439
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
-#: g10/keyserver.c:1446
+#: g10/keyserver.c:1500
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
-#: g10/keyserver.c:1452
+#: g10/keyserver.c:1506
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 
-#: g10/keyserver.c:1464
+#: g10/keyserver.c:1518
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1469
+#: g10/keyserver.c:1523
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1477
+#: g10/keyserver.c:1531
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr ""
 
-#: g10/keyserver.c:1484
+#: g10/keyserver.c:1538
 #, fuzzy
 msgid "keyserver timed out\n"
 msgstr "kulcsszerverhiba"
 
-#: g10/keyserver.c:1489
+#: g10/keyserver.c:1543
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "kulcsszerverhiba"
 
-#: g10/keyserver.c:1498
+#: g10/keyserver.c:1552
 #, fuzzy, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "Vétel a kulcsszerverrõl sikertelen: %s\n"
 
-#: g10/keyserver.c:1523 g10/keyserver.c:1557
+#: g10/keyserver.c:1577 g10/keyserver.c:1611
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
 
-#: g10/keyserver.c:1814
+#: g10/keyserver.c:1868
 #, fuzzy, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr ""
 "FIGYELEM: Nem tudom törölni az (\"%s\") átmeneti állományt: \"%s\": %s.\n"
 
-#: g10/keyserver.c:1836
+#: g10/keyserver.c:1890
 #, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
 
-#: g10/keyserver.c:1838
+#: g10/keyserver.c:1892
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
 
-#: g10/keyserver.c:1903
+#: g10/keyserver.c:1957
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr ""
 "FIGYELEM: Nem tudom törölni az (\"%s\") átmeneti állományt: \"%s\": %s.\n"
 
-#: g10/keyserver.c:1909
+#: g10/keyserver.c:1963
 #, fuzzy, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr ""
 "FIGYELEM: Nem tudom törölni az (\"%s\") átmeneti állományt: \"%s\": %s.\n"
 
-#: g10/mainproc.c:253
+#: g10/mainproc.c:240
 #, c-format
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "Furcsa méretû (%d) titkosított munkafolyamatkulcs.\n"
 
-#: g10/mainproc.c:304
+#: g10/mainproc.c:291
 #, c-format
 msgid "%s encrypted session key\n"
 msgstr "%s titkosított munkafolyamatkulcs\n"
 
-#: g10/mainproc.c:314
+#: g10/mainproc.c:301
 #, fuzzy, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr "Ismeretlen algoritmussal (%d) titkosítva.\n"
 
-#: g10/mainproc.c:395
+#: g10/mainproc.c:382
 #, fuzzy, c-format
 msgid "public key is %s\n"
 msgstr "Nyilvános kulcs: %08lX\n"
 
-#: g10/mainproc.c:450
+#: g10/mainproc.c:439
 msgid "public key encrypted data: good DEK\n"
 msgstr "Nyilvános kulccsal titkosított adat: jó DEK.\n"
 
-#: g10/mainproc.c:483
+#: g10/mainproc.c:472
 #, fuzzy, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
 msgstr "Titkosítva %u bites %s kulccsal, azonosító: %08lX, létrehozva: %s\n"
 
-#: g10/mainproc.c:487 g10/pkclist.c:219
+#: g10/mainproc.c:476 g10/pkclist.c:219
 #, fuzzy, c-format
 msgid "      \"%s\"\n"
 msgstr "               azaz \""
 
-#: g10/mainproc.c:491
+#: g10/mainproc.c:480
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "Titkosítva %s kulccsal, azonosító: %08lX\n"
 
-#: g10/mainproc.c:505
+#: g10/mainproc.c:494
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "Nyilvános kulcsú visszafejtés sikertelen: %s\n"
 
-#: g10/mainproc.c:519
+#: g10/mainproc.c:508
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "%lu jelszóval rejtjelezve\n"
 
-#: g10/mainproc.c:521
+#: g10/mainproc.c:510
 msgid "encrypted with 1 passphrase\n"
 msgstr "1 jelszóval rejtjelezve\n"
 
-#: g10/mainproc.c:549 g10/mainproc.c:571
+#: g10/mainproc.c:541 g10/mainproc.c:563
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "%s titkosított adatot feltételezek.\n"
 
-#: g10/mainproc.c:557
+#: g10/mainproc.c:549
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "IDEA rejtjelezõ nem áll rendelkezésre, optimista módon megpróbálok\n"
 "%s-t használni helyette.\n"
 
-#: g10/mainproc.c:589
+#: g10/mainproc.c:581
 msgid "decryption okay\n"
 msgstr "Visszafejtés rendben.\n"
 
-#: g10/mainproc.c:593
+#: g10/mainproc.c:585
 msgid "WARNING: message was not integrity protected\n"
 msgstr "FIGYELEM: Az üzenetet nem látták el integritásvédelemmel.\n"
 
-#: g10/mainproc.c:606
+#: g10/mainproc.c:598
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "FIGYELEM: A titkosított üzenetet manipulálták!\n"
 
-#: g10/mainproc.c:612
+#: g10/mainproc.c:604
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "Visszafejtés sikertelen: %s.\n"
 
-#: g10/mainproc.c:631
+#: g10/mainproc.c:623
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "MEGJEGYZÉS: A feladó kérése: \"csak az Ön szemeinek\".\n"
 
-#: g10/mainproc.c:633
+#: g10/mainproc.c:625
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "Eredeti fájlnév: '%.*s'.\n"
 
-#: g10/mainproc.c:822
+#: g10/mainproc.c:815
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 "Különálló visszavonás. Használja a \"gpg --import\"-ot az alkalmazásához!\n"
 
-#: g10/mainproc.c:1168
+#: g10/mainproc.c:1161
 #, fuzzy
 msgid "no signature found\n"
 msgstr "Jó aláírás a következõtõl: \""
 
-#: g10/mainproc.c:1418
+#: g10/mainproc.c:1419
 msgid "signature verification suppressed\n"
 msgstr "Aláírás-ellenõrzés elnyomva.\n"
 
-#: g10/mainproc.c:1460 g10/mainproc.c:1470
-msgid "can't handle these multiple signatures\n"
+#: g10/mainproc.c:1519
+#, fuzzy
+msgid "can't handle this ambiguous signature data\n"
 msgstr "Nem tudom kezelni ezeket a többszörös aláírásokat!\n"
 
-#: g10/mainproc.c:1480
+#: g10/mainproc.c:1530
 #, fuzzy, c-format
 msgid "Signature made %s\n"
 msgstr "Az aláírás lejárt: %s.\n"
 
-#: g10/mainproc.c:1481
+#: g10/mainproc.c:1531
 #, fuzzy, c-format
 msgid "               using %s key %s\n"
 msgstr "               azaz \""
 
-#: g10/mainproc.c:1485
+#: g10/mainproc.c:1535
 #, fuzzy, c-format
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Aláírva: %.*s; kulcs: %s, %08lX.\n"
 
-#: g10/mainproc.c:1505
+#: g10/mainproc.c:1555
 msgid "Key available at: "
 msgstr "Kulcs található: "
 
-#: g10/mainproc.c:1639 g10/mainproc.c:1687
+#: g10/mainproc.c:1688 g10/mainproc.c:1736
 #, fuzzy, c-format
 msgid "BAD signature from \"%s\""
 msgstr "ROSSZ aláírás a következõtõl: \""
 
-#: g10/mainproc.c:1641 g10/mainproc.c:1689
+#: g10/mainproc.c:1690 g10/mainproc.c:1738
 #, fuzzy, c-format
 msgid "Expired signature from \"%s\""
 msgstr "Lejárt aláírás a következõtõl: \""
 
-#: g10/mainproc.c:1643 g10/mainproc.c:1691
+#: g10/mainproc.c:1692 g10/mainproc.c:1740
 #, fuzzy, c-format
 msgid "Good signature from \"%s\""
 msgstr "Jó aláírás a következõtõl: \""
 
-#: g10/mainproc.c:1695
+#: g10/mainproc.c:1744
 msgid "[uncertain]"
 msgstr "[bizonytalan]"
 
-#: g10/mainproc.c:1727
+#: g10/mainproc.c:1776
 #, fuzzy, c-format
 msgid "                aka \"%s\""
 msgstr "               azaz \""
 
-#: g10/mainproc.c:1824
+#: g10/mainproc.c:1873
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Az aláírás lejárt: %s.\n"
 
-#: g10/mainproc.c:1829
+#: g10/mainproc.c:1878
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "Az aláírás lejár: %s.\n"
 
-#: g10/mainproc.c:1832
+#: g10/mainproc.c:1881
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
 
-#: g10/mainproc.c:1833
+#: g10/mainproc.c:1882
 msgid "binary"
 msgstr "Bináris"
 
-#: g10/mainproc.c:1834
+#: g10/mainproc.c:1883
 msgid "textmode"
 msgstr "Szövegmódú"
 
-#: g10/mainproc.c:1834 g10/trustdb.c:536
+#: g10/mainproc.c:1883 g10/trustdb.c:536
 msgid "unknown"
 msgstr "Ismeretlen módú"
 
-#: g10/mainproc.c:1854
+#: g10/mainproc.c:1903
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nem tudom ellenõrizni az aláírást: %s.\n"
 
-#: g10/mainproc.c:1922 g10/mainproc.c:1938 g10/mainproc.c:2024
+#: g10/mainproc.c:1972 g10/mainproc.c:1988 g10/mainproc.c:2074
 msgid "not a detached signature\n"
 msgstr "Nem különálló aláírás.\n"
 
-#: g10/mainproc.c:1965
+#: g10/mainproc.c:2015
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr "FIGYELEM: Többszörös aláírást érzékeltem. Csak az elsõt ellenõrzöm.\n"
 
-#: g10/mainproc.c:1973
+#: g10/mainproc.c:2023
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "0x%02x osztályú különálló aláírás.\n"
 
-#: g10/mainproc.c:2030
+#: g10/mainproc.c:2080
 msgid "old style (PGP 2.x) signature\n"
 msgstr "Régi stílusú (PGP 2.x) aláírás.\n"
 
-#: g10/mainproc.c:2040
+#: g10/mainproc.c:2090
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "Érvénytelen gyökércsomagot találtam a proc_tree() függvényben!\n"
 
@@ -5293,23 +5300,23 @@ msgstr ""
 msgid "error creating `%s': %s\n"
 msgstr "Hiba \"%s\" létrehozásakor: %s\n"
 
-#: g10/plaintext.c:447
+#: g10/plaintext.c:453
 msgid "Detached signature.\n"
 msgstr "Különálló aláírás.\n"
 
-#: g10/plaintext.c:453
+#: g10/plaintext.c:459
 msgid "Please enter name of data file: "
 msgstr "Kérem, adja meg az adatállomány nevét: "
 
-#: g10/plaintext.c:485
+#: g10/plaintext.c:491
 msgid "reading stdin ...\n"
 msgstr "Olvasom a szabványos bemenetet...\n"
 
-#: g10/plaintext.c:519
+#: g10/plaintext.c:525
 msgid "no signed data\n"
 msgstr "Nincs aláírt adat.\n"
 
-#: g10/plaintext.c:533
+#: g10/plaintext.c:539
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "Nem tudom megnyitni a(z) \"%s\" aláírt adatot!\n"

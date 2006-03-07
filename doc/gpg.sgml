@@ -2878,6 +2878,15 @@ message contains a bogus key ID.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--allow-multisig-verification</term>
+<listitem><para>
+Allow verification of concatenated signed messages.  This will run a
+signature verification for each data+signature block.  There are some
+security issues with this option thus it is off by default.  Note that
+versions of gpg rpior to version 1.4.3 implicityly allowed for this.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--enable-special-filenames</term>
 <listitem><para>
 This options enables a mode in which filenames of the form

@@ -1,3 +1,9 @@
+2006-03-07  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (proc_signature_packets): Return any_sig_seen to caller.
+	(check_sig_and_print): Option to partly allow the old behaviour.
+	* gpg.c: New option --allow-multisig-verification.
+
 2006-03-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (make_keysig_packet): Don't use MD5 for a RSA_S key as
