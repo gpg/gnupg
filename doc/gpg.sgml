@@ -1200,12 +1200,6 @@ This is the Web of Trust combined with trust signatures as used in PGP
 trust database.
 </para></listitem></varlistentry>
 
-<varlistentry><term>pgp+pka</term><listitem><para>
-Same as <term>pka</term> but a valid PKA will increase the trust to full.
-Note, that the option <term>--allow-pka-lookup</term> needs to be
-enabled to actually make this work.
-</para></listitem></varlistentry>
-
 <varlistentry><term>classic</term><listitem><para>
 This is the standard Web of Trust as used in PGP 2.x and earlier.
 </para></listitem></varlistentry>
@@ -1215,27 +1209,18 @@ Key validity is set directly by the user and not calculated via the
 Web of Trust.
 </para></listitem></varlistentry>
 
-<varlistentry><term>direct+pka</term><listitem><para>
-Same as <term>direct</term> but a valid PKA will increase the trust to full.
-</para></listitem></varlistentry>
-
 <varlistentry><term>always</term><listitem><para>
 Skip key validation and assume that used keys are always fully
-trusted.  You won't use this unless you have installed some external
-validation scheme.  This option also suppresses the "[uncertain]" tag
-printed with signature checks when there is no evidence that the user
-ID is bound to the key.
+trusted.  You generally won't use this unless you are using some
+external validation scheme.  This option also suppresses the
+"[uncertain]" tag printed with signature checks when there is no
+evidence that the user ID is bound to the key.
 </para></listitem></varlistentry>
 
 <varlistentry><term>auto</term><listitem><para>
 Select the trust model depending on whatever the internal trust
 database says. This is the default model if such a database already
-exists.  Note, this won't enable the PKA sub model.
-</para></listitem></varlistentry>
-
-<varlistentry><term>auto+pka</term><listitem><para>
-Select the trust model depending on whatever the internal trust
-database says and enable the PKA sub model.
+exists.
 </para></listitem></varlistentry>
 
 </variablelist></para></listitem></varlistentry>
@@ -1248,9 +1233,8 @@ Identical to `--trust-model always'.  This option is deprecated.
 
 <varlistentry>
 <term>--auto-key-locate <parameter>parameters</parameter></term>
-
+<term>--no-auto-key-locate</term>
 <listitem><para>
-
 GnuPG can automatically locate and retrieve keys as needed using this
 option.  This happens when encrypting to an email address (in the
 "user@example.com" form), and there are no user@example.com keys on
@@ -1284,16 +1268,6 @@ used here to query that particular keyserver.
 </para></listitem></varlistentry>
 
 </variablelist>
-</para></listitem></varlistentry>
-
-
-<varlistentry>
-<term>--allow-pka-lookup</term>
-<listitem><para>
-This option enables PKA lookups.  PKA is based on DNS; thus enabling
-this option may disclose information on when and what signatures are verified
-or to whom data is encrypted.  This is similar to the "web bug"
-described for the auto-key-retrieve feature.
 </para></listitem></varlistentry>
 
 
@@ -1349,7 +1323,7 @@ differentiate between revoked and unrevoked keys, and for such
 keyservers this option is meaningless.  Note also that most keyservers
 do not have cryptographic verification of key revocations, and so
 turning this option off may result in skipping keys that are
-incorrectly marked as revoked.  Defaults to on.
+incorrectly marked as revoked.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1361,11 +1335,35 @@ used with HKP keyservers.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>auto-key-retrieve</term>
+<listitem><para>
+This option enables the automatic retrieving of keys from a keyserver
+when verifying signatures made by keys that are not on the local
+keyring.
+</para><para>
+Note that this option makes a "web bug" like behavior possible.
+Keyserver operators can see which keys you request, so by sending you
+a message signed by a brand new key (which you naturally will not have
+on your local keyring), the operator can tell both your IP address and
+the time when you verified the signature.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>honor-keyserver-url</term>
 <listitem><para>
 When using --refresh-keys, if the key in question has a preferred
-keyserver set, then use that preferred keyserver to refresh the key
-from.  Defaults to yes.
+keyserver URL, then use that preferred keyserver to refresh the key
+from.  In addition, if auto-key-retrieve is set, and the signature
+being verified has a preferred keyserver URL, then use that preferred
+keyserver to fetch the key from.  Defaults to yes.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>honor-pka-record</term>
+<listitem><para>
+If auto-key-retrieve is set, and the signature being verified has a
+PKA record, then use the PKA information to fetch the key.  Defaults
+to yes.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1421,32 +1419,6 @@ specified, try to use the value of the environment variable
 "http_proxy".
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>auto-key-retrieve</term>
-<listitem><para>
-This option enables the automatic retrieving of keys from a keyserver
-when verifying signatures made by keys that are not on the local
-keyring.
-</para><para>
-Note that this option makes a "web bug" like behavior possible.
-Keyserver operators can see which keys you request, so by sending you
-a message signed by a brand new key (which you naturally will not have
-on your local keyring), the operator can tell both your IP address and
-the time when you verified the signature.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>auto-pka-retrieve</term>
-<listitem><para>
-This option enables the automatic retrieving of missing keys through
-information taken from PKA records in the DNS. Defaults to yes.
-Note, that the option <term>--allow-pka-lookup</term> needs to be
-enabled to actually make this work.  
-</para><para>
-By using this option, one may unintentionally disclose information
-similar to the one described for <term>auto-key-retrieve</term>.
-</para></listitem></varlistentry>
-
 </variablelist>
 </para></listitem></varlistentry>
 
@@ -1499,7 +1471,9 @@ command "clean" after import.  Defaults to no.
 <term>import-minimal</term>
 <listitem><para>
 Import the smallest key possible.  This removes all signatures except
-the most recent self-signature on each user ID.  Defaults to no.
+the most recent self-signature on each user ID.  This option is the
+same as running the --edit-key command "minimize" after import.
+Defaults to no.
 </para></listitem></varlistentry>
 
 </variablelist>
@@ -1552,15 +1526,18 @@ Compact (remove all signatures from) user IDs on the key being
 exported if the user IDs are not usable.  Also, do not export any
 signatures that are not usable.  This includes signatures that were
 issued by keys that are not present on the keyring.  This option is
-the same as running the --edit-key command "clean" before export.
-Defaults to no.
+the same as running the --edit-key command "clean" before export
+except that the local copy of the key is not modified.  Defaults to
+no.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>export-minimal</term>
 <listitem><para>
 Export the smallest key possible.  This removes all signatures except
-the most recent self-signature on each user ID.  Defaults to no.
+the most recent self-signature on each user ID.  This option is the
+same as running the --edit-key command "minimize" before export except
+that the local copy of the key is not modified.  Defaults to no.
 </para></listitem></varlistentry>
 
 </variablelist>
@@ -1702,6 +1679,23 @@ the signature.  Defaults to no.
 <listitem><para>
 Show revoked and expired user IDs during signature verification.
 Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>pka-lookups</term>
+<listitem><para>
+Enable PKA lookups to verify sender addresses.  Note that PKA is based
+on DNS, and so enabling this option may disclose information on when
+and what signatures are verified or to whom data is encrypted.  This
+is similar to the "web bug" described for the auto-key-retrieve
+feature.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>pka-trust-increase</term>
+<listitem><para>
+Raise the trust in a signature to full if the signature passes PKA
+validation.  This option is only meaningful if pka-lookups is set.
 </para></listitem></varlistentry>
 
 </variablelist>
@@ -2329,11 +2323,9 @@ Enabled by default.  --no-escape-from-lines disables this option.
 <varlistentry>
 <term>--passphrase-fd &ParmN;</term>
 <listitem><para>
-Read the passphrase from file descriptor &ParmN;. If you use
-0 for &ParmN;, the passphrase will be read from stdin.	This
-can only be used if only one passphrase is supplied.
-<!--fixme: make this print strong-->
-Don't use this option if you can avoid it.
+Read the passphrase from file descriptor &ParmN;.  If you use 0 for
+&ParmN;, the passphrase will be read from stdin.  This can only be
+used if only one passphrase is supplied.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2341,8 +2333,8 @@ Don't use this option if you can avoid it.
 <listitem><para>
 Read the passphrase from file &ParmFile;.  This can only be used if
 only one passphrase is supplied.  Obviously, a passphrase stored in a
-file is of questionable security.  Don't use this option if you can
-avoid it.
+file is of questionable security if other users can read this file.
+Don't use this option if you can avoid it.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2350,7 +2342,8 @@ avoid it.
 <listitem><para>
 Use &ParmString; as the passphrase.  This can only be used if only one
 passphrase is supplied.  Obviously, this is of very questionable
-security.  Don't use this option if you can avoid it.
+security on a multi-user system.  Don't use this option if you can
+avoid it.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -3171,12 +3164,6 @@ starting the gpg-agent as described in its documentation, this
 variable is set to the correct value.  The option --gpg-agent-info can
 be used to override it.</para></listitem>
 </varlistentry>
-<varlistentry>
-<term>http_proxy</term>
-<listitem><para>Only honored when the keyserver-option
-honor-http-proxy is set.</para></listitem>
-</varlistentry>
-
 <varlistentry>
 <term>COLUMNS</term>
 <term>LINES</term>
