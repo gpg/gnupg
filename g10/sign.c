@@ -1374,9 +1374,8 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
 	if(opt.cert_digest_algo)
 	  digest_algo=opt.cert_digest_algo;
-	else if((sk->pubkey_algo==PUBKEY_ALGO_RSA ||
-		 sk->pubkey_algo==PUBKEY_ALGO_RSA_S) &&
-		pk->version<4 && sigversion < 4)
+	else if(sk->pubkey_algo==PUBKEY_ALGO_RSA
+		&& pk->version<4 && sigversion<4)
 	  digest_algo = DIGEST_ALGO_MD5;
 	else
 	  digest_algo = DIGEST_ALGO_SHA1;

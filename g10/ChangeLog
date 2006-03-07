@@ -1,5 +1,8 @@
 2006-03-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* sign.c (make_keysig_packet): Don't use MD5 for a RSA_S key as
+	that is not a PGP 2.x algorithm.
+
 	* mainproc.c (proc_compressed): "Uncompressed" is not a valid
 	compression algorithm.
 
