@@ -1,5 +1,9 @@
 2006-03-08  David Shaw  <dshaw@jabberwocky.com>
 
+	* packet.h, build-packet.c (sig_to_notation), keygen.c
+	(keygen_add_notations): Tweak to handle non-human-readable
+	notation values.
+
 	* options.h, sign.c (mk_notation_policy_etc), gpg.c
 	(add_notation_data): Use it here for the various notation
 	commands.

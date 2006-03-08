@@ -1000,17 +1000,17 @@ sig_to_notation(PKT_signature *sig)
 
       if(p[0]&0x80)
 	{
+	  n->flags.human=1;
 	  n->value=xmalloc(n2+1);
-	  memcpy(n->value,&p[8+n1],n2);
 	  n->value[n2]='\0';
 	}
       else
 	{
-	  n->value=xmalloc(2+strlen(_("not human readable"))+2+1);
-	  strcpy(n->value,"[ ");
-	  strcat(n->value,_("not human readable"));
-	  strcat(n->value," ]");
+	  n->value=xmalloc(n2);
+	  n->blen=n2;
 	}
+
+      memcpy(n->value,&p[8+n1],n2);
 
       n->flags.critical=crit;
 

@@ -708,12 +708,15 @@ keygen_add_notations(PKT_signature *sig,void *opaque)
 	n1=strlen(notation->name);
 	if(notation->altvalue)
 	  n2=strlen(notation->altvalue);
+	else if(!notation->flags.human)
+	  n2=notation->blen;
 	else
 	  n2=strlen(notation->value);
 
 	buf = xmalloc( 8 + n1 + n2 );
 
-	buf[0] = 0x80; /* human readable */
+	/* human readable or not */
+	buf[0] = notation->flags.human?0x80:0;
 	buf[1] = buf[2] = buf[3] = 0;
 	buf[4] = n1 >> 8;
 	buf[5] = n1;
