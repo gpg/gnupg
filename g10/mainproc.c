@@ -1866,7 +1866,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if (!rc)
           {
-	    if(opt.verify_options&VERIFY_PKA_LOOKUP)
+	    if(opt.verify_options&VERIFY_PKA_LOOKUPS)
 	      pka_uri_from_sig (sig); /* Make sure PKA info is available. */
 	    rc = check_signatures_trust( sig );
           }

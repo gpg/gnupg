@@ -1,5 +1,12 @@
 2006-03-07  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, mainproc.c (check_sig_and_print), gpg.c (main):
+	pka-lookups, not pka-lookup.
+
+	* options.h, gpg.c (main), keyedit.c [cmds], sig-check.c
+	(signature_check2): Rename "backsign" to "cross-certify" as a more
+	accurate name.
+
 	* options.h, gpg.c (main, parse_trust_model), pkclist.c
 	(check_signatures_trust), mainproc.c (check_sig_and_print,
 	pka_uri_from_sig), trustdb.c (init_trustdb): Some tweaks to PKA so

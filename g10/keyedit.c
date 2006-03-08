@@ -1363,6 +1363,7 @@ static struct
     { "key"     , cmdSELKEY    , 0, N_("select subkey N") },
     { "check"   , cmdCHECK     , 0, N_("check signatures") },
     { "c"       , cmdCHECK     , 0, NULL },
+    { "cross-certify", cmdBACKSIGN  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
     { "backsign", cmdBACKSIGN  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
     { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH,
       N_("sign selected user IDs [* see below for related commands]") },

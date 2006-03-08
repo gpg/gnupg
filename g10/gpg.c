@@ -357,8 +357,8 @@ enum cmd_and_opt_values
     octapiDriver,
     opcscDriver,
     oDisableCCID,
-    oRequireBacksigs,
-    oNoRequireBacksigs,
+    oRequireCrossCert,
+    oNoRequireCrossCert,
     oAutoKeyLocate,
     oNoAutoKeyLocate,
     oAllowMultisigVerification,
@@ -706,8 +706,10 @@ static ARGPARSE_OPTS opts[] = {
        I'm returning the favor. */
     { oLocalUser, "sign-with", 2, "@" },
     { oRecipient, "user", 2, "@" },
-    { oRequireBacksigs, "require-backsigs", 0, "@"},
-    { oNoRequireBacksigs, "no-require-backsigs", 0, "@"},
+    { oRequireCrossCert, "require-backsigs", 0, "@"},
+    { oRequireCrossCert, "require-cross-certification", 0, "@"},
+    { oNoRequireCrossCert, "no-require-backsigs", 0, "@"},
+    { oNoRequireCrossCert, "no-require-cross-certification", 0, "@"},
     { oAutoKeyLocate, "auto-key-locate", 2, "@"},
     { oNoAutoKeyLocate, "no-auto-key-locate", 0, "@"},
     {0,NULL,0,NULL}
@@ -2462,7 +2464,7 @@ main (int argc, char **argv )
 		   N_("show user ID validity during signature verification")},
 		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL,
 		   N_("show revoked and expired user IDs in signature verification")},
-		  {"pka-lookup",VERIFY_PKA_LOOKUP,NULL,
+		  {"pka-lookups",VERIFY_PKA_LOOKUPS,NULL,
 		   N_("validate signatures with PKA data")},
 		  {"pka-trust-increase",VERIFY_PKA_TRUST_INCREASE,NULL,
 		   N_("elevate the trust of signatures with valid PKA data")},
@@ -2625,8 +2627,8 @@ main (int argc, char **argv )
             opt.limit_card_insert_tries = pargs.r.ret_int; 
             break;
 
-	  case oRequireBacksigs: opt.require_backsigs=1; break;
-	  case oNoRequireBacksigs: opt.require_backsigs=0; break;
+	  case oRequireCrossCert: opt.flags.require_cross_cert=1; break;
+	  case oNoRequireCrossCert: opt.flags.require_cross_cert=0; break;
 
 	  case oAutoKeyLocate:
 	    if(!parse_auto_key_locate(pargs.r.ret_str))

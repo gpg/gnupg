@@ -100,7 +100,7 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
 	       have backsigs, change this to always give the warning,
 	       and have --require-backsigs enable or disable the
 	       G10ERR_GENERAL. */
-	    if(pk->backsig==0 && opt.require_backsigs)
+	    if(pk->backsig==0 && opt.flags.require_cross_cert)
 	      {
 		log_info(_("WARNING: signing subkey %s is not"
 			   " cross-certified\n"),keystr_from_pk(pk));

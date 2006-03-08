@@ -215,10 +215,13 @@ struct
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
 #endif /*ENABLE_CARD_SUPPORT*/
 
-  /* If set, require an 0x19 backsig to be present on signatures made
-     by signing subkeys.  If not set, a missing backsig is not an
-     error (but an invalid backsig still is). */
-  int require_backsigs;
+  struct
+  {
+    /* If set, require an 0x19 backsig to be present on signatures
+       made by signing subkeys.  If not set, a missing backsig is not
+       an error (but an invalid backsig still is). */
+    unsigned int require_cross_cert:1;
+  } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local
      keyring. */
@@ -314,7 +317,7 @@ struct {
 #define VERIFY_SHOW_KEYSERVER_URLS       (1<<4)
 #define VERIFY_SHOW_UID_VALIDITY         (1<<5)
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
-#define VERIFY_PKA_LOOKUP                (1<<7)
+#define VERIFY_PKA_LOOKUPS               (1<<7)
 #define VERIFY_PKA_TRUST_INCREASE        (1<<8)
 
 #define KEYSERVER_USE_TEMP_FILES         (1<<0)
