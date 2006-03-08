@@ -1,6 +1,6 @@
 /* build-packet.c - assemble packets and write them
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "packet.h"
 #include "errors.h"
@@ -33,6 +34,7 @@
 #include "util.h"
 #include "cipher.h"
 #include "memory.h"
+#include "i18n.h"
 #include "options.h"
 
 static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
@@ -884,6 +886,153 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
     memcpy(&attrib[idx],header,headerlen);
   memcpy(&attrib[idx+headerlen],buf,buflen);
   uid->attrib_len+=idx+headerlen+buflen;
+}
+
+struct notation *
+string_to_notation(const char *string,int is_utf8)
+{
+  const char *s,*i;
+  int saw_at=0,highbit=0;
+  struct notation *notation;
+
+  notation=xmalloc_clear(sizeof(*notation));
+
+  if(*string=='!')
+    {
+      notation->flags.critical=1;
+      string++;
+    }
+
+  /* If and when the IETF assigns some official name tags, we'll have
+     to add them here. */
+
+  for( s=string ; *s != '='; s++ )
+    {
+      if( *s=='@')
+	saw_at++;
+
+      if( !*s || !isascii (*s) || (!isgraph(*s) && !isspace(*s)) )
+	{
+	  log_error(_("a notation name must have only printable characters"
+		      " or spaces, and end with an '='\n") );
+	  goto fail;
+	}
+    }
+
+  notation->name=xmalloc((s-string)+1);
+  strncpy(notation->name,string,s-string);
+  notation->name[s-string]='\0';
+
+  if(!saw_at && !opt.expert)
+    {
+      log_error(_("a user notation name must contain the '@' character\n"));
+      goto fail;
+    }
+
+  if (saw_at > 1)
+    {
+      log_error(_("a notation name must not contain more than"
+		  " one '@' character\n"));
+      goto fail;
+    }
+
+  i=s+1;
+
+  /* we only support printable text - therefore we enforce the use of
+     only printable characters (an empty value is valid) */
+  for(s++; *s ; s++ )
+    {
+      if ( !isascii (*s) )
+	highbit=1;
+      else if (iscntrl(*s))
+	{
+	  log_error(_("a notation value must not use any"
+		      " control characters\n"));
+	  goto fail;
+	}
+    }
+
+  if(!highbit || is_utf8)
+    notation->value=xstrdup(i);
+  else
+    notation->value=native_to_utf8(i);
+
+  return notation;
+
+ fail:
+  free_notation(notation);
+  return NULL;
+}
+
+struct notation *
+sig_to_notation(PKT_signature *sig)
+{
+  const byte *p;
+  size_t len;
+  int seq=0,crit;
+  struct notation *list=NULL;
+
+  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq,&crit)))
+    {
+      int n1,n2;
+      struct notation *n=NULL;
+
+      if(len<8)
+	{
+	  log_info(_("WARNING: invalid notation data found\n"));
+	  continue;
+	}
+
+      n1=(p[4]<<8)|p[5];
+      n2=(p[6]<<8)|p[7];
+
+      if(8+n1+n2!=len)
+	{
+	  log_info(_("WARNING: invalid notation data found\n"));
+	  continue;
+	}
+
+      n=xmalloc_clear(sizeof(*n));
+      n->name=xmalloc(n1+1);
+
+      memcpy(n->name,&p[8],n1);
+      n->name[n1]='\0';
+
+      if(p[0]&0x80)
+	{
+	  n->value=xmalloc(n2+1);
+	  memcpy(n->value,&p[8+n1],n2);
+	  n->value[n2]='\0';
+	}
+      else
+	{
+	  n->value=xmalloc(2+strlen(_("not human readable"))+2+1);
+	  strcpy(n->value,"[ ");
+	  strcat(n->value,_("not human readable"));
+	  strcat(n->value," ]");
+	}
+
+      n->flags.critical=crit;
+
+      n->next=list;
+      list=n;
+    }
+
+  return list;
+}
+
+void
+free_notation(struct notation *notation)
+{
+  while(notation)
+    {
+      struct notation *n=notation;
+
+      xfree(n->name);
+      xfree(n->value);
+      notation=n->next;
+      xfree(n);
+    }
 }
 
 static int

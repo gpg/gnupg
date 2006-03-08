@@ -1,3 +1,14 @@
+2006-03-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, sign.c (mk_notation_policy_etc), gpg.c
+	(add_notation_data): Use it here for the various notation
+	commands.
+
+	* packet.h, main.h, keygen.c (keygen_add_notations),
+	build-packet.c (string_to_notation, sig_to_notation)
+	(free_notation): New "one stop shopping" functions to handle
+	notations and start removing some code duplication.
+
 2006-03-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, mainproc.c (check_sig_and_print), gpg.c (main):

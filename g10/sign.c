@@ -1,6 +1,6 @@
 /* sign.c - sign data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -55,9 +55,9 @@ void __stdcall Sleep(ulong);
 static int recipient_digest_algo=0;
 
 /****************
- * Create a notation.  It is assumed that the stings in STRLIST
- * are already checked to contain only printable data and have a valid
- * NAME=VALUE format.
+ * Create notations and other stuff.  It is assumed that the stings in
+ * STRLIST are already checked to contain only printable data and have
+ * a valid NAME=VALUE format.
  */
 static void
 mk_notation_policy_etc( PKT_signature *sig,
@@ -65,9 +65,8 @@ mk_notation_policy_etc( PKT_signature *sig,
 {
     const char *string;
     char *s=NULL;
-    byte *buf;
-    unsigned n1, n2;
-    STRLIST nd=NULL,pu=NULL;
+    STRLIST pu=NULL;
+    struct notation *nd=NULL;
     struct expando_args args;
 
     memset(&args,0,sizeof(args));
@@ -80,57 +79,43 @@ mk_notation_policy_etc( PKT_signature *sig,
        good to do these checks anyway. */
 
     /* notation data */
-    if(IS_SIG(sig) && opt.sig_notation_data)
+    if(IS_SIG(sig) && opt.sig_notations)
       {
 	if(sig->version<4)
 	  log_error(_("can't put notation data into v3 (PGP 2.x style) "
 		      "signatures\n"));
 	else
-	  nd=opt.sig_notation_data;
+	  nd=opt.sig_notations;
       }
-    else if( IS_CERT(sig) && opt.cert_notation_data )
+    else if( IS_CERT(sig) && opt.cert_notations )
       {
 	if(sig->version<4)
 	  log_error(_("can't put notation data into v3 (PGP 2.x style) "
 		      "key signatures\n"));
 	else
-	  nd=opt.cert_notation_data;
+	  nd=opt.cert_notations;
       }
 
-    for( ; nd; nd = nd->next ) {
-        char *expanded;
+    if(nd)
+      {
+	struct notation *i;
 
-        string = nd->d;
-	s = strchr( string, '=' );
-	if( !s )
-	  BUG(); /* we have already parsed this */
-	n1 = s - string;
-	s++;
-
-	expanded=pct_expando(s,&args);
-	if(!expanded)
+	for(i=nd;i;i=i->next)
 	  {
-	    log_error(_("WARNING: unable to %%-expand notation "
-			"(too large).  Using unexpanded.\n"));
-	    expanded=xstrdup(s);
+	    i->altvalue=pct_expando(i->value,&args);
+	    if(!i->altvalue)
+	      log_error(_("WARNING: unable to %%-expand notation "
+			  "(too large).  Using unexpanded.\n"));
 	  }
 
-	n2 = strlen(expanded);
-	buf = xmalloc( 8 + n1 + n2 );
-	buf[0] = 0x80; /* human readable */
-	buf[1] = buf[2] = buf[3] = 0;
-	buf[4] = n1 >> 8;
-	buf[5] = n1;
-	buf[6] = n2 >> 8;
-	buf[7] = n2;
-	memcpy(buf+8, string, n1 );
-	memcpy(buf+8+n1, expanded, n2 );
-	build_sig_subpkt( sig, SIGSUBPKT_NOTATION
-			  | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
-			  buf, 8+n1+n2 );
-	xfree(expanded);
-	xfree(buf);
-    }
+	keygen_add_notations(sig,nd);
+
+	for(i=nd;i;i=i->next)
+	  {
+	    xfree(i->altvalue);
+	    i->altvalue=NULL;
+	  }
+      }
 
     /* set policy URL */
     if( IS_SIG(sig) && opt.sig_policy_url )
@@ -650,7 +635,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	if(opt.force_v3_sigs || RFC1991)
 	  sig->version=3;
 	else if(duration || opt.sig_policy_url
-		|| opt.sig_notation_data || opt.sig_keyserver_url)
+		|| opt.sig_notations || opt.sig_keyserver_url)
 	  sig->version=4;
 	else
 	  sig->version=sk->version;

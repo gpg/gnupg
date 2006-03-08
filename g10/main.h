@@ -1,6 +1,6 @@
 /* main.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -55,7 +55,7 @@ struct groupitem
   struct groupitem *next;
 };
 
-/*-- g10.c --*/
+/*-- gpg.c --*/
 extern int g10_errors_seen;
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
@@ -181,6 +181,7 @@ int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);
+int keygen_add_notations(PKT_signature *sig,void *opaque);
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
 int make_backsig(PKT_signature *sig,PKT_public_key *pk,
 		 PKT_public_key *sub_pk,PKT_secret_key *sub_sk);

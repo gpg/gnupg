@@ -163,8 +163,8 @@ struct
   char *temp_dir;
   int no_encrypt_to;
   int interactive;
-  STRLIST sig_notation_data;
-  STRLIST cert_notation_data;
+  struct notation *sig_notations;
+  struct notation *cert_notations;
   STRLIST sig_policy_url;
   STRLIST cert_policy_url;
   STRLIST sig_keyserver_url;

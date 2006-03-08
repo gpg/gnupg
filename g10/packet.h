@@ -1,6 +1,6 @@
 /* packet.h - packet definitions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -407,6 +407,18 @@ typedef enum {
     SIGSUBPKT_FLAG_CRITICAL=128
 } sigsubpkttype_t;
 
+struct notation
+{
+  char *name;
+  char *value;
+  char *altvalue;
+  struct
+  {
+    unsigned int critical:1;
+    unsigned int ignore:1;
+  } flags;
+  struct notation *next;
+};
 
 /*-- mainproc.c --*/
 int proc_packets( void *ctx, IOBUF a );
@@ -476,6 +488,9 @@ int  delete_sig_subpkt(subpktarea_t *buffer, sigsubpkttype_t type );
 void build_attribute_subpkt(PKT_user_id *uid,byte type,
 			    const void *buf,u32 buflen,
 			    const void *header,u32 headerlen);
+struct notation *string_to_notation(const char *string,int is_utf8);
+struct notation *sig_to_notation(PKT_signature *sig);
+void free_notation(struct notation *notation);
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );

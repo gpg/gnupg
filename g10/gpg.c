@@ -3974,69 +3974,22 @@ print_mds( const char *fname, int algo )
 static void
 add_notation_data( const char *string, int which )
 {
-    const char *s;
-    STRLIST sl,*notation_data;
-    int critical=0;
-    int highbit=0;
-    int saw_at=0;
+  struct notation *notation;
 
-    if(which)
-      notation_data=&opt.cert_notation_data;
-    else
-      notation_data=&opt.sig_notation_data;
-
-    if( *string == '!' ) {
-	critical = 1;
-	string++;
-    }
-
-    /* If and when the IETF assigns some official name tags, we'll
-       have to add them here. */
-
-    for( s=string ; *s != '='; s++ )
-      {
-	if( *s=='@')
-	  saw_at++;
-
-	if( !*s || !isascii (*s) || (!isgraph(*s) && !isspace(*s)) )
-	  {
-	    log_error(_("a notation name must have only printable characters "
-			"or spaces, and end with an '='\n") );
-	    return;
-	  }
-      }
-
-    if(!saw_at && !opt.expert)
-      {
-	log_error(_("a user notation name must contain the '@' character\n"));
-	return;
-      }
-    if (saw_at > 1)
-      {
-	log_error(_("a notation name must not contain more than "
-                    "one '@' character\n"));
-	return;
-      }
-
-    /* we only support printable text - therefore we enforce the use
-     * of only printable characters (an empty value is valid) */
-    for( s++; *s ; s++ ) {
-	if ( !isascii (*s) )
-          highbit = 1;
-	else if (iscntrl(*s)) {
-	    log_error(_("a notation value must not use"
-			" any control characters\n") );
-	    return;
+  notation=string_to_notation(string,utf8_strings);
+  if(notation)
+    {
+      if(which)
+	{
+	  notation->next=opt.cert_notations;
+	  opt.cert_notations=notation;
+	}
+      else
+	{
+	  notation->next=opt.sig_notations;
+	  opt.sig_notations=notation;
 	}
     }
-
-    if( highbit )   /* must use UTF8 encoding */
-	sl = add_to_strlist2( notation_data, string, utf8_strings );
-    else
-	sl = add_to_strlist( notation_data, string );
-
-    if( critical )
-	sl->flags |= 1;
 }
 
 static void
