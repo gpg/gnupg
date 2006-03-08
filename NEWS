@@ -11,14 +11,11 @@ Noteworthy changes in version 1.4.3
       Note also that a future version of GnuPG will remove the old
       keyserver helpers altogether.
 
-    * Implemented Public Key Association (PKA) trust sub model.  This
-      is an optional trust model on top of the standard ones.  It make
-      use of special DNS records and notation data to associate a mail
-      address with an OpenPGP key. It is by default not used.  To use
-      it you need to set the new option --allow-pka-lookup and an
-      appropriate trust-model.  Also added new keyserver option
-      auto-pka-retrieve which is enabled by default but only working
-      if --allow-pka-lookup is also used.
+    * Implemented Public Key Association (PKA) signature verification.
+      This uses special DNS records and notation data to associate a
+      mail address with an OpenPGP key to prove that mail coming from
+      that address is legitimate without the need for a full trust
+      path to the signing key.
 
     * When exporting subkeys, those specified with a key ID or
       fingerpint and the '!' suffix are now merged into one keyblock.
@@ -26,12 +23,12 @@ Noteworthy changes in version 1.4.3
     * Added "gpg-zip", a program to create encrypted archives that can
       interoperate with PGP Zip.
 
-    * Added support for signing subkey "back signatures".  Requiring
-      back signatures to be present is currently off by default, but
-      will be changed to on by default in the future, once more keys
-      contain the back signature.  A new "backsign" command in the
-      --edit-key menu can be used to update signing subkeys with back
-      signatures.
+    * Added support for signing subkey cross-certification "back
+      signatures".  Requiring cross-certification to be present is
+      currently off by default, but will be changed to on by default
+      in the future, once more keys use it.  A new "cross-certify"
+      command in the --edit-key menu can be used to update signing
+      subkeys to have cross-certification.
 
     * The key cleaning options for --import-options and
       --export-options have been further polished.  "import-clean" and
@@ -66,6 +63,9 @@ Noteworthy changes in version 1.4.3
       server for the domain in question), "keyserver" (use the
       currently defined keyserver), as well as arbitrary keyserver
       URIs that will be contacted for the key.
+
+    * Able to retrieve keys using DNS CERT records as per RFC-2538bis
+      (currently in draft): http://www.josefsson.org/rfc2538bis
 
 
 Noteworthy changes in version 1.4.2 (2005-07-26)
