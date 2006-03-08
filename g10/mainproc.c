@@ -112,27 +112,14 @@ release_list( CTX c )
 static int
 add_onepass_sig( CTX c, PACKET *pkt )
 {
-    KBNODE node;
+  KBNODE node;
 
-    if( c->list ) { /* add another packet */
-        /* We can only append another onepass packet if the list
-         * does contain only onepass packets */
-        for( node=c->list; node && node->pkt->pkttype == PKT_ONEPASS_SIG;
-             node = node->next )
-            ;
-	if( node ) {
-            /* this is not the case, so we flush the current thing and 
-             * allow this packet to start a new verification thing */
-	   release_list( c );
-	   c->list = new_kbnode( pkt );
-	}
-	else
-	   add_kbnode( c->list, new_kbnode( pkt ));
-    }
-    else /* insert the first one */
-	c->list = node = new_kbnode( pkt );
+  if ( c->list ) /* add another packet */
+    add_kbnode( c->list, new_kbnode( pkt ));
+  else /* insert the first one */
+    c->list = node = new_kbnode( pkt );
 
-    return 1;
+  return 1;
 }
 
 
@@ -802,8 +789,8 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig,
 	    return check_key_signature( c->list, node, is_selfsig );
 	}
 	else if( sig->sig_class == 0x20 ) {
-	    log_info(_("standalone revocation - "
-		       "use \"gpg --import\" to apply\n"));
+	    log_error (_("standalone revocation - "
+                         "use \"gpg --import\" to apply\n"));
 	    return G10ERR_NOT_PROCESSED;
 	}
 	else {
@@ -1151,6 +1138,13 @@ proc_signature_packets( void *anchor, IOBUF a,
         log_error (_("no signature found\n"));
         rc = G10ERR_NO_DATA;
       }
+
+    /* Propagate the signature seen flag upward. Do this only on
+       success so that we won't issue the nodata status several
+       times. */
+    if (!rc && c->anchor && c->any_sig_seen)
+      c->anchor->any_sig_seen = 1;
+
     m_free( c );
     return rc;
 }
@@ -1313,69 +1307,119 @@ do_proc_packets( CTX c, IOBUF a )
 static int
 check_sig_and_print( CTX c, KBNODE node )
 {
-    PKT_signature *sig = node->pkt->pkt.signature;
-    const char *astr;
-    int rc, is_expkey=0, is_revkey=0;
+  PKT_signature *sig = node->pkt->pkt.signature;
+  const char *astr;
+  int rc, is_expkey=0, is_revkey=0;
 
-    if( opt.skip_verify ) {
-	log_info(_("signature verification suppressed\n"));
-	return 0;
-    }
-
-    /* It is not in all cases possible to check multiple signatures:
-     * PGP 2 (which is also allowed by OpenPGP), does use the packet
-     * sequence: sig+data,  OpenPGP does use onepas+data=sig and GnuPG
-     * sometimes uses (because I did'nt read the specs right) data+sig.
-     * Because it is possible to create multiple signatures with
-     * different packet sequence (e.g. data+sig and sig+data) it might
-     * not be possible to get it right:  let's say we have:
-     * data+sig, sig+data,sig+data and we have not yet encountered the last
-     * data, we could also see this a one data with 2 signatures and then 
-     * data+sig.
-     * To protect against this we check that all signatures follow
-     * without any intermediate packets.  Note, that we won't get this
-     * error when we use onepass packets or cleartext signatures because
-     * we reset the list every time
-     *
-     * FIXME: Now that we have these marker packets, we should create a 
-     * real grammar and check against this.
-     */
+  if (opt.skip_verify)
     {
-        KBNODE n;
-        int n_sig=0;
-
-        for (n=c->list; n; n=n->next ) {
-            if ( n->pkt->pkttype == PKT_SIGNATURE ) 
-                n_sig++;
-        }
-        if (n_sig > 1) { /* more than one signature - check sequence */
-            int tmp, onepass;
-
-            for (tmp=onepass=0,n=c->list; n; n=n->next ) {
-                if (n->pkt->pkttype == PKT_ONEPASS_SIG) 
-                    onepass++;
-                else if (n->pkt->pkttype == PKT_GPG_CONTROL
-                         && n->pkt->pkt.gpg_control->control
-                            == CTRLPKT_CLEARSIGN_START ) {
-                    onepass++; /* handle the same way as a onepass */
-                }
-                else if ( (tmp && n->pkt->pkttype != PKT_SIGNATURE) ) {
-                    log_error(_("can't handle these multiple signatures\n"));
-                    return 0;
-                }
-                else if ( n->pkt->pkttype == PKT_SIGNATURE ) 
-                    tmp = 1;
-                else if (!tmp && !onepass 
-                         && n->pkt->pkttype == PKT_GPG_CONTROL
-                         && n->pkt->pkt.gpg_control->control
-                            == CTRLPKT_PLAINTEXT_MARK ) {
-                    /* plaintext before signatures but no one-pass packets*/
-                    log_error(_("can't handle these multiple signatures\n"));
-                    return 0;
-                }
-            }
-        }
+      log_info(_("signature verification suppressed\n"));
+      return 0;
     }
+
+  /* Check that the message composition is valid.
+
+     Per RFC-2440bis (-15) allowed:
+
+     S{1,n}           -- detached signature.
+     S{1,n} P         -- old style PGP2 signature
+     O{1,n} P S{1,n}  -- standard OpenPGP signature.
+     C P S{1,n}       -- cleartext signature.
+
+        
+          O = One-Pass Signature packet.
+          S = Signature packet.
+          P = OpenPGP Message packet (Encrypted | Compressed | Literal)
+                 (Note that the current rfc2440bis draft also allows
+                  for a signed message but that does not work as it
+                  introduces ambiguities.)
+              We keep track of these packages using the marker packet
+              CTRLPKT_PLAINTEXT_MARK.
+          C = Marker packet for cleartext signatures.
+
+     We reject all other messages.
+     
+     Actually we are calling this too often, i.e. for verification of
+     each message but better have some duplicate work than to silently
+     introduce a bug here.
+  */
+  {
+    KBNODE n;
+    int n_onepass, n_sig;
+
+/*     log_debug ("checking signature packet composition\n"); */
+/*     dump_kbnode (c->list); */
+
+    n = c->list;
+    assert (n);
+    if ( n->pkt->pkttype == PKT_SIGNATURE ) 
+      {
+        /* This is either "S{1,n}" case (detached signature) or
+           "S{1,n} P" (old style PGP2 signature). */
+        for (n = n->next; n; n = n->next)
+          if (n->pkt->pkttype != PKT_SIGNATURE)
+            break;
+        if (!n)
+          ; /* Okay, this is a detached signature.  */
+        else if (n->pkt->pkttype == PKT_GPG_CONTROL
+                 && (n->pkt->pkt.gpg_control->control
+                     == CTRLPKT_PLAINTEXT_MARK) )
+          {
+            if (n->next)
+              goto ambiguous;  /* We only allow one P packet. */
+          }
+        else
+          goto ambiguous;
+      }
+    else if (n->pkt->pkttype == PKT_ONEPASS_SIG) 
+      {
+        /* This is the "O{1,n} P S{1,n}" case (standard signature). */
+        for (n_onepass=1, n = n->next;
+             n && n->pkt->pkttype == PKT_ONEPASS_SIG; n = n->next)
+          n_onepass++;
+        if (!n || !(n->pkt->pkttype == PKT_GPG_CONTROL
+                    && (n->pkt->pkt.gpg_control->control
+                        == CTRLPKT_PLAINTEXT_MARK)))
+          goto ambiguous;
+        for (n_sig=0, n = n->next;
+             n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
+          n_sig++;
+        if (!n_sig)
+          goto ambiguous;
+        if (n && !opt.allow_multisig_verification)
+          goto ambiguous;
+        if (n_onepass != n_sig)
+          {
+            log_info ("number of one-pass packets does not match "
+                      "number of signature packets\n");
+            goto ambiguous;
+          }
+      }
+    else if (n->pkt->pkttype == PKT_GPG_CONTROL
+             && n->pkt->pkt.gpg_control->control == CTRLPKT_CLEARSIGN_START )
+      {
+        /* This is the "C P S{1,n}" case (clear text signature). */
+        n = n->next;
+        if (!n || !(n->pkt->pkttype == PKT_GPG_CONTROL
+                    && (n->pkt->pkt.gpg_control->control
+                        == CTRLPKT_PLAINTEXT_MARK)))
+          goto ambiguous;
+        for (n_sig=0, n = n->next;
+             n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
+          n_sig++;
+        if (n || !n_sig)
+          goto ambiguous;
+      }
+    else 
+      {
+      ambiguous:
+        log_error(_("can't handle this ambiguous signature data\n"));
+        return 0;
+      }
+
+  }
+
+  /* (Indendation below not yet changed to GNU style.) */
 
     astr = pubkey_algo_to_string( sig->pubkey_algo );
     if(keystrlen()>8)

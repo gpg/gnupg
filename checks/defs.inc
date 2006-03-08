@@ -31,22 +31,52 @@ LANGUAGE=
 LC_ALL=
 LC_MESSAGES=
 
+# Internal use.
+defs_stop_on_error=no
+defs_error_seen=no
+
 #--------------------------------
 #------ utility functions -------
 #--------------------------------
 
 fatal () {
     echo "$pgmname: fatal:" $* >&2
+    [ -n "${BASH_VERSION+set}" ] && echo "$pgmname: fatal:" $* >&5
     exit 1;
 }
 
 error () {
     echo "$pgmname:" $* >&2
-    exit 1
+    defs_error_seen=yes
+    [ -n "${BASH_VERSION+set}" ] && echo "$pgmname:" $* >&5
+    if [ x$defs_stop_on_error != xyes ]; then
+      exit 1 
+    fi
+}
+
+# Call this at the start of a test and resume_error at the end to keep
+# on running all subtests without immediately exiting on error.
+suspend_error () {
+   defs_stop_on_error=yes
+}
+
+resume_error () {
+    if [ x$defs_error_seen = xyes ]; then
+        exit 1
+    fi
+    defs_stop_on_error=no
+    defs_error_seen=no
 }
 
 info () {
     echo "$pgmname:" $* >&2
+    if [ -n "${verbose+set}" ]; then
+      [ -n "${BASH_VERSION+set}" ] && echo "$pgmname:" $* >&5
+    fi
+}
+
+linefeed () {
+    echo >&2
 }
 
 
@@ -125,6 +155,8 @@ elif [ -f $srcdir/options ]; then
 fi
 
 GPG="../g10/gpg --no-permission-warning --homedir . "
+
+[ -n "${BASH_VERSION+set}" ] && exec 5>/dev/stderr
 
 exec 2> ${pgmname}.log
 

@@ -1,3 +1,14 @@
+2006-03-08  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (proc_signature_packets): Return any_sig_seen to
+	caller.
+	(check_sig_and_print): Made the composition test more tight.  This
+	is due to another bug report by Tavis Ormandy.
+	(add_onepass_sig): Simplified.
+	(do_check_sig): Use log_error for standalone revocations.
+	* g10.c: New option --allow-multisig-verification.
+	* options.h (struct): Add allow_multisig_verification.
+
 2005-07-26  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (agent_get_passphrase): Make sure to release the

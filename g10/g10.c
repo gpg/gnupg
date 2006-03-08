@@ -354,6 +354,8 @@ enum cmd_and_opt_values
     opcscDriver,
     oDisableCCID,
 
+    oAllowMultisigVerification,
+
     oNoop
   };
 
@@ -679,6 +681,7 @@ static ARGPARSE_OPTS opts[] = {
     { oKeyidFormat, "keyid-format", 2, "@" },
     { oExitOnStatusWriteError, "exit-on-status-write-error", 0, "@" },
     { oLimitCardInsertTries, "limit-card-insert-tries", 1, "@"},
+    { oAllowMultisigVerification, "allow-multisig-verification", 0, "@"},
 
     { oReaderPort, "reader-port",    2, "@"},
     { octapiDriver, "ctapi-driver",  2, "@"},
@@ -2554,6 +2557,9 @@ main (int argc, char **argv )
             opt.limit_card_insert_tries = pargs.r.ret_int; 
             break;
 
+          case oAllowMultisigVerification:
+            opt.allow_multisig_verification = 1;
+            break;
   
 	  case oNoop: break;
 

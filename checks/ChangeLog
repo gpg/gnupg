@@ -1,3 +1,9 @@
+2006-03-08  Werner Koch  <wk@g10code.com>
+
+	* verify.test: More tests
+	* multisig.test: Adjusted.
+	* defs.inc: A few more support functions.
+
 2005-06-21  Werner Koch  <wk@g10code.com>
 
 	* conventional.test (algos): Uhh ohh, cut+paste error and not

@@ -26,7 +26,7 @@ min_automake_version="1.9.3"
 
 # Remember to change the version number immediately *after* a release
 # and remove the "-cvs" or "rc" suffix immediately *before* a release.
-AC_INIT(gnupg, 1.4.2.1, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.4.2.2, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.

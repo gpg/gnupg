@@ -207,6 +207,9 @@ struct
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
 #endif /*ENABLE_CARD_SUPPORT*/
 
+  /* True if multiple concatenated signatures may be verified. */
+  int allow_multisig_verification; 
+
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't
