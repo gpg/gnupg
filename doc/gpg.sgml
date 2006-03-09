@@ -506,9 +506,10 @@ preferences, without including any implied preferences.
     <term>showpref</term>
     <listitem><para>
 More verbose preferences listing for the selected user ID.  This shows
-the preferences in effect by including the implied preferences of
-3DES (cipher), SHA-1 (digest), and Uncompressed (compression) if they
-are not already included in the preference list.
+the preferences in effect by including the implied preferences of 3DES
+(cipher), SHA-1 (digest), and Uncompressed (compression) if they are
+not already included in the preference list.  In addition, the
+preferred keyserver and signature notations (if any) are shown.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>setpref &ParmString;</term>
@@ -529,9 +530,15 @@ used by GnuPG.
 Set a preferred keyserver for the specified user ID(s).  This allows
 other users to know where you prefer they get your key from.  See
 --keyserver-options honor-keyserver-url for more on how this works.
-Note that some versions of PGP interpret the presence of a keyserver
-URL as an instruction to enable PGP/MIME mail encoding.  Setting a
-value of "none" removes a existing preferred keyserver.
+Setting a value of "none" removes an existing preferred keyserver.
+</para></listitem></varlistentry>
+    <varlistentry>
+    <term>notation</term>
+    <listitem><para>
+Set a name=value notation for the specified user ID(s).  See
+--cert-notation for more on how this works.  Setting a value of "none"
+removes all notations, and setting a name with no value removes that
+notation alone.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>toggle</term>
