@@ -1,6 +1,10 @@
 2006-03-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, build-packet.c (sig_to_notation), keygen.c
+	(keygen_add_notations): Provide printable text for
+	non-human-readable notation values.
+	
+	* packet.h, build-packet.c (sig_to_notation), keygen.c
 	(keygen_add_notations): Tweak to handle non-human-readable
 	notation values.
 

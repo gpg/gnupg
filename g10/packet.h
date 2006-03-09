@@ -411,12 +411,12 @@ struct notation
 {
   char *name;
   char *value;
-  size_t blen;
   char *altvalue;
+  unsigned char *bdat;
+  size_t blen;
   struct
   {
     unsigned int critical:1;
-    unsigned int human:1;
     unsigned int ignore:1;
   } flags;
   struct notation *next;
