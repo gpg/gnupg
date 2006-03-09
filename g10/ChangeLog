@@ -6,25 +6,30 @@
 	(tty_print_notations): Helper.
 	(show_prefs): Show notations in "showpref".
 
-	* mainproc.c (get_pka_address), keylist.c (show_notation): Remove
+	* mainproc.c (get_pka_address)
+	* keylist.c (show_notation): Remove
 	duplicate code by using notation functions.
 
-	* packet.h, build-packet.c (sig_to_notation), keygen.c
-	(keygen_add_notations): Provide printable text for
+	* packet.h, build-packet.c (sig_to_notation)
+	* keygen.c (keygen_add_notations): Provide printable text for
 	non-human-readable notation values.
 	
-	* packet.h, build-packet.c (sig_to_notation), keygen.c
-	(keygen_add_notations): Tweak to handle non-human-readable
+	* packet.h, build-packet.c (sig_to_notation)
+	* keygen.c (keygen_add_notations): Tweak to handle non-human-readable
 	notation values.
 
-	* options.h, sign.c (mk_notation_policy_etc), gpg.c
-	(add_notation_data): Use it here for the various notation
+	* options.h, sign.c (mk_notation_policy_etc)
+	* gpg.c (add_notation_data): Use it here for the various notation
 	commands.
 
-	* packet.h, main.h, keygen.c (keygen_add_notations),
-	build-packet.c (string_to_notation, sig_to_notation)
+	* packet.h, main.h, keygen.c (keygen_add_notations)
+	* build-packet.c (string_to_notation, sig_to_notation)
 	(free_notation): New "one stop shopping" functions to handle
 	notations and start removing some code duplication.
+
+2006-03-08  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (do_check_sig): Use log_error for standalone revocations.
 
 2006-03-07  David Shaw  <dshaw@jabberwocky.com>
 

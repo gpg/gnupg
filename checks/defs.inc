@@ -41,14 +41,14 @@ defs_error_seen=no
 
 fatal () {
     echo "$pgmname: fatal:" $* >&2
-    [ -n "${BASH_VERSION+set}" ] && echo "$pgmname: fatal:" $* >&5
+    echo "$pgmname: fatal:" $* >&5
     exit 1;
 }
 
 error () {
     echo "$pgmname:" $* >&2
     defs_error_seen=yes
-    [ -n "${BASH_VERSION+set}" ] && echo "$pgmname:" $* >&5
+    echo "$pgmname:" $* >&5
     if [ x$defs_stop_on_error != xyes ]; then
       exit 1 
     fi
@@ -71,7 +71,7 @@ resume_error () {
 info () {
     echo "$pgmname:" $* >&2
     if [ -n "${verbose+set}" ]; then
-      [ -n "${BASH_VERSION+set}" ] && echo "$pgmname:" $* >&5
+      echo "$pgmname:" $* >&5
     fi
 }
 
@@ -156,9 +156,7 @@ fi
 
 GPG="../g10/gpg --no-permission-warning --homedir . "
 
-[ -n "${BASH_VERSION+set}" ] && exec 5>/dev/stderr
-
-exec 2> ${pgmname}.log
+exec 5>&2 2>${pgmname}.log
 
 :
 # end

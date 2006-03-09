@@ -1,3 +1,7 @@
+2006-03-09  Werner Koch  <wk@g10code.com>
+
+	* defs.inc: Removed Basishm by proper redirection.
+
 2006-03-06  Werner Koch  <wk@g10code.com>
 
 	* defs.inc: Print error messages also to stderr.  Allow for
