@@ -1,5 +1,8 @@
 2006-03-08  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (get_pka_address), keylist.c (show_notation): Remove
+	duplicate code by using notation functions.
+
 	* packet.h, build-packet.c (sig_to_notation), keygen.c
 	(keygen_add_notations): Provide printable text for
 	non-human-readable notation values.

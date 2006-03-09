@@ -332,71 +332,55 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
 void
 show_notation(PKT_signature *sig,int indent,int mode,int which)
 {
-  const byte *p;
-  size_t len;
-  int seq=0,crit;
   FILE *fp=mode?log_stream():stdout;
+  struct notation *nd,*notations;
 
   if(which==0)
     which=3;
 
+  notations=sig_to_notation(sig);
+
   /* There may be multiple notations in the same sig. */
+  for(nd=notations;nd;nd=nd->next)
+    {
+      if(mode!=2)
+	{
+	  int has_at=!!strchr(nd->name,'@');
 
-  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq,&crit)))
-    if(len>=8)
-      {
-	int n1,n2;
+	  if((which&1 && !has_at) || (which&2 && has_at))
+	    {
+	      int i;
+	      const char *str;
 
-	n1=(p[4]<<8)|p[5];
-	n2=(p[6]<<8)|p[7];
+	      for(i=0;i<indent;i++)
+		putchar(' ');
 
-	if(8+n1+n2!=len)
-	  {
-	    log_info(_("WARNING: invalid notation data found\n"));
-	    continue;
-	  }
+	      if(nd->flags.critical)
+		str=_("Critical signature notation: ");
+	      else
+		str=_("Signature notation: ");
+	      if(mode)
+		log_info("%s",str);
+	      else
+		printf("%s",str);
+	      /* This is all UTF8 */
+	      print_utf8_string(fp,nd->name,strlen(nd->name));
+	      fprintf(fp,"=");
+	      print_utf8_string(fp,nd->value,strlen(nd->value));
+	      fprintf(fp,"\n");
+	    }
+	}
 
-	if(mode!=2)
-	  {
-	    int has_at=!!memchr(p+8,'@',n1);
+      if(mode)
+	{
+	  write_status_buffer(STATUS_NOTATION_NAME,
+			      nd->name,strlen(nd->name),0);
+	  write_status_buffer(STATUS_NOTATION_DATA,
+			      nd->value,strlen(nd->value),50);
+	}
+    }
 
-	    if((which&1 && !has_at) || (which&2 && has_at))
-	      {
-		int i;
-		const char *str;
-
-		for(i=0;i<indent;i++)
-		  putchar(' ');
-
-		/* This is UTF8 */
-		if(crit)
-		  str=_("Critical signature notation: ");
-		else
-		  str=_("Signature notation: ");
-		if(mode)
-		  log_info("%s",str);
-		else
-		  printf("%s",str);
-		print_utf8_string(fp,p+8,n1);
-		fprintf(fp,"=");
-
-		if(*p&0x80)
-		  print_utf8_string(fp,p+8+n1,n2);
-		else
-		  fprintf(fp,"[ %s ]",_("not human readable"));
-
-		fprintf(fp,"\n");
-	      }
-	  }
-
-	if(mode)
-	  {
-	    write_status_buffer ( STATUS_NOTATION_NAME, p+8   , n1, 0 );
-	    write_status_buffer ( STATUS_NOTATION_DATA, p+8+n1, n2, 50 );
-	  }
-      }
-  else
-    log_info(_("WARNING: invalid notation data found\n"));
+  free_notation(notations);
 }
 
 static void

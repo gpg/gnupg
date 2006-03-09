@@ -1334,46 +1334,31 @@ do_proc_packets( CTX c, IOBUF a )
 static pka_info_t *
 get_pka_address (PKT_signature *sig)
 {
-  const unsigned char *p;
-  size_t len, n1, n2;
-  int seq = 0;
   pka_info_t *pka = NULL;
+  struct notation *nd,*notation;
 
-  while ((p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_NOTATION,
-                               &len, &seq, NULL)))
+  notation=sig_to_notation(sig);
+
+  for(nd=notation;nd;nd=nd->next)
     {
-      if (len < 8)
-        continue; /* Notation packet is too short. */
-      n1 = (p[4]<<8)|p[5];
-      n2 = (p[6]<<8)|p[7];
-      if (8 + n1 + n2 != len)
-        continue; /* Length fields of notation packet are inconsistent. */
-      p += 8;
-      if (n1 != 21 || memcmp (p, "pka-address@gnupg.org", 21))
+      if(strcmp(nd->name,"pka-address@gnupg.org")!=0)
         continue; /* Not the notation we want. */
-      p += n1;
-      if (n2 < 3)
-        continue; /* Impossible email address. */
 
-      if (pka)
-        break; /* For now we only use the first valid PKA notation. In
-                  future we might want to keep additional PKA
-                  notations in a linked list. */
-
-      pka = xmalloc (sizeof *pka + n2);
-      pka->valid = 0;
-      pka->checked = 0;
-      pka->uri = NULL;
-      memcpy (pka->email, p, n2);
-      pka->email[n2] = 0;
-
-      if (!is_valid_mailbox (pka->email))
-        {
-          /* We don't accept invalid mail addresses. */
-          xfree (pka);
-          pka = NULL;
-        }
+      /* For now we only use the first valid PKA notation. In future
+	 we might want to keep additional PKA notations in a linked
+	 list. */
+      if (is_valid_mailbox (pka->email))
+	{
+	  pka = xmalloc (sizeof *pka + strlen(nd->value));
+	  pka->valid = 0;
+	  pka->checked = 0;
+	  pka->uri = NULL;
+	  strcpy (pka->email, nd->value);
+	  break;
+	}
     }
+
+  free_notation(notation);
 
   return pka;
 }
