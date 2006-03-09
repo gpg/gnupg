@@ -67,6 +67,8 @@ static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_keyserver_url (const char *url,
 				   KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_set_notation(const char *string,
+			     KBNODE pub_keyblock,KBNODE sec_keyblock);
 static int menu_select_uid( KBNODE keyblock, int idx );
 static int menu_select_uid_namehash( KBNODE keyblock, const char *namehash );
 static int menu_select_key( KBNODE keyblock, int idx );
@@ -1339,8 +1341,9 @@ enum cmdids
     cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
     cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
     cmdEXPIRE, cmdBACKSIGN, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF,
-    cmdSETPREF, cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
-    cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdCLEAN, cmdMINIMIZE, cmdNOP
+    cmdSETPREF, cmdPREFKS, cmdNOTATION, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
+    cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdCLEAN,
+    cmdMINIMIZE, cmdNOP
   };
 
 static struct
@@ -1422,7 +1425,9 @@ static struct
     { "updpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
 
     { "keyserver",cmdPREFKS    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
-      N_("set preferred keyserver URL for the selected user IDs")},
+      N_("set the preferred keyserver URL for the selected user IDs")},
+    { "notation", cmdNOTATION  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
+      N_("set a notation for the selected user IDs")},
     { "passwd"  , cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK,
       N_("change the passphrase") },
     /* Alias */
@@ -2151,6 +2156,16 @@ keyedit_menu( const char *username, STRLIST locusr,
 	      }
 	    break;
 
+	  case cmdNOTATION:
+	    if( menu_set_notation ( *arg_string?arg_string:NULL,
+				    keyblock, sec_keyblock ) )
+	      {
+		merge_keys_and_selfsig( keyblock );
+		modified = 1;
+		redisplay = 1;
+	      }
+	    break;
+
 	  case cmdNOP:
 	    break;
 
@@ -2238,8 +2253,36 @@ keyedit_menu( const char *username, STRLIST locusr,
     xfree(answer);
 }
 
+static void
+tty_print_notations(int indent,PKT_signature *sig)
+{
+  int first=1;
+  struct notation *notation,*nd;
 
-
+  if(indent<0)
+    {
+      first=0;
+      indent=-indent;
+    }
+
+  notation=sig_to_notation(sig);
+
+  for(nd=notation;nd;nd=nd->next)
+    {
+      if(!first)
+	tty_printf("%*s",indent,"");
+      else
+	first=0;
+
+      tty_print_utf8_string(nd->name,strlen(nd->name));
+      tty_printf("=");
+      tty_print_utf8_string(nd->value,strlen(nd->value));
+      tty_printf("\n");
+    }
+
+  free_notation(notation);
+}
+
 /****************
  * show preferences of a public keyblock.
  */
@@ -2368,6 +2411,13 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 		tty_printf(_("Preferred keyserver: "));
 		tty_print_utf8_string(pref_ks,pref_ks_len);
 		tty_printf("\n");
+	      }
+
+	    if(selfsig->flags.notation)
+	      {
+		tty_printf ("     ");
+		tty_printf(_("Notations: "));
+		tty_print_notations(5+strlen(_("Notations: ")),selfsig);
 	      }
 	  }
     }
@@ -4096,6 +4146,196 @@ menu_set_keyserver_url (const char *url,
     }
 
   xfree(uri);
+  free_secret_key( sk );
+  return modified;
+}
+
+static int
+menu_set_notation(const char *string,KBNODE pub_keyblock,KBNODE sec_keyblock)
+{
+  PKT_secret_key *sk;    /* copy of the main sk */
+  PKT_public_key *main_pk;
+  PKT_user_id *uid;
+  KBNODE node;
+  u32 keyid[2];
+  int selected, select_all;
+  int modified = 0;
+  char *answer;
+  struct notation *notation;
+
+  no_primary_warning(pub_keyblock);
+
+  if(string)
+    answer=xstrdup(string);
+  else
+    {
+      answer=cpr_get_utf8("keyedit.add_notation",
+			  _("Enter the notation: "));
+      if(answer[0]=='\0' || answer[0]=='\004')
+	{
+	  xfree(answer);
+	  return 0;
+	}
+    }
+
+  if(ascii_strcasecmp(answer,"none")==0)
+    notation=NULL; /* delete them all */
+  else
+    {
+      notation=string_to_notation(answer,0);
+      if(!notation)
+	{
+	  xfree(answer);
+	  return 0;
+	}
+    }
+
+  xfree(answer);
+
+  select_all = !count_selected_uids (pub_keyblock);
+
+  node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+  sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
+
+  /* Now we can actually change the self signature(s) */
+  main_pk = NULL;
+  uid = NULL;
+  selected = 0;
+  for ( node=pub_keyblock; node; node = node->next )
+    {
+      if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	break; /* ready */
+
+      if ( node->pkt->pkttype == PKT_PUBLIC_KEY )
+	{
+	  main_pk = node->pkt->pkt.public_key;
+	  keyid_from_pk( main_pk, keyid );
+	}
+      else if ( node->pkt->pkttype == PKT_USER_ID )
+	{
+	  uid = node->pkt->pkt.user_id;
+	  selected = select_all || (node->flag & NODFLG_SELUID);
+	}
+      else if ( main_pk && uid && selected
+		&& node->pkt->pkttype == PKT_SIGNATURE )
+	{
+	  PKT_signature *sig = node->pkt->pkt.signature;
+	  if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+	       && (uid && (sig->sig_class&~3) == 0x10)
+	       && sig->flags.chosen_selfsig)
+	    {
+	      char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+	      if( sig->version < 4 )
+		log_info(_("skipping v3 self-signature on user ID \"%s\"\n"),
+			 user);
+	      else
+		{
+		  PKT_signature *newsig;
+		  PACKET *newpkt;
+		  int rc,skip=0,addonly=1;
+
+		  if(sig->flags.notation)
+		    {
+		      tty_printf("Current notations for user ID \"%s\":\n",
+				 user);
+		      tty_print_notations(-10,sig);
+		    }
+		  else
+		    {
+		      tty_printf("No notations on user ID \"%s\"\n",user);
+		      if(notation==NULL)
+			{
+			  /* There are no current notations, so there
+			     is no point in trying to un-set them. */
+			  continue;
+			}
+		    }
+
+		  if(notation)
+		    {
+		      struct notation *n,*list=sig_to_notation(sig);
+		      notation->next=list;
+
+		      for(n=list;n;n=n->next)
+			if(strcmp(n->name,notation->name)==0)
+			  {
+			    if(strcmp(n->value,notation->value)==0)
+			      {
+				/* Adding the same notation twice, so
+				   don't add it at all. */
+				skip=1;
+				tty_printf("Skipping notation: %s=%s\n",
+					   notation->name,notation->value);
+				notation->flags.ignore=1;
+				break;
+			      }
+			    else if(notation->value[0]=='\0')
+			      {
+				/* No value, so we don't replace this
+				   notation with anything. */
+				n->flags.ignore=1;
+				notation->flags.ignore=1;
+				addonly=0;
+			      }
+
+			    if(n->flags.ignore)
+			      tty_printf("Removing notation: %s=%s\n",
+					 n->name,n->value);
+			  }
+
+		      if(!notation->flags.ignore)
+			tty_printf("Adding notation: %s=%s\n",
+				   notation->name,notation->value);
+		    }
+		  else
+		    {
+		      tty_printf("Removing all notations\n");
+		      addonly=0;
+		    }
+
+		  if(skip
+		     || (!addonly
+			 && !cpr_get_answer_is_yes("keyedit.confirm_notation",
+						   _("Proceed? (y/N) "))))
+		    continue;
+
+		  rc = update_keysig_packet (&newsig, sig,
+					     main_pk, uid, NULL,
+					     sk,
+					     keygen_add_notations, notation );
+		  if( rc )
+		    {
+		      log_error ("update_keysig_packet failed: %s\n",
+				 g10_errstr(rc));
+		      free_secret_key( sk );
+		      free_notation(notation);
+		      xfree(user);
+		      return 0;
+		    }
+
+		  /* replace the packet */
+		  newpkt = xmalloc_clear( sizeof *newpkt );
+		  newpkt->pkttype = PKT_SIGNATURE;
+		  newpkt->pkt.signature = newsig;
+		  free_packet( node->pkt );
+		  xfree( node->pkt );
+		  node->pkt = newpkt;
+		  modified = 1;
+
+		  if(notation)
+		    {
+		      /* Snip off the notation list from the sig */
+		      free_notation(notation->next);
+		      notation->next=NULL;
+		    }
+
+		  xfree(user);
+		}
+	    }
+	}
+    }
+
+  free_notation(notation);
   free_secret_key( sk );
   return modified;
 }

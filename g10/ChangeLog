@@ -1,5 +1,11 @@
 2006-03-08  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (menu_set_notation): New function to set notations on
+	self-signatures.
+	(keyedit_menu): Call it here.
+	(tty_print_notations): Helper.
+	(show_prefs): Show notations in "showpref".
+
 	* mainproc.c (get_pka_address), keylist.c (show_notation): Remove
 	duplicate code by using notation functions.
 
