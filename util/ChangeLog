@@ -1,3 +1,7 @@
+2006-03-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* argparse.c (default_strusage): Update copyright year to 2006.
+
 2006-02-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (send_request): A zero length proxy is the same as no
