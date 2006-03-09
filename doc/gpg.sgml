@@ -537,8 +537,10 @@ Setting a value of "none" removes an existing preferred keyserver.
     <listitem><para>
 Set a name=value notation for the specified user ID(s).  See
 --cert-notation for more on how this works.  Setting a value of "none"
-removes all notations, and setting a name with no value removes that
-notation alone.
+removes all notations, setting a notation prefixed with a minus sign
+(-) removes that notation, and setting a notation name (without the
+=value) prefixed with a minus sign removes all notations with that
+name.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>toggle</term>
