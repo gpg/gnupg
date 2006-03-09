@@ -1,0 +1,211 @@
+           GnuPG does not detect injection of unsigned data
+           ================================================
+                 (released 2006-03-09, CVE-2006-0049)
+
+
+Summary
+=======
+
+In the aftermath of the false positive signature verfication bug
+(announced 2006-02-15) more thorough testing of the fix has been done
+and another vulnerability has been detected.
+
+This new problem affects the use of *gpg* for verification of
+signatures which are _not_ detached signatures.  The problem also
+affects verification of signatures embedded in encrypted messages;
+i.e. standard use of gpg for mails.
+
+To solve this problem, an update of the current stable version has
+been released (see below).
+
+Please do not respond to this message.  The mailing list gnupg-devel
+is the best place to discuss this problem (please subscribe first so
+you don't need moderator approval [1]).
+
+
+Impact:
+=======
+
+Signature verification of non-detached signatures may give a positive
+result but when extracting the signed data, this data may be prepended
+or appended with extra data not covered by the signature.  Thus it is
+possible for an attacker to take any signed message and inject extra
+arbitrary data.
+
+Detached signatures (a separate signature file) are not affected.
+
+All versions of gnupg prior to 1.4.2.2 are affected.
+
+Scripts and applications using gpg to verify the integrity of data are
+affected. This includes applications using the GPGME library[2].
+
+The GnuPG version 1.9.x is not affected unless the currently
+deprecated gpg part has been enabled.
+
+
+Solution:
+=========
+
+Update GnuPG as soon as possible to version 1.4.2.2.  There are no
+fixes for older versions available.
+
+If you can't get an update from your vendor, please follow the
+instructions found at http://www.gnupg.org/download/ or read on:
+
+GnuPG 1.4.2.2 may be downloaded from one of the GnuPG mirror sites or
+direct from ftp://ftp.gnupg.org/gcrypt/ .  The list of mirrors can be
+found at http://www.gnupg.org/mirrors.html .  Note, that GnuPG is not
+available at ftp.gnu.org.
+
+On the mirrors you should find the following files in the *gnupg*
+directory:
+
+  gnupg-1.4.2.2.tar.bz2 (2.8M)
+  gnupg-1.4.2.2.tar.bz2.sig
+
+      GnuPG source compressed using BZIP2 and OpenPGP signature.
+
+  gnupg-1.4.2.2.tar.gz (4.0M)
+  gnupg-1.4.2.2.tar.gz.sig
+
+      GnuPG source compressed using GZIP and OpenPGP signature.
+
+  gnupg-1.4.2.1-1.4.2.2.diff.bz2 (101k)
+
+      A patch file to upgrade a 1.4.2.1 GnuPG source. 
+
+Select one of them. To shorten the download time, you probably want to
+get the BZIP2 compressed file.  Please try another mirror if
+exceptional your mirror is not yet up to date.
+
+In the *binary* directory, you should find these files:
+
+  gnupg-w32cli-1.4.2.2.exe (1.4M)
+  gnupg-w32cli-1.4.2.2.exe.sig
+
+      GnuPG compiled for Microsoft Windows and OpenPGP signature.
+      Note that this is a command line version and now comes with a
+      graphical installer tool.  The source files are the same as
+      given above.  Note, that a new version of the Gpg4Win
+      package[3], including a fixed version of GnuPG has also been
+      released today.
+
+
+In order to check that the version of GnuPG which you are going to
+install is an original and unmodified one, you can do it in one of
+the following ways:
+
+ * If you already have a trusted version of GnuPG installed, you can
+   simply check the supplied signature.  Due to the fact that detached
+   signatures are used, the problem described here does not affect
+   this verification.  For example to check the signature of the file
+   gnupg-1.4.2.2.tar.bz2 you would use this command:
+
+     gpg --verify gnupg-1.4.2.2.tar.bz2.sig
+
+   This checks whether the signature file matches the source file.
+   You should see a message indicating that the signature is good and
+   made by that signing key.  Make sure that you have the right key,
+   either by checking the fingerprint of that key with other sources
+   or by checking that the key has been signed by a trustworthy other
+   key.  Note, that you can retrieve the signing key using "finger wk
+   'at' g10code.com" or "finger dd9jn 'at' gnu.org" or using the
+   keyservers.  From time to time I prolong the expiration date; thus
+   you might need a fresh copy of that key.
+
+   Never use a GnuPG version you just downloaded to check the
+   integrity of the source - use an existing GnuPG installation!
+   Watch out for a "Good signature" messages.
+
+ * If you are not able to use an old version of GnuPG, you have to
+   verify the SHA-1 checksum.  Assuming you downloaded the file
+   gnupg-1.4.2.1.tar.bz2, you would run the sha1sum command like this:
+
+     sha1sum gnupg-1.4.2.2.tar.bz2
+
+   and check that the output matches the first line from the
+   following list:
+
+f5559ddb004e0638f6bd9efe2bac00134c5065ba  gnupg-1.4.2.2.tar.bz2
+959540c1c6158e09d668ceee055bf366dc26d0bd  gnupg-1.4.2.2.tar.gz
+880b3e937f232b1ca366bda37c4a959aacbd84f3  gnupg-1.4.2.1-1.4.2.2.diff.bz2
+95dd7fd4c49423b86704acfc396ce5a53c8b19e7  gnupg-w32cli-1.4.2.2.exe
+
+
+
+Background:
+===========
+
+OpenPGP messages are made up of packets.  The signed data is a packet,
+the actual signature is a packet and there are several control packets
+as well.  For example:
+
+   O + D + S 
+
+This describes a standard signed message made made up of a control
+packet (O for one-pass signature packet), the actual signed data (D)
+and the actual signature packet (S).  gpg checks that the signature S
+is valid over the data D.  This is actually easy if not OpenPGP and
+GnuPG would have a long tradition of changing the fromats.  PGP 2
+versions used a different way of composing these packets:
+
+   S + D
+
+and early versions of gpg, released before RFC2440, even created
+
+   D + S
+
+i.e. without the one-pass packet.  Still this would all be easy to
+process properly but in an ill-advised attempt to make things easier,
+gpg allowed the processing of multiple signatures per file, like
+
+   O1 + D1 + S1 + O2 + D2 + S2
+
+where two standard signatures are concatenated.  Now when combining
+this with the other variants of signatures, things get really messy
+and it is not always possible to assocciate the signature (S) with the
+signed data (D).  gpg checked that this all works but unfortunately
+these checks are not sufficient enough.  The attack is to change a
+standard message to inject faked data (F).  A simple case is this:
+
+   F + O + D + S 
+
+gpg now happily skips F for verification and does a proper signature
+verification of D and if this succeeds, prints a positive result.
+However when asked to output the actual signed data it will output the
+concatenation of F + D and thus create the impression that both are
+covered by the signature.  Depending on how gpg is invoked (in a
+pipeline or using --output) it may even output just F and not at all
+D.  There are several variants of the attack in where to put the faked
+data.
+
+The only correct solution to this problem is to get rid of the feature
+to check concatenated signatures - this allows for strict checking of
+valid packet composition.  This is what has been done in 1.4.2.2 and
+in the forthcoming 1.4.3rc2.  These versions accept signatures only if
+they are composed of
+
+  O + D + S
+  S + D
+  
+Cleartext signatures are of course also supported, they are similiar
+to the O+D+S case.
+
+The actual checking for valid signature packet composition is done at
+g10/mainproc.c, at the top of check_sig_and_print().
+
+
+Thanks
+======
+
+Tavis Ormandy again poked on gpg and found this vulnerability. 
+
+The new version has been released yesterday and should by now be
+available on all mirrors.
+
+
+
+
+[1] http://lists.gnupg.org/mailman/listinfo/gnupg-devel
+[2] http://www.gnupg.org/related_software/gpgme
+[3] http://www.gpg4win.org

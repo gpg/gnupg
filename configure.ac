@@ -9,7 +9,7 @@ dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation; either version 2 of the License, or
 dnl (at your option) any later version.
 dnl 
-dnl GnuPG is distributed in the hope that it will be useful,
+dnl GnuPG is distributed in the hope that it will be useful,g
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
@@ -26,7 +26,7 @@ min_automake_version="1.9.3"
 
 # Remember to change the version number immediately *after* a release
 # and remove the "-cvs" or "rc" suffix immediately *before* a release.
-AC_INIT(gnupg, 1.4.3rc2, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.4.3-cvs, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
