@@ -1,3 +1,12 @@
+2006-03-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (string_to_notation): Add ability to indicate a
+	notation to be deleted with a '-' prefix.
+
+	* keyedit.c (menu_set_notation): Use it here to allow deleting a
+	notation marked with '-'.  This works with either "-notation" or
+	"-notation=value".
+
 2006-03-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_set_notation): New function to set notations on

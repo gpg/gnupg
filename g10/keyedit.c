@@ -4178,7 +4178,8 @@ menu_set_notation(const char *string,KBNODE pub_keyblock,KBNODE sec_keyblock)
 	}
     }
 
-  if(ascii_strcasecmp(answer,"none")==0)
+  if(ascii_strcasecmp(answer,"none")==0
+     || ascii_strcasecmp(answer,"-")==0)
     notation=NULL; /* delete them all */
   else
     {
@@ -4238,7 +4239,7 @@ menu_set_notation(const char *string,KBNODE pub_keyblock,KBNODE sec_keyblock)
 		    {
 		      tty_printf("Current notations for user ID \"%s\":\n",
 				 user);
-		      tty_print_notations(-10,sig);
+		      tty_print_notations(-9,sig);
 		    }
 		  else
 		    {
@@ -4253,39 +4254,61 @@ menu_set_notation(const char *string,KBNODE pub_keyblock,KBNODE sec_keyblock)
 
 		  if(notation)
 		    {
-		      struct notation *n,*list=sig_to_notation(sig);
-		      notation->next=list;
+		      struct notation *n;
+		      int deleting=0;
 
-		      for(n=list;n;n=n->next)
+		      notation->next=sig_to_notation(sig);
+
+		      for(n=notation->next;n;n=n->next)
 			if(strcmp(n->name,notation->name)==0)
 			  {
-			    if(strcmp(n->value,notation->value)==0)
+			    if(notation->value)
 			      {
-				/* Adding the same notation twice, so
-				   don't add it at all. */
-				skip=1;
-				tty_printf("Skipping notation: %s=%s\n",
-					   notation->name,notation->value);
-				notation->flags.ignore=1;
-				break;
+				if(strcmp(n->value,notation->value)==0)
+				  {
+				    if(notation->flags.ignore)
+				      {
+					/* Value match with a delete
+					   flag. */
+					n->flags.ignore=1;
+					deleting=1;
+				      }
+				    else
+				      {
+					/* Adding the same notation
+					   twice, so don't add it at
+					   all. */
+					skip=1;
+					tty_printf("Skipping notation:"
+						   " %s=%s\n",
+						   notation->name,
+						   notation->value);
+					break;
+				      }
+				  }
 			      }
-			    else if(notation->value[0]=='\0')
+			    else
 			      {
-				/* No value, so we don't replace this
-				   notation with anything. */
+				/* No value, so it means delete. */
 				n->flags.ignore=1;
-				notation->flags.ignore=1;
-				addonly=0;
+				deleting=1;
 			      }
 
 			    if(n->flags.ignore)
-			      tty_printf("Removing notation: %s=%s\n",
-					 n->name,n->value);
+			      {
+				tty_printf("Removing notation: %s=%s\n",
+					   n->name,n->value);
+				addonly=0;
+			      }
 			  }
 
-		      if(!notation->flags.ignore)
+		      if(!notation->flags.ignore && !skip)
 			tty_printf("Adding notation: %s=%s\n",
 				   notation->name,notation->value);
+
+		      /* We tried to delete, but had no matches */
+		      if(notation->flags.ignore && !deleting)
+			continue;
 		    }
 		  else
 		    {

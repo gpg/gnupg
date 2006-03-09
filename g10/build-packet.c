@@ -891,11 +891,17 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
 struct notation *
 string_to_notation(const char *string,int is_utf8)
 {
-  const char *s,*i;
-  int saw_at=0,highbit=0;
+  const char *s;
+  int saw_at=0;
   struct notation *notation;
 
   notation=xmalloc_clear(sizeof(*notation));
+
+  if(*string=='-')
+    {
+      notation->flags.ignore=1;
+      string++;
+    }
 
   if(*string=='!')
     {
@@ -910,6 +916,10 @@ string_to_notation(const char *string,int is_utf8)
     {
       if( *s=='@')
 	saw_at++;
+
+      /* -notationname is legal without an = sign */
+      if(!*s && notation->flags.ignore)
+	break;
 
       if( !*s || !isascii (*s) || (!isgraph(*s) && !isspace(*s)) )
 	{
@@ -936,26 +946,30 @@ string_to_notation(const char *string,int is_utf8)
       goto fail;
     }
 
-  i=s+1;
-
-  /* we only support printable text - therefore we enforce the use of
-     only printable characters (an empty value is valid) */
-  for(s++; *s ; s++ )
+  if(*s)
     {
-      if ( !isascii (*s) )
-	highbit=1;
-      else if (iscntrl(*s))
-	{
-	  log_error(_("a notation value must not use any"
-		      " control characters\n"));
-	  goto fail;
-	}
-    }
+      const char *i=s+1;
+      int highbit=0;
 
-  if(!highbit || is_utf8)
-    notation->value=xstrdup(i);
-  else
-    notation->value=native_to_utf8(i);
+      /* we only support printable text - therefore we enforce the use
+	 of only printable characters (an empty value is valid) */
+      for(s++; *s ; s++ )
+	{
+	  if ( !isascii (*s) )
+	    highbit=1;
+	  else if (iscntrl(*s))
+	    {
+	      log_error(_("a notation value must not use any"
+			  " control characters\n"));
+	      goto fail;
+	    }
+	}
+
+      if(!highbit || is_utf8)
+	notation->value=xstrdup(i);
+      else
+	notation->value=native_to_utf8(i);
+    }
 
   return notation;
 
