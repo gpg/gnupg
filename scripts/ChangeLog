@@ -1,3 +1,7 @@
+2006-03-09  Werner Koch  <wk@g10code.com>
+
+	* config.sub, config.guess: Updated.
+
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	* w32installer.nsi: Don't use System.dll.
