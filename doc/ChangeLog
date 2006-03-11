@@ -1,3 +1,8 @@
+2006-03-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* samplekeys.asc: Update 99242560 to have a signing subkey
+	backsig.
+
 2006-03-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Clarify new notation delete feature.
