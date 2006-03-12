@@ -3699,9 +3699,10 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
 	 keys), so we just pick the selfsig with the right class.
 	 This is what menu_expire does as well. */
       for(node2=node2->next;
-	  node2 && node2->pkt->pkttype==PKT_SIGNATURE;
+	  node2 && node2->pkt->pkttype!=PKT_SECRET_SUBKEY;
 	  node2=node2->next)
-	if(node2->pkt->pkt.signature->version>=4
+	if(node2->pkt->pkttype==PKT_SIGNATURE
+	   && node2->pkt->pkt.signature->version>=4
 	   && node2->pkt->pkt.signature->keyid[0]==sig_pk->pkt->pkt.signature->keyid[0]
 	   && node2->pkt->pkt.signature->keyid[1]==sig_pk->pkt->pkt.signature->keyid[1]
 	   && node2->pkt->pkt.signature->sig_class==sig_pk->pkt->pkt.signature->sig_class)

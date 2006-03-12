@@ -1,3 +1,12 @@
+2006-03-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* sig-check.c (signature_check2): Print the backsig warning when
+	there is no backsig present.  Give a URL for more information.
+
+	* keyedit.c (menu_backsign): Small tweak to work properly with
+	keys originally generated with older GnuPGs that included comments
+	in the secret keys.
+
 2006-03-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (string_to_notation): Add ability to indicate a
