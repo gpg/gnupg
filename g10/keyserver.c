@@ -92,6 +92,7 @@ static struct parse_options keyserver_opts[]=
 
 static int keyserver_work(enum ks_action action,STRLIST list,
 			  KEYDB_SEARCH_DESC *desc,int count,
+			  unsigned char **fpr,size_t *fpr_len,
 			  struct keyserver_spec *keyserver);
 
 /* Reasonable guess */
@@ -754,7 +755,8 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
       while((num=strsep(&split," ,"))!=NULL)
 	if(atoi(num)>=1 && atoi(num)<=numdesc)
-	  keyserver_work(KS_GET,NULL,&desc[atoi(num)-1],1,opt.keyserver);
+	  keyserver_work(KS_GET,NULL,&desc[atoi(num)-1],1,
+			 NULL,NULL,opt.keyserver);
 
       xfree(answer);
       return 1;
@@ -956,7 +958,8 @@ curl_cant_handle(const char *scheme,unsigned int direct_uri)
 
 static int 
 keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
-		int count,int *prog,struct keyserver_spec *keyserver)
+		int count,int *prog,unsigned char **fpr,size_t *fpr_len,
+		struct keyserver_spec *keyserver)
 {
   int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
@@ -1457,7 +1460,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	     way to do this could be to continue parsing this
 	     line-by-line and make a temp iobuf for each key. */
 
-	  import_keys_stream(spawn->fromchild,stats_handle,NULL,NULL,
+	  import_keys_stream(spawn->fromchild,stats_handle,fpr,fpr_len,
 			     opt.keyserver_options.import_options);
 
 	  import_print_stats(stats_handle);
@@ -1491,7 +1494,8 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 static int 
 keyserver_work(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
-	       int count,struct keyserver_spec *keyserver)
+	       int count,unsigned char **fpr,size_t *fpr_len,
+	       struct keyserver_spec *keyserver)
 {
   int rc=0,ret=0;
 
@@ -1509,7 +1513,7 @@ keyserver_work(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 #else
   /* Spawn a handler */
 
-  rc=keyserver_spawn(action,list,desc,count,&ret,keyserver);
+  rc=keyserver_spawn(action,list,desc,count,&ret,fpr,fpr_len,keyserver);
   if(ret)
     {
       switch(ret)
@@ -1583,7 +1587,7 @@ keyserver_export(STRLIST users)
 
   if(sl)
     {
-      rc=keyserver_work(KS_SEND,sl,NULL,0,opt.keyserver);
+      rc=keyserver_work(KS_SEND,sl,NULL,0,NULL,NULL,opt.keyserver);
       free_strlist(sl);
     }
 
@@ -1621,7 +1625,7 @@ keyserver_import(STRLIST users)
     }
 
   if(count>0)
-    rc=keyserver_work(KS_GET,NULL,desc,count,opt.keyserver);
+    rc=keyserver_work(KS_GET,NULL,desc,count,NULL,NULL,opt.keyserver);
 
   xfree(desc);
 
@@ -1645,7 +1649,9 @@ keyserver_import_fprint(const byte *fprint,size_t fprint_len,
 
   memcpy(desc.u.fpr,fprint,fprint_len);
 
-  return keyserver_work(KS_GET,NULL,&desc,1,keyserver);
+  /* TODO: Warn here if the fingerprint we got doesn't match the one
+     we asked for? */
+  return keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
 }
 
 int 
@@ -1659,7 +1665,7 @@ keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_work(KS_GET,NULL,&desc,1,keyserver);
+  return keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
 }
 
 /* code mostly stolen from do_export_stream */
@@ -1863,7 +1869,7 @@ keyserver_refresh(STRLIST users)
 		 Note that a preferred keyserver without a scheme://
 		 will be interpreted as hkp:// */
 
-	      rc=keyserver_work(KS_GET,NULL,&desc[i],1,keyserver);
+	      rc=keyserver_work(KS_GET,NULL,&desc[i],1,NULL,NULL,keyserver);
 	      if(rc)
 		log_info(_("WARNING: unable to refresh key %s"
 			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
@@ -1893,7 +1899,7 @@ keyserver_refresh(STRLIST users)
 		     count,opt.keyserver->uri);
 	}
 
-      rc=keyserver_work(KS_GET,NULL,desc,numdesc,opt.keyserver);
+      rc=keyserver_work(KS_GET,NULL,desc,numdesc,NULL,NULL,opt.keyserver);
     }
 
   xfree(desc);
@@ -1912,7 +1918,7 @@ int
 keyserver_search(STRLIST tokens)
 {
   if(tokens)
-    return keyserver_work(KS_SEARCH,tokens,NULL,0,opt.keyserver);
+    return keyserver_work(KS_SEARCH,tokens,NULL,0,NULL,NULL,opt.keyserver);
   else
     return 0;
 }
@@ -1952,7 +1958,7 @@ keyserver_fetch(STRLIST urilist)
 	  */
 	  spec->flags.direct_uri=1;
 
-	  rc=keyserver_work(KS_GET,NULL,&desc,1,spec);
+	  rc=keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,spec);
 	  if(rc)
 	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
 		     sl->d,g10_errstr(rc));
@@ -1975,7 +1981,7 @@ keyserver_fetch(STRLIST urilist)
 
 /* Import key in a CERT or pointed to by a CERT */
 int
-keyserver_import_cert(const char *name)
+keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *domain,*look,*url;
   IOBUF key;
@@ -1995,7 +2001,7 @@ keyserver_import_cert(const char *name)
       /* CERTs are always in binary format */
       opt.no_armor=1;
 
-      rc=import_keys_stream(key,NULL,NULL,NULL,
+      rc=import_keys_stream(key,NULL,fpr,fpr_len,
 			    opt.keyserver_options.import_options);
 
       opt.no_armor=armor_status;
@@ -2053,14 +2059,15 @@ keyserver_import_pka(const char *name,unsigned char *fpr)
 
 /* Import all keys that match name */
 int
-keyserver_import_name(const char *name,struct keyserver_spec *keyserver)
+keyserver_import_name(const char *name,unsigned char **fpr,size_t *fpr_len,
+		      struct keyserver_spec *keyserver)
 {
   STRLIST list=NULL;
   int rc;
 
   append_to_strlist(&list,name);
 
-  rc=keyserver_work(KS_GETNAME,list,NULL,0,keyserver);
+  rc=keyserver_work(KS_GETNAME,list,NULL,0,fpr,fpr_len,keyserver);
 
   free_strlist(list);
 
@@ -2070,7 +2077,7 @@ keyserver_import_name(const char *name,struct keyserver_spec *keyserver)
 /* Use the PGP Universal trick of asking ldap://keys.(maildomain) for
    the key. */
 int
-keyserver_import_ldap(const char *name)
+keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *domain;
   struct keyserver_spec *keyserver;
@@ -2098,7 +2105,7 @@ keyserver_import_ldap(const char *name)
   strcat(keyserver->uri,"://");
   strcat(keyserver->uri,keyserver->host);
     
-  rc=keyserver_work(KS_GETNAME,list,NULL,0,keyserver);
+  rc=keyserver_work(KS_GETNAME,list,NULL,0,fpr,fpr_len,keyserver);
 
   free_strlist(list);
 

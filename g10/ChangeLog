@@ -1,5 +1,9 @@
 2006-03-13  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver-internal.h, keyserver.c (keyserver_spawn,
+	keyserver_work, keyserver_import_cert, keyserver_import_name,
+	keyserver_import_ldap): Pass fingerprint info through.
+
 	* main.h, import.c (import_one): Optionally return the fingerprint
 	of the key being imported.
 	(import_keys_internal, import_keys_stream, import): Change all

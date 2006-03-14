@@ -926,7 +926,7 @@ get_pubkey_byname (PKT_public_key *pk,
 	    {
 	    case AKL_CERT:
 	      glo_ctrl.in_auto_key_retrieve++;
-	      res=keyserver_import_cert(name);
+	      res=keyserver_import_cert(name,NULL,NULL);
 	      glo_ctrl.in_auto_key_retrieve--;
 
 	      if(res==0)
@@ -963,7 +963,7 @@ get_pubkey_byname (PKT_public_key *pk,
 
 	    case AKL_LDAP:
 	      glo_ctrl.in_auto_key_retrieve++;
-	      res=keyserver_import_ldap(name);
+	      res=keyserver_import_ldap(name,NULL,NULL);
 	      glo_ctrl.in_auto_key_retrieve--;
 
 	      if(res==0)
@@ -979,7 +979,7 @@ get_pubkey_byname (PKT_public_key *pk,
 	      if(opt.keyserver)
 		{
 		  glo_ctrl.in_auto_key_retrieve++;
-		  res=keyserver_import_name(name,opt.keyserver);
+		  res=keyserver_import_name(name,NULL,NULL,opt.keyserver);
 		  glo_ctrl.in_auto_key_retrieve--;
 
 		  if(res==0)
@@ -994,7 +994,7 @@ get_pubkey_byname (PKT_public_key *pk,
 
 		keyserver=keyserver_match(akl->spec);
 		glo_ctrl.in_auto_key_retrieve++;
-		res=keyserver_import_name(name,keyserver);
+		res=keyserver_import_name(name,NULL,NULL,keyserver);
 		glo_ctrl.in_auto_key_retrieve--;
 
 		if(res==0)
