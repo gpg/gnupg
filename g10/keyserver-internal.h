@@ -45,7 +45,7 @@ int keyserver_search(STRLIST tokens);
 int keyserver_fetch(STRLIST urilist);
 int keyserver_import_cert(const char *name,
 			  unsigned char **fpr,size_t *fpr_len);
-int keyserver_import_pka(const char *name,unsigned char *fpr);
+int keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len);
 int keyserver_import_name(const char *name,unsigned char **fpr,size_t *fpr_len,
 			  struct keyserver_spec *keyserver);
 int keyserver_import_ldap(const char *name,

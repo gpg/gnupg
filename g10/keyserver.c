@@ -2036,23 +2036,29 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 /* Import key pointed to by a PKA record. Return the requested
    fingerprint in fpr. */
 int
-keyserver_import_pka(const char *name,unsigned char *fpr)
+keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *uri;
   int rc=-1;
 
-  uri = get_pka_info (name, fpr);
+  *fpr=xmalloc(20);
+  *fpr_len=20;
+
+  uri = get_pka_info (name, *fpr);
   if (uri)
     {
       struct keyserver_spec *spec;
       spec = parse_keyserver_uri (uri, 1, NULL, 0);
       if (spec)
 	{
-	  rc=keyserver_import_fprint (fpr, 20, spec);
+	  rc=keyserver_import_fprint (*fpr, 20, spec);
 	  free_keyserver_spec (spec);
 	}
       xfree (uri);
     }
+
+  if(rc!=0)
+    xfree(*fpr);
 
   return rc;
 }

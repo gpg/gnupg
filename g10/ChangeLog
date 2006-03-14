@@ -1,5 +1,16 @@
 2006-03-13  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver-internal.h, keyserver.c (keyserver_import_pka): Use
+	the same API as the other auto-key-locate fetchers.
+
+	* getkey.c (get_pubkey_byname): Use the fingerprint of the key
+	that we actually fetched.  This helps prevent problems where the
+	key that we fetched doesn't have the same name that we used to
+	fetch it.  In the case of CERT and PKA, this is an actual security
+	requirement as the URL might point to a key put in by an attacker.
+	By forcing the use of the fingerprint, we won't use the attacker's
+	key here.
+
 	* keyserver-internal.h, keyserver.c (keyserver_spawn,
 	keyserver_work, keyserver_import_cert, keyserver_import_name,
 	keyserver_import_ldap): Pass fingerprint info through.

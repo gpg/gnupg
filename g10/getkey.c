@@ -922,11 +922,14 @@ get_pubkey_byname (PKT_public_key *pk,
 
       for(akl=opt.auto_key_locate;akl;akl=akl->next)
 	{
+	  unsigned char *fpr;
+	  size_t fpr_len;
+
 	  switch(akl->type)
 	    {
 	    case AKL_CERT:
 	      glo_ctrl.in_auto_key_retrieve++;
-	      res=keyserver_import_cert(name,NULL,NULL);
+	      res=keyserver_import_cert(name,&fpr,&fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 
 	      if(res==0)
@@ -935,35 +938,17 @@ get_pubkey_byname (PKT_public_key *pk,
 	      break;
 
 	    case AKL_PKA:
-	      {
-		unsigned char fpr[MAX_FINGERPRINT_LEN];
+	      glo_ctrl.in_auto_key_retrieve++;
+	      res=keyserver_import_pka(name,&fpr,&fpr_len);
 
-		glo_ctrl.in_auto_key_retrieve++;
-		res=keyserver_import_pka(name,fpr);
-		glo_ctrl.in_auto_key_retrieve--;
-
-		if(res==0)
-		  {
-		    int i;
-		    char fpr_string[MAX_FINGERPRINT_LEN*2+1];
-
-		    log_info(_("Automatically retrieved `%s' via %s\n"),
-			     name,"PKA");
-
-		    free_strlist(namelist);
-		    namelist=NULL;
-
-		    for(i=0;i<MAX_FINGERPRINT_LEN;i++)
-		      sprintf(fpr_string+2*i,"%02X",fpr[i]);
-
-		    add_to_strlist( &namelist, fpr_string );
-		  }
-	      }
+	      if(res==0)
+		log_info(_("Automatically retrieved `%s' via %s\n"),
+			 name,"PKA");
 	      break;
 
 	    case AKL_LDAP:
 	      glo_ctrl.in_auto_key_retrieve++;
-	      res=keyserver_import_ldap(name,NULL,NULL);
+	      res=keyserver_import_ldap(name,&fpr,&fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 
 	      if(res==0)
@@ -979,7 +964,7 @@ get_pubkey_byname (PKT_public_key *pk,
 	      if(opt.keyserver)
 		{
 		  glo_ctrl.in_auto_key_retrieve++;
-		  res=keyserver_import_name(name,NULL,NULL,opt.keyserver);
+		  res=keyserver_import_name(name,&fpr,&fpr_len,opt.keyserver);
 		  glo_ctrl.in_auto_key_retrieve--;
 
 		  if(res==0)
@@ -994,7 +979,7 @@ get_pubkey_byname (PKT_public_key *pk,
 
 		keyserver=keyserver_match(akl->spec);
 		glo_ctrl.in_auto_key_retrieve++;
-		res=keyserver_import_name(name,NULL,NULL,keyserver);
+		res=keyserver_import_name(name,&fpr,&fpr_len,keyserver);
 		glo_ctrl.in_auto_key_retrieve--;
 
 		if(res==0)
@@ -1002,6 +987,34 @@ get_pubkey_byname (PKT_public_key *pk,
 			   name,akl->spec->uri);
 	      }
 	      break;
+	    }
+
+	  /* Use the fingerprint of the key that we actually fetched.
+	     This helps prevent problems where the key that we fetched
+	     doesn't have the same name that we used to fetch it.  In
+	     the case of CERT and PKA, this is an actual security
+	     requirement as the URL might point to a key put in by an
+	     attacker.  By forcing the use of the fingerprint, we
+	     won't use the attacker's key here. */
+	  if(res==0 && fpr)
+	    {
+	      int i;
+	      char fpr_string[MAX_FINGERPRINT_LEN*2+1];
+
+	      assert(fpr_len<=MAX_FINGERPRINT_LEN);
+
+	      free_strlist(namelist);
+	      namelist=NULL;
+
+	      for(i=0;i<fpr_len;i++)
+		sprintf(fpr_string+2*i,"%02X",fpr[i]);
+
+	      if(opt.verbose)
+		log_info("auto-key-locate found fingerprint %s\n",fpr_string);
+
+	      add_to_strlist( &namelist, fpr_string );
+
+	      xfree(fpr);
 	    }
 
 	  rc = key_byname( NULL, namelist, pk, NULL, 0,
