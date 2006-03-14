@@ -1,6 +1,6 @@
 /* import.c - import a key into our key storage.
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -60,12 +60,13 @@ struct stats_s {
 };
 
 
-static int import( IOBUF inp, const char* fname,
-                   struct stats_s *stats, unsigned int options );
+static int import( IOBUF inp, const char* fname,struct stats_s *stats,
+		   unsigned char **fpr,size_t *fpr_len,unsigned int options );
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void revocation_present(KBNODE keyblock);
-static int import_one( const char *fname, KBNODE keyblock,
-                       struct stats_s *stats, unsigned int options);
+static int import_one(const char *fname, KBNODE keyblock,struct stats_s *stats,
+		      unsigned char **fpr,size_t *fpr_len,
+		      unsigned int options);
 static int import_secret_one( const char *fname, KBNODE keyblock,
                               struct stats_s *stats, unsigned int options);
 static int import_revoke_cert( const char *fname, KBNODE node,
@@ -163,7 +164,8 @@ import_release_stats_handle (void *p)
  */
 static int
 import_keys_internal( IOBUF inp, char **fnames, int nnames,
-		      void *stats_handle, unsigned int options )
+		      void *stats_handle, unsigned char **fpr, size_t *fpr_len,
+		      unsigned int options )
 {
     int i, rc = 0;
     struct stats_s *stats = stats_handle;
@@ -172,7 +174,7 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
         stats = import_new_stats_handle ();
 
     if (inp) {
-        rc = import( inp, "[stream]", stats, options);
+        rc = import( inp, "[stream]", stats, fpr, fpr_len, options);
     }
     else {
         if( !fnames && !nnames )
@@ -191,15 +193,16 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
               }
 	    if( !inp2 )
 	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
-	    else {
-	        rc = import( inp2, fname, stats, options );
+	    else
+	      {
+	        rc = import( inp2, fname, stats, fpr, fpr_len, options );
 	        iobuf_close(inp2);
                 /* Must invalidate that ugly cache to actually close it. */
                 iobuf_ioctl (NULL, 2, 0, (char*)fname);
 	        if( rc )
-		    log_error("import from `%s' failed: %s\n", fname,
-       	                      g10_errstr(rc) );
-	    }
+		  log_error("import from `%s' failed: %s\n", fname,
+			    g10_errstr(rc) );
+	      }
 	    if( !fname )
 	        break;
 	}
@@ -225,18 +228,19 @@ void
 import_keys( char **fnames, int nnames,
 	     void *stats_handle, unsigned int options )
 {
-    import_keys_internal( NULL, fnames, nnames, stats_handle, options);
+  import_keys_internal(NULL,fnames,nnames,stats_handle,NULL,NULL,options);
 }
 
 int
-import_keys_stream( IOBUF inp, void *stats_handle, unsigned int options )
+import_keys_stream( IOBUF inp, void *stats_handle,
+		    unsigned char **fpr, size_t *fpr_len,unsigned int options )
 {
-    return import_keys_internal( inp, NULL, 0, stats_handle, options);
+  return import_keys_internal(inp,NULL,0,stats_handle,fpr,fpr_len,options);
 }
 
 static int
-import( IOBUF inp, const char* fname,
-	struct stats_s *stats, unsigned int options )
+import( IOBUF inp, const char* fname,struct stats_s *stats,
+	unsigned char **fpr,size_t *fpr_len,unsigned int options )
 {
     PACKET *pending_pkt = NULL;
     KBNODE keyblock;
@@ -252,7 +256,7 @@ import( IOBUF inp, const char* fname,
 
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-	    rc = import_one( fname, keyblock, stats, options );
+	    rc = import_one( fname, keyblock, stats, fpr, fpr_len, options );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
                 rc = import_secret_one( fname, keyblock, stats, options );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
@@ -673,8 +677,8 @@ check_prefs(KBNODE keyblock)
  * which called g10.
  */
 static int
-import_one( const char *fname, KBNODE keyblock,
-            struct stats_s *stats, unsigned int options )
+import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
+	    unsigned char **fpr,size_t *fpr_len,unsigned int options )
 {
     PKT_public_key *pk;
     PKT_public_key *pk_orig;
@@ -692,6 +696,10 @@ import_one( const char *fname, KBNODE keyblock,
 	BUG();
 
     pk = node->pkt->pkt.public_key;
+
+    if(fpr)
+      *fpr=fingerprint_from_pk(pk,NULL,fpr_len);
+
     keyid_from_pk( pk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
@@ -1146,7 +1154,8 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	    KBNODE pub_keyblock=sec_to_pub_keyblock(keyblock);
 	    if(pub_keyblock)
 	      {
-		import_one(fname,pub_keyblock,stats,opt.import_options);
+		import_one(fname,pub_keyblock,stats,
+			   NULL,NULL,opt.import_options);
 		release_kbnode(pub_keyblock);
 	      }
 	  }

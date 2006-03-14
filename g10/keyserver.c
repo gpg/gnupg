@@ -1457,7 +1457,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	     way to do this could be to continue parsing this
 	     line-by-line and make a temp iobuf for each key. */
 
-	  import_keys_stream(spawn->fromchild,stats_handle,
+	  import_keys_stream(spawn->fromchild,stats_handle,NULL,NULL,
 			     opt.keyserver_options.import_options);
 
 	  import_print_stats(stats_handle);
@@ -1995,7 +1995,8 @@ keyserver_import_cert(const char *name)
       /* CERTs are always in binary format */
       opt.no_armor=1;
 
-      rc=import_keys_stream(key,NULL,opt.keyserver_options.import_options);
+      rc=import_keys_stream(key,NULL,NULL,NULL,
+			    opt.keyserver_options.import_options);
 
       opt.no_armor=armor_status;
 

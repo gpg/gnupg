@@ -210,8 +210,8 @@ MPI encode_md_value( int pubkey_algo, MD_HANDLE md,
 int parse_import_options(char *str,unsigned int *options,int noisy);
 void import_keys( char **fnames, int nnames,
 		  void *stats_hd, unsigned int options );
-int import_keys_stream( IOBUF inp,
-			void *stats_hd, unsigned int options );
+int import_keys_stream( IOBUF inp,void *stats_hd,unsigned char **fpr,
+			size_t *fpr_len,unsigned int options );
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
 void import_print_stats (void *hd);
