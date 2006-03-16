@@ -1,6 +1,6 @@
 /* util.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -257,7 +257,8 @@ int asprintf (char **buf, const char *fmt, ...);
 char *get_pka_info (const char *address, unsigned char *fpr);
 
 /*-- cert.c --*/
-int get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url);
+int get_cert(const char *name,size_t max_size,IOBUF *iobuf,
+	     unsigned char **fpr,size_t *fpr_len,char **url);
 
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */

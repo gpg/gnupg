@@ -1,5 +1,5 @@
 /* cert.c - DNS CERT code
- * Copyright (C) 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -33,6 +33,7 @@
 #include "memory.h"
 #endif
 #include "iobuf.h"
+#include "util.h"
 
 /* Not every installation has gotten around to supporting CERTs
    yet... */
@@ -45,11 +46,18 @@
 /* Returns -1 on error, 0 for no answer, 1 for PGP provided and 2 for
    IPGP provided. */
 int
-get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
+get_cert(const char *name,size_t max_size,IOBUF *iobuf,
+	 unsigned char **fpr,size_t *fpr_len,char **url)
 {
   unsigned char *answer;
   int r,ret=-1;
   u16 count;
+
+  if(fpr)
+    *fpr=NULL;
+
+  if(url)
+    *url=NULL;
 
   answer=xmalloc(max_size);
 
@@ -90,7 +98,8 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 
 	  pt+=rc;
 
-	  /* Truncated message? */
+	  /* Truncated message? 15 bytes takes us to the point where
+	     we start looking at the ctype. */
 	  if((emsg-pt)<15)
 	    break;
 
@@ -127,26 +136,41 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 
 	  dlen-=5;
 
-	  if(ctype==3 && iobuf)
+	  /* 15 bytes takes us to here */
+
+	  if(ctype==3 && iobuf && dlen)
 	    {
 	      /* PGP type */
 	      *iobuf=iobuf_temp_with_content((char *)pt,dlen);
 	      ret=1;
 	      break;
 	    }
-#if 0
-	  else if(ctype==6 && dlen<1023 && url)
+	  else if(ctype==6 && dlen && dlen<1023 && dlen>=pt[0]+1
+		  && fpr && fpr_len && url)
 	    {
-	      /* Sanity check the IPGP URL type that the URL isn't too
-		 long */
+	      /* IPGP type */
+	      *fpr_len=pt[0];
 
-	      *url=xmalloc(dlen+1);
-	      memcpy(*url,pt,dlen);
-	      (*url)[dlen]='\0';
+	      if(*fpr_len)
+		{
+		  *fpr=xmalloc(*fpr_len);
+		  memcpy(*fpr,&pt[1],*fpr_len);
+		}
+	      else
+		*fpr=NULL;
+
+	      if(dlen>*fpr_len+1)
+		{
+		  *url=xmalloc(dlen-(*fpr_len+1)+1);
+		  memcpy(*url,&pt[*fpr_len+1],dlen-(*fpr_len+1));
+		  (*url)[dlen-(*fpr_len+1)]='\0';
+		}
+	      else
+		*url=NULL;
+
 	      ret=2;
 	      break;
 	    }
-#endif
 
 	  /* Neither type matches, so go around to the next answer. */
 	  pt+=dlen;
@@ -162,7 +186,8 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 #else /* !USE_DNS_CERT */
 
 int
-get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
+get_cert(const char *name,size_t max_size,IOBUF *iobuf,
+	 unsigned char **fpr,size_t *fpr_len,char **url)
 {
   return -1;
 }
@@ -175,6 +200,8 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,char **url)
 int
 main(int argc,char *argv[])
 {
+  unsigned char *fpr;
+  size_t fpr_len;
   char *url;
   int rc;
   IOBUF iobuf;
@@ -187,7 +214,7 @@ main(int argc,char *argv[])
 
   printf("CERT lookup on %s\n",argv[1]);
 
-  rc=get_cert(argv[1],16384,&iobuf,&url);
+  rc=get_cert(argv[1],16384,&iobuf,&fpr,&fpr_len,&url);
   if(rc==-1)
     printf("error\n");
   else if(rc==0)
@@ -199,7 +226,23 @@ main(int argc,char *argv[])
     }
   else if(rc==2)
     {
-      printf("URL found: %s\n",url);
+      if(fpr)
+	{
+	  size_t i;
+	  printf("Fingerprint found (%d bytes): ",fpr_len);
+	  for(i=0;i<fpr_len;i++)
+	    printf("%02X",fpr[i]);
+	  printf("\n");
+	}
+      else
+	printf("No fingerprint found\n");
+
+      if(url)
+	printf("URL found: %s\n",url);
+      else
+	printf("No URL found\n");
+
+      xfree(fpr);
       xfree(url);
     }
 
