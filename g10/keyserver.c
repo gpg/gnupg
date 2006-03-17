@@ -1985,7 +1985,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *domain,*look,*url;
   IOBUF key;
-  int type,rc=-1;
+  int type,rc=G10ERR_GENERAL;
 
   look=xstrdup(name);
 
@@ -1993,7 +1993,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
   if(domain)
     *domain='.';
 
-  type=get_cert(look,max_cert_size,&key,NULL,NULL,&url);
+  type=get_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
   if(type==1)
     {
       int armor_status=opt.no_armor;
@@ -2008,21 +2008,34 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 
       iobuf_close(key);
     }
-  else if(type==2)
+  else if(type==2 && *fpr)
     {
-      struct keyserver_spec *spec;
-
-      spec=parse_keyserver_uri(url,1,NULL,0);
-      if(spec)
+      /* We only consider the IPGP type if a fingerprint was provided.
+	 This lets us select the right key regardless of what a URL
+	 points to, or get the key from a keyserver. */
+      if(url)
 	{
-	  STRLIST list=NULL;
+	  struct keyserver_spec *spec;
 
-	  add_to_strlist(&list,url);
+	  spec=parse_keyserver_uri(url,1,NULL,0);
+	  if(spec)
+	    {
+	      STRLIST list=NULL;
 
-	  rc=keyserver_fetch(list);
+	      add_to_strlist(&list,url);
 
-	  free_strlist(list);
-	  free_keyserver_spec(spec);
+	      rc=keyserver_fetch(list);
+
+	      free_strlist(list);
+	      free_keyserver_spec(spec);
+	    }
+	}
+      else if(opt.keyserver)
+	{
+	  /* If only a fingerprint is provided, try and fetch it from
+	     our --keyserver */
+
+	  rc=keyserver_import_fprint(*fpr,*fpr_len,opt.keyserver);
 	}
 
       xfree(url);

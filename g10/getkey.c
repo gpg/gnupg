@@ -917,7 +917,6 @@ get_pubkey_byname (PKT_public_key *pk,
 
   if (rc == G10ERR_NO_PUBKEY && is_valid_mailbox(name))
     {
-      int res;
       struct akl *akl;
 
       for(akl=opt.auto_key_locate;akl;akl=akl->next)
@@ -929,29 +928,29 @@ get_pubkey_byname (PKT_public_key *pk,
 	    {
 	    case AKL_CERT:
 	      glo_ctrl.in_auto_key_retrieve++;
-	      res=keyserver_import_cert(name,&fpr,&fpr_len);
+	      rc=keyserver_import_cert(name,&fpr,&fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 
-	      if(res==0)
+	      if(rc==0)
 		log_info(_("Automatically retrieved `%s' via %s\n"),
 			 name,"DNS CERT");
 	      break;
 
 	    case AKL_PKA:
 	      glo_ctrl.in_auto_key_retrieve++;
-	      res=keyserver_import_pka(name,&fpr,&fpr_len);
+	      rc=keyserver_import_pka(name,&fpr,&fpr_len);
 
-	      if(res==0)
+	      if(rc==0)
 		log_info(_("Automatically retrieved `%s' via %s\n"),
 			 name,"PKA");
 	      break;
 
 	    case AKL_LDAP:
 	      glo_ctrl.in_auto_key_retrieve++;
-	      res=keyserver_import_ldap(name,&fpr,&fpr_len);
+	      rc=keyserver_import_ldap(name,&fpr,&fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 
-	      if(res==0)
+	      if(rc==0)
 		log_info(_("Automatically retrieved `%s' via %s\n"),
 			 name,"LDAP");
 	      break;
@@ -964,10 +963,10 @@ get_pubkey_byname (PKT_public_key *pk,
 	      if(opt.keyserver)
 		{
 		  glo_ctrl.in_auto_key_retrieve++;
-		  res=keyserver_import_name(name,&fpr,&fpr_len,opt.keyserver);
+		  rc=keyserver_import_name(name,&fpr,&fpr_len,opt.keyserver);
 		  glo_ctrl.in_auto_key_retrieve--;
 
-		  if(res==0)
+		  if(rc==0)
 		    log_info(_("Automatically retrieved `%s' via %s\n"),
 			     name,opt.keyserver->uri);
 		}
@@ -979,10 +978,10 @@ get_pubkey_byname (PKT_public_key *pk,
 
 		keyserver=keyserver_match(akl->spec);
 		glo_ctrl.in_auto_key_retrieve++;
-		res=keyserver_import_name(name,&fpr,&fpr_len,keyserver);
+		rc=keyserver_import_name(name,&fpr,&fpr_len,keyserver);
 		glo_ctrl.in_auto_key_retrieve--;
 
-		if(res==0)
+		if(rc==0)
 		  log_info(_("Automatically retrieved `%s' via %s\n"),
 			   name,akl->spec->uri);
 	      }
@@ -996,7 +995,7 @@ get_pubkey_byname (PKT_public_key *pk,
 	     requirement as the URL might point to a key put in by an
 	     attacker.  By forcing the use of the fingerprint, we
 	     won't use the attacker's key here. */
-	  if(res==0 && fpr)
+	  if(rc==0 && fpr)
 	    {
 	      int i;
 	      char fpr_string[MAX_FINGERPRINT_LEN*2+1];
