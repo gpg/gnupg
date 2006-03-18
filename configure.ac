@@ -1,6 +1,6 @@
 dnl configure.ac script for GnuPG
-dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-dnl               2005, 2006 Free Software Foundation, Inc.
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+dnl               2006 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
 dnl
@@ -593,11 +593,27 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns
   # enabling any code that calls it.  At some point I'll rewrite the
   # code to use the BIND 8 resolver API.
 
+  AC_MSG_CHECKING([whether the resolver is usable])
   AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>],
-[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);]])],have_resolver=yes)
+[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);]])],have_resolver=yes,have_resolver=no)
+  AC_MSG_RESULT($have_resolver)
+
+# This is Apple-specific and somewhat bizarre as they changed the
+# define in bind 8 for some reason.
+
+  if test x"$have_resolver" != xyes ; then
+    AC_MSG_CHECKING([whether I can make the resolver usable with BIND_8_COMPAT])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#define BIND_8_COMPAT
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/nameser.h>
+#include <resolv.h>],
+[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);]])],[have_resolver=yes ; need_compat=yes])
+    AC_MSG_RESULT($have_resolver)
+  fi
 
   if test x"$have_resolver" = xyes ; then
      SRVLIBS=$LIBS
@@ -612,6 +628,10 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns
 
      if test x"$use_dns_cert" = xyes ; then
         AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
+     fi
+
+     if test x"$need_compat" = xyes ; then
+        AC_DEFINE(BIND_8_COMPAT,1,[an Appleism])
      fi
   else
      use_dns_srv=no
