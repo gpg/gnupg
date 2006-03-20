@@ -405,6 +405,18 @@ AH_TOP([
 ])
 
 AH_BOTTOM([
+/* We didn't define endianness above, so get it from OS macros.  This
+is intended for making fat binary builds on OS X. */
+#if !defined(BIG_ENDIAN_HOST) && !defined(LITTLE_ENDIAN_HOST)
+#if defined(__BIG_ENDIAN__)
+#define BIG_ENDIAN_HOST 1
+#elif defined(__LITTLE_ENDIAN__)
+#define LITTLE_ENDIAN_HOST 1
+#else
+#error "No endianness found"
+#endif
+#endif
+
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
 #define EXEC_TEMPFILE_ONLY
 #endif
@@ -824,15 +836,11 @@ AC_TYPE_SIGNAL
 AC_DECL_SYS_SIGLIST
 
 AC_ARG_ENABLE(endian-check,
-              AC_HELP_STRING([--disable-endian-check],[disable the endian check and trust the OS provided macros]),
+              AC_HELP_STRING([--disable-endian-check],
+	      [disable the endian check and trust the OS provided macros]),
 	      endiancheck=$enableval,endiancheck=yes)
 
-if test x"$endiancheck" = xno ; then
-   # don't do an endian check so we can build universal ("fat")
-   # binaries on OS X.
-   AC_DEFINE_UNQUOTED(LITTLE_ENDIAN_HOST,__LITTLE_ENDIAN__)
-   AC_DEFINE_UNQUOTED(BIG_ENDIAN_HOST,__BIG_ENDIAN__)
-else
+if test x"$endiancheck" = xyes ; then
    GNUPG_CHECK_ENDIAN
 fi
 
