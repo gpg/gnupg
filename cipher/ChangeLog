@@ -1,3 +1,8 @@
+2006-03-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* blowfish.c, md5.c, rmd160.c, sha1.c, sha256.c, sha512.c: Revert
+	previous change.  It's now all done in configure.
+
 2006-03-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* blowfish.c, md5.c, rmd160.c, sha1.c, sha256.c, sha512.c: Use

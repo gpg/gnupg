@@ -91,7 +91,7 @@ transform( SHA1_CONTEXT *hd, byte *data )
     d = hd->h3;
     e = hd->h4;
 
-#if BIG_ENDIAN_HOST
+#ifdef BIG_ENDIAN_HOST
     memcpy( x, data, 64 );
 #else
     { int i;
@@ -305,7 +305,7 @@ sha1_final(SHA1_CONTEXT *hd)
     burn_stack (88+4*sizeof(void*));
 
     p = hd->buf;
-#if BIG_ENDIAN_HOST
+#ifdef BIG_ENDIAN_HOST
 #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
 #else /* little endian */
 #define X(a) do { *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \
