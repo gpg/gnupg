@@ -1,3 +1,11 @@
+2006-03-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* blowfish.c, md5.c, rmd160.c, sha1.c, sha256.c, sha512.c: Use
+	'#if' rather than '#ifdef' BIG_ENDIAN_HOST.  Harmless as we
+	explicitly define BIG_ENDIAN_HOST to 1 when we need it, but needed
+	for OSX fat builds when we define BIG_ENDIAN_HOST to another
+	macro.
+
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	* random.c (lock_seed_file): Build even when not used.

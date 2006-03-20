@@ -176,7 +176,7 @@ static void
 transform( RMD160_CONTEXT *hd, byte *data )
 {
     u32 a,b,c,d,e,aa,bb,cc,dd,ee,t;
-#ifdef BIG_ENDIAN_HOST
+#if BIG_ENDIAN_HOST
     u32 x[16];
     { int i;
       byte *p2, *p1;
@@ -515,7 +515,7 @@ rmd160_final( RMD160_CONTEXT *hd )
     burn_stack (108+5*sizeof(void*));
 
     p = hd->buf;
-#ifdef BIG_ENDIAN_HOST
+#if BIG_ENDIAN_HOST
 #define X(a) do { *p++ = hd->h##a	   ; *p++ = hd->h##a >> 8;	\
 		      *p++ = hd->h##a >> 16; *p++ = hd->h##a >> 24; } while(0)
 #else /* little endian */
