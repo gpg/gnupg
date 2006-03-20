@@ -823,7 +823,18 @@ AC_TYPE_MODE_T
 AC_TYPE_SIGNAL
 AC_DECL_SYS_SIGLIST
 
-GNUPG_CHECK_ENDIAN
+AC_ARG_ENABLE(endian-check,
+              AC_HELP_STRING([--disable-endian-check],[disable the endian check and trust the OS provided macros]),
+	      endiancheck=$enableval,endiancheck=yes)
+
+if test x"$endiancheck" = xno ; then
+   # don't do an endian check so we can build universal ("fat")
+   # binaries on OS X.
+   AC_DEFINE_UNQUOTED(LITTLE_ENDIAN_HOST,__LITTLE_ENDIAN__)
+   AC_DEFINE_UNQUOTED(BIG_ENDIAN_HOST,__BIG_ENDIAN__)
+else
+   GNUPG_CHECK_ENDIAN
+fi
 
 GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(ushort, HAVE_USHORT_TYPEDEF)

@@ -1,3 +1,10 @@
+2006-03-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add --disable-endian-check for building fat
+	binaries on OSX.
+
+	* README: Add note on how to build a fat binary on OSX.
+
 2006-03-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Allow the DNS stuff to work on OSX by trying the

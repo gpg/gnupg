@@ -47,6 +47,7 @@
 
     Installation
     ------------
+
     Please read the file INSTALL and the sections in this file
     related to the installation.  Here is a quick summary:
 
@@ -74,6 +75,7 @@
 
     How to Verify the Source
     ------------------------
+
     In order to check that the version of GnuPG which you are going to
     install is an original and unmodified one, you can do it in one of
     the following ways:
@@ -141,6 +143,7 @@
 
     Introduction
     ------------
+
     Here is a brief overview on how to use GnuPG - it is strongly suggested
     that you read the manual and other information about the use of
     cryptography.  GnuPG is only a tool, secure usage requires that
@@ -387,7 +390,8 @@
 
 
     8 Ways to Specify a User ID
-    --------------------------
+    ---------=-----------------
+
     There are several ways to specify a user ID, here are some examples.
 
     * Only by the short keyid (prepend a zero if it begins with A..F):
@@ -439,6 +443,7 @@
 
     Batch mode
     ----------
+
     If you use the option "--batch", GnuPG runs in non-interactive mode and
     never prompts for input data.  This does not even allow entering the
     passphrase.  Until we have a better solution (something like ssh-agent),
@@ -451,6 +456,7 @@
 
     Exit status
     -----------
+
     GnuPG returns with an exit status of 1 if in batch mode and a bad signature
     has been detected or 2 or higher for all other errors.  You should parse
     stderr or, better, the output of the fd specified with --status-fd to get
@@ -459,6 +465,7 @@
 
     Configure options 
     -----------------
+
     Here is a list of configure options which are sometime useful 
     for installation.
 
@@ -627,18 +634,10 @@
                     the use of iconv.  Note, that iconv is also
                     disabled if gettext has been disabled.
 
-     --enable-backsigs
-                    Enables "backsigs" support.  This is a currently
-		    experimental solution to a subtle OpenPGP protocol
-		    problem involving signing subkeys.  It is
-		    specified in the 2440bis drafts that will become
-		    the new OpenPGP standard, but is not finalized yet
-		    and has not had interoperability testing.  Use at
-		    your own risk.
-
 
     Installation Problems
     ---------------------
+
     If you get unresolved externals "gettext" you should run configure
     again with the option "--with-included-gettext"; this is version
     0.12.1 which is available at ftp.gnu.org.
@@ -706,6 +705,7 @@
 
          ./configure ac_cv_sys_symbol_underscore=yes
 
+
     The Random Device
     -----------------
 
@@ -722,6 +722,7 @@
 
     Creating an RPM package
     -----------------------
+
     The file scripts/gnupg.spec is used to build a RPM package (both
     binary and src):
       1. copy the spec file into /usr/src/redhat/SPECS
@@ -735,9 +736,23 @@
     rpm in /usr/src/redhat/SRPMS
 
 
+    Building Universal Binaries on Apple OS X
+    -----------------------------------------
+
+    You can build a universal ("fat") binary that will work on both
+    PPC and Intel Macs with something like:
+
+    ./configure CFLAGS="-arch ppc -arch i386" \
+		--disable-dependency-tracking --disable-asm
+
+    If you are doing the build on a OS X 10.4 (Tiger) PPC machine you
+    may need to add "-isysroot /Developer/SDKs/MacOSX10.4u.sdk" to
+    those CFLAGS.
+
 
     GnuPG 1.4 and GnuPG 1.9
     -----------------------
+
     GnuPG 1.4 is the stable version of GnuPG; GnuPG 1.9 is the
     development branch.  However, large parts of GnuPG 1.9 are also
     considered to be stable and useful.  In particular the tools
@@ -746,7 +761,6 @@
     packages (1.4.x and 1.9.x) may be installed at the same time and
     it is actually suggested to do this if you need S/MIME support or
     want to make use of gpg-agent.
-
 
 
     How to Get More Information
