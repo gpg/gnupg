@@ -444,7 +444,14 @@ hex notation.  The actual signing is done using the command
 @end example
 
 where @var{keyid} is the hexified ID of the key to be used.  The key id
-may have been retrieved using the command @code{LEARN}.
+may have been retrieved using the command @code{LEARN}.  If another
+hash algorithm than SHA-1 is used, that algorithm may be given like:
+
+@example
+  PKSIGN --hash=@var{algoname} @var{keyid}
+@end example
+
+With @var{algoname} are one of @code{sha1}, @code{rmd160} or @code{md5}.
 
 
 @node Scdaemon PKDECRYPT

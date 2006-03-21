@@ -11,6 +11,8 @@ Noteworthy changes in version 1.9.21
  * [gpgsm] Kludge to allow use of Bundesnetzagentur issued
    certificates.
 
+ * [scdaemon] Added --hash=xxx option to the PKSIGN command.
+
 
 Noteworthy changes in version 1.9.20 (2005-12-20)
 -------------------------------------------------

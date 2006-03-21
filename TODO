@@ -3,6 +3,7 @@
 * src/base64
 ** Make parsing more robust
 Currently we don't cope with overlong lines in the best way.
+** Check that we really release the ksba reader/writer objects.
 
 * sm/call-agent.c
 ** The protocol uses an incomplete S-expression

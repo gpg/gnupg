@@ -708,7 +708,9 @@ pin_cb (void *opaque, const char *info, char **retstr)
 }
 
 
-/* PKSIGN <hexified_id>
+/* PKSIGN [--hash=[rmd160|sha1|md5]] <hexified_id>
+
+   The --hash option is optional; the default is SHA1.
 
  */
 static int
@@ -719,6 +721,26 @@ cmd_pksign (assuan_context_t ctx, char *line)
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
+  int hash_algo;
+
+  if (has_option (line, "--hash=rmd160"))
+    hash_algo = GCRY_MD_RMD160;
+  else if (has_option (line, "--hash=sha1"))
+    hash_algo = GCRY_MD_SHA1;
+  else if (has_option (line, "--hash=md5"))
+    hash_algo = GCRY_MD_MD5;
+  else if (!strstr (line, "--"))
+    hash_algo = GCRY_MD_SHA1; 
+  else
+    return set_error (Parameter_Error, "invalid hash algorithm");
+  /* Skip over options. */
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -734,7 +756,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
     return ASSUAN_Out_Of_Core;
   
   rc = app_sign (ctrl->app_ctx,
-                 keyidstr, GCRY_MD_SHA1,
+                 keyidstr, hash_algo,
                  pin_cb, ctx,
                  ctrl->in_data.value, ctrl->in_data.valuelen,
                  &outdata, &outdatalen);
@@ -777,7 +799,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   if (!ctrl->app_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
-  /* We have to use a copy of the key ID because the function may use
+ /* We have to use a copy of the key ID because the function may use
      the pin_cb which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid */
   keyidstr = xtrystrdup (line);
