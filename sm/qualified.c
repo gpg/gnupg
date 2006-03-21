@@ -145,16 +145,21 @@ read_list (char *key, char *country, int *lnr)
    per user because it is not a decision of the user. 
 
    Returns: 0 if the certificate is included.  GPG_ERR_NOT_FOUND if it
-   is not in the liost or any other error (e.g. if no list of
-   qualified signatures is available. */
+   is not in the list or any other error (e.g. if no list of
+   qualified signatures is available.  If COUNTRY has not been passed
+   as NULL a string witha maximum length of 2 will be copied into it;
+   thus the caller needs to provide a buffer of length 3. */
 gpg_error_t
-gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert)
+gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert, char *country)
 {
   gpg_error_t err;
   char *fpr;
   char key[41];
-  char country[2];
+  char mycountry[3];
   int lnr = 0;
+
+  if (country)
+    *country = 0;
 
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   if (!fpr)
@@ -162,13 +167,16 @@ gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert)
 
   if (listfp)
     rewind (listfp);
-  while (!(err = read_list (key, country, &lnr)))
+  while (!(err = read_list (key, mycountry, &lnr)))
     {
       if (!strcmp (key, fpr))
         break;
     }
   if (gpg_err_code (err) == GPG_ERR_EOF)
     err = gpg_error (GPG_ERR_NOT_FOUND);
+
+  if (!err && country)
+    strcpy (country, mycountry);
 
   xfree (fpr);
   return err;

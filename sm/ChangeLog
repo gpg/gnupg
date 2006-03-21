@@ -1,3 +1,12 @@
+2006-03-21  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (get_regtp_ca_info): New.
+	(allowed_ca): Use it.
+
+2006-03-20  Werner Koch  <wk@g10code.com>
+
+	* qualified.c (gpgsm_is_in_qualified_list): New optional arg COUNTRY.
+
 2006-02-17  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c (start_dirmngr): Print name of dirmngr to be started.

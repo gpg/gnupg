@@ -296,7 +296,8 @@ int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);
 int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp);
 
 /*-- qualified.c --*/
-gpg_error_t gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert);
+gpg_error_t gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert,
+                                        char *country);
 gpg_error_t gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert);
 gpg_error_t gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert);
 

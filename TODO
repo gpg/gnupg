@@ -18,7 +18,9 @@ might want to have an agent context for each service request
 
 * sm/certchain.c
 ** When a certificate chain was sucessfully verified, make ephemeral certs used  in this chain permanent.
-
+** Try to keep certificate references somewhere
+  This will help with some of our caching code.  We also need to test
+  that cachining; in particular "regtp_ca_chainlen".
 
 * sm/decrypt.c
 ** replace leading zero in integer hack by a cleaner solution
