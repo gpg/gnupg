@@ -1,3 +1,8 @@
+2006-03-21  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (agent_scd_pksign): Allow the use of ripemd-160 along
+	with scdaemon.
+
 2006-03-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_import_cert): Handle the IPGP CERT type
@@ -35,6 +40,10 @@
 	* keyedit.c (menu_backsign): Small tweak to work properly with
 	keys originally generated with older GnuPGs that included comments
 	in the secret keys.
+
+2006-03-10  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (get_manufacturer): Added Vendor 3
 
 2006-03-09  David Shaw  <dshaw@jabberwocky.com>
 

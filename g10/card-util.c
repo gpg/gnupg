@@ -158,6 +158,7 @@ get_manufacturer (unsigned int no)
     case 0xffff: return "test card";
     case 0x0001: return "PPC Card Systems";
     case 0x0002: return "Prism";
+    case 0x0003: return "OpenFortress";
     default: return "unknown";
     }
 }
