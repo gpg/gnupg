@@ -445,8 +445,8 @@ idea_cipher_warn(int show)
   if(!warned || show)
     {
       log_info(_("the IDEA cipher plugin is not present\n"));
-      log_info(_("please see http://www.gnupg.org/why-not-idea.html "
-		 "for more information\n"));
+      log_info(_("please see %s for more information\n"),
+               "http://www.gnupg.org/faq/why-not-idea.html");
       warned=1;
     }
 }
