@@ -1,3 +1,8 @@
+2006-03-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (get_pka_address): Fix bug introduced as part of
+	sig_to_notation conversion.  Noted by Peter Palfradrer.
+
 2006-03-21  Werner Koch  <wk@g10code.com>
 
 	* cardglue.c (agent_scd_pksign): Allow the use of ripemd-160 along

@@ -1347,7 +1347,7 @@ get_pka_address (PKT_signature *sig)
       /* For now we only use the first valid PKA notation. In future
 	 we might want to keep additional PKA notations in a linked
 	 list. */
-      if (is_valid_mailbox (pka->email))
+      if (is_valid_mailbox (nd->value))
 	{
 	  pka = xmalloc (sizeof *pka + strlen(nd->value));
 	  pka->valid = 0;
