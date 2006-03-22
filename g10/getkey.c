@@ -2934,6 +2934,7 @@ parse_auto_key_locate(char *options)
   while((tok=optsep(&options)))
     {
       struct akl *akl,*last;
+      int dupe=0;
 
       if(tok[0]=='\0')
 	continue;
@@ -2969,15 +2970,19 @@ parse_auto_key_locate(char *options)
 		 || (akl->type==AKL_SPEC
 		     && strcmp(last->spec->uri,akl->spec->uri)==0)))
 	    {
+	      dupe=1;
 	      free_akl(akl);
-	      return 0;
+	      break;
 	    }
 	}
 
-      if(last)
-	last->next=akl;
-      else
-	opt.auto_key_locate=akl;
+      if(!dupe)
+	{
+	  if(last)
+	    last->next=akl;
+	  else
+	    opt.auto_key_locate=akl;
+	}
     }
 
   return 1;
