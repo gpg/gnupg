@@ -1,3 +1,7 @@
+2006-03-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* README: Missing some instructions on building a fat binary.
+
 2006-03-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Improved --disable-endian-check that doesn't

@@ -742,7 +742,7 @@
     You can build a universal ("fat") binary that will work on both
     PPC and Intel Macs with something like:
 
-    ./configure CFLAGS="-arch ppc -arch i386" \
+    ./configure CFLAGS="-arch ppc -arch i386" --disable-endian-check \
 		--disable-dependency-tracking --disable-asm
 
     If you are doing the build on a OS X 10.4 (Tiger) PPC machine you
