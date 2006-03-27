@@ -1,3 +1,9 @@
+2006-03-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: #define LDAP_DEPRECATED for newer OpenLDAPs so
+	they use the regular old API that is compatible with other LDAP
+	libraries.
+
 2006-03-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (main): Fix build problem with non-OpenLDAP LDAP

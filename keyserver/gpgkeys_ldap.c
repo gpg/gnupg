@@ -37,6 +37,8 @@
 #ifdef NEED_LBER_H
 #include <lber.h>
 #endif
+/* For OpenLDAP, to enable the API that we're using. */
+#define LDAP_DEPRECATED 1
 #include <ldap.h>
 #endif
 
