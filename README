@@ -747,7 +747,10 @@
 
     If you are doing the build on a OS X 10.4 (Tiger) PPC machine you
     may need to add "-isysroot /Developer/SDKs/MacOSX10.4u.sdk" to
-    those CFLAGS.
+    those CFLAGS.  Note that any third-party libraries you may link
+    with need to be universal as well.  All Apple-supplied libraries
+    (even libraries not originally written by Apple like curl, zip,
+    and BZ2) are universal.
 
 
     GnuPG 1.4 and GnuPG 1.9
