@@ -203,8 +203,8 @@ void try_make_homedir( const char *fname );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
-MPI encode_md_value( int pubkey_algo, MD_HANDLE md,
-		     int hash_algo, unsigned nbits );
+MPI encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
+		     MD_HANDLE md, int hash_algo );
 
 /*-- import.c --*/
 int parse_import_options(char *str,unsigned int *options,int noisy);

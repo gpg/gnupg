@@ -274,8 +274,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     }
     md_final( digest );
 
-    result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
-			      mpi_get_nbits(pk->pkey[0]) );
+    result = encode_md_value( pk, NULL, digest, sig->digest_algo );
     if (!result)
         return G10ERR_GENERAL;
     ctx.sig = sig;

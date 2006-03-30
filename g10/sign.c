@@ -319,8 +319,17 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
       }
     else 
       {
-        frame = encode_md_value( sk->pubkey_algo, md,
-                                 digest_algo, mpi_get_nbits(sk->skey[0]) );
+	/* TODO: remove this check in the future once all the
+	   variable-q DSA stuff makes it into the standard. */
+	if(!opt.expert
+	   && sk->pubkey_algo==PUBKEY_ALGO_DSA
+	   && md_digest_length(digest_algo)!=20)
+	  {
+	    log_error(_("DSA requires the use of a 160 bit hash algorithm\n"));
+	    return G10ERR_GENERAL;
+	  }
+
+        frame = encode_md_value( NULL, sk, md, digest_algo );
         if (!frame)
           return G10ERR_GENERAL;
         rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
@@ -336,9 +345,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         if( get_pubkey( pk, sig->keyid ) )
             rc = G10ERR_NO_PUBKEY;
         else {
-            frame = encode_md_value (pk->pubkey_algo, md,
-                                     sig->digest_algo,
-                                     mpi_get_nbits(pk->pkey[0]) );
+	    frame = encode_md_value (pk, NULL, md, sig->digest_algo );
             if (!frame)
                 rc = G10ERR_GENERAL;
             else

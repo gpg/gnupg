@@ -195,36 +195,76 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 
 /****************
  * Encode a message digest into an MPI.
- * v3compathack is used to work around a bug in old GnuPG versions
- * which did put the algo identifier inseatd of the block type 1 into
- * the encoded value.  Setting this flag forces the old behaviour.
+ * If it's for a DSA signature, make sure that the hash is large
+ * enough to fill up q.  If the hash is too big, take the leftmost
+ * bits.
  */
 MPI
-encode_md_value( int pubkey_algo, MD_HANDLE md,
-		 int hash_algo, unsigned nbits )
+encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
+		 MD_HANDLE md, int hash_algo )
 {
-    int algo = hash_algo? hash_algo : md_get_algo(md);
-    const byte *asn;
-    size_t asnlen, mdlen;
-    MPI frame;
+  MPI frame;
 
-    if( pubkey_algo == PUBKEY_ALGO_DSA ) {
-        mdlen = md_digest_length (hash_algo);
-        if (mdlen != 20) {
-            log_error (_("DSA requires the use of a 160 bit hash algorithm\n"));
-            return NULL;
-        }
+  assert(hash_algo);
+  assert(pk || sk);
 
-	frame = md_is_secure(md)? mpi_alloc_secure((md_digest_length(hash_algo)
-				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
-				: mpi_alloc((md_digest_length(hash_algo)
-				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
-	mpi_set_buffer( frame, md_read(md, hash_algo),
-			       md_digest_length(hash_algo), 0 );
+  if((pk?pk->pubkey_algo:sk->pubkey_algo) == PUBKEY_ALGO_DSA)
+    {
+      /* It's a DSA signature, so find out the size of q. */
+
+      unsigned int qbytes=mpi_get_nbits(pk?pk->pkey[1]:sk->skey[1]);
+
+      /* Make sure it is a multiple of 8 bits. */
+
+      if(qbytes%8)
+	{
+	  log_error(_("DSA requires the hash length to be a"
+		      " multiple of 8 bits\n"));
+	  return NULL;
+	}
+
+      /* Don't allow any q smaller than 160 bits.  This might need a
+	 revisit as the DSA2 design firms up, but for now, we don't
+	 want someone to issue signatures from a key with a 16-bit q
+	 or something like that, which would look correct but allow
+	 trivial forgeries.  Yes, I know this rules out using MD5 with
+	 DSA. ;) */
+
+      if(qbytes<160)
+	{
+	  log_error(_("DSA key %s uses an unsafe (%u bit) hash\n"),
+		    pk?keystr_from_pk(pk):keystr_from_sk(sk),qbytes);
+	  return NULL;
+	}
+
+      qbytes/=8;
+
+      /* Check if we're too short.  Too long is safe as we'll
+	 automatically left-truncate. */
+
+      if(md_digest_length(hash_algo) < qbytes)
+	{
+	  log_error(_("DSA key %s requires a %u bit or larger hash\n"),
+		    pk?keystr_from_pk(pk):keystr_from_sk(sk),qbytes*8);
+	  return NULL;
+	}
+
+      frame = md_is_secure(md)? mpi_alloc_secure((qbytes+BYTES_PER_MPI_LIMB-1)
+						 / BYTES_PER_MPI_LIMB )
+	: mpi_alloc((qbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+
+      mpi_set_buffer( frame, md_read(md, hash_algo), qbytes, 0 );
     }
-    else {
-       asn = md_asn_oid( algo, &asnlen, &mdlen );
-       frame = do_encode_md( md, algo, mdlen, nbits, asn, asnlen );
+  else
+    {
+      const byte *asn;
+      size_t asnlen,mdlen;
+
+      asn = md_asn_oid( hash_algo, &asnlen, &mdlen );
+      frame = do_encode_md( md, hash_algo, mdlen,
+			    mpi_get_nbits(pk?pk->pkey[0]:sk->skey[0]),
+			    asn, asnlen );
     }
-    return frame;
+
+  return frame;
 }

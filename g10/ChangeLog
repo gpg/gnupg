@@ -1,3 +1,16 @@
+2006-03-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, seskey.c (encode_md_value): Modify to allow a q size
+	greater than 160 bits as per DSA2.  This will allow us to verify
+	and issue DSA2 signatures for some backwards compatibility once we
+	start generating DSA2 keys.	
+	* sign.c (do_sign), sig-check.c (do_check): Change all callers.
+
+	* sign.c (do_sign): Enforce the 160-bit check for new signatures
+	here since encode_md_value can handle non-160-bit digests now.
+	This will need to come out once the standard for DSA2 is firmed
+	up.
+
 2006-03-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (parse_auto_key_locate): Silently strip out duplicates
