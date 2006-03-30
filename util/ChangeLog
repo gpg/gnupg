@@ -1,3 +1,7 @@
+2006-03-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* cert.c (main): Fix test program build warning on OSX.
+
 2006-03-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* cert.c (get_cert): Handle the fixed IPGP type with fingerprint.

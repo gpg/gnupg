@@ -221,7 +221,7 @@ main(int argc,char *argv[])
     printf("no answer\n");
   else if(rc==1)
     {
-      printf("key found: %d bytes\n",iobuf_get_temp_length(iobuf));
+      printf("key found: %d bytes\n",(int)iobuf_get_temp_length(iobuf));
       iobuf_close(iobuf);
     }
   else if(rc==2)
@@ -229,7 +229,7 @@ main(int argc,char *argv[])
       if(fpr)
 	{
 	  size_t i;
-	  printf("Fingerprint found (%d bytes): ",fpr_len);
+	  printf("Fingerprint found (%d bytes): ",(int)fpr_len);
 	  for(i=0;i<fpr_len;i++)
 	    printf("%02X",fpr[i]);
 	  printf("\n");
