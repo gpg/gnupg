@@ -2321,7 +2321,7 @@ static gpg_error_t
 ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
 {
   gpg_error_t err;
-  unsigned char key_grip_raw[21];
+  unsigned char key_grip_raw[20];
   char key_grip[41];
   unsigned char *buffer = NULL;
   unsigned int buffer_n;
@@ -2333,8 +2333,6 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   err = ssh_key_grip (key, key_grip_raw);
   if (err)
     goto out;
-
-  key_grip_raw[sizeof (key_grip_raw) - 1] = 0; /* FIXME:  Why?? */
 
   /* Check whether the key is already in our key storage.  Don't do
      anything then.  */

@@ -1,3 +1,9 @@
+2006-04-01  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_identity_register): Make KEY_GRIP_RAW be 20
+	instead of 21 bytes long; do not fill KEY_GRIP_RAW[20] with NUL
+	byte - KEY_GRIP_RAW is a raw binary string anyway.
+
 2006-02-09  Werner Koch  <wk@g10code.com>
 
 	* call-scd.c (struct scd_local_s): New field next_local.
