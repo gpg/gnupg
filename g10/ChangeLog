@@ -1,3 +1,9 @@
+2006-03-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (get_pubkey_byname): Fix missing auto_key_retrieve
+	unlock.  Fix strings to not start with a capital letter as per
+	convention.
+
 2006-03-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, seskey.c (encode_md_value): Modify to allow a q size

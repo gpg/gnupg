@@ -932,16 +932,17 @@ get_pubkey_byname (PKT_public_key *pk,
 	      glo_ctrl.in_auto_key_retrieve--;
 
 	      if(rc==0)
-		log_info(_("Automatically retrieved `%s' via %s\n"),
+		log_info(_("automatically retrieved `%s' via %s\n"),
 			 name,"DNS CERT");
 	      break;
 
 	    case AKL_PKA:
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc=keyserver_import_pka(name,&fpr,&fpr_len);
+	      glo_ctrl.in_auto_key_retrieve--;
 
 	      if(rc==0)
-		log_info(_("Automatically retrieved `%s' via %s\n"),
+		log_info(_("automatically retrieved `%s' via %s\n"),
 			 name,"PKA");
 	      break;
 
@@ -951,7 +952,7 @@ get_pubkey_byname (PKT_public_key *pk,
 	      glo_ctrl.in_auto_key_retrieve--;
 
 	      if(rc==0)
-		log_info(_("Automatically retrieved `%s' via %s\n"),
+		log_info(_("automatically retrieved `%s' via %s\n"),
 			 name,"LDAP");
 	      break;
 
@@ -967,7 +968,7 @@ get_pubkey_byname (PKT_public_key *pk,
 		  glo_ctrl.in_auto_key_retrieve--;
 
 		  if(rc==0)
-		    log_info(_("Automatically retrieved `%s' via %s\n"),
+		    log_info(_("automatically retrieved `%s' via %s\n"),
 			     name,opt.keyserver->uri);
 		}
 	      break;
@@ -982,7 +983,7 @@ get_pubkey_byname (PKT_public_key *pk,
 		glo_ctrl.in_auto_key_retrieve--;
 
 		if(rc==0)
-		  log_info(_("Automatically retrieved `%s' via %s\n"),
+		  log_info(_("automatically retrieved `%s' via %s\n"),
 			   name,akl->spec->uri);
 	      }
 	      break;
