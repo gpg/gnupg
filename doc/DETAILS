@@ -422,6 +422,11 @@ more arguments in future versions.
     END_ENCRYPTION
 	Mark the start and end of the actual encryption process.
 
+    BEGIN_SIGNING
+       Mark the start of the actual signing process. This may be used
+       as an indication that all requested secret keys are ready for
+       use.
+
     DELETE_PROBLEM reason_code
 	Deleting a key failed.	Reason codes are:
 	    1 - No such key

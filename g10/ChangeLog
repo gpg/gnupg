@@ -1,3 +1,15 @@
+2006-04-03  Werner Koch  <wk@g10code.com>
+
+	* import.c (check_prefs_warning): Merged strings for better
+	translation.
+
+	* gpg.c (main) [__GLIBC__]: Default to libpcsclite.so.1.
+
+	* status.h, status.c (STATUS_BEGIN_SIGNING): New.  Suggested by
+	Daiki Ueno.
+	* textfilter.c (copy_clearsig_text): Issue new status code.
+	* sign.c (sign_file, sign_symencrypt_file): Ditto.
+
 2006-03-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (get_pubkey_byname): Fix missing auto_key_retrieve
@@ -16,6 +28,11 @@
 	here since encode_md_value can handle non-160-bit digests now.
 	This will need to come out once the standard for DSA2 is firmed
 	up.
+
+2006-03-28  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (overwrite_filep): Fix small cpr issue.  Noted by
+	Daiki Ueno.
 
 2006-03-22  David Shaw  <dshaw@jabberwocky.com>
 

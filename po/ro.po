@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-03-09 13:31+0100\n"
+"POT-Creation-Date: 2006-04-03 11:40+0200\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -42,12 +42,12 @@ msgstr "nu pot încuia (lock) `%s'\n"
 msgid "waiting for lock on `%s'...\n"
 msgstr "scriu cheia secretã în `%s'\n"
 
-#: cipher/random.c:448 g10/card-util.c:677 g10/card-util.c:746
+#: cipher/random.c:448 g10/card-util.c:678 g10/card-util.c:747
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:488
-#: g10/gpg.c:997 g10/gpg.c:3363 g10/import.c:193 g10/keygen.c:2323
-#: g10/keyring.c:1525 g10/openfile.c:184 g10/openfile.c:340
-#: g10/plaintext.c:482 g10/sign.c:772 g10/sign.c:932 g10/sign.c:1045
-#: g10/sign.c:1195 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
+#: g10/gpg.c:997 g10/gpg.c:3365 g10/import.c:195 g10/keygen.c:2323
+#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:342
+#: g10/plaintext.c:482 g10/sign.c:779 g10/sign.c:941 g10/sign.c:1054
+#: g10/sign.c:1204 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
 #, c-format
 msgid "can't open `%s': %s\n"
@@ -83,8 +83,8 @@ msgid "note: random_seed file not updated\n"
 msgstr "notã: fiºierul random_seed nu a fost actualizat\n"
 
 #: cipher/random.c:544 g10/exec.c:478 g10/gpg.c:996 g10/keygen.c:2802
-#: g10/keygen.c:2832 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:261
-#: g10/openfile.c:355 g10/sign.c:790 g10/sign.c:1061 g10/tdbio.c:536
+#: g10/keygen.c:2832 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:263
+#: g10/openfile.c:357 g10/sign.c:797 g10/sign.c:1070 g10/tdbio.c:536
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "nu pot crea `%s': %s\n"
@@ -385,7 +385,7 @@ msgstr ""
 "caracter printabil în ghilimele în armurã - probabil a fost folosit un MTA "
 "cu bug-uri\n"
 
-#: g10/card-util.c:63 g10/card-util.c:305
+#: g10/card-util.c:63 g10/card-util.c:306
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "cardul OpenPGP nu e disponibil: %s\n"
@@ -395,153 +395,153 @@ msgstr "cardul OpenPGP nu e disponibil: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "cardul OpenPGP nr. %s detectat\n"
 
-#: g10/card-util.c:76 g10/card-util.c:1405 g10/delkey.c:128 g10/keyedit.c:1524
+#: g10/card-util.c:76 g10/card-util.c:1406 g10/delkey.c:128 g10/keyedit.c:1524
 #: g10/keygen.c:2507 g10/revoke.c:218 g10/revoke.c:456
 msgid "can't do this in batch mode\n"
 msgstr "nu pot face acest lucru în modul batch\n"
 
-#: g10/card-util.c:103 g10/card-util.c:1131 g10/card-util.c:1214
+#: g10/card-util.c:103 g10/card-util.c:1132 g10/card-util.c:1215
 #: g10/keyedit.c:425 g10/keyedit.c:446 g10/keyedit.c:460 g10/keygen.c:1339
 #: g10/keygen.c:1406
 msgid "Your selection? "
 msgstr "Selecþia d-voastrã? "
 
-#: g10/card-util.c:215 g10/card-util.c:265
+#: g10/card-util.c:216 g10/card-util.c:266
 msgid "[not set]"
 msgstr "[nesetat(ã)]"
 
-#: g10/card-util.c:412
+#: g10/card-util.c:413
 msgid "male"
 msgstr "masculin"
 
-#: g10/card-util.c:413
+#: g10/card-util.c:414
 msgid "female"
 msgstr "feminin"
 
-#: g10/card-util.c:413
+#: g10/card-util.c:414
 msgid "unspecified"
 msgstr "nespecificat(ã)"
 
-#: g10/card-util.c:440
+#: g10/card-util.c:441
 msgid "not forced"
 msgstr "neforþat(ã)"
 
-#: g10/card-util.c:440
+#: g10/card-util.c:441
 msgid "forced"
 msgstr "forþat(ã)"
 
-#: g10/card-util.c:518
+#: g10/card-util.c:519
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Eroare: Deocamdatã sunt permise numai caractere ASCII.\n"
 
-#: g10/card-util.c:520
+#: g10/card-util.c:521
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "Eroare: Caracterul \"<\" nu poate fi folosit.\n"
 
-#: g10/card-util.c:522
+#: g10/card-util.c:523
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "Eroare: Spaþiile duble nu sunt permise.\n"
 
-#: g10/card-util.c:539
+#: g10/card-util.c:540
 msgid "Cardholder's surname: "
 msgstr "Numele de familie al proprietarului cardului: "
 
-#: g10/card-util.c:541
+#: g10/card-util.c:542
 msgid "Cardholder's given name: "
 msgstr "Prenumele proprietarului cardului: "
 
-#: g10/card-util.c:559
+#: g10/card-util.c:560
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr "Eroare: Nume combinat prea lung (limita este de %d caractere).\n"
 
-#: g10/card-util.c:580
+#: g10/card-util.c:581
 msgid "URL to retrieve public key: "
 msgstr "URL pentru a aduce cheia publicã: "
 
-#: g10/card-util.c:588
+#: g10/card-util.c:589
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Eroare: URL prea lung (limita este de %d caractere).\n"
 
-#: g10/card-util.c:686 g10/card-util.c:755 g10/import.c:276
+#: g10/card-util.c:687 g10/card-util.c:756 g10/import.c:280
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
-#: g10/card-util.c:694
+#: g10/card-util.c:695
 msgid "Login data (account name): "
 msgstr "Date login (nume cont): "
 
-#: g10/card-util.c:704
+#: g10/card-util.c:705
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "Eroare: datele de login prea lungi (limita este de %d caractere).\n"
 
-#: g10/card-util.c:763
+#: g10/card-util.c:764
 msgid "Private DO data: "
 msgstr "Date DO personale: "
 
-#: g10/card-util.c:773
+#: g10/card-util.c:774
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "Eroare DO personal pre lung (limita este de %d caractere).\n"
 
-#: g10/card-util.c:793
+#: g10/card-util.c:794
 msgid "Language preferences: "
 msgstr "Preferinþe limbã: "
 
-#: g10/card-util.c:801
+#: g10/card-util.c:802
 msgid "Error: invalid length of preference string.\n"
 msgstr "Eroare: lungime invalidã pentru ºir preferinþe.\n"
 
-#: g10/card-util.c:810
+#: g10/card-util.c:811
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Eroare: caractere invalide în ºir preferinþe.\n"
 
-#: g10/card-util.c:831
+#: g10/card-util.c:832
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "Sex ((M)asculin, (F)eminin sau spaþiu): "
 
-#: g10/card-util.c:845
+#: g10/card-util.c:846
 msgid "Error: invalid response.\n"
 msgstr "Eroare: rãspuns invalid.\n"
 
-#: g10/card-util.c:866
+#: g10/card-util.c:867
 msgid "CA fingerprint: "
 msgstr "Amprenta CA: "
 
-#: g10/card-util.c:889
+#: g10/card-util.c:890
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "Eroare: amprentã formatatã invalid.\n"
 
-#: g10/card-util.c:937
+#: g10/card-util.c:938
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "operaþia pe cheie nu e posibilã: %s\n"
 
-#: g10/card-util.c:938
+#: g10/card-util.c:939
 msgid "not an OpenPGP card"
 msgstr "nu este un card OpenPGP"
 
-#: g10/card-util.c:947
+#: g10/card-util.c:948
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "eroare la obþinerea informaþiei pentru cheia curentã: %s\n"
 
-#: g10/card-util.c:1032
+#: g10/card-util.c:1033
 msgid "Replace existing key? (y/N) "
 msgstr "Înlocuiesc cheia existentã? (d/N) "
 
-#: g10/card-util.c:1053 g10/card-util.c:1062
+#: g10/card-util.c:1054 g10/card-util.c:1063
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Creez copie de rezervã a cheii de cifrare în afara cardului? (d/N) "
 
-#: g10/card-util.c:1074
+#: g10/card-util.c:1075
 msgid "Replace existing keys? (y/N) "
 msgstr "Înlocuiesc cheile existente? (d/N) "
 
-#: g10/card-util.c:1083
+#: g10/card-util.c:1084
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -552,120 +552,120 @@ msgstr ""
 "   PIN = `%s'     PIN Admin = `%s'\n"
 "Ar trebui sã le schimbaþi folosind comanda --change-pin\n"
 
-#: g10/card-util.c:1122
+#: g10/card-util.c:1123
 msgid "Please select the type of key to generate:\n"
 msgstr "Vã rugãm selectaþi tipul de cheie de generat:\n"
 
-#: g10/card-util.c:1124 g10/card-util.c:1205
+#: g10/card-util.c:1125 g10/card-util.c:1206
 msgid "   (1) Signature key\n"
 msgstr "   (1) Cheie de semnare\n"
 
-#: g10/card-util.c:1125 g10/card-util.c:1207
+#: g10/card-util.c:1126 g10/card-util.c:1208
 msgid "   (2) Encryption key\n"
 msgstr "   (2) Cheie de cifrare\n"
 
-#: g10/card-util.c:1126 g10/card-util.c:1209
+#: g10/card-util.c:1127 g10/card-util.c:1210
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Cheie de autentificare\n"
 
-#: g10/card-util.c:1142 g10/card-util.c:1225 g10/keyedit.c:946
+#: g10/card-util.c:1143 g10/card-util.c:1226 g10/keyedit.c:946
 #: g10/keygen.c:1343 g10/keygen.c:1371 g10/keygen.c:1445 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Selecþie invalidã.\n"
 
-#: g10/card-util.c:1202
+#: g10/card-util.c:1203
 msgid "Please select where to store the key:\n"
 msgstr "Vã rugãm selectaþi unde sã fie stocatã cheia:\n"
 
-#: g10/card-util.c:1237
+#: g10/card-util.c:1238
 msgid "unknown key protection algorithm\n"
 msgstr "algoritm de protecþie a cheii necunoscut\n"
 
-#: g10/card-util.c:1242
+#: g10/card-util.c:1243
 msgid "secret parts of key are not available\n"
 msgstr "pãrþi secrete ale cheii nu sunt disponibile\n"
 
-#: g10/card-util.c:1247
+#: g10/card-util.c:1248
 msgid "secret key already stored on a card\n"
 msgstr "cheia secretã deja stocatã pe un card\n"
 
-#: g10/card-util.c:1318 g10/keyedit.c:1357
+#: g10/card-util.c:1319 g10/keyedit.c:1357
 msgid "quit this menu"
 msgstr "ieºi din acest meniu"
 
-#: g10/card-util.c:1320
+#: g10/card-util.c:1321
 msgid "show admin commands"
 msgstr "aratã comenzi administrare"
 
-#: g10/card-util.c:1321 g10/keyedit.c:1360
+#: g10/card-util.c:1322 g10/keyedit.c:1360
 msgid "show this help"
 msgstr "afiºeazã acest mesaj"
 
-#: g10/card-util.c:1323
+#: g10/card-util.c:1324
 msgid "list all available data"
 msgstr "afiºeazã toate datele disponibile"
 
-#: g10/card-util.c:1326
+#: g10/card-util.c:1327
 msgid "change card holder's name"
 msgstr "schimbã numele purtãtorului cardului"
 
-#: g10/card-util.c:1327
+#: g10/card-util.c:1328
 msgid "change URL to retrieve key"
 msgstr "schimbã URL-ul de unde sã fie adusã cheia"
 
-#: g10/card-util.c:1328
+#: g10/card-util.c:1329
 msgid "fetch the key specified in the card URL"
 msgstr "adu cheia specificatã de URL-ul de pe card"
 
-#: g10/card-util.c:1329
+#: g10/card-util.c:1330
 msgid "change the login name"
 msgstr "schimbã numele de login"
 
-#: g10/card-util.c:1330
+#: g10/card-util.c:1331
 msgid "change the language preferences"
 msgstr "schimbã preferinþele de limbã"
 
-#: g10/card-util.c:1331
+#: g10/card-util.c:1332
 msgid "change card holder's sex"
 msgstr "schimbã sexul purtãtorului cardului"
 
-#: g10/card-util.c:1332
+#: g10/card-util.c:1333
 msgid "change a CA fingerprint"
 msgstr "schimbã o amprentã CA"
 
-#: g10/card-util.c:1333
+#: g10/card-util.c:1334
 msgid "toggle the signature force PIN flag"
 msgstr "comutã fanionul PIN de forþare a semnãturii"
 
-#: g10/card-util.c:1334
+#: g10/card-util.c:1335
 msgid "generate new keys"
 msgstr "genereazã noi chei"
 
-#: g10/card-util.c:1335
+#: g10/card-util.c:1336
 msgid "menu to change or unblock the PIN"
 msgstr "meniu pentru a schimba sau debloca PIN-ul"
 
-#: g10/card-util.c:1336
+#: g10/card-util.c:1337
 msgid "verify the PIN and list all data"
 msgstr "verificã PIN-ul ºi listeazã toate datele"
 
-#: g10/card-util.c:1456 g10/keyedit.c:1623
+#: g10/card-util.c:1457 g10/keyedit.c:1623
 msgid "Command> "
 msgstr "Comandã> "
 
-#: g10/card-util.c:1494
+#: g10/card-util.c:1495
 msgid "Admin-only command\n"
 msgstr "Comandã numai-administrare\n"
 
-#: g10/card-util.c:1525
+#: g10/card-util.c:1526
 msgid "Admin commands are allowed\n"
 msgstr "Sunt permise comenzi administrare\n"
 
-#: g10/card-util.c:1527
+#: g10/card-util.c:1528
 msgid "Admin commands are not allowed\n"
 msgstr "Nu sunt permise comenzi administrare\n"
 
-#: g10/card-util.c:1601 g10/keyedit.c:2244
+#: g10/card-util.c:1602 g10/keyedit.c:2244
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comandã invalidã  (încercaþi \"ajutor\")\n"
 
@@ -712,7 +712,7 @@ msgstr "Repetaþi acest PIN: "
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN-ul nu a fost repetat corect; mai încercaþi o datã"
 
-#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3723 g10/keyring.c:377
+#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3725 g10/keyring.c:377
 #: g10/keyring.c:663 g10/verify.c:102 g10/verify.c:157
 #, c-format
 msgid "can't open `%s'\n"
@@ -722,13 +722,13 @@ msgstr "nu pot deschide `%s'\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output nu merge pentru aceastã comandã\n"
 
-#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3387 g10/keyserver.c:1698
+#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3387 g10/keyserver.c:1704
 #: g10/revoke.c:228
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "cheia \"%s\" nu a fost gãsitã: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2322 g10/keyserver.c:1712
+#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2330 g10/keyserver.c:1718
 #: g10/revoke.c:234 g10/revoke.c:478
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -770,7 +770,7 @@ msgstr ""
 "folosiþi opþiunea \"--delete-secret-keys\" pentru a o ºterge pe aceasta mai "
 "întâi.\n"
 
-#: g10/encode.c:213 g10/sign.c:1215
+#: g10/encode.c:213 g10/sign.c:1224
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolã: %s\n"
@@ -789,7 +789,7 @@ msgstr "folosesc cifrul %s\n"
 msgid "`%s' already compressed\n"
 msgstr "`%s' deja compresat\n"
 
-#: g10/encode.c:306 g10/encode.c:598 g10/sign.c:557
+#: g10/encode.c:306 g10/encode.c:598 g10/sign.c:564
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "AVERTISMENT: `%s' este un fiºier gol\n"
@@ -818,7 +818,7 @@ msgstr ""
 "AVERTISMENT: forþând cifrul simetric %s (%d) violaþi preferinþele "
 "destinatarului\n"
 
-#: g10/encode.c:642 g10/sign.c:896
+#: g10/encode.c:642 g10/sign.c:903
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -866,7 +866,7 @@ msgstr "problemã cu mânuirea pachetului cifrat\n"
 msgid "no remote program execution supported\n"
 msgstr "nu este suportatã execuþia nici unui program la distanþã\n"
 
-#: g10/exec.c:173 g10/openfile.c:413
+#: g10/exec.c:173 g10/openfile.c:415
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "nu pot crea directorul `%s': %s\n"
@@ -1383,432 +1383,432 @@ msgstr "aratã cãruia dintre inelele de chei îi aparþine o cheie enumeratã"
 msgid "show expiration dates during signature listings"
 msgstr "Nici o semnãturã corespunzãtoare în inelul secret\n"
 
-#: g10/gpg.c:1850
+#: g10/gpg.c:1852
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "NOTÃ: fisier opþiuni implicite vechi `%s' ignorat\n"
 
-#: g10/gpg.c:1892
+#: g10/gpg.c:1894
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTÃ: nici un fiºier opþiuni implicit `%s'\n"
 
-#: g10/gpg.c:1896
+#: g10/gpg.c:1898
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fiºier opþiuni `%s': %s\n"
 
-#: g10/gpg.c:1903
+#: g10/gpg.c:1905
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "citesc opþiuni din `%s'\n"
 
-#: g10/gpg.c:2118 g10/gpg.c:2719 g10/gpg.c:2738
+#: g10/gpg.c:2120 g10/gpg.c:2721 g10/gpg.c:2740
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTÃ: %s nu este pentru o folosire normalã!\n"
 
-#: g10/gpg.c:2131
+#: g10/gpg.c:2133
 #, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr ""
 "extensie cifru `%s' nu a fost încãrcat din cauza permisiunilor nesigure "
 "(unsafe)\n"
 
-#: g10/gpg.c:2285 g10/gpg.c:2297
+#: g10/gpg.c:2287 g10/gpg.c:2299
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "`%s' nu este expirare de semnãturã validã\n"
 
-#: g10/gpg.c:2373
+#: g10/gpg.c:2375
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "`%s' nu este un set de carectere valid\n"
 
 #
-#: g10/gpg.c:2397 g10/keyedit.c:4048
+#: g10/gpg.c:2399 g10/keyedit.c:4049
 msgid "could not parse keyserver URL\n"
 msgstr "nu am putut interpreta URL-ul serverului de chei\n"
 
-#: g10/gpg.c:2409
+#: g10/gpg.c:2411
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: opþiuni server de chei invalide\n"
 
-#: g10/gpg.c:2412
+#: g10/gpg.c:2414
 msgid "invalid keyserver options\n"
 msgstr "opþiuni server de chei invalide\n"
 
-#: g10/gpg.c:2419
+#: g10/gpg.c:2421
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opþiuni import invalide\n"
 
-#: g10/gpg.c:2422
+#: g10/gpg.c:2424
 msgid "invalid import options\n"
 msgstr "opþiuni import invalide\n"
 
-#: g10/gpg.c:2429
+#: g10/gpg.c:2431
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: opþiuni export invalide\n"
 
-#: g10/gpg.c:2432
+#: g10/gpg.c:2434
 msgid "invalid export options\n"
 msgstr "opþiuni export invalide\n"
 
-#: g10/gpg.c:2439
+#: g10/gpg.c:2441
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: opþiuni enumerare invalide\n"
 
-#: g10/gpg.c:2442
+#: g10/gpg.c:2444
 msgid "invalid list options\n"
 msgstr "opþiuni enumerare invalide\n"
 
-#: g10/gpg.c:2450
+#: g10/gpg.c:2452
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2452
+#: g10/gpg.c:2454
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2454
+#: g10/gpg.c:2456
 #, fuzzy
 msgid "show all notations during signature verification"
 msgstr "`%s' nu este expirare de semnãturã validã\n"
 
-#: g10/gpg.c:2456
+#: g10/gpg.c:2458
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2460
+#: g10/gpg.c:2462
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2462
+#: g10/gpg.c:2464
 #, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "URL-ul serverului de chei preferat furnizat este invalid\n"
 
-#: g10/gpg.c:2464
+#: g10/gpg.c:2466
 #, fuzzy
 msgid "show user ID validity during signature verification"
 msgstr "`%s' nu este expirare de semnãturã validã\n"
 
-#: g10/gpg.c:2466
+#: g10/gpg.c:2468
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2468
+#: g10/gpg.c:2470
 msgid "validate signatures with PKA data"
 msgstr ""
 
-#: g10/gpg.c:2470
+#: g10/gpg.c:2472
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 
-#: g10/gpg.c:2477
+#: g10/gpg.c:2479
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: opþiuni verificare invalide\n"
 
-#: g10/gpg.c:2480
+#: g10/gpg.c:2482
 msgid "invalid verify options\n"
 msgstr "opþiuni verificare invalide\n"
 
-#: g10/gpg.c:2487
+#: g10/gpg.c:2489
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "nu pot seta cale-execuþie ca %s\n"
 
-#: g10/gpg.c:2637
+#: g10/gpg.c:2639
 #, fuzzy, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: opþiuni verificare invalide\n"
 
-#: g10/gpg.c:2640
+#: g10/gpg.c:2642
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2708
+#: g10/gpg.c:2710
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVERTISMENT: programul ar putea crea un fiºier core!\n"
 
-#: g10/gpg.c:2712
+#: g10/gpg.c:2714
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "AVERTISMENT: %s înlocuieºte %s\n"
 
-#: g10/gpg.c:2721
+#: g10/gpg.c:2723
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s nu este permis cu %s!\n"
 
-#: g10/gpg.c:2724
+#: g10/gpg.c:2726
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s nu are sens cu %s!\n"
 
-#: g10/gpg.c:2731
+#: g10/gpg.c:2733
 #, c-format
 msgid "NOTE: %s is not available in this version\n"
 msgstr "NOTÃ: %s nu este disponibil în aceastã sesiune\n"
 
-#: g10/gpg.c:2746
+#: g10/gpg.c:2748
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "nu va rula cu memorie neprotejatã (insecure) pentru cã %s\n"
 
-#: g10/gpg.c:2760
+#: g10/gpg.c:2762
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "puteþi crea doar semnãturi detaºate sau în clar câtã vreme sunteþi în modul "
 "--pgp2\n"
 
-#: g10/gpg.c:2766
+#: g10/gpg.c:2768
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr ""
 "nu puteþi semna ºi cifra în acelaºi timp câtã vreme sunteþi în modul --pgp2\n"
 
-#: g10/gpg.c:2772
+#: g10/gpg.c:2774
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "trebuie sã folosiþi fiºiere (ºi nu un pipe) când lucraþi cu modul --pgp2 "
 "activat.\n"
 
-#: g10/gpg.c:2785
+#: g10/gpg.c:2787
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "cifrarea unui mesaj în modul --pgp2 necesitã un cifru IDEA\n"
 
-#: g10/gpg.c:2852 g10/gpg.c:2876
+#: g10/gpg.c:2854 g10/gpg.c:2878
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritm cifrare selectat este invalid\n"
 
-#: g10/gpg.c:2858 g10/gpg.c:2882
+#: g10/gpg.c:2860 g10/gpg.c:2884
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritm rezumat selectat este invalid\n"
 
-#: g10/gpg.c:2864
+#: g10/gpg.c:2866
 msgid "selected compression algorithm is invalid\n"
 msgstr "algoritm compresie selectat este invalid\n"
 
-#: g10/gpg.c:2870
+#: g10/gpg.c:2872
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "algoritm rezumat certificare selectat este invalid\n"
 
-#: g10/gpg.c:2885
+#: g10/gpg.c:2887
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed trebuie sã fie mai mare decât 0\n"
 
-#: g10/gpg.c:2887
+#: g10/gpg.c:2889
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed trebuie sã fie mai mare decât 1\n"
 
-#: g10/gpg.c:2889
+#: g10/gpg.c:2891
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth trebuie sã fie în intervalul de la 1 la 255\n"
 
-#: g10/gpg.c:2891
+#: g10/gpg.c:2893
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "default-cert-level invalid; trebuie sã fie 0, 1, 2 sau 3\n"
 
-#: g10/gpg.c:2893
+#: g10/gpg.c:2895
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "min-cert-level invalid; trebuie sã fie 0, 1, 2 sau 3\n"
 
-#: g10/gpg.c:2896
+#: g10/gpg.c:2898
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTÃ: modul S2K simplu (0) este contraindicat cu insistenþã\n"
 
-#: g10/gpg.c:2900
+#: g10/gpg.c:2902
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "mod S2K invalid; trebuie sã fie 0, 1 sau 3\n"
 
-#: g10/gpg.c:2907
+#: g10/gpg.c:2909
 msgid "invalid default preferences\n"
 msgstr "preferinþe implicite invalide\n"
 
-#: g10/gpg.c:2916
+#: g10/gpg.c:2918
 msgid "invalid personal cipher preferences\n"
 msgstr "preferinþe cifrare personale invalide\n"
 
-#: g10/gpg.c:2920
+#: g10/gpg.c:2922
 msgid "invalid personal digest preferences\n"
 msgstr "preferinþe rezumat personale invalide\n"
 
-#: g10/gpg.c:2924
+#: g10/gpg.c:2926
 msgid "invalid personal compress preferences\n"
 msgstr "preferinþe compresie personale invalide\n"
 
-#: g10/gpg.c:2957
+#: g10/gpg.c:2959
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s nu merge încã cu %s!\n"
 
-#: g10/gpg.c:3004
+#: g10/gpg.c:3006
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "nu puteþi folosi algoritmul de cifrare `%s' câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3009
+#: g10/gpg.c:3011
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "nu puteþi folosi algorimul de rezumat `%s' câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3014
+#: g10/gpg.c:3016
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "nu puteþi folosi algoritmul de compresie `%s' câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3110
+#: g10/gpg.c:3112
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "am eºuat sã iniþializez TrustDB:%s\n"
 
-#: g10/gpg.c:3121
+#: g10/gpg.c:3123
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVERTISMENT: destinatari (-r) furnizaþi fãrã a folosi cifrare cu cheie "
 "publicã\n"
 
-#: g10/gpg.c:3132
+#: g10/gpg.c:3134
 msgid "--store [filename]"
 msgstr "--store [nume_fiºier]"
 
-#: g10/gpg.c:3139
+#: g10/gpg.c:3141
 msgid "--symmetric [filename]"
 msgstr "--symmetric [nume_fiºier]"
 
-#: g10/gpg.c:3141
+#: g10/gpg.c:3143
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "cifrarea simetricã a lui `%s' a eºuat: %s\n"
 
-#: g10/gpg.c:3151
+#: g10/gpg.c:3153
 msgid "--encrypt [filename]"
 msgstr "--encrypt [nume_fiºier]"
 
-#: g10/gpg.c:3164
+#: g10/gpg.c:3166
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [nume_fiºier]"
 
-#: g10/gpg.c:3166
+#: g10/gpg.c:3168
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "nu puteþi folosi --symmetric --encrypt cu --s2k-mode 0\n"
 
-#: g10/gpg.c:3169
+#: g10/gpg.c:3171
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "nu puteþi folosi --symmetric --encrypt câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3187
+#: g10/gpg.c:3189
 msgid "--sign [filename]"
 msgstr "--sign [nume_fiºier]"
 
-#: g10/gpg.c:3200
+#: g10/gpg.c:3202
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nume_fiºier]"
 
-#: g10/gpg.c:3215
+#: g10/gpg.c:3217
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [nume_fiºier]"
 
-#: g10/gpg.c:3217
+#: g10/gpg.c:3219
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "nu puteþi folosi --symmetric --sign --encrypt cu --s2k-mode 0\n"
 
-#: g10/gpg.c:3220
+#: g10/gpg.c:3222
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "nu puteþi folosi --symmetric --sign --encrypt câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3240
+#: g10/gpg.c:3242
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [nume_fiºier]"
 
-#: g10/gpg.c:3249
+#: g10/gpg.c:3251
 msgid "--clearsign [filename]"
 msgstr "--clearsign [nume_fiºier]"
 
-#: g10/gpg.c:3274
+#: g10/gpg.c:3276
 msgid "--decrypt [filename]"
 msgstr "--decrypt [nume_fiºier]"
 
-#: g10/gpg.c:3282
+#: g10/gpg.c:3284
 msgid "--sign-key user-id"
 msgstr "--sign-key id-utilizator"
 
-#: g10/gpg.c:3286
+#: g10/gpg.c:3288
 msgid "--lsign-key user-id"
 msgstr "--lsign-key id-utilizator"
 
-#: g10/gpg.c:3307
+#: g10/gpg.c:3309
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id-utilizator [comenzi]"
 
-#: g10/gpg.c:3378
+#: g10/gpg.c:3380
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [id-utilizator] [inel_chei]"
 
-#: g10/gpg.c:3415
+#: g10/gpg.c:3417
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "trimitere server de chei eºuatã: %s\n"
 
-#: g10/gpg.c:3417
+#: g10/gpg.c:3419
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "recepþie server de chei eºuatã: %s\n"
 
-#: g10/gpg.c:3419
+#: g10/gpg.c:3421
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "export cheie eºuat: %s\n"
 
-#: g10/gpg.c:3430
+#: g10/gpg.c:3432
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "cãutare server de chei eºuatã: %s\n"
 
-#: g10/gpg.c:3440
+#: g10/gpg.c:3442
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "actualizare server de chei eºuatã: %s\n"
 
-#: g10/gpg.c:3491
+#: g10/gpg.c:3493
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "eliminarea armurii a eºuat: %s\n"
 
-#: g10/gpg.c:3499
+#: g10/gpg.c:3501
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "punerea armurii a eºuat: %s\n"
 
-#: g10/gpg.c:3586
+#: g10/gpg.c:3588
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "algoritm hash invalid `%s'\n"
 
-#: g10/gpg.c:3709
+#: g10/gpg.c:3711
 msgid "[filename]"
 msgstr "[nume_fiºier]"
 
-#: g10/gpg.c:3713
+#: g10/gpg.c:3715
 msgid "Go ahead and type your message ...\n"
 msgstr "Daþi-i drumul ºi scrieþi mesajul ...\n"
 
-#: g10/gpg.c:4014
+#: g10/gpg.c:4016
 msgid "the given certification policy URL is invalid\n"
 msgstr "URL-ul politicii de certificare furnizat este invalid\n"
 
-#: g10/gpg.c:4016
+#: g10/gpg.c:4018
 msgid "the given signature policy URL is invalid\n"
 msgstr "URL-ul politicii de semnãturi furnizat este invalid\n"
 
-#: g10/gpg.c:4049
+#: g10/gpg.c:4051
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "URL-ul serverului de chei preferat furnizat este invalid\n"
 
@@ -1816,32 +1816,32 @@ msgstr "URL-ul serverului de chei preferat furnizat este invalid\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "prea multe intrãri în cache-ul pk - deactivat\n"
 
-#: g10/getkey.c:188 g10/getkey.c:2876
+#: g10/getkey.c:188 g10/getkey.c:2889
 msgid "[User ID not found]"
 msgstr "[ID utilizator nu a fost gãsit]"
 
-#: g10/getkey.c:933 g10/getkey.c:950 g10/getkey.c:970 g10/getkey.c:986
-#: g10/getkey.c:1001
+#: g10/getkey.c:935 g10/getkey.c:945 g10/getkey.c:955 g10/getkey.c:971
+#: g10/getkey.c:986
 #, c-format
-msgid "Automatically retrieved `%s' via %s\n"
+msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
-#: g10/getkey.c:1800
+#: g10/getkey.c:1813
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "Cheia invalidã %s fãcutã validã de --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2354
+#: g10/getkey.c:2367
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "nici o subcheie secretã pentru subcheia publicã %s - ignoratã\n"
 
-#: g10/getkey.c:2585
+#: g10/getkey.c:2598
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "folosim subcheia %s în loc de cheia primarã %s\n"
 
-#: g10/getkey.c:2632
+#: g10/getkey.c:2645
 #, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "cheia %s: cheie secretã fãrã cheie publicã - sãritã\n"
@@ -2214,455 +2214,453 @@ msgstr "Nici un ajutor disponibil"
 msgid "No help available for `%s'"
 msgstr "Nici un disponibil disponibil pentru `%s'"
 
-#: g10/import.c:95
+#: g10/import.c:96
 msgid "import signatures that are marked as local-only"
 msgstr ""
 
-#: g10/import.c:97
+#: g10/import.c:98
 msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
-#: g10/import.c:99
+#: g10/import.c:100
 #, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "actualizeazã baza de date de încredere"
 
-#: g10/import.c:101
+#: g10/import.c:102
 #, fuzzy
 msgid "create a public key when importing a secret key"
 msgstr "cheia publicã nu se potriveºte cu cheia secretã!\n"
 
-#: g10/import.c:103
+#: g10/import.c:104
 msgid "only accept updates to existing keys"
 msgstr ""
 
-#: g10/import.c:105
+#: g10/import.c:106
 #, fuzzy
 msgid "remove unusable parts from key after import"
 msgstr "cheie secretã de nefolosit"
 
-#: g10/import.c:107
+#: g10/import.c:108
 msgid "remove as much as possible from key after import"
 msgstr ""
 
-#: g10/import.c:262
+#: g10/import.c:266
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "bloc de tip %d sãrit\n"
 
-#: g10/import.c:271
+#: g10/import.c:275
 #, c-format
 msgid "%lu keys processed so far\n"
 msgstr "%lu chei procesate pânã acum\n"
 
-#: g10/import.c:288
+#: g10/import.c:292
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Numãr total procesate: %lu\n"
 
-#: g10/import.c:290
+#: g10/import.c:294
 #, c-format
 msgid "      skipped new keys: %lu\n"
 msgstr "      chei noi sãrite: %lu\n"
 
-#: g10/import.c:293
+#: g10/import.c:297
 #, c-format
 msgid "          w/o user IDs: %lu\n"
 msgstr "  fãrã ID-uri utilizator: %lu\n"
 
-#: g10/import.c:295
+#: g10/import.c:299
 #, c-format
 msgid "              imported: %lu"
 msgstr "               importate: %lu"
 
-#: g10/import.c:301
+#: g10/import.c:305
 #, c-format
 msgid "             unchanged: %lu\n"
 msgstr "             neschimbate: %lu\n"
 
-#: g10/import.c:303
+#: g10/import.c:307
 #, c-format
 msgid "          new user IDs: %lu\n"
 msgstr "   noi ID-uri utilizator: %lu\n"
 
-#: g10/import.c:305
+#: g10/import.c:309
 #, c-format
 msgid "           new subkeys: %lu\n"
 msgstr "             noi subchei: %lu\n"
 
-#: g10/import.c:307
+#: g10/import.c:311
 #, c-format
 msgid "        new signatures: %lu\n"
 msgstr "           noi semnãturi: %lu\n"
 
-#: g10/import.c:309
+#: g10/import.c:313
 #, c-format
 msgid "   new key revocations: %lu\n"
 msgstr "    noi revocãri de chei: %lu\n"
 
-#: g10/import.c:311
+#: g10/import.c:315
 #, c-format
 msgid "      secret keys read: %lu\n"
 msgstr "     chei secrete citite: %lu\n"
 
-#: g10/import.c:313
+#: g10/import.c:317
 #, c-format
 msgid "  secret keys imported: %lu\n"
 msgstr "  chei secrete importate: %lu\n"
 
-#: g10/import.c:315
+#: g10/import.c:319
 #, c-format
 msgid " secret keys unchanged: %lu\n"
 msgstr "chei secrete neschimbate: %lu\n"
 
-#: g10/import.c:317
+#: g10/import.c:321
 #, c-format
 msgid "          not imported: %lu\n"
 msgstr "            ne importate: %lu\n"
 
-#: g10/import.c:319
+#: g10/import.c:323
 #, fuzzy, c-format
 msgid "    signatures cleaned: %lu\n"
 msgstr "semnãturi create pânã acum: %lu\n"
 
-#: g10/import.c:321
+#: g10/import.c:325
 #, fuzzy, c-format
 msgid "      user IDs cleaned: %lu\n"
 msgstr "     chei secrete citite: %lu\n"
 
-#: g10/import.c:562
-#, c-format
-msgid "WARNING: key %s contains preferences for unavailable\n"
+#: g10/import.c:566
+#, fuzzy, c-format
+msgid ""
+"WARNING: key %s contains preferences for unavailable\n"
+"algorithms on these user IDs:\n"
 msgstr "AVERTISMENT: cheia %s conþine preferinþe pentru indisponibil\n"
 
-#: g10/import.c:564
-msgid "algorithms on these user IDs:\n"
-msgstr "algoritmuri pentru aceste ID-uri utilizator:\n"
-
-#: g10/import.c:601
+#: g10/import.c:604
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr "         \"%s\": preferinþã pentru algoritm de cifrare %s\n"
 
-#: g10/import.c:613
+#: g10/import.c:616
 #, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
 msgstr "         \"%s\": preferinþã pentru algoritm rezumat %s\n"
 
-#: g10/import.c:625
+#: g10/import.c:628
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr "         \"%s\": preferinþã pentru algoritm compresie %s\n"
 
-#: g10/import.c:638
+#: g10/import.c:641
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr ""
 "este puternic sugerat sã vã actualizaþi preferinþele ºi re-distribuiþi\n"
 
-#: g10/import.c:640
+#: g10/import.c:643
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 "aceastã cheie pentru a avita probleme potenþiale de ne-potrivire de "
 "algoritm\n"
 
-#: g10/import.c:664
+#: g10/import.c:667
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
 msgstr "vã puteþi actualiza preferinþele cu: gpg --edit-key %s updpref save\n"
 
-#: g10/import.c:712 g10/import.c:1092
+#: g10/import.c:719 g10/import.c:1099
 #, c-format
 msgid "key %s: no user ID\n"
 msgstr "cheia %s: nici un ID utilizator\n"
 
-#: g10/import.c:741
+#: g10/import.c:748
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "cheia %s: subcheia HPK coruptã a fost reparatã\n"
 
-#: g10/import.c:756
+#: g10/import.c:763
 #, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
 msgstr "cheia %s: am acceptat ID-ul utilizator ce nu e auto-semnat \"%s\"\n"
 
-#: g10/import.c:762
+#: g10/import.c:769
 #, c-format
 msgid "key %s: no valid user IDs\n"
 msgstr "cheia %s: nici un ID utilizator valid\n"
 
-#: g10/import.c:764
+#: g10/import.c:771
 msgid "this may be caused by a missing self-signature\n"
 msgstr "aceasta poate fi cauzatã de o auto-semnãturã ce lipseºte\n"
 
-#: g10/import.c:774 g10/import.c:1213
+#: g10/import.c:781 g10/import.c:1221
 #, c-format
 msgid "key %s: public key not found: %s\n"
 msgstr "cheia %s: cheia publicã nu a fost gãsitã: %s\n"
 
-#: g10/import.c:780
+#: g10/import.c:787
 #, c-format
 msgid "key %s: new key - skipped\n"
 msgstr "cheia %s: cheie nouã - sãritã\n"
 
-#: g10/import.c:789
+#: g10/import.c:796
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "n-am gãsit nici un inel de chei ce poate fi scris: %s\n"
 
-#: g10/import.c:794 g10/openfile.c:265 g10/sign.c:795 g10/sign.c:1066
+#: g10/import.c:801 g10/openfile.c:267 g10/sign.c:802 g10/sign.c:1075
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "scriu în `%s'\n"
 
-#: g10/import.c:798 g10/import.c:893 g10/import.c:1132 g10/import.c:1274
-#: g10/import.c:2336 g10/import.c:2358
+#: g10/import.c:805 g10/import.c:900 g10/import.c:1139 g10/import.c:1282
+#: g10/import.c:2344 g10/import.c:2366
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
-#: g10/import.c:817
+#: g10/import.c:824
 #, c-format
 msgid "key %s: public key \"%s\" imported\n"
 msgstr "cheia %s: cheia publicã \"%s\" importatã\n"
 
-#: g10/import.c:841
+#: g10/import.c:848
 #, c-format
 msgid "key %s: doesn't match our copy\n"
 msgstr "cheia %s: nu se potriveºte cu copia noastrã\n"
 
-#: g10/import.c:858 g10/import.c:1231
+#: g10/import.c:865 g10/import.c:1239
 #, c-format
 msgid "key %s: can't locate original keyblock: %s\n"
 msgstr "cheia %s: nu pot gãsi keyblock-ul original: %s\n"
 
-#: g10/import.c:866 g10/import.c:1238
+#: g10/import.c:873 g10/import.c:1246
 #, c-format
 msgid "key %s: can't read original keyblock: %s\n"
 msgstr "cheia %s: nu pot citi keyblock-ul original: %s\n"
 
-#: g10/import.c:903
+#: g10/import.c:910
 #, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "cheia %s: \"%s\" 1 nou ID utilizator\n"
 
-#: g10/import.c:906
+#: g10/import.c:913
 #, c-format
 msgid "key %s: \"%s\" %d new user IDs\n"
 msgstr "cheia %s: \"%s\" %d noi ID-uri utilizator\n"
 
-#: g10/import.c:909
+#: g10/import.c:916
 #, c-format
 msgid "key %s: \"%s\" 1 new signature\n"
 msgstr "cheia %s: \"%s\" 1 nouã semnãturã\n"
 
-#: g10/import.c:912
+#: g10/import.c:919
 #, c-format
 msgid "key %s: \"%s\" %d new signatures\n"
 msgstr "cheia %s: \"%s\" %d noi semnãturi\n"
 
-#: g10/import.c:915
+#: g10/import.c:922
 #, c-format
 msgid "key %s: \"%s\" 1 new subkey\n"
 msgstr "cheia %s: \"%s\" 1 nouã subcheie\n"
 
-#: g10/import.c:918
+#: g10/import.c:925
 #, c-format
 msgid "key %s: \"%s\" %d new subkeys\n"
 msgstr "cheia %s: \"%s\" %d noi subchei\n"
 
-#: g10/import.c:921
+#: g10/import.c:928
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d signature cleaned\n"
 msgstr "cheia %s: \"%s\" %d noi semnãturi\n"
 
-#: g10/import.c:924
+#: g10/import.c:931
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d signatures cleaned\n"
 msgstr "cheia %s: \"%s\" %d noi semnãturi\n"
 
-#: g10/import.c:927
+#: g10/import.c:934
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d user ID cleaned\n"
 msgstr "cheia %s: \"%s\" %d noi ID-uri utilizator\n"
 
-#: g10/import.c:930
+#: g10/import.c:937
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d user IDs cleaned\n"
 msgstr "cheia %s: \"%s\" %d noi ID-uri utilizator\n"
 
-#: g10/import.c:953
+#: g10/import.c:960
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "cheia %s: \"%s\" nu a fost schimbatã\n"
 
-#: g10/import.c:1098
+#: g10/import.c:1105
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "cheia %s: cheie secretã cu cifru invalid %d - sãritã\n"
 
-#: g10/import.c:1109
+#: g10/import.c:1116
 msgid "importing secret keys not allowed\n"
 msgstr "importul de chei secrete nu este permis\n"
 
-#: g10/import.c:1126 g10/import.c:2351
+#: g10/import.c:1133 g10/import.c:2359
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "nici un inel de chei secrete implicit: %s\n"
 
-#: g10/import.c:1137
+#: g10/import.c:1144
 #, c-format
 msgid "key %s: secret key imported\n"
 msgstr "cheia %s: cheie secretã importatã\n"
 
-#: g10/import.c:1166
+#: g10/import.c:1174
 #, c-format
 msgid "key %s: already in secret keyring\n"
 msgstr "cheia %s: deja în inelul de chei secrete\n"
 
-#: g10/import.c:1176
+#: g10/import.c:1184
 #, c-format
 msgid "key %s: secret key not found: %s\n"
 msgstr "cheia %s: cheia secretã nu a fost gãsitã: %s\n"
 
-#: g10/import.c:1206
+#: g10/import.c:1214
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "cheia %s: nici o cheie publicã - nu pot aplica certificatul de revocare\n"
 
-#: g10/import.c:1249
+#: g10/import.c:1257
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
 msgstr "cheia %s: certificat de revocare invalid: %s - respins\n"
 
-#: g10/import.c:1281
+#: g10/import.c:1289
 #, c-format
 msgid "key %s: \"%s\" revocation certificate imported\n"
 msgstr "cheia %s: certificatul de revocare \"%s\" importat\n"
 
-#: g10/import.c:1347
+#: g10/import.c:1355
 #, c-format
 msgid "key %s: no user ID for signature\n"
 msgstr "cheia %s: nici un ID utilizator pentru semnãturã\n"
 
-#: g10/import.c:1362
+#: g10/import.c:1370
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
 "cheia %s: algoritm cu cheie publicã nesuportat pentru ID-ul utilizator \"%s"
 "\"\n"
 
-#: g10/import.c:1364
+#: g10/import.c:1372
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "cheia %s: auto-semnãturã invalidã pentru ID-ul utilizator \"%s\"\n"
 
-#: g10/import.c:1382
+#: g10/import.c:1390
 #, c-format
 msgid "key %s: no subkey for key binding\n"
 msgstr "cheia %s: nici o subcheie pentru legarea cheii\n"
 
-#: g10/import.c:1393 g10/import.c:1443
+#: g10/import.c:1401 g10/import.c:1451
 #, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "cheia %s: algoritm cu cheie publicã nesuportat\n"
 
-#: g10/import.c:1395
+#: g10/import.c:1403
 #, c-format
 msgid "key %s: invalid subkey binding\n"
 msgstr "cheia %s: legare subcheie invalidã\n"
 
-#: g10/import.c:1410
+#: g10/import.c:1418
 #, c-format
 msgid "key %s: removed multiple subkey binding\n"
 msgstr "cheia %s: am ºters multiple legãturi de subchei\n"
 
-#: g10/import.c:1432
+#: g10/import.c:1440
 #, c-format
 msgid "key %s: no subkey for key revocation\n"
 msgstr "cheia %s: nici o subcheie pentru revocare de cheie\n"
 
-#: g10/import.c:1445
+#: g10/import.c:1453
 #, c-format
 msgid "key %s: invalid subkey revocation\n"
 msgstr "cheia %s: revocare de subcheie invalidã\n"
 
-#: g10/import.c:1460
+#: g10/import.c:1468
 #, c-format
 msgid "key %s: removed multiple subkey revocation\n"
 msgstr "cheia %s: am ºters multiple revocãri de subcheie\n"
 
-#: g10/import.c:1502
+#: g10/import.c:1510
 #, c-format
 msgid "key %s: skipped user ID \"%s\"\n"
 msgstr "cheia %s: am sãrit ID-ul utilizator \"%s\"\n"
 
-#: g10/import.c:1523
+#: g10/import.c:1531
 #, c-format
 msgid "key %s: skipped subkey\n"
 msgstr "cheia %s: am sãrit subcheia\n"
 
-#: g10/import.c:1550
+#: g10/import.c:1558
 #, c-format
 msgid "key %s: non exportable signature (class 0x%02X) - skipped\n"
 msgstr "cheia %s: semnãtura nu poate fi exportatã (clasa 0x%02X) - sãritã\n"
 
-#: g10/import.c:1560
+#: g10/import.c:1568
 #, c-format
 msgid "key %s: revocation certificate at wrong place - skipped\n"
 msgstr "cheia %s: certificat de revocare într-un loc greºit - sãrit\n"
 
-#: g10/import.c:1577
+#: g10/import.c:1585
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - skipped\n"
 msgstr "cheia %s: certificat de revocare invalid: %s - sãrit\n"
 
-#: g10/import.c:1591
+#: g10/import.c:1599
 #, c-format
 msgid "key %s: subkey signature in wrong place - skipped\n"
 msgstr "cheia %s: semnãturã subcheie într-un loc greºit - sãritã\n"
 
-#: g10/import.c:1599
+#: g10/import.c:1607
 #, c-format
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr "cheia %s: clasã de semnãturã neaºteptatã (0x%02X) - sãritã\n"
 
-#: g10/import.c:1699
+#: g10/import.c:1707
 #, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "cheia %s: am detectat un ID utilizator duplicat - combinate\n"
 
-#: g10/import.c:1761
+#: g10/import.c:1769
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr "AVERTISMENT: cheia %s poate fi revocatã: aduc revocarea cheii %s\n"
 
-#: g10/import.c:1775
+#: g10/import.c:1783
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr ""
 "AVERTISMENT: cheia %s poate fi revocatã: cheia de revocare %s nu este "
 "prezentã.\n"
 
-#: g10/import.c:1834
+#: g10/import.c:1842
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "cheia %s: am adãugat certificatul de revocare \"%s\"\n"
 
-#: g10/import.c:1868
+#: g10/import.c:1876
 #, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "cheia %s: am adãugat semnãtura de cheie directã\n"
 
-#: g10/import.c:2257
+#: g10/import.c:2265
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "NOTÃ: S/N-ul unei chei nu se potriveºte cu cel al cardului\n"
 
-#: g10/import.c:2265
+#: g10/import.c:2273
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "NOTÃ: cheia primarã este online ºi stocatã pe card\n"
 
-#: g10/import.c:2267
+#: g10/import.c:2275
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "NOTÃ: cheia secundarã este online ºi stocatã pe card\n"
 
@@ -2965,8 +2963,8 @@ msgstr "Am verificat aceastã cheie foarte atent.\n"
 msgid "Really sign? (y/N) "
 msgstr "Doriþi cu adevãrat sã semnaþi? (d/N) "
 
-#: g10/keyedit.c:1067 g10/keyedit.c:4744 g10/keyedit.c:4835 g10/keyedit.c:4899
-#: g10/keyedit.c:4960 g10/sign.c:355
+#: g10/keyedit.c:1067 g10/keyedit.c:4768 g10/keyedit.c:4859 g10/keyedit.c:4923
+#: g10/keyedit.c:4984 g10/sign.c:362
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "semnarea a eºuat: %s\n"
@@ -3389,7 +3387,7 @@ msgid "(sensitive)"
 msgstr " (senzitiv)"
 
 #: g10/keyedit.c:2732 g10/keyedit.c:2788 g10/keyedit.c:2849 g10/keyedit.c:2864
-#: g10/keylist.c:194 g10/keyserver.c:525
+#: g10/keylist.c:194 g10/keyserver.c:526
 #, c-format
 msgid "created: %s"
 msgstr "creatã: %s"
@@ -3406,7 +3404,7 @@ msgstr "expiratã: %s"
 
 #: g10/keyedit.c:2739 g10/keyedit.c:2790 g10/keyedit.c:2851 g10/keyedit.c:2866
 #: g10/keylist.c:196 g10/keylist.c:748 g10/keylist.c:783 g10/keylist.c:877
-#: g10/keylist.c:898 g10/keyserver.c:531 g10/mainproc.c:968
+#: g10/keylist.c:898 g10/keyserver.c:532 g10/mainproc.c:968
 #, c-format
 msgid "expires: %s"
 msgstr "expirã: %s"
@@ -3443,12 +3441,12 @@ msgstr ""
 "corectã dacã nu reporniþi programul.\n"
 
 #
-#: g10/keyedit.c:2883 g10/keyedit.c:3229 g10/keyserver.c:535
+#: g10/keyedit.c:2883 g10/keyedit.c:3229 g10/keyserver.c:536
 #: g10/mainproc.c:1770 g10/trustdb.c:1179 g10/trustdb.c:1699
 msgid "revoked"
 msgstr "revocatã"
 
-#: g10/keyedit.c:2885 g10/keyedit.c:3231 g10/keyserver.c:539
+#: g10/keyedit.c:2885 g10/keyedit.c:3231 g10/keyserver.c:540
 #: g10/mainproc.c:1772 g10/trustdb.c:532 g10/trustdb.c:1701
 msgid "expired"
 msgstr "expiratã"
@@ -3585,127 +3583,127 @@ msgstr "Nu puteþi schimba data de expirare a unei chei v3\n"
 msgid "No corresponding signature in secret ring\n"
 msgstr "Nici o semnãturã corespunzãtoare în inelul secret\n"
 
-#: g10/keyedit.c:3820
+#: g10/keyedit.c:3821
 msgid "Please select exactly one user ID.\n"
 msgstr "Vã rugãm selectaþi exact un ID utilizator.\n"
 
-#: g10/keyedit.c:3859 g10/keyedit.c:3969 g10/keyedit.c:4089 g10/keyedit.c:4229
+#: g10/keyedit.c:3860 g10/keyedit.c:3970 g10/keyedit.c:4090 g10/keyedit.c:4231
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "auto-semnãturã v3 sãritã pentru ID-ul utilizator \"%s\"\n"
 
-#: g10/keyedit.c:4030
+#: g10/keyedit.c:4031
 msgid "Enter your preferred keyserver URL: "
 msgstr "Introduceþi URL-ul serverului de chei preferat: "
 
-#: g10/keyedit.c:4110
+#: g10/keyedit.c:4111
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Sunteþi sigur(ã) cã doriþi sã o folosiþi? (d/N) "
 
-#: g10/keyedit.c:4111
+#: g10/keyedit.c:4112
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Sunteþi sigur(ã) cã doriþi sã o folosiþi? (d/N) "
 
-#: g10/keyedit.c:4173
+#: g10/keyedit.c:4174
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Notare semnãturã: "
 
-#: g10/keyedit.c:4299
+#: g10/keyedit.c:4323
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Suprascriu? (d/N) "
 
-#: g10/keyedit.c:4363
+#: g10/keyedit.c:4387
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Nici un ID utilizator cu indicele %d\n"
 
-#: g10/keyedit.c:4421
+#: g10/keyedit.c:4445
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Nici un ID utilizator cu hash-ul %s\n"
 
-#: g10/keyedit.c:4448
+#: g10/keyedit.c:4472
 #, c-format
 msgid "No subkey with index %d\n"
 msgstr "Nici o subcheie cu indicele %d\n"
 
-#: g10/keyedit.c:4583
+#: g10/keyedit.c:4607
 #, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "ID utilizator: \"%s\"\n"
 
-#: g10/keyedit.c:4586 g10/keyedit.c:4650 g10/keyedit.c:4693
+#: g10/keyedit.c:4610 g10/keyedit.c:4674 g10/keyedit.c:4717
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "semnatã de cheia d-voastrã %s la %s%s%s\n"
 
-#: g10/keyedit.c:4588 g10/keyedit.c:4652 g10/keyedit.c:4695
+#: g10/keyedit.c:4612 g10/keyedit.c:4676 g10/keyedit.c:4719
 msgid " (non-exportable)"
 msgstr " (non-exportabilã)"
 
-#: g10/keyedit.c:4592
+#: g10/keyedit.c:4616
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Aceastã semnãturã a expirat pe %s.\n"
 
-#: g10/keyedit.c:4596
+#: g10/keyedit.c:4620
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Sunteþi încã sigur(ã) cã doriþi sã o revocaþi? (d/N) "
 
-#: g10/keyedit.c:4600
+#: g10/keyedit.c:4624
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Creaþi un certificat de revocare pentru aceastã semnãturã? (d/N) "
 
-#: g10/keyedit.c:4627
+#: g10/keyedit.c:4651
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Aþi semnat aceste ID-uri utilizator pe cheia %s:\n"
 
-#: g10/keyedit.c:4653
+#: g10/keyedit.c:4677
 msgid " (non-revocable)"
 msgstr " (non-revocabilã)"
 
-#: g10/keyedit.c:4660
+#: g10/keyedit.c:4684
 #, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "revocatã de cheia d-voastrã %s pe %s\n"
 
-#: g10/keyedit.c:4682
+#: g10/keyedit.c:4706
 msgid "You are about to revoke these signatures:\n"
 msgstr "Sunteþi pe cale sã revocaþi aceste semnãturi:\n"
 
-#: g10/keyedit.c:4702
+#: g10/keyedit.c:4726
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Doriþi într-adevãr sã creaþi certificatele de revocare? (d/N) "
 
-#: g10/keyedit.c:4732
+#: g10/keyedit.c:4756
 msgid "no secret key\n"
 msgstr "nici o cheie secretã\n"
 
-#: g10/keyedit.c:4802
+#: g10/keyedit.c:4826
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "ID-ul utilizator \"%s\" este deja revocat\n"
 
-#: g10/keyedit.c:4819
+#: g10/keyedit.c:4843
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "AVERTISMENT: o semnãturã ID utilizator este datatã %d secunde în viitor\n"
 
-#: g10/keyedit.c:4883
+#: g10/keyedit.c:4907
 #, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "Cheia %s este deja revocatã.\n"
 
-#: g10/keyedit.c:4945
+#: g10/keyedit.c:4969
 #, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "Subcheia %s este deja revocatã.\n"
 
-#: g10/keyedit.c:5040
+#: g10/keyedit.c:5064
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Afiºez poza ID %s de dimensiune %ld pentru cheia %s (uid %d)\n"
@@ -4302,153 +4300,153 @@ msgstr "Introduceþi URL-ul serverului de chei preferat: "
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
-#: g10/keyserver.c:154
+#: g10/keyserver.c:155
 #, c-format
 msgid "WARNING: keyserver option `%s' is not used on this platform\n"
 msgstr ""
 "AVERTISMENT: opþiunile serverului de chei `%s' nu sunt folosite pe aceastã "
 "platformã\n"
 
-#: g10/keyserver.c:537
+#: g10/keyserver.c:538
 msgid "disabled"
 msgstr "deactivat(ã)"
 
-#: g10/keyserver.c:738
+#: g10/keyserver.c:739
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "Introduceþi numãr/numere, N)ext (urmãtor), sau Q)uit (terminã) > "
 
-#: g10/keyserver.c:821 g10/keyserver.c:1422
+#: g10/keyserver.c:823 g10/keyserver.c:1425
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "protocol server de chei invalid (us %d!=handler %d)\n"
 
-#: g10/keyserver.c:919
+#: g10/keyserver.c:921
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "cheia \"%s\" nu a fost gãsitã pe serverul de chei\n"
 
-#: g10/keyserver.c:921
+#: g10/keyserver.c:923
 msgid "key not found on keyserver\n"
 msgstr "cheia nu a fost gãsitã pe serverul de chei\n"
 
-#: g10/keyserver.c:1146
+#: g10/keyserver.c:1149
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "cer cheia %s de la serverul %s %s\n"
 
-#: g10/keyserver.c:1150
+#: g10/keyserver.c:1153
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "cer cheia %s de la %s\n"
 
-#: g10/keyserver.c:1174
+#: g10/keyserver.c:1177
 #, fuzzy, c-format
 msgid "searching for names from %s server %s\n"
 msgstr "caut \"%s\" de pe serverul %s %s\n"
 
-#: g10/keyserver.c:1177
+#: g10/keyserver.c:1180
 #, fuzzy, c-format
 msgid "searching for names from %s\n"
 msgstr "caut \"%s\" de pe %s\n"
 
-#: g10/keyserver.c:1325
+#: g10/keyserver.c:1328
 #, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "trimit cheia %s serverului %s %s\n"
 
-#: g10/keyserver.c:1329
+#: g10/keyserver.c:1332
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "trimit cheia %s lui %s\n"
 
-#: g10/keyserver.c:1372
+#: g10/keyserver.c:1375
 #, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "caut \"%s\" de pe serverul %s %s\n"
 
-#: g10/keyserver.c:1375
+#: g10/keyserver.c:1378
 #, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "caut \"%s\" de pe %s\n"
 
-#: g10/keyserver.c:1382 g10/keyserver.c:1478
+#: g10/keyserver.c:1385 g10/keyserver.c:1481
 msgid "no keyserver action!\n"
 msgstr "nici o acþiune pentru serverul de chei!\n"
 
-#: g10/keyserver.c:1430
+#: g10/keyserver.c:1433
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 "AVERTISMENT: manipulator server de chei dintr-o versiune diferitã de GnuPG (%"
 "s)\n"
 
-#: g10/keyserver.c:1439
+#: g10/keyserver.c:1442
 msgid "keyserver did not send VERSION\n"
 msgstr "serverul de chei nu a trimis VERSION (versiune)\n"
 
-#: g10/keyserver.c:1500
+#: g10/keyserver.c:1504
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "nici un server de chei cunoscut (folosiþi opþiunea --keyserver)\n"
 
-#: g10/keyserver.c:1506
+#: g10/keyserver.c:1510
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 "apeluri cãtre server de chei extern nu este suportat de acest program\n"
 
-#: g10/keyserver.c:1518
+#: g10/keyserver.c:1522
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr "nici un manipulator (handler) pentru schema serverului de chei `%s'\n"
 
-#: g10/keyserver.c:1523
+#: g10/keyserver.c:1527
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr "acþiunea `%s' nu este suportatã cu schema serverului de chei `%s'\n"
 
-#: g10/keyserver.c:1531
+#: g10/keyserver.c:1535
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr "%s nu suportã versiunea de manipulator (handler) %d\n"
 
-#: g10/keyserver.c:1538
+#: g10/keyserver.c:1542
 msgid "keyserver timed out\n"
 msgstr "serverul de chei a epuizat timpul de aºteptare (timed out)\n"
 
-#: g10/keyserver.c:1543
+#: g10/keyserver.c:1547
 msgid "keyserver internal error\n"
 msgstr "eroare internã server de chei\n"
 
-#: g10/keyserver.c:1552
+#: g10/keyserver.c:1556
 #, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "eroare de comunicare server de chei: %s\n"
 
-#: g10/keyserver.c:1577 g10/keyserver.c:1611
+#: g10/keyserver.c:1581 g10/keyserver.c:1615
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" nu este un ID de cheie: sãrit\n"
 
-#: g10/keyserver.c:1868
+#: g10/keyserver.c:1874
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "AVERTISMENT: nu pot reactualiza cheia %s via %s: %s\n"
 
-#: g10/keyserver.c:1890
+#: g10/keyserver.c:1896
 #, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "reactualizez 1 cheie de la %s\n"
 
-#: g10/keyserver.c:1892
+#: g10/keyserver.c:1898
 #, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "reactualizez %d chei de la %s\n"
 
-#: g10/keyserver.c:1957
+#: g10/keyserver.c:1963
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "AVERTISMENT: nu pot reactualiza cheia %s via %s: %s\n"
 
-#: g10/keyserver.c:1963
+#: g10/keyserver.c:1969
 #, fuzzy, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr "AVERTISMENT: nu pot reactualiza cheia %s via %s: %s\n"
@@ -4697,12 +4695,10 @@ msgstr "AVERTISMENT: algoritmul rezumat %s este prea vechi (deprecated)\n"
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "plugin-ul pentru cifrare IDEA nu este prezent\n"
 
-#: g10/misc.c:448
-msgid ""
-"please see http://www.gnupg.org/why-not-idea.html for more information\n"
-msgstr ""
-"vedeþi http://www.gnupg.org/why-not-idea.html pentru informaþii "
-"suplimentare\n"
+#: g10/misc.c:448 g10/sig-check.c:103
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = aratã-mi mai multe informaþii\n"
 
 #: g10/misc.c:681
 #, c-format
@@ -4753,40 +4749,40 @@ msgstr "opþiune necunoscutã `%s'\n"
 msgid "File `%s' exists. "
 msgstr "Fiºierul `%s' existã. "
 
-#: g10/openfile.c:88
+#: g10/openfile.c:90
 msgid "Overwrite? (y/N) "
 msgstr "Suprascriu? (d/N) "
 
-#: g10/openfile.c:121
+#: g10/openfile.c:123
 #, c-format
 msgid "%s: unknown suffix\n"
 msgstr "%s: sufix necunoscut\n"
 
-#: g10/openfile.c:143
+#: g10/openfile.c:145
 msgid "Enter new filename"
 msgstr "Introduceþi un nou nume-fiºier"
 
-#: g10/openfile.c:188
+#: g10/openfile.c:190
 msgid "writing to stdout\n"
 msgstr "scriu la stdout\n"
 
-#: g10/openfile.c:303
+#: g10/openfile.c:305
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "presupun date semnate în `%s'\n"
 
-#: g10/openfile.c:382
+#: g10/openfile.c:384
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr "fiºier de configurare nou `%s' creat\n"
 
-#: g10/openfile.c:384
+#: g10/openfile.c:386
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr ""
 "AVERTISMENT: opþiunile din %s nu sunt încã active în timpul acestei rulãri\n"
 
-#: g10/openfile.c:416
+#: g10/openfile.c:418
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "director `%s' creat\n"
@@ -5421,48 +5417,58 @@ msgstr ""
 msgid "generating the deprecated 16-bit checksum for secret key protection\n"
 msgstr "generez învechitul checksum de 16-bit pentru protecþia cheii secrete\n"
 
-#: g10/seskey.c:53
+#: g10/seskey.c:54
 msgid "weak key created - retrying\n"
 msgstr "cheie slabã creatã - reîncerc\n"
 
-#: g10/seskey.c:58
+#: g10/seskey.c:59
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr "nu pot evita cheie slabã pentru cifru simetric; am încercat %d ori!\n"
 
-#: g10/seskey.c:214
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA necesitã folosirea unui algoritm cu hash de 160 biþi\n"
+#: g10/seskey.c:222
+msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+msgstr ""
+
+#: g10/seskey.c:236
+#, c-format
+msgid "DSA key %s uses an unsafe (%u bit) hash\n"
+msgstr ""
+
+#: g10/seskey.c:248
+#, c-format
+msgid "DSA key %s requires a %u bit or larger hash\n"
+msgstr ""
 
 #: g10/sig-check.c:76
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "AVERTISMENT: conflict pentru rezumat semnãturã în mesaj\n"
 
-#: g10/sig-check.c:105
+#: g10/sig-check.c:101
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
 msgstr ""
 "AVERTISMENT: subcheia de semnare %s nu este certificatã reciproc (cross-"
 "certified)\n"
 
-#: g10/sig-check.c:111
+#: g10/sig-check.c:113
 #, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
 msgstr ""
 "AVERTISMENT: subcheia de semnare %s are o certificare-reciprocã invalidã "
 "(invalid cross-certification)\n"
 
-#: g10/sig-check.c:179
+#: g10/sig-check.c:181
 #, c-format
 msgid "public key %s is %lu second newer than the signature\n"
 msgstr "cheie publicã %s este mai nouã cu %lu secundã decât semnãtura\n"
 
-#: g10/sig-check.c:180
+#: g10/sig-check.c:182
 #, c-format
 msgid "public key %s is %lu seconds newer than the signature\n"
 msgstr "cheie publicã %s este mai nouã cu %lu secunde decât semnãtura\n"
 
-#: g10/sig-check.c:191
+#: g10/sig-check.c:193
 #, c-format
 msgid ""
 "key %s was created %lu second in the future (time warp or clock problem)\n"
@@ -5470,7 +5476,7 @@ msgstr ""
 "cheia %s a fost creatã %lu secundã în viitor (warp în timp sau probleme cu "
 "ceasul)\n"
 
-#: g10/sig-check.c:193
+#: g10/sig-check.c:195
 #, c-format
 msgid ""
 "key %s was created %lu seconds in the future (time warp or clock problem)\n"
@@ -5478,24 +5484,24 @@ msgstr ""
 "cheia %s a fost creatã %lu secunde în viitor (warp în timp sau probleme cu "
 "ceasul)\n"
 
-#: g10/sig-check.c:203
+#: g10/sig-check.c:205
 #, c-format
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTÃ: cheia semnãturii %s a expirat %s\n"
 
-#: g10/sig-check.c:286
+#: g10/sig-check.c:287
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "presupun semnãturã incorectã din cheia %s datoritã unui bit critic "
 "necunoscut\n"
 
-#: g10/sig-check.c:543
+#: g10/sig-check.c:544
 #, c-format
 msgid "key %s: no subkey for subkey revocation signature\n"
 msgstr "cheia %s: nici o subcheie pentru semnãtura de revocare a subcheii\n"
 
-#: g10/sig-check.c:569
+#: g10/sig-check.c:570
 #, c-format
 msgid "key %s: no subkey for subkey binding signature\n"
 msgstr "cheia %s: nici o subcheie pentru semnãtura legatã de subcheie\n"
@@ -5540,21 +5546,25 @@ msgstr ""
 "AVERTISMENT: nu pot %%-expanda URL-ul serverului de chei (prea mare).  Îl "
 "folosesc neexpandat.\n"
 
-#: g10/sign.c:350
+#: g10/sign.c:328
+msgid "DSA requires the use of a 160 bit hash algorithm\n"
+msgstr "DSA necesitã folosirea unui algoritm cu hash de 160 biþi\n"
+
+#: g10/sign.c:357
 #, c-format
 msgid "checking created signature failed: %s\n"
 msgstr "verificarea semnãturii create a eºuat: %s\n"
 
-#: g10/sign.c:359
+#: g10/sign.c:366
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s semnãturã de la: \"%s\"\n"
 
-#: g10/sign.c:752
+#: g10/sign.c:759
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "puteþi semna-dataºat cu chei stil PGP 2.x numai în modul --pgp2\n"
 
-#: g10/sign.c:821
+#: g10/sign.c:828
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -5562,15 +5572,15 @@ msgstr ""
 "AVERTISMENT: forþarea algoritmului rezumat %s (%d) violeazã preferinþele "
 "destinatarului\n"
 
-#: g10/sign.c:919
+#: g10/sign.c:928
 msgid "signing:"
 msgstr "semnare:"
 
-#: g10/sign.c:1031
+#: g10/sign.c:1040
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "puteþi semna-în-clar cu chei stil PGP 2.x în modul --pgp2\n"
 
-#: g10/sign.c:1209
+#: g10/sign.c:1218
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "va fi folositã cifrarea %s\n"
@@ -5777,12 +5787,12 @@ msgstr "%s: adãugarea unei înregistrãri a eºuat: %s\n"
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "trustdb este coruptã; rulaþi \"gpg --fix-trustdb\".\n"
 
-#: g10/textfilter.c:148
+#: g10/textfilter.c:149
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
 msgstr "nu pot mânui linii de text mai lungi de %d caractere\n"
 
-#: g10/textfilter.c:245
+#: g10/textfilter.c:248
 #, c-format
 msgid "input line longer than %d characters\n"
 msgstr "linii de intrare mai lungi de %d caractere\n"
@@ -6261,6 +6271,15 @@ msgstr ""
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(aþi folosit probabil un program nepotrivit pentru aceastã sarcinã)\n"
 
+#~ msgid "algorithms on these user IDs:\n"
+#~ msgstr "algoritmuri pentru aceste ID-uri utilizator:\n"
+
+#~ msgid ""
+#~ "please see http://www.gnupg.org/why-not-idea.html for more information\n"
+#~ msgstr ""
+#~ "vedeþi http://www.gnupg.org/why-not-idea.html pentru informaþii "
+#~ "suplimentare\n"
+
 #~ msgid ""
 #~ "a notation name must have only printable characters or spaces, and end "
 #~ "with an '='\n"
@@ -6515,9 +6534,6 @@ msgstr "(aþi folosit probabil un program nepotrivit pentru aceastã sarcinã)\n"
 
 #~ msgid "can't open %s: %s\n"
 #~ msgstr "nu pot deschide %s: %s\n"
-
-#~ msgid " i = please show me more information\n"
-#~ msgstr " i = aratã-mi mai multe informaþii\n"
 
 #~ msgid "key %08lX: key has been revoked!\n"
 #~ msgstr "cheia %08lX: cheia a fost revocatã!\n"

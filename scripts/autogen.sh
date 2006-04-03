@@ -63,15 +63,17 @@ if test "$1" = "--build-w32"; then
           echo "We need at least version 0.3 of MingW32/CPD" >&2
           exit 1
        fi
-       crossbindir=`mingw32 --install-dir`/bin
-       # Old autoconf version required us to setup the environment
-       # with the proper tool names.
-       CC=`mingw32 --get-path gcc`
-       CPP=`mingw32 --get-path cpp`
-       AR=`mingw32 --get-path ar`
-       RANLIB=`mingw32 --get-path ranlib`
-       export CC CPP AR RANLIB 
-       conf_CC=""
+       echo "MingW32/CPD is no longer supported" >&2
+       exit 1
+       # crossbindir=`mingw32 --install-dir`/bin
+       # # Old autoconf version required us to setup the environment
+       # # with the proper tool names.
+       # CC=`mingw32 --get-path gcc`
+       # CPP=`mingw32 --get-path cpp`
+       # AR=`mingw32 --get-path ar`
+       # RANLIB=`mingw32 --get-path ranlib`
+       # export CC CPP AR RANLIB 
+       # conf_CC=""
     fi
    
     if [ -f "$tsdir/config.log" ]; then

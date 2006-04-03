@@ -917,7 +917,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
             goto leave;
     }
 
-    /* setup the inner packet */
+    write_status (STATUS_BEGIN_SIGNING);
+
+    /* Setup the inner packet. */
     if( detached ) {
 	if( multifile ) {
 	    STRLIST sl;
@@ -1282,6 +1284,8 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
         if (rc)
             goto leave;
     }
+
+    write_status (STATUS_BEGIN_SIGNING);
 
     /* Pipe data through all filters; i.e. write the signed stuff */
     /*(current filters: zip - encrypt - armor)*/

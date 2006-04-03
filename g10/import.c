@@ -563,9 +563,8 @@ print_import_check (PKT_public_key * pk, PKT_user_id * id)
 static void
 check_prefs_warning(PKT_public_key *pk)
 {
-  log_info(_("WARNING: key %s contains preferences for unavailable\n"),
-	   keystr_from_pk(pk));
-  log_info(_("algorithms on these user IDs:\n"));
+  log_info(_("WARNING: key %s contains preferences for unavailable\n"
+             "algorithms on these user IDs:\n"), keystr_from_pk(pk));
 }
 
 static void

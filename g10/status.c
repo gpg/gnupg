@@ -165,6 +165,7 @@ get_status_string ( int no )
     case STATUS_BACKUP_KEY_CREATED:s="BACKUP_KEY_CREATED"; break;
     case STATUS_PKA_TRUST_BAD  : s = "PKA_TRUST_BAD"; break;
     case STATUS_PKA_TRUST_GOOD : s = "PKA_TRUST_GOOD"; break;
+    case STATUS_BEGIN_SIGNING  : s = "BEGIN_SIGNING"; break;
     default: s = "?"; break;
     }
   return s;

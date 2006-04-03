@@ -43,27 +43,27 @@ a file containing keys is listed).
 
 @table @asis
 
-@item -s, --sign
+@item -s, --sign 
 Make a signature. This command may be combined with --encrypt (for a
 signed and encrypted message), --symmetric (for a signed and
 symmetrically encrypted message), or --encrypt and --symmetric
 together (for a signed message that may be decrypted via a secret key
 or a passphrase).
 
-@item --clearsign
+@item --clearsign 
 Make a clear text signature.
 
-@item -b, --detach-sign
+@item -b, --detach-sign 
 Make a detached signature.
 
-@item -e, --encrypt
+@item -e, --encrypt 
 Encrypt data. This option may be combined with --sign (for a signed
 and encrypted message), --symmetric (for a message that may be
 decrypted via a secret key or a passphrase), or --sign and --symmetric
 together (for a signed message that may be decrypted via a secret key
 or a passphrase).
 
-@item -c, --symmetric
+@item -c, --symmetric 
 Encrypt with a symmetric cipher using a passphrase. The default
 symmetric cipher used is CAST5, but may be chosen with the
 --cipher-algo option. This option may be combined with --sign (for a
@@ -72,10 +72,10 @@ that may be decrypted via a secret key or a passphrase), or --sign and
 --encrypt together (for a signed message that may be decrypted via a
 secret key or a passphrase).
 
-@item --store
+@item --store 
 Store only (make a simple RFC1991 packet).
 
-@item --decrypt 
+@item -d, --decrypt 
 Decrypt @code{file} (or stdin if no file is specified) and
 write it to stdout (or the file specified with
 --output). If the decrypted file is signed, the
@@ -317,9 +317,10 @@ preferences, without including any implied preferences.
 
 @item showpref
 More verbose preferences listing for the selected user ID. This shows
-the preferences in effect by including the implied preferences of
-3DES (cipher), SHA-1 (digest), and Uncompressed (compression) if they
-are not already included in the preference list.
+the preferences in effect by including the implied preferences of 3DES
+(cipher), SHA-1 (digest), and Uncompressed (compression) if they are
+not already included in the preference list. In addition, the
+preferred keyserver and signature notations (if any) are shown.
 
 @item setpref @code{string}
 Set the list of user ID preferences to @code{string} for all (or just
@@ -335,33 +336,37 @@ used by GnuPG.
 @item keyserver
 Set a preferred keyserver for the specified user ID(s). This allows
 other users to know where you prefer they get your key from. See
---keyserver-option honor-keyserver-url for more on how this works.
-Note that some versions of PGP interpret the presence of a keyserver
-URL as an instruction to enable PGP/MIME mail encoding. Setting a
-value of "none" removes a existing preferred keyserver.
+--keyserver-options honor-keyserver-url for more on how this works.
+Setting a value of "none" removes an existing preferred keyserver.
+
+@item notation
+Set a name=value notation for the specified user ID(s). See
+--cert-notation for more on how this works. Setting a value of "none"
+removes all notations, setting a notation prefixed with a minus sign
+(-) removes that notation, and setting a notation name (without the
+=value) prefixed with a minus sign removes all notations with that
+name.
 
 @item toggle
 Toggle between public and secret key listing.
 
 @item clean
-Cleans keys by removing unusable pieces. This command can be used to
-keep keys neat and clean, and it has no effect aside from that.
-
-@table @asis
-
-@item sigs
-Remove any signatures that are not usable by the trust calculations.
-For example, this removes any signature that does not validate. It
-also removes any signature that is superceded by a later signature, or
-signatures that were revoked.
-
-@item uids
 Compact (by removing all signatures except the selfsig) any user ID
-that is no longer usable (e.g. revoked, or expired).
-@end table
+that is no longer usable (e.g. revoked, or expired). Then, remove any
+signatures that are not usable by the trust calculations.
+Specifically, this removes any signature that does not validate, any
+signature that is superceded by a later signature, revoked signatures,
+and signatures issued by keys that are not present on the keyring.
 
-@noindent
-If invoked with no arguments, both `sigs' and `uids' are cleaned.
+@item minimize
+Make the key as small as possible. This removes all signatures from
+each user ID except for the most recent self-signature.
+
+@item cross-certify
+Add cross-certification signatures to signing subkeys that may not
+currently have them. Cross-certification signatures protect against a
+subtle attack against signing subkeys. See
+--require-cross-certification.
 
 @item save
 Save all changes to the key rings and quit.
@@ -480,7 +485,7 @@ Import/merge keys. This adds the given keys to the
 keyring. The fast version is currently just a synonym.
 
 There are a few other options which control how this command works.
-Most notable here is the --keyserver-option merge-only option which
+Most notable here is the --keyserver-options merge-only option which
 does not insert new keys but does only the merging of new signatures,
 user-IDs and subkeys.
 
@@ -494,9 +499,9 @@ local keyring. This is useful for updating a key with the latest
 signatures, user IDs, etc. Calling this with no arguments will
 refresh the entire keyring. Option --keyserver must be used to give
 the name of the keyserver for all keys that do not have preferred
-keyservers set (see --keyserver-option honor-keyserver-url).
+keyservers set (see --keyserver-options honor-keyserver-url).
 
-@item --search-keys 
+@item --search-keys @code{names}
 Search the keyserver for the given names. Multiple names given here
 will be joined together to create the search string for the keyserver.
 Option --keyserver must be used to give the name of this keyserver.
@@ -504,6 +509,11 @@ Keyservers that support different search methods allow using the
 syntax specified in "How to specify a user ID" below. Note that
 different keyserver types support different search methods. Currently
 only LDAP supports them all.
+
+@item --fetch-keys @code{URIs}
+Retrieve keys located at the specified URIs. Note that different
+installations of GnuPG may support different protocols (HTTP, FTP,
+LDAP, etc.)
 
 @item --update-trustdb
 Do trust database maintenance. This command iterates over all keys
@@ -775,14 +785,15 @@ don't want to keep your secret keys (or one of them)
 online but still want to be able to check the validity of a given
 recipient's or signator's key. 
 
-@item --trust-model @code{pgp|classic|always}
+@item --trust-model @code{pgp|classic|direct|always|auto}
 Set what trust model GnuPG should follow. The models are:
 
 @table @asis
 
 @item pgp
 This is the Web of Trust combined with trust signatures as used in PGP
-5.x and later. This is the default trust model.
+5.x and later. This is the default trust model when creating a new
+trust database.
 
 @item classic
 This is the standard Web of Trust as used in PGP 2.x and earlier.
@@ -793,14 +804,49 @@ Web of Trust.
 
 @item always
 Skip key validation and assume that used keys are always fully
-trusted. You won't use this unless you have installed some external
-validation scheme. This option also suppresses the "[uncertain]" tag
-printed with signature checks when there is no evidence that the user
-ID is bound to the key.
+trusted. You generally won't use this unless you are using some
+external validation scheme. This option also suppresses the
+"[uncertain]" tag printed with signature checks when there is no
+evidence that the user ID is bound to the key.
+
+@item auto
+Select the trust model depending on whatever the internal trust
+database says. This is the default model if such a database already
+exists.
 @end table
 
 @item --always-trust
 Identical to `--trust-model always'. This option is deprecated.
+
+@item --auto-key-locate @code{parameters}
+@itemx --no-auto-key-locate
+GnuPG can automatically locate and retrieve keys as needed using this
+option. This happens when encrypting to an email address (in the
+"user@@example.com" form), and there are no user@@example.com keys on
+the local keyring. This option takes any number of the following
+arguments, in the order they are to be tried:
+
+@table @asis
+
+@item cert
+locate a key using DNS CERT, as specified in 2538bis (currently in
+draft): http://www.josefsson.org/rfc2538bis/
+
+@item pka
+locate a key using DNS PKA.
+
+@item ldap
+locate a key using the PGP Universal method of checking
+"ldap://keys.(thedomain)".
+
+@item keyserver
+locate a key using whatever keyserver is defined using the --keyserver
+option.
+
+@item (keyserver URL)
+In addition, a keyserver URL as used in the --keyserver option may be
+used here to query that particular keyserver.
+@end table
 
 @item --keyid-format @code{short|0xshort|long|0xlong}
 Select how to display key IDs. "short" is the traditional 8-character
@@ -808,23 +854,26 @@ key ID. "long" is the more accurate (but less convenient)
 16-character key ID. Add an "0x" to either to include an "0x" at the
 beginning of the key ID, as in 0x99242560.
 
-@item --keyserver @code{name}
+@item --keyserver @code{name} 
 Use @code{name} as your keyserver. This is the server that
 --recv-keys, --send-keys, and --search-keys will communicate with to
 receive keys from, send keys to, and search for keys on. The format
 of the @code{name} is a URI: `scheme:[//]keyservername[:port]' The
 scheme is the type of keyserver: "hkp" for the HTTP (or compatible)
-keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
-Graff email keyserver. Note that your particular installation of
-GnuPG may have other keyserver types available as well. Keyserver
-schemes are case-insensitive.
+keyservers, "ldap" for the LDAP keyservers, or "mailto" for the Graff
+email keyserver. Note that your particular installation of GnuPG may
+have other keyserver types available as well. Keyserver schemes are
+case-insensitive. After the keyserver name, optional keyserver
+configuration options may be provided. These are the same as the
+global --keyserver-options from below, but apply only to this
+particular keyserver.
 
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. The keyserver
 "hkp://subkeys.pgp.net" uses round robin DNS to give a different
 keyserver each time you use it.
 
-@item --keyserver-options @code{parameters}
+@item --keyserver-options @code{name=value1 }
 This is a space or comma delimited string that gives options for the
 keyserver. Options can be prepended with a `no-' to give the opposite
 meaning. Valid import-options or export-options may be used here as
@@ -841,17 +890,35 @@ differentiate between revoked and unrevoked keys, and for such
 keyservers this option is meaningless. Note also that most keyservers
 do not have cryptographic verification of key revocations, and so
 turning this option off may result in skipping keys that are
-incorrectly marked as revoked. Defaults to on.
+incorrectly marked as revoked.
 
 @item include-disabled
 When searching for a key with --search-keys, include keys that are
 marked on the keyserver as disabled. Note that this option is not
 used with HKP keyservers.
 
+@item auto-key-retrieve
+This option enables the automatic retrieving of keys from a keyserver
+when verifying signatures made by keys that are not on the local
+keyring.
+
+Note that this option makes a "web bug" like behavior possible.
+Keyserver operators can see which keys you request, so by sending you
+a message signed by a brand new key (which you naturally will not have
+on your local keyring), the operator can tell both your IP address and
+the time when you verified the signature.
+
 @item honor-keyserver-url
 When using --refresh-keys, if the key in question has a preferred
-keyserver set, then use that preferred keyserver to refresh the key
-from. Defaults to yes.
+keyserver URL, then use that preferred keyserver to refresh the key
+from. In addition, if auto-key-retrieve is set, and the signature
+being verified has a preferred keyserver URL, then use that preferred
+keyserver to fetch the key from. Defaults to yes.
+
+@item honor-pka-record
+If auto-key-retrieve is set, and the signature being verified has a
+PKA record, then use the PKA information to fetch the key. Defaults
+to yes.
 
 @item include-subkeys
 When receiving a key, include subkeys as potential targets. Note that
@@ -885,19 +952,12 @@ timeout applies separately to each key retrieval, and not to the
 For HTTP-like keyserver schemes that (such as HKP and HTTP itself),
 try to access the keyserver over a proxy. If a @code{value} is
 specified, use this as the HTTP proxy. If no @code{value} is
-specified, try to use the value of the environment variable
-"http_proxy".
+specified, the value of the environment variable "http_proxy", if any,
+will be used.
 
-@item auto-key-retrieve
-This option enables the automatic retrieving of keys from a keyserver
-when verifying signatures made by keys that are not on the local
-keyring.
-
-Note that this option makes a "web bug" like behavior possible.
-Keyserver operators can see which keys you request, so by sending you
-a message signed by a brand new key (which you naturally will not have
-on your local keyring), the operator can tell both your IP address and
-the time when you verified the signature.
+@item max-cert-size
+When retrieving a key via DNS CERT, only accept keys up to this size.
+Defaults to 16384 bytes.
 @end table
 
 @item --import-options @code{parameters}
@@ -924,18 +984,19 @@ yes for keyserver --recv-keys.
 During import, allow key updates to existing keys, but do not allow
 any new keys to be imported. Defaults to no.
 
-@item import-clean-sigs
-After import, remove any signatures from the new key that are not
-usable. This is the same as running the --edit-key command "clean
-sigs" after import. Defaults to no.
-
-@item import-clean-uids
-After import, compact (remove all signatures from) any user IDs from
-the new key that are not usable. This is the same as running the
---edit-key command "clean uids" after import. Defaults to no.
-
 @item import-clean
-Identical to "import-clean-sigs import-clean-uids".
+After import, compact (remove all signatures except the
+self-signature) any user IDs from the new key that are not usable.
+Then, remove any signatures from the new key that are not usable.
+This includes signatures that were issued by keys that are not present
+on the keyring. This option is the same as running the --edit-key
+command "clean" after import. Defaults to no.
+
+@item import-minimal
+Import the smallest key possible. This removes all signatures except
+the most recent self-signature on each user ID. This option is the
+same as running the --edit-key command "minimize" after import.
+Defaults to no.
 @end table
 
 @item --export-options @code{parameters}
@@ -959,25 +1020,26 @@ program that does not accept attribute user IDs. Defaults to yes.
 Include designated revoker information that was marked as
 "sensitive". Defaults to no.
 
-@item export-minimal
-Export the smallest key possible. Currently this is done by leaving
-out any signatures that are not self-signatures. Defaults to no.
-
-@item export-clean-sigs
-Do not export any signatures that are not usable. This is the same as
-running the --edit-key command "clean sigs" before export. Defaults
-to no.
-
-@item export-clean-uids
-Compact (remove all signatures from) user IDs on the key being
-exported if the user IDs are not usable. This is the same as running
-the --edit-key command "clean uids" before export. Defaults to no.
-
 @item export-reset-subkey-passwd
 When using the "--export-secret-subkeys" command, this option resets
 the passphrases for all exported subkeys to empty. This is useful
 when the exported subkey is to be used on an unattended machine where
 a passphrase doesn't necessarily make sense. Defaults to no.
+
+@item export-clean
+Compact (remove all signatures from) user IDs on the key being
+exported if the user IDs are not usable. Also, do not export any
+signatures that are not usable. This includes signatures that were
+issued by keys that are not present on the keyring. This option is
+the same as running the --edit-key command "clean" before export
+except that the local copy of the key is not modified. Defaults to
+no.
+
+@item export-minimal
+Export the smallest key possible. This removes all signatures except
+the most recent self-signature on each user ID. This option is the
+same as running the --edit-key command "minimize" before export except
+that the local copy of the key is not modified. Defaults to no.
 @end table
 
 @item --list-options @code{parameters}
@@ -1065,6 +1127,17 @@ the signature. Defaults to no.
 @item show-unusable-uids
 Show revoked and expired user IDs during signature verification.
 Defaults to no.
+
+@item pka-lookups
+Enable PKA lookups to verify sender addresses. Note that PKA is based
+on DNS, and so enabling this option may disclose information on when
+and what signatures are verified or to whom data is encrypted. This
+is similar to the "web bug" described for the auto-key-retrieve
+feature.
+
+@item pka-trust-increase
+Raise the trust in a signature to full if the signature passes PKA
+validation. This option is only meaningful if pka-lookups is set.
 @end table
 
 @item --show-photos
@@ -1135,10 +1208,10 @@ a options file. This also overrides the environment variable
 $GNUPGHOME.
 
 @item --pcsc-driver @code{file}
-Use @code{file} to access the smartcard reader. The current default
-is `libpcsclite.so'. Instead of using this option you might also
-want to install a symbolic link to the default file name
-(e.g. from `libpcsclite.so.1').
+Use @code{file} to access the smartcard reader. The current default is
+`libpcsclite.so.1' for GLIBC based systems,
+`/System/Library/Frameworks/PCSC.framework/PCSC' for MAC OS X,
+`winscard.dll' for Windows and `libpcsclite.so' for other systems.
 
 @item --ctapi-driver @code{file}
 Use @code{file} to access the smartcard reader. The current default
@@ -1485,21 +1558,21 @@ signature. Note that all other PGP versions do it this way too.
 Enabled by default. --no-escape-from-lines disables this option.
 
 @item --passphrase-fd @code{n}
-Read the passphrase from file descriptor @code{n}. If you use
-0 for @code{n}, the passphrase will be read from stdin. This
-can only be used if only one passphrase is supplied.
-Don't use this option if you can avoid it.
+Read the passphrase from file descriptor @code{n}. If you use 0 for
+@code{n}, the passphrase will be read from stdin. This can only be
+used if only one passphrase is supplied.
 
 @item --passphrase-file @code{file}
 Read the passphrase from file @code{file}. This can only be used if
 only one passphrase is supplied. Obviously, a passphrase stored in a
-file is of questionable security. Don't use this option if you can
-avoid it.
+file is of questionable security if other users can read this file.
+Don't use this option if you can avoid it.
 
 @item --passphrase @code{string}
 Use @code{string} as the passphrase. This can only be used if only one
 passphrase is supplied. Obviously, this is of very questionable
-security. Don't use this option if you can avoid it.
+security on a multi-user system. Don't use this option if you can
+avoid it.
 
 @item --command-fd @code{n}
 This is a replacement for the deprecated shared-memory IPC mode.
@@ -1788,19 +1861,29 @@ of one specific message without compromising all messages ever
 encrypted for one secret key. DON'T USE IT UNLESS YOU ARE REALLY
 FORCED TO DO SO.
 
-@item --override-session-key @code{string} 
+@item --override-session-key @code{string}
 Don't use the public key but the session key @code{string}. The format of this
 string is the same as the one printed by --show-session-key. This option
 is normally not used but comes handy in case someone forces you to reveal the
 content of an encrypted message; using this option you can do this without
 handing out the secret key.
 
+@item --require-cross-certification
+@itemx --no-require-certification
+When verifying a signature made from a subkey, ensure that the cross
+certification "back signature" on the subkey is present and valid.
+This protects against a subtle attack against subkeys that can sign.
+Currently defaults to --no-require-cross-certification, but will be
+changed to --require-cross-certification in the future.
+
 @item --ask-sig-expire
 @itemx --no-ask-sig-expire
 When making a data signature, prompt for an expiration time. If this
 option is not specified, the expiration time set via
 --default-sig-expire is used. --no-ask-sig-expire disables this
-option.
+option. Note that by default, --force-v3-sigs is set which also
+disables this option. If you want signature expiration, you must set
+--no-force-v3-sigs as well as turning --ask-sig-expire on.
 
 @item --default-sig-expire
 The default expiration time to use for signature expiration. Valid
@@ -1842,6 +1925,12 @@ keys in turn to find the right decryption key. This option forces the
 behaviour as used by anonymous recipients (created by using
 --throw-keyids) and might come handy in case where an encrypted
 message contains a bogus key ID.
+
+@item --allow-multisig-verification
+Allow verification of concatenated signed messages. This will run a
+signature verification for each data+signature block. There are some
+security issues with this option thus it is off by default. Note that
+versions of gpg rpior to version 1.4.3 implicityly allowed for this.
 
 @item --enable-special-filenames
 This options enables a mode in which filenames of the form
@@ -2016,10 +2105,6 @@ the gpg-agent and the protocol version which should be set to 1. When
 starting the gpg-agent as described in its documentation, this
 variable is set to the correct value. The option --gpg-agent-info can
 be used to override it.
-
-@item http_proxy
-Only honored when the keyserver-option
-honor-http-proxy is set.
 
 @item COLUMNS
 @itemx LINES

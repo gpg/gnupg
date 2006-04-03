@@ -1817,10 +1817,10 @@ $GNUPGHOME.
 <varlistentry>
 <term>--pcsc-driver &ParmFile;</term>
 <listitem><para>
-Use &ParmFile; to access the smartcard reader.  The current default
-is `libpcsclite.so'.  Instead of using this option you might also
-want to install a symbolic link to the default file name
-(e.g. from `libpcsclite.so.1').
+Use &ParmFile; to access the smartcard reader.  The current default is
+`libpcsclite.so.1' for GLIBC based systems,
+`/System/Library/Frameworks/PCSC.framework/PCSC' for MAC OS X,
+`winscard.dll' for Windows and `libpcsclite.so' for other systems.
 </para></listitem></varlistentry>
 
 <varlistentry>

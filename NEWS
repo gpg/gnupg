@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.4.3
+Noteworthy changes in version 1.4.3 (2006-04-03)
 ------------------------------------------------
 
     * If available, cURL-based keyserver helpers are built that can

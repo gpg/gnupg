@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-03-09 13:31+0100\n"
+"POT-Creation-Date: 2006-04-03 11:40+0200\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -39,12 +39,12 @@ msgstr "nelze zamèít `%s'\n"
 msgid "waiting for lock on `%s'...\n"
 msgstr "zapisuji tajný klíè do `%s'\n"
 
-#: cipher/random.c:448 g10/card-util.c:677 g10/card-util.c:746
+#: cipher/random.c:448 g10/card-util.c:678 g10/card-util.c:747
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:488
-#: g10/gpg.c:997 g10/gpg.c:3363 g10/import.c:193 g10/keygen.c:2323
-#: g10/keyring.c:1525 g10/openfile.c:184 g10/openfile.c:340
-#: g10/plaintext.c:482 g10/sign.c:772 g10/sign.c:932 g10/sign.c:1045
-#: g10/sign.c:1195 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
+#: g10/gpg.c:997 g10/gpg.c:3365 g10/import.c:195 g10/keygen.c:2323
+#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:342
+#: g10/plaintext.c:482 g10/sign.c:779 g10/sign.c:941 g10/sign.c:1054
+#: g10/sign.c:1204 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
 #, c-format
 msgid "can't open `%s': %s\n"
@@ -78,8 +78,8 @@ msgid "note: random_seed file not updated\n"
 msgstr "poznámka: soubor random_seed není aktualizován\n"
 
 #: cipher/random.c:544 g10/exec.c:478 g10/gpg.c:996 g10/keygen.c:2802
-#: g10/keygen.c:2832 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:261
-#: g10/openfile.c:355 g10/sign.c:790 g10/sign.c:1061 g10/tdbio.c:536
+#: g10/keygen.c:2832 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:263
+#: g10/openfile.c:357 g10/sign.c:797 g10/sign.c:1070 g10/tdbio.c:536
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "nemohu vytvoøit `%s': %s\n"
@@ -379,7 +379,7 @@ msgstr ""
 "neplatný znak (quoted-printable) v ASCII kódování - pravdìpodobnì byl pou¾it "
 "¹patný MTA\n"
 
-#: g10/card-util.c:63 g10/card-util.c:305
+#: g10/card-util.c:63 g10/card-util.c:306
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGp karta není dostupná: %s\n"
@@ -389,153 +389,153 @@ msgstr "OpenPGp karta není dostupná: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "Nalezena OpenPGP karta èíslo %s\n"
 
-#: g10/card-util.c:76 g10/card-util.c:1405 g10/delkey.c:128 g10/keyedit.c:1524
+#: g10/card-util.c:76 g10/card-util.c:1406 g10/delkey.c:128 g10/keyedit.c:1524
 #: g10/keygen.c:2507 g10/revoke.c:218 g10/revoke.c:456
 msgid "can't do this in batch mode\n"
 msgstr "nelze provést v dávkovém módu\n"
 
-#: g10/card-util.c:103 g10/card-util.c:1131 g10/card-util.c:1214
+#: g10/card-util.c:103 g10/card-util.c:1132 g10/card-util.c:1215
 #: g10/keyedit.c:425 g10/keyedit.c:446 g10/keyedit.c:460 g10/keygen.c:1339
 #: g10/keygen.c:1406
 msgid "Your selection? "
 msgstr "Vá¹ výbìr? "
 
-#: g10/card-util.c:215 g10/card-util.c:265
+#: g10/card-util.c:216 g10/card-util.c:266
 msgid "[not set]"
 msgstr "[není nastaven]"
 
-#: g10/card-util.c:412
+#: g10/card-util.c:413
 msgid "male"
 msgstr "mu¾"
 
-#: g10/card-util.c:413
+#: g10/card-util.c:414
 msgid "female"
 msgstr "¾ena"
 
-#: g10/card-util.c:413
+#: g10/card-util.c:414
 msgid "unspecified"
 msgstr "neuvedeno"
 
-#: g10/card-util.c:440
+#: g10/card-util.c:441
 msgid "not forced"
 msgstr "není vy¾adováno"
 
-#: g10/card-util.c:440
+#: g10/card-util.c:441
 msgid "forced"
 msgstr "vy¾adováno"
 
-#: g10/card-util.c:518
+#: g10/card-util.c:519
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Chyba: V souèasné verzi je povolenou pouze plain ASCII.\n"
 
-#: g10/card-util.c:520
+#: g10/card-util.c:521
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "Chyba: Znak \"<\" nelze pou¾ít.\n"
 
-#: g10/card-util.c:522
+#: g10/card-util.c:523
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "Chyba: Více mezer není povoleno.\n"
 
-#: g10/card-util.c:539
+#: g10/card-util.c:540
 msgid "Cardholder's surname: "
 msgstr "Pøíjmení dr¾itele karty: "
 
-#: g10/card-util.c:541
+#: g10/card-util.c:542
 msgid "Cardholder's given name: "
 msgstr "Jméno (køestní) dr¾itele karty: "
 
-#: g10/card-util.c:559
+#: g10/card-util.c:560
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr "Chyba: jméno a pøíjmení je pøíli¹ dlouhé (limit je %d znakù).\n"
 
-#: g10/card-util.c:580
+#: g10/card-util.c:581
 msgid "URL to retrieve public key: "
 msgstr "URL pro získání veøejného klíèe: "
 
-#: g10/card-util.c:588
+#: g10/card-util.c:589
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Chyba: URL je pøíli¹ dlouhé (limit je %d znakù).\n"
 
-#: g10/card-util.c:686 g10/card-util.c:755 g10/import.c:276
+#: g10/card-util.c:687 g10/card-util.c:756 g10/import.c:280
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "chyba pøi ètení `%s': %s\n"
 
-#: g10/card-util.c:694
+#: g10/card-util.c:695
 msgid "Login data (account name): "
 msgstr "Login (jménu úètu): "
 
-#: g10/card-util.c:704
+#: g10/card-util.c:705
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "Chyba: Login je pøíli¹ dlouhý (limit je %d znakù).\n"
 
-#: g10/card-util.c:763
+#: g10/card-util.c:764
 msgid "Private DO data: "
 msgstr "Privátní DO data: "
 
-#: g10/card-util.c:773
+#: g10/card-util.c:774
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "Chyba: Privátní DO je pøíli¹ dlouhé (limit je %d znakù).\n"
 
-#: g10/card-util.c:793
+#: g10/card-util.c:794
 msgid "Language preferences: "
 msgstr "Jazykové pøedvolby: "
 
-#: g10/card-util.c:801
+#: g10/card-util.c:802
 msgid "Error: invalid length of preference string.\n"
 msgstr "Chyba: neplatná délka øetezce s pøedvolbami.\n"
 
-#: g10/card-util.c:810
+#: g10/card-util.c:811
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Chyba: neplatný znak v øetìzci s pøedvolbami\n"
 
-#: g10/card-util.c:831
+#: g10/card-util.c:832
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "Zadejte pohlaví: M - mu¾ské, F - ¾enské nebo stisnìte mezerník: "
 
-#: g10/card-util.c:845
+#: g10/card-util.c:846
 msgid "Error: invalid response.\n"
 msgstr "Chyba: neplatná odpovìï.\n"
 
-#: g10/card-util.c:866
+#: g10/card-util.c:867
 msgid "CA fingerprint: "
 msgstr "CA fingerprint: "
 
-#: g10/card-util.c:889
+#: g10/card-util.c:890
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "Chyba: nesprávnì naformátovaný fingerprint.\n"
 
-#: g10/card-util.c:937
+#: g10/card-util.c:938
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "operace s klíèem není mo¾ná: %s\n"
 
-#: g10/card-util.c:938
+#: g10/card-util.c:939
 msgid "not an OpenPGP card"
 msgstr "toto není OpenPGP karta"
 
-#: g10/card-util.c:947
+#: g10/card-util.c:948
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "chyba pøi získání informací o aktuálním klíèi: %s\n"
 
-#: g10/card-util.c:1032
+#: g10/card-util.c:1033
 msgid "Replace existing key? (y/N) "
 msgstr "Pøepsat existující klíè? (a/N) "
 
-#: g10/card-util.c:1053 g10/card-util.c:1062
+#: g10/card-util.c:1054 g10/card-util.c:1063
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Vytvoøit zálohu ¹ifrovacího klíèe mimo kartu? (A/n) "
 
-#: g10/card-util.c:1074
+#: g10/card-util.c:1075
 msgid "Replace existing keys? (y/N) "
 msgstr "Pøepsat existující klíèe? (a/N) "
 
-#: g10/card-util.c:1083
+#: g10/card-util.c:1084
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -546,120 +546,120 @@ msgstr ""
 "   PIN = `%s'     PIN administrátora = `%s'\n"
 "Toto nastavení mù¾ete zmìnit pøíkazem --change-pin\n"
 
-#: g10/card-util.c:1122
+#: g10/card-util.c:1123
 msgid "Please select the type of key to generate:\n"
 msgstr "Prosím, vyberte druh klíèe, který chcete generovat:\n"
 
-#: g10/card-util.c:1124 g10/card-util.c:1205
+#: g10/card-util.c:1125 g10/card-util.c:1206
 msgid "   (1) Signature key\n"
 msgstr "   (1) Podepisovací klíè\n"
 
-#: g10/card-util.c:1125 g10/card-util.c:1207
+#: g10/card-util.c:1126 g10/card-util.c:1208
 msgid "   (2) Encryption key\n"
 msgstr "   (2) ©ifrovací klíè\n"
 
-#: g10/card-util.c:1126 g10/card-util.c:1209
+#: g10/card-util.c:1127 g10/card-util.c:1210
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Autentizaèní klíè\n"
 
-#: g10/card-util.c:1142 g10/card-util.c:1225 g10/keyedit.c:946
+#: g10/card-util.c:1143 g10/card-util.c:1226 g10/keyedit.c:946
 #: g10/keygen.c:1343 g10/keygen.c:1371 g10/keygen.c:1445 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Neplatný výbìr.\n"
 
-#: g10/card-util.c:1202
+#: g10/card-util.c:1203
 msgid "Please select where to store the key:\n"
 msgstr "Prosím vyberte místo pro uchování klíèe:\n"
 
-#: g10/card-util.c:1237
+#: g10/card-util.c:1238
 msgid "unknown key protection algorithm\n"
 msgstr "neznámý algoritmus pro ochranu klíèe\n"
 
-#: g10/card-util.c:1242
+#: g10/card-util.c:1243
 msgid "secret parts of key are not available\n"
 msgstr "tajné èásti klèe nejsou dostupné\n"
 
-#: g10/card-util.c:1247
+#: g10/card-util.c:1248
 msgid "secret key already stored on a card\n"
 msgstr "tajný klíè je na kartì ulo¾en\n"
 
-#: g10/card-util.c:1318 g10/keyedit.c:1357
+#: g10/card-util.c:1319 g10/keyedit.c:1357
 msgid "quit this menu"
 msgstr "ukonèit toto menu"
 
-#: g10/card-util.c:1320
+#: g10/card-util.c:1321
 msgid "show admin commands"
 msgstr "zobraz administrátorské pøíkazy"
 
-#: g10/card-util.c:1321 g10/keyedit.c:1360
+#: g10/card-util.c:1322 g10/keyedit.c:1360
 msgid "show this help"
 msgstr "ukázat tuto pomoc"
 
-#: g10/card-util.c:1323
+#: g10/card-util.c:1324
 msgid "list all available data"
 msgstr "vypi¹ v¹echna dostupná data"
 
-#: g10/card-util.c:1326
+#: g10/card-util.c:1327
 msgid "change card holder's name"
 msgstr "zmìní jméno majitele karty"
 
-#: g10/card-util.c:1327
+#: g10/card-util.c:1328
 msgid "change URL to retrieve key"
 msgstr "zmìní URL pro záskání klíèe"
 
-#: g10/card-util.c:1328
+#: g10/card-util.c:1329
 msgid "fetch the key specified in the card URL"
 msgstr "získá klíè specifikovaný v URL karty"
 
-#: g10/card-util.c:1329
+#: g10/card-util.c:1330
 msgid "change the login name"
 msgstr "zmìnit login name"
 
-#: g10/card-util.c:1330
+#: g10/card-util.c:1331
 msgid "change the language preferences"
 msgstr "zmìnit jazykové pøedvolby"
 
-#: g10/card-util.c:1331
+#: g10/card-util.c:1332
 msgid "change card holder's sex"
 msgstr "zmìní pohlaví dr¾itele karty"
 
-#: g10/card-util.c:1332
+#: g10/card-util.c:1333
 msgid "change a CA fingerprint"
 msgstr "vypsat fingerprint certifikaèní autority"
 
-#: g10/card-util.c:1333
+#: g10/card-util.c:1334
 msgid "toggle the signature force PIN flag"
 msgstr "zapnout/vypnout po¾adování PINu pøi ka¾dé self-sign operaci"
 
-#: g10/card-util.c:1334
+#: g10/card-util.c:1335
 msgid "generate new keys"
 msgstr "vytvoøit nový pár klíèù"
 
-#: g10/card-util.c:1335
+#: g10/card-util.c:1336
 msgid "menu to change or unblock the PIN"
 msgstr "nabídka pro zmìnu anebo odblokování PINu"
 
-#: g10/card-util.c:1336
+#: g10/card-util.c:1337
 msgid "verify the PIN and list all data"
 msgstr "ovìø PIN a vypi¹ v¹echna data"
 
-#: g10/card-util.c:1456 g10/keyedit.c:1623
+#: g10/card-util.c:1457 g10/keyedit.c:1623
 msgid "Command> "
 msgstr "Pøíkaz> "
 
-#: g10/card-util.c:1494
+#: g10/card-util.c:1495
 msgid "Admin-only command\n"
 msgstr "pouze administrátorské pøíkazy\n"
 
-#: g10/card-util.c:1525
+#: g10/card-util.c:1526
 msgid "Admin commands are allowed\n"
 msgstr "administrátorské pøíkazy jsou povoleny\n"
 
-#: g10/card-util.c:1527
+#: g10/card-util.c:1528
 msgid "Admin commands are not allowed\n"
 msgstr "administrátorské pøíkazy nejsou povoleny\n"
 
-#: g10/card-util.c:1601 g10/keyedit.c:2244
+#: g10/card-util.c:1602 g10/keyedit.c:2244
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Neplatný pøíkaz (zkuste \"help\")\n"
 
@@ -706,7 +706,7 @@ msgstr "Opakujte tento PIN: "
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN není zopakován správnì; zkuste to znovu"
 
-#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3723 g10/keyring.c:377
+#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3725 g10/keyring.c:377
 #: g10/keyring.c:663 g10/verify.c:102 g10/verify.c:157
 #, c-format
 msgid "can't open `%s'\n"
@@ -716,13 +716,13 @@ msgstr "nelze otevøít `%s'\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output pro tento pøíkaz není platný\n"
 
-#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3387 g10/keyserver.c:1698
+#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3387 g10/keyserver.c:1704
 #: g10/revoke.c:228
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "klíè \"%s\" nenalezen: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2322 g10/keyserver.c:1712
+#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2330 g10/keyserver.c:1718
 #: g10/revoke.c:234 g10/revoke.c:478
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -763,7 +763,7 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr ""
 "abyste ho smazal(a), pou¾ijte nejprve parametr \"--delete-secret-key\".\n"
 
-#: g10/encode.c:213 g10/sign.c:1215
+#: g10/encode.c:213 g10/sign.c:1224
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "chyba pøi vytváøení hesla: %s\n"
@@ -782,7 +782,7 @@ msgstr "pou¾ití ¹ifry: %s\n"
 msgid "`%s' already compressed\n"
 msgstr "`%s' je ji¾ zkomprimován\n"
 
-#: g10/encode.c:306 g10/encode.c:598 g10/sign.c:557
+#: g10/encode.c:306 g10/encode.c:598 g10/sign.c:564
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "VAROVÁNÍ: soubor `%s' je prázdný\n"
@@ -809,7 +809,7 @@ msgid ""
 msgstr ""
 "VAROVÁNÍ: vy¾ádaná symetrická ¹ifra %s (%d) nevyhovuje pøedvolbám pøíjemce\n"
 
-#: g10/encode.c:642 g10/sign.c:896
+#: g10/encode.c:642 g10/sign.c:903
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -856,7 +856,7 @@ msgstr "problém se za¹ifrovaným paketem\n"
 msgid "no remote program execution supported\n"
 msgstr "spu¹tìní externího programu není podporováno\n"
 
-#: g10/exec.c:173 g10/openfile.c:413
+#: g10/exec.c:173 g10/openfile.c:415
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "nemohu vytvoøit adresáø `%s': %s\n"
@@ -1380,431 +1380,431 @@ msgstr "pøepnout mezi vypisem seznamu tajných a veøejných klíèù"
 msgid "show expiration dates during signature listings"
 msgstr "V souboru tajných klíèù chybí odpovídající podpis\n"
 
-#: g10/gpg.c:1850
+#: g10/gpg.c:1852
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "POZNÁMKA: starý implicitní soubor s mo¾nostmi `%s ignorován'\n"
 
-#: g10/gpg.c:1892
+#: g10/gpg.c:1894
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "POZNÁMKA: neexistuje implicitní soubor s mo¾nostmi `%s'\n"
 
-#: g10/gpg.c:1896
+#: g10/gpg.c:1898
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "soubor s mo¾nostmi `%s': %s\n"
 
-#: g10/gpg.c:1903
+#: g10/gpg.c:1905
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "ètu mo¾nosti z `%s'\n"
 
-#: g10/gpg.c:2118 g10/gpg.c:2719 g10/gpg.c:2738
+#: g10/gpg.c:2120 g10/gpg.c:2721 g10/gpg.c:2740
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "POZNÁMKA: %s není pro normální pou¾ití!\n"
 
-#: g10/gpg.c:2131
+#: g10/gpg.c:2133
 #, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr ""
 "¹ifra `%s' nebyla nahrána, proto¾e pøístupová práva nejsou nastavena "
 "bezpeènì\n"
 
-#: g10/gpg.c:2285 g10/gpg.c:2297
+#: g10/gpg.c:2287 g10/gpg.c:2299
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "`%s' není platná doba expirace podpisu\n"
 
-#: g10/gpg.c:2373
+#: g10/gpg.c:2375
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "`%s' není platná znaková sada\n"
 
-#: g10/gpg.c:2397 g10/keyedit.c:4048
+#: g10/gpg.c:2399 g10/keyedit.c:4049
 msgid "could not parse keyserver URL\n"
 msgstr "nelze zpracovat URL serveru klíèù\n"
 
-#: g10/gpg.c:2409
+#: g10/gpg.c:2411
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: neplatný parametr pro server klíèù\n"
 
-#: g10/gpg.c:2412
+#: g10/gpg.c:2414
 msgid "invalid keyserver options\n"
 msgstr "neplatný parametr pro server klíèù\n"
 
-#: g10/gpg.c:2419
+#: g10/gpg.c:2421
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: neplatný parametr pro import\n"
 
-#: g10/gpg.c:2422
+#: g10/gpg.c:2424
 msgid "invalid import options\n"
 msgstr "neplatný parametr pro import\n"
 
-#: g10/gpg.c:2429
+#: g10/gpg.c:2431
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: neplatný parametr pro export\n"
 
-#: g10/gpg.c:2432
+#: g10/gpg.c:2434
 msgid "invalid export options\n"
 msgstr "neplatný parametr pro export\n"
 
-#: g10/gpg.c:2439
+#: g10/gpg.c:2441
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: neplatný parametr pro výpis\n"
 
-#: g10/gpg.c:2442
+#: g10/gpg.c:2444
 msgid "invalid list options\n"
 msgstr "neplatný parametr pro výpis\n"
 
-#: g10/gpg.c:2450
+#: g10/gpg.c:2452
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2452
+#: g10/gpg.c:2454
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2454
+#: g10/gpg.c:2456
 #, fuzzy
 msgid "show all notations during signature verification"
 msgstr "`%s' není platná doba expirace podpisu\n"
 
-#: g10/gpg.c:2456
+#: g10/gpg.c:2458
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2460
+#: g10/gpg.c:2462
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2462
+#: g10/gpg.c:2464
 #, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "zadané URL preferovaného serveru klíèù je neplaté\n"
 
-#: g10/gpg.c:2464
+#: g10/gpg.c:2466
 #, fuzzy
 msgid "show user ID validity during signature verification"
 msgstr "`%s' není platná doba expirace podpisu\n"
 
-#: g10/gpg.c:2466
+#: g10/gpg.c:2468
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2468
+#: g10/gpg.c:2470
 msgid "validate signatures with PKA data"
 msgstr ""
 
-#: g10/gpg.c:2470
+#: g10/gpg.c:2472
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 
-#: g10/gpg.c:2477
+#: g10/gpg.c:2479
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: neplatný parametr pro ovìøení\n"
 
-#: g10/gpg.c:2480
+#: g10/gpg.c:2482
 msgid "invalid verify options\n"
 msgstr "neplatný parametr pro ovìøení\n"
 
-#: g10/gpg.c:2487
+#: g10/gpg.c:2489
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "nelze nastavit exec-path na %s\n"
 
-#: g10/gpg.c:2637
+#: g10/gpg.c:2639
 #, fuzzy, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: neplatný parametr pro ovìøení\n"
 
-#: g10/gpg.c:2640
+#: g10/gpg.c:2642
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2708
+#: g10/gpg.c:2710
 msgid "WARNING: program may create a core file!\n"
 msgstr "VAROVÁNÍ: program mù¾e vytvoøit soubor core!\n"
 
-#: g10/gpg.c:2712
+#: g10/gpg.c:2714
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "VAROVÁNÍ: %s pøepí¹e %s\n"
 
-#: g10/gpg.c:2721
+#: g10/gpg.c:2723
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "Není dovoleno pou¾ívat %s s %s!\n"
 
-#: g10/gpg.c:2724
+#: g10/gpg.c:2726
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s nedává s %s smysl!\n"
 
-#: g10/gpg.c:2731
+#: g10/gpg.c:2733
 #, c-format
 msgid "NOTE: %s is not available in this version\n"
 msgstr "POZNÁMKA: %s není v této verzi dostupné\n"
 
-#: g10/gpg.c:2746
+#: g10/gpg.c:2748
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "nelze spustit s nebezpeènou pamìtí vzhledem k %s\n"
 
-#: g10/gpg.c:2760
+#: g10/gpg.c:2762
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "v módu --pgp2 mù¾ete vytváøet pouze oddìlené podpisy nebo podpisy èitelné "
 "jako text\n"
 
-#: g10/gpg.c:2766
+#: g10/gpg.c:2768
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "v módu --pgp2 nelze souèasnì ¹ifrovat a podepisovat\n"
 
-#: g10/gpg.c:2772
+#: g10/gpg.c:2774
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "v módu --pgp2 musíte pou¾ít soubor (ne rouru).\n"
 
-#: g10/gpg.c:2785
+#: g10/gpg.c:2787
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "¹ifrování zpráv v módu --pgp2 vy¾aduje algoritmus IDEA\n"
 
-#: g10/gpg.c:2852 g10/gpg.c:2876
+#: g10/gpg.c:2854 g10/gpg.c:2878
 msgid "selected cipher algorithm is invalid\n"
 msgstr "vybraný ¹ifrovací algoritmus je neplatný\n"
 
-#: g10/gpg.c:2858 g10/gpg.c:2882
+#: g10/gpg.c:2860 g10/gpg.c:2884
 msgid "selected digest algorithm is invalid\n"
 msgstr "vybraný hashovací algoritmus je neplatný\n"
 
-#: g10/gpg.c:2864
+#: g10/gpg.c:2866
 msgid "selected compression algorithm is invalid\n"
 msgstr "vybraný komprimovací algoritmus je neplatný\n"
 
-#: g10/gpg.c:2870
+#: g10/gpg.c:2872
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "vybraný hashovací algoritmus je neplatný\n"
 
-#: g10/gpg.c:2885
+#: g10/gpg.c:2887
 msgid "completes-needed must be greater than 0\n"
 msgstr "polo¾ka completes-needed musí být vìt¹í ne¾ 0\n"
 
-#: g10/gpg.c:2887
+#: g10/gpg.c:2889
 msgid "marginals-needed must be greater than 1\n"
 msgstr "polo¾ka marginals-needed musí být vìt¹í ne¾ 1\n"
 
-#: g10/gpg.c:2889
+#: g10/gpg.c:2891
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "polo¾ka max-cert-depth musí být v rozmezí od 1 do 255\n"
 
-#: g10/gpg.c:2891
+#: g10/gpg.c:2893
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr ""
 "neplatná implicitní úroveò certifikace (default-cert-level); musí být 0, 1, "
 "2 nebo 3\n"
 
-#: g10/gpg.c:2893
+#: g10/gpg.c:2895
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr ""
 "neplatná minimální úroveò certifikace (min-cert-level); musí být 0, 1, 2 "
 "nebo 3\n"
 
-#: g10/gpg.c:2896
+#: g10/gpg.c:2898
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "POZNÁMKA: jednoduchý mód S2K (0) je dùraznì nedoporuèován\n"
 
-#: g10/gpg.c:2900
+#: g10/gpg.c:2902
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "neplatný mód S2K; musí být 0, 1 nebo 3\n"
 
-#: g10/gpg.c:2907
+#: g10/gpg.c:2909
 msgid "invalid default preferences\n"
 msgstr "neplatné defaultní pøedvolby\n"
 
-#: g10/gpg.c:2916
+#: g10/gpg.c:2918
 msgid "invalid personal cipher preferences\n"
 msgstr "neplatné u¾ivatelské pøedvolby pro ¹ifrování\n"
 
-#: g10/gpg.c:2920
+#: g10/gpg.c:2922
 msgid "invalid personal digest preferences\n"
 msgstr "neplatné u¾ivatelské pøedvolby pro hashování\n"
 
-#: g10/gpg.c:2924
+#: g10/gpg.c:2926
 msgid "invalid personal compress preferences\n"
 msgstr "neplatné u¾ivatelské pøedvolby pro komprimaci\n"
 
-#: g10/gpg.c:2957
+#: g10/gpg.c:2959
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s dosud není funkèní s %s\n"
 
-#: g10/gpg.c:3004
+#: g10/gpg.c:3006
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "pou¾ití ¹ifrovacího algoritmu `%s' v módu %s dovoleno\n"
 
-#: g10/gpg.c:3009
+#: g10/gpg.c:3011
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "pou¾ití hashovacího algoritmu `%s' v módu %s dovoleno\n"
 
-#: g10/gpg.c:3014
+#: g10/gpg.c:3016
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "pou¾ití komprimaèního algoritmu `%s' v módu %s dovoleno\n"
 
-#: g10/gpg.c:3110
+#: g10/gpg.c:3112
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "nemohu inicializovat databázi dùvìry: %s\n"
 
-#: g10/gpg.c:3121
+#: g10/gpg.c:3123
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "VAROVÁNÍ: specifikován adresát (-r) bez pou¾ití ¹ifrování s veøejným klíèem\n"
 
-#: g10/gpg.c:3132
+#: g10/gpg.c:3134
 msgid "--store [filename]"
 msgstr "--store [jméno souboru]"
 
-#: g10/gpg.c:3139
+#: g10/gpg.c:3141
 msgid "--symmetric [filename]"
 msgstr "--symmetric [jméno souboru]"
 
-#: g10/gpg.c:3141
+#: g10/gpg.c:3143
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "symetrické ¹ifrování `%s' se nepovedlo: %s\n"
 
-#: g10/gpg.c:3151
+#: g10/gpg.c:3153
 msgid "--encrypt [filename]"
 msgstr "--encrypt [jméno souboru]"
 
-#: g10/gpg.c:3164
+#: g10/gpg.c:3166
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [jméno souboru]"
 
-#: g10/gpg.c:3166
+#: g10/gpg.c:3168
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "nelze pou¾ít --symmetric --encrypt s pøíkazem --s2k-mode 0\n"
 
-#: g10/gpg.c:3169
+#: g10/gpg.c:3171
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "nelze pou¾ít --symmetric --encrypt v módu %s\n"
 
-#: g10/gpg.c:3187
+#: g10/gpg.c:3189
 msgid "--sign [filename]"
 msgstr "--sign [jméno souboru]"
 
-#: g10/gpg.c:3200
+#: g10/gpg.c:3202
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [jméno souboru]"
 
-#: g10/gpg.c:3215
+#: g10/gpg.c:3217
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [jméno souboru]"
 
-#: g10/gpg.c:3217
+#: g10/gpg.c:3219
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "nelze pou¾ít --symmetric --sign --encrypt s pøíkazem --s2k-mode 0\n"
 
-#: g10/gpg.c:3220
+#: g10/gpg.c:3222
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "nelze pou¾ít --symmetric --sign --encrypt v módu %s\n"
 
-#: g10/gpg.c:3240
+#: g10/gpg.c:3242
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [jméno souboru]"
 
-#: g10/gpg.c:3249
+#: g10/gpg.c:3251
 msgid "--clearsign [filename]"
 msgstr "--clearsign [jméno souboru]"
 
-#: g10/gpg.c:3274
+#: g10/gpg.c:3276
 msgid "--decrypt [filename]"
 msgstr "--decrypt [jméno souboru]"
 
-#: g10/gpg.c:3282
+#: g10/gpg.c:3284
 msgid "--sign-key user-id"
 msgstr "--sign-key id u¾ivatele"
 
-#: g10/gpg.c:3286
+#: g10/gpg.c:3288
 msgid "--lsign-key user-id"
 msgstr "--lsign-key id u¾ivatele"
 
-#: g10/gpg.c:3307
+#: g10/gpg.c:3309
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id u¾ivatele [pøíkazy]"
 
-#: g10/gpg.c:3378
+#: g10/gpg.c:3380
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [id u¾ivatele] [soubor s klíèi (keyring)]"
 
-#: g10/gpg.c:3415
+#: g10/gpg.c:3417
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "odeslání na keyserver se nezdaøilo: %s\n"
 
-#: g10/gpg.c:3417
+#: g10/gpg.c:3419
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "získání dat z keyserveru se nezdaøilo: %s\n"
 
-#: g10/gpg.c:3419
+#: g10/gpg.c:3421
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "export klíèe se nepodaøil: %s\n"
 
-#: g10/gpg.c:3430
+#: g10/gpg.c:3432
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "hledání na keyserveru se nezdaøilo: %s\n"
 
-#: g10/gpg.c:3440
+#: g10/gpg.c:3442
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "refresh dat na keyserveru se nezdaøil: %s\n"
 
-#: g10/gpg.c:3491
+#: g10/gpg.c:3493
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "dekódování z ASCII formátu selhalo: %s\n"
 
-#: g10/gpg.c:3499
+#: g10/gpg.c:3501
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "kódování do ASCII formátu selhalo: %s\n"
 
-#: g10/gpg.c:3586
+#: g10/gpg.c:3588
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "neplatný hashovací algoritmus `%s'\n"
 
-#: g10/gpg.c:3709
+#: g10/gpg.c:3711
 msgid "[filename]"
 msgstr "[jméno souboru]"
 
-#: g10/gpg.c:3713
+#: g10/gpg.c:3715
 msgid "Go ahead and type your message ...\n"
 msgstr "Zaènìte psát svou zprávu ...\n"
 
-#: g10/gpg.c:4014
+#: g10/gpg.c:4016
 msgid "the given certification policy URL is invalid\n"
 msgstr "zadané URL pro certifikaèní politiku je neplatné\n"
 
-#: g10/gpg.c:4016
+#: g10/gpg.c:4018
 msgid "the given signature policy URL is invalid\n"
 msgstr "zadané URL pro podepisovací politiku je neplatné\n"
 
-#: g10/gpg.c:4049
+#: g10/gpg.c:4051
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "zadané URL preferovaného serveru klíèù je neplaté\n"
 
@@ -1812,33 +1812,33 @@ msgstr "zadané URL preferovaného serveru klíèù je neplaté\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "pøíli¹ mnoho polo¾ek v bufferu veøejných klíèù - vypnuto\n"
 
-#: g10/getkey.c:188 g10/getkey.c:2876
+#: g10/getkey.c:188 g10/getkey.c:2889
 msgid "[User ID not found]"
 msgstr "[ID u¾ivatele nenalezeno]"
 
-#: g10/getkey.c:933 g10/getkey.c:950 g10/getkey.c:970 g10/getkey.c:986
-#: g10/getkey.c:1001
+#: g10/getkey.c:935 g10/getkey.c:945 g10/getkey.c:955 g10/getkey.c:971
+#: g10/getkey.c:986
 #, c-format
-msgid "Automatically retrieved `%s' via %s\n"
+msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
 # c-format
-#: g10/getkey.c:1800
+#: g10/getkey.c:1813
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "Neplatný klíè %s zmìnìn na platný pomocí --always-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2354
+#: g10/getkey.c:2367
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "neexistuje tajný podklíè pro veøejný klíè %s - ignorováno\n"
 
-#: g10/getkey.c:2585
+#: g10/getkey.c:2598
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "pou¾ívám podklíè %s místo primárního klíèe %s\n"
 
-#: g10/getkey.c:2632
+#: g10/getkey.c:2645
 #, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "klíè %s: tajný klíè bez klíèe veøejného - pøeskoèeno\n"
@@ -2204,453 +2204,451 @@ msgstr "Pomoc není k dispozici"
 msgid "No help available for `%s'"
 msgstr "Pomoc není dostupná pro '%s'"
 
-#: g10/import.c:95
+#: g10/import.c:96
 msgid "import signatures that are marked as local-only"
 msgstr ""
 
-#: g10/import.c:97
+#: g10/import.c:98
 msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
-#: g10/import.c:99
+#: g10/import.c:100
 #, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "aktualizovat databázi dùvìry"
 
-#: g10/import.c:101
+#: g10/import.c:102
 #, fuzzy
 msgid "create a public key when importing a secret key"
 msgstr "veøejný klíè neodpovídá tajnému klíèi!\n"
 
-#: g10/import.c:103
+#: g10/import.c:104
 msgid "only accept updates to existing keys"
 msgstr ""
 
-#: g10/import.c:105
+#: g10/import.c:106
 #, fuzzy
 msgid "remove unusable parts from key after import"
 msgstr "odstranit nepou¾itelné èásti z klíèe"
 
-#: g10/import.c:107
+#: g10/import.c:108
 msgid "remove as much as possible from key after import"
 msgstr ""
 
-#: g10/import.c:262
+#: g10/import.c:266
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "blok typu %d byl pøeskoèen\n"
 
-#: g10/import.c:271
+#: g10/import.c:275
 #, c-format
 msgid "%lu keys processed so far\n"
 msgstr "%lu klíèe byly doposud zpracovány\n"
 
-#: g10/import.c:288
+#: g10/import.c:292
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Celkový poèet zpracovaných klíèù: %lu\n"
 
-#: g10/import.c:290
+#: g10/import.c:294
 #, c-format
 msgid "      skipped new keys: %lu\n"
 msgstr "     pøeskoèeny nové klíèe: %lu\n"
 
-#: g10/import.c:293
+#: g10/import.c:297
 #, c-format
 msgid "          w/o user IDs: %lu\n"
 msgstr "          bez ID u¾ivatele: %lu\n"
 
-#: g10/import.c:295
+#: g10/import.c:299
 #, c-format
 msgid "              imported: %lu"
 msgstr "                 importováno: %lu"
 
-#: g10/import.c:301
+#: g10/import.c:305
 #, c-format
 msgid "             unchanged: %lu\n"
 msgstr "                 beze zmìn: %lu\n"
 
-#: g10/import.c:303
+#: g10/import.c:307
 #, c-format
 msgid "          new user IDs: %lu\n"
 msgstr "         nové ID u¾ivatelù: %lu\n"
 
-#: g10/import.c:305
+#: g10/import.c:309
 #, c-format
 msgid "           new subkeys: %lu\n"
 msgstr "             nové podklíèe: %lu\n"
 
-#: g10/import.c:307
+#: g10/import.c:311
 #, c-format
 msgid "        new signatures: %lu\n"
 msgstr "              nové podpisy: %lu\n"
 
-#: g10/import.c:309
+#: g10/import.c:313
 #, c-format
 msgid "   new key revocations: %lu\n"
 msgstr "       nové revokace klíèù: %lu\n"
 
-#: g10/import.c:311
+#: g10/import.c:315
 #, c-format
 msgid "      secret keys read: %lu\n"
 msgstr "      pøeètené tajné klíèe: %lu\n"
 
-#: g10/import.c:313
+#: g10/import.c:317
 #, c-format
 msgid "  secret keys imported: %lu\n"
 msgstr "   importované tajné klíèe: %lu\n"
 
-#: g10/import.c:315
+#: g10/import.c:319
 #, c-format
 msgid " secret keys unchanged: %lu\n"
 msgstr "     tajné klíèe nezmìnìny: %lu\n"
 
-#: g10/import.c:317
+#: g10/import.c:321
 #, c-format
 msgid "          not imported: %lu\n"
 msgstr "             neimportováno: %lu\n"
 
-#: g10/import.c:319
+#: g10/import.c:323
 #, c-format
 msgid "    signatures cleaned: %lu\n"
 msgstr "         odstranìné podpisy: %lu\n"
 
-#: g10/import.c:321
+#: g10/import.c:325
 #, c-format
 msgid "      user IDs cleaned: %lu\n"
 msgstr " odstranìné u¾ivatelské ID: %lu\n"
 
-#: g10/import.c:562
-#, c-format
-msgid "WARNING: key %s contains preferences for unavailable\n"
+#: g10/import.c:566
+#, fuzzy, c-format
+msgid ""
+"WARNING: key %s contains preferences for unavailable\n"
+"algorithms on these user IDs:\n"
 msgstr "VAROVÁNÍ: klíè %s obsahuje preference pro algoritmy,\n"
 
-#: g10/import.c:564
-msgid "algorithms on these user IDs:\n"
-msgstr "které nesjou k dispozici. Táká se to tìchto user ID:\n"
-
-#: g10/import.c:601
+#: g10/import.c:604
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr "         \"%s\": preference pro ¹ifrovací algortimus %s\n"
 
-#: g10/import.c:613
+#: g10/import.c:616
 #, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
 msgstr "         \"%s\": preference pro podepisovací algoritmus %s\n"
 
-#: g10/import.c:625
+#: g10/import.c:628
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr "         \"%s\": preference pro komprimaèní algoritmus %s\n"
 
-#: g10/import.c:638
+#: g10/import.c:641
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr "velmi doporuèujeme aktualiaci nastavení va¹ich preferencí a\n"
 
-#: g10/import.c:640
+#: g10/import.c:643
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 "distribuci tohoto klíèe aby jste pøede¹el problémùm s neshodou algoritmù\n"
 
-#: g10/import.c:664
+#: g10/import.c:667
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
 msgstr "nelze aktualizovat preference s: gpg --edit-key %s updpref save\n"
 
-#: g10/import.c:712 g10/import.c:1092
+#: g10/import.c:719 g10/import.c:1099
 #, c-format
 msgid "key %s: no user ID\n"
 msgstr "klíè %s: chybí identifikátor u¾ivatele\n"
 
-#: g10/import.c:741
+#: g10/import.c:748
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "klíè %s: PKS po¹kození podklíèe opraveno\n"
 
 # c-format
-#: g10/import.c:756
+#: g10/import.c:763
 #, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
 msgstr "klíè %s: pøijat id u¾ivatele \"%s\",který není podepsán jím samým\n"
 
-#: g10/import.c:762
+#: g10/import.c:769
 #, c-format
 msgid "key %s: no valid user IDs\n"
 msgstr "klíè %s: chybí platný identifikátor u¾ivatele\n"
 
-#: g10/import.c:764
+#: g10/import.c:771
 msgid "this may be caused by a missing self-signature\n"
 msgstr "mù¾e to být zpùsobeno chybìjícím podpisem klíèe jím samým\n"
 
-#: g10/import.c:774 g10/import.c:1213
+#: g10/import.c:781 g10/import.c:1221
 #, c-format
 msgid "key %s: public key not found: %s\n"
 msgstr "klíè %s: veøejný klíè nenalezen: %s\n"
 
-#: g10/import.c:780
+#: g10/import.c:787
 #, c-format
 msgid "key %s: new key - skipped\n"
 msgstr "klíè %s: nový klíè - pøeskoèen\n"
 
-#: g10/import.c:789
+#: g10/import.c:796
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "nenalezen zapisovatelný soubor klíèù (keyring): %s\n"
 
 # g10/import.c:766 g10/openfile.c:261#, c-format
-#: g10/import.c:794 g10/openfile.c:265 g10/sign.c:795 g10/sign.c:1066
+#: g10/import.c:801 g10/openfile.c:267 g10/sign.c:802 g10/sign.c:1075
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "zapisuji do '%s'\n"
 
-#: g10/import.c:798 g10/import.c:893 g10/import.c:1132 g10/import.c:1274
-#: g10/import.c:2336 g10/import.c:2358
+#: g10/import.c:805 g10/import.c:900 g10/import.c:1139 g10/import.c:1282
+#: g10/import.c:2344 g10/import.c:2366
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "chyba pøi zápisu souboru klíèù (keyring)  `%s': %s\n"
 
-#: g10/import.c:817
+#: g10/import.c:824
 #, c-format
 msgid "key %s: public key \"%s\" imported\n"
 msgstr "klíè %s: veøejný klíè \"%s\" importován\n"
 
-#: g10/import.c:841
+#: g10/import.c:848
 #, c-format
 msgid "key %s: doesn't match our copy\n"
 msgstr "klíè %s: neodpovídá na¹í kopii\n"
 
-#: g10/import.c:858 g10/import.c:1231
+#: g10/import.c:865 g10/import.c:1239
 #, c-format
 msgid "key %s: can't locate original keyblock: %s\n"
 msgstr "klíè %s: nemohu najít originální blok klíèe: %s\n"
 
-#: g10/import.c:866 g10/import.c:1238
+#: g10/import.c:873 g10/import.c:1246
 #, c-format
 msgid "key %s: can't read original keyblock: %s\n"
 msgstr "klíè %s: nemohu èíst originální blok klíèe: %s\n"
 
-#: g10/import.c:903
+#: g10/import.c:910
 #, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "klíè %s: \"%s\" 1 nový identifikátor u¾ivatele\n"
 
-#: g10/import.c:906
+#: g10/import.c:913
 #, c-format
 msgid "key %s: \"%s\" %d new user IDs\n"
 msgstr "klíè %s: \"%s\" %d nových identifikátorù u¾ivatele\n"
 
-#: g10/import.c:909
+#: g10/import.c:916
 #, c-format
 msgid "key %s: \"%s\" 1 new signature\n"
 msgstr "klíè %s: \"%s\" 1 nový podpis\n"
 
-#: g10/import.c:912
+#: g10/import.c:919
 #, c-format
 msgid "key %s: \"%s\" %d new signatures\n"
 msgstr "klíè %s: \"%s\" %d nových podpisù\n"
 
-#: g10/import.c:915
+#: g10/import.c:922
 #, c-format
 msgid "key %s: \"%s\" 1 new subkey\n"
 msgstr "klíè %s: \"%s\" 1 nový podklíè\n"
 
-#: g10/import.c:918
+#: g10/import.c:925
 #, c-format
 msgid "key %s: \"%s\" %d new subkeys\n"
 msgstr "klíè %s: \"%s\" %d nových podklíèù\n"
 
-#: g10/import.c:921
+#: g10/import.c:928
 #, c-format
 msgid "key %s: \"%s\" %d signature cleaned\n"
 msgstr "klíè %s: \"%s\" %d podpisù odstranìno\n"
 
-#: g10/import.c:924
+#: g10/import.c:931
 #, c-format
 msgid "key %s: \"%s\" %d signatures cleaned\n"
 msgstr "klíè %s: \"%s\" %d podpisù odstranìno\n"
 
-#: g10/import.c:927
+#: g10/import.c:934
 #, c-format
 msgid "key %s: \"%s\" %d user ID cleaned\n"
 msgstr "klíè %s: \"%s\" %d ID u¾ivatele odstranìno\n"
 
-#: g10/import.c:930
+#: g10/import.c:937
 #, c-format
 msgid "key %s: \"%s\" %d user IDs cleaned\n"
 msgstr "klíè %s: \"%s\" %d ID u¾ivatele odstranìno\n"
 
-#: g10/import.c:953
+#: g10/import.c:960
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "klíè %s: \"%s\" beze zmìn\n"
 
-#: g10/import.c:1098
+#: g10/import.c:1105
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "klíè %s: tajný klíè s neplatnou ¹ifrou %d - pøeskoèeno\n"
 
-#: g10/import.c:1109
+#: g10/import.c:1116
 msgid "importing secret keys not allowed\n"
 msgstr "import tajných klíèù není povolen\n"
 
-#: g10/import.c:1126 g10/import.c:2351
+#: g10/import.c:1133 g10/import.c:2359
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "není nastaven implicitní soubor tajných klíèù %s\n"
 
-#: g10/import.c:1137
+#: g10/import.c:1144
 #, c-format
 msgid "key %s: secret key imported\n"
 msgstr "klíè %s: tajný klíè importován\n"
 
-#: g10/import.c:1166
+#: g10/import.c:1174
 #, c-format
 msgid "key %s: already in secret keyring\n"
 msgstr "klíè %s: je ji¾ v souboru tajných klíèù\n"
 
-#: g10/import.c:1176
+#: g10/import.c:1184
 #, c-format
 msgid "key %s: secret key not found: %s\n"
 msgstr "klíè %s: nenalezen tajný klíè: %s\n"
 
-#: g10/import.c:1206
+#: g10/import.c:1214
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "klíè %s: chybí veøejný klíè - nemohu aplikovat revokaèní certifikát\n"
 
-#: g10/import.c:1249
+#: g10/import.c:1257
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
 msgstr "klíè %s: neplatný revokaèní certifikát: %s - zamítnuto\n"
 
-#: g10/import.c:1281
+#: g10/import.c:1289
 #, c-format
 msgid "key %s: \"%s\" revocation certificate imported\n"
 msgstr "klíè %s: \"%s\" revokaèní certifikát importován\n"
 
-#: g10/import.c:1347
+#: g10/import.c:1355
 #, c-format
 msgid "key %s: no user ID for signature\n"
 msgstr "klíè %s: neexistuje id u¾ivatele pro podpis\n"
 
-#: g10/import.c:1362
+#: g10/import.c:1370
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
 "klíè %s: nepodporovaný algoritmus veøejného klíèe u u¾ivatelského id  \"%s"
 "\"\n"
 
-#: g10/import.c:1364
+#: g10/import.c:1372
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "klíè %s neplatný podpis klíèe jím samým u u¾ivatelského id \"%s\"\n"
 
-#: g10/import.c:1382
+#: g10/import.c:1390
 #, c-format
 msgid "key %s: no subkey for key binding\n"
 msgstr "klíè %s: neexistuje podklíè pro vázání klíèù\n"
 
-#: g10/import.c:1393 g10/import.c:1443
+#: g10/import.c:1401 g10/import.c:1451
 #, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "klíè %s: nepodporovaný algoritmus veøejného klíèe\n"
 
-#: g10/import.c:1395
+#: g10/import.c:1403
 #, c-format
 msgid "key %s: invalid subkey binding\n"
 msgstr "klíè %s: neplatná vazba podklíèe\n"
 
-#: g10/import.c:1410
+#: g10/import.c:1418
 #, c-format
 msgid "key %s: removed multiple subkey binding\n"
 msgstr "klíè %s: smazána vícenásobná vazba podklíèe\n"
 
-#: g10/import.c:1432
+#: g10/import.c:1440
 #, c-format
 msgid "key %s: no subkey for key revocation\n"
 msgstr "klíè %s: neexistuje podklíè pro revokaci klíèe\n"
 
-#: g10/import.c:1445
+#: g10/import.c:1453
 #, c-format
 msgid "key %s: invalid subkey revocation\n"
 msgstr "klíè %s: neplatný revokaèní podklíè\n"
 
-#: g10/import.c:1460
+#: g10/import.c:1468
 #, c-format
 msgid "key %s: removed multiple subkey revocation\n"
 msgstr "klíè %s: smazána vícenásobná revokace podklíèe\n"
 
-#: g10/import.c:1502
+#: g10/import.c:1510
 #, c-format
 msgid "key %s: skipped user ID \"%s\"\n"
 msgstr "klíè %s: pøeskoèen identifikátor u¾ivatele \"%s\"\n"
 
-#: g10/import.c:1523
+#: g10/import.c:1531
 #, c-format
 msgid "key %s: skipped subkey\n"
 msgstr "klíè %s: podklíè pøeskoèen\n"
 
-#: g10/import.c:1550
+#: g10/import.c:1558
 #, c-format
 msgid "key %s: non exportable signature (class 0x%02X) - skipped\n"
 msgstr "klíè %s: podpis není exportovatelný (tøída %02X) - pøeskoèeno\n"
 
-#: g10/import.c:1560
+#: g10/import.c:1568
 #, c-format
 msgid "key %s: revocation certificate at wrong place - skipped\n"
 msgstr "klíè %s: revokaèní certifikát na ¹patném místì - pøeskoèeno \n"
 
-#: g10/import.c:1577
+#: g10/import.c:1585
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - skipped\n"
 msgstr "klíè %s: neplatný revokaèní certifikát: %s - pøeskoèen\n"
 
-#: g10/import.c:1591
+#: g10/import.c:1599
 #, c-format
 msgid "key %s: subkey signature in wrong place - skipped\n"
 msgstr "klíè %s: podpis podklíèe na ¹patném místì - pøeskoèeno \n"
 
-#: g10/import.c:1599
+#: g10/import.c:1607
 #, c-format
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr "klíè %s: neoèekávaná podpisová tøída (0x%02X) - pøeskoèeno\n"
 
-#: g10/import.c:1699
+#: g10/import.c:1707
 #, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "klíè %s: objeven duplikovaný identifikátor u¾ivatele - slouèen\n"
 
-#: g10/import.c:1761
+#: g10/import.c:1769
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
 "VAROVÁNÍ: klíè %s mù¾e být revokován: zkou¹ím získat revokaèní klíè %s\n"
 
-#: g10/import.c:1775
+#: g10/import.c:1783
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr "VAROVÁNÍ: klíè %s mù¾e být revokován: revokaèní klíè %s nenalezen.\n"
 
-#: g10/import.c:1834
+#: g10/import.c:1842
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "klíè %s: \"%s\" pøidán revokaèní certifikát\n"
 
-#: g10/import.c:1868
+#: g10/import.c:1876
 #, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "klíè %s: podpis klíèe jím samým (direct key signature) pøidán\n"
 
-#: g10/import.c:2257
+#: g10/import.c:2265
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "POZNÁMKA: S/N klíèe neodpovídá S/N karty\n"
 
-#: g10/import.c:2265
+#: g10/import.c:2273
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "POZNÁMKA: primární klíè je online a je ulo¾en na kartì\n"
 
-#: g10/import.c:2267
+#: g10/import.c:2275
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "POZNÁMKA: sekundární klíè je online a je ulo¾en na kartì\n"
 
@@ -2955,8 +2953,8 @@ msgstr "Velmi peèlivì jsem ovìøil tento klíè.\n"
 msgid "Really sign? (y/N) "
 msgstr "Skuteènì podepsat? (a/N) "
 
-#: g10/keyedit.c:1067 g10/keyedit.c:4744 g10/keyedit.c:4835 g10/keyedit.c:4899
-#: g10/keyedit.c:4960 g10/sign.c:355
+#: g10/keyedit.c:1067 g10/keyedit.c:4768 g10/keyedit.c:4859 g10/keyedit.c:4923
+#: g10/keyedit.c:4984 g10/sign.c:362
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "podepsání selhalo: %s\n"
@@ -3375,7 +3373,7 @@ msgid "(sensitive)"
 msgstr "(citlivá informace)"
 
 #: g10/keyedit.c:2732 g10/keyedit.c:2788 g10/keyedit.c:2849 g10/keyedit.c:2864
-#: g10/keylist.c:194 g10/keyserver.c:525
+#: g10/keylist.c:194 g10/keyserver.c:526
 #, c-format
 msgid "created: %s"
 msgstr "vytvoøen: %s"
@@ -3392,7 +3390,7 @@ msgstr "platnost skonèila: %s"
 
 #: g10/keyedit.c:2739 g10/keyedit.c:2790 g10/keyedit.c:2851 g10/keyedit.c:2866
 #: g10/keylist.c:196 g10/keylist.c:748 g10/keylist.c:783 g10/keylist.c:877
-#: g10/keylist.c:898 g10/keyserver.c:531 g10/mainproc.c:968
+#: g10/keylist.c:898 g10/keyserver.c:532 g10/mainproc.c:968
 #, c-format
 msgid "expires: %s"
 msgstr "platnost skonèí: %s"
@@ -3428,12 +3426,12 @@ msgstr ""
 "Prosím nezapomeòte, ¾e zobrazované údaje o platnosti klíèù nemusí\n"
 "být nutnì správné, dokud znova nespustíte program.\n"
 
-#: g10/keyedit.c:2883 g10/keyedit.c:3229 g10/keyserver.c:535
+#: g10/keyedit.c:2883 g10/keyedit.c:3229 g10/keyserver.c:536
 #: g10/mainproc.c:1770 g10/trustdb.c:1179 g10/trustdb.c:1699
 msgid "revoked"
 msgstr "revokován"
 
-#: g10/keyedit.c:2885 g10/keyedit.c:3231 g10/keyserver.c:539
+#: g10/keyedit.c:2885 g10/keyedit.c:3231 g10/keyserver.c:540
 #: g10/mainproc.c:1772 g10/trustdb.c:532 g10/trustdb.c:1701
 msgid "expired"
 msgstr "platnost skonèila"
@@ -3565,126 +3563,126 @@ msgstr "Nemù¾ete zmìnit dobu platnosti klíèe verze 3\n"
 msgid "No corresponding signature in secret ring\n"
 msgstr "V souboru tajných klíèù chybí odpovídající podpis\n"
 
-#: g10/keyedit.c:3820
+#: g10/keyedit.c:3821
 msgid "Please select exactly one user ID.\n"
 msgstr "Prosím, vyberte právì jeden id u¾ivatele .\n"
 
-#: g10/keyedit.c:3859 g10/keyedit.c:3969 g10/keyedit.c:4089 g10/keyedit.c:4229
+#: g10/keyedit.c:3860 g10/keyedit.c:3970 g10/keyedit.c:4090 g10/keyedit.c:4231
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "pøeskoèen v3 podpis klíèe jím samým u u¾ivatelského id \"%s\"\n"
 
-#: g10/keyedit.c:4030
+#: g10/keyedit.c:4031
 msgid "Enter your preferred keyserver URL: "
 msgstr "Vlo¾te URL preferovaného keyserveru: "
 
-#: g10/keyedit.c:4110
+#: g10/keyedit.c:4111
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Jste si jistý(á), ¾e jej chcete pøepsat? (a/N) "
 
-#: g10/keyedit.c:4111
+#: g10/keyedit.c:4112
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Jste si jistý(á), ¾e jej chcete smazat? (a/N) "
 
-#: g10/keyedit.c:4173
+#: g10/keyedit.c:4174
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Podepisovací notace: "
 
-#: g10/keyedit.c:4299
+#: g10/keyedit.c:4323
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Pøepsat (a/N)? "
 
-#: g10/keyedit.c:4363
+#: g10/keyedit.c:4387
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Neexistuje identifikátor u¾ivatele s indexem %d\n"
 
-#: g10/keyedit.c:4421
+#: g10/keyedit.c:4445
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Neexistuje u¾ivatelské ID s hashem %s\n"
 
-#: g10/keyedit.c:4448
+#: g10/keyedit.c:4472
 #, c-format
 msgid "No subkey with index %d\n"
 msgstr "Neexistuje podklíè s indexem %d\n"
 
-#: g10/keyedit.c:4583
+#: g10/keyedit.c:4607
 #, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "id u¾ivatele:\"%s\"\n"
 
-#: g10/keyedit.c:4586 g10/keyedit.c:4650 g10/keyedit.c:4693
+#: g10/keyedit.c:4610 g10/keyedit.c:4674 g10/keyedit.c:4717
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "podepsáno va¹ím klíèem %s v %s%s%s\n"
 
-#: g10/keyedit.c:4588 g10/keyedit.c:4652 g10/keyedit.c:4695
+#: g10/keyedit.c:4612 g10/keyedit.c:4676 g10/keyedit.c:4719
 msgid " (non-exportable)"
 msgstr " (neexportovatelné)"
 
-#: g10/keyedit.c:4592
+#: g10/keyedit.c:4616
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Platnost podpisu vypr¹í %s.\n"
 
-#: g10/keyedit.c:4596
+#: g10/keyedit.c:4620
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Jste si jistý, ¾e jej chcete stále revokovat? (a/N) "
 
-#: g10/keyedit.c:4600
+#: g10/keyedit.c:4624
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Vytvoøit pro tento podpis revokaèní certifikát? (a/N)"
 
-#: g10/keyedit.c:4627
+#: g10/keyedit.c:4651
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Podepsal(a) jste následující identifikátory u¾ivatele: %s:\n"
 
-#: g10/keyedit.c:4653
+#: g10/keyedit.c:4677
 msgid " (non-revocable)"
 msgstr " (nerevokovatelné)"
 
-#: g10/keyedit.c:4660
+#: g10/keyedit.c:4684
 #, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "revokováno va¹ím klíèem %s v %s\n"
 
-#: g10/keyedit.c:4682
+#: g10/keyedit.c:4706
 msgid "You are about to revoke these signatures:\n"
 msgstr "Chystáte se revokovat tyto podpisy:\n"
 
-#: g10/keyedit.c:4702
+#: g10/keyedit.c:4726
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Opravdu vytvoøit revokaèní certifikáty? (a/N) "
 
-#: g10/keyedit.c:4732
+#: g10/keyedit.c:4756
 msgid "no secret key\n"
 msgstr "neexistuje tajný klíè\n"
 
-#: g10/keyedit.c:4802
+#: g10/keyedit.c:4826
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "U¾ivatelské ID \"%s\" je ji¾ revokováno.\n"
 
-#: g10/keyedit.c:4819
+#: g10/keyedit.c:4843
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "VAROVÁNÍ: podpis ID u¾ivatele je datován %d sekund v budoucnosti\n"
 
-#: g10/keyedit.c:4883
+#: g10/keyedit.c:4907
 #, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "Klíè %s je ji¾ revokován.\n"
 
-#: g10/keyedit.c:4945
+#: g10/keyedit.c:4969
 #, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "Podklíè %s je ji¾ revokován.\n"
 
-#: g10/keyedit.c:5040
+#: g10/keyedit.c:5064
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Zobrazuji %s fotografický ID o velikosti %ld pro klíè %s (uid %d)\n"
@@ -4282,148 +4280,148 @@ msgstr "Vlo¾te URL preferovaného keyserveru: "
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
-#: g10/keyserver.c:154
+#: g10/keyserver.c:155
 #, c-format
 msgid "WARNING: keyserver option `%s' is not used on this platform\n"
 msgstr "VAROVÁNÍ: volba `%s' pro server klíèù není na této platformì úèinná\n"
 
-#: g10/keyserver.c:537
+#: g10/keyserver.c:538
 msgid "disabled"
 msgstr "disabled"
 
-#: g10/keyserver.c:738
+#: g10/keyserver.c:739
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "Vlo¾te èíslo (èísla), 'N' pro dal¹í nebo 'Q' pro konec> "
 
-#: g10/keyserver.c:821 g10/keyserver.c:1422
+#: g10/keyserver.c:823 g10/keyserver.c:1425
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "neplatný protokol serveru klíèù (us %d!=handler %d)\n"
 
-#: g10/keyserver.c:919
+#: g10/keyserver.c:921
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "klíè \"%s\" nebyl na serveru klíèù nalezen\n"
 
-#: g10/keyserver.c:921
+#: g10/keyserver.c:923
 msgid "key not found on keyserver\n"
 msgstr "klíè nebyl na serveru klíèù nalezen\n"
 
-#: g10/keyserver.c:1146
+#: g10/keyserver.c:1149
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "po¾aduji klíè %s ze %s server %s\n"
 
-#: g10/keyserver.c:1150
+#: g10/keyserver.c:1153
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "po¾aduji klíè %s z %s\n"
 
-#: g10/keyserver.c:1174
+#: g10/keyserver.c:1177
 #, fuzzy, c-format
 msgid "searching for names from %s server %s\n"
 msgstr "vyhledávám \"%s\" na %s serveru %s\n"
 
-#: g10/keyserver.c:1177
+#: g10/keyserver.c:1180
 #, fuzzy, c-format
 msgid "searching for names from %s\n"
 msgstr "vyhledávám \"%s\" na serveru %s\n"
 
-#: g10/keyserver.c:1325
+#: g10/keyserver.c:1328
 #, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "posílám klíè %s na %s server %s\n"
 
-#: g10/keyserver.c:1329
+#: g10/keyserver.c:1332
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "posílám klíè %s na %s\n"
 
-#: g10/keyserver.c:1372
+#: g10/keyserver.c:1375
 #, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "vyhledávám \"%s\" na %s serveru %s\n"
 
-#: g10/keyserver.c:1375
+#: g10/keyserver.c:1378
 #, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "vyhledávám \"%s\" na serveru %s\n"
 
-#: g10/keyserver.c:1382 g10/keyserver.c:1478
+#: g10/keyserver.c:1385 g10/keyserver.c:1481
 msgid "no keyserver action!\n"
 msgstr "¾ádná operace se serverem klíèù!\n"
 
-#: g10/keyserver.c:1430
+#: g10/keyserver.c:1433
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr "VAROVÁNÍ: keyserver handler z jiné verze GnuPG (%s)\n"
 
-#: g10/keyserver.c:1439
+#: g10/keyserver.c:1442
 msgid "keyserver did not send VERSION\n"
 msgstr "server klíèù neposlal VERSION\n"
 
-#: g10/keyserver.c:1500
+#: g10/keyserver.c:1504
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "¾adný server klíèù není znám (pou¾íjte volbu --keyserver)\n"
 
-#: g10/keyserver.c:1506
+#: g10/keyserver.c:1510
 msgid "external keyserver calls are not supported in this build\n"
 msgstr "volání externího keyserver není v této verzi podporováno\n"
 
-#: g10/keyserver.c:1518
+#: g10/keyserver.c:1522
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr "protokol serveru klíèù `%s' není podporován\n"
 
-#: g10/keyserver.c:1523
+#: g10/keyserver.c:1527
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr "akce `%s' není podporována v protokolu `%s' serveru klíèù\n"
 
-#: g10/keyserver.c:1531
+#: g10/keyserver.c:1535
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr "%s nepodporuje protokol verze  %d\n"
 
-#: g10/keyserver.c:1538
+#: g10/keyserver.c:1542
 msgid "keyserver timed out\n"
 msgstr "èasový limit pro server klíèù vypr¹el\n"
 
-#: g10/keyserver.c:1543
+#: g10/keyserver.c:1547
 msgid "keyserver internal error\n"
 msgstr "interní chyba serveru klíèù\n"
 
-#: g10/keyserver.c:1552
+#: g10/keyserver.c:1556
 #, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "chyba komunikace se serverem klíèù: %s\n"
 
-#: g10/keyserver.c:1577 g10/keyserver.c:1611
+#: g10/keyserver.c:1581 g10/keyserver.c:1615
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" není ID klíèe: pøeskoèeno\n"
 
-#: g10/keyserver.c:1868
+#: g10/keyserver.c:1874
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "VAROVÁNÍ: nelze aktualizovat klíè %s prostøednictvím %s: %s\n"
 
-#: g10/keyserver.c:1890
+#: g10/keyserver.c:1896
 #, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "aktualizuji 1 klíè z %s\n"
 
-#: g10/keyserver.c:1892
+#: g10/keyserver.c:1898
 #, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "aktualizuji %d klíèù z %s\n"
 
-#: g10/keyserver.c:1957
+#: g10/keyserver.c:1963
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "VAROVÁNÍ: nelze aktualizovat klíè %s prostøednictvím %s: %s\n"
 
-#: g10/keyserver.c:1963
+#: g10/keyserver.c:1969
 #, fuzzy, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr "VAROVÁNÍ: nelze aktualizovat klíè %s prostøednictvím %s: %s\n"
@@ -4678,11 +4676,10 @@ msgstr "VAROVÁNÍ: vy¾ádaný algoritmus %s není doporuèen\n"
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA modul pro GnuPG nenalezen\n"
 
-#: g10/misc.c:448
-msgid ""
-"please see http://www.gnupg.org/why-not-idea.html for more information\n"
-msgstr ""
-"více informací naleznete v dokumentu http://www.gnupg.cz/why-not-idea.html\n"
+#: g10/misc.c:448 g10/sig-check.c:103
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr "Více informací naleznete na adrese http://www.gnupg.cz/faq.html\n"
 
 #: g10/misc.c:681
 #, c-format
@@ -4732,39 +4729,39 @@ msgstr "neznámá volba `%s'\n"
 msgid "File `%s' exists. "
 msgstr "Soubor `%s' existuje. "
 
-#: g10/openfile.c:88
+#: g10/openfile.c:90
 msgid "Overwrite? (y/N) "
 msgstr "Pøepsat (a/N)? "
 
-#: g10/openfile.c:121
+#: g10/openfile.c:123
 #, c-format
 msgid "%s: unknown suffix\n"
 msgstr "%s: neznámá pøípona\n"
 
-#: g10/openfile.c:143
+#: g10/openfile.c:145
 msgid "Enter new filename"
 msgstr "Vlo¾te nový název souboru"
 
-#: g10/openfile.c:188
+#: g10/openfile.c:190
 msgid "writing to stdout\n"
 msgstr "zapisuji do standardního výstupu\n"
 
-#: g10/openfile.c:303
+#: g10/openfile.c:305
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "pøedpokládám podepsaná data v `%s'\n"
 
-#: g10/openfile.c:382
+#: g10/openfile.c:384
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr "vytvoøen nový konfiguraèní soubor `%s'\n"
 
-#: g10/openfile.c:384
+#: g10/openfile.c:386
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr "VAROVÁNÍ: nastavení z `%s' nejsou pøi tomto spu¹tìní zatím aktivní\n"
 
-#: g10/openfile.c:416
+#: g10/openfile.c:418
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "adresáø `%s' vytvoøen\n"
@@ -5384,46 +5381,56 @@ msgstr ""
 "generuji _nevhodný_ 16-ti bitový kontrolní souèet pro ochranu soukromého "
 "klíèe\n"
 
-#: g10/seskey.c:53
+#: g10/seskey.c:54
 msgid "weak key created - retrying\n"
 msgstr "vytvoøen slabý klíè - zkou¹ím znovu\n"
 
-#: g10/seskey.c:58
+#: g10/seskey.c:59
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
 "nemohu se vyvarovat slabého klíèe pro symetrickou ¹ifru; operaci jsem zkusil "
 "%d krát!\n"
 
-#: g10/seskey.c:214
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA po¾aduje pou¾ití 160-ti bitového hashovacího algoritmu\n"
+#: g10/seskey.c:222
+msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+msgstr ""
+
+#: g10/seskey.c:236
+#, c-format
+msgid "DSA key %s uses an unsafe (%u bit) hash\n"
+msgstr ""
+
+#: g10/seskey.c:248
+#, c-format
+msgid "DSA key %s requires a %u bit or larger hash\n"
+msgstr ""
 
 #: g10/sig-check.c:76
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "VAROVÁNÍ: konflikt hashe podpisu ve zprávì\n"
 
-#: g10/sig-check.c:105
+#: g10/sig-check.c:101
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
 msgstr "VAROVÁNÍ: podepisovací podklíè %s není køí¾ovì certifikován\n"
 
-#: g10/sig-check.c:111
+#: g10/sig-check.c:113
 #, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
 msgstr "VAROVÁNÍ: podepisovací podklíè %s má neplatnou køí¾ovou certifikaci\n"
 
-#: g10/sig-check.c:179
+#: g10/sig-check.c:181
 #, c-format
 msgid "public key %s is %lu second newer than the signature\n"
 msgstr "veøejný klíè %s je o %lu sekund novìj¹í ne¾ podpis\n"
 
-#: g10/sig-check.c:180
+#: g10/sig-check.c:182
 #, c-format
 msgid "public key %s is %lu seconds newer than the signature\n"
 msgstr "veøejný klíè %s je o %lu sekund novìj¹í ne¾ podpis\n"
 
-#: g10/sig-check.c:191
+#: g10/sig-check.c:193
 #, c-format
 msgid ""
 "key %s was created %lu second in the future (time warp or clock problem)\n"
@@ -5431,7 +5438,7 @@ msgstr ""
 "klíè %s byl vytvoøen %lu sekund v budoucnosti (do¹lo ke zmìnì èasu nebo\n"
 "je problém se systémovým èasem)\n"
 
-#: g10/sig-check.c:193
+#: g10/sig-check.c:195
 #, c-format
 msgid ""
 "key %s was created %lu seconds in the future (time warp or clock problem)\n"
@@ -5439,24 +5446,24 @@ msgstr ""
 "klíè %s byl vytvoøen %lu sekund v budoucnosti (do¹lo ke zmìnì èasu nebo\n"
 "je problém se systémovým èasem)\n"
 
-#: g10/sig-check.c:203
+#: g10/sig-check.c:205
 #, c-format
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "POZNÁMKA: podpisovému klíèi %s skonèila platnost %s\n"
 
-#: g10/sig-check.c:286
+#: g10/sig-check.c:287
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "pøedpokládám ¹patný podpis klíèem %s, proto¾e je nastaven neznámý kritický "
 "bit\n"
 
-#: g10/sig-check.c:543
+#: g10/sig-check.c:544
 #, c-format
 msgid "key %s: no subkey for subkey revocation signature\n"
 msgstr "klíè %s: neexistuje podklíè pro revokaci podklíèe\n"
 
-#: g10/sig-check.c:569
+#: g10/sig-check.c:570
 #, c-format
 msgid "key %s: no subkey for subkey binding signature\n"
 msgstr "klíè %s: podklíè který je svázán s podpisem neexistuje\n"
@@ -5502,23 +5509,27 @@ msgstr ""
 "VAROVÁNÍ: nemohu %%-expandovat URL preferovaného keyservery (pøíli¹ dlouhé). "
 "Pou¾ity neexpandované.\n"
 
-#: g10/sign.c:350
+#: g10/sign.c:328
+msgid "DSA requires the use of a 160 bit hash algorithm\n"
+msgstr "DSA po¾aduje pou¾ití 160-ti bitového hashovacího algoritmu\n"
+
+#: g10/sign.c:357
 #, c-format
 msgid "checking created signature failed: %s\n"
 msgstr "kontrola vytvoøeného podpisu se nepodaøila: %s\n"
 
-#: g10/sign.c:359
+#: g10/sign.c:366
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s podpis od: \"%s\"\n"
 
-#: g10/sign.c:752
+#: g10/sign.c:759
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
 "v módu --pgp2 mù¾ete vytvoøit pouze oddìlený podpis (detach-sign)s klíèi "
 "formátu PGP-2.x\n"
 
-#: g10/sign.c:821
+#: g10/sign.c:828
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -5526,16 +5537,16 @@ msgstr ""
 "VAROVÁNÍ: vy¾ádaný hashovací algoritmus %s (%d) nevyhovuje pøedvolbám "
 "pøíjemce\n"
 
-#: g10/sign.c:919
+#: g10/sign.c:928
 msgid "signing:"
 msgstr "podepisuji:"
 
-#: g10/sign.c:1031
+#: g10/sign.c:1040
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
 "v módu --pgp2 mù¾ete vytváøet jen èitelné podpisy s klíèi formátu PGP-2.x\n"
 
-#: g10/sign.c:1209
+#: g10/sign.c:1218
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "bude pou¾ito ¹ifrování %s\n"
@@ -5744,12 +5755,12 @@ msgstr "%s: pøidání záznamu selhalo: %s\n"
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "databáze dùvìry je po¹kozena; prosím spus»te \"gpg --fix-trustdb\".\n"
 
-#: g10/textfilter.c:148
+#: g10/textfilter.c:149
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
 msgstr "nemohu pracovat s øádky del¹ími ne¾ %d znakù\n"
 
-#: g10/textfilter.c:245
+#: g10/textfilter.c:248
 #, c-format
 msgid "input line longer than %d characters\n"
 msgstr "vstupní øádek je del¹í ne¾ %d znakù\n"
@@ -6226,6 +6237,15 @@ msgstr "provést operaci není mo¾né bez inicializované bezpeèné pamìti\n"
 #: util/secmem.c:351
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(pravdìpodobnì jste pro tento úkol pou¾ili nesprávný program)\n"
+
+#~ msgid "algorithms on these user IDs:\n"
+#~ msgstr "které nesjou k dispozici. Táká se to tìchto user ID:\n"
+
+#~ msgid ""
+#~ "please see http://www.gnupg.org/why-not-idea.html for more information\n"
+#~ msgstr ""
+#~ "více informací naleznete v dokumentu http://www.gnupg.cz/why-not-idea."
+#~ "html\n"
 
 #~ msgid ""
 #~ "a notation name must have only printable characters or spaces, and end "

@@ -33,6 +33,7 @@
 #include "filter.h"
 #include "i18n.h"
 #include "options.h"
+#include "status.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define LF "\r\n"
@@ -176,6 +177,8 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 
     if( !escape_dash )
 	escape_from = 0;
+
+    write_status (STATUS_BEGIN_SIGNING);
 
     for(;;) {
 	maxlen = MAX_LINELEN;

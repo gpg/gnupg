@@ -118,6 +118,8 @@
 #define STATUS_PKA_TRUST_BAD    82
 #define STATUS_PKA_TRUST_GOOD   83
 
+#define STATUS_BEGIN_SIGNING    84
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

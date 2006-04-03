@@ -1726,6 +1726,8 @@ main (int argc, char **argv )
     opt.pcsc_driver = "winscard.dll";
 #elif defined(__APPLE__)
     opt.pcsc_driver = "/System/Library/Frameworks/PCSC.framework/PCSC";
+#elif defined(__GLIBC__)
+    opt.pcsc_driver = "libpcsclite.so.1"; 
 #else
     opt.pcsc_driver = "libpcsclite.so"; 
 #endif
