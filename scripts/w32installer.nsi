@@ -155,7 +155,7 @@ Section "Base" SecBase
   File "gpg.exe"
   File "gpgkeys_finger.exe"
   File "gpgkeys_hkp.exe"
-  File "gpgkeys_http.exe"
+  File "gpgkeys_curl.exe"
   File "gpgkeys_ldap.exe"
 
   SetOutPath "$INSTDIR\Doc"

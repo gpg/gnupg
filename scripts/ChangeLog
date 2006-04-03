@@ -1,5 +1,9 @@
 2006-04-03  Werner Koch  <wk@g10code.com>
 
+	* w32installer.nsi: Install curl and not http keyserver helper.
+
+2006-04-03  Werner Koch  <wk@g10code.com>
+
 	* autogen.sh: Unsupport mingw32/cpd.
 
 2006-03-09  Werner Koch  <wk@g10code.com>
