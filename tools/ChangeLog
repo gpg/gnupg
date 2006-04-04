@@ -1,3 +1,8 @@
+2006-04-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* make-dns-cert.c: New program to generate properly formatted CERT
+	records so people don't have to do it manually.
+
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	* mk-tdata.c (main): Implement option --char.

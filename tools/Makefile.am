@@ -25,7 +25,7 @@ needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 bin_PROGRAMS    = gpgsplit
-noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest
+noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest make-dns-cert
 
 if HAVE_USTAR
 bin_SCRIPTS = gpg-zip
