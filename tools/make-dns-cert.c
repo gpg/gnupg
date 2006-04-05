@@ -44,22 +44,27 @@ cert_key(const char *name,const char *keyfile)
   fd=open(keyfile,O_RDONLY);
   if(fd==-1)
     {
-      printf("Cannot open key file %s: %s\n",keyfile,strerror(errno));
+      fprintf(stderr,"Cannot open key file %s: %s\n",keyfile,strerror(errno));
       return 1;
     }
 
   err=fstat(fd,&statbuf);
   if(err==-1)
     {
-      printf("Unable to stat key file %s: %s\n",keyfile,strerror(errno));
+      fprintf(stderr,"Unable to stat key file %s: %s\n",
+	      keyfile,strerror(errno));
       goto fail;
     }
 
-  if(statbuf.st_size>32768)
+  if(statbuf.st_size>65536)
     {
-      printf("Key %s too large for CERT encoding\n",keyfile);
+      fprintf(stderr,"Key %s too large for CERT encoding\n",keyfile);
       goto fail;
     }
+
+  if(statbuf.st_size>16384)
+    fprintf(stderr,"Warning: key file %s is larger than the default"
+	    " GnuPG max-cert-size\n",keyfile);
 
   printf("%s\tTYPE37\t\\# %u 0003 0000 00 ",
 	 name,(unsigned int)statbuf.st_size+5);
@@ -72,7 +77,8 @@ cert_key(const char *name,const char *keyfile)
       err=read(fd,buffer,1024);
       if(err==-1)
 	{
-	  printf("Unable to read key file %s: %s\n",keyfile,strerror(errno));
+	  fprintf(stderr,"Unable to read key file %s: %s\n",
+		  keyfile,strerror(errno));
 	  goto fail;
 	}
 
@@ -97,10 +103,28 @@ url_key(const char *name,const char *fpr,const char *url)
 
   if(fpr)
     {
-      fprlen=strlen(fpr);
+      const char *tmp = fpr;
+      while (*tmp)
+	{
+	  if ((*tmp >= 'A' && *tmp <= 'F') ||
+	      (*tmp >= 'a' && *tmp <= 'f') ||
+	      (*tmp >= '0' && *tmp <= '9'))
+	    {
+	      fprlen++;
+	    }
+	  else if (*tmp != ' ' && *tmp != '\t')
+	    {
+	      fprintf(stderr,"Fingerprint must consist of only hex digits"
+		      " and whitespace\n");
+	      return 1;
+	    }
+
+	  tmp++;
+	}
+
       if(fprlen%2)
 	{
-	  printf("Fingerprint must be an even number of characters\n");
+	  fprintf(stderr,"Fingerprint must be an even number of characters\n");
 	  return 1;
 	}
 
@@ -113,7 +137,8 @@ url_key(const char *name,const char *fpr,const char *url)
 
   if(!fpr && !url)
     {
-      printf("Cannot generate a CERT without either a fingerprint or URL\n");
+      fprintf(stderr,
+	      "Cannot generate a CERT without either a fingerprint or URL\n");
       return 1;
     }
 
@@ -136,13 +161,13 @@ url_key(const char *name,const char *fpr,const char *url)
 }
 
 static void
-usage(void)
+usage(FILE *stream)
 {
-  printf("make-dns-cert\n");
-  printf("\t-f\tfingerprint\n");
-  printf("\t-u\tURL\n");
-  printf("\t-k\tkey file\n");
-  printf("\t-n\tDNS name\n");
+  fprintf(stream,"make-dns-cert\n");
+  fprintf(stream,"\t-f\tfingerprint\n");
+  fprintf(stream,"\t-u\tURL\n");
+  fprintf(stream,"\t-k\tkey file\n");
+  fprintf(stream,"\t-n\tDNS name\n");
 }
 
 int
@@ -153,7 +178,7 @@ main(int argc,char *argv[])
 
   if(argc==1)
     {
-      usage();
+      usage(stderr);
       return 0;
     }
   else if(argc>1 && strcmp(argv[1],"--version")==0)
@@ -163,7 +188,7 @@ main(int argc,char *argv[])
     }
   else if(argc>1 && strcmp(argv[1],"--help")==0)
     {
-      usage();
+      usage(stdout);
       return 0;
     }
 
@@ -172,7 +197,7 @@ main(int argc,char *argv[])
       {
       default:
       case 'h':
-	usage();
+	usage(stdout);
 	exit(0);
 
       case 'f':
@@ -194,14 +219,14 @@ main(int argc,char *argv[])
 
   if(!name)
     {
-      printf("No name provided\n");
+      fprintf(stderr,"No name provided\n");
       return 1;
     }
 
   if(keyfile && (fpr || url))
     {
-      printf("Cannot generate a CERT record with both a keyfile and"
-	     " a fingerprint or URL\n");
+      fprintf(stderr,"Cannot generate a CERT record with both a keyfile and"
+	      " a fingerprint or URL\n");
       return 1;
     }
 

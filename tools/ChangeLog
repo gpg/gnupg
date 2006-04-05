@@ -1,3 +1,11 @@
+2006-04-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* make-dns-cert.c: Some changes from Peter Palfrader to send
+	errors to stderr and allow spaces in a fingerprint.  Also warn
+	when a key is over 16k (as that is the default max-cert-size) and
+	fail when a key is over 64k as that is the DNS limit in many
+	places.
+
 2006-04-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* make-dns-cert.c: New program to generate properly formatted CERT
