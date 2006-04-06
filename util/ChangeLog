@@ -1,3 +1,7 @@
+2006-04-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* memory.c (realloc): Fix compile problem with --enable-m-guard.
+
 2006-03-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* cert.c (main): Fix test program build warning on OSX.

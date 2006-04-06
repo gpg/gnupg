@@ -1,5 +1,5 @@
 /* memory.c  -	memory allocation
- *	Copyright (C) 1998, 1999, 2001, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2001, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -509,15 +509,15 @@ FNAMEX(realloc)( void *a, size_t n FNAMEPRT )
         if( len >= n ) /* we don't shrink for now */
             return a;
         if( p[-1] == MAGIC_SEC_BYTE )
-            b = FNAME(alloc_secure_clear)(n FNAMEARG);
+            b = FNAMEXM(alloc_secure_clear)(n FNAMEARG);
         else
-            b = FNAME(alloc_clear)(n FNAMEARG);
+            b = FNAMEXM(alloc_clear)(n FNAMEARG);
         FNAME(check)(NULL FNAMEARG);
         memcpy(b, a, len );
-        FNAME(free)(p FNAMEARG);
+        FNAMEX(free)(p FNAMEARG);
     }
     else
-        b = FNAME(alloc)(n FNAMEARG);
+        b = FNAMEXM(alloc)(n FNAMEARG);
 #else
     if( m_is_secure(a) ) {
 	if( !(b = secmexrealloc( a, n )) )
