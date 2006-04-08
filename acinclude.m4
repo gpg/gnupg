@@ -748,3 +748,18 @@ if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
 fi
 ])
 
+# GNUPG_AC_INIT([PACKAGE, VERSION, [ISDEVEL], BUG-REPORT)
+# ----------------------------------------
+# Call AC_INIT with an additional argument to indicate a development
+# version.  If this is called ""svn", the global revision of the
+# repository will be appended, so that a version.  The variable
+# SVN_REVISION will always be set.  In case svn is not available 0
+# will be used for the revision.
+m4_define([GNUPG_AC_INIT],
+[
+m4_define(gnupg_ac_init_tmp, m4_esyscmd([echo -n $((svn info 2>/dev/null || \
+          echo 'Revision: 0') |sed -n '/^Revision:/ {s/[^0-9]//gp;q}')]))
+SVN_REVISION="gnupg_ac_init_tmp[]"
+AC_INIT([$1], [$2][]m4_ifval([$3],[-[$3][]gnupg_ac_init_tmp],[]), [$4])
+])
+

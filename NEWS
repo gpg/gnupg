@@ -68,8 +68,7 @@ Noteworthy changes in version 1.4.3 (2006-04-03)
       currently defined keyserver), as well as arbitrary keyserver
       URIs that will be contacted for the key.
 
-    * Able to retrieve keys using DNS CERT records as per RFC-2538bis
-      (currently in draft): http://www.josefsson.org/rfc2538bis
+    * Able to retrieve keys using DNS CERT records as per RFC-4398.
 
 
 Noteworthy changes in version 1.4.2 (2005-07-26)

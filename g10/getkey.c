@@ -163,6 +163,21 @@ cache_public_key( PKT_public_key *pk )
 }
 
 
+/* Return a const utf-8 string with the text "[User ID not found]".
+   This fucntion is required so that we don't need to switch gettext's
+   encoding temporary. */
+static const char *
+user_id_not_found_utf8 (void)
+{
+  static char *text;
+
+  if (!text)
+    text = native_to_utf8 (_("[User ID not found]"));
+  return text;
+}
+
+
+
 /*
  * Return the user ID from the given keyblock.
  * We use the primary uid flag which has been set by the merge_selfsigs
@@ -183,9 +198,7 @@ get_primary_uid ( KBNODE keyblock, size_t *uidlen )
             return k->pkt->pkt.user_id->name;
         }
     } 
-    /* fixme: returning translatable constants instead of a user ID is 
-     * not good because they are probably not utf-8 encoded. */
-    s = _("[User ID not found]");
+    s = user_id_not_found_utf8 ();
     *uidlen = strlen (s);
     return s;
 }
@@ -2886,7 +2899,7 @@ get_user_id( u32 *keyid, size_t *rn )
             }
         }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = xstrdup( _("[User ID not found]") );
+    p = xstrdup( user_id_not_found_utf8 () );
     *rn = strlen(p);
     return p;
 }

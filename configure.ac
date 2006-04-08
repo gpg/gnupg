@@ -24,9 +24,16 @@ dnl (Process this file with autoconf to produce a configure script.)
 AC_PREREQ(2.59)
 min_automake_version="1.9.3"
 
-# Remember to change the version number immediately *after* a release
-# and remove the "-cvs" or "rc" suffix immediately *before* a release.
-AC_INIT(gnupg, 1.4.4-cvs, bug-gnupg@gnu.org)
+# Remember to change the version number immediately *after* a release.
+# Set my_issvn to "yes" for non-released code.  Remember to run an
+# "svn up" and "autogen.sh" right before creating a distribution.
+m4_define([my_version], [1.4.4])
+m4_define([my_issvn], [yes])
+
+m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
+            || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q}')]))
+AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
+        [bug-gnupg@gnu.org])
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.

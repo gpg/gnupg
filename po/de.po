@@ -93,7 +93,7 @@ msgstr "kann '%s' nicht schreiben: %s\n"
 #: cipher/random.c:569
 #, c-format
 msgid "can't close `%s': %s\n"
-msgstr "kann '%s' nicht schliessen: %s\n"
+msgstr "kann '%s' nicht schließen: %s\n"
 
 #: cipher/random.c:814
 msgid "WARNING: using insecure random number generator!!\n"
@@ -120,7 +120,7 @@ msgid ""
 "keep you from getting bored, because it will improve the quality\n"
 "of the entropy.\n"
 msgstr ""
-"Zufalls wird gesammelt.  Bitte arbeiten Sie an etwas anderem, da\n"
+"Zufall wird gesammelt.  Bitte arbeiten Sie an etwas anderem, da\n"
 "so die Qualität der Zufallszahlen erhöht werden kann.\n"
 
 #: cipher/rndlinux.c:132
@@ -377,7 +377,7 @@ msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
 "\"quoted printable\" Zeichen in der ASCII-Hülle gefunden - möglicherweise\n"
-" war ein fehlerhafter E-Mail-Transporter(\"MTA\") die Ursache\n"
+" war ein fehlerhafter Email-Transporter(\"MTA\") die Ursache\n"
 
 #: g10/card-util.c:63 g10/card-util.c:306
 #, c-format
@@ -531,7 +531,7 @@ msgstr "Vorhandenen Schlüssel ersetzen? (j/N) "
 #: g10/card-util.c:1054 g10/card-util.c:1063
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
-"Sicherung des Verschlüsselungsschlüssel ausserhalb der Karte erstellen? (J/"
+"Sicherung des Verschlüsselungsschlüssel außerhalb der Karte erstellen? (J/"
 "n) "
 
 #: g10/card-util.c:1075
@@ -778,7 +778,7 @@ msgstr "Fehler beim Erzeugen der Passphrase: %s\n"
 #: g10/encode.c:218
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr ""
-"Aufgrund des S2K-Modus kann ein symmetrisches ESK Packet nicht benutzt "
+"Aufgrund des S2K-Modus kann ein symmetrisches ESK Paket nicht benutzt "
 "werden\n"
 
 #: g10/encode.c:231
@@ -1970,7 +1970,7 @@ msgstr "Geben Sie den Namen des Schlüsselinhabers ein"
 #: g10/helptext.c:122
 msgid "please enter an optional but highly suggested email address"
 msgstr ""
-"Geben Sie eine E-Mail-Adresse ein. Dies ist zwar nicht unbedingt notwendig,\n"
+"Geben Sie eine Email-Adresse ein. Dies ist zwar nicht unbedingt notwendig,\n"
 "aber sehr empfehlenswert."
 
 #: g10/helptext.c:126
@@ -1987,7 +1987,7 @@ msgid ""
 msgstr ""
 "N  um den Namen zu ändern.\n"
 "K  um den Kommentar zu ändern.\n"
-"E  um die E-Mail-Adresse zu ändern.\n"
+"E  um die Email-Adresse zu ändern.\n"
 "F  um mit der Schlüsselerzeugung fortzusetzen.\n"
 "B  um die Schlüsselerzeugung abbrechen."
 
@@ -2060,8 +2060,8 @@ msgstr ""
 "    Das kann z.B. die Kontrolle des Schlüsselfingerabdrucks mit dem\n"
 "    Schlüsselinhaber persönlich vorgenommen haben; daß Sie die User-ID des\n"
 "    Schlüssel anhand einer schwer zu fälschenden Urkunde mit Foto (wie z.B.\n"
-"    einem Paß) abgeglichen haben und schließlich per E-Mail-Verkehr die\n"
-"    E-Mail-Adresse als zum Schlüsselbesitzer gehörig erkannt haben.\n"
+"    einem Paß) abgeglichen haben und schließlich per Email-Verkehr die\n"
+"    Email-Adresse als zum Schlüsselbesitzer gehörig erkannt haben.\n"
 "\n"
 "Beachten Sie, daß diese Beispiele für die Antworten 2 und 3 *nur* Beispiele\n"
 "sind.  Schlußendlich ist es Ihre Sache, was Sie unter \"flüchtig\" oder\n"
@@ -2201,7 +2201,7 @@ msgstr ""
 "      Falls Sie diesen Schlüssel zurückgezogen haben.\n"
 "  \"User-ID ist nicht mehr gültig\"\n"
 "      Um bekanntzugeben, daß die User-ID nicht mehr benutzt werden soll.\n"
-"      So weist man normalerweise auf eine ungültige E-Mailadresse hin.\n"
+"      So weist man normalerweise auf eine ungültige Emailadresse hin.\n"
 
 #: g10/helptext.c:272
 msgid ""
@@ -3369,14 +3369,12 @@ msgid "Really revoke this user ID? (y/N) "
 msgstr "Diese User-ID wirklich widerrufen? "
 
 #: g10/keyedit.c:2024
-#, fuzzy
 msgid "Do you really want to revoke the entire key? (y/N) "
-msgstr "Möchten Sie diesen Schlüssel wirklich wiederrufen? "
+msgstr "Möchten Sie diesen Schlüssel wirklich vollständig widerrufen? "
 
 #: g10/keyedit.c:2035
-#, fuzzy
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
-msgstr "Möchten Sie die ausgewählten Schlüssel wirklich widerrufen? "
+msgstr "Möchten Sie die ausgewählten Unterschlüssel wirklich widerrufen? "
 
 #: g10/keyedit.c:2037
 msgid "Do you really want to revoke this subkey? (y/N) "
@@ -4055,7 +4053,7 @@ msgstr ""
 "\n"
 "Sie benötigen eine User-ID, um Ihren Schlüssel eindeutig zu machen; das\n"
 "Programm baut diese User-ID aus Ihrem echten Namen, einem Kommentar und\n"
-"Ihrer E-Mail-Adresse in dieser Form auf:\n"
+"Ihrer Email-Adresse in dieser Form auf:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
@@ -4077,11 +4075,11 @@ msgstr "Der Name muß min. 5 Zeichen lang sein.\n"
 
 #: g10/keygen.c:1706
 msgid "Email address: "
-msgstr "E-Mail-Adresse: "
+msgstr "Email-Adresse: "
 
 #: g10/keygen.c:1712
 msgid "Not a valid email address\n"
-msgstr "Diese E-Mail-Adresse ist ungültig\n"
+msgstr "Diese Email-Adresse ist ungültig\n"
 
 #: g10/keygen.c:1720
 msgid "Comment: "
@@ -4109,7 +4107,7 @@ msgstr ""
 
 #: g10/keygen.c:1760
 msgid "Please don't put the email address into the real name or the comment\n"
-msgstr "Bitte keine E-Mailadressen als Namen oder Kommentar verwenden\n"
+msgstr "Bitte keine Emailadressen als Namen oder Kommentar verwenden\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4572,18 +4570,18 @@ msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr "Passphrase wurde mit unbekanntem Hashverfahren %d erstellt\n"
 
 #: g10/mainproc.c:382
-#, fuzzy, c-format
+#, c-format
 msgid "public key is %s\n"
-msgstr "Öffentlicher Schlüssel ist %08lX\n"
+msgstr "Öffentlicher Schlüssel ist %s\n"
 
 #: g10/mainproc.c:439
 msgid "public key encrypted data: good DEK\n"
-msgstr "Mit öffentlichem Schüssel verschlüsselte Daten: Korrekte DEK\n"
+msgstr "Mit öffentlichem Schlüssel verschlüsselte Daten: Korrekte DEK\n"
 
 #: g10/mainproc.c:472
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
-msgstr "verschlüsselt mit %u-Bit %s Schlüssel, ID %08lX, erzeugt %s\n"
+msgstr "verschlüsselt mit %u-Bit %s Schlüssel, ID %s, erzeugt %s\n"
 
 #: g10/mainproc.c:476 g10/pkclist.c:219
 #, fuzzy, c-format
@@ -4593,9 +4591,9 @@ msgstr "                    alias \""
 # Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
 # [kw]
 #: g10/mainproc.c:480
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %s key, ID %s\n"
-msgstr "verschlüsselt mit %s Schlüssel, ID %08lX\n"
+msgstr "verschlüsselt mit %s Schlüssel, ID %s\n"
 
 #: g10/mainproc.c:494
 #, c-format
@@ -5835,7 +5833,7 @@ msgstr "trustdb Transaktion zu groß\n"
 #: g10/tdbio.c:498
 #, fuzzy, c-format
 msgid "can't access `%s': %s\n"
-msgstr "kann '%s' nicht schliessen: %s\n"
+msgstr "kann '%s' nicht schließen: %s\n"
 
 #: g10/tdbio.c:513
 #, c-format

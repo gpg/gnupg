@@ -1,3 +1,13 @@
+2006-04-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use new method to include the SVN revison.  Now it
+	is the actual global revision number.
+
+2006-04-04  Werner Koch  <wk@g10code.com>
+
+	* NEWS: Fixed old news entry to point to rfc4398 which has been
+	published just before 1.4.3.
+
 2006-04-03  Werner Koch  <wk@g10code.com>
 
 	Released 1.4.3.
