@@ -1,3 +1,8 @@
+2006-04-08  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (list_node): Print ring trust value only if not empty
+	and --with-colons has been given.
+
 2006-04-05  Werner Koch  <wk@g10code.com>
 
 	* getkey.c (user_id_not_found_utf8): New.

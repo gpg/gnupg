@@ -937,10 +937,12 @@ list_node( CTX c, KBNODE node )
 		    putchar('\n');
 		    if( opt.fingerprint && !any )
 			print_fingerprint( pk, NULL, 0 );
-		    if( node->next
+		    if( opt.with_colons
+                        && node->next
 			&& node->next->pkt->pkttype == PKT_RING_TRUST ) {
 			printf("rtv:2:%u:\n",
-				 node->next->pkt->pkt.ring_trust->trustval );
+                               node->next->pkt->pkt.ring_trust?
+                               node->next->pkt->pkt.ring_trust->trustval : 0);
 		    }
 		    any=1;
 		}
