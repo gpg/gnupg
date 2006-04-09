@@ -3711,9 +3711,6 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
 	    break;
 	  }
 
-      if(!sig_sk)
-	continue;
-
       /* Now we can get to work.  We have a main key and secret part,
 	 a signing subkey with signature and secret part with
 	 signature. */
@@ -3744,13 +3741,16 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
 	      xfree(sig_pk->pkt);
 	      sig_pk->pkt=newpkt;
 
-	      /* Put the new sig into place on the seckey */
-	      newpkt=xmalloc_clear(sizeof(*newpkt));
-	      newpkt->pkttype=PKT_SIGNATURE;
-	      newpkt->pkt.signature=copy_signature(NULL,newsig);
-	      free_packet(sig_sk->pkt);
-	      xfree(sig_sk->pkt);
-	      sig_sk->pkt=newpkt;
+	      if(sig_sk)
+		{
+		  /* Put the new sig into place on the seckey */
+		  newpkt=xmalloc_clear(sizeof(*newpkt));
+		  newpkt->pkttype=PKT_SIGNATURE;
+		  newpkt->pkt.signature=copy_signature(NULL,newsig);
+		  free_packet(sig_sk->pkt);
+		  xfree(sig_sk->pkt);
+		  sig_sk->pkt=newpkt;
+		}
 
 	      modified=1;
 	    }

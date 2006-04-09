@@ -2947,7 +2947,7 @@ parse_auto_key_locate(char *options)
 
   while((tok=optsep(&options)))
     {
-      struct akl *akl,*last;
+      struct akl *akl,*check,*last=NULL;
       int dupe=0;
 
       if(tok[0]=='\0')
@@ -2976,13 +2976,13 @@ parse_auto_key_locate(char *options)
 	}
 
       /* We must maintain the order the user gave us */
-      for(last=opt.auto_key_locate;last && last->next;last=last->next)
+      for(check=opt.auto_key_locate;check;last=check,check=check->next)
 	{
 	  /* Check for duplicates */
-	  if(last && last->type==akl->type
+	  if(check->type==akl->type
 	     && (akl->type!=AKL_SPEC
 		 || (akl->type==AKL_SPEC
-		     && strcmp(last->spec->uri,akl->spec->uri)==0)))
+		     && strcmp(check->spec->uri,akl->spec->uri)==0)))
 	    {
 	      dupe=1;
 	      free_akl(akl);

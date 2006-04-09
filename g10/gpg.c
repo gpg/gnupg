@@ -3399,12 +3399,17 @@ main (int argc, char **argv )
 	import_keys( argc? argv:NULL, argc, NULL, opt.import_options );
 	break;
 
+	/* TODO: There are a number of command that use this same
+	   "make strlist, call function, report error, free strlist"
+	   pattern.  Join them together here and avoid all that
+	   duplicated code. */
+
       case aExport:
       case aSendKeys:
       case aRecvKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	    add_to_strlist2( &sl, *argv, utf8_strings );
+	    append_to_strlist2( &sl, *argv, utf8_strings );
 	if( cmd == aSendKeys )
 	    rc=keyserver_export( sl );
 	else if( cmd == aRecvKeys )
@@ -3436,7 +3441,7 @@ main (int argc, char **argv )
       case aRefreshKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	    add_to_strlist2( &sl, *argv, utf8_strings );
+	    append_to_strlist2( &sl, *argv, utf8_strings );
 	rc=keyserver_refresh(sl);
 	if(rc)
 	  log_error(_("keyserver refresh failed: %s\n"),g10_errstr(rc));
@@ -3446,7 +3451,7 @@ main (int argc, char **argv )
       case aFetchKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	    add_to_strlist2( &sl, *argv, utf8_strings );
+	    append_to_strlist2( &sl, *argv, utf8_strings );
 	rc=keyserver_fetch(sl);
 	if(rc)
 	  log_error("key fetch failed: %s\n",g10_errstr(rc));

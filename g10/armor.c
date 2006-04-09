@@ -676,7 +676,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     int checkcrc=0;
     int rc = 0;
     size_t n = 0;
-    int  idx, i;
+    int  idx, i, onlypad=0;
     u32 crc;
 
     crc = afx->crc;
@@ -720,6 +720,8 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    goto again;
 		}
 	    }
+	    else if(n==0)
+	      onlypad=1;
 
 	    if( idx == 1 )
 		buf[n++] = val;
@@ -848,7 +850,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	}
     }
 
-    if( !n )
+    if( !n && !onlypad )
 	rc = -1;
 
     *retn = n;

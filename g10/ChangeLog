@@ -1,3 +1,17 @@
+2006-04-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (parse_auto_key_locate): Fix dupe-removal code.
+
+	* keyedit.c (menu_backsign): Allow backsigning even if the secret
+	subkey doesn't have a binding signature.
+
+	* armor.c (radix64_read): Don't report EOF when reading only a pad
+	(=) character.  The EOF actually starts after the pad.
+
+	* gpg.c (main): Make --export, --send-keys, --recv-keys,
+	--refresh-keys, and --fetch-keys follow their arguments from left
+	to right.  Suggested by Peter Palfrader.
+
 2006-04-08  Werner Koch  <wk@g10code.com>
 
 	* mainproc.c (list_node): Print ring trust value only if not empty
@@ -7,7 +21,7 @@
 
 	* getkey.c (user_id_not_found_utf8): New.
 	(get_primary_uid, get_user_id): Use it.  Fixes Debian bug #205028
-	inthe right way.
+	in the right way.
 
 2006-04-03  Werner Koch  <wk@g10code.com>
 
