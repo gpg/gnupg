@@ -1,5 +1,5 @@
 /* command-ssh.c - gpg-agent's ssh-agent emulation layer
- * Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2677,10 +2677,13 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
      secret key material.  The response does not have to be stored in
      secure memory, since we never give out secret keys. 
 
-     FIXME: This is a pretty good DoS.  We only have a limited amount
-     of secure memory, we can't throw in everything we get from a
-     client -wk */
-      
+     Note: we only have little secure memory, but there is NO
+     possibility of DoS here; only trusted clients are allowed to
+     connect to the agent.  What could happen is that the agent
+     returns out-of-secure-memory errors on requests in case the
+     agent's owner floods his own agent with many large messages.
+     -moritz */
+
   /* Retrieve request.  */
   err = stream_read_string (stream_sock, 1, &request_data, &request_data_size);
   if (err)

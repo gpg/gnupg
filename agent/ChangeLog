@@ -1,3 +1,8 @@
+2006-04-09  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_request_process): Removed FIXME mentioning a
+	possible DoS attack.
+
 2006-04-01  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_identity_register): Make KEY_GRIP_RAW be 20
