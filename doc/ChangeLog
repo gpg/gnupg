@@ -1,3 +1,7 @@
+2006-04-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Some typo fixes.  This is Debian 361324.
+
 2006-03-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* samplekeys.asc: Update 99242560 to have a signing subkey

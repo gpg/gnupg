@@ -554,7 +554,7 @@ Compact (by removing all signatures except the selfsig) any user ID
 that is no longer usable (e.g. revoked, or expired).  Then, remove any
 signatures that are not usable by the trust calculations.
 Specifically, this removes any signature that does not validate, any
-signature that is superceded by a later signature, revoked signatures,
+signature that is superseded by a later signature, revoked signatures,
 and signatures issued by keys that are not present on the keyring.
 </para></listitem></varlistentry>
 
@@ -2671,10 +2671,10 @@ certain common permission problems.  Do not assume that the lack of a
 warning means that your system is secure.
 </para><para>
 Note that the warning for unsafe --homedir permissions cannot be
-supressed in the gpg.conf file, as this would allow an attacker to
-place an unsafe gpg.conf file in place, and use this file to supress
+suppressed in the gpg.conf file, as this would allow an attacker to
+place an unsafe gpg.conf file in place, and use this file to suppress
 warnings about itself.  The --homedir permissions warning may only be
-supressed on the command line.
+suppressed on the command line.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2892,8 +2892,8 @@ message contains a bogus key ID.
 <listitem><para>
 Allow verification of concatenated signed messages.  This will run a
 signature verification for each data+signature block.  There are some
-security issues with this option thus it is off by default.  Note that
-versions of gpg rpior to version 1.4.3 implicityly allowed for this.
+security issues with this option and thus it is off by default.  Note
+that versions of GPG prior to version 1.4.3 implicitly allowed this.
 </para></listitem></varlistentry>
 
 <varlistentry>
