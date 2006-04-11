@@ -182,14 +182,13 @@ keyserver hkp://subkeys.pgp.net
 # input is the best way to do this as it avoids the time and effort in
 # generating and then cleaning up a secure temp file.
 #
-# The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
-# On Mac OS X and Windows, the default is to use your regular JPEG image
-# viewer.
+# If no photo-viewer is provided, GnuPG will look for xloadimage, eog,
+# or display (ImageMagick).  On Mac OS X and Windows, the default is
+# to use your regular JPEG image viewer.
 #
 # Some other viewers:
 # photo-viewer "qiv %i"
 # photo-viewer "ee %i"
-# photo-viewer "display -title 'KeyID 0x%k'"
 #
 # This one saves a copy of the photo ID in your home directory:
 # photo-viewer "cat > ~/photoid-for-key-%k.%t"
