@@ -1,5 +1,8 @@
 2006-04-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_ldap.c (ldap_quote, get_name, search_key): LDAP-quote
+	directly into place rather than mallocing temporary buffers.
+
 	* gpgkeys_ldap.c (get_name): Build strings with strcat rather than
 	using sprintf which is harder to read and modify.
 

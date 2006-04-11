@@ -1121,36 +1121,25 @@ get_key(char *getkey)
 
 #define LDAP_ESCAPE_CHARS "*()\\"
 
-static int
+/* Append string to buffer in a LDAP-quoted way */
+static void
 ldap_quote(char *buffer,const char *string)
 {
-  int count=0;
+  /* Find the end of buffer */
+  buffer+=strlen(buffer);
 
   for(;*string;string++)
     {
       if(strchr(LDAP_ESCAPE_CHARS,*string))
 	{
-	  if(buffer)
-	    {
-	      sprintf(buffer,"\\%02X",*string);
-	      buffer+=3;
-	    }
-
-	  count+=3;
+	  sprintf(buffer,"\\%02X",*string);
+	  buffer+=3;
 	}
       else
-	{
-	  if(buffer)
-	    *buffer++=*string;
-
-	  count++;
-	}
+	*buffer++=*string;
     }
 
-  if(buffer)
-    *buffer='\0';
-
-  return count;
+  *buffer='\0';
 }
 
 /* Note that key-not-found is not a fatal error */
@@ -1159,7 +1148,6 @@ get_name(char *getkey)
 {
   LDAPMessage *res,*each;
   int ret=KEYSERVER_INTERNAL_ERROR,err,count;
-  char *expanded_search;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
   char search[2+12+(MAX_LINE*3)+2+15+14+1+1+20];
@@ -1172,16 +1160,6 @@ get_name(char *getkey)
   attrs[0]=pgpkeystr; /* Some compilers don't like using variables as
                          array initializers. */
 
-  expanded_search=malloc(ldap_quote(NULL,getkey)+1);
-  if(!expanded_search)
-    {
-      fprintf(output,"NAME %s FAILED %d\n",getkey,KEYSERVER_NO_MEMORY);
-      fprintf(console,"Out of memory when quoting LDAP search string\n");
-      return KEYSERVER_NO_MEMORY;
-    }
-
-  ldap_quote(expanded_search,getkey);
-
   /* Build the search string */
 
   search[0]='\0';
@@ -1190,7 +1168,7 @@ get_name(char *getkey)
     strcat(search,"(&");
 
   strcat(search,"(pgpUserID=*");
-  strcat(search,expanded_search);
+  ldap_quote(search,getkey);
   strcat(search,"*)");
 
   if(!opt->flags.include_disabled)
@@ -1201,8 +1179,6 @@ get_name(char *getkey)
 
   if(!opt->flags.include_disabled || !opt->flags.include_revoked)
     strcat(search,")");
-
-  free(expanded_search);
 
   if(opt->verbose>2)
     fprintf(console,"gpgkeys: LDAP fetch for: %s\n",search);
@@ -1299,7 +1275,6 @@ search_key(const char *searchkey)
   LDAPMessage *res,*each;
   int err,count=0;
   struct keylist *dupelist=NULL;
-  char *expanded_search;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
   char search[2+1+9+1+3+(MAX_LINE*3)+3+1+15+14+1+1+20];
@@ -1315,16 +1290,6 @@ search_key(const char *searchkey)
   if(opt->debug)
     fprintf(console,"search type is %d, and key is \"%s\"\n",
 	    search_type,searchkey);
-
-  expanded_search=malloc(ldap_quote(NULL,searchkey)+1);
-  if(!expanded_search)
-    {
-      fprintf(output,"SEARCH %s FAILED %d\n",searchkey,KEYSERVER_NO_MEMORY);
-      fprintf(console,"Out of memory when quoting LDAP search string\n");
-      return KEYSERVER_NO_MEMORY;
-    }
-
-  ldap_quote(expanded_search,searchkey);
 
   /* Build the search string */
 
@@ -1372,7 +1337,7 @@ search_key(const char *searchkey)
       break;
     }
 
-  strcat(search,expanded_search);
+  ldap_quote(search,searchkey);
 
   switch(search_type)
     {
@@ -1404,8 +1369,6 @@ search_key(const char *searchkey)
 
   if(!opt->flags.include_disabled || !opt->flags.include_revoked)
     strcat(search,")");
-
-  free(expanded_search);
 
   if(opt->verbose>2)
     fprintf(console,"gpgkeys: LDAP search for: %s\n",search);
