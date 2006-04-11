@@ -1,3 +1,7 @@
+2006-04-11  Werner Koch  <wk@g10code.com>
+
+	* armor.test: New.
+
 2006-03-09  Werner Koch  <wk@g10code.com>
 
 	* defs.inc: Removed Basishm by proper redirection.
