@@ -1162,7 +1162,7 @@ get_name(char *getkey)
   char *expanded_search;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
-  char search[2+11+3+MAX_LINE+2+15+14+1+1+20];
+  char search[2+12+(MAX_LINE*3)+2+15+14+1+1+20];
   /* This ordering is significant - specifically, "pgpcertid" needs to
      be the second item in the list, since everything after it may be
      discarded if the user isn't in verbose mode. */
@@ -1184,12 +1184,23 @@ get_name(char *getkey)
 
   /* Build the search string */
 
-  sprintf(search,"%s(pgpuserid=*%s*)%s%s%s",
-	  (!(opt->flags.include_disabled&&opt->flags.include_revoked))?"(&":"",
-	  expanded_search,
-	  opt->flags.include_disabled?"":"(pgpdisabled=0)",
-	  opt->flags.include_revoked?"":"(pgprevoked=0)",
-	  !(opt->flags.include_disabled&&opt->flags.include_revoked)?")":"");
+  search[0]='\0';
+
+  if(!opt->flags.include_disabled || !opt->flags.include_revoked)
+    strcat(search,"(&");
+
+  strcat(search,"(pgpUserID=*");
+  strcat(search,expanded_search);
+  strcat(search,"*)");
+
+  if(!opt->flags.include_disabled)
+    strcat(search,"(pgpDisabled=0)");
+
+  if(!opt->flags.include_revoked)
+    strcat(search,"(pgpRevoked=0)");
+
+  if(!opt->flags.include_disabled || !opt->flags.include_revoked)
+    strcat(search,")");
 
   free(expanded_search);
 
@@ -1291,7 +1302,7 @@ search_key(const char *searchkey)
   char *expanded_search;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
-  char search[2+1+9+1+3+(MAX_LINE*3)+3+1+15+1+1];
+  char search[2+1+9+1+3+(MAX_LINE*3)+3+1+15+14+1+1+20];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
 		 "pgpkeycreatetime","pgpkeyexpiretime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
