@@ -1,3 +1,12 @@
+2006-04-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (classify_ks_search): Add
+	KS_SEARCH_KEYID_SHORT and KS_SEARCH_KEYID_LONG to search for a key
+	ID.
+
+	* gpgkeys_ldap.c (search_key): Use it here to flip from pgpUserID
+	searches to pgpKeyID or pgpCertID.
+
 2006-03-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c: #define LDAP_DEPRECATED for newer OpenLDAPs so

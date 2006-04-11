@@ -346,8 +346,6 @@ classify_ks_search(const char **search)
 {
   switch(**search)
     {
-    default:
-      return KS_SEARCH_SUBSTR;
     case '*':
       (*search)++;
       return KS_SEARCH_SUBSTR;
@@ -355,10 +353,30 @@ classify_ks_search(const char **search)
       (*search)++;
       return KS_SEARCH_EXACT;
     case '<':
+      (*search)++;
       return KS_SEARCH_MAIL;
     case '@':
       (*search)++;
       return KS_SEARCH_MAILSUB;
+    case '0':
+      if((*search)[1]=='x')
+	{
+	  if(strlen(*search)==10
+	     && strspn(*search,"abcdefABCDEF1234567890x")==10)
+	    {
+	      (*search)+=2;
+	      return KS_SEARCH_KEYID_SHORT;
+	    }
+	  else if(strlen(*search)==18
+		  && strspn(*search,"abcdefABCDEF1234567890x")==18)
+	    {
+	      (*search)+=2;
+	      return KS_SEARCH_KEYID_LONG;
+	    }
+	}
+      /* fall through */
+    default:
+      return KS_SEARCH_SUBSTR;
     }
 }
 

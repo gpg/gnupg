@@ -75,7 +75,8 @@ int register_timeout(void);
 enum ks_action {KS_UNKNOWN=0,KS_GET,KS_GETNAME,KS_SEND,KS_SEARCH};
 
 enum ks_search_type {KS_SEARCH_SUBSTR,KS_SEARCH_EXACT,
-		     KS_SEARCH_MAIL,KS_SEARCH_MAILSUB};
+		     KS_SEARCH_MAIL,KS_SEARCH_MAILSUB,
+		     KS_SEARCH_KEYID_LONG,KS_SEARCH_KEYID_SHORT};
 
 struct ks_options
 {

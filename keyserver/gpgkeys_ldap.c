@@ -1291,7 +1291,7 @@ search_key(const char *searchkey)
   char *expanded_search;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
-  char search[2+11+3+MAX_LINE+2+15+14+1+1+20];
+  char search[2+1+9+1+3+(MAX_LINE*3)+3+1+15+1+1];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
 		 "pgpkeycreatetime","pgpkeyexpiretime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
@@ -1317,17 +1317,82 @@ search_key(const char *searchkey)
 
   /* Build the search string */
 
-  sprintf(search,"%s(pgpuserid=%s%s%s)%s%s%s",
-	  (!(opt->flags.include_disabled&&opt->flags.include_revoked))?"(&":"",
-	  (search_type==KS_SEARCH_EXACT)?"":
-	  (search_type==KS_SEARCH_MAILSUB)?"*<*":"*",
-	  expanded_search,
-	  (search_type==KS_SEARCH_EXACT
-	   || search_type==KS_SEARCH_MAIL)?"":
-	  (search_type==KS_SEARCH_MAILSUB)?"*>":"*",
-	  opt->flags.include_disabled?"":"(pgpdisabled=0)",
-	  opt->flags.include_revoked?"":"(pgprevoked=0)",
-	  !(opt->flags.include_disabled&&opt->flags.include_revoked)?")":"");
+  search[0]='\0';
+
+  if(!opt->flags.include_disabled || !opt->flags.include_revoked)
+    strcat(search,"(&");
+
+  strcat(search,"(");
+
+  switch(search_type)
+    {
+    case KS_SEARCH_KEYID_SHORT:
+      strcat(search,"pgpKeyID");
+      break;
+
+    case KS_SEARCH_KEYID_LONG:
+      strcat(search,"pgpCertID");
+      break;
+
+    default:
+      strcat(search,"pgpUserID");
+      break;
+    }
+
+  strcat(search,"=");
+
+  switch(search_type)
+    {
+    case KS_SEARCH_SUBSTR:
+      strcat(search,"*");
+      break;
+
+    case KS_SEARCH_MAIL:
+      strcat(search,"*<");
+      break;
+
+    case KS_SEARCH_MAILSUB:
+      strcat(search,"*<*");
+      break;
+
+    case KS_SEARCH_EXACT:
+    case KS_SEARCH_KEYID_LONG:
+    case KS_SEARCH_KEYID_SHORT:
+      break;
+    }
+
+  strcat(search,expanded_search);
+
+  switch(search_type)
+    {
+    case KS_SEARCH_SUBSTR:
+      strcat(search,"*");
+      break;
+
+    case KS_SEARCH_MAIL:
+      strcat(search,">*");
+      break;
+
+    case KS_SEARCH_MAILSUB:
+      strcat(search,"*>*");
+      break;
+
+    case KS_SEARCH_EXACT:
+    case KS_SEARCH_KEYID_LONG:
+    case KS_SEARCH_KEYID_SHORT:
+      break;
+    }
+
+  strcat(search,")");
+
+  if(!opt->flags.include_disabled)
+    strcat(search,"(pgpDisabled=0)");
+
+  if(!opt->flags.include_revoked)
+    strcat(search,"(pgpRevoked=0)");
+
+  if(!opt->flags.include_disabled || !opt->flags.include_revoked)
+    strcat(search,")");
 
   free(expanded_search);
 
