@@ -1,3 +1,12 @@
+2006-04-11  Werner Koch  <wk@g10code.com>
+
+	* command.c (hex_to_buffer): New.
+	(cmd_apdu): New.
+
+2006-04-03  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c [__GLIBC__]: Default to libpcsclite.so.1.
+
 2006-03-21  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_pksign): Add --hash option.

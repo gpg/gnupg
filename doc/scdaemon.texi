@@ -347,6 +347,8 @@ syncronizing access to a token between sessions.
 * Scdaemon RANDOM::       Return random bytes generate on-card.
 * Scdaemon PASSWD::       Change PINs.
 * Scdaemon CHECKPIN::     Perform a VERIFY operation.
+* Scdaemon RESTART::      Restart connection
+* Scdaemon APDU::         Send a verbatim APDU to the card
 @end menu
 
 @node Scdaemon SERIALNO 
@@ -551,5 +553,49 @@ literal string @code{[CHV3]}: In this case the Admin PIN is checked if
 and only if the retry counter is still at 3.
 
 @end table
+
+
+
+@node Scdaemon RESTART
+@subsection Perform a RESTART operation.
+
+@example
+  RESTART
+@end example
+
+Restart the current connection; this is a kind of warm reset.  It
+deletes the context used by this connection but does not actually
+reset the card. 
+
+This is used by gpg-agent to reuse a primary pipe connection and
+may be used by clients to backup from a conflict in the serial
+command; i.e. to select another application. 
+
+
+
+
+@node Scdaemon APDU
+@subsection Send a verbatim APDU to the card.
+
+@example
+  APDU [--atr] [--more] [@var{hexstring}]
+@end example
+
+
+Send an APDU to the current reader.  This command bypasses the high
+level functions and sends the data directly to the card.
+@var{hexstring} is expected to be a proper APDU.  If @var{hexstring} is
+not given no commands are send to the card; However the command will
+implictly check whether the card is ready for use.
+
+Using the option @code{--atr} returns the ATR of the card as a status
+message before any data like this:
+@example
+     S CARD-ATR 3BFA1300FF813180450031C173C00100009000B1
+@end example
+
+Using the option @code{--more} handles the card status word MORE_DATA
+(61xx) and concatenate all reponses to one block.
+
 
 

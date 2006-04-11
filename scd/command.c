@@ -156,6 +156,38 @@ has_option (const char *line, const char *name)
 }
 
 
+/* Convert the STRING into a newly allocated buffer while translating
+   the hex numbers.  Stops at the first invalid character.  Blanks and
+   colons are allowed to separate the hex digits.  Returns NULL on
+   error or a newly malloced buffer and its length in LENGTH.  */
+static unsigned char *
+hex_to_buffer (const char *string, size_t *r_length)
+{
+  unsigned char *buffer;
+  const char *s;
+  size_t n;
+
+  buffer = xtrymalloc (strlen (string)+1);
+  if (!buffer)
+    return NULL;
+  for (s=string, n=0; *s; s++)
+    {
+      if (spacep (s) || *s == ':') 
+        continue;
+      if (hexdigitp (s) && hexdigitp (s+1))
+        {
+          buffer[n++] = xtoi_2 (s);
+          s++;
+        }
+      else
+        break;
+    }
+  *r_length = n;
+  return buffer;
+}
+
+
+
 /* Reset the card and free the application context.  With SEND_RESET
    set to true actually send a RESET to the reader. */
 static void
@@ -1372,6 +1404,101 @@ cmd_restart (assuan_context_t ctx, char *line)
 }
 
 
+/* APDU [--atr] [--more] [hexstring]
+
+   Send an APDU to the current reader.  This command bypasses the high
+   level functions and sends the data directly to the card.  HEXSTRING
+   is expected to be a proper APDU.  If HEXSTRING is not given no
+   commands are set to the card but the command will implictly check
+   whether the card is ready for use. 
+
+   Using the option "--atr" returns the ATR of the card as a status
+   message before any data like this:
+     S CARD-ATR 3BFA1300FF813180450031C173C00100009000B1
+
+   Using the option --more handles the card status word MORE_DATA
+   (61xx) and concatenate all reponses to one block.
+
+ */
+static int
+cmd_apdu (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int rc;
+  int rc_is_assuan = 0;
+  unsigned char *apdu;
+  size_t apdulen;
+  int with_atr;
+  int handle_more;
+
+  with_atr = has_option (line, "--atr");
+  handle_more = has_option (line, "--more");
+
+  /* Skip over options. */
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_LOCKED);
+
+  if ((rc = open_card (ctrl, NULL)))
+    return rc;
+
+  if (with_atr)
+    {
+      unsigned char *atr;
+      size_t atrlen;
+      int i;
+      char hexbuf[400];
+      
+      atr = apdu_get_atr (ctrl->reader_slot, &atrlen);
+      if (!atr || atrlen > sizeof hexbuf - 2 )
+        {
+          rc = gpg_error (GPG_ERR_INV_CARD);
+          goto leave;
+        }
+      for (i=0; i < atrlen; i++)
+        sprintf (hexbuf+2*i, "%02X", atr[i]);
+      xfree (atr);
+      send_status_info (ctrl, "CARD-ATR", hexbuf, strlen (hexbuf), NULL, 0);
+    }
+
+  apdu = hex_to_buffer (line, &apdulen);
+  if (!apdu)
+    {
+      rc = gpg_error_from_errno (errno);
+      goto leave;
+    }
+  if (apdulen)
+    {
+      unsigned char *result = NULL;
+      size_t resultlen;
+
+      rc = apdu_send_direct (ctrl->reader_slot, apdu, apdulen, handle_more,
+                             &result, &resultlen);
+      if (rc)
+        log_error ("apdu_send_direct failed: %s\n", gpg_strerror (rc));
+      else
+        {
+          rc_is_assuan = 1;
+          rc = assuan_send_data (ctx, result, resultlen);
+          xfree (result);
+        }
+    }
+  xfree (apdu);
+
+ leave:
+  TEST_CARD_REMOVAL (ctrl, rc);
+  return rc_is_assuan? rc : map_to_assuan_status (rc);
+}
+
+
+
 
 
 /* Tell the assuan library about our commands */
@@ -1403,6 +1530,7 @@ register_commands (assuan_context_t ctx)
     { "UNLOCK",       cmd_unlock },
     { "GETINFO",      cmd_getinfo },
     { "RESTART",      cmd_restart },
+    { "APDU",         cmd_apdu },
     { NULL }
   };
   int i, rc;

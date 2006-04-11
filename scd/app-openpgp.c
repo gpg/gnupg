@@ -112,8 +112,8 @@ struct app_local_s {
                            encoded S-expression encoding a public
                            key. Might be NULL if key is not
                            available.  */
-    size_t keylen;      /* The length of the above S-expression.  Thsi
-                           is usullay only required for corss checks
+    size_t keylen;      /* The length of the above S-expression.  This
+                           is usullay only required for cross checks
                            because the length of an S-expression is
                            implicitly available.  */
   } pk[3];

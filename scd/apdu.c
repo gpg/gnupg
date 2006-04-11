@@ -2848,8 +2848,8 @@ apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
    HANDLE_MORE set to true this function will handle the MORE DATA
    status and return all APDUs concatenated with one status word at
    the end.  The function does not return a regular status word but 0
-   on success.  If the slot is locked, the fucntion returns
-   immediately.*/
+   on success.  If the slot is locked, the function returns
+   immediately with an error.  */
 int
 apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
                   int handle_more,
