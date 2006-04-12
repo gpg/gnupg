@@ -2340,18 +2340,20 @@ Enabled by default.  --no-escape-from-lines disables this option.
 <varlistentry>
 <term>--passphrase-fd &ParmN;</term>
 <listitem><para>
-Read the passphrase from file descriptor &ParmN;.  If you use 0 for
-&ParmN;, the passphrase will be read from stdin.  This can only be
-used if only one passphrase is supplied.
+Read the passphrase from file descriptor &ParmN;.  Only the first line
+will be read from file descriptor &ParmN;.  If you use 0 for &ParmN;,
+the passphrase will be read from stdin.  This can only be used if only
+one passphrase is supplied.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--passphrase-file &ParmFile;</term>
 <listitem><para>
-Read the passphrase from file &ParmFile;.  This can only be used if
-only one passphrase is supplied.  Obviously, a passphrase stored in a
-file is of questionable security if other users can read this file.
-Don't use this option if you can avoid it.
+Read the passphrase from file &ParmFile;.  Only the first line will
+be read from file &ParmFile;.  This can only be used if only one 
+passphrase is supplied.  Obviously, a passphrase stored in a file is
+of questionable security if other users can read this file.  Don't use
+this option if you can avoid it.
 </para></listitem></varlistentry>
 
 <varlistentry>

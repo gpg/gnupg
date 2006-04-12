@@ -31,7 +31,7 @@ m4_define([my_version], [1.4.4])
 m4_define([my_issvn], [yes])
 
 m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
-            || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q}')]))
+          || echo 'Revision: 0')|sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
 AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
         [bug-gnupg@gnu.org])
 # Set development_version to yes if the minor number is odd or you
@@ -1407,6 +1407,7 @@ AC_OUTPUT
 
 # Give some feedback
 echo
+echo   "                Version info:   $PACKAGE_STRING"             
 echo   "                Configured for: $PRINTABLE_OS_NAME ($host)"
 if test -n "$show_extraasm"; then
   echo "  Extra cpu specific functions:$show_extraasm"
