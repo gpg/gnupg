@@ -161,22 +161,25 @@ is_app_allowed (const char *name)
 void
 application_notify_card_removed (int slot)
 {
+  app_t app;
+
   if (slot < 0 || slot >= DIM (lock_table))
     return;
+
+  /* FIXME: We are ignoring any error value here.  */
+  lock_reader (slot); 
 
   /* Deallocate a saved application for that slot, so that we won't
      try to reuse it.  If there is no saved application, set a flag so
      that we won't save the current state. */
-  if (lock_table[slot].initialized)
-    {
-      app_t app = lock_table[slot].last_app;
+  app = lock_table[slot].last_app;
 
-      if (app)
-        {
-          lock_table[slot].last_app = NULL;
-          deallocate_app (app);
-        }
+  if (app)
+    {
+      lock_table[slot].last_app = NULL;
+      deallocate_app (app);
     }
+  unlock_reader (slot); 
 }
 
  
@@ -262,6 +265,8 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     {
       if (app->slot != slot)
         log_bug ("slot mismatch %d/%d\n", app->slot, slot);
+      app->slot = slot;
+
       app->ref_count++;
       *r_app = app;
       unlock_reader (slot);
@@ -400,18 +405,22 @@ release_application (app_t app)
     return;
 
   /* Move the reference to the application in the lock table. */
-  for (slot = 0;  slot < DIM (lock_table); slot++)
-    if (lock_table[slot].initialized && lock_table[slot].app == app)
-      {
-        if (lock_table[slot].last_app)
-          deallocate_app (lock_table[slot].last_app);
-        lock_table[slot].last_app = lock_table[slot].app;
-        lock_table[slot].app = NULL;
-        return;
-      }
+  slot = app->slot;
+  /* FIXME: We are ignoring any error value.  */
+  lock_reader (slot);
+  if (lock_table[slot].app != app)
+    {
+      unlock_reader (slot);
+      log_bug ("app mismatch %p/%p\n", app, lock_table[slot].app);
+      deallocate_app (app);
+      return;
+    }
 
-  log_debug ("application missing in lock table - deallocating anyway\n");
-  deallocate_app (app);
+  if (lock_table[slot].last_app)
+    deallocate_app (lock_table[slot].last_app);
+  lock_table[slot].last_app = lock_table[slot].app;
+  lock_table[slot].app = NULL;
+  unlock_reader (slot);
 }
 
 

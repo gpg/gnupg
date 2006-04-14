@@ -1,3 +1,10 @@
+2006-04-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* app.c (select_application): Cover up a slot mismatch error in
+	case it happens (it shouldn't happen).
+	(release_application): Use APP->slot.  Lock the reader.
+	(application_notify_card_removed): Lock the reader.
+
 2006-04-11  Werner Koch  <wk@g10code.com>
 
 	* command.c (hex_to_buffer): New.
