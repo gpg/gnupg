@@ -313,7 +313,7 @@ make_printable_string( const byte *p, size_t n, int delim )
 		*d++ = '0';
 	    else {
 		sprintf(d, "x%02x", *p );
-		d += 2;
+		d += 3;
 	    }
 	}
 	else
