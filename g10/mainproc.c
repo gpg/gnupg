@@ -639,7 +639,7 @@ proc_plaintext( CTX c, PACKET *pkt )
              * documents */
             clearsig = (*data == 0x01);
             for( data++, datalen--; datalen; datalen--, data++ )
-	      md_enable( c->mfx.md, *data );
+	        gcry_md_enable (c->mfx.md, *data);
             any = 1;
             break;  /* Stop here as one-pass signature packets are not
                        expected.  */
@@ -679,7 +679,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     }
 
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
-    if( gpg_err_code (rc) == G10ERR_CREATE_FILE && !c->sigs_only) 
+    if( gpg_err_code (rc) == GPG_ERR_ENOENT && !c->sigs_only) 
       {
 #warning We need to change the test for the error code
         /* Can't write output but we hash it anyway to
@@ -1194,7 +1194,7 @@ do_proc_packets( CTX c, IOBUF a )
 	    free_packet(pkt);
             /* stop processing when an invalid packet has been encountered
              * but don't do so when we are doing a --list-packets. */
-	    if (gpg_err_code (rc) == GPG_ERR_INVALID_PACKET
+	    if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
                 && opt.list_packets != 2 )
 		break;
 	    continue;
@@ -2002,7 +2002,7 @@ proc_tree( CTX c, KBNODE node )
 	    /* detached signature */
 	    free_md_filter_context( &c->mfx );
             if (gcry_md_open (&c->mfx.md, sig->digest_algo, 0))
-              BUG ():
+              BUG ();
 
 	    if( !opt.pgp2_workarounds )
 		;

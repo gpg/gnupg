@@ -596,9 +596,9 @@ check_prefs(KBNODE keyblock)
 
 	      if(prefs->type==PREFTYPE_SYM)
 		{
-		  if(check_cipher_algo(prefs->value))
+		  if (openpgp_cipher_algo_test (prefs->value))
 		    {
-		      const char *algo=cipher_algo_to_string(prefs->value);
+		      const char *algo = gcry_cipher_algo_name (prefs->value);
 		      if(!problem)
 			check_prefs_warning(pk);
 		      log_info(_("         \"%s\": preference for cipher"
@@ -608,9 +608,9 @@ check_prefs(KBNODE keyblock)
 		}
 	      else if(prefs->type==PREFTYPE_HASH)
 		{
-		  if(check_digest_algo(prefs->value))
+		  if(openpgp_md_test_algo(prefs->value))
 		    {
-		      const char *algo=digest_algo_to_string(prefs->value);
+		      const char *algo = gcry_md_algo_name (prefs->value);
 		      if(!problem)
 			check_prefs_warning(pk);
 		      log_info(_("         \"%s\": preference for digest"
@@ -620,7 +620,7 @@ check_prefs(KBNODE keyblock)
 		}
 	      else if(prefs->type==PREFTYPE_ZIP)
 		{
-		  if(check_compress_algo(prefs->value))
+		  if(check_compress_algo (prefs->value))
 		    {
 		      const char *algo=compress_algo_to_string(prefs->value);
 		      if(!problem)
@@ -1541,9 +1541,9 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 	    else
 	      subkey_seen = 1;
 	}
-	else if( node->pkt->pkttype == PKT_SIGNATURE
-		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
-		 && node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
+	else if (node->pkt->pkttype == PKT_SIGNATURE
+                && openpgp_pk_test_algo (node->pkt->pkt.signature->pubkey_algo)
+		&& node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
 	    delete_kbnode( node ); /* build_packet() can't handle this */
 	else if( node->pkt->pkttype == PKT_SIGNATURE &&
 		 !node->pkt->pkt.signature->flags.exportable &&

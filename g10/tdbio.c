@@ -94,7 +94,6 @@ static int  db_fd = -1;
 static int in_transaction;
 
 static void open_db(void);
-static void migrate_from_v2 (void);
 
 
 
@@ -580,8 +579,6 @@ tdbio_get_dbname()
 static void
 open_db()
 {
-  byte buf[10];
-  int n;
   TRUSTREC rec;
 
   assert( db_fd == -1 );

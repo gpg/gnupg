@@ -958,7 +958,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
           rc = get_pubkey_byname( pk, answer, NULL, NULL, 0 );
           if (rc)
             tty_printf(_("No such user ID.\n"));
-          else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) 
+          else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo, use)) ) 
             {
               if ( have_def_rec )
                 {

@@ -897,7 +897,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	xfree(p);
 
 	if( !get_pubkey( pk, keyid ) ) {
-	    const char *s = pubkey_algo_to_string( pk->pubkey_algo );
+	    const char *s = gcry_pk_algo_name ( pk->pubkey_algo );
 	    tty_printf( _("%u-bit %s key, ID %s, created %s"),
 		       nbits_from_pk( pk ), s?s:"?", keystr(keyid),
 		       strtimestamp(pk->timestamp) );
@@ -1011,22 +1011,23 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 static void
 hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 {
-    MD_HANDLE md;
+    gcry_md_hd_t md;
     int pass, i;
     int used = 0;
     int pwlen = strlen(pw);
 
     assert( s2k->hash_algo );
-    dek->keylen = cipher_get_keylen( dek->algo ) / 8;
+    dek->keylen = gcry_cipher_algo_get_keylen (dek->algo );
     if( !(dek->keylen > 0 && dek->keylen <= DIM(dek->key)) )
 	BUG();
 
-    md = md_open( s2k->hash_algo, 1);
+    if (gcry_md_open (&md, s2k->hash_algo, 1))
+      BUG ();
     for(pass=0; used < dek->keylen ; pass++ ) {
 	if( pass ) {
-            md_reset(md);
+            gcry_md_reset (md);
 	    for(i=0; i < pass; i++ ) /* preset the hash context */
-		md_putc(md, 0 );
+		gcry_md_putc (md, 0 );
 	}
 
 	if( s2k->mode == 1 || s2k->mode == 3 ) {
@@ -1034,7 +1035,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    ulong count = len2;
 
 	    if( create && !pass ) {
-		randomize_buffer(s2k->salt, 8, 1);
+		gcry_randomize (s2k->salt, 8, GCRY_STRONG_RANDOM);
 		if( s2k->mode == 3 )
 		    s2k->count = 96; /* 65536 iterations */
 	    }
@@ -1046,27 +1047,27 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    }
 	    /* a little bit complicated because we need a ulong for count */
 	    while( count > len2 ) { /* maybe iterated+salted */
-		md_write( md, s2k->salt, 8 );
-		md_write( md, pw, pwlen );
+		gcry_md_write ( md, s2k->salt, 8 );
+		gcry_md_write ( md, pw, pwlen );
 		count -= len2;
 	    }
 	    if( count < 8 )
-		md_write( md, s2k->salt, count );
+		gcry_md_write ( md, s2k->salt, count );
 	    else {
-		md_write( md, s2k->salt, 8 );
+		gcry_md_write ( md, s2k->salt, 8 );
 		count -= 8;
-                md_write( md, pw, count );
+                gcry_md_write ( md, pw, count );
 	    }
 	}
 	else
-	    md_write( md, pw, pwlen );
-	md_final( md );
-	i = md_digest_length( s2k->hash_algo );
+	    gcry_md_write ( md, pw, pwlen );
+	gcry_md_final( md );
+	i = gcry_md_get_algo_dlen ( s2k->hash_algo );
 	if( i > dek->keylen - used )
 	    i = dek->keylen - used;
 	memcpy( dek->key+used, md_read(md, s2k->hash_algo), i );
 	used += i;
     }
-    md_close(md);
+    gcry_md_close(md);
 }
 

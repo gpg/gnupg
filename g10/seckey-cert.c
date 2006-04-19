@@ -232,7 +232,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    copy_secret_key( sk, save_sk );
             passphrase_clear_cache ( keyid, NULL, sk->pubkey_algo );
 	    free_secret_key( save_sk );
-	    return G10ERR_BAD_PASS;
+	    return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 	}
 
 	/* The checksum may fail, so we also check the key itself. */
@@ -241,7 +241,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    copy_secret_key( sk, save_sk );
             passphrase_clear_cache ( keyid, NULL, sk->pubkey_algo );
 	    free_secret_key( save_sk );
-	    return G10ERR_BAD_PASS;
+	    return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 	}
 	free_secret_key( save_sk );
 	sk->is_protected = 0;
@@ -286,7 +286,7 @@ check_secret_key( PKT_secret_key *sk, int n )
     if( n < 1 )
 	n = (opt.batch && !opt.use_agent)? 1 : 3; /* use the default value */
 
-    for(i=0; i < n && gpg_err_code (rc) == G10ERR_BAD_PASS; i++ ) {
+    for(i=0; i < n && gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE; i++ ) {
         int canceled = 0;
         const char *tryagain = NULL;
 	if (i) {

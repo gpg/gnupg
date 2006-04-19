@@ -438,8 +438,8 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->tochild=fdopen(to[1],binary?"wb":"w");
       if((*info)->tochild==NULL)
 	{
+          ret = gpg_error_from_errno (errno);
 	  close(to[1]);
-	  ret=G10ERR_WRITE_FILE;
 	  goto fail;
 	}
 
@@ -448,8 +448,8 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->fromchild=iobuf_fdopen(from[0],"r");
       if((*info)->fromchild==NULL)
 	{
+          ret = gpg_error_from_errno (errno);
 	  close(from[0]);
-	  ret=G10ERR_READ_FILE;
 	  goto fail;
 	}
 
@@ -547,9 +547,9 @@ int exec_read(struct exec_info *info)
             }
 	  if(info->fromchild==NULL)
 	    {
+              ret = gpg_error_from_errno (errno);
 	      log_error(_("unable to read external program response: %s\n"),
 			strerror(errno));
-	      ret=G10ERR_READ_FILE;
 	      goto fail;
 	    }
 

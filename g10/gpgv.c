@@ -49,8 +49,6 @@
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
-#include "g10defs.h"
-#include "cardglue.h"
 
 
 enum cmd_and_opt_values { aNull = 0,
@@ -379,15 +377,15 @@ void disable_cipher_algo( int algo ) {}
 int check_cipher_algo( int algo ) { return -1;}
 unsigned int cipher_get_keylen( int algo ) { return 0; }
 unsigned int cipher_get_blocksize( int algo ) {return 0;}
-CIPHER_HANDLE cipher_open( int algo, int mode, int secure ) { return NULL;}
-void cipher_close( CIPHER_HANDLE c ) {}
-int cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen ) { return -1;}
-void cipher_setiv( CIPHER_HANDLE c, const byte *iv, unsigned ivlen ){}
-void cipher_encrypt( CIPHER_HANDLE c, byte *outbuf,
+gcry_cipher_hd_t cipher_open( int algo, int mode, int secure ) { return NULL;}
+void cipher_close( gcry_cipher_hd_t c ) {}
+int cipher_setkey( gcry_cipher_hd_t c, byte *key, unsigned keylen ) { return -1;}
+void cipher_setiv( gcry_cipher_hd_t c, const byte *iv, unsigned ivlen ){}
+void cipher_encrypt( gcry_cipher_hd_t c, byte *outbuf,
                      byte *inbuf, unsigned nbytes ) {}
-void cipher_decrypt( CIPHER_HANDLE c, byte *outbuf,
+void cipher_decrypt( gcry_cipher_hd_t c, byte *outbuf,
                      byte *inbuf, unsigned nbytes ) {}
-void cipher_sync( CIPHER_HANDLE c ) {}
+void cipher_sync( gcry_cipher_hd_t c ) {}
 
 /* Stubs to avoid linking to ../cipher/random.c */
 void random_dump_stats(void) {}
@@ -404,7 +402,7 @@ void register_primegen_progress ( void (*cb)( void *, int), void *cb_data ) {}
 MPI generate_secret_prime( unsigned  nbits ) { return NULL;}
 MPI generate_public_prime( unsigned  nbits ) { return NULL;}
 MPI generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
-                        MPI g, MPI **ret_factors ) { return NULL;}
+                        gcry_mpi_t g, gcry_mpi_t **ret_factors ) { return NULL;}
 
 /* Do not link to ../cipher/rndlinux.c */
 void rndlinux_constructor(void) {}

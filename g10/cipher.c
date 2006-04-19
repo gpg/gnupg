@@ -51,7 +51,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     unsigned int blocksize;
     unsigned int nprefix;
 
-    blocksize = gcry_cipher_algo_blklen (cfx->dek->algo);
+    blocksize = gcry_cipher_get_algo_blklen (cfx->dek->algo);
     if ( blocksize < 8 || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
 
@@ -88,8 +88,8 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
                             GCRY_CIPHER_MODE_CFB,
                             (GCRY_CIPHER_SECURE
                              | ((cfx->dek->use_mdc || cfx->dek->algo >= 100)?
-                                0 : GCRY_CIPHER_ENABLE_SYNC));
-    if (rc) {
+                                0 : GCRY_CIPHER_ENABLE_SYNC)));
+    if (err) {
 	/* We should never get an error here cause we already checked,
 	 * that the algorithm is available.  */
 	BUG();

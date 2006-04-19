@@ -917,7 +917,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		rc = check_key_signature( keyblock, node, NULL );
 		switch( gpg_err_code (rc) ) {
 		 case 0:		sigrc = '!'; break;
-		 case GPG_ERR_BAD_SIGN: stats->inv_sigs++; sigrc = '-'; break;
+		 case GPG_ERR_BAD_SIGNATURE:
+                   stats->inv_sigs++; sigrc = '-'; break;
 		 case GPG_ERR_NO_PUBKEY: 
 		 case GPG_ERR_UNUSABLE_PUBKEY: stats->no_key++; continue;
 		 default:		stats->oth_err++; sigrc = '%'; break;
@@ -1306,11 +1307,11 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		rc = check_key_signature2( keyblock, node, NULL, signer_pk,
 					   NULL, NULL, NULL );
 		switch ( gpg_err_code (rc) ) {
-		  case 0:		   sigrc = '!'; break;
-		  case GPG_ERR_BAD_SIGN:   sigrc = '-'; break;
+		  case 0:		        sigrc = '!'; break;
+		  case GPG_ERR_BAD_SIGNATURE:   sigrc = '-'; break;
 		  case GPG_ERR_NO_PUBKEY: 
-		  case GPG_ERR_UNU_PUBKEY: sigrc = '?'; break;
-		  default:		   sigrc = '%'; break;
+		  case Gpg_Err_UNUSABLE_PUBKEY: sigrc = '?'; break;
+		  default:		        sigrc = '%'; break;
 		}
 
 		if(opt.no_sig_cache)

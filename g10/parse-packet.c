@@ -491,11 +491,10 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
     }
 
     if( out && pkttype	) {
-	if( iobuf_write( out, hdr, hdrlen ) == -1 )
-	    rc = G10ERR_WRITE_FILE;
-	else
+      rc = iobuf_write (out, hdr, hdrlen);
+      if (!rc)
 	    rc = copy_packet(inp, out, pkttype, pktlen, partial );
-	goto leave;
+      goto leave;
     }
 
     if (with_uid && pkttype == PKT_USER_ID)

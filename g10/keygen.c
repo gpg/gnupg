@@ -319,13 +319,13 @@ keygen_set_std_prefs (const char *string,int personal)
 	    /* Make sure we do not add more than 15 items here, as we
 	       could overflow the size of dummy_string.  We currently
 	       have at most 12. */
-	    if(!check_cipher_algo(CIPHER_ALGO_AES256))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_AES256) )
 	      strcat(dummy_string,"S9 ");
-	    if(!check_cipher_algo(CIPHER_ALGO_AES192))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_AES192) )
 	      strcat(dummy_string,"S8 ");
-	    if(!check_cipher_algo(CIPHER_ALGO_AES))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_AES) )
 	      strcat(dummy_string,"S7 ");
-	    if(!check_cipher_algo(CIPHER_ALGO_CAST5))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_CAST5) )
 	      strcat(dummy_string,"S3 ");
 	    strcat(dummy_string,"S2 "); /* 3DES */
 	    /* If we have it, IDEA goes *after* 3DES so it won't be
@@ -335,7 +335,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	       break PGP2, but that is difficult with the current
 	       code, and not really worth checking as a non-RSA <=2048
 	       bit key wouldn't be usable by PGP2 anyway. -dms */
-	    if(!check_cipher_algo(CIPHER_ALGO_IDEA))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
 	      strcat(dummy_string,"S1 ");
 
 	    /* SHA-1 */
@@ -370,12 +370,12 @@ keygen_set_std_prefs (const char *string,int personal)
 
 	while((tok=strsep(&prefstring," ,")))
 	  {
-	    if((val=string_to_cipher_algo(tok)))
+	    if((val=openpgp_cipher_map_name (tok)))
 	      {
 		if(set_one_pref(val,1,tok,sym,&nsym))
 		  rc=-1;
 	      }
-	    else if((val=string_to_digest_algo(tok)))
+	    else if((val=openpgp_md_map_name (tok)))
 	      {
 		if(set_one_pref(val,2,tok,hash,&nhash))
 		  rc=-1;
@@ -1071,6 +1071,7 @@ genhelp_protect (DEK *dek, STRING2KEY *s2k, PKT_secret_key *sk)
 static void
 genhelp_factors (gcry_sexp_t misc_key_info, KBNODE sec_root)
 {
+#if 0 /* Not used anymore */
   size_t n;
   char *buf;
   
@@ -1093,6 +1094,7 @@ genhelp_factors (gcry_sexp_t misc_key_info, KBNODE sec_root)
       xfree (buf);
       gcry_sexp_release (misc_key_info);
     }
+#endif
 }
 
 
@@ -1484,7 +1486,7 @@ ask_key_flags(int algo,int subkey)
     {
       tty_printf("\n");
       tty_printf(_("Possible actions for a %s key: "),
-		 pubkey_algo_to_string(algo));
+		 gcry_pk_algo_name (algo));
       print_key_flags(possible);
       tty_printf("\n");
       tty_printf(_("Current allowed actions: "));
@@ -1649,7 +1651,7 @@ ask_keysize( int algo )
     }
 
   tty_printf(_("%s keys may be between %u and %u bits long.\n"),
-	     pubkey_algo_to_string(algo),min,max);
+	     gcry_pk_algo_name (algo), min, max);
 
   for(;;)
     {
@@ -1670,7 +1672,7 @@ ask_keysize( int algo )
       
       if(nbits<min || nbits>max)
 	tty_printf(_("%s keysizes must be in the range %u-%u\n"),
-		   pubkey_algo_to_string(algo),min,max);
+		   gcry_pk_algo_name (algo), min, max);
       else
 	break;
     }
@@ -2136,7 +2138,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key )
     if( digitp( r->u.value ) )
 	i = atoi( r->u.value );
     else
-        i = string_to_pubkey_algo( r->u.value );
+        i = openpgp_pk_map_name (r->u.value);
     if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
       i = 0; /* we don't want to allow generation of these algorithms */
     return i;
@@ -2287,7 +2289,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   if(r)
     {
       algo=get_parameter_algo(para,pKEYTYPE);
-      if(check_pubkey_algo2(algo,PUBKEY_USAGE_SIG))
+      if (openpgp_pk_test_algo (algo, PUBKEY_USAGE_SIG))
 	{
 	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
 	  return -1;
@@ -2316,7 +2318,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   if(r)
     {
       algo=get_parameter_algo( para, pSUBKEYTYPE);
-      if(check_pubkey_algo(algo))
+      if (openpgp_pk_test_algo (algo))
 	{
 	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
 	  return -1;
@@ -3504,7 +3506,7 @@ write_keyblock( IOBUF out, KBNODE node )
 	    {
 	      log_error("build_packet(%d) failed: %s\n",
 			node->pkt->pkttype, g10_errstr(rc) );
-	      return G10ERR_WRITE_FILE;
+	      return rc;
 	    }
 	}
     }

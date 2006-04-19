@@ -189,7 +189,7 @@ mk_notation_policy_etc( PKT_signature *sig,
  * Helper to hash a user ID packet.  
  */
 static void
-hash_uid (MD_HANDLE md, int sigversion, const PKT_user_id *uid)
+hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
 {
     if ( sigversion >= 4 ) {
         byte buf[5];
@@ -222,7 +222,7 @@ hash_uid (MD_HANDLE md, int sigversion, const PKT_user_id *uid)
  * Helper to hash some parts from the signature
  */
 static void
-hash_sigversion_to_magic (MD_HANDLE md, const PKT_signature *sig)
+hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 {
     if (sig->version >= 4) 
         gcry_md_putc (md, sig->version);
@@ -266,7 +266,7 @@ hash_sigversion_to_magic (MD_HANDLE md, const PKT_signature *sig)
 
 static int
 do_sign( PKT_secret_key *sk, PKT_signature *sig,
-	 MD_HANDLE md, int digest_algo )
+	 gcry_md_hd_t md, int digest_algo )
 {
     gcry_mpi_t frame;
     byte *dp;
@@ -315,7 +315,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
             xfree (rbuf);
           }
 #else
-        return G10ERR_UNSUPPORTED;
+        return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif /* ENABLE_CARD_SUPPORT */
       }
     else 
@@ -324,7 +324,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	   variable-q DSA stuff makes it into the standard. */
 	if(!opt.expert
 	   && sk->pubkey_algo==PUBKEY_ALGO_DSA
-	   && md_digest_length(digest_algo)!=20)
+	   && gcry_md_get_algo_dlen (digest_algo)!=20)
 	  {
 	    log_error(_("DSA requires the use of a 160 bit hash algorithm\n"));
 	    return G10ERR_GENERAL;
@@ -375,7 +375,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 
 
 int
-complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
+complete_sig( PKT_signature *sig, PKT_secret_key *sk, gcry_md_hd_t md )
 {
     int rc=0;
 
@@ -419,7 +419,7 @@ hash_for(PKT_secret_key *sk)
 	  prefitem_t *prefs;
 
 	  for(prefs=opt.personal_digest_prefs;prefs->type;prefs++)
-	    if (gcry_md_get_algo-dlen (prefs->value) == 20)
+	    if (gcry_md_get_algo_dlen (prefs->value) == 20)
 	      return prefs->value;
 	}
 
@@ -604,10 +604,9 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
         int  bytes_copied;
 
         while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-            if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-                rc = G10ERR_WRITE_FILE;
+            if ( (rc=iobuf_write(out, copy_buffer, bytes_copied)) ) {
                 log_error ("copying input to output failed: %s\n",
-                           g10_errstr(rc));
+                           gpg_strerror (rc));
                 break;
             }
         wipememory(copy_buffer,4096); /* burn buffer */
@@ -622,7 +621,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
  * hash which will not be changes here.
  */
 static int
-write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
+write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
                          int sigclass, u32 timestamp, u32 duration,
 			 int status_letter)
 {
@@ -632,7 +631,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
 	PKT_secret_key *sk;
 	PKT_signature *sig;
-	MD_HANDLE md;
+	gcry_md_hd_t md;
         int rc;
 
 	sk = sk_rover->sk;
@@ -774,11 +773,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
           inp = NULL;
           errno = EPERM;
         }
-      if( !inp ) {
-	    log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
-		      strerror(errno) );
-	    rc = G10ERR_OPEN_FILE;
-	    goto leave;
+      if( !inp ) 
+        {
+          rc = gpg_error_from_errno (errno);
+          log_error (_("can't open `%s': %s\n"), fname? fname: "[stdin]",
+                     strerror(errno) );
+          goto leave;
 	}
 
         handle_progress (&pfx, inp, fname);
@@ -793,8 +793,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
             out = iobuf_create( outfile );
 	if( !out )
 	  {
+            rc = gpg_error_from_errno (errno);
 	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	  }
 	else if( opt.verbose )
@@ -810,7 +810,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( inp, text_filter, &tfx );
       }
 
-    if ( gcry_md_open (&,mfx.md, 0, 0) )
+    if ( gcry_md_open (&mfx.md, 0, 0) )
       BUG ();
     if (DBG_HASHING)
       gcry_md_start_debug (mfx.md, "sign");
@@ -1008,7 +1008,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 {
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
-    MD_HANDLE textmd = NULL;
+    gcry_md_hd_t textmd = NULL;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     int rc = 0;
@@ -1051,9 +1051,9 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
         errno = EPERM;
       }
     if( !inp ) {
-	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
-					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+        rc = gpg_error_from_errno (errno);
+	log_error (_("can't open `%s': %s\n"), 
+                   fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
     handle_progress (&pfx, inp, fname);
@@ -1067,8 +1067,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
             out = iobuf_create( outfile );
 	if( !out )
 	  {
+            rc = gpg_error_from_errno (errno);
 	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	  }
 	else if( opt.verbose )
@@ -1101,7 +1101,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    int i = hash_for(sk);
 
 	    if( !hashs_seen[ i & 0xff ] ) {
-		s = gcry_md_ago_name ( i );
+		s = gcry_md_algo_name ( i );
 		if( s ) {
 		    hashs_seen[ i & 0xff ] = 1;
 		    if( any )
@@ -1203,9 +1203,9 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
         errno = EPERM;
       }
     if( !inp ) {
-	log_error(_("can't open `%s': %s\n"), 
-                  fname? fname: "[stdin]", strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+        rc = gpg_error_from_errno (errno);
+	log_error (_("can't open `%s': %s\n"), 
+                   fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
     handle_progress (&pfx, inp, fname);
@@ -1222,8 +1222,8 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL, NULL);
 
     if (!cfx.dek || !cfx.dek->keylen) {
-        rc = G10ERR_PASSPHRASE;
-        log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
+        rc = gpg_error (GPG_ERR_BAD_PASSPHRASE);
+        log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc) );
         goto leave;
     }
 
@@ -1341,7 +1341,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 {
     PKT_signature *sig;
     int rc=0;
-    MD_HANDLE md;
+    gcry_md_hd_t md;
 
     assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
 	    || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
@@ -1455,7 +1455,7 @@ update_keysig_packet( PKT_signature **ret_sig,
 {
     PKT_signature *sig;
     int rc=0;
-    MD_HANDLE md;
+    gcry_md_hd_t md;
 
     if ((!orig_sig || !pk || !sk)
 	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
@@ -1506,7 +1506,7 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     if (!rc) {
         hash_sigversion_to_magic (md, sig);
-	md_final(md);
+	gcry_md_final (md);
 
 	rc = complete_sig( sig, sk, md );
     }

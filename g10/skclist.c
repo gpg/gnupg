@@ -176,7 +176,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 		log_error(_("skipped \"%s\": %s\n"),
 			  locusr->d, g10_errstr(rc) );
 	      }
-	    else if( !(rc=openpgp_pk_test_algo (sk->pubkey_algo, use)) ) {
+	    else if( !(rc=openpgp_pk_test_algo2 (sk->pubkey_algo, use)) ) {
 		SK_LIST r;
 
 		if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)

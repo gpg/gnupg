@@ -594,7 +594,6 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	    if( rc ) {
 		log_error("build_packet(%d) failed: %s\n",
 			    node->pkt->pkttype, g10_errstr(rc) );
-		rc = G10ERR_WRITE_FILE;
 		goto leave;
 	    }
 	}

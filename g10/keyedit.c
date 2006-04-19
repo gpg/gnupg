@@ -2311,7 +2311,7 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 	tty_printf (_("Cipher: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_SYM ) {
-                const char *s = cipher_algo_to_string (prefs[i].value);
+                const char *s = gcry_cipher_algo_name (prefs[i].value);
                 
                 if (any)
                     tty_printf (", ");
@@ -2328,13 +2328,13 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
         if (!des_seen) {
             if (any)
                 tty_printf (", ");
-            tty_printf ("%s",cipher_algo_to_string(CIPHER_ALGO_3DES));
+            tty_printf ("%s", gcry_cipher_algo_name (CIPHER_ALGO_3DES));
         }
         tty_printf ("\n     ");
 	tty_printf (_("Digest: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_HASH ) {
-                const char *s = digest_algo_to_string (prefs[i].value);
+                const char *s = gcry_md_algo_name (prefs[i].value);
                 
                 if (any)
                     tty_printf (", ");
@@ -2351,7 +2351,7 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
         if (!sha1_seen) {
             if (any)
                 tty_printf (", ");
-            tty_printf ("%s",digest_algo_to_string(DIGEST_ALGO_SHA1));
+            tty_printf ("%s", gcry_md_algo_name (DIGEST_ALGO_SHA1));
         }
         tty_printf ("\n     ");
 	tty_printf (_("Compression: "));
@@ -2686,7 +2686,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    if(pk->is_revoked)
 	      {
 		char *user=get_user_id_string_native(pk->revoked.keyid);
-		const char *algo=pubkey_algo_to_string(pk->revoked.algo);
+		const char *algo = gcry_pk_algo_name (pk->revoked.algo);
 		tty_printf(_("This key was revoked on %s by %s key %s\n"),
 			   revokestr_from_pk(pk),algo?algo:"?",user);
 		xfree(user);
@@ -2701,9 +2701,9 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		    {
 		      u32 r_keyid[2];
 		      char *user;
-		      const char *algo=
-			pubkey_algo_to_string(pk->revkey[i].algid);
+		      const char *algo;
 
+                      algo = gcry_pk_algo_name (pk->revkey[i].algid);
 		      keyid_from_fingerprint(pk->revkey[i].fpr,
 					     MAX_FINGERPRINT_LEN,r_keyid);
 

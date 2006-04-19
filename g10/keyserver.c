@@ -478,7 +478,7 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   if(keyrec->type)
     {
-      const char *str=pubkey_algo_to_string(keyrec->type);
+      const char *str = gcry_pk_algo_name (keyrec->type);
 
       if(str)
 	printf("%s ",str);
@@ -1402,7 +1402,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       maxlen=1024;
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
-	  ret=G10ERR_READ_FILE;
+	  ret = gpg_error_from_errno (errno);
 	  goto fail; /* i.e. EOF */
 	}
 

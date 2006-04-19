@@ -92,7 +92,7 @@ encode_seskey( DEK *dek, DEK **seskey, byte *enckey )
       BUG ();
     if (gcry_cipher_setkey (hd, dek->key, dek->keylen))
       BUG ();
-    gry_cipher_setiv (hd, NULL, 0);
+    gcry_cipher_setiv (hd, NULL, 0);
     gcry_cipher_encrypt (hd, buf, (*seskey)->keylen + 1, NULL, 0);
     gcry_cipher_close (hd);
 
@@ -190,7 +190,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
       }
     if( !inp ) {
         rc = gpg_error_from_errno (errno);
-	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]"
+	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]",
                   strerror(errno) );
 	return rc;
     }
@@ -365,9 +365,9 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	byte copy_buffer[4096];
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-		rc = G10ERR_WRITE_FILE;
-		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
+	    if ( (rc=iobuf_write(out, copy_buffer, bytes_copied)) ) {
+		log_error ("copying input to output failed: %s\n",
+                           gpg_strerror (rc) );
 		break;
 	    }
 	wipememory(copy_buffer, 4096); /* burn buffer */
@@ -403,7 +403,7 @@ setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
     {
       xfree(*symkey_dek);
       xfree(*symkey_s2k);
-      return G10ERR_PASSPHRASE;
+      return gpg_error (GPG_ERR_BAD_PASSPHRASE);
     }
 
   return 0;
@@ -412,7 +412,7 @@ setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
 static int
 write_symkey_enc(STRING2KEY *symkey_s2k,DEK *symkey_dek,DEK *dek,IOBUF out)
 {
-  int rc,seskeylen=cipher_get_keylen(dek->algo)/8;
+  int rc, seskeylen = gcry_cipher_get_algo_keylen (dek->algo);
 
   PKT_symkey_enc *enc;
   byte enckey[33];
@@ -674,10 +674,9 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 	byte copy_buffer[4096];
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-		rc = G10ERR_WRITE_FILE;
-		log_error("copying input to output failed: %s\n",
-                          g10_errstr(rc) );
+	    if ( (rc=iobuf_write(out, copy_buffer, bytes_copied)) ) {
+		log_error ("copying input to output failed: %s\n",
+                           gpg_strerror (rc));
 		break;
 	    }
 	wipememory(copy_buffer, 4096); /* burn buffer */
@@ -795,7 +794,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
     int rc;
 
     for( ; pk_list; pk_list = pk_list->next ) {
-	MPI frame;
+	gcry_mpi_t frame;
 
 	pk = pk_list->pk;
 

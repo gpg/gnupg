@@ -309,7 +309,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
 
 
 static void
-hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
+hash_uid_node( KBNODE unode, gcry_md_hd_t md, PKT_signature *sig )
 {
     PKT_user_id *uid = unode->pkt->pkt.user_id;
 
