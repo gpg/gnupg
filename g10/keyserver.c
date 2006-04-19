@@ -1,5 +1,6 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -24,6 +26,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
 
 #include "gpg.h"
 #include "filter.h"
@@ -33,149 +38,302 @@
 #include "main.h"
 #include "i18n.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "ttyio.h"
 #include "options.h"
 #include "packet.h"
+#include "trustdb.h"
 #include "keyserver-internal.h"
 #include "util.h"
 
-#define GET    0
-#define SEND   1
-#define SEARCH 2
+#define GPGKEYS_PREFIX "gpgkeys_"
+
+#if defined(HAVE_LIBCURL) || defined(FAKE_CURL)
+#define GPGKEYS_CURL "gpgkeys_curl"
+#endif
+
+#ifdef GPGKEYS_CURL
+#define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_PREFIX)+strlen(GPGKEYS_CURL))
+#else
+#define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_PREFIX))
+#endif
 
 struct keyrec
 {
   KEYDB_SEARCH_DESC desc;
-  time_t createtime,expiretime;
+  u32 createtime,expiretime;
   int size,flags;
   byte type;
-  iobuf_t uidbuf;
-  int lines;
+  IOBUF uidbuf;
+  unsigned int lines;
 };
 
-struct kopts
-{
-  char *name;
-  int tell; /* tell remote process about this one */
-  int *flag;
-} keyserver_opts[]=
-{
-  {"include-revoked",1,&opt.keyserver_options.include_revoked},
-  {"include-disabled",1,&opt.keyserver_options.include_disabled},
-  {"include-subkeys",1,&opt.keyserver_options.include_subkeys},
-  {"keep-temp-files",0,&opt.keyserver_options.keep_temp_files},
-  {"honor-http-proxy",1,&opt.keyserver_options.honor_http_proxy},
-  {"broken-http-proxy",1,&opt.keyserver_options.broken_http_proxy},
-  {"refresh-add-fake-v3-keyids",0,&opt.keyserver_options.fake_v3_keyids},
-  {"auto-key-retrieve",0,&opt.keyserver_options.auto_key_retrieve},
-  {"try-dns-srv",1,&opt.keyserver_options.try_dns_srv},
-  {NULL}
-};
+enum ks_action {KS_UNKNOWN=0,KS_GET,KS_GETNAME,KS_SEND,KS_SEARCH};
 
-static int keyserver_work(int action,STRLIST list,
-			  KEYDB_SEARCH_DESC *desc,int count);
+static struct parse_options keyserver_opts[]=
+  {
+    /* some of these options are not real - just for the help
+       message */
+    {"max-cert-size",0,NULL,NULL},
+    {"include-revoked",0,NULL,N_("include revoked keys in search results")},
+    {"include-subkeys",0,NULL,N_("include subkeys when searching by key ID")},
+    {"use-temp-files",0,NULL,
+     N_("use temporary files to pass data to keyserver helpers")},
+    {"keep-temp-files",KEYSERVER_KEEP_TEMP_FILES,NULL,
+     N_("do not delete temporary files after using them")},
+    {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL,
+     NULL},
+    {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL,
+     N_("automatically retrieve keys when verifying signatures")},
+    {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL,
+     N_("honor the preferred keyserver URL set on the key")},
+    {"honor-pka-record",KEYSERVER_HONOR_PKA_RECORD,NULL,
+     N_("honor the PKA record set on a key when retrieving keys")},
+    {NULL,0,NULL,NULL}
+  };
 
-void 
+static int keyserver_work(enum ks_action action,STRLIST list,
+			  KEYDB_SEARCH_DESC *desc,int count,
+			  unsigned char **fpr,size_t *fpr_len,
+			  struct keyserver_spec *keyserver);
+
+/* Reasonable guess */
+#define DEFAULT_MAX_CERT_SIZE 16384
+
+static size_t max_cert_size=DEFAULT_MAX_CERT_SIZE;
+
+static void
+add_canonical_option(char *option,STRLIST *list)
+{
+  char *arg=argsplit(option);
+
+  if(arg)
+    {
+      char *joined;
+
+      joined=xmalloc(strlen(option)+1+strlen(arg)+1);
+      /* Make a canonical name=value form with no spaces */
+      strcpy(joined,option);
+      strcat(joined,"=");
+      strcat(joined,arg);
+      append_to_strlist(list,joined);
+      xfree(joined);
+    }
+  else
+    append_to_strlist(list,option);
+}
+
+int
 parse_keyserver_options(char *options)
 {
+  int ret=1;
   char *tok;
+  char *max_cert=NULL;
 
-  while((tok=strsep(&options," ,")))
+  keyserver_opts[0].value=&max_cert;
+
+  while((tok=optsep(&options)))
     {
-      int i,hit=0;
-
       if(tok[0]=='\0')
 	continue;
 
-      for(i=0;keyserver_opts[i].name;i++)
-	{
-	  if(ascii_strcasecmp(tok,keyserver_opts[i].name)==0)
-	    {
-	      *(keyserver_opts[i].flag)=1;
-	      hit=1;
-	      break;
-	    }
-	  else if(ascii_strncasecmp("no-",tok,3)==0 &&
-		  ascii_strcasecmp(&tok[3],keyserver_opts[i].name)==0)
-	    {
-	      *(keyserver_opts[i].flag)=0;
-	      hit=1;
-	      break;
-	    }
-	}
+      /* For backwards compatibility.  1.2.x used honor-http-proxy and
+	 there are a good number of documents published that recommend
+	 it. */
+      if(ascii_strcasecmp(tok,"honor-http-proxy")==0)
+	tok="http-proxy";
+      else if(ascii_strcasecmp(tok,"no-honor-http-proxy")==0)
+	tok="no-http-proxy";
 
-      /* These options need more than just a flag */
-      if(!hit)
-	{
-	  if(ascii_strcasecmp(tok,"verbose")==0)
-	    opt.keyserver_options.verbose++;
-	  else if(ascii_strcasecmp(tok,"no-verbose")==0)
-	    opt.keyserver_options.verbose--;
+      /* We accept quite a few possible options here - some options to
+	 handle specially, the keyserver_options list, and import and
+	 export options that pertain to keyserver operations.  Note
+	 that you must use strncasecmp here as there might be an
+	 =argument attached which will foil the use of strcasecmp. */
+
 #ifdef EXEC_TEMPFILE_ONLY
-	  else if(ascii_strcasecmp(tok,"use-temp-files")==0 ||
-		  ascii_strcasecmp(tok,"no-use-temp-files")==0)
-	    log_info(_("WARNING: keyserver option \"%s\" is not used "
-		       "on this platform\n"),tok);
+      if(ascii_strncasecmp(tok,"use-temp-files",14)==0 ||
+	      ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
+	log_info(_("WARNING: keyserver option `%s' is not used"
+		   " on this platform\n"),tok);
 #else
-	  else if(ascii_strcasecmp(tok,"use-temp-files")==0)
-	    opt.keyserver_options.use_temp_files=1;
-	  else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
-	    opt.keyserver_options.use_temp_files=0;
+      if(ascii_strncasecmp(tok,"use-temp-files",14)==0)
+	opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
+      else if(ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
+	opt.keyserver_options.options&=~KEYSERVER_USE_TEMP_FILES;
 #endif
-	  else
-	    if(!parse_import_options(tok,
-				     &opt.keyserver_options.import_options) &&
-	       !parse_export_options(tok,
-				     &opt.keyserver_options.export_options))
-	      add_to_strlist(&opt.keyserver_options.other,tok);
+      else if(!parse_options(tok,&opt.keyserver_options.options,
+			     keyserver_opts,0)
+	 && !parse_import_options(tok,
+				  &opt.keyserver_options.import_options,0)
+	 && !parse_export_options(tok,
+				  &opt.keyserver_options.export_options,0))
+	{
+	  /* All of the standard options have failed, so the option is
+	     destined for a keyserver plugin. */
+	  add_canonical_option(tok,&opt.keyserver_options.other);
 	}
     }
+
+  if(max_cert)
+    {
+      max_cert_size=strtoul(max_cert,(char **)NULL,10);
+
+      if(max_cert_size==0)
+	max_cert_size=DEFAULT_MAX_CERT_SIZE;
+    }
+
+  return ret;
 }
 
-int 
-parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
+void
+free_keyserver_spec(struct keyserver_spec *keyserver)
+{
+  xfree(keyserver->uri);
+  xfree(keyserver->scheme);
+  xfree(keyserver->auth);
+  xfree(keyserver->host);
+  xfree(keyserver->port);
+  xfree(keyserver->path);
+  xfree(keyserver->opaque);
+  free_strlist(keyserver->options);
+  xfree(keyserver);
+}
+
+/* Return 0 for match */
+static int
+cmp_keyserver_spec(struct keyserver_spec *one,struct keyserver_spec *two)
+{
+  if(ascii_strcasecmp(one->scheme,two->scheme)==0)
+    {
+      if(one->host && two->host && ascii_strcasecmp(one->host,two->host)==0)
+	{
+	  if((one->port && two->port
+	      && ascii_strcasecmp(one->port,two->port)==0)
+	     || (!one->port && !two->port))
+	    return 0;
+	}
+      else if(one->opaque && two->opaque
+	      && ascii_strcasecmp(one->opaque,two->opaque)==0)
+	return 0;
+    }
+
+  return 1;
+}
+
+/* Try and match one of our keyservers.  If we can, return that.  If
+   we can't, return our input. */
+struct keyserver_spec *
+keyserver_match(struct keyserver_spec *spec)
+{
+  struct keyserver_spec *ks;
+
+  for(ks=opt.keyserver;ks;ks=ks->next)
+    if(cmp_keyserver_spec(spec,ks)==0)
+      return ks;
+
+  return spec;
+}
+
+/* TODO: once we cut over to an all-curl world, we don't need this
+   parser any longer so it can be removed, or at least moved to
+   keyserver/ksutil.c for limited use in gpgkeys_ldap or the like. */
+
+struct keyserver_spec *
+parse_keyserver_uri(const char *string,int require_scheme,
+		    const char *configname,unsigned int configlineno)
 {
   int assume_hkp=0;
+  struct keyserver_spec *keyserver;
+  const char *idx;
+  int count;
+  char *uri,*options;
 
-  assert(uri!=NULL);
+  assert(string!=NULL);
 
-  opt.keyserver_host=NULL;
-  opt.keyserver_port=NULL;
-  opt.keyserver_opaque=NULL;
+  keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
+
+  uri=xstrdup(string);
+
+  options=strchr(uri,' ');
+  if(options)
+    {
+      char *tok;
+
+      *options='\0';
+      options++;
+
+      while((tok=optsep(&options)))
+	add_canonical_option(tok,&keyserver->options);
+    }
 
   /* Get the scheme */
 
-  opt.keyserver_scheme=strsep(&uri,":");
-  if(uri==NULL)
+  for(idx=uri,count=0;*idx && *idx!=':';idx++)
     {
+      count++;
+
+      /* Do we see the start of an RFC-2732 ipv6 address here?  If so,
+	 there clearly isn't a scheme so get out early. */
+      if(*idx=='[')
+	{
+	  /* Was the '[' the first thing in the string?  If not, we
+	     have a mangled scheme with a [ in it so fail. */
+	  if(count==1)
+	    break;
+	  else
+	    goto fail;
+	}
+    }
+
+  if(count==0)
+    goto fail;
+
+  if(*idx=='\0' || *idx=='[')
+    {
+      if(require_scheme)
+	return NULL;
+
       /* Assume HKP if there is no scheme */
       assume_hkp=1;
-      uri=opt.keyserver_scheme;
-      opt.keyserver_scheme="hkp";
+      keyserver->scheme=xstrdup("hkp");
+
+      keyserver->uri=xmalloc(strlen(keyserver->scheme)+3+strlen(uri)+1);
+      strcpy(keyserver->uri,keyserver->scheme);
+      strcat(keyserver->uri,"://");
+      strcat(keyserver->uri,uri);
     }
   else
     {
-      /* Force to lowercase */
-      char *i;
+      int i;
 
-      for(i=opt.keyserver_scheme;*i!='\0';i++)
-	*i=ascii_tolower(*i);
+      keyserver->uri=xstrdup(uri);
+
+      keyserver->scheme=xmalloc(count+1);
+
+      /* Force to lowercase */
+      for(i=0;i<count;i++)
+	keyserver->scheme[i]=ascii_tolower(uri[i]);
+
+      keyserver->scheme[i]='\0';
+
+      /* Skip past the scheme and colon */
+      uri+=count+1;
     }
 
-  if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+  if(ascii_strcasecmp(keyserver->scheme,"x-broken-hkp")==0)
     {
       deprecated_warning(configname,configlineno,"x-broken-hkp",
 			 "--keyserver-options ","broken-http-proxy");
-      opt.keyserver_scheme="hkp";
-      opt.keyserver_options.broken_http_proxy=1;
+      xfree(keyserver->scheme);
+      keyserver->scheme=xstrdup("hkp");
+      append_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
     }
-  else if(ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0
-	  || ascii_strcasecmp(opt.keyserver_scheme,"http")==0)
+  else if(ascii_strcasecmp(keyserver->scheme,"x-hkp")==0)
     {
       /* Canonicalize this to "hkp" so it works with both the internal
 	 and external keyserver interface. */
-      opt.keyserver_scheme="hkp";
+      xfree(keyserver->scheme);
+      keyserver->scheme=xstrdup("hkp");
     }
 
   if(assume_hkp || (uri[0]=='/' && uri[1]=='/'))
@@ -186,57 +344,124 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
       if(!assume_hkp)
 	uri+=2;
 
-      /* Get the host */
-      opt.keyserver_host=strsep(&uri,":/");
-      if(opt.keyserver_host[0]=='\0')
-	return GPG_ERR_BAD_URI;
+      /* Do we have userinfo auth data present? */
+      for(idx=uri,count=0;*idx && *idx!='@' && *idx!='/';idx++)
+	count++;
 
-      if(uri==NULL || uri[0]=='\0')
-	opt.keyserver_port=NULL;
-      else
+      /* We found a @ before the slash, so that means everything
+	 before the @ is auth data. */
+      if(*idx=='@')
 	{
-	  char *ch;
+	  if(count==0)
+	    goto fail;
 
-	  /* Get the port */
-	  opt.keyserver_port=strsep(&uri,"/");
+	  keyserver->auth=xmalloc(count+1);
+	  strncpy(keyserver->auth,uri,count);
+	  keyserver->auth[count]='\0';
+	  uri+=count+1;
+	}
 
-	  /* Ports are digits only */
-	  ch=opt.keyserver_port;
-	  while(*ch!='\0')
-	    {
-	      if(!digitp(ch))
-		return GPG_ERR_BAD_URI;
+      /* Is it an RFC-2732 ipv6 [literal address] ? */
+      if(*uri=='[')
+	{
+	  for(idx=uri+1,count=1;*idx
+		&& ((isascii (*idx) && isxdigit(*idx))
+                    || *idx==':' || *idx=='.');idx++)
+	    count++;
 
-	      ch++;
-	    }
+	  /* Is the ipv6 literal address terminated? */
+	  if(*idx==']')
+	    count++;
+	  else
+	    goto fail;
+	}
+      else
+	for(idx=uri,count=0;*idx && *idx!=':' && *idx!='/';idx++)
+	  count++;
 
+      if(count==0)
+	goto fail;
+
+      keyserver->host=xmalloc(count+1);
+      strncpy(keyserver->host,uri,count);
+      keyserver->host[count]='\0';
+
+      /* Skip past the host */
+      uri+=count;
+
+      if(*uri==':')
+	{
 	  /* It would seem to be reasonable to limit the range of the
 	     ports to values between 1-65535, but RFC 1738 and 1808
 	     imply there is no limit.  Of course, the real world has
 	     limits. */
+
+	  for(idx=uri+1,count=0;*idx && *idx!='/';idx++)
+	    {
+	      count++;
+
+	      /* Ports are digits only */
+	      if(!digitp(idx))
+		goto fail;
+	    }
+
+	  keyserver->port=xmalloc(count+1);
+	  strncpy(keyserver->port,uri+1,count);
+	  keyserver->port[count]='\0';
+
+	  /* Skip past the colon and port number */
+	  uri+=1+count;
 	}
 
-      /* (any path part of the URI is discarded for now as no keyserver
-	 uses it yet) */
+      /* Everything else is the path */
+      if(*uri)
+	keyserver->path=xstrdup(uri);
+      else
+	keyserver->path=xstrdup("/");
+
+      if(keyserver->path[1]!='\0')
+	keyserver->flags.direct_uri=1;
     }
   else if(uri[0]!='/')
     {
       /* No slash means opaque.  Just record the opaque blob and get
 	 out. */
-      opt.keyserver_opaque=uri;
-      return 0;
+      keyserver->opaque=xstrdup(uri);
     }
   else
     {
       /* One slash means absolute path.  We don't need to support that
 	 yet. */
-      return GPG_ERR_BAD_URI;
+      goto fail;
     }
 
-  if(opt.keyserver_scheme[0]=='\0')
-    return GPG_ERR_BAD_URI;
+  return keyserver;
 
-  return 0;
+ fail:
+  free_keyserver_spec(keyserver);
+
+  return NULL;
+}
+
+struct keyserver_spec *
+parse_preferred_keyserver(PKT_signature *sig)
+{
+  struct keyserver_spec *spec=NULL;
+  const byte *p;
+  size_t plen;
+
+  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&plen);
+  if(p && plen)
+    {
+      byte *dupe=xmalloc(plen+1);
+
+      memcpy(dupe,p,plen);
+      dupe[plen]='\0';
+      spec=parse_keyserver_uri(dupe,1,NULL,0);
+      xfree(dupe);
+    }
+
+  return spec;
 }
 
 static void
@@ -253,7 +478,7 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   if(keyrec->type)
     {
-      const char *str = gcry_pk_algo_name (keyrec->type);
+      const char *str=pubkey_algo_to_string(keyrec->type);
 
       if(str)
 	printf("%s ",str);
@@ -263,25 +488,32 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   switch(keyrec->desc.mode)
     {
+      /* If the keyserver helper gave us a short keyid, we have no
+	 choice but to use it.  Do check --keyid-format to add a 0x if
+	 needed. */
     case KEYDB_SEARCH_MODE_SHORT_KID:
-      printf("key %08lX",(ulong)keyrec->desc.u.kid[1]);
+      printf("key %s%08lX",
+	     (opt.keyid_format==KF_0xSHORT
+	      || opt.keyid_format==KF_0xLONG)?"0x":"",
+	     (ulong)keyrec->desc.u.kid[1]);
       break;
 
+      /* However, if it gave us a long keyid, we can honor
+	 --keyid-format */
     case KEYDB_SEARCH_MODE_LONG_KID:
-      printf("key %08lX%08lX",(ulong)keyrec->desc.u.kid[0],
-	     (ulong)keyrec->desc.u.kid[1]);
+      printf("key %s",keystr(keyrec->desc.u.kid));
       break;
 
     case KEYDB_SEARCH_MODE_FPR16:
       printf("key ");
       for(i=0;i<16;i++)
-	printf("%02X",(unsigned char)keyrec->desc.u.fpr[i]);
+	printf("%02X",keyrec->desc.u.fpr[i]);
       break;
 
     case KEYDB_SEARCH_MODE_FPR20:
       printf("key ");
       for(i=0;i<20;i++)
-	printf("%02X",(unsigned char)keyrec->desc.u.fpr[i]);
+	printf("%02X",keyrec->desc.u.fpr[i]);
       break;
 
     default:
@@ -290,17 +522,23 @@ print_keyrec(int number,struct keyrec *keyrec)
     }
 
   if(keyrec->createtime>0)
-    printf(", created %s",strtimestamp(keyrec->createtime));
+    {
+      printf(", ");
+      printf(_("created: %s"),strtimestamp(keyrec->createtime));
+    }
 
   if(keyrec->expiretime>0)
-    printf(", expires %s",strtimestamp(keyrec->expiretime));
+    {
+      printf(", ");
+      printf(_("expires: %s"),strtimestamp(keyrec->expiretime));
+    }
 
   if(keyrec->flags&1)
-    printf(" (%s)",("revoked"));
+    printf(" (%s)",_("revoked"));
   if(keyrec->flags&2)
-    printf(" (%s)",("disabled"));
+    printf(" (%s)",_("disabled"));
   if(keyrec->flags&4)
-    printf(" (%s)",("expired"));
+    printf(" (%s)",_("expired"));
 
   printf("\n");
 }
@@ -322,7 +560,7 @@ parse_keyrec(char *keystring)
 	return NULL;
       else if(work->desc.mode==KEYDB_SEARCH_MODE_NONE)
 	{
-	  xfree (work);
+	  xfree(work);
 	  return NULL;
 	}
       else
@@ -335,7 +573,7 @@ parse_keyrec(char *keystring)
 
   if(work==NULL)
     {
-      work=xcalloc (1,sizeof(struct keyrec));
+      work=xmalloc_clear(sizeof(struct keyrec));
       work->uidbuf=iobuf_temp();
     }
 
@@ -356,7 +594,7 @@ parse_keyrec(char *keystring)
       if(work->desc.mode)
 	{
 	  ret=work;
-	  work=xcalloc (1,sizeof(struct keyrec));
+	  work=xmalloc_clear(sizeof(struct keyrec));
 	  work->uidbuf=iobuf_temp();
 	}
 
@@ -391,12 +629,23 @@ parse_keyrec(char *keystring)
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
 
-      work->createtime=atoi(tok);
+      if(atoi(tok)<=0)
+	work->createtime=0;
+      else
+	work->createtime=atoi(tok);
 
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
 
-      work->expiretime=atoi(tok);
+      if(atoi(tok)<=0)
+	work->expiretime=0;
+      else
+	{
+	  work->expiretime=atoi(tok);
+	  /* Force the 'e' flag on if this key is expired. */
+	  if(work->expiretime<=make_timestamp())
+	    work->flags|=4;
+	}
 
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
@@ -419,9 +668,6 @@ parse_keyrec(char *keystring)
 	    work->flags|=4;
 	    break;
 	  }
-
-      if(work->expiretime && work->expiretime<=make_timestamp())
-	work->flags|=4;
     }
   else if(ascii_strcasecmp("uid",record)==0 && work->desc.mode)
     {
@@ -460,12 +706,14 @@ parse_keyrec(char *keystring)
 	 does this for us. */
 
       decoded=utf8_to_native(userid,i,0);
+      if(strlen(decoded)>opt.screen_columns-10)
+	decoded[opt.screen_columns-10]='\0';
       iobuf_writestr(work->uidbuf,decoded);
-      xfree (decoded);
+      xfree(decoded);
       iobuf_writestr(work->uidbuf,"\n\t");
       work->lines++;
     }
-  
+
   /* Ignore any records other than "pri" and "uid" for easy future
      growth. */
 
@@ -499,7 +747,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
   if(answer[0]=='q' || answer[0]=='Q')
     {
-      xfree (answer);
+      xfree(answer);
       return 1;
     }
   else if(atoi(answer)>=1 && atoi(answer)<=numdesc)
@@ -508,9 +756,10 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
       while((num=strsep(&split," ,"))!=NULL)
 	if(atoi(num)>=1 && atoi(num)<=numdesc)
-	  keyserver_work(GET,NULL,&desc[atoi(num)-1],1);
+	  keyserver_work(KS_GET,NULL,&desc[atoi(num)-1],1,
+			 NULL,NULL,opt.keyserver);
 
-      xfree (answer);
+      xfree(answer);
       return 1;
     }
 
@@ -519,18 +768,20 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
 /* Count and searchstr are just for cosmetics.  If the count is too
    small, it will grow safely.  If negative it disables the "Key x-y
-   of z" messages. */
+   of z" messages.  searchstr should be UTF-8 (rather than native). */
 static void
-keyserver_search_prompt(iobuf_t buffer,const char *searchstr)
+keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 {
   int i=0,validcount=0,started=0,header=0,count=1;
-  unsigned int maxlen,buflen;
+  unsigned int maxlen,buflen,numlines=0;
   KEYDB_SEARCH_DESC *desc;
   byte *line=NULL;
-  /* TODO: Something other than 23?  That's 24-1 (the prompt). */
-  int maxlines=23,numlines=0;
+  char *localstr=NULL;
 
-  desc=xmalloc (count*sizeof(KEYDB_SEARCH_DESC));
+  if(searchstr)
+    localstr=utf8_to_native(searchstr,strlen(searchstr),0);
+
+  desc=xmalloc(count*sizeof(KEYDB_SEARCH_DESC));
 
   for(;;)
     {
@@ -609,7 +860,7 @@ keyserver_search_prompt(iobuf_t buffer,const char *searchstr)
 
 	      for(;;)
 		{
-		  if(show_prompt(desc,i,validcount?count:0,searchstr))
+		  if(show_prompt(desc,i,validcount?count:0,localstr))
 		    break;
 		  validcount=0;
 		}
@@ -635,9 +886,10 @@ keyserver_search_prompt(iobuf_t buffer,const char *searchstr)
 
 	  if(!opt.with_colons)
 	    {
-	      if(numlines+keyrec->lines>maxlines)
+	      /* screen_lines - 1 for the prompt. */
+	      if(numlines+keyrec->lines>opt.screen_lines-1)
 		{
-		  if(show_prompt(desc,i,validcount?count:0,searchstr))
+		  if(show_prompt(desc,i,validcount?count:0,localstr))
 		    break;
 		  else
 		    numlines=0;
@@ -648,62 +900,144 @@ keyserver_search_prompt(iobuf_t buffer,const char *searchstr)
 
 	  numlines+=keyrec->lines;
 	  iobuf_close(keyrec->uidbuf);
-	  xfree (keyrec);
+	  xfree(keyrec);
 
 	  started=1;
 	  i++;
 	}
     }
 
-  xfree (desc);
-  xfree (line);
-
  notfound:
+  /* Leave this commented out or now, and perhaps for a very long
+     time.  All HKPish servers return HTML error messages for
+     no-key-found. */
+  /* 
+     if(!started)
+     log_info(_("keyserver does not support searching\n"));
+     else
+  */
   if(count==0)
     {
-      if(searchstr)
-	log_info(_("key \"%s\" not found on keyserver\n"),searchstr);
+      if(localstr)
+	log_info(_("key \"%s\" not found on keyserver\n"),localstr);
       else
 	log_info(_("key not found on keyserver\n"));
-      return;
     }
+
+  xfree(localstr);
+  xfree(desc);
+  xfree(line);
 }
+
+/* We sometimes want to use a different gpgkeys_xxx for a given
+   protocol (for example, ldaps is handled by gpgkeys_ldap).  Map
+   these here. */
+static const char *
+keyserver_typemap(const char *type)
+{
+  if(strcmp(type,"ldaps")==0)
+    return "ldap";
+  else
+    return type;
+}
+
+#ifdef GPGKEYS_CURL
+/* The PGP LDAP and the curl fetch-a-LDAP-object methodologies are
+   sufficiently different that we can't use curl to do LDAP. */
+static int
+curl_cant_handle(const char *scheme,unsigned int direct_uri)
+{
+  if(!direct_uri && (strcmp(scheme,"ldap")==0 || strcmp(scheme,"ldaps")==0))
+    return 1;
+
+  return 0;
+}
+#endif
 
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
 static int 
-keyserver_spawn(int action,STRLIST list,
-		KEYDB_SEARCH_DESC *desc,int count,int *prog)
+keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+		int count,int *prog,unsigned char **fpr,size_t *fpr_len,
+		struct keyserver_spec *keyserver)
 {
   int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
   unsigned int maxlen,buflen;
-  char *command=NULL,*searchstr=NULL;
+  char *command,*end,*searchstr=NULL;
   byte *line=NULL;
-  struct kopts *kopts;
   struct exec_info *spawn;
+  const char *scheme;
+  const char *libexecdir = get_libexecdir ();
+
+  assert(keyserver);
 
 #ifdef EXEC_TEMPFILE_ONLY
-  opt.keyserver_options.use_temp_files=1;
-#endif
-
-  /* Push the libexecdir into path.  If DISABLE_KEYSERVER_PATH is set,
-     use the 0 arg to replace the path. */
-#ifdef DISABLE_KEYSERVER_PATH
-  set_exec_path(GNUPG_LIBEXECDIR,0);
-#else
-  set_exec_path(GNUPG_LIBEXECDIR,opt.exec_path_set);
+  opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
 #endif
 
   /* Build the filename for the helper to execute */
-  command=xmalloc (strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
-  strcpy(command,"gpgkeys_");
-  strcat(command,opt.keyserver_scheme);
+  scheme=keyserver_typemap(keyserver->scheme);
 
-  if(opt.keyserver_options.use_temp_files)
+#ifdef DISABLE_KEYSERVER_PATH
+  /* Destroy any path we might have.  This is a little tricky,
+     portability-wise.  It's not correct to delete the PATH
+     environment variable, as that may fall back to a system built-in
+     PATH.  Similarly, it is not correct to set PATH to the null
+     string (PATH="") since this actually deletes the PATH environment
+     variable under MinGW.  The safest thing to do here is to force
+     PATH to be GNUPG_LIBEXECDIR.  All this is not that meaningful on
+     Unix-like systems (since we're going to give a full path to
+     gpgkeys_foo), but on W32 it prevents loading any DLLs from
+     directories in %PATH%.
+
+     After some more thinking about this we came to the conclusion
+     that it is better to load the helpers from the directory where
+     the program of this process lives.  Fortunately Windows provides
+     a way to retrieve this and our get_libexecdir function has been
+     modified to return just this.  Setting the exec-path is not
+     anymore required.  
+       set_exec_path(libexecdir);
+ */
+#else
+  if(opt.exec_path_set)
     {
-      if(opt.keyserver_options.keep_temp_files)
+      /* If exec-path was set, and DISABLE_KEYSERVER_PATH is
+	 undefined, then don't specify a full path to gpgkeys_foo, so
+	 that the PATH can work. */
+      command=xmalloc(GPGKEYS_PREFIX_LEN+strlen(scheme)+3+strlen(EXEEXT)+1);
+      command[0]='\0';
+    }
+  else
+#endif
+    {
+      /* Specify a full path to gpgkeys_foo. */
+      command=xmalloc(strlen(libexecdir)+strlen(DIRSEP_S)+
+		      GPGKEYS_PREFIX_LEN+strlen(scheme)+3+strlen(EXEEXT)+1);
+      strcpy(command,libexecdir);
+      strcat(command,DIRSEP_S);
+    }
+
+  end=command+strlen(command);
+
+  strcat(command,GPGKEYS_PREFIX); 
+  strcat(command,scheme);
+
+  if(keyserver->flags.direct_uri)
+    strcat(command,"uri");
+
+  strcat(command,EXEEXT);
+
+#ifdef GPGKEYS_CURL
+  if(!curl_cant_handle(scheme,keyserver->flags.direct_uri)
+     && path_access(command,X_OK)!=0)
+    strcpy(end,GPGKEYS_CURL);
+#endif
+
+  if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
+    {
+      if(opt.keyserver_options.options&KEYSERVER_KEEP_TEMP_FILES)
 	{
 	  command=xrealloc(command,strlen(command)+
 			    strlen(KEYSERVER_ARGS_KEEP)+1);
@@ -721,41 +1055,47 @@ keyserver_spawn(int action,STRLIST list,
   else
     ret=exec_write(&spawn,command,NULL,NULL,0,0);
 
+  xfree(command);
+
   if(ret)
     return ret;
 
-  fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
+  fprintf(spawn->tochild,
+	  "# This is a GnuPG %s keyserver communications file\n",VERSION);
   fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
+  fprintf(spawn->tochild,"SCHEME %s\n",keyserver->scheme);
 
-  if(opt.keyserver_opaque)
-    fprintf(spawn->tochild,"OPAQUE %s\n",opt.keyserver_opaque);
+  if(keyserver->opaque)
+    fprintf(spawn->tochild,"OPAQUE %s\n",keyserver->opaque);
   else
     {
-      if(opt.keyserver_host)
-	fprintf(spawn->tochild,"HOST %s\n",opt.keyserver_host);
+      if(keyserver->auth)
+	fprintf(spawn->tochild,"AUTH %s\n",keyserver->auth);
 
-      if(opt.keyserver_port)
-	fprintf(spawn->tochild,"PORT %s\n",opt.keyserver_port);
+      if(keyserver->host)
+	fprintf(spawn->tochild,"HOST %s\n",keyserver->host);
+
+      if(keyserver->port)
+	fprintf(spawn->tochild,"PORT %s\n",keyserver->port);
+
+      if(keyserver->path)
+	fprintf(spawn->tochild,"PATH %s\n",keyserver->path);
     }
 
-  /* Write options */
+  /* Write global options */
 
-  for(i=0,kopts=keyserver_opts;kopts[i].name;i++)
-    if(*(kopts[i].flag) && kopts[i].tell)
-      fprintf(spawn->tochild,"OPTION %s\n",kopts[i].name);
+  for(temp=opt.keyserver_options.other;temp;temp=temp->next)
+    fprintf(spawn->tochild,"OPTION %s\n",temp->d);
 
-  for(i=0;i<opt.keyserver_options.verbose;i++)
-    fprintf(spawn->tochild,"OPTION verbose\n");
+  /* Write per-keyserver options */
 
-  temp=opt.keyserver_options.other;
-
-  for(;temp;temp=temp->next)
+  for(temp=keyserver->options;temp;temp=temp->next)
     fprintf(spawn->tochild,"OPTION %s\n",temp->d);
 
   switch(action)
     {
-    case GET:
+    case KS_GET:
       {
 	fprintf(spawn->tochild,"COMMAND GET\n\n");
 
@@ -763,6 +1103,8 @@ keyserver_spawn(int action,STRLIST list,
 
 	for(i=0;i<count;i++)
 	  {
+	    int quiet=0;
+
 	    if(desc[i].mode==KEYDB_SEARCH_MODE_FPR20)
 	      {
 		int f;
@@ -770,7 +1112,7 @@ keyserver_spawn(int action,STRLIST list,
 		fprintf(spawn->tochild,"0x");
 
 		for(f=0;f<MAX_FINGERPRINT_LEN;f++)
-		  fprintf(spawn->tochild,"%02X",(byte)desc[i].u.fpr[f]);
+		  fprintf(spawn->tochild,"%02X",desc[i].u.fpr[f]);
 
 		fprintf(spawn->tochild,"\n");
 	      }
@@ -781,7 +1123,7 @@ keyserver_spawn(int action,STRLIST list,
 		fprintf(spawn->tochild,"0x");
 
 		for(f=0;f<16;f++)
-		  fprintf(spawn->tochild,"%02X",(byte)desc[i].u.fpr[f]);
+		  fprintf(spawn->tochild,"%02X",desc[i].u.fpr[f]);
 
 		fprintf(spawn->tochild,"\n");
 	      }
@@ -789,9 +1131,29 @@ keyserver_spawn(int action,STRLIST list,
 	      fprintf(spawn->tochild,"0x%08lX%08lX\n",
 		      (ulong)desc[i].u.kid[0],
 		      (ulong)desc[i].u.kid[1]);
-	    else
+	    else if(desc[i].mode==KEYDB_SEARCH_MODE_SHORT_KID)
 	      fprintf(spawn->tochild,"0x%08lX\n",
 		      (ulong)desc[i].u.kid[1]);
+	    else if(desc[i].mode==KEYDB_SEARCH_MODE_EXACT)
+	      {
+		fprintf(spawn->tochild,"0x0000000000000000\n");
+		quiet=1;
+	      }
+	    else if(desc[i].mode==KEYDB_SEARCH_MODE_NONE)
+	      continue;
+	    else
+	      BUG();
+
+	    if(!quiet)
+	      {
+		if(keyserver->host)
+		  log_info(_("requesting key %s from %s server %s\n"),
+			   keystr_from_desc(&desc[i]),
+			   keyserver->scheme,keyserver->host);
+		else
+		  log_info(_("requesting key %s from %s\n"),
+			   keystr_from_desc(&desc[i]),keyserver->uri);
+	      }
 	  }
 
 	fprintf(spawn->tochild,"\n");
@@ -799,7 +1161,29 @@ keyserver_spawn(int action,STRLIST list,
 	break;
       }
 
-    case SEND:
+    case KS_GETNAME:
+      {
+	STRLIST key;
+
+	fprintf(spawn->tochild,"COMMAND GETNAME\n\n");
+
+	/* Which names do we want? */
+
+	for(key=list;key!=NULL;key=key->next)
+	  fprintf(spawn->tochild,"%s\n",key->d);
+
+	fprintf(spawn->tochild,"\n");
+
+	if(keyserver->host)
+	  log_info(_("searching for names from %s server %s\n"),
+		   keyserver->scheme,keyserver->host);
+	else
+	  log_info(_("searching for names from %s\n"),keyserver->uri);
+
+	break;
+      }
+
+    case KS_SEND:
       {
 	STRLIST key;
 
@@ -809,7 +1193,7 @@ keyserver_spawn(int action,STRLIST list,
 	for(key=list;key!=NULL;key=key->next)
 	  {
 	    armor_filter_context_t afx;
-	    iobuf_t buffer=iobuf_temp();
+	    IOBUF buffer=iobuf_temp();
 	    KBNODE block;
 
 	    temp=NULL;
@@ -817,11 +1201,17 @@ keyserver_spawn(int action,STRLIST list,
 
 	    memset(&afx,0,sizeof(afx));
 	    afx.what=1;
+	    /* Tell the armor filter to use Unix-style \n line
+	       endings, since we're going to fprintf this to a file
+	       that (on Win32) is open in text mode.  The win32 stdio
+	       will transform the \n to \r\n and we'll end up with the
+	       proper line endings on win32.  This is a no-op on
+	       Unix. */
+	    afx.eol[0]='\n';
 	    iobuf_push_filter(buffer,armor_filter,&afx);
 
-	    /* TODO: Don't use the keyblock hack here - instead,
-	       output each key as a different ascii armored blob with
-	       its own INFO section. */
+	    /* TODO: Remove Comment: lines from keys exported this
+	       way? */
 
 	    if(export_pubkeys_stream(buffer,temp,&block,
 				     opt.keyserver_options.export_options)==-1)
@@ -834,7 +1224,9 @@ keyserver_spawn(int action,STRLIST list,
 
 		merge_keys_and_selfsig(block);
 
-		fprintf(spawn->tochild,"INFO %s BEGIN\n",key->d);
+		fprintf(spawn->tochild,"INFO %08lX%08lX BEGIN\n",
+			(ulong)block->pkt->pkt.public_key->keyid[0],
+			(ulong)block->pkt->pkt.public_key->keyid[1]);
 
 		for(node=block;node;node=node->next)
 		  {
@@ -864,9 +1256,8 @@ keyserver_spawn(int action,STRLIST list,
 			    fprintf(spawn->tochild,"e");
 
 			  fprintf(spawn->tochild,"\n");
-
-			  break;
 			}
+			break;
 
 		      case PKT_USER_ID:
 			{
@@ -884,7 +1275,8 @@ keyserver_spawn(int action,STRLIST list,
 			    {
 			      if(uid->name[r]==':' || uid->name[r]=='%'
 				 || uid->name[r]&0x80)
-				fprintf(spawn->tochild,"%%%02X",uid->name[r]);
+				fprintf(spawn->tochild,"%%%02X",
+					(byte)uid->name[r]);
 			      else
 				fprintf(spawn->tochild,"%c",uid->name[r]);
 			    }
@@ -899,10 +1291,32 @@ keyserver_spawn(int action,STRLIST list,
 
 			  fprintf(spawn->tochild,"\n");
 			}
+			break;
+
+			/* This bit is really for the benefit of
+			   people who store their keys in LDAP
+			   servers.  It makes it easy to do queries
+			   for things like "all keys signed by
+			   Isabella". */
+		      case PKT_SIGNATURE:
+			{
+			  PKT_signature *sig=node->pkt->pkt.signature;
+
+			  if(!IS_UID_SIG(sig))
+			    continue;
+
+			  fprintf(spawn->tochild,"sig:%08lX%08lX:%X:%u:%u\n",
+				  (ulong)sig->keyid[0],(ulong)sig->keyid[1],
+				  sig->sig_class,sig->timestamp,
+				  sig->expiredate);
+			}
+			break;
 		      }
 		  }
 
-		fprintf(spawn->tochild,"INFO %s END\n",key->d);
+		fprintf(spawn->tochild,"INFO %08lX%08lX END\n",
+			(ulong)block->pkt->pkt.public_key->keyid[0],
+			(ulong)block->pkt->pkt.public_key->keyid[1]);
 
 		fprintf(spawn->tochild,"KEY %s BEGIN\n",key->d);
 		fwrite(iobuf_get_temp_buffer(buffer),
@@ -910,6 +1324,16 @@ keyserver_spawn(int action,STRLIST list,
 		fprintf(spawn->tochild,"KEY %s END\n",key->d);
 
 		iobuf_close(buffer);
+
+		if(keyserver->host)
+		  log_info(_("sending key %s to %s server %s\n"),
+			   keystr(block->pkt->pkt.public_key->keyid),
+			   keyserver->scheme,keyserver->host);
+		else
+		  log_info(_("sending key %s to %s\n"),
+			   keystr(block->pkt->pkt.public_key->keyid),
+			   keyserver->uri);
+
 		release_kbnode(block);
 	      }
 
@@ -919,7 +1343,7 @@ keyserver_spawn(int action,STRLIST list,
 	break;
       }
 
-    case SEARCH:
+    case KS_SEARCH:
       {
 	STRLIST key;
 
@@ -939,7 +1363,7 @@ keyserver_spawn(int action,STRLIST list,
 	      }
 	    else
 	      {
-		searchstr=xmalloc (strlen(key->d)+1);
+		searchstr=xmalloc(strlen(key->d)+1);
 		searchstr[0]='\0';
 	      }
 
@@ -947,6 +1371,13 @@ keyserver_spawn(int action,STRLIST list,
 	  }
 
 	fprintf(spawn->tochild,"\n");
+
+	if(keyserver->host)
+	  log_info(_("searching for \"%s\" from %s server %s\n"),
+		   searchstr,keyserver->scheme,keyserver->host);
+	else
+	  log_info(_("searching for \"%s\" from %s\n"),
+		   searchstr,keyserver->uri);
 
 	break;
       }
@@ -971,7 +1402,7 @@ keyserver_spawn(int action,STRLIST list,
       maxlen=1024;
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
-	  ret = iobuf_error (spawn->fromchild);
+	  ret=G10ERR_READ_FILE;
 	  goto fail; /* i.e. EOF */
 	}
 
@@ -1000,8 +1431,8 @@ keyserver_spawn(int action,STRLIST list,
       else if(ascii_strncasecmp(ptr,"PROGRAM ",8)==0)
 	{
 	  if(ascii_strncasecmp(&ptr[8],VERSION,strlen(VERSION))!=0)
-	    log_info(_("WARNING: keyserver handler from a different "
-		       "version of GnuPG (%s)\n"),&ptr[8]);
+	    log_info(_("WARNING: keyserver handler from a different"
+		       " version of GnuPG (%s)\n"),&ptr[8]);
 	}
       else if(ascii_strncasecmp(ptr,"OPTION OUTOFBAND",16)==0)
 	outofband=1; /* Currently the only OPTION */
@@ -1016,7 +1447,8 @@ keyserver_spawn(int action,STRLIST list,
   if(!outofband)
     switch(action)
       {
-      case GET:
+      case KS_GET:
+      case KS_GETNAME:
 	{
 	  void *stats_handle;
 
@@ -1029,7 +1461,7 @@ keyserver_spawn(int action,STRLIST list,
 	     way to do this could be to continue parsing this
 	     line-by-line and make a temp iobuf for each key. */
 
-	  import_keys_stream(spawn->fromchild,stats_handle,
+	  import_keys_stream(spawn->fromchild,stats_handle,fpr,fpr_len,
 			     opt.keyserver_options.import_options);
 
 	  import_print_stats(stats_handle);
@@ -1039,15 +1471,12 @@ keyserver_spawn(int action,STRLIST list,
 	}
 
 	/* Nothing to do here */
-      case SEND:
+      case KS_SEND:
 	break;
 
-      case SEARCH:
-	{
-	  keyserver_search_prompt(spawn->fromchild,searchstr);
-
-	  break;
-	}
+      case KS_SEARCH:
+	keyserver_search_prompt(spawn->fromchild,searchstr);
+	break;
 
       default:
 	log_fatal(_("no keyserver action!\n"));
@@ -1055,7 +1484,9 @@ keyserver_spawn(int action,STRLIST list,
       }
 
  fail:
-  xfree (line);
+  xfree(line);
+  xfree(searchstr);
+
 
   *prog=exec_finish(spawn);
 
@@ -1063,45 +1494,53 @@ keyserver_spawn(int action,STRLIST list,
 }
 
 static int 
-keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
+keyserver_work(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+	       int count,unsigned char **fpr,size_t *fpr_len,
+	       struct keyserver_spec *keyserver)
 {
   int rc=0,ret=0;
 
-  if(opt.keyserver_scheme==NULL)
+  if(!keyserver)
     {
       log_error(_("no keyserver known (use option --keyserver)\n"));
-      return GPG_ERR_BAD_URI;
+      return G10ERR_BAD_URI;
     }
 
 #ifdef DISABLE_KEYSERVER_HELPERS
 
   log_error(_("external keyserver calls are not supported in this build\n"));
-  return GPG_ERR_KEYSERVER;
+  return G10ERR_KEYSERVER;
 
 #else
   /* Spawn a handler */
 
-  rc=keyserver_spawn(action,list,desc,count,&ret);
+  rc=keyserver_spawn(action,list,desc,count,&ret,fpr,fpr_len,keyserver);
   if(ret)
     {
       switch(ret)
 	{
 	case KEYSERVER_SCHEME_NOT_FOUND:
-	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
-		    opt.keyserver_scheme);
+	  log_error(_("no handler for keyserver scheme `%s'\n"),
+		    keyserver->scheme);
 	  break;
 
 	case KEYSERVER_NOT_SUPPORTED:
-	  log_error(_("action \"%s\" not supported with keyserver "
-		      "scheme \"%s\"\n"),
-		    action==GET?"get":action==SEND?"send":
-		    action==SEARCH?"search":"unknown",
-		    opt.keyserver_scheme);
+	  log_error(_("action `%s' not supported with keyserver "
+		      "scheme `%s'\n"),
+		    action==KS_GET?"get":action==KS_SEND?"send":
+		    action==KS_SEARCH?"search":"unknown",
+		    keyserver->scheme);
 	  break;
 
 	case KEYSERVER_VERSION_ERROR:
-	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
-		    opt.keyserver_scheme,KEYSERVER_PROTO_VERSION);
+	  log_error(_(GPGKEYS_PREFIX "%s does not support"
+		      " handler version %d\n"),
+		    keyserver_typemap(keyserver->scheme),
+		    KEYSERVER_PROTO_VERSION);
+	  break;
+
+	case KEYSERVER_TIMEOUT:
+	  log_error(_("keyserver timed out\n"));
 	  break;
 
 	case KEYSERVER_INTERNAL_ERROR:
@@ -1110,12 +1549,12 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 	  break;
 	}
 
-      return GPG_ERR_KEYSERVER;
+      return G10ERR_KEYSERVER;
     }
 
   if(rc)
     {
-      log_error(_("keyserver communications error: %s\n"),gpg_strerror (rc));
+      log_error(_("keyserver communications error: %s\n"),g10_errstr(rc));
 
       return rc;
     }
@@ -1127,18 +1566,33 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 int 
 keyserver_export(STRLIST users)
 {
-  /* We better ask for confirmation when the user entered --send-keys
-     without arguments.  Sending all keys might not be the thing he
-     intended to do */
-  if (users || opt.batch || opt.answer_yes)
-    ;
-  else if ( !cpr_get_answer_is_yes
-            ("keyserver_export.send_all",
-             _("Do you really want to send all your "
-               "public keys to the keyserver? (y/N) ")))
-    return -1;
+  STRLIST sl=NULL;
+  KEYDB_SEARCH_DESC desc;
+  int rc=0;
 
-  return keyserver_work(SEND,users,NULL,0);
+  /* Weed out descriptors that we don't support sending */
+  for(;users;users=users->next)
+    {
+      classify_user_id (users->d, &desc);
+      if(desc.mode!=KEYDB_SEARCH_MODE_SHORT_KID &&
+	 desc.mode!=KEYDB_SEARCH_MODE_LONG_KID &&
+	 desc.mode!=KEYDB_SEARCH_MODE_FPR16 &&
+	 desc.mode!=KEYDB_SEARCH_MODE_FPR20)
+	{
+	  log_error(_("\"%s\" not a key ID: skipping\n"),users->d);
+	  continue;
+	}
+      else
+	append_to_strlist(&sl,users->d);
+    }
+
+  if(sl)
+    {
+      rc=keyserver_work(KS_SEND,sl,NULL,0,NULL,NULL,opt.keyserver);
+      free_strlist(sl);
+    }
+
+  return rc;
 }
 
 int 
@@ -1149,7 +1603,7 @@ keyserver_import(STRLIST users)
   int rc=0;
 
   /* Build a list of key ids */
-  desc=xmalloc (sizeof(KEYDB_SEARCH_DESC)*num);
+  desc=xmalloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
   for(;users;users=users->next)
     {
@@ -1159,7 +1613,7 @@ keyserver_import(STRLIST users)
 	 desc[count].mode!=KEYDB_SEARCH_MODE_FPR16 &&
 	 desc[count].mode!=KEYDB_SEARCH_MODE_FPR20)
 	{
-	  log_error(_("skipping invalid key ID \"%s\"\n"),users->d);
+	  log_error(_("\"%s\" not a key ID: skipping\n"),users->d);
 	  continue;
 	}
 
@@ -1172,15 +1626,16 @@ keyserver_import(STRLIST users)
     }
 
   if(count>0)
-    rc=keyserver_work(GET,NULL,desc,count);
+    rc=keyserver_work(KS_GET,NULL,desc,count,NULL,NULL,opt.keyserver);
 
-  xfree (desc);
+  xfree(desc);
 
   return rc;
 }
 
 int
-keyserver_import_fprint(const byte *fprint,size_t fprint_len)
+keyserver_import_fprint(const byte *fprint,size_t fprint_len,
+			struct keyserver_spec *keyserver)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1195,11 +1650,13 @@ keyserver_import_fprint(const byte *fprint,size_t fprint_len)
 
   memcpy(desc.u.fpr,fprint,fprint_len);
 
-  return keyserver_work(GET,NULL,&desc,1);
+  /* TODO: Warn here if the fingerprint we got doesn't match the one
+     we asked for? */
+  return keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
 }
 
 int 
-keyserver_import_keyid(u32 *keyid)
+keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1209,7 +1666,7 @@ keyserver_import_keyid(u32 *keyid)
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_work(GET,NULL,&desc,1);
+  return keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
 }
 
 /* code mostly stolen from do_export_stream */
@@ -1224,14 +1681,14 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
   *count=0;
 
-  *klist=xmalloc (sizeof(KEYDB_SEARCH_DESC)*num);
+  *klist=xmalloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
   kdbhd=keydb_new(0);
 
   if(!users)
     {
       ndesc = 1;
-      desc = xcalloc (1, ndesc * sizeof *desc);
+      desc = xmalloc_clear ( ndesc * sizeof *desc);
       desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
     }
   else
@@ -1245,8 +1702,8 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	  if(classify_user_id (sl->d, desc+ndesc))
 	    ndesc++;
 	  else
-	    log_error (_("key `%s' not found: %s\n"),
-		       sl->d, gpg_strerror (GPG_ERR_INV_USER_ID));
+	    log_error (_("key \"%s\" not found: %s\n"),
+		       sl->d, g10_errstr (G10ERR_INV_USER_ID));
 	}
     }
 
@@ -1259,7 +1716,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
       rc = keydb_get_keyblock (kdbhd, &keyblock );
       if( rc )
 	{
-	  log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
+	  log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
 	  goto leave;
 	}
 
@@ -1276,8 +1733,8 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	     node->pkt->pkt.public_key->version>=4)
 	    {
 	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      v3_keyid (node->pkt->pkt.public_key->pkey[0],
-                        (*klist)[*count].u.kid);
+	      mpi_get_keyid(node->pkt->pkt.public_key->pkey[0],
+			    (*klist)[*count].u.kid);
 	      (*count)++;
 
 	      if(*count==num)
@@ -1288,7 +1745,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	    }
 
 	  /* v4 keys get full fingerprints.  v3 keys get long keyids.
-             This is because it's easy to calculate any sort of key id
+             This is because it's easy to calculate any sort of keyid
              from a v4 fingerprint, but not a v3 fingerprint. */
 
 	  if(node->pkt->pkt.public_key->version<4)
@@ -1306,6 +1763,43 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 				  (*klist)[*count].u.fpr,&dummy);
 	    }
 
+	  /* This is a little hackish, using the skipfncvalue as a
+	     void* pointer to the keyserver spec, but we don't need
+	     the skipfnc here, and it saves having an additional field
+	     for this (which would be wasted space most of the
+	     time). */
+
+	  (*klist)[*count].skipfncvalue=NULL;
+
+	  /* Are we honoring preferred keyservers? */
+	  if(opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL)
+	    {
+	      PKT_user_id *uid=NULL;
+	      PKT_signature *sig=NULL;
+
+	      merge_keys_and_selfsig(keyblock);
+
+	      for(node=node->next;node;node=node->next)
+		{
+		  if(node->pkt->pkttype==PKT_USER_ID
+		     && node->pkt->pkt.user_id->is_primary)
+		    uid=node->pkt->pkt.user_id;
+		  else if(node->pkt->pkttype==PKT_SIGNATURE
+			  && node->pkt->pkt.signature->
+			  flags.chosen_selfsig && uid)
+		    {
+		      sig=node->pkt->pkt.signature;
+		      break;
+		    }
+		}
+
+	      /* Try and parse the keyserver URL.  If it doesn't work,
+		 then we end up writing NULL which indicates we are
+		 the same as any other key. */
+	      if(sig)
+		(*klist)[*count].skipfncvalue=parse_preferred_keyserver(sig);
+	    }
+
 	  (*count)++;
 
 	  if(*count==num)
@@ -1320,7 +1814,9 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
     rc=0;
   
  leave:
-  xfree (desc);
+  if(rc)
+    xfree(*klist);
+  xfree(desc);
   keydb_release(kdbhd);
   release_kbnode(keyblock);
 
@@ -1330,43 +1826,91 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 /* Note this is different than the original HKP refresh.  It allows
    usernames to refresh only part of the keyring. */
 
-int 
+int
 keyserver_refresh(STRLIST users)
 {
-  int rc,count,fakev3=0;
+  int rc,count,numdesc,fakev3=0;
   KEYDB_SEARCH_DESC *desc;
+  unsigned int options=opt.keyserver_options.import_options;
 
-  /* We switch merge_only on during a refresh, as 'refresh' should
-     never import new keys, even if their keyids match.  Is it worth
-     preserving the old merge_only value here? */
-  opt.merge_only=1;
+  /* We switch merge-only on during a refresh, as 'refresh' should
+     never import new keys, even if their keyids match. */
+  opt.keyserver_options.import_options|=IMPORT_MERGE_ONLY;
+
+  /* Similarly, we switch on fast-import, since refresh may make
+     multiple import sets (due to preferred keyserver URLs).  We don't
+     want each set to rebuild the trustdb.  Instead we do it once at
+     the end here. */
+  opt.keyserver_options.import_options|=IMPORT_FAST;
 
   /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
      scheme, then enable fake v3 keyid generation. */
-  if(opt.keyserver_options.fake_v3_keyids && opt.keyserver_scheme &&
-     (ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
-      ascii_strcasecmp(opt.keyserver_scheme,"mailto")==0))
+  if((opt.keyserver_options.options&KEYSERVER_ADD_FAKE_V3) && opt.keyserver
+     && (ascii_strcasecmp(opt.keyserver->scheme,"hkp")==0 ||
+	 ascii_strcasecmp(opt.keyserver->scheme,"mailto")==0))
     fakev3=1;
 
-  rc=keyidlist(users,&desc,&count,fakev3);
+  rc=keyidlist(users,&desc,&numdesc,fakev3);
   if(rc)
     return rc;
 
+  count=numdesc;
   if(count>0)
     {
-      if(opt.keyserver_uri)
-	{
-	  if(count==1)
-	    log_info(_("refreshing 1 key from %s\n"),opt.keyserver_uri);
-	  else
-	    log_info(_("refreshing %d keys from %s\n"),
-		     count,opt.keyserver_uri);
-	}
+      int i;
 
-      rc=keyserver_work(GET,NULL,desc,count);
+      /* Try to handle preferred keyserver keys first */
+      for(i=0;i<numdesc;i++)
+	{
+	  if(desc[i].skipfncvalue)
+	    {
+	      struct keyserver_spec *keyserver=desc[i].skipfncvalue;
+
+	      /* We use the keyserver structure we parsed out before.
+		 Note that a preferred keyserver without a scheme://
+		 will be interpreted as hkp:// */
+
+	      rc=keyserver_work(KS_GET,NULL,&desc[i],1,NULL,NULL,keyserver);
+	      if(rc)
+		log_info(_("WARNING: unable to refresh key %s"
+			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
+			 keyserver->uri,g10_errstr(rc));
+	      else
+		{
+		  /* We got it, so mark it as NONE so we don't try and
+		     get it again from the regular keyserver. */
+
+		  desc[i].mode=KEYDB_SEARCH_MODE_NONE;
+		  count--;
+		}
+
+	      free_keyserver_spec(keyserver);
+	    }
+	}
     }
 
-  xfree (desc);
+  if(count>0)
+    {
+      if(opt.keyserver)
+	{
+	  if(count==1)
+	    log_info(_("refreshing 1 key from %s\n"),opt.keyserver->uri);
+	  else
+	    log_info(_("refreshing %d keys from %s\n"),
+		     count,opt.keyserver->uri);
+	}
+
+      rc=keyserver_work(KS_GET,NULL,desc,numdesc,NULL,NULL,opt.keyserver);
+    }
+
+  xfree(desc);
+
+  opt.keyserver_options.import_options=options;
+
+  /* If the original options didn't have fast import, and the trustdb
+     is dirty, rebuild. */
+  if(!(opt.keyserver_options.import_options&IMPORT_FAST))
+    trustdb_check_or_update();
 
   return rc;
 }
@@ -1375,7 +1919,217 @@ int
 keyserver_search(STRLIST tokens)
 {
   if(tokens)
-    return keyserver_work(SEARCH,tokens,NULL,0);
+    return keyserver_work(KS_SEARCH,tokens,NULL,0,NULL,NULL,opt.keyserver);
   else
     return 0;
+}
+
+int
+keyserver_fetch(STRLIST urilist)
+{
+  KEYDB_SEARCH_DESC desc;
+  STRLIST sl;
+  unsigned int options=opt.keyserver_options.import_options;
+
+  /* Switch on fast-import, since fetch can handle more than one
+     import and we don't want each set to rebuild the trustdb.
+     Instead we do it once at the end. */
+  opt.keyserver_options.import_options|=IMPORT_FAST;
+
+  /* A dummy desc since we're not actually fetching a particular key
+     ID */
+  memset(&desc,0,sizeof(desc));
+  desc.mode=KEYDB_SEARCH_MODE_EXACT;
+
+  for(sl=urilist;sl;sl=sl->next)
+    {
+      struct keyserver_spec *spec;
+
+      spec=parse_keyserver_uri(sl->d,1,NULL,0);
+      if(spec)
+	{
+	  int rc;
+
+	  /*
+	    Set the direct_uri flag so we know later to call a direct
+	    handler instead of the keyserver style.  This lets us use
+	    gpgkeys_curl or gpgkeys_ldapuri instead of gpgkeys_ldap to
+	    fetch things like
+	    ldap://keyserver.pgp.com/o=PGP%20keys?pgpkey?sub?pgpkeyid=99242560
+	  */
+	  spec->flags.direct_uri=1;
+
+	  rc=keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,spec);
+	  if(rc)
+	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
+		     sl->d,g10_errstr(rc));
+
+	  free_keyserver_spec(spec);
+	}
+      else
+	log_info (_("WARNING: unable to parse URI %s\n"),sl->d);
+    }
+
+  opt.keyserver_options.import_options=options;
+
+  /* If the original options didn't have fast import, and the trustdb
+     is dirty, rebuild. */
+  if(!(opt.keyserver_options.import_options&IMPORT_FAST))
+    trustdb_check_or_update();
+
+  return 0;
+}
+
+/* Import key in a CERT or pointed to by a CERT */
+int
+keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
+{
+  char *domain,*look,*url;
+  IOBUF key;
+  int type,rc=G10ERR_GENERAL;
+
+  look=xstrdup(name);
+
+  domain=strrchr(look,'@');
+  if(domain)
+    *domain='.';
+
+  type=get_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
+  if(type==1)
+    {
+      int armor_status=opt.no_armor;
+
+      /* CERTs are always in binary format */
+      opt.no_armor=1;
+
+      rc=import_keys_stream(key,NULL,fpr,fpr_len,
+			    opt.keyserver_options.import_options);
+
+      opt.no_armor=armor_status;
+
+      iobuf_close(key);
+    }
+  else if(type==2 && *fpr)
+    {
+      /* We only consider the IPGP type if a fingerprint was provided.
+	 This lets us select the right key regardless of what a URL
+	 points to, or get the key from a keyserver. */
+      if(url)
+	{
+	  struct keyserver_spec *spec;
+
+	  spec=parse_keyserver_uri(url,1,NULL,0);
+	  if(spec)
+	    {
+	      STRLIST list=NULL;
+
+	      add_to_strlist(&list,url);
+
+	      rc=keyserver_fetch(list);
+
+	      free_strlist(list);
+	      free_keyserver_spec(spec);
+	    }
+	}
+      else if(opt.keyserver)
+	{
+	  /* If only a fingerprint is provided, try and fetch it from
+	     our --keyserver */
+
+	  rc=keyserver_import_fprint(*fpr,*fpr_len,opt.keyserver);
+	}
+
+      xfree(url);
+    }
+
+  xfree(look);
+
+  return rc;
+}
+
+/* Import key pointed to by a PKA record. Return the requested
+   fingerprint in fpr. */
+int
+keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len)
+{
+  char *uri;
+  int rc=-1;
+
+  *fpr=xmalloc(20);
+  *fpr_len=20;
+
+  uri = get_pka_info (name, *fpr);
+  if (uri)
+    {
+      struct keyserver_spec *spec;
+      spec = parse_keyserver_uri (uri, 1, NULL, 0);
+      if (spec)
+	{
+	  rc=keyserver_import_fprint (*fpr, 20, spec);
+	  free_keyserver_spec (spec);
+	}
+      xfree (uri);
+    }
+
+  if(rc!=0)
+    xfree(*fpr);
+
+  return rc;
+}
+
+/* Import all keys that match name */
+int
+keyserver_import_name(const char *name,unsigned char **fpr,size_t *fpr_len,
+		      struct keyserver_spec *keyserver)
+{
+  STRLIST list=NULL;
+  int rc;
+
+  append_to_strlist(&list,name);
+
+  rc=keyserver_work(KS_GETNAME,list,NULL,0,fpr,fpr_len,keyserver);
+
+  free_strlist(list);
+
+  return rc;
+}
+
+/* Use the PGP Universal trick of asking ldap://keys.(maildomain) for
+   the key. */
+int
+keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
+{
+  char *domain;
+  struct keyserver_spec *keyserver;
+  STRLIST list=NULL;
+  int rc;
+
+  append_to_strlist(&list,name);
+
+  /* Parse out the domain */
+  domain=strrchr(name,'@');
+  if(!domain)
+    return G10ERR_GENERAL;
+
+  domain++;
+
+  keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
+
+  keyserver->scheme=xstrdup("ldap");
+  keyserver->host=xmalloc(5+strlen(domain)+1);
+  strcpy(keyserver->host,"keys.");
+  strcat(keyserver->host,domain);
+  keyserver->uri=xmalloc(strlen(keyserver->scheme)+
+			 3+strlen(keyserver->host)+1);
+  strcpy(keyserver->uri,keyserver->scheme);
+  strcat(keyserver->uri,"://");
+  strcat(keyserver->uri,keyserver->host);
+    
+  rc=keyserver_work(KS_GETNAME,list,NULL,0,fpr,fpr_len,keyserver);
+
+  free_strlist(list);
+
+  free_keyserver_spec(keyserver);
+
+  return rc;
 }

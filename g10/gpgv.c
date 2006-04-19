@@ -1,6 +1,6 @@
 /* gpgv.c - The GnuPG signature verify utility
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -29,23 +30,27 @@
 #ifdef HAVE_DOSISH_SYSTEM
 #include <fcntl.h> /* for setmode() */
 #endif
+#ifdef HAVE_LIBREADLINE
+#include <stdio.h>
+#include <readline/readline.h>
+#endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
 #include "packet.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "options.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "mpi.h"
 #include "cipher.h"
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
+#include "g10defs.h"
+#include "cardglue.h"
 
 
 enum cmd_and_opt_values { aNull = 0,
@@ -79,10 +84,6 @@ static ARGPARSE_OPTS opts[] = {
 
 int g10_errors_seen = 0;
 
-#ifdef __riscos__
-RISCOS_GLOBAL_STATICS("GnuPG (gpgv) Heap")
-#endif /* __riscos__ */
-
 static const char *
 my_strusage( int level )
 {
@@ -110,21 +111,20 @@ my_strusage( int level )
 }
 
 
-
-
 static void
 i18n_init(void)
 {
 #ifdef USE_SIMPLE_GETTEXT
-    set_gettext_file( PACKAGE_GT );
+  set_gettext_file (PACKAGE_GT, "Software\\GNU\\GnuPG");
 #else
 #ifdef ENABLE_NLS
-    setlocale( LC_ALL, "" );
-    bindtextdomain( PACKAGE_GT, LOCALEDIR );
-    textdomain( PACKAGE_GT );
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE_GT, LOCALEDIR);
+  textdomain (PACKAGE_GT);
 #endif
 #endif
 }
+
 
 
 int
@@ -136,17 +136,13 @@ main( int argc, char **argv )
     STRLIST nrings=NULL;
     unsigned configlineno;
 
-#ifdef __riscos__
-    riscos_global_defaults();
-#endif /* __riscos__ */
-
     set_strusage (my_strusage);
     log_set_prefix ("gpgv", 1);
-    gnupg_init_signals(0, NULL);
+    gnupg_init_signals (0, NULL);
     i18n_init();
     opt.command_fd = -1; /* no command fd */
     opt.pgp2_workarounds = 1;
-    opt.keyserver_options.auto_key_retrieve = 1;
+    opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
     opt.trust_model = TM_ALWAYS;
     opt.batch = 1;
 
@@ -164,8 +160,11 @@ main( int argc, char **argv )
     while( optfile_parse( NULL, NULL, &configlineno, &pargs, opts) ) {
 	switch( pargs.r_opt ) {
 	  case oQuiet: opt.quiet = 1; break;
-          case oVerbose: g10_opt_verbose++;
-		  opt.verbose++; opt.list_sigs=1; break;
+          case oVerbose: 
+            opt.verbose++; 
+            opt.list_sigs=1;
+            gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+            break;
           case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
 	  case oLoggerFD: 
@@ -180,9 +179,7 @@ main( int argc, char **argv )
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
-    g10_opt_homedir = opt.homedir;
-
-    if( opt.verbose > 1 )
+     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
 
     if( !nrings )  /* no keyring given: use default one */
@@ -193,7 +190,7 @@ main( int argc, char **argv )
     FREE_STRLIST(nrings);
     
     if( (rc = verify_signatures( argc, argv ) ))
-        log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
+        log_error("verify signatures failed: %s\n", g10_errstr(rc) );
 
     /* cleanup */
     g10_exit(0);
@@ -210,14 +207,6 @@ g10_exit( int rc )
 }
 
 
-
-void
-read_trust_options (byte *trust_model,ulong *created,ulong *nextcheck,
-		    byte *marginals,byte *completes,byte *cert_depth) 
-{
-}
-
-
 /* Stub:
  * We have to override the trustcheck from pkclist.c becuase 
  * this utility assumes that all keys in the keyring are trustworthy
@@ -228,6 +217,9 @@ check_signatures_trust( PKT_signature *sig )
     return 0;
 }
 
+void
+read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
+		   byte *marginals,byte *completes,byte *cert_depth) {}
 
 /* Stub: 
  * We don't have the trustdb , so we have to provide some stub functions
@@ -239,6 +231,9 @@ cache_disabled_value(PKT_public_key *pk)
 {
   return 0;
 }
+
+void
+check_trustdb_stale(void) {}
 
 int
 get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
@@ -258,7 +253,12 @@ trust_value_to_string (unsigned int value)
   return "err";
 }
 
-/* Stub: */
+const char *
+uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
+{
+  return "err";
+}
+
 int
 get_ownertrust_info (PKT_public_key *pk)
 {
@@ -272,15 +272,34 @@ get_ownertrust (PKT_public_key *pk)
 }
 
 
-/* Stub:
+/* Stubs:
  * Because we only work with trusted keys, it does not make sense to
  * get them from a keyserver
  */
+
+struct keyserver_spec *
+keyserver_match(struct keyserver_spec *spec) { return NULL; }
+
 int
 keyserver_import_keyid( u32 *keyid, void *dummy )
 {
     return -1;
 }
+
+int
+keyserver_import_cert(const char *name) { return -1; }
+
+int
+keyserver_import_pka(const char *name,unsigned char *fpr) { return -1; }
+
+int
+keyserver_import_name(const char *name,struct keyserver_spec *spec)
+{
+  return -1;
+}
+
+int
+keyserver_import_ldap(const char *name) { return -1; }
 
 /* Stub:
  * No encryption here but mainproc links to these functions.
@@ -288,19 +307,19 @@ keyserver_import_keyid( u32 *keyid, void *dummy )
 int
 get_session_key( PKT_pubkey_enc *k, DEK *dek )
 {
-    return GPG_ERR_GENERAL;
+    return G10ERR_GENERAL;
 }
 /* Stub: */
 int
 get_override_session_key( DEK *dek, const char *string )
 {
-    return GPG_ERR_GENERAL;
+    return G10ERR_GENERAL;
 }
 /* Stub: */
 int
 decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 {
-    return GPG_ERR_GENERAL;
+    return G10ERR_GENERAL;
 }
 
 
@@ -318,7 +337,7 @@ display_online_help( const char *keyword )
 int
 check_secret_key( PKT_secret_key *sk, int n )
 {
-    return GPG_ERR_GENERAL;
+    return G10ERR_GENERAL;
 }
 
 /* Stub:
@@ -334,10 +353,24 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
   return NULL;
 }
 
+struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig) {return NULL;}
+struct keyserver_spec *parse_keyserver_uri(const char *uri,int require_scheme,
+                                           const char *configname,
+                                           unsigned int configlineno)
+{
+  return NULL;
+}
+
+void free_keyserver_spec(struct keyserver_spec *keyserver) {}
+
 /* Stubs to avoid linking to photoid.c */
 void show_photos(const struct user_attribute *attrs,int count,PKT_public_key *pk) {}
 int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len) {return 0;}
 char *image_type_to_string(byte type,int string) {return NULL;}
+
+#ifdef ENABLE_CARD_SUPPORT
+int agent_scd_getattr (const char *name, struct agent_card_info_s *info) {return 0;}
+#endif /* ENABLE_CARD_SUPPORT */
 
 /* Stubs to void linking to ../cipher/cipher.c */
 int string_to_cipher_algo( const char *string ) { return 0; }
@@ -356,10 +389,31 @@ void cipher_decrypt( CIPHER_HANDLE c, byte *outbuf,
                      byte *inbuf, unsigned nbytes ) {}
 void cipher_sync( CIPHER_HANDLE c ) {}
 
+/* Stubs to avoid linking to ../cipher/random.c */
+void random_dump_stats(void) {}
+int quick_random_gen( int onoff ) { return -1;}
+void randomize_buffer( byte *buffer, size_t length, int level ) {}
+int random_is_faked() { return -1;}
+byte *get_random_bits( size_t nbits, int level, int secure ) { return NULL;}
+void set_random_seed_file( const char *name ) {}
+void update_random_seed_file() {}
+void fast_random_poll() {}
+
+/* Stubs to avoid linking of ../cipher/primegen.c */
+void register_primegen_progress ( void (*cb)( void *, int), void *cb_data ) {}
+MPI generate_secret_prime( unsigned  nbits ) { return NULL;}
+MPI generate_public_prime( unsigned  nbits ) { return NULL;}
+MPI generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
+                        MPI g, MPI **ret_factors ) { return NULL;}
+
+/* Do not link to ../cipher/rndlinux.c */
+void rndlinux_constructor(void) {}
+
 
 /* Stubs to avoid linking to ../util/ttyio.c */
 int tty_batchmode( int onoff ) { return 0; }
 void tty_printf( const char *fmt, ... ) { }
+void tty_fprintf (FILE *fp, const char *fmt, ... ) { }
 void tty_print_string( const byte *p, size_t n ) { }
 void tty_print_utf8_string( const byte *p, size_t n ) {}
 void tty_print_utf8_string2( const byte *p, size_t n, size_t max_n ) {}
@@ -368,10 +422,15 @@ char *tty_get_hidden( const char *prompt ) {return NULL; }
 void tty_kill_prompt(void) {}
 int tty_get_answer_is_yes( const char *prompt ) {return 0;}
 int tty_no_terminal(int onoff) {return 0;}
+#ifdef HAVE_LIBREADLINE
+void tty_enable_completion(rl_completion_func_t *completer) {}
+void tty_disable_completion(void) {}
+#endif
 
 /* We do not do any locking, so use these stubs here */
 void disable_dotlock(void) {}
 DOTLOCK create_dotlock( const char *file_to_lock ) { return NULL; }
+void destroy_dotlock (DOTLOCK h) {}
 int make_dotlock( DOTLOCK h, long timeout ) { return 0;}
 int release_dotlock( DOTLOCK h ) {return 0;}
-void dotlock_remove_lockfiles(void) {}
+void remove_lockfiles(void) {}

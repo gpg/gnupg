@@ -1,6 +1,6 @@
 /* build-packet.c - assemble packets and write them
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -24,40 +25,38 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "gpg.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "mpi.h"
 #include "util.h"
 #include "cipher.h"
-#include "memory.h"
+#include "i18n.h"
 #include "options.h"
 
-
-static int do_comment( iobuf_t out, int ctb, PKT_comment *rem );
-static int do_user_id( iobuf_t out, int ctb, PKT_user_id *uid );
-static int do_public_key( iobuf_t out, int ctb, PKT_public_key *pk );
-static int do_secret_key( iobuf_t out, int ctb, PKT_secret_key *pk );
-static int do_symkey_enc( iobuf_t out, int ctb, PKT_symkey_enc *enc );
-static int do_pubkey_enc( iobuf_t out, int ctb, PKT_pubkey_enc *enc );
+static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
+static int do_public_key( IOBUF out, int ctb, PKT_public_key *pk );
+static int do_secret_key( IOBUF out, int ctb, PKT_secret_key *pk );
+static int do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc );
+static int do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc );
 static u32 calc_plaintext( PKT_plaintext *pt );
-static int do_plaintext( iobuf_t out, int ctb, PKT_plaintext *pt );
-static int do_encrypted( iobuf_t out, int ctb, PKT_encrypted *ed );
-static int do_encrypted_mdc( iobuf_t out, int ctb, PKT_encrypted *ed );
-static int do_compressed( iobuf_t out, int ctb, PKT_compressed *cd );
-static int do_signature( iobuf_t out, int ctb, PKT_signature *sig );
-static int do_onepass_sig( iobuf_t out, int ctb, PKT_onepass_sig *ops );
+static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
+static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
+static int do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed );
+static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
+static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
+static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
 
 static int calc_header_length( u32 len, int new_ctb );
-static int write_16(iobuf_t inp, u16 a);
-static int write_32(iobuf_t inp, u32 a);
-static int write_header( iobuf_t out, int ctb, u32 len );
-static int write_sign_packet_header( iobuf_t out, int ctb, u32 len );
-static int write_header2( iobuf_t out, int ctb, u32 len, int hdrlen, int blkmode );
-static int write_new_header( iobuf_t out, int ctb, u32 len, int hdrlen );
-static int write_version( iobuf_t out, int ctb );
+static int write_16(IOBUF inp, u16 a);
+static int write_32(IOBUF inp, u32 a);
+static int write_header( IOBUF out, int ctb, u32 len );
+static int write_sign_packet_header( IOBUF out, int ctb, u32 len );
+static int write_header2( IOBUF out, int ctb, u32 len, int hdrlen );
+static int write_new_header( IOBUF out, int ctb, u32 len, int hdrlen );
+static int write_version( IOBUF out, int ctb );
 
 /****************
  * Build a packet and write it to INP
@@ -66,7 +65,7 @@ static int write_version( iobuf_t out, int ctb );
  * Note: Caller must free the packet
  */
 int
-build_packet( iobuf_t out, PACKET *pkt )
+build_packet( IOBUF out, PACKET *pkt )
 {
     int new_ctb=0, rc=0, ctb;
     int pkttype;
@@ -75,30 +74,38 @@ build_packet( iobuf_t out, PACKET *pkt )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
     assert( pkt->pkt.generic );
 
-    switch( (pkttype = pkt->pkttype) ) {
-      case PKT_OLD_COMMENT: pkttype = pkt->pkttype = PKT_COMMENT; break;
+    switch( (pkttype = pkt->pkttype) )
+      {
       case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
       case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
       case PKT_USER_ID:
-	    if( pkt->pkt.user_id->attrib_data )
-		pkttype = PKT_ATTRIBUTE;
-	    break;
+	if( pkt->pkt.user_id->attrib_data )
+	  pkttype = PKT_ATTRIBUTE;
+	break;
       default: break;
-    }
+      }
 
     if( new_ctb || pkttype > 15 ) /* new format */
 	ctb = 0xc0 | (pkttype & 0x3f);
     else
 	ctb = 0x80 | ((pkttype & 15)<<2);
-    switch( pkttype ) {
+    switch( pkttype )
+      {
       case PKT_ATTRIBUTE:
       case PKT_USER_ID:
 	rc = do_user_id( out, ctb, pkt->pkt.user_id );
 	break;
+      case PKT_OLD_COMMENT:
       case PKT_COMMENT:
-	rc = do_comment( out, ctb, pkt->pkt.comment );
+	/*
+	  Ignore these.  Theoretically, this will never be called as
+	  we have no way to output comment packets any longer, but
+	  just in case there is some code path that would end up
+	  outputting a comment that was written before comments were
+	  dropped (in the public key?) this is a no-op.
+	*/
 	break;
       case PKT_PUBLIC_SUBKEY:
       case PKT_PUBLIC_KEY:
@@ -138,10 +145,31 @@ build_packet( iobuf_t out, PACKET *pkt )
       default:
 	log_bug("invalid packet type in build_packet()\n");
 	break;
-    }
+      }
 
     return rc;
 }
+
+
+/*
+ * Write the mpi A to OUT.
+ */
+static int
+mpi_write (iobuf_t out, gcry_mpi_t a)
+{
+  char buffer[(MAX_EXTERN_MPI_BITS+7)/8];
+  size_t nbytes;
+  int rc;
+
+  nbytes = (MAX_EXTERN_MPI_BITS+7)/8;
+  rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
+  if( !rc )
+    rc = iobuf_write( out, buffer, nbytes );
+  
+  return rc;
+}
+
+
 
 /****************
  * calculate the length of a packet described by PKT
@@ -180,56 +208,42 @@ calc_packet_length( PACKET *pkt )
 }
 
 static void
-write_fake_data( iobuf_t out, gcry_mpi_t a )
+write_fake_data (IOBUF out, gcry_mpi_t a)
 {
-    if( a ) {
-	unsigned int n;
-	void *p;
-
-        assert( gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE));
-        p = gcry_mpi_get_opaque (a, &n);
-        iobuf_write (out, p, (n+7)/8);
+  if (a) 
+    {
+      unsigned int n;
+      void *p;
+      
+      p = gcry_mpi_get_opaque ( a, &n );
+      iobuf_write (out, p, (n+7)/8 );
     }
 }
 
-
 static int
-do_comment (iobuf_t out, int ctb, PKT_comment *rem)
+do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
-  int rc = 0;
+    int rc;
 
-  if (opt.sk_comments)
-    {
-      write_header(out, ctb, rem->len);
-      rc = iobuf_write( out, rem->data, rem->len );
-    }
-  return rc;
+    if( uid->attrib_data )
+      {
+	write_header(out, ctb, uid->attrib_len);
+	rc = iobuf_write( out, uid->attrib_data, uid->attrib_len );
+      }
+    else
+      {
+        write_header2( out, ctb, uid->len, 2 );
+	rc = iobuf_write( out, uid->name, uid->len );
+      }
+    return 0;
 }
 
 static int
-do_user_id( iobuf_t out, int ctb, PKT_user_id *uid )
-{
-  int rc;
-
-  if (uid->attrib_data)
-    {
-      write_header (out, ctb, uid->attrib_len);
-      rc = iobuf_write (out, uid->attrib_data, uid->attrib_len );
-    }
-  else
-    {
-      write_header (out, ctb, uid->len);
-      rc = iobuf_write (out, uid->name, uid->len );
-    }
-  return rc;
-}
-
-static int
-do_public_key( iobuf_t out, int ctb, PKT_public_key *pk )
+do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
 {
     int rc = 0;
     int n, i;
-    iobuf_t a = iobuf_temp();
+    IOBUF a = iobuf_temp();
 
     if( !pk->version )
 	iobuf_put( a, 3 );
@@ -251,99 +265,20 @@ do_public_key( iobuf_t out, int ctb, PKT_public_key *pk )
     for(i=0; i < n; i++ )
 	mpi_write(a, pk->pkey[i] );
 
-    write_header2(out, ctb, iobuf_get_temp_length(a), pk->hdrbytes, 1 );
-    rc = iobuf_write_temp (out, a);
+    write_header2(out, ctb, iobuf_get_temp_length(a), pk->hdrbytes);
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
 }
 
 
-/****************
- * Make a hash value from the public key certificate
- */
-void
-hash_public_key( MD_HANDLE md, PKT_public_key *pk )
-{
-    PACKET pkt;
-    int rc = 0;
-    int ctb;
-    ulong pktlen;
-    int c;
-    iobuf_t a = iobuf_temp();
-#if 0
-    FILE *fp = fopen("dump.pk", "a");
-    int i=0;
-
-    fprintf(fp, "\nHashing PK (v%d):\n", pk->version);
-#endif
-
-    /* build the packet */
-    init_packet(&pkt);
-    pkt.pkttype = PKT_PUBLIC_KEY;
-    pkt.pkt.public_key = pk;
-    if( (rc = build_packet( a, &pkt )) )
-	log_fatal("build public_key for hashing failed: %s\n", gpg_strerror (rc));
-
-    if( !(pk->version == 3 && pk->pubkey_algo == 16) ) {
-	/* skip the constructed header but don't do this for our very old
-	 * v3 ElG keys */
-	ctb = iobuf_get_noeof(a);
-	pktlen = 0;
-	if( (ctb & 0x40) ) {
-	    c = iobuf_get_noeof(a);
-	    if( c < 192 )
-		pktlen = c;
-	    else if( c < 224 ) {
-		pktlen = (c - 192) * 256;
-		c = iobuf_get_noeof(a);
-		pktlen += c + 192;
-	    }
-	    else if( c == 255 ) {
-		pktlen	= iobuf_get_noeof(a) << 24;
-		pktlen |= iobuf_get_noeof(a) << 16;
-		pktlen |= iobuf_get_noeof(a) << 8;
-		pktlen |= iobuf_get_noeof(a);
-	    }
-	}
-	else {
-	    int lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
-	    for( ; lenbytes; lenbytes-- ) {
-		pktlen <<= 8;
-		pktlen |= iobuf_get_noeof(a);
-	    }
-	}
-	/* hash a header */
-	gcry_md_putc ( md, 0x99 );
-	pktlen &= 0xffff; /* can't handle longer packets */
-	gcry_md_putc ( md, pktlen >> 8 );
-	gcry_md_putc ( md, pktlen & 0xff );
-    }
-    /* hash the packet body */
-    while( (c=iobuf_get(a)) != -1 ) {
-#if 0
-	fprintf( fp," %02x", c );
-	if( (++i == 24) ) {
-	    putc('\n', fp);
-	    i=0;
-	}
-#endif
-	gcry_md_putc ( md, c );
-    }
-#if 0
-    putc('\n', fp);
-    fclose(fp);
-#endif
-    iobuf_cancel(a);
-}
-
-
 static int
-do_secret_key( iobuf_t out, int ctb, PKT_secret_key *sk )
+do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 {
     int rc = 0;
     int i, nskey, npkey;
-    iobuf_t a = iobuf_temp(); /* build in a self-enlarging buffer */
+    IOBUF a = iobuf_temp(); /* build in a self-enlarging buffer */
 
     /* Write the version number - if none is specified, use 3 */
     if( !sk->version )
@@ -371,7 +306,7 @@ do_secret_key( iobuf_t out, int ctb, PKT_secret_key *sk )
 
     /* If we don't have any public parameters - which is the case if
        we don't know the algorithm used - the parameters are stored as
-       one blob in a faked (opaque) gcry_mpi_t */
+       one blob in a faked (opaque) MPI */
     if( !npkey ) {
 	write_fake_data( a, sk->skey[0] );
 	goto leave;
@@ -415,9 +350,9 @@ do_secret_key( iobuf_t out, int ctb, PKT_secret_key *sk )
 	    if( sk->protect.s2k.mode == 3 )
 		iobuf_put(a, sk->protect.s2k.count ); 
 
-            /* For our special modes 1001 and 1002 we do not need an IV */
-	    if( sk->protect.s2k.mode != 1001
-                && sk->protect.s2k.mode != 1002 )
+            /* For out special modes 1001, 1002 we do not need an IV */
+	    if( sk->protect.s2k.mode != 1001 
+              && sk->protect.s2k.mode != 1002 )
 		iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
     }
@@ -437,19 +372,21 @@ do_secret_key( iobuf_t out, int ctb, PKT_secret_key *sk )
     else if( sk->is_protected && sk->version >= 4 ) {
         /* The secret key is protected - write it out as it is */
 	byte *p;
-	assert( gcry_mpi_get_flag( sk->skey[npkey], GCRYMPI_FLAG_OPAQUE ) );
-	p = gcry_mpi_get_opaque( sk->skey[npkey], &i );
-	iobuf_write(a, p, (i+7)/8 );
+	unsigned int ndatabits;
+
+	assert (gcry_mpi_get_flag (sk->skey[npkey], GCRYMPI_FLAG_OPAQUE));
+	p = gcry_mpi_get_opaque (sk->skey[npkey], &ndatabits );
+	iobuf_write (a, p, (ndatabits+7)/8 );
     }
     else if( sk->is_protected ) {
-        /* The secret key is protected the old v4 way. */
+        /* The secret key is protected te old v4 way. */
 	for(   ; i < nskey; i++ ) {
             byte *p;
-            size_t n;
+            unsigned int ndatabits;
 
-            assert( gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE));
-            p = gcry_mpi_get_opaque( sk->skey[i], &n );
-            iobuf_write (a, p, (n+7)/8);
+            assert (gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE));
+            p = gcry_mpi_get_opaque (sk->skey[i], &ndatabits);
+            iobuf_write (a, p, (ndatabits+7)/8);
         }
 	write_16(a, sk->csum );
     }
@@ -463,19 +400,19 @@ do_secret_key( iobuf_t out, int ctb, PKT_secret_key *sk )
   leave:
     /* Build the header of the packet - which we must do after writing all
        the other stuff, so that we know the length of the packet */
-    write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes, 1 );
+    write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes);
     /* And finally write it out the real stream */
-    rc = iobuf_write_temp (out, a );
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a); /* close the remporary buffer */
     return rc;
 }
 
 static int
-do_symkey_enc( iobuf_t out, int ctb, PKT_symkey_enc *enc )
+do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 {
     int rc = 0;
-    iobuf_t a = iobuf_temp();
+    IOBUF a = iobuf_temp();
 
     assert( enc->version == 4 );
     switch( enc->s2k.mode ) {
@@ -495,21 +432,19 @@ do_symkey_enc( iobuf_t out, int ctb, PKT_symkey_enc *enc )
 	iobuf_write(a, enc->seskey, enc->seskeylen );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
-    rc = iobuf_write_temp (out, a);
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
 }
 
 
-
-
 static int
-do_pubkey_enc( iobuf_t out, int ctb, PKT_pubkey_enc *enc )
+do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 {
     int rc = 0;
     int n, i;
-    iobuf_t a = iobuf_temp();
+    IOBUF a = iobuf_temp();
 
     write_version( a, ctb );
     if( enc->throw_keyid ) {
@@ -528,55 +463,56 @@ do_pubkey_enc( iobuf_t out, int ctb, PKT_pubkey_enc *enc )
 	mpi_write(a, enc->data[i] );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
-    rc = iobuf_write_temp (out, a);
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
 }
 
 
-
-
 static u32
 calc_plaintext( PKT_plaintext *pt )
 {
-    return pt->len? (1 + 1 + pt->namelen + 4 + pt->len) : 0;
+  /* Truncate namelen to the maximum 255 characters.  Note this means
+     that a function that calls build_packet with an illegal literal
+     packet will get it back legalized. */
+
+  if(pt->namelen>255)
+    pt->namelen=255;
+
+  return pt->len? (1 + 1 + pt->namelen + 4 + pt->len) : 0;
 }
 
 static int
-do_plaintext( iobuf_t out, int ctb, PKT_plaintext *pt )
+do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 {
     int i, rc = 0;
     u32 n;
     byte buf[1000]; /* this buffer has the plaintext! */
     int nbytes;
 
-    /* Truncate namelen to the maximum 255 characters.  This does mean
-       that a function that calls build_packet with an illegal literal
-       packet will get it back legalized. */
-    if(pt->namelen>255)
-      pt->namelen=255;
-
     write_header(out, ctb, calc_plaintext( pt ) );
     iobuf_put(out, pt->mode );
     iobuf_put(out, pt->namelen );
     for(i=0; i < pt->namelen; i++ )
 	iobuf_put(out, pt->name[i] );
-    rc = write_32 (out, pt->timestamp);
+    rc = write_32(out, pt->timestamp );
+    if (rc) 
+      return rc;
 
     n = 0;
     while( (nbytes=iobuf_read(pt->buf, buf, 1000)) != -1 ) {
-        rc = iobuf_write(out, buf, nbytes);
-        if (rc)
-          break;
-	n += nbytes;
+      rc = iobuf_write (out, buf, nbytes);
+      if (rc)
+        break;
+      n += nbytes;
     }
     wipememory(buf,1000); /* burn the buffer */
-    if( !pt->len )
-	iobuf_set_block_mode(out, 0 ); /* write end marker */
-    else if( n != pt->len )
-	log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
-			(ulong)n, (ulong)pt->len );
+    if( (ctb&0x40) && !pt->len )
+      iobuf_set_partial_block_mode(out, 0 ); /* turn off partial */
+    if( pt->len && n != pt->len )
+      log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
+		(ulong)n, (ulong)pt->len );
 
     return rc;
 }
@@ -584,7 +520,7 @@ do_plaintext( iobuf_t out, int ctb, PKT_plaintext *pt )
 
 
 static int
-do_encrypted( iobuf_t out, int ctb, PKT_encrypted *ed )
+do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
 {
     int rc = 0;
     u32 n;
@@ -598,7 +534,7 @@ do_encrypted( iobuf_t out, int ctb, PKT_encrypted *ed )
 }
 
 static int
-do_encrypted_mdc( iobuf_t out, int ctb, PKT_encrypted *ed )
+do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
 {
     int rc = 0;
     u32 n;
@@ -617,7 +553,7 @@ do_encrypted_mdc( iobuf_t out, int ctb, PKT_encrypted *ed )
 
 
 static int
-do_compressed( iobuf_t out, int ctb, PKT_compressed *cd )
+do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 {
     int rc = 0;
 
@@ -626,7 +562,7 @@ do_compressed( iobuf_t out, int ctb, PKT_compressed *cd )
        set, CTB is already formatted as new style and write_header2
        does create a partial length encoding using new the new
        style. */
-    write_header2(out, ctb, 0, 0, 0 );
+    write_header2(out, ctb, 0, 0);
     iobuf_put(out, cd->algorithm );
 
     /* This is all. The caller has to write the real data */
@@ -734,6 +670,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_NOTATION:
       case SIGSUBPKT_POLICY:
       case SIGSUBPKT_REV_KEY:
+      case SIGSUBPKT_SIGNATURE:
 	/* we do allow multiple subpackets */
 	break;
 
@@ -803,18 +740,20 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
     else
 	nlen = 1; /* just a 1 byte length header */
 
-    switch( type ) {
+    switch( type )
+      {
 	/* The issuer being unhashed is a historical oddity.  It
 	   should work equally as well hashed.  Of course, if even an
 	   unhashed issuer is tampered with, it makes it awfully hard
 	   to verify the sig... */
       case SIGSUBPKT_ISSUER:
+      case SIGSUBPKT_SIGNATURE:
         hashed = 0;
         break;
       default: 
         hashed = 1;
         break;
-    }
+      }
 
     if( critical )
 	type |= SIGSUBPKT_FLAG_CRITICAL;
@@ -966,12 +905,179 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
   uid->attrib_len+=idx+headerlen+buflen;
 }
 
+struct notation *
+string_to_notation(const char *string,int is_utf8)
+{
+  const char *s;
+  int saw_at=0;
+  struct notation *notation;
+
+  notation=xmalloc_clear(sizeof(*notation));
+
+  if(*string=='-')
+    {
+      notation->flags.ignore=1;
+      string++;
+    }
+
+  if(*string=='!')
+    {
+      notation->flags.critical=1;
+      string++;
+    }
+
+  /* If and when the IETF assigns some official name tags, we'll have
+     to add them here. */
+
+  for( s=string ; *s != '='; s++ )
+    {
+      if( *s=='@')
+	saw_at++;
+
+      /* -notationname is legal without an = sign */
+      if(!*s && notation->flags.ignore)
+	break;
+
+      if( !*s || !isascii (*s) || (!isgraph(*s) && !isspace(*s)) )
+	{
+	  log_error(_("a notation name must have only printable characters"
+		      " or spaces, and end with an '='\n") );
+	  goto fail;
+	}
+    }
+
+  notation->name=xmalloc((s-string)+1);
+  strncpy(notation->name,string,s-string);
+  notation->name[s-string]='\0';
+
+  if(!saw_at && !opt.expert)
+    {
+      log_error(_("a user notation name must contain the '@' character\n"));
+      goto fail;
+    }
+
+  if (saw_at > 1)
+    {
+      log_error(_("a notation name must not contain more than"
+		  " one '@' character\n"));
+      goto fail;
+    }
+
+  if(*s)
+    {
+      const char *i=s+1;
+      int highbit=0;
+
+      /* we only support printable text - therefore we enforce the use
+	 of only printable characters (an empty value is valid) */
+      for(s++; *s ; s++ )
+	{
+	  if ( !isascii (*s) )
+	    highbit=1;
+	  else if (iscntrl(*s))
+	    {
+	      log_error(_("a notation value must not use any"
+			  " control characters\n"));
+	      goto fail;
+	    }
+	}
+
+      if(!highbit || is_utf8)
+	notation->value=xstrdup(i);
+      else
+	notation->value=native_to_utf8(i);
+    }
+
+  return notation;
+
+ fail:
+  free_notation(notation);
+  return NULL;
+}
+
+struct notation *
+sig_to_notation(PKT_signature *sig)
+{
+  const byte *p;
+  size_t len;
+  int seq=0,crit;
+  struct notation *list=NULL;
+
+  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq,&crit)))
+    {
+      int n1,n2;
+      struct notation *n=NULL;
+
+      if(len<8)
+	{
+	  log_info(_("WARNING: invalid notation data found\n"));
+	  continue;
+	}
+
+      n1=(p[4]<<8)|p[5];
+      n2=(p[6]<<8)|p[7];
+
+      if(8+n1+n2!=len)
+	{
+	  log_info(_("WARNING: invalid notation data found\n"));
+	  continue;
+	}
+
+      n=xmalloc_clear(sizeof(*n));
+      n->name=xmalloc(n1+1);
+
+      memcpy(n->name,&p[8],n1);
+      n->name[n1]='\0';
+
+      if(p[0]&0x80)
+	{
+	  n->value=xmalloc(n2+1);
+	  memcpy(n->value,&p[8+n1],n2);
+	  n->value[n2]='\0';
+	}
+      else
+	{
+	  n->bdat=xmalloc(n2);
+	  n->blen=n2;
+	  memcpy(n->bdat,&p[8+n1],n2);
+
+	  n->value=xmalloc(2+strlen(_("not human readable"))+2+1);
+	  strcpy(n->value,"[ ");
+	  strcat(n->value,_("not human readable"));
+	  strcat(n->value," ]");
+	}
+
+      n->flags.critical=crit;
+
+      n->next=list;
+      list=n;
+    }
+
+  return list;
+}
+
+void
+free_notation(struct notation *notation)
+{
+  while(notation)
+    {
+      struct notation *n=notation;
+
+      xfree(n->name);
+      xfree(n->value);
+      xfree(n->altvalue);
+      xfree(n->bdat);
+      notation=n->next;
+      xfree(n);
+    }
+}
+
 static int
-do_signature( iobuf_t out, int ctb, PKT_signature *sig )
+do_signature( IOBUF out, int ctb, PKT_signature *sig )
 {
     int rc = 0;
     int n, i;
-    iobuf_t a = iobuf_temp();
+    IOBUF a = iobuf_temp();
 
     if( !sig->version )
 	iobuf_put( a, 3 );
@@ -1013,7 +1119,7 @@ do_signature( iobuf_t out, int ctb, PKT_signature *sig )
 	write_sign_packet_header(out, ctb, iobuf_get_temp_length(a) );
     else
 	write_header(out, ctb, iobuf_get_temp_length(a) );
-    rc = iobuf_write_temp (out, a);
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
@@ -1021,10 +1127,10 @@ do_signature( iobuf_t out, int ctb, PKT_signature *sig )
 
 
 static int
-do_onepass_sig( iobuf_t out, int ctb, PKT_onepass_sig *ops )
+do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
 {
     int rc = 0;
-    iobuf_t a = iobuf_temp();
+    IOBUF a = iobuf_temp();
 
     write_version( a, ctb );
     iobuf_put(a, ops->sig_class );
@@ -1035,7 +1141,7 @@ do_onepass_sig( iobuf_t out, int ctb, PKT_onepass_sig *ops )
     iobuf_put(a, ops->last );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
-    rc = iobuf_write_temp (out, a);
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
@@ -1043,19 +1149,21 @@ do_onepass_sig( iobuf_t out, int ctb, PKT_onepass_sig *ops )
 
 
 static int
-write_16(iobuf_t out, u16 a)
+write_16(IOBUF out, u16 a)
 {
     iobuf_put(out, a>>8);
-    return iobuf_put(out,a);
+    if( iobuf_put(out,a) )
+	return -1;
+    return 0;
 }
 
 static int
-write_32(iobuf_t out, u32 a)
+write_32(IOBUF out, u32 a)
 {
     iobuf_put(out, a>> 24);
     iobuf_put(out, a>> 16);
     iobuf_put(out, a>> 8);
-    return iobuf_put (out, a);
+    return iobuf_put(out, a);
 }
 
 
@@ -1088,14 +1196,14 @@ calc_header_length( u32 len, int new_ctb )
  * Write the CTB and the packet length
  */
 static int
-write_header( iobuf_t out, int ctb, u32 len )
+write_header( IOBUF out, int ctb, u32 len )
 {
-    return write_header2( out, ctb, len, 0, 1 );
+    return write_header2( out, ctb, len, 0 );
 }
 
 
 static int
-write_sign_packet_header( iobuf_t out, int ctb, u32 len )
+write_sign_packet_header( IOBUF out, int ctb, u32 len )
 {
     /* work around a bug in the pgp read function for signature packets,
      * which are not correctly coded and silently assume at some
@@ -1106,57 +1214,66 @@ write_sign_packet_header( iobuf_t out, int ctb, u32 len )
 }
 
 /****************
- * if HDRLEN is > 0, try to build a header of this length.
- * we need this, so that we can hash packets without reading them again.
+ * If HDRLEN is > 0, try to build a header of this length.  We need
+ * this so that we can hash packets without reading them again.  If
+ * len is 0, write a partial or indeterminate length header, unless
+ * hdrlen is specified in which case write an actual zero length
+ * (using the specified hdrlen).
  */
 static int
-write_header2( iobuf_t out, int ctb, u32 len, int hdrlen, int blkmode )
+write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
 {
-    if( ctb & 0x40 )
-	return write_new_header( out, ctb, len, hdrlen );
+  if( ctb & 0x40 )
+    return write_new_header( out, ctb, len, hdrlen );
 
-    if( hdrlen ) {
-	if( !len )
-	    ctb |= 3;
-	else if( hdrlen == 2 && len < 256 )
-	    ;
-	else if( hdrlen == 3 && len < 65536 )
-	    ctb |= 1;
-	else
-	    ctb |= 2;
+  if( hdrlen )
+    {
+      if( hdrlen == 2 && len < 256 )
+	;
+      else if( hdrlen == 3 && len < 65536 )
+	ctb |= 1;
+      else
+	ctb |= 2;
     }
-    else {
-	if( !len )
-	    ctb |= 3;
-	else if( len < 256 )
-	    ;
-	else if( len < 65536 )
-	    ctb |= 1;
-	else
-	    ctb |= 2;
+  else
+    {
+      if( !len )
+	ctb |= 3;
+      else if( len < 256 )
+	;
+      else if( len < 65536 )
+	ctb |= 1;
+      else
+	ctb |= 2;
     }
-    if( iobuf_put(out, ctb ) )
-	return -1;
-    if( !len ) {
-	if( blkmode )
-	    iobuf_set_block_mode(out, 8196 );
-    }
-    else {
-	if( ctb & 2 ) {
-	    iobuf_put(out, len >> 24 );
-	    iobuf_put(out, len >> 16 );
-	}
-	if( ctb & 3 )
-	    iobuf_put(out, len >> 8 );
-	if( iobuf_put(out, len ) )
+
+  if( iobuf_put(out, ctb ) )
+    return -1;
+
+  if( len || hdrlen )
+    {
+      if( ctb & 2 )
+	{
+	  if(iobuf_put(out, len >> 24 ))
 	    return -1;
+	  if(iobuf_put(out, len >> 16 ))
+	    return -1;
+	}
+
+      if( ctb & 3 )
+	if(iobuf_put(out, len >> 8 ))
+	  return -1;
+
+      if( iobuf_put(out, len ) )
+	return -1;
     }
-    return 0;
+
+  return 0;
 }
 
 
 static int
-write_new_header( iobuf_t out, int ctb, u32 len, int hdrlen )
+write_new_header( IOBUF out, int ctb, u32 len, int hdrlen )
 {
     if( hdrlen )
 	log_bug("can't cope with hdrlen yet\n");
@@ -1195,7 +1312,7 @@ write_new_header( iobuf_t out, int ctb, u32 len, int hdrlen )
 }
 
 static int
-write_version( iobuf_t out, int ctb )
+write_version( IOBUF out, int ctb )
 {
     if( iobuf_put( out, 3 ) )
 	return -1;

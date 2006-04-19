@@ -1,6 +1,6 @@
 /* trustdb.h - Trust database
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,12 +16,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #ifndef G10_TRUSTDB_H
 #define G10_TRUSTDB_H
-
 
 /* Trust values must be sorted in ascending order */
 #define TRUST_MASK	 15
@@ -38,19 +38,26 @@
 #define TRUST_FLAG_DISABLED 128 /* d: key/uid disabled */
 #define TRUST_FLAG_PENDING_CHECK 256 /* a check-trustdb is pending */
 
+#define NAMEHASH_HASH DIGEST_ALGO_RMD160
+#define NAMEHASH_LEN  20
+
 /*-- trustdb.c --*/
+void register_trusted_keyid(u32 *keyid);
 void register_trusted_key( const char *string );
 void check_trustdb (void);
 void update_trustdb (void);
 int setup_trustdb( int level, const char *dbname );
 void init_trustdb( void );
+void check_trustdb_stale(void);
 void sync_trustdb( void );
 
+const char *uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid);
 const char *trust_value_to_string (unsigned int value);
 int string_to_trust_value (const char *str);
 
 void revalidation_mark (void);
 int trustdb_pending_check(void);
+void trustdb_check_or_update(void);
 
 int cache_disabled_value(PKT_public_key *pk);
 
@@ -74,6 +81,11 @@ const char *get_ownertrust_string (PKT_public_key *pk);
 
 void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
 int clear_ownertrusts (PKT_public_key *pk);
+
+void clean_one_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only,
+		   int *uids_cleaned,int *sigs_cleaned);
+void clean_key(KBNODE keyblock,int noisy,int self_only,
+	       int *uids_cleaned,int *sigs_cleaned);
 
 /*-- tdbdump.c --*/
 void list_trustdb(const char *username);

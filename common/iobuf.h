@@ -36,6 +36,7 @@
 #define IOBUFCTRL_USER	    16
 
 typedef struct iobuf_struct *iobuf_t;
+typedef struct iobuf_struct *IOBUF;  /* Compatibility with gpg 1.4. */
 
 /* fixme: we should hide most of this stuff */
 struct iobuf_struct

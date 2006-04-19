@@ -1,12 +1,14 @@
 Noteworthy changes in version 1.9.21
 -------------------------------------------------
 
+ * [scdaemon] New command APDU.
+
  * [scdaemon] Support for keypads of some readers.  Tested only with
    SPR532. New option --disable-keypad.
 
- * Support for CardMan 4040 PCMCIA reader.
+ * [scdaemon] Support for CardMan 4040 PCMCIA reader.
 
- * Cards are not anymore reseted at the end of a connection. 
+ * [scdaemon] Cards are not anymore reseted at the end of a connection. 
 
  * [gpgsm] Kludge to allow use of Bundesnetzagentur issued
    certificates.

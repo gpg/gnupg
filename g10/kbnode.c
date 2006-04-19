@@ -1,5 +1,6 @@
 /* kbnode.c -  keyblock node utility functions
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -26,7 +28,6 @@
 
 #include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "packet.h"
 #include "keydb.h"
 
@@ -43,7 +44,7 @@ alloc_node(void)
     if( n )
 	unused_nodes = n->next;
     else
-	n = xmalloc ( sizeof *n );
+	n = xmalloc( sizeof *n );
     n->next = NULL;
     n->pkt = NULL;
     n->flag = 0;
@@ -60,7 +61,7 @@ free_node( KBNODE n )
 	n->next = unused_nodes;
 	unused_nodes = n;
 #else
-	xfree ( n );
+	xfree( n );
 #endif
     }
 }
@@ -96,7 +97,7 @@ release_kbnode( KBNODE n )
 	n2 = n->next;
 	if( !is_cloned_kbnode(n) ) {
 	    free_packet( n->pkt );
-	    xfree ( n->pkt );
+	    xfree( n->pkt );
 	}
 	free_node( n );
 	n = n2;
@@ -113,8 +114,6 @@ delete_kbnode( KBNODE node )
 {
     node->private_flag |= 1;
 }
-
-
 
 /****************
  * Append NODE to ROOT.  ROOT must exist!
@@ -269,7 +268,7 @@ commit_kbnode( KBNODE *root )
 		nl->next = n->next;
 	    if( !is_cloned_kbnode(n) ) {
 		free_packet( n->pkt );
-		xfree ( n->pkt );
+		xfree( n->pkt );
 	    }
 	    free_node( n );
 	    changed = 1;
@@ -293,7 +292,7 @@ remove_kbnode( KBNODE *root, KBNODE node )
 		nl->next = n->next;
 	    if( !is_cloned_kbnode(n) ) {
 		free_packet( n->pkt );
-		xfree ( n->pkt );
+		xfree( n->pkt );
 	    }
 	    free_node( n );
 	}

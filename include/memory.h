@@ -21,6 +21,8 @@
 #ifndef G10_MEMORY_H
 #define G10_MEMORY_H
 
+#error this file should not be used anymore
+
 #ifdef M_DEBUG
 #ifndef STR
 #define STR(v) #v

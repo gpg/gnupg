@@ -1,5 +1,5 @@
-/* verify.c - verify signed data
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* verify.c - Verify signed data
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -24,14 +25,13 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
-#include <unistd.h> /* for isatty() */
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "status.h"
@@ -54,7 +54,7 @@
 int
 verify_signatures( int nfiles, char **files )
 {
-    iobuf_t fp;
+    IOBUF fp;
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
     const char *sigfile;
@@ -91,11 +91,17 @@ verify_signatures( int nfiles, char **files )
 
     /* open the signature file */
     fp = iobuf_open(sigfile);
+    if (fp && is_secured_file (iobuf_get_fd (fp)))
+      {
+        iobuf_close (fp);
+        fp = NULL;
+        errno = EPERM;
+      }
     if( !fp ) {
         rc = gpg_error_from_errno (errno);
 	log_error(_("can't open `%s': %s\n"),
                   print_fname_stdin(sigfile), strerror (errno));
-        return rc;
+	return rc;
     }
     handle_progress (&pfx, fp, sigfile);
 
@@ -103,12 +109,12 @@ verify_signatures( int nfiles, char **files )
 	iobuf_push_filter( fp, armor_filter, &afx );
 
     sl = NULL;
-    for(i=1 ; i < nfiles; i++ )
+    for(i=nfiles-1 ; i > 0 ; i-- )
 	add_to_strlist( &sl, files[i] );
     rc = proc_signature_packets( NULL, fp, sl, sigfile );
     free_strlist(sl);
     iobuf_close(fp);
-    if( afx.no_openpgp_data && rc == -1 ) {
+    if( (afx.no_openpgp_data && rc == -1) || rc == G10ERR_NO_DATA ) {
 	log_error(_("the signature could not be verified.\n"
 		   "Please remember that the signature file (.sig or .asc)\n"
 		   "should be the first file given on the command line.\n") );
@@ -122,23 +128,31 @@ verify_signatures( int nfiles, char **files )
 void
 print_file_status( int status, const char *name, int what )
 {
-    char *p = xmalloc (strlen(name)+10);
+    char *p = xmalloc(strlen(name)+10);
     sprintf(p, "%d %s", what, name );
     write_status_text( status, p );
-    xfree (p);
+    xfree(p);
 }
 
 
 static int
 verify_one_file( const char *name )
 {
-    iobuf_t fp;
+    IOBUF fp;
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
     int rc;
 
     print_file_status( STATUS_FILE_START, name, 1 );
     fp = iobuf_open(name);
+    if (fp)
+      iobuf_ioctl (fp,3,1,NULL); /* disable fd caching */
+    if (fp && is_secured_file (iobuf_get_fd (fp)))
+      {
+        iobuf_close (fp);
+        fp = NULL;
+        errno = EPERM;
+      }
     if( !fp ) {
         rc = gpg_error_from_errno (errno);
 	log_error(_("can't open `%s': %s\n"),
@@ -179,7 +193,7 @@ verify_files( int nfiles, char **files )
 	    lno++;
 	    if( !*line || line[strlen(line)-1] != '\n' ) {
 		log_error(_("input line %u too long or missing LF\n"), lno );
-		return GPG_ERR_GENERAL;
+		return G10ERR_GENERAL;
 	    }
 	    /* This code does not work on MSDOS but how cares there are
 	     * also no script languages available.  We don't strip any

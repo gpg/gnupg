@@ -1,5 +1,6 @@
 /* encr-data.c -  process an encrypted data packet
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -26,25 +28,24 @@
 
 #include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "packet.h"
-#include "mpi.h"
 #include "cipher.h"
 #include "options.h"
 #include "i18n.h"
 
 
-static int mdc_decode_filter( void *opaque, int control, iobuf_t a,
+static int mdc_decode_filter( void *opaque, int control, IOBUF a,
 					      byte *buf, size_t *ret_len);
-static int decode_filter( void *opaque, int control, iobuf_t a,
+static int decode_filter( void *opaque, int control, IOBUF a,
 					byte *buf, size_t *ret_len);
 
-typedef struct {
-    CIPHER_HANDLE cipher_hd;
-    MD_HANDLE mdc_hash;
-    char defer[20];
-    int  defer_filled;
-    int  eof_seen;
+typedef struct 
+{
+  gcry_cipher_hd_t cipher_hd;
+  gcry_md_hd_t mdc_hash;
+  char defer[20];
+  int  defer_filled;
+  int  eof_seen;
 } decode_filter_ctx_t;
 
 
@@ -70,7 +71,8 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	    log_info(_("encrypted with unknown algorithm %d\n"), dek->algo );
         dek->algo_info_printed = 1;
     }
-    if( (rc=openpgp_cipher_test_algo(dek->algo)) )
+    rc = openpgp_cipher_test_algo (dek->algo);
+    if (rc)
 	goto leave;
     blocksize = gcry_cipher_get_algo_blklen (dek->algo);
     if( !blocksize || blocksize > 16 )
@@ -80,31 +82,39 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	BUG();
 
     if( ed->mdc_method ) {
-	gcry_md_open (&dfx.mdc_hash, ed->mdc_method, 0 );
+        if (gcry_md_open (&dfx.mdc_hash, ed->mdc_method, 0 ))
+            BUG ();
 	if ( DBG_HASHING )
 	    gcry_md_start_debug (dfx.mdc_hash, "checkmdc");
     }
+
     rc = gcry_cipher_open (&dfx.cipher_hd, dek->algo,
                            GCRY_CIPHER_MODE_CFB,
-                           GCRY_CIPHER_SECURE
-                           | ((ed->mdc_method || dek->algo >= 100)?
-                              0 : GCRY_CIPHER_ENABLE_SYNC) );
-     if (rc)
-       {
-         /* we should never get an error here cause we already
-          * checked, that the algorithm is available. What about a
-          * flag to let the function die in this case? */
-	BUG();
-       }
+                           (GCRY_CIPHER_SECURE
+                            | ((ed->mdc_method || dek->algo >= 100)?
+                               0 : GCRY_CIPHER_ENABLE_SYNC)));
+    if (rc)
+      {
+        /* We should never get an error here cause we already checked
+         * that the algorithm is available.  */
+        BUG();
+      }
+
+
     /* log_hexdump( "thekey", dek->key, dek->keylen );*/
     rc = gcry_cipher_setkey (dfx.cipher_hd, dek->key, dek->keylen);
-    if( gpg_err_code (rc) == GPG_ERR_WEAK_KEY )
-	log_info(_("WARNING: message was encrypted with "
-		    "a weak key in the symmetric cipher.\n"));
-    else if( rc ) {
-	log_error("key setup failed: %s\n", gpg_strerror (rc) );
+    if ( gpg_err_code (rc) == GPG_ERR_WEAK_KEY )
+      {
+	log_info(_("WARNING: message was encrypted with"
+		   " a weak key in the symmetric cipher.\n"));
+	rc=0;
+      }
+    else if( rc )
+      {
+	log_error("key setup failed: %s\n", g10_errstr(rc) );
 	goto leave;
-    }
+      
+      }
     if (!ed->buf) {
         log_error(_("problem handling encrypted packet\n"));
         goto leave;
@@ -112,7 +122,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
     gcry_cipher_setiv (dfx.cipher_hd, NULL, 0);
 
-    if (ed->len) {
+    if( ed->len ) {
 	for(i=0; i < (nprefix+2) && ed->len; i++, ed->len-- ) {
 	    if( (c=iobuf_get(ed->buf)) == -1 )
 		break;
@@ -127,17 +137,20 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	    else
 		temp[i] = c;
     }
-    gcry_cipher_decrypt( dfx.cipher_hd, temp, nprefix+2, NULL, 0);
-    gcry_cipher_sync( dfx.cipher_hd );
+
+    gcry_cipher_decrypt (dfx.cipher_hd, temp, nprefix+2, NULL, 0);
+    gcry_cipher_sync (dfx.cipher_hd);
     p = temp;
 /* log_hexdump( "prefix", temp, nprefix+2 ); */
-    if( p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1] ) {
+    if(dek->symmetric
+       && (p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1]) )
+      {
 	rc = GPG_ERR_BAD_KEY;
 	goto leave;
-    }
+      }
 
     if( dfx.mdc_hash )
-	gcry_md_write( dfx.mdc_hash, temp, nprefix+2 );
+	gcry_md_write (dfx.mdc_hash, temp, nprefix+2);
 
     if( ed->mdc_method )
 	iobuf_push_filter( ed->buf, mdc_decode_filter, &dfx );
@@ -152,18 +165,18 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	int datalen = gcry_md_get_algo_dlen (ed->mdc_method);
 
 	gcry_cipher_decrypt (dfx.cipher_hd, dfx.defer, 20, NULL, 0);
-	gcry_md_final ( dfx.mdc_hash );
-	if( datalen != 20
-	    || memcmp(gcry_md_read ( dfx.mdc_hash, 0 ), dfx.defer, datalen) )
-	    rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
-	/*log_hexdump("MDC calculated:", gcry_md_read ( dfx.mdc_hash, 0), datalen);*/
+	gcry_md_final (dfx.mdc_hash);
+	if (datalen != 20
+	    || memcmp (gcry_md_read( dfx.mdc_hash, 0 ), dfx.defer, datalen) )
+          rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
+	/*log_hexdump("MDC calculated:", md_read( dfx.mdc_hash, 0), datalen);*/
 	/*log_hexdump("MDC message   :", dfx.defer, 20);*/
     }
     
 
   leave:
-    gcry_cipher_close(dfx.cipher_hd);
-    gcry_md_close ( dfx.mdc_hash );
+    gcry_cipher_close (dfx.cipher_hd);
+    gcry_md_close (dfx.mdc_hash);
     return rc;
 }
 
@@ -171,7 +184,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
 /* I think we should merge this with cipher_filter */
 static int
-mdc_decode_filter( void *opaque, int control, iobuf_t a,
+mdc_decode_filter( void *opaque, int control, IOBUF a,
 					      byte *buf, size_t *ret_len)
 {
     decode_filter_ctx_t *dfx = opaque;
@@ -229,8 +242,8 @@ mdc_decode_filter( void *opaque, int control, iobuf_t a,
 	}
 
 	if( n ) {
-	    gcry_cipher_decrypt( dfx->cipher_hd, buf, n, NULL, 0);
-	    gcry_md_write( dfx->mdc_hash, buf, n );
+	    gcry_cipher_decrypt (dfx->cipher_hd, buf, n, NULL, 0);
+	    gcry_md_write (dfx->mdc_hash, buf, n);
 	}
 	else {
 	    assert( dfx->eof_seen );
@@ -245,7 +258,7 @@ mdc_decode_filter( void *opaque, int control, iobuf_t a,
 }
 
 static int
-decode_filter( void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len)
+decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
 {
     decode_filter_ctx_t *fc = opaque;
     size_t n, size = *ret_len;
@@ -256,7 +269,7 @@ decode_filter( void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len)
 	n = iobuf_read( a, buf, size );
 	if( n == -1 ) n = 0;
 	if( n )
-	    gcry_cipher_decrypt( fc->cipher_hd, buf, n, NULL, 0);
+	    gcry_cipher_decrypt (fc->cipher_hd, buf, n, NULL, 0);
 	else
 	    rc = -1; /* eof */
 	*ret_len = n;

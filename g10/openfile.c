@@ -1,5 +1,6 @@
 /* openfile.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -31,7 +33,6 @@
 
 #include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "ttyio.h"
 #include "options.h"
 #include "main.h"
@@ -66,8 +67,8 @@
 int
 overwrite_filep( const char *fname )
 {
-    if( !fname || (*fname == '-' && !fname[1]) )
-	return 1; /* writing to stdout is always okay */
+    if( iobuf_is_pipe_filename (fname) )
+	return 1; /* Writing to stdout is always okay */
 
     if( access( fname, F_OK ) )
 	return 1; /* does not exist */
@@ -84,8 +85,10 @@ overwrite_filep( const char *fname )
 	return 0;  /* do not overwrite */
 
     tty_printf(_("File `%s' exists. "), fname);
+    if( cpr_enabled () )
+        tty_printf ("\n");
     if( cpr_get_answer_is_yes("openfile.overwrite.okay",
-			       _("Overwrite (y/N)? ")) )
+			       _("Overwrite? (y/N) ")) )
 	return 1;
     return 0;
 }
@@ -100,20 +103,20 @@ make_outfile_name( const char *iname )
 {
     size_t n;
 
-    if( (!iname || (*iname=='-' && !iname[1]) ))
-	return xstrdup ("-");
+    if ( iobuf_is_pipe_filename (iname) )
+	return xstrdup("-");
 
     n = strlen(iname);
     if( n > 4 && (    !CMP_FILENAME(iname+n-4, EXTSEP_S "gpg")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "pgp")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "sig")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "asc") ) ) {
-	char *buf = xstrdup ( iname );
+	char *buf = xstrdup( iname );
 	buf[n-4] = 0;
 	return buf;
     }
     else if( n > 5 && !CMP_FILENAME(iname+n-5, EXTSEP_S "sign") ) {
-	char *buf = xstrdup ( iname );
+	char *buf = xstrdup( iname );
 	buf[n-5] = 0;
 	return buf;
     }
@@ -144,19 +147,21 @@ ask_outfile_name( const char *name, size_t namelen )
 
     n = strlen(s) + namelen + 10;
     defname = name && namelen? make_printable_string( name, namelen, 0): NULL;
-    prompt = xmalloc (n);
+    prompt = xmalloc(n);
     if( defname )
 	sprintf(prompt, "%s [%s]: ", s, defname );
     else
 	sprintf(prompt, "%s: ", s );
+    tty_enable_completion(NULL);
     fname = cpr_get("openfile.askoutname", prompt );
     cpr_kill_prompt();
-    xfree (prompt);
+    tty_disable_completion();
+    xfree(prompt);
     if( !*fname ) {
-	xfree ( fname ); fname = NULL;
+	xfree( fname ); fname = NULL;
 	fname = defname; defname = NULL;
     }
-    xfree (defname);
+    xfree(defname);
     if (fname)
         trim_spaces (fname);
     return fname;
@@ -165,21 +170,22 @@ ask_outfile_name( const char *name, size_t namelen )
 
 /****************
  * Make an output filename for the inputfile INAME.
- * Returns an iobuf_t and an errorcode
+ * Returns an IOBUF and an errorcode
  * Mode 0 = use ".gpg"
  *	1 = use ".asc"
  *	2 = use ".sig"
  */
 int
-open_outfile( const char *iname, int mode, iobuf_t *a )
+open_outfile( const char *iname, int mode, IOBUF *a )
 {
   int rc = 0;
 
   *a = NULL;
-  if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
-    if( !(*a = iobuf_create(NULL)) ) {
+  if( iobuf_is_pipe_filename (iname) && !opt.outfile ) {
+    *a = iobuf_create(NULL);
+    if( !*a ) {
       rc = gpg_error_from_errno (errno);
-      log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
+      log_error(_("can't open `%s': %s\n"), "[stdout]", strerror(errno) );
     }
     else if( opt.verbose )
       log_info(_("writing to stdout\n"));
@@ -207,7 +213,7 @@ open_outfile( const char *iname, int mode, iobuf_t *a )
           const char *newsfx = mode==1 ? ".asc" :
                                mode==2 ? ".sig" : ".gpg";
           
-          buf = xmalloc (strlen(iname)+4+1);
+          buf = xmalloc(strlen(iname)+4+1);
           strcpy(buf,iname);
           dot = strchr(buf, '.' );
           if ( dot && dot > buf && dot[1] && strlen(dot) <= 4
@@ -223,7 +229,7 @@ open_outfile( const char *iname, int mode, iobuf_t *a )
       if (!buf)
 #endif /* USE_ONLY_8DOT3 */
         {
-          buf = xmalloc (strlen(iname)+4+1);
+          buf = xmalloc(strlen(iname)+4+1);
           strcpy(stpcpy(buf,iname), mode==1 ? EXTSEP_S "asc" :
 		                   mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg");
         }
@@ -237,7 +243,7 @@ open_outfile( const char *iname, int mode, iobuf_t *a )
         if ( !tmp || !*tmp )
           {
             xfree (tmp);
-            rc = GPG_ERR_EEXIST;
+            rc = gpg_error (GPG_ERR_EEXIST);
             break;
           }
         xfree (buf);
@@ -246,16 +252,26 @@ open_outfile( const char *iname, int mode, iobuf_t *a )
     
     if( !rc )
       {
-        if( !(*a = iobuf_create( name )) )
+        if (is_secured_filename (name) )
+          {
+            *a = NULL;
+            errno = EPERM;
+          }
+        else
+          *a = iobuf_create( name );
+        if( !*a )
           {
             rc = gpg_error_from_errno (errno);
-            log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
+            log_error(_("can't create `%s': %s\n"), name, strerror(errno) );
           }
         else if( opt.verbose )
           log_info(_("writing to `%s'\n"), name );
       }
-    xfree (buf);
+    xfree(buf);
   }
+
+  if (*a)
+    iobuf_ioctl (*a,3,1,NULL); /* disable fd caching */
 
   return rc;
 }
@@ -265,26 +281,32 @@ open_outfile( const char *iname, int mode, iobuf_t *a )
  * Try to open a file without the extension ".sig" or ".asc"
  * Return NULL if such a file is not available.
  */
-iobuf_t
+IOBUF
 open_sigfile( const char *iname, progress_filter_context_t *pfx )
 {
-    iobuf_t a = NULL;
+    IOBUF a = NULL;
     size_t len;
 
-    if( iname && !(*iname == '-' && !iname[1]) ) {
+    if( !iobuf_is_pipe_filename (iname) ) {
 	len = strlen(iname);
 	if( len > 4 && ( !strcmp(iname + len - 4, EXTSEP_S "sig")
                         || ( len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign") )
                         || !strcmp(iname + len - 4, EXTSEP_S "asc")) ) {
 	    char *buf;
-	    buf = xstrdup (iname);
+	    buf = xstrdup(iname);
 	    buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
 	    a = iobuf_open( buf );
+            if (a && is_secured_file (iobuf_get_fd (a)))
+              {
+                iobuf_close (a);
+                a = NULL;
+                errno = EPERM;
+              }
 	    if( a && opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );
 	    if (a && pfx)
 	      handle_progress (pfx, a, buf);
-            xfree (buf);
+            xfree(buf);
 	}
     }
     return a;
@@ -308,23 +330,34 @@ copy_options_file( const char *destdir )
     if( opt.dry_run )
 	return;
 
-    fname = xmalloc ( strlen(datadir) + strlen(destdir) 
-                      + strlen (SKELEXT) + 15 );
+    fname = xmalloc( strlen(datadir) + strlen(destdir) + 15 );
     strcpy(stpcpy(fname, datadir), DIRSEP_S "gpg-conf" SKELEXT );
     src = fopen( fname, "r" );
+    if (src && is_secured_file (fileno (src)))
+      {
+        fclose (src);
+        src = NULL;
+        errno = EPERM;
+      }
     if( !src ) {
-	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );
-	xfree (fname);
+	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
+	xfree(fname);
 	return;
     }
     strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg" EXTSEP_S "conf" );
     oldmask=umask(077);
-    dst = fopen( fname, "w" );
+    if ( is_secured_filename (fname) )
+      {
+        dst = NULL;
+        errno = EPERM;
+      }
+    else
+      dst = fopen( fname, "w" );
     umask(oldmask);
     if( !dst ) {
-	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );
+	log_error(_("can't create `%s': %s\n"), fname, strerror(errno) );
 	fclose( src );
-	xfree (fname);
+	xfree(fname);
 	return;
     }
 
@@ -354,7 +387,7 @@ copy_options_file( const char *destdir )
         log_info (_("WARNING: options in `%s'"
                     " are not yet active during this run\n"),
                   fname);
-    xfree (fname);
+    xfree(fname);
 }
 
 
@@ -380,10 +413,10 @@ try_make_homedir( const char *fname )
               && !compare_filenames( fname, defhome ) )
         ) {
 	if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
-	    log_fatal( _("%s: can't create directory: %s\n"),
+	    log_fatal( _("can't create directory `%s': %s\n"),
 					fname,	strerror(errno) );
 	else if( !opt.quiet )
-	    log_info( _("%s: directory created\n"), fname );
+	    log_info( _("directory `%s' created\n"), fname );
 	copy_options_file( fname );
 /*  	log_info(_("you have to start GnuPG again, " */
 /*  		   "so it can read the new configuration file\n") ); */

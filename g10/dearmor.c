@@ -1,5 +1,5 @@
 /* dearmor.c - Armor utility
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -28,13 +29,12 @@
 #include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "packet.h"
 #include "options.h"
 #include "main.h"
-
+#include "i18n.h"
 
 /****************
  * Take an armor file and write it out without armor
@@ -43,17 +43,24 @@ int
 dearmor_file( const char *fname )
 {
     armor_filter_context_t afx;
-    iobuf_t inp = NULL, out = NULL;
+    IOBUF inp = NULL, out = NULL;
     int rc = 0;
     int c;
 
     memset( &afx, 0, sizeof afx);
 
     /* prepare iobufs */
-    if( !(inp = iobuf_open(fname)) ) {
-        rc = gpg_error_from_errno (errno);
-	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
+    inp = iobuf_open(fname);
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if (!inp) {
+	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
 					strerror(errno) );
+	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 
@@ -85,17 +92,24 @@ int
 enarmor_file( const char *fname )
 {
     armor_filter_context_t afx;
-    iobuf_t inp = NULL, out = NULL;
+    IOBUF inp = NULL, out = NULL;
     int rc = 0;
     int c;
 
     memset( &afx, 0, sizeof afx);
 
     /* prepare iobufs */
-    if( !(inp = iobuf_open(fname)) ) {
-        rc = gpg_error_from_errno (errno);
-	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
-					strerror(errno) );
+    inp = iobuf_open(fname);
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if (!inp) {
+	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
+                  strerror(errno) );
+	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 

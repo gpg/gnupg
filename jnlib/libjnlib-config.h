@@ -1,5 +1,5 @@
 /* libjnlib-config.h - local configuration of the jnlib functions
- *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2001, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,6 +28,9 @@
 
 #include <gcrypt.h> /* gcry_malloc & Cie. */
 #include "logging.h"
+
+/* We require support for utf-8 conversion. */
+#define JNLIB_NEED_UTF8CONF 1
 
 #ifdef USE_SIMPLE_GETTEXT
   int set_gettext_file( const char *filename );

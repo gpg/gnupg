@@ -23,11 +23,16 @@ AC_PREREQ(2.52)
 min_automake_version="1.9.3"
 
 # Remember to change the version number immediately *after* a release.
-# Uncomment the my_iscvs macro for non-released code.
-m4_define(my_version, [1.9.21])
-m4_define(my_iscvs, yes)
-AC_INIT([gnupg], my_version[]m4_ifdef([my_iscvs], [-cvs[]m4_translit(
-                 [$Revision$],[Ra-z $:])]), [gnupg-devel@gnupg.org])
+# Set my_issvn to "yes" for non-released code.  Remember to run an
+# "svn up" and "autogen.sh" right before creating a distribution.
+m4_define([my_version], [1.9.21])
+m4_define([my_issvn], [yes])
+
+
+m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
+            || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q}')]))
+AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
+        [gnupg-devel@gnupg.org])
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
@@ -218,6 +223,34 @@ if test "$use_exec" = yes ; then
         fi],enableval=yes)
     AC_MSG_RESULT($enableval)
   fi
+
+
+dnl
+dnl Check for the key/uid cache size.  This can't be zero, but can be
+dnl pretty small on embedded systems.
+dnl
+AC_MSG_CHECKING([for the size of the key and uid cache])
+AC_ARG_ENABLE(key-cache,
+	AC_HELP_STRING([--enable-key-cache=SIZE],[Set key cache to SIZE (default 4096)]),,enableval=4096)
+
+if test "$enableval" = "no"; then
+   enableval=5
+elif test "$enableval" = "yes" || test "$enableval" = ""; then
+   enableval=4096
+fi
+
+changequote(,)dnl
+key_cache_size=`echo "$enableval" | sed 's/[A-Za-z]//g'`
+changequote([,])dnl
+
+if test "$enableval" != "$key_cache_size" || test "$key_cache_size" -lt 5; then
+   AC_MSG_ERROR([invalid key-cache size])
+fi
+
+AC_MSG_RESULT($key_cache_size)
+AC_DEFINE_UNQUOTED(PK_UID_CACHE_SIZE,$key_cache_size,[Size of the key and UID caches])
+
+
 
 dnl
 dnl Check whether we want to use Linux capabilities

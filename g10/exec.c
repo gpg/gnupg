@@ -1,5 +1,5 @@
 /* exec.c - generic call-a-program code
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -34,12 +35,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+
+#include "gpg.h"
 #include "options.h"
-#include "memory.h"
 #include "i18n.h"
 #include "iobuf.h"
 #include "util.h"
-#include "mkdtemp.h"
+#include "mkdtemp.h"  /* From gnulib. */
 #include "exec.h"
 
 #ifdef NO_EXEC
@@ -47,12 +49,12 @@ int exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary)
 {
   log_error(_("no remote program execution supported\n"));
-  return GPG_ERR_GENERAL;
+  return G10ERR_GENERAL;
 }
 
-int exec_read(struct exec_info *info) { return GPG_ERR_GENERAL; }
-int exec_finish(struct exec_info *info) { return GPG_ERR_GENERAL; }
-int set_exec_path(const char *path,int method) { return GPG_ERR_GENERAL; }
+int exec_read(struct exec_info *info) { return G10ERR_GENERAL; }
+int exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
+int set_exec_path(const char *path) { return G10ERR_GENERAL; }
 
 #else /* ! NO_EXEC */
 
@@ -60,7 +62,7 @@ int set_exec_path(const char *path,int method) { return GPG_ERR_GENERAL; }
 /* This is a nicer system() for windows that waits for programs to
    return before returning control to the caller.  I hate helpful
    computers. */
-static int win_system(const char *command)
+static int w32_system(const char *command)
 {
   PROCESS_INFORMATION pi;
   STARTUPINFO si;
@@ -68,7 +70,7 @@ static int win_system(const char *command)
 
   /* We must use a copy of the command as CreateProcess modifies this
      argument. */
-  string=xstrdup (command);
+  string=xstrdup(command);
 
   memset(&pi,0,sizeof(pi));
   memset(&si,0,sizeof(si));
@@ -82,42 +84,30 @@ static int win_system(const char *command)
 
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
-  xfree (string);
+  xfree(string);
 
   return 0;
 }
 #endif
 
-/* method==0 to replace current $PATH, and 1 to append to current
-   $PATH.  */
-int set_exec_path(const char *path,int method)
+/* Replaces current $PATH */
+int set_exec_path(const char *path)
 {
-  char *p,*curpath=NULL;
-  size_t curlen=0;
+  char *p;
 
-  if(method==1 && (curpath=getenv("PATH")))
-    curlen=strlen(curpath)+1;
-
-  p=xmalloc (5+curlen+strlen(path)+1);
+  p=xmalloc(5+strlen(path)+1);
   strcpy(p,"PATH=");
-
-  if(curpath)
-    {
-      strcat(p,curpath);
-      strcat(p,":");
-    }
-
   strcat(p,path);
 
   if(DBG_EXTPROG)
-    log_debug("set_exec_path method %d: %s\n",method,p);
+    log_debug("set_exec_path: %s\n",p);
 
   /* Notice that path is never freed.  That is intentional due to the
      way putenv() works.  This leaks a few bytes if we call
      set_exec_path multiple times. */
 
   if(putenv(p)!=0)
-    return GPG_ERR_GENERAL;
+    return G10ERR_GENERAL;
   else
     return 0;
 }
@@ -128,16 +118,16 @@ static int make_tempdir(struct exec_info *info)
   char *tmp=opt.temp_dir,*namein=info->name,*nameout;
 
   if(!namein)
-    namein=info->binary?"tempin" EXTSEP_S "bin":"tempin" EXTSEP_S "txt";
+    namein=info->flags.binary?"tempin" EXTSEP_S "bin":"tempin" EXTSEP_S "txt";
 
-  nameout=info->binary?"tempout" EXTSEP_S "bin":"tempout" EXTSEP_S "txt";
+  nameout=info->flags.binary?"tempout" EXTSEP_S "bin":"tempout" EXTSEP_S "txt";
 
   /* Make up the temp dir and files in case we need them */
 
   if(tmp==NULL)
     {
 #if defined (_WIN32)
-      tmp=xmalloc (256);
+      tmp=xmalloc(256);
       if(GetTempPath(256,tmp)==0)
 	strcpy(tmp,"c:\\windows\\temp");
       else
@@ -169,12 +159,12 @@ static int make_tempdir(struct exec_info *info)
 #endif
     }
 
-  info->tempdir=xmalloc (strlen(tmp)+strlen(DIRSEP_S)+10+1);
+  info->tempdir=xmalloc(strlen(tmp)+strlen(DIRSEP_S)+10+1);
 
   sprintf(info->tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
 
 #if defined (_WIN32)
-  xfree (tmp);
+  xfree(tmp);
 #endif
 
   if(mkdtemp(info->tempdir)==NULL)
@@ -182,21 +172,21 @@ static int make_tempdir(struct exec_info *info)
 	      info->tempdir,strerror(errno));
   else
     {
-      info->madedir=1;
+      info->flags.madedir=1;
 
-      info->tempfile_in=xmalloc (strlen(info->tempdir)+
+      info->tempfile_in=xmalloc(strlen(info->tempdir)+
 				strlen(DIRSEP_S)+strlen(namein)+1);
       sprintf(info->tempfile_in,"%s" DIRSEP_S "%s",info->tempdir,namein);
 
-      if(!info->writeonly)
+      if(!info->flags.writeonly)
 	{
-	  info->tempfile_out=xmalloc (strlen(info->tempdir)+
+	  info->tempfile_out=xmalloc(strlen(info->tempdir)+
 				     strlen(DIRSEP_S)+strlen(nameout)+1);
 	  sprintf(info->tempfile_out,"%s" DIRSEP_S "%s",info->tempdir,nameout);
 	}
     }
 
-  return info->madedir?0:GPG_ERR_GENERAL;
+  return info->flags.madedir?0:G10ERR_GENERAL;
 }
 
 /* Expands %i and %o in the args to the full temp files within the
@@ -206,14 +196,14 @@ static int expand_args(struct exec_info *info,const char *args_in)
   const char *ch=args_in;
   unsigned int size,len;
 
-  info->use_temp_files=0;
-  info->keep_temp_files=0;
+  info->flags.use_temp_files=0;
+  info->flags.keep_temp_files=0;
 
   if(DBG_EXTPROG)
     log_debug("expanding string \"%s\"\n",args_in);
 
   size=100;
-  info->command=xmalloc (size);
+  info->command=xmalloc(size);
   len=0;
   info->command[0]='\0';
 
@@ -228,31 +218,31 @@ static int expand_args(struct exec_info *info,const char *args_in)
 	  switch(*ch)
 	    {
 	    case 'O':
-	      info->keep_temp_files=1;
+	      info->flags.keep_temp_files=1;
 	      /* fall through */
 
 	    case 'o': /* out */
-	      if(!info->madedir)
+	      if(!info->flags.madedir)
 		{
 		  if(make_tempdir(info))
 		    goto fail;
 		}
 	      append=info->tempfile_out;
-	      info->use_temp_files=1;
+	      info->flags.use_temp_files=1;
 	      break;
 
 	    case 'I':
-	      info->keep_temp_files=1;
+	      info->flags.keep_temp_files=1;
 	      /* fall through */
 
 	    case 'i': /* in */
-	      if(!info->madedir)
+	      if(!info->flags.madedir)
 		{
 		  if(make_tempdir(info))
 		    goto fail;
 		}
 	      append=info->tempfile_in;
-	      info->use_temp_files=1;
+	      info->flags.use_temp_files=1;
 	      break;
 
 	    case '%':
@@ -293,17 +283,17 @@ static int expand_args(struct exec_info *info,const char *args_in)
     }
 
   if(DBG_EXTPROG)
-    log_debug("args expanded to \"%s\", use %d, keep %d\n",
-	      info->command,info->use_temp_files,info->keep_temp_files);
+    log_debug("args expanded to \"%s\", use %u, keep %u\n",info->command,
+	      info->flags.use_temp_files,info->flags.keep_temp_files);
 
   return 0;
 
  fail:
 
-  xfree (info->command);
+  xfree(info->command);
   info->command=NULL;
 
-  return GPG_ERR_GENERAL;
+  return G10ERR_GENERAL;
 }
 
 /* Either handles the tempfile creation, or the fork/exec.  If it
@@ -315,7 +305,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 int exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary)
 {
-  int ret=GPG_ERR_GENERAL;
+  int ret=G10ERR_GENERAL;
 
   if(opt.exec_disable && !opt.no_perm_warn)
     {
@@ -335,22 +325,22 @@ int exec_write(struct exec_info **info,const char *program,
   if(program==NULL && args_in==NULL)
     BUG();
 
-  *info=xcalloc (1,sizeof(struct exec_info));
+  *info=xmalloc_clear(sizeof(struct exec_info));
 
   if(name)
-    (*info)->name=xstrdup (name);
-  (*info)->binary=binary;
-  (*info)->writeonly=writeonly;
+    (*info)->name=xstrdup(name);
+  (*info)->flags.binary=binary;
+  (*info)->flags.writeonly=writeonly;
 
   /* Expand the args, if any */
   if(args_in && expand_args(*info,args_in))
     goto fail;
 
 #ifdef EXEC_TEMPFILE_ONLY
-  if(!(*info)->use_temp_files)
+  if(!(*info)->flags.use_temp_files)
     {
-      log_error(_("this platform requires temp files when calling external "
-		  "programs\n"));
+      log_error(_("this platform requires temporary files when calling"
+		  " external programs\n"));
       goto fail;
     }
 
@@ -358,7 +348,7 @@ int exec_write(struct exec_info **info,const char *program,
 
   /* If there are no args, or there are args, but no temp files, we
      can use fork/exec/pipe */
-  if(args_in==NULL || (*info)->use_temp_files==0)
+  if(args_in==NULL || (*info)->flags.use_temp_files==0)
     {
       int to[2],from[2];
 
@@ -392,7 +382,7 @@ int exec_write(struct exec_info **info,const char *program,
 
 	  /* If the program isn't going to respond back, they get to
              keep their stdout/stderr */
-	  if(!(*info)->writeonly)
+	  if(!(*info)->flags.writeonly)
 	    {
 	      /* implied close of STDERR */
 	      if(dup2(STDOUT_FILENO,STDERR_FILENO)==-1)
@@ -426,10 +416,12 @@ int exec_write(struct exec_info **info,const char *program,
 
 	  /* If we get this far the exec failed.  Clean up and return. */
 
-	  log_error(_("unable to execute %s \"%s\": %s\n"),
-		    args_in==NULL?"program":"shell",
-		    args_in==NULL?program:shell,
-		    strerror(errno));
+	  if(args_in==NULL)
+	    log_error(_("unable to execute program `%s': %s\n"),
+		      program,strerror(errno));
+	  else
+	    log_error(_("unable to execute shell `%s': %s\n"),
+		      shell,strerror(errno));
 
 	  /* This mimics the POSIX sh behavior - 127 means "not found"
              from the shell. */
@@ -446,8 +438,8 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->tochild=fdopen(to[1],binary?"wb":"w");
       if((*info)->tochild==NULL)
 	{
-          ret = gpg_error_from_errno (errno);
 	  close(to[1]);
+	  ret=G10ERR_WRITE_FILE;
 	  goto fail;
 	}
 
@@ -456,8 +448,8 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->fromchild=iobuf_fdopen(from[0],"r");
       if((*info)->fromchild==NULL)
 	{
-          ret = gpg_error_from_errno (errno);
 	  close(from[0]);
+	  ret=G10ERR_READ_FILE;
 	  goto fail;
 	}
 
@@ -472,12 +464,18 @@ int exec_write(struct exec_info **info,const char *program,
     log_debug("using temp file `%s'\n",(*info)->tempfile_in);
 
   /* It's not fork/exec/pipe, so create a temp file */
-  (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
+  if( is_secured_filename ((*info)->tempfile_in) )
+    {
+      (*info)->tochild = NULL;
+      errno = EPERM;
+    }
+  else
+    (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
-      ret = gpg_error_from_errno (errno);
       log_error(_("can't create `%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
+      ret=G10ERR_WRITE_FILE;
       goto fail;
     }
 
@@ -489,18 +487,18 @@ int exec_write(struct exec_info **info,const char *program,
 
 int exec_read(struct exec_info *info)
 {
-  int ret=GPG_ERR_GENERAL;
+  int ret=G10ERR_GENERAL;
 
   fclose(info->tochild);
   info->tochild=NULL;
 
-  if(info->use_temp_files)
+  if(info->flags.use_temp_files)
     {
       if(DBG_EXTPROG)
 	log_debug("system() command is %s\n",info->command);
 
 #if defined (_WIN32)
-      info->progreturn=win_system(info->command);
+      info->progreturn=w32_system(info->command);
 #else
       info->progreturn=system(info->command);
 #endif
@@ -537,14 +535,21 @@ int exec_read(struct exec_info *info)
 	  goto fail;
 	}
 
-      if(!info->writeonly)
+      if(!info->flags.writeonly)
 	{
 	  info->fromchild=iobuf_open(info->tempfile_out);
+          if (info->fromchild
+              && is_secured_file (iobuf_get_fd (info->fromchild)))
+            {
+              iobuf_close (info->fromchild);
+              info->fromchild = NULL;
+              errno = EPERM;
+            }
 	  if(info->fromchild==NULL)
 	    {
-              ret = gpg_error_from_errno (errno);
 	      log_error(_("unable to read external program response: %s\n"),
 			strerror(errno));
+	      ret=G10ERR_READ_FILE;
 	      goto fail;
 	    }
 
@@ -583,7 +588,7 @@ int exec_finish(struct exec_info *info)
     }
 #endif
 
-  if(info->madedir && !info->keep_temp_files)
+  if(info->flags.madedir && !info->flags.keep_temp_files)
     {
       if(info->tempfile_in)
 	{
@@ -604,12 +609,12 @@ int exec_finish(struct exec_info *info)
 		 info->tempdir,strerror(errno));
     }
 
-  xfree (info->command);
-  xfree (info->name);
-  xfree (info->tempdir);
-  xfree (info->tempfile_in);
-  xfree (info->tempfile_out);
-  xfree (info);
+  xfree(info->command);
+  xfree(info->name);
+  xfree(info->tempdir);
+  xfree(info->tempfile_in);
+  xfree(info->tempfile_out);
+  xfree(info);
 
   return ret;
 }

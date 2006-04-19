@@ -1,5 +1,5 @@
 /* textfilter.c
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -28,11 +29,11 @@
 #include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "i18n.h"
 #include "options.h"
+#include "status.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define LF "\r\n"
@@ -62,17 +63,9 @@ len_without_trailing_chars( byte *line, unsigned len, const char *trimchars )
     return mark? (mark - line) : len;
 }
 
-unsigned
-len_without_trailing_ws( byte *line, unsigned len )
-{
-    return len_without_trailing_chars( line, len, " \t\r\n" );
-}
-
-
-
 
 static int
-standard( text_filter_context_t *tfx, iobuf_t a,
+standard( text_filter_context_t *tfx, IOBUF a,
 	  byte *buf, size_t size, size_t *ret_len)
 {
     int rc=0;
@@ -102,7 +95,30 @@ standard( text_filter_context_t *tfx, iobuf_t a,
 	    break;
 	}
 	lf_seen = tfx->buffer[tfx->buffer_len-1] == '\n';
-	tfx->buffer_len = trim_trailing_ws( tfx->buffer, tfx->buffer_len );
+
+	/* The story behind this is that 2440 says that textmode
+	   hashes should canonicalize line endings to CRLF and remove
+	   spaces and tabs.  2440bis-12 says to just canonicalize to
+	   CRLF.  1.4.0 was released using the bis-12 behavior, but it
+	   was discovered that many mail clients do not canonicalize
+	   PGP/MIME signature text appropriately (and were relying on
+	   GnuPG to handle trailing spaces).  So, we default to the
+	   2440 behavior, but use the 2440bis-12 behavior if the user
+	   specifies --no-rfc2440-text.  The default will be changed
+	   at some point in the future when the mail clients have been
+	   upgraded.  Aside from PGP/MIME and broken mail clients,
+	   this makes no difference to any signatures in the real
+	   world except for a textmode detached signature.  PGP always
+	   used the 2440bis-12 behavior (ignoring 2440 itself), so
+	   this actually makes us compatible with PGP textmode
+	   detached signatures for the first time. */
+	if(opt.rfc2440_text)
+	  tfx->buffer_len=trim_trailing_chars(tfx->buffer,tfx->buffer_len,
+					      " \t\r\n");
+	else
+	  tfx->buffer_len=trim_trailing_chars(tfx->buffer,tfx->buffer_len,
+					      "\r\n");
+
 	if( lf_seen ) {
 	    tfx->buffer[tfx->buffer_len++] = '\r';
 	    tfx->buffer[tfx->buffer_len++] = '\n';
@@ -113,15 +129,13 @@ standard( text_filter_context_t *tfx, iobuf_t a,
 }
 
 
-
-
 /****************
  * The filter is used to make canonical text: Lines are terminated by
  * CR, LF, trailing white spaces are removed.
  */
 int
 text_filter( void *opaque, int control,
-	     iobuf_t a, byte *buf, size_t *ret_len)
+	     IOBUF a, byte *buf, size_t *ret_len)
 {
     size_t size = *ret_len;
     text_filter_context_t *tfx = opaque;
@@ -134,7 +148,7 @@ text_filter( void *opaque, int control,
 	if( tfx->truncated )
 	    log_error(_("can't handle text lines longer than %d characters\n"),
 			MAX_LINELEN );
-	xfree ( tfx->buffer );
+	xfree( tfx->buffer );
 	tfx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )
@@ -148,13 +162,13 @@ text_filter( void *opaque, int control,
  * md is updated as required by rfc2440
  */
 int
-copy_clearsig_text( iobuf_t out, iobuf_t inp, MD_HANDLE md,
+copy_clearsig_text( IOBUF out, IOBUF inp, gcry_md_hd_t md,
 		    int escape_dash, int escape_from, int pgp2mode )
 {
-    unsigned maxlen;
+    unsigned int maxlen;
     byte *buffer = NULL;    /* malloced buffer */
-    unsigned bufsize;	    /* and size of this buffer */
-    unsigned n;
+    unsigned int bufsize;   /* and size of this buffer */
+    unsigned int n;
     int truncated = 0;
     int pending_lf = 0;
 
@@ -163,6 +177,8 @@ copy_clearsig_text( iobuf_t out, iobuf_t inp, MD_HANDLE md,
 
     if( !escape_dash )
 	escape_from = 0;
+
+    write_status (STATUS_BEGIN_SIGNING);
 
     for(;;) {
 	maxlen = MAX_LINELEN;
@@ -176,15 +192,16 @@ copy_clearsig_text( iobuf_t out, iobuf_t inp, MD_HANDLE md,
 	/* update the message digest */
 	if( escape_dash ) {
 	    if( pending_lf ) {
-		gcry_md_putc( md, '\r' );
-		gcry_md_putc( md, '\n' );
+		gcry_md_putc ( md, '\r' );
+		gcry_md_putc ( md, '\n' );
 	    }
-	    gcry_md_write( md, buffer,
-		     len_without_trailing_chars( buffer, n,
-						 pgp2mode? " \r\n":" \t\r\n"));
+	    gcry_md_write ( md, buffer,
+                            len_without_trailing_chars (buffer, n,
+                                                        pgp2mode?
+                                                        " \r\n":" \t\r\n"));
 	}
 	else
-	    gcry_md_write( md, buffer, n );
+            gcry_md_write ( md, buffer, n );
 	pending_lf = buffer[n-1] == '\n';
 
 	/* write the output */

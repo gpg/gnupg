@@ -1,5 +1,5 @@
 /* exec.h
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #ifndef _EXEC_H_
@@ -23,11 +24,20 @@
 
 #include <unistd.h>
 #include <stdio.h>
+
 #include "../common/iobuf.h"
 
 struct exec_info
 {
-  int progreturn,binary,writeonly,madedir,use_temp_files,keep_temp_files;
+  int progreturn;
+  struct
+  {
+    unsigned int binary:1;
+    unsigned int writeonly:1;
+    unsigned int madedir:1;
+    unsigned int use_temp_files:1;
+    unsigned int keep_temp_files:1;
+  } flags;
   pid_t child;
   FILE *tochild;
   iobuf_t fromchild;
@@ -38,6 +48,6 @@ int exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary);
 int exec_read(struct exec_info *info);
 int exec_finish(struct exec_info *info);
-int set_exec_path(const char *path,int method);
+int set_exec_path(const char *path);
 
 #endif /* !_EXEC_H_ */

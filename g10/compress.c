@@ -1,6 +1,6 @@
 /* compress.c - compress filter
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ *               2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,8 +16,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
+
+/* Note that the code in compress-bz2.c is nearly identical to the
+   code here, so if you fix a bug here, look there to see if a
+   matching bug needs to be fixed.  I tried to have one set of
+   functions that could do ZIP, ZLIB, and BZIP2, but it became
+   dangerously unreadable with #ifdefs and if(algo) -dshaw */
 
 #include <config.h>
 #include <stdio.h>
@@ -27,17 +34,19 @@
 #include <assert.h>
 #include <errno.h>
 #include <zlib.h>
-#ifdef __riscos__
+#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
 # include "zlib-riscos.h"
-#endif
+#endif 
 
 #include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "packet.h"
 #include "filter.h"
 #include "main.h"
 #include "options.h"
+
+int compress_filter_bz2( void *opaque, int control,
+			 IOBUF a, byte *buf, size_t *ret_len);
 
 static void
 init_compress( compress_filter_context_t *zfx, z_stream *zs )
@@ -45,24 +54,21 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     int rc;
     int level;
 
-#ifdef __riscos__
+#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
     static int zlib_initialized = 0;
 
     if (!zlib_initialized)
         zlib_initialized = riscos_load_module("ZLib", zlib_path, 1);
 #endif
 
-    if( opt.compress >= 0 && opt.compress <= 9 )
-	level = opt.compress;
-    else if( opt.compress == -1 )
+    if( opt.compress_level >= 1 && opt.compress_level <= 9 )
+	level = opt.compress_level;
+    else if( opt.compress_level == -1 )
 	level = Z_DEFAULT_COMPRESSION;
-    else if( opt.compress == 10 ) /* remove this ! */
-	level = 0;
     else {
 	log_error("invalid compression level; using default level\n");
 	level = Z_DEFAULT_COMPRESSION;
     }
-
 
     if( (rc = zfx->algo == 1? deflateInit2( zs, level, Z_DEFLATED,
 					    -13, 8, Z_DEFAULT_STRATEGY)
@@ -75,13 +81,13 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->outbufsize = 8192;
-    zfx->outbuf = xmalloc ( zfx->outbufsize );
+    zfx->outbuf = xmalloc( zfx->outbufsize );
 }
 
 static int
-do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, iobuf_t a )
+do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
 {
-    gpg_error_t rc;
+    int rc;
     int zrc;
     unsigned n;
 
@@ -111,12 +117,10 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, iobuf_t a 
 		(unsigned)zs->avail_in, (unsigned)zs->avail_out,
 					       (unsigned)n, zrc );
 
-	rc = iobuf_write (a, zfx->outbuf, n);
-        if (rc)
-          {
+	if( (rc=iobuf_write( a, zfx->outbuf, n )) ) {
 	    log_debug("deflate: iobuf_write failed\n");
 	    return rc;
-          }
+	}
     } while( zs->avail_in || (flush == Z_FINISH && zrc != Z_STREAM_END) );
     return 0;
 }
@@ -145,13 +149,13 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->inbufsize = 2048;
-    zfx->inbuf = xmalloc ( zfx->inbufsize );
+    zfx->inbuf = xmalloc( zfx->inbufsize );
     zs->avail_in = 0;
 }
 
 static int
 do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
-	       iobuf_t a, size_t *ret_len )
+	       IOBUF a, size_t *ret_len )
 {
     int zrc;
     int rc=0;
@@ -213,9 +217,9 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
     return rc;
 }
 
-int
+static int
 compress_filter( void *opaque, int control,
-		 iobuf_t a, byte *buf, size_t *ret_len)
+		 IOBUF a, byte *buf, size_t *ret_len)
 {
     size_t size = *ret_len;
     compress_filter_context_t *zfx = opaque;
@@ -224,7 +228,7 @@ compress_filter( void *opaque, int control,
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( !zfx->status ) {
-	    zs = zfx->opaque = xcalloc (1, sizeof *zs );
+	    zs = zfx->opaque = xmalloc_clear( sizeof *zs );
 	    init_uncompress( zfx, zs );
 	    zfx->status = 1;
 	}
@@ -242,10 +246,8 @@ compress_filter( void *opaque, int control,
 	if( !zfx->status ) {
 	    PACKET pkt;
 	    PKT_compressed cd;
-
-	    if( !zfx->algo )
-	        zfx->algo = DEFAULT_COMPRESS_ALGO;
-	    if( zfx->algo != 1 && zfx->algo != 2 )
+	    if(zfx->algo != COMPRESS_ALGO_ZIP
+	       && zfx->algo != COMPRESS_ALGO_ZLIB)
 	      BUG();
 	    memset( &cd, 0, sizeof cd );
 	    cd.len = 0;
@@ -255,7 +257,7 @@ compress_filter( void *opaque, int control,
 	    pkt.pkt.compressed = &cd;
 	    if( build_packet( a, &pkt ))
 		log_bug("build_packet(PKT_COMPRESSED) failed\n");
-	    zs = zfx->opaque = xcalloc (1, sizeof *zs );
+	    zs = zfx->opaque = xmalloc_clear( sizeof *zs );
 	    init_compress( zfx, zs );
 	    zfx->status = 2;
 	}
@@ -271,9 +273,9 @@ compress_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FREE ) {
 	if( zfx->status == 1 ) {
 	    inflateEnd(zs);
-	    xfree (zs);
+	    xfree(zs);
 	    zfx->opaque = NULL;
-	    xfree (zfx->outbuf); zfx->outbuf = NULL;
+	    xfree(zfx->outbuf); zfx->outbuf = NULL;
 	}
 	else if( zfx->status == 2 ) {
 #ifndef __riscos__
@@ -284,9 +286,9 @@ compress_filter( void *opaque, int control,
 	    zs->avail_in = 0;
 	    do_compress( zfx, zs, Z_FINISH, a );
 	    deflateEnd(zs);
-	    xfree (zs);
+	    xfree(zs);
 	    zfx->opaque = NULL;
-	    xfree (zfx->outbuf); zfx->outbuf = NULL;
+	    xfree(zfx->outbuf); zfx->outbuf = NULL;
 	}
         if (zfx->release)
           zfx->release (zfx);
@@ -308,17 +310,17 @@ release_context (compress_filter_context_t *ctx)
  */
 int
 handle_compressed( void *procctx, PKT_compressed *cd,
-		   int (*callback)(iobuf_t, void *), void *passthru )
+		   int (*callback)(IOBUF, void *), void *passthru )
 {
     compress_filter_context_t *cfx;
     int rc;
 
-    if( cd->algorithm < 1 || cd->algorithm > 2	)
-	return GPG_ERR_COMPR_ALGO;
-    cfx = xcalloc (1,sizeof *cfx);
-    cfx->algo = cd->algorithm;
+    if(check_compress_algo(cd->algorithm))
+      return G10ERR_COMPR_ALGO;
+    cfx = xmalloc_clear (sizeof *cfx);
     cfx->release = release_context;
-    iobuf_push_filter( cd->buf, compress_filter, cfx );
+    cfx->algo = cd->algorithm;
+    push_compress_filter(cd->buf,cfx,cd->algorithm);
     if( callback )
 	rc = callback(cd->buf, passthru );
     else
@@ -327,3 +329,38 @@ handle_compressed( void *procctx, PKT_compressed *cd,
     return rc;
 }
 
+void
+push_compress_filter(IOBUF out,compress_filter_context_t *zfx,int algo)
+{
+  push_compress_filter2(out,zfx,algo,0);
+}
+
+void
+push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
+		      int algo,int rel)
+{
+  if(algo>=0)
+    zfx->algo=algo;
+  else
+    zfx->algo=DEFAULT_COMPRESS_ALGO;
+
+  switch(zfx->algo)
+    {
+    case COMPRESS_ALGO_NONE:
+      break;
+
+    case COMPRESS_ALGO_ZIP:
+    case COMPRESS_ALGO_ZLIB:
+      iobuf_push_filter2(out,compress_filter,zfx,rel);
+      break;
+
+#ifdef HAVE_BZIP2
+    case COMPRESS_ALGO_BZIP2:
+      iobuf_push_filter2(out,compress_filter_bz2,zfx,rel);
+      break;
+#endif
+
+    default:
+      BUG();
+    }
+}

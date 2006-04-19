@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 /* Photo ID functions */
@@ -25,7 +26,7 @@
 
 #include "packet.h"
 
-PKT_user_id *generate_photo_id(PKT_public_key *pk);
+PKT_user_id *generate_photo_id(PKT_public_key *pk,const char *filename);
 int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len);
 char *image_type_to_string(byte type,int style);
 void show_photos(const struct user_attribute *attrs,

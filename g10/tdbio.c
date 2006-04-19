@@ -1,4 +1,4 @@
-/* tdbio.c
+/* tdbio.c - trust databse I/O operations
  * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -32,7 +33,6 @@
 #include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "options.h"
 #include "main.h"
@@ -123,21 +123,21 @@ get_record_from_cache( ulong recno )
 static int
 write_cache_item( CACHE_CTRL r )
 {
+    gpg_error_t err;
     int n;
-    gpg_error_t rc;
 
     if( lseek( db_fd, r->recno * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-        rc = gpg_error_from_errno (errno);
+        err = gpg_error_from_errno (errno);
 	log_error(_("trustdb rec %lu: lseek failed: %s\n"),
 					    r->recno, strerror(errno) );
-	return rc;
+	return err;
     }
     n = write( db_fd, r->data, TRUST_RECORD_LEN);
     if( n != TRUST_RECORD_LEN ) {
-        rc = gpg_error_from_errno (errno);
+        err = gpg_error_from_errno (errno);
 	log_error(_("trustdb rec %lu: write failed (n=%d): %s\n"),
 					    r->recno, n, strerror(errno) );
-	return rc;
+	return err;
     }
     r->flags.dirty = 0;
     return 0;
@@ -191,7 +191,7 @@ put_record_into_cache( ulong recno, const char *data )
     }
     /* see whether we reached the limit */
     if( cache_entries < MAX_CACHE_ENTRIES_SOFT ) { /* no */
-	r = xmalloc ( sizeof *r );
+	r = xmalloc( sizeof *r );
 	r->flags.used = 1;
 	r->recno = recno;
 	memcpy( r->data, data, TRUST_RECORD_LEN );
@@ -234,7 +234,7 @@ put_record_into_cache( ulong recno, const char *data )
 	if( cache_entries < MAX_CACHE_ENTRIES_HARD ) { /* no */
 	    if( opt.debug && !(cache_entries % 100) )
 		log_debug("increasing tdbio cache size\n");
-	    r = xmalloc ( sizeof *r );
+	    r = xmalloc( sizeof *r );
 	    r->flags.used = 1;
 	    r->recno = recno;
 	    memcpy( r->data, data, TRUST_RECORD_LEN );
@@ -246,7 +246,7 @@ put_record_into_cache( ulong recno, const char *data )
 	    return 0;
 	}
 	log_info(_("trustdb transaction too large\n"));
-	return GPG_ERR_RESOURCE_LIMIT;
+	return G10ERR_RESOURCE_LIMIT;
     }
     if( dirty_count ) {
 	int n = dirty_count / 5; /* discard some dirty entries */
@@ -336,7 +336,6 @@ tdbio_sync()
     return 0;
 }
 
-
 #if 0
 /* The transaction code is disabled in the 1.2.x branch, as it is not
    yet used.  It will be enabled in 1.3.x. */
@@ -375,11 +374,10 @@ tdbio_end_transaction()
 	else
 	    is_locked = 1;
     }
-#warning block_all_signals is not yet available in ../common/signals.c
-    /*    block_all_signals(); */
+    block_all_signals();
     in_transaction = 0;
     rc = tdbio_sync();
-/*      unblock_all_signals(); */
+    unblock_all_signals();
     if( !opt.lock_once ) {
 	if( !release_dotlock( lockhandle ) )
 	    is_locked = 0;
@@ -410,9 +408,7 @@ tdbio_cancel_transaction()
     in_transaction = 0;
     return 0;
 }
-
-#endif /* transaction code */
-
+#endif
 
 
 /********************************************************
@@ -502,9 +498,9 @@ tdbio_set_dbname( const char *new_dbname, int create )
 
     if( access( fname, R_OK ) ) {
 	if( errno != ENOENT ) {
-	    log_error( _("%s: can't access: %s\n"), fname, strerror(errno) );
-	    xfree (fname);
-	    return GPG_ERR_TRUSTDB;
+	    log_error( _("can't access `%s': %s\n"), fname, strerror(errno) );
+	    xfree(fname);
+	    return G10ERR_TRUSTDB;
 	}
 	if( create ) {
 	    FILE *fp;
@@ -521,37 +517,42 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    }
 	    *p = DIRSEP_C;
 
-	    xfree (db_name);
+	    xfree(db_name);
 	    db_name = fname;
 #ifdef __riscos__
 	    if( !lockhandle )
 		lockhandle = create_dotlock( db_name );
 	    if( !lockhandle )
-		log_fatal( _("%s: can't create lock\n"), db_name );
+		log_fatal( _("can't create lock for `%s'\n"), db_name );
             if( make_dotlock( lockhandle, -1 ) )
-                log_fatal( _("%s: can't make lock\n"), db_name );
+                log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
 	    oldmask=umask(077);
-	    fp =fopen( fname, "wb" );
+            if (is_secured_filename (fname)) {
+                fp = NULL;
+                errno = EPERM;
+            }
+            else
+                fp =fopen( fname, "wb" );
 	    umask(oldmask);
 	    if( !fp )
-		log_fatal( _("%s: can't create: %s\n"), fname, strerror(errno) );
+		log_fatal( _("can't create `%s': %s\n"), fname, strerror(errno) );
 	    fclose(fp);
 	    db_fd = open( db_name, O_RDWR | MY_O_BINARY );
 	    if( db_fd == -1 )
-		log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
+		log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
 
 #ifndef __riscos__
 	    if( !lockhandle )
 		lockhandle = create_dotlock( db_name );
 	    if( !lockhandle )
-		log_fatal( _("%s: can't create lock\n"), db_name );
+		log_fatal( _("can't create lock for `%s'\n"), db_name );
 #endif /* !__riscos__ */
 
             rc = create_version_record ();
 	    if( rc )
 		log_fatal( _("%s: failed to create version record: %s"),
-						   fname, gpg_strerror (rc));
+						   fname, g10_errstr(rc));
 	    /* and read again to check that we are okay */
 	    if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
 		log_fatal( _("%s: invalid trustdb created\n"), db_name );
@@ -562,7 +563,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    return 0;
 	}
     }
-    xfree (db_name);
+    xfree(db_name);
     db_name = fname;
     return 0;
 }
@@ -588,30 +589,26 @@ open_db()
   if (!lockhandle )
     lockhandle = create_dotlock( db_name );
   if (!lockhandle )
-    log_fatal( _("%s: can't create lock\n"), db_name );
+    log_fatal( _("can't create lock for `%s'\n"), db_name );
 #ifdef __riscos__
   if (make_dotlock( lockhandle, -1 ) )
-    log_fatal( _("%s: can't make lock\n"), db_name );
+    log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
   db_fd = open (db_name, O_RDWR | MY_O_BINARY );
-  if (db_fd == -1 && errno == EACCES) {
+  if (db_fd == -1 && (errno == EACCES
+#ifdef EROFS
+                      || errno == EROFS)
+#endif
+      ) {
       db_fd = open (db_name, O_RDONLY | MY_O_BINARY );
       if (db_fd != -1)
           log_info (_("NOTE: trustdb not writable\n"));
   }
   if ( db_fd == -1 )
-    log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
+    log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
+  register_secured_file (db_name);
 
-  /* check whether we need to do a version migration */
-  do
-    n = read (db_fd, buf, 5);
-  while (n==-1 && errno == EINTR);
-  if (n == 5 && !memcmp (buf, "\x01gpg\x02", 5))
-    {
-      migrate_from_v2 ();
-    }
-  
-  /* read the version record */
+  /* Read the version record. */
   if (tdbio_read_record (0, &rec, RECTYPE_VER ) )
     log_fatal( _("%s: invalid trustdb\n"), db_name );
 }
@@ -646,7 +643,7 @@ create_hashtable( TRUSTREC *vr, int type )
 	 rc = tdbio_write_record( &rec );
 	 if( rc )
 	     log_fatal( _("%s: failed to create hashtable: %s\n"),
-					db_name, gpg_strerror (rc));
+					db_name, g10_errstr(rc));
     }
     /* update the version record */
     rc = tdbio_write_record( vr );
@@ -654,7 +651,7 @@ create_hashtable( TRUSTREC *vr, int type )
 	rc = tdbio_sync();
     if( rc )
 	log_fatal( _("%s: error updating version record: %s\n"),
-						  db_name, gpg_strerror (rc));
+						  db_name, g10_errstr(rc));
 }
 
 
@@ -671,7 +668,7 @@ tdbio_db_matches_options()
       rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
       if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-		   db_name, gpg_strerror (rc) );
+		   db_name, g10_errstr(rc) );
 
       yes_no = vr.r.ver.marginals == opt.marginals_needed
 	&& vr.r.ver.completes == opt.completes_needed
@@ -691,7 +688,7 @@ tdbio_read_model(void)
   rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
   if( rc )
     log_fatal( _("%s: error reading version record: %s\n"),
-	       db_name, gpg_strerror (rc) );
+	       db_name, g10_errstr(rc) );
   return vr.r.ver.trust_model;
 }
 
@@ -707,7 +704,7 @@ tdbio_read_nextcheck ()
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-						    db_name, gpg_strerror (rc) );
+						    db_name, g10_errstr(rc) );
     return vr.r.ver.nextcheck;
 }
 
@@ -721,7 +718,7 @@ tdbio_write_nextcheck (ulong stamp)
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-				       db_name, gpg_strerror (rc) );
+				       db_name, g10_errstr(rc) );
 
     if (vr.r.ver.nextcheck == stamp)
       return 0;
@@ -730,7 +727,7 @@ tdbio_write_nextcheck (ulong stamp)
     rc = tdbio_write_record( &vr );
     if( rc )
 	log_fatal( _("%s: error writing version record: %s\n"),
-				       db_name, gpg_strerror (rc) );
+				       db_name, g10_errstr(rc) );
     return 1;
 }
 
@@ -751,7 +748,7 @@ get_trusthashrec(void)
 	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
 	if( rc )
 	    log_fatal( _("%s: error reading version record: %s\n"),
-					    db_name, gpg_strerror (rc) );
+					    db_name, g10_errstr(rc) );
 	if( !vr.r.ver.trusthashtbl )
 	    create_hashtable( &vr, 0 );
 
@@ -782,9 +779,8 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
     if( rc ) {
-        log_error ("upd_hashtable in `%s': read failed: %s\n", db_name,
-                   gpg_strerror (rc) );
-        return rc;
+	log_error("upd_hashtable: read failed: %s\n",	g10_errstr(rc) );
+	return rc;
     }
 
     item = rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD];
@@ -792,8 +788,8 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = newrecnum;
 	rc = tdbio_write_record( &rec );
 	if( rc ) {
-            log_error ("upd_hashtable in `%s': write htbl failed: %s\n",
-                       db_name, gpg_strerror (rc) );
+	    log_error("upd_hashtable: write htbl failed: %s\n",
+							    g10_errstr(rc) );
 	    return rc;
 	}
     }
@@ -802,7 +798,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	rc = tdbio_read_record( item, &rec, 0 );
 	if( rc ) {
 	    log_error( "upd_hashtable: read item failed: %s\n",
-							    gpg_strerror (rc) );
+							    g10_errstr(rc) );
 	    return rc;
 	}
 
@@ -811,7 +807,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	    level++;
 	    if( level >= keylen ) {
 		log_error( "hashtable has invalid indirections.\n");
-		return GPG_ERR_TRUSTDB;
+		return G10ERR_TRUSTDB;
 	    }
 	    goto next_level;
 	}
@@ -828,7 +824,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 						       &rec, RECTYPE_HLST);
 		    if( rc ) {
 			log_error( "upd_hashtable: read hlst failed: %s\n",
-							     gpg_strerror (rc) );
+							     g10_errstr(rc) );
 			return rc;
 		    }
 		}
@@ -843,7 +839,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 			rc = tdbio_write_record( &rec );
 			if( rc )
 			    log_error( "upd_hashtable: write hlst failed: %s\n",
-							      gpg_strerror (rc) );
+							      g10_errstr(rc) );
 			return rc; /* done */
 		    }
 		}
@@ -852,7 +848,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 						      &rec, RECTYPE_HLST );
 		    if( rc ) {
 			log_error( "upd_hashtable: read hlst failed: %s\n",
-							     gpg_strerror (rc) );
+							     g10_errstr(rc) );
 			return rc;
 		    }
 		}
@@ -861,7 +857,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_write_record( &rec );
 		    if( rc ) {
 			log_error( "upd_hashtable: write hlst failed: %s\n",
-							  gpg_strerror (rc) );
+							  g10_errstr(rc) );
 			return rc;
 		    }
 		    memset( &rec, 0, sizeof rec );
@@ -871,7 +867,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_write_record( &rec );
 		    if( rc )
 			log_error( "upd_hashtable: write ext hlst failed: %s\n",
-							  gpg_strerror (rc) );
+							  g10_errstr(rc) );
 		    return rc; /* done */
 		}
 	    } /* end loop over hlst slots */
@@ -889,7 +885,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	    rc = tdbio_write_record( &rec );
 	    if( rc ) {
 		log_error( "upd_hashtable: write new hlst failed: %s\n",
-						  gpg_strerror (rc) );
+						  g10_errstr(rc) );
 		return rc;
 	    }
 	    /* update the hashtable record */
@@ -897,14 +893,14 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	    rc = tdbio_write_record( &lastrec );
 	    if( rc )
 		log_error( "upd_hashtable: update htbl failed: %s\n",
-							     gpg_strerror (rc) );
+							     g10_errstr(rc) );
 	    return rc; /* ready */
 	}
 	else {
 	    log_error( "hashtbl %lu: %lu/%d points to an invalid record %lu\n",
 		       table, hashrec, (msb % ITEMS_PER_HTBL_RECORD), item);
 	    list_trustdb(NULL);
-	    return GPG_ERR_TRUSTDB;
+	    return G10ERR_TRUSTDB;
 	}
     }
 
@@ -931,8 +927,8 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
     if( rc ) {
-	log_error ("drop_from_hashtable `%s': read failed: %s\n",
-                   db_name, gpg_strerror (rc) );
+	log_error("drop_from_hashtable: read failed: %s\n",
+							g10_errstr(rc) );
 	return rc;
     }
 
@@ -944,15 +940,15 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 	rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = 0;
 	rc = tdbio_write_record( &rec );
 	if( rc )
-	    log_error ("drop_from_hashtable `%s': write htbl failed: %s\n",
-                       db_name, gpg_strerror (rc) );
+	    log_error("drop_from_hashtable: write htbl failed: %s\n",
+							    g10_errstr(rc) );
 	return rc;
     }
 
     rc = tdbio_read_record( item, &rec, 0 );
     if( rc ) {
 	log_error( "drop_from_hashtable: read item failed: %s\n",
-							gpg_strerror (rc) );
+							g10_errstr(rc) );
 	return rc;
     }
 
@@ -961,7 +957,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 	level++;
 	if( level >= keylen ) {
 	    log_error( "hashtable has invalid indirections.\n");
-	    return GPG_ERR_TRUSTDB;
+	    return G10ERR_TRUSTDB;
 	}
 	goto next_level;
     }
@@ -973,9 +969,8 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 		    rec.r.hlst.rnum[i] = 0; /* drop */
 		    rc = tdbio_write_record( &rec );
 		    if( rc )
-			log_error ("drop_from_hashtable `%s': "
-                                   "write htbl failed: %s\n",
-                                   db_name, gpg_strerror (rc) );
+			log_error("drop_from_hashtable: write htbl failed: %s\n",
+									g10_errstr(rc) );
 		    return rc;
 		}
 	    }
@@ -984,7 +979,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 						   &rec, RECTYPE_HLST);
 		if( rc ) {
 		    log_error( "drop_from_hashtable: read hlst failed: %s\n",
-							 gpg_strerror (rc) );
+							 g10_errstr(rc) );
 		    return rc;
 		}
 	    }
@@ -995,7 +990,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 
     log_error( "hashtbl %lu: %lu/%d points to wrong record %lu\n",
 		    table, hashrec, (msb % ITEMS_PER_HTBL_RECORD), item);
-    return GPG_ERR_TRUSTDB;
+    return G10ERR_TRUSTDB;
 }
 
 
@@ -1021,8 +1016,7 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, rec, RECTYPE_HTBL );
     if( rc ) {
-	log_error ("lookup_hashtable in `%s' failed: %s\n",
-                   db_name, gpg_strerror (rc) );
+	log_error("lookup_hashtable failed: %s\n", g10_errstr(rc) );
 	return rc;
     }
 
@@ -1032,16 +1026,15 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 
     rc = tdbio_read_record( item, rec, 0 );
     if( rc ) {
-	log_error ("hashtable `%s' read failed: %s\n",
-                   db_name, gpg_strerror (rc) );
+	log_error( "hashtable read failed: %s\n", g10_errstr(rc) );
 	return rc;
     }
     if( rec->rectype == RECTYPE_HTBL ) {
 	hashrec = item;
 	level++;
 	if( level >= keylen ) {
-	    log_error ("hashtable `%s' has invalid indirections\n", db_name);
-	    return GPG_ERR_TRUSTDB;
+	    log_error("hashtable has invalid indirections\n");
+	    return G10ERR_TRUSTDB;
 	}
 	goto next_level;
     }
@@ -1056,7 +1049,7 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 		    rc = tdbio_read_record( rec->r.hlst.rnum[i], &tmp, 0 );
 		    if( rc ) {
 			log_error( "lookup_hashtable: read item failed: %s\n",
-							      gpg_strerror (rc) );
+							      g10_errstr(rc) );
 			return rc;
 		    }
 		    if( (*cmpfnc)( cmpdata, &tmp ) ) {
@@ -1069,7 +1062,7 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 		rc = tdbio_read_record( rec->r.hlst.next, rec, RECTYPE_HLST );
 		if( rc ) {
 		    log_error( "lookup_hashtable: read hlst failed: %s\n",
-							 gpg_strerror (rc) );
+							 g10_errstr(rc) );
 		    return rc;
 		}
 	    }
@@ -1164,7 +1157,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 {
     byte readbuf[TRUST_RECORD_LEN];
     const byte *buf, *p;
-    int rc = 0;
+    gpg_error_t err = 0;
     int n, i;
 
     if( db_fd == -1 )
@@ -1172,19 +1165,19 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
     buf = get_record_from_cache( recnum );
     if( !buf ) {
 	if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-            rc = gpg_error_from_errno (errno);
+            err = gpg_error_from_errno (errno);
 	    log_error(_("trustdb: lseek failed: %s\n"), strerror(errno) );
-	    return rc;
+	    return err;
 	}
 	n = read( db_fd, readbuf, TRUST_RECORD_LEN);
 	if( !n ) {
 	    return -1; /* eof */
 	}
 	else if( n != TRUST_RECORD_LEN ) {
-            rc = gpg_error_from_errno (errno);
+            err = gpg_error_from_errno (errno);
 	    log_error(_("trustdb: read failed (n=%d): %s\n"), n,
 							strerror(errno) );
-	    return rc;
+	    return err;
 	}
 	buf = readbuf;
     }
@@ -1195,7 +1188,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
     if( expected && rec->rectype != expected ) {
 	log_error("%lu: read expected rec type %d, got %d\n",
 		    recnum, expected, rec->rectype );
-	return GPG_ERR_TRUSTDB;
+	return gpg_error (GPG_ERR_TRUSTDB);
     }
     p++;    /* skip reserved byte */
     switch( rec->rectype ) {
@@ -1204,7 +1197,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
       case RECTYPE_VER: /* version record */
 	if( memcmp(buf+1, "gpg", 3 ) ) {
 	    log_error( _("%s: not a trustdb file\n"), db_name );
-	    rc = GPG_ERR_TRUSTDB;
+	    err = gpg_error (GPG_ERR_TRUSTDB);
 	}
 	p += 2; /* skip "gpg" */
 	rec->r.ver.version  = *p++;
@@ -1223,12 +1216,12 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	if( recnum ) {
 	    log_error( _("%s: version record with recnum %lu\n"), db_name,
 							     (ulong)recnum );
-	    rc = GPG_ERR_TRUSTDB;
+	    err = gpg_error (GPG_ERR_TRUSTDB);
 	}
 	else if( rec->r.ver.version != 3 ) {
 	    log_error( _("%s: invalid file version %d\n"), db_name,
 							rec->r.ver.version );
-	    rc = GPG_ERR_TRUSTDB;
+	    err = gpg_error (GPG_ERR_TRUSTDB);
 	}
 	break;
       case RECTYPE_FREE:
@@ -1263,11 +1256,11 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
       default:
 	log_error( "%s: invalid record type %d at recnum %lu\n",
 				   db_name, rec->rectype, (ulong)recnum );
-	rc = GPG_ERR_TRUSTDB;
+	err = gpg_error (GPG_ERR_TRUSTDB);
 	break;
     }
 
-    return rc;
+    return err;
 }
 
 /****************
@@ -1379,7 +1372,7 @@ tdbio_delete_record( ulong recnum )
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-				       db_name, gpg_strerror (rc) );
+				       db_name, g10_errstr(rc) );
 
     rec.recnum = recnum;
     rec.rectype = RECTYPE_FREE;
@@ -1406,13 +1399,13 @@ tdbio_new_recnum()
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-					     db_name, gpg_strerror (rc) );
+					     db_name, g10_errstr(rc) );
     if( vr.r.ver.firstfree ) {
 	recnum = vr.r.ver.firstfree;
 	rc = tdbio_read_record( recnum, &rec, RECTYPE_FREE );
 	if( rc ) {
 	    log_error( _("%s: error reading free record: %s\n"),
-						  db_name,  gpg_strerror (rc) );
+						  db_name,  g10_errstr(rc) );
 	    return rc;
 	}
 	/* update dir record */
@@ -1420,7 +1413,7 @@ tdbio_new_recnum()
 	rc = tdbio_write_record( &vr );
 	if( rc ) {
 	    log_error( _("%s: error writing dir record: %s\n"),
-						     db_name, gpg_strerror (rc) );
+						     db_name, g10_errstr(rc) );
 	    return rc;
 	}
 	/*zero out the new record */
@@ -1430,7 +1423,7 @@ tdbio_new_recnum()
 	rc = tdbio_write_record( &rec );
 	if( rc )
 	    log_fatal(_("%s: failed to zero a record: %s\n"),
-				       db_name, gpg_strerror (rc));
+				       db_name, g10_errstr(rc));
     }
     else { /* not found, append a new record */
 	offset = lseek( db_fd, 0, SEEK_END );
@@ -1460,7 +1453,7 @@ tdbio_new_recnum()
 
 	if( rc )
 	    log_fatal(_("%s: failed to append a record: %s\n"),
-				    db_name,	gpg_strerror (rc));
+				    db_name,	g10_errstr(rc));
     }
     return recnum ;
 }
@@ -1508,129 +1501,3 @@ tdbio_invalid(void)
     g10_exit(2);
 }
 
-/*
- * Migrate the trustdb as just up to gpg 1.0.6 (trustdb version 2)
- * to the 2.1 version as used with 1.0.6b - This is pretty trivial as needs
- * only to scan the tdb and insert new the new trust records.  The old ones are
- * obsolte from now on
- */
-static void
-migrate_from_v2 ()
-{
-  TRUSTREC rec;
-  int i, n;
-  struct {
-    ulong keyrecno;
-    byte  ot;
-    byte okay;
-    byte  fpr[20];
-  } *ottable;
-  int ottable_size, ottable_used;
-  byte oldbuf[40];
-  ulong recno;
-  int rc, count;
-
-  ottable_size = 5;
-  ottable = xmalloc (ottable_size * sizeof *ottable);
-  ottable_used = 0;
-
-  /* We have some restrictions here.  We can't use the version record
-   * and we can't use any of the old hashtables because we dropped the
-   * code.  So we first collect all ownertrusts and then use a second
-   * pass fo find the associated keys.  We have to do this all without using 
-   * the regular record read functions.
-   */
-
-  /* get all the ownertrusts */
-  if (lseek (db_fd, 0, SEEK_SET ) == -1 ) 
-      log_fatal ("migrate_from_v2: lseek failed: %s\n", strerror (errno));
-  for (recno=0;;recno++)
-    {
-      do
-        n = read (db_fd, oldbuf, 40);
-      while (n==-1 && errno == EINTR);
-      if (!n)
-        break; /* eof */
-      if (n != 40)
-        log_fatal ("migrate_vfrom_v2: read error or short read\n");
-
-      if (*oldbuf != 2)
-        continue;
-      
-      /* v2 dir record */
-      if (ottable_used == ottable_size)
-        {
-          ottable_size += 1000;
-          ottable = xrealloc (ottable, ottable_size * sizeof *ottable);
-        }
-      ottable[ottable_used].keyrecno = buftoulong (oldbuf+6);
-      ottable[ottable_used].ot = oldbuf[18];
-      ottable[ottable_used].okay = 0;
-      memset (ottable[ottable_used].fpr,0, 20);
-      if (ottable[ottable_used].keyrecno && ottable[ottable_used].ot)
-        ottable_used++;
-    }
-  log_info ("found %d ownertrust records\n", ottable_used);
-
-  /* Read again and find the fingerprints */
-  if (lseek (db_fd, 0, SEEK_SET ) == -1 ) 
-      log_fatal ("migrate_from_v2: lseek failed: %s\n", strerror (errno));
-  for (recno=0;;recno++)
-    {
-      do
-        n = read (db_fd, oldbuf, 40);
-      while (n==-1 && errno == EINTR);
-      if (!n)
-        break; /* eof */
-      if (n != 40)
-        log_fatal ("migrate_from_v2: read error or short read\n");
-
-      if (*oldbuf != 3) 
-        continue;
-
-      /* v2 key record */
-      for (i=0; i < ottable_used; i++)
-        {
-          if (ottable[i].keyrecno == recno)
-            {
-              memcpy (ottable[i].fpr, oldbuf+20, 20);
-              ottable[i].okay = 1;
-              break;
-            }
-        }
-    }
-
-  /* got everything - create the v3 trustdb */
-  if (ftruncate (db_fd, 0))
-    log_fatal ("can't truncate `%s': %s\n", db_name, strerror (errno) );
-  if (create_version_record ())
-    log_fatal ("failed to recreate version record of `%s'\n", db_name);
-
-  /* access the hash table, so it is store just after the version record, 
-   * this is not needed put a dump is more pretty */
-  get_trusthashrec ();
-
-  /* And insert the old ownertrust values */
-  count = 0;
-  for (i=0; i < ottable_used; i++)
-    {
-      if (!ottable[i].okay)
-        continue;
-      
-      memset (&rec, 0, sizeof rec);
-      rec.recnum = tdbio_new_recnum ();
-      rec.rectype = RECTYPE_TRUST;
-      memcpy(rec.r.trust.fingerprint, ottable[i].fpr, 20);
-      rec.r.trust.ownertrust = ottable[i].ot;
-      if (tdbio_write_record (&rec))
-        log_fatal ("failed to write trust record of `%s'\n", db_name);
-      count++;
-    }
-
-  revalidation_mark ();
-  rc = tdbio_sync ();
-  if (rc)
-    log_fatal ("failed to sync `%s'\n", db_name);
-  log_info ("migrated %d version 2 ownertrusts\n", count);
-  xfree (ottable);
-}

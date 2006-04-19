@@ -1,6 +1,6 @@
 /* encode.c - encode data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -32,7 +33,6 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "filter.h"
@@ -42,10 +42,8 @@
 #include "pkglue.h"
 
 
-static int encode_simple( const char *filename, int mode, int compat );
-static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, iobuf_t out );
-
-
+static int encode_simple( const char *filename, int mode, int use_seskey );
+static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 
 /****************
  * Encode FILENAME with only the symmetric cipher.  Take input from
@@ -54,17 +52,7 @@ static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, iobuf_t out );
 int
 encode_symmetric( const char *filename )
 {
-    int compat = 1;
-
-#if 0    
-    /* We don't want to use it because older gnupg version can't
-       handle it and we can presume that a lot of scripts are running
-       with the expert mode set.  Some time in the future we might
-       want to allow for it. */
-    if ( opt.expert )
-        compat = 0; /* PGP knows how to handle this mode. */
-#endif
-    return encode_simple( filename, 1, compat );
+    return encode_simple( filename, 1, 0 );
 }
 
 /****************
@@ -74,69 +62,62 @@ encode_symmetric( const char *filename )
 int
 encode_store( const char *filename )
 {
-    return encode_simple( filename, 0, 1 );
+    return encode_simple( filename, 0, 0 );
 }
 
+
 static void
-encode_sesskey (DEK * dek, DEK ** ret_dek, byte * enckey)
+encode_seskey( DEK *dek, DEK **seskey, byte *enckey )
 {
-  CIPHER_HANDLE hd;
-  DEK * c;
-  byte buf[33];
+    gcry_cipher_hd_t hd;
+    byte buf[33];
 
-  assert (dek->keylen < 32);
+    assert ( dek->keylen <= 32 );
+    if(!*seskey)
+      {
+	*seskey=xmalloc_clear(sizeof(DEK));
+	(*seskey)->keylen=dek->keylen;
+	(*seskey)->algo=dek->algo;
+	make_session_key(*seskey);
+	/*log_hexdump( "thekey", c->key, c->keylen );*/
+      }
+
+    /* The encrypted session key is prefixed with a one-octet algorithm id.  */
+    buf[0] = (*seskey)->algo;
+    memcpy( buf + 1, (*seskey)->key, (*seskey)->keylen );
     
-  c = xcalloc (1, sizeof *c);
-  c->keylen = dek->keylen;
-  c->algo = dek->algo;
-  make_session_key (c);
-  /*log_hexdump ("thekey", c->key, c->keylen);*/
+    /* We only pass already checked values to the following fucntion,
+       thus we consider any failure as fatal.  */
+    if (gcry_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
+      BUG ();
+    if (gcry_cipher_setkey (hd, dek->key, dek->keylen))
+      BUG ();
+    gry_cipher_setiv (hd, NULL, 0);
+    gcry_cipher_encrypt (hd, buf, (*seskey)->keylen + 1, NULL, 0);
+    gcry_cipher_close (hd);
 
-  /* the encrypted session key is prefixed with a one-octet algorithm id */
-  buf[0] = c->algo;
-  memcpy (buf + 1, c->key, c->keylen);
-    
-  /* due to the fact that we use only checked values, consider each
-     failure as fatal. */
-  if (gcry_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
-    BUG();
-  if (gcry_cipher_setkey (hd, dek->key, dek->keylen))
-    BUG();
-  gcry_cipher_setiv (hd, NULL, 0);
-  gcry_cipher_encrypt (hd, buf, c->keylen + 1, NULL, 0);
-  gcry_cipher_close (hd);
-
-  memcpy (enckey, buf, c->keylen + 1);
-  wipememory (buf, sizeof buf); /* burn key */
-  *ret_dek = c;
+    memcpy( enckey, buf, (*seskey)->keylen + 1 );
+    wipememory( buf, sizeof buf ); /* burn key */
 }
 
 /* We try very hard to use a MDC */
 static int
-use_mdc (PK_LIST pk_list,int algo)
+use_mdc(PK_LIST pk_list,int algo)
 {
-  byte cipher_algid[4] = {
-    CIPHER_ALGO_AES,
-    CIPHER_ALGO_AES192,
-    CIPHER_ALGO_AES256,
-    CIPHER_ALGO_TWOFISH
-  };
-  int i;
-
   /* RFC-1991 and 2440 don't have MDC */
   if(RFC1991 || RFC2440)
     return 0;
-  
+
   /* --force-mdc overrides --disable-mdc */
-  if (opt.force_mdc)
+  if(opt.force_mdc)
     return 1;
 
-  if (opt.disable_mdc)
+  if(opt.disable_mdc)
     return 0;
 
   /* Do the keys really support MDC? */
 
-  if (select_mdc_from_pklist (pk_list))
+  if(select_mdc_from_pklist(pk_list))
     return 1;
   
   /* The keys don't support MDC, so now we do a bit of a hack - if any
@@ -144,26 +125,40 @@ use_mdc (PK_LIST pk_list,int algo)
      can handle a MDC.  This is valid for PGP 7, which can handle MDCs
      though it will not generate them.  2440bis allows this, by the
      way. */
-  for (i=0; i < DIM (cipher_algid); i++)
-    {
-      if (select_algo_from_prefs (pk_list, PREFTYPE_SYM, cipher_algid[i],
-                                  NULL) == cipher_algid[i])
-        return 1;
-    }
+
+  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+			    CIPHER_ALGO_AES,NULL)==CIPHER_ALGO_AES)
+    return 1;
+
+  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+			    CIPHER_ALGO_AES192,NULL)==CIPHER_ALGO_AES192)
+    return 1;
+
+  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+			    CIPHER_ALGO_AES256,NULL)==CIPHER_ALGO_AES256)
+    return 1;
+
+  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+			    CIPHER_ALGO_TWOFISH,NULL)==CIPHER_ALGO_TWOFISH)
+    return 1;
 
   /* Last try.  Use MDC for the modern ciphers. */
+
   if (gcry_cipher_get_algo_blklen (algo) != 8)
     return 1;
 
   return 0; /* No MDC */
 }
 
+/* We don't want to use use_seskey yet because older gnupg versions
+   can't handle it, and there isn't really any point unless we're
+   making a message that can be decrypted by a public key or
+   passphrase. */
 static int
-encode_simple( const char *filename, int mode, int compat )
+encode_simple( const char *filename, int mode, int use_seskey )
 {
-    iobuf_t inp, out;
+    IOBUF inp, out;
     PACKET pkt;
-    DEK *dek = NULL;
     PKT_plaintext *pt = NULL;
     STRING2KEY *s2k = NULL;
     byte enckey[33];
@@ -175,7 +170,7 @@ encode_simple( const char *filename, int mode, int compat )
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
     progress_filter_context_t pfx;
-    int do_compress = opt.compress && !RFC1991;
+    int do_compress = !RFC1991 && default_compress_algo();
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
@@ -184,10 +179,19 @@ encode_simple( const char *filename, int mode, int compat )
     init_packet(&pkt);
     
     /* prepare iobufs */
-    if( !(inp = iobuf_open(filename)) ) {
+    inp = iobuf_open(filename);
+    if (inp)
+      iobuf_ioctl (inp,3,1,NULL); /* disable fd caching */
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if( !inp ) {
         rc = gpg_error_from_errno (errno);
-	log_error(_("%s: can't open: %s\n"), filename? filename: "[stdin]",
-					strerror(errno) );
+	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]"
+                  strerror(errno) );
 	return rc;
     }
 
@@ -199,42 +203,49 @@ encode_simple( const char *filename, int mode, int compat )
     /* Due the the fact that we use don't use an IV to encrypt the
        session key we can't use the new mode with RFC1991 because
        it has no S2K salt. RFC1991 always uses simple S2K. */
-    if ( RFC1991 && !compat )
-        compat = 1;
+    if ( RFC1991 && use_seskey )
+        use_seskey = 0;
     
     cfx.dek = NULL;
     if( mode ) {
-	s2k = xcalloc (1, sizeof *s2k );
+	s2k = xmalloc_clear( sizeof *s2k );
 	s2k->mode = RFC1991? 0:opt.s2k_mode;
-	s2k->hash_algo = opt.s2k_digest_algo;
+	s2k->hash_algo=S2K_DIGEST_ALGO;
 	cfx.dek = passphrase_to_dek( NULL, 0,
 				     default_cipher_algo(), s2k, 2,
                                      NULL, NULL);
 	if( !cfx.dek || !cfx.dek->keylen ) {
-            rc = gpg_error (GPG_ERR_INV_PASSPHRASE);
-	    xfree (cfx.dek);
-	    xfree (s2k);
+	    rc = gpg_error (GPG_ERR_INV_PASSPHRASE);
+	    xfree(cfx.dek);
+	    xfree(s2k);
 	    iobuf_close(inp);
-	    log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc) );
+	    log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc));
 	    return rc;
 	}
-        if (!compat && s2k->mode != 1 && s2k->mode != 3) {
-            compat = 1;
+        if (use_seskey && s2k->mode != 1 && s2k->mode != 3) {
+            use_seskey = 0;
             log_info (_("can't use a symmetric ESK packet "
                         "due to the S2K mode\n"));
         }
 
-        if ( !compat ) {            
-            seskeylen = gcry_cipher_get_algo_keylen (default_cipher_algo());
-            encode_sesskey( cfx.dek, &dek, enckey );
-            xfree (cfx.dek); cfx.dek = dek;
-        }
+        if ( use_seskey )
+	  {
+	    DEK *dek = NULL;
+
+            seskeylen = gcry_cipher_get_algo_keylen (default_cipher_algo ());
+            encode_seskey( cfx.dek, &dek, enckey );
+            xfree( cfx.dek ); cfx.dek = dek;
+	  }
+
+	if(opt.verbose)
+	  log_info(_("using cipher %s\n"),
+		   gcry_cipher_algo_name (cfx.dek->algo));
 
 	cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
 
-    if (opt.compress == -1 && cfx.dek && cfx.dek->use_mdc &&
-	is_file_compressed(filename, &rc))
+    if (do_compress && cfx.dek && cfx.dek->use_mdc
+	&& is_file_compressed(filename, &rc))
       {
         if (opt.verbose)
           log_info(_("`%s' already compressed\n"), filename);
@@ -243,52 +254,43 @@ encode_simple( const char *filename, int mode, int compat )
 
     if( rc || (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
 	iobuf_cancel(inp);
-	xfree (cfx.dek);
-	xfree (s2k);
+	xfree(cfx.dek);
+	xfree(s2k);
 	return rc;
     }
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
-#ifdef ENABLE_COMMENT_PACKETS
-    else {
-	write_comment( out, "#created by GNUPG v" VERSION " ("
-					    PRINTABLE_OS_NAME ")");
-	if( opt.comment_string )
-	    write_comment( out, opt.comment_string );
-    }
-#endif
+
     if( s2k && !RFC1991 ) {
-	PKT_symkey_enc *enc = xcalloc (1, sizeof *enc + seskeylen + 1 );
+	PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc + seskeylen + 1 );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
 	enc->s2k = *s2k;
-        if ( !compat && seskeylen ) {
+        if ( use_seskey && seskeylen ) {
             enc->seskeylen = seskeylen + 1; /* algo id */
             memcpy( enc->seskey, enckey, seskeylen + 1 );
         }
 	pkt.pkttype = PKT_SYMKEY_ENC;
 	pkt.pkt.symkey_enc = enc;
 	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build symkey packet failed: %s\n", gpg_strerror (rc) );
-	xfree (enc);
+	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
+	xfree(enc);
     }
 
     if (!opt.no_literal) {
 	/* setup the inner packet */
 	if( filename || opt.set_filename ) {
-	    char *s = make_basename ( opt.set_filename ? opt.set_filename
-						      : filename
-                                      /* for riscos?
-                                         .iobuf_get_real_fname( inp ) */
-                                      );
-	    pt = xmalloc ( sizeof *pt + strlen(s) - 1 );
+	    char *s = make_basename( opt.set_filename ? opt.set_filename
+						      : filename,
+				     iobuf_get_real_fname( inp ) );
+	    pt = xmalloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );
-	    xfree (s);
+	    xfree(s);
 	}
 	else { /* no filename */
-	    pt = xmalloc ( sizeof *pt - 1 );
+	    pt = xmalloc( sizeof *pt - 1 );
 	    pt->namelen = 0;
 	}
     }
@@ -304,12 +306,14 @@ encode_simple( const char *filename, int mode, int compat )
        either partial length or fixed length with the new style
        messages. */
 
-    if (filename && *filename && !(*filename == '-' && !filename[1])
-        && !opt.textmode ) {
+    if ( !iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
+      {
         off_t tmpsize;
+        int overflow;
 
-	if ( !(tmpsize = iobuf_get_filelength(inp)) )
-          log_info(_("%s: WARNING: empty file\n"), filename );
+	if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
+             && !overflow )
+          log_info(_("WARNING: `%s' is an empty file\n"), filename );
         /* We can't encode the length of very large files because
            OpenPGP uses only 32 bit for file sizes.  So if the the
            size of a file is larger than 2^32 minus some bytes for
@@ -318,9 +322,9 @@ encode_simple( const char *filename, int mode, int compat )
           filesize = tmpsize;
         else
           filesize = 0;
-    }
+      }
     else
-	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
+      filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
 
     if (!opt.no_literal) {
 	pt->timestamp = make_timestamp();
@@ -347,14 +351,13 @@ encode_simple( const char *filename, int mode, int compat )
       {
         if (cfx.dek && cfx.dek->use_mdc)
           zfx.new_ctb = 1;
-	zfx.algo=default_compress_algo();
-	iobuf_push_filter( out, compress_filter, &zfx );
+	push_compress_filter(out,&zfx,default_compress_algo());
       }
 
     /* do the work */
     if (!opt.no_literal) {
 	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build_packet failed: %s\n", gpg_strerror (rc) );
+	    log_error("build_packet failed: %s\n", g10_errstr(rc) );
     }
     else {
 	/* user requested not to create a literal packet,
@@ -362,8 +365,9 @@ encode_simple( const char *filename, int mode, int compat )
 	byte copy_buffer[4096];
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-	    if ( (rc=iobuf_write(out, copy_buffer, bytes_copied))) {
-		log_error("copying input to output failed: %s\n", gpg_strerror (rc) );
+	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
+		rc = G10ERR_WRITE_FILE;
+		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
 		break;
 	    }
 	wipememory(copy_buffer, 4096); /* burn buffer */
@@ -381,9 +385,56 @@ encode_simple( const char *filename, int mode, int compat )
     if (pt)
 	pt->buf = NULL;
     free_packet(&pkt);
-    xfree (cfx.dek);
-    xfree (s2k);
+    xfree(cfx.dek);
+    xfree(s2k);
     return rc;
+}
+
+int
+setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
+{
+  *symkey_s2k=xmalloc_clear(sizeof(STRING2KEY));
+  (*symkey_s2k)->mode = opt.s2k_mode;
+  (*symkey_s2k)->hash_algo = S2K_DIGEST_ALGO;
+
+  *symkey_dek=passphrase_to_dek(NULL,0,opt.s2k_cipher_algo,
+				*symkey_s2k,2,NULL,NULL);
+  if(!*symkey_dek || !(*symkey_dek)->keylen)
+    {
+      xfree(*symkey_dek);
+      xfree(*symkey_s2k);
+      return G10ERR_PASSPHRASE;
+    }
+
+  return 0;
+}
+
+static int
+write_symkey_enc(STRING2KEY *symkey_s2k,DEK *symkey_dek,DEK *dek,IOBUF out)
+{
+  int rc,seskeylen=cipher_get_keylen(dek->algo)/8;
+
+  PKT_symkey_enc *enc;
+  byte enckey[33];
+  PACKET pkt;
+
+  enc=xmalloc_clear(sizeof(PKT_symkey_enc)+seskeylen+1);
+  encode_seskey(symkey_dek,&dek,enckey);
+
+  enc->version = 4;
+  enc->cipher_algo = opt.s2k_cipher_algo;
+  enc->s2k = *symkey_s2k;
+  enc->seskeylen = seskeylen + 1; /* algo id */
+  memcpy( enc->seskey, enckey, seskeylen + 1 );
+
+  pkt.pkttype = PKT_SYMKEY_ENC;
+  pkt.pkt.symkey_enc = enc;
+
+  if((rc=build_packet(out,&pkt)))
+    log_error("build symkey_enc packet failed: %s\n",g10_errstr(rc));
+
+  xfree(enc);
+  return rc;
 }
 
 /****************
@@ -391,11 +442,13 @@ encode_simple( const char *filename, int mode, int compat )
  * is supplied).
  */
 int
-encode_crypt( const char *filename, STRLIST remusr )
+encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 {
-    iobuf_t inp = NULL, out = NULL;
+    IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     PKT_plaintext *pt = NULL;
+    DEK *symkey_dek = NULL;
+    STRING2KEY *symkey_s2k = NULL;
     int rc = 0, rc2 = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
@@ -404,14 +457,17 @@ encode_crypt( const char *filename, STRLIST remusr )
     text_filter_context_t tfx;
     progress_filter_context_t pfx;
     PK_LIST pk_list,work_list;
-    int do_compress = opt.compress && !RFC1991;
-
+    int do_compress = opt.compress_algo && !RFC1991;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
+
+    if(use_symkey
+       && (rc=setup_symkey(&symkey_s2k,&symkey_dek)))
+      return rc;
 
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
 	return rc;
@@ -429,10 +485,20 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
 
     /* prepare iobufs */
-    if( !(inp = iobuf_open(filename)) ) {
+    inp = iobuf_open(filename);
+    if (inp)
+      iobuf_ioctl (inp,3,1,NULL); /* disable fd caching */
+    if (inp && is_secured_file (iobuf_get_fd (inp)))
+      {
+        iobuf_close (inp);
+        inp = NULL;
+        errno = EPERM;
+      }
+    if( !inp ) {
         rc = gpg_error_from_errno (errno);
-	log_error(_("can't open %s: %s\n"), filename? filename: "[stdin]",
-					strerror(errno) );
+	log_error(_("can't open `%s': %s\n"),
+                  filename? filename: "[stdin]",
+                  gpg_strerror (rc) );
 	goto leave;
     }
     else if( opt.verbose )
@@ -446,19 +512,11 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) )
 	goto leave;
 
-
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
-#ifdef ENABLE_COMMENT_PACKETS
-    else {
-	write_comment( out, "#created by GNUPG v" VERSION " ("
-					    PRINTABLE_OS_NAME ")");
-	if( opt.comment_string )
-	    write_comment( out, opt.comment_string );
-    }
-#endif
+
     /* create a session key */
-    cfx.dek = xcalloc_secure (1, sizeof *cfx.dek);
+    cfx.dek = xmalloc_secure_clear (sizeof *cfx.dek);
     if( !opt.def_cipher_algo ) { /* try to get it from the prefs */
 	cfx.dek->algo = select_algo_from_prefs(pk_list,PREFTYPE_SYM,-1,NULL);
 	/* The only way select_algo_from_prefs can fail here is when
@@ -482,8 +540,8 @@ encode_crypt( const char *filename, STRLIST remusr )
       if(!opt.expert &&
 	 select_algo_from_prefs(pk_list,PREFTYPE_SYM,
 				opt.def_cipher_algo,NULL)!=opt.def_cipher_algo)
-	log_info(_("forcing symmetric cipher %s (%d) "
-		   "violates recipient preferences\n"),
+	log_info(_("WARNING: forcing symmetric cipher %s (%d)"
+		   " violates recipient preferences\n"),
 		 gcry_cipher_algo_name (opt.def_cipher_algo),
 		 opt.def_cipher_algo);
 
@@ -497,8 +555,7 @@ encode_crypt( const char *filename, STRLIST remusr )
        not have a MDC to give some protection against chosen
        ciphertext attacks. */
 
-    if (opt.compress == -1 && cfx.dek->use_mdc &&
-	is_file_compressed(filename, &rc2) )
+    if (do_compress && cfx.dek->use_mdc && is_file_compressed(filename, &rc2) )
       {
         if (opt.verbose)
           log_info(_("`%s' already compressed\n"), filename);
@@ -518,40 +575,49 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( rc  )
 	goto leave;
 
+    /* We put the passphrase (if any) after any public keys as this
+       seems to be the most useful on the recipient side - there is no
+       point in prompting a user for a passphrase if they have the
+       secret key needed to decrypt. */
+    if(use_symkey && (rc=write_symkey_enc(symkey_s2k,symkey_dek,cfx.dek,out)))
+      goto leave;
+
     if (!opt.no_literal) {
 	/* setup the inner packet */
 	if( filename || opt.set_filename ) {
 	    char *s = make_basename( opt.set_filename ? opt.set_filename
-						      : filename
-				     /* ,iobuf_get_real_fname( inp )*/ );
-	    pt = xmalloc ( sizeof *pt + strlen(s) - 1 );
+						      : filename,
+				     iobuf_get_real_fname( inp ) );
+	    pt = xmalloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );
-	    xfree (s);
+	    xfree(s);
 	}
 	else { /* no filename */
-	    pt = xmalloc ( sizeof *pt - 1 );
+	    pt = xmalloc( sizeof *pt - 1 );
 	    pt->namelen = 0;
 	}
     }
 
-    if (filename && *filename && !(*filename == '-' && !filename[1])
-        && !opt.textmode ) {
+    if (!iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
+      {
         off_t tmpsize;
+        int overflow;
 
-	if ( !(tmpsize = iobuf_get_filelength(inp)) )
-          log_info(_("%s: WARNING: empty file\n"), filename );
+	if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
+             && !overflow )
+          log_info(_("WARNING: `%s' is an empty file\n"), filename );
         /* We can't encode the length of very large files because
            OpenPGP uses only 32 bit for file sizes.  So if the the
            size of a file is larger than 2^32 minus some bytes for
            packet headers, we switch to partial length encoding. */
-        if ( tmpsize < (IOBUF_FILELENGTH_LIMIT - 65536) )
+        if (tmpsize < (IOBUF_FILELENGTH_LIMIT - 65536) )
           filesize = tmpsize;
         else
           filesize = 0;
-    }
+      }
     else
-	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
+      filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
 
     if (!opt.no_literal) {
 	pt->timestamp = make_timestamp();
@@ -571,7 +637,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     /* register the compress filter */
     if( do_compress ) {
-	int compr_algo = opt.def_compress_algo;
+	int compr_algo = opt.compress_algo;
 
 	if(compr_algo==-1)
 	  {
@@ -584,8 +650,8 @@ encode_crypt( const char *filename, STRLIST remusr )
 	else if(!opt.expert &&
 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
 				       compr_algo,NULL)!=compr_algo)
-	  log_info(_("forcing compression algorithm %s (%d) "
-		     "violates recipient preferences\n"),
+	  log_info(_("WARNING: forcing compression algorithm %s (%d)"
+		     " violates recipient preferences\n"),
 		   compress_algo_to_string(compr_algo),compr_algo);
 
 	/* algo 0 means no compression */
@@ -593,15 +659,14 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  {
             if (cfx.dek && cfx.dek->use_mdc)
               zfx.new_ctb = 1;
-	    zfx.algo = compr_algo;
-	    iobuf_push_filter( out, compress_filter, &zfx );
+	    push_compress_filter(out,&zfx,compr_algo);
 	  }
     }
 
     /* do the work */
     if (!opt.no_literal) {
 	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build_packet failed: %s\n", gpg_strerror (rc) );
+	    log_error("build_packet failed: %s\n", g10_errstr(rc) );
     }
     else {
 	/* user requested not to create a literal packet, so we copy
@@ -609,9 +674,10 @@ encode_crypt( const char *filename, STRLIST remusr )
 	byte copy_buffer[4096];
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-	    if ((rc=iobuf_write(out, copy_buffer, bytes_copied))) {
+	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
+		rc = G10ERR_WRITE_FILE;
 		log_error("copying input to output failed: %s\n",
-                          gpg_strerror (rc) );
+                          g10_errstr(rc) );
 		break;
 	    }
 	wipememory(copy_buffer, 4096); /* burn buffer */
@@ -629,7 +695,9 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( pt )
 	pt->buf = NULL;
     free_packet(&pkt);
-    xfree (cfx.dek);
+    xfree(cfx.dek);
+    xfree(symkey_dek);
+    xfree(symkey_s2k);
     release_pk_list( pk_list );
     return rc;
 }
@@ -642,7 +710,7 @@ encode_crypt( const char *filename, STRLIST remusr )
  */
 int
 encrypt_filter( void *opaque, int control,
-	       iobuf_t a, byte *buf, size_t *ret_len)
+	       IOBUF a, byte *buf, size_t *ret_len)
 {
     size_t size = *ret_len;
     encrypt_filter_context_t *efx = opaque;
@@ -653,7 +721,7 @@ encrypt_filter( void *opaque, int control,
     }
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	if( !efx->header_okay ) {
-	    efx->cfx.dek = xcalloc_secure (1, sizeof *efx->cfx.dek );
+	    efx->cfx.dek = xmalloc_secure_clear( sizeof *efx->cfx.dek );
 
 	    if( !opt.def_cipher_algo  ) { /* try to get it from the prefs */
 		efx->cfx.dek->algo =
@@ -688,6 +756,14 @@ encrypt_filter( void *opaque, int control,
 	    if( rc )
 		return rc;
 
+	    if(efx->symkey_s2k && efx->symkey_dek)
+	      {
+		rc=write_symkey_enc(efx->symkey_s2k,efx->symkey_dek,
+				    efx->cfx.dek,a);
+		if(rc)
+		  return rc;
+	      }
+
 	    iobuf_push_filter( a, cipher_filter, &efx->cfx );
 
 	    efx->header_okay = 1;
@@ -695,8 +771,11 @@ encrypt_filter( void *opaque, int control,
 	rc = iobuf_write( a, buf, size );
 
     }
-    else if( control == IOBUFCTRL_FREE ) {
-    }
+    else if( control == IOBUFCTRL_FREE )
+      {
+	xfree(efx->symkey_dek);
+	xfree(efx->symkey_s2k);
+      }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "encrypt_filter";
     }
@@ -708,7 +787,7 @@ encrypt_filter( void *opaque, int control,
  * Write pubkey-enc packets from the list of PKs to OUT.
  */
 static int
-write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, iobuf_t out )
+write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 {
     PACKET pkt;
     PKT_public_key *pk;
@@ -716,12 +795,12 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, iobuf_t out )
     int rc;
 
     for( ; pk_list; pk_list = pk_list->next ) {
-	gcry_mpi_t frame;
+	MPI frame;
 
 	pk = pk_list->pk;
 
 	print_pubkey_algo_note( pk->pubkey_algo );
-	enc = xcalloc (1, sizeof *enc );
+	enc = xmalloc_clear( sizeof *enc );
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
 	enc->throw_keyid = (opt.throw_keyid || (pk_list->flags&1));
@@ -742,23 +821,24 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, iobuf_t out )
 	 * algorithm number PK->PUBKEY_ALGO and pass it to pubkey_encrypt
 	 * which returns the encrypted value in the array ENC->DATA.
 	 * This array has a size which depends on the used algorithm
-	 * (e.g. 2 for ElGamal).  We don't need frame anymore because we
+	 * (e.g. 2 for Elgamal).  We don't need frame anymore because we
 	 * have everything now in enc->data which is the passed to
 	 * build_packet()
 	 */
-	frame = encode_session_key( dek, pubkey_nbits( pk->pubkey_algo,
-							  pk->pkey ) );
-	rc = pk_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );
-	gcry_mpi_release ( frame );
+	frame = encode_session_key (dek, pubkey_nbits (pk->pubkey_algo,
+                                                       pk->pkey) );
+	rc = pk_encrypt (pk->pubkey_algo, enc->data, frame, pk->pkey);
+	gcry_mpi_release (frame);
 	if( rc )
-	    log_error("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
+	    log_error ("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
 	else {
 	    if( opt.verbose ) {
-		char *ustr = get_user_id_string_printable (enc->keyid);
+		char *ustr = get_user_id_string_native (enc->keyid);
 		log_info(_("%s/%s encrypted for: \"%s\"\n"),
-		    gcry_pk_algo_name (enc->pubkey_algo),
-		    gcry_cipher_algo_name (dek->algo), ustr );
-		xfree (ustr);
+                         gcry_pk_algo_name (enc->pubkey_algo),
+                         gcry_cipher_algo_name (dek->algo),
+                         ustr );
+		xfree(ustr);
 	    }
 	    /* and write it */
 	    init_packet(&pkt);
@@ -766,7 +846,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, iobuf_t out )
 	    pkt.pkt.pubkey_enc = enc;
 	    rc = build_packet( out, &pkt );
 	    if( rc )
-	       log_error("build_packet(pubkey_enc) failed: %s\n", gpg_strerror (rc));
+	       log_error("build_packet(pubkey_enc) failed: %s\n", g10_errstr(rc));
 	}
 	free_pubkey_enc(enc);
 	if( rc )
@@ -800,9 +880,9 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
             }
           line[strlen(line)-1] = '\0';
           print_file_status(STATUS_FILE_START, line, 2);
-          if ( (rc = encode_crypt(line, remusr)) )
-            log_error("%s: encryption failed: %s\n",
-                      print_fname_stdin(line), gpg_strerror (rc) );
+          if ( (rc = encode_crypt(line, remusr, 0)) )
+            log_error("encryption of `%s' failed: %s\n",
+                      print_fname_stdin(line), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
         }
     }
@@ -811,9 +891,9 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
       while (nfiles--)
         {
           print_file_status(STATUS_FILE_START, *files, 2);
-          if ( (rc = encode_crypt(*files, remusr)) )
-            log_error("%s: encryption failed: %s\n",
-                      print_fname_stdin(*files), gpg_strerror (rc) );
+          if ( (rc = encode_crypt(*files, remusr, 0)) )
+            log_error("encryption of `%s' failed: %s\n",
+                      print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
           files++;
         }

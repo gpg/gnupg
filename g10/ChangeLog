@@ -1,3 +1,33 @@
+2006-04-18  Werner Koch  <wk@g10code.com>
+
+	* tdbio.c (open_db, migrate_from_v2): Removed feature to migration
+	from old trustdb version 2.
+
+	* gpg.c, mainproc.c: Removed pipemode feature.
+
+	* status.c: Removed shared memory coprocess stuff
+
+	Merged with current gpg 1.4.3 code.
+	
+	* keygen.c, keyid.c, misc.c, openfile.c, verify.c, trustdb.c
+	* textfilter.c, tdbio.c, tdbdump.c, status.c, skclist.c, signal.c
+	* sign.c, sig-check.c, seskey.c, seckey-cert.c, revoke.c
+	* pubkey-enc.c, progress.c, plaintext.c, pkclist.c, photoid.c
+	* passphrase.c, parse-packet.c, mdfilter.c, mainproc.c
+	* keyserver.c, keyring.c, keylist.c, keyedit.c, keydb.c, kbnode.c
+	* import.c, getkey.c, gpgv.c, helptext.c, free-packet.c
+	* build-packet.c, cipher.c, compress.c, dearmor.c, decrypt.c
+	* delkey.c, encr-data.c, encode.c, exec.c, export.c
+	* gpg.c, armor.c: Updated from gnupg-1.4.3 and merged back gcry and
+	gnupg-1.9 related changes.
+	* trustdb.h, tdbio.h, status.h, photoid.h, packet.h, options.h
+	* main.h, keyserver-internal.h, keyring.h, keydb.h, filter.h
+	* exec.h: Ditto.
+	* global.h: Removed after merging constants with gpg.h.
+	* comment.c, pipemode.c: Removed.
+	* card-util.c: Updated from gnupg-1.4.3.
+	* compress-bz2.c: New.
+	
 2005-06-15  Werner Koch  <wk@g10code.com>
 
 	* g10.c (print_hashline, add_group): Fixes for signed/unsigned
@@ -9007,7 +9037,8 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 	* pubkey-enc.c (get_session_key): rewritten
 
 
- Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ Copyright 1998,1999,2000,2001,2002,2003,2004,2005,
+	   2006 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -1,5 +1,5 @@
 /* photoid.c - photo ID handling code
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -28,6 +29,8 @@
 #  define VER_PLATFORM_WIN32_WINDOWS 1
 # endif
 #endif
+
+#include "gpg.h"
 #include "packet.h"
 #include "status.h"
 #include "exec.h"
@@ -35,21 +38,23 @@
 #include "util.h"
 #include "i18n.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "options.h"
 #include "main.h"
 #include "photoid.h"
+#include "ttyio.h"
 
 /* Generate a new photo id packet, or return NULL if canceled */
-PKT_user_id *generate_photo_id(PKT_public_key *pk)
+PKT_user_id *
+generate_photo_id(PKT_public_key *pk,const char *photo_name)
 {
   PKT_user_id *uid;
   int error=1,i;
   unsigned int len;
-  char *filename=NULL;
+  char *filename;
   byte *photo=NULL;
   byte header[16];
-  iobuf_t file;
+  IOBUF file;
+  int overflow;
 
   header[0]=0x10; /* little side of photo header length */
   header[1]=0;    /* big side of photo header length */
@@ -60,48 +65,78 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
     header[i]=0;
 
 #define EXTRA_UID_NAME_SPACE 71
-  uid=xcalloc (1,sizeof(*uid)+71);
+  uid=xmalloc_clear(sizeof(*uid)+71);
 
-  printf(_("\nPick an image to use for your photo ID.  "
-	   "The image must be a JPEG file.\n"
-	   "Remember that the image is stored within your public key.  "
-	   "If you use a\n"
-	   "very large picture, your key will become very large as well!\n"
-	   "Keeping the image close to 240x288 is a good size to use.\n"));
+  if(photo_name && *photo_name)
+    filename=make_filename(photo_name,(void *)NULL);
+  else
+    {
+      tty_printf(_("\nPick an image to use for your photo ID."
+		   "  The image must be a JPEG file.\n"
+		   "Remember that the image is stored within your public key."
+		   "  If you use a\n"
+		   "very large picture, your key will become very large"
+		   " as well!\n"
+		   "Keeping the image close to 240x288 is a good size"
+		   " to use.\n"));
+      filename=NULL;
+    }
 
   while(photo==NULL)
     {
-      printf("\n");
+      if(filename==NULL)
+	{
+	  char *tempname;
 
-      xfree (filename);
+	  tty_printf("\n");
 
-      filename=cpr_get("photoid.jpeg.add",
-		       _("Enter JPEG filename for photo ID: "));
+	  tty_enable_completion(NULL);
 
-      if(strlen(filename)==0)
-	goto scram;
+	  tempname=cpr_get("photoid.jpeg.add",
+			   _("Enter JPEG filename for photo ID: "));
+
+	  tty_disable_completion();
+
+	  filename=make_filename(tempname,(void *)NULL);
+
+	  xfree(tempname);
+
+	  if(strlen(filename)==0)
+	    goto scram;
+	}
 
       file=iobuf_open(filename);
+      if (file && is_secured_file (iobuf_get_fd (file)))
+        {
+          iobuf_close (file);
+          file = NULL;
+          errno = EPERM;
+        }
       if(!file)
 	{
-	  log_error(_("Unable to open photo \"%s\": %s\n"),
+	  log_error(_("unable to open JPEG file `%s': %s\n"),
 		    filename,strerror(errno));
+	  xfree(filename);
+	  filename=NULL;
 	  continue;
 	}
 
-      len=iobuf_get_filelength(file);
-      if(len>6144)
+      
+      len=iobuf_get_filelength(file, &overflow);
+      if(len>6144 || overflow)
 	{
-	  printf("This JPEG is really large (%d bytes) !\n",len);
+	  tty_printf( _("This JPEG is really large (%d bytes) !\n"),len);
 	  if(!cpr_get_answer_is_yes("photoid.jpeg.size",
-			    _("Are you sure you want to use it (y/N)? ")))
+			    _("Are you sure you want to use it? (y/N) ")))
 	  {
 	    iobuf_close(file);
+	    xfree(filename);
+	    filename=NULL;
 	    continue;
 	  }
 	}
 
-      photo=xmalloc (len);
+      photo=xmalloc(len);
       iobuf_read(file,photo,len);
       iobuf_close(file);
 
@@ -109,9 +144,11 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
       if(photo[0]!=0xFF || photo[1]!=0xD8 ||
 	 photo[6]!='J' || photo[7]!='F' || photo[8]!='I' || photo[9]!='F')
 	{
-	  log_error(_("\"%s\" is not a JPEG file\n"),filename);
-	  xfree (photo);
+	  log_error(_("`%s' is not a JPEG file\n"),filename);
+	  xfree(photo);
 	  photo=NULL;
+	  xfree(filename);
+	  filename=NULL;
 	  continue;
 	}
 
@@ -132,8 +169,10 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 	      goto scram;
 	    case 0:
 	      free_attributes(uid);
-	      xfree (photo);
+	      xfree(photo);
 	      photo=NULL;
+	      xfree(filename);
+	      filename=NULL;
 	      continue;
 	    }
 	}
@@ -143,13 +182,13 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
   uid->ref=1;
 
  scram:
-  xfree (filename);
-  xfree (photo);
+  xfree(filename);
+  xfree(photo);
 
   if(error)
     {
       free_attributes(uid);
-      xfree (uid);
+      xfree(uid);
       return NULL;
     }
 
@@ -283,7 +322,7 @@ void show_photos(const struct user_attribute *attrs,
 	if(!command)
 	  goto fail;
 
-	name=xmalloc (16+strlen(EXTSEP_S)+
+	name=xmalloc(16+strlen(EXTSEP_S)+
 		     strlen(image_type_to_string(args.imagetype,0))+1);
 
 	/* Make the filename.  Notice we are not using the image
@@ -302,7 +341,7 @@ void show_photos(const struct user_attribute *attrs,
 
 	if(exec_write(&spawn,NULL,command,name,1,1)!=0)
 	  {
-	    xfree (name);
+	    xfree(name);
 	    goto fail;
 	  }
 
@@ -311,7 +350,7 @@ void show_photos(const struct user_attribute *attrs,
                                         image_type_to_string(args.imagetype,2));
 #endif
 
-	xfree (name);
+	xfree(name);
 
 	fwrite(&attrs[i].data[offset],attrs[i].len-offset,1,spawn->tochild);
 

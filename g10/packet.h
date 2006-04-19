@@ -1,6 +1,6 @@
-/* packet.h - packet definitions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 
- *               2003  Free Software Foundation, Inc.
+/* packet.h - OpenPGP packet definitions
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,21 +16,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #ifndef G10_PACKET_H
 #define G10_PACKET_H
-
-#include "gpg.h"
-#include <gcrypt.h>
 
 #include "types.h"
 #include "../common/iobuf.h"
 #include "../jnlib/strlist.h"
 #include "cipher.h"
 #include "filter.h"
-#include "global.h"
 
 #define DEBUG_PARSE_PACKET 1
 
@@ -124,36 +121,56 @@ struct revocation_key {
   byte fpr[MAX_FINGERPRINT_LEN];
 };
 
-typedef struct {
-    ulong   local_id;	    /* internal use, valid if > 0 */
-    struct {
-	unsigned checked:1; /* signature has been checked */
-	unsigned valid:1;   /* signature is good (if checked is set) */
-	unsigned unknown_critical:1;
-        unsigned exportable:1;
-        unsigned revocable:1;
-        unsigned policy_url:1; /* At least one policy URL is present */
-        unsigned notation:1;   /* At least one notation is present */
-        unsigned pref_ks:1;    /* At least one preferred keyserver is present */
-        unsigned expired:1;
-    } flags;
-    u32     keyid[2];	    /* 64 bit keyid */
-    u32     timestamp;	    /* signature made */
-    u32     expiredate;     /* expires at this date or 0 if not at all */
-    byte    version;
-    byte    sig_class;	    /* sig classification, append for MD calculation*/
-    byte    pubkey_algo;    /* algorithm used for public key scheme */
-			    /* (PUBKEY_ALGO_xxx) */
-    byte    digest_algo;    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
-    byte    trust_depth;
-    byte    trust_value;
-    const byte *trust_regexp;
-    struct revocation_key **revkey;
-    int numrevkeys;
-    subpktarea_t *hashed;    /* all subpackets with hashed  data (v4 only) */
-    subpktarea_t *unhashed;  /* ditto for unhashed data */
-    byte digest_start[2];   /* first 2 bytes of the digest */
-    gcry_mpi_t  data[PUBKEY_MAX_NSIG];
+
+/* Object to keep information about a PKA DNS record. */
+typedef struct
+{
+  int valid;    /* An actual PKA record exists for EMAIL. */
+  int checked;  /* Set to true if the FPR has been checked against the
+                   actual key. */
+  char *uri;    /* Malloced string with the URI. NULL if the URI is
+                   not available.*/
+  unsigned char fpr[20]; /* The fingerprint as stored in the PKA RR. */
+  char email[1];/* The email address from the notation data. */
+} pka_info_t;
+
+
+/* Object to keep information pertaining to a signature. */
+typedef struct 
+{
+  struct 
+  {
+    unsigned checked:1;         /* Signature has been checked. */
+    unsigned valid:1;           /* Signature is good (if checked is set). */
+    unsigned chosen_selfsig:1;  /* A selfsig that is the chosen one. */
+    unsigned unknown_critical:1;
+    unsigned exportable:1;
+    unsigned revocable:1;
+    unsigned policy_url:1;  /* At least one policy URL is present */
+    unsigned notation:1;    /* At least one notation is present */
+    unsigned pref_ks:1;     /* At least one preferred keyserver is present */
+    unsigned expired:1;
+    unsigned pka_tried:1;   /* Set if we tried to retrieve the PKA record. */
+  } flags;
+  u32     keyid[2];	  /* 64 bit keyid */
+  u32     timestamp;	  /* Signature made (seconds since Epoch). */
+  u32     expiredate;     /* Expires at this date or 0 if not at all. */
+  byte    version;
+  byte    sig_class;	  /* Sig classification, append for MD calculation. */
+  byte    pubkey_algo;    /* Algorithm used for public key scheme */
+                          /* (PUBKEY_ALGO_xxx) */
+  byte    digest_algo;    /* Algorithm used for digest (DIGEST_ALGO_xxxx). */
+  byte    trust_depth;
+  byte    trust_value;
+  const byte *trust_regexp;
+  struct revocation_key **revkey;
+  int numrevkeys;
+  pka_info_t *pka_info;      /* Malloced PKA data or NULL if not
+                                available.  See also flags.pka_tried. */
+  subpktarea_t *hashed;      /* All subpackets with hashed data (v4 only). */
+  subpktarea_t *unhashed;    /* Ditto for unhashed data. */
+  byte digest_start[2];      /* First 2 bytes of the digest. */
+  gcry_mpi_t  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
 
 #define ATTRIB_IMAGE 1
@@ -165,41 +182,57 @@ struct user_attribute {
   u32 len;
 };
 
-typedef struct {
-    int ref;              /* reference counter */
-    int len;		  /* length of the name */
-    struct user_attribute *attribs;
-    int numattribs;
-    byte *attrib_data;    /* if this is not NULL, the packet is an attribute */
-    unsigned long attrib_len;
-    byte *namehash;
-    int help_key_usage;
-    u32 help_key_expire;
-    int help_full_count;
-    int help_marginal_count;
-    int is_primary;       /* 2 if set via the primary flag, 1 if calculated */
-    int is_revoked;
-    int is_expired;
-    u32 expiredate;       /* expires at this date or 0 if not at all */
-    prefitem_t *prefs;    /* list of preferences (may be NULL)*/
-    int mdc_feature;
-    int ks_modify;
-    u32 created;          /* according to the self-signature */
-    byte selfsigversion;
-    char name[1];
+typedef struct
+{
+  int ref;              /* reference counter */
+  int len;	        /* length of the name */
+  struct user_attribute *attribs;
+  int numattribs;
+  byte *attrib_data;    /* if this is not NULL, the packet is an attribute */
+  unsigned long attrib_len;
+  byte *namehash;
+  int help_key_usage;
+  u32 help_key_expire;
+  int help_full_count;
+  int help_marginal_count;
+  int is_primary;       /* 2 if set via the primary flag, 1 if calculated */
+  int is_revoked;
+  int is_expired;
+  u32 expiredate;       /* expires at this date or 0 if not at all */
+  prefitem_t *prefs;    /* list of preferences (may be NULL)*/
+  u32 created;          /* according to the self-signature */
+  byte selfsigversion;
+  struct
+  {
+    /* TODO: Move more flags here */
+    unsigned mdc:1;
+    unsigned ks_modify:1;
+    unsigned compacted:1;
+  } flags;
+  char name[1];
 } PKT_user_id;
 
+struct revoke_info
+{
+  /* revoked at this date */
+  u32 date;
+  /* the keyid of the revoking key (selfsig or designated revoker) */
+  u32 keyid[2];
+  /* the algo of the revoking key */
+  byte algo;
+};
 
 /****************
  * Note about the pkey/skey elements:  We assume that the secret keys
  * has the same elemts as the public key at the begin of the array, so
  * that npkey < nskey and it is possible to compare the secret and
- * public keys by comparing the first npkey elements of pkey against skey.
+ * public keys by comparing the first npkey elements of pkey againts skey.
  */
 typedef struct {
     u32     timestamp;	    /* key made */
     u32     expiredate;     /* expires at this date or 0 if not at all */
     u32     max_expiredate; /* must not expire past this date */
+    struct revoke_info revoked;
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    selfsigversion; /* highest version of all of the self-sigs */
@@ -208,10 +241,13 @@ typedef struct {
     byte    req_usage;      /* hack to pass a request to getkey() */
     byte    req_algo;       /* Ditto */
     u32     has_expired;    /* set to the expiration date if expired */ 
-    int     is_revoked;     /* key has been revoked */
+    int     is_revoked;     /* key has been revoked, 1 if by the
+			       owner, 2 if by a designated revoker */
+    int     maybe_revoked;  /* a designated revocation is present, but
+			       without the key to check it */
     int     is_valid;       /* key (especially subkey) is valid */
     int     dont_cache;     /* do not cache this */
-    ulong   local_id;	    /* internal use, valid if > 0 */
+    byte    backsig;        /* 0=none, 1=bad, 2=good */
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
     byte    is_primary;
@@ -273,15 +309,16 @@ typedef struct {
     u32  len;		  /* reserved */
     byte  new_ctb;
     byte  algorithm;
-    iobuf_t buf;		  /* iobuf_t reference */
+    iobuf_t buf;	  /* IOBUF reference */
 } PKT_compressed;
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
     int  extralen;        /* this is (blocksize+2) */
     byte new_ctb;	  /* uses a new CTB */
+    byte is_partial;      /* partial length encoded */
     byte mdc_method;	  /* > 0: integrity protected encrypted data packet */
-    iobuf_t buf;		  /* iobuf_t reference */
+    iobuf_t buf;	  /* IOBUF reference */
 } PKT_encrypted;
 
 typedef struct {
@@ -295,7 +332,7 @@ typedef struct {
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
-    iobuf_t buf;		  /* iobuf_t reference */
+    iobuf_t buf;	  /* IOBUF reference */
     byte new_ctb;
     byte is_partial;      /* partial length encoded */
     int mode;
@@ -364,9 +401,25 @@ typedef enum {
     SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
     SIGSUBPKT_FEATURES     =30, /* feature flags */
 
+    SIGSUBPKT_SIGNATURE    =32, /* embedded signature */
+
     SIGSUBPKT_FLAG_CRITICAL=128
 } sigsubpkttype_t;
 
+struct notation
+{
+  char *name;
+  char *value;
+  char *altvalue;
+  unsigned char *bdat;
+  size_t blen;
+  struct
+  {
+    unsigned int critical:1;
+    unsigned int ignore:1;
+  } flags;
+  struct notation *next;
+};
 
 /*-- mainproc.c --*/
 int proc_packets( void *ctx, iobuf_t a );
@@ -407,6 +460,8 @@ int copy_some_packets( iobuf_t inp, iobuf_t out, off_t stopoff );
 int skip_some_packets( iobuf_t inp, unsigned n );
 #endif
 
+int parse_signature( iobuf_t inp, int pkttype, unsigned long pktlen,
+		     PKT_signature *sig );
 const byte *enum_sig_subpkt ( const subpktarea_t *subpkts,
                               sigsubpkttype_t reqtype,
                               size_t *ret_n, int *start, int *critical );
@@ -427,7 +482,6 @@ PACKET *create_gpg_control ( ctrlpkttype_t type,
 /*-- build-packet.c --*/
 int build_packet( iobuf_t inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
-void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
 void build_sig_subpkt_from_sig( PKT_signature *sig );
@@ -435,6 +489,9 @@ int  delete_sig_subpkt(subpktarea_t *buffer, sigsubpkttype_t type );
 void build_attribute_subpkt(PKT_user_id *uid,byte type,
 			    const void *buf,u32 buflen,
 			    const void *header,u32 headerlen);
+struct notation *string_to_notation(const char *string,int is_utf8);
+struct notation *sig_to_notation(PKT_signature *sig);
+void free_notation(struct notation *notation);
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );
@@ -463,8 +520,8 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 
 /*-- sig-check.c --*/
-int signature_check( PKT_signature *sig, MD_HANDLE digest );
-int signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
+int signature_check( PKT_signature *sig, gcry_md_hd_t digest );
+int signature_check2( PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 		      int *r_expired, int *r_revoked, PKT_public_key *ret_pk );
 
 /*-- seckey-cert.c --*/
@@ -485,12 +542,9 @@ int decrypt_data( void *ctx, PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
-                      int nooutput, int clearsig, int *create_failed );
-int ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
+					int nooutput, int clearsig );
+int ask_for_detached_datafile( gcry_md_hd_t md, gcry_md_hd_t md2,
 			       const char *inname, int textmode );
-
-/*-- comment.c --*/
-int write_comment( iobuf_t out, const char *s );
 
 /*-- sign.c --*/
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,

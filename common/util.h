@@ -59,6 +59,10 @@
 #define xrealloc(a,b)    gcry_xrealloc ((a),(b))
 #define xstrdup(a)       gcry_xstrdup ((a))
 
+/* For compatibility with gpg 1.4 we also define these: */
+#define xmalloc_clear(a) gcry_xcalloc (1, (a))
+#define xmalloc_secure_clear(a) gcry_xcalloc_secure (1, (a))
+
 
 /* A type to hold the ISO time.  Note that this this is the same as
    the the KSBA type ksba_isotime_t. */
@@ -133,7 +137,7 @@ int cmp_simple_canon_sexp (const unsigned char *a, const unsigned char *b);
 unsigned char *make_simple_sexp_from_hexstr (const char *line,
                                              size_t *nscanned);
 
-/*-- homedir. c --*/
+/*-- homedir.c --*/
 const char *default_homedir (void);
 
 

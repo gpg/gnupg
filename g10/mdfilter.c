@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -25,9 +26,9 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "filter.h"
 
@@ -38,7 +39,7 @@
  */
 int
 md_filter( void *opaque, int control,
-	       iobuf_t a, byte *buf, size_t *ret_len)
+	       IOBUF a, byte *buf, size_t *ret_len)
 {
     size_t size = *ret_len;
     md_filter_context_t *mfx = opaque;
@@ -67,8 +68,8 @@ md_filter( void *opaque, int control,
 void
 free_md_filter_context( md_filter_context_t *mfx )
 {
-    gcry_md_close (mfx->md);
-    gcry_md_close (mfx->md2);
+    gcry_md_close(mfx->md);
+    gcry_md_close(mfx->md2);
     mfx->md = NULL;
     mfx->md2 = NULL;
     mfx->maxbuf_size = 0;

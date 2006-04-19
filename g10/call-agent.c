@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if 0  /* lety Emacs display a red warning */
-#error fixme: this shares a lof of code with the file in ../sm
+#if 0  /* let Emacs display a red warning */
+#error fixme: this shares a lot of code with the file in ../sm
 #endif
 
 #include <config.h>

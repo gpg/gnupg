@@ -1,3 +1,8 @@
+2006-04-18  Werner Koch  <wk@g10code.com>
+
+	* libjnlib-config.h (JNLIB_NEED_UTF8CONF): Defined.
+	* strlist.c (add_to_strlist2) [JNLIB_NEED_UTF8CONV]: Enabled.
+
 2005-06-15  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (sanitize_buffer): Make P a void*.

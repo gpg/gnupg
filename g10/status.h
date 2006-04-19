@@ -1,5 +1,6 @@
 /* status.h
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,11 +16,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 #ifndef G10_STATUS_H
 #define G10_STATUS_H
-
 
 #define STATUS_ENTER	 1
 #define STATUS_LEAVE	 2
@@ -28,7 +29,6 @@
 #define STATUS_GOODSIG	 4
 #define STATUS_BADSIG	 5
 #define STATUS_ERRSIG	 6
-
 
 #define STATUS_BADARMOR  7
 
@@ -100,6 +100,26 @@
 #define STATUS_IMPORT_OK 	68
 #define STATUS_IMPORT_CHECK     69
 #define STATUS_REVKEYSIG        70
+#define STATUS_CARDCTRL         71
+#define STATUS_NEWSIG           72
+#define STATUS_PLAINTEXT        73
+#define STATUS_PLAINTEXT_LENGTH 74
+#define STATUS_KEY_NOT_CREATED  75
+#define STATUS_NEED_PASSPHRASE_PIN 76
+#define STATUS_SIG_SUBPACKET    77
+
+/* Extra status codes for certain smartcard operations.  Primary
+   useful to double check that change PIN worked as expected.  */
+#define STATUS_SC_OP_FAILURE    79
+#define STATUS_SC_OP_SUCCESS    80
+
+#define STATUS_BACKUP_KEY_CREATED 81
+
+#define STATUS_PKA_TRUST_BAD    82
+#define STATUS_PKA_TRUST_GOOD   83
+
+#define STATUS_BEGIN_SIGNING    84
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
@@ -119,6 +139,8 @@ char *cpr_get_hidden( const char *keyword, const char *prompt );
 void cpr_kill_prompt(void);
 int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
 int  cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt );
-
+int  cpr_get_answer_okay_cancel (const char *keyword,
+                                 const char *prompt,
+                                 int def_answer);
 
 #endif /*G10_STATUS_H*/

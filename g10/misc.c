@@ -1,6 +1,6 @@
-/* misc.c -  miscellaneous functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+/* misc.c - miscellaneous functions
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -25,7 +26,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <assert.h>
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
 #include <asm/sysinfo.h>
 #include <asm/unistd.h>
@@ -35,15 +35,51 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
+#ifdef ENABLE_SELINUX_HACKS
+#include <sys/stat.h>
+#endif
+
+#ifdef HAVE_W32_SYSTEM
+#include <time.h>
+#include <process.h>
+#include <windows.h> 
+#include <shlobj.h>
+#ifndef CSIDL_APPDATA
+#define CSIDL_APPDATA 0x001a
+#endif
+#ifndef CSIDL_LOCAL_APPDATA
+#define CSIDL_LOCAL_APPDATA 0x001c
+#endif
+#ifndef CSIDL_FLAG_CREATE
+#define CSIDL_FLAG_CREATE 0x8000
+#endif
+#endif /*HAVE_W32_SYSTEM*/
 
 #include "gpg.h"
+#ifdef HAVE_W32_SYSTEM
+# include "errors.h"
+# include "dynload.h"
+#endif /*HAVE_W32_SYSTEM*/
 #include "util.h"
 #include "main.h"
 #include "photoid.h"
 #include "options.h"
 #include "i18n.h"
 
-#define MAX_EXTERN_MPI_BITS 16384
+
+
+#ifdef ENABLE_SELINUX_HACKS
+/* A object and a global variable to keep track of files marked as
+   secured. */
+struct secured_file_item 
+{
+  struct secured_file_item *next;
+  ino_t ino;
+  dev_t dev;
+};
+static struct secured_file_item *secured_files;
+#endif /*ENABLE_SELINUX_HACKS*/
+
 
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
@@ -92,6 +128,135 @@ disable_core_dumps()
 }
 
 
+/* For the sake of SELinux we want to restrict access through gpg to
+   certain files we keep under our own control.  This function
+   registers such a file and is_secured_file may then be used to
+   check whether a file has ben registered as secured. */
+void
+register_secured_file (const char *fname)
+{
+#ifdef ENABLE_SELINUX_HACKS
+  struct stat buf;
+  struct secured_file_item *sf;
+
+  /* Note that we stop immediatley if something goes wrong here. */
+  if (stat (fname, &buf))
+    log_fatal (_("fstat of `%s' failed in %s: %s\n"), fname, 
+               "register_secured_file", strerror (errno));
+/*   log_debug ("registering `%s' i=%lu.%lu\n", fname, */
+/*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
+  for (sf=secured_files; sf; sf = sf->next)
+    {
+      if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
+        return; /* Already registered.  */
+    }
+
+  sf = xmalloc (sizeof *sf);
+  sf->ino = buf.st_ino;
+  sf->dev = buf.st_dev;
+  sf->next = secured_files;
+  secured_files = sf;
+#endif /*ENABLE_SELINUX_HACKS*/
+}
+
+/* Remove a file registered as secure. */
+void
+unregister_secured_file (const char *fname)
+{
+#ifdef ENABLE_SELINUX_HACKS
+  struct stat buf;
+  struct secured_file_item *sf, *sfprev;
+
+  if (stat (fname, &buf))
+    {
+      log_error (_("fstat of `%s' failed in %s: %s\n"), fname,
+                 "unregister_secured_file", strerror (errno));
+      return;
+    }
+/*   log_debug ("unregistering `%s' i=%lu.%lu\n", fname,  */
+/*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
+  for (sfprev=NULL,sf=secured_files; sf; sfprev=sf, sf = sf->next)
+    {
+      if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
+        {
+          if (sfprev)
+            sfprev->next = sf->next;
+          else
+            secured_files = sf->next;
+          xfree (sf);
+          return;
+        }
+    }
+#endif /*ENABLE_SELINUX_HACKS*/
+}
+
+/* Return true if FD is corresponds to a secured file.  Using -1 for
+   FS is allowed and will return false. */ 
+int 
+is_secured_file (int fd)
+{
+#ifdef ENABLE_SELINUX_HACKS
+  struct stat buf;
+  struct secured_file_item *sf;
+
+  if (fd == -1)
+    return 0; /* No file descriptor so it can't be secured either.  */
+
+  /* Note that we print out a error here and claim that a file is
+     secure if something went wrong. */
+  if (fstat (fd, &buf))
+    {
+      log_error (_("fstat(%d) failed in %s: %s\n"), fd, 
+                 "is_secured_file", strerror (errno));
+      return 1;
+    }
+/*   log_debug ("is_secured_file (%d) i=%lu.%lu\n", fd, */
+/*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
+  for (sf=secured_files; sf; sf = sf->next)
+    {
+      if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
+        return 1; /* Yes.  */
+    }
+#endif /*ENABLE_SELINUX_HACKS*/
+  return 0; /* No. */
+}
+
+/* Return true if FNAME is corresponds to a secured file.  Using NULL,
+   "" or "-" for FS is allowed and will return false. This function is
+   used before creating a file, thus it won't fail if the file does
+   not exist. */ 
+int 
+is_secured_filename (const char *fname)
+{
+#ifdef ENABLE_SELINUX_HACKS
+  struct stat buf;
+  struct secured_file_item *sf;
+
+  if (iobuf_is_pipe_filename (fname) || !*fname)
+    return 0; 
+
+  /* Note that we print out a error here and claim that a file is
+     secure if something went wrong. */
+  if (stat (fname, &buf))
+    {
+      if (errno == ENOENT || errno == EPERM || errno == EACCES)
+        return 0;
+      log_error (_("fstat of `%s' failed in %s: %s\n"), fname,
+                 "is_secured_filename", strerror (errno));
+      return 1;
+    }
+/*   log_debug ("is_secured_filename (%s) i=%lu.%lu\n", fname, */
+/*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
+  for (sf=secured_files; sf; sf = sf->next)
+    {
+      if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
+        return 1; /* Yes.  */
+    }
+#endif /*ENABLE_SELINUX_HACKS*/
+  return 0; /* No. */
+}
+
+
 
 u16
 checksum_u16( unsigned n )
@@ -115,25 +280,26 @@ checksum( byte *p, unsigned n )
 }
 
 u16
-checksum_mpi( gcry_mpi_t a )
+checksum_mpi (gcry_mpi_t a)
 {
-  int rc;
   u16 csum;
   byte *buffer;
-  size_t nbytes;
+  unsigned int nbytes;
+  unsigned int nbits;
 
-  rc = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, 0, &nbytes, a );
-  if (rc)
+  if ( gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, a) )
     BUG ();
-  /* fixme: for numbers not in secure memory we should use a stack
-   * based buffer and only allocate a larger one if mpi_print return
-   * an error */
-  buffer = gcry_is_secure(a)? gcry_xmalloc_secure(nbytes):gcry_xmalloc(nbytes);
-  rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, NULL, a );
-  if (rc)
+  /* Fixme: For numbers not in secure memory we should use a stack
+   * based buffer and only allocate a larger one if mpi_print returns
+   * an error. */
+  buffer = (gcry_is_secure(a)?
+            gcry_xmalloc_secure (nbytes) : gcry_xmalloc (nbytes));
+  if ( gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, NULL, a) )
     BUG ();
-  csum = checksum (buffer, nbytes );
-  xfree (buffer );
+  nbits = gcry_mpi_get_nbits (a);
+  csum = checksum_u16 (nbits);
+  csum += checksum (buffer, nbytes);
+  xfree (buffer);
   return csum;
 }
 
@@ -148,46 +314,32 @@ buffer_to_u32( const byte *buffer )
     return a;
 }
 
-
-static void
-no_exp_algo(void)
-{
-    static int did_note = 0;
-
-    if( !did_note ) {
-	did_note = 1;
-	log_info(_("Experimental algorithms should not be used!\n"));
-    }
-}
-
 void
 print_pubkey_algo_note( int algo )
 {
-    if( algo >= 100 && algo <= 110 )
-	no_exp_algo();
+  if(algo >= 100 && algo <= 110)
+    {
+      static int warn=0;
+      if(!warn)
+	{
+	  warn=1;
+	  log_info (_("WARNING: using experimental public key algorithm %s\n"),
+		    gcry_pk_algo_name (algo));
+	}
+    }
 }
 
 void
 print_cipher_algo_note( int algo )
 {
-    if( algo >= 100 && algo <= 110 )
-	no_exp_algo();
-    else if(	algo == CIPHER_ALGO_3DES
-	     || algo == CIPHER_ALGO_CAST5
-	     || algo == CIPHER_ALGO_BLOWFISH
-	     || algo == CIPHER_ALGO_TWOFISH
-	     || algo == CIPHER_ALGO_RIJNDAEL
-	     || algo == CIPHER_ALGO_RIJNDAEL192
-	     || algo == CIPHER_ALGO_RIJNDAEL256
-	   )
-	;
-    else {
-	static int did_note = 0;
-
-	if( !did_note ) {
-	    did_note = 1;
-	    log_info(_("this cipher algorithm is deprecated; "
-		       "please use a more standard one!\n"));
+  if(algo >= 100 && algo <= 110)
+    {
+      static int warn=0;
+      if(!warn)
+	{
+	  warn=1;
+	  log_info (_("WARNING: using experimental cipher algorithm %s\n"),
+                    gcry_cipher_algo_name (algo));
 	}
     }
 }
@@ -195,63 +347,81 @@ print_cipher_algo_note( int algo )
 void
 print_digest_algo_note( int algo )
 {
-    if( algo >= 100 && algo <= 110 )
-	no_exp_algo();
+  if(algo >= 100 && algo <= 110)
+    {
+      static int warn=0;
+      if(!warn)
+	{
+	  warn=1;
+	  log_info (_("WARNING: using experimental digest algorithm %s\n"),
+                    gcry_md_algo_name (algo));
+	}
+    }
+  else if(algo==DIGEST_ALGO_MD5)
+    log_info (_("WARNING: digest algorithm %s is deprecated\n"),
+              gcry_md_algo_name (algo));
 }
-
 
 /* Return a string which is used as a kind of process ID */
 const byte *
 get_session_marker( size_t *rlen )
 {
-    static byte marker[SIZEOF_UNSIGNED_LONG*2];
-    static int initialized;
-
-    if ( !initialized ) {
-        volatile ulong aa, bb; /* we really want the uninitialized value */
-        ulong a, b;
-
-        initialized = 1;
-        /* also this marker is guessable it is not easy to use this 
-         * for a faked control packet because an attacker does not
-         * have enough control about the time the verification does 
-         * take place.  Of course, we can add just more random but 
-         * than we need the random generator even for verification
-         * tasks - which does not make sense. */
-        a = aa ^ (ulong)getpid();
-        b = bb ^ (ulong)time(NULL);
-        memcpy( marker, &a, SIZEOF_UNSIGNED_LONG );
-        memcpy( marker+SIZEOF_UNSIGNED_LONG, &b, SIZEOF_UNSIGNED_LONG );
+  static byte marker[SIZEOF_UNSIGNED_LONG*2];
+  static int initialized;
+  
+  if ( !initialized )
+    {
+      volatile ulong aa, bb; /* We really want the uninitialized value. */
+      ulong a, b;
+      
+      initialized = 1;
+      /* Although this marker is guessable it is not easy to use this
+       * for a faked control packet because an attacker does not have
+       * enough control about the time the verification takes place.
+       * Of course, we could add just more random but than we need the
+       * random generator even for verification tasks - which does not
+       * make sense. */
+      a = aa ^ (ulong)getpid();
+      b = bb ^ (ulong)time(NULL);
+      memcpy ( marker, &a, SIZEOF_UNSIGNED_LONG );
+      memcpy ( marker+SIZEOF_UNSIGNED_LONG, &b, SIZEOF_UNSIGNED_LONG );
     }
-    *rlen = sizeof(marker);
-    return marker;
+  *rlen = sizeof(marker);
+  return marker;
 }
 
 /****************
- * Wrapper around the libgcrypt function with addional checks on
- * openPGP contraints for the algo ID.
+ * Wrapper around the libgcrypt function with additonal checks on
+ * the OpenPGP contraints for the algo ID.
  */
 int
 openpgp_cipher_test_algo( int algo )
 {
-    if( algo < 0 || algo > 110 )
-        return GPG_ERR_CIPHER_ALGO;
-    return gcry_cipher_test_algo (algo);
+  if ( algo < 0 || algo > 110 )
+    return gpg_error (GPG_ERR_CIPHER_ALGO);
+  return gcry_cipher_test_algo (algo);
 }
 
 int
-openpgp_pk_test_algo( int algo, unsigned int usage_flags )
+openpgp_pk_test_algo( int algo )
 {
-  size_t value = usage_flags;
-
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
-#ifdef __GNUC__
-#warning need to handle the usage here?
-#endif
+
   if (algo < 0 || algo > 110)
-    return GPG_ERR_PUBKEY_ALGO;
-  return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &value);
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+  return gcry_pk_test_algo (algo);
+}
+
+int
+openpgp_pk_test_algo2( int algo, unsigned int use )
+{
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+
+  if (algo < 0 || algo > 110)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+  return gcry_pk_test_algo2 (algo, use);
 }
 
 int 
@@ -259,25 +429,23 @@ openpgp_pk_algo_usage ( int algo )
 {
     int use = 0; 
     
-    /* they are hardwired in gpg 1.0 */
+    /* They are hardwired in gpg 1.0. */
     switch ( algo ) {    
       case PUBKEY_ALGO_RSA:
-          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
+          use = (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG
+                 | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH);
           break;
       case PUBKEY_ALGO_RSA_E:
           use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_RSA_S:
-          use = PUBKEY_USAGE_SIG;
+          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL_E:
           use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_DSA:  
-          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
-          break;
-      case PUBKEY_ALGO_ELGAMAL:
-          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
+          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
       default:
           break;
@@ -288,54 +456,9 @@ openpgp_pk_algo_usage ( int algo )
 int
 openpgp_md_test_algo( int algo )
 {
-    if( algo < 0 || algo > 110 )
-        return GPG_ERR_DIGEST_ALGO;
-    return gcry_md_test_algo (algo);
-}
-
-int
-openpgp_md_map_name (const char *string)
-{
-  int i = gcry_md_map_name (string);
-
-  if (!i && (string[0]=='H' || string[0]=='h'))
-    { /* Didn't find it, so try the Hx format */
-      long val;
-      char *endptr;
-
-      string++;
-      
-      val=strtol(string,&endptr,10);
-      if (*string!='\0' && *endptr=='\0' && !openpgp_md_test_algo(val))
-        i = val;
-    }
-  return i < 0 || i > 110? 0 : i;
-}
-
-int
-openpgp_cipher_map_name (const char *string)
-{
-  int i = gcry_cipher_map_name (string);
-
-  if (!i && (string[0]=='S' || string[0]=='s'))
-    { /* Didn't find it, so try the Sx format */
-      long val;
-      char *endptr;
-
-      string++;
-      
-      val=strtol(string,&endptr,10);
-      if (*string!='\0' && *endptr=='\0' && !openpgp_cipher_test_algo(val))
-        i = val;
-    }
-  return i < 0 || i > 110? 0 : i;
-}
-
-int
-openpgp_pk_map_name (const char *string)
-{
-  int i = gcry_pk_map_name (string);
-  return i < 0 || i > 110? 0 : i;
+  if (algo < 0 || algo > 110)
+    return gpg_error (GPG_ERR_DIGEST_ALGO);
+  return gcry_md_test_algo (algo);
 }
 
 #ifdef USE_IDEA
@@ -348,14 +471,30 @@ idea_cipher_warn(int show)
   if(!warned || show)
     {
       log_info(_("the IDEA cipher plugin is not present\n"));
-      log_info(_("please see http://www.gnupg.org/why-not-idea.html "
-		 "for more information\n"));
+      log_info(_("please see %s for more information\n"),
+               "http://www.gnupg.org/faq/why-not-idea.html");
       warned=1;
     }
 }
 #endif
 
-/* Expand %-strings.  Returns a string which must be m_freed.  Returns
+static unsigned long get_signature_count(PKT_secret_key *sk)
+{
+#ifdef ENABLE_CARD_SUPPORT
+  if(sk && sk->is_protected && sk->protect.s2k.mode==1002)
+    {
+      struct agent_card_info_s info;
+      if(agent_scd_getattr("SIG-COUNTER",&info)==0)
+	return info.sig_counter;
+    }  
+#endif
+
+  /* How to do this without a card? */
+
+  return 0;
+}
+
+/* Expand %-strings.  Returns a string which must be xfreed.  Returns
    NULL if the string cannot be expanded (too large). */
 char *
 pct_expando(const char *string,struct expando_args *args)
@@ -387,7 +526,7 @@ pct_expando(const char *string,struct expando_args *args)
 	    goto fail;
 
 	  maxlen+=1024;
-	  ret= xrealloc(ret,maxlen);
+	  ret=xrealloc(ret,maxlen);
 	}
 
       done=0;
@@ -434,6 +573,15 @@ pct_expando(const char *string,struct expando_args *args)
 		}
 	      break;
 
+	    case 'c': /* signature count from card, if any. */
+	      if(idx+10<maxlen)
+		{
+		  sprintf(&ret[idx],"%lu",get_signature_count(args->sk));
+		  idx+=strlen(&ret[idx]);
+		  done=1;
+		}	      
+	      break;
+
 	    case 'p': /* primary pk fingerprint of a sk */
 	    case 'f': /* pk fingerprint */
 	    case 'g': /* sk fingerprint */
@@ -442,13 +590,14 @@ pct_expando(const char *string,struct expando_args *args)
 		size_t len;
 		int i;
 
-		if( ch[1]=='p' && args->sk)
+		if((*(ch+1))=='p' && args->sk)
 		  {
 		    if(args->sk->is_primary)
 		      fingerprint_from_sk(args->sk,array,&len);
 		    else if(args->sk->main_keyid[0] || args->sk->main_keyid[1])
 		      {
-			PKT_public_key *pk= xcalloc(1, sizeof(PKT_public_key));
+			PKT_public_key *pk=
+			  xmalloc_clear(sizeof(PKT_public_key));
 
 			if(get_pubkey_fast(pk,args->sk->main_keyid)==0)
 			  fingerprint_from_pk(pk,array,&len);
@@ -459,12 +608,12 @@ pct_expando(const char *string,struct expando_args *args)
 		    else
 		      memset(array,0,(len=MAX_FINGERPRINT_LEN));
 		  }
-		else if( ch[1]=='f' && args->pk)
+		else if((*(ch+1))=='f' && args->pk)
 		  fingerprint_from_pk(args->pk,array,&len);
-		else if( ch[1]=='g' && args->sk)
+		else if((*(ch+1))=='g' && args->sk)
 		  fingerprint_from_sk(args->sk,array,&len);
 		else
-		  memset(array, 0, (len=MAX_FINGERPRINT_LEN));
+		  memset(array,0,(len=MAX_FINGERPRINT_LEN));
 
 		if(idx+(len*2)<maxlen)
 		  {
@@ -539,33 +688,8 @@ pct_expando(const char *string,struct expando_args *args)
   return ret;
 
  fail:
-  xfree (ret);
+  xfree(ret);
   return NULL;
-}
-
-int
-hextobyte( const char *s )
-{
-    int c;
-
-    if( *s >= '0' && *s <= '9' )
-	c = 16 * (*s - '0');
-    else if( *s >= 'A' && *s <= 'F' )
-	c = 16 * (10 + *s - 'A');
-    else if( *s >= 'a' && *s <= 'f' )
-	c = 16 * (10 + *s - 'a');
-    else
-	return -1;
-    s++;
-    if( *s >= '0' && *s <= '9' )
-	c += *s - '0';
-    else if( *s >= 'A' && *s <= 'F' )
-	c += 10 + *s - 'A';
-    else if( *s >= 'a' && *s <= 'f' )
-	c += 10 + *s - 'a';
-    else
-	return -1;
-    return c;
 }
 
 void
@@ -589,24 +713,39 @@ deprecated_warning(const char *configname,unsigned int configlineno,
   log_info(_("please use \"%s%s\" instead\n"),repl1,repl2);
 }
 
+
+void
+deprecated_command (const char *name)
+{
+  log_info(_("WARNING: \"%s\" is a deprecated command - do not use it\n"),
+           name);
+}
+
+
 const char *
 compress_algo_to_string(int algo)
 {
-  const char *s="?";
+  const char *s=NULL;
 
   switch(algo)
     {
-    case 0:
-      s="Uncompressed";
+    case COMPRESS_ALGO_NONE:
+      s=_("Uncompressed");
       break;
 
-    case 1:
+    case COMPRESS_ALGO_ZIP:
       s="ZIP";
       break;
 
-    case 2:
+    case COMPRESS_ALGO_ZLIB:
       s="ZLIB";
       break;
+
+#ifdef HAVE_BZIP2
+    case COMPRESS_ALGO_BZIP2:
+      s="BZIP2";
+      break;
+#endif
     }
 
   return s;
@@ -615,18 +754,31 @@ compress_algo_to_string(int algo)
 int
 string_to_compress_algo(const char *string)
 {
-  if(ascii_strcasecmp(string,"uncompressed")==0)
+  /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+  if(match_multistr(_("uncompressed|none"),string))
+    return 0;
+  else if(ascii_strcasecmp(string,"uncompressed")==0)
+    return 0;
+  else if(ascii_strcasecmp(string,"none")==0)
     return 0;
   else if(ascii_strcasecmp(string,"zip")==0)
     return 1;
   else if(ascii_strcasecmp(string,"zlib")==0)
     return 2;
+#ifdef HAVE_BZIP2
+  else if(ascii_strcasecmp(string,"bzip2")==0)
+    return 3;
+#endif
   else if(ascii_strcasecmp(string,"z0")==0)
     return 0;
   else if(ascii_strcasecmp(string,"z1")==0)
     return 1;
   else if(ascii_strcasecmp(string,"z2")==0)
     return 2;
+#ifdef HAVE_BZIP2
+  else if(ascii_strcasecmp(string,"z3")==0)
+    return 3;
+#endif
   else
     return -1;
 }
@@ -634,10 +786,15 @@ string_to_compress_algo(const char *string)
 int
 check_compress_algo(int algo)
 {
+#ifdef HAVE_BZIP2
+  if(algo>=0 && algo<=3)
+    return 0;
+#else
   if(algo>=0 && algo<=2)
     return 0;
+#endif
 
-  return GPG_ERR_COMPR_ALGO;
+  return G10ERR_COMPR_ALGO;
 }
 
 int
@@ -652,13 +809,13 @@ default_cipher_algo(void)
 }
 
 /* There is no default_digest_algo function, but see
-   sign.c:hash_for */
+   sign.c:hash_for() */
 
 int
 default_compress_algo(void)
 {
-  if(opt.def_compress_algo!=-1)
-    return opt.def_compress_algo;
+  if(opt.compress_algo!=-1)
+    return opt.compress_algo;
   else if(opt.personal_compress_prefs)
     return opt.personal_compress_prefs[0].value;
   else
@@ -712,14 +869,151 @@ compliance_failure(void)
   opt.compliance=CO_GNUPG;
 }
 
+/* Break a string into successive option pieces.  Accepts single word
+   options and key=value argument options. */
+char *
+optsep(char **stringp)
+{
+  char *tok,*end;
+
+  tok=*stringp;
+  if(tok)
+    {
+      end=strpbrk(tok," ,=");
+      if(end)
+	{
+	  int sawequals=0;
+	  char *ptr=end;
+
+	  /* what we need to do now is scan along starting with *end,
+	     If the next character we see (ignoring spaces) is an =
+	     sign, then there is an argument. */
+
+	  while(*ptr)
+	    {
+	      if(*ptr=='=')
+		sawequals=1;
+	      else if(*ptr!=' ')
+		break;
+	      ptr++;
+	    }
+
+	  /* There is an argument, so grab that too.  At this point,
+	     ptr points to the first character of the argument. */
+	  if(sawequals)
+	    {
+	      /* Is it a quoted argument? */
+	      if(*ptr=='"')
+		{
+		  ptr++;
+		  end=strchr(ptr,'"');
+		  if(end)
+		    end++;
+		}
+	      else
+		end=strpbrk(ptr," ,");
+	    }
+
+	  if(end && *end)
+	    {
+	      *end='\0';
+	      *stringp=end+1;
+	    }
+	  else
+	    *stringp=NULL;
+	}
+      else
+	*stringp=NULL;
+    }
+
+  return tok;
+}
+
+/* Breaks an option value into key and value.  Returns NULL if there
+   is no value.  Note that "string" is modified to remove the =value
+   part. */
+char *
+argsplit(char *string)
+{
+  char *equals,*arg=NULL;
+
+  equals=strchr(string,'=');
+  if(equals)
+    {
+      char *quote,*space;
+
+      *equals='\0';
+      arg=equals+1;
+
+      /* Quoted arg? */
+      quote=strchr(arg,'"');
+      if(quote)
+	{
+	  arg=quote+1;
+
+	  quote=strchr(arg,'"');
+	  if(quote)
+	    *quote='\0';
+	}
+      else
+	{
+	  size_t spaces;
+
+	  /* Trim leading spaces off of the arg */
+	  spaces=strspn(arg," ");
+	  arg+=spaces;
+	}
+
+      /* Trim tailing spaces off of the tag */
+      space=strchr(string,' ');
+      if(space)
+	*space='\0';
+    }
+
+  return arg;
+}
+
+/* Return the length of the initial token, leaving off any
+   argument. */
+static size_t
+optlen(const char *s)
+{
+  char *end=strpbrk(s," =");
+
+  if(end)
+    return end-s;
+  else
+    return strlen(s);
+}
+
 int
-parse_options(char *str,unsigned int *options,struct parse_options *opts)
+parse_options(char *str,unsigned int *options,
+	      struct parse_options *opts,int noisy)
 {
   char *tok;
 
-  while((tok=strsep(&str," ,")))
+  if (str && !strcmp (str, "help"))
+    {
+      int i,maxlen=0;
+
+      /* Figure out the longest option name so we can line these up
+	 neatly. */
+      for(i=0;opts[i].name;i++)
+	if(opts[i].help && maxlen<strlen(opts[i].name))
+	  maxlen=strlen(opts[i].name);
+
+      for(i=0;opts[i].name;i++)
+        if(opts[i].help)
+	  printf("%s%*s%s\n",opts[i].name,
+		 maxlen+2-(int)strlen(opts[i].name),"",_(opts[i].help));
+
+      g10_exit(0);
+    }
+
+  while((tok=optsep(&str)))
     {
       int i,rev=0;
+      char *otok=tok;
 
       if(tok[0]=='\0')
 	continue;
@@ -732,25 +1026,248 @@ parse_options(char *str,unsigned int *options,struct parse_options *opts)
 
       for(i=0;opts[i].name;i++)
 	{
-	  if(ascii_strcasecmp(opts[i].name,tok)==0)
+	  size_t toklen=optlen(tok);
+
+	  if(ascii_strncasecmp(opts[i].name,tok,toklen)==0)
 	    {
+	      /* We have a match, but it might be incomplete */
+	      if(toklen!=strlen(opts[i].name))
+		{
+		  int j;
+
+		  for(j=i+1;opts[j].name;j++)
+		    {
+		      if(ascii_strncasecmp(opts[j].name,tok,toklen)==0)
+			{
+			  if(noisy)
+			    log_info(_("ambiguous option `%s'\n"),otok);
+			  return 0;
+			}
+		    }
+		}
+
 	      if(rev)
-		*options&=~opts[i].bit;
+		{
+		  *options&=~opts[i].bit;
+		  if(opts[i].value)
+		    *opts[i].value=NULL;
+		}
 	      else
-		*options|=opts[i].bit;
+		{
+		  *options|=opts[i].bit;
+		  if(opts[i].value)
+		    *opts[i].value=argsplit(tok);
+		}
 	      break;
 	    }
 	}
 
       if(!opts[i].name)
-	return 0;
+	{
+	  if(noisy)
+	    log_info(_("unknown option `%s'\n"),otok);
+	  return 0;
+	}
     }
 
   return 1;
 }
 
 
+/* Return a new malloced string by unescaping the string S.  Escaping
+   is percent escaping and '+'/space mapping.  A binary nul will
+   silently be replaced by a 0xFF. */
+char *
+unescape_percent_string (const unsigned char *s)
+{
+  char *buffer, *d;
 
+  buffer = d = xmalloc (strlen (s)+1);
+  while (*s)
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          *d = xtoi_2 (s);
+          if (!*d)
+            *d = '\xff';
+          d++;
+          s += 2;
+        }
+      else if (*s == '+')
+        {
+          *d++ = ' ';
+          s++;
+        }
+      else
+        *d++ = *s++;
+    }
+  *d = 0; 
+  return buffer;
+}
+
+
+int
+has_invalid_email_chars (const char *s)
+{
+  int at_seen=0;
+  const char *valid_chars=
+    "01234567890_-.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  for ( ; *s; s++ ) 
+    {
+      if ( *s & 0x80 )
+        return 1;
+      if ( *s == '@' )
+        at_seen=1;
+      else if ( !at_seen && !( !!strchr( valid_chars, *s ) || *s == '+' ) )
+        return 1;
+      else if ( at_seen && !strchr( valid_chars, *s ) )
+        return 1;
+    }
+  return 0;
+}
+
+
+/* Check whether NAME represents a valid mailbox according to
+   RFC822. Returns true if so. */
+int
+is_valid_mailbox (const char *name)
+{
+  return !( !name
+            || !*name
+            || has_invalid_email_chars (name)
+            || string_count_chr (name,'@') != 1
+            || *name == '@'
+            || name[strlen(name)-1] == '@'
+            || name[strlen(name)-1] == '.'
+            || strstr (name, "..") );
+}
+
+
+/* This is a helper function to load a Windows function from either of
+   one DLLs. */
+#ifdef HAVE_W32_SYSTEM
+static HRESULT
+w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
+{
+  static int initialized;
+  static HRESULT (WINAPI * func)(HWND,int,HANDLE,DWORD,LPSTR);
+
+  if (!initialized)
+    {
+      static char *dllnames[] = { "shell32.dll", "shfolder.dll", NULL };
+      void *handle;
+      int i;
+
+      initialized = 1;
+
+      for (i=0, handle = NULL; !handle && dllnames[i]; i++)
+        {
+          handle = dlopen (dllnames[i], RTLD_LAZY);
+          if (handle)
+            {
+              func = dlsym (handle, "SHGetFolderPathA");
+              if (!func)
+                {
+                  dlclose (handle);
+                  handle = NULL;
+                }
+            }
+        }
+    }
+
+  if (func)
+    return func (a,b,c,d,e);
+  else
+    return -1;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* Return the name of the libexec directory.  The name is allocated in
+   a static area on the first use.  This function won't fail. */
+const char *
+get_libexecdir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  static int got_dir;
+  static char dir[MAX_PATH+5];
+
+  if (!got_dir)
+    {
+      char *p;
+
+      if ( !GetModuleFileName ( NULL, dir, MAX_PATH) )
+        {
+          log_debug ("GetModuleFileName failed: %s\n", w32_strerror (0));
+          *dir = 0;
+        }
+      got_dir = 1;
+      p = strrchr (dir, DIRSEP_C);
+      if (p)
+        *p = 0;
+      else
+        {
+          log_debug ("bad filename `%s' returned for this process\n", dir);
+          *dir = 0; 
+        }
+    }
+
+  if (*dir)
+    return dir;
+  /* Fallback to the hardwired value. */
+#endif /*HAVE_W32_SYSTEM*/
+
+  return GNUPG_LIBEXECDIR;
+}
+
+/* Similar to access(2), but uses PATH to find the file. */
+int
+path_access(const char *file,int mode)
+{
+  char *envpath;
+  int ret=-1;
+
+  envpath=getenv("PATH");
+
+  if(!envpath
+#ifdef HAVE_DRIVE_LETTERS
+     || (((file[0]>='A' && file[0]<='Z')
+	  || (file[0]>='a' && file[0]<='z'))
+	 && file[1]==':')
+#else
+     || file[0]=='/'
+#endif
+     )
+    return access(file,mode);
+  else
+    {
+      /* At least as large as, but most often larger than we need. */
+      char *buffer=xmalloc(strlen(envpath)+1+strlen(file)+1);
+      char *split,*item,*path=xstrdup(envpath);
+
+      split=path;
+
+      while((item=strsep(&split,PATHSEP_S)))
+	{
+	  strcpy(buffer,item);
+	  strcat(buffer,"/");
+	  strcat(buffer,file);
+	  ret=access(buffer,mode);
+	  if(ret==0)
+	    break;
+	}
+
+      xfree(path);
+      xfree(buffer);
+    }
+
+  return ret;
+}
+
+
+
 /* Temporary helper. */
 int
 pubkey_get_npkey( int algo )
@@ -837,141 +1354,9 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
     return nbits;
 }
 
-
-/* MPI helper functions. */
 
 
-/****************
- * write an mpi to out.
- */
-int
-mpi_write( iobuf_t out, gcry_mpi_t a )
-{
-    char buffer[(MAX_EXTERN_MPI_BITS+7)/8];
-    size_t nbytes;
-    int rc;
-
-    nbytes = (MAX_EXTERN_MPI_BITS+7)/8;
-    rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
-    if( !rc )
-	rc = iobuf_write( out, buffer, nbytes );
-
-    return rc;
-}
-
-/****************
- * Writyeg a MPI to out, but in this case it is an opaque one,
- * s used vor v3 protected keys.
- */
-int
-mpi_write_opaque( iobuf_t out, gcry_mpi_t a )
-{
-    size_t nbytes, nbits;
-    int rc;
-    char *p;
-
-    assert( gcry_mpi_get_flag( a, GCRYMPI_FLAG_OPAQUE ) );
-    p = gcry_mpi_get_opaque( a, &nbits );
-    nbytes = (nbits+7) / 8;
-    iobuf_put( out, nbits >> 8 );
-    iobuf_put( out, nbits );
-    rc = iobuf_write( out, p, nbytes );
-    return rc;
-}
-
-
-/****************
- * Read an external representation of an mpi and return the MPI
- * The external format is a 16 bit unsigned value stored in network byte order,
- * giving the number of bits for the following integer. The integer is stored
- * with MSB first (left padded with zeroes to align on a byte boundary).
- */
-gcry_mpi_t
-mpi_read(iobuf_t inp, unsigned int *ret_nread, int secure)
-{
-    int c, c1, c2, i;
-    unsigned int nbits, nbytes, nread=0;
-    gcry_mpi_t a = NULL;
-    byte *buf = NULL;
-    byte *p;
-
-    if( (c = c1 = iobuf_get(inp)) == -1 )
-	goto leave;
-    nbits = c << 8;
-    if( (c = c2 = iobuf_get(inp)) == -1 )
-	goto leave;
-    nbits |= c;
-    if( nbits > MAX_EXTERN_MPI_BITS ) {
-	log_error("mpi too large (%u bits)\n", nbits);
-	goto leave;
-    }
-    nread = 2;
-    nbytes = (nbits+7) / 8;
-    buf = secure? gcry_xmalloc_secure( nbytes+2 ) : gcry_xmalloc( nbytes+2 );
-    p = buf;
-    p[0] = c1;
-    p[1] = c2;
-    for( i=0 ; i < nbytes; i++ ) {
-	p[i+2] = iobuf_get(inp) & 0xff;
-	nread++;
-    }
-    nread += nbytes;
-    if( gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, buf, nread, &nread ) )
-	a = NULL;
-
-  leave:
-    gcry_free(buf);
-    if( nread > *ret_nread )
-	log_bug("mpi larger than packet");
-    else
-	*ret_nread = nread;
-    return a;
-}
-
-/****************
- * Same as mpi_read but the value is stored as an opaque MPI.
- * This function is used to read encrypted MPI of v3 packets.
- */
-gcry_mpi_t
-mpi_read_opaque(iobuf_t inp, unsigned *ret_nread )
-{
-    int c, c1, c2, i;
-    unsigned nbits, nbytes, nread=0;
-    gcry_mpi_t a = NULL;
-    byte *buf = NULL;
-    byte *p;
-
-    if( (c = c1 = iobuf_get(inp)) == -1 )
-	goto leave;
-    nbits = c << 8;
-    if( (c = c2 = iobuf_get(inp)) == -1 )
-	goto leave;
-    nbits |= c;
-    if( nbits > MAX_EXTERN_MPI_BITS ) {
-	log_error("mpi too large (%u bits)\n", nbits);
-	goto leave;
-    }
-    nread = 2;
-    nbytes = (nbits+7) / 8;
-    buf = gcry_xmalloc( nbytes );
-    p = buf;
-    for( i=0 ; i < nbytes; i++ ) {
-	p[i] = iobuf_get(inp) & 0xff;
-    }
-    nread += nbytes;
-    a = gcry_mpi_set_opaque(NULL, buf, nbits );
-    buf = NULL;
-
-  leave:
-    gcry_free(buf);
-    if( nread > *ret_nread )
-	log_bug("mpi larger than packet");
-    else
-	*ret_nread = nread;
-    return a;
-}
-
-
+/* FIXME: Use gcry_mpi_print directly. */
 int
 mpi_print( FILE *fp, gcry_mpi_t a, int mode )
 {
@@ -985,16 +1370,14 @@ mpi_print( FILE *fp, gcry_mpi_t a, int mode )
 	n += fprintf(fp, "[%u bits]", n1);
     }
     else {
-	int rc;
-	char *buffer;
+	unsigned char *buffer;
 
-	rc = gcry_mpi_aprint( GCRYMPI_FMT_HEX, &buffer, NULL, a );
-	assert( !rc );
+	if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a))
+          BUG ();
 	fputs( buffer, fp );
 	n += strlen(buffer);
 	gcry_free( buffer );
     }
     return n;
 }
-
 

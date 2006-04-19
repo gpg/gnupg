@@ -1,4 +1,4 @@
-/* progress.c
+/* progress.c - emit progress status lines
  * Copyright (C) 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -33,7 +34,7 @@
  */
 int
 progress_filter (void *opaque, int control,
-		 iobuf_t a, byte *buf, size_t *ret_len)
+		 IOBUF a, byte *buf, size_t *ret_len)
 {
   int rc = 0;
   progress_filter_context_t *pfx = opaque;
@@ -96,7 +97,7 @@ progress_filter (void *opaque, int control,
 }
 
 void
-handle_progress (progress_filter_context_t *pfx, iobuf_t inp, const char *name)
+handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
 {
   off_t filesize = 0;
 
@@ -106,8 +107,8 @@ handle_progress (progress_filter_context_t *pfx, iobuf_t inp, const char *name)
   if (!is_status_enabled ())
     return;
 
-  if (name && *name && !(*name == '-' && !name[1]))
-    filesize = iobuf_get_filelength (inp);
+  if ( !iobuf_is_pipe_filename (name) && *name )
+    filesize = iobuf_get_filelength (inp, NULL);
   else if (opt.set_filesize)
     filesize = opt.set_filesize;
 

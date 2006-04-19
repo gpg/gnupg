@@ -1,6 +1,6 @@
 /* armor.c - Armor flter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -30,7 +31,6 @@
 #include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "packet.h"
@@ -38,12 +38,6 @@
 #include "main.h"
 #include "status.h"
 #include "i18n.h"
-
-#ifdef HAVE_DOSISH_SYSTEM
-#define LF "\r\n"
-#else
-#define LF "\n"
-#endif
 
 #define MAX_LINELEN 20000
 
@@ -120,7 +114,6 @@ static char *tail_strings[] = {
 };
 
 
-
 static void
 initialize(void)
 {
@@ -193,7 +186,7 @@ is_armored( const byte *buf )
  *	   filter to do further processing.
  */
 int
-use_armor_filter( iobuf_t a )
+use_armor_filter( IOBUF a )
 {
     byte buf[1];
     int n;
@@ -292,17 +285,24 @@ is_armor_header( byte *line, unsigned len )
     save_p = p;
     p += 5;
 
-    /* Some mail programs on Windows seem to add spaces to the end of
-       the line.  This becomes strict if --openpgp is set. */
+    /* Some Windows environments seem to add whitespace to the end of
+       the line, so we strip it here.  This becomes strict if
+       --rfc2440 is set since 2440 reads "The header lines, therefore,
+       MUST start at the beginning of a line, and MUST NOT have text
+       following them on the same line."  It is unclear whether "text"
+       refers to all text or just non-whitespace text. */
 
-    if(!RFC2440)
-      while(*p==' ')
+    if(RFC2440)
+      {
+	if( *p == '\r' )
+	  p++;
+	if( *p == '\n' )
+	  p++;
+      }
+    else
+      while(*p==' ' || *p=='\r' || *p=='\n' || *p=='\t')
 	p++;
 
-    if( *p == '\r' )
-	p++;
-    if( *p == '\n' )
-	p++;
     if( *p )
 	return -1; /* garbage after dashes */
     save_c = *save_p; *save_p = 0;
@@ -334,21 +334,35 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
     int hashes=0;
     unsigned int len2;
 
-    len2 = length_sans_trailing_ws( line, len );
+    len2 = check_trailing_ws( line, len );
     if( !len2 ) {
         afx->buffer_pos = len2;  /* (it is not the fine way to do it here) */
 	return 0; /* WS only: same as empty line */
     }
-    len = len2;
-    line[len2] = 0;
+
+    /*
+      This is fussy.  The spec says that a header line is delimited
+      with a colon-space pair.  This means that a line such as
+      "Comment: " (with nothing else) is actually legal as an empty
+      string comment.  However, email and cut-and-paste being what it
+      is, that trailing space may go away.  Therefore, we accept empty
+      headers delimited with only a colon.  --rfc2440, as always,
+      makes this strict and enforces the colon-space pair. -dms
+    */
 
     p = strchr( line, ':');
-    if( !p || !p[1] ) {
+    if( !p || (RFC2440 && p[1]!=' ')
+	|| (!RFC2440 && p[1]!=' ' && p[1]!='\n' && p[1]!='\r'))
+      {
 	log_error(_("invalid armor header: "));
 	print_string( stderr, line, len, 0 );
 	putc('\n', stderr);
 	return -1;
-    }
+      }
+
+    /* Chop off the whitespace we detected before */
+    len=len2;
+    line[len2]='\0';
 
     if( opt.verbose ) {
 	log_info(_("armor header: "));
@@ -373,7 +387,7 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 
 /* figure out whether the data is armored or not */
 static int
-check_input( armor_filter_context_t *afx, iobuf_t a )
+check_input( armor_filter_context_t *afx, IOBUF a )
 {
     int rc = 0;
     int i;
@@ -415,7 +429,7 @@ check_input( armor_filter_context_t *afx, iobuf_t a )
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX ) {
 		if( afx->in_cleartext ) {
 		    log_error(_("nested clear text signatures\n"));
-		    rc = GPG_ERR_INV_ARMOR;
+		    rc = gpg_error (GPG_ERR_INV_ARMOR);
 		}
 		afx->in_cleartext = 1;
 	    }
@@ -431,9 +445,9 @@ check_input( armor_filter_context_t *afx, iobuf_t a )
 	} while( !maxlen );
     }
 
-    /* parse the header lines */
+    /* Parse the header lines.  */
     while(len) {
-	/* read the next line (skip all truncated lines) */
+	/* Read the next line (skip all truncated lines). */
 	do {
 	    maxlen = MAX_LINELEN;
 	    afx->buffer_len = iobuf_read_line( a, &afx->buffer,
@@ -444,8 +458,8 @@ check_input( armor_filter_context_t *afx, iobuf_t a )
 
 	i = parse_header_line( afx, line, len );
 	if( i <= 0 ) {
-	    if( i )
-		rc = GPG_ERR_INV_ARMOR;
+	    if (i && RFC2440)
+		rc = G10ERR_INVALID_ARMOR;
 	    break;
 	}
     }
@@ -465,7 +479,8 @@ check_input( armor_filter_context_t *afx, iobuf_t a )
     return rc;
 }
 
-
+#define PARTIAL_CHUNK 512
+#define PARTIAL_POW   9
 
 /****************
  * Fake a literal data packet and wait for the next armor line
@@ -473,7 +488,7 @@ check_input( armor_filter_context_t *afx, iobuf_t a )
  *	  not implemented/checked.
  */
 static int
-fake_packet( armor_filter_context_t *afx, iobuf_t a,
+fake_packet( armor_filter_context_t *afx, IOBUF a,
 	     size_t *retn, byte *buf, size_t size  )
 {
     int rc = 0;
@@ -481,19 +496,31 @@ fake_packet( armor_filter_context_t *afx, iobuf_t a,
     int lastline = 0;
     unsigned maxlen, n;
     byte *p;
+    byte tempbuf[PARTIAL_CHUNK];
+    size_t tempbuf_len=0;
 
-    len = 2;	/* reserve 2 bytes for the length header */
-    size -= 2;	/* and 2 for the terminating header */
-    while( !rc && len < size ) {
+    while( !rc && size-len>=(PARTIAL_CHUNK+1)) {
 	/* copy what we have in the line buffer */
 	if( afx->faked == 1 )
 	    afx->faked++; /* skip the first (empty) line */
-	else {
-	    while( len < size && afx->buffer_pos < afx->buffer_len )
-		buf[len++] = afx->buffer[afx->buffer_pos++];
-	    if( len >= size )
+	else
+	  {
+	    /* It's full, so write this partial chunk */
+	    if(tempbuf_len==PARTIAL_CHUNK)
+	      {
+		buf[len++]=0xE0+PARTIAL_POW;
+		memcpy(&buf[len],tempbuf,PARTIAL_CHUNK);
+		len+=PARTIAL_CHUNK;
+		tempbuf_len=0;
 		continue;
-	}
+	      }
+
+	    while( tempbuf_len < PARTIAL_CHUNK
+		   && afx->buffer_pos < afx->buffer_len )
+	      tempbuf[tempbuf_len++] = afx->buffer[afx->buffer_pos++];
+	    if( tempbuf_len==PARTIAL_CHUNK )
+	      continue;
+	  }
 
 	/* read the next line */
 	maxlen = MAX_LINELEN;
@@ -506,15 +533,64 @@ fake_packet( armor_filter_context_t *afx, iobuf_t a,
 	}
 	if( !maxlen )
 	    afx->truncated++;
-	if( !afx->not_dash_escaped ) {
-	    int crlf;
-	    p = afx->buffer;
-	    n = afx->buffer_len;
-	    crlf = n > 1 && p[n-2] == '\r' && p[n-1]=='\n';
+
+	p = afx->buffer;
+	n = afx->buffer_len;
+
+	/* Armor header or dash-escaped line? */
+	if(p[0]=='-')
+	  {
+	    /* 2440bis-10: When reversing dash-escaping, an
+	       implementation MUST strip the string "- " if it occurs
+	       at the beginning of a line, and SHOULD warn on "-" and
+	       any character other than a space at the beginning of a
+	       line.  */
+
+	    if(p[1]==' ' && !afx->not_dash_escaped)
+	      {
+		/* It's a dash-escaped line, so skip over the
+		   escape. */
+		afx->buffer_pos = 2;
+	      }
+	    else if(p[1]=='-' && p[2]=='-' && p[3]=='-' && p[4]=='-')
+	      {
+		/* Five dashes in a row mean it's probably armor
+		   header. */
+		int type = is_armor_header( p, n );
+		if( afx->not_dash_escaped && type != BEGIN_SIGNATURE )
+		  ; /* this is okay */
+		else
+		  {
+		    if( type != BEGIN_SIGNATURE )
+		      {
+			log_info(_("unexpected armor: "));
+			print_string( stderr, p, n, 0 );
+			putc('\n', stderr);
+		      }
+
+		    lastline = 1;
+		    rc = -1;
+		  }
+	      }
+	    else if(!afx->not_dash_escaped)
+	      {
+		/* Bad dash-escaping. */
+		log_info(_("invalid dash escaped line: "));
+		print_string( stderr, p, n, 0 );
+		putc('\n', stderr);
+	      }
+	  }
+
+	/* Now handle the end-of-line canonicalization */
+	if( !afx->not_dash_escaped )
+	  {
+	    int crlf = n > 1 && p[n-2] == '\r' && p[n-1]=='\n';
 
 	    /* PGP2 does not treat a tab as white space character */
-	    afx->buffer_len = trim_trailing_chars( p, n,
-					 afx->pgp2mode ? " \r\n" : " \t\r\n");
+	    afx->buffer_len=
+	      trim_trailing_chars( &p[afx->buffer_pos], n-afx->buffer_pos,
+				   afx->pgp2mode ? " \r\n" : " \t\r\n");
+	    afx->buffer_len+=afx->buffer_pos;
 	    /* the buffer is always allocated with enough space to append
 	     * the removed [CR], LF and a Nul
 	     * The reason for this complicated procedure is to keep at least
@@ -526,48 +602,23 @@ fake_packet( armor_filter_context_t *afx, iobuf_t a,
 	     * faked packet could do the job).
 	     */
 	    if( crlf )
-		afx->buffer[afx->buffer_len++] = '\r';
+	      afx->buffer[afx->buffer_len++] = '\r';
 	    afx->buffer[afx->buffer_len++] = '\n';
-	    afx->buffer[afx->buffer_len] = 0;
-	}
-	p = afx->buffer;
-	n = afx->buffer_len;
-
-	if( n > 2 && *p == '-' ) {
-	    /* check for dash escaped or armor header */
-	    if( p[1] == ' ' && !afx->not_dash_escaped ) {
-		/* issue a warning if it is not regular encoded */
-		if( p[2] != '-' && !( n > 6 && !memcmp(p+2, "From ", 5))) {
-		    log_info(_("invalid dash escaped line: "));
-		    print_string( stderr, p, n, 0 );
-		    putc('\n', stderr);
-		}
-		afx->buffer_pos = 2; /* skip */
-	    }
-	    else if( n >= 15 &&  p[1] == '-' && p[2] == '-' && p[3] == '-' ) {
-		int type = is_armor_header( p, n );
-		if( afx->not_dash_escaped && type != BEGIN_SIGNATURE )
-		    ; /* this is okay */
-		else {
-		    if( type != BEGIN_SIGNATURE ) {
-			log_info(_("unexpected armor:"));
-			print_string( stderr, p, n, 0 );
-			putc('\n', stderr);
-		    }
-		    lastline = 1;
-		    rc = -1;
-		}
-	    }
-	}
+	    afx->buffer[afx->buffer_len] = '\0';
+	  }
     }
 
-    buf[0] = (len-2) >> 8;
-    buf[1] = (len-2);
     if( lastline ) { /* write last (ending) length header */
-	if( buf[0] || buf[1] ) { /* only if we have some text */
-	    buf[len++] = 0;
-	    buf[len++] = 0;
-	}
+        if(tempbuf_len<192)
+	  buf[len++]=tempbuf_len;
+	else
+	  {
+	    buf[len++]=((tempbuf_len-192)/256) + 192;
+	    buf[len++]=(tempbuf_len-192) % 256;
+	  }
+	memcpy(&buf[len],tempbuf,tempbuf_len);
+	len+=tempbuf_len;
+
 	rc = 0;
 	afx->faked = 0;
 	afx->in_cleartext = 0;
@@ -609,15 +660,15 @@ fake_packet( armor_filter_context_t *afx, iobuf_t a,
 static int
 invalid_crc(void)
 {
-    if ( opt.ignore_crc_error )
-        return 0;
-    log_inc_errorcount();
-    return GPG_ERR_INV_ARMOR;
+  if ( opt.ignore_crc_error )
+    return 0;
+  log_inc_errorcount();
+  return gpg_error (GPG_ERR_INV_ARMOR);
 }
 
 
 static int
-radix64_read( armor_filter_context_t *afx, iobuf_t a, size_t *retn,
+radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	      byte *buf, size_t size )
 {
     byte val;
@@ -676,7 +727,7 @@ radix64_read( armor_filter_context_t *afx, iobuf_t a, size_t *retn,
 	    break;
 	}
 	else if( (c = asctobin[(c2=c)]) == 255 ) {
-	    log_error(_("invalid radix64 character %02x skipped\n"), c2);
+	    log_error(_("invalid radix64 character %02X skipped\n"), c2);
 	    continue;
 	}
 	switch(idx) {
@@ -755,13 +806,17 @@ radix64_read( armor_filter_context_t *afx, iobuf_t a, size_t *retn,
 	    if( c == -1 ) {
 		log_info(_("premature eof (in CRC)\n"));
 		rc = invalid_crc();
-                	    }
+	    }
+	    else if( idx == 0 ) {
+	        /* No CRC at all is legal ("MAY") */
+	        rc=0;
+	    }
 	    else if( idx != 4 ) {
 		log_info(_("malformed CRC\n"));
 		rc = invalid_crc();
 	    }
 	    else if( mycrc != afx->crc ) {
-                log_info (_("CRC error; %06lx - %06lx\n"),
+                log_info (_("CRC error; %06lX - %06lX\n"),
 				    (ulong)afx->crc, (ulong)mycrc);
                 rc = invalid_crc();
 	    }
@@ -781,12 +836,12 @@ radix64_read( armor_filter_context_t *afx, iobuf_t a, size_t *retn,
 		if( rc == -1 )
 		    rc = 0;
 		else if( rc == 2 ) {
-		    log_error(_("premature eof (in Trailer)\n"));
-		    rc = GPG_ERR_INV_ARMOR;
+		    log_error(_("premature eof (in trailer)\n"));
+		    rc = G10ERR_INVALID_ARMOR;
 		}
 		else {
 		    log_error(_("error in trailer line\n"));
-		    rc = GPG_ERR_INV_ARMOR;
+		    rc = G10ERR_INVALID_ARMOR;
 		}
 #endif
 	    }
@@ -805,7 +860,7 @@ radix64_read( armor_filter_context_t *afx, iobuf_t a, size_t *retn,
  */
 int
 armor_filter( void *opaque, int control,
-	     iobuf_t a, byte *buf, size_t *ret_len)
+	     IOBUF a, byte *buf, size_t *ret_len)
 {
     size_t size = *ret_len;
     armor_filter_context_t *afx = opaque;
@@ -843,9 +898,10 @@ armor_filter( void *opaque, int control,
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
-        /* We need some space for the faked packet.  The minmum required
-         * size is ~18 + length of the session marker */
-	if( size < 50 ) 
+        /* We need some space for the faked packet.  The minmum
+         * required size is the PARTIAL_CHUNK size plus a byte for the
+         * length itself */
+	if( size < PARTIAL_CHUNK+1 ) 
 	    BUG(); /* supplied buffer too short */
 
 	if( afx->faked )
@@ -882,7 +938,7 @@ armor_filter( void *opaque, int control,
 			afx->pgp2mode = 1;
 		}
 		n=0;
-                /* first a gpg control packet */
+                /* First a gpg control packet... */
                 buf[n++] = 0xff; /* new format, type 63, 1 length byte */
                 n++;   /* see below */
                 memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
@@ -902,12 +958,16 @@ armor_filter( void *opaque, int control,
                     buf[n++] = DIGEST_ALGO_SHA512;
                 buf[1] = n - 2;
 
-		/* followed by a plaintext packet */
-		buf[n++] = 0xaf; /* old packet format, type 11, var length */
-		buf[n++] = 0;	 /* set the length header */
-		buf[n++] = 6;
+		/* ...followed by an invented plaintext packet.
+		   Amusingly enough, this packet is not compliant with
+		   2440 as the initial partial length is less than 512
+		   bytes.  Of course, we'll accept it anyway ;) */
+
+		buf[n++] = 0xCB; /* new packet format, type 11 */
+		buf[n++] = 0xE1; /* 2^1 == 2 bytes */
 		buf[n++] = 't';  /* canonical text mode */
 		buf[n++] = 0;	 /* namelength */
+		buf[n++] = 0xE2; /* 2^2 == 4 more bytes */
 		memset(buf+n, 0, 4); /* timestamp */
 		n += 4;
 	    }
@@ -926,35 +986,39 @@ armor_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH && !afx->cancel ) {
 	if( !afx->status ) { /* write the header line */
 	    const char *s;
-            STRLIST comment = opt.comments;
+	    STRLIST comment=opt.comments;
 
 	    if( afx->what >= DIM(head_strings) )
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, head_strings[afx->what] );
-	    iobuf_writestr(a, "-----" LF );
+	    iobuf_writestr(a, "-----" );
+	    iobuf_writestr(a,afx->eol);
 	    if( !opt.no_version )
+	      {
 		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
-					      PRINTABLE_OS_NAME ")" LF );
+			       PRINTABLE_OS_NAME ")" );
+		iobuf_writestr(a,afx->eol);
+	      }
 
-	    /* Write the comment string. */
-	    for(s=comment? comment->d:NULL; comment;
-                comment=comment->next,s=comment->d)
+	    /* write the comment strings */
+	    for(s=comment->d;comment;comment=comment->next,s=comment->d)
 	      {
 		iobuf_writestr(a, "Comment: " );
-		for ( ; *s; s++ )
-                  {
+		for( ; *s; s++ )
+		  {
 		    if( *s == '\n' )
-                      iobuf_writestr(a, "\\n" );
+		      iobuf_writestr(a, "\\n" );
 		    else if( *s == '\r' )
-                      iobuf_writestr(a, "\\r" );
+		      iobuf_writestr(a, "\\r" );
 		    else if( *s == '\v' )
-                      iobuf_writestr(a, "\\v" );
+		      iobuf_writestr(a, "\\v" );
 		    else
-                      iobuf_put(a, *s );
-                  }
-		iobuf_writestr(a, LF );
-              }
+		      iobuf_put(a, *s );
+		  }
+
+		iobuf_writestr(a,afx->eol);
+	      }
 
 	    if ( afx->hdrlines ) {
                 for ( s = afx->hdrlines; *s; s++ ) {
@@ -965,7 +1029,8 @@ armor_filter( void *opaque, int control,
                     iobuf_put(a, *s );
                 }
             }
-	    iobuf_writestr(a, LF );
+
+	    iobuf_writestr(a,afx->eol);
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;
@@ -994,10 +1059,11 @@ armor_filter( void *opaque, int control,
 		iobuf_put(a, c);
 		c = bintoasc[radbuf[2]&077];
 		iobuf_put(a, c);
-		if( ++idx2 >= (64/4) ) { /* pgp doesn't like 72 here */
-		    iobuf_writestr(a, LF );
+		if( ++idx2 >= (64/4) )
+		  { /* pgp doesn't like 72 here */
+		    iobuf_writestr(a,afx->eol);
 		    idx2=0;
-		}
+		  }
 	    }
 	}
 	for(i=0; i < idx; i++ )
@@ -1006,10 +1072,23 @@ armor_filter( void *opaque, int control,
 	afx->idx2 = idx2;
 	afx->crc  = crc;
     }
-    else if( control == IOBUFCTRL_INIT ) {
+    else if( control == IOBUFCTRL_INIT )
+      {
 	if( !is_initialized )
-	    initialize();
-    }
+	  initialize();
+
+	/* Figure out what we're using for line endings if the caller
+	   didn't specify. */
+	if(afx->eol[0]==0)
+	  {
+#ifdef HAVE_DOSISH_SYSTEM
+	    afx->eol[0]='\r';
+	    afx->eol[1]='\n';
+#else
+	    afx->eol[0]='\n';
+#endif
+	  }
+      }
     else if( control == IOBUFCTRL_CANCEL ) {
 	afx->cancel = 1;
     }
@@ -1038,14 +1117,15 @@ armor_filter( void *opaque, int control,
 		    iobuf_put(a, c);
 		    iobuf_put(a, '=');
 		}
-		if( ++idx2 >= (64/4) ) { /* pgp doesn't like 72 here */
-		    iobuf_writestr(a, LF );
+		if( ++idx2 >= (64/4) )
+		  { /* pgp doesn't like 72 here */
+		    iobuf_writestr(a,afx->eol);
 		    idx2=0;
-		}
+		  }
 	    }
 	    /* may need a linefeed */
 	    if( idx2 )
-		iobuf_writestr(a, LF );
+	      iobuf_writestr(a,afx->eol);
 	    /* write the CRC */
 	    iobuf_put(a, '=');
 	    radbuf[0] = crc >>16;
@@ -1059,13 +1139,14 @@ armor_filter( void *opaque, int control,
 	    iobuf_put(a, c);
 	    c = bintoasc[radbuf[2]&077];
 	    iobuf_put(a, c);
-	    iobuf_writestr(a, LF );
+	    iobuf_writestr(a,afx->eol);
 	    /* and the the trailer */
 	    if( afx->what >= DIM(tail_strings) )
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, tail_strings[afx->what] );
-	    iobuf_writestr(a, "-----" LF );
+	    iobuf_writestr(a, "-----" );
+	    iobuf_writestr(a,afx->eol);
 	}
 	else if( !afx->any_data && !afx->inp_bypass ) {
 	    log_error(_("no valid OpenPGP data found.\n"));
@@ -1079,7 +1160,7 @@ armor_filter( void *opaque, int control,
 	if( afx->qp_detected )
 	    log_error(_("quoted printable character in armor - "
 			"probably a buggy MTA has been used\n") );
-	xfree ( afx->buffer );
+	xfree( afx->buffer );
 	afx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )
@@ -1096,7 +1177,7 @@ make_radix64_string( const byte *data, size_t len )
 {
     char *buffer, *p;
 
-    buffer = p = xmalloc ( (len+2)/3*4 + 1 );
+    buffer = p = xmalloc( (len+2)/3*4 + 1 );
     for( ; len >= 3 ; len -= 3, data += 3 ) {
 	*p++ = bintoasc[(data[0] >> 2) & 077];
 	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
@@ -1156,7 +1237,7 @@ unarmor_pump_new (void)
 
     if( !is_initialized )
         initialize();
-    x = xcalloc (1,sizeof *x);
+    x = xmalloc_clear (sizeof *x);
     return x;
 }
 
@@ -1253,7 +1334,7 @@ unarmor_pump (UnarmorPump x, int c)
         {
             int c2;
             if( (c = asctobin[(c2=c)]) == 255 ) {
-                log_error(_("invalid radix64 character %02x skipped\n"), c2);
+                log_error(_("invalid radix64 character %02X skipped\n"), c2);
                 break;
             }
         }
@@ -1290,7 +1371,7 @@ unarmor_pump (UnarmorPump x, int c)
         if( (c = asctobin[c]) == 255 ) {
             rval = -1; /* ready */
             if( x->crc != x->mycrc ) {
-                log_info (_("CRC error; %06lx - %06lx\n"),
+                log_info (_("CRC error; %06lX - %06lX\n"),
                           (ulong)x->crc, (ulong)x->mycrc);
                 if ( invalid_crc() )
                     rval = -3;

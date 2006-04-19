@@ -1,6 +1,6 @@
 /* plaintext.c -  process plaintext packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003  Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -25,13 +26,13 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/types.h>
 #ifdef HAVE_DOSISH_SYSTEM
 #include <fcntl.h> /* for setmode() */
 #endif
 
 #include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "options.h"
 #include "packet.h"
 #include "ttyio.h"
@@ -39,7 +40,6 @@
 #include "main.h"
 #include "status.h"
 #include "i18n.h"
-
 
 
 /****************
@@ -50,27 +50,41 @@
  */
 int
 handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
-		  int nooutput, int clearsig, int *create_failed )
+		  int nooutput, int clearsig )
 {
     char *fname = NULL;
     FILE *fp = NULL;
+    static off_t count=0;
     int rc = 0;
     int c;
-    int convert = pt->mode == 't';
+    int convert = (pt->mode == 't' || pt->mode == 'u');
 #ifdef __riscos__
     int filetype = 0xfff;
 #endif
-    int dummy_create_failed;
 
-    if (!create_failed)
-      create_failed = &dummy_create_failed;
-    *create_failed = 0;
+    /* Let people know what the plaintext info is. This allows the
+       receiving program to try and do something different based on
+       the format code (say, recode UTF-8 to local). */
+    if(!nooutput && is_status_enabled())
+      {
+	char status[50];
+
+	sprintf(status,"%X %lu ",(byte)pt->mode,(ulong)pt->timestamp);
+	write_status_text_and_buffer(STATUS_PLAINTEXT,
+				     status,pt->name,pt->namelen,0);
+
+	if(!pt->is_partial)
+	  {
+	    sprintf(status,"%lu",(ulong)pt->len);
+	    write_status_text(STATUS_PLAINTEXT_LENGTH,status);
+	  }
+      }
 
     /* create the filename as C string */
     if( nooutput )
 	;
     else if( opt.outfile ) {
-	fname = xmalloc ( strlen( opt.outfile ) + 1);
+	fname = xmalloc( strlen( opt.outfile ) + 1);
 	strcpy(fname, opt.outfile );
     }
     else if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) ) {
@@ -82,8 +96,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	if( !fname )
 	    fname = ask_outfile_name( pt->name, pt->namelen );
 	if( !fname ) {
-            *create_failed = 1;
-            rc = GPG_ERR_GENERAL;
+             rc = gpg_error (GPG_ERR_GENERAL) /* Can't create file. */
 	    goto leave;
 	}
     }
@@ -93,20 +106,20 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 
     if( nooutput )
 	;
-    else if( !*fname || (*fname=='-' && !fname[1])) {
-	/* no filename or "-" given; write to stdout */
+    else if ( iobuf_is_pipe_filename (fname) || !*fname)
+      {
+	/* No filename or "-" given; write to stdout. */
 	fp = stdout;
 #ifdef HAVE_DOSISH_SYSTEM
 	setmode ( fileno(fp) , O_BINARY );
 #endif
-    }
+      }
     else {
 	while( !overwrite_filep (fname) ) {
             char *tmp = ask_outfile_name (NULL, 0);
             if ( !tmp || !*tmp ) {
                 xfree (tmp);
-                *create_failed = 1;
-                rc = GPG_ERR_GENERAL;
+                rc = G10ERR_CREATE_FILE;
                 goto leave;
             }
             xfree (fname);
@@ -117,26 +130,34 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #ifndef __riscos__
     if( fp || nooutput )
 	;
-    else if( !(fp = fopen(fname,"wb")) ) {
-	rc = gpg_error_from_errno (errno);
+    else if (is_secured_filename (fname))
+      {
+        errno = EPERM;
 	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
-        *create_failed = 1;
+	rc = G10ERR_CREATE_FILE;
+	goto leave;
+      }
+    else if( !(fp = fopen(fname,"wb")) ) {
+	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
+	rc = G10ERR_CREATE_FILE;
 	goto leave;
     }
 #else /* __riscos__ */
-    /* Convert all '.' in fname to '/' -- we don't create directories! */
-    for( c=0; fname[c]; ++c )
-        if( fname[c] == '.' )
-            fname[c] = '/';
+    /* If no output filename was given, i.e. we constructed it,
+       convert all '.' in fname to '/' but not vice versa as
+       we don't create directories! */
+    if( !opt.outfile )
+        for( c=0; fname[c]; ++c )
+            if( fname[c] == '.' )
+                fname[c] = '/';
 
     if( fp || nooutput )
 	;
     else {
         fp = fopen(fname,"wb");
         if( !fp ) {
-             rc == gpg_error_from_errno (errno);          
             log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
-            *create_failed = 1;
+            rc = G10ERR_CREATE_FILE;
             if (errno == 106)
                 log_info("Do output file and input file have the same name?\n");
             goto leave;
@@ -156,15 +177,21 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 #endif /* __riscos__ */
 
     if( !pt->is_partial ) {
-        /* we have an actual length (which might be zero). */
-	assert( !clearsig );
+        /* We have an actual length (which might be zero). */
+
+        if (clearsig) {
+            log_error ("clearsig encountered while not expected\n");
+            rc = G10ERR_UNEXPECTED;
+            goto leave;
+        }
+
 	if( convert ) { /* text mode */
 	    for( ; pt->len; pt->len-- ) {
 		if( (c = iobuf_get(pt->buf)) == -1 ) {
-                     rc = gpg_error_from_errno (errno);
-		    log_error("Problem reading source (%u bytes remaining)\n",
-			      (unsigned)pt->len);
-		    goto leave;
+                    rc = gpg_error_from_errno (errno);
+		    log_error ("problem reading source (%u bytes remaining)\n",
+                               (unsigned)pt->len);
+                    goto leave;
 		}
 		if( mfx->md )
 		    gcry_md_putc (mfx->md, c );
@@ -172,65 +199,93 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( c == '\r' )  /* convert to native line ending */
 		    continue;	 /* fixme: this hack might be too simple */
 #endif
-		if( fp ) {
-     		    if( putc( c, fp ) == EOF ) {
-                        rc = gpg_error_from_errno (errno);
+		if( fp )
+		  {
+		    if(opt.max_output && (++count)>opt.max_output)
+		      {
+			log_error("Error writing to `%s': %s\n",
+				  fname,"exceeded --max-output limit\n");
+			rc = gpg_error (GPG_ERR_GENERAL);
+			goto leave;
+		      }
+		    else if( putc( c, fp ) == EOF )
+		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
+			rc = G10ERR_WRITE_FILE;
 			goto leave;
-		    }
-		}
+		      }
+		  }
 	    }
 	}
 	else { /* binary mode */
-	    byte *buffer = xmalloc ( 32768 );
+	    byte *buffer = xmalloc( 32768 );
 	    while( pt->len ) {
 		int len = pt->len > 32768 ? 32768 : pt->len;
 		len = iobuf_read( pt->buf, buffer, len );
 		if( len == -1 ) {
-                    rc = gpg_error_from_errno (errno);
 		    log_error("Problem reading source (%u bytes remaining)\n",
 			      (unsigned)pt->len);
-		    xfree ( buffer );
+		    rc = G10ERR_READ_FILE;
+		    xfree( buffer );
 		    goto leave;
 		}
 		if( mfx->md )
-		    gcry_md_write( mfx->md, buffer, len );
-		if( fp ) {
-  		    if( fwrite( buffer, 1, len, fp ) != len ) {
-                        rc = gpg_error_from_errno (errno);
+		    gcry_md_write ( mfx->md, buffer, len );
+		if( fp )
+		  {
+		    if(opt.max_output && (count+=len)>opt.max_output)
+		      {
+			log_error("Error writing to `%s': %s\n",
+				  fname,"exceeded --max-output limit\n");
+			rc = G10ERR_WRITE_FILE;
+			xfree( buffer );
+			goto leave;
+		      }
+		    else if( fwrite( buffer, 1, len, fp ) != len )
+		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			xfree ( buffer );
+			rc = G10ERR_WRITE_FILE;
+			xfree( buffer );
 			goto leave;
-		    }
-		}
+		      }
+		  }
 		pt->len -= len;
 	    }
-	    xfree ( buffer );
+	    xfree( buffer );
 	}
     }
     else if( !clearsig ) {
 	if( convert ) { /* text mode */
 	    while( (c = iobuf_get(pt->buf)) != -1 ) {
 		if( mfx->md )
-		    gcry_md_putc (mfx->md, c );
+		    md_putc(mfx->md, c );
 #ifndef HAVE_DOSISH_SYSTEM
 		if( convert && c == '\r' )
 		    continue; /* fixme: this hack might be too simple */
 #endif
-		if( fp ) {
-   		    if( putc( c, fp ) == EOF ) {
-                        rc = gpg_error_from_errno (errno);
+		if( fp )
+		  {
+		    if(opt.max_output && (++count)>opt.max_output)
+		      {
+			log_error("Error writing to `%s': %s\n",
+				  fname,"exceeded --max-output limit\n");
+			rc = G10ERR_WRITE_FILE;
+			goto leave;
+		      }
+		    else if( putc( c, fp ) == EOF )
+		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
+			rc = G10ERR_WRITE_FILE;
 			goto leave;
-		    }
-		}
+		      }
+		  }
 	    }
 	}
 	else { /* binary mode */
-	    byte *buffer = xmalloc ( 32768 );
+	    byte *buffer = xmalloc( 32768 );
 	    int eof;
 	    for( eof=0; !eof; ) {
 		/* Why do we check for len < 32768:
@@ -245,18 +300,27 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( len < 32768 )
 		    eof = 1;
 		if( mfx->md )
-		    gcry_md_write( mfx->md, buffer, len );
-		if( fp ) {
-		    if( fwrite( buffer, 1, len, fp ) != len ) {
-                        rc = gpg_error_from_errno (errno);
+		    md_write( mfx->md, buffer, len );
+		if( fp )
+		  {
+		    if(opt.max_output && (count+=len)>opt.max_output)
+		      {
 			log_error("Error writing to `%s': %s\n",
-				  fname, strerror(errno) );
-			xfree ( buffer );
+				  fname,"exceeded --max-output limit\n");
+			rc = G10ERR_WRITE_FILE;
+			xfree( buffer );
 			goto leave;
+		      }
+		    else if( fwrite( buffer, 1, len, fp ) != len ) {
+		      log_error("Error writing to `%s': %s\n",
+				fname, strerror(errno) );
+		      rc = G10ERR_WRITE_FILE;
+		      xfree( buffer );
+		      goto leave;
 		    }
-		}
+		  }
 	    }
-	    xfree ( buffer );
+	    xfree( buffer );
 	}
 	pt->buf = NULL;
     }
@@ -264,19 +328,28 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	int state = 0;
 
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
-	    if( fp ) {
-		if( putc( c, fp ) == EOF ) {
-                    rc = gpg_error_from_errno (errno);
+	    if( fp )
+	      {
+		if(opt.max_output && (++count)>opt.max_output)
+		  {
 		    log_error("Error writing to `%s': %s\n",
-						fname, strerror(errno) );
+			      fname,"exceeded --max-output limit\n");
+		    rc = G10ERR_WRITE_FILE;
 		    goto leave;
-		}
-	    }
+		  }
+		else if( putc( c, fp ) == EOF )
+		  {
+		    log_error("Error writing to `%s': %s\n",
+			      fname, strerror(errno) );
+		    rc = G10ERR_WRITE_FILE;
+		    goto leave;
+		  }
+	      }
 	    if( !mfx->md )
 		continue;
 	    if( state == 2 ) {
-		gcry_md_putc (mfx->md, '\r' );
-		gcry_md_putc (mfx->md, '\n' );
+		md_putc(mfx->md, '\r' );
+		md_putc(mfx->md, '\n' );
 		state = 0;
 	    }
 	    if( !state ) {
@@ -285,18 +358,18 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		else if( c == '\n'  )
 		    state = 2;
 		else
-		    gcry_md_putc (mfx->md, c );
+		    md_putc(mfx->md, c );
 	    }
 	    else if( state == 1 ) {
 		if( c == '\n'  )
 		    state = 2;
 		else {
-		    gcry_md_putc (mfx->md, '\r' );
+		    md_putc(mfx->md, '\r' );
 		    if( c == '\r'  )
 			state = 1;
 		    else {
 			state = 0;
-			gcry_md_putc (mfx->md, c );
+			md_putc(mfx->md, c );
 		    }
 		}
 	    }
@@ -305,9 +378,9 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     }
 
     if( fp && fp != stdout && fclose(fp) ) {
-        rc = gpg_error_from_errno (errno);
 	log_error("Error closing `%s': %s\n", fname, strerror(errno) );
 	fp = NULL;
+	rc = G10ERR_WRITE_FILE;
 	goto leave;
     }
     fp = NULL;
@@ -315,12 +388,12 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
   leave:
     if( fp && fp != stdout )
 	fclose(fp);
-    xfree (fname);
+    xfree(fname);
     return rc;
 }
 
 static void
-do_hash( MD_HANDLE md, MD_HANDLE md2, iobuf_t fp, int textmode )
+do_hash( gcry_md_hd_t md, gcry_md_hd_t md2, IOBUF fp, int textmode )
 {
     text_filter_context_t tfx;
     int c;
@@ -365,12 +438,12 @@ do_hash( MD_HANDLE md, MD_HANDLE md2, iobuf_t fp, int textmode )
  * INFILE is the name of the input file.
  */
 int
-ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
+ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
 			   const char *inname, int textmode )
 {
     progress_filter_context_t pfx;
     char *answer = NULL;
-    iobuf_t fp;
+    IOBUF fp;
     int rc = 0;
 
     fp = open_sigfile( inname, &pfx ); /* open default file */
@@ -379,24 +452,37 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 	int any=0;
 	tty_printf(_("Detached signature.\n"));
 	do {
-	    xfree (answer);
-	    answer = cpr_get("detached_signature.filename",
+	    char *name;
+	    xfree(answer);
+	    tty_enable_completion(NULL);
+	    name = cpr_get("detached_signature.filename",
 			   _("Please enter name of data file: "));
+	    tty_disable_completion();
 	    cpr_kill_prompt();
+	    answer=make_filename(name,(void *)NULL);
+	    xfree(name);
+
 	    if( any && !*answer ) {
-		rc = GPG_ERR_GENERAL;
+                rc = gpg_error (GPG_ERR_GENERAL); /*G10ERR_READ_FILE*/
 		goto leave;
 	    }
 	    fp = iobuf_open(answer);
+            if (fp && is_secured_file (iobuf_get_fd (fp)))
+              {
+                iobuf_close (fp);
+                fp = NULL;
+                errno = EPERM;
+              }
 	    if( !fp && errno == ENOENT ) {
 		tty_printf("No such file, try again or hit enter to quit.\n");
 		any++;
 	    }
-	    else if( !fp ) {
-                rc = gpg_error_from_errno (errno);
-		log_error("can't open `%s': %s\n", answer, strerror(errno) );
+	    else if( !fp )
+	      {
+		log_error(_("can't open `%s': %s\n"), answer, strerror(errno));
+		rc = G10ERR_READ_FILE;
 		goto leave;
-	    }
+	      }
 	} while( !fp );
     }
 
@@ -410,7 +496,7 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     iobuf_close(fp);
 
   leave:
-    xfree (answer);
+    xfree(answer);
     return rc;
 }
 
@@ -421,11 +507,11 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
  * If FILES is NULL, hash stdin.
  */
 int
-hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
+hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2, STRLIST files,
 		const char *sigfilename, int textmode )
 {
     progress_filter_context_t pfx;
-    iobuf_t fp;
+    IOBUF fp;
     STRLIST sl;
 
     if( !files ) {
@@ -437,17 +523,22 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 	    return 0;
 	}
         log_error (_("no signed data\n"));
-        return GPG_ERR_NO_DATA;
+        return gpg_error (GPG_ERR_NO_DATA);
     }
 
 
     for (sl=files; sl; sl = sl->next ) {
 	fp = iobuf_open( sl->d );
+        if (fp && is_secured_file (iobuf_get_fd (fp)))
+          {
+            iobuf_close (fp);
+            fp = NULL;
+            errno = EPERM;
+          }
 	if( !fp ) {
-            int tmperr = gpg_error_from_errno (errno);
 	    log_error(_("can't open signed data `%s'\n"),
 						print_fname_stdin(sl->d));
-	    return tmperr;
+	    return G10ERR_OPEN_FILE;
 	}
         handle_progress (&pfx, fp, sl->d);
 	do_hash( md, md2, fp, textmode );

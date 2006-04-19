@@ -30,6 +30,8 @@
 #ifndef G10_MPI_H
 #define G10_MPI_H
 
+#error this file should not be used anymore
+
 #include <gcrypt.h>
 
 #if 0

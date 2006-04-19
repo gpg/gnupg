@@ -1,5 +1,5 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002,
-#               2003  Free Software Foundation, Inc.
+#               2003, 2006  Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -26,16 +26,17 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) -Wno-pointer-sign
 
 needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
 
 bin_PROGRAMS = gpg2 gpgv2
 
 common_source =  \
-	      global.h gpg.h    \
+	      gpg.h             \
 	      build-packet.c	\
 	      compress.c	\
+	      compress-bz2.c	\
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
@@ -55,7 +56,6 @@ common_source =  \
 	      keyid.c		\
 	      packet.h		\
 	      parse-packet.c	\
-	      comment.c 	\
 	      status.c		\
 	      status.h		\
 	      plaintext.c	\
@@ -63,7 +63,7 @@ common_source =  \
 	      keylist.c 	\
 	      pkglue.c pkglue.h 
 
-gpg2_SOURCES  = g10.c		\
+gpg2_SOURCES  = gpg.c		\
 	      $(common_source)	\
 	      pkclist.c 	\
 	      skclist.c 	\
@@ -88,7 +88,6 @@ gpg2_SOURCES  = g10.c		\
 	      tdbio.h		\
 	      delkey.c		\
 	      keygen.c          \
-	      pipemode.c        \
 	      helptext.c        \
 	      keyserver.c       \
 	      keyserver-internal.h \

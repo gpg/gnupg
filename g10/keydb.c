@@ -1,5 +1,5 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -71,6 +72,124 @@ static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
 
 
+/* Handle the creation of a keyring if it does not yet exist.  Take
+   into acount that other processes might have the keyring already
+   locked.  This lock check does not work if the directory itself is
+   not yet available. */
+static int
+maybe_create_keyring (char *filename, int force)
+{
+  DOTLOCK lockhd = NULL;
+  IOBUF iobuf;
+  int rc;
+  mode_t oldmask;
+  char *last_slash_in_filename;
+
+  /* A quick test whether the filename already exists. */
+  if (!access (filename, F_OK))
+    return 0;
+
+  /* If we don't want to create a new file at all, there is no need to
+     go any further - bail out right here.  */
+  if (!force) 
+    return gpg_error (GPG_ERR_ENOENT);
+
+  /* First of all we try to create the home directory.  Note, that we
+     don't do any locking here because any sane application of gpg
+     would create the home directory by itself and not rely on gpg's
+     tricky auto-creation which is anyway only done for some home
+     directory name patterns. */
+  last_slash_in_filename = strrchr (filename, DIRSEP_C);
+  *last_slash_in_filename = 0;
+  if (access(filename, F_OK))
+    { 
+      static int tried;
+      
+      if (!tried)
+        {
+          tried = 1;
+          try_make_homedir (filename);
+        }
+      if (access (filename, F_OK))
+        {
+          rc = gpg_error_from_errno (errno);
+          *last_slash_in_filename = DIRSEP_C;
+          goto leave;
+        }
+    }
+  *last_slash_in_filename = DIRSEP_C;
+
+
+  /* To avoid races with other instances of gpg trying to create or
+     update the keyring (it is removed during an update for a short
+     time), we do the next stuff in a locked state. */
+  lockhd = create_dotlock (filename);
+  if (!lockhd)
+    {
+      /* A reason for this to fail is that the directory is not
+         writable. However, this whole locking stuff does not make
+         sense if this is the case. An empty non-writable directory
+         with no keyring is not really useful at all. */
+      if (opt.verbose)
+        log_info ("can't allocate lock for `%s'\n", filename );
+
+      if (!force) 
+        return G10ERR_OPEN_FILE; 
+      else
+        return G10ERR_GENERAL;
+    }
+
+  if ( make_dotlock (lockhd, -1) )
+    {
+      /* This is something bad.  Probably a stale lockfile.  */
+      log_info ("can't lock `%s'\n", filename );
+      rc = G10ERR_GENERAL;
+      goto leave;
+    }
+
+  /* Now the real test while we are locked. */
+  if (!access(filename, F_OK))
+    {
+      rc = 0;  /* Okay, we may access the file now.  */
+      goto leave;
+    }
+
+  /* The file does not yet exist, create it now. */
+  oldmask = umask (077);
+  if (is_secured_filename (filename))
+    {
+      iobuf = NULL;
+      errno = EPERM;
+    }
+  else
+    iobuf = iobuf_create (filename);
+  umask (oldmask);
+  if (!iobuf) 
+    {
+      log_error ( _("error creating keyring `%s': %s\n"),
+                  filename, strerror(errno));
+      rc = G10ERR_OPEN_FILE;
+      goto leave;
+    }
+
+  if (!opt.quiet)
+    log_info (_("keyring `%s' created\n"), filename);
+
+  iobuf_close (iobuf);
+  /* Must invalidate that ugly cache */
+  iobuf_ioctl (NULL, 2, 0, filename);
+  rc = 0;
+
+ leave:
+  if (lockhd)
+    {
+      release_dotlock (lockhd);
+      destroy_dotlock (lockhd);
+    }
+  return rc;
+}
+
+
 /*
  * Register a resource (which currently may only be a keyring file).
  * The first keyring which is added by this function is
@@ -78,14 +197,14 @@ static void unlock_all (KEYDB_HANDLE hd);
  * Note: this function may be called before secure memory is
  * available.
  * Flag 1 == force
- * Flag 2 == default
+ * Flag 2 == mark resource as primary
+ * Flag 4 == This is a default resources
  */
 int
 keydb_add_resource (const char *url, int flags, int secret)
 {
     static int any_secret, any_public;
     const char *resname = url;
-    iobuf_t iobuf = NULL;
     char *filename = NULL;
     int force=(flags&1);
     int rc = 0;
@@ -104,7 +223,7 @@ keydb_add_resource (const char *url, int flags, int secret)
 #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
 	else if (strchr (resname, ':')) {
 	    log_error ("invalid key resource URL `%s'\n", url );
-	    rc = GPG_ERR_GENERAL;
+	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
 #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
@@ -146,65 +265,18 @@ keydb_add_resource (const char *url, int flags, int secret)
     switch (rt) {
       case KEYDB_RESOURCE_TYPE_NONE:
 	log_error ("unknown type of key resource `%s'\n", url );
-	rc = GPG_ERR_GENERAL;
+	rc = G10ERR_GENERAL;
 	goto leave;
 
       case KEYDB_RESOURCE_TYPE_KEYRING:
-        if (access(filename, F_OK))
-          { /* file does not exist */
-	    mode_t oldmask;
-	    char *last_slash_in_filename;
-
-            if (!force) 
-              {
-                rc = gpg_error_from_errno (errno);
-                goto leave;
-              }
-
-	    last_slash_in_filename = strrchr (filename, DIRSEP_C);
-	    *last_slash_in_filename = 0;
-	    if (access(filename, F_OK))
-              { /* On the first time we try to create the default
-		   homedir and check again. */
-                static int tried;
-                
-                if (!tried)
-                  {
-                    tried = 1;
-                    try_make_homedir (filename);
-                  }
-         	if (access (filename, F_OK))
-                  {
-                    rc = gpg_error_from_errno (errno);
-                    *last_slash_in_filename = DIRSEP_C;
-                    goto leave;
-                  }
-              }
-	    *last_slash_in_filename = DIRSEP_C;
-
-	    oldmask=umask(077);
-	    iobuf = iobuf_create (filename);
-	    umask(oldmask);
-	    if (!iobuf) 
-              {
-		log_error ( _("error creating keyring `%s': %s\n"),
-                            filename, strerror(errno));
-                rc = gpg_error_from_errno (errno);
-		goto leave;
-              }
-
-            if (!opt.quiet)
-              log_info (_("keyring `%s' created\n"), filename);
-            iobuf_close (iobuf);
-            iobuf = NULL;
-            /* must invalidate that ugly cache */
-            iobuf_ioctl (NULL, 2, 0, (char*)filename);
-          } /* end file creation */
+        rc = maybe_create_keyring (filename, force);
+        if (rc)
+          goto leave;
 
         if(keyring_register_filename (filename, secret, &token))
 	  {
 	    if (used_resources >= MAX_KEYDB_RESOURCES)
-	      rc = GPG_ERR_RESOURCE_LIMIT;
+	      rc = G10ERR_RESOURCE_LIMIT;
 	    else 
 	      {
 		if(flags&2)
@@ -228,7 +300,7 @@ keydb_add_resource (const char *url, int flags, int secret)
 
       default:
 	log_error ("resource type of `%s' not supported\n", url);
-	rc = GPG_ERR_GENERAL;
+	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
@@ -236,7 +308,18 @@ keydb_add_resource (const char *url, int flags, int secret)
 
   leave:
     if (rc)
-	log_error ("keyblock resource `%s': %s\n", filename, gpg_strerror (rc));
+      {
+        /* Secret keyrings are not required in all cases.  To avoid
+           having gpg return failure we use log_info here if the
+           rewsource is a secret one and marked as default
+           resource.  */
+        if ((flags&4) && secret)
+          log_info (_("keyblock resource `%s': %s\n"),
+                    filename, g10_errstr(rc));
+        else
+          log_error (_("keyblock resource `%s': %s\n"),
+                     filename, g10_errstr(rc));
+      }
     else if (secret)
 	any_secret = 1;
     else
@@ -254,7 +337,7 @@ keydb_new (int secret)
   KEYDB_HANDLE hd;
   int i, j;
   
-  hd = xcalloc (1,sizeof *hd);
+  hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;
   
   assert (used_resources <= MAX_KEYDB_RESOURCES);
@@ -414,14 +497,14 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
     int rc = 0;
 
     if (!hd)
-        return GPG_ERR_INV_ARG;
+        return G10ERR_INV_ARG;
 
     if ( hd->found < 0 || hd->found >= hd->used) 
         return -1; /* nothing found */
 
     switch (hd->active[hd->found].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
-        rc = GPG_ERR_GENERAL; /* oops */
+        rc = G10ERR_GENERAL; /* oops */
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
         rc = keyring_get_keyblock (hd->active[hd->found].u.kr, ret_kb);
@@ -440,7 +523,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb)
     int rc = 0;
 
     if (!hd)
-        return GPG_ERR_INV_ARG;
+        return G10ERR_INV_ARG;
 
     if ( hd->found < 0 || hd->found >= hd->used) 
         return -1; /* nothing found */
@@ -454,7 +537,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb)
 
     switch (hd->active[hd->found].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
-        rc = GPG_ERR_GENERAL; /* oops */
+        rc = G10ERR_GENERAL; /* oops */
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
         rc = keyring_update_keyblock (hd->active[hd->found].u.kr, kb);
@@ -476,7 +559,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
     int idx;
 
     if (!hd) 
-        return GPG_ERR_INV_ARG;
+        return G10ERR_INV_ARG;
 
     if( opt.dry_run )
 	return 0;
@@ -486,7 +569,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
     else if ( hd->current >= 0 && hd->current < hd->used) 
         idx = hd->current;
     else
-        return GPG_ERR_GENERAL;
+        return G10ERR_GENERAL;
 
     rc = lock_all (hd);
     if (rc)
@@ -494,7 +577,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
 
     switch (hd->active[idx].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
-        rc = GPG_ERR_GENERAL; /* oops */
+        rc = G10ERR_GENERAL; /* oops */
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
         rc = keyring_insert_keyblock (hd->active[idx].u.kr, kb);
@@ -515,7 +598,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
     int rc = -1;
 
     if (!hd)
-        return GPG_ERR_INV_ARG;
+        return G10ERR_INV_ARG;
 
     if ( hd->found < 0 || hd->found >= hd->used) 
         return -1; /* nothing found */
@@ -529,7 +612,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
 
     switch (hd->active[hd->found].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
-        rc = GPG_ERR_GENERAL; /* oops */
+        rc = G10ERR_GENERAL; /* oops */
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
         rc = keyring_delete_keyblock (hd->active[hd->found].u.kr);
@@ -552,7 +635,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
   int rc;
   
   if (!hd)
-    return GPG_ERR_INV_ARG;
+    return G10ERR_INV_ARG;
   
   rc = keydb_search_reset (hd); /* this does reset hd->current */
   if (rc)
@@ -598,7 +681,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
  * Rebuild the caches of all key resources.
  */
 void
-keydb_rebuild_caches (void)
+keydb_rebuild_caches (int noisy)
 {
   int i, rc;
   
@@ -611,10 +694,10 @@ keydb_rebuild_caches (void)
         case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
-          rc = keyring_rebuild_cache (all_resources[i].token);
+          rc = keyring_rebuild_cache (all_resources[i].token,noisy);
           if (rc)
             log_error (_("failed to rebuild keyring cache: %s\n"),
-                       gpg_strerror (rc));
+                       g10_errstr (rc));
           break;
         }
     }
@@ -631,7 +714,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
     int i, rc = 0;
 
     if (!hd)
-        return GPG_ERR_INV_ARG;
+        return G10ERR_INV_ARG;
 
     hd->current = 0; 
     hd->found = -1;
@@ -660,7 +743,7 @@ keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     int rc = -1;
 
     if (!hd)
-        return GPG_ERR_INV_ARG;
+        return G10ERR_INV_ARG;
 
     while (rc == -1 && hd->current >= 0 && hd->current < hd->used) {
         switch (hd->active[hd->current].type) {

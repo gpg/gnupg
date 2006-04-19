@@ -20,7 +20,7 @@
 #ifndef G10_UTIL_H
 #define G10_UTIL_H
 
-#warning oops, using old util.h
+#error this file should not be used anymore
 #if 0 /* Dont use it anymore */
 
 #if defined (__MINGW32__) || defined (__CYGWIN32__)

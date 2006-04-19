@@ -1,5 +1,6 @@
 /* decrypt.c - verify signed data
- * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -25,12 +27,12 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "status.h"
@@ -49,17 +51,24 @@
 int
 decrypt_message( const char *filename )
 {
-    iobuf_t fp;
+    IOBUF fp;
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
     int rc;
     int no_out=0;
 
-    /* open the message file */
+    /* Open the message file.  */
     fp = iobuf_open(filename);
+    if (fp && is_secured_file (iobuf_get_fd (fp)))
+      {
+        iobuf_close (fp);
+        fp = NULL;
+        errno = EPERM;
+      }
     if( !fp ) {
         rc = gpg_error_from_errno (errno);
-	log_error(_("can't open `%s'\n"), print_fname_stdin(filename));
+	log_error (_("can't open `%s': %s\n"), print_fname_stdin(filename),
+                   gpg_strerror (rc));
 	return rc;
     }
 
@@ -84,13 +93,14 @@ decrypt_message( const char *filename )
 }
 
 void
-decrypt_messages(int nfiles, char **files)
+decrypt_messages(int nfiles, char *files[])
 {
-  iobuf_t fp;
+  IOBUF fp;
   armor_filter_context_t afx;  
   progress_filter_context_t pfx;
   char *p, *output = NULL;
-  int rc = 0;
+  int rc=0,use_stdin=0;
+  unsigned int lno=0;
   
   if (opt.outfile)
     {
@@ -99,20 +109,61 @@ decrypt_messages(int nfiles, char **files)
         
     }
 
-  while (nfiles--)
+  if(!nfiles)
+    use_stdin=1;
+
+  for(;;)
     {
-      print_file_status(STATUS_FILE_START, *files, 3);      
-      output = make_outfile_name(*files);
+      char line[2048];
+      char *filename=NULL;
+
+      if(use_stdin)
+	{
+	  if(fgets(line, DIM(line), stdin))
+	    {
+	      lno++;
+	      if (!*line || line[strlen(line)-1] != '\n')
+		log_error("input line %u too long or missing LF\n", lno);
+	      else
+		{
+		  line[strlen(line)-1] = '\0';
+		  filename=line;
+		}
+	    }
+	}
+      else
+	{
+	  if(nfiles)
+	    {
+	      filename=*files;
+	      nfiles--;
+	      files++;
+	    }
+	}
+
+      if(filename==NULL)
+	break;
+
+      print_file_status(STATUS_FILE_START, filename, 3);      
+      output = make_outfile_name(filename);
       if (!output)
         goto next_file;
-      fp = iobuf_open(*files);
+      fp = iobuf_open(filename);
+      if (fp)
+        iobuf_ioctl (fp,3,1,NULL); /* disable fd caching */
+      if (fp && is_secured_file (iobuf_get_fd (fp)))
+        {
+          iobuf_close (fp);
+          fp = NULL;
+          errno = EPERM;
+        }
       if (!fp)
         {
-          log_error(_("can't open `%s'\n"), print_fname_stdin(*files));
+          log_error(_("can't open `%s'\n"), print_fname_stdin(filename));
           goto next_file;
         }
 
-      handle_progress (&pfx, fp, *files);
+      handle_progress (&pfx, fp, filename);
 
       if (!opt.no_armor)
         {
@@ -125,8 +176,8 @@ decrypt_messages(int nfiles, char **files)
       rc = proc_packets(NULL, fp);
       iobuf_close(fp);
       if (rc)
-        log_error("%s: decryption failed: %s\n", print_fname_stdin(*files),
-                  gpg_strerror (rc));
+        log_error("%s: decryption failed: %s\n", print_fname_stdin(filename),
+                  g10_errstr(rc));
       p = get_last_passphrase();
       set_next_passphrase(p);
       xfree (p);
@@ -134,9 +185,8 @@ decrypt_messages(int nfiles, char **files)
     next_file:
       /* Note that we emit file_done even after an error. */
       write_status( STATUS_FILE_DONE );
-      xfree (output);
-      files++;
+      xfree(output);
     }
+
   set_next_passphrase(NULL);  
 }
-

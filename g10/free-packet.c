@@ -1,6 +1,6 @@
 /* free-packet.c - cleanup stuff for packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2005  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -25,18 +26,18 @@
 #include <string.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "packet.h"
-#include "iobuf.h"
-#include "mpi.h"
+#include "../common/iobuf.h"
 #include "util.h"
 #include "cipher.h"
-#include "memory.h"
-#include "options.h"
+#include "options.h" 
+
 
 void
 free_symkey_enc( PKT_symkey_enc *enc )
 {
-    xfree (enc);
+    xfree(enc);
 }
 
 void
@@ -45,10 +46,10 @@ free_pubkey_enc( PKT_pubkey_enc *enc )
     int n, i;
     n = pubkey_get_nenc( enc->pubkey_algo );
     if( !n )
-	mpi_release (enc->data[0]);
+	mpi_release(enc->data[0]);
     for(i=0; i < n; i++ )
-	mpi_release ( enc->data[i] );
-    xfree (enc);
+	mpi_release( enc->data[i] );
+    xfree(enc);
 }
 
 void
@@ -58,14 +59,21 @@ free_seckey_enc( PKT_signature *sig )
 
   n = pubkey_get_nsig( sig->pubkey_algo );
   if( !n )
-    mpi_release (sig->data[0]);
+    mpi_release(sig->data[0]);
   for(i=0; i < n; i++ )
-    mpi_release ( sig->data[i] );
-  
-  xfree (sig->revkey);
-  xfree (sig->hashed);
-  xfree (sig->unhashed);
-  xfree (sig);
+    mpi_release( sig->data[i] );
+
+  xfree(sig->revkey);
+  xfree(sig->hashed);
+  xfree(sig->unhashed);
+
+  if (sig->pka_info)
+    {
+      xfree (sig->pka_info->uri);
+      xfree (sig->pka_info);
+    }
+
+  xfree(sig);
 }
 
 
@@ -75,9 +83,9 @@ release_public_key_parts( PKT_public_key *pk )
     int n, i;
     n = pubkey_get_npkey( pk->pubkey_algo );
     if( !n )
-	mpi_release (pk->pkey[0]);
+	mpi_release(pk->pkey[0]);
     for(i=0; i < n; i++ ) {
-	mpi_release ( pk->pkey[i] );
+	mpi_release( pk->pkey[i] );
 	pk->pkey[i] = NULL;
     }
     if (pk->prefs) {
@@ -89,7 +97,7 @@ release_public_key_parts( PKT_public_key *pk )
         pk->user_id = NULL;
     }
     if (pk->revkey) {
-        xfree (pk->revkey);
+        xfree(pk->revkey);
 	pk->revkey=NULL;
 	pk->numrevkeys=0;
     }
@@ -100,7 +108,7 @@ void
 free_public_key( PKT_public_key *pk )
 {
     release_public_key_parts( pk );
-    xfree (pk);
+    xfree(pk);
 }
 
 
@@ -150,7 +158,7 @@ copy_public_key ( PKT_public_key *d, PKT_public_key *s)
     int n, i;
 
     if( !d )
-	d = xmalloc (sizeof *d);
+	d = xmalloc(sizeof *d);
     memcpy( d, s, sizeof *d );
     d->user_id = scopy_user_id (s->user_id);
     d->prefs = copy_prefs (s->prefs);
@@ -164,7 +172,7 @@ copy_public_key ( PKT_public_key *d, PKT_public_key *s)
     if( !s->revkey && s->numrevkeys )
         BUG();
     if( s->numrevkeys ) {
-        d->revkey = xmalloc (sizeof(struct revocation_key)*s->numrevkeys);
+        d->revkey = xmalloc(sizeof(struct revocation_key)*s->numrevkeys);
         memcpy(d->revkey,s->revkey,sizeof(struct revocation_key)*s->numrevkeys);
     }
     else
@@ -194,13 +202,28 @@ copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
     sk->keyid[1]    = pk->keyid[1];
 }
 
+
+static pka_info_t *
+cp_pka_info (const pka_info_t *s)
+{
+  pka_info_t *d = xmalloc (sizeof *s + strlen (s->email));
+  
+  d->valid = s->valid;
+  d->checked = s->checked;
+  d->uri = s->uri? xstrdup (s->uri):NULL;
+  memcpy (d->fpr, s->fpr, sizeof s->fpr);
+  strcpy (d->email, s->email);
+  return d;
+}
+
+
 PKT_signature *
 copy_signature( PKT_signature *d, PKT_signature *s )
 {
     int n, i;
 
     if( !d )
-	d = xmalloc (sizeof *d);
+	d = xmalloc(sizeof *d);
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nsig( s->pubkey_algo );
     if( !n )
@@ -209,6 +232,7 @@ copy_signature( PKT_signature *d, PKT_signature *s )
 	for(i=0; i < n; i++ )
 	    d->data[i] = mpi_copy( s->data[i] );
     }
+    d->pka_info = s->pka_info? cp_pka_info (s->pka_info) : NULL;
     d->hashed = cp_subpktarea (s->hashed);
     d->unhashed = cp_subpktarea (s->unhashed);
     if(s->numrevkeys)
@@ -241,9 +265,9 @@ release_secret_key_parts( PKT_secret_key *sk )
 
     n = pubkey_get_nskey( sk->pubkey_algo );
     if( !n )
-	mpi_release (sk->skey[0]);
+	mpi_release(sk->skey[0]);
     for(i=0; i < n; i++ ) {
-	mpi_release ( sk->skey[i] );
+	mpi_release( sk->skey[i] );
 	sk->skey[i] = NULL;
     }
 }
@@ -252,7 +276,7 @@ void
 free_secret_key( PKT_secret_key *sk )
 {
     release_secret_key_parts( sk );
-    xfree (sk);
+    xfree(sk);
 }
 
 PKT_secret_key *
@@ -261,29 +285,32 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
     int n, i;
 
     if( !d )
-	d = xmalloc (sizeof *d);
+	d = xmalloc_secure(sizeof *d);
+    else
+        release_secret_key_parts (d);
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nskey( s->pubkey_algo );
     if( !n )
-	d->skey[0] = mpi_copy(s->skey[0]);
+  	d->skey[0] = mpi_copy(s->skey[0]);
     else {
 	for(i=0; i < n; i++ )
-	    d->skey[i] = mpi_copy( s->skey[i] );
+  	    d->skey[i] = mpi_copy( s->skey[i] );
     }
+
     return d;
 }
 
 void
 free_comment( PKT_comment *rem )
 {
-    xfree (rem);
+    xfree(rem);
 }
 
 void
 free_attributes(PKT_user_id *uid)
 {
-  xfree (uid->attribs);
-  xfree (uid->attrib_data);
+  xfree(uid->attribs);
+  xfree(uid->attrib_data);
 
   uid->attribs=NULL;
   uid->attrib_data=NULL;
@@ -312,14 +339,14 @@ free_compressed( PKT_compressed *zd )
 	while( iobuf_read( zd->buf, NULL, 1<<30 ) != -1 )
 	    ;
     }
-    xfree (zd);
+    xfree(zd);
 }
 
 void
 free_encrypted( PKT_encrypted *ed )
 {
     if( ed->buf ) { /* have to skip some bytes */
-	if( iobuf_in_block_mode(ed->buf) ) {
+	if( ed->is_partial ) {
 	    while( iobuf_read( ed->buf, NULL, 1<<30 ) != -1 )
 		;
 	}
@@ -333,7 +360,7 @@ free_encrypted( PKT_encrypted *ed )
 	   }
 	}
     }
-    xfree (ed);
+    xfree(ed);
 }
 
 
@@ -341,7 +368,7 @@ void
 free_plaintext( PKT_plaintext *pt )
 {
     if( pt->buf ) { /* have to skip some bytes */
-	if( iobuf_in_block_mode(pt->buf) ) {
+	if( pt->is_partial ) {
 	    while( iobuf_read( pt->buf, NULL, 1<<30 ) != -1 )
 		;
 	}
@@ -355,7 +382,7 @@ free_plaintext( PKT_plaintext *pt )
 	   }
 	}
     }
-    xfree (pt);
+    xfree(pt);
 }
 
 /****************
@@ -405,7 +432,7 @@ free_packet( PACKET *pkt )
 	free_plaintext( pkt->pkt.plaintext );
 	break;
       default:
-	xfree ( pkt->pkt.generic );
+	xfree( pkt->pkt.generic );
 	break;
     }
     pkt->pkt.generic = NULL;

@@ -1,5 +1,6 @@
 /* delkey.c - delete keys
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004,
+ *               2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -26,12 +28,12 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "trustdb.h"
@@ -47,7 +49,7 @@
  * key can't be deleted for that reason.
  */
 static int
-do_delete_key( const char *username, int secret, int *r_sec_avail )
+do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
@@ -68,9 +70,9 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     exactmatch = (desc.mode == KEYDB_SEARCH_MODE_FPR
                   || desc.mode == KEYDB_SEARCH_MODE_FPR16
                   || desc.mode == KEYDB_SEARCH_MODE_FPR20);
-    rc = desc.mode? keydb_search (hd, &desc, 1):GPG_ERR_INV_USER_ID;
+    rc = desc.mode? keydb_search (hd, &desc, 1):G10ERR_INV_USER_ID;
     if (rc) {
-	log_error (_("key `%s' not found: %s\n"), username, gpg_strerror (rc));
+	log_error (_("key \"%s\" not found: %s\n"), username, g10_errstr (rc));
 	write_status_text( STATUS_DELETE_PROBLEM, "1" );
 	goto leave;
     }
@@ -78,7 +80,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     /* read the keyblock */
     rc = keydb_get_keyblock (hd, &keyblock );
     if (rc) {
-	log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
+	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
 	goto leave;
     }
 
@@ -86,29 +88,36 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY:PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key not found anymore!\n");
-	rc = GPG_ERR_GENERAL;
+	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
-    if( secret ) {
+    if( secret )
+      {
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
-    }
-    else {
+      }
+    else
+      {
+	/* public */
 	pk = node->pkt->pkt.public_key;
 	keyid_from_pk( pk, keyid );
-	rc = seckey_available( keyid );
-	if( !rc ) {
-            *r_sec_avail = 1;
-            rc = -1;
-            goto leave;
-	}
-	else if( rc != GPG_ERR_NO_SECKEY ) {
-	    log_error("%s: get secret key: %s\n", username, gpg_strerror (rc) );
-	}
-	else
-	    rc = 0;
-    }
+
+	if(!force)
+	  {
+	    rc = seckey_available( keyid );
+	    if( !rc )
+	      {
+		*r_sec_avail = 1;
+		rc = -1;
+		goto leave;
+	      }
+	    else if( rc != G10ERR_NO_SECKEY )
+	      log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
+	    else
+	      rc = 0;
+	  }
+      }
 
     if( rc )
 	rc = 0;
@@ -116,26 +125,26 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
         okay++;
     else if( opt.batch && secret )
       {
-	log_error(_("can't do that in batchmode\n"));
+	log_error(_("can't do this in batch mode\n"));
         log_info (_("(unless you specify the key by fingerprint)\n"));
       }
     else if( opt.batch && opt.answer_yes )
 	okay++;
     else if( opt.batch )
       {
-	log_error(_("can't do that in batchmode without \"--yes\"\n"));
+	log_error(_("can't do this in batch mode without \"--yes\"\n"));
         log_info (_("(unless you specify the key by fingerprint)\n"));
       }
     else {
         if( secret )
             print_seckey_info( sk );
         else
-            print_pubkey_info (NULL, pk );
+            print_pubkey_info(NULL, pk );
 	tty_printf( "\n" );
 
 	yes = cpr_get_answer_is_yes( secret? "delete_key.secret.okay"
 					   : "delete_key.okay",
-			      _("Delete this key from the keyring? "));
+			      _("Delete this key from the keyring? (y/N) "));
 	if( !cpr_enabled() && secret && yes ) {
 	    /* I think it is not required to check a passphrase; if
 	     * the user is so stupid as to let others access his secret keyring
@@ -143,7 +152,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 	     * basic texts about security.
 	     */
 	    yes = cpr_get_answer_is_yes("delete_key.secret.okay",
-			 _("This is a secret key! - really delete? "));
+			 _("This is a secret key! - really delete? (y/N) "));
 	}
 	if( yes )
 	    okay++;
@@ -153,7 +162,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     if( okay ) {
 	rc = keydb_delete_keyblock (hd);
 	if (rc) {
-	    log_error (_("deleting keyblock failed: %s\n"), gpg_strerror (rc) );
+	    log_error (_("deleting keyblock failed: %s\n"), g10_errstr(rc) );
 	    goto leave;
 	}
 
@@ -179,15 +188,18 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 int
 delete_keys( STRLIST names, int secret, int allow_both )
 {
-    int rc, avail;
+    int rc, avail, force=(!allow_both && !secret && opt.expert);
+
+    /* Force allows us to delete a public key even if a secret key
+       exists. */
 
     for(;names;names=names->next) {
-       rc = do_delete_key (names->d, secret, &avail );
+       rc = do_delete_key (names->d, secret, force, &avail );
        if ( rc && avail ) { 
 	 if ( allow_both ) {
-	   rc = do_delete_key (names->d, 1, &avail );
+	   rc = do_delete_key (names->d, 1, 0, &avail );
 	   if ( !rc )
-	     rc = do_delete_key (names->d, 0, &avail );
+	     rc = do_delete_key (names->d, 0, 0, &avail );
 	 }
 	 else {
 	   log_error(_(
@@ -200,7 +212,7 @@ delete_keys( STRLIST names, int secret, int allow_both )
        }
 
        if(rc) {
-	 log_error("%s: delete key failed: %s\n", names->d, gpg_strerror (rc) );
+	 log_error("%s: delete key failed: %s\n", names->d, g10_errstr(rc) );
 	 return rc;
        }
     }
