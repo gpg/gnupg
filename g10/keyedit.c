@@ -3660,10 +3660,21 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
 	}
 
       /* Find a signing subkey with no backsig */
-      if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY
-         && (node->pkt->pkt.public_key->pubkey_usage&PUBKEY_USAGE_SIG)
-         && !node->pkt->pkt.public_key->backsig)
-        sub_pk=node->pkt->pkt.public_key;
+      if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY)
+	{
+	  if(node->pkt->pkt.public_key->pubkey_usage&PUBKEY_USAGE_SIG)
+	    {
+	      if(node->pkt->pkt.public_key->backsig)
+		tty_printf(_("signing subkey %s is already cross-certified\n"),
+			   keystr_from_pk(node->pkt->pkt.public_key));
+	      else
+		sub_pk=node->pkt->pkt.public_key;
+	    }
+	  else
+	    tty_printf(_("subkey %s does not sign and so does"
+			 " not need to be cross-certified\n"),
+		       keystr_from_pk(node->pkt->pkt.public_key));
+	}
 
       if(!sub_pk)
 	continue;
@@ -3692,7 +3703,11 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
 	  }
 
       if(!sub_sk)
-	continue;
+	{
+	  tty_printf(_("no secret subkey for public subkey %s - ignoring\n"),
+		     keystr_from_pk(sub_pk));
+	  continue;
+	}
 
       /* Now finally find the matching selfsig on the secret subkey.
 	 We can't use chosen_selfsig here (it's not set for secret
@@ -3712,7 +3727,7 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
 	  }
 
       /* Now we can get to work.  We have a main key and secret part,
-	 a signing subkey with signature and secret part with
+	 a signing subkey with signature and secret part possibly with
 	 signature. */
 
       passphrase=get_last_passphrase();

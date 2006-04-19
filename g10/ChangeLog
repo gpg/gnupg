@@ -1,3 +1,8 @@
+2006-04-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_backsign): Give some more verbose errors when we
+	have no need to backsign.
+
 2006-04-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.skel, photoid.c (get_default_photo_command): Find an
