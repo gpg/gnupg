@@ -1,3 +1,8 @@
+2006-04-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Reminders that --cipher-algo, --digest-algo, and
+	--compress-algo should be avoided.
+
 2006-04-11  Michael Roth <mroth@nessie.de>  (wk)
 
 	* gpg.sgml (passphrase-fd): Explain that only the first line is used.
