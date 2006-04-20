@@ -1,3 +1,21 @@
+2006-04-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, gpg.c (main): Add --enable-dsa2 and --disable-dsa2.
+	Defaults to disable.
+
+	* pkclist.c (algo_available): If --enable-dsa2 is set, we're
+	allowed to truncate hashes to fit DSA keys.
+
+	* sign.c (match_dsa_hash): New.  Return the best match hash for a
+	given q size.
+	(do_sign, hash_for, sign_file): When signing with a DSA key, if it
+	has q==160, assume it is an old DSA key and don't allow truncation
+	unless --enable-dsa2 is also set.  q!=160 always allows truncation
+	since they must be DSA2 keys.
+	(make_keysig_packet): If the user doesn't specify a
+	--cert-digest-algo, use match_dsa_hash to pick the best hash for
+	key signatures.
+
 2006-04-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (print_mds), armor.c (armor_filter, parse_hash_header):

@@ -362,6 +362,8 @@ enum cmd_and_opt_values
     oAutoKeyLocate,
     oNoAutoKeyLocate,
     oAllowMultisigVerification,
+    oEnableDSA2,
+    oDisableDSA2,
 
     oNoop
   };
@@ -699,6 +701,8 @@ static ARGPARSE_OPTS opts[] = {
     { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
 #endif
     { oAllowMultisigVerification, "allow-multisig-verification", 0, "@"},
+    { oEnableDSA2, "enable-dsa2", 0, "@"},
+    { oDisableDSA2, "disable-dsa2", 0, "@"},
 
     /* These two are aliases to help users of the PGP command line
        product use gpg with minimal pain.  Many commands are common
@@ -2658,6 +2662,9 @@ main (int argc, char **argv )
           case oAllowMultisigVerification:
             opt.allow_multisig_verification = 1;
             break;
+
+	  case oEnableDSA2: opt.flags.dsa2=1; break;
+	  case oDisableDSA2: opt.flags.dsa2=0; break;
 
 	  case oNoop: break;
 

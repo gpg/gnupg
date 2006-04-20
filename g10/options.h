@@ -222,6 +222,7 @@ struct
     unsigned int require_cross_cert:1;
     unsigned int use_embedded_filename:1;
     unsigned int utf8_filename:1;
+    unsigned int dsa2:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

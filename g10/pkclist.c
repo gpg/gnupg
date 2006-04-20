@@ -1,6 +1,6 @@
 /* pkclist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1210,8 +1210,20 @@ algo_available( preftype_t preftype, int algo, void *hint )
     }
   else if( preftype == PREFTYPE_HASH )
     {
-      if(hint && ((*(int *)hint) != md_digest_length(algo)))
-	return 0;
+      if(hint)
+	{
+	  if(opt.flags.dsa2)
+	    {
+	      /* If --enable-dsa2 is set, then we'll accept a hash
+		 that is larger than we need.  If --enable-dsa2 is not
+		 set, then we won't accept any hash that isn't exactly
+		 the right size. */
+	      if((*(int *)hint) > md_digest_length(algo))
+		return 0;
+	    }
+	  else if(((*(int *)hint) != md_digest_length(algo)))
+	    return 0;
+	}
 
       if((PGP6 || PGP7) && (algo != DIGEST_ALGO_MD5
 			    && algo != DIGEST_ALGO_SHA1
