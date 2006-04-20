@@ -1,6 +1,6 @@
 /* encode.c - encode data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -268,22 +268,8 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	xfree(enc);
     }
 
-    if (!opt.no_literal) {
-	/* setup the inner packet */
-	if( filename || opt.set_filename ) {
-	    char *s = make_basename( opt.set_filename ? opt.set_filename
-						      : filename,
-				     iobuf_get_real_fname( inp ) );
-	    pt = xmalloc( sizeof *pt + strlen(s) - 1 );
-	    pt->namelen = strlen(s);
-	    memcpy(pt->name, s, pt->namelen );
-	    xfree(s);
-	}
-	else { /* no filename */
-	    pt = xmalloc( sizeof *pt - 1 );
-	    pt->namelen = 0;
-	}
-    }
+    if (!opt.no_literal)
+      pt=setup_plaintext_name(filename,inp);
 
     /* Note that PGP 5 has problems decrypting symmetrically encrypted
        data if the file length is in the inner packet. It works when

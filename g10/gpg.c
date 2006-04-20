@@ -2186,7 +2186,12 @@ main (int argc, char **argv )
             riscos_not_implemented("run-as-shm-coprocess");
 #endif /* __riscos__ */
 	    break;
-	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
+	  case oSetFilename:
+	    if(utf8_strings)
+	      opt.set_filename = pargs.r.ret_str;
+	    else
+	      opt.set_filename = native_to_utf8(pargs.r.ret_str);
+	    break;
 	  case oForYourEyesOnly: eyes_only = 1; break;
 	  case oNoForYourEyesOnly: eyes_only = 0; break;
 	  case oSetPolicyURL:
@@ -2212,8 +2217,12 @@ main (int argc, char **argv )
 	    opt.verify_options&=~VERIFY_SHOW_POLICY_URLS;
 	    break;
 	  case oSigKeyserverURL: add_keyserver_url(pargs.r.ret_str,0); break;
-	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
-	  case oNoUseEmbeddedFilename: opt.use_embedded_filename = 0; break;
+	  case oUseEmbeddedFilename:
+	    opt.flags.use_embedded_filename=1;
+	    break;
+	  case oNoUseEmbeddedFilename:
+	    opt.flags.use_embedded_filename=0;
+	    break;
 	  case oComment:
 	    if(pargs.r.ret_str[0])
 	      append_to_strlist(&opt.comments,pargs.r.ret_str);
@@ -3095,6 +3104,9 @@ main (int argc, char **argv )
 
     fname = argc? *argv : NULL;
 
+    if(fname && utf8_strings)
+      opt.flags.utf8_filename=1;
+
     switch( cmd ) {
       case aPrimegen:
       case aPrintMD:
@@ -3919,6 +3931,7 @@ print_mds( const char *fname, int algo )
 	md_enable( md, DIGEST_ALGO_SHA1 );
 	md_enable( md, DIGEST_ALGO_RMD160 );
 #ifdef USE_SHA256
+	md_enable( md, DIGEST_ALGO_SHA224 );
 	md_enable( md, DIGEST_ALGO_SHA256 );
 #endif
 #ifdef USE_SHA512
@@ -3941,6 +3954,7 @@ print_mds( const char *fname, int algo )
                 print_hashline( md, DIGEST_ALGO_SHA1, fname );
                 print_hashline( md, DIGEST_ALGO_RMD160, fname );
 #ifdef USE_SHA256
+                print_hashline( md, DIGEST_ALGO_SHA224, fname );
                 print_hashline( md, DIGEST_ALGO_SHA256, fname );
 #endif
 #ifdef USE_SHA512
@@ -3957,6 +3971,7 @@ print_mds( const char *fname, int algo )
                 print_hex( md, DIGEST_ALGO_SHA1, fname );
                 print_hex( md, DIGEST_ALGO_RMD160, fname );
 #ifdef USE_SHA256
+                print_hex( md, DIGEST_ALGO_SHA224, fname );
                 print_hex( md, DIGEST_ALGO_SHA256, fname );
 #endif
 #ifdef USE_SHA512

@@ -537,21 +537,8 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     u32 filesize;
     int rc = 0;
 
-    if (!opt.no_literal) {
-        if (fname || opt.set_filename) {
-            char *s = make_basename (opt.set_filename? opt.set_filename
-                                                     : fname,
-                                     iobuf_get_real_fname(inp));
-            pt = xmalloc (sizeof *pt + strlen(s) - 1);
-            pt->namelen = strlen (s);
-            memcpy (pt->name, s, pt->namelen);
-            xfree (s);
-        }
-        else { /* no filename */
-            pt = xmalloc (sizeof *pt - 1);
-            pt->namelen = 0;
-        }
-    }
+    if (!opt.no_literal)
+      pt=setup_plaintext_name(fname,inp);
 
     /* try to calculate the length of the data */
     if ( !iobuf_is_pipe_filename (fname) && *fname )

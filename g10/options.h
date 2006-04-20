@@ -170,7 +170,6 @@ struct
   STRLIST sig_keyserver_url;
   STRLIST cert_subpackets;
   STRLIST sig_subpackets;
-  int use_embedded_filename;
   int allow_non_selfsigned_uid;
   int allow_freeform_uid;
   int no_literal;
@@ -221,6 +220,8 @@ struct
        made by signing subkeys.  If not set, a missing backsig is not
        an error (but an invalid backsig still is). */
     unsigned int require_cross_cert:1;
+    unsigned int use_embedded_filename:1;
+    unsigned int utf8_filename:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

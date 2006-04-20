@@ -1,6 +1,6 @@
 /* armor.c - Armor flter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -242,12 +242,14 @@ parse_hash_header( const char *line )
 	    found |= 2;
 	else if( !strncmp( s, "MD5", s2-s ) )
 	    found |= 4;
-	else if( !strncmp( s, "SHA256", s2-s ) )
+	else if( !strncmp( s, "SHA224", s2-s ) )
 	    found |= 8;
-	else if( !strncmp( s, "SHA384", s2-s ) )
+	else if( !strncmp( s, "SHA256", s2-s ) )
 	    found |= 16;
-	else if( !strncmp( s, "SHA512", s2-s ) )
+	else if( !strncmp( s, "SHA384", s2-s ) )
 	    found |= 32;
+	else if( !strncmp( s, "SHA512", s2-s ) )
+	    found |= 64;
 	else
 	    return 0;
 	for(; *s2 && (*s2==' ' || *s2 == '\t'); s2++ )
@@ -953,10 +955,12 @@ armor_filter( void *opaque, int control,
                 if( hashes & 4 )
                     buf[n++] = DIGEST_ALGO_MD5;
                 if( hashes & 8 )
-                    buf[n++] = DIGEST_ALGO_SHA256;
+                    buf[n++] = DIGEST_ALGO_SHA224;
                 if( hashes & 16 )
-                    buf[n++] = DIGEST_ALGO_SHA384;
+                    buf[n++] = DIGEST_ALGO_SHA256;
                 if( hashes & 32 )
+                    buf[n++] = DIGEST_ALGO_SHA384;
+                if( hashes & 64 )
                     buf[n++] = DIGEST_ALGO_SHA512;
                 buf[1] = n - 2;
 

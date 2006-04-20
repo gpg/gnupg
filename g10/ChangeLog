@@ -1,3 +1,17 @@
+2006-04-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.c (print_mds), armor.c (armor_filter, parse_hash_header):
+	Add SHA-224.
+
+	* sign.c (write_plaintext_packet), encode.c (encode_simple):
+	Factor common literal packet setup code from here, to...
+
+	* main.h, plaintext.c (setup_plaintext_name): Here. New. Make sure
+	the literal packet filename field is UTF-8 encoded.
+
+	* options.h, gpg.c (main): Make sure --set-filename is UTF-8
+	encoded and note when filenames are already UTF-8.
+
 2006-04-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_backsign): Give some more verbose errors when we

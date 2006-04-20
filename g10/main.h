@@ -274,6 +274,7 @@ void decrypt_messages(int nfiles, char *files[]);
 /*-- plaintext.c --*/
 int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,
 		    STRLIST files, const char *sigfilename, int textmode );
+PKT_plaintext *setup_plaintext_name(const char *filename,IOBUF iobuf);
 
 /*-- pipemode.c --*/
 void run_in_pipemode (void);

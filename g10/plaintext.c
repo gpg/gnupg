@@ -1,6 +1,6 @@
 /* plaintext.c -  process plaintext packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -91,7 +91,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	log_info(_("data not saved; use option \"--output\" to save it\n"));
 	nooutput = 1;
     }
-    else if( !opt.use_embedded_filename ) {
+    else if( !opt.flags.use_embedded_filename ) {
 	fname = make_outfile_name( iobuf_get_real_fname(pt->buf) );
 	if( !fname )
 	    fname = ask_outfile_name( pt->name, pt->namelen );
@@ -100,9 +100,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    goto leave;
 	}
     }
-    else {
-	fname = make_printable_string( pt->name, pt->namelen, 0 );
-    }
+    else
+      fname=utf8_to_native(pt->name,pt->namelen,0);
 
     if( nooutput )
 	;
@@ -546,4 +545,45 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
     }
 
     return 0;
+}
+
+
+/* Set up a plaintext packet with the appropriate filename.  If there
+   is a --set-filename, use it (it's already UTF8).  If there is a
+   regular filename, UTF8-ize it if necessary.  If there is no
+   filenames at all, set the field empty. */
+
+PKT_plaintext *
+setup_plaintext_name(const char *filename,IOBUF iobuf)
+{
+  PKT_plaintext *pt;
+
+  if(filename || opt.set_filename)
+    {
+      char *s;
+
+      if(opt.set_filename)
+	s=make_basename(opt.set_filename,iobuf_get_real_fname(iobuf));
+      else if(filename && !opt.flags.utf8_filename)
+	{
+	  char *tmp=native_to_utf8(filename);
+	  s=make_basename(tmp,iobuf_get_real_fname(iobuf));
+	  xfree(tmp);
+	}
+      else
+	s=make_basename(filename,iobuf_get_real_fname(iobuf));
+
+      pt = xmalloc (sizeof *pt + strlen(s) - 1);
+      pt->namelen = strlen (s);
+      memcpy (pt->name, s, pt->namelen);
+      xfree (s);
+    }
+  else
+    {
+      /* no filename */
+      pt = xmalloc (sizeof *pt - 1);
+      pt->namelen = 0;
+    }
+
+  return pt;
 }
