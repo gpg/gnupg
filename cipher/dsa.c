@@ -180,8 +180,9 @@ generate( DSA_secret_key *sk, unsigned nbits, unsigned qbits,
     MPI h, e;  /* helper */
     byte *rndbuf;
 
-    assert( nbits >= 512 && nbits <= 1024 );
+    assert( nbits >= 512 );
     assert( qbits >= 160 );
+    assert( qbits %8 == 0 );
 
     p = generate_elg_prime( 1, nbits, qbits, NULL, ret_factors );
     /* get q out of factors */

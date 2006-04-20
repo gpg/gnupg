@@ -2,6 +2,8 @@
 
 	* dsa.c (dsa2_generate): New function to generate a DSA key with a
 	variable sized q.
+	(generate): Tweak to allow keys larger than 1024 bits.  Enforce
+	that the q size doesn't end between byte boundaries.
 
 2006-04-19  David Shaw  <dshaw@jabberwocky.com>
 
