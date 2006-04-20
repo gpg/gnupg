@@ -1,5 +1,5 @@
 /* algorithms.h - prototypes for algorithm functions.
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -50,6 +50,15 @@ sha1_get_info (int algo, size_t *contextsize,
 	       void (**r_final)( void *c ),
 	       byte *(**r_read)( void *c )
                );
+
+const char *
+sha224_get_info (int algo, size_t *contextsize,
+		 byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+		 void (**r_init)( void *c ),
+		 void (**r_write)( void *c, byte *buf, size_t nbytes ),
+		 void (**r_final)( void *c ),
+		 byte *(**r_read)( void *c )
+		 );
 
 const char *
 sha256_get_info (int algo, size_t *contextsize,

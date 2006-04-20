@@ -1,3 +1,9 @@
+2006-04-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* sha256.c (sha224_get_info, sha224_init): New init functions for
+	the 224-bit variant of SHA-256.
+	* algorithms.h, md.c (load_digest_module): Call them here.
+
 2006-03-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* blowfish.c, md5.c, rmd160.c, sha1.c, sha256.c, sha512.c: Revert

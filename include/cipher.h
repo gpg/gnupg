@@ -1,6 +1,6 @@
 /* cipher.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -60,6 +60,7 @@
 #define DIGEST_ALGO_SHA256    8
 #define DIGEST_ALGO_SHA384    9
 #define DIGEST_ALGO_SHA512   10
+#define DIGEST_ALGO_SHA224   11
 
 #define COMPRESS_ALGO_NONE   0
 #define COMPRESS_ALGO_ZIP    1

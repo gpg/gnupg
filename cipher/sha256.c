@@ -1,5 +1,5 @@
-/* sha256.c - SHA256 hash function
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+/* sha256.c - SHA224 and SHA256 hash functions
+ * Copyright (C) 2003, 2006 Free Software Foundation, Inc.
  *
  * Please see below for more legal information!
  *
@@ -25,12 +25,21 @@
 /*  Test vectors from FIPS-180-2:
  *
  *  "abc"
+ * 224:
+ *  23097D22 3405D822 8642A477 BDA255B3 2AADBCE4 BDA0B3F7 E36C9DA7
+ * 256:
  *  BA7816BF 8F01CFEA 414140DE 5DAE2223 B00361A3 96177A9C B410FF61 F20015AD
  *
  *  "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+ * 224:
+ *  75388B16 512776CC 5DBA5DA1 FD890150 B0C6455C B4F58B19 52522525
+ * 256:
  *  248D6A61 D20638B8 E5C02693 0C3E6039 A33CE459 64FF2167 F6ECEDD4 19DB06C1
  *
  *  "a" x 1000000
+ * 224:
+ *  20794655 980C91D8 BBB4C1EA 97618A4B F03F4258 1948B2EE 4EE7AD67
+ * 256:
  *  CDC76E5C 9914FB92 81A1C7E2 84D73E67 F1809A48 A497200E 046D39CC C7112CD0
  */
 
@@ -71,6 +80,22 @@ sha256_init( SHA256_CONTEXT *hd )
     hd->h5 = 0x9b05688c;
     hd->h6 = 0x1f83d9ab;
     hd->h7 = 0x5be0cd19;
+
+    hd->nblocks = 0;
+    hd->count = 0;
+}
+
+void
+sha224_init( SHA256_CONTEXT *hd )
+{
+    hd->h0 = 0xc1059ed8;
+    hd->h1 = 0x367cd507;
+    hd->h2 = 0x3070dd17;
+    hd->h3 = 0xf70e5939;
+    hd->h4 = 0xffc00b31;
+    hd->h5 = 0x68581511;
+    hd->h6 = 0x64f98fa7;
+    hd->h7 = 0xbefa4fa4;
 
     hd->nblocks = 0;
     hd->count = 0;
@@ -207,7 +232,8 @@ sha256_write( SHA256_CONTEXT *hd, byte *inbuf, size_t inlen)
  * returns the digest.
  * The handle is prepared for a new cycle, but adding bytes to the
  * handle will the destroy the returned buffer.
- * Returns: 32 bytes representing the digest.
+ * Returns: 32 bytes representing the digest.  When used for sha224,
+ * we take the leftmost 28 of those bytes.
  */
 
 static void
@@ -270,6 +296,8 @@ sha256_final(SHA256_CONTEXT *hd)
     X(4);
     X(5);
     X(6);
+    /* Note that this last chunk is included even for SHA224.  We just
+       ignore it. */
     X(7);
 #undef X
 }
@@ -315,4 +343,37 @@ sha256_get_info( int algo, size_t *contextsize,
     *(byte *(**)(SHA256_CONTEXT *))r_read 		  = sha256_read;
 
     return "SHA256";
+}
+
+/* SHA224 is really a truncated SHA256 with a different
+   initialization */
+const char *
+sha224_get_info( int algo, size_t *contextsize,
+		 byte **r_asnoid, int *r_asnlen, int *r_mdlen,
+		 void (**r_init)( void *c ),
+		 void (**r_write)( void *c, byte *buf, size_t nbytes ),
+		 void (**r_final)( void *c ),
+		 byte *(**r_read)( void *c )
+		 )
+{
+    static byte asn[] = /* Object ID is 2.16.840.1.101.3.4.2.4 */
+      { 
+	0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+	0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x04, 0x05,
+	0x00, 0x04, 0x20
+      };
+
+    if( algo != 11 )
+	return NULL;
+
+    *contextsize = sizeof(SHA256_CONTEXT);
+    *r_asnoid = asn;
+    *r_asnlen = DIM(asn);
+    *r_mdlen = 28;
+    *(void  (**)(SHA256_CONTEXT *))r_init 	  	  = sha224_init;
+    *(void  (**)(SHA256_CONTEXT *, byte*, size_t))r_write = sha256_write;
+    *(void  (**)(SHA256_CONTEXT *))r_final		  = sha256_final;
+    *(byte *(**)(SHA256_CONTEXT *))r_read 		  = sha256_read;
+
+    return "SHA224";
 }

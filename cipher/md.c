@@ -1,5 +1,5 @@
 /* md.c  -  message digest dispatcher
- *	Copyright (C) 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2002, 2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -105,6 +105,8 @@ load_digest_module (void)
 #endif
 #ifdef USE_SHA256
   if (!new_list_item (DIGEST_ALGO_SHA256, sha256_get_info)) 
+    BUG ();
+  if (!new_list_item (DIGEST_ALGO_SHA224, sha224_get_info)) 
     BUG ();
 #endif
   if (!new_list_item (DIGEST_ALGO_MD5, md5_get_info)) 
