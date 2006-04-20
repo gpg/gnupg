@@ -27,8 +27,17 @@ done
 if have_pubkey_algo "RSA"; then
     # Using the RSA sig key - all hashes
     hash_algo_list="ripemd160 sha1 md5"
+    if have_hash_algo "SHA224"; then
+	hash_algo_list="$hash_algo_list sha224"
+    fi
     if have_hash_algo "SHA256"; then
 	hash_algo_list="$hash_algo_list sha256"
+    fi
+    if have_hash_algo "SHA384"; then
+	hash_algo_list="$hash_algo_list sha384"
+    fi
+    if have_hash_algo "SHA512"; then
+	hash_algo_list="$hash_algo_list sha512"
     fi
 
     for da in $hash_algo_list ; do
