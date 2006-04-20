@@ -179,7 +179,7 @@ main(int argc,char *argv[])
   if(argc==1)
     {
       usage(stderr);
-      return 0;
+      return 1;
     }
   else if(argc>1 && strcmp(argv[1],"--version")==0)
     {

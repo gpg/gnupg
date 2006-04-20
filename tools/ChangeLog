@@ -1,3 +1,8 @@
+2006-04-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* make-dns-cert.c (main): Small exit code tweak from Peter
+	Palfrader.
+
 2006-04-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* make-dns-cert.c: Some changes from Peter Palfrader to send
