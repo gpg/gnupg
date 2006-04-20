@@ -184,6 +184,8 @@ int pubkey_get_nsig( int algo );
 int pubkey_get_nenc( int algo );
 unsigned pubkey_nbits( int algo, MPI *pkey );
 int pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors );
+int dsa2_generate( int algo, unsigned nbits, unsigned qbits,
+		   MPI *skey, MPI **retfactors );
 int pubkey_check_secret_key( int algo, MPI *skey );
 int pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
 int pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey );

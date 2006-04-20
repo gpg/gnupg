@@ -1,3 +1,8 @@
+2006-04-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* dsa.c (dsa2_generate): New function to generate a DSA key with a
+	variable sized q.
+
 2006-04-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* sha256.c (sha224_get_info, sha224_init): New init functions for

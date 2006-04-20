@@ -1,5 +1,5 @@
 /* dsa.c  -  DSA signature algorithm
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -49,7 +49,8 @@ typedef struct {
 static MPI gen_k( MPI q );
 static void test_keys( DSA_secret_key *sk, unsigned qbits );
 static int  check_secret_key( DSA_secret_key *sk );
-static void generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors );
+static void generate( DSA_secret_key *sk, unsigned nbits, unsigned qbits,
+		      MPI **ret_factors );
 static void sign(MPI r, MPI s, MPI input, DSA_secret_key *skey);
 static int  verify(MPI r, MPI s, MPI input, DSA_public_key *pkey);
 
@@ -168,20 +169,20 @@ test_keys( DSA_secret_key *sk, unsigned qbits )
  *	    and an array with the n-1 factors of (p-1)
  */
 static void
-generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
+generate( DSA_secret_key *sk, unsigned nbits, unsigned qbits,
+	  MPI **ret_factors )
 {
     MPI p;    /* the prime */
-    MPI q;    /* the 160 bit prime factor */
+    MPI q;    /* the prime factor */
     MPI g;    /* the generator */
     MPI y;    /* g^x mod p */
     MPI x;    /* the secret exponent */
     MPI h, e;  /* helper */
-    unsigned qbits;
     byte *rndbuf;
 
     assert( nbits >= 512 && nbits <= 1024 );
+    assert( qbits >= 160 );
 
-    qbits = 160;
     p = generate_elg_prime( 1, nbits, qbits, NULL, ret_factors );
     /* get q out of factors */
     q = mpi_copy((*ret_factors)[0]);
@@ -207,7 +208,6 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
      * is the secret part. */
     if( DBG_CIPHER )
 	log_debug("choosing a random x ");
-    assert( qbits >= 160 );
     x = mpi_alloc_secure( mpi_get_nlimbs(q) );
     mpi_sub_ui( h, q, 1 );  /* put q-1 into h */
     rndbuf = NULL;
@@ -364,21 +364,35 @@ verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
  **************  interface  ******************
  *********************************************/
 
+/* DSA2 has a variable-sized q, which adds an extra parameter to the
+   pubkey generation.  I'm doing this as a different function as it is
+   only called from one place and is thus cleaner than revamping the
+   pubkey_generate interface to carry an extra parameter which would
+   be meaningless for all algorithms other than DSA. */
+
 int
-dsa_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
+dsa2_generate( int algo, unsigned nbits, unsigned qbits,
+	       MPI *skey, MPI **retfactors )
 {
     DSA_secret_key sk;
 
     if( algo != PUBKEY_ALGO_DSA )
 	return G10ERR_PUBKEY_ALGO;
 
-    generate( &sk, nbits, retfactors );
+    generate( &sk, nbits, qbits, retfactors );
     skey[0] = sk.p;
     skey[1] = sk.q;
     skey[2] = sk.g;
     skey[3] = sk.y;
     skey[4] = sk.x;
     return 0;
+}
+
+
+int
+dsa_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
+{
+  return dsa2_generate(algo,nbits,160,skey,retfactors);
 }
 
 
