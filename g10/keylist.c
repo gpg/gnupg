@@ -1310,7 +1310,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		  case 0:		        sigrc = '!'; break;
 		  case GPG_ERR_BAD_SIGNATURE:   sigrc = '-'; break;
 		  case GPG_ERR_NO_PUBKEY: 
-		  case Gpg_Err_UNUSABLE_PUBKEY: sigrc = '?'; break;
+		  case GPG_ERR_UNUSABLE_PUBKEY: sigrc = '?'; break;
 		  default:		        sigrc = '%'; break;
 		}
 

@@ -656,7 +656,8 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
 	  sig->expiredate = sig->timestamp+duration;
 	sig->sig_class = sigclass;
 
-	md = gcry_md_copy (hash);
+	if (gcry_md_copy (&md, hash))
+          BUG ();
 
 	if (sig->version >= 4)
 	    build_sig_subpkt_from_sig (sig);
@@ -938,9 +939,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
                   }
 		if( !inp )
 		  {
+                    rc = gpg_error_from_errno (errno);
 		    log_error(_("can't open `%s': %s\n"),
 			      sl->d,strerror(errno));
-		    rc = G10ERR_OPEN_FILE;
 		    goto leave;
 		  }
                 handle_progress (&pfx, inp, sl->d);

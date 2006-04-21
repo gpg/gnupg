@@ -133,13 +133,13 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     else if (is_secured_filename (fname))
       {
         errno = EPERM;
+	rc = gpg_error_from_errno (errno);
 	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
-	rc = G10ERR_CREATE_FILE;
 	goto leave;
       }
     else if( !(fp = fopen(fname,"wb")) ) {
+	rc = gpg_error_from_errno (errno);
 	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
-	rc = G10ERR_CREATE_FILE;
 	goto leave;
     }
 #else /* __riscos__ */
@@ -205,7 +205,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		      {
 			log_error ("error writing to `%s': %s\n",
                                    fname,"exceeded --max-output limit\n");
-			rc = gpg_error (GPG_ERR_GENERAL);
+			rc = gpg_error (GPG_ERR_TOO_LARGE);
 			goto leave;
 		      }
 		    else if( putc( c, fp ) == EOF )
@@ -239,17 +239,17 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		  {
 		    if(opt.max_output && (count+=len)>opt.max_output)
 		      {
-			log_error("Error writing to `%s': %s\n",
-				  fname,"exceeded --max-output limit\n");
-			rc = G10ERR_WRITE_FILE;
+			log_error ("error writing to `%s': %s\n",
+                                   fname,"exceeded --max-output limit\n");
+			rc = gpg_error (GPG_ERR_TOO_LARGE);
 			xfree( buffer );
 			goto leave;
 		      }
 		    else if( fwrite( buffer, 1, len, fp ) != len )
 		      {
-			log_error("Error writing to `%s': %s\n",
-				  fname, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
+                        rc = gpg_error_from_errno (errno);
+			log_error ("error writing to `%s': %s\n",
+                                   fname, strerror(errno) );
 			xfree( buffer );
 			goto leave;
 		      }
@@ -274,14 +274,17 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
-			rc = G10ERR_WRITE_FILE;
+			rc = gpg_error (GPG_ERR_TOO_LARGE);
 			goto leave;
 		      }
 		    else if( putc( c, fp ) == EOF )
 		      {
+                        if ( ferror (fp ) )
+                          rc = gpg_error_from_errno (errno);
+                        else
+                          rc = gpg_error (GPG_ERR_EOF);
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
-			rc = G10ERR_WRITE_FILE;
 			goto leave;
 		      }
 		  }
@@ -310,7 +313,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
-			rc = G10ERR_WRITE_FILE;
+			rc = gpg_error (GPG_ERR_TOO_LARGE);
 			xfree( buffer );
 			goto leave;
 		      }
@@ -337,7 +340,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		  {
 		    log_error("Error writing to `%s': %s\n",
 			      fname,"exceeded --max-output limit\n");
-		    rc = G10ERR_WRITE_FILE;
+                    rc = gpg_error (GPG_ERR_TOO_LARGE);
 		    goto leave;
 		  }
 		else if( putc( c, fp ) == EOF )
@@ -351,8 +354,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    if( !mfx->md )
 		continue;
 	    if( state == 2 ) {
-		md_putc(mfx->md, '\r' );
-		md_putc(mfx->md, '\n' );
+		gcry_md_putc (mfx->md, '\r' );
+		gcry_md_putc (mfx->md, '\n' );
 		state = 0;
 	    }
 	    if( !state ) {
@@ -361,18 +364,18 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		else if( c == '\n'  )
 		    state = 2;
 		else
-		    md_putc(mfx->md, c );
+		    gcry_md_putc(mfx->md, c );
 	    }
 	    else if( state == 1 ) {
 		if( c == '\n'  )
 		    state = 2;
 		else {
-		    md_putc(mfx->md, '\r' );
+		    gcry_md_putc(mfx->md, '\r' );
 		    if( c == '\r'  )
 			state = 1;
 		    else {
 			state = 0;
-			md_putc(mfx->md, c );
+			gcry_md_putc(mfx->md, c );
 		    }
 		}
 	    }

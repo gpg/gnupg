@@ -234,15 +234,19 @@ length_sans_trailing_ws (const unsigned char *line, size_t len)
  *
  */
 char *
-make_basename(const char *filepath)
+make_basename(const char *filepath, const char *inputpath)
 {
     char *p;
 
+#ifdef __riscos__
+    return riscos_make_basename(filepath, inputpath);
+#endif
+
     if ( !(p=strrchr(filepath, '/')) )
-      #ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DRIVE_LETTERS
 	if ( !(p=strrchr(filepath, '\\')) )
 	    if ( !(p=strrchr(filepath, ':')) )
-      #endif
+#endif
 	      {
 		return jnlib_xstrdup(filepath);
 	      }

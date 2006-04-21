@@ -1,3 +1,19 @@
+2006-04-19  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (iobuf_get_fd): New.  Taken from 1.4.3.
+	(iobuf_is_pipe_filename): New.
+	(pop_filter): Made static.
+	(iobuf_skip_rest): New.  Orginal patch by Florian
+	Weimer.  Added new argument PARTIAL.
+	(block_filter): Remove the old gpg indeterminate length mode.
+	(block_filter): Properly handle a partial body stream
+	that ends with a 5-byte length that happens to be zero.
+	(iobuf_set_block_mode, iobuf_in_block_mode): Removed as
+	superfluous.
+	(iobuf_get_filelength): New arg OVERFLOW.
+	(iobuf_get_filelength) [W32]: Use GetFileSizeEx if available
+	* miscellaneous.c (is_file_compressed): Take care of OVERFLOW.
+
 2006-04-18  Werner Koch  <wk@g10code.com>
 
 	* homedir.c (w32_shgetfolderpath): New.  Taken from gpg 1.4.3.

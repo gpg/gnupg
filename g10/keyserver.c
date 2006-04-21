@@ -31,13 +31,13 @@
 #endif
 
 #include "gpg.h"
+#include "iobuf.h"
 #include "filter.h"
 #include "keydb.h"
 #include "status.h"
 #include "exec.h"
 #include "main.h"
 #include "i18n.h"
-#include "iobuf.h"
 #include "ttyio.h"
 #include "options.h"
 #include "packet.h"

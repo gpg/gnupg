@@ -81,6 +81,7 @@ is_file_compressed (const char *s, int *ret_rc)
     iobuf_t a;
     byte buf[4];
     int i, rc = 0;
+    int overflow;
 
     struct magic_compress_s {
         size_t len;
@@ -91,7 +92,7 @@ is_file_compressed (const char *s, int *ret_rc)
         { 4, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
     };
     
-    if ( !s || (*s == '-' && !s[1]) || !ret_rc )
+    if ( iobuf_is_pipe_filename (s) || !ret_rc )
         return 0; /* We can't check stdin or no file was given */
 
     a = iobuf_open( s );
@@ -100,7 +101,7 @@ is_file_compressed (const char *s, int *ret_rc)
         return 0;
     }
 
-    if ( iobuf_get_filelength( a ) < 4 ) {
+    if ( iobuf_get_filelength( a, &overflow ) < 4 && !overflow) {
         *ret_rc = 0;
         goto leave;
     }

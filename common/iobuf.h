@@ -90,6 +90,7 @@ struct iobuf_struct
 EXTERN_UNLESS_MAIN_MODULE int iobuf_debug_mode;
 
 void iobuf_enable_special_filenames (int yes);
+int  iobuf_is_pipe_filename (const char *fname);
 iobuf_t iobuf_alloc (int use, size_t bufsize);
 iobuf_t iobuf_temp (void);
 iobuf_t iobuf_temp_with_content (const char *buffer, size_t length);
@@ -134,14 +135,13 @@ int iobuf_write_temp (iobuf_t a, iobuf_t temp);
 size_t iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen);
 void iobuf_unget_and_close_temp (iobuf_t a, iobuf_t temp);
 
-off_t iobuf_get_filelength (iobuf_t a);
+off_t iobuf_get_filelength (iobuf_t a, int *overflow);
 #define IOBUF_FILELENGTH_LIMIT 0xffffffff
+int  iobuf_get_fd (iobuf_t a);
 const char *iobuf_get_real_fname (iobuf_t a);
 const char *iobuf_get_fname (iobuf_t a);
 
-void iobuf_set_block_mode (iobuf_t a, size_t n);
 void iobuf_set_partial_block_mode (iobuf_t a, size_t len);
-int iobuf_in_block_mode (iobuf_t a);
 
 int iobuf_translate_file_handle (int fd, int for_write);
 

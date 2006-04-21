@@ -473,9 +473,9 @@ int exec_write(struct exec_info **info,const char *program,
     (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
+      ret = gpg_error_from_errno (errno);
       log_error(_("can't create `%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
-      ret=G10ERR_WRITE_FILE;
       goto fail;
     }
 

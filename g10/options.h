@@ -262,6 +262,7 @@ struct {
 #define DBG_CARD_IO_VALUE 2048  /* debug smart card I/O.  */
 
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
+#define DBG_CIPHER (opt.debug & DBG_CIPHER_VALUE)
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)
@@ -304,6 +305,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define EXPORT_RESET_SUBKEY_PASSWD       (1<<3)
 #define EXPORT_MINIMAL                   (1<<4)
 #define EXPORT_CLEAN                     (1<<5)
+#define EXPORT_SEXP_FORMAT               (1<<6)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

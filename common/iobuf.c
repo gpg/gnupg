@@ -1,5 +1,6 @@
 /* iobuf.c  -  file handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004, 2006  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,6 +41,11 @@
 #include "memory.h"
 #include "util.h"
 #include "iobuf.h"
+
+/* The size of the internal buffers. 
+   NOTE: If you change this value you MUST also adjust the regression
+   test "armored_key_8192" in armor.test! */
+#define IOBUF_BUFFER_SIZE  8192
 
 #undef FILE_FILTER_USES_STDIO
 
@@ -762,32 +768,23 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 			  break;
 			}
 		      a->size |= c;
+                      a->partial = 2;
+                      if (!a->size)
+                        {
+                          a->eof = 1;
+                          if (!n)
+                            rc = -1;
+                          break;
+			}
 		    }
 		  else
-		    {		/* next partial body length */
+		    { /* Next partial body length. */
 		      a->size = 1 << (c & 0x1f);
 		    }
 		  /*  log_debug("partial: ctx=%p c=%02x size=%u\n", a, c, a->size); */
 		}
 	      else
-		{		/* the gnupg partial length scheme - much better :-) */
-		  c = iobuf_get (chain);
-		  a->size = c << 8;
-		  c = iobuf_get (chain);
-		  a->size |= c;
-		  if (c == -1)
-		    {
-		      log_error ("block_filter: error reading length info\n");
-		      rc = GPG_ERR_BAD_DATA;
-		    }
-		  if (!a->size)
-		    {
-		      a->eof = 1;
-		      if (!n)
-			rc = -1;
-		      break;
-		    }
-		}
+		BUG ();	
 	    }
 
 	  while (!rc && size && a->size)
@@ -876,39 +873,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 	    }
 	}
       else
-	{			/* the gnupg scheme (which is not openpgp compliant) */
-	  size_t avail, n;
-
-	  for (p = buf; !rc && size;)
-	    {
-	      n = size;
-	      avail = a->size - a->count;
-	      if (!avail)
-		{
-		  if (n > a->size)
-		    {
-		      iobuf_put (chain, (a->size >> 8) & 0xff);
-		      iobuf_put (chain, a->size & 0xff);
-		      avail = a->size;
-		      a->count = 0;
-		    }
-		  else
-		    {
-		      iobuf_put (chain, (n >> 8) & 0xff);
-		      iobuf_put (chain, n & 0xff);
-		      avail = n;
-		      a->count = a->size - n;
-		    }
-		}
-	      if (n > avail)
-		n = avail;
-	      if (iobuf_write (chain, p, n))
-		rc = gpg_error_from_errno (errno);
-	      a->count += n;
-	      p += n;
-	      size -= n;
-	    }
-	}
+	BUG ();
     }
   else if (control == IOBUFCTRL_INIT)
     {
@@ -976,10 +941,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 	      a->buflen = 0;
 	    }
 	  else
-	    {
-	      iobuf_writebyte (chain, 0);
-	      iobuf_writebyte (chain, 0);
-	    }
+	    BUG ();
 	}
       else if (a->size)
 	{
@@ -1159,11 +1121,10 @@ iobuf_enable_special_filenames (int yes)
   special_names_enabled = yes;
 }
 
-/*
- * see whether the filename has the for "-&nnnn", where n is a
- * non-zero number.
- * Returns this number or -1 if it is not the case.
- */
+
+/* See whether the filename has the form "-&nnnn", where n is a
+   non-zero number.  Returns this number or -1 if it is not the
+   case.  */
 static int
 check_special_filename (const char *fname)
 {
@@ -1178,6 +1139,17 @@ check_special_filename (const char *fname)
 	return atoi (fname);
     }
   return -1;
+}
+
+
+/* This fucntion returns true if FNAME indicates a PIPE (stdout or
+   stderr) or a special file name if those are enabled. */
+int
+iobuf_is_pipe_filename (const char *fname)
+{
+  if (!fname || (*fname=='-' && !fname[1]) )
+    return 1;
+  return check_special_filename (fname) != -1;
 }
 
 /****************
@@ -1547,7 +1519,7 @@ iobuf_push_filter2 (iobuf_t a,
 /****************
  * Remove an i/o filter.
  */
-int
+static int
 pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
 			       iobuf_t chain, byte * buf, size_t * len),
 	    void *ov)
@@ -2038,48 +2010,109 @@ iobuf_set_limit (iobuf_t a, off_t nlimit)
 
 
 
-/****************
- * Return the length of an open file
- */
+/* Return the length of an open file A.  IF OVERFLOW is not NULL it
+   will be set to true if the file is larger than what off_t can cope
+   with.  The function return 0 on error or on overflow condition.  */
 off_t
-iobuf_get_filelength (iobuf_t a)
+iobuf_get_filelength (iobuf_t a, int *overflow)
 {
-  struct stat st;
+    struct stat st;
 
-  if (a->directfp)
-    {
-      FILE *fp = a->directfp;
+    if (overflow)
+      *overflow = 0;
 
-      if (!fstat (fileno (fp), &st))
-	return st.st_size;
-      log_error ("fstat() failed: %s\n", strerror (errno));
-      return 0;
+    if( a->directfp )  {
+	FILE *fp = a->directfp;
+
+       if( !fstat(fileno(fp), &st) )
+           return st.st_size;
+	log_error("fstat() failed: %s\n", strerror(errno) );
+	return 0;
     }
 
-  /* Hmmm: file_filter may have already been removed */
-  for (; a; a = a->chain)
-    if (!a->chain && a->filter == file_filter)
-      {
-	file_filter_ctx_t *b = a->filter_ov;
-	FILEP_OR_FD fp = b->fp;
+    /* Hmmm: file_filter may have already been removed */
+    for( ; a; a = a->chain )
+	if( !a->chain && a->filter == file_filter ) {
+	    file_filter_ctx_t *b = a->filter_ov;
+	    FILEP_OR_FD fp = b->fp;
 
 #if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
-	ulong size;
+            ulong size;
+            static int (* __stdcall get_file_size_ex) 
+              (void *handle, LARGE_INTEGER *size);
+            static int get_file_size_ex_initialized;
 
-	if ((size = GetFileSize (fp, NULL)) != 0xffffffff)
-	  return size;
-	log_error ("GetFileSize for handle %p failed: ec=%d\n",
-		   fp, (int) GetLastError ());
+            if (!get_file_size_ex_initialized)
+              {
+                void *handle;
+                
+                handle = dlopen ("kernel32.dll", RTLD_LAZY);
+                if (handle)
+                  {
+                    get_file_size_ex = dlsym (handle, "GetFileSizeEx");
+                    if (!get_file_size_ex)
+                    dlclose (handle);
+                  }
+                get_file_size_ex_initialized = 1;
+              }
+
+            if (get_file_size_ex)
+              {
+                /* This is a newer system with GetFileSizeEx; we use
+                   this then becuase it seem that GetFileSize won't
+                   return a proper error in case a file is larger than
+                   4GB. */
+                LARGE_INTEGER size;
+                
+                if (get_file_size_ex (fp, &size))
+                  {
+                    if (!size.u.HighPart)
+                      return size.u.LowPart;
+                    if (overflow)
+                      *overflow = 1;
+                    return 0; 
+                  }
+              }
+            else
+              {
+                if  ((size=GetFileSize (fp, NULL)) != 0xffffffff)
+                  return size;
+              }
+            log_error ("GetFileSize for handle %p failed: %s\n",
+                       fp, w32_strerror (0));
 #else
-	if (!fstat (my_fileno (fp), &st))
-	  return st.st_size;
-	log_error ("fstat() failed: %s\n", strerror (errno));
+            if( !fstat(my_fileno(fp), &st) )
+		return st.st_size;
+	    log_error("fstat() failed: %s\n", strerror(errno) );
 #endif
-	break;
+	    break;
+	}
+
+    return 0;
+}
+
+
+/* Return the file descriptor of the underlying file or -1 if it is
+   not available.  */
+int 
+iobuf_get_fd (iobuf_t a)
+{
+  if (a->directfp)
+    return fileno ( (FILE*)a->directfp );
+
+  for ( ; a; a = a->chain )
+    if (!a->chain && a->filter == file_filter)
+      {
+        file_filter_ctx_t *b = a->filter_ov;
+        FILEP_OR_FD fp = b->fp;
+
+        return my_fileno (fp);
       }
 
-  return 0;
+  return -1;
 }
+
+
 
 /****************
  * Tell the file position, where the next read will take place
@@ -2233,30 +2266,6 @@ iobuf_get_fname (iobuf_t a)
   return NULL;
 }
 
-/****************
- * Start the block write mode, see rfc1991.new for details.
- * A value of 0 for N stops this mode (flushes and writes
- * the end marker)
- */
-void
-iobuf_set_block_mode (iobuf_t a, size_t n)
-{
-  block_filter_ctx_t *ctx = xcalloc (1, sizeof *ctx);
-
-  assert (a->use == 1 || a->use == 2);
-  ctx->use = a->use;
-  if (!n)
-    {
-      if (a->use == 1)
-	log_debug ("pop_filter called in set_block_mode - please report\n");
-      pop_filter (a, block_filter, NULL);
-    }
-  else
-    {
-      ctx->size = n;		/* only needed for use 2 */
-      iobuf_push_filter (a, block_filter, ctx);
-    }
-}
 
 /****************
  * enable partial block mode as described in the OpenPGP draft.
@@ -2285,18 +2294,6 @@ iobuf_set_partial_block_mode (iobuf_t a, size_t len)
     }
 }
 
-
-/****************
- * Checks whether the stream is in block mode
- * Note: This does not work if other filters are pushed on the stream.
- */
-int
-iobuf_in_block_mode (iobuf_t a)
-{
-  if (a && a->filter == block_filter)
-    return 1;			/* yes */
-  return 0;			/* no */
-}
 
 
 /****************
@@ -2415,4 +2412,55 @@ translate_file_handle (int fd, int for_write)
 #endif
 #endif
   return fd;
+}
+
+
+void
+iobuf_skip_rest (iobuf_t a, unsigned long n, int partial)
+{
+  if ( partial )
+    {
+      for (;;)
+        {
+          if (a->nofast || a->d.start >= a->d.len) 
+            {
+              if (iobuf_readbyte (a) == -1)
+                {
+                  break;
+                }
+	    } 
+          else
+            {
+              unsigned long count = a->d.len - a->d.start;
+              a->nbytes += count;
+              a->d.start = a->d.len;
+	    }
+	}
+    } 
+  else
+    {
+      unsigned long remaining = n;
+      while (remaining > 0) 
+        {
+          if (a->nofast || a->d.start >= a->d.len)
+            {
+              if (iobuf_readbyte (a) == -1)
+                {
+                  break;
+		}
+              --remaining;
+	    } 
+          else 
+            {
+              unsigned long count = a->d.len - a->d.start;
+              if (count > remaining) 
+                {
+                  count = remaining;
+		}
+              a->nbytes += count;
+              a->d.start += count;
+              remaining -= count;
+	    }
+	}
+    }
 }

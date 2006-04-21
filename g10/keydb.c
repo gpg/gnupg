@@ -134,9 +134,9 @@ maybe_create_keyring (char *filename, int force)
         log_info ("can't allocate lock for `%s'\n", filename );
 
       if (!force) 
-        return G10ERR_OPEN_FILE; 
+        return gpg_error (GPG_ERR_ENOENT); 
       else
-        return G10ERR_GENERAL;
+        return gpg_error (GPG_ERR_GENERAL);
     }
 
   if ( make_dotlock (lockhd, -1) )
@@ -166,9 +166,9 @@ maybe_create_keyring (char *filename, int force)
   umask (oldmask);
   if (!iobuf) 
     {
+      rc = gpg_error_from_errno (errno);
       log_error ( _("error creating keyring `%s': %s\n"),
                   filename, strerror(errno));
-      rc = G10ERR_OPEN_FILE;
       goto leave;
     }
 

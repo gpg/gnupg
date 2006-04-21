@@ -294,7 +294,8 @@ check_secret_key( PKT_secret_key *sk, int n )
             log_info (_("%s ...\n"), _(tryagain));
         }
 	rc = do_check( sk, tryagain, mode, &canceled );
-	if ( gpg_err_code (rc) == G10ERR_BAD_PASS && is_status_enabled () ) {
+	if ( gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+             && is_status_enabled () ) {
 	    u32 kid[2];
 	    char buf[50];
 

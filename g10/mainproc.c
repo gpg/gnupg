@@ -647,7 +647,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 	else if(n->pkt->pkttype==PKT_SIGNATURE)
 	  {
 	    /* For the SIG+LITERAL case that PGP used to use. */
-	    md_enable( c->mfx.md, n->pkt->pkt.signature->digest_algo );
+	    gcry_md_enable ( c->mfx.md, n->pkt->pkt.signature->digest_algo );
 	    any=1;
 	  }
       }
@@ -2010,7 +2010,7 @@ proc_tree( CTX c, KBNODE node )
 		     && is_RSA( sig->pubkey_algo ) ) {
 		/* enable a workaround for a pgp2 bug */
                 if (gcry_md_open (&c->mfx.md2, DIGEST_ALGO_MD5, 0))
-                    BUG ():
+                  BUG ();
 	    }
 	    else if( sig->digest_algo == DIGEST_ALGO_SHA1
 		     && sig->pubkey_algo == PUBKEY_ALGO_DSA
