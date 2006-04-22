@@ -26,9 +26,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#ifdef HAVE_LIBCURL
-#include <curl/curl.h>
-#endif
 #include "filter.h"
 #include "keydb.h"
 #include "status.h"
