@@ -1,5 +1,7 @@
 2006-04-26  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_http.c, gpgkeys_oldhkp.c: Removed.
+
 	* Makefile.am: Don't build gpgkeys_http or gpgkeys_(old)hkp any
 	longer as this is done via curl or fake-curl.
 
