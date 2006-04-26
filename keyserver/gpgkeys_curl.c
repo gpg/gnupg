@@ -1,5 +1,5 @@
 /* gpgkeys_curl.c - fetch a key via libcurl
- * Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,10 +28,10 @@
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
-#ifdef FAKE_CURL
-#include "curl-shim.h"
-#else
+#ifdef HAVE_LIBCURL
 #include <curl/curl.h>
+#else
+#include "curl-shim.h"
 #endif
 #include "keyserver.h"
 #include "ksutil.h"

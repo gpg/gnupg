@@ -1,5 +1,5 @@
 /* ksutil.c - general keyserver utility functions
- * Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,9 +29,7 @@
 #ifdef HAVE_LIBCURL
 #include <curl/curl.h>
 #else
-#ifdef FAKE_CURL
 #include "curl-shim.h"
-#endif
 #endif
 #include "keyserver.h"
 #include "ksutil.h"
@@ -380,7 +378,6 @@ classify_ks_search(const char **search)
     }
 }
 
-#if defined (HAVE_LIBCURL) || defined (FAKE_CURL)
 int
 curl_err_to_gpg_err(CURLcode error)
 {
@@ -541,4 +538,3 @@ curl_writer_finalize(struct curl_writer_ctx *ctx)
       ctx->flags.done=1;
     }
 }
-#endif

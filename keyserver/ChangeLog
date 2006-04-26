@@ -1,3 +1,11 @@
+2006-04-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Don't build gpgkeys_http or gpgkeys_(old)hkp any
+	longer as this is done via curl or fake-curl.
+
+	* ksutil.h, ksutil.c, gpgkeys_hkp.c, gpgkeys_curl.c: Minor
+	#include tweaks as FAKE_CURL is no longer meaningful.
+
 2006-04-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (ldap_quote, get_name, search_key): LDAP-quote

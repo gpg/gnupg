@@ -28,10 +28,10 @@
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
-#ifdef FAKE_CURL
-#include "curl-shim.h"
-#else
+#ifdef HAVE_LIBCURL
 #include <curl/curl.h>
+#else
+#include "curl-shim.h"
 #endif
 #include "keyserver.h"
 #include "ksutil.h"
