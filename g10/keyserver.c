@@ -2024,6 +2024,12 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 
 	  rc=keyserver_import_fprint(*fpr,*fpr_len,opt.keyserver);
 	}
+      else
+	log_info(_("no keyserver known (use option --keyserver)\n"));
+
+      /* Give a better string here? "CERT fingerprint for \"%s\"
+	 found, but no keyserver" " known (use option
+	 --keyserver)\n" ? */
 
       xfree(url);
     }
