@@ -1,3 +1,10 @@
+2006-04-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (path_makes_direct): New.
+	(keyserver_spawn): Used here to add "_uri" to certain gpgkeys_xxx
+	helpers when the meaning is different if a path is provided
+	(i.e. ldap).
+
 2006-04-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c: Fix build problem with platforms that stick libcurl
