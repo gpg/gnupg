@@ -1,3 +1,10 @@
+2006-04-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note SHA-224 and DSA2.
+
+	* configure.ac: Remove --enable-old-keyserver-helpers.  Comment
+	out --enable-m-guard for now.
+
 2006-04-12  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Print version at end of run.

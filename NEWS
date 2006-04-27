@@ -1,6 +1,16 @@
 Noteworthy changes in version 1.4.4
 ------------------------------------------------
 
+    * Added support for the SHA-224 hash.  Like the SHA-384 hash, it
+      is mainly useful when DSS (the US Digital Signature Standard)
+      compatibility is desired.
+
+    * Added support for the latest update to DSA keys and signatures.
+      This allows for larger keys than 1024 bits and hashes other than
+      SHA-1 and RIPEMD/160.  Note that not all OpenPGP implementations
+      can handle these new keys and signatures yet.  See
+      "--enable-dsa2" in the manual for more information.
+
 
 Noteworthy changes in version 1.4.3 (2006-04-03)
 ------------------------------------------------

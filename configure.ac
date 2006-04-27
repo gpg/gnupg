@@ -100,14 +100,14 @@ AC_ARG_ENABLE(asm,
      try_asm_modules=$enableval, try_asm_modules=yes)
 AC_MSG_RESULT($try_asm_modules)
 
-AC_MSG_CHECKING([whether memory guard is requested])
-AC_ARG_ENABLE(m-guard,
-    [  --enable-m-guard        enable memory guard facility],
-    use_m_guard=$enableval, use_m_guard=no)
-AC_MSG_RESULT($use_m_guard)
-if test "$use_m_guard" = yes ; then
-    AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
-fi
+dnl AC_MSG_CHECKING([whether memory guard is requested])
+dnl AC_ARG_ENABLE(m-guard,
+dnl     [  --enable-m-guard        enable memory guard facility],
+dnl     use_m_guard=$enableval, use_m_guard=no)
+dnl AC_MSG_RESULT($use_m_guard)
+dnl if test "$use_m_guard" = yes ; then
+dnl     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
+dnl fi
 
 # We don't have a test to check whether as(1) knows about the
 # non executable stack option.  Thus we provide an option to enable
@@ -262,11 +262,11 @@ fi
 
 AC_MSG_CHECKING([whether to enable the SHA-256 digest])
 AC_ARG_ENABLE(sha256,
-   AC_HELP_STRING([--disable-sha256],[disable the SHA-256 digest]),
+   AC_HELP_STRING([--disable-sha256],[disable the SHA-224 and SHA-256 digests]),
    use_sha256=$enableval)
 AC_MSG_RESULT($use_sha256)
 if test x"$use_sha256" = xyes ; then
-   AC_DEFINE(USE_SHA256,1,[Define to include the SHA-256 digest])
+   AC_DEFINE(USE_SHA256,1,[Define to include the SHA-224 and SHA-256 digests])
 fi
 
 dnl SHA512 is defined only after we confirm 64-bit support later
@@ -345,6 +345,13 @@ dnl LDAP is defined only after we confirm the library is available later
         [disable finger key fetching interface only]),
       try_finger=$enableval, try_finger=yes)
     AC_MSG_RESULT($try_finger)
+
+    AC_MSG_CHECKING([whether generic object key fetching support is requested])
+    AC_ARG_ENABLE(generic,
+      AC_HELP_STRING([--disable-generic],
+        [disable generic object key fetching interface only]),
+      try_generic=$enableval, try_generic=yes)
+    AC_MSG_RESULT($try_generic)
 
     AC_MSG_CHECKING([whether email keyserver support is requested])
     AC_ARG_ENABLE(mailto,
@@ -671,23 +678,15 @@ if test "$try_ldap" = yes ; then
    GNUPG_CHECK_LDAP($NETLIBS)
 fi
 
-# Which keyserver helpers are we building?
+# Check for curl.  We fake the curl API if libcurl isn't installed.
 
-AC_ARG_ENABLE(old-keyserver-helpers,
-   AC_HELP_STRING([--enable-old-keyserver-helpers],[enable old keyserver helpers]),old_ks=$enableval,old_ks=no)
-
-if test "$old_ks" = yes ; then
-   AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
-else
-   LIBCURL_CHECK_CONFIG([yes],,[with_curl=yes],[fake_curl=yes])
-   AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
-fi
-
+LIBCURL_CHECK_CONFIG([yes],,,[fake_curl=yes])
 AM_CONDITIONAL(FAKE_CURL,test x"$fake_curl" = xyes)
-AM_CONDITIONAL(WITH_CURL,test x"$with_curl" = xyes || test x"$fake_curl" = xyes)
 
-if test x"$fake_curl" = xyes ; then
-   AC_DEFINE(FAKE_CURL,1,[define to fake the libcurl API internally])
+# Generic, for us, means curl
+
+if test x"$try_generic" = xyes ; then
+   AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
 fi
 
 dnl This isn't necessarily sendmail itself, but anything that gives a
