@@ -341,7 +341,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	    /* SHA-1 */
 	    strcat(dummy_string,"H2 ");
 
-	    if(!check_digest_algo(DIGEST_ALGO_SHA256))
+	    if (!openpgp_md_test_algo(DIGEST_ALGO_SHA256))
 	      strcat(dummy_string,"H8 ");
 
 	    /* RIPEMD160 */
@@ -370,12 +370,12 @@ keygen_set_std_prefs (const char *string,int personal)
 
 	while((tok=strsep(&prefstring," ,")))
 	  {
-	    if((val=openpgp_cipher_map_name (tok)))
+	    if((val=gcry_cipher_map_name (tok)))
 	      {
 		if(set_one_pref(val,1,tok,sym,&nsym))
 		  rc=-1;
 	      }
-	    else if((val=openpgp_md_map_name (tok)))
+	    else if((val=gcry_md_map_name (tok)))
 	      {
 		if(set_one_pref(val,2,tok,hash,&nhash))
 		  rc=-1;
@@ -2138,7 +2138,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key )
     if( digitp( r->u.value ) )
 	i = atoi( r->u.value );
     else
-        i = openpgp_pk_map_name (r->u.value);
+        i = gcry_pk_map_name (r->u.value);
     if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
       i = 0; /* we don't want to allow generation of these algorithms */
     return i;
@@ -2289,7 +2289,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   if(r)
     {
       algo=get_parameter_algo(para,pKEYTYPE);
-      if (openpgp_pk_test_algo (algo, PUBKEY_USAGE_SIG))
+      if (openpgp_pk_test_algo2 (algo, PUBKEY_USAGE_SIG))
 	{
 	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
 	  return -1;

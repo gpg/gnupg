@@ -354,6 +354,8 @@ enum cmd_and_opt_values
     oAutoKeyLocate,
     oNoAutoKeyLocate,
     oAllowMultisigVerification,
+    oEnableDSA2,
+    oDisableDSA2,
 
     oNoop
   };
@@ -684,6 +686,8 @@ static ARGPARSE_OPTS opts[] = {
     { oLimitCardInsertTries, "limit-card-insert-tries", 1, "@"},
 
     { oAllowMultisigVerification, "allow-multisig-verification", 0, "@"},
+    { oEnableDSA2, "enable-dsa2", 0, "@"},
+    { oDisableDSA2, "disable-dsa2", 0, "@"},
 
     /* These two are aliases to help users of the PGP command line
        product use gpg with minimal pain.  Many commands are common
@@ -2169,7 +2173,12 @@ main (int argc, char **argv )
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRFC2440Text: opt.rfc2440_text=1; break;
 	  case oNoRFC2440Text: opt.rfc2440_text=0; break;
-	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
+ 	  case oSetFilename:
+            if(utf8_strings)
+              opt.set_filename = pargs.r.ret_str;
+            else
+              opt.set_filename = native_to_utf8(pargs.r.ret_str);
+ 	    break;
 	  case oForYourEyesOnly: eyes_only = 1; break;
 	  case oNoForYourEyesOnly: eyes_only = 0; break;
 	  case oSetPolicyURL:
@@ -2195,8 +2204,12 @@ main (int argc, char **argv )
 	    opt.verify_options&=~VERIFY_SHOW_POLICY_URLS;
 	    break;
 	  case oSigKeyserverURL: add_keyserver_url(pargs.r.ret_str,0); break;
-	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
-	  case oNoUseEmbeddedFilename: opt.use_embedded_filename = 0; break;
+	  case oUseEmbeddedFilename:
+	    opt.flags.use_embedded_filename=1;
+	    break;
+	  case oNoUseEmbeddedFilename:
+	    opt.flags.use_embedded_filename=0;
+	    break;
 	  case oComment:
 	    if(pargs.r.ret_str[0])
 	      append_to_strlist(&opt.comments,pargs.r.ret_str);
@@ -2638,6 +2651,9 @@ main (int argc, char **argv )
           case oAllowMultisigVerification:
             opt.allow_multisig_verification = 1;
             break;
+
+	  case oEnableDSA2: opt.flags.dsa2=1; break;
+	  case oDisableDSA2: opt.flags.dsa2=0; break;
 
 	  case oNoop: break;
 
@@ -3086,6 +3102,9 @@ main (int argc, char **argv )
 
     fname = argc? *argv : NULL;
 
+    if(fname && utf8_strings)
+      opt.flags.utf8_filename=1;
+
     switch( cmd ) {
       case aPrimegen:
       case aPrintMD:
@@ -3390,12 +3409,17 @@ main (int argc, char **argv )
 	import_keys( argc? argv:NULL, argc, NULL, opt.import_options );
 	break;
 
+	/* TODO: There are a number of command that use this same
+	   "make strlist, call function, report error, free strlist"
+	   pattern.  Join them together here and avoid all that
+	   duplicated code. */
+
       case aExport:
       case aSendKeys:
       case aRecvKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	    add_to_strlist2( &sl, *argv, utf8_strings );
+	    append_to_strlist2( &sl, *argv, utf8_strings );
 	if( cmd == aSendKeys )
 	    rc=keyserver_export( sl );
 	else if( cmd == aRecvKeys )
@@ -3427,7 +3451,7 @@ main (int argc, char **argv )
       case aRefreshKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	    add_to_strlist2( &sl, *argv, utf8_strings );
+	    append_to_strlist2( &sl, *argv, utf8_strings );
 	rc=keyserver_refresh(sl);
 	if(rc)
 	  log_error(_("keyserver refresh failed: %s\n"),g10_errstr(rc));
@@ -3437,7 +3461,7 @@ main (int argc, char **argv )
       case aFetchKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	    add_to_strlist2( &sl, *argv, utf8_strings );
+	    append_to_strlist2( &sl, *argv, utf8_strings );
 	rc=keyserver_fetch(sl);
 	if(rc)
 	  log_error("key fetch failed: %s\n",g10_errstr(rc));
@@ -3913,6 +3937,7 @@ print_mds( const char *fname, int algo )
 	gcry_md_enable (md, GCRY_MD_SHA1);
 	gcry_md_enable (md, GCRY_MD_RMD160);
 #ifdef USE_SHA256
+	gcry_md_enable (md, DIGEST_ALGO_SHA224);
 	gcry_md_enable (md, GCRY_MD_SHA256);
 #endif
 #ifdef USE_SHA512
@@ -3935,6 +3960,8 @@ print_mds( const char *fname, int algo )
                 print_hashline( md, GCRY_MD_SHA1, fname );
                 print_hashline( md, GCRY_MD_RMD160, fname );
 #ifdef USE_SHA256
+                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224)
+                    print_hashline (md, DIGEST_ALGO_SHA224, fname);
                 print_hashline( md, GCRY_MD_SHA256, fname );
 #endif
 #ifdef USE_SHA512
@@ -3951,6 +3978,8 @@ print_mds( const char *fname, int algo )
                 print_hex( md, GCRY_MD_SHA1, fname );
                 print_hex( md, GCRY_MD_RMD160, fname );
 #ifdef USE_SHA256
+                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224)
+                    print_hex (md, DIGEST_ALGO_SHA224, fname);
                 print_hex( md, GCRY_MD_SHA256, fname );
 #endif
 #ifdef USE_SHA512

@@ -659,9 +659,9 @@ proc_plaintext( CTX c, PACKET *pkt )
 	   often.  There is no good way to specify what algorithms to
 	   use in that case, so these three are the historical
 	   answer. */
-	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
-	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
-	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
+	gcry_md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
+	gcry_md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
+	gcry_md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
       }
     if( opt.pgp2_workarounds && only_md5 && !opt.skip_verify ) {
 	/* This is a kludge to work around a bug in pgp2.  It does only

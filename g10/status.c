@@ -209,9 +209,10 @@ set_status_fd ( int fd )
                   fd, strerror(errno));
     }
     last_fd = fd;
-    register_primegen_progress ( progress_cb, "primegen" );
-    register_pk_dsa_progress ( progress_cb, "pk_dsa" );
-    register_pk_elg_progress ( progress_cb, "pk_elg" );
+#warning Use libgrypt calls for progress indicators
+/*     register_primegen_progress ( progress_cb, "primegen" ); */
+/*     register_pk_dsa_progress ( progress_cb, "pk_dsa" ); */
+/*     register_pk_elg_progress ( progress_cb, "pk_elg" ); */
 }
 
 int

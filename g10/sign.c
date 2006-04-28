@@ -320,11 +320,15 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
       }
     else 
       {
-	/* TODO: remove this check in the future once all the
-	   variable-q DSA stuff makes it into the standard. */
-	if(!opt.expert
-	   && sk->pubkey_algo==PUBKEY_ALGO_DSA
-	   && gcry_md_get_algo_dlen (digest_algo)!=20)
+	/* If it's a DSA key, and q is 160 bits, it might be an
+	   old-style DSA key.  If the hash doesn't match the q, fail
+	   unless --enable-dsa2 is set.  If the q isn't 160 bits, then
+	   allow any hash since it must be a DSA2 key (if the hash is
+	   too small, we'll fail in encode_md_value). */
+	if (sk->pubkey_algo==PUBKEY_ALGO_DSA
+            && (gcry_mpi_get_nbits (sk->skey[1])/8)==20
+            && !opt.flags.dsa2
+            && gcry_md_get_algo_dlen (digest_algo)!=20)
 	  {
 	    log_error(_("DSA requires the use of a 160 bit hash algorithm\n"));
 	    return G10ERR_GENERAL;
@@ -384,6 +388,32 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, gcry_md_hd_t md )
     return rc;
 }
 
+
+
+static int
+match_dsa_hash (unsigned int qbytes)
+{
+  if (qbytes <= 20)
+    return DIGEST_ALGO_SHA1;
+#ifdef USE_SHA256
+  if (qbytes <= 28)
+    return DIGEST_ALGO_SHA224;
+  if (qbytes <= 32)
+    return DIGEST_ALGO_SHA256;
+#endif
+
+#ifdef USE_SHA512
+  if (qbytes <= 48)
+    return DIGEST_ALGO_SHA384;
+  if (qbytes <= 64)
+    return DIGEST_ALGO_SHA512;
+#endif
+  return DEFAULT_DIGEST_ALGO;
+  /* DEFAULT_DIGEST_ALGO will certainly fail, but it's the best wrong
+     answer we have if the larger SHAs aren't there. */
+}
+
+
 /*
   First try --digest-algo.  If that isn't set, see if the recipient
   has a preferred algorithm (which is also filtered through
@@ -397,7 +427,6 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, gcry_md_hd_t md )
   the signing key prefs either before or after using the personal
   list?
 */
-
 static int
 hash_for(PKT_secret_key *sk)
 {
@@ -405,32 +434,61 @@ hash_for(PKT_secret_key *sk)
     return opt.def_digest_algo;
   else if( recipient_digest_algo )
     return recipient_digest_algo;
-  else if(sk->pubkey_algo==PUBKEY_ALGO_DSA
-	  || (sk->is_protected && sk->protect.s2k.mode==1002))
+  else if(sk->pubkey_algo==PUBKEY_ALGO_DSA)
     {
-      /* The sk lives on a smartcard, or it's a DSA key.  DSA requires
-	 a 160-bit hash, and current smartcards only handle SHA-1 and
-	 RIPEMD/160 (i.e. 160-bit hashes).  This is correct now, but
-	 may need revision as the cards add algorithms and/or DSA is
-	 expanded to use larger hashes. */
+      unsigned int qbytes = gcry_mpi_get_nbits (sk->skey[1]) / 8;
+
+      /* It's a DSA key, so find a hash that is the same size as q or
+	 larger.  If q is 160, assume it is an old DSA key and use a
+	 160-bit hash unless --enable-dsa2 is set, in which case act
+	 like a new DSA key that just happens to have a 160-bit q
+	 (i.e. allow truncation).  If q is not 160, by definition it
+	 must be a new DSA key. */
+
+      if (opt.personal_digest_prefs)
+	{
+	  prefitem_t *prefs;
+
+	  if (qbytes != 20 || opt.flags.dsa2)
+	    {
+	      for (prefs=opt.personal_digest_prefs; prefs->type; prefs++)
+		if (gcry_md_get_algo_dlen (prefs->value) >= qbytes)
+		  return prefs->value;
+	    }
+	  else
+	    {
+	      for (prefs=opt.personal_digest_prefs; prefs->type; prefs++)
+		if (gcry_md-get_algo_dlen (prefs->value) == qbytes)
+		  return prefs->value;
+	    }
+	}
+
+      return match_dsa_hash(qbytes);
+    }
+  else if (sk->is_protected && sk->protect.s2k.mode==1002)
+    {
+      /* The sk lives on a smartcard, and current smartcards only
+	 handle SHA-1 and RIPEMD/160.  This is correct now, but may
+	 need revision as the cards add algorithms. */
 
       if(opt.personal_digest_prefs)
 	{
 	  prefitem_t *prefs;
 
-	  for(prefs=opt.personal_digest_prefs;prefs->type;prefs++)
-	    if (gcry_md_get_algo_dlen (prefs->value) == 20)
+	  for (prefs=opt.personal_digest_prefs;prefs->type;prefs++)
+	    if (prefs->value==DIGEST_ALGO_SHA1
+                || prefs->value==DIGEST_ALGO_RMD160)
 	      return prefs->value;
 	}
 
       return DIGEST_ALGO_SHA1;
     }
-  else if(PGP2 && sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
+  else if (PGP2 && sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
     {
-      /* Old-style PGP only understands MD5. */
+      /* Old-style PGP only understands MD5 */
       return DIGEST_ALGO_MD5;
     }
-  else if( opt.personal_digest_prefs )
+  else if ( opt.personal_digest_prefs )
     {
       /* It's not DSA, so we can use whatever the first hash algorithm
 	 is in the pref list */
@@ -439,6 +497,7 @@ hash_for(PKT_secret_key *sk)
   else
     return DEFAULT_DIGEST_ALGO;
 }
+
 
 static int
 only_old_style( SK_LIST sk_list )
@@ -537,21 +596,8 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     u32 filesize;
     int rc = 0;
 
-    if (!opt.no_literal) {
-        if (fname || opt.set_filename) {
-            char *s = make_basename (opt.set_filename? opt.set_filename
-                                                     : fname,
-                                     iobuf_get_real_fname(inp));
-            pt = xmalloc (sizeof *pt + strlen(s) - 1);
-            pt->namelen = strlen (s);
-            memcpy (pt->name, s, pt->namelen);
-            xfree (s);
-        }
-        else { /* no filename */
-            pt = xmalloc (sizeof *pt - 1);
-            pt->namelen = 0;
-        }
-    }
+    if (!opt.no_literal)
+      pt=setup_plaintext_name(fname,inp);
 
     /* try to calculate the length of the data */
     if ( !iobuf_is_pipe_filename (fname) && *fname )
@@ -1367,16 +1413,19 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
       {
 	/* Basically, this means use SHA1 always unless it's a v3 RSA
 	   key making a v3 cert (use MD5), or the user specified
-	   something (use whatever they said).  They still must use a
-	   160-bit hash with DSA, or the signature will fail.  Note
-	   that this still allows the caller of make_keysig_packet to
-	   override the user setting if it must. */
+	   something (use whatever they said), or it's DSA (use the
+	   best match).  They still can't pick an inappropriate hash
+	   for DSA or the signature will fail.  Note that this still
+	   allows the caller of make_keysig_packet to override the
+	   user setting if it must. */
 
 	if(opt.cert_digest_algo)
 	  digest_algo=opt.cert_digest_algo;
 	else if(sk->pubkey_algo==PUBKEY_ALGO_RSA
 		&& pk->version<4 && sigversion<4)
 	  digest_algo = DIGEST_ALGO_MD5;
+	else if(sk->pubkey_algo==PUBKEY_ALGO_DSA)
+	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (sk->skey[1])/8);
 	else
 	  digest_algo = DIGEST_ALGO_SHA1;
       }

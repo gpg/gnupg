@@ -26,9 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#ifdef HAVE_LIBCURL
-#include <curl/curl.h>
-#endif
+#include <errno.h>
 
 #include "gpg.h"
 #include "iobuf.h"
@@ -44,18 +42,6 @@
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "util.h"
-
-#define GPGKEYS_PREFIX "gpgkeys_"
-
-#if defined(HAVE_LIBCURL) || defined(FAKE_CURL)
-#define GPGKEYS_CURL "gpgkeys_curl"
-#endif
-
-#ifdef GPGKEYS_CURL
-#define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_PREFIX)+strlen(GPGKEYS_CURL))
-#else
-#define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_PREFIX))
-#endif
 
 struct keyrec
 {
@@ -419,7 +405,7 @@ parse_keyserver_uri(const char *string,int require_scheme,
       else
 	keyserver->path=xstrdup("/");
 
-      if(keyserver->path[1]!='\0')
+      if(keyserver->path[1])
 	keyserver->flags.direct_uri=1;
     }
   else if(uri[0]!='/')
@@ -941,19 +927,20 @@ keyserver_typemap(const char *type)
     return type;
 }
 
-#ifdef GPGKEYS_CURL
 /* The PGP LDAP and the curl fetch-a-LDAP-object methodologies are
    sufficiently different that we can't use curl to do LDAP. */
 static int
-curl_cant_handle(const char *scheme,unsigned int direct_uri)
+direct_uri_map(const char *scheme,unsigned int is_direct)
 {
-  if(!direct_uri && (strcmp(scheme,"ldap")==0 || strcmp(scheme,"ldaps")==0))
+  if(is_direct && strcmp(scheme,"ldap")==0)
     return 1;
 
   return 0;
 }
-#endif
 
+#define GPGKEYS_PREFIX "gpgkeys_"
+#define GPGKEYS_CURL GPGKEYS_PREFIX "curl" EXEEXT
+#define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_CURL))
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
@@ -1021,19 +1008,29 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
   end=command+strlen(command);
 
+  /* Build a path for the keyserver helper.  If it is direct_uri
+     (i.e. an object fetch and not a keyserver), then add "_uri" to
+     the end to distinguish the keyserver helper from an object
+     fetcher that can speak that protocol (this is a problem for
+     LDAP). */
+
   strcat(command,GPGKEYS_PREFIX); 
   strcat(command,scheme);
 
-  if(keyserver->flags.direct_uri)
-    strcat(command,"uri");
+  /* This "_uri" thing is in case we need to call a direct handler
+     instead of the keyserver handler.  This lets us use gpgkeys_curl
+     or gpgkeys_ldap_uri (we don't provide it, but a user might)
+     instead of gpgkeys_ldap to fetch things like
+     ldap://keyserver.pgp.com/o=PGP%20keys?pgpkey?sub?pgpkeyid=99242560 */
+
+  if(direct_uri_map(scheme,keyserver->flags.direct_uri))
+    strcat(command,"_uri");
 
   strcat(command,EXEEXT);
 
-#ifdef GPGKEYS_CURL
-  if(!curl_cant_handle(scheme,keyserver->flags.direct_uri)
-     && path_access(command,X_OK)!=0)
+  /* Can we execute it?  If not, try curl as our catchall. */
+  if(path_access(command,X_OK)!=0)
     strcpy(end,GPGKEYS_CURL);
-#endif
 
   if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
     {
@@ -1950,15 +1947,6 @@ keyserver_fetch(STRLIST urilist)
 	{
 	  int rc;
 
-	  /*
-	    Set the direct_uri flag so we know later to call a direct
-	    handler instead of the keyserver style.  This lets us use
-	    gpgkeys_curl or gpgkeys_ldapuri instead of gpgkeys_ldap to
-	    fetch things like
-	    ldap://keyserver.pgp.com/o=PGP%20keys?pgpkey?sub?pgpkeyid=99242560
-	  */
-	  spec->flags.direct_uri=1;
-
 	  rc=keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,spec);
 	  if(rc)
 	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
@@ -2038,6 +2026,12 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 
 	  rc=keyserver_import_fprint(*fpr,*fpr_len,opt.keyserver);
 	}
+      else
+	log_info(_("no keyserver known (use option --keyserver)\n"));
+
+      /* Give a better string here? "CERT fingerprint for \"%s\"
+	 found, but no keyserver" " known (use option
+	 --keyserver)\n" ? */
 
       xfree(url);
     }

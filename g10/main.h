@@ -282,6 +282,7 @@ void decrypt_messages(int nfiles, char *files[]);
 /*-- plaintext.c --*/
 int hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2,
 		    STRLIST files, const char *sigfilename, int textmode );
+PKT_plaintext *setup_plaintext_name(const char *filename,IOBUF iobuf);
 
 /*-- signal.c --*/
 void init_signals(void);

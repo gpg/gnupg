@@ -1,3 +1,59 @@
+2006-04-28  David Shaw  <dshaw@jabberwocky.com>  (wk)
+	
+	* keyserver.c (direct_uri_map): New.
+	(keyserver_spawn): Used here to add "_uri" to certain gpgkeys_xxx
+	helpers when the meaning is different if a path is provided (i.e. 
+	ldap).
+	(keyserver_import_cert): Show warning if there is a CERT
+	fingerprint, but no --keyserver set.
+
+	* keyserver.c: Fix build problem with platforms that stick libcurl
+	in a place not in the regular include search path.
+
+	* options.h, gpg.c (main): Add --enable-dsa2 and --disable-dsa2.
+	Defaults to disable.
+
+	* pkclist.c (algo_available): If --enable-dsa2 is set, we're
+	allowed to truncate hashes to fit DSA keys.
+
+	* sign.c (match_dsa_hash): New.  Return the best match hash for a
+	given q size.
+	(do_sign, hash_for, sign_file): When signing with a DSA key, if it
+	has q==160, assume it is an old DSA key and don't allow truncation
+	unless --enable-dsa2 is also set.  q!=160 always allows truncation
+	since they must be DSA2 keys.
+	(make_keysig_packet): If the user doesn't specify a
+	--cert-digest-algo, use match_dsa_hash to pick the best hash for
+	key signatures.
+
+	* gpg.c (print_mds): Add SHA-224.
+	* armor.c (armor_filter, parse_hash_header): Add SHA-224.
+
+	* sign.c (write_plaintext_packet):
+	Factor common literal packet setup code from here, to...
+	* encode.c (encode_simple): .. there.
+	
+	* main.h, plaintext.c (setup_plaintext_name): Here. New. Make sure
+	the literal packet filename field is UTF-8 encoded.
+
+	* options.h, gpg.c (main): Make sure --set-filename is UTF-8
+	encoded and note when filenames are already UTF-8.
+
+	* keyedit.c (menu_backsign): Give some more verbose errors when we
+	have no need to backsign.
+
+	* getkey.c (parse_auto_key_locate): Fix dupe-removal code.
+
+	* keyedit.c (menu_backsign): Allow backsigning even if the secret
+	subkey doesn't have a binding signature.
+
+	* armor.c (radix64_read): Don't report EOF when reading only a pad
+	(=) character.  The EOF actually starts after the pad.
+
+	* gpg.c (main): Make --export, --send-keys, --recv-keys,
+	--refresh-keys, and --fetch-keys follow their arguments from left
+	to right.  Suggested by Peter Palfrader.
+
 2006-04-18  Werner Koch  <wk@g10code.com>
 
 	* tdbio.c (open_db, migrate_from_v2): Removed feature to migration
