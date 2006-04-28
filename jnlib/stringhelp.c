@@ -1,6 +1,6 @@
 /* stringhelp.c -  standard string helper functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2005  Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005,
+ *               2006  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -367,7 +367,7 @@ print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
           else
             {
               fprintf (fp, "x%02x", *p);
-              count += 2;
+              count += 3;
             }
 	}
       else
@@ -428,7 +428,7 @@ sanitize_buffer (const void *p_arg, size_t n, int delim)
   const unsigned char *save_p;
   char *buffer, *d;
 
-  /* first count length */
+  /* First count length. */
   for (save_n = n, save_p = p, buflen=1 ; n; n--, p++ ) 
     {
       if ( *p < 0x20 || *p == 0x7f || *p == delim  || (delim && *p=='\\'))
@@ -437,14 +437,14 @@ sanitize_buffer (const void *p_arg, size_t n, int delim)
                || *p=='\v' || *p=='\b' || !*p )
             buflen += 2;
           else
-            buflen += 4;
+            buflen += 5;
 	}
       else
         buflen++;
     }
   p = save_p;
   n = save_n;
-  /* and now make the string */
+  /* And now make the string */
   d = buffer = jnlib_xmalloc( buflen );
   for ( ; n; n--, p++ )
     {
@@ -464,7 +464,7 @@ sanitize_buffer (const void *p_arg, size_t n, int delim)
           *d++ = '0';
         else {
           sprintf(d, "x%02x", *p );
-          d += 2;
+          d += 3;
         }
       }
       else

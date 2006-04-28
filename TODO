@@ -106,3 +106,8 @@ might want to have an agent context for each service request
 
 * gpg/
 ** issue a NO_SECKEY xxxx if a -u key was not found.
+** Replace DIGEST_ALGO_SHA224
+   We can't do that right now because it is only defined by newer
+   versions of libgcrypt.  Changes this if we require libgcrypt 1.3
+   anyway.
+

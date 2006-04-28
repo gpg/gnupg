@@ -1,3 +1,10 @@
+2006-04-28  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (print_sanitized_buffer): Fix bug where the count
+	got wrong for the \xNN representation.
+	(sanitize_buffer): Fix bug where some control characters lose part
+	of their \xNN representation.
+
 2006-04-20  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (make_basename): New arg INPUTPATH for future

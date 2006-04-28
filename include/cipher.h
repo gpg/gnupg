@@ -68,6 +68,9 @@
 #define DIGEST_ALGO_SHA256    /*  8 */ GCRY_MD_SHA256
 #define DIGEST_ALGO_SHA384    /*  9 */ GCRY_MD_SHA384
 #define DIGEST_ALGO_SHA512    /* 10 */ GCRY_MD_SHA512
+/* SHA224 is as of now only defined in the libgcrypt SVN; thus we
+   can't use that macro.  */
+#define DIGEST_ALGO_SHA224    /* 11 */ 11 /* GCRY_MD_SHA224 */
 
 #define COMPRESS_ALGO_NONE 0
 #define COMPRESS_ALGO_ZIP  1
