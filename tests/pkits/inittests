@@ -13,7 +13,7 @@ set -e
 
 
 clean_files='
-ReadMe.txt pkits.ldif
+ReadMe.txt pkits.ldif pkits.schema
 gpgsm.conf gpg-agent.conf trustlist.txt policies.txt pubring.kbx
 msg msg.sig msg.unsig
 '

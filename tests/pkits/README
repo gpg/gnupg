@@ -1,7 +1,7 @@
 tests/pkits/README
 
 These are tests based on NIST's Public Key Interoperability Test Suite
-(PKITS) as downloaded on 2004-08-16 from
+(PKITS) as downloaded on 2006-05-02 from
 http://csrc.nist.gov/pki/testing/x509paths.html .
 
 README             - this file.
