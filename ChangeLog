@@ -1,3 +1,10 @@
+2006-05-16  Werner Koch  <wk@g10code.com>
+
+	* README: Removed note for OSF5 as this is the default now.
+	Reported by Joerg Honegger.
+
+	* configure.ac [osf5]: Fixed warning name to ptrmismatch1.
+
 2006-04-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note SHA-224 and DSA2.
