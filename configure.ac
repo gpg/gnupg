@@ -530,11 +530,11 @@ case "${host}" in
         ;;
     *-dec-osf5*)
         if test -z "$GCC" ; then
-            # Use the newer compiler `-msg_disable ptrmismatch' to
+            # Use the newer compiler `-msg_disable ptrmismatch1' to
             # get rid of the unsigned/signed char mismatch warnings.
             # Using this may hide other pointer mismatch warnings, but
 	    # it at least lets other warning classes through
-            CFLAGS="$CFLAGS -msg_disable ptrmismatch"
+            CFLAGS="$CFLAGS -msg_disable ptrmismatch1"
         fi
         ;;
     m68k-atari-mint)
