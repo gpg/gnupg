@@ -978,15 +978,13 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
       }
     else if(new_key)
       {
-	if(fpr && stats->imported==1)
+	if(fpr)
 	  {
 	    xfree(*fpr);
-	    *fpr=fingerprint_from_pk(pk,NULL,fpr_len);
-	  }
-	else
-	  {
-	    xfree(*fpr);
-	    *fpr=NULL;
+	    if(stats->imported==1)
+	      *fpr=fingerprint_from_pk(pk,NULL,fpr_len);
+	    else
+	      *fpr=NULL;
 	  }
 
 	revocation_present(keyblock);

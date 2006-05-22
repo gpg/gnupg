@@ -1,5 +1,8 @@
 2006-05-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* import.c (import_one): Fix bug when importing a new key from a
+	file.
+
 	* getkey.c (get_pubkey_byname), import.c (import_one): Fix key
 	selection problem when auto-key-locate returns a list of keys, not
 	all of which are usable (revoked, expired, etc).  Noted by Simon
