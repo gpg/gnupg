@@ -1,3 +1,14 @@
+2006-05-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* keydb.c (keydb_insert_cert): Do not lock here, but only check if
+	it is locked.
+	(keydb_store_cert): Lock here.
+
+	* keydb.h (keydb_delete): Accept new argument UNLOCK.
+	* keydb.c (keydb_delete): Likewise.  Only unlock if this is set.
+	* delete.c (delete_one): Add new argument to invocation of
+	keydb_delete.
+	
 2006-03-21  Werner Koch  <wk@g10code.com>
 
 	* certchain.c (get_regtp_ca_info): New.

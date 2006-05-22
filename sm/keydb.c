@@ -696,9 +696,8 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
   else
     return gpg_error (GPG_ERR_GENERAL);
 
-  rc = lock_all (hd);
-  if (rc)
-    return rc;
+  if (!hd->locked)
+    return gpg_error (GPG_ERR_NOT_LOCKED);
 
   gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL); /* kludge*/
 
@@ -759,7 +758,7 @@ keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
  * The current keyblock or cert will be deleted.
  */
 int
-keydb_delete (KEYDB_HANDLE hd)
+keydb_delete (KEYDB_HANDLE hd, int unlock)
 {
   int rc = -1;
   
@@ -785,7 +784,8 @@ keydb_delete (KEYDB_HANDLE hd)
       break;
     }
 
-  unlock_all (hd);
+  if (unlock)
+    unlock_all (hd);
   return rc;
 }
 
@@ -1337,6 +1337,10 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
   if (ephemeral)
     keydb_set_ephemeral (kh, 1);
   
+  rc = lock_all (kh);
+  if (rc)
+    return rc;
+
   rc = keydb_search_fpr (kh, fpr);
   if (rc != -1)
     {
