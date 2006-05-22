@@ -934,7 +934,7 @@ get_pubkey_byname (PKT_public_key *pk,
 
       for(akl=opt.auto_key_locate;akl;akl=akl->next)
 	{
-	  unsigned char *fpr;
+	  unsigned char *fpr=NULL;
 	  size_t fpr_len;
 
 	  switch(akl->type)

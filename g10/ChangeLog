@@ -1,3 +1,10 @@
+2006-05-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (get_pubkey_byname), import.c (import_one): Fix key
+	selection problem when auto-key-locate returns a list of keys, not
+	all of which are usable (revoked, expired, etc).  Noted by Simon
+	Josefsson.
+
 2006-04-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (direct_uri_map): New.

@@ -696,9 +696,6 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 
     pk = node->pkt->pkt.public_key;
 
-    if(fpr)
-      *fpr=fingerprint_from_pk(pk,NULL,fpr_len);
-
     keyid_from_pk( pk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
@@ -981,6 +978,17 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
       }
     else if(new_key)
       {
+	if(fpr && stats->imported==1)
+	  {
+	    xfree(*fpr);
+	    *fpr=fingerprint_from_pk(pk,NULL,fpr_len);
+	  }
+	else
+	  {
+	    xfree(*fpr);
+	    *fpr=NULL;
+	  }
+
 	revocation_present(keyblock);
 	if(seckey_available(keyid)==0)
 	  check_prefs(keyblock);
