@@ -1,3 +1,8 @@
+2006-05-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* mksamplekeys: Incorporate new package signature key and minimize
+	keys when generating samplekeys.asc.
+
 2006-05-17  Werner Koch  <wk@g10code.com>
 
 	* samplekeys.asc: Added new package signature key and cleaned all
