@@ -221,7 +221,7 @@ keygen_add_key_expire( PKT_signature *sig, void *opaque )
         if(pk->expiredate > pk->timestamp)
 	  u= pk->expiredate - pk->timestamp;
 	else
-	  u= 0;
+	  u= 1;
 
 	buf[0] = (u >> 24) & 0xff;
 	buf[1] = (u >> 16) & 0xff;

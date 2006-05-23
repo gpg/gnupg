@@ -1506,12 +1506,12 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     /* store the key flags in the helper variable for later processing */
     uid->help_key_usage=parse_key_usage(sig);
 
-    /* ditto or the key expiration */
-    uid->help_key_expire = 0;
+    /* ditto for the key expiration */
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-    if ( p ) { 
-        uid->help_key_expire = keycreated + buffer_to_u32(p);
-    }
+    if( p && buffer_to_u32(p) )
+      uid->help_key_expire = keycreated + buffer_to_u32(p);
+    else
+      uid->help_key_expire = 0;
 
     /* Set the primary user ID flag - we will later wipe out some
      * of them to only have one in our keyblock */
@@ -1723,7 +1723,7 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
 	key_usage=parse_key_usage(sig);
 
 	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-	if ( p )
+	if( p && buffer_to_u32(p) )
 	  {
 	    key_expire = keytimestamp + buffer_to_u32(p);
 	    key_expire_seen = 1;
@@ -2127,7 +2127,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     subpk->pubkey_usage = key_usage;
     
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-    if ( p ) 
+    if ( p && buffer_to_u32(p) )
         key_expire = keytimestamp + buffer_to_u32(p);
     else
         key_expire = 0;

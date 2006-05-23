@@ -1,7 +1,11 @@
 2006-05-22  David Shaw  <dshaw@jabberwocky.com>
 
-	* import.c (import_one): Fix bug when importing a new key from a
-	file.
+	* parse-packet.c (dump_sig_subpkt, parse_signature),
+	build-packet.c (build_sig_subpkt_from_sig), getkey.c
+	(fixup_uidnode, merge_selfsigs_main, merge_selfsigs_subkey),
+	keygen.c (keygen_add_key_expire): Fix meaning of key expiration
+	and sig expiration subpackets - zero means "never expire"
+	according to 2440, not "expire instantly".
 
 	* getkey.c (get_pubkey_byname), import.c (import_one): Fix key
 	selection problem when auto-key-locate returns a list of keys, not

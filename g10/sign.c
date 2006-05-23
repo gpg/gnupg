@@ -1544,7 +1544,7 @@ update_keysig_packet( PKT_signature **ret_sig,
       }
 
     /* Note that already expired sigs will remain expired (with a
-       duration of 0) since build-packet.c:build_sig_subpkt_from_sig
+       duration of 1) since build-packet.c:build_sig_subpkt_from_sig
        detects this case. */
 
     if( sig->version >= 4 )
