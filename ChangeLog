@@ -1,3 +1,12 @@
+2006-05-23  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (ZLIBS): New for zlib link commands. Add bzip2
+	support.
+
+2006-05-22  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (EXEEXT): New.
+
 2006-04-18  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (PK_UID_CACHE_SIZE): New.

@@ -41,6 +41,7 @@
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "photoid.h"
+#include "pka.h"
 
 
 struct kidlist_item {

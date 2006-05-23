@@ -84,6 +84,7 @@ u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
 int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo );
+int openpgp_pk_test_algo2 ( int algo, unsigned int use );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
 

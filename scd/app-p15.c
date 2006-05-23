@@ -18,6 +18,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+/* Information pertaining to the BELPIC developer card samples:
+
+       Unblock PUK: "222222111111"
+       Reset PIN:   "333333111111")
+
+   e.g. the APDUs 00:20:00:02:08:2C:33:33:33:11:11:11:FF 
+              and 00:24:01:01:08:24:12:34:FF:FF:FF:FF:FF
+   should change the PIN into 1234.
+*/
+
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>

@@ -21,7 +21,8 @@
 #define GNUPG_G10_CALL_AGENT_H 
 
 
-struct agent_card_info_s {
+struct agent_card_info_s 
+{
   int error;         /* private. */
   char *serialno;    /* malloced hex string. */
   char *disp_name;   /* malloced. */
@@ -29,6 +30,7 @@ struct agent_card_info_s {
   int  disp_sex;     /* 0 = unspecified, 1 = male, 2 = female */
   char *pubkey_url;  /* malloced. */
   char *login_data;  /* malloced. */
+  char *private_do[4]; /* malloced. */
   char cafpr1valid;
   char cafpr2valid;
   char cafpr3valid;
@@ -41,6 +43,9 @@ struct agent_card_info_s {
   char fpr1[20];
   char fpr2[20];
   char fpr3[20];
+  u32  fpr1time;
+  u32  fpr2time;
+  u32  fpr3time;
   unsigned long sig_counter;
   int chv1_cached;   /* True if a PIN is not required for each
                         signing.  Note that the gpg-agent might cache
@@ -73,10 +78,12 @@ int agent_havekey (const char *hexkeygrip);
 
 /* Send a SETATTR command to the SCdaemon. */
 int agent_scd_setattr (const char *name,
-                       const unsigned char *value, size_t valuelen);
+                       const unsigned char *value, size_t valuelen,
+                       const char *serialno);
 
 /* Send a GENKEY command to the SCdaemon. */
-int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force);
+int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
+                      const char *serialno);
 
 /* Send a PKSIGN command to the SCdaemon. */
 int agent_scd_pksign (const char *keyid, int hashalgo,
@@ -89,11 +96,13 @@ int agent_scd_pkdecrypt (const char *serialno,
                          char **r_buf, size_t *r_buflen);
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
-int agent_scd_change_pin (int chvno);
+int agent_scd_change_pin (int chvno, const char *serialno);
 
 /* Send the CHECKPIN command to the SCdaemon. */
 int agent_scd_checkpin  (const char *serialno);
 
+/* Dummy function, only implemented by gpg 1.4. */
+void agent_clear_pin_cache (const char *sn);
 
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/

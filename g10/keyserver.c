@@ -42,6 +42,9 @@
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "util.h"
+#include "dns-cert.h"
+#include "pka.h"
+
 
 struct keyrec
 {
@@ -1730,8 +1733,8 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	     node->pkt->pkt.public_key->version>=4)
 	    {
 	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      mpi_get_keyid(node->pkt->pkt.public_key->pkey[0],
-			    (*klist)[*count].u.kid);
+	      v3_keyid (node->pkt->pkt.public_key->pkey[0],
+                        (*klist)[*count].u.kid);
 	      (*count)++;
 
 	      if(*count==num)
@@ -1982,7 +1985,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
   if(domain)
     *domain='.';
 
-  type=get_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
+  type=get_dns_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
   if(type==1)
     {
       int armor_status=opt.no_armor;

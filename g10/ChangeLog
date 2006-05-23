@@ -1,3 +1,43 @@
+2006-05-23  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (generate_card_keys): Removed temporary kludge for
+	generate_keypair.
+
+	* call-agent.c (agent_scd_setattr): Add arg SERIALNO.
+	(agent_scd_genkey): Ditto.
+	(agent_scd_change_pin): Ditto.
+
+	* call-agent.h (struct agent_card_info_s): Updated to match the
+	one of 1.4.3.
+
+	* Makefile.am (LDADD): Include ZLIBS.
+
+	* gpgv.c: Removed stubs not anymore useful due to libgcrypt.
+
+2006-05-22  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c (keyidlist): Replaced mpi_get_keyid by v3_keyid.
+	* keydb.h (v3_keyid): Added.
+
+	* import.c (import): Better initialize KEYBLOCK as to quiet
+	compiler warning.
+
+	* skclist.c (random_is_faked): New.
+
+	* mainproc.c: Include pka.h.
+
+2006-05-19  Werner Koch  <wk@g10code.com>
+
+	* misc.c (openpgp_pk_test_algo2): Need to use gcry_pk_algo_info
+	directly.
+	(string_count_chr): New.
+
+	* armor.c (parse_header_line): Use renamed function
+	length_sans_trailing_ws.
+
+	* options.h, gpg.c: Option --strict is not used thus removed code
+	but kept option.
+
 2006-04-28  David Shaw  <dshaw@jabberwocky.com>  (wk)
 	
 	* keyserver.c (direct_uri_map): New.

@@ -193,7 +193,6 @@ struct
   int preserve_permissions;
   int no_homedir_creation;
   struct groupitem *grouplist;
-  int strict;
   int mangle_dos_filenames;
   int enable_progress_filter;
   unsigned int screen_columns;

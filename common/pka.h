@@ -1,5 +1,5 @@
-/* dotlock.h
- *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+/* pka.h - DNS Public Key Association RR access definitions
+ * Copyright (C) 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,23 +15,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
+#ifndef GNUPG_COMMON_PKA_H
+#define GNUPG_COMMON_PKA_H
 
-#ifndef LIBJNLIB_DOTLOCK_H
-#define LIBJNLIB_DOTLOCK_H
-
-struct dotlock_handle;
-typedef struct dotlock_handle *DOTLOCK;
-
-void disable_dotlock (void);
-DOTLOCK create_dotlock(const char *file_to_lock);
-void destroy_dotlock ( DOTLOCK h );
-int make_dotlock (DOTLOCK h, long timeout);
-int release_dotlock (DOTLOCK h);
-void dotlock_remove_lockfiles (void);
-
-#endif /*LIBJNLIB_DOTLOCK_H*/
+char *get_pka_info (const char *address, unsigned char *fpr);
 
 
-
+#endif /*GNUPG_COMMON_PKA_H*/

@@ -95,22 +95,24 @@ append_to_strlist( strlist_t *list, const char *string )
     return sl;
 }
 
-#if 0
+
+#ifdef JNLIB_NEED_UTF8CONV
 strlist_t
 append_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
 {
-    strlist_t sl;
-
-    if( is_utf8 )
-	sl = append_to_strlist( list, string );
-    else {
-	char *p = native_to_utf8( string );
-	sl = append_to_strlist( list, p );
-	m_free( p );
+  strlist_t sl;
+    
+  if( is_utf8 )
+    sl = append_to_strlist( list, string );
+  else
+    {
+      char *p = native_to_utf8 (string);
+      sl = append_to_strlist( list, p );
+      jnlib_free( p );
     }
-    return sl;
+  return sl;
 }
-#endif
+#endif /* JNLIB_NEED_UTF8CONV */
 
 
 /* Return a copy of LIST. */

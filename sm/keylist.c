@@ -529,7 +529,9 @@ print_names_raw (FILE *fp, int indent, ksba_name_t name)
   for (idx=0; (s = ksba_name_enum (name, idx)); idx++)
     {
       char *p = ksba_name_get_uri (name, idx);
-      printf ("%*s%s\n", idx||indent_all?indent:0, "", p?p:s);
+      printf ("%*s", idx||indent_all?indent:0, "");
+      print_sanitized_string (fp, p?p:s, 0);
+      putc ('\n', fp);
       xfree (p);
     }
 }

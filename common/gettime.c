@@ -201,7 +201,7 @@ strtimevalue( u32 value )
 }
 
 
-/****************
+/*
  * Note: this function returns GMT
  */
 const char *
@@ -221,6 +221,32 @@ strtimestamp( u32 stamp )
     }
     return buffer;
 }
+
+
+/*
+ * Note: this function returns GMT
+ */
+const char *
+isotimestamp (u32 stamp)
+{
+  static char buffer[25+5];
+  struct tm *tp;
+  time_t atime = stamp;
+  
+  if (atime < 0)
+    {
+      strcpy (buffer, "????" "-??" "-??" " " "??" ":" "??" ":" "??");
+    }
+  else
+    {
+      tp = gmtime ( &atime );
+      sprintf (buffer,"%04d-%02d-%02d %02d:%02d:%02d",
+               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+               tp->tm_hour, tp->tm_min, tp->tm_sec);
+    }
+  return buffer;
+}
+
 
 /****************
  * Note: this function returns local time

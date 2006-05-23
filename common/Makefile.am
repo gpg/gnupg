@@ -49,7 +49,9 @@ libcommon_a_SOURCES = \
 	w32reg.c \
 	signal.c \
 	dynload.h \
-	estream.c estream.h
+	estream.c estream.h \
+	dns-cert.c dns-cert.h \
+	pka.c pka.h 
 
 
 libsimple_pwquery_a_SOURCES = \

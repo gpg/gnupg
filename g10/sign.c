@@ -458,7 +458,7 @@ hash_for(PKT_secret_key *sk)
 	  else
 	    {
 	      for (prefs=opt.personal_digest_prefs; prefs->type; prefs++)
-		if (gcry_md-get_algo_dlen (prefs->value) == qbytes)
+		if (gcry_md_get_algo_dlen (prefs->value) == qbytes)
 		  return prefs->value;
 	    }
 	}

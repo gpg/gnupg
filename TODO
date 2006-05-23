@@ -110,4 +110,11 @@ might want to have an agent context for each service request
    We can't do that right now because it is only defined by newer
    versions of libgcrypt.  Changes this if we require libgcrypt 1.3
    anyway.
+** skclist.c:random_is_faked
+   Remove the whole stuff?
 
+* common/
+** ttyio
+  Add completion support.
+** yesno
+  Update to gpg 1.4.3 version

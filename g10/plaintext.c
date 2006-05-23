@@ -282,7 +282,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
                           rc = gpg_error_from_errno (errno);
                         else
                           rc = gpg_error (GPG_ERR_EOF);
-			log_error("Error writing to `%s': %s\n",
+			log_error("error writing to `%s': %s\n",
 				  fname, strerror(errno) );
 			goto leave;
 		      }
@@ -310,7 +310,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		  {
 		    if(opt.max_output && (count+=len)>opt.max_output)
 		      {
-			log_error("Error writing to `%s': %s\n",
+			log_error("error writing to `%s': %s\n",
 				  fname,"exceeded --max-output limit\n");
 			rc = gpg_error (GPG_ERR_TOO_LARGE);
 			xfree( buffer );
@@ -319,7 +319,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    else if( fwrite( buffer, 1, len, fp ) != len ) {
 		      rc = (errno? gpg_error_from_errno (errno)
                             : gpg_error (GPG_ERR_INTERNAL));
-		      log_error("Error writing to `%s': %s\n",
+		      log_error ("error writing to `%s': %s\n",
 				fname, strerror(errno) );
 		      xfree( buffer );
 		      goto leave;
@@ -338,16 +338,17 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	      {
 		if(opt.max_output && (++count)>opt.max_output)
 		  {
-		    log_error("Error writing to `%s': %s\n",
+		    log_error ("error writing to `%s': %s\n",
 			      fname,"exceeded --max-output limit\n");
                     rc = gpg_error (GPG_ERR_TOO_LARGE);
 		    goto leave;
 		  }
 		else if( putc( c, fp ) == EOF )
 		  {
-		    log_error("Error writing to `%s': %s\n",
+                    rc = (errno? gpg_error_from_errno (errno)
+                          : gpg_error (GPG_ERR_INTERNAL));
+		    log_error ("error writing to `%s': %s\n",
 			      fname, strerror(errno) );
-		    rc = G10ERR_WRITE_FILE;
 		    goto leave;
 		  }
 	      }
@@ -384,9 +385,10 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     }
 
     if( fp && fp != stdout && fclose(fp) ) {
-	log_error("Error closing `%s': %s\n", fname, strerror(errno) );
+        rc = (errno? gpg_error_from_errno (errno)
+              : gpg_error (GPG_ERR_INTERNAL));
+	log_error ("error closing `%s': %s\n", fname, strerror(errno) );
 	fp = NULL;
-	rc = G10ERR_WRITE_FILE;
 	goto leave;
     }
     fp = NULL;

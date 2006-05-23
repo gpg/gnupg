@@ -214,8 +214,8 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
      * DEK is the encryption key (session key) with length k
      * CSUM
      */
-    if( DBG_CIPHER )
-	log_hexdump("DEK frame:", frame, nframe );
+    if (DBG_CIPHER)
+      log_printhex ("DEK frame:", frame, nframe );
     n=0;
     if (!card)
       {
@@ -267,7 +267,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	goto leave;
     }
     if( DBG_CIPHER )
-	log_hexdump("DEK is:", dek->key, dek->keylen );
+        log_printhex ("DEK is:", dek->key, dek->keylen );
     /* check that the algo is in the preferences and whether it has expired */
     {
 	PKT_public_key *pk = NULL;

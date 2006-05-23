@@ -1911,8 +1911,9 @@ ask_user_id( int mode )
 
 	/* append a warning if we do not have dev/random
 	 * or it is switched into  quick testmode */
-	if( quick_random_gen(-1) )
-	    strcpy(p, " (INSECURE!)" );
+        /* FIXME: see skclist.c:random_is_faked */
+        /* 	if( quick_random_gen(-1)  ) */
+        /* 	    strcpy(p, " (INSECURE!)" ); */
 
 	/* print a note in case that UTF8 mapping has to be done */
 	for(p=uid; *p; p++ ) {
@@ -2648,7 +2649,7 @@ read_parameter_file( const char *fname )
 
 /*
  * Generate a keypair (fname is only used in batch mode) If
- * CARD_SERIALNO is not NULL the fucntion will create the keys on an
+ * CARD_SERIALNO is not NULL the function will create the keys on an
  * OpenPGP Card.  If BACKUP_ENCRYPTION_DIR has been set and
  * CARD_SERIALNO is NOT NULL, the encryption key for the card gets
  * generate in software, imported to the card and a backup file

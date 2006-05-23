@@ -1,5 +1,5 @@
 /* miscellaneous.c - Stuff not fitting elsewhere
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -47,6 +47,7 @@ print_fname_stdin (const char *s)
     return s;
 }
 
+/* fixme: Globally replace it by print_sanitized_buffer. */
 void
 print_string( FILE *fp, const byte *p, size_t n, int delim )
 {
@@ -124,5 +125,26 @@ leave:
     return rc;
 }
 
+
+/* Try match against each substring of multistr, delimited by | */
+int
+match_multistr (const char *multistr,const char *match)
+{
+  do
+    {
+      size_t seglen = strcspn (multistr,"|");
+      if (!seglen)
+	break;
+      /* Using the localized strncasecmp! */
+      if (strncasecmp(multistr,match,seglen)==0)
+	return 1;
+      multistr += seglen;
+      if (*multistr == '|')
+	multistr++;
+    }
+  while (*multistr);
+
+  return 0;
+}
 
 

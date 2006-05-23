@@ -147,6 +147,16 @@ AC_ARG_ENABLE(agent-only,
     build_agent_only=$enableval)
 
 
+# Allow disabling of bzib2 support.
+# It is defined only after we confirm the library is available later
+use_bzip2=yes
+AC_MSG_CHECKING([whether to enable the BZIP2 compression algorithm])
+AC_ARG_ENABLE(bzip2,
+   AC_HELP_STRING([--disable-bzip2],[disable the BZIP2 compression algorithm]),
+   use_bzip2=$enableval)
+AC_MSG_RESULT($use_bzip2)
+
+
 # Configure option to allow or disallow execution of external
 # programs, like a photo viewer.
 AC_MSG_CHECKING([whether to enable external program execution])
@@ -462,6 +472,8 @@ if test "$have_w32_system" = yes; then
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
 
+# These need to go after AC_PROG_CC so that $EXEEXT is defined
+AC_DEFINE_UNQUOTED(EXEEXT,"$EXEEXT",[The executable file extension, if any])
 
 
 #
@@ -969,11 +981,13 @@ else
   AC_DEFINE(DISABLE_REGEX,1,[ Define to disable regular expression support ])
 fi
 
-dnl Do we have zlib? Must do it here because Solaris failed
-dnl when compiling a conftest (due to the "-lz" from LIBS).
+#
+# Do we have zlib? Must do it here because Solaris failed
+# when compiling a conftest (due to the "-lz" from LIBS).
+# Note that we combine zlib and bzlib2 in ZLIBS.
+#
 _cppflags="${CPPFLAGS}"
 _ldflags="${LDFLAGS}"
-
 AC_ARG_WITH(zlib,
   [  --with-zlib=DIR         use libz in DIR],[
     if test -d "$withval"; then
@@ -984,10 +998,43 @@ AC_ARG_WITH(zlib,
 
 AC_CHECK_HEADER(zlib.h,
       AC_CHECK_LIB(z, deflateInit2_,
-       LIBS="$LIBS -lz",
+       ZLIBS="-lz",
        CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
        CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
- 
+
+#
+# Check whether we can support bzip2
+# 
+if test "$use_bzip2" = yes ; then
+  _cppflags="${CPPFLAGS}"
+  _ldflags="${LDFLAGS}"
+  AC_ARG_WITH(bzip2,
+     AC_HELP_STRING([--with-bzip2=DIR],[look for bzip2 in DIR]),
+      [
+      if test -d "$withval" ; then
+        CPPFLAGS="${CPPFLAGS} -I$withval/include"
+        LDFLAGS="${LDFLAGS} -L$withval/lib"
+      fi
+      ],withval="")
+
+  # Checking alongside stdio.h as an early version of bzip2 (1.0)
+  # required stdio.h to be included before bzlib.h, and Solaris 9 is 
+  # woefully out of date.
+  if test "$withval" != no ; then
+     AC_CHECK_HEADER(bzlib.h,
+        AC_CHECK_LIB(bz2,BZ2_bzCompressInit,
+  	  [
+	  have_bz2=yes
+	  ZLIBS="$ZLIBS -lbz2"
+	  AC_DEFINE(HAVE_BZIP2,1,
+		  [Defined if the bz2 compression library is available])
+	  ],
+	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
+	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags},[#include <stdio.h>])
+  fi
+fi
+AM_CONDITIONAL(ENABLE_BZIP2_SUPPORT,test x"$have_bz2" = "xyes")
+AC_SUBST(ZLIBS)
 
 
 # See wether we want to run the long test suite.

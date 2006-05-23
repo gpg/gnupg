@@ -84,6 +84,7 @@ u32    scan_isodatestr (const char *string);
 u32    add_days_to_timestamp (u32 stamp, u16 days);
 const char *strtimevalue (u32 stamp);
 const char *strtimestamp (u32 stamp); /* GMT */
+const char *isotimestamp (u32 stamp); /* GMT */
 const char *asctimestamp (u32 stamp); /* localized */
 
 
@@ -108,6 +109,7 @@ void gnupg_unblock_all_signals (void);
 int answer_is_yes (const char *s);
 int answer_is_yes_no_default (const char *s, int def_answer);
 int answer_is_yes_no_quit (const char *s);
+int answer_is_okay_cancel (const char *s, int def_answer);
 
 /*-- xreadline.c --*/
 ssize_t read_line (FILE *fp, 
@@ -161,6 +163,7 @@ char *make_printable_string (const void *p, size_t n, int delim);
 
 int is_file_compressed (const char *s, int *ret_rc);
 
+int match_multistr (const char *multistr,const char *match);
 
 
 /*-- Simple replacement functions. */

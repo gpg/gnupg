@@ -243,7 +243,9 @@ import( IOBUF inp, const char* fname,struct stats_s *stats,
 	unsigned char **fpr,size_t *fpr_len,unsigned int options )
 {
     PACKET *pending_pkt = NULL;
-    KBNODE keyblock;
+    KBNODE keyblock = NULL;  /* Need to initialize because gcc can't
+                                grasp the return semantics of
+                                read_block. */
     int rc = 0;
 
     getkey_disable_caches();
@@ -596,7 +598,7 @@ check_prefs(KBNODE keyblock)
 
 	      if(prefs->type==PREFTYPE_SYM)
 		{
-		  if (openpgp_cipher_algo_test (prefs->value))
+		  if (openpgp_cipher_test_algo (prefs->value))
 		    {
 		      const char *algo = gcry_cipher_algo_name (prefs->value);
 		      if(!problem)

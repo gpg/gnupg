@@ -1376,7 +1376,7 @@ list_config(char *items)
 
 	      for(sl=iter->values;sl;sl=sl->next)
 		{
-		  print_string2(stdout,sl->d,strlen(sl->d),':',';');
+		  print_sanitized_string2 (stdout, sl->d, ':',';');
 		  if(sl->next)
 		    printf(";");
 		}
@@ -1782,13 +1782,11 @@ main (int argc, char **argv )
 	    opt.no_perm_warn=1;
 	else if (pargs.r_opt == oStrict )
 	  {
-	    opt.strict=1;
-	    log_set_strict(1);
+	    /* Not used */
 	  }
 	else if (pargs.r_opt == oNoStrict )
 	  {
-	    opt.strict=0;
-	    log_set_strict(0);
+	    /* Not used */
 	  }
     }
 
@@ -2360,8 +2358,14 @@ main (int argc, char **argv )
 		compress_algo_string = xstrdup(pargs.r.ret_str);
 	    }
 	    break;
-	  case oCertDigestAlgo: cert_digest_string = xstrdup(pargs.r.ret_str); break;
-	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
+	  case oCertDigestAlgo: 
+            cert_digest_string = xstrdup(pargs.r.ret_str);
+            break;
+
+	  case oNoSecmemWarn: 
+            gcry_control (GCRYCTL_DISABLE_SECMEM_WARN); 
+            break;
+
 	  case oRequireSecmem: require_secmem=1; break;
 	  case oNoRequireSecmem: require_secmem=0; break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
@@ -2604,8 +2608,12 @@ main (int argc, char **argv )
 		xfree(iter);
 	      }
 	    break;
-	  case oStrict: opt.strict=1; log_set_strict(1); break;
-	  case oNoStrict: opt.strict=0; log_set_strict(0); break;
+
+	  case oStrict: 
+	  case oNoStrict: 
+	    /* Not used */
+            break;
+
           case oMangleDosFilenames: opt.mangle_dos_filenames = 1; break;
           case oNoMangleDosFilenames: opt.mangle_dos_filenames = 0; break;
           case oEnableProgressFilter: opt.enable_progress_filter = 1; break;
@@ -3035,7 +3043,6 @@ main (int argc, char **argv )
     /* Set the random seed file. */
     if( use_random_seed ) {
 	char *p = make_filename(opt.homedir, "random_seed", NULL );
-	set_random_seed_file(p);
 	gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
         if (!access (p, F_OK))
           register_secured_file (p);

@@ -67,6 +67,18 @@
 #include "i18n.h"
 
 
+static int
+string_count_chr (const char *string, int c)
+{
+  int count;
+
+  for (count=0; *string; string++ )
+    if ( *string == c )
+      count++;
+  return count;
+}
+
+
 
 #ifdef ENABLE_SELINUX_HACKS
 /* A object and a global variable to keep track of files marked as
@@ -416,12 +428,17 @@ openpgp_pk_test_algo( int algo )
 int
 openpgp_pk_test_algo2( int algo, unsigned int use )
 {
+  int use_buf = use;
+  size_t sizeof_use_buf = sizeof (use_buf);
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
 
   if (algo < 0 || algo > 110)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
-  return gcry_pk_test_algo2 (algo, use);
+
+  return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO,
+                            &use_buf, &sizeof_use_buf);
 }
 
 int 

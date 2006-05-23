@@ -387,26 +387,6 @@ void cipher_decrypt( gcry_cipher_hd_t c, byte *outbuf,
                      byte *inbuf, unsigned nbytes ) {}
 void cipher_sync( gcry_cipher_hd_t c ) {}
 
-/* Stubs to avoid linking to ../cipher/random.c */
-void random_dump_stats(void) {}
-int quick_random_gen( int onoff ) { return -1;}
-void randomize_buffer( byte *buffer, size_t length, int level ) {}
-int random_is_faked() { return -1;}
-byte *get_random_bits( size_t nbits, int level, int secure ) { return NULL;}
-void set_random_seed_file( const char *name ) {}
-void update_random_seed_file() {}
-void fast_random_poll() {}
-
-/* Stubs to avoid linking of ../cipher/primegen.c */
-void register_primegen_progress ( void (*cb)( void *, int), void *cb_data ) {}
-MPI generate_secret_prime( unsigned  nbits ) { return NULL;}
-MPI generate_public_prime( unsigned  nbits ) { return NULL;}
-MPI generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
-                        gcry_mpi_t g, gcry_mpi_t **ret_factors ) { return NULL;}
-
-/* Do not link to ../cipher/rndlinux.c */
-void rndlinux_constructor(void) {}
-
 
 /* Stubs to avoid linking to ../util/ttyio.c */
 int tty_batchmode( int onoff ) { return 0; }

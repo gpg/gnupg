@@ -1,5 +1,6 @@
 /* ttyio.c -  tty i/O functions
- * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003,
+ *               2004, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -45,6 +46,12 @@
 #endif
 #include <errno.h>
 #include <ctype.h>
+#ifdef HAVE_LIBREADLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
+
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
@@ -93,13 +100,21 @@ tty_get_ttyname (void)
   if (!got_name)
     {
       const char *s;
+      /* Note that despite our checks for these macros the function is
+         not necessarily thread save.  We mainly do this for
+         portability reasons, in case L_ctermid is not defined. */
+# if defined(_POSIX_THREAD_SAFE_FUNCTIONS) || defined(_POSIX_TRHEADS)
+      char buffer[L_ctermid];
+      s = ctermid (buffer);
+# else
       s = ctermid (NULL);
+# endif
       if (s)
         name = strdup (s);
       got_name = 1;
     }
-#endif
-  /* Assume the staandrd tty on memory error or when tehre is no
+#endif /*HAVE_CTERMID*/
+  /* Assume the standard tty on memory error or when tehre is no
      certmid. */
   return name? name : "/dev/tty";
 }
@@ -163,6 +178,34 @@ init_ttyfp(void)
 #endif
     initialized = 1;
 }
+
+
+#ifdef HAVE_LIBREADLINE
+void
+tty_enable_completion(rl_completion_func_t *completer)
+{
+/*   if( no_terminal ) */
+/*     return; */
+
+/*   if( !initialized ) */
+/*     init_ttyfp(); */
+
+/*   rl_attempted_completion_function=completer; */
+/*   rl_inhibit_completion=0; */
+}
+
+void
+tty_disable_completion(void)
+{
+/*   if( no_terminal ) */
+/*     return; */
+
+/*   if( !initialized ) */
+/*     init_ttyfp(); */
+
+/*   rl_inhibit_completion=1; */
+}
+#endif /*HAVE_LIBREADLINE*/
 
 
 int

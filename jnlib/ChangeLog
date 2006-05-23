@@ -1,3 +1,22 @@
+2006-05-23  Werner Koch  <wk@g10code.com>
+
+	* libjnlib-config.h (JNLIB_NEED_UTF8CONV): Fixed typo in name.
+
+	* dotlock.c (release_dotlock): Don't act if we don't have any
+	locks at all.
+	(destroy_dotlock): New.  From 1.4.3.
+	(dotlock_remove_lockfiles): Make use of destroy function.
+
+2006-05-19  Werner Koch  <wk@g10code.com>
+
+	* strlist.c (append_to_strlist2): Enabled.
+
+	* stringhelp.c (print_sanitized_buffer2): New.  Changed the rules
+	to match the behaviour of print_string2 from gnupg 1.4.3.
+	(print_sanitized_buffer): Use the new function.
+	(print_sanitized_string2): New.
+	(hextobyte): New.  Taken from gpg 1.4.3.
+
 2006-04-28  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (print_sanitized_buffer): Fix bug where the count

@@ -145,6 +145,8 @@ void iobuf_set_partial_block_mode (iobuf_t a, size_t len);
 
 int iobuf_translate_file_handle (int fd, int for_write);
 
+void iobuf_skip_rest (iobuf_t a, unsigned long n, int partial);
+
 
 /* get a byte form the iobuf; must check for eof prior to this function
  * this function returns values in the range 0 .. 255 or -1 to indicate EOF

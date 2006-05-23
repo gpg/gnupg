@@ -218,8 +218,8 @@ length_sans_trailing_chars (const unsigned char *line, size_t len,
   return len;
 }
 
-/****************
- * remove trailing white spaces and return the length of the buffer
+/*
+ *  Return the length of line ignoring trailing white-space.
  */
 size_t
 length_sans_trailing_ws (const unsigned char *line, size_t len)
@@ -336,34 +336,86 @@ compare_filenames( const char *a, const char *b )
 #endif
 }
 
+
+/* Convert 2 hex characters at S to a byte value.  Return this value
+   or -1 if there is an error. */
+int
+hextobyte (const char *s)
+{
+  int c;
+
+  if ( *s >= '0' && *s <= '9' )
+    c = 16 * (*s - '0');
+  else if ( *s >= 'A' && *s <= 'F' )
+    c = 16 * (10 + *s - 'A');
+  else if ( *s >= 'a' && *s <= 'f' )
+    c = 16 * (10 + *s - 'a');
+  else
+    return -1;
+  s++;
+  if ( *s >= '0' && *s <= '9' )
+    c += *s - '0';
+  else if ( *s >= 'A' && *s <= 'F' )
+    c += 10 + *s - 'A';
+  else if ( *s >= 'a' && *s <= 'f' )
+    c += 10 + *s - 'a';
+  else
+    return -1;
+  return c;
+}
+
+
 /* Print a BUFFER to stream FP while replacing all control characters
-   and the character DELIM with standard C escape sequences.  Returns
-   the number of characters printed. */
+   and the characters DELIM and DELIM2 with standard C escape
+   sequences.  Returns the number of characters printed. */
 size_t 
-print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
-                        int delim)
+print_sanitized_buffer2 (FILE *fp, const void *buffer, size_t length,
+                         int delim, int delim2)
 {
   const unsigned char *p = buffer;
   size_t count = 0;
 
   for (; length; length--, p++, count++)
     {
-      if (*p < 0x20 || *p == 0x7f || *p == delim)
+      /* Fixme: Check whether *p < 0xa0 is correct for utf8 encoding. */
+      if (*p < 0x20 
+          || (*p >= 0x7f && *p < 0xa0)
+          || *p == delim 
+          || *p == delim2
+          || ((delim || delim2) && *p=='\\'))
         {
           putc ('\\', fp);
           count++;
           if (*p == '\n')
-            putc ('n', fp);
+            {
+              putc ('n', fp);
+              count++;
+            }
           else if (*p == '\r')
-            putc ('r', fp);
+            {
+              putc ('r', fp);
+              count++;
+            }
           else if (*p == '\f')
-            putc ('f', fp);
+            {
+              putc ('f', fp);
+              count++;
+            }
           else if (*p == '\v')
-            putc ('v', fp);
+            {
+              putc ('v', fp);
+              count++;
+            }
           else if (*p == '\b')
-            putc ('b', fp);
+            {
+              putc ('b', fp);
+              count++;
+            }
           else if (!*p)
-            putc('0', fp);
+            {
+              putc('0', fp);
+              count++;
+            }
           else
             {
               fprintf (fp, "x%02x", *p);
@@ -371,11 +423,23 @@ print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
             }
 	}
       else
-        putc (*p, fp);
+        {
+          putc (*p, fp);
+          count++;
+        }
     }
 
   return count;
 }
+
+/* Same as print_sanitized_buffer2 but with just one delimiter. */
+size_t 
+print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
+                        int delim)
+{
+  return print_sanitized_buffer2 (fp, buffer, length, delim, 0);
+}
+
 
 size_t 
 print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
@@ -403,6 +467,13 @@ print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
     return print_sanitized_buffer (fp, p, length, delim);
 }
 
+
+size_t 
+print_sanitized_string2 (FILE *fp, const char *string, int delim, int delim2)
+{
+  return string? print_sanitized_buffer2 (fp, string, strlen (string),
+                                          delim, delim2):0;
+}
 
 size_t 
 print_sanitized_string (FILE *fp, const char *string, int delim)

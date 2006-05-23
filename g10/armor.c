@@ -336,7 +336,7 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
     int hashes=0;
     unsigned int len2;
 
-    len2 = check_trailing_ws( line, len );
+    len2 = length_sans_trailing_ws ( line, len );
     if( !len2 ) {
         afx->buffer_pos = len2;  /* (it is not the fine way to do it here) */
 	return 0; /* WS only: same as empty line */

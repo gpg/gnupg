@@ -363,7 +363,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 int
 edit_ownertrust (PKT_public_key *pk, int mode )
 {
-  unsigned int trust;
+  unsigned int trust = 0;
   int no_help = 0;
 
   for(;;)
@@ -897,7 +897,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
           else if (backlog) 
             {
               /* This is part of our trick to expand and display groups. */
-              answer = pop_strlist (&backlog);
+              answer = strlist_pop (&backlog);
             }
           else
             {
@@ -1032,7 +1032,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
       rc = get_pubkey_byname (pk, def_rec, NULL, NULL, 1);
       if (rc)
         log_error(_("unknown default recipient \"%s\"\n"), def_rec );
-      else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) 
+      else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo, use)) ) 
         {
           /* Mark any_recipients here since the default recipient
              would have been used if it wasn't already there.  It
@@ -1079,7 +1079,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
                                             -1);
               goto fail;
             }
-          else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) 
+          else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo, use )) ) 
             {
               /* Key found and usable.  Check validity. */
               int trustlevel;

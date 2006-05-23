@@ -36,6 +36,19 @@
 #include "cipher.h"
 
 
+/* There is currently no way to get the status of the quick random
+   generator flag from libgcrypt and it is not clear whether this
+   faked RNG is really a good idea.  Thus for now we use this stub
+   function but we should consider to entirely remove this fake RNG
+   stuff. */
+static int
+random_is_faked (void)
+{
+  return 0;
+}
+
+
+
 void
 release_sk_list( SK_LIST sk_list )
 {

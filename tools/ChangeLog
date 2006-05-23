@@ -1,3 +1,11 @@
+2006-05-23  Werner Koch  <wk@g10code.com>
+
+	* gpgparsemail.c: Include config.h if available
+	(stpcpy): Conditional include it.
+
+	* gpgconf-comp.c (hextobyte): Removed as it is now availble in
+	jnlib.
+
 2005-12-20  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gc_options_gpg): Add allow-pka-lookup.

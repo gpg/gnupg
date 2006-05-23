@@ -1017,7 +1017,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
     int pwlen = strlen(pw);
 
     assert( s2k->hash_algo );
-    dek->keylen = gcry_cipher_algo_get_keylen (dek->algo );
+    dek->keylen = gcry_cipher_get_algo_keylen (dek->algo);
     if( !(dek->keylen > 0 && dek->keylen <= DIM(dek->key)) )
 	BUG();
 
@@ -1065,7 +1065,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	i = gcry_md_get_algo_dlen ( s2k->hash_algo );
 	if( i > dek->keylen - used )
 	    i = dek->keylen - used;
-	memcpy( dek->key+used, md_read(md, s2k->hash_algo), i );
+	memcpy (dek->key+used, gcry_md_read (md, s2k->hash_algo), i);
 	used += i;
     }
     gcry_md_close(md);

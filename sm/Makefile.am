@@ -56,6 +56,6 @@ gpgsm_SOURCES = \
 gpgsm_LDADD = ../jnlib/libjnlib.a ../kbx/libkeybox.a	\
               ../common/libcommon.a ../gl/libgnu.a \
               $(LIBGCRYPT_LIBS)  $(KSBA_LIBS) $(LIBASSUAN_LIBS) -lgpg-error \
-	      $(LIBINTL) $(PTH_LIBS)
+	      $(LIBINTL) $(PTH_LIBS) $(ZLIBS)
 
 

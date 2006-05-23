@@ -30,31 +30,31 @@
 #include "logging.h"
 
 /* We require support for utf-8 conversion. */
-#define JNLIB_NEED_UTF8CONF 1
+#define JNLIB_NEED_UTF8CONV 1
 
 #ifdef USE_SIMPLE_GETTEXT
   int set_gettext_file( const char *filename );
   const char *gettext( const char *msgid );
 
-  #define _(a) gettext (a)
-  #define N_(a) (a)
+# define _(a) gettext (a)
+# define N_(a) (a)
 
 #else
 #ifdef HAVE_LOCALE_H
-  #include <locale.h>
+#  include <locale.h>
 #endif
 
 #ifdef ENABLE_NLS
-  #include <libintl.h>
-  #define _(a) gettext (a)
-  #ifdef gettext_noop
-    #define N_(a) gettext_noop (a)
-  #else
-    #define N_(a) (a)
-  #endif
+# include <libintl.h>
+# define _(a) gettext (a)
+# ifdef gettext_noop
+# define N_(a) gettext_noop (a)
+# else
+# define N_(a) (a)
+# endif
 #else
-  #define _(a) (a)
-  #define N_(a) (a)
+# define _(a) (a)
+# define N_(a) (a)
 #endif
 #endif /* !USE_SIMPLE_GETTEXT */
 

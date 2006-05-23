@@ -254,6 +254,7 @@ int parse_auto_key_locate(char *options);
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
+u32 v3_keyid (gcry_mpi_t a, u32 *ki);
 void hash_public_key( gcry_md_hd_t md, PKT_public_key *pk );
 size_t keystrlen(void);
 const char *keystr(u32 *keyid);

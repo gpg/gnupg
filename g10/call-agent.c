@@ -626,10 +626,13 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 }
 
 
-/* Send an setattr command to the SCdaemon. */
+/* Send an setattr command to the SCdaemon.  SERIALNO is not actually
+   used here but required by gpg 1.4's implementation of this code in
+   cardglue.c. */
 int
 agent_scd_setattr (const char *name,
-                   const unsigned char *value, size_t valuelen)
+                   const unsigned char *value, size_t valuelen,
+                   const char *serialno)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -719,9 +722,11 @@ scd_genkey_cb (void *opaque, const char *line)
   return 0;
 }
 
-/* Send a GENKEY command to the SCdaemon. */
+/* Send a GENKEY command to the SCdaemon.  SERIALNO is not used in
+   this implementation. */
 int
-agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
+agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
+                  const char *serialno)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -865,9 +870,10 @@ agent_scd_pkdecrypt (const char *serialno,
          3: Change the admin PIN
        101: Set a new PIN and reset the retry counter
        102: Same as 101
+   SERIALNO is not used.
  */
 int
-agent_scd_change_pin (int chvno)
+agent_scd_change_pin (int chvno, const char *serialno)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -890,7 +896,7 @@ agent_scd_change_pin (int chvno)
 
 
 /* Perform a CHECKPIN operation.  SERIALNO should be the serial
-   number of the card - optioanlly followed by the fingerprint;
+   number of the card - optionally followed by the fingerprint;
    however the fingerprint is ignored here. */
 int
 agent_scd_checkpin  (const char *serialno)
@@ -910,3 +916,9 @@ agent_scd_checkpin  (const char *serialno)
 }
 
 
+/* Dummy function, only used by the gpg 1.4 implementation. */
+void
+agent_clear_pin_cache (const char *sn)
+{
+
+}

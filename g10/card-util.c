@@ -27,7 +27,7 @@
 #include <assert.h>
 
 #if GNUPG_MAJOR_VERSION != 1
-#include "gpg.h"
+# include "gpg.h"
 #endif /*GNUPG_MAJOR_VERSION != 1*/
 #include "util.h"
 #include "i18n.h"
@@ -37,13 +37,13 @@
 #include "main.h"
 #include "keyserver-internal.h"
 #if GNUPG_MAJOR_VERSION == 1
-#ifdef HAVE_LIBREADLINE
-#include <stdio.h>
-#include <readline/readline.h>
-#endif /*HAVE_LIBREADLINE*/
-#include "cardglue.h"
+# ifdef HAVE_LIBREADLINE
+# include <stdio.h>
+# include <readline/readline.h>
+# endif /*HAVE_LIBREADLINE*/
+# include "cardglue.h"
 #else /*GNUPG_MAJOR_VERSION!=1*/
-#include "call-agent.h"
+# include "call-agent.h"
 #endif /*GNUPG_MAJOR_VERSION!=1*/
 
 #define CONTROL_D ('D' - 'A' + 1)
@@ -1091,12 +1091,8 @@ generate_card_keys (const char *serialno)
   if (check_pin_for_key_operation (&info, &forced_chv1))
     goto leave;
   
-#if GNUPG_MAJOR_VERSION == 1
   generate_keypair (NULL, info.serialno,
                     want_backup? opt.homedir:NULL);
-#else
-  generate_keypair (NULL, info.serialno);
-#endif
 
  leave:
   agent_release_card_info (&info);
