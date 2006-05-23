@@ -1,3 +1,13 @@
+2006-05-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.c (reopen_std): New function to reopen fd 0, 1, or 2 if we
+	are called with them closed.  This is to protect our
+	keyring/trustdb files from corruption if they get attached to one
+	of the standard fds.  Print a warning if possible that this has
+	happened, and fail completely if we cannot reopen (should never
+	happen).
+	(main): Call it here.
+
 2006-05-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (dump_sig_subpkt, parse_signature),

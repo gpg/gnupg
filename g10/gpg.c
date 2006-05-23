@@ -1625,6 +1625,67 @@ parse_trust_model(const char *model)
     log_error("unknown trust model `%s'\n",model);
 }
 
+/* Must be called before we open any files. */
+static void
+reopen_std(void)
+{  
+#ifdef HAVE_STAT
+  struct stat statbuf;
+  int did_stdin=0,did_stdout=0,did_stderr=0;
+  FILE *complain;
+
+  if(fstat(STDIN_FILENO,&statbuf)==-1 && errno==EBADF)
+    {
+      if(open("/dev/null",O_RDONLY)==STDIN_FILENO)
+	did_stdin=1;
+      else
+	did_stdin=2;
+    }
+
+  if(fstat(STDOUT_FILENO,&statbuf)==-1 && errno==EBADF)
+    {
+      if(open("/dev/null",O_WRONLY)==STDOUT_FILENO)
+	did_stdout=1;
+      else
+	did_stdout=2;
+    }
+
+  if(fstat(STDERR_FILENO,&statbuf)==-1 && errno==EBADF)
+    {
+      if(open("/dev/null",O_WRONLY)==STDERR_FILENO)
+	did_stderr=1;
+      else
+	did_stderr=2;
+    }
+
+  /* It's hard to log this sort of thing since the filehandle we would
+     complain to may be closed... */
+  if(did_stderr==0)
+    complain=stderr;
+  else if(did_stdout==0)
+    complain=stdout;
+  else
+    complain=NULL;
+
+  if(complain)
+    {
+      if(did_stdin==1)
+	fprintf(complain,"gpg: WARNING: standard input reopened\n");
+      if(did_stdout==1)
+	fprintf(complain,"gpg: WARNING: standard output reopened\n");
+      if(did_stderr==1)
+	fprintf(complain,"gpg: WARNING: standard error reopened\n");
+
+      if(did_stdin==2 || did_stdout==2 || did_stderr==2)
+	fprintf(complain,"gpg: fatal: unable to reopen standard input,"
+		" output, or error\n");
+    }
+
+  if(did_stdin==2 || did_stdout==2 || did_stderr==2)
+    exit(3);
+#endif
+}
+
 int
 main (int argc, char **argv )
 {
@@ -1675,6 +1736,7 @@ main (int argc, char **argv )
     opt.lock_once = 1;
 #endif /* __riscos__ */
 
+    reopen_std();
     trap_unaligned();
     secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
