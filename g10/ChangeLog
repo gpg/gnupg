@@ -1,3 +1,14 @@
+2006-05-24  Werner Koch  <wk@g10code.com>
+
+	* keyid.c (hash_public_key): Do not double hash the length bytes,
+	they are already included by mpi_print.
+
+	* misc.c (openpgp_pk_test_algo2): Get test call right.
+
+	* misc.c (string_to_cipher_algo, string_to_digest_algo): New.
+	* keygen.c (keygen_set_std_prefs): use them here.
+	* gpg.c (main): and here.
+
 2006-05-23  Werner Koch  <wk@g10code.com>
 
 	* card-util.c (generate_card_keys): Removed temporary kludge for

@@ -429,7 +429,6 @@ int
 openpgp_pk_test_algo2( int algo, unsigned int use )
 {
   int use_buf = use;
-  size_t sizeof_use_buf = sizeof (use_buf);
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
@@ -437,8 +436,7 @@ openpgp_pk_test_algo2( int algo, unsigned int use )
   if (algo < 0 || algo > 110)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO,
-                            &use_buf, &sizeof_use_buf);
+  return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &use_buf);
 }
 
 int 
@@ -739,6 +737,54 @@ deprecated_command (const char *name)
 }
 
 
+/*
+ * Wrapper around gcry_cipher_map_name to provide a fallback using the
+ * "Sn" syntax as used by the preference strings.
+ */
+int 
+string_to_cipher_algo (const char *string) 
+{ 
+  int val;
+
+  val = gcry_cipher_map_name (string);
+  if (!val && string && (string[0]=='S' || string[0]=='s'))
+    {
+      char *endptr;
+
+      string++;
+      val = strtol (string, &endptr, 10);
+      if (!*string || *endptr || openpgp_cipher_test_algo (val))
+        val = 0;
+    }
+
+  return val;
+}
+
+/*
+ * Wrapper around gcry_md_map_name to provide a fallback using the
+ * "Hn" syntax as used by the preference strings.
+ */
+int 
+string_to_digest_algo (const char *string) 
+{ 
+  int val;
+
+  val = gcry_md_map_name (string);
+  if (!val && string && (string[0]=='H' || string[0]=='h'))
+    {
+      char *endptr;
+
+      string++;
+      val = strtol (string, &endptr, 10);
+      if (!*string || *endptr || openpgp_md_test_algo (val))
+        val = 0;
+    }
+
+  return val;
+}
+
+
+
 const char *
 compress_algo_to_string(int algo)
 {
@@ -771,7 +817,7 @@ compress_algo_to_string(int algo)
 int
 string_to_compress_algo(const char *string)
 {
-  /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+  /* TRANSLATORS: See doc/TRANSLATE about this string. */
   if(match_multistr(_("uncompressed|none"),string))
     return 0;
   else if(ascii_strcasecmp(string,"uncompressed")==0)

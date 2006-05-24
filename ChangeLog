@@ -1,3 +1,7 @@
+2006-05-24  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: New option --disable-optimization taked from 1.4.3.
+
 2006-05-23  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (ZLIBS): New for zlib link commands. Add bzip2

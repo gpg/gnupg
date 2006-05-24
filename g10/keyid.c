@@ -56,7 +56,6 @@ void
 hash_public_key( gcry_md_hd_t md, PKT_public_key *pk )
 {
   unsigned int n = 6;
-  unsigned int nb[PUBKEY_MAX_NPKEY];
   unsigned int nn[PUBKEY_MAX_NPKEY];
   byte *pp[PUBKEY_MAX_NPKEY];
   int i;
@@ -77,7 +76,6 @@ hash_public_key( gcry_md_hd_t md, PKT_public_key *pk )
   else
     for(i=0; i < npkey; i++ )
       {
-	nb[i] = gcry_mpi_get_nbits (pk->pkey[i]);
 	if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, pk->pkey[i]))
           BUG ();
 	pp[i] = xmalloc (nbytes);
@@ -85,7 +83,7 @@ hash_public_key( gcry_md_hd_t md, PKT_public_key *pk )
                             &nbytes, pk->pkey[i]))
           BUG ();
         nn[i] = nbytes;
-	n += 2 + nn[i];
+	n += nn[i];
       }
 
   gcry_md_putc ( md, 0x99 );     /* ctb */
@@ -119,8 +117,6 @@ hash_public_key( gcry_md_hd_t md, PKT_public_key *pk )
   else
     for(i=0; i < npkey; i++ )
       {
-	gcry_md_putc ( md, nb[i]>>8);
-	gcry_md_putc ( md, nb[i] );
 	gcry_md_write ( md, pp[i], nn[i] );
 	xfree(pp[i]);
       }

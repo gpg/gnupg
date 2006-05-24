@@ -371,7 +371,6 @@ int agent_scd_getattr (const char *name, struct agent_card_info_s *info) {return
 #endif /* ENABLE_CARD_SUPPORT */
 
 /* Stubs to void linking to ../cipher/cipher.c */
-int string_to_cipher_algo( const char *string ) { return 0; }
 const char *cipher_algo_to_string( int algo ) { return "?";}
 void disable_cipher_algo( int algo ) {}
 int check_cipher_algo( int algo ) { return -1;}

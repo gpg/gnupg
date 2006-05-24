@@ -370,12 +370,12 @@ keygen_set_std_prefs (const char *string,int personal)
 
 	while((tok=strsep(&prefstring," ,")))
 	  {
-	    if((val=gcry_cipher_map_name (tok)))
+	    if((val=string_to_cipher_algo (tok)))
 	      {
 		if(set_one_pref(val,1,tok,sym,&nsym))
 		  rc=-1;
 	      }
-	    else if((val=gcry_md_map_name (tok)))
+	    else if((val=string_to_digest_algo (tok)))
 	      {
 		if(set_one_pref(val,2,tok,hash,&nhash))
 		  rc=-1;

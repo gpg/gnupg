@@ -1080,6 +1080,20 @@ if test "$GCC" = yes; then
     fi
 fi
 
+#
+# This is handy for debugging so the compiler doesn't rearrange
+# things and eliminate variables.
+#
+AC_ARG_ENABLE(optimization,
+   AC_HELP_STRING([--disable-optimization],
+                  [disable compiler optimization]),
+                  [if test $enableval = no ; then
+                      CFLAGS=`echo $CFLAGS | sed 's/-O[[0-9]]//'`
+                   fi])
+
+
+
+
 AC_SUBST(NETLIBS)
 AC_SUBST(W32LIBS)
 

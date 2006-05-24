@@ -2515,7 +2515,7 @@ main (int argc, char **argv )
 	  case oNoUtf8Strings: utf8_strings = 0; break;
 	  case oDisableCipherAlgo:
             {
-              int algo = gcry_cipher_map_name (pargs.r.ret_str);
+              int algo = string_to_cipher_algo (pargs.r.ret_str);
               gcry_cipher_ctl (NULL, GCRYCTL_DISABLE_ALGO, &algo, sizeof algo);
             }
             break;
@@ -2859,7 +2859,7 @@ main (int argc, char **argv )
 
 
     if( def_cipher_string ) {
-	opt.def_cipher_algo = gcry_cipher_map_name (def_cipher_string);
+	opt.def_cipher_algo = string_to_cipher_algo (def_cipher_string);
 	if(opt.def_cipher_algo==0 &&
 	   (ascii_strcasecmp(def_cipher_string,"idea")==0
 	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
@@ -2869,7 +2869,7 @@ main (int argc, char **argv )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( def_digest_string ) {
-	opt.def_digest_algo = gcry_md_map_name (def_digest_string);
+	opt.def_digest_algo = string_to_digest_algo (def_digest_string);
 	xfree(def_digest_string); def_digest_string = NULL;
 	if ( openpgp_md_test_algo (opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
@@ -2881,19 +2881,19 @@ main (int argc, char **argv )
           log_error(_("selected compression algorithm is invalid\n"));
     }
     if( cert_digest_string ) {
-	opt.cert_digest_algo = gcry_md_map_name (cert_digest_string);
+	opt.cert_digest_algo = string_to_digest_algo (cert_digest_string);
 	xfree(cert_digest_string); cert_digest_string = NULL;
 	if (openpgp_md_test_algo(opt.cert_digest_algo))
           log_error(_("selected certification digest algorithm is invalid\n"));
     }
     if( s2k_cipher_string ) {
-	opt.s2k_cipher_algo = gcry_cipher_map_name (s2k_cipher_string);
+	opt.s2k_cipher_algo = string_to_cipher_algo (s2k_cipher_string);
 	xfree(s2k_cipher_string); s2k_cipher_string = NULL;
 	if (openpgp_cipher_test_algo (opt.s2k_cipher_algo))
           log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( s2k_digest_string ) {
-	opt.s2k_digest_algo = gcry_md_map_name (s2k_digest_string);
+	opt.s2k_digest_algo = string_to_digest_algo (s2k_digest_string);
 	xfree(s2k_digest_string); s2k_digest_string = NULL;
 	if (openpgp_md_test_algo(opt.s2k_digest_algo))
           log_error(_("selected digest algorithm is invalid\n"));
