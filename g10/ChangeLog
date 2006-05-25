@@ -1,3 +1,11 @@
+2006-05-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (gen_dsa): Allow generating DSA2 keys
+	(allow specifying sizes > 1024 when --enable-dsa2 is set).  The
+	size of q is set automatically based on the key size.
+	(ask_keysize, generate_keypair): Ask for DSA size when
+	--enable-dsa2 is set.
+
 2006-05-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* exec.c (make_tempdir): Fix bug with a temporary directory on

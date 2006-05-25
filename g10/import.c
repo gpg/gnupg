@@ -978,6 +978,15 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
       }
     else if(new_key)
       {
+	/* A little explanation for this: we fill in the fingerprint
+	   when importing keys as it can be useful to know the
+	   fingerprint in certain keyserver-related cases (a keyserver
+	   asked for a particular name, but the key doesn't have that
+	   name).  However, in cases where we're importing more than
+	   one key at a time, we cannot know which key to fingerprint.
+	   In these cases, rather than guessing, we do not fingerpring
+	   at all, and we must hope the user ID on the keys are
+	   useful. */
 	if(fpr)
 	  {
 	    xfree(*fpr);

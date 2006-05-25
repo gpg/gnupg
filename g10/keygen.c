@@ -1089,30 +1089,65 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PKT_public_key *pk;
     MPI skey[5];
     MPI *factors;
+    unsigned int qbits;
 
-    if( nbits > 1024 || nbits < 512 ) {
+    if( nbits < 512 || (!opt.flags.dsa2 && nbits > 1024))
+      {
 	nbits = 1024;
 	log_info(_("keysize invalid; using %u bits\n"), nbits );
-    }
+      }
+    else if(nbits>3072)
+      {
+	nbits = 3072;
+	log_info(_("keysize invalid; using %u bits\n"), nbits );
+      }
 
-    if( (nbits % 64) ) {
+    if(nbits % 64)
+      {
 	nbits = ((nbits + 63) / 64) * 64;
 	log_info(_("keysize rounded up to %u bits\n"), nbits );
-    }
+      }
 
-    rc = pubkey_generate( PUBKEY_ALGO_DSA, nbits, skey, &factors );
-    if( rc ) {
-	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
+    /*
+      Figure out a q size based on the key size.  FIPS 180-3 says:
+
+      L = 1024, N = 160
+      L = 2048, N = 224
+      L = 2048, N = 256
+      L = 3072, N = 256
+
+      2048/256 is an odd pair since there is also a 2048/224 and
+      3072/256.  Matching sizes is not a very exact science.
+      
+      We'll do 256 qbits for nbits over 2048, 224 for nbits over 1024
+      but less than 2048, and 160 for 1024 (DSA1).
+    */
+
+    if(nbits>2048)
+      qbits=256;
+    else if(nbits>1024)
+      qbits=224;
+    else
+      qbits=160;
+
+    if(qbits!=160)
+      log_info("WARNING: some OpenPGP programs can't"
+	       " handle a DSA key with this digest size\n");
+
+    rc = dsa2_generate( PUBKEY_ALGO_DSA, nbits, qbits, skey, &factors );
+    if( rc )
+      {
+	log_error("dsa2_generate failed: %s\n", g10_errstr(rc) );
 	return rc;
-    }
+      }
 
     sk = xmalloc_clear( sizeof *sk );
     pk = xmalloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
-    if( expireval ) {
-	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
-    }
+    if( expireval )
+      sk->expiredate = pk->expiredate = sk->timestamp + expireval;
+
     sk->pubkey_algo = pk->pubkey_algo = PUBKEY_ALGO_DSA;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
@@ -1462,10 +1497,10 @@ ask_keysize( int algo )
   switch(algo)
     {
     case PUBKEY_ALGO_DSA:
-      if(opt.expert)
+      if(opt.flags.dsa2)
 	{
 	  def=1024;
-	  max=1024;
+	  max=3072;
 	}
       else
 	{
@@ -2574,12 +2609,12 @@ generate_keypair (const char *fname, const char *card_serialno,
           sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
           r->next = para;
           para = r;
-          tty_printf(_("DSA keypair will have %u bits.\n"),1024);
-          r = xmalloc_clear( sizeof *r + 20 );
-          r->key = pKEYLENGTH;
-          strcpy( r->u.value, "1024" );
-          r->next = para;
-          para = r;
+	  nbits = ask_keysize( PUBKEY_ALGO_DSA );
+	  r = xmalloc_clear( sizeof *r + 20 );
+	  r->key = pKEYLENGTH;
+	  sprintf( r->u.value, "%u", nbits);
+	  r->next = para;
+	  para = r;
           r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYUSAGE;
           strcpy( r->u.value, "sign" );
@@ -2619,7 +2654,7 @@ generate_keypair (const char *fname, const char *card_serialno,
             }
            
         }
-       
+
       nbits = ask_keysize( algo );
       r = xmalloc_clear( sizeof *r + 20 );
       r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
@@ -3169,7 +3204,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-				      dek, s2k, &sub_sk, expire, 1 );
+		    dek, s2k, &sub_sk, expire, 1 );
     if( !rc )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
     if( !rc )
