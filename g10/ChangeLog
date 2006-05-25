@@ -1,3 +1,8 @@
+2006-05-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* exec.c (make_tempdir): Fix bug with a temporary directory on
+	Win32 that is over 256 bytes long.  Noted by Israel G. Lugo.
+
 2006-05-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (reopen_std): New function to reopen fd 0, 1, or 2 if we
