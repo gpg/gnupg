@@ -129,21 +129,16 @@ static int make_tempdir(struct exec_info *info)
   if(tmp==NULL)
     {
 #if defined (_WIN32)
-      int tmp_siz;
-      int len=0;
+      int err;
 
-      /* Poll temp path length */
-      tmp_siz=GetTempPath(0,NULL);
-      if(tmp_siz)
-	{
-	  tmp=xmalloc(tmp_siz);
-	  len=GetTempPath(tmp_siz,tmp);
-	}
-
-      if(len==0)
-	tmp=xstrdup("c:\\windows\\temp");
+      tmp=xmalloc(MAX_PATH);
+      err=GetTempPath(MAX_PATH,tmp);
+      if(err==0 || err>MAX_PATH)
+	strcpy(tmp,"c:\\windows\\temp");
       else
 	{
+	  int len=strlen(tmp);
+
 	  /* GetTempPath may return with \ on the end */
 	  while(len>0 && tmp[len-1]=='\\')
 	    {

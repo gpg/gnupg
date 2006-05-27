@@ -1,8 +1,3 @@
-2006-05-25  Israel G. Lugo  <ilugo@bridonsecurity.com> (dshaw)
-
-	* exec.c (make_tempdir) [_WIN32]: Modified to properly handle
-	arbitrarily long temporary directory paths.
-
 2006-05-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (gen_dsa): Allow generating DSA2 keys
