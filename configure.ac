@@ -576,7 +576,7 @@ if test "$have_w32_system" = no; then
   if test $have_pth = yes; then      
      PTH_CFLAGS=`$PTH_CONFIG --cflags`
      PTH_LIBS=`$PTH_CONFIG --ldflags`
-     PTH_LIBS="$PTH_LIBS `$PTH_CONFIG --libs`"
+     PTH_LIBS="$PTH_LIBS `$PTH_CONFIG --libs --all`"
      AC_DEFINE(USE_GNU_PTH, 1,
               [Defined if the GNU Portable Thread Library should be used])
      AC_DEFINE(HAVE_PTH, 1,
