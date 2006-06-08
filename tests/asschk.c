@@ -116,6 +116,18 @@
 # define ATTR_PRINTF(f,a)
 #endif
 
+#if __STDC_VERSION__ < 199901L
+# if __GNUC__ >= 2
+#  define __func__ __FUNCTION__
+# else
+/* Let's try our luck here.  Some systems may provide __func__ without
+   providing __STDC_VERSION__ 199901L.  */
+#  if 0
+#   define __func__ "<unknown>"
+#  endif
+# endif
+#endif
+
 #define spacep(p) (*(p) == ' ' || *(p) == '\t')
 
 #define MAX_LINELEN 2048
@@ -188,7 +200,7 @@ die (const char *format, ...)
   exit (1);
 }
 
-#define die(format, args...) (die) ("%s: " format, __FUNCTION__ , ##args)
+#define die(format, args...) (die) ("%s: " format, __func__ , ##args)
 
 static void
 err (const char *format, ...)

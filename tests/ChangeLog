@@ -1,3 +1,9 @@
+2006-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* asschk.c (__func__) [__STDC_VERSION__ < 199901L && __GNUC__ >= 2]:
+	Define macro to __FUNCTION__.
+	(die): Use __func__ instead of __FUNCTION__.
+
 2005-10-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (TESTS_ENVIRONMENT): Remove LD_LIBRARY_PATH hack.
