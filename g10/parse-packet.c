@@ -1982,6 +1982,20 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
+    /* Cap the size of a user ID at 2k: a value absurdly large enough
+       that there is no sane user ID string (which is printable text
+       as of RFC2440bis) that won't fit in it, but yet small enough to
+       avoid allocation problems.  A large pktlen may not be
+       allocatable, and a very large pktlen could actually cause our
+       allocation to wrap around in xmalloc to a small number. */
+
+    if(pktlen>2048)
+      {
+	log_error("packet(%d) too large\n", pkttype);
+	iobuf_skip_rest(inp, pktlen, 0);
+	return G10ERR_INVALID_PACKET;
+      }
+
     packet->pkt.user_id = xmalloc_clear(sizeof *packet->pkt.user_id + pktlen);
     packet->pkt.user_id->len = pktlen;
     packet->pkt.user_id->ref=1;

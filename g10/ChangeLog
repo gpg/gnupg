@@ -1,3 +1,11 @@
+2006-06-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_user_id): Cap the user ID size at 2048
+	bytes.  This prevents a memory allocation attack with a very large
+	user ID.  A very large packet length could even cause the
+	allocation (a u32) to wrap around to a small number.  Noted by
+	Evgeny Legerov on full-disclosure.
+
 2006-05-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (gen_dsa): Allow generating DSA2 keys
