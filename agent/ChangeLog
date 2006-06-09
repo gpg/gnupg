@@ -1,6 +1,8 @@
 2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (gpg_agent_LDADD): Add $(NETLIBS).
+	(gpg_protect_tool_LDADD): Likewise.
+	(gpg_preset_passphrase_LDADD): Likewise.
 
 2006-04-09  Moritz Schulte  <moritz@g10code.com>
 

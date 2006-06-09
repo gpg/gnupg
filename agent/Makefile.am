@@ -54,9 +54,10 @@ gpg_protect_tool_SOURCES = \
 	protect.c \
 	minip12.c minip12.h 
 
+# Needs $(NETLIBS) for libsimple-pwquery.la.
 gpg_protect_tool_LDADD = ../common/libsimple-pwquery.a \
 	../jnlib/libjnlib.a  ../common/libcommon.a ../gl/libgnu.a \
-	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
+	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@ $(NETLIBS)
 if HAVE_W32_SYSTEM
 gpg_protect_tool_LDADD += -lwsock32
 endif
@@ -64,9 +65,10 @@ endif
 gpg_preset_passphrase_SOURCES = \
 	preset-passphrase.c
 
+# Needs $(NETLIBS) for libsimple-pwquery.la.
 gpg_preset_passphrase_LDADD = ../common/libsimple-pwquery.a \
 	../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
-	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
+	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@ $(NETLIBS)
 if HAVE_W32_SYSTEM
 gpg_preset_passphrase_LDADD += -lwsock32
 endif
