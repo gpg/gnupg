@@ -42,8 +42,10 @@ endif
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
-gpgconf_LDADD = ../jnlib/libjnlib.a \
-                ../common/libcommon.a ../gl/libgnu.a @LIBINTL@
+# jnlib/common sucks in gpg-error, will they, nil they (some compilers
+# do not eliminate the supposed-to-be-unused-inline-functions).
+gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+		../gl/libgnu.a @LIBINTL@ $(GPG_ERROR_LIBS)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD = 
@@ -64,5 +66,7 @@ gpg_connect_agent_LDADD = ../jnlib/libjnlib.a \
 
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
 gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
-gpgkey2ssh_LDADD = ../common/libcommon.a ../gl/libgnu.a \
+# common sucks in jnlib, via use of BUG() in an inline function, which
+# some compilers do not eliminate.
+gpgkey2ssh_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)

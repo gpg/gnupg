@@ -1,3 +1,8 @@
+2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpgconf_LDADD): Add $(GPG_ERROR_LIBS).
+	(gpgkey2ssh_LDADD): Add ../jnlib/libjnlib.a.
+
 2006-05-23  Werner Koch  <wk@g10code.com>
 
 	* gpgparsemail.c: Include config.h if available
