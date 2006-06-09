@@ -1,3 +1,7 @@
+2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpg_agent_LDADD): Add $(NETLIBS).
+
 2006-04-09  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_request_process): Removed FIXME mentioning a

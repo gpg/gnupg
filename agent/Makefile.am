@@ -47,7 +47,7 @@ gpg_agent_SOURCES = \
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
                 $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
-	         -lgpg-error @LIBINTL@
+	         -lgpg-error @LIBINTL@ $(NETLIBS)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \

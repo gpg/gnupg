@@ -45,7 +45,7 @@ scdaemon_SOURCES = \
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
-	$(LIBUSB_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS)
+	$(LIBUSB_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS) $(NETLIBS)
 
 # Removed for now: We need to decide whether it makes sense to
 # continue it at all, given that gpg has now all required

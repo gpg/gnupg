@@ -1,3 +1,7 @@
+2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (scdaemon_LDADD): Add $(NETLIBS).
+
 2006-04-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* app.c (select_application): Cover up a slot mismatch error in
