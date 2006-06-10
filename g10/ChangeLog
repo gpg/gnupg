@@ -1,5 +1,12 @@
 2006-06-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (gen_card_key): Add optional argument to return a
+	pointer (not a copy) of the stub secret key for the secret key we
+	just generated on the card.
+	(generate_card_subkeypair): Use it here so that the signing key on
+	the card can use the card to generate the 0x19 backsig on the
+	primary key.  Noted by Janko Heilgeist and Jonas Oberg.
+
 	* parse-packet.c (parse_user_id): Cap the user ID size at 2048
 	bytes.  This prevents a memory allocation attack with a very large
 	user ID.  A very large packet length could even cause the

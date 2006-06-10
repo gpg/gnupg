@@ -122,6 +122,7 @@ static void do_generate_keypair( struct para_data_s *para,
 static int  write_keyblock( IOBUF out, KBNODE node );
 static int gen_card_key (int algo, int keyno, int is_primary,
                          KBNODE pub_root, KBNODE sec_root,
+			 PKT_secret_key **ret_sk,
                          u32 expireval, struct para_data_s *para);
 static int gen_card_key_with_backup (int algo, int keyno, int is_primary,
                                      KBNODE pub_root, KBNODE sec_root,
@@ -937,7 +938,6 @@ write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
     return rc;
 }
 
-/* sub_sk is currently unused (reserved for backsigs) */
 static int
 write_keybinding( KBNODE root, KBNODE pub_root,
 		  PKT_secret_key *pri_sk, PKT_secret_key *sub_sk,
@@ -2908,7 +2908,7 @@ do_generate_keypair( struct para_data_s *para,
       }
     else
       {
-        rc = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root, sec_root,
+        rc = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root, sec_root, NULL,
                            get_parameter_u32 (para, pKEYEXPIRE), para);
         if (!rc)
           {
@@ -2944,7 +2944,7 @@ do_generate_keypair( struct para_data_s *para,
 
     if (!rc && card && get_parameter (para, pAUTHKEYTYPE))
       {
-        rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root,
+        rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root, NULL,
                            get_parameter_u32 (para, pKEYEXPIRE), para);
         
         if (!rc)
@@ -2980,6 +2980,7 @@ do_generate_keypair( struct para_data_s *para,
               }
             else
               rc = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, sec_root,
+				 NULL,
                                  get_parameter_u32 (para, pKEYEXPIRE), para);
           }
 
@@ -3238,7 +3239,7 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
 {
   int okay=0, rc=0;
   KBNODE node;
-  PKT_secret_key *pri_sk = NULL;
+  PKT_secret_key *pri_sk = NULL, *sub_sk;
   int algo;
   unsigned int use;
   u32 expire;
@@ -3318,11 +3319,12 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
 
   if (passphrase)
     set_next_passphrase (passphrase);
-  rc = gen_card_key (algo, keyno, 0, pub_keyblock, sec_keyblock, expire, para);
+  rc = gen_card_key (algo, keyno, 0, pub_keyblock, sec_keyblock,
+		     &sub_sk, expire, para);
   if (!rc)
-    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, NULL, use);
+    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
   if (!rc)
-    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, NULL, use);
+    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, sub_sk, use);
   if (!rc)
     {
       okay = 1;
@@ -3369,7 +3371,7 @@ write_keyblock( IOBUF out, KBNODE node )
 
 static int
 gen_card_key (int algo, int keyno, int is_primary,
-              KBNODE pub_root, KBNODE sec_root,
+              KBNODE pub_root, KBNODE sec_root, PKT_secret_key **ret_sk,
               u32 expireval, struct para_data_s *para)
 {
 #ifdef ENABLE_CARD_SUPPORT
@@ -3429,6 +3431,9 @@ gen_card_key (int algo, int keyno, int is_primary,
            sk->protect.ivlen++, s += 2)
         sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s);
     }
+
+  if( ret_sk )
+    *ret_sk = sk;
 
   pkt = xcalloc (1,sizeof *pkt);
   pkt->pkttype = is_primary ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
