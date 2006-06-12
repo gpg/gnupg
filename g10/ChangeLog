@@ -1,3 +1,9 @@
+2006-06-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_one): Add a flag (from_sk) so we don't check
+	prefs on an autoconverted public key.  The check should only
+	happen on the sk size.  Noted by Dirk Traulsen.
+
 2006-06-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (gen_card_key): Add optional argument to return a
