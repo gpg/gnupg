@@ -21,7 +21,7 @@ might want to have an agent context for each service request
 ** When a certificate chain was sucessfully verified, make ephemeral certs used  in this chain permanent.
 ** Try to keep certificate references somewhere
   This will help with some of our caching code.  We also need to test
-  that cachining; in particular "regtp_ca_chainlen".
+  that caching; in particular "regtp_ca_chainlen".
 
 * sm/decrypt.c
 ** replace leading zero in integer hack by a cleaner solution
@@ -101,7 +101,6 @@ might want to have an agent context for each service request
 
 
 * sm/
-** --include-certs is as of now still a dummy command line option
 ** check that we issue NO_SECKEY xxx if a -u key was not found
 
 * gpg/

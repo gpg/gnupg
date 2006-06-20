@@ -1,3 +1,10 @@
+2006-06-20  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (gpgsm_init_default_ctrl): Take care of the command line
+	option --include-certs.
+
+	* keylist.c (list_cert_raw): Print the certid.
+
 2006-05-23  Werner Koch  <wk@g10code.com>
 
 	* keydb.c (hextobyte): Deleted as it is now defined in jnlib.

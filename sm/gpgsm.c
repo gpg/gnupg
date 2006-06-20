@@ -1,5 +1,6 @@
 /* gpgsm.c - GnuPG for S/MIME 
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005,
+ *               2006  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -460,6 +462,10 @@ static unsigned int debug_value;
 
 /* Option --enable-special-filenames */
 static int allow_special_filenames;
+
+/* Default value for include-certs. */
+static int default_include_certs = 1; /* Only include the signer's cert. */
+
 
 
 static char *build_list (const char *text,
@@ -998,7 +1004,9 @@ main ( int argc, char **argv)
           ctrl.use_ocsp = opt.enable_ocsp = 1;
           break;
 
-        case oIncludeCerts: ctrl.include_certs = pargs.r.ret_int; break;
+        case oIncludeCerts: 
+          ctrl.include_certs = default_include_certs = pargs.r.ret_int; 
+          break;
 
         case oPolicyFile:
           xfree (opt.policy_file);
@@ -1657,7 +1665,7 @@ gpgsm_exit (int rc)
 void
 gpgsm_init_default_ctrl (struct server_control_s *ctrl)
 {
-  ctrl->include_certs = 1;  /* only include the signer's cert */
+  ctrl->include_certs = default_include_certs;
   ctrl->use_ocsp = opt.enable_ocsp;
 }
 

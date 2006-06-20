@@ -356,6 +356,7 @@ enum cmd_and_opt_values
     oAllowMultisigVerification,
     oEnableDSA2,
     oDisableDSA2,
+    oDebugAllowRun,
 
     oNoop
   };
@@ -701,6 +702,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoRequireCrossCert, "no-require-cross-certification", 0, "@"},
     { oAutoKeyLocate, "auto-key-locate", 2, "@"},
     { oNoAutoKeyLocate, "no-auto-key-locate", 0, "@"},
+
+    { oDebugAllowRun, "debug_allow_run", 0, "@"},
     {0,NULL,0,NULL}
 };
 
@@ -1684,6 +1687,7 @@ main (int argc, char **argv )
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
     int require_secmem=0,got_secmem=0;
+    int allow_run = 0;
 
 #ifdef __riscos__
     opt.lock_once = 1;
@@ -2663,6 +2667,8 @@ main (int argc, char **argv )
 	  case oEnableDSA2: opt.flags.dsa2=1; break;
 	  case oDisableDSA2: opt.flags.dsa2=0; break;
 
+          case oDebugAllowRun: allow_run = 1; break; 
+
 	  case oNoop: break;
 
 	  default : pargs.err = configfp? 1:2; break;
@@ -2715,6 +2721,9 @@ main (int argc, char **argv )
 	  log_info("%s\n",s);
       }
 #endif
+
+    if (!allow_run)
+      log_fatal ("This version of gpg is not ready for use, use gpg 1.4.x\n");
 
     /* FIXME: We should use logging to a file only in server mode;
        however we have not yet implemetyed that.  Thus we try to get
