@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gnupg2 1.9.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2006-06-20 18:45+0200\n"
-"PO-Revision-Date: 2005-11-28 12:16+0100\n"
+"PO-Revision-Date: 2006-06-20 20:04+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
@@ -747,7 +747,7 @@ msgstr "Ungültige Struktur der OpenPGP Karte (DO 0x93)\n"
 #: scd/app-openpgp.c:2125
 #, c-format
 msgid "card does not support digest algorithm %s\n"
-msgstr ""
+msgstr "Der Hashalgorithmus %s wird von der Karte nicht unterstützt\n"
 
 #: scd/app-openpgp.c:2172
 #, c-format
@@ -789,9 +789,9 @@ msgid "can't connect to the agent - trying fall back\n"
 msgstr "Verbindung zum gpg-agent nicht möglich - Ersatzmethode wird versucht\n"
 
 #: sm/call-dirmngr.c:182
-#, fuzzy, c-format
+#, c-format
 msgid "no running dirmngr - starting `%s'\n"
-msgstr "Kein aktiver Dirmngr - es wird einer gestartet\n"
+msgstr "Kein aktiver Dirmngr - `%s' wird einer gestartet\n"
 
 #: sm/call-dirmngr.c:216
 msgid "malformed DIRMNGR_INFO environment variable\n"
@@ -1657,7 +1657,7 @@ msgstr "Konfiguration der Schlüsselserver"
 
 #: tools/gpgconf-comp.c:606
 msgid "allow PKA lookups (DNS requests)"
-msgstr ""
+msgstr "Erlaube PKA Zugriffe (DNS Anfragen)"
 
 #: tools/gpgconf-comp.c:665
 msgid "do not check CRLs for root certificates"

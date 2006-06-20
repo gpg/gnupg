@@ -1,22 +1,22 @@
-Noteworthy changes in version 1.9.21
+Noteworthy changes in version 1.9.21 (2006-06-20)
 -------------------------------------------------
 
- * [scdaemon] New command APDU.
+ * New command APDU for scdaemon to allow using it for general card
+   access.  Might be used through gpg-connect-agent by using the SCD
+   prefix command.
 
- * [scdaemon] Support for keypads of some readers.  Tested only with
-   SPR532. New option --disable-keypad.
+ * Support for the CardMan 4040 PCMCIA reader (Linux 2.6.15 required).
 
- * [scdaemon] Support for CardMan 4040 PCMCIA reader.
+ * Scdaemon does not anymore reset cards at the end of a connection. 
 
- * [scdaemon] Cards are not anymore reseted at the end of a connection. 
+ * Kludge to allow use of Bundesnetzagentur issued X.509 certificates.
 
- * [gpgsm] Kludge to allow use of Bundesnetzagentur issued
-   certificates.
+ * Added --hash=xxx option to scdaemon's PKSIGN command.
 
- * [scdaemon] Added --hash=xxx option to the PKSIGN command.
+ * Pkcs#12 files are now created with a MAC.  This is for better
+   interoperability.
 
- * [gpg-protect-tool] Does now create a MAC for P12 files.  This is for
-   better interoperability.
+ * Collected bug fixes and minor other changes.
 
 
 Noteworthy changes in version 1.9.20 (2005-12-20)
@@ -310,7 +310,7 @@ Noteworthy changes in version 1.9.0 (2003-08-05)
    development branch.
 
 
- Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
