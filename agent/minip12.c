@@ -1,5 +1,5 @@
 /* minip12.c - A minimal pkcs-12 implementation.
- *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -120,6 +120,16 @@ static unsigned char const data_rc2iter2048[30] = {
   0xFF, 0xFF, 0x02, 0x02, 0x08, 0x00 };
 #define DATA_RC2ITER2048_SALT_OFF  18
 
+static unsigned char const data_mactemplate[51] = {
+  0x30, 0x31, 0x30, 0x21, 0x30, 0x09, 0x06, 0x05,
+  0x2b, 0x0e, 0x03, 0x02, 0x1a, 0x05, 0x00, 0x04,
+  0x14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0x04, 0x08, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x02,
+  0x02, 0x08, 0x00 }; 
+#define DATA_MACTEMPLATE_MAC_OFF 17
+#define DATA_MACTEMPLATE_SALT_OFF 39
 
 struct buffer_s 
 {
@@ -1200,17 +1210,27 @@ store_tag_length (unsigned char *p, int tag, size_t n)
 
 
 /* Create the final PKCS-12 object from the sequences contained in
-   SEQLIST.  That array is terminated with an NULL object */
+   SEQLIST.  PW is the password. That array is terminated with an NULL
+   object. */
 static unsigned char *
-create_final (struct buffer_s *sequences, size_t *r_length)
+create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
 {
   int i;
   size_t needed = 0;
   size_t len[8], n;
+  unsigned char *macstart;
+  size_t maclen;
   unsigned char *result, *p;
   size_t resultlen;
+  char salt[8];
+  unsigned char keybuf[20];
+  gcry_md_hd_t md;
+  int rc;
 
-  /* 8 steps to create the pkcs#12 Krampf. */
+  /* 9 steps to create the pkcs#12 Krampf. */
+
+  /* 8. The MAC. */
+  /* We add this at step 0. */
 
   /* 7. All the buffers. */
   for (i=0; sequences[i].buffer; i++)
@@ -1243,6 +1263,7 @@ create_final (struct buffer_s *sequences, size_t *r_length)
   needed += 3;
 
   /* 0. And the final outer sequence. */
+  needed += DIM (data_mactemplate);
   len[0] = needed;
   n = compute_tag_length (needed);
   needed += n;
@@ -1263,7 +1284,7 @@ create_final (struct buffer_s *sequences, size_t *r_length)
   *p++ = TAG_INTEGER;
   *p++ = 1; 
   *p++ = 3;
- 
+
   /* 2. Store another sequence. */
   p = store_tag_length (p, TAG_SEQUENCE, len[2]);
 
@@ -1279,6 +1300,7 @@ create_final (struct buffer_s *sequences, size_t *r_length)
   p = store_tag_length (p, TAG_OCTET_STRING, len[5]);
 
   /* 6. And the inner sequence. */
+  macstart = p;
   p = store_tag_length (p, TAG_SEQUENCE, len[6]);
 
   /* 7. Append all the buffers. */
@@ -1287,6 +1309,38 @@ create_final (struct buffer_s *sequences, size_t *r_length)
       memcpy (p, sequences[i].buffer, sequences[i].length);
       p += sequences[i].length;
     }
+
+  /* Intermezzo to compute the MAC. */
+  maclen = p - macstart;
+  gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
+  if (string_to_key (3, salt, 8, 2048, pw, 20, keybuf))
+    {
+      gcry_free (result);
+      return NULL;
+    }
+  rc = gcry_md_open (&md, GCRY_MD_SHA1, GCRY_MD_FLAG_HMAC);
+  if (rc)
+    {
+      log_error ("gcry_md_open failed: %s\n", gpg_strerror (rc));
+      gcry_free (result);
+      return NULL;
+    }
+  rc = gcry_md_setkey (md, keybuf, 20);
+  if (rc)
+    {
+      log_error ("gcry_md_setkey failed: %s\n", gpg_strerror (rc));
+      gcry_md_close (md);
+      gcry_free (result);
+      return NULL;
+    }
+  gcry_md_write (md, macstart, maclen);
+
+  /* 8. Append the MAC template and fix it up. */
+  memcpy (p, data_mactemplate, DIM (data_mactemplate));
+  memcpy (p + DATA_MACTEMPLATE_SALT_OFF, salt, 8);
+  memcpy (p + DATA_MACTEMPLATE_MAC_OFF, gcry_md_read (md, 0), 20);
+  p += DIM (data_mactemplate);
+  gcry_md_close (md);
 
   /* Ready. */
   resultlen = p - result;
@@ -1811,7 +1865,7 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
   seqlist[seqlistidx].buffer = NULL;
   seqlist[seqlistidx].length = 0;
 
-  buffer = create_final (seqlist, &buflen);
+  buffer = create_final (seqlist, pw, &buflen);
 
  failure:
   for ( ; seqlistidx; seqlistidx--)
