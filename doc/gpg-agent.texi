@@ -1028,5 +1028,3 @@ Set the startup TTY and X-DISPLAY variables to the values of this
 session.  This command is useful to direct future pinentry invocations
 to another screen.  It is only required because there is no way in the
 ssh-agent protocol to convey this information.
-
-

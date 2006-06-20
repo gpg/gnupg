@@ -85,11 +85,11 @@ section entitled ``Copying''.
 @subtitle Version @value{VERSION}
 @subtitle @value{UPDATED}
 
-@sp 6
+@sp 3
 
 @image{gnupg-badge-openpgp,8cm,,The GnuPG Logo}
 
-@sp 6
+@sp 3
 
 @author Werner Koch (@email{wk@@gnupg.org})
 

@@ -144,7 +144,7 @@ making use of ssh.
 
 Here is a little picture showing how the components work together:
 
-@image{gnupg-card-architecture, 14cm}
+@image{gnupg-card-architecture, 10cm}
 
 @noindent
 Lets try to explain it:

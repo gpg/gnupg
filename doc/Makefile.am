@@ -20,9 +20,12 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg \
-             gnupg-card-architecture.eps gnupg-card-architecture.png
+             gnupg-badge-openpgp.pdf \
+             gnupg-card-architecture.eps gnupg-card-architecture.png \
+             gnupg-card-architecture.pdf
 
-BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png
+BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
+                gnupg-card-architecture.pdf
 
 info_TEXINFOS = gnupg.texi
 
