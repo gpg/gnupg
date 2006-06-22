@@ -120,7 +120,11 @@ or a passphrase).
 <varlistentry>
 <term>--clearsign &OptParmFile;</term>
 <listitem><para>
-Make a clear text signature.
+Make a clear text signature.  The content in a clear text signature is
+readable without any special software.  OpenPGP software is only
+needed to verify the signature.  Clear text signatures may modify
+end-of-line whitespace for platform independence and are not intended
+to be reversible.
 </para></listitem></varlistentry>
 
 
@@ -2496,7 +2500,8 @@ TWOFISH.
 Set up all options to be as PGP 8 compliant as possible.  PGP 8 is a
 lot closer to the OpenPGP standard than previous versions of PGP, so
 all this does is disable --throw-keyids and set --escape-from-lines.
-All algorithms are allowed except for the SHA384 and SHA512 digests.
+All algorithms are allowed except for the SHA224, SHA384, and SHA512
+digests.
 </para></listitem></varlistentry>
 
 </variablelist></para></listitem></varlistentry>

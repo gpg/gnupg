@@ -1,3 +1,8 @@
+2006-06-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Note that --pgp8 does not include SHA224.  Clarify
+	that clearsigned messages are not reversible.
+
 2006-05-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* mksamplekeys: Incorporate new package signature key and minimize
