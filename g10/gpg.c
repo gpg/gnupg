@@ -333,6 +333,7 @@ enum cmd_and_opt_values
     oNoAutoCheckTrustDB,
     oPreservePermissions,
     oDefaultPreferenceList,
+    oDefaultKeyserverURL,
     oPersonalCipherPreferences,
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
@@ -667,6 +668,7 @@ static ARGPARSE_OPTS opts[] = {
     { aRebuildKeydbCaches, "rebuild-keydb-caches", 256, "@"},
     { oPreservePermissions, "preserve-permissions", 0, "@"},
     { oDefaultPreferenceList,  "default-preference-list", 2, "@"},
+    { oDefaultKeyserverURL,  "default-keyserver-url", 2, "@"},
     { oPersonalCipherPreferences,  "personal-cipher-preferences", 2, "@"},
     { oPersonalDigestPreferences,  "personal-digest-preferences", 2, "@"},
     { oPersonalCompressPreferences,  "personal-compress-preferences", 2, "@"},
@@ -2651,6 +2653,19 @@ main (int argc, char **argv )
           case oPreservePermissions: opt.preserve_permissions=1; break;
           case oDefaultPreferenceList:
 	    opt.def_preference_list = pargs.r.ret_str;
+	    break;
+	  case oDefaultKeyserverURL:
+	    {
+	      struct keyserver_spec *keyserver;
+	      keyserver=parse_keyserver_uri(pargs.r.ret_str,1,
+					    configname,configlineno);
+	      if(!keyserver)
+		log_error(_("could not parse keyserver URL\n"));
+	      else
+		free_keyserver_spec(keyserver);
+
+	      opt.def_keyserver_url = pargs.r.ret_str;
+	    }
 	    break;
           case oPersonalCipherPreferences:
 	    pers_cipher_list=pargs.r.ret_str;

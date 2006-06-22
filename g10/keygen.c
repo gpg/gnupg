@@ -41,6 +41,7 @@
 #include "status.h"
 #include "i18n.h"
 #include "cardglue.h"
+#include "keyserver-internal.h"
 
 #define MAX_PREFS 30 
 
@@ -66,7 +67,8 @@ enum para_name {
   pPASSPHRASE_S2K,
   pSERIALNO,
   pBACKUPENCDIR,
-  pHANDLE
+  pHANDLE,
+  pKEYSERVER
 };
 
 struct para_data_s {
@@ -655,6 +657,7 @@ keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
     /* Make sure that the MDC feature flag is set if needed */
     add_feature_mdc (sig,mdc_available);
     add_keyserver_modify (sig,ks_modify);
+    keygen_add_keyserver_url(sig,NULL);
 
     return 0;
 }
@@ -673,6 +676,7 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     do_add_key_flags (sig, pk->pubkey_usage);
     keygen_add_key_expire( sig, opaque );
     keygen_upd_std_prefs (sig, opaque);
+    keygen_add_keyserver_url(sig,NULL);
 
     return 0;
 }
@@ -681,6 +685,9 @@ int
 keygen_add_keyserver_url(PKT_signature *sig, void *opaque)
 {
   const char *url=opaque;
+
+  if(!url)
+    url=opt.def_keyserver_url;
 
   if(url)
     build_sig_subpkt(sig,SIGSUBPKT_PREF_KS,url,strlen(url));
@@ -2238,6 +2245,25 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   /* Set preferences, if any. */
   keygen_set_std_prefs(get_parameter_value( para, pPREFERENCES ), 0);
 
+  /* Set keyserver, if any. */
+  s1=get_parameter_value( para, pKEYSERVER );
+  if(s1)
+    {
+      struct keyserver_spec *spec;
+
+      spec=parse_keyserver_uri(s1,1,NULL,0);
+      if(spec)
+	{
+	  free_keyserver_spec(spec);
+	  opt.def_keyserver_url=s1;
+	}
+      else
+	{
+	  log_error("%s:%d: invalid keyserver url\n", fname, r->lnr );
+	  return -1;
+	}
+    }
+
   /* Set revoker, if any. */
   if (parse_revocation_key (fname, para, pREVOKER))
     return -1;
@@ -2330,6 +2356,7 @@ read_parameter_file( const char *fname )
 	{ "Preferences",    pPREFERENCES },
 	{ "Revoker",        pREVOKER },
         { "Handle",         pHANDLE },
+	{ "Keyserver",      pKEYSERVER },
 	{ NULL, 0 }
     };
     IOBUF fp;

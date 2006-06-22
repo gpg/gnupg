@@ -1,5 +1,11 @@
 2006-06-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, gpg.c (main), keygen.c (keygen_upd_std_prefs,
+	keygen_add_std_prefs, proc_parameter_file): Add
+	--default-keyserver-url to specify a keyserver URL at key
+	generation time, and "Keyserver:" keyword for doing the same
+	through a batch file.
+
 	* sign.c (do_sign): Accept a truncated hash even for DSA1 keys (be
 	liberal in what you accept, etc).
 
