@@ -319,6 +319,12 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
       }
     else 
       {
+#if 0
+	/* Disabled for now.  It seems reasonable to accept a
+	   truncated hash for a DSA1 key, even though we don't
+	   generate it without --enable-dsa2.  Be liberal in what you
+	   accept, etc. */
+
 	/* If it's a DSA key, and q is 160 bits, it might be an
 	   old-style DSA key.  If the hash doesn't match the q, fail
 	   unless --enable-dsa2 is set.  If the q isn't 160 bits, then
@@ -333,6 +339,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	    log_error(_("DSA requires the use of a 160 bit hash algorithm\n"));
 	    return G10ERR_GENERAL;
 	  }
+#endif
 
         frame = encode_md_value( NULL, sk, md, digest_algo );
         if (!frame)
