@@ -1723,6 +1723,17 @@ validation.  This option is only meaningful if pka-lookups is set.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--enable-dsa2</term>
+<term>--disable-dsa2</term>
+<listitem><para>
+Enables new-style DSA keys which (unlike the old style) may be larger
+than 1024 bit and use hashes other than SHA-1 and RIPEMD/160.  Note
+that very few programs currently support these keys and signatures
+from them.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
 <term>--show-photos</term>
 <term>--no-show-photos</term>
 <listitem><para>
@@ -3002,6 +3013,14 @@ used when there are no recipient keys to consider (e.g. --symmetric).
 Set the list of default preferences to &ParmString;.  This preference
 list is used for new keys and becomes the default for "setpref" in the
 edit menu.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--default-keyserver-url &ParmName;</term>
+<listitem><para>
+Set the default keyserver URL to &ParmName;.  This keyserver will be
+used as the keyserver URL when writing a new self-signature on a key,
+which includes key generation and changing preferences.
 </para></listitem></varlistentry>
 
 <varlistentry>

@@ -1,5 +1,10 @@
 2006-06-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.sgml: Document --enable-dsa2, --disable-dsa2, and
+	--default-keyserver-url.
+
+	* DETAILS: Note "Keyserver:"
+
 	* gpg.sgml: Note that --pgp8 does not include SHA224.  Clarify
 	that clearsigned messages are not reversible.
 

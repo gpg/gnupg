@@ -807,6 +807,9 @@ The format of this file is as follows:
         characters and should not contain spaces.  It is useful for
         batch key generation to associate a key parameter block with a
         status line.
+     Keyserver: <string>
+        This is an optional parameter that specifies the preferred
+        keyserver URL for the key.
 
 
 Here is an example:
