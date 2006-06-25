@@ -1,7 +1,7 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 1.4.3
+			    Version 1.4.4
 
 	 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
 		 2005, 2006 Free Software Foundation, Inc.
@@ -621,8 +621,8 @@
                     allow import or export of secret keys. 
 
      --enable-noexecstack
-                    Pass option --noexecstack to as.  Works only when
-                    using gcc.
+                    Pass option --noexecstack to as.  Autdetect wether
+                    the tool chain actually support this.
 
      --disable-gnupg-iconv
                     If iconv is available it is used to convert
@@ -807,4 +807,4 @@
     do so.
 
     Commercial grade support for GnuPG is available; please see
-    the GNU service directory or check out http://g10code.com.
+    http://www.gnupg.org/service.html .
