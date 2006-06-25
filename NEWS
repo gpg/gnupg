@@ -1,7 +1,7 @@
 Noteworthy changes in version 1.4.4 (2006-06-25)
 ------------------------------------------------
 
-    * User IDs are now capped 2048 byte.  This avoids a memory
+    * User IDs are now capped at 2048 byte.  This avoids a memory
       allocation attack (see CVE-2006-3082).
 
     * Added support for the SHA-224 hash.  Like the SHA-384 hash, it
