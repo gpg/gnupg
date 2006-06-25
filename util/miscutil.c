@@ -326,10 +326,10 @@ make_printable_string( const byte *p, size_t n, int delim )
 int
 answer_is_yes_no_default( const char *s, int def_answer )
 {
-    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    /* TRANSLATORS: See doc/TRANSLATE about this string. */
     const char *long_yes = _("yes");
     const char *short_yes = _("yY");
-    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    /* TRANSLATORS: See doc/TRANSLATE about this string. */
     const char *long_no = _("no");
     const char *short_no = _("nN");
 
@@ -363,11 +363,11 @@ answer_is_yes( const char *s )
 int
 answer_is_yes_no_quit( const char *s )
 {
-    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    /* TRANSLATORS: See doc/TRANSLATE about this string. */
     const char *long_yes = _("yes");
-    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    /* TRANSLATORS: See doc/TRANSLATE about this string. */
     const char *long_no = _("no");
-    /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+    /* TRANSLATORS: See doc/TRANSLATE about this string. */
     const char *long_quit = _("quit");
     const char *short_yes = _("yY");
     const char *short_no = _("nN");
@@ -403,9 +403,9 @@ answer_is_yes_no_quit( const char *s )
 int
 answer_is_okay_cancel (const char *s, int def_answer)
 {
-  /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+  /* TRANSLATORS: See doc/TRANSLATE about this string. */
   const char *long_okay = _("okay|okay");
-  /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+  /* TRANSLATORS: See doc/TRANSLATE about this string. */
   const char *long_cancel = _("cancel|cancel");
   const char *short_okay = _("oO");
   const char *short_cancel = _("cC");

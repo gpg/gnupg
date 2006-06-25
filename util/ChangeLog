@@ -10,7 +10,7 @@
 
 2006-04-11  Werner Koch  <wk@g10code.com>
 
-	* iobuf.c (IOBUF_BUFFER_SIZE): New to repalce hardwired 8192.
+	* iobuf.c (IOBUF_BUFFER_SIZE): New to replace hardwired 8192.
 
 2006-04-06  David Shaw  <dshaw@jabberwocky.com>
 

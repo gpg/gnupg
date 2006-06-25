@@ -51,7 +51,11 @@ together (for a signed message that may be decrypted via a secret key
 or a passphrase).
 
 @item --clearsign 
-Make a clear text signature.
+Make a clear text signature. The content in a clear text signature is
+readable without any special software. OpenPGP software is only
+needed to verify the signature. Clear text signatures may modify
+end-of-line whitespace for platform independence and are not intended
+to be reversible.
 
 @item -b, --detach-sign 
 Make a detached signature.
@@ -355,7 +359,7 @@ Compact (by removing all signatures except the selfsig) any user ID
 that is no longer usable (e.g. revoked, or expired). Then, remove any
 signatures that are not usable by the trust calculations.
 Specifically, this removes any signature that does not validate, any
-signature that is superceded by a later signature, revoked signatures,
+signature that is superseded by a later signature, revoked signatures,
 and signatures issued by keys that are not present on the keyring.
 
 @item minimize
@@ -1140,6 +1144,13 @@ Raise the trust in a signature to full if the signature passes PKA
 validation. This option is only meaningful if pka-lookups is set.
 @end table
 
+@item --enable-dsa2
+@itemx --disable-dsa2
+Enables new-style DSA keys which (unlike the old style) may be larger
+than 1024 bit and use hashes other than SHA-1 and RIPEMD/160. Note
+that very few programs currently support these keys and signatures
+from them.
+
 @item --show-photos
 @itemx --no-show-photos
 Causes --list-keys, --list-sigs, --list-public-keys,
@@ -1434,14 +1445,20 @@ key signer (defaults to 3)
 Maximum depth of a certification chain (default is 5).
 
 @item --cipher-algo @code{name}
-Use @code{name} as cipher algorithm. Running the program
-with the command --version yields a list of supported
-algorithms. If this is not used the cipher algorithm is
-selected from the preferences stored with the key.
+Use @code{name} as cipher algorithm. Running the program with the
+command --version yields a list of supported algorithms. If this is
+not used the cipher algorithm is selected from the preferences stored
+with the key. In general, you do not want to use this option as it
+allows you to violate the OpenPGP standard.
+--personal-cipher-preferences is the safe way to accomplish the same
+thing.
 
 @item --digest-algo @code{name}
 Use @code{name} as the message digest algorithm. Running the program
-with the command --version yields a list of supported algorithms.
+with the command --version yields a list of supported algorithms. In
+general, you do not want to use this option as it allows you to
+violate the OpenPGP standard. --personal-digest-preferences is the
+safe way to accomplish the same thing.
 
 @item --compress-algo @code{name}
 Use compression algorithm @code{name}. "zlib" is RFC-1950 ZLIB
@@ -1460,7 +1477,10 @@ compression results than that, but will use a significantly larger
 amount of memory while compressing and decompressing. This may be
 significant in low memory situations. Note, however, that PGP (all
 versions) only supports ZIP compression. Using any algorithm other
-than ZIP or "none" will make the message unreadable with PGP.
+than ZIP or "none" will make the message unreadable with PGP. In
+general, you do not want to use this option as it allows you to
+violate the OpenPGP standard. --personal-compress-preferences is the
+safe way to accomplish the same thing.
 
 @item --cert-digest-algo @code{name}
 Use @code{name} as the message digest algorithm used when signing a
@@ -1558,15 +1578,17 @@ signature. Note that all other PGP versions do it this way too.
 Enabled by default. --no-escape-from-lines disables this option.
 
 @item --passphrase-fd @code{n}
-Read the passphrase from file descriptor @code{n}. If you use 0 for
-@code{n}, the passphrase will be read from stdin. This can only be
-used if only one passphrase is supplied.
+Read the passphrase from file descriptor @code{n}. Only the first line
+will be read from file descriptor @code{n}. If you use 0 for @code{n},
+the passphrase will be read from stdin. This can only be used if only
+one passphrase is supplied.
 
 @item --passphrase-file @code{file}
-Read the passphrase from file @code{file}. This can only be used if
-only one passphrase is supplied. Obviously, a passphrase stored in a
-file is of questionable security if other users can read this file.
-Don't use this option if you can avoid it.
+Read the passphrase from file @code{file}. Only the first line will
+be read from file @code{file}. This can only be used if only one 
+passphrase is supplied. Obviously, a passphrase stored in a file is
+of questionable security if other users can read this file. Don't use
+this option if you can avoid it.
 
 @item --passphrase @code{string}
 Use @code{string} as the passphrase. This can only be used if only one
@@ -1660,7 +1682,8 @@ TWOFISH.
 Set up all options to be as PGP 8 compliant as possible. PGP 8 is a
 lot closer to the OpenPGP standard than previous versions of PGP, so
 all this does is disable --throw-keyids and set --escape-from-lines.
-All algorithms are allowed except for the SHA384 and SHA512 digests.
+All algorithms are allowed except for the SHA224, SHA384, and SHA512
+digests.
 @end table
 
 @item --force-v3-sigs
@@ -1785,10 +1808,10 @@ certain common permission problems. Do not assume that the lack of a
 warning means that your system is secure.
 
 Note that the warning for unsafe --homedir permissions cannot be
-supressed in the gpg.conf file, as this would allow an attacker to
-place an unsafe gpg.conf file in place, and use this file to supress
+suppressed in the gpg.conf file, as this would allow an attacker to
+place an unsafe gpg.conf file in place, and use this file to suppress
 warnings about itself. The --homedir permissions warning may only be
-supressed on the command line.
+suppressed on the command line.
 
 @item --no-mdc-warning
 Suppress the warning about missing MDC integrity protection.
@@ -1929,8 +1952,8 @@ message contains a bogus key ID.
 @item --allow-multisig-verification
 Allow verification of concatenated signed messages. This will run a
 signature verification for each data+signature block. There are some
-security issues with this option thus it is off by default. Note that
-versions of gpg rpior to version 1.4.3 implicityly allowed for this.
+security issues with this option and thus it is off by default. Note
+that versions of GPG prior to version 1.4.3 implicitly allowed this.
 
 @item --enable-special-filenames
 This options enables a mode in which filenames of the form
@@ -1993,6 +2016,11 @@ used when there are no recipient keys to consider (e.g. --symmetric).
 Set the list of default preferences to @code{string}. This preference
 list is used for new keys and becomes the default for "setpref" in the
 edit menu.
+
+@item --default-keyserver-url @code{name}
+Set the default keyserver URL to @code{name}. This keyserver will be
+used as the keyserver URL when writing a new self-signature on a key,
+which includes key generation and changing preferences.
 
 @item --list-config 
 Display various internal configuration parameters of GnuPG. This

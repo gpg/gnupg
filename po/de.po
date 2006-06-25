@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gnupg-1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
 "POT-Creation-Date: 2006-04-03 11:40+0200\n"
-"PO-Revision-Date: 2006-04-03 11:40+0200\n"
+"PO-Revision-Date: 2006-05-12 12:13+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -6113,7 +6113,7 @@ msgstr ""
 #: g10/trustdb.c:2197
 #, c-format
 msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
-msgstr "%d marignal-needed, %d complete-needed, %s Trust-Modell\n"
+msgstr "%d marginal-needed, %d complete-needed, %s Vertrauensmodell\n"
 
 #: g10/trustdb.c:2283
 #, c-format
