@@ -1631,7 +1631,7 @@ parse_trust_model(const char *model)
 static void
 reopen_std(void)
 {  
-#ifdef HAVE_STAT
+#if defined(HAVE_STAT) && !defined(HAVE_W32_SYSTEM)
   struct stat statbuf;
   int did_stdin=0,did_stdout=0,did_stderr=0;
   FILE *complain;
@@ -1685,7 +1685,7 @@ reopen_std(void)
 
   if(did_stdin==2 || did_stdout==2 || did_stderr==2)
     exit(3);
-#endif
+#endif /* HAVE_STAT && !HAVE_W32_SYSTEM */
 }
 
 int
