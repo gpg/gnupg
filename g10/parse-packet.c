@@ -1,6 +1,6 @@
 /* parse-packet.c  - read packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -876,8 +876,13 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	break;
       case SIGSUBPKT_SIG_EXPIRE:
 	if( length >= 4 )
-	    fprintf (listfp, "sig expires after %s",
-				     strtimevalue( buffer_to_u32(buffer) ) );
+	  {
+	    if(buffer_to_u32(buffer))
+	      fprintf (listfp, "sig expires after %s",
+		       strtimevalue( buffer_to_u32(buffer) ) );
+	    else
+	      fprintf (listfp, "sig does not expire");
+	  }
 	break;
       case SIGSUBPKT_EXPORTABLE:
 	if( length )
@@ -901,8 +906,13 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	break;
       case SIGSUBPKT_KEY_EXPIRE:
 	if( length >= 4 )
-	    fprintf (listfp, "key expires after %s",
-				    strtimevalue( buffer_to_u32(buffer) ) );
+	  {
+	    if(buffer_to_u32(buffer))
+	      fprintf (listfp, "key expires after %s",
+		       strtimevalue( buffer_to_u32(buffer) ) );
+	    else
+	      fprintf (listfp, "key does not expire");
+	  }
 	break;
       case SIGSUBPKT_PREF_SYM:
 	fputs("pref-sym-algos:", listfp );
@@ -1408,7 +1418,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	  log_info ("signature packet without keyid\n");
 
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_SIG_EXPIRE,NULL);
-	if(p)
+	if(p && buffer_to_u32(p))
 	  sig->expiredate=sig->timestamp+buffer_to_u32(p);
 	if(sig->expiredate && sig->expiredate<=make_timestamp())
 	  sig->flags.expired=1;
@@ -2027,6 +2037,20 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
+    /* Cap the size of a user ID at 2k: a value absurdly large enough
+       that there is no sane user ID string (which is printable text
+       as of RFC2440bis) that won't fit in it, but yet small enough to
+       avoid allocation problems.  A large pktlen may not be
+       allocatable, and a very large pktlen could actually cause our
+       allocation to wrap around in xmalloc to a small number. */
+
+    if (pktlen > 2048)
+      {
+	log_error ("packet(%d) too large\n", pkttype);
+	iobuf_skip_rest(inp, pktlen, 0);
+	return G10ERR_INVALID_PACKET;
+      }
+    
     packet->pkt.user_id = xmalloc_clear(sizeof *packet->pkt.user_id + pktlen);
     packet->pkt.user_id->len = pktlen;
     packet->pkt.user_id->ref=1;

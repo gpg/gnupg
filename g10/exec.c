@@ -127,8 +127,11 @@ static int make_tempdir(struct exec_info *info)
   if(tmp==NULL)
     {
 #if defined (_WIN32)
-      tmp=xmalloc(256);
-      if(GetTempPath(256,tmp)==0)
+      int err;
+
+      tmp=xmalloc(MAX_PATH+2);
+      err=GetTempPath(MAX_PATH+1,tmp);
+      if(err==0 || err>MAX_PATH+1)
 	strcpy(tmp,"c:\\windows\\temp");
       else
 	{

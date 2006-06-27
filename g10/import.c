@@ -66,7 +66,7 @@ static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void revocation_present(KBNODE keyblock);
 static int import_one(const char *fname, KBNODE keyblock,struct stats_s *stats,
 		      unsigned char **fpr,size_t *fpr_len,
-		      unsigned int options);
+		      unsigned int options,int from_sk);
 static int import_secret_one( const char *fname, KBNODE keyblock,
                               struct stats_s *stats, unsigned int options);
 static int import_revoke_cert( const char *fname, KBNODE node,
@@ -258,7 +258,7 @@ import( IOBUF inp, const char* fname,struct stats_s *stats,
 
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-	    rc = import_one( fname, keyblock, stats, fpr, fpr_len, options );
+	    rc = import_one( fname, keyblock, stats, fpr, fpr_len, options, 0);
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
                 rc = import_secret_one( fname, keyblock, stats, options );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
@@ -679,7 +679,8 @@ check_prefs(KBNODE keyblock)
  */
 static int
 import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
-	    unsigned char **fpr,size_t *fpr_len,unsigned int options )
+	    unsigned char **fpr,size_t *fpr_len,unsigned int options,
+	    int from_sk )
 {
     PKT_public_key *pk;
     PKT_public_key *pk_orig;
@@ -697,9 +698,6 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	BUG();
 
     pk = node->pkt->pkt.public_key;
-
-    if(fpr)
-      *fpr=fingerprint_from_pk(pk,NULL,fpr_len);
 
     keyid_from_pk( pk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
@@ -978,13 +976,31 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
     if(mod_key)
       {
 	revocation_present(keyblock_orig);
-	if(seckey_available(keyid)==0)
+	if(!from_sk && seckey_available(keyid)==0)
 	  check_prefs(keyblock_orig);
       }
     else if(new_key)
       {
+	/* A little explanation for this: we fill in the fingerprint
+	   when importing keys as it can be useful to know the
+	   fingerprint in certain keyserver-related cases (a keyserver
+	   asked for a particular name, but the key doesn't have that
+	   name).  However, in cases where we're importing more than
+	   one key at a time, we cannot know which key to fingerprint.
+	   In these cases, rather than guessing, we do not fingerpring
+	   at all, and we must hope the user ID on the keys are
+	   useful. */
+	if(fpr)
+	  {
+	    xfree(*fpr);
+	    if(stats->imported==1)
+	      *fpr=fingerprint_from_pk(pk,NULL,fpr_len);
+	    else
+	      *fpr=NULL;
+	  }
+
 	revocation_present(keyblock);
-	if(seckey_available(keyid)==0)
+	if(!from_sk && seckey_available(keyid)==0)
 	  check_prefs(keyblock);
       }
 
@@ -1156,7 +1172,7 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	    if(pub_keyblock)
 	      {
 		import_one(fname,pub_keyblock,stats,
-			   NULL,NULL,opt.import_options);
+			   NULL,NULL,opt.import_options,1);
 		release_kbnode(pub_keyblock);
 	      }
 	  }

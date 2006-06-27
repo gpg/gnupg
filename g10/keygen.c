@@ -42,6 +42,7 @@
 #include "trustdb.h"
 #include "status.h"
 #include "i18n.h"
+#include "keyserver-internal.h"
 #include "call-agent.h"
 
 
@@ -69,7 +70,8 @@ enum para_name {
   pPASSPHRASE_S2K,
   pSERIALNO,
   pBACKUPENCDIR,
-  pHANDLE
+  pHANDLE,
+  pKEYSERVER
 };
 
 struct para_data_s {
@@ -125,6 +127,7 @@ static void do_generate_keypair( struct para_data_s *para,
 static int  write_keyblock( IOBUF out, KBNODE node );
 static int gen_card_key (int algo, int keyno, int is_primary,
                          KBNODE pub_root, KBNODE sec_root,
+			 PKT_secret_key **ret_sk,
                          u32 expireval, struct para_data_s *para);
 static int gen_card_key_with_backup (int algo, int keyno, int is_primary,
                                      KBNODE pub_root, KBNODE sec_root,
@@ -224,7 +227,7 @@ keygen_add_key_expire( PKT_signature *sig, void *opaque )
         if(pk->expiredate > pk->timestamp)
 	  u= pk->expiredate - pk->timestamp;
 	else
-	  u= 0;
+	  u= 1;
 
 	buf[0] = (u >> 24) & 0xff;
 	buf[1] = (u >> 16) & 0xff;
@@ -657,6 +660,7 @@ keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
     /* Make sure that the MDC feature flag is set if needed */
     add_feature_mdc (sig,mdc_available);
     add_keyserver_modify (sig,ks_modify);
+    keygen_add_keyserver_url(sig,NULL);
 
     return 0;
 }
@@ -675,6 +679,7 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     do_add_key_flags (sig, pk->pubkey_usage);
     keygen_add_key_expire( sig, opaque );
     keygen_upd_std_prefs (sig, opaque);
+    keygen_add_keyserver_url(sig,NULL);
 
     return 0;
 }
@@ -683,6 +688,9 @@ int
 keygen_add_keyserver_url(PKT_signature *sig, void *opaque)
 {
   const char *url=opaque;
+
+  if(!url)
+    url=opt.def_keyserver_url;
 
   if(url)
     build_sig_subpkt(sig,SIGSUBPKT_PREF_KS,url,strlen(url));
@@ -940,7 +948,6 @@ write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
     return rc;
 }
 
-/* sub_sk is currently unused (reserved for backsigs) */
 static int
 write_keybinding( KBNODE root, KBNODE pub_root,
 		  PKT_secret_key *pri_sk, PKT_secret_key *sub_sk,
@@ -1224,20 +1231,54 @@ gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PKT_public_key *pk;
     gcry_sexp_t s_parms, s_key;
     gcry_sexp_t misc_key_info;
+    unsigned int qbits;
 
-    if( nbits > 1024 || nbits < 512 ) {
+    if ( nbits < 512 || (!opt.flags.dsa2 && nbits > 1024)) 
+      {
 	nbits = 1024;
 	log_info(_("keysize invalid; using %u bits\n"), nbits );
-    }
+      }
+    else if ( nbits > 3072 )
+      {
+ 	nbits = 3072;
+        log_info(_("keysize invalid; using %u bits\n"), nbits );
+      }
 
-    if( (nbits % 64) ) {
+    if( (nbits % 64) )
+      {
 	nbits = ((nbits + 63) / 64) * 64;
 	log_info(_("keysize rounded up to %u bits\n"), nbits );
-    }
+      }
+
+    /*
+      Figure out a q size based on the key size.  FIPS 180-3 says:
+ 
+      L = 1024, N = 160
+      L = 2048, N = 224
+      L = 2048, N = 256
+      L = 3072, N = 256
+ 
+      2048/256 is an odd pair since there is also a 2048/224 and
+      3072/256.  Matching sizes is not a very exact science.
+      
+      We'll do 256 qbits for nbits over 2048, 224 for nbits over 1024
+      but less than 2048, and 160 for 1024 (DSA1).
+    */
+ 
+    if (nbits > 2048)
+      qbits = 256;
+    else if ( nbits > 1024)
+      qbits = 224;
+    else
+      qbits = 160;
+ 
+    if (qbits != 160 )
+      log_info (_("WARNING: some OpenPGP programs can't"
+                  " handle a DSA key with this digest size\n"));
 
     rc = gcry_sexp_build (&s_parms, NULL,
-                          "(genkey(dsa(nbits %d)))",
-                          (int)nbits);
+                            "(genkey(dsa(nbits %d)(qbits %d)))",
+                            (int)nbits, (int)qbits);
     if (rc)
       log_bug ("gcry_sexp_build failed: %s\n", gpg_strerror (rc));
   
@@ -1253,9 +1294,8 @@ gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pk = xmalloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
-    if( expireval ) {
-	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
-    }
+    if (expireval) 
+      sk->expiredate = pk->expiredate = sk->timestamp + expireval;
     sk->pubkey_algo = pk->pubkey_algo = PUBKEY_ALGO_DSA;
 
     rc = key_from_sexp (pk->pkey, s_key, "public-key", "pqgy");
@@ -1633,10 +1673,10 @@ ask_keysize( int algo )
   switch(algo)
     {
     case PUBKEY_ALGO_DSA:
-      if(opt.expert)
+      if(opt.flags.dsa2)
 	{
 	  def=1024;
-	  max=1024;
+	  max=3072;
 	}
       else
 	{
@@ -2375,6 +2415,25 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   /* Set preferences, if any. */
   keygen_set_std_prefs(get_parameter_value( para, pPREFERENCES ), 0);
 
+  /* Set keyserver, if any. */
+  s1=get_parameter_value( para, pKEYSERVER );
+  if(s1)
+    {
+      struct keyserver_spec *spec;
+
+      spec=parse_keyserver_uri(s1,1,NULL,0);
+      if(spec)
+	{
+	  free_keyserver_spec(spec);
+	  opt.def_keyserver_url=s1;
+	}
+      else
+	{
+	  log_error("%s:%d: invalid keyserver url\n", fname, r->lnr );
+	  return -1;
+	}
+    }
+
   /* Set revoker, if any. */
   if (parse_revocation_key (fname, para, pREVOKER))
     return -1;
@@ -2467,6 +2526,7 @@ read_parameter_file( const char *fname )
 	{ "Preferences",    pPREFERENCES },
 	{ "Revoker",        pREVOKER },
         { "Handle",         pHANDLE },
+	{ "Keyserver",      pKEYSERVER },
 	{ NULL, 0 }
     };
     IOBUF fp;
@@ -2746,12 +2806,12 @@ generate_keypair (const char *fname, const char *card_serialno,
           sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
           r->next = para;
           para = r;
-          tty_printf(_("DSA keypair will have %u bits.\n"),1024);
-          r = xmalloc_clear( sizeof *r + 20 );
-          r->key = pKEYLENGTH;
-          strcpy( r->u.value, "1024" );
-          r->next = para;
-          para = r;
+	  nbits = ask_keysize( PUBKEY_ALGO_DSA );
+	  r = xmalloc_clear( sizeof *r + 20 );
+	  r->key = pKEYLENGTH;
+	  sprintf( r->u.value, "%u", nbits);
+	  r->next = para;
+	  para = r;
           r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYUSAGE;
           strcpy( r->u.value, "sign" );
@@ -2791,7 +2851,7 @@ generate_keypair (const char *fname, const char *card_serialno,
             }
            
         }
-       
+
       nbits = ask_keysize( algo );
       r = xmalloc_clear( sizeof *r + 20 );
       r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
@@ -3057,7 +3117,7 @@ do_generate_keypair( struct para_data_s *para,
       }
     else
       {
-        rc = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root, sec_root,
+        rc = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root, sec_root, NULL,
                            get_parameter_u32 (para, pKEYEXPIRE), para);
         if (!rc)
           {
@@ -3093,7 +3153,7 @@ do_generate_keypair( struct para_data_s *para,
 
     if (!rc && card && get_parameter (para, pAUTHKEYTYPE))
       {
-        rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root,
+        rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root, NULL,
                            get_parameter_u32 (para, pKEYEXPIRE), para);
         
         if (!rc)
@@ -3129,6 +3189,7 @@ do_generate_keypair( struct para_data_s *para,
               }
             else
               rc = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, sec_root,
+				 NULL,
                                  get_parameter_u32 (para, pKEYEXPIRE), para);
           }
 
@@ -3353,7 +3414,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-				      dek, s2k, &sub_sk, expire, 1 );
+		    dek, s2k, &sub_sk, expire, 1 );
     if( !rc )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
     if( !rc )
@@ -3387,7 +3448,7 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
 {
   int okay=0, rc=0;
   KBNODE node;
-  PKT_secret_key *pri_sk = NULL;
+  PKT_secret_key *pri_sk = NULL, *sub_sk;
   int algo;
   unsigned int use;
   u32 expire;
@@ -3467,11 +3528,12 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
 
   if (passphrase)
     set_next_passphrase (passphrase);
-  rc = gen_card_key (algo, keyno, 0, pub_keyblock, sec_keyblock, expire, para);
+  rc = gen_card_key (algo, keyno, 0, pub_keyblock, sec_keyblock,
+		     &sub_sk, expire, para);
   if (!rc)
-    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, NULL, use);
+    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
   if (!rc)
-    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, NULL, use);
+    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, sub_sk, use);
   if (!rc)
     {
       okay = 1;
@@ -3518,7 +3580,7 @@ write_keyblock( IOBUF out, KBNODE node )
 
 static int
 gen_card_key (int algo, int keyno, int is_primary,
-              KBNODE pub_root, KBNODE sec_root,
+              KBNODE pub_root, KBNODE sec_root, PKT_secret_key **ret_sk,
               u32 expireval, struct para_data_s *para)
 {
 #ifdef ENABLE_CARD_SUPPORT
@@ -3578,6 +3640,9 @@ gen_card_key (int algo, int keyno, int is_primary,
            sk->protect.ivlen++, s += 2)
         sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s);
     }
+
+  if( ret_sk )
+    *ret_sk = sk;
 
   pkt = xcalloc (1,sizeof *pkt);
   pkt->pkttype = is_primary ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;

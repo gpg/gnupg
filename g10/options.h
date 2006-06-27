@@ -154,7 +154,8 @@ struct
   unsigned int export_options;
   unsigned int list_options;
   unsigned int verify_options;
-  char *def_preference_list;
+  const char *def_preference_list;
+  const char *def_keyserver_url;
   prefitem_t *personal_cipher_prefs;
   prefitem_t *personal_digest_prefs;
   prefitem_t *personal_compress_prefs;

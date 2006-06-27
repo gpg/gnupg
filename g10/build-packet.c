@@ -841,7 +841,8 @@ build_sig_subpkt_from_sig( PKT_signature *sig )
 	if(sig->expiredate>sig->timestamp)
 	  u=sig->expiredate-sig->timestamp;
 	else
-	  u=0;
+	  u=1; /* A 1-second expiration time is the shortest one
+		  OpenPGP has */
 
 	buf[0] = (u >> 24) & 0xff;
 	buf[1] = (u >> 16) & 0xff;

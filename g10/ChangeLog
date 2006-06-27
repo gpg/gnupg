@@ -1,3 +1,63 @@
+2006-06-27  Werner Koch  <wk@g10code.com>
+
+	Applied patches from 1.4.x (2006-05-22 to 2006-06-23) from David:
+
+	* keygen.c (keygen_upd_std_prefs, keygen_add_std_prefs)
+	(proc_parameter_file): Add --default-keyserver-url to specify a
+	keyserver URL at key generation time, and "Keyserver:" keyword for
+	doing the same through a batch file.
+	* options.h, gpg.c (main): Ditto.
+
+	* sign.c (do_sign): For now don't accept a truncated hash even
+	for DSA1 keys (be liberal in what you accept, etc).
+
+	* import.c (import_one): Add a flag (from_sk) so we don't check
+	prefs on an autoconverted public key.  The check should only
+	happen on the sk side.  Noted by Dirk Traulsen.
+
+	* keygen.c (gen_card_key): Add optional argument to return a
+	pointer (not a copy) of the stub secret key for the secret key we
+	just generated on the card.
+	(generate_card_subkeypair): Use it here so that the signing key on
+	the card can use the card to generate the 0x19 backsig on the
+	primary key.  Noted by Janko Heilgeist and Jonas Oberg.
+
+	* parse-packet.c (parse_user_id): Cap the user ID size at 2048
+	bytes.  This prevents a memory allocation attack with a very large
+	user ID.  A very large packet length could even cause the
+	allocation (a u32) to wrap around to a small number.  Noted by
+	Evgeny Legerov on full-disclosure.
+
+	* keygen.c (gen_dsa): Allow generating DSA2 keys.  Allow
+	specifying sizes > 1024 when --enable-dsa2 is set.  The size of q
+	is set automatically based on the key size.
+	(ask_keysize, generate_keypair): Ask for DSA size when
+	--enable-dsa2 is set.
+
+	* exec.c (make_tempdir) [W32]: Fix bug with a temporary directory
+	on W32 that is over 256 bytes long.  Noted by Israel G. Lugo.
+
+	* gpg.c (reopen_std): New function to reopen fd 0, 1, or 2 if we
+	are called with them closed.  This is to protect our
+	keyring/trustdb files from corruption if they get attached to one
+	of the standard fds.  Print a warning if possible that this has
+	happened, and fail completely if we cannot reopen (should never
+	happen).
+	(main): Call it here.
+	
+	* parse-packet.c (dump_sig_subpkt, parse_signature): Fix meaning
+	of key expiration and sig expiration subpackets - zero means
+	"never expire" according to 2440, not "expire instantly".
+	* build-packet.c (build_sig_subpkt_from_sig): Ditto.
+	* getkey.c (fixup_uidnode, merge_selfsigs_main)
+	(merge_selfsigs_subkey): Ditto.
+	* keygen.c (keygen_add_key_expire): Ditto.
+
+	* getkey.c (get_pubkey_byname)
+	* import.c (import_one): Fix key selection problem when
+	auto-key-locate returns a list of keys, not all of which are
+	usable (revoked, expired, etc).  Noted by Simon Josefsson.
+
 2006-05-24  Werner Koch  <wk@g10code.com>
 
 	* keyid.c (hash_public_key): Do not double hash the length bytes,

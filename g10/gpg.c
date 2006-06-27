@@ -328,6 +328,7 @@ enum cmd_and_opt_values
     oNoAutoCheckTrustDB,
     oPreservePermissions,
     oDefaultPreferenceList,
+    oDefaultKeyserverURL,
     oPersonalCipherPreferences,
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
@@ -659,6 +660,7 @@ static ARGPARSE_OPTS opts[] = {
     { aRebuildKeydbCaches, "rebuild-keydb-caches", 256, "@"},
     { oPreservePermissions, "preserve-permissions", 0, "@"},
     { oDefaultPreferenceList,  "default-preference-list", 2, "@"},
+    { oDefaultKeyserverURL,  "default-keyserver-url", 2, "@"},
     { oPersonalCipherPreferences,  "personal-cipher-preferences", 2, "@"},
     { oPersonalDigestPreferences,  "personal-digest-preferences", 2, "@"},
     { oPersonalCompressPreferences,  "personal-compress-preferences", 2, "@"},
@@ -1643,6 +1645,78 @@ parse_trust_model(const char *model)
     log_error("unknown trust model `%s'\n",model);
 }
 
+
+
+/* Make sure that the standard file descriptors are opened. Obviously
+   some folks close them before an exec and the next file we open will
+   get one of them assigned and thus any output (i.e. diagnostics) end
+   up in that file (e.g. the trustdb).  Not actually a gpg problem as
+   this will hapenn with almost all utilities when called in a wrong
+   way.  However we try to minimize the damage here and raise
+   awareness of the problem.
+
+   Must be called before we open any files! */
+static void
+reopen_std(void)
+{  
+#if defined(HAVE_STAT) && !defined(HAVE_W32_SYSTEM)
+  struct stat statbuf;
+  int did_stdin=0,did_stdout=0,did_stderr=0;
+  FILE *complain;
+
+  if(fstat(STDIN_FILENO,&statbuf)==-1 && errno==EBADF)
+    {
+      if(open("/dev/null",O_RDONLY)==STDIN_FILENO)
+	did_stdin=1;
+      else
+	did_stdin=2;
+    }
+
+  if(fstat(STDOUT_FILENO,&statbuf)==-1 && errno==EBADF)
+    {
+      if(open("/dev/null",O_WRONLY)==STDOUT_FILENO)
+	did_stdout=1;
+      else
+	did_stdout=2;
+    }
+
+  if(fstat(STDERR_FILENO,&statbuf)==-1 && errno==EBADF)
+    {
+      if(open("/dev/null",O_WRONLY)==STDERR_FILENO)
+	did_stderr=1;
+      else
+	did_stderr=2;
+    }
+
+  /* It's hard to log this sort of thing since the filehandle we would
+     complain to may be closed... */
+  if(did_stderr==0)
+    complain=stderr;
+  else if(did_stdout==0)
+    complain=stdout;
+  else
+    complain=NULL;
+
+  if(complain)
+    {
+      if(did_stdin==1)
+	fprintf(complain,"gpg: WARNING: standard input reopened\n");
+      if(did_stdout==1)
+	fprintf(complain,"gpg: WARNING: standard output reopened\n");
+      if(did_stderr==1)
+	fprintf(complain,"gpg: WARNING: standard error reopened\n");
+
+      if(did_stdin==2 || did_stdout==2 || did_stderr==2)
+	fprintf(complain,"gpg: fatal: unable to reopen standard input,"
+		" output, or error\n");
+    }
+
+  if(did_stdin==2 || did_stdout==2 || did_stderr==2)
+    exit(3);
+#endif /* HAVE_STAT && !HAVE_W32_SYSTEM */
+}
+
+
 int
 main (int argc, char **argv )
 {
@@ -1697,7 +1771,7 @@ main (int argc, char **argv )
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
        when adding any stuff between here and the call to
        secmem_init() somewhere after the option parsing. */
-
+    reopen_std ();
     trap_unaligned();
     set_strusage (my_strusage);
     gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -2585,6 +2659,19 @@ main (int argc, char **argv )
           case oPreservePermissions: opt.preserve_permissions=1; break;
           case oDefaultPreferenceList:
 	    opt.def_preference_list = pargs.r.ret_str;
+	    break;
+	  case oDefaultKeyserverURL:
+	    {
+	      struct keyserver_spec *keyserver;
+	      keyserver=parse_keyserver_uri(pargs.r.ret_str,1,
+					    configname,configlineno);
+	      if(!keyserver)
+		log_error(_("could not parse keyserver URL\n"));
+	      else
+		free_keyserver_spec(keyserver);
+
+	      opt.def_keyserver_url = pargs.r.ret_str;
+	    }
 	    break;
           case oPersonalCipherPreferences:
 	    pers_cipher_list=pargs.r.ret_str;
