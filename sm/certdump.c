@@ -238,6 +238,36 @@ gpgsm_dump_cert (const char *text, ksba_cert_t cert)
 }
 
 
+/* Log the certificate's name in "#SN/ISSUERDN" format along with
+   TEXT. */
+void 
+gpgsm_cert_log_name (const char *text, ksba_cert_t cert)
+{
+  log_info ("%s", text? text:"certificate" );
+  if (cert)
+    {
+      ksba_sexp_t sn;
+      char *p;
+
+      p = ksba_cert_get_issuer (cert, 0);
+      sn = ksba_cert_get_serial (cert);
+      if (p && sn)
+        {
+          log_printf (" #");
+          gpgsm_dump_serial (sn);
+          log_printf ("/");
+          gpgsm_dump_string (p);
+        }
+      else
+        log_printf (" [invalid]");
+      ksba_free (sn);
+      xfree (p);
+    }
+  log_printf ("\n");
+}
+
+
+
 
 /* helper for the rfc2253 string parser */
 static const unsigned char *

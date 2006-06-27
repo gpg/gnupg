@@ -597,6 +597,8 @@ is_cert_still_valid (ctrl_t ctrl, int lm, FILE *fp,
         {
           /* Fixme: We should change the wording because we may
              have used OCSP. */
+          if (!lm)
+            gpgsm_cert_log_name (NULL, subject_cert);
           switch (gpg_err_code (err))
             {
             case GPG_ERR_CERT_REVOKED:

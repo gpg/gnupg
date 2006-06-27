@@ -218,6 +218,8 @@ void gpgsm_print_time (FILE *fp, ksba_isotime_t t);
 void gpgsm_print_name2 (FILE *fp, const char *string, int translate);
 void gpgsm_print_name (FILE *fp, const char *string);
 
+void gpgsm_cert_log_name (const char *text, ksba_cert_t cert);
+
 void gpgsm_dump_cert (const char *text, ksba_cert_t cert);
 void gpgsm_dump_serial (ksba_const_sexp_t p);
 void gpgsm_dump_time (ksba_isotime_t t);

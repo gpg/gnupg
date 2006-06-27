@@ -1360,7 +1360,8 @@ handle_signal (int signo)
       break;
       
     case SIGUSR2:
-      log_info ("SIGUSR2 received - checking smartcard status\n");
+      if (opt.verbose)
+        log_info ("SIGUSR2 received - checking smartcard status\n");
       break;
 
     case SIGTERM:

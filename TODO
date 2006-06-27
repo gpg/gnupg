@@ -111,6 +111,10 @@ might want to have an agent context for each service request
    anyway.
 ** skclist.c:random_is_faked
    Remove the whole stuff?
+** qbits
+   We pass a new qbit parameter to genkey - implement this in libgcrypt.
+** Makefile.am
+   Remove the no-pointer-sign kludge.
 
 * common/
 ** ttyio

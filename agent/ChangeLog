@@ -1,3 +1,14 @@
+2006-06-26  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (handle_signal): Print infor for SIGUSR2 only in
+	verbose mode.
+
+2006-06-22  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (make_cstring): Use memcpy instead of strncpy.
+	(ssh_receive_mpint_list, sexp_key_extract, data_sign): Use
+	xtrycalloc instead of xtrymalloc followed by memset.
+
 2006-06-20  Werner Koch  <wk@g10code.com>
 
 	* minip12.c (create_final): New arg PW. Add code to calculate the

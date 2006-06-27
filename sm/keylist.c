@@ -672,7 +672,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   else
     fputs ("[?]\n", fp);
 
-  fputs ("     keyUsage:", fp);
+  fputs ("     keyUsage: ", fp);
   err = ksba_cert_get_key_usage (cert, &kusage);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {

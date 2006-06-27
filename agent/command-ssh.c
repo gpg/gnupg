@@ -268,7 +268,7 @@ make_cstring (const char *data, size_t data_n)
   s = xtrymalloc (data_n + 1);
   if (s)
     {
-      strncpy (s, data, data_n);
+      memcpy (s, data, data_n);
       s[data_n] = 0;
     }
 
@@ -853,14 +853,12 @@ ssh_receive_mpint_list (estream_t stream, int secret,
   elems_public = key_spec.elems_key_public;
   elems_public_n = strlen (elems_public);
 
-  mpis = xtrymalloc (sizeof (*mpis) * (elems_n + 1));
-  if (! mpis)
+  mpis = xtrycalloc (elems_n + 1, sizeof *mpis );
+  if (!mpis)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
-  
-  memset (mpis, 0, sizeof (*mpis) * (elems_n + 1));
 
   elem_is_secret = 0;
   for (i = 0; i < elems_n; i++)
@@ -1143,13 +1141,12 @@ sexp_key_extract (gcry_sexp_t sexp,
     }
 
   elems_n = strlen (elems);
-  mpis_new = xtrymalloc (sizeof (*mpis_new) * (elems_n + 1));
-  if (! mpis_new)
+  mpis_new = xtrycalloc (elems_n + 1, sizeof *mpis_new );
+  if (!mpis_new)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
-  memset (mpis_new, 0, sizeof (*mpis_new) * (elems_n + 1));
 
   value_list = gcry_sexp_find_token (sexp, key_spec.identifier, 0);
   if (! value_list)
@@ -2055,13 +2052,12 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   elems = spec.elems_signature;
   elems_n = strlen (elems);
 
-  mpis = xtrymalloc (sizeof (*mpis) * (elems_n + 1));
-  if (! mpis)
+  mpis = xtrycalloc (elems_n + 1, sizeof *mpis);
+  if (!mpis)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
-  memset (mpis, 0, sizeof (*mpis) * (elems_n + 1));
 
   for (i = 0; i < elems_n; i++)
     {
