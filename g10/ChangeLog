@@ -1,5 +1,11 @@
 2006-06-28  David Shaw  <dshaw@jabberwocky.com>
 
+	* sign.c (sign_file): When signing with multiple DSA keys, one
+	being DSA1 and one being DSA2 and encrypting at the same time, if
+	the recipient preferences give a hash that can work with the DSA2
+	key, then allow the DSA1 key to be promoted rather than giving up
+	and using hash_for().
+
 	* pkclist.c (algo_available): Automatically enable DSA2 mode when
 	handling a key that clearly isn't DSA1 (i.e. q!=160).
 
