@@ -1,5 +1,10 @@
 2006-06-28  David Shaw  <dshaw@jabberwocky.com>
 
+	* keydb.h, pkclist.c (select_algo_from_prefs, algo_available):
+	Pass a union for preference hints rather than doing void * games.
+
+	* sign.c (sign_file): Use it here.
+
 	* sign.c (sign_file): When signing with multiple DSA keys, one
 	being DSA1 and one being DSA2 and encrypting at the same time, if
 	the recipient preferences give a hash that can work with the DSA2

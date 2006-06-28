@@ -1186,7 +1186,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
    preference list, so I'm including it. -dms */
 
 int
-algo_available( preftype_t preftype, int algo, void *hint )
+algo_available( preftype_t preftype, int algo, const union pref_hint *hint )
 {
   if( preftype == PREFTYPE_SYM )
     {
@@ -1210,18 +1210,18 @@ algo_available( preftype_t preftype, int algo, void *hint )
     }
   else if( preftype == PREFTYPE_HASH )
     {
-      if(hint)
+      if(hint && hint->digest_length)
 	{
-	  if((*(int *)hint)!=20 || opt.flags.dsa2)
+	  if(hint->digest_length!=20 || opt.flags.dsa2)
 	    {
 	      /* If --enable-dsa2 is set or the hash isn't 160 bits
 		 (which implies DSA2), then we'll accept a hash that
 		 is larger than we need.  Otherwise we won't accept
 		 any hash that isn't exactly the right size. */
-	      if((*(int *)hint) > md_digest_length(algo))
+	      if(hint->digest_length > md_digest_length(algo))
 		return 0;
 	    }
-	  else if(((*(int *)hint) != md_digest_length(algo)))
+	  else if(hint->digest_length != md_digest_length(algo))
 	    return 0;
 	}
 
@@ -1259,7 +1259,8 @@ algo_available( preftype_t preftype, int algo, void *hint )
  * Return -1 if we could not find an algorithm.
  */
 int
-select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
+select_algo_from_prefs(PK_LIST pk_list, int preftype,
+		       int request, const union pref_hint *hint)
 {
     PK_LIST pkr;
     u32 bits[8];

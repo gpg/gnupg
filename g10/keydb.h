@@ -177,9 +177,14 @@ void show_revocation_reason( PKT_public_key *pk, int mode );
 int  check_signatures_trust( PKT_signature *sig );
 void release_pk_list( PK_LIST pk_list );
 int  build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use );
-int  algo_available( preftype_t preftype, int algo, void *hint );
+union pref_hint
+{
+  int digest_length;
+};
+int  algo_available( preftype_t preftype, int algo,
+		     const union pref_hint *hint );
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype,
-			     int request, void *hint );
+			     int request, const union pref_hint *hint );
 int  select_mdc_from_pklist (PK_LIST pk_list);
 
 /*-- skclist.c --*/

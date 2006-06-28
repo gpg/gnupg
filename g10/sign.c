@@ -866,7 +866,10 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	  }
 	else
 	  {
-	    int hashlen=0,algo,smartcard=0;
+	    union pref_hint hint;
+	    int algo,smartcard=0;
+
+	    hint.digest_length=0;
 
 	    /* Of course, if the recipient asks for something
 	       unreasonable (like the wrong hash for a DSA key) then
@@ -894,8 +897,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		    /* Pick a hash that is large enough for our
 		       largest q */
 
-		    if(hashlen<temp_hashlen)
-		      hashlen=temp_hashlen;
+		    if(hint.digest_length<temp_hashlen)
+		      hint.digest_length=temp_hashlen;
 		  }
 		else if(sk_rover->sk->is_protected
 			&& sk_rover->sk->protect.s2k.mode==1002)
@@ -909,10 +912,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       single hash for all signatures.  All this may well have
 	       to change as the cards add algorithms. */
 
-	    if(!smartcard || (smartcard && hashlen==20))
+	    if(!smartcard || (smartcard && hint.digest_length==20))
 	      if((algo=
-		  select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,
-					 hashlen?&hashlen:NULL))>0)
+		  select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,&hint))>0)
 		recipient_digest_algo=algo;
 	  }
       }
