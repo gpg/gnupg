@@ -1,3 +1,8 @@
+2006-06-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (algo_available): Automatically enable DSA2 mode when
+	handling a key that clearly isn't DSA1 (i.e. q!=160).
+
 2006-06-28  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_writekey): Fixed computation of memmove

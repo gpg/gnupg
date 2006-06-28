@@ -1212,12 +1212,12 @@ algo_available( preftype_t preftype, int algo, void *hint )
     {
       if(hint)
 	{
-	  if(opt.flags.dsa2)
+	  if((*(int *)hint)!=20 || opt.flags.dsa2)
 	    {
-	      /* If --enable-dsa2 is set, then we'll accept a hash
-		 that is larger than we need.  If --enable-dsa2 is not
-		 set, then we won't accept any hash that isn't exactly
-		 the right size. */
+	      /* If --enable-dsa2 is set or the hash isn't 160 bits
+		 (which implies DSA2), then we'll accept a hash that
+		 is larger than we need.  Otherwise we won't accept
+		 any hash that isn't exactly the right size. */
 	      if((*(int *)hint) > md_digest_length(algo))
 		return 0;
 	    }
