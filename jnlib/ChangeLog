@@ -1,3 +1,15 @@
+2006-06-28  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c (make_dotlock, release_dotlock, read_lockfile)
+	(maybe_deadlock, destroy_dotlock, create_dotlock): Re-indented.
+	(create_dotlock): Repalces some log_fatal by log_error as it was
+	not intended that they should terminate.  Write the nodename to
+	the locking file. Code cleanups.
+	(read_lockfile): Reworked to read the node name.
+	(make_dotlock): Test for identical node name and delete lock stale
+	file.
+	(release_dotlock): Likewise.
+
 2006-05-23  Werner Koch  <wk@g10code.com>
 
 	* libjnlib-config.h (JNLIB_NEED_UTF8CONV): Fixed typo in name.
