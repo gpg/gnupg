@@ -136,25 +136,21 @@ generate( RSA_secret_key *sk, unsigned nbits )
     mpi_gcd(g, t1, t2);
     mpi_fdiv_q(f, phi, g);
 
-    /* find an public exponent.
-       We use 41 as this is quite fast and more secure than the
-       commonly used 17.  Benchmarking the RSA verify function
-       with a 1024 bit key yields (2001-11-08): 
+    /* Find an public exponent.
+       Benchmarking the RSA verify function with a 1024 bit key yields
+       (2001-11-08):
          e=17    0.54 ms
          e=41    0.75 ms
          e=257   0.95 ms
          e=65537 1.80 ms
+
+       This code used 41 until 2006-06-28 when it was changed to use
+       65537 as the new best practice.  See FIPS-186-3.
      */
     e = mpi_alloc( (32+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    mpi_set_ui( e, 41); 
-    if( !mpi_gcd(t1, e, phi) ) {
-      mpi_set_ui( e, 257); 
-      if( !mpi_gcd(t1, e, phi) ) {
-        mpi_set_ui( e, 65537); 
-        while( !mpi_gcd(t1, e, phi) ) /* (while gcd is not 1) */
-          mpi_add_ui( e, e, 2);
-      }
-    }
+    mpi_set_ui( e, 65537); 
+    while( !mpi_gcd(t1, e, phi) ) /* (while gcd is not 1) */
+      mpi_add_ui( e, e, 2);
 
     /* calculate the secret key d = e^1 mod phi */
     d = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
