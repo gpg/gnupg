@@ -16,6 +16,9 @@
 
 2006-06-28  Werner Koch  <wk@g10code.com>
 
+	* import.c (check_prefs_warning): Fix change for better
+	translatability.
+
 	* app-openpgp.c (do_writekey): Fixed computation of memmove
 	length.  This led to garbled keys if E was larger than one byte.
 	Thanks to Achim Pietig for hinting at the garbled E.
