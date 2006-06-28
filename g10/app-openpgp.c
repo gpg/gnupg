@@ -1789,7 +1789,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   if (rsa_e_len < 4)
     {
       /* Right justify E. */
-      memmove (tp+4-rsa_e_len, tp, 4-rsa_e_len);
+      memmove (tp+4-rsa_e_len, tp, rsa_e_len);
       memset (tp, 0, 4-rsa_e_len);
     }                 
   tp += 4;
