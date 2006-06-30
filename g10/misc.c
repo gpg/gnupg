@@ -297,7 +297,6 @@ checksum_mpi (gcry_mpi_t a)
   u16 csum;
   byte *buffer;
   unsigned int nbytes;
-  unsigned int nbits;
 
   if ( gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, a) )
     BUG ();
@@ -308,9 +307,7 @@ checksum_mpi (gcry_mpi_t a)
             gcry_xmalloc_secure (nbytes) : gcry_xmalloc (nbytes));
   if ( gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, NULL, a) )
     BUG ();
-  nbits = gcry_mpi_get_nbits (a);
-  csum = checksum_u16 (nbits);
-  csum += checksum (buffer, nbytes);
+  csum = checksum (buffer, nbytes);
   xfree (buffer);
   return csum;
 }

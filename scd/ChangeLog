@@ -1,3 +1,9 @@
+2006-06-28  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_writekey): Fixed computation of memmove
+	length.  This led to garbled keys if E was larger than one byte.
+	Thanks to Achim Pietig for hinting at the garbled E.
+
 2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (scdaemon_LDADD): Add $(NETLIBS).

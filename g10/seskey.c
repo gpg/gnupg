@@ -220,8 +220,7 @@ encode_md_value (PKT_public_key *pk, PKT_secret_key *sk,
     {
       /* It's a DSA signature, so find out the size of q. */
 
-      unsigned int qbytes = gcry_mpi_get_nbits (pk?pk->pkey[1]:sk->skey[1]);
-      size_t n;
+      size_t qbytes = gcry_mpi_get_nbits (pk?pk->pkey[1]:sk->skey[1]);
 
       /* Make sure it is a multiple of 8 bits. */
 
@@ -259,7 +258,7 @@ encode_md_value (PKT_public_key *pk, PKT_secret_key *sk,
 	}
 
       if (gcry_mpi_scan (&frame, GCRYMPI_FMT_USG,
-                         gcry_md_read (md, hash_algo), n, &n))
+                         gcry_md_read (md, hash_algo), qbytes, &qbytes))
         BUG();
     }
   else

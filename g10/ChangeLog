@@ -1,3 +1,24 @@
+2006-06-30  Werner Koch  <wk@g10code.com>
+
+	* misc.c (checksum_mpi): No need for nbits as they are alredy
+	included in the buffer.
+
+2006-06-29  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (parse_signature, parse_key): Need store the
+	length of opaque data as number of bits. 
+	* card-util.c (card_store_subkey): Ditto.
+
+	* mainproc.c (print_pkenc_list, check_sig_and_print): Replaced
+	log_get_stream by calls to log_printf.  This avoids the extra LFs
+	inserted by the logging function. They are a bit too smart
+	sometimes.
+	* pkclist.c (do_show_revocation_reason): Print final LF through
+	log_printf to avoid extra LFs.
+	* pubkey-enc.c (get_it): Ditto.
+
+	* seskey.c (encode_md_value): Fix call to gcry.
+
 2006-06-27  Werner Koch  <wk@g10code.com>
 
 	Applied patches from 1.4.x (2006-05-22 to 2006-06-23) from David:

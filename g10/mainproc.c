@@ -445,7 +445,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 		      nbits_from_pk( pk ), algstr, keystr_from_pk(pk),
 		      strtimestamp(pk->timestamp) );
 	    p=get_user_id_native(list->kid);
-	    fprintf(log_get_stream(),_("      \"%s\"\n"),p);
+	    log_printf (_("      \"%s\"\n"),p);
 	    xfree(p);
 	  }
 	else
@@ -1527,7 +1527,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	       not going to even try to make two strings here :) */
 	    log_info(_("Key available at: ") );
 	    print_utf8_string( log_get_stream(), p, n );
-	    putc( '\n', log_get_stream() );
+	    log_printf ("\n");
 
 	    if(opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
 	       && opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL)
@@ -1667,9 +1667,9 @@ check_sig_and_print( CTX c, KBNODE node )
 	    xfree(p);
 
 	    if(opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
-	      fprintf(log_get_stream()," [%s]\n",trust_value_to_string(valid));
+	      log_printf (" [%s]\n",trust_value_to_string(valid));
 	    else
-	      fputs("\n", log_get_stream() );
+	      log_printf ("\n");
             count++;
 	}
 	if( !count ) {	/* just in case that we have no valid textual
@@ -1712,11 +1712,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	    else
 	      log_info(_("Good signature from \"%s\""),p);
             if (opt.trust_model!=TM_ALWAYS && un)
-	      {
-                putc(' ', log_get_stream() );
-                fputs(_("[uncertain]"), log_get_stream() );
-	      }
-	    fputs("\n", log_get_stream() );
+              log_printf (" %s",_("[uncertain]") );
+	    log_printf ("\n");
 	}
 
         /* If we have a good signature and already printed 
@@ -1760,10 +1757,10 @@ check_sig_and_print( CTX c, KBNODE node )
 		      valid=trust_value_to_string(get_validity(pk,
 							       un->pkt->
 							       pkt.user_id));
-		    fprintf(log_get_stream()," [%s]\n",valid);
+		    log_printf (" [%s]\n",valid);
 		  }
 		else
-		  fputs("\n", log_get_stream() );
+		  log_printf ("\n");
             }
 	}
 	release_kbnode( keyblock );

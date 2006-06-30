@@ -76,7 +76,7 @@ do_show_revocation_reason( PKT_signature *sig )
 	    fputs( text, log_get_stream() );
 	else
 	    fprintf( log_get_stream(), "code=%02x", *p );
-	putc( '\n', log_get_stream() );
+	log_printf ("\n");
 	n--; p++;
 	pp = NULL;
 	do {
@@ -88,9 +88,9 @@ do_show_revocation_reason( PKT_signature *sig )
 	    if( n ) {
 		pp = memchr( p, '\n', n );
 		nn = pp? pp - p : n;
-		log_info( _("revocation comment: ") );
-		print_string( log_get_stream(), p, nn, 0 );
-		putc( '\n', log_get_stream() );
+		log_info ( _("revocation comment: ") );
+		print_string ( log_get_stream(), p, nn, 0 );
+		log_printf ("\n");
 		p += nn; n -= nn;
 	    }
 	} while( pp );

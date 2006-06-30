@@ -3701,7 +3701,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
       sk->skey[i] = NULL;
     }
   i = pubkey_get_npkey (sk->pubkey_algo);
-  sk->skey[i] = mpi_set_opaque (NULL, xstrdup ("dummydata"), 10);
+  sk->skey[i] = gcry_mpi_set_opaque (NULL, xstrdup ("dummydata"), 10*8);
   sk->is_protected = 1;
   sk->protect.s2k.mode = 1002;
   s = get_parameter_value (para, pSERIALNO);

@@ -1490,9 +1490,10 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	if( list_mode )
 	    fprintf (listfp, "\tunknown algorithm %d\n", sig->pubkey_algo );
 	unknown_pubkey_warning( sig->pubkey_algo );
-	/* we store the plain material in data[0], so that we are able
+	/* We store the plain material in data[0], so that we are able
 	 * to write it back with build_packet() */
-	sig->data[0]= mpi_set_opaque(NULL, read_rest(inp, pktlen, 0), pktlen );
+	sig->data[0]= gcry_mpi_set_opaque (NULL, read_rest(inp, pktlen, 0),
+                                           pktlen*8 );
 	pktlen = 0;
     }
     else {
@@ -1715,8 +1716,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
         size_t snlen = 0;
 
 	if( !npkey ) {
-	    sk->skey[0] = mpi_set_opaque( NULL,
-					  read_rest(inp, pktlen, 0), pktlen );
+	    sk->skey[0] = gcry_mpi_set_opaque (NULL, read_rest(inp, pktlen, 0),
+                                               pktlen*8 );
 	    pktlen = 0;
 	    goto leave;
 	}
@@ -1894,15 +1895,17 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	if( sk->protect.s2k.mode == 1001 
             || sk->protect.s2k.mode == 1002 ) {
 	    /* better set some dummy stuff here */
-	    sk->skey[npkey] = mpi_set_opaque(NULL, xstrdup("dummydata"), 10);
+	    sk->skey[npkey] = gcry_mpi_set_opaque(NULL,
+                                                  xstrdup("dummydata"), 10*8);
 	    pktlen = 0;
 	}
 	else if( is_v4 && sk->is_protected ) {
 	    /* ugly; the length is encrypted too, so we read all
 	     * stuff up to the end of the packet into the first
 	     * skey element */
-	    sk->skey[npkey] = mpi_set_opaque(NULL,
-					     read_rest(inp, pktlen, 0),pktlen);
+	    sk->skey[npkey] = gcry_mpi_set_opaque (NULL,
+                                                   read_rest(inp, pktlen, 0),
+                                                   pktlen*8);
 	    pktlen = 0;
 	    if( list_mode ) {
 		fprintf (listfp, "\tencrypted stuff follows\n");
@@ -1942,8 +1945,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	PKT_public_key *pk = pkt->pkt.public_key;
 
 	if( !npkey ) {
-	    pk->pkey[0] = mpi_set_opaque( NULL,
-					  read_rest(inp, pktlen, 0), pktlen );
+	    pk->pkey[0] = gcry_mpi_set_opaque ( NULL,
+                                                read_rest(inp, pktlen, 0),
+                                                pktlen*8 );
 	    pktlen = 0;
 	    goto leave;
 	}
