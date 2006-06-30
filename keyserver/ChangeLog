@@ -1,0 +1,1067 @@
+2006-04-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c, gpgkeys_oldhkp.c: Removed.
+
+	* Makefile.am: Don't build gpgkeys_http or gpgkeys_(old)hkp any
+	longer as this is done via curl or fake-curl.
+
+	* ksutil.h, ksutil.c, gpgkeys_hkp.c, gpgkeys_curl.c: Minor
+	#include tweaks as FAKE_CURL is no longer meaningful.
+
+2006-04-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (ldap_quote, get_name, search_key): LDAP-quote
+	directly into place rather than mallocing temporary buffers.
+
+	* gpgkeys_ldap.c (get_name): Build strings with strcat rather than
+	using sprintf which is harder to read and modify.
+
+	* ksutil.h, ksutil.c (classify_ks_search): Add
+	KS_SEARCH_KEYID_SHORT and KS_SEARCH_KEYID_LONG to search for a key
+	ID.
+
+	* gpgkeys_ldap.c (search_key): Use it here to flip from pgpUserID
+	searches to pgpKeyID or pgpCertID.
+
+2006-03-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: #define LDAP_DEPRECATED for newer OpenLDAPs so
+	they use the regular old API that is compatible with other LDAP
+	libraries.
+
+2006-03-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Fix build problem with non-OpenLDAP LDAP
+	libraries that have TLS.
+
+2006-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.c (init_ks_options): Default include-revoked and
+	include-subkeys to on, as gpg isn't doing this any longer.
+
+2006-02-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_name): A GETNAME query turns exact=on to cut
+	down on odd matches.
+
+2006-02-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (make_one_attr, build_attrs, send_key): Don't
+	allow duplicate attributes as OpenLDAP is now enforcing this.
+
+	* gpgkeys_ldap.c (main): Add binddn and bindpw so users can pass
+	credentials to a remote LDAP server.
+
+	* curl-shim.h, curl-shim.c (curl_easy_init, curl_easy_setopt,
+	curl_easy_perform): Mingw has 'stderr' as a macro?
+
+	* curl-shim.h, curl-shim.c (curl_easy_init, curl_easy_setopt,
+	curl_easy_perform): Add CURLOPT_VERBOSE and CURLOPT_STDERR for
+	easier debugging.
+
+2006-01-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key): Do not escape the '=' in the HTTP POST
+	when uploading a key.
+
+2005-12-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (parse_ks_options): New keyserver command
+	"getname".
+
+	* gpgkeys_hkp.c (main, get_name), gpgkeys_ldap.c (main, get_name):
+	Use it here to do direct name (rather than key ID) fetches.
+
+2005-12-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (curl_armor_writer, curl_writer,
+	curl_writer_finalize): New functionality to handle binary format
+	keys by armoring them for input to GPG.
+
+	* gpgkeys_curl.c (get_key), gpgkeys_hkp.c (get_key): Call it here.
+
+2005-12-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c (get_key), gpgkeys_curl.c (get_key): Better
+	language for the key-not-found error.
+
+	* ksutil.c (curl_err_to_gpg_err): Add CURLE_OK and
+	CURLE_COULDNT_CONNECT.
+
+	* gpgkeys_curl.c (get_key): Give key-not-found error if no data is
+	found (or file itself is not found) during a fetch.
+
+2005-12-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.c (curl_easy_perform): Fix build warning (code before
+	declaration).
+
+2005-11-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (search_key): Fix warning with typecast (though
+	curl should really have defined that char * as const).
+
+2005-08-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (parse_ks_options): Remove exact-name and
+	exact-email.
+	(classify_ks_search): Mimic the gpg search modes instead with *,
+	=, <, and @.
+
+	* gpgkeys_ldap.c (search_key), gpgkeys_hkp.c (search_key): Call
+	them here.  Suggested by Jason Harris.
+
+2005-08-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (parse_ks_options): New keyserver-option
+	exact-name.  The last of exact-name and exact-email overrides the
+	earlier.
+
+	* gpgkeys_ldap.c (search_key), gpgkeys_hkp.c (search_key): Use it
+	here to do a name-only search.
+
+	* gpgkeys_ldap.c (ldap_quote): \-quote a string for LDAP.
+
+	* gpgkeys_ldap.c (search_key): Use it here to escape reserved
+	characters in searches.
+
+2005-08-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c (parse_ks_options): New keyserver-option
+	exact-email.
+
+	* gpgkeys_ldap.c (search_key), gpgkeys_hkp.c (search_key): Use it
+	here to do an email-only search.
+
+2005-08-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Include LDAP_CPPFLAGS when building LDAP.
+
+2005-08-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (main), gpgkeys_curl.c (main), curl-shim.h: Show
+	version of curl (or curl-shim) when debug is set.
+
+2005-07-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (get_key, main): Don't try and be smart about
+	what protocols we handle.  Directly pass them to curl or fake-curl
+	and see if an error comes back.
+
+	* curl-shim.h, curl-shim.c (handle_error), ksutil.c
+	(curl_err_to_gpg_err): Add support for CURLE_UNSUPPORTED_PROTOCOL
+	in fake curl.
+
+	* Makefile.am: Don't need -DFAKE_CURL any longer since it's in
+	config.h.
+
+2005-06-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in, gpgkeys_test.in: Use @VERSION@ so version
+	string stays up to date.
+
+	* gpgkeys_http.c: Don't need to define HTTP_PROXY_ENV here since
+	it's in ksutil.h.
+
+	* gpgkeys_curl.c (get_key, main), gpgkeys_hkp.c (main): Pass AUTH
+	values to curl or curl-shim.
+
+	* curl-shim.c (curl_easy_perform), gpgkeys_curl.c (main),
+	gpgkeys_hkp.c (main): Use curl-style proxy semantics.
+
+	* curl-shim.h, curl-shim.c (curl_easy_setopt, curl_easy_perform):
+	Add CURLOPT_USERPWD option for HTTP auth.
+
+	* gpgkeys_http.c (get_key), gpgkeys_oldhkp (send_key, get_key,
+	search_key): No longer need to pass a proxyauth.
+
+	* gpgkeys_http.c (get_key): Pass auth outside of the URL.
+
+2005-06-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c (get_key), gpgkeys_oldhkp.c (send_key, get_key,
+	search_key): Fix http_open/http_open_document calls to pass NULL
+	for auth and proxyauth since these programs pass them in the URL.
+
+2005-06-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (append_path, send_key, get_key, search_key,
+	main), gpgkeys_oldhkp.c (main): Properly handle double slashes in
+	paths.
+
+2005-06-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.c (init_ks_options, parse_ks_options): Provide a default
+	"/" path unless overridden by the config.  Allow config to specify
+	items multiple times and take the last specified item.
+
+2005-06-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c, gpgkeys_oldhkp.c: Add support for HKP servers
+	that aren't at the root path.  Suggested by Jack Bates.
+
+2005-06-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.c [HAVE_DOSISH_SYSTEM]: Fix warnings on mingw32.  Noted
+	by Joe Vender.
+
+2005-05-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, ksutil.c: #ifdef so we can build without libcurl or
+	fake-curl.
+
+2005-05-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c: Need GET defined.
+
+2005-05-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c, gpgkeys_oldhkp.c, ksutil.h: Some minor cleanup
+	and comments as to the size of MAX_LINE and MAX_URL.
+
+2005-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c: New hkp handler that uses curl or curl-shim.
+
+	* Makefile.am: Build new gpgkeys_hkp.
+
+	* curl-shim.c (curl_easy_perform): Cleanup.
+
+	* ksutil.h, ksutil.c (curl_writer), gpgkeys_curl.c (get_key): Pass
+	a context to curl_writer so we can support multiple fetches in a
+	single session.
+
+	* curl-shim.h, curl-shim.c (handle_error, curl_easy_setopt,
+	curl_easy_perform): Add POST functionality to the curl shim.
+
+	* curl-shim.h, curl-shim.c (curl_escape, curl_free): Emulate
+	curl_escape and curl_free.
+
+	* gpgkeys_curl.c (main): If the http-proxy option is given without
+	any arguments, try to get the proxy from the environment.
+
+	* ksutil.h, ksutil.c (curl_err_to_gpg_err, curl_writer): Copy from
+	gpgkeys_curl.c.
+
+	* gpgkeys_oldhkp.c: Copy from gpgkeys_hkp.c.
+
+2005-03-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c, ksutil.h, ksutil.c (print_nocr): Moved from
+	gpgkeys_ldap.c.  Print a string, but strip out any CRs.
+
+	* gpgkeys_finger.c (get_key), gpgkeys_hkp.c (get_key),
+	gpgkeys_http.c (get_key): Use it here when outputting key material
+	to canonicalize line endings.
+
+2005-03-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Fix three wrong calls to fail_all().
+	Noted by Stefan Bellon.
+
+2005-03-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.c (parse_ks_options): Handle verbose=nnn.
+
+	* Makefile.am: Calculate GNUPG_LIBEXECDIR directly.  Do not
+	redefine $libexecdir.
+
+	* gpgkeys_curl.c, gpgkeys_finger.c, gpgkeys_ldap.c: Start using
+	parse_ks_options and remove a lot of common code.
+
+	* ksutil.h, ksutil.c (parse_ks_options): Parse OPAQUE, and default
+	debug with no arguments to 1.
+
+2005-03-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: Include lber.h if configure determines we need
+	it.
+
+	* ksutil.h, ksutil.c (ks_action_to_string): New.
+	(free_ks_options): Only free if options exist.
+
+	* ksutil.h, ksutil.c (init_ks_options, free_ks_options,
+	parse_ks_options): Pull a lot of duplicated code into a single
+	options parser for all keyserver helpers.
+
+2005-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.c (curl_easy_perform): Fix compile warning.
+
+	* curl-shim.h, gpgkeys_curl.c (main), gpgkeys_ldap.c (main): Add
+	ca-cert-file option, to pass in the SSL cert.
+
+	* curl-shim.h, curl-shim.c: New.  This is code to fake the curl
+	API in terms of the current HTTP iobuf API.
+
+	* gpgkeys_curl.c [FAKE_CURL], Makefile.am: If FAKE_CURL is set,
+	link with the iobuf code rather than libcurl.
+
+2005-02-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c (main), gpgkeys_hkp.c (main): Fix --version
+	output.
+
+	* gpgkeys_curl.c (main): Make sure the curl handle is cleaned up
+	on failure.
+
+2005-02-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_key), gpgkeys_http.c (get_key): Fix missing
+	http_close() calls.  Noted by Phil Pennock.
+
+	* ksutil.h: Up the default timeout to two minutes.
+
+2005-01-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (print_nocr): New.
+	(get_key): Call it here to canonicalize line endings.
+
+	* gpgkeys_curl.c (writer): Discard everything outside the BEGIN
+	and END lines when retrieving keys.  Canonicalize line endings.
+	(main): Accept FTPS.
+
+2005-01-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Add "check-cert" option to disable SSL
+	certificate checking (which is on by default).
+
+	* gpgkeys_curl.c (main): Add "debug" option to match the LDAP
+	helper.  Add "check-cert" option to disable SSL certificate
+	checking (which is on by default).
+
+2005-01-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c: Fix typo.
+
+2005-01-18  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_curl.c: s/MAX_PATH/URLMAX_PATH/g to avoid a clash with
+	the W32 defined macro.  Removed unneeded initialization of static
+	variables.
+	* gpgkeys_http.c: Ditto.
+	* ksutil.h: s/MAX_PATH/URLMAX_PATH/.
+
+2005-01-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (main): Only allow specified protocols to use the
+	curl handler.
+
+	* Makefile.am: Use LIBCURL_CPPFLAGS instead of LIBCURL_INCLUDES.
+
+2005-01-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* ksutil.h, gpgkeys_curl.c, gpgkeys_hkp.c, gpgkeys_ldap.c,
+	gpgkeys_finger.c, gpgkeys_http.c: Part 2 of the cleanup.  Move all
+	the various defines to ksutil.h.
+
+	* gpgkeys_finger.c, gpgkeys_hkp.c, gpgkeys_http.c, gpgkeys_ldap.c:
+	Part 1 of a minor cleanup to use #defines instead of hard-coded
+	sizes.
+
+	* gpgkeys_finger.c (connect_server): Use INADDR_NONE instead of
+	SOCKET_ERROR.  Noted by Timo.
+
+2005-01-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (get_key): Newer versions of libcurl don't define
+	TRUE.
+
+2004-12-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (main): Use new defines for opting out of certain
+	transfer protocols.  Allow setting HTTP proxy via "http-proxy=foo"
+	option (there is natural support in libcurl for the http_proxy
+	environment variable).
+
+	* Makefile.am: Remove the conditional since this is all handled in
+	autoconf now.
+
+2004-12-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (main): New "follow-redirects" option.  Takes an
+	optional numeric value for the maximum number of redirects to
+	allow.  Defaults to 5.
+
+	* gpgkeys_curl.c (main), gpgkeys_finger.c (main), gpgkeys_hkp.c
+	(main), gpgkeys_http.c (main), gpgkeys_ldap.c (main): Make sure
+	that a "timeout" option passed with no arguments is properly
+	handled.
+
+	* gpgkeys_curl.c (get_key, writer): New function to wrap around
+	fwrite to avoid DLL access problem on win32.
+
+	* gpgkeys_http.c (main, get_key): Properly pass authentication
+	info through to the http library.
+
+	* Makefile.am: Build gpgkeys_http or gpgkeys_curl as needed.
+
+	* gpgkeys_curl.c (main, get_key): Minor tweaks to work with either
+	FTP or HTTP.
+
+	* gpgkeys_ftp.c: renamed to gpgkeys_curl.c.
+
+	* gpgkeys_ftp.c (main, get_key): Use auth data as passed by gpg.
+	Use CURLOPT_FILE instead of CURLOPT_WRITEDATA (same option, but
+	backwards compatible).
+
+2004-12-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ftp.c: New.
+
+	* Makefile.am: Build it if requested.
+
+2004-12-14  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (install-exec-hook, uninstall-hook): Removed.  For
+	Windows reasons we can't use the symlink trick.
+
+2004-12-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: The harmless "ignored error" on gpgkeys_ldap
+	install on top of an existing install is bound to confuse people.
+	Use ln -s -f to force the overwrite.
+
+2004-10-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c [_WIN32] (connect_server): Fix typo.
+
+2004-10-28  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (other_libs): New.  Also include LIBICONV.  Noted by
+	Tim Mooney.
+
+2004-10-28  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (other_libs): 
+
+2004-10-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key, get_key, search_key): Use "hkp" instead
+	of "x-hkp" so it can be used as a SRV tag.
+
+2004-10-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c [_WIN32] (connect_server): Fix typo.
+
+2004-10-15  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_ldap.c (main, show_help): Kludge to implement standard
+	GNU options. Factored help printing out.
+	* gpgkeys_finger.c (main, show_help): Ditto.
+	* gpgkeys_hkp.c (main, show_help): Ditto.
+	* gpgkeys_http.c (main, show_help): Ditto.
+	* gpgkeys_test.in, gpgkeys_mailto.in: Implement --version and --help.
+
+	* Makefile.am: Add ksutil.h.
+
+2004-10-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c (main): We do not support relay fingering
+	(i.e. "finger://relayhost/user@example.com"), but finger URLs are
+	occasionally miswritten that way.  Give an error in this case.
+
+2004-10-14  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_finger.c (get_key): s/unsigned char/byte/ due
+	to a strange typedef for RISC OS.  Noted by Stefan.
+
+2004-10-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main), gpgkeys_hkp.c (main), gpgkeys_http.c
+	(main), gpgkeys_finger.c (main): Call timeout functions before
+	performing an action that could block for a long time.
+
+	* ksutil.h, ksutil.c: New.  Right now just contains timeout
+	functions.
+
+2004-10-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c, gpgkeys_hkp.c, gpgkeys_http.c, gpgkeys_ldap.c:
+	Fix a few occurances of "filename" to `filename'.
+
+2004-10-11  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_finger.c: New.
+
+2004-08-27  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgkeys_hkp.c (search_key): Fix the prior faulty fix by
+	introducing a cast but leaving skey unsigned.
+
+	* gpgkeys_hkp.c (search_key): Change type of variable skey from
+	unsigned char* to char* to fix type incompatibility.
+
+2004-08-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (get_key, search_key), gpgkeys_hkp.c (get_key,
+	search_key), gpgkeys_http.c (get_key): Do not give informational
+	logs since this is now done inside gpg.
+
+	* gpgkeys_hkp.c (dehtmlize): Understand the quote character
+	(i.e. "&quot;") in HTML responses.
+	(search_key): Search key must be unsigned for url encoder to work
+	properly for 8-bit values.
+
+	* gpgkeys_ldap.c (get_key): Factor out informational display into
+	new function build_info().
+
+	* gpgkeys_ldap.c (build_attrs): Properly terminate user ID strings
+	that got shrunk due to encoding.
+
+2004-08-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (find_basekeyspacedn): Use LDAP_SCOPE_BASE along
+	with a full DN rather than LDAP_SCOPE_ONELEVEL plus a filter to
+	find the pgpServerInfo object.  Some LDAP setups don't like the
+	search.
+	(main): Stop binding to the server since it seems no server really
+	requires it, and some require it not be there.
+
+2004-07-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Add "debug" option.  This is only really
+	useful with OpenLDAP, but it's practically vital to debug SSL and
+	TLS setups.  Add "basedn" option.  This allows users to override
+	the autodetection for base DN.  SSL overrides TLS, so TLS will not
+	be started on SSL connections (starting an already started car).
+
+2004-07-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (build_attrs): Add "pgpKeySize" and "pgpSubKeyID"
+	attributes so we can do subkey searches.
+
+	* gpgkeys_ldap.c (main): Under certain error conditions, we might
+	try and unbind twice.  Don't.
+
+	* gpgkeys_ldap.c (join_two_modlists): New.
+	(send_key): Use new function so we can try a modify operation
+	first, and fail over to an add if that fails.  Add cannot cope
+	with the NULLs at the head of the modify request, so we jump into
+	the list in the middle.
+
+2004-07-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Don't try and error out before making a
+	ldaps connection to the NAI keyserver since we cannot tell if it
+	is a NAI keyserver until we connect.  Fail if we cannot find a
+	base keyspace DN.  Fix a false success message for TLS being
+	enabled.
+
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_ldap.c [_WIN32]: Include Windows specific header files.
+	Suggested by Brian Gladman.
+
+2004-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c: General polish and removal of leftover stuff
+	from gpgkeys_hkp.c.
+
+2004-05-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c (get_key): Cosmetic fix - make sure that URLs
+	with no path use a path of "/".
+
+	* gpgkeys_ldap.c (ldap2epochtime): We can always rely on timegm()
+	being available now, since it's a replacement function.
+
+2004-05-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_http.c: New program to do a simple HTTP file fetch using
+	the keyserver interface.
+
+	* Makefile.am: Build it.
+
+2004-02-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Don't split LDADD across two lines since some make
+	programs can't handle blank lines after a \ continuation.  Noted
+	by Christoph Moench-Tegeder.
+
+2004-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (send_key): List pgpCertID as one of the deleted
+	attributes.  This guarantees that if something goes wrong, we
+	won't be able to complete the transaction, thus leaving any key
+	already existing on the server intact.
+
+2004-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (delete_one_attr): Removed.
+	(make_one_attr): Delete functionality added.  Optional deduping
+	functionality added (currently only used for pgpSignerID).
+	(build_attrs): Translate sig entries into pgpSignerID.  Properly
+	build the timestamp for pgpKeyCreateTime and pgpKeyExpireTime.
+
+2004-02-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (delete_one_attr): New function to replace
+	attributes with NULL (a "delete" that works even for nonexistant
+	attributes).
+	(send_key): Use it here to remove attributes so a modify operation
+	starts with a clean playing field.  Bias sends to modify before
+	add, since (I suspect) people update their existing keys more
+	often than they make and send new keys to the server.
+
+2004-02-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (epoch2ldaptime): New.  Converse of
+	ldap2epochtime.
+	(make_one_attr): New. Build a modification list in memory to send
+	to the LDAP server.
+	(build_attrs): New. Parse INFO lines sent over by gpg.
+	(free_mod_values): New.  Unwinds a modification list.
+	(send_key_keyserver): Renamed from old send_key().
+	(send_key): New function to send a key to a LDAP server.
+	(main): Use send_key() for real LDAP servers, send_key_keyserver()
+	otherwise.
+
+2004-02-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: Replacement prototypes for setenv and unsetenv.
+	(search_key): Catch a SIZELIMIT_EXCEEDED error and show the user
+	whatever the server did give us.
+	(find_basekeyspacedn): There is no guarantee that namingContexts
+	will be readable.
+
+	* Makefile.am: Link gpgkeys_ldap with libutil.a to get the
+	replacement functions (and eventually translations, etc).
+
+2004-02-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (ldap2epochtime): LDAP timestamps are UTC, so do
+	not correct for timezones.
+	(main): Find the basekeyspacedn before we try to start TLS, so we
+	can give a better error message when a user tries to use TLS with
+	a LDAP keyserver.
+
+	* Makefile.am: Add automake conditionals to symlink gpgkeys_ldaps
+	to gpgkeys_ldap when needed.
+
+	* gpgkeys_ldap.c (main): Add support for LDAPS and TLS
+	connections.  These are only useful and usable when talking to
+	real LDAP keyservers.  Add new "tls" option to tune TLS use from
+	off, to try quietly, to try loudly, or to require TLS.
+
+	* gpgkeys_ldap.c (find_basekeyspacedn): New function to figure out
+	what kind of LDAP server we're talking to (either real LDAP or the
+	LDAP keyserver), and return the baseKeySpaceDN to find keys under.
+	(main): Call it from here, and remove the old code that only
+	handled the LDAP keyserver.
+
+2004-02-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (ldap_to_gpg_err): Make sure that
+	LDAP_OPT_ERROR_NUMBER is defined before we use it.
+
+	* gpgkeys_mailto.in: Fix VERSION number.
+
+2004-01-13  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_hkp.c (send_key): Add a content type.
+
+2004-01-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (search_key): Catch a mangled input file (useful
+	if something other than GnuPG is calling the program).
+	(main): Avoid possible pre-string write.  Noted by Christian
+	Biere.
+
+	* gpgkeys_ldap.c (main): Avoid possible pre-string write.
+
+2003-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key, get_key, main): Work with new HTTP code
+	that passes the proxy in from the outside.  If the command file
+	sends a proxy, use it.  If it sends "http-proxy" with no
+	arguments, use $http_proxy from the environment.  Suggested by
+	Christian Biere.
+
+2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgkeys_hkp.c, gpgkeys_ldap.c [__riscos__]: Removal of
+	unnecessary #ifdef __riscos__ sections.
+
+2003-11-27  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_hkp.c (get_key): Fixed invalid use of fprintf without
+	format string.
+
+2003-10-25  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (gpgkeys_hkp_LDADD): Replaced INTLLIBS by LIBINTL.
+
+2003-07-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Use W32LIBS where appropriate.
+
+2003-05-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c, gpgkeys_ldap.c: #include <getopt.h> if it is
+	available.  Also include extern references for optarg and optind
+	since there is no guarantee that any header file will include
+	them.  Standards?  We don't need no stinkin' standards.
+
+	* Makefile.am: Use @GETOPT@ to pull in libiberty on those
+	platforms that need it.
+
+2003-04-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (dehtmlize, parse_hkp_index): Fix memory
+	corruption bug on some platforms.
+
+2003-03-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_key): Properly handle CRLF line endings in
+	the armored key.
+	(main): Accept "try-dns-srv" option.
+
+	* Makefile.am: Use @CAPLIBS@ to link in -lcap if we are using
+	capabilities.  Use @SRVLIBS@ to link in the resolver if we are
+	using DNS SRV.
+
+2003-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Use a local copy of libexecdir along with @PACKAGE@
+	so it can be easily overridden at make time.
+
+2003-01-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Fix regexp to work properly if the "keyid" is
+	not a keyid, but rather a text string from the user ID.
+
+2003-01-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_key): Use options=mr when getting a key so
+	keyserver doesn't attach the HTML header which we will just have
+	to discard.
+
+2002-11-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main), gpgkeys_hkp.c (main): Use new keyserver
+	protocol version.
+
+2002-11-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (get_key): The deduping code requires
+	"pgpcertid", but that was not available when running without
+	verbose on.  Noted by Stefan.
+
+2002-11-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (get_key): Fix typo in deduping code.
+
+2002-11-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (key_in_keylist, add_key_to_keylist,
+	free_keylist, get_key, search_key): The LDAP keyserver doesn't
+	remove duplicates, so remove them locally.  Do not include the key
+	modification time in the search response.
+
+2002-11-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key), gpgkeys_ldap.c (send_key): Properly
+	handle an input file that does not include any key data at all.
+
+2002-10-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (main), gpgkeys_ldap.c (main): Add -V flag to
+	output protocol and program version.
+
+2002-10-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Anything linking with libutil.a needs INTLLIBS as
+	well on platforms where INTLLIBS is set.
+
+2002-10-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (write_quoted): Use %-encoding instead of
+	\-encoding.
+	(parse_hkp_index): Use new keyserver key listing format, and add
+	support for disabled keys via include-disabled.
+
+	* gpgkeys_ldap.c (get_key): Don't print keysize unless it's >0.
+	(printquoted): Use %-encoding instead of \-encoding.
+	(search_key): Use new keyserver key listing format.
+
+2002-10-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (search_key, main): Make sure LDAP values are
+	freed in case of error.
+
+	* gpgkeys_ldap.c (fail_all): New function to unwind a keylist and
+	error each item.
+	(main): Call fail_all from here, as needed.  Also add a NO_MEMORY
+	error in an appropriate place and fix error return code.
+	(ldap_err_to_gpg_err): Add KEYSERVER_UNREACHABLE.
+
+	* gpgkeys_hkp.c (fail_all): New function to unwind a keylist and
+	error each item.
+	(main): Call fail_all from here.  Also add a NO_MEMORY error in an
+	appropriate place.
+	(get_key): Use new UNREACHABLE error for network errors.
+
+2002-09-26  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_ldap.c (send_key): Removed non-constant initializers.
+
+2002-09-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (ldap_err_to_gpg_err, ldap_to_gpg_err, send_key,
+	get_key, search_key, main): Some minor error reporting
+	enhancements for use with GPA (show reasons for KEY FAILED).
+
+	* gpgkeys_hkp.c (send_key, get_key, search_key, main): Some minor
+	error reporting enhancements for use with GPA (show reasons for
+	KEY FAILED).
+
+2002-09-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_hkp.c (handle_old_hkp_index): s/input/inp/ to avoid
+	shadowing warning.
+
+2002-09-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_key, handle_old_hkp_index, search_key):
+	Properly handle line truncation.
+
+2002-09-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Add quasi-RFC-2368 mailto:email@addr?from=
+	syntax so people can set their own email address to respond to.
+
+	* gpgkeys_hkp.c (get_key): Properly respond with KEY FAILED (to
+	gpg) and "key not found" (to user) on failure.
+
+2002-09-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c: (search_key, handle_old_hkp_index): Try and
+	request a machine-readable key index.  If the server supports
+	this, pass it through.  If the server does not support it, parse
+	the "index" page.
+
+2002-09-12  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgkeys_hkp.c: Tidied up RISC OS initializations.
+
+2002-09-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (main): Remove warning - this is no longer
+	experimental code.
+
+2002-09-09  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_hkp.c (send_key, get_key, search_key): Check return
+	value of malloc.
+	(dehtmlize): Use ascii_tolower to protect against weird locales.
+	Cast the argument for isspace for the sake of broken HP/UXes.
+	(search_key): Check return value of realloc.
+
+2002-09-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (get_key): Some compilers (RISC OS, HPUX c89)
+	don't like using variables as array initializers.
+
+	* gpgkeys_hkp.c (send_key): Use CRLF in headers.
+
+2002-08-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (parse_hkp_index): Use same types on all
+	platforms.  This was probably leftover from earlier code where the
+	typing mattered.
+
+	* gpgkeys_hkp.c: Overall cleanup from iobuf conversion.  Be
+	consistent in m_alloc and malloc usage.  Remove include-disabled
+	(meaningless on HKP).  RISC OS tweak.
+
+2002-08-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c, Makefile.am: Convert over to using iobufs.
+
+	* gpgkeys_hkp.c (http_get, http_post): Use CRLF for line endings.
+
+	* gpgkeys_hkp.c: Include util.h on RISC OS as per Stefan.  Include
+	a replacement for hstrerror() for those platforms (such as RISC
+	OS) that don't have it.
+
+2002-08-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: May as well include gpgkeys_hkp.c in the
+	distribution now.  It works well enough without proxies, and isn't
+	built by default.  It would be good to get some test experience
+	with it.
+
+	* gpgkeys_hkp.c (main): Don't warn about include-subkeys - it
+	isn't unsupported, it's actually non-meaningful in the context of
+	HKP (yet).
+
+	* gpgkeys_hkp.c (parse_hkp_index, dehtmlize): Move HTML
+	functionality into new "dehtmlize" function.  Remove HTML before
+	trying to parse each line from the keyserver.  If the keyserver
+	provides key type information in the listing, use it.  (Copy over
+	from g10/hkp.c).
+
+2002-08-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_key, parse_hkp_index): Bring over latest code
+	from g10/hkp.c.
+
+	* gpgkeys_ldap.c (get_key): Fix cosmetic URL display problem
+	(extra ":" at the end).
+
+2002-08-03  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgkeys_ldap.c: Tidied up RISC OS initializations.
+
+2002-07-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c: "Warning" -> "WARNING"
+
+2002-07-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Install keyserver helpers in @GNUPG_LIBEXECDIR@
+
+2002-07-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (send_key, get_key, main): Consult the server
+	version string to determine whether to use pgpKey or pgpKeyV2.
+
+2002-07-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Use new OPAQUE tag for non net-path URIs.
+	Fail more elegantly if there is no email address to send to.  Show
+	the GnuPG version in the message body.
+
+2002-07-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (get_key), gpgkeys_hkp.c (get_key): Display
+	keyserver URI as a URI, but only if verbose.
+
+2002-07-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (parse_hkp_index): Error if the keyserver returns
+	an unparseable HKP response.
+
+	* gpgkeys_hkp.c (main): Warn on honor-http-proxy,
+	broken-http-proxy, and include-subkeys (not supported yet).
+
+	* gpgkeys_ldap.c (main), gpgkeys_hkp.c (http_connect, main): Fix
+	some shadowing warnings.
+
+2002-06-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Don't hard-code the LDAP libraries - get them from
+	LDAPLIBS via configure.  Also, gpgkeys_hkp is a program, not a
+	script.
+
+2002-06-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (include_subkeys): Default "include-subkeys" to
+	off, since GnuPG now defaults it to on.
+
+2002-06-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (parse_hkp_index): Type tweaks.
+
+	* gpgkeys_hkp.c (main): Add experimental code warning.
+
+2002-06-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am, gpgkeys_hkp.c (new): Experimental HKP keyserver
+	interface.
+
+2002-05-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: Include <lber.h> if we absolutely must.  This
+	helps when compiling against a very old OpenLDAP.
+
+2002-04-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Properly handle key requests in full
+	fingerprint form.
+
+2002-03-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (printquoted): Quote backslashes within keyserver
+	search responses.
+
+2002-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap (get_key): LDAP keyservers do not support v3
+	fingerprints, so error out if someone tries.  Actually, they don't
+	support any fingerprints, but at least we can calculate a keyid
+	from a v4 fingerprint.
+
+2002-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap: Clarify the notion of a partial failure.  This is
+	possible if more than one key is being handled in a batch, and one
+	fails while the other succeeds.  Note that a search that comes up
+	with no results is not a failure - that is a valid response of "no
+	answer".
+
+	* gpgkeys_ldap.c (get_key): Allow GnuPG to send us full v4
+	fingerprints, long key ids, or short key ids while fetching.
+	Since the LDAP server doesn't actually handle fingerprints, chop
+	them down to long key ids for actual use.
+
+	* gpgkeys_ldap.c (main, get_key): When searching for a keyid,
+	search for subkeys as well as primary keys.  This is mostly
+	significant when automatically fetching the key based on the id in
+	a header (i.e. "signature made by....").  "no-include-subkeys"
+	disables.
+
+2002-02-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: Fix compiler warning.
+
+	* gpgkeys_ldap.c: Be much more robust with mangled input files.
+
+2001-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Use the new OUTOFBAND indicator so gpg knows
+	not to try and import anything.  Also turn on perl -w for
+	warnings.
+
+	* gpgkeys_ldap.c (main): If we're using temp files (rather than
+	stdin/stdout), make sure the file is closed when we're done.
+
+2001-12-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* Properly free the LDAP response when we're done with it.
+
+	* Now that we handle multiple keys, we must remove duplicates as
+	the LDAP keyserver returns keys with multiple user IDs multiple
+	times.
+
+	* Properly handle multiple keys with the same key ID (it's really
+	rare, so fetch "0xDEADBEEF" to test this).
+
+2001-12-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c, gpgkeys_mailto.in: Fix GNU capitalization
+	issues.  Prefix log messages with "gpgkeys" to clarify which
+	program is generating them.
+
+2001-12-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (search_key): Use unsigned int rather than uint
+	for portability.
+
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* Initial version of gpgkeys_ldap (LDAP keyserver helper) and
+	gpgkeys_mailto (email keyserver helper)
+
+
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+	   2004 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

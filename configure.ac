@@ -716,6 +716,20 @@ fi
 AC_SUBST(GPGKEYS_LDAP)
 AC_SUBST(LDAPLIBS)
 
+
+# Check for curl.  We fake the curl API if libcurl isn't installed.
+
+# fixme: need to add this
+#LIBCURL_CHECK_CONFIG([yes],,,[fake_curl=yes])
+#AM_CONDITIONAL(FAKE_CURL,test x"$fake_curl" = xyes)
+AM_CONDITIONAL(FAKE_CURL,1)
+
+# Generic, for us, means curl
+
+if test x"$try_generic" = xyes ; then
+   AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
+fi
+
 dnl This isn't necessarily sendmail itself, but anything that gives a
 dnl sendmail-ish interface to the outside world.  That includes qmail,
 dnl postfix, etc.  Basically, anything that can handle "sendmail -t".
@@ -1231,6 +1245,7 @@ jnlib/Makefile
 common/Makefile
 kbx/Makefile
 g10/Makefile
+keyserver/Makefile
 sm/Makefile
 agent/Makefile
 scd/Makefile

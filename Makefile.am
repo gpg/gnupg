@@ -35,8 +35,11 @@ endif
 
 if BUILD_GPG
 gpg = g10
+# fixme: Noy yet ready for a build
+keyserver = 
 else
 gpg =
+keyserver = 
 endif
 if BUILD_GPGSM
 sm = sm
@@ -61,7 +64,7 @@ tests = tests
 endif
 
 SUBDIRS = m4 intl gl jnlib common ${kbx} \
- ${gpg} ${sm} ${agent} ${scd} tools po doc ${tests}
+ ${gpg} ${keyserver} ${sm} ${agent} ${scd} tools po doc ${tests}
 
 dist-hook:
 	@set -e; \

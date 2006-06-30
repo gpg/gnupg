@@ -1,3 +1,8 @@
+2006-06-30  Werner Koch  <wk@g10code.com>
+
+	* ldap.m4: New.  Taken from gnupg 1.4.4
+	* Makefile.am (EXTRA_DIST): Add ldap.me
+
 2004-09-30  Werner Koch  <wk@g10code.com>
 
 	* gpg-error.m4, libassuan.m4, libgcrypt.m4: Updated.

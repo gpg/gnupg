@@ -1,0 +1,225 @@
+#!@PERL@ -w
+
+# gpgkeys_mailto - talk to a email keyserver 
+# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+#
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+
+use Getopt::Std;
+$Getopt::Std::STANDARD_HELP_VERSION=1;
+$sendmail="@SENDMAIL@ -t";
+
+###
+
+sub VERSION_MESSAGE ()
+{
+    print STDOUT "gpgkeys_mailto (GnuPG) @VERSION@\n";
+}
+
+sub HELP_MESSAGE ()
+{
+    print STDOUT <<EOT
+
+--help     Print this help
+--version  Print the version
+-o FILE    Write output to FILE
+EOT
+}
+
+
+
+getopts('o:');
+
+if(defined($opt_o))
+{
+    open(STDOUT,">$opt_o") || die "Can't open output file $opt_o\n";
+}
+
+if(@ARGV)
+{
+    open(STDIN,$ARGV[0]) || die "Can't open input file $ARGV[0]\n";
+}
+
+($login,$name)=(getpwuid($<))[0,6];
+
+$from="$name <$login>";
+
+while(<STDIN>)
+{
+    last if($_ eq "\n");
+
+    if(/^COMMAND (\S+)/)
+    {
+	$command=$1;
+    }
+
+    if(/^OPAQUE (\S+)/)
+    {
+	$address=$1;
+    }
+
+    if(/^PROGRAM (\S+)/)
+    {
+	$program=$1;
+    }
+
+    if(/^OPTION (\S+)/)
+    {
+	if($1=~/^verbose$/i)
+	{
+	    $verbose++;
+	}
+	elsif($1=~/^no-verbose$/i)
+	{
+	    $verbose--;
+	}
+    }
+}
+
+$program="(unknown)" if(!defined($program));
+
+if(!defined($address))
+{
+    print STDERR "gpgkeys: no address provided\n";
+    exit(1);
+}
+
+# decode $address
+
+($address,$args)=split(/\?/,$address);
+
+if(defined($args))
+{
+    @pairs = split(/&/, $args);
+    foreach $pair (@pairs)
+    {
+	($hdr, $val) = split(/=/, $pair);
+	$hdr =~ tr/+/ /;
+	$hdr =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+	$val =~ tr/+/ /;
+	$val =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+# we only handle "from" right now
+	if($hdr=~/^from$/i)
+	{
+	    $from=$val;
+	    last;
+	}
+    }
+}
+
+while(<STDIN>)
+{
+    last if($_ eq "\n");
+
+    chomp;
+
+    push(@keys,$_);
+}
+
+# Send response
+
+print "VERSION 1\n";
+print "OPTION OUTOFBAND\n\n";
+
+# Email keyservers get and search the same way
+
+if($command=~/get/i || $command=~/search/i)
+{
+    if($command=~/search/i)
+    {
+	print "COUNT 0\n";
+    }
+
+    foreach $key (@keys)
+    {
+	open(MAIL,"|$sendmail") || die "ERROR: Can't open $sendmail\n";
+	print MAIL "From: $from\n";
+	print MAIL "To: $address\n";
+	if($command=~/get/i)
+	{
+	    # mail keyservers don't like long-form keyids
+
+	    if(substr($key,0,2) eq "0x")
+	    {
+		$key=substr($key,2);
+	    }
+
+	    if(length($key)>8)
+	    {
+		$key=substr($key,-8);
+	    }
+
+    	    print MAIL "Subject: GET 0x$key\n\n";
+	}
+	else
+	{
+	    print MAIL "Subject: GET $key\n\n";
+	}
+	print MAIL "GnuPG $program email keyserver request\n";
+	close(MAIL);
+
+	# Tell GnuPG not to expect a key
+	print "KEY $key OUTOFBAND\n";
+
+	if($verbose)
+	{
+	    print STDERR "gpgkeys: key $key requested from $address\n";
+	}
+    }
+}
+
+if($command=~/send/i)
+{
+    while(!eof(STDIN))
+    {
+	open(MAIL,"|$sendmail") || die "ERROR: Can't open $sendmail\n";
+	print MAIL "From: $name <$login>\n";
+	print MAIL "To: $address\n";
+	print MAIL "Subject: ADD\n\n";
+
+	while(<STDIN>)
+	{
+	    if(/^KEY (\S+) BEGIN$/)
+	    {
+		$key=$1;
+		last;
+	    }
+	}
+
+	while(<STDIN>)
+	{
+	    if(/^KEY \S+ END$/)
+	    {
+		last;
+	    }
+
+	    print MAIL;
+	}
+
+	close(MAIL);
+
+	if($verbose)
+	{
+	    print STDERR "gpgkeys: key $key sent to $address\n";
+	}
+    }
+}
+
+
+# Local Variables: 
+# mode:perl
+# End:

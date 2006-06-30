@@ -1,0 +1,99 @@
+#!@PERL@
+
+# gpgkeys_test - keyserver code tester
+# Copyright (C) 2001 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+#
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+
+use Getopt::Std;
+$Getopt::Std::STANDARD_HELP_VERSION=1;
+
+$|=1;
+
+sub VERSION_MESSAGE ()
+{
+    print STDOUT "gpgkeys_test (GnuPG) @VERSION@\n";
+}
+
+sub HELP_MESSAGE ()
+{
+    print STDOUT <<EOT
+
+--help     Print this help
+--version  Print the version
+EOT
+}
+
+
+getopts('o:');
+
+print STDERR "gpgkeys_test starting\n";
+
+if(defined($opt_o))
+{
+    print STDERR "Using output file $opt_o\n";
+    open(STDOUT,">$opt_o") || die "Can't open output file $opt_o\n";
+}
+
+if(@ARGV)
+{
+    print STDERR "Using input file $ARGV[0]\n";
+    open(STDIN,$ARGV[0]) || die "Can't open input file $ARGV[0]\n";
+}
+
+# Get the command block
+
+print STDERR "Command block:\n";
+
+while(<STDIN>)
+{
+    last if($_ eq "\n");
+    print STDERR "--command-> $_";
+
+    if(/^COMMAND (\w+)/)
+    {
+	$command=$1;
+    }
+}
+
+# Get the keylist block
+
+print STDERR "Keylist block:\n";
+
+while(<STDIN>)
+{
+    last if($_ eq "\n");
+    print STDERR "--keylist-> $_";
+}
+
+# If it's a SEND, then get the key material
+
+if($command eq "SEND")
+{
+    print STDERR "Key material to send:\n";
+
+    while(<STDIN>)
+    {
+	print STDERR "$_";
+    }
+}
+
+printf STDERR "gpgkeys_test finished\n";
+
+# Local Variables: 
+# mode:perl
+# End:

@@ -1,3 +1,10 @@
+2006-06-30  Werner Koch  <wk@g10code.com>
+
+	* keyserver/: New.  Taken from 1.4.4
+	* Makefile.am (SUBDIRS): Include keyserver/.
+	* configure.ac: Include keyserver/.
+	(FAKE_CURL, GPGKEYS_CURL): New.
+	
 2006-06-20  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.21.
