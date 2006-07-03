@@ -1,3 +1,8 @@
+2006-07-03  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (proc_parameters): Print the component label of a
+	faulty DN.
+
 2006-06-26  Werner Koch  <wk@g10code.com>
 
 	* certdump.c (gpgsm_cert_log_name): New.

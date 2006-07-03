@@ -512,6 +512,11 @@ AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_VERSION",
 # libksba is our X.509 support library
 #
 AM_PATH_KSBA("$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
+# fixme: Remove the following test and require newer libksba instead.
+_ksba_save_libs=$LIBS
+LIBS=$KSBA_LIBS
+AC_CHECK_FUNCS(ksba_dn_teststr)
+LIBS=$_ksba_save_libs
 
 #
 # libusb allows us to use the integrated CCID smartcard reader driver.

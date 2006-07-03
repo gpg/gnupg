@@ -1,3 +1,7 @@
+2006-07-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test for ksba_dn_teststr. 
+
 2006-06-30  Werner Koch  <wk@g10code.com>
 
 	* keyserver/: New.  Taken from 1.4.4

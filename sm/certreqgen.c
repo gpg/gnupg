@@ -441,6 +441,7 @@ static int
 proc_parameters (ctrl_t ctrl,
                  struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
 {
+  gpg_error_t err;
   struct para_data_s *r;
   const char *s;
   int i;
@@ -450,8 +451,9 @@ proc_parameters (ctrl_t ctrl,
   int rc;
   ksba_sexp_t public;
   int seq;
-  
-  /* check that we have all required parameters */
+  size_t erroff, errlen;
+
+  /* Check that we have all required parameters; */
   assert (get_parameter (para, pKEYTYPE, 0));
 
   /* We can only use RSA for now.  There is a with pkcs-10 on how to
@@ -483,17 +485,31 @@ proc_parameters (ctrl_t ctrl,
   if (parse_parameter_usage (para, pKEYUSAGE))
     return gpg_error (GPG_ERR_INV_PARAMETER);
 
-  /* check that there is a subject name and that this DN fits our
-     requirements */
+  /* Check that there is a subject name and that this DN fits our
+     requirements. */
   if (!(s=get_parameter_value (para, pNAMEDN, 0)))
     {
-      r = get_parameter (para, pKEYTYPE, 0);
+      r = get_parameter (para, pNAMEDN, 0);
       log_error (_("line %d: no subject name given\n"), r->lnr);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
-  /* fixme check s */
+#if HAVE_KSBA_DN_TESTSTR
+  err = ksba_dn_teststr (s, 0, &erroff, &errlen);
+  if (err)
+    {
+      r = get_parameter (para, pNAMEDN, 0);
+      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_NAME)
+        log_error (_("line %d: invalid subject name label `%.*s'\n"),
+                   r->lnr, (int)errlen, s+erroff);
+      else
+        log_error (_("line %d: invalid subject name `%s' at pos %d\n"),
+                   r->lnr, s, erroff);
 
-  /* check that the optional email address is okay */
+      return gpg_error (GPG_ERR_INV_PARAMETER);
+    }
+#endif /*HAVE_KSBA_DN_TESTSTR*/
+
+  /* Check that the optional email address is okay. */
   for (seq=0; (s=get_parameter_value (para, pNAMEEMAIL, seq)); seq++)
     { 
       if (has_invalid_email_chars (s)

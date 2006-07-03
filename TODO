@@ -13,10 +13,6 @@ We should always use valid S-Exp and not just parts.
 might want to have an agent context for each service request
 (i.e. Assuan context).
 
-* sm/certreqgen.c
-** Improve error reporting
-** Do some basic checks on the supplied DNs
-
 * sm/certchain.c
 ** When a certificate chain was sucessfully verified, make ephemeral certs used  in this chain permanent.
 ** Try to keep certificate references somewhere
