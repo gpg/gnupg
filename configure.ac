@@ -595,44 +595,47 @@ AC_ARG_ENABLE(dns-cert,
    use_dns_cert=$enableval,use_dns_cert=yes)
 
 if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
-  _srv_save_libs=$LIBS
+  _dns_save_libs=$LIBS
   LIBS=""
   # the double underscore thing is a glibc-ism?
   AC_SEARCH_LIBS(res_query,resolv bind,,
-                 AC_SEARCH_LIBS(__res_query,resolv bind,,use_dns_srv=no))
+                 AC_SEARCH_LIBS(__res_query,resolv bind,,have_resolver=no))
   AC_SEARCH_LIBS(dn_expand,resolv bind,,
-                 AC_SEARCH_LIBS(__dn_expand,resolv bind,,use_dns_srv=no))
+                 AC_SEARCH_LIBS(__dn_expand,resolv bind,,have_resolver=no))
   AC_SEARCH_LIBS(dn_skipname,resolv bind,,
-                 AC_SEARCH_LIBS(__dn_skipname,resolv bind,,use_dns_srv=no))
+                 AC_SEARCH_LIBS(__dn_skipname,resolv bind,,have_resolver=no))
 
-  # Make sure that the BIND 4 resolver interface is workable before
-  # enabling any code that calls it.  At some point I'll rewrite the
-  # code to use the BIND 8 resolver API.
+  if test x"$have_resolver" != xno ; then
 
-  AC_MSG_CHECKING([whether the resolver is usable])
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
+    # Make sure that the BIND 4 resolver interface is workable before
+    # enabling any code that calls it.  At some point I'll rewrite the
+    # code to use the BIND 8 resolver API.
+
+    AC_MSG_CHECKING([whether the resolver is usable])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>],
-[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);]])],have_resolver=yes,have_resolver=no)
-  AC_MSG_RESULT($have_resolver)
+[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ); dn_skipname(0,0); dn_expand(0,0,0,0,0);]])],have_resolver=yes,have_resolver=no)
+    AC_MSG_RESULT($have_resolver)
 
-# This is Apple-specific and somewhat bizarre as they changed the
-# define in bind 8 for some reason.
+    # This is Apple-specific and somewhat bizarre as they changed the
+    # define in bind 8 for some reason.
 
-  if test x"$have_resolver" != xyes ; then
-    AC_MSG_CHECKING([whether I can make the resolver usable with BIND_8_COMPAT])
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([#define BIND_8_COMPAT
+    if test x"$have_resolver" != xyes ; then
+       AC_MSG_CHECKING([whether I can make the resolver usable with BIND_8_COMPAT])
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([#define BIND_8_COMPAT
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>],
-[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);]])],[have_resolver=yes ; need_compat=yes])
-    AC_MSG_RESULT($have_resolver)
+[[unsigned char answer[PACKETSZ]; res_query("foo.bar",C_IN,T_A,answer,PACKETSZ); dn_skipname(0,0); dn_expand(0,0,0,0,0);]])],[have_resolver=yes ; need_compat=yes])
+       AC_MSG_RESULT($have_resolver)
+    fi
   fi
 
   if test x"$have_resolver" = xyes ; then
-     SRVLIBS=$LIBS
+     DNSLIBS=$LIBS
 
      if test x"$use_dns_srv" = xyes ; then
         AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
@@ -647,7 +650,7 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns
      fi
 
      if test x"$need_compat" = xyes ; then
-        AC_DEFINE(BIND_8_COMPAT,1,[an Appleism])
+        AC_DEFINE(BIND_8_COMPAT,1,[an Apple OSXism])
      fi
   else
      use_dns_srv=no
@@ -655,10 +658,10 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns
      use_dns_cert=no
   fi
 
-  LIBS=$_srv_save_libs
+  LIBS=$_dns_save_libs
 fi
 
-AC_SUBST(SRVLIBS)
+AC_SUBST(DNSLIBS)
 
 AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
 

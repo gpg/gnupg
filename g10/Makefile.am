@@ -30,7 +30,7 @@ AM_CPPFLAGS += -DGNUPG_LIBEXECDIR="\"$(libexecdir)/@PACKAGE@\""
 endif
 
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
-other_libs = $(LIBICONV) $(SRVLIBS) $(LIBINTL) $(CAPLIBS)
+other_libs = $(LIBICONV) $(DNSLIBS) $(LIBINTL) $(CAPLIBS)
 
 bin_PROGRAMS = gpg gpgv
 
