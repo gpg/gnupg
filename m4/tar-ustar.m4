@@ -1,5 +1,5 @@
 dnl Check for a tar program that speaks ustar format
-dnl Copyright (C) 2005 Free Software Foundation, Inc.
+dnl Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 dnl
 dnl This file is free software, distributed under the terms of the GNU
 dnl General Public License.  As a special exception to the GNU General
@@ -27,7 +27,7 @@ AC_DEFUN([GNUPG_CHECK_USTAR],
      if test x$_mytar != x ; then
         AC_MSG_CHECKING([whether $_mytar speaks USTAR])
         echo hithere > conftest.txt
-        $_mytar -cf - conftest.txt | strings | grep -q ustar
+        $_mytar -cf - conftest.txt | strings | grep ustar > /dev/null
         _tar_bad=$?
         rm conftest.txt
 

@@ -1,5 +1,8 @@
 2006-07-11  David Shaw  <dshaw@jabberwocky.com>
 
+	* tar-ustar.m4: Not all greps know the -q (quiet) flag, so
+	redirect to /dev/null instead.
+
 	* tar-ustar.m4: Pass tar data through strings so that greps that
 	don't grep in binary files (Solaris) can detect the string.  Noted
 	by Mark Davies.
