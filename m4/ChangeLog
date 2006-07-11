@@ -1,3 +1,9 @@
+2006-07-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* tar-ustar.m4: Pass tar data through strings so that greps that
+	don't grep in binary files (Solaris) can detect the string.  Noted
+	by Mark Davies.
+
 2006-06-25  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Added noexecstack.m4 and ldap.m4
