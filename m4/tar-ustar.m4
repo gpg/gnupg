@@ -27,7 +27,7 @@ AC_DEFUN([GNUPG_CHECK_USTAR],
      if test x$_mytar != x ; then
         AC_MSG_CHECKING([whether $_mytar speaks USTAR])
         echo hithere > conftest.txt
-        $_mytar -cf - conftest.txt | strings | grep ustar > /dev/null
+        $_mytar -cf - conftest.txt | (dd skip=257 bs=1 count=5 2>/dev/null || cat) | grep ustar > /dev/null
         _tar_bad=$?
         rm conftest.txt
 
