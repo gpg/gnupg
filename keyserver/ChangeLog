@@ -1,3 +1,8 @@
+2006-07-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (printquoted), curl-shim.c (curl_escape): Fix bad
+	encoding of characters > 127.  Noted by Nalin Dahyabhai.
+
 2006-04-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_http.c, gpgkeys_oldhkp.c: Removed.

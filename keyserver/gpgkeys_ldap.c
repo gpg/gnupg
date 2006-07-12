@@ -1258,7 +1258,7 @@ printquoted(FILE *stream,char *string,char delim)
   while(*string)
     {
       if(*string==delim || *string=='%')
-	fprintf(stream,"%%%02x",*string);
+	fprintf(stream,"%%%02x",(unsigned char)*string);
       else
 	fputc(*string,stream);
 
