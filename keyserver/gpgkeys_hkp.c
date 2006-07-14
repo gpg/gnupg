@@ -86,7 +86,7 @@ send_key(int *eof)
   CURLcode res;
   char request[MAX_URL+15];
   int begin=0,end=0,ret=KEYSERVER_INTERNAL_ERROR;
-  char keyid[17];
+  char keyid[17],state[6];
   char line[MAX_LINE];
   char *key=NULL,*encoded_key=NULL;
   size_t keylen=0,keymax=0;
@@ -94,7 +94,8 @@ send_key(int *eof)
   /* Read and throw away input until we see the BEGIN */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
-    if(sscanf(line,"KEY %16s BEGIN\n",keyid)==1)
+    if(sscanf(line,"KEY %16s %5s\n",keyid,state)==2
+       && strcmp(state,"BEGIN")==0)
       {
 	begin=1;
 	break;
@@ -112,7 +113,8 @@ send_key(int *eof)
   /* Now slurp up everything until we see the END */
 
   while(fgets(line,MAX_LINE,input))
-    if(sscanf(line,"KEY %16s END\n",keyid)==1)
+    if(sscanf(line,"KEY %16s %3s\n",keyid,state)==2
+       && strcmp(state,"END")==0)
       {
 	end=1;
 	break;
@@ -194,6 +196,7 @@ send_key(int *eof)
     {
       fprintf(console,"gpgkeys: HTTP post error %d: %s\n",res,errorbuffer);
       ret=curl_err_to_gpg_err(res);
+      goto fail;
     }
   else
     fprintf(output,"\nKEY %s SENT\n",keyid);
