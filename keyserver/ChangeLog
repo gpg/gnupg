@@ -1,3 +1,9 @@
+2006-07-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key), gpgkeys_ldap.c (send_key,
+	send_key_keyserver): Improved version of previous fix.  Force
+	match on spaces in string.
+
 2006-07-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (send_key), gpgkeys_ldap.c (send_key,

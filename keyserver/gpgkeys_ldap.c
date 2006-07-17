@@ -608,7 +608,7 @@ send_key(int *eof)
   /* Assemble the INFO stuff into LDAP attributes */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
-    if(sscanf(line,"INFO %16s %5s\n",keyid,state)==2
+    if(sscanf(line,"INFO%*[ ]%16s%*[ ]%5s\n",keyid,state)==2
        && strcmp(state,"BEGIN")==0)
       {
 	begin=1;
@@ -654,7 +654,7 @@ send_key(int *eof)
   /* Now parse each line until we see the END */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
-    if(sscanf(line,"INFO %16s %3s\n",keyid,state)==2
+    if(sscanf(line,"INFO%*[ ]%16s%*[ ]%3s\n",keyid,state)==2
        && strcmp(state,"END")==0)
       {
 	end=1;
@@ -676,7 +676,7 @@ send_key(int *eof)
   /* Read and throw away stdin until we see the BEGIN */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
-    if(sscanf(line,"KEY %16s %5s\n",keyid,state)==2
+    if(sscanf(line,"KEY%*[ ]%16s%*[ ]%5s\n",keyid,state)==2
        && strcmp(state,"BEGIN")==0)
       {
 	begin=1;
@@ -695,7 +695,7 @@ send_key(int *eof)
   /* Now slurp up everything until we see the END */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
-    if(sscanf(line,"KEY %16s %3s\n",keyid,state)==2
+    if(sscanf(line,"KEY%*[ ]%16s%*[ ]%3s\n",keyid,state)==2
        && strcmp(state,"END")==0)
       {
 	end=1;
@@ -816,7 +816,7 @@ send_key_keyserver(int *eof)
   /* Read and throw away stdin until we see the BEGIN */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
-    if(sscanf(line,"KEY %16s %5s\n",keyid,state)==2
+    if(sscanf(line,"KEY%*[ ]%16s%*[ ]%5s\n",keyid,state)==2
        && strcmp(state,"BEGIN")==0)
       {
 	begin=1;
@@ -835,7 +835,7 @@ send_key_keyserver(int *eof)
   /* Now slurp up everything until we see the END */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
-    if(sscanf(line,"KEY %16s %3s\n",keyid,state)==2
+    if(sscanf(line,"KEY%*[ ]%16s%*[ ]%3s\n",keyid,state)==2
        && strcmp(state,"END")==0)
       {
 	end=1;

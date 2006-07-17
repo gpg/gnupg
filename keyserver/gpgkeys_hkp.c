@@ -94,7 +94,7 @@ send_key(int *eof)
   /* Read and throw away input until we see the BEGIN */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
-    if(sscanf(line,"KEY %16s %5s\n",keyid,state)==2
+    if(sscanf(line,"KEY%*[ ]%16s%*[ ]%5s\n",keyid,state)==2
        && strcmp(state,"BEGIN")==0)
       {
 	begin=1;
@@ -113,7 +113,7 @@ send_key(int *eof)
   /* Now slurp up everything until we see the END */
 
   while(fgets(line,MAX_LINE,input))
-    if(sscanf(line,"KEY %16s %3s\n",keyid,state)==2
+    if(sscanf(line,"KEY%*[ ]%16s%*[ ]%3s\n",keyid,state)==2
        && strcmp(state,"END")==0)
       {
 	end=1;
