@@ -574,7 +574,7 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy )
     request=xmalloc(strlen(server)*2 + strlen(p)
 		    + (authstr?strlen(authstr):0)
 		    + (proxy_authstr?strlen(proxy_authstr):0) + 65);
-    if( proxy )
+    if( proxy && *proxy )
       sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n%s%s",
 	       hd->req_type == HTTP_REQ_GET ? "GET" :
 	       hd->req_type == HTTP_REQ_HEAD? "HEAD":
