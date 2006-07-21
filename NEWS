@@ -2,6 +2,8 @@ Noteworthy changes in version 1.9.22
 -------------------------------------------------
 
 
+ * Enhanced pkcs#12 support to allow import from simple keyBags.
+
 
 Noteworthy changes in version 1.9.21 (2006-06-20)
 -------------------------------------------------

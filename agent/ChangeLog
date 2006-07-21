@@ -1,3 +1,10 @@
+2006-07-21  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (oid_pkcs_12_keyBag): New.
+	(parse_bag_encrypted_data): New arg R_RESULT. Support keybags and
+	return the key object. 
+	(p12_parse): Take new arg into account.  Free RESULT on error.
+
 2006-06-26  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (handle_signal): Print infor for SIGUSR2 only in

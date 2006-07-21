@@ -88,6 +88,8 @@ static unsigned char const oid_data[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x07, 0x01 };
 static unsigned char const oid_encryptedData[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x07, 0x06 };
+static unsigned char const oid_pkcs_12_keyBag[11] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x0A, 0x01, 0x01 };
 static unsigned char const oid_pkcs_12_pkcs_8ShroudedKeyBag[11] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x0A, 0x01, 0x02 };
 static unsigned char const oid_pkcs_12_CertBag[11] = {
@@ -465,11 +467,13 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
   
 
 
+/* Note: If R_RESULT is passed as NULL, a key object as already be
+   processed and thus we need to skip it here. */
 static int
 parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
                           int startoffset, size_t *r_consumed, const char *pw,
                           void (*certcb)(void*, const unsigned char*, size_t),
-                          void *certcbarg)
+                          void *certcbarg, gcry_mpi_t **r_result)
 {
   struct tag_info ti;
   const unsigned char *p = buffer;
@@ -483,7 +487,12 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   int bad_pass = 0;
   unsigned char *cram_buffer = NULL;
   size_t consumed = 0; /* Number of bytes consumed from the orginal buffer. */
-  
+  int is_3des = 0;
+  gcry_mpi_t *result = NULL;
+  int result_count;
+
+  if (r_result)
+    *r_result = NULL;
   where = "start";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
@@ -529,10 +538,19 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       p += DIM(oid_pbeWithSHAAnd40BitRC2_CBC);
       n -= DIM(oid_pbeWithSHAAnd40BitRC2_CBC);
     }
+  else if (!ti.class && ti.tag == TAG_OBJECT_ID 
+      && ti.length == DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC)
+      && !memcmp (p, oid_pbeWithSHAAnd3_KeyTripleDES_CBC,
+                  DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC)))
+    {
+      p += DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC);
+      n -= DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC);
+      is_3des = 1;
+    }
   else
     goto bailout;
 
-  where = "rc2-params";
+  where = "rc2or3des-params";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class || ti.tag != TAG_SEQUENCE)
@@ -557,7 +575,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       n--;
     }
   
-  where = "rc2-ciphertext";
+  where = "rc2or3des-ciphertext";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
 
@@ -566,7 +584,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
     {
       /* Mozilla exported certs now come with single byte chunks of
          octect strings.  (Mozilla Firefox 1.0.4).  Arghh. */
-      where = "cram-rc2-ciphertext";
+      where = "cram-rc2or3des-ciphertext";
       cram_buffer = cram_octet_string ( p, &n, &consumed);
       if (!cram_buffer)
         goto bailout;
@@ -581,7 +599,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   else
     goto bailout;
   
-  log_info ("%lu bytes of RC2 encrypted text\n", ti.length);
+  log_info ("%lu bytes of %s encrypted text\n",ti.length,is_3des?"3DES":"RC2");
 
   plain = gcry_malloc_secure (ti.length);
   if (!plain)
@@ -591,7 +609,9 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
     }
   memcpy (plain, p, ti.length);
   crypt_block (plain, ti.length, salt, saltlen,
-               iter, pw, GCRY_CIPHER_RFC2268_40, 0);
+               iter, pw, 
+               is_3des? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40, 
+               0);
   n = ti.length;
   startoffset = 0;
   p_start = p = plain;
@@ -625,7 +645,8 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   /* Loop over all certificates inside the bag. */
   while (n)
     {
-      int isbag = 0;
+      int iscrlbag = 0;
+      int iskeybag = 0;
 
       where = "certbag.nextcert";
       if (ti.class || ti.tag != TAG_SEQUENCE)
@@ -647,7 +668,17 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
         {
           p += DIM(oid_pkcs_12_CrlBag);
           n -= DIM(oid_pkcs_12_CrlBag);
-          isbag = 1;
+          iscrlbag = 1;
+        }
+      else if ( ti.length == DIM(oid_pkcs_12_keyBag)
+           && !memcmp (p, oid_pkcs_12_keyBag, DIM(oid_pkcs_12_keyBag)))
+        {
+          /* The TrustedMIME plugin for MS Outlook started to create
+             files with just one outer 3DES encrypted container and
+             inside the certificates as well as the key. */
+          p += DIM(oid_pkcs_12_keyBag);
+          n -= DIM(oid_pkcs_12_keyBag);
+          iskeybag = 1;
         }
       else
         goto bailout;
@@ -657,14 +688,106 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
         goto bailout;
       if (ti.class != CONTEXT || ti.tag)
         goto bailout;
-      if (isbag)
+      if (iscrlbag)
         {
           log_info ("skipping unsupported crlBag\n");
           p += ti.length;
           n -= ti.length;
         }
+      else if (iskeybag && (result || !r_result))
+        {
+          log_info ("one keyBag already processed; skipping this one\n");
+          p += ti.length;
+          n -= ti.length;
+        }
+      else if (iskeybag)
+        {
+          int len;
+
+          log_info ("processing simple keyBag\n");
+
+          /* Fixme: This code is duplicated from parse_bag_data.  */
+          if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
+            goto bailout;
+          if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_INTEGER
+              || ti.length != 1 || *p)
+            goto bailout;
+          p++; n--;
+          if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
+            goto bailout;
+          len = ti.length;
+          if (parse_tag (&p, &n, &ti))
+            goto bailout;
+          if (len < ti.nhdr)
+            goto bailout;
+          len -= ti.nhdr;
+          if (ti.class || ti.tag != TAG_OBJECT_ID
+              || ti.length != DIM(oid_rsaEncryption)
+              || memcmp (p, oid_rsaEncryption,
+                         DIM(oid_rsaEncryption)))
+            goto bailout;
+          p += DIM (oid_rsaEncryption);
+          n -= DIM (oid_rsaEncryption);
+          if (len < ti.length)
+            goto bailout;
+          len -= ti.length;
+          if (n < len)
+            goto bailout;
+          p += len;
+          n -= len;
+          if ( parse_tag (&p, &n, &ti)
+               || ti.class || ti.tag != TAG_OCTET_STRING)
+            goto bailout;
+          if ( parse_tag (&p, &n, &ti)
+               || ti.class || ti.tag != TAG_SEQUENCE)
+            goto bailout;
+          len = ti.length;
+
+          result = gcry_calloc (10, sizeof *result);
+          if (!result)
+            {
+              log_error ( "error allocating result array\n");
+              goto bailout;
+            }
+          result_count = 0;
+
+          where = "reading.keybag.key-parameters";
+          for (result_count = 0; len && result_count < 9;)
+            {
+              if ( parse_tag (&p, &n, &ti)
+                   || ti.class || ti.tag != TAG_INTEGER)
+                goto bailout;
+              if (len < ti.nhdr)
+                goto bailout;
+              len -= ti.nhdr;
+              if (len < ti.length)
+                goto bailout;
+              len -= ti.length;
+              if (!result_count && ti.length == 1 && !*p)
+                ; /* ignore the very first one if it is a 0 */
+              else 
+                {
+                  int rc;
+
+                  rc = gcry_mpi_scan (result+result_count, GCRYMPI_FMT_USG, p,
+                                      ti.length, NULL);
+                  if (rc)
+                    {
+                      log_error ("error parsing key parameter: %s\n",
+                                 gpg_strerror (rc));
+                      goto bailout;
+                    }
+                  result_count++;
+                }
+              p += ti.length;
+              n -= ti.length;
+            }
+          if (len)
+            goto bailout;
+        }
       else
         {
+          log_info ("processing certBag\n");
           if (parse_tag (&p, &n, &ti))
             goto bailout;
           if (ti.class || ti.tag != TAG_SEQUENCE)
@@ -730,9 +853,19 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
     *r_consumed = consumed;
   gcry_free (plain);
   gcry_free (cram_buffer);
+  if (r_result)
+    *r_result = result;
   return 0;
 
  bailout:
+  if (result)
+    {
+      int i;
+
+      for (i=0; result[i]; i++)
+        gcry_mpi_release (result[i]);
+      gcry_free (result);
+    }
   if (r_consumed)
     *r_consumed = consumed;
   gcry_free (plain);
@@ -1066,7 +1199,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   bagseqlength = ti.length;
   while (bagseqlength || bagseqndef)
     {
-      log_debug ( "at offset %u\n", (p - p_start));
+/*       log_debug ( "at offset %u\n", (p - p_start)); */
       where = "bag-sequence";
       if (parse_tag (&p, &n, &ti))
         goto bailout;
@@ -1105,7 +1238,8 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
             len -= DIM(oid_encryptedData);
           where = "bag.encryptedData";
           if (parse_bag_encrypted_data (p, n, (p - p_start), &consumed, pw,
-                                        certcb, certcbarg))
+                                        certcb, certcbarg,
+                                        result? NULL : &result))
             goto bailout;
           if (lenndef)
             len += consumed;
@@ -1115,7 +1249,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
         {
           if (result)
             {
-              log_info ("already got an data object, skipping next one\n");
+              log_info ("already got an key object, skipping this one\n");
               p += ti.length;
               n -= ti.length;
             }
@@ -1159,7 +1293,14 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   return result;
  bailout:
   log_error ("error at \"%s\", offset %u\n", where, (p - p_start));
-  /* fixme: need to release RESULT. */
+  if (result)
+    {
+      int i;
+
+      for (i=0; result[i]; i++)
+        gcry_mpi_release (result[i]);
+      gcry_free (result);
+    }
   gcry_free (cram_buffer);
   return NULL;
 }
@@ -1227,6 +1368,8 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
   unsigned char keybuf[20];
   gcry_md_hd_t md;
   int rc;
+  int with_mac = 1;
+
 
   /* 9 steps to create the pkcs#12 Krampf. */
 
@@ -1264,7 +1407,8 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
   needed += 3;
 
   /* 0. And the final outer sequence. */
-  needed += DIM (data_mactemplate);
+  if (with_mac)
+    needed += DIM (data_mactemplate);
   len[0] = needed;
   n = compute_tag_length (needed);
   needed += n;
@@ -1311,37 +1455,40 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
       p += sequences[i].length;
     }
 
-  /* Intermezzo to compute the MAC. */
-  maclen = p - macstart;
-  gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
-  if (string_to_key (3, salt, 8, 2048, pw, 20, keybuf))
+  if (with_mac)
     {
-      gcry_free (result);
-      return NULL;
-    }
-  rc = gcry_md_open (&md, GCRY_MD_SHA1, GCRY_MD_FLAG_HMAC);
-  if (rc)
-    {
-      log_error ("gcry_md_open failed: %s\n", gpg_strerror (rc));
-      gcry_free (result);
-      return NULL;
-    }
-  rc = gcry_md_setkey (md, keybuf, 20);
-  if (rc)
-    {
-      log_error ("gcry_md_setkey failed: %s\n", gpg_strerror (rc));
-      gcry_md_close (md);
-      gcry_free (result);
-      return NULL;
-    }
-  gcry_md_write (md, macstart, maclen);
+      /* Intermezzo to compute the MAC. */
+      maclen = p - macstart;
+      gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
+      if (string_to_key (3, salt, 8, 2048, pw, 20, keybuf))
+        {
+          gcry_free (result);
+          return NULL;
+        }
+      rc = gcry_md_open (&md, GCRY_MD_SHA1, GCRY_MD_FLAG_HMAC);
+      if (rc)
+        {
+          log_error ("gcry_md_open failed: %s\n", gpg_strerror (rc));
+          gcry_free (result);
+          return NULL;
+        }
+      rc = gcry_md_setkey (md, keybuf, 20);
+      if (rc)
+        {
+          log_error ("gcry_md_setkey failed: %s\n", gpg_strerror (rc));
+          gcry_md_close (md);
+          gcry_free (result);
+          return NULL;
+        }
+      gcry_md_write (md, macstart, maclen);
 
-  /* 8. Append the MAC template and fix it up. */
-  memcpy (p, data_mactemplate, DIM (data_mactemplate));
-  memcpy (p + DATA_MACTEMPLATE_SALT_OFF, salt, 8);
-  memcpy (p + DATA_MACTEMPLATE_MAC_OFF, gcry_md_read (md, 0), 20);
-  p += DIM (data_mactemplate);
-  gcry_md_close (md);
+      /* 8. Append the MAC template and fix it up. */
+      memcpy (p, data_mactemplate, DIM (data_mactemplate));
+      memcpy (p + DATA_MACTEMPLATE_SALT_OFF, salt, 8);
+      memcpy (p + DATA_MACTEMPLATE_MAC_OFF, gcry_md_read (md, 0), 20);
+      p += DIM (data_mactemplate);
+      gcry_md_close (md);
+    }
 
   /* Ready. */
   resultlen = p - result;
@@ -1952,7 +2099,7 @@ main (int argc, char **argv)
 
 /*
 Local Variables:
-compile-command: "gcc -Wall -O -g -DTEST=1 -o minip12 minip12.c ../jnlib/libjnlib.a -L /usr/local/lib -lgcrypt -lgpg-error"
+compile-command: "gcc -Wall -O0 -g -DTEST=1 -o minip12 minip12.c ../jnlib/libjnlib.a -L /usr/local/lib -lgcrypt -lgpg-error"
 End:
 */
 #endif /* TEST */
