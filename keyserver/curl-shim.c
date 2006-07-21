@@ -164,13 +164,11 @@ curl_easy_perform(CURL *curl)
   /* Emulate the libcurl proxy behavior.  If the calling program set a
      proxy, use it.  If it didn't set a proxy or set it to NULL, check
      for one in the environment.  If the calling program explicitly
-     set a null-string proxy, don't set a proxy at all. */
+     set a null-string proxy the http code doesn't use a proxy at
+     all. */
 
   if(curl->proxy)
-    {
-      if(*curl->proxy)
-	proxy=curl->proxy;
-    }
+    proxy=curl->proxy;
   else
     proxy=getenv(HTTP_PROXY_ENV);
 
