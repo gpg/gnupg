@@ -1,3 +1,11 @@
+2006-07-24  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (build_key_bag): New args SHA1HASH and
+	KEYIDSTR. Append bag Attributes if these args are given.
+	(build_cert_sequence): ditto.
+	(p12_build): Calculate certificate hash and pass to build
+	functions.
+
 2006-07-21  Werner Koch  <wk@g10code.com>
 
 	* minip12.c (oid_pkcs_12_keyBag): New.

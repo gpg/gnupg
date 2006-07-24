@@ -134,6 +134,23 @@ static unsigned char const data_mactemplate[51] = {
 #define DATA_MACTEMPLATE_MAC_OFF 17
 #define DATA_MACTEMPLATE_SALT_OFF 39
 
+static unsigned char const data_attrtemplate[106] = {
+  0x31, 0x7c, 0x30, 0x55, 0x06, 0x09, 0x2a, 0x86,
+  0x48, 0x86, 0xf7, 0x0d, 0x01, 0x09, 0x14, 0x31,
+  0x48, 0x1e, 0x46, 0x00, 0x47, 0x00, 0x6e, 0x00,
+  0x75, 0x00, 0x50, 0x00, 0x47, 0x00, 0x20, 0x00,
+  0x65, 0x00, 0x78, 0x00, 0x70, 0x00, 0x6f, 0x00,
+  0x72, 0x00, 0x74, 0x00, 0x65, 0x00, 0x64, 0x00,
+  0x20, 0x00, 0x63, 0x00, 0x65, 0x00, 0x72, 0x00,
+  0x74, 0x00, 0x69, 0x00, 0x66, 0x00, 0x69, 0x00,
+  0x63, 0x00, 0x61, 0x00, 0x74, 0x00, 0x65, 0x00,
+  0x20, 0x00, 0x66, 0x00, 0x66, 0x00, 0x66, 0x00,
+  0x66, 0x00, 0x66, 0x00, 0x66, 0x00, 0x66, 0x00,
+  0x66, 0x30, 0x23, 0x06, 0x09, 0x2a, 0x86, 0x48,
+  0x86, 0xf7, 0x0d, 0x01, 0x09, 0x15, 0x31, 0x16,
+  0x04, 0x14 }; /* Need to append SHA-1 digest. */
+#define DATA_ATTRTEMPLATE_KEYID_OFF 73
+
 struct buffer_s 
 {
   unsigned char *buffer;
@@ -1648,6 +1665,7 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
 
 static unsigned char *
 build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
+               const unsigned char *sha1hash, const char *keyidstr,
                size_t *r_length)
 {
   size_t len[11], needed;
@@ -1670,6 +1688,10 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
   /* 7. Prepend a [0] tag. */
   len[7] = needed;
   needed += compute_tag_length (needed);
+
+  /* 6b. The attributes which are appended at the end. */
+  if (sha1hash)
+    needed += DIM (data_attrtemplate) + 20;
 
   /* 6. Prepend the shroudedKeyBag OID. */
   needed += 2 + DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag);
@@ -1741,12 +1763,26 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
   memcpy (p + DATA_3DESITER2048_SALT_OFF, salt, 8);
   p += DIM (data_3desiter2048);
 
-  /* 10. And finally the octet string with the encrypted data. */
+  /* 10. And the octet string with the encrypted data. */
   p = store_tag_length (p, TAG_OCTET_STRING, buflen);
   memcpy (p, buffer, buflen);
   p += buflen;
+
+  /* Append the attributes whose length we calculated at step 2b. */
+  if (sha1hash)
+    {
+      int i;
+
+      memcpy (p, data_attrtemplate, DIM (data_attrtemplate));
+      for (i=0; i < 8; i++)
+        p[DATA_ATTRTEMPLATE_KEYID_OFF+2*i+1] = keyidstr[i];
+      p += DIM (data_attrtemplate);
+      memcpy (p, sha1hash, 20);
+      p += 20;
+    }
+
+
   keybaglen = p - keybag;
-  
   if (needed != keybaglen)
     log_debug ("length mismatch: %lu, %lu\n",
                (unsigned long)needed, (unsigned long)keybaglen);
@@ -1856,12 +1892,16 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
 
 
 static unsigned char *
-build_cert_sequence (unsigned char *buffer, size_t buflen, size_t *r_length)
+build_cert_sequence (unsigned char *buffer, size_t buflen, 
+                     const unsigned char *sha1hash, const char *keyidstr,
+                     size_t *r_length)
 {
   size_t len[8], needed, n;
   unsigned char *p, *certseq;
   size_t certseqlen;
   int i;
+
+  assert (strlen (keyidstr) == 8);
 
   /* Walk 8 steps down to collect the info: */
 
@@ -1883,6 +1923,10 @@ build_cert_sequence (unsigned char *buffer, size_t buflen, size_t *r_length)
   /* 3. A [0] tag. */
   len[3] = needed;
   needed += compute_tag_length (needed);
+
+  /* 2b. The attributes which are appended at the end. */
+  if (sha1hash)
+    needed += DIM (data_attrtemplate) + 20;
 
   /* 2. An OID. */
   needed += 2 + DIM (oid_pkcs_12_CertBag);
@@ -1932,16 +1976,27 @@ build_cert_sequence (unsigned char *buffer, size_t buflen, size_t *r_length)
   /* 6. Store a [0] tag. */
   p = store_tag_length (p, 0xa0, len[6]);
 
-  /* 7. And finally the octet string with the actual certificate. */
+  /* 7. And the octet string with the actual certificate. */
   p = store_tag_length (p, TAG_OCTET_STRING, buflen);
   memcpy (p, buffer, buflen);
   p += buflen;
-  certseqlen = p - certseq;
   
+  /* Append the attributes whose length we calculated at step 2b. */
+  if (sha1hash)
+    {
+      memcpy (p, data_attrtemplate, DIM (data_attrtemplate));
+      for (i=0; i < 8; i++)
+        p[DATA_ATTRTEMPLATE_KEYID_OFF+2*i+1] = keyidstr[i];
+      p += DIM (data_attrtemplate);
+      memcpy (p, sha1hash, 20);
+      p += 20;
+    }
+
+  certseqlen = p - certseq;
   if (needed != certseqlen)
     log_debug ("length mismatch: %lu, %lu\n",
                (unsigned long)needed, (unsigned long)certseqlen);
-  
+
   /* Append some pad characters; we already allocated extra space. */
   n = 8 - certseqlen % 8;
   for (i=0; i < n; i++, certseqlen++)
@@ -1964,13 +2019,23 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
   char salt[8];
   struct buffer_s seqlist[3];
   int seqlistidx = 0;
+  unsigned char sha1hash[20];
+  char keyidstr[8+1];
 
   n = buflen = 0; /* (avoid compiler warning). */
+  memset (sha1hash, 0, 20);
+  *keyidstr = 0;
 
   if (cert && certlen)
     {
+      /* Calculate the hash value we need for the bag attributes. */
+      gcry_md_hash_buffer (GCRY_MD_SHA1, sha1hash, cert, certlen);
+      sprintf (keyidstr, "%02x%02x%02x%02x",
+               sha1hash[16], sha1hash[17], sha1hash[18], sha1hash[19]);
+
       /* Encode the certificate. */
-      buffer = build_cert_sequence (cert, certlen, &buflen);
+      buffer = build_cert_sequence (cert, certlen, sha1hash, keyidstr,
+                                    &buflen);
       if (!buffer)
         goto failure;
 
@@ -1989,6 +2054,7 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
       seqlistidx++;
     }
 
+
   if (kparms)
     {
       /* Encode the key. */
@@ -2001,7 +2067,12 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
       crypt_block (buffer, buflen, salt, 8, 2048, pw, GCRY_CIPHER_3DES, 1);
 
       /* Encode the encrypted stuff into a bag. */
-      seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt, &n);
+      if (cert && certlen)
+        seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt, 
+                                                    sha1hash, keyidstr, &n);
+      else
+        seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt,
+                                                    NULL, NULL, &n);
       seqlist[seqlistidx].length = n;
       gcry_free (buffer);
       buffer = NULL;
