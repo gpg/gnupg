@@ -1,3 +1,9 @@
+2006-07-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Fix missing include path for gpgkeys_finger (needs
+	the libcurl path, even though it doesn't use libcurl because of
+	ksutil.c:curl_err_to_gpg_err().  Noted by Gilbert Fernandes.
+
 2006-07-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* curl-shim.c (curl_easy_perform): Minor cleanup of proxy code.

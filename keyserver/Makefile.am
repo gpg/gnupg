@@ -50,4 +50,5 @@ gpgkeys_curl_CPPFLAGS = @LIBCURL_CPPFLAGS@
 gpgkeys_curl_LDADD = @LIBCURL@ @GETOPT@
 gpgkeys_hkp_CPPFLAGS = @LIBCURL_CPPFLAGS@
 gpgkeys_hkp_LDADD = @LIBCURL@ @GETOPT@
+gpgkeys_finger_CPPFLAGS = @LIBCURL_CPPFLAGS@
 endif
