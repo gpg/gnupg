@@ -3495,6 +3495,8 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
   size_t n;
   int i;
 
+  sk_unprotected = NULL;
+  sk_protected = NULL;
   rc = generate_raw_key (algo, 1024, make_timestamp (),
                          &sk_unprotected, &sk_protected);
   if (rc)

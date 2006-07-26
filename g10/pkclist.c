@@ -363,7 +363,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 int
 edit_ownertrust (PKT_public_key *pk, int mode )
 {
-  unsigned int trust;
+  unsigned int trust = 0;  /* Needs to be initialized to avoid gcc warning. */
   int no_help = 0;
 
   for(;;)

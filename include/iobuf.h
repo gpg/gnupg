@@ -135,10 +135,10 @@ void iobuf_set_partial_block_mode( IOBUF a, size_t len );
 
 int iobuf_translate_file_handle ( int fd, int for_write );
 
-/* get a byte form the iobuf; must check for eof prior to this function
- * this function returns values in the range 0 .. 255 or -1 to indicate EOF
+/* Get a byte form the iobuf; must check for eof prior to this function.
+ * This function returns values in the range 0 .. 255 or -1 to indicate EOF
  * iobuf_get_noeof() does not return -1 to indicate EOF, but masks the
- * returned value to be in the range 0 ..255.
+ * returned value to be in the range 0..255.
  */
 #define iobuf_get(a)  \
      (	((a)->nofast || (a)->d.start >= (a)->d.len )?  \

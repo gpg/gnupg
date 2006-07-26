@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-06-25 13:35+0200\n"
+"POT-Creation-Date: 2006-07-26 12:43+0200\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -63,8 +63,8 @@ msgstr "s'està escrivint la clau secreta a «%s»\n"
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:474
 #: g10/gpg.c:1003 g10/gpg.c:3461 g10/import.c:195 g10/keygen.c:2385
 #: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:342
-#: g10/plaintext.c:481 g10/sign.c:830 g10/sign.c:1005 g10/sign.c:1118
-#: g10/sign.c:1268 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
+#: g10/plaintext.c:481 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1114
+#: g10/sign.c:1264 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
 #, c-format
 msgid "can't open `%s': %s\n"
@@ -100,7 +100,7 @@ msgstr "nota: el fitxer random_seed no s'ha actualitzat\n"
 
 #: cipher/random.c:544 g10/exec.c:481 g10/gpg.c:1002 g10/keygen.c:2864
 #: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:263
-#: g10/openfile.c:357 g10/sign.c:848 g10/sign.c:1134 g10/tdbio.c:536
+#: g10/openfile.c:357 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
@@ -779,7 +779,7 @@ msgstr "--output no funciona per a aquesta ordre\n"
 msgid "key \"%s\" not found: %s\n"
 msgstr "no s'ha trobat la clau «%s»: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2346 g10/keyserver.c:1714
+#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2349 g10/keyserver.c:1714
 #: g10/revoke.c:234 g10/revoke.c:478
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -824,7 +824,7 @@ msgstr "hi ha una clau secreta per a la clau pública «%s»!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "utilitzeu l'opció «--delete-secret-keys» per a eliminar-la primer.\n"
 
-#: g10/encode.c:213 g10/sign.c:1288
+#: g10/encode.c:213 g10/sign.c:1284
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "error en la creació de la contrasenya: %s\n"
@@ -843,7 +843,7 @@ msgstr "Ha fallat el procés de signatura: %s\n"
 msgid "`%s' already compressed\n"
 msgstr "«%s» ja està comprimida\n"
 
-#: g10/encode.c:292 g10/encode.c:584 g10/sign.c:615
+#: g10/encode.c:292 g10/encode.c:584 g10/sign.c:593
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "AVÍS: «%s» és un fitxer buit\n"
@@ -872,7 +872,7 @@ msgid ""
 msgstr ""
 "forçar el xifrat asimètric %s (%d) viola les preferències del destinatari\n"
 
-#: g10/encode.c:628 g10/sign.c:967
+#: g10/encode.c:628 g10/sign.c:963
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -2403,195 +2403,200 @@ msgstr " claus privades llegides: %lu\n"
 
 #: g10/import.c:566
 #, c-format
-msgid ""
-"WARNING: key %s contains preferences for unavailable\n"
-"algorithms on these user IDs:\n"
+msgid "WARNING: key %s contains preferences for unavailable\n"
 msgstr ""
 
-#: g10/import.c:604
+#. TRANSLATORS: This string is belongs to the previous one.  They are
+#. only split up to allow printing of a common prefix.
+#: g10/import.c:570
+#, fuzzy
+msgid "         algorithms on these user IDs:\n"
+msgstr "Heu signat els següents ID d'usuari:\n"
+
+#: g10/import.c:607
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr ""
 
-#: g10/import.c:616
+#: g10/import.c:619
 #, fuzzy, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
 msgstr "signatura %s, algorisme de resum %s\n"
 
-#: g10/import.c:628
+#: g10/import.c:631
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr ""
 
-#: g10/import.c:641
+#: g10/import.c:644
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr ""
 
-#: g10/import.c:643
+#: g10/import.c:646
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 
-#: g10/import.c:667
+#: g10/import.c:670
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
 msgstr ""
 
-#: g10/import.c:717 g10/import.c:1115
+#: g10/import.c:720 g10/import.c:1118
 #, fuzzy, c-format
 msgid "key %s: no user ID\n"
 msgstr "clau %08lX: sense ID\n"
 
-#: g10/import.c:746
+#: g10/import.c:749
 #, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "clau %08lX: corrupció de la subclau HKP reparada\n"
 
-#: g10/import.c:761
+#: g10/import.c:764
 #, fuzzy, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
 msgstr "clau %08lX: s'ha acceptat la ID d'usuari no autosignada «%s»\n"
 
-#: g10/import.c:767
+#: g10/import.c:770
 #, fuzzy, c-format
 msgid "key %s: no valid user IDs\n"
 msgstr "clau %08lX: l'ID no és vàlid\n"
 
-#: g10/import.c:769
+#: g10/import.c:772
 msgid "this may be caused by a missing self-signature\n"
 msgstr "açò pot ser causat per l'absència d'autosignatura\n"
 
-#: g10/import.c:779 g10/import.c:1237
+#: g10/import.c:782 g10/import.c:1240
 #, fuzzy, c-format
 msgid "key %s: public key not found: %s\n"
 msgstr "clau %08lX: no s'ha trobat la clau pública: %s\n"
 
-#: g10/import.c:785
+#: g10/import.c:788
 #, fuzzy, c-format
 msgid "key %s: new key - skipped\n"
 msgstr "clau %08lX: clau nova - es descarta \n"
 
-#: g10/import.c:794
+#: g10/import.c:797
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "no s'ha trobat cap anell escrivible: %s\n"
 
-#: g10/import.c:799 g10/openfile.c:267 g10/sign.c:853 g10/sign.c:1139
+#: g10/import.c:802 g10/openfile.c:267 g10/sign.c:831 g10/sign.c:1135
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "s'està escrivint en «%s»\n"
 
-#: g10/import.c:803 g10/import.c:898 g10/import.c:1155 g10/import.c:1298
-#: g10/import.c:2360 g10/import.c:2382
+#: g10/import.c:806 g10/import.c:901 g10/import.c:1158 g10/import.c:1301
+#: g10/import.c:2363 g10/import.c:2385
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
-#: g10/import.c:822
+#: g10/import.c:825
 #, fuzzy, c-format
 msgid "key %s: public key \"%s\" imported\n"
 msgstr "clau %08lX: s'ha importat la clau pública «%s»\n"
 
-#: g10/import.c:846
+#: g10/import.c:849
 #, fuzzy, c-format
 msgid "key %s: doesn't match our copy\n"
 msgstr "clau %08lX: no correspon a la nostra còpia\n"
 
-#: g10/import.c:863 g10/import.c:1255
+#: g10/import.c:866 g10/import.c:1258
 #, fuzzy, c-format
 msgid "key %s: can't locate original keyblock: %s\n"
 msgstr "clau %08lX: no s'ha trobat el bloc de claus original: %s\n"
 
-#: g10/import.c:871 g10/import.c:1262
+#: g10/import.c:874 g10/import.c:1265
 #, fuzzy, c-format
 msgid "key %s: can't read original keyblock: %s\n"
 msgstr "clau %08lX: no s'ha pogut llegir el bloc de claus original: %s\n"
 
-#: g10/import.c:908
+#: g10/import.c:911
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "clau %08lX: «%s» 1 ID d'usuari nou\n"
 
-#: g10/import.c:911
+#: g10/import.c:914
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new user IDs\n"
 msgstr "clau %08lX: «%s» %d ID d'usuari nous\n"
 
-#: g10/import.c:914
+#: g10/import.c:917
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new signature\n"
 msgstr "clau %08lX: «%s» 1 signatura nova\n"
 
-#: g10/import.c:917
+#: g10/import.c:920
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new signatures\n"
 msgstr "clau %08lX: «%s» %d signatures noves\n"
 
-#: g10/import.c:920
+#: g10/import.c:923
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new subkey\n"
 msgstr "clau %08lX: «%s» 1 subclau nova\n"
 
-#: g10/import.c:923
+#: g10/import.c:926
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new subkeys\n"
 msgstr "clau %08lX: «%s» %d subclaus noves\n"
 
-#: g10/import.c:926
+#: g10/import.c:929
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d signature cleaned\n"
 msgstr "clau %08lX: «%s» %d signatures noves\n"
 
-#: g10/import.c:929
+#: g10/import.c:932
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d signatures cleaned\n"
 msgstr "clau %08lX: «%s» %d signatures noves\n"
 
-#: g10/import.c:932
+#: g10/import.c:935
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d user ID cleaned\n"
 msgstr "clau %08lX: «%s» %d ID d'usuari nous\n"
 
-#: g10/import.c:935
+#: g10/import.c:938
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d user IDs cleaned\n"
 msgstr "clau %08lX: «%s» %d ID d'usuari nous\n"
 
-#: g10/import.c:958
+#: g10/import.c:961
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "clau %08lX: «%s» no ha estat modificada\n"
 
-#: g10/import.c:1121
+#: g10/import.c:1124
 #, fuzzy, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "clau %08lX: clau secreta amb xifrat %d no vàlid - es descarta\n"
 
-#: g10/import.c:1132
+#: g10/import.c:1135
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
-#: g10/import.c:1149 g10/import.c:2375
+#: g10/import.c:1152 g10/import.c:2378
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "no hi ha anell secret predeterminat: %s\n"
 
-#: g10/import.c:1160
+#: g10/import.c:1163
 #, fuzzy, c-format
 msgid "key %s: secret key imported\n"
 msgstr "clau %08lX: s'ha importat la clau secreta\n"
 
-#: g10/import.c:1190
+#: g10/import.c:1193
 #, fuzzy, c-format
 msgid "key %s: already in secret keyring\n"
 msgstr "clau %08lX: ja es troba en l'anell privat\n"
 
-#: g10/import.c:1200
+#: g10/import.c:1203
 #, fuzzy, c-format
 msgid "key %s: secret key not found: %s\n"
 msgstr "clau %08lX: no s'ha trobat la clau secreta: %s\n"
 
-#: g10/import.c:1230
+#: g10/import.c:1233
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -2601,22 +2606,22 @@ msgstr ""
 # O «rebutjara»? ivb
 # Per tots els canvis d'anglicisme «ignorat» -> «es descarta»,
 # «es rebutja» està bé. jm
-#: g10/import.c:1273
+#: g10/import.c:1276
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
 msgstr "clau %08lX: el certificat de revocació és invàlid: %s: es rebutja\n"
 
-#: g10/import.c:1305
+#: g10/import.c:1308
 #, fuzzy, c-format
 msgid "key %s: \"%s\" revocation certificate imported\n"
 msgstr "clau %08lX: s'ha importat el certificat de revocació «%s»\n"
 
-#: g10/import.c:1371
+#: g10/import.c:1374
 #, fuzzy, c-format
 msgid "key %s: no user ID for signature\n"
 msgstr "clau %08lX: no hi ha ID per a la signatura\n"
 
-#: g10/import.c:1386
+#: g10/import.c:1389
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
@@ -2624,126 +2629,126 @@ msgstr ""
 "s»\n"
 "\n"
 
-#: g10/import.c:1388
+#: g10/import.c:1391
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "clau %08lX: l'autosignatura no és vàlida en l'id d'usuari «%s»\n"
 
-#: g10/import.c:1406
+#: g10/import.c:1409
 #, fuzzy, c-format
 msgid "key %s: no subkey for key binding\n"
 msgstr "clau %08lX: no hi ha una subclau per a l'enllaç de la clau\n"
 
-#: g10/import.c:1417 g10/import.c:1467
+#: g10/import.c:1420 g10/import.c:1470
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "clau %08lX: l'algoritme de clau pública no és suportat\n"
 
-#: g10/import.c:1419
+#: g10/import.c:1422
 #, fuzzy, c-format
 msgid "key %s: invalid subkey binding\n"
 msgstr "clau %08lX: l'enllaç de subclau és invàlid\n"
 
-#: g10/import.c:1434
+#: g10/import.c:1437
 #, fuzzy, c-format
 msgid "key %s: removed multiple subkey binding\n"
 msgstr "clau %08lX: s'ha eliminat un enllaç de subclau múltiple\n"
 
-#: g10/import.c:1456
+#: g10/import.c:1459
 #, fuzzy, c-format
 msgid "key %s: no subkey for key revocation\n"
 msgstr "clau %08lX: no hi ha una subclau per a la clau de revocació\n"
 
-#: g10/import.c:1469
+#: g10/import.c:1472
 #, fuzzy, c-format
 msgid "key %s: invalid subkey revocation\n"
 msgstr "clau %08lX: Subclau de revocació no vàlida\n"
 
-#: g10/import.c:1484
+#: g10/import.c:1487
 #, fuzzy, c-format
 msgid "key %s: removed multiple subkey revocation\n"
 msgstr "clau %08lX: s'han eliminat subclaus de revocació múltiples\n"
 
-#: g10/import.c:1526
+#: g10/import.c:1529
 #, fuzzy, c-format
 msgid "key %s: skipped user ID \"%s\"\n"
 msgstr "clau %08lX: es descarta l'ID d'usuari '"
 
-#: g10/import.c:1547
+#: g10/import.c:1550
 #, fuzzy, c-format
 msgid "key %s: skipped subkey\n"
 msgstr "clau %08lX: es descarta la subclau\n"
 
-#: g10/import.c:1574
+#: g10/import.c:1577
 #, fuzzy, c-format
 msgid "key %s: non exportable signature (class 0x%02X) - skipped\n"
 msgstr "clau %08lX: la signatura és inexportable (classe %02x) - es descarta\n"
 
-#: g10/import.c:1584
+#: g10/import.c:1587
 #, fuzzy, c-format
 msgid "key %s: revocation certificate at wrong place - skipped\n"
 msgstr ""
 "clau %08lX: el certificat de revocació és en el lloc equivocat - es "
 "descarta\n"
 
-#: g10/import.c:1601
+#: g10/import.c:1604
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - skipped\n"
 msgstr "clau %08lX: el certificat de revocació és invàlid: %s - es descarta\n"
 
-#: g10/import.c:1615
+#: g10/import.c:1618
 #, fuzzy, c-format
 msgid "key %s: subkey signature in wrong place - skipped\n"
 msgstr ""
 "clau %08lX: la signatura de la subclau és en el lloc equivocat - es "
 "descarta\n"
 
-#: g10/import.c:1623
+#: g10/import.c:1626
 #, fuzzy, c-format
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr ""
 "clau %08lX: la classe de signatura és inesperada (0x%02x) - es descarta\n"
 
-#: g10/import.c:1723
+#: g10/import.c:1726
 #, fuzzy, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "clau %08lX: s'ha detectat un ID d'usuari duplicat - es fusiona\n"
 
-#: g10/import.c:1785
+#: g10/import.c:1788
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
 "AVÍS: la clau %08lX pot estar revocada: s'adquireix la clau de revocació %"
 "08lX\n"
 
-#: g10/import.c:1799
+#: g10/import.c:1802
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr ""
 "AVÍS: la clau %08lX pot estar revocada: la clau de revocació %08lX no està "
 "present.\n"
 
-#: g10/import.c:1858
+#: g10/import.c:1861
 #, fuzzy, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "clau %08lX: s'hi ha afegit el certificat de revocació «%s»\n"
 
-#: g10/import.c:1892
+#: g10/import.c:1895
 #, fuzzy, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "clau %08lX: s'ha afegit la signatura de clau directa\n"
 
-#: g10/import.c:2281
+#: g10/import.c:2284
 #, fuzzy
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "la clau pública no coincideix amb la clau secreta!\n"
 
-#: g10/import.c:2289
+#: g10/import.c:2292
 #, fuzzy
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "es descarta: la clau secreta ja és present\n"
 
-#: g10/import.c:2291
+#: g10/import.c:2294
 #, fuzzy
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "es descarta: la clau secreta ja és present\n"
@@ -3070,7 +3075,7 @@ msgid "Really sign? (y/N) "
 msgstr "Signar realment? "
 
 #: g10/keyedit.c:1067 g10/keyedit.c:4783 g10/keyedit.c:4874 g10/keyedit.c:4938
-#: g10/keyedit.c:4999 g10/sign.c:374
+#: g10/keyedit.c:4999 g10/sign.c:352
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "Ha fallat el procés de signatura: %s\n"
@@ -4354,17 +4359,17 @@ msgstr "NOTA: crear subclaus per a claus v3 no és conforme amb OpenPGP\n"
 msgid "Really create? (y/N) "
 msgstr "Crear realment? "
 
-#: g10/keygen.c:3507
+#: g10/keygen.c:3509
 #, fuzzy, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
 
-#: g10/keygen.c:3554
+#: g10/keygen.c:3556
 #, fuzzy, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
 
-#: g10/keygen.c:3580
+#: g10/keygen.c:3582
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr ""
@@ -5802,43 +5807,39 @@ msgstr ""
 "AVÍS: no s'ha pogut %%-expandir l'url de política (massa gran). S'utilitza "
 "no expandida.\n"
 
-#: g10/sign.c:339
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA requereix l'ús d'un algoritme de dispersió de 160 bits\n"
-
-#: g10/sign.c:369
+#: g10/sign.c:347
 #, c-format
 msgid "checking created signature failed: %s\n"
 msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
-#: g10/sign.c:378
+#: g10/sign.c:356
 #, fuzzy, c-format
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s signatura de: «%s»\n"
 
-#: g10/sign.c:810
+#: g10/sign.c:788
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
 "només podeu fer signatures separades amb claus d'estil PGP 2.x mentre esteu "
 "en mode --pgp2\n"
 
-#: g10/sign.c:879
+#: g10/sign.c:862
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr ""
 "forçar l'algoritme de digest %s (%d) viola les preferències del destinatari\n"
 
-#: g10/sign.c:992
+#: g10/sign.c:988
 msgid "signing:"
 msgstr "signatura:"
 
-#: g10/sign.c:1104
+#: g10/sign.c:1100
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
 "només podeu signar en clar amb claus d'estil PGP 2.x en el mode --pgp2\n"
 
-#: g10/sign.c:1282
+#: g10/sign.c:1278
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "s'utilitzarà xifratge %s\n"
@@ -6579,9 +6580,8 @@ msgstr "l'operació no és possible sense memòria segura inicialitzada\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(potser heu utilitzat el programa erroni per a aquesta tasca)\n"
 
-#, fuzzy
-#~ msgid "algorithms on these user IDs:\n"
-#~ msgstr "Heu signat els següents ID d'usuari:\n"
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA requereix l'ús d'un algoritme de dispersió de 160 bits\n"
 
 #~ msgid ""
 #~ "please see http://www.gnupg.org/why-not-idea.html for more information\n"

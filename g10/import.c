@@ -243,7 +243,7 @@ import( IOBUF inp, const char* fname,struct stats_s *stats,
 	unsigned char **fpr,size_t *fpr_len,unsigned int options )
 {
     PACKET *pending_pkt = NULL;
-    KBNODE keyblock;
+    KBNODE keyblock = NULL;
     int rc = 0;
 
     getkey_disable_caches();
@@ -566,10 +566,8 @@ check_prefs_warning(PKT_public_key *pk)
   log_info(_("WARNING: key %s contains preferences for unavailable\n"),
             keystr_from_pk(pk));
   /* TRANSLATORS: This string is belongs to the previous one.  They are
-     only split up to allow printing of a common prefix. The
-     check_prefs_warning tag is a hack to make this string unique.  */
-  log_info(_("         algorithms on these user IDs:\n"
-             "\0" "check_prefs_warning")); 
+     only split up to allow printing of a common prefix. */
+  log_info(_("         algorithms on these user IDs:\n"));
 }
 
 static void

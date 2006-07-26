@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-07-26 18:08+0200\n"
+"POT-Creation-Date: 2006-07-26 12:43+0200\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -43,28 +43,12 @@ msgstr "无法锁定‘%s’：%s\n"
 msgid "waiting for lock on `%s'...\n"
 msgstr "等待‘%s’上的锁\n"
 
-#: cipher/random.c:448
-#: g10/card-util.c:678
-#: g10/card-util.c:747
-#: g10/dearmor.c:61
-#: g10/dearmor.c:110
-#: g10/encode.c:184
-#: g10/encode.c:474
-#: g10/gpg.c:1003
-#: g10/gpg.c:3461
-#: g10/import.c:195
-#: g10/keygen.c:2385
-#: g10/keyring.c:1525
-#: g10/openfile.c:186
-#: g10/openfile.c:342
-#: g10/plaintext.c:481
-#: g10/sign.c:830
-#: g10/sign.c:1005
-#: g10/sign.c:1118
-#: g10/sign.c:1268
-#: g10/tdbdump.c:141
-#: g10/tdbdump.c:149
-#: g10/tdbio.c:540
+#: cipher/random.c:448 g10/card-util.c:678 g10/card-util.c:747
+#: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:474
+#: g10/gpg.c:1003 g10/gpg.c:3461 g10/import.c:195 g10/keygen.c:2385
+#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:342
+#: g10/plaintext.c:481 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1114
+#: g10/sign.c:1264 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
 #, c-format
 msgid "can't open `%s': %s\n"
@@ -97,24 +81,14 @@ msgstr "无法读取‘%s’：%s\n"
 msgid "note: random_seed file not updated\n"
 msgstr "注意：随机数种子文件未被更新\n"
 
-#: cipher/random.c:544
-#: g10/exec.c:481
-#: g10/gpg.c:1002
-#: g10/keygen.c:2864
-#: g10/keygen.c:2894
-#: g10/keyring.c:1201
-#: g10/keyring.c:1501
-#: g10/openfile.c:263
-#: g10/openfile.c:357
-#: g10/sign.c:848
-#: g10/sign.c:1134
-#: g10/tdbio.c:536
+#: cipher/random.c:544 g10/exec.c:481 g10/gpg.c:1002 g10/keygen.c:2864
+#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:263
+#: g10/openfile.c:357 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "无法建立‘%s’：%s\n"
 
-#: cipher/random.c:556
-#: cipher/random.c:566
+#: cipher/random.c:556 cipher/random.c:566
 #, c-format
 msgid "can't write `%s': %s\n"
 msgstr "无法写入‘%s’：%s\n"
@@ -177,40 +151,30 @@ msgstr "无法存储创建日期：%s\n"
 msgid "reading public key failed: %s\n"
 msgstr "无法读出公钥：%s\n"
 
-#: g10/app-openpgp.c:985
-#: g10/app-openpgp.c:1910
+#: g10/app-openpgp.c:985 g10/app-openpgp.c:1910
 msgid "response does not contain the public key data\n"
 msgstr "响应未包含公钥数据\n"
 
-#: g10/app-openpgp.c:993
-#: g10/app-openpgp.c:1918
+#: g10/app-openpgp.c:993 g10/app-openpgp.c:1918
 msgid "response does not contain the RSA modulus\n"
 msgstr "响应未包含 RSA 余数\n"
 
-#: g10/app-openpgp.c:1002
-#: g10/app-openpgp.c:1928
+#: g10/app-openpgp.c:1002 g10/app-openpgp.c:1928
 msgid "response does not contain the RSA public exponent\n"
 msgstr "响应未包含 RSA 公钥指数\n"
 
-#: g10/app-openpgp.c:1258
-#: g10/app-openpgp.c:1346
-#: g10/app-openpgp.c:2154
+#: g10/app-openpgp.c:1258 g10/app-openpgp.c:1346 g10/app-openpgp.c:2154
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "PIN 回调返回错误：%s\n"
 
-#: g10/app-openpgp.c:1264
-#: g10/app-openpgp.c:1352
-#: g10/app-openpgp.c:2160
+#: g10/app-openpgp.c:1264 g10/app-openpgp.c:1352 g10/app-openpgp.c:2160
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "CHV%d 的 PIN 太短；最小长度为 %d\n"
 
-#: g10/app-openpgp.c:1273
-#: g10/app-openpgp.c:1287
-#: g10/app-openpgp.c:1362
-#: g10/app-openpgp.c:2169
-#: g10/app-openpgp.c:2183
+#: g10/app-openpgp.c:1273 g10/app-openpgp.c:1287 g10/app-openpgp.c:1362
+#: g10/app-openpgp.c:2169 g10/app-openpgp.c:2183
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "验证 CHV%d 失败：%s\n"
@@ -219,13 +183,11 @@ msgstr "验证 CHV%d 失败：%s\n"
 msgid "access to admin commands is not configured\n"
 msgstr "尚未配置管理员命令的权限\n"
 
-#: g10/app-openpgp.c:1325
-#: g10/app-openpgp.c:2389
+#: g10/app-openpgp.c:1325 g10/app-openpgp.c:2389
 msgid "error retrieving CHV status from card\n"
 msgstr "从卡中获取 CHV 状态时出错\n"
 
-#: g10/app-openpgp.c:1331
-#: g10/app-openpgp.c:2398
+#: g10/app-openpgp.c:1331 g10/app-openpgp.c:2398
 msgid "card is permanently locked!\n"
 msgstr "卡被永久锁定！\n"
 
@@ -257,13 +219,11 @@ msgstr "新的 PIN"
 msgid "error getting new PIN: %s\n"
 msgstr "获取新 PIN 时出错：%s\n"
 
-#: g10/app-openpgp.c:1546
-#: g10/app-openpgp.c:1996
+#: g10/app-openpgp.c:1546 g10/app-openpgp.c:1996
 msgid "error reading application data\n"
 msgstr "读取应用程序数据时出错\n"
 
-#: g10/app-openpgp.c:1552
-#: g10/app-openpgp.c:2003
+#: g10/app-openpgp.c:1552 g10/app-openpgp.c:2003
 msgid "error reading fingerprint DO\n"
 msgstr "读取指纹 D0 出错\n"
 
@@ -293,8 +253,7 @@ msgstr "RSA 余数缺失或者不是 %d 位长\n"
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "RSA 公钥指数缺失或长于 %d 位\n"
 
-#: g10/app-openpgp.c:1757
-#: g10/app-openpgp.c:1764
+#: g10/app-openpgp.c:1757 g10/app-openpgp.c:1764
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "RSA 质数 %s 缺失或者不是 %d 位长\n"
@@ -337,11 +296,11 @@ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
 
 #: g10/app-openpgp.c:2403
-msgid "verification of Admin PIN is currently prohibited through this command\n"
+msgid ""
+"verification of Admin PIN is currently prohibited through this command\n"
 msgstr "目前禁止通过此命令验证管理员 PIN\n"
 
-#: g10/app-openpgp.c:2474
-#: g10/app-openpgp.c:2484
+#: g10/app-openpgp.c:2474 g10/app-openpgp.c:2484
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "不能存取 %s――无效的 OpenPGP 卡？\n"
@@ -375,8 +334,7 @@ msgstr "与预期不符的 ASCII 封装："
 msgid "invalid dash escaped line: "
 msgstr "以连字符开头的行格式错误："
 
-#: g10/armor.c:734
-#: g10/armor.c:1343
+#: g10/armor.c:734 g10/armor.c:1343
 #, c-format
 msgid "invalid radix64 character %02X skipped\n"
 msgstr "跳过无效的 64 进制字符 %02x\n"
@@ -393,8 +351,7 @@ msgstr "文件先于预期结束(CRC 部分未结束)\n"
 msgid "malformed CRC\n"
 msgstr "异常的 CRC\n"
 
-#: g10/armor.c:823
-#: g10/armor.c:1380
+#: g10/armor.c:823 g10/armor.c:1380
 #, c-format
 msgid "CRC error; %06lX - %06lX\n"
 msgstr "CRC 错误：%06lx - %06lx\n"
@@ -417,11 +374,11 @@ msgid "invalid armor: line longer than %d characters\n"
 msgstr "无效的 ASCII 封装：一行超过 %d 字符\n"
 
 #: g10/armor.c:1167
-msgid "quoted printable character in armor - probably a buggy MTA has been used\n"
+msgid ""
+"quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr "封装里出现括上的可打印字符――可能是有缺陷的信件传输程序造成的\n"
 
-#: g10/card-util.c:63
-#: g10/card-util.c:306
+#: g10/card-util.c:63 g10/card-util.c:306
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP 卡不可用：%s\n"
@@ -431,29 +388,18 @@ msgstr "OpenPGP 卡不可用：%s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "检测到 OpenPGP 卡号 %s\n"
 
-#: g10/card-util.c:76
-#: g10/card-util.c:1406
-#: g10/delkey.c:128
-#: g10/keyedit.c:1524
-#: g10/keygen.c:2569
-#: g10/revoke.c:218
-#: g10/revoke.c:456
+#: g10/card-util.c:76 g10/card-util.c:1406 g10/delkey.c:128 g10/keyedit.c:1524
+#: g10/keygen.c:2569 g10/revoke.c:218 g10/revoke.c:456
 msgid "can't do this in batch mode\n"
 msgstr "在批处理模式中无法完成此操作\n"
 
-#: g10/card-util.c:103
-#: g10/card-util.c:1132
-#: g10/card-util.c:1215
-#: g10/keyedit.c:425
-#: g10/keyedit.c:446
-#: g10/keyedit.c:460
-#: g10/keygen.c:1381
+#: g10/card-util.c:103 g10/card-util.c:1132 g10/card-util.c:1215
+#: g10/keyedit.c:425 g10/keyedit.c:446 g10/keyedit.c:460 g10/keygen.c:1381
 #: g10/keygen.c:1448
 msgid "Your selection? "
 msgstr "您的选择？ "
 
-#: g10/card-util.c:216
-#: g10/card-util.c:266
+#: g10/card-util.c:216 g10/card-util.c:266
 msgid "[not set]"
 msgstr "[未设定]"
 
@@ -511,9 +457,7 @@ msgstr "获取公钥的 URL："
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "错误：URL 太长(至多 %d 个字符)\n"
 
-#: g10/card-util.c:687
-#: g10/card-util.c:756
-#: g10/import.c:280
+#: g10/card-util.c:687 g10/card-util.c:756 g10/import.c:280
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "读取‘%s’时出错：%s\n"
@@ -582,8 +526,7 @@ msgstr "取得当前密钥信息时出错：%s\n"
 msgid "Replace existing key? (y/N) "
 msgstr "替换已有的密钥？(y/N)"
 
-#: g10/card-util.c:1054
-#: g10/card-util.c:1063
+#: g10/card-util.c:1054 g10/card-util.c:1063
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "是否为加密密钥创建卡外的备份？(Y/n)"
 
@@ -606,28 +549,20 @@ msgstr ""
 msgid "Please select the type of key to generate:\n"
 msgstr "请选择您要使用的密钥种类：\n"
 
-#: g10/card-util.c:1125
-#: g10/card-util.c:1206
+#: g10/card-util.c:1125 g10/card-util.c:1206
 msgid "   (1) Signature key\n"
 msgstr "  (1) 签名密钥\n"
 
-#: g10/card-util.c:1126
-#: g10/card-util.c:1208
+#: g10/card-util.c:1126 g10/card-util.c:1208
 msgid "   (2) Encryption key\n"
 msgstr "  (2) 加密密钥\n"
 
-#: g10/card-util.c:1127
-#: g10/card-util.c:1210
+#: g10/card-util.c:1127 g10/card-util.c:1210
 msgid "   (3) Authentication key\n"
 msgstr "  (3) 认证密钥\n"
 
-#: g10/card-util.c:1143
-#: g10/card-util.c:1226
-#: g10/keyedit.c:946
-#: g10/keygen.c:1385
-#: g10/keygen.c:1413
-#: g10/keygen.c:1487
-#: g10/revoke.c:685
+#: g10/card-util.c:1143 g10/card-util.c:1226 g10/keyedit.c:946
+#: g10/keygen.c:1385 g10/keygen.c:1413 g10/keygen.c:1487 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "无效的选择。\n"
 
@@ -647,8 +582,7 @@ msgstr "私钥部分不可用\n"
 msgid "secret key already stored on a card\n"
 msgstr "私钥已存储在卡上\n"
 
-#: g10/card-util.c:1319
-#: g10/keyedit.c:1357
+#: g10/card-util.c:1319 g10/keyedit.c:1357
 msgid "quit this menu"
 msgstr "离开这个菜单"
 
@@ -656,8 +590,7 @@ msgstr "离开这个菜单"
 msgid "show admin commands"
 msgstr "显示管理员命令"
 
-#: g10/card-util.c:1322
-#: g10/keyedit.c:1360
+#: g10/card-util.c:1322 g10/keyedit.c:1360
 msgid "show this help"
 msgstr "显示这份在线说明"
 
@@ -709,8 +642,7 @@ msgstr "更改或解锁 PIN 的菜单"
 msgid "verify the PIN and list all data"
 msgstr "验证 PIN 并列出所有数据"
 
-#: g10/card-util.c:1457
-#: g10/keyedit.c:1623
+#: g10/card-util.c:1457 g10/keyedit.c:1623
 msgid "Command> "
 msgstr "命令> "
 
@@ -726,8 +658,7 @@ msgstr "允许使用管理员命令\n"
 msgid "Admin commands are not allowed\n"
 msgstr "不允许使用管理员命令\n"
 
-#: g10/card-util.c:1602
-#: g10/keyedit.c:2244
+#: g10/card-util.c:1602 g10/keyedit.c:2244
 msgid "Invalid command  (try \"help\")\n"
 msgstr "无效的指令(尝试“help”)\n"
 
@@ -772,43 +703,29 @@ msgstr "再次输入此 PIN："
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN 再次输入时与首次输入不符；请再试一次"
 
-#: g10/decrypt.c:69
-#: g10/decrypt.c:160
-#: g10/gpg.c:3826
-#: g10/keyring.c:377
-#: g10/keyring.c:663
-#: g10/verify.c:102
-#: g10/verify.c:157
+#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3826 g10/keyring.c:377
+#: g10/keyring.c:663 g10/verify.c:102 g10/verify.c:157
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "无法打开‘%s’\n"
 
-#: g10/decrypt.c:105
-#: g10/encode.c:839
+#: g10/decrypt.c:105 g10/encode.c:839
 msgid "--output doesn't work for this command\n"
 msgstr "--output 在这个命令中不起作用\n"
 
-#: g10/delkey.c:75
-#: g10/export.c:311
-#: g10/keyedit.c:3387
-#: g10/keyserver.c:1700
+#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3387 g10/keyserver.c:1700
 #: g10/revoke.c:228
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "密钥‘%s’找不到：%s\n"
 
-#: g10/delkey.c:83
-#: g10/export.c:341
-#: g10/import.c:2346
-#: g10/keyserver.c:1714
-#: g10/revoke.c:234
-#: g10/revoke.c:478
+#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2349 g10/keyserver.c:1714
+#: g10/revoke.c:234 g10/revoke.c:478
 #, c-format
 msgid "error reading keyblock: %s\n"
 msgstr "读取密钥区块时发生错误：%s\n"
 
-#: g10/delkey.c:129
-#: g10/delkey.c:136
+#: g10/delkey.c:129 g10/delkey.c:136
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(除非您用指纹指定密钥)\n"
 
@@ -842,8 +759,7 @@ msgstr "公钥“%s”有对应的私钥！\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "请先使用“--delete-secret-keys”选项来删除它。\n"
 
-#: g10/encode.c:213
-#: g10/sign.c:1288
+#: g10/encode.c:213 g10/sign.c:1284
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "生成密码的时候发生错误：%s\n"
@@ -857,15 +773,12 @@ msgstr "在此 S2K 模式下无法使用对称的 ESK 包\n"
 msgid "using cipher %s\n"
 msgstr "使用对称加密算法 %s\n"
 
-#: g10/encode.c:241
-#: g10/encode.c:536
+#: g10/encode.c:241 g10/encode.c:536
 #, c-format
 msgid "`%s' already compressed\n"
 msgstr "‘%s’已被压缩\n"
 
-#: g10/encode.c:292
-#: g10/encode.c:584
-#: g10/sign.c:615
+#: g10/encode.c:292 g10/encode.c:584 g10/sign.c:593
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "警告：‘%s’是一个空文件\n"
@@ -880,18 +793,21 @@ msgid "reading from `%s'\n"
 msgstr "正在从‘%s’读取\n"
 
 #: g10/encode.c:508
-msgid "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+msgid ""
+"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
 msgstr "您正要用来加密的所有密钥都不能使用 IDEA 算法。\n"
 
 #: g10/encode.c:518
 #, c-format
-msgid "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "警告：强行使用的 %s (%d)对称加密算法不在收件者的首选项中\n"
 
-#: g10/encode.c:628
-#: g10/sign.c:967
+#: g10/encode.c:628 g10/sign.c:963
 #, c-format
-msgid "WARNING: forcing compression algorithm %s (%d) violates recipient preferences\n"
+msgid ""
+"WARNING: forcing compression algorithm %s (%d) violates recipient "
+"preferences\n"
 msgstr "警告：强行使用的 %s (%d)压缩算法不在收件者的首选项中\n"
 
 #: g10/encode.c:715
@@ -899,9 +815,7 @@ msgstr "警告：强行使用的 %s (%d)压缩算法不在收件者的首选项�
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "强行使用的 %s (%d)对称加密算法不在收件者的首选项中\n"
 
-#: g10/encode.c:785
-#: g10/pkclist.c:803
-#: g10/pkclist.c:851
+#: g10/encode.c:785 g10/pkclist.c:803 g10/pkclist.c:851
 #, c-format
 msgid "you may not use %s while in %s mode\n"
 msgstr "您不该将 %s 用于 %s 模式中\n"
@@ -911,20 +825,19 @@ msgstr "您不该将 %s 用于 %s 模式中\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s 已经加密给：“%s”\n"
 
-#: g10/encr-data.c:67
-#: g10/mainproc.c:293
+#: g10/encr-data.c:67 g10/mainproc.c:293
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "%s 加密过的数据\n"
 
-#: g10/encr-data.c:69
-#: g10/mainproc.c:297
+#: g10/encr-data.c:69 g10/mainproc.c:297
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "以未知的算法 %d 加密\n"
 
 #: g10/encr-data.c:93
-msgid "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
+msgid ""
+"WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr "警告：报文被使用对称加密算法的弱密钥加密。\n"
 
 #: g10/encr-data.c:104
@@ -935,14 +848,14 @@ msgstr "处理加密包有问题\n"
 msgid "no remote program execution supported\n"
 msgstr "不支持远程调用\n"
 
-#: g10/exec.c:176
-#: g10/openfile.c:415
+#: g10/exec.c:176 g10/openfile.c:415
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "无法建立目录‘%s’：%s\n"
 
 #: g10/exec.c:317
-msgid "external program calls are disabled due to unsafe options file permissions\n"
+msgid ""
+"external program calls are disabled due to unsafe options file permissions\n"
 msgstr "由于配置文件权限不安全，外部程序调用被禁用\n"
 
 #: g10/exec.c:347
@@ -964,8 +877,7 @@ msgstr "无法在命令解释环境中执行‘%s’：%s\n"
 msgid "system error while calling external program: %s\n"
 msgstr "调用外部程序时发生系统错误：%s\n"
 
-#: g10/exec.c:524
-#: g10/exec.c:590
+#: g10/exec.c:524 g10/exec.c:590
 msgid "unnatural exit of external program\n"
 msgstr "外部程序异常退出\n"
 
@@ -978,8 +890,7 @@ msgstr "无法执行外部程序\n"
 msgid "unable to read external program response: %s\n"
 msgstr "无法读取外部程序响应：%s\n"
 
-#: g10/exec.c:601
-#: g10/exec.c:608
+#: g10/exec.c:601 g10/exec.c:608
 #, c-format
 msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
 msgstr "警告：无法删除临时文件(%s)‘%s’：%s\n"
@@ -1179,8 +1090,7 @@ msgstr "更新信任度数据库"
 msgid "|algo [files]|print message digests"
 msgstr "|算法 [文件]|使用指定的散列算法打印报文散列值"
 
-#: g10/gpg.c:437
-#: g10/gpgv.c:71
+#: g10/gpg.c:437 g10/gpgv.c:71
 msgid ""
 "@\n"
 "Options:\n"
@@ -1214,8 +1124,7 @@ msgstr "使用标准的文本模式"
 msgid "use as output file"
 msgstr "指定输出文件"
 
-#: g10/gpg.c:474
-#: g10/gpgv.c:73
+#: g10/gpg.c:474 g10/gpgv.c:73
 msgid "verbose"
 msgstr "详细模式"
 
@@ -1263,8 +1172,7 @@ msgstr ""
 " --list-keys [某甲]           显示密钥\n"
 " --fingerprint [某甲]         显示指纹\n"
 
-#: g10/gpg.c:757
-#: g10/gpgv.c:98
+#: g10/gpg.c:757 g10/gpgv.c:98
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr ""
 "请向 <gnupg-bugs@gnu.org> 报告程序缺陷。\n"
@@ -1296,8 +1204,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "公钥："
 
-#: g10/gpg.c:797
-#: g10/keyedit.c:2310
+#: g10/gpg.c:797 g10/keyedit.c:2310
 msgid "Cipher: "
 msgstr "对称加密："
 
@@ -1305,8 +1212,7 @@ msgstr "对称加密："
 msgid "Hash: "
 msgstr "散列："
 
-#: g10/gpg.c:809
-#: g10/keyedit.c:2356
+#: g10/gpg.c:809 g10/keyedit.c:2356
 msgid "Compression: "
 msgstr "压缩："
 
@@ -1360,7 +1266,8 @@ msgstr "警告：用户目录‘%s’的关闭目录所有权不安全\n"
 
 #: g10/gpg.c:1282
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
+msgid ""
+"WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr "警告：配置文件‘%s’的关闭目录所有权不安全\n"
 
 #: g10/gpg.c:1285
@@ -1375,7 +1282,8 @@ msgstr "警告：用户目录‘%s’的关闭目录权限不安全\n"
 
 #: g10/gpg.c:1294
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
+msgid ""
+"WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "警告：配置文件‘%s’的关闭目录权限不安全\n"
 
 #: g10/gpg.c:1297
@@ -1452,9 +1360,7 @@ msgstr "配置文件‘%s’：%s\n"
 msgid "reading options from `%s'\n"
 msgstr "从‘%s’读取选项\n"
 
-#: g10/gpg.c:2188
-#: g10/gpg.c:2814
-#: g10/gpg.c:2833
+#: g10/gpg.c:2188 g10/gpg.c:2814 g10/gpg.c:2833
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "注意：一般情况下不会用到 %s！\n"
@@ -1464,8 +1370,7 @@ msgstr "注意：一般情况下不会用到 %s！\n"
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr "对称加算密法扩展模块‘%s’因为权限不安全而未被载入\n"
 
-#: g10/gpg.c:2364
-#: g10/gpg.c:2376
+#: g10/gpg.c:2364 g10/gpg.c:2376
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "‘%s’不是一个有效的签名过期日期\n"
@@ -1475,9 +1380,7 @@ msgstr "‘%s’不是一个有效的签名过期日期\n"
 msgid "`%s' is not a valid character set\n"
 msgstr "‘%s’不是一个有效的字符集\n"
 
-#: g10/gpg.c:2476
-#: g10/gpg.c:2663
-#: g10/keyedit.c:4064
+#: g10/gpg.c:2476 g10/gpg.c:2663 g10/keyedit.c:4064
 msgid "could not parse keyserver URL\n"
 msgstr "无法解析公钥服务器 URL\n"
 
@@ -1625,13 +1528,11 @@ msgstr "启用 --pgp2 时您应该只使用文件，而非管道\n"
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "在 --pgp2 模式下加密报文需要 IDEA 算法\n"
 
-#: g10/gpg.c:2947
-#: g10/gpg.c:2971
+#: g10/gpg.c:2947 g10/gpg.c:2971
 msgid "selected cipher algorithm is invalid\n"
 msgstr "所选的对称加密算法无效\n"
 
-#: g10/gpg.c:2953
-#: g10/gpg.c:2977
+#: g10/gpg.c:2953 g10/gpg.c:2977
 msgid "selected digest algorithm is invalid\n"
 msgstr "所选的散列算法无效\n"
 
@@ -1863,10 +1764,7 @@ msgstr "pk 缓存里项目太多――已禁用\n"
 msgid "[User ID not found]"
 msgstr "[找不到用户标识]"
 
-#: g10/getkey.c:948
-#: g10/getkey.c:958
-#: g10/getkey.c:968
-#: g10/getkey.c:984
+#: g10/getkey.c:948 g10/getkey.c:958 g10/getkey.c:968 g10/getkey.c:984
 #: g10/getkey.c:999
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
@@ -1877,8 +1775,7 @@ msgstr "自动获取‘%s’，通过 %s\n"
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "--allow-non-selfsigned-uid 使无效密钥 %s 生效\n"
 
-#: g10/getkey.c:2380
-#: g10/keyedit.c:3707
+#: g10/getkey.c:2380 g10/keyedit.c:3707
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "公钥 %s 没有相对应的私钥――忽略\n"
@@ -1945,7 +1842,8 @@ msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 msgstr "如果您无论如何要使用这把未被信任的密钥，请回答“yes”。"
 
 #: g10/helptext.c:66
-msgid "Enter the user ID of the addressee to whom you want to send the message."
+msgid ""
+"Enter the user ID of the addressee to whom you want to send the message."
 msgstr "输入您要递送的报文的接收者的用户标识。"
 
 #: g10/helptext.c:70
@@ -1984,13 +1882,8 @@ msgstr ""
 msgid "Enter the size of the key"
 msgstr "请输入密钥的尺寸"
 
-#: g10/helptext.c:95
-#: g10/helptext.c:100
-#: g10/helptext.c:112
-#: g10/helptext.c:144
-#: g10/helptext.c:172
-#: g10/helptext.c:177
-#: g10/helptext.c:182
+#: g10/helptext.c:95 g10/helptext.c:100 g10/helptext.c:112 g10/helptext.c:144
+#: g10/helptext.c:172 g10/helptext.c:177 g10/helptext.c:182
 msgid "Answer \"yes\" or \"no\""
 msgstr "请回答“yes”或“no”"
 
@@ -2041,26 +1934,36 @@ msgid ""
 "belongs to the person named in the user ID.  It is useful for others to\n"
 "know how carefully you verified this.\n"
 "\n"
-"\"0\" means you make no particular claim as to how carefully you verified the\n"
+"\"0\" means you make no particular claim as to how carefully you verified "
+"the\n"
 "    key.\n"
 "\n"
 "\"1\" means you believe the key is owned by the person who claims to own it\n"
-"    but you could not, or did not verify the key at all.  This is useful for\n"
-"    a \"persona\" verification, where you sign the key of a pseudonymous user.\n"
+"    but you could not, or did not verify the key at all.  This is useful "
+"for\n"
+"    a \"persona\" verification, where you sign the key of a pseudonymous "
+"user.\n"
 "\n"
-"\"2\" means you did casual verification of the key.  For example, this could\n"
-"    mean that you verified the key fingerprint and checked the user ID on the\n"
+"\"2\" means you did casual verification of the key.  For example, this "
+"could\n"
+"    mean that you verified the key fingerprint and checked the user ID on "
+"the\n"
 "    key against a photo ID.\n"
 "\n"
-"\"3\" means you did extensive verification of the key.  For example, this could\n"
+"\"3\" means you did extensive verification of the key.  For example, this "
+"could\n"
 "    mean that you verified the key fingerprint with the owner of the key in\n"
-"    person, and that you checked, by means of a hard to forge document with a\n"
-"    photo ID (such as a passport) that the name of the key owner matches the\n"
-"    name in the user ID on the key, and finally that you verified (by exchange\n"
+"    person, and that you checked, by means of a hard to forge document with "
+"a\n"
+"    photo ID (such as a passport) that the name of the key owner matches "
+"the\n"
+"    name in the user ID on the key, and finally that you verified (by "
+"exchange\n"
 "    of email) that the email address on the key belongs to the key owner.\n"
 "\n"
 "Note that the examples given above for levels 2 and 3 are *only* examples.\n"
-"In the end, it is up to you to decide just what \"casual\" and \"extensive\"\n"
+"In the end, it is up to you to decide just what \"casual\" and \"extensive"
+"\"\n"
 "mean to you when you sign other keys.\n"
 "\n"
 "If you don't know what the right answer is, answer \"0\"."
@@ -2336,278 +2239,270 @@ msgid "      user IDs cleaned: %lu\n"
 msgstr "  清除的用户标识：%lu\n"
 
 #: g10/import.c:566
-#, c-format
-msgid ""
-"WARNING: key %s contains preferences for unavailable\n"
-"algorithms on these user IDs:\n"
+#, fuzzy, c-format
+msgid "WARNING: key %s contains preferences for unavailable\n"
 msgstr "警告：密钥 %s 下列用户标识的首选项中包含不可用的算法：\n"
 
-#: g10/import.c:604
+#. TRANSLATORS: This string is belongs to the previous one.  They are
+#. only split up to allow printing of a common prefix.
+#: g10/import.c:570
+#, fuzzy
+msgid "         algorithms on these user IDs:\n"
+msgstr "      新用户标识：%lu\n"
+
+#: g10/import.c:607
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr "         “%s”：对称加密算法 %s 对应首选项\n"
 
-#: g10/import.c:616
+#: g10/import.c:619
 #, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
 msgstr "         “%s”：散列算法 %s 对应首选项\n"
 
-#: g10/import.c:628
+#: g10/import.c:631
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr "         “%s”：压缩算法 %s 对应首选项\n"
 
-#: g10/import.c:641
+#: g10/import.c:644
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr "强烈建议您更新您的首选项并重新分发这把密钥，\n"
 
-#: g10/import.c:643
+#: g10/import.c:646
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr "以避免可能的算法不匹配问题\n"
 
-#: g10/import.c:667
+#: g10/import.c:670
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
 msgstr "您可以这样更新您的首选项：gpg --edit-key %s updpref save\n"
 
-#: g10/import.c:717
-#: g10/import.c:1115
+#: g10/import.c:720 g10/import.c:1118
 #, c-format
 msgid "key %s: no user ID\n"
 msgstr "密钥 %s：没有用户标识\n"
 
-#: g10/import.c:746
+#: g10/import.c:749
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "密钥 %s：PKS 子钥破损已修复\n"
 
-#: g10/import.c:761
+#: g10/import.c:764
 #, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
 msgstr "密钥 %s：已接受不含自身签名的用户标识“%s”\n"
 
-#: g10/import.c:767
+#: g10/import.c:770
 #, c-format
 msgid "key %s: no valid user IDs\n"
 msgstr "密钥 %s：没有有效的用户标识\n"
 
-#: g10/import.c:769
+#: g10/import.c:772
 msgid "this may be caused by a missing self-signature\n"
 msgstr "这可能由于遗失自身签名所致\n"
 
-#: g10/import.c:779
-#: g10/import.c:1237
+#: g10/import.c:782 g10/import.c:1240
 #, c-format
 msgid "key %s: public key not found: %s\n"
 msgstr "密钥 %s：找不到公钥：%s\n"
 
-#: g10/import.c:785
+#: g10/import.c:788
 #, c-format
 msgid "key %s: new key - skipped\n"
 msgstr "密钥 %s：新密钥――已跳过\n"
 
-#: g10/import.c:794
+#: g10/import.c:797
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "找不到可写的钥匙环：%s\n"
 
-#: g10/import.c:799
-#: g10/openfile.c:267
-#: g10/sign.c:853
-#: g10/sign.c:1139
+#: g10/import.c:802 g10/openfile.c:267 g10/sign.c:831 g10/sign.c:1135
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "正在写入‘%s’\n"
 
-#: g10/import.c:803
-#: g10/import.c:898
-#: g10/import.c:1155
-#: g10/import.c:1298
-#: g10/import.c:2360
-#: g10/import.c:2382
+#: g10/import.c:806 g10/import.c:901 g10/import.c:1158 g10/import.c:1301
+#: g10/import.c:2363 g10/import.c:2385
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "写入钥匙环‘%s’时出错： %s\n"
 
-#: g10/import.c:822
+#: g10/import.c:825
 #, c-format
 msgid "key %s: public key \"%s\" imported\n"
 msgstr "密钥 %s：公钥“%s”已导入\n"
 
-#: g10/import.c:846
+#: g10/import.c:849
 #, c-format
 msgid "key %s: doesn't match our copy\n"
 msgstr "密钥 %s：与我们的副本不吻合\n"
 
-#: g10/import.c:863
-#: g10/import.c:1255
+#: g10/import.c:866 g10/import.c:1258
 #, c-format
 msgid "key %s: can't locate original keyblock: %s\n"
 msgstr "密钥 %s：无法定位原始的密钥区块：%s\n"
 
-#: g10/import.c:871
-#: g10/import.c:1262
+#: g10/import.c:874 g10/import.c:1265
 #, c-format
 msgid "key %s: can't read original keyblock: %s\n"
 msgstr "密钥 %s：无法读取原始的密钥区块： %s\n"
 
-#: g10/import.c:908
+#: g10/import.c:911
 #, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "密钥 %s：“%s”一个新的用户标识\n"
 
-#: g10/import.c:911
+#: g10/import.c:914
 #, c-format
 msgid "key %s: \"%s\" %d new user IDs\n"
 msgstr "密钥 %s：“%s”%d 个新的用户标识\n"
 
-#: g10/import.c:914
+#: g10/import.c:917
 #, c-format
 msgid "key %s: \"%s\" 1 new signature\n"
 msgstr "密钥 %s：“%s”1 个新的签名\n"
 
-#: g10/import.c:917
+#: g10/import.c:920
 #, c-format
 msgid "key %s: \"%s\" %d new signatures\n"
 msgstr "密钥 %s：“%s”%d 个新的签名\n"
 
-#: g10/import.c:920
+#: g10/import.c:923
 #, c-format
 msgid "key %s: \"%s\" 1 new subkey\n"
 msgstr "密钥 %s：“%s”1 个新的子钥\n"
 
-#: g10/import.c:923
+#: g10/import.c:926
 #, c-format
 msgid "key %s: \"%s\" %d new subkeys\n"
 msgstr "密钥 %s：“%s”%d 个新的子钥\n"
 
-#: g10/import.c:926
+#: g10/import.c:929
 #, c-format
 msgid "key %s: \"%s\" %d signature cleaned\n"
 msgstr "密钥 %s：“%s”%d 个签名被清除\n"
 
-#: g10/import.c:929
+#: g10/import.c:932
 #, c-format
 msgid "key %s: \"%s\" %d signatures cleaned\n"
 msgstr "密钥 %s：“%s”%d 个签名被清除\n"
 
-#: g10/import.c:932
+#: g10/import.c:935
 #, c-format
 msgid "key %s: \"%s\" %d user ID cleaned\n"
 msgstr "密钥 %s：“%s”%d 个用户标识被清除\n"
 
-#: g10/import.c:935
+#: g10/import.c:938
 #, c-format
 msgid "key %s: \"%s\" %d user IDs cleaned\n"
 msgstr "密钥 %s：“%s”%d 个用户标识被清除\n"
 
-#: g10/import.c:958
+#: g10/import.c:961
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "密钥 %s：“%s”未改变\n"
 
-#: g10/import.c:1121
+#: g10/import.c:1124
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "密钥 %s：私钥使用了无效的加密算法 %d――已跳过\n"
 
-#: g10/import.c:1132
+#: g10/import.c:1135
 msgid "importing secret keys not allowed\n"
 msgstr "不允许导入私钥\n"
 
-#: g10/import.c:1149
-#: g10/import.c:2375
+#: g10/import.c:1152 g10/import.c:2378
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "没有默认的私钥钥匙环： %s\n"
 
-#: g10/import.c:1160
+#: g10/import.c:1163
 #, c-format
 msgid "key %s: secret key imported\n"
 msgstr "密钥 %s：私钥已导入\n"
 
-#: g10/import.c:1190
+#: g10/import.c:1193
 #, c-format
 msgid "key %s: already in secret keyring\n"
 msgstr "密钥 %s：已在私钥钥匙环中\n"
 
-#: g10/import.c:1200
+#: g10/import.c:1203
 #, c-format
 msgid "key %s: secret key not found: %s\n"
 msgstr "密钥 %s：找不到私钥：%s\n"
 
-#: g10/import.c:1230
+#: g10/import.c:1233
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "密钥 %s：没有公钥――无法应用吊销证书\n"
 
-#: g10/import.c:1273
+#: g10/import.c:1276
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
 msgstr "密钥 %s：无效的吊销证书：%s――已拒绝\n"
 
-#: g10/import.c:1305
+#: g10/import.c:1308
 #, c-format
 msgid "key %s: \"%s\" revocation certificate imported\n"
 msgstr "密钥 %s：“%s”吊销证书已被导入\n"
 
-#: g10/import.c:1371
+#: g10/import.c:1374
 #, c-format
 msgid "key %s: no user ID for signature\n"
 msgstr "密钥 %s：签名没有用户标识\n"
 
-#: g10/import.c:1386
+#: g10/import.c:1389
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr "密钥 %s：用户标识“%s”使用了不支持的公钥算法\n"
 
-#: g10/import.c:1388
+#: g10/import.c:1391
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "密钥 %s：用户标识“%s”自身签名无效\n"
 
-#: g10/import.c:1406
+#: g10/import.c:1409
 #, c-format
 msgid "key %s: no subkey for key binding\n"
 msgstr "密钥 %s：没有可供绑定的子钥\n"
 
-#: g10/import.c:1417
-#: g10/import.c:1467
+#: g10/import.c:1420 g10/import.c:1470
 #, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "密钥 %s：不支持的公钥算法\n"
 
-#: g10/import.c:1419
+#: g10/import.c:1422
 #, c-format
 msgid "key %s: invalid subkey binding\n"
 msgstr "密钥 %s：无效的子钥绑定\n"
 
-#: g10/import.c:1434
+#: g10/import.c:1437
 #, c-format
 msgid "key %s: removed multiple subkey binding\n"
 msgstr "密钥 %s：已删除多重子钥绑定\n"
 
-#: g10/import.c:1456
+#: g10/import.c:1459
 #, c-format
 msgid "key %s: no subkey for key revocation\n"
 msgstr "密钥 %s：没有用于密钥吊销的子钥\n"
 
-#: g10/import.c:1469
+#: g10/import.c:1472
 #, c-format
 msgid "key %s: invalid subkey revocation\n"
 msgstr "密钥 %s：无效的子钥吊销\n"
 
-#: g10/import.c:1484
+#: g10/import.c:1487
 #, c-format
 msgid "key %s: removed multiple subkey revocation\n"
 msgstr "密钥 %s：已删除多重子钥吊销\n"
 
-#: g10/import.c:1526
+#: g10/import.c:1529
 #, c-format
 msgid "key %s: skipped user ID \"%s\"\n"
 msgstr "密钥 %s：已跳过用户标识“%s”\n"
 
-#: g10/import.c:1547
+#: g10/import.c:1550
 #, c-format
 msgid "key %s: skipped subkey\n"
 msgstr "密钥 %s：已跳过子钥\n"
@@ -2616,65 +2511,65 @@ msgstr "密钥 %s：已跳过子钥\n"
 #  * to import non-exportable signature when we have the
 #  * the secret key used to create this signature - it
 #  * seems that this makes sense
-#: g10/import.c:1574
+#: g10/import.c:1577
 #, c-format
 msgid "key %s: non exportable signature (class 0x%02X) - skipped\n"
 msgstr "密钥 %s：不可导出的签名(验证级别 0x%02X)――已跳过\n"
 
-#: g10/import.c:1584
+#: g10/import.c:1587
 #, c-format
 msgid "key %s: revocation certificate at wrong place - skipped\n"
 msgstr "密钥 %s：吊销证书位置错误――已跳过\n"
 
-#: g10/import.c:1601
+#: g10/import.c:1604
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - skipped\n"
 msgstr "密钥 %s：无效的吊销证书：%s――已跳过\n"
 
-#: g10/import.c:1615
+#: g10/import.c:1618
 #, c-format
 msgid "key %s: subkey signature in wrong place - skipped\n"
 msgstr "密钥 %s：子钥签名位置错误――已跳过\n"
 
-#: g10/import.c:1623
+#: g10/import.c:1626
 #, c-format
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr "密钥 %s：与预期不符的签名验证级别(0x%02X)――已跳过\n"
 
-#: g10/import.c:1723
+#: g10/import.c:1726
 #, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "密钥 %s：检测到重复的用户标识――已合并\n"
 
-#: g10/import.c:1785
+#: g10/import.c:1788
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr "警告：密钥 %s 可能已被吊销：正在取回吊销密钥 %s\n"
 
-#: g10/import.c:1799
+#: g10/import.c:1802
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr "警告：密钥 %s 可能已被吊销：吊销密钥 %s 不存在。\n"
 
-#: g10/import.c:1858
+#: g10/import.c:1861
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "密钥 %s：已新增吊销证书“%s”\n"
 
-#: g10/import.c:1892
+#: g10/import.c:1895
 #, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "密钥 %s：已新增直接密钥签名\n"
 
-#: g10/import.c:2281
+#: g10/import.c:2284
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "注意：密钥的序列号与卡的不符\n"
 
-#: g10/import.c:2289
+#: g10/import.c:2292
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "注意：主钥在线，存储在卡上\n"
 
-#: g10/import.c:2291
+#: g10/import.c:2294
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "注意：子钥在线，存储在卡上\n"
 
@@ -2688,8 +2583,7 @@ msgstr "建立钥匙环‘%s’时发生错误：%s\n"
 msgid "keyring `%s' created\n"
 msgstr "钥匙环‘%s’已建立\n"
 
-#: g10/keydb.c:316
-#: g10/keydb.c:319
+#: g10/keydb.c:316 g10/keydb.c:319
 #, c-format
 msgid "keyblock resource `%s': %s\n"
 msgstr "密钥块资源‘%s’：%s\n"
@@ -2707,35 +2601,29 @@ msgstr "[吊销]"
 msgid "[self-signature]"
 msgstr "[自身签名]"
 
-#: g10/keyedit.c:345
-#: g10/keylist.c:390
+#: g10/keyedit.c:345 g10/keylist.c:390
 msgid "1 bad signature\n"
 msgstr "1 个损坏的签名\n"
 
-#: g10/keyedit.c:347
-#: g10/keylist.c:392
+#: g10/keyedit.c:347 g10/keylist.c:392
 #, c-format
 msgid "%d bad signatures\n"
 msgstr "%d 个损坏的签名\n"
 
-#: g10/keyedit.c:349
-#: g10/keylist.c:394
+#: g10/keyedit.c:349 g10/keylist.c:394
 msgid "1 signature not checked due to a missing key\n"
 msgstr "有 1 份签名因为遗失密钥而未被检查\n"
 
-#: g10/keyedit.c:351
-#: g10/keylist.c:396
+#: g10/keyedit.c:351 g10/keylist.c:396
 #, c-format
 msgid "%d signatures not checked due to missing keys\n"
 msgstr "有 %d 份签名因为遗失密钥而未被检查\n"
 
-#: g10/keyedit.c:353
-#: g10/keylist.c:398
+#: g10/keyedit.c:353 g10/keylist.c:398
 msgid "1 signature not checked due to an error\n"
 msgstr "有 1 份签名因为某个错误而未被检查\n"
 
-#: g10/keyedit.c:355
-#: g10/keylist.c:400
+#: g10/keyedit.c:355 g10/keylist.c:400
 #, c-format
 msgid "%d signatures not checked due to errors\n"
 msgstr "有 %d 份签名因为某些错误而未被检查\n"
@@ -2749,23 +2637,23 @@ msgstr "检测到 1 个没有有效自身签名的用户标识\n"
 msgid "%d user IDs without valid self-signatures detected\n"
 msgstr "检测到 %d 个没有有效自身签名的用户标识\n"
 
-#: g10/keyedit.c:415
-#: g10/pkclist.c:263
+#: g10/keyedit.c:415 g10/pkclist.c:263
 msgid ""
-"Please decide how far you trust this user to correctly verify other users' keys\n"
-"(by looking at passports, checking fingerprints from different sources, etc.)\n"
+"Please decide how far you trust this user to correctly verify other users' "
+"keys\n"
+"(by looking at passports, checking fingerprints from different sources, "
+"etc.)\n"
 msgstr ""
-"您是否相信这位用户有能力验证其他用户密钥的有效性(查对身份证、通过不同的渠道检查\n"
+"您是否相信这位用户有能力验证其他用户密钥的有效性(查对身份证、通过不同的渠道检"
+"查\n"
 "指纹等)？\n"
 
-#: g10/keyedit.c:419
-#: g10/pkclist.c:275
+#: g10/keyedit.c:419 g10/pkclist.c:275
 #, c-format
 msgid "  %d = I trust marginally\n"
 msgstr "  %d = 我勉强相信\n"
 
-#: g10/keyedit.c:420
-#: g10/pkclist.c:277
+#: g10/keyedit.c:420 g10/pkclist.c:277
 #, c-format
 msgid "  %d = I trust fully\n"
 msgstr "  %d = 我完全相信\n"
@@ -2788,19 +2676,12 @@ msgstr "请输入这份签名的限制域，如果没有请按回车。\n"
 msgid "User ID \"%s\" is revoked."
 msgstr "用户标识“%s”已被吊销。"
 
-#: g10/keyedit.c:608
-#: g10/keyedit.c:636
-#: g10/keyedit.c:663
-#: g10/keyedit.c:831
-#: g10/keyedit.c:896
-#: g10/keyedit.c:1742
+#: g10/keyedit.c:608 g10/keyedit.c:636 g10/keyedit.c:663 g10/keyedit.c:831
+#: g10/keyedit.c:896 g10/keyedit.c:1742
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "您仍然想要为它签名吗？(y/N)"
 
-#: g10/keyedit.c:622
-#: g10/keyedit.c:650
-#: g10/keyedit.c:677
-#: g10/keyedit.c:837
+#: g10/keyedit.c:622 g10/keyedit.c:650 g10/keyedit.c:677 g10/keyedit.c:837
 #: g10/keyedit.c:1748
 msgid "  Unable to sign.\n"
 msgstr "  无法添加签名。\n"
@@ -2892,7 +2773,9 @@ msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "您想要让您的签名也同时过期吗？ (Y/n) "
 
 #: g10/keyedit.c:889
-msgid "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 mode.\n"
+msgid ""
+"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+"mode.\n"
 msgstr "您不能在 --pgp2 模式下，用 PGP 2.x 密钥生成 OpenPGP 签名。\n"
 
 #: g10/keyedit.c:891
@@ -2901,7 +2784,8 @@ msgstr "这会让这把密钥在 PGP 2.x 模式下不可使用。\n"
 
 #: g10/keyedit.c:916
 msgid ""
-"How carefully have you verified the key you are about to sign actually belongs\n"
+"How carefully have you verified the key you are about to sign actually "
+"belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
 msgstr ""
 "您是否谨慎地检查过，确认正要签名的密钥的确属于以上它所声称的所有者呢？\n"
@@ -2976,12 +2860,8 @@ msgstr "我非常小心地检查过这把密钥。\n"
 msgid "Really sign? (y/N) "
 msgstr "真的要签名吗？(y/N)"
 
-#: g10/keyedit.c:1067
-#: g10/keyedit.c:4783
-#: g10/keyedit.c:4874
-#: g10/keyedit.c:4938
-#: g10/keyedit.c:4999
-#: g10/sign.c:374
+#: g10/keyedit.c:1067 g10/keyedit.c:4783 g10/keyedit.c:4874 g10/keyedit.c:4938
+#: g10/keyedit.c:4999 g10/sign.c:352
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "签名时失败： %s\n"
@@ -2990,24 +2870,19 @@ msgstr "签名时失败： %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr "只有占位密钥，或者密钥存储在卡上——没有密码可以更改。\n"
 
-#: g10/keyedit.c:1143
-#: g10/keygen.c:3199
+#: g10/keyedit.c:1143 g10/keygen.c:3199
 msgid "This key is not protected.\n"
 msgstr "这把密钥没有被保护。\n"
 
-#: g10/keyedit.c:1147
-#: g10/keygen.c:3187
-#: g10/revoke.c:539
+#: g10/keyedit.c:1147 g10/keygen.c:3187 g10/revoke.c:539
 msgid "Secret parts of primary key are not available.\n"
 msgstr "主钥的私钥部分无法取用。\n"
 
-#: g10/keyedit.c:1151
-#: g10/keygen.c:3202
+#: g10/keyedit.c:1151 g10/keygen.c:3202
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "主钥的私钥部分存储在卡上。\n"
 
-#: g10/keyedit.c:1155
-#: g10/keygen.c:3206
+#: g10/keyedit.c:1155 g10/keygen.c:3206
 msgid "Key is protected.\n"
 msgstr "密钥受保护。\n"
 
@@ -3024,8 +2899,7 @@ msgstr ""
 "输入要给这把私钥用的新密码。\n"
 "\n"
 
-#: g10/keyedit.c:1194
-#: g10/keygen.c:1897
+#: g10/keyedit.c:1194 g10/keygen.c:1897
 msgid "passphrase not correctly repeated; try again"
 msgstr "密码再次输入时与首次输入不符；请再试一次"
 
@@ -3216,7 +3090,8 @@ msgstr "请先使用“toggle”指令。\n"
 
 #: g10/keyedit.c:1696
 msgid ""
-"* The `sign' command may be prefixed with an `l' for local signatures (lsign),\n"
+"* The `sign' command may be prefixed with an `l' for local signatures "
+"(lsign),\n"
 "  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
@@ -3246,9 +3121,7 @@ msgstr "未知的签名类型‘%s’\n"
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "在 %s 模式中不允许使用这个指令。\n"
 
-#: g10/keyedit.c:1816
-#: g10/keyedit.c:1836
-#: g10/keyedit.c:2002
+#: g10/keyedit.c:1816 g10/keyedit.c:1836 g10/keyedit.c:2002
 msgid "You must select at least one user ID.\n"
 msgstr "您至少得选择一个用户标识。\n"
 
@@ -3319,7 +3192,8 @@ msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "您真的要吊销这把子钥吗？(y/N)"
 
 #: g10/keyedit.c:2087
-msgid "Owner trust may not be set while using an user provided trust database\n"
+msgid ""
+"Owner trust may not be set while using an user provided trust database\n"
 msgstr "使用用户提供的信任度数据库时信任度可能并未被设定\n"
 
 #: g10/keyedit.c:2129
@@ -3368,13 +3242,11 @@ msgstr "特点："
 msgid "Keyserver no-modify"
 msgstr "公钥服务器不可变造"
 
-#: g10/keyedit.c:2411
-#: g10/keylist.c:308
+#: g10/keyedit.c:2411 g10/keylist.c:308
 msgid "Preferred keyserver: "
 msgstr "首选公钥服务器："
 
-#: g10/keyedit.c:2419
-#: g10/keyedit.c:2420
+#: g10/keyedit.c:2419 g10/keyedit.c:2420
 msgid "Notations: "
 msgstr "注记："
 
@@ -3396,43 +3268,25 @@ msgstr "这把密钥可被 %s 密钥 %s 吊销"
 msgid "(sensitive)"
 msgstr " (敏感的)"
 
-#: g10/keyedit.c:2732
-#: g10/keyedit.c:2788
-#: g10/keyedit.c:2849
-#: g10/keyedit.c:2864
-#: g10/keylist.c:194
-#: g10/keyserver.c:511
+#: g10/keyedit.c:2732 g10/keyedit.c:2788 g10/keyedit.c:2849 g10/keyedit.c:2864
+#: g10/keylist.c:194 g10/keyserver.c:511
 #, c-format
 msgid "created: %s"
 msgstr "创建于：%s"
 
-#: g10/keyedit.c:2735
-#: g10/keylist.c:771
-#: g10/keylist.c:865
-#: g10/mainproc.c:964
+#: g10/keyedit.c:2735 g10/keylist.c:771 g10/keylist.c:865 g10/mainproc.c:964
 #, c-format
 msgid "revoked: %s"
 msgstr "已吊销：%s"
 
-#: g10/keyedit.c:2737
-#: g10/keylist.c:742
-#: g10/keylist.c:777
-#: g10/keylist.c:871
+#: g10/keyedit.c:2737 g10/keylist.c:742 g10/keylist.c:777 g10/keylist.c:871
 #, c-format
 msgid "expired: %s"
 msgstr "已过期：%s"
 
-#: g10/keyedit.c:2739
-#: g10/keyedit.c:2790
-#: g10/keyedit.c:2851
-#: g10/keyedit.c:2866
-#: g10/keylist.c:196
-#: g10/keylist.c:748
-#: g10/keylist.c:783
-#: g10/keylist.c:877
-#: g10/keylist.c:898
-#: g10/keyserver.c:517
-#: g10/mainproc.c:970
+#: g10/keyedit.c:2739 g10/keyedit.c:2790 g10/keyedit.c:2851 g10/keyedit.c:2866
+#: g10/keylist.c:196 g10/keylist.c:748 g10/keylist.c:783 g10/keylist.c:877
+#: g10/keylist.c:898 g10/keyserver.c:517 g10/mainproc.c:970
 #, c-format
 msgid "expires: %s"
 msgstr "有效至：%s"
@@ -3456,8 +3310,7 @@ msgstr "有效性：%s"
 msgid "This key has been disabled"
 msgstr "这把密钥已经被禁用"
 
-#: g10/keyedit.c:2795
-#: g10/keylist.c:200
+#: g10/keyedit.c:2795 g10/keylist.c:200
 msgid "card-no: "
 msgstr "卡号："
 
@@ -3467,21 +3320,13 @@ msgid ""
 "unless you restart the program.\n"
 msgstr "请注意，在您重启程序之前，显示的密钥有效性未必正确，\n"
 
-#: g10/keyedit.c:2883
-#: g10/keyedit.c:3229
-#: g10/keyserver.c:521
-#: g10/mainproc.c:1772
-#: g10/trustdb.c:1179
-#: g10/trustdb.c:1699
+#: g10/keyedit.c:2883 g10/keyedit.c:3229 g10/keyserver.c:521
+#: g10/mainproc.c:1772 g10/trustdb.c:1179 g10/trustdb.c:1699
 msgid "revoked"
 msgstr "已吊销"
 
-#: g10/keyedit.c:2885
-#: g10/keyedit.c:3231
-#: g10/keyserver.c:525
-#: g10/mainproc.c:1774
-#: g10/trustdb.c:532
-#: g10/trustdb.c:1701
+#: g10/keyedit.c:2885 g10/keyedit.c:3231 g10/keyserver.c:525
+#: g10/mainproc.c:1774 g10/trustdb.c:532 g10/trustdb.c:1701
 msgid "expired"
 msgstr "已过期"
 
@@ -3489,18 +3334,19 @@ msgstr "已过期"
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
-msgstr "警告：没有首选用户标识。此指令可能假定一个不同的用户标识为首选用户标识。\n"
+msgstr ""
+"警告：没有首选用户标识。此指令可能假定一个不同的用户标识为首选用户标识。\n"
 
 #: g10/keyedit.c:3011
 msgid ""
-"WARNING: This is a PGP2-style key.  Adding a photo ID may cause some versions\n"
+"WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
+"versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
 "警告：这是一把 PGP2 样式的密钥。\n"
 "      增加照片标识可能会导致某些版本的 PGP 不能识别这把密钥。\n"
 
-#: g10/keyedit.c:3016
-#: g10/keyedit.c:3346
+#: g10/keyedit.c:3016 g10/keyedit.c:3346
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "您确定仍然想要增加吗？(y/N)"
 
@@ -3538,8 +3384,7 @@ msgstr "已经删除了 %d 个签名。\n"
 msgid "Nothing deleted.\n"
 msgstr "没有东西被删除。\n"
 
-#: g10/keyedit.c:3233
-#: g10/trustdb.c:1703
+#: g10/keyedit.c:3233 g10/trustdb.c:1703
 msgid "invalid"
 msgstr "无效"
 
@@ -3550,7 +3395,8 @@ msgstr "用户标识“%s”：无用部分已清除\n"
 
 #: g10/keyedit.c:3341
 msgid ""
-"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may cause\n"
+"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
+"cause\n"
 "         some versions of PGP to reject this key.\n"
 msgstr ""
 "警告：这是一把 PGP2 样式的密钥。\n"
@@ -3587,7 +3433,8 @@ msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "警告：将某把密钥指派为指定吊销者的操作无法撤销！\n"
 
 #: g10/keyedit.c:3459
-msgid "Are you sure you want to appoint this key as a designated revoker? (y/N) "
+msgid ""
+"Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "您确定要将这把密钥设为指定吊销者吗？(y/N)："
 
 #: g10/keyedit.c:3520
@@ -3628,10 +3475,7 @@ msgstr "子钥 %s 不签名，因此不需要交叉验证\n"
 msgid "Please select exactly one user ID.\n"
 msgstr "请精确地选择一个用户标识。\n"
 
-#: g10/keyedit.c:3875
-#: g10/keyedit.c:3985
-#: g10/keyedit.c:4105
-#: g10/keyedit.c:4246
+#: g10/keyedit.c:3875 g10/keyedit.c:3985 g10/keyedit.c:4105 g10/keyedit.c:4246
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "跳过用户标识“%s”的 v3 自身签名\n"
@@ -3676,16 +3520,12 @@ msgstr "没有索引为 %d 的子钥\n"
 msgid "user ID: \"%s\"\n"
 msgstr "用户标识：“%s”\n"
 
-#: g10/keyedit.c:4625
-#: g10/keyedit.c:4689
-#: g10/keyedit.c:4732
+#: g10/keyedit.c:4625 g10/keyedit.c:4689 g10/keyedit.c:4732
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "由您的密钥 %s 于 %s%s%s 签名\n"
 
-#: g10/keyedit.c:4627
-#: g10/keyedit.c:4691
-#: g10/keyedit.c:4734
+#: g10/keyedit.c:4627 g10/keyedit.c:4691 g10/keyedit.c:4734
 msgid " (non-exportable)"
 msgstr " (不可导出)"
 
@@ -3787,19 +3627,13 @@ msgstr "正在写入自身签名\n"
 msgid "writing key binding signature\n"
 msgstr "正在写入密钥绑定签名\n"
 
-#: g10/keygen.c:1022
-#: g10/keygen.c:1104
-#: g10/keygen.c:1109
-#: g10/keygen.c:1225
+#: g10/keygen.c:1022 g10/keygen.c:1104 g10/keygen.c:1109 g10/keygen.c:1225
 #: g10/keygen.c:2762
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "密钥尺寸无效：改用 %u 位\n"
 
-#: g10/keygen.c:1027
-#: g10/keygen.c:1115
-#: g10/keygen.c:1230
-#: g10/keygen.c:2768
+#: g10/keygen.c:1027 g10/keygen.c:1115 g10/keygen.c:1230 g10/keygen.c:2768
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "密钥尺寸舍入到 %u 位\n"
@@ -3917,8 +3751,7 @@ msgstr "%s 密钥尺寸必须在 %u 与 %u 间\n"
 msgid "Requested keysize is %u bits\n"
 msgstr "您所要求的密钥尺寸是 %u 位\n"
 
-#: g10/keygen.c:1556
-#: g10/keygen.c:1561
+#: g10/keygen.c:1556 g10/keygen.c:1561
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "舍入到 %u 位\n"
@@ -4001,13 +3834,15 @@ msgstr "以上正确吗？(y/n)"
 #: g10/keygen.c:1715
 msgid ""
 "\n"
-"You need a user ID to identify your key; the software constructs the user ID\n"
+"You need a user ID to identify your key; the software constructs the user "
+"ID\n"
 "from the Real Name, Comment and Email Address in this form:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 msgstr ""
 "\n"
-"您需要一个用户标识来辨识您的密钥；本软件会用真实姓名、注释和电子邮件地址组合\n"
+"您需要一个用户标识来辨识您的密钥；本软件会用真实姓名、注释和电子邮件地址组"
+"合\n"
 "成用户标识，如下所示：\n"
 "    “Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>”\n"
 "\n"
@@ -4099,8 +3934,7 @@ msgstr ""
 "您需要一个密码来保护您的私钥。\n"
 "\n"
 
-#: g10/keygen.c:1898
-#: g10/passphrase.c:810
+#: g10/keygen.c:1898 g10/passphrase.c:810
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
@@ -4131,20 +3965,17 @@ msgstr ""
 msgid "Key generation canceled.\n"
 msgstr "密钥生成已取消。\n"
 
-#: g10/keygen.c:2907
-#: g10/keygen.c:3052
+#: g10/keygen.c:2907 g10/keygen.c:3052
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "正在将公钥写至`%s'\n"
 
-#: g10/keygen.c:2909
-#: g10/keygen.c:3055
+#: g10/keygen.c:2909 g10/keygen.c:3055
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "向‘%s’写入私钥占位符\n"
 
-#: g10/keygen.c:2912
-#: g10/keygen.c:3058
+#: g10/keygen.c:2912 g10/keygen.c:3058
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "正在将私钥写至`%s'\n"
@@ -4181,56 +4012,47 @@ msgstr ""
 "请注意这把密钥还不能用来加密，您必须先用“--edit-key”指令\n"
 "生成用于加密的子钥。\n"
 
-#: g10/keygen.c:3118
-#: g10/keygen.c:3247
-#: g10/keygen.c:3363
+#: g10/keygen.c:3118 g10/keygen.c:3247 g10/keygen.c:3363
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "生成密钥失败：%s\n"
 
-#: g10/keygen.c:3170
-#: g10/keygen.c:3298
-#: g10/sign.c:276
+#: g10/keygen.c:3170 g10/keygen.c:3298 g10/sign.c:276
 #, c-format
-msgid "key has been created %lu second in future (time warp or clock problem)\n"
+msgid ""
+"key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "密钥是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
-#: g10/keygen.c:3172
-#: g10/keygen.c:3300
-#: g10/sign.c:278
+#: g10/keygen.c:3172 g10/keygen.c:3300 g10/sign.c:278
 #, c-format
-msgid "key has been created %lu seconds in future (time warp or clock problem)\n"
+msgid ""
+"key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "密钥是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
-#: g10/keygen.c:3181
-#: g10/keygen.c:3311
+#: g10/keygen.c:3181 g10/keygen.c:3311
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "注意：为 v3 密钥生成子钥会失去 OpenPGP 兼容性\n"
 
-#: g10/keygen.c:3220
-#: g10/keygen.c:3344
+#: g10/keygen.c:3220 g10/keygen.c:3344
 msgid "Really create? (y/N) "
 msgstr "真的要建立吗？(y/N)"
 
-#: g10/keygen.c:3507
+#: g10/keygen.c:3509
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "向卡上存储密钥时失败：%s\n"
 
-#: g10/keygen.c:3554
+#: g10/keygen.c:3556
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "不能创建备份文件‘%s’：%s\n"
 
-#: g10/keygen.c:3580
+#: g10/keygen.c:3582
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "注意：卡密钥的备份已保存到‘%s’\n"
 
-#: g10/keyid.c:498
-#: g10/keyid.c:510
-#: g10/keyid.c:522
-#: g10/keyid.c:534
+#: g10/keyid.c:498 g10/keyid.c:510 g10/keyid.c:522 g10/keyid.c:534
 msgid "never     "
 msgstr "永不过期"
 
@@ -4277,8 +4099,7 @@ msgid "      Subkey fingerprint:"
 msgstr " 子钥指纹："
 
 #  use tty
-#: g10/keylist.c:1520
-#: g10/keylist.c:1524
+#: g10/keylist.c:1520 g10/keylist.c:1524
 msgid "      Key fingerprint ="
 msgstr "密钥指纹 ="
 
@@ -4370,8 +4191,7 @@ msgstr "已禁用"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "输入数字以选择，输入 N 翻页，输入 Q 退出 >"
 
-#: g10/keyserver.c:808
-#: g10/keyserver.c:1421
+#: g10/keyserver.c:808 g10/keyserver.c:1421
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "无效的公钥服务器协议(us %d!=handler %d)\n"
@@ -4425,8 +4245,7 @@ msgstr "搜索“%s”，在 %s 服务器 %s 上\n"
 msgid "searching for \"%s\" from %s\n"
 msgstr "搜索“%s”，在 %s 上\n"
 
-#: g10/keyserver.c:1381
-#: g10/keyserver.c:1477
+#: g10/keyserver.c:1381 g10/keyserver.c:1477
 msgid "no keyserver action!\n"
 msgstr "公钥服务器无动作！\n"
 
@@ -4439,8 +4258,7 @@ msgstr "警告：处理公钥服务器的程序来自不同版本的 GnuPG (%s)\
 msgid "keyserver did not send VERSION\n"
 msgstr "公钥服务器未发送 VERSION\n"
 
-#: g10/keyserver.c:1500
-#: g10/keyserver.c:2028
+#: g10/keyserver.c:1500 g10/keyserver.c:2028
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "未给出公钥服务器(使用 --keyserver 选项)\n"
 
@@ -4476,8 +4294,7 @@ msgstr "公钥服务器内部错误\n"
 msgid "keyserver communications error: %s\n"
 msgstr "公钥服务器通讯错误：%s\n"
 
-#: g10/keyserver.c:1577
-#: g10/keyserver.c:1611
+#: g10/keyserver.c:1577 g10/keyserver.c:1611
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "“%s”不是一个用户标识：跳过\n"
@@ -4536,8 +4353,7 @@ msgstr "公钥加密过的数据：完好的数据加密密钥\n"
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
 msgstr "由 %u 位的 %s 密钥加密，钥匙号为 %s、生成于 %s\n"
 
-#: g10/mainproc.c:476
-#: g10/pkclist.c:219
+#: g10/mainproc.c:476 g10/pkclist.c:219
 #, c-format
 msgid "      \"%s\"\n"
 msgstr "      “%s”\n"
@@ -4561,8 +4377,7 @@ msgstr "以 %lu 个密码加密\n"
 msgid "encrypted with 1 passphrase\n"
 msgstr "以 1 个密码加密\n"
 
-#: g10/mainproc.c:541
-#: g10/mainproc.c:563
+#: g10/mainproc.c:541 g10/mainproc.c:563
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "假定 %s 为加密过的数据\n"
@@ -4633,20 +4448,17 @@ msgstr "于 %s 创建的签名，使用 %s，钥匙号 %s\n"
 msgid "Key available at: "
 msgstr "可用的密钥在："
 
-#: g10/mainproc.c:1677
-#: g10/mainproc.c:1725
+#: g10/mainproc.c:1677 g10/mainproc.c:1725
 #, c-format
 msgid "BAD signature from \"%s\""
 msgstr "已损坏的签名，来自于“%s”"
 
-#: g10/mainproc.c:1679
-#: g10/mainproc.c:1727
+#: g10/mainproc.c:1679 g10/mainproc.c:1727
 #, c-format
 msgid "Expired signature from \"%s\""
 msgstr "过期的签名，来自于“%s”"
 
-#: g10/mainproc.c:1681
-#: g10/mainproc.c:1729
+#: g10/mainproc.c:1681 g10/mainproc.c:1729
 #, c-format
 msgid "Good signature from \"%s\""
 msgstr "完好的签名，来自于“%s”"
@@ -4683,8 +4495,7 @@ msgstr "二进制"
 msgid "textmode"
 msgstr "文本模式"
 
-#: g10/mainproc.c:1873
-#: g10/trustdb.c:531
+#: g10/mainproc.c:1873 g10/trustdb.c:531
 msgid "unknown"
 msgstr "未知"
 
@@ -4693,14 +4504,13 @@ msgstr "未知"
 msgid "Can't check signature: %s\n"
 msgstr "无法检查签名：%s\n"
 
-#: g10/mainproc.c:1962
-#: g10/mainproc.c:1978
-#: g10/mainproc.c:2064
+#: g10/mainproc.c:1962 g10/mainproc.c:1978 g10/mainproc.c:2064
 msgid "not a detached signature\n"
 msgstr "不是一份分离的签名\n"
 
 #: g10/mainproc.c:2005
-msgid "WARNING: multiple signatures detected.  Only the first will be checked.\n"
+msgid ""
+"WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr "警告：检测到多重签名。只检查第一个签名。\n"
 
 #: g10/mainproc.c:2013
@@ -4721,9 +4531,7 @@ msgstr "在 proc_tree() 中检测到无效的根包\n"
 msgid "can't disable core dumps: %s\n"
 msgstr "无法禁用核心内存转储：%s\n"
 
-#: g10/misc.c:142
-#: g10/misc.c:170
-#: g10/misc.c:242
+#: g10/misc.c:142 g10/misc.c:170 g10/misc.c:242
 #, c-format
 msgid "fstat of `%s' failed in %s: %s\n"
 msgstr "‘%s’的 fstat 在 %s 中出错：%s\n"
@@ -4757,8 +4565,7 @@ msgstr "警告：不建议使用散列算法 %s\n"
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA 算法插件不存在\n"
 
-#: g10/misc.c:448
-#: g10/sig-check.c:103
+#: g10/misc.c:448 g10/sig-check.c:103
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "请参见 %s 以得到更多信息。\n"
@@ -4880,14 +4687,11 @@ msgstr "不支持 gpg-agent 协议版本 %d\n"
 msgid "can't connect to `%s': %s\n"
 msgstr "无法连接至‘%s’：%s\n"
 
-#: g10/passphrase.c:379
-#: g10/passphrase.c:655
-#: g10/passphrase.c:745
+#: g10/passphrase.c:379 g10/passphrase.c:655 g10/passphrase.c:745
 msgid "problem with the agent - disabling agent use\n"
 msgstr "代理程序有问题――正在停用代理程序\n"
 
-#: g10/passphrase.c:532
-#: g10/passphrase.c:914
+#: g10/passphrase.c:532 g10/passphrase.c:914
 #, c-format
 msgid " (main key ID %s)"
 msgstr " (主钥匙号 %s)"
@@ -4915,13 +4719,11 @@ msgstr "请输入密码\n"
 msgid "cancelled by user\n"
 msgstr "用户取消\n"
 
-#: g10/passphrase.c:805
-#: g10/passphrase.c:968
+#: g10/passphrase.c:805 g10/passphrase.c:968
 msgid "can't query passphrase in batch mode\n"
 msgstr "在批处理模式中无法查询密码\n"
 
-#: g10/passphrase.c:812
-#: g10/passphrase.c:973
+#: g10/passphrase.c:812 g10/passphrase.c:973
 msgid "Enter passphrase: "
 msgstr "请输入密码："
 
@@ -4994,28 +4796,23 @@ msgstr "没有设置照片查看程序\n"
 msgid "unable to display photo ID!\n"
 msgstr "无法显示照片标识！\n"
 
-#: g10/pkclist.c:62
-#: g10/revoke.c:623
+#: g10/pkclist.c:62 g10/revoke.c:623
 msgid "No reason specified"
 msgstr "未指定原因"
 
-#: g10/pkclist.c:64
-#: g10/revoke.c:625
+#: g10/pkclist.c:64 g10/revoke.c:625
 msgid "Key is superseded"
 msgstr "密钥被替换"
 
-#: g10/pkclist.c:66
-#: g10/revoke.c:624
+#: g10/pkclist.c:66 g10/revoke.c:624
 msgid "Key has been compromised"
 msgstr "密钥已泄漏"
 
-#: g10/pkclist.c:68
-#: g10/revoke.c:626
+#: g10/pkclist.c:68 g10/revoke.c:626
 msgid "Key is no longer used"
 msgstr "密钥不再使用"
 
-#: g10/pkclist.c:70
-#: g10/revoke.c:627
+#: g10/pkclist.c:70 g10/revoke.c:627
 msgid "User ID is no longer valid"
 msgstr "用户标识不再有效"
 
@@ -5042,7 +4839,8 @@ msgid "  aka \"%s\"\n"
 msgstr "  亦即“%s”\n"
 
 #: g10/pkclist.c:256
-msgid "How much do you trust that this key actually belongs to the named user?\n"
+msgid ""
+"How much do you trust that this key actually belongs to the named user?\n"
 msgstr "您是否相信这把密钥属于它所声称的持有者？\n"
 
 #: g10/pkclist.c:271
@@ -5081,8 +4879,7 @@ msgstr ""
 "这把密钥的最小信任等级为：%s\n"
 "\n"
 
-#: g10/pkclist.c:299
-#: g10/revoke.c:652
+#: g10/pkclist.c:299 g10/revoke.c:652
 msgid "Your decision? "
 msgstr "您的决定是什么？"
 
@@ -5180,7 +4977,8 @@ msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr "警告：这把密钥未经受信任的签名认证！\n"
 
 #: g10/pkclist.c:604
-msgid "         There is no indication that the signature belongs to the owner.\n"
+msgid ""
+"         There is no indication that the signature belongs to the owner.\n"
 msgstr "      没有证据表明这个签名属于它所声称的持有者。\n"
 
 #: g10/pkclist.c:612
@@ -5192,23 +4990,20 @@ msgid "         The signature is probably a FORGERY.\n"
 msgstr "      这个签名很有可能是伪造的。\n"
 
 #: g10/pkclist.c:621
-msgid "WARNING: This key is not certified with sufficiently trusted signatures!\n"
+msgid ""
+"WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr "警告：这把密钥未经有足够信任度的签名所认证。\n"
 
 #: g10/pkclist.c:623
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "      这份签名并不一定属于它所声称的持有者\n"
 
-#: g10/pkclist.c:822
-#: g10/pkclist.c:864
-#: g10/pkclist.c:1076
-#: g10/pkclist.c:1146
+#: g10/pkclist.c:822 g10/pkclist.c:864 g10/pkclist.c:1076 g10/pkclist.c:1146
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s：已跳过：%s\n"
 
-#: g10/pkclist.c:834
-#: g10/pkclist.c:1114
+#: g10/pkclist.c:834 g10/pkclist.c:1114
 #, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: 已跳过：公钥已存在\n"
@@ -5233,8 +5028,7 @@ msgstr ""
 msgid "No such user ID.\n"
 msgstr "没有这个用户标识。\n"
 
-#: g10/pkclist.c:969
-#: g10/pkclist.c:1043
+#: g10/pkclist.c:969 g10/pkclist.c:1043
 msgid "skipped: public key already set as default recipient\n"
 msgstr "已跳过：公钥已被设为默认收件者\n"
 
@@ -5264,9 +5058,7 @@ msgstr "没有有效的地址\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "数据未被保存；请用“--output”选项来保存它们\n"
 
-#: g10/plaintext.c:135
-#: g10/plaintext.c:140
-#: g10/plaintext.c:158
+#: g10/plaintext.c:135 g10/plaintext.c:140 g10/plaintext.c:158
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "建立‘%s’时发生错误：%s\n"
@@ -5324,12 +5116,8 @@ msgstr "注意：私钥 %s 已于 %s 过期\n"
 msgid "NOTE: key has been revoked"
 msgstr "注意：密钥已被吊销"
 
-#: g10/revoke.c:104
-#: g10/revoke.c:118
-#: g10/revoke.c:130
-#: g10/revoke.c:176
-#: g10/revoke.c:188
-#: g10/revoke.c:588
+#: g10/revoke.c:104 g10/revoke.c:118 g10/revoke.c:130 g10/revoke.c:176
+#: g10/revoke.c:188 g10/revoke.c:588
 #, c-format
 msgid "build_packet failed: %s\n"
 msgstr "build_packet 失败：%s\n"
@@ -5351,13 +5139,11 @@ msgstr "(这是一把敏感的吊销密钥)\n"
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "要为这把密钥建立一份指定吊销者证书吗？(y/N)"
 
-#: g10/revoke.c:329
-#: g10/revoke.c:554
+#: g10/revoke.c:329 g10/revoke.c:554
 msgid "ASCII armored output forced.\n"
 msgstr "已强行使用 ASCII 封装过的输出。\n"
 
-#: g10/revoke.c:344
-#: g10/revoke.c:568
+#: g10/revoke.c:344 g10/revoke.c:568
 #, c-format
 msgid "make_keysig_packet failed: %s\n"
 msgstr "make_keysig_packet 失败： %s\n"
@@ -5525,12 +5311,14 @@ msgstr "公钥 %s 在其签名后 %lu 秒生成\n"
 
 #: g10/sig-check.c:193
 #, c-format
-msgid "key %s was created %lu second in the future (time warp or clock problem)\n"
+msgid ""
+"key %s was created %lu second in the future (time warp or clock problem)\n"
 msgstr "密钥 %s 是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
 #: g10/sig-check.c:195
 #, c-format
-msgid "key %s was created %lu seconds in the future (time warp or clock problem)\n"
+msgid ""
+"key %s was created %lu seconds in the future (time warp or clock problem)\n"
 msgstr "密钥 %s 是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
 #: g10/sig-check.c:205
@@ -5576,52 +5364,51 @@ msgstr "无法在 v3 (PGP 2.x样式)的密钥签名内放入策略 URL\n"
 
 #: g10/sign.c:145
 #, c-format
-msgid "WARNING: unable to %%-expand policy URL (too large).  Using unexpanded.\n"
+msgid ""
+"WARNING: unable to %%-expand policy URL (too large).  Using unexpanded.\n"
 msgstr "警告：无法 %%-扩展策略 URL (太大了)。现在使用未扩展的。\n"
 
 #: g10/sign.c:173
 #, c-format
-msgid "WARNING: unable to %%-expand preferred keyserver URL (too large).  Using unexpanded.\n"
+msgid ""
+"WARNING: unable to %%-expand preferred keyserver URL (too large).  Using "
+"unexpanded.\n"
 msgstr "警告：无法 %%-扩展首选公钥服务器 URL (太大了)。现在使用未扩展的。\n"
 
-#: g10/sign.c:339
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA 要求使用 160 位的散列算法\n"
-
-#: g10/sign.c:369
+#: g10/sign.c:347
 #, c-format
 msgid "checking created signature failed: %s\n"
 msgstr "检查已建立的签名时发生错误： %s\n"
 
-#: g10/sign.c:378
+#: g10/sign.c:356
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s 签名来自：“%s”\n"
 
-#: g10/sign.c:810
+#: g10/sign.c:788
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "您在 --pgp2 模式下只能够使用 PGP 2.x 样式的密钥来做分离签名\n"
 
-#: g10/sign.c:879
+#: g10/sign.c:862
 #, c-format
-msgid "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
+msgid ""
+"WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr "警告：强行使用的 %s (%d)散列算法不在收件者的首选项中\n"
 
-#: g10/sign.c:992
+#: g10/sign.c:988
 msgid "signing:"
 msgstr "正在签名："
 
-#: g10/sign.c:1104
+#: g10/sign.c:1100
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "您在 --pgp2 模式下只能够使用 PGP 2.x 样式的密钥来做明文签名\n"
 
-#: g10/sign.c:1282
+#: g10/sign.c:1278
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "%s 加密将被采用\n"
 
-#: g10/skclist.c:127
-#: g10/skclist.c:191
+#: g10/skclist.c:127 g10/skclist.c:191
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr "密钥未被标示为不安全――不能与假的随机数发生器共同使用！\n"
 
@@ -5630,9 +5417,7 @@ msgstr "密钥未被标示为不安全――不能与假的随机数发生器共
 msgid "skipped \"%s\": duplicated\n"
 msgstr "“%s”已跳过：重复\n"
 
-#: g10/skclist.c:166
-#: g10/skclist.c:176
-#: g10/skclist.c:185
+#: g10/skclist.c:166 g10/skclist.c:176 g10/skclist.c:185
 #, c-format
 msgid "skipped \"%s\": %s\n"
 msgstr "“%s”已跳过：%s\n"
@@ -5645,8 +5430,7 @@ msgstr "已跳过：私钥已存在\n"
 msgid "this is a PGP generated Elgamal key which is not secure for signatures!"
 msgstr "这是一把由 PGP 生成的 ElGamal 密钥，用于签名不安全！"
 
-#: g10/tdbdump.c:60
-#: g10/trustdb.c:366
+#: g10/tdbdump.c:60 g10/trustdb.c:366
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
 msgstr "信任记录 %lu，类别 %d：写入失败：%s\n"
@@ -5660,10 +5444,7 @@ msgstr ""
 "# 已指定的信任度的清单，建立于 %s \n"
 "# (请用“gpg --import-ownertrust”导入这些信任度)\n"
 
-#: g10/tdbdump.c:160
-#: g10/tdbdump.c:168
-#: g10/tdbdump.c:173
-#: g10/tdbdump.c:178
+#: g10/tdbdump.c:160 g10/tdbdump.c:168 g10/tdbdump.c:173 g10/tdbdump.c:178
 #, c-format
 msgid "error in `%s': %s\n"
 msgstr "‘%s’中出错：%s\n"
@@ -5694,20 +5475,17 @@ msgstr "在‘%s’中寻找信任度记录时出错：%s\n"
 msgid "read error in `%s': %s\n"
 msgstr "读取‘%s’错误：%s\n"
 
-#: g10/tdbdump.c:228
-#: g10/trustdb.c:381
+#: g10/tdbdump.c:228 g10/trustdb.c:381
 #, c-format
 msgid "trustdb: sync failed: %s\n"
 msgstr "信任度数据库：同步失败：%s\n"
 
-#: g10/tdbio.c:129
-#: g10/tdbio.c:1445
+#: g10/tdbio.c:129 g10/tdbio.c:1445
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信任度数据库记录 %lu：lseek 失败：%s\n"
 
-#: g10/tdbio.c:135
-#: g10/tdbio.c:1452
+#: g10/tdbio.c:135 g10/tdbio.c:1452
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "信任度数据库记录 %lu：write 失败 (n=%d): %s\n"
@@ -5726,15 +5504,12 @@ msgstr "无法存取‘%s’：%s\n"
 msgid "%s: directory does not exist!\n"
 msgstr "%s：目录不存在！\n"
 
-#: g10/tdbio.c:523
-#: g10/tdbio.c:546
-#: g10/tdbio.c:589
+#: g10/tdbio.c:523 g10/tdbio.c:546 g10/tdbio.c:589
 #, c-format
 msgid "can't create lock for `%s'\n"
 msgstr "不能为‘%s’创建锁定\n"
 
-#: g10/tdbio.c:525
-#: g10/tdbio.c:592
+#: g10/tdbio.c:525 g10/tdbio.c:592
 #, c-format
 msgid "can't lock `%s'\n"
 msgstr "无法锁定‘%s’\n"
@@ -5773,13 +5548,8 @@ msgstr "%s：建立散列表失败：%s\n"
 msgid "%s: error updating version record: %s\n"
 msgstr "%s：更新版本记录时出错： %s\n"
 
-#: g10/tdbio.c:676
-#: g10/tdbio.c:696
-#: g10/tdbio.c:712
-#: g10/tdbio.c:726
-#: g10/tdbio.c:756
-#: g10/tdbio.c:1378
-#: g10/tdbio.c:1405
+#: g10/tdbio.c:676 g10/tdbio.c:696 g10/tdbio.c:712 g10/tdbio.c:726
+#: g10/tdbio.c:756 g10/tdbio.c:1378 g10/tdbio.c:1405
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s：读取版本记录时出错： %s\n"
@@ -5901,8 +5671,7 @@ msgstr "10 translator see trustdb.c:uid_trust_string_fixed"
 msgid "[ revoked]"
 msgstr "[已吊销]"
 
-#: g10/trustdb.c:509
-#: g10/trustdb.c:514
+#: g10/trustdb.c:509 g10/trustdb.c:514
 msgid "[ expired]"
 msgstr "[已过期]"
 
@@ -5950,8 +5719,7 @@ msgstr "绝对"
 msgid "no need for a trustdb check\n"
 msgstr "不需要检查信任度数据库\n"
 
-#: g10/trustdb.c:583
-#: g10/trustdb.c:2352
+#: g10/trustdb.c:583 g10/trustdb.c:2352
 #, c-format
 msgid "next trustdb check due at %s\n"
 msgstr "下次信任度数据库检查将于 %s 进行\n"
@@ -5966,8 +5734,7 @@ msgstr "使用‘%s’信任模型时不需要检查信任度数据库\n"
 msgid "no need for a trustdb update with `%s' trust model\n"
 msgstr "使用‘%s’信任模型时不需要更新信任度数据库\n"
 
-#: g10/trustdb.c:839
-#: g10/trustdb.c:1277
+#: g10/trustdb.c:839 g10/trustdb.c:1277
 #, c-format
 msgid "public key %s not found: %s\n"
 msgstr "找不到公钥 %s：%s\n"
@@ -6001,8 +5768,10 @@ msgstr "需要 %d 份勉强信任和 %d 份完全信任，%s 信任模型\n"
 
 #: g10/trustdb.c:2283
 #, c-format
-msgid "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
-msgstr "深度：%d 有效性：%3d 已签名：%3d 信任度：%d-，%dq，%dn，%dm，%df，%du\n"
+msgid ""
+"depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
+msgstr ""
+"深度：%d 有效性：%3d 已签名：%3d 信任度：%d-，%dq，%dn，%dm，%df，%du\n"
 
 #: g10/trustdb.c:2358
 #, c-format
@@ -6263,24 +6032,20 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "您找到一个程序缺陷了……(%s:%d)\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:330
-#: util/miscutil.c:367
+#: util/miscutil.c:330 util/miscutil.c:367
 msgid "yes"
 msgstr "yes"
 
-#: util/miscutil.c:331
-#: util/miscutil.c:372
+#: util/miscutil.c:331 util/miscutil.c:372
 msgid "yY"
 msgstr "yY"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:333
-#: util/miscutil.c:369
+#: util/miscutil.c:333 util/miscutil.c:369
 msgid "no"
 msgstr "no"
 
-#: util/miscutil.c:334
-#: util/miscutil.c:373
+#: util/miscutil.c:334 util/miscutil.c:373
 msgid "nN"
 msgstr "nN"
 
@@ -6327,3 +6092,5 @@ msgstr "安全内存未初始化，不能进行操作\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(您可能使用了错误的程序来完成此项任务)\n"
 
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA 要求使用 160 位的散列算法\n"

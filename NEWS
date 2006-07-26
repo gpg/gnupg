@@ -1,6 +1,8 @@
 Noteworthy changes in version 1.4.5
 ------------------------------------------------
 
+    * Fixed 2 more memory allocation attacks.
+
 
 Noteworthy changes in version 1.4.4 (2006-06-25)
 ------------------------------------------------

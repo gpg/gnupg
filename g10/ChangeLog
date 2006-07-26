@@ -1,3 +1,15 @@
+2006-07-26  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (gen_card_key_with_backup): Initialize sk_{un}protected.
+
+	* import.c (import): Init KEYBLOCK.
+
+	* pkclist.c (edit_ownertrust): Intialize trust to avoid ggc
+	warning.
+
+	* parse-packet.c (parse_comment): Cap comments at 65k.
+	(parse_gpg_control): Skip too large control packets.
+
 2006-06-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* keydb.h, pkclist.c (select_algo_from_prefs, algo_available):
