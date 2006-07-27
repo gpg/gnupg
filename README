@@ -13,7 +13,7 @@ You should use this GnuPG version if you want to use the gpg-agent or
 gpgsm (the S/MIME variant of gpg).  Note that the gpg-agent is also
 helpful when using the standard gpg versions (1.4.x as well as some of
 the old 1.2.x).  There are no problems installing 1.4 and 1.9
-alongside; in act we suggest to do this.
+alongside; in dact we suggest to do this.
 
 
 BUILD INSTRUCTIONS

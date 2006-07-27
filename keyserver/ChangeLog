@@ -1,3 +1,12 @@
+2006-07-24  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	* curl-shim.c (curl_easy_perform): Minor cleanup of proxy code.
+
+	* gpgkeys_hkp.c (send_key)
+	* gpgkeys_ldap.c (send_key, send_key_keyserver): Fix string
+	matching problem when the ascii armored form of the key happens to
+	match "KEY" at the beginning of the line.
+
 2006-04-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_http.c, gpgkeys_oldhkp.c: Removed.

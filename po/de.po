@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-06-20 18:45+0200\n"
+"POT-Creation-Date: 2006-07-24 16:19+0200\n"
 "PO-Revision-Date: 2006-06-20 20:04+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
@@ -215,45 +215,45 @@ msgstr "stat() Aufruf für `%s' fehlgeschlagen: %s\n"
 msgid "can't use `%s' as home directory\n"
 msgstr "Die Datei `%s' kann nicht als Home-Verzeichniss benutzt werden\n"
 
-#: agent/gpg-agent.c:1402
+#: agent/gpg-agent.c:1403
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr "Handhabungsroutine 0x%lx für fd %d gestartet\n"
 
-#: agent/gpg-agent.c:1412
+#: agent/gpg-agent.c:1413
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr "Handhabungsroutine 0x%lx für den fd %d beendet\n"
 
-#: agent/gpg-agent.c:1426
+#: agent/gpg-agent.c:1427
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr "SSH Handhabungsroutine 0x%lx für fd %d gestartet\n"
 
-#: agent/gpg-agent.c:1433
+#: agent/gpg-agent.c:1434
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "SSH Handhabungsroutine 0x%lx für fd %d beendet\n"
 
-#: agent/gpg-agent.c:1527 scd/scdaemon.c:1108
+#: agent/gpg-agent.c:1528 scd/scdaemon.c:1108
 #, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "pth_select() Aufruf fehlgeschlagen: %s - warte 1s\n"
 
-#: agent/gpg-agent.c:1611 scd/scdaemon.c:1165
+#: agent/gpg-agent.c:1612 scd/scdaemon.c:1165
 #, c-format
 msgid "%s %s stopped\n"
 msgstr "%s %s angehalten\n"
 
-#: agent/gpg-agent.c:1632
+#: agent/gpg-agent.c:1633
 msgid "no gpg-agent running in this session\n"
 msgstr "Der gpg-agent läuft nicht für diese Session\n"
 
-#: agent/gpg-agent.c:1642 common/simple-pwquery.c:324 sm/call-agent.c:144
+#: agent/gpg-agent.c:1643 common/simple-pwquery.c:324 sm/call-agent.c:144
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "Die Variable GPG_AGENT_INFO ist fehlerhaft\n"
 
-#: agent/gpg-agent.c:1654 common/simple-pwquery.c:336 sm/call-agent.c:156
+#: agent/gpg-agent.c:1655 common/simple-pwquery.c:336 sm/call-agent.c:156
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "Das gpg-agent Protocol %d wird nicht unterstützt\n"
@@ -816,23 +816,23 @@ msgstr "keine"
 msgid "[none]"
 msgstr "[keine]"
 
-#: sm/certdump.c:499 sm/certdump.c:562
+#: sm/certdump.c:529 sm/certdump.c:592
 msgid "[Error - invalid encoding]"
 msgstr "[Fehler - Ungültige Kodierung]"
 
-#: sm/certdump.c:507
+#: sm/certdump.c:537
 msgid "[Error - out of core]"
 msgstr "[Fehler - Nich genügend Speicher]"
 
-#: sm/certdump.c:542
+#: sm/certdump.c:572
 msgid "[Error - No name]"
 msgstr "[Fehler - Kein Name]"
 
-#: sm/certdump.c:567
+#: sm/certdump.c:597
 msgid "[Error - invalid DN]"
 msgstr "[Fehler - Ungültiger DN]"
 
-#: sm/certdump.c:728
+#: sm/certdump.c:758
 #, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
@@ -916,91 +916,91 @@ msgstr "Der Herausgeber wird von einer externen Stelle gesucht\n"
 msgid "number of issuers matching: %d\n"
 msgstr "Anzahl der übereinstimmenden Heruasgeber: %d\n"
 
-#: sm/certchain.c:514 sm/certchain.c:676 sm/certchain.c:1114 sm/decrypt.c:261
+#: sm/certchain.c:514 sm/certchain.c:678 sm/certchain.c:1116 sm/decrypt.c:261
 #: sm/encrypt.c:342 sm/sign.c:325 sm/verify.c:107
 msgid "failed to allocated keyDB handle\n"
 msgstr "Ein keyDB Handle konnte nicht bereitgestellt werden\n"
 
-#: sm/certchain.c:603
+#: sm/certchain.c:605
 msgid "certificate has been revoked"
 msgstr "Das Zertifikat wurde widerrufen"
 
-#: sm/certchain.c:612
+#: sm/certchain.c:614
 msgid "no CRL found for certificate"
 msgstr "Keine CRL für das Zertifikat gefunden"
 
-#: sm/certchain.c:616
+#: sm/certchain.c:618
 msgid "the available CRL is too old"
 msgstr "Die vorhandene CRL ist zu alt"
 
-#: sm/certchain.c:618
+#: sm/certchain.c:620
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 "Bitte vergewissern Sie sich das der \"dirmngr\" richtig installierrt ist\n"
 
-#: sm/certchain.c:623
+#: sm/certchain.c:625
 #, c-format
 msgid "checking the CRL failed: %s"
 msgstr "Die CRL konnte nicht geprüft werden: %s"
 
-#: sm/certchain.c:696
+#: sm/certchain.c:698
 msgid "no issuer found in certificate"
 msgstr "Im Zertifikat ist kein Herausgeber enthalten"
 
-#: sm/certchain.c:709
+#: sm/certchain.c:711
 #, c-format
 msgid "certificate with invalid validity: %s"
 msgstr "Zertifikat mit unzulässiger Gültigkeit: %s"
 
-#: sm/certchain.c:725
+#: sm/certchain.c:727
 msgid "certificate not yet valid"
 msgstr "Das Zertifikat ist noch nicht gültig"
 
-#: sm/certchain.c:738
+#: sm/certchain.c:740
 msgid "certificate has expired"
 msgstr "Das Zertifikat ist abgelaufen"
 
-#: sm/certchain.c:775
+#: sm/certchain.c:777
 msgid "self-signed certificate has a BAD signature"
 msgstr "Das eigenbeglaubigte Zertifikat hat eine FALSCHE Signatur"
 
-#: sm/certchain.c:840
+#: sm/certchain.c:842
 msgid "root certificate is not marked trusted"
 msgstr "Das Wurzelzertifikat ist nicht als vertrauenswürdig markiert"
 
-#: sm/certchain.c:851
+#: sm/certchain.c:853
 #, c-format
 msgid "fingerprint=%s\n"
 msgstr "Fingerprint=%s\n"
 
-#: sm/certchain.c:856
+#: sm/certchain.c:858
 msgid "root certificate has now been marked as trusted\n"
 msgstr "Das Wurzelzertifikat wurde nun als vertrauenswürdig markiert\n"
 
-#: sm/certchain.c:871
+#: sm/certchain.c:873
 #, c-format
 msgid "checking the trust list failed: %s\n"
 msgstr "Fehler beim Prüfen der vertrauenswürdigen Zertifikate: %s\n"
 
-#: sm/certchain.c:897 sm/import.c:158
+#: sm/certchain.c:899 sm/import.c:158
 msgid "certificate chain too long\n"
 msgstr "Der Zertifikatkette ist zu lang\n"
 
-#: sm/certchain.c:909
+#: sm/certchain.c:911
 msgid "issuer certificate not found"
 msgstr "Herausgeberzertifikat nicht gefunden"
 
-#: sm/certchain.c:942
+#: sm/certchain.c:944
 msgid "certificate has a BAD signature"
 msgstr "Das Zertifikat hat eine FALSCHE Signatur"
 
-#: sm/certchain.c:972
+#: sm/certchain.c:974
 msgid "found another possible matching CA certificate - trying again"
 msgstr ""
 "Eine anderes möglicherweise passendes CA-Zertifikat gefunden - versuche "
 "nochmal"
 
-#: sm/certchain.c:995
+#: sm/certchain.c:997
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr "Die Zertifikatkette ist länger als von der CA erlaubt (%d)"

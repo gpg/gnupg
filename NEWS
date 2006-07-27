@@ -1,11 +1,12 @@
-Noteworthy changes in version 1.9.22
+Noteworthy changes in version 1.9.22 (2006-07-27)
 -------------------------------------------------
-
 
  * Enhanced pkcs#12 support to allow import from simple keyBags.
 
  * Exporting to pkcs#12 now create bag attributes so that Mozilla is
    able to import the files.
+
+ * Fixed uploading of certain keys to the smart card.
 
 
 Noteworthy changes in version 1.9.21 (2006-06-20)

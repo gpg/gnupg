@@ -2147,6 +2147,16 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
+    /* Cap comment packet at a reasonable value to avoid an integer
+       overflow in the malloc below.  Comment packets are actually not
+       anymore define my OpenPGP and we even stopped to use our
+       private comment packet. */
+    if (pktlen>65536)
+      {
+	log_error ("packet(%d) too large\n", pkttype);
+	iobuf_skip_rest (inp, pktlen, 0);
+	return G10ERR_INVALID_PACKET;
+      }
     packet->pkt.comment = xmalloc(sizeof *packet->pkt.comment + pktlen - 1);
     packet->pkt.comment->len = pktlen;
     p = packet->pkt.comment->data;
@@ -2220,6 +2230,7 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     mode = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     namelen = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
+    /* Note that namelen will never exceed 255 bytes. */
     pt = pkt->pkt.plaintext = xmalloc(sizeof *pkt->pkt.plaintext + namelen -1);
     pt->new_ctb = new_ctb;
     pt->mode = mode;
@@ -2399,6 +2410,9 @@ parse_gpg_control( IOBUF inp, int pkttype,
 	if ( sesmark[i] != iobuf_get_noeof(inp) )
             goto skipit;
     }
+    if (pktlen > 4096)
+      goto skipit; /* Definitely too large.  We skip it to avoid an
+                      overflow in the malloc. */
     if ( list_mode )
         puts ("- gpg control packet");
 

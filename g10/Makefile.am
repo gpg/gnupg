@@ -27,7 +27,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) -Wno-pointer-sign
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
 
 needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
 

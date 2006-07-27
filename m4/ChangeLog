@@ -1,3 +1,7 @@
+2006-07-27  Werner Koch  <wk@g10code.com>
+
+	* autobuild.m4: New. 
+
 2006-06-30  Werner Koch  <wk@g10code.com>
 
 	* ldap.m4: New.  Taken from gnupg 1.4.4

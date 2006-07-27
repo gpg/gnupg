@@ -320,27 +320,6 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
       }
     else 
       {
-#if 0 /* disabled *.
-	/* Disabled for now.  It seems reasonable to accept a
-	   truncated hash for a DSA1 key, even though we don't
-	   generate it without --enable-dsa2.  Be liberal in what you
-	   accept, etc. */
-
-	/* If it's a DSA key, and q is 160 bits, it might be an
-	   old-style DSA key.  If the hash doesn't match the q, fail
-	   unless --enable-dsa2 is set.  If the q isn't 160 bits, then
-	   allow any hash since it must be a DSA2 key (if the hash is
-	   too small, we'll fail in encode_md_value). */
-	if (sk->pubkey_algo==PUBKEY_ALGO_DSA
-            && (gcry_mpi_get_nbits (sk->skey[1])/8)==20
-            && !opt.flags.dsa2
-            && gcry_md_get_algo_dlen (digest_algo)!=20)
-	  {
-	    log_error(_("DSA requires the use of a 160 bit hash algorithm\n"));
-	    return G10ERR_GENERAL;
-	  }
-#endif /* disabled */
-
         frame = encode_md_value( NULL, sk, md, digest_algo );
         if (!frame)
           return G10ERR_GENERAL;
@@ -869,8 +848,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if (DBG_HASHING)
       gcry_md_start_debug (mfx.md, "sign");
 
-   /* If we're encrypting and signing, it is reasonable to pick the
-       hash algorithm to use out of the recepient key prefs. */
+    /* If we're encrypting and signing, it is reasonable to pick the
+       hash algorithm to use out of the recepient key prefs.  This is
+       best effort only, as in a DSA2 and smartcard world there are
+       cases where we cannot please everyone with a single hash (DSA2
+       wants >160 and smartcards want =160).  In the future this could
+       be more complex with different hashes for each sk, but the
+       current design requires a single hash for all SKs. */
     if(pk_list)
       {
 	if(opt.def_digest_algo)
@@ -886,30 +870,57 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	  }
 	else
 	  {
-	    int hashlen=0,algo;
+	    int algo, smartcard=0;
+	    union pref_hint hint;
+
+            hint.digest_length = 0;
 
 	    /* Of course, if the recipient asks for something
-	       unreasonable (like a non-160-bit hash for DSA, for
-	       example), then don't do it.  Check all sk's - if any
-	       are DSA, then the hash must be 160-bit.  In the future
-	       this can be more complex with different hashes for each
-	       sk, but so long as there is only one signing algorithm
-	       with hash restrictions, this is ok. -dms */
+	       unreasonable (like the wrong hash for a DSA key) then
+	       don't do it.  Check all sk's - if any are DSA or live
+	       on a smartcard, then the hash has restrictions and we
+	       may not be able to give the recipient what they want.
+	       For DSA, pass a hint for the largest q we have.  Note
+	       that this means that a q>160 key will override a q=160
+	       key and force the use of truncation for the q=160 key.
+	       The alternative would be to ignore the recipient prefs
+	       completely and get a different hash for each DSA key in
+	       hash_for().  The override behavior here is more or less
+	       reasonable as it is under the control of the user which
+	       keys they sign with for a given message and the fact
+	       that the message with multiple signatures won't be
+	       usable on an implementation that doesn't understand
+	       DSA2 anyway. */
 
-	    /* Current smartcards only do 160-bit hashes as well.
-	       Note that this may well have to change as the cards add
-	       algorithms. */
+	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+	      {
+		if (sk_rover->sk->pubkey_algo == PUBKEY_ALGO_DSA)
+		  {
+		    int temp_hashlen = gcry_mpi_get_nbits
+                      (sk_rover->sk->skey[1])+7/8;
 
-	    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
-	      if(sk_rover->sk->pubkey_algo==PUBKEY_ALGO_DSA
-		 || (sk_rover->sk->is_protected
-		     && sk_rover->sk->protect.s2k.mode==1002))
-		hashlen=20;
+		    /* Pick a hash that is large enough for our
+		       largest q */
 
-	    if((algo=
-		select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,
-				       hashlen?&hashlen:NULL))>0)
-	      recipient_digest_algo=algo;
+		    if (hint.digest_length<temp_hashlen)
+		      hint.digest_length=temp_hashlen;
+		  }
+		else if (sk_rover->sk->is_protected
+                         && sk_rover->sk->protect.s2k.mode == 1002)
+		  smartcard = 1;
+	      }
+
+	    /* Current smartcards only do 160-bit hashes.  If we have
+	       to have a >160-bit hash, then we can't use the
+	       recipient prefs as we'd need both =160 and >160 at the
+	       same time and recipient prefs currently require a
+	       single hash for all signatures.  All this may well have
+	       to change as the cards add algorithms. */
+
+	    if (!smartcard || (smartcard && hint.digest_length==20))
+	      if ( (algo=
+                   select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,&hint)) > 0)
+		recipient_digest_algo=algo;
 	  }
       }
 

@@ -1,3 +1,9 @@
+2006-07-27  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.22.
+
+	* configure.ac: Call AB_INIT.
+
 2006-07-03  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Test for ksba_dn_teststr. 

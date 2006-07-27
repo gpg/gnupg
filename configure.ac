@@ -27,7 +27,7 @@ min_automake_version="1.9.3"
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
 m4_define([my_version], [1.9.22])
-m4_define([my_issvn], [yes])
+m4_define([my_issvn], [no])
 
 
 m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
@@ -57,6 +57,7 @@ AC_CONFIG_SRCDIR(sm/gpgsm.c)
 AM_CONFIG_HEADER(config.h)
 AC_CANONICAL_TARGET()
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AB_INIT
 
 AC_GNU_SOURCE
 
@@ -1250,7 +1251,6 @@ jnlib/Makefile
 common/Makefile
 kbx/Makefile
 g10/Makefile
-keyserver/Makefile
 sm/Makefile
 agent/Makefile
 scd/Makefile
@@ -1260,6 +1260,7 @@ tests/Makefile
 ])
 AC_OUTPUT
 
+#./autogen      keyserver/Makefile
 #tests/pkits/Makefile
 
 

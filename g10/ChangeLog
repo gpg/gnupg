@@ -1,3 +1,24 @@
+2006-07-27  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (parse_comment): Cap comments at 65k.
+	(parse_gpg_control): Skip too large control packets.
+
+2006-07-24  David Shaw  <dshaw@jabberwocky.com>  (wk)
+ 
+	* keydb.h, pkclist.c (select_algo_from_prefs, algo_available):
+	Pass a union for preference hints rather than doing void * games.
+
+	* sign.c (sign_file): Use it here.
+
+	* sign.c (sign_file): When signing with multiple DSA keys, one
+	being DSA1 and one being DSA2 and encrypting at the same time, if
+	the recipient preferences give a hash that can work with the DSA2
+	key, then allow the DSA1 key to be promoted rather than giving up
+	and using hash_for().
+
+	* pkclist.c (algo_available): Automatically enable DSA2 mode when
+	handling a key that clearly isn't DSA1 (i.e. q!=160).
+
 2006-06-30  Werner Koch  <wk@g10code.com>
 
 	* misc.c (checksum_mpi): No need for nbits as they are alredy
