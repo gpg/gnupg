@@ -1,3 +1,7 @@
+2006-07-28  Werner Koch  <wk@g10code.com>
+
+	Released 1.4.5rc1.
+
 2006-07-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Fix resolver autoconf code so it works (fails)

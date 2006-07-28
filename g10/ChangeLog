@@ -2,9 +2,9 @@
 
 	* keygen.c (gen_card_key_with_backup): Initialize sk_{un}protected.
 
-	* import.c (import): Init KEYBLOCK.
+	* import.c (import): Initialize KEYBLOCK.
 
-	* pkclist.c (edit_ownertrust): Intialize trust to avoid ggc
+	* pkclist.c (edit_ownertrust): Intialize trust to avoid gcc
 	warning.
 
 	* parse-packet.c (parse_comment): Cap comments at 65k.

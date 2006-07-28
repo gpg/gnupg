@@ -413,7 +413,7 @@ open_card (void)
       if (slot == -1)
         {
           write_status_text (STATUS_CARDCTRL, "5");
-          log_error ("card reader not available\n");
+          log_error (_("card reader not available\n"));
           return NULL;
         }
     }
@@ -443,7 +443,7 @@ open_card (void)
   if (rc)
     {
       write_status_text (STATUS_CARDCTRL, "4");
-      log_info ("selecting openpgp failed: %s\n", gpg_strerror (rc));
+      log_info (_("selecting openpgp failed: %s\n"), gpg_strerror (rc));
       apdu_close_reader (slot);
       xfree (app);
       return NULL;

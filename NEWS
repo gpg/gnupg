@@ -1,7 +1,15 @@
 Noteworthy changes in version 1.4.5
 ------------------------------------------------
 
-    * Fixed 2 more memory allocation attacks.
+    * Reverted check for valid standard handles under Windows.
+
+    * More DSA2 tweaks.
+
+    * Fixed a problem uploading certain keys to the smart card.
+
+    * Fixed 2 more possible memory allocation attacks.
+
+    * Added Norwegian translation.
 
 
 Noteworthy changes in version 1.4.4 (2006-06-25)

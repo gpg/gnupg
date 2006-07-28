@@ -24,13 +24,6 @@
     it's end and allow for multiple signature for one message.  And
     add a real grammar to the code in mainproc.c
 
-  * If there is no secure memory, allocate more memory for the secure
-    memory block or do it in all cases.
-
-  * add some minor things vor VMS.
-
-  * Use DSA keys with the test suite (partly done)
-
   * Fix the bug in the mips assembler code
 
   * Add a way to show the fingerprint of an key signator's keys
@@ -42,8 +35,6 @@
     layer) into the signatures notation data.
 
   * --disable-asm should still assemble _udiv_qrnnd when needed
-
-  * add test cases for invalid data (scrambled armor or other random data)
 
   * the pubkey encrypt functions should do some sanity checks.
 
