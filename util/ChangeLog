@@ -1,3 +1,7 @@
+2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* secmem.c (init_pool): Close FD after establishing the mapping.
+
 2006-07-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (send_request): A zero-length proxy is the same as no
