@@ -51,7 +51,7 @@ As with all packages, you just have to do
 
 If everything succeeds, you have a working GnuPG with support for
 S/MIME and smartcards.  Note that there is no binary gpg but a gpg2 so
-that this package won't confict with a GnuPG 1.2 or 1.3
+that this package won't conflict with a GnuPG 1.2 or 1.3
 installation. gpg2 behaves just like gpg; it is however suggested to
 keep using gpg 1.2.x or 1.3.x. gpg2 is not even build by default.
 
@@ -98,7 +98,7 @@ gpgsm:
   
 --policy-file <filename>
 
-  Chnage the deault name of the policy file
+  Change the default name of the policy file
 
 --enable-policy-checks
 --disable-policy-checks
@@ -111,20 +111,20 @@ gpgsm:
 
   By default the CRL checks are enabled and the DirMngr is used to
   check for revoked certificates.  The disable option is most useful
-  with a off-line connection to suppres this check.
+  with an off-line connection to suppres this check.
 
 --agent-program <path_to_agent_program>
 
   Specify an agent program to be used for secret key operations.  The
   default value is "../agent/gpg-agent".  This is only used as a
-  fallback when the envrionment varaibale GPG_AGENT_INFO is not set or
+  fallback when the envrionment variable GPG_AGENT_INFO is not set or
   a running agent can't be connected.
   
 --dirmngr-program <path_to_dirmgr_program>
 
   Specify a dirmngr program to be used for CRL checks.  The default
   value is "/usr/sbin/dirmngr".  This is only used as a fallback when
-  the environment varaibale DIRMNGR_INFO is not set or a running
+  the environment variable DIRMNGR_INFO is not set or a running
   dirmngr can't be connected.
 
 --no-secmem-warning
@@ -133,7 +133,7 @@ gpgsm:
 
 --armor
 
-  Create PEM ecoded output.  Default is binary output. 
+  Create PEM encoded output.  Default is binary output. 
 
 --base64 
 
@@ -182,7 +182,7 @@ gpg-agent:
 
 --no-grab
 
-  Tell the pinentry not to grab keybourd and mouse.  You most likely
+  Tell the pinentry not to grab keyboard and mouse.  You most likely
   want to give this option during testing and development to avoid
   lockups in case of bugs.
 
@@ -216,7 +216,7 @@ FILES
 =====
 
 The default home directory is ~/.gnupg.  It can be changed by
-either the --homedir option or by seting the environment variable
+either the --homedir option or by setting the environment variable
 GNUPGHOME.  This is a list of files usually found in this directory:
 
 gpgsm.conf 
@@ -224,7 +224,7 @@ gpgsm.conf
         Options for gpgsm.  Options are the same as the command line
         options but don't enter the leading dashes and give arguments
         without an equal sign.  Blank lines and lines starting with a
-        hash mark as the first non whitye space character are ignored.
+        hash mark as the first non white space character are ignored.
 
 gpg-agent.conf
         
@@ -237,7 +237,7 @@ scdaemon.conf
 dirmngr.conf 
 
         Options for the DirMngr which is not part of this package and
-        the option file wilol most likely be moved to /etc
+        the option file will most likely be moved to /etc
 
 gpg.conf
         
@@ -253,7 +253,7 @@ policies.txt
 
         A list of allowed CA policies.  This file should give the
         object identifiers of the policies line by line.  Empty lines
-        and lines startung with a hash mark are ignored.
+        and lines starting with a hash mark are ignored.
 
         ++++++++++
         2.289.9.9  
@@ -320,8 +320,8 @@ modes for gpgsm, here is the entire list of ways to specify a key:
 
  * By keyID.
 
-   This format is deducded from the length of the string and its
-   content or "0x" prefix. For use with OpenPGP a exclamation mark may
+   This format is deducted from the length of the string and its
+   content or "0x" prefix. For use with OpenPGP an exclamation mark may
    be appended to force use of the specified (sub)key.
 
    As with v34 OpenPGP keys, the keyID of an X509 certificate are the
@@ -346,7 +346,7 @@ modes for gpgsm, here is the entire list of ways to specify a key:
    This is format is deduced from the length of the string and its
    content or "0x" prefix.  Note, that only the 20 byte fingerprint is
    used with GPGSM (SHA-1 hash of the certificate).  For use with
-   OpenPGP a exclamation mark may be appended to force use of the
+   OpenPGP an exclamation mark may be appended to force use of the
    specified (sub)key.
 
    Examples:
@@ -397,7 +397,7 @@ modes for gpgsm, here is the entire list of ways to specify a key:
 
       /CN=Heinrich Heine,O=Poets,L=Paris,C=FR
 
- * Excact match by issuer's DN
+ * Exact match by issuer's DN
 
    This is indicated by a leading hash mark, directly followed by a
    slash and then directly followed by the rfc2253 encoded DN of the
