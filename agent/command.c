@@ -794,7 +794,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   return map_to_assuan_status (rc);
 }
 
-/* PRESET_PASSPHRASE <hexstring_with_keygrip> <timeout> <passwd>
+/* PRESET_PASSPHRASE <hexstring_with_keygrip> <timeout> <hexstring>
   
    Set the cached passphrase/PIN for the key identified by the keygrip
    to passwd for the given time, where -1 means infinite and 0 means
@@ -809,6 +809,7 @@ cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
   char *grip_clear = NULL;
   char *passphrase = NULL;
   int ttl;
+  size_t len;
 
   if (!opt.allow_preset_passphrase)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
@@ -836,6 +837,12 @@ cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
   line++;
   while (!(*line != ' ' && *line != '\t'))
     line++;
+
+  /* Syntax check the hexstring.  */
+  rc = parse_hexstring (ctx, line, &len);
+  if (rc)
+    return rc;
+  line[len] = '\0';
 
   /* If there is a passphrase, use it.  Currently, a passphrase is
      required.  */

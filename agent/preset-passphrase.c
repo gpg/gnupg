@@ -152,6 +152,38 @@ map_spwq_error (int err)
 }
 
       
+/* Percent-Escape special characters.  The string is valid until the
+   next invocation of the function.  */
+static char *
+make_hexstring (const char *src)
+{
+  int len = 2 * strlen (src) + 1;
+  char *dst;
+  char *res;
+
+  res = dst = malloc (len);
+  if (!dst)
+    {
+      log_error ("can not escape string: %s\n",
+		 gpg_strerror (gpg_error_from_errno (errno)));
+      return NULL;
+    }
+
+#define _tohex(nr)	((nr) < 10 ? ((nr) + '0') : (((nr) - 10) + 'A'))
+#define tohex1(p)  _tohex (*((unsigned char *) p) & 15)
+#define tohex2(p)  _tohex ((*((unsigned char *) p) >> 4) & 15)
+
+  while (*src)
+    {
+      *(dst++) = tohex2 (src);
+      *(dst++) = tohex1 (src);
+      src++;
+    }
+  *dst = '\0';
+  return res;
+}
+
+
 static void
 preset_passphrase (const char *keygrip)
 {
@@ -159,6 +191,7 @@ preset_passphrase (const char *keygrip)
   char *line;
   /* FIXME: Use secure memory.  */
   char passphrase[500];
+  char *passphrase_esc;
 
   if (!opt_passphrase)
     {
@@ -173,7 +206,6 @@ preset_passphrase (const char *keygrip)
       line = strchr (passphrase, '\n');
       if (line)
         {
-          line--;
           if (line > passphrase && line[-1] == '\r')
             line--;
           *line = '\0';
@@ -182,8 +214,19 @@ preset_passphrase (const char *keygrip)
       /* FIXME: How to handle empty passwords?  */
     }
 
+  passphrase_esc = make_hexstring (opt_passphrase
+				   ? opt_passphrase : passphrase);
+  if (!passphrase_esc)
+    {
+      /* Error message printed by callee.  */
+      return;
+    }
+
   rc = asprintf (&line, "PRESET_PASSPHRASE %s -1 %s\n", keygrip,
-                 opt_passphrase? opt_passphrase : passphrase);
+		 passphrase_esc);
+  wipememory (passphrase_esc, strlen (passphrase_esc));
+  free (passphrase_esc);
+
   if (rc < 0)
     {
       log_error ("caching passphrase failed: %s\n",
