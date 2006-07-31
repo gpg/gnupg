@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.1.92\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-26 12:43+0200\n"
+"POT-Creation-Date: 2006-07-28 11:12+0200\n"
 "PO-Revision-Date: 2004-06-16 17:01+0200\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -697,9 +697,19 @@ msgstr "scrittura della chiave segreta in `%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando non valido  (prova \"help\")\n"
 
+#: g10/cardglue.c:416
+#, fuzzy
+msgid "card reader not available\n"
+msgstr "la chiave segreta non è disponibile"
+
 #: g10/cardglue.c:434
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr ""
+
+#: g10/cardglue.c:446
+#, fuzzy, c-format
+msgid "selecting openpgp failed: %s\n"
+msgstr "cancellazione del keyblock fallita: %s\n"
 
 #: g10/cardglue.c:573
 #, c-format

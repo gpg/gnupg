@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.2.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-26 12:43+0200\n"
+"POT-Creation-Date: 2006-07-28 11:12+0200\n"
 "PO-Revision-Date: 2004-06-23 15:54+0200\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -712,9 +712,19 @@ msgstr "zapisujê klucz tajny w '%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Niepoprawna komenda  (spróbuj \"help\")\n"
 
+#: g10/cardglue.c:416
+#, fuzzy
+msgid "card reader not available\n"
+msgstr "brak klucza prywatnego"
+
 #: g10/cardglue.c:434
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr ""
+
+#: g10/cardglue.c:446
+#, fuzzy, c-format
+msgid "selecting openpgp failed: %s\n"
+msgstr "usuniêcie bloku klucza nie powiod³o siê: %s\n"
 
 #: g10/cardglue.c:573
 #, c-format

@@ -197,12 +197,15 @@ verify_files( int nfiles, char **files )
 	     * spaces, so that we can process nearly all filenames */
 	    line[strlen(line)-1] = 0;
 	    verify_one_file( line );
+            iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
 	}
 
     }
     else {  /* take filenames from the array */
-	for(i=0; i < nfiles; i++ )
+        for(i=0; i < nfiles; i++ ) {
 	    verify_one_file( files[i] );
+            iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
+        }
     }
     return 0;
 }

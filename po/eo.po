@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6d\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-26 12:43+0200\n"
+"POT-Creation-Date: 2006-07-28 11:12+0200\n"
 "PO-Revision-Date: 2002-04-14 14:33+0100\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -691,9 +691,19 @@ msgstr "skribas sekretan þlosilon al '%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Nevalida komando (provu per \"helpo\")\n"
 
+#: g10/cardglue.c:416
+#, fuzzy
+msgid "card reader not available\n"
+msgstr "sekreta þlosilo ne havebla"
+
 #: g10/cardglue.c:434
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr ""
+
+#: g10/cardglue.c:446
+#, fuzzy, c-format
+msgid "selecting openpgp failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
 
 #: g10/cardglue.c:573
 #, c-format

@@ -1,3 +1,8 @@
+2006-07-31  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (iobuf_ioctl, fd_cache_invalidate): Allow closing all
+	open files.
+
 2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* secmem.c (init_pool): Close FD after establishing the mapping.

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-26 12:43+0200\n"
+"POT-Creation-Date: 2006-07-28 11:12+0200\n"
 "PO-Revision-Date: 2003-10-30 16:35+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nab@mail.by>\n"
 "Language-Team: Belarusian <i18n@mova.org>\n"
@@ -670,9 +670,19 @@ msgstr "сакрэтны ключ недаступны"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Нерэчаісны загад (паспрабуйце \"help\")\n"
 
+#: g10/cardglue.c:416
+#, fuzzy
+msgid "card reader not available\n"
+msgstr "сакрэтны ключ недаступны"
+
 #: g10/cardglue.c:434
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr ""
+
+#: g10/cardglue.c:446
+#, fuzzy, c-format
+msgid "selecting openpgp failed: %s\n"
+msgstr "збой падпісаньня: %s\n"
 
 #: g10/cardglue.c:573
 #, c-format

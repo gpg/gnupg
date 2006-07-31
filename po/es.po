@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-26 12:43+0200\n"
+"POT-Creation-Date: 2006-07-28 11:12+0200\n"
 "PO-Revision-Date: 2005-03-25 16:50+0100\n"
 "Last-Translator: Jaime Suárez <jsuarez@ono.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -675,9 +675,19 @@ msgstr "No se permiten órdenes de administrador\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Orden inválida (pruebe \"help\")\n"
 
+#: g10/cardglue.c:416
+#, fuzzy
+msgid "card reader not available\n"
+msgstr "clave secreta no disponible"
+
 #: g10/cardglue.c:434
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr "Inserte la tarjeta y pulse Intro o escriba 'c' para cancelar: "
+
+#: g10/cardglue.c:446
+#, fuzzy, c-format
+msgid "selecting openpgp failed: %s\n"
+msgstr "borrado de bloque de anillo de claves fallido: %s\n"
 
 #: g10/cardglue.c:573
 #, c-format

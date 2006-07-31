@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.4.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-26 12:43+0200\n"
+"POT-Creation-Date: 2006-07-28 11:12+0200\n"
 "PO-Revision-Date: 2005-06-22 02:53+0200\n"
 "Last-Translator: Maxim Britov <maxbritov@tut.by>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -667,9 +667,19 @@ msgstr "Команды администрирования не разрешен�
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Недопустимая команда  (список команд: \"help\")\n"
 
+#: g10/cardglue.c:416
+#, fuzzy
+msgid "card reader not available\n"
+msgstr "секретный ключ не найден"
+
 #: g10/cardglue.c:434
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr "Вставьте карту и нажмите Enter или введите 'c' для отмены: "
+
+#: g10/cardglue.c:446
+#, fuzzy, c-format
+msgid "selecting openpgp failed: %s\n"
+msgstr "сбой при удалении блока ключа: %s\n"
 
 #: g10/cardglue.c:573
 #, c-format

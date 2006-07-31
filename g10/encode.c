@@ -858,6 +858,7 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
             log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(line), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
+          iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
         }
     }
   else
@@ -869,6 +870,7 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
             log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
+          iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
           files++;
         }
     }

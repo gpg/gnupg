@@ -161,14 +161,31 @@ fd_cache_strcmp (const char *a, const char *b)
 }
 
 /*
- * Invalidate (i.e. close) a cached iobuf
+ * Invalidate (i.e. close) a cached iobuf or all iobufs if NULL is
+ * used for FNAME.
  */
 static void
 fd_cache_invalidate (const char *fname)
 {
     CLOSE_CACHE cc;
 
-    assert (fname);
+    if (!fname) {
+        if( DBG_IOBUF )
+            log_debug ("fd_cache_invalidate (all)\n");
+
+        for (cc=close_cache; cc; cc = cc->next ) {
+            if ( cc->fp != INVALID_FP ) {
+#ifdef HAVE_DOSISH_SYSTEM
+                CloseHandle (cc->fp);
+#else
+                close(cc->fp);
+#endif
+                cc->fp = INVALID_FP;
+            }
+        }
+        return;
+    }
+
     if( DBG_IOBUF )
         log_debug ("fd_cache_invalidate (%s)\n", fname);
 
@@ -1275,8 +1292,8 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
     else if ( cmd == 2 ) {  /* invalidate cache */
         if( DBG_IOBUF )
             log_debug("iobuf-*.*: ioctl `%s' invalidate\n",
-                      ptrval? (char*)ptrval:"?");
-        if ( !a && !intval && ptrval ) {
+                      ptrval? (char*)ptrval:"[all]");
+        if ( !a && !intval ) {
 #ifndef FILE_FILTER_USES_STDIO
             fd_cache_invalidate (ptrval);
 #endif

@@ -183,6 +183,7 @@ decrypt_messages(int nfiles, char *files[])
     next_file:
       /* Note that we emit file_done even after an error. */
       write_status( STATUS_FILE_DONE );
+      iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
       xfree(output);
     }
 

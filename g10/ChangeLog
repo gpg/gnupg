@@ -1,3 +1,10 @@
+2006-07-31  Werner Koch  <wk@g10code.com>
+
+	* encode.c (encode_crypt_files): Invalidate the whole fd cache.
+	This is a workaround for problems in iobuf's stupid fd cache.
+	* decrypt.c (decrypt_messages): Ditto.
+	* verify.c (verify_files): Ditto.
+
 2006-07-26  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (gen_card_key_with_backup): Initialize sk_{un}protected.
