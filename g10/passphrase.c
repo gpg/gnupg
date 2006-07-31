@@ -359,7 +359,7 @@ agent_open (int try, const char *orig_codeset)
           if (orig_codeset)
             bind_textdomain_codeset (PACKAGE, orig_codeset);
 #endif /*ENABLE_NLS*/
-          log_error ( _("can't connect to `%s': %s\n"), 
+          log_info ( _("can't connect to `%s': %s\n"), 
                       infostr, assuan_strerror (rc));
           opt.use_agent = 0;
         }
