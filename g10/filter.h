@@ -26,8 +26,8 @@
 #include "cipher.h"
 
 typedef struct {
-    MD_HANDLE md;      /* catch all */
-    MD_HANDLE md2;     /* if we want to calculate an alternate hash */
+    gcry_md_hd_t md;      /* catch all */
+    gcry_md_hd_t md2;     /* if we want to calculate an alternate hash */
     size_t maxbuf_size;
 } md_filter_context_t;
 
@@ -92,9 +92,9 @@ typedef struct compress_filter_context_s compress_filter_context_t;
 typedef struct {
     DEK *dek;
     u32 datalen;
-    CIPHER_HANDLE cipher_hd;
+    gcry_cipher_hd_t cipher_hd;
     int header;
-    MD_HANDLE mdc_hash;
+    gcry_md_hd_t mdc_hash;
     byte enchash[20];
     int create_mdc; /* flag will be set by the cipher filter */
 } cipher_filter_context_t;
@@ -109,7 +109,7 @@ typedef struct {
     int truncated;	    /* number of truncated lines */
     int not_dash_escaped;
     int escape_from;
-    MD_HANDLE md;
+    gcry_md_hd_t md;
     int pending_lf;
     int pending_esc;
 } text_filter_context_t;
@@ -126,36 +126,36 @@ typedef struct {
 /* encrypt_filter_context_t defined in main.h */
 
 /*-- mdfilter.c --*/
-int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);
+int md_filter( void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len);
 void free_md_filter_context( md_filter_context_t *mfx );
 
 /*-- armor.c --*/
-int use_armor_filter( IOBUF a );
+int use_armor_filter( iobuf_t a );
 int armor_filter( void *opaque, int control,
-		  IOBUF chain, byte *buf, size_t *ret_len);
+		  iobuf_t chain, byte *buf, size_t *ret_len);
 UnarmorPump unarmor_pump_new (void);
 void        unarmor_pump_release (UnarmorPump x);
 int         unarmor_pump (UnarmorPump x, int c);
 
 /*-- compress.c --*/
-void push_compress_filter(IOBUF out,compress_filter_context_t *zfx,int algo);
-void push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
+void push_compress_filter(iobuf_t out,compress_filter_context_t *zfx,int algo);
+void push_compress_filter2(iobuf_t out,compress_filter_context_t *zfx,
 			   int algo,int rel);
 
 /*-- cipher.c --*/
 int cipher_filter( void *opaque, int control,
-		   IOBUF chain, byte *buf, size_t *ret_len);
+		   iobuf_t chain, byte *buf, size_t *ret_len);
 
 /*-- textfilter.c --*/
 int text_filter( void *opaque, int control,
-		 IOBUF chain, byte *buf, size_t *ret_len);
-int copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
-			  int escape_dash, int escape_from, int pgp2mode );
+		 iobuf_t chain, byte *buf, size_t *ret_len);
+int copy_clearsig_text (iobuf_t out, iobuf_t inp, gcry_md_hd_t md,
+                        int escape_dash, int escape_from, int pgp2mode);
 
 /*-- progress.c --*/
 int progress_filter (void *opaque, int control,
-		     IOBUF a, byte *buf, size_t *ret_len);
+		     iobuf_t a, byte *buf, size_t *ret_len);
 void handle_progress (progress_filter_context_t *pfx,
-		      IOBUF inp, const char *name);
+		      iobuf_t inp, const char *name);
 
 #endif /*G10_FILTER_H*/

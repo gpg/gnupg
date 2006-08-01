@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 /* This is a simple stand-alone Assuan server test program.  We don't
@@ -59,10 +60,10 @@
       Print VALUE.
 
    openfile <filename>
-      Open file FILENAME for read access and retrun the file descriptor.
+      Open file FILENAME for read access and return the file descriptor.
 
    createfile <filename>
-      Create file FILENAME, open for write access and retrun the file
+      Create file FILENAME, open for write access and return the file
       descriptor.
 
    pipeserver <program>
@@ -114,6 +115,18 @@
 # define ATTR_PRINTF(f,a)  __attribute__ ((format (printf,f,a)))
 #else
 # define ATTR_PRINTF(f,a)
+#endif
+
+#if __STDC_VERSION__ < 199901L
+# if __GNUC__ >= 2
+#  define __func__ __FUNCTION__
+# else
+/* Let's try our luck here.  Some systems may provide __func__ without
+   providing __STDC_VERSION__ 199901L.  */
+#  if 0
+#   define __func__ "<unknown>"
+#  endif
+# endif
 #endif
 
 #define spacep(p) (*(p) == ' ' || *(p) == '\t')
@@ -188,7 +201,7 @@ die (const char *format, ...)
   exit (1);
 }
 
-#define die(format, args...) (die) ("%s: " format, __FUNCTION__ , ##args)
+#define die(format, args...) (die) ("%s: " format, __func__ , ##args)
 
 static void
 err (const char *format, ...)

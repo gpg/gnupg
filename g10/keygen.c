@@ -30,6 +30,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include "gpg.h"
 #include "util.h"
 #include "main.h"
 #include "packet.h"
@@ -40,8 +42,9 @@
 #include "trustdb.h"
 #include "status.h"
 #include "i18n.h"
-#include "cardglue.h"
 #include "keyserver-internal.h"
+#include "call-agent.h"
+
 
 #define MAX_PREFS 30 
 
@@ -319,13 +322,13 @@ keygen_set_std_prefs (const char *string,int personal)
 	    /* Make sure we do not add more than 15 items here, as we
 	       could overflow the size of dummy_string.  We currently
 	       have at most 12. */
-	    if(!check_cipher_algo(CIPHER_ALGO_AES256))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_AES256) )
 	      strcat(dummy_string,"S9 ");
-	    if(!check_cipher_algo(CIPHER_ALGO_AES192))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_AES192) )
 	      strcat(dummy_string,"S8 ");
-	    if(!check_cipher_algo(CIPHER_ALGO_AES))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_AES) )
 	      strcat(dummy_string,"S7 ");
-	    if(!check_cipher_algo(CIPHER_ALGO_CAST5))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_CAST5) )
 	      strcat(dummy_string,"S3 ");
 	    strcat(dummy_string,"S2 "); /* 3DES */
 	    /* If we have it, IDEA goes *after* 3DES so it won't be
@@ -335,13 +338,13 @@ keygen_set_std_prefs (const char *string,int personal)
 	       break PGP2, but that is difficult with the current
 	       code, and not really worth checking as a non-RSA <=2048
 	       bit key wouldn't be usable by PGP2 anyway. -dms */
-	    if(!check_cipher_algo(CIPHER_ALGO_IDEA))
+	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
 	      strcat(dummy_string,"S1 ");
 
 	    /* SHA-1 */
 	    strcat(dummy_string,"H2 ");
 
-	    if(!check_digest_algo(DIGEST_ALGO_SHA256))
+	    if (!openpgp_md_test_algo(DIGEST_ALGO_SHA256))
 	      strcat(dummy_string,"H8 ");
 
 	    /* RIPEMD160 */
@@ -370,12 +373,12 @@ keygen_set_std_prefs (const char *string,int personal)
 
 	while((tok=strsep(&prefstring," ,")))
 	  {
-	    if((val=string_to_cipher_algo(tok)))
+	    if((val=string_to_cipher_algo (tok)))
 	      {
 		if(set_one_pref(val,1,tok,sym,&nsym))
 		  rc=-1;
 	      }
-	    else if((val=string_to_digest_algo(tok)))
+	    else if((val=string_to_digest_algo (tok)))
 	      {
 		if(set_one_pref(val,2,tok,hash,&nhash))
 		  rc=-1;
@@ -1004,16 +1007,116 @@ write_keybinding( KBNODE root, KBNODE pub_root,
 }
 
 
+
 static int
-gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
+key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
+               const char *topname, const char *elems)
+{
+  gcry_sexp_t list, l2;
+  const char *s;
+  int i, idx;
+  int rc = 0;
+
+  list = gcry_sexp_find_token (sexp, topname, 0);
+  if (!list)
+    return gpg_error (GPG_ERR_INV_OBJ);
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  if (!list)
+    return gpg_error (GPG_ERR_NO_OBJ);
+
+  for (idx=0,s=elems; *s; s++, idx++)
+    {
+      l2 = gcry_sexp_find_token (list, s, 1);
+      if (!l2)
+        {
+          rc = gpg_error (GPG_ERR_NO_OBJ); /* required parameter not found */
+          goto leave;
+        }
+      array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+      gcry_sexp_release (l2);
+      if (!array[idx]) 
+        {
+          rc = gpg_error (GPG_ERR_INV_OBJ); /* required parameter invalid */
+          goto leave;
+        }
+    }
+  gcry_sexp_release (list);
+
+ leave:
+  if (rc)
+    {
+      for (i=0; i<idx; i++)
+        {
+          xfree (array[i]);
+          array[i] = NULL;
+        }
+      gcry_sexp_release (list);
+    }
+  return rc;
+}
+
+
+static int
+genhelp_protect (DEK *dek, STRING2KEY *s2k, PKT_secret_key *sk)
+{
+  int rc = 0;
+
+  if (dek)
+    {
+      sk->protect.algo = dek->algo;
+      sk->protect.s2k = *s2k;
+      rc = protect_secret_key (sk, dek);
+      if (rc)
+        log_error ("protect_secret_key failed: %s\n", gpg_strerror (rc) );
+    }
+
+  return rc;
+}
+
+static void
+genhelp_factors (gcry_sexp_t misc_key_info, KBNODE sec_root)
+{
+#if 0 /* Not used anymore */
+  size_t n;
+  char *buf;
+  
+  if (misc_key_info)
+    {
+      /* DSA: don't know whether it makes sense to have the factors, so for now
+         we store them in the secret keyring (but they are not secret)
+         p = 2 * q * f1 * f2 * ... * fn
+         We store only f1 to f_n-1;  fn can be calculated because p and q
+         are known. */
+      n = gcry_sexp_sprint (misc_key_info, 0, NULL, 0);
+      buf = xmalloc (n+4);
+      strcpy (buf, "#::");
+      n = gcry_sexp_sprint (misc_key_info, 0, buf+3, n);
+      if (n)
+        {
+          n += 3;
+          add_kbnode (sec_root, make_comment_node_from_buffer (buf, n));
+        }
+      xfree (buf);
+      gcry_sexp_release (misc_key_info);
+    }
+#endif
+}
+
+
+static int
+gen_elg(int algo, unsigned int nbits,
+        KBNODE pub_root, KBNODE sec_root, DEK *dek,
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval,
+        int is_subkey)
 {
     int rc;
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
-    MPI skey[4];
-    MPI *factors;
+    gcry_sexp_t s_parms, s_key;
+    gcry_sexp_t misc_key_info;
 
     assert( is_ELGAMAL(algo) );
 
@@ -1027,11 +1130,22 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	log_info(_("keysize rounded up to %u bits\n"), nbits );
     }
 
-    rc = pubkey_generate( algo, nbits, skey, &factors );
-    if( rc ) {
-	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
-	return rc;
-    }
+
+    rc = gcry_sexp_build ( &s_parms, NULL,
+                           "(genkey(%s(nbits %d)))",
+                           algo == GCRY_PK_ELG_E ? "openpgp-elg" :
+                           algo == GCRY_PK_ELG	 ? "elg" : "x-oops" ,
+                           (int)nbits);
+    if (rc)
+      log_bug ("gcry_sexp_build failed: %s\n", gpg_strerror (rc));
+  
+    rc = gcry_pk_genkey (&s_key, s_parms);
+    gcry_sexp_release (s_parms);
+    if (rc)
+      {
+        log_error ("gcry_pk_genkey failed: %s\n", gpg_strerror (rc) );
+        return rc;
+      }
 
     sk = xmalloc_clear( sizeof *sk );
     pk = xmalloc_clear( sizeof *pk );
@@ -1041,13 +1155,35 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
     }
     sk->pubkey_algo = pk->pubkey_algo = algo;
-		       pk->pkey[0] = mpi_copy( skey[0] );
-		       pk->pkey[1] = mpi_copy( skey[1] );
-		       pk->pkey[2] = mpi_copy( skey[2] );
-    sk->skey[0] = skey[0];
-    sk->skey[1] = skey[1];
-    sk->skey[2] = skey[2];
-    sk->skey[3] = skey[3];
+/* 		       pk->pkey[0] = mpi_copy( skey[0] ); */
+/* 		       pk->pkey[1] = mpi_copy( skey[1] ); */
+/* 		       pk->pkey[2] = mpi_copy( skey[2] ); */
+/*     sk->skey[0] = skey[0]; */
+/*     sk->skey[1] = skey[1]; */
+/*     sk->skey[2] = skey[2]; */
+/*     sk->skey[3] = skey[3]; */
+
+    rc = key_from_sexp (pk->pkey, s_key, "public-key", "pgy");
+    if (rc) 
+      {
+        log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc) );
+        gcry_sexp_release (s_key);
+        free_secret_key (sk);
+        free_public_key (pk);
+        return rc;
+      }
+    rc = key_from_sexp (sk->skey, s_key, "private-key", "pgyx");
+    if (rc)
+      {
+        log_error("key_from_sexp failed: %s\n", gpg_strerror (rc) );
+        gcry_sexp_release (s_key);
+        free_secret_key (sk);
+        free_public_key (pk);
+        return rc;
+      }
+    misc_key_info = gcry_sexp_find_token (s_key, "misc-key-info", 0);
+    gcry_sexp_release (s_key);
+  
     sk->is_protected = 0;
     sk->protect.algo = 0;
 
@@ -1055,29 +1191,28 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     if( ret_sk ) /* return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 
-    if( dek ) {
-	sk->protect.algo = dek->algo;
-	sk->protect.s2k = *s2k;
-	rc = protect_secret_key( sk, dek );
-	if( rc ) {
-	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
-	    free_public_key(pk);
-	    free_secret_key(sk);
-	    return rc;
-	}
-    }
+    rc = genhelp_protect (dek, s2k, sk);
+    if (rc)
+      {
+        free_public_key (pk);
+        free_secret_key (sk);
+        gcry_sexp_release (misc_key_info);
+        return rc;
+      }
 
-    pkt = xmalloc_clear(sizeof *pkt);
+    pkt = xmalloc_clear (sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
-    /* don't know whether it makes sense to have the factors, so for now
-     * we store them in the secret keyring (but they are not secret) */
+    /* Don't know whether it makes sense to have the factors, so for now
+     * we store them in the secret keyring (but they are not secret). */
     pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
+
+    genhelp_factors (misc_key_info, sec_root);
 
     return 0;
 }
@@ -1087,29 +1222,29 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  * Generate a DSA key
  */
 static int
-gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
+gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
 {
     int rc;
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
-    MPI skey[5];
-    MPI *factors;
+    gcry_sexp_t s_parms, s_key;
+    gcry_sexp_t misc_key_info;
     unsigned int qbits;
 
-    if( nbits < 512 || (!opt.flags.dsa2 && nbits > 1024))
+    if ( nbits < 512 || (!opt.flags.dsa2 && nbits > 1024)) 
       {
 	nbits = 1024;
 	log_info(_("keysize invalid; using %u bits\n"), nbits );
       }
-    else if(nbits>3072)
+    else if ( nbits > 3072 )
       {
-	nbits = 3072;
-	log_info(_("keysize invalid; using %u bits\n"), nbits );
+ 	nbits = 3072;
+        log_info(_("keysize invalid; using %u bits\n"), nbits );
       }
 
-    if(nbits % 64)
+    if( (nbits % 64) )
       {
 	nbits = ((nbits + 63) / 64) * 64;
 	log_info(_("keysize rounded up to %u bits\n"), nbits );
@@ -1117,54 +1252,73 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     /*
       Figure out a q size based on the key size.  FIPS 180-3 says:
-
+ 
       L = 1024, N = 160
       L = 2048, N = 224
       L = 2048, N = 256
       L = 3072, N = 256
-
+ 
       2048/256 is an odd pair since there is also a 2048/224 and
       3072/256.  Matching sizes is not a very exact science.
       
       We'll do 256 qbits for nbits over 2048, 224 for nbits over 1024
       but less than 2048, and 160 for 1024 (DSA1).
     */
-
-    if(nbits>2048)
-      qbits=256;
-    else if(nbits>1024)
-      qbits=224;
+ 
+    if (nbits > 2048)
+      qbits = 256;
+    else if ( nbits > 1024)
+      qbits = 224;
     else
-      qbits=160;
+      qbits = 160;
+ 
+    if (qbits != 160 )
+      log_info (_("WARNING: some OpenPGP programs can't"
+                  " handle a DSA key with this digest size\n"));
 
-    if(qbits!=160)
-      log_info("WARNING: some OpenPGP programs can't"
-	       " handle a DSA key with this digest size\n");
-
-    rc = dsa2_generate( PUBKEY_ALGO_DSA, nbits, qbits, skey, &factors );
-    if( rc )
+    rc = gcry_sexp_build (&s_parms, NULL,
+                            "(genkey(dsa(nbits %d)(qbits %d)))",
+                            (int)nbits, (int)qbits);
+    if (rc)
+      log_bug ("gcry_sexp_build failed: %s\n", gpg_strerror (rc));
+  
+    rc = gcry_pk_genkey (&s_key, s_parms);
+    gcry_sexp_release (s_parms);
+    if (rc)
       {
-	log_error("dsa2_generate failed: %s\n", g10_errstr(rc) );
-	return rc;
+        log_error ("gcry_pk_genkey failed: %s\n", gpg_strerror (rc) );
+        return rc;
       }
 
     sk = xmalloc_clear( sizeof *sk );
     pk = xmalloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
-    if( expireval )
+    if (expireval) 
       sk->expiredate = pk->expiredate = sk->timestamp + expireval;
-
     sk->pubkey_algo = pk->pubkey_algo = PUBKEY_ALGO_DSA;
-		       pk->pkey[0] = mpi_copy( skey[0] );
-		       pk->pkey[1] = mpi_copy( skey[1] );
-		       pk->pkey[2] = mpi_copy( skey[2] );
-		       pk->pkey[3] = mpi_copy( skey[3] );
-    sk->skey[0] = skey[0];
-    sk->skey[1] = skey[1];
-    sk->skey[2] = skey[2];
-    sk->skey[3] = skey[3];
-    sk->skey[4] = skey[4];
+
+    rc = key_from_sexp (pk->pkey, s_key, "public-key", "pqgy");
+    if (rc) 
+      {
+        log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc));
+        gcry_sexp_release (s_key);
+        free_public_key(pk);
+        free_secret_key(sk);
+        return rc;
+      }
+    rc = key_from_sexp (sk->skey, s_key, "private-key", "pqgyx");
+    if (rc) 
+      {
+        log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc) );
+        gcry_sexp_release (s_key);
+        free_public_key(pk);
+        free_secret_key(sk);
+        return rc;
+      }
+    misc_key_info = gcry_sexp_find_token (s_key, "misc-key-info", 0);
+    gcry_sexp_release (s_key);
+  
     sk->is_protected = 0;
     sk->protect.algo = 0;
 
@@ -1172,24 +1326,21 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     if( ret_sk ) /* return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 
-    if( dek ) {
-	sk->protect.algo = dek->algo;
-	sk->protect.s2k = *s2k;
-	rc = protect_secret_key( sk, dek );
-	if( rc ) {
-	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
-	    free_public_key(pk);
-	    free_secret_key(sk);
-	    return rc;
-	}
-    }
+    rc = genhelp_protect (dek, s2k, sk);
+    if (rc)
+      {
+        free_public_key (pk);
+        free_secret_key (sk);
+        gcry_sexp_release (misc_key_info);
+        return rc;
+      }
 
     pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
-    /* don't know whether it makes sense to have the factors, so for now
+    /* Don't know whether it makes sense to have the factors, so for now
      * we store them in the secret keyring (but they are not secret)
      * p = 2 * q * f1 * f2 * ... * fn
      * We store only f1 to f_n-1;  fn can be calculated because p and q
@@ -1199,6 +1350,8 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
+
+    genhelp_factors (misc_key_info, sec_root);
 
     return 0;
 }
@@ -1215,8 +1368,7 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
-    MPI skey[6];
-    MPI *factors;
+    gcry_sexp_t s_parms, s_key;
 
     assert( is_RSA(algo) );
 
@@ -1230,11 +1382,19 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	log_info(_("keysize rounded up to %u bits\n"), nbits );
     }
 
-    rc = pubkey_generate( algo, nbits, skey, &factors );
-    if( rc ) {
-	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
-	return rc;
-    }
+    rc = gcry_sexp_build (&s_parms, NULL,
+                          "(genkey(rsa(nbits %d)))",
+                          (int)nbits);
+    if (rc)
+      log_bug ("gcry_sexp_build failed: %s\n", gpg_strerror (rc));
+  
+    rc = gcry_pk_genkey (&s_key, s_parms);
+    gcry_sexp_release (s_parms);
+    if (rc)
+      {
+        log_error ("gcry_pk_genkey failed: %s\n", gpg_strerror (rc) );
+        return rc;
+      }
 
     sk = xmalloc_clear( sizeof *sk );
     pk = xmalloc_clear( sizeof *pk );
@@ -1244,14 +1404,27 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
     }
     sk->pubkey_algo = pk->pubkey_algo = algo;
-		       pk->pkey[0] = mpi_copy( skey[0] );
-		       pk->pkey[1] = mpi_copy( skey[1] );
-    sk->skey[0] = skey[0];
-    sk->skey[1] = skey[1];
-    sk->skey[2] = skey[2];
-    sk->skey[3] = skey[3];
-    sk->skey[4] = skey[4];
-    sk->skey[5] = skey[5];
+
+    rc = key_from_sexp (pk->pkey, s_key, "public-key", "ne");
+    if (rc) 
+      {
+        log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc));
+        gcry_sexp_release (s_key);
+        free_public_key(pk);
+        free_secret_key(sk);
+        return rc;
+      }
+    rc = key_from_sexp (sk->skey, s_key, "private-key", "nedpqu");
+    if (rc) 
+      {
+        log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc) );
+        gcry_sexp_release (s_key);
+        free_public_key(pk);
+        free_secret_key(sk);
+        return rc;
+      }
+    gcry_sexp_release (s_key);
+
     sk->is_protected = 0;
     sk->protect.algo = 0;
 
@@ -1262,17 +1435,13 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     if( ret_sk ) /* return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 
-    if( dek ) {
-	sk->protect.algo = dek->algo;
-	sk->protect.s2k = *s2k;
-	rc = protect_secret_key( sk, dek );
-	if( rc ) {
-	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
-	    free_public_key(pk);
-	    free_secret_key(sk);
-	    return rc;
-	}
-    }
+    rc = genhelp_protect (dek, s2k, sk);
+    if (rc)
+      {
+        free_public_key (pk);
+        free_secret_key (sk);
+        return rc;
+      }
 
     pkt = xmalloc_clear(sizeof *pkt);
     pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
@@ -1357,7 +1526,7 @@ ask_key_flags(int algo,int subkey)
     {
       tty_printf("\n");
       tty_printf(_("Possible actions for a %s key: "),
-		 pubkey_algo_to_string(algo));
+		 gcry_pk_algo_name (algo));
       print_key_flags(possible);
       tty_printf("\n");
       tty_printf(_("Current allowed actions: "));
@@ -1494,7 +1663,7 @@ ask_algo (int addmode, unsigned int *r_usage)
 static unsigned
 ask_keysize( int algo )
 {
-  unsigned nbits,min,def=2048,max=4096;
+  unsigned int nbits, min, def=2048, max=4096;
 
   if(opt.expert)
     min=512;
@@ -1522,7 +1691,7 @@ ask_keysize( int algo )
     }
 
   tty_printf(_("%s keys may be between %u and %u bits long.\n"),
-	     pubkey_algo_to_string(algo),min,max);
+	     gcry_pk_algo_name (algo), min, max);
 
   for(;;)
     {
@@ -1543,7 +1712,7 @@ ask_keysize( int algo )
       
       if(nbits<min || nbits>max)
 	tty_printf(_("%s keysizes must be in the range %u-%u\n"),
-		   pubkey_algo_to_string(algo),min,max);
+		   gcry_pk_algo_name (algo), min, max);
       else
 	break;
     }
@@ -1782,8 +1951,9 @@ ask_user_id( int mode )
 
 	/* append a warning if we do not have dev/random
 	 * or it is switched into  quick testmode */
-	if( quick_random_gen(-1) )
-	    strcpy(p, " (INSECURE!)" );
+        /* FIXME: see skclist.c:random_is_faked */
+        /* 	if( quick_random_gen(-1)  ) */
+        /* 	    strcpy(p, " (INSECURE!)" ); */
 
 	/* print a note in case that UTF8 mapping has to be done */
 	for(p=uid; *p; p++ ) {
@@ -2009,7 +2179,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key )
     if( digitp( r->u.value ) )
 	i = atoi( r->u.value );
     else
-        i = string_to_pubkey_algo( r->u.value );
+        i = gcry_pk_map_name (r->u.value);
     if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
       i = 0; /* we don't want to allow generation of these algorithms */
     return i;
@@ -2160,7 +2330,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   if(r)
     {
       algo=get_parameter_algo(para,pKEYTYPE);
-      if(check_pubkey_algo2(algo,PUBKEY_USAGE_SIG))
+      if (openpgp_pk_test_algo2 (algo, PUBKEY_USAGE_SIG))
 	{
 	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
 	  return -1;
@@ -2189,7 +2359,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   if(r)
     {
       algo=get_parameter_algo( para, pSUBKEYTYPE);
-      if(check_pubkey_algo(algo))
+      if (openpgp_pk_test_algo (algo))
 	{
 	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
 	  return -1;
@@ -2539,7 +2709,7 @@ read_parameter_file( const char *fname )
 
 /*
  * Generate a keypair (fname is only used in batch mode) If
- * CARD_SERIALNO is not NULL the fucntion will create the keys on an
+ * CARD_SERIALNO is not NULL the function will create the keys on an
  * OpenPGP Card.  If BACKUP_ENCRYPTION_DIR has been set and
  * CARD_SERIALNO is NOT NULL, the encryption key for the card gets
  * generate in software, imported to the card and a backup file
@@ -2775,30 +2945,42 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
   sk->version = 4;
   sk->pubkey_algo = algo;
 
-  rc = pubkey_generate (algo, nbits, sk->skey, NULL);
-  if (rc)
+  if ( !is_RSA (algo) )
     {
-      log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
+      log_error ("only RSA is supported for offline generated keys\n");
+      rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
       goto leave;
     }
-
+  rc = gcry_sexp_build (&s_parms, NULL,
+                        "(genkey(rsa(nbits %d)))",
+                        (int)nbits);
+  if (rc)
+    log_bug ("gcry_sexp_build failed: %s\n", gpg_strerror (rc));
+  rc = gcry_pk_genkey (&s_key, s_parms);
+  gcry_sexp_release (s_parms);
+  if (rc)
+    {
+      log_error ("gcry_pk_genkey failed: %s\n", gpg_strerror (rc) );
+      goto leave;
+    }
+  rc = key_from_sexp (sk->skey, s_key, "private-key", "nedpqu");
+  gcry_sexp_release (s_key);
+  if (rc) 
+    {
+      log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc) );
+      goto leave;
+    }
+  
   for (i=npkey; i < nskey; i++)
     sk->csum += checksum_mpi (sk->skey[i]);
 
   if (r_sk_unprotected) 
     *r_sk_unprotected = copy_secret_key (NULL, sk);
 
-  if (dek)
-    {
-      sk->protect.algo = dek->algo;
-      sk->protect.s2k = *s2k;
-      rc = protect_secret_key (sk, dek);
-      if (rc)
-        {
-          log_error ("protect_secret_key failed: %s\n", g10_errstr(rc));
-          goto leave;
-	}
-    }
+  rc = genhelp_protect (dek, s2k, sk);
+  if (rc)
+    goto leave;
+
   if (r_sk_protected)
     {
       *r_sk_protected = sk;
@@ -3387,7 +3569,7 @@ write_keyblock( IOBUF out, KBNODE node )
 	    {
 	      log_error("build_packet(%d) failed: %s\n",
 			node->pkt->pkttype, g10_errstr(rc) );
-	      return G10ERR_WRITE_FILE;
+	      return rc;
 	    }
 	}
     }
@@ -3446,9 +3628,9 @@ gen_card_key (int algo, int keyno, int is_primary,
   sk->pubkey_algo = pk->pubkey_algo = algo;
   pk->pkey[0] = info.n;
   pk->pkey[1] = info.e; 
-  sk->skey[0] = mpi_copy (pk->pkey[0]);
-  sk->skey[1] = mpi_copy (pk->pkey[1]);
-  sk->skey[2] = mpi_set_opaque (NULL, xstrdup ("dummydata"), 10);
+  sk->skey[0] = gcry_mpi_copy (pk->pkey[0]);
+  sk->skey[1] = gcry_mpi_copy (pk->pkey[1]);
+  sk->skey[2] = gcry_mpi_set_opaque (NULL, xstrdup ("dummydata"), 10*8);
   sk->is_protected = 1;
   sk->protect.s2k.mode = 1002;
   s = get_parameter_value (para, pSERIALNO);
@@ -3495,8 +3677,6 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
   size_t n;
   int i;
 
-  sk_unprotected = NULL;
-  sk_protected = NULL;
   rc = generate_raw_key (algo, 1024, make_timestamp (),
                          &sk_unprotected, &sk_protected);
   if (rc)
@@ -3521,7 +3701,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
       sk->skey[i] = NULL;
     }
   i = pubkey_get_npkey (sk->pubkey_algo);
-  sk->skey[i] = mpi_set_opaque (NULL, xstrdup ("dummydata"), 10);
+  sk->skey[i] = gcry_mpi_set_opaque (NULL, xstrdup ("dummydata"), 10*8);
   sk->is_protected = 1;
   sk->protect.s2k.mode = 1002;
   s = get_parameter_value (para, pSERIALNO);

@@ -29,6 +29,8 @@
 #  define VER_PLATFORM_WIN32_WINDOWS 1
 # endif
 #endif
+
+#include "gpg.h"
 #include "packet.h"
 #include "status.h"
 #include "exec.h"
@@ -36,7 +38,6 @@
 #include "util.h"
 #include "i18n.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "options.h"
 #include "main.h"
 #include "photoid.h"
@@ -259,8 +260,7 @@ char *image_type_to_string(byte type,int style)
 }
 
 #if !defined(FIXED_PHOTO_VIEWER) && !defined(DISABLE_PHOTO_VIEWER)
-static const char *
-get_default_photo_command(void)
+static const char *get_default_photo_command(void)
 {
 #if defined(_WIN32)
   OSVERSIONINFO osvi;
@@ -279,14 +279,7 @@ get_default_photo_command(void)
 #elif defined(__riscos__)
   return "Filer_Run %I";
 #else
-  if(path_access("xloadimage",X_OK)==0)
-    return "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin";
-  else if(path_access("eog",X_OK)==0)
-    return "eog %i";
-  else if(path_access("display",X_OK)==0)
-    return "display -title 'KeyID 0x%k' %i";
-  else
-    return "";
+  return "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin";
 #endif
 }
 #endif
@@ -323,12 +316,6 @@ void show_photos(const struct user_attribute *attrs,
 	if(!opt.photo_viewer)
 	  opt.photo_viewer=get_default_photo_command();
 #endif
-
-	if(!*opt.photo_viewer)
-	  {
-	    log_info(_("no photo viewer set\n"));
-	    goto fail;
-	  }
 
 	/* make command grow */
 	command=pct_expando(opt.photo_viewer,&args);

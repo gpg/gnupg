@@ -1,6 +1,6 @@
 /* delkey.c - delete keys
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004,
- *               2005 Free Software Foundation, Inc.
+ *               2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,12 +28,12 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "trustdb.h"

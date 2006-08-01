@@ -27,12 +27,12 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "status.h"
@@ -57,7 +57,7 @@ decrypt_message( const char *filename )
     int rc;
     int no_out=0;
 
-    /* open the message file */
+    /* Open the message file.  */
     fp = iobuf_open(filename);
     if (fp && is_secured_file (iobuf_get_fd (fp)))
       {
@@ -66,8 +66,10 @@ decrypt_message( const char *filename )
         errno = EPERM;
       }
     if( !fp ) {
-	log_error(_("can't open `%s'\n"), print_fname_stdin(filename));
-	return G10ERR_OPEN_FILE;
+        rc = gpg_error_from_errno (errno);
+	log_error (_("can't open `%s': %s\n"), print_fname_stdin(filename),
+                   gpg_strerror (rc));
+	return rc;
     }
 
     handle_progress (&pfx, fp, filename);
@@ -183,7 +185,6 @@ decrypt_messages(int nfiles, char *files[])
     next_file:
       /* Note that we emit file_done even after an error. */
       write_status( STATUS_FILE_DONE );
-      iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
       xfree(output);
     }
 

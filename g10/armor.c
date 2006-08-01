@@ -28,9 +28,9 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "packet.h"
@@ -336,7 +336,7 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
     int hashes=0;
     unsigned int len2;
 
-    len2 = check_trailing_ws( line, len );
+    len2 = length_sans_trailing_ws ( line, len );
     if( !len2 ) {
         afx->buffer_pos = len2;  /* (it is not the fine way to do it here) */
 	return 0; /* WS only: same as empty line */
@@ -431,7 +431,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX ) {
 		if( afx->in_cleartext ) {
 		    log_error(_("nested clear text signatures\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = gpg_error (GPG_ERR_INV_ARMOR);
 		}
 		afx->in_cleartext = 1;
 	    }
@@ -662,10 +662,10 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 static int
 invalid_crc(void)
 {
-    if ( opt.ignore_crc_error )
-        return 0;
-    log_inc_errorcount();
-    return G10ERR_INVALID_ARMOR;
+  if ( opt.ignore_crc_error )
+    return 0;
+  log_inc_errorcount();
+  return gpg_error (GPG_ERR_INV_ARMOR);
 }
 
 

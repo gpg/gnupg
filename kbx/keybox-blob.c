@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 
@@ -35,11 +36,13 @@ The first record of a plain KBX file has a special format:
  byte reserved
  byte reserved
  u32  magic 'KBXf'
- byte pgp_marginals  used for validity calculation of this file
- byte pgp_completes  ditto.
- byte pgp_cert_depth ditto.
+ u32  reserved
+ u32  file_created_at
+ u32  last_maintenance_run
+ u32  reserved
+ u32  reserved
 
-The OpenPGP and X.509 blob are verry similiar, things which are
+The OpenPGP and X.509 blob are very similiar, things which are
 X.509 specific are noted like [X.509: xxx]
 
  u32  length of this blob (including these 4 bytes)
@@ -59,7 +62,7 @@ X.509 specific are noted like [X.509: xxx]
    u32	offset to the n-th key's keyID (a keyID is always 8 byte)
         or 0 if not known which is the case only for X509.
    u16	special key flags
-	 bit 0 =
+	 bit 0 = qualified signature (not yet implemented}
    u16	reserved
  u16  size of serialnumber(may be zero) 
    n  u16 (see above) bytes of serial number
@@ -72,7 +75,7 @@ X.509 specific are noted like [X.509: xxx]
 	 bit 0 =
    byte validity
    byte reserved
-   [For X509, the first user ID is the issuer, the second the subject
+   [For X509, the first user ID is the Issuer, the second the Subject
    and the others are subjectAltNames]
  u16  number of signatures
  u16  size of signature information (4)
@@ -82,8 +85,11 @@ X.509 specific are noted like [X.509: xxx]
 	0x00000002 = bad signature
 	0x10000000 = valid and expires at some date in 1978.
 	0xffffffff = valid and does not expire
- u8	assigned ownertrust [X509: no used]
- u8	all_validity        [X509: no used]
+ u8	assigned ownertrust [X509: not used]
+ u8	all_validity 
+           OpenPGP:  see ../g10/trustdb/TRUST_* [not yet used]
+           X509: Bit 4 set := key has been revoked.  Note that this value
+                              matches TRUST_FLAG_REVOKED
  u16	reserved
  u32	recheck_after
  u32	Newest timestamp in the keyblock (useful for KS syncronsiation?)
@@ -99,7 +105,7 @@ X.509 specific are noted like [X.509: xxx]
 
  b16	MD5 checksum  (useful for KS syncronisation), we might also want to use
     a mac here.
- b4    reserved
+ b4    resevered
 
 */
 
@@ -110,6 +116,7 @@ X.509 specific are noted like [X.509: xxx]
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <time.h>
 
 #include "keybox-defs.h"
 #include <gcrypt.h>
@@ -194,7 +201,7 @@ struct keyboxblob {
 
 
 
-/* A simple implemnation of a dynamic buffer.  Use init_membuf() to
+/* A simple implemention of a dynamic buffer.  Use init_membuf() to
    create a buffer, put_membuf to append bytes and get_membuf to
    release and return the buffer.  Allocation errors are detected but
    only returned at the final get_membuf(), this helps not to clutter
@@ -478,7 +485,7 @@ pgp_create_blob_keyblock (KEYBOXBLOB blob, KBNODE keyblock)
 
 /* Write the raw certificate out */
 static int
-x509_create_blob_cert (KEYBOXBLOB blob, KsbaCert cert)
+x509_create_blob_cert (KEYBOXBLOB blob, ksba_cert_t cert)
 {
   struct membuf *a = blob->buf;
   const unsigned char *image;
@@ -640,8 +647,8 @@ static int
 create_blob_finish (KEYBOXBLOB blob)
 {
   struct membuf *a = blob->buf;
-  byte *p;
-  char *pp;
+  unsigned char *p;
+  unsigned char *pp;
   int i;
   size_t n;
 
@@ -650,6 +657,7 @@ create_blob_finish (KEYBOXBLOB blob)
     put32 (a, 0);  /* Hmmm: why put32() ?? */
   
   /* get the memory area */
+  n = 0; /* (Just to avoid compiler warning.) */
   p = get_membuf (a, &n);
   if (!p)
     return gpg_error (GPG_ERR_ENOMEM);
@@ -777,7 +785,7 @@ _keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock, int as_ephemeral)
 static char *
 x509_email_kludge (const char *name)
 {
-  const unsigned char *p;
+  const char *p;
   unsigned char *buf;
   int n;
 
@@ -799,7 +807,7 @@ x509_email_kludge (const char *name)
     buf[n] = xtoi_2 (p);
   buf[n++] = '>';
   buf[n] = 0;
-  return buf;
+  return (char *)buf;
 }
 
 
@@ -807,13 +815,14 @@ x509_email_kludge (const char *name)
 /* Note: We should move calculation of the digest into libksba and
    remove that parameter */
 int
-_keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
+_keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
                           unsigned char *sha1_digest, int as_ephemeral)
 {
   int i, rc = 0;
   KEYBOXBLOB blob;
-  unsigned char *p;
-  unsigned char **names = NULL;
+  unsigned char *sn;
+  char *p;
+  char **names = NULL;
   size_t max_names;
 
   *r_blob = NULL;
@@ -821,28 +830,28 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   if( !blob )
     return gpg_error (gpg_err_code_from_errno (errno));
 
-  p = ksba_cert_get_serial (cert);
-  if (p)
+  sn = ksba_cert_get_serial (cert);
+  if (sn)
     {
       size_t n, len;
-      n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+      n = gcry_sexp_canon_len (sn, 0, NULL, NULL);
       if (n < 2)
         {
-          xfree (p);
+          xfree (sn);
           return gpg_error (GPG_ERR_GENERAL);
         }
-      blob->serialbuf = p;
-      p++; n--; /* skip '(' */
-      for (len=0; n && *p && *p != ':' && digitp (p); n--, p++)
-        len = len*10 + atoi_1 (p);
-      if (*p != ':')
+      blob->serialbuf = sn;
+      sn++; n--; /* skip '(' */
+      for (len=0; n && *sn && *sn != ':' && digitp (sn); n--, sn++)
+        len = len*10 + atoi_1 (sn);
+      if (*sn != ':')
         {
           xfree (blob->serialbuf);
           blob->serialbuf = NULL;
           return gpg_error (GPG_ERR_GENERAL);
         }
-      p++;
-      blob->serial = p;
+      sn++;
+      blob->serial = sn;
       blob->seriallen = len;
     }
 
@@ -857,6 +866,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
       rc = gpg_error (gpg_err_code_from_errno (errno));
       goto leave;
     }
+  
   p = ksba_cert_get_issuer (cert, 0);
   if (!p)
     {
@@ -866,10 +876,9 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   names[blob->nuids++] = p;
   for (i=0; (p = ksba_cert_get_subject (cert, i)); i++)
     {
-
       if (blob->nuids >= max_names)
         {
-          unsigned char **tmp;
+          char **tmp;
           
           max_names += 100;
           tmp = xtryrealloc (names, max_names * sizeof *names);
@@ -958,7 +967,8 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
 
 
 int
-_keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen, off_t off)
+_keybox_new_blob (KEYBOXBLOB *r_blob,
+                  unsigned char *image, size_t imagelen, off_t off)
 {
   KEYBOXBLOB blob;
   
@@ -973,6 +983,7 @@ _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen, off_t off)
   *r_blob = blob;
   return 0;
 }
+
 
 void
 _keybox_release_blob (KEYBOXBLOB blob)
@@ -993,7 +1004,7 @@ _keybox_release_blob (KEYBOXBLOB blob)
 
 
 
-const char *
+const unsigned char *
 _keybox_get_blob_image ( KEYBOXBLOB blob, size_t *n )
 {
   *n = blob->bloblen;
@@ -1006,3 +1017,19 @@ _keybox_get_blob_fileoffset (KEYBOXBLOB blob)
   return blob->fileoffset;
 }
 
+
+
+void
+_keybox_update_header_blob (KEYBOXBLOB blob)
+{
+  if (blob->bloblen >= 32 && blob->blob[4] == BLOBTYPE_HEADER)
+    {
+      u32 val = make_timestamp ();
+
+      /* Update the last maintenance run times tamp. */
+      blob->blob[20]   = (val >> 24);
+      blob->blob[20+1] = (val >> 16);
+      blob->blob[20+2] = (val >>  8);
+      blob->blob[20+3] = (val      );
+    }
+}

@@ -23,7 +23,7 @@
 #ifndef G10_HTTP_H
 #define G10_HTTP_H 1
 
-#include "iobuf.h"
+#include "../common/iobuf.h"
 
 struct uri_tuple {
     struct uri_tuple *next;
@@ -65,8 +65,8 @@ struct http_context {
     unsigned int status_code;
     int sock;
     int in_data;
-    IOBUF fp_read;
-    IOBUF fp_write;
+    iobuf_t fp_read;
+    iobuf_t fp_write;
     int is_http_0_9;
     PARSED_URI uri;
     HTTP_REQ_TYPE req_type;

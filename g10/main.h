@@ -21,9 +21,9 @@
  */
 #ifndef G10_MAIN_H
 #define G10_MAIN_H
+
 #include "types.h"
-#include "iobuf.h"
-#include "mpi.h"
+#include "../common/iobuf.h"
 #include "cipher.h"
 #include "keydb.h"
 
@@ -79,11 +79,12 @@ int  is_secured_file (int fd);
 int  is_secured_filename (const char *fname);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
-u16 checksum_mpi( MPI a );
+u16 checksum_mpi( gcry_mpi_t a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
 int openpgp_cipher_test_algo( int algo );
-int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
+int openpgp_pk_test_algo( int algo );
+int openpgp_pk_test_algo2 ( int algo, unsigned int use );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
 
@@ -104,6 +105,9 @@ char *pct_expando(const char *string,struct expando_args *args);
 void deprecated_warning(const char *configname,unsigned int configlineno,
 			const char *option,const char *repl1,const char *repl2);
 void deprecated_command (const char *name);
+
+int string_to_cipher_algo (const char *string);
+int string_to_digest_algo (const char *string);
 
 const char *compress_algo_to_string(int algo);
 int string_to_compress_algo(const char *string);
@@ -128,9 +132,17 @@ int parse_options(char *str,unsigned int *options,
 char *unescape_percent_string (const unsigned char *s);
 int has_invalid_email_chars (const char *s);
 int is_valid_mailbox (const char *name);
-char *default_homedir (void);
 const char *get_libexecdir (void);
 int path_access(const char *file,int mode);
+
+/* Temporary helpers. */
+int pubkey_get_npkey( int algo );
+int pubkey_get_nskey( int algo );
+int pubkey_get_nsig( int algo );
+int pubkey_get_nenc( int algo );
+unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
+int mpi_print( FILE *fp, gcry_mpi_t a, int mode );
+
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
@@ -142,11 +154,11 @@ int encode_store( const char *filename );
 int encode_crypt( const char *filename, STRLIST remusr, int use_symkey );
 void encode_crypt_files(int nfiles, char **files, STRLIST remusr);
 int encrypt_filter( void *opaque, int control,
-		    IOBUF a, byte *buf, size_t *ret_len);
+		    iobuf_t a, byte *buf, size_t *ret_len);
 
 
 /*-- sign.c --*/
-int complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md );
+int complete_sig( PKT_signature *sig, PKT_secret_key *sk, gcry_md_hd_t md );
 int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       int do_encrypt, STRLIST remusr, const char *outfile );
 int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
@@ -196,21 +208,21 @@ int save_unprotected_key_to_card (PKT_secret_key *sk, int keyno);
 int overwrite_filep( const char *fname );
 char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
-int   open_outfile( const char *iname, int mode, IOBUF *a );
-IOBUF open_sigfile( const char *iname, progress_filter_context_t *pfx );
+int   open_outfile( const char *iname, int mode, iobuf_t *a );
+iobuf_t open_sigfile( const char *iname, progress_filter_context_t *pfx );
 void try_make_homedir( const char *fname );
 
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
-MPI encode_session_key( DEK *dek, unsigned nbits );
-MPI encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
-		     MD_HANDLE md, int hash_algo );
+gcry_mpi_t encode_session_key( DEK *dek, unsigned nbits );
+gcry_mpi_t encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
+                            gcry_md_hd_t md, int hash_algo );
 
 /*-- import.c --*/
 int parse_import_options(char *str,unsigned int *options,int noisy);
 void import_keys( char **fnames, int nnames,
 		  void *stats_hd, unsigned int options );
-int import_keys_stream( IOBUF inp,void *stats_hd,unsigned char **fpr,
+int import_keys_stream( iobuf_t inp,void *stats_hd,unsigned char **fpr,
 			size_t *fpr_len,unsigned int options );
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
@@ -226,7 +238,7 @@ int auto_create_card_key_stub ( const char *serialnostr,
 /*-- export.c --*/
 int parse_export_options(char *str,unsigned int *options,int noisy);
 int export_pubkeys( STRLIST users, unsigned int options );
-int export_pubkeys_stream( IOBUF out, STRLIST users,
+int export_pubkeys_stream( iobuf_t out, STRLIST users,
 			   KBNODE *keyblock_out, unsigned int options );
 int export_seckeys( STRLIST users );
 int export_secsubkeys( STRLIST users );
@@ -272,12 +284,9 @@ int decrypt_message( const char *filename );
 void decrypt_messages(int nfiles, char *files[]);
 
 /*-- plaintext.c --*/
-int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,
+int hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2,
 		    STRLIST files, const char *sigfilename, int textmode );
 PKT_plaintext *setup_plaintext_name(const char *filename,IOBUF iobuf);
-
-/*-- pipemode.c --*/
-void run_in_pipemode (void);
 
 /*-- signal.c --*/
 void init_signals(void);

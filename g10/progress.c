@@ -1,4 +1,4 @@
-/* progress.c
+/* progress.c - emit progress status lines
  * Copyright (C) 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -22,6 +22,7 @@
 #include <config.h>
 #include <stdio.h>
 
+#include "gpg.h"
 #include "iobuf.h"
 #include "filter.h"
 #include "status.h"

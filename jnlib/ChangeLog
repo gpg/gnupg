@@ -1,0 +1,389 @@
+2006-06-28  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c (make_dotlock, release_dotlock, read_lockfile)
+	(maybe_deadlock, destroy_dotlock, create_dotlock): Re-indented.
+	(create_dotlock): Repalces some log_fatal by log_error as it was
+	not intended that they should terminate.  Write the nodename to
+	the locking file. Code cleanups.
+	(read_lockfile): Reworked to read the node name.
+	(make_dotlock): Test for identical node name and delete lock stale
+	file.
+	(release_dotlock): Likewise.
+
+2006-05-23  Werner Koch  <wk@g10code.com>
+
+	* libjnlib-config.h (JNLIB_NEED_UTF8CONV): Fixed typo in name.
+
+	* dotlock.c (release_dotlock): Don't act if we don't have any
+	locks at all.
+	(destroy_dotlock): New.  From 1.4.3.
+	(dotlock_remove_lockfiles): Make use of destroy function.
+
+2006-05-19  Werner Koch  <wk@g10code.com>
+
+	* strlist.c (append_to_strlist2): Enabled.
+
+	* stringhelp.c (print_sanitized_buffer2): New.  Changed the rules
+	to match the behaviour of print_string2 from gnupg 1.4.3.
+	(print_sanitized_buffer): Use the new function.
+	(print_sanitized_string2): New.
+	(hextobyte): New.  Taken from gpg 1.4.3.
+
+2006-04-28  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (print_sanitized_buffer): Fix bug where the count
+	got wrong for the \xNN representation.
+	(sanitize_buffer): Fix bug where some control characters lose part
+	of their \xNN representation.
+
+2006-04-20  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (make_basename): New arg INPUTPATH for future
+	riscos compatibility.
+
+2006-04-18  Werner Koch  <wk@g10code.com>
+
+	* libjnlib-config.h (JNLIB_NEED_UTF8CONF): Defined.
+	* strlist.c (add_to_strlist2) [JNLIB_NEED_UTF8CONV]: Enabled.
+
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (sanitize_buffer): Make P a void*.
+	(ascii_memistr, memistr): Ditto.
+	(ascii_memcasecmp): Ditto.
+	* logging.c (writen): Use void * for arg BUFFER.
+	* stringhelp.c (memistr): Fixed unsigned/signed pointer conflict.
+	(ascii_memistr): Ditto.
+	(ascii_memcasemem): Ditto.
+	* utf8conv.c (utf8_to_native): Ditto.
+	(utf8_to_native): Ditto.
+	* argparse.c (show_version): Removed non-required cast.
+
+2005-01-19  Werner Koch  <wk@g10code.com>
+
+	* logging.c (fun_writer): Don't fallback to stderr. Print to
+	stderr only if connected to a tty.
+
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c (do_pth_event_free): The events are hold in a ring
+	buffer.  Adjust for that.
+	(do_pth_event_body): Ditto.
+	(pth_event_isolate): Ditto.
+	(do_pth_wait): Ditto.
+	(_pth_event_count): Renamed to ..
+	(event_count): .. and adjusted as above.
+	(pth_init): Define 3 debug levels and change all debug calls to
+	make use of them.  This makes the moule now silent.
+
+2004-12-19  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c (pth_init): Enable debugging depending on env var.
+	(pth_self): New.
+	(pth_mutex_release, pth_mutex_acquire): Implemented directly using
+	the W32 API.
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c (pth_init): Reverse return values.  Use TRUE and FALSE
+	constants.
+	(pth_kill, pth_mutex_acquire, pth_attr_set, pth_join, pth_cancel):
+	Ditto.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* logging.c [W32]: Don't include unavailable headers.
+
+2004-12-14  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c (_pth_strerror): Renamed to ...
+	(w32_strerror): .. this. And let callers provide a buffer.
+	(spawn_helper_thread): Removed HD arg and hardwire the stack size
+	to 32k.
+	(do_pth_wait): Removed use of ATTR; not needed for the helper
+	threads.
+	(helper_thread): Renamed to ..
+	(launch_thread): .. this.  Release handle if not joinable.
+	(struct pth_priv_hd_s): Renamed to ...
+	(struct thread_info_s): .. this.  Add member JOINABLE and TH.
+
+2004-12-14  Timo Schulz  <twoaday@g10code.com>
+
+	* w32-pth.c (pth_kill): Just release the crit section if
+	pth_init was really called. And set all handles to NULL.
+	(_pth_strerror): New.
+	(do_pth_wait): Before we enter the loop we check if there
+	are too much events in the ring.
+	
+2004-12-14  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.h (pth_event_occured): Removed macro. 
+	* w32-pth.c: Fixed license statement; its under the LGPL.
+	(enter_pth, leave_pth): Use them to bracket almost all public
+	functions.
+
+2004-12-13  Timo Schulz  <twoaday@g10code.com>
+
+	* w32-pth.c (enter_pth, leave_pth): New.
+	(pth_init): Initialize global mutex section.
+	(pth_kill): Release global mutex section.
+	(helper_thread): New.
+	(pth_spawn): Make sure only one thread is running.
+	
+2004-12-13  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (w32_strerror) [W32]: New.
+
+	* w32-pth.c, w32-pth.h: Added real code written by Timo	Schulz.
+	Not finished, though.
+
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c, w32-pth.h: New.
+
+2004-11-26  Werner Koch  <wk@g10code.com>
+
+	* logging.c [_WIN32]: Don't include socket headers.
+
+2004-11-30  Timo Schulz  <ts@g10code.com>
+
+	* w32-afunix.c: New. AF_UNIX emulation for W32.
+	* w32-afunix.h: Likewise.
+	
+2004-11-22  Werner Koch  <wk@g10code.com>
+
+	* logging.c (log_test_fd): Add test on LOGSTREAM.  Reported by
+	Barry Schwartz.
+
+2004-11-18  Werner Koch  <wk@g10code.com>
+
+	* logging.c: Explicitly include sys/stat.h for the S_I* constants.
+
+2004-10-21  Werner Koch  <wk@g10code.com>
+
+	* logging.c (do_logv): Use set_log_stream to setup a default.
+	(log_set_file): Factored code out to ..
+	(set_file_fd): .. New function to allow using a file descriptor.
+	(log_set_fd): Make use of new fucntion.
+	(fun_writer): Reworked.
+
+2004-08-18  Werner Koch  <wk@g10code.de>
+
+	* stringhelp.c (print_sanitized_utf8_string): Actually implement
+	it.
+
+2004-06-21  Werner Koch  <wk@g10code.com>
+
+	* logging.c (log_set_file): Do not close an old logstream if it
+	used to be stderr or stdout.
+
+2004-05-05  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_set_file): Oops, don't close if LOGSTREAM is NULL.
+
+2004-04-30  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_set_file): Make sure the log stream will be
+	closed even if the stderr fileno will be assigned to a new socket.
+
+2004-04-16  Werner Koch  <wk@gnupg.org>
+
+	* logging.h (JNLIB_LOG_WITH_PREFIX): Add constants for the flag
+	values.
+	* logging.c (log_set_prefix): New flag DETACHED.
+	(fun_writer): Take care of this flag.
+	(log_test_fd): New.
+
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (print_sanitized_buffer): Don't care about
+	non-ASCII characaters.
+	(sanitize_buffer): Ditto.
+
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Replaced INCLUDES by AM_CPPFLAGS.
+
+2004-01-05  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (strusage): Changed default copyright year to 2004.
+
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (initialize): Replaced use of non-literal format
+	args.  Suggested by Florian Weimer.
+
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (writen, fun_writer, fun_closer): New.
+	(log_set_file): Add feature to log to a socket.
+	(log_set_file, do_logv): Force printing with prefix and pid.
+
+2003-11-13  Werner Koch  <wk@gnupg.org>
+
+	* strlist.c (strlist_copy): New.
+
+	* dotlock.c: Define DIRSEP_C et al. if not defined.
+
+2003-11-06  Werner Koch  <wk@gnupg.org>
+
+	* strlist.h (strlist_t): New. STRLIST is now deprecated.
+
+2003-06-18  Werner Koch  <wk@gnupg.org>
+
+	* strlist.c (strlist_pop): New.
+
+	* dotlock.c (dotlock_remove_lockfiles): Prefixed with dotlock_ and
+	made global.
+
+2003-06-17  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (length_sans_trailing_chars)
+	(length_sans_trailing_ws): New.
+
+	* logging.c (log_inc_errorcount): New.
+
+	* stringhelp.c (print_sanitized_utf8_buffer): Implement utf8
+	conversion.
+	(sanitize_buffer): New. Based on gnupg 1.3.2 make_printable_string.
+
+	* dotlock.c: Updated to match the version from 1.3.2
+	* utf8conv.c: New.  Code taken from strgutil.c of gnupg 1.3.2.
+	* utf8conv.h: New.
+
+2003-06-16  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (do_logv): Hack to optionally suppress a leading space.
+
+	* stringhelp.c (ascii_strncasecmp): New.  Taken from gnupg 1.3.
+	(ascii_memistr): New. Taken from gnupg 1.3
+
+2003-06-13  Werner Koch  <wk@gnupg.org>
+
+	* mischelp.h (wipememory2,wipememory): New. Taken from GnuPG 1.3.2. 
+
+2002-06-04  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (print_sanitized_utf8_string): New.  No real
+	implementation for now.
+	(print_sanitized_utf8_buffer): Ditto.
+
+2002-04-04  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_get_prefix): New.
+
+2002-03-15  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (optfile_parse): Fixed missing argument handling.
+
+2002-02-25  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (ascii_memcasemem): New.
+
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (INCLUDES): Add cflags for libgcrypt.
+
+2002-02-07  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_set_fd): New.
+
+	* stringhelp.c (print_sanitized_buffer): New.
+	(print_sanitized_string): New.
+
+2002-01-24  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (strusage): Set default copyright notice year to 2002.
+
+	Fixed the copyright notice of this file, as it has always been
+	part of GnuPG and therefore belongs to the FSF.
+
+2001-11-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* logging.c (log_printf): Do not initialize ARG_PTR with 0, we
+	don't know the correct type.  Instead, run va_start and va_end
+	unconditionally.
+	Reported by Jose Carlos Garcia Sogo <jsogo@debian.org>.
+
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_get_stream): New.
+
+2001-12-05  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_set_prefix): New.
+	(do_logv): Include prefix and pid only if enabled. Print time only
+	when explicitly enabled.
+	(log_logv): New.  
+	* logging.h: Include log_logv() only when requested.
+
+2001-11-06  Werner Koch  <wk@gnupg.org>
+
+	* strlist.c, strlist.h: New. Taken from pgnupg/util/strgutil.c
+
+2001-08-30  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (log_printf): Don't pass NULL instead of arg_ptr.
+
+2001-07-19  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (ascii_memistr,ascii_isupper,ascii_islower,
+	ascii_toupper,ascii_tolower, ascii_strcasecmp, ascii_memcasecmp): New.
+
+2000-07-26 10:02:51  Werner Koch  (wk@habibti.openit.de)
+
+  * stringhelp.c.: Add stdarg.h
+  * argparse.h: s/ulong/unsigned long/ although this should be defined
+  by types.h.
+
+2000-06-28 19:40:23  Werner Koch  (wk@habibti.openit.de)
+
+  * Makefile.am: Replaced second logging.c by .h
+
+2000-05-24 08:58:15  Werner Koch  (wk@habibti.openit.de)
+
+  * logging.c (log_get_errorcount): New.
+
+2000-05-24 08:44:47  Werner Koch  (wk@habibti.openit.de)
+
+  * stringhelp.c: Added a few filename related helper functions.
+
+2000-05-11 18:04:43  Werner Koch  (wk@habibti.openit.de)
+
+  * xmalloc.c (xstrcat2):  Replaced stpcpy to quickly address W32
+    problems.
+
+2000-05-02 19:43:38  Werner Koch  (wk@habibti.openit.de)
+
+  * xmalloc.c (xstrcat2): New.
+
+Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
+
+  * README: New.
+  * Makefile.am: new.
+  * argparse.c argparse.h logging.c logging.h
+    mischelp.h stringhelp.c stringhelp.h xmalloc.c
+    xmalloc.h dotlock.c: Moved from ../util to here.
+  * dotlock.h: New.
+  * libjnlib-config.h: New.
+
+  * logging.c (log_set_file): New.
+  (log_printf): New.
+  (do_logv): Add kludge to insert LFs.
+
+
+     ***********************************************************
+     * Please note that Jnlib is maintained as part of GnuPG.  *
+     * You may find it source-copied in other packages.        *
+     ***********************************************************	
+	
+ Copyright 2000, 2001, 2002, 2003, 2004,
+	   2005 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

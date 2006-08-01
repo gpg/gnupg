@@ -1,30 +1,11 @@
-2006-07-26  David Shaw  <dshaw@jabberwocky.com>
-
-	* Makefile.am: Fix missing include path for gpgkeys_finger (needs
-	the libcurl path, even though it doesn't use libcurl because of
-	ksutil.c:curl_err_to_gpg_err().  Noted by Gilbert Fernandes.
-
-2006-07-20  David Shaw  <dshaw@jabberwocky.com>
+2006-07-24  David Shaw  <dshaw@jabberwocky.com>  (wk)
 
 	* curl-shim.c (curl_easy_perform): Minor cleanup of proxy code.
 
-2006-07-16  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpgkeys_hkp.c (send_key), gpgkeys_ldap.c (send_key,
-	send_key_keyserver): Improved version of previous fix.  Force
-	match on spaces in string.
-
-2006-07-14  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpgkeys_hkp.c (send_key), gpgkeys_ldap.c (send_key,
-	send_key_keyserver): Fix string matching problem when the ascii
-	armored form of the key happens to match "KEY" at the beginning of
-	the line.
-
-2006-07-12  David Shaw  <dshaw@jabberwocky.com>
-
-	* gpgkeys_ldap.c (printquoted), curl-shim.c (curl_escape): Fix bad
-	encoding of characters > 127.  Noted by Nalin Dahyabhai.
+	* gpgkeys_hkp.c (send_key)
+	* gpgkeys_ldap.c (send_key, send_key_keyserver): Fix string
+	matching problem when the ascii armored form of the key happens to
+	match "KEY" at the beginning of the line.
 
 2006-04-26  David Shaw  <dshaw@jabberwocky.com>
 

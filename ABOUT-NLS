@@ -3,9 +3,8 @@ Notes on the Free Translation Project
 
 Free software is going international!  The Free Translation Project is
 a way to get maintainers of free software, translators, and users all
-together, so that free software will gradually become able to speak many
-languages.  A few packages already provide translations for their
-messages.
+together, so that will gradually become able to speak many languages.
+A few packages already provide translations for their messages.
 
    If you found this `ABOUT-NLS' file inside a distribution, you may
 assume that the distributed package does use GNU `gettext' internally,
@@ -16,7 +15,7 @@ this package with messages translated.
    Installers will find here some useful hints.  These notes also
 explain how users should proceed for getting the programs to use the
 available translations.  They tell how people wanting to contribute and
-work on translations can contact the appropriate team.
+work at translations should contact the appropriate team.
 
    When reporting bugs in the `intl/' directory or bugs which may be
 related to internationalization, you should tell about the version of
@@ -56,27 +55,27 @@ internationalization, predating GNU `gettext'.
 
    By default, this package will be installed to allow translation of
 messages.  It will automatically detect whether the system already
-provides the GNU `gettext' functions.  If not, the included GNU
-`gettext' library will be used.  This library is wholly contained
-within this package, usually in the `intl/' subdirectory, so prior
-installation of the GNU `gettext' package is _not_ required.
-Installers may use special options at configuration time for changing
-the default behaviour.  The commands:
+provides the GNU `gettext' functions.  If not, the GNU `gettext' own
+library will be used.  This library is wholly contained within this
+package, usually in the `intl/' subdirectory, so prior installation of
+the GNU `gettext' package is _not_ required.  Installers may use
+special options at configuration time for changing the default
+behaviour.  The commands:
 
      ./configure --with-included-gettext
      ./configure --disable-nls
 
-will, respectively, bypass any pre-existing `gettext' to use the
+will respectively bypass any pre-existing `gettext' to use the
 internationalizing routines provided within this package, or else,
 _totally_ disable translation of messages.
 
    When you already have GNU `gettext' installed on your system and run
 configure without an option for your new package, `configure' will
 probably detect the previously built and installed `libintl.a' file and
-will decide to use this.  This might not be desirable.  You should use
-the more recent version of the GNU `gettext' library.  I.e. if the file
-`intl/VERSION' shows that the library which comes with this package is
-more recent, you should use
+will decide to use this.  This might be not what is desirable.  You
+should use the more recent version of the GNU `gettext' library.  I.e.
+if the file `intl/VERSION' shows that the library which comes with this
+package is more recent, you should use
 
      ./configure --with-included-gettext
 
@@ -87,7 +86,7 @@ and therefore it will not be used.  The reason is that even an
 emulation of `gettext' on top of `catgets' could not provide all the
 extensions of the GNU `gettext' library.
 
-   Internationalized packages usually have many `po/LL.po' files, where
+   Internationalized packages have usually many `po/LL.po' files, where
 LL gives an ISO 639 two-letter code identifying the language.  Unless
 translations have been forbidden at `configure' time by using the
 `--disable-nls' switch, all available translations are installed

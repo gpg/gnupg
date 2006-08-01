@@ -1,0 +1,12 @@
+tests/pkits/README
+
+These are tests based on NIST's Public Key Interoperability Test Suite
+(PKITS) as downloaded on 2006-05-02 from
+http://csrc.nist.gov/pki/testing/x509paths.html .
+
+README             - this file.
+PKITS_data.tar.bz2 - the orginal ZIP file, repackaged as a tarball.
+Makefile.am        - Part of our build system.
+
+
+The password for the p12 files is "password".

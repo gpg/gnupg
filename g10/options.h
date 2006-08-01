@@ -86,7 +86,7 @@ struct
   int completes_needed;
   int max_cert_depth;
   const char *homedir;
-
+  const char *agent_program; 
   char *display;      /* 5 options to be passed to the gpg-agent */
   char *ttyname;     
   char *ttytype;
@@ -194,7 +194,6 @@ struct
   int preserve_permissions;
   int no_homedir_creation;
   struct groupitem *grouplist;
-  int strict;
   int mangle_dos_filenames;
   int enable_progress_filter;
   unsigned int screen_columns;
@@ -210,6 +209,7 @@ struct
   int limit_card_insert_tries; 
 
 #ifdef ENABLE_CARD_SUPPORT
+  /* FIXME: We don't needs this here as it is done in scdaemon. */
   const char *ctapi_driver; /* Library to access the ctAPI. */
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
@@ -221,6 +221,7 @@ struct
        made by signing subkeys.  If not set, a missing backsig is not
        an error (but an invalid backsig still is). */
     unsigned int require_cross_cert:1;
+
     unsigned int use_embedded_filename:1;
     unsigned int utf8_filename:1;
     unsigned int dsa2:1;
@@ -264,12 +265,21 @@ struct {
 #define DBG_CARD_IO_VALUE 2048  /* debug smart card I/O.  */
 
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
+#define DBG_CIPHER (opt.debug & DBG_CIPHER_VALUE)
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 #define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
+
+/* FIXME: We need to check whey we did not put this into opt. */
+#define DBG_MEMORY    memory_debug_mode
+#define DBG_MEMSTAT   memory_stat_debug_mode
+
+EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
+EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
+
 
 
 #define GNUPG   (opt.compliance==CO_GNUPG)
@@ -298,6 +308,7 @@ struct {
 #define EXPORT_RESET_SUBKEY_PASSWD       (1<<3)
 #define EXPORT_MINIMAL                   (1<<4)
 #define EXPORT_CLEAN                     (1<<5)
+#define EXPORT_SEXP_FORMAT               (1<<6)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

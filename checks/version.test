@@ -1,9 +1,0 @@
-#!/bin/sh
-
-. $srcdir/defs.inc || exit 3
-
-# print the GPG version
-$GPG --version
-
-#fixme: check that the output is correct
-

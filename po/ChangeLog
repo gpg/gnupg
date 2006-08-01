@@ -1,620 +1,76 @@
-2006-07-27  Werner Koch  <wk@g10code.com>
+2005-11-23  Werner Koch  <wk@g10code.com>
 
-	* nb.po: New.
+	* de.po: Updated.
 
-2006-07-03  Werner Koch  <wk@g10code.com>
+2005-08-01  Werner Koch  <wk@g10code.com>
 
-	* zh_TW.po: Updated, albeit a copy from last year.
+	* de.po: Converted to utf-8; fixed a few umlaut problems.
 
-	* zh_CN.po: Updated.
+2005-04-21  Werner Koch  <wk@g10code.com>
 
-2006-06-27  Werner Koch  <wk@g10code.com>
+	* de.po: Fixed all fuzzies and untranslated strings.
 
-	* de.po: Fixed misleading translation.  Thanks to Olav Seyfarth.
+2005-01-04  Werner Koch  <wk@g10code.com>
 
-2005-10-06  Werner Koch  <wk@g10code.com>
+	* de.po: Updated.
 
-	* POTFILES.in: s/g10.c/gpg.c/.
+2004-10-22  Werner Koch  <wk@g10code.com>
 
-2005-07-26  Werner Koch  <wk@g10code.com>
+	* POTFILES.in: Removed sc-investigate.c
 
-	* zh_TW.po, fr.po, cs.po: Updated.
+2004-10-04  Werner Koch  <wk@g10code.com>
 
-2005-07-19  Werner Koch  <wk@g10code.com>
+	* de.po: Typo fixes.
 
-	* ru.po: Updated.
-
-2005-06-21  Werner Koch  <wk@g10code.com>
-
-	* zh_TW.po: Updated.
-
-	* ro.po: Updated.
-
-2005-06-15  Werner Koch  <wk@g10code.com>
-
-	* de.po: Some Typo fixes.
-
-2005-05-31  Werner Koch  <wk@g10code.com>
-
-	* zh_TW.po, zh_CN.po, es.po, ro.po: Updated.
-
-	* tr.po: Updated from TP.  Note: this is an exception in general
-	translations from the Robot are not anymore accepted.
-
-2005-03-30  Werner Koch  <wk@g10code.com>
-
-	* de.po: Fixed typo in "|AN|New Admin PIN"; the leading bar was
-	missing.
-
-2005-03-07  Werner Koch  <wk@g10code.com>
-
-	* de.po: Updated. Translation is still in the works, though.
-
-2005-02-15  Werner Koch  <wk@g10code.com>
-
-	* ca.po: Updated using a patch provided by Jordi Mallach.
-
-2005-02-03  Werner Koch  <wk@g10code.com>
-
-	* zh_TW.po, ro.po: Updated.
-
-2004-12-10  Werner Koch  <wk@g10code.com>
-
-	* sv.po: Take the update done for 1.2.6.
-
-	* zh_CN.po, fr.po, cs.po, ja.po: Updated.
-
-2004-10-27  Werner Koch  <wk@g10code.com>
-
-	* LINGUAS: Better don't have comments in this file.
-
-2004-10-15  Werner Koch  <wk@g10code.com>
-
-	* POTFILES.in: Updated.
-
-	* sv.po: Updated.
-
-2004-10-12  Werner Koch  <wk@g10code.com>
-
-	* es.po: s/intgridad/integridad/. This is bug 275.
-
-2004-07-27  Werner Koch  <wk@g10code.de>
-
-	* LINGUAS: Added all languages we supported in 1.2.5.
-	Copied all po files from 1.2.5.
-
-2004-07-27  gettextize  <bug-gnu-gettext@gnu.org>
+2004-09-30  gettextize  <bug-gnu-gettext@gnu.org>
 
 	* Makefile.in.in: Upgrade to gettext-0.14.1.
 	* Rules-quot: Upgrade to gettext-0.14.1.
 
-2003-11-27  Werner Koch  <wk@gnupg.org>
+2004-09-30  Werner Koch  <wk@g10code.com>
 
-	* de.po: Updated some fuzzys.
+	* de.po: Updated.
 
-2003-10-25  Werner Koch  <wk@gnupg.org>
+	* POTFILES.in: Add more files.
 
-	* Makevars: New.
+2004-07-22  Werner Koch  <wk@g10code.de>
 
-2003-10-25  gettextize  <bug-gnu-gettext@gnu.org>
+	* de.po: Updated.
 
-	* Makefile.in.in: New file, from gettext-0.12.1.
-	* Rules-quot: New file, from gettext-0.12.1.
-	* boldquot.sed: New file, from gettext-0.12.1.
-	* en@boldquot.header: New file, from gettext-0.12.1.
-	* en@quot.header: New file, from gettext-0.12.1.
-	* insert-header.sin: New file, from gettext-0.12.1.
-	* quot.sed: New file, from gettext-0.12.1.
-	* remove-potcdate.sin: New file, from gettext-0.12.1.
+2004-04-06  Werner Koch  <wk@gnupg.org>
 
-2003-10-10  Werner Koch  <wk@gnupg.org>
+	* Makevars (DOMAIN): Init from PACKAGE_GT
 
-	* POTFILES.in (cipher/primegen.c): Added.
+2003-12-09  Werner Koch  <wk@gnupg.org>
 
-2003-05-26  David Shaw  <dshaw@jabberwocky.com>
+	* Makevars (MSGID_BUGS_ADDRESS): New.
 
-	* POTFILES.in: Added a couple of missing source files.  Noted by
-	Pascal Hartig and Walter Koch. (From wk on stable branch)
+2003-04-29  Werner Koch  <wk@gnupg.org>
 
-2002-10-18  Werner Koch  <wk@gnupg.org>
+	* LINUGAS: NEW.
 
-	* POTFILES.in (hkp.c): Removed.
+2003-04-29  gettextize  <bug-gnu-gettext@gnu.org>
 
-2002-09-12  Werner Koch  <wk@gnupg.org>
+	* Rules-quot: New file, from gettext-0.11.5.
+	* boldquot.sed: New file, from gettext-0.11.5.
+	* en@boldquot.header: New file, from gettext-0.11.5.
+	* en@quot.header: New file, from gettext-0.11.5.
+	* insert-header.sin: New file, from gettext-0.11.5.
+	* quot.sed: New file, from gettext-0.11.5.
+	* remove-potcdate.sin: New file, from gettext-0.11.5.
 
-	* tr.po, el.po: Updated.
+2002-08-21  Werner Koch  <wk@gnupg.org>
 
-2002-08-23  gettextize  <bug-gnu-utils@gnu.org>
+	* de.po: Updated the translation.
 
-	* Makefile.in.in: Upgrade to gettext-0.10.40.
+2002-08-10  Werner Koch  <wk@gnupg.org>
 
-2002-08-04  Werner Koch  <wk@gnupg.org>
+	* Makefile.in.in: Installed from gettext-0.10.40.
+	* POTFILES.in: New.
+	* de.po: New.
 
-	* de.po: Fixed fuzzys and translated new strings.
-	* es.po, et.po, fr.po, gl.po, id.po, it.po, ja.po, tr.po: Updated
-	from TP site.
-	* ca.po: New from TP site.
-
-2002-04-30  Werner Koch  <wk@gnupg.org>
-
-	* ja.po: Updated, also a bit too late for the release.
-
-2002-04-29  Werner Koch  <wk@gnupg.org>
-
-	* pl.po: Update.
-	* el.po: Updated, removed one entry due to non-matching printf and
-	one removed one printf specifier.
-
-	Fixed fuzzy entries due to the change of (y/N) to (Y/n) in most files.
 	
-2002-04-25  gettextize  <bug-gnu-utils@gnu.org>
-
-	* Makefile.in.in: Upgrade to gettext-0.10.40.
-
-2002-04-22  Werner Koch  <wk@gnupg.org>
-
-	* et.po, tr.po, cs.po, it.po, id.po: Updated.
-
-2002-04-19  Werner Koch  <wk@gnupg.org>
-
-	* de.po: Fixed fuzzies and added a few translations.
-
-2002-04-18  Werner Koch  <wk@gnupg.org>
-
-	* eo.po: Updated.
-
-2002-04-10  Werner Koch  <wk@gnupg.org>
-
-	* pl.po: Updated.
-
-2002-04-09  Werner Koch  <wk@gnupg.org>
-
-	* pt_BR.po: Updated the info entry 
-
-	* es.po: Fixed a c-format problem; for unknown reasons msgfmt -c
-	can't cope with swapped arguments.
-
-	* de.po: Fuzzy fixes and a few new translations.
-
-	* id.po: Fixed a format string mismatch.
-
-	* eo.po, it.po, ja.po, sv.po: Updated with a somewhat newer
-	version from the TP.
-
-	* es_ES.po: Removed
-	* es.po: and replaced with this updated version from the TP.
-
-	* cs.po: New.  Fixed for format string mismatches.
-
-	* el.po, gl.po: New from TP.
-	
-2002-04-06  Werner Koch  <wk@gnupg.org>
-
-	* fr.po: Updated.
-
-2002-04-02  Werner Koch  <wk@gnupg.org>
-
-	* de.po, de.glo: Updated.
-
-2002-03-08  Werner Koch  <wk@gnupg.org>
-
-	* et.po: Updated.
-
-2002-03-06  Werner Koch  <wk@gnupg.org>
-
-	* pt_PT.po: Removed.
-	* pt.po: and replaced by this updated one.  My machine voted 30 to
-	2 for just pt.  So we go with the crowd.  Thanks for Pedro Morais
-	for suggesting this.
-
-2002-03-05  Werner Koch  <wk@gnupg.org>
-
-	* tr.po, id.po: Updated.
-
-2002-03-03  gettextize  <bug-gnu-utils@gnu.org>
-
-	* Makefile.in.in: Upgrade to gettext-0.10.40.
-
-2002-03-03  gettextize  <bug-gnu-utils@gnu.org>
-
-	* Makefile.in.in: Upgrade to gettext-0.10.40.
-
-2001-10-23  gettextize  <bug-gnu-utils@gnu.org>
-
-	* Makefile.in.in: Upgrade to gettext-0.10.40.
-
-2001-09-07  Werner Koch  <wk@gnupg.org>
-
-	* POTFILES.in: Added new files.
-
-2001-07-26  gettextize  <bug-gnu-utils@gnu.org>
-
-	* Makefile.in.in: Upgrade to gettext-0.10.38.
-
-2001-07-05  Werner Koch  <wk@gnupg.org>
-
-	* id.po: Updated
-
-2001-05-28  Werner Koch  <wk@gnupg.org>
-
-	* ru.po: Removed - too many format string bugs. 
-
-2001-05-27  gettextize  <bug-gnu-utils@gnu.org>
-
-	* Makefile.in.in: Upgrade to gettext-0.10.38.
-	* cat-id-tbl.c: Remove file.
-	* stamp-cat-id: Remove file.
-
-2001-05-27  Werner Koch  <wk@gnupg.org>
-
-	* tr.po: New copy from the TP Robot. 
-	* da.po, de.po, eo.po, es_ES.po, et.po, id.po, ja.po, nl.po,
-        pt_BR.po, sv.po: Fixes to format string errors by Kurt Garloff.
-	It is not cleare whether they are all correct but at least they
-	won't give segv and minimize the risk of format string exploits.
-	* ru.po: Fixed the header entry.
-
-	Fixed some fuzzy entries in all files.
-	
-2001-05-06  Werner Koch  <wk@gnupg.org>
-
-	* id.po: Updated
-
-2001-04-27  Werner Koch  <wk@gnupg.org>
-
-	* de.po: Removed an extra "%s".
-
-2001-04-25  Werner Koch  <wk@gnupg.org>
-
-	* fr.po: Updated.
-
-2001-04-23  Werner Koch  <wk@gnupg.org>
-
-	* eo.po: Updated.
-
-	* it.po: Updated.
-
-2001-04-22  Werner Koch  <wk@gnupg.org>
-
-	* pl.po: Updated.
-
-2001-04-17  Werner Koch  <wk@gnupg.org>
-
-	* et.po: New.
-
-	* de.po: Updated.
-
-2001-04-16  Werner Koch  <wk@gnupg.org>
-
-	* pt_PT.po: Updated.
-
-2001-04-06  Werner Koch  <wk@gnupg.org>
-
-	* tr.po: New. 
-
-2001-03-18  Werner Koch  <wk@gnupg.org>
-
-	* de.po, de.glo: Updated. 
-
-2001-02-22  Werner Koch  <wk@gnupg.org>
-
-	* de.po, de.glo: Updated.
-
-2001-01-23  Werner Koch  <wk@gnupg.org>
-
-	* de.po: Removed superfluous \r.
-
-2001-01-14  Werner Koch  <wk@gnupg.org>
-
-	* de.po, de.glo: Updated.
-
-2000-12-19  Werner Koch  <wk@gnupg.org>
-
-	* pl.po: Updated.
-
-	* ja.po: Justified one message.
-
-2000-10-23  Werner Koch  <wk@gnupg.org>
-
-	* ja.po: Updated.
-
-2000-10-19  Werner Koch  <wk@gnupg.org>
-
-	Fixed a typo in all files.
-
-2000-10-16  Werner Koch  <wk@gnupg.org>
-
-	* de.po, de.glo: Updated.
-
-Thu Sep 14 17:45:11 CEST 2000  Werner Koch  <wk@openit.de>
-
-        * eo.po: Updated.
-
-Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
-
-  * da.po: New from the TP server
-  * eo.po: Updated from the TP server
-  * pl.po: Ditto.
-  * sv.po: Ditto.
-
-  Small English spelling correction in all files.
-
-Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@openit.de>
-
-  * fr.po: Minor changes by Gael
-
-Wed Jun 14 12:27:09 CEST 2000  Werner Koch  <wk@openit.de>
-
-  * de.po, de.glo: Updated.
-
-2000-06-07 18:26:58  Werner Koch  (wk@habibti.openit.de)
-
-  * fr.po: New version from Gaël
-
-2000-05-02 10:44:42  Werner Koch  (wk@habibti.openit.de)
-
-	* fr.po: New version from the TP Robot.
-
-2000-05-01 14:19:52  Werner Koch  (wk@habibti.openit.de)
-
-	* de.po: Updated.
-	* de.glo: Ditto.
-
-2000-03-15 15:37:08  Werner Koch  (wk@habibti.openit.de)
-
-	* de.po: Updated.
-
-Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
-
-	* nl.po: New. By Ivo Timmermans.
-
-Wed Feb 16 16:25:09 CET 2000  Werner Koch  <wk@gnupg.de>
-
-	* eo.po : New. By Edmund.
-
-Wed Feb 16 14:09:00 CET 2000  Werner Koch  <wk@gnupg.de>
-
-	* ja.po: New. By Yosiaki
-
-	* sv.po: New. By Daniel.
-
-Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
-
-	* id.po: Updated.
-
-Thu Jan  6 16:56:18 CET 2000  Werner Koch  <wk@gnupg.de>
-
-	* Makefile.in.in: Is not longer maintained as a symlink because we
-	have a patch to work around a bug in non-gnu Make.
-	Fixed by Dave Dykstra.
-
-Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
-
-	* pt_PT.po: Updated.
-	* de.po: Updated.
-	* it.po: Updated.
-
-Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
-
-	* de.po: Updated.
-	* pt_BR.po: Updated.
-
-Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
-
-	* es_ES.po: Fixed 3 \n mismatches.
-
-	* de.po: Updated.
-
-Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
-
-	* es_ES.po: Updated.
-
-	* pt_BR.po: Updated.
-
-Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
-
-	* fr.po: Updated for 1.0.0d.
-
-Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
-
-	* pl.po: New version by Alex.
-
-Thu Sep 23 06:26:28 1999  Werner Koch  (wk@gnupg.org)
-
-	* fr.po: Updated by Gaël.
-
-Sat Sep 18 11:49:51 1999  Werner Koch  (wk@gnupg.org)
-
-	* id.po: New. Done by Tedi Heriyanto.
-
-Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* pt_PT.po: New. Done by Pedro Morais.
-
-	* it.po: Updated by Marco.
-
-Tue Sep  7 16:23:36 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* pl.po: Updated.
-
-Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* fr.po: Imported and fixed a msgid.
-	* de.po: Ditto.
-	* pt_BR.po: Ditto.
-
-	* POTFILES.in (delkey.c): New.
-
-	* fr.po: Gaël was the first to update it again.
-
-Wed Sep  1 15:30:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* de.po: Updated.
-
-Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* it.po: Updated (Marco).
-	* de.po: Updated (Walter).
-	* pt_BR-po: Update (Thiago).
-	* fr.po: Updated (Gaël).
-
-Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* de.po: Updated (Walter).
-
-Mon Jul 26 09:34:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* it.po: Updated (Marco).
-
-Tue Jul 13 17:39:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* de.po: Updated (Walter)
-
-Tue Jun 29 21:44:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* it.po: Updated (Marco).
-
-Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* pt_BR.po: Updated (Thiago).
-
-Thu Jun 10 14:18:23 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* it.po: Updated (Marco).
-
-	* es_ES.po: Updated (Urko).
-
-Wed Jun  2 14:17:19 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* es_ES.po: Some patches (Urko Lusa).
-
-Mon May 31 19:41:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* de.po: New version (Walter).
-
-	* pl.po: New version (Alex).
-
-Tue May 25 19:50:32 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* fr.po: Imported new version.
-
-Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* de.po, de.glo:  New version from Walter.
-
-Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* fr.po: Imported new version.
-
-Wed Feb 24 11:07:27 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* de.po: Imported update for 0.9.3
-
-Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* pl.po: New version.
-
-Wed Jan 20 21:40:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* es_ES.po: Import of new version.
-
-Wed Jan 13 12:49:36 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* de.po de.glo: New version imported.
-
-Tue Jan 12 11:17:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* fr.po: Imported new version
-
-Tue Dec 29 14:41:47 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* pl.po: Janusz A. Urbanowicz contributed this one
-
-Thu Dec 17 18:31:15 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* fr.po: Imported new version
-
-Mon Dec 14 21:18:49 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* de.po: Imported new version.
-
-Thu Dec 10 20:15:36 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* *.po: Changed some english strings.
-
-Tue Dec  8 15:09:29 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* pt_BR.po: Add translation by Thiago Jung Bauermann.
-Fri Nov 27 12:39:29 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
-
-	* en.po: Removed
-
-Fri Nov 20 11:46:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* de.po: Imported new version
-	* de.glo: Glossary used for de.po.
-
-Sat Nov 14 10:16:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* es_ES.po: New translation by Urko Lusa.
-
-Tue Nov 10 10:48:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* it.po: Imported new version.
-
-Fri Oct 30 20:03:17 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* fr.po: Imported new version
-
-Mon Oct 12 09:08:09 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* it.po: Imported new version.
-	* de.po: Imported new version.
-
-Sun Oct 11 16:24:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* fr.po: Imported new version
-
-Wed Oct  7 13:12:00 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* Makefile.in.in: Fixed mkinstalldirs problems
-
-Mon Sep 21 15:03:44 1998  Werner Koch  (wk@(none))
-
-	* it.po: New version from Marco d'Itri
-
-Mon Sep 21 09:28:54 1998  Werner Koch  (wk@(none))
-
-	* fr.po: New version from Gaël Quéri
-
-Tue Aug 11 12:28:11 1998  Werner Koch  (wk@(none))
-
-	* it.po: New file from Marco.
-
-Thu Jul  9 21:14:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* de.po: Fixed typos and added new translations.
-
-Fri Jun 26 11:44:24 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* it.po: New file from Marco.
-
-Thu May 28 10:44:25 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* it.po: Add small corrections from Marco
-
-Thu Apr  9 10:03:14 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* it.po: New version from Marco
-
-Fri Mar 13 09:43:19 1998  Werner Koch  (wk@isil.d.shuttle.de)
-
-	* it.po: New
-
-
-
- Copyright 1998, 1999, 2000, 2001, 2004,
-	   2005 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -623,5 +79,5 @@ Fri Mar 13 09:43:19 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+		
 

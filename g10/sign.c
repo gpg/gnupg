@@ -28,12 +28,12 @@
 #include <assert.h>
 #include <unistd.h> /* need sleep() */
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "filter.h"
@@ -41,7 +41,8 @@
 #include "trustdb.h"
 #include "status.h"
 #include "i18n.h"
-#include "cardglue.h"
+#include "pkglue.h"
+#include "call-agent.h"
 
 
 #ifdef HAVE_DOSISH_SYSTEM
@@ -188,7 +189,7 @@ mk_notation_policy_etc( PKT_signature *sig,
  * Helper to hash a user ID packet.  
  */
 static void
-hash_uid (MD_HANDLE md, int sigversion, const PKT_user_id *uid)
+hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
 {
     if ( sigversion >= 4 ) {
         byte buf[5];
@@ -207,13 +208,13 @@ hash_uid (MD_HANDLE md, int sigversion, const PKT_user_id *uid)
 	  buf[3] = uid->len >>  8;
 	  buf[4] = uid->len;
 	}
-        md_write( md, buf, 5 );
+        gcry_md_write( md, buf, 5 );
     }
 
     if(uid->attrib_data)
-      md_write (md, uid->attrib_data, uid->attrib_len );
+      gcry_md_write (md, uid->attrib_data, uid->attrib_len );
     else
-      md_write (md, uid->name, uid->len );
+      gcry_md_write (md, uid->name, uid->len );
 }
 
 
@@ -221,34 +222,34 @@ hash_uid (MD_HANDLE md, int sigversion, const PKT_user_id *uid)
  * Helper to hash some parts from the signature
  */
 static void
-hash_sigversion_to_magic (MD_HANDLE md, const PKT_signature *sig)
+hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 {
     if (sig->version >= 4) 
-        md_putc (md, sig->version);
-    md_putc (md, sig->sig_class);
+        gcry_md_putc (md, sig->version);
+    gcry_md_putc (md, sig->sig_class);
     if (sig->version < 4) {
         u32 a = sig->timestamp;
-        md_putc (md, (a >> 24) & 0xff );
-        md_putc (md, (a >> 16) & 0xff );
-        md_putc (md, (a >>  8) & 0xff );
-        md_putc (md,  a	       & 0xff );
+        gcry_md_putc (md, (a >> 24) & 0xff );
+        gcry_md_putc (md, (a >> 16) & 0xff );
+        gcry_md_putc (md, (a >>  8) & 0xff );
+        gcry_md_putc (md,  a	       & 0xff );
     }
     else {
         byte buf[6];
         size_t n;
         
-        md_putc (md, sig->pubkey_algo);
-        md_putc (md, sig->digest_algo);
+        gcry_md_putc (md, sig->pubkey_algo);
+        gcry_md_putc (md, sig->digest_algo);
         if (sig->hashed) {
             n = sig->hashed->len;
-            md_putc (md, (n >> 8) );
-            md_putc (md,  n       );
-            md_write (md, sig->hashed->data, n );
+            gcry_md_putc (md, (n >> 8) );
+            gcry_md_putc (md,  n       );
+            gcry_md_write (md, sig->hashed->data, n );
             n += 6;
         }
         else {
-            md_putc (md, 0);  /* always hash the length of the subpacket*/
-            md_putc (md, 0);
+            gcry_md_putc (md, 0);  /* always hash the length of the subpacket*/
+            gcry_md_putc (md, 0);
             n = 6;
         }
         /* add some magic */
@@ -258,16 +259,16 @@ hash_sigversion_to_magic (MD_HANDLE md, const PKT_signature *sig)
         buf[3] = n >> 16;
         buf[4] = n >>  8;
         buf[5] = n;
-        md_write (md, buf, 6);
+        gcry_md_write (md, buf, 6);
     }
 }
 
 
 static int
 do_sign( PKT_secret_key *sk, PKT_signature *sig,
-	 MD_HANDLE md, int digest_algo )
+	 gcry_md_hd_t md, int digest_algo )
 {
-    MPI frame;
+    gcry_mpi_t frame;
     byte *dp;
     int rc;
 
@@ -285,10 +286,10 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     print_pubkey_algo_note(sk->pubkey_algo);
 
     if( !digest_algo )
-	digest_algo = md_get_algo(md);
+	digest_algo = gcry_md_get_algo (md);
 
     print_digest_algo_note( digest_algo );
-    dp = md_read( md, digest_algo );
+    dp = gcry_md_read ( md, digest_algo );
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
@@ -302,19 +303,19 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         snbuf = serialno_and_fpr_from_sk (sk->protect.iv,
                                           sk->protect.ivlen, sk);
         rc = agent_scd_pksign (snbuf, digest_algo,
-                               md_read (md, digest_algo),
-                               md_digest_length (digest_algo),
+                               gcry_md_read (md, digest_algo),
+                               gcry_md_get_algo_dlen (digest_algo),
                                &rbuf, &rbuflen);
         xfree (snbuf);
         if (!rc)
           {
-            sig->data[0] = mpi_alloc ( (rbuflen+BYTES_PER_MPI_LIMB-1)
-                                       / BYTES_PER_MPI_LIMB );
-            mpi_set_buffer (sig->data[0], rbuf, rbuflen, 0);
+            if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG,
+                               rbuf, rbuflen, NULL))
+              BUG ();
             xfree (rbuf);
           }
 #else
-        return G10ERR_UNSUPPORTED;
+        return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif /* ENABLE_CARD_SUPPORT */
       }
     else 
@@ -322,12 +323,12 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         frame = encode_md_value( NULL, sk, md, digest_algo );
         if (!frame)
           return G10ERR_GENERAL;
-        rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
-        mpi_free(frame);
+        rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
+        gcry_mpi_release (frame);
       }
 
     if (!rc && !opt.no_sig_create_check) {
-        /* check that the signature verification worked and nothing is
+        /* Check that the signature verification worked and nothing is
          * fooling us e.g. by a bug in the signature create
          * code or by deliberately introduced faults. */
         PKT_public_key *pk = xmalloc_clear (sizeof *pk);
@@ -337,11 +338,10 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         else {
 	    frame = encode_md_value (pk, NULL, md, sig->digest_algo );
             if (!frame)
-                rc = G10ERR_GENERAL;
+              rc = G10ERR_GENERAL;
             else
-                rc = pubkey_verify (pk->pubkey_algo, frame,
-                                    sig->data, pk->pkey );
-            mpi_free (frame);
+              rc = pk_verify (pk->pubkey_algo, frame, sig->data, pk->pkey );
+            gcry_mpi_release (frame);
         }
         if (rc)
             log_error (_("checking created signature failed: %s\n"),
@@ -354,8 +354,8 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string_native (sig->keyid);
 	    log_info(_("%s/%s signature from: \"%s\"\n"),
-		     pubkey_algo_to_string(sk->pubkey_algo),
-		     digest_algo_to_string(sig->digest_algo),
+		     gcry_pk_algo_name (sk->pubkey_algo),
+		     gcry_md_algo_name (sig->digest_algo),
 		     ustr );
 	    xfree(ustr);
 	}
@@ -365,7 +365,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 
 
 int
-complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
+complete_sig( PKT_signature *sig, PKT_secret_key *sk, gcry_md_hd_t md )
 {
     int rc=0;
 
@@ -374,21 +374,24 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
     return rc;
 }
 
+
+
 static int
-match_dsa_hash(unsigned int qbytes)
+match_dsa_hash (unsigned int qbytes)
 {
-  if(qbytes<=20)
+  if (qbytes <= 20)
     return DIGEST_ALGO_SHA1;
 #ifdef USE_SHA256
-  if(qbytes<=28)
+  if (qbytes <= 28)
     return DIGEST_ALGO_SHA224;
-  if(qbytes<=32)
+  if (qbytes <= 32)
     return DIGEST_ALGO_SHA256;
 #endif
+
 #ifdef USE_SHA512
-  if(qbytes<=48)
+  if (qbytes <= 48)
     return DIGEST_ALGO_SHA384;
-  if(qbytes<=64)
+  if (qbytes <= 64)
     return DIGEST_ALGO_SHA512;
 #endif
   return DEFAULT_DIGEST_ALGO;
@@ -410,7 +413,6 @@ match_dsa_hash(unsigned int qbytes)
   the signing key prefs either before or after using the personal
   list?
 */
-
 static int
 hash_for(PKT_secret_key *sk)
 {
@@ -420,7 +422,7 @@ hash_for(PKT_secret_key *sk)
     return recipient_digest_algo;
   else if(sk->pubkey_algo==PUBKEY_ALGO_DSA)
     {
-      unsigned int qbytes=mpi_get_nbits(sk->skey[1])/8;
+      unsigned int qbytes = gcry_mpi_get_nbits (sk->skey[1]) / 8;
 
       /* It's a DSA key, so find a hash that is the same size as q or
 	 larger.  If q is 160, assume it is an old DSA key and use a
@@ -429,27 +431,27 @@ hash_for(PKT_secret_key *sk)
 	 (i.e. allow truncation).  If q is not 160, by definition it
 	 must be a new DSA key. */
 
-      if(opt.personal_digest_prefs)
+      if (opt.personal_digest_prefs)
 	{
 	  prefitem_t *prefs;
 
-	  if(qbytes!=20 || opt.flags.dsa2)
+	  if (qbytes != 20 || opt.flags.dsa2)
 	    {
-	      for(prefs=opt.personal_digest_prefs;prefs->type;prefs++)
-		if(md_digest_length(prefs->value)>=qbytes)
+	      for (prefs=opt.personal_digest_prefs; prefs->type; prefs++)
+		if (gcry_md_get_algo_dlen (prefs->value) >= qbytes)
 		  return prefs->value;
 	    }
 	  else
 	    {
-	      for(prefs=opt.personal_digest_prefs;prefs->type;prefs++)
-		if(md_digest_length(prefs->value)==qbytes)
+	      for (prefs=opt.personal_digest_prefs; prefs->type; prefs++)
+		if (gcry_md_get_algo_dlen (prefs->value) == qbytes)
 		  return prefs->value;
 	    }
 	}
 
       return match_dsa_hash(qbytes);
     }
-  else if(sk->is_protected && sk->protect.s2k.mode==1002)
+  else if (sk->is_protected && sk->protect.s2k.mode==1002)
     {
       /* The sk lives on a smartcard, and current smartcards only
 	 handle SHA-1 and RIPEMD/160.  This is correct now, but may
@@ -459,20 +461,20 @@ hash_for(PKT_secret_key *sk)
 	{
 	  prefitem_t *prefs;
 
-	  for(prefs=opt.personal_digest_prefs;prefs->type;prefs++)
-	    if(prefs->value==DIGEST_ALGO_SHA1
-	       || prefs->value==DIGEST_ALGO_RMD160)
+	  for (prefs=opt.personal_digest_prefs;prefs->type;prefs++)
+	    if (prefs->value==DIGEST_ALGO_SHA1
+                || prefs->value==DIGEST_ALGO_RMD160)
 	      return prefs->value;
 	}
 
       return DIGEST_ALGO_SHA1;
     }
-  else if(PGP2 && sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
+  else if (PGP2 && sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
     {
       /* Old-style PGP only understands MD5 */
       return DIGEST_ALGO_MD5;
     }
-  else if( opt.personal_digest_prefs )
+  else if ( opt.personal_digest_prefs )
     {
       /* It's not DSA, so we can use whatever the first hash algorithm
 	 is in the pref list */
@@ -481,6 +483,7 @@ hash_for(PKT_secret_key *sk)
   else
     return DEFAULT_DIGEST_ALGO;
 }
+
 
 static int
 only_old_style( SK_LIST sk_list )
@@ -633,10 +636,9 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
         int  bytes_copied;
 
         while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-            if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-                rc = G10ERR_WRITE_FILE;
+            if ( (rc=iobuf_write(out, copy_buffer, bytes_copied)) ) {
                 log_error ("copying input to output failed: %s\n",
-                           g10_errstr(rc));
+                           gpg_strerror (rc));
                 break;
             }
         wipememory(copy_buffer,4096); /* burn buffer */
@@ -651,7 +653,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
  * hash which will not be changes here.
  */
 static int
-write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
+write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
                          int sigclass, u32 timestamp, u32 duration,
 			 int status_letter)
 {
@@ -661,7 +663,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
 	PKT_secret_key *sk;
 	PKT_signature *sig;
-	MD_HANDLE md;
+	gcry_md_hd_t md;
         int rc;
 
 	sk = sk_rover->sk;
@@ -686,18 +688,18 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	  sig->expiredate = sig->timestamp+duration;
 	sig->sig_class = sigclass;
 
-	md = md_copy (hash);
+	if (gcry_md_copy (&md, hash))
+          BUG ();
 
 	if (sig->version >= 4)
 	    build_sig_subpkt_from_sig (sig);
 	mk_notation_policy_etc (sig, NULL, sk);
 
         hash_sigversion_to_magic (md, sig);
-	md_final (md);
+	gcry_md_final (md);
 
 	rc = do_sign( sk, sig, md, hash_for (sk) );
-	md_close (md);
-
+	gcry_md_close (md);
 	if( !rc ) { /* and write it */
             PACKET pkt;
 
@@ -804,11 +806,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
           inp = NULL;
           errno = EPERM;
         }
-      if( !inp ) {
-	    log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
-		      strerror(errno) );
-	    rc = G10ERR_OPEN_FILE;
-	    goto leave;
+      if( !inp ) 
+        {
+          rc = gpg_error_from_errno (errno);
+          log_error (_("can't open `%s': %s\n"), fname? fname: "[stdin]",
+                     strerror(errno) );
+          goto leave;
 	}
 
         handle_progress (&pfx, inp, fname);
@@ -823,8 +826,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
             out = iobuf_create( outfile );
 	if( !out )
 	  {
+            rc = gpg_error_from_errno (errno);
 	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	  }
 	else if( opt.verbose )
@@ -840,9 +843,10 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( inp, text_filter, &tfx );
       }
 
-    mfx.md = md_open(0, 0);
+    if ( gcry_md_open (&mfx.md, 0, 0) )
+      BUG ();
     if (DBG_HASHING)
-	md_start_debug (mfx.md, "sign");
+      gcry_md_start_debug (mfx.md, "sign");
 
     /* If we're encrypting and signing, it is reasonable to pick the
        hash algorithm to use out of the recepient key prefs.  This is
@@ -861,15 +865,15 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 				      NULL)!=opt.def_digest_algo)
 	  log_info(_("WARNING: forcing digest algorithm %s (%d)"
 		     " violates recipient preferences\n"),
-		   digest_algo_to_string(opt.def_digest_algo),
-		   opt.def_digest_algo);
+		   gcry_md_algo_name (opt.def_digest_algo),
+		   opt.def_digest_algo );
 	  }
 	else
 	  {
+	    int algo, smartcard=0;
 	    union pref_hint hint;
-	    int algo,smartcard=0;
 
-	    hint.digest_length=0;
+            hint.digest_length = 0;
 
 	    /* Of course, if the recipient asks for something
 	       unreasonable (like the wrong hash for a DSA key) then
@@ -888,21 +892,22 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       usable on an implementation that doesn't understand
 	       DSA2 anyway. */
 
-	    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
 	      {
-		if(sk_rover->sk->pubkey_algo==PUBKEY_ALGO_DSA)
+		if (sk_rover->sk->pubkey_algo == PUBKEY_ALGO_DSA)
 		  {
-		    int temp_hashlen=mpi_get_nbits(sk_rover->sk->skey[1])/8;
+		    int temp_hashlen = gcry_mpi_get_nbits
+                      (sk_rover->sk->skey[1])+7/8;
 
 		    /* Pick a hash that is large enough for our
 		       largest q */
 
-		    if(hint.digest_length<temp_hashlen)
+		    if (hint.digest_length<temp_hashlen)
 		      hint.digest_length=temp_hashlen;
 		  }
-		else if(sk_rover->sk->is_protected
-			&& sk_rover->sk->protect.s2k.mode==1002)
-		  smartcard=1;
+		else if (sk_rover->sk->is_protected
+                         && sk_rover->sk->protect.s2k.mode == 1002)
+		  smartcard = 1;
 	      }
 
 	    /* Current smartcards only do 160-bit hashes.  If we have
@@ -912,16 +917,16 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       single hash for all signatures.  All this may well have
 	       to change as the cards add algorithms. */
 
-	    if(!smartcard || (smartcard && hint.digest_length==20))
-	      if((algo=
-		  select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,&hint))>0)
+	    if (!smartcard || (smartcard && hint.digest_length==20))
+	      if ( (algo=
+                   select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,&hint)) > 0)
 		recipient_digest_algo=algo;
 	  }
       }
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(mfx.md, hash_for(sk));
+	gcry_md_enable (mfx.md, hash_for(sk));
     }
 
     if( !multifile )
@@ -998,9 +1003,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
                   }
 		if( !inp )
 		  {
+                    rc = gpg_error_from_errno (errno);
 		    log_error(_("can't open `%s': %s\n"),
 			      sl->d,strerror(errno));
-		    rc = G10ERR_OPEN_FILE;
 		    goto leave;
 		  }
                 handle_progress (&pfx, inp, sl->d);
@@ -1051,7 +1056,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
             write_status( STATUS_END_ENCRYPTION );
     }
     iobuf_close(inp);
-    md_close( mfx.md );
+    gcry_md_close ( mfx.md );
     release_sk_list( sk_list );
     release_pk_list( pk_list );
     recipient_digest_algo=0;
@@ -1068,7 +1073,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 {
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
-    MD_HANDLE textmd = NULL;
+    gcry_md_hd_t textmd = NULL;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     int rc = 0;
@@ -1111,9 +1116,9 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
         errno = EPERM;
       }
     if( !inp ) {
-	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
-					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+        rc = gpg_error_from_errno (errno);
+	log_error (_("can't open `%s': %s\n"), 
+                   fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
     handle_progress (&pfx, inp, fname);
@@ -1127,8 +1132,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
             out = iobuf_create( outfile );
 	if( !out )
 	  {
+            rc = gpg_error_from_errno (errno);
 	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	  }
 	else if( opt.verbose )
@@ -1161,7 +1166,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    int i = hash_for(sk);
 
 	    if( !hashs_seen[ i & 0xff ] ) {
-		s = digest_algo_to_string( i );
+		s = gcry_md_algo_name ( i );
 		if( s ) {
 		    hashs_seen[ i & 0xff ] = 1;
 		    if( any )
@@ -1180,13 +1185,15 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 		  "NotDashEscaped: You need GnuPG to verify this message" LF );
     iobuf_writestr(out, LF );
 
-    textmd = md_open(0, 0);
+    if ( gcry_md_open (&textmd, 0, 0) )
+      BUG ();
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(textmd, hash_for(sk));
+	gcry_md_enable (textmd, hash_for(sk));
     }
     if ( DBG_HASHING )
-	md_start_debug( textmd, "clearsign" );
+      gcry_md_start_debug ( textmd, "clearsign" );
+
     copy_clearsig_text( out, inp, textmd, !opt.not_dash_escaped,
 			opt.escape_from, (old_style && only_md5) );
     /* fixme: check for read errors */
@@ -1206,7 +1213,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     else
 	iobuf_close(out);
     iobuf_close(inp);
-    md_close( textmd );
+    gcry_md_close ( textmd );
     release_sk_list( sk_list );
     return rc;
 }
@@ -1261,9 +1268,9 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
         errno = EPERM;
       }
     if( !inp ) {
-	log_error(_("can't open `%s': %s\n"), 
-                  fname? fname: "[stdin]", strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+        rc = gpg_error_from_errno (errno);
+	log_error (_("can't open `%s': %s\n"), 
+                   fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
     handle_progress (&pfx, inp, fname);
@@ -1276,12 +1283,12 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     algo = default_cipher_algo();
     if (!opt.quiet || !opt.batch)
         log_info (_("%s encryption will be used\n"),
-		    cipher_algo_to_string(algo) );
+                  gcry_cipher_algo_name (algo) );
     cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL, NULL);
 
     if (!cfx.dek || !cfx.dek->keylen) {
-        rc = G10ERR_PASSPHRASE;
-        log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
+        rc = gpg_error (GPG_ERR_BAD_PASSPHRASE);
+        log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc) );
         goto leave;
     }
 
@@ -1300,13 +1307,14 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* prepare to calculate the MD over the input */
     if (opt.textmode)
 	iobuf_push_filter (inp, text_filter, &tfx);
-    mfx.md = md_open(0, 0);
+    if ( gcry_md_open (&mfx.md, 0, 0) )
+      BUG ();
     if ( DBG_HASHING )
-	md_start_debug (mfx.md, "symc-sign");
+      gcry_md_start_debug (mfx.md, "symc-sign");
 
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable (mfx.md, hash_for (sk));
+	gcry_md_enable (mfx.md, hash_for (sk));
     }
 
     iobuf_push_filter (inp, md_filter, &mfx);
@@ -1371,7 +1379,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     }
     iobuf_close(inp);
     release_sk_list( sk_list );
-    md_close( mfx.md );
+    gcry_md_close( mfx.md );
     xfree(cfx.dek);
     xfree(s2k);
     return rc;
@@ -1398,7 +1406,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 {
     PKT_signature *sig;
     int rc=0;
-    MD_HANDLE md;
+    gcry_md_hd_t md;
 
     assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
 	    || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
@@ -1435,14 +1443,15 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 		&& pk->version<4 && sigversion<4)
 	  digest_algo = DIGEST_ALGO_MD5;
 	else if(sk->pubkey_algo==PUBKEY_ALGO_DSA)
-	  digest_algo = match_dsa_hash(mpi_get_nbits(sk->skey[1])/8);
+	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (sk->skey[1])/8);
 	else
 	  digest_algo = DIGEST_ALGO_SHA1;
       }
 
-    md = md_open( digest_algo, 0 );
+    if ( gcry_md_open (&md, digest_algo, 0 ) )
+      BUG ();
 
-    /* hash the public key certificate */
+    /* Hash the public key certificate. */
     hash_public_key( md, pk );
 
     if( sigclass == 0x18 || sigclass == 0x19 || sigclass == 0x28 )
@@ -1482,12 +1491,12 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
     if( !rc ) {
         hash_sigversion_to_magic (md, sig);
-	md_final(md);
+	gcry_md_final (md);
 
 	rc = complete_sig( sig, sk, md );
     }
 
-    md_close( md );
+    gcry_md_close ( md );
     if( rc )
 	free_seckey_enc( sig );
     else
@@ -1514,16 +1523,17 @@ update_keysig_packet( PKT_signature **ret_sig,
 {
     PKT_signature *sig;
     int rc=0;
-    MD_HANDLE md;
+    gcry_md_hd_t md;
 
     if ((!orig_sig || !pk || !sk)
 	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
 	|| (orig_sig->sig_class == 0x18 && !subpk))
       return G10ERR_GENERAL;
 
-    md = md_open( orig_sig->digest_algo, 0 );
+    if ( gcry_md_open (&md, orig_sig->digest_algo, 0 ) )
+      BUG ();
 
-    /* hash the public key certificate and the user id */
+    /* Hash the public key certificate and the user id. */
     hash_public_key( md, pk );
 
     if( orig_sig->sig_class == 0x18 )
@@ -1564,12 +1574,12 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     if (!rc) {
         hash_sigversion_to_magic (md, sig);
-	md_final(md);
+	gcry_md_final (md);
 
 	rc = complete_sig( sig, sk, md );
     }
 
-    md_close (md);
+    gcry_md_close (md);
     if( rc )
 	free_seckey_enc (sig);
     else

@@ -23,13 +23,11 @@
 #ifndef G10_KEYDB_H
 #define G10_KEYDB_H
 
+#include <assuan.h>
+
 #include "types.h"
-#include "global.h"
 #include "packet.h"
 #include "cipher.h"
-#ifdef ENABLE_AGENT_SUPPORT
-#include "assuan.h"
-#endif
 
 /* What qualifies as a certification (rather than a signature?) */
 #define IS_CERT(s)       (IS_KEY_SIG(s) || IS_UID_SIG(s) || IS_SUBKEY_SIG(s) \
@@ -80,7 +78,7 @@ struct keyblock_pos_struct {
     enum resource_type rt;
     off_t offset;    /* position information */
     unsigned count;  /* length of the keyblock in packets */
-    IOBUF  fp;	     /* used by enum_keyblocks */
+    iobuf_t  fp;     /* Used by enum_keyblocks. */
     int secret;      /* working on a secret keyring */
     PACKET *pkt;     /* ditto */
     int valid;
@@ -146,6 +144,14 @@ struct keydb_search_desc {
     int exact;
 };
 
+
+/* Helper type for preference fucntions. */
+union pref_hint
+{
+  int digest_length;
+};
+
+
 /*-- keydb.c --*/
 
 /*
@@ -177,14 +183,10 @@ void show_revocation_reason( PKT_public_key *pk, int mode );
 int  check_signatures_trust( PKT_signature *sig );
 void release_pk_list( PK_LIST pk_list );
 int  build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use );
-union pref_hint
-{
-  int digest_length;
-};
 int  algo_available( preftype_t preftype, int algo,
 		     const union pref_hint *hint );
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype,
-			     int request, const union pref_hint *hint );
+			     int request, const union pref_hint *hint);
 int  select_mdc_from_pklist (PK_LIST pk_list);
 
 /*-- skclist.c --*/
@@ -193,15 +195,8 @@ int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 					    int unlock, unsigned use );
 
 /*-- passphrase.h --*/
-#ifdef ENABLE_AGENT_SUPPORT
 assuan_context_t agent_open (int try, const char *orig_codeset);
 void agent_close (assuan_context_t ctx);
-#else
-/* If we build w/o agent support, assuan.h won't get included and thus
-   we need to define a replacement for some Assuan types. */
-typedef int assuan_error_t;
-typedef void *assuan_context_t;
-#endif
 int  have_static_passphrase(void);
 void set_passphrase_from_string(const char *pass);
 void read_passphrase_from_fd( int fd );
@@ -268,7 +263,8 @@ int parse_auto_key_locate(char *options);
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
-void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
+u32 v3_keyid (gcry_mpi_t a, u32 *ki);
+void hash_public_key( gcry_md_hd_t md, PKT_public_key *pk );
 size_t keystrlen(void);
 const char *keystr(u32 *keyid);
 const char *keystr_from_pk(PKT_public_key *pk);

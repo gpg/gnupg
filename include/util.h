@@ -1,6 +1,5 @@
 /* util.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -22,7 +21,10 @@
 #ifndef G10_UTIL_H
 #define G10_UTIL_H
 
-#if defined (_WIN32) || defined (__CYGWIN32__)
+#error this file should not be used anymore
+#if 0 /* Dont use it anymore */
+
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
 #include <stdarg.h>
 #endif
 
@@ -86,6 +88,14 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
   void g10_log_info( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
   void g10_log_warning( const char *fmt, ... )  __attribute__ ((format (printf,1,2)));
   void g10_log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+  void g10_log_fatal_f( const char *fname, const char *fmt, ... )
+			    __attribute__ ((noreturn, format (printf,2,3)));
+  void g10_log_error_f( const char *fname, const char *fmt, ... )
+			    __attribute__ ((format (printf,2,3)));
+  void g10_log_info_f( const char *fname, const char *fmt, ... )
+			    __attribute__ ((format (printf,2,3)));
+  void g10_log_debug_f( const char *fname,  const char *fmt, ... )
+			    __attribute__ ((format (printf,2,3)));
 #ifndef __riscos__
 #define BUG() g10_log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
 #else
@@ -99,6 +109,10 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
   void g10_log_info( const char *fmt, ... );
   void g10_log_warning( const char *fmt, ... );
   void g10_log_debug( const char *fmt, ... );
+  void g10_log_fatal_f( const char *fname, const char *fmt, ... );
+  void g10_log_error_f( const char *fname, const char *fmt, ... );
+  void g10_log_info_f( const char *fname, const char *fmt, ... );
+  void g10_log_debug_f( const char *fname, const char *fmt, ... );
 #define BUG() g10_log_bug0( __FILE__ , __LINE__ )
 #endif
 
@@ -110,10 +124,11 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
 #define log_info    g10_log_info
 #define log_warning g10_log_warning
 #define log_debug   g10_log_debug
+#define log_fatal_f g10_log_fatal_f
+#define log_error_f g10_log_error_f
+#define log_info_f  g10_log_info_f
+#define log_debug_f g10_log_debug_f
 
-
-/*-- errors.c --*/
-const char * g10_errstr( int no );
 
 /*-- argparse.c --*/
 int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
@@ -133,7 +148,6 @@ typedef struct dotlock_handle *DOTLOCK;
 
 void disable_dotlock(void);
 DOTLOCK create_dotlock( const char *file_to_lock );
-void destroy_dotlock ( DOTLOCK h );
 int make_dotlock( DOTLOCK h, long timeout );
 int release_dotlock( DOTLOCK h );
 void remove_lockfiles (void);
@@ -145,37 +159,28 @@ char *make_filename( const char *first_part, ... );
 int compare_filenames( const char *a, const char *b );
 const char *print_fname_stdin( const char *s );
 const char *print_fname_stdout( const char *s );
-int is_file_compressed(const char *s, int *r_status);
+int  is_file_compressed(const char *s, int *r_status);
+
 
 /*-- miscutil.c --*/
 u32 make_timestamp(void);
 u32 scan_isodatestr( const char *string );
+u32 add_days_to_timestamp( u32 stamp, u16 days );
 const char *strtimevalue( u32 stamp );
 const char *strtimestamp( u32 stamp ); /* GMT */
-const char *isotimestamp( u32 stamp ); /* GMT with hh:mm:ss */
 const char *asctimestamp( u32 stamp ); /* localized */
 void print_string( FILE *fp, const byte *p, size_t n, int delim );
-void print_string2( FILE *fp, const byte *p, size_t n, int delim, int delim2 );
 void  print_utf8_string( FILE *fp, const byte *p, size_t n );
 void  print_utf8_string2( FILE *fp, const byte *p, size_t n, int delim);
 char *make_printable_string( const byte *p, size_t n, int delim );
 int answer_is_yes_no_default( const char *s, int def_answer );
 int answer_is_yes( const char *s );
 int answer_is_yes_no_quit( const char *s );
-int answer_is_okay_cancel (const char *s, int def_answer);
-int match_multistr(const char *multistr,const char *match);
-int hextobyte( const char *s );
 
 /*-- strgutil.c --*/
-void free_strlist( STRLIST sl );
-#define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
-STRLIST add_to_strlist( STRLIST *list, const char *string );
-STRLIST add_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
-STRLIST append_to_strlist( STRLIST *list, const char *string );
-STRLIST append_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
-STRLIST strlist_prev( STRLIST head, STRLIST node );
-STRLIST strlist_last( STRLIST node );
-char *pop_strlist( STRLIST *list );
+
+#include "../jnlib/strlist.h"
+
 const char *memistr( const char *buf, size_t buflen, const char *sub );
 const char *ascii_memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
@@ -223,25 +228,7 @@ int strncasecmp (const char *, const char *b, size_t n);
 #define memmove(d, s, n) bcopy((s), (d), (n))
 #endif
 
-/*-- membuf.c --*/
-/* The definition of the structure is private, we only need it here,
-   so it can be allocated on the stack. */
-struct private_membuf_s {
-  size_t len;      
-  size_t size;     
-  char *buf;       
-  int out_of_core; 
-};
-
-typedef struct private_membuf_s membuf_t;
-
-void init_membuf (membuf_t *mb, int initiallen);
-void put_membuf  (membuf_t *mb, const void *buf, size_t len);
-void *get_membuf (membuf_t *mb, size_t *len);
-
-
-
-#if defined (_WIN32)
+#if defined (__MINGW32__)
 /*-- w32reg.c --*/
 char *read_w32_registry_string( const char *root,
 				const char *dir, const char *name );
@@ -249,16 +236,8 @@ int write_w32_registry_string(const char *root, const char *dir,
                               const char *name, const char *value);
 
 /*-- strgutil.c --*/
-int vasprintf (char **result, const char *format, va_list args);
-int asprintf (char **buf, const char *fmt, ...);
-#endif /*_WIN32*/
-
-/*-- pka.c --*/
-char *get_pka_info (const char *address, unsigned char *fpr);
-
-/*-- cert.c --*/
-int get_cert(const char *name,size_t max_size,IOBUF *iobuf,
-	     unsigned char **fpr,size_t *fpr_len,char **url);
+int vasprintf ( char **result, const char *format, va_list args);
+#endif
 
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */
@@ -268,10 +247,6 @@ int get_cert(const char *name,size_t max_size,IOBUF *iobuf,
 #ifndef HAVE_RAISE
 #define raise(a) kill(getpid(), (a))
 #endif
-
-/*-- Replacement functions from funcname.c --*/
-
-
 
 /******** some macros ************/
 #ifndef STR
@@ -284,26 +259,16 @@ int get_cert(const char *name,size_t max_size,IOBUF *iobuf,
 #define wipememory2(_ptr,_set,_len) do { volatile char *_vptr=(volatile char *)(_ptr); size_t _vlen=(_len); while(_vlen) { *_vptr=(_set); _vptr++; _vlen--; } } while(0)
 #define wipememory(_ptr,_len) wipememory2(_ptr,0,_len)
 
-/*-- macros to replace ctype ones and avoid locale problems --*/
-#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
-#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
-#define hexdigitp(a) (digitp (a)                     \
-                      || (*(a) >= 'A' && *(a) <= 'F')  \
-                      || (*(a) >= 'a' && *(a) <= 'f'))
-/* the atoi macros assume that the buffer has only valid digits */
-#define atoi_1(p)   (*(p) - '0' )
-#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
-#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
-#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
-                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
-#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
-
-/* Note this isn't identical to a C locale isspace() without \f and
-   \v, but works for the purposes used here. */
-#define ascii_isspace(a) ((a)==' ' || (a)=='\n' || (a)=='\r' || (a)=='\t')
-
 /******* RISC OS stuff ***********/
 #ifdef __riscos__
+/* needed for strcasecmp() */
+#include <strings.h>
+/* needed for filename munging */
+#include <unixlib/local.h>
+/* needed for image file system feature */
+#include <unixlib/features.h>
+void riscos_global_defaults(void);
+#define RISCOS_GLOBAL_STATICS(a) const char *__dynamic_da_name = (a);
 int riscos_load_module(const char *name, const char * const path[], int fatal);
 int riscos_get_filetype_from_string(const char *string, int len);
 int riscos_get_filetype(const char *filename);
@@ -330,5 +295,7 @@ void riscos_list_openfiles(void);
 #define access(a,b) riscos_access((a),(b))
 #endif /* !__RISCOS__C__ */
 #endif /* __riscos__ */
+
+#endif
 
 #endif /*G10_UTIL_H*/

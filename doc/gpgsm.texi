@@ -1,0 +1,1006 @@
+@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Invoking GPGSM
+@chapter Invoking GPGSM
+@cindex GPGSM command options
+@cindex command options
+@cindex options, GPGSM command
+
+@c man begin DESCRIPTION
+
+@command{gpgsm} is a tool similar to @command{gpg} to provide digital
+encryption and signing servicesd on X.509 certificates and the CMS
+protocol.  It is mainly used as a backend for S/MIME mail processing.
+@command{gpgsm} includes a full features certificate management and
+complies with all rules defined for the German Sphinx project.
+
+@c man end
+
+@xref{Option Index}, for an index to @command{GPGSM}'s commands and options.
+
+@menu
+* GPGSM Commands::        List of all commands.
+* GPGSM Options::         List of all options.
+* GPGSM Configuration::   Configuration files.
+* GPGSM Examples::        Some usage examples.
+
+Developer information:
+* Unattended Usage::      Using @command{gpgsm} from other programs.
+* GPGSM Protocol::        The protocol the server mode uses.
+@end menu
+
+@c man begin COMMANDS
+
+@node GPGSM Commands
+@section Commands
+
+Commands are not distinguished from options execpt for the fact that
+only one one command is allowed.
+
+@menu
+* General Commands::        Commands not specific to the functionality.
+* Operational Commands::    Commands to select the type of operation.
+* Certificate Management::  How to manage certificates.
+@end menu
+
+@node General Commands
+@subsection Commands not specific to the function
+
+@table @gnupgtabopt
+@item --version
+@opindex version
+Print the program version and licensing information.  Not that you can
+abbreviate this command.
+
+@item --help, -h
+@opindex help
+Print a usage message summarizing the most usefule command-line options.
+Not that you can abbreviate this command.
+
+@item --dump-options
+@opindex dump-options
+Print a list of all available options and commands.  Not that you can
+abbreviate this command.
+@end table
+
+
+
+@node Operational Commands
+@subsection Commands to select the type of operation
+
+@table @gnupgtabopt
+@item --encrypt
+@opindex encrypt
+Perform an encryption.
+
+@item --decrypt
+@opindex decrypt
+Perform a decryption; the type of input is automatically detmerined.  It
+may either be in binary form or PEM encoded; automatic determination of
+base-64 encoding is not done.
+
+@item --sign
+@opindex sign
+Create a digital signature.  The key used is either the fist one found
+in the keybox or thise set with the -u option
+
+@item --verify
+@opindex verify
+Check a signature file for validity.  Depending on the arguments a
+detached signatrue may also be checked.
+ 
+@item --server
+@opindex server
+Run in server mode and wait for commands on the @code{stdin}.
+
+@item --call-dirmngr @var{command} [@var{args}]
+@opindex call-dirmngr
+Behave as a Dirmngr client issuing the request @var{command} with the
+optional list of @var{args}.  The output of the Dirmngr is printed
+stdout.  Please note that file names given as arguments should have an
+absulte file name (i.e. commencing with @code{/} because they are
+passed verbatim to the Dirmngr and the working directory of the
+Dirmngr might not be the same as the one of this client.  Currently it
+is not possible to pass data via stdin to the Dirmngr.  @var{command}
+should not contain spaces.
+
+This is command is required for certain maintaining tasks of the dirmngr
+where a dirmngr must be able to call back to @command{gpgsm}.  See the Dirmngr
+manual for details.
+
+@item --call-protect-tool @var{arguments}
+@opindex call-protect-tool
+Certain maintenance operations are done by an external program call
+@command{gpg-protect-tool}; this is usually not installed in a directory
+listed in the PATH variable.  This command provides a simple wrapper to
+access this tool.  @var{arguments} are passed verbatim to this command;
+use @samp{--help} to get a list of supported operations. 
+
+
+@end table
+
+
+@node Certificate Management
+@subsection How to manage the certificate and keys
+
+@table @gnupgtabopt
+@item --gen-key
+@opindex gen-key
+Generate a new key and a certificate request.
+
+@item --list-keys
+@itemx -k 
+@opindex list-keys
+List all available certificates stored in the local key database.
+Note that the displayed data might be reformatted for better human
+readability and illegal characters are replaced by safe substitutes.
+
+@item --list-secret-keys
+@itemx -K
+@opindex list-secret-keys
+List all available certificates for which a corresponding a secret key
+is available.
+
+@item --list-external-keys @var{pattern}
+@opindex list-keys
+List certificates matching @var{pattern} using an external server.  This
+utilizes the @code{dirmngr} service.  
+
+@item --dump-keys
+@opindex dump-keys
+List all available certificates stored in the local key database using a
+format useful mainly for debugging.
+
+@item --dump-secret-keys
+@opindex dump-secret-keys
+List all available certificates for which a corresponding a secret key
+is available using a format useful mainly for debugging.
+
+@item --dump-external-keys @var{pattern}
+@opindex dump-external-keys
+List certificates matching @var{pattern} using an external server.
+This utilizes the @code{dirmngr} service.  It uses a format useful
+mainly for debugging.
+
+@item --keydb-clear-some-cert-flags
+@opindex keydb-clear-some-cert-flags
+This is a debugging aid to reset certain flags in the key database
+which are used to cache certain certificate stati.  It is especially
+useful if a bad CRL or a weird running OCSP reponder did accidently
+revoke certificate.  There is no security issue with this command
+because @command{gpgsm} always make sure that the validity of a certificate is
+checked right before it is used.
+
+@item --delete-keys @var{pattern}
+@opindex delete-keys
+Delete the keys matching @var{pattern}.
+
+@item --export [@var{pattern}]
+@opindex export
+Export all certificates stored in the Keybox or those specified by the
+optional @var{pattern}.  When using along with the @code{--armor} option
+a few informational lines are prepended before each block.
+
+@item --export-secret-key-p12 @var{key-id}
+@opindex export
+Export the private key and the certificate identified by @var{key-id}
+in a PKCS#12 format. When using along with the @code{--armor} option
+a few informational lines are prepended to the output.  Note, that the
+PKCS#12 format is higly insecure and this command is only provided if
+there is no other way to exchange the private key.
+
+@item --import [@var{files}]
+@opindex import
+Import the certificates from the PEM or binary encoded files as well as
+from signed-only messages.  This command may also be used to import a
+secret key from a PKCS#12 file.
+
+@item --learn-card
+@opindex learn-card
+Read information about the private keys from the smartcard and import
+the certificates from there.  This command utilizes the @sc{gpg-agent}
+and in turn the @sc{scdaemon}.
+
+@item --passwd @var{user_id}
+@opindex passwd
+Change the passphrase of the private key belonging to the certificate
+specified as @var{user_id}.  Note, that changing the passphrase/PIN of a
+smartcard is not yet supported.
+
+@end table
+
+
+@node GPGSM Options
+@section Option Summary
+
+@command{GPGSM} comes features a bunch ofoptions to control the exact behaviour
+and to change the default configuration.
+
+@menu 
+* Configuration Options::   How to change the configuration.
+* Certificate Options::     Certificate related options.
+* Input and Output::        Input and Output.
+* CMS Options::             How to change how the CMS is created.
+* Esoteric Options::        Doing things one usually don't want to do.
+@end menu
+
+@c man begin OPTIONS
+
+@node Configuration Options
+@subsection How to change the configuration
+
+These options are used to change the configuraton and are usually found
+in the option file.
+
+@table @gnupgtabopt
+
+@item --options @var{file}
+@opindex options
+Reads configuration from @var{file} instead of from the default
+per-user configuration file.  The default configuration file is named
+@file{gpgsm.conf} and expected in the @file{.gnupg} directory directly
+below the home directory of the user.
+
+@item --homedir @var{dir}
+@opindex homedir
+Set the name of the home directory to @var{dir}. If his option is not
+used, the home directory defaults to @file{~/.gnupg}.  It is only
+recognized when given on the command line.  It also overrides any home
+directory stated through the environment variable @env{GNUPGHOME} or
+(on W32 systems) by means on the Registry entry
+@var{HKCU\Software\GNU\GnuPG:HomeDir}.
+
+
+@item -v
+@item --verbose
+@opindex v
+@opindex verbose
+Outputs additional information while running.
+You can increase the verbosity by giving several
+verbose commands to @command{gpgsm}, such as @samp{-vv}.
+
+@item --policy-file @var{filename}
+@opindex policy-file
+Change the default name of the policy file to @var{filename}.
+
+@item --agent-program @var{file}
+@opindex agent-program
+Specify an agent program to be used for secret key operations.  The
+default value is the @file{/usr/local/bin/gpg-agent}.  This is only used
+as a fallback when the envrionment variable @code{GPG_AGENT_INFO} is not
+set or a running agent can't be connected.
+  
+@item --dirmngr-program @var{file}
+@opindex dirmnr-program
+Specify a dirmngr program to be used for @acronym{CRL} checks.  The
+default value is @file{/usr/sbin/dirmngr}.  This is only used as a
+fallback when the environment variable @code{DIRMNGR_INFO} is not set or
+a running dirmngr can't be connected.
+
+@item --prefer-system-dirmngr
+@opindex prefer-system-dirmngr
+If a system wide @command{dirmngr} is running in daemon mode, first try
+to connect to this one.  Fallback to a pipe based server if this does
+not work.
+
+@item --no-secmem-warning
+@opindex no-secmem-warning
+Don't print a warning when the so called "secure memory" can't be used.
+
+@item --log-file @var{file}
+@opindex log-file
+When running in server mode, append all logging output to @var{file}.
+
+@end table
+
+
+@node Certificate Options
+@subsection Certificate related options
+
+@table @gnupgtabopt
+
+@item  --enable-policy-checks
+@itemx --disable-policy-checks
+@opindex enable-policy-checks
+@opindex disable-policy-checks
+By default policy checks are enabled.  These options may be used to
+change it.
+
+@item  --enable-crl-checks
+@itemx --disable-crl-checks
+@opindex enable-crl-checks
+@opindex disable-crl-checks
+By default the @acronym{CRL} checks are enabled and the DirMngr is used
+to check for revoked certificates.  The disable option is most useful
+with an off-line network connection to suppress this check.
+
+@item  --enable-trusted-cert-crl-check
+@itemx --disable-trusted-cert-crl-check
+@opindex enable-trusted-cert-crl-check
+@opindex disable-trusted-cert-crl-check
+By default the @acronym{CRL} for trusted root certificates are checked
+like for any other certificates.  This allows a CA to revoke its own
+certificates voluntary without the need of putting all ever issued
+certificates into a CRL.  The disable option may be used to switch this
+extra check off.  Due to the caching done by the Dirmngr, there won't be
+any noticeable performance gain.  Note, that this also disables possible
+OCSP checks for trusted root certificates.
+
+@item --force-crl-refresh
+@opindex force-crl-refresh
+Tell the dirmngr to reload the CRL for each request.  For better
+performance, the dirmngr will actually optimize this by suppressing
+the loading for short time intervalls (e.g. 30 minutes). This option
+is useful to make sure that a fresh CRL is available for certificates
+hold in the keybox.  The suggested way of doing this is by using it
+along with the option @option{--with-validation} for a ke listing
+command.  This option should not be used in a configuration file. 
+
+@item  --enable-ocsp
+@itemx --disable-ocsp
+@opindex enable-ocsp
+@opindex disable-ocsp
+Be default @acronym{OCSP} checks are disabled.  The enable opton may
+be used to enable OCSP checks via Dirmngr.  If @acronym{CRL} checks
+are also enabled, CRLs will be used as a fallback if for some reason an
+OCSP request won't succeed.  Note, that you have to allow OCSP
+requests in Dirmngr's configuration too (option 
+@option{--allow-ocsp} and configure dirmngr properly.  If you don't do
+so you will get the error code @samp{Not supported}.
+
+@end table
+
+@node Input and Output
+@subsection Input and Output
+
+@table @gnupgtabopt
+@item --armor
+@itemx -a
+@opindex armor
+@opindex -a
+Create PEM encoded output.  Default is binary output. 
+
+@item --base64 
+@opindex base64
+Create Base-64 encoded output; i.e. PEM without the header lines.
+
+@item --assume-armor
+@opindex assume-armor
+Assume the input data is PEM encoded.  Default is to autodetect the
+encoding but this is may fail.
+
+@item --assume-base64
+@opindex assume-base64
+Assume the input data is plain base-64 encoded.
+
+@item --assume-binary
+@opindex assume-binary
+Assume the input data is binary encoded.
+
+@item --local-user @var{user_id}
+@item -u @var{user_id}
+@opindex local-user
+@opindex -u
+Set the user(s) to be used for signing.  The default is the first
+secret key found in the database.
+
+@item --with-key-data
+@opindex with-key-data
+Displays extra information with the @code{--list-keys} commands.  Especially
+a line tagged @code{grp} is printed which tells you the keygrip of a
+key.  This string is for example used as the file name of the
+secret key.
+
+@item --with-validation
+@opindex with-validation
+When doing a key listing, do a full validation check for each key and
+print the result.  This is usually a slow operation because it
+requires a CRL lookup and other operations. 
+
+When used along with --import, a validation of the certificate to
+import is done and only imported if it succeeds the test.  Note that
+this does not affect an already available cwertificate in the DB.
+This option is therefore useful to simply verify a certificate.
+
+
+@item --with-md5-fingerprint
+For standard key listings, also print the MD5 fingerprint of the
+certificate.
+
+@end table
+
+@node CMS Options
+@subsection How to change how the CMS is created.
+
+@table @gnupgtabopt
+@item --include-certs @var{n}
+Using @var{n} of -2 includes all certificate except for the root cert,
+-1 includes all certs, 0 does not include any certs, 1 includes only
+the signers cert (this is the default) and all other positive
+values include up to @var{n} certificates starting with the signer cert.
+  
+@end table
+
+
+
+@node Esoteric Options
+@subsection Doing things one usually don't want to do.
+
+
+@table @gnupgtabopt
+
+@item --faked-system-time @var{epoch}
+@opindex faked-system-time
+This option is only useful for testing; it sets the system time back or
+forth to @var{epoch} which is the number of seconds elapsed since the year
+1970.
+
+@item --with-ephemeral-keys
+@opindex with-ephemeral-keys
+Include ephemeral flagged keys in the output of key listings.
+
+@item --debug-level @var{level}
+@opindex debug-level
+Select the debug level for investigating problems. @var{level} may be
+one of:
+
+   @table @code
+   @item none
+   no debugging at all.
+   @item basic  
+   some basic debug messages
+   @item advanced
+   more verbose debug messages
+   @item expert
+   even more detailed messages
+   @item guru
+   all of the debug messages you can get
+   @end table
+
+How these messages are mapped to the actual debugging flags is not
+specified and may change with newer releaes of this program. They are
+however carefully selected to best aid in debugging.
+
+@item --debug @var{flags}
+@opindex debug
+This option is only useful for debugging and the behaviour may change
+at any time without notice; using @code{--debug-levels} is the
+preferred method to select the debug verbosity.  FLAGS are bit encoded
+and may be given in usual C-Syntax. The currently defined bits are:
+
+   @table @code
+   @item 0  (1)
+   X.509 or OpenPGP protocol related data
+   @item 1  (2)  
+   values of big number integers 
+   @item 2  (4)
+   low level crypto operations
+   @item 5  (32)
+   memory allocation
+   @item 6  (64)
+   caching
+   @item 7  (128)
+   show memory statistics.
+   @item 9  (512)
+   write hashed data to files named @code{dbgmd-000*}
+   @item 10 (1024)
+   trace Assuan protocol
+   @end table
+
+Note, that all flags set using this option may get overriden by
+@code{--debug-level}.
+
+@item --debug-all
+@opindex debug-all
+Same as @code{--debug=0xffffffff}
+
+@item --debug-allow-core-dump
+@opindex debug-allow-core-dump
+Usually @command{gpgsm} tries to avoid dumping core by well written code and by
+disabling core dumps for security reasons.  However, bugs are pretty
+durable beasts and to squash them it is sometimes useful to have a core
+dump.  This option enables core dumps unless the Bad Thing happened
+before the option parsing.
+
+@item --debug-no-chain-validation
+@opindex debug-no-chain-validation
+This is actually not a debugging option but only useful as such.  It
+lets @command{gpgsm} bypass all certificate chain validation checks.
+
+@item --debug-ignore-expiration
+@opindex debug-ignore-expiration
+This is actually not a debugging option but only useful as such.  It
+lets @command{gpgsm} ignore all notAfter dates, this is used by the regresssion
+tests.
+
+@item --fixed-passphrase @var{string}
+@opindex fixed-passphrase
+Supply the passphrase @var{string} to the gpg-protect-tool.  This
+option is only useful for the regression tests included with this
+package and may be revised or removed at any time without notice.
+
+@end table
+
+All the long options may also be given in the configuration file after
+stripping off the two leading dashes.
+
+
+@c man begin FILES
+
+@node GPGSM Configuration
+@section Configuration files
+
+There are a few configuration files to control certain aspects of
+@command{gpgsm}'s operation. Unless noted, they are expected in the
+current home directory (@pxref{option --homedir}).
+
+@table @file
+
+@item gpgsm.conf
+@cindex gpgsm.conf
+This is the standard configuration file read by @command{gpgsm} on
+startup.  It may contain any valid long option; the leading two dashes
+may not be entered and the option may not be abbreviated.  This default
+name may be changed on the command line (@pxref{option
+  --options}).
+
+@item policies.txt
+@cindex policies.txt
+This is a list of allowed CA policies.  This file should list the
+object identifiers of the policies line by line.  Empty lines and
+lines starting with a hash mark are ignored.  Policies missing in this
+file and not marked as critical in the certificate will print only a
+warning; certificates with policies marked as critical and not listed
+in this file will fail the signature verification.
+
+For example, to allow only the policy 2.289.9.9, the file should look
+like this:
+
+@example
+# Allowed policies
+2.289.9.9  
+@end example
+
+@item qualified.txt
+@cindex qualified.txt
+This is the list of root certificates used for qualified certificates.
+They are defined as certificates capable of creating legally binding
+signatures in the same way as handwritten signatures are.  Comments
+start with a hash mark and empty lines are ignored.  Lines do have a
+length limit but this is not a serious limitation as the format of the
+entries is fixed and checked by gpgsm: A non-comment line starts with
+optional white spaces, followed by exactly 40 hex character, white space
+and a lowercased 2 letter country code.  Additional data delimited with
+by a white space is current ignored but might late be used for other
+purposes.
+
+Note that even if a certificate is listed in this file, this does not
+mean that thecertificate is trusted; in general the certificates listed
+in this file need to be listed also in @file{trustlist.txt}.
+
+This is a global file an installed in the data directory
+(e.g. @file{/usr/share/gnupg/qualified.txt}).  GnuPG installs a suitable
+file with root certificates as used in Germany.  As new Root-CA
+certificates may be issued over time, these entries may need to be
+updated; new distributions of this software should come with an updated
+list but it is still the responsibility of the Administrator to check
+that this list is correct.
+
+Everytime @command{gpgsm} uses a certificate for signing or verification
+this file will be consulted to check whether the certificate under
+question has ultimately been issued by one of these CAs.  If this is the
+case the user will be informed that the verified signature represents a
+legally binding (``qualified'') signature.  When creating a signature
+using such a certificate an extra prompt will be issued to let the user
+confirm that such a legally binding signature shall really be created.
+
+Because this software has not yet been approved for use with such
+certificates, appropriate notices will be shown to indicate this fact.
+
+@end table
+
+Note that on larger installations, it is useful to put predefined files
+into the directory @file{/etc/skel/.gnupg/} so that newly created users
+start up with a working configuration.  For existing users the a small
+helper script is provided to create these files (@pxref{addgnupghome}).
+
+
+For internal purposes gpgsm creates and maintaines a few other files;
+They all live in in the current home directory (@pxref{option
+--homedir}).  Only @command{gpgsm} may modify these files.
+
+@table @file
+@item pubring.kbx
+@cindex pubring.kbx
+This a database file storing the certificates as well as meta
+information.  For debugging purposes the tool @command{kbxutil} may be
+used to show the internal structure of this file.
+      
+@item random_seed
+@cindex random_seed
+This content of this file is used to maintain the internal state of the
+random number generator accross invocations.  The same file is used by
+other programs of this software too.
+
+@end table
+
+
+@c 
+@c  Examples
+@c
+@node GPGSM Examples
+@section Examples
+
+@c man begin EXAMPLES
+
+@example
+$ gpgsm -er goo@@bar.net <plaintext >ciphertext
+@end example
+
+@c man end
+
+
+
+@c ---------------------------------
+@c    The machine interface
+@c --------------------------------
+@node Unattended Usage
+@section Unattended Usage
+
+@command{gpgsm} is often used as a backend engine by other software.  To help
+with this a machine interface has been defined to have an unambiguous
+way to do this.  This is most likely used with the @code{--server} command
+but may also be used in the standard operation mode by using the
+@code{--status-fd} option.
+
+@menu
+* Automated signature checking::  Automated signature checking.
+@end menu
+
+@node Automated signature checking,,,Unattended Usage
+@section Automated signature checking
+
+It is very important to understand the semantics used with signature
+verification.  Checking a signature is not as simple as it may sound and
+so the ooperation si a bit complicated.  In mosted cases it is required
+to look at several status lines.  Here is a table of all cases a signed
+message may have:
+
+@table @asis
+@item The signature is valid
+This does mean that the signature has been successfully verified, the
+certificates are all sane.  However there are two subcases with
+important information:  One of the certificates may have expired or a
+signature of a message itself as expired.  It is a sound practise to
+consider such a signature still as valid but additional information
+should be displayed.  Depending on the subcase @command{gpgsm} will issue
+these status codes:
+  @table @asis 
+  @item signature valid and nothing did expire
+  @code{GOODSIG}, @code{VALIDSIG}, @code{TRUST_FULLY}
+  @item signature valid but at least one certificate has expired
+  @code{EXPKEYSIG}, @code{VALIDSIG}, @code{TRUST_FULLY}
+  @item signature valid but expired
+  @code{EXPSIG}, @code{VALIDSIG}, @code{TRUST_FULLY}
+  Note, that this case is currently not implemented.
+  @end table
+
+@item The signature is invalid
+This means that the signature verification failed (this is an indication
+of af a transfer error, a programm error or tampering with the message).
+@command{gpgsm} issues one of these status codes sequences:
+  @table @code
+  @item  @code{BADSIG}
+  @item  @code{GOODSIG}, @code{VALIDSIG} @code{TRUST_NEVER}
+  @end table
+
+@item Error verifying a signature
+For some reason the signature could not be verified, i.e. it can't be
+decided whether the signature is valid or invalid.  A common reason for
+this is a missing certificate.
+
+@end table
+
+
+@c 
+@c  Assuan Protocol
+@c
+@node GPGSM Protocol
+@section The Protocol the Server Mode Uses.
+
+Description of the protocol used to access @command{GPGSM}.
+@command{GPGSM} does implement the Assuan protocol and in addition
+provides a regular command line interface which exhibits a full client
+to this protocol (but uses internal linking).  To start
+@command{gpgsm} as a server the command line the option
+@code{--server} must be used.  Additional options are provided to
+select the communication method (i.e. the name of the socket).
+
+We assume that the connection has already been established; see the
+Assuan manual for details.
+
+@menu
+* GPGSM ENCRYPT::         Encrypting a message.
+* GPGSM DECRYPT::         Decrypting a message.
+* GPGSM SIGN::            Signing a message.
+* GPGSM VERIFY::          Verifying a message.
+* GPGSM GENKEY::          Generating a key.
+* GPGSM LISTKEYS::        List available keys.
+* GPGSM EXPORT::          Export certificates.
+* GPGSM IMPORT::          Import certificates.
+* GPGSM DELETE::          Delete certificates.
+@end menu
+
+
+@node GPGSM ENCRYPT
+@subsection Encrypting a Message
+
+Before encrytion can be done the recipient must be set using the
+command:
+
+@example
+  RECIPIENT @var{userID}
+@end example
+
+Set the recipient for the encryption.  @var{userID} should be the
+internal representation of the key; the server may accept any other way
+of specification.  If this is a valid and trusted recipient the server
+does respond with OK, otherwise the return is an ERR with the reason why
+the recipient can't be used, the encryption will then not be done for
+this recipient.  If the policy is not to encrypt at all if not all
+recipients are valid, the client has to take care of this.  All
+@code{RECIPIENT} commands are cumulative until a @code{RESET} or an
+successful @code{ENCRYPT} command.
+
+@example
+  INPUT FD=@var{n} [--armor|--base64|--binary]
+@end example
+
+Set the file descriptor for the message to be encrypted to @var{n}.
+Obviously the pipe must be open at that point, the server establishes
+its own end.  If the server returns an error the client should consider
+this session failed.
+
+The @code{--armor} option may be used to advice the server that the
+input data is in @acronym{PEM} format, @code{--base64} advices that a
+raw base-64 encoding is used, @code{--binary} advices of raw binary
+input (@acronym{BER}).  If none of these options is used, the server
+tries to figure out the used encoding, but this may not always be
+correct.
+
+@example
+  OUTPUT FD=@var{n} [--armor|--base64]
+@end example
+
+Set the file descriptor to be used for the output (i.e. the encrypted
+message). Obviously the pipe must be open at that point, the server
+establishes its own end.  If the server returns an error he client
+should consider this session failed.
+
+The option armor encodes the output in @acronym{PEM} format, the
+@code{--base64} option applies just a base 64 encoding.  No option
+creates binary output (@acronym{BER}).
+  
+The actual encryption is done using the command
+
+@example
+  ENCRYPT 
+@end example
+
+It takes the plaintext from the @code{INPUT} command, writes to the
+ciphertext to the file descriptor set with the @code{OUTPUT} command,
+take the recipients from all the recipients set so far.  If this command
+fails the clients should try to delete all output currently done or
+otherwise mark it as invalid.  @command{GPGSM} does ensure that there won't be any
+security problem with leftover data on the output in this case.
+
+This command should in general not fail, as all necessary checks have
+been done while setting the recipients.  The input and output pipes are
+closed.
+
+
+@node GPGSM DECRYPT
+@subsection Decrypting a message
+
+Input and output FDs are set the same way as in encryption, but
+@code{INPUT} refers to the ciphertext and output to the plaintext. There
+is no need to set recipients.  @command{GPGSM} automatically strips any
+@acronym{S/MIME} headers from the input, so it is valid to pass an
+entire MIME part to the INPUT pipe.
+
+The encryption is done by using the command
+
+@example
+  DECRYPT
+@end example
+
+It performs the decrypt operation after doing some check on the internal
+state. (e.g. that all needed data has been set).  Because it utilizes
+the GPG-Agent for the session key decryption, there is no need to ask
+the client for a protecting passphrase - GpgAgent takes care of this by
+requesting this from the user.
+
+
+@node GPGSM SIGN
+@subsection Signing a Message
+
+Signing is usually done with these commands:
+
+@example
+  INPUT FD=@var{n} [--armor|--base64|--binary]
+@end example
+
+This tells @command{GPGSM} to read the data to sign from file descriptor @var{n}.
+
+@example
+  OUTPUT FD=@var{m} [--armor|--base64]
+@end example
+
+Write the output to file descriptor @var{m}.  If a detached signature is
+requested, only the signature is written.
+
+@example
+  SIGN [--detached] 
+@end example
+
+Sign the data set with the INPUT command and write it to the sink set by
+OUTPUT.  With @code{--detached}, a detached signature is created
+(surprise).
+
+The key used for signining is the default one or the one specified in
+the configuration file.  To get finer control over the keys, it is
+possible to use the command
+
+@example
+  SIGNER @var{userID}
+@end example
+
+to the signer's key.  @var{userID} should be the
+internal representation of the key; the server may accept any other way
+of specification.  If this is a valid and trusted recipient the server
+does respond with OK, otherwise the return is an ERR with the reason why
+the key can't be used, the signature will then not be created using
+this key.  If the policy is not to sign at all if not all
+keys are valid, the client has to take care of this.  All
+@code{SIGNER} commands are cumulative until a @code{RESET} is done.
+Note that a @code{SIGN} does not reset this list of signers which is in
+contrats to the @code{RECIPIENT} command.
+
+
+@node GPGSM VERIFY
+@subsection Verifying a Message
+
+To verify a mesage the command:
+
+@example
+  VERIFY
+@end example
+
+is used. It does a verify operation on the message send to the input FD.
+The result is written out using status lines.  If an output FD was
+given, the signed text will be written to that.  If the signature is a
+detached one, the server will inquire about the signed material and the
+client must provide it.
+
+@node GPGSM GENKEY
+@subsection Generating a Key
+
+This is used to generate a new keypair, store the secret part in the
+@acronym{PSE} and the public key in the key database.  We will probably
+add optional commands to allow the client to select whether a hardware
+token is used to store the key.  Configuration options to
+@command{GPGSM} can be used to restrict the use of this command.
+
+@example
+  GENKEY 
+@end example
+
+@command{GPGSM} checks whether this command is allowed and then does an
+INQUIRY to get the key parameters, the client should then send the
+key parameters in the native format:
+
+@example
+    S: INQUIRE KEY_PARAM native
+    C: D foo:fgfgfg
+    C: D bar
+    C: END
+@end example    
+
+Please note that the server may send Status info lines while reading the
+data lines from the client.  After this the key generation takes place
+and the server eventually does send an ERR or OK response.  Status lines
+may be issued as a progress indicator.
+
+
+@node GPGSM LISTKEYS
+@subsection List available keys
+
+To list the keys in the internal database or using an external key
+provider, the command:
+
+@example
+  LISTKEYS  @var{pattern}
+@end example
+
+is used.  To allow multiple patterns (which are ORed during the search)
+quoting is required: Spaces are to be translated into "+" or into "%20";
+in turn this requires that the usual escape quoting rules are done.
+
+@example
+  LISTSECRETKEYS @var{pattern}
+@end example
+
+Lists only the keys where a secret key is available.
+
+The list commands  commands are affected by the option
+
+@example
+  OPTION list-mode=@var{mode}
+@end example
+
+where mode may be:
+@table @code
+@item 0 
+Use default (which is usually the same as 1).
+@item 1
+List only the internal keys.
+@item 2
+List only the external keys.
+@item 3
+List internal and external keys.
+@end table
+
+Note that options are valid for the entire session.
+    
+
+@node GPGSM EXPORT
+@subsection Export certificates
+
+To export certificate from the internal key database the command:
+
+@example
+  EXPORT @var{pattern}
+@end example
+
+is used.  To allow multiple patterns (which are ORed) quoting is
+required: Spaces are to be translated into "+" or into "%20"; in turn
+this requires that the usual escape quoting rules are done.
+
+The format of the output depends on what was set with the OUTPUT
+command.  When using @acronym{PEM} encoding a few informational lines
+are prepended.
+
+
+@node GPGSM IMPORT
+@subsection Import certificates
+
+To import certificates into the internal key database, the command
+
+@example
+  IMPORT
+@end example
+
+is used.  The data is expected on the file descriptor set with the
+@code{INPUT} command.  Certain checks are performend on the
+certificate.  Note that the code will also handle PKCS\#12 files and
+import private keys; a helper program is used for that.
+
+
+@node GPGSM DELETE
+@subsection Delete certificates
+
+To delete certificate the command
+
+@example
+  DELKEYS @var{pattern}
+@end example
+
+is used.  To allow multiple patterns (which are ORed) quoting is
+required: Spaces are to be translated into "+" or into "%20"; in turn
+this requires that the usual escape quoting rules are done.
+
+The certificates must be specified unambiguously otherwise an error is
+returned.
+

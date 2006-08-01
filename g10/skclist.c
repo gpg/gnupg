@@ -1,5 +1,5 @@
-/* skclist.c
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* skclist.c - Build a list of secret keys
+ * Copyright (C) 1998, 1999, 2000, 2001, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,14 +26,27 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "i18n.h"
 #include "cipher.h"
+
+
+/* There is currently no way to get the status of the quick random
+   generator flag from libgcrypt and it is not clear whether this
+   faked RNG is really a good idea.  Thus for now we use this stub
+   function but we should consider to entirely remove this fake RNG
+   stuff. */
+static int
+random_is_faked (void)
+{
+  return 0;
+}
+
 
 
 void
@@ -118,7 +131,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 	  free_secret_key( sk ); sk = NULL;
 	  log_error("no default secret key: %s\n", g10_errstr(rc) );
 	}
-	else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) )
+	else if( !(rc=openpgp_pk_test_algo2 (sk->pubkey_algo, use)) )
 	  {
 	    SK_LIST r;
 
@@ -176,7 +189,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 		log_error(_("skipped \"%s\": %s\n"),
 			  locusr->d, g10_errstr(rc) );
 	      }
-	    else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
+	    else if( !(rc=openpgp_pk_test_algo2 (sk->pubkey_algo, use)) ) {
 		SK_LIST r;
 
 		if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)

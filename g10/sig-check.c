@@ -1,6 +1,6 @@
 /* sig-check.c -  Check a signature
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,23 +25,29 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "gpg.h"
 #include "util.h"
 #include "packet.h"
-#include "memory.h"
-#include "mpi.h"
 #include "keydb.h"
 #include "cipher.h"
 #include "main.h"
 #include "status.h"
 #include "i18n.h"
 #include "options.h"
+#include "pkglue.h"
 
-struct cmp_help_context_s {
-    PKT_signature *sig;
-    MD_HANDLE md;
+/* Context used by the compare function. */
+struct cmp_help_context_s
+{
+  PKT_signature *sig;
+  gcry_md_hd_t md;
 };
 
-static int do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
+
+
+static int do_check( PKT_public_key *pk, PKT_signature *sig,
+                     gcry_md_hd_t digest,
 		     int *r_expired, int *r_revoked, PKT_public_key *ret_pk);
 
 /****************
@@ -50,23 +56,23 @@ static int do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
  * is able to append some data, before finalizing the digest.
  */
 int
-signature_check( PKT_signature *sig, MD_HANDLE digest )
+signature_check (PKT_signature *sig, gcry_md_hd_t digest)
 {
     return signature_check2( sig, digest, NULL, NULL, NULL, NULL );
 }
 
 int
-signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate, 
+signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate, 
 		  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
 {
     PKT_public_key *pk = xmalloc_clear( sizeof *pk );
     int rc=0;
 
-    if( (rc=check_digest_algo(sig->digest_algo)) )
-      ; /* we don't have this digest */
-    else if((rc=check_pubkey_algo(sig->pubkey_algo)))
-      ; /* we don't have this pubkey algo */
-    else if(!md_algo_present(digest,sig->digest_algo))
+    if ( (rc=openpgp_md_test_algo(sig->digest_algo)) )
+      ; /* We don't have this digest. */
+    else if ((rc=openpgp_pk_test_algo(sig->pubkey_algo)))
+      ; /* We don't have this pubkey algo. */
+    else if (!gcry_md_is_enabled (digest,sig->digest_algo))
       {
 	/* Sanity check that the md has a context for the hash that the
 	   sig is expecting.  This can happen if a onepass sig header does
@@ -127,36 +133,40 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
 	 * not possible to sign more than one identical document within
 	 * one second.	Some remote batch processing applications might
 	 * like this feature here */
-	MD_HANDLE md;
+	gcry_md_hd_t md;
+
 	u32 a = sig->timestamp;
 	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
 	byte *p, *buffer;
 
-	md = md_open( DIGEST_ALGO_RMD160, 0);
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
-	for(i=0; i < nsig; i++ ) {
-	    unsigned n = mpi_get_nbits( sig->data[i]);
+	if (gcry_md_open (&md, GCRY_MD_RMD160, 0))
+          BUG ();
 
-	    md_putc( md, n>>8);
-	    md_putc( md, n );
-	    p = mpi_get_buffer( sig->data[i], &n, NULL );
-	    md_write( md, p, n );
-	    xfree(p);
+        /* FIXME:  Why the hell are we updating DIGEST here??? */
+	gcry_md_putc( digest, sig->pubkey_algo );
+	gcry_md_putc( digest, sig->digest_algo );
+	gcry_md_putc( digest, (a >> 24) & 0xff );
+	gcry_md_putc( digest, (a >> 16) & 0xff );
+	gcry_md_putc( digest, (a >>	8) & 0xff );
+	gcry_md_putc( digest,  a	   & 0xff );
+	for(i=0; i < nsig; i++ ) {
+	    size_t n;
+            unsigned char *tmp;
+
+	    if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &tmp, &n, sig->data[i]))
+              BUG();
+	    gcry_md_write (md, tmp, n);
+	    xfree (tmp);
 	}
-	md_final( md );
-	p = make_radix64_string( md_read( md, 0 ), 20 );
+	gcry_md_final (md);
+	p = make_radix64_string ( gcry_md_read( md, 0 ), 20 );
 	buffer = xmalloc( strlen(p) + 60 );
 	sprintf( buffer, "%s %s %lu",
 		 p, strtimestamp( sig->timestamp ), (ulong)sig->timestamp );
 	write_status_text( STATUS_SIG_ID, buffer );
 	xfree(buffer);
 	xfree(p);
-	md_close(md);
+	gcry_md_close(md);
     }
 
     return rc;
@@ -220,47 +230,48 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
 
 
 static int
-do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
+do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
 	  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
 {
-    MPI result = NULL;
-    int rc=0;
+    gcry_mpi_t result = NULL;
+    int rc = 0;
     struct cmp_help_context_s ctx;
 
     if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
 
-    /* make sure the digest algo is enabled (in case of a detached signature)*/
-    md_enable( digest, sig->digest_algo );
+    /* Make sure the digest algo is enabled (in case of a detached
+       signature).  */
+    gcry_md_enable (digest, sig->digest_algo);
 
-    /* complete the digest */
+    /* Complete the digest. */
     if( sig->version >= 4 )
-	md_putc( digest, sig->version );
-    md_putc( digest, sig->sig_class );
+	gcry_md_putc( digest, sig->version );
+    gcry_md_putc( digest, sig->sig_class );
     if( sig->version < 4 ) {
 	u32 a = sig->timestamp;
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
+	gcry_md_putc( digest, (a >> 24) & 0xff );
+	gcry_md_putc( digest, (a >> 16) & 0xff );
+	gcry_md_putc( digest, (a >>	8) & 0xff );
+	gcry_md_putc( digest,  a	   & 0xff );
     }
     else {
 	byte buf[6];
 	size_t n;
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
+	gcry_md_putc( digest, sig->pubkey_algo );
+	gcry_md_putc( digest, sig->digest_algo );
 	if( sig->hashed ) {
 	    n = sig->hashed->len;
-            md_putc (digest, (n >> 8) );
-            md_putc (digest,  n       );
-	    md_write (digest, sig->hashed->data, n);
+            gcry_md_putc (digest, (n >> 8) );
+            gcry_md_putc (digest,  n       );
+	    gcry_md_write (digest, sig->hashed->data, n);
 	    n += 6;
 	}
 	else {
 	  /* Two octets for the (empty) length of the hashed
              section. */
-          md_putc (digest, 0);
-	  md_putc (digest, 0);
+          gcry_md_putc (digest, 0);
+	  gcry_md_putc (digest, 0);
 	  n = 6;
 	}
 	/* add some magic */
@@ -270,17 +281,17 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 	buf[3] = n >> 16;
 	buf[4] = n >>  8;
 	buf[5] = n;
-	md_write( digest, buf, 6 );
+	gcry_md_write( digest, buf, 6 );
     }
-    md_final( digest );
+    gcry_md_final( digest );
 
     result = encode_md_value( pk, NULL, digest, sig->digest_algo );
     if (!result)
         return G10ERR_GENERAL;
     ctx.sig = sig;
     ctx.md = digest;
-    rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
-    mpi_free( result );
+    rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
+    gcry_mpi_release (result);
 
     if( !rc && sig->flags.unknown_critical )
       {
@@ -296,8 +307,9 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 }
 
 
+
 static void
-hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
+hash_uid_node( KBNODE unode, gcry_md_hd_t md, PKT_signature *sig )
 {
     PKT_user_id *uid = unode->pkt->pkt.user_id;
 
@@ -310,9 +322,9 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 	    buf[2] = uid->attrib_len >> 16;
 	    buf[3] = uid->attrib_len >>  8;
 	    buf[4] = uid->attrib_len;
-	    md_write( md, buf, 5 );
+	    gcry_md_write( md, buf, 5 );
 	}
-	md_write( md, uid->attrib_data, uid->attrib_len );
+	gcry_md_write( md, uid->attrib_data, uid->attrib_len );
     }
     else {
 	if( sig->version >=4 ) {
@@ -322,9 +334,9 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 	    buf[2] = uid->len >> 16;
 	    buf[3] = uid->len >>  8;
 	    buf[4] = uid->len;
-	    md_write( md, buf, 5 );
+	    gcry_md_write( md, buf, 5 );
 	}
-	md_write( md, uid->name, uid->len );
+	gcry_md_write( md, uid->name, uid->len );
     }
 }
 
@@ -335,7 +347,7 @@ cache_sig_result ( PKT_signature *sig, int result )
         sig->flags.checked = 1;
         sig->flags.valid = 1;
     }
-    else if ( result == G10ERR_BAD_SIGN ) {
+    else if ( gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE ) {
         sig->flags.checked = 1;
         sig->flags.valid = 0;
     }
@@ -397,9 +409,10 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
     
           if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
 	    {
-              MD_HANDLE md;
+              gcry_md_hd_t md;
     
-              md=md_open(sig->digest_algo,0);
+              if (gcry_md_open (&md, sig->digest_algo, 0))
+                BUG ();
               hash_public_key(md,pk);
               rc=signature_check(sig,md);
 	      cache_sig_result(sig,rc);
@@ -422,23 +435,24 @@ int
 check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
 	      PKT_signature *backsig)
 {
-  MD_HANDLE md;
+  gcry_md_hd_t md;
   int rc;
 
   if(!opt.no_sig_cache && backsig->flags.checked)
     {
-      if((rc=check_digest_algo(backsig->digest_algo)))
+      if((rc=openpgp_md_test_algo (backsig->digest_algo)))
 	return rc;
 
-      return backsig->flags.valid? 0 : G10ERR_BAD_SIGN;
+      return backsig->flags.valid? 0 : gpg_error (GPG_ERR_BAD_SIGNATURE);
     }
 
-  md=md_open(backsig->digest_algo,0);
+  if (gcry_md_open (&md, backsig->digest_algo,0))
+    BUG ();
   hash_public_key(md,main_pk);
   hash_public_key(md,sub_pk);
   rc=do_check(sub_pk,backsig,md,NULL,NULL,NULL);
   cache_sig_result(backsig,rc);
-  md_close(md);
+  gcry_md_close(md);
 
   return rc;
 }
@@ -466,7 +480,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 		      PKT_public_key *ret_pk, int *is_selfsig,
 		      u32 *r_expiredate, int *r_expired )
 {
-    MD_HANDLE md;
+    gcry_md_hd_t md;
     PKT_public_key *pk;
     PKT_signature *sig;
     int algo;
@@ -502,13 +516,13 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	       actual pk */
 	    if((rc=do_check_messages(pk,sig,r_expired,NULL)))
 	      return rc;
-            return sig->flags.valid? 0 : G10ERR_BAD_SIGN;
+            return sig->flags.valid? 0 : gpg_error (GPG_ERR_BAD_SIGNATURE);
         }
     }
 
-    if( (rc=check_pubkey_algo(sig->pubkey_algo)) )
+    if( (rc=openpgp_pk_test_algo(sig->pubkey_algo)) )
 	return rc;
-    if( (rc=check_digest_algo(algo)) )
+    if( (rc=openpgp_md_test_algo(algo)) )
 	return rc;
 
     if( sig->sig_class == 0x20 ) { /* key revocation */
@@ -520,23 +534,25 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	  rc=check_revocation_keys(pk,sig);
 	else
 	  {
-	    md = md_open( algo, 0 );
+	    if (gcry_md_open (&md, algo, 0 ))
+              BUG ();
 	    hash_public_key( md, pk );
 	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
 	    cache_sig_result ( sig, rc );
-	    md_close(md);
+	    gcry_md_close(md);
 	  }
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
 	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );
 
 	if( snode ) {
-	    md = md_open( algo, 0 );
+            if (gcry_md_open (&md, algo, 0))
+              BUG ();
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
             cache_sig_result ( sig, rc );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else
 	  {
@@ -557,12 +573,13 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    *is_selfsig = 1;
 	    }
-	    md = md_open( algo, 0 );
+	    if (gcry_md_open (&md, algo, 0))
+              BUG ();
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
             cache_sig_result ( sig, rc );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else
 	  {
@@ -573,11 +590,12 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	  }
     }
     else if( sig->sig_class == 0x1f ) { /* direct key signature */
-	md = md_open( algo, 0 );
+        if (gcry_md_open (&md, algo, 0 ))
+          BUG ();
 	hash_public_key( md, pk );
 	rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
         cache_sig_result ( sig, rc );
-	md_close(md);
+	gcry_md_close(md);
     }
     else { /* all other classes */
 	KBNODE unode = find_prev_kbnode( root, node, PKT_USER_ID );
@@ -586,7 +604,8 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    u32 keyid[2];
 
 	    keyid_from_pk( pk, keyid );
-	    md = md_open( algo, 0 );
+	    if (gcry_md_open (&md, algo, 0 ))
+              BUG ();
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
@@ -601,7 +620,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	      rc=signature_check2(sig,md,r_expiredate,r_expired,NULL,ret_pk);
 
             cache_sig_result ( sig, rc );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else
 	  {

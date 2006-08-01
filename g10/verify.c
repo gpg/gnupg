@@ -1,4 +1,4 @@
-/* verify.c - verify signed data
+/* verify.c - Verify signed data
  * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -25,14 +25,13 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
-#include <unistd.h> /* for isatty() */
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "status.h"
@@ -99,8 +98,10 @@ verify_signatures( int nfiles, char **files )
         errno = EPERM;
       }
     if( !fp ) {
-	log_error(_("can't open `%s'\n"), print_fname_stdin(sigfile));
-	return G10ERR_OPEN_FILE;
+        rc = gpg_error_from_errno (errno);
+	log_error(_("can't open `%s': %s\n"),
+                  print_fname_stdin(sigfile), strerror (errno));
+	return rc;
     }
     handle_progress (&pfx, fp, sigfile);
 
@@ -153,9 +154,11 @@ verify_one_file( const char *name )
         errno = EPERM;
       }
     if( !fp ) {
+        rc = gpg_error_from_errno (errno);
+	log_error(_("can't open `%s': %s\n"),
+                  print_fname_stdin(name), strerror (errno));
 	print_file_status( STATUS_FILE_ERROR, name, 1 );
-	log_error(_("can't open `%s'\n"), print_fname_stdin(name));
-	return G10ERR_OPEN_FILE;
+	return rc;
     }
     handle_progress (&pfx, fp, name);
 
@@ -197,15 +200,12 @@ verify_files( int nfiles, char **files )
 	     * spaces, so that we can process nearly all filenames */
 	    line[strlen(line)-1] = 0;
 	    verify_one_file( line );
-            iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
 	}
 
     }
     else {  /* take filenames from the array */
-        for(i=0; i < nfiles; i++ ) {
+	for(i=0; i < nfiles; i++ )
 	    verify_one_file( files[i] );
-            iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
-        }
     }
     return 0;
 }

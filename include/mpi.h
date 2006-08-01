@@ -31,6 +31,13 @@
 #ifndef G10_MPI_H
 #define G10_MPI_H
 
+#error this file should not be used anymore
+
+#include <gcrypt.h>
+
+#if 0
+
+
 #include <config.h>
 #include <stdio.h>
 #include "iobuf.h"
@@ -69,11 +76,11 @@ EXTERN_UNLESS_MAIN_MODULE int mpi_debug_mode;
 struct gcry_mpi {
     int alloced;    /* array size (# of allocated limbs) */
     int nlimbs;     /* number of valid limbs */
-    unsigned int nbits; /* the real number of valid bits (info only) */
+    int nbits;	    /* the real number of valid bits (info only) */
     int sign;	    /* indicates a negative number */
     unsigned flags; /* bit 0: array must be allocated in secure memory space */
 		    /* bit 1: not used */
-		    /* bit 2: the limb is a pointer to some xmalloced data */
+		    /* bit 2: the limb is a pointer to some m_alloced data */
     mpi_limb_t *d;  /* array with the limbs */
 };
 
@@ -108,8 +115,8 @@ void mpi_resize( MPI a, unsigned nlimbs );
 MPI  mpi_copy( MPI a );
 #endif
 #define mpi_is_opaque(a) ((a) && ((a)->flags&4))
-MPI mpi_set_opaque( MPI a, void *p, unsigned int len );
-void *mpi_get_opaque( MPI a, unsigned int *len );
+MPI mpi_set_opaque( MPI a, void *p, int len );
+void *mpi_get_opaque( MPI a, int *len );
 #define mpi_is_secure(a) ((a) && ((a)->flags&1))
 void mpi_set_secure( MPI a );
 void mpi_clear( MPI a );
@@ -167,7 +174,7 @@ int mpi_gcd( MPI g, MPI a, MPI b );
 
 /*-- mpi-pow.c --*/
 void mpi_pow( MPI w, MPI u, MPI v);
-void mpi_powm( MPI res, MPI base, MPI exponent, MPI mod);
+void mpi_powm( MPI res, MPI base, MPI exp, MPI mod);
 
 /*-- mpi-mpow.c --*/
 void mpi_mulpowm( MPI res, MPI *basearray, MPI *exparray, MPI mod);
@@ -193,5 +200,5 @@ void mpi_rshift( MPI x, MPI a, unsigned n );
 
 /*-- mpi-inv.c --*/
 void mpi_invm( MPI x, MPI u, MPI v );
-
+#endif
 #endif /*G10_MPI_H*/

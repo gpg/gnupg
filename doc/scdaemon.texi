@@ -1,0 +1,601 @@
+@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Invoking SCDAEMON
+@chapter Invoking the SCDAEMON
+@cindex SCDAEMON command options
+@cindex command options
+@cindex options, SCDAEMON command
+
+@c man begin DESCRIPTION
+
+The @command{scdaemon} is a daemon to manage smartcards.  It is usually
+invoked by gpg-agent and in general not used directly.
+
+@c man end
+
+@xref{Option Index}, for an index to GPG-AGENTS's commands and options.
+
+@menu
+* Scdaemon Commands::      List of all commands.
+* Scdaemon Options::       List of all options.
+* Card applications::      Description of card applications.
+* Scdaemon Examples::      Some usage examples.
+* Scdaemon Protocol::      The protocol the daemon uses.
+@end menu
+
+@c man begin COMMANDS
+
+@node Scdaemon Commands
+@section Commands
+
+Commands are not distinguished from options execpt for the fact that
+only one one command is allowed.
+
+@table @gnupgtabopt
+@item --version
+@opindex version
+Print the program version and licensing information.  Not that you can
+abbreviate this command.
+
+@item --help, -h
+@opindex help
+Print a usage message summarizing the most usefule command-line options.
+Not that you can abbreviate this command.
+
+@item --dump-options
+@opindex dump-options
+Print a list of all available options and commands.  Not that you can
+abbreviate this command.
+
+@item --server
+@opindex server
+Run in server mode and wait for commands on the @code{stdin}.  This is
+default mode is to create a socket and listen for commands there.
+
+@item --multi-server
+@opindex multi-server
+Run in server mode and wait for commands on the @code{stdin} as well as
+on an additional Unix Domain socket.  The server command @code{GETINFO}
+may be used to get the name of that extra socket.
+
+@item --daemon
+@opindex daemon
+Run the program in the background.  This option is required to prevent
+it from being accidently running in the background.
+
+@item --print-atr
+@opindex print-atr
+This is mainly a debugging command, used to print the ATR
+(Answer-To-Reset) of a card and exit immediately. 
+
+@end table
+
+
+@c man begin OPTIONS
+
+@node Scdaemon Options
+@section Option Summary
+
+@table @gnupgtabopt
+
+@item --options @var{file}
+@opindex options
+Reads configuration from @var{file} instead of from the default
+per-user configuration file.  The default configuration file is named
+@file{scdaemon.conf} and expected in the @file{.gnupg} directory directly
+below the home directory of the user.
+
+@item --homedir @var{dir}
+@opindex homedir
+Set the name of the home directory to @var{dir}. If his option is not
+used, the home directory defaults to @file{~/.gnupg}.  It is only
+recognized when given on the command line.  It also overrides any home
+directory stated through the environment variable @env{GNUPGHOME} or
+(on W32 systems) by means on the Registry entry
+@var{HKCU\Software\GNU\GnuPG:HomeDir}.
+
+@item -v
+@item --verbose
+@opindex v
+@opindex verbose
+Outputs additional information while running.
+You can increase the verbosity by giving several
+verbose commands to @command{gpgsm}, such as @samp{-vv}.
+
+@item --debug-level @var{level}
+@opindex debug-level
+Select the debug level for investigating problems. @var{level} may be
+one of:
+
+   @table @code
+   @item none
+   no debugging at all.
+   @item basic  
+   some basic debug messages
+   @item advanced
+   more verbose debug messages
+   @item expert
+   even more detailed messages
+   @item guru
+   all of the debug messages you can get
+   @end table
+
+How these messages are mapped to the actual debugging flags is not
+specified and may change with newer releaes of this program. They are
+however carefully selected to best aid in debugging.
+
+@quotation Note
+All debugging options are subject to change and thus should not be used
+by any application program.  As the name says, they are only used as
+helpers to debug problems.
+@end quotation
+
+
+@item --debug @var{flags}
+@opindex debug
+This option is only useful for debugging and the behaviour may change at
+any time without notice.  FLAGS are bit encoded and may be given in
+usual C-Syntax. The currently defined bits are:
+
+   @table @code
+   @item 0  (1)
+   command I/O
+   @item 1  (2)  
+   values of big number integers 
+   @item 2  (4)
+   low level crypto operations
+   @item 5  (32)
+   memory allocation
+   @item 6  (64)
+   caching
+   @item 7  (128)
+   show memory statistics.
+   @item 9  (512)
+   write hashed data to files named @code{dbgmd-000*}
+   @item 10 (1024)
+   trace Assuan protocol
+   @item 11 (2048)
+   trace APDU I/O to the card.  This may reveal sensitive data.
+   @end table
+
+@item --debug-all
+@opindex debug-all
+Same as @code{--debug=0xffffffff}
+
+@item --debug-wait @var{n}
+@opindex debug-wait
+When running in server mode, wait @var{n} seconds before entering the
+actual processing loop and print the pid.  This gives time to attach a
+debugger.
+
+@item --debug-ccid-driver
+@opindex debug-wait
+Enable debug output from the included CCID driver for smartcards.
+Using this option twice will also enable some tracing of the T=1
+protocol.  Note that this option may reveal sensitive data.
+
+@item --debug-disable-ticker
+@opindex debug-disable-ticker
+This option disables all ticker functions like checking for card
+insertions.
+
+@item --debug-allow-core-dump
+@opindex debug-allow-core-dump
+For security reasons we won't create a core dump when the process
+aborts.  For debugging purposes it is sometimes better to allow core
+dump.  This options enables it and also changes the working directory to
+@file{/tmp} when running in @option{--server} mode.
+
+
+@item --no-detach
+@opindex no-detach
+Don't detach the process from the console.  This is manly usefule for
+debugging.
+
+@item --log-file @var{file}
+@opindex log-file
+Append all logging output to @var{file}.  This is very helpful in
+seeing what the agent actually does.
+
+
+@item --pcsc-driver @var{library}
+@opindex pcsc-driver
+Use @var{library} to access the smartcard reader.  The current default
+is @file{libpcsclite.so}.  Instead of using this option you might also
+want to install a symbolic link to the default file name
+(e.g. from @file{libpcsclite.so.1}).
+
+@item --ctapi-driver @var{library}
+@opindex ctapi-driver
+Use @var{library} to access the smartcard reader.  The current default
+is @file{libtowitoko.so}.  Note that the use of this interface is
+deprecated; it may be removed in future releases.
+
+@item --disable-ccid 
+@opindex disable-ccid
+Disable the integrated support for CCID compliant readers.  This
+allows to fall back to one of the other drivers even if the internal
+CCID driver can handle the reader.  Note, that CCID support is only
+available if libusb was available at build time.
+
+@item --reader-port @var{number_or_string}
+@opindex reader-port
+This option may be used to specify the port of the card terminal.  A
+value of 0 refers to the first serial device; add 32768 to access USB
+devices.  The default is 32768 (first USB device).  PC/SC or CCID
+readers might need a string here; run the program in verbose mode to get
+a list of available readers.  The default is then the first reader
+found.
+
+@item --disable-keypad
+@opindex disable-keypad
+Even if a card reader features a keypad, do not try to use it.
+
+
+@item --allow-admin
+@itemx --deny-admin
+@opindex allow-admin
+@opindex deny-admin
+This enables the use of Admin class commands for card applications
+where this is supported.  Currently we support it for the OpenPGP
+card.  Deny is the default.  This commands is useful to inhibit
+accidental access to admin class command which could ultimately lock
+the card through worng PIN numbers.
+
+@item --disable-application @var{name}
+@opindex disable-application
+This option disables the use of the card application named
+@var{name}.  This is mainly useful for debugging or if a application
+with lower priority should be used by default.
+
+@end table
+
+All the long options may also be given in the configuration file after
+stripping off the two leading dashes.
+
+
+@c man begin CARD APPLICATIONS
+
+@node Card applications
+@section Description of card applications
+
+@command{scdaemon} supports the card applications as described below.
+
+@menu
+* OpenPGP Card::          The OpenPGP card application
+* NKS Card::              The Telesec NetKey card application
+* DINSIG Card::           The DINSIG card application
+* PKCS#15 Card::          The PKCS#15 card application
+@end menu
+
+@node OpenPGP Card
+@subsection The OpenPGP card application ``openpgp''
+
+This application is currently only used by @command{gpg} but may in
+future also be useful with @command{gpgsm}. 
+
+The specification for such a card is available at
+@uref{http://g10code.com/docs/openpgp-card-1.0.pdf}.
+
+@node NKS Card
+@subsection The Telesec NetKey card ``nks''
+
+This is the main application of the Telesec cards as available in
+Germany.  It is a superset of the German DINSIG card.  The card is
+used by @command{gpgsm}.
+
+@node DINSIG Card
+@subsection The DINSIG card application ``dinsig''
+
+This is an application as described in the German draft standard
+@emph{DIN V 66291-1}.  It is intended to be used by cards supporteing
+the German signature law and its bylaws (SigG and SigV).
+
+@node PKCS#15 Card
+@subsection The PKCS#15 card application ``p15''
+
+This is common fraqmework for smart card applications.  It is used by
+@command{gpgsm}.
+
+
+
+@c 
+@c  Examples
+@c
+@node Scdaemon Examples
+@section Examples
+
+@c man begin EXAMPLES
+
+@example
+$ scdaemon --server -v
+@end example
+
+@c man end
+
+@c 
+@c  Assuan Protocol
+@c
+@node Scdaemon Protocol
+@section Scdaemon's Assuan Protocol
+
+The SC-Daemon should be started by the system to provide access to
+external tokens.  Using Smartcards on a multi-user system does not
+make much sense expcet for system services, but in this case no
+regular user accounts are hosted on the machine.
+
+A client connects to the SC-Daemon by connecting to the socket named
+@file{/var/run/scdaemon/socket}, configuration information is read from
+@var{/etc/scdaemon.conf}
+
+Each connection acts as one session, SC-Daemon takes care of
+syncronizing access to a token between sessions.
+
+@menu
+* Scdaemon SERIALNO::     Return the serial number.
+* Scdaemon LEARN::        Read all useful information from the card.
+* Scdaemon READCERT::     Return a certificate.
+* Scdaemon READKEY::      Return a public key.
+* Scdaemon PKSIGN::       Signing data with a Smartcard.
+* Scdaemon PKDECRYPT::    Decrypting data with a Smartcard.
+* Scdaemon GETATTR::      Read an attribute's value.
+* Scdaemon SETATTR::      Update an attribute's value.
+* Scdaemon WRITEKEY::     Write a key to a card.
+* Scdaemon GENKEY::       Generate a new key on-card.
+* Scdaemon RANDOM::       Return random bytes generate on-card.
+* Scdaemon PASSWD::       Change PINs.
+* Scdaemon CHECKPIN::     Perform a VERIFY operation.
+* Scdaemon RESTART::      Restart connection
+* Scdaemon APDU::         Send a verbatim APDU to the card
+@end menu
+
+@node Scdaemon SERIALNO 
+@subsection Return the serial number
+
+This command should be used to check for the presence of a card.  It is
+special in that it can be used to reset the card.  Most other commands
+will return an error when a card change has been detected and the use of
+this function is therefore required.
+
+Background: We want to keep the client clear of handling card changes
+between operations; i.e. the client can assume that all operations are
+done on the same card unless he call this function.
+
+@example
+  SERIALNO
+@end example
+
+Return the serial number of the card using a status reponse like:
+
+@example
+  S SERIALNO D27600000000000000000000 0
+@end example
+
+The trailing 0 should be ignored for now, it is reserved for a future
+extension.  The serial number is the hex encoded value identified by 
+the @code{0x5A} tag in the GDO file (FIX=0x2F02).
+
+
+
+@node Scdaemon LEARN
+@subsection Read all useful information from the card
+
+@example
+  LEARN [--force]
+@end example
+
+Learn all useful information of the currently inserted card.  When
+used without the force options, the command might do an INQUIRE
+like this:
+
+@example
+      INQUIRE KNOWNCARDP <hexstring_with_serialNumber> <timestamp>
+@end example
+
+The client should just send an @code{END} if the processing should go on
+or a @code{CANCEL} to force the function to terminate with a cancel
+error message.  The response of this command is a list of status lines
+formatted as this:
+
+@example
+     S KEYPAIRINFO @var{hexstring_with_keygrip} @var{hexstring_with_id}
+@end example
+
+If there is no certificate yet stored on the card a single "X" is
+returned in @var{hexstring_with_keygrip}.
+
+@node Scdaemon READCERT
+@subsection Return a certificate
+
+@example
+ READCERT @var{hexified_certid}
+@end example
+
+This function is used to read a certificate identified by
+@var{hexified_certid} from the card.
+
+
+@node Scdaemon READKEY
+@subsection Return a public key
+
+@example
+READKEY @var{hexified_certid}
+@end example
+
+Return the public key for the given cert or key ID as an standard
+S-Expression. 
+
+
+
+@node Scdaemon PKSIGN
+@subsection Signing data with a Smartcard
+
+To sign some data the caller should use the command
+
+@example
+ SETDATA @var{hexstring}
+@end example
+
+to tell @command{scdaemon} about the data to be signed.  The data must be given in
+hex notation.  The actual signing is done using the command
+
+@example
+  PKSIGN @var{keyid}
+@end example
+
+where @var{keyid} is the hexified ID of the key to be used.  The key id
+may have been retrieved using the command @code{LEARN}.  If another
+hash algorithm than SHA-1 is used, that algorithm may be given like:
+
+@example
+  PKSIGN --hash=@var{algoname} @var{keyid}
+@end example
+
+With @var{algoname} are one of @code{sha1}, @code{rmd160} or @code{md5}.
+
+
+@node Scdaemon PKDECRYPT
+@subsection Decrypting data with a Smartcard
+
+To decrypt some data the caller should use the command
+
+@example
+ SETDATA @var{hexstring}
+@end example
+
+to tell @command{scdaemon} about the data to be decrypted.  The data
+must be given in hex notation.  The actual decryption is then done
+using the command
+
+@example
+  PKDECRYPT @var{keyid}
+@end example
+
+where @var{keyid} is the hexified ID of the key to be used.
+
+
+@node Scdaemon GETATTR
+@subsection Read an attribute's value.
+
+TO BE WRITTEN.
+
+@node Scdaemon SETATTR
+@subsection Update an attribute's value.
+
+TO BE WRITTEN.
+
+@node Scdaemon WRITEKEY
+@subsection Write a key to a card.
+
+@example
+  WRITEKEY [--force] @var{keyid}
+@end example
+
+This command is used to store a secret key on a a smartcard.  The
+allowed keyids depend on the currently selected smartcard
+application. The actual keydata is requested using the inquiry
+@code{KEYDATA} and need to be provided without any protection.  With
+@option{--force} set an existing key under this @var{keyid} will get
+overwritten.  The key data is expected to be the usual canonical encoded
+S-expression.
+
+A PIN will be requested in most saes.  This however depends on the
+actual card application.
+
+
+@node Scdaemon GENKEY
+@subsection Generate a new key on-card.
+
+TO BE WRITTEN.
+
+@node Scdaemon RANDOM
+@subsection Return random bytes generate on-card.
+
+TO BE WRITTEN.
+
+
+@node Scdaemon PASSWD
+@subsection Change PINs.
+
+@example
+   PASSWD [--reset] @var{chvno}
+@end example
+  
+Change the PIN or reset the retry counter of the card holder
+verification vector number @var{chvno}.
+
+
+@node Scdaemon CHECKPIN
+@subsection Perform a VERIFY operation.
+
+@example
+  CHECKPIN @var{idstr}
+@end example
+
+Perform a VERIFY operation without doing anything else.  This may be
+used to initialize a the PIN cache earlier to long lasting
+operations.  Its use is highly application dependent:
+
+@table @strong
+@item OpenPGP
+
+Perform a simple verify operation for CHV1 and CHV2, so that further
+operations won't ask for CHV2 and it is possible to do a cheap check on
+the PIN: If there is something wrong with the PIN entry system, only the
+regular CHV will get blocked and not the dangerous CHV3.  @var{idstr} is
+the usual card's serial number in hex notation; an optional fingerprint
+part will get ignored.
+
+There is however a special mode if @var{idstr} is suffixed with the
+literal string @code{[CHV3]}: In this case the Admin PIN is checked if
+and only if the retry counter is still at 3.
+
+@end table
+
+
+
+@node Scdaemon RESTART
+@subsection Perform a RESTART operation.
+
+@example
+  RESTART
+@end example
+
+Restart the current connection; this is a kind of warm reset.  It
+deletes the context used by this connection but does not actually
+reset the card. 
+
+This is used by gpg-agent to reuse a primary pipe connection and
+may be used by clients to backup from a conflict in the serial
+command; i.e. to select another application. 
+
+
+
+
+@node Scdaemon APDU
+@subsection Send a verbatim APDU to the card.
+
+@example
+  APDU [--atr] [--more] [@var{hexstring}]
+@end example
+
+
+Send an APDU to the current reader.  This command bypasses the high
+level functions and sends the data directly to the card.
+@var{hexstring} is expected to be a proper APDU.  If @var{hexstring} is
+not given no commands are send to the card; However the command will
+implictly check whether the card is ready for use.
+
+Using the option @code{--atr} returns the ATR of the card as a status
+message before any data like this:
+@example
+     S CARD-ATR 3BFA1300FF813180450031C173C00100009000B1
+@end example
+
+Using the option @code{--more} handles the card status word MORE_DATA
+(61xx) and concatenate all reponses to one block.
+
+
+

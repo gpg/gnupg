@@ -1,0 +1,6 @@
+Makefile.am
+watchgnupg.c
+gpgconf.c
+gpgconf.h
+gpgconf-list.c
+$names$

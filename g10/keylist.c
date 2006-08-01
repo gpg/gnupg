@@ -1,4 +1,4 @@
-/* keylist.c
+/* keylist.c - print keys
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004, 2005 Free Software Foundation, Inc.
  *
@@ -27,11 +27,11 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
 #include "photoid.h"
 #include "util.h"
 #include "ttyio.h"
@@ -249,7 +249,7 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
   const byte *p;
   size_t len;
   int seq=0,crit;
-  FILE *fp=mode?log_stream():stdout;
+  FILE *fp=mode?log_get_stream():stdout;
 
   while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len,&seq,&crit)))
     {
@@ -290,7 +290,7 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
   const byte *p;
   size_t len;
   int seq=0,crit;
-  FILE *fp=mode?log_stream():stdout;
+  FILE *fp=mode?log_get_stream():stdout;
 
   while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&len,&seq,&crit)))
     {
@@ -332,7 +332,7 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
 void
 show_notation(PKT_signature *sig,int indent,int mode,int which)
 {
-  FILE *fp=mode?log_stream():stdout;
+  FILE *fp=mode?log_get_stream():stdout;
   struct notation *nd,*notations;
 
   if(which==0)
@@ -915,12 +915,13 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if( stats ) {
                 /*fflush(stdout);*/
 		rc = check_key_signature( keyblock, node, NULL );
-		switch( rc ) {
-		 case 0:		 sigrc = '!'; break;
-		 case G10ERR_BAD_SIGN:   stats->inv_sigs++; sigrc = '-'; break;
-		 case G10ERR_NO_PUBKEY: 
-		 case G10ERR_UNU_PUBKEY: stats->no_key++; continue;
-		 default:		 stats->oth_err++; sigrc = '%'; break;
+		switch( gpg_err_code (rc) ) {
+		 case 0:		sigrc = '!'; break;
+		 case GPG_ERR_BAD_SIGNATURE:
+                   stats->inv_sigs++; sigrc = '-'; break;
+		 case GPG_ERR_NO_PUBKEY: 
+		 case GPG_ERR_UNUSABLE_PUBKEY: stats->no_key++; continue;
+		 default:		stats->oth_err++; sigrc = '%'; break;
 		}
 
 		/* TODO: Make sure a cached sig record here still has
@@ -1305,12 +1306,12 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 
 		rc = check_key_signature2( keyblock, node, NULL, signer_pk,
 					   NULL, NULL, NULL );
-		switch( rc ) {
-		  case 0:		   sigrc = '!'; break;
-		  case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-		  case G10ERR_NO_PUBKEY: 
-		  case G10ERR_UNU_PUBKEY:  sigrc = '?'; break;
-		  default:		   sigrc = '%'; break;
+		switch ( gpg_err_code (rc) ) {
+		  case 0:		        sigrc = '!'; break;
+		  case GPG_ERR_BAD_SIGNATURE:   sigrc = '-'; break;
+		  case GPG_ERR_NO_PUBKEY: 
+		  case GPG_ERR_UNUSABLE_PUBKEY: sigrc = '?'; break;
+		  default:		        sigrc = '%'; break;
 		}
 
 		if(opt.no_sig_cache)
@@ -1500,7 +1501,7 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
       }
 
     if (mode == 1) {
-        fp = log_stream ();
+        fp = log_get_stream ();
 	if(primary)
 	  text = _("Primary key fingerprint:");
 	else

@@ -1,5 +1,5 @@
 /* keybox-defs.h - interal Keybox defintions
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,31 +15,33 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #ifndef KEYBOX_DEFS_H
 #define KEYBOX_DEFS_H 1
-
-#include <sys/types.h> /* off_t */
-#include "keybox.h"
 
 #ifdef GPG_ERR_SOURCE_DEFAULT
 #error GPG_ERR_SOURCE_DEFAULT already defined
 #endif
 #define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_KEYBOX
 #include <gpg-error.h>
+#define map_assuan_err(a) \
+        map_assuan_err_with_source (GPG_ERR_SOURCE_DEFAULT, (a))
 
+#include <sys/types.h> /* off_t */
 
-#ifndef HAVE_BYTE_TYPEDEF
-typedef unsigned char byte; /* fixme */
-#endif
-#ifndef HAVE_U16_TYPEDEF
-typedef unsigned short u16; /* fixme */
-#endif
-#ifndef HAVE_U32_TYPEDEF
-typedef unsigned int u32; /* fixme */
-#endif
+/* We include the type defintions from jnlib instead of defining our
+   owns here.  This will not allow us build KBX in a standalone way
+   but there is currently no need for it anyway.  Same goes for
+   stringhelp.h which for example provides a replacement for stpcpy -
+   fixme: Better the LIBOBJ mechnism. */
+#include "../jnlib/types.h"
+#include "../jnlib/stringhelp.h"
+
+#include "keybox.h"
+
 
 enum {
   BLOBTYPE_EMPTY = 0,
@@ -86,6 +88,40 @@ struct keybox_handle {
 };
 
 
+/* Openpgp helper structures. */
+struct _keybox_openpgp_key_info
+{
+  struct _keybox_openpgp_key_info *next;
+  unsigned char keyid[8];
+  int fprlen;  /* Either 16 or 20 */
+  unsigned char fpr[20];
+};
+
+struct _keybox_openpgp_uid_info
+{
+  struct _keybox_openpgp_uid_info *next;
+  size_t off;
+  size_t len;
+};
+
+struct _keybox_openpgp_info
+{
+  int is_secret;        /* True if this is a secret key. */
+  unsigned int nsubkeys;/* Total number of subkeys.  */
+  unsigned int nuids;   /* Total number of user IDs in the keyblock. */
+  unsigned int nsigs;   /* Total number of signatures in the keyblock. */
+
+  /* Note, we use 2 structs here to better cope with the most common
+     use of having one primary and one subkey - this allows us to
+     statically allocate this structure and only malloc stuff for more
+     than one subkey. */
+  struct _keybox_openpgp_key_info primary;
+  struct _keybox_openpgp_key_info subkeys;
+  struct _keybox_openpgp_uid_info uids;
+};
+typedef struct _keybox_openpgp_info *keybox_openpgp_info_t;
+
+
 /* Don't know whether this is needed: */
 /*  static struct { */
 /*    const char *homedir; */
@@ -101,23 +137,40 @@ struct keybox_handle {
   /* fixme */
 #endif /*KEYBOX_WITH_OPENPGP*/
 #ifdef KEYBOX_WITH_X509
-int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
+int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
                               unsigned char *sha1_digest, int as_ephemeral);
 #endif /*KEYBOX_WITH_X509*/
 
-int  _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen,
+int  _keybox_new_blob (KEYBOXBLOB *r_blob,
+                       unsigned char *image, size_t imagelen,
                        off_t off);
 void _keybox_release_blob (KEYBOXBLOB blob);
-const char *_keybox_get_blob_image (KEYBOXBLOB blob, size_t *n);
+const unsigned char *_keybox_get_blob_image (KEYBOXBLOB blob, size_t *n);
 off_t _keybox_get_blob_fileoffset (KEYBOXBLOB blob);
+void _keybox_update_header_blob (KEYBOXBLOB blob);
+
+/*-- keybox-openpgp.c --*/
+gpg_error_t _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
+                                   size_t *nparsed,
+                                   keybox_openpgp_info_t info);
+void _keybox_destroy_openpgp_info (keybox_openpgp_info_t info);
+
 
 /*-- keybox-file.c --*/
 int _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp);
+int _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted);
 int _keybox_write_blob (KEYBOXBLOB blob, FILE *fp);
+int _keybox_write_header_blob (FILE *fp);
+
+/*-- keybox-search.c --*/
+gpg_err_code_t _keybox_get_flag_location (const unsigned char *buffer,
+                                          size_t length,
+                                          int what,
+                                          size_t *flag_off, size_t *flag_size);
 
 /*-- keybox-dump.c --*/
 int _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp);
-int _keybox_dump_file (const char *filename, FILE *outfp);
+int _keybox_dump_file (const char *filename, int stats_only, FILE *outfp);
 
 
 /*-- keybox-util.c --*/

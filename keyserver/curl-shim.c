@@ -304,7 +304,7 @@ curl_escape(char *str,int length)
       else
 	{
 	  char numbuf[5];
-	  sprintf(numbuf,"%%%02X",(unsigned char)str[idx]);
+	  sprintf(numbuf,"%%%02X",str[idx]);
 	  strcpy(&enc[enc_idx],numbuf);
 	  enc_idx+=3;
 	}

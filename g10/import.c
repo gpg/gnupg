@@ -27,11 +27,11 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "trustdb.h"
 #include "main.h"
@@ -243,7 +243,9 @@ import( IOBUF inp, const char* fname,struct stats_s *stats,
 	unsigned char **fpr,size_t *fpr_len,unsigned int options )
 {
     PACKET *pending_pkt = NULL;
-    KBNODE keyblock = NULL;
+    KBNODE keyblock = NULL;  /* Need to initialize because gcc can't
+                                grasp the return semantics of
+                                read_block. */
     int rc = 0;
 
     getkey_disable_caches();
@@ -563,11 +565,8 @@ print_import_check (PKT_public_key * pk, PKT_user_id * id)
 static void
 check_prefs_warning(PKT_public_key *pk)
 {
-  log_info(_("WARNING: key %s contains preferences for unavailable\n"),
-            keystr_from_pk(pk));
-  /* TRANSLATORS: This string is belongs to the previous one.  They are
-     only split up to allow printing of a common prefix. */
-  log_info(_("         algorithms on these user IDs:\n"));
+  log_info(_("WARNING: key %s contains preferences for unavailable\n"
+             "algorithms on these user IDs:\n"), keystr_from_pk(pk));
 }
 
 static void
@@ -599,9 +598,9 @@ check_prefs(KBNODE keyblock)
 
 	      if(prefs->type==PREFTYPE_SYM)
 		{
-		  if(check_cipher_algo(prefs->value))
+		  if (openpgp_cipher_test_algo (prefs->value))
 		    {
-		      const char *algo=cipher_algo_to_string(prefs->value);
+		      const char *algo = gcry_cipher_algo_name (prefs->value);
 		      if(!problem)
 			check_prefs_warning(pk);
 		      log_info(_("         \"%s\": preference for cipher"
@@ -611,9 +610,9 @@ check_prefs(KBNODE keyblock)
 		}
 	      else if(prefs->type==PREFTYPE_HASH)
 		{
-		  if(check_digest_algo(prefs->value))
+		  if(openpgp_md_test_algo(prefs->value))
 		    {
-		      const char *algo=digest_algo_to_string(prefs->value);
+		      const char *algo = gcry_md_algo_name (prefs->value);
 		      if(!problem)
 			check_prefs_warning(pk);
 		      log_info(_("         \"%s\": preference for digest"
@@ -623,7 +622,7 @@ check_prefs(KBNODE keyblock)
 		}
 	      else if(prefs->type==PREFTYPE_ZIP)
 		{
-		  if(check_compress_algo(prefs->value))
+		  if(check_compress_algo (prefs->value))
 		    {
 		      const char *algo=compress_algo_to_string(prefs->value);
 		      if(!problem)
@@ -1560,9 +1559,9 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 	    else
 	      subkey_seen = 1;
 	}
-	else if( node->pkt->pkttype == PKT_SIGNATURE
-		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
-		 && node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
+	else if (node->pkt->pkttype == PKT_SIGNATURE
+                && openpgp_pk_test_algo (node->pkt->pkt.signature->pubkey_algo)
+		&& node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
 	    delete_kbnode( node ); /* build_packet() can't handle this */
 	else if( node->pkt->pkttype == PKT_SIGNATURE &&
 		 !node->pkt->pkt.signature->flags.exportable &&

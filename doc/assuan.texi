@@ -1,0 +1,193 @@
+@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Assuan
+@appendix Description of the Assuan protocol.
+@cindex Assuan, IPC
+
+The architecture of the modular GnuPG system is based on a couple of
+highly specialized modules which make up a network of client server
+communication.  A common framework for intermodule communication is
+therefore needed and should be implemented in a library.
+
+@appendixsubsec Goals
+
+@itemize @bullet
+@item Common framework for module communication
+@item Easy debugging
+@item Easy module testing 
+@item Extendible
+@item Optional authentication and encryption facility
+@item Usable to access external hardware
+@end itemize
+
+
+@appendixsubsec Design criteria
+
+@itemize @bullet
+@item Client Server with back channel
+@item Use a mainly text based protocol
+@item Escape certain control characters
+@item Allow indefinite data length
+@item Request confidentiality for parts of the communication
+@item Dummy module should allow direct linking of client and server.
+@item Inline data or descriptor passing for bulk data
+@item No protection against DoS needed
+@item Subliminal channels are not an issue
+@end itemize
+
+
+@appendixsubsec Implementation
+
+@noindent
+The implementation is line based with a maximum line size of 1000
+octects.  The default IPC mechanism are Unix Domain Sockets.
+
+On a connect request the server responds either with an okay or an error
+status.  For authentication check the server may send an Inquiry
+Response prior to the first Okay, it may also issue Status messages.
+The server must check that the client is allowed to connect, this is
+done by requesting the credentials for the peer and comparing them to
+those of the server.  This avoids attacks based on wrong socket
+permissions.
+
+It may choose to delay the first response in case of an error.  The
+server never closes the connection - however the lower protocol may do
+so after some time of inactivity or when the connection is in an error
+state.
+
+All textual messages are assumed to be in UTF-8 unless otherwise noted.
+
+
+@appendixsubsec Server responses
+
+@table @code
+@item OK  [<arbitary debugging information>]
+Request was successful.
+
+@item ERR @var{errorcode} [<human readable error description>]
+Request could not be fulfilled.  The error codes are mostly application
+specific except for a few common ones.
+
+@item S @var{keyword} <status information depending on keyword>
+Informational output by the server, still processing the request.
+
+@item # <string>
+Comment line issued only for debugging purposes.  Totally ignored.
+
+@item D <raw data>
+Raw data returned to client. There must be exactly one space after the
+'D'.  The values for '%', CR and LF must be percent escaped; this is
+encoded as %25, %0D and %0A.  Only uppercase letters should be used in
+the hexadecimal representation.  Other characters may be percent escaped
+for easier debugging.  All these Data lines are considered one data
+stream up to the OK or ERR response.  Status and Inquiry Responses
+may be mixed with the Data lines.
+
+@item INQUIRE @var{keyword}> <parameters>
+Server needs further information from the client.  The client should
+answer with a command which is allowed after an inquiry.  Note that the
+server does not confirm that client command but either continues
+processing or ends processing with an error status.  Not all commands
+are allowed.
+@end table
+
+
+A client should only check the first letter of each line and then skip
+over to the next token (except for data lines where the raw data starts
+exactly after 2 bytes).  Lines larger than 1000 bytes should be
+treated as a communication error. (The rationale for having a line
+length limit is to allow for easier multiplexing of multiple channels).
+
+
+@appendixsubsec Client requests
+
+The server waits for client requests after he sent an Okay or Error.
+The client should not issue a request in other cases with the
+exception of the CANCEL command.
+
+@example
+@var{command} <parameters>
+@end example
+
+@var{command} is a one word string without preceding white space.
+Parameters are command specific, CR, LF and the percent signs should be
+percent escaped as described above.  To send a backslash as the last
+character it should also be percent escaped.  Percent escaping is
+allowed anywhere in the parameters but not in the command.  The line
+ends with a CR, LF or just a LF.
+
+Not yet implemented feature: If there is a need for a parameter list
+longer than the line length limit (1000 characters including command and
+CR, LF), the last character of the line (right before the CR/LF or LF)
+must be a non-escape encoded backslash. The following line is then
+expected to be a continuation of the line with the backslash replaced by
+a blank and the line ending removed.
+
+@example
+D <raw data>
+@end example
+
+Raw data to the server. There must be exactly one space after the 'D'.
+The values for '%', CR and LF must be percent escaped; this is encoded
+as %25, %0D and %0A.  Only uppercase letters should be used in the
+hexadecimal representation.  Other characters may be percent escaped for
+easier debugging.  All these Data lines are considered one data stream
+up to the OKAY or ERROR response.  Status and Inquiry Responses may be
+mixed with the Data lines.
+
+@example
+END
+@end example
+
+
+
+Lines beginning with a @code{#} or empty lines are ignored.  This is
+useful to comment test scripts.
+
+
+Although the commands are application specific, some of them are used by
+all protocols and partly directly supported by the Assuan library:
+
+@table @code
+@item CANCEL
+his is the one special command which aborts the current request.  it can
+be sent at any time and the server will stop its operation right before
+it would send the next response line (of any type).
+
+@item BYE
+Close the connect, the server will reply with an @code{OK}.
+
+@item AUTH
+Not yet specified as we don't implement it in the first phase.  See my
+mail to gpa-dev on 2001-10-25 about the rationale for measurements
+against local attacks.
+
+@item RESET
+Reset the connection but not any existing authentication.  The server
+should release all resources associated with the connection.
+
+@item END
+Used by a client to mark the end of raw data.  The server may send END
+to indicate a partial end of data.
+@end table
+
+
+
+@appendixsubsec Error Codes
+
+Here we keep a list of error codes used in any Assuan based
+protocol.  The format is the string @code{ERR}, white space, the error
+number, white space, a textual description of the error.
+
+@table @code
+
+@item 100 Unknown Command
+@item 101 Not Implemented
+
+@item 301 certificate has been revoked [DirMngr]
+@item 302 no CRL known for this certificate [DirMngr]
+@item 303 CRL is too old and a new one could not be retrieved [DirMngr]
+
+@end table

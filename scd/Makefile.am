@@ -1,0 +1,72 @@
+# Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+#
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+## Process this file with automake to produce Makefile.in
+
+bin_PROGRAMS = scdaemon 
+if ! HAVE_W32_SYSTEM
+pkglib_PROGRAMS = pcsc-wrapper
+endif
+
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
+
+include $(top_srcdir)/am/cmacros.am
+
+AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) \
+	     $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
+
+
+card_apps = app-openpgp.c app-nks.c app-dinsig.c app-p15.c
+
+scdaemon_SOURCES = \
+	scdaemon.c scdaemon.h \
+	command.c \
+	apdu.c apdu.h \
+	ccid-driver.c ccid-driver.h \
+	iso7816.c iso7816.h \
+	tlv.c tlv.h \
+	app.c app-common.h app-help.c $(card_apps)
+
+
+scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
+	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
+	$(LIBUSB_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS) $(NETLIBS)
+
+# Removed for now: We need to decide whether it makes sense to
+# continue it at all, given that gpg has now all required
+# functionality.
+#sc_copykeys_SOURCES = \
+#	sc-copykeys.c scdaemon.h \
+#	apdu.c apdu.h \
+#	ccid-driver.c ccid-driver.h \
+#	iso7816.c iso7816.h \
+#	tlv.c tlv.h \
+#	atr.c atr.h \
+#	app.c app-common.h app-help.c $(card_apps)
+#
+#sc_copykeys_LDADD = \
+#	../jnlib/libjnlib.a ../common/libcommon.a \
+#	../common/libsimple-pwquery.a \
+#	$(LIBGCRYPT_LIBS) $(PTH_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
+#	 $(LIBUSB_LIBS) \
+#        -lgpg-error @LIBINTL@ @DL_LIBS@
+#
+pcsc_wrapper_SOURCES = pcsc-wrapper.c
+pcsc_wrapper_LDADD = $(DL_LIBS)
+pcsc_wrapper_CFLAGS = 

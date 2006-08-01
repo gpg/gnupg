@@ -1,5 +1,5 @@
 /* keybox-search.c - Search operations
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 #include <config.h>
@@ -26,11 +27,14 @@
 #include <errno.h>
 
 #include "../jnlib/stringhelp.h" /* ascii_xxxx() */
+
 #include "keybox-defs.h"
+
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
 
 struct sn_array_s {
     int snlen;
@@ -39,7 +43,7 @@ struct sn_array_s {
 
 
 
-static ulong
+static inline ulong
 get32 (const byte *buffer)
 {
   ulong a;
@@ -50,7 +54,7 @@ get32 (const byte *buffer)
   return a;
 }
 
-static ulong
+static inline ulong
 get16 (const byte *buffer)
 {
   ulong a;
@@ -61,20 +65,20 @@ get16 (const byte *buffer)
 
 
 
-static int
+static inline int
 blob_get_type (KEYBOXBLOB blob)
 {
   const unsigned char *buffer;
   size_t length;
 
   buffer = _keybox_get_blob_image (blob, &length);
-  if (length < 40)
+  if (length < 32)
     return -1; /* blob too short */
 
   return buffer[4];
 }
 
-static unsigned int
+static inline unsigned int
 blob_get_blob_flags (KEYBOXBLOB blob)
 {
   const unsigned char *buffer;
@@ -85,6 +89,110 @@ blob_get_blob_flags (KEYBOXBLOB blob)
     return 0; /* oops */
 
   return get16 (buffer + 6);
+}
+
+
+/* Return information on the flag WHAT within the blob BUFFER,LENGTH.
+   Return the offset and the length (in bytes) of the flag in
+   FLAGOFF,FLAG_SIZE. */
+gpg_err_code_t
+_keybox_get_flag_location (const unsigned char *buffer, size_t length,
+                           int what, size_t *flag_off, size_t *flag_size)
+{
+  size_t pos;
+  size_t nkeys, keyinfolen;
+  size_t nuids, uidinfolen;
+  size_t nserial;
+  size_t nsigs, siginfolen;
+
+  switch (what)
+    {
+    case KEYBOX_FLAG_BLOB:
+      if (length < 8)
+        return GPG_ERR_INV_OBJ;
+      *flag_off = 6;
+      *flag_size = 2;
+      break;
+    
+    case KEYBOX_FLAG_OWNERTRUST:
+    case KEYBOX_FLAG_VALIDITY:
+    case KEYBOX_FLAG_CREATED_AT:
+      if (length < 20)
+        return GPG_ERR_INV_OBJ;
+      /* Key info. */
+      nkeys = get16 (buffer + 16);
+      keyinfolen = get16 (buffer + 18 );
+      if (keyinfolen < 28)
+        return GPG_ERR_INV_OBJ;
+      pos = 20 + keyinfolen*nkeys;
+      if (pos+2 > length)
+        return GPG_ERR_INV_OBJ; /* Out of bounds. */
+      /* Serial number. */
+      nserial = get16 (buffer+pos); 
+      pos += 2 + nserial;
+      if (pos+4 > length)
+        return GPG_ERR_INV_OBJ; /* Out of bounds. */
+      /* User IDs. */
+      nuids = get16 (buffer + pos); pos += 2;
+      uidinfolen = get16 (buffer + pos); pos += 2;
+      if (uidinfolen < 12 )
+        return GPG_ERR_INV_OBJ; 
+      pos += uidinfolen*nuids;
+      if (pos+4 > length)
+        return GPG_ERR_INV_OBJ ; /* Out of bounds. */
+      /* Signature info. */
+      nsigs = get16 (buffer + pos); pos += 2;
+      siginfolen = get16 (buffer + pos); pos += 2;
+      if (siginfolen < 4 )
+        return GPG_ERR_INV_OBJ; 
+      pos += siginfolen*nsigs;
+      if (pos+1+1+2+4+4+4+4 > length)
+        return GPG_ERR_INV_OBJ ; /* Out of bounds. */
+      *flag_size = 1;
+      *flag_off = pos;
+      switch (what)
+        {
+        case KEYBOX_FLAG_VALIDITY:
+          *flag_off += 1;
+          break;
+        case KEYBOX_FLAG_CREATED_AT:
+          *flag_size = 4;
+          *flag_off += 1+2+4+4+4;
+          break;
+        default:
+          break;
+        }
+      break;
+
+    default:
+      return GPG_ERR_INV_FLAG;
+    }
+  return 0;
+}
+
+
+
+/* Return one of the flags WHAT in VALUE from teh blob BUFFER of
+   LENGTH bytes.  Return 0 on success or an raw error code. */
+static gpg_err_code_t
+get_flag_from_image (const unsigned char *buffer, size_t length,
+                     int what, unsigned int *value)
+{
+  gpg_err_code_t ec;
+  size_t pos, size;
+
+  *value = 0;
+  ec = _keybox_get_flag_location (buffer, length, what, &pos, &size);
+  if (!ec)
+    switch (size)
+      {
+      case 1: *value = buffer[pos]; break;
+      case 2: *value = get16 (buffer + pos); break;
+      case 4: *value = get32 (buffer + pos); break;
+      default: ec = GPG_ERR_BUG; break;
+      }
+  
+  return ec;
 }
 
 
@@ -353,26 +461,26 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
 /*
   The has_foo functions are used as helpers for search 
 */
-static int
+static inline int
 has_short_kid (KEYBOXBLOB blob, const unsigned char *kid)
 {
   return blob_cmp_fpr_part (blob, kid+4, 16, 4);
 }
 
-static int
+static inline int
 has_long_kid (KEYBOXBLOB blob, const unsigned char *kid)
 {
   return blob_cmp_fpr_part (blob, kid, 12, 8);
 }
 
-static int
+static inline int
 has_fingerprint (KEYBOXBLOB blob, const unsigned char *fpr)
 {
   return blob_cmp_fpr (blob, fpr);
 }
 
 
-static int
+static inline int
 has_issuer (KEYBOXBLOB blob, const char *name)
 {
   size_t namelen;
@@ -386,7 +494,7 @@ has_issuer (KEYBOXBLOB blob, const char *name)
   return blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0);
 }
 
-static int
+static inline int
 has_issuer_sn (KEYBOXBLOB blob, const char *name,
                const unsigned char *sn, int snlen)
 {
@@ -404,7 +512,7 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name,
           && blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0));
 }
 
-static int
+static inline int
 has_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
 {
   return_val_if_fail (sn, 0);
@@ -414,7 +522,7 @@ has_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
   return blob_cmp_sn (blob, sn, snlen);
 }
 
-static int
+static inline int
 has_subject (KEYBOXBLOB blob, const char *name)
 {
   size_t namelen;
@@ -428,7 +536,7 @@ has_subject (KEYBOXBLOB blob, const char *name)
   return blob_cmp_name (blob, 1 /* subject */, name, namelen, 0);
 }
 
-static int
+static inline int
 has_subject_or_alt (KEYBOXBLOB blob, const char *name, int substr)
 {
   size_t namelen;
@@ -444,7 +552,7 @@ has_subject_or_alt (KEYBOXBLOB blob, const char *name, int substr)
 }
 
 
-static int
+static inline int
 has_mail (KEYBOXBLOB blob, const char *name, int substr)
 {
   size_t namelen;
@@ -566,7 +674,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 
   /* kludge: we need to convert an SN given as hexstring to it's
      binary representation - in some cases we are not able to store it
-     in the search descriptor, because due to its usgae it is not
+     in the search descriptor, because due to its usage it is not
      possible to free allocated memory */
   if (sn_array)
     {
@@ -633,6 +741,10 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       rc = _keybox_read_blob (&blob, hd->fp);
       if (rc)
         break;
+
+      if (blob_get_type (blob) == BLOBTYPE_HEADER)
+        continue;
+
 
       blobflags = blob_get_blob_flags (blob);
       if (!hd->ephemeral && (blobflags & 2))
@@ -753,13 +865,13 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
   Return the last found cert.  Caller must free it.
  */
 int
-keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
+keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *r_cert)
 {
   const unsigned char *buffer;
   size_t length;
   size_t cert_off, cert_len;
-  KsbaReader reader = NULL;
-  KsbaCert cert = NULL;
+  ksba_reader_t reader = NULL;
+  ksba_cert_t cert = NULL;
   int rc;
 
   if (!hd)
@@ -778,9 +890,9 @@ keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
   if (cert_off+cert_len > length)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
-  reader = ksba_reader_new ();
-  if (!reader)
-    return gpg_error (GPG_ERR_ENOMEM);
+  rc = ksba_reader_new (&reader);
+  if (rc)
+    return rc;
   rc = ksba_reader_set_mem (reader, buffer+cert_off, cert_len);
   if (rc)
     {
@@ -789,11 +901,11 @@ keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  cert = ksba_cert_new ();
-  if (!cert)
+  rc = ksba_cert_new (&cert);
+  if (rc)
     {
       ksba_reader_release (reader);
-      return gpg_error (GPG_ERR_ENOMEM);
+      return rc;
     }
 
   rc = ksba_cert_read_der (cert, reader);
@@ -811,3 +923,23 @@ keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
 }
 
 #endif /*KEYBOX_WITH_X509*/
+
+/* Return the flags named WHAT at the address of VALUE. IDX is used
+   only for certain flags and should be 0 if not required. */
+int
+keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value)
+{
+  const unsigned char *buffer;
+  size_t length;
+  gpg_err_code_t ec;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!hd->found.blob)
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+
+  buffer = _keybox_get_blob_image (hd->found.blob, &length);
+  ec = get_flag_from_image (buffer, length, what, value);
+  return ec? gpg_error (ec):0;
+}
+

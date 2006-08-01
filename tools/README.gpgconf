@@ -1,0 +1,79 @@
+============
+  GPG Conf
+============
+
+Main documentation for this tool can be found in doc/tools.texi.
+
+BACKENDS
+========
+
+Backends should support the following commands:
+
+Command --gpgconf-list
+----------------------
+
+List the location of the configuration file, and all default values of
+all options.  The location of the configuration file must be an
+absolute pathname.
+
+The format of each line is:
+
+NAME:FLAGS:DEFAULT:ARGDEF
+
+NAME
+
+This field contains a name tag for the group or option.  The name tag
+is used to specify the group or option in all communication with
+GPGConf.  The name tag is to be used verbatim.  It is not in any
+escaped format.
+
+FLAGS
+
+The flags field contains an unsigned number.  Its value is the
+OR-wise combination of the following flag values:
+
+	16 default	If this flag is set, a default value is available.
+	32 default desc If this flag is set, a (runtime) default is available.
+			This and the "default" flag are mutually exclusive.
+	64 no arg desc	If this flag is set, and the "optional arg" flag
+			is set, then the option has a special meaning if no
+			argument is given.
+
+DEFAULT
+
+This field is defined only for options.  Its format is that of an
+option argument (see section Format Conventions for details).  If the
+default value is empty, then no default is known.  Otherwise, the
+value specifies the default value for this option.  Note that this
+field is also meaningful if the option itself does not take a real
+argument.
+
+ARGDEF
+
+This field is defined only for options for which the "optional arg"
+flag is set.  If the "no arg desc" flag is not set, its format is that
+of an option argument (see section Format Conventions for details).
+If the default value is empty, then no default is known.  Otherwise,
+the value specifies the default value for this option.  If the "no arg
+desc" flag is set, the field is either empty or contains a description
+of the effect of this option if no argument is given.  Note that this
+field is also meaningful if the option itself does not take a real
+argument.
+
+
+Example:
+$ dirmngr --gpgconf-list
+gpgconf-config-file:/mnt/marcus/.gnupg/dirmngr.conf
+ldapservers-file:/mnt/marcus/.gnupg/dirmngr_ldapservers.conf
+add-servers:0
+max-replies:10
+
+
+TODO
+----
+
+* Implement --dry-run and --quiet.
+
+* Extend the backend interface to include gettext domain and
+description, if available, to avoid repeating this information in
+gpgconf.

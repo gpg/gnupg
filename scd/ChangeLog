@@ -1,0 +1,1430 @@
+2006-06-28  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_writekey): Fixed computation of memmove
+	length.  This led to garbled keys if E was larger than one byte.
+	Thanks to Achim Pietig for hinting at the garbled E.
+
+2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (scdaemon_LDADD): Add $(NETLIBS).
+
+2006-04-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* app.c (select_application): Cover up a slot mismatch error in
+	case it happens (it shouldn't happen).
+	(release_application): Use APP->slot.  Lock the reader.
+	(application_notify_card_removed): Lock the reader.
+
+2006-04-11  Werner Koch  <wk@g10code.com>
+
+	* command.c (hex_to_buffer): New.
+	(cmd_apdu): New.
+
+2006-04-03  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c [__GLIBC__]: Default to libpcsclite.so.1.
+
+2006-03-21  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_pksign): Add --hash option.
+
+2006-03-01  Werner Koch  <wk@g10code.com>
+
+	* command.c (status_file_update_lock): New.
+	(scd_update_reader_status_file): Use lock and factor existing code
+	out to ..
+	(update_reader_status_file): .. this.
+	(do_reset): Use the lock and call update_reader_status_file.
+
+2006-02-20  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (open_pcsc_reader): Fixed double free.  Thanks to Moritz.
+
+2006-02-09  Werner Koch  <wk@g10code.com>
+
+	* command.c (get_reader_slot, do_reset) 
+	(scd_update_reader_status_file): Rewrote.
+
+	* app.c (release_application): Factored code out to ..
+	(deallocate_app): new function.
+	(select_application): Introduce new saved application stuff.
+	(application_notify_card_removed): New.
+	* command.c (update_card_removed): Call it here.
+	(do_reset): And here.
+
+	* app.c (check_application_conflict): New.
+	* command.c (open_card): Use it here.
+	(cmd_restart): New command.
+
+	* command.c (cmd_lock): Fixed --wait option to actually terminate.
+
+2006-02-08  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (ccid_get_atr): Read Parameter and select T=1
+	using these parameters.
+	(scan_or_find_devices): Check for NULL r_fd.
+
+2006-02-02  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (special_transport): New
+	(ccid_open_reader, do_close_reader, ccid_shutdown_reader)
+	(bulk_out, bulk_in): Add support for CardMan 4040 reader.
+
+	* ccid-driver.c (scan_or_find_devices): Factored most code out to
+	(scan_or_find_usb_device): .. new.
+	(make_reader_id): Fixed vendor mask.
+
+2006-01-01  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_sign): Give user error if hash algorithm is
+	not supported by the card.
+
+2005-12-06  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (open_pcsc_reader): Check that pcsc-wrapper is actually
+	installed.
+
+2005-11-23  Werner Koch  <wk@g10code.com>
+
+	* app-nks.c (verify_pin): Give a special error message for a Nullpin.
+
+2005-10-29  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (send_escape_cmd): New args RESULT, RESULTLEN and
+	RESULTMAX.  Changed all callers.
+	(ccid_transceive_escape): New.
+
+2005-10-27  Werner Koch  <wk@g10code.com>
+
+	* apdu.c [__CYGWIN__]: Make cygwin environment similar to _WIN32.
+	Suggested by John P. Clizbe.
+	* scdaemon.c [__CYGWIN__]: Set default PC/SC driver to winscard.dll.
+
+2005-10-19  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.h (CCID_DRIVER_ERR_NO_KEYPAD): New.
+	* apdu.h (SW_HOST_NO_KEYPAD): New.
+	* iso7816.h (struct iso7816_pininfo_s): New.
+	* iso7816.c (map_sw): Support new code.
+	(iso7816_check_keypad): New.
+	(iso7816_verify_kp, iso7816_change_reference_data_kp) 
+	(iso7816_reset_retry_counter_kp): New.  Extended versions of the
+	original functions.
+	* apdu.c (host_sw_string): Support new code. 
+	(reader_table_s): New field CHECK_KEYPAD.
+	(new_reader_slot, open_ct_reader, open_pcsc_reader) 
+	(open_ccid_reader, open_rapdu_reader): Initialize it.
+	(check_ccid_keypad): New.
+	(apdu_check_keypad): New.
+	(apdu_send_le): Factored all code out to ...
+	(send_le): .. new.  Takes an additional arg; changed all callers
+	of the orginal function to use this one with a NULL for the new
+	arg.
+	(apdu_send_simple_kp): New.
+	(ct_send_apdu, pcsc_send_apdu, my_rapdu_send_apdu) 
+	(send_apdu_ccid): New arg PININFO.
+	(send_apdu_ccid): Use the new arg.
+
+	* scdaemon.c: New option --disable-keypad.
+
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (scdaemon_LDADD): Add ../gl/libgnu.a after
+	../common/libcommon.a.
+
+2005-09-20  Werner Koch  <wk@g10code.com>
+
+	* app-dinsig.c (verify_pin): Try ISO 9564 BCD encoding.
+
+	* iso7816.c (iso7816_select_application): Add arg FLAGS.  Changed
+	all callers to pass 0.
+	* app-openpgp.c (app_select_openpgp): But this one requires a
+	special flag.
+
+	* app-p15.c (app_select_p15): Don't use select application for the
+	BELPIC.
+
+2005-09-09  Werner Koch  <wk@g10code.com>
+
+	* pcsc-wrapper.c (main): Removed bogus free.
+
+	* app-p15.c (do_auth): New.
+	(do_getattr): New attribs $AUTHKEYID and $DISPSERIALNO.
+	* app-openpgp.c (do_getattr): Ditto.
+
+2005-09-08  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_getattr): New key $AUTHKEYID.
+
+2005-09-06  Werner Koch  <wk@g10code.com>
+
+	* app-p15.c (do_sign): Tweaked for BELPIC cards.
+	(read_home_df): New arg R_BELPIC.
+	(app_select_p15): Set card type for BELPIC.
+
+2005-09-05  Werner Koch  <wk@g10code.com>
+
+	* iso7816.c (iso7816_select_path): New.
+	* app-p15.c (select_ef_by_path): Allow for direct path selection.
+	(app_select_p15): Try using the Belgian variant of pkcs#15.
+	(read_home_df): New.
+	(read_ef_odf): Generalized.
+	(read_ef_tokeninfo): New.
+	(read_p15_info): Set serialnumber from TokenInfo.
+	(app_select_p15): Don't munge serialNumber - that must be done
+	only once.
+
+	* iso7816.c (iso7816_read_binary): Use Le=0 when reading all
+	data.  Handle 6C00 error and take 6B00 as indication for EOF.
+	* apdu.h (SW_EXACT_LENGTH_P): New.
+	* apdu.c (new_reader_slot, reset_pcsc_reader, pcsc_get_status) 
+	(open_pcsc_reader): Set new reader state IS_T0.
+	(apdu_send_le): When doing T=0 make sure not to send Lc and Le.
+	Problem reported by Carl Meijer.
+	(apdu_send_direct): Initialize RESULTLEN.
+	* pcsc-wrapper.c (handle_status): Return the current protocol as
+	a new third word.
+
+2005-08-05  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (open_rapdu_reader): Set the reader number.
+
+2005-07-05  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_readkey): Return a mallcoed copy of the key as
+	required by the description.  Thanks to Moritz for tracking this
+	problem down.
+
+2005-06-21  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): ifdef call to ccid_set_debug_level.
+
+	* apdu.c (reset_pcsc_reader, open_pcsc_reader): Cast size_t to
+	ulong for printf.
+
+2005-06-06  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): New option --debug-allow-core-dump. 
+
+2005-06-03  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (handle_connections): Make sure that the signals we
+	are handling are not blocked.Block signals while creating new
+	threads.
+	(handle_connections): Include the file descriptor into the name of
+	the thread.
+
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* app.c (app_dump_state, dump_mutex_state): New.
+	* scdaemon.c (handle_signal): Print it on SIGUSR1.
+
+	* app-openpgp.c (do_writekey): Typo fix.
+
+	* command.c (open_card): Check for locked state even if an
+	application context is available.
+
+	* app-common.h: Add REF_COUNT field.
+	* app.c (release_application, select_application): Implement
+	reference counting to share the context beween connections.
+
+	* app.c (lock_reader, unlock_reader): Take SLOT instead of APP as
+	argument.  Changed all callers.
+	(select_application): Unlock the reader on error.  This should fix
+	the hangs I noticed last week.
+
+	* scdaemon.h: Removed card_ctx_t cruft.
+
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c: Include mkdtemp.h.
+
+2005-05-31  Werner Koch  <wk@g10code.com>
+
+	* tlv.c [GNUPG_MAJOR_VERSION==1]: Define constants instead of
+	including a gnupg 1.4 header.
+
+2005-05-30  Werner Koch  <wk@g10code.com>
+
+	* tlv.c: Add hack to compile without gpg-error.h when used with
+	GnuPG 1.4.
+
+2005-05-23  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Do not build sc-copykeys anymore.
+
+	* app-openpgp.c (app_openpgp_storekey, app_openpgp_readkey)
+	(app_openpgp_cardinfo): Removed.
+
+	* ccid-driver.c (parse_ccid_descriptor): SCR335 FW version 5.14 is
+	good.
+	(do_close_reader): Never do a reset. The caller should instead
+	make sure that the reader has been closed properly.  The new retry
+	code in ccid_slot_status will make sure that the readersatrts up
+	fine even if the last process didn't closed the USB connection
+	properly.
+	(ccid_get_atr): For certain readers try switching to ISO mode.
+	Thanks to Ludovic Rousseau for this hint and the magic numbers.
+	(print_command_failed): New.
+	(bulk_in): Use it here. Add new arg NO_DEBUG.
+	(ccid_slot_status): Disabled debugging.
+
+2005-05-21  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (handle_signal): Print thread info on SIGUSR1.
+
+2005-05-20  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c: Replaced macro DEBUG_T1 by a new debug level.
+	(parse_ccid_descriptor): Mark SCR335 firmware version 5.18 good.
+	(ccid_transceive): Arghhh.  The seqno is another bit in the
+	R-block than in the I block, this was wrong at one place.
+
+	* scdaemon.c: New options --debug-ccid-driver and
+	--debug-disable-ticker.
+
+	* app-openpgp.c (do_genkey, do_writekey): Factored code to check
+	for existing key out into ..
+	(does_key_exist): .. New function.
+
+2005-05-19  Werner Koch  <wk@g10code.com>
+
+	* tlv.c (parse_sexp): New.
+
+	* command.c (cmd_writekey): New.
+	* app.c (app_writekey): New.
+	* app-common.c (app_t): Add function ptr WRITEKEY.
+	* app-openpgp.c (do_writekey): New.
+
+	* app-openpgp.c (do_readkey) [GNUPG_MAJOR_VERSION==1]: Return error.
+	* app-common.h (app_t) [GNUPG_MAJOR_VERSION==1]: Add a field to
+	store the Assuan context.
+
+2005-05-17  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c: Removed non-pth code paths.
+	(create_socket_name, create_server_socket): New.  Taken from
+	../agent/gpg-agent.
+	(cleanup): Changed to adjust for SOCKET_NAME now being malloced.
+	(ticker_thread): Always use pth_event_occurred; it is again
+	defined for all decent PTH versions.
+	(handle_connections): New. Based on the gpg-agent code.
+	(start_connection_thread): Ditto.
+	(ticker_thread): Removed.
+	(cleanup_sh): Removed.
+	(main): Run the handler for the pipe server in a separate
+	thread.  This replaces the old ticker thread.
+	(scd_get_socket_name): New.
+	* command.c (cmd_getinfo): New command GETINFO.
+	(scd_command_handler): Renamed argument and changed code to use an
+	already connected FD.
+
+2005-05-15  Werner Koch  <wk@g10code.com>
+
+	* app.c, app-common.h, app-nks.c, app-p15.c, app-dinsig.c
+	* app-openpgp.c: Change most function return types from int to
+	gpg_error_t.
+	* command.c (pin_cb): Ditto.
+	* sc-copykeys.c (pincb): Ditto.
+
+	* app.c (lock_reader, unlock_reader): New.  Changed call handler
+	wrappers to make use of these functions.
+
+2005-05-07  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (do_close_reader): Don't do a reset before close.
+	Some folks reported that it makes the SCR335 hang less often.
+	Look at the source on how to re-enable it.
+
+2005-04-27  Werner Koch  <wk@g10code.com>
+
+	* app-p15.c (micardo_mse): New.
+	(do_sign): Call it.
+	* iso7816.c (iso7816_manage_security_env): Allow passing DATA as
+	NULL to indicate an empty Lc.
+	* tlv.c (find_tlv): Check that a found object fits into the
+	buffer.
+	(find_tlv_unchecked): New as replacement for the old non-checking
+	variant.
+	* app.c (select_application): Keep on using the non-checking
+	variant.
+	* app-openpgp.c (get_one_do, dump_all_do): Ditto.
+
+	
+	Removal of the old OpenSC based code.
+	
+	* app-p15.c: New.  Basic support for pkcs15 cards without OpenSC.
+	There are quite a couple of things missing but at least I can use
+	my old TCOS cards from the Aegypten-1 development for signing.
+	* app.c (select_application): Detect pkcs15 applications.
+	* Makefile.am (scdaemon_SOURCES): Removed card.c, card-common.h
+	and card-p15.c because they are now obsolete. Added app-p15.c.
+	Removed all OpenSC stuff.
+	* command.c (do_reset, open_card, cmd_serialno, cmd_learn) 
+	(cmd_readcert, cmd_readkey, cmd_pksign, cmd_pkdecrypt): Removed
+	all special cases for the old card.c based mechanisms.
+	* scdaemon.c, apdu.c: Removed all special cases for OpenSC.
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* command.c: Use GPG_ERR_LOCKED instead of EBUSY.
+
+2005-04-14  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (retrieve_key_material): Rewritten.  Return a
+	proper error code.
+	(retrieve_next_token): Removed.
+	(retrieve_fpr_from_card): Rewritten to make use of DO caching and
+	to take the KEYNO as arg.
+	(get_public_key): Renamed variable for clarity.
+
+2005-04-12  Werner Koch  <wk@g10code.com>
+
+	Basic support for several sessions.
+	
+	* command.c (scd_command_handler): Replace the primary_connection
+	stuff by a real connection list.  Release the local context on
+	exit.
+	(scd_update_reader_status_file): Update accordingly.  Send signal
+	to all connections who registered an event signal.
+	(cmd_lock, cmd_unlock, register_commands): New commands LOCK and
+	UNLOCK.
+	(cmd_setdata, cmd_pksign, cmd_pkauth, cmd_pkdecrypt, cmd_setattr) 
+	(cmd_genkey, cmd_passwd, cmd_checkpin): Return an error if reader
+	is locked.
+	(do_reset): Handle locking.
+	(open_card): Ditto.  Share the reader slot with other sessions.
+	(get_reader_slot): New.
+	(update_card_removed): New.  Use it in the TEST_CARD_REMOVAL macro.
+
+2005-04-07  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_check_pin): Add hack to allow verification of
+	CHV3.
+	(get_public_key): Don't use gcry functions to create S-expressions.
+	(do_deinit, do_readkey, do_genkey, send_keypair_info): Adjust for
+	above change.
+
+2005-03-29  Moritz Schulte  <moritz@g10code.com>
+
+	* app-openpgp.c (retrieve_fpr_from_card): New function.
+	(retrieve_next_token): New function.
+	(retrieve_key_material): New function.
+	(get_public_key): Implement retrival of key through expernal
+	helper (gpg) in case the openpgp card is not cooperative enough.
+
+2005-03-16  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (parse_ccid_descriptor): Make SCM workaround
+	reader type specific.
+	(scan_or_find_devices): Do not check the interface subclass in the
+	SPR532 kludge, as this depends on the firmware version.
+	(ccid_get_atr): Get the Slot status first.  This solves the
+	problem with readers hanging on recent Linux 2.6.x.
+	(bulk_in): Add argument TIMEOUT and changed all callers to pass an
+	appropriate one.  Change the standard timeout from 10 to 5 seconds.
+	(ccid_slot_status): Add a retry code with an initial short timeout.
+	(do_close_reader): Do an usb_reset before closing the reader.
+
+2005-02-25  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (get_public_key): Make sure not to return negative
+	numbers.
+	(do_sign): Allow passing of indata with algorithm prefix.
+	(do_auth): Allow OPENPGP.3 as an alternative ID.
+
+	* app.c (app_getattr): Return just the S/N but not the timestamp.
+
+2005-02-24  Werner Koch  <wk@g10code.com>
+
+	* app.c (app_getattr): Return APPTYPE or SERIALNO type even if the
+	application does dot support the getattr call.
+
+	* app-openpgp.c (get_one_do): Never try to get a non cacheable
+	object from the cache.
+	(get_one_do): Add new arg to return an error code.  Changed all
+	callers.
+	(do_getattr): Let it return a proper error code.
+
+	* app.c (select_application): Return an error code and the
+	application context in an new arg.
+	* command.c (open_card): Adjusted for that.  Don't use the
+	fallback if no card is present.  Return an error if the card has
+	been removed without a reset.
+	(do_reset, cmd_serialno): Clear that error flag.
+	(TEST_CARD_REMOVAL): New. Use it with all command handlers.
+	(scd_update_reader_status_file): Set the error flag on all changes.
+
+	* scdaemon.c (ticker_thread): Termintate if a shutdown is pending.
+
+	* apdu.c: Added some PCSC error codes.
+	(pcsc_error_to_sw): New.
+	(reset_pcsc_reader, pcsc_get_status, pcsc_send_apdu) 
+	(open_pcsc_reader): Do proper error code mapping.
+
+2005-03-16  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (parse_ccid_descriptor): Make SCM workaround
+	reader type specific.
+	(scan_or_find_devices): Do not check the interface subclass in the
+	SPR532 kludge, as this depends on the firmware version.
+	(ccid_get_atr): Get the Slot status first.  This solves the
+	problem with readers hanging on recent Linux 2.6.x.
+
+2005-02-22  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (app_local_s): New field PK.
+	(do_deinit, do_genkey, app_openpgp_storekey): Clear it.
+	(get_public_key, send_keypair_info): New.
+	(do_learn_status): Send KEYPAIR info
+
+	* app-common.h (app_ctx_t): Add function pointer READKEY.
+	* app.c (app_readkey): New.
+	* command.c (cmd_readkey): Use READKEY function if possible.
+
+2005-01-26  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (parse_ccid_descriptor): Need the CSM workaround
+	also for newer firmware versions.  Need to get a list of fixed
+	firmware versions and use that.
+
+2005-01-25  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (apdu_send_le, apdu_send_direct): Fix some compiler
+	warnings.
+
+	* app-openpgp.c (get_cached_data): New arg GET_IMMEDIATE to bypass
+	the cache.  Changed all callers.
+	(get_one_do): Bypass the cache if the value would have been read
+	directly for v1.1 cards.It makes things a bit slower but obnly for
+	1.0 cards and there are not that many cards out in the wild.  This
+	is required to fix a caching bug when generating new keys; as a
+	side effect of the retrieval of the the C4 DO from the 6E DO the
+	cached fingerprint will get updated to the old value and later
+	when signing the generated key the checking of the fingerprint
+	fails because it won't match the new one.  Thanks to Moritz for
+	analyzing this problem.
+	(verify_chv3): Removed the CHV status reread logic because we
+	won't cache the C4 DO anymore.
+
+2004-12-28  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (find_endpoint): New.
+	(scan_or_find_devices): Add new args to return endpoint info and
+	interface number.
+	(ccid_open_reader, ccid_shutdown_reader): Take care of these new
+	args.
+	(bulk_in, bulk_out): Use the correct endpoints.
+	(ccid_transceive_apdu_level): New.
+	(ccid_transceive): Divert to above.
+	(parse_ccid_descriptor): Allow APDU level exchange mode.
+	(do_close_reader): Pass the interface number to usb_release_interface.
+
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): Use default_homedir().
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main) [W32]: Remove special Pth initialize..
+
+	* scdaemon.h (map_assuan_err): Define in terms of
+	map_assuan_err_with_source.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c [W32]: Various hacks to make it run under W32.
+
+	* command.c (scd_update_reader_status_file) [W32]: Don't use kill.
+
+	* apdu.c [W32]: Disable use of pcsc_wrapper.
+
+	* Makefile.am (scdaemon_LDADD): Reorder libs.
+	(sc_copykeys_LDADD): Add libassuan because it is needed for W32. 
+
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (pkglib_PROGRAMS): Build only for W32.
+
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv3): The minium length for CHV3 is
+	8. Changed string to match the other ones.
+
+2004-10-21  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_sign): Replace asprintf by direct allocation.
+	This avoids problems with missing vasprintf implementations in
+	gnupg 1.4.
+
+	* app-common.h (app_openpgp_storekey: Add prototype. 
+
+2004-10-20  Werner Koch  <wk@g10code.com>
+
+	* sc-investigate: Removed.
+	* Makefile.am (sc_investigate): Removed.
+	
+	* pcsc-wrapper.c (load_pcsc_driver): Load get_status_change func.
+	(handle_open): Succeed even without a present card.
+	(handle_status, handle_reset): New.
+	
+	* apdu.c (apdu_open_reader): Load pcsc_get_status_change fucntion.
+	(pcsc_get_status): Implemented.
+	(reset_pcsc_reader): Implemented.
+	(open_pcsc_reader): Succeed even with no card inserted.
+	(open_ccid_reader): Set LAST_STATUS.
+
+	* iso7816.c (iso7816_select_application): Always use 0 for P1.
+
+2004-10-18  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (ccid_get_atr): Reset T=1 state info.
+
+2004-10-14  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (parse_login_data): New. 
+	(app_select_openpgp): Call it.
+	(do_setattr): Reparse it after change.
+
+2004-10-06  Werner Koch  <wk@g10code.de>
+
+	* ccid-driver.c (ccid_open_reader): Store the vendor ID.
+	(ccid_transceive_secure): New.
+	(parse_ccid_descriptor): Workaround for an SCM reader problem.
+
+2004-10-04  Werner Koch  <wk@g10code.de>
+
+	* ccid-driver.c (send_escape_cmd): New.
+
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Adjusted for gettext 0.14.
+
+	* app-openpgp.c (do_sign): Add the error string to the verify
+	failed messages.
+
+2004-09-27  Werner Koch  <wk@g10code.com>
+
+        From gnupg 1.3
+
+	* app-openpgp.c: Made all strings translatable.
+	(verify_chv3) [GNUPG_MAJOR_VERSION]: Make opt.allow_admin
+	available for use in gnupg 2. 
+	(verify_chv3): Reimplemented countdown showing to use only
+	functions from this module.  Flush the CVH status cache on a
+	successful read.
+	(get_one_do): Hack to bypass the cache for cards versions > 1.0.
+	(store_fpr): Store the creation date for card version > 1.0.
+
+	* app-openpgp.c (app_openpgp_storekey): Call flush_cache.
+	(get_cached_data): Move local data initialization to ..
+	(app_select_openpgp): .. here. Read some flags for later use.
+	(do_getattr): New read-only attribute EXTCAP.
+	
+	* apdu.c (open_pcsc_reader): Do not print empty reader string.
+
+	* ccid-driver.c (do_close_reader): Factored some code out from ...
+	(ccid_close_reader): ..here.
+	(ccid_shutdown_reader): New.
+
+	* apdu.c (apdu_shutdown_reader): New.
+	(shutdown_ccid_reader): New.
+
+	* apdu.c (open_ccid_reader): New arg PORTSTR.  Pass it to
+	ccid_open_reader.
+	(apdu_open_reader): Pass portstr to open_ccid_reader.
+	(apdu_open_reader): No fallback if a full CCID reader id has been
+	given.
+
+	* ccid-driver.c (ccid_get_reader_list): New.
+	(ccid_open_reader): Changed API to take a string for the reader.
+	Removed al the cruft for the libusb development vesion which seems
+	not to be maintained anymore and there are no packages anyway.
+	The stable library works just fine.
+	(struct ccid_reader_id_s): Deleted and replaced everywhere by a
+	simple string.
+	(usb_get_string_simple): Removed.
+	(bulk_in): Do valgrind hack here and not just everywhere.
+
+	* ccid-driver.c (read_device_info): Removed.
+	(make_reader_id, scan_or_find_devices): New.
+	(ccid_open_reader): Simplified by make use of the new functions.
+	(ccid_set_debug_level): New.  Changed the macros to make use of
+	it.  It has turned out that it is often useful to enable debugging
+	at runtime so I added this option.
+
+        From gnupg 1.3 - David Shaw  <dshaw@jabberwocky.com>
+
+	* app-openpgp.c (verify_chv3): Show a countdown of how many wrong
+	admin PINs can be entered before the card is locked.
+
+	* app-openpgp.c (get_cached_data): Avoid mallocing zero since it
+	breaks us when using --enable-m-guard.
+
+	* ccid-driver.c (usb_get_string_simple): Replacement function to
+	work with older libusb.
+
+	* ccid-driver.c (read_device_info): Fix segfault when usb device
+	is not accessible.
+	(ccid_open_reader): Allow working with an even older version of
+	libusb (usb_busses global instead of usb_get_busses()).
+
+2004-09-11  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (app_select_openpgp): Its app_munge_serialno and
+	not app_number_serialno.
+
+2004-08-20  Werner Koch  <wk@g10code.de>
+
+	* app.c (select_application): Fixed serial number extraction and
+	added the BMI card workaround.
+	(app_munge_serialno): New.
+	* app-openpgp.c (app_select_openpgp): Try munging serialno.
+
+2004-08-05  Werner Koch  <wk@g10code.de>
+
+	* scdaemon.c (main): New option --disable-application.
+	* app.c (is_app_allowed): New.
+	(select_application): Use it to check for disabled applications.
+
+	* ccid-driver.h (CCID_DRIVER_ERR_ABORTED): New.
+	* ccid-driver.c (ccid_open_reader): Support the stable 0.1 version
+	of libusb.
+	(ccid_get_atr): Handle short messages.
+
+	* apdu.c (my_rapdu_get_status): Implemented.
+
+2004-07-27  Moritz Schulte  <moritz@g10code.com>
+
+	* apdu.c: Include <signal.h>.
+
+	* Makefile.am: Use @DL_LIBS@ instead of -ldl.
+
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	* Makefile.am: Make OpenSC lib link after libgcrypt. Do not link
+	to pth.
+	* apdu.c: Don't use Pth if we use OpenSC.
+	* sc-investigate.c, scdaemon.c: Disable use of pth if OpenSC is used. 
+
+	* scdaemon.c (main): Bumbed thread stack size up to 512k.
+
+2004-07-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (reader_table_s):  Add function pointers for the backends.
+	(apdu_close_reader, apdu_get_status, apdu_activate) 
+	(send_apdu): Make use of them.
+	(new_reader_slot): Intialize them to NULL.
+	(dump_ccid_reader_status, ct_dump_reader_status): New.
+	(dump_pcsc_reader_status): New.
+	(open_ct_reader, open_pcsc_reader, open_ccid_reader) 
+	(open_osc_reader, open_rapdu_reader): Intialize function pointers.
+	(ct_activate_card, ct_send_apdu, pcsc_send_apdu, osc_send_apdu) 
+	(error_string): Removed.  Replaced by apdu_strerror.
+	(get_ccid_error_string): Removed.
+	(ct_activate_card): Remove the unused loop.
+	(reset_ct_reader): Implemented.
+	(ct_send_apdu): Activate the card if not yet done.
+	(pcsc_send_apdu): Ditto.
+
+2004-07-15  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.h: Add error codes.
+	* ccid-driver.c: Implement more or less proper error codes all
+	over the place.
+
+	* apdu.c (apdu_send_direct): New.
+	(get_ccid_error_string): Add some error code mappings.
+	(send_apdu): Pass error codes along for drivers already supporting
+	them.
+	(host_sw_string): New.
+	(get_ccid_error_string): Use above.
+	(send_apdu_ccid): Reset the reader if it has not yet been done.
+	(open_ccid_reader): Don't care if the ATR can't be read.
+	(apdu_activate_card): New.
+	(apdu_strerror): New.
+	(dump_reader_status): Only enable it with opt.VERBOSE.
+	* iso7816.c (map_sw): Add mappings for the new error codes.
+
+2004-07-02  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (open_ct_reader, open_pcsc_reader, open_ccid_reader)
+	(reset_ccid_reader, open_osc_reader): Call dump_reader_status only
+	in verbose mode.
+
+2004-07-01  Werner Koch  <wk@gnupg.org>
+
+	* sc-investigate.c: Initialize Pth which is now required.
+	(interactive_shell): New command "readpk".
+
+	* app-openpgp.c (do_getattr): Fix for sending CA-FPR.
+
+2004-06-30  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (app_openpgp_readkey): Fixed check for valid
+	exponent.
+
+2004-06-18  Werner Koch  <wk@g10code.com>
+
+	* sc-investigate.c (my_read_line): Renamed from read_line.
+
+2004-06-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (osc_get_status): Fixed type in function name. Noted by
+	Axel Thimm.  Yes, I didn't tested it with OpenSC :-(.
+
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_setattr): Sync FORCE_CHV1.
+
+2004-04-27  Werner Koch  <wk@gnupg.org>
+
+	* app-common.h: Do not include ksba.h for gnupg 1.
+
+2004-04-26  Werner Koch  <wk@gnupg.org>
+
+	* app-common.h: New members FNC.DEINIT and APP_LOCAL.
+	* app.c (release_application): Call new deconstructor.
+	* app-openpgp.c (do_deinit): New.
+	(get_cached_data, flush_cache_item, flush_cache_after_error)
+	(flush_cache): New.
+	(get_one_do): Replaced arg SLOT by APP.  Make used of cached data.
+	(verify_chv2, verify_chv3): Flush some cache item after error.
+	(do_change_pin): Ditto.
+	(do_sign): Ditto.
+	(do_setattr): Flush cache item.
+	(do_genkey): Flush the entire cache.
+	(compare_fingerprint): Use cached data.
+
+	* scdaemon.c (main): Do the last change the usual way. This is so
+	that we can easily test for versioned config files above.
+
+2004-04-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* scdaemon.c (main): For now, always print default filename for
+	--gpgconf-list, and never /dev/null.
+
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	* command.c (scd_update_reader_status_file): Send a signal back to
+	the client.
+	(option_handler): Parse the new event-signal option.
+
+	* scdaemon.c (handle_signal): Do not use SIGUSR{1,2} anymore for
+	changing the verbosity.
+
+2004-04-20  Werner Koch  <wk@gnupg.org>
+
+	* command.c (scd_update_reader_status_file): Write status files.
+
+	* app-help.c (app_help_read_length_of_cert): Fixed calculation of
+	R_CERTOFF.
+
+	* pcsc-wrapper.c: New.
+	* Makefile.am (pkglib_PROGRAMS): Install it here.
+	* apdu.c (writen, readn): New.
+	(open_pcsc_reader, pcsc_send_apdu, close_pcsc_reader): Use the
+	pcsc-wrapper if we are using Pth.
+	(apdu_send_le): Reinitialize RESULTLEN.  Handle SW_EOF_REACHED
+	like SW_SUCCESS.
+
+2004-04-19  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (parse_ccid_descriptor): Store some of the reader
+	features away.  New arg HANDLE
+	(read_device_info): New arg HANDLE. Changed caller.
+	(bulk_in): Handle time extension requests.
+	(ccid_get_atr): Setup parameters and the IFSD.
+	(compute_edc): New. Factored out code.
+	(ccid_transceive): Use default NADs when required.
+
+2004-04-14  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.h (server_control_s): Add member READER_SLOT.
+	* scdaemon.c (scd_init_default_ctrl): Initialize READER_SLOT to -1.
+	* command.c (open_card): Reuse an open slot.
+	(reset_notify): Just reset the slot if supported by the reader.
+	(do_reset): Factored code from above out.
+	(scd_command_handler): Use it for cleanup.
+
+	* apdu.h: New pseudo stati SW_HOST_NOT_SUPPORTED,
+	SW_HOST_LOCKING_FAILED and SW_HOST_BUSY.
+	* iso7816.c (map_sw): Map it.
+	
+	* ccid-driver.c (ccid_slot_status): Add arg STATUSBITS.
+	* apdu.c (apdu_get_status): New.
+	(ct_get_status, pcsc_get_status, ocsc_get_status): New stubs.
+	(get_status_ccid): New.
+	(apdu_reset): New.
+	(reset_ct_reader, reset_pcsc_reader, reset_osc_reader): New stubs.
+	(reset_ccid_reader): New.
+	(apdu_enum_reader): New.
+	
+	* apdu.c (lock_slot, trylock_slot, unlock_slot): New helpers.
+	(new_reader_slot) [USE_GNU_PTH]: Init mutex.
+	(apdu_reset, apdu_get_status, apdu_send_le): Run functions
+	in locked mode.
+
+	* command.c (scd_update_reader_status_file): New.
+	* scdaemon.c (handle_tick): Call it.
+
+2004-04-13  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: Convert to a Pth application.
+	(handle_signal, ticker_thread, handle_tick): New.
+	(main): Fire up the ticker thread in server mode.
+
+2004-03-23  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main) <gpgconf_list>: Fixed output for pcsc_driver.
+
+2004-03-17  Werner Koch  <wk@gnupg.org>
+
+	* tlv.c (parse_ber_header): Do not check for tag overflow - it
+	does not make sense.  Simplified the check for length overflow.
+
+	* scdaemon.c (main) <gpgconf>: Fixed default value quoting.
+
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* app-dinsig.c: Implemented. Based on app-nks.c and card-dinsig.c
+	* app-nks.c (get_length_of_cert): Removed.
+	* app-help.c: New.
+	(app_help_read_length_of_cert): New.  Code taken from above.  New
+	optional arg R_CERTOFF.
+
+	* card-dinsig.c: Removed.
+	* card.c (card_get_serial_and_stamp): Do not bind to the old and
+	never finsiged card-dinsig.c.
+
+	* iso7816.c (iso7816_read_binary): Allow for an NMAX > 254.
+
+2004-03-11  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.h (out_of_core): Removed.  Replaced callers by standard
+	gpg_error function.
+
+	* apdu.c, iso7816.c, ccid-driver.c [GNUPG_SCD_MAIN_HEADER]: Allow
+	to include a header defined by the compiler.  This helps us to
+	reuse the source in other software.
+
+2004-03-10  Werner Koch  <wk@gnupg.org>
+
+	* iso7816.c (iso7816_read_record): New arg SHORT_EF.  Changed all
+	callers.
+
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* sc-investigate.c (main): Setup the used character set.
+	* scdaemon.c (main): Ditto.
+
+	* scdaemon.c (set_debug): New.  Add option --debug-level.
+	(main): Add option --gpgconf-list.
+
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Include cmacros.am for common flags.
+
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* command.c (reset_notify): Release the application context and
+	close the reader.
+
+2004-01-28  Werner Koch  <wk@gnupg.org>
+
+	* iso7816.c (iso7816_manage_security_env): New.
+	(iso7816_decipher): Add PADIND argument.
+
+2004-01-27  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_readcert, cmd_readkey): Work on a copy of LINE.
+
+	* app-common.h (app_ctx_s): Added readcert field.
+	* app.c (app_readcert): New.
+	* tlv.c (parse_ber_header): Added; taken from libksba.
+
+2004-01-26  Werner Koch  <wk@gnupg.org>
+
+	* card.c (map_sc_err): Use SCD as the error source.
+
+	* command.c (open_card): ADD arg NAME to allow requesting a
+	specific application.  Changed all callers.
+	(cmd_serialno): Allow optional argument to select the desired
+	application.
+
+	* app-nks.c: New. 
+
+	* scdaemon.h (opt): Add READER_PORT.
+	* scdaemon.c (main): Set it here.
+	* app.c (app_set_default_reader_port): Removed.
+	(select_application): Add NAME arg and figure out a
+	default serial number from the GDO. Add SLOT arg and remove all
+	reader management.
+	(release_application): New.
+	(app_write_learn_status): Output an APPTYPE status line.
+	* command.c (open_card): Adapt for select_application change.
+	* app-openpgp.c (app_select_openpgp): Removed SN and SNLEN args
+	and set it directly.  Changed all callers.
+
+2004-01-25  Werner Koch  <wk@gnupg.org>
+
+	* iso7816.c (iso7816_select_application): P1 kludge for OpenPGP
+	card.
+	* app-openpgp.c (find_tlv): Factor out this function to ..
+	* tlv.c, tlv.h: .. new.
+
+	* scdaemon.h: Introduced app_t and ctrl_t as the new types for APP
+	and CTRL.
+
+2004-01-21  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (apdu_send_le): Treat SW_EOF_REACHED as a warning.
+
+2004-01-20  Werner Koch  <wk@gnupg.org>
+
+	* iso7816.c (iso7816_read_binary): New.
+	(iso7816_select_file): New.
+	(iso7816_list_directory): New.
+
+	* sc-investigate.c: Add option -i.
+	(select_app, read_line, interactive_shell): New.
+
+2004-01-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.h: Add SW_FILE_NOT_FOUND.
+	* iso7816.c (map_sw): Map it to GPG_ERR_ENOENT.
+	* iso7816.c (iso7816_select_file): New.
+
+	* app-dinsig.c: New file w/o any real code yet.
+	* Makefile.am (scdaemon_SOURCES,sc_investigate_SOURCES): Add file.
+
+	* sc-investigate.c: Add option --disable-ccid.
+
+2003-12-19  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (apdu_send_le): Send a get_response with the indicated
+	length and not the 64 bytes we used for testing.
+
+	* app-openpgp.c (verify_chv2, verify_chv3, do_sign): Check the
+	minimum length of the passphrase, so that we don't need to
+	decrement the retry counter.
+
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* card-p15.c (p15_enum_keypairs): Replaced KRC by RC.
+	* card-dinsig.c (dinsig_enum_keypairs): Ditto.
+
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): Set the prefixes for assuan logging.
+
+2003-11-17  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c, scdaemon.h: New options --allow-admin and --deny-admin.
+	* app-openpgp.c (verify_chv3): Check it here.
+
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for API changes in Libksba.
+
+2003-10-30  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (close_ct_reader, close_pcsc_reader): Implemented.
+	(get_ccid_error_string): New.  Not very useful messages, though.
+
+2003-10-25  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (ccid_open_reader): Return an error if no USB
+	devices are found.
+
+	* command.c (cmd_genkey, cmd_passwd): Fixed faulty use of
+	!spacep().
+
+	* apdu.c (apdu_open_reader): Hacks for PC/SC under Windows.
+
+2003-10-20  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_checkpin): New.
+	(register_commands): Add command CHECKPIN.
+	* app.c (app_check_pin): New.
+	* app-openpgp.c (check_against_given_fingerprint): New. Factored
+	out that code elsewhere.
+	(do_check_pin): New.
+
+2003-10-10  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (ccid_close_reader): New.
+
+	* apdu.c (close_ccid_reader, close_ct_reader, close_csc_reader)
+	(close_osc_reader, apdu_close_reader): New.  Not all are properly
+	implemented yet.
+
+2003-10-09  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (ccid_transceive): Add T=1 chaining for sending.
+
+2003-10-08  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_getattr): Support SERIALNO and AID.
+
+2003-10-01  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c: Detect GnuPG 1.3 and include appropriate files.
+	* apdu.c: Ditto.
+	* app-openpgp.c: Ditto.
+	* iso7816.c: Ditto.
+	(generate_keypair): Renamed to ..
+	(do_generate_keypair): .. this.
+	* app-common.h [GNUPG_MAJOR_VERSION]: New.
+	* iso7816.h [GNUPG_MAJOR_VERSION]: Include cardglue.h
+
+2003-09-30  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_getattr): New command GETATTR.
+	* app.c (app_setattr): New.
+	(do_getattr): New.
+	(do_learn_status): Reimplemented in terms of do_getattr.
+
+	* app-openpgp.c (do_change_pin): Make sure CVH1 and CHV2 are
+	always synced.
+	(verify_chv2, verify_chv3): New. Factored out common code.
+	(do_setattr, do_sign, do_auth, do_decipher): Change the names of
+	the prompts to match that we have only 2 different PINs.
+	(app_select_openpgp): Check whether the card enforced CHV1.
+	(convert_sig_counter_value): New. Factor out code from
+	get_sig_counter.
+
+2003-09-28  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (dump_all_do): Use gpg_err_code and not gpg_error.
+
+2003-09-19  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (parse_ccid_descriptor): New.
+	(read_device_info): New.
+	(ccid_open_reader): Check that the device has all required features.
+
+2003-09-06  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): --pcsc-driver again defaults to pcsclite.
+	David Corcoran was so kind to remove the GPL incompatible
+	advertisng clause from pcsclite.
+	* apdu.c (apdu_open_reader): Actually make pcsc-driver option work.
+
+2003-09-05  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c: More work, data can now actually be retrieved.
+	* ccid-driver.c, ccid-driver.h: Alternativley allow use under BSD
+	conditions.
+
+2003-09-02  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c, scdaemon.h: New option --pcsc-ccid.
+	* ccid-driver.c, ccid-driver.h: New but far from being useful.
+	* Makefile.am: Add above.
+	* apdu.c: Add support for that ccid driver.
+	
+2003-08-26  Timo Schulz  <twoaday@freakmail.de>
+
+	* apdu.c (new_reader_slot): Only set 'is_osc' when OpenSC
+	is used.
+	
+2003-08-25  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_setattr): Use a copy of LINE.
+	(cmd_genkey): Use a copy of KEYNO.
+	(cmd_passwd): Use a copy of CHVNOSTR.
+	(cmd_pksign, cmd_pkauth, cmd_pkdecrypt): s/strdup/xtrystrdup/.
+
+2003-08-19  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c, scdaemon.h: New option --pcsc-driver.
+	* apdu.c (apdu_open_reader): Use that option here instead of a
+	hardcoded one.
+
+2003-08-18  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Add OPENSC_LIBS to all programs. 
+
+	* scdaemon.c, scdaemon.h: New option --disable-opensc.
+	* card.c (card_open): Implement it.
+	* apdu.c (open_osc_reader, osc_send_apdu): New.
+	(apdu_open_reader) [HAVE_OPENSC]: Use the opensc driver if not
+	disabled.
+	(error_string) [HAVE_OPENSC]: Use sc_strerror.
+	(send_apdu) [HAVE_OPENSC]: Call osc_apdu_send.
+
+	* card-p15.c (p15_enum_keypairs, p15_prepare_key): Adjusted for
+	libgpg-error.
+
+2003-08-14  Timo Schulz  <twoaday@freakmail.de>
+
+	* apdu.c (ct_activate_card): Change the code a little to avoid
+	problems with other readers.
+	* Always use 'dynload.h' instead of 'dlfcn.h'.
+
+2003-08-05  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (dump_all_do): Don't analyze constructed DOs after
+	an error.
+
+2003-08-04  Werner Koch  <wk@gnupg.org>
+
+	* app.c (app_set_default_reader_port): New.
+	(select_application): Use it here.
+	* scdaemon.c (main): and here.
+	* sc-copykeys.c: --reader-port does now take a string.
+	* sc-investigate.c, scdaemon.c: Ditto.
+	* apdu.c (apdu_open_reader): Ditto.  Load pcsclite if no ctapi
+	driver is configured.  Always include code for ctapi.
+	(new_reader_slot): Don't test for already used ports and remove
+	port arg.
+	(open_pcsc_reader, pcsc_send_apdu, pcsc_error_string): New.
+	(apdu_send_le): Changed RC to long to cope with PC/SC.
+
+	* scdaemon.c, scdaemon.h: New option --ctapi-driver.
+	* sc-investigate.c, sc-copykeys.c: Ditto.
+	
+2003-07-31  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (scdaemon_LDADD): Added INTLLIBS.
+
+2003-07-28  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_setattr): Change implementation.  Allow all
+	useful DOs.
+
+2003-07-27  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.
+
+2003-07-24  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_learn_status): Print more status information.
+	(app_select_openpgp): Store the card version.
+	(store_fpr): Add argument card_version and fix DOs for old cards.
+	(app_openpgp_storekey): Likewise.
+
+2003-07-23  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_pkauth): New.
+	(cmd_setdata): Check whether data was given at all to avoid
+	passing 0 to malloc.
+
+	* app.c (app_auth): New.
+	* app-openpgp.c (do_auth): New.
+
+2003-07-22  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_passwd): New.
+	* app.c (app_change_pin): New.
+	* app-openpgp.c (do_change_pin): New.
+	* iso7816.c (iso7816_reset_retry_counter): Implemented.
+
+	* sc-investigate.c (main): New option --gen-random.
+	* iso7816.c (iso7816_get_challenge): Don't create APDUs with a
+	length larger than 255.
+
+2003-07-17  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_random): New command RANDOM.
+
+	* iso7816.c (map_sw): New. Use it in this file to return
+	meaningful error messages.  Changed all public fucntions to return
+	a gpg_error_t.
+	(iso7816_change_reference_data): New.
+	* apdu.c (apdu_open_reader): Use faked status words for soem
+	system errors.
+
+2003-07-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (apdu_send_simple): Use apdu_send_le so that we can
+	specify not to send Le as it should be.
+
+2003-07-15  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Add sc-copykeys program.
+	* sc-copykeys.c: New.
+	* app-openpgp.c (app_openpgp_storekey): New.
+	(app_openpgp_cardinfo): New.
+	(count_bits): New.
+	(store_fpr): And use it here to get the actual length in bit.
+
+2003-07-03  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_setattr): Add setting of the URL.
+	(app_select_openpgp): Dump card data only in very verbose mode.
+	(do_decipher): New.
+
+2003-07-02  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (get_sig_counter): New.
+	(do_sign): Print the signature counter and enable the PIN callback.
+	(do_genkey): Implement the PIN callback. 
+
+2003-07-01  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (store_fpr): Fixed fingerprint calculation.
+
+2003-06-26  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (find_tlv): Fixed length header parsing.
+
+	* app.c (app_genkey): New.
+	* command.c (cmd_genkey): New.
+
+2003-06-25  Werner Koch  <wk@gnupg.org>
+
+	* command.c (percent_plus_unescape): New.
+	(cmd_setattr): New.
+
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* command.c (send_status_info): New.
+
+	* app-openpgp.c (app_select_openpgp): Replace SLOT arg by APP arg
+	and setup the function pointers in APP on success. Changed callers.
+	* app.c: New.
+	* app-common.h: New.
+	* scdaemon.h (APP): New type to handle applications.
+	(server_control_s): Add an APP context field.
+
+	* command.c (cmd_serialno): Handle applications.
+	(cmd_pksign): Ditto.
+	(cmd_pkdecrypt): Ditto.
+	(reset_notify): Ditto.
+	(cmd_learn): For now return error for application contexts.
+	(cmd_readcert): Ditto.
+	(cmd_readkey): Ditto.
+
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	* card.c (map_sc_err): Renamed gpg_make_err to gpg_err_make.
+
+	Renamed error codes from INVALID to INV and removed _ERROR suffixes.
+
+2003-06-03  Werner Koch  <wk@gnupg.org>
+
+	Changed all error codes in all files to the new libgpg-error scheme.
+
+	* scdaemon.h: Include gpg-error.h and errno.h
+	* card.c (map_sc_err): Use unknown for the error source.
+	* Makefile.am: Link with libgpg-error
+
+2003-05-14  Werner Koch  <wk@gnupg.org>
+
+	* atr.c, atr.h: New.
+	* sc-investigate.c: Dump the ATR in a human readable format.
+
+2003-05-08  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.h (DBG_CARD_IO_VALUE): New.
+
+	* sc-investigate.c: New.
+	* scdaemon.c (main): Removed --print-atr option.
+
+	* iso7816.c, iso7816.h, app-openpgp.c: New.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: New options --print-atr and --reader-port
+	* apdu.c, apdu.h: New
+
+	* card.c, card-p15.c, card-dinsig.c: Allow build without OpenSC.
+	
+	* Makefile.am (LDFLAGS): Removed.
+
+	* command.c (register_commands): Adjusted for new Assuan semantics.
+
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): New option --daemon so that the program is
+	not accidently started in the background.
+
+2002-08-16  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: Include i18n.h.
+
+	* card-common.h (struct p15_private_s): Forward declaration.  Add
+	it to card_ctx_s.
+	* card.c (card_close): Make sure private data is released.
+	(card_enum_certs): New.
+	* card-p15.c (p15_release_private_data): New.
+	(init_private_data): New to work around an OpenSC weirdness.
+	(p15_enum_keypairs): Do an OpenSC get_objects only once.
+	(p15_enum_certs): New.
+	(card_p15_bind): Bind new function.
+	* command.c (cmd_learn): Return information about the certificates.
+
+2002-08-09  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_get_serial_and_stamp): Use the tokeinfo serial
+	number as a fallback. Add a special prefix for serial numbers.
+
+2002-07-30  Werner Koch  <wk@gnupg.org>
+
+        Changes to cope with OpenSC 0.7.0:
+	
+	* card.c: Removed the check for the packed opensc version.
+	Changed include file names of opensc.
+	(map_sc_err): Adjusted error codes for new opensc version.
+	* card-p15.c: Changed include filename of opensc.
+	* card-dinsig.c: Ditto.
+
+	* card-p15.c (p15_decipher): Add flags argument to OpenSC call.
+	
+2002-07-24  Werner Koch  <wk@gnupg.org>
+
+	* card.c (find_simple_tlv, find_iccsn): New.
+	(card_get_serial_and_stamp): Improved serial number parser.
+
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): Use GNUPG_DEFAULT_HOMEDIR constant.
+
+2002-06-15  Werner Koch  <wk@gnupg.org>
+
+	* card-dinsig.c: Documented some stuff from the DIN norm.
+
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_pksign, cmd_pkdecrypt): Use a copy of the key ID.
+
+2002-04-12  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: New option --debug-sc N.
+	* card.c (card_open): set it here.
+
+	* card-p15.c (p15_prepare_key): Factored out common code from ...
+	(p15_sign, p15_decipher): here and made the decryption work the
+	regular way.
+
+2002-04-10  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_open): Return immediately when no reader is available.
+
+2002-03-27  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_open, card_close): Adjusted for changes in OpenSC.
+
+2002-03-10  Werner Koch  <wk@gnupg.org>
+
+	* card-p15.c, card-dinsig.c, card-common.h: New.
+	* card.c: Factored most code out to the new modules, so that we
+	can better support different types of card applications.
+
+2002-01-26  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c scdaemon.h, command.c: New. Based on the code from
+	the gpg-agent.
+
+	
+ Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

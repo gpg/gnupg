@@ -15,7 +15,8 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
 
 ## Process this file with automake to produce Makefile.in
 
@@ -23,7 +24,7 @@ localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
 EXTRA_DIST = mkerrors
-AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl \
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl \
 	       $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 noinst_LIBRARIES = libkeybox.a
@@ -37,16 +38,15 @@ common_sources = \
 	keybox-file.c \
 	keybox-search.c \
 	keybox-update.c \
+	keybox-openpgp.c \
 	keybox-dump.c 
 
 
 libkeybox_a_SOURCES = $(common_sources)
 
+# Note that libcommon is only required to resolve the LIBOBJS.
 kbxutil_SOURCES = kbxutil.c $(common_sources)
-kbxutil_LDADD   = ../jnlib/libjnlib.a  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
-                  -lgpg-error @INTLLIBS@ 
-
-
-
-
+kbxutil_LDADD   = ../jnlib/libjnlib.a ../gl/libgnu.a \
+	          $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
+                  -lgpg-error $(LIBINTL) ../common/libcommon.a
 

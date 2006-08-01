@@ -22,7 +22,6 @@
 #ifndef GPG_KEYRING_H
 #define GPG_KEYRING_H 1
 
-#include "global.h"
 
 typedef struct keyring_handle *KEYRING_HANDLE;
 

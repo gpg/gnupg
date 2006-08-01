@@ -1,7 +1,8 @@
-# Copyright (C) 1998,1999,2000,2001,2003 Free Software Foundation, Inc.
-#
+# Makefile.am - main makefile for NewPG/GnuPG
+#     	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+# 
 # This file is part of GnuPG.
-#
+# 
 # GnuPG is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -14,40 +15,68 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
 
 ## Process this file with automake to produce Makefile.in
 
-ACLOCAL_AMFLAGS = -I m4
-DISTCHECK_CONFIGURE_FLAGS = --enable-selinux-support
-AUTOMAKE_OPTIONS = dist-bzip2 filename-length-max=99
+ACLOCAL_AMFLAGS = -I m4 -I gl/m4
+AUTOMAKE_OPTIONS = dist-bzip2
 
-if CROSS_COMPILING
-checks =
-else
-checks = checks
-endif
-
-SUBDIRS = m4 intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
-EXTRA_DIST = scripts/config.rpath  PROJECTS BUGS config.h.in autogen.sh
+EXTRA_DIST = scripts/config.rpath autogen.sh README.CVS
 DISTCLEANFILES = g10defs.h 
 
-# Add all the files listed in "distfiles" files to the distribution,
-# apply version numbers to some files and create a VERSION file which
-# we need for the Prereq: patch file trick.
+if BUILD_GPGSM
+kbx = kbx
+else
+kbx =
+endif
+
+
+if BUILD_GPG
+gpg = g10
+# fixme: Noy yet ready for a build
+keyserver = 
+else
+gpg =
+keyserver = 
+endif
+if BUILD_GPGSM
+sm = sm
+else
+sm =
+endif
+if BUILD_AGENT
+agent = agent
+else
+agent =
+endif
+if BUILD_SCDAEMON
+scd = scd
+else
+scd =
+endif
+
+if HAVE_W32_SYSTEM
+tests =
+else
+tests = tests
+endif
+
+SUBDIRS = m4 intl gl jnlib common ${kbx} \
+ ${gpg} ${keyserver} ${sm} ${agent} ${scd} tools po doc ${tests}
+
 dist-hook:
 	@set -e; \
 	 for file in `cd $(top_srcdir); \
-		     find scripts mpi include -type f -name distfiles`; do \
+		     find scripts include -type f -name distfiles`; do \
 	    dir=`dirname $$file` ; $(mkinstalldirs) $(distdir)/$$dir ; \
 	    for i in distfiles `cat $(top_srcdir)/$$file` ; do \
 		ln $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i 2> /dev/null \
 		|| cp -p $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
 	    done ; \
 	done
-	@set -e; \
-	sed -e 's/@pkg_version@/$(VERSION)/g' \
-	    $(top_srcdir)/scripts/gnupg.spec.in \
-	    > $(distdir)/gnupg.spec
 	echo "$(VERSION)" > $(distdir)/VERSION
+
+
 

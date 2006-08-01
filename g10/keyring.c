@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "gpg.h"
 #include "util.h"
 #include "keyring.h"
 #include "packet.h"
@@ -660,8 +661,9 @@ prepare_search (KEYRING_HANDLE hd)
     hd->current.iobuf = iobuf_open (hd->current.kr->fname);
     if (!hd->current.iobuf)
       {
+        hd->current.error = gpg_error_from_errno (errno);
         log_error(_("can't open `%s'\n"), hd->current.kr->fname );
-        return (hd->current.error = G10ERR_OPEN_FILE);
+        return hd->current.error;
       }
 
     return 0;
@@ -1198,10 +1200,11 @@ create_tmp_file (const char *template,
     umask(oldmask);
     if (!*r_fp)
       {
+        int rc = gpg_error_from_errno (errno);
 	log_error(_("can't create `%s': %s\n"), tmpfname, strerror(errno) );
         xfree (tmpfname);
         xfree (bakfname);
-	return G10ERR_OPEN_FILE;
+	return rc;
       }
     
     *r_bakfname = bakfname;
@@ -1229,9 +1232,10 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 #endif
       if (rename (fname, bakfname) )
         {
+          rc = gpg_error_from_errno (errno);
           log_error ("renaming `%s' to `%s' failed: %s\n",
                      fname, bakfname, strerror(errno) );
-          return G10ERR_RENAME_FILE;
+          return rc;
 	}
     }
   
@@ -1243,10 +1247,10 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
     unregister_secured_file (fname);
   if (rename (tmpfname, fname) )
     {
+      rc = gpg_error_from_errno (errno);
       log_error (_("renaming `%s' to `%s' failed: %s\n"),
                  tmpfname, fname, strerror(errno) );
       register_secured_file (fname);
-      rc = G10ERR_RENAME_FILE;
       if (secret)
         {
           log_info(_("WARNING: 2 files with confidential"
@@ -1311,10 +1315,12 @@ write_keyblock (IOBUF fp, KBNODE keyblock)
           iobuf_put (fp, 0xb0); /* old style packet 12, 1 byte len*/
           iobuf_put (fp, 2);    /* 2 bytes */
           iobuf_put (fp, 0);    /* unused */
-          if (iobuf_put (fp, cacheval)) {
-            log_error ("writing sigcache packet failed\n");
-            return G10ERR_WRITE_FILE;
-          }
+          if (iobuf_put (fp, cacheval)) 
+            {
+              rc = gpg_error_from_errno (errno);
+              log_error ("writing sigcache packet failed\n");
+              return rc;
+            }
         }
     }
   return 0;
@@ -1356,9 +1362,9 @@ keyring_rebuild_cache (void *token,int noisy)
             {
               if (iobuf_close (tmpfp))
                 {
+                  rc = gpg_error_from_errno (errno);
                   log_error ("error closing `%s': %s\n",
                              tmpfilename, strerror (errno));
-                  rc = G10ERR_CLOSE_FILE;
                   goto leave;
                 }
               /* because we have switched resources, we can be sure that
@@ -1403,8 +1409,8 @@ keyring_rebuild_cache (void *token,int noisy)
 	      PKT_signature *sig=node->pkt->pkt.signature;
 
 	      if(!opt.no_sig_cache && sig->flags.checked && sig->flags.valid
-		 && (check_digest_algo(sig->digest_algo)
-		     || check_pubkey_algo(sig->pubkey_algo)))
+		 && (openpgp_md_test_algo(sig->digest_algo)
+		     || openpgp_pk_test_algo(sig->pubkey_algo)))
 		sig->flags.checked=sig->flags.valid=0;
 	      else
 		check_key_signature (keyblock, node, NULL);
@@ -1436,9 +1442,9 @@ keyring_rebuild_cache (void *token,int noisy)
     {
       if (iobuf_close (tmpfp))
         {
+          rc = gpg_error_from_errno (errno);
           log_error ("error closing `%s': %s\n",
                      tmpfilename, strerror (errno));
-          rc = G10ERR_CLOSE_FILE;
           goto leave;
         }
       /* because we have switched resources, we can be sure that
@@ -1480,7 +1486,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     /* Open the source file. Because we do a rename, we have to check the 
        permissions of the file */
     if (access (fname, W_OK))
-      return G10ERR_WRITE_FILE;
+      return gpg_error_from_errno (errno);
 
     fp = iobuf_open (fname);
     if (mode == 1 && !fp && errno == ENOENT) { 
@@ -1498,8 +1504,9 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	umask(oldmask);
 	if( !newfp )
 	  {
+            rc = gpg_error_from_errno (errno);
 	    log_error (_("can't create `%s': %s\n"), fname, strerror(errno));
-	    return G10ERR_OPEN_FILE;
+	    return rc;
 	  }
 	if( !opt.quiet )
 	    log_info(_("%s: keyring created\n"), fname );
@@ -1510,20 +1517,21 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 		log_error("build_packet(%d) failed: %s\n",
 			    node->pkt->pkttype, g10_errstr(rc) );
 		iobuf_cancel(newfp);
-		return G10ERR_WRITE_FILE;
+		return rc;
 	    }
 	}
 	if( iobuf_close(newfp) ) {
+            rc = gpg_error_from_errno (errno);
 	    log_error ("%s: close failed: %s\n", fname, strerror(errno));
-	    return G10ERR_CLOSE_FILE;
+	    return rc;
 	}
 	return 0; /* ready */
     }
 
     if( !fp )
       {
+        rc = gpg_error_from_errno (errno);
 	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
 	goto leave;
       }
 
@@ -1605,13 +1613,13 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 
     /* close both files */
     if( iobuf_close(fp) ) {
+        rc = gpg_error_from_errno (errno);
 	log_error("%s: close failed: %s\n", fname, strerror(errno) );
-	rc = G10ERR_CLOSE_FILE;
 	goto leave;
     }
     if( iobuf_close(newfp) ) {
+        rc = gpg_error_from_errno (errno);
 	log_error("%s: close failed: %s\n", tmpfname, strerror(errno) );
-	rc = G10ERR_CLOSE_FILE;
 	goto leave;
     }
 

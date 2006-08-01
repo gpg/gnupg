@@ -1,0 +1,1631 @@
+2006-07-03  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (proc_parameters): Print the component label of a
+	faulty DN.
+
+2006-06-26  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (gpgsm_cert_log_name): New.
+	* certchain.c (is_cert_still_valid): Log the name of the certificate.
+
+2006-06-20  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (gpgsm_init_default_ctrl): Take care of the command line
+	option --include-certs.
+
+	* keylist.c (list_cert_raw): Print the certid.
+
+2006-05-23  Werner Koch  <wk@g10code.com>
+
+	* keydb.c (hextobyte): Deleted as it is now defined in jnlib.
+
+	* Makefile.am (gpgsm_LDADD): Include ZLIBS.
+
+2006-05-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* keydb.c (keydb_insert_cert): Do not lock here, but only check if
+	it is locked.
+	(keydb_store_cert): Lock here.
+
+	* keydb.h (keydb_delete): Accept new argument UNLOCK.
+	* keydb.c (keydb_delete): Likewise.  Only unlock if this is set.
+	* delete.c (delete_one): Add new argument to invocation of
+	keydb_delete.
+	
+2006-05-15  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (print_names_raw): Sanitize URI.
+
+2006-03-21  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (get_regtp_ca_info): New.
+	(allowed_ca): Use it.
+
+2006-03-20  Werner Koch  <wk@g10code.com>
+
+	* qualified.c (gpgsm_is_in_qualified_list): New optional arg COUNTRY.
+
+2006-02-17  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (start_dirmngr): Print name of dirmngr to be started.
+
+2005-11-23  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.h: New member QUALSIG_APPROVAL.
+	* sign.c (gpgsm_sign): Print a warning if a certificate is not
+	qualified.
+	* qualified.c (gpgsm_qualified_consent): Include a note that this
+	is not approved software.
+	(gpgsm_not_qualified_warning): New.
+	* gpgsm.c (main): Prepared to print a note whether the software
+	has been approved.
+
+2005-11-13  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (gpgsm_agent_get_confirmation): New.
+
+	* keylist.c (list_cert_std): Print qualified status.
+	* qualified.c: New.
+	* certchain.c (gpgsm_validate_chain): Check for qualified
+	certificates.
+
+	* certchain.c (gpgsm_basic_cert_check): Release keydb handle when
+	no-chain-validation is used.
+
+2005-11-11  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (print_capabilities): Print is_qualified status.
+
+2005-10-28  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (pretty_print_sexp): New.
+	(gpgsm_print_name2): Use it here.  This allows proper printing of
+	DNS names as used with server certificates.
+
+2005-10-10  Werner Koch  <wk@g10code.com>
+
+	* keylist.c: Add pkaAdress OID as reference.
+
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpgsm_LDADD): Add ../gl/libgnu.a after
+	../common/libcommon.a.
+
+2005-09-13  Werner Koch  <wk@g10code.com>
+
+	* verify.c (gpgsm_verify): Print a note if the unknown algorithm
+	is MD2.
+	* sign.c (gpgsm_sign): Ditto.
+	* certcheck.c (gpgsm_check_cert_sig): Ditto.
+
+2005-09-08  Werner Koch  <wk@g10code.com>
+
+	* export.c (popen_protect_tool): Add option --have-cert.  We
+	probably lost this option with 1.9.14 due to restructuring of
+	export.c.
+
+2005-07-21  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): New options --no-log-file and --debug-none.
+
+	* certreqgen.c (get_parameter, get_parameter_value): Add SEQ arg
+	to allow enumeration.  Changed all callers.
+	(create_request): Process DNS and URI parameters.
+
+2005-07-20  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (email_kludge): Reworked.
+
+	* certdump.c (gpgsm_print_serial, gpgsm_dump_serial): Cast printf
+	arg to unsigned.
+	* call-dirmngr.c (gpgsm_dirmngr_run_command): Ditto
+
+2005-07-19  Werner Koch  <wk@g10code.com>
+
+	* fingerprint.c (gpgsm_get_certid): Cast printf arg to unsigned.
+	Bug accidently introduced while solving the #$%^& gcc
+	signed/unsigned char* warnings.
+
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* delete.c (delete_one): Changed FPR to unsigned.
+	* encrypt.c (encrypt_dek): Made ENCVAL unsigned.
+	(gpgsm_encrypt): Ditto.
+	* sign.c (gpgsm_sign): Made SIGVAL unsigned.
+	* base64.c (base64_reader_cb): Need to use some casting to get
+	around signed/unsigned char* warnings.
+	* certcheck.c (gpgsm_check_cms_signature): Ditto.
+	(gpgsm_create_cms_signature): Changed arg R_SIGVAL to unsigned char*.
+	(do_encode_md): Made NFRAME a size_t.
+	* certdump.c (gpgsm_print_serial): Fixed signed/unsigned warning.
+	(gpgsm_dump_serial): Ditto.
+	(gpgsm_format_serial): Ditto.
+	(gpgsm_dump_string): Ditto.
+	(gpgsm_dump_cert): Ditto.
+	(parse_dn_part): Ditto.
+	(gpgsm_print_name2): Ditto.
+	* keylist.c (email_kludge): Ditto.
+	* certreqgen.c (proc_parameters, create_request): Ditto.
+	(create_request): Ditto.
+	* call-agent.c (gpgsm_agent_pksign): Made arg R_BUF unsigned.
+	(struct cipher_parm_s): Made CIPHERTEXT unsigned.
+	(struct genkey_parm_s): Ditto.
+	* server.c (strcpy_escaped_plus): Made arg S signed char*.
+	* fingerprint.c (gpgsm_get_fingerprint): Made ARRAY unsigned.
+	(gpgsm_get_keygrip): Ditto.
+	* keydb.c (keydb_insert_cert): Made DIGEST unsigned.
+	(keydb_update_cert): Ditto.
+	(classify_user_id): Apply cast to signed/unsigned assignment.
+	(hextobyte): Ditto.
+
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* misc.c: Include setenv.h.
+
+2005-04-21  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: New options --{enable,disable}-trusted-cert-crl-check.
+	* certchain.c (gpgsm_validate_chain): Make use of it.
+
+	* certchain.c (gpgsm_validate_chain): Check revocations even for
+	expired certificates.  This is required because on signature
+	verification an expired key is fine whereas a revoked one is not.
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CFLAGS): Add PTH_CFLAGS as noted by several folks.
+
+2005-04-19  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (check_cert_policy): Print the diagnostic for a open
+	failure of policies.txt only in verbose mode or when it is not
+	ENOENT.
+
+2005-04-17  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (inq_certificate): Add new inquire SENDCERT_SKI.
+	* certlist.c (gpgsm_find_cert): Add new arg KEYID and implement
+	this filter.  Changed all callers.
+
+	* certchain.c (find_up_search_by_keyid): New helper.
+	(find_up): Also try using the AKI.keyIdentifier.
+	(find_up_external): Ditto.
+
+2005-04-15  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_cert_raw): Print the subjectKeyIdentifier as
+	well as the keyIdentifier part of the authorityKeyIdentifier.
+
+2005-03-31  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (start_dirmngr): Use PATHSEP_C instead of ':'.
+	* call-agent.c (start_agent): Ditto.
+
+2005-03-17  Werner Koch  <wk@g10code.com>
+
+	* certcheck.c: Fixed use of DBG_CRYPTO and DBG_X509.
+
+	* certchain.c (gpgsm_basic_cert_check): Dump certificates after a
+	failed gcry_pk_verify.
+	(find_up): Do an external lookup also for an authorityKeyIdentifier
+	lookup. Factored external lookup code out to ..
+	(find_up_external): .. new.
+
+2005-03-03  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpgsm_LDADD): Added PTH_LIBS.  Noted by Kazu Yamamoto.
+
+2005-01-13  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (proc_parameters): Cast printf arg.
+
+2004-12-22  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (set_binary): New.
+	(main, open_read, open_fwrite): Use it.
+
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Use default_homedir().
+	(main) [W32]: Default to disabled CRL checks.
+
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (start_agent): Before starting a pipe server start
+	to connect to a server on the standard socket.  Use PATHSEP
+	* call-dirmngr.c (start_dirmngr): Use PATHSEP.
+
+	* import.c: Include unistd.h for dup and close.
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.h (map_assuan_err): Define in terms of
+	map_assuan_err_with_source.
+	* call-agent.c (start_agent): Pass error source to
+	send_pinentry_environment.
+
+2004-12-17  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (isvalid_status_cb, lookup_status_cb)
+	(run_command_status_cb): Return cancel status if gpgsm_status
+	returned an error.
+
+	* server.c (gpgsm_status, gpgsm_status2) 
+	(gpgsm_status_with_err_code): Return an error code.
+	(gpgsm_status2): Always call va_end().
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (lookup_status_cb): Send progress messages
+	upstream.
+	(isvalid_status_cb): Ditto.
+	(gpgsm_dirmngr_isvalid): Put CTRL into status CB parameters.
+	(gpgsm_dirmngr_run_command, run_command_status_cb): Pass CTRL to
+	status callback and handle PROGRESS.
+
+	* misc.c (setup_pinentry_env) [W32]: Don't use it.
+
+	* gpgsm.c (main) [W32]: Init Pth because we need it for the socket
+	operations and to resolve libassuan symbols.
+	(run_protect_tool) [W32]: Disable it.
+
+	* Makefile.am (gpgsm_LDADD): Move LIBASSUAN_LIBS more to the end.
+
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpgsm_LDADD): Put libassuan before jnlib because
+	under W32 we need the w32 pth code from jnlib.
+
+	* misc.c (setup_pinentry_env) [W32]: Disabled.
+
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (run_protect_tool) [_WIN32]: Disabled.
+
+	* import.c (popen_protect_tool): Simplified by making use of
+	gnupg_spawn_process.
+	(parse_p12): Likewise, using gnupg_wait_process.
+	* export.c (popen_protect_tool): Ditto.
+	(export_p12): Ditto.
+
+	* keydb.c: Don't define DIRSEP_S here.
+
+2004-12-02  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (gpgsm_basic_cert_check): Dump certs with bad
+	signature for debugging.
+	(gpgsm_validate_chain): Ditto.
+
+2004-11-29  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (set_debug): Changed to use a globals DEBUG_LEVEL and
+	DEBUG_VALUE.
+	(main): Made DEBUG_LEVEL global and introduced DEBUG_VALUE.  This
+	now allows to add debug flags on top of a debug-level setting.
+
+2004-11-23  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: New option --prefer-system-dirmngr.
+	* call-dirmngr.c (start_dirmngr): Implement this option.
+
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (gpgsm_genkey): Remove the NEW from the certificate
+	request PEM header.  This is according to the Sphinx standard.
+
+2004-10-08  Moritz Schulte  <moritz@g10code.com>
+
+	* certchain.c (gpgsm_validate_chain): Do not use keydb_new() in
+	case the no_chain_validation-return-short-cut is used (fixes
+	memory leak).
+
+2004-10-04  Werner Koch  <wk@g10code.com>
+
+	* misc.c (setup_pinentry_env): Try hard to set a default for GPG_TTY.
+
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (i18n_init): Always use LC_ALL.
+
+	* certdump.c (gpgsm_format_name): Factored code out to ..
+	(gpgsm_format_name2): .. new.
+	(gpgsm_print_name): Factored code out to ..
+	(gpgsm_print_name2): .. new.
+	(print_dn_part): New arg TRANSLATE.  Changed all callers.
+	(print_dn_parts): Ditto.
+	(gpgsm_format_keydesc): Do not translate the SUBJECT; we require
+	it to stay UTF-8 but we still want to filter out bad control
+	characters.
+
+	* Makefile.am: Adjusted for gettext 0.14.
+
+	* keylist.c (list_cert_colon): Make sure that the expired flag has
+	a higher precedence than the invalid flag. 
+
+2004-09-29  Werner Koch  <wk@g10code.com>
+
+	* import.c (parse_p12): Write an error status line for bad
+	passphrases. Add new arg CTRL and changed caller.
+	* export.c (export_p12): Likewise.
+
+2004-09-14  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (gpgsm_validate_chain): Give expired certificates a
+	higher error precedence and don't bother to check any CRL in that
+	case.
+
+2004-08-24  Werner Koch  <wk@g10code.de>
+
+	* certlist.c: Fixed typo in ocsp OID.
+
+2004-08-18  Werner Koch  <wk@g10code.de>
+
+	* certlist.c (gpgsm_cert_use_ocsp_p): New.
+	(cert_usage_p): Support it here.
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): Use it here.
+
+2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* import.c: Fix typo in last change.
+
+2004-08-17  Werner Koch  <wk@g10code.de>
+
+	* import.c (check_and_store): Do a full validation if
+	--with-validation is set.
+
+	* certchain.c (gpgsm_basic_cert_check): Print more detailed error
+	messages.
+	
+	* certcheck.c (do_encode_md): Partly support DSA.  Add new arg
+	PKALGO. Changed all callers to pass it.
+	(pk_algo_from_sexp): New.
+
+2004-08-16  Werner Koch  <wk@g10code.de>
+
+	* gpgsm.c: New option --fixed-passphrase.
+	* import.c (popen_protect_tool): Pass it to the protect-tool.
+
+	* server.c (cmd_encrypt): Use DEFAULT_RECPLIST and not recplist
+	for encrypt-to keys.
+
+2004-08-06  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: New option --with-ephemeral-keys.
+	* keylist.c (list_internal_keys): Set it here.
+	(list_cert_raw): And indicate those keys.  Changed all our callers
+	to pass the new arg HD through.
+
+2004-07-23  Werner Koch  <wk@g10code.de>
+
+	* certreqgen.c (proc_parameters): Do not allow key length below
+	1024.
+
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	* keylist.c (list_cert_raw): Print the keygrip.
+
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (gpgsm_validate_chain): The trust check didn't
+	worked anymore, probably due to the changes at 2003-03-04.  Fixed.
+
+2004-06-06  Werner Koch  <wk@gnupg.org>
+
+	* certreqgen.c (get_parameter_uint, create_request): Create
+	an extension for key usage when requested. 
+
+2004-05-12  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Install emergency_cleanup also as an atexit
+	handler.
+
+	* verify.c (gpgsm_verify): Removed the separate error code
+	handling for KSBA.  We use shared error codes anyway.
+
+	* export.c (export_p12): Removed debugging code.
+
+	* encrypt.c (gpgsm_encrypt): Put the session key in to secure memory.
+
+2004-05-11  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (gpgsm_sign): Include the error source in the final error
+	message.
+	* decrypt.c (gpgsm_decrypt): Ditto.
+
+	* fingerprint.c (gpgsm_get_key_algo_info): New.
+	* sign.c (gpgsm_sign): Don't assume RSA in the status line.
+	* keylist.c (list_cert_colon): Really print the algorithm and key
+	length.
+	(list_cert_raw, list_cert_std): Ditto.
+	(list_cert_colon): Reorganized to be able to tell whether a root
+	certificate is trusted.
+
+	* gpgsm.c: New option --debug-allow-core-dump.
+
+	* gpgsm.h (opt): Add member CONFIG_FILENAME.
+	* gpgsm.c (main): Use it here instead of the local var.
+
+	* server.c (gpgsm_server): Print some additional information with
+	the hello in verbose mode.
+
+2004-04-30  Werner Koch  <wk@gnupg.org>
+
+	* import.c (check_and_store): Do not update the stats for hidden
+	imports of issuer certs.
+	(popen_protect_tool): Request statusmessages from the protect-tool.
+	(parse_p12): Detect status messages. Add new arg STATS and update them.
+	(print_imported_summary): Include secret key stats.
+
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: New command --keydb-clear-some-cert-flags.
+	* keydb.c (keydb_clear_some_cert_flags): New.
+	(keydb_update_keyblock, keydb_set_flags): Change error code
+	CONFLICT to NOT_LOCKED.
+
+2004-04-26  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main) <gpgconf>: Do not use /dev/null as default config
+	filename.
+
+	* call-agent.c (gpgsm_agent_pksign, gpgsm_agent_pkdecrypt) 
+	(gpgsm_agent_genkey, gpgsm_agent_istrusted) 
+	(gpgsm_agent_marktrusted, gpgsm_agent_havekey) 
+	(gpgsm_agent_passwd): Add new arg CTRL and changed all callers.
+	(start_agent): New arg CTRL.  Send progress item when starting a
+	new agent.
+	* sign.c (gpgsm_get_default_cert, get_default_signer): New arg
+	CTRL to be passed down to the agent function.
+	* decrypt.c (prepare_decryption): Ditto.
+	* certreqgen.c (proc_parameters, read_parameters): Ditto.
+	* certcheck.c (gpgsm_create_cms_signature): Ditto.
+
+2004-04-23  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (keydb_add_resource): Try to compress the file on init.
+
+	* keylist.c (oidtranstbl): New.  OIDs collected from several sources.
+	(print_name_raw, print_names_raw, list_cert_raw): New.
+	(gpgsm_list_keys): Check the dump mode and pass it down as
+	necessary.
+
+2004-04-22  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): New commands --dump-keys, --dump-external-keys,
+	--dump-secret-keys.
+
+2004-04-13  Werner Koch  <wk@gnupg.org>
+
+	* misc.c (setup_pinentry_env): New.
+	* import.c (popen_protect_tool): Call it.
+	* export.c (popen_protect_tool): Call it.
+
+2004-04-08  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (gpgsm_decrypt): Return GPG_ERR_NO_DATA if it is not a 
+	encrypted message.
+
+2004-04-07  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: New option --force-crl-refresh.
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): Pass option to dirmngr.
+
+2004-04-05  Werner Koch  <wk@gnupg.org>
+
+	* server.c (get_status_string): Add STATUS_NEWSIG.
+	* verify.c (gpgsm_verify): Print STATUS_NEWSIG for each signature.
+
+	* certchain.c (gpgsm_validate_chain) <gpgsm_cert_use_cer_p>: Do
+	not just warn if a cert is not suitable; bail out immediately.
+
+2004-04-01  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c (isvalid_status_cb): New.
+	(unhexify_fpr): New. Taken from ../g10/call-agent.c
+	(gpgsm_dirmngr_isvalid): Add new arg CTRL, changed caller to pass
+	it thru.  Detect need to check the respondert cert and do that.
+	* certchain.c (gpgsm_validate_chain): Add new arg FLAGS.  Changed
+	all callers.
+
+2004-03-24  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (gpgsm_sign): Include a short list of capabilities.
+
+2004-03-17  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main) <gpgconf>: Fixed default value quoting.
+
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Implemented --gpgconf-list.
+
+2004-03-15  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Hack to set the expired flag.
+
+2004-03-09  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Correctly intitialze USE_OCSP flag.
+
+	* keydb.c (keydb_delete): s/GPG_ERR_CONFLICT/GPG_ERR_NOT_LOCKED/
+
+2004-03-04  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): New arg ISSUER_CERT.
+
+	* certchain.c (is_cert_still_valid): New.  Code moved from ...
+	(gpgsm_validate_chain): ... here because we now need to check at
+	two places and at a later stage, so that we can pass the issuer
+	cert down to the dirmngr.
+
+2004-03-03  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (start_agent): Replaced pinentry setup code by a
+	call to a new common function.
+
+	* certdump.c (gpgsm_format_keydesc): Make sure the string is
+	returned as utf-8.
+
+	* export.c (gpgsm_export): Make sure that we don't export more
+	than one certificate.
+
+2004-03-02  Werner Koch  <wk@gnupg.org>
+
+	* export.c (create_duptable, destroy_duptable)
+	(insert_duptable): New.
+	(gpgsm_export): Avoid duplicates.
+
+2004-02-26  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (compare_certs): New.
+	(gpgsm_validate_chain): Fixed infinite certificate checks after
+	bad signatures.
+
+2004-02-24  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Print the fingerprint as the
+	cert-id for root certificates.
+
+2004-02-21  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_internal_keys): Return error codes.
+	(list_external_keys, gpgsm_list_keys): Ditto.
+	* server.c (do_listkeys): Ditto.
+
+	* gpgsm.c (main): Display a key description for --passwd.
+	* call-agent.c (gpgsm_agent_passwd): New arg DESC.
+
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): New option --debug-ignore-expiration.
+	* certchain.c (gpgsm_validate_chain): Use it here.
+
+	* certlist.c (cert_usage_p): Apply extKeyUsage.
+
+2004-02-19  Werner Koch  <wk@gnupg.org>
+
+	* export.c (export_p12, popen_protect_tool)
+	(gpgsm_p12_export): New.
+	* gpgsm.c (main): New command --export-secret-key-p12. 
+
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (set_debug): Set the new --debug-level flags.
+	(main): New option --gpgconf-list.  
+	(main): Do not setup -u and -r keys when not required.
+	(main): Setup the used character set.
+
+	* keydb.c (keydb_add_resource): Print a hint to start the
+	gpg-agent.
+
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: Fixed value parsing for --with-validation.
+	* call-agent.c (start_agent): Ignore an empty GPG_AGENT_INFO.
+	* call-dirmngr.c (start_dirmngr): Likewise for DIRMNGR_INFO.
+
+	* gpgsm.c: New option --with-md5-fingerprint.
+	* keylist.c (list_cert_std): Print MD5 fpr.
+
+	* gpgsm.c: New options --with-validation.
+	* server.c (option_handler): New option "with-validation".
+	* keylist.c (list_cert_std, list_internal_keys): New args CTRL and
+	WITH_VALIDATION. Changed callers to set it.
+	(list_external_cb, list_external_keys): Pass CTRL to the callback.
+	(list_cert_colon): Add arg CTRL.  Check validation if requested.
+	* certchain.c (unknown_criticals, allowed_ca, check_cert_policy) 
+	(gpgsm_validate_chain): New args LISTMODE and FP.
+	(do_list): New helper for info output.
+	(find_up): New arg FIND_NEXT.
+	(gpgsm_validate_chain): After a bad signature try again with other
+	CA certificates.
+
+	* import.c (print_imported_status): New arg NEW_CERT. Print
+	additional STATUS_IMPORT_OK becuase that is what gpgme expects.
+	(check_and_store): Always call above function after import.
+	* server.c (get_status_string): Added STATUS_IMPORT_OK.
+
+2004-02-13  Werner Koch  <wk@gnupg.org>
+
+	* certcheck.c (gpgsm_create_cms_signature): Format a description
+	for use by the pinentry.
+	* decrypt.c (gpgsm_decrypt): Ditto. Free HEXKEYGRIP.
+	* certdump.c (format_name_cookie, format_name_writer) 
+	(gpgsm_format_name): New.
+	(gpgsm_format_serial): New.
+	(gpgsm_format_keydesc): New.
+	* call-agent.c (gpgsm_agent_pksign): New arg DESC.
+	(gpgsm_agent_pkdecrypt): Ditto.
+
+	* encrypt.c (init_dek): Check for too weak algorithms.
+
+	* import.c (parse_p12, popen_protect_tool): New.
+
+	* base64.c (gpgsm_create_reader): New arg ALLOW_MULTI_PEM.
+	Changed all callers.
+	(base64_reader_cb): Handle it here.
+	(gpgsm_reader_eof_seen): New.
+	(base64_reader_cb): Set a flag for EOF.
+	(simple_reader_cb): Ditto.
+
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.h, gpgsm.c: New option --protect-tool-program.
+	* gpgsm.c (run_protect_tool): Use it.
+
+2004-02-11  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (AM_CPPFLAGS): Pass directory constants via -D; this
+	will allow to override directory names at make time.
+
+2004-02-02  Werner Koch  <wk@gnupg.org>
+
+	* import.c (check_and_store): Import certificates even with
+	missing issuer's cert.  Fixed an "depending on the verbose
+	setting" bug.
+
+	* certchain.c (gpgsm_validate_chain): Mark revoked certs in the
+	keybox.
+
+	* keylist.c (list_cert_colon): New arg VALIDITY; use it to print a
+	revoked flag.
+	(list_internal_keys): Retrieve validity flag.
+	(list_external_cb): Pass 0 as validity flag.
+	* keydb.c (keydb_get_flags, keydb_set_flags): New.
+	(keydb_set_cert_flags): New.
+	(lock_all): Return a proper error code.
+	(keydb_lock): New.
+	(keydb_delete): Don't lock but check that it has been locked.
+	(keydb_update_keyblock): Ditto.
+	* delete.c (delete_one): Take a lock.
+
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (check_cert_policy): Fixed read error checking.
+	(check_cert_policy): With no critical policies issue only a
+	warning if the policy file does not exists.
+
+	* sign.c (add_certificate_list): Decrement N for the first cert.
+
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* certdump.c (parse_dn_part): Map common OIDs to human readable
+	labels.  Make sure that a value won't get truncated if it includes
+	a Nul.
+
+2004-01-28  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (gpgsm_validate_chain): Changed the message printed
+	for an untrusted root certificate.
+
+2004-01-27  Werner Koch  <wk@gnupg.org>
+
+	* certdump.c (parse_dn_part): Pretty print the nameDistinguisher OID.
+	(print_dn_part): Do not delimit multiple RDN by " + ".  Handle
+	multi-valued RDNs in a special way, i.e. in the order specified by
+	the certificate.
+	(print_dn_parts): Simplified. 
+
+2004-01-16  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (gpgsm_sign): Print an error message on all failures.
+	* decrypt.c (gpgsm_decrypt): Ditto.
+
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* server.c (gpgsm_server): Add arg DEFAULT_RECPLIST.
+	(cmd_encrypt): Add all enrypt-to marked certs to the list.
+	* encrypt.c (gpgsm_encrypt): Check that real recipients are
+	available.
+	* gpgsm.c (main): Make the --encrypt-to and --no-encrypt-to
+	options work.  Pass the list of recients to gpgsm_server.
+	* gpgsm.h (certlist_s): Add field IS_ENCRYPT_TO.
+	(opt): Add NO_ENCRYPT_TO.
+	* certlist.c (gpgsm_add_to_certlist): New arg IS_ENCRYPT_TO.
+	Changed all callers and ignore duplicate entries.
+	(is_cert_in_certlist): New.
+	(gpgsm_add_cert_to_certlist): New.
+
+	* certdump.c (gpgsm_print_serial): Cleaned up cast use in strtoul.
+	(gpgsm_dump_serial): Ditto.
+
+	* decrypt.c (gpgsm_decrypt): Replaced ERR by RC.
+
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Set the prefixes for assuan logging.
+
+	* sign.c (gpgsm_sign): Add validation checks for the default
+	certificate.
+
+	* gpgsm.c: Add -k as alias for --list-keys and -K for
+	--list-secret-keys.
+
+2003-12-15  Werner Koch  <wk@gnupg.org>
+
+	* encrypt.c (init_dek): Use gry_create_nonce for the IV; there is
+	not need for real strong random here and it even better protect
+	the random bits used for the key.
+
+2003-12-01  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c, gpgsm.h: New options --{enable,disable}-ocsp.
+	(gpgsm_init_default_ctrl): Set USE_OCSP to the default value.
+	* certchain.c (gpgsm_validate_chain): Handle USE_OCSP.
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): Add arg USE_OCSP and
+	proceed accordingly.
+
+2003-11-19  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgsm_verify): Use "0" instead of an empty string for
+	the VALIDSIG status.
+
+2003-11-18  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgsm_verify): Fixed for changes API of gcry_md_info.
+
+	* certchain.c (unknown_criticals): Fixed an error code test.
+
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for API changes in Libksba.
+
+2003-10-31  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (gpgsm_validate_chain): Changed to use ksba_isotime_t.
+	* verify.c (strtimestamp_r, gpgsm_verify): Ditto.
+	* sign.c (gpgsm_sign): Ditto.
+	* keylist.c (print_time, list_cert_std, list_cert_colon): Ditto.
+	* certdump.c (gpgsm_print_time, gpgsm_dump_time, gpgsm_dump_cert):
+	Ditto.
+
+2003-10-25  Werner Koch  <wk@gnupg.org>
+
+	* certreqgen.c (read_parameters): Fixed faulty of !spacep().
+
+2003-08-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* encrypt.c (encode_session_key): Allocate enough space.  Cast key
+	byte to unsigned char to prevent sign extension.
+	(encrypt_dek): Check return value before error.
+
+2003-08-14  Timo Schulz  <twoaday@freakmail.de>
+
+	* encrypt.c (encode_session_key): Use new Libgcrypt interface.
+	
+2003-07-31  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (gpgsm_LDADD): Added INTLLIBS.
+
+2003-07-29  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Add secmem features and set the random seed file.
+	(gpgsm_exit): Update the random seed file and enable debug output.
+
+2003-07-27  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.
+
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* server.c (gpgsm_status_with_err_code): New.
+	* verify.c (gpgsm_verify): Use it here instead of the old
+	tokenizing version.
+
+	* verify.c (strtimestamp): Renamed to strtimestamp_r
+
+	Adjusted for changes in the libgcrypt API. Some more fixes for the
+	libgpg-error stuff.  
+
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (init_membuf,put_membuf,get_membuf): Removed.
+	Include new membuf header and changed used type.
+
+	Renamed error codes from INVALID to INV and removed _ERROR suffixes.
+
+2003-06-03  Werner Koch  <wk@gnupg.org>
+
+	Changed all error codes in all files to the new libgpg-error scheme.
+
+	* gpgsm.h: Include gpg-error.h .
+	* Makefile.am: Link with libgpg-error.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Use libassuan.  Don't override LDFLAGS anymore.
+	* server.c (register_commands): Adjust for new Assuan semantics.
+
+2002-12-03  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (gpgsm_agent_passwd): New.
+	* gpgsm.c (main): New command --passwd and --call-protect-tool
+	(run_protect_tool): New.
+
+2002-11-25  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgsm_verify): Handle content-type attribute. 
+
+2002-11-13  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (start_agent): Try to use $GPG_TTY instead of
+	ttyname.  Changed ttyname to test stdin becuase it can be assumed
+	that output redirection is more common that input redirection.
+
+2002-11-12  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: New command --call-dirmngr. 
+	* call-dirmngr.c (gpgsm_dirmngr_run_command)
+	(run_command_inq_cb,run_command_cb)
+	(run_command_status_cb): New.
+
+2002-11-11  Werner Koch  <wk@gnupg.org>
+
+	* certcheck.c (gpgsm_check_cms_signature): Don't double free
+	s_sig but free s_pkey at leave.
+
+2002-11-10  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: Removed duplicate --list-secret-key entry.
+
+2002-09-19  Werner Koch  <wk@gnupg.org>
+
+	* certcheck.c (gpgsm_check_cert_sig): Add cert hash debugging.
+
+	* certchain.c (find_up): Print info when the cert was not found 
+	by the autorithyKeyIdentifier.
+
+2002-09-03  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Disable the internal libgcrypt locking.
+
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* import.c (print_imported_summary): Cleaned up.  Print new
+	not_imported value.
+	(check_and_store): Update non_imported counter.
+	(print_import_problem): New.
+	(check_and_store): Print error status message.
+	* server.c (get_status_string): Added STATUS_IMPORT_PROBLEM.
+
+2002-08-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Use the log file only in server mode.
+
+	* import.c (print_imported_summary): New.
+	(check_and_store): Update the counters, take new argument.
+	(import_one): Factored out core of gpgsm_import.
+	(gpgsm_import): Print counters.
+	(gpgsm_import_files): New.
+	* gpgsm.c (main): Use the new function for import.
+
+2002-08-19  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (gpgsm_decrypt): Return a better error status token.
+	* verify.c (gpgsm_verify): Don't error on messages with no signing
+	time or no message digest.  This is only the case for messages
+	without any signed attributes.
+
+2002-08-16  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c: Renamed to ..
+	* certchain.c: this. Renamed all all other usages of "path" in the
+	context of certificates to "chain".
+
+	* call-agent.c (learn_cb): Special treatment when the issuer
+	certificate is missing.
+
+2002-08-10  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (INCLUDES): Add definition for localedir.
+
+	* keylist.c (list_cert_colon): Print the short fingerprint in the
+	key ID field.
+	* fingerprint.c (gpgsm_get_short_fingerprint): New.
+	* verify.c (gpgsm_verify): Print more verbose info for a good
+	signature.
+
+2002-08-09  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (prepare_decryption): Hack to detected already
+	unpkcsedone keys.
+
+	* gpgsm.c (emergency_cleanup): New.
+	(main): Initialize the signal handler.
+
+	* sign.c (gpgsm_sign): Reset the hash context for subsequent
+	signers and release it at the end.
+
+2002-08-05  Werner Koch  <wk@gnupg.org>
+
+	* server.c (cmd_signer): New command "SIGNER"
+	(register_commands): Register it.
+	(cmd_sign): Pass the signer list to gpgsm_sign.
+	* certlist.c (gpgsm_add_to_certlist): Add SECRET argument, check
+	for secret key if set and changed all callers.
+	* sign.c (gpgsm_sign): New argument SIGNERLIST and implemt
+	multiple signers.
+	* gpgsm.c (main): Support more than one -u.
+	
+	* server.c (cmd_recipient): Return reason code 1 for No_Public_Key
+	which is actually what gets returned from add_to_certlist.
+	
+2002-07-26  Werner Koch  <wk@gnupg.org>
+
+	* certcheck.c (gpgsm_check_cert_sig): Implement proper cleanup.
+	(gpgsm_check_cms_signature): Ditto.
+
+2002-07-22  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (keydb_add_resource): Register a lock file.
+	(lock_all, unlock_all): Implemented.
+
+	* delete.c: New.
+	* gpgsm.c: Made --delete-key work.
+	* server.c (cmd_delkeys): New.
+	(register_commands): New command DELKEYS.
+
+	* decrypt.c (gpgsm_decrypt): Print a convenience note when RC2 is
+	used and a STATUS_ERROR with the algorithm oid.
+
+2002-07-03  Werner Koch  <wk@gnupg.org>
+
+	* server.c (gpgsm_status2): Insert a blank between all optional
+	arguments when using assuan.
+	* server.c (cmd_recipient): No more need for extra blank in constants.
+	* import.c (print_imported_status): Ditto.
+	* gpgsm.c (main): Ditto.
+
+2002-07-02  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgsm_verify): Extend the STATUS_BADSIG line with
+	the fingerprint.
+
+	* certpath.c (check_cert_policy): Don't use log_error to print a
+	warning.
+
+	* keydb.c (keydb_store_cert): Add optional ar EXISTED and changed
+	all callers.
+	* call-agent.c (learn_cb): Print info message only for real imports.
+
+	* import.c (gpgsm_import): Moved duplicated code to ...
+	(check_and_store): new function.  Added magic to import the entire
+	chain. Print status only for real imports and moved printing code
+	to ..
+	(print_imported_status): New.
+
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): print status of dirmngr
+	call in very verbose mode.
+
+	* gpgsm.c (main): Use the same error codes for STATUS_INV_RECP as
+	with the server mode.
+
+2002-06-29  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: New option --auto-issuer-key-retrieve.
+	* certpath.c (find_up): Try to retrieve an issuer key from an
+	external source and from the ephemeral key DB.
+	(find_up_store_certs_cb): New.
+
+	* keydb.c (keydb_set_ephemeral): Does now return the old
+	state.  Call the backend only when required.
+
+	* call-dirmngr.c (start_dirmngr): Use GNUPG_DEFAULT_DIRMNGR.
+	(lookup_status_cb): Issue status only when CTRL is not NULL.
+	(gpgsm_dirmngr_lookup): Document that CTRL is optional.
+
+	* call-agent.c (start_agent): Use GNUPG_DEFAULT_AGENT.
+
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* server.c (cmd_recipient): Add more reason codes.
+
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (gpgsm_basic_cert_check): Use
+	--debug-no-path-validation to also bypass this basic check.
+
+	* gpgsm.c (main): Use GNUPG_DEFAULT_HOMEDIR constant.
+
+	* call-agent.c (start_agent): Create and pass the list of FD to
+	keep in the child to assuan.
+	* call-dirmngr.c (start_dirmngr): Ditto.
+
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* import.c (gpgsm_import): Print an STATUS_IMPORTED.
+
+	* gpgsm.c: --debug-no-path-validation does not take an argument.
+
+2002-06-25  Werner Koch  <wk@gnupg.org>
+
+	* certdump.c (print_dn_part): Always print a leading slash,
+	removed NEED_DELIM arg and changed caller.
+
+	* export.c (gpgsm_export): Print LFs to FP and not stdout.
+	(print_short_info): Ditto.  Make use of gpgsm_print_name.
+
+	* server.c (cmd_export): Use output-fd instead of data lines; this
+	was actually the specified way.
+
+2002-06-24  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: Removed duped help entry for --list-keys.
+	
+	* gpgsm.c, gpgsm.h: New option --debug-no-path-validation.
+
+	* certpath.c (gpgsm_validate_path): Use it here instead of the
+	debug flag hack.
+
+	* certpath.c (check_cert_policy): Return No_Policy_Match if the
+	policy file could not be opened.
+
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* certlist.c (gpgsm_add_to_certlist): Fixed locating of a
+	certificate with the required key usage.
+
+	* gpgsm.c (main): Fixed a segv when using --outfile without an
+	argument.
+
+	* keylist.c (print_capabilities): Also check for non-repudiation
+	and data encipherment.
+	* certlist.c (cert_usage_p): Test for signing and encryption was
+	swapped.  Add a case for certification usage, handle
+	non-repudiation and data encipherment.
+	(gpgsm_cert_use_cert_p): New.
+	(gpgsm_add_to_certlist): Added a CTRL argument and changed all
+	callers to pass it.
+	* certpath.c (gpgsm_validate_path): Use it here to print a status
+	message. Added a CTRL argument and changed all callers to pass it.
+	* decrypt.c (gpgsm_decrypt): Print a status message for wrong key
+	usage.
+	* verify.c (gpgsm_verify): Ditto.
+	* keydb.c (classify_user_id): Allow a colon delimited fingerprint.
+
+2002-06-19  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (learn_cb): Use log_info instead of log_error on
+	successful import.
+
+	* keydb.c (keydb_set_ephemeral): New.
+	(keydb_store_cert): New are ephemeral, changed all callers.
+	* keylist.c (list_external_cb): Store cert as ephemeral.
+	* export.c (gpgsm_export): Kludge to export epehmeral certificates.
+
+	* gpgsm.c (main): New command --list-external-keys.
+	
+2002-06-17  Werner Koch  <wk@gnupg.org>
+
+	* certreqgen.c (read_parameters): Improved error handling.
+	(gpgsm_genkey): Print error message.
+
+2002-06-13  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): New option --log-file.
+
+2002-06-12  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c (lookup_status_cb): New.
+	(gpgsm_dirmngr_lookup): Use the status CB.  Add new arg CTRL and
+	changed caller to pass it.
+
+	* gpgsm.c (open_fwrite): New.
+	(main): Allow --output for --verify.
+
+	* sign.c (hash_and_copy_data): New.
+	(gpgsm_sign): Implemented normal (non-detached) signatures.
+	* gpgsm.c (main): Ditto.
+	
+	* certpath.c (gpgsm_validate_path): Special error handling for
+	no policy match.
+
+2002-06-10  Werner Koch  <wk@gnupg.org>
+
+	* server.c (get_status_string): Add STATUS_ERROR.
+
+	* certpath.c (gpgsm_validate_path): Tweaked the error checking to 
+	return error codes in a more sensitive way.
+	* verify.c (gpgsm_verify): Send status TRUST_NEVER also for a bad
+	CA certificate and when the certificate has been revoked.  Issue
+	TRUST_FULLY even when the cert has expired.  Append an error token
+	to these status lines.  Issue the new generic error status when a
+	cert was not found and when leaving the function.
+
+2002-06-04  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): New command --list-sigs
+	* keylist.c (list_cert_std): New.  Use it whenever colon mode is
+	not used.
+	(list_cert_chain): New.
+
+2002-05-31  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Don't print the "go ahead" message for an
+	invalid command.
+
+2002-05-23  Werner Koch  <wk@gnupg.org>
+
+	* import.c (gpgsm_import): Add error messages.
+
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_internal_keys): Renamed from gpgsm_list_keys.
+	(list_external_keys): New.
+	(gpgsm_list_keys): Dispatcher for above.
+	* call-dirmngr.c (lookup_cb,pattern_from_strlist)
+	(gpgsm_dirmngr_lookup): New.
+	* server.c (option_handler): Handle new option --list-mode.
+	(do_listkeys): Handle options and actually use the mode argument.
+	(get_status_string): New code TRUNCATED.
+
+	* import.c (gpgsm_import): Try to identify the type of input and
+	handle certs-only messages.
+
+2002-05-14  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: New option --faked-system-time
+	* sign.c (gpgsm_sign): And use it here.
+	* certpath.c (gpgsm_validate_path): Ditto.
+
+2002-05-03  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (gpgsm_validate_path): Added EXPTIME arg and changed
+	all callers.
+	* verify.c (gpgsm_verify): Tweaked usage of log_debug and
+	log_error.  Return EXPSIG status and add expiretime to VALIDSIG.
+
+2002-04-26  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.h (DBG_AGENT,DBG_AGENT_VALUE): Replaced by DBG_ASSUAN_*.
+	Changed all users.
+
+	* call-agent.c (start_agent): Be more silent without -v.
+	* call-dirmngr.c (start_dirmngr): Ditto.
+
+2002-04-25  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (start_agent): Make copies of old locales and check
+	for setlocale.
+
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* call-agent.c (start_agent): Fix error handling logic so the
+	locale is always correctly reset.
+
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (option_handler): Accept display, ttyname, ttytype,
+	lc_ctype and lc_messages options.
+	* gpgsm.c (main): Allocate memory for these options.
+	* gpgsm.h (struct opt): Make corresponding members non-const.
+
+2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm.h (struct opt): New members display, ttyname, ttytype,
+	lc_ctype, lc_messages.
+	* gpgsm.c (enum cmd_and_opt_values): New members oDisplay,
+	oTTYname, oTTYtype, oLCctype, oLCmessages.
+	(opts): New entries for these options.
+	(main): Handle these new options.
+	* call-agent.c (start_agent): Set the various display and tty
+	parameter after resetting.
+
+2002-04-18  Werner Koch  <wk@gnupg.org>
+
+	* certreqgen.c (gpgsm_genkey): Write status output on success.
+
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Check ksba version.
+
+	* certpath.c (find_up): New to use the authorithKeyIdentifier.
+	Use it in all other functions to locate the signing cert..
+
+2002-04-11  Werner Koch  <wk@gnupg.org>
+
+	* certlist.c (cert_usable_p): New.
+	(gpgsm_cert_use_sign_p,gpgsm_cert_use_encrypt_p): New.
+	(gpgsm_cert_use_verify_p,gpgsm_cert_use_decrypt_p): New.
+	(gpgsm_add_to_certlist): Check the key usage.
+	* sign.c (gpgsm_sign): Ditto.
+	* verify.c (gpgsm_verify): Print a message wehn an unsuitable
+	certificate was used.
+	* decrypt.c (gpgsm_decrypt): Ditto
+	* keylist.c (print_capabilities): Determine values from the cert.
+
+2002-03-28  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Fixed listing of crt record; the
+	issuer is not at the right place.  Print a chainingID.
+	* certpath.c (gpgsm_walk_cert_chain): Be a bit more silent on
+	common errors.
+
+2002-03-21  Werner Koch  <wk@gnupg.org>
+
+	* export.c: New.
+	* gpgsm.c: Add command --export.
+	* server.c (cmd_export): New.
+	
+2002-03-13  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (gpgsm_decrypt): Allow multiple recipients.
+
+2002-03-12  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (check_cert_policy): Print the policy list.
+
+	* verify.c (gpgsm_verify): Detect certs-only message.
+
+2002-03-11  Werner Koch  <wk@gnupg.org>
+
+	* import.c (gpgsm_import): Print a notice about imported certificates
+	when in verbose mode.
+
+	* gpgsm.c (main): Print INV_RECP status.
+	* server.c (cmd_recipient): Ditto.
+
+	* server.c (gpgsm_status2): New.  Allows for a list of strings.
+	(gpgsm_status): Divert to gpgsm_status2.
+
+	* encrypt.c (gpgsm_encrypt): Don't use a default key when no
+	recipients are given.  Print a NO_RECP status.
+
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* server.c (cmd_listkeys, cmd_listsecretkeys): Divert to
+	(do_listkeys): new.  Add pattern parsing.
+
+	* keylist.c (gpgsm_list_keys): Handle selection pattern.
+
+	* gpgsm.c: New command --learn-card
+	* call-agent.c (learn_cb,gpgsm_agent_learn): New.
+
+	* gpgsm.c (main): Print error messages for non-implemented commands.
+
+	* base64.c (base64_reader_cb): Use case insensitive compare of the
+	Content-Type string to detect plain base-64.
+
+2002-03-05  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c, gpgsm.h: Add local_user.
+	* sign.c (gpgsm_get_default_cert): New.
+	(get_default_signer): Use the new function if local_user is not
+	set otherwise used that value.
+	* encrypt.c (get_default_recipient): Removed.
+	(gpgsm_encrypt): Use gpgsm_get_default_cert.
+
+	* verify.c (gpgsm_verify): Better error text for a bad signature
+	found by comparing the hashs.
+
+2002-02-27  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c, call-agent.c: Add 2 more arguments to all uses
+	of assuan_transact.
+
+2002-02-25  Werner Koch  <wk@gnupg.org>
+
+	* server.c (option_handler): Allow to use -2 for "send all certs
+	except the root cert".
+	* sign.c (add_certificate_list): Implement it here.
+	* certpath.c (gpgsm_is_root_cert): New.
+
+2002-02-19  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (check_cert_policy): New.
+	(gpgsm_validate_path): And call it from here.
+	* gpgsm.c (main): New options --policy-file,
+	--disable-policy-checks and --enable-policy-checks.
+	* gpgsm.h (opt): Added policy_file, no_policy_checks.
+
+2002-02-18  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (gpgsm_validate_path): Ask the agent to add the
+	certificate into the trusted list.
+	* call-agent.c (gpgsm_agent_marktrusted): New.
+
+2002-02-07  Werner Koch  <wk@gnupg.org>
+
+	* certlist.c (gpgsm_add_to_certlist): Check that the specified
+	name identifies a certificate unambiguously.
+	(gpgsm_find_cert): Ditto.
+
+	* server.c (cmd_listkeys): Check that the data stream is available.
+	(cmd_listsecretkeys): Ditto.
+	(has_option): New.
+	(cmd_sign): Fix ambiguousity in option recognition.
+
+	* gpgsm.c (main): Enable --logger-fd.
+
+	* encrypt.c (gpgsm_encrypt): Increased buffer size for better
+	performance.
+
+	* call-agent.c (gpgsm_agent_pksign): Check the S-Exp received from
+	the agent.
+
+	* keylist.c (list_cert_colon): Filter out control characters.
+
+2002-02-06  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (gpgsm_decrypt): Bail out after an decryption error.
+
+	* server.c (reset_notify): Close input and output FDs.
+	(cmd_encrypt,cmd_decrypt,cmd_verify,cmd_sign.cmd_import)
+	(cmd_genkey): Close the FDs and release the recipient list even in
+	the error case.
+
+2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* sign.c (gpgsm_sign): Do not release certificate twice.
+
+2002-01-29  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (gpgsm_agent_havekey): New.
+	* keylist.c (list_cert_colon): New arg HAVE_SECRET, print "crs"
+	when we know that the secret key is available.
+	(gpgsm_list_keys): New arg MODE, check whether a secret key is
+	available.  Changed all callers.
+	* gpgsm.c (main): New command --list-secret-keys.
+	* server.c (cmd_listsecretkeys): New.
+	(cmd_listkeys): Return secret keys with "crs" record.
+
+2002-01-28  Werner Koch  <wk@gnupg.org>
+
+	* certreqgen.c (create_request): Store the email address in the req.
+
+2002-01-25  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Disable core dumps.
+
+	* sign.c (add_certificate_list): New.
+	(gpgsm_sign): Add the certificates to the CMS object.
+	* certpath.c (gpgsm_walk_cert_chain): New.
+	* gpgsm.h (server_control_s): Add included_certs.
+	* gpgsm.c: Add option --include-certs.
+	(gpgsm_init_default_ctrl): New.
+	(main): Call it.
+	* server.c (gpgsm_server): Ditto.
+	(option_handler): Support --include-certs.
+
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (gpgsm_validate_path): Print the DN of a missing issuer.
+	* certdump.c (gpgsm_dump_string): New.
+	(print_dn): Replaced by above.
+
+2002-01-22  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (unknown_criticals): New.
+	(allowed_ca): New.
+	(gpgsm_validate_path): Check validity, CA attribute, path length
+	and unknown critical extensions.
+
+2002-01-21  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: Add option --enable-crl-checks.
+
+	* call-agent.c (start_agent): Implemented socket based access.
+	* call-dirmngr.c (start_dirmngr): Ditto.
+
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* server.c (option_handler): New.
+	(gpgsm_server): Register it with assuan.
+
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* server.c (gpgsm_server): Use assuan_deinit_server and setup
+	assuan logging if enabled.
+	* call-agent.c (inq_ciphertext_cb): Don't show the session key in
+	an Assuan log file.
+
+	* gpgsm.c (my_strusage): Take bugreport address from configure.ac
+
+2002-01-15  Werner Koch  <wk@gnupg.org>
+
+	* import.c (gpgsm_import): Just do a basic cert check before
+	storing it.
+	* certpath.c (gpgsm_basic_cert_check): New.
+
+	* keydb.c (keydb_store_cert): New.
+	* import.c (store_cert): Removed and change all caller to use
+	the new function.
+	* verify.c (store_cert): Ditto.
+
+	* certlist.c (gpgsm_add_to_certlist): Validate the path
+
+	* certpath.c (gpgsm_validate_path): Check the trust list.
+	* call-agent.c (gpgsm_agent_istrusted): New.
+
+2002-01-14  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c (inq_certificate): Changed for new interface semantic.
+	* certlist.c (gpgsm_find_cert): New.
+
+2002-01-13  Werner Koch  <wk@gnupg.org>
+
+	* fingerprint.c (gpgsm_get_certid): Print the serial and not the
+	hash after the dot.
+
+2002-01-11  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c: New.
+	* certpath.c (gpgsm_validate_path): Check the CRL here.
+	* fingerprint.c (gpgsm_get_certid): New.
+	* gpgsm.c: New options --dirmngr-program and --disable-crl-checks.
+
+2002-01-10  Werner Koch  <wk@gnupg.org>
+
+	* base64.c (gpgsm_create_writer): Allow to set the object name
+
+2002-01-08  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (spacep): Removed because it is now in util.c
+
+	* server.c (cmd_genkey): New.
+	* certreqgen.c: New.  The parameter handling code has been taken
+	from gnupg/g10/keygen.c version 1.0.6.
+	* call-agent.c (gpgsm_agent_genkey): New.
+
+2002-01-02  Werner Koch  <wk@gnupg.org>
+
+	* server.c (rc_to_assuan_status): Removed and changed all callers
+	to use map_to_assuan_status.
+
+2001-12-20  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (gpgsm_verify): Implemented non-detached signature
+	verification.  Add OUT_FP arg, initialize a writer and changed all
+	callers.
+	* server.c (cmd_verify): Pass an out_fp if one has been set.
+
+	* base64.c (base64_reader_cb): Try to detect an S/MIME body part.
+
+	* certdump.c (print_sexp): Renamed to gpgsm_dump_serial, made
+	global.
+	(print_time): Renamed to gpgsm_dump_time, made global.
+	(gpgsm_dump_serial): Take a real S-Expression as argument and
+	print the first item.
+	* keylist.c (list_cert_colon): Ditto.
+	* keydb.c (keydb_search_issuer_sn): Ditto.
+	* decrypt.c (print_integer_sexp): Removed and made callers 
+	use gpgsm_dump_serial.
+	* verify.c (print_time): Removed, made callers use gpgsm_dump_time.
+	
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* call-agent.c (start_agent): Add new argument to assuan_pipe_connect.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (print_integer_sexp): Renamed from print_integer and
+	print the serial number according to the S-Exp rules.
+	* decrypt.c (print_integer_sexp): Ditto.
+
+2001-12-17  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Changed for new return value of
+	get_serial.
+	* keydb.c (keydb_search_issuer_sn): Ditto.
+	* certcheck.c (gpgsm_check_cert_sig): Likewise for other S-Exp
+	returingin functions.
+	* fingerprint.c (gpgsm_get_keygrip): Ditto.
+	* encrypt.c (encrypt_dek): Ditto
+	* certcheck.c (gpgsm_check_cms_signature): Ditto
+	* decrypt.c (prepare_decryption): Ditto.
+	* call-agent.c (gpgsm_agent_pkdecrypt): Removed arg ciphertextlen,
+	use KsbaSexp type and calculate the length.
+
+	* certdump.c (print_sexp): Remaned from print_integer, changed caller.
+
+	* Makefile.am: Use the LIBGCRYPT and LIBKSBA variables.
+
+	* fingerprint.c (gpgsm_get_keygrip): Use the new
+	gcry_pk_get_keygrip to calculate the grip - note the algorithm and
+	therefore the grip values changed.
+
+2001-12-15  Werner Koch  <wk@gnupg.org>
+
+	* certcheck.c (gpgsm_check_cms_signature): Removed the faked-key
+	kludge.
+	(gpgsm_create_cms_signature): Removed the commented fake key
+	code.  This makes the function pretty simple.
+
+	* gpgsm.c (main): Renamed the default key database to "keyring.kbx".
+
+	* decrypt.c (gpgsm_decrypt): Write STATUS_DECRYPTION_*.
+	* sign.c (gpgsm_sign): Write a STATUS_SIG_CREATED.
+
+2001-12-14  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Kludge to show an email address
+	encoded in the subject's DN.
+
+	* verify.c (gpgsm_verify): Add hash debug helpers
+	* sign.c (gpgsm_sign): Ditto.
+
+	* base64.c (base64_reader_cb): Reset the linelen when we need to
+	skip the line and adjusted test; I somehow forgot about DeMorgan.
+
+	* server.c (cmd_encrypt,cmd_decrypt,cmd_sign,cmd_verify) 
+	(cmd_import): Close the FDs on success.
+	(close_message_fd): New.
+	(input_notify): Setting autodetect_encoding to 0 after initializing
+	it to 0 is pretty pointless.  Easy to fix.
+
+	* gpgsm.c (main): New option --debug-wait n, so that it is
+	possible to attach gdb when used in server mode.
+
+	* sign.c (get_default_signer): Use keydb_classify_name here.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* call-agent.c (LINELENGTH): Removed.
+	(gpgsm_agent_pksign): Use ASSUAN_LINELENGTH, not LINELENGTH.
+	(gpgsm_agent_pkdecrypt): Likewise.
+
+2001-12-13  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Print alternative names of subject
+	and a few other values.
+
+2001-12-12  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): New options --assume-{armor,base64,binary}. 
+	* base64.c (base64_reader_cb): Fixed non-autodetection mode.
+
+2001-12-04  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (read_from_agent): Check for inquire responses.
+	(request_reply): Handle them using a new callback arg, changed all
+	callers.
+	(gpgsm_agent_pkdecrypt): New.
+
+2001-11-27  Werner Koch  <wk@gnupg.org>
+
+	* base64.c: New.  Changed all other functions to use this instead
+	of direct creation of ksba_reader/writer.
+	* gpgsm.c (main): Set ctrl.auto_encoding unless --no-armor is used.
+
+2001-11-26  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: New option --agent-program
+	* call-agent.c (start_agent): Allow to override the default path
+	to the agent.
+
+	* keydb.c (keydb_add_resource): Create keybox
+
+	* keylist.c (gpgsm_list_keys): Fixed non-server keylisting.
+
+	* server.c (rc_to_assuan_status): New.  Use it for all commands.
+
+	
+ Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

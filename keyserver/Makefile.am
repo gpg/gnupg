@@ -42,13 +42,12 @@ gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ $(other_libs) @GETOPT@ @W32LI
 
 if FAKE_CURL
 gpgkeys_curl_SOURCES += curl-shim.c curl-shim.h
-gpgkeys_curl_LDADD = ../util/libutil.a @NETLIBS@ @DNSLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+gpgkeys_curl_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_hkp_SOURCES += curl-shim.c curl-shim.h
-gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @DNSLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 else
 gpgkeys_curl_CPPFLAGS = @LIBCURL_CPPFLAGS@
 gpgkeys_curl_LDADD = @LIBCURL@ @GETOPT@
 gpgkeys_hkp_CPPFLAGS = @LIBCURL_CPPFLAGS@
 gpgkeys_hkp_LDADD = @LIBCURL@ @GETOPT@
-gpgkeys_finger_CPPFLAGS = @LIBCURL_CPPFLAGS@
 endif

@@ -27,18 +27,20 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "filter.h"
 #include "trustdb.h"
 #include "i18n.h"
 #include "status.h"
+#include "pkglue.h"
+
 
 static int encode_simple( const char *filename, int mode, int use_seskey );
 static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
@@ -63,10 +65,11 @@ encode_store( const char *filename )
     return encode_simple( filename, 0, 0 );
 }
 
+
 static void
 encode_seskey( DEK *dek, DEK **seskey, byte *enckey )
 {
-    CIPHER_HANDLE hd;
+    gcry_cipher_hd_t hd;
     byte buf[33];
 
     assert ( dek->keylen <= 32 );
@@ -79,14 +82,19 @@ encode_seskey( DEK *dek, DEK **seskey, byte *enckey )
 	/*log_hexdump( "thekey", c->key, c->keylen );*/
       }
 
+    /* The encrypted session key is prefixed with a one-octet algorithm id.  */
     buf[0] = (*seskey)->algo;
     memcpy( buf + 1, (*seskey)->key, (*seskey)->keylen );
     
-    hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
-    cipher_setkey( hd, dek->key, dek->keylen );
-    cipher_setiv( hd, NULL, 0 );
-    cipher_encrypt( hd, buf, buf, (*seskey)->keylen + 1 );
-    cipher_close( hd );
+    /* We only pass already checked values to the following fucntion,
+       thus we consider any failure as fatal.  */
+    if (gcry_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
+      BUG ();
+    if (gcry_cipher_setkey (hd, dek->key, dek->keylen))
+      BUG ();
+    gcry_cipher_setiv (hd, NULL, 0);
+    gcry_cipher_encrypt (hd, buf, (*seskey)->keylen + 1, NULL, 0);
+    gcry_cipher_close (hd);
 
     memcpy( enckey, buf, (*seskey)->keylen + 1 );
     wipememory( buf, sizeof buf ); /* burn key */
@@ -136,7 +144,7 @@ use_mdc(PK_LIST pk_list,int algo)
 
   /* Last try.  Use MDC for the modern ciphers. */
 
-  if(cipher_get_blocksize(algo)!=8)
+  if (gcry_cipher_get_algo_blklen (algo) != 8)
     return 1;
 
   return 0; /* No MDC */
@@ -181,9 +189,10 @@ encode_simple( const char *filename, int mode, int use_seskey )
         errno = EPERM;
       }
     if( !inp ) {
+        rc = gpg_error_from_errno (errno);
 	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]",
                   strerror(errno) );
-	return G10ERR_OPEN_FILE;
+	return rc;
     }
 
     handle_progress (&pfx, inp, filename);
@@ -206,11 +215,11 @@ encode_simple( const char *filename, int mode, int use_seskey )
 				     default_cipher_algo(), s2k, 2,
                                      NULL, NULL);
 	if( !cfx.dek || !cfx.dek->keylen ) {
-	    rc = G10ERR_PASSPHRASE;
+	    rc = gpg_error (GPG_ERR_INV_PASSPHRASE);
 	    xfree(cfx.dek);
 	    xfree(s2k);
 	    iobuf_close(inp);
-	    log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
+	    log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc));
 	    return rc;
 	}
         if (use_seskey && s2k->mode != 1 && s2k->mode != 3) {
@@ -222,14 +231,15 @@ encode_simple( const char *filename, int mode, int use_seskey )
         if ( use_seskey )
 	  {
 	    DEK *dek = NULL;
-            seskeylen = cipher_get_keylen( default_cipher_algo() ) / 8;
+
+            seskeylen = gcry_cipher_get_algo_keylen (default_cipher_algo ());
             encode_seskey( cfx.dek, &dek, enckey );
             xfree( cfx.dek ); cfx.dek = dek;
 	  }
 
 	if(opt.verbose)
 	  log_info(_("using cipher %s\n"),
-		   cipher_algo_to_string(cfx.dek->algo));
+		   gcry_cipher_algo_name (cfx.dek->algo));
 
 	cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
@@ -341,9 +351,9 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	byte copy_buffer[4096];
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-		rc = G10ERR_WRITE_FILE;
-		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
+	    if ( (rc=iobuf_write(out, copy_buffer, bytes_copied)) ) {
+		log_error ("copying input to output failed: %s\n",
+                           gpg_strerror (rc) );
 		break;
 	    }
 	wipememory(copy_buffer, 4096); /* burn buffer */
@@ -379,7 +389,7 @@ setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
     {
       xfree(*symkey_dek);
       xfree(*symkey_s2k);
-      return G10ERR_PASSPHRASE;
+      return gpg_error (GPG_ERR_BAD_PASSPHRASE);
     }
 
   return 0;
@@ -388,7 +398,7 @@ setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
 static int
 write_symkey_enc(STRING2KEY *symkey_s2k,DEK *symkey_dek,DEK *dek,IOBUF out)
 {
-  int rc,seskeylen=cipher_get_keylen(dek->algo)/8;
+  int rc, seskeylen = gcry_cipher_get_algo_keylen (dek->algo);
 
   PKT_symkey_enc *enc;
   byte enckey[33];
@@ -471,9 +481,10 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
         errno = EPERM;
       }
     if( !inp ) {
-	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]",
-					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
+        rc = gpg_error_from_errno (errno);
+	log_error(_("can't open `%s': %s\n"),
+                  filename? filename: "[stdin]",
+                  gpg_strerror (rc) );
 	goto leave;
     }
     else if( opt.verbose )
@@ -517,7 +528,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 				opt.def_cipher_algo,NULL)!=opt.def_cipher_algo)
 	log_info(_("WARNING: forcing symmetric cipher %s (%d)"
 		   " violates recipient preferences\n"),
-		 cipher_algo_to_string(opt.def_cipher_algo),
+		 gcry_cipher_algo_name (opt.def_cipher_algo),
 		 opt.def_cipher_algo);
 
       cfx.dek->algo = opt.def_cipher_algo;
@@ -544,7 +555,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 
     make_session_key( cfx.dek );
     if( DBG_CIPHER )
-	log_hexdump("DEK is: ", cfx.dek->key, cfx.dek->keylen );
+	log_printhex ("DEK is: ", cfx.dek->key, cfx.dek->keylen );
 
     rc = write_pubkey_enc_from_list( pk_list, cfx.dek, out );
     if( rc  )
@@ -649,10 +660,9 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 	byte copy_buffer[4096];
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-		rc = G10ERR_WRITE_FILE;
-		log_error("copying input to output failed: %s\n",
-                          g10_errstr(rc) );
+	    if ( (rc=iobuf_write(out, copy_buffer, bytes_copied)) ) {
+		log_error ("copying input to output failed: %s\n",
+                           gpg_strerror (rc));
 		break;
 	    }
 	wipememory(copy_buffer, 4096); /* burn buffer */
@@ -714,7 +724,7 @@ encrypt_filter( void *opaque, int control,
 					NULL)!=opt.def_cipher_algo)
 		log_info(_("forcing symmetric cipher %s (%d) "
 			   "violates recipient preferences\n"),
-			 cipher_algo_to_string(opt.def_cipher_algo),
+			 gcry_cipher_algo_name (opt.def_cipher_algo),
 			 opt.def_cipher_algo);
 
 	      efx->cfx.dek->algo = opt.def_cipher_algo;
@@ -724,8 +734,8 @@ encrypt_filter( void *opaque, int control,
 
 	    make_session_key( efx->cfx.dek );
 	    if( DBG_CIPHER )
-		log_hexdump("DEK is: ",
-			     efx->cfx.dek->key, efx->cfx.dek->keylen );
+		log_printhex ("DEK is: ",
+                              efx->cfx.dek->key, efx->cfx.dek->keylen );
 
 	    rc = write_pubkey_enc_from_list( efx->pk_list, efx->cfx.dek, a );
 	    if( rc )
@@ -770,7 +780,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
     int rc;
 
     for( ; pk_list; pk_list = pk_list->next ) {
-	MPI frame;
+	gcry_mpi_t frame;
 
 	pk = pk_list->pk;
 
@@ -800,18 +810,19 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	 * have everything now in enc->data which is the passed to
 	 * build_packet()
 	 */
-	frame = encode_session_key( dek, pubkey_nbits( pk->pubkey_algo,
-							  pk->pkey ) );
-	rc = pubkey_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );
-	mpi_free( frame );
+	frame = encode_session_key (dek, pubkey_nbits (pk->pubkey_algo,
+                                                       pk->pkey) );
+	rc = pk_encrypt (pk->pubkey_algo, enc->data, frame, pk->pkey);
+	gcry_mpi_release (frame);
 	if( rc )
-	    log_error("pubkey_encrypt failed: %s\n", g10_errstr(rc) );
+	    log_error ("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
 	else {
 	    if( opt.verbose ) {
 		char *ustr = get_user_id_string_native (enc->keyid);
 		log_info(_("%s/%s encrypted for: \"%s\"\n"),
-		    pubkey_algo_to_string(enc->pubkey_algo),
-		    cipher_algo_to_string(dek->algo), ustr );
+                         gcry_pk_algo_name (enc->pubkey_algo),
+                         gcry_cipher_algo_name (dek->algo),
+                         ustr );
 		xfree(ustr);
 	    }
 	    /* and write it */
@@ -858,7 +869,6 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
             log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(line), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
-          iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
         }
     }
   else
@@ -870,7 +880,6 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
             log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
-          iobuf_ioctl( NULL, 2, 0, NULL); /* Invalidate entire cache. */
           files++;
         }
     }

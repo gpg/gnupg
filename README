@@ -1,810 +1,501 @@
+                   The GNU Privacy Guard 2
+                  =========================
+                       Version 1.9.x
 
-		    GnuPG - The GNU Privacy Guard
-		   -------------------------------
-			    Version 1.4.5
 
-	 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-		 2005, 2006 Free Software Foundation, Inc.
+GnuPG 1.9 is the future version of GnuPG; it is based on some gnupg-1.3
+code and the previous newpg package.  It will eventually lead to a
+GnuPG 2.0 release.  Note that GnuPG 1.4 and 1.9 are not always in sync
+and thus features and bug fixes done in 1.4 are not necessary
+available in 1.9.
 
-    This file is free software; as a special exception the author
-    gives unlimited permission to copy and/or distribute it, with or
-    without modifications, as long as this notice is preserved.
+You should use this GnuPG version if you want to use the gpg-agent or
+gpgsm (the S/MIME variant of gpg).  Note that the gpg-agent is also
+helpful when using the standard gpg versions (1.4.x as well as some of
+the old 1.2.x).  There are no problems installing 1.4 and 1.9
+alongside; in dact we suggest to do this.
 
-    This file is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY, to the extent permitted by law; without even
-    the implied warranty of MERCHANTABILITY or FITNESS FOR A
-    PARTICULAR PURPOSE.
 
+BUILD INSTRUCTIONS
+==================
 
-    Intro
-    -----
+GnuPG 1.9 depends on the following packages:
 
-    GnuPG is GNU's tool for secure communication and data storage.
-    It can be used to encrypt data and to create digital signatures.
-    It includes an advanced key management facility and is compliant
-    with the proposed OpenPGP Internet standard as described in RFC2440.
-
-    GnuPG works best on GNU/Linux or *BSD systems.  Most other Unices
-    are also supported but are not as well tested as the Free Unices.
-    See http://www.gnupg.org/download/supported_systems.html for a
-    list of systems which are known to work.
-
-    See the file COPYING for copyright and warranty information.
-
-    Because GnuPG does not use use any patented algorithms it is not
-    by default fully compatible with PGP 2.x, which uses the patented
-    IDEA algorithm.  See http://www.gnupg.org/why-not-idea.html for
-    more information on this subject, including what to do if you are
-    legally entitled to use IDEA.
-
-    The default public key algorithms are DSA and Elgamal, but RSA is
-    also supported.  Symmetric algorithms available are AES (with 128,
-    192, and 256 bit keys), 3DES, Blowfish, CAST5 and Twofish.  Digest
-    algorithms available are MD5, RIPEMD/160, SHA-1, SHA-256, SHA-384,
-    and SHA-512.  Compression algorithms available are ZIP, ZLIB, and
-    BZIP2 (with libbz2 installed).
-
-
-    Installation
-    ------------
-
-    Please read the file INSTALL and the sections in this file
-    related to the installation.  Here is a quick summary:
-
-    1) Check that you have unmodified sources.  See below on how to do
-       this.  Don't skip it - this is an important step!
-
-    2) Unpack the tarball.  With GNU tar you can do it this way:
-       "tar xzvf gnupg-x.y.z.tar.gz".  If got a bzip2 compressed
-       tarball you need to use: "tar xjvf gnupg-x.y.z.tar.bz2".
-
-    3) "cd gnupg-x.y.z"
-
-    4) "./configure"
-
-    5) "make"
-
-    6) "make install"
-
-    7) You end up with a "gpg" binary in /usr/local/bin.
-
-    8) To avoid swapping out of sensitive data, you can install "gpg"
-       setuid root.  If you don't do so, you may want to add the
-       option "no-secmem-warning" to ~/.gnupg/gpg.conf
-
-
-    How to Verify the Source
-    ------------------------
-
-    In order to check that the version of GnuPG which you are going to
-    install is an original and unmodified one, you can do it in one of
-    the following ways:
-
-    a) If you already have a trusted Version of GnuPG installed, you
-       can simply check the supplied signature:
-
-	$ gpg --verify gnupg-x.y.z.tar.gz.sig
-
-       This checks that the detached signature gnupg-x.y.z.tar.gz.sig
-       is indeed a signature of gnupg-x.y.z.tar.gz.  The key currently
-       used to create this signature is:
-
-       "pub  1024R/1CE0C630 2006-01-01 Werner Koch (dist sig) <dd9jn@gnu.org>"
-
-       If you do not have this key, you can get it from the source in
-       the file doc/samplekeys.asc (use "gpg --import  doc/samplekeys.asc"
-       to add it to the keyring) or from any keyserver.  You have to
-       make sure that this is really the key and not a faked one. You
-       can do this by comparing the output of:
-
-		$ gpg --fingerprint 0x1CE0C630
-
-       with the fingerprint published elsewhere.
-
-       Please note, that you have to use an old version of GnuPG to
-       do all this stuff.  *Never* use the version which you are going
-       to check!
-
-
-    b) If you don't have any of the above programs, you have to verify
-       the SHA1 checksum:
-
-	$ sha1sum gnupg-x.y.z.tar.gz
-
-       This should yield an output _similar_ to this:
-
-	fd9351b26b3189c1d577f0970f9dcadc1234abcd  gnupg-x.y.z.tar.gz
-
-       Now check that this checksum is _exactly_ the same as the one
-       published via the announcement list and probably via Usenet.
-
-
-    Documentation
-    -------------
-
-    The manual will be distributed separately under the name "gph".
-    An online version of the latest manual draft is available at the
-    GnuPG web pages:
-
-	http://www.gnupg.org/documentation/
-
-    A list of frequently asked questions is available in the GnuPG
-    distribution in the file doc/FAQ and online as:
-
-	http://www.gnupg.org/documentation/faqs.html
-
-    A couple of HOWTO documents are available online; for a listing see:
-
-	http://www.gnupg.org/documentation/howtos.html
-
-    A man page with a description of all commands and options gets installed
-    along with the program. 
-
-
-    Introduction
-    ------------
-
-    Here is a brief overview on how to use GnuPG - it is strongly suggested
-    that you read the manual and other information about the use of
-    cryptography.  GnuPG is only a tool, secure usage requires that
-    YOU KNOW WHAT YOU ARE DOING.
-
-    The first time you run gpg, it will create a .gnupg directory in
-    your home directory and populate it with a default configuration
-    file.  Once this is done, you may create a new key, or if you
-    already have keyrings from PGP, you can import them into GnuPG
-    with:
-
-        gpg --import path/to/pgp/keyring/pubring.pkr
-    and
-        gpg --import path/to/pgp/keyring/secring.skr
-
-    The normal way to create a key is
-
-	gpg --gen-key
-
-    This asks some questions and then starts key generation. To create
-    good random numbers for the key parameters, GnuPG needs to gather
-    enough noise (entropy) from your system.  If you see no progress
-    during key generation you should start some other activities such
-    as moving the mouse or hitting the CTRL and SHIFT keys.
-
-    Generate a key ONLY on a machine where you have direct physical
-    access - don't do it over the network or on a machine also used
-    by others, especially if you have no access to the root account.
-
-    When you are asked for a passphrase use a good one which you can
-    easily remember.  Don't make the passphrase too long because you
-    have to type it for every decryption or signing; but, - AND THIS
-    IS VERY IMPORTANT - use a good one that is not easily to guess
-    because the security of the whole system relies on your secret key
-    and the passphrase that protects it when someone gains access to
-    your secret keyring.  One good way to select a passphrase is to
-    figure out a short nonsense sentence which makes some sense for
-    you and modify it by inserting extra spaces, non-letters and
-    changing the case of some characters - this is really easy to
-    remember especially if you associate some pictures with it.
-
-    Next, you should create a revocation certificate in case someone
-    gets knowledge of your secret key or you forgot your passphrase
-
-	gpg --gen-revoke your_user_id
-
-    Run this command and store the revocation certificate away.  The output
-    is always ASCII armored, so that you can print it and (hopefully
-    never) re-create it if your electronic media fails.
-
-    Now you can use your key to create digital signatures
-
-	gpg -s file
-
-    This creates a file "file.gpg" which is compressed and has a
-    signature attached.
-
-	gpg -sa file
-
-    Same as above, but creates a file "file.asc" which is ASCII armored
-    and and ready for sending by mail.	It is better to use your
-    mailers features to create signatures (The mailer uses GnuPG to do
-    this) because the mailer has the ability to MIME encode such
-    signatures - but this is not a security issue.
-
-	gpg -s -o out file
-
-    Creates a signature of "file", but writes the output to the file
-    "out".
-
-    Everyone who knows your public key (you can and should publish
-    your key by putting it on a key server, a web page or in your .plan
-    file) is now able to check whether you really signed this text
-
-	gpg --verify file
-
-    GnuPG now checks whether the signature is valid and prints an
-    appropriate message.  If the signature is good, you know at least
-    that the person (or machine) has access to the secret key which
-    corresponds to the published public key.
-
-    If you run gpg without an option it will verify the signature and
-    create a new file that is identical to the original.  gpg can also
-    run as a filter, so that you can pipe data to verify trough it
-
-	cat signed-file | gpg | wc -l
-
-    which will check the signature of signed-file and then display the
-    number of lines in the original file.
-
-    To send a message encrypted to someone you can use
-
-	gpg -e -r heine file
-
-    This encrypts "file" with the public key of the user "heine" and
-    writes it to "file.gpg"
-
-	echo "hello" | gpg -ea -r heine | mail heine
-
-    Ditto, but encrypts "hello\n" and mails it as ASCII armored message
-    to the user with the mail address heine.
-
-	gpg -se -r heine file
-
-    This encrypts "file" with the public key of "heine" and writes it
-    to "file.gpg" after signing it with your user id.
-
-	gpg -se -r heine -u Suttner file
-
-    Ditto, but sign the file with your alternative user id "Suttner"
-
-
-    GnuPG has some options to help you publish public keys.  This is
-    called "exporting" a key, thus
-
-	gpg --export >all-my-keys
-
-    exports all the keys in the keyring and writes them (in a binary
-    format) to "all-my-keys".  You may then mail "all-my-keys" as an
-    MIME attachment to someone else or put it on an FTP server. To
-    export only some user IDs, you give them as arguments on the command
-    line.
-
-    To mail a public key or put it on a web page you have to create
-    the key in ASCII armored format
-
-	gpg --export --armor | mail panther@tiger.int
-
-    This will send all your public keys to your friend panther.
-
-    If you have received a key from someone else you can put it
-    into your public keyring.  This is called "importing"
-
-	gpg --import [filenames]
-
-    New keys are appended to your keyring and already existing
-    keys are updated. Note that GnuPG does not import keys that
-    are not self-signed.
-
-    Because anyone can claim that a public key belongs to her
-    we must have some way to check that a public key really belongs
-    to the owner.  This can be achieved by comparing the key during
-    a phone call.  Sure, it is not very easy to compare a binary file
-    by reading the complete hex dump of the file - GnuPG (and nearly
-    every other program used for management of cryptographic keys)
-    provides other solutions.
-
-	gpg --fingerprint <username>
-
-    prints the so called "fingerprint" of the given username which
-    is a sequence of hex bytes (which you may have noticed in mail
-    sigs or on business cards) that uniquely identifies the public
-    key - different keys will always have different fingerprints.
-    It is easy to compare fingerprints by phone and I suggest
-    that you print your fingerprint on the back of your business
-    card.  To see the fingerprints of the secondary keys, you can
-    give the command twice; but this is normally not needed.
-
-    If you don't know the owner of the public key you are in trouble.
-    Suppose however that friend of yours knows someone who knows someone
-    who has met the owner of the public key at some computer conference.
-    Suppose that all the people between you and the public key holder
-    may now act as introducers to you.	Introducers signing keys thereby
-    certify that they know the owner of the keys they sign.  If you then
-    trust all the introducers to have correctly signed other keys, you
-    can be be sure that the other key really belongs to the one who
-    claims to own it.
-
-    There are 2 steps to validate a key:
-	1. First check that there is a complete chain
-	   of signed keys from the public key you want to use
-	   and your key and verify each signature.
-	2. Make sure that you have full trust in the certificates
-	   of all the introduces between the public key holder and
-	   you.
-    Step 2 is the more complicated part because there is no easy way
-    for a computer to decide who is trustworthy and who is not.  GnuPG
-    leaves this decision to you and will ask you for a trust value
-    (here also referenced as the owner-trust of a key) for every key
-    needed to check the chain of certificates.	You may choose from:
-      a) "I don't know" - then it is not possible to use any
-	 of the chains of certificates, in which this key is used
-	 as an introducer, to validate the target key.	Use this if
-	 you don't know the introducer.
-      b) "I do not trust" - Use this if you know that the introducer
-	 does not do a good job in certifying other keys.  The effect
-	 is the same as with a) but for a) you may later want to
-	 change the value because you got new information about this
-	 introducer.
-      c) "I trust marginally" - Use this if you assume that the
-	 introducer knows what he is doing.  Together with some
-	 other marginally trusted keys, GnuPG validates the target
-	 key then as good.
-      d) "I fully trust" - Use this if you really know that this
-	 introducer does a good job when certifying other keys.
-	 If all the introducer are of this trust value, GnuPG
-	 normally needs only one chain of signatures to validate
-	 a target key okay. (But this may be adjusted with the help
-	 of some options).
-    This information is confidential because it gives your personal
-    opinion on the trustworthiness of someone else.  Therefore this data
-    is not stored in the keyring but in the "trustdb"
-    (~/.gnupg/trustdb.gpg).  Do not assign a high trust value just
-    because the introducer is a friend of yours - decide how well she
-    understands the implications of key signatures and you may want to
-    tell her more about public key cryptography so you can later change
-    the trust value you assigned.
-
-    Okay, here is how GnuPG helps you with key management.  Most stuff
-    is done with the --edit-key command
-
-	gpg --edit-key <keyid or username>
-
-    GnuPG displays some information about the key and then prompts
-    for a command (enter "help" to see a list of commands and see
-    the man page for a more detailed explanation).  To sign a key
-    you select the user ID you want to sign by entering the number
-    that is displayed in the leftmost column (or do nothing if the
-    key has only one user ID) and then enter the command "sign" and
-    follow all the prompts.  When you are ready, give the command
-    "save" (or use "quit" to cancel your actions).
-
-    If you want to sign the key with another of your user IDs, you
-    must give an "-u" option on the command line together with the
-    "--edit-key".
-
-    Normally you want to sign only one user ID because GnuPG
-    uses only one and this keeps the public key certificate
-    small.  Because such key signatures are very important you
-    should make sure that the signatories of your key sign a user ID
-    which is very likely to stay for a long time - choose one with an
-    email address you have full control of or do not enter an email
-    address at all.  In future GnuPG will have a way to tell which
-    user ID is the one with an email address you prefer - because
-    you have no signatures on this email address it is easy to change
-    this address.  Remember, your signatories sign your public key (the
-    primary one) together with one of your user IDs - so it is not possible
-    to change the user ID later without voiding all the signatures.
-
-    Tip: If you hear about a key signing party on a computer conference
-    join it because this is a very convenient way to get your key
-    certified (But remember that signatures have nothing to to with the
-    trust you assign to a key).
-
-
-    8 Ways to Specify a User ID
-    ---------=-----------------
-
-    There are several ways to specify a user ID, here are some examples.
-
-    * Only by the short keyid (prepend a zero if it begins with A..F):
-
-	"234567C4"
-	"0F34E556E"
-	"01347A56A"
-	"0xAB123456
-
-    * By a complete keyid:
-
-	"234AABBCC34567C4"
-	"0F323456784E56EAB"
-	"01AB3FED1347A5612"
-	"0x234AABBCC34567C4"
-
-    * By a fingerprint:
-
-	"1234343434343434C434343434343434"
-	"123434343434343C3434343434343734349A3434"
-	"0E12343434343434343434EAB3484343434343434"
-
-      The first one is a short fingerprint for PGP 2.x style keys.
-      The others are long fingerprints for OpenPGP keys.
-
-    * By an exact string:
-
-	"=Heinrich Heine <heinrichh@uni-duesseldorf.de>"
-
-    * By an email address:
-
-	"<heinrichh@uni-duesseldorf.de>"
-
-    * By word match
-
-	"+Heinrich Heine duesseldorf"
-
-      All words must match exactly (not case sensitive) and appear in
-      any order in the user ID.  Words are any sequences of letters,
-      digits, the underscore and characters with bit 7 set.
-
-    * Or by the usual substring:
-
-	"Heine"
-	"*Heine"
-
-      The '*' indicates substring search explicitly.
-
-
-    Batch mode
-    ----------
-
-    If you use the option "--batch", GnuPG runs in non-interactive mode and
-    never prompts for input data.  This does not even allow entering the
-    passphrase.  Until we have a better solution (something like ssh-agent),
-    you can use the option "--passphrase-fd n", which works like PGP's
-    PGPPASSFD.
-
-    Batch mode also causes GnuPG to terminate as soon as a BAD signature is
-    detected.
-
-
-    Exit status
-    -----------
-
-    GnuPG returns with an exit status of 1 if in batch mode and a bad signature
-    has been detected or 2 or higher for all other errors.  You should parse
-    stderr or, better, the output of the fd specified with --status-fd to get
-    detailed information about the errors.
-
-
-    Configure options 
-    -----------------
-
-    Here is a list of configure options which are sometime useful 
-    for installation.
-
-    --enable-static-rnd=<name> 
-                     Force the use of the random byte gathering
-		     module <name>.  Default is either to use /dev/random
-		     or the auto mode.  Value for name:
-		       egd - Use the module which accesses the
-			     Entropy Gathering Daemon. See the webpages
-			     for more information about it.
-		      unix - Use the standard Unix module which does not
-			     have a very good performance.
-		     linux - Use the module which accesses /dev/random.
-			     This is the first choice and the default one
-			     for GNU/Linux or *BSD.
-                      auto - Compile linux, egd and unix in and 
-                             automagically select at runtime.
+  libgpg-error (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
+  libgcrypt    (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
+  libassuan    (ftp://ftp.gnupg.org/gcrypt/alpha/libassuan/)
+  libksba      (ftp://ftp.gnupg.org/gcrypt/alpha/libksba/)
   
-     --with-egd-socket=<name>
-                     This is only used when EGD is used as random
-                     gatherer. GnuPG uses by default "~/.gnupg/entropy"
-                     as the socket to connect EGD.  Using this option the
-                     socket name can be changed.  You may use any filename
-                     here with 2 exceptions:  a filename starting with
-                     "~/" uses the socket in the home directory of the user
-                     and one starting with a "=" uses a socket in the
-                     GnuPG home directory which is "~/.gnupg" by default.
- 
-     --without-readline
-                     Do not include support for the readline library
-                     even if it is available.  The default is to check
-                     whether the readline library is a available and
-                     use it to allow fancy command line editing.
+If you use the configure option --enable-agent-only, libksba is not
+required.
+
+You also need the pinentry package for most function of GnuPG; however
+it is not a build requirement.  pinentry is available at
+ftp://ftp.gnupg.org/gcrypt/pinentry/ .
+
+You should get the latest versions of course, the GnuPG configure
+script complains if a version is not sufficient.
+
+After building and installing the above packages in the order as given
+above, you may now continue with GnuPG installation (you may also just
+try to build GnuPG to see whether your already installed versions are
+sufficient).
+
+As with all packages, you just have to do
+
+ ./configure
+ make
+ make install
+
+(Before doing install you might need to become root.)
+
+If everything succeeds, you have a working GnuPG with support for
+S/MIME and smartcards.  Note that there is no binary gpg but a gpg2 so
+that this package won't conflict with a GnuPG 1.2 or 1.3
+installation. gpg2 behaves just like gpg; it is however suggested to
+keep using gpg 1.2.x or 1.3.x. gpg2 is not even build by default.
+
+In case of problem please ask on gpa-dev@gnupg.org for advise.  Note
+that this release is only expected to build on GNU and *BSD systems.
+
+A texinfo manual named `gnupg.info' will get installed.  Some commands
+and options given below.  See also the section `SMARTCARD INTRO'.
+
+
+COMMANDS
+========
+
+See the info documentation ("info gnupg") for a full list of commands
+and options.
+
+gpgsm:
+------
+
+--learn-card
+
+   Read information about the private keys from the smartcard and
+   import the certificates from there.
+
+--export
+
+   Export all certificates stored in the Keybox or those specified on
+   the command line.  When using --armor a few informational lines are
+   prepended before each block.
+
+
+OPTIONS
+=======
+
+gpgsm:
+------
+
+--include-certs <n>
+
+  Using N of -2 includes all certificate except for the Root cert,
+  -1 includes all certs, 0 does not include any certs, 1 includes only
+  the signers cert (this is the default) and all other positives
+  values include up to N certs starting with the signer cert.
   
-     --with-included-zlib
-                     Forces usage of the local zlib sources. Default is
-		     to use the (shared) library of the system.
-
-     --with-zlib=<DIR>
-		     Look for the system zlib in DIR.
-
-     --with-bzip2=<DIR>
-		     Look for the system libbz2 in DIR.
-
-     --without-bzip2
-		     Disable the BZIP2 compression algorithm.
-
-     --with-included-gettext
-                     Forces usage of the local gettext sources instead of
-		     the one provided by your system.
-
-     --disable-nls
-                     Disable NLS support (See the file ABOUT-NLS)
-
-     --enable-m-guard
-                     Enable the integrated malloc checking code. Please
-                     note that this feature does not work on all CPUs
-                     (e.g. SunOS 5.7 on UltraSparc-2) and might give
-                     you a bus error.
-
-     --disable-dynload 
-                    If you have problems with dynamic loading, this
-                    option disables all dynamic loading stuff.  Note
-                    that the use of dynamic linking is very limited.
-
-     --disable-asm
-                    Do not use assembler modules.  It is not possible 
-                    to use this on some CPU types.
-                    
-     --disable-exec
-                    Disable all remote program execution.  This
-		    disables photo ID viewing as well as all keyserver
-		    access.
-
-     --disable-photo-viewers
-                    Disable only photo ID viewing.
-
-     --disable-keyserver-helpers
-                    Disable only keyserver helpers.
-
-     --disable-keyserver-path
-                    Disables the user's ability to use the exec-path
-		    feature to add additional search directories when
-		    executing a keyserver helper.
-
-     --with-photo-viewer=FIXED_VIEWER
-                    Force the photo viewer to be FIXED_VIEWER and
-		    disable any ability for the user to change it in
-		    their options file.
-
-     --disable-rsa
-		    Removes support for the RSA public key algorithm.
-                    This can give a smaller gpg binary for places
-                    where space is tight.
-
-     --disable-idea
-     --disable-cast5
-     --disable-blowfish
-     --disable-aes
-     --disable-twofish
-     --disable-sha256
-     --disable-sha512
-		    Removes support for the selected symmetric or hash
-		    algorithm.  This can give a smaller gpg binary for
-		    places where space is tight.
-
-		    **** Note that if there are existing keys that
-		    have one of these algorithms as a preference,
-		    messages may be received that use one of these
-		    algorithms and you will not be able to decrypt the
-		    message! ****
-
-		    The public key preference list can be updated to
-		    match the list of available algorithms by using
-		    "gpg --edit-key (thekey)", and running the
-		    "setpref" command.
-
-     --enable-minimal
-		    Build the smallest gpg binary possible (disables
-		    all optional algorithms, disables keyserver
-		    access, and disables photo IDs).  Specifically,
-		    this means --disable-rsa --disable-idea,
-		    --disable-cast5, --disable-blowfish,
-		    --disable-aes, --disable-twofish,
-		    --disable-sha256, --disable-sha512,
-		    --without-bzip2, --disable-exec, 
-                    --disable-card-support and
-		    --disable-agent-support.
-                    Configure command lines are read from left to
-		    right, so if you want to have an "almost minimal"
-		    configuration, you can do (for example)
-		    "--enable-minimal --enable-rsa" to have RSA added
-		    to the minimal build.
-
-     --enable-key-cache=SIZE
-                    Set the internal key and UID cache size.  This has
-                    a significant impact on performance with large
-                    keyrings.  The default is 4096, but for use on
-                    platforms where memory is an issue, it can be set
-                    as low as 5.
-
-     --disable-card-support
-                    Do not include smartcard support.  The default is
-                    to include support if all required libraries are
-                    available.
-
-     --disable-agent-support
-                    Do not include support for the gpg-agent.  The
-                    default is to include support.
+--policy-file <filename>
 
-     --enable-selinux-support
-                    This prevents access to certain files and won't
-                    allow import or export of secret keys. 
+  Change the default name of the policy file
 
-     --enable-noexecstack
-                    Pass option --noexecstack to as.  Autdetect wether
-                    the tool chain actually support this.
-
-     --disable-gnupg-iconv
-                    If iconv is available it is used to convert
-                    between utf-8 and the system character set.  This
-                    is in general the preferable solution.  However
-                    the code is new and under some cirumstances it may
-                    give different output than with the limited old
-                    support.  This option allows to explicity disable
-                    the use of iconv.  Note, that iconv is also
-                    disabled if gettext has been disabled.
+--enable-policy-checks
+--disable-policy-checks
 
+  By default policy checks are enabled.  These options may be used to
+  change it.
 
-    Installation Problems
-    ---------------------
+--enable-crl-checks
+--disable-crl-checks
 
-    If you get unresolved externals "gettext" you should run configure
-    again with the option "--with-included-gettext"; this is version
-    0.12.1 which is available at ftp.gnu.org.
+  By default the CRL checks are enabled and the DirMngr is used to
+  check for revoked certificates.  The disable option is most useful
+  with an off-line connection to suppres this check.
 
-    If you have other compile problems, try the configure options
-    "--with-included-zlib" or "--disable-nls" (See ABOUT-NLS) or
-    --disable-dynload.
+--agent-program <path_to_agent_program>
 
-    We can't check all assembler files, so if you have problems
-    assembling them (or the program crashes) use --disable-asm with
-    ./configure.  If you opt to delete individual replacement files in
-    hopes of using the remaining ones, be aware that the configure
-    scripts may consider several subdirectories to get all available
-    assembler files; be sure to delete the correct ones. The assembler
-    replacements are in C and in mpi/generic; never delete
-    udiv-qrnnd.S in any CPU directory, because there may be no C
-    substitute.  Don't forget to delete "config.cache" and run
-    "./config.status --recheck".  We have also heard reports of
-    problems when using versions of gcc earlier than 2.96 along with a
-    non-GNU assembler (as).  If this applies to your platform, you can
-    either upgrade gcc to a more recent version, or use the GNU
-    assembler.
+  Specify an agent program to be used for secret key operations.  The
+  default value is "../agent/gpg-agent".  This is only used as a
+  fallback when the envrionment variable GPG_AGENT_INFO is not set or
+  a running agent can't be connected.
+  
+--dirmngr-program <path_to_dirmgr_program>
 
-    Some make tools are broken - the best solution is to use GNU's
-    make.  Try gmake or grab the sources from a GNU archive and
-    install them.
+  Specify a dirmngr program to be used for CRL checks.  The default
+  value is "/usr/sbin/dirmngr".  This is only used as a fallback when
+  the environment variable DIRMNGR_INFO is not set or a running
+  dirmngr can't be connected.
 
-    On some OSF systems you may get unresolved externals.  This is a
-    libtool problem and the workaround is to manually remove all the
-    "-lc -lz" but the last one from the linker line and execute them
-    manually.
+--no-secmem-warning
 
-    On some architectures you see warnings like:
-      longlong.h:175: warning: function declaration isn't a prototype
-    or
-      http.c:647: warning: cast increases required alignment of target type
-    This doesn't matter and we know about it (actually it is due to
-    some warning options which we have enabled for gcc)
+  Don't print the warning "no secure memory"
 
+--armor
 
-    Specific problems on some machines
-    ----------------------------------
+  Create PEM encoded output.  Default is binary output. 
 
-    * Apple Darwin 6.1:
+--base64 
 
-        ./configure --with-libiconv-prefix=/sw
+  Create Base-64 encoded output; i.e. PEM without the header lines.
 
-    * IBM RS/6000 running AIX:
+--assume-armor
 
-	Due to a change in gcc (since version 2.8) the MPI stuff may
-	not build. In this case try to run configure using:
-	    CFLAGS="-g -O2 -mcpu=powerpc" ./configure
+  Assume the input data is PEM encoded.  Default is to autodetect the
+  encoding but this is may fail.
 
-    * SVR4.2 (ESIX V4.2 cc)
+--assume-base64
 
-        Due to problems with the ESIX as, you probably want to do
-            CFLAGS="-O -K pentium" ./configure --disable-asm
+  Assume the input data is plain base-64 encoded.
 
-    * SunOS 4.1.4
+--assume-binary
 
-         ./configure ac_cv_sys_symbol_underscore=yes
+  Assume the input data is binary encoded.
 
+--server
 
-    The Random Device
-    -----------------
+  Run in server mode.  This is used by GPGME to control gpgsm.  See
+  the assuan specification regarding gpgsm about the used protocol.
+  Some options are ignored in server mode.
 
-    Random devices are available in Linux, FreeBSD and OpenBSD.
-    Operating systems without a random devices must use another
-    entropy collector. 
+--local-user  <user_id>
 
-    This collector works by running a lot of commands that yield more
-    or less unpredictable output and feds this as entropy into the
-    random generator - It should work reliably but you should check
-    whether it produces good output for your version of Unix. There
-    are some debug options to help you (see cipher/rndunix.c).
+  Set the user to be used for signing.  The default is the first
+  secret key found in the database.
 
+--with-key-data
 
-    Creating an RPM package
-    -----------------------
+  Displays extra information with the --list-keys commands.  Especially
+  a line tagged "grp" is printed which tells you the keygrip of a
+  key.  This is string is for example used as the filename of the
+  secret key.
 
-    The file scripts/gnupg.spec is used to build a RPM package (both
-    binary and src):
-      1. copy the spec file into /usr/src/redhat/SPECS
-      2. copy the tar file into /usr/src/redhat/SOURCES
-      3. type: rpm -ba SPECS/gnupg.spec
 
-    Or use the -t (--tarbuild) option of rpm:
-      1. rpm -ta gnupg-x.x.x.tar.gz
 
-    The binary rpm file can now be found in /usr/src/redhat/RPMS, source
-    rpm in /usr/src/redhat/SRPMS
+gpg-agent:
+---------
 
+--pinentry-program <path_to_pinentry_program>
 
-    Building Universal Binaries on Apple OS X
-    -----------------------------------------
+  Specify the PINentry program.  The default value is
+  "<prefix>/bin/pinentry" so you most likely want to specify it.
 
-    You can build a universal ("fat") binary that will work on both
-    PPC and Intel Macs with something like:
+--no-grab
 
-    ./configure CFLAGS="-arch ppc -arch i386" --disable-endian-check \
-		--disable-dependency-tracking --disable-asm
+  Tell the pinentry not to grab keyboard and mouse.  You most likely
+  want to give this option during testing and development to avoid
+  lockups in case of bugs.
 
-    If you are doing the build on a OS X 10.4 (Tiger) PPC machine you
-    may need to add "-isysroot /Developer/SDKs/MacOSX10.4u.sdk" to
-    those CFLAGS.  Note that any third-party libraries you may link
-    with need to be universal as well.  All Apple-supplied libraries
-    (even libraries not originally written by Apple like curl, zip,
-    and BZ2) are universal.
+                     
+scdaemon:
+--------
 
+--ctapi-driver <libraryname>
 
-    GnuPG 1.4 and GnuPG 1.9
-    -----------------------
+  The default for Scdaemon is to use the PC/SC API currently provided
+  by libpcsclite.so.  As an alternative the ctAPI can be used by
+  specify this option with the appropriate driver name
+  (e.g. libtowitoko.so).
 
-    GnuPG 1.4 is the stable version of GnuPG; GnuPG 1.9 is the
-    development branch.  However, large parts of GnuPG 1.9 are also
-    considered to be stable and useful.  In particular the tools
-    "gpg-agent" (private key operations and passphrase caching) and
-    "gpgsm" (S/MIME cousin of "gpg") are considered stable.  Both
-    packages (1.4.x and 1.9.x) may be installed at the same time and
-    it is actually suggested to do this if you need S/MIME support or
-    want to make use of gpg-agent.
+--reader-port <portname>
 
+  This specifies the port of the chipcard reader.  For PC/SC this is
+  currently ignored and the first PC/SC reader is used.  For the
+  ctAPI, a number must be specified (the default is 32768 for the
+  first USB port).
 
-    How to Get More Information
-    ---------------------------
+--disable-ccid 
 
-    The primary WWW page is "http://www.gnupg.org"
-    The primary FTP site is "ftp://ftp.gnupg.org/gcrypt/"
+  Disable the integrated support for CCID compliant readers.  This
+  allows to fall back to one of the other drivers even if the internal
+  CCID driver can handle the reader.  Note, that CCID support is only
+  available if libusb was available at build time.
 
-    See http://www.gnupg.org/download/mirrors.html for a list of
-    mirrors and use them if possible.  You may also find GnuPG
-    mirrored on some of the regular GNU mirrors.
 
-    We have some mailing lists dedicated to GnuPG:
+FILES
+=====
 
-	gnupg-announce@gnupg.org    For important announcements like
-				    new versions and such stuff.
-				    This is a moderated list and has
-				    very low traffic.  Do not post to
-				    this list.
+The default home directory is ~/.gnupg.  It can be changed by
+either the --homedir option or by setting the environment variable
+GNUPGHOME.  This is a list of files usually found in this directory:
 
-	gnupg-users@gnupg.org	    For general user discussion and
-				    help (English).
+gpgsm.conf 
 
-        gnupg-de@gnupg.org          German speaking counterpart of
-                                    gnupg-users.
+        Options for gpgsm.  Options are the same as the command line
+        options but don't enter the leading dashes and give arguments
+        without an equal sign.  Blank lines and lines starting with a
+        hash mark as the first non white space character are ignored.
 
-        gnupg-ru@gnupg.org          Russian speaking counterpart of
-                                    gnupg-users.
+gpg-agent.conf
+        
+        Options for gpg-agent
 
-	gnupg-devel@gnupg.org	    GnuPG developers main forum.
+scdaemon.conf
 
-    You subscribe to one of the list by sending mail with a subject
-    of "subscribe" to x-request@gnupg.org, where x is the name of the
-    mailing list (gnupg-announce, gnupg-users, etc.).  An archive of
-    the mailing lists are available at
-    http://www.gnupg.org/documentation/mailing-lists.html
+        Options for scdaemon.
 
-    Please direct bug reports to http://bugs.gnupg.org or post
-    them direct to the mailing list <gnupg-devel@gnupg.org>.
+dirmngr.conf 
 
-    Please direct questions about GnuPG to the users mailing list or
-    one of the pgp newsgroups; please do not direct questions to one
-    of the authors directly as we are busy working on improvements and
-    bug fixes.  The English and German mailing lists are watched by
-    the authors and we try to answer questions when time allows us to
-    do so.
+        Options for the DirMngr which is not part of this package and
+        the option file will most likely be moved to /etc
 
-    Commercial grade support for GnuPG is available; please see
-    http://www.gnupg.org/service.html .
+gpg.conf
+        
+        Options for gpg.  Note that old versions of gpg use the
+        filename `options' instead of `gpg.conf'.
+
+gpg.conf-1.9.x
+
+        Options for gpg; tried before gpg.conf
+
+
+policies.txt
+
+        A list of allowed CA policies.  This file should give the
+        object identifiers of the policies line by line.  Empty lines
+        and lines starting with a hash mark are ignored.
+
+        ++++++++++
+        2.289.9.9  
+        ++++++++++
+
+trustlist.txt
+
+        A list of trusted certificates. The file will be created
+        automagically with some explaining comments.  By using
+        gpg-agent's option --allow-mark-trusted, gpg-agent may add new
+        entries after user confirmation.
+
+random_seed
+
+        Used internally for keeping the state of the RNG over
+        invocations.
+
+pubring.kbx
+
+        The database file with the certificates. 
+
+pubring.gpg
+
+        The database file with the OpenPGP public keys.  This will
+        eventually be merged with pubring.kbx
+
+secring.gpg
+
+        The database file with the OpenPGP secret keys.  This will be
+        removed when gpg is changed to make use of the gpg-agent.
+
+
+private-keys-v1.d/
+
+        Directory holding the private keys maintained by gpg-agent.
+        For detailed info see agent/keyformat.txt. Note that there is
+        a helper tool gpg-protect-tool which may be used to protect or
+        unprotect keys.  This is however nothing a user should care
+        about.
+
+
+SOURCE FILES
+============
+
+Here is a list of directories with source files:
+
+jnlib/  utility functions
+kbx/    keybox library
+g10/    the gpg program here called gpg2
+sm/     the gpgsm program
+agent/  the gpg-agent
+scd/    the smartcard daemon
+doc/    documentation
+
+
+
+HOW TO SPECIFY A USER ID
+========================
+
+Due to the way X.509 certificates are made up we need a few new ways
+to specify a certificate (aka key in OpenPGP).  In addition to the
+ways a user ID can be specified with gpg, I have implemented 3 new
+modes for gpgsm, here is the entire list of ways to specify a key:
+
+ * By keyID.
+
+   This format is deducted from the length of the string and its
+   content or "0x" prefix. For use with OpenPGP an exclamation mark may
+   be appended to force use of the specified (sub)key.
+
+   As with v34 OpenPGP keys, the keyID of an X509 certificate are the
+   low 64 bits of the SHA-1 fingerprint.  The use of keyIDs is just a
+   shortcut, for all automated processing the fingerprint should be
+   used.
+
+   Examples:
+
+       234567C4
+       0F34E556E
+       01347A56A
+       0xAB123456
+
+       234AABBCC34567C4
+       0F323456784E56EAB
+       01AB3FED1347A5612
+       0x234AABBCC34567C4
+
+ * By fingerprint
+
+   This is format is deduced from the length of the string and its
+   content or "0x" prefix.  Note, that only the 20 byte fingerprint is
+   used with GPGSM (SHA-1 hash of the certificate).  For use with
+   OpenPGP an exclamation mark may be appended to force use of the
+   specified (sub)key.
+
+   Examples:
+
+       1234343434343434C434343434343434
+       123434343434343C3434343434343734349A3434
+       0E12343434343434343434EAB3484343434343434
+       0xE12343434343434343434EAB3484343434343434
+
+ * Exact match on OpenPGP user ID
+
+   This is denoted by a leading equal sign. It does not make much
+   sense for X.509.
+
+   Example:
+
+       =Heinrich Heine <heinrichh@uni-duesseldorf.de>
+
+ * Exact match on an email address.
+
+   This is indicated by enclosing the email address in the usual way
+   with left and right angles
+
+   Example:
+
+       <heinrichh@uni-duesseldorf.de>
+
+ * Word match
+
+   All words must match exactly (not case sensitive) but can appear in
+   any order in the user ID or a subjects name.  Words are any
+   sequences of letters, digits, the underscore and all characters
+   with bit 7 set.
+
+   Example:
+
+       +Heinrich Heine duesseldorf
+
+ * Exact match by subject's DN
+
+   This is indicated by a leading slash, directly followed by the
+   rfc2253 encoded DN of the subject.  Note that you can't use the
+   string printed by "gpgsm --list-keys" because that one as been
+   reordered and modified for better readability; use --with-colons to 
+   print the raw (but standard escaped) rfc2253 string 
+
+   Example:
+
+      /CN=Heinrich Heine,O=Poets,L=Paris,C=FR
+
+ * Exact match by issuer's DN
+
+   This is indicated by a leading hash mark, directly followed by a
+   slash and then directly followed by the rfc2253 encoded DN of the
+   issuer.  This should return the Root cert of the issuer.  See note
+   above.
+
+   Example:
+
+      #/CN=Root Cert,O=Poets,L=Paris,C=FR
+
+ * Exact match by serial number and issuer's DN
+
+   This is indicated by a hash mark, followed by the hexadecmal
+   representation of the serial number, the followed by a slash and
+   the RFC2253 encoded DN of the issuer. See note above.
+
+   Example:
+
+      #4F03/CN=Root Cert,O=Poets,L=Paris,C=FR
+
+ * Substring match
+
+   By case insensitive substring matching.  This is the default mode
+   but applications may want to explicitly indicate this by putting
+   the asterisk in front.
+
+   Example:
+
+        Heine
+        *Heine
+
+
+Please note that we have reused the hash mark identifier which was
+used in old GnuPG versions to indicate the so called local-id.  It is
+not anymore used and there should be no conflict when used with X.509
+stuff.
+
+Using the rfc2253 format of DNs has the drawback that it is not
+possible to map them back to the original encoding, however we don't
+have to do this, because our key database stores this encoding as meta
+data.
+
+Some of the search modes are not yet implemented ;-)
+
+
+HOW TO IMPORT A PRIVATE KEY
+===========================
+There is some limited support to import a private key from a PKCS-12
+file.  
+
+ gpgsm --import  foo.p12
+
+This requires that the gpg-agent is running.
+
+
+HOW TO EXPORT A PRIVATE KEY
+===========================
+There is also limited support to export a private key in PKCS-12
+format. However there is no MAC applied.
+
+ gpgsm --export-secret-key-p12 userID  >foo.p12
+
+
+SMARTCARD INTRO
+===============
+
+GPG, the OpenPGP part of GnuPG, supports the OpenPGP smartcard
+(surprise!); see http://g10code.com/p-card.html and
+http://www.gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .
+
+GPGSM, the CMS (S/MIME) part of GnuPG, supports two kinds of
+smartcards.  The most flexible way is to use PKCS#15 compliant cards,
+however you must have build GnuPG with support for the OpenSC library.
+The build process automagically detects the presence of this library
+and will include support for these cards.
+
+The other cards we currently support are the Telesec NetKey card with
+the NKS 2.0 card application and all generic DINSIG cards.
+
+Before GPGSM can make use of a new card it must gather some
+information, like the card's serial number, the public keys and the
+certificates stored on the card.  Thus for a new card you need to run
+the command
+
+  gpgsm --learn-card
+
+once.  This is also a good test to see whether your card reader is
+properly installed. See below in case of error.  Once this has been
+done you may use the keys stored on the card in the same way you use
+keys stored on the disk.  gpgsm automagically knows whether a card is
+required and will pop up the pinentry to ask you to insert the
+correct card.
+
+For selecting the driver, see the options of scdaemon.  A useful
+debugging flag is "--debug 2048" showing the communication between
+scdaemon and the reader.
+
+
+
+
+

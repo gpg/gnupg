@@ -1,6 +1,6 @@
-/* misc.c -  miscellaneous functions
+/* misc.c - miscellaneous functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ *               2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,7 +38,8 @@
 #ifdef ENABLE_SELINUX_HACKS
 #include <sys/stat.h>
 #endif
-#ifdef _WIN32
+
+#ifdef HAVE_W32_SYSTEM
 #include <time.h>
 #include <process.h>
 #include <windows.h> 
@@ -52,17 +53,30 @@
 #ifndef CSIDL_FLAG_CREATE
 #define CSIDL_FLAG_CREATE 0x8000
 #endif
-#include "errors.h"
-#include "dynload.h"
-#endif /*_WIN32*/
+#endif /*HAVE_W32_SYSTEM*/
 
+#include "gpg.h"
+#ifdef HAVE_W32_SYSTEM
+# include "errors.h"
+# include "dynload.h"
+#endif /*HAVE_W32_SYSTEM*/
 #include "util.h"
 #include "main.h"
 #include "photoid.h"
 #include "options.h"
 #include "i18n.h"
-#include "cardglue.h"
 
+
+static int
+string_count_chr (const char *string, int c)
+{
+  int count;
+
+  for (count=0; *string; string++ )
+    if ( *string == c )
+      count++;
+  return count;
+}
 
 
 
@@ -157,7 +171,7 @@ register_secured_file (const char *fname)
 #endif /*ENABLE_SELINUX_HACKS*/
 }
 
-/* Remove a file registerd as secure. */
+/* Remove a file registered as secure. */
 void
 unregister_secured_file (const char *fname)
 {
@@ -278,19 +292,24 @@ checksum( byte *p, unsigned n )
 }
 
 u16
-checksum_mpi( MPI a )
+checksum_mpi (gcry_mpi_t a)
 {
-    u16 csum;
-    byte *buffer;
-    unsigned nbytes;
-    unsigned nbits;
+  u16 csum;
+  byte *buffer;
+  unsigned int nbytes;
 
-    buffer = mpi_get_buffer( a, &nbytes, NULL );
-    nbits = mpi_get_nbits(a);
-    csum = checksum_u16( nbits );
-    csum += checksum( buffer, nbytes );
-    xfree( buffer );
-    return csum;
+  if ( gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, a) )
+    BUG ();
+  /* Fixme: For numbers not in secure memory we should use a stack
+   * based buffer and only allocate a larger one if mpi_print returns
+   * an error. */
+  buffer = (gcry_is_secure(a)?
+            gcry_xmalloc_secure (nbytes) : gcry_xmalloc (nbytes));
+  if ( gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, NULL, a) )
+    BUG ();
+  csum = checksum (buffer, nbytes);
+  xfree (buffer);
+  return csum;
 }
 
 u32
@@ -313,8 +332,8 @@ print_pubkey_algo_note( int algo )
       if(!warn)
 	{
 	  warn=1;
-	  log_info(_("WARNING: using experimental public key algorithm %s\n"),
-		   pubkey_algo_to_string(algo));
+	  log_info (_("WARNING: using experimental public key algorithm %s\n"),
+		    gcry_pk_algo_name (algo));
 	}
     }
 }
@@ -328,8 +347,8 @@ print_cipher_algo_note( int algo )
       if(!warn)
 	{
 	  warn=1;
-	  log_info(_("WARNING: using experimental cipher algorithm %s\n"),
-		   cipher_algo_to_string(algo));
+	  log_info (_("WARNING: using experimental cipher algorithm %s\n"),
+                    gcry_cipher_algo_name (algo));
 	}
     }
 }
@@ -343,60 +362,78 @@ print_digest_algo_note( int algo )
       if(!warn)
 	{
 	  warn=1;
-	  log_info(_("WARNING: using experimental digest algorithm %s\n"),
-		   digest_algo_to_string(algo));
+	  log_info (_("WARNING: using experimental digest algorithm %s\n"),
+                    gcry_md_algo_name (algo));
 	}
     }
   else if(algo==DIGEST_ALGO_MD5)
-    log_info(_("WARNING: digest algorithm %s is deprecated\n"),
-	     digest_algo_to_string(algo));
+    log_info (_("WARNING: digest algorithm %s is deprecated\n"),
+              gcry_md_algo_name (algo));
 }
 
 /* Return a string which is used as a kind of process ID */
 const byte *
 get_session_marker( size_t *rlen )
 {
-    static byte marker[SIZEOF_UNSIGNED_LONG*2];
-    static int initialized;
-
-    if ( !initialized ) {
-        volatile ulong aa, bb; /* we really want the uninitialized value */
-        ulong a, b;
-
-        initialized = 1;
-        /* also this marker is guessable it is not easy to use this 
-         * for a faked control packet because an attacker does not
-         * have enough control about the time the verification does 
-         * take place.  Of course, we can add just more random but 
-         * than we need the random generator even for verification
-         * tasks - which does not make sense. */
-        a = aa ^ (ulong)getpid();
-        b = bb ^ (ulong)time(NULL);
-        memcpy( marker, &a, SIZEOF_UNSIGNED_LONG );
-        memcpy( marker+SIZEOF_UNSIGNED_LONG, &b, SIZEOF_UNSIGNED_LONG );
+  static byte marker[SIZEOF_UNSIGNED_LONG*2];
+  static int initialized;
+  
+  if ( !initialized )
+    {
+      volatile ulong aa, bb; /* We really want the uninitialized value. */
+      ulong a, b;
+      
+      initialized = 1;
+      /* Although this marker is guessable it is not easy to use this
+       * for a faked control packet because an attacker does not have
+       * enough control about the time the verification takes place.
+       * Of course, we could add just more random but than we need the
+       * random generator even for verification tasks - which does not
+       * make sense. */
+      a = aa ^ (ulong)getpid();
+      b = bb ^ (ulong)time(NULL);
+      memcpy ( marker, &a, SIZEOF_UNSIGNED_LONG );
+      memcpy ( marker+SIZEOF_UNSIGNED_LONG, &b, SIZEOF_UNSIGNED_LONG );
     }
-    *rlen = sizeof(marker);
-    return marker;
+  *rlen = sizeof(marker);
+  return marker;
 }
 
 /****************
- * Wrapper around the libgcrypt function with addional checks on
- * openPGP contraints for the algo ID.
+ * Wrapper around the libgcrypt function with additonal checks on
+ * the OpenPGP contraints for the algo ID.
  */
 int
 openpgp_cipher_test_algo( int algo )
 {
-    if( algo < 0 || algo > 110 )
-        return G10ERR_CIPHER_ALGO;
-    return check_cipher_algo(algo);
+  if ( algo < 0 || algo > 110 )
+    return gpg_error (GPG_ERR_CIPHER_ALGO);
+  return gcry_cipher_test_algo (algo);
 }
 
 int
-openpgp_pk_test_algo( int algo, unsigned int usage_flags )
+openpgp_pk_test_algo( int algo )
 {
-    if( algo < 0 || algo > 110 )
-	return G10ERR_PUBKEY_ALGO;
-    return check_pubkey_algo2( algo, usage_flags );
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+
+  if (algo < 0 || algo > 110)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+  return gcry_pk_test_algo (algo);
+}
+
+int
+openpgp_pk_test_algo2( int algo, unsigned int use )
+{
+  int use_buf = use;
+
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+
+  if (algo < 0 || algo > 110)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+
+  return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &use_buf);
 }
 
 int 
@@ -404,10 +441,11 @@ openpgp_pk_algo_usage ( int algo )
 {
     int use = 0; 
     
-    /* they are hardwired in gpg 1.0 */
+    /* They are hardwired in gpg 1.0. */
     switch ( algo ) {    
       case PUBKEY_ALGO_RSA:
-          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
+          use = (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG
+                 | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH);
           break;
       case PUBKEY_ALGO_RSA_E:
           use = PUBKEY_USAGE_ENC;
@@ -430,9 +468,9 @@ openpgp_pk_algo_usage ( int algo )
 int
 openpgp_md_test_algo( int algo )
 {
-    if( algo < 0 || algo > 110 )
-        return G10ERR_DIGEST_ALGO;
-    return check_digest_algo(algo);
+  if (algo < 0 || algo > 110)
+    return gpg_error (GPG_ERR_DIGEST_ALGO);
+  return gcry_md_test_algo (algo);
 }
 
 #ifdef USE_IDEA
@@ -696,6 +734,54 @@ deprecated_command (const char *name)
 }
 
 
+/*
+ * Wrapper around gcry_cipher_map_name to provide a fallback using the
+ * "Sn" syntax as used by the preference strings.
+ */
+int 
+string_to_cipher_algo (const char *string) 
+{ 
+  int val;
+
+  val = gcry_cipher_map_name (string);
+  if (!val && string && (string[0]=='S' || string[0]=='s'))
+    {
+      char *endptr;
+
+      string++;
+      val = strtol (string, &endptr, 10);
+      if (!*string || *endptr || openpgp_cipher_test_algo (val))
+        val = 0;
+    }
+
+  return val;
+}
+
+/*
+ * Wrapper around gcry_md_map_name to provide a fallback using the
+ * "Hn" syntax as used by the preference strings.
+ */
+int 
+string_to_digest_algo (const char *string) 
+{ 
+  int val;
+
+  val = gcry_md_map_name (string);
+  if (!val && string && (string[0]=='H' || string[0]=='h'))
+    {
+      char *endptr;
+
+      string++;
+      val = strtol (string, &endptr, 10);
+      if (!*string || *endptr || openpgp_md_test_algo (val))
+        val = 0;
+    }
+
+  return val;
+}
+
+
+
 const char *
 compress_algo_to_string(int algo)
 {
@@ -728,7 +814,7 @@ compress_algo_to_string(int algo)
 int
 string_to_compress_algo(const char *string)
 {
-  /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+  /* TRANSLATORS: See doc/TRANSLATE about this string. */
   if(match_multistr(_("uncompressed|none"),string))
     return 0;
   else if(ascii_strcasecmp(string,"uncompressed")==0)
@@ -1159,49 +1245,6 @@ w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
 #endif /*HAVE_W32_SYSTEM*/
 
 
-/* Set up the default home directory.  The usual --homedir option
-   should be parsed later. */
-char *
-default_homedir (void)
-{
-  char *dir;
-
-  dir = getenv("GNUPGHOME");
-#ifdef HAVE_W32_SYSTEM
-  if (!dir || !*dir)
-    dir = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG", "HomeDir");
-  if (!dir || !*dir)
-    {
-      char path[MAX_PATH];
-      
-      /* It might be better to use LOCAL_APPDATA because this is
-         defined as "non roaming" and thus more likely to be kept
-         locally.  For private keys this is desired.  However, given
-         that many users copy private keys anyway forth and back,
-         using a system roaming serives might be better than to let
-         them do it manually.  A security conscious user will anyway
-         use the registry entry to have better control.  */
-      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, 
-                               NULL, 0, path) >= 0) 
-        {
-          char *tmp = xmalloc (strlen (path) + 6 +1);
-          strcpy (stpcpy (tmp, path), "\\gnupg");
-          dir = tmp;
-          
-          /* Try to create the directory if it does not yet
-             exists.  */
-          if (access (dir, F_OK))
-            CreateDirectory (dir, NULL);
-        }
-    }
-#endif /*HAVE_W32_SYSTEM*/
-  if (!dir || !*dir)
-    dir = GNUPG_HOMEDIR;
-
-  return dir;
-}
-
-
 /* Return the name of the libexec directory.  The name is allocated in
    a static area on the first use.  This function won't fail. */
 const char *
@@ -1282,3 +1325,119 @@ path_access(const char *file,int mode)
 
   return ret;
 }
+
+
+
+/* Temporary helper. */
+int
+pubkey_get_npkey( int algo )
+{
+  size_t n;
+
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
+    n = 0;
+  return n;
+}
+
+/* Temporary helper. */
+int
+pubkey_get_nskey( int algo )
+{
+  size_t n;
+
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &n ))
+    n = 0;
+  return n;
+}
+
+/* Temporary helper. */
+int
+pubkey_get_nsig( int algo )
+{
+  size_t n;
+
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, &n))
+    n = 0;
+  return n;
+}
+
+/* Temporary helper. */
+int
+pubkey_get_nenc( int algo )
+{
+  size_t n;
+  
+  if (algo == GCRY_PK_ELG_E)
+    algo = GCRY_PK_ELG;
+  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, &n ))
+    n = 0;
+  return n;
+}
+
+
+/* Temporary helper. */
+unsigned int
+pubkey_nbits( int algo, gcry_mpi_t *key )
+{
+    int rc, nbits;
+    gcry_sexp_t sexp;
+
+    if( algo == GCRY_PK_DSA ) {
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
+				  key[0], key[1], key[2], key[3] );
+    }
+    else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(elg(p%m)(g%m)(y%m)))",
+				  key[0], key[1], key[2] );
+    }
+    else if( algo == GCRY_PK_RSA ) {
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(rsa(n%m)(e%m)))",
+				  key[0], key[1] );
+    }
+    else
+	return 0;
+
+    if ( rc )
+	BUG ();
+
+    nbits = gcry_pk_get_nbits( sexp );
+    gcry_sexp_release( sexp );
+    return nbits;
+}
+
+
+
+/* FIXME: Use gcry_mpi_print directly. */
+int
+mpi_print( FILE *fp, gcry_mpi_t a, int mode )
+{
+    int n=0;
+
+    if( !a )
+	return fprintf(fp, "[MPI_NULL]");
+    if( !mode ) {
+	unsigned int n1;
+	n1 = gcry_mpi_get_nbits(a);
+	n += fprintf(fp, "[%u bits]", n1);
+    }
+    else {
+	unsigned char *buffer;
+
+	if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a))
+          BUG ();
+	fputs( buffer, fp );
+	n += strlen(buffer);
+	gcry_free( buffer );
+    }
+    return n;
+}
+

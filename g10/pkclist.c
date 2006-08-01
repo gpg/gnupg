@@ -1,4 +1,4 @@
-/* pkclist.c
+/* pkclist.c - create a list of public keys
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
  *               2006 Free Software Foundation, Inc.
  *
@@ -27,11 +27,11 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "trustdb.h"
@@ -73,10 +73,10 @@ do_show_revocation_reason( PKT_signature *sig )
 
 	log_info( _("reason for revocation: ") );
 	if( text )
-	    fputs( text, log_stream() );
+	    fputs( text, log_get_stream() );
 	else
-	    fprintf( log_stream(), "code=%02x", *p );
-	putc( '\n', log_stream() );
+	    fprintf( log_get_stream(), "code=%02x", *p );
+	log_printf ("\n");
 	n--; p++;
 	pp = NULL;
 	do {
@@ -88,9 +88,9 @@ do_show_revocation_reason( PKT_signature *sig )
 	    if( n ) {
 		pp = memchr( p, '\n', n );
 		nn = pp? pp - p : n;
-		log_info( _("revocation comment: ") );
-		print_string( log_stream(), p, nn, 0 );
-		putc( '\n', log_stream() );
+		log_info ( _("revocation comment: ") );
+		print_string ( log_get_stream(), p, nn, 0 );
+		log_printf ("\n");
 		p += nn; n -= nn;
 	    }
 	} while( pp );
@@ -363,7 +363,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 int
 edit_ownertrust (PKT_public_key *pk, int mode )
 {
-  unsigned int trust = 0;  /* Needs to be initialized to avoid gcc warning. */
+  unsigned int trust = 0;
   int no_help = 0;
 
   for(;;)
@@ -613,7 +613,7 @@ check_signatures_trust( PKT_signature *sig )
       log_info(_("         The signature is probably a FORGERY.\n"));
       if (opt.with_fingerprint)
         print_fingerprint (pk, NULL, 1);
-      rc = G10ERR_BAD_SIGN;
+      rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
       break;
 
     case TRUST_MARGINAL:
@@ -824,7 +824,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
                                             rov->d, strlen (rov->d), -1);
               goto fail;
             }
-          else if ( !(rc=check_pubkey_algo2 (pk->pubkey_algo, use )) ) 
+          else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo, use)) ) 
             {
               /* Skip the actual key if the key is already present
                * in the list.  Add it to our list if not. */
@@ -897,7 +897,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
           else if (backlog) 
             {
               /* This is part of our trick to expand and display groups. */
-              answer = pop_strlist (&backlog);
+              answer = strlist_pop (&backlog);
             }
           else
             {
@@ -958,7 +958,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
           rc = get_pubkey_byname( pk, answer, NULL, NULL, 0 );
           if (rc)
             tty_printf(_("No such user ID.\n"));
-          else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) 
+          else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo, use)) ) 
             {
               if ( have_def_rec )
                 {
@@ -1032,7 +1032,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
       rc = get_pubkey_byname (pk, def_rec, NULL, NULL, 1);
       if (rc)
         log_error(_("unknown default recipient \"%s\"\n"), def_rec );
-      else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) 
+      else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo, use)) ) 
         {
           /* Mark any_recipients here since the default recipient
              would have been used if it wasn't already there.  It
@@ -1079,7 +1079,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
                                             -1);
               goto fail;
             }
-          else if ( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) 
+          else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo, use )) ) 
             {
               /* Key found and usable.  Check validity. */
               int trustlevel;
@@ -1186,7 +1186,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
    preference list, so I'm including it. -dms */
 
 int
-algo_available( preftype_t preftype, int algo, const union pref_hint *hint )
+algo_available( preftype_t preftype, int algo, const union pref_hint *hint)
 {
   if( preftype == PREFTYPE_SYM )
     {
@@ -1206,22 +1206,22 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint )
 
       /* PGP8 supports all the ciphers we do.. */
 
-      return algo && !check_cipher_algo( algo );
+      return algo && !openpgp_cipher_test_algo ( algo );
     }
   else if( preftype == PREFTYPE_HASH )
     {
-      if(hint && hint->digest_length)
+      if (hint && hint->digest_length)
 	{
-	  if(hint->digest_length!=20 || opt.flags.dsa2)
+	  if (hint->digest_length!=20 || opt.flags.dsa2)
 	    {
 	      /* If --enable-dsa2 is set or the hash isn't 160 bits
 		 (which implies DSA2), then we'll accept a hash that
 		 is larger than we need.  Otherwise we won't accept
 		 any hash that isn't exactly the right size. */
-	      if(hint->digest_length > md_digest_length(algo))
+	      if (hint->digest_length > gcry_md_get_algo_dlen (algo))
 		return 0;
 	    }
-	  else if(hint->digest_length != md_digest_length(algo))
+	  else if (hint->digest_length != gcry_md_get_algo_dlen (algo))
 	    return 0;
 	}
 
@@ -1237,7 +1237,7 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint )
 		  && algo != DIGEST_ALGO_SHA256))
 	return 0;
 
-      return algo && !check_digest_algo( algo );
+      return algo && !openpgp_md_test_algo (algo);
     }
   else if( preftype == PREFTYPE_ZIP )
     {
@@ -1259,8 +1259,8 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint )
  * Return -1 if we could not find an algorithm.
  */
 int
-select_algo_from_prefs(PK_LIST pk_list, int preftype,
-		       int request, const union pref_hint *hint)
+select_algo_from_prefs(PK_LIST pk_list, int preftype, int request,
+                       const union pref_hint *hint)
 {
     PK_LIST pkr;
     u32 bits[8];

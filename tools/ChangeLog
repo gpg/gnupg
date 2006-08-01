@@ -1,219 +1,479 @@
-2006-04-20  David Shaw  <dshaw@jabberwocky.com>
+2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
 
-	* make-dns-cert.c (main): Small exit code tweak from Peter
-	Palfrader.
+	* Makefile.am (gpgconf_LDADD): Add $(GPG_ERROR_LIBS).
+	(gpgkey2ssh_LDADD): Add ../jnlib/libjnlib.a.
 
-2006-04-05  David Shaw  <dshaw@jabberwocky.com>
+2006-05-23  Werner Koch  <wk@g10code.com>
 
-	* make-dns-cert.c: Some changes from Peter Palfrader to send
-	errors to stderr and allow spaces in a fingerprint.  Also warn
-	when a key is over 16k (as that is the default max-cert-size) and
-	fail when a key is over 64k as that is the DNS limit in many
-	places.
+	* gpgparsemail.c: Include config.h if available
+	(stpcpy): Conditional include it.
 
-2006-04-04  David Shaw  <dshaw@jabberwocky.com>
+	* gpgconf-comp.c (hextobyte): Removed as it is now availble in
+	jnlib.
 
-	* make-dns-cert.c: New program to generate properly formatted CERT
-	records so people don't have to do it manually.
+2005-12-20  Werner Koch  <wk@g10code.com>
 
-2006-02-14  Werner Koch  <wk@gnupg.org>
+	* gpgconf-comp.c (gc_options_gpg): Add allow-pka-lookup.
 
-	* mk-tdata.c (main): Implement option --char.
+2005-12-14  Werner Koch  <wk@g10code.com>
 
-2005-08-05  David Shaw  <dshaw@jabberwocky.com>
+	* Makefile.am (bin_PROGRAMS): Build gpgparsemail.
 
-	* gpg-zip.in: Add --decrypt functionality.  Fix quoting so
-	filenames with spaces work properly.
+	* gpgparsemail.c (pkcs7_begin): New.
+	(parse_message, message_cb): Add support of direct pkcs signatures.
 
-2005-08-04  David Shaw  <dshaw@jabberwocky.com>
+2005-10-19  Werner Koch  <wk@g10code.com>
 
-	* gpg-zip.in: New.  Script wrapper to work with encrypted tar
-	files, a la PGP Zip.
+	* gpgconf-comp.c (gc_options_scdaemon): New option --disable-keypad.
 
-	* Makefile.am: Use it if we have a USTAR compatible tar.
+2005-09-22  Werner Koch  <wk@g10code.com>
 
-2004-12-18  David Shaw  <dshaw@jabberwocky.com>
+	* rfc822parse.c (parse_field): Tread Content-Disposition special.
 
-	* Makefile.am: Link with readline where needed.
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
 
-2004-10-28  Werner Koch  <wk@g10code.com>
+	* Makefile.am (watchgnupg_LDADD): New variable.
 
-	* Makefile.am (other_libs): New.  Also include LIBICONV.  Noted by
-	Tim Mooney.
+	* Makefile.am (gpgconf_LDADD): Add ../gl/libgnu.a after
+	../common/libcommon.a.
+	(symcryptrun_LDADD, gpg_connect_agent_LDADD, gpgkey2ssh_LDADD):
+	Likewise.
+
+2005-09-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (AM_CFLAGS): Add $(LIBGCRYPT_CFLAGS).
+
+2005-09-06  Werner Koch  <wk@g10code.com>
+
+	* rfc822parse.c, rfc822parse.h:  Changed license to LGPL.
+
+2005-08-01  Werner Koch  <wk@g10code.com>
+
+	* gpgsm-gencert.sh: Allow entering a keygrip to generate a CSR from
+	an existing key.
+
+2005-07-21  Werner Koch  <wk@g10code.com>
+
+	* gpgsm-gencert.sh: Reworked to allow for multiple email addresses
+	as well as DNsanmes and URi.  Present the parameter file before
+	creating the certificate.
+
+2005-07-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* symcryptrun.c (SYMC_BAD_PASSPHRASE, SYMC_CANCELED): New symbols,
+	use instead constants.
+	(hash_string): New function copied from simple-gettext.c.
+	(confucius_get_pass): Take new argument CACHEID.
+	(confucius_process): Calculate cacheid and pass it to
+	confucius_get_pass.  Clear passphrase from cache if necessary.
+
+2005-06-16  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (read_and_print_response): Made LINELEN a
+	size_t.
+
+2005-06-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* symcryptrun.c (main): Allow any number of arguments, don't use
+	first argument as input file name.  Pass extra arguments to
+	confucius_main.
+	(confucius_main): Accept new arguments argc and argv and pass them
+	to confucius_process.
+	(confucius_process): Accept new arguments argc and argv and pass
+	them to the confucius process.
+
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c: Include mkdtemp.h. 
+
+2005-05-31  Werner Koch  <wk@g10code.com>
+
+	* watchgnupg.c: Make sure that PF_LCOAL and AF_LOCAL are defines.
+	Noted by Ray Link.
+
+2005-05-28  Moritz Schulte  <moritz@g10code.com>
+
+	* gpgkey2ssh.c: New file.
+	* Makefile.am (bin_PROGRAMS): Added gpgkey2ssh.
+
+2005-05-20  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (add_definq, show_definq, clear_definq)
+	(handle_inquire): New.
+	(read_and_print_response): Handle INQUIRE command.
+	(main): Implement control commands.
+
+2005-04-21  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c (main): Optionally allow the input file as command
+	line argument.
+
+	* gpgconf-comp.c: Add gpgsm option disable-trusted-cert-crl-check.
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c: Add gpg-agent:disable-scdaemon.
+
+2005-04-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* symcryptrun.c: Add --input option.
+
+2005-04-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* symcryptrun.c (TEMP_FAILURE_RETRY): Define if not defined.
+
+	* symcryptrun.c (remove_file): New function.
+	(confucius_copy_file): Accept new argument PLAIN and shred the
+	file if it is set on error.
+
+	* Makefile.am: Define symcryptrun make variable depending on
+	BUILD_SYMCRYPTUN.
+	(bin_PROGRAMS): Add ${symcryptrun} instead symcryptrun.
+	(symcryptrun_LDADD): Use $(LIBUTIL_LIBS) instead of -lutil.
+
+2005-04-11  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c (confucius_mktmpdir): Changed to use mkdtmp(3).
+
+2005-04-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* symcryptrun.c: Implement config file parsing.
+	
+	* Makefile.am (bin_PROGRAMS): Add symcryptrun.
+	(symcryptrun_SOURCES, symcryptrun_LDADD): New variables.
+	* symcryptrun.c: New file.
+
+2005-03-31  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (start_agent): Use PATHSEP_C instead of ':'.
+
+2005-03-09  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <dirmngr>: Add honor-http-proxy.
+
+2005-02-25  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c (gcry_strdup): New.
+
+2005-02-24  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c: New.
+	* Makefile.am: Add it. 
+
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (get_config_pathname) [DOSISH]: Detect absolute
+	pathnames with a drive letter.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (bin_PROGRAMS) [W32]: Do not build watchgnupg.
+
+	* gpgconf-comp.c (gpg_agent_runtime_change) [W32]: No way yet to
+	send a signal.  Disable.
+	(change_options_file, change_options_program) [W32]: No link(2),
+	so we disable it.
+	(gc_component_change_options): Use rename instead of link.
+
+2004-12-13  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <ignore-ocsp-service-url>: Fixed typo.
+
+2004-11-24  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <dirmngr>: Add --ignore-http-dp, --ignore-ldap-dp
+	and --ignore-ocsp-service-url.
+
+2004-11-23  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <dirmngr>: Add the proxy options.
+	<gpgsm>: Add --prefer-system-daemon.
+
+2004-11-11  Werner Koch  <wk@g10code.com>
+
+	* watchgnupg.c (main): Fixed test for read error.
+
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (bin_SCRIPTS): Add gpgsm-gencert.sh
+
+	* gpgsm-gencert.sh: Fixed copyright; its part of GnuPG thus FSF.
 
 2004-10-01  Werner Koch  <wk@g10code.com>
 
-	* bftest.c (i18n_init): Always use LC_ALL.
-	* shmtest.c (i18n_init): Ditto.
-	* mpicalc.c (i18n_init): Ditto.
+	* gpgconf-comp.c: Made all strings for --log-file read the same.
+	
+2004-10-01  Werner Koch  <wk@g10code.com>
 
-2004-09-13  David Shaw  <dshaw@jabberwocky.com>
+	* gpgconf-comp.c (my_dgettext): Also switch codeset and directory
+	for the other used domains (i.e. dirmngr).
 
-	* pgpgroup-to-gpggroup: New perl script to take groups from PGP
-	command line and write out GnuPG 'group' config lines.
+	* gpgconf.c (main): Fixed translation markers.
 
-2004-07-04  David Shaw  <dshaw@jabberwocky.com>
+2004-09-30  Werner Koch  <wk@g10code.com>
 
-	* ring-a-party: ElGamal -> Elgamal
+	* gpgconf.c (i18n_init): Always use LC_ALL.
 
-2004-01-11  David Shaw  <dshaw@jabberwocky.com>
+	* Makefile.am: Adjusted for gettext 0.14.
 
-	* convert-from-106, lspgpot: Check for gpg binary before
-	proceeding.  Don't hardcode the path to gpg.
+2004-09-29  Werner Koch  <wk@g10code.com>
 
-	* gpgsplit.c (handle_bzip2): Remove two cut and paste typecast
-	errors.  Noted by Stefan Bellon.
+	* gpgconf-comp.c: Made the entries fro GROUPs translatable.
+	Include i18n.h.
+	(my_dgettext): Hack to use the gnupg2 domain.
 
-2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
+2004-08-09  Moritz Schulte  <moritz@g10code.com>
 
-	* gpgsplit.c [__riscos__]: Removal of unnecessary #ifdef
-	__riscos__ sections.
+	* gpgsm-gencert.sh: New file.
 
-2003-12-06  David Shaw  <dshaw@jabberwocky.com>
+2004-06-16  Werner Koch  <wk@gnupg.org>
 
-	* gpgsplit.c (write_part): Split off decompression code.
-	(handle_zlib): Move it here.
-	(handle_bzip2): Add this to handle BZIP2 compressed messages.
+	* rfc822parse.c (rfc822parse_get_field): Add arg VALUEOFF.
 
-2003-10-25  Werner Koch  <wk@gnupg.org>
+2004-06-14  Werner Koch  <wk@gnupg.org>
 
-	* Makefile.am: Replaced INTLLIBS by LIBINTL.
+	* no-libgcrypt.c (gcry_realloc, gcry_xmalloc, gcry_xcalloc): New.
 
-2003-08-24  David Shaw  <dshaw@jabberwocky.com>
+	* gpgconf-comp.c (retrieve_options_from_program) 
+	(retrieve_options_from_file, change_options_file) 
+	(change_options_program, gc_component_change_options): Replaced
+	getline by read_line and test for allocation failure.
 
-	* Makefile.am: Use NETLIBS instead of EGDLIBS.
+2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
-2003-07-10  David Shaw  <dshaw@jabberwocky.com>
+	* gpgconf-comp.c (gc_options_dirmngr): Remove CRL group, put its
+	only option "max-replies" into LDAP group.
+	(gc_component): Change description of dirmngr to "Directory
+	Manager".
 
-	* Makefile.am: Use W32LIBS where appropriate.
+	* gpgconf-comp.c (gc_component_change_options): Move the
+	per-process backup file into a standard location.
 
-2003-05-30  David Shaw  <dshaw@jabberwocky.com>
+2004-05-03  Werner Koch  <wk@gnupg.org>
 
-	* Makefile.am: Some cleanup, and use DLLIBS for -ldl.
+	* gpgconf-comp.c: Add --allow-mark-trusted for the gpg-agent.
 
-2003-05-24  David Shaw  <dshaw@jabberwocky.com>
+2004-04-30  Werner Koch  <wk@gnupg.org>
 
-	* bftest.c, crlf.c, mk-tdata.c, mpicalc.c, shmtest.c: Edit all
-	preprocessor instructions to remove whitespace before the
-	'#'. This is not required by C89, but there are some compilers out
-	there that don't like it.
+	* gpgconf-comp.c: Added more runtime flags for the gpg-agent
+	backend.
 
-2003-03-11  David Shaw  <dshaw@jabberwocky.com>
+2004-04-29  Marcus Brinkmann  <marcus@g10code.de>
 
-	* Makefile.am: Use @CAPLIBS@ to link in -lcap if we are using
-	capabilities.
+	* gpgconf-comp.c (change_options_program): Turn on utf8-strings in
+	the gpgconf specific part of the config file for the GnuPG
+	backend.
 
-2003-02-22  David Shaw  <dshaw@jabberwocky.com>
+2004-04-28  Werner Koch  <wk@gnupg.org>
 
-	* Makefile.am: Distribute convert-from-106.
+	* gpgconf-comp.c: Add --ocsp-signer for the dirmngr backend.
 
-	* convert-from-106: Script to automate the 1.0.6->later
-	conversion.  It marks all secret keys as ultimately trusted, adds
-	the signature caches, and checks the trustdb.  Moved from the
-	scripts directory.
+2004-04-20  Marcus Brinkmann  <marcus@g10code.de>
 
-2002-10-31  Stefan Bellon  <sbellon@sbellon.de>
+	* gpgconf-comp.c (gc_options_gpg_agent): Change type of
+	ignore-cache-for-signing option to GC_ARG_TYPE_NONE.
 
-	* gpgsplit.c (write_part) [__riscos__]: Use riscos_load_module()
-	to load ZLib module.
+2004-04-07  Werner Koch  <wk@gnupg.org>
 
-2002-10-23  Werner Koch  <wk@gnupg.org>
+	* gpgconf-comp.c (my_dgettext): Switch the codeset once to utf-8.
+	Allow building with out NLS.
 
-	* gpgsplit.c: New options --secret-to-public and --no-split.
-	GNUified the indentation style.
+2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
 
-2002-09-25  David Shaw  <dshaw@jabberwocky.com>
+	* gpgconf-comp.c (gc_options_dirmngr): Set GC_OPT_FLAG_ARG_OPT for
+	"LDAP Server".
+	(change_options_file): Remove assertion that tests that this flag
+	is not present.  Handle an empty string in OPTION->new_value.
 
-	* Makefile.am: Link bftest with EGDLIBS (i.e. NETLIBS) as EGD uses
-	sockets.
+	* gpgconf.c (main): Remove obsolete warning.
 
-2002-05-07  Stefan Bellon  <sbellon@sbellon.de>
+2004-03-23  Werner Koch  <wk@gnupg.org>
 
-	* gpgsplit.c (create_filename): Use EXTSEP_S instead of ".".
+	* gpgconf-comp.c (gc_options_gpg): New.
+	(gc_component_t, gc_component): Add GC_BACKEND_GPG.
+	(gc_options_dirmngr): Add allow-ocsp.
 
-2002-04-23  David Shaw  <dshaw@jabberwocky.com>
+2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
 
-	* Makefile.am: Do not list libraries in -lxxx format in a
-	dependency line.
+	* gpgconf-comp.c (gc_flag): Add missing flags.
 
-2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+	* gpgconf-comp.c: Include <signal.h>.
+	(gc_backend): Add new member runtime_change.
+	(gpg_agent_runtime_change): New function.
+	(gc_component_change_options): New variable runtime.  Initialize
+	it.  If an option is changed that has the GC_OPT_FLAG_RUNTIME bit
+	set, also set the corresponding runtime variable.  Finally, call
+	the runtime_change callback of the backend if needed.	
 
-	* gpgsplit.c [__riscos__]: Added RISC OS specific file name
-	code.
+2004-03-16  Werner Koch  <wk@gnupg.org>
 
-	* gpgsplit.c (write_part): Introduced two explicit casts.
+	* gpgconf-comp.c (gc_options_gpg_agent): Implemented.
+	(gc_options_gpgsm, gc_options_scdaemon): Implemented.
+	(gc_backend_t): Add GC_BACKEND_SCDAEMON.
 
-2001-12-21  David Shaw  <dshaw@jabberwocky.com>
+2004-03-12  Marcus Brinkmann  <marcus@g10code.de>
 
-	* gpgsplit.c (pkttype_to_string): PKT_PHOTO_ID -> PKT_ATTRIBUTE
+	* gpgconf-comp.c (gc_component_change_options): Set the filenames
+	of the option's backend, not of the component.
+	Also use GC_BACKEND_NR, not GC_COMPONENT_NR.
 
-2001-10-23  Werner Koch  <wk@gnupg.org>
+2004-03-09  Werner Koch  <wk@gnupg.org>
 
-	* Makefile.am (gpgsplit_LDADD): Add ZLIBS.
+	* gpgconf-comp.c [_riscos_]: Removed special code for RISC OS; we
+	don't want to clutter our code with system dependent stuff.
 
-2001-09-18  Werner Koch  <wk@gnupg.org>
+2004-03-08  Marcus Brinkmann  <marcus@g10code.de>
 
-	* gpgsplit.c: New option --uncompress.
-	(write_part): Handle old style uncompressing.
+	* gpgconf-comp.c (retrieve_options_from_file): Quote each string
+	in the list, not only the first.
 
-2001-06-20  Werner Koch  <wk@gnupg.org>
+2004-02-26  Marcus Brinkmann  <marcus@g10code.de>
 
-	* gpgsplit.c: New.
-	* Makefile.am (bin_PROGRAMS): Install gpgsplit.
+	* gpgconf-comp.c (gc_component_list_options): Do not print empty
+	groups.
 
-2001-03-27  Werner Koch  <wk@gnupg.org>
+	* gpgconf-comp.c (option_check_validity): Check if option is
+	active.
+	(change_options_file): Implement.
 
-	* mail-signed-keys: Add option --dry-run.
+	* gpgconf-comp.c (retrieve_options_from_program): Remove broken
+	string handling.
 
-2001-03-21  Werner Koch  <wk@gnupg.org>
+	* gpgconf-comp.c (change_options_program): Support all types of
+	options, including list types.
 
-	* shmtest.c: Add sys/types.h
+	* README.gpgconf: Fix description of arguments.
+	* gpgconf-comp.c (option_check_validity): Rewritten to properly
+	support optional arguments in lists.
 
-Fri Sep 15 18:40:36 CEST 2000  Werner Koch  <wk@openit.de>
+	* README.gpgconf: Add info about optional arg and arg type 0.
+	* gpgconf-comp.c (gc_component_change_options): Parse list of
+	arg type 0 options.
+	(option_check_validity): Add new argument NEW_VALUE_NR.  Perform
+	rigorous validity checks.
+	(change_options_program): Disable an option also if we have a new
+	value for it.
 
-        * ring-a-party: An array start at offset 1 no 0.  Many thanks to Mike
-        for finding this bug.
+2004-02-25  Marcus Brinkmann  <marcus@g10code.de>
 
-Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
+	* gpgconf-comp.c (gc_component_list_options): Correct output for
+	lists of arg type none.
+	(struct gc_option): Add new member new_flags.
+	(option_check_validity): Check OPTION->new_flags beside
+	OPTION->new_value.  Add new argument FLAGS.
+	(gc_component_change_options): Support default flag correctly.
+	(change_options_program): Likewise.
 
-        * ring-a-party: Flush the last key.
+2004-02-24  Marcus Brinkmann  <marcus@g10code.de>
 
-Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@>
+	* README.gpgconf: Revert last change.  Add new flags "default",
+	"default desc" and "no arg desc".  Add new field ARGDEF.  Add new
+	field FLAG to backend interface.
+	* gpgconf-comp.c (struct gc_option): Make flags of type unsigned
+	long.
+	(gc_component_list_options): Adjust type for flags.
+	Add default argument field.
+	(retrieve_options_from_program): Use "1" as value for non-option
+	arguments, not "Y".
+	(gc_component_change_options): Read in flags from input.
 
-        * mail-signed-keys: New.
+2004-02-23  Marcus Brinkmann  <marcus@g10code.de>
 
-Tue May 23 09:19:00 CEST 2000  Werner Koch  <wk@openit.de>
+	* README.gpgconf: Change meaning of type 0 options value if it is
+	the empty string or "0".
 
-	* ring-a-party: New.
+	* gpgconf.h (struct): Add member runtime.
+	* gpgconf.c: Add new option oRuntime.
+	(main): Same here.
 
-Thu Jul  8 16:21:27 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+	* gpgconf-comp.c (hextobyte): New function.
+	(percent_deescape): New function.
+	(get_config_pathname): Percent deescape pathname if taken from
+	option (default) value.  Use default value only if it exists and
+	is not empty.  Use empty string otherwise.  Don't include leading
+	quote in pathname.
+	(change_options_program): Percent deescape string before writing
+	it out.
+	
+	* gpgconf-comp.c (gc_component_list_options): Do not skip groups
+	on output.
 
-	* lspgpot: New
+2004-02-18  Werner Koch  <wk@gnupg.org>
 
-Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+	* gpgconf-comp.c: Added empty components for gpgsm and scdaemon.
 
-	* Makefile.am: Support for libtool.
+2004-02-12  Werner Koch  <wk@gnupg.org>
 
-Tue Jun  8 13:36:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+	* watchgnupg.c (main): Implement option "--".
+	(print_version): New.
 
-	* mpicalc.c (main): hex digits may now be lowercase
-	(do_mulm): new.
+	* Makefile.am: Include cmacros.am for common flags.
 
-Thu Dec 10 20:15:36 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+2004-02-03  Werner Koch  <wk@gnupg.org>
 
-	* mpicalc.c (main): Moved initialization out of definition.
+	* addgnupghome: Try to use getent, so that it also works for NIS
+	setups.
 
-Mon May 18 15:39:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
+2004-01-31  Marcus Brinkmann  <marcus@g10code.de>
 
-	* mk-tdata.c: New.
+	* gpgconf-comp.c: Some bug fixes, parse only defaults from the
+	program, and read the current values from the configuration file
+	directly.
 
-Tue Apr  7 19:50:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
+2004-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
-	* bftest.c: Now supports all availabe ciphers.
+	* gpgconf-comp.c (gc_error): New function, use it instead of
+	error() throughout.
 
+	* gpgconf-comp.c: Use xmalloc, libcommon's asctimestamp and
+	gnupg_get_time, fix error() invocation and use getline()
+	consistently.
+	
+2004-01-30  Werner Koch  <wk@gnupg.org>
 
+	* addgnupghome: Also set the group of copied files. 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (sbin_SCRIPTS): New, to install addgnupghome.
+	(EXTRA_DIST): Added rfc822parse.c rfc822parse.h gpgparsemail.c
+	which might be useful for debugging.
+
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* addgnupghome: New.
+
+2004-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-list.c: File removed.
+	* README.gpgconf: New file.
+	* gpgconf-comp.c: New file.
+	* Makefile.am (gpgconf_SOURCES): Remove gpgconf-list.c, add
+	gpgconf-comp.c.
+
+2004-01-16  Werner Koch  <wk@gnupg.org>
+
+	* watchgnupg.c (main): Need to use FD_ISSET for the client
+	descriptors too; aiiih.  Set the listening socket to non-blocking.
+
+2004-01-10  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Use GPG_ERROR_CFLAGS
+	
+2004-01-05  Werner Koch  <wk@gnupg.org>
+
+	* Manifest: New.
+	* gpgconf.c, gpgconf.h, gpgconf-list.c: New. A skeleton for now.
+	* no-libgcrypt.c: New.
+	* Makefile.am: Add above.
+
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: New.
+	* watchgnupg.c: New.
+
+
+ Copyright 2003, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -222,5 +482,3 @@ Tue Apr  7 19:50:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

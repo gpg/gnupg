@@ -15,34 +15,26 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
 
 ## Process this file with automake to produce Makefile.in
 
+
+#if RUN_PKITS_TESTS
+#pkits = pkits
+#else
+#pkits =
+#endif
+#
+#SUBDIRS = . ${pkits}
+
+
 GPGSM = ../sm/gpgsm
 
-# We can't unset a variable here so we unset GPG_AGENT_INFO in runtest
-TESTS_ENVIRONMENT = GNUPGHOME=`pwd` LC_ALL=C GPGSM=$(GPGSM) \
-		    LD_LIBRARY_PATH=$$(seen=0; \
-                           for i in $(LDFLAGS) $(LIBGCRYPT_LIBS) $(PTH_LIBS); \
-                           do \
-                             if echo "$$i" | egrep '^-L' >/dev/null 2>&1; \
-                             then \
-                               if test $$seen = 0; \
-                               then \
-                                 seen=1; \
-                               else \
-                                 printf ":"; \
-                               fi; \
-                               printf "%s" "$${i}" | sed 's/^-L//'; \
-                             fi; \
-                           done; \
-                           if test $$seen != 0 \
-                              && test x$${LD_LIBRARY_PATH} != x; \
-                           then \
-                             printf ":"; \
-                           fi; \
-                           printf "%s" "$${LD_LIBRARY_PATH}") $(srcdir)/runtest
+
+TESTS_ENVIRONMENT = GNUPGHOME=`pwd` GPG_AGENT_INFO= LC_ALL=C GPGSM=$(GPGSM) \
+	$(srcdir)/runtest
 
 testscripts = sm-sign+verify sm-verify
 
@@ -57,7 +49,7 @@ EXTRA_DIST = runtest inittests $(testscripts) \
 
 TESTS = $(testscripts)
 
-CLEANFILES = inittests.stamp x y y z out err 
+CLEANFILES = inittests.stamp x y y z out err \
 	     *.lock .\#lk* 
 
 DISTCLEANFILES = pubring.kbx~ random_seed

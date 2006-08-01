@@ -3,6 +3,8 @@ Maintainer:  Werner Koch <wk@gnupg.org>
 Bug reports: <bug-gnupg@gnu.org>
 Security related bug reports: <security@gnupg.org>
 
+Please note that this file is for the 1.9 branch of GnuPG.
+
 
 Authors
 =======
@@ -28,6 +30,9 @@ Edmund GRIMLEY EVANS <edmundo@rano.org> Translations [eo]
 Florian Weimer	<fw@deneb.enyo.de>  Assigns past and future changes
     (changed:g10/parse-packet.c, include/iobuf.h, util/iobuf.c)
 
+g10 Code GmbH   <info@g10code.com>  Assigns past and future changes
+    (all work since 2001 as indicated by mail addresses in ChangeLogs)
+
 Gaël Quéri  <gael@lautre.net>  Translations [fr]
     (fixed a lot of typos)
 
@@ -50,8 +55,6 @@ Laurentiu Buzdugan <lbgnupg@rolix.org> Translations [ro]
 
 Magda Procha'zkova'  <magda@math.muni.cz> Translations [cs]
 
-Meng Jie <zuxyhere@eastday.com> Translations [zh_CN]
-
 Michael Roth  <mroth@nessie.de>  Assigns changes.
     (wrote cipher/des.c., changes and bug fixes all over the place)
 
@@ -59,8 +62,14 @@ Michal Majer <mmajer@econ.umb.sk> Translations [sk]
 
 Marco d'Itri <md@linux.it> Translations [it]
 
+Marcus Brinkmann  <marcus@g10code.de>
+    (gpgconf and fixes all over the place)
+
 Matthew Skala <mskala@ansuz.sooke.bc.ca>  Disclaimer
     (wrote cipher/twofish.c)
+
+Moritz Schulte  <moritz@g10code.com>  
+   (ssh support gpg-agent)
 
 Niklas Hernaeus <nh@df.lth.se> Disclaimer
     (weak key patches)
@@ -96,15 +105,13 @@ Rafael Caetano dos Santos <rcaetano@linux.ime.usp.br> Translations [pt_BR]
 
 Toomas Soome <tsoome@ut.ee> Translations [et]
 
-Trond Endrestøl <Trond.Endrestol@fagskolen.gjovik.no> Translations [nb]
-
-Urko Lusa <ulusa@euskalnet.net> Translations [es]
-Jaime Sua'rez <jjsuarez@iname.com> Translations [es]
+Urko Lusa <ulusa@euskalnet.net> Translations [es_ES]
 
 Walter Koch <koch@u32.de>  Translations [de]
 
 Werner Koch  <wk@gnupg.org>  Assigns GNU Privacy Guard and future changes.
-    (started the whole thing)
+    (started the whole thing, wrote the S/MIME extensions, the
+     smartcard daemon and the gpg-agent)
 
 Yosiaki IIDA <iida@ring.gr.jp> Translations [ja]
 
@@ -113,28 +120,15 @@ Yosiaki IIDA <iida@ring.gr.jp> Translations [ja]
 Other authors
 =============
 
-This program uses the zlib compression library written by
-Jean-loup Gailly and Mark Adler.
-
-Most of the stuff in mpi has been taken from the GMP library by
-Torbjorn Granlund <tege@noisy.tmg.se>.
-
-The Rijndael implementation (cipher/rijndael.c) is based on the 
-public domain reference code provided for the AES selection process.
-The Rijndael algorithm is due to Joan Daemen and Vincent Rijmen. 
-
-The files cipher/rndunix.c and cipher/rndw32.c are based on rndunix.c
-and rndwin32.c from cryptlib.
-Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-1999.
+The files common/libestream.[ch] are maintained as a separate project
+by g10 Code GmbH.  These files, as used here, are considered part of
+GnuPG.
 
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
 
-The files below scripts/conf-w32brg/ is a contribution to GnuPG by
-Brian Gladman and not to be considered a proper part of GnuPG.
-
-
- Copyright 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2004,
+           2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

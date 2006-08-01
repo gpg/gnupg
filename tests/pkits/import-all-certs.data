@@ -1,0 +1,490 @@
+# The first column is for the basic import test, the second for a
+# validation test.
+
+# Make sure that the root certificate is imported first
+p p TrustAnchorRootCertificate.crt
+ 
+p p AllCertificatesNoPoliciesTest2EE.crt
+p p AllCertificatesSamePoliciesTest10EE.crt
+p p AllCertificatesSamePoliciesTest13EE.crt
+p p AllCertificatesanyPolicyTest11EE.crt
+p p AnyPolicyTest14EE.crt
+p p BadCRLIssuerNameCACert.crt
+p p BadCRLSignatureCACert.crt
+f f BadSignedCACert.crt
+p f BadnotAfterDateCACert.crt
+
+#  UTC: "470101120100Z" i.e. not before 2047-01-01
+p f BadnotBeforeDateCACert.crt
+
+p p BasicSelfIssuedCRLSigningKeyCACert.crt
+ 
+#   For yet unknown reasons gpgsm claims a bad signature.
+? ? BasicSelfIssuedCRLSigningKeyCRLCert.crt
+   
+p p BasicSelfIssuedNewKeyCACert.crt
+
+#   For yet unknown reasons gpgsm claims a bad signature.
+? ? BasicSelfIssuedNewKeyOldWithNewCACert.crt
+
+p p BasicSelfIssuedOldKeyCACert.crt
+
+#   For yet unknown reasons gpgsm claims a bad signature.
+? ? BasicSelfIssuedOldKeyNewWithOldCACert.crt
+
+p p CPSPointerQualifierTest20EE.crt
+   
+u u DSACACert.crt
+u u DSAParametersInheritedCACert.crt
+   
+p p DifferentPoliciesTest12EE.crt
+p p DifferentPoliciesTest3EE.crt
+p p DifferentPoliciesTest4EE.crt
+p p DifferentPoliciesTest5EE.crt
+p p DifferentPoliciesTest7EE.crt
+p p DifferentPoliciesTest8EE.crt
+p p DifferentPoliciesTest9EE.crt
+p p GeneralizedTimeCRLnextUpdateCACert.crt
+p p GoodCACert.crt
+p p GoodsubCACert.crt
+
+# gpgsm: critical certificate extension 2.5.29.33 (policyMappings) 
+#        is not supported
+p u GoodsubCAPanyPolicyMapping1to2CACert.crt
+
+# fixme: gpgme does not fail for it.
+p f InvalidBadCRLIssuerNameTest5EE.crt
+
+p f InvalidBadCRLSignatureTest4EE.crt
+p f InvalidBasicSelfIssuedCRLSigningKeyTest7EE.crt
+
+f f InvalidBasicSelfIssuedCRLSigningKeyTest8EE.crt
+
+p f InvalidBasicSelfIssuedNewWithOldTest5EE.crt
+
+f f InvalidBasicSelfIssuedOldWithNewTest2EE.crt
+
+p f InvalidCASignatureTest2EE.crt
+
+p f InvalidCAnotAfterDateTest5EE.crt
+p f InvalidCAnotBeforeDateTest1EE.crt
+p f InvalidDNSnameConstraintsTest31EE.crt
+p f InvalidDNSnameConstraintsTest33EE.crt
+p f InvalidDNSnameConstraintsTest38EE.crt
+p f InvalidDNandRFC822nameConstraintsTest28EE.crt
+p f InvalidDNandRFC822nameConstraintsTest29EE.crt
+p f InvalidDNnameConstraintsTest10EE.crt
+p f InvalidDNnameConstraintsTest12EE.crt
+p f InvalidDNnameConstraintsTest13EE.crt
+p f InvalidDNnameConstraintsTest15EE.crt
+p f InvalidDNnameConstraintsTest16EE.crt
+p f InvalidDNnameConstraintsTest17EE.crt
+
+f f InvalidDNnameConstraintsTest20EE.crt
+
+p f InvalidDNnameConstraintsTest2EE.crt
+p f InvalidDNnameConstraintsTest3EE.crt
+p f InvalidDNnameConstraintsTest7EE.crt
+p f InvalidDNnameConstraintsTest8EE.crt
+p f InvalidDNnameConstraintsTest9EE.crt
+
+u u InvalidDSASignatureTest6EE.crt
+
+f f InvalidEESignatureTest3EE.crt
+
+p f InvalidEEnotAfterDateTest6EE.crt
+p f InvalidEEnotBeforeDateTest2EE.crt
+p f InvalidIDPwithindirectCRLTest23EE.crt
+p f InvalidIDPwithindirectCRLTest26EE.crt
+p f InvalidLongSerialNumberTest18EE.crt
+p f InvalidMappingFromanyPolicyTest7EE.crt
+p f InvalidMappingToanyPolicyTest8EE.crt
+p f InvalidMissingCRLTest1EE.crt
+p f InvalidMissingbasicConstraintsTest1EE.crt
+p f InvalidNameChainingOrderTest2EE.crt
+p f InvalidNameChainingTest1EE.crt
+p f InvalidNegativeSerialNumberTest15EE.crt
+p f InvalidOldCRLnextUpdateTest11EE.crt
+p f InvalidPolicyMappingTest10EE.crt
+p f InvalidPolicyMappingTest2EE.crt
+p f InvalidPolicyMappingTest4EE.crt
+p f InvalidRFC822nameConstraintsTest22EE.crt
+p f InvalidRFC822nameConstraintsTest24EE.crt
+p f InvalidRFC822nameConstraintsTest26EE.crt
+p f InvalidRevokedCATest2EE.crt
+p f InvalidRevokedEETest3EE.crt
+
+f f InvalidSelfIssuedinhibitAnyPolicyTest10EE.crt
+
+p f InvalidSelfIssuedinhibitAnyPolicyTest8EE.crt
+p f InvalidSelfIssuedinhibitPolicyMappingTest10EE.crt
+p f InvalidSelfIssuedinhibitPolicyMappingTest11EE.crt
+p f InvalidSelfIssuedinhibitPolicyMappingTest8EE.crt
+p f InvalidSelfIssuedinhibitPolicyMappingTest9EE.crt
+p f InvalidSelfIssuedpathLenConstraintTest16EE.crt
+p f InvalidSelfIssuedrequireExplicitPolicyTest7EE.crt
+p f InvalidSelfIssuedrequireExplicitPolicyTest8EE.crt
+
+f f InvalidSeparateCertificateandCRLKeysTest20EE.crt
+f f InvalidSeparateCertificateandCRLKeysTest21EE.crt
+
+p f InvalidURInameConstraintsTest35EE.crt
+p f InvalidURInameConstraintsTest37EE.crt
+p f InvalidUnknownCRLEntryExtensionTest8EE.crt
+p f InvalidUnknownCRLExtensionTest10EE.crt
+p f InvalidUnknownCRLExtensionTest9EE.crt
+p f InvalidUnknownCriticalCertificateExtensionTest2EE.crt
+p f InvalidWrongCRLTest6EE.crt
+p f InvalidcAFalseTest2EE.crt
+p f InvalidcAFalseTest3EE.crt
+p f InvalidcRLIssuerTest27EE.crt
+p f InvalidcRLIssuerTest31EE.crt
+p f InvalidcRLIssuerTest32EE.crt
+p f InvalidcRLIssuerTest34EE.crt
+p f InvalidcRLIssuerTest35EE.crt
+p f InvaliddeltaCRLIndicatorNoBaseTest1EE.crt
+p f InvaliddeltaCRLTest10EE.crt
+p f InvaliddeltaCRLTest3EE.crt
+p f InvaliddeltaCRLTest4EE.crt
+p f InvaliddeltaCRLTest6EE.crt
+p f InvaliddeltaCRLTest9EE.crt
+p f InvaliddistributionPointTest2EE.crt
+p f InvaliddistributionPointTest3EE.crt
+p f InvaliddistributionPointTest6EE.crt
+p f InvaliddistributionPointTest8EE.crt
+p f InvaliddistributionPointTest9EE.crt
+p f InvalidinhibitAnyPolicyTest1EE.crt
+p f InvalidinhibitAnyPolicyTest4EE.crt
+p f InvalidinhibitAnyPolicyTest5EE.crt
+p f InvalidinhibitAnyPolicyTest6EE.crt
+p f InvalidinhibitPolicyMappingTest1EE.crt
+p f InvalidinhibitPolicyMappingTest3EE.crt
+p f InvalidinhibitPolicyMappingTest5EE.crt
+p f InvalidinhibitPolicyMappingTest6EE.crt
+p f InvalidkeyUsageCriticalcRLSignFalseTest4EE.crt
+p f InvalidkeyUsageCriticalkeyCertSignFalseTest1EE.crt
+p f InvalidkeyUsageNotCriticalcRLSignFalseTest5EE.crt
+p f InvalidkeyUsageNotCriticalkeyCertSignFalseTest2EE.crt
+p f InvalidonlyContainsAttributeCertsTest14EE.crt
+p f InvalidonlyContainsCACertsTest12EE.crt
+p f InvalidonlyContainsUserCertsTest11EE.crt
+p f InvalidonlySomeReasonsTest15EE.crt
+p f InvalidonlySomeReasonsTest16EE.crt
+p f InvalidonlySomeReasonsTest17EE.crt
+p f InvalidonlySomeReasonsTest20EE.crt
+p f InvalidonlySomeReasonsTest21EE.crt
+p f InvalidpathLenConstraintTest10EE.crt
+p f InvalidpathLenConstraintTest11EE.crt
+p f InvalidpathLenConstraintTest12EE.crt
+p f InvalidpathLenConstraintTest5EE.crt
+p f InvalidpathLenConstraintTest6EE.crt
+p f InvalidpathLenConstraintTest9EE.crt
+p f Invalidpre2000CRLnextUpdateTest12EE.crt
+p f Invalidpre2000UTCEEnotAfterDateTest7EE.crt
+p f InvalidrequireExplicitPolicyTest3EE.crt
+p f InvalidrequireExplicitPolicyTest5EE.crt
+p p LongSerialNumberCACert.crt
+p p Mapping1to2CACert.crt
+p p MappingFromanyPolicyCACert.crt
+p p MappingToanyPolicyCACert.crt
+p p MissingbasicConstraintsCACert.crt
+p p NameOrderingCACert.crt
+p p NegativeSerialNumberCACert.crt
+p p NoCRLCACert.crt
+p p NoPoliciesCACert.crt
+p p NoissuingDistributionPointCACert.crt
+p p OldCRLnextUpdateCACert.crt
+p p OverlappingPoliciesTest6EE.crt
+p p P12Mapping1to3CACert.crt
+p p P12Mapping1to3subCACert.crt
+p p P12Mapping1to3subsubCACert.crt
+p p P1Mapping1to234CACert.crt
+p p P1Mapping1to234subCACert.crt
+p p P1anyPolicyMapping1to2CACert.crt
+p p PanyPolicyMapping1to2CACert.crt
+p p PoliciesP1234CACert.crt
+p p PoliciesP1234subCAP123Cert.crt
+p p PoliciesP1234subsubCAP123P12Cert.crt
+p p PoliciesP123CACert.crt
+p p PoliciesP123subCAP12Cert.crt
+p p PoliciesP123subsubCAP12P1Cert.crt
+p p PoliciesP123subsubCAP12P2Cert.crt
+p p PoliciesP123subsubsubCAP12P2P1Cert.crt
+p p PoliciesP12CACert.crt
+p p PoliciesP12subCAP1Cert.crt
+p p PoliciesP12subsubCAP1P2Cert.crt
+p p PoliciesP2subCA2Cert.crt
+p p PoliciesP2subCACert.crt
+p p PoliciesP3CACert.crt
+p p RFC3280MandatoryAttributeTypesCACert.crt
+p p RFC3280OptionalAttributeTypesCACert.crt
+p p RevokedsubCACert.crt
+p p RolloverfromPrintableStringtoUTF8StringCACert.crt
+p p SeparateCertificateandCRLKeysCA2CRLSigningCert.crt
+p p SeparateCertificateandCRLKeysCA2CertificateSigningCACert.crt
+p p SeparateCertificateandCRLKeysCRLSigningCert.crt
+p p SeparateCertificateandCRLKeysCertificateSigningCACert.crt
+p p TwoCRLsCACert.crt
+p p UIDCACert.crt
+p p UTF8StringCaseInsensitiveMatchCACert.crt
+p p UTF8StringEncodedNamesCACert.crt
+p p UnknownCRLEntryExtensionCACert.crt
+p p UnknownCRLExtensionCACert.crt
+p p UserNoticeQualifierTest15EE.crt
+p p UserNoticeQualifierTest16EE.crt
+p p UserNoticeQualifierTest17EE.crt
+p p UserNoticeQualifierTest18EE.crt
+p p UserNoticeQualifierTest19EE.crt
+p p ValidBasicSelfIssuedCRLSigningKeyTest6EE.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? ValidBasicSelfIssuedNewWithOldTest3EE.crt
+
+p p ValidBasicSelfIssuedNewWithOldTest4EE.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? ValidBasicSelfIssuedOldWithNewTest1EE.crt
+
+p p ValidCertificatePathTest1EE.crt
+p p ValidDNSnameConstraintsTest30EE.crt
+p p ValidDNSnameConstraintsTest32EE.crt
+p p ValidDNandRFC822nameConstraintsTest27EE.crt
+p p ValidDNnameConstraintsTest11EE.crt
+
+# This certificate has an empty subject sequence.  Our parser does not
+# support this yet and it is unlikely that gpgsm will be able to cope
+# with it at all.
+u u ValidDNnameConstraintsTest14EE.crt
+
+p p ValidDNnameConstraintsTest18EE.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? ValidDNnameConstraintsTest19EE.crt
+
+p p ValidDNnameConstraintsTest1EE.crt
+p p ValidDNnameConstraintsTest4EE.crt
+p p ValidDNnameConstraintsTest5EE.crt
+p p ValidDNnameConstraintsTest6EE.crt
+
+u p ValidDSAParameterInheritanceTest5EE.crt
+u p ValidDSASignaturesTest4EE.crt
+
+p p ValidGeneralizedTimeCRLnextUpdateTest13EE.crt
+p p ValidGeneralizedTimenotAfterDateTest8EE.crt
+p p ValidGeneralizedTimenotBeforeDateTest4EE.crt
+p p ValidIDPwithindirectCRLTest22EE.crt
+p p ValidIDPwithindirectCRLTest24EE.crt
+p p ValidIDPwithindirectCRLTest25EE.crt
+p p ValidLongSerialNumberTest16EE.crt
+p p ValidLongSerialNumberTest17EE.crt
+p p ValidNameChainingCapitalizationTest5EE.crt
+p p ValidNameChainingWhitespaceTest3EE.crt
+p p ValidNameChainingWhitespaceTest4EE.crt
+p p ValidNameUIDsTest6EE.crt
+p p ValidNegativeSerialNumberTest14EE.crt
+p p ValidNoissuingDistributionPointTest10EE.crt
+p p ValidPolicyMappingTest11EE.crt
+p p ValidPolicyMappingTest12EE.crt
+p p ValidPolicyMappingTest13EE.crt
+p p ValidPolicyMappingTest14EE.crt
+p p ValidPolicyMappingTest1EE.crt
+p p ValidPolicyMappingTest3EE.crt
+p p ValidPolicyMappingTest5EE.crt
+p p ValidPolicyMappingTest6EE.crt
+p p ValidPolicyMappingTest9EE.crt
+p p ValidRFC3280MandatoryAttributeTypesTest7EE.crt
+p p ValidRFC3280OptionalAttributeTypesTest8EE.crt
+p p ValidRFC822nameConstraintsTest21EE.crt
+p p ValidRFC822nameConstraintsTest23EE.crt
+p p ValidRFC822nameConstraintsTest25EE.crt
+p p ValidRolloverfromPrintableStringtoUTF8StringTest10EE.crt
+p p ValidSelfIssuedinhibitAnyPolicyTest7EE.crt
+p p ValidSelfIssuedinhibitAnyPolicyTest9EE.crt
+p p ValidSelfIssuedinhibitPolicyMappingTest7EE.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? ValidSelfIssuedpathLenConstraintTest15EE.crt
+
+p p ValidSelfIssuedpathLenConstraintTest17EE.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? ValidSelfIssuedrequireExplicitPolicyTest6EE.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? ValidSeparateCertificateandCRLKeysTest19EE.crt
+
+p p ValidTwoCRLsTest7EE.crt
+p p ValidURInameConstraintsTest34EE.crt
+p p ValidURInameConstraintsTest36EE.crt
+p p ValidUTF8StringCaseInsensitiveMatchTest11EE.crt
+p p ValidUTF8StringEncodedNamesTest9EE.crt
+p p ValidUnknownNotCriticalCertificateExtensionTest1EE.crt
+p p ValidbasicConstraintsNotCriticalTest4EE.crt
+p p ValidcRLIssuerTest28EE.crt
+p p ValidcRLIssuerTest29EE.crt
+p p ValidcRLIssuerTest30EE.crt
+p p ValidcRLIssuerTest33EE.crt
+p p ValiddeltaCRLTest2EE.crt
+p p ValiddeltaCRLTest5EE.crt
+p p ValiddeltaCRLTest7EE.crt
+p p ValiddeltaCRLTest8EE.crt
+p p ValiddistributionPointTest1EE.crt
+p p ValiddistributionPointTest4EE.crt
+p p ValiddistributionPointTest5EE.crt
+p p ValiddistributionPointTest7EE.crt
+p p ValidinhibitAnyPolicyTest2EE.crt
+p p ValidinhibitPolicyMappingTest2EE.crt
+p p ValidinhibitPolicyMappingTest4EE.crt
+p p ValidkeyUsageNotCriticalTest3EE.crt
+p p ValidonlyContainsCACertsTest13EE.crt
+p p ValidonlySomeReasonsTest18EE.crt
+p p ValidonlySomeReasonsTest19EE.crt
+p p ValidpathLenConstraintTest13EE.crt
+p p ValidpathLenConstraintTest14EE.crt
+p p ValidpathLenConstraintTest7EE.crt
+p p ValidpathLenConstraintTest8EE.crt
+p p Validpre2000UTCnotBeforeDateTest3EE.crt
+p p ValidrequireExplicitPolicyTest1EE.crt
+p p ValidrequireExplicitPolicyTest2EE.crt
+p p ValidrequireExplicitPolicyTest4EE.crt
+p p WrongCRLCACert.crt
+p p anyPolicyCACert.crt
+p p basicConstraintsCriticalcAFalseCACert.crt
+p p basicConstraintsNotCriticalCACert.crt
+p p basicConstraintsNotCriticalcAFalseCACert.crt
+p p deltaCRLCA1Cert.crt
+p p deltaCRLCA2Cert.crt
+p p deltaCRLCA3Cert.crt
+p p deltaCRLIndicatorNoBaseCACert.crt
+p p distributionPoint1CACert.crt
+p p distributionPoint2CACert.crt
+p p indirectCRLCA1Cert.crt
+p p indirectCRLCA2Cert.crt
+p p indirectCRLCA3Cert.crt
+p p indirectCRLCA3cRLIssuerCert.crt
+p p indirectCRLCA4Cert.crt
+p p indirectCRLCA4cRLIssuerCert.crt
+p p indirectCRLCA5Cert.crt
+p p indirectCRLCA6Cert.crt
+p p inhibitAnyPolicy0CACert.crt
+p p inhibitAnyPolicy1CACert.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? inhibitAnyPolicy1SelfIssuedCACert.crt
+? ? inhibitAnyPolicy1SelfIssuedsubCA2Cert.crt
+
+p p inhibitAnyPolicy1subCA1Cert.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? inhibitAnyPolicy1subCA2Cert.crt
+
+p p inhibitAnyPolicy1subCAIAP5Cert.crt
+p p inhibitAnyPolicy1subsubCA2Cert.crt
+p p inhibitAnyPolicy5CACert.crt
+p p inhibitAnyPolicy5subCACert.crt
+p p inhibitAnyPolicy5subsubCACert.crt
+p p inhibitAnyPolicyTest3EE.crt
+p p inhibitPolicyMapping0CACert.crt
+p p inhibitPolicyMapping0subCACert.crt
+p p inhibitPolicyMapping1P12CACert.crt
+p p inhibitPolicyMapping1P12subCACert.crt
+p p inhibitPolicyMapping1P12subCAIPM5Cert.crt
+p p inhibitPolicyMapping1P12subsubCACert.crt
+p p inhibitPolicyMapping1P12subsubCAIPM5Cert.crt
+p p inhibitPolicyMapping1P1CACert.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? inhibitPolicyMapping1P1SelfIssuedCACert.crt
+? ? inhibitPolicyMapping1P1SelfIssuedsubCACert.crt
+? ? inhibitPolicyMapping1P1subCACert.crt
+
+p p inhibitPolicyMapping1P1subsubCACert.crt
+p p inhibitPolicyMapping5CACert.crt
+p p inhibitPolicyMapping5subCACert.crt
+p p inhibitPolicyMapping5subsubCACert.crt
+p p inhibitPolicyMapping5subsubsubCACert.crt
+p p keyUsageCriticalcRLSignFalseCACert.crt
+p p keyUsageCriticalkeyCertSignFalseCACert.crt
+p p keyUsageNotCriticalCACert.crt
+p p keyUsageNotCriticalcRLSignFalseCACert.crt
+p p keyUsageNotCriticalkeyCertSignFalseCACert.crt
+p p nameConstraintsDN1CACert.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? nameConstraintsDN1SelfIssuedCACert.crt
+
+p p nameConstraintsDN1subCA1Cert.crt
+p p nameConstraintsDN1subCA2Cert.crt
+p p nameConstraintsDN1subCA3Cert.crt
+p p nameConstraintsDN2CACert.crt
+p p nameConstraintsDN3CACert.crt
+p p nameConstraintsDN3subCA1Cert.crt
+p p nameConstraintsDN3subCA2Cert.crt
+p p nameConstraintsDN4CACert.crt
+p p nameConstraintsDN5CACert.crt
+p p nameConstraintsDNS1CACert.crt
+p p nameConstraintsDNS2CACert.crt
+p p nameConstraintsRFC822CA1Cert.crt
+p p nameConstraintsRFC822CA2Cert.crt
+p p nameConstraintsRFC822CA3Cert.crt
+p p nameConstraintsURI1CACert.crt
+p p nameConstraintsURI2CACert.crt
+p p onlyContainsAttributeCertsCACert.crt
+p p onlyContainsCACertsCACert.crt
+p p onlyContainsUserCertsCACert.crt
+p p onlySomeReasonsCA1Cert.crt
+p p onlySomeReasonsCA2Cert.crt
+p p onlySomeReasonsCA3Cert.crt
+p p onlySomeReasonsCA4Cert.crt
+p p pathLenConstraint0CACert.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? pathLenConstraint0SelfIssuedCACert.crt
+? ? pathLenConstraint0subCA2Cert.crt
+
+p p pathLenConstraint0subCACert.crt
+p p pathLenConstraint1CACert.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? pathLenConstraint1SelfIssuedCACert.crt
+? ? pathLenConstraint1SelfIssuedsubCACert.crt
+? ? pathLenConstraint1subCACert.crt
+
+p p pathLenConstraint6CACert.crt
+p p pathLenConstraint6subCA0Cert.crt
+p p pathLenConstraint6subCA1Cert.crt
+p p pathLenConstraint6subCA4Cert.crt
+p p pathLenConstraint6subsubCA00Cert.crt
+p p pathLenConstraint6subsubCA11Cert.crt
+p p pathLenConstraint6subsubCA41Cert.crt
+p p pathLenConstraint6subsubsubCA11XCert.crt
+p p pathLenConstraint6subsubsubCA41XCert.crt
+p p pre2000CRLnextUpdateCACert.crt
+p p requireExplicitPolicy0CACert.crt
+p p requireExplicitPolicy0subCACert.crt
+p p requireExplicitPolicy0subsubCACert.crt
+p p requireExplicitPolicy0subsubsubCACert.crt
+p p requireExplicitPolicy10CACert.crt
+p p requireExplicitPolicy10subCACert.crt
+p p requireExplicitPolicy10subsubCACert.crt
+p p requireExplicitPolicy10subsubsubCACert.crt
+p p requireExplicitPolicy2CACert.crt
+
+# For yet unknown reasons gpgsm claims a bad signature.
+? ? requireExplicitPolicy2SelfIssuedCACert.crt
+? ? requireExplicitPolicy2SelfIssuedsubCACert.crt
+? ? requireExplicitPolicy2subCACert.crt
+
+p p requireExplicitPolicy4CACert.crt
+p p requireExplicitPolicy4subCACert.crt
+p p requireExplicitPolicy4subsubCACert.crt
+p p requireExplicitPolicy4subsubsubCACert.crt
+p p requireExplicitPolicy5CACert.crt
+p p requireExplicitPolicy5subCACert.crt
+p p requireExplicitPolicy5subsubCACert.crt
+p p requireExplicitPolicy5subsubsubCACert.crt
+p p requireExplicitPolicy7CACert.crt
+p p requireExplicitPolicy7subCARE2Cert.crt
+p p requireExplicitPolicy7subsubCARE2RE4Cert.crt
+p p requireExplicitPolicy7subsubsubCARE2RE4Cert.crt
+

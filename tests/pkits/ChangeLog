@@ -1,0 +1,23 @@
+2006-05-02  Werner Koch  <wk@g10code.com>
+
+	* PKITS_data.tar.bz2: Repackaged new copy becuase the old one got
+	corrupted by the conversion fromCVS to SVN.
+
+2004-08-16  Werner Koch  <wk@g10code.de>
+
+	Started implementing PKITS based tests.
+
+	
+ Copyright 2004 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	
+
+	
+

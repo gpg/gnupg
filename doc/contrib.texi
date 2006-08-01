@@ -1,0 +1,106 @@
+@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Contributors
+@unnumbered Contributors to GnuPG
+@cindex contributors
+
+The GnuPG project would like to thank its many contributors.  Without
+them the project would not have been nearly as successful as it has
+been.  Any omissions in this list are accidental.  Feel free to contact
+the maintainer if you have been left out or some of your contributions
+are not listed.
+
+David Shaw, Matthew Skala, Michael Roth, Niklas Hernaeus, Nils
+Ellmenreich, Rémi Guyomarch, Stefan Bellon, Timo Schulz and Werner
+Koch wrote the code.  Birger Langkjer, Daniel Resare, Dokianakis
+Theofanis, Edmund GRIMLEY EVANS, Gaël Quéri, Gregory Steuck, Nagy
+Ferenc László, Ivo Timmermans, Jacobo Tarri'o Barreiro, Janusz
+Aleksander Urbanowicz, Jedi Lin, Jouni Hiltunen, Laurentiu Buzdugan,
+Magda Procha'zkova', Michael Anckaert, Michal Majer, Marco d'Itri,
+Nilgun Belma Buguner, Pedro Morais, Tedi Heriyanto, Thiago Jung
+Bauermann, Rafael Caetano dos Santos, Toomas Soome, Urko Lusa, Walter
+Koch, Yosiaki IIDA did the official translations. Mike Ashley wrote
+and maintains the GNU Privacy Handbook. David Scribner is the current
+FAQ editor.  Lorenzo Cappelletti maintains the web site.
+
+The new modularized architecture of gnupg 1.9 as well as the X.509/CMS
+part has been developed as part of the Ägypten project.  Direct
+contributors to this project are: Bernhard Herzog, who did extensive
+testing and tracked down a lot of bugs.  Bernhard Reiter, who made sure
+that we met the specifications and the deadlines. He did extensive
+testing and came up with a lot of suggestions. Jan-Oliver Wagner made
+sure that we met the specifications and the deadlines.  He also did
+extensive testing and came up with a lot of suggestions. Karl-Heinz
+Zimmer and Marc Mutz had to struggle with all the bugs and
+misconceptions while working on KDE integration. Marcus Brinkman
+extended GPGME, cleaned up the Assuan code and fixed bugs all over the
+place. Moritz Schulte took over Libgcrypt maintenance and developed it
+into a stable an useful library.  Steffen Hansen had a hard time to
+write the dirmngr due to underspecified interfaces. Thomas Koester did
+extensive testing and tracked down a lot of bugs.  Werner Koch designed
+the system and wrote most of the code.
+
+The following people helped greatly by suggesting improvements,
+testing, fixing bugs, providing resources and doing other important
+tasks: Adam Mitchell, Albert Chin, Alec Habig, Allan Clark, Anand
+Kumria, Andreas Haumer, Anthony Mulcahy, Ariel T Glenn, Bob Mathews,
+Bodo Moeller, Brendan O'Dea, Brenno de Winter, Brian M. Carlson, Brian
+Moore, Brian Warner, Bryan Fullerton, Caskey L. Dickson, Cees van de
+Griend, Charles Levert, Chip Salzenberg, Chris Adams, Christian Biere,
+Christian Kurz, Christian von Roques, Christopher Oliver, Christian
+Recktenwald, Dan Winship, Daniel Eisenbud, Daniel Koening, Dave
+Dykstra, David C Niemi, David Champion, David Ellement, David
+Hallinan, David Hollenberg, David Mathog, David R. Bergstein, Detlef
+Lannert, Dimitri, Dirk Lattermann, Dirk Meyer, Disastry, Douglas
+Calvert, Ed Boraas, Edmund GRIMLEY EVANS, Edwin Woudt, Enzo
+Michelangeli, Ernst Molitor, Fabio Coatti, Felix von Leitner, fish
+stiqz, Florian Weimer, Francesco Potorti, Frank Donahoe, Frank
+Heckenbach, Frank Stajano, Frank Tobin, Gabriel Rosenkoetter, Gaël
+Quéri, Gene Carter, Geoff Keating, Georg Schwarz, Giampaolo Tomassoni,
+Gilbert Fernandes, Greg Louis, Greg Troxel, Gregory Steuck, Gregery
+Barton, Harald Denker, Holger Baust, Hendrik Buschkamp, Holger
+Schurig, Holger Smolinski, Holger Trapp, Hugh Daniel, Huy Le, Ian
+McKellar, Ivo Timmermans, Jan Krueger, Jan Niehusmann, Janusz
+A. Urbanowicz, James Troup, Jean-loup Gailly, Jeff Long, Jeffery Von
+Ronne, Jens Bachem, Jeroen C. van Gelderen, J Horacio MG, J. Michael
+Ashley, Jim Bauer, Jim Small, Joachim Backes, Joe Rhett, John
+A. Martin, Johnny Teveßen, Jörg Schilling, Jos Backus, Joseph Walton,
+Juan F. Codagnone, Jun Kuriyama, Kahil D. Jallad, Karl Fogel, Karsten
+Thygesen, Katsuhiro Kondou, Kazu Yamamoto, Keith Clayton, Kevin Ryde,
+Klaus Singvogel, Kurt Garloff, Lars Kellogg-Stedman, L. Sassaman, M
+Taylor, Marcel Waldvogel, Marco d'Itri, Marco Parrone, Marcus
+Brinkmann, Mark Adler, Mark Elbrecht, Mark Pettit, Markus Friedl,
+Martin Kahlert, Martin Hamilton, Martin Schulte, Matt Kraai, Matthew
+Skala, Matthew Wilcox, Matthias Urlichs, Max Valianskiy, Michael
+Engels, Michael Fischer v. Mollard, Michael Roth, Michael Sobolev,
+Michael Tokarev, Nicolas Graner, Mike McEwan, Neal H Walfield, Nelson
+H. F. Beebe, NIIBE Yutaka, Niklas Hernaeus, Nimrod Zimerman, N J Doye,
+Oliver Haakert, Oskari Jääskeläinen, Pascal Scheffers, Paul D. Smith,
+Per Cederqvist, Phil Blundell, Philippe Laliberte, Peter Fales, Peter
+Gutmann, Peter Marschall, Peter Valchev, Piotr Krukowiecki, QingLong,
+Ralph Gillen, Rat, Reinhard Wobst, Rémi Guyomarch, Reuben Sumner,
+Richard Outerbridge, Robert Joop, Roddy Strachan, Roger Sondermann,
+Roland Rosenfeld, Roman Pavlik, Ross Golder, Ryan Malayter, Sam
+Roberts, Sami Tolvanen, Sean MacLennan, Sebastian Klemke, Serge
+Munhoven, SL Baur, Stefan Bellon, Dr.Stefan.Dalibor, Stefan Karrmann,
+Stefan Keller, Steffen Ullrich, Steffen Zahn, Steven Bakker, Steven
+Murdoch, Susanne Schultz, Ted Cabeen, Thiago Jung Bauermann, Thijmen
+Klok, Thomas Roessler, Tim Mooney, Timo Schulz, Todd Vierling, TOGAWA
+Satoshi, Tom Spindler, Tom Zerucha, Tomas Fasth, Tommi Komulainen,
+Thomas Klausner, Tomasz Kozlowski, Thomas Mikkelsen, Ulf Möller, Urko
+Lusa, Vincent P. Broman, Volker Quetschke, W Lewis, Walter Hofmann,
+Walter Koch, Wayne Chapeskie, Wim Vandeputte, Winona Brown, Yosiaki
+IIDA, Yoshihiro Kajiki and Gerlinde Klaes.
+
+This software has been made possible by the previous work of Chris
+Wedgwood, Jean-loup Gailly, Jon Callas, Mark Adler, Martin Hellmann
+Paul Kendall, Philip R. Zimmermann, Peter Gutmann, Philip A. Nelson,
+Taher ElGamal, Torbjorn Granlund, Whitfield Diffie, some unknown NSA
+mathematicians and all the folks who have worked hard to create
+complete and free operating systems.
+
+And finally we'd like to thank everyone who uses these tools, submits
+bug reports and generally reminds us why we're doing this work in the
+first place.

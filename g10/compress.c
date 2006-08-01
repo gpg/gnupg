@@ -1,6 +1,6 @@
 /* compress.c - compress filter
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ *               2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,10 +36,10 @@
 #include <zlib.h>
 #if defined(__riscos__) && defined(USE_ZLIBRISCOS)
 # include "zlib-riscos.h"
-#endif
+#endif 
 
+#include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "packet.h"
 #include "filter.h"
 #include "main.h"
@@ -87,6 +87,7 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
 static int
 do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
 {
+    int rc;
     int zrc;
     unsigned n;
 
@@ -116,9 +117,9 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
 		(unsigned)zs->avail_in, (unsigned)zs->avail_out,
 					       (unsigned)n, zrc );
 
-	if( iobuf_write( a, zfx->outbuf, n ) ) {
+	if( (rc=iobuf_write( a, zfx->outbuf, n )) ) {
 	    log_debug("deflate: iobuf_write failed\n");
-	    return G10ERR_WRITE_FILE;
+	    return rc;
 	}
     } while( zs->avail_in || (flush == Z_FINISH && zrc != Z_STREAM_END) );
     return 0;

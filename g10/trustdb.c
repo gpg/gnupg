@@ -35,10 +35,10 @@
 #endif
 #endif /* !DISABLE_REGEX */
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "options.h"
 #include "packet.h"

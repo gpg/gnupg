@@ -26,20 +26,25 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
+
+#include "gpg.h"
+#include "iobuf.h"
 #include "filter.h"
 #include "keydb.h"
 #include "status.h"
 #include "exec.h"
 #include "main.h"
 #include "i18n.h"
-#include "iobuf.h"
-#include "memory.h"
 #include "ttyio.h"
 #include "options.h"
 #include "packet.h"
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "util.h"
+#include "dns-cert.h"
+#include "pka.h"
+
 
 struct keyrec
 {
@@ -462,7 +467,7 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   if(keyrec->type)
     {
-      const char *str=pubkey_algo_to_string(keyrec->type);
+      const char *str = gcry_pk_algo_name (keyrec->type);
 
       if(str)
 	printf("%s ",str);
@@ -1397,7 +1402,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       maxlen=1024;
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
-	  ret=G10ERR_READ_FILE;
+	  ret = gpg_error_from_errno (errno);
 	  goto fail; /* i.e. EOF */
 	}
 
@@ -1728,8 +1733,8 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	     node->pkt->pkt.public_key->version>=4)
 	    {
 	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      mpi_get_keyid(node->pkt->pkt.public_key->pkey[0],
-			    (*klist)[*count].u.kid);
+	      v3_keyid (node->pkt->pkt.public_key->pkey[0],
+                        (*klist)[*count].u.kid);
 	      (*count)++;
 
 	      if(*count==num)
@@ -1980,7 +1985,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
   if(domain)
     *domain='.';
 
-  type=get_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
+  type=get_dns_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
   if(type==1)
     {
       int armor_status=opt.no_armor;

@@ -1,4 +1,4 @@
-/* tdbio.c
+/* tdbio.c - trust databse I/O operations
  * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -30,9 +30,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "options.h"
 #include "main.h"
@@ -94,7 +94,6 @@ static int  db_fd = -1;
 static int in_transaction;
 
 static void open_db(void);
-static void migrate_from_v2 (void);
 
 
 
@@ -123,18 +122,21 @@ get_record_from_cache( ulong recno )
 static int
 write_cache_item( CACHE_CTRL r )
 {
+    gpg_error_t err;
     int n;
 
     if( lseek( db_fd, r->recno * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
+        err = gpg_error_from_errno (errno);
 	log_error(_("trustdb rec %lu: lseek failed: %s\n"),
 					    r->recno, strerror(errno) );
-	return G10ERR_WRITE_FILE;
+	return err;
     }
     n = write( db_fd, r->data, TRUST_RECORD_LEN);
     if( n != TRUST_RECORD_LEN ) {
+        err = gpg_error_from_errno (errno);
 	log_error(_("trustdb rec %lu: write failed (n=%d): %s\n"),
 					    r->recno, n, strerror(errno) );
-	return G10ERR_WRITE_FILE;
+	return err;
     }
     r->flags.dirty = 0;
     return 0;
@@ -577,8 +579,6 @@ tdbio_get_dbname()
 static void
 open_db()
 {
-  byte buf[10];
-  int n;
   TRUSTREC rec;
 
   assert( db_fd == -1 );
@@ -605,16 +605,7 @@ open_db()
     log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
   register_secured_file (db_name);
 
-  /* check whether we need to do a version migration */
-  do
-    n = read (db_fd, buf, 5);
-  while (n==-1 && errno == EINTR);
-  if (n == 5 && !memcmp (buf, "\x01gpg\x02", 5))
-    {
-      migrate_from_v2 ();
-    }
-  
-  /* read the version record */
+  /* Read the version record. */
   if (tdbio_read_record (0, &rec, RECTYPE_VER ) )
     log_fatal( _("%s: invalid trustdb\n"), db_name );
 }
@@ -1163,7 +1154,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 {
     byte readbuf[TRUST_RECORD_LEN];
     const byte *buf, *p;
-    int rc = 0;
+    gpg_error_t err = 0;
     int n, i;
 
     if( db_fd == -1 )
@@ -1171,17 +1162,19 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
     buf = get_record_from_cache( recnum );
     if( !buf ) {
 	if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
+            err = gpg_error_from_errno (errno);
 	    log_error(_("trustdb: lseek failed: %s\n"), strerror(errno) );
-	    return G10ERR_READ_FILE;
+	    return err;
 	}
 	n = read( db_fd, readbuf, TRUST_RECORD_LEN);
 	if( !n ) {
 	    return -1; /* eof */
 	}
 	else if( n != TRUST_RECORD_LEN ) {
+            err = gpg_error_from_errno (errno);
 	    log_error(_("trustdb: read failed (n=%d): %s\n"), n,
 							strerror(errno) );
-	    return G10ERR_READ_FILE;
+	    return err;
 	}
 	buf = readbuf;
     }
@@ -1192,7 +1185,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
     if( expected && rec->rectype != expected ) {
 	log_error("%lu: read expected rec type %d, got %d\n",
 		    recnum, expected, rec->rectype );
-	return G10ERR_TRUSTDB;
+	return gpg_error (GPG_ERR_TRUSTDB);
     }
     p++;    /* skip reserved byte */
     switch( rec->rectype ) {
@@ -1201,7 +1194,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
       case RECTYPE_VER: /* version record */
 	if( memcmp(buf+1, "gpg", 3 ) ) {
 	    log_error( _("%s: not a trustdb file\n"), db_name );
-	    rc = G10ERR_TRUSTDB;
+	    err = gpg_error (GPG_ERR_TRUSTDB);
 	}
 	p += 2; /* skip "gpg" */
 	rec->r.ver.version  = *p++;
@@ -1220,12 +1213,12 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	if( recnum ) {
 	    log_error( _("%s: version record with recnum %lu\n"), db_name,
 							     (ulong)recnum );
-	    rc = G10ERR_TRUSTDB;
+	    err = gpg_error (GPG_ERR_TRUSTDB);
 	}
 	else if( rec->r.ver.version != 3 ) {
 	    log_error( _("%s: invalid file version %d\n"), db_name,
 							rec->r.ver.version );
-	    rc = G10ERR_TRUSTDB;
+	    err = gpg_error (GPG_ERR_TRUSTDB);
 	}
 	break;
       case RECTYPE_FREE:
@@ -1260,11 +1253,11 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
       default:
 	log_error( "%s: invalid record type %d at recnum %lu\n",
 				   db_name, rec->rectype, (ulong)recnum );
-	rc = G10ERR_TRUSTDB;
+	err = gpg_error (GPG_ERR_TRUSTDB);
 	break;
     }
 
-    return rc;
+    return err;
 }
 
 /****************
@@ -1442,16 +1435,16 @@ tdbio_new_recnum()
 	rec.recnum = recnum;
 	rc = 0;
 	if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
+            rc = gpg_error_from_errno (errno);
 	    log_error(_("trustdb rec %lu: lseek failed: %s\n"),
 						recnum, strerror(errno) );
-	    rc = G10ERR_WRITE_FILE;
 	}
 	else {
 	    int n = write( db_fd, &rec, TRUST_RECORD_LEN);
 	    if( n != TRUST_RECORD_LEN ) {
+                rc = gpg_error_from_errno (errno);
 		log_error(_("trustdb rec %lu: write failed (n=%d): %s\n"),
 						 recnum, n, strerror(errno) );
-		rc = G10ERR_WRITE_FILE;
 	    }
 	}
 
@@ -1505,129 +1498,3 @@ tdbio_invalid(void)
     g10_exit(2);
 }
 
-/*
- * Migrate the trustdb as just up to gpg 1.0.6 (trustdb version 2)
- * to the 2.1 version as used with 1.0.6b - This is pretty trivial as needs
- * only to scan the tdb and insert new the new trust records.  The old ones are
- * obsolte from now on
- */
-static void
-migrate_from_v2 ()
-{
-  TRUSTREC rec;
-  int i, n;
-  struct {
-    ulong keyrecno;
-    byte  ot;
-    byte okay;
-    byte  fpr[20];
-  } *ottable;
-  int ottable_size, ottable_used;
-  byte oldbuf[40];
-  ulong recno;
-  int rc, count;
-
-  ottable_size = 5;
-  ottable = xmalloc (ottable_size * sizeof *ottable);
-  ottable_used = 0;
-
-  /* We have some restrictions here.  We can't use the version record
-   * and we can't use any of the old hashtables because we dropped the
-   * code.  So we first collect all ownertrusts and then use a second
-   * pass fo find the associated keys.  We have to do this all without using 
-   * the regular record read functions.
-   */
-
-  /* get all the ownertrusts */
-  if (lseek (db_fd, 0, SEEK_SET ) == -1 ) 
-      log_fatal ("migrate_from_v2: lseek failed: %s\n", strerror (errno));
-  for (recno=0;;recno++)
-    {
-      do
-        n = read (db_fd, oldbuf, 40);
-      while (n==-1 && errno == EINTR);
-      if (!n)
-        break; /* eof */
-      if (n != 40)
-        log_fatal ("migrate_vfrom_v2: read error or short read\n");
-
-      if (*oldbuf != 2)
-        continue;
-      
-      /* v2 dir record */
-      if (ottable_used == ottable_size)
-        {
-          ottable_size += 1000;
-          ottable = xrealloc (ottable, ottable_size * sizeof *ottable);
-        }
-      ottable[ottable_used].keyrecno = buftoulong (oldbuf+6);
-      ottable[ottable_used].ot = oldbuf[18];
-      ottable[ottable_used].okay = 0;
-      memset (ottable[ottable_used].fpr,0, 20);
-      if (ottable[ottable_used].keyrecno && ottable[ottable_used].ot)
-        ottable_used++;
-    }
-  log_info ("found %d ownertrust records\n", ottable_used);
-
-  /* Read again and find the fingerprints */
-  if (lseek (db_fd, 0, SEEK_SET ) == -1 ) 
-      log_fatal ("migrate_from_v2: lseek failed: %s\n", strerror (errno));
-  for (recno=0;;recno++)
-    {
-      do
-        n = read (db_fd, oldbuf, 40);
-      while (n==-1 && errno == EINTR);
-      if (!n)
-        break; /* eof */
-      if (n != 40)
-        log_fatal ("migrate_from_v2: read error or short read\n");
-
-      if (*oldbuf != 3) 
-        continue;
-
-      /* v2 key record */
-      for (i=0; i < ottable_used; i++)
-        {
-          if (ottable[i].keyrecno == recno)
-            {
-              memcpy (ottable[i].fpr, oldbuf+20, 20);
-              ottable[i].okay = 1;
-              break;
-            }
-        }
-    }
-
-  /* got everything - create the v3 trustdb */
-  if (ftruncate (db_fd, 0))
-    log_fatal ("can't truncate `%s': %s\n", db_name, strerror (errno) );
-  if (create_version_record ())
-    log_fatal ("failed to recreate version record of `%s'\n", db_name);
-
-  /* access the hash table, so it is store just after the version record, 
-   * this is not needed put a dump is more pretty */
-  get_trusthashrec ();
-
-  /* And insert the old ownertrust values */
-  count = 0;
-  for (i=0; i < ottable_used; i++)
-    {
-      if (!ottable[i].okay)
-        continue;
-      
-      memset (&rec, 0, sizeof rec);
-      rec.recnum = tdbio_new_recnum ();
-      rec.rectype = RECTYPE_TRUST;
-      memcpy(rec.r.trust.fingerprint, ottable[i].fpr, 20);
-      rec.r.trust.ownertrust = ottable[i].ot;
-      if (tdbio_write_record (&rec))
-        log_fatal ("failed to write trust record of `%s'\n", db_name);
-      count++;
-    }
-
-  revalidation_mark ();
-  rc = tdbio_sync ();
-  if (rc)
-    log_fatal ("failed to sync `%s'\n", db_name);
-  log_info ("migrated %d version 2 ownertrusts\n", count);
-  xfree (ottable);
-}

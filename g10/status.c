@@ -1,6 +1,6 @@
-/* status.c
+/* status.c - Status message and command-fd interface 
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ *               2004, 2005, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,21 +27,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
-#ifdef USE_SHM_COPROCESSING
-#ifdef USE_CAPABILITIES
-#include <sys/capability.h>
-#endif
-#ifdef HAVE_SYS_IPC_H
-#include <sys/types.h>
-#include <sys/ipc.h>
-#endif
-#ifdef HAVE_SYS_SHM_H
-#include <sys/shm.h>
-#endif
-#if defined(HAVE_MLOCK)
-#include <sys/mman.h>
-#endif
-#endif
+
+#include "gpg.h"
 #include "util.h"
 #include "status.h"
 #include "ttyio.h"
@@ -55,13 +42,6 @@
 
 
 static FILE *statusfp;
-
-#ifdef USE_SHM_COPROCESSING
-  static int shm_id = -1;
-  static volatile char *shm_area;
-  static size_t shm_size;
-  static int shm_is_locked;
-#endif /*USE_SHM_COPROCESSING*/
 
 
 static void
@@ -229,9 +209,10 @@ set_status_fd ( int fd )
                   fd, strerror(errno));
     }
     last_fd = fd;
-    register_primegen_progress ( progress_cb, "primegen" );
-    register_pk_dsa_progress ( progress_cb, "pk_dsa" );
-    register_pk_elg_progress ( progress_cb, "pk_elg" );
+#warning Use libgrypt calls for progress indicators
+/*     register_primegen_progress ( progress_cb, "primegen" ); */
+/*     register_pk_dsa_progress ( progress_cb, "pk_dsa" ); */
+/*     register_pk_elg_progress ( progress_cb, "pk_elg" ); */
 }
 
 int
@@ -342,178 +323,6 @@ write_status_buffer ( int no, const char *buffer, size_t len, int wrap )
 }
 
 
-#ifdef USE_SHM_COPROCESSING
-
-#ifndef IPC_RMID_DEFERRED_RELEASE
-static void
-remove_shmid( void )
-{
-    if( shm_id != -1 ) {
-	shmctl ( shm_id, IPC_RMID, 0);
-	shm_id = -1;
-    }
-}
-#endif
-
-void
-init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
-{
-    char buf[100];
-    struct shmid_ds shmds;
-
-#ifndef IPC_RMID_DEFERRED_RELEASE
-    atexit( remove_shmid );
-#endif
-    requested_shm_size = (requested_shm_size + 4095) & ~4095;
-    if ( requested_shm_size > 2 * 4096 )
-	log_fatal("too much shared memory requested; only 8k are allowed\n");
-    shm_size = 4096 /* one page for us */ + requested_shm_size;
-
-    shm_id = shmget( IPC_PRIVATE, shm_size, IPC_CREAT | 0700 );
-    if ( shm_id == -1 )
-	log_fatal("can't get %uk of shared memory: %s\n",
-				(unsigned)shm_size/1024, strerror(errno));
-
-#if !defined(IPC_HAVE_SHM_LOCK) \
-      && defined(HAVE_MLOCK) && !defined(HAVE_BROKEN_MLOCK)
-    /* part of the old code which uses mlock */
-    shm_area = shmat( shm_id, 0, 0 );
-    if ( shm_area == (char*)-1 )
-	log_fatal("can't attach %uk shared memory: %s\n",
-				(unsigned)shm_size/1024, strerror(errno));
-    log_debug("mapped %uk shared memory at %p, id=%d\n",
-			    (unsigned)shm_size/1024, shm_area, shm_id );
-    if( lock_mem ) {
-#ifdef USE_CAPABILITIES
-	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
-#endif
-	/* (need the cast for Solaris with Sun's workshop compilers) */
-	if ( mlock ( (char*)shm_area, shm_size) )
-	    log_info("locking shared memory %d failed: %s\n",
-				shm_id, strerror(errno));
-	else
-	    shm_is_locked = 1;
-#ifdef USE_CAPABILITIES
-	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
-#endif
-    }
-
-#ifdef IPC_RMID_DEFERRED_RELEASE
-    if( shmctl( shm_id, IPC_RMID, 0) )
-	log_fatal("shmctl IPC_RMDID of %d failed: %s\n",
-					    shm_id, strerror(errno));
-#endif
-
-    if( shmctl( shm_id, IPC_STAT, &shmds ) )
-	log_fatal("shmctl IPC_STAT of %d failed: %s\n",
-					    shm_id, strerror(errno));
-    if( shmds.shm_perm.uid != getuid() ) {
-	shmds.shm_perm.uid = getuid();
-	if( shmctl( shm_id, IPC_SET, &shmds ) )
-	    log_fatal("shmctl IPC_SET of %d failed: %s\n",
-						shm_id, strerror(errno));
-    }
-
-#else /* this is the new code which handles the changes in the SHM
-       * semantics introduced with Linux 2.4.  The changes is that we
-       * now change the permissions and then attach to the memory.
-       */
-
-    if( lock_mem ) {
-#ifdef USE_CAPABILITIES
-	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
-#endif
-#ifdef IPC_HAVE_SHM_LOCK
-	if ( shmctl (shm_id, SHM_LOCK, 0) )
-	    log_info("locking shared memory %d failed: %s\n",
-				shm_id, strerror(errno));
-	else
-	    shm_is_locked = 1;
-#else
-	log_info("Locking shared memory %d failed: No way to do it\n", shm_id );
-#endif
-#ifdef USE_CAPABILITIES
-	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
-#endif
-    }
-
-    if( shmctl( shm_id, IPC_STAT, &shmds ) )
-	log_fatal("shmctl IPC_STAT of %d failed: %s\n",
-					    shm_id, strerror(errno));
-    if( shmds.shm_perm.uid != getuid() ) {
-	shmds.shm_perm.uid = getuid();
-	if( shmctl( shm_id, IPC_SET, &shmds ) )
-	    log_fatal("shmctl IPC_SET of %d failed: %s\n",
-						shm_id, strerror(errno));
-    }
-
-    shm_area = shmat( shm_id, 0, 0 );
-    if ( shm_area == (char*)-1 )
-	log_fatal("can't attach %uk shared memory: %s\n",
-				(unsigned)shm_size/1024, strerror(errno));
-    log_debug("mapped %uk shared memory at %p, id=%d\n",
-			    (unsigned)shm_size/1024, shm_area, shm_id );
-
-#ifdef IPC_RMID_DEFERRED_RELEASE
-    if( shmctl( shm_id, IPC_RMID, 0) )
-	log_fatal("shmctl IPC_RMDID of %d failed: %s\n",
-					    shm_id, strerror(errno));
-#endif
-
-#endif
-    /* write info; Protocol version, id, size, locked size */
-    sprintf( buf, "pv=1 pid=%d shmid=%d sz=%u lz=%u", (int)getpid(),
-	    shm_id, (unsigned)shm_size, shm_is_locked? (unsigned)shm_size:0 );
-    write_status_text( STATUS_SHM_INFO, buf );
-}
-
-/****************
- * Request a string from client
- * If bool, returns static string on true (do not free) or NULL for false
- */
-static char *
-do_shm_get( const char *keyword, int hidden, int bool )
-{
-    size_t n;
-    byte *p;
-    char *string;
-
-    if( !shm_area )
-	BUG();
-
-    shm_area[0] = 0;  /* msb of length of control block */
-    shm_area[1] = 32; /* and lsb */
-    shm_area[2] = 1;  /* indicate that we are waiting on a reply */
-    shm_area[3] = 0;  /* clear data available flag */
-
-    write_status_text( bool? STATUS_SHM_GET_BOOL :
-		       hidden? STATUS_SHM_GET_HIDDEN : STATUS_SHM_GET, keyword );
-
-    do {
-	pause_on_sigusr(1);
-	if( shm_area[0] || shm_area[1] != 32 || shm_area[2] != 1 )
-	    log_fatal("client modified shm control block - abort\n");
-    } while( !shm_area[3] );
-    shm_area[2] = 0; /* reset request flag */
-    p = (byte*)shm_area+32;
-    n = p[0] << 8 | p[1];
-    p += 2;
-    if( n+32+2+1 > 4095 )
-	log_fatal("client returns too large data (%u bytes)\n", (unsigned)n );
-
-    if( bool )
-	return p[0]? "" : NULL;
-
-    string = hidden? xmalloc_secure( n+1 ) : xmalloc( n+1 );
-    memcpy(string, p, n );
-    string[n] = 0; /* make sure it is a string */
-    if( hidden ) /* invalidate the memory */
-	memset( p, 0, n );
-
-    return string;
-}
-
-#endif /* USE_SHM_COPROCESSING */
 
 static int
 myread(int fd, void *buf, size_t count)

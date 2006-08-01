@@ -25,8 +25,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "packet.h"
 #include "keydb.h"
 

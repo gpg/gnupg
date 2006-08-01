@@ -35,32 +35,28 @@
 #include <sys/stat.h> /* for stat() */
 #endif
 #include <fcntl.h>
+#include <assuan.h>
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 #endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
+#include "gpg.h"
 #include "packet.h"
-#include "iobuf.h"
-#include "memory.h"
+#include "../common/iobuf.h"
 #include "util.h"
 #include "main.h"
 #include "options.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "mpi.h"
 #include "cipher.h"
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
-#include "g10defs.h"
 #include "keyserver-internal.h"
 #include "exec.h"
-#include "cardglue.h"
-#ifdef ENABLE_CARD_SUPPORT
-#include "ccid-driver.h"
-#endif
+
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
@@ -152,7 +148,6 @@ enum cmd_and_opt_values
     aDeArmor,
     aEnArmor,
     aGenRandom,
-    aPipeMode,
     aRebuildKeydbCaches,
     aCardStatus,
     aCardEdit,
@@ -186,6 +181,7 @@ enum cmd_and_opt_values
     oNoDefRecipient,
     oOptions,
     oDebug,
+    oDebugLevel,
     oDebugAll,
     oDebugCCIDDriver,
     oStatusFD,
@@ -243,7 +239,6 @@ enum cmd_and_opt_values
     oAlwaysTrust,
     oTrustModel,
     oForceOwnertrust,
-    oRunAsShmCP,
     oSetFilename,
     oForYourEyesOnly,
     oNoForYourEyesOnly,
@@ -337,6 +332,7 @@ enum cmd_and_opt_values
     oPersonalCipherPreferences,
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
+    oAgentProgram,
     oDisplay,
     oTTYname,
     oTTYtype,
@@ -354,10 +350,6 @@ enum cmd_and_opt_values
     oKeyidFormat,
     oExitOnStatusWriteError,
     oLimitCardInsertTries,
-    oReaderPort,
-    octapiDriver,
-    opcscDriver,
-    oDisableCCID,
     oRequireCrossCert,
     oNoRequireCrossCert,
     oAutoKeyLocate,
@@ -505,6 +497,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDisplayCharset, "charset", 2, "@"},
     { oOptions, "options", 2, "@"},
     { oDebug, "debug"     ,4|16, "@"},
+    { oDebugLevel, "debug-level" ,2, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, "@"},
     { oStatusFile, "status-file" ,2, "@"},
@@ -569,7 +562,6 @@ static ARGPARSE_OPTS opts[] = {
     { aListTrustDB, "list-trustdb",0 , "@"},
     /* Not yet used */
     /* { aListTrustPath, "list-trust-path",0, "@"}, */
-    { aPipeMode,  "pipemode", 0, "@" },
     { oKOption, NULL,	 0, "@"},
     { oPasswd, "passphrase",2, "@" },
     { oPasswdFD, "passphrase-fd",1, "@" },
@@ -603,7 +595,6 @@ static ARGPARSE_OPTS opts[] = {
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
     { oForceOwnertrust, "force-ownertrust", 2, "@"},
-    { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
     { oForYourEyesOnly, "for-your-eyes-only", 0, "@" },
     { oNoForYourEyesOnly, "no-for-your-eyes-only", 0, "@" },
@@ -628,7 +619,7 @@ static ARGPARSE_OPTS opts[] = {
     { oLockMultiple, "lock-multiple", 0, "@" },
     { oLockNever, "lock-never", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
-    { oLoggerFile, "logger-file",2, "@" },
+    { oLoggerFile, "log-file",2, "@" },
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
     { oNoUseEmbeddedFilename, "no-use-embedded-filename", 0, "@" },
     { oUtf8Strings, "utf8-strings", 0, "@" },
@@ -677,6 +668,7 @@ static ARGPARSE_OPTS opts[] = {
     { oPersonalCipherPreferences, "personal-cipher-prefs", 2, "@"},
     { oPersonalDigestPreferences, "personal-digest-prefs", 2, "@"},
     { oPersonalCompressPreferences, "personal-compress-prefs", 2, "@"},
+    { oAgentProgram, "agent-program", 2 , "@" },
     { oDisplay,    "display",     2, "@" },
     { oTTYname,    "ttyname",     2, "@" },
     { oTTYtype,    "ttytype",     2, "@" },
@@ -695,13 +687,6 @@ static ARGPARSE_OPTS opts[] = {
     { oExitOnStatusWriteError, "exit-on-status-write-error", 0, "@" },
     { oLimitCardInsertTries, "limit-card-insert-tries", 1, "@"},
 
-    { oReaderPort, "reader-port",    2, "@"},
-    { octapiDriver, "ctapi-driver",  2, "@"},
-    { opcscDriver, "pcsc-driver",    2, "@"},
-    { oDisableCCID, "disable-ccid", 0, "@"},
-#if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
-    { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
-#endif
     { oAllowMultisigVerification, "allow-multisig-verification", 0, "@"},
     { oEnableDSA2, "enable-dsa2", 0, "@"},
     { oDisableDSA2, "disable-dsa2", 0, "@"},
@@ -718,6 +703,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoRequireCrossCert, "no-require-cross-certification", 0, "@"},
     { oAutoKeyLocate, "auto-key-locate", 2, "@"},
     { oNoAutoKeyLocate, "no-auto-key-locate", 0, "@"},
+
     {0,NULL,0,NULL}
 };
 
@@ -742,9 +728,11 @@ static void print_mds( const char *fname, int algo );
 static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
 static void add_keyserver_url( const char *string, int which );
+static void emergency_cleanup (void);
 
-const char *
-strusage( int level )
+
+static const char *
+my_strusage( int level )
 {
   static char *digests, *pubkeys, *ciphers, *zips;
     const char *p;
@@ -787,31 +775,35 @@ strusage( int level )
 #endif /* __riscos__ */
       case 33: p = _("\nSupported algorithms:\n"); break;
       case 34:
-	if( !pubkeys )
-	    pubkeys = build_list(_("Pubkey: "), 0, pubkey_algo_to_string,
-							check_pubkey_algo );
+	if (!pubkeys)
+            pubkeys = build_list (_("Pubkey: "), 0,
+                                  gcry_pk_algo_name,
+                                  openpgp_pk_test_algo );
 	p = pubkeys;
 	break;
       case 35:
 	if( !ciphers )
-	    ciphers = build_list(_("Cipher: "), 'S', cipher_algo_to_string,
-							check_cipher_algo );
+	    ciphers = build_list(_("Cipher: "), 'S', 
+                                 gcry_cipher_algo_name,
+                                 openpgp_cipher_test_algo );
 	p = ciphers;
 	break;
       case 36:
 	if( !digests )
-	    digests = build_list(_("Hash: "), 'H', digest_algo_to_string,
-							check_digest_algo );
+	    digests = build_list(_("Hash: "), 'H', 
+                                 gcry_md_algo_name,
+                                 openpgp_md_test_algo );
 	p = digests;
 	break;
       case 37:
 	if( !zips )
-	    zips = build_list(_("Compression: "),'Z',compress_algo_to_string,
-			                                check_compress_algo);
+	    zips = build_list(_("Compression: "),'Z',
+                              compress_algo_to_string,
+                              check_compress_algo);
 	p = zips;
 	break;
 
-      default:	p = default_strusage(level);
+      default:	p = NULL;
     }
     return p;
 }
@@ -826,8 +818,8 @@ build_list( const char *text, char letter,
     size_t n=strlen(text)+2;
     char *list, *p, *line=NULL;
 
-    if( maybe_setuid )
-	secmem_init( 0 );    /* drop setuid */
+    if (maybe_setuid)
+      gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
 
     for(i=0; i <= 110; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
@@ -876,12 +868,12 @@ static void
 i18n_init(void)
 {
 #ifdef USE_SIMPLE_GETTEXT
-    set_gettext_file (PACKAGE, "Software\\GNU\\GnuPG");
+  set_gettext_file (PACKAGE_GT, "Software\\GNU\\GnuPG");
 #else
 #ifdef ENABLE_NLS
-    setlocale( LC_ALL, "" );
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
-    textdomain( PACKAGE );
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE_GT, LOCALEDIR);
+  textdomain (PACKAGE_GT);
 #endif
 #endif
 }
@@ -908,31 +900,55 @@ make_username( const char *string )
 }
 
 
+/* Setup the debugging.  With a LEVEL of NULL only the active debug
+   flags are propagated to the subsystems.  With LEVEL set, a specific
+   set of debug flags is set; thus overriding all flags already
+   set. */
 static void
-set_debug(void)
+set_debug (const char *level)
 {
-    if( opt.debug & DBG_MEMORY_VALUE )
-	memory_debug_mode = 1;
-    if( opt.debug & DBG_MEMSTAT_VALUE )
-	memory_stat_debug_mode = 1;
-    if( opt.debug & DBG_MPI_VALUE )
-	mpi_debug_mode = 1;
-    if( opt.debug & DBG_CIPHER_VALUE )
-	g10c_debug_mode = 1;
-    if( opt.debug & DBG_IOBUF_VALUE )
-	iobuf_debug_mode = 1;
+  if (!level)
+    ;
+  else if (!strcmp (level, "none"))
+    opt.debug = 0;
+  else if (!strcmp (level, "basic"))
+    opt.debug = DBG_MEMSTAT_VALUE;
+  else if (!strcmp (level, "advanced"))
+    opt.debug = DBG_MEMSTAT_VALUE|DBG_TRUST_VALUE|DBG_EXTPROG_VALUE;
+  else if (!strcmp (level, "expert"))
+    opt.debug = (DBG_MEMSTAT_VALUE|DBG_TRUST_VALUE|DBG_EXTPROG_VALUE
+                 |DBG_CACHE_VALUE|DBG_FILTER_VALUE|DBG_PACKET_VALUE);
+  else if (!strcmp (level, "guru"))
+    opt.debug = ~0;
+  else
+    {
+      log_error (_("invalid debug-level `%s' given\n"), level);
+      g10_exit (2);
+    }
 
+  if (opt.debug & DBG_MEMORY_VALUE )
+    memory_debug_mode = 1;
+  if (opt.debug & DBG_MEMSTAT_VALUE )
+    memory_stat_debug_mode = 1;
+  if (opt.debug & DBG_MPI_VALUE)
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
+  if (opt.debug & DBG_CIPHER_VALUE )
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
+  if (opt.debug & DBG_IOBUF_VALUE )
+    iobuf_debug_mode = 1;
+  gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 }
+
 
 
 /* We need the home directory also in some other directories, so make
    sure that both variables are always in sync. */
 static void
-set_homedir (char *dir)
+set_homedir (const char *dir)
 {
   if (!dir)
     dir = "";
-  g10_opt_homedir = opt.homedir = dir;
+  opt.homedir = dir;
 }
 
 
@@ -941,7 +957,7 @@ set_homedir (char *dir)
 static void
 set_screen_dimensions(void)
 {
-#ifndef _WIN32
+#ifndef HAVE_W32_SYSTEM
   char *str;
 
   str=getenv("COLUMNS");
@@ -1363,7 +1379,7 @@ list_config(char *items)
 
 	      for(sl=iter->values;sl;sl=sl->next)
 		{
-		  print_string2(stdout,sl->d,strlen(sl->d),':',';');
+		  print_sanitized_string2 (stdout, sl->d, ':',';');
 		  if(sl->next)
 		    printf(";");
 		}
@@ -1385,7 +1401,7 @@ list_config(char *items)
       if(show_all || ascii_strcasecmp(name,"pubkey")==0)
 	{
 	  printf("cfg:pubkey:");
-	  print_algo_numbers(check_pubkey_algo);
+	  print_algo_numbers (openpgp_pk_test_algo);
 	  printf("\n");
 	  any=1;
 	}
@@ -1393,7 +1409,7 @@ list_config(char *items)
       if(show_all || ascii_strcasecmp(name,"cipher")==0)
 	{
 	  printf("cfg:cipher:");
-	  print_algo_numbers(check_cipher_algo);
+	  print_algo_numbers(openpgp_cipher_test_algo);
 	  printf("\n");
 	  any=1;
 	}
@@ -1403,7 +1419,7 @@ list_config(char *items)
 	 || ascii_strcasecmp(name,"hash")==0)
 	{
 	  printf("cfg:digest:");
-	  print_algo_numbers(check_digest_algo);
+	  print_algo_numbers(openpgp_md_test_algo);
 	  printf("\n");
 	  any=1;
 	}
@@ -1627,7 +1643,17 @@ parse_trust_model(const char *model)
     log_error("unknown trust model `%s'\n",model);
 }
 
-/* Must be called before we open any files. */
+
+
+/* Make sure that the standard file descriptors are opened. Obviously
+   some folks close them before an exec and the next file we open will
+   get one of them assigned and thus any output (i.e. diagnostics) end
+   up in that file (e.g. the trustdb).  Not actually a gpg problem as
+   this will hapenn with almost all utilities when called in a wrong
+   way.  However we try to minimize the damage here and raise
+   awareness of the problem.
+
+   Must be called before we open any files! */
 static void
 reopen_std(void)
 {  
@@ -1688,6 +1714,7 @@ reopen_std(void)
 #endif /* HAVE_STAT && !HAVE_W32_SYSTEM */
 }
 
+
 int
 main (int argc, char **argv )
 {
@@ -1712,8 +1739,10 @@ main (int argc, char **argv )
     int default_keyring = 1;
     int greeting = 0;
     int nogreeting = 0;
+    char *logfile = NULL;
     int use_random_seed = 1;
     enum cmd_and_opt_values cmd = 0;
+    const char *debug_level = NULL;
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
@@ -1730,27 +1759,43 @@ main (int argc, char **argv )
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
     int require_secmem=0,got_secmem=0;
-#ifdef USE_SHM_COPROCESSING
-    ulong requested_shm_size=0;
-#endif
 
 #ifdef __riscos__
     opt.lock_once = 1;
 #endif /* __riscos__ */
 
-    reopen_std();
-    trap_unaligned();
-    secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
+
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
-     * when adding any stuff between here and the call to
-     * secmem_init()  somewhere after the option parsing
-     */
-    log_set_name("gpg");
-    secure_randoxmalloc(); /* put random number into secure memory */
+       when adding any stuff between here and the call to
+       secmem_init() somewhere after the option parsing. */
+    reopen_std ();
+    trap_unaligned();
+    set_strusage (my_strusage);
+    gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
+    /* We don't need any locking in libgcrypt unless we use any kind of
+       threading. */
+    gcry_control (GCRYCTL_DISABLE_INTERNAL_LOCKING);
+    log_set_prefix ("gpg", 1);
+
+    /* Check that the libraries are suitable.  Do it right here because the
+       option parsing may need services of the library.  */
+    if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
+      {
+        log_fatal ( _("libgcrypt is too old (need %s, have %s)\n"),
+                    NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
+      }
+
+    /* Put random number into secure memory */
+    gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
+
     may_coredump = disable_core_dumps();
-    init_signals();
-    create_dotlock(NULL); /* register locking cleanup */
+
+    gnupg_init_signals (0, emergency_cleanup);
+
+    create_dotlock(NULL); /* Register locking cleanup. */
+
     i18n_init();
+
     opt.command_fd = -1; /* no command fd */
     opt.compress_level = -1; /* defaults to standard compress level */
     opt.bz2_compress_level = -1; /* defaults to standard compress level */
@@ -1789,19 +1834,7 @@ main (int argc, char **argv )
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
 
-#ifdef ENABLE_CARD_SUPPORT
-#if defined(_WIN32) || defined(__CYGWIN__)
-    opt.pcsc_driver = "winscard.dll";
-#elif defined(__APPLE__)
-    opt.pcsc_driver = "/System/Library/Frameworks/PCSC.framework/PCSC";
-#elif defined(__GLIBC__)
-    opt.pcsc_driver = "libpcsclite.so.1"; 
-#else
-    opt.pcsc_driver = "libpcsclite.so"; 
-#endif
-#endif /*ENABLE_CARD_SUPPORT*/
-
-    /* check whether we have a config file on the commandline */
+    /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
     orig_argv = argv;
     pargs.argc = &argc;
@@ -1824,27 +1857,12 @@ main (int argc, char **argv )
 	    opt.no_perm_warn=1;
 	else if (pargs.r_opt == oStrict )
 	  {
-	    opt.strict=1;
-	    log_set_strict(1);
+	    /* Not used */
 	  }
 	else if (pargs.r_opt == oNoStrict )
 	  {
-	    opt.strict=0;
-	    log_set_strict(0);
+	    /* Not used */
 	  }
-#ifdef USE_SHM_COPROCESSING
-	else if( pargs.r_opt == oRunAsShmCP ) {
-	    /* does not make sense in a options file, we do it here,
-	     * so that we are the able to drop setuid as soon as possible */
-	    opt.shm_coprocess = 1;
-	    requested_shm_size = pargs.r.ret_ulong;
-	}
-	else if ( pargs.r_opt == oStatusFD ) {
-	    /* this is needed to ensure that the status-fd filedescriptor is
-	     * initialized when init_shm_coprocessing() is called */
-	    set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
-	}
-#endif
     }
 
 #ifdef HAVE_DOSISH_SYSTEM
@@ -1863,22 +1881,23 @@ main (int argc, char **argv )
         set_homedir (buf);
     }
 #endif
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess ) {
-	init_shm_coprocessing(requested_shm_size, 1 );
-    }
-#endif
-    /* initialize the secure memory. */
-    got_secmem=secmem_init( 32768 );
-    maybe_setuid = 0;
-    /* Okay, we are now working under our real uid */
 
+    /* Initialize the secure memory. */
+    gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0);
+    got_secmem = 1; /* FIXME: gcry_control should return an indicator. */
 #if defined(HAVE_GETUID) && defined(HAVE_GETEUID)
     /* There should be no way to get to this spot while still carrying
        setuid privs.  Just in case, bomb out if we are. */
     if(getuid()!=geteuid())
       BUG();
 #endif
+    maybe_setuid = 0;
+
+    /* Okay, we are now working under our real uid */
+
+    /* malloc hooks go here ... */
+    assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
+
 
     set_native_charset (NULL); /* Try to auto set the character set */
 
@@ -2044,24 +2063,7 @@ main (int argc, char **argv )
 			       "--list-ownertrust","--export-ownertrust","");
 	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
 	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
-          case aPipeMode:
-	    deprecated_command ("--pipemode");
-            set_cmd( &cmd, aPipeMode);
-            break;
-
           case aRebuildKeydbCaches: set_cmd( &cmd, aRebuildKeydbCaches); break;
-
-#ifdef ENABLE_CARD_SUPPORT
-          case aCardStatus: set_cmd (&cmd, aCardStatus); break;
-          case aCardEdit: set_cmd (&cmd, aCardEdit); break;
-          case aChangePIN: set_cmd (&cmd, aChangePIN); break;
-          case oReaderPort:
-            card_set_reader_port (pargs.r.ret_str);
-            break;
-          case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
-          case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
-          case oDisableCCID: opt.disable_ccid = 1; break;
-#endif /* ENABLE_CARD_SUPPORT*/
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -2071,8 +2073,8 @@ main (int argc, char **argv )
 	  case oDryRun: opt.dry_run = 1; break;
 	  case oInteractive: opt.interactive = 1; break;
 	  case oVerbose:
-	    g10_opt_verbose++;
 	    opt.verbose++;
+            gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 	    opt.list_options|=LIST_SHOW_UNUSABLE_UIDS;
 	    opt.list_options|=LIST_SHOW_UNUSABLE_SUBKEYS;
 	    break;
@@ -2101,13 +2103,11 @@ main (int argc, char **argv )
 			       "--list-options ","show-keyring");
 	    opt.list_options|=LIST_SHOW_KEYRING;
 	    break;
+
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
-          case oDebugCCIDDriver: 
-#if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
-            ccid_set_debug_level (ccid_set_debug_level (1)+1);
-#endif
-            break;
+          case oDebugLevel: debug_level = pargs.r.ret_str; break;
+
 	  case oStatusFD:
             set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
             break;
@@ -2121,11 +2121,10 @@ main (int argc, char **argv )
             set_attrib_fd ( open_info_file (pargs.r.ret_str, 1) );
             break;
 	  case oLoggerFD:
-            log_set_logfile( NULL,
-                             iobuf_translate_file_handle (pargs.r.ret_int, 1));
+            log_set_fd (iobuf_translate_file_handle (pargs.r.ret_int, 1));
             break;
-	  case oLoggerFile:
-            log_set_logfile( NULL, open_info_file (pargs.r.ret_str, 1) );
+          case oLoggerFile:
+            logfile = pargs.r.ret_str;
             break;
 
 	  case oWithFingerprint:
@@ -2146,9 +2145,13 @@ main (int argc, char **argv )
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
 	  case oNoGreeting: nogreeting = 1; break;
-	  case oNoVerbose: g10_opt_verbose = 0;
-			   opt.verbose = 0; opt.list_sigs=0; break;
-	  case oQuickRandom: quick_random_gen(1); break;
+	  case oNoVerbose: 
+            opt.verbose = 0;
+            gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+            opt.list_sigs=0;
+            break;
+          /* Disabled for now:
+          case oQuickRandom: quick_random_gen(1); break;*/
 	  case oEmitVersion: opt.no_version=0; break;
 	  case oNoEmitVersion: opt.no_version=1; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
@@ -2243,23 +2246,12 @@ main (int argc, char **argv )
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRFC2440Text: opt.rfc2440_text=1; break;
 	  case oNoRFC2440Text: opt.rfc2440_text=0; break;
-	  case oRunAsShmCP:
-#ifndef __riscos__
-# ifndef USE_SHM_COPROCESSING
-	    /* not possible in the option file,
-	     * but we print the warning here anyway */
-	    log_error("shared memory coprocessing is not available\n");
-# endif
-#else /* __riscos__ */
-            riscos_not_implemented("run-as-shm-coprocess");
-#endif /* __riscos__ */
-	    break;
-	  case oSetFilename:
-	    if(utf8_strings)
-	      opt.set_filename = pargs.r.ret_str;
-	    else
-	      opt.set_filename = native_to_utf8(pargs.r.ret_str);
-	    break;
+ 	  case oSetFilename:
+            if(utf8_strings)
+              opt.set_filename = pargs.r.ret_str;
+            else
+              opt.set_filename = native_to_utf8(pargs.r.ret_str);
+ 	    break;
 	  case oForYourEyesOnly: eyes_only = 1; break;
 	  case oNoForYourEyesOnly: eyes_only = 0; break;
 	  case oSetPolicyURL:
@@ -2441,8 +2433,14 @@ main (int argc, char **argv )
 		compress_algo_string = xstrdup(pargs.r.ret_str);
 	    }
 	    break;
-	  case oCertDigestAlgo: cert_digest_string = xstrdup(pargs.r.ret_str); break;
-	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
+	  case oCertDigestAlgo: 
+            cert_digest_string = xstrdup(pargs.r.ret_str);
+            break;
+
+	  case oNoSecmemWarn: 
+            gcry_control (GCRYCTL_DISABLE_SECMEM_WARN); 
+            break;
+
 	  case oRequireSecmem: require_secmem=1; break;
 	  case oNoRequireSecmem: require_secmem=0; break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
@@ -2458,7 +2456,6 @@ main (int argc, char **argv )
 	  case oLockOnce: opt.lock_once = 1; break;
 	  case oLockNever:
             disable_dotlock ();
-            random_disable_locking ();
             break;
 	  case oLockMultiple:
 #ifndef __riscos__
@@ -2592,11 +2589,17 @@ main (int argc, char **argv )
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings: utf8_strings = 0; break;
 	  case oDisableCipherAlgo:
-		disable_cipher_algo( string_to_cipher_algo(pargs.r.ret_str) );
-		break;
+            {
+              int algo = string_to_cipher_algo (pargs.r.ret_str);
+              gcry_cipher_ctl (NULL, GCRYCTL_DISABLE_ALGO, &algo, sizeof algo);
+            }
+            break;
 	  case oDisablePubkeyAlgo:
-		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
-		break;
+            {
+              int algo = gcry_pk_map_name (pargs.r.ret_str);
+              gcry_pk_ctl (GCRYCTL_DISABLE_ALGO, &algo, sizeof algo);
+            }
+            break;
           case oNoSigCache: opt.no_sig_cache = 1; break;
           case oNoSigCreateCheck: opt.no_sig_create_check = 1; break;
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
@@ -2676,6 +2679,7 @@ main (int argc, char **argv )
           case oPersonalCompressPreferences:
 	    pers_compress_list=pargs.r.ret_str;
 	    break;
+          case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
           case oDisplay: opt.display = pargs.r.ret_str; break;
           case oTTYname: opt.ttyname = pargs.r.ret_str; break;
           case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
@@ -2692,8 +2696,12 @@ main (int argc, char **argv )
 		xfree(iter);
 	      }
 	    break;
-	  case oStrict: opt.strict=1; log_set_strict(1); break;
-	  case oNoStrict: opt.strict=0; log_set_strict(0); break;
+
+	  case oStrict: 
+	  case oNoStrict: 
+	    /* Not used */
+            break;
+
           case oMangleDosFilenames: opt.mangle_dos_filenames = 1; break;
           case oNoMangleDosFilenames: opt.mangle_dos_filenames = 0; break;
           case oEnableProgressFilter: opt.enable_progress_filter = 1; break;
@@ -2796,6 +2804,18 @@ main (int argc, char **argv )
       }
 #endif
 
+    log_info ("WARNING: This version of gpg is not ready for use, use gpg 1.4.x\n");
+
+    /* FIXME: We should use logging to a file only in server mode;
+       however we have not yet implemetyed that.  Thus we try to get
+       away with --batch as indication for logging to file
+       required. */
+    if (logfile && opt.batch)
+      {
+        log_set_file (logfile);
+        log_set_prefix (NULL, 1|2|4);
+      }
+
     if (opt.verbose > 2)
         log_info ("using character set `%s'\n", get_native_charset ());
 
@@ -2821,20 +2841,13 @@ main (int argc, char **argv )
 		        "--no-literal" );
     }
 
-#ifndef ENABLE_AGENT_SUPPORT   
-    if (opt.use_agent) {
-      log_info(_("NOTE: %s is not available in this version\n"),
-               "--use-agent");
-      opt.use_agent = 0;
-    }
-#endif /*!ENABLE_AGENT_SUPPORT*/
 
     if (opt.set_filesize)
 	log_info(_("NOTE: %s is not for normal use!\n"), "--set-filesize");
     if( opt.batch )
 	tty_batchmode( 1 );
 
-    secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
+    gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
 
     if(require_secmem && !got_secmem)
       {
@@ -2843,7 +2856,7 @@ main (int argc, char **argv )
 	g10_exit(2);
       }
 
-    set_debug();
+    set_debug (debug_level);
 
     /* Do these after the switch(), so they can override settings. */
     if(PGP2)
@@ -2875,7 +2888,7 @@ main (int argc, char **argv )
 	       preference, but those have their own error
 	       messages). */
 
-	    if(check_cipher_algo(CIPHER_ALGO_IDEA))
+	    if (openpgp_cipher_test_algo(CIPHER_ALGO_IDEA))
 	      {
 		log_info(_("encrypting a message in --pgp2 mode requires "
 			   "the IDEA cipher\n"));
@@ -2934,47 +2947,46 @@ main (int argc, char **argv )
 	opt.escape_from=1;
       }
 
-    /* must do this after dropping setuid, because string_to...
-     * may try to load an module */
+
     if( def_cipher_string ) {
-	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
+	opt.def_cipher_algo = string_to_cipher_algo (def_cipher_string);
 	if(opt.def_cipher_algo==0 &&
 	   (ascii_strcasecmp(def_cipher_string,"idea")==0
 	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
 	  idea_cipher_warn(1);
 	xfree(def_cipher_string); def_cipher_string = NULL;
-	if( check_cipher_algo(opt.def_cipher_algo) )
+	if ( openpgp_cipher_test_algo (opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( def_digest_string ) {
-	opt.def_digest_algo = string_to_digest_algo(def_digest_string);
+	opt.def_digest_algo = string_to_digest_algo (def_digest_string);
 	xfree(def_digest_string); def_digest_string = NULL;
-	if( check_digest_algo(opt.def_digest_algo) )
+	if ( openpgp_md_test_algo (opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
     if( compress_algo_string ) {
 	opt.compress_algo = string_to_compress_algo(compress_algo_string);
 	xfree(compress_algo_string); compress_algo_string = NULL;
 	if( check_compress_algo(opt.compress_algo) )
-	    log_error(_("selected compression algorithm is invalid\n"));
+          log_error(_("selected compression algorithm is invalid\n"));
     }
     if( cert_digest_string ) {
-	opt.cert_digest_algo = string_to_digest_algo(cert_digest_string);
+	opt.cert_digest_algo = string_to_digest_algo (cert_digest_string);
 	xfree(cert_digest_string); cert_digest_string = NULL;
-	if( check_digest_algo(opt.cert_digest_algo) )
-	    log_error(_("selected certification digest algorithm is invalid\n"));
+	if (openpgp_md_test_algo(opt.cert_digest_algo))
+          log_error(_("selected certification digest algorithm is invalid\n"));
     }
     if( s2k_cipher_string ) {
-	opt.s2k_cipher_algo = string_to_cipher_algo(s2k_cipher_string);
+	opt.s2k_cipher_algo = string_to_cipher_algo (s2k_cipher_string);
 	xfree(s2k_cipher_string); s2k_cipher_string = NULL;
-	if( check_cipher_algo(opt.s2k_cipher_algo) )
-	    log_error(_("selected cipher algorithm is invalid\n"));
+	if (openpgp_cipher_test_algo (opt.s2k_cipher_algo))
+          log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( s2k_digest_string ) {
-	opt.s2k_digest_algo = string_to_digest_algo(s2k_digest_string);
+	opt.s2k_digest_algo = string_to_digest_algo (s2k_digest_string);
 	xfree(s2k_digest_string); s2k_digest_string = NULL;
-	if( check_digest_algo(opt.s2k_digest_algo) )
-	    log_error(_("selected digest algorithm is invalid\n"));
+	if (openpgp_md_test_algo(opt.s2k_digest_algo))
+          log_error(_("selected digest algorithm is invalid\n"));
     }
     if( opt.completes_needed < 1 )
       log_error(_("completes-needed must be greater than 0\n"));
@@ -3069,26 +3081,26 @@ main (int argc, char **argv )
 	if(opt.def_cipher_algo
 	   && !algo_available(PREFTYPE_SYM,opt.def_cipher_algo,NULL))
 	  {
-	    badalg=cipher_algo_to_string(opt.def_cipher_algo);
-	    badtype=PREFTYPE_SYM;
+	    badalg = gcry_cipher_algo_name (opt.def_cipher_algo);
+	    badtype = PREFTYPE_SYM;
 	  }
 	else if(opt.def_digest_algo
 		&& !algo_available(PREFTYPE_HASH,opt.def_digest_algo,NULL))
 	  {
-	    badalg=digest_algo_to_string(opt.def_digest_algo);
-	    badtype=PREFTYPE_HASH;
+	    badalg = gcry_md_algo_name (opt.def_digest_algo);
+	    badtype = PREFTYPE_HASH;
 	  }
 	else if(opt.cert_digest_algo
 		&& !algo_available(PREFTYPE_HASH,opt.cert_digest_algo,NULL))
 	  {
-	    badalg=digest_algo_to_string(opt.cert_digest_algo);
-	    badtype=PREFTYPE_HASH;
+	    badalg = gcry_md_algo_name (opt.cert_digest_algo);
+	    badtype = PREFTYPE_HASH;
 	  }
 	else if(opt.compress_algo!=-1
 		&& !algo_available(PREFTYPE_ZIP,opt.compress_algo,NULL))
 	  {
-	    badalg=compress_algo_to_string(opt.compress_algo);
-	    badtype=PREFTYPE_ZIP;
+	    badalg = compress_algo_to_string(opt.compress_algo);
+	    badtype = PREFTYPE_ZIP;
 	  }
 
 	if(badalg)
@@ -3118,10 +3130,10 @@ main (int argc, char **argv )
 	  }
       }
 
-    /* set the random seed file */
+    /* Set the random seed file. */
     if( use_random_seed ) {
 	char *p = make_filename(opt.homedir, "random_seed", NULL );
-	set_random_seed_file(p);
+	gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
         if (!access (p, F_OK))
           register_secured_file (p);
 	xfree(p);
@@ -3143,7 +3155,6 @@ main (int argc, char **argv )
 	    opt.list_sigs++;
 
 	opt.verbose = opt.verbose > 1;
-	g10_opt_verbose = opt.verbose;
     }
 
     /* kludge to let -sat generate a clear text signature */
@@ -3604,6 +3615,7 @@ main (int argc, char **argv )
 
 
       case aPrimegen:
+#if 0 /*FIXME*/
 	{   int mode = argc < 2 ? 0 : atoi(*argv);
 
 	    if( mode == 1 && argc == 2 ) {
@@ -3635,6 +3647,8 @@ main (int argc, char **argv )
 		wrong_args("--gen-prime mode bits [qbits] ");
 	    putchar('\n');
 	}
+#endif
+        wrong_args("--gen-prime not yet supported ");
 	break;
 
       case aGenRandom:
@@ -3654,7 +3668,7 @@ main (int argc, char **argv )
                    other tools */
 		size_t n = !endless && count < 99? count : 99;
 
-		p = get_random_bits( n*8, level, 0);
+		p = gcry_random_bytes (n, level);
 #ifdef HAVE_DOSISH_SYSTEM
 		setmode ( fileno(stdout), O_BINARY );
 #endif
@@ -3683,7 +3697,7 @@ main (int argc, char **argv )
 	    wrong_args("--print-md algo [files]");
 	{
 	    int all_algos = (**argv=='*' && !(*argv)[1]);
-	    int algo = all_algos? 0 : string_to_digest_algo(*argv);
+	    int algo = all_algos? 0 : gcry_md_map_name (*argv);
 
 	    if( !algo && !all_algos )
 		log_error(_("invalid hash algorithm `%s'\n"), *argv );
@@ -3756,12 +3770,6 @@ main (int argc, char **argv )
 	import_ownertrust( argc? *argv:NULL );
 	break;
       
-      case aPipeMode:
-        if ( argc )
-            wrong_args ("--pipemode");
-        run_in_pipemode ();
-        break;
-
       case aRebuildKeydbCaches:
         if (argc)
             wrong_args ("--rebuild-keydb-caches");
@@ -3852,23 +3860,34 @@ main (int argc, char **argv )
 }
 
 
+/* Note: This function is used by signal handlers!. */
+static void
+emergency_cleanup (void)
+{
+  gcry_control (GCRYCTL_TERM_SECMEM );
+}
+
+
 void
 g10_exit( int rc )
 {
 #ifdef ENABLE_CARD_SUPPORT
-    card_close ();
+  card_close ();
 #endif
-    update_random_seed_file();
-    if( opt.debug & DBG_MEMSTAT_VALUE ) {
-	m_print_stats("on exit");
-	random_dump_stats();
+
+  gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
+  if ( (opt.debug & DBG_MEMSTAT_VALUE) )
+    {
+      gcry_control (GCRYCTL_DUMP_MEMORY_STATS);
+      gcry_control (GCRYCTL_DUMP_RANDOM_STATS);
     }
-    if( opt.debug )
-	secmem_dump_stats();
-    secmem_term();
-    rc = rc? rc : log_get_errorcount(0)? 2 :
-			g10_errors_seen? 1 : 0;
-    exit(rc );
+  if (opt.debug)
+    gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
+
+  emergency_cleanup ();
+  
+  rc = rc? rc : log_get_errorcount(0)? 2 : g10_errors_seen? 1 : 0;
+  exit (rc);
 }
 
 
@@ -3876,7 +3895,7 @@ g10_exit( int rc )
    display, but there are a few other similar assumptions in the
    display code. */
 static void
-print_hex( MD_HANDLE md, int algo, const char *fname )
+print_hex( gcry_md_hd_t md, int algo, const char *fname )
 {
   int i,n,count,indent=0;
   const byte *p;
@@ -3893,16 +3912,16 @@ print_hex( MD_HANDLE md, int algo, const char *fname )
   if(algo==DIGEST_ALGO_RMD160)
     indent+=printf("RMD160 = ");
   else if(algo>0)
-    indent+=printf("%6s = ",digest_algo_to_string(algo));
+    indent+=printf("%6s = ", gcry_md_algo_name (algo));
   else
     algo=abs(algo);
 
   count=indent;
 
-  p = md_read( md, algo );
-  n = md_digest_length(algo);
+  p = gcry_md_read (md, algo);
+  n = gcry_md_get_algo_dlen (algo);
 
-  count+=printf("%02X",*p++);
+  count += printf ("%02X",*p++);
 
   for(i=1;i<n;i++,p++)
     {
@@ -3956,7 +3975,7 @@ print_hex( MD_HANDLE md, int algo, const char *fname )
 }
 
 static void
-print_hashline( MD_HANDLE md, int algo, const char *fname )
+print_hashline( gcry_md_hd_t md, int algo, const char *fname )
 {
     int i, n;
     const byte *p;
@@ -3971,8 +3990,8 @@ print_hashline( MD_HANDLE md, int algo, const char *fname )
     }
     putchar(':');
     printf("%d:", algo );
-    p = md_read( md, algo );
-    n = md_digest_length(algo);
+    p = gcry_md_read (md, algo);
+    n = gcry_md_get_algo_dlen (algo);
     for(i=0; i < n ; i++, p++ ) 
         printf("%02X", *p );
     putchar(':');
@@ -3985,7 +4004,7 @@ print_mds( const char *fname, int algo )
     FILE *fp;
     char buf[1024];
     size_t n;
-    MD_HANDLE md;
+    gcry_md_hd_t md;
 
     if( !fname ) {
 	fp = stdin;
@@ -4007,43 +4026,44 @@ print_mds( const char *fname, int algo )
 	return;
     }
 
-    md = md_open( 0, 0 );
+    gcry_md_open (&md, 0, 0);
     if( algo )
-	md_enable( md, algo );
+        gcry_md_enable (md, algo);
     else {
-	md_enable( md, DIGEST_ALGO_MD5 );
-	md_enable( md, DIGEST_ALGO_SHA1 );
-	md_enable( md, DIGEST_ALGO_RMD160 );
+	gcry_md_enable (md, GCRY_MD_MD5);
+	gcry_md_enable (md, GCRY_MD_SHA1);
+	gcry_md_enable (md, GCRY_MD_RMD160);
 #ifdef USE_SHA256
-	md_enable( md, DIGEST_ALGO_SHA224 );
-	md_enable( md, DIGEST_ALGO_SHA256 );
+	gcry_md_enable (md, DIGEST_ALGO_SHA224);
+	gcry_md_enable (md, GCRY_MD_SHA256);
 #endif
 #ifdef USE_SHA512
-	md_enable( md, DIGEST_ALGO_SHA384 );
-	md_enable( md, DIGEST_ALGO_SHA512 );
+	gcry_md_enable (md, GCRY_MD_SHA384);
+	gcry_md_enable (md, GCRY_MD_SHA512);
 #endif
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
-	md_write( md, buf, n );
+	gcry_md_write (md, buf, n);
     if( ferror(fp) )
 	log_error("%s: %s\n", fname?fname:"[stdin]", strerror(errno) );
     else {
-	md_final(md);
+	gcry_md_final (md);
         if ( opt.with_colons ) {
             if ( algo ) 
                 print_hashline( md, algo, fname );
             else {
-                print_hashline( md, DIGEST_ALGO_MD5, fname );
-                print_hashline( md, DIGEST_ALGO_SHA1, fname );
-                print_hashline( md, DIGEST_ALGO_RMD160, fname );
+                print_hashline( md, GCRY_MD_MD5, fname );
+                print_hashline( md, GCRY_MD_SHA1, fname );
+                print_hashline( md, GCRY_MD_RMD160, fname );
 #ifdef USE_SHA256
-                print_hashline( md, DIGEST_ALGO_SHA224, fname );
-                print_hashline( md, DIGEST_ALGO_SHA256, fname );
+                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224)
+                    print_hashline (md, DIGEST_ALGO_SHA224, fname);
+                print_hashline( md, GCRY_MD_SHA256, fname );
 #endif
 #ifdef USE_SHA512
-		print_hashline( md, DIGEST_ALGO_SHA384, fname );
-		print_hashline( md, DIGEST_ALGO_SHA512, fname );
+		print_hashline( md, GCRY_MD_SHA384, fname );
+		print_hashline( md, GCRY_MD_SHA512, fname );
 #endif
             }
         }
@@ -4051,21 +4071,22 @@ print_mds( const char *fname, int algo )
             if( algo )
 	       print_hex(md,-algo,fname);
             else {
-                print_hex( md, DIGEST_ALGO_MD5, fname );
-                print_hex( md, DIGEST_ALGO_SHA1, fname );
-                print_hex( md, DIGEST_ALGO_RMD160, fname );
+                print_hex( md, GCRY_MD_MD5, fname );
+                print_hex( md, GCRY_MD_SHA1, fname );
+                print_hex( md, GCRY_MD_RMD160, fname );
 #ifdef USE_SHA256
-                print_hex( md, DIGEST_ALGO_SHA224, fname );
-                print_hex( md, DIGEST_ALGO_SHA256, fname );
+                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224)
+                    print_hex (md, DIGEST_ALGO_SHA224, fname);
+                print_hex( md, GCRY_MD_SHA256, fname );
 #endif
 #ifdef USE_SHA512
-		print_hex( md, DIGEST_ALGO_SHA384, fname );
-		print_hex( md, DIGEST_ALGO_SHA512, fname );
+		print_hex( md, GCRY_MD_SHA384, fname );
+		print_hex( md, GCRY_MD_SHA512, fname );
 #endif
             }
         }
     }
-    md_close(md);
+    gcry_md_close(md);
 
     if( fp != stdin )
 	fclose(fp);

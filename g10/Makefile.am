@@ -1,5 +1,5 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-#               2005 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002,
+#               2003, 2006  Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -15,36 +15,29 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
 
 ## Process this file with automake to produce Makefile.in
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/intl @LIBUSB_CPPFLAGS@
-
 EXTRA_DIST = options.skel
-# it seems that we can't use this with automake 1.5
-#OMIT_DEPENDENCIES = zlib.h zconf.h
 
-if ! HAVE_DOSISH_SYSTEM
-AM_CPPFLAGS += -DGNUPG_LIBEXECDIR="\"$(libexecdir)/@PACKAGE@\""
-endif
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
+              -I$(top_srcdir)/include -I$(top_srcdir)/intl 
 
-needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
-other_libs = $(LIBICONV) $(DNSLIBS) $(LIBINTL) $(CAPLIBS)
+include $(top_srcdir)/am/cmacros.am
 
-bin_PROGRAMS = gpg gpgv
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
 
-if ENABLE_BZIP2_SUPPORT
-bzip2_source = compress-bz2.c
-else
-bzip2_source =
-endif
+needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
+
+bin_PROGRAMS = gpg2 gpgv2
 
 common_source =  \
-	      global.h          \
+	      gpg.h             \
 	      build-packet.c	\
 	      compress.c	\
-	      $(bzip2_source)   \
+	      compress-bz2.c	\
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
@@ -69,28 +62,10 @@ common_source =  \
 	      plaintext.c	\
 	      sig-check.c	\
 	      keylist.c 	\
-	      signal.c
+	      pkglue.c pkglue.h 
 
-if ENABLE_CARD_SUPPORT
-card_support_source_gpg = card-util.c 
-card_support_source_scd = \
-	app-common.h \
-	app-openpgp.c \
-	iso7816.c iso7816.h \
-	apdu.c apdu.h \
-	ccid-driver.c ccid-driver.h
-card_support_source_local = cardglue.c cardglue.h tlv.c tlv.h
-else
-card_support_source_gpg =
-card_support_source_scd = 
-card_support_source_local =
-endif
-
-card_support_source = $(card_support_source_local) $(card_support_source_gpg) $(card_support_source_scd)
-
-gpg_SOURCES  = gpg.c		\
+gpg2_SOURCES  = gpg.c		\
 	      $(common_source)	\
-	      $(card_support_source) \
 	      pkclist.c 	\
 	      skclist.c 	\
 	      pubkey-enc.c	\
@@ -114,43 +89,33 @@ gpg_SOURCES  = gpg.c		\
 	      tdbio.h		\
 	      delkey.c		\
 	      keygen.c          \
-	      pipemode.c        \
 	      helptext.c        \
 	      keyserver.c       \
 	      keyserver-internal.h \
 	      photoid.c photoid.h \
+	      call-agent.c call-agent.h \
+	      card-util.c \
 	      exec.c exec.h
 
-gpgv_SOURCES = gpgv.c           \
+gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \
 	      verify.c          
 
-LDADD =  $(needed_libs) $(other_libs) @ZLIBS@ @W32LIBS@ @LIBREADLINE@
-gpg_LDADD = $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB@
+#gpgd_SOURCES = gpgd.c \
+#	       ks-proto.h \
+#	       ks-proto.c \
+#	       ks-db.c \
+#	       ks-db.h \
+#	       $(common_source)
+
+LDADD =  $(needed_libs) $(ZLIBS) @LIBINTL@ @CAPLIBS@ @W32LIBS@ 
+gpg2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
+gpgv2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
 
 $(PROGRAMS): $(needed_libs)
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel \
-				$(DESTDIR)$(pkgdatadir)/options.skel
-	@set -e;\
-	 if test -f $(DESTDIR)$(bindir)/gpgm ; then \
-	   echo "removing obsolete gpgm binary" ;   \
-	   rm $(DESTDIR)$(bindir)/gpgm ;	    \
-	 fi
+				$(DESTDIR)$(pkgdatadir)/gpg-conf.skel
 
-# Helper to update some source files.
-update-source-from-gnupg-2:
-	@set -e; \
-	 if test -d ../../gnupg-1.9/scd; then dir="../../gnupg-1.9"; \
-	 elif test -d ../../gnupg/scd; then dir="../../gnupg"; \
-	 else exit 1; \
-	 fi; \
-	 for i in $(card_support_source_scd); do \
-           cp $$dir/scd/$$i $$i; echo $$i; \
-	 done ;\
-	 for i in $(card_support_source_gpg); do \
-           cp $$dir/g10/$$i $$i; echo $$i; \
-	 done ; \
-	 echo "Please remember to update the ChangeLog accordingly!"

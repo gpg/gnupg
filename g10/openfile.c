@@ -30,8 +30,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+#include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "ttyio.h"
 #include "options.h"
 #include "main.h"
@@ -183,8 +184,8 @@ open_outfile( const char *iname, int mode, IOBUF *a )
   if( iobuf_is_pipe_filename (iname) && !opt.outfile ) {
     *a = iobuf_create(NULL);
     if( !*a ) {
+      rc = gpg_error_from_errno (errno);
       log_error(_("can't open `%s': %s\n"), "[stdout]", strerror(errno) );
-      rc = G10ERR_CREATE_FILE;
     }
     else if( opt.verbose )
       log_info(_("writing to stdout\n"));
@@ -201,10 +202,10 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 #ifdef USE_ONLY_8DOT3
       if (opt.mangle_dos_filenames)
         {
-          /* It is quite common for DOS system to have only one dot in a
+          /* It is quite common DOS system to have only one dot in a
            * a filename So if we have something like this, we simple
-           * replace the suffix except in cases where the suffix is
-           * larger than 3 characters and not identlically to the new one.
+           * replace the suffix execpt in cases where the suffix is
+           * larger than 3 characters and not the same as.
            * We should really map the filenames to 8.3 but this tends to
            * be more complicated and is probaly a duty of the filesystem
            */
@@ -214,22 +215,16 @@ open_outfile( const char *iname, int mode, IOBUF *a )
           
           buf = xmalloc(strlen(iname)+4+1);
           strcpy(buf,iname);
-          dot = strrchr(buf, '.' );
+          dot = strchr(buf, '.' );
           if ( dot && dot > buf && dot[1] && strlen(dot) <= 4
-               && CMP_FILENAME(newsfx, dot) 
-               && !(strchr (dot, '/') || strchr (dot, '\\')))
+				  && CMP_FILENAME(newsfx, dot) )
             {
-              /* There is a dot, the dot is not the first character,
-                 the suffix is not longer than 3, the suffix is not
-                 equal to the new suffix and tehre is no path delimter
-                 after the dot (e.g. foo.1/bar): Replace the
-                 suffix. */
-              strcpy (dot, newsfx );
+              strcpy(dot, newsfx );
             }
-          else if ( dot && !dot[1] ) /* Don't duplicate a trailing dot. */
-            strcpy ( dot, newsfx+1 );
+          else if ( dot && !dot[1] ) /* don't duplicate a dot */
+            strcpy( dot, newsfx+1 );
           else
-            strcat ( buf, newsfx ); /* Just append the new suffix. */
+            strcat ( buf, newsfx );
         }
       if (!buf)
 #endif /* USE_ONLY_8DOT3 */
@@ -248,7 +243,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
         if ( !tmp || !*tmp )
           {
             xfree (tmp);
-            rc = G10ERR_FILE_EXISTS;
+            rc = gpg_error (GPG_ERR_EEXIST);
             break;
           }
         xfree (buf);
@@ -266,8 +261,8 @@ open_outfile( const char *iname, int mode, IOBUF *a )
           *a = iobuf_create( name );
         if( !*a )
           {
+            rc = gpg_error_from_errno (errno);
             log_error(_("can't create `%s': %s\n"), name, strerror(errno) );
-            rc = G10ERR_CREATE_FILE;
           }
         else if( opt.verbose )
           log_info(_("writing to `%s'\n"), name );
@@ -336,7 +331,7 @@ copy_options_file( const char *destdir )
 	return;
 
     fname = xmalloc( strlen(datadir) + strlen(destdir) + 15 );
-    strcpy(stpcpy(fname, datadir), DIRSEP_S "options" SKELEXT );
+    strcpy(stpcpy(fname, datadir), DIRSEP_S "gpg-conf" SKELEXT );
     src = fopen( fname, "r" );
     if (src && is_secured_file (fileno (src)))
       {
@@ -399,7 +394,7 @@ copy_options_file( const char *destdir )
 void
 try_make_homedir( const char *fname )
 {
-    const char *defhome = GNUPG_HOMEDIR;
+    const char *defhome = GNUPG_DEFAULT_HOMEDIR;
 
     /* Create the directory only if the supplied directory name
      * is the same as the default one.  This way we avoid to create

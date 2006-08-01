@@ -1,0 +1,11 @@
+Extra test data where it is not clear whether we may distribute them.  Thus
+we only keep them in the CVS.
+
+dod-test9.p12    A file from the DoD X.509 tests suite, September 2001.
+                 Passphrase is "password".
+
+siemens-ZZZZZ000.crt
+siemens-ZZZZZ0EE.crt
+                 Two certificates from the Siemens CA featuring a trailing
+		 garbage byte and crlDPs with several names.
+

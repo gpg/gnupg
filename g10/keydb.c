@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "gpg.h"
 #include "util.h"
 #include "options.h"
 #include "main.h" /*try_make_homedir ()*/
@@ -91,7 +92,7 @@ maybe_create_keyring (char *filename, int force)
   /* If we don't want to create a new file at all, there is no need to
      go any further - bail out right here.  */
   if (!force) 
-    return G10ERR_OPEN_FILE;
+    return gpg_error (GPG_ERR_ENOENT);
 
   /* First of all we try to create the home directory.  Note, that we
      don't do any locking here because any sane application of gpg
@@ -111,7 +112,7 @@ maybe_create_keyring (char *filename, int force)
         }
       if (access (filename, F_OK))
         {
-          rc = G10ERR_OPEN_FILE;
+          rc = gpg_error_from_errno (errno);
           *last_slash_in_filename = DIRSEP_C;
           goto leave;
         }
@@ -133,9 +134,9 @@ maybe_create_keyring (char *filename, int force)
         log_info ("can't allocate lock for `%s'\n", filename );
 
       if (!force) 
-        return G10ERR_OPEN_FILE; 
+        return gpg_error (GPG_ERR_ENOENT); 
       else
-        return G10ERR_GENERAL;
+        return gpg_error (GPG_ERR_GENERAL);
     }
 
   if ( make_dotlock (lockhd, -1) )
@@ -165,9 +166,9 @@ maybe_create_keyring (char *filename, int force)
   umask (oldmask);
   if (!iobuf) 
     {
+      rc = gpg_error_from_errno (errno);
       log_error ( _("error creating keyring `%s': %s\n"),
                   filename, strerror(errno));
-      rc = G10ERR_OPEN_FILE;
       goto leave;
     }
 

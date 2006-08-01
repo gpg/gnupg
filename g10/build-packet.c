@@ -27,13 +27,12 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpg.h"
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "mpi.h"
 #include "util.h"
 #include "cipher.h"
-#include "memory.h"
 #include "i18n.h"
 #include "options.h"
 
@@ -151,6 +150,27 @@ build_packet( IOBUF out, PACKET *pkt )
     return rc;
 }
 
+
+/*
+ * Write the mpi A to OUT.
+ */
+static int
+mpi_write (iobuf_t out, gcry_mpi_t a)
+{
+  char buffer[(MAX_EXTERN_MPI_BITS+7)/8];
+  size_t nbytes;
+  int rc;
+
+  nbytes = (MAX_EXTERN_MPI_BITS+7)/8;
+  rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
+  if( !rc )
+    rc = iobuf_write( out, buffer, nbytes );
+  
+  return rc;
+}
+
+
+
 /****************
  * calculate the length of a packet described by PKT
  */
@@ -188,31 +208,32 @@ calc_packet_length( PACKET *pkt )
 }
 
 static void
-write_fake_data( IOBUF out, MPI a )
+write_fake_data (IOBUF out, gcry_mpi_t a)
 {
-    if( a ) {
-        unsigned int i;
-	void *p;
-
-	p = mpi_get_opaque( a, &i );
-	iobuf_write( out, p, i );
+  if (a) 
+    {
+      unsigned int n;
+      void *p;
+      
+      p = gcry_mpi_get_opaque ( a, &n );
+      iobuf_write (out, p, (n+7)/8 );
     }
 }
 
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
+    int rc;
+
     if( uid->attrib_data )
       {
 	write_header(out, ctb, uid->attrib_len);
-	if( iobuf_write( out, uid->attrib_data, uid->attrib_len ) )
-	  return G10ERR_WRITE_FILE;
+	rc = iobuf_write( out, uid->attrib_data, uid->attrib_len );
       }
     else
       {
         write_header2( out, ctb, uid->len, 2 );
-	if( iobuf_write( out, uid->name, uid->len ) )
-	  return G10ERR_WRITE_FILE;
+	rc = iobuf_write( out, uid->name, uid->len );
       }
     return 0;
 }
@@ -245,8 +266,7 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
 	mpi_write(a, pk->pkey[i] );
 
     write_header2(out, ctb, iobuf_get_temp_length(a), pk->hdrbytes);
-    if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
@@ -352,21 +372,21 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     else if( sk->is_protected && sk->version >= 4 ) {
         /* The secret key is protected - write it out as it is */
 	byte *p;
-	unsigned int ndata;
+	unsigned int ndatabits;
 
-	assert( mpi_is_opaque( sk->skey[npkey] ) );
-	p = mpi_get_opaque( sk->skey[npkey], &ndata );
-	iobuf_write(a, p, ndata );
+	assert (gcry_mpi_get_flag (sk->skey[npkey], GCRYMPI_FLAG_OPAQUE));
+	p = gcry_mpi_get_opaque (sk->skey[npkey], &ndatabits );
+	iobuf_write (a, p, (ndatabits+7)/8 );
     }
     else if( sk->is_protected ) {
         /* The secret key is protected te old v4 way. */
 	for(   ; i < nskey; i++ ) {
             byte *p;
-            unsigned int ndata;
+            unsigned int ndatabits;
 
-            assert (mpi_is_opaque (sk->skey[i]));
-            p = mpi_get_opaque (sk->skey[i], &ndata);
-            iobuf_write (a, p, ndata);
+            assert (gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE));
+            p = gcry_mpi_get_opaque (sk->skey[i], &ndatabits);
+            iobuf_write (a, p, (ndatabits+7)/8);
         }
 	write_16(a, sk->csum );
     }
@@ -382,8 +402,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
        the other stuff, so that we know the length of the packet */
     write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes);
     /* And finally write it out the real stream */
-    if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a); /* close the remporary buffer */
     return rc;
@@ -413,8 +432,7 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 	iobuf_write(a, enc->seskey, enc->seskeylen );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
-    if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
@@ -445,8 +463,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 	mpi_write(a, enc->data[i] );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
-    if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
@@ -479,16 +496,16 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     iobuf_put(out, pt->namelen );
     for(i=0; i < pt->namelen; i++ )
 	iobuf_put(out, pt->name[i] );
-    if( write_32(out, pt->timestamp ) )
-	rc = G10ERR_WRITE_FILE;
+    rc = write_32(out, pt->timestamp );
+    if (rc) 
+      return rc;
 
     n = 0;
     while( (nbytes=iobuf_read(pt->buf, buf, 1000)) != -1 ) {
-	if( iobuf_write(out, buf, nbytes) == -1 ) {
-	    rc = G10ERR_WRITE_FILE;
-	    break;
-	}
-	n += nbytes;
+      rc = iobuf_write (out, buf, nbytes);
+      if (rc)
+        break;
+      n += nbytes;
     }
     wipememory(buf,1000); /* burn the buffer */
     if( (ctb&0x40) && !pt->len )
@@ -1103,8 +1120,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 	write_sign_packet_header(out, ctb, iobuf_get_temp_length(a) );
     else
 	write_header(out, ctb, iobuf_get_temp_length(a) );
-    if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
@@ -1126,8 +1142,7 @@ do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
     iobuf_put(a, ops->last );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
-    if( iobuf_write_temp( out, a ) )
-	rc = G10ERR_WRITE_FILE;
+    rc = iobuf_write_temp( out, a );
 
     iobuf_close(a);
     return rc;
@@ -1149,9 +1164,7 @@ write_32(IOBUF out, u32 a)
     iobuf_put(out, a>> 24);
     iobuf_put(out, a>> 16);
     iobuf_put(out, a>> 8);
-    if( iobuf_put(out, a) )
-	return -1;
-    return 0;
+    return iobuf_put(out, a);
 }
 
 

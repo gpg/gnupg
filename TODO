@@ -1,72 +1,121 @@
-  * Using an expired key for signing should give an error message
-    "expired key" and not "unusable key'.  Furthermore the error should
-    also be thrown when the default key has expired.  Reported by
-    Eric.VanBuggenhaut add AdValvas.be.
+                                                              -*- outline -*-
 
-  * pause scrolling help in --edit-key and elsewhere.
+* src/base64
+** Make parsing more robust
+Currently we don't cope with overlong lines in the best way.
+** Check that we really release the ksba reader/writer objects.
 
-  * getkey does not return revoked/expired keys - therefore it is not
-    possible to override it.
+* sm/call-agent.c
+** The protocol uses an incomplete S-expression
+We should always use valid S-Exp and not just parts.
+** Some code should go into import.c
+** When we allow concurrent service request in gpgsm, we
+might want to have an agent context for each service request
+(i.e. Assuan context).
 
-  * Selection using +wordlist does not work.
-    What about adding a feature -word to the +wordlist search mode.
+* sm/certchain.c
+** When a certificate chain was sucessfully verified, make ephemeral certs used  in this chain permanent.
+** Try to keep certificate references somewhere
+  This will help with some of our caching code.  We also need to test
+  that caching; in particular "regtp_ca_chainlen".
 
-  * Check the changes to the gpg random gatherer on all W32 platforms.
+* sm/decrypt.c
+** replace leading zero in integer hack by a cleaner solution
 
-  * Show more info does not work from edit->trust. We should give more
-    information on the user ID under question while running
-    --update-trustdb.
+* sm/gpgsm.c
+** Support --output for all commands
+** mark all unimplemented commands and options.
+** Implement --default-key
+** support the anyPolicy semantic
+** Check that we are really following the verification procedures in rfc3280.
+** Implement a --card-status command.
+   This is useful to check whether a card is supported at all.
 
-  * Check that no secret temporary results are stored in the result parameter
-    of the mpi functions.  We have already done this for mpi-mul.c 
 
-  * We need another special packet at the end of a clearsign message to mark
-    it's end and allow for multiple signature for one message.  And
-    add a real grammar to the code in mainproc.c
+* sm/keydb.c
+** Check file permissions
+** Check that all error code mapping is done.
+** Remove the inter-module dependencies between gpgsm and keybox
+** Add an source_of_key field
 
-  * Fix the bug in the mips assembler code
+* agent/command.c
+** Make sure that secure memory is used where appropriate
 
-  * Add a way to show the fingerprint of an key signator's keys
+* agent/pkdecrypt.c, agent/pksign.c
+** Don't use stdio to return results.
+** Support DSA
 
-  * Concatenated encryption messages don't work corectly - only the
-    first one is processed.
+* Move pkcs-1 encoding into libgcrypt.
 
-  * Add option to put the list of recipients (from the encryption
-    layer) into the signatures notation data.
+* Use a MAC to protect sensitive files.
+  The problem here is that we need yet another key and it is unlikely
+  that users are willing to remember that key too.  It is possible to
+  do this with a smartcard, though.
 
-  * --disable-asm should still assemble _udiv_qrnnd when needed
+* sm/export.c
+** Return an error code or a status info per user ID.
 
-  * the pubkey encrypt functions should do some sanity checks.
+* scd/tlv.c
+  The parse_sexp fucntion should not go into this file.  Check whether
+  we can change all S-expression handling code to make use of this
+  function.
 
-  * "gpg filename.tar.gz.asc" should work like --verify (-sab).
+* scd
+** Application context vs. reader slot
+  We have 2 concurrent method of tracking whether a read is in use:
+  Using the session_list in command.c and the lock_table in app.c.  IT
+  would be better to do this just at one place. First we need to see
+  how we can support cards with multiple applications.
+** Detecting a removed card works only after the ticker detected it.
+ We should check the card status in open-card to make this smoother.
+ Needs to be integrated with the status file update, though.  It is
+ not a real problem because application will get a card removed status
+ and should the send a reset to try solving the problem.
 
-  * for messages created with "-t", it might make sense to append the
-    verification status of the message to the output (i.e. write something to
-    the --output file and not only to stderr.  However the problem is
-    that we consider the message transpatrent and don't have any
-    indication of the used character set.  To implement this feature
-    we need to make sure that all output is plain 7 bit ascii but
-    given that we need to print a user name, this does not make sense
-    at all.  The only way this can be implemented is by assuming that
-    the message is encoded in utf8 and hope tht everyone starts to use
-    utf8 instead of latin-1 or whatever RSN.  Hmmm, I myself should
-    start with this.
+* tests
+** Makefile.am
+  We use printf(1) to setup the library path, this is not portable.
+  Furthermore LD_LIBRARY_PATH is not used on all systems.  It doesn't
+  matter for now, because we use some GNU/*BSDish features anyway.
 
-  * keyflags don't distinguish between {certify,signature}-only.
+** Add a test to check the extkeyusage.
 
-  * cat foo | gpg --sign | gpg --list-packets
-    Does not list the signature packet.
+* doc/
+** Explain how to setup a root CA key as trusted
+** Explain how trustlist.txt might be managed.
+** Write a script to generate man pages from texi.
+   In progress (yatm)
 
-  * When presenting the result of a verification show the user ID with
-    the highest trust level first instead of the primary one.
 
-  * allow the use of option in gpg.conf. 
+* Windows port
+** gpgsm's LISTKEYS does not yet work
+    Fix is to change everything to libestream
+** Signals are not support 
+    This means we can't reread a configuration
+** No card status notifications.
 
-  * Add the NEWSIG status.
 
-  * Delete a card key as well as a wiping.
 
-  * passphrase_to_dek does not return NULL after a cancel.  There is
-    no way to issue a cancel when unsing the CLI - this would however
-    be a Good Thing when used with mixed symkey/pubkey encrypted
-    messages. See comment in mainproc.c:proc_symkey_enc. 
+* sm/
+** check that we issue NO_SECKEY xxx if a -u key was not found
+
+* jnlib/
+** provide jnlib_malloc and try to remove all jnlib_xmalloc.
+
+* gpg/
+** issue a NO_SECKEY xxxx if a -u key was not found.
+** Replace DIGEST_ALGO_SHA224
+   We can't do that right now because it is only defined by newer
+   versions of libgcrypt.  Changes this if we require libgcrypt 1.3
+   anyway.
+** skclist.c:random_is_faked
+   Remove the whole stuff?
+** qbits
+   We pass a new qbit parameter to genkey - implement this in libgcrypt.
+
+
+* common/
+** ttyio
+  Add completion support.
+** yesno
+  Update to gpg 1.4.3 version

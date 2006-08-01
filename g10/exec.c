@@ -35,11 +35,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+
+#include "gpg.h"
 #include "options.h"
-#include "memory.h"
 #include "i18n.h"
 #include "iobuf.h"
 #include "util.h"
+#include "mkdtemp.h"  /* From gnulib. */
 #include "exec.h"
 
 #ifdef NO_EXEC
@@ -56,15 +58,11 @@ int set_exec_path(const char *path) { return G10ERR_GENERAL; }
 
 #else /* ! NO_EXEC */
 
-#ifndef HAVE_MKDTEMP
-char *mkdtemp(char *template);
-#endif
-
 #if defined (_WIN32)
 /* This is a nicer system() for windows that waits for programs to
    return before returning control to the caller.  I hate helpful
    computers. */
-static int win_system(const char *command)
+static int w32_system(const char *command)
 {
   PROCESS_INFORMATION pi;
   STARTUPINFO si;
@@ -131,9 +129,9 @@ static int make_tempdir(struct exec_info *info)
 #if defined (_WIN32)
       int err;
 
-      tmp=xmalloc(MAX_PATH);
-      err=GetTempPath(MAX_PATH,tmp);
-      if(err==0 || err>MAX_PATH)
+      tmp=xmalloc(MAX_PATH+2);
+      err=GetTempPath(MAX_PATH+1,tmp);
+      if(err==0 || err>MAX_PATH+1)
 	strcpy(tmp,"c:\\windows\\temp");
       else
 	{
@@ -443,8 +441,8 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->tochild=fdopen(to[1],binary?"wb":"w");
       if((*info)->tochild==NULL)
 	{
+          ret = gpg_error_from_errno (errno);
 	  close(to[1]);
-	  ret=G10ERR_WRITE_FILE;
 	  goto fail;
 	}
 
@@ -453,8 +451,8 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->fromchild=iobuf_fdopen(from[0],"r");
       if((*info)->fromchild==NULL)
 	{
+          ret = gpg_error_from_errno (errno);
 	  close(from[0]);
-	  ret=G10ERR_READ_FILE;
 	  goto fail;
 	}
 
@@ -478,9 +476,9 @@ int exec_write(struct exec_info **info,const char *program,
     (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
+      ret = gpg_error_from_errno (errno);
       log_error(_("can't create `%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
-      ret=G10ERR_WRITE_FILE;
       goto fail;
     }
 
@@ -503,7 +501,7 @@ int exec_read(struct exec_info *info)
 	log_debug("system() command is %s\n",info->command);
 
 #if defined (_WIN32)
-      info->progreturn=win_system(info->command);
+      info->progreturn=w32_system(info->command);
 #else
       info->progreturn=system(info->command);
 #endif
@@ -552,9 +550,9 @@ int exec_read(struct exec_info *info)
             }
 	  if(info->fromchild==NULL)
 	    {
+              ret = gpg_error_from_errno (errno);
 	      log_error(_("unable to read external program response: %s\n"),
 			strerror(errno));
-	      ret=G10ERR_READ_FILE;
 	      goto fail;
 	    }
 

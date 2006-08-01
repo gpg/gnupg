@@ -1,3 +1,104 @@
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (kbxutil_LDADD): Add ../gl/libgnu.a after
+	../jnlib/libjnlib.a.
+
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* keybox-file.c (_keybox_read_blob2): Make IMAGE unsigned.
+	(_keybox_write_blob): 
+
+	* keybox-blob.c (create_blob_finish, _keybox_create_x509_blob):
+	Fixed warnings about signed/unsigned pointer mismatches.
+	(x509_email_kludge): Ditto.
+	(_keybox_new_blob): Changed arg IMAGE to unsigned char *.
+	(_keybox_get_blob_image): Changed return type to unsigned char*.
+
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* keybox-file.c (ftello) [!HAVE_FSEEKO]: New replacement
+	function.  Copied from ../common/ftello.c.
+	* keybox-update.c (fseeko) [!HAVE_FSEEKO]: New replacement
+	function.  Copied from ../common/iobuf.c.
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* keybox-defs.h (map_assuan_err): Define in terms of
+	map_assuan_err_with_source.
+
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* keybox-init.c (keybox_release): Close the file pointer.
+
+2004-11-26  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (kbxutil_LDADD): Add ../common/libcommon.a
+
+	* keybox-defs.h: Include stringhelp.h.
+
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* kbxutil.c (i18n_init): Always use LC_ALL.
+
+	* Makefile.am: Adjusted for gettext 0.14.
+
+2004-08-24  Werner Koch  <wk@g10code.de>
+
+	* kbxutil.c: New command --import-openpgp.
+	(main): Updated libgcrypt initialization stuff.
+	(my_gcry_logger): New.
+	(read_file): New.  Taken from ../agent/protect-tool.
+	(dump_fpr, dump_openpgp_key, import_openpgp): New.
+
+	* keybox-openpgp.c: New.
+
+2004-06-18  Werner Koch  <wk@gnupg.org>
+
+	* keybox-dump.c (_keybox_dump_file): New arg STATS_ONLY.
+	(update_stats): New.
+	* kbxutil.c (main): New command --stats.
+
+2004-04-23  Werner Koch  <wk@gnupg.org>
+
+	* keybox-blob.c (_keybox_update_header_blob): New.
+	* keybox-update.c (blob_filecopy): Handle header blob.
+	* keybox-file.c (_keybox_read_blob2): New. Moved code from
+	_keybox_read_blob to there. 
+	* keybox-dump.c (dump_header_blob): Print header info.
+
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	* keybox-search.c (_keybox_get_flag_location): Add flag
+	KEYBOX_FLAG_CREATED_AT.
+	* keybox-update.c (keybox_compress): New.
+
+	* keybox-search.c (get32, get16, blob_get_type) 
+	(blob_get_blob_flags, has_short_kid, has_long_kid) 
+	(has_fingerprint, has_issuer, has_issuer_sn, has_sn, has_subject) 
+	(has_subject_or_alt, has_mail): inline them.
+	
+	* keybox-update.c (blob_filecopy): Fixed an error/eof check
+	(s/if(fread)/if(nread)/).
+
+	* keybox-dump.c (_keybox_dump_blob): Really print the timestamps.
+
+2004-04-20  Werner Koch  <wk@gnupg.org>
+
+	* keybox-defs.h: Include jnlib/types.h and remove our own
+	definitions for byte.u16 and u32.
+
+2004-02-02  Werner Koch  <wk@gnupg.org>
+
+	* keybox.h (keybox_flag_t): New.
+	* keybox-search.c (get_flag_from_image, keybox_get_flags): New.
+	(_keybox_get_flag_location): New.
+
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for API changes in Libksba.
+
+	* keybox-blob.c: Include time.h
+
 2003-06-03  Werner Koch  <wk@gnupg.org>
 	
 	Changed all error codes in all files to the new libgpg-error scheme.

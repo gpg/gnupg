@@ -26,9 +26,9 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "packet.h"
@@ -58,9 +58,9 @@ dearmor_file( const char *fname )
         errno = EPERM;
       }
     if (!inp) {
+        rc = gpg_error_from_errno (errno);
 	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 
@@ -107,9 +107,9 @@ enarmor_file( const char *fname )
         errno = EPERM;
       }
     if (!inp) {
+        rc = gpg_error_from_errno (errno);
 	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
                   strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 

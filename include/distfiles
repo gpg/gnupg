@@ -1,9 +1,7 @@
 cipher.h
 errors.h
-iobuf.h
 memory.h
 mpi.h
-ttyio.h
 types.h
 util.h
 i18n.h
@@ -11,7 +9,5 @@ host2net.h
 http.h
 keyserver.h
 _regex.h
-dynload.h
-assuan.h
 
 ChangeLog

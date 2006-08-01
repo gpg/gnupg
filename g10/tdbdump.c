@@ -31,10 +31,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "trustdb.h"
 #include "options.h"

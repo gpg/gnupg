@@ -26,9 +26,10 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
+
+#include "gpg.h"
 #include "util.h"
 #include "packet.h"
-#include "memory.h"
 #include "iobuf.h"
 #include "keydb.h"
 #include "options.h"
@@ -2135,7 +2136,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     subpk->expiredate = key_expire;
 
     /* algo doesn't exist */
-    if(check_pubkey_algo(subpk->pubkey_algo))
+    if(openpgp_pk_test_algo(subpk->pubkey_algo))
       return;
 
     subpk->is_valid = 1;

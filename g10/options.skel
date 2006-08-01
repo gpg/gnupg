@@ -39,14 +39,6 @@
 #default-recipient some-user-id
 #default-recipient-self
 
-# Use --encrypt-to to add the specified key as a recipient to all
-# messages.  This is useful, for example, when sending mail through a
-# mail client that does not automatically encrypt mail to your key.
-# In the example, this option allows you to read your local copy of
-# encrypted mail that you've sent to others.
-
-#encrypt-to some-key-id
-
 # By default GnuPG creates version 3 signatures for data files.  This
 # is not strictly OpenPGP compliant but PGP 6 and most versions of PGP
 # 7 require them.  To disable this behavior, you may use this option
@@ -66,8 +58,7 @@
 # for supported character sets.  This character set is only used for
 # metadata and not for the actual message which does not undergo any
 # translation.  Note that future version of GnuPG will change to UTF-8
-# as default character set.  In most cases this option is not required 
-# GnuPG is able to figure out the correct charset and use that.
+# as default character set.
 
 #charset utf-8
 
@@ -83,9 +74,14 @@
 
 #group mynames = paige 0x12345678 joe patti
 
+# Some old Windows platforms require 8.3 filenames.  If your system
+# can handle long filenames, uncomment this.
+
+#no-mangle-dos-filenames
+
 # Lock the file only once for the lifetime of a process.  If you do
 # not define this, the lock will be obtained and released every time
-# it is needed, which is usually preferable.
+# it is needed - normally this is not needed.
 
 #lock-once
 
@@ -100,6 +96,7 @@
 #      mailto:pgp-public-keys@keys.pgp.net
 #
 # Example LDAP keyservers:
+#      ldap://pgp.surfnet.nl:11370
 #      ldap://keyserver.pgp.com
 #
 # Regular URL syntax applies, and you can set an alternate port
@@ -121,6 +118,7 @@
 
 keyserver hkp://subkeys.pgp.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
+#keyserver ldap://pgp.surfnet.nl:11370
 #keyserver ldap://keyserver.pgp.com
 
 # Common options for keyserver functions:
@@ -157,14 +155,10 @@ keyserver hkp://subkeys.pgp.net
 
 #keyserver-options auto-key-retrieve
 
-# Display photo user IDs in key listings
+# Uncomment this line to display photo user IDs in key listings and
+# when a signature from a key with a photo is verified.
 
-# list-options show-photos
-
-# Display photo user IDs when a signature from a key with a photo is
-# verified
-
-# verify-options show-photos
+#show-photos
 
 # Use this program to display photo user IDs
 #
@@ -182,13 +176,14 @@ keyserver hkp://subkeys.pgp.net
 # input is the best way to do this as it avoids the time and effort in
 # generating and then cleaning up a secure temp file.
 #
-# If no photo-viewer is provided, GnuPG will look for xloadimage, eog,
-# or display (ImageMagick).  On Mac OS X and Windows, the default is
-# to use your regular JPEG image viewer.
+# The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
+# On Mac OS X and Windows, the default is to use your regular JPEG image
+# viewer.
 #
 # Some other viewers:
 # photo-viewer "qiv %i"
 # photo-viewer "ee %i"
+# photo-viewer "display -title 'KeyID 0x%k'"
 #
 # This one saves a copy of the photo ID in your home directory:
 # photo-viewer "cat > ~/photoid-for-key-%k.%t"
@@ -215,27 +210,3 @@ keyserver hkp://subkeys.pgp.net
 # --gpg-agent-info=<path>:<pid>:1
 #
 # may be used to override it.
-
-# Automatic key location
-#
-# GnuPG can automatically locate and retrieve keys as needed using the
-# auto-key-locate option.  This happens when encrypting to an email
-# address (in the "user@example.com" form), and there are no
-# user@example.com keys on the local keyring.  This option takes the
-# following arguments, in the order they are to be tried:
-# 
-# cert = locate a key using DNS CERT, as specified in 2538bis
-# (currently in draft): http://www.josefsson.org/rfc2538bis/
-#
-# pka = locate a key using DNS PKA.
-#
-# ldap = locate a key using the PGP Universal method of checking
-# "ldap://keys.(thedomain)".
-#
-# keyserver = locate a key using whatever keyserver is defined using
-# the keyserver option.
-#
-# You may also list arbitrary keyservers here by URL.
-#
-# Try CERT, then PKA, then LDAP, then hkp://subkeys.net:
-#auto-key-locate cert pka ldap hkp://subkeys.pgp.net

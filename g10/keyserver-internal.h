@@ -24,7 +24,7 @@
 
 #include <time.h>
 #include "keyserver.h"
-#include "iobuf.h"
+#include "../common/iobuf.h"
 #include "types.h"
 
 int parse_keyserver_options(char *options);

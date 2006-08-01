@@ -1,7 +1,0 @@
-mkdiff
-build-w32
-gnupg.spec.in
-autogen.sh
-mk-gpg-texi
-mk-w32-dist
-w32installer.nsi

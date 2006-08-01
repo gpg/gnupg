@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "gpg.h"
 #include "util.h"
 #include "ttyio.h"
 #include "main.h"

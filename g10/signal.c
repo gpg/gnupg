@@ -33,9 +33,9 @@
 #include <readline/history.h>
 #endif
 
+#include "gpg.h"
 #include "options.h"
 #include "errors.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "ttyio.h"
@@ -84,7 +84,7 @@ got_fatal_signal( int sig )
 	raise( sig );
     caught_fatal_sig = 1;
 
-    secmem_term();
+    gcry_control (GCRYCTL_TERM_SECMEM );
 
 #ifdef HAVE_LIBREADLINE
     rl_free_line_state ();
@@ -113,7 +113,7 @@ got_fatal_signal( int sig )
 
     /* Reset action to default action and raise signal again. */
     init_one_signal (sig, SIG_DFL, 0);
-    remove_lockfiles ();
+    dotlock_remove_lockfiles ();
 #ifdef __riscos__
     riscos_close_fds ();
 #endif /* __riscos__ */

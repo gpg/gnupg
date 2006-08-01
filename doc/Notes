@@ -1,0 +1,245 @@
+
+Add an infor page for watchgnupg.
+
+> * How to mark a CA certificate as trusted.
+
+There are two ways: 
+
+  1. Let gpg-agent do this for you.  Since version 1.9.9 you need to
+     add the option --allow-mark-trusted  gpg-agent.conf or when
+     invoking gpg-agent.  Everytime gpgsm notices an untrusted root
+     certificate gpg-agent will pop up a dialog to ask whether this
+     certificate should be trusted.  This is similar to whatmost
+     browsers do.
+
+     The disadvantage of this method and the reason why
+     --allow-mark-trusted is required is that the list of trusted root
+     certificates will grow, because almost all user will just hit
+     "yes, I trust" and "yes, I verified the fingerprint" without
+     understanding that this is a very serious decision.
+
+  2. Use your editor.  Edit the file ~/.gnupg/trustlist.txt and add
+     the fingerprints of the trusted root certificates. There are
+     comments on the top explaining the simple format.  The current
+     CVS version allows for colons in the fingerprint, so you can
+     easily cut and paste it from whereever you know that this is the
+     correct fingerprint.
+
+An example for an entry in the trustlist.txt is:
+
+  # CN=PCA-1-Verwaltung,O=PKI-1-Verwaltung,C=de
+  3EEE3D8BB7F0FE5C9F5804A3A7E51BCE98209DF9 S
+
+This is in fact one that probably made its way into the file using the
+first method.  As usual a # indicates a comment.  The trailing S means
+that this is to be used for (X.509).
+
+It is not possible to trust intermediate CA certificates; gpgsm always
+checks the entire chain of certificates.
+
+> * How to import a key and bind it to some certificate already
+>   imported.  Alternatively, import key and certificate together, from
+>   a pkcs12 blob, or pkcs8 + certificate blobs, or whatever.
+>   Alternatively, don't import the key at all, but specify location of
+>   key using a parameter when signing.
+
+You always need to import the key; there is something similar to a
+keyring (here called a keybox: ~/.gnupg/pubring.kbx).
+
+Importing a key either from a binary or ascii armored (PEM) certificate
+file or from a cert-only signature file is done using
+
+  gpg --import FILE
+
+or
+
+  gpg --import < FILE
+
+In general you should first import the root certificates and then down
+to the end user certificate.  You may put all into one file and gpgsm
+will do the right thing in this case independend of the order.  
+
+While verifying a signature, all included certificates are
+automagically imported.
+
+To import from a pkcs#12 file you may use the same command; if a
+private key is contained in that file, you will be asked for the
+transport passphrases as well as for the new passphrase used to
+protect it in gpg-agent's private key storage
+(~/.gnupg/private-keys-v1.d/). Note that the pkcs#12 support is very
+basic but sufficient for certificates exported from Mozilla, OpenSSL
+and MS Outlook.
+
+Background info on private keys:
+
+If you want to look at the private key you first need to know the name
+of the keyfile.  Run the command "gpgsm -K --with-key-data [KEYID]" and
+you get an output like:
+
+  crs::1024:1:CF8[..]6D:20040105T184908:2006[...]:09::CN=ZS[....]::esES:
+  fpr:::::::::3B50BF2BDAF2[...]1AE6796D:::2812[...]508F21F065E65E44:
+  grp:::::::::C92DB9CFD588ADE846BE3AC4E7A2E1B11A4A2ADB:
+  uid:::::::::CN=Werner Koch,OU=test,O=g10 Code,C=de::
+  uid:::::::::<wk@g10code.de>::
+
+This should be familar to advanced gpg-users; see doc/DETAILS in gpg
+1.3 (CVS HEAD) for a description of the records.  The value in the
+"grp" tagged record is the so called keygrip and you should find a
+file ~/.gnupg/private-keys-v1.d/C92DB9CFD588ADE846BE3AC4E7A2E1B11A4A2ADB.key
+with the private and public key in an S-expression like format.  The
+gpg-protect-tool may be used to display it in a human readable format:
+
+  $ gpgsm --call-protect-tool ~/.gnupg/private-keys-v1.d/C9[...]B.key 
+  (protected-private-key 
+   (rsa 
+    (n #00C16B6E807C47BB[...]10487#)
+    (e #010001#)
+    (protected openpgp-s2k3-sha1-aes-cbc 
+     (
+      (sha1 "Hvü9Qt^Ç" "96")
+      #2B17DC766AEA2568EE0C688E18F9757E#)
+     #65A4FF9F30750A1300[...]7#)
+    )
+   )
+  
+The current CVS version of gpgsm has a command --dump-keys which lists
+more details of a key including the keygrip so you don't need to use
+the colon format if you want to manually debug things.
+
+  $ gpgsm --dump-keys
+  Serial number: 01
+         Issuer: CN=Trust Anchor,O=Test Certificates,C=US
+        Subject: CN=Trust Anchor,O=Test Certificates,C=US
+       sha1_fpr: 66:8A:47:56:A2:DC:88:FF:DA:B8:95:E1:3C:63:37:55:5F:0A:F7:BF
+        md5_fpr: 03:01:3B:BB:EC:6C:5D:48:88:4C:95:63:99:84:ED:C0
+        keygrip: 6A082B3063F6DA6D68B2994AB11B4328FD6206D2
+      notBefore: 2001-04-19 14:57:20
+       notAfter: 2011-04-19 14:57:20
+       hashAlgo: 1.2.840.113549.1.1.5 (sha1WithRSAEncryption)
+        keyType: 1024 bit RSA
+      authKeyId: [none]
+       keyUsage: certSign crlSign
+    extKeyUsage: [none]
+       policies: [none]
+    chainLength: unlimited
+          crlDP: [none]
+       authInfo: [none]
+       subjInfo: [none]
+           extn: 2.5.29.14 (subjectKeyIdentifier)  [22 octets]
+  
+> * How to import a CRL
+
+CRLs are managed by the dirmngr which is a separate package.  The idea
+is to eventaully turn it into a system daemon, so that on a multi-user
+machine CRLs are handled more efficiently.  As of now the dirmngr
+needs service from gpgsm thus it is best to call it through gpgsm:
+
+  gpgsm --call-dirmngr LOAD /absolute/filename/to/a/CRL/file
+
+See the dirmngr README and manual for further details.
+
+If you don't want to check CRLs, use the option --diable-crl-checks
+with gpgsm.
+
+> I'm trying to replace the S/MIME support in OpenSSL with gpgsm for the
+> MUA Gnus.
+
+Great; I'd love it.
+
+> Perhaps I shouldn't be using gpgsm directly?  gpgme didn't seem to
+> have a command line front end.
+
+For Gnus it makes sense to use gpgsm directly.  Enhancing pgg to
+support gpgsm should not be that hard.  Things you need to take care
+off are: Warn if GPG_AGENT_INFO has not been set, because this will
+call gpg-agent for each operation and obviously does not cache the
+passphrase them. If GPG_AGENT_INFO has been set, also disable the
+passphrase code for gpg and pass --use-agent to gpg - this way gpg
+benefits from the passphrase caching and the pinentry.
+
+You may want to look at gpgconf (tools/README.gpgconf) to provide a
+customization interface for gpgsm, gpg-agent and dirmngr.
+
+
+Module Overview
+================ 
+
+gpgsm 
+        libgpg-error
+        libgcrypt 
+        libksba
+        libassuan [statically linked]
+        [Standard system libraries]
+
+gpg-agent
+        libgpg-error
+        libgcrypt
+        libassuan [statically linked]
+        libpth    [system library]
+        [Standard system libraries]
+
+scdaemon 
+        libgpg-error
+        libgcrypt
+        libksba
+        libassuan [statically linked]
+        libusb    [system library, optional]
+        libopensc [system library, optional]
+        [For reader access libpcsclite or a CT-API library may be
+         linked at runtime (controllable by scdaemon.conf)]
+        [Standard system libraries]
+
+gpg-protect-tool 
+        libgpg-error
+        libgcrypt
+        [Standard system libraries]
+
+dirmngr 
+        libgpg-error
+        libgcrypt
+        libksba
+        libassuan [statically linked]
+        libldap [system libary]
+        liblber [system libary]
+        libsasl [system libary, required by libldap]
+        libdb2  [system libary, required by libsasl]
+        libcrypt [system libary, required by libsasl - OOPS]
+        libpam  [system libary, required by libsasl]
+        [Standard system libraries]
+
+pinentry-curses 
+        libncurses
+        [Standard system libraries]
+        [Independent Assuan code is source included]
+
+pinentry-gtk    
+        libncurses
+        [GTK+ and X libraries]
+        [Standard system libraries]
+        [Independent Assuan code is source included]
+
+pinentry-qt 
+        libncurses
+        [QT and X libraries]
+        [Standard system libraries]
+        [Independent Assuan code is source included]
+
+gpgme
+        [Standard system libraries]
+        [gpgsm is required at runtime]       
+        [Independent Assuan code is source included]
+
+libgpg-error
+        [none]
+        
+libgcrypt 
+        libgpg-error
+
+libksba
+        libgpg-error
+
+libassuan 
+        [none]
+
+
+

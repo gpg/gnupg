@@ -1,5 +1,6 @@
 /* seckey-cert.c -  secret key certificate packet handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2006  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,31 +25,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "gpg.h"
 #include "util.h"
-#include "memory.h"
 #include "packet.h"
-#include "mpi.h"
 #include "keydb.h"
 #include "cipher.h"
 #include "main.h"
 #include "options.h"
 #include "i18n.h"
 #include "status.h"
-
+#include "pkglue.h"
 
 static int
 do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
           int *canceled )
 {
+    gpg_error_t err;
     byte *buffer;
     u16 csum=0;
     int i, res;
-    unsigned nbytes;
+    unsigned int nbytes;
 
     if( sk->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
 	u32 keyid[4]; /* 4! because we need two of them */
-	CIPHER_HANDLE cipher_hd=NULL;
+	gcry_cipher_hd_t cipher_hd=NULL;
 	PKT_secret_key *save_sk;
 
 	if( sk->protect.s2k.mode == 1001 ) {
@@ -57,7 +59,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	}
 	if( sk->protect.algo == CIPHER_ALGO_NONE )
 	    BUG();
-	if( check_cipher_algo( sk->protect.algo ) ) {
+	if( openpgp_cipher_test_algo( sk->protect.algo ) ) {
 	    log_info(_("protection algorithm %d%s is not supported\n"),
 			sk->protect.algo,sk->protect.algo==1?" (IDEA)":"" );
 	    if (sk->protect.algo==CIPHER_ALGO_IDEA)
@@ -67,7 +69,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
               }
 	    return G10ERR_CIPHER_ALGO;
 	}
-	if(check_digest_algo(sk->protect.s2k.hash_algo))
+	if(gcry_md_test_algo (sk->protect.s2k.hash_algo))
 	  {
 	    log_info(_("protection digest %d is not supported\n"),
 		     sk->protect.s2k.hash_algo);
@@ -85,26 +87,43 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
         if (!dek && canceled && *canceled)
 	    return G10ERR_GENERAL;
 
-	cipher_hd = cipher_open( sk->protect.algo,
-				 CIPHER_MODE_AUTO_CFB, 1);
-	cipher_setkey( cipher_hd, dek->key, dek->keylen );
+
+	err = gcry_cipher_open (&cipher_hd, sk->protect.algo,
+                                GCRY_CIPHER_MODE_CFB,
+                                (GCRY_CIPHER_SECURE
+                                 | (sk->protect.algo >= 100 ?
+                                    0 : GCRY_CIPHER_ENABLE_SYNC)));
+        if (err)
+          log_fatal ("cipher open failed: %s\n", gpg_strerror (err) );
+
+	err = gcry_cipher_setkey (cipher_hd, dek->key, dek->keylen);
+        if (err)
+          log_fatal ("set key failed: %s\n", gpg_strerror (err) );
+
 	xfree(dek);
 	save_sk = copy_secret_key( NULL, sk );
-	cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
+
+	gcry_cipher_setiv ( cipher_hd, sk->protect.iv, sk->protect.ivlen );
+
 	csum = 0;
 	if( sk->version >= 4 ) {
-	    unsigned int ndata;
+            int ndata;
+	    unsigned int ndatabits;
 	    byte *p, *data;
             u16 csumc = 0;
 
 	    i = pubkey_get_npkey(sk->pubkey_algo);
-	    assert( mpi_is_opaque( sk->skey[i] ) );
-	    p = mpi_get_opaque( sk->skey[i], &ndata );
+
+            assert ( gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE ));
+            p = gcry_mpi_get_opaque ( sk->skey[i], &ndatabits );
+            ndata = (ndatabits+7)/8;
+
             if ( ndata > 1 )
                 csumc = p[ndata-2] << 8 | p[ndata-1];
-	    data = xmalloc_secure( ndata );
-	    cipher_decrypt( cipher_hd, data, p, ndata );
-	    mpi_free( sk->skey[i] ); sk->skey[i] = NULL ;
+	    data = xmalloc_secure ( ndata );
+	    gcry_cipher_decrypt ( cipher_hd, data, ndata, p, ndata );
+	    gcry_mpi_release (sk->skey[i]); sk->skey[i] = NULL ;
+
 	    p = data;
             if (sk->protect.sha1chk) {
                 /* This is the new SHA1 checksum method to detect
@@ -115,21 +134,23 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 if( ndata < 20 ) 
                     log_error("not enough bytes for SHA-1 checksum\n");
                 else {
-                    MD_HANDLE h = md_open (DIGEST_ALGO_SHA1, 1);
-                    if (!h)
-                        BUG(); /* algo not available */
-                    md_write (h, data, ndata - 20);
-                    md_final (h);
-                    if (!memcmp (md_read (h, DIGEST_ALGO_SHA1),
-                                 data + ndata - 20, 20) ) {
-                        /* digest does match.  We have to keep the old
+                    gcry_md_hd_t h;
+
+                    if ( gcry_md_open (&h, DIGEST_ALGO_SHA1, 1))
+                        BUG(); /* Algo not available. */
+                    gcry_md_write (h, data, ndata - 20);
+                    gcry_md_final (h);
+                    if (!memcmp (gcry_md_read (h, DIGEST_ALGO_SHA1),
+                                 data + ndata - 20, 20) ) 
+                      {
+                        /* Digest does match.  We have to keep the old
                            style checksum in sk->csum, so that the
                            test used for unprotected keys does work.
                            This test gets used when we are adding new
                            keys. */
                         sk->csum = csum = checksum (data, ndata-20);
-                    }
-                    md_close (h);
+                      } 
+                    gcry_md_close (h);
                 }
             }
             else {
@@ -152,9 +173,8 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                because the length may have an arbitrary value */
             if( sk->csum == csum ) {
                 for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-                    nbytes = ndata;
-                    sk->skey[i] = mpi_read_from_buffer(p, &nbytes, 1 );
-                    if (!sk->skey[i])
+                    if ( gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
+                                        p, ndata, &nbytes))
                       {
                         /* Checksum was okay, but not correctly
                            decrypted.  */
@@ -174,22 +194,27 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    for(i=pubkey_get_npkey(sk->pubkey_algo);
 		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
                 byte *p;
-                unsigned int ndata;
+                int ndata;
+                unsigned int ndatabits;
 
-                assert (mpi_is_opaque (sk->skey[i]));
-                p = mpi_get_opaque (sk->skey[i], &ndata);
+                assert (gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE));
+                p = gcry_mpi_get_opaque (sk->skey[i], &ndatabits);
+                ndata = (ndatabits+7)/8;
                 assert (ndata >= 2);
                 assert (ndata == ((p[0] << 8 | p[1]) + 7)/8 + 2);
                 buffer = xmalloc_secure (ndata);
-		cipher_sync (cipher_hd);
+		gcry_cipher_sync (cipher_hd);
                 buffer[0] = p[0];
                 buffer[1] = p[1];
-                cipher_decrypt (cipher_hd, buffer+2, p+2, ndata-2);
+                gcry_cipher_decrypt (cipher_hd, buffer+2, ndata-2,
+                                     p+2, ndata-2);
                 csum += checksum (buffer, ndata);
-                mpi_free (sk->skey[i]);
-                sk->skey[i] = mpi_read_from_buffer (buffer, &ndata, 1);
+                gcry_mpi_release (sk->skey[i]);
+
+		err = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_USG,
+				     buffer, ndata, &ndata );
 		xfree (buffer);
-                if (!sk->skey[i])
+                if (err)
                   {
                     /* Checksum was okay, but not correctly
                        decrypted.  */
@@ -200,21 +225,23 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 /*  		csum += checksum_mpi (sk->skey[i]); */
 	    }
 	}
-	cipher_close( cipher_hd );
-	/* now let's see whether we have used the right passphrase */
+	gcry_cipher_close ( cipher_hd );
+
+	/* Now let's see whether we have used the correct passphrase. */
 	if( csum != sk->csum ) {
 	    copy_secret_key( sk, save_sk );
             passphrase_clear_cache ( keyid, NULL, sk->pubkey_algo );
 	    free_secret_key( save_sk );
-	    return G10ERR_BAD_PASS;
+	    return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 	}
-	/* the checksum may fail, so we also check the key itself */
-	res = pubkey_check_secret_key( sk->pubkey_algo, sk->skey );
+
+	/* The checksum may fail, so we also check the key itself. */
+	res = pk_check_secret_key ( sk->pubkey_algo, sk->skey );
 	if( res ) {
 	    copy_secret_key( sk, save_sk );
             passphrase_clear_cache ( keyid, NULL, sk->pubkey_algo );
 	    free_secret_key( save_sk );
-	    return G10ERR_BAD_PASS;
+	    return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 	}
 	free_secret_key( save_sk );
 	sk->is_protected = 0;
@@ -242,11 +269,11 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 int
 check_secret_key( PKT_secret_key *sk, int n )
 {
-    int rc = G10ERR_BAD_PASS;
+    int rc = gpg_error (GPG_ERR_BAD_PASSPHRASE);
     int i,mode;
 
     if (sk && sk->is_protected && sk->protect.s2k.mode == 1002)
-      return 0; /* Let the card support stuff handle this. */
+      return 0; /* Let the scdaemon handle this. */
 
     if(n<0)
       {
@@ -259,7 +286,7 @@ check_secret_key( PKT_secret_key *sk, int n )
     if( n < 1 )
 	n = (opt.batch && !opt.use_agent)? 1 : 3; /* use the default value */
 
-    for(i=0; i < n && rc == G10ERR_BAD_PASS; i++ ) {
+    for(i=0; i < n && gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE; i++ ) {
         int canceled = 0;
         const char *tryagain = NULL;
 	if (i) {
@@ -267,7 +294,8 @@ check_secret_key( PKT_secret_key *sk, int n )
             log_info (_("%s ...\n"), _(tryagain));
         }
 	rc = do_check( sk, tryagain, mode, &canceled );
-	if( rc == G10ERR_BAD_PASS && is_status_enabled() ) {
+	if ( gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+             && is_status_enabled () ) {
 	    u32 kid[2];
 	    char buf[50];
 
@@ -316,23 +344,30 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	return 0;
 
     if( !sk->is_protected ) { /* okay, apply the protection */
-	CIPHER_HANDLE cipher_hd=NULL;
+	gcry_cipher_hd_t cipher_hd=NULL;
 
-	if( check_cipher_algo( sk->protect.algo ) )
-	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
+	if ( openpgp_cipher_test_algo ( sk->protect.algo ) ) {
+            /* Unsupport protection algorithm. */
+            rc = gpg_error (GPG_ERR_CIPHER_ALGO); 
+        }
 	else {
 	    print_cipher_algo_note( sk->protect.algo );
-	    cipher_hd = cipher_open( sk->protect.algo,
-				     CIPHER_MODE_AUTO_CFB, 1 );
-	    if( cipher_setkey( cipher_hd, dek->key, dek->keylen ) )
+	    
+	    if ( gcry_cipher_open (&cipher_hd, sk->protect.algo,
+                                   GCRY_CIPHER_MODE_CFB,
+                                   (GCRY_CIPHER_SECURE
+                                    | (sk->protect.algo >= 100 ?
+                                       0 : GCRY_CIPHER_ENABLE_SYNC))) )
+              BUG();
+	    if ( gcry_cipher_setkey ( cipher_hd, dek->key, dek->keylen ) )
 		log_info(_("WARNING: Weak key detected"
 			   " - please change passphrase again.\n"));
-	    sk->protect.ivlen = cipher_get_blocksize( sk->protect.algo );
+	    sk->protect.ivlen = gcry_cipher_get_algo_blklen (sk->protect.algo);
 	    assert( sk->protect.ivlen <= DIM(sk->protect.iv) );
 	    if( sk->protect.ivlen != 8 && sk->protect.ivlen != 16 )
 		BUG(); /* yes, we are very careful */
-	    randomize_buffer(sk->protect.iv, sk->protect.ivlen, 1);
-	    cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
+	    gcry_create_nonce (sk->protect.iv, sk->protect.ivlen);
+	    gcry_cipher_setiv (cipher_hd, sk->protect.iv, sk->protect.ivlen);
 	    if( sk->version >= 4 ) {
                 byte *bufarr[PUBKEY_MAX_NSKEY];
 		unsigned narr[PUBKEY_MAX_NSKEY];
@@ -340,15 +375,20 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		int ndata=0;
 		byte *p, *data;
 
-		for(j=0, i = pubkey_get_npkey(sk->pubkey_algo);
-			i < pubkey_get_nskey(sk->pubkey_algo); i++, j++ ) {
-		    assert( !mpi_is_opaque( sk->skey[i] ) );
-		    bufarr[j] = mpi_get_buffer( sk->skey[i], &narr[j], NULL );
-		    nbits[j]  = mpi_get_nbits( sk->skey[i] );
+		for (j=0, i = pubkey_get_npkey(sk->pubkey_algo);
+			i < pubkey_get_nskey(sk->pubkey_algo); i++, j++ )
+                  {
+		    assert (!gcry_mpi_get_flag (sk->skey[i],
+                                                GCRYMPI_FLAG_OPAQUE));
+		    if (gcry_mpi_aprint (GCRYMPI_FMT_USG, bufarr+j,
+                                         narr+j, sk->skey[i]))
+                      BUG();
+		    nbits[j] = gcry_mpi_get_nbits (sk->skey[i]);
 		    ndata += narr[j] + 2;
-		}
-		for( ; j < PUBKEY_MAX_NSKEY; j++ )
-		    bufarr[j] = NULL;
+                  }
+		for ( ; j < PUBKEY_MAX_NSKEY; j++ )
+                  bufarr[j] = NULL;
+
 		ndata += opt.simple_sk_checksum? 2 : 20; /* for checksum */
 
 		data = xmalloc_secure( ndata );
@@ -372,27 +412,29 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
                     sk->protect.sha1chk = 0;
                 }
                 else {
-                    MD_HANDLE h = md_open (DIGEST_ALGO_SHA1, 1);
-                    if (!h)
-                        BUG(); /* algo not available */
-                    md_write (h, data, ndata - 20);
-                    md_final (h);
-                    memcpy (p, md_read (h, DIGEST_ALGO_SHA1), 20);
+                    gcry_md_hd_t h;
+
+                    if (gcry_md_open (&h, GCRY_MD_SHA1, 1))
+                      BUG(); /* Algo not available. */
+                    gcry_md_write (h, data, ndata - 20);
+                    gcry_md_final (h);
+                    memcpy (p, gcry_md_read (h, DIGEST_ALGO_SHA1), 20);
                     p += 20;
-                    md_close (h);
+                    gcry_md_close (h);
                     sk->csum = csum = 0;
                     sk->protect.sha1chk = 1;
                 }
                 assert( p == data+ndata );
 
-		cipher_encrypt( cipher_hd, data, data, ndata );
-		for(i = pubkey_get_npkey(sk->pubkey_algo);
-			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-		    mpi_free( sk->skey[i] );
+		gcry_cipher_encrypt (cipher_hd, data, ndata, NULL, 0);
+		for (i = pubkey_get_npkey(sk->pubkey_algo);
+                     i < pubkey_get_nskey(sk->pubkey_algo); i++ )
+                  {
+		    gcry_mpi_release (sk->skey[i]);
 		    sk->skey[i] = NULL;
-		}
+                  }
 		i = pubkey_get_npkey(sk->pubkey_algo);
-		sk->skey[i] = mpi_set_opaque(NULL, data, ndata );
+		sk->skey[i] = gcry_mpi_set_opaque (NULL, data, ndata*8 );
 	    }
 	    else {
 		csum = 0;
@@ -402,24 +444,31 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    unsigned int nbits;
 
 		    csum += checksum_mpi (sk->skey[i]);
-		    buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
-		    cipher_sync (cipher_hd);
-		    assert ( !mpi_is_opaque (sk->skey[i]) );
-                    data = xmalloc (nbytes+2);
-                    nbits  = mpi_get_nbits (sk->skey[i]);
+
+		    if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &buffer,
+                                         &nbytes, sk->skey[i] ))
+                      BUG();
+		    gcry_cipher_sync (cipher_hd);
+		    assert (!gcry_mpi_get_flag (sk->skey[i],
+                                                GCRYMPI_FLAG_OPAQUE));
+
+                    data = xmalloc (nbytes+2);  /* fixme: need xtrymalloc. */
+                    nbits = gcry_mpi_get_nbits (sk->skey[i]);
                     assert (nbytes == (nbits + 7)/8);
                     data[0] = nbits >> 8;
                     data[1] = nbits;
-		    cipher_encrypt (cipher_hd, data+2, buffer, nbytes);
+		    gcry_cipher_encrypt (cipher_hd, data+2, nbytes,
+                                         buffer, nbytes);
 		    xfree( buffer );
                     
-                    mpi_free (sk->skey[i]);
-                    sk->skey[i] = mpi_set_opaque (NULL, data, nbytes+2);
+                    gcry_mpi_release (sk->skey[i]);
+                    sk->skey[i] = gcry_mpi_set_opaque (NULL,
+                                                       data, (nbytes+2)*8 );
 		}
 		sk->csum = csum;
 	    }
 	    sk->is_protected = 1;
-	    cipher_close( cipher_hd );
+	    gcry_cipher_close (cipher_hd);
 	}
     }
     return rc;

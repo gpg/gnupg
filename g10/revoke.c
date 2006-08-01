@@ -28,11 +28,11 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "ttyio.h"

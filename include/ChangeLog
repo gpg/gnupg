@@ -1,205 +1,40 @@
-2006-04-20  David Shaw  <dshaw@jabberwocky.com>
+2006-04-28  Werner Koch  <wk@g10code.com>
 
-	* cipher.h: Add dsa2_generate();
+	* cipher.h (DIGEST_ALGO_SHA224): Define it.
 
-2006-04-19  David Shaw  <dshaw@jabberwocky.com>
+2006-04-18  Werner Koch  <wk@g10code.com>
 
-	* cipher.h: Add SHA-224.
-
-2006-03-16  David Shaw  <dshaw@jabberwocky.com>
-
-	* util.h: Handle the fixed IPGP type with fingerprint.
-
-2006-02-14  Werner Koch  <wk@gnupg.org>
-
-	* errors.h (G10ERR_NO_DATA): New.
-
-2005-12-23  David Shaw  <dshaw@jabberwocky.com>
-
-	* util.h: Prototype get_cert().
-
-2005-07-27  Werner Koch  <wk@g10code.com>
-
-	* memory.h (m_free, m_alloc, m_realloc, m_strdup): Removed and
-	replaced all over by xfoo functions.  This is to ease porting to
-	gnupg 1.9.
-	(xmalloc_secure) [M_DEBUG]: Correctly map to m_debug_alloc_secure.
-
-2005-06-23  David Shaw  <dshaw@jabberwocky.com>
-
-	* http.h: Fix prototypes for http_open_document and http_open
-	again, to handle the new different auth for regular files and
-	proxies.
-
-2005-06-21  David Shaw  <dshaw@jabberwocky.com>
-
-	* http.h: Fix prototypes for http_open_document and http_open to
-	pass in auth and proxyauth.
-
-2005-05-19  Werner Koch  <wk@g10code.com>
-
-	* util.h: Add definitions for membuf functions.
-
-2005-05-05  David Shaw  <dshaw@jabberwocky.com>
-
-	* util.h: Remove add_days_to_timestamp as unused.
-
-2005-04-22  David Shaw  <dshaw@jabberwocky.com>
-
-	* distfiles: Add assuan.h.
-
-2005-04-04  Werner Koch  <wk@g10code.com>
-
-	* memory.h (xcalloc, xcalloc_secure): Replaced macros by functions.
-
-2005-03-31  Werner Koch  <wk@g10code.com>
-
-	* assuan.h: New.  Taken from libassuan 0.6.9.
-
-2005-03-18  David Shaw  <dshaw@jabberwocky.com>
-
-	* ttyio.h: Prototype tty_enable_completion(), and
-	tty_disable_completion().
-
-2005-02-09  David Shaw  <dshaw@jabberwocky.com>
-
-	* cipher.h: Add a flag for a symmetric DEK.
-
-2004-12-16  David Shaw  <dshaw@jabberwocky.com>
-
-	* memory.h: Return a flag to indicate whether we got the lock.
-
-2004-11-29  David Shaw  <dshaw@jabberwocky.com>
-
-	* cipher.h: Add PUBKEY_USAGE_UNKNOWN.
-
-2004-11-03  Timo Schulz  <twoaday@g10code.com>
-
-        * errors.h: Add w32_strerror prototype.
-	* dynload.h: Use w32_strerror.
-	
-2004-10-27  Werner Koch  <wk@g10code.com>
-
-	* dynload.h: Always use it for _WIN32.
-
-2004-10-21  Werner Koch  <wk@g10code.com>
-
-	* util.h [!HAVE_VASPRINTF]: Removed prototype.
-
-2004-10-15  Werner Koch  <wk@g10code.com>
-
-	* util.h [!HAVE_VASPRINTF]: Add asprintf prototype.
-
-2004-10-13  David Shaw  <dshaw@jabberwocky.com>
-
-	* keyserver.h: Add KEYSERVER_TIMEOUT.
-
-2004-09-30  David Shaw  <dshaw@jabberwocky.com>
-
-	* util.h: Prototype destroy_dotlock().  From Werner on stable
-	branch.
-
-2004-09-10  David Shaw  <dshaw@jabberwocky.com>
-
-	* http.h: Add auth field for a parsed_uri to allow for basic auth.
-
-2004-09-09  Werner Koch  <wk@g10code.com>
-
-	* errors.h (G10ERR_NO_CARD, G10ERR_CANCELED): New error codes.
-
-2004-04-27  Werner Koch  <wk@gnupg.org>
-
-	* mpi.h: Renamed prototype parameter name to avoid gcc warnings.
-
-2004-03-04  David Shaw  <dshaw@jabberwocky.com>
-
-	* iobuf.h: Remove iobuf_set_block_mode() and
-	iobuf_in_block_mode().
-
-2004-02-21  David Shaw  <dshaw@jabberwocky.com>
-
-	* util.h: Prototype for hextobyte().
-
-2004-01-16  David Shaw  <dshaw@jabberwocky.com>
-
-	* cipher.h: Remove the old CIPHER_ALGO_RINJDAEL values.
-	is_ELGAMAL() now only matches type 16 and not type 20.
-
-2004-01-15  David Shaw  <dshaw@jabberwocky.com>
-
-	* util.h: Add prototype for print_string2().
-
-2003-12-28  David Shaw  <dshaw@jabberwocky.com>
-
-	* http.h: Pass the http proxy from outside rather than pulling it
-	from the evironment.
-
-2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
-
-	* util.h [__riscos__]: Removal of unnecessary RISC OS stuff.
-
-2003-12-17  David Shaw  <dshaw@jabberwocky.com>
-
-	* mpi.h (gcry_mpi, mpi_get_opaque, mpi_set_opaque): Make nbits and
-	the length of an opaque MPI unsigned.
-
-	* cipher.h (pubkey_verify): Remove old unused code.
-
-2003-12-03  David Shaw  <dshaw@jabberwocky.com>
-
-	* cipher.h: Make cipher list match 2440bis-09.
-
-2003-11-20  David Shaw  <dshaw@jabberwocky.com>
-
-	* util.h: Add prototype for match_multistr().
-
-2003-10-31  David Shaw  <dshaw@jabberwocky.com>
-
-	* cipher.h: Add COMPRESS_ALGO_BZIP2.
-
-2003-10-04  Timo Schulz  <twoaday@freakmail.de>
-
-	* dynload [WIN32] (dlclose): Do not use CloseHandle but FreeLibrary.
-	
-2003-09-29  Werner Koch  <wk@gnupg.org>
-
-	* cipher.h (PUBKEY_USAGE_AUTH): New.
-
-2003-09-28  Timo Schulz  <twoaday@freakmail.de>
-
-	* util.h [WIN32]: Prototype for asprintf.
-	* dynload.h [WIN32]: Define RTLD_LAZY.
-	
-2003-09-28  Werner Koch  <wk@gnupg.org>
-
-	* util.h: Add the atoi_* and xtoi_* suite of macros from 1.9.
-	* dynload.h: New.  Taken from 1.9.
-
-2003-09-27  Werner Koch  <wk@gnupg.org>
-
-	* memory.h (xmalloc): Define xmalloc macros in terms of m_alloc.
+	* keyserver.h, i18n.h, http.h, cipher.h: Updated to gpg 1.4.3.
 
 2003-09-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.h: Drop TIGER/192 support.
 
-2003-08-28  David Shaw  <dshaw@jabberwocky.com>
-
-	* util.h: s/__MINGW32__/_WIN32/ to help building on native Windows
-	compilers.  Requested by Brian Gladman.  From Werner on stable
-	branch.
-
-2003-07-10  David Shaw  <dshaw@jabberwocky.com>
-
 	* types.h: Prefer using uint64_t when creating a 64-bit unsigned
 	type. This avoids a warning on compilers that support but complain
 	about unsigned long long.
 
-	* util.h (ascii_isspace): New variation on isspace() that is
-	immune from locale changes.
-
 	* util.h: Make sure that only ascii is passed to isfoo
 	functions. (From Werner on stable branch).
+
+2003-09-04  Werner Koch  <wk@gnupg.org>
+
+	* cipher.h (PUBKEY_USAGE_AUTH): Added.
+
+2003-07-03  Werner Koch  <wk@gnupg.org>
+
+	* cipher.h (DBG_CIPHER,g10c_debug_mode): Removed.
+
+2003-06-11  Werner Koch  <wk@gnupg.org>
+
+	* cipher.h: Include gcrypt.h and mapped cipher algo names to
+	gcrypt ones.  Removed twofish_old and skipjack.  Removed all
+	handle definitions and other raerely used stuff.  This file will
+	eventually be entirely removed.
+
+2003-06-10  Werner Koch  <wk@gnupg.org>
+
+	* types.h (struct strlist): Removed.
 
 2003-05-24  David Shaw  <dshaw@jabberwocky.com>
 
@@ -563,8 +398,7 @@ Tue Mar  3 15:11:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	functions to this header.
 
 
- Copyright 1998, 1999, 2000, 2001, 2002, 2003,
-	   2004, 2005 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -573,3 +407,5 @@ Tue Mar  3 15:11:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+

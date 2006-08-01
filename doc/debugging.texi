@@ -1,0 +1,154 @@
+@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Debugging
+@chapter How to solve problems
+
+Everyone knows that software often does not do what it should do and thus
+there is a need to track down problems.  We call this debugging in a
+reminiscent to the moth jamming a relay in a Mark II box back in 1947.
+
+Most of the probelsm a merely configuration and user problems but
+nevertheless there are the most annoying ones and reposnible for may
+gray hairs.  We try to give some guidelines here on how to identify and
+solve the problem at hand.
+
+
+@menu
+* Debugging Tools::       Description of some useful tools
+* Common Problems::       Commonly seen problems.
+* Architecture Details::  How the whole thing works internally.
+@end menu
+
+
+@node Debugging Tools
+@section Debugging Tools
+
+The GnuPG distribution comes with a couple of tools, useful to help find
+and solving problems.
+
+@menu
+* kbxutil::        Scrutinizing a keybox file.
+@end menu
+
+@node kbxutil
+@subsection Scrutinizing a keybox file
+
+A keybox is a file fomat used to store public keys along with meta
+information and indices.  The commonly used one is the file
+@file{pubring.kbx} in the @file{.gnupg} directory. It contains all
+X.509 certificates as well as OpenPGP keys@footnote{Well, OpenPGP keys
+are not implemented, @command{gpg} still used the keyring file
+@file{pubring.gpg}} .
+
+@noindent
+When called the standard way, e.g.:
+
+@samp{kbxutil ~/.gnupg/pubring.kbx}
+
+@noindent
+it lists all records (called @acronym{blobs}) with there meta-information
+in a human readable format.
+
+@noindent
+To see statistics on the keybox in question, run it using
+
+@samp{kbxutil --stats ~/.gnupg/pubring.kbx}
+
+@noindent
+and you get an output like:
+
+@example
+Total number of blobs:       99
+               header:        1
+                empty:        0
+              openpgp:        0
+                 x509:       98
+          non flagged:       81
+       secret flagged:        0
+    ephemeral flagged:       17
+@end example
+
+In this example you see that the keybox does not have any OpenPGP keys
+but contains 98 X.509 cerificates and a total of 17 keys or certificates
+are flagges as ephemeral, meaning that they are only temporary stored
+(cached) in the keybox and won't get listed using the usual commands
+provided by @command{gpgsm} or @command{gpg}. 81 certifcates are stored
+in a standard way and directly available from @command{gpgsm}.
+
+
+
+
+
+@node Common Problems
+@section Commonly Seen Problems
+
+
+@itemize @bullet
+@item Error code @samp{Not supported} from Dirmngr
+
+Most likely the option @option{enable-ocsp} is active for gpgsm
+but Dirmngr's OCSP feature has not been enabled using
+@option{allow-ocsp} in @file{dirmngr.conf}.
+
+@item The Curses based Pinentry does not work
+
+The far most common reason for this is that the environment variable
+@code{GPG_TTY} has not been set correctly.  Make sure that it has been
+set to a real tty devce and not just to @samp{/dev/tty};
+i.e. @samp{GPG_TTY=tty} is plainly wrong; what you want is
+@samp{GPG_TTY=`tty`} --- note the back ticks.  Also make sure that
+this environment variable gets exported, that is you should follow up
+the setting with an @samp{export GPG_TTY} (assuming a Bourne style
+shell). Even for GUI based Pinentries; you should have set
+@code{GPG_TTY}. See the section on installing the @command{gpg-agent}
+on how to do it.
+
+
+@item SSH hangs while a popping up pinentry was expected
+
+SSH has no way to tell the gpg-agent what terminal or X display it is
+running on.  So when remotely logging into a box where a gpg-agent with
+SSH support is running, the pinentry will get popped up on whatever
+display t he gpg-agent has been started.  To solve this problem you may
+issue the command
+
+@smallexample
+echo UPDATESTARTUPTTY | gpg-connect-agent
+@end smallexample
+
+and the next pinentry will pop up on your display or screen. However,
+you need to kill the running pinentry first because only one pinentry
+may be running at once.  If you plan to use ssh on a new display you
+should issue the above command before invoking ssh or any other service
+making use of ssh.
+
+
+@end itemize
+
+
+@c ********************************************
+@c ***  Architecture Details  *****************
+@c ********************************************
+@node Architecture Details
+@section How the whole thing works internally.
+
+
+@menu
+* gpg 1.4 vs. 1.9::   Relationship between the two branches.
+@end menu
+
+@node gpg 1.4 vs. 1.9
+@subsection  Relationship between the two branches.
+
+Here is a little picture showing how the components work together:
+
+@image{gnupg-card-architecture, 10cm}
+
+@noindent
+Lets try to explain it:
+
+TO BE DONE.
+
+

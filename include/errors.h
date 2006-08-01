@@ -1,4 +1,4 @@
-/* errors.h - erro code
+/* errors.h - error code
  *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -18,9 +18,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  * USA.
  */
-#ifndef G10_ERRORS_H
-#define G10_ERRORS_H
+#ifndef GNUPG_INCLUDE_ERRORS_H
+#define GNUPG_INCLUDE_ERRORS_H
 
+#if 0
+#error Remove this file after replacing all error codes with those
+#error from libgpg-error.  The numerical values are identical, though.
+#endif
+
+
+#if 0 /* Not used anymore. */
 #define G10ERR_GENERAL	       1
 #define G10ERR_UNKNOWN_PACKET  2
 #define G10ERR_UNKNOWN_VERSION 3 /* Unknown version (in packet) */
@@ -76,16 +83,20 @@
 #define G10ERR_UNU_PUBKEY     53
 #define G10ERR_UNU_SECKEY     54
 #define G10ERR_KEYSERVER      55
-#define G10ERR_CANCELED       56
-#define G10ERR_NO_CARD        57
-#define G10ERR_NO_DATA        58
+#endif
 
 #ifndef HAVE_STRERROR
-char *strerror (int n);
+char *strerror( int n );
 #endif
 
-#ifdef _WIN32
-const char * w32_strerror (int w32_errno);
-#endif
+#endif /*GNUPG_INCLUDE_ERRORS_H*/
 
-#endif /*G10_ERRORS_H*/
+
+
+
+
+
+
+
+
+

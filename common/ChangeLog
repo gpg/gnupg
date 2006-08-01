@@ -1,0 +1,577 @@
+2006-05-23  Werner Koch  <wk@g10code.com>
+
+	* gettime.c (isotimestamp): New.
+
+	* ttyio.c (tty_get_ttyname): Posixly correct usage of ctermid.
+
+	* dns-cert.c: New.  Taken from 1.4.3's util/cert.c.
+	* dns-cert.h: New.
+
+2006-05-22  Werner Koch  <wk@g10code.com>
+
+	* pka.c: New. Taked from 1.4.3.
+	* pka.h: New.
+	* Makefile.am: Added pka.
+
+2006-05-19  Werner Koch  <wk@g10code.com>
+
+	* yesno.c (answer_is_yes_no_default, answer_is_yes_no_quit):
+	Updated from 1.4.3.
+	(answer_is_okay_cancel): new.  From 1.4.3.
+
+	* miscellaneous.c (match_multistr): New.  Taken from 1.4.3.
+
+	* ttyio.c (tty_enable_completion, tty_disable_completion): New
+	dummy functions.
+	* ttyio.h: Add prototypes and stubs.
+
+2006-04-19  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (iobuf_get_fd): New.  Taken from 1.4.3.
+	(iobuf_is_pipe_filename): New.
+	(pop_filter): Made static.
+	(iobuf_skip_rest): New.  Orginal patch by Florian
+	Weimer.  Added new argument PARTIAL.
+	(block_filter): Remove the old gpg indeterminate length mode.
+	(block_filter): Properly handle a partial body stream
+	that ends with a 5-byte length that happens to be zero.
+	(iobuf_set_block_mode, iobuf_in_block_mode): Removed as
+	superfluous.
+	(iobuf_get_filelength): New arg OVERFLOW.
+	(iobuf_get_filelength) [W32]: Use GetFileSizeEx if available
+	* miscellaneous.c (is_file_compressed): Take care of OVERFLOW.
+
+2006-04-18  Werner Koch  <wk@g10code.com>
+
+	* homedir.c (w32_shgetfolderpath): New.  Taken from gpg 1.4.3.
+	(default_homedir): Use it.
+
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* signal.c (get_signal_name): Check value of HAVE_DECL_SYS_SIGLIST
+	instead of just if it is defined.
+
+2005-09-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (AM_CFLAGS): Add $(LIBASSUAN_CFLAGS).
+
+2005-07-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* simple-pwquery.h (simple_pwclear): New prototype.
+	* simple-pwquery.c (simple_pwclear): New function.
+
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* miscellaneous.c (make_printable_string): Made P a void*.
+
+	* sexputil.c (keygrip_from_canon_sexp, cmp_simple_canon_sexp):
+	Fixed signed/unsigned pointer mismatch.
+	(make_simple_sexp_from_hexstr): Ditto.  This is all too ugly; I
+	wonder why gcc-4's default is to warn about them and forcing us to
+	use cast the warning away.
+	* iobuf.c (block_filter): Ditto.
+	(iobuf_flush): Ditto.
+	(iobuf_read_line): Ditto.
+	(iobuf_read): Make BUFFER a void *.
+	(iobuf_write): Make BUFFER a const void *.
+	* ttyio.c (tty_print_utf8_string2): Ditto.
+	* estream.c (estream_cookie_mem): Make MEMORY unsigned char*.
+	(es_write): Make BUFFER a void *.
+	(es_writen): Ditto.
+	(es_func_fd_read, es_func_fd_write, es_func_mem_read) 
+	(es_func_mem_write): Ditto.
+	(es_read, es_readn): Ditto.
+	(es_func_mem_write): Made MEMORY_NEW an unsigned char *.
+	* estream.h (es_cookie_read_function_t)
+	(es_cookie_write_function_t): Changed buffer arg to void*.
+
+2005-06-03  Werner Koch  <wk@g10code.com>
+
+	* estream.c: Use HAVE_CONFIG_H and not USE_CONFIG_H!
+	(es_func_fd_read, es_func_fd_write): Protect against EINTR.
+	
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CPPFLAGS): Added.
+
+	* util.h: Add some includes for gnulib.
+	(ttyname, isascii): Define them inline.
+	* fseeko.c, ftello.c: Removed.
+	* strsep.c, mkdtemp.c: Removed.
+	* ttyname.c, isascii.c: Removed.
+
+2005-05-31  Werner Koch  <wk@g10code.com>
+
+	* dynload.h: s/__inline__/inline/.
+
+2005-05-13  Werner Koch  <wk@g10code.com>
+
+	* signal.c (got_fatal_signal): Print the signal number if we can't
+	get a name for it.
+	(get_signal_name): Return NULL if no name is available. Fixed
+	conditional for sys_siglist to the correct one.
+
+2005-04-17  Werner Koch  <wk@g10code.com>
+
+	* sexputil.c (cmp_simple_canon_sexp): New.
+	(make_simple_sexp_from_hexstr): New.
+
+2005-04-07  Werner Koch  <wk@g10code.com>
+
+	* sexputil.c: New.
+
+2005-04-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* simple-pwquery.c (simple_pwquery): Use spwq_secure_free.
+
+2005-03-03  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CFLAGS): Added PTH_CFLAGS.  Noted by Kazu Yamamoto.
+
+2005-02-25  Werner Koch  <wk@g10code.com>
+
+	* xasprintf.c (xtryasprintf): New.
+
+2005-01-26  Moritz Schulte  <moritz@g10code.com>
+
+	* Makefile.am (libcommon_a_SOURCES): New source files: estream.c,
+	estream.h.
+	* estream.c, estream.h: New files.
+
+2005-01-03  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (send_pinentry_environment): Fixed changed from
+	2004-12-18; cut+paste error for lc-messages.
+
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* simple-pwquery.c (agent_open) [W32]: Implement for W32.
+	(readline) [W32]: Use recv instead of read.
+	(writen) [W32]: Use send instead of write.
+	(my_stpcpy): Define a stpcpy replacement so that this file
+	continues to be self-contained.
+	(agent_send_all_options) [W32]: Don't call ttyname.
+
+2004-12-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* simple-pwquery.h (simple_query): Add prototype.
+	* simple-pwquery.c (simple_query): New function.
+
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* signal.c (got_fatal_signal, got_usr_signal)
+	(got_fatal_signal) [DOSISH]: Don't build.
+	* simple-gettext.c: Include sysutils.h 
+
+	* homedir.c: New. Use CSIDL_APPDATA for W32 as the default home
+	directory.
+	* Makefile.am (libcommon_a_SOURCES): Add it.
+	(EXTRA_DIST): Removed mkerror and mkerrtok.
+
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* sysutils.h [W32]: Define sleep.
+	* util.h: Add prototype for mkdtemp.
+
+	* membuf.c (put_membuf): Wipe out buffer after a failed realloc.
+
+2004-12-19  Werner Koch  <wk@g10code.com>
+
+	* maperror.c (map_assuan_err_with_source): Oops, args were swapped.
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* maperror.c (map_assuan_err): Renamed to ..
+	(map_assuan_err_with_source): .. this and add arg SOURCE.c
+	* asshelp.c (send_pinentry_environment, send_one_option): Add arg
+	ERRSOURCE.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* sysutils.h [W32]: Prototypes for registry functions.
+	* w32reg.c: Include sysutils.h
+
+	* simple-pwquery.c [W32]: Dummy code to allow a build.
+
+	* exechelp.c [W32]: Implemented for W32 .
+
+	* ttyname.c: New.
+
+	* asshelp.c (send_one_option): New.
+	(send_pinentry_environment): Cleaned up and made sure that empty
+	values are not send.
+
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (send_pinentry_environment) [W32]: Do not use ttyname.
+
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* exechelp.h, exechelp.c: New.  Based on code from ../sm/import.c.
+
+2004-12-03  Werner Koch  <wk@g10code.com>
+
+	* strsep.c: Fixed copyright comments.
+
+2004-11-26  Werner Koch  <wk@g10code.com>
+
+	* simple-gettext.c: New taken from gnupg 1.3.x
+
+	* simple-pwquery.c [_WIN32]: Include winsock2.h.
+	(agent_open): Disable it until we have our AF_UNIX implementation
+	ready.
+	* fseeko.c, ftello.c: Include sys/types for the sake of W32.
+
+2004-11-23  Werner Koch  <wk@g10code.com>
+
+	* b64enc.c: Include stdio.h and string.h
+
+2004-08-18  Werner Koch  <wk@g10code.de>
+
+	* simple-pwquery.c (simple_pwquery): Handle gpg-error style return
+	code for canceled.
+
+2004-07-20  Werner Koch  <wk@g10code.de>
+
+	* maperror.c: Removed header ksba.h.  Not required anymore.
+
+2004-06-14  Werner Koch  <wk@gnupg.org>
+
+	* xreadline.c: New.  Based on the iobuf_read_line function.
+
+2004-05-12  Werner Koch  <wk@gnupg.org>
+
+	* util.h (xtrycalloc_secure,xtrymalloc_secure): New.
+
+2004-05-11  Werner Koch  <wk@gnupg.org>
+
+	* sysutils.c (disable_core_dumps): Only set the current limit.
+	(enable_core_dumps): New.
+
+2004-04-13  Werner Koch  <wk@gnupg.org>
+
+	* simple-pwquery.c (copy_and_escape): Relaxed quoting.
+
+2004-04-05  Werner Koch  <wk@gnupg.org>
+
+	* errors.h (STATUS_NEWSIG): New.
+
+2004-03-11  Werner Koch  <wk@gnupg.org>
+
+	* dynload.h [__MINGW32__]: Define RTLD_LAZY.
+
+2004-03-09  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_assuan_err): Map the Locale_Problem item.
+
+2004-03-03  Werner Koch  <wk@gnupg.org>
+
+	* asshelp.c, asshelp.h: New.
+	(send_pinentry_environment): New. Code taken from ../sm/call-agent.c.
+
+2004-02-19  Werner Koch  <wk@gnupg.org>
+
+	* simple-pwquery.c (agent_open): Don't mangle INFOSTR.
+
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* simple-pwquery.c (agent_open): Ignore an empty GPG_AGENT_INFO.
+
+	* errors.h: Added STATUS_IMPORT_OK.
+
+2004-02-10  Werner Koch  <wk@gnupg.org>
+
+	* b64enc.c: New.  Based on code from ../sm/base64.c.
+
+2004-01-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libcommon_a_SOURCES): Add xasprintf.c.
+	* miscellaneous.c (xasprintf): Moved to ...
+	* xasprintf (xasprintf): ... here.  New file.
+	This allows to use xasprintf without sucking in gpg-error.
+
+2004-01-27  Werner Koch  <wk@gnupg.org>
+
+	* sexp-parse.h: New; moved from../agent.
+
+	* util.h (xtoi_4): New.
+
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_assuan_err): Prepared for a new error code.
+
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* gettime.c (asctimestamp): Add a note on a non-avoidable gcc warning.
+
+	* util.h [!HAVE_VASPRINTF]: Add printf format attribute to the
+	replacement function.
+
+	* miscellaneous.c (xasprintf): New.
+
+2003-11-14  Werner Koch  <wk@gnupg.org>
+
+	* mkdtemp.c (mkdtemp): Use gcry_create_nonce.
+
+	* cryptmiss.c: Removed.
+
+2003-11-13  Werner Koch  <wk@gnupg.org>
+
+	* util.h (vasprintf): Also fixed the prototype.
+
+	* vasprintf.c (vasprintf): ARGS should not be a pointer.  Fixed
+	segv on Solaris.  Reported by Andrew J. Schorr.
+
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_ksba_err, map_gcry_err, map_kbx_err): Removed.
+
+2003-10-31  Werner Koch  <wk@gnupg.org>
+
+	* util.h (gnupg_isotime_t): New.
+	(gnupg_copy_time): New.
+
+	* gettime.c (gnupg_get_isotime): New.
+
+2003-09-23  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (check_special_filename): Replaced is isdigit by digitp
+	to avoid passing negative values and potential locale problems.
+	Problem noted by Christian Biere.
+
+	* util.h (ascii_isspace): New.
+
+2003-09-18  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.c (tty_fprintf): New.
+	(tty_print_string, tty_print_utf8_string2)
+	(tty_print_utf8_string): Made P argument const byte*.
+
+2003-08-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* maperror.c (map_ksba_err): Map -1.  Use gpg_err_make to set
+	the error source.
+
+2003-08-14  Timo Schulz  <twoaday@freakmail.de>
+
+	* dynload.h. New. W32 wrapper around the dynload mechanism.
+	
+2003-07-15  Werner Koch  <wk@gnupg.org>
+
+	* simple-pwquery.c, simple-pwquery.h:  New; moved from ../agent.  
+	* Makefile.am (libsimple_pwquery_a_LIBADD): New.
+
+2003-06-25  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): Directly map 0 to 0.
+
+2003-06-17  Werner Koch  <wk@gnupg.org>
+
+	* gettime.c (scan_isodatestr,add_days_to_timestamp,strtimevalue)
+	(strtimestamp,asctimestamp): New.  Code taken from gnupg 1.3.2
+	mischelp.c.
+
+	* yesno.c: New.  Code taken from gnupg 1.3.2 mischelp.c
+
+	* miscellaneous.c: New.
+
+	* util.h: Include utf8conf.h
+
+2003-06-16  Werner Koch  <wk@gnupg.org>
+
+	* gettime.c (make_timestamp): New.
+
+	* ttyio.c: New. Taken from gnupg 1.2.
+	* ttyio.h: Move from ../include.
+
+2003-06-13  Werner Koch  <wk@gnupg.org>
+
+	* util.h (seterr): Removed macro.
+	(xmalloc_secure,xcalloc_secure): New.
+
+2003-06-11  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_writebyte,iobuf_write): Return error code from
+	iobuf_flush.
+	(iobuf_writestr): Ditto.
+
+2003-06-10  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c, iobuf.h: New. Taken from current gnupg 1.3 CVS.  Run
+	indent on it and adjusted error handling to libgpg-error style.
+	Replaced IOBUF by iobuf_t. Renamed malloc functions.
+
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	* errors.h: Removed all error codes.  We keep the status codes for
+	now.
+	* Makefile.am: Do not create errors.c anymore; remove it from the
+	sources.
+
+	* maperror.c: Don't include error.h.  Change all error codes to
+	libgpg-error style.
+	(map_assuan_err): Changed to new Assuan error code convention.
+	(map_to_assuan_status): Likewise.
+	(map_gcry_err,map_kbx_err): Not needed.  For now dummy functions.
+
+	* membuf.c, membuf.h: New.  Code taken from ../sm/call-agent.h.
+	* Makefile.am: Added above.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* util.h (fopencokokie): Removed prototype and struct.
+
+	* fopencookie.c: Removed.
+
+	* maperror.c: Use system assuan.h
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* isascii.c: New file.
+	* putc_unlocked.c: Likewise.
+
+2002-10-28  Neal H. Walfield  <neal@g10code.de>
+
+	* signal.c (caught_fatal_sig): Remove superfluous zero
+	initializer.
+	(caught_sigusr1): Likewise.
+
+2002-09-04  Neal H. Walfield  <neal@g10code.de>
+
+	* vasprintf.c (vasprintf) [va_copy]: Use va_copy.
+	[!va_copy && __va_copy]: Use __va_copy.
+	[!va_copy && !__va_copy]: Only now fall back to using memcpy.
+
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* errors.h: Added STATUS_IMPORT_PROBLEM.
+
+2002-08-20  Werner Koch  <wk@gnupg.org>
+
+	* vasprintf.c: Hack to handle NULL for %s.
+
+2002-08-09  Werner Koch  <wk@gnupg.org>
+
+	* signal.c: New. Taken from GnuPG 1.1.91.
+
+2002-07-23  Werner Koch  <wk@gnupg.org>
+
+	* util.h (_IO_cookie_io_functions_t): Fixed typo.  Noted by
+	Richard Lefebvre.
+
+2002-07-22  Werner Koch  <wk@gnupg.org>
+
+	* fseeko.c, ftello.c: New.
+
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): Map more errorcodes to Bad
+	Certificate.
+
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): Map EOF to No_Data_Available.
+
+2002-06-10  Werner Koch  <wk@gnupg.org>
+
+	* errors.h (gnupg_error_token): Add new prototype.
+	(STATUS_ERROR): New.
+
+	* mkerrtok: New.
+	* Makefile.am: Use it to create the new error token function.
+
+2002-06-04  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): Map Bad_CA_Certificate.
+
+2002-05-23  Werner Koch  <wk@gnupg.org>
+
+	* no-pth.c, Makefile.am: Removed.
+
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* mkdtemp.c: Replaced byte by unsigned char because it is no longer
+	defined in gcrypt.h.
+
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_gcry_err): Add libgcrypt's new S-expression errors.
+	(map_ksba_err): Add a few mappings.
+
+2002-05-14  Werner Koch  <wk@gnupg.org>
+
+	* gettime.c: New.
+
+2002-05-03  Werner Koch  <wk@gnupg.org>
+
+	* errors.h: Added STARUS_EXPSIG and STATUS_EXPKEYSIG.
+
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* cryptmiss.c: New.
+
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c: Add more assuan<->gnupg mappings.
+
+2002-02-12  Werner Koch  <wk@gnupg.org>
+
+	* fopencookie.c: Dummy function.
+
+	* vasprintf.c: New.  Taken from binutils-2.9.1 and dropped all non
+	ANSI-C stuff.  Merged with asprintf version.
+
+	* no-pth.c: New.
+
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* mkdtemp.c: Copied from gnupg-1.0.6c and changed to use libgcrypt.
+
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* sysutils.c: New.  This is the misc.c file from gnupg 1.0.6 with
+	the OpenPGP stuff removed.
+	* sysutils.h: New.
+	
+2002-01-15  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c: Add mapping for Not_Trusted. 
+
+2002-01-11  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_assuan_err): Codes for CRL
+
+2002-01-08  Werner Koch  <wk@gnupg.org>
+
+	* util.h (spacep): New.
+
+2002-01-02  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): New.  Merged from ../agent
+	and ../sm.
+
+2001-12-20  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_gcry_err): Add some mappings.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (AM_CPPFLAGS): Include flags for gcrypt and ksba
+
+2001-12-14  Werner Koch  <wk@gnupg.org>
+
+	* util.h (digitp, hexdigitp): New ctype like macros.
+	(atoi_1,atoi_2,atoi_4,xtoi_1,xtoi_2): New.
+	
+	
+ Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+		
+

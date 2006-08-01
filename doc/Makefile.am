@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -14,78 +14,42 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
 
-## Process this file with automake to create Makefile.in
+## Process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = no-texinfo.tex
+EXTRA_DIST = gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg \
+             gnupg-badge-openpgp.pdf \
+             gnupg-card-architecture.eps gnupg-card-architecture.png \
+             gnupg-card-architecture.pdf
 
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 gpgv.sgml gpgv.1 faq.raw FAQ faq.html \
-             HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 \
-             TRANSLATE gpg.ru.sgml gpg.ru.1 highlights-1.4.txt
+BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
+                gnupg-card-architecture.pdf
 
-man_MANS = gpg.1 gpgv.1 gnupg.7 gpg.ru.1
+info_TEXINFOS = gnupg.texi
 
-info_TEXINFOS = gpg.texi gpgv.texi
+dist_pkgdata_DATA = qualified.txt
 
-# Need this to avoid building of dvis with automake 1.4
-DVIS =
+gnupg_TEXINFOS = \
+	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi assuan.texi \
+	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
+	sysnotes.texi gnupg-card-architecture.fig
 
-pkgdata_DATA = FAQ faq.html
-
-BUILT_SOURCES = FAQ faq.html 
-# we can't add gpg.texi gpgv.texi here because automake does not like them to
-# be built files. 
-
-CLEANFILES = faq.raw.xref gpg.xml gpgv.xml gpg.ru.xml
+DISTCLEANFILES = gnupg.tmp gnupg.ops
 
 
-# We better build the texi versions manually.
-#%.texi : %.xml
-#if HAVE_DOCBOOK_TO_TEXI
-#	 docbook2texi $< | sed 's,--,---,' \
-#	    | $(top_srcdir)/scripts/fix-db-texi $@  >$@
-#else
-#	 : Warning: missing docbook to texinfo tools, cannot make $@
-#	 touch $@
-#endif
-#
-#%.xml : %.sgml
-#if HAVE_DOCBOOK_TO_TEXI
-#	 sgml2xml -x lower $< >$@
-#else
-#	 : Warning: missing docbook to texinfo tools, cannot make $@
-#	 touch $@
-#endif
-#
 
-%.1 : %.sgml
-if HAVE_DOCBOOK_TO_MAN
-	docbook-to-man $<  >$@
-else
-	: Warning: missing docbook-to-man, cannot make $@
-	echo ".TH $< 1"   >$@
-	echo "No man page due to missing docbook-to-man" >>$@
-endif
+.fig.png:
+	fig2dev -L png `test -f '$<' || echo '$(srcdir)/'`$< $@
 
-FAQ : faq.raw
-if WORKING_FAQPROG
-	$(FAQPROG) -f $<  $@ || $(FAQPROG) -f $< $@
-else
-	: Warning: missing faqprog.pl, cannot make $@
-	echo "No $@ due to missing faqprog.pl" > $@
-	echo "See ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl" >> $@
-endif
+.fig.jpg:
+	fig2dev -L jpg `test -f '$<' || echo '$(srcdir)/'`$< $@
 
-faq.html : faq.raw
-if WORKING_FAQPROG
-	$(FAQPROG) -h -f $< $@ 2>&1 || $(FAQPROG) -h -f $< $@
-else
-	: Warning: missing faqprog.pl, cannot make $@
-	echo "No $@ due to missing faqprog.pl" > $@
-	echo "See ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl" >> $@
-endif
+.fig.eps:
+	fig2dev -L eps `test -f '$<' || echo '$(srcdir)/'`$< $@
 
-dist-hook:
-	@if test "`wc -c < gpg.1`" -lt 200; then \
-	    echo 'ERROR: dummy man page'; false; fi
+.fig.pdf:
+	fig2dev -L pdf `test -f '$<' || echo '$(srcdir)/'`$< $@
+
+

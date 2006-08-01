@@ -1,0 +1,1513 @@
+2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* preset-passphrase.c (preset_passphrase): Do not strip off last
+	character of passphrase.
+	(make_hexstring): New function.
+	* command.c (cmd_preset_passphrase): Use parse_hexstring to syntax
+	check passphrase argument.  Truncate passphrase at delimiter.
+
+2006-07-24  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (build_key_bag): New args SHA1HASH and
+	KEYIDSTR. Append bag Attributes if these args are given.
+	(build_cert_sequence): ditto.
+	(p12_build): Calculate certificate hash and pass to build
+	functions.
+
+2006-07-21  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (oid_pkcs_12_keyBag): New.
+	(parse_bag_encrypted_data): New arg R_RESULT. Support keybags and
+	return the key object. 
+	(p12_parse): Take new arg into account.  Free RESULT on error.
+
+2006-06-26  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (handle_signal): Print infor for SIGUSR2 only in
+	verbose mode.
+
+2006-06-22  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (make_cstring): Use memcpy instead of strncpy.
+	(ssh_receive_mpint_list, sexp_key_extract, data_sign): Use
+	xtrycalloc instead of xtrymalloc followed by memset.
+
+2006-06-20  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (create_final): New arg PW. Add code to calculate the
+	MAC.
+
+2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpg_agent_LDADD): Add $(NETLIBS).
+	(gpg_protect_tool_LDADD): Likewise.
+	(gpg_preset_passphrase_LDADD): Likewise.
+
+2006-04-09  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_request_process): Removed FIXME mentioning a
+	possible DoS attack.
+
+2006-04-01  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_identity_register): Make KEY_GRIP_RAW be 20
+	instead of 21 bytes long; do not fill KEY_GRIP_RAW[20] with NUL
+	byte - KEY_GRIP_RAW is a raw binary string anyway.
+
+2006-02-09  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (struct scd_local_s): New field next_local.
+	(scd_local_list): New.
+	(start_scd): Put new local into list.
+	(agent_reset_scd): Remove it from the list.
+	(agent_scd_check_aliveness): Here is the actual reason why we need
+	all this stuff.
+	(agent_reset_scd): Send the new command RESTART instead of RESET.
+
+2005-12-16  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (cram_octet_string): New
+	(p12_parse): Use it for NDEFed bags.
+	(parse_bag_data): Ditto.
+	(string_to_key, set_key_iv, crypt_block): New arg SALTLEN.
+	(p12_build): Use old value 8 for new arg.
+	(parse_bag_encrypted_data, parse_bag_data): Allow for salts of 8
+	to 16 bytes.  Add new arg R_CONSUMED.
+
+2005-11-24  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (p12_parse): Fixed for case that the key object comes
+	prior to the certificate.
+
+2005-10-19  Werner Koch  <wk@g10code.com>
+
+	* divert-scd.c (getpin_cb): Hack to use it for a keypad message.
+
+	* call-scd.c (inq_needpin): Reworked to support the new KEYPADINFO.
+
+	* query.c (start_pinentry): Keep track of the owner.
+	(popup_message_thread, agent_popup_message_start) 
+	(agent_popup_message_stop, agent_reset_query): New.
+	* command.c (start_command_handler): Make sure a popup window gets
+	closed.
+
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpg_protect_tool_LDADD): Add ../gl/libgnu.a.
+	(gpg_preset_passphrase_LDADD, t_common_ldadd): Likewise.
+	(gpg_agent_LDADD): Add ../gl/libgnu.a after ../common/libcommon.a.
+
+2005-09-16  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (build_key_sequence, build_cert_sequence): Fixed
+	padding.
+
+2005-09-15  Moritz Schulte  <moritz@g10code.com>
+
+	* t-protect.c (test_agent_protect): Implemented.
+	(main): Disable use of secure memory.
+
+2005-09-09  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (p12_build): Oops, array needs to be larger for the
+	certificate.
+	(build_cert_bag): Fixed yesterdays change.
+
+	* command-ssh.c (card_key_available): Let the card handler decide
+	whether the card is supported here.  Also get a short serial
+	number to return from the card handler.
+
+2005-09-08  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (build_cert_bag): Use a non constructed object.
+	i.e. 0x80 and not 0xa0.
+
+2005-08-16  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Use a default file name for --write-env-file.
+
+2005-07-25  Werner Koch  <wk@g10code.com>
+
+	* findkey.c (agent_public_key_from_file): Fixed array assignment.
+	This was the cause for random segvs.
+
+2005-06-29  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (data_sign): Removed empty statement.
+
+2005-06-21  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (create_final): Cast size_t to ulong for printf. 
+	(build_key_bag, build_cert_bag, build_cert_sequence): Ditto.
+
+2005-06-16  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (make_advanced): Makde RESULT a plain char.
+	* call-scd.c (unescape_status_string): Need to cast unsigned char*
+	for strcpy.
+	(agent_card_pksign): Made arg R_BUF an unsigned char**.
+	* divert-scd.c (divert_pksign): Made SIGVAL unsigned char*.
+	(encode_md_for_card): Initialize R_VAL and R_LEN.
+	* genkey.c (store_key): Made BUF unsigned.
+	* protect.c (do_encryption): Ditto.
+	(do_encryption): Made arg PROTBEGIN unsigned. Initialize RESULT
+	and RESULTLEN even on error.
+	(merge_lists): Need to cast unsigned char * for strcpy. Initialize 
+	RESULTand RESULTLEN even on error.
+	(agent_unprotect): Likewise for strtoul.
+	(make_shadow_info): Made P and INFO plain char.
+	(agent_shadow_key): Made P plain char.
+
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* query.c (agent_get_passphrase): Made HEXSTRING a char*.
+	* command-ssh.c (ssh_key_grip): Made arg BUFFER unsigned.
+	(ssh_key_grip): Simplified.
+	(data_sign): Initialize variables with the definition.
+	(ssh_convert_key_to_blob): Make sure that BLOB and BLOB_SIZE
+	are set to NULL on error.  Cool, gcc-4 detects uninitialized stuff
+	beyond function boundaries; well it can't know that we do error
+	proper error handling so that this was not a real error.
+	(file_to_buffer): Likewise for BUFFER and BUFFER_N.
+	(data_sign): Likewise for SIG and SIG_N.
+	(stream_read_byte): Set B to a value even on error.
+	* command.c (cmd_genkey): Changed VALUE to char.
+	(cmd_readkey): Cast arg for gcry_sexp_sprint.
+	* agent.h (struct server_control_s): Made KEYGRIP unsigned.
+
+2005-06-13  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (start_command_handler_ssh): Reset the SCD.
+
+2005-06-09  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (create_socket_name): New option --max-cache-ttl-ssh.
+	* cache.c (housekeeping): Use it.
+	(agent_put_cache): Use a switch to get the default ttl so that it
+	is easier to add more cases.
+
+2005-06-06  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c: New option --default-cache-ttl-ssh.
+	* agent.h (cache_mode_t): New.
+	* pksign.c (agent_pksign_do): New arg CACHE_MODE to replace the
+	ARG IGNORE_CACHE. Changed all callers.
+	(agent_pksign): Ditto.
+	* findkey.c (agent_key_from_file): Ditto. Canged all callers.
+	(unprotect): Ditto.
+	* command-ssh.c (data_sign): Use CACHE_MODE_SSH.
+	* cache.c (agent_get_cache): New arg CACHE_MODE.
+	(agent_put_cache): Ditto.  Store it in the cache.
+
+	* query.c (agent_query_dump_state, dump_mutex_state): New.
+	(unlock_pinentry): Reset the global context before releasing the
+	mutex.
+	* gpg-agent.c (handle_signal): Dump query.c info on SIGUSR1.
+
+	* call-scd.c (agent_scd_check_aliveness): Always do a waitpid and
+	add a timeout to the locking.
+
+2005-06-03  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_updatestartuptty): New.
+
+	* gpg-agent.c: New option --write-env-file.
+	
+	* gpg-agent.c (handle_connections): Make sure that the signals we
+	are handling are not blocked.Block signals while creating new
+	threads.
+
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (agent_scd_dump_state, dump_mutex_state): New.
+	* gpg-agent.c (handle_signal): Print it on SIGUSR1.
+	(handle_connections): Include the file descriptor into the
+	threadnames.
+
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c: Include setenv.h.
+
+2005-05-31  Werner Koch  <wk@g10code.com>
+
+	* agent.h (out_of_core): s/__inline__/inine.  Noted by Ray Link.
+
+2005-05-25  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Do not unset the DISPLAY when we are
+	continuing as child.
+
+2005-05-24  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (inq_needpin): Skip leading spaces in of PIN
+	description.
+	* divert-scd.c (getpin_cb): Enhanced to cope with description
+	flags.
+	* query.c (agent_askpin): Add arg PROMPT_TEXT. Changed all
+	callers.
+
+2005-05-21  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (start_scd): Don't test for an alive scdaemon here.
+	(agent_scd_check_aliveness): New.
+	* gpg-agent.c (handle_tick): Test for an alive scdaemon.
+	(handle_signal): Print thread info on SIGUSR1.
+
+2005-05-20  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c: New option --canonical.
+	(show_file): Implement it.
+
+	* keyformat.txt: Define the created-at attribute for keys.
+
+2005-05-18  Werner Koch  <wk@g10code.com>
+
+	* divert-scd.c (ask_for_card): Removed the card reset kludge.
+
+2005-05-17  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (unlock_scd): Add new arg CTRL. Changed all callers.
+	(start_scd): Reoworked to allow for additional connections.
+	* agent.h (ctrl_t): Add local data for the SCdaemon.
+	* command.c (start_command_handler): Release SERVER_LOCAL.
+
+	* gpg-agent.c (create_server_socket): Use xmalloc.
+	(main): Removed option --disable-pth a dummy.  Removed non-pth
+	code path.
+	(cleanup_sh): Removed.  Not needed anymore.
+
+2005-05-05  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_key_to_buffer): Rename to ...
+	(ssh_key_to_protected_buffer): ... this; change callers.
+	Improved documentation.
+	Use ssh_key_grip(), where gcry_pk_get_keygrip() has been used
+	before.
+	(ssh_handler_sign_request): Removed unusued variable P.
+
+2005-04-20  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_handler_request_identities): Removed
+	debugging code (sleep call), which was commited unintenionally.
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (parse_bag_encrypted_data): Fix the unpadding hack.
+
+	* gpg-agent.c: New option --disable-scdaemon.
+	(handle_connections): Add time event to drive ...
+	(handle_tick): New function.
+	(main): Record the parent PID. Fixed segv when using ssh and a
+	command.
+
+	* call-scd.c (start_scd): Take care of this option.
+
+2005-04-03  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_request_spec): New member: secret_input.
+	(REQUEST_SPEC_DEFINE): New argument: secret_input.
+	(request_specs): Add secret_input flag.
+	(request_spec_lookup): New function ...
+	(ssh_request_process): ... use it here; depending on secret_input
+	flag allocate secure or non-secure memory.
+
+2005-03-02  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (sexp_key_extract): Removed FIXME, since
+	xtrymallos does set errno correctly by now.
+	(sexp_extract_identifier): Remove const attribute from identifier.
+	(ssh_handler_request_identities): Remove const attribute from
+	key_type; removes ugly casts and FIXME.
+	(sexp_key_extract): Remove const attribute from comment.
+	(ssh_send_key_public): Remove const attribute from
+	key_type/comment; removes ugly cast.
+	(data_sign): Remove const attribute from identifier; removes ugly
+	cast.
+	(key_secret_to_public): Remove const attribute from comment;
+	removes ugly cast.
+	(ssh_handler_sign_request): Remove const attribute from p.
+	(sexp_key_extract): Use make_cstring().
+	(ssh_key_extract_comment): Likewise.
+	(ssh_key_to_buffer): Use secure memory for memory area to hold the
+	key S-Expression.
+	Added more comments.
+
+2005-02-25  Werner Koch  <wk@g10code.com>
+
+	* findkey.c (modify_description): Keep invalid % escapes, so that
+	%0A may pass through.
+
+	* agent.h (server_control_s): New field USE_AUTH_CALL.
+	* call-scd.c (agent_card_pksign): Make use of it.
+	* command-ssh.c (data_sign): Set the flag.
+	(ssh_send_key_public): New arg OVERRIDE_COMMENT.
+	(card_key_available): Add new arg CARDSN.
+	(ssh_handler_request_identities): Use the card s/n as comment.
+	(sexp_key_extract): Use GCRYMPI_FMT_STD.
+	(data_sign): Ditto.
+
+	* learncard.c (make_shadow_info): Moved to ..
+	* protect.c (make_shadow_info): .. here. Return NULL on malloc
+	failure. Made global.
+	* agent.h: Add prototype.
+
+2005-02-24  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (unescape_status_string): New. Actual a copy of
+	../g10/call-agent.c
+	(card_getattr_cb, agent_card_getattr): New.
+
+	* command-ssh.c (card_key_available): New.
+	(ssh_handler_request_identities): First see whether a card key is
+	available.
+
+	* gpg-agent.c (handle_connections): Need to check for events if
+	select returns with -1.
+
+2005-02-23  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (get_passphrase): Removed.
+	(ssh_identity_register): Partly rewritten.
+	(open_control_file, search_control_file, add_control_entry): New.
+	(ssh_handler_request_identities): Return only files listed in our
+	control file.
+
+	* findkey.c (unprotect): Check for allocation error.
+
+	* agent.h (opt): Add fields to record the startup terminal
+	settings.
+	* gpg-agent.c (main): Record them and do not force keep display
+	with --enable-ssh-support.
+	* command-ssh.c (start_command_handler_ssh): Use them here.
+
+	* gpg-agent.c: Renamed option --ssh-support to
+	--enable-ssh-support.
+
+	* command.c (cmd_readkey): New.
+	(register_commands): Register new command "READKEY".
+
+	* command-ssh.c (ssh_request_process): Improved logging.
+
+	* findkey.c (agent_write_private_key): Always use plain open.
+	Don't depend on an umask for permissions.
+	(agent_key_from_file): Factored file reading code out to ..
+	(read_key_file): .. new function.
+	(agent_public_key_from_file): New.
+
+2005-02-22  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (stream_read_string): Removed call to abort on
+	memory error because the CVS version of libgcrypt makes sure
+	that ERRNO gets always set on error even with a faulty user
+	supplied function.
+
+2005-02-19  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_receive_mpint_list): Slightly rewritten, do
+	not use elems_secret member of key_spec.
+	(ssh_key_type_spec): Removed member: elems_secret.
+	(ssh_key_types): Removed elems_secret data.
+	(ssh_sexp_construct): Renamed to ...
+	(sexp_key_construct): ... this; changed callers.
+	(ssh_sexp_extract): Renamed to ...
+	(sexp_key_extract): ... this; changed callers.
+	(ssh_sexp_extract_key_type): Renamed to ...
+	(sexp_extract_identifier): ... this; changed callers; use
+	make_cstring().
+	Added more comments.
+
+2005-02-18  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_sexp_construct): Rewritten generation of sexp
+	template, clarified.
+	(ssh_sexp_extract): Support shadowed-private-key-sexp; treat
+	protected-private key and shadowed-private-key as public keys.
+	(key_secret_to_public): Rewritten: simply use ssh_sexp_extract()
+	and ssh_sexp_construct().
+
+2005-02-15  Werner Koch  <wk@g10code.com>
+
+	* findkey.c (modify_description): Don't increment OUT_LEN during
+	the second pass.
+
+2005-02-14  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (es_read_byte): Renamed to ...
+	(stream_es_read_byte): ... this; changed callers.
+	(es_write_byte): Renamed to ...
+	(stream_write_byte): ... this; changed callers.
+	(es_read_uint32): Renamed to ...
+	(stream_read_uint32): ... this; changed callers.
+	(es_write_uint32): Renamed to ...
+	(stream_write_uint32): ... this; changed callers.
+	(es_read_data): Renamed to ...
+	(stream_read_data): ... this; changed callers.
+	(es_write_data): Renamed to ...
+	(stream_write_data): ... this; changed callers.
+	(es_read_string): Renamed to ...
+	(stream_read_string): ... this; changed callers.
+	(es_read_cstring): Renamed to ...
+	(stream_read_cstring): ... this; changed callers.
+	(es_write_string): Renamed to ...
+	(stream_write_string): ... this; changed callers.
+	(es_write_cstring): Renamed to ...
+	(stream_write_cstring): ... this; changed callers.
+	(es_read_mpi): Renamed to ...
+	(stream_read_mpi): ... this; changed callers.
+	(es_write_mpi): Renamed to ...
+	(stream_write_mpi): ... this; changed callers.
+	(es_copy): Renamed to ...
+	(stream_copy): ... this; changed callers.
+	(es_read_file): Renamed to ...
+	(file_to_buffer): ... this; changed callers.
+	(ssh_identity_register): Removed variable description_length;
+	changed code to use asprintf for description.
+	(stream_write_uint32): Do not filter out the last byte of shift
+	expression.
+	(uint32_construct): New macro ...
+	(stream_read_uint32): ... use it; removed unnecessary cast.
+
+2005-02-03  Werner Koch  <wk@g10code.com>
+
+	* agent.h (agent_exit): Add JNLIB_GCC_A_NR to indicate that this
+	function won't return.
+
+	* gpg-agent.c (check_for_running_agent): Initialize pid to a
+	default value if not needed.
+
+	* command-ssh.c: Removed stdint.h.  s/byte_t/unsigned char/,
+	s/uint32/u32/ becuase that is what we have always used in GnuPG.
+	(ssh_request_specs): Moved to top of file.
+	(ssh_key_types): Ditto.
+	(make_cstring): Ditto.
+	(data_sign): Don't use a variable for the passphrase prompt, make
+	it translatable.
+	(ssh_request_process): 
+	
+
+	* findkey.c (modify_description): Renamed arguments for clarity,
+	polished documentation.  Make comment a C-string.  Fixed case of
+	DESCRIPTION being just "%".
+	(agent_key_from_file): Make sure comment string to a C-string.
+
+	* gpg-agent.c (create_socket_name): Cleanup the implemntation, use
+	DIMof, agent_exit, removed superflous args and return the
+	allocated string as value.  Documented.  Changed callers.
+	(create_server_socket): Cleanups similar to above.  Changed callers.
+	(cleanup_do): Renamed to ..
+	(remove_socket): .. this.  Changed caller.
+	(handle_connections): The signals are to be handled in the select
+	and not in the accept.  Test all FDs after returning from a
+	select.  Remove the event tests from the accept calls.  The select
+	already assured that the accept won't block.
+
+2005-01-29  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_handler_request_identities)
+	(ssh_handler_sign_request, ssh_handler_add_identity)
+	(ssh_handler_remove_identity, ssh_handler_remove_all_identities)
+	(ssh_handler_lock, ssh_handler_unlock): Changed to return an error
+	code instead of a boolean.
+	(ssh_request_process): Changed to return a boolean instead of an
+	error; adjust caller.
+	(ssh_request_handle_t): Adjusted type.
+	(ssh_request_spec): New member: identifier.
+	(REQUEST_SPEC_DEFINE): New macro; use it for initialization of
+	request_specs[].
+	(ssh_request_process): In debugging mode, log identifier of
+	handler to execute.
+	(start_command_handler_ssh): Moved most of the stream handling
+	code ...
+	(ssh_request_process): ... here.
+
+2005-01-28  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_handler_add_identity): Pass ctrl to
+	ssh_identity_register().
+	(ssh_identity_register): New argument: ctrl; pass ctrl to
+	get_passphrase().
+	(get_passphrase): Pass ctrl instead of NULL to agent_askpin().
+	(start_command_handler_ssh): Use agent_init_default_ctrl();
+	deallocate structure members, which might be dynamically
+	allocated.
+	(lifetime_default): Removed variable.
+	(ssh_handler_add_identity): Fix ttl handling; renamed variable
+	`death' to `ttl'.
+	(ssh_identity_register): Fix key grip handling.
+
+2005-01-26  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_handler_sign_request): Confirm to agent
+	protocol in case of failure.
+
+	* command-ssh.c: New file.
+
+	* Makefile.am (gpg_agent_SOURCES): New source file: command-ssh.c.
+
+	* findkey.c (modify_description): New function.
+	(agent_key_from_file): Support comment field in key s-expressions.
+
+	* gpg-agent.c (enum cmd_and_opt_values): New item: oSSHSupport.
+	(opts) New entry for oSSHSupport.
+	New variable: socket_name_ssh.
+	(cleanup_do): New function based on cleanup().
+	(cleanup): Use cleanup_do() for socket_name and socket_name_ssh.
+	(main): New switch case for oSSHSupport.
+	(main): Move socket name creation code to ...
+	(create_socket_name): ... this new function.
+	(main): Use create_socket_name() for creating socket names for
+	socket_name and for socket_name_ssh in case ssh support is
+	enabled.
+	Move socket creation code to ...
+	(create_server_socket): ... this new function.
+	(main): Use create_server_socket() for creating sockets.
+	In case standard_socket is set, do not only store a socket name in
+	socket_name, but also in socket_name_ssh.
+	Generate additional environment info strings for ssh support.
+	Pass additional ssh socket argument to handle_connections.
+	(start_connection_thread_ssh): New function.
+	(handle_connections): Use select to multiplex between gpg-agent
+	and ssh-agent protocol.
+
+	* agent.h (struct opt): New member: ssh_support.
+	(start_command_handler_ssh): Add prototype.
+
+2005-01-04  Werner Koch  <wk@g10code.com>
+
+	* trustlist.c (agent_marktrusted): Use "Cancel" for the first
+	confirmation and made the strings translatable.
+
+	* cache.c (agent_put_cache): Fix the test for using the default
+	TTL.
+
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* preset-passphrase.c (preset_passphrase): Handle --passphrase.
+
+	* Makefile.am (gpg_preset_passphrase_LDADD): Reorder libs so that
+	pwquery may use stuff from jnlib.  Conditionally add -lwsock2
+	(gpg_protect_tool_LDADD): Ditto.
+
+	* preset-passphrase.c (main): Use default_homedir().
+	(main) [W32]: Initialize sockets.
+
+2004-12-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (libexec_PROGRAMS): Add gpg-preset-passphrase.
+	(gpg_preset_passphrase_SOURCES, gpg_preset_passphrase_LDADD): New
+	targets.
+	* agent.h (opt): New member allow_cache_passphrase.
+	* cache.c (housekeeping): Check if R->ttl is not negative.
+	(agent_put_cache): Allow ttl to be negative.
+	* command.c (parse_hexstring): Allow something to follow the
+	hexstring.
+	(cmd_cache_passphrase): New function.
+	(register_commands): Add it.
+	* gpg-agent.c: Handle --allow-preset-passphrase.
+	* preset-passphrase.c: New file.
+
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Use default_homedir().
+	* protect-tool.c (main): Ditto.	
+
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main) [W32]: Now that Mutexes work we can remove
+	the pth_init kludge.
+	(main): Add new options --[no-]use-standard-socket.
+	(check_for_running_agent): Check whether it is running on the
+	standard socket.
+
+	* call-scd.c (init_membuf, put_membuf, get_membuf): Removed.  We
+	now use the identical implementation from ../common/membuf.c.
+
+	* pksign.c (agent_pksign): Changed arg OUTFP to OUTBUF and use
+	membuf functions to return the value.
+	* pkdecrypt.c (agent_pkdecrypt): Ditto.
+	* genkey.c (agent_genkey): Ditto.
+	* command.c (cmd_pksign, cmd_pkdecrypt, cmd_genkey): Replaced
+	assuan_get_data_fp() by a the membuf scheme.
+	(clear_outbuf, write_and_clear_outbuf): New.
+
+2004-12-19  Werner Koch  <wk@g10code.com>
+
+	* query.c (initialize_module_query): New.
+	* call-scd.c (initialize_module_call_scd): New.
+	* gpg-agent.c (main): Call them.
+	
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main):  Remove special Pth initialize.
+
+	* agent.h (map_assuan_err): Define in terms of
+	map_assuan_err_with_source.
+
+2004-12-17  Moritz Schulte  <moritz@g10code.com>
+
+	* query.c: Undo change from 2004-12-05.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c [W32]: Various hacks to make it work.
+
+	* findkey.c (agent_write_private_key) [W32]: Adjust open call.
+
+	* call-scd.c (start_scd) [W32]: Don't check whether the daemon
+	didn't died.  To hard to do under Windows.
+	(start_scd) [W32]: Disable sending of the event signal option.
+
+	* protect-tool.c (read_file, export_p12_file) [W32]: Use setmode
+	to get stdout and stin into binary mode.
+
+2004-12-05  Moritz Schulte  <moritz@g10code.com>
+
+	* query.c (start_pinentry): Allow CTRL be NULL.
+
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (parse_rereadable_options): Return "not handled"
+	when the log file has not beend hadled.  This is will let the main
+	option processing continue. Fixed a bug introduced on 2004-09-4
+	resulting in logging to stderr until a HUP has been given.
+	(main): Don't close the listen FD.
+
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Adjusted from gettext 1.14.
+
+2004-09-29  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (parse_bag_encrypted_data): Print error if a bad
+	passphrase has been given.
+
+2004-09-28  Werner Koch  <wk@g10code.com>
+
+	* protect.c (agent_unprotect): Fixed wiping of CLEARTEXT.  Thanks
+	to Moritz for pointing this out.
+
+2004-09-25  Moritz Schulte  <moritz@g10code.com>
+	
+	* agent.h: Declare: agent_pksign_do.
+	(struct server_control_s): New member: raw_value.
+	
+	* pksign.c (do_encode_md): New argument: raw_value; support
+	generation of raw (non-pkcs1) data objects; adjust callers.
+	(agent_pksign_do): New function, based on code ripped
+	out from agent_pksign.
+	(agent_pksign): Use agent_pksign_do.
+
+	* command.c (start_command_handler): Set ctrl.digest.raw_value.
+	
+2004-09-09  Werner Koch  <wk@g10code.de>
+
+	* gpg-agent.c (check_for_running_agent): New.
+	(main): The default action is now to check for an already running
+	agent.
+	(parse_rereadable_options): Set logfile only on reread.
+	(main): Do not print the "is development version" note.
+
+2004-08-20  Werner Koch  <wk@g10code.de>
+
+	* gpg-agent.c: New option --max-cache-ttl.  Suggested by Alexander
+	Belopolsky.
+	* cache.c (housekeeping): Use it here instead of the hardwired
+	default of 1 hour.
+
+	* query.c (start_pinentry): Use a timeout for the pinentry lock.
+
+2004-08-18  Werner Koch  <wk@g10code.de>
+
+	* protect-tool.c (get_passphrase): Make sure that the default
+	prompts passed to gpg-agent are utf-8 encoded. Add new prompt values.
+	(import_p12_file, import_p12_file, export_p12_file): Changed calls
+	to get_passphrase so that better prompts are displayed.
+	(get_new_passphrase): New.
+
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	* trustlist.c (read_list): Allow colons in the fingerprint.
+	(headerblurb): Rephrased.
+
+	* gpg-agent.c (handle_connections): Increase the stack size ot 256k.
+
+2004-06-20  Moritz Schulte  <moritz@g10code.com>
+
+	* gpg-agent.c: Include <sys/stat.h> (build fix for BSD).
+
+2004-05-11  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (handle_signal): Reload the trustlist on SIGHUP.
+	(start_connection_thread): Hack to simulate a ticker.
+	* trustlist.c (agent_trustlist_housekeeping) 
+	(agent_reload_trustlist): New.  Protected all global functions
+	here with a simple counter which is sufficient for Pth.
+
+2004-05-03  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c: Remove help texts for options lile --lc-ctype.
+	(main): New option --allow-mark-trusted. 
+	* trustlist.c (agent_marktrusted): Use it here.
+
+2004-04-30  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c: New option --enable-status-msg.
+	(store_private_key): Print status messages for imported keys.
+	(read_and_unprotect): Ditto for bad passphrase.
+
+	* gpg-agent.c (parse_rereadable_options): New arg REREAD.  Allow
+	changing oLogFile.
+	(current_logfile): New.
+
+2004-04-26  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (start_scd): Do not register an event signal if we
+	are running as a pipe server.
+
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (start_scd): Send event-signal option. Always check
+	that the scdaemon is still running.
+
+	* gpg-agent.c (handle_signal): Do not use SIGUSR{1,2} anymore for
+	changing the verbosity.
+
+2004-04-16  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): Tell the logging code that we are running
+	detached.
+
+2004-04-06  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): Use new libgcrypt thread library register
+	scheme.
+
+2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg-agent.c (main): For now, always print the default config
+	file name for --gpgconf-list.
+
+2004-03-17  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main) <gpgconf>: Fixed default value quoting.
+
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (parse_rereadable_options): Use the new
+	DEFAULT_CACHE_TTL macro.
+	(main): Updated --gpgconf-list output.
+
+2004-02-21  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_passwd): Take acount of a key description.
+
+	* genkey.c (reenter_compare_cb): Do not set the error text.
+	(agent_protect_and_store, agent_genkey): Force a re-enter after a
+	non-matching passphrase.
+	* query.c (agent_askpin): Add new arg INITIAL_ERRTEXT; changed
+	all callers.
+
+2004-02-19  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c: New options --have-cert and --prompt.
+	(export_p12_file): Read a certificate from STDIN and pass it to
+	p12_build.  Detect a keygrip and construct the filename in that
+	case.  Unprotcet a key if needed.  Print error messages for key
+	formats we can't handle.
+	(release_passphrase): New.
+	(get_passphrase): New arg PROMPTNO. Return the allocated
+	string. Changed all callers.
+
+	* minip12.c: Revamped the build part.
+	(p12_build): New args CERT and CERTLEN.  
+
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (main): Setup the used character set.
+	* gpg-agent.c (main): Ditto.
+
+	* gpg-agent.c (set_debug): New.  New option --debug-level.
+	(main): New option --gpgconf-list.
+
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* pksign.c (do_encode_md): Cleaned up by using gcry_sexp_build.
+
+	* Makefile.am (gpg_protect_tool_SOURCES): Removed
+	simple-pwquery.[ch], as we once moved it to ../common.
+
+2004-02-13  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_setkeydesc): New.
+	(register_commands): Add command SETKEYDESC.
+	(cmd_pksign, cmd_pkdecrypt): Use the key description.
+	(reset_notify): Reset the description.
+	* findkey.c (unprotect): Add arg DESC_TEXT.
+	(agent_key_from_file): Ditto.
+	* pksign.c (agent_pksign): Ditto.
+	* pkdecrypt.c (agent_pkdecrypt): Ditto. Made CIPHERTEXT an
+	unsigned char*.
+
+	* protect-tool.c (main): New options --no-fail-on-exist, --homedir.
+	(store_private_key): Use them here.
+
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (read_file, main): Allow reading from stdin.
+
+	* Makefile.am: Include cmacros.am for common flags.
+	(libexec_PROGRAMS): Put gpg-protect-tool there.
+
+2004-02-10  Werner Koch  <wk@gnupg.org>
+
+	* minip12.c (parse_bag_encrypted_data): Finished implementation.
+	(p12_parse): Add callback args.
+	* protect-tool.c (import_p12_cert_cb): New.
+	(import_p12_file): Use it.
+
+2004-02-06  Werner Koch  <wk@gnupg.org>
+
+	* minip12.c (crypt_block): Add arg CIPHER_ALGO; changed all callers.
+	(set_key_iv): Add arg KEYBYTES; changed caller.
+
+2004-02-03  Werner Koch  <wk@gnupg.org>
+
+	* findkey.c (agent_key_from_file): Extra paranoid wipe.
+	* protect.c (agent_unprotect): Ditto.
+	(merge_lists): Ditto. Add arg RESULTLEN.
+	* pkdecrypt.c (agent_pkdecrypt): Don't show the secret key even in
+	debug mode.
+
+	* protect.c: Add DSA and Elgamal description.
+
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* agent.h (server_control_s): Add connection_fd field.
+	* command.c (start_command_handler): Init it here.
+	* gpg-agent.c (agent_init_default_ctrl): and here.
+	* call-scd.c: Add the CTRL arg to all functions calling start_scd
+	and pass it to start_scd.  Changed all callers
+	(start_scd): Keep track of the current active connection.
+	(agent_reset_scd): New.
+	* command.c (start_command_handler): Call it here.
+	* learncard.c (agent_handle_learn): Add arg CTRL; changed caller.
+	(send_cert_back): Ditto.
+
+2004-01-28  Werner Koch  <wk@gnupg.org>
+
+	* trustlist.c (agent_marktrusted): Check whether the trustlist is
+	writable.
+
+2004-01-27  Werner Koch  <wk@gnupg.org>
+
+	* sexp-parse.h: Moved to ../common.
+
+2004-01-24  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (atfork_cb): New.
+	(start_scd): Make sure secmem gets cleared.
+	* query.c  (atfork_cb): New.
+	(start_pinentry): Make sure secmem gets cleared.
+
+2004-01-16  Werner Koch  <wk@gnupg.org>
+
+	* findkey.c (agent_key_from_file): Now return an error code so
+	that we have more detailed error messages in the upper layers.
+	This fixes the handling of pinentry's cancel button. 
+	* pksign.c (agent_pksign): Changed accordingly.
+	* pkdecrypt.c (agent_pkdecrypt): Ditto.
+	* command.c (cmd_passwd): Ditto.
+
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): Set the prefixes for assuan logging.
+
+2003-12-15  Werner Koch  <wk@gnupg.org>
+
+	* protect.c (do_encryption): Use gcry_create_nonce instad of the
+	obsolete WEAK_RANDOM.
+
+2003-11-20  Werner Koch  <wk@gnupg.org>
+
+	* sexp-parse.h (snext): Don't use atoi_1 and digitp macros, so
+	that this file is useful by other applications too.
+
+2003-10-27  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_get_confirmation): New command.
+
+2003-08-20  Timo Schulz  <twoaday@freakmail.de>
+
+	* pksign.c (do_encode_md): Allocate enough space. Cast md
+	byte to unsigned char to prevent sign extension.
+	
+2003-08-14  Timo Schulz  <twoaday@freakmail.de>
+
+	* pksign.c (do_encode_md): Due to the fact pkcs#1 padding
+	is now in Libgcrypt, use the new interface.
+	
+2003-07-31  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (gpg_agent_LDADD): Added INTLLIBS.
+	(gpg_protect_tool_SOURCES): Added simple-pwquery.[ch]
+
+2003-07-27  Werner Koch  <wk@gnupg.org>
+
+	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.
+
+2003-07-15  Werner Koch  <wk@gnupg.org>
+
+	* simple-pwquery.c, simple-pwquery.h:  Moved to ../common.
+	* Makefile.am (gpg_protect_tool_LDADD): Add simple-pwquery.o.
+	Removed it from xx_SOURCES.
+
+2003-07-04  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (handle_connections): Kludge to allow use of Pth 1
+	and 2.
+
+2003-06-30  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (learn_status_cb): Store the serialno in PARM.
+
+2003-06-26  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (agent_card_serialno): Don't do a RESET anymore.
+
+2003-06-25  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_scd): New.
+	* call-scd.c (agent_card_scd): New.
+	* divert-scd.c (divert_generic_cmd): New
+
+	* call-scd.c (agent_card_learn): New callback args SINFO.
+	(learn_status_cb): Pass all other status lines to the sinfo
+	callback.
+	* learncard.c (release_sinfo, sinfo_cb): New.
+	(agent_handle_learn): Pass the new cb to the learn function and
+	pass the collected information back to the client's assuan
+	connection.
+
+	* gpg-agent.c (main): Moved pth_init before gcry_check_version.
+
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (handle_connections): Adjusted for Pth 2.0
+
+	Adjusted for changes in the libgcrypt API. Some more fixes for the
+	libgpg-error stuff.  
+
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	Renamed error codes from INVALID to INV and removed _ERROR suffixes.
+
+2003-06-03  Werner Koch  <wk@gnupg.org>
+
+	Changed all error codes in all files to the new libgpg-error scheme.
+
+	* agent.h: Include gpg-error.h and errno.h
+	* Makefile.am: Link with libgpg-error
+
+	* query.c: assuan.h is now a system header.
+	* genkey.c (agent_genkey): Fixed silly use of xmalloc by
+	xtrymalloc.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* command.c (register_commands): Adjusted for new Assuan semantics.
+
+	* Makefile.am: Don't override LDFLAGS.
+
+2002-12-04  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c: New variable config_filename.
+	(parse_rereadable_options): New.
+	(main): Use it here.  Add setting of default values, set
+	config_filename.
+	(reread_configuration): Filled with actual code.
+
+2002-12-03  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (read_key): Don't run make_canonical on a NULL
+	buffer.
+
+	* command.c (parse_hexstring): New.
+	(cmd_sethash): Use it.
+	(parse_keygrip): New.
+	(cmd_havekey, cmd_sigkey): Use it.
+	(cmd_passwd): New.
+	* genkey.c (agent_protect_and_store): New.
+	(store_key): Add arg FORCE.
+	(agent_genkey): Pass false to this force of store_key.
+
+2002-11-13  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): Switch all messages to utf-8.
+
+	* simple-pwquery.c (agent_send_all_options): Use $GPG_TTY and
+	stdin with ttyname.
+
+	* cache.c (new_data): Uiih - /sizeof d/sizeof *d/.
+
+2002-11-10  Werner Koch  <wk@gnupg.org>
+
+	* command.c (option_handler): Fix keep_tty check.
+
+2002-11-06  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): Make sure we have a default ttyname.
+	* command.c (option_handler): Check opt.keep_tty here
+	* query.c (start_pinentry): but not anymore here.
+
+2002-11-05  Werner Koch  <wk@gnupg.org>
+
+	* agent.h (opt,server_control_s): Move display and lc_ variables
+	to the control struct so that they are per connection.
+	* gpg-agent.c (agent_init_default_ctrl): New.
+	(main): Assign those command line options to new default_* variables.
+	Reset DISPLAY in server mode so that tehre is no implicit default.
+	* command.c (start_command_handler): Initialize and deinitialize
+	the control values.
+	(option_handler): Work on the ctrl values and not on the opt.
+	* query.c (start_pinentry): New argument CTRL to set the display
+	connection specific.  Changed all callers to pass this value.
+	(agent_askpin,agent_get_passphrase,agent_get_confirmation): Add
+	CTRL arg and pass it ot start_pinentry.
+	* command.c (cmd_get_passphrase): Pass CTRL argument.
+	* trustlist.c (agent_marktrusted):  Add CTRL argument  
+	* command.c (cmd_marktrusted): Pass CTRL argument
+	* divert-scd.c (ask_for_card):  Add CTRL arg. 
+	(divert_pksign,divert_pkdecrypt): Ditto.  Changed caller.
+	(getpin_cb): Use OPAQUE to pass the CTRL variable.  Changed both 
+	users.
+	* findkey.c (unprotect): Add CTRL arg.
+	(agent_key_from_file): Ditto.
+
+	* query.c (unlock_pinentry): Disconnect the pinentry so that we
+	start a new one for each request.  This is required to support
+	clients with different environments (e.g. X magic cookies).
+
+2002-09-05  Neal H. Walfield  <neal@cs.uml.edu>
+
+	* gpg-agent.c (main) [USE_GNU_PTH]: No need to call
+	assuan_set_io_func as assuan is smart.
+
+2002-09-25  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (handle_signal): Flush cache on SIGHUP.
+	* cache.c (agent_flush_cache): New.
+
+	* gpg-agent.c, agent.h: Add --keep-display and --keep-tty.
+	* query.c (start_pinentry): Implement them.  The option passing
+	needs more thoughts.
+
+2002-09-09  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (create_private_keys_directory)
+	(create_directories): New.
+	(main): Try to create a home directory.
+
+2002-09-04  Neal H. Walfield  <neal@g10code.de>
+
+	* gpg-agent.c (main): Use sigaction, not signal.
+
+2002-09-03  Neal H. Walfield  <neal@g10code.de>
+
+	* findkey.c: Include <fcntl.h>.
+	(agent_write_private_key): Prefer POSIX compatibity, open and
+	fdopen, over the simplicity of GNU extensions, fopen(file, "x").
+
+2002-08-22  Werner Koch  <wk@gnupg.org>
+
+	* query.c (agent_askpin): Provide the default desc text depending
+	on the pininfo.  Do the basic PIN verification only when
+	min_digits is set.
+
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* query.c (agent_askpin): Hack to show the right default prompt.
+	(agent_get_passphrase): Ditto.
+
+	* trans.c: Removed and replaced all usages with standard _()
+
+	* divert-scd.c (getpin_cb): Pass a more descritive text to the
+	pinentry.
+
+	* Makefile.am: Renamed the binary protect-tool to gpg-protect-tool.
+	* protect-tool.c: Removed the note about internal use only.
+
+	* gpg-agent.c (main): New option --daemon so that the program is
+	not accidently started in the background.
+
+2002-08-16  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (learn_status_cb): Handle CERTINFO status.
+	(agent_card_learn): Add args for certinfo cb.
+	* learncard.c (release_certinfo,certinfo_cb): New.
+	(send_cert_back): New. With factored out code from ..
+	(agent_handle_learn): here.  Return certinfo stuff.
+
+2002-07-26  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): New option --ignore-cache-for-signing.
+	* command.c (option_handler): New server option
+	use-cache-for-signing defaulting to true.
+	(cmd_pksign): handle global and per session option.
+	* findkey.c (agent_key_from_file, unprotect): New arg
+	ignore_cache.  Changed all callers.
+	* pksign.c (agent_pksign): Likewise.
+
+2002-06-29  Werner Koch  <wk@gnupg.org>
+
+	* query.c (start_pinentry): Use GNUPG_DERAULT_PINENTRY.
+	* call-scd.c (start_scd): Use GNUPG_DEFAULT_SCDAEMON.
+
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (export_p12_file): New.
+	(main): New command --p12-export.
+	* minip12.c (create_final,p12_build,compute_tag_length): New.
+	(store_tag_length): New.
+
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* minip12.c (crypt_block): Renamed from decrypt_block, add arg to
+	allow encryption.
+
+	* Makefile.am (pkglib_PROGRAMS): Put protect-tool there.
+
+	* findkey.c (agent_write_private_key,agent_key_from_file)
+	(agent_key_available): Use GNUPG_PRIVATE_KEYS_DIR constant.
+	* gpg-agent.c (main): Use GNUPG_DEFAULT_HOMEDIR constant.
+
+	* protect-tool.c (store_private_key): New.
+	(import_p12_file): Store the new file if requested.
+	(main): New options --force and --store.
+
+	* gpg-agent.c (main): Set a global flag when running detached.
+	* query.c (start_pinentry): Pass the list of FD to keep in the
+	child when not running detached.
+	* call-scd.c (start_scd): Ditto.
+
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_istrusted, cmd_listtrusted, cmd_marktrusted)
+	(cmd_pksign, cmd_pkdecrypt, cmd_genkey, cmd_get_passphrase)
+	(cmd_learn): Print an error message for a failed operation.
+
+	* simple-pwquery.c, simple-pwquery.h: New.
+	* protect-tool. (get_passphrase): New, used to get a passphrase
+	from the agent if none was given on the command line.
+
+2002-06-25  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (rsa_key_check): New.
+	(import_p12_file): New.
+	(main): New command --p12-import.
+	* minip12.c, minip12.h: New.
+
+2002-06-24  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (read_file): New.
+	(read_key): Factored most code out to read_file.
+
+2002-06-17  Werner Koch  <wk@gnupg.org>
+
+	* agent.h: Add a callback function to the pin_entry_info structure.
+	* query.c (agent_askpin): Use the callback to check for a correct
+	PIN.  Removed the start_err_text argument because it is not
+	anymore needed; changed callers.
+	* findkey.c (unprotect): Replace our own check loop by a callback.
+	(try_unprotect_cb): New.
+	* genkey.c (reenter_compare_cb): New.
+	(agent_genkey): Use this callback here.  Fixed setting of the pi2
+	variable and a segv in case of an empty PIN.
+
+	* divert-scd.c (getpin_cb): Removed some unused stuff and
+	explained what we still have to change.
+
+2002-06-12  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): New option --disable-pth.
+
+2002-06-11  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c: Add command --show-keygrip
+	(show_keygrip): New.
+
+2002-05-23  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c: Seirialized all scdaeom access when using Pth.
+
+	* cache.c: Made the cache Pth-thread-safe.
+	(agent_unlock_cache_entry): New.
+	* findkey.c (unprotect): Unlock the returned cache value.
+	* command.c (cmd_get_passphrase): Ditto.
+
+	* gpg-agent.c (main): Register pth_read/write with Assuan.
+
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* query.c: Serialized all pinentry access when using Pth.
+
+	* gpg-agent.c (handle_signal,start_connection_thread)
+	(handle_connections): New
+	(main): Use the new Pth stuff to allow concurrent connections.
+	* command.c (start_command_handler): Add new arg FD so that the
+	fucntion can also be used for an already connected socket.
+	* Makefile.am: Link with Pth.
+
+2002-05-14  Werner Koch  <wk@gnupg.org>
+
+	* cache.c (housekeeping, agent_put_cache): Use our time() wrapper.
+
+2002-04-26  Werner Koch  <wk@gnupg.org>
+
+	* cache.c (agent_put_cache): Reinitialize the creation time and
+	the ttl when reusing a slot.
+
+	* call-scd.c (start_scd): Print debug messages only with debug
+	flags set.
+	* query.c (start_pinentry): Ditto.
+
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* agent.h (agent_get_confirmation): Replace paramter prompt with
+	two parameters ok and cancel.
+	* query.c (agent_get_confirmation): Likewise.  Implement this.
+	* trustlist.c (agent_marktrusted): Fix invocation of
+	agent_get_confirmation.
+	* divert-scd.c (ask_for_card): Likewise.
+
+2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* agent.h (struct opt): Add members display, ttyname, ttytype,
+	lc_ctype, and lc_messages.
+	* gpg-agent.c (enum cmd_and_opt_values): Add oDisplay, oTTYname,
+	oTTYtype, oLCctype, and LCmessages.
+	(main): Handle these options.
+	* command.c (option_handler): New function.
+	(register_commands): Register option handler.
+	* query.c (start_pinentry): Pass the various display and tty
+	options to the pinentry.
+
+2002-04-05  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (show_file): New.  Used as default action.
+
+2002-03-28  Werner Koch  <wk@gnupg.org>
+
+	* divert-scd.c (encode_md_for_card): Don't do the pkcs-1 padding,
+	the scdaemon should take care of it.
+	(ask_for_card): Hack to not display the trailing zero.
+
+2002-03-11  Werner Koch  <wk@gnupg.org>
+
+	* learncard.c (kpinfo_cb): Remove the content restrictions from
+	the keyID.
+
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* learncard.c: New.
+	* divert-scd.c (ask_for_card): The serial number is binary so
+	convert it to hex here.
+	* findkey.c (agent_write_private_key): New.
+	* genkey.c (store_key): And use it here.
+	
+	* pkdecrypt.c (agent_pkdecrypt): Changed the way the diversion is done.
+	* divert-scd.c (divert_pkdecrypt): Changed interface and
+	implemented it.
+
+2002-03-05  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (inq_needpin): New.
+	(agent_card_pksign): Add getpin_cb args.
+	(agent_card_pkdecrypt): New.
+
+2002-03-04  Werner Koch  <wk@gnupg.org>
+
+	* pksign.c (agent_pksign): Changed how the diversion is done.
+	* divert-scd.c (divert_pksign): Changed interface and implemented it.
+	(encode_md_for_card): New.
+	* call-scd.c (agent_card_pksign): New.
+
+2002-02-28  Werner Koch  <wk@gnupg.org>
+
+	* pksign.c (agent_pksign): Detect whether a Smartcard is to be
+	used and divert the operation in this case.
+	* pkdecrypt.c (agent_pkdecrypt): Likewise
+	* findkey.c (agent_key_from_file): Add optional arg shadow_info
+	and have it return information about a shadowed key.
+	* protect.c (agent_get_shadow_info): New.
+
+	* protect.c (snext,sskip,smatch): Moved to
+	* sexp-parse.h: New file.
+	* divert-scd.c: New.
+	
+2002-02-27  Werner Koch  <wk@gnupg.org>
+
+	* protect.c (agent_shadow_key): New.
+
+	* command.c (cmd_learn): New command LEARN.
+	* gpg-agent.c: New option --scdaemon-program.
+	* call-scd.c (start_scd): New. Based on query.c
+	* query.c: Add 2 more arguments to all uses of assuan_transact.
+
+2002-02-18  Werner Koch  <wk@gnupg.org>
+
+	* findkey.c (unprotect): Show an error message for a bad passphrase.
+
+	* command.c (cmd_marktrusted): Implemented.
+	* trustlist.c (agent_marktrusted): New.
+	(open_list): Add APPEND arg.
+
+	* query.c (agent_get_confirmation): New.
+
+2002-02-06  Werner Koch  <wk@gnupg.org>
+
+	* cache.c (housekeeping): Fixed linking in the remove case.
+
+2002-02-01  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c: New option --default-cache-ttl.
+	* cache.c (agent_put_cache): Use it.
+	
+	* cache.c: Add a few debug outputs.
+
+	* protect.c (agent_private_key_type): New.
+	* agent.h: Add PRIVATE_KEY_ enums.
+	* findkey.c (agent_key_from_file): Use it to decide whether we
+	have to unprotect a key.
+	(unprotect): Cache the passphrase.
+	
+	* findkey.c (agent_key_from_file,agent_key_available): The key
+	files do now require a ".key" suffix to make a script's life
+	easier. 
+	* genkey.c (store_key): Ditto.
+
+2002-01-31  Werner Koch  <wk@gnupg.org>
+
+	* genkey.c (store_key): Protect the key.
+	(agent_genkey): Ask for the passphrase.
+	* findkey.c (unprotect): Actually unprotect the key.
+	* query.c (agent_askpin): Add an optional start_err_text. 
+
+2002-01-30  Werner Koch  <wk@gnupg.org>
+
+	* protect.c: New.  
+	(hash_passphrase): Based on the GnuPG 1.0.6 version.
+	* protect-tool.c: New
+
+2002-01-29  Werner Koch  <wk@gnupg.org>
+
+	* findkey.c (agent_key_available): New.
+	* command.c (cmd_havekey): New.
+	(register_commands): And register new command.
+
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_get_passphrase): Remove the plus signs.
+
+	* query.c (start_pinentry): Send no-grab option to pinentry
+	* gpg-agent.c (main): Move variable grab as no_grab to agent.h.
+
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): Disable core dumps.
+
+	* cache.c: New.
+	* command.c (cmd_get_passphrase): Use the cache.
+	(cmd_clear_passphrase): Ditto.
+
+	* gpg-agent.c:  Removed unused cruft and implement the socket
+	based server.
+	(my_strusage): Take bug report address from configure.ac.
+	* command.c (start_command_handler): Add an argument to start as
+	regular server.
+	(start_command_handler): Enable Assuan logging.
+
+2002-01-15  Werner Koch  <wk@gnupg.org>
+
+	* trustlist.c: New.
+	* command.c (cmd_istrusted, cmd_listtrusted, cmd_marktrusted): New.
+
+2002-01-07  Werner Koch  <wk@gnupg.org>
+
+	* genkey.c: Store the secret part and return the public part.
+
+2002-01-03  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_get_passphrase): New.
+	(cmd_clear_passphrase): New.
+	* query.c (agent_get_passphrase): New.
+
+2002-01-02  Werner Koch  <wk@gnupg.org>
+
+	* genkey.c: New.
+	* command.c (cmd_genkey): New.
+
+	* command.c (rc_to_assuan_status): Removed and changed all callers
+	to use map_to_assuan_status.
+	
+2001-12-19  Werner Koch  <wk@gnupg.org>
+
+	* keyformat.txt: New. 
+
+2001-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* query.c (start_pinentry): Add new argument to assuan_pipe_connect.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Use LIBGCRYPT macros
+
+2001-12-14  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): New option --batch.  New option --debug-wait
+	n, so that it is possible to attach gdb when used in server mode.
+	* query.c (agent_askpin): Don't ask in batch mode.
+
+	* command.c: Removed the conversion macros as they are now in
+	../common/util.h.
+
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* query.c (LINELENGTH): Removed.
+	(agent_askpin): Use ASSUAN_LINELENGTH, not LINELENGTH.
+
+2001-11-19  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c: Removed all GUI code, removed code for old
+	protocol.  New code to use the Assuan protocol as a server and
+	also to communicate with a new ask-passphrase utility.
+
+2000-11-22  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): csh support by Dan Winship, new options --sh
+	and --csh and set default by consulting $SHELL.
+
+Mon Aug 21 17:59:17 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* gpg-agent.c (passphrase_dialog): Cleanup the window and added the
+        user supplied text to the window.
+        (main): Fixed segv in gtk_init when used without a command to start.
+
+	* gpg-agent.c: --flush option.
+        (req_flush): New.
+        (req_clear_passphrase): Implemented.
+
+Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* gpg-agent.c: New.
+	* Makefile.am: New.
+
+
+ Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
