@@ -1,7 +1,7 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 1.4.4
+			    Version 1.4.5
 
 	 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
 		 2005, 2006 Free Software Foundation, Inc.
@@ -86,10 +86,10 @@
 	$ gpg --verify gnupg-x.y.z.tar.gz.sig
 
        This checks that the detached signature gnupg-x.y.z.tar.gz.sig
-       is indeed a signature of gnupg-x.y.z.tar.gz.  The key used to
-       create this signature is:
+       is indeed a signature of gnupg-x.y.z.tar.gz.  The key currently
+       used to create this signature is:
 
-       "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
+       "pub  1024R/1CE0C630 2006-01-01 Werner Koch (dist sig) <dd9jn@gnu.org>"
 
        If you do not have this key, you can get it from the source in
        the file doc/samplekeys.asc (use "gpg --import  doc/samplekeys.asc"
@@ -97,7 +97,7 @@
        make sure that this is really the key and not a faked one. You
        can do this by comparing the output of:
 
-		$ gpg --fingerprint 0x57548DCD
+		$ gpg --fingerprint 0x1CE0C630
 
        with the fingerprint published elsewhere.
 

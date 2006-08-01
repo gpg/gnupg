@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.4.5
+Noteworthy changes in version 1.4.5 (2006-08-01)
 ------------------------------------------------
 
     * Reverted check for valid standard handles under Windows.

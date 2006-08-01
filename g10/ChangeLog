@@ -1,5 +1,8 @@
 2006-07-31  Werner Koch  <wk@g10code.com>
 
+	* openfile.c (open_outfile) [USE_ONLY_8DOT3]: Search backwards for
+	the dot.  Fixes bug 654.
+
 	* passphrase.c (agent_open): Use log_info instead of log_error to
 	allow a fallback without having gpg return an error code.  Fixes
 	bug #655.

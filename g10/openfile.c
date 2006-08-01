@@ -201,10 +201,10 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 #ifdef USE_ONLY_8DOT3
       if (opt.mangle_dos_filenames)
         {
-          /* It is quite common DOS system to have only one dot in a
+          /* It is quite common for DOS system to have only one dot in a
            * a filename So if we have something like this, we simple
-           * replace the suffix execpt in cases where the suffix is
-           * larger than 3 characters and not the same as.
+           * replace the suffix except in cases where the suffix is
+           * larger than 3 characters and not identlically to the new one.
            * We should really map the filenames to 8.3 but this tends to
            * be more complicated and is probaly a duty of the filesystem
            */
@@ -214,16 +214,22 @@ open_outfile( const char *iname, int mode, IOBUF *a )
           
           buf = xmalloc(strlen(iname)+4+1);
           strcpy(buf,iname);
-          dot = strchr(buf, '.' );
+          dot = strrchr(buf, '.' );
           if ( dot && dot > buf && dot[1] && strlen(dot) <= 4
-				  && CMP_FILENAME(newsfx, dot) )
+               && CMP_FILENAME(newsfx, dot) 
+               && !(strchr (dot, '/') || strchr (dot, '\\')))
             {
-              strcpy(dot, newsfx );
+              /* There is a dot, the dot is not the first character,
+                 the suffix is not longer than 3, the suffix is not
+                 equal to the new suffix and tehre is no path delimter
+                 after the dot (e.g. foo.1/bar): Replace the
+                 suffix. */
+              strcpy (dot, newsfx );
             }
-          else if ( dot && !dot[1] ) /* don't duplicate a dot */
-            strcpy( dot, newsfx+1 );
+          else if ( dot && !dot[1] ) /* Don't duplicate a trailing dot. */
+            strcpy ( dot, newsfx+1 );
           else
-            strcat ( buf, newsfx );
+            strcat ( buf, newsfx ); /* Just append the new suffix. */
         }
       if (!buf)
 #endif /* USE_ONLY_8DOT3 */
