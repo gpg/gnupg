@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-28 11:12+0200\n"
+"POT-Creation-Date: 2006-08-01 13:07+0200\n"
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -41,7 +41,7 @@ msgstr "Írom a titkos kulcsot a %s állományba.\n"
 #: cipher/random.c:448 g10/card-util.c:678 g10/card-util.c:747
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:474
 #: g10/gpg.c:1003 g10/gpg.c:3461 g10/import.c:195 g10/keygen.c:2385
-#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:342
+#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:348
 #: g10/plaintext.c:481 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1114
 #: g10/sign.c:1264 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
@@ -78,8 +78,8 @@ msgid "note: random_seed file not updated\n"
 msgstr "Megjegyzés: random_seed állományt nem frissítettem.\n"
 
 #: cipher/random.c:544 g10/exec.c:481 g10/gpg.c:1002 g10/keygen.c:2864
-#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:263
-#: g10/openfile.c:357 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
+#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:269
+#: g10/openfile.c:363 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
@@ -894,7 +894,7 @@ msgstr "Probléma a titkosított csomag kezelésekor!\n"
 msgid "no remote program execution supported\n"
 msgstr "Külsõ program meghívása nem támogatott.\n"
 
-#: g10/exec.c:176 g10/openfile.c:415
+#: g10/exec.c:176 g10/openfile.c:421
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
@@ -2418,7 +2418,7 @@ msgstr "%08lX kulcs: új kulcs - kihagytam.\n"
 msgid "no writable keyring found: %s\n"
 msgstr "Nem írható kulcskarikát találtam: %s\n"
 
-#: g10/import.c:802 g10/openfile.c:267 g10/sign.c:831 g10/sign.c:1135
+#: g10/import.c:802 g10/openfile.c:273 g10/sign.c:831 g10/sign.c:1135
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "Írok a \"%s\" állományba.\n"
@@ -4867,23 +4867,23 @@ msgstr "Írja be az új állománynevet"
 msgid "writing to stdout\n"
 msgstr "Írok a szabványos kimenetre.\n"
 
-#: g10/openfile.c:305
+#: g10/openfile.c:311
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "Azt feltételezem, hogy az aláírt adat a %s állományban van.\n"
 
-#: g10/openfile.c:384
+#: g10/openfile.c:390
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr "\"%s\" új konfigurációs állományt létrehoztam.\n"
 
-#: g10/openfile.c:386
+#: g10/openfile.c:392
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr ""
 "FIGYELEM: \"%s\" opciói csak a következõ futáskor lesznek érvényesek!\n"
 
-#: g10/openfile.c:418
+#: g10/openfile.c:424
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: Könyvtárat létrehoztam.\n"
@@ -6386,11 +6386,11 @@ msgstr "FIGYELEM: Nem biztonságos memóriát használunk!\n"
 msgid "please see http://www.gnupg.org/faq.html for more information\n"
 msgstr "További információ a http://www.gnupg.org/faq.html címen található.\n"
 
-#: util/secmem.c:350
+#: util/secmem.c:351
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "A mûvelet nem lehetséges biztonságos memória nélkül.\n"
 
-#: util/secmem.c:351
+#: util/secmem.c:352
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(Lehet, hogy nem a megfelelõ programot használja a feladatra.)\n"
 

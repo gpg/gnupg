@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.3.92\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-28 11:12+0200\n"
+"POT-Creation-Date: 2006-08-01 13:07+0200\n"
 "PO-Revision-Date: 2004-11-23 11:14+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -44,7 +44,7 @@ msgstr "「%s」へ秘密鍵を書き込みます\n"
 #: cipher/random.c:448 g10/card-util.c:678 g10/card-util.c:747
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:474
 #: g10/gpg.c:1003 g10/gpg.c:3461 g10/import.c:195 g10/keygen.c:2385
-#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:342
+#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:348
 #: g10/plaintext.c:481 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1114
 #: g10/sign.c:1264 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
@@ -80,8 +80,8 @@ msgid "note: random_seed file not updated\n"
 msgstr "注意: random_seed ファイルの更新をしません\n"
 
 #: cipher/random.c:544 g10/exec.c:481 g10/gpg.c:1002 g10/keygen.c:2864
-#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:263
-#: g10/openfile.c:357 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
+#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:269
+#: g10/openfile.c:363 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "「%s」が作成できません: %s\n"
@@ -862,7 +862,7 @@ msgstr "暗号化パケットの取扱いで障害\n"
 msgid "no remote program execution supported\n"
 msgstr "遠隔プログラムの実行は、サポートしていません\n"
 
-#: g10/exec.c:176 g10/openfile.c:415
+#: g10/exec.c:176 g10/openfile.c:421
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "ディレクトリー「%s」が作成できません: %s\n"
@@ -2370,7 +2370,7 @@ msgstr "鍵%s: 新しい鍵です - とばします\n"
 msgid "no writable keyring found: %s\n"
 msgstr "書込み可能な鍵輪が見つかりません: %s\n"
 
-#: g10/import.c:802 g10/openfile.c:267 g10/sign.c:831 g10/sign.c:1135
+#: g10/import.c:802 g10/openfile.c:273 g10/sign.c:831 g10/sign.c:1135
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "「%s」への書込み\n"
@@ -4732,22 +4732,22 @@ msgstr "新しいファイル名を入力してください"
 msgid "writing to stdout\n"
 msgstr "標準出力に書き込みます\n"
 
-#: g10/openfile.c:305
+#: g10/openfile.c:311
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "署名されたデータが「%s」にあると想定します\n"
 
-#: g10/openfile.c:384
+#: g10/openfile.c:390
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr "新しい構成ファイル「%s」ができました\n"
 
-#: g10/openfile.c:386
+#: g10/openfile.c:392
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr "警告: 「%s」のオプションは起動している間、有効になりません\n"
 
-#: g10/openfile.c:418
+#: g10/openfile.c:424
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "ディレクトリー「%s」ができました\n"
@@ -6195,11 +6195,11 @@ msgstr "警告: 剣呑なメモリーを使用しています!\n"
 msgid "please see http://www.gnupg.org/faq.html for more information\n"
 msgstr "詳細はhttp://www.gnupg.org/faq.htmlをご覧ください\n"
 
-#: util/secmem.c:350
+#: util/secmem.c:351
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "初期化済みの安全なメモリーがない場合には操作できません\n"
 
-#: util/secmem.c:351
+#: util/secmem.c:352
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(この目的には誤ったプログラムを使ったのでしょう)\n"
 

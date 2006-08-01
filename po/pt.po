@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-28 11:12+0200\n"
+"POT-Creation-Date: 2006-08-01 13:07+0200\n"
 "PO-Revision-Date: 2002-09-13 18:26+0100\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
@@ -44,7 +44,7 @@ msgstr "a escrever chave privada para `%s'\n"
 #: cipher/random.c:448 g10/card-util.c:678 g10/card-util.c:747
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:474
 #: g10/gpg.c:1003 g10/gpg.c:3461 g10/import.c:195 g10/keygen.c:2385
-#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:342
+#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:348
 #: g10/plaintext.c:481 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1114
 #: g10/sign.c:1264 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
@@ -81,8 +81,8 @@ msgid "note: random_seed file not updated\n"
 msgstr "nota: ficheiro random_seed não actualizado\n"
 
 #: cipher/random.c:544 g10/exec.c:481 g10/gpg.c:1002 g10/keygen.c:2864
-#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:263
-#: g10/openfile.c:357 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
+#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:269
+#: g10/openfile.c:363 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "impossível criar `%s': %s\n"
@@ -900,7 +900,7 @@ msgstr "problema ao tratar pacote cifrado\n"
 msgid "no remote program execution supported\n"
 msgstr ""
 
-#: g10/exec.c:176 g10/openfile.c:415
+#: g10/exec.c:176 g10/openfile.c:421
 #, fuzzy, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "%s: impossível criar directoria: %s\n"
@@ -2425,7 +2425,7 @@ msgstr "chave %08lX: chave nova - ignorada\n"
 msgid "no writable keyring found: %s\n"
 msgstr "não foi encontrada nenhum porta-chaves onde escrever: %s\n"
 
-#: g10/import.c:802 g10/openfile.c:267 g10/sign.c:831 g10/sign.c:1135
+#: g10/import.c:802 g10/openfile.c:273 g10/sign.c:831 g10/sign.c:1135
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "a escrever para `%s'\n"
@@ -4877,22 +4877,22 @@ msgstr "Digite novo nome de ficheiro"
 msgid "writing to stdout\n"
 msgstr "a escrever em \"stdout\"\n"
 
-#: g10/openfile.c:305
+#: g10/openfile.c:311
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "a assumir dados assinados em `%s'\n"
 
-#: g10/openfile.c:384
+#: g10/openfile.c:390
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr "criado um novo ficheiro de configuração `%s'\n"
 
-#: g10/openfile.c:386
+#: g10/openfile.c:392
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr "AVISO: opções em `%s' ainda não estão activas nesta execução\n"
 
-#: g10/openfile.c:418
+#: g10/openfile.c:424
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: directoria criada\n"
@@ -6393,11 +6393,11 @@ msgstr "AVISO: a utilizar memória insegura!\n"
 msgid "please see http://www.gnupg.org/faq.html for more information\n"
 msgstr "por favor veja http://www.gnupg.org/faq.html para mais informações\n"
 
-#: util/secmem.c:350
+#: util/secmem.c:351
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "a operação não é possível sem memória segura inicializada\n"
 
-#: util/secmem.c:351
+#: util/secmem.c:352
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(você pode ter usado o programa errado para esta tarefa)\n"
 

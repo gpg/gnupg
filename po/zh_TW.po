@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-07-28 11:12+0200\n"
+"POT-Creation-Date: 2006-08-01 13:07+0200\n"
 "PO-Revision-Date: 2005-07-29 09:49+0800\n"
 "Last-Translator: Jedi <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -44,7 +44,7 @@ msgstr "正在將私鑰寫至 `%s'\n"
 #: cipher/random.c:448 g10/card-util.c:678 g10/card-util.c:747
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:474
 #: g10/gpg.c:1003 g10/gpg.c:3461 g10/import.c:195 g10/keygen.c:2385
-#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:342
+#: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:348
 #: g10/plaintext.c:481 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1114
 #: g10/sign.c:1264 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
@@ -80,8 +80,8 @@ msgid "note: random_seed file not updated\n"
 msgstr "請注意: random_seed 檔案未被更新\n"
 
 #: cipher/random.c:544 g10/exec.c:481 g10/gpg.c:1002 g10/keygen.c:2864
-#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:263
-#: g10/openfile.c:357 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
+#: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:269
+#: g10/openfile.c:363 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "無法建立 `%s': %s\n"
@@ -856,7 +856,7 @@ msgstr "處理加密的封包有問題\n"
 msgid "no remote program execution supported\n"
 msgstr "沒有已支援的遠端程式執行\n"
 
-#: g10/exec.c:176 g10/openfile.c:415
+#: g10/exec.c:176 g10/openfile.c:421
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "無法建立目錄 `%s': %s\n"
@@ -2349,7 +2349,7 @@ msgstr "金鑰 %s: 新的金鑰 - 已跳過\n"
 msgid "no writable keyring found: %s\n"
 msgstr "找不到可寫的鑰匙圈: %s\n"
 
-#: g10/import.c:802 g10/openfile.c:267 g10/sign.c:831 g10/sign.c:1135
+#: g10/import.c:802 g10/openfile.c:273 g10/sign.c:831 g10/sign.c:1135
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "正在寫到 `%s'\n"
@@ -4684,22 +4684,22 @@ msgstr "請輸入新的檔名"
 msgid "writing to stdout\n"
 msgstr "正在寫入到標準輸出\n"
 
-#: g10/openfile.c:305
+#: g10/openfile.c:311
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "假設被簽署的資料在 `%s'\n"
 
-#: g10/openfile.c:384
+#: g10/openfile.c:390
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr "新的設定檔 `%s' 被建立了\n"
 
-#: g10/openfile.c:386
+#: g10/openfile.c:392
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr "警告: 在 `%s' 裡的選項於這次執行期間並沒有被啟用\n"
 
-#: g10/openfile.c:418
+#: g10/openfile.c:424
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "目錄 `%s' 已建立\n"
@@ -6140,11 +6140,11 @@ msgstr "警告: 正在使用不安全的記憶體!\n"
 msgid "please see http://www.gnupg.org/faq.html for more information\n"
 msgstr "請參考 http://www.gnupg.org/faq.html 上進一步的資訊\n"
 
-#: util/secmem.c:350
+#: util/secmem.c:351
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "尚未啟用安全的記憶體前, 不可能進行操作\n"
 
-#: util/secmem.c:351
+#: util/secmem.c:352
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(也許妳選錯程式來做這件事了)\n"
 
