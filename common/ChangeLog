@@ -1,3 +1,22 @@
+2006-08-11  Werner Koch  <wk@g10code.com>
+
+	* http.c: Major internal changes to optionallly support GNUTLS and
+	ESTREAM.
+	(http_open): Move initialization of the stream ...
+	(send_request): .. here.
+	(http_register_tls_callback): New.
+
+	* estream.c (es_writen): Try to seek only is a seek function has
+	been registered.
+
+2006-08-09  Werner Koch  <wk@g10code.com>
+
+	* http.c, http.h: New.  Taken from gnupg 1.4.5, merged with
+	changes done for the Dirmngr project (by g10 Code) and cleaned up
+	some stuff.
+	(make_header_line): New. Change all caller to make user of the new
+	* Makefile.am (libcommon_a_SOURCES): Added http.c and http.h.
+
 2006-05-23  Werner Koch  <wk@g10code.com>
 
 	* gettime.c (isotimestamp): New.

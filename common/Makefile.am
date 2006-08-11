@@ -52,7 +52,8 @@ libcommon_a_SOURCES = \
 	dynload.h \
 	estream.c estream.h \
 	dns-cert.c dns-cert.h \
-	pka.c pka.h 
+	pka.c pka.h \
+	http.c http.h 
 
 
 libsimple_pwquery_a_SOURCES = \

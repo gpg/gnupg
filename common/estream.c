@@ -559,7 +559,7 @@ static es_cookie_io_functions_t estream_functions_mem =
     es_func_mem_read,
     es_func_mem_write,
     es_func_mem_seek,
-    es_func_mem_destroy,
+    es_func_mem_destroy
   };
 
 /* Implementation of fd I/O.  */
@@ -1402,16 +1402,19 @@ es_writen (estream_t ES__RESTRICT stream,
   if (! (stream->flags & ES_FLAG_WRITING))
     {
       /* Switching to writing mode -> discard input data and seek to
-	 position at which reading has stopped.  */
-
-      err = es_seek (stream, 0, SEEK_CUR, NULL);
-      if (err)
-	{
-	  if (errno == ESPIPE)
-	    err = 0;
-	  else
-	    goto out;
-	}
+	 position at which reading has stopped.  We can do this only
+	 if a seek function has been registered. */
+      if (stream->intern->func_seek)
+        {
+          err = es_seek (stream, 0, SEEK_CUR, NULL);
+          if (err)
+            {
+              if (errno == ESPIPE)
+                err = 0;
+              else
+                goto out;
+            }
+        }
     }
 
   switch (stream->intern->strategy)
