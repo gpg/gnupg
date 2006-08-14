@@ -1,3 +1,21 @@
+2006-08-14  Werner Koch  <wk@g10code.com>
+
+	* http.h (struct http_context_s): Moved to implementation.
+	* http.c (http_open): Changed call to return a context.
+	(http_open_document): Ditto.
+	(http_get_read_ptr, http_get_read_ptr, http_get_status_code): New.
+	(do_parse_uri): Replaced strlwr by straight code to ease
+	standalone use of this file.
+	(http_wait_response): Removed arg STATUS_CODE as it is available
+	through an accessor function. Adjusted caller.
+	(http_escape_string): New.
+
+	* estream.c (es_read_line): Renamed to ..
+	(doreadline): .. this.  Changed all callers.
+	(es_read_line): New.  This is theusual limited getline variabnt as
+	used at several places.  Here taken and adjusted from xreadline.c
+	(es_free): New.
+
 2006-08-11  Werner Koch  <wk@g10code.com>
 
 	* http.c: Major internal changes to optionallly support GNUTLS and

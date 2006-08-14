@@ -40,8 +40,8 @@
    memory was enable and ERRNO is set accordingly.
 
    If a line has been truncated, the file pointer is moved forward to
-   the end of the line so that the next read start with the next
-   line.  Note that MAX_LENGTH must be re-initialzied in this case..
+   the end of the line so that the next read starts with the next
+   line.  Note that MAX_LENGTH must be re-initialzied in this case.
 
    Note: The returned buffer is allocated with enough extra space to
    append a CR,LF,Nul

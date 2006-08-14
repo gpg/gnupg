@@ -156,8 +156,32 @@ typedef struct cookie_s *cookie_t;
 static gpg_error_t (*tls_callback) (http_t, gnutls_session_t, int);
 #endif /*HTTP_USE_GNUTLS*/
 
+/* Our handle context. */
+struct http_context_s 
+{
+  unsigned int status_code;
+  int sock;
+  int in_data;
+#ifdef HTTP_USE_ESTREAM
+  estream_t fp_read;
+  estream_t fp_write;
+  void *write_cookie;
+#else /*!HTTP_USE_ESTREAM*/
+  FILE *fp_read;
+  FILE *fp_write;
+#endif /*!HTTP_USE_ESTREAM*/
+  void *tls_context;
+  int is_http_0_9;
+  parsed_uri_t uri;
+  http_req_t req_type;
+  char *buffer;          /* Line buffer. */
+  size_t buffer_size;
+  unsigned int flags;
+};
 
 
+
+
 #ifdef HAVE_W32_SYSTEM
 static void
 deinit_sockets (void)
@@ -253,20 +277,27 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
 
 
 
+/* Start a HTTP retrieval and return on success in R_HD a context
+   pointer for completing the the request and to wait for the
+   response. */
 gpg_error_t
-http_open (http_t hd, http_req_t reqtype, const char *url, 
+http_open (http_t *r_hd, http_req_t reqtype, const char *url, 
            const char *auth, unsigned int flags, const char *proxy,
            void *tls_context)
 {
   gpg_error_t err;
+  http_t hd;
+  
+  *r_hd = NULL;
 
   if (!(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST))
     return gpg_error (GPG_ERR_INV_ARG);
 
-  /* Initialize the handle. */
-  memset (hd, 0, sizeof *hd);
+  /* Create the handle. */
+  hd = xtrycalloc (1, sizeof *hd);
+  if (!hd)
+    return gpg_error_from_errno (errno);
   hd->sock = -1;
-  hd->initialized = 1;
   hd->req_type = reqtype;
   hd->flags = flags;
   hd->tls_context = tls_context;
@@ -284,8 +315,10 @@ http_open (http_t hd, http_req_t reqtype, const char *url,
       if (hd->fp_write)
         P_ES(fclose) (hd->fp_write);
       http_release_parsed_uri (hd->uri);
-      hd->initialized = 0;
+      xfree (hd);
     }
+  else
+    *r_hd = hd;
   return err;
 }
 
@@ -310,7 +343,7 @@ http_start_data (http_t hd)
 
 
 gpg_error_t
-http_wait_response (http_t hd, unsigned int *ret_status)
+http_wait_response (http_t hd)
 {
   gpg_error_t err;
 
@@ -370,9 +403,6 @@ http_wait_response (http_t hd, unsigned int *ret_status)
 #endif /*!HTTP_USE_ESTREAM*/
 
   err = parse_response (hd);
-  if (!err && ret_status)
-    *ret_status = hd->status_code;
-
   return err;
 }
 
@@ -382,19 +412,20 @@ http_wait_response (http_t hd, unsigned int *ret_status)
    be used as an HTTP proxy and any enabled $http_proxy gets
    ignored. */
 gpg_error_t
-http_open_document (http_t hd, const char *document, 
+http_open_document (http_t *r_hd, const char *document, 
                     const char *auth, unsigned int flags, const char *proxy,
                     void *tls_context)
 {
   gpg_error_t err;
 
-  err = http_open (hd, HTTP_REQ_GET, document, auth, flags, proxy,tls_context);
+  err = http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
+                   proxy, tls_context);
   if (err)
     return err;
 
-  err = http_wait_response (hd, NULL);
+  err = http_wait_response (*r_hd);
   if (err)
-    http_close (hd, 0);
+    http_close (*r_hd, 0);
 
   return err;
 }
@@ -403,7 +434,7 @@ http_open_document (http_t hd, const char *document,
 void
 http_close (http_t hd, int keep_read_stream)
 {
-  if (!hd || !hd->initialized)
+  if (!hd)
     return;
   if (!hd->fp_read && !hd->fp_write && hd->sock != -1)
     sock_close (hd->sock);
@@ -413,11 +444,41 @@ http_close (http_t hd, int keep_read_stream)
     P_ES(fclose) (hd->fp_write);
   http_release_parsed_uri (hd->uri);
   xfree (hd->buffer);
-  hd->initialized = 0;
+  xfree (hd);
 }
 
 
+#ifdef HTTP_USE_ESTREAM
+estream_t
+http_get_read_ptr (http_t hd)
+{
+  return hd?hd->fp_read:NULL;
+}
+estream_t
+http_get_write_ptr (http_t hd)
+{
+  return hd?hd->fp_write:NULL;
+}
+#else /*!HTTP_USE_ESTREAM*/
+FILE *
+http_get_read_ptr (http_t hd)
+{
+  return hd?hd->fp_read:NULL;
+}
+FILE *
+http_get_write_ptr (http_t hd)
+{
+  return hd?hd->fp_write:NULL;
+}
+#endif /*!HTTP_USE_ESTREAM*/
+unsigned int
+http_get_status_code (http_t hd)
+{
+  return hd?hd->status_code:0;
+}
 
+
+
 /*
  * Parse an URI and put the result into the newly allocated RET_URI.
  * The caller must always use release_parsed_uri() to releases the
@@ -452,7 +513,7 @@ static gpg_error_t
 do_parse_uri (parsed_uri_t uri, int only_local_part)
 {
   uri_tuple_t *tail;
-  char *p, *p2, *p3;
+  char *p, *p2, *p3, *pp;
   int n;
 
   p = uri->buffer;
@@ -474,7 +535,8 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
       if (!(p2 = strchr (p, ':')) || p2 == p)
 	return gpg_error (GPG_ERR_BAD_URI); /* No scheme. */
       *p2++ = 0;
-      strlwr (p);
+      for (pp=p; *pp; pp++)
+       *pp = tolower (*(unsigned char*)pp);
       uri->scheme = p;
       if (!strcmp (uri->scheme, "http"))
         uri->port = 80;
@@ -511,7 +573,8 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
               p = p3;
             }
 
-	  strlwr (p);
+          for (pp=p; *pp; pp++)
+            *pp = tolower (*(unsigned char*)pp);
 	  uri->host = p;
 	  if ((p3 = strchr (p, ':')))
 	    {
@@ -646,6 +709,29 @@ insert_escapes (char *buffer, const char *string,
     }
   return n;
 }
+
+
+/* Allocate a new string from STRING using standard HTTP escaping as
+   well as escaping of characters given in SPECIALS.  A common pattern
+   for SPECIALS is "%;?&=". However it depends on the needs, for
+   example "+" and "/: often needs to be escaped too.  Returns NULL on
+   failure and sets ERRNO. */
+char *
+http_escape_string (const char *string, const char *specials)
+{
+  int n;
+  char *buf;
+
+  n = insert_escapes (NULL, string, specials);
+  buf = xtrymalloc (n+1);
+  if (buf)
+    {
+      insert_escapes (buf, string, specials);
+      buf[n] = 0;
+    }
+  return buf;
+}
+
 
 
 static uri_tuple_t
@@ -1095,6 +1181,9 @@ parse_response (http_t hd)
 	return gpg_error (GPG_ERR_TRUNCATED); /* Line has been truncated. */
       if (!len)
 	return gpg_error (GPG_ERR_EOF);
+      if ( (hd->flags & HTTP_FLAG_LOG_RESP) )
+        log_info ("RESP: `%.*s'\n",
+                  (int)strlen(line)-(*line&&line[1]?2:0),line);
     }
   while (!*line);
 
@@ -1138,6 +1227,9 @@ parse_response (http_t hd)
       /* Trim line endings of empty lines. */
       if ((*line == '\r' && line[1] == '\n') || *line == '\n')
 	*line = 0;
+      if ( (hd->flags & HTTP_FLAG_LOG_RESP) )
+        log_info ("RESP: `%.*s'\n",
+                  (int)strlen(line)-(*line&&line[1]?2:0),line);
     }
   while (len && *line);
 
@@ -1603,7 +1695,7 @@ main (int argc, char **argv)
   int rc;
   parsed_uri_t uri;
   uri_tuple_t r;
-  struct http_context_s hd;
+  http_t hd;
   int c;
   gnutls_session_t tls_session = NULL;
 #ifdef HTTP_USE_GNUTLS
@@ -1706,10 +1798,11 @@ main (int argc, char **argv)
       log_error ("can't get `%s': %s\n", *argv, gpg_strerror (rc));
       return 1;
     }
-  log_info ("open_http_document succeeded; status=%u\n", hd.status_code);
-  while ((c = P_ES(getc) (hd.fp_read)) != EOF)
+  log_info ("open_http_document succeeded; status=%u\n",
+            http_get_status_code (hd));
+  while ((c = P_ES(getc) (http_get_read_ptr (hd))) != EOF)
     putchar (c);
-  http_close (&hd, 0);
+  http_close (hd, 0);
 
 #ifdef HTTP_USE_GNUTLS
   gnutls_deinit (tls_session);

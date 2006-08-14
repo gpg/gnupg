@@ -184,6 +184,10 @@ int es_fputs (const char *ES__RESTRICT s, estream_t ES__RESTRICT stream);
 ssize_t es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr,
 		    size_t *ES__RESTRICT n,
 		    estream_t stream);
+ssize_t es_read_line (estream_t stream, 
+                      char **addr_of_buffer, size_t *length_of_buffer,
+                      size_t *max_length);
+void es_free (void *a);
 
 int es_fprintf (estream_t ES__RESTRICT stream,
 		const char *ES__RESTRICT format, ...);

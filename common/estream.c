@@ -1,5 +1,5 @@
-/* estream.c - Extended stream I/O/ Library
- * Copyright (C) 2004 g10 Code GmbH
+/* estream.c - Extended Stream I/O Library
+ * Copyright (C) 2004, 2006 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -1501,9 +1501,9 @@ es_skip (estream_t stream, size_t size)
 
 
 static int
-es_read_line (estream_t ES__RESTRICT stream, size_t max_length,
-	      char *ES__RESTRICT *ES__RESTRICT line,
-	      size_t *ES__RESTRICT line_length)
+doreadline (estream_t ES__RESTRICT stream, size_t max_length,
+             char *ES__RESTRICT *ES__RESTRICT line,
+             size_t *ES__RESTRICT line_length)
 {
   size_t space_left;
   size_t line_size;
@@ -2386,7 +2386,7 @@ es_fgets (char *ES__RESTRICT s, int n, estream_t ES__RESTRICT stream)
       int err;
       
       ESTREAM_LOCK (stream);
-      err = es_read_line (stream, n, &s, NULL);
+      err = doreadline (stream, n, &s, NULL);
       ESTREAM_UNLOCK (stream);
       if (! err)
 	ret = s;
@@ -2420,7 +2420,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
   int err;
 
   ESTREAM_LOCK (stream);
-  err = es_read_line (stream, 0, &line, &line_n);
+  err = doreadline (stream, 0, &line, &line_n);
   ESTREAM_UNLOCK (stream);
   if (err)
     goto out;
@@ -2463,6 +2463,129 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
  out:
 
   return err ? err : line_n;
+}
+
+
+
+/* Same as fgets() but if the provided buffer is too short a larger
+   one will be allocated.  This is similar to getline. A line is
+   considered a byte stream ending in a LF.
+
+   If MAX_LENGTH is not NULL, it shall point to a value with the
+   maximum allowed allocation.  
+
+   Returns the length of the line. EOF is indicated by a line of
+   length zero. A truncated line is indicated my setting the value at
+   MAX_LENGTH to 0.  If the returned value is less then 0 not enough
+   memory was enable or another error occurred; ERRNO is then set
+   accordingly.
+
+   If a line has been truncated, the file pointer is moved forward to
+   the end of the line so that the next read starts with the next
+   line.  Note that MAX_LENGTH must be re-initialzied in this case.
+
+   The caller initially needs to provide the address of a variable,
+   initialized to NULL, at ADDR_OF_BUFFER and don't change this value
+   anymore with the following invocations.  LENGTH_OF_BUFFER should be
+   the address of a variable, initialized to 0, which is also
+   maintained by this function.  Thus, both paramaters should be
+   considered the state of this function.
+
+   Note: The returned buffer is allocated with enough extra space to
+   allow the caller to append a CR,LF,Nul.  The buffer should be
+   released using es_free.
+ */
+ssize_t
+es_read_line (estream_t stream, 
+              char **addr_of_buffer, size_t *length_of_buffer,
+              size_t *max_length)
+{
+  int c;
+  char  *buffer = *addr_of_buffer;
+  size_t length = *length_of_buffer;
+  size_t nbytes = 0;
+  size_t maxlen = max_length? *max_length : 0;
+  char *p;
+
+  if (!buffer)
+    { 
+      /* No buffer given - allocate a new one. */
+      length = 256;
+      buffer = MEM_ALLOC (length);
+      *addr_of_buffer = buffer;
+      if (!buffer)
+        {
+          *length_of_buffer = 0;
+          if (max_length)
+            *max_length = 0;
+          return -1;
+        }
+      *length_of_buffer = length;
+    }
+
+  if (length < 4)
+    {
+      /* This should never happen. If it does, the fucntion has been
+         called with wrong arguments. */
+      errno = EINVAL;
+      return -1;
+    }
+  length -= 3; /* Reserve 3 bytes for CR,LF,EOL. */
+
+  ESTREAM_LOCK (stream);
+  p = buffer;
+  while  ((c = es_getc_unlocked (stream)) != EOF)
+    {
+      if (nbytes == length)
+        { 
+          /* Enlarge the buffer. */
+          if (maxlen && length > maxlen) 
+            {
+              /* We are beyond our limit: Skip the rest of the line. */
+              while (c != '\n' && (c=es_getc_unlocked (stream)) != EOF)
+                ;
+              *p++ = '\n'; /* Always append a LF (we reserved some space). */
+              nbytes++;
+              if (max_length)
+                *max_length = 0; /* Indicate truncation. */
+              break; /* the while loop. */
+            }
+          length += 3; /* Adjust for the reserved bytes. */
+          length += length < 1024? 256 : 1024;
+          *addr_of_buffer = MEM_REALLOC (buffer, length);
+          if (!*addr_of_buffer)
+            {
+              int save_errno = errno;
+              MEM_FREE (buffer); 
+              *length_of_buffer = *max_length = 0;
+              ESTREAM_UNLOCK (stream);
+              errno = save_errno;
+              return -1;
+            }
+          buffer = *addr_of_buffer;
+          *length_of_buffer = length;
+          length -= 3; 
+          p = buffer + nbytes;
+	}
+      *p++ = c;
+      nbytes++;
+      if (c == '\n')
+        break;
+    }
+  *p = 0; /* Make sure the line is a string. */
+  ESTREAM_UNLOCK (stream);
+
+  return nbytes;
+}
+
+/* Wrapper around free() to match the memory allocation system used
+   by estream.  Should be used for all buffers returned to the caller
+   by libestream. */
+void
+es_free (void *a)
+{
+  if (a)
+    MEM_FREE (a);
 }
 
 
@@ -2616,3 +2739,4 @@ es_opaque_get (estream_t stream)
 
   return opaque;
 }
+

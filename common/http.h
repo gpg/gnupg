@@ -65,31 +65,11 @@ enum
   { 
     HTTP_FLAG_TRY_PROXY = 1,
     HTTP_FLAG_NO_SHUTDOWN = 2,
-    HTTP_FLAG_TRY_SRV = 4
+    HTTP_FLAG_TRY_SRV = 4,
+    HTTP_FLAG_LOG_RESP = 8
   };
 
-struct http_context_s 
-{
-  int initialized;
-  unsigned int status_code;
-  int sock;
-  int in_data;
-#ifdef HTTP_USE_ESTREAM
-  estream_t fp_read;
-  estream_t fp_write;
-  void *write_cookie;
-#else /*!HTTP_USE_ESTREAM*/
-  FILE *fp_read;
-  FILE *fp_write;
-#endif /*!HTTP_USE_ESTREAM*/
-  void *tls_context;
-  int is_http_0_9;
-  parsed_uri_t uri;
-  http_req_t req_type;
-  char *buffer;          /* Line buffer. */
-  size_t buffer_size;
-  unsigned int flags;
-};
+struct http_context_s;
 typedef struct http_context_s *http_t;
 
 void http_register_tls_callback (gpg_error_t (*cb) (http_t, void *, int));
@@ -98,7 +78,7 @@ gpg_error_t http_parse_uri (parsed_uri_t *ret_uri, const char *uri);
 
 void http_release_parsed_uri (parsed_uri_t uri);
 
-gpg_error_t http_open (http_t hd, http_req_t reqtype,
+gpg_error_t http_open (http_t *r_hd, http_req_t reqtype,
                        const char *url,
                        const char *auth,
                        unsigned int flags,
@@ -107,15 +87,27 @@ gpg_error_t http_open (http_t hd, http_req_t reqtype,
 
 void http_start_data (http_t hd);
 
-gpg_error_t http_wait_response (http_t hd, unsigned int *ret_status);
+gpg_error_t http_wait_response (http_t hd);
 
 void http_close (http_t hd, int keep_read_stream);
 
-gpg_error_t http_open_document (http_t hd,
+gpg_error_t http_open_document (http_t *r_hd,
                                 const char *document,
                                 const char *auth,
                                 unsigned int flags,
                                 const char *proxy,
                                 void *tls_context);
+
+#ifdef HTTP_USE_ESTREAM
+estream_t http_get_read_ptr (http_t hd);
+estream_t http_get_write_ptr (http_t hd);
+#else /*!HTTP_USE_ESTREAM*/
+FILE *http_get_read_ptr (http_t hd);
+FILE *http_get_write_ptr (http_t hd);
+#endif /*!HTTP_USE_ESTREAM*/
+unsigned int http_get_status_code (http_t hd);
+
+char *http_escape_string (const char *string, const char *specials);
+
 
 #endif /*GNUPG_COMMON_HTTP_H*/
