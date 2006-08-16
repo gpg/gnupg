@@ -37,6 +37,7 @@
 #include "main.h"
 #include "i18n.h"
 #include "pkglue.h"
+#include "call-agent.h"
 
 
 static int get_it( PKT_pubkey_enc *k,

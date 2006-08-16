@@ -35,8 +35,7 @@ endif
 
 if BUILD_GPG
 gpg = g10
-# fixme: Noy yet ready for a build
-keyserver = 
+keyserver = keyserver
 else
 gpg =
 keyserver = 

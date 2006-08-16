@@ -119,3 +119,9 @@ might want to have an agent context for each service request
   Add completion support.
 ** yesno
   Update to gpg 1.4.3 version
+
+
+what about gnupg_use_iconv?  
+Extend selinux support to other modules
+Does the check for Linux capabilities still makes sense?
+

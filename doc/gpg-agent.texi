@@ -430,7 +430,7 @@ agent. By default they may all be found in the current home directory
   hash mark, as well as empty lines are ignored.  To mark a key as trusted
   you need to enter its fingerprint followed by a space and a capital
   letter @code{S}.  Colons may optionally be used to separate the bytes of
-  a fingerprint; this allows to cut and paste the fingeperint from a key
+  a fingerprint; this allows to cut and paste the fingerprint from a key
   listing output.
   
   Here is an example where two keys are marked as ultimately trusted:

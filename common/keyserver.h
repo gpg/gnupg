@@ -1,4 +1,4 @@
-/* keyserver.h
+/* keyserver.h - Public definitions for gpg keyserver helpers.
  * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -19,8 +19,8 @@
  * USA.
  */
 
-#ifndef _KEYSERVER_H_
-#define _KEYSERVER_H_
+#ifndef GNUPG_COMMON_KEYSERVER_H
+#define GNUPG_COMMON_KEYSERVER_H
 
 #define KEYSERVER_PROTO_VERSION    1
 
@@ -41,4 +41,4 @@
 /* Must be 127 due to shell internal magic. */
 #define KEYSERVER_SCHEME_NOT_FOUND 127
 
-#endif /* !_KEYSERVER_H_ */
+#endif /*GNUPG_COMMON_KEYSERVER_H*/

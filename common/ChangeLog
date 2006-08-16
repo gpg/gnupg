@@ -1,3 +1,11 @@
+2006-08-16  Werner Koch  <wk@g10code.com>
+
+	* keyserver.h: Moved from ../include to here.
+
+	* http.c: Include srv.h.
+
+	* srv.c, srv.h: New. Taken from GnuPG 1.4
+
 2006-08-14  Werner Koch  <wk@g10code.com>
 
 	* http.h (struct http_context_s): Moved to implementation.

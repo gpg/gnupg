@@ -82,6 +82,10 @@ int agent_scd_setattr (const char *name,
                        const unsigned char *value, size_t valuelen,
                        const char *serialno);
 
+/* Send a WRITEKEY command to the SCdaemon. */
+int agent_scd_writekey (int keyno, const char *serialno,
+                        const unsigned char *keydata, size_t keydatalen);
+
 /* Send a GENKEY command to the SCdaemon. */
 int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
                       const char *serialno);
@@ -89,12 +93,12 @@ int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
 /* Send a PKSIGN command to the SCdaemon. */
 int agent_scd_pksign (const char *keyid, int hashalgo,
                       const unsigned char *indata, size_t indatalen,
-                      char **r_buf, size_t *r_buflen);
+                      unsigned char **r_buf, size_t *r_buflen);
 
 /* Send a PKDECRYPT command to the SCdaemon. */
 int agent_scd_pkdecrypt (const char *serialno,
                          const unsigned char *indata, size_t indatalen,
-                         char **r_buf, size_t *r_buflen);
+                         unsigned char **r_buf, size_t *r_buflen);
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
 int agent_scd_change_pin (int chvno, const char *serialno);

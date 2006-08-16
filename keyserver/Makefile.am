@@ -18,36 +18,47 @@
 
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
-EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp gpgkeys_finger gpgkeys_curl
-EXTRA_SCRIPTS = gpgkeys_mailto
+EXTRA_PROGRAMS = gpg2keys_ldap gpg2keys_hkp gpg2keys_finger gpg2keys_curl
+EXTRA_SCRIPTS = gpg2keys_mailto
 
-gpglibexecdir = $(libexecdir)/@PACKAGE@
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl 
 
-gpglibexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_FINGER@ @GPGKEYS_CURL@
-gpglibexec_SCRIPTS = @GPGKEYS_MAILTO@
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
+
+include $(top_srcdir)/am/cmacros.am
+
+libexec_PROGRAMS = $(GPGKEYS_LDAP) $(GPGKEYS_HKP) $(GPGKEYS_FINGER) \
+                   $(GPGKEYS_CURL)
+libexec_SCRIPTS = $(GPGKEYS_MAILTO)
 noinst_SCRIPTS = gpgkeys_test
 
-gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h
-gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h
-gpgkeys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h
-gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
-
+needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
-gpgkeys_ldap_CPPFLAGS = @LDAP_CPPFLAGS@
-gpgkeys_ldap_LDADD = ../util/libutil.a @LDAPLIBS@ @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+gpg2keys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h
+gpg2keys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h
+gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h
+gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
 
-gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+
+gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
+gpg2keys_ldap_LDADD = $(needed_libs) $(LDAPLIBS) $(NETLIBS) \
+                      $(other_libs) $(W32LIBS)
+
+gpg2keys_finger_LDADD = $(needed_libs) $(LIBGCRYPT_LIBS) \
+                        $(NETLIBS) $(other_libs) $(W32LIBS)
 
 if FAKE_CURL
-gpgkeys_curl_SOURCES += curl-shim.c curl-shim.h
-gpgkeys_curl_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
-gpgkeys_hkp_SOURCES += curl-shim.c curl-shim.h
-gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+gpg2keys_curl_SOURCES += curl-shim.c curl-shim.h
+gpg2keys_curl_LDADD = $(needed_libs) $(NETLIBS) $(DNSLIBS) \
+	              $(other_libs) $(W32LIBS)
+gpg2keys_hkp_SOURCES += curl-shim.c curl-shim.h
+gpg2keys_hkp_LDADD = $(needed_libs) $(NETLIBS) $(DNSLIBS) \
+	             $(other_libs) $(W32LIBS)
 else
-gpgkeys_curl_CPPFLAGS = @LIBCURL_CPPFLAGS@
-gpgkeys_curl_LDADD = @LIBCURL@ @GETOPT@
-gpgkeys_hkp_CPPFLAGS = @LIBCURL_CPPFLAGS@
-gpgkeys_hkp_LDADD = @LIBCURL@ @GETOPT@
+gpg2keys_curl_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)
+gpg2keys_curl_LDADD = $(LIBCURL) $(GETOPT)
+gpg2keys_hkp_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)
+gpg2keys_hkp_LDADD = $(LIBCURL) $(GETOPT)
 endif
+

@@ -65,7 +65,7 @@ if test x$_ldap_with != xno ; then
     if test "$gnupg_cv_func_ldap_init" = yes || \
         test "$gnupg_cv_func_ldaplber_init" = yes ; then
        LDAPLIBS="$LDAP_LDFLAGS $MY_LDAPLIBS"
-       GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
+       GPGKEYS_LDAP="gpg2keys_ldap$EXEEXT"
 
        AC_CHECK_FUNCS(ldap_get_option ldap_set_option ldap_start_tls_s)
 

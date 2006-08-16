@@ -1434,7 +1434,9 @@ list_config(char *items)
 
       if(show_all || ascii_strcasecmp(name,"ccid-reader-id")==0)
 	{
-#if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
+#if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB) \
+    && GNUPG_MAJOR_VERSION == 1
+
           char *p, *p2, *list = ccid_get_reader_list ();
 
           for (p=list; p && (p2 = strchr (p, '\n')); p = p2+1)
@@ -3871,10 +3873,6 @@ emergency_cleanup (void)
 void
 g10_exit( int rc )
 {
-#ifdef ENABLE_CARD_SUPPORT
-  card_close ();
-#endif
-
   gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
   if ( (opt.debug & DBG_MEMSTAT_VALUE) )
     {

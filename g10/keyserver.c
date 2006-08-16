@@ -941,7 +941,11 @@ direct_uri_map(const char *scheme,unsigned int is_direct)
   return 0;
 }
 
+#if GNUPG_MAJOR_VERSION == 2
+#define GPGKEYS_PREFIX "gpg2keys_"
+#else
 #define GPGKEYS_PREFIX "gpgkeys_"
+#endif
 #define GPGKEYS_CURL GPGKEYS_PREFIX "curl" EXEEXT
 #define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_CURL))
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""

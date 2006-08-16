@@ -467,7 +467,7 @@ proc_parameters (ctrl_t ctrl,
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
   
-  /* check the keylength */
+  /* Check the keylength. */
   if (!get_parameter (para, pKEYLENGTH, 0))
     nbits = 1024;
   else
@@ -481,7 +481,7 @@ proc_parameters (ctrl_t ctrl,
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
     
-  /* check the usage */
+  /* Check the usage. */
   if (parse_parameter_usage (para, pKEYUSAGE))
     return gpg_error (GPG_ERR_INV_PARAMETER);
 
@@ -493,7 +493,6 @@ proc_parameters (ctrl_t ctrl,
       log_error (_("line %d: no subject name given\n"), r->lnr);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
-#if HAVE_KSBA_DN_TESTSTR
   err = ksba_dn_teststr (s, 0, &erroff, &errlen);
   if (err)
     {
@@ -507,7 +506,6 @@ proc_parameters (ctrl_t ctrl,
 
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
-#endif /*HAVE_KSBA_DN_TESTSTR*/
 
   /* Check that the optional email address is okay. */
   for (seq=0; (s=get_parameter_value (para, pNAMEEMAIL, seq)); seq++)

@@ -1,3 +1,20 @@
+2006-08-16  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Renamed all binaries to gpg2keys_*.
+	(gpg2keys_ldap_CPPFLAGS): Add AM_CPPFLAGS.
+
+2006-08-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Adjusted to the gnupg2 framework.
+
+2006-08-14  Werner Koch  <wk@g10code.com>
+
+	* curl-shil.c, curl-shim.h: Changed to make use of the new http.c
+	API.
+
+	* curl-shim.c (curl_easy_perform): Add missing http_close to the
+	POST case.
+
 2006-07-24  David Shaw  <dshaw@jabberwocky.com>  (wk)
 
 	* curl-shim.c (curl_easy_perform): Minor cleanup of proxy code.

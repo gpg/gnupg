@@ -812,3 +812,28 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
   *ret_len = len;
   return array;
 }
+
+
+/* Create a serialno/fpr string from the serial number and the secret
+   key.  Caller must free the returned string.  There is no error
+   return.  */
+char *
+serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
+                          PKT_secret_key *sk)
+{
+  unsigned char fpr[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
+  char *buffer, *p;
+  int i;
+  
+  fingerprint_from_sk (sk, fpr, &fprlen);
+  buffer = p = xmalloc (snlen*2 + 1 + fprlen*2 + 1);
+  for (i=0; i < snlen; i++, p+=2)
+    sprintf (p, "%02X", sn[i]);
+  *p++ = '/';
+  for (i=0; i < fprlen; i++, p+=2)
+    sprintf (p, "%02X", fpr[i]);
+  *p = 0;
+  return buffer;
+}
+

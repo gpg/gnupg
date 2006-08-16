@@ -1,3 +1,21 @@
+2006-08-16  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c (GPGKEYS_PREFIX): Rename to gpg2keys_.  This is so
+	that we can install helpers from 1.4 and 2 without conflicts and
+	first of all don't get lost with weird bug reports.
+
+	* keyid.c (serialno_and_fpr_from_sk): New. Actually lost during
+	the last 1.4 to 1.9 merge.
+
+	* gpg.c (list_config): Output ccid-reader-id only for gnupg 1.
+
+	* call-agent.c (agent_scd_writekey): New.
+	(inq_writekey_parms): New.
+
+	* gpgv.c: Include call-agent.h for use by stubs.
+
+	* misc.c: Include call-agent.h for use by get_signature_count.
+
 2006-07-27  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (parse_comment): Cap comments at 65k.

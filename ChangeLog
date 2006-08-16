@@ -1,3 +1,10 @@
+2006-08-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (keyserver): Enable building of keyserver helpers.
+
+	* configure.ac: Merged with the current configure from 1.4.5.
+	Require libgpg-error 1.2 and libksba 0.9.16.
+
 2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* README: Spelling fixes.

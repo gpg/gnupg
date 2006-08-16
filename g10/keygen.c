@@ -2921,6 +2921,7 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
   PKT_secret_key *sk = NULL;
   int i;
   size_t nskey, npkey;
+  gcry_sexp_t s_parms, s_key;
 
   npkey = pubkey_get_npkey (algo);
   nskey = pubkey_get_nskey (algo);
@@ -3613,8 +3614,8 @@ gen_card_key (int algo, int keyno, int is_primary,
   if ( !info.n || !info.e )
     {
       log_error ("communication error with SCD\n");
-      mpi_free (info.n);
-      mpi_free (info.e);
+      gcry_mpi_release (info.n);
+      gcry_mpi_release (info.e);
       return gpg_error (GPG_ERR_GENERAL);
     }
   
@@ -3672,7 +3673,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
   int rc;
   const char *s;
   PACKET *pkt;
-  PKT_secret_key *sk, *sk_unprotected, *sk_protected;
+  PKT_secret_key *sk, *sk_unprotected = NULL, *sk_protected = NULL;
   PKT_public_key *pk;
   size_t n;
   int i;
@@ -3697,7 +3698,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
   n = pubkey_get_nskey (sk->pubkey_algo);
   for (i=pubkey_get_npkey (sk->pubkey_algo); i < n; i++)
     {
-      mpi_free (sk->skey[i]);
+      gcry_mpi_release (sk->skey[i]);
       sk->skey[i] = NULL;
     }
   i = pubkey_get_npkey (sk->pubkey_algo);
@@ -3733,12 +3734,13 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
     umask (oldmask);
     if (!fp) 
       {
+        rc = gpg_error_from_errno (errno);
 	log_error (_("can't create backup file `%s': %s\n"),
                    fname, strerror(errno) );
         xfree (fname);
         free_secret_key (sk_unprotected);
         free_secret_key (sk_protected);
-        return G10ERR_OPEN_FILE;
+        return rc;
       }
 
     pkt = xcalloc (1, sizeof *pkt);
@@ -3754,7 +3756,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
       }
     else
       {
-        byte array[MAX_FINGERPRINT_LEN];
+        unsigned char array[MAX_FINGERPRINT_LEN];
         char *fprbuf, *p;
        
         iobuf_close (fp);
@@ -3831,11 +3833,11 @@ save_unprotected_key_to_card (PKT_secret_key *sk, int keyno)
   assert (!sk->is_protected);
 
   /* Copy the parameters into straight buffers. */
-  rsa_n = mpi_get_secure_buffer (sk->skey[0], &rsa_n_len, NULL);
-  rsa_e = mpi_get_secure_buffer (sk->skey[1], &rsa_e_len, NULL);
-  rsa_p = mpi_get_secure_buffer (sk->skey[3], &rsa_p_len, NULL);
-  rsa_q = mpi_get_secure_buffer (sk->skey[4], &rsa_q_len, NULL);
-  if (!rsa_n || !rsa_e || !rsa_p || !rsa_q)
+  gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_n, &rsa_n_len, sk->skey[0]);
+  gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_e, &rsa_e_len, sk->skey[1]);
+  gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_p, &rsa_p_len, sk->skey[2]);
+  gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_q, &rsa_q_len, sk->skey[3]);
+   if (!rsa_n || !rsa_e || !rsa_p || !rsa_q)
     {
       rc = G10ERR_INV_ARG;
       goto leave;

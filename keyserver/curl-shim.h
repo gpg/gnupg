@@ -73,7 +73,7 @@ typedef struct
     unsigned int failonerror:1;
     unsigned int verbose:1;
   } flags;
-  struct http_context hd;
+  http_t hd;
 } CURL;
 
 #define CURL_ERROR_SIZE 256

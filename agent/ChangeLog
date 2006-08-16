@@ -1,3 +1,9 @@
+2006-07-31  Werner Koch  <wk@g10code.com>
+
+	* preset-passphrase.c (make_hexstring): For conistency use
+	xtrymalloc and changed caller to use xfree.  Fixed function
+	comment.
+
 2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* preset-passphrase.c (preset_passphrase): Do not strip off last
@@ -23,7 +29,7 @@
 
 2006-06-26  Werner Koch  <wk@g10code.com>
 
-	* gpg-agent.c (handle_signal): Print infor for SIGUSR2 only in
+	* gpg-agent.c (handle_signal): Print info for SIGUSR2 only in
 	verbose mode.
 
 2006-06-22  Werner Koch  <wk@g10code.com>

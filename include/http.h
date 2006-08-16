@@ -23,6 +23,9 @@
 #ifndef G10_HTTP_H
 #define G10_HTTP_H 1
 
+#error this file should not be used anymore
+
+
 #include "../common/iobuf.h"
 
 struct uri_tuple {

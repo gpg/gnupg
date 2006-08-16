@@ -46,6 +46,7 @@
 #include "util.h"
 #include "keyserver.h"
 #include "ksutil.h"
+#include "iobuf.h"
 
 #ifdef _WIN32
 #define sock_close(a)  closesocket(a)
@@ -289,7 +290,7 @@ get_key (char *getkey)
 {
   int rc;
   int sock;
-  IOBUF fp_read;
+  iobuf_t fp_read;
   unsigned int maxlen, buflen, gotit=0;
   byte *line = NULL;
 

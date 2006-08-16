@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+
 #include "http.h"
 #include "util.h"
 #include "ksutil.h"
@@ -100,7 +101,11 @@ curl_easy_init(void)
 void
 curl_easy_cleanup(CURL *curl)
 {
-  free(curl);
+  if (curl)
+    {
+      http_close (curl->hd);
+      free(curl);
+    }
 }
 
 CURLcode
@@ -177,42 +182,46 @@ curl_easy_perform(CURL *curl)
 
   if(curl->flags.post)
     {
-      rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,curl->auth,0,proxy);
-      if(rc==0)
+      rc = http_open (&curl->hd, HTTP_REQ_POST, curl->url, curl->auth,
+                      0, proxy, NULL);
+      if (!rc)
 	{
-	  char content_len[50];
-	  unsigned int post_len=strlen(curl->postfields);
+	  unsigned int post_len = strlen(curl->postfields);
 
-	  iobuf_writestr(curl->hd.fp_write,
-			 "Content-Type: application/x-www-form-urlencoded\r\n");
-	  sprintf(content_len,"Content-Length: %u\r\n",post_len);
+	  es_fprintf (http_get_write_ptr (curl->hd),
+                      "Content-Type: application/x-www-form-urlencoded\r\n"
+                      "Content-Length: %u\r\n", post_len);
+	  http_start_data (curl->hd);
+	  es_write (http_get_write_ptr (curl->hd),
+                    curl->postfields, post_len, NULL);
 
-	  iobuf_writestr(curl->hd.fp_write,content_len);
-
-	  http_start_data(&curl->hd);
-	  iobuf_write(curl->hd.fp_write,curl->postfields,post_len);
-	  rc=http_wait_response(&curl->hd,&curl->status);
-	  if(rc==0 && curl->flags.failonerror && curl->status>=300)
-	    err=CURLE_HTTP_RETURNED_ERROR;
+	  rc = http_wait_response (curl->hd);
+          curl->status = http_get_status_code (curl->hd);
+	  if (!rc && curl->flags.failonerror && curl->status>=300)
+	    err = CURLE_HTTP_RETURNED_ERROR;
+          http_close(curl->hd);
+          curl->hd = NULL;
 	}
     }
   else
     {
-      rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,curl->auth,0,proxy);
-      if(rc==0)
+      rc = http_open (&curl->hd, HTTP_REQ_GET, curl->url, curl->auth,
+                      0, proxy, NULL);
+      if (!rc)
 	{
-	  rc=http_wait_response(&curl->hd,&curl->status);
-	  if(rc==0)
+	  rc = http_wait_response (curl->hd);
+          curl->status = http_get_status_code (curl->hd);
+	  if (!rc)
 	    {
-	      if(curl->flags.failonerror && curl->status>=300)
-		err=CURLE_HTTP_RETURNED_ERROR;
+	      if (curl->flags.failonerror && curl->status>=300)
+		err = CURLE_HTTP_RETURNED_ERROR;
 	      else
 		{
-		  unsigned int maxlen=1024,buflen,len;
-		  byte *line=NULL;
+		  unsigned int maxlen = 1024, buflen, len;
+		  unsigned char *line = NULL;
 
-		  while((len=iobuf_read_line(curl->hd.fp_read,
-					     &line,&buflen,&maxlen)))
+		  while ((len = es_read_line (http_get_read_ptr (curl->hd),
+                                              &line, &buflen, &maxlen)))
 		    {
 		      size_t ret;
 
@@ -226,12 +235,16 @@ curl_easy_perform(CURL *curl)
 			}
 		    }
 
-		  xfree(line);
-		  http_close(&curl->hd);
+		  es_free (line);
+		  http_close(curl->hd);
+                  curl->hd = NULL;
 		}
 	    }
 	  else
-	    http_close(&curl->hd);
+            {
+              http_close (curl->hd);
+              curl->hd = NULL;
+            }
 	}
     }
 

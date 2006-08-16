@@ -152,8 +152,8 @@ map_spwq_error (int err)
 }
 
       
-/* Percent-Escape special characters.  The string is valid until the
-   next invocation of the function.  */
+/* Convert the string SRC into HEX encoding.  Caller needs to xfree
+   the returned string.  */
 static char *
 make_hexstring (const char *src)
 {
@@ -161,7 +161,7 @@ make_hexstring (const char *src)
   char *dst;
   char *res;
 
-  res = dst = malloc (len);
+  res = dst = xtrymalloc (len);
   if (!dst)
     {
       log_error ("can not escape string: %s\n",
@@ -225,7 +225,7 @@ preset_passphrase (const char *keygrip)
   rc = asprintf (&line, "PRESET_PASSPHRASE %s -1 %s\n", keygrip,
 		 passphrase_esc);
   wipememory (passphrase_esc, strlen (passphrase_esc));
-  free (passphrase_esc);
+  xfree (passphrase_esc);
 
   if (rc < 0)
     {

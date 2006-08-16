@@ -49,6 +49,7 @@
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
+#include "call-agent.h"
 
 
 enum cmd_and_opt_values { aNull = 0,

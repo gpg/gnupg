@@ -1,5 +1,5 @@
 /* call-agent.c - divert operations to the agent
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -47,17 +47,26 @@
 # define DBG_ASSUAN 1
 #endif
 
-static ASSUAN_CONTEXT agent_ctx = NULL;
+static assuan_context_t agent_ctx = NULL;
 static int force_pipe_server = 1; /* FIXME: set this back to 0. */
 
-struct cipher_parm_s {
-  ASSUAN_CONTEXT ctx;
+struct cipher_parm_s 
+{
+  assuan_context_t ctx;
   const char *ciphertext;
   size_t ciphertextlen;
 };
 
-struct genkey_parm_s {
-  ASSUAN_CONTEXT ctx;
+struct writekey_parm_s
+{
+  assuan_context_t ctx;
+  const unsigned char *keydata;
+  size_t keydatalen;
+};
+
+struct genkey_parm_s 
+{
+  assuan_context_t ctx;
   const char *sexp;
   size_t sexplen;
 };
@@ -672,6 +681,48 @@ agent_scd_setattr (const char *name,
   return map_assuan_err (rc);
 }
 
+
+
+/* Handle a KEYDATA inquiry.  Note, we only send the data,
+   assuan_transact takes care of flushing and writing the end */
+static assuan_error_t
+inq_writekey_parms (void *opaque, const char *keyword)
+{
+  struct writekey_parm_s *parm = opaque; 
+
+  return assuan_send_data (parm->ctx, parm->keydata, parm->keydatalen);
+}
+
+
+/* Send a WRITEKEY command to the SCdaemon. */
+int 
+agent_scd_writekey (int keyno, const char *serialno,
+                    const unsigned char *keydata, size_t keydatalen)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  struct writekey_parm_s parms;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  memset (&parms, 0, sizeof parms);
+
+  snprintf (line, DIM(line)-1, "SCD WRITEKEY --force OPENPGP.%d", keyno);
+  line[DIM(line)-1] = 0;
+  parms.ctx = agent_ctx;
+  parms.keydata = keydata;
+  parms.keydatalen = keydatalen;
+  
+  rc = assuan_transact (agent_ctx, line, NULL, NULL,
+                        inq_writekey_parms, &parms, NULL, NULL);
+
+  return map_assuan_err (rc);
+}
+
+
+
 
 /* Status callback for the SCD GENKEY command. */
 static AssuanError
@@ -765,7 +816,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 int
 agent_scd_pksign (const char *serialno, int hashalgo,
                   const unsigned char *indata, size_t indatalen,
-                  char **r_buf, size_t *r_buflen)
+                  unsigned char **r_buf, size_t *r_buflen)
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];
@@ -822,7 +873,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
 int
 agent_scd_pkdecrypt (const char *serialno,
                      const unsigned char *indata, size_t indatalen,
-                     char **r_buf, size_t *r_buflen)
+                     unsigned char **r_buf, size_t *r_buflen)
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];

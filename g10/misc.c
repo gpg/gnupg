@@ -64,6 +64,7 @@
 #include "main.h"
 #include "photoid.h"
 #include "options.h"
+#include "call-agent.h"
 #include "i18n.h"
 
 
@@ -490,7 +491,9 @@ idea_cipher_warn(int show)
 }
 #endif
 
-static unsigned long get_signature_count(PKT_secret_key *sk)
+
+static unsigned long 
+get_signature_count (PKT_secret_key *sk)
 {
 #ifdef ENABLE_CARD_SUPPORT
   if(sk && sk->is_protected && sk->protect.s2k.mode==1002)

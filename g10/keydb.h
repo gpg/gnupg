@@ -292,6 +292,8 @@ const char *colon_datestr_from_sig (PKT_signature *sig);
 const char *colon_expirestr_from_sig (PKT_signature *sig);
 byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf, size_t *ret_len );
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
+char *serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
+                                PKT_secret_key *sk);
 
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );

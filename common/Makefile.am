@@ -51,6 +51,7 @@ libcommon_a_SOURCES = \
 	signal.c \
 	dynload.h \
 	estream.c estream.h \
+	srv.c srv.h \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \
 	http.c http.h 

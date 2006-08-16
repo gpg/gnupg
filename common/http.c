@@ -67,10 +67,11 @@ typedef gnutls_transport_ptr gnutls_transport_ptr_t;
 
 #include "util.h"
 #include "http.h"
-
+#ifdef USE_DNS_SRV
+#include "srv.h"
+#else /*!USE_DNS_SRV*/
 /* If we are not compiling with SRV record support we provide stub
    data structures. */
-#ifndef USE_DNS_SRV
 #ifndef MAXDNAME
 #define MAXDNAME 1025
 #endif
@@ -1366,7 +1367,7 @@ connect_server (const char *server, unsigned short port,
 	{
 	  char srvname[MAXDNAME];
 
-	  stprcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srvtag),
+	  stpcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srvtag),
                            "._tcp."), server);
 	  srvcount = getsrv (srvname, &serverlist);
 	}
