@@ -37,15 +37,15 @@ Developer information:
 @section Commands
 
 Commands are not distinguished from options execpt for the fact that
-only one one command is allowed.
+only one command is allowed.
 
 @menu
-* General Commands::        Commands not specific to the functionality.
-* Operational Commands::    Commands to select the type of operation.
-* Certificate Management::  How to manage certificates.
+* General GPGSM Commands::        Commands not specific to the functionality.
+* Operational GPGSM Commands::    Commands to select the type of operation.
+* Certificate Management::        How to manage certificates.
 @end menu
 
-@node General Commands
+@node General GPGSM Commands
 @subsection Commands not specific to the function
 
 @table @gnupgtabopt
@@ -67,7 +67,7 @@ abbreviate this command.
 
 
 
-@node Operational Commands
+@node Operational GPGSM Commands
 @subsection Commands to select the type of operation
 
 @table @gnupgtabopt
