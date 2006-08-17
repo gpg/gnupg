@@ -8,17 +8,35 @@
 @cindex command options
 @cindex options, GPGSM command
 
-@c man begin DESCRIPTION
+@manpage gpgsm.1
+@ifset manverb
+.B gpgsm
+.R \- CMS encryption and signing tool
+@end ifset
 
+@mansect synopsis
+@ifset manverb
+.B  gpgsm
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.I command
+.RI [ args ]
+@end ifset
+
+
+@mansect description
 @command{gpgsm} is a tool similar to @command{gpg} to provide digital
 encryption and signing servicesd on X.509 certificates and the CMS
 protocol.  It is mainly used as a backend for S/MIME mail processing.
 @command{gpgsm} includes a full features certificate management and
 complies with all rules defined for the German Sphinx project.
 
-@c man end
-
+@manpause
 @xref{Option Index}, for an index to @command{GPGSM}'s commands and options.
+@mancont
 
 @menu
 * GPGSM Commands::        List of all commands.
@@ -31,8 +49,12 @@ Developer information:
 * GPGSM Protocol::        The protocol the server mode uses.
 @end menu
 
-@c man begin COMMANDS
-
+@c *******************************************
+@c ***************            ****************
+@c ***************  COMMANDS  ****************
+@c ***************            ****************
+@c *******************************************
+@mansect commands
 @node GPGSM Commands
 @section Commands
 
@@ -45,6 +67,10 @@ only one command is allowed.
 * Certificate Management::        How to manage certificates.
 @end menu
 
+
+@c *******************************************
+@c **********  GENERAL COMMANDS  *************
+@c *******************************************
 @node General GPGSM Commands
 @subsection Commands not specific to the function
 
@@ -59,6 +85,10 @@ abbreviate this command.
 Print a usage message summarizing the most usefule command-line options.
 Not that you can abbreviate this command.
 
+@item --warranty
+@opindex warranty
+Print warranty information.
+
 @item --dump-options
 @opindex dump-options
 Print a list of all available options and commands.  Not that you can
@@ -66,7 +96,9 @@ abbreviate this command.
 @end table
 
 
-
+@c *******************************************
+@c ********  OPERATIONAL COMMANDS  ***********
+@c *******************************************
 @node Operational GPGSM Commands
 @subsection Commands to select the type of operation
 
@@ -122,8 +154,11 @@ use @samp{--help} to get a list of supported operations.
 @end table
 
 
+@c *******************************************
+@c *******  CERTIFICATE MANAGEMENT  **********
+@c *******************************************
 @node Certificate Management
-@subsection How to manage the certificate and keys
+@subsection How to manage the certificates and keys
 
 @table @gnupgtabopt
 @item --gen-key
@@ -200,8 +235,8 @@ secret key from a PKCS#12 file.
 @item --learn-card
 @opindex learn-card
 Read information about the private keys from the smartcard and import
-the certificates from there.  This command utilizes the @sc{gpg-agent}
-and in turn the @sc{scdaemon}.
+the certificates from there.  This command utilizes the @command{gpg-agent}
+and in turn the @command{scdaemon}.
 
 @item --passwd @var{user_id}
 @opindex passwd
@@ -212,6 +247,12 @@ smartcard is not yet supported.
 @end table
 
 
+@c *******************************************
+@c ***************            ****************
+@c ***************  OPTIONS   ****************
+@c ***************            ****************
+@c *******************************************
+@mansect options
 @node GPGSM Options
 @section Option Summary
 
@@ -226,8 +267,10 @@ and to change the default configuration.
 * Esoteric Options::        Doing things one usually don't want to do.
 @end menu
 
-@c man begin OPTIONS
 
+@c *******************************************
+@c ********  CONFIGURATION OPTIONS  **********
+@c *******************************************
 @node Configuration Options
 @subsection How to change the configuration
 
@@ -296,6 +339,9 @@ When running in server mode, append all logging output to @var{file}.
 @end table
 
 
+@c *******************************************
+@c ********  CERTIFICATE OPTIONS  ************
+@c *******************************************
 @node Certificate Options
 @subsection Certificate related options
 
@@ -335,7 +381,7 @@ performance, the dirmngr will actually optimize this by suppressing
 the loading for short time intervalls (e.g. 30 minutes). This option
 is useful to make sure that a fresh CRL is available for certificates
 hold in the keybox.  The suggested way of doing this is by using it
-along with the option @option{--with-validation} for a ke listing
+along with the option @option{--with-validation} for a key listing
 command.  This option should not be used in a configuration file. 
 
 @item  --enable-ocsp
@@ -352,6 +398,9 @@ so you will get the error code @samp{Not supported}.
 
 @end table
 
+@c *******************************************
+@c ***********  INPUT AND OUTPUT  ************
+@c *******************************************
 @node Input and Output
 @subsection Input and Output
 
@@ -411,6 +460,9 @@ certificate.
 
 @end table
 
+@c *******************************************
+@c *************  CMS OPTIONS  ***************
+@c *******************************************
 @node CMS Options
 @subsection How to change how the CMS is created.
 
@@ -425,6 +477,9 @@ values include up to @var{n} certificates starting with the signer cert.
 
 
 
+@c *******************************************
+@c ********  ESOTERIC OPTIONS  ***************
+@c *******************************************
 @node Esoteric Options
 @subsection Doing things one usually don't want to do.
 
@@ -527,8 +582,12 @@ All the long options may also be given in the configuration file after
 stripping off the two leading dashes.
 
 
-@c man begin FILES
-
+@c *******************************************
+@c ***************            ****************
+@c ***************   FILES    ****************
+@c ***************            ****************
+@c *******************************************
+@mansect files
 @node GPGSM Configuration
 @section Configuration files
 
@@ -558,10 +617,12 @@ in this file will fail the signature verification.
 For example, to allow only the policy 2.289.9.9, the file should look
 like this:
 
+@c man:.RS
 @example
 # Allowed policies
 2.289.9.9  
 @end example
+@c man:.RE
 
 @item qualified.txt
 @cindex qualified.txt
@@ -601,15 +662,16 @@ certificates, appropriate notices will be shown to indicate this fact.
 
 @end table
 
+@c man:.RE
 Note that on larger installations, it is useful to put predefined files
 into the directory @file{/etc/skel/.gnupg/} so that newly created users
 start up with a working configuration.  For existing users the a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 
-
 For internal purposes gpgsm creates and maintaines a few other files;
 They all live in in the current home directory (@pxref{option
 --homedir}).  Only @command{gpgsm} may modify these files.
+
 
 @table @file
 @item pubring.kbx
@@ -627,25 +689,28 @@ other programs of this software too.
 @end table
 
 
-@c 
-@c  Examples
-@c
+@c *******************************************
+@c ***************            ****************
+@c ***************  EXAMPLES  ****************
+@c ***************            ****************
+@c *******************************************
+@mansect examples
 @node GPGSM Examples
 @section Examples
-
-@c man begin EXAMPLES
 
 @example
 $ gpgsm -er goo@@bar.net <plaintext >ciphertext
 @end example
 
+
 @c man end
 
 
-
-@c ---------------------------------
-@c    The machine interface
-@c --------------------------------
+@c *******************************************
+@c ***************              **************
+@c ***************  UNATTENDED  **************
+@c ***************              **************
+@c *******************************************
 @node Unattended Usage
 @section Unattended Usage
 
@@ -704,9 +769,12 @@ this is a missing certificate.
 @end table
 
 
-@c 
-@c  Assuan Protocol
-@c
+@c *******************************************
+@c ***************           *****************
+@c ***************  ASSSUAN  *****************
+@c ***************           *****************
+@c *******************************************
+@mansect assuan
 @node GPGSM Protocol
 @section The Protocol the Server Mode Uses.
 

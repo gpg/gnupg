@@ -1,3 +1,11 @@
+2006-08-17  Werner Koch  <wk@g10code.com>
+
+	* THANKS: Merged with the 1.4 one.
+
+2006-08-16  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Removed test for capabilities and mlock.
+
 2006-08-15  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (keyserver): Enable building of keyserver helpers.

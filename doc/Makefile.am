@@ -27,6 +27,8 @@ EXTRA_DIST = gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg \
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf
 
+noinst_PROGRAMS = yat2m
+
 info_TEXINFOS = gnupg.texi
 
 dist_pkgdata_DATA = qualified.txt
@@ -36,8 +38,22 @@ gnupg_TEXINFOS = \
 	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
 	sysnotes.texi gnupg-card-architecture.fig
 
-DISTCLEANFILES = gnupg.tmp gnupg.ops
+YAT2M_OPTIONS = \
+        --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
 
+myman_sources = gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi tools.texi
+myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 scdaemon.1 \
+                watchgnupg.1 gpgconf.1 addgnupghome.8
+
+man_MANS = $(myman_pages)
+
+
+watchgnupg_SOURCE = gnupg.texi
+
+DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
+		 $(myman_pages)
+
+yat2m_SOURCES = yat2m.c
 
 
 .fig.png:
@@ -52,4 +68,27 @@ DISTCLEANFILES = gnupg.tmp gnupg.ops
 .fig.pdf:
 	fig2dev -L pdf `test -f '$<' || echo '$(srcdir)/'`$< $@
 
+
+yat2m-stamp: $(myman_sources)
+	@rm -f yat2m-stamp.tmp
+	@touch yat2m-stamp.tmp
+	for file in $(myman_sources) ; do \
+              ./yat2m $(YAT2M_OPTIONS) --store \
+	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
+	@mv -f yat2m-stamp.tmp $@
+
+yat2m-stamp: yat2m
+
+$(myman_pages) : yat2m-stamp
+	@if test -f $@; then :; else \
+            trap 'rm -rf yat2m-stamp yat2m-lock' 1 2 13 15; \
+               if mkdir yat2m-lock 2>/dev/null; then \
+                 rm -f yat2m-stamp; \
+                 $(MAKE) $(AM_MAKEFLAGS) yat2m-stamp; \
+                 rmdir yat2m-lock; \
+               else \
+                 while test -d yat2m-lock; do sleep 1; done; \
+                 test -f yat2m-stamp; exit $$?; \
+               fi; \
+             fi
 

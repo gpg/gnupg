@@ -1,9 +1,272 @@
+GnuPG was originally written by Werner Koch.  Other people contributed
+by reporting problems, suggesting various improvements or submitting
+actual code.  Here is a list of those people.  Help us keep it
+complete and free of errors.
 
-Alexander Belopolsky      belopolsky at mac.com
-Andrew J. Schorr          aschorr at telemetry-investments.com
-Carl Meijer               carlm at prism.co.za
-Charly Avital             shavital at mac.com
-Kazu Yamamoto             kazu at iij.ad.jp
-Michael Nottebrock        michaelnottebrock at gmx.net
-Ray Link                  rlink at pitt.edu
-Richard Lefebvre          rick at cerca.umontreal.ca
+
+Adam Mitchell		   adam at cafe21.org
+Albert Chin                china at thewrittenword.com
+Alec Habig		   habig at budoe2.bu.edu
+Alexander Belopolsky       belopolsky at mac.com
+Allan Clark		   allanc at sco.com
+Anand Kumria		   wildfire at progsoc.uts.edu.au
+Andreas Haumer             andreas at xss.co.at
+Andrew J. Schorr           aschorr at telemetry-investments.com
+Anthony Carrico            acarrico at memebeam.org
+Anthony Mulcahy 	   anthony at kcn.ne.jp
+Ariel T Glenn		   ariel at columbia.edu
+Bernhard Herzog            bh at intevation.de
+Bernhard Reiter            bernhard de intevation.de
+Bob Mathews                bobmathews at mindspring.com
+Bodo Moeller		   Bodo_Moeller at public.uni-hamburg.de
+Brendan O'Dea              bod at debian.org
+Brenno de Winter	   brenno at dewinter.com
+Brian M. Carlson           karlsson at hal-pc.org
+Brian Moore		   bem at cmc.net
+Brian Warner		   warner at lothar.com
+Bryan Fullerton 	   bryanf at samurai.com
+Bryce Nichols              bryce at bnichols.org
+Carl Meijer                carlm at prism.co.za
+Caskey L. Dickson	   caskey at technocage.com
+Cees van de Griend	   cees-list at griend.xs4all.nl
+Charles Levert		   charles at comm.polymtl.ca
+Charly Avital              shavital at mac.com
+Chip Salzenberg 	   chip at valinux.com
+Chris Adams                cmadams at hiwaay.net
+Christian Biere            christianbiere at gmx.de
+Christian Kurz		   shorty at debian.org
+Christian von Roques	   roques at pond.sub.org
+Christopher Oliver	   oliver at fritz.traverse.net
+Christian Recktenwald	   chris at citecs.de
+Daiki Ueno                 ueno at unixuser.org
+Dan Winship                danw at helixcode.com
+Daniel Eisenbud 	   eisenbud at cs.swarthmore.edu
+Daniel Koening		   dan at chaosdorf.de
+Daniel Resare		   daniel at resare.com
+Dany Nativel               dany at natzo.com
+Dave Dykstra		   dwd at bell-labs.com
+David C Niemi              niemi at tuxers.net
+David Champion             dgc at uchicago.edu
+David D. Scribner          dscribner at bigfoot.com
+David Ellement		   ellement at sdd.hp.com
+David Hallinan		   hallinan at rtd.com
+David Hollenberg           dhollen at ISI.EDU
+David Mathog               MATHOG at seqaxp.bio.caltech.edu
+David R. Bergstein         dbergstein at home.com
+David Shaw                 dshaw at jabberwocky.com
+Detlef Lannert		   lannert at lannert.rz.uni-duesseldorf.de
+Dimitri 		   dmitri at advantrix.com
+Dirk Lattermann 	   dlatt at t-online.de
+Dirk Meyer                 dirk.meyer at dinoex.sub.org
+Disastry                   Disastry at saiknes.lv
+Douglas Calvert            dfc at anize.org
+Ed Boraas		   ecxjo at esperanto.org
+Edmund GRIMLEY EVANS	   edmundo at rano.org
+Edwin Woudt                edwin at woudt.nl
+Enzo Michelangeli	   em at MailAndNews.com
+Ernst Molitor		   ernst.molitor at uni-bonn.de
+Evgeny Legerov
+Fabio Coatti		   cova at ferrara.linux.it
+Felix von Leitner	   leitner at amdiv.de
+fish stiqz                 fish at analog.org
+Florian Weimer             Florian.Weimer at rus.uni-stuttgart.de
+Francesco Potorti          pot at gnu.org
+Frank Donahoe		   fdonahoe at wilkes1.wilkes.edu
+Frank Heckenbach	   heckenb at mi.uni-erlangen.de
+Frank Stajano		   frank.stajano at cl.cam.ac.uk
+Frank Tobin		   ftobin at uiuc.edu
+Gabriel Rosenkoetter	   gr at eclipsed.net
+Gaël Quéri		   gael at lautre.net
+Gene Carter                gcarter at lanier.com
+Geoff Keating		   geoffk at ozemail.com.au
+Georg Schwarz              georg.schwarz at iname.com
+Giampaolo Tomassoni        g.tomassoni at libero.it
+Gilbert Fernandes          gilbert_fernandes at hotmail.com
+Greg Louis		   glouis at dynamicro.on.ca
+Greg Troxel		   gdt at ir.bbn.com
+Gregory Steuck		   steuck at iname.com
+Harald Denker		   harry at hal.westfalen.de
+Holger Baust               Holger.Baust at freenet-ag.de
+Hendrik Buschkamp	   buschkamp at rheumanet.org
+Holger Schurig		   holger at d.om.org
+Holger Smolinski	   smolinsk at de.ibm.com
+Holger Trapp		   Holger.Trapp at informatik.tu-chemnitz.de
+Hugh Daniel		   hugh at toad.com
+Huy Le			   huyle at ugcs.caltech.edu
+Ian McKellar		   imckellar at harvestroad.com.au
+Ingo Klöcker               kloecker at kde.org
+Ivo Timmermans		   itimmermans at bigfoot.com
+Jan Krueger		   max at physics.otago.ac.nz
+Jan Niehusmann             jan at gondor.com  
+Jan-0liver Wagner          jan @ intevation.de
+Janusz A. Urbanowicz	   alex at bofh.torun.pl
+James Troup		   james at nocrew.org
+Jean-loup Gailly	   gzip at prep.ai.mit.edu
+Jeff Long		   long at kestrel.cc.ukans.edu
+Jeffery Von Ronne          jronne at ics.uci.edu
+Jens Bachem		   bachem at rrz.uni-koeln.de
+Jeroen C. van Gelderen     jeroen at vangelderen.org
+J Horacio MG		   homega at ciberia.es
+J. Michael Ashley          jashley at acm.org
+Jim Bauer                  jfbauer at home.com
+Jim Small                  cavenewt at my-deja.com
+Joachim Backes		   backes at rhrk.uni-kl.de
+Joe Rhett                  jrhett at isite.net
+Joerg Honegger             Joerg.Honegger at hp.com
+John A. Martin		   jam at jamux.com
+John Clizbe                JPClizbe at comcast.net
+John R. Shannon            john at johnrshannon.com
+Johnny Teveßen		   j.tevessen at gmx.de
+Jörg Schilling		   schilling at fokus.gmd.de
+Jos Backus		   Jos.Backus at nl.origin-it.com
+Joseph Walton              joe at kafsemo.org
+Juan F. Codagnone          juam at arnet.com.ar
+Jun Kuriyama		   kuriyama at sky.rim.or.jp
+Kahil D. Jallad            kdj4 at cs.columbia.edu
+Karl Fogel		   kfogel at guanabana.onshore.com
+Karsten Thygesen	   karthy at kom.auc.dk
+Katsuhiro Kondou	   kondou at nec.co.jp
+Kazu Yamamoto              kazu at iij.ad.jp
+Kazuyoshi Kakihara         
+Keith Clayton              keith at claytons.org
+Kevin Ryde                 user42 at zip.com.au
+Klaus Singvogel            ks at caldera.de
+Kurt Garloff               garloff at suse.de
+Lars Kellogg-Stedman	   lars at bu.edu
+L. Sassaman		   rabbi at quickie.net
+M Taylor                   mctaylor at privacy.nb.ca                 
+Marcel Waldvogel           mwa at arl.wustl.edu
+Marco d'Itri               md at linux.it
+Marco Parrone              marc0 at autistici.org
+Marcus Brinkmann           Marcus.Brinkmann at ruhr-uni-bochum.de	
+Mark Adler		   madler at alumni.caltech.edu
+Mark Elbrecht		   snowball3 at bigfoot.com
+Mark Pettit                pettit at yahoo-inc.com
+Markus Friedl		   Markus.Friedl at informatik.uni-erlangen.de
+Martin Kahlert		   martin.kahlert at provi.de
+Martin Hamilton
+Martin Schulte		   schulte at thp.uni-koeln.de
+Matt Kraai                 kraai at alumni.carnegiemellon.edu
+Matthew Skala		   mskala at ansuz.sooke.bc.ca
+Matthew Wilcox             matthew at wil.cx
+Matthias Urlichs	   smurf at noris.de
+Max Valianskiy		   maxcom at maxcom.ml.org
+Michael Engels             michael.engels at uni-duesseldorf.de
+Michael Fischer v. Mollard mfvm at gmx.de
+Michael Nottebrock         michaelnottebrock at gmx.net
+Michael Roth		   mroth at nessie.de
+Michael Sobolev 	   mss at despair.transas.com
+Michael Tokarev 	   mjt at tls.msk.ru
+Mike Dowling               ML.Dowling at tu-bs.de
+Mike McEwan		   mike at lotusland.demon.co.uk
+Moritz Schulte             moritz at chaosdorf.de
+Neal H Walfield            neal at cs.uml.edu
+Nelson H. F. Beebe         beebe at math.utah.edu
+Nicolas Graner		   Nicolas.Graner at cri.u-psud.fr
+NIIBE Yutaka		   gniibe at chroot.org
+Niklas Hernaeus
+Nimrod Zimerman 	   zimerman at forfree.at
+Norihiko Murase            skeleten at shillest.net
+N J Doye		   nic at niss.ac.uk
+Oliver Haakert		   haakert at hsp.de
+Oskari Jääskeläinen	   f33003a at cc.hut.fi
+Pascal Scheffers           Pascal at scheffers.net
+Paul D. Smith		   psmith at baynetworks.com
+Per Cederqvist             ceder at lysator.liu.se
+Phil Blundell              pb at debian.org
+Philippe Laliberte	   arsphl at oeil.qc.ca
+Peter Fales                psfales at lucent.com
+Peter Gutmann		   pgut001 at cs.auckland.ac.nz
+Peter Marschall 	   Peter.Marschall at gedos.de
+Peter Valchev              pvalchev at openbsd.org
+Phong Nguyen               Phong.Nguyen at ens.fr
+Piotr Krukowiecki          piotr at pingu.ii.uj.edu.pl
+QingLong		   qinglong at bolizm.ihep.su
+Ralph Gillen		   gillen at theochem.uni-duesseldorf.de
+Rat			   ratinox at peorth.gweep.net
+Ray Link                   rlink at pitt.edu
+Reinhard Wobst		   R.Wobst at ifw-dresden.de
+Rémi Guyomarch		   rguyom at mail.dotcom.fr
+Reuben Sumner		   rasumner at wisdom.weizmann.ac.il
+Richard Lefebvre           rick at cerca.umontreal.ca
+Richard Outerbridge	   outer at interlog.com
+Richard Patterson          vectro at yahoo.com
+Robert Joop                rj at rainbow.in-berlin.de
+Roddy Strachan		   roddy at satlink.com.au
+Roger Sondermann           r.so at bigfoot.com
+Roland Rosenfeld	   roland at spinnaker.rhein.de
+Roman Pavlik               rp at tns.cz
+Ross Golder		   rossigee at bigfoot.com
+Russell Coker              russell at coker.com.au
+Ryan Malayter              rmalayter at bai.org
+Sam Roberts		   sam at cogent.ca
+Sami Tolvanen              sami at tolvanen.com
+Sascha Kiefer              sk at intertivity.com
+Scott Worley               sworley at chkno.net
+Sean MacLennan		   seanm at netwinder.org
+Sebastian Klemke           packet at convergence.de
+Serge Munhoven		   munhoven at mema.ucl.ac.be
+SL Baur 		   steve at xemacs.org
+Stefan Bellon              sbellon at sbellon.de
+Dr.Stefan.Dalibor          Dr.Stefan.Dalibor at bfa.de
+Stefan Karrmann 	   S.Karrmann at gmx.net
+Stefan Keller		   dres at cs.tu-berlin.de
+Steffen Ullrich 	   ccrlphr at xensei.com
+Steffen Zahn		   zahn at berlin.snafu.de
+Steven Bakker		   steven at icoe.att.com
+Steven Murdoch             sjmurdoch at bigfoot.com
+Susanne Schultz 	   schultz at hsp.de
+Tavis Ormandy              taviso at gentoo.org
+Ted Cabeen		   secabeen at pobox.com
+Thiago Jung Bauermann	   jungmann at cwb.matrix.com.br
+Thijmen Klok               thijmen at xs4all.nl
+Thomas Roessler 	   roessler at guug.de
+Tim Mooney		   mooney at dogbert.cc.ndsu.nodak.edu
+Timo Schulz                twoaday at freakmail.de
+Tobias Winkler             tobias.winkler at s1998.tu-chemnitz.de
+Todd Vierling              tv at pobox.com
+TOGAWA Satoshi             Satoshi.Togawa at jp.yokogawa.com
+Tom Spindler		   dogcow at home.merit.edu
+Tom Zerucha		   tzeruch at ceddec.com
+Tomas Fasth		   tomas.fasth at twinspot.net
+Tommi Komulainen           Tommi.Komulainen at iki.fi
+Thomas Klausner 	   wiz at danbala.ifoer.tuwien.ac.at
+Tomasz Kozlowski           tomek at rentec.com
+Thomas Mikkelsen	   tbm at image.dk
+Ulf Möller		   3umoelle at informatik.uni-hamburg.de
+Urko Lusa		   ulusa at euskalnet.net
+Vincent P. Broman          broman at spawar.navy.mil
+Volker Quetschke           quetschke at scytek.de
+W Lewis                    wiml at hhhh.org
+Walter Hofmann		   Walter.Hofmann at physik.stud.uni-erlangen.de
+Walter Koch		   koch at hsp.de
+Wayne Chapeskie 	   waynec at spinnaker.com
+Werner Koch		   wk at gnupg.org
+Wim Vandeputte		   bunbun at reptile.rug.ac.be
+Winona Brown               win at huh.org
+Yosiaki IIDA		   iida at ring.gr.jp
+Yoshihiro Kajiki	   kajiki at ylug.org
+			   nbecker at hns.com
+
+
+Thanks to the German Unix User Group for sponsoring this project,
+Martin Hamilton for hosting the first mailing list and OpenIT for
+hosting the server.
+
+The development of this software has partly (i.e. the Windows port)
+been funded by the German Ministry for Economics and Technology under
+grant VIB3-68553.168-001/1999.
+
+Many thanks to my wife Gerlinde for having so much patience with
+me while hacking late in the evening.
+
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004
+           2006  Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

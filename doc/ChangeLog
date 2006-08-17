@@ -1,3 +1,9 @@
+2006-08-17  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Added rules to build man pages.
+
+	* yat2m.c: New.
+
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.texi (GPGSM Configuration): New section.

@@ -8,8 +8,40 @@
 @cindex command options
 @cindex options, GPG-AGENT command
 
-@c man begin DESCRIPTION
+@manpage gpg-agent.1
+@ifset manverb
+.B gpg-agent
+.R \- Secret key management for GnuPG
+@end ifset
 
+@mansect synopsis
+@ifset manverb
+.B  gpg-agent
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.br
+.B  gpg-agent
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.B  \-\-server 
+.br
+.B  gpg-agent
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.B  \-\-daemon 
+.RI [ command_line ]
+@end ifset
+
+@mansect description
 @command{gpg-agent} is a daemon to manage secret (private) keys
 independently from any protocol.  It is used as a backend for
 @command{gpg} and @command{gpgsm} as well as for a couple of other
@@ -67,10 +99,10 @@ It is often useful to install a symbolic link from the actual used
 pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the expected
 one (e.g. @file{/usr/bin/pinentry}).
 
-@c man end
-
+@manpause
 @noindent
-@xref{Option Index}, for an index to @command{GPG-AGENT}'s commands and options.
+@xref{Option Index},for an index to @command{GPG-AGENT}'s commands and options.
+@mancont
 
 @menu
 * Agent Commands::      List of all commands.
@@ -81,8 +113,7 @@ one (e.g. @file{/usr/bin/pinentry}).
 * Agent Protocol::      The protocol the agent uses.
 @end menu
 
-@c man begin COMMANDS
-
+@mansect commands
 @node Agent Commands
 @section Commands
 
@@ -95,9 +126,10 @@ only one one command is allowed.
 Print the program version and licensing information.  Not that you can
 abbreviate this command.
 
-@item --help, -h
+@item --help
+@itemx -h
 @opindex help
-Print a usage message summarizing the most usefule command-line options.
+Print a usage message summarizing the most useful command-line options.
 Not that you can abbreviate this command.
 
 @item --dump-options
@@ -110,7 +142,7 @@ abbreviate this command.
 Run in server mode and wait for commands on the @code{stdin}.  The
 default mode is to create a socket and listen for commands there.
 
-@item --daemon
+@item --daemon [@var{command line}]
 @opindex daemon
 Run the program in the background.  This option is required to prevent
 it from being accidently running in the background.  A common way to do
@@ -121,8 +153,7 @@ $ eval `gpg-agent --daemon`
 @end table
 
 
-@c man begin OPTIONS
-
+@mansect options
 @node Agent Options
 @section Option Summary
 
@@ -152,7 +183,7 @@ directory stated through the environment variable @env{GNUPGHOME} or
 @opindex verbose
 Outputs additional information while running.
 You can increase the verbosity by giving several
-verbose commands to @sc{gpgsm}, such as @samp{-vv}.
+verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
 @item -q
 @item --quiet
@@ -198,26 +229,26 @@ This option is only useful for debugging and the behaviour may change at
 any time without notice.  FLAGS are bit encoded and may be given in
 usual C-Syntax. The currently defined bits are:
 
-   @table @code
-   @item 0  (1)
-   X.509 or OpenPGP protocol related data
-   @item 1  (2)  
-   values of big number integers 
-   @item 2  (4)
-   low level crypto operations
-   @item 5  (32)
-   memory allocation
-   @item 6  (64)
-   caching
-   @item 7  (128)
-   show memory statistics.
-   @item 9  (512)
-   write hashed data to files named @code{dbgmd-000*}
-   @item 10 (1024)
-   trace Assuan protocol
-   @item 12 (4096)
-   bypass all certificate validation
-   @end table
+@table @code
+@item 0  (1)
+X.509 or OpenPGP protocol related data
+@item 1  (2)  
+values of big number integers 
+@item 2  (4)
+low level crypto operations
+@item 5  (32)
+memory allocation
+@item 6  (64)
+caching
+@item 7  (128)
+show memory statistics.
+@item 9  (512)
+write hashed data to files named @code{dbgmd-000*}
+@item 10 (1024)
+trace Assuan protocol
+@item 12 (4096)
+bypass all certificate validation
+@end table
 
 @item --debug-all
 @opindex debug-all
@@ -359,9 +390,9 @@ information.
 @itemx --keep-display
 @opindex keep-tty
 @opindex keep-display
-Ignore requests to change change the current @sc{tty} respective the X
+Ignore requests to change change the current @code{tty} respective the X
 window system's @code{DISPLAY} variable.  This is useful to lock the
-pinentry to pop up at the @sc{tty} or display you started the agent.
+pinentry to pop up at the @code{tty} or display you started the agent.
 
 @anchor{option --enable-ssh-support}
 @item --enable-ssh-support
@@ -405,8 +436,7 @@ All the long options may also be given in the configuration file after
 stripping off the two leading dashes.
 
 
-@c man begin FILES
-
+@mansect files
 @node Agent Configuration
 @section Configuration
 
@@ -455,7 +485,7 @@ agent. By default they may all be found in the current home directory
   even advisable to change the permissions to read-only so that this file
   can't be changed inadvertently.
   
-  @item sshcontrol
+@item sshcontrol
 
   This file is used when support for the secure shell agent protocol has
   been enabled (@pxref{option --enable-ssh-support}). Only keys present in
@@ -488,6 +518,7 @@ a small helper script is provied to create these files (@pxref{addgnupghome}).
 @c
 @c Agent Signals
 @c
+@mansect signals
 @node Agent Signals
 @section Use of some signals.
 A running @command{gpg-agent} may be controlled by signals, i.e. using
@@ -533,18 +564,15 @@ This signal is used for internal purposes.
 @c 
 @c  Examples
 @c
+@mansect examples
 @node Agent Examples
 @section Examples
-
-@c man begin EXAMPLES
 
 The usual way to invoke @command{gpg-agent} is
 
 @example
 $ eval `gpg-agent --daemon`
 @end example
-
-@c man end
 
 An alternative way is by replacing @command{ssh-agent} with
 @command{gpg-agent}.  If for example @command{ssh-agent} is started as
@@ -580,6 +608,7 @@ to your shell initialization file (e.g. @file{~/.bashrc}).
 @c 
 @c  Assuan Protocol
 @c
+@mansect assuan
 @node Agent Protocol
 @section Agent's Assuan Protocol
 

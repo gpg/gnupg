@@ -34,7 +34,7 @@ Published by the Free Software Foundation@*
 Boston, MA 02111-1307 USA
 @end iftex
 
-Copyright @copyright{} 2002, 2004, 2005 Free Software Foundation, Inc.
+Copyright @copyright{} 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document

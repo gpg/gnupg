@@ -8,14 +8,41 @@
 @cindex command options
 @cindex options, SCDAEMON command
 
-@c man begin DESCRIPTION
+@manpage scdaemon.1
+@ifset manverb
+.B scdaemon
+.R \- Smartcard daemon for the GnuPG system
+@end ifset
 
+@mansect synopsis
+@ifset manverb
+.B  scdaemon
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.B  \-\-server 
+.br
+.B  scdaemon
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.B  \-\-daemon 
+.RI [ command_line ]
+@end ifset
+
+
+@mansect description
 The @command{scdaemon} is a daemon to manage smartcards.  It is usually
-invoked by gpg-agent and in general not used directly.
+invoked by @command{gpg-agent} and in general not used directly.
 
-@c man end
-
-@xref{Option Index}, for an index to GPG-AGENTS's commands and options.
+@manpause
+@xref{Option Index}, for an index to @command{scdaemon}'s commands and
+options.
+@mancont
 
 @menu
 * Scdaemon Commands::      List of all commands.
@@ -25,7 +52,7 @@ invoked by gpg-agent and in general not used directly.
 * Scdaemon Protocol::      The protocol the daemon uses.
 @end menu
 
-@c man begin COMMANDS
+@mansect commands
 
 @node Scdaemon Commands
 @section Commands
@@ -73,7 +100,7 @@ This is mainly a debugging command, used to print the ATR
 @end table
 
 
-@c man begin OPTIONS
+@mansect options
 
 @node Scdaemon Options
 @section Option Summary
@@ -109,18 +136,18 @@ verbose commands to @command{gpgsm}, such as @samp{-vv}.
 Select the debug level for investigating problems. @var{level} may be
 one of:
 
-   @table @code
-   @item none
-   no debugging at all.
-   @item basic  
-   some basic debug messages
-   @item advanced
-   more verbose debug messages
-   @item expert
-   even more detailed messages
-   @item guru
-   all of the debug messages you can get
-   @end table
+@table @code
+@item none
+no debugging at all.
+@item basic  
+some basic debug messages
+@item advanced
+more verbose debug messages
+@item expert
+even more detailed messages
+@item guru
+all of the debug messages you can get
+@end table
 
 How these messages are mapped to the actual debugging flags is not
 specified and may change with newer releaes of this program. They are
@@ -139,26 +166,26 @@ This option is only useful for debugging and the behaviour may change at
 any time without notice.  FLAGS are bit encoded and may be given in
 usual C-Syntax. The currently defined bits are:
 
-   @table @code
-   @item 0  (1)
-   command I/O
-   @item 1  (2)  
-   values of big number integers 
-   @item 2  (4)
-   low level crypto operations
-   @item 5  (32)
-   memory allocation
-   @item 6  (64)
-   caching
-   @item 7  (128)
-   show memory statistics.
-   @item 9  (512)
-   write hashed data to files named @code{dbgmd-000*}
-   @item 10 (1024)
-   trace Assuan protocol
-   @item 11 (2048)
-   trace APDU I/O to the card.  This may reveal sensitive data.
-   @end table
+@table @code
+@item 0  (1)
+command I/O
+@item 1  (2)  
+values of big number integers 
+@item 2  (4)
+low level crypto operations
+@item 5  (32)
+memory allocation
+@item 6  (64)
+caching
+@item 7  (128)
+show memory statistics.
+@item 9  (512)
+write hashed data to files named @code{dbgmd-000*}
+@item 10 (1024)
+trace Assuan protocol
+@item 11 (2048)
+trace APDU I/O to the card.  This may reveal sensitive data.
+@end table
 
 @item --debug-all
 @opindex debug-all
@@ -256,8 +283,7 @@ All the long options may also be given in the configuration file after
 stripping off the two leading dashes.
 
 
-@c man begin CARD APPLICATIONS
-
+@mansect card applications
 @node Card applications
 @section Description of card applications
 
@@ -304,6 +330,7 @@ This is common fraqmework for smart card applications.  It is used by
 @c 
 @c  Examples
 @c
+@mansect examples
 @node Scdaemon Examples
 @section Examples
 
@@ -318,6 +345,7 @@ $ scdaemon --server -v
 @c 
 @c  Assuan Protocol
 @c
+@mansect assuan
 @node Scdaemon Protocol
 @section Scdaemon's Assuan Protocol
 

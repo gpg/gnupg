@@ -988,41 +988,11 @@ AC_CHECK_FUNCS([getrusage setrlimit stat setlocale])
 AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen])
 
 
-
-GNUPG_CHECK_MLOCK
-
+#
+# W32 specific test
+#
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
 
-#
-# Check whether we can use Linux capabilities as requested
-#
-#  fixme: Still required?
-#
-if test "$use_capabilities" = "yes" ; then
-use_capabilities=no
-AC_CHECK_HEADERS(sys/capability.h)
-if test "$ac_cv_header_sys_capability_h" = "yes" ; then
-  AC_CHECK_LIB(cap, cap_init, ac_need_libcap=1)
-  if test "$ac_cv_lib_cap_cap_init" = "yes"; then
-     AC_DEFINE(USE_CAPABILITIES,1,
-               [define if capabilities should be used])
-     AC_SUBST(CAPLIBS,"-lcap")
-     use_capabilities=yes
-  fi
-fi
-if test "$use_capabilities" = "no" ; then
-    AC_MSG_WARN([[
-***
-*** The use of capabilities on this system is not possible.
-*** You need a recent Linux kernel and some patches:
-***   fcaps-2.2.9-990610.patch      (kernel patch for 2.2.9)
-***   fcap-module-990613.tar.gz     (kernel module)
-***   libcap-1.92.tar.gz            (user mode library and utilities)
-*** And you have to configure the kernel with CONFIG_VFS_CAP_PLUGIN
-*** set (filesystems menu). Be warned: This code is *really* ALPHA.
-***]])
-fi
-fi
 
 #
 # Sanity check regex.  Tests adapted from mutt.

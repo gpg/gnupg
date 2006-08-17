@@ -9,14 +9,33 @@
 @cindex command options
 @cindex options, GPG command
 
-@c man begin DESCRIPTION
 
-@command{gpg2} is the OpenPGP part of GnuPG. It is a tool to provide
-digitla encryption and signing services using the OpenPGP
-standard. @command{gpg2} features complete key management and all bells
-and whistles you can expect from a decent OpenPGP implementation.
+@manpage gpg2.1
+@ifset manverb
+.B gpg2
+.R \- OpenPGP encryption and signing tool
+@end ifset
 
-In contrast to the standalone version @command{gpg,} which is more
+@mansect synopsis
+@ifset manverb
+.B  gpg2
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.I command
+.RI [ args ]
+@end ifset
+
+@mansect description
+@command{gpg2} is the OpenPGP part of the GNU Privacy Guard (GnuPG). It
+is a tool to provide digitla encryption and signing services using the
+OpenPGP standard. @command{gpg2} features complete key management and
+all bells and whistles you can expect from a decent OpenPGP
+implementation.
+
+In contrast to the standalone version @command{gpg}, which is more
 suited for server and embedded platforms, this version is installed
 under the name @command{gpg2} and more targeted to the desktop as it
 requires several other modules to be installed.  The standalone version
@@ -25,12 +44,12 @@ the same system.  If you need to use different configuration files, you
 should make use of something like @file{gpg.conf-2} instead of just
 @file{gpg.conf}.
 
+@manpause
 Documentation for the old standard @command{gpg} is available as man page
 man page and at @inforef{Top,GnuPG 1,gpg}.
 
-@c man end
-
 @xref{Option Index}, for an index to @command{GPG}'s commands and options.
+@mancont
 
 @menu
 * GPG Commands::        List of all commands.
@@ -44,13 +63,13 @@ Developer information:
 @end menu
 
 
+
 @c *******************************************
 @c ***************            ****************
 @c ***************  COMMANDS  ****************
 @c ***************            ****************
 @c *******************************************
-@c man begin COMMANDS
-
+@mansect commands
 @node GPG Commands
 @section Commands
 
@@ -86,7 +105,8 @@ using the special option "--".
 Print the program version and licensing information.  Note that you
 cannot abbreviate this command.
 
-@item --help, -h
+@item --help
+@itemx -h
 @opindex help
 Print a usage message summarizing the most useful command line options.
 Not that you cannot abbreviate this command.
@@ -111,7 +131,7 @@ abbreviate this command.
 
 @table @gnupgtabopt
 
-@item --sign 
+@item --sign
 @itemx -s
 @opindex sign
 Make a signature. This command may be combined with --encrypt (for a
@@ -120,7 +140,7 @@ symmetrically encrypted message), or --encrypt and --symmetric
 together (for a signed message that may be decrypted via a secret key
 or a passphrase).
 
-@item --clearsign 
+@item --clearsign
 @opindex clearsign
 Make a clear text signature. The content in a clear text signature is
 readable without any special software. OpenPGP software is only
@@ -128,12 +148,12 @@ needed to verify the signature. Clear text signatures may modify
 end-of-line whitespace for platform independence and are not intended
 to be reversible.
 
-@item --detach-sign 
+@item --detach-sign
 @itemx -b
 @opindex detach-sign
 Make a detached signature.
 
-@item --encrypt 
+@item --encrypt
 @itemx -e
 @opindex encrypt
 Encrypt data. This option may be combined with --sign (for a signed
@@ -142,7 +162,7 @@ decrypted via a secret key or a passphrase), or --sign and --symmetric
 together (for a signed message that may be decrypted via a secret key
 or a passphrase).
 
-@item --symmetric 
+@item --symmetric
 @itemx -c
 @opindex symmetric
 Encrypt with a symmetric cipher using a passphrase. The default
@@ -153,11 +173,11 @@ that may be decrypted via a secret key or a passphrase), or --sign and
 --encrypt together (for a signed message that may be decrypted via a
 secret key or a passphrase).
 
-@item --store 
+@item --store
 @opindex store
 Store only (make a simple RFC1991 literal data packet).
 
-@item --decrypt 
+@item --decrypt
 @itemx -d
 @opindex decrypt
 Decrypt the file given on the command line (or @code{stdin} if no file
@@ -167,7 +187,7 @@ verified. This command differs from the default operation, as it never
 writes to the filename which is included in the file and it rejects
 files which don't begin with an encrypted message.
 
-@item --verify 
+@item --verify
 @opindex verify
 Assume that the first argument is a signed file or a detached signature
 and verify it without generating any output. With no arguments, the
@@ -189,21 +209,21 @@ once. --multifile may currently be used along with --verify, --encrypt,
 and --decrypt. Note that `--multifile --verify' may not be used with
 detached signatures.
 
-@item --verify-files 
+@item --verify-files
 @opindex verify-files
 Identical to `--multifile --verify'.
 
-@item --encrypt-files 
+@item --encrypt-files
 @opindex encrypt-files
 Identical to `--multifile --encrypt'.
 
-@item --decrypt-files 
+@item --decrypt-files
 @opindex decrypt-files
 Identical to `--multifile --decrypt'.
 
-@item --list-keys 
+@item --list-keys
 @itemx -k
-@itemx --list-public-keys 
+@itemx --list-public-keys
 @opindex list-keys
 List all keys from the public keyrings, or just the ones given on the
 command line.
@@ -213,7 +233,7 @@ it is likely to change as GnuPG changes. See --with-colons for a
 machine-parseable key listing command that is appropriate for use in
 scripts and other programs.
 
-@item --list-secret-keys 
+@item --list-secret-keys
 @itemx -K
 @opindex list-secret-keys
 List all keys from the secret keyrings, or just the ones given on the
@@ -221,7 +241,7 @@ command line. A @code{#} after the letters @code{sec} means that the
 secret key is not usable (for example, if it was created via
 --export-secret-subkeys).
 
-@item --list-sigs 
+@item --list-sigs
 @opindex list-sigs
 Same as --list-keys, but the signatures are listed too.
 
@@ -236,11 +256,11 @@ notation (see --cert-notation), "X" for an eXpired signature (see
 --ask-cert-expire), and the numbers 1-9 or "T" for 10 and above to
 indicate trust signature levels (see the --edit-key command "tsign").
 
-@item --check-sigs 
+@item --check-sigs
 @opindex check-sigs
 Same as --list-sigs, but the signatures are verified.
 
-@item --fingerprint 
+@item --fingerprint
 @opindex fingerprint
 List all keys (or the specified ones) along with their
 fingerprints. This is the same output as --list-keys but with the
@@ -258,7 +278,7 @@ useful for debugging.
 @opindex card-edit
 Present a menu to work with a smartcard. The subcommand "help" provides
 an overview on available commands. For a detailed description, please
-see the Card HOWTO at 
+see the Card HOWTO at
 http://www.gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .
 
 @item --card-status
@@ -284,10 +304,10 @@ must be specified by fingerprint.
 
 @item --delete-secret-and-public-key @code{name}
 @opindex delete-secret-and-public-key
-Same as --delete-key, but if a secret key exists, it will be removed 
+Same as --delete-key, but if a secret key exists, it will be removed
 first. In batch mode the key must be specified by fingerprint.
 
-@item --export 
+@item --export
 @opindex export
 Either export all keys from all keyrings (default keyrings and those
 registered via option --keyring), or if at least one name is given,
@@ -295,15 +315,15 @@ those of the given name. The new keyring is written to stdout or to the
 file given with option "output". Use together with --armor to mail those
 keys.
 
-@item --send-keys 
+@item --send-keys
 @opindex send-keys
 Same as --export but sends the keys to a keyserver.  Option --keyserver
 must be used to give the name of this keyserver. Don't send your
 complete keyring to a keyserver - select only those keys which are new
 or changed by you.
 
-@item --export-secret-keys 
-@itemx --export-secret-subkeys 
+@item --export-secret-keys
+@itemx --export-secret-subkeys
 @opindex export-secret-keys
 @opindex export-secret-subkeys
 Same as --export, but exports the secret keys instead.  This is normally
@@ -314,8 +334,8 @@ can not be expected to successfully import such a key.  See the option
 --simple-sk-checksum if you want to import such an exported key with an
 older OpenPGP implementation.
 
-@item --import 
-@itemx --fast-import 
+@item --import
+@itemx --fast-import
 @opindex import
 Import/merge keys. This adds the given keys to the
 keyring. The fast version is currently just a synonym.
@@ -330,7 +350,7 @@ user-IDs and subkeys.
 Import the keys with the given key IDs from a keyserver. Option
 --keyserver must be used to give the name of this keyserver.
 
-@item --refresh-keys 
+@item --refresh-keys
 @opindex refresh-keys
 Request updates from a keyserver for keys that already exist on the
 local keyring. This is useful for updating a key with the latest
@@ -386,7 +406,7 @@ Send the ownertrust values to stdout. This is useful for backup purposes
 as these values are the only ones which can't be re-created from a
 corrupted trust DB.
 
-@item --import-ownertrust 
+@item --import-ownertrust
 @opindex import-ownertrust
 Update the trustdb with the ownertrust values stored in @code{files} (or
 stdin if not given); existing values will be overwritten.
@@ -397,21 +417,21 @@ ThisWhen updating from version 1.0.6 to 1.0.7 this command should be used
 to create signature caches in the keyring. It might be handy in other
 situations too.
 
-@item --print-md @code{algo} 
-@itemx --print-mds 
+@item --print-md @code{algo}
+@itemx --print-mds
 @opindex print-md
 Print message digest of algorithm ALGO for all given files or stdin.
 With the second form (or a deprecated "*" as algo) digests for all
 available algorithms are printed.
 
-@item --gen-random @code{0|1|2}  
+@item --gen-random @code{0|1|2}
 @opindex gen-random
 Emit @var{count} random bytes of the given quality level. If count is
 not given or zero, an endless sequence of random bytes will be emitted.
 PLEASE, don't use this command unless you know what you are doing; it
 may remove precious entropy from the system!
 
-@item --gen-prime @code{mode}  @code{bits}  
+@item --gen-prime @code{mode}  @code{bits}
 @opindex gen-prime
 Use the source, Luke :-). The output format is still subject to change.
 
@@ -449,7 +469,7 @@ user (with the permission of the keyholder) to revoke someone else's
 key.
 
 
-@item --edit-key 
+@item --edit-key
 @opindex edit-key
 Present a menu which enables you to do most of the key management
 related tasks.  It expects the specification of a key on the command
@@ -486,9 +506,11 @@ of certification (like a regular signature), and trust (like the
 or groups.
 @end table
 
+@c man:.RS
 Note that "l" (for local / non-exportable), "nr" (for non-revocable,
 and "t" (for trust) may be freely mixed and prefixed to "sign" to
 create a signature of any type desired.
+@c man:.RE
 
 @table @asis
 
@@ -573,7 +595,7 @@ Remove a subkey (secondart key). Note that it is not possible to retract
 a subkey, once it has been send to the public (i.e. to a keyserver).  In
 that case you better use @code{revkey}.
 
-@item addrevoker 
+@item addrevoker
 @opindex keyedit:addrevoker
 Add a designated revoker. This takes one optional argument:
 "sensitive". If a designated revoker is marked as sensitive, it will not
@@ -698,11 +720,13 @@ key rings.
 
 @end table
 
+@c man:.RS
 The listing shows you the key with its secondary keys and all user
 ids. Selected keys or user ids are indicated by an asterisk. The trust
 value is displayed with the primary key: the first is the assigned owner
 trust and the second is the calculated trust value. Letters are used for
 the values:
+@c man:.RE
 
 @table @asis
 
@@ -733,10 +757,10 @@ Ultimately trusted.
 @item --sign-key @code{name}
 @opindex sign-key
 Signs a public key with your secret key. This is a shortcut version of
-the subcommand "sign" from --edit. 
+the subcommand "sign" from --edit.
 
 @item --lsign-key @code{name}
-@opindex lsign-ket
+@opindex lsign-key
 Signs a public key with your secret key but marks it as
 non-exportable. This is a shortcut version of the subcommand "lsign"
 from --edit.
@@ -750,21 +774,20 @@ from --edit.
 @c ***************  OPTIONS   ****************
 @c ***************            ****************
 @c *******************************************
+@mansect options
 @node GPG Options
 @section Option Summary
 
 @command{GPG} comes features a bunch of options to control the exact
 behaviour and to change the default configuration.
 
-@menu 
+@menu
 * GPG Configuration Options::   How to change the configuration.
 * GPG Key related Options::     Key related options.
 * GPG Input and Output::        Input and Output.
 * OpenPGP Options::             OpenPGP protocol specific options.
 * GPG Esoteric Options::        Doing things one usually don't want to do.
 @end menu
-
-@c man begin OPTIONS
 
 Long options can be put in an options file (default
 "~/.gnupg/gpg.conf"). Short option names will not work - for example,
@@ -1053,7 +1076,7 @@ as a full 8 byte key ID) is as trustworthy as one of
 your own secret keys. This option is useful if you
 don't want to keep your secret keys (or one of them)
 online but still want to be able to check the validity of a given
-recipient's or signator's key. 
+recipient's or signator's key.
 
 @item --trust-model @code{pgp|classic|direct|always|auto}
 Set what trust model GnuPG should follow. The models are:
@@ -1124,7 +1147,7 @@ key ID. "long" is the more accurate (but less convenient)
 16-character key ID. Add an "0x" to either to include an "0x" at the
 beginning of the key ID, as in 0x99242560.
 
-@item --keyserver @code{name} 
+@item --keyserver @code{name}
 Use @code{name} as your keyserver. This is the server that
 --recv-keys, --send-keys, and --search-keys will communicate with to
 receive keys from, send keys to, and search for keys on. The format
@@ -1555,7 +1578,7 @@ in an options file.
 @item --no-options
 Shortcut for "--options /dev/null". This option is
 detected before an attempt to open an option file.
-Using this option will also prevent the creation of a 
+Using this option will also prevent the creation of a
 "~./gnupg" homedir.
 
 @item --load-extension @code{name}
@@ -1677,7 +1700,7 @@ are deprecated. Use `--list-options [no-]show-policy-url' and/or
 @item --sig-keyserver-url @code{string}
 Use @code{string} as a preferred keyserver URL for data signatures. If
 you prefix it with an exclamation mark, the keyserver URL packet will
-be flagged as critical. 
+be flagged as critical.
 
 The same %-expandos used for notation data are available here as well.
 
@@ -1851,7 +1874,7 @@ one passphrase is supplied.
 
 @item --passphrase-file @code{file}
 Read the passphrase from file @code{file}. Only the first line will
-be read from file @code{file}. This can only be used if only one 
+be read from file @code{file}. This can only be used if only one
 passphrase is supplied. Obviously, a passphrase stored in a file is
 of questionable security if other users can read this file. Don't use
 this option if you can avoid it.
@@ -2290,7 +2313,7 @@ Set the default keyserver URL to @code{name}. This keyserver will be
 used as the keyserver URL when writing a new self-signature on a key,
 which includes key generation and changing preferences.
 
-@item --list-config 
+@item --list-config
 @opindex list-config
 Display various internal configuration parameters of GnuPG. This
 option is intended for external programs that call GnuPG to perform
@@ -2309,7 +2332,7 @@ only usable with --with-colons set.
 @c ***************   FILES    ****************
 @c ***************            ****************
 @c *******************************************
-@c man begin FILES
+@mansect files
 @node GPG Configuration
 @section Configuration files
 
@@ -2329,6 +2352,7 @@ name may be changed on the command line (@pxref{option
 
 @end table
 
+@c man:.RE
 Note that on larger installations, it is useful to put predefined files
 into the directory @file{/etc/skel/.gnupg/} so that newly created users
 start up with a working configuration.  For existing users the a small
@@ -2338,14 +2362,60 @@ For internal purposes @command{gpg2} creates and maintaines a few other
 files; They all live in in the current home directory (@pxref{option
 --homedir}).  Only the @command{gpg2} may modify these files.
 
+
 @table @file
-@item pubring.gpg
-@cindex pubring.gpg
-xxx
-      
-@item random_seed
-@cindex random_seed
-xxxx
+@item ~/.gnupg/secring.gpg
+The secret keyring.
+
+@item ~/.gnupg/secring.gpg.lock
+and the lock file
+
+@item ~/.gnupg/pubring.gpg
+The public keyring
+
+@item ~/.gnupg/pubring.gpg.lock
+and the lock file
+
+@item ~/.gnupg/trustdb.gpg
+The trust database
+
+@item ~/.gnupg/trustdb.gpg.lock
+and the lock file
+
+@item ~/.gnupg/random_seed
+used to preserve the internal random pool
+
+@item /usr[/local]/share/gnupg/options.skel
+Skeleton options file
+
+@item /usr[/local]/lib/gnupg/
+Default location for extensions
+
+@end table
+
+@c man:.RE
+Operation is further controlled by a few environment variables:
+
+@table @asis
+
+@item HOME
+Used to locate the default home directory.
+
+@item GNUPGHOME
+If set directory used instead of "~/.gnupg".
+
+@item GPG_AGENT_INFO
+Used to locate the gpg-agent; only honored when
+--use-agent is set. The value consists of 3 colon delimited fields:
+The first is the path to the Unix Domain Socket, the second the PID of
+the gpg-agent and the protocol version which should be set to 1. When
+starting the gpg-agent as described in its documentation, this
+variable is set to the correct value. The option --gpg-agent-info can
+be used to override it.
+
+@item COLUMNS
+@itemx LINES
+Used to size some displays to the full size of the screen.
 
 @end table
 
@@ -2355,33 +2425,48 @@ xxxx
 @c ***************  EXAMPLES  ****************
 @c ***************            ****************
 @c *******************************************
+@mansect examples
 @node GPG Examples
 @section Examples
 
-@c man begin EXAMPLES
+@table @asis
 
-@example
- fooo
-@end example
+@item gpg -se -r @code{Bob} @code{file}
+sign and encrypt for user Bob
 
-@c man end
+@item gpg --clearsign @code{file}
+make a clear text signature
+
+@item gpg -sb @code{file}
+make a detached signature
+
+@item gpg --list-keys @code{user_ID}
+show keys
+
+@item gpg --fingerprint @code{user_ID}
+show fingerprint
+
+@item gpg --verify @code{pgpfile}
+@itemx gpg --verify @code{sigfile}
+Verify the signature of the file but do not output the data. The
+second form is used for detached signatures, where @code{sigfile}
+is the detached signature (either ASCII armored or binary) and
+are the signed data; if this is not given, the name of
+the file holding the signed data is constructed by cutting off the
+extension (".asc" or ".sig") of @code{sigfile} or by asking the
+user for the filename.
+@end table
 
 
-
-
-ENDEND
-
-
-
-
-@c @chapheading How to specify a user ID
+@mansect how to specify a user id
+@chapheading How to specify a user ID
 
 There are different ways to specify a user ID to GnuPG; here are some
 examples:
 
 @table @asis
 
-@item 
+@item
 
 @item 234567C4
 @itemx 0F34E556E
@@ -2426,103 +2511,15 @@ Note that you can append an exclamation mark (!) to key IDs or
 fingerprints. This flag tells GnuPG to use the specified primary or
 secondary key and not to try and calculate which primary or secondary
 key to use.
+
+@mansect return vaue
 @chapheading RETURN VALUE
 
 The program returns 0 if everything was fine, 1 if at least
 a signature was bad, and other error codes for fatal errors.
-@chapheading EXAMPLES
 
-@table @asis
-
-@item gpg -se -r @code{Bob} @code{file}
-sign and encrypt for user Bob
-
-@item gpg --clearsign @code{file}
-make a clear text signature
-
-@item gpg -sb @code{file}
-make a detached signature
-
-@item gpg --list-keys @code{user_ID}
-show keys
-
-@item gpg --fingerprint @code{user_ID}
-show fingerprint
-
-@item gpg --verify @code{pgpfile}
-@itemx gpg --verify @code{sigfile} 
-Verify the signature of the file but do not output the data. The
-second form is used for detached signatures, where @code{sigfile}
-is the detached signature (either ASCII armored or binary) and
-are the signed data; if this is not given, the name of
-the file holding the signed data is constructed by cutting off the
-extension (".asc" or ".sig") of @code{sigfile} or by asking the
-user for the filename.
-@end table
-
-@c @chapheading ENVIRONMENT
-
-@table @asis
-
-@item HOME
-Used to locate the default home directory.
-
-@item GNUPGHOME
-If set directory used instead of "~/.gnupg".
-
-@item GPG_AGENT_INFO
-Used to locate the gpg-agent; only honored when
---use-agent is set. The value consists of 3 colon delimited fields: 
-The first is the path to the Unix Domain Socket, the second the PID of
-the gpg-agent and the protocol version which should be set to 1. When
-starting the gpg-agent as described in its documentation, this
-variable is set to the correct value. The option --gpg-agent-info can
-be used to override it.
-
-@item COLUMNS
-@itemx LINES
-Used to size some displays to the full size of the screen.
-@end table
-@chapheading FILES
-
-@table @asis
-
-@item ~/.gnupg/secring.gpg
-The secret keyring
-
-@item ~/.gnupg/secring.gpg.lock
-and the lock file
-
-@item ~/.gnupg/pubring.gpg
-The public keyring
-
-@item ~/.gnupg/pubring.gpg.lock
-and the lock file
-
-@item ~/.gnupg/trustdb.gpg
-The trust database
-
-@item ~/.gnupg/trustdb.gpg.lock
-and the lock file
-
-@item ~/.gnupg/random_seed
-used to preserve the internal random pool
-
-@item ~/.gnupg/gpg.conf
-Default configuration file
-
-@item ~/.gnupg/options
-Old style configuration file; only used when gpg.conf
-is not found
-
-@item /usr[/local]/share/gnupg/options.skel
-Skeleton options file
-
-@item /usr[/local]/lib/gnupg/
-Default location for extensions
-@end table
-
-@c @chapheading WARNINGS
+@mansect warnings
+@chapheading WARNINGS
 
 Use a *good* password for your user account and a *good* passphrase
 to protect your secret key. This passphrase is the weakest part of the
@@ -2536,6 +2533,8 @@ is *very* easy to spy out your passphrase!
 If you are going to verify detached signatures, make sure that the
 program knows about it; either give both filenames on the command line
 or use @samp{-} to specify stdin.
+
+@mansect interoperability
 @chapheading INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS
 
 GnuPG tries to be a very flexible implementation of the OpenPGP
@@ -2564,6 +2563,8 @@ better off using the --pgp6, --pgp7, or --pgp8 options. These options
 are safe as they do not force any particular algorithms in violation
 of OpenPGP, but rather reduce the available algorithms to a "PGP-safe"
 list.
+
+@mansect bugs
 @chapheading BUGS
 
 On many systems this program should be installed as setuid(root). This
@@ -2573,6 +2574,4 @@ passphrases or other sensitive material) to disk. If you get no
 warning message about insecure memory your operating system supports
 locking without being root. The program drops root privileges as soon
 as locked memory is allocated.
-
-
 

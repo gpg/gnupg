@@ -98,11 +98,14 @@ might want to have an agent context for each service request
 
 * sm/
 ** check that we issue NO_SECKEY xxx if a -u key was not found
+   We don't. The messages retruned are also wrong (recipient vs. signer).
 
 * jnlib/
 ** provide jnlib_malloc and try to remove all jnlib_xmalloc.
+** Extend utf8conv.c to make use of iconv.
+   Need to merge with the code in 1.4/util/strgutil.c.
 
-* gpg/
+* g10/
 ** issue a NO_SECKEY xxxx if a -u key was not found.
 ** Replace DIGEST_ALGO_SHA224
    We can't do that right now because it is only defined by newer
@@ -121,7 +124,6 @@ might want to have an agent context for each service request
   Update to gpg 1.4.3 version
 
 
-what about gnupg_use_iconv?  
-Extend selinux support to other modules
-Does the check for Linux capabilities still makes sense?
+* Extend selinux support to other modules
+
 
