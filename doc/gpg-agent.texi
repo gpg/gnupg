@@ -11,7 +11,7 @@
 @manpage gpg-agent.1
 @ifset manverb
 .B gpg-agent
-.R \- Secret key management for GnuPG
+\- Secret key management for GnuPG
 @end ifset
 
 @mansect synopsis

@@ -11,7 +11,7 @@
 @manpage scdaemon.1
 @ifset manverb
 .B scdaemon
-.R \- Smartcard daemon for the GnuPG system
+\- Smartcard daemon for the GnuPG system
 @end ifset
 
 @mansect synopsis

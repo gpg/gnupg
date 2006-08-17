@@ -13,7 +13,7 @@
 @manpage gpg2.1
 @ifset manverb
 .B gpg2
-.R \- OpenPGP encryption and signing tool
+\- OpenPGP encryption and signing tool
 @end ifset
 
 @mansect synopsis

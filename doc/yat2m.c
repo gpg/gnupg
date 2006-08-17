@@ -446,6 +446,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "table",   3 }, 
     { "end",     4 },
     { "quotation",1, ".RS\n\\fB" },
+    { "ifset",   1 },
     { NULL }
   };
   size_t n;
@@ -780,14 +781,12 @@ finish_page (void)
 /* Parse one Texinfo file and create manpages according to the
    embedded instructions.  */
 static void
-parse_file (const char *fname, FILE *fp)
+parse_file (const char *fname, FILE *fp, char **section_name)
 {
   char *line;
   int lnr = 0;
   int in_verbatim = 0;
   int in_pause = 0;
-  char *section_name = NULL;  /* Name of the current section or NULL
-                                 if not in a section.  */
   int skip_to_end = 0;        /* Used to skip over menu entries. */
 
   line = xmalloc (LINESIZE);
@@ -842,8 +841,8 @@ parse_file (const char *fname, FILE *fp)
             }
           else if (n == 8 && !memcmp (line, "@manpage", 8))
             {
-              free (section_name);
-              section_name = NULL;
+              free (*section_name);
+              *section_name = NULL;
               finish_page ();
               start_page (p);
               in_pause = 0;
@@ -854,14 +853,14 @@ parse_file (const char *fname, FILE *fp)
                 err ("%s:%d: section outside of a man page", fname, lnr);
               else
                 {
-                  free (section_name);
-                  section_name = ascii_strupr (xstrdup (p));
+                  free (*section_name);
+                  *section_name = ascii_strupr (xstrdup (p));
                   in_pause = 0;
                 }
             }
           else if (n == 9 && !memcmp (line, "@manpause", 9))
             {
-              if (!section_name)
+              if (!*section_name)
                 err ("%s:%d: pausing outside of a man section", fname, lnr);
               else if (in_pause)
                 err ("%s:%d: already pausing", fname, lnr);
@@ -870,7 +869,7 @@ parse_file (const char *fname, FILE *fp)
             }
           else if (n == 8 && !memcmp (line, "@mancont", 8))
             {
-              if (!section_name)
+              if (!*section_name)
                 err ("%s:%d: continue outside of a man section", fname, lnr);
               else if (!in_pause)
                 err ("%s:%d: continue while not pausing", fname, lnr);
@@ -882,6 +881,21 @@ parse_file (const char *fname, FILE *fp)
             {
               skip_to_end = 1;
             }
+          else if (n == 8 && !memcmp (line, "@include", 8)
+                   && (line[8]==' '||line[8]=='\t'||!line[8]))
+            {
+              char *incname = xstrdup (p);
+              FILE *incfp = fopen (incname, "r");
+
+              if (!incfp)
+                err ("can't open include file `%s':%s",
+                     incname, strerror (errno));
+              else
+                {
+                  parse_file (incname, incfp, section_name);
+                  fclose (incfp);
+                }
+            }
           else
             got_line = 1;
         }
@@ -889,22 +903,26 @@ parse_file (const char *fname, FILE *fp)
         got_line = 1;
 
       if (got_line && in_verbatim)
-        add_content (section_name, line, 1);
-      else if (got_line && thepage.name && section_name && !in_pause)
-        add_content (section_name, line, 0);
+        add_content (*section_name, line, 1);
+      else if (got_line && thepage.name && *section_name && !in_pause)
+        add_content (*section_name, line, 0);
 
     }
   if (ferror (fp))
     err ("%s:%d: read error: %s", fname, lnr, strerror (errno));
-  finish_page ();
-  free (section_name);
   free (line);
 }
 
 
-
-
-
+static void
+top_parse_file (const char *fname, FILE *fp)
+{
+  char *section_name = NULL;  /* Name of the current section or NULL
+                                 if not in a section.  */
+  parse_file (fname, fp, &section_name);
+  free (section_name);
+  finish_page ();
+}
 
 
 int 
@@ -1014,11 +1032,11 @@ main (int argc, char **argv)
       FILE *fp = fopen (*argv, "rb");
       if (!fp)
         die ("%s:0: can't open file: %s", *argv, strerror (errno));
-      parse_file (*argv, fp);
+      top_parse_file (*argv, fp);
       fclose (fp);
     }
   else
-    parse_file ("-", stdin);
+    top_parse_file ("-", stdin);
 
   return !!any_error;
 }

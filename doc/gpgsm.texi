@@ -11,7 +11,7 @@
 @manpage gpgsm.1
 @ifset manverb
 .B gpgsm
-.R \- CMS encryption and signing tool
+\- CMS encryption and signing tool
 @end ifset
 
 @mansect synopsis
