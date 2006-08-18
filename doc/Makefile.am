@@ -22,7 +22,8 @@
 EXTRA_DIST = gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg \
              gnupg-badge-openpgp.pdf \
              gnupg-card-architecture.eps gnupg-card-architecture.png \
-             gnupg-card-architecture.pdf
+             gnupg-card-architecture.pdf \
+             opt-homedir.texi see-also-note.texi
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf
@@ -38,12 +39,16 @@ gnupg_TEXINFOS = \
 	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
 	sysnotes.texi gnupg-card-architecture.fig
 
-YAT2M_OPTIONS = \
+AM_MAKEFINFOFLAGS = -I $(srcdir)
+
+YAT2M_OPTIONS = -I $(srcdir) \
         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
 
 myman_sources = gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi tools.texi
 myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 scdaemon.1 \
-                watchgnupg.1 gpgconf.1 addgnupghome.8
+                watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
+		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
+		gpgsm-gencert.sh.1
 
 man_MANS = $(myman_pages)
 

@@ -1,6 +1,13 @@
 Noteworthy changes in version 1.9.23
 -------------------------------------------------
 
+ * man pages for most tools are now build directly from the texinfo
+   source.
+
+ * The gpg code from 1.4.5 has been fully merged into this release.
+   The configure option --enable-gpg is still required to build this
+   gpg part.  For production use of OpenPGP the gpg version 1.4.5 is
+   still recommended.
 
 
 Noteworthy changes in version 1.9.22 (2006-07-27)

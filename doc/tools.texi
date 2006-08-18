@@ -138,15 +138,17 @@ addgnupghome account1 account2 ... accountn
 @ifset manverb
 .B gpgconf
 .RI [ options ]
-.BI --list-components
+.B \-\-list-components
 .br
 .B gpgconf
 .RI [ options ]
-.BI --list-options component
+.B \-\-list-options 
+.I component
 .br
 .B gpgconf
 .RI [ options ]
-.BI --change-options component
+.B \-\-change-options
+.I component
 @end ifset
 
 
@@ -192,7 +194,7 @@ throughout this section.
 * Changing options::      Changing options of a component.
 @end menu
 
-
+@manpause
 @node Invoking gpgconf
 @subsection Invoking gpgconf
 
@@ -210,7 +212,6 @@ List all options of the component @var{component}.
 
 @item --change-options @var{component}
 Change the options of the component @var{component}.
-@manpause
 @end table
 
 @mansect options
@@ -650,20 +651,47 @@ $ echo 'force:16:' | gpgconf --change-options dirmngr
 The @code{--runtime} option can influence when the changes take
 effect.
 
+@mansect see also
+@command{gpg}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@command{scdaemon}(1),
+@command{dirmngr}(1)
+@include see-also-note.texi
+
+
 @manpause
 @c
 @c    GPGSM-GENCERT.SH
 @c
 @node gpgsm-gencert.sh
 @section Generate an X.509 certificate request
+@manpage gpgsm-gencert.sh.1
+@ifset manverb
+.B gpgsm-gencert.sh
+\- Generate an X.509 certificate request
+@end ifset 
 
+@mansect synopsis
+@ifset manverb
+.B  gpgsm-gencert.sh
+@end ifset
+
+@mansect description
 This is a simple tool to interactivly generate a certificate request
 which will be printed to stdout.
 
+@manpause
 @noindent
 @command{gpgsm-gencert.sh} is invoked as:
 
 @samp{gpgsm-cencert.sh}
+
+@mansect see also
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@command{scdaemon}(1)
+@include see-also-note.texi
 
 
 
@@ -672,7 +700,21 @@ which will be printed to stdout.
 @c
 @node gpg-preset-passphrase
 @section Put a passphrase into the cache.
+@manpage gpg-preset-passphrase.1
+@ifset manverb
+.B gpg-preset-passphrase
+\- Put a passphrase into gpg-agent's cache
+@end ifset
 
+@mansect synopsis
+@ifset manverb
+.B  gpg-preset-passphrase
+.RI [ options ]
+.RI [ command ]
+.I keygrip
+@end ifset
+
+@mansect description
 The @command{gpg-preset-passphrase} is a utility to seed the internal
 cache of a running @command{gpg-agent} with passphrases.  It is mainly
 useful for unattended machines, where the usual @command{pinentry} tool
@@ -690,9 +732,10 @@ starting @command{gpg-agent} with the
 * Invoking gpg-preset-passphrase::   List of all commands and options.
 @end menu
 
-
+@manpause
 @node Invoking gpg-preset-passphrase
 @subsection List of all commands and options.
+@mancont
 
 @noindent
 @command{gpg-preset-passphrase} is invoked this way:
@@ -709,11 +752,13 @@ must be given:
 
 @table @gnupgtabopt
 @item --preset
+@opindex preset
 Preset a passphrase. This is what you usually will
 use. @command{gpg-preset-passphrase} will then read the passphrase from
 @code{stdin}.
 
 @item --forget
+@opindex forget
 Flush the passphrase for the given keygrip from the cache.
 
 @end table
@@ -735,6 +780,12 @@ Instead of reading the passphrase from @code{stdin}, use the supplied
 for other users.
 @end table
 
+@mansect see also
+@command{gpg}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@command{scdaemon}(1)
+@include see-also-note.texi
 
 
 
@@ -743,8 +794,20 @@ for other users.
 @c   GPG-CONNECT-AGENT
 @c
 @node gpg-connect-agent
-@section Communicate with a runnig agent.
+@section Communicate with a running agent.
+@manpage gpg-connect-agent.1
+@ifset manverb
+.B gpg-connect-agent
+\- Communicate with a running agent
+@end ifset
 
+@mansect synopsis
+@ifset manverb
+.B  gpg-connect-agent
+.RI [ options ]
+@end ifset
+
+@mansect description
 The @command{gpg-connect-agent} is a utility to communicate with a
 running @command{gpg-agent}.  It is useful to check out the commands
 gpg-agent provides using the Assuan interface.  It might also be useful
@@ -758,9 +821,10 @@ here we connect to a running instance.
 * Invoking gpg-connect-agent::   List of all commands and options.
 @end menu
 
-
+@manpause
 @node Invoking gpg-connect-agent
 @subsection List of all commands and options.
+@mancont
 
 @noindent
 @command{gpg-connect-agent} is invoked this way:
@@ -784,15 +848,7 @@ Output additional information while running.
 @opindex quiet
 Try to be as quiet as possible.
 
-@item --homedir @var{dir}
-@opindex homedir
-Set the name of the home directory to @var{dir}. If his option is not
-used, the home directory defaults to @file{~/.gnupg}.  It is only
-recognized when given on the command line.  It also overrides any home
-directory stated through the environment variable @env{GNUPGHOME} or
-(on W32 systems) by means on the Registry entry
-@var{HKCU\Software\GNU\GnuPG:HomeDir}.
-
+@include opt-homedir.texi
 
 @item -S
 @itemx --raw-socket @var{name}
@@ -802,8 +858,14 @@ Connect to socket @var{name} assuming this is an Assuan style server.
 Do not run any special initializations or environment checks.  This may
 be used to directly connect to any Assuan style socket server.
 
-
 @end table
+
+@mansect see also
+@command{gpg-agent}(1), 
+@command{scdaemon}(1)
+@include see-also-note.texi
+
+
 
 @c
 @c   GPGPARSEMAIL
@@ -811,7 +873,21 @@ be used to directly connect to any Assuan style socket server.
 @node gpgparsemail
 @section Parse a mail message into an annotated format
 
-The @command{gpgparsemail} is a utility currentlu only useful for
+@manpage gpgparsemail.1
+@ifset manverb
+.B gpgparsemail
+\- Parse a mail message into an annotated format
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpgparsemail
+.RI [ options ]
+.RI [ file ]
+@end ifset
+
+@mansect description
+The @command{gpgparsemail} is a utility currently only useful for
 debugging.  Run it with @code{--help} for usage information.
 
 
@@ -821,7 +897,26 @@ debugging.  Run it with @code{--help} for usage information.
 @c
 @node symcryptrun
 @section Call a simple symmetric encryption tool.
+@manpage symcryptrun.1
+@ifset manverb
+.B symcryptrun
+\- Call a simple symmetric encryption tool
+@end ifset
 
+@mansect synopsis
+@ifset manverb
+.B  symcryptrun
+.B \-\-class
+.I class
+.B \-\-program
+.I program
+.B \-\-keyfile
+.I keyfile
+.RB [ --decrypt | --encrypt ]
+.RI [ inputfile ]
+@end ifset
+
+@mansect description
 Sometimes simple encryption tools are already in use for a long time and
 there might be a desire to integrate them into the GnuPG framework.  The
 protocols and encryption methods might be non-standard or not even
@@ -838,7 +933,7 @@ configured with @samp{--enable-symcryptrun} at build time.
 * Invoking symcryptrun::   List of all commands and options.
 @end menu
 
-
+@manpause
 @node Invoking symcryptrun
 @subsection List of all commands and options.
 
@@ -849,6 +944,7 @@ configured with @samp{--enable-symcryptrun} at build time.
 symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE 
    [--decrypt | --encrypt] [inputfile]
 @end example
+@mancont
 
 For encryption, the plain text must be provided on STDIN or as the
 argument @var{inputfile}, and the ciphertext will be output to STDOUT.
@@ -882,14 +978,8 @@ Output additional information while running.
 @opindex quiet
 Try to be as quiet as possible.
 
-@item --homedir @var{dir}
-@opindex homedir
-Set the name of the home directory to @var{dir}. If his option is not
-used, the home directory defaults to @file{~/.gnupg}.  It is only
-recognized when given on the command line.  It also overrides any home
-directory stated through the environment variable @env{GNUPGHOME} or
-(on W32 systems) by means on the Registry entry
-@var{HKCU\Software\GNU\GnuPG:HomeDir}.
+@include opt-homedir.texi
+
 
 @item --log-file @var{file}
 @opindex log-file
@@ -912,4 +1002,10 @@ The possible exit status codes of @command{symcryptrun} are:
         The operation was canceled by the user.
 
 @end table
+
+@mansect see also
+@command{gpg}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@include see-also-note.texi
 

@@ -85,6 +85,7 @@ static int debug;
 static const char *opt_source; 
 static const char *opt_release; 
 static const char *opt_select;
+static const char *opt_include;
 static int opt_store;
 
 
@@ -335,7 +336,6 @@ add_content (const char *sectname, char *line, int verbatim)
   section_buffer_t sect;
   line_buffer_t lb;
 
-  
   sect = get_section_buffer (sectname);
   if (sect->last_line && !sect->last_line->verbatim == !verbatim)
     {
@@ -447,6 +447,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "end",     4 },
     { "quotation",1, ".RS\n\\fB" },
     { "ifset",   1 },
+    { "ifclear",   1 },
     { NULL }
   };
   size_t n;
@@ -498,6 +499,11 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
             }
           else if (n >= 9 && !memcmp (s, "quotation", 9)
               && (!n || s[9] == ' ' || s[9] == '\t' || s[9] == '\n'))
+            {
+              fputs ("\\fR\n.RE\n", fp);
+            }
+          else if (n >= 5 && !memcmp (s, "ifset", 5)
+              && (!n || s[5] == ' ' || s[5] == '\t' || s[5] == '\n'))
             {
               fputs ("\\fR\n.RE\n", fp);
             }
@@ -815,8 +821,8 @@ parse_file (const char *fname, FILE *fp, char **section_name)
           while (*p == ' ' || *p == '\t')
             p++;
 
-          if (skip_to_end 
-              &&n == 4 && !memcmp (line, "@end", 4)
+          if (skip_to_end
+              && n == 4 && !memcmp (line, "@end", 4)
               && (line[4]==' '||line[4]=='\t'||!line[4]))
             {
               skip_to_end = 0;
@@ -881,11 +887,28 @@ parse_file (const char *fname, FILE *fp, char **section_name)
             {
               skip_to_end = 1;
             }
+          else if (n == 8 && !memcmp (line, "@ifclear", 8)
+              && !strncmp (p, "isman", 5) && (p[5]==' '||p[5]=='\t'||!p[5]))
+            {
+              skip_to_end = 1;
+            }
           else if (n == 8 && !memcmp (line, "@include", 8)
                    && (line[8]==' '||line[8]=='\t'||!line[8]))
             {
               char *incname = xstrdup (p);
               FILE *incfp = fopen (incname, "r");
+
+              if (!incfp && opt_include && *opt_include && *p != '/')
+                {
+                  free (incname);
+                  incname = xmalloc (strlen (opt_include) + 1
+                                     + strlen (p) + 1);
+                  strcpy (incname, opt_include);
+                  if ( incname[strlen (incname)-1] != '/' )
+                    strcat (incname, "/");
+                  strcat (incname, p);
+                  incfp = fopen (incname, "r");
+                }
 
               if (!incfp)
                 err ("can't open include file `%s':%s",
@@ -895,8 +918,9 @@ parse_file (const char *fname, FILE *fp, char **section_name)
                   parse_file (incname, incfp, section_name);
                   fclose (incfp);
                 }
+              free (incname);
             }
-          else
+          else if (!skip_to_end)
             got_line = 1;
         }
       else if (!skip_to_end)
@@ -956,7 +980,8 @@ main (int argc, char **argv)
                 "  --select NAME    only output pages with @manpage NAME\n"
                 "  --verbose        enable extra informational output\n"
                 "  --debug          enable additional debug output\n"
-                "  --help           display this help and exit\n\n"
+                "  --help           display this help and exit\n"
+                "  -I DIR           also search in include DIR\n\n"
                 "With no FILE, or when FILE is -, read standard input.\n\n"
                 "Report bugs to <bugs@g10code.com>.");
           exit (0);
@@ -1018,6 +1043,15 @@ main (int argc, char **argv)
                 opt_select++;
               else 
                 opt_select = *argv;
+              argc--; argv++;
+            }
+        }
+      else if (!strcmp (*argv, "-I"))
+        {
+          argc--; argv++;
+          if (argc)
+            {
+              opt_include = *argv;
               argc--; argv++;
             }
         }

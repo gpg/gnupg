@@ -55,11 +55,12 @@ that this package won't conflict with a GnuPG 1.2 or 1.3
 installation. gpg2 behaves just like gpg; it is however suggested to
 keep using gpg 1.2.x or 1.3.x. gpg2 is not even build by default.
 
-In case of problem please ask on gpa-dev@gnupg.org for advise.  Note
+In case of problem please ask on gnupg-dev@gnupg.org for advise.  Note
 that this release is only expected to build on GNU and *BSD systems.
 
-A texinfo manual named `gnupg.info' will get installed.  Some commands
-and options given below.  See also the section `SMARTCARD INTRO'.
+A texinfo manual named `gnupg.info' will get installed. man pages for
+all major components are also provided. Some commands and options
+given below.  See also the section `SMARTCARD INTRO'.
 
 
 COMMANDS
