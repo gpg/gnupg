@@ -1,0 +1,11 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+#info Checking armored encryption
+for i in $plain_files $data_files ; do
+    $GPG --always-trust -ea -o x --yes -r "$usrname2" $i
+    $GPG -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
+

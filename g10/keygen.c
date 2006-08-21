@@ -1949,11 +1949,9 @@ ask_user_id( int mode )
 	if( *amail )
 	    p = stpcpy(stpcpy(stpcpy(p," <"), amail),">");
 
-	/* append a warning if we do not have dev/random
-	 * or it is switched into  quick testmode */
-        /* FIXME: see skclist.c:random_is_faked */
-        /* 	if( quick_random_gen(-1)  ) */
-        /* 	    strcpy(p, " (INSECURE!)" ); */
+	/* Append a warning if the RNG is switched into fake mode.  */
+        if ( random_is_faked ()  )
+          strcpy(p, " (insecure!)" );
 
 	/* print a note in case that UTF8 mapping has to be done */
 	for(p=uid; *p; p++ ) {

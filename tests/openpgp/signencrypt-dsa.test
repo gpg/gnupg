@@ -1,0 +1,22 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+#info Checking signing and encryption for DSA
+for i in $plain_files $data_files ; do
+    $GPG $dsa_keyrings --always-trust -se -o x --yes \
+		-u "$dsa_usrname1" -r "$dsa_usrname2" $i
+    $GPG $dsa_keyrings -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
+
+for da in ripemd160 sha1; do
+    for i in $plain_files; do
+	$GPG $dsa_keyrings --always-trust -se -o x --yes --digest-algo $da \
+		    -u "$dsa_usrname1" -r "$dsa_usrname2" $i
+	$GPG $dsa_keyrings -o y --yes x
+	cmp $i y || error "$i: mismatch"
+	# process only the first one
+	break
+    done
+done

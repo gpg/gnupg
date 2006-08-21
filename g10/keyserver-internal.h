@@ -23,7 +23,7 @@
 #define _KEYSERVER_INTERNAL_H_
 
 #include <time.h>
-#include "keyserver.h"
+#include "../common/keyserver.h"
 #include "../common/iobuf.h"
 #include "types.h"
 

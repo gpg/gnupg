@@ -568,7 +568,7 @@ static ARGPARSE_OPTS opts[] = {
     { oPasswdFile, "passphrase-file",2, "@" },
     { oCommandFD, "command-fd",1, "@" },
     { oCommandFile, "command-file",2, "@" },
-    { oQuickRandom, "quick-random", 0, "@"},
+    { oQuickRandom, "debug-quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" },
@@ -2152,8 +2152,9 @@ main (int argc, char **argv )
             gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
             opt.list_sigs=0;
             break;
-          /* Disabled for now:
-          case oQuickRandom: quick_random_gen(1); break;*/
+          case oQuickRandom: 
+            gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+            break;
 	  case oEmitVersion: opt.no_version=0; break;
 	  case oNoEmitVersion: opt.no_version=1; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
@@ -2162,17 +2163,17 @@ main (int argc, char **argv )
 	  case oTrustDBName: trustdb_name = pargs.r.ret_str; break;
 	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
 	  case oDefRecipient:
-		    if( *pargs.r.ret_str )
-			opt.def_recipient = make_username(pargs.r.ret_str);
-		    break;
+            if( *pargs.r.ret_str )
+              opt.def_recipient = make_username(pargs.r.ret_str);
+            break;
 	  case oDefRecipientSelf:
-		    xfree(opt.def_recipient); opt.def_recipient = NULL;
-		    opt.def_recipient_self = 1;
-		    break;
+            xfree(opt.def_recipient); opt.def_recipient = NULL;
+            opt.def_recipient_self = 1;
+            break;
 	  case oNoDefRecipient:
-		    xfree(opt.def_recipient); opt.def_recipient = NULL;
-		    opt.def_recipient_self = 0;
-		    break;
+            xfree(opt.def_recipient); opt.def_recipient = NULL;
+            opt.def_recipient_self = 0;
+            break;
 	  case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
 	  case oHomedir: break;
 	  case oNoBatch: opt.batch = 0; break;
@@ -4031,14 +4032,14 @@ print_mds( const char *fname, int algo )
 	gcry_md_enable (md, GCRY_MD_MD5);
 	gcry_md_enable (md, GCRY_MD_SHA1);
 	gcry_md_enable (md, GCRY_MD_RMD160);
-#ifdef USE_SHA256
-	gcry_md_enable (md, DIGEST_ALGO_SHA224);
-	gcry_md_enable (md, GCRY_MD_SHA256);
-#endif
-#ifdef USE_SHA512
-	gcry_md_enable (md, GCRY_MD_SHA384);
-	gcry_md_enable (md, GCRY_MD_SHA512);
-#endif
+        if (!openpgp_md_test_algo (DIGEST_ALGO_SHA224))
+          gcry_md_enable (md, DIGEST_ALGO_SHA224);
+        if (!openpgp_md_test_algo (GCRY_MD_SHA256))
+          gcry_md_enable (md, GCRY_MD_SHA256);
+        if (!openpgp_md_test_algo (GCRY_MD_SHA384))
+          gcry_md_enable (md, GCRY_MD_SHA384);
+        if (!openpgp_md_test_algo (GCRY_MD_SHA512))
+          gcry_md_enable (md, GCRY_MD_SHA512);
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
@@ -4054,15 +4055,14 @@ print_mds( const char *fname, int algo )
                 print_hashline( md, GCRY_MD_MD5, fname );
                 print_hashline( md, GCRY_MD_SHA1, fname );
                 print_hashline( md, GCRY_MD_RMD160, fname );
-#ifdef USE_SHA256
-                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224)
+                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224))
                     print_hashline (md, DIGEST_ALGO_SHA224, fname);
-                print_hashline( md, GCRY_MD_SHA256, fname );
-#endif
-#ifdef USE_SHA512
-		print_hashline( md, GCRY_MD_SHA384, fname );
-		print_hashline( md, GCRY_MD_SHA512, fname );
-#endif
+                if (!gcry_md_test_algo (GCRY_MD_SHA256))
+                    print_hashline( md, GCRY_MD_SHA256, fname );
+                if (!gcry_md_test_algo (GCRY_MD_SHA384))
+                    print_hashline ( md, GCRY_MD_SHA384, fname );
+                if (!gcry_md_test_algo (GCRY_MD_SHA512))
+                    print_hashline ( md, GCRY_MD_SHA512, fname );
             }
         }
         else {
@@ -4072,15 +4072,14 @@ print_mds( const char *fname, int algo )
                 print_hex( md, GCRY_MD_MD5, fname );
                 print_hex( md, GCRY_MD_SHA1, fname );
                 print_hex( md, GCRY_MD_RMD160, fname );
-#ifdef USE_SHA256
-                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224)
+                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224))
                     print_hex (md, DIGEST_ALGO_SHA224, fname);
-                print_hex( md, GCRY_MD_SHA256, fname );
-#endif
-#ifdef USE_SHA512
-		print_hex( md, GCRY_MD_SHA384, fname );
-		print_hex( md, GCRY_MD_SHA512, fname );
-#endif
+                if (!gcry_md_test_algo (GCRY_MD_SHA256))
+                    print_hex( md, GCRY_MD_SHA256, fname );
+                if (!gcry_md_test_algo (GCRY_MD_SHA384))
+                    print_hex( md, GCRY_MD_SHA384, fname );
+                if (!gcry_md_test_algo (GCRY_MD_SHA512))
+                    print_hex( md, GCRY_MD_SHA512, fname );
             }
         }
     }

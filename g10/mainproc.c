@@ -508,8 +508,9 @@ proc_encrypted( CTX c, PACKET *pkt )
 	  }
 	else
 	  {
-	    /* assume this is old style conventional encrypted data */
-	    if ( (algo = opt.def_cipher_algo))
+	    /* Assume this is old style conventional encrypted data. */
+	    algo = opt.def_cipher_algo;
+	    if ( algo )
 	      log_info (_("assuming %s encrypted data\n"),
                         gcry_cipher_algo_name (algo));
 	    else if ( gcry_cipher_test_algo (CIPHER_ALGO_IDEA) )
@@ -680,6 +681,8 @@ proc_plaintext( CTX c, PACKET *pkt )
     }
 
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
+    if (rc)
+      log_debug ("handle_plaintext failed: err=%d\n", rc);
     if( gpg_err_code (rc) == GPG_ERR_ENOENT && !c->sigs_only) 
       {
 #warning We need to change the test for the error code

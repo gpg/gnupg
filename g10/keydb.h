@@ -190,6 +190,7 @@ int  select_algo_from_prefs( PK_LIST pk_list, int preftype,
 int  select_mdc_from_pklist (PK_LIST pk_list);
 
 /*-- skclist.c --*/
+int  random_is_faked (void);
 void release_sk_list( SK_LIST sk_list );
 int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 					    int unlock, unsigned use );

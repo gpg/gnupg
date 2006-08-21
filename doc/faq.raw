@@ -1,0 +1,1344 @@
+[$htmltitle=GnuPG FAQ]
+[$htmlcharset=<meta http-equiv="content-type" content="text/html; charset=utf-8">]
+[$sfaqheader=The GnuPG FAQ says:]
+[$sfaqfooter=
+The most recent version of the FAQ is available from
+<http://www.gnupg.org/>
+]
+[$usenetheader=
+]
+[$maintainer=David D. Scribner, <faq 'at' gnupg.org>]
+[$hGPGHTTP=http://www.gnupg.org]
+[$hGPGFTP=ftp://ftp.gnupg.org]
+[$hVERSION=1.2.2]
+
+[H body bgcolor=#ffffff text=#000000 link=#1f00ff alink=#ff0000 vlink=#9900dd]
+[H h1]GnuPG Frequently Asked Questions[H /h1]
+
+
+[H p]
+Version: 1.6.3[H br]
+Last-Modified: Jul 30, 2003[H br]
+Maintained-by: [$maintainer]
+[H /p]
+
+
+This is the GnuPG FAQ. The latest HTML version is available
+[H a href=[$hGPGHTTP]/documentation/faqs.html]here[H/a].
+
+The index is generated automatically, so there may be errors. Not all
+questions may be in the section they belong to. Suggestions about how
+to improve the structure of this FAQ are welcome.
+
+Please send additions and corrections to the maintainer. It would be
+most convenient if you could provide the answer to be included here
+as well. Your help is very much appreciated!
+
+Please, don't send message like "This should be a FAQ - what's the
+answer?". If it hasn't been asked before, it isn't a FAQ. In that case
+you could search in the mailing list archive.
+
+[H hr]
+<C>
+[H hr]
+
+
+<S> GENERAL
+
+<Q> What is GnuPG?
+
+    [H a href=[$hGPGHTTP]]GnuPG[H /a] stands for GNU Privacy Guard and
+    is GNU's tool for secure communication and data storage. It can be
+    used to encrypt data and to create digital signatures. It includes
+    an advanced key management facility and is compliant with the
+    proposed OpenPGP Internet standard as described in [H a href=http://www.rfc-editor.org/]RFC 2440[H/a].
+    As such, it is aimed to be compatible with PGP from PGP Corp. and
+    other OpenPGP tools
+
+<Q> Is GnuPG compatible with PGP?
+
+    In general, yes. GnuPG and newer PGP releases should be implementing
+    the OpenPGP standard. But there are some interoperability problems.
+    See question <Rcompat> for details.
+
+<Q> Is GnuPG free to use for personal or commercial use?
+
+    Yes. GnuPG is part of the GNU family of tools and applications built
+    and provided in accordance with the Free Software Foundation (FSF)
+    General Public License (GPL). Therefore the software is free to copy,
+    use, modify and distribute in accordance with that license. Please
+    read the file titled COPYING that accompanies the application for
+    more information.
+
+<Q> What conventions are used in this FAQ?
+
+    Although GnuPG is being developed for several operating systems
+    (often in parallel), the conventions used in this FAQ reflect a
+    UNIX shell environment. For Win32 users, references to a shell
+    prompt (`$') should be interpreted as a command prompt (`>'),
+    directory names separated by a forward slash (`/') may need to be
+    converted to a back slash (`\'), and a tilde (`~') represents a
+    user's "home" directory (reference question <Rhomedir> for an example).
+
+    Some command-lines presented in this FAQ are too long to properly
+    display in some browsers for the web page version of this file, and
+    have been split into two or more lines. For these commands please
+    remember to enter the entire command-string on one line or the
+    command will error, or at minimum not give the desired results. 
+
+    Please keep in mind that this FAQ contains information that may not
+    apply to your particular version, as new features and bug fixes are
+    added on a continuing basis (reference the NEWS file included with
+    the source or package for noteworthy changes between versions). One
+    item to note is that starting with GnuPG version 1.1.92 the file
+    containing user options and settings has been renamed from "options"
+    to "gpg.conf". Information in the FAQ that relates to the options
+    file may be interchangable with the newer gpg.conf file in many
+    instances. See question <Roptions> for details.
+
+
+<S> SOURCES of INFORMATION
+
+<Q> Where can I find more information on GnuPG?
+
+    On-line resources:
+
+    [H ul] 
+    [H li]The documentation page is located at [H a href=[$hGPGHTTP]/documentation/]<[$hGPGHTTP]/documentation/>[H/a].
+    Also, have a look at the HOWTOs and the GNU Privacy Handbook (GPH,
+    available in English, Spanish and Russian). The latter provides a
+    detailed user's guide to GnuPG. You'll also find a document about how
+    to convert from PGP 2.x to GnuPG.
+
+    [H li]At [H a href=[$hGPGHTTP]/documentation/mailing-lists.html]<[$hGPGHTTP]/documentation/mailing-lists.html>[H/a] you'll find
+    an online archive of the GnuPG mailing lists. Most interesting should
+    be gnupg-users for all user-related issues and gnupg-devel if you want
+    to get in touch with the developers.
+
+    In addition, searchable archives can be found on MARC, e.g.: [H br]
+    gnupg-users: [H a href=http://marc.theaimsgroup.com/?l=gnupg-users&r=1&w=2]<http://marc.theaimsgroup.com/?l=gnupg-users&r=1&w=2>[H/a][H br]
+    gnupg-devel: [H a href=http://marc.theaimsgroup.com/?l=gnupg-devel&r=1&w=2]<http://marc.theaimsgroup.com/?l=gnupg-devel&r=1&w=2>[H/a][H br]
+
+    [H b]PLEASE:[H /b]
+    Before posting to a list, read this FAQ and the available documentation.
+    In addition, search the list archive - maybe your question has already
+    been discussed. This way you help people focus on topics that have not
+    yet been resolved.
+
+    [H li]The GnuPG source distribution contains a subdirectory:
+
+    [H samp]
+       ./doc
+    [H /samp]
+
+    where some additional documentation is located (mainly interesting
+    for hackers, not the casual user).
+    [H /ul]
+
+<Q> Where do I get GnuPG?
+
+    You can download the GNU Privacy Guard from its primary FTP server
+    [H a href=[$hGPGFTP]/gcrypt/]<[$hGPGFTP]/gcrypt/>[H /a] or from one of the mirrors:
+
+    [H a href=[$hGPGHTTP]/download/mirrors.html]
+       <[$hGPGHTTP]/download/mirrors.html>
+    [H /a]
+
+    The current stable version is [$hVERSION]. Please upgrade to this version as
+    it includes additional features, functions and security fixes that may
+    not have existed in prior versions.
+
+
+<S> INSTALLATION 
+
+<Q> Which OSes does GnuPG run on?
+
+    It should run on most Unices as well as Windows versions (including
+    Windows NT/2000) and Macintosh OS/X. A list of OSes reported to be OK
+    is presented at:
+
+    [H a href=[$hGPGHTTP]/download/supported_systems.html]
+       <[$hGPGHTTP]/download/supported_systems.html>
+    [H /a]
+
+<Q> Which random data gatherer should I use?
+
+    "Good" random numbers are crucial for the security of your encryption.
+    Different operating systems provide a variety of more or less quality
+    random data. Linux and *BSD provide kernel generated random data
+    through /dev/random - this should be the preferred choice on these
+    systems. Also Solaris users with the SUNWski package installed have
+    a /dev/random. In these cases, use the configure option:
+
+    [H samp]
+       --enable-static-rnd=linux
+    [H /samp]
+
+    In addition, there's also the kernel random device by Andi Maier
+    [H a href= http://www.cosy.sbg.ac.at/~andi/SUNrand/]<http://www.cosy.sbg.ac.at/~andi/SUNrand/>[H /a], but it's still beta. Use at your
+    own risk!
+
+    On other systems, the Entropy Gathering Daemon (EGD) is a good choice.
+    It is a perl-daemon that monitors system activity and hashes it into
+    random data. See the download page [H a href=[$hGPGHTTP]/download/]<[$hGPGHTTP]/download/>[H /a]
+    to obtain EGD. Use:
+
+    [H samp]
+       --enable-static-rnd=egd
+    [H /samp]
+
+    here.
+
+    If the above options do not work, you can use the random number
+    generator "unix". This is [H B]very[H /B] slow and should be avoided. The
+    random quality isn't very good so don't use it on sensitive data.
+
+<Didea>
+<Q> How do I include support for RSA and IDEA?
+
+    RSA is included as of GnuPG version 1.0.3.
+
+    The official GnuPG distribution does not contain IDEA due to a patent
+    restriction. The patent does not expire before 2007 so don't expect
+    official support before then.
+
+    However, there is an unofficial module to include it even in earlier
+    versions of GnuPG. It's available from
+    [H a href=ftp://ftp.gnupg.dk/pub/contrib-dk/]<ftp://ftp.gnupg.dk/pub/contrib-dk/>[H /a]. Look for:
+
+    [H pre]
+       idea.c.gz        (c module)
+       idea.c.gz.sig    (signature file)
+    [H /pre]
+
+    [H pre]
+       ideadll.zip      (c module and win32 dll)
+       ideadll.zip.sig  (signature file)
+    [H /pre]
+
+    Compilation directives are in the headers of these files. You will
+    then need to add the following line to your ~/.gnupg/gpg.conf or
+    ~/.gnupg/options file:
+
+    [H samp]
+       load-extension idea
+    [H /samp]
+
+
+<S> USAGE
+
+<Q> What is the recommended key size?
+
+    1024 bit for DSA signatures; even for plain Elgamal signatures.
+    This is sufficient as the size of the hash is probably the weakest
+    link if the key size is larger than 1024 bits. Encryption keys may
+    have greater sizes, but you should then check the fingerprint of
+    this key:
+
+    [H samp]
+       $ gpg --fingerprint <user ID>
+    [H /samp]
+
+    As for the key algorithms, you should stick with the default (i.e.,
+    DSA signature and Elgamal encryption). An Elgamal signing key has
+    the following disadvantages: the signature is larger, it is hard
+    to create such a key useful for signatures which can withstand some
+    real world attacks, you don't get any extra security compared to
+    DSA, and there might be compatibility problems with certain PGP
+    versions. It has only been introduced because at the time it was
+    not clear whether there was a patent on DSA.
+
+<Q> Why does it sometimes take so long to create keys?
+
+    The problem here is that we need a lot of random bytes and for that
+    we (on Linux the /dev/random device) must collect some random data.
+    It is really not easy to fill the Linux internal entropy buffer; I
+    talked to Ted Ts'o and he commented that the best way to fill the
+    buffer is to play with your keyboard. Good security has its price.
+    What I do is to hit several times on the shift, control, alternate,
+    and caps lock keys, because these keys do not produce output to the
+    screen. This way you get your keys really fast (it's the same thing
+    PGP2 does).
+
+    Another problem might be another program which eats up your random
+    bytes (a program (look at your daemons) that reads from /dev/random).
+
+<Q> And it really takes long when I work on a remote system. Why?
+
+    Don't do this at all! You should never create keys or even use GnuPG
+    on a remote system because you normally have no physical control
+    over your secret key ring (which is in most cases vulnerable to
+    advanced dictionary attacks) - I strongly encourage everyone to only
+    create keys on a local computer (a disconnected laptop is probably
+    the best choice) and if you need it on your connected box (I know,
+    we all do this) be sure to have a strong password for both your
+    account and for your secret key, and that you can trust your system
+    administrator.
+
+    When I check GnuPG on a remote system via ssh (I have no Alpha here)
+    ;-) I have the same problem. It takes a *very* long time to create
+    the keys, so I use a special option, --quick-random, to generate
+    insecure keys which are only good for some tests.
+
+<Q> What is the difference between options and commands?
+
+    If you do a 'gpg --help', you will get two separate lists. The first
+    is a list of commands. The second is a list of options. Whenever you
+    run GPG, you [H b]must[H /b] pick exactly one command (with one exception,
+    see below). You [H b]may[H /b] pick one or more options. The command should,
+    just by convention, come at the end of the argument list, after all
+    the options. If the command takes a file (all the basic ones do),
+    the filename comes at the very end. So the basic way to run gpg is:
+
+    [H samp]
+       $ gpg [--option something] [--option2] [--option3 something] --command file
+    [H /samp]
+
+    Some options take arguments. For example, the --output option (which
+    can be abbreviated as -o) is an option that takes a filename. The
+    option's argument must follow immediately after the option itself,
+    otherwise gpg doesn't know which option the argument is supposed to
+    paired with. As an option, --output and its filename must come before
+    the command. The --recipient (-r) option takes a name or keyID to
+    encrypt the message to, which must come right after the -r option.
+    The --encrypt (or -e) command comes after all the options and is
+    followed by the file you wish to encrypt. Therefore in this example
+    the command-line issued would be:
+
+    [H samp]
+       $ gpg -r alice -o secret.txt -e test.txt
+    [H /samp]
+
+    If you write the options out in full, it is easier to read:
+
+    [H samp]
+       $ gpg --recipient alice --output secret.txt --encrypt test.txt
+    [H /samp]
+
+    If you're encrypting to a file with the extension ".txt", then you'd
+    probably expect to see ASCII-armored text in the file (not binary),
+    so you need to add the --armor (-a) option, which doesn't take any
+    arguments:
+
+    [H samp]
+       $ gpg --armor --recipient alice --output secret.txt --encrypt test.txt
+    [H /samp]
+
+    If you imagine square brackets around the optional parts, it becomes
+    a bit clearer:
+
+    [H samp]
+       $ gpg [--armor] [--recipient alice] [--output secret.txt] --encrypt test.txt
+    [H /samp]
+
+    The optional parts can be rearranged any way you want:
+
+    [H samp]
+       $ gpg --output secret.txt --recipient alice --armor --encrypt test.txt
+    [H /samp]
+
+    If your filename begins with a hyphen (e.g. "-a.txt"), GnuPG assumes
+    this is an option and may complain. To avoid this you have to either
+    use "./-a.txt", or stop the option and command processing with two
+    hyphens: "-- -a.txt".
+
+    [H B]The exception to using only one command:[H /B] signing and encrypting
+    at the same time. For this you can combine both commands, such as in:
+
+    [H samp]
+       $ gpg [--options] --sign --encrypt foo.txt
+    [H /samp]
+
+<Q> I can't delete a user ID on my secret keyring because it has
+    already been deleted on my public keyring. What can I do?
+
+    Because you can only select from the public key ring, there is no
+    direct way to do this. However it is not very complicated to do
+    anyway. Create a new user ID with exactly the same name and you
+    will see that there are now two identical user IDs on the secret
+    ring. Now select this user ID and delete it. Both user IDs will be
+    removed from the secret ring.
+
+<Q> I can't delete my secret key because the public key disappeared.
+    What can I do?
+
+    To select a key a search is always done on the public keyring,
+    therefore it is not possible to select a secret key without
+    having the public key. Normally it should never happen that the
+    public key got lost but the secret key is still available. The
+    reality is different, so GnuPG implements a special way to deal
+    with it: Simply use the long keyID to specify the key to delete,
+    which can be obtained by using the --with-colons options (it is
+    the fifth field in the lines beginning with "sec").
+
+    If you've lost your public key and need to recreate it instead
+    for continued use with your secret key, you may be able to use
+    gpgsplit as detailed in question <Rgpgsplit>.
+
+<Q> What are trust, validity and ownertrust?
+
+    With GnuPG, the term "ownertrust" is used instead of "trust" to
+    help clarify that this is the value you have assigned to a key
+    to express how much you trust the owner of this key to correctly
+    sign (and thereby introduce) other keys. The "validity", or
+    calculated trust, is a value which indicates how much GnuPG
+    considers a key as being valid (that it really belongs to the
+    one who claims to be the owner of the key). For more information
+    on trust values see the chapter "The Web of Trust" in The GNU
+    Privacy Handbook.
+
+<Q> How do I sign a patch file?
+
+    Use "gpg --clearsign --not-dash-escaped ...". The problem with
+    --clearsign is that all lines starting with a dash are quoted with
+    "- "; obviously diff produces many lines starting with a dash and
+    these are then quoted and that is not good for a patch ;-). To use
+    a patch file without removing the cleartext signature, the special
+    option --not-dash-escaped may be used to suppress generation of
+    these escape sequences. You should not mail such a patch because
+    spaces and line endings are also subject to the signature and a
+    mailer may not preserve these. If you want to mail a file you can
+    simply sign it using your MUA (Mail User Agent).
+
+<Q> Where is the "encrypt-to-self" option?
+
+    Use "--encrypt-to your_keyID". You can use more than one of these
+    options. To temporarily override the use of this additional key,
+    you can use the option "--no-encrypt-to".
+
+<Q> How can I get rid of the Version and Comment headers in armored
+    messages?
+
+    Use "--no-version --comment ''". Note that the left over blank line
+    is required by the protocol.
+
+<Q> What does the "You are using the xxxx character set." mean?
+
+    This note is printed when UTF-8 mapping has to be done. Make sure
+    that the displayed character set is the one you have activated on
+    your system. Since "iso-8859-1" is the character set most used,
+    this is the default. You can change the charset with the option
+    "--charset". It is important that your active character set matches
+    the one displayed - if not, restrict yourself to plain 7 bit ASCII
+    and no mapping has to be done.
+
+<Q> How can I get list of key IDs used to encrypt a message?
+
+    [H samp]
+       $ gpg --batch --decrypt --list-only --status-fd 1 2>/dev/null |
+         awk '/^\[GNUPG:\] ENC_TO / { print $3 }'
+    [H /samp]
+
+<Q> Why can't I decrypt files encrypted as symmetrical-only (-c) with
+    a version of GnuPG prior to 1.0.1.
+
+    There was a bug in GnuPG versions prior to 1.0.1 which affected files
+    only if 3DES or Twofish was used for symmetric-only encryption (this has
+    never been the default). The bug has been fixed, but to enable decryption
+    of old files you should run gpg with the option "--emulate-3des-s2k-bug",
+    decrypt the file and encrypt it again without this option.
+
+    NOTE: This option was removed in GnuPG development version 1.1.0 and later
+    updates, so you will need to use a version between 1.0.1 and 1.0.7 to
+    re-encrypt any affected files.
+
+<Q> How can I use GnuPG in an automated environment?
+
+    You should use the option --batch and don't use passphrases as
+    there is usually no way to store it more securely than on the
+    secret keyring itself. The suggested way to create keys for an
+    automated environment is:
+
+    On a secure machine:
+    [H ol]
+    [H li] If you want to do automatic signing, create a signing subkey
+           for your key (use the interactive key editing menu by issueing
+           the command 'gpg --edit-key keyID', enter "addkey" and select
+           the DSA key type).
+    [H li] Make sure that you use a passphrase (needed by the current
+           implementation).
+    [H li] gpg --export-secret-subkeys --no-comment foo >secring.auto
+    [H li] Copy secring.auto and the public keyring to a test directory.
+    [H li] Change to this directory.
+    [H li] gpg --homedir . --edit foo and use "passwd" to remove the
+           passphrase from the subkeys. You may also want to remove all
+           unused subkeys.
+    [H li] Copy secring.auto to a floppy and carry it to the target box.
+    [H /ol]
+
+    On the target machine:
+    [H ol]
+    [H li] Install secring.auto as the secret keyring.
+    [H li] Now you can start your new service. It's also a good idea to
+           install an intrusion detection system so that you hopefully
+           get a notice of an successful intrusion, so that you in turn
+           can revoke all the subkeys installed on that machine and
+           install new subkeys.
+    [H /ol]
+
+<Q> Which email-client can I use with GnuPG?
+
+    Using GnuPG to encrypt email is one of the most popular uses.
+    Several mail clients or mail user agents (MUAs) support GnuPG to
+    varying degrees. Simplifying a bit, there are two ways mail can be
+    encrypted with GnuPG: the "old style" ASCII armor (i.e. cleartext
+    encryption), and RFC 2015 style (previously PGP/MIME, now OpenPGP).
+    The latter has full MIME support. Some MUAs support only one of
+    them, so whichever you actually use depends on your needs as well
+    as the capabilities of your addressee. As well, support may be
+    native to the MUA, or provided via "plug-ins" or external tools.
+
+    The following list is not exhaustive:
+
+    [H pre]
+       MUA            OpenPGP ASCII   How? (N,P,T)
+       -------------------------------------------------------------
+       Calypso           N      Y      P (Unixmail)
+       Elm               N      Y      T (mailpgp,morepgp)
+       Elm ME+           N      Y      N
+       Emacs/Gnus        Y      Y      T (Mailcrypt,gpg.el)
+       Emacs/Mew         Y      Y      N
+       Emacs/VM          N      Y      T (Mailcrypt)
+       Evolution         Y      Y      N
+       Exmh              Y      Y      N
+       GNUMail.app       Y      Y      P (PGPBundle)
+       GPGMail           Y      Y      N
+       KMail (<=1.4.x)   N      Y      N
+       KMail (1.5.x)     Y(P)   Y(N)   P/N
+       Mozilla           Y      Y      P (Enigmail)
+       Mulberry          Y      Y      P
+       Mutt              Y      Y      N
+       Sylpheed          Y      Y      N
+       Sylpheed-claws    Y      Y      N
+       TkRat             Y      Y      N
+       XEmacs/Gnus       Y      Y      T (Mailcrypt)
+       XEmacs/Mew        Y      Y      N
+       XEmacs/VM         N      Y      T (Mailcrypt)
+       XFmail            Y      Y      N
+
+       N - Native, P - Plug-in, T - External Tool
+    [H /pre]
+
+    The following table lists proprietary MUAs. The GNU Project
+    suggests against the use of these programs, but they are listed
+    for interoperability reasons for your convenience.
+
+    [H pre]
+       MUA            OpenPGP ASCII   How? (N,P,T)
+       -------------------------------------------------------------
+       Apple Mail        Y      Y      P (GPGMail)
+       Becky2            Y      Y      P (BkGnuPG)
+       Eudora            Y      Y      P (EuroraGPG)
+       Eudora Pro        Y      Y      P (EudoraGPG)
+       Lotus Notes       N      Y      P
+       Netscape 4.x      N      Y      P
+       Netscape 7.x      Y      Y      P (Enigmail)
+       Novell Groupwise  N      Y      P
+       Outlook           N      Y      P (G-Data)
+       Outlook Express   N      Y      P (GPGOE)
+       Pegasus           N      Y      P (QDPGP,PM-PGP)
+       Pine              N      Y      T (pgpenvelope,(gpg|pgp)4pine)
+       Postme            N      Y      P (GPGPPL)
+       The Bat!          N      Y      P (Ritlabs)
+    [H /pre]
+
+    Good overviews of OpenPGP-support can be found at:[H br]
+    [H a href=http://www.openpgp.fr.st/courrier_en.html]<http://www.openpgp.fr.st/courrier_en.html>[H /a] and[H br]
+    [H a href=http://www.bretschneidernet.de/tips/secmua.html]<http://www.bretschneidernet.de/tips/secmua.html>[H /a].
+
+    Users of Win32 MUAs that lack OpenPGP support may look into
+    using GPGrelay [H a href=http://gpgrelay.sourceforge.net]<http://gpgrelay.sourceforge.net>[H /a], a small
+    email-relaying server that uses GnuPG to enable many email clients
+    to send and receive emails that conform to PGP-MIME (RFC 2015).
+
+<Q> Can't we have a gpg library?
+
+    This has been frequently requested. However, the current viewpoint
+    of the GnuPG maintainers is that this would lead to several security
+    issues and will therefore not be implemented in the foreseeable
+    future. However, for some areas of application gpgme could do the
+    trick. You'll find it at [H a href=[$hGPGFTP]/gcrypt/alpha/gpgme]<[$hGPGFTP]/gcrypt/alpha/gpgme>[H /a].
+
+<Q> I have successfully generated a revocation certificate, but I don't
+    understand how to send it to the key servers.
+
+    Most keyservers don't accept a 'bare' revocation certificate. You
+    have to import the certificate into gpg first:
+
+    [H samp]
+       $ gpg --import my-revocation.asc
+    [H /samp]
+
+    then send the revoked key to the keyservers:
+
+    [H samp]
+       $ gpg --keyserver certserver.pgp.com --send-keys mykeyid
+    [H /samp]
+
+    (or use a keyserver web interface for this).
+
+<Dhomedir>
+<Q> How do I put my keyring in a different directory?
+
+    GnuPG keeps several files in a special homedir directory. These
+    include the options file, pubring.gpg, secring.gpg, trustdb.gpg,
+    and others. GnuPG will always create and use these files. On unices,
+    the homedir is usually ~/.gnupg; on Windows "C:\gnupg\".
+
+    If you want to put your keyrings somewhere else, use the option:
+
+    [H samp]
+       --homedir /my/path/
+    [H /samp]
+
+    to make GnuPG create all its files in that directory. Your keyring
+    will be "/my/path/pubring.gpg". This way you can store your secrets
+    on a floppy disk. Don't use "--keyring" as its purpose is to specify
+    additional keyring files.
+
+<Q> How do I verify signed packages?
+
+    Before you can verify the signature that accompanies a package,
+    you must first have the vendor, organisation, or issueing person's
+    key imported into your public keyring. To prevent GnuPG warning
+    messages the key should also be validated (or locally signed).
+
+    You will also need to download the detached signature file along
+    with the package. These files will usually have the same name as
+    the package, with either a binary (.sig) or ASCII armor (.asc)
+    extension.
+
+    Once their key has been imported, and the package and accompanying
+    signature files have been downloaded, use:
+
+    [H samp]
+       $ gpg --verify sigfile signed-file
+    [H /samp]
+
+    If the signature file has the same base name as the package file,
+    the package can also be verified by specifying just the signature
+    file, as GnuPG will derive the package's file name from the name
+    given (less the .sig or .asc extension). For example, to verify a
+    package named foobar.tar.gz against its detached binary signature
+    file, use:
+
+    [H samp]
+       $ gpg --verify foobar.tar.gz.sig
+    [H /samp]
+
+<Q> How do I export a keyring with only selected signatures (keys)?
+
+    If you're wanting to create a keyring with only a subset of keys
+    selected from a master keyring (for a club, user group, or company
+    department for example), simply specify the keys you want to export:
+
+    [H samp]
+       $ gpg --armor --export key1 key2 key3 key4 > keys1-4.asc
+    [H /samp]
+
+<Dgpgsplit>
+<Q> I still have my secret key, but lost my public key. What can I do?
+
+    All OpenPGP secret keys have a copy of the public key inside them,
+    and in a worst-case scenario, you can create yourself a new public
+    key using the secret key.
+
+    A tool to convert a secret key into a public one has been included
+    (it's actually a new option for gpgsplit) and is available with GnuPG
+    versions 1.2.1 or later (or can be found in CVS). It works like this:
+
+    [H samp]
+       $ gpgsplit --no-split --secret-to-public secret.gpg >publickey.gpg
+    [H /samp]
+
+    One should first try to export the secret key and convert just this
+    one. Using the entire secret keyring should work too. After this has
+    been done, the publickey.gpg file can be imported into GnuPG as usual.
+
+<Q> Clearsigned messages sent from my web-mail account have an invalid
+    signature. Why?
+
+    Check to make sure the settings for your web-based email account
+    do not use HTML formatting for the pasted clearsigned message. This can
+    alter the message with embedded HTML markup tags or spaces, resulting
+    in an invalid signature. The recipient may be able to copy the signed
+    message block to a text file for verification, or the web email
+    service may allow you to attach the clearsigned message as a file
+    if plaintext messages are not an option.
+
+
+<S> COMPATIBILITY ISSUES
+
+<Dcompat>
+<Q> How can I encrypt a message with GnuPG so that PGP is able to decrypt it?
+
+    It depends on the PGP version.
+
+    [H ul]
+    [H li]PGP 2.x[H br]
+    You can't do that because PGP 2.x normally uses IDEA which is not
+    supported by GnuPG as it is patented (see <Ridea>), but if you have a
+    modified version of PGP you can try this:
+
+    [H samp]
+       $ gpg --rfc1991 --cipher-algo 3des ...
+    [H /samp]
+
+    Please don't pipe the data to encrypt to gpg but provide it using a
+    filename; otherwise, PGP 2 will not be able to handle it.
+
+    As for conventional encryption, you can't do this for PGP 2.
+
+    [H li]PGP 5.x and higher[H br]
+    You need to provide two additional options:
+
+    [H samp]
+       --compress-algo 1 --cipher-algo cast5
+    [H /samp]
+
+    You may also use "3des" instead of "cast5", and "blowfish" does not
+    work with all versions of PGP 5. You may also want to put:
+
+    [H samp]
+       compress-algo 1
+    [H /samp]
+
+    into your ~/.gnupg/options file - this does not affect normal GnuPG
+    operation.
+
+    This applies to conventional encryption as well.
+    [H /UL]
+
+<Q> How do I migrate from PGP 2.x to GnuPG?
+
+    PGP 2 uses the RSA and IDEA encryption algorithms. Whereas the RSA
+    patent has expired and RSA is included as of GnuPG 1.0.3, the IDEA
+    algorithm is still patented until 2007. Under certain conditions you
+    may use IDEA even today. In that case, you may refer to Question
+    <Ridea> about how to add IDEA support to GnuPG and read
+    [H a href=[$hGPGHTTP]/gph/en/pgp2x.html]<[$hGPGHTTP]/gph/en/pgp2x.html>[H /a] to perform the migration.
+
+<Q> (removed)
+
+    (empty)
+
+<Q> Why is PGP 5.x not able to encrypt messages with some keys?
+
+    PGP, Inc. refuses to accept Elgamal keys of type 20 even for
+    encryption. They only support type 16 (which is identical at least
+    for decryption). To be more inter-operable, GnuPG (starting with
+    version 0.3.3) now also uses type 16 for the Elgamal subkey which is
+    created if the default key algorithm is chosen. You may add a type
+    16 Elgamal key to your public key, which is easy as your key
+    signatures are still valid.
+
+<Q> Why is PGP 5.x not able to verify my messages?
+
+    PGP 5.x does not accept v4 signatures for data material but OpenPGP
+    requests generation of v4 signatures for all kind of data, that's why
+    GnuPG defaults to them. Use the option "--force-v3-sigs" to generate
+    v3 signatures for data.
+
+<Q> How do I transfer owner trust values from PGP to GnuPG?
+
+    There is a script in the tools directory to help you. After you have
+    imported the PGP keyring you can give this command:
+
+    [H samp]
+       $ lspgpot pgpkeyring | gpg --import-ownertrust
+    [H /samp]
+
+    where pgpkeyring is the original keyring and not the GnuPG keyring
+    you might have created in the first step.
+
+<Q> PGP does not like my secret key.
+
+    Older PGPs probably bail out on some private comment packets used by
+    GnuPG. These packets are fully in compliance with OpenPGP; however
+    PGP is not really OpenPGP aware. A workaround is to export the
+    secret keys with this command:
+
+    [H samp]
+       $ gpg --export-secret-keys --no-comment -a your-KeyID
+    [H /samp]
+
+    Another possibility is this: by default, GnuPG encrypts your secret
+    key using the Blowfish symmetric algorithm. Older PGPs will only
+    understand 3DES, CAST5, or IDEA symmetric algorithms. Using the
+    following method you can re-encrypt your secret gpg key with a
+    different algo:
+
+    [H samp]
+       $ gpg --s2k-cipher-algo=CAST5 --s2k-digest-algo=SHA1
+         --compress-algo=1  --edit-key <username>
+    [H /samp]
+
+    Then use passwd to change the password (just change it to the same
+    thing, but it will encrypt the key with CAST5 this time).
+
+    Now you can export it and PGP should be able to handle it.
+
+    For PGP 6.x the following options work to export a key:
+
+    [H samp]
+       $ gpg --s2k-cipher-algo 3des --compress-algo 1 --rfc1991
+         --export-secret-keys <KeyID>
+    [H /samp]
+
+<Doptions>
+<Q> GnuPG no longer installs a ~/.gnupg/options file. Is it missing?
+
+    No. The ~/.gnupg/options file has been renamed to ~/.gnupg/gpg.conf for
+    new installs as of version 1.1.92. If an existing ~/.gnupg/options file
+    is found during an upgrade it will still be used, but this change was
+    required to have a more consistent naming scheme with forthcoming tools.
+    An existing options file can be renamed to gpg.conf for users upgrading,
+    or receiving the message that the "old default options file" is ignored
+    (occurs if both a gpg.conf and an options file are found).
+
+<Q> How do you export GnuPG keys for use with PGP?
+
+    This has come up fairly often, so here's the HOWTO:
+
+    PGP can (for most key types) use secret keys generated by GnuPG. The
+    problems that come up occasionally are generally because GnuPG
+    supports a few more features from the OpenPGP standard than PGP does.
+    If your secret key has any of those features in use, then PGP will
+    reject the key or you will have problems communicating later. Note
+    that PGP doesn't do Elgamal signing keys at all, so they are not
+    usable with any version.
+
+    These instructions should work for GnuPG 1.0.7 and later, and PGP
+    7.0.3 and later.
+
+    Start by editing the key. Most of this line is not really necessary
+    as the default values are correct, but it does not hurt to repeat the
+    values, as this will override them in case you have something else set
+    in your options file.
+
+    [H samp]
+       $ gpg --s2k-cipher-algo cast5 --s2k-digest-algo sha1 --s2k-mode 3
+         --simple-sk-checksum --edit KeyID
+    [H /samp]
+
+    Turn off some features. Set the list of preferred ciphers, hashes,
+    and compression algorithms to things that PGP can handle. (Yes, I
+    know this is an odd list of ciphers, but this is what PGP itself uses,
+    minus IDEA).
+
+    [H samp]
+       > setpref S9 S8 S7 S3 S2 S10 H2 H3 Z1 Z0
+    [H /samp]
+
+    Now put the list of preferences onto the key.
+
+    [H samp]
+       > updpref
+    [H /samp]
+
+    Finally we must decrypt and re-encrypt the key, making sure that we
+    encrypt with a cipher that PGP likes. We set this up in the --edit
+    line above, so now we just need to change the passphrase to make it
+    take effect. You can use the same passphrase if you like, or take
+    this opportunity to actually change it.
+
+    [H samp]
+       > passwd
+    [H /samp]
+
+    Save our work.
+
+    [H samp]
+       > save
+    [H /samp]
+
+    Now we can do the usual export:
+
+    [H samp]
+       $ gpg --export KeyID > mypublickey.pgp[H br]
+       $ gpg --export-secret-key KeyID > mysecretkey.pgp
+    [H /samp]
+
+    Thanks to David Shaw for this information!
+
+
+<S> PROBLEMS and ERROR MESSAGES
+
+<Q> Why do I get "gpg: Warning: using insecure memory!"
+
+    On many systems this program should be installed as setuid(root).
+    This is necessary to lock memory pages. Locking memory pages prevents
+    the operating system from writing them to disk and thereby keeping your
+    secret keys really secret. If you get no warning message about insecure
+    memory your operating system supports locking without being root. The
+    program drops root privileges as soon as locked memory is allocated.
+
+    To setuid(root) permissions on the gpg binary you can either use:
+
+    [H samp]
+       $ chmod u+s /path/to/gpg
+    [H /samp]
+
+    or
+
+    [H samp]
+       $ chmod 4755 /path/to/gpg
+    [H /samp]
+
+    Some refrain from using setuid(root) unless absolutely required for
+    security reasons. Please check with your system administrator if you
+    are not able to make these determinations yourself. 
+
+    On UnixWare 2.x and 7.x you should install GnuPG with the 'plock'
+    privilege to get the same effect:
+
+    [H samp]
+       $ filepriv -f plock /path/to/gpg
+    [H /samp]
+
+    If you can't or don't want to install GnuPG setuid(root), you can
+    use the option "--no-secmem-warning" or put:
+
+    [H samp]
+       no-secmem-warning
+    [H /samp]
+
+    in your ~/.gnupg/options or ~/.gnupg/gpg.conf file (this disables
+    the warning).
+
+    On some systems (e.g., Windows) GnuPG does not lock memory pages
+    and older GnuPG versions (<=1.0.4) issue the warning:
+
+    [H samp]
+       gpg: Please note that you don't have secure memory
+    [H /samp]
+
+    This warning can't be switched off by the above option because it
+    was thought to be too serious an issue. However, it confused users
+    too much, so the warning was eventually removed.
+
+<Q> Large File Support doesn't work ...
+
+    LFS works correctly in post-1.0.4 versions. If configure doesn't
+    detect it, try a different (i.e., better) compiler. egcs 1.1.2 works
+    fine, other gccs sometimes don't. BTW, several compilation problems
+    of GnuPG 1.0.3 and 1.0.4 on HP-UX and Solaris were due to broken LFS
+    support.
+
+<Q> In the edit menu the trust values are not displayed correctly after
+    signing uids. Why?
+
+    This happens because some information is stored immediately in
+    the trustdb, but the actual trust calculation can be done after the
+    save command. This is a "not easy to fix" design bug which will be
+    addressed in some future release.
+
+<Q> What does "skipping pubkey 1: already loaded" mean?
+
+    As of GnuPG 1.0.3, the RSA algorithm is included. If you still have
+    a "load-extension rsa" in your options file, the above message
+    occurs. Just remove the load command from the options file.
+
+<Q> GnuPG 1.0.4 doesn't create ~/.gnupg ...
+
+    That's a known bug, already fixed in newer versions.
+
+<Q> An Elgamal signature does not verify anymore since version 1.0.2 ...
+
+    Use the option --emulate-md-encode-bug.
+
+<Q> Old versions of GnuPG can't verify Elgamal signatures
+
+    Update to GnuPG 1.0.2 or newer.
+
+<Q> When I use --clearsign, the plain text has sometimes extra dashes
+    in it - why?
+
+    This is called dash-escaped text and is required by OpenPGP.
+    It always happens when a line starts with a dash ("-") and is
+    needed to make the lines that structure signature and text
+    (i.e., "-----BEGIN PGP SIGNATURE-----") to be the only lines
+    that start with two dashes.
+
+    If you use GnuPG to process those messages, the extra dashes
+    are removed. Good mail clients remove those extra dashes when
+    displaying such a message.      
+
+<Q> What is the thing with "can't handle multiple signatures"?
+
+    Due to different message formats GnuPG is not always able to split
+    a file with multiple signatures unambiguously into its parts. This
+    error message informs you that there is something wrong with the input.
+
+    The only way to have multiple signatures in a file is by using the
+    OpenPGP format with one-pass-signature packets (which is GnuPG's
+    default) or the cleartext signed format.
+
+<Q> If I submit a key to a keyserver, nothing happens ...
+
+    You are most likely using GnuPG 1.0.2 or older on Windows. That's
+    feature isn't yet implemented, but it's a bug not to say it. Newer
+    versions issue a warning. Upgrade to 1.0.4 or newer.
+
+<Q> I get "gpg: waiting for lock ..."
+
+    A previous instance of gpg has most likely exited abnormally and left
+    a lock file. Go to ~/.gnupg and look for .*.lock files and remove them.
+
+<Q> Older gpg binaries (e.g., 1.0) have problems with keys from newer
+    gpg binaries ...
+
+    As of 1.0.3, keys generated with gpg are created with preferences to
+    TWOFISH (and AES since 1.0.4) and that also means that they have the
+    capability to use the new MDC encryption method. This will go into
+    OpenPGP soon, and is also suppoted by PGP 7. This new method avoids
+    a (not so new) attack on all email encryption systems.
+
+    This in turn means that pre-1.0.3 gpg binaries have problems with
+    newer keys. Because of security and bug fixes, you should keep your
+    GnuPG installation in a recent state anyway. As a workaround, you can
+    force gpg to use a previous default cipher algo by putting:
+
+    [H samp]
+       cipher-algo cast5
+    [H /samp]
+
+    into your options file.
+
+<Q> With 1.0.4, I get "this cipher algorithm is deprecated ..."
+
+    If you just generated a new key and get this message while
+    encrypting, you've witnessed a bug in 1.0.4. It uses the new AES
+    cipher Rijndael that is incorrectly being referred as "deprecated".
+    Ignore this warning, more recent versions of gpg are corrected.
+
+<Q> Some dates are displayed as ????-??-??. Why?
+
+    Due to constraints in most libc implementations, dates beyond
+    2038-01-19 can't be displayed correctly. 64-bit OSes are not
+    affected by this problem. To avoid printing wrong dates, GnuPG
+    instead prints some question marks. To see the correct value, you
+    can use the options --with-colons and --fixed-list-mode.
+
+<Q> I still have a problem. How do I report a bug?
+
+    Are you sure that it's not been mentioned somewhere on the mailing
+    lists? Did you have a look at the bug list (you'll find a link to
+    the list of reported bugs on the documentation page). If you're not
+    sure about it being a bug, you can send mail to the gnupg-devel
+    list. Otherwise, use the GUUG bug tracking system 
+    [H a href=http://bugs.guug.de/Reporting.html]<http://bugs.guug.de/Reporting.html>[H /a].
+
+<Q> Why doesn't GnuPG support X.509 certificates?
+
+    GnuPG, first and foremost, is an implementation of the OpenPGP
+    standard (RFC 2440), which is a competing infrastructure, different
+    from X.509.
+
+    They are both public-key cryptosystems, but how the public keys are
+    actually handled is different.
+
+<Q> Why do national characters in my user ID look funny?
+
+    According to OpenPGP, GnuPG encodes user ID strings (and other
+    things) using UTF-8. In this encoding of Unicode, most national
+    characters get encoded as two- or three-byte sequences. For
+    example, &aring; (0xE5 in ISO-8859-1) becomes &Atilde;&yen; (0xC3,
+    0xA5). This might also be the reason why keyservers can't find
+    your key.
+
+<Q> I get 'sed' errors when running ./configure on Mac OS X ...
+
+    This will be fixed after GnuPG has been upgraded to autoconf-2.50.
+    Until then, find the line setting CDPATH in the configure script
+    and place an:
+
+    [H samp]
+       unset CDPATH
+    [H /samp]
+
+    statement below it.
+
+<Q> Why does GnuPG 1.0.6 bail out on keyrings used with 1.0.7?
+
+    There is a small bug in 1.0.6 which didn't parse trust packets
+    correctly. You may want to apply this patch if you can't upgrade:
+
+    [H a href=http://www.gnupg.org/developer/gpg-woody-fix.txt]<http://www.gnupg.org/developer/gpg-woody-fix.txt>[H /a]
+
+<Q> I upgraded to GnuPG version 1.0.7 and now it takes longer to load my
+    keyrings. What can I do?
+
+    The way signature states are stored has changed so that v3 signatures
+    can be supported. You can use the new --rebuild-keydb-caches migration
+    command, which was built into this release and increases the speed of
+    many operations for existing keyrings.
+
+<Q> Doesn't a fully trusted user ID on a key prevent warning messages
+    when encrypting to other IDs on the key?
+
+    No. That was actually a key validity bug in GnuPG 1.2.1 and earlier
+    versions. As part of the development of GnuPG 1.2.2, a bug was
+    discovered in the key validation code.  This bug causes keys with
+    more than one user ID to give all user IDs on the key the amount of
+    validity given to the most-valid key. The bug has been fixed in GnuPG
+    release 1.2.2, and upgrading is the recommended fix for this problem.
+    More information and a patch for a some pre-1.2.2 versions of GnuPG
+    can be found at:
+
+    [H a href=http://lists.gnupg.org/pipermail/gnupg-announce/2003q2/000268.html]<http://lists.gnupg.org/pipermail/gnupg-announce/2003q2/000268.html>[H /a]
+
+<Q> I just compiled GnuPG from source on my GNU/Linux RPM-based system
+    and it's not working. Why?
+
+    Many GNU/Linux distributions that are RPM-based will install a
+    version of GnuPG as part of its standard installation, placing the
+    binaries in the /usr/bin directory. Later, compiling and installing
+    GnuPG from source other than from a source RPM won't normally
+    overwrite these files, as the default location for placement of
+    GnuPG binaries is in /usr/local/bin unless the '--prefix' switch
+    is used during compile to specify an alternate location. Since the
+    /usr/bin directory more than likely appears in your path before
+    /usr/local/bin, the older RPM-version binaries will continue to
+    be used when called since they were not replaced.
+
+    To resolve this, uninstall the RPM-based version with 'rpm -e gnupg'
+    before installing the binaries compiled from source. If dependency
+    errors are displayed when attempting to uninstall the RPM (such as
+    when Red Hat's up2date is also installed, which uses GnuPG), uninstall
+    the RPM with 'rpm -e gnupg --nodeps' to force the uninstall. Any
+    dependent files should be automatically replaced during the install
+    of the compiled version. If the default /usr/local/bin directory is
+    used, some packages such as SuSE's Yast Online Update may need to be
+    configured to look for GnuPG binaries in the /usr/local/bin directory,
+    or symlinks can be created in /usr/bin that point to the binaries
+    located in /usr/local/bin.
+
+
+<S> ADVANCED TOPICS
+
+<Q> How does this whole thing work?
+
+    To generate a secret/public keypair, run:
+
+    [H samp]
+       $ gpg --gen-key
+    [H /samp]
+
+    and choose the default values.
+
+    Data that is encrypted with a public key can only be decrypted by
+    the matching secret key. The secret key is protected by a password,
+    the public key is not.
+
+    So to send your friend a message, you would encrypt your message
+    with his public key, and he would only be able to decrypt it by
+    having the secret key and putting in the password to use his secret
+    key.
+
+    GnuPG is also useful for signing things. Files that are encrypted
+    with the secret key can be decrypted with the public key. To sign
+    something, a hash is taken of the data, and then the hash is in some
+    form encoded with the secret key. If someone has your public key, they
+    can verify that it is from you and that it hasn't changed by checking
+    the encoded form of the hash with the public key.
+
+    A keyring is just a large file that stores keys. You have a public
+    keyring where you store yours and your friend's public keys. You have
+    a secret keyring that you keep your secret key on, and should be very
+    careful with. Never ever give anyone else access to it and use a *good*
+    passphrase to protect the data in it.
+
+    You can 'conventionally' encrypt something by using the option 'gpg -c'.
+    It is encrypted using a passphrase, and does not use public and secret
+    keys. If the person you send the data to knows that passphrase, they
+    can decrypt it. This is usually most useful for encrypting things to
+    yourself, although you can encrypt things to your own public key in the
+    same way. It should be used for communication with partners you know
+    and where it is easy to exchange the passphrases (e.g. with your boy
+    friend or your wife). The advantage is that you can change the
+    passphrase from time to time and decrease the risk, that many old
+    messages may be decrypted by people who accidently got your passphrase.
+
+    You can add and copy keys to and from your keyring with the 'gpg
+    --import' and 'gpg --export' command. 'gpg --export-secret-keys' will
+    export secret keys. This is normally not useful, but you can generate
+    the key on one machine then move it to another machine.
+
+    Keys can be signed under the 'gpg --edit-key' option. When you sign a
+    key, you are saying that you are certain that the key belongs to the
+    person it says it comes from. You should be very sure that is really
+    that person: You should verify the key fingerprint with:
+
+    [H samp]
+       $ gpg --fingerprint KeyID
+    [H /samp]
+
+    over the phone (if you really know the voice of the other person), at
+    a key signing party (which are often held at computer conferences),
+    or at a meeting of your local GNU/Linux User Group.
+
+    Hmm, what else. You may use the option '-o filename' to force output
+    to this filename (use '-' to force output to stdout). '-r' just lets
+    you specify the recipient (which public key you encrypt with) on the
+    command line instead of typing it interactively.
+
+    Oh yeah, this is important. By default all data is encrypted in some
+    weird binary format. If you want to have things appear in ASCII text
+    that is readable, just add the '-a' option. But the preferred method
+    is to use a MIME aware mail reader (Mutt, Pine and many more).
+
+    There is a small security glitch in the OpenPGP (and therefore GnuPG)
+    system; to avoid this you should always sign and encrypt a message
+    instead of only encrypting it.
+
+<Q> Why are some signatures with an ELG-E key valid?
+
+    These are Elgamal keys generated by GnuPG in v3 (RFC 1991) packets.
+    The OpenPGP draft later changed the algorithm identifier for Elgamal
+    keys which are usable for signatures and encryption from 16 to 20.
+    GnuPG now uses 20 when it generates new Elgamal keys but still
+    accepts 16 (which is according to OpenPGP "encryption only") if this
+    key is in a v3 packet. GnuPG is the only program which had used
+    these v3 Elgamal keys - so this assumption is quite safe.
+
+<Q> How does the whole trust thing work?
+
+    It works more or less like PGP. The difference is that the trust is
+    computed at the time it is needed. This is one of the reasons for
+    the trustdb which holds a list of valid key signatures. If you are
+    not running in batch mode you will be asked to assign a trust
+    parameter (ownertrust) to a key.
+
+    You can see the validity (calculated trust value) using this
+    command.
+
+    [H samp]
+       $ gpg --list-keys --with-colons
+    [H /samp] 
+
+    If the first field is "pub" or "uid", the second field shows you the
+    trust:
+
+    [H pre]
+       o = Unknown (this key is new to the system)
+       e = The key has expired
+       q = Undefined (no value assigned)
+       n = Don't trust this key at all
+       m = There is marginal trust in this key
+       f = The key is full trusted
+       u = The key is ultimately trusted; this is only used
+           for keys for which the secret key is also available.
+       r = The key has been revoked
+       d = The key has been disabled
+    [H /pre]
+
+    The value in the "pub" record is the best one of all "uid" records.
+    You can get a list of the assigned trust values (how much you trust
+    the owner to correctly sign another person's key) with:
+
+    [H samp]
+       $ gpg --list-ownertrust
+    [H /samp]
+
+    The first field is the fingerprint of the primary key, the second
+    field is the assigned value:
+
+    [H pre]
+       - = No ownertrust value yet assigned or calculated.
+       n = Never trust this keyholder to correctly verify others signatures.
+       m = Have marginal trust in the keyholders capability to sign other
+           keys.
+       f = Assume that the key holder really knows how to sign keys.
+       u = No need to trust ourself because we have the secret key.
+    [H /pre]
+
+    Keep these values confidential because they express your opinions
+    about others. PGP stores this information with the keyring thus it
+    is not a good idea to publish a PGP keyring instead of exporting the
+    keyring. GnuPG stores the trust in the trustdb.gpg file so it is okay
+    to give a gpg keyring away (but we have a --export command too).
+
+<Q> What kind of output is this: "key C26EE891.298, uid 09FB: ...."?
+
+    This is the internal representation of a user ID in the trustdb.
+    "C26EE891" is the keyid, "298" is the local ID (a record number in
+    the trustdb) and "09FB" is the last two bytes of a ripe-md-160 hash
+    of the user ID for this key.
+
+<Q> How do I interpret some of the informational outputs?
+
+    While checking the validity of a key, GnuPG sometimes prints some
+    information which is prefixed with information about the checked
+    item.
+
+    [H samp]
+       "key 12345678.3456"
+    [H /samp]
+
+    This is about the key with key ID 12345678 and the internal number
+    3456, which is the record number of the so called directory record
+    in the trustdb.
+
+    [H samp]
+       "uid 12345678.3456/ACDE"
+    [H /samp]
+
+    This is about the user ID for the same key. To identify the user ID
+    the last two bytes of a ripe-md-160 over the user ID ring is printed.
+
+    [H samp]
+       "sig 12345678.3456/ACDE/9A8B7C6D"
+    [H /samp]
+
+    This is about the signature with key ID 9A8B7C6D for the above key
+    and user ID, if it is a signature which is direct on a key, the user
+    ID part is empty (..//..).
+
+<Q> Are the header lines of a cleartext signature part of the signed
+    material?
+
+    No. For example you can add or remove "Comment:" lines. They have
+    a purpose like the mail header lines. However a "Hash:" line is
+    needed for OpenPGP signatures to tell the parser which hash
+    algorithm to use.
+
+<Q> What is the list of preferred algorithms?
+
+    The list of preferred algorithms is a list of cipher, hash and
+    compression algorithms stored in the self-signature of a key during
+    key generation. When you encrypt a document, GnuPG uses this list
+    (which is then part of a public key) to determine which algorithms
+    to use. Basically it tells other people what algorithms the
+    recipient is able to handle and provides an order of preference.
+
+<Q> How do I change the list of preferred algorithms?
+
+    In version 1.0.7 or later, you can use the edit menu and set the
+    new list of preference using the command "setpref"; the format of
+    this command resembles the output of the command "pref". The
+    preference is not changed immediately but the set preference will
+    be used when a new user ID is created. If you want to update the
+    preferences for existing user IDs, select those user IDs (or select
+    none to update all) and enter the command "updpref". Note that the
+    timestamp of the self-signature is increased by one second when
+    running this command.
+
+
+<S> ACKNOWLEDGEMENTS
+
+    Many thanks to Nils Ellmenreich for maintaining this FAQ file for
+    such a long time, Werner Koch for the original FAQ file, and to all
+    posters to gnupg-users and gnupg-devel. They all provided most of
+    the answers.
+
+    Also thanks to Casper Dik for providing us with a script to generate
+    this FAQ (he uses it for the excellent Solaris2 FAQ).
+
+[H hr]
+
+Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02111, USA
+
+Verbatim copying and distribution of this entire article is permitted in
+any medium, provided this notice is preserved.

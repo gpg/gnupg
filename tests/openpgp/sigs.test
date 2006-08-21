@@ -1,0 +1,52 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+#info Checking signatures
+for i in $plain_files $data_files; do
+    echo "$usrpass1" | $GPG --passphrase-fd 0 -s -o x --yes $i
+    $GPG -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
+
+# Using the DSA sig key - only 160 bit hashes
+for da in ripemd160 sha1 ; do
+    for i in $plain_files; do
+	echo "$usrpass1" | $GPG --passphrase-fd 0 --digest-algo $da \
+				-s -o x --yes $i
+	$GPG -o y --yes x
+	cmp $i y || error "$i: mismatch"
+	# process only the first one
+	break
+    done
+done
+
+# TODO: add the new SHAs here once we allow them to be used in new
+# documents.
+
+if have_pubkey_algo "RSA"; then
+    # Using the RSA sig key - all hashes
+    hash_algo_list="ripemd160 sha1 md5"
+    if have_hash_algo "SHA224"; then
+	hash_algo_list="$hash_algo_list sha224"
+    fi
+    if have_hash_algo "SHA256"; then
+	hash_algo_list="$hash_algo_list sha256"
+    fi
+    if have_hash_algo "SHA384"; then
+	hash_algo_list="$hash_algo_list sha384"
+    fi
+    if have_hash_algo "SHA512"; then
+	hash_algo_list="$hash_algo_list sha512"
+    fi
+
+    for da in $hash_algo_list ; do
+	for i in $plain_files; do
+	    $GPG -u $usrname3 --digest-algo $da -s -o x --yes $i
+	    $GPG -o y --yes x
+	    cmp $i y || error "$i: mismatch"
+  	    # process only the first one
+	    break
+	done
+    done
+fi

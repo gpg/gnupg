@@ -1,3 +1,9 @@
+2006-08-21  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (libcommon_a_SOURCES): Added keyserver.h
+
+	* openpgpdefs.h: New.  Stripped from ..g10/packet.h.
+
 2006-08-16  Werner Koch  <wk@g10code.com>
 
 	* keyserver.h: Moved from ../include to here.

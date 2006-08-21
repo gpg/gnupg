@@ -1,0 +1,42 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+algos="3des"
+
+if have_cipher_algo "idea"; then
+   algos="$algos idea"
+fi
+
+if have_cipher_algo "cast5"; then
+   algos="$algos idea"
+fi
+
+if have_cipher_algo "blowfish"; then
+   algos="$algos idea"
+fi
+
+if have_cipher_algo "aes"; then
+   algos="$algos aes aes192 aes256"
+fi
+
+if have_cipher_algo "twofish"; then
+   algos="$algos twofish"
+fi
+
+#info Checking conventional encryption
+for i in 0 1 2 3 9 10 11 19 20 21 22 23 39 40 41 8192 32000 ; do
+  for ciph in $algos; do
+    # *BSD's dd can't cope with a count of 0
+    if test "$i" = "0"; then
+        : >z
+    else
+        dd if=data-80000 of=z bs=1 count=$i 2>/dev/null
+    fi
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
+	--force-mdc --cipher $ciph -c -o x --yes z
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
+	-o y --yes x
+    cmp z y || error "$ciph/$i: mismatch"
+  done
+done

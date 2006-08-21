@@ -1,0 +1,305 @@
+		      A Hacker's Guide to GNUPG
+		   ================================
+		   (Some notes on GNUPG internals.)
+
+
+		   ===> Under construction <=======
+
+
+CVS Access
+==========
+
+NOTE: CVS access has been disabled while we are migrating to Subversion.
+Watch www.gnupg.org for instarctions on how to use the Subversion repository.
+
+Anonymous read-only CVS access is available:
+
+  cvs -z3 -d :pserver:anoncvs@cvs.gnupg.org:/cvs/gnupg login
+
+use the password "anoncvs".  To check out the the complete
+archive use:
+
+  cvs -z3 -d :pserver:anoncvs@cvs.gnupg.org:/cvs/gnupg \
+        checkout -R STABLE-BRANCH-1-0 gnupg
+
+This service is provided to help you in hunting bugs and not to deliver
+stable snapshots; it may happen that it even does not compile, so please
+don't complain. CVS may put a high load on a server, so please don't poll
+poll for new updates but wait for an announcement; to receive this you may
+want to subscribe to:
+
+    gnupg-commit-watchers@gnupg.org
+
+by sending a mail with subject "subscribe" to
+
+    gnupg-commit-watchers-request@gnupg.org
+
+
+You must run scripts/autogen.sh before doing the ./configure,
+as this creates some needed while which are not in the CVS.
+autogen.sh should checks that you have all required tools
+installed.
+
+
+RSYNC access
+============
+The FTP archive is also available by anonymous rsync.  A daily snapshot
+of the CVS head revision is also available.  See rsync(1) and try
+"rsync ftp.gnupg.org::" to see available resources.
+
+
+
+Special Tools
+=============
+Documentation is based on the docbook DTD.  Actually we have only the
+man page for now.  To build a man page you need the docbook-to-man
+tool and all the other thinks needed for SGML processing.  Debian
+comes with the docbook tools and you only need this docbook-to-man
+script which is comes with gtk-doc or download it from
+ftp.openit.de:/pub/devel/sgml.	If you don't have it everything
+should still work fine but you will have only a dummy man page.
+
+
+RFCs
+====
+
+1423  Privacy Enhancement for Internet Electronic Mail:
+      Part III: Algorithms, Modes, and Identifiers.
+
+1489  Registration of a Cyrillic Character Set.
+
+1750  Randomness Recommendations for Security.
+
+1991  PGP Message Exchange Formats.
+
+2015  MIME Security with Pretty Good Privacy (PGP).
+
+2144  The CAST-128 Encryption Algorithm.
+
+2279  UTF-8, a transformation format of ISO 10646.
+
+2440  OpenPGP.
+
+
+
+Debug Flags
+-----------
+Use the option "--debug n" to output debug information. This option
+can be used multiple times, all values are ORed; n maybe prefixed with
+0x to use hex-values.
+
+     value  used for
+     -----  ----------------------------------------------
+      1     packet reading/writing
+      2     MPI details
+      4     ciphers and primes (may reveal sensitive data)
+      8     iobuf filter functions
+      16    iobuf stuff
+      32    memory allocation stuff
+      64    caching
+      128   show memory statistics at exit
+      256   trust verification stuff
+
+
+
+
+Directory Layout
+----------------
+  ./		Readme, configure
+  ./scripts	Scripts needed by configure and others
+  ./doc 	Documentation
+  ./util	General purpose utility function
+  ./mpi 	Multi precision integer library
+  ./cipher	Cryptographic functions
+  ./g10 	GnuPG application
+  ./tools	Some helper and demo programs
+  ./keybox	The keybox library (under construction)
+  ./gcrypt	Stuff needed to build libgcrypt (under construction)
+
+
+Detailed Roadmap
+----------------
+g10/g10.c	Main module with option parsing and all the stuff you have
+		to do on startup.  Also has the exout handler and some
+		helper functions.
+g10/sign.c      Create signature and optionally encrypt
+
+g10/parse-packet.c
+g10/build-packet.c
+g10/free-packet.c
+		Parsing and creating of OpenPGP message packets.
+
+g10/getkey.c    Key selection code
+g10/pkclist.c   Build a list of public keys
+g10/skclist.c   Build a list of secret keys
+g10/ringedit.c  Keyring I/O
+g10/keydb.h
+
+g10/keyid.c	Helper functions to get the keyid, fingerprint etc.
+
+
+g10/trustdb.c    
+g10/trustdb.h
+g10/tdbdump.c
+               Management of the trustdb.gpg
+
+g10/compress.c Filter to handle compression
+g10/filter.h   Declarations for all filter functions
+g10/delkey.c   Delete a key
+g10/kbnode.c   Helper for the KBNODE linked list
+g10/main.h     Prototypes and some constants
+g10/mainproc.c Message processing
+g10/armor.c    Ascii armor filter 
+g10/mdfilter.c Filter to calculate hashs
+g10/textfilter.c Filter to handle CR/LF and trailing white space
+g10/cipher.c   En-/Decryption filter
+g10/misc.c     Utlity functions
+g10/options.h  Structure with all the command line options
+               and related constants
+g10/openfile.c Create/Open Files
+g10/tdbio.c    I/O handling for the trustdb.gpg
+g10/tdbio.h
+g10/hkp.h      Keyserver access
+g10/hkp.c
+g10/packet.h   Defintion of OpenPGP structures.
+g10/passphrase.c  Passphrase handling code
+g10/pubkey-enc.c  
+g10/seckey-cert.c
+g10/seskey.c
+g10/import.c
+g10/export.c
+g10/comment.c
+g10/status.c
+g10/status.h
+g10/sign.c
+g10/plaintext.c
+g10/encr-data.c
+g10/encode.c
+g10/revoke.c
+g10/keylist.c
+g10/sig-check.c
+g10/signal.c
+g10/helptext.c
+g10/verify.c
+g10/decrypt.c
+g10/keyedit.c
+g10/dearmor.c
+g10/keygen.c
+
+
+
+Memory allocation
+-----------------
+Use only the functions:
+
+    m_alloc()
+    m_alloc_clear()
+    m_strdup()
+    m_free()
+
+If you want to store a passphrase or some other sensitive data you may
+want to use m_alloc_secure() instead of m_alloc(), as this puts the data
+into a memory region which is protected from swapping (on some platforms).
+m_free() works for both.  This functions will not return if there is not
+enough memory available.
+
+
+
+Logging
+-------
+
+
+
+
+
+
+Option parsing
+---------------
+GNUPG does not use getopt or GNU getopt but functions of it's own.  See
+util/argparse.c for details.  The advantage of these functions is that
+it is more easy to display and maintain the help texts for the options.
+The same option table is also used to parse resource files.
+
+
+
+What is an IOBUF
+----------------
+This is the data structure used for most I/O of gnupg.	It is similar
+to System V Streams but much simpler.  Because OpenPGP messages are nested
+in different ways; the use of such a system has big advantages.  Here is
+an example, how it works:  If the parser sees a packet header with a partial
+length, it pushes the block_filter onto the IOBUF to handle these partial
+length packets: from now on you don't have to worry about this.  When it sees
+a compressed packet it pushes the uncompress filter and the next read byte
+is one which has already been uncompressed by this filter. Same goes for
+enciphered packet, plaintext packets and so on.  The file g10/encode.c
+might be a good staring point to see how it is used  - actually this is
+the other way: constructing messages using pushed filters but it may be
+easier to understand.
+
+
+How to use the message digest functions
+---------------------------------------
+cipher/md.c implements an interface to hash (message digest functions).
+
+a) If you have a common part of data and some variable parts
+   and you need to hash of the concatenated parts, you can use this:
+	md = md_open(...)
+	md_write( md,  common_part )
+	md1 = md_copy( md )
+	md_write(md1, part1)
+	md_final(md1);
+	digest1 = md_read(md1)
+	md2 = md_copy( md )
+	md_write(md2, part2)
+	md_final(md2);
+	digest2 = md_read(md2)
+
+   An example are key signatures; the key packet is the common part
+   and the user-id packets are the variable parts.
+
+b) If you need a running digest you should use this:
+	md = md_open(...)
+	md_write( md, part1 )
+	digest_of_part1 = md_digest( md );
+	md_write( md, part2 )
+	digest_of_part1_cat_part2 = md_digest( md );
+	....
+
+Both methods may be combined. [Please see the source for the real syntax]
+
+
+
+
+How to use the cipher functions
+-------------------------------
+cipher/cipher.c implements the interface to symmetric encryption functions.
+As usual you have a function to open a cipher (which returns a handle to be used
+with all other functions), some functions to set the key and other stuff and
+a encrypt and decrypt function which does the real work.  You probably know
+how to work with files - so it should really be easy to work with these
+functions.  Here is an example:
+
+    CIPHER_HANDLE hd;
+
+    hd = cipher_open( CIPHER_ALGO_TWOFISH, CIPHER_MODE_CFB, 0 );
+    if( !hd )
+	oops( use other function to check for the real error );
+    rc = cipher_setkey( hd, key256bit, 32 ) )
+    if( rc )
+	oops( weak key or something like this );
+    cipher_setiv( hd, some_IV_or_NULL_for_all_zeroes );
+    cipher_encrypt( hd, plain, cipher, size );
+    cipher_close( hd );
+
+
+
+How to use the public key functions
+-----------------------------------
+cipher/pubkey.c implements the interface to asymmetric encryption and
+signature functions. This is basically the same as with the symmetric
+counterparts, but due to their nature it is a little bit more complicated.
+
+   [Give an example]
+
+

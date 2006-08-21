@@ -29,6 +29,7 @@
 #
 #SUBDIRS = . ${pkits}
 
+SUBDIRS = openpgp
 
 GPGSM = ../sm/gpgsm
 

@@ -30,6 +30,8 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS) \
 libcommon_a_SOURCES = \
 	util.h i18n.h \
 	errors.h \
+	openpgpdefs.h \
+	keyserver.h \
 	sexp-parse.h \
 	sexputil.c \
 	maperror.c \
@@ -55,7 +57,6 @@ libcommon_a_SOURCES = \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \
 	http.c http.h 
-
 
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h

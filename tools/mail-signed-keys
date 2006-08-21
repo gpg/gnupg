@@ -1,0 +1,114 @@
+#!/bin/sh
+# Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+# FIXME: Add --dry-run,  use only valid email addreses, extract only given keys
+
+dryrun=0
+if [ "$1" = "--dry-run" ]; then
+   dryrun=1
+   shift
+fi
+
+if [ -z "$1" -o -z "$2" -o -z "$3" ]; then
+   echo "usage: mail-signed-keys keyring signedby signame" >&2
+   exit 1
+fi
+
+signame="$3"
+
+if [ ! -f $1 ]; then
+    echo "mail-signed-keys: '$1': no such file" >&2
+    exit 1
+fi
+
+[ -f '.#tdb.tmp' ] && rm '.#tdb.tmp'
+ro="--homedir . --no-options --trustdb-name=./.#tdb.tmp --dry-run --lock-never --no-default-keyring --keyring $1"
+
+signedby=`gpg $ro --list-keys --with-colons $2 \
+	  2>/dev/null | awk -F: '$1=="pub" {print $5; exit 0}'`
+
+if [ -z "$signedby" ]; then
+    echo "mail-signed-keys: '$2': no such signator" >&2
+    exit 1
+fi
+
+if [ "$dryrun" = "0" ]; then
+  echo "About to send the the keys signed by $signedby" >&2
+  echo -n "to their owners.  Do you really want to do this? (y/N)" >&2
+  read
+  [ "$REPLY" != "y" -a "$REPLY" != "Y" ] && exit 0
+fi
+
+gpg $ro --check-sigs --with-colons 2>/dev/null \
+     | awk -F: -v signedby="$signedby" -v gpgopt="$ro" \
+       -v dryrun="$dryrun" -v signame="$signame"  '
+BEGIN	      { sendmail="/usr/lib/sendmail -oi -t " }
+$1 == "pub"   { nextkid=$5; nextuid=$10
+		if( uidcount > 0 ) { myflush() }
+		kid=nextkid; uid=nextuid; next
+	      }
+$1 == "uid"   { uid=$10 ; next }
+$1 == "sig" && $2 == "!" && $5 == signedby  { uids[uidcount++] = uid; next }
+END	      {  if( uidcount > 0 ) { myflush() } }
+
+function myflush()
+{
+       if ( kid == signedby ) { uidcount=0; return }
+       print "sending key " substr(kid,9) " to" | "cat >&2"
+       for(i=0; i < 1; i++ ) {  
+	   print "    " uids[i] | "cat >&2"
+           if( dryrun == 0 ) {
+	      if( i == 0 ) {
+		 printf "To: %s", uids[i]   | sendmail
+	      }
+	      else {
+		 printf ",\n    %s", uids[i]   | sendmail
+	      }
+           }
+       }
+       if(dryrun == 0) {  
+         printf "\n"                                        | sendmail
+         print "Subject: I signed your key " substr(kid,9)  | sendmail
+         print ""                                           | sendmail
+         print "Hi,"                                        | sendmail
+         print ""                                           | sendmail
+         print "Here you get back the signed key."          | sendmail
+	 print "Please send it yourself to a keyserver."    | sendmail
+         print ""                                           | sendmail
+         print "Peace,"                                     | sendmail
+         print "      " signame                             | sendmail
+         print ""                                           | sendmail
+         cmd = "gpg " gpgopt " --export -a " kid " 2>/dev/null"
+         while( (cmd | getline) > 0 ) {
+             print | sendmail
+         }
+         print ""                                           | sendmail
+         close(cmd)
+         close( sendmail )
+       }
+       uidcount=0
+}
+'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

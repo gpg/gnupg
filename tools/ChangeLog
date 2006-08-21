@@ -1,3 +1,9 @@
+2006-08-21  Werner Koch  <wk@g10code.com>
+
+	* gpgsplit.c: New. Taken from 1.4. Adjusted to GnuPG2.
+
+	* Makefile.am (noinst_PROGRAMS): New.
+
 2006-06-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (gpgconf_LDADD): Add $(GPG_ERROR_LIBS).

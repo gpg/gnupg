@@ -1,0 +1,37 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+#info Checking conventional encryption
+for i in plain-2 data-32000 ; do
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 -c -o x --yes $i
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0    -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
+
+algos="3des"
+
+if have_cipher_algo "CAST5"; then
+   algos="$algos cast5"
+fi
+
+if have_cipher_algo "BLOWFISH"; then
+   algos="$algos blowfish"
+fi
+
+if have_cipher_algo "AES"; then
+   algos="$algos aes aes192 aes256"
+fi
+
+if have_cipher_algo "TWOFISH"; then
+   algos="$algos twofish"
+fi
+
+for a in $algos; do
+    for i in plain-1 data-80000 ; do
+      echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
+					  --cipher-algo $a -c -o x --yes $i
+      echo "Hier spricht HAL" | $GPG --passphrase-fd 0 -o y --yes x
+      cmp $i y || error "$i: ($a) mismatch"
+    done
+done

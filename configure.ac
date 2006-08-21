@@ -442,10 +442,7 @@ AC_PATH_PROG(PERL,"perl")
 AC_ISC_POSIX
 gl_EARLY
 AC_SYS_LARGEFILE
-AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
-AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
 GNUPG_CHECK_FAQPROG
-GNUPG_CHECK_DOCBOOK_TO_TEXI
 GNUPG_CHECK_USTAR
 
 
@@ -1312,9 +1309,13 @@ sm/Makefile
 agent/Makefile
 scd/Makefile
 keyserver/Makefile
+keyserver/gpgkeys_mailto
+keyserver/gpgkeys_test
+tools/gpg-zip
 tools/Makefile
 doc/Makefile
 tests/Makefile
+tests/openpgp/Makefile
 ])
 AC_OUTPUT
 

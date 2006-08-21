@@ -1,0 +1,69 @@
+#!/bin/sh
+
+
+. $srcdir/defs.inc || exit 3
+
+
+test_one () {
+   if [ "`grep $1 y | sed -e 's/:[^:]*:\(.*\):/\1/'`" != "$2" ]; then
+	failed="$failed $1"
+   fi
+}
+
+failed=""
+
+#info Checking message digests
+cat /dev/null | $GPG --with-colons --print-mds >y
+# MD5
+test_one ":1:"    "D41D8CD98F00B204E9800998ECF8427E"
+# SHA-1
+test_one ":2:"    "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
+# RMD160
+test_one ":3:"    "9C1185A5C5E9FC54612808977EE8F548B2258D31"
+# SHA-224
+if have_hash_algo "SHA224"; then
+  test_one ":11:"    "D14A028C2A3A2BC9476102BB288234C415A2B01F828EA62AC5B3E42F"
+else
+  echo "Hash algorithm SHA-224 is not installed (not an error)"
+fi
+# SHA-256
+if have_hash_algo "SHA256"; then
+  test_one ":8:"    "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+else
+  echo "Hash algorithm SHA-256 is not installed (not an error)"
+fi
+# SHA-384
+if have_hash_algo "SHA384"; then
+  test_one ":9:"  "38B060A751AC96384CD9327EB1B1E36A21FDB71114BE07434C0CC7BF63F6E1DA274EDEBFE76F65FBD51AD2F14898B95B"
+else
+  echo "Hash algorithm SHA-384 is not installed (not an error)"
+fi
+# SHA-512
+if have_hash_algo "SHA512"; then
+  test_one ":10:"  "CF83E1357EEFB8BDF1542850D66D8007D620E4050B5715DC83F4A921D36CE9CE47D0D13C5D85F2B0FF8318D2877EEC2F63B931BD47417A81A538327AF927DA3E"
+else
+  echo "Hash algorithm SHA-512 is not installed (not an error)"
+fi
+
+[ "$failed" != "" ] && error "$failed failed for empty string"
+
+echo_n "abcdefghijklmnopqrstuvwxyz" | $GPG --with-colons --print-mds >y
+test_one ":1:"    "C3FCD3D76192E4007DFB496CCA67E13B"
+test_one ":2:"    "32D10C7B8CF96570CA04CE37F2A19D84240D3A89"
+test_one ":3:"    "F71C27109C692C1B56BBDCEB5B9D2865B3708DBC"
+if have_hash_algo "SHA224"; then
+  test_one ":11:"    "45A5F72C39C5CFF2522EB3429799E49E5F44B356EF926BCF390DCCC2"
+fi
+if have_hash_algo "SHA256"; then
+  test_one ":8:"    "71C480DF93D6AE2F1EFAD1447C66C9525E316218CF51FC8D9ED832F2DAF18B73"
+fi
+if have_hash_algo "SHA384"; then
+  test_one ":9:"  "FEB67349DF3DB6F5924815D6C3DC133F091809213731FE5C7B5F4999E463479FF2877F5F2936FA63BB43784B12F3EBB4"
+fi
+if have_hash_algo "SHA512"; then
+  test_one ":10:" "4DBFF86CC2CA1BAE1E16468A05CB9881C97F1753BCE3619034898FAA1AABE429955A1BF8EC483D7421FE3C1646613A59ED5441FB0F321389F77F48A879C7B1F1"
+fi
+
+[ "$failed" != "" ] && error "$failed failed for a..z"
+
+exit 0

@@ -22,6 +22,7 @@
 
 ACLOCAL_AMFLAGS = -I m4 -I gl/m4
 AUTOMAKE_OPTIONS = dist-bzip2
+DISTCHECK_CONFIGURE_FLAGS = --enable-gpg
 
 EXTRA_DIST = scripts/config.rpath autogen.sh README.CVS
 DISTCLEANFILES = g10defs.h 

@@ -1,0 +1,108 @@
+		    GnuPG and OpenPGP
+		    =================
+
+   See RFC2440 for a description of OpenPGP.  We have an annotated version
+   of this RFC online:	http://www.gnupg.org/rfc2440.html
+
+
+
+  Compatibility Notes
+  ===================
+   GnuPG (>=1.0.3) is in compliance with RFC2440 despite these exceptions:
+
+    * (9.2) states that IDEA SHOULD be implemented.  This is not done
+      due to patent problems.
+
+
+   All MAY features are implemented with this exception:
+
+    * multi-part armored messages are not supported.
+      MIME (rfc2015) should be used instead.
+
+   Most of the OPTIONAL stuff is implemented.
+
+   There are a couple of options which can be used to override some
+   RFC requirements.  This is always mentioned with the description
+   of that options.
+
+   A special format of partial packet length exists for v3 packets
+   which can be considered to be in compliance with RFC1991;  this
+   format is only created if a special option is active.
+
+   GnuPG uses a S2K mode of 101 for GNU extensions to the secret key
+   protection algorithms.  This number is not defined in OpenPGP, but
+   given the fact that this number is in a range which used at many
+   other places in OpenPGP for private/experimenat algorithm identifiers,
+   this should be not a so bad choice.	The 3 bytes "GNU" are used
+   to identify this as a GNU extension - see the file DETAILS for a
+   definition of the used data formats.
+
+
+
+  Some Notes on OpenPGP / PGP Compatibility:
+  ==========================================
+
+     * PGP 5.x does not accept V4 signatures for anything other than
+       key material.  The GnuPG option --force-v3-sigs mimics this
+       behavior.
+
+     * PGP 5.x does not recognize the "five-octet" lengths in
+       new-format headers or in signature subpacket lengths.
+
+     * PGP 5.0 rejects an encrypted session key if the keylength
+       differs from the S2K symmetric algorithm. This is a bug in its
+       validation function.
+
+     * PGP 5.0 does not handle multiple one-pass signature headers and
+       trailers. Signing one will compress the one-pass signed literal
+       and prefix a V3 signature instead of doing a nested one-pass
+       signature.
+
+     * When exporting a private key, PGP 2.x generates the header
+       "BEGIN PGP SECRET KEY BLOCK" instead of "BEGIN PGP PRIVATE KEY
+       BLOCK". All previous versions ignore the implied data type, and
+       look directly at the packet data type.
+
+     * In a clear-signed signature, PGP 5.0 will figure out the correct
+       hash algorithm if there is no "Hash:" header, but it will reject
+       a mismatch between the header and the actual algorithm used. The
+       "standard" (i.e. Zimmermann/Finney/et al.) version of PGP 2.x
+       rejects the "Hash:" header and assumes MD5. There are a number
+       of enhanced variants of PGP 2.6.x that have been modified for
+       SHA-1 signatures.
+
+     * PGP 5.0 can read an RSA key in V4 format, but can only recognize
+       it with a V3 keyid, and can properly use only a V3 format RSA
+       key.
+
+     * Neither PGP 5.x nor PGP 6.0 recognize ElGamal Encrypt and Sign
+       keys. They only handle ElGamal Encrypt-only keys.
+
+
+  Parts of this document are taken from:
+  ======================================
+
+			 OpenPGP Message Format
+		   draft-ietf-openpgp-formats-07.txt
+
+
+   Copyright 1998 by The Internet Society. All Rights Reserved.
+
+   This document and translations of it may be copied and furnished to
+   others, and derivative works that comment on or otherwise explain it
+   or assist in its implementation may be prepared, copied, published
+   and distributed, in whole or in part, without restriction of any
+   kind, provided that the above copyright notice and this paragraph
+   are included on all such copies and derivative works.  However, this
+   document itself may not be modified in any way, such as by removing
+   the copyright notice or references to the Internet Society or other
+   Internet organizations, except as needed for the purpose of
+   developing Internet standards in which case the procedures for
+   copyrights defined in the Internet Standards process must be
+   followed, or as required to translate it into languages other than
+   English.
+
+   The limited permissions granted above are perpetual and will not be
+   revoked by the Internet Society or its successors or assigns.
+
+

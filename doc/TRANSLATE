@@ -1,0 +1,33 @@
+$Id$
+
+Note for translators
+--------------------
+
+Some strings in GnuPG are for matching user input against.  These
+strings can accept multiple values that mean essentially the same
+thing.
+
+For example, the string "yes" in English is "sí" in Spanish.  However,
+some users will type "si" (without the accent).  To accomodate both
+users, you can translate the string "yes" as "sí|si".  You can have
+any number of alternate matches seperated by the | character like
+"sí|si|seguro".
+
+The strings that can be handled in this way are of the form "yes|yes",
+(or "no|no", etc.) There should also be a comment in the .po file
+directing you to this file.
+
+
+
+Sending new or updated translations
+-----------------------------------
+
+Please note that we do not use the TP Robot but require that
+translations are to be send by mail to translations@gnupg.org.  We
+also strongly advise to get subscribed to i18n@gnupg.org and request
+assistance if it is not clear on how to translate certain strings.  A
+wrongly translated string may lead to a security problem.
+
+A copyright disclaimer to the FSF is required by all translators.
+
+

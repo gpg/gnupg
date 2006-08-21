@@ -1,0 +1,13 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+
+#info Checking signing and encryption
+for i in $plain_files $data_files ; do
+    echo "$usrpass1" | $GPG --passphrase-fd 0 --always-trust \
+                            -se -o x --yes -r "$usrname2" $i
+    $GPG -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
+

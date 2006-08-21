@@ -28,32 +28,10 @@
 #include "../jnlib/strlist.h"
 #include "cipher.h"
 #include "filter.h"
+#include "../common/openpgpdefs.h"
 
 #define DEBUG_PARSE_PACKET 1
 
-typedef enum {
-	PKT_NONE	   =0,
-	PKT_PUBKEY_ENC	   =1, /* public key encrypted packet */
-	PKT_SIGNATURE	   =2, /* secret key encrypted packet */
-	PKT_SYMKEY_ENC	   =3, /* session key packet (OpenPGP)*/
-	PKT_ONEPASS_SIG    =4, /* one pass sig packet (OpenPGP)*/
-	PKT_SECRET_KEY	   =5, /* secret key */
-	PKT_PUBLIC_KEY	   =6, /* public key */
-	PKT_SECRET_SUBKEY  =7, /* secret subkey (OpenPGP) */
-	PKT_COMPRESSED	   =8, /* compressed data packet */
-	PKT_ENCRYPTED	   =9, /* conventional encrypted data */
-	PKT_MARKER	  =10, /* marker packet (OpenPGP) */
-	PKT_PLAINTEXT	  =11, /* plaintext data with filename and mode */
-	PKT_RING_TRUST	  =12, /* keyring trust packet */
-	PKT_USER_ID	  =13, /* user id packet */
-	PKT_PUBLIC_SUBKEY =14, /* public subkey (OpenPGP) */
-	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
-	PKT_ATTRIBUTE     =17, /* PGP's attribute packet */
-	PKT_ENCRYPTED_MDC =18, /* integrity protected encrypted data */
-	PKT_MDC 	  =19, /* manipulation detection code packet */
-	PKT_COMMENT	  =61, /* new comment packet (private) */
-        PKT_GPG_CONTROL   =63  /* internal control packet */
-} pkttype_t;
 
 typedef struct packet_struct PACKET;
 
@@ -373,38 +351,6 @@ struct packet_struct {
 			    (a)->pkt.generic = NULL;	\
 		       } while(0)
 
-typedef enum {
-    SIGSUBPKT_TEST_CRITICAL=-3,
-    SIGSUBPKT_LIST_UNHASHED=-2,
-    SIGSUBPKT_LIST_HASHED  =-1,
-    SIGSUBPKT_NONE	   = 0,
-    SIGSUBPKT_SIG_CREATED  = 2, /* signature creation time */
-    SIGSUBPKT_SIG_EXPIRE   = 3, /* signature expiration time */
-    SIGSUBPKT_EXPORTABLE   = 4, /* exportable */
-    SIGSUBPKT_TRUST	   = 5, /* trust signature */
-    SIGSUBPKT_REGEXP	   = 6, /* regular expression */
-    SIGSUBPKT_REVOCABLE    = 7, /* revocable */
-    SIGSUBPKT_KEY_EXPIRE   = 9, /* key expiration time */
-    SIGSUBPKT_ARR	   =10, /* additional recipient request */
-    SIGSUBPKT_PREF_SYM	   =11, /* preferred symmetric algorithms */
-    SIGSUBPKT_REV_KEY	   =12, /* revocation key */
-    SIGSUBPKT_ISSUER	   =16, /* issuer key ID */
-    SIGSUBPKT_NOTATION	   =20, /* notation data */
-    SIGSUBPKT_PREF_HASH    =21, /* preferred hash algorithms */
-    SIGSUBPKT_PREF_COMPR   =22, /* preferred compression algorithms */
-    SIGSUBPKT_KS_FLAGS	   =23, /* key server preferences */
-    SIGSUBPKT_PREF_KS	   =24, /* preferred key server */
-    SIGSUBPKT_PRIMARY_UID  =25, /* primary user id */
-    SIGSUBPKT_POLICY	   =26, /* policy URL */
-    SIGSUBPKT_KEY_FLAGS    =27, /* key flags */
-    SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
-    SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
-    SIGSUBPKT_FEATURES     =30, /* feature flags */
-
-    SIGSUBPKT_SIGNATURE    =32, /* embedded signature */
-
-    SIGSUBPKT_FLAG_CRITICAL=128
-} sigsubpkttype_t;
 
 struct notation
 {

@@ -115,6 +115,9 @@ might want to have an agent context for each service request
    Remove the whole stuff?
 ** qbits
    We pass a new qbit parameter to genkey - implement this in libgcrypt.
+** skclist.c
+   As soon as we switch to libgcrypt 1.3 we should remove the hard
+   coded constant in random_is_faked.
 
 
 * common/

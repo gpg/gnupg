@@ -1,0 +1,41 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+#info Checking encryption
+for i in $plain_files $data_files ; do
+    $GPG $dsa_keyrings --always-trust -e -o x --yes -r "$dsa_usrname2" $i
+    $GPG $dsa_keyrings -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
+
+algos="3des"
+
+if have_cipher_algo "idea"; then
+   algos="$algos idea"
+fi
+
+if have_cipher_algo "cast5"; then
+   algos="$algos idea"
+fi
+
+if have_cipher_algo "blowfish"; then
+   algos="$algos idea"
+fi
+
+if have_cipher_algo "aes"; then
+   algos="$algos aes aes192 aes256"
+fi
+
+if have_cipher_algo "twofish"; then
+   algos="$algos twofish"
+fi
+
+for ca in $algos ; do
+    for i in $plain_files $data_files ; do
+	$GPG $dsa_keyrings --always-trust --cipher-algo $ca -e \
+	    -o x --yes -r "$dsa_usrname2" $i
+	$GPG $dsa_keyrings -o y --yes x
+	cmp $i y || error "$i: mismatch"
+    done
+done

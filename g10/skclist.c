@@ -35,16 +35,26 @@
 #include "i18n.h"
 #include "cipher.h"
 
+#ifndef GCRYCTL_FAKED_RANDOM_P
+#define GCRYCTL_FAKED_RANDOM_P 51
+#endif
 
-/* There is currently no way to get the status of the quick random
-   generator flag from libgcrypt and it is not clear whether this
-   faked RNG is really a good idea.  Thus for now we use this stub
-   function but we should consider to entirely remove this fake RNG
-   stuff. */
-static int
+/* Return true if Libgcrypt's RNG is in faked mode.  */
+int
 random_is_faked (void)
 {
-  return 0;
+  /* We use a runtime check to allow for slow migrattion of libgcrypt.
+     We can't use the constant becuase that one is actually an enum
+     value.  */
+  gpg_error_t err = gcry_control ( 51 /*GCRYCTL_FAKED_RANDOM_P*/, 0);
+
+  if (!err)
+    return 0;
+  if (gpg_err_code (err) != GPG_ERR_INV_OP)
+    return 1;
+  log_info ("WARNING: libgcrypt too old.\n");
+  log_info ("         can't check whether we are in faked RNG mode\n");
+  return 0; /* Need to return false.  */
 }
 
 
@@ -82,7 +92,8 @@ is_insecure( PKT_secret_key *sk )
                 continue; /* skip attribute packets */
             if ( strstr( id->name, "(insecure!)" )
                  || strstr( id->name, "not secure" )
-                 || strstr( id->name, "do not use" ) ) {
+                 || strstr( id->name, "do not use" )
+                 || strstr( id->name, "(INSECURE!)" ) ) {
                 insecure = 1;
                 break;
             }

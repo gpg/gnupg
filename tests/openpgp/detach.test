@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+#info Checking detached signatures
+for i in $plain_files $data_files ; do
+    echo "$usrpass1" | $GPG --passphrase-fd 0 -sb -o x --yes $i
+    $GPG -o /dev/null --yes x  <$i || error "$i: bad signature"
+done
+

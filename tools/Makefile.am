@@ -18,8 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-EXTRA_DIST = Manifest watchgnupg.c \
-	     addgnupghome gpgsm-gencert.sh
+EXTRA_DIST = \
+	Manifest watchgnupg.c \
+	addgnupghome gpgsm-gencert.sh \
+	lspgpot mail-signed-keys convert-from-106
+
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
@@ -29,6 +32,9 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 sbin_SCRIPTS = addgnupghome
 
 bin_SCRIPTS = gpgsm-gencert.sh
+if HAVE_USTAR
+bin_SCRIPTS += gpg-zip
+endif
 
 if BUILD_SYMCRYPTRUN
   symcryptrun = symcryptrun
@@ -36,17 +42,24 @@ else
   symcryptrun =
 endif
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun} gpgparsemail
+bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun} \
+	       gpgparsemail gpgsplit
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg
 endif
+
+noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert
+
+common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
+
+gpgsplit_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(ZLIBS)
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 # jnlib/common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-		../gl/libgnu.a @LIBINTL@ $(GPG_ERROR_LIBS)
+		../gl/libgnu.a $(LIBINTL) $(GPG_ERROR_LIBS)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD = 
@@ -71,3 +84,5 @@ gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 # some compilers do not eliminate.
 gpgkey2ssh_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+
+
