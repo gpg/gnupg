@@ -474,6 +474,8 @@ handle_open (unsigned char *argbuf, size_t arglen)
       pcsc_release_context (pcsc_context);
       free (current_rdrname);
       current_rdrname = NULL;
+      pcsc_card = 0;
+      pcsc_protocol = 0;
       request_failed (err);
       return;
     }      
@@ -527,6 +529,8 @@ handle_close (unsigned char *argbuf, size_t arglen)
   free (current_rdrname);
   current_rdrname = NULL;
   pcsc_release_context (pcsc_context);
+  pcsc_card = 0;
+  pcsc_protocol = 0;
 
   request_succeeded (NULL, 0);
 }
@@ -567,17 +571,20 @@ handle_status (unsigned char *argbuf, size_t arglen)
     }
 
   status = 0;
-  if ( (rdrstates[0].event_state & PCSC_STATE_PRESENT) )
-    status |= 2;
-  if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
-    status |= 4;
-  /* We indicate a useful card if it is not in use by another
-     application.  This is because we only use exclusive access
-     mode.  */
-  if ( (status & 6) == 6
-       && !(rdrstates[0].event_state & PCSC_STATE_INUSE) )
-    status |= 1;
-  
+  if ( !(rdrstates[0].event_state & PCSC_STATE_UNKNOWN) )
+    {
+      if ( (rdrstates[0].event_state & PCSC_STATE_PRESENT) )
+        status |= 2;
+      if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
+        status |= 4;
+      /* We indicate a useful card if it is not in use by another
+         application.  This is because we only use exclusive access
+         mode.  */
+      if ( (status & 6) == 6
+           && !(rdrstates[0].event_state & PCSC_STATE_INUSE) )
+        status |= 1;
+    }
+
   /* First word is identical to the one used by apdu.c. */
   buf[0] = 0;
   buf[1] = 0;
@@ -618,6 +625,8 @@ handle_reset (unsigned char *argbuf, size_t arglen)
   if (pcsc_card)
     {
       err = pcsc_disconnect (pcsc_card, PCSC_LEAVE_CARD);
+      if (err == 0x80100003)  /* Invalid handle.  (already disconnected) */
+        err = 0;
       if (err)
         {
           fprintf (stderr, PGM": pcsc_disconnect failed: %s (0x%lx)\n",
