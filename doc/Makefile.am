@@ -24,8 +24,8 @@ EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
              gnupg-badge-openpgp.pdf \
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
-             faq.raw FAQ faq.html \
-             opt-homedir.texi see-also-note.texi 
+             faq.raw FAQ faq.html gnupg7.texi \
+             opt-homedir.texi see-also-note.texi
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf FAQ faq.html
@@ -46,8 +46,9 @@ AM_MAKEFINFOFLAGS = -I $(srcdir)
 YAT2M_OPTIONS = -I $(srcdir) \
         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
 
-myman_sources = gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi tools.texi
-myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 scdaemon.1 \
+myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
+                scdaemon.texi tools.texi
+myman_pages   = gnupg.7 gpg2.1 gpgsm.1 gpg-agent.1 scdaemon.1 gpgv2.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
 		gpgsm-gencert.sh.1

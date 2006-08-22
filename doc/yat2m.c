@@ -40,8 +40,12 @@
     go into the man page. These macros need to be used without leading
     left space. Processing starts after a "manpage" macro has been
     seen.  "mansect" identifies the section and yat2m make sure to
-    emit the sections in the proper order.  To insert verbatim troff
-    markup, the follwing texinfo code may be used:
+    emit the sections in the proper order.  Note that @mansect skips
+    the next input line if that line begins with @subsection or
+    @chapheading.
+
+    To insert verbatim troff markup, the follwing texinfo code may be
+    used:
 
       @ifset manverb
       .B whateever you want
@@ -51,11 +55,24 @@
 
       @c man:.B whatever you want
 
-    This is useful in case you need just one line.  @section is
-    ignored, however @subsection gets rendered as ".SS".  @menu is
-    completely skipped. Several man pages may be extracted from one
-    file, either using the --store or the --select option.
-    Makefile snippet from GnuPG:
+    This is useful in case you need just one line. If you want to
+    include parts only in the man page but keep the texinfo
+    translation you may use:
+
+      @ifset isman
+      stuff to be rendered only on man pages
+      @end ifset
+
+    or to exclude stuff from man pages:
+
+      @ifclear isman
+      stuff not to be rendered on man pages
+      @end ifclear
+
+    the keyword @section is ignored, however @subsection gets rendered
+    as ".SS".  @menu is completely skipped. Several man pages may be
+    extracted from one file, either using the --store or the --select
+    option.
 
 
 */
@@ -794,6 +811,7 @@ parse_file (const char *fname, FILE *fp, char **section_name)
   int in_verbatim = 0;
   int in_pause = 0;
   int skip_to_end = 0;        /* Used to skip over menu entries. */
+  int skip_sect_line = 0;     /* Skip after @mansect.  */
 
   line = xmalloc (LINESIZE);
   while (fgets (line, LINESIZE, fp))
@@ -810,6 +828,15 @@ parse_file (const char *fname, FILE *fp, char **section_name)
           break;
         }
       line[--n] = 0;
+
+      if (skip_sect_line)
+        {
+          skip_sect_line = 0;
+          if (!strncmp (line, "@subsection", 11)
+              || !strncmp (line, "@chapheading", 12))
+            continue;
+        }
+
       /* We only parse lines we need and ignore the rest.  There are a
          few macros used to control this as well as one @ifset
          command.  Parts we know about are saved away into containers
@@ -862,6 +889,7 @@ parse_file (const char *fname, FILE *fp, char **section_name)
                   free (*section_name);
                   *section_name = ascii_strupr (xstrdup (p));
                   in_pause = 0;
+                  skip_sect_line = 1;
                 }
             }
           else if (n == 9 && !memcmp (line, "@manpause", 9))
