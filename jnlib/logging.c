@@ -486,9 +486,17 @@ do_logv (int level, const char *fmt, va_list arg_ptr)
     }
 
   if (level == JNLIB_LOG_FATAL)
-    exit(2);
+    {
+      if (missing_lf)
+        putc('\n', logstream );
+      exit(2);
+    }
   if (level == JNLIB_LOG_BUG)
-    abort();
+    {
+      if (missing_lf)
+        putc('\n', logstream );
+      abort();
+    }
 }
 
 static void

@@ -428,6 +428,12 @@ Assume the input data is binary encoded.
 Set the user(s) to be used for signing.  The default is the first
 secret key found in the database.
 
+@item --output @var{file}
+@itemx -o @var{file}
+@opindex output
+Write output to @var{file}.  The default is to write it to stdout.
+
+
 @item --with-key-data
 @opindex with-key-data
 Displays extra information with the @code{--list-keys} commands.  Especially

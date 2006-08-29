@@ -9,6 +9,9 @@ Noteworthy changes in version 1.9.23
    gpg part.  For production use of OpenPGP the gpg version 1.4.5 is
    still recommended.
 
+ * API change in gpg-agent's pkdecrypt command.  Thus an older gpgsm
+   may not be used with the current gpg-agent.
+
 
 Noteworthy changes in version 1.9.22 (2006-07-27)
 -------------------------------------------------

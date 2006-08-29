@@ -701,7 +701,7 @@ Here is an example session:
    C: D    (b 3F444677CA)))
    C: END
    S: # session key follows
-   S: D 1234567890ABCDEF0
+   S: D (value 1234567890ABCDEF0)
    S: OK descryption successful
 @end example         
 

@@ -1420,31 +1420,42 @@ main ( int argc, char **argv)
       run_protect_tool (argc, argv);
       break;
 
-    case aEncr: /* encrypt the given file */
-      set_binary (stdin);
-      set_binary (stdout);
-      if (!argc)
-        gpgsm_encrypt (&ctrl, recplist, 0, stdout); /* from stdin */
-      else if (argc == 1)
-        gpgsm_encrypt (&ctrl, recplist, open_read (*argv), stdout); /* from file */
-      else
-        wrong_args ("--encrypt [datafile]");
+    case aEncr: /* Encrypt the given file. */
+      {
+        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+
+        set_binary (stdin);
+
+        if (!argc) /* Source is stdin. */
+          gpgsm_encrypt (&ctrl, recplist, 0, fp); 
+        else if (argc == 1)  /* Source is the given file. */
+          gpgsm_encrypt (&ctrl, recplist, open_read (*argv), fp);
+        else
+          wrong_args ("--encrypt [datafile]");
+
+        if (fp != stdout)
+          fclose (fp);
+      }
       break;
 
-    case aSign: /* sign the given file */
-      /* FIXME: We don't handle --output yet. We should also allow
-         to concatenate multiple files for signing because that is
-         what gpg does.*/
-      set_binary (stdin);
-      set_binary (stdout);
-      if (!argc)
-        gpgsm_sign (&ctrl, signerlist,
-                    0, detached_sig, stdout); /* create from stdin */
-      else if (argc == 1)
-        gpgsm_sign (&ctrl, signerlist,
-                    open_read (*argv), detached_sig, stdout); /* from file */
-      else
-        wrong_args ("--sign [datafile]");
+    case aSign: /* Sign the given file. */
+      {
+        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+
+        /* Fixme: We should also allow to concatenate multiple files for
+           signing because that is what gpg does.*/
+        set_binary (stdin);
+        if (!argc) /* Create from stdin. */
+          gpgsm_sign (&ctrl, signerlist, 0, detached_sig, fp); 
+        else if (argc == 1) /* From file. */
+          gpgsm_sign (&ctrl, signerlist,
+                      open_read (*argv), detached_sig, fp); 
+        else
+          wrong_args ("--sign [datafile]");
+
+        if (fp != stdout)
+          fclose (fp);
+      }
       break;
         
     case aSignEncr: /* sign and encrypt the given file */
@@ -1484,14 +1495,19 @@ main ( int argc, char **argv)
       break;
 
     case aDecrypt:
-      set_binary (stdin);
-      set_binary (stdout);
-      if (!argc)
-        gpgsm_decrypt (&ctrl, 0, stdout); /* from stdin */
-      else if (argc == 1)
-        gpgsm_decrypt (&ctrl, open_read (*argv), stdout); /* from file */
-      else
-        wrong_args ("--decrypt [filename]");
+      {
+        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+
+        set_binary (stdin);
+        if (!argc)
+          gpgsm_decrypt (&ctrl, 0, fp); /* from stdin */
+        else if (argc == 1)
+          gpgsm_decrypt (&ctrl, open_read (*argv), fp); /* from file */
+        else
+          wrong_args ("--decrypt [filename]");
+        if (fp != stdout)
+          fclose (fp);
+      }
       break;
 
     case aDeleteKey:
@@ -1556,19 +1572,29 @@ main ( int argc, char **argv)
       break;
 
     case aExport:
-      set_binary (stdout);
-      for (sl=NULL; argc; argc--, argv++)
-        add_to_strlist (&sl, *argv);
-      gpgsm_export (&ctrl, sl, stdout);
-      free_strlist(sl);
+      {
+        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+
+        for (sl=NULL; argc; argc--, argv++)
+          add_to_strlist (&sl, *argv);
+        gpgsm_export (&ctrl, sl, fp);
+        free_strlist(sl);
+        if (fp != stdout)
+          fclose (fp);
+      }
       break;
 
     case aExportSecretKeyP12:
-      set_binary (stdout);
-      if (argc == 1)
-        gpgsm_p12_export (&ctrl, *argv, stdout);
-      else
-        wrong_args ("--export-secret-key-p12 KEY-ID");
+      {
+        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+
+        if (argc == 1)
+          gpgsm_p12_export (&ctrl, *argv, stdout);
+        else
+          wrong_args ("--export-secret-key-p12 KEY-ID");
+        if (fp != stdout)
+          fclose (fp);
+      }
       break;
       
     case aSendKeys:

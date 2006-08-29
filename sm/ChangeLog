@@ -1,3 +1,11 @@
+2006-08-29  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (gpgsm_agent_pkdecrypt): Allow decryption using
+	complete S-expressions as implemented by the current gpg-agent.
+
+	* gpgsm.c (main): Implement --output for encrypt, decrypt, sign
+	and export.
+
 2006-07-03  Werner Koch  <wk@g10code.com>
 
 	* certreqgen.c (proc_parameters): Print the component label of a

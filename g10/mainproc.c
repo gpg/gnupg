@@ -681,13 +681,10 @@ proc_plaintext( CTX c, PACKET *pkt )
     }
 
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
-    if (rc)
-      log_debug ("handle_plaintext failed: err=%d\n", rc);
-    if( gpg_err_code (rc) == GPG_ERR_ENOENT && !c->sigs_only) 
+    if ( gpg_err_code (rc) == GPG_ERR_EACCES && !c->sigs_only ) 
       {
-#warning We need to change the test for the error code
-        /* Can't write output but we hash it anyway to
-         * Check the signature. */
+        /* Can't write output but we hash it anyway to check the
+           signature. */
         rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
       }
 

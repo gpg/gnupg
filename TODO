@@ -6,8 +6,6 @@ Currently we don't cope with overlong lines in the best way.
 ** Check that we really release the ksba reader/writer objects.
 
 * sm/call-agent.c
-** The protocol uses an incomplete S-expression
-We should always use valid S-Exp and not just parts.
 ** Some code should go into import.c
 ** When we allow concurrent service request in gpgsm, we
 might want to have an agent context for each service request
@@ -23,7 +21,6 @@ might want to have an agent context for each service request
 ** replace leading zero in integer hack by a cleaner solution
 
 * sm/gpgsm.c
-** Support --output for all commands
 ** mark all unimplemented commands and options.
 ** Implement --default-key
 ** support the anyPolicy semantic
@@ -109,10 +106,8 @@ might want to have an agent context for each service request
 ** issue a NO_SECKEY xxxx if a -u key was not found.
 ** Replace DIGEST_ALGO_SHA224
    We can't do that right now because it is only defined by newer
-   versions of libgcrypt.  Changes this if we require libgcrypt 1.3
+   versions of libgcrypt.  Change this if we require libgcrypt 1.3
    anyway.
-** skclist.c:random_is_faked
-   Remove the whole stuff?
 ** qbits
    We pass a new qbit parameter to genkey - implement this in libgcrypt.
 ** skclist.c

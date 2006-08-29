@@ -90,15 +90,14 @@ agent_pkdecrypt (CTRL ctrl, const char *desc_text,
           log_error ("smartcard decryption failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
-      /* FIXME: Change the protocol to return a complete S-expression
-         and not just a part. */
-      {
-        char tmpbuf[50];
 
-        sprintf (tmpbuf, "%u:", (unsigned int)len);
+      {
+        char tmpbuf[60];
+
+        sprintf (tmpbuf, "(5:value%u:", (unsigned int)len);
         put_membuf (outbuf, tmpbuf, strlen (tmpbuf));
         put_membuf (outbuf, buf, len);
-        put_membuf (outbuf, "", 1);
+        put_membuf (outbuf, ")", 2);
       }
     }
   else
@@ -126,7 +125,16 @@ agent_pkdecrypt (CTRL ctrl, const char *desc_text,
       buf = xmalloc (len);
       len = gcry_sexp_sprint (s_plain, GCRYSEXP_FMT_CANON, buf, len);
       assert (len);
-      put_membuf (outbuf, buf, len);
+      if (*buf == '(')
+        put_membuf (outbuf, buf, len);
+      else
+        {
+          /* Old style libgcrypt: This is only an S-expression
+             part. Turn it into a complete S-expression. */
+          put_membuf (outbuf, "(5:value", 8);
+          put_membuf (outbuf, buf, len);
+          put_membuf (outbuf, ")", 2);
+        }
     }      
 
 

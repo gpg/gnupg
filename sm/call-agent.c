@@ -300,7 +300,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   membuf_t data;
   struct cipher_parm_s cipher_parm;
   size_t n, len;
-  char *buf, *endp;
+  char *p, *buf, *endp;
   size_t ciphertextlen;
   
   if (!keygrip || strlen(keygrip) != 40 || !ciphertext || !r_buf || !r_buflen)
@@ -349,21 +349,36 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
       return map_assuan_err (rc);
     }
 
-  put_membuf (&data, "", 1); /* make sure it is 0 terminated */
+  put_membuf (&data, "", 1); /* Make sure it is 0 terminated. */
   buf = get_membuf (&data, &len);
   if (!buf)
     return gpg_error (GPG_ERR_ENOMEM);
-  /* FIXME: We would better a return a full S-exp and not just a part */
-  assert (len);
-  len--; /* remove the terminating 0 */
-  n = strtoul (buf, &endp, 10);
+  assert (len); /* (we forced Nul termination.)  */
+
+  if (*buf == '(')
+    {
+      if (len < 13 || memcmp (buf, "(5:value", 8) ) /* "(5:valueN:D)\0" */
+        return gpg_error (GPG_ERR_INV_SEXP);
+      len -= 11;   /* Count only the data of the second part. */
+      p = buf + 8; /* Skip leading parenthesis and the value tag. */
+    }
+  else
+    {
+      /* For compatibility with older gpg-agents handle the old style
+         incomplete S-exps. */
+      len--;      /* Do not count the Nul. */
+      p = buf;
+    }
+
+  n = strtoul (p, &endp, 10);
   if (!n || *endp != ':')
     return gpg_error (GPG_ERR_INV_SEXP);
   endp++;
-  if (endp-buf+n > len)
-    return gpg_error (GPG_ERR_INV_SEXP); /* oops len does not
-					    match internal len*/
+  if (endp-p+n > len)
+    return gpg_error (GPG_ERR_INV_SEXP); /* Oops: Inconsistent S-Exp. */
+  
   memmove (buf, endp, n);
+
   *r_buflen = n;
   *r_buf = buf;
   return 0;

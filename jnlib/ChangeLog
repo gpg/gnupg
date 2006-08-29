@@ -1,3 +1,7 @@
+2006-08-29  Werner Koch  <wk@g10code.com>
+
+	* logging.c (do_logv): Emit a missing LF for fatal errors.
+
 2006-06-28  Werner Koch  <wk@g10code.com>
 
 	* dotlock.c (make_dotlock, release_dotlock, read_lockfile)
