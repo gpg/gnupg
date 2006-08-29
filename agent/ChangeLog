@@ -1,3 +1,11 @@
+2006-08-29  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (stream_read_mpi): Sanity check for early
+	detecting of too large keys.
+	* gpg-agent.c (my_gcry_outofcore_handler): New.
+	(main): Register it.
+	(main): No allocate 32k secure memory (was 16k).
+
 2006-07-31  Werner Koch  <wk@g10code.com>
 
 	* preset-passphrase.c (make_hexstring): For conistency use

@@ -526,6 +526,15 @@ stream_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
   if (err)
     goto out;
 
+  /* To avoid excessive use of secure memory we check that an MPI is
+     not too large. */
+  if (mpi_data_size > 520)
+    {
+      log_error (_("ssh keys greater than %d bits are not supported\n"), 4096);
+      err = GPG_ERR_TOO_LARGE;
+      goto out;
+    }
+
   err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_STD, mpi_data, mpi_data_size, NULL);
   if (err)
     goto out;

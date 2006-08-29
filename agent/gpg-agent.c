@@ -285,6 +285,28 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 }
 
 
+/* This function is called by libgcrypt if it ran out of core and
+   there is no way to return that error to the caller.  We do our own
+   function here to make use of our logging functions. */
+static int
+my_gcry_outofcore_handler ( void *opaque, size_t req_n, unsigned int flags)
+{
+  static int been_here;  /* Used to protect against recursive calls. */
+
+  if (!been_here)
+    {
+      been_here = 1;
+      if ( (flags & 1) )
+        log_fatal (_("out of core in secure memory "
+                     "while allocating %lu bytes"), (unsigned long)req_n);
+      else
+        log_fatal (_("out of core while allocating %lu bytes"),
+                   (unsigned long)req_n);
+    }
+  return 0; /* Let libgcrypt call its own fatal error handler. */
+}
+
+
 /* Setup the debugging.  With the global variable DEBUG_LEVEL set to NULL
    only the active debug flags are propagated to the subsystems.  With
    DEBUG_LEVEL set, a specific set of debug flags is set; thus overriding
@@ -489,6 +511,7 @@ main (int argc, char **argv )
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
 
   gcry_set_log_handler (my_gcry_logger, NULL);
+  gcry_set_outofcore_handler (my_gcry_outofcore_handler, NULL);
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
   may_coredump = disable_core_dumps ();
@@ -546,8 +569,8 @@ main (int argc, char **argv )
           opt.homedir = pargs.r.ret_str;
     }
 
-  /* initialize the secure memory. */
-  gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
+  /* Initialize the secure memory. */
+  gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0);
   maybe_setuid = 0;
 
   /* 
