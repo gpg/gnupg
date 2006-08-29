@@ -1,3 +1,8 @@
+2006-08-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* app-openpgp.c (do_decipher, do_sign): Allow "OPENPGP.2"
+	resp. "OPENPGP.1" for KEYIDSTR.
+
 2006-08-21  Werner Koch  <wk@g10code.com>
 
 	* pcsc-wrapper.c (handle_open, handle_close): Reset card and

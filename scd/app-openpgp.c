@@ -2128,27 +2128,31 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
 
   /* Check whether an OpenPGP card of any version has been requested. */
-  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
-    return gpg_error (GPG_ERR_INV_ID);
-  
-  for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+  if (!strcmp (keyidstr, "OPENPGP.1"))
     ;
-  if (n != 32)
+  else if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
     return gpg_error (GPG_ERR_INV_ID);
-  else if (!*s)
-    ; /* no fingerprint given: we allow this for now. */
-  else if (*s == '/')
-    fpr = s + 1; 
   else
-    return gpg_error (GPG_ERR_INV_ID);
+    {
+      for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+	;
+      if (n != 32)
+	return gpg_error (GPG_ERR_INV_ID);
+      else if (!*s)
+	; /* no fingerprint given: we allow this for now. */
+      else if (*s == '/')
+	fpr = s + 1; 
+      else
+	return gpg_error (GPG_ERR_INV_ID);
 
-  for (s=keyidstr, n=0; n < 16; s += 2, n++)
-    tmp_sn[n] = xtoi_2 (s);
+      for (s=keyidstr, n=0; n < 16; s += 2, n++)
+	tmp_sn[n] = xtoi_2 (s);
 
-  if (app->serialnolen != 16)
-    return gpg_error (GPG_ERR_INV_CARD);
-  if (memcmp (app->serialno, tmp_sn, 16))
-    return gpg_error (GPG_ERR_WRONG_CARD);
+      if (app->serialnolen != 16)
+	return gpg_error (GPG_ERR_INV_CARD);
+      if (memcmp (app->serialno, tmp_sn, 16))
+	return gpg_error (GPG_ERR_WRONG_CARD);
+    }
 
   /* If a fingerprint has been specified check it against the one on
      the card.  This is allows for a meaningful error message in case
@@ -2322,27 +2326,31 @@ do_decipher (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check whether an OpenPGP card of any version has been requested. */
-  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
-    return gpg_error (GPG_ERR_INV_ID);
-  
-  for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+  if (!strcmp (keyidstr, "OPENPGP.2"))
     ;
-  if (n != 32)
+  else if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
     return gpg_error (GPG_ERR_INV_ID);
-  else if (!*s)
-    ; /* no fingerprint given: we allow this for now. */
-  else if (*s == '/')
-    fpr = s + 1; 
   else
-    return gpg_error (GPG_ERR_INV_ID);
-
-  for (s=keyidstr, n=0; n < 16; s += 2, n++)
-    tmp_sn[n] = xtoi_2 (s);
-
-  if (app->serialnolen != 16)
-    return gpg_error (GPG_ERR_INV_CARD);
-  if (memcmp (app->serialno, tmp_sn, 16))
-    return gpg_error (GPG_ERR_WRONG_CARD);
+    {
+      for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+	;
+      if (n != 32)
+	return gpg_error (GPG_ERR_INV_ID);
+      else if (!*s)
+	; /* no fingerprint given: we allow this for now. */
+      else if (*s == '/')
+	fpr = s + 1; 
+      else
+	return gpg_error (GPG_ERR_INV_ID);
+      
+      for (s=keyidstr, n=0; n < 16; s += 2, n++)
+	tmp_sn[n] = xtoi_2 (s);
+      
+      if (app->serialnolen != 16)
+	return gpg_error (GPG_ERR_INV_CARD);
+      if (memcmp (app->serialno, tmp_sn, 16))
+	return gpg_error (GPG_ERR_WRONG_CARD);
+    }
 
   /* If a fingerprint has been specified check it against the one on
      the card.  This is allows for a meaningful error message in case
