@@ -212,7 +212,6 @@ do_reset (ctrl_t ctrl, int send_reset)
           slot_table[slot].reset_failed = 1;
         }
     }
-  ctrl->reader_slot = -1;
 
   /* If we hold a lock, unlock now. */
   if (locked_session && ctrl->server_local == locked_session)
@@ -229,12 +228,16 @@ do_reset (ctrl_t ctrl, int send_reset)
   if (!pth_mutex_acquire (&status_file_update_lock, 0, NULL))
     {
       log_error ("failed to acquire status_fle_update lock\n");
+      ctrl->reader_slot = -1;
       return;
     }
   update_reader_status_file ();
   update_card_removed (slot, 0);
   if (!pth_mutex_release (&status_file_update_lock))
     log_error ("failed to release status_file_update lock\n");
+
+  /* Do this last, so that update_card_removed does its job.  */
+  ctrl->reader_slot = -1;
 }
 
 

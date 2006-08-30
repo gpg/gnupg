@@ -1,3 +1,8 @@
+2006-08-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* command.c (do_reset): Delay resetting CTRL->reader_slot until
+	after update_card_removed invocation.
+
 2006-08-28  Marcus Brinkmann  <marcus@g10code.de>
 
 	* app-openpgp.c (do_decipher, do_sign): Allow "OPENPGP.2"
