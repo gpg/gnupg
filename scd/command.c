@@ -295,7 +295,7 @@ get_reader_slot (void)
 
 /* If the card has not yet been opened, do it.  Note that this
    function returns an Assuan error, so don't map the error a second
-   time */
+   time.  */
 static assuan_error_t
 open_card (ctrl_t ctrl, const char *apptype)
 {
@@ -1355,7 +1355,12 @@ cmd_unlock (assuan_context_t ctx, char *line)
    Supported values of WHAT are:
 
    socket_name - Return the name of the socket.
-
+   status - Return the status of the current slot (in the future, may
+   also return the status of all slots).  The status is a list of
+   one-character flags.  The following flags are currently defined:
+     'u'  Usable card present.  This is the normal state during operation.
+     'r'  Card removed.  A reset is necessary.
+   These flags are exclusive.
 */
 
 static int
@@ -1371,6 +1376,29 @@ cmd_getinfo (assuan_context_t ctx, char *line)
         rc = assuan_send_data (ctx, s, strlen (s));
       else
         rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else if (!strcmp (line, "status"))
+    {
+      ctrl_t ctrl = assuan_get_pointer (ctx);
+      int slot = ctrl->reader_slot;
+      char flag = 'r';
+
+      if (!ctrl->server_local->card_removed && slot != -1)
+	{
+	  struct slot_status_s *ss;
+	  
+	  if (!(slot >= 0 && slot < DIM(slot_table)))
+	    BUG ();
+
+	  ss = &slot_table[slot];
+
+	  if (!ss->valid)
+	    BUG ();
+
+	  if (ss->any && (ss->status & 1))
+	    flag = 'u';
+	}
+      rc = assuan_send_data (ctx, &flag, 1);
     }
   else
     rc = set_error (Parameter_Error, "unknown value for WHAT");
@@ -1752,7 +1780,7 @@ update_reader_status_file (void)
              will set this on any card change because a reset or
              SERIALNO request must be done in any case.  */
           if (ss->any)
-            update_card_removed (ss->slot, 1);
+            update_card_removed (ss->slot, 1); /* XXX: MB: Should be idx? */
           
           ss->any = 1;
           ss->status = status;
