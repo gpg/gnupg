@@ -104,7 +104,9 @@ struct server_local_s
 };
 
 
-/* The table with information on all used slots. */
+/* The table with information on all used slots.  FIXME: This is a
+   different slot number than the one used by the APDU layer, and
+   should be renamed.  */
 static struct slot_status_s slot_table[10];
 
 
@@ -290,7 +292,8 @@ get_reader_slot (void)
   if (ss->slot == -1)
     ss->slot = apdu_open_reader (opt.reader_port);
 
-  return ss->slot;
+  /* Return the slot_table index.  */
+  return 0;
 }
 
 /* If the card has not yet been opened, do it.  Note that this
@@ -1762,7 +1765,10 @@ update_reader_status_file (void)
 
           log_info ("updating status of slot %d to 0x%04X\n",
                     ss->slot, status);
-            
+
+	  /* FIXME: Should this be IDX instead of ss->slot?  This
+	     depends on how client sessions will associate the reader
+	     status with their session.  */
           sprintf (templ, "reader_%d.status", ss->slot);
           fname = make_filename (opt.homedir, templ, NULL );
           fp = fopen (fname, "w");
@@ -1780,7 +1786,7 @@ update_reader_status_file (void)
              will set this on any card change because a reset or
              SERIALNO request must be done in any case.  */
           if (ss->any)
-            update_card_removed (ss->slot, 1); /* XXX: MB: Should be idx? */
+            update_card_removed (idx, 1);
           
           ss->any = 1;
           ss->status = status;

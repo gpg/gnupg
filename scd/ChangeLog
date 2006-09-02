@@ -1,3 +1,10 @@
+2006-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* command.c (get_reader_slot): Return the slot_table index, not
+	the APDU slot number.
+	(update_reader_status_file): Use the slot_table index in the
+	update_card_removed invocation.
+
 2006-09-01  Marcus Brinkmann  <marcus@g10code.de>
 
 	* command.c (cmd_getinfo): Handle status command.
