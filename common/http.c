@@ -65,6 +65,10 @@ typedef gnutls_session gnutls_session_t;
 typedef gnutls_transport_ptr gnutls_transport_ptr_t;
 #endif /*HTTP_USE_GNUTLS*/
 
+#ifdef TEST
+#undef USE_DNS_SRV
+#endif
+
 #include "util.h"
 #include "http.h"
 #ifdef USE_DNS_SRV
@@ -157,6 +161,17 @@ typedef struct cookie_s *cookie_t;
 static gpg_error_t (*tls_callback) (http_t, gnutls_session_t, int);
 #endif /*HTTP_USE_GNUTLS*/
 
+
+/* An object to save header lines. */
+struct header_s
+{
+  struct header_s *next;
+  char *value;    /* The value of the header (malloced).  */
+  char name[1];   /* The name of the header (canonicalized). */
+};
+typedef struct header_s *header_t;
+
+
 /* Our handle context. */
 struct http_context_s 
 {
@@ -178,6 +193,7 @@ struct http_context_s
   char *buffer;          /* Line buffer. */
   size_t buffer_size;
   unsigned int flags;
+  header_t headers;      /* Received headers. */
 };
 
 
@@ -444,6 +460,13 @@ http_close (http_t hd, int keep_read_stream)
   if (hd->fp_write)
     P_ES(fclose) (hd->fp_write);
   http_release_parsed_uri (hd->uri);
+  while (hd->headers)
+    {
+      header_t tmp = hd->headers->next;
+      xfree (hd->headers->value);
+      xfree (hd->headers);
+      hd->headers = tmp;
+    }
   xfree (hd->buffer);
   xfree (hd);
 }
@@ -1160,6 +1183,129 @@ my_read_line (
 }
 
 
+/* Transform a header name into a standard capitalized format; e.g.
+   "Content-Type".  Conversion stops at the colon.  As usual we don't
+   use the localized versions of ctype.h. */
+static void
+capitalize_header_name (char *name)
+{
+  int first = 1;
+
+  for (; *name && *name != ':'; name++)
+    {
+      if (*name == '-')
+        first = 1;
+      else if (first)
+        {
+          if (*name >= 'a' && *name <= 'z')
+            *name = *name - 'a' + 'A';
+          first = 0;
+        }
+      else if (*name >= 'A' && *name <= 'Z')
+        *name = *name - 'A' + 'a';
+    }
+}
+
+
+/* Store an HTTP header line in LINE away.  Line continuation is
+   supported as well as merging of headers with the same name. This
+   function may modify LINE. */
+static gpg_error_t
+store_header (http_t hd, char *line)
+{
+  size_t n;
+  char *p, *value;
+  header_t h;
+
+  n = strlen (line);
+  if (n && line[n-1] == '\n')
+    {
+      line[--n] = 0;
+      if (n && line[n-1] == '\r')
+        line[--n] = 0;
+    }
+  if (!n)  /* we are never called to hit this. */
+    return gpg_error (GPG_ERR_BUG);
+  if (*line == ' ' || *line == '\t')
+    {
+      /* Continuation. This won't happen too often as it is not
+         recommended.  We use a straightforward implementaion. */
+      if (!hd->headers)
+        return gpg_error (GPG_ERR_PROTOCOL_VIOLATION);
+      n += strlen (hd->headers->value);
+      p = xtrymalloc (n+1);
+      if (!p)
+        return gpg_error_from_errno (errno);
+      strcpy (stpcpy (p, hd->headers->value), line);
+      xfree (hd->headers->value);
+      hd->headers->value = p;
+      return 0;
+    }
+
+  capitalize_header_name (line);
+  p = strchr (line, ':');
+  if (!p)
+    return gpg_error (GPG_ERR_PROTOCOL_VIOLATION);
+  *p++ = 0;
+  while (*p == ' ' || *p == '\t')
+    p++;
+  value = p;
+  
+  for (h=hd->headers; h; h = h->next)
+    if ( !strcmp (h->name, line) )
+      break;
+  if (h)
+    {
+      /* We have already seen a line with that name.  Thus we assume
+         it is a comma separated list and merge them.  */
+      p = xtrymalloc (strlen (h->value) + 1 + strlen (value)+ 1);
+      if (!p)
+        return gpg_error_from_errno (errno);
+      strcpy (stpcpy (stpcpy (p, h->value), ","), value);
+      xfree (h->value);
+      h->value = p;
+      return 0;
+    }
+
+  /* Append a new header. */
+  h = xtrymalloc (sizeof *h + strlen (line));
+  if (!h)
+    return gpg_error_from_errno (errno);
+  strcpy (h->name, line);
+  h->value = xtrymalloc (strlen (value)+1);
+  if (!h->value)
+    {
+      xfree (h);
+      return gpg_error_from_errno (errno);
+    }
+  strcpy (h->value, value);
+  h->next = hd->headers;
+  hd->headers = h;
+
+  return 0;
+}
+
+
+/* Return the header NAME from the last response.  The returned value
+   is valid as along as HD has not been closed and no othe request has
+   been send. If the header was not found, NULL is returned.  Name
+   must be canonicalized, that is the first letter of each dash
+   delimited part must be uppercase and all other letters lowercase.
+   Note that the context must have been opened with the
+   HTTP_FLAG_NEED_HEADER. */
+const char *
+http_get_header (http_t hd, const char *name)
+{
+  header_t h;
+
+  for (h=hd->headers; h; h = h->next)
+    if ( !strcmp (h->name, name) )
+      return h->value;
+  return NULL;
+}
+
+
+
 /*
  * Parse the response from a server.
  * Returns: Errorcode and sets some files in the handle
@@ -1169,6 +1315,15 @@ parse_response (http_t hd)
 {
   char *line, *p, *p2;
   size_t maxlen, len;
+
+  /* Delete old header lines.  */
+  while (hd->headers)
+    {
+      header_t tmp = hd->headers->next;
+      xfree (hd->headers->value);
+      xfree (hd->headers);
+      hd->headers = tmp;
+    }
 
   /* Wait for the status line. */
   do
@@ -1231,6 +1386,12 @@ parse_response (http_t hd)
       if ( (hd->flags & HTTP_FLAG_LOG_RESP) )
         log_info ("RESP: `%.*s'\n",
                   (int)strlen(line)-(*line&&line[1]?2:0),line);
+      if ( (hd->flags & HTTP_FLAG_NEED_HEADER) && *line )
+        {
+          gpg_error_t err = store_header (hd, line);
+          if (err)
+            return err;
+        }
     }
   while (len && *line);
 
@@ -1703,6 +1864,7 @@ main (int argc, char **argv)
   gnutls_certificate_credentials certcred;
   const int certprio[] = { GNUTLS_CRT_X509, 0 };
 #endif /*HTTP_USE_GNUTLS*/
+  header_t hdr;
 
 #ifdef HTTP_USE_ESTREAM
   es_init ();
@@ -1792,7 +1954,8 @@ main (int argc, char **argv)
   http_release_parsed_uri (uri);
   uri = NULL;
 
-  rc = http_open_document (&hd, *argv, NULL, HTTP_FLAG_NO_SHUTDOWN,
+  rc = http_open_document (&hd, *argv, NULL, 
+                           HTTP_FLAG_NO_SHUTDOWN | HTTP_FLAG_NEED_HEADER,
                            NULL, tls_session);
   if (rc)
     {
@@ -1801,8 +1964,19 @@ main (int argc, char **argv)
     }
   log_info ("open_http_document succeeded; status=%u\n",
             http_get_status_code (hd));
-  while ((c = P_ES(getc) (http_get_read_ptr (hd))) != EOF)
-    putchar (c);
+  for (hdr = hd->headers; hdr; hdr = hdr->next)
+    printf ("HDR: %s: %s\n", hdr->name, hdr->value);
+  switch (http_get_status_code (hd))
+    {
+    case 200:
+      while ((c = P_ES(getc) (http_get_read_ptr (hd))) != EOF)
+        putchar (c);
+      break;
+    case 301:
+    case 302:
+      printf ("Redirected to `%s'\n", http_get_header (hd, "Location"));
+      break;
+    }
   http_close (hd, 0);
 
 #ifdef HTTP_USE_GNUTLS

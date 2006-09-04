@@ -1,3 +1,10 @@
+2006-09-04  Werner Koch  <wk@g10code.com>
+
+	* http.c (http_get_header): New.
+	(capitalize_header_name, store_header): New.
+	(parse_response): Store headers away.
+	* http.h: New flag HTTP_FLAG_NEED_HEADER.
+
 2006-08-21  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (libcommon_a_SOURCES): Added keyserver.h

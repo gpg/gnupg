@@ -66,7 +66,8 @@ enum
     HTTP_FLAG_TRY_PROXY = 1,
     HTTP_FLAG_NO_SHUTDOWN = 2,
     HTTP_FLAG_TRY_SRV = 4,
-    HTTP_FLAG_LOG_RESP = 8
+    HTTP_FLAG_LOG_RESP = 8,
+    HTTP_FLAG_NEED_HEADER = 16
   };
 
 struct http_context_s;
@@ -106,6 +107,7 @@ FILE *http_get_read_ptr (http_t hd);
 FILE *http_get_write_ptr (http_t hd);
 #endif /*!HTTP_USE_ESTREAM*/
 unsigned int http_get_status_code (http_t hd);
+const char *http_get_header (http_t hd, const char *name);
 
 char *http_escape_string (const char *string, const char *specials);
 
