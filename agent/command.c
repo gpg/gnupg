@@ -49,13 +49,28 @@
 #endif
 
 /* Data used to associate an Assuan context with local server data */
-struct server_local_s {
-  ASSUAN_CONTEXT assuan_ctx;
+struct server_local_s
+{
+  assuan_context_t assuan_ctx;
   int message_fd;
   int use_cache_for_signing;
   char *keydesc;  /* Allocated description for the next key
                      operation. */
 };
+
+
+/* An entry for the getval/putval commands. */
+struct putval_item_s
+{
+  struct putval_item_s *next;
+  size_t off;  /* Offset to the value into DATA.  */
+  size_t len;  /* Length of the value.  */
+  char d[1];   /* Key | Nul | value.  */ 
+};
+
+
+/* A list of key value pairs fpr the getval/putval commands.  */
+static struct putval_item_s *putval_list;
 
 
 
@@ -131,6 +146,42 @@ plus_to_blank (char *s)
         *s = ' ';
     }
 }
+
+
+/* Do the percent and plus/space unescaping in place and return the
+   length of the valid buffer. */
+static size_t
+percent_plus_unescape (char *string)
+{
+  unsigned char *p = string;
+  size_t n = 0;
+
+  while (*string)
+    {
+      if (*string == '%' && string[1] && string[2])
+        { 
+          string++;
+          *p++ = xtoi_2 (string);
+          n++;
+          string+= 2;
+        }
+      else if (*string == '+')
+        {
+          *p++ = ' ';
+          n++;
+          string++;
+        }
+      else
+        {
+          *p++ = *string++;
+          n++;
+        }
+    }
+
+  return n;
+}
+
+
 
 
 /* Parse a hex string.  Return an Assuan error code or 0 on success and the
@@ -310,7 +361,7 @@ cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-/* SETKEYDESC plus_percent_escaped_string:
+/* SETKEYDESC plus_percent_escaped_string
 
    Set a description to be used for the next PKSIGN or PKDECRYPT
    operation if this operation requires the entry of a passphrase.  If
@@ -318,7 +369,7 @@ cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
    this description implictly selects the label used for the entry
    box; if the string contains the string PIN (which in general will
    not be translated), "PIN" is used, otherwise the translation of
-   'passphrase" is used.  The description string should not contain
+   "passphrase" is used.  The description string should not contain
    blanks unless they are percent or '+' escaped.
 
    The description is only valid for the next PKSIGN or PKDECRYPT
@@ -877,6 +928,141 @@ cmd_scd (ASSUAN_CONTEXT ctx, char *line)
 
 
 
+/* GETVAL <key>
+
+   Return the value for KEY from the special environment as created by
+   PUTVAL.
+ */
+static int
+cmd_getval (assuan_context_t ctx, char *line)
+{
+  int rc = 0;
+  char *key = NULL;
+  char *p;
+  struct putval_item_s *vl;
+
+  for (p=line; *p == ' '; p++)
+    ;
+  key = p;
+  p = strchr (key, ' ');
+  if (p)
+    {
+      *p++ = 0; 
+      for (; *p == ' '; p++)
+        ;
+      if (*p)
+        return set_error (Parameter_Error, "too many arguments");
+    }
+  if (!key || !*key)
+    return set_error (Parameter_Error, "no key given");
+
+
+  for (vl=putval_list; vl; vl = vl->next)
+    if ( !strcmp (vl->d, key) )
+      break;
+
+  if (vl) /* Got an entry. */
+    {
+      rc = assuan_send_data (ctx, vl->d+vl->off, vl->len);
+      if (rc)
+        rc = map_assuan_err (rc);
+    }
+  else
+    return gpg_error (GPG_ERR_NO_DATA);
+
+  if (rc)
+    log_error ("command getval failed: %s\n", gpg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
+
+/* PUTVAL <key> [<percent_escaped_value>]
+
+   The gpg-agent maintains a kind of environment which may be used to
+   store key/value pairs in it, so that they can be retrieved later.
+   This may be used by helper daemons to daemonize themself on
+   invocation and register them with gpg-agent.  Callers of the
+   daemon's service may now first try connect to get the information
+   for that service from gpg-agent through the GETVAL command and then
+   try to connect to that daemon.  Only if that fails they may start
+   an own instance of the service daemon. 
+
+   KEY is an an arbitrary symbol with the same syntax rules as keys
+   for shell environment variables.  PERCENT_ESCAPED_VALUE is the
+   corresponsing value; they should be similar to the values of
+   envronment variables but gpg-agent does not enforce any
+   restrictions.  If that value is not given any value under that KEY
+   is removed from this special environment.
+*/
+static int
+cmd_putval (assuan_context_t ctx, char *line)
+{
+  int rc = 0;
+  char *key = NULL;
+  char *value = NULL;
+  size_t valuelen = 0;
+  char *p;
+  struct putval_item_s *vl, *vlprev;
+
+  for (p=line; *p == ' '; p++)
+    ;
+  key = p;
+  p = strchr (key, ' ');
+  if (p)
+    {
+      *p++ = 0; 
+      for (; *p == ' '; p++)
+        ;
+      if (*p)
+        {
+          value = p;
+          p = strchr (value, ' ');
+          if (p)
+            *p = 0;
+          valuelen = percent_plus_unescape (value);
+        }
+    }
+  if (!key || !*key)
+    return set_error (Parameter_Error, "no key given");
+
+
+  for (vl=putval_list,vlprev=NULL; vl; vlprev=vl, vl = vl->next)
+    if ( !strcmp (vl->d, key) )
+      break;
+
+  if (vl) /* Delete old entry. */
+    {
+      if (vlprev)
+        vlprev->next = vl->next;
+      else
+        putval_list = vl->next;
+      xfree (vl);
+    }
+
+  if (valuelen) /* Add entry. */  
+    {
+      vl = xtrymalloc (sizeof *vl + strlen (key) + valuelen);
+      if (!vl)
+        rc = gpg_error_from_errno (errno);
+      else
+        {
+          vl->len = valuelen;
+          vl->off = strlen (key) + 1;
+          strcpy (vl->d, key);
+          memcpy (vl->d + vl->off, value, valuelen);
+          vl->next = putval_list;
+          putval_list = vl;
+        }
+    }
+
+  if (rc)
+    log_error ("command putval failed: %s\n", gpg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
+
+
+
 /* UPDATESTARTUPTTY 
   
   Set startup TTY and X DISPLAY variables to the values of this
@@ -999,6 +1185,8 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "INPUT",          NULL }, 
     { "OUTPUT",         NULL }, 
     { "SCD",            cmd_scd },
+    { "GETVAL",         cmd_getval },
+    { "PUTVAL",         cmd_putval },
     { "UPDATESTARTUPTTY",  cmd_updatestartuptty },
     { NULL }
   };

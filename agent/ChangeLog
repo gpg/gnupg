@@ -1,3 +1,8 @@
+2006-09-04  Werner Koch  <wk@g10code.com>
+
+	* command.c (percent_plus_unescape): New.
+	(cmd_get_val, cmd_putval): New.
+
 2006-08-29  Werner Koch  <wk@g10code.com>
 
 	* command-ssh.c (stream_read_mpi): Sanity check for early
