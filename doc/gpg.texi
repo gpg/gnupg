@@ -2572,3 +2572,10 @@ warning message about insecure memory your operating system supports
 locking without being root. The program drops root privileges as soon
 as locked memory is allocated.
 
+@mansect see also
+@ifset isman
+@command{gpgv}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1)
+@end ifset
+@include see-also-note.texi

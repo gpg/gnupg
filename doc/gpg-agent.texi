@@ -602,7 +602,7 @@ to your shell initialization file (e.g. @file{~/.bashrc}).
 @c 
 @c  Assuan Protocol
 @c
-@mansect assuan
+@manpause
 @node Agent Protocol
 @section Agent's Assuan Protocol
 
@@ -1051,3 +1051,13 @@ Set the startup TTY and X-DISPLAY variables to the values of this
 session.  This command is useful to direct future pinentry invocations
 to another screen.  It is only required because there is no way in the
 ssh-agent protocol to convey this information.
+
+
+@mansect see also
+@ifset isman
+@command{gpg2}(1), 
+@command{gpgsm}(1), 
+@command{gpg-connect-agent}(1),
+@command{scdaemon}(1)
+@end ifset
+@include see-also-note.texi

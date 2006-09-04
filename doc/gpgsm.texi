@@ -773,7 +773,7 @@ this is a missing certificate.
 @c ***************  ASSSUAN  *****************
 @c ***************           *****************
 @c *******************************************
-@mansect assuan
+@manpause
 @node GPGSM Protocol
 @section The Protocol the Server Mode Uses.
 
@@ -1071,3 +1071,10 @@ this requires that the usual escape quoting rules are done.
 The certificates must be specified unambiguously otherwise an error is
 returned.
 
+
+@mansect see also
+@ifset isman
+@command{gpg2}(1), 
+@command{gpg-agent}(1)
+@end ifset
+@include see-also-note.texi

@@ -41,7 +41,7 @@
     left space. Processing starts after a "manpage" macro has been
     seen.  "mansect" identifies the section and yat2m make sure to
     emit the sections in the proper order.  Note that @mansect skips
-    the next input line if that line begins with @subsection or
+    the next input line if that line begins with @section, @subsection or
     @chapheading.
 
     To insert verbatim troff markup, the follwing texinfo code may be
@@ -147,13 +147,14 @@ static struct
 } thepage;
 
 
-/* The list of standard section names.  */
+/* The list of standard section names.  COMMANDS and ASSUAN are GnuPG
+   specific. */
 static const char * const standard_sections[] = 
   { "NAME",  "SYNOPSIS",  "DESCRIPTION",
     "RETURN VALUE", "EXIT STATUS", "ERROR HANDLING", "ERRORS",
-    "OPTIONS", "USAGE", "EXAMPLES", "FILES",
+    "COMMANDS", "OPTIONS", "USAGE", "EXAMPLES", "FILES",
     "ENVIRONMENT", "DIAGNOSTICS", "SECURITY", "CONFORMING TO",
-    "NOTES", "BUGS", "AUTHOR", "SEE ALSO", NULL };
+    "ASSUAN", "NOTES", "BUGS", "AUTHOR", "SEE ALSO", NULL };
 
 
 /*-- Local prototypes.  --*/
@@ -432,11 +433,13 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
   } cmdtbl[] = {
     { "command", 0, "\\fB", "\\fR" },
     { "code",    0, "\\fB", "\\fR" },
+    { "sc",      0, "\\fB", "\\fR" },
     { "var",     0, "\\fI", "\\fR" },
     { "samp",    0, "\n'",  "'\n"  },
     { "file",    0, "`\\fI","\\fR'" }, 
     { "env",     0, "`\\fI","\\fR'" }, 
     { "acronym", 0 },
+    { "dfn",     0 },
     { "option",  0, "\\fB", "\\fR"   },
     { "example", 1, ".RS 2\n.nf\n" },
     { "smallexample", 1, ".RS 2\n.nf\n" },
@@ -456,6 +459,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "node",    1 },
     { "noindent", 0 },
     { "section", 1 },
+    { "chapter", 1 },
     { "subsection", 6, "\n.SS " },
     { "chapheading", 0},
     { "item",    2, ".TP\n.B " },
@@ -804,12 +808,11 @@ finish_page (void)
 /* Parse one Texinfo file and create manpages according to the
    embedded instructions.  */
 static void
-parse_file (const char *fname, FILE *fp, char **section_name)
+parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
 {
   char *line;
   int lnr = 0;
   int in_verbatim = 0;
-  int in_pause = 0;
   int skip_to_end = 0;        /* Used to skip over menu entries. */
   int skip_sect_line = 0;     /* Skip after @mansect.  */
 
@@ -832,7 +835,8 @@ parse_file (const char *fname, FILE *fp, char **section_name)
       if (skip_sect_line)
         {
           skip_sect_line = 0;
-          if (!strncmp (line, "@subsection", 11)
+          if (!strncmp (line, "@section", 8)
+              || !strncmp (line, "@subsection", 11)
               || !strncmp (line, "@chapheading", 12))
             continue;
         }
@@ -943,7 +947,7 @@ parse_file (const char *fname, FILE *fp, char **section_name)
                      incname, strerror (errno));
               else
                 {
-                  parse_file (incname, incfp, section_name);
+                  parse_file (incname, incfp, section_name, in_pause);
                   fclose (incfp);
                 }
               free (incname);
@@ -971,7 +975,7 @@ top_parse_file (const char *fname, FILE *fp)
 {
   char *section_name = NULL;  /* Name of the current section or NULL
                                  if not in a section.  */
-  parse_file (fname, fp, &section_name);
+  parse_file (fname, fp, &section_name, 0);
   free (section_name);
   finish_page ();
 }
