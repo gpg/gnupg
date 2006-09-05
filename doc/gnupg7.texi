@@ -1,0 +1,29 @@
+@c                                              @c -*-texinfo-*-
+@c This is only used to create a man page, thus we don't need to care
+@c about actual texinfo stuff.
+
+@manpage gnupg.7
+@ifset manverb
+.B GnuPG
+\- The GNU Privacy Guard suite of programs
+@end ifset
+@mansect description
+@ifset isman
+GnuPG is a set of programs for public key encryption and digital
+signatures.  The program most users will want to use is the OpenPGP
+command line tool, named @command{gpg2}.  @command{gpgv}is a stripped
+down version of @command{gpg2} with no encryption functionality, used
+only to verify signatures against a trusted keyring.  @command{gpgsm} is
+the X.509/CMS (for S/MIME) counterpart of
+@command{gpg2}. @command{gpg-agent} is a passphrase and private key
+daemon which may also emulate the @command{ssh-agent}.
+@mansect see also
+@command{gpg2}(1), 
+@command{gpgv}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@command{scdaemon}(1)
+@include see-also-note.texi
+@end ifset
+
+@bye
