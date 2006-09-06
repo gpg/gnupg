@@ -66,7 +66,7 @@ The format of the native parameter file is follows:
 	Length of the key in bits.  Default is 1024.
      Key-Grip: hexstring
         This is optional and used to generate a request for an already
-        existsing key.  Key-Length will be ignored when given,
+        existing key.  Key-Length will be ignored when given,
      Key-Usage: <usage-list>
         Space or comma delimited list of key usage, allowed values are
         "encrypt" and "sign".  This is used to generate the KeyUsage extension.

@@ -70,6 +70,9 @@ struct {
 
   { "2.16.840.1.113730.4.1", "serverGatedCrypto.ns" }, /* Netscape. */
   { "1.3.6.1.4.1.311.10.3.3", "serverGatedCrypto.ms"}, /* Microsoft. */
+
+  { "1.3.6.1.5.5.7.48.1.5", "ocspNoCheck" },
+
   { NULL, NULL }
 };
 
@@ -124,6 +127,11 @@ static struct {
   { "1.3.6.1.5.5.7.1.9", "sbgp-routerIdentifier" },
   { "1.3.6.1.5.5.7.1.10", "acProxying" },
   { "1.3.6.1.5.5.7.1.11", "subjectInfoAccess" },
+
+  { "1.3.6.1.5.5.7.48.1", "ocsp" },
+  { "1.3.6.1.5.5.7.48.2", "caIssuers" },
+  { "1.3.6.1.5.5.7.48.3", "timeStamping" },
+  { "1.3.6.1.5.5.7.48.5", "caRepository" },
 
   /* X.509 id-ce */
   { "2.5.29.14", "subjectKeyIdentifier", 1},

@@ -2012,8 +2012,14 @@ main (int argc, char **argv )
 	  case aRefreshKeys:
 	  case aFetchKeys:
 	  case aExport: 
+#ifdef ENABLE_CARD_SUPPORT
+          case aCardStatus:
+          case aCardEdit: 
+          case aChangePIN:
+#endif /* ENABLE_CARD_SUPPORT*/
             set_cmd (&cmd, pargs.r_opt);
             break;
+
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;

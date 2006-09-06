@@ -13,6 +13,12 @@
 dnl AM_PATH_KSBA([MINIMUM-VERSION,
 dnl              [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libksba and define KSBA_CFLAGS and KSBA_LIBS
+dnl MINIMUN-VERSION is a string with the version number optionalliy prefixed
+dnl with the API version to also check the API compatibility. Example:
+dnl a MINIMUN-VERSION of 1:1.0.7 won't pass the test unless the installed 
+dnl version of libksba is at least 1.0.7 *and* the API number is 1.  Using
+dnl this features allows to prevent build against newer versions of libksba
+dnl with a changed API.
 dnl
 AC_DEFUN([AM_PATH_KSBA],
 [ AC_ARG_WITH(ksba-prefix,
@@ -27,7 +33,15 @@ AC_DEFUN([AM_PATH_KSBA],
   fi
 
   AC_PATH_PROG(KSBA_CONFIG, ksba-config, no)
-  min_ksba_version=ifelse([$1], ,0.4.4,$1)
+  tmp=ifelse([$1], ,1:1.0.0,$1)
+  if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
+     req_ksba_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
+     min_ksba_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
+  else
+     req_ksba_api=0
+     min_ksba_version="$tmp"
+  fi
+
   AC_MSG_CHECKING(for KSBA - version >= $min_ksba_version)
   ok=no
   if test "$KSBA_CONFIG" != "no" ; then
@@ -61,14 +75,33 @@ AC_DEFUN([AM_PATH_KSBA],
     fi
   fi
   if test $ok = yes; then
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+  if test $ok = yes; then
+     # Even if we have a recent libksba, we should check that the
+     # API is compatible.
+     if test "$req_ksba_api" -gt 0 ; then
+        tmp=`$KSBA_CONFIG --api-version 2>/dev/null || echo 0`
+        if test "$tmp" -gt 0 ; then
+           AC_MSG_CHECKING([KSBA API version])
+           if test "$req_ksba_api" -eq "$tmp" ; then
+             AC_MSG_RESULT(okay)
+           else
+             ok=no
+             AC_MSG_RESULT([does not match.  want=$req_ksba_api got=$tmp.])
+           fi
+        fi
+     fi
+  fi
+  if test $ok = yes; then
     KSBA_CFLAGS=`$KSBA_CONFIG $ksba_config_args --cflags`
     KSBA_LIBS=`$KSBA_CONFIG $ksba_config_args --libs`
-    AC_MSG_RESULT(yes)
     ifelse([$2], , :, [$2])
   else
     KSBA_CFLAGS=""
     KSBA_LIBS=""
-    AC_MSG_RESULT(no)
     ifelse([$3], , :, [$3])
   fi
   AC_SUBST(KSBA_CFLAGS)

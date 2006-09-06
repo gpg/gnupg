@@ -1142,7 +1142,7 @@ reread_configuration (void)
    unique name in a unique new directory will be created.  In both
    cases check for valid characters as well as against a maximum
    allowed length for a unix domain socket is done.  The function
-   terminates the process in case of an error.  Retunrs: Pointer to an
+   terminates the process in case of an error.  Returns: Pointer to an
    allcoated string with the absolute name of the socket used.  */
 static char *
 create_socket_name (int use_standard_socket,

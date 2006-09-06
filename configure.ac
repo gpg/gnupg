@@ -46,7 +46,8 @@ NEED_LIBGCRYPT_VERSION=1.1.94
 
 NEED_LIBASSUAN_VERSION=0.6.10
 
-NEED_KSBA_VERSION=0.9.16
+NEED_KSBA_API=1
+NEED_KSBA_VERSION=1.0.0
 
 
 PACKAGE=$PACKAGE_NAME
@@ -68,6 +69,7 @@ have_libgcrypt=no
 have_libassuan=no
 have_ksba=no
 have_pth=no
+have_libusb=no
 
 use_bzip2=yes
 use_exec=yes
@@ -561,10 +563,6 @@ fi
 #
 AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
                   have_gpg_error=yes,have_gpg_error=no)
-_tmp_gpg_error_save_cflags="$CFLAGS"
-CFLAGS="$CFLAGS $GPG_ERROR_CFLAGS"
-AC_CHECK_DECLS(GPG_ERR_LOCKED,,,[#include <gpg-error.h>])
-CFLAGS="${_tmp_gpg_error_save_cflags}"
 
 
 #
@@ -584,7 +582,7 @@ AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_VERSION",
 #
 # libksba is our X.509 support library
 #
-AM_PATH_KSBA("$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
+AM_PATH_KSBA("$NEED_KSBA_API:$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
 
 
 #
@@ -595,6 +593,7 @@ AC_CHECK_LIB(usb, usb_bulk_write,
               [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
                 AC_DEFINE(HAVE_LIBUSB,1,
                          [defined if libusb is available])
+                have_libusb=yes
              ])
 AC_SUBST(LIBUSB_LIBS)
 AC_CHECK_FUNCS(usb_create_match)
@@ -1208,6 +1207,10 @@ if test "$build_scdaemon" = "yes"; then
      tmp=", "
      missing_pth=yes
   fi
+  if test $have_libusb = no; then
+     build_scdaemon_extra="${tmp}without internal CCID driver"
+     tmp=", "
+  fi
   if test -n "$build_scdaemon_extra"; then
      build_scdaemon_extra="(${build_scdaemon_extra})"
   fi
@@ -1251,7 +1254,7 @@ if test "$have_libgcrypt" = "no"; then
 *** You need libgcrypt to build this program.
 **  This library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/libgcrypt/
-*** (at least version $NEED_LIBGCRYPT_VERSION using API $NEED_LIBGCRYPT_API) is required.)
+*** (at least version $NEED_LIBGCRYPT_VERSION using API $NEED_LIBGCRYPT_API is required.)
 ***]])
 fi
 if test "$have_libassuan" = "no"; then
@@ -1269,8 +1272,8 @@ if test "$have_ksba" = "no"; then
 ***
 *** You need libksba to build this program.
 *** This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/alpha/libksba/
-*** (at least version $NEED_KSBA_VERSION is required).
+***   ftp://ftp.gnupg.org/gcrypt/libksba/
+*** (at least version $NEED_KSBA_VERSION using API $NEED_KSBA_API is required).
 ***]])
 fi
 if test "$missing_pth" = "yes"; then

@@ -1,3 +1,9 @@
+2006-09-01  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c: Do not force using the pipe server.
+
+	* gpg.c (main): Enable card related commands.
+
 2006-08-22  Werner Koch  <wk@g10code.com>
 
 	* mainproc.c (proc_plaintext): Fixed a #warning

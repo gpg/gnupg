@@ -872,7 +872,9 @@ send_request (http_t hd, const char *auth, const char *proxy)
   if (hd->sock == -1)
     {
       xfree (proxy_authstr);
-      return gpg_error_from_errno (save_errno);
+      return (save_errno 
+              ? gpg_error_from_errno (save_errno)
+              : gpg_error (GPG_ERR_NOT_FOUND));
     }
 
 #ifdef HTTP_USE_GNUTLS

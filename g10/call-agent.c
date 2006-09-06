@@ -48,7 +48,7 @@
 #endif
 
 static assuan_context_t agent_ctx = NULL;
-static int force_pipe_server = 1; /* FIXME: set this back to 0. */
+static int force_pipe_server; 
 
 struct cipher_parm_s 
 {

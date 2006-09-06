@@ -136,6 +136,8 @@ allowed_ca (ksba_cert_t cert, int *chainlen, int listmode, FILE *fp)
     {
       if (get_regtp_ca_info (cert, chainlen))
         {
+          /* Note that dirmngr takes a different way to cope with such
+             certs. */
           return 0; /* RegTP issued certificate. */
         }
 
