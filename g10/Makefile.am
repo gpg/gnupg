@@ -27,7 +27,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
 needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
 
@@ -110,8 +110,8 @@ gpgv2_SOURCES = gpgv.c           \
 
 LDADD =  $(needed_libs) $(ZLIBS) $(DNSLIBS) $(LIBREADLINE) \
          $(LIBINTL) $(CAPLIBS) $(W32LIBS)
-gpg2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
-gpgv2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
+gpg2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS)
+gpgv2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS)
 
 $(PROGRAMS): $(needed_libs)
 
