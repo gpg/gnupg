@@ -4,7 +4,7 @@ agent/gpg-agent.c
 agent/protect-tool.c
 agent/divert-scd.c
 agent/genkey.c
-agent/query.c
+agent/call-pinentry.c
 agent/trustlist.c
 
 common/sysutils.c

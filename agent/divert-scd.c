@@ -35,7 +35,7 @@
 
 
 static int
-ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
+ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
 {
   int rc, i;
   const unsigned char *s;
@@ -309,7 +309,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 
 
 int
-divert_pksign (CTRL ctrl, 
+divert_pksign (ctrl_t ctrl, 
                const unsigned char *digest, size_t digestlen, int algo,
                const unsigned char *shadow_info, unsigned char **r_sig)
 {
@@ -344,7 +344,7 @@ divert_pksign (CTRL ctrl,
    key identified by SHADOW_INFO and return the plaintext in an
    allocated buffer in R_BUF.  */
 int  
-divert_pkdecrypt (CTRL ctrl,
+divert_pkdecrypt (ctrl_t ctrl,
                   const unsigned char *cipher,
                   const unsigned char *shadow_info,
                   char **r_buf, size_t *r_len)
@@ -407,7 +407,7 @@ divert_pkdecrypt (CTRL ctrl,
 
 
 int  
-divert_generic_cmd (CTRL ctrl, const char *cmdline, void *assuan_context)
+divert_generic_cmd (ctrl_t ctrl, const char *cmdline, void *assuan_context)
 {
   return agent_card_scd (ctrl, cmdline, getpin_cb, ctrl, assuan_context);
 }

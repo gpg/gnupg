@@ -48,25 +48,25 @@ struct membuf {
 
 
 
-static ASSUAN_CONTEXT dirmngr_ctx = NULL;
+static assuan_context_t dirmngr_ctx = NULL;
 static int force_pipe_server = 0;
 
 struct inq_certificate_parm_s {
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   ksba_cert_t cert;
   ksba_cert_t issuer_cert;
 };
 
 struct isvalid_status_parm_s {
-  CTRL ctrl;
+  ctrl_t ctrl;
   int seen;
   unsigned char fpr[20];
 };
 
 
 struct lookup_parm_s {
-  CTRL ctrl;
-  ASSUAN_CONTEXT ctx;
+  ctrl_t ctrl;
+  assuan_context_t ctx;
   void (*cb)(void *, ksba_cert_t);
   void *cb_value;
   struct membuf data;
@@ -74,7 +74,7 @@ struct lookup_parm_s {
 };
 
 struct run_command_parm_s {
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
 };
 
 
@@ -148,7 +148,7 @@ start_dirmngr (void)
 {
   int rc;
   char *infostr, *p;
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   int try_default = 0;
 
   if (dirmngr_ctx)
@@ -200,7 +200,7 @@ start_dirmngr (void)
       no_close_list[i] = -1;
 
       /* connect to the agent and perform initial handshaking */
-      rc = assuan_pipe_connect (&ctx, opt.dirmngr_program, (char**)argv,
+      rc = assuan_pipe_connect (&ctx, opt.dirmngr_program, argv,
                                 no_close_list);
     }
   else
@@ -237,7 +237,7 @@ start_dirmngr (void)
 
       rc = assuan_socket_connect (&ctx, infostr, pid);
       xfree (infostr);
-      if (rc == ASSUAN_Connect_Failed)
+      if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
         {
           log_error (_("can't connect to the dirmngr - trying fall back\n"));
           force_pipe_server = 1;
@@ -247,7 +247,7 @@ start_dirmngr (void)
 
   if (rc)
     {
-      log_error ("can't connect to the dirmngr: %s\n", assuan_strerror (rc));
+      log_error ("can't connect to the dirmngr: %s\n", gpg_strerror (rc));
       return gpg_error (GPG_ERR_NO_DIRMNGR);
     }
   dirmngr_ctx = ctx;
@@ -260,11 +260,11 @@ start_dirmngr (void)
 
 
 /* Handle a SENDCERT inquiry. */
-static AssuanError
+static int
 inq_certificate (void *opaque, const char *line)
 {
   struct inq_certificate_parm_s *parm = opaque;
-  AssuanError rc;
+  int rc;
   const unsigned char *der;
   size_t derlen;
   int issuer_mode = 0;
@@ -296,7 +296,7 @@ inq_certificate (void *opaque, const char *line)
   else
     {
       log_error ("unsupported inquiry `%s'\n", line);
-      return ASSUAN_Inquire_Unknown;
+      return gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
   if (!*line)
@@ -304,7 +304,7 @@ inq_certificate (void *opaque, const char *line)
       der = ksba_cert_get_image (issuer_mode? parm->issuer_cert : parm->cert,
                                  &derlen);
       if (!der)
-        rc = ASSUAN_Inquire_Error;
+        rc = gpg_error (GPG_ERR_INV_CERT_OBJ);
       else
         rc = assuan_send_data (parm->ctx, der, derlen);
     }
@@ -312,7 +312,7 @@ inq_certificate (void *opaque, const char *line)
     {
       log_error ("sending specific issuer certificate back "
                  "is not yet implemented\n");
-      rc = ASSUAN_Inquire_Error;
+      rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
   else 
     { /* Send the given certificate. */
@@ -324,13 +324,13 @@ inq_certificate (void *opaque, const char *line)
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
-          rc = ASSUAN_Inquire_Error;
+          rc = gpg_error (GPG_ERR_NOT_FOUND);
         }
       else
         {
           der = ksba_cert_get_image (cert, &derlen);
           if (!der)
-            rc = ASSUAN_Inquire_Error;
+            rc = gpg_error (GPG_ERR_INV_CERT_OBJ);
           else
             rc = assuan_send_data (parm->ctx, der, derlen);
           ksba_cert_release (cert);
@@ -373,7 +373,7 @@ isvalid_status_cb (void *opaque, const char *line)
           for (line += 8; *line == ' '; line++)
             ;
           if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, line))
-            return ASSUAN_Canceled;
+            return gpg_error (GPG_ERR_ASS_CANCELED);
         }
     }
   else if (!strncmp (line, "ONLY_VALID_IF_CERT_VALID", 24)
@@ -466,8 +466,8 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                         inq_certificate, &parm,
                         isvalid_status_cb, &stparm);
   if (opt.verbose > 1)
-    log_info ("response of dirmngr: %s\n", rc? assuan_strerror (rc): "okay");
-  rc = map_assuan_err (rc);
+    log_info ("response of dirmngr: %s\n", rc? gpg_strerror (rc): "okay");
+  rc = rc;
 
   if (!rc && stparm.seen)
     {
@@ -526,7 +526,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
 
 
 /* Lookup helpers*/
-static AssuanError
+static int
 lookup_cb (void *opaque, const void *buffer, size_t length)
 {
   struct lookup_parm_s *parm = opaque;
@@ -632,7 +632,7 @@ pattern_from_strlist (STRLIST names)
   return pattern;
 }
 
-static AssuanError
+static int
 lookup_status_cb (void *opaque, const char *line)
 {
   struct lookup_parm_s *parm = opaque;
@@ -644,7 +644,7 @@ lookup_status_cb (void *opaque, const char *line)
           for (line += 8; *line == ' '; line++)
             ;
           if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, line))
-            return ASSUAN_Canceled;
+            return gpg_error (GPG_ERR_ASS_CANCELED);
         }
     }
   else if (!strncmp (line, "TRUNCATED", 9) && (line[9]==' ' || !line[9]))
@@ -665,7 +665,7 @@ lookup_status_cb (void *opaque, const char *line)
    the callback CB which will be passed cert by cert.  Note that CTRL
    is optional. */
 int 
-gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
+gpgsm_dirmngr_lookup (ctrl_t ctrl, STRLIST names,
                       void (*cb)(void*, ksba_cert_t), void *cb_value)
 { 
   int rc;
@@ -680,7 +680,7 @@ gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
 
   pattern = pattern_from_strlist (names);
   if (!pattern)
-    return OUT_OF_CORE (errno);
+    return out_of_core ();
   snprintf (line, DIM(line)-1, "LOOKUP %s", pattern);
   line[DIM(line)-1] = 0;
   xfree (pattern);
@@ -696,7 +696,7 @@ gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
                         NULL, NULL, lookup_status_cb, &parm);
   xfree (get_membuf (&parm.data, &len));
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
   return parm.error;
 }
 
@@ -705,7 +705,7 @@ gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
 /* Run Command helpers*/
 
 /* Fairly simple callback to write all output of dirmngr to stdout. */
-static AssuanError
+static int
 run_command_cb (void *opaque, const void *buffer, size_t length)
 {
   if (buffer)
@@ -717,11 +717,11 @@ run_command_cb (void *opaque, const void *buffer, size_t length)
 }
 
 /* Handle inquiries from the dirmngr COMMAND. */
-static AssuanError
+static int
 run_command_inq_cb (void *opaque, const char *line)
 {
   struct run_command_parm_s *parm = opaque;
-  AssuanError rc = 0;
+  int rc = 0;
 
   if ( !strncmp (line, "SENDCERT", 8) && (line[8] == ' ' || !line[8]) )
     { /* send the given certificate */
@@ -732,19 +732,19 @@ run_command_inq_cb (void *opaque, const char *line)
 
       line += 8;
       if (!*line)
-        return ASSUAN_Inquire_Error;
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
 
       err = gpgsm_find_cert (line, NULL, &cert);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
-          rc = ASSUAN_Inquire_Error;
+          rc = gpg_error (GPG_ERR_NOT_FOUND);
         }
       else
         {
           der = ksba_cert_get_image (cert, &derlen);
           if (!der)
-            rc = ASSUAN_Inquire_Error;
+            rc = gpg_error (GPG_ERR_INV_CERT_OBJ);
           else
             rc = assuan_send_data (parm->ctx, der, derlen);
           ksba_cert_release (cert);
@@ -758,13 +758,13 @@ run_command_inq_cb (void *opaque, const char *line)
   else
     {
       log_error ("unsupported inquiry `%s'\n", line);
-      rc = ASSUAN_Inquire_Unknown;
+      rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
   return rc; 
 }
 
-static AssuanError
+static int
 run_command_status_cb (void *opaque, const char *line)
 {
   ctrl_t ctrl = opaque;
@@ -780,7 +780,7 @@ run_command_status_cb (void *opaque, const char *line)
           for (line += 8; *line == ' '; line++)
             ;
           if (gpgsm_status (ctrl, STATUS_PROGRESS, line))
-            return ASSUAN_Canceled;
+            return gpg_error (GPG_ERR_ASS_CANCELED);
         }
     }
   return 0;
@@ -794,7 +794,7 @@ run_command_status_cb (void *opaque, const char *line)
    percent characters within the argument strings are percent escaped
    so that blanks can act as delimiters. */
 int
-gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,
+gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
                            int argc, char **argv)
 { 
   int rc;
@@ -815,7 +815,7 @@ gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,
     len += 1 + 3*strlen (argv[i]); /* enough space for percent escaping */
   line = xtrymalloc (len);
   if (!line)
-    return OUT_OF_CORE (errno);
+    return out_of_core ();
 
   p = stpcpy (line, command);
   for (i=0; i < argc; i++)
@@ -843,6 +843,6 @@ gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,
                         run_command_inq_cb, &parm,
                         run_command_status_cb, ctrl);
   xfree (line);
-  log_info ("response of dirmngr: %s\n", rc? assuan_strerror (rc): "okay");
-  return map_assuan_err (rc);
+  log_info ("response of dirmngr: %s\n", rc? gpg_strerror (rc): "okay");
+  return rc;
 }

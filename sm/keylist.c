@@ -1327,7 +1327,7 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
    make sense here because it would be unwise to list external secret
    keys */
 static gpg_error_t
-list_external_keys (CTRL ctrl, STRLIST names, FILE *fp, int raw_mode)
+list_external_keys (ctrl_t ctrl, STRLIST names, FILE *fp, int raw_mode)
 {
   int rc;
   struct list_external_parm_s parm;
@@ -1357,7 +1357,7 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp, int raw_mode)
     Bit 8: Do a raw format dump.
  */
 gpg_error_t
-gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
+gpgsm_list_keys (ctrl_t ctrl, STRLIST names, FILE *fp, unsigned int mode)
 {
   gpg_error_t err = 0;
 

@@ -1899,6 +1899,7 @@ main (int argc, char **argv )
 
     /* malloc hooks go here ... */
     assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
+    assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
 
 
     set_native_charset (NULL); /* Try to auto set the character set */

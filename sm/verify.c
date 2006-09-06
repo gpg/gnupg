@@ -82,7 +82,7 @@ hash_data (int fd, gcry_md_hd_t md)
    must be different than -1.  With OUT_FP given and a non-detached
    signature, the signed material is written to that stream. */
 int
-gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
+gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
 {
   int i, rc;
   Base64Context b64reader = NULL;

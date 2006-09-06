@@ -33,7 +33,7 @@
    ../jnlib/libjnlib.a .  ../common/util.h defines macros to map them
    to xmalloc etc. */
 static void
-out_of_core (void)
+out_of_memory (void)
 {
   log_fatal (_("error allocating enough memory: %s\n"), strerror (errno));
 }
@@ -50,7 +50,7 @@ gcry_xmalloc (size_t n)
 {
   void *p = malloc (n);
   if (!p)
-    out_of_core ();
+    out_of_memory ();
   return p;
 }
 
@@ -72,7 +72,7 @@ gcry_xrealloc (void *a, size_t n)
 {
   void *p = realloc (a, n);
   if (!p)
-    out_of_core ();
+    out_of_memory ();
   return p;
 }
 
@@ -89,7 +89,7 @@ gcry_xcalloc (size_t n, size_t m)
 {
   void *p = calloc (n, m);
   if (!p)
-    out_of_core ();
+    out_of_memory ();
   return p;
 }
 
@@ -99,7 +99,7 @@ gcry_xstrdup (const char *string)
 {
   void *p = malloc (strlen (string)+1);
   if (!p)
-    out_of_core ();
+    out_of_memory ();
   strcpy( p, string );
   return p;
 }

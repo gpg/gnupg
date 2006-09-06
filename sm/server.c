@@ -32,7 +32,7 @@
 
 #include "gpgsm.h"
 
-#define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
+#define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
 
 /* The filepointer for status message used in non-server mode */
@@ -88,7 +88,7 @@ has_option (const char *line, const char *name)
 
 
 static void 
-close_message_fd (CTRL ctrl)
+close_message_fd (ctrl_t ctrl)
 {
   if (ctrl->server_local->message_fd != -1)
     {
@@ -99,24 +99,24 @@ close_message_fd (CTRL ctrl)
 
 
 static int
-option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
+option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   if (!strcmp (key, "include-certs"))
     {
       int i = *value? atoi (value) : -1;
       if (ctrl->include_certs < -2)
-        return ASSUAN_Parameter_Error;
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
       ctrl->include_certs = i;
     }
-  else   if (!strcmp (key, "display"))
+  else if (!strcmp (key, "display"))
     {
       if (opt.display)
         free (opt.display);
       opt.display = strdup (value);
       if (!opt.display)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
     }
   else if (!strcmp (key, "ttyname"))
     {
@@ -124,7 +124,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         free (opt.ttyname);
       opt.ttyname = strdup (value);
       if (!opt.ttyname)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
     }
   else if (!strcmp (key, "ttytype"))
     {
@@ -132,7 +132,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         free (opt.ttytype);
       opt.ttytype = strdup (value);
       if (!opt.ttytype)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
     }
   else if (!strcmp (key, "lc-ctype"))
     {
@@ -140,7 +140,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         free (opt.lc_ctype);
       opt.lc_ctype = strdup (value);
       if (!opt.lc_ctype)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
     }
   else if (!strcmp (key, "lc-messages"))
     {
@@ -148,7 +148,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         free (opt.lc_messages);
       opt.lc_messages = strdup (value);
       if (!opt.lc_messages)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
     }
   else if (!strcmp (key, "list-mode"))
     {
@@ -169,7 +169,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
           ctrl->server_local->list_external = 1;
         }
       else
-        return ASSUAN_Parameter_Error;
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
     }
   else if (!strcmp (key, "with-validation"))
     {
@@ -177,7 +177,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
       ctrl->with_validation = i;
     }
   else
-    return ASSUAN_Invalid_Option;
+    return gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
   return 0;
 }
@@ -186,9 +186,9 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 
 
 static void
-reset_notify (ASSUAN_CONTEXT ctx)
+reset_notify (assuan_context_t ctx)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   gpgsm_release_certlist (ctrl->server_local->recplist);
   gpgsm_release_certlist (ctrl->server_local->signerlist);
@@ -201,9 +201,9 @@ reset_notify (ASSUAN_CONTEXT ctx)
 
 
 static void
-input_notify (ASSUAN_CONTEXT ctx, const char *line)
+input_notify (assuan_context_t ctx, const char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   ctrl->autodetect_encoding = 0;
   ctrl->is_pem = 0;
@@ -219,9 +219,9 @@ input_notify (ASSUAN_CONTEXT ctx, const char *line)
 }
 
 static void
-output_notify (ASSUAN_CONTEXT ctx, const char *line)
+output_notify (assuan_context_t ctx, const char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   ctrl->create_pem = 0;
   ctrl->create_base64 = 0;
@@ -245,9 +245,9 @@ output_notify (ASSUAN_CONTEXT ctx, const char *line)
   client has to take care of this.  All RECIPIENT commands are
   cumulative until a RESET or an successful ENCRYPT command.  */
 static int 
-cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
+cmd_recipient (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
 
   rc = gpgsm_add_to_certlist (ctrl, line, 0, &ctrl->server_local->recplist, 0);
@@ -268,7 +268,7 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
                    line, NULL);
     }
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 /*  SIGNER <userID>
@@ -288,9 +288,9 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
   Note that this command returns an INV_RECP status which is a bit
   strange, but they are very similar.  */
 static int 
-cmd_signer (ASSUAN_CONTEXT ctx, char *line)
+cmd_signer (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
 
   rc = gpgsm_add_to_certlist (ctrl, line, 1,
@@ -312,7 +312,7 @@ cmd_signer (ASSUAN_CONTEXT ctx, char *line)
                    "0",
                   line, NULL);
     }
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -330,9 +330,9 @@ cmd_signer (ASSUAN_CONTEXT ctx, char *line)
   have been done while setting the recipients.  The input and output
   pipes are closed. */
 static int 
-cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
+cmd_encrypt (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   certlist_t cl;
   int inp_fd, out_fd;
   FILE *out_fp;
@@ -340,14 +340,14 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
 
   inp_fd = assuan_get_input_fd (ctx);
   if (inp_fd == -1)
-    return set_error (No_Input, NULL);
+    return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
   out_fd = assuan_get_output_fd (ctx);
   if (out_fd == -1)
-    return set_error (No_Output, NULL);
+    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
-    return set_error (General_Error, "fdopen() failed");
+    return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
   
   /* Now add all encrypt-to marked recipients from the default
      list. */
@@ -371,7 +371,7 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 /* DECRYPT
@@ -382,23 +382,23 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
   no need to ask the client for a protecting passphrase - GpgAgent
   does take care of this by requesting this from the user. */
 static int 
-cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
+cmd_decrypt (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int inp_fd, out_fd;
   FILE *out_fp;
   int rc;
 
   inp_fd = assuan_get_input_fd (ctx);
   if (inp_fd == -1)
-    return set_error (No_Input, NULL);
+    return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
   out_fd = assuan_get_output_fd (ctx);
   if (out_fd == -1)
-    return set_error (No_Output, NULL);
+    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
-    return set_error (General_Error, "fdopen() failed");
+    return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
   rc = gpgsm_decrypt (ctrl, inp_fd, out_fp); 
   fclose (out_fp);
 
@@ -407,7 +407,7 @@ cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -421,22 +421,22 @@ cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
   the signed material and the client must provide it.
   */
 static int 
-cmd_verify (ASSUAN_CONTEXT ctx, char *line)
+cmd_verify (assuan_context_t ctx, char *line)
 {
   int rc;
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int fd = assuan_get_input_fd (ctx);
   int out_fd = assuan_get_output_fd (ctx);
   FILE *out_fp = NULL;
 
   if (fd == -1)
-    return set_error (No_Input, NULL);
+    return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
 
   if (out_fd != -1)
     {
       out_fp = fdopen ( dup(out_fd), "w");
       if (!out_fp)
-        return set_error (General_Error, "fdopen() failed");
+        return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
     }
 
   rc = gpgsm_verify (assuan_get_pointer (ctx), fd,
@@ -449,7 +449,7 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -459,9 +459,9 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
   set by OUTPUT.  With "--detached" specified, a detached signature is
   created (surprise).  */
 static int 
-cmd_sign (ASSUAN_CONTEXT ctx, char *line)
+cmd_sign (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int inp_fd, out_fd;
   FILE *out_fp;
   int detached;
@@ -469,16 +469,16 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
 
   inp_fd = assuan_get_input_fd (ctx);
   if (inp_fd == -1)
-    return set_error (No_Input, NULL);
+    return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
   out_fd = assuan_get_output_fd (ctx);
   if (out_fd == -1)
-    return set_error (No_Output, NULL);
+    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
   detached = has_option (line, "--detached"); 
 
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
-    return set_error (General_Error, "fdopen() failed");
+    return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
 
   rc = gpgsm_sign (assuan_get_pointer (ctx), ctrl->server_local->signerlist,
                    inp_fd, detached, out_fp);
@@ -489,7 +489,7 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -500,14 +500,14 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
   the certificate but not of the entire chain.  It is possible to
   import expired certificates.  */
 static int 
-cmd_import (ASSUAN_CONTEXT ctx, char *line)
+cmd_import (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   int fd = assuan_get_input_fd (ctx);
 
   if (fd == -1)
-    return set_error (No_Input, NULL);
+    return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
 
   rc = gpgsm_import (assuan_get_pointer (ctx), fd);
 
@@ -516,21 +516,21 @@ cmd_import (ASSUAN_CONTEXT ctx, char *line)
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
 static int 
-cmd_export (ASSUAN_CONTEXT ctx, char *line)
+cmd_export (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int fd = assuan_get_output_fd (ctx);
   FILE *out_fp;
   char *p;
   STRLIST list, sl;
 
   if (fd == -1)
-    return set_error (No_Output, NULL);
+    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
   
   /* break the line down into an STRLIST */
   list = NULL;
@@ -546,7 +546,7 @@ cmd_export (ASSUAN_CONTEXT ctx, char *line)
           if (!sl)
             {
               free_strlist (list);
-              return ASSUAN_Out_Of_Core;
+              return out_of_core ();
             }
           sl->flags = 0;
           strcpy_escaped_plus (sl->d, line);
@@ -559,7 +559,7 @@ cmd_export (ASSUAN_CONTEXT ctx, char *line)
   if (!out_fp)
     {
       free_strlist (list);
-      return set_error (General_Error, "fdopen() failed");
+      return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
     }
 
   gpgsm_export (ctrl, list, out_fp);
@@ -574,9 +574,9 @@ cmd_export (ASSUAN_CONTEXT ctx, char *line)
 
 
 static int 
-cmd_delkeys (ASSUAN_CONTEXT ctx, char *line)
+cmd_delkeys (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   char *p;
   STRLIST list, sl;
   int rc;
@@ -595,7 +595,7 @@ cmd_delkeys (ASSUAN_CONTEXT ctx, char *line)
           if (!sl)
             {
               free_strlist (list);
-              return ASSUAN_Out_Of_Core;
+              return out_of_core ();
             }
           sl->flags = 0;
           strcpy_escaped_plus (sl->d, line);
@@ -612,7 +612,7 @@ cmd_delkeys (ASSUAN_CONTEXT ctx, char *line)
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -622,22 +622,22 @@ cmd_delkeys (ASSUAN_CONTEXT ctx, char *line)
    Set the file descriptor to read a message which is used with
    detached signatures */
 static int 
-cmd_message (ASSUAN_CONTEXT ctx, char *line)
+cmd_message (assuan_context_t ctx, char *line)
 {
   char *endp;
   int fd;
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   if (strncmp (line, "FD=", 3))
-    return set_error (Syntax_Error, "FD=<n> expected");
+    return set_error (GPG_ERR_ASS_SYNTAX, "FD=<n> expected");
   line += 3;
   if (!digitp (line))
-    return set_error (Syntax_Error, "number required");
+    return set_error (GPG_ERR_ASS_SYNTAX, "number required");
   fd = strtoul (line, &endp, 10);
   if (*endp)
-    return set_error (Syntax_Error, "garbage found");
+    return set_error (GPG_ERR_ASS_SYNTAX, "garbage found");
   if (fd == -1)
-    return set_error (No_Input, NULL);
+    return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
 
   ctrl->server_local->message_fd = fd;
   return 0;
@@ -645,9 +645,9 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
 
 
 static int 
-do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
+do_listkeys (assuan_context_t ctx, char *line, int mode)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   FILE *fp = assuan_get_data_fp (ctx);
   char *p;
   STRLIST list, sl;
@@ -655,7 +655,7 @@ do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
   gpg_error_t err;
 
   if (!fp)
-    return set_error (General_Error, "no data stream");
+    return set_error (GPG_ERR_ASS_GENERAL, "no data stream");
   
   /* break the line down into an STRLIST */
   list = NULL;
@@ -671,7 +671,7 @@ do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
           if (!sl)
             {
               free_strlist (list);
-              return ASSUAN_Out_Of_Core;
+              return out_of_core ();
             }
           sl->flags = 0;
           strcpy_escaped_plus (sl->d, line);
@@ -688,17 +688,17 @@ do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
     listmode |= (1<<7);
   err = gpgsm_list_keys (assuan_get_pointer (ctx), list, fp, listmode);
   free_strlist (list);
-  return map_to_assuan_status (err);
+  return err;
 }
 
 static int 
-cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
+cmd_listkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 3);
 }
 
 static int 
-cmd_listsecretkeys (ASSUAN_CONTEXT ctx, char *line)
+cmd_listsecretkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 2);
 }
@@ -710,23 +710,23 @@ cmd_listsecretkeys (ASSUAN_CONTEXT ctx, char *line)
    certificate request to the output.
  */
 static int 
-cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
+cmd_genkey (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int inp_fd, out_fd;
   FILE *out_fp;
   int rc;
 
   inp_fd = assuan_get_input_fd (ctx);
   if (inp_fd == -1)
-    return set_error (No_Input, NULL);
+    return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
   out_fd = assuan_get_output_fd (ctx);
   if (out_fd == -1)
-    return set_error (No_Output, NULL);
+    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
-    return set_error (General_Error, "fdopen() failed");
+    return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
   rc = gpgsm_genkey (ctrl, inp_fd, out_fp);
   fclose (out_fp);
 
@@ -734,7 +734,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -743,11 +743,11 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 
 /* Tell the assuan library about our commands */
 static int
-register_commands (ASSUAN_CONTEXT ctx)
+register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    int (*handler)(ASSUAN_CONTEXT, char *line);
+    int (*handler)(assuan_context_t, char *line);
   } table[] = {
     { "RECIPIENT",     cmd_recipient },
     { "SIGNER",        cmd_signer },
@@ -785,7 +785,7 @@ gpgsm_server (certlist_t default_recplist)
 {
   int rc;
   int filedes[2];
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   struct server_control_s ctrl;
   static const char hello[] = ("GNU Privacy Guard's S/M server "
                                VERSION " ready");
@@ -802,14 +802,14 @@ gpgsm_server (certlist_t default_recplist)
   if (rc)
     {
       log_error ("failed to initialize the server: %s\n",
-                 assuan_strerror(rc));
+                 gpg_strerror (rc));
       gpgsm_exit (2);
     }
   rc = register_commands (ctx);
   if (rc)
     {
       log_error ("failed to the register commands with Assuan: %s\n",
-                 assuan_strerror(rc));
+                 gpg_strerror(rc));
       gpgsm_exit (2);
     }
   if (opt.verbose || opt.debug)
@@ -862,14 +862,14 @@ gpgsm_server (certlist_t default_recplist)
         }
       else if (rc)
         {
-          log_info ("Assuan accept problem: %s\n", assuan_strerror (rc));
+          log_info ("Assuan accept problem: %s\n", gpg_strerror (rc));
           break;
         }
       
       rc = assuan_process (ctx);
       if (rc)
         {
-          log_info ("Assuan processing failed: %s\n", assuan_strerror (rc));
+          log_info ("Assuan processing failed: %s\n", gpg_strerror (rc));
           continue;
         }
     }
@@ -966,7 +966,7 @@ get_status_string ( int no )
 
 
 gpg_error_t
-gpgsm_status2 (CTRL ctrl, int no, ...)
+gpgsm_status2 (ctrl_t ctrl, int no, ...)
 {
   gpg_error_t err = 0;
   va_list arg_ptr;
@@ -1015,7 +1015,7 @@ gpgsm_status2 (CTRL ctrl, int no, ...)
     }
   else 
     {
-      ASSUAN_CONTEXT ctx = ctrl->server_local->assuan_ctx;
+      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
       char buf[950], *p;
       size_t n;
 
@@ -1032,8 +1032,7 @@ gpgsm_status2 (CTRL ctrl, int no, ...)
             *p++ = *text++;
         }
       *p = 0;
-      err = map_assuan_err (assuan_write_status (ctx,
-                                                 get_status_string (no), buf));
+      err = assuan_write_status (ctx, get_status_string (no), buf);
     }
 
   va_end (arg_ptr);
@@ -1041,13 +1040,13 @@ gpgsm_status2 (CTRL ctrl, int no, ...)
 }
 
 gpg_error_t
-gpgsm_status (CTRL ctrl, int no, const char *text)
+gpgsm_status (ctrl_t ctrl, int no, const char *text)
 {
   return gpgsm_status2 (ctrl, no, text, NULL);
 }
 
 gpg_error_t
-gpgsm_status_with_err_code (CTRL ctrl, int no, const char *text,
+gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
                             gpg_err_code_t ec)
 {
   char buf[30];

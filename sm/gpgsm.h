@@ -27,20 +27,17 @@
 #endif
 #define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_GPGSM
 #include <gpg-error.h>
-#define map_assuan_err(a) \
-        map_assuan_err_with_source (GPG_ERR_SOURCE_DEFAULT, (a))
 
 
 #include <ksba.h>
 #include "../common/util.h"
 #include "../common/errors.h"
 
-#define OUT_OF_CORE(a) (gpg_error (gpg_err_code_from_errno ((a))))
-
 #define MAX_DIGEST_LEN 24 
 
-/* A large struct named "opt" to keep global flags */
-struct {
+/* A large struct named "opt" to keep global flags. */
+struct 
+{
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */
   int verbose;      /* verbosity level */
   int quiet;        /* be as quiet as possible */
@@ -119,6 +116,7 @@ struct {
 } opt;
 
 
+/* Debug values and macros.  */
 #define DBG_X509_VALUE    1	/* debug x.509 data reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
 #define DBG_CRYPTO_VALUE  4	/* debug low level crypto */
@@ -135,11 +133,14 @@ struct {
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_ASSUAN   (opt.debug & DBG_ASSUAN_VALUE)
 
+/* Forward declaration for an object defined in server.c */
 struct server_local_s;
 
-/* Note that the default values for this are set by
-   gpgsm_init_default_ctrl() */
-struct server_control_s {
+/* Session control object.  This object is passed down to most
+   functions.  Note that the default values for it are set by
+   gpgsm_init_default_ctrl(). */
+struct server_control_s
+{
   int no_server;      /* We are not running under server control */
   int  status_fd;     /* Only for non-server mode */
   struct server_local_s *server_local;
@@ -161,20 +162,21 @@ struct server_control_s {
                          signer) */
   int use_ocsp;       /* Set to true if OCSP should be used. */
 };
-typedef struct server_control_s *CTRL;
 typedef struct server_control_s *ctrl_t;
 
-/* data structure used in base64.c */
+
+/* Data structure used in base64.c. */
 typedef struct base64_context_s *Base64Context;
 
 
-struct certlist_s {
+/* An object to keep a list of certificates. */
+struct certlist_s 
+{
   struct certlist_s *next;
   ksba_cert_t cert;
   int is_encrypt_to; /* True if the certificate has been set through
                         the --encrypto-to option. */
 };
-typedef struct certlist_s *CERTLIST;
 typedef struct certlist_s *certlist_t;
 
 /*-- gpgsm.c --*/
@@ -286,11 +288,11 @@ int gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp);
 
 /*-- sign.c --*/
 int gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert);
-int gpgsm_sign (ctrl_t ctrl, CERTLIST signerlist,
+int gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                 int data_fd, int detached, FILE *out_fp);
 
 /*-- encrypt.c --*/
-int gpgsm_encrypt (ctrl_t ctrl, CERTLIST recplist, int in_fd, FILE *out_fp);
+int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int in_fd, FILE *out_fp);
 
 /*-- decrypt.c --*/
 int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);

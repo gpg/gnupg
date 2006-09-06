@@ -129,7 +129,7 @@ insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
 
 /* Export all certificates or just those given in NAMES. */
 void
-gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
+gpgsm_export (ctrl_t ctrl, STRLIST names, FILE *fp)
 {
   KEYDB_HANDLE hd = NULL;
   KEYDB_SEARCH_DESC *desc = NULL;
@@ -170,7 +170,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
   if (!ndesc)
     {
       log_error ("allocating memory for export failed: %s\n",
-                 gpg_strerror (OUT_OF_CORE (errno)));
+                 gpg_strerror (out_of_core ()));
       goto leave;
     }
 
@@ -349,7 +349,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
   if (!desc)
     {
       log_error ("allocating memory for export failed: %s\n",
-                 gpg_strerror (OUT_OF_CORE (errno)));
+                 gpg_strerror (out_of_core ()));
       goto leave;
     }
 

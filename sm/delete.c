@@ -38,7 +38,7 @@
 
 /* Delete a certificate or an secret key from a key database. */
 static int
-delete_one (CTRL ctrl, const char *username)
+delete_one (ctrl_t ctrl, const char *username)
 {
   int rc = 0;
   KEYDB_SEARCH_DESC desc;
@@ -148,7 +148,7 @@ delete_one (CTRL ctrl, const char *username)
 
 /* Delete the certificates specified by NAMES. */
 int
-gpgsm_delete (CTRL ctrl, STRLIST names)
+gpgsm_delete (ctrl_t ctrl, STRLIST names)
 {
   int rc;
 

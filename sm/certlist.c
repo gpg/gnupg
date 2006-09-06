@@ -258,7 +258,7 @@ gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
     {
       certlist_t cl = xtrycalloc (1, sizeof *cl);
       if (!cl)
-        return OUT_OF_CORE (errno);
+        return out_of_core ();
       cl->cert = cert;
       ksba_cert_ref (cert);
       cl->next = *listaddr;
@@ -274,7 +274,7 @@ gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
    flag in the new create LISTADDR item.  */
 int
 gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
-                       CERTLIST *listaddr, int is_encrypt_to)
+                       certlist_t *listaddr, int is_encrypt_to)
 {
   int rc;
   KEYDB_SEARCH_DESC desc;
@@ -379,9 +379,9 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                 rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL, 0);
               if (!rc)
                 {
-                  CERTLIST cl = xtrycalloc (1, sizeof *cl);
+                  certlist_t cl = xtrycalloc (1, sizeof *cl);
                   if (!cl)
-                    rc = OUT_OF_CORE (errno);
+                    rc = out_of_core ();
                   else 
                     {
                       cl->cert = cert; cert = NULL;
@@ -400,11 +400,11 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
 }
 
 void
-gpgsm_release_certlist (CERTLIST list)
+gpgsm_release_certlist (certlist_t list)
 {
   while (list)
     {
-      CERTLIST cl = list->next;
+      certlist_t cl = list->next;
       ksba_cert_release (list->cert);
       xfree (list);
       list = cl;

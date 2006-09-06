@@ -24,7 +24,8 @@
 
 #include <gcrypt.h> /* We need this for the memory function protos. */
 #include <time.h>   /* We need time_t. */
-#include <gpg-error.h> /* we need gpg-error_t. */
+#include <errno.h>  /* We need errno.  */
+#include <gpg-error.h> /* We need gpg_error_t. */
 
 /* Common GNUlib includes (-I ../gl/). */
 #include "strpbrk.h"
@@ -64,16 +65,21 @@
 #define xmalloc_clear(a) gcry_xcalloc (1, (a))
 #define xmalloc_secure_clear(a) gcry_xcalloc_secure (1, (a))
 
+/* Convenience function to return a gpg-error code for memory
+   allocation failures.  This function makes sure that an error will
+   be returned even if accidently ERRNO is not set.  */
+static inline gpg_error_t
+out_of_core (void)
+{
+  return gpg_error (errno
+                    ? gpg_err_code_from_errno(errno)
+                    : GPG_ERR_MISSING_ERRNO);
+}
 
 /* A type to hold the ISO time.  Note that this this is the same as
    the the KSBA type ksba_isotime_t. */
 typedef char gnupg_isotime_t[16];
 
-
-/*-- maperror.c --*/
-int map_kbx_err (int err);
-gpg_error_t map_assuan_err_with_source (int source, int err);
-int map_to_assuan_status (int rc);
 
 /*-- gettime.c --*/
 time_t gnupg_get_time (void);

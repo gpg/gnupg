@@ -1445,7 +1445,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, STRLIST names)
   if (!ndesc)
     {
       log_error ("allocating memory failed: %s\n",
-                 gpg_strerror (OUT_OF_CORE (errno)));
+                 gpg_strerror (out_of_core ()));
       goto leave;
     }
 

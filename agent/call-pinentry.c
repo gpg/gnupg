@@ -1,4 +1,4 @@
-/* query.c - fork of the pinentry to query stuff from the user
+/* call-pinnetry.c - fork of the pinentry to query stuff from the user
  * Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -32,10 +32,10 @@
 #include <sys/wait.h>
 #endif
 #include <pth.h>
+#include <assuan.h>
 
 #include "agent.h"
 #include "i18n.h"
-#include <assuan.h>
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX
@@ -176,7 +176,7 @@ start_pinentry (ctrl_t ctrl)
 {
   int rc;
   const char *pgmname;
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   const char *argv[5];
   int no_close_list[3];
   int i;
@@ -238,12 +238,12 @@ start_pinentry (ctrl_t ctrl)
   no_close_list[i] = -1;
 
   /* Connect to the pinentry and perform initial handshaking */
-  rc = assuan_pipe_connect2 (&ctx, opt.pinentry_program, (char**)argv,
+  rc = assuan_pipe_connect2 (&ctx, opt.pinentry_program, argv,
                              no_close_list, atfork_cb, NULL);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",
-                 assuan_strerror (rc));
+                 gpg_strerror (rc));
       return unlock_pinentry (gpg_error (GPG_ERR_NO_PIN_ENTRY));
     }
   entry_ctx = ctx;
@@ -255,7 +255,7 @@ start_pinentry (ctrl_t ctrl)
                         opt.no_grab? "OPTION no-grab":"OPTION grab",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (map_assuan_err (rc));
+    return unlock_pinentry (rc);
   if (ctrl->ttyname)
     {
       char *optstr;
@@ -265,7 +265,7 @@ start_pinentry (ctrl_t ctrl)
 			    NULL);
       free (optstr);
       if (rc)
-	return unlock_pinentry (map_assuan_err (rc));
+	return unlock_pinentry (rc);
     }
   if (ctrl->ttytype)
     {
@@ -275,7 +275,7 @@ start_pinentry (ctrl_t ctrl)
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
-	return unlock_pinentry (map_assuan_err (rc));
+	return unlock_pinentry (rc);
     }
   if (ctrl->lc_ctype)
     {
@@ -285,7 +285,7 @@ start_pinentry (ctrl_t ctrl)
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
-	return unlock_pinentry (map_assuan_err (rc));
+	return unlock_pinentry (rc);
     }
   if (ctrl->lc_messages)
     {
@@ -295,13 +295,13 @@ start_pinentry (ctrl_t ctrl)
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
-	return unlock_pinentry (map_assuan_err (rc));
+	return unlock_pinentry (rc);
     }
   return 0;
 }
 
 
-static AssuanError
+static int
 getpin_cb (void *opaque, const void *buffer, size_t length)
 {
   struct entry_parm_s *parm = opaque;
@@ -311,7 +311,7 @@ getpin_cb (void *opaque, const void *buffer, size_t length)
 
   /* we expect the pin to fit on one line */
   if (parm->lines || length >= parm->size)
-    return ASSUAN_Too_Much_Data;
+    return gpg_error (GPG_ERR_ASS_TOO_MUCH_DATA);
 
   /* fixme: we should make sure that the assuan buffer is allocated in
      secure memory or read the response byte by byte */
@@ -372,14 +372,14 @@ agent_askpin (ctrl_t ctrl,
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (map_assuan_err (rc));
+    return unlock_pinentry (rc);
 
   snprintf (line, DIM(line)-1, "SETPROMPT %s",
             prompt_text? prompt_text : is_pin? "PIN:" : "Passphrase:");
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (map_assuan_err (rc));
+    return unlock_pinentry (rc);
 
 
   if (initial_errtext)
@@ -389,7 +389,7 @@ agent_askpin (ctrl_t ctrl,
       rc = assuan_transact (entry_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return unlock_pinentry (map_assuan_err (rc));
+        return unlock_pinentry (rc);
     }
 
   for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
@@ -407,17 +407,17 @@ agent_askpin (ctrl_t ctrl,
           rc = assuan_transact (entry_ctx, line,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
-            return unlock_pinentry (map_assuan_err (rc));
+            return unlock_pinentry (rc);
           errtext = NULL;
         }
       
       rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
                             NULL, NULL, NULL, NULL);
-      if (rc == ASSUAN_Too_Much_Data)
+      if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
         errtext = is_pin? _("PIN too long")
                         : _("Passphrase too long");
       else if (rc)
-        return unlock_pinentry (map_assuan_err (rc));
+        return unlock_pinentry (rc);
 
       if (!errtext && pininfo->min_digits)
         {
@@ -443,7 +443,7 @@ agent_askpin (ctrl_t ctrl,
             errtext = (is_pin? _("Bad PIN")
                        : _("Bad Passphrase"));
           else if (rc)
-            return unlock_pinentry (map_assuan_err (rc));
+            return unlock_pinentry (rc);
         }
 
       if (!errtext)
@@ -491,13 +491,13 @@ agent_get_passphrase (ctrl_t ctrl,
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (map_assuan_err (rc));
+    return unlock_pinentry (rc);
 
   snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (map_assuan_err (rc));
+    return unlock_pinentry (rc);
 
   if (errtext)
     {
@@ -505,7 +505,7 @@ agent_get_passphrase (ctrl_t ctrl,
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return unlock_pinentry (map_assuan_err (rc));
+        return unlock_pinentry (rc);
     }
 
   memset (&parm, 0, sizeof parm);
@@ -519,7 +519,7 @@ agent_get_passphrase (ctrl_t ctrl,
   if (rc)
     {
       xfree (parm.buffer);
-      return unlock_pinentry (map_assuan_err (rc));
+      return unlock_pinentry (rc);
     }
   
   hexstring = gcry_malloc_secure (strlen ((char*)parm.buffer)*2+1);
@@ -562,7 +562,7 @@ agent_get_confirmation (ctrl_t ctrl,
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (map_assuan_err (rc));
+    return unlock_pinentry (rc);
 
   if (ok)
     {
@@ -570,7 +570,7 @@ agent_get_confirmation (ctrl_t ctrl,
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return unlock_pinentry (map_assuan_err (rc));
+        return unlock_pinentry (rc);
     }
   if (cancel)
     {
@@ -578,11 +578,11 @@ agent_get_confirmation (ctrl_t ctrl,
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return unlock_pinentry (map_assuan_err (rc));
+        return unlock_pinentry (rc);
     }
 
   rc = assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL, NULL, NULL);
-  return unlock_pinentry (map_assuan_err (rc));
+  return unlock_pinentry (rc);
 }
 
 
@@ -621,7 +621,7 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc,
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (map_assuan_err (rc));
+    return unlock_pinentry (rc);
 
   if (ok_btn)
     {
@@ -629,7 +629,7 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc,
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL,NULL,NULL,NULL,NULL,NULL);
       if (rc)
-        return unlock_pinentry (map_assuan_err (rc));
+        return unlock_pinentry (rc);
     }
   if (cancel_btn)
     {
@@ -637,7 +637,7 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc,
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL,NULL,NULL,NULL,NULL,NULL);
       if (rc)
-        return unlock_pinentry (map_assuan_err (rc));
+        return unlock_pinentry (rc);
     }
 
   tattr = pth_attr_new();

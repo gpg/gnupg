@@ -39,12 +39,12 @@ AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
 # sufficient.
 development_version=yes
 
-NEED_GPG_ERROR_VERSION=1.2
+NEED_GPG_ERROR_VERSION=1.4
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.1.94
 
-NEED_LIBASSUAN_VERSION=0.6.10
+NEED_LIBASSUAN_VERSION=0.9.0
 
 NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.0.0
@@ -417,6 +417,8 @@ AH_BOTTOM([
 /* We always include support for the OpenPGP card.  */
 #define ENABLE_CARD_SUPPORT 1
 
+/* We don't want the old assuan codes anymore. */
+#define _ASSUAN_ONLY_GPG_ERRORS 1
 
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])

@@ -1,3 +1,9 @@
+2006-09-06  Werner Koch  <wk@g10code.com>
+
+	* maperror.c: Removed.
+
+	* util.h (out_of_core): New.
+
 2006-09-04  Werner Koch  <wk@g10code.com>
 
 	* http.c (http_get_header): New.

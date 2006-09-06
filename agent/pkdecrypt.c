@@ -36,7 +36,7 @@
    Try to get the key from CTRL and write the decoded stuff back to
    OUTFP. */
 int
-agent_pkdecrypt (CTRL ctrl, const char *desc_text,
+agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                  const unsigned char *ciphertext, size_t ciphertextlen,
                  membuf_t *outbuf) 
 {

@@ -265,8 +265,8 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
   if (rc)
     {
       log_error ("sending certificate failed: %s\n",
-                 assuan_strerror (rc));
-      return map_assuan_err (rc);
+                 gpg_strerror (rc));
+      return rc;
     }
   return 0;
 }

@@ -606,7 +606,7 @@ create_request (ctrl_t ctrl,
       buf = xtrymalloc (strlen (s) + 3);
       if (!buf)
         {
-          rc = OUT_OF_CORE (errno);
+          rc = out_of_core ();
           goto leave;
         }
       *buf = '<';
@@ -631,7 +631,7 @@ create_request (ctrl_t ctrl,
       buf = p = xtrymalloc (11 + strlen (numbuf) + len + 3);
       if (!buf)
         {
-          rc = OUT_OF_CORE (errno);
+          rc = out_of_core ();
           goto leave;
         }
       p = stpcpy (p, "(8:dns-name");
@@ -658,7 +658,7 @@ create_request (ctrl_t ctrl,
       buf = p = xtrymalloc (6 + strlen (numbuf) + len + 3);
       if (!buf)
         {
-          rc = OUT_OF_CORE (errno);
+          rc = out_of_core ();
           goto leave;
         }
       p = stpcpy (p, "(3:uri");

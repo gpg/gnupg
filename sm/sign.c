@@ -234,7 +234,7 @@ get_default_signer (ctrl_t ctrl)
    other certificate up in the chain to the Root-CA to the CMS
    object. */
 static int 
-add_certificate_list (CTRL ctrl, ksba_cms_t cms, ksba_cert_t cert)
+add_certificate_list (ctrl_t ctrl, ksba_cms_t cms, ksba_cert_t cert)
 {
   gpg_error_t err;
   int rc = 0;
@@ -301,7 +301,7 @@ add_certificate_list (CTRL ctrl, ksba_cms_t cms, ksba_cert_t cert)
    keys used to sign are taken from SIGNERLIST or the default one will
    be used if the value of this argument is NULL. */
 int
-gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
+gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
             int data_fd, int detached, FILE *out_fp)
 {
   int i, rc;
@@ -316,7 +316,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   const char *algoid;
   int algo;
   ksba_isotime_t signed_at;
-  CERTLIST cl;
+  certlist_t cl;
   int release_signerlist = 0;
 
   kh = keydb_new (0);
@@ -387,7 +387,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       signerlist = xtrycalloc (1, sizeof *signerlist);
       if (!signerlist)
         {
-          rc = OUT_OF_CORE (errno);
+          rc = out_of_core ();
           ksba_cert_release (cert);
           goto leave;
         }

@@ -119,7 +119,7 @@ keygripstr_from_pk_file (int slot, int fid, char *r_gripstr)
 
 
 static gpg_error_t
-do_learn_status (APP app, CTRL ctrl)
+do_learn_status (app_t app, ctrl_t ctrl)
 {
   gpg_error_t err;
   char ct_buf[100], id_buf[100];
@@ -490,7 +490,7 @@ do_decipher (app_t app, const char *keyidstr,
 
 /* Select the NKS 2.0 application on the card in SLOT.  */
 gpg_error_t
-app_select_nks (APP app)
+app_select_nks (app_t app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x01, 0x02 };
   int slot = app->slot;

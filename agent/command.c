@@ -41,7 +41,7 @@
 /* maximum allowed size of the key parameters */
 #define MAXLEN_KEYPARAM 1024
 
-#define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
+#define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
 
 #if MAX_DIGEST_LEN < 20
@@ -103,16 +103,16 @@ write_and_clear_outbuf (assuan_context_t ctx, membuf_t *mb)
 
   p = get_membuf (mb, &n);
   if (!p)
-    return gpg_error (GPG_ERR_ENOMEM);
+    return out_of_core ();
   ae = assuan_send_data (ctx, p, n);
   memset (p, 0, n);
   xfree (p);
-  return map_assuan_err (ae);
+  return ae;
 }
 
 
 static void
-reset_notify (ASSUAN_CONTEXT ctx)
+reset_notify (assuan_context_t ctx)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
@@ -187,7 +187,7 @@ percent_plus_unescape (char *string)
 /* Parse a hex string.  Return an Assuan error code or 0 on success and the
    length of the parsed string in LEN. */
 static int
-parse_hexstring (ASSUAN_CONTEXT ctx, const char *string, size_t *len)
+parse_hexstring (assuan_context_t ctx, const char *string, size_t *len)
 {
   const char *p;
   size_t n;
@@ -196,9 +196,9 @@ parse_hexstring (ASSUAN_CONTEXT ctx, const char *string, size_t *len)
   for (p=string, n=0; hexdigitp (p); p++, n++)
     ;
   if (*p != ' ' && *p != '\t' && *p)
-    return set_error (Parameter_Error, "invalid hexstring");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid hexstring");
   if ((n&1))
-    return set_error (Parameter_Error, "odd number of digits");
+    return set_error (GPG_ERR_ASS_PARAMETER, "odd number of digits");
   *len = n;
   return 0;
 }
@@ -207,7 +207,7 @@ parse_hexstring (ASSUAN_CONTEXT ctx, const char *string, size_t *len)
    provide space for 20 bytes. BUF is not changed if the fucntions
    returns an error. */
 static int
-parse_keygrip (ASSUAN_CONTEXT ctx, const char *string, unsigned char *buf)
+parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
 {
   int rc;
   size_t n;
@@ -218,7 +218,7 @@ parse_keygrip (ASSUAN_CONTEXT ctx, const char *string, unsigned char *buf)
     return rc;
   n /= 2;
   if (n != 20)
-    return set_error (Parameter_Error, "invalid length of keygrip");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of keygrip");
 
   for (p=(const unsigned char*)string, n=0; n < 20; p += 2, n++)
     buf[n] = xtoi_2 (p);
@@ -234,7 +234,7 @@ parse_keygrip (ASSUAN_CONTEXT ctx, const char *string, unsigned char *buf)
    Return OK when we have an entry with this fingerprint in our
    trustlist */
 static int
-cmd_istrusted (ASSUAN_CONTEXT ctx, char *line)
+cmd_istrusted (assuan_context_t ctx, char *line)
 {
   int rc, n, i;
   char *p;
@@ -244,7 +244,7 @@ cmd_istrusted (ASSUAN_CONTEXT ctx, char *line)
   for (p=line,n=0; hexdigitp (p); p++, n++)
     ;
   if (*p || !(n == 40 || n == 32))
-    return set_error (Parameter_Error, "invalid fingerprint");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid fingerprint");
   i = 0;
   if (n==32)
     {
@@ -255,14 +255,14 @@ cmd_istrusted (ASSUAN_CONTEXT ctx, char *line)
     fpr[i] = *p >= 'a'? (*p & 0xdf): *p;
   fpr[i] = 0;
   rc = agent_istrusted (fpr);
-  if (!rc)
-    return 0;
-  else if (rc == -1)
-    return ASSUAN_Not_Trusted;
+  if (!rc || gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
+    return rc;
+  else if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF )
+    return gpg_error (GPG_ERR_NOT_TRUSTED);
   else
     {
       log_error ("command is_trusted failed: %s\n", gpg_strerror (rc));
-      return map_to_assuan_status (rc);
+      return rc;
     }
 }
 
@@ -270,12 +270,12 @@ cmd_istrusted (ASSUAN_CONTEXT ctx, char *line)
 
    List all entries from the trustlist */
 static int
-cmd_listtrusted (ASSUAN_CONTEXT ctx, char *line)
+cmd_listtrusted (assuan_context_t ctx, char *line)
 {
   int rc = agent_listtrusted (ctx);
   if (rc)
     log_error ("command listtrusted failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -283,7 +283,7 @@ cmd_listtrusted (ASSUAN_CONTEXT ctx, char *line)
 
    Store a new key in into the trustlist*/
 static int
-cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
+cmd_marktrusted (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc, n, i;
@@ -295,7 +295,7 @@ cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
   for (p=line,n=0; hexdigitp (p); p++, n++)
     ;
   if (!spacep (p) || !(n == 40 || n == 32))
-    return set_error (Parameter_Error, "invalid fingerprint");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid fingerprint");
   i = 0;
   if (n==32)
     {
@@ -310,14 +310,14 @@ cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
     p++;
   flag = *p++;
   if ( (flag != 'S' && flag != 'P') || !spacep (p) )
-    return set_error (Parameter_Error, "invalid flag - must be P or S");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid flag - must be P or S");
   while (spacep (p))
     p++;
 
   rc = agent_marktrusted (ctrl, p, fpr, flag);
   if (rc)
     log_error ("command marktrusted failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -327,7 +327,7 @@ cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
   
    Return success when the secret key is available */
 static int
-cmd_havekey (ASSUAN_CONTEXT ctx, char *line)
+cmd_havekey (assuan_context_t ctx, char *line)
 {
   int rc;
   unsigned char buf[20];
@@ -337,7 +337,7 @@ cmd_havekey (ASSUAN_CONTEXT ctx, char *line)
     return rc;
 
   if (agent_key_available (buf))
-    return ASSUAN_No_Secret_Key;
+    return gpg_error (GPG_ERR_NO_SECKEY);
 
   return 0;
 }
@@ -348,7 +348,7 @@ cmd_havekey (ASSUAN_CONTEXT ctx, char *line)
   
    Set the  key used for a sign or decrypt operation */
 static int
-cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
+cmd_sigkey (assuan_context_t ctx, char *line)
 {
   int rc;
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -389,7 +389,7 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
     *p = 0; /* We ignore any garbage; we might late use it for other args. */
 
   if (!desc || !*desc)
-    return set_error (Parameter_Error, "no description given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no description given");
 
   /* Note, that we only need to replace the + characters and should
      leave the other escaping in place because the escaped string is
@@ -400,7 +400,7 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = xtrystrdup (desc);
   if (!ctrl->server_local->keydesc)
-    return map_to_assuan_status (gpg_error_from_errno (errno));
+    return out_of_core ();
   return 0;
 }
 
@@ -410,7 +410,7 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
   The client can use this command to tell the server about the data
   (which usually is a hash) to be signed. */
 static int
-cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
+cmd_sethash (assuan_context_t ctx, char *line)
 {
   int rc;
   size_t n;
@@ -425,7 +425,7 @@ cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
   for (line = endp; *line == ' ' || *line == '\t'; line++)
     ;
   if (!algo || gcry_md_test_algo (algo))
-    return set_error (Unsupported_Algorithm, NULL);
+    return set_error (GPG_ERR_UNSUPPORTED_ALGORITHM, NULL);
   ctrl->digest.algo = algo;
 
   /* parse the hash value */
@@ -434,9 +434,9 @@ cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
     return rc;
   n /= 2;
   if (n != 16 && n != 20 && n != 24 && n != 32)
-    return set_error (Parameter_Error, "unsupported length of hash");
+    return set_error (GPG_ERR_ASS_PARAMETER, "unsupported length of hash");
   if (n > MAX_DIGEST_LEN)
-    return set_error (Parameter_Error, "hash value to long");
+    return set_error (GPG_ERR_ASS_PARAMETER, "hash value to long");
 
   buf = ctrl->digest.value;
   ctrl->digest.valuelen = n;
@@ -453,7 +453,7 @@ cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
    Perform the actual sign operation. Neither input nor output are
    sensitive to eavesdropping. */
 static int
-cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
+cmd_pksign (assuan_context_t ctx, char *line)
 {
   int rc;
   cache_mode_t cache_mode = CACHE_MODE_NORMAL;
@@ -477,7 +477,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
     log_error ("command pksign failed: %s\n", gpg_strerror (rc));
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 /* PKDECRYPT <options>
@@ -485,7 +485,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
    Perform the actual decrypt operation.  Input is not 
    sensitive to eavesdropping */
 static int
-cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
+cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
   int rc;
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -512,7 +512,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
     log_error ("command pkdecrypt failed: %s\n", gpg_strerror (rc));
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -531,7 +531,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
 */
 
 static int
-cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
+cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -554,7 +554,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
     rc = write_and_clear_outbuf (ctx, &outbuf);
   if (rc)
     log_error ("command genkey failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -591,7 +591,6 @@ cmd_readkey (assuan_context_t ctx, char *line)
           len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, buf, len);
           assert (len);
           rc = assuan_send_data (ctx, buf, len);
-          rc = map_assuan_err (rc);
           xfree (buf);
         }
       gcry_sexp_release (s_pkey);
@@ -599,7 +598,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
   if (rc)
     log_error ("command readkey failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -619,7 +618,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 */
 
 static int
-cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
+cmd_get_passphrase (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -661,9 +660,9 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
         }
     }
   if (!cacheid || !*cacheid || strlen (cacheid) > 50)
-    return set_error (Parameter_Error, "invalid length of cacheID");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
   if (!desc)
-    return set_error (Parameter_Error, "no description given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no description given");
 
   if (!strcmp (cacheid, "X"))
     cacheid = NULL;
@@ -709,7 +708,7 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
 
   if (rc)
     log_error ("command get_passphrase failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -720,7 +719,7 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
 */
 
 static int
-cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
+cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
   char *cacheid = NULL;
   char *p;
@@ -733,7 +732,7 @@ cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
   if (p)
     *p = 0; /* ignore garbage */
   if (!cacheid || !*cacheid || strlen (cacheid) > 50)
-    return set_error (Parameter_Error, "invalid length of cacheID");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
 
   agent_put_cache (cacheid, CACHE_MODE_USER, NULL, 0);
   return 0;
@@ -753,7 +752,7 @@ cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
 */
 
 static int
-cmd_get_confirmation (ASSUAN_CONTEXT ctx, char *line)
+cmd_get_confirmation (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -769,7 +768,7 @@ cmd_get_confirmation (ASSUAN_CONTEXT ctx, char *line)
     *p = 0; /* We ignore any garbage -may be later used for other args. */
 
   if (!desc || !*desc)
-    return set_error (Parameter_Error, "no description given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no description given");
 
   if (!strcmp (desc, "X"))
     desc = NULL;
@@ -784,7 +783,7 @@ cmd_get_confirmation (ASSUAN_CONTEXT ctx, char *line)
   rc = agent_get_confirmation (ctrl, desc, NULL, NULL);
   if (rc)
     log_error ("command get_confirmation failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -794,7 +793,7 @@ cmd_get_confirmation (ASSUAN_CONTEXT ctx, char *line)
    Learn something about the currently inserted smartcard.  With
    --send the new certificates are send back.  */
 static int
-cmd_learn (ASSUAN_CONTEXT ctx, char *line)
+cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -802,7 +801,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   rc = agent_handle_learn (ctrl, has_option (line, "--send")? ctx : NULL);
   if (rc)
     log_error ("command learn failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -811,7 +810,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   
    Change the passphrase/PID for the key identified by keygrip in LINE. */
 static int
-cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
+cmd_passwd (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
@@ -842,7 +841,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
   xfree (shadow_info);
   if (rc)
     log_error ("command passwd failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 /* PRESET_PASSPHRASE <hexstring_with_keygrip> <timeout> <hexstring>
@@ -853,7 +852,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
    to never expire it).  If passwd is not provided, ask for it via the
    pinentry module.  */
 static int
-cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
+cmd_preset_passphrase (assuan_context_t ctx, char *line)
 {
   int rc;
   unsigned char grip[20];
@@ -874,7 +873,7 @@ cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
   while (*line && (*line != ' ' && *line != '\t'))
     line++;
   if (!*line)
-    return map_to_assuan_status (gpg_error (GPG_ERR_MISSING_VALUE));
+    return gpg_error (GPG_ERR_MISSING_VALUE);
   *line = '\0';
   line++;
   while (*line && (*line == ' ' || *line == '\t'))
@@ -883,7 +882,7 @@ cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
   /* Currently, only infinite timeouts are allowed.  */
   ttl = -1;
   if (line[0] != '-' || line[1] != '1')
-    return map_to_assuan_status (gpg_error (GPG_ERR_NOT_IMPLEMENTED));
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
   line++;
   line++;
   while (!(*line != ' ' && *line != '\t'))
@@ -900,14 +899,14 @@ cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
   if (*line)
     passphrase = line;
   else
-    return map_to_assuan_status (gpg_error (GPG_ERR_NOT_IMPLEMENTED));
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   rc = agent_put_cache (grip_clear, CACHE_MODE_ANY, passphrase, ttl);
 
   if (rc)
     log_error ("command preset_passwd failed: %s\n", gpg_strerror (rc));
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -916,14 +915,14 @@ cmd_preset_passphrase (ASSUAN_CONTEXT ctx, char *line)
    This is a general quote command to redirect everything to the
    SCDAEMON. */
 static int
-cmd_scd (ASSUAN_CONTEXT ctx, char *line)
+cmd_scd (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
 
   rc = divert_generic_cmd (ctrl, line, ctx);
 
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -951,10 +950,10 @@ cmd_getval (assuan_context_t ctx, char *line)
       for (; *p == ' '; p++)
         ;
       if (*p)
-        return set_error (Parameter_Error, "too many arguments");
+        return set_error (GPG_ERR_ASS_PARAMETER, "too many arguments");
     }
   if (!key || !*key)
-    return set_error (Parameter_Error, "no key given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no key given");
 
 
   for (vl=putval_list; vl; vl = vl->next)
@@ -962,17 +961,13 @@ cmd_getval (assuan_context_t ctx, char *line)
       break;
 
   if (vl) /* Got an entry. */
-    {
-      rc = assuan_send_data (ctx, vl->d+vl->off, vl->len);
-      if (rc)
-        rc = map_assuan_err (rc);
-    }
+    rc = assuan_send_data (ctx, vl->d+vl->off, vl->len);
   else
     return gpg_error (GPG_ERR_NO_DATA);
 
   if (rc)
     log_error ("command getval failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1023,7 +1018,7 @@ cmd_putval (assuan_context_t ctx, char *line)
         }
     }
   if (!key || !*key)
-    return set_error (Parameter_Error, "no key given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no key given");
 
 
   for (vl=putval_list,vlprev=NULL; vl; vlprev=vl, vl = vl->next)
@@ -1057,7 +1052,7 @@ cmd_putval (assuan_context_t ctx, char *line)
 
   if (rc)
     log_error ("command putval failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1097,7 +1092,7 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
 
 
 static int
-option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
+option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
@@ -1107,7 +1102,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         free (ctrl->display);
       ctrl->display = strdup (value);
       if (!ctrl->display)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
     }
   else if (!strcmp (key, "ttyname"))
     {
@@ -1117,7 +1112,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
             free (ctrl->ttyname);
           ctrl->ttyname = strdup (value);
           if (!ctrl->ttyname)
-            return ASSUAN_Out_Of_Core;
+            return out_of_core ();
         }
     }
   else if (!strcmp (key, "ttytype"))
@@ -1128,7 +1123,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
             free (ctrl->ttytype);
           ctrl->ttytype = strdup (value);
           if (!ctrl->ttytype)
-            return ASSUAN_Out_Of_Core;
+            return out_of_core ();
         }
     }
   else if (!strcmp (key, "lc-ctype"))
@@ -1137,7 +1132,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         free (ctrl->lc_ctype);
       ctrl->lc_ctype = strdup (value);
       if (!ctrl->lc_ctype)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
     }
   else if (!strcmp (key, "lc-messages"))
     {
@@ -1145,12 +1140,12 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         free (ctrl->lc_messages);
       ctrl->lc_messages = strdup (value);
       if (!ctrl->lc_messages)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
     }
   else if (!strcmp (key, "use-cache-for-signing"))
     ctrl->server_local->use_cache_for_signing = *value? atoi (value) : 0;
   else
-    return ASSUAN_Invalid_Option;
+    return gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
   return 0;
 }
@@ -1158,11 +1153,11 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 
 /* Tell the assuan library about our commands */
 static int
-register_commands (ASSUAN_CONTEXT ctx)
+register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    int (*handler)(ASSUAN_CONTEXT, char *line);
+    int (*handler)(assuan_context_t, char *line);
   } table[] = {
     { "ISTRUSTED",      cmd_istrusted },
     { "HAVEKEY",        cmd_havekey },
@@ -1210,7 +1205,7 @@ void
 start_command_handler (int listen_fd, int fd)
 {
   int rc;
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   struct server_control_s ctrl;
 
   memset (&ctrl, 0, sizeof ctrl);
@@ -1236,14 +1231,14 @@ start_command_handler (int listen_fd, int fd)
   if (rc)
     {
       log_error ("failed to initialize the server: %s\n",
-                 assuan_strerror(rc));
+                 gpg_strerror(rc));
       agent_exit (2);
     }
   rc = register_commands (ctx);
   if (rc)
     {
       log_error ("failed to register commands with Assuan: %s\n",
-                 assuan_strerror(rc));
+                 gpg_strerror(rc));
       agent_exit (2);
     }
 
@@ -1266,14 +1261,14 @@ start_command_handler (int listen_fd, int fd)
         }
       else if (rc)
         {
-          log_info ("Assuan accept problem: %s\n", assuan_strerror (rc));
+          log_info ("Assuan accept problem: %s\n", gpg_strerror (rc));
           break;
         }
       
       rc = assuan_process (ctx);
       if (rc)
         {
-          log_info ("Assuan processing failed: %s\n", assuan_strerror (rc));
+          log_info ("Assuan processing failed: %s\n", gpg_strerror (rc));
           continue;
         }
     }

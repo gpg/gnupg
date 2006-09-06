@@ -266,7 +266,7 @@ start_scd (ctrl_t ctrl)
       if (rc)
         {
           log_error ("can't connect to socket `%s': %s\n",
-                     socket_name, assuan_strerror (rc));
+                     socket_name, gpg_strerror (rc));
           err = gpg_error (GPG_ERR_NO_SCDAEMON);
           goto leave;
         }
@@ -315,12 +315,12 @@ start_scd (ctrl_t ctrl)
   no_close_list[i] = -1;
 
   /* Connect to the pinentry and perform initial handshaking */
-  rc = assuan_pipe_connect2 (&ctx, opt.scdaemon_program, (char**)argv,
+  rc = assuan_pipe_connect2 (&ctx, opt.scdaemon_program, argv,
                              no_close_list, atfork_cb, NULL);
   if (rc)
     {
       log_error ("can't connect to the SCdaemon: %s\n",
-                 assuan_strerror (rc));
+                 gpg_strerror (rc));
       err = gpg_error (GPG_ERR_NO_SCDAEMON);
       goto leave;
     }
@@ -554,7 +554,7 @@ unescape_status_string (const unsigned char *s)
 
 
 
-static AssuanError
+static int
 learn_status_cb (void *opaque, const char *line)
 {
   struct learn_parm_s *parm = opaque;
@@ -610,14 +610,14 @@ agent_card_learn (ctrl_t ctrl,
                         NULL, NULL, NULL, NULL,
                         learn_status_cb, &parm);
   if (rc)
-    return unlock_scd (ctrl, map_assuan_err (rc));
+    return unlock_scd (ctrl, rc);
 
   return unlock_scd (ctrl, 0);
 }
 
 
 
-static AssuanError
+static int
 get_serialno_cb (void *opaque, const char *line)
 {
   char **serialno = opaque;
@@ -633,14 +633,14 @@ get_serialno_cb (void *opaque, const char *line)
   if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
     {
       if (*serialno)
-        return ASSUAN_Unexpected_Status;
+        return gpg_error (GPG_ERR_CONFLICT); /* Unexpected status line. */
       for (n=0,s=line; hexdigitp (s); s++, n++)
         ;
       if (!n || (n&1)|| !(spacep (s) || !*s) )
-        return ASSUAN_Invalid_Status;
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
       *serialno = xtrymalloc (n+1);
       if (!*serialno)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
       memcpy (*serialno, line, n);
       (*serialno)[n] = 0;
     }
@@ -666,7 +666,7 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
   if (rc)
     {
       xfree (serialno);
-      return unlock_scd (ctrl, map_assuan_err (rc));
+      return unlock_scd (ctrl, rc);
     }
   *r_serialno = serialno;
   return unlock_scd (ctrl, 0);
@@ -675,7 +675,7 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
 
 
 
-static AssuanError
+static int
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *data = opaque;
@@ -686,7 +686,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 }
   
 /* Handle the NEEDPIN inquiry. */
-static AssuanError
+static int
 inq_needpin (void *opaque, const char *line)
 {
   struct inq_needpin_s *parm = opaque;
@@ -703,11 +703,9 @@ inq_needpin (void *opaque, const char *line)
       pinlen = 90;
       pin = gcry_malloc_secure (pinlen);
       if (!pin)
-        return ASSUAN_Out_Of_Core;
+        return out_of_core ();
 
       rc = parm->getpin_cb (parm->getpin_cb_arg, line, pin, pinlen);
-      if (rc)
-        rc = ASSUAN_Canceled;
       if (!rc)
         rc = assuan_send_data (parm->ctx, pin, pinlen);
       xfree (pin);
@@ -723,13 +721,11 @@ inq_needpin (void *opaque, const char *line)
         line++;
       
       rc = parm->getpin_cb (parm->getpin_cb_arg, line, NULL, code);
-      if (rc)
-        rc = ASSUAN_Canceled;
     }
   else
     {
       log_error ("unsupported inquiry `%s'\n", line);
-      rc = ASSUAN_Inquire_Unknown;
+      rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
   return rc;
@@ -769,7 +765,7 @@ agent_card_pksign (ctrl_t ctrl,
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_scd (ctrl, map_assuan_err (rc));
+    return unlock_scd (ctrl, rc);
 
   init_membuf (&data, 1024);
   inqparm.ctx = ctrl->scd_local->ctx;
@@ -785,7 +781,7 @@ agent_card_pksign (ctrl_t ctrl,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return unlock_scd (ctrl, map_assuan_err (rc));
+      return unlock_scd (ctrl, rc);
     }
   sigbuf = get_membuf (&data, &sigbuflen);
 
@@ -839,7 +835,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_scd (ctrl, map_assuan_err (rc));
+    return unlock_scd (ctrl, rc);
 
   init_membuf (&data, 1024);
   inqparm.ctx = ctrl->scd_local->ctx;
@@ -854,7 +850,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return unlock_scd (ctrl, map_assuan_err (rc));
+      return unlock_scd (ctrl, rc);
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
@@ -890,7 +886,7 @@ agent_card_readcert (ctrl_t ctrl,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return unlock_scd (ctrl, map_assuan_err (rc));
+      return unlock_scd (ctrl, rc);
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
@@ -926,7 +922,7 @@ agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return unlock_scd (ctrl, map_assuan_err (rc));
+      return unlock_scd (ctrl, rc);
     }
   *r_buf = get_membuf (&data, &buflen);
   if (!*r_buf)
@@ -1008,9 +1004,9 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
   if (err)
     return err;
 
-  err = map_assuan_err (assuan_transact (ctrl->scd_local->ctx, line,
-                                         NULL, NULL, NULL, NULL,
-                                         card_getattr_cb, &parm));
+  err = assuan_transact (ctrl->scd_local->ctx, line,
+                         NULL, NULL, NULL, NULL,
+                         card_getattr_cb, &parm);
   if (!err && parm.error)
     err = gpg_error_from_errno (parm.error);
   
@@ -1028,10 +1024,10 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
 
 
 
-static AssuanError
+static int
 pass_status_thru (void *opaque, const char *line)
 {
-  ASSUAN_CONTEXT ctx = opaque;
+  assuan_context_t ctx = opaque;
   char keyword[200];
   int i;
 
@@ -1048,10 +1044,10 @@ pass_status_thru (void *opaque, const char *line)
   return 0;
 }
 
-static AssuanError
+static int
 pass_data_thru (void *opaque, const void *buffer, size_t length)
 {
-  ASSUAN_CONTEXT ctx = opaque;
+  assuan_context_t ctx = opaque;
 
   assuan_send_data (ctx, buffer, length);
   return 0;
@@ -1083,7 +1079,7 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
                         pass_status_thru, assuan_context);
   if (rc)
     {
-      return unlock_scd (ctrl, map_assuan_err (rc));
+      return unlock_scd (ctrl, rc);
     }
 
   return unlock_scd (ctrl, 0);

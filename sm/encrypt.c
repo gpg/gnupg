@@ -217,7 +217,7 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, unsigned char **encval)
   buf = xtrymalloc (len);
   if (!buf)
     {
-      gpg_error_t tmperr = OUT_OF_CORE (errno);
+      gpg_error_t tmperr = out_of_core ();
       gcry_sexp_release (s_ciph);
       return tmperr;
     }
@@ -304,7 +304,7 @@ encrypt_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
    recipients are take from the certificate given in recplist; if this
    is NULL it will be encrypted for a default recipient */
 int
-gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
+gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
 {
   int rc = 0;
   Base64Context b64writer = NULL;
@@ -318,7 +318,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   DEK dek = NULL;
   int recpno;
   FILE *data_fp = NULL;
-  CERTLIST cl;
+  certlist_t cl;
 
   memset (&encparm, 0, sizeof encparm);
 
@@ -402,7 +402,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   /* Create a session key */
   dek = xtrycalloc_secure (1, sizeof *dek); 
   if (!dek)
-    rc = OUT_OF_CORE (errno);
+    rc = out_of_core ();
   else
   {
     dek->algoid = opt.def_cipher_algoid;
@@ -430,7 +430,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
   encparm.buffer = xtrymalloc (encparm.bufsize);
   if (!encparm.buffer)
     {
-      rc = OUT_OF_CORE (errno);
+      rc = out_of_core ();
       goto leave;
     }
 

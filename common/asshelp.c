@@ -47,10 +47,7 @@ send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
     err = gpg_error_from_errno (errno);
   else
     {
-      assuan_error_t ae;
-
-      ae = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL, NULL);
-      err = ae? map_assuan_err_with_source (errsource, ae) : 0;
+      err = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL, NULL);
       free (optstr);
     }
 

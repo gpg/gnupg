@@ -430,7 +430,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 /* Select the DINSIG application on the card in SLOT.  This function
    must be used before any other DINSIG application functions. */
 gpg_error_t
-app_select_dinsig (APP app)
+app_select_dinsig (app_t app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };
   int slot = app->slot;

@@ -88,7 +88,7 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
 /* Generate a new keypair according to the parameters given in
    KEYPARAM */
 int
-agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
+agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
               membuf_t *outbuf) 
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
@@ -209,7 +209,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
 
 /* Apply a new passpahrse to the key S_SKEY and store it. */
 int
-agent_protect_and_store (CTRL ctrl, gcry_sexp_t s_skey) 
+agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey) 
 {
   struct pin_entry_info_s *pi, *pi2;
   int rc;

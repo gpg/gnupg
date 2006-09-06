@@ -224,6 +224,7 @@ main (int argc, char **argv)
 
   set_strusage (my_strusage);
   log_set_prefix ("gpg-connect-agent", 1);
+  assuan_set_assuan_err_source (0);
 
   i18n_init();
 
@@ -259,7 +260,7 @@ main (int argc, char **argv)
       if (rc)
         {
           log_error ("can't connect to socket `%s': %s\n",
-                     opt.raw_socket, assuan_strerror (rc));
+                     opt.raw_socket, gpg_strerror (rc));
           exit (1);
         }
 
@@ -347,7 +348,7 @@ main (int argc, char **argv)
       rc = assuan_write_line (ctx, line);
       if (rc)
         {
-          log_info (_("sending line failed: %s\n"), assuan_strerror (rc) );
+          log_info (_("sending line failed: %s\n"), gpg_strerror (rc) );
           continue;
         }
       if (*line == '#' || !*line)
@@ -355,7 +356,7 @@ main (int argc, char **argv)
 
       rc = read_and_print_response (ctx);
       if (rc)
-        log_info (_("receiving line failed: %s\n"), assuan_strerror (rc) );
+        log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
     }
 
   if (opt.verbose)
@@ -431,7 +432,7 @@ handle_inquire (assuan_context_t ctx, char *line)
       rc = assuan_send_data (ctx, buffer, n);
       if (rc)
         {
-          log_error ("sending data back failed: %s\n", assuan_strerror (rc) );
+          log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
           break;
         }
     }
@@ -440,7 +441,7 @@ handle_inquire (assuan_context_t ctx, char *line)
 
   rc = assuan_send_data (ctx, NULL, 0);
   if (rc)
-    log_error ("sending data back failed: %s\n", assuan_strerror (rc) );
+    log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
 
   if (d->is_prog)
     {
@@ -556,7 +557,7 @@ read_and_print_response (assuan_context_t ctx)
           /* Received from server, thus more responses are expected.  */
         }
       else
-        return ASSUAN_Invalid_Response;
+        return gpg_error (GPG_ERR_ASS_INV_RESPONSE);
     }
 }
 
@@ -612,7 +613,7 @@ start_agent (void)
 
   if (rc)
     {
-      log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+      log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
       exit (1);
     }
 
@@ -623,7 +624,7 @@ start_agent (void)
   if (rc)
     {
       log_error (_("error sending %s command: %s\n"), "RESET", 
-                 assuan_strerror (rc));
+                 gpg_strerror (rc));
       exit (1);
     }
 

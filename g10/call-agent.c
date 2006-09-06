@@ -80,7 +80,7 @@ start_agent (void)
 {
   int rc = 0;
   char *infostr, *p;
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
   char *dft_display = NULL;
   char *dft_ttyname = NULL;
   char *dft_ttytype = NULL;
@@ -127,7 +127,7 @@ start_agent (void)
       no_close_list[i] = -1;
 
       /* connect to the agent and perform initial handshaking */
-      rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv,
+      rc = assuan_pipe_connect (&ctx, opt.agent_program, argv,
                                 no_close_list);
     }
   else
@@ -159,7 +159,7 @@ start_agent (void)
 
       rc = assuan_socket_connect (&ctx, infostr, pid);
       xfree (infostr);
-      if (rc == ASSUAN_Connect_Failed)
+      if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
         {
           log_error (_("can't connect to the agent - trying fall back\n"));
           force_pipe_server = 1;
@@ -169,7 +169,7 @@ start_agent (void)
 
   if (rc)
     {
-      log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+      log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
       return gpg_error (GPG_ERR_NO_AGENT);
     }
   agent_ctx = ctx;
@@ -179,7 +179,7 @@ start_agent (void)
 
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
 #ifdef __GNUC__
 #warning put this code into common/asshelp.c
@@ -196,7 +196,7 @@ start_agent (void)
 			    NULL);
       free (optstr);
       if (rc)
-	return map_assuan_err (rc);
+	return rc;
     }
   if (!opt.ttyname)
     {
@@ -214,7 +214,7 @@ start_agent (void)
 			    NULL);
       free (optstr);
       if (rc)
-	return map_assuan_err (rc);
+	return rc;
     }
   dft_ttytype = getenv ("TERM");
   if (opt.ttytype || (dft_ttyname && dft_ttytype))
@@ -227,7 +227,7 @@ start_agent (void)
 			    NULL);
       free (optstr);
       if (rc)
-	return map_assuan_err (rc);
+	return rc;
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   old_lc = setlocale (LC_CTYPE, NULL);
@@ -251,8 +251,6 @@ start_agent (void)
 	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 				NULL);
 	  free (optstr);
-	  if (rc)
-	    rc = map_assuan_err (rc);
 	}
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
@@ -285,8 +283,6 @@ start_agent (void)
 	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 				NULL);
 	  free (optstr);
-	  if (rc)
-	    rc = map_assuan_err (rc);
 	}
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
@@ -379,11 +375,11 @@ store_serialno (const char *line)
 #if 0
 /* Handle a KEYPARMS inquiry.  Note, we only send the data,
    assuan_transact takes care of flushing and writing the end */
-static AssuanError
+static int
 inq_genkey_parms (void *opaque, const char *keyword)
 {
   struct genkey_parm_s *parm = opaque; 
-  AssuanError rc;
+  int rc;
 
   rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);
   return rc; 
@@ -409,7 +405,7 @@ agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL,
                         NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   init_membuf (&data, 1024);
   gk_parm.ctx = agent_ctx;
@@ -423,7 +419,7 @@ agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return rc;
     }
   buf = get_membuf (&data, &len);
   if (!buf)
@@ -459,7 +455,7 @@ agent_havekey (const char *hexkeygrip)
   line[DIM(line)-1] = 0;
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return rc;
 }
 
 
@@ -479,7 +475,7 @@ agent_release_card_info (struct agent_card_info_s *info)
   info->fpr1valid = info->fpr2valid = info->fpr3valid = 0;
 }
 
-static AssuanError
+static int
 learn_status_cb (void *opaque, const char *line)
 {
   struct agent_card_info_s *parm = opaque;
@@ -605,7 +601,7 @@ agent_learn (struct agent_card_info_s *info)
                         NULL, NULL, NULL, NULL,
                         learn_status_cb, info);
   
-  return map_assuan_err (rc);
+  return rc;
 }
 
 /* Call the agent to retrieve a data object.  This function returns
@@ -632,7 +628,7 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                         learn_status_cb, info);
   
-  return map_assuan_err (rc);
+  return rc;
 }
 
 
@@ -678,7 +674,7 @@ agent_scd_setattr (const char *name,
     return rc;
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return rc;
 }
 
 
@@ -718,14 +714,14 @@ agent_scd_writekey (int keyno, const char *serialno,
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
                         inq_writekey_parms, &parms, NULL, NULL);
 
-  return map_assuan_err (rc);
+  return rc;
 }
 
 
 
 
 /* Status callback for the SCD GENKEY command. */
-static AssuanError
+static int
 scd_genkey_cb (void *opaque, const char *line)
 {
   struct agent_card_genkey_s *parm = opaque;
@@ -797,11 +793,11 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
                         NULL, NULL, NULL, NULL,
                         scd_genkey_cb, info);
   
-  return map_assuan_err (rc);
+  return rc;
 }
 
 
-static AssuanError
+static int
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *data = opaque;
@@ -841,7 +837,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
     sprintf (p, "%02X", indata[i]);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   init_membuf (&data, 1024);
 #if 0
@@ -856,7 +852,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return rc;
     }
   *r_buf = get_membuf (&data, r_buflen);
 
@@ -895,7 +891,7 @@ agent_scd_pkdecrypt (const char *serialno,
     sprintf (p, "%02X", indata[i]);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   init_membuf (&data, 1024);
   snprintf (line, DIM(line)-1, "SCD PKDECRYPT %s", serialno);
@@ -906,7 +902,7 @@ agent_scd_pkdecrypt (const char *serialno,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return rc;
     }
   *r_buf = get_membuf (&data, r_buflen);
   if (!*r_buf)
@@ -943,7 +939,7 @@ agent_scd_change_pin (int chvno, const char *serialno)
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
                         NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return rc;
 }
 
 

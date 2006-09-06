@@ -492,7 +492,7 @@ app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 /* Write out the application specifig status lines for the LEARN
    command. */
 gpg_error_t
-app_write_learn_status (app_t app, CTRL ctrl)
+app_write_learn_status (app_t app, ctrl_t ctrl)
 {
   gpg_error_t err;
 
@@ -574,7 +574,7 @@ app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 
 /* Perform a GETATTR operation.  */
 gpg_error_t 
-app_getattr (app_t app, CTRL ctrl, const char *name)
+app_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
 
@@ -763,7 +763,7 @@ app_writekey (app_t app, ctrl_t ctrl,
 
 /* Perform a SETATTR operation.  */
 gpg_error_t 
-app_genkey (app_t app, CTRL ctrl, const char *keynostr, unsigned int flags,
+app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
@@ -810,7 +810,7 @@ app_get_challenge (app_t app, size_t nbytes, unsigned char *buffer)
 
 /* Perform a CHANGE REFERENCE DATA or RESET RETRY COUNTER operation.  */
 gpg_error_t 
-app_change_pin (app_t app, CTRL ctrl, const char *chvnostr, int reset_mode,
+app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
                 gpg_error_t (*pincb)(void*, const char *, char **),
                 void *pincb_arg)
 {

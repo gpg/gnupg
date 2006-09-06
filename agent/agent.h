@@ -36,18 +36,12 @@
 #include "../common/errors.h"
 #include "membuf.h"
 
-/* Convenience function to be used instead of returning the old
-   GNUPG_Out_Of_Core. */
-static inline gpg_error_t
-out_of_core (void)
-{
-  return gpg_error (gpg_err_code_from_errno (errno));
-}
 
 #define MAX_DIGEST_LEN 24 
 
 /* A large struct name "opt" to keep global flags */
-struct {
+struct
+{
   unsigned int debug;  /* Debug flags (DBG_foo_VALUE) */
   int verbose;         /* Verbosity level */
   int quiet;           /* Be as quiet as possible */
@@ -136,11 +130,12 @@ struct server_control_s
   int use_auth_call; /* Hack to send the PKAUTH command instead of the
                         PKSIGN command to the scdaemon.  */
 };
-typedef struct server_control_s *CTRL;
+
 typedef struct server_control_s *ctrl_t;
 
 
-struct pin_entry_info_s {
+struct pin_entry_info_s 
+{
   int min_digits; /* min. number of digits required or 0 for freeform entry */
   int max_digits; /* max. number of allowed digits allowed*/
   int max_tries;

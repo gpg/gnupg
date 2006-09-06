@@ -54,7 +54,7 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
         }
       frame = xtrymalloc (nframe);
       if (!frame)
-        return OUT_OF_CORE (errno);
+        return out_of_core ();
       memcpy (frame, gcry_md_read (md, algo), nframe);
       n = nframe;
     }
@@ -91,7 +91,7 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
        */
       frame = xtrymalloc (nframe);
       if (!frame)
-        return OUT_OF_CORE (errno);
+        return out_of_core ();
       n = 0;
       frame[n++] = 0;
       frame[n++] = 1; /* block type */

@@ -27,10 +27,6 @@
 #endif
 #define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_SCD
 #include <gpg-error.h>
-#define map_assuan_err(a) \
-        map_assuan_err_with_source (GPG_ERR_SOURCE_DEFAULT, (a))
-
-#include <errno.h>
 
 #include <time.h>
 #include <gcrypt.h>
@@ -41,7 +37,8 @@
 #define MAX_DIGEST_LEN 24 
 
 /* A large struct name "opt" to keep global flags. */
-struct {
+struct
+{
   unsigned int debug; /* Debug flags (DBG_foo_VALUE). */
   int verbose;        /* Verbosity level. */
   int quiet;          /* Be as quiet as possible. */
@@ -103,9 +100,7 @@ struct server_control_s
   } in_data;  
 };
 
-typedef struct server_control_s *CTRL;
 typedef struct server_control_s *ctrl_t;
-typedef struct app_ctx_s *APP;
 typedef struct app_ctx_s *app_t;
 
 /*-- scdaemon.c --*/
@@ -115,7 +110,7 @@ const char *scd_get_socket_name (void);
 
 /*-- command.c --*/
 void scd_command_handler (int);
-void send_status_info (CTRL ctrl, const char *keyword, ...);
+void send_status_info (ctrl_t ctrl, const char *keyword, ...);
 void scd_update_reader_status_file (void);
 
 

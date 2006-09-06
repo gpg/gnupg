@@ -1,3 +1,18 @@
+2006-09-06  Werner Koch  <wk@g10code.com>
+
+	* query.c: Renamed to ..
+	* call-pinentry.c: .. this.
+
+	* agent.h (out_of_core): Removed.
+	(CTRL): Removed and changed everywhere to ctrl_t.
+
+	Replaced all Assuan error codes by libgpg-error codes.  Removed
+	all map_to_assuan_status and map_assuan_err.
+	
+	* gpg-agent.c (main): Call assuan_set_assuan_err_source to have Assuan
+	switch to gpg-error codes.
+	* command.c (set_error): Adjusted.
+
 2006-09-04  Werner Koch  <wk@g10code.com>
 
 	* command.c (percent_plus_unescape): New.
@@ -13,7 +28,7 @@
 
 2006-07-31  Werner Koch  <wk@g10code.com>
 
-	* preset-passphrase.c (make_hexstring): For conistency use
+	* preset-passphrase.c (make_hexstring): For consistency use
 	xtrymalloc and changed caller to use xfree.  Fixed function
 	comment.
 

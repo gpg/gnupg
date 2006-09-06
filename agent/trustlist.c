@@ -94,7 +94,7 @@ open_list (int append)
    buffer of at least 41 characters. KEYFLAG does return either 'P',
    'S' or '*'.
 
-   Reading a valid entry return 0, EOF returns -1 any other error
+   Reading a valid entry returns 0, EOF returns -1 any other error
    returns the appropriate error code. */
 static int
 read_list (char *key, int *keyflag)
@@ -246,7 +246,7 @@ agent_listtrusted (void *assuan_context)
    whether this is actual wants he want to do.
 */
 int 
-agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
+agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 {
   int rc;
   static char key[41];

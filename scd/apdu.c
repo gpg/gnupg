@@ -274,7 +274,8 @@ long (* DLSTDCALL pcsc_status) (unsigned long card,
                                 unsigned long *r_protocol,
                                 unsigned char *atr, unsigned long *atrlen);
 long (* DLSTDCALL pcsc_begin_transaction) (unsigned long card);
-long (* DLSTDCALL pcsc_end_transaction) (unsigned long card);
+long (* DLSTDCALL pcsc_end_transaction) (unsigned long card,
+                                         unsigned long disposition);
 long (* DLSTDCALL pcsc_transmit) (unsigned long card,
                                   const pcsc_io_request_t send_pci,
                                   const unsigned char *send_buffer,

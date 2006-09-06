@@ -19,6 +19,8 @@
  * USA.
  */
 
+#error This file is not anymore used.
+
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>
@@ -31,6 +33,7 @@
 
 #include "util.h"
 #include "errors.h"
+
 
 
 /* Map Assuan error code ERR to an GPG_ERR_ code.  We need to

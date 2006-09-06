@@ -45,7 +45,7 @@
 #define MAXLEN_KEYDATA 4096
 
 
-#define set_error(e,t) assuan_set_error (ctx, ASSUAN_ ## e, (t))
+#define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
 
 /* Macro to flag a removed card.  */
@@ -262,7 +262,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       /* A value of 0 is allowed to reset the event signal. */
       int i = *value? atoi (value) : -1;
       if (i < 0)
-        return ASSUAN_Parameter_Error;
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
       ctrl->server_local->event_signal = i;
     }
 
@@ -309,7 +309,7 @@ open_card (ctrl_t ctrl, const char *apptype)
      the SERIALNO command and a reset are able to clear from that
      state. */
   if (ctrl->server_local->card_removed)
-    return map_to_assuan_status (gpg_error (GPG_ERR_CARD_REMOVED));
+    return gpg_error (GPG_ERR_CARD_REMOVED);
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -333,7 +333,7 @@ open_card (ctrl_t ctrl, const char *apptype)
     err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
 
   TEST_CARD_REMOVAL (ctrl, err);
-  return map_to_assuan_status (err);
+  return err;
 }
 
 
@@ -413,12 +413,12 @@ cmd_serialno (assuan_context_t ctx, char *line)
 
   rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
   if (rc)
-    return map_to_assuan_status (rc);
+    return rc;
 
   rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
   xfree (serial);
   if (rc < 0)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
   rc = 0;
   assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
   free (serial_and_stamp);
@@ -510,11 +510,11 @@ cmd_learn (assuan_context_t ctx, char *line)
 
     rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
     if (rc)
-      return map_to_assuan_status (rc);
+      return rc;
     rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
     xfree (serial);
     if (rc < 0)
-      return ASSUAN_Out_Of_Core;
+      return out_of_core ();
     rc = 0;
     assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
 
@@ -526,16 +526,16 @@ cmd_learn (assuan_context_t ctx, char *line)
         if (rc < 0)
           {
             free (serial_and_stamp);
-            return ASSUAN_Out_Of_Core;
+            return out_of_core ();
           }
         rc = 0;
         rc = assuan_inquire (ctx, command, NULL, NULL, 0); 
         free (command);  /* (must use standard free here) */
         if (rc)
           {
-            if (rc != ASSUAN_Canceled)
+            if (gpg_err_code (rc) != GPG_ERR_ASS_CANCELED)
               log_error ("inquire KNOWNCARDP failed: %s\n",
-                         assuan_strerror (rc));
+                         gpg_strerror (rc));
             free (serial_and_stamp);
             return rc; 
           }
@@ -550,7 +550,7 @@ cmd_learn (assuan_context_t ctx, char *line)
     rc = app_write_learn_status (ctrl->app_ctx, ctrl);
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -585,7 +585,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
     }
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -620,7 +620,6 @@ cmd_readkey (assuan_context_t ctx, char *line)
     { /* Yeah, got that key - send it back.  */
       rc = assuan_send_data (ctx, pk, pklen);
       xfree (pk);
-      rc = map_assuan_err (rc);
       xfree (line);
       line = NULL;
       goto leave;
@@ -661,7 +660,6 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
   n = gcry_sexp_canon_len (p, 0, NULL, NULL);
   rc = assuan_send_data (ctx, p, n);
-  rc = map_assuan_err (rc);
   xfree (p);
 
 
@@ -669,7 +667,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   ksba_cert_release (kc);
   xfree (cert);
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -694,15 +692,15 @@ cmd_setdata (assuan_context_t ctx, char *line)
   for (p=line,n=0; hexdigitp (p); p++, n++)
     ;
   if (*p)
-    return set_error (Parameter_Error, "invalid hexstring");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid hexstring");
   if (!n)
-    return set_error (Parameter_Error, "no data given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no data given");
   if ((n&1))
-    return set_error (Parameter_Error, "odd number of digits");
+    return set_error (GPG_ERR_ASS_PARAMETER, "odd number of digits");
   n /= 2;
   buf = xtrymalloc (n);
   if (!buf)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
 
   ctrl->in_data.value = buf;
   ctrl->in_data.valuelen = n;
@@ -734,7 +732,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
   rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
   free (command);  
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   if (!valuelen || value[valuelen-1])
     {
@@ -771,7 +769,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   else if (!strstr (line, "--"))
     hash_algo = GCRY_MD_SHA1; 
   else
-    return set_error (Parameter_Error, "invalid hash algorithm");
+    return set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
   /* Skip over options. */
   while ( *line == '-' && line[1] == '-' )
     {
@@ -792,7 +790,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
      overwriting the original line with the keyid */
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
   
   rc = app_sign (ctrl->app_ctx,
                  keyidstr, hash_algo,
@@ -814,7 +812,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
     }
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 /* PKAUTH <hexified_id>
@@ -843,7 +841,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
      overwriting the original line with the keyid */
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
   
   rc = app_auth (ctrl->app_ctx,
                  keyidstr,
@@ -864,7 +862,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
     }
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 /* PKDECRYPT <hexified_id>
@@ -887,7 +885,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
   rc = app_decipher (ctrl->app_ctx,
                      keyidstr, 
                      pin_cb, ctx,
@@ -908,7 +906,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
     }
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -947,7 +945,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
   rc = app_getattr (ctrl->app_ctx, ctrl, keyword);
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -983,7 +981,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
      context and thus reuses the Assuan provided LINE. */
   line = linebuf = xtrystrdup (orig_line);
   if (!line)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
 
   keyword = line;
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
@@ -999,7 +997,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
   xfree (linebuf);
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1039,7 +1037,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
         line++;
     }
   if (!*line)
-    return set_error (Parameter_Error, "no keyid given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no keyid given");
   keyid = line;
   while (*line && !spacep (line))
     line++;
@@ -1053,7 +1051,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
 
   keyid = xtrystrdup (keyid);
   if (!keyid)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
 
   /* Now get the actual keydata. */
   rc = assuan_inquire (ctx, "KEYDATA", &keydata, &keydatalen, MAXLEN_KEYDATA);
@@ -1070,7 +1068,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
   xfree (keydata);
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1114,7 +1112,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
         line++;
     }
   if (!*line)
-    return set_error (Parameter_Error, "no key number given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no key number given");
   keyno = line;
   while (*line && !spacep (line))
     line++;
@@ -1128,12 +1126,12 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
   keyno = xtrystrdup (keyno);
   if (!keyno)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
   rc = app_genkey (ctrl->app_ctx, ctrl, keyno, force? 1:0, pin_cb, ctx);
   xfree (keyno);
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1152,7 +1150,7 @@ cmd_random (assuan_context_t ctx, char *line)
   unsigned char *buffer;
 
   if (!*line)
-    return set_error (Parameter_Error, "number of requested bytes missing");
+    return set_error (GPG_ERR_ASS_PARAMETER, "number of requested bytes missing");
   nbytes = strtoul (line, NULL, 0);
 
   if ((rc = open_card (ctrl, NULL)))
@@ -1163,7 +1161,7 @@ cmd_random (assuan_context_t ctx, char *line)
 
   buffer = xtrymalloc (nbytes);
   if (!buffer)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
 
   rc = app_get_challenge (ctrl->app_ctx, nbytes, buffer);
   if (!rc)
@@ -1175,7 +1173,7 @@ cmd_random (assuan_context_t ctx, char *line)
   xfree (buffer);
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1203,7 +1201,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
         line++;
     }
   if (!*line)
-    return set_error (Parameter_Error, "no CHV number given");
+    return set_error (GPG_ERR_ASS_PARAMETER, "no CHV number given");
   chvnostr = line;
   while (*line && !spacep (line))
     line++;
@@ -1217,14 +1215,14 @@ cmd_passwd (assuan_context_t ctx, char *line)
   
   chvnostr = xtrystrdup (chvnostr);
   if (!chvnostr)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
   rc = app_change_pin (ctrl->app_ctx, ctrl, chvnostr, reset_mode, pin_cb, ctx);
   if (rc)
     log_error ("command passwd failed: %s\n", gpg_strerror (rc));
   xfree (chvnostr);
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1268,7 +1266,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
      overwriting the original line with the keyid. */
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
-    return ASSUAN_Out_Of_Core;
+    return out_of_core ();
   
   rc = app_check_pin (ctrl->app_ctx,
                       keyidstr,
@@ -1278,7 +1276,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
     log_error ("app_check_pin failed: %s\n", gpg_strerror (rc));
 
   TEST_CARD_REMOVAL (ctrl, rc);
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1322,7 +1320,7 @@ cmd_lock (assuan_context_t ctx, char *line)
   
   if (rc)
     log_error ("cmd_lock failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1348,7 +1346,7 @@ cmd_unlock (assuan_context_t ctx, char *line)
 
   if (rc)
     log_error ("cmd_unlock failed: %s\n", gpg_strerror (rc));
-  return map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1404,7 +1402,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       rc = assuan_send_data (ctx, &flag, 1);
     }
   else
-    rc = set_error (Parameter_Error, "unknown value for WHAT");
+    rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
   return rc;
 }
 
@@ -1460,7 +1458,6 @@ cmd_apdu (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-  int rc_is_assuan = 0;
   unsigned char *apdu;
   size_t apdulen;
   int with_atr;
@@ -1520,7 +1517,6 @@ cmd_apdu (assuan_context_t ctx, char *line)
         log_error ("apdu_send_direct failed: %s\n", gpg_strerror (rc));
       else
         {
-          rc_is_assuan = 1;
           rc = assuan_send_data (ctx, result, resultlen);
           xfree (result);
         }
@@ -1529,7 +1525,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
 
  leave:
   TEST_CARD_REMOVAL (ctrl, rc);
-  return rc_is_assuan? rc : map_to_assuan_status (rc);
+  return rc;
 }
 
 
@@ -1611,14 +1607,14 @@ scd_command_handler (int fd)
   if (rc)
     {
       log_error ("failed to initialize the server: %s\n",
-                 assuan_strerror(rc));
+                 gpg_strerror(rc));
       scd_exit (2);
     }
   rc = register_commands (ctx);
   if (rc)
     {
       log_error ("failed to register commands with Assuan: %s\n",
-                 assuan_strerror(rc));
+                 gpg_strerror(rc));
       scd_exit (2);
     }
   assuan_set_pointer (ctx, &ctrl);
@@ -1651,14 +1647,14 @@ scd_command_handler (int fd)
         }
       else if (rc)
         {
-          log_info ("Assuan accept problem: %s\n", assuan_strerror (rc));
+          log_info ("Assuan accept problem: %s\n", gpg_strerror (rc));
           break;
         }
       
       rc = assuan_process (ctx);
       if (rc)
         {
-          log_info ("Assuan processing failed: %s\n", assuan_strerror (rc));
+          log_info ("Assuan processing failed: %s\n", gpg_strerror (rc));
           continue;
         }
     }

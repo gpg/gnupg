@@ -53,7 +53,7 @@ static gpg_error_t parse_p12 (ctrl_t ctrl, ksba_reader_t reader, FILE **retfp,
 
 
 static void
-print_imported_status (CTRL ctrl, ksba_cert_t cert, int new_cert)
+print_imported_status (ctrl_t ctrl, ksba_cert_t cert, int new_cert)
 {
   char *fpr;
      
@@ -76,7 +76,7 @@ print_imported_status (CTRL ctrl, ksba_cert_t cert, int new_cert)
    4 := "Error storing certificate".
 */
 static void
-print_import_problem (CTRL ctrl, ksba_cert_t cert, int reason)
+print_import_problem (ctrl_t ctrl, ksba_cert_t cert, int reason)
 {
   char *fpr = NULL;
   char buf[25];
@@ -101,7 +101,7 @@ print_import_problem (CTRL ctrl, ksba_cert_t cert, int reason)
 
 
 void
-print_imported_summary (CTRL ctrl, struct stats_s *stats)
+print_imported_summary (ctrl_t ctrl, struct stats_s *stats)
 {
   char buf[14*25];
 
@@ -147,7 +147,7 @@ print_imported_summary (CTRL ctrl, struct stats_s *stats)
 
 
 static void
-check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
+check_and_store (ctrl_t ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
 {
   int rc;
 
@@ -245,7 +245,7 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
 
 
 static int
-import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
+import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
 {
   int rc;
   Base64Context b64reader = NULL;
@@ -406,7 +406,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
 
 
 int
-gpgsm_import (CTRL ctrl, int in_fd)
+gpgsm_import (ctrl_t ctrl, int in_fd)
 {
   int rc;
   struct stats_s stats;
@@ -424,7 +424,7 @@ gpgsm_import (CTRL ctrl, int in_fd)
 
 
 int
-gpgsm_import_files (CTRL ctrl, int nfiles, char **files,
+gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
                     int (*of)(const char *fname))
 {
   int rc = 0;

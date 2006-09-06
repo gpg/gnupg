@@ -736,8 +736,8 @@ main ( int argc, char **argv)
   char *def_digest_string = NULL;
   enum cmd_and_opt_values cmd = 0;
   struct server_control_s ctrl;
-  CERTLIST recplist = NULL;
-  CERTLIST signerlist = NULL;
+  certlist_t recplist = NULL;
+  certlist_t signerlist = NULL;
   int do_not_setup_keys = 0;
 
 
@@ -830,6 +830,7 @@ main ( int argc, char **argv)
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
   assuan_set_assuan_log_stream (log_get_stream ());
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
+  assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
 
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 

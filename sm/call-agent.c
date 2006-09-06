@@ -129,7 +129,7 @@ start_agent (ctrl_t ctrl)
           no_close_list[i] = -1;
 
           /* Connect to the agent and perform initial handshaking. */
-          rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv,
+          rc = assuan_pipe_connect (&ctx, opt.agent_program, argv,
                                     no_close_list);
         }
     }
@@ -162,7 +162,7 @@ start_agent (ctrl_t ctrl)
 
       rc = assuan_socket_connect (&ctx, infostr, pid);
       xfree (infostr);
-      if (rc == ASSUAN_Connect_Failed)
+      if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
         {
           log_error (_("can't connect to the agent - trying fall back\n"));
           force_pipe_server = 1;
@@ -172,7 +172,7 @@ start_agent (ctrl_t ctrl)
 
   if (rc)
     {
-      log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+      log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
       return gpg_error (GPG_ERR_NO_AGENT);
     }
   agent_ctx = ctx;
@@ -182,7 +182,7 @@ start_agent (ctrl_t ctrl)
 
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   return send_pinentry_environment (agent_ctx, GPG_ERR_SOURCE_DEFAULT,
                                     opt.display, opt.ttyname, opt.ttytype,
@@ -190,7 +190,7 @@ start_agent (ctrl_t ctrl)
 }
 
 
-static AssuanError
+static int
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *data = opaque;
@@ -225,13 +225,13 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   snprintf (line, DIM(line)-1, "SIGKEY %s", keygrip);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   if (desc)
     {
@@ -240,7 +240,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
       rc = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return map_assuan_err (rc);
+        return rc;
     }
 
   sprintf (line, "SETHASH %d ", digestalgo);
@@ -249,7 +249,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
     sprintf (p, "%02X", digest[i]);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, "PKSIGN",
@@ -257,7 +257,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return rc;
     }
   *r_buf = get_membuf (&data, r_buflen);
 
@@ -267,7 +267,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
       return gpg_error (GPG_ERR_INV_VALUE);
     }
 
-  return *r_buf? 0 : OUT_OF_CORE (errno);
+  return *r_buf? 0 : out_of_core ();
 }
 
 
@@ -275,11 +275,11 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
 
 /* Handle a CIPHERTEXT inquiry.  Note, we only send the data,
    assuan_transact talkes care of flushing and writing the end */
-static AssuanError
+static int
 inq_ciphertext_cb (void *opaque, const char *keyword)
 {
   struct cipher_parm_s *parm = opaque; 
-  AssuanError rc;
+  int rc;
 
   assuan_begin_confidential (parm->ctx);
   rc = assuan_send_data (parm->ctx, parm->ciphertext, parm->ciphertextlen);
@@ -317,14 +317,14 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   assert ( DIM(line) >= 50 );
   snprintf (line, DIM(line)-1, "SETKEY %s", keygrip);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   if (desc)
     {
@@ -333,7 +333,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
       rc = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return map_assuan_err (rc);
+        return rc;
     }
 
   init_membuf (&data, 1024);
@@ -346,7 +346,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return rc;
     }
 
   put_membuf (&data, "", 1); /* Make sure it is 0 terminated. */
@@ -390,11 +390,11 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
 
 /* Handle a KEYPARMS inquiry.  Note, we only send the data,
    assuan_transact takes care of flushing and writing the end */
-static AssuanError
+static int
 inq_genkey_parms (void *opaque, const char *keyword)
 {
   struct genkey_parm_s *parm = opaque; 
-  AssuanError rc;
+  int rc;
 
   rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);
   return rc; 
@@ -420,7 +420,7 @@ gpgsm_agent_genkey (ctrl_t ctrl,
 
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   init_membuf (&data, 1024);
   gk_parm.ctx = agent_ctx;
@@ -434,7 +434,7 @@ gpgsm_agent_genkey (ctrl_t ctrl,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return rc;
     }
   buf = get_membuf (&data, &len);
   if (!buf)
@@ -467,7 +467,7 @@ gpgsm_agent_readkey (ctrl_t ctrl, const char *hexkeygrip,
 
   rc = assuan_transact (agent_ctx, "RESET",NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
 
   snprintf (line, DIM(line)-1, "READKEY %s", hexkeygrip);
   line[DIM(line)-1] = 0;
@@ -479,7 +479,7 @@ gpgsm_agent_readkey (ctrl_t ctrl, const char *hexkeygrip,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return map_assuan_err (rc);
+      return rc;
     }
   buf = get_membuf (&data, &len);
   if (!buf)
@@ -519,7 +519,7 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert)
   xfree (fpr);
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return rc;
 }
 
 /* Ask the agent to mark CERT as a trusted Root-CA one */
@@ -553,7 +553,7 @@ gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
   xfree (fpr);
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return rc;
 }
 
 
@@ -577,11 +577,11 @@ gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip)
   line[DIM(line)-1] = 0;
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return rc;
 }
 
 
-static AssuanError
+static int
 learn_cb (void *opaque, const void *buffer, size_t length)
 {
   struct learn_parm_s *parm = opaque;
@@ -671,7 +671,7 @@ gpgsm_agent_learn (ctrl_t ctrl)
                         NULL, NULL, NULL, NULL);
   xfree (get_membuf (&data, &len));
   if (rc)
-    return map_assuan_err (rc);
+    return rc;
   return learn_parm.error;
 }
 
@@ -699,14 +699,14 @@ gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
       rc = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return map_assuan_err (rc);
+        return rc;
     }
 
   snprintf (line, DIM(line)-1, "PASSWD %s", hexkeygrip);
   line[DIM(line)-1] = 0;
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return rc;
 }
 
 
@@ -727,5 +727,5 @@ gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
   line[DIM(line)-1] = 0;
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return map_assuan_err (rc);
+  return rc;
 }

@@ -522,7 +522,7 @@ base64_finish_write (struct writer_cb_parm_s *parm)
    until no more objects were found. */
 int
 gpgsm_create_reader (Base64Context *ctx,
-                     CTRL ctrl, FILE *fp, int allow_multi_pem,
+                     ctrl_t ctrl, FILE *fp, int allow_multi_pem,
                      ksba_reader_t *r_reader)
 {
   int rc;
@@ -531,7 +531,7 @@ gpgsm_create_reader (Base64Context *ctx,
   *r_reader = NULL;
   *ctx = xtrycalloc (1, sizeof **ctx);
   if (!*ctx)
-    return OUT_OF_CORE (errno);
+    return out_of_core ();
   (*ctx)->u.rparm.allow_multi_pem = allow_multi_pem;
 
   rc = ksba_reader_new (&r);
@@ -595,7 +595,7 @@ gpgsm_destroy_reader (Base64Context ctx)
    function on. */
 int
 gpgsm_create_writer (Base64Context *ctx,
-                     CTRL ctrl, FILE *fp, ksba_writer_t *r_writer)
+                     ctrl_t ctrl, FILE *fp, ksba_writer_t *r_writer)
 {
   int rc;
   ksba_writer_t w;
@@ -603,7 +603,7 @@ gpgsm_create_writer (Base64Context *ctx,
   *r_writer = NULL;
   *ctx = xtrycalloc (1, sizeof **ctx);
   if (!*ctx)
-    return OUT_OF_CORE (errno);
+    return out_of_core ();
 
   rc = ksba_writer_new (&w);
   if (rc)

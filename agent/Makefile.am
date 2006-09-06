@@ -32,7 +32,7 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
 	command.c command-ssh.c \
-	query.c \
+	call-pinentry.c \
 	cache.c \
 	trans.c \
 	findkey.c \

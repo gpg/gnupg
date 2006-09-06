@@ -509,6 +509,7 @@ main (int argc, char **argv )
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
   assuan_set_assuan_log_stream (log_get_stream ());
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
+  assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
 
   gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_set_outofcore_handler (my_gcry_outofcore_handler, NULL);
@@ -1697,7 +1698,7 @@ check_for_running_agent (int mode)
         return 0; /* Okay, its running on the standard socket. */
 
       if (!mode)
-        log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+        log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
       return -1;
     }
 

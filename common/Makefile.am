@@ -34,7 +34,6 @@ libcommon_a_SOURCES = \
 	keyserver.h \
 	sexp-parse.h \
 	sexputil.c \
-	maperror.c \
 	sysutils.c sysutils.h \
 	homedir.c \
 	gettime.c \

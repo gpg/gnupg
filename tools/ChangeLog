@@ -1,3 +1,11 @@
+2006-09-06  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c: Switch everything to new Assuan error code
+	style.
+
+	* no-libgcrypt.c (out_of_core): Reanmed to ...
+	(out_of_memory): .. this to avoid name clash with util.h.
+
 2006-08-21  Werner Koch  <wk@g10code.com>
 
 	* gpgsplit.c: New. Taken from 1.4. Adjusted to GnuPG2.
