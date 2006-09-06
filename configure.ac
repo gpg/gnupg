@@ -1232,6 +1232,8 @@ AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
 AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 
+AM_CONDITIONAL(RUN_GPG_TESTS,
+	test x$cross_compiling = xno -a "$build_gpg" = yes )
 
 
 #

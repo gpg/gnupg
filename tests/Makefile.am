@@ -29,7 +29,13 @@
 #
 #SUBDIRS = . ${pkits}
 
-SUBDIRS = openpgp
+if RUN_GPG_TESTS
+openpgp = openpgp
+else
+openpgp =
+endif
+
+SUBDIRS = ${openpgp}
 
 GPGSM = ../sm/gpgsm
 
