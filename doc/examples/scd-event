@@ -1,0 +1,102 @@
+#!/bin/sh
+# Sample script for scdaemon event mechanism.
+
+#exec >>/tmp/scd-event.log
+
+PGM=scd-event
+
+reader_port=
+old_code=0x0000
+new_code=0x0000
+status=
+
+tick='`'
+prev=
+while [ $# -gt 0 ]; do
+  arg="$1"
+  case $arg in
+      -*=*) optarg=$(echo "X$arg" | sed -e '1s/^X//' -e 's/[-_a-zA-Z0-9]*=//')
+            ;;
+         *) optarg=
+            ;;
+  esac
+  if [ -n "$prev" ]; then
+    eval "$prev=\$arg"
+    prev=
+    shift
+    continue
+  fi
+  case $arg in
+      --help|-h)
+          cat <<EOF
+Usage: $PGM [options]
+$PGM is called by scdaemon on card reader status changes
+
+Options:
+  --reader-port N        Reports change for port N
+  --old-code 0xNNNN      Previous status code
+  --old-code 0xNNNN      Current status code
+  --status USABLE|ACTIVE|PRESENT}NOCARD 
+                         Human readable status code
+
+Environment:
+
+GNUPGHOME=DIR            Set to the active hmedir
+
+EOF
+          exit 0
+          ;;
+    
+      --reader-port)  
+          prev=reader_port
+          ;;
+      --reader-port=*)
+          reader_port="$optarg"
+          ;;
+      --old-code)  
+          prev=old_code
+          ;;
+      --old-code=*)
+          old_code="$optarg"
+          ;;
+      --new-code)  
+          prev=new_code
+          ;;
+      --new-code=*)
+          new_code="$optarg"
+          ;;
+      --status)  
+          prev=status
+          ;;
+      --new-code=*)
+          status="$optarg"
+          ;;
+
+      -*)
+          echo "$PGM: invalid option $tick$arg'" >&2
+          exit 1
+          ;;
+
+      *)
+          break
+          ;;
+  esac
+  shift
+done
+if [ -n "$prev" ]; then
+  echo "$PGM: argument missing for option $tick$prev'" >&2
+  exit 1
+fi
+
+cat <<EOF
+========================
+port:     $reader_port
+old-code: $old_code
+new-code: $new_code
+status:   $status
+EOF
+
+if [ x$status = xUSABLE ]; then
+    gpg --batch --card-status 2>&1
+fi
+

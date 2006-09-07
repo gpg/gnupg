@@ -19,13 +19,16 @@
 
 ## Process this file with automake to produce Makefile.in
 
+examples=examples/scd-event
+
 EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
 	     gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg \
              gnupg-badge-openpgp.pdf \
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
              faq.raw FAQ faq.html gnupg7.texi \
-             opt-homedir.texi see-also-note.texi
+             opt-homedir.texi see-also-note.texi \
+	     $(examples)
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf FAQ faq.html

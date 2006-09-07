@@ -1,3 +1,8 @@
+2006-09-07  Werner Koch  <wk@g10code.com>
+
+	* command.c (update_reader_status_file): Execute an event handler
+	if available.
+
 2006-09-06  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (pcsc_end_transaction): 

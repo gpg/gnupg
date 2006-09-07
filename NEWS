@@ -12,6 +12,8 @@ Noteworthy changes in version 1.9.23
  * API change in gpg-agent's pkdecrypt command.  Thus an older gpgsm
    may not be used with the current gpg-agent.
 
+ * The scdaemon will now call a script on reader status changes.
+
 
 Noteworthy changes in version 1.9.22 (2006-07-27)
 -------------------------------------------------

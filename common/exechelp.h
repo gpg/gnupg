@@ -43,4 +43,16 @@ gpg_error_t gnupg_spawn_process (const char *pgmname, const char *argv[],
 gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid);
 
 
+/* Spawn a new process and immediatley detach from it.  The name of
+   the program to exec is PGMNAME and its arguments are in ARGV (the
+   programname is automatically passed as first argument).
+   Environment strings in ENVP are set.  An error is returned if
+   pgmname is not executable; to make this work it is necessary to
+   provide an absolute file name.  */
+gpg_error_t gnupg_spawn_process_detached (const char *pgmname,
+                                          const char *argv[],
+                                          const char *envp[] );
+
+
+
 #endif /*GNUPG_COMMON_EXECHELP_H*/

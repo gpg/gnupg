@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <signal.h>
 #include <unistd.h> 
+#include <fcntl.h>
 #ifdef USE_GNU_PTH      
 #include <pth.h>
 #endif
@@ -158,6 +159,67 @@ create_inheritable_pipe (int filedes[2])
 }
 #endif /*HAVE_W32_SYSTEM*/
 
+
+#ifndef HAVE_W32_SYSTEM
+/* The exec core used right after the fork. This will never return. */
+static void
+do_exec (const char *pgmname, const char *argv[],
+         int fd_in, int fd_out, int fd_err,
+         void (*preexec)(void) )
+{
+  char **arg_list;
+  int n, i, j;
+  int fds[3];
+
+  fds[0] = fd_in;
+  fds[1] = fd_out;
+  fds[2] = fd_err;
+
+  /* Create the command line argument array.  */
+  i = 0;
+  if (argv)
+    while (argv[i])
+      i++;
+  arg_list = xcalloc (i+2, sizeof *arg_list);
+  arg_list[0] = strrchr (pgmname, '/');
+  if (arg_list[0])
+    arg_list[0]++;
+  else
+    arg_list[0] = xstrdup (pgmname);
+  if (argv)
+    for (i=0,j=1; argv[i]; i++, j++)
+      arg_list[j] = (char*)argv[i];
+
+  /* Connect the standard files. */
+  for (i=0; i <= 2; i++)
+    {
+      if (fds[i] == -1 )
+        {
+          fds[i] = open ("/dev/null", i? O_WRONLY : O_RDONLY);
+          if (fds[i] == -1)
+            log_fatal ("failed to open `%s': %s\n",
+                       "/dev/null", strerror (errno));
+        }
+      else if (fds[i] != i && dup2 (fds[i], i) == -1)
+        log_fatal ("dup2 std%s failed: %s\n",
+                   i==0?"in":i==1?"out":"err", strerror (errno));
+    }
+
+  /* Close all other files. */
+  n = sysconf (_SC_OPEN_MAX);
+  if (n < 0)
+    n = MAX_OPEN_FDS;
+  for (i=3; i < n; i++)
+    close(i);
+  errno = 0;
+  
+  if (preexec)
+    preexec ();
+  execv (pgmname, arg_list);
+  /* No way to print anything, as we have closed all streams. */
+  _exit (127);
+}
+#endif /*!HAVE_W32_SYSTEM*/
 
 
 /* Fork and exec the PGMNAME, connect the file descriptor of INFILE to
@@ -325,47 +387,10 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   if (!*pid)
     { 
-      /* Child. */
-      char **arg_list;
-      int n, i, j;
-
-      /* Create the command line argument array.  */
-      for (i=0; argv[i]; i++)
-        ;
-      arg_list = xcalloc (i+2, sizeof *arg_list);
-      arg_list[0] = strrchr (pgmname, '/');
-      if (arg_list[0])
-        arg_list[0]++;
-      else
-        arg_list[0] = xstrdup (pgmname);
-      for (i=0,j=1; argv[i]; i++, j++)
-        arg_list[j] = (char*)argv[i];
-
-      /* Connect the infile to stdin. */
-      if (fd != 0 && dup2 (fd, 0) == -1)
-        log_fatal ("dup2 stdin failed: %s\n", strerror (errno));
-
-      /* Connect the outfile to stdout. */
-      if (fdout != 1 && dup2 (fdout, 1) == -1)
-        log_fatal ("dup2 stdout failed: %s\n", strerror (errno));
-      
-      /* Connect stderr to our pipe. */
-      if (rp[1] != 2 && dup2 (rp[1], 2) == -1)
-        log_fatal ("dup2 stderr failed: %s\n", strerror (errno));
-
-      /* Close all other files. */
-      n = sysconf (_SC_OPEN_MAX);
-      if (n < 0)
-        n = MAX_OPEN_FDS;
-      for (i=3; i < n; i++)
-        close(i);
-      errno = 0;
-
-      if (preexec)
-        preexec ();
-      execv (pgmname, arg_list);
-      /* No way to print anything, as we have closed all streams. */
-      _exit (127);
+      gcry_control (GCRYCTL_TERM_SECMEM);
+      /* Run child. */
+      do_exec (pgmname, argv, fd, fdout, rp[1], preexec);
+      /*NOTREACHED*/
     }
 
   /* Parent. */
@@ -481,3 +506,64 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
 
 }
 
+
+/* Spawn a new process and immediatley detach from it.  The name of
+   the program to exec is PGMNAME and its arguments are in ARGV (the
+   programname is automatically passed as first argument).
+   Environment strings in ENVP are set.  An error is returned if
+   pgmname is not executable; to make this work it is necessary to
+   provide an absolute file name.  All standard file descriptors are
+   connected to /dev/null. */
+gpg_error_t
+gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
+                              const char *envp[] )
+{
+#ifdef HAVE_W32_SYSTEM
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#else
+  pid_t pid;
+  int i;
+
+  if (getuid() != geteuid())
+    return gpg_error (GPG_ERR_BUG);
+
+  if (access (pgmname, X_OK))
+    return gpg_error_from_errno (errno);
+
+#ifdef USE_GNU_PTH      
+  pid = pth_fork? pth_fork () : fork ();
+#else
+  pid = fork ();
+#endif
+  if (pid == (pid_t)(-1))
+    {
+      log_error (_("error forking process: %s\n"), strerror (errno));
+      return gpg_error_from_errno (errno);
+    }
+  if (!pid)
+    {
+      gcry_control (GCRYCTL_TERM_SECMEM);
+      if (setsid() == -1 || chdir ("/"))
+        _exit (1);
+      pid = fork (); /* Double fork to let init takes over the new child. */
+      if (pid == (pid_t)(-1))
+        _exit (1);
+      if (pid)
+        _exit (0);  /* Let the parent exit immediately. */
+
+      if (envp)
+        for (i=0; envp[i]; i++)
+          putenv (xstrdup (envp[i]));
+      
+      do_exec (pgmname, argv, -1, -1, -1, NULL);
+
+      /*NOTREACHED*/
+    }
+  
+  if (waitpid (pid, NULL, 0) == -1)
+    log_error ("waitpid failed in gnupg_spawn_process_detached: %s",
+               strerror (errno));
+
+  return 0;
+#endif /* !HAVE_W32_SYSTEM*/
+}

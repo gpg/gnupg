@@ -80,9 +80,6 @@ might want to have an agent context for each service request
 * doc/
 ** Explain how to setup a root CA key as trusted
 ** Explain how trustlist.txt might be managed.
-** Write a script to generate man pages from texi.
-   In progress (yatm)
-
 
 * Windows port
 ** gpgsm's LISTKEYS does not yet work
@@ -90,8 +87,6 @@ might want to have an agent context for each service request
 ** Signals are not support 
     This means we can't reread a configuration
 ** No card status notifications.
-
-
 
 * sm/
 ** check that we issue NO_SECKEY xxx if a -u key was not found

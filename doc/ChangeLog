@@ -1,3 +1,10 @@
+2006-09-07  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.texi (Scdaemon Configuration): New.
+
+	* examples/scd-event: Event handler for sdaemon.
+	* examples/: New directory
+
 2006-08-22  Werner Koch  <wk@g10code.com>
 
 	* yat2m.c (parse_file): Added code to skip a line after @mansect.

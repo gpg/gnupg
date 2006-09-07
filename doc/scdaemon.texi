@@ -48,6 +48,7 @@ options.
 * Scdaemon Commands::      List of all commands.
 * Scdaemon Options::       List of all options.
 * Card applications::      Description of card applications.
+* Scdaemon Configuration:: Configuration files.
 * Scdaemon Examples::      Some usage examples.
 * Scdaemon Protocol::      The protocol the daemon uses.
 @end menu
@@ -320,6 +321,41 @@ This is common fraqmework for smart card applications.  It is used by
 @command{gpgsm}.
 
 
+@c *******************************************
+@c ***************            ****************
+@c ***************   FILES    ****************
+@c ***************            ****************
+@c *******************************************
+@mansect files
+@node Scdaemon Configuration
+@section Configuration files
+
+There are a few configuration files to control certain aspects of
+@command{scdaemons}'s operation. Unless noted, they are expected in the
+current home directory (@pxref{option --homedir}).
+
+@table @file
+
+@item scdaemon.conf
+@cindex scdaemon.conf
+This is the standard configuration file read by @command{scdaemon} on
+startup.  It may contain any valid long option; the leading two dashes
+may not be entered and the option may not be abbreviated.  This default
+name may be changed on the command line (@pxref{option --options}).
+
+@item scd-event
+@cindex scd-event
+If this file is present and executable, it will be called on veyer card
+reader's status changed. An example of this script is provided with the
+distribution
+
+@item reader_@var{n}.status
+This file is created by @command{sdaemon} to let other applications now
+about reader status changes.  Its use is now deprecated in favor of
+@file{scd-event}.
+
+@end table
+
 
 @c 
 @c  Examples
@@ -339,7 +375,7 @@ $ scdaemon --server -v
 @c 
 @c  Assuan Protocol
 @c
-@mansect assuan
+@manpause
 @node Scdaemon Protocol
 @section Scdaemon's Assuan Protocol
 
@@ -620,4 +656,12 @@ Using the option @code{--more} handles the card status word MORE_DATA
 (61xx) and concatenate all reponses to one block.
 
 
+
+@mansect see also
+@ifset isman
+@command{gpg-agent}(1),
+@command{gpgsm}(1), 
+@command{gpg2}(1)
+@end ifset
+@include see-also-note.texi
 

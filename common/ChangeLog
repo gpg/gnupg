@@ -1,3 +1,10 @@
+2006-09-07  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c (gnupg_spawn_process): Factor out post fork code to ..
+	(do_exec): .. new function.  Allow passing of -1 for the fds.
+	(gnupg_spawn_process): Terminate gcrypt's secure memory in the child.
+	(gnupg_spawn_process_detached): New.
+
 2006-09-06  Werner Koch  <wk@g10code.com>
 
 	* maperror.c: Removed.

@@ -37,6 +37,7 @@
 #include <ksba.h>
 #include "app-common.h"
 #include "apdu.h" /* Required for apdu_*_reader (). */
+#include "exechelp.h"
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -1778,6 +1779,47 @@ update_reader_status_file (void)
             }
           xfree (fname);
             
+          /* If a status script is executable, run it. */
+          {
+            const char *args[9], *envs[2];
+            char numbuf1[30], numbuf2[3], numbuf3[30];
+            char *homestr, *envstr;
+            gpg_error_t err;
+            
+            homestr = make_filename (opt.homedir, NULL);
+            if (asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
+              log_error ("out of core while building environment\n");
+            else
+              {
+                envs[0] = envstr;
+                envs[1] = NULL;
+
+                sprintf (numbuf1, "%d", ss->slot);
+                sprintf (numbuf2, "0x%04X", ss->status);
+                sprintf (numbuf3, "0x%04X", status);
+                args[0] = "--reader-port";
+                args[1] = numbuf1; 
+                args[2] = "--old-code";
+                args[3] = numbuf2;  
+                args[4] = "--new-code";
+                args[5] = numbuf3; 
+                args[6] = "--status";
+                args[7] = ((status & 1)? "USABLE":
+                           (status & 4)? "ACTIVE":
+                           (status & 2)? "PRESENT": "NOCARD");
+                args[8] = NULL;  
+
+                fname = make_filename (opt.homedir, "scd-event", NULL);
+                err = gnupg_spawn_process_detached (fname, args, envs);
+                if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
+                  log_error ("failed to run event handler `%s': %s\n",
+                             fname, gpg_strerror (err));
+                xfree (fname);
+                free (envstr);
+              }
+            xfree (homestr);
+          }
+
           /* Set the card removed flag for all current sessions.  We
              will set this on any card change because a reset or
              SERIALNO request must be done in any case.  */
@@ -1802,6 +1844,7 @@ update_reader_status_file (void)
                   kill (pid, signo);
 #endif
               }
+
         }
     }
 }
