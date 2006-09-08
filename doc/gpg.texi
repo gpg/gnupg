@@ -30,7 +30,7 @@
 
 @mansect description
 @command{gpg2} is the OpenPGP part of the GNU Privacy Guard (GnuPG). It
-is a tool to provide digitla encryption and signing services using the
+is a tool to provide digital encryption and signing services using the
 OpenPGP standard. @command{gpg2} features complete key management and
 all bells and whistles you can expect from a decent OpenPGP
 implementation.
@@ -2455,59 +2455,15 @@ user for the filename.
 @end table
 
 
+@c *******************************************
+@c ***************            ****************
+@c ***************  USER ID   ****************
+@c ***************            ****************
+@c *******************************************
 @mansect how to specify a user id
-@chapheading How to specify a user ID
-
-There are different ways to specify a user ID to GnuPG; here are some
-examples:
-
-@table @asis
-
-@item
-
-@item 234567C4
-@itemx 0F34E556E
-@itemx 01347A56A
-@itemx 0xAB123456
-Here the key ID is given in the usual short form.
-
-@item 234AABBCC34567C4
-@itemx 0F323456784E56EAB
-@itemx 01AB3FED1347A5612
-@itemx 0x234AABBCC34567C4
-Here the key ID is given in the long form as used by OpenPGP
-(you can get the long key ID using the option --with-colons).
-
-@item 1234343434343434C434343434343434
-@itemx 123434343434343C3434343434343734349A3434
-@itemx 0E12343434343434343434EAB3484343434343434
-@itemx 0xE12343434343434343434EAB3484343434343434
-The best way to specify a key ID is by using the fingerprint of
-the key. This avoids any ambiguities in case that there are duplicated
-key IDs (which are really rare for the long key IDs).
-
-@item =Heinrich Heine <heinrichh@@uni-duesseldorf.de>
-Using an exact to match string. The equal sign indicates this.
-
-@item <heinrichh@@uni-duesseldorf.de>
-Using the email address part which must match exactly. The left angle bracket
-indicates this email address mode.
-
-@item @@heinrichh
-Match within the <email.address> part of a user ID. The at sign
-indicates this email address mode.
-
-@item Heine
-@itemx *Heine
-By case insensitive substring matching. This is the default mode but
-applications may want to explicitly indicate this by putting the asterisk
-in front.
-@end table
-
-Note that you can append an exclamation mark (!) to key IDs or
-fingerprints. This flag tells GnuPG to use the specified primary or
-secondary key and not to try and calculate which primary or secondary
-key to use.
+@ifset isman
+@include specify-user-id.texi
+@end ifset
 
 @mansect return vaue
 @chapheading RETURN VALUE

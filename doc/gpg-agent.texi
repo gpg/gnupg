@@ -500,6 +500,14 @@ agent. By default they may all be found in the current home directory
   # Key added on 2005-02-25 15:08:29
   5A6592BF45DC73BD876874A28FD4639282E29B52 0
   @end example
+
+@item private-keys-v1.d/
+
+  This is the directory where gpg-agent stores the private keys.  Each
+  key is stored in a file with the name made up of the keygrip and the
+  suffix @file{key}.
+
+
 @end table
 
 Note that on larger installations, it is useful to put predefined

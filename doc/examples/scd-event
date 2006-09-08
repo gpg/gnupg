@@ -36,12 +36,12 @@ Options:
   --reader-port N        Reports change for port N
   --old-code 0xNNNN      Previous status code
   --old-code 0xNNNN      Current status code
-  --status USABLE|ACTIVE|PRESENT}NOCARD 
+  --status USABLE|ACTIVE|PRESENT|NOCARD 
                          Human readable status code
 
 Environment:
 
-GNUPGHOME=DIR            Set to the active hmedir
+GNUPGHOME=DIR            Set to the active homedir
 
 EOF
           exit 0

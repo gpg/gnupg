@@ -1,3 +1,10 @@
+2006-09-08  Werner Koch  <wk@g10code.com>
+
+	* yat2m.c (parse_file): Ignore @node lines immediately.
+	(proc_texi_cmd): No special @end ifset processing anymore.
+
+	* specify-user-id.texi: New.  Factored out of gpg.texi and ../README.
+
 2006-09-07  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.texi (Scdaemon Configuration): New.

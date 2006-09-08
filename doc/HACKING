@@ -6,6 +6,22 @@
 		   ===> Under construction <=======
 
 
+SOURCE FILES
+============
+
+Here is a list of directories with source files:
+
+jnlib/  utility functions
+kbx/    keybox library
+g10/    the gpg program here called gpg2
+sm/     the gpgsm program
+agent/  the gpg-agent
+scd/    the smartcard daemon
+doc/    documentation
+
+
+
+
 CVS Access
 ==========
 

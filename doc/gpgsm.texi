@@ -105,18 +105,19 @@ abbreviate this command.
 @table @gnupgtabopt
 @item --encrypt
 @opindex encrypt
-Perform an encryption.
+Perform an encryption.  The keys the data is encrypted too must be set
+using the option @option{--recipient}.
 
 @item --decrypt
 @opindex decrypt
-Perform a decryption; the type of input is automatically detmerined.  It
+Perform a decryption; the type of input is automatically determined.  It
 may either be in binary form or PEM encoded; automatic determination of
 base-64 encoding is not done.
 
 @item --sign
 @opindex sign
 Create a digital signature.  The key used is either the fist one found
-in the keybox or thise set with the -u option
+in the keybox or those set with the @option{--local-user} option.
 
 @item --verify
 @opindex verify
@@ -428,6 +429,14 @@ Assume the input data is binary encoded.
 Set the user(s) to be used for signing.  The default is the first
 secret key found in the database.
 
+
+@item --recipient @var{name}
+@itemx -r
+@opindex recipient
+Encrypt to the user id @var{name}.  There are several ways a user id
+may be given (@pxref{how-to-specify-a-user-id}).
+
+
 @item --output @var{file}
 @itemx -o @var{file}
 @opindex output
@@ -500,18 +509,18 @@ Include ephemeral flagged keys in the output of key listings.
 Select the debug level for investigating problems. @var{level} may be
 one of:
 
-   @table @code
-   @item none
-   no debugging at all.
-   @item basic  
-   some basic debug messages
-   @item advanced
-   more verbose debug messages
-   @item expert
-   even more detailed messages
-   @item guru
-   all of the debug messages you can get
-   @end table
+@table @code
+@item none
+no debugging at all.
+@item basic  
+some basic debug messages
+@item advanced
+more verbose debug messages
+@item expert
+even more detailed messages
+@item guru
+all of the debug messages you can get
+@end table
 
 How these messages are mapped to the actual debugging flags is not
 specified and may change with newer releaes of this program. They are
@@ -524,24 +533,24 @@ at any time without notice; using @code{--debug-levels} is the
 preferred method to select the debug verbosity.  FLAGS are bit encoded
 and may be given in usual C-Syntax. The currently defined bits are:
 
-   @table @code
-   @item 0  (1)
-   X.509 or OpenPGP protocol related data
-   @item 1  (2)  
-   values of big number integers 
-   @item 2  (4)
-   low level crypto operations
-   @item 5  (32)
-   memory allocation
-   @item 6  (64)
-   caching
-   @item 7  (128)
-   show memory statistics.
-   @item 9  (512)
-   write hashed data to files named @code{dbgmd-000*}
-   @item 10 (1024)
-   trace Assuan protocol
-   @end table
+@table @code
+@item 0  (1)
+X.509 or OpenPGP protocol related data
+@item 1  (2)  
+values of big number integers 
+@item 2  (4)
+low level crypto operations
+@item 5  (32)
+memory allocation
+@item 6  (64)
+caching
+@item 7  (128)
+show memory statistics.
+@item 9  (512)
+write hashed data to files named @code{dbgmd-000*}
+@item 10 (1024)
+trace Assuan protocol
+@end table
 
 Note, that all flags set using this option may get overriden by
 @code{--debug-level}.
@@ -580,6 +589,15 @@ package and may be revised or removed at any time without notice.
 All the long options may also be given in the configuration file after
 stripping off the two leading dashes.
 
+@c *******************************************
+@c ***************            ****************
+@c ***************  USER ID   ****************
+@c ***************            ****************
+@c *******************************************
+@mansect how to specify a user id
+@ifset isman
+@include specify-user-id.texi
+@end ifset
 
 @c *******************************************
 @c ***************            ****************

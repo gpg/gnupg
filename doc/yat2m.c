@@ -456,7 +456,6 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "opindex", 1 },
     { "cpindex", 1 },
     { "cindex",  1 },
-    { "node",    1 },
     { "noindent", 0 },
     { "section", 1 },
     { "chapter", 1 },
@@ -465,6 +464,8 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "item",    2, ".TP\n.B " },
     { "itemx",   2, ".TP\n.B " },
     { "table",   3 }, 
+    { "itemize",   3 }, 
+    { "bullet",  0, "* " },
     { "end",     4 },
     { "quotation",1, ".RS\n\\fB" },
     { "ifset",   1 },
@@ -520,11 +521,6 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
             }
           else if (n >= 9 && !memcmp (s, "quotation", 9)
               && (!n || s[9] == ' ' || s[9] == '\t' || s[9] == '\n'))
-            {
-              fputs ("\\fR\n.RE\n", fp);
-            }
-          else if (n >= 5 && !memcmp (s, "ifset", 5)
-              && (!n || s[5] == ' ' || s[5] == '\t' || s[5] == '\n'))
             {
               fputs ("\\fR\n.RE\n", fp);
             }
@@ -831,6 +827,14 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
           break;
         }
       line[--n] = 0;
+
+      if (n >= 5 && !memcmp (line, "@node", 5)
+          && (line[5]==' '||line[5]=='\t'||!line[5]))
+        {
+          /* Completey ignore @node lines.  */
+          continue;
+        }
+
 
       if (skip_sect_line)
         {

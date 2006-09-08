@@ -948,13 +948,13 @@ It is very similar to running @command{gpg-agent} in server mode; but
 here we connect to a running instance.
 
 @menu
-* Invoking gpg-connect-agent::   List of all commands and options.
+* Invoking gpg-connect-agent::       List of all options.
+* Controlling gpg-connect-agent::    Control commands.
 @end menu
 
 @manpause
 @node Invoking gpg-connect-agent
-@subsection List of all commands and options.
-@mancont
+@subsection List of all options.
 
 @noindent
 @command{gpg-connect-agent} is invoked this way:
@@ -962,6 +962,7 @@ here we connect to a running instance.
 @example
 gpg-connect-agent [options]
 @end example
+@mancont
 
 @noindent
 The following options may be used:
@@ -990,11 +991,47 @@ be used to directly connect to any Assuan style socket server.
 
 @end table
 
+@mansect control commands
+@node Controlling gpg-connect-agent
+@subsection Control commands.
+
+While reading Assuan commands, gpg-agent also allows a few special
+commands to control its operation.  These control commands all start
+with a slash (@code{/}).
+
+
+@table @code
+
+@item /echo @var{args}
+Just print @var{args}.
+
+@item /definqfile @var{name} @var{file}
+
+Use content of @var{file} for inquiries with @var{name}.
+@var{name} may be an asterisk (@code{*} to match any inquiry.
+
+@item /definqprog @var{name} @var{prog}
+Run @var{prog} for inquiries matching @var{name} and pass the
+entire line to it as command line arguments
+
+@item /showdef
+Print all definitions
+
+@item /cleardef
+Delete all definitions
+
+@item /help
+Print a list of available control commands.
+
+@end table
+
+
+@ifset isman
 @mansect see also
 @command{gpg-agent}(1), 
 @command{scdaemon}(1)
 @include see-also-note.texi
-
+@end ifset
 
 
 @c
