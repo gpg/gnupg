@@ -1,3 +1,8 @@
+2006-09-12  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (read_and_print_response): With verbosity
+	level 2 also print comment lines.
+
 2006-09-06  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c: Switch everything to new Assuan error code

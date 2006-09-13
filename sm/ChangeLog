@@ -1,3 +1,17 @@
+2006-09-13  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_internal_keys): Print marker line to FP and not
+	to stdout.
+
+	* gpgsm.c (main): All list key list commands now make ose of
+	--output. Cleaned up calls to list modes.  New command
+	--dump-chain.  Renamed --list-sigs to --list-chain and added an
+	alias for the old one.
+
+	* server.c (cmd_message): Changed to use assuan_command_parse_fd.
+	(option_handler): New option list-to-output.
+	(do_listkeys): Use it.
+
 2006-09-06  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.h (OUT_OF_CORE): Removed and changed all callers to

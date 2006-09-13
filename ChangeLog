@@ -1,3 +1,7 @@
+2006-09-13  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Better detection of the cross compiler kit.
+
 2006-09-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: New automake conditional RUN_GPG_TESTS.

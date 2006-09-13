@@ -1,8 +1,8 @@
 Noteworthy changes in version 1.9.23
 -------------------------------------------------
 
- * man pages for most tools are now build directly from the texinfo
-   source.
+ * Regular man pages for most tools are now build directly from the
+   texinfo source.
 
  * The gpg code from 1.4.5 has been fully merged into this release.
    The configure option --enable-gpg is still required to build this
@@ -13,6 +13,18 @@ Noteworthy changes in version 1.9.23
    may not be used with the current gpg-agent.
 
  * The scdaemon will now call a script on reader status changes.
+
+ * gpgsm now allows file descriptor passing for "INPUT", "OUTPUT" and
+   "MESSAGE".
+
+ * The gpgsm server may now output a key listing to the output file
+   handle. This needs to be enabled using "OPTION list-to-output=1".
+
+ * The --output option of gpgsm has now an effect on list-keys.
+
+ * New gpgsm commands --dump-chain and list-chain.
+
+ * gpg-connect-agent has new options to utilize descriptor passing.
 
 
 Noteworthy changes in version 1.9.22 (2006-07-27)

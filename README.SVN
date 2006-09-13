@@ -1,4 +1,4 @@
-If you are building from CVS, run the script
+If you are building from Subversion, run the script
 
 ./autogen.sh
 

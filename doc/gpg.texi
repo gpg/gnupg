@@ -2178,12 +2178,11 @@ content of an encrypted message; using this option you can do this without
 handing out the secret key.
 
 @item --require-cross-certification
-@itemx --no-require-certification
+@itemx --no-require-cross-certification
 When verifying a signature made from a subkey, ensure that the cross
 certification "back signature" on the subkey is present and valid.
 This protects against a subtle attack against subkeys that can sign.
-Currently defaults to --no-require-cross-certification, but will be
-changed to --require-cross-certification in the future.
+Defaults to --require-cross-certification for @command{gpg2}.
 
 @item --ask-sig-expire
 @itemx --no-ask-sig-expire

@@ -1130,7 +1130,7 @@ list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
 /* List all internal keys or just the keys given as NAMES.  MODE is a
    bit vector to specify what keys are to be included; see
    gpgsm_list_keys (below) for details.  If RAW_MODE is true, the raw
-   output mode will be used intead of the standard beautified one.
+   output mode will be used instead of the standard beautified one.
  */
 static gpg_error_t
 list_internal_keys (ctrl_t ctrl, STRLIST names, FILE *fp,
@@ -1229,7 +1229,7 @@ list_internal_keys (ctrl_t ctrl, STRLIST names, FILE *fp,
             {
               fprintf (fp, "%s\n", resname );
               for (i=strlen(resname); i; i-- )
-                putchar('-');
+                putc ('-', fp);
               putc ('\n', fp);
               lastresname = resname;
             }

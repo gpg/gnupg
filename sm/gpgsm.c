@@ -80,7 +80,7 @@ enum cmd_and_opt_values {
   aVerify,
   aVerifyFiles,
   aListExternalKeys,
-  aListSigs,
+  aListChain,
   aSendKeys,
   aRecvKeys,
   aExport,
@@ -93,6 +93,7 @@ enum cmd_and_opt_values {
   aPasswd,
   aGPGConfList,
   aDumpKeys,
+  aDumpChain,
   aDumpSecretKeys,
   aDumpExternalKeys,
   aKeydbClearSomeCertFlags,
@@ -251,8 +252,7 @@ static ARGPARSE_OPTS opts[] = {
     { aListKeys, "list-keys", 256, N_("list keys")},
     { aListExternalKeys, "list-external-keys", 256, N_("list external keys")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
-    { aListSigs,   "list-sigs", 256, N_("list certificate chain")}, 
-    { aListSigs,   "check-sigs",256, "@"},
+    { aListChain,   "list-chain",  256, N_("list certificate chain")}, 
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
@@ -269,6 +269,7 @@ static ARGPARSE_OPTS opts[] = {
     { aGPGConfList, "gpgconf-list", 256, "@" },
 
     { aDumpKeys, "dump-keys", 256, "@"},
+    { aDumpChain, "dump-chain", 256, "@"},
     { aDumpExternalKeys, "dump-external-keys", 256, "@"},
     { aDumpSecretKeys, "dump-secret-keys", 256, "@"},
     { aKeydbClearSomeCertFlags, "keydb-clear-some-cert-flags", 256, "@"},
@@ -428,9 +429,11 @@ static ARGPARSE_OPTS opts[] = {
     { oWithValidation, "with-validation", 0, "@"},
     { oWithMD5Fingerprint, "with-md5-fingerprint", 0, "@"},
     { oWithEphemeralKeys,  "with-ephemeral-keys", 0, "@"},
-    { aListKeys, "list-key", 0, "@" }, /* alias */
-    { aListSigs, "list-sig", 0, "@" }, /* alias */
-    { aListSigs, "check-sig",0, "@" }, /* alias */
+    { aListKeys, "list-key", 256, "@" },  /* alias */
+    { aListChain, "list-sig", 256, "@" }, /* alias */
+    { aListChain, "list-sigs",256, "@" }, /* alias */
+    { aListChain, "check-sig",256, "@" }, /* alias */
+    { aListChain, "check-sigs",256, "@"}, /* alias */
     { oSkipVerify, "skip-verify",0, "@" },
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
@@ -930,12 +933,13 @@ main ( int argc, char **argv)
         case aExport: 
         case aExportSecretKeyP12: 
         case aDumpKeys:
+        case aDumpChain:
         case aDumpExternalKeys: 
         case aDumpSecretKeys: 
         case aListKeys:
         case aListExternalKeys: 
         case aListSecretKeys: 
-        case aListSigs: 
+        case aListChain: 
         case aLearnCard: 
         case aPasswd: 
         case aKeydbClearSomeCertFlags:
@@ -1518,51 +1522,42 @@ main ( int argc, char **argv)
       free_strlist(sl);
       break;
 
-    case aListSigs:
-      ctrl.with_chain = 1;
+    case aListChain:
+    case aDumpChain:
+       ctrl.with_chain = 1;
     case aListKeys:
-      for (sl=NULL; argc; argc--, argv++)
-        add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout, (0 | (1<<6)));
-      free_strlist(sl);
-      break;
-
     case aDumpKeys:
-      for (sl=NULL; argc; argc--, argv++)
-        add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout, (256 | (1<<6)));
-      free_strlist(sl);
-      break;
-
     case aListExternalKeys:
-      for (sl=NULL; argc; argc--, argv++)
-        add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout,
-                       (0 | (1<<7)));
-      free_strlist(sl);
-      break;
-
     case aDumpExternalKeys:
-      for (sl=NULL; argc; argc--, argv++)
-        add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout,
-                       (256 | (1<<7)));
-      free_strlist(sl);
-      break;
-
     case aListSecretKeys:
-      for (sl=NULL; argc; argc--, argv++)
-        add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout, (2 | (1<<6)));
-      free_strlist(sl);
+    case aDumpSecretKeys:
+      {
+        unsigned int mode;
+        FILE *fp;
+
+        switch (cmd)
+          {
+          case aListChain:
+          case aListKeys:         mode = (0   | 0 | (1<<6)); break;
+          case aDumpChain: 
+          case aDumpKeys:         mode = (256 | 0 | (1<<6)); break;
+          case aListExternalKeys: mode = (0   | 0 | (1<<7)); break;
+          case aDumpExternalKeys: mode = (256 | 0 | (1<<7)); break;
+          case aListSecretKeys:   mode = (0   | 2 | (1<<6)); break;
+          case aDumpSecretKeys:   mode = (256 | 2 | (1<<6)); break;
+          default: BUG();
+          }
+
+        fp = open_fwrite (opt.outfile?opt.outfile:"-");
+        for (sl=NULL; argc; argc--, argv++)
+          add_to_strlist (&sl, *argv);
+        gpgsm_list_keys (&ctrl, sl, fp, mode);
+        free_strlist(sl);
+        if (fp != stdout)
+          fclose (fp);
+      }
       break;
 
-    case aDumpSecretKeys:
-      for (sl=NULL; argc; argc--, argv++)
-        add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout, (256 | 2 | (1<<6)));
-      free_strlist(sl);
-      break;
 
     case aKeygen: /* generate a key */
       log_error ("this function is not yet available from the commandline\n");

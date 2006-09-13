@@ -55,36 +55,32 @@ if test "$1" = "--build-w32"; then
     [ -z "$w32root" ] && w32root="$HOME/w32root"
     echo "Using $w32root as standard install directory" >&2
     
-    # See whether we have the Debian cross compiler package or the
-    # old mingw32/cpd system
-    if i586-mingw32msvc-gcc --version >/dev/null 2>&1 ; then
-        host=i586-mingw32msvc
-        crossbindir=/usr/$host/bin
-    else
-       host=i386--mingw32
-       if ! mingw32 --version >/dev/null; then
-          echo "We need at least version 0.3 of MingW32/CPD" >&2
-          exit 1
-       fi
-       crossbindir=`mingw32 --install-dir`/bin
-       # Old autoconf version required us to setup the environment
-       # with the proper tool names.
-       CC=`mingw32 --get-path gcc`
-       CPP=`mingw32 --get-path cpp`
-       AR=`mingw32 --get-path ar`
-       RANLIB=`mingw32 --get-path ranlib`
-       export CC CPP AR RANLIB 
+    # Locate the cross compiler
+    crossbindir=
+    for host in i586-mingw32msvc i386-mingw32msvc; do
+        if ${host}-gcc --version >/dev/null 2>&1 ; then
+            crossbindir=/usr/${host}/bin
+            conf_CC="CC=${host}-gcc"
+            break;
+        fi
+    done
+    if [ -z "$crossbindir" ]; then
+        echo "Cross compiler kit not installed" >&2
+        echo "Under Debian GNU/Linux, you may install it using" >&2
+        echo "  apt-get install mingw32 mingw32-runtime mingw32-binutils" >&2 
+        echo "Stop." >&2
+        exit 1
     fi
    
     if [ -f "$tsdir/config.log" ]; then
         if ! head $tsdir/config.log | grep "$host" >/dev/null; then
-            echo "Pease run a 'make distclean' first" >&2
+            echo "Please run a 'make distclean' first" >&2
             exit 1
         fi
     fi
 
     ./configure --enable-maintainer-mode --prefix=${w32root}  \
-             --host=i586-mingw32msvc --build=${build} \
+             --host=${host} --build=${build} \
              --with-gpg-error-prefix=${w32root} \
 	     --with-ksba-prefix=${w32root} \
 	     --with-libgcrypt-prefix=${w32root} \
@@ -93,10 +89,6 @@ if test "$1" = "--build-w32"; then
              --with-pth-prefix=${w32root} \
              --disable-gpg
     rc=$?
-    # Ugly hack to overcome a gettext problem.  Someone should look into
-    # gettext to figure out why the po directory is not ignored as it used
-    # to be.
-    [ $rc = 0 ] && touch $tsdir/po/all
     exit $rc
 fi
 # ***** end W32 build script *******

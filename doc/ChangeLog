@@ -1,3 +1,12 @@
+2006-09-13  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi (GPG Esoteric Options): Fixed typo in
+	--require-cross-certification and made it the default.
+
+2006-09-11  Werner Koch  <wk@g10code.com>
+
+	* HACKING: Cleaned up.
+
 2006-09-08  Werner Koch  <wk@g10code.com>
 
 	* yat2m.c (parse_file): Ignore @node lines immediately.

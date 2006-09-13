@@ -184,10 +184,19 @@ is available.
 List certificates matching @var{pattern} using an external server.  This
 utilizes the @code{dirmngr} service.  
 
+@item --list-chain
+@opindex list-chain
+Same as @option{--list-keys} but also prints all keys making up the chain.
+
+
 @item --dump-keys
 @opindex dump-keys
 List all available certificates stored in the local key database using a
 format useful mainly for debugging.
+
+@item --dump-chain
+@opindex dump-chain
+Same as @option{--dump-keys} but also prints all keys making up the chain.
 
 @item --dump-secret-keys
 @opindex dump-secret-keys

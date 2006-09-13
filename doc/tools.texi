@@ -989,6 +989,22 @@ Connect to socket @var{name} assuming this is an Assuan style server.
 Do not run any special initializations or environment checks.  This may
 be used to directly connect to any Assuan style socket server.
 
+@item -E
+@itemx --exec
+@opindex exec
+Take the rest of the command line as a program and it's arguments and
+execute it as an assuan server. Here is how you would run @command{gpgsm}:
+@smallexample
+ gpg-connect-agent --exec gpgsm --server
+@end smallexample
+
+
+@item --no-ext-connect
+@opindex no-ext-connect
+When using @option{-S} or @option{--exec}, @command{gpg-connect-agent}
+connects to the assuan server in extended mode to allow descriptor
+passing.  This option makes it use the old mode.
+
 @end table
 
 @mansect control commands
@@ -1019,6 +1035,15 @@ Print all definitions
 
 @item /cleardef
 Delete all definitions
+
+@item /sendfd @var{file} @var{mode}
+Open @var{file} in @var{mode} (which needs to be a valid @code{fopen}
+mode string) and send the file descriptor to the server.  This is
+usually followed by a command like @code{INPUT FD} to set the
+input source for other commands.
+
+@item /recvfd
+Not yet implemented.
 
 @item /help
 Print a list of available control commands.

@@ -44,6 +44,7 @@ struct server_local_s {
   int message_fd;
   int list_internal;
   int list_external;
+  int list_to_output;           /* Write keylistings to the output fd. */
   certlist_t recplist;
   certlist_t signerlist;
   certlist_t default_recplist; /* As set by main() - don't release. */
@@ -170,6 +171,11 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
         }
       else
         return gpg_error (GPG_ERR_ASS_PARAMETER);
+    }
+  else if (!strcmp (key, "list-to-output"))
+    {
+      int i = *value? atoi (value) : 0;
+      ctrl->server_local->list_to_output = i;
     }
   else if (!strcmp (key, "with-validation"))
     {
@@ -624,40 +630,33 @@ cmd_delkeys (assuan_context_t ctx, char *line)
 static int 
 cmd_message (assuan_context_t ctx, char *line)
 {
-  char *endp;
+  int rc;
   int fd;
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
-  if (strncmp (line, "FD=", 3))
-    return set_error (GPG_ERR_ASS_SYNTAX, "FD=<n> expected");
-  line += 3;
-  if (!digitp (line))
-    return set_error (GPG_ERR_ASS_SYNTAX, "number required");
-  fd = strtoul (line, &endp, 10);
-  if (*endp)
-    return set_error (GPG_ERR_ASS_SYNTAX, "garbage found");
+  rc = assuan_command_parse_fd (ctx, line, &fd);
+  if (rc)
+    return rc;
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-
   ctrl->server_local->message_fd = fd;
   return 0;
 }
 
-
+/* LISTKEYS [<patterns>]
+   LISTSECRETKEYS [<patterns>]
+*/
 static int 
 do_listkeys (assuan_context_t ctx, char *line, int mode)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  FILE *fp = assuan_get_data_fp (ctx);
+  FILE *fp;
   char *p;
   STRLIST list, sl;
   unsigned int listmode;
   gpg_error_t err;
 
-  if (!fp)
-    return set_error (GPG_ERR_ASS_GENERAL, "no data stream");
-  
-  /* break the line down into an STRLIST */
+  /* Break the line down into an STRLIST. */
   list = NULL;
   for (p=line; *p; line = p)
     {
@@ -680,6 +679,21 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
         }
     }
 
+  if (ctrl->server_local->list_to_output)
+    {
+      if ( assuan_get_output_fd (ctx) == -1 )
+        return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+      fp = fdopen (assuan_get_output_fd (ctx), "w");
+      if (!fp)
+        return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+    }
+  else
+    {
+      fp = assuan_get_data_fp (ctx);
+      if (!fp)
+        return set_error (GPG_ERR_ASS_GENERAL, "no data stream");
+    }
+  
   ctrl->with_colons = 1;
   listmode = mode; 
   if (ctrl->server_local->list_internal)
@@ -688,6 +702,11 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
     listmode |= (1<<7);
   err = gpgsm_list_keys (assuan_get_pointer (ctx), list, fp, listmode);
   free_strlist (list);
+  if (ctrl->server_local->list_to_output)
+    {
+      fclose (fp);
+      assuan_close_output_fd (ctx);
+    }
   return err;
 }
 
@@ -793,9 +812,9 @@ gpgsm_server (certlist_t default_recplist)
   memset (&ctrl, 0, sizeof ctrl);
   gpgsm_init_default_ctrl (&ctrl);
 
-  /* For now we use a simple pipe based server so that we can work
-     from scripts.  We will later add options to run as a daemon and
-     wait for requests on a Unix domain socket */
+  /* We use a pipe based server so that we can work from scripts.
+     assuan_init_pipe_server will automagically detect when we are
+     called with a socketpair and ignore FIELDES in this case. */
   filedes[0] = 0;
   filedes[1] = 1;
   rc = assuan_init_pipe_server (&ctx, filedes);

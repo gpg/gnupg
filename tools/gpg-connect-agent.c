@@ -41,10 +41,12 @@ enum cmd_and_opt_values
     oQuiet      = 'q',
     oVerbose	= 'v',
     oRawSocket  = 'S',
+    oExec       = 'E',
 
     oNoVerbose	= 500,
     oHomedir,
-    oHex
+    oHex,
+    oNoExtConnect
 
   };
 
@@ -58,6 +60,9 @@ static ARGPARSE_OPTS opts[] =
     { oQuiet, "quiet",      0, N_("quiet") },
     { oHex,   "hex",        0, N_("print data out hex encoded") },
     { oRawSocket, "raw-socket", 2, N_("|NAME|connect to Assuan socket NAME")},
+    { oExec, "exec", 0, N_("run the Assuan server given on the command line")},
+    { oNoExtConnect, "no-ext-connect",
+                            0, N_("do not use extended connect mode")},
 
     /* hidden options */
     { oNoVerbose, "no-verbose",  0, "@"},
@@ -74,6 +79,8 @@ struct
   const char *homedir;  /* Configuration directory name */
   int hex;              /* Print data lines in hex format. */
   const char *raw_socket; /* Name of socket to connect in raw mode. */
+  int exec;             /* Run the pgm given on the command line. */
+  unsigned int connect_flags;    /* Flags used for connecting. */
 } opt;
 
 
@@ -209,13 +216,68 @@ clear_definq (void)
 }      
 
 
+static void
+do_sendfd (assuan_context_t ctx, char *line)
+{
+  FILE *fp;
+  char *name, *mode, *p;
+  int rc, fd;
+
+  /* Get file name. */
+  name = line;
+  for (p=name; *p && !spacep (p); p++)
+    ;
+  if (*p)
+    *p++ = 0;
+  while (spacep (p))
+    p++;
+
+  /* Get mode.  */
+  mode = p;
+  if (!*mode)
+    mode = "r";
+  else
+    {
+      for (p=mode; *p && !spacep (p); p++)
+        ;
+      if (*p)
+        *p++ = 0;
+    }
+
+  /* Open and send. */
+  fp = fopen (name, mode);
+  if (!fp)
+    {
+      log_error ("can't open `%s' in \"%s\" mode: %s\n",
+                 name, mode, strerror (errno));
+      return;
+    }
+  fd = fileno (fp);
+
+  if (opt.verbose)
+    log_error ("file `%s' opened in \"%s\" mode, fd=%d\n",
+               name, mode, fd);
+
+  rc = assuan_sendfd (ctx, fd);
+  if (rc)
+    log_error ("sednig  descriptor %d failed: %s\n", fd, gpg_strerror (rc));
+  fclose (fp);
+}
+
+
+static void
+do_recvfd (assuan_context_t ctx, char *line)
+{
+  log_info ("This command has not yet been implemented\n");
+}
+
+
 
 /* gpg-connect-agent's entry point. */
 int
 main (int argc, char **argv)
 {
   ARGPARSE_ARGS pargs;
-  const char *fname;
   int no_more_options = 0;
   assuan_context_t ctx;
   char *line, *p;
@@ -229,6 +291,7 @@ main (int argc, char **argv)
   i18n_init();
 
   opt.homedir = default_homedir ();
+  opt.connect_flags = 1; /* Use extended connect mode.  */
 
   /* Parse the command line. */
   pargs.argc  = &argc;
@@ -244,6 +307,8 @@ main (int argc, char **argv)
         case oHomedir:   opt.homedir = pargs.r.ret_str; break;
         case oHex:       opt.hex = 1; break;
         case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
+        case oExec:      opt.exec = 1; break;
+        case oNoExtConnect: opt.connect_flags &= ~(1); break;
 
         default: pargs.err = 2; break;
 	}
@@ -251,12 +316,48 @@ main (int argc, char **argv)
 
   if (log_get_errorcount (0))
     exit (2);
-  
-  fname = argc ? *argv : NULL;
 
-  if (opt.raw_socket)
+  if (opt.exec)
     {
-      rc = assuan_socket_connect (&ctx, opt.raw_socket, 0);
+      if (!argc)
+        {
+          log_error (_("option \"%s\" requires a program "
+                       "and optional arguments\n"), "--exec" );
+          exit (1);
+        }
+    }
+  else if (argc)
+    usage (1);
+
+  if (opt.exec && opt.raw_socket)
+    log_info (_("option \"%s\" ignored due to \"%s\"\n"),
+              "--raw-socket", "--exec");
+
+  if (opt.exec)
+    {
+      int no_close[3];
+
+      no_close[0] = fileno (stderr);
+      no_close[1] = log_get_fd ();
+      no_close[2] = -1;
+      rc = assuan_pipe_connect_ext (&ctx, *argv, (const char **)argv,
+                                    no_close, NULL, NULL,
+                                    opt.connect_flags);
+      if (rc)
+        {
+          log_error ("assuan_pipe_connect_ext failed: %s\n",
+                     gpg_strerror (rc));
+          exit (1);
+        }
+
+      if (opt.verbose)
+        log_info ("server `%s' started\n", *argv);
+
+    }
+  else if (opt.raw_socket)
+    {
+      rc = assuan_socket_connect_ext (&ctx, opt.raw_socket, 0,
+                                      opt.connect_flags);
       if (rc)
         {
           log_error ("can't connect to socket `%s': %s\n",
@@ -325,18 +426,31 @@ main (int argc, char **argv)
             {
               puts (p);
             }
+          else if (!strcmp (cmd, "sendfd"))
+            {
+              do_sendfd (ctx, p);
+              continue;
+            }
+          else if (!strcmp (cmd, "recvfd"))
+            {
+              do_recvfd (ctx, p);
+              continue;
+            }
           else if (!strcmp (cmd, "help"))
             {
-              puts ("Available commands:\n"
-                    "/echo ARGS             Echo ARGS.\n"
-                    "/definqfile NAME FILE\n"
-                    "    Use content of FILE for inquiries with NAME.\n"
-                    "    NAME may be \"*\" to match any inquiry.\n"
-                    "/definqprog NAME PGM\n"
-                    "    Run PGM for inquiries matching NAME and pass the\n"
-                    "    entire line to it as arguments.\n"
-                    "/showdef               Print all definitions.\n"
-                    "/cleardef              Delete all definitions.\n"
+              puts (
+"Available commands:\n"
+"/echo ARGS             Echo ARGS.\n"
+"/definqfile NAME FILE\n"
+"    Use content of FILE for inquiries with NAME.\n"
+"    NAME may be \"*\" to match any inquiry.\n"
+"/definqprog NAME PGM\n"
+"    Run PGM for inquiries matching NAME and pass the\n"
+"    entire line to it as arguments.\n"
+"/showdef               Print all definitions.\n"
+"/cleardef              Delete all definitions.\n"
+"/sendfd FILE MODE      Open FILE and pass descripor to server.\n"
+"/recvfd                Receive FD from server and print. \n"
                     "/help                  Print this help.");
             }
           else
@@ -352,7 +466,7 @@ main (int argc, char **argv)
           continue;
         }
       if (*line == '#' || !*line)
-        continue; /* Don't expect a response for a coment line. */
+        continue; /* Don't expect a response for a comment line. */
 
       rc = read_and_print_response (ctx);
       if (rc)
@@ -471,6 +585,12 @@ read_and_print_response (assuan_context_t ctx)
           rc = assuan_read_line (ctx, &line, &linelen);
           if (rc)
             return rc;
+
+          if (opt.verbose > 1 && *line == '#')
+            {
+              fwrite (line, linelen, 1, stdout);
+              putchar ('\n');
+            }
         }    
       while (*line == '#' || !linelen);
 

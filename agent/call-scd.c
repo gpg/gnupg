@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #ifndef HAVE_W32_SYSTEM

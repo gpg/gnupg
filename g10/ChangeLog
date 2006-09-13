@@ -1,3 +1,7 @@
+2006-09-13  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): Made --require-cross-certification the default. 
+
 2006-09-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (gpg2_LDADD, gpgv2_LDADD): Replace -lassuan and

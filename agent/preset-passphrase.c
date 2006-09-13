@@ -281,10 +281,15 @@ main (int argc, char **argv)
 #ifdef HAVE_W32_SYSTEM
   /* Fixme: Need to initialize the Windows sockets: This should be
      moved to another place and we should make sure that it won't get
-     doen twice, like when Pth is used too. */
+     done twice, like when Pth is used too. */
   {
     WSADATA wsadat;
-    WSAStartup (0x202, &wsadat);
+    if (WSAStartup (0x202, &wsadat) )
+      {
+        log_error ("error initializing socket library: ec=%d\n", 
+                   (int)WSAGetLastError () );
+        return 2;
+      }
   }
 #endif
 
