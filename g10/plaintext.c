@@ -132,12 +132,12 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     else if (is_secured_filename (fname))
       {
         errno = EPERM;
-	rc = gpg_error_from_errno (errno);
+	rc = gpg_error_from_syserror ();
 	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
 	goto leave;
       }
     else if( !(fp = fopen(fname,"wb")) ) {
-	rc = gpg_error_from_errno (errno);
+	rc = gpg_error_from_syserror ();
 	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
 	goto leave;
     }
@@ -187,7 +187,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	if( convert ) { /* text mode */
 	    for( ; pt->len; pt->len-- ) {
 		if( (c = iobuf_get(pt->buf)) == -1 ) {
-                    rc = gpg_error_from_errno (errno);
+                    rc = gpg_error_from_syserror ();
 		    log_error ("problem reading source (%u bytes remaining)\n",
                                (unsigned)pt->len);
                     goto leave;
@@ -210,7 +210,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    else if( putc( c, fp ) == EOF )
 		      {
                         if (ferror (fp))
-                          rc = gpg_error_from_errno (errno);
+                          rc = gpg_error_from_syserror ();
                         else
                           rc = gpg_error (GPG_ERR_EOF);
 			log_error ("error writing to `%s': %s\n",
@@ -226,7 +226,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		int len = pt->len > 32768 ? 32768 : pt->len;
 		len = iobuf_read( pt->buf, buffer, len );
 		if( len == -1 ) {
-                    rc = gpg_error_from_errno (errno);
+                    rc = gpg_error_from_syserror ();
 		    log_error ("problem reading source (%u bytes remaining)\n",
                                (unsigned)pt->len);
 		    xfree( buffer );
@@ -246,7 +246,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		      }
 		    else if( fwrite( buffer, 1, len, fp ) != len )
 		      {
-                        rc = gpg_error_from_errno (errno);
+                        rc = gpg_error_from_syserror ();
 			log_error ("error writing to `%s': %s\n",
                                    fname, strerror(errno) );
 			xfree( buffer );
@@ -279,7 +279,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    else if( putc( c, fp ) == EOF )
 		      {
                         if ( ferror (fp ) )
-                          rc = gpg_error_from_errno (errno);
+                          rc = gpg_error_from_syserror ();
                         else
                           rc = gpg_error (GPG_ERR_EOF);
 			log_error("error writing to `%s': %s\n",
@@ -317,7 +317,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 			goto leave;
 		      }
 		    else if( fwrite( buffer, 1, len, fp ) != len ) {
-		      rc = (errno? gpg_error_from_errno (errno)
+		      rc = (errno? gpg_error_from_syserror ()
                             : gpg_error (GPG_ERR_INTERNAL));
 		      log_error ("error writing to `%s': %s\n",
 				fname, strerror(errno) );
@@ -345,7 +345,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		  }
 		else if( putc( c, fp ) == EOF )
 		  {
-                    rc = (errno? gpg_error_from_errno (errno)
+                    rc = (errno? gpg_error_from_syserror ()
                           : gpg_error (GPG_ERR_INTERNAL));
 		    log_error ("error writing to `%s': %s\n",
 			      fname, strerror(errno) );
@@ -385,7 +385,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     }
 
     if( fp && fp != stdout && fclose(fp) ) {
-        rc = (errno? gpg_error_from_errno (errno)
+        rc = (errno? gpg_error_from_syserror ()
               : gpg_error (GPG_ERR_INTERNAL));
 	log_error ("error closing `%s': %s\n", fname, strerror(errno) );
 	fp = NULL;
@@ -487,7 +487,7 @@ ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
 	    }
 	    else if( !fp )
 	      {
-                rc = gpg_error_from_errno (errno);
+                rc = gpg_error_from_syserror ();
 		log_error(_("can't open `%s': %s\n"), answer, strerror(errno));
 		goto leave;
 	      }
@@ -544,7 +544,7 @@ hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2, STRLIST files,
             errno = EPERM;
           }
 	if( !fp ) {
-            int rc = gpg_error_from_errno (errno);
+            int rc = gpg_error_from_syserror ();
 	    log_error(_("can't open signed data `%s'\n"),
 						print_fname_stdin(sl->d));
 	    return rc;

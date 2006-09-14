@@ -3732,7 +3732,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
     umask (oldmask);
     if (!fp) 
       {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error (_("can't create backup file `%s': %s\n"),
                    fname, strerror(errno) );
         xfree (fname);

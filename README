@@ -5,9 +5,7 @@
 
 GnuPG 1.9 is the future version of GnuPG; it is based on some gnupg-1.3
 code and the previous newpg package.  It will eventually lead to a
-GnuPG 2.0 release.  Note that GnuPG 1.4 and 1.9 are not always in sync
-and thus features and bug fixes done in 1.4 are not necessary
-available in 1.9.
+GnuPG 2.0 release.  
 
 You should use this GnuPG version if you want to use the gpg-agent or
 gpgsm (the S/MIME variant of gpg).  Note that the gpg-agent is also

@@ -521,7 +521,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
   tmpfp = tmpfile ();
   if (!tmpfp)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("error creating temporary file: %s\n"), strerror (errno));
       goto cleanup;
     }
@@ -529,7 +529,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
     {
       if (nread && fwrite (buffer, nread, 1, tmpfp) != 1)
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           log_error (_("error writing to temporary file: %s\n"),
                      strerror (errno));
           goto cleanup;
@@ -546,7 +546,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
   certfp = tmpfile ();
   if (!certfp)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("error creating temporary file: %s\n"), strerror (errno));
       goto cleanup;
     }

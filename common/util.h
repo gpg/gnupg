@@ -71,9 +71,7 @@
 static inline gpg_error_t
 out_of_core (void)
 {
-  return gpg_error (errno
-                    ? gpg_err_code_from_errno(errno)
-                    : GPG_ERR_MISSING_ERRNO);
+  return gpg_error_from_syserror ();
 }
 
 /* A type to hold the ISO time.  Note that this this is the same as

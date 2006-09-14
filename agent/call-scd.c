@@ -217,7 +217,7 @@ start_scd (ctrl_t ctrl)
     {
       ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
       if (!ctrl->scd_local)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       ctrl->scd_local->ctrl_backlink = ctrl;
       ctrl->scd_local->next_local = scd_local_list;
       scd_local_list = ctrl->scd_local;
@@ -316,8 +316,8 @@ start_scd (ctrl_t ctrl)
   no_close_list[i] = -1;
 
   /* Connect to the pinentry and perform initial handshaking */
-  rc = assuan_pipe_connect2 (&ctx, opt.scdaemon_program, argv,
-                             no_close_list, atfork_cb, NULL);
+  rc = assuan_pipe_connect_ext (&ctx, opt.scdaemon_program, argv,
+                                no_close_list, atfork_cb, NULL, 0);
   if (rc)
     {
       log_error ("can't connect to the SCdaemon: %s\n",

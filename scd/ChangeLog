@@ -1,3 +1,11 @@
+2006-09-14  Werner Koch  <wk@g10code.com>
+
+ 	Replaced all call gpg_error_from_errno(errno) by
+	gpg_error_from_syserror().
+
+	* command.c (scd_command_handler): Replaced
+	init_connected_socket_server by init_socket_server_ext.
+
 2006-09-07  Werner Koch  <wk@g10code.com>
 
 	* command.c (update_reader_status_file): Execute an event handler

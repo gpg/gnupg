@@ -112,7 +112,7 @@ maybe_create_keyring (char *filename, int force)
         }
       if (access (filename, F_OK))
         {
-          rc = gpg_error_from_errno (errno);
+          rc = gpg_error_from_syserror ();
           *last_slash_in_filename = DIRSEP_C;
           goto leave;
         }
@@ -166,7 +166,7 @@ maybe_create_keyring (char *filename, int force)
   umask (oldmask);
   if (!iobuf) 
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       log_error ( _("error creating keyring `%s': %s\n"),
                   filename, strerror(errno));
       goto leave;

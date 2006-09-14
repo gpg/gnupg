@@ -189,7 +189,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
         errno = EPERM;
       }
     if( !inp ) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]",
                   strerror(errno) );
 	return rc;
@@ -481,7 +481,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
         errno = EPERM;
       }
     if( !inp ) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error(_("can't open `%s': %s\n"),
                   filename? filename: "[stdin]",
                   gpg_strerror (rc) );

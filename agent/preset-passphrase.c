@@ -144,7 +144,7 @@ map_spwq_error (int err)
     case SPWQ_NO_AGENT:
       return gpg_error (GPG_ERR_NO_AGENT);
     case SPWQ_SYS_ERROR:
-      return gpg_error_from_errno (errno);
+      return gpg_error_from_syserror ();
     case SPWQ_GENERAL_ERROR:
     default:
       return gpg_error (GPG_ERR_GENERAL);
@@ -165,7 +165,7 @@ make_hexstring (const char *src)
   if (!dst)
     {
       log_error ("can not escape string: %s\n",
-		 gpg_strerror (gpg_error_from_errno (errno)));
+		 gpg_strerror (gpg_error_from_syserror ()));
       return NULL;
     }
 
@@ -199,7 +199,7 @@ preset_passphrase (const char *keygrip)
       if (rc < 0)
         {
           log_error ("reading passphrase failed: %s\n",
-                     gpg_strerror (gpg_error_from_errno (errno)));
+                     gpg_strerror (gpg_error_from_syserror ()));
           return;
         }
       passphrase[rc] = '\0';
@@ -230,7 +230,7 @@ preset_passphrase (const char *keygrip)
   if (rc < 0)
     {
       log_error ("caching passphrase failed: %s\n",
-		 gpg_strerror (gpg_error_from_errno (errno)));
+		 gpg_strerror (gpg_error_from_syserror ()));
       return;
     }
   if (!opt_passphrase)
@@ -258,7 +258,7 @@ forget_passphrase (const char *keygrip)
   if (rc < 0)
     {
       log_error ("clearing passphrase failed: %s\n",
-		 gpg_strerror (gpg_error_from_errno (errno)));
+		 gpg_strerror (gpg_error_from_syserror ()));
       return;
     }
   free (line);

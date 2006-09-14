@@ -248,7 +248,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
  again:
   pi = gcry_calloc_secure (1, sizeof (*pi) + maxbuf + 10);
   if (!pi)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   pi->max_length = maxbuf-1;
   pi->min_digits = 0;  /* we want a real passphrase */
   pi->max_digits = 8;
@@ -264,7 +264,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
           pi2 = gcry_calloc_secure (1, sizeof (*pi) + maxbuf + 10);
           if (!pi2)
             {
-              rc = gpg_error_from_errno (errno);
+              rc = gpg_error_from_syserror ();
               xfree (pi);
               return rc;
             }

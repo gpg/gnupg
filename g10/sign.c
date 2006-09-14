@@ -808,7 +808,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
         }
       if( !inp ) 
         {
-          rc = gpg_error_from_errno (errno);
+          rc = gpg_error_from_syserror ();
           log_error (_("can't open `%s': %s\n"), fname? fname: "[stdin]",
                      strerror(errno) );
           goto leave;
@@ -826,7 +826,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
             out = iobuf_create( outfile );
 	if( !out )
 	  {
-            rc = gpg_error_from_errno (errno);
+            rc = gpg_error_from_syserror ();
 	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
 	    goto leave;
 	  }
@@ -1003,7 +1003,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
                   }
 		if( !inp )
 		  {
-                    rc = gpg_error_from_errno (errno);
+                    rc = gpg_error_from_syserror ();
 		    log_error(_("can't open `%s': %s\n"),
 			      sl->d,strerror(errno));
 		    goto leave;
@@ -1116,7 +1116,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
         errno = EPERM;
       }
     if( !inp ) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error (_("can't open `%s': %s\n"), 
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
@@ -1132,7 +1132,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
             out = iobuf_create( outfile );
 	if( !out )
 	  {
-            rc = gpg_error_from_errno (errno);
+            rc = gpg_error_from_syserror ();
 	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
 	    goto leave;
 	  }
@@ -1268,7 +1268,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
         errno = EPERM;
       }
     if( !inp ) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error (_("can't open `%s': %s\n"), 
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;

@@ -104,7 +104,7 @@ start_agent (void)
 
       if (fflush (NULL))
         {
-          gpg_error_t tmperr = gpg_error_from_errno (errno);
+          gpg_error_t tmperr = gpg_error_from_syserror ();
           log_error ("error flushing pending output: %s\n", strerror (errno));
           return tmperr;
         }
@@ -191,7 +191,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION display=%s",
 		    opt.display ? opt.display : dft_display) < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -209,7 +209,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION ttyname=%s",
 		    opt.ttyname ? opt.ttyname : dft_ttyname) < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -222,7 +222,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s",
 		    opt.ttyname ? opt.ttytype : dft_ttytype) < 0)
-	return gpg_error_from_errno (errno);
+	return gpg_error_from_syserror ();
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -235,7 +235,7 @@ start_agent (void)
     {
       old_lc = strdup (old_lc);
       if (!old_lc)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
 
     }
   dft_lc = setlocale (LC_CTYPE, "");
@@ -245,7 +245,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-ctype=%s",
 		    opt.lc_ctype ? opt.lc_ctype : dft_lc) < 0)
-	rc = gpg_error_from_errno (errno);
+	rc = gpg_error_from_syserror ();
       else
 	{
 	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
@@ -268,7 +268,7 @@ start_agent (void)
     {
       old_lc = strdup (old_lc);
       if (!old_lc)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
     }
   dft_lc = setlocale (LC_MESSAGES, "");
 #endif
@@ -277,7 +277,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-messages=%s",
 		    opt.lc_messages ? opt.lc_messages : dft_lc) < 0)
-	rc = gpg_error_from_errno (errno);
+	rc = gpg_error_from_syserror ();
       else
 	{
 	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,

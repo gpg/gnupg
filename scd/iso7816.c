@@ -677,7 +677,7 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
           unsigned char *p = xtryrealloc (*result, *resultlen + bufferlen);
           if (!p)
             {
-              gpg_error_t err = gpg_error_from_errno (errno);
+              gpg_error_t err = gpg_error_from_syserror ();
               xfree (buffer);
               xfree (*result);
               *result = NULL;

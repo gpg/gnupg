@@ -451,7 +451,7 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
   parm->base64.idx = idx;
   parm->base64.quad_count = quad_count;
 
-  return ferror (fp) ? gpg_error_from_errno (errno) : 0;
+  return ferror (fp) ? gpg_error_from_syserror () : 0;
 }
 
 static int

@@ -215,7 +215,7 @@ modify_description (const char *in, const char *comment, char **result)
         {
           *result = out = xtrymalloc (out_len + 1);
           if (!out)
-            return gpg_error_from_errno (errno);
+            return gpg_error_from_syserror ();
         }
     }
 
@@ -270,7 +270,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
   
   pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
   if (!pi)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   pi->max_length = 100;
   pi->min_digits = 0;  /* we want a real passphrase */
   pi->max_digits = 8;
@@ -318,7 +318,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   fp = fopen (fname, "rb");
   if (!fp)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       log_error ("can't open `%s': %s\n", fname, strerror (errno));
       xfree (fname);
       return rc;
@@ -326,7 +326,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   
   if (fstat (fileno(fp), &st))
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       log_error ("can't stat `%s': %s\n", fname, strerror (errno));
       xfree (fname);
       fclose (fp);
@@ -337,7 +337,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   buf = xtrymalloc (buflen+1);
   if (!buf || fread (buf, buflen, 1, fp) != 1)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       log_error ("error reading `%s': %s\n", fname, strerror (errno));
       xfree (fname);
       fclose (fp);
@@ -394,7 +394,7 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
   buf = xtrymalloc (len);
   if (!buf)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       gcry_sexp_release (s_skey);
       return rc;
     }
@@ -435,7 +435,7 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
                    shouldn't be a problem.  */
                 char *tmp = xtrymalloc (comment_length+1);
                 if (!tmp)
-                  rc = gpg_error_from_errno (errno);
+                  rc = gpg_error_from_syserror ();
                 else
                   {
                     memcpy (tmp, comment, comment_length);
@@ -593,7 +593,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   array = xtrycalloc (strlen(elems) + 1, sizeof *array);
   if (!array)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       gcry_sexp_release (list);
       gcry_sexp_release (s_skey);
       return rc;
@@ -655,7 +655,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   format = xtrymalloc (15+7*strlen (elems)+10+15+1+1);
   if (!format)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       for (i=0; array[i]; i++)
         gcry_mpi_release (array[i]);
       xfree (array);

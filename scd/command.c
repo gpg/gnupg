@@ -1504,7 +1504,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
   apdu = hex_to_buffer (line, &apdulen);
   if (!apdu)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       goto leave;
     }
   if (apdulen)
@@ -1603,7 +1603,7 @@ scd_command_handler (int fd)
     }
   else
     {
-      rc = assuan_init_connected_socket_server (&ctx, fd);
+      rc = assuan_init_socket_server_ext (&ctx, fd, 2);
     }
   if (rc)
     {

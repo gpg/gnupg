@@ -184,7 +184,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
   if( iobuf_is_pipe_filename (iname) && !opt.outfile ) {
     *a = iobuf_create(NULL);
     if( !*a ) {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       log_error(_("can't open `%s': %s\n"), "[stdout]", strerror(errno) );
     }
     else if( opt.verbose )
@@ -261,7 +261,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
           *a = iobuf_create( name );
         if( !*a )
           {
-            rc = gpg_error_from_errno (errno);
+            rc = gpg_error_from_syserror ();
             log_error(_("can't create `%s': %s\n"), name, strerror(errno) );
           }
         else if( opt.verbose )

@@ -661,7 +661,7 @@ prepare_search (KEYRING_HANDLE hd)
     hd->current.iobuf = iobuf_open (hd->current.kr->fname);
     if (!hd->current.iobuf)
       {
-        hd->current.error = gpg_error_from_errno (errno);
+        hd->current.error = gpg_error_from_syserror ();
         log_error(_("can't open `%s'\n"), hd->current.kr->fname );
         return hd->current.error;
       }
@@ -1200,7 +1200,7 @@ create_tmp_file (const char *template,
     umask(oldmask);
     if (!*r_fp)
       {
-        int rc = gpg_error_from_errno (errno);
+        int rc = gpg_error_from_syserror ();
 	log_error(_("can't create `%s': %s\n"), tmpfname, strerror(errno) );
         xfree (tmpfname);
         xfree (bakfname);
@@ -1232,7 +1232,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 #endif
       if (rename (fname, bakfname) )
         {
-          rc = gpg_error_from_errno (errno);
+          rc = gpg_error_from_syserror ();
           log_error ("renaming `%s' to `%s' failed: %s\n",
                      fname, bakfname, strerror(errno) );
           return rc;
@@ -1247,7 +1247,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
     unregister_secured_file (fname);
   if (rename (tmpfname, fname) )
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       log_error (_("renaming `%s' to `%s' failed: %s\n"),
                  tmpfname, fname, strerror(errno) );
       register_secured_file (fname);
@@ -1317,7 +1317,7 @@ write_keyblock (IOBUF fp, KBNODE keyblock)
           iobuf_put (fp, 0);    /* unused */
           if (iobuf_put (fp, cacheval)) 
             {
-              rc = gpg_error_from_errno (errno);
+              rc = gpg_error_from_syserror ();
               log_error ("writing sigcache packet failed\n");
               return rc;
             }
@@ -1362,7 +1362,7 @@ keyring_rebuild_cache (void *token,int noisy)
             {
               if (iobuf_close (tmpfp))
                 {
-                  rc = gpg_error_from_errno (errno);
+                  rc = gpg_error_from_syserror ();
                   log_error ("error closing `%s': %s\n",
                              tmpfilename, strerror (errno));
                   goto leave;
@@ -1442,7 +1442,7 @@ keyring_rebuild_cache (void *token,int noisy)
     {
       if (iobuf_close (tmpfp))
         {
-          rc = gpg_error_from_errno (errno);
+          rc = gpg_error_from_syserror ();
           log_error ("error closing `%s': %s\n",
                      tmpfilename, strerror (errno));
           goto leave;
@@ -1486,7 +1486,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     /* Open the source file. Because we do a rename, we have to check the 
        permissions of the file */
     if (access (fname, W_OK))
-      return gpg_error_from_errno (errno);
+      return gpg_error_from_syserror ();
 
     fp = iobuf_open (fname);
     if (mode == 1 && !fp && errno == ENOENT) { 
@@ -1504,7 +1504,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	umask(oldmask);
 	if( !newfp )
 	  {
-            rc = gpg_error_from_errno (errno);
+            rc = gpg_error_from_syserror ();
 	    log_error (_("can't create `%s': %s\n"), fname, strerror(errno));
 	    return rc;
 	  }
@@ -1521,7 +1521,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    }
 	}
 	if( iobuf_close(newfp) ) {
-            rc = gpg_error_from_errno (errno);
+            rc = gpg_error_from_syserror ();
 	    log_error ("%s: close failed: %s\n", fname, strerror(errno));
 	    return rc;
 	}
@@ -1530,7 +1530,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 
     if( !fp )
       {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	goto leave;
       }
@@ -1613,12 +1613,12 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 
     /* close both files */
     if( iobuf_close(fp) ) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error("%s: close failed: %s\n", fname, strerror(errno) );
 	goto leave;
     }
     if( iobuf_close(newfp) ) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error("%s: close failed: %s\n", tmpfname, strerror(errno) );
 	goto leave;
     }

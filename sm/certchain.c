@@ -351,7 +351,7 @@ find_up_external (KEYDB_HANDLE kh, const char *issuer, ksba_sexp_t keyid)
 
   pattern = xtrymalloc (strlen (s)+2);
   if (!pattern)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   strcpy (stpcpy (pattern, "/"), s);
   add_to_strlist (&names, pattern);
   xfree (pattern);

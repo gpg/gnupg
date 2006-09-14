@@ -294,7 +294,7 @@ stream_read_byte (estream_t stream, unsigned char *b)
   if (ret == EOF)
     {
       if (es_ferror (stream))
-	err = gpg_error_from_errno (errno);
+	err = gpg_error_from_syserror ();
       else
 	err = gpg_error (GPG_ERR_EOF);
       *b = 0;
@@ -317,7 +317,7 @@ stream_write_byte (estream_t stream, unsigned char b)
 
   ret = es_fputc (b, stream);
   if (ret == EOF)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     err = 0;
 
@@ -335,7 +335,7 @@ stream_read_uint32 (estream_t stream, u32 *uint32)
 
   ret = es_read (stream, buffer, sizeof (buffer), &bytes_read);
   if (ret)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     {
       if (bytes_read != sizeof (buffer))
@@ -368,7 +368,7 @@ stream_write_uint32 (estream_t stream, u32 uint32)
 
   ret = es_write (stream, buffer, sizeof (buffer), NULL);
   if (ret)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     err = 0;
 
@@ -385,7 +385,7 @@ stream_read_data (estream_t stream, unsigned char *buffer, size_t size)
 
   ret = es_read (stream, buffer, size, &bytes_read);
   if (ret)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     {
       if (bytes_read != size)
@@ -406,7 +406,7 @@ stream_write_data (estream_t stream, const unsigned char *buffer, size_t size)
 
   ret = es_write (stream, buffer, size, NULL);
   if (ret)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     err = 0;
 
@@ -438,7 +438,7 @@ stream_read_string (estream_t stream, unsigned int secure,
     buffer = xtrymalloc (length + 1);
   if (! buffer)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -587,13 +587,13 @@ stream_copy (estream_t dst, estream_t src)
       if (ret || (! bytes_read))
 	{
 	  if (ret)
-	    err = gpg_error_from_errno (errno);
+	    err = gpg_error_from_syserror ();
 	  break;
 	}
       ret = es_write (dst, buffer, bytes_read, NULL);
       if (ret)
 	{
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  break;
 	}
     }
@@ -623,21 +623,21 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
   stream = es_fopen (filename, "r");
   if (! stream)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
   ret = fstat (es_fileno (stream), &statbuf);
   if (ret)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
   buffer_new = xtrymalloc (statbuf.st_size);
   if (! buffer_new)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -865,7 +865,7 @@ ssh_receive_mpint_list (estream_t stream, int secret,
   mpis = xtrycalloc (elems_n + 1, sizeof *mpis );
   if (!mpis)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1040,7 +1040,7 @@ sexp_key_construct (gcry_sexp_t *sexp,
   sexp_template = xtrymalloc (sexp_template_n);
   if (! sexp_template)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1048,7 +1048,7 @@ sexp_key_construct (gcry_sexp_t *sexp,
   arg_list = xtrymalloc (sizeof (*arg_list) * (2 + elems_n + 1));
   if (! arg_list)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1153,7 +1153,7 @@ sexp_key_extract (gcry_sexp_t sexp,
   mpis_new = xtrycalloc (elems_n + 1, sizeof *mpis_new );
   if (!mpis_new)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1204,7 +1204,7 @@ sexp_key_extract (gcry_sexp_t sexp,
   comment_new = make_cstring (data, data_n);
   if (! comment_new)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1401,7 +1401,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   stream = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
   if (! stream)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1417,7 +1417,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   blob_size_new = es_ftell (stream);
   if (blob_size_new == -1)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
   
@@ -1428,7 +1428,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   blob_new = xtrymalloc (blob_size_new);
   if (! blob_new)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1520,7 +1520,7 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
   blob_stream = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
   if (! blob_stream)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1684,7 +1684,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
       shadow_info = make_shadow_info (serialno, authkeyid);
       if (!shadow_info)
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
           xfree (serialno);
@@ -1734,7 +1734,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
         *cardsn = xtryasprintf ("cardno:%s", serialno);
       if (!*cardsn)
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
           xfree (serialno);
@@ -1801,7 +1801,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   key_blobs = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
   if (! key_blobs)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -1925,7 +1925,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   ret = es_fseek (key_blobs, 0, SEEK_SET);
   if (ret)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -2032,7 +2032,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   stream = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
   if (! stream)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -2046,7 +2046,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   identifier = make_cstring (identifier_raw, identifier_n);
   if (! identifier)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -2064,7 +2064,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   mpis = xtrycalloc (elems_n + 1, sizeof *mpis);
   if (!mpis)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -2098,21 +2098,21 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   sig_blob_n = es_ftell (stream);
   if (sig_blob_n == -1)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
   sig_blob = xtrymalloc (sig_blob_n);
   if (! sig_blob)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
   ret = es_fseek (stream, 0, SEEK_SET);
   if (ret)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }    
 
@@ -2269,7 +2269,7 @@ ssh_key_extract_comment (gcry_sexp_t key, char **comment)
   comment_new = make_cstring (data, data_n);
   if (! comment_new)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -2299,7 +2299,7 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
   buffer_new = xtrymalloc_secure (buffer_new_n);
   if (! buffer_new)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
   
@@ -2356,7 +2356,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
                    "within gpg-agent's key storage"),
                  comment ? comment : "?") < 0)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -2364,7 +2364,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   pi = gcry_calloc_secure (1, sizeof (*pi) + 100 + 1);
   if (!pi)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
   pi->max_length = 100;
@@ -2720,13 +2720,13 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
     request = es_mopen (NULL, 0, 0, 1, gcry_realloc, gcry_free, "r+");
   if (! request)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
   ret = es_setvbuf (request, NULL, _IONBF, 0);
   if (ret)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
   err = stream_write_data (request, request_data + 1, request_data_size - 1);
@@ -2737,7 +2737,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
   response = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
   if (! response)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto out;
     }
 
@@ -2853,7 +2853,7 @@ start_command_handler_ssh (int sock_client)
   stream_sock = es_fdopen (sock_client, "r+");
   if (!stream_sock)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("failed to create stream from socket: %s\n"),
 		 gpg_strerror (err));
       goto out;
@@ -2863,7 +2863,7 @@ start_command_handler_ssh (int sock_client)
   ret = es_setvbuf (stream_sock, NULL, _IONBF, 0);
   if (ret)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("failed to disable buffering "
                    "on socket stream: %s\n"), gpg_strerror (err));
       goto out;

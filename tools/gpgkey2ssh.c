@@ -85,7 +85,7 @@ retrieve_key_material (FILE *fp, const char *hexkeyid, int *algorithm_id,
         break; /* EOF. */
       if (i < 0)
 	{
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  goto leave; /* Error. */
 	}
       if (!max_length)

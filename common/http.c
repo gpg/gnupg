@@ -200,6 +200,16 @@ struct http_context_s
 
 
 #ifdef HAVE_W32_SYSTEM
+
+#if GNUPG_MAJOR_VERSION == 1
+#define REQ_WINSOCK_MAJOR  1
+#define REQ_WINSOCK_MINOR  1
+#else
+#define REQ_WINSOCK_MAJOR  2
+#define REQ_WINSOCK_MINOR  2
+#endif
+
+
 static void
 deinit_sockets (void)
 {
@@ -215,16 +225,18 @@ init_sockets (void)
   if (initialized)
     return;
 
-  if ( WSAStartup( 0x0101, &wsdata ) ) 
+  if ( WSAStartup( MAKEWORD (REQ_WINSOCK_MINOR, REQ_WINSOCK_MAJOR), &wsdata ) ) 
     {
       log_error ("error initializing socket library: ec=%d\n", 
                  (int)WSAGetLastError () );
       return;
     }
-  if ( wsdata.wVersion < 0x0001 ) 
+  if ( LOBYTE(wsdata.wVersion) != REQ_WINSOCK_MAJOR  
+       || HIBYTE(wsdata.wVersion) != REQ_WINSOCK_MINOR ) 
     {
-      log_error ("socket library version is %x.%x - but 1.1 needed\n",
-                 LOBYTE(wsdata.wVersion), HIBYTE(wsdata.wVersion));
+      log_error ("socket library version is %x.%x - but %d.%d needed\n",
+                 LOBYTE(wsdata.wVersion), HIBYTE(wsdata.wVersion)
+                 REQ_WINSOCK_MAJOR, REQ_WINSOCK_MINOR);
       WSACleanup();
       return;
     }
@@ -313,7 +325,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   /* Create the handle. */
   hd = xtrycalloc (1, sizeof *hd);
   if (!hd)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   hd->sock = -1;
   hd->req_type = reqtype;
   hd->flags = flags;
@@ -383,7 +395,7 @@ http_wait_response (http_t hd)
     {
       hd->sock = dup (hd->sock);
       if (hd->sock == -1)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
     }
   P_ES(fclose) (hd->fp_write);
   hd->fp_write = NULL;
@@ -401,7 +413,7 @@ http_wait_response (http_t hd)
 
     cookie = xtrycalloc (1, sizeof *cookie);
     if (!cookie)
-      return gpg_error_from_errno (errno);
+      return gpg_error_from_syserror ();
     cookie->fd = hd->sock;
     if (hd->uri->use_tls)
       cookie->tls_session = hd->tls_context;
@@ -410,13 +422,13 @@ http_wait_response (http_t hd)
     if (!hd->fp_read)
       {
         xfree (cookie);
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       }
   }
 #else /*!HTTP_USE_ESTREAM*/
   hd->fp_read = fdopen (hd->sock, "r");
   if (!hd->fp_read)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 #endif /*!HTTP_USE_ESTREAM*/
 
   err = parse_response (hd);
@@ -851,7 +863,7 @@ send_request (http_t hd, const char *auth, const char *proxy)
                                             uri->auth, strlen(uri->auth));
           if (!proxy_authstr)
             {
-              err = gpg_error_from_errno (errno);
+              err = gpg_error_from_syserror ();
               http_release_parsed_uri (uri);
               return err;
             }
@@ -919,7 +931,7 @@ send_request (http_t hd, const char *auth, const char *proxy)
           if (!myauth)
             {
               xfree (proxy_authstr);
-              return gpg_error_from_errno (errno);
+              return gpg_error_from_syserror ();
             }
           remove_escapes (myauth);
         }
@@ -937,13 +949,13 @@ send_request (http_t hd, const char *auth, const char *proxy)
       if (!authstr)
         {
           xfree (proxy_authstr);
-          return gpg_error_from_errno (errno);
+          return gpg_error_from_syserror ();
         }
     }
   
   p = build_rel_path (hd->uri);
   if (!p)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   request = xtrymalloc (2 * strlen (server) 
                         + strlen (p)
@@ -952,7 +964,7 @@ send_request (http_t hd, const char *auth, const char *proxy)
                         + 100);
   if (!request)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       xfree (p);
       xfree (authstr);
       xfree (proxy_authstr);
@@ -997,7 +1009,7 @@ send_request (http_t hd, const char *auth, const char *proxy)
     cookie = xtrycalloc (1, sizeof *cookie);
     if (!cookie)
       {
-        err = gpg_error_from_errno (errno);
+        err = gpg_error_from_syserror ();
         goto leave;
       }
     cookie->fd = hd->sock;
@@ -1011,10 +1023,10 @@ send_request (http_t hd, const char *auth, const char *proxy)
     if (!hd->fp_write)
       {
         xfree (cookie);
-        err = gpg_error_from_errno (errno);
+        err = gpg_error_from_syserror ();
       }
     else if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
     else
       err = 0;
   }
@@ -1030,7 +1042,7 @@ send_request (http_t hd, const char *auth, const char *proxy)
     {
       hd->fp_write = fdopen (hd->sock, "w");
       if (!hd->fp_write)
-        err = gpg_error_from_errno (errno);
+        err = gpg_error_from_syserror ();
     }
 #endif /*!HTTP_USE_ESTREAM*/
 
@@ -1237,7 +1249,7 @@ store_header (http_t hd, char *line)
       n += strlen (hd->headers->value);
       p = xtrymalloc (n+1);
       if (!p)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       strcpy (stpcpy (p, hd->headers->value), line);
       xfree (hd->headers->value);
       hd->headers->value = p;
@@ -1262,7 +1274,7 @@ store_header (http_t hd, char *line)
          it is a comma separated list and merge them.  */
       p = xtrymalloc (strlen (h->value) + 1 + strlen (value)+ 1);
       if (!p)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       strcpy (stpcpy (stpcpy (p, h->value), ","), value);
       xfree (h->value);
       h->value = p;
@@ -1272,13 +1284,13 @@ store_header (http_t hd, char *line)
   /* Append a new header. */
   h = xtrymalloc (sizeof *h + strlen (line));
   if (!h)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   strcpy (h->name, line);
   h->value = xtrymalloc (strlen (value)+1);
   if (!h->value)
     {
       xfree (h);
-      return gpg_error_from_errno (errno);
+      return gpg_error_from_syserror ();
     }
   strcpy (h->value, value);
   h->next = hd->headers;
@@ -1334,7 +1346,7 @@ parse_response (http_t hd)
       len = my_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
       line = hd->buffer;
       if (!line)
-	return gpg_error_from_errno (errno); /* Out of core. */
+	return gpg_error_from_syserror (); /* Out of core. */
       if (!maxlen)
 	return gpg_error (GPG_ERR_TRUNCATED); /* Line has been truncated. */
       if (!len)
@@ -1378,7 +1390,7 @@ parse_response (http_t hd)
       len = my_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
       line = hd->buffer;
       if (!line)
-	return gpg_error_from_errno (errno); /* Out of core. */
+	return gpg_error_from_syserror (); /* Out of core. */
       /* Note, that we can silently ignore truncated lines. */
       if (!len)
 	return gpg_error (GPG_ERR_EOF);
@@ -1700,7 +1712,7 @@ write_server (int sock, const char *data, size_t length)
 	      continue;
 	    }
 	  log_info ("network write failed: %s\n", strerror (errno));
-	  return gpg_error_from_errno (errno);
+	  return gpg_error_from_syserror ();
 	}
 #endif /*!HAVE_W32_SYSTEM*/
       nleft -= nwritten;

@@ -238,8 +238,8 @@ start_pinentry (ctrl_t ctrl)
   no_close_list[i] = -1;
 
   /* Connect to the pinentry and perform initial handshaking */
-  rc = assuan_pipe_connect2 (&ctx, opt.pinentry_program, argv,
-                             no_close_list, atfork_cb, NULL);
+  rc = assuan_pipe_connect_ext (&ctx, opt.pinentry_program, argv,
+                                no_close_list, atfork_cb, NULL, 0);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",
@@ -649,7 +649,7 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc,
   popup_tid = pth_spawn (tattr, popup_message_thread, NULL);
   if (!popup_tid)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       log_error ("error spawning popup message handler: %s\n",
                  strerror (errno) );
       pth_attr_destroy (tattr);

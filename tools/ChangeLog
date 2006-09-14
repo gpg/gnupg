@@ -1,5 +1,8 @@
 2006-09-12  Werner Koch  <wk@g10code.com>
 
+ 	Replaced all call gpg_error_from_errno(errno) by
+	gpg_error_from_syserror().
+
 	* gpg-connect-agent.c (read_and_print_response): With verbosity
 	level 2 also print comment lines.
 

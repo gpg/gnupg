@@ -1406,7 +1406,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       maxlen=1024;
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
-	  ret = gpg_error_from_errno (errno);
+	  ret = gpg_error_from_syserror ();
 	  goto fail; /* i.e. EOF */
 	}
 

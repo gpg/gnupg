@@ -76,7 +76,7 @@ use_exec=yes
 disable_keyserver_path=no
 
 
-GNUPG_BUILD_PROGRAM(gpg, no)
+GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 GNUPG_BUILD_PROGRAM(agent, yes)
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
@@ -945,11 +945,6 @@ if test "$ac_cv_sizeof_unsigned_short" = "0" \
    || test "$ac_cv_sizeof_unsigned_long" = "0"; then
     AC_MSG_WARN([Hmmm, something is wrong with the sizes - using defaults]);
 fi
-
-#
-# fixme: do we really need this - it should be encapsulated in libassuan
-#
-GNUPG_SYS_SO_PEERCRED
 
 
 #

@@ -1834,7 +1834,7 @@ main (int argc, char **argv )
     opt.rfc2440_text=1;
     opt.def_sig_expire="0";
     opt.def_cert_expire="0";
-    opt.require_cross_cert = 1;
+    opt.flags.require_cross_cert = 1;
     set_homedir ( default_homedir () );
 
     /* Check whether we have a config file on the command line.  */

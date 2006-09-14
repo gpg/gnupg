@@ -99,7 +99,7 @@ is_file_compressed (const char *s, int *ret_rc)
 
     a = iobuf_open( s );
     if ( a == NULL ) {
-        *ret_rc = gpg_error_from_errno (errno);
+        *ret_rc = gpg_error_from_syserror ();
         return 0;
     }
 

@@ -441,7 +441,7 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->tochild=fdopen(to[1],binary?"wb":"w");
       if((*info)->tochild==NULL)
 	{
-          ret = gpg_error_from_errno (errno);
+          ret = gpg_error_from_syserror ();
 	  close(to[1]);
 	  goto fail;
 	}
@@ -451,7 +451,7 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->fromchild=iobuf_fdopen(from[0],"r");
       if((*info)->fromchild==NULL)
 	{
-          ret = gpg_error_from_errno (errno);
+          ret = gpg_error_from_syserror ();
 	  close(from[0]);
 	  goto fail;
 	}
@@ -476,7 +476,7 @@ int exec_write(struct exec_info **info,const char *program,
     (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
-      ret = gpg_error_from_errno (errno);
+      ret = gpg_error_from_syserror ();
       log_error(_("can't create `%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
       goto fail;
@@ -550,7 +550,7 @@ int exec_read(struct exec_info *info)
             }
 	  if(info->fromchild==NULL)
 	    {
-              ret = gpg_error_from_errno (errno);
+              ret = gpg_error_from_syserror ();
 	      log_error(_("unable to read external program response: %s\n"),
 			strerror(errno));
 	      goto fail;

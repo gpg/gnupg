@@ -96,7 +96,7 @@ build_w32_commandline (const char *pgmname, const char **argv, char **cmdline)
 
   buf = p = xtrymalloc (n);
   if (!buf)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   /* fixme: PGMNAME may not contain spaces etc. */
   p = stpcpy (p, pgmname);
@@ -342,7 +342,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   }
   if (!*statusfile)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("can't fdopen pipe for reading: %s\n"), gpg_strerror (err));
       CloseHandle (pi.hProcess);
       return err;
@@ -366,7 +366,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   if (pipe (rp) == -1)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("error creating a pipe: %s\n"), strerror (errno));
       return err;
     }
@@ -378,7 +378,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 #endif
   if (*pid == (pid_t)(-1))
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("error forking process: %s\n"), strerror (errno));
       close (rp[0]);
       close (rp[1]);
@@ -399,7 +399,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   *statusfile = fdopen (rp[0], "r");
   if (!*statusfile)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("can't fdopen pipe for reading: %s\n"), strerror (errno));
       kill (*pid, SIGTERM);
       *pid = (pid_t)(-1);
@@ -528,7 +528,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
     return gpg_error (GPG_ERR_BUG);
 
   if (access (pgmname, X_OK))
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
 #ifdef USE_GNU_PTH      
   pid = pth_fork? pth_fork () : fork ();
@@ -538,7 +538,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   if (pid == (pid_t)(-1))
     {
       log_error (_("error forking process: %s\n"), strerror (errno));
-      return gpg_error_from_errno (errno);
+      return gpg_error_from_syserror ();
     }
   if (!pid)
     {

@@ -1,3 +1,11 @@
+2006-09-14  Werner Koch  <wk@g10code.com>
+
+ 	Replaced all call gpg_error_from_errno(errno) by
+	gpg_error_from_syserror().
+	
+	* configure.ac: Build gpg by default.
+	(GNUPG_SYS_SO_PEERCRED): Removed.
+
 2006-09-13  Werner Koch  <wk@g10code.com>
 
 	* autogen.sh: Better detection of the cross compiler kit.

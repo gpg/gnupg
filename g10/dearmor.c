@@ -58,7 +58,7 @@ dearmor_file( const char *fname )
         errno = EPERM;
       }
     if (!inp) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
 					strerror(errno) );
 	goto leave;
@@ -107,7 +107,7 @@ enarmor_file( const char *fname )
         errno = EPERM;
       }
     if (!inp) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error(_("can't open `%s': %s\n"), fname? fname: "[stdin]",
                   strerror(errno) );
 	goto leave;

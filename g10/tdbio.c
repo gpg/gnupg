@@ -126,14 +126,14 @@ write_cache_item( CACHE_CTRL r )
     int n;
 
     if( lseek( db_fd, r->recno * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-        err = gpg_error_from_errno (errno);
+        err = gpg_error_from_syserror ();
 	log_error(_("trustdb rec %lu: lseek failed: %s\n"),
 					    r->recno, strerror(errno) );
 	return err;
     }
     n = write( db_fd, r->data, TRUST_RECORD_LEN);
     if( n != TRUST_RECORD_LEN ) {
-        err = gpg_error_from_errno (errno);
+        err = gpg_error_from_syserror ();
 	log_error(_("trustdb rec %lu: write failed (n=%d): %s\n"),
 					    r->recno, n, strerror(errno) );
 	return err;
@@ -1162,7 +1162,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
     buf = get_record_from_cache( recnum );
     if( !buf ) {
 	if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-            err = gpg_error_from_errno (errno);
+            err = gpg_error_from_syserror ();
 	    log_error(_("trustdb: lseek failed: %s\n"), strerror(errno) );
 	    return err;
 	}
@@ -1171,7 +1171,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	    return -1; /* eof */
 	}
 	else if( n != TRUST_RECORD_LEN ) {
-            err = gpg_error_from_errno (errno);
+            err = gpg_error_from_syserror ();
 	    log_error(_("trustdb: read failed (n=%d): %s\n"), n,
 							strerror(errno) );
 	    return err;
@@ -1435,14 +1435,14 @@ tdbio_new_recnum()
 	rec.recnum = recnum;
 	rc = 0;
 	if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-            rc = gpg_error_from_errno (errno);
+            rc = gpg_error_from_syserror ();
 	    log_error(_("trustdb rec %lu: lseek failed: %s\n"),
 						recnum, strerror(errno) );
 	}
 	else {
 	    int n = write( db_fd, &rec, TRUST_RECORD_LEN);
 	    if( n != TRUST_RECORD_LEN ) {
-                rc = gpg_error_from_errno (errno);
+                rc = gpg_error_from_syserror ();
 		log_error(_("trustdb rec %lu: write failed (n=%d): %s\n"),
 						 recnum, n, strerror(errno) );
 	    }

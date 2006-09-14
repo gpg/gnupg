@@ -69,7 +69,7 @@ lock_reader (int slot)
     {
       if (!pth_mutex_init (&lock_table[slot].lock))
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           log_error ("error initializing mutex: %s\n", strerror (errno));
           return err;
         }
@@ -80,7 +80,7 @@ lock_reader (int slot)
   
   if (!pth_mutex_acquire (&lock_table[slot].lock, 0, NULL))
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error ("failed to acquire APP lock for slot %d: %s\n",
                  slot, strerror (errno));
       return err;
@@ -278,7 +278,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   app = xtrycalloc (1, sizeof *app);
   if (!app)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_info ("error allocating context: %s\n", gpg_strerror (err));
       unlock_reader (slot);
       return err;
@@ -480,7 +480,7 @@ app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 
   buf = xtrymalloc (app->serialnolen * 2 + 1);
   if (!buf)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   for (p=buf, i=0; i < app->serialnolen; p +=2, i++)
     sprintf (p, "%02X", app->serialno[i]);
   *p = 0;

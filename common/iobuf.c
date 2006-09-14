@@ -392,7 +392,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	    }
 	  else if (ferror (f) && errno != EPIPE)
 	    {
-	      rc = gpg_error_from_errno (errno);
+	      rc = gpg_error_from_syserror ();
 	      log_error ("%s: read error: %s\n", a->fname, strerror (errno));
 	    }
 	  *ret_len = nbytes;
@@ -406,7 +406,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	  nbytes = fwrite (buf, 1, size, f);
 	  if (ferror (f))
 	    {
-	      rc = gpg_error_from_errno (errno);
+	      rc = gpg_error_from_syserror ();
 	      log_error ("%s: write error: %s\n", a->fname, strerror (errno));
 	    }
 	}
@@ -481,7 +481,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	    {			/* error */
 	      if (errno != EPIPE)
 		{
-		  rc = gpg_error_from_errno (errno);
+		  rc = gpg_error_from_syserror ();
 		  log_error ("%s: read error: %s\n",
 			     a->fname, strerror (errno));
 		}
@@ -543,7 +543,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	  while (n != -1 && nbytes);
 	  if (n == -1)
 	    {
-	      rc = gpg_error_from_errno (errno);
+	      rc = gpg_error_from_syserror ();
 	      log_error ("%s: write error: %s\n", a->fname, strerror (errno));
 	    }
 	  nbytes = p - buf;
@@ -849,14 +849,14 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 		    {		/* write stuff from the buffer */
 		      assert (n == OP_MIN_PARTIAL_CHUNK);
 		      if (iobuf_write (chain, a->buffer, n))
-			rc = gpg_error_from_errno (errno);
+			rc = gpg_error_from_syserror ();
 		      a->buflen = 0;
 		      nbytes -= n;
 		    }
 		  if ((n = nbytes) > blen)
 		    n = blen;
 		  if (n && iobuf_write (chain, p, n))
-		    rc = gpg_error_from_errno (errno);
+		    rc = gpg_error_from_syserror ();
 		  p += n;
 		  nbytes -= n;
 		}
@@ -935,7 +935,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 		{
 		  log_error ("block_filter: write error: %s\n",
 			     strerror (errno));
-		  rc = gpg_error_from_errno (errno);
+		  rc = gpg_error_from_syserror ();
 		}
 	      xfree (a->buffer);
 	      a->buffer = NULL;
@@ -1649,7 +1649,7 @@ underflow (iobuf_t a)
       if (len < a->d.size)
 	{
 	  if (ferror (fp))
-	    a->error = gpg_error_from_errno (errno);
+	    a->error = gpg_error_from_syserror ();
 	}
       a->d.len = len;
       a->d.start = 0;

@@ -70,7 +70,7 @@ read_list (char *key, char *country, int *lnr)
       listfp = fopen (listname, "r");
       if (!listfp && errno != ENOENT)
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           log_error (_("can't open `%s': %s\n"), listname, gpg_strerror (err));
           return err;
         }
@@ -85,7 +85,7 @@ read_list (char *key, char *country, int *lnr)
         {
           if (feof (listfp))
             return gpg_error (GPG_ERR_EOF);
-          return gpg_error_from_errno (errno);
+          return gpg_error_from_syserror ();
         }
 
       if (!*line || line[strlen(line)-1] != '\n')
@@ -234,7 +234,7 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
                   "to create or verify such signatures.\n"),
                 opt.qualsig_approval? "":"\n"
                 ) < 0 )
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     err = 0;
 
@@ -251,7 +251,7 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
   buffer = p = xtrymalloc (strlen (name) * 3 + 1);
   if (!buffer)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       free (name);
       return err;
     }
@@ -324,7 +324,7 @@ gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
                   "Note, that this certificate will NOT create a "
                   "qualified signature!"),
                 subject? subject:"?") < 0 )
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     err = 0;
 
@@ -341,7 +341,7 @@ gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
   buffer = p = xtrymalloc (strlen (name) * 3 + 1);
   if (!buffer)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       free (name);
       return err;
     }

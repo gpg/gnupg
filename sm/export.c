@@ -117,7 +117,7 @@ insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
   /* Insert that fingerprint. */
   t = xtrymalloc (sizeof *t);
   if (!t)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   memcpy (t->fpr, fpr+1, 19);
   t->next = table[idx];
   table[idx] = t;
@@ -558,14 +558,14 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   infp = tmpfile ();
   if (!infp)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("error creating temporary file: %s\n"), strerror (errno));
       goto cleanup;
     }
 
   if (fwrite (certimg, certimglen, 1, infp) != 1)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("error writing to temporary file: %s\n"),
                  strerror (errno));
       goto cleanup;
@@ -574,7 +574,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   outfp = tmpfile ();
   if (!outfp)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       log_error (_("error creating temporary file: %s\n"), strerror (errno));
       goto cleanup;
     }

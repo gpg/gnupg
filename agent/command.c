@@ -585,7 +585,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
       assert (len);
       buf = xtrymalloc (len);
       if (!buf)
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
       else
         {
           len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, buf, len);
@@ -1038,7 +1038,7 @@ cmd_putval (assuan_context_t ctx, char *line)
     {
       vl = xtrymalloc (sizeof *vl + strlen (key) + valuelen);
       if (!vl)
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
       else
         {
           vl->len = valuelen;
@@ -1221,11 +1221,11 @@ start_command_handler (int listen_fd, int fd)
     }
   else if (listen_fd != -1)
     {
-      rc = assuan_init_socket_server (&ctx, listen_fd);
+      rc = assuan_init_socket_server_ext (&ctx, listen_fd, 0);
     }
   else 
     {
-      rc = assuan_init_connected_socket_server (&ctx, fd);
+      rc = assuan_init_socket_server_ext (&ctx, fd, 2);
       ctrl.connection_fd = fd;
     }
   if (rc)

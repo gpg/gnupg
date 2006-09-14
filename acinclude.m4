@@ -157,25 +157,6 @@ AC_DEFUN([GNUPG_CHECK_ENDIAN],
 
 
 
-# Check for the getsockopt SO_PEERCRED
-AC_DEFUN([GNUPG_SYS_SO_PEERCRED],
-  [ AC_MSG_CHECKING(for SO_PEERCRED)
-    AC_CACHE_VAL(gnupg_cv_sys_so_peercred,
-      [AC_TRY_COMPILE([#include <sys/socket.h>], 
-                    [struct ucred cr; 
-                     int cl = sizeof cr;
-                     getsockopt (1, SOL_SOCKET, SO_PEERCRED, &cr, &cl);],
-                    gnupg_cv_sys_so_peercred=yes,
-                    gnupg_cv_sys_so_peercred=no)
-      ])
-    AC_MSG_RESULT($gnupg_cv_sys_so_peercred) 
-    if test $gnupg_cv_sys_so_peercred = yes; then
-         AC_DEFINE(HAVE_SO_PEERCRED, 1,
-                            [Defined if SO_PEERCRED is supported (Linux)])
-    fi
-  ])
-
-
 
 # GNUPG_BUILD_PROGRAM(NAME,DEFAULT)
 # Add a --enable-NAME option to configure an set the

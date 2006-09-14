@@ -520,7 +520,7 @@ parse_certid (app_t app, const char *certid,
   objidlen /= 2;
   objid = xtrymalloc (objidlen);
   if (!objid)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   for (s=certid, i=0; i < objidlen; i++, s+=2)
     objid[i] = xtoi_2 (s);
   *r_objid = objid;
@@ -1130,14 +1130,14 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
                               + objlen/2 * sizeof(unsigned short)));
       if (!prkdf)
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           goto leave;
         }
       prkdf->objidlen = objidlen;
       prkdf->objid = xtrymalloc (objidlen);
       if (!prkdf->objid)
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           xfree (prkdf);
           goto leave;
         }
@@ -1148,7 +1148,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           prkdf->authid = xtrymalloc (authidlen);
           if (!prkdf->authid)
             {
-              err = gpg_error_from_errno (errno);
+              err = gpg_error_from_syserror ();
               xfree (prkdf->objid);
               xfree (prkdf);
               goto leave;
@@ -1416,14 +1416,14 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
                             + objlen/2 * sizeof(unsigned short)));
       if (!cdf)
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           goto leave;
         }
       cdf->objidlen = objidlen;
       cdf->objid = xtrymalloc (objidlen);
       if (!cdf->objid)
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           xfree (cdf);
           goto leave;
         }
@@ -2135,7 +2135,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       continue; /* Ready. */
 
     no_core:
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       release_aodf_object (aodf);
       goto leave;
 
@@ -2272,7 +2272,7 @@ read_ef_tokeninfo (app_t app)
   app->app_local->serialno = xtrymalloc (objlen);
   if (!app->app_local->serialno)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto leave;
     }
   memcpy (app->app_local->serialno, p, objlen);
@@ -2368,7 +2368,7 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
 
       buf = xtrymalloc (9 + certinfo->objidlen*2 + 1);
       if (!buf)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       p = stpcpy (buf, "P15");
       if (app->app_local->home_df)
         {
@@ -2463,7 +2463,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
 
       buf = xtrymalloc (9 + keyinfo->objidlen*2 + 1);
       if (!buf)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       p = stpcpy (buf, "P15");
       if (app->app_local->home_df)
         {
@@ -2544,7 +2544,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
     {
       *r_cert = xtrymalloc (cdf->imagelen);
       if (!*r_cert)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
       memcpy (*r_cert, cdf->image, cdf->imagelen);
       *r_certlen = cdf->imagelen;
       return 0;
@@ -2687,7 +2687,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
         {
           buf = xtrymalloc (9 + prkdf->objidlen*2 + 1);
           if (!buf)
-            return gpg_error_from_errno (errno);
+            return gpg_error_from_syserror ();
           p = stpcpy (buf, "P15");
           if (app->app_local->home_df)
             {
@@ -3059,7 +3059,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
           paddedpin = xtrymalloc (aodf->stored_length+1);
           if (!paddedpin)
             {
-              err = gpg_error_from_errno (errno);
+              err = gpg_error_from_syserror ();
               xfree (pinvalue);
               return err;
             }
@@ -3087,7 +3087,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
           paddedpin = xtrymalloc (aodf->stored_length+1);
           if (!paddedpin)
             {
-              err = gpg_error_from_errno (errno);
+              err = gpg_error_from_syserror ();
               xfree (pinvalue);
               return err;
             }
@@ -3345,7 +3345,7 @@ app_select_p15 (app_t app)
       app->app_local = xtrycalloc (1, sizeof *app->app_local);
       if (!app->app_local)
         {
-          rc = gpg_error_from_errno (errno);
+          rc = gpg_error_from_syserror ();
           goto leave;
         }
 

@@ -57,7 +57,7 @@ b64enc_start (struct b64state *state, FILE *fp, const char *title)
     {
       state->title = xtrystrdup (title);
       if (!state->title)
-        return  gpg_error_from_errno (errno);
+        return  gpg_error_from_syserror ();
     }
   return 0;
 }
@@ -130,7 +130,7 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
   return 0;
 
  write_error:
-  return gpg_error_from_errno (errno);
+  return gpg_error_from_syserror ();
 }
 
 gpg_error_t
@@ -200,7 +200,7 @@ b64enc_finish (struct b64state *state)
   goto cleanup;
 
  write_error:
-  err = gpg_error_from_errno (errno);
+  err = gpg_error_from_syserror ();
 
  cleanup:
   if (state->title)

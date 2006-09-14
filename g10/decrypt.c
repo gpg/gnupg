@@ -66,7 +66,7 @@ decrypt_message( const char *filename )
         errno = EPERM;
       }
     if( !fp ) {
-        rc = gpg_error_from_errno (errno);
+        rc = gpg_error_from_syserror ();
 	log_error (_("can't open `%s': %s\n"), print_fname_stdin(filename),
                    gpg_strerror (rc));
 	return rc;

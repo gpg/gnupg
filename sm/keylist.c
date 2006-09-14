@@ -1164,7 +1164,7 @@ list_internal_keys (ctrl_t ctrl, STRLIST names, FILE *fp,
   desc = xtrycalloc (ndesc, sizeof *desc);
   if (!ndesc)
     {
-      rc = gpg_error_from_errno (errno);
+      rc = gpg_error_from_syserror ();
       log_error ("out of core\n");
       goto leave;
     }

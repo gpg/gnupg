@@ -44,7 +44,7 @@ send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
   if (!value || !*value)
     err = 0;  /* Avoid sending empty strings.  */
   else if (asprintf (&optstr, "OPTION %s=%s", name, value ) < 0)
-    err = gpg_error_from_errno (errno);
+    err = gpg_error_from_syserror ();
   else
     {
       err = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -116,7 +116,7 @@ send_pinentry_environment (assuan_context_t ctx,
     {
       old_lc = strdup (old_lc);
       if (!old_lc)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
     }
   dft_lc = setlocale (LC_CTYPE, "");
 #endif
@@ -142,7 +142,7 @@ send_pinentry_environment (assuan_context_t ctx,
     {
       old_lc = strdup (old_lc);
       if (!old_lc)
-        return gpg_error_from_errno (errno);
+        return gpg_error_from_syserror ();
     }
   dft_lc = setlocale (LC_MESSAGES, "");
 #endif

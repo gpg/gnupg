@@ -566,7 +566,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   n = 6 + 2 + mlen + 2 + elen;
   p = buffer = xtrymalloc (3 + n);
   if (!buffer)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
   
   *p++ = 0x99;     /* ctb */
   *p++ = n >> 8;   /* 2 byte length header */
@@ -880,7 +880,7 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
         break; /* EOF. */
       if (i < 0)
 	{
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  goto leave; /* Error. */
 	}
       if (!max_length)
@@ -1036,7 +1036,7 @@ get_public_key (app_t app, int keyno)
           mbuf = xtrymalloc ( mlen + 1);
           if (!mbuf)
             {
-              err = gpg_error_from_errno (errno);
+              err = gpg_error_from_syserror ();
               goto leave;
             }
           *mbuf = 0;
@@ -1049,7 +1049,7 @@ get_public_key (app_t app, int keyno)
           ebuf = xtrymalloc ( elen + 1);
           if (!ebuf)
             {
-              err = gpg_error_from_errno (errno);
+              err = gpg_error_from_syserror ();
               goto leave;
             }
           *ebuf = 0;
@@ -1091,7 +1091,7 @@ get_public_key (app_t app, int keyno)
 		      fpr);
       if (ret < 0)
 	{
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  goto leave;
 	}
 
@@ -1099,7 +1099,7 @@ get_public_key (app_t app, int keyno)
       free (command);
       if (!fp)
 	{
-	  err = gpg_error_from_errno (errno);
+	  err = gpg_error_from_syserror ();
 	  log_error ("running gpg failed: %s\n", gpg_strerror (err));
 	  goto leave;
 	}
@@ -1120,7 +1120,7 @@ get_public_key (app_t app, int keyno)
   keybuf = xtrymalloc (50 + 2*35 + mlen + elen + 1);
   if (!keybuf)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto leave;
     }
   
@@ -1260,7 +1260,7 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   *pk = xtrymalloc (*pklen);
   if (!*pk)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       *pklen = 0;
       return err;
     }
@@ -1819,7 +1819,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   template = tp = xtrymalloc_secure (template_len);
   if (!template)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto leave;
     }
   *tp++ = 0xC0;
@@ -2185,7 +2185,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
         prompt = malloc (strlen (PROMPTSTRING) + 50);
         if (!prompt)
-          return gpg_error_from_errno (errno);
+          return gpg_error_from_syserror ();
         sprintf (prompt, PROMPTSTRING, sigcount);
         rc = pincb (pincb_arg, prompt, &pinvalue); 
         free (prompt);
