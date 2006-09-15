@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-examples=examples/scd-event
+examples = examples/README examples/scd-event examples/trustlist.txt
 
 EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
 	     gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg \

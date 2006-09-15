@@ -153,7 +153,7 @@ plus_to_blank (char *s)
 static size_t
 percent_plus_unescape (char *string)
 {
-  unsigned char *p = string;
+  unsigned char *p = (unsigned char *)string;
   size_t n = 0;
 
   while (*string)
@@ -240,7 +240,7 @@ cmd_istrusted (assuan_context_t ctx, char *line)
   char *p;
   char fpr[41];
 
-  /* parse the fingerprint value */
+  /* Parse the fingerprint value. */
   for (p=line,n=0; hexdigitp (p); p++, n++)
     ;
   if (*p || !(n == 40 || n == 32))

@@ -26,6 +26,8 @@ Noteworthy changes in version 1.9.23
 
  * gpg-connect-agent has new options to utilize descriptor passing.
 
+ * A global trustlist may now be used.  See doc/examples/trustlist.txt.
+
 
 Noteworthy changes in version 1.9.22 (2006-07-27)
 -------------------------------------------------

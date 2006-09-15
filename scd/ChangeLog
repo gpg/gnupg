@@ -52,7 +52,7 @@
 
 	* pcsc-wrapper.c (handle_open, handle_close): Reset card and
 	protocol on error/close.
-	(handle_status): Don't set the stae if the state is unknown.
+	(handle_status): Don't set the state if the state is unknown.
 	(handle_reset): Ignore an error if already disconnected.  May
 	happen due to system wake-up after hibernation.  Suggested by Bob
 	Dunlop.

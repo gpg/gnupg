@@ -153,4 +153,4 @@ $AUTOMAKE --gnu;
 echo "Running autoconf..."
 $AUTOCONF
 
-echo "You may now run \"./configure --enable-maintainer-mode && make\"."
+echo "You may now run \"./configure --sysconfdir=/etc --enable-maintainer-mode && make\"."

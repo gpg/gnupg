@@ -1427,11 +1427,6 @@ start_connection_thread (void *arg)
     log_info (_("handler 0x%lx for fd %d started\n"), 
               (long)pth_self (), fd);
 
-  /* FIXME: Move this housekeeping into a ticker function.  Calling it
-     for each connection should work but won't work anymore if our
-     clients start to keep connections. */
-  agent_trustlist_housekeeping ();
-
   start_command_handler (-1, fd);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d terminated\n"), 
@@ -1450,8 +1445,6 @@ start_connection_thread_ssh (void *arg)
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d started\n"),
               (long)pth_self (), fd);
-
-  agent_trustlist_housekeeping ();
 
   start_command_handler_ssh (fd);
   if (opt.verbose)

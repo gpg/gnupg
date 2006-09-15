@@ -252,11 +252,10 @@ int agent_get_shadow_info (const unsigned char *shadowkey,
 
 
 /*-- trustlist.c --*/
-int agent_istrusted (const char *fpr);
-int agent_listtrusted (void *assuan_context);
-int agent_marktrusted (ctrl_t ctrl, const char *name,
-                       const char *fpr, int flag);
-void agent_trustlist_housekeeping (void);
+gpg_error_t agent_istrusted (const char *fpr);
+gpg_error_t agent_listtrusted (void *assuan_context);
+gpg_error_t agent_marktrusted (ctrl_t ctrl, const char *name,
+                               const char *fpr, int flag);
 void agent_reload_trustlist (void);
 
 

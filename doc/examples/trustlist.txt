@@ -1,0 +1,46 @@
+# This is the global list of trusted keys.  Comment lines, like this
+# one, as well as empty lines are ignored.  Lines have a length limit
+# but this is not serious limitation as the format of the entries is
+# fixed and checked by gpg-agent.  A non-comment line starts with
+# optional white space, followed by the SHA-1 fingerpint in hex,
+# optionally followed by a flag character which my either be 'P', 'S'
+# or '*'.  This file will be read by gpg-agent if no local trustlist
+# is available or if the statement "include-default" is used in the
+# local list. You should give the gpg-agent(s) a HUP after editing
+# this file.
+
+
+#Serial number: 32D18D
+#       Issuer: /CN=6R-Ca 1:PN/NameDistinguisher=1/O=RegulierungsbehÈorde
+#               fÈur Telekommunikation und Post/C=DE
+EA:8D:99:DD:36:AA:2D:07:1A:3C:7B:69:00:9E:51:B9:4A:2E:E7:60  S
+
+#Serial number: 00C48C8D
+#       Issuer: /CN=7R-CA 1:PN/NameDistinguisher=1/O=RegulierungsbehÈorde
+#               fÈur Telekommunikation und Post/C=DE
+DB:45:3D:1B:B0:1A:F3:23:10:6B:DE:D0:09:61:57:AA:F4:25:E0:5B  S
+
+#Serial number: 01
+#       Issuer: /CN=8R-CA 1:PN/O=Regulierungsbehörde für
+#               Telekommunikation und Post/C=DE
+42:6A:F6:78:30:E9:CE:24:5B:EF:41:A2:C1:A8:51:DA:C5:0A:6D:F5  S
+
+#Serial number: 02
+#       Issuer: /CN=9R-CA 1:PN/O=Regulierungsbehörde für
+#               Telekommunikation und Post/C=DE
+75:9A:4A:CE:7C:DA:7E:89:1B:B2:72:4B:E3:76:EA:47:3A:96:97:24  S
+
+#Serial number: 2A
+#       Issuer: /CN=10R-CA 1:PN/O=Bundesnetzagentur/C=DE
+31:C9:D2:E6:31:4D:0B:CC:2C:1A:45:00:A6:6B:97:98:27:18:8E:CD  S
+
+#Serial number: 2D
+#       Issuer: /CN=11R-CA 1:PN/O=Bundesnetzagentur/C=DE
+A0:8B:DF:3B:AA:EE:3F:9D:64:6C:47:81:23:21:D4:A6:18:81:67:1D  S
+
+#Serial number: 00
+#       Issuer: /CN=CA Cert Signing Authority/OU=http:\x2f\x2fwww.
+#               cacert.org/O=Root CA/EMail=support@cacert.org
+13:5C:EC:36:F4:9C:B8:E9:3B:1A:B2:70:CD:80:88:46:76:CE:8F:33  S
+
+

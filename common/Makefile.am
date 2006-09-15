@@ -21,6 +21,8 @@
 ## Process this file with automake to produce Makefile.in
 
 noinst_LIBRARIES = libcommon.a libsimple-pwquery.a
+noinst_PROGRAMS = $(module_tests)
+TESTS = $(module_tests)
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl
 
@@ -39,6 +41,7 @@ libcommon_a_SOURCES = \
 	gettime.c \
 	yesno.c \
 	b64enc.c \
+	convert.c \
 	miscellaneous.c \
 	xasprintf.c \
 	xreadline.c \
@@ -59,4 +62,16 @@ libcommon_a_SOURCES = \
 
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h
+
+
+#
+# Module tests
+#
+module_tests = t-convert
+
+t_common_ldadd = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
+                 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+
+t_convert_DEPENDENCIES = convert.c
+t_convert_LDADD = $(t_common_ldadd)
 

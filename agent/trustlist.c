@@ -1,5 +1,5 @@
 /* trustlist.c - Maintain the list of trusted keys
- *	Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,213 +28,347 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <pth.h>
 
 #include "agent.h"
 #include <assuan.h> /* fixme: need a way to avoid assuan calls here */
 #include "i18n.h"
 
+
+/* A structure to store the information from the trust file. */
+struct trustitem_s
+{
+  int keyflag;            /* The keyflag:  '*', 'P' or 'S'. */
+  unsigned char fpr[20];  /* The binary fingerprint. */
+};
+typedef struct trustitem_s trustitem_t;
+
+/* Malloced table and its allocated size with all trust items. */
+static trustitem_t *trusttable; 
+static size_t trusttablesize; 
+/* A mutex used to protect the table. */
+static pth_mutex_t trusttable_lock = PTH_MUTEX_INIT;
+
+
+
 static const char headerblurb[] =
 "# This is the list of trusted keys.  Comment lines, like this one, as\n"
-"# well as empty lines are ignored. The entire file may be integrity\n"
-"# protected by the use of a MAC, so changing the file does not make\n"
-"# sense without the knowledge of the MAC key.  Lines do have a length\n"
-"# limit but this is not serious limitation as the format of the\n"
-"# entries is fixed and checked by gpg-agent: A non-comment line starts\n"
-"# with optional white spaces, followed by the SHA-1 fingerpint in hex,\n"
-"# optionally followed by a flag character which my either be 'P', 'S'\n"
-"# or '*'. Additional data, delimited by white space, is ignored.\n"
-"#\n"
-"# NOTE: You should give the gpg-agent a HUP after editing this file.\n"
+"# well as empty lines are ignored.  Lines have a length limit but this\n"
+"# is not serious limitation as the format of the entries is fixed and\n"
+"# checked by gpg-agent.  A non-comment line starts with optional white\n"
+"# space, followed by the SHA-1 fingerpint in hex, optionally followed\n"
+"# by a flag character which my either be 'P', 'S' or '*'.  You should\n"
+"# give the gpg-agent a HUP after editing this file.\n"
+"\n\n"
+"# Include the default trust list\n"
+"include-default\n"
 "\n";
 
 
-static FILE *trustfp;
-static int   trustfp_used; /* Counter to track usage of TRUSTFP. */
-static int   reload_trustlist_pending;
 
-
-static int
-open_list (int append)
+
+static void
+lock_trusttable (void)
 {
-  char *fname;
+  if (!pth_mutex_acquire (&trusttable_lock, 0, NULL))
+    log_fatal ("failed to acquire mutex in %s\n", __FILE__);
+}
 
-  fname = make_filename (opt.homedir, "trustlist.txt", NULL);
-  trustfp = fopen (fname, append? "a+":"r");
-  if (!trustfp && errno == ENOENT)
-    {
-      trustfp = fopen (fname, "wx");
-      if (!trustfp)
-        {
-          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-          log_error ("can't create `%s': %s\n", fname, strerror (errno));
-          xfree (fname);
-          return tmperr;
-        }
-      fputs (headerblurb, trustfp);
-      fclose (trustfp);
-      trustfp = fopen (fname, append? "a+":"r");
-    }
-
-  if (!trustfp)
-    {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-      log_error ("can't open `%s': %s\n", fname, strerror (errno));
-      xfree (fname);
-      return tmperr;
-    }
-
-  /*FIXME: check the MAC */
-
-  return 0;
+static void
+unlock_trusttable (void)
+{
+  if (!pth_mutex_release (&trusttable_lock))
+    log_fatal ("failed to release mutex in %s\n", __FILE__);
 }
 
 
 
-/* Read the trustlist and return entry by entry.  KEY must point to a
-   buffer of at least 41 characters. KEYFLAG does return either 'P',
-   'S' or '*'.
-
-   Reading a valid entry returns 0, EOF returns -1 any other error
-   returns the appropriate error code. */
-static int
-read_list (char *key, int *keyflag)
+static gpg_error_t
+read_one_trustfile (const char *fname, int allow_include,
+                    trustitem_t **addr_of_table, 
+                    size_t *addr_of_tablesize,
+                    int *addr_of_tableidx)
 {
-  int rc;
-  int c, i, j;
+  gpg_error_t err = 0;
+  FILE *fp;
+  int n, c;
   char *p, line[256];
-  
-  if (!trustfp)
+  trustitem_t *table, *ti;
+  int tableidx;
+  size_t tablesize;
+  int lnr = 0;
+
+  table = *addr_of_table;
+  tablesize = *addr_of_tablesize;
+  tableidx = *addr_of_tableidx;
+
+  fp = fopen (fname, "r");
+  if (!fp)
     {
-      rc = open_list (0);
-      if (rc)
-        return rc;
+      err = gpg_error_from_syserror ();
+      log_error (_("error opening `%s': %s\n"), fname, gpg_strerror (err));
+      goto leave;
     }
 
-  do
+  while (fgets (line, DIM(line)-1, fp))
     {
-      if (!fgets (line, DIM(line)-1, trustfp) )
-        {
-          if (feof (trustfp))
-            return -1;
-          return gpg_error (gpg_err_code_from_errno (errno));
-        }
+      lnr++;
       
       if (!*line || line[strlen(line)-1] != '\n')
         {
-          /* eat until end of line */
-          while ( (c=getc (trustfp)) != EOF && c != '\n')
+          /* Eat until end of line. */
+          while ( (c=getc (fp)) != EOF && c != '\n')
             ;
-          return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
-                                 : GPG_ERR_INCOMPLETE_LINE);
+          err = gpg_error (*line? GPG_ERR_LINE_TOO_LONG
+                           : GPG_ERR_INCOMPLETE_LINE);
+          log_error (_("file `%s', line %d: %s\n"),
+                     fname, lnr, gpg_strerror (err));
+          continue;
         }
+      line[strlen(line)-1] = 0; /* Chop the LF. */
       
       /* Allow for empty lines and spaces */
       for (p=line; spacep (p); p++)
         ;
-    }
-  while (!*p || *p == '\n' || *p == '#');
+      if (!*p || *p == '#')
+        continue;
   
-  for (i=j=0; (p[i] == ':' || hexdigitp (p+i)) && j < 40; i++)
-    if ( p[i] != ':' )
-      key[j++] = p[i] >= 'a'? (p[i] & 0xdf): p[i];
-  key[j] = 0;
-  if (j!=40 || !(spacep (p+i) || p[i] == '\n'))
-    {
-      log_error ("invalid formatted fingerprint in trustlist\n");
-      return gpg_error (GPG_ERR_BAD_DATA);
-    }
-  assert (p[i]);
-  if (p[i] == '\n')
-    *keyflag = '*';
-  else 
-    {
-      i++;
-      if ( p[i] == 'P' || p[i] == 'p')
-        *keyflag = 'P';
-      else if ( p[i] == 'S' || p[i] == 's')
-        *keyflag = 'S';
-      else if ( p[i] == '*')
-        *keyflag = '*';
+      if (!strncmp (p, "include-default", 15)
+          && (!p[15] || spacep (p+15)))
+        {
+          char *etcname;
+          gpg_error_t err2;
+
+          if (!allow_include)
+            {
+              log_error (_("statement \"%s\" ignored in `%s', line %d\n"),
+                         "include-default", fname, lnr);
+              continue;
+            }
+          /* fixme: Should check for trailing garbage.  */
+
+          etcname = make_filename (GNUPG_SYSCONFDIR, "trustlist.txt", NULL);
+          if ( !strcmp (etcname, fname) ) /* Same file. */
+            log_info (_("statement \"%s\" ignored in `%s', line %d\n"),
+                      "include-default", fname, lnr);
+          else if ( access (etcname, F_OK) && errno == ENOENT )
+            {
+              /* A non existent system trustlist is not an error.
+                 Just print a note. */
+              log_info (_("system trustlist `%s' not available\n"), etcname);
+            }
+          else
+            {
+              err2 = read_one_trustfile (etcname, 0,
+                                         &table, &tablesize, &tableidx);
+              if (err2)
+                err = err2;
+            }
+          xfree (etcname);
+          
+          continue;
+        }
+
+      if (tableidx == tablesize)  /* Need more space. */
+        {
+          trustitem_t *tmp;
+          size_t tmplen;
+          
+          tmplen = tablesize + 20;
+          tmp = xtryrealloc (table, tmplen * sizeof *table);
+          if (!tmp)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          table = tmp;
+          tablesize = tmplen;
+        }
+
+      ti = table + tableidx;
+
+      n = hexcolon2bin (p, ti->fpr, 20);
+      if (n < 0)
+        {
+          log_error (_("bad fingerprint in `%s', line %d\n"), fname, lnr);
+          err = gpg_error (GPG_ERR_BAD_DATA); 
+          continue;
+        }
+      p += n;
+      for (; spacep (p); p++)
+        ;
+      
+      if (!*p)
+        ti->keyflag = '*';
+      else if ( *p == 'P' || *p == 'p')
+        ti->keyflag = 'P';
+      else if ( *p == 'S' || *p == 's')
+        ti->keyflag = 'S';
+      else if ( *p == '*')
+        ti->keyflag = '*';
       else
         {
-          log_error ("invalid keyflag in trustlist\n");
-          return gpg_error (GPG_ERR_BAD_DATA);
+          log_error (_("invalid keyflag in `%s', line %d\n"), fname, lnr);
+          err = gpg_error (GPG_ERR_BAD_DATA);
+          continue;
         }
-      i++;
-      if ( !(spacep (p+i) || p[i] == '\n'))
+      p++;
+      if ( *p && !spacep (p) )
         {
-          log_error ("invalid keyflag in trustlist\n");
-          return gpg_error (GPG_ERR_BAD_DATA);
+          log_error (_("invalid keyflag in `%s', line %d\n"), fname, lnr);
+          err = gpg_error (GPG_ERR_BAD_DATA);
+          continue;
         }
+      /* Fixme: need to check for trailing garbage. */
+      tableidx++;
+    }
+  if ( !err && !feof (fp) )
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error reading `%s', line %d: %s\n"),
+                 fname, lnr, gpg_strerror (err));
     }
 
+ leave:
+  if (fp)
+    fclose (fp);
+  *addr_of_table = table;
+  *addr_of_tablesize = tablesize;
+  *addr_of_tableidx = tableidx;
+  return err;
+}
+
+
+/* Read the trust files and update the global table on success. */
+static gpg_error_t
+read_trustfiles (void)
+{
+  gpg_error_t err;
+  trustitem_t *table, *ti;
+  int tableidx;
+  size_t tablesize;
+  char *fname;
+  int allow_include = 1;
+
+  tablesize = 10;
+  table = xtrycalloc (tablesize, sizeof *table);
+  if (!table)
+    return gpg_error_from_syserror ();
+  tableidx = 0;
+
+  fname = make_filename (opt.homedir, "trustlist.txt", NULL);
+  if ( access (fname, F_OK) )
+    {
+      if ( errno == ENOENT )
+        ; /* Silently ignore a non-existing trustfile.  */
+      else
+        {
+          err = gpg_error_from_syserror ();
+          log_error (_("error opening `%s': %s\n"), fname, gpg_strerror (err));
+        }
+      xfree (fname);
+      fname = make_filename (GNUPG_SYSCONFDIR, "trustlist.txt", NULL);
+      allow_include = 0;
+    }
+  err = read_one_trustfile (fname, allow_include,
+                            &table, &tablesize, &tableidx);
+  xfree (fname);
+
+  if (err)
+    {
+      xfree (table);
+      return err;
+    }
+
+  /* Fixme: we should drop duplicates and sort the table. */
+
+  ti = xtryrealloc (table, tableidx * sizeof *table);
+  if (!ti)
+    {
+      xfree (table);
+      return err;
+    }
+
+  lock_trusttable ();
+  xfree (trusttable);
+  trusttable = table;
+  trusttablesize = tableidx;
+  unlock_trusttable ();
   return 0;
 }
 
+
+
 /* Check whether the given fpr is in our trustdb.  We expect FPR to be
    an all uppercase hexstring of 40 characters. */
-int 
+gpg_error_t 
 agent_istrusted (const char *fpr)
 {
-  int rc;
-  static char key[41];
-  int keyflag;
+  gpg_error_t err;
+  trustitem_t *ti;
+  size_t len;
+  unsigned char fprbin[20];
 
-  trustfp_used++;
-  if (trustfp)
-    rewind (trustfp);
-  while (!(rc=read_list (key, &keyflag)))
+  if ( hexcolon2bin (fpr, fprbin, 20) < 0 )
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!trusttable)
     {
-      if (!strcmp (key, fpr))
+      err = read_trustfiles ();
+      if (err)
         {
-          trustfp_used--;
-          return 0;
+          log_error (_("error reading list of trusted root certificates\n"));
+          return err;
         }
     }
-  if (rc != -1)
+
+  if (trusttable)
     {
-      /* Error in the trustdb - close it to give the user a chance for
-         correction */
-      if (trustfp)
-        fclose (trustfp);
-      trustfp = NULL;
+      for (ti=trusttable, len = trusttablesize; len; ti++, len--)
+        if (!memcmp (ti->fpr, fprbin, 20))
+          return 0; /* Trusted. */
     }
-  trustfp_used--;
-  return rc;
+  return gpg_error (GPG_ERR_NOT_TRUSTED);
 }
 
 
 /* Write all trust entries to FP. */
-int 
+gpg_error_t 
 agent_listtrusted (void *assuan_context)
 {
-  int rc;
-  static char key[51];
-  int keyflag;
+  trustitem_t *ti;
+  char key[51];
+  gpg_error_t err;
+  size_t len;
 
-  trustfp_used++;
-  if (trustfp)
-    rewind (trustfp);
-  while (!(rc=read_list (key, &keyflag)))
+  if (!trusttable)
     {
-      key[40] = ' ';
-      key[41] = keyflag;
-      key[42] = '\n';
-      assuan_send_data (assuan_context, key, 43);
-      assuan_send_data (assuan_context, NULL, 0); /* flush */
-    } 
-  if (rc == -1)
-    rc = 0;
-  if (rc)
-    {
-      /* Error in the trustdb - close it to give the user a chance for
-         correction */
-      if (trustfp)
-        fclose (trustfp);
-      trustfp = NULL;
+      err = read_trustfiles ();
+      if (err)
+        {
+          log_error (_("error reading list of trusted root certificates\n"));
+          return err;
+        }
     }
-  trustfp_used--;
-  return rc;
+
+  if (trusttable)
+    {
+      /* We need to lock the table because the scheduler may interrupt
+         assuan_send_data and an other thread may then re-read the table. */
+      lock_trusttable ();
+      for (ti=trusttable, len = trusttablesize; len; ti++, len--)
+        {
+          bin2hex (ti->fpr, 20, key);
+          key[40] = ' ';
+          key[41] = ti->keyflag;
+          key[42] = '\n';
+          assuan_send_data (assuan_context, key, 43);
+          assuan_send_data (assuan_context, NULL, 0); /* flush */
+        }
+      unlock_trusttable ();
+    }
+
+  return 0;
 }
 
 
@@ -245,52 +379,36 @@ agent_listtrusted (void *assuan_context)
    actually gets inserted, the user is asked by means of the pin-entry
    whether this is actual wants he want to do.
 */
-int 
+gpg_error_t
 agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 {
-  int rc;
-  static char key[41];
-  int keyflag;
+  gpg_error_t err = 0;
   char *desc;
   char *fname;
+  FILE *fp;
 
   /* Check whether we are at all allowed to modify the trustlist.
      This is useful so that the trustlist may be a symlink to a global
      trustlist with only admin priviliges to modify it.  Of course
      this is not a secure way of denying access, but it avoids the
-     usual clicking on an Okay buttun thing most users are used to. */
+     usual clicking on an Okay button most users are used to. */
   fname = make_filename (opt.homedir, "trustlist.txt", NULL);
-  rc = access (fname, W_OK);
-  if (rc && errno != ENOENT)
+  if ( access (fname, W_OK) && errno != ENOENT)
     {
       xfree (fname);
       return gpg_error (GPG_ERR_EPERM);
     }    
   xfree (fname);
 
-  trustfp_used++;
-  if (trustfp)
-    rewind (trustfp);
-  while (!(rc=read_list (key, &keyflag)))
+  if (!agent_istrusted (fpr))
     {
-      if (!strcmp (key, fpr))
-        return 0;
-    }
-  if (trustfp)
-    fclose (trustfp);
-  trustfp = NULL;
-  if (rc != -1)
-    {
-      trustfp_used--;
-      return rc;   /* Error in the trustlist. */
+      return 0; /* We already got this fingerprint.  Silently return
+                   success. */
     }
 
   /* This feature must explicitly been enabled. */
   if (!opt.allow_mark_trusted)
-    {
-      trustfp_used--;
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   /* Insert a new one. */
   if (asprintf (&desc,
@@ -307,21 +425,15 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                   "  \"%s\"%%0A"
                   "has the fingerprint:%%0A"
                   "  %s"), name, fpr) < 0 )
-    {
-      trustfp_used--;
-      return out_of_core ();
-    }
+    return out_of_core ();
 
   /* TRANSLATORS: "Correct" is the label of a button and intended to
      be hit if the fingerprint matches the one of the CA.  The other
      button is "the default "Cancel" of the Pinentry. */
-  rc = agent_get_confirmation (ctrl, desc, _("Correct"), NULL);
+  err = agent_get_confirmation (ctrl, desc, _("Correct"), NULL);
   free (desc);
-  if (rc)
-    {
-      trustfp_used--;
-      return rc;
-    }
+  if (err)
+    return err;
 
   if (asprintf (&desc,
                 /* TRANSLATORS: This prompt is shown by the Pinentry
@@ -336,83 +448,78 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                   "  \"%s\"%%0A"
                   "to correctly certify user certificates?"),
                 name) < 0 )
-    {
-      trustfp_used--;
-      return out_of_core ();
-    }
-  rc = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"));
+    return out_of_core ();
+
+  err = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"));
   free (desc);
-  if (rc)
+  if (err)
+    return err;
+
+  /* Now check again to avoid duplicates.  We take the lock to make
+     sure that nobody else plays with our file.  Frankly we don't work
+     with the trusttable but using this lock is just fine for our
+     purpose.  */
+  lock_trusttable ();
+  if (!agent_istrusted (fpr))
     {
-      trustfp_used--;
-      return rc;
+      unlock_trusttable ();
+      return 0; 
     }
 
-  /* Now check again to avoid duplicates.  Also open in append mode now. */
-  rc = open_list (1);
-  if (rc)
+
+  fname = make_filename (opt.homedir, "trustlist.txt", NULL);
+  if ( access (fname, F_OK) && errno == ENOENT)
     {
-      trustfp_used--;
-      return rc;
-    }
-  rewind (trustfp);
-  while (!(rc=read_list (key, &keyflag)))
-    {
-      if (!strcmp (key, fpr))
+      fp = fopen (fname, "wx"); /* Warning: "x" is a GNU extension. */
+      if (!fp)
         {
-          trustfp_used--;
-          return 0;
+          err = gpg_error_from_syserror ();
+          log_error ("can't create `%s': %s\n", fname, gpg_strerror (err));
+          xfree (fname);
+          unlock_trusttable ();
+          return err;
         }
+      fputs (headerblurb, fp);
+      fclose (fp);
     }
-  if (rc != -1)
+  fp = fopen (fname, "a+");
+  if (!fp)
     {
-      if (trustfp)
-        fclose (trustfp);
-      trustfp = NULL;
-      trustfp_used--;
-      return rc;   /* Error in the trustlist. */
+      err = gpg_error_from_syserror ();
+      log_error ("can't open `%s': %s\n", fname, gpg_strerror (err));
+      xfree (fname);
+      unlock_trusttable ();
+      return err;
     }
-  rc = 0;
 
   /* Append the key. */
-  fflush (trustfp);
-  fputs ("\n# ", trustfp);
-  print_sanitized_string (trustfp, name, 0);
-  fprintf (trustfp, "\n%s %c\n", fpr, flag);
-  if (ferror (trustfp))
-    rc = gpg_error (gpg_err_code_from_errno (errno));
+  fputs ("\n# ", fp);
+  print_sanitized_string (fp, name, 0);
+  fprintf (fp, "\n%s %c\n", fpr, flag);
+  if (ferror (fp))
+    err = gpg_error_from_syserror ();
   
-  /* close because we are in append mode */
-  if (fclose (trustfp))
-    rc = gpg_error (gpg_err_code_from_errno (errno));
-  trustfp = NULL;
-  trustfp_used--;
-  return rc;
+  if (fclose (fp))
+    err = gpg_error_from_syserror ();
+
+  if (!err)
+    agent_reload_trustlist ();
+  xfree (fname);
+  unlock_trusttable ();
+  return err;
 }
 
 
-void
-agent_trustlist_housekeeping (void)
-{
-  if (reload_trustlist_pending && !trustfp_used)
-    {
-      if (trustfp)
-        {
-          fclose (trustfp);
-          trustfp = NULL;
-        }
-      reload_trustlist_pending = 0;
-    }
-}
-
-
-/* Not all editors are editing files in place, thus a changes
-   trustlist.txt won't be recognozed if we keep the file descriptor
-   open. This function may be used to explicitly close that file
-   descriptor, which will force a reopen in turn. */
+/* This function may be called to force reloading of the
+   trustlist.  */
 void
 agent_reload_trustlist (void)
 {
-  reload_trustlist_pending = 1;
-  agent_trustlist_housekeeping ();
+  /* All we need to do is to delete the trusttable.  At the next
+     access it will get re-read. */
+  lock_trusttable ();
+  xfree (trusttable);
+  trusttable = NULL;
+  trusttablesize = 0;
+  unlock_trusttable ();
 }
