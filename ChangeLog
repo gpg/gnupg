@@ -1,3 +1,11 @@
+2006-09-18  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.23.
+	
+	* configure.ac (--enable-agent-only): Donot build tools and doc
+	(--disable-tools,--disable-doc): New.
+	* Makefile.am (SUBDIRS): Allow to conditional build tools and doc.
+
 2006-09-14  Werner Koch  <wk@g10code.com>
 
  	Replaced all call gpg_error_from_errno(errno) by

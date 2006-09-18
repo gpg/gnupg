@@ -27,7 +27,7 @@ min_automake_version="1.9.3"
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
 m4_define([my_version], [1.9.23])
-m4_define([my_issvn], [yes])
+m4_define([my_issvn], [no])
 
 
 m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
@@ -80,6 +80,8 @@ GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 GNUPG_BUILD_PROGRAM(agent, yes)
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
+GNUPG_BUILD_PROGRAM(tools, yes)
+GNUPG_BUILD_PROGRAM(doc, yes)
 GNUPG_BUILD_PROGRAM(symcryptrun, no)
 
 AC_SUBST(PACKAGE)
@@ -153,7 +155,6 @@ test -n "$GNUPG_PROTECT_TOOL_PGM" \
 AC_ARG_ENABLE(agent-only,
     AC_HELP_STRING([--enable-agent-only],[build only the gpg-agent]),
     build_agent_only=$enableval)
-
 
 # SELinux support includes tracking of sensitive files to avoid
 # leaking their contents through processing these files by gpg itself
@@ -1218,6 +1219,8 @@ if test "$build_agent_only" = "yes" ; then
   build_gpg=no
   build_gpgsm=no
   build_scdaemon=no
+  build_tools=no
+  build_doc=no
 fi
 
 
@@ -1225,6 +1228,8 @@ AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
 AM_CONDITIONAL(BUILD_GPGSM, test "$build_gpgsm" = "yes")
 AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
+AM_CONDITIONAL(BUILD_TOOLS, test "$build_tools" = "yes")
+AM_CONDITIONAL(BUILD_DOC,   test "$build_doc" = "yes")
 AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 
 AM_CONDITIONAL(RUN_GPG_TESTS,

@@ -56,6 +56,16 @@ scd = scd
 else
 scd =
 endif
+if BUILD_TOOLS
+scd = tools
+else
+scd =
+endif
+if BUILD_DOC
+scd = doc
+else
+scd =
+endif
 
 if HAVE_W32_SYSTEM
 tests =
@@ -64,7 +74,7 @@ tests = tests
 endif
 
 SUBDIRS = m4 intl gl jnlib common ${kbx} \
- ${gpg} ${keyserver} ${sm} ${agent} ${scd} tools po doc ${tests}
+ ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${tools} po ${doc} ${tests}
 
 dist-hook:
 	@set -e; \

@@ -849,13 +849,16 @@ recipients are valid, the client has to take care of this.  All
 successful @code{ENCRYPT} command.
 
 @example
-  INPUT FD=@var{n} [--armor|--base64|--binary]
+  INPUT FD[=@var{n}] [--armor|--base64|--binary]
 @end example
 
 Set the file descriptor for the message to be encrypted to @var{n}.
 Obviously the pipe must be open at that point, the server establishes
 its own end.  If the server returns an error the client should consider
-this session failed.
+this session failed.  If @var{n} is not given, this commands uses the
+last file descriptor passed to the application.
+@xref{fun-assuan_sendfd, ,the assuan_sendfd function,assuan,the Libassuan
+manual}, on how to do descriptor passing.
 
 The @code{--armor} option may be used to advice the server that the
 input data is in @acronym{PEM} format, @code{--base64} advices that a
@@ -865,7 +868,7 @@ tries to figure out the used encoding, but this may not always be
 correct.
 
 @example
-  OUTPUT FD=@var{n} [--armor|--base64]
+  OUTPUT FD[=@var{n}] [--armor|--base64]
 @end example
 
 Set the file descriptor to be used for the output (i.e. the encrypted
@@ -923,13 +926,13 @@ requesting this from the user.
 Signing is usually done with these commands:
 
 @example
-  INPUT FD=@var{n} [--armor|--base64|--binary]
+  INPUT FD[=@var{n}] [--armor|--base64|--binary]
 @end example
 
 This tells @command{GPGSM} to read the data to sign from file descriptor @var{n}.
 
 @example
-  OUTPUT FD=@var{m} [--armor|--base64]
+  OUTPUT FD[=@var{m}] [--armor|--base64]
 @end example
 
 Write the output to file descriptor @var{m}.  If a detached signature is

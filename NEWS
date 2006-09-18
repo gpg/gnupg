@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.9.23
+Noteworthy changes in version 1.9.23 (2006-09-18)
 -------------------------------------------------
 
  * Regular man pages for most tools are now build directly from the
@@ -7,7 +7,8 @@ Noteworthy changes in version 1.9.23
  * The gpg code from 1.4.5 has been fully merged into this release.
    The configure option --enable-gpg is still required to build this
    gpg part.  For production use of OpenPGP the gpg version 1.4.5 is
-   still recommended.
+   still recommended.  Note, that gpg will be installed under the name
+   gpg2 to allow coexisting with an 1.4.x gpg.
 
  * API change in gpg-agent's pkdecrypt command.  Thus an older gpgsm
    may not be used with the current gpg-agent.
