@@ -71,13 +71,12 @@ static void unlock_all (KEYDB_HANDLE hd);
 
 /*
  * Register a resource (which currently may only be a keybox file).
- * The first keybox which is added by this function is
- * created if it does not exist.
- * Note: this function may be called before secure memory is
- * available.
+ * The first keybox which is added by this function is created if it
+ * does not exist.  If AUTO_CREATED is not NULL it will be set to true
+ * if the function has created a a new keybox. 
  */
 int
-keydb_add_resource (const char *url, int force, int secret)
+keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 {
   static int any_secret, any_public;
   const char *resname = url;
@@ -86,6 +85,9 @@ keydb_add_resource (const char *url, int force, int secret)
   FILE *fp;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
   const char *created_fname = NULL;
+
+  if (auto_created)
+    *auto_created = 0;
 
   /* Do we have an URL?
      gnupg-kbx:filename := this is a plain keybox
@@ -195,6 +197,8 @@ keydb_add_resource (const char *url, int force, int secret)
           if (!opt.quiet)
             log_info (_("keybox `%s' created\n"), filename);
           created_fname = filename;
+          if (auto_created)
+            *auto_created = 1;
 	}
 	fclose (fp);
 	fp = NULL;

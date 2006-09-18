@@ -1299,10 +1299,29 @@ main ( int argc, char **argv)
   if (!cmd && opt.fingerprint && !with_fpr)
     set_cmd (&cmd, aListKeys);
   
-  if (!nrings && default_keyring)  /* add default keybox */
-    keydb_add_resource ("pubring.kbx", 0, 0);
+  if (!nrings && default_keyring)  /* Add default keybox. */
+    {
+      int created;
+
+      keydb_add_resource ("pubring.kbx", 0, 0, &created);
+      if (created)
+        {
+          /* Import the standard certificates for a new default keybox. */
+          char *filelist[2];
+          
+          filelist[0] = make_filename (GNUPG_DATADIR, "com-certs.pem", NULL);
+          filelist[1] = NULL;
+          if (!access (filelist[0], F_OK))
+            {
+              log_info (_("importing common certificates `%s'\n"),
+                        filelist[0]);
+              gpgsm_import_files (&ctrl, 1, filelist, open_read);
+            }
+          xfree (filelist[0]);
+        }
+    }
   for (sl = nrings; sl; sl = sl->next)
-    keydb_add_resource (sl->d, 0, 0);
+    keydb_add_resource (sl->d, 0, 0, NULL);
   FREE_STRLIST(nrings);
 
   if (!do_not_setup_keys)

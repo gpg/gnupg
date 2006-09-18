@@ -1,3 +1,7 @@
+2006-09-18  Werner Koch  <wk@g10code.com>
+
+	* com-certs.pem: New.
+
 2006-09-13  Werner Koch  <wk@g10code.com>
 
 	* gpg.texi (GPG Esoteric Options): Fixed typo in

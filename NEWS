@@ -28,6 +28,9 @@ Noteworthy changes in version 1.9.23
 
  * A global trustlist may now be used.  See doc/examples/trustlist.txt.
 
+ * When creating a new pubring.kbx keybox common certificates are
+   imported.
+
 
 Noteworthy changes in version 1.9.22 (2006-07-27)
 -------------------------------------------------

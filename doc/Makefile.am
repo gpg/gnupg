@@ -37,7 +37,7 @@ noinst_PROGRAMS = yat2m
 
 info_TEXINFOS = gnupg.texi
 
-dist_pkgdata_DATA = qualified.txt FAQ faq.html
+dist_pkgdata_DATA = qualified.txt FAQ faq.html com-certs.pem
 
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi assuan.texi \
