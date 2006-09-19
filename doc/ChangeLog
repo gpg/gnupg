@@ -1,3 +1,9 @@
+2006-09-19  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi: Some restructuring.
+
+	* Makefile.am (online): New target.
+
 2006-09-18  Werner Koch  <wk@g10code.com>
 
 	* com-certs.pem: New.

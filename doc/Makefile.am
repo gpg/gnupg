@@ -125,3 +125,12 @@ $(myman_pages) : yat2m-stamp
                fi; \
              fi
 
+
+online: gnupg.html gnupg.pdf
+	set -e; \
+	echo "Uploading current manuals to www.gnupg.org ..."; \
+        user=werner ; \
+	(cd gnupg.html && rsync -vr --exclude='.svn' .  \
+	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg/ ); \
+        rsync -v gnupg.pdf $${user}@cvs.gnupg.org:webspace/manuals/
+

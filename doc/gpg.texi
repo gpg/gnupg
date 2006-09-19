@@ -800,7 +800,7 @@ every execution of gpg.
 
 Please remember that option parsing stops as soon as a non-option is
 encountered, you can explicitly stop parsing by using the special option
-"--".
+@code{--}.
 
 @c *******************************************
 @c ********  CONFIGURATION OPTIONS  **********
@@ -813,120 +813,11 @@ in the option file.
 
 @table @gnupgtabopt
 
-@item XXX
-foo
-
-@end table
-
-
-@c *******************************************
-@c ********  KEY RELATED OPTIONS  ************
-@c *******************************************
-@node GPG Key related Options
-@subsection Key related options
-
-@table @gnupgtabopt
-
-@item XXX
-foo
-
-@end table
-
-@c *******************************************
-@c ********  INPUT AND OUTPUT  ***************
-@c *******************************************
-@node GPG Input and Output
-@subsection Input and Output
-
-@table @gnupgtabopt
-
-@item XXX
-foo
-
-@end table
-
-@c *******************************************
-@c ********  OPENPGP OPTIONS  ****************
-@c *******************************************
-@node OpenPGP Options
-@subsection OpenPGP protocol specific options.
-
-@table @gnupgtabopt
-
-@item XXX
-foo
-
-@end table
-
-@c *******************************************
-@c ********  ESOTERIC OPTIONS  ***************
-@c *******************************************
-@node GPG Esoteric Options
-@subsection Doing things one usually don't want to do.
-
-@table @gnupgtabopt
-
-@item XXX
-foo
-
-
-@item --armor
-@itemx -a
-@opindex armor
-Create ASCII armored output.  The default is to create the binary
-OpenPGP format.
-
-@item --output @var{file}
-@itemx -o @var{file}
-@opindex output
-Write output to @var{file}.
-
-@item --max-output @code{n}
-@opindex max-output
-This option sets a limit on the number of bytes that will be generated
-when processing a file. Since OpenPGP supports various levels of
-compression, it is possible that the plaintext of a given message may be
-significantly larger than the original OpenPGP message. While GnuPG
-works properly with such messages, there is often a desire to set a
-maximum file size that will be generated before processing is forced to
-stop by the OS limits. Defaults to 0, which means "no limit".
-
-@item --mangle-dos-filenames
-@itemx --no-mangle-dos-filenames
-@opindex mangle-dos-filenames
-@opindex no-mangle-dos-filenames
-Older version of Windows cannot handle filenames with more than one
-dot. --mangle-dos-filenames causes GnuPG to replace (rather than add to)
-the extension of an output filename to avoid this problem. This option
-is off by default and has no effect on non-Windows platforms.
-
-@item --local-user @var{name}
-@itemx -u
-@opindex local-user
-Use @var{name} as the key to sign with. Note that this option overrides
---default-key.
-
 @item --default-key @var{name}
 @opindex default-key
 Use @var{name} as the default key to sign with. If this option is not
 used, the default key is the first key found in the secret keyring.
 Note that -u or --local-user overrides this option.
-
-@item --recipient @var{name}
-@itemx -r
-@opindex recipient
-Encrypt for user id @var{name}. If this option or --hidden-recipient is
-not specified, GnuPG asks for the user-id unless --default-recipient is
-given.
-
-@item --hidden-recipient @var{name}
-@itemx -R
-@opindex hidden-recipient
-Encrypt for user ID @var{name}, but hide the key ID of this user's
-key. This option helps to hide the receiver of the message and is a
-limited countermeasure against traffic analysis. If this option or
---recipient is not specified, GnuPG asks for the user ID unless
---default-recipient is given.
 
 @item --default-recipient @var{name}
 @opindex default-recipient
@@ -943,32 +834,252 @@ one from the secret keyring or the one set with --default-key.
 @opindex no-default-recipient
 Reset --default-recipient and --default-recipient-self.
 
-@item --encrypt-to @code{name}
-Same as --recipient but this one is intended for use
-in the options file and may be used with
-your own user-id as an "encrypt-to-self". These keys
-are only used when there are other recipients given
-either by use of --recipient or by the asked user id.
-No trust checking is performed for these user ids and
-even disabled keys can be used.
-
-@item --hidden-encrypt-to @code{name}
-Same as --hidden-recipient but this one is intended for use in the
-options file and may be used with your own user-id as a hidden
-"encrypt-to-self". These keys are only used when there are other
-recipients given either by use of --recipient or by the asked user id.
-No trust checking is performed for these user ids and even disabled
-keys can be used.
-
-@item --no-encrypt-to
-Disable the use of all --encrypt-to and --hidden-encrypt-to keys.
-
 @item -v, --verbose
+@opindex verbose
 Give more information during processing. If used
 twice, the input data is listed in detail.
 
+@item --no-verbose
+@opindex no-verbose
+Reset verbose level to 0.
+
 @item -q, --quiet
+@opindex quiet
 Try to be as quiet as possible.
+
+@item --list-options @code{parameters}
+@opindex list-options
+This is a space or comma delimited string that gives options used when
+listing keys and signatures (that is, --list-keys, --list-sigs,
+--list-public-keys, --list-secret-keys, and the --edit-key functions).
+Options can be prepended with a `no-' to give the opposite meaning.
+The options are:
+
+@table @asis
+
+@item show-photos
+@opindex list-options:show-photos
+Causes --list-keys, --list-sigs, --list-public-keys, and
+--list-secret-keys to display any photo IDs attached to the key.
+Defaults to no. See also --photo-viewer.
+
+@item show-policy-urls
+@opindex list-options:show-policy-urls
+Show policy URLs in the --list-sigs or --check-sigs listings.
+Defaults to no.
+
+@item show-notations
+@itemx show-std-notations
+@itemx show-user-notations
+@opindex list-options:show-notations
+@opindex list-options:show-std-notations
+@opindex list-options:show-user-notations
+Show all, IETF standard, or user-defined signature notations in the
+--list-sigs or --check-sigs listings. Defaults to no.
+
+@item show-keyserver-urls
+
+Show any preferred keyserver URL in the --list-sigs or --check-sigs
+listings. Defaults to no.
+
+@item show-uid-validity
+Display the calculated validity of user IDs during key listings.
+Defaults to no.
+
+@item show-unusable-uids
+Show revoked and expired user IDs in key listings. Defaults to no.
+
+@item show-unusable-subkeys
+Show revoked and expired subkeys in key listings. Defaults to no.
+
+@item show-keyring
+Display the keyring name at the head of key listings to show which
+keyring a given key resides on. Defaults to no.
+
+@item show-sig-expire
+Show signature expiration dates (if any) during --list-sigs or
+--check-sigs listings. Defaults to no.
+
+@item show-sig-subpackets
+Include signature subpackets in the key listing. This option can take
+an optional argument list of the subpackets to list. If no argument
+is passed, list all subpackets. Defaults to no. This option is only
+meaningful when using --with-colons along with --list-sigs or
+--check-sigs.
+@end table
+
+@item --verify-options @code{parameters}
+This is a space or comma delimited string that gives options used when
+verifying signatures. Options can be prepended with a `no-' to give
+the opposite meaning. The options are:
+
+@table @asis
+
+@item show-photos
+Display any photo IDs present on the key that issued the signature.
+Defaults to no. See also --photo-viewer.
+
+@item show-policy-urls
+Show policy URLs in the signature being verified. Defaults to no.
+
+@item show-notations
+@itemx show-std-notations
+@itemx show-user-notations
+Show all, IETF standard, or user-defined signature notations in the
+signature being verified. Defaults to IETF standard.
+
+@item show-keyserver-urls
+Show any preferred keyserver URL in the signature being verified.
+Defaults to no.
+
+@item show-uid-validity
+Display the calculated validity of the user IDs on the key that issued
+the signature. Defaults to no.
+
+@item show-unusable-uids
+Show revoked and expired user IDs during signature verification.
+Defaults to no.
+
+@item pka-lookups
+Enable PKA lookups to verify sender addresses. Note that PKA is based
+on DNS, and so enabling this option may disclose information on when
+and what signatures are verified or to whom data is encrypted. This
+is similar to the "web bug" described for the auto-key-retrieve
+feature.
+
+@item pka-trust-increase
+Raise the trust in a signature to full if the signature passes PKA
+validation. This option is only meaningful if pka-lookups is set.
+@end table
+
+@item --enable-dsa2
+@itemx --disable-dsa2
+Enables new-style DSA keys which (unlike the old style) may be larger
+than 1024 bit and use hashes other than SHA-1 and RIPEMD/160. Note
+that very few programs currently support these keys and signatures
+from them.
+
+@item --photo-viewer @code{string}
+This is the command line that should be run to view a photo ID. "%i"
+will be expanded to a filename containing the photo. "%I" does the
+same, except the file will not be deleted once the viewer exits.
+Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
+for the key fingerprint, "%t" for the extension of the image type
+(e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
+and "%%" for an actual percent sign. If neither %i or %I are present,
+then the photo will be supplied to the viewer on standard input.
+
+The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
+stdin". Note that if your image viewer program is not secure, then
+executing it from GnuPG does not make it secure.
+
+@item --exec-path @code{string}
+Sets a list of directories to search for photo viewers and keyserver
+helpers. If not provided, keyserver helpers use the compiled-in
+default directory, and photo viewers use the $PATH environment
+variable.
+Note, that on W32 system this value is ignored when searching for
+keyserver helpers.
+
+@item --keyring @code{file}
+Add @code{file} to the current list of keyrings. If @code{file} begins
+with a tilde and a slash, these are replaced by the $HOME
+directory. If the filename does not contain a slash, it is assumed to
+be in the GnuPG home directory ("~/.gnupg" if --homedir or $GNUPGHOME
+is not used).
+
+Note that this adds a keyring to the current list. If the intent is
+to use the specified keyring alone, use --keyring along with
+--no-default-keyring.
+
+@item --secret-keyring @code{file}
+Same as --keyring but for the secret keyrings.
+
+@item --primary-keyring @code{file}
+Designate @code{file} as the primary public keyring. This means that
+newly imported keys (via --import or keyserver --recv-from) will go to
+this keyring.
+
+@item --trustdb-name @code{file}
+Use @code{file} instead of the default trustdb. If @code{file} begins
+with a tilde and a slash, these are replaced by the $HOME
+directory. If the filename does not contain a slash, it is assumed to
+be in the GnuPG home directory ("~/.gnupg" if --homedir or $GNUPGHOME
+is not used).
+
+@include opt-homedir.texi
+
+
+@item --pcsc-driver @code{file}
+Use @code{file} to access the smartcard reader. The current default is
+`libpcsclite.so.1' for GLIBC based systems,
+`/System/Library/Frameworks/PCSC.framework/PCSC' for MAC OS X,
+`winscard.dll' for Windows and `libpcsclite.so' for other systems.
+
+@item --disable-ccid
+Disable the integrated support for CCID compliant readers. This
+allows to fall back to one of the other drivers even if the internal
+CCID driver can handle the reader. Note, that CCID support is only
+available if libusb was available at build time.
+
+@item --reader-port @code{number_or_string}
+This option may be used to specify the port of the card terminal. A
+value of 0 refers to the first serial device; add 32768 to access USB
+devices. The default is 32768 (first USB device). PC/SC or CCID
+readers might need a string here; run the program in verbose mode to get
+a list of available readers. The default is then the first reader
+found.
+
+@item --display-charset @code{name}
+Set the name of the native character set. This is used to convert
+some informational strings like user IDs to the proper UTF-8 encoding.
+Note that this has nothing to do with the character set of data to be
+encrypted or signed; GnuPG does not recode user supplied data. If
+this option is not used, the default character set is determined from
+the current locale. A verbosity level of 3 shows the chosen set.
+Valid values for @code{name} are:
+
+@table @asis
+
+@item iso-8859-1
+This is the Latin 1 set.
+
+@item iso-8859-2
+The Latin 2 set.
+
+@item iso-8859-15
+This is currently an alias for
+the Latin 1 set.
+
+@item koi8-r
+The usual Russian set (rfc1489).
+
+@item utf-8
+Bypass all translations and assume
+that the OS uses native UTF-8 encoding.
+@end table
+
+@item --utf8-strings
+@itemx --no-utf8-strings
+Assume that command line arguments are given as UTF8 strings. The
+default (--no-utf8-strings) is to assume that arguments are encoded in
+the character set as specified by --display-charset. These options
+affect all following arguments. Both options may be used multiple
+times.
+
+@item --options @code{file}
+Read options from @code{file} and do not try to read
+them from the default options file in the homedir
+(see --homedir). This option is ignored if used
+in an options file.
+
+@item --no-options
+Shortcut for "--options /dev/null". This option is
+detected before an attempt to open an option file.
+Using this option will also prevent the creation of a
+"~./gnupg" homedir.
+
+
 
 @item -z @code{n}
 @itemx --compress-level @code{n}
@@ -988,44 +1099,16 @@ at half the speed. This is useful under extreme low memory
 circumstances when the file was originally compressed at a high
 --bzip2-compress-level.
 
-@item -t, --textmode
-@itemx --no-textmode
-Treat input files as text and store them in the OpenPGP canonical text
-form with standard "CRLF" line endings. This also sets the necessary
-flags to inform the recipient that the encrypted or signed data is
-text and may need its line endings converted back to whatever the
-local system uses. This option is useful when communicating between
-two platforms that have different line ending conventions (UNIX-like
-to Mac, Mac to Windows, etc). --no-textmode disables this option, and
-is the default.
 
-If -t (but not --textmode) is used together with armoring and signing,
-this enables clearsigned messages. This kludge is needed for
-command-line compatibility with command-line versions of PGP; normally
-you would use --sign or --clearsign to select the type of the
-signature.
 
-@item -n, --dry-run
-Don't make any changes (this is not completely implemented).
-
-@item -i, --interactive
-Prompt before overwriting any files.
-
-@item --batch
-@itemx --no-batch
-Use batch mode. Never ask, do not allow interactive commands.
---no-batch disables this option.
-
-@item --no-tty
-Make sure that the TTY (terminal) is never used for any output.
-This option is needed in some cases because GnuPG sometimes prints
-warnings to the TTY if --batch is used.
-
-@item --yes
-Assume "yes" on most questions.
-
-@item --no
-Assume "no" on most questions.
+@item --mangle-dos-filenames
+@itemx --no-mangle-dos-filenames
+@opindex mangle-dos-filenames
+@opindex no-mangle-dos-filenames
+Older version of Windows cannot handle filenames with more than one
+dot. --mangle-dos-filenames causes GnuPG to replace (rather than add to)
+the extension of an output filename to avoid this problem. This option
+is off by default and has no effect on non-Windows platforms.
 
 @item --ask-cert-level
 @itemx --no-ask-cert-level
@@ -1108,9 +1191,6 @@ database says. This is the default model if such a database already
 exists.
 @end table
 
-@item --always-trust
-Identical to `--trust-model always'. This option is deprecated.
-
 @item --auto-key-locate @code{parameters}
 @itemx --no-auto-key-locate
 GnuPG can automatically locate and retrieve keys as needed using this
@@ -1163,7 +1243,7 @@ particular keyserver.
 
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. The keyserver
-"hkp://subkeys.pgp.net" uses round robin DNS to give a different
+@code{hkp://subkeys.pgp.net} uses round robin DNS to give a different
 keyserver each time you use it.
 
 @item --keyserver-options @code{name=value1 }
@@ -1253,6 +1333,268 @@ When retrieving a key via DNS CERT, only accept keys up to this size.
 Defaults to 16384 bytes.
 @end table
 
+@item --completes-needed @code{n}
+Number of completely trusted users to introduce a new
+key signer (defaults to 1).
+
+@item --marginals-needed @code{n}
+Number of marginally trusted users to introduce a new
+key signer (defaults to 3)
+
+@item --max-cert-depth @code{n}
+Maximum depth of a certification chain (default is 5).
+
+@item --simple-sk-checksum
+Secret keys are integrity protected by using a SHA-1 checksum. This
+method is part of the upcoming enhanced OpenPGP specification but
+GnuPG already uses it as a countermeasure against certain attacks.
+Old applications don't understand this new format, so this option may
+be used to switch back to the old behaviour. Using this option bears
+a security risk. Note that using this option only takes effect when
+the secret key is encrypted - the simplest way to make this happen is
+to change the passphrase on the key (even changing it to the same
+value is acceptable).
+
+@item --no-sig-cache
+Do not cache the verification status of key signatures.
+Caching gives a much better performance in key listings. However, if
+you suspect that your public keyring is not save against write
+modifications, you can use this option to disable the caching. It
+probably does not make sense to disable it because all kind of damage
+can be done if someone else has write access to your public keyring.
+
+@item --no-sig-create-check
+GnuPG normally verifies each signature right after creation to protect
+against bugs and hardware malfunctions which could leak out bits from
+the secret key. This extra verification needs some time (about 115%
+for DSA keys), and so this option can be used to disable it.
+However, due to the fact that the signature creation needs manual
+interaction, this performance penalty does not matter in most settings.
+
+@item --auto-check-trustdb
+@itemx --no-auto-check-trustdb
+If GnuPG feels that its information about the Web of Trust has to be
+updated, it automatically runs the --check-trustdb command internally.
+This may be a time consuming process. --no-auto-check-trustdb
+disables this option.
+
+@item --use-agent
+@itemx --no-use-agent
+Try to use the GnuPG-Agent. Please note that this agent is still under
+development. With this option, GnuPG first tries to connect to the
+agent before it asks for a passphrase. --no-use-agent disables this
+option.
+
+@item --gpg-agent-info
+Override the value of the environment variable
+@samp{GPG_AGENT_INFO}. This is only used when --use-agent has been given
+
+@item --lock-once
+Lock the databases the first time a lock is requested
+and do not release the lock until the process
+terminates.
+
+@item --lock-multiple
+Release the locks every time a lock is no longer
+needed. Use this to override a previous --lock-once
+from a config file.
+
+@item --lock-never
+Disable locking entirely. This option should be used only in very
+special environments, where it can be assured that only one process
+is accessing those files. A bootable floppy with a stand-alone
+encryption system will probably use this. Improper usage of this
+option may lead to data and key corruption.
+
+@item --exit-on-status-write-error
+This option will cause write errors on the status FD to immediately
+terminate the process. That should in fact be the default but it
+never worked this way and thus we need an option to enable this, so
+that the change won't break applications which close their end of a
+status fd connected pipe too early. Using this option along with
+--enable-progress-filter may be used to cleanly cancel long running
+gpg operations.
+
+@item --limit-card-insert-tries @code{n}
+With @code{n} greater than 0 the number of prompts asking to insert a
+smartcard gets limited to N-1. Thus with a value of 1 gpg won't at
+all ask to insert a card if none has been inserted at startup. This
+option is useful in the configuration file in case an application does
+not know about the smartcard support and waits ad infinitum for an
+inserted card.
+
+@item --no-random-seed-file
+GnuPG uses a file to store its internal random pool over invocations.
+This makes random generation faster; however sometimes write operations
+are not desired. This option can be used to achieve that with the cost of
+slower random generation.
+
+@item --no-greeting
+Suppress the initial copyright message.
+
+@item --no-secmem-warning
+Suppress the warning about "using insecure memory".
+
+@item --no-permission-warning
+Suppress the warning about unsafe file and home directory (--homedir)
+permissions. Note that the permission checks that GnuPG performs are
+not intended to be authoritative, but rather they simply warn about
+certain common permission problems. Do not assume that the lack of a
+warning means that your system is secure.
+
+Note that the warning for unsafe --homedir permissions cannot be
+suppressed in the gpg.conf file, as this would allow an attacker to
+place an unsafe gpg.conf file in place, and use this file to suppress
+warnings about itself. The --homedir permissions warning may only be
+suppressed on the command line.
+
+@item --no-mdc-warning
+Suppress the warning about missing MDC integrity protection.
+
+@item --require-secmem
+@itemx --no-require-secmem
+Refuse to run if GnuPG cannot get secure memory. Defaults to no
+(i.e. run, but give a warning).
+
+
+@item --require-cross-certification
+@itemx --no-require-cross-certification
+When verifying a signature made from a subkey, ensure that the cross
+certification "back signature" on the subkey is present and valid.
+This protects against a subtle attack against subkeys that can sign.
+Defaults to --require-cross-certification for @command{gpg2}.
+
+@item --expert
+@itemx --no-expert
+Allow the user to do certain nonsensical or "silly" things like
+signing an expired or revoked key, or certain potentially incompatible
+things like generating unusual key types. This also disables certain
+warning messages about potentially incompatible actions. As the name
+implies, this option is for experts only. If you don't fully
+understand the implications of what it allows you to do, leave this
+off. --no-expert disables this option.
+
+
+
+
+@end table
+
+
+@c *******************************************
+@c ********  KEY RELATED OPTIONS  ************
+@c *******************************************
+@node GPG Key related Options
+@subsection Key related options
+
+@table @gnupgtabopt
+
+@item --recipient @var{name}
+@itemx -r
+@opindex recipient
+Encrypt for user id @var{name}. If this option or --hidden-recipient is
+not specified, GnuPG asks for the user-id unless --default-recipient is
+given.
+
+@item --hidden-recipient @var{name}
+@itemx -R
+@opindex hidden-recipient
+Encrypt for user ID @var{name}, but hide the key ID of this user's
+key. This option helps to hide the receiver of the message and is a
+limited countermeasure against traffic analysis. If this option or
+--recipient is not specified, GnuPG asks for the user ID unless
+--default-recipient is given.
+
+@item --encrypt-to @code{name}
+Same as --recipient but this one is intended for use
+in the options file and may be used with
+your own user-id as an "encrypt-to-self". These keys
+are only used when there are other recipients given
+either by use of --recipient or by the asked user id.
+No trust checking is performed for these user ids and
+even disabled keys can be used.
+
+@item --hidden-encrypt-to @code{name}
+Same as --hidden-recipient but this one is intended for use in the
+options file and may be used with your own user-id as a hidden
+"encrypt-to-self". These keys are only used when there are other
+recipients given either by use of --recipient or by the asked user id.
+No trust checking is performed for these user ids and even disabled
+keys can be used.
+
+@item --no-encrypt-to
+Disable the use of all --encrypt-to and --hidden-encrypt-to keys.
+
+@item --group @code{name=value1 }
+Sets up a named group, which is similar to aliases in email programs.
+Any time the group name is a recipient (-r or --recipient), it will be
+expanded to the values specified. Multiple groups with the same name
+are automatically merged into a single group.
+
+The values are @code{key IDs} or fingerprints, but any key description
+is accepted. Note that a value with spaces in it will be treated as
+two different values. Note also there is only one level of expansion
+- you cannot make an group that points to another group. When used
+from the command line, it may be necessary to quote the argument to
+this option to prevent the shell from treating it as multiple
+arguments.
+
+@item --ungroup @code{name}
+Remove a given entry from the --group list.
+
+@item --no-groups
+Remove all entries from the --group list.
+
+@item --local-user @var{name}
+@itemx -u
+@opindex local-user
+Use @var{name} as the key to sign with. Note that this option overrides
+--default-key.
+
+@item --try-all-secrets
+Don't look at the key ID as stored in the message but try all secret
+keys in turn to find the right decryption key. This option forces the
+behaviour as used by anonymous recipients (created by using
+--throw-keyids) and might come handy in case where an encrypted
+message contains a bogus key ID.
+
+
+
+
+
+@end table
+
+@c *******************************************
+@c ********  INPUT AND OUTPUT  ***************
+@c *******************************************
+@node GPG Input and Output
+@subsection Input and Output
+
+@table @gnupgtabopt
+
+@item --armor
+@itemx -a
+@opindex armor
+Create ASCII armored output.  The default is to create the binary
+OpenPGP format.
+
+@item --no-armor
+Assume the input data is not in ASCII armored format.
+
+@item --output @var{file}
+@itemx -o @var{file}
+@opindex output
+Write output to @var{file}.
+
+@item --max-output @code{n}
+@opindex max-output
+This option sets a limit on the number of bytes that will be generated
+when processing a file. Since OpenPGP supports various levels of
+compression, it is possible that the plaintext of a given message may be
+significantly larger than the original OpenPGP message. While GnuPG
+works properly with such messages, there is often a desire to set a
+maximum file size that will be generated before processing is forced to
+stop by the OS limits. Defaults to 0, which means "no limit".
+
 @item --import-options @code{parameters}
 This is a space or comma delimited string that gives options for
 importing keys. Options can be prepended with a `no-' to give the
@@ -1335,257 +1677,239 @@ same as running the --edit-key command "minimize" before export except
 that the local copy of the key is not modified. Defaults to no.
 @end table
 
-@item --list-options @code{parameters}
-This is a space or comma delimited string that gives options used when
-listing keys and signatures (that is, --list-keys, --list-sigs,
---list-public-keys, --list-secret-keys, and the --edit-key functions).
-Options can be prepended with a `no-' to give the opposite meaning.
-The options are:
+@item --with-colons
+@opindex with-colons
+Print key listings delimited by colons. Note that the output will be
+encoded in UTF-8 regardless of any --display-charset setting. This
+format is useful when GnuPG is called from scripts and other programs
+as it is easily machine parsed. The details of this format are
+documented in the file @file{doc/DETAILS}, which is included in the GnuPG
+source distribution.
 
-@table @asis
+@item --fixed-list-mode
+@opindex fixed-list-mode
+Do not merge primary user ID and primary key in --with-colon listing
+mode and print all timestamps as seconds since 1970-01-01.
 
-@item show-photos
-Causes --list-keys, --list-sigs, --list-public-keys, and
---list-secret-keys to display any photo IDs attached to the key.
-Defaults to no. See also --photo-viewer.
+@item --with-fingerprint
+@opindex with-fingerprint
+Same as the command --fingerprint but changes only the format of the output
+and may be used together with another command.
 
-@item show-policy-urls
-Show policy URLs in the --list-sigs or --check-sigs listings.
-Defaults to no.
 
-@item show-notations
-@itemx show-std-notations
-@itemx show-user-notations
-Show all, IETF standard, or user-defined signature notations in the
---list-sigs or --check-sigs listings. Defaults to no.
-
-@item show-keyserver-urls
-Show any preferred keyserver URL in the --list-sigs or --check-sigs
-listings. Defaults to no.
-
-@item show-uid-validity
-Display the calculated validity of user IDs during key listings.
-Defaults to no.
-
-@item show-unusable-uids
-Show revoked and expired user IDs in key listings. Defaults to no.
-
-@item show-unusable-subkeys
-Show revoked and expired subkeys in key listings. Defaults to no.
-
-@item show-keyring
-Display the keyring name at the head of key listings to show which
-keyring a given key resides on. Defaults to no.
-
-@item show-sig-expire
-Show signature expiration dates (if any) during --list-sigs or
---check-sigs listings. Defaults to no.
-
-@item show-sig-subpackets
-Include signature subpackets in the key listing. This option can take
-an optional argument list of the subpackets to list. If no argument
-is passed, list all subpackets. Defaults to no. This option is only
-meaningful when using --with-colons along with --list-sigs or
---check-sigs.
 @end table
 
-@item --verify-options @code{parameters}
-This is a space or comma delimited string that gives options used when
-verifying signatures. Options can be prepended with a `no-' to give
-the opposite meaning. The options are:
+@c *******************************************
+@c ********  OPENPGP OPTIONS  ****************
+@c *******************************************
+@node OpenPGP Options
+@subsection OpenPGP protocol specific options.
 
-@table @asis
+@table @gnupgtabopt
 
-@item show-photos
-Display any photo IDs present on the key that issued the signature.
-Defaults to no. See also --photo-viewer.
+@item -t, --textmode
+@itemx --no-textmode
+Treat input files as text and store them in the OpenPGP canonical text
+form with standard "CRLF" line endings. This also sets the necessary
+flags to inform the recipient that the encrypted or signed data is
+text and may need its line endings converted back to whatever the
+local system uses. This option is useful when communicating between
+two platforms that have different line ending conventions (UNIX-like
+to Mac, Mac to Windows, etc). --no-textmode disables this option, and
+is the default.
 
-@item show-policy-urls
-Show policy URLs in the signature being verified. Defaults to no.
+If -t (but not --textmode) is used together with armoring and signing,
+this enables clearsigned messages. This kludge is needed for
+command-line compatibility with command-line versions of PGP; normally
+you would use --sign or --clearsign to select the type of the
+signature.
 
-@item show-notations
-@itemx show-std-notations
-@itemx show-user-notations
-Show all, IETF standard, or user-defined signature notations in the
-signature being verified. Defaults to IETF standard.
 
-@item show-keyserver-urls
-Show any preferred keyserver URL in the signature being verified.
-Defaults to no.
 
-@item show-uid-validity
-Display the calculated validity of the user IDs on the key that issued
-the signature. Defaults to no.
 
-@item show-unusable-uids
-Show revoked and expired user IDs during signature verification.
-Defaults to no.
+@item --force-v3-sigs
+@itemx --no-force-v3-sigs
+OpenPGP states that an implementation should generate v4 signatures
+but PGP versions 5 through 7 only recognize v4 signatures on key
+material. This option forces v3 signatures for signatures on data.
+Note that this option overrides --ask-sig-expire, as v3 signatures
+cannot have expiration dates. --no-force-v3-sigs disables this
+option.
 
-@item pka-lookups
-Enable PKA lookups to verify sender addresses. Note that PKA is based
-on DNS, and so enabling this option may disclose information on when
-and what signatures are verified or to whom data is encrypted. This
-is similar to the "web bug" described for the auto-key-retrieve
-feature.
+@item --force-v4-certs
+@itemx --no-force-v4-certs
+Always use v4 key signatures even on v3 keys. This option also
+changes the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
+--no-force-v4-certs disables this option.
 
-@item pka-trust-increase
-Raise the trust in a signature to full if the signature passes PKA
-validation. This option is only meaningful if pka-lookups is set.
+@item --force-mdc
+Force the use of encryption with a modification detection code. This
+is always used with the newer ciphers (those with a blocksize greater
+than 64 bits), or if all of the recipient keys indicate MDC support in
+their feature flags.
+
+@item --disable-mdc
+Disable the use of the modification detection code. Note that by
+using this option, the encrypted message becomes vulnerable to a
+message modification attack.
+
+@item --personal-cipher-preferences @code{string}
+Set the list of personal cipher preferences to @code{string}, this list
+should be a string similar to the one printed by the command "pref" in
+the edit menu. This allows the user to factor in their own preferred
+algorithms when algorithms are chosen via recipient key preferences.
+The most highly ranked cipher in this list is also used for the
+--symmetric encryption command.
+
+@item --personal-digest-preferences @code{string}
+Set the list of personal digest preferences to @code{string}, this list
+should be a string similar to the one printed by the command "pref" in
+the edit menu. This allows the user to factor in their own preferred
+algorithms when algorithms are chosen via recipient key preferences.
+The most highly ranked digest algorithm in this list is algo used when
+signing without encryption (e.g. --clearsign or --sign). The default
+value is SHA-1.
+
+@item --personal-compress-preferences @code{string}
+Set the list of personal compression preferences to @code{string}, this
+list should be a string similar to the one printed by the command
+"pref" in the edit menu. This allows the user to factor in their own
+preferred algorithms when algorithms are chosen via recipient key
+preferences. The most highly ranked algorithm in this list is also
+used when there are no recipient keys to consider (e.g. --symmetric).
+
+
+
+@item --s2k-cipher-algo @code{name}
+Use @code{name} as the cipher algorithm used to protect secret keys.
+The default cipher is CAST5. This cipher is also used for
+conventional encryption if --personal-cipher-preferences and
+--cipher-algo is not given.
+
+@item --s2k-digest-algo @code{name}
+Use @code{name} as the digest algorithm used to mangle the passphrases.
+The default algorithm is SHA-1.
+
+@item --s2k-mode @code{n}
+Selects how passphrases are mangled. If @code{n} is 0 a plain
+passphrase (which is not recommended) will be used, a 1 adds a salt to
+the passphrase and a 3 (the default) iterates the whole process a
+couple of times. Unless --rfc1991 is used, this mode is also used for
+conventional encryption.
+
+
+
 @end table
 
-@item --enable-dsa2
-@itemx --disable-dsa2
-Enables new-style DSA keys which (unlike the old style) may be larger
-than 1024 bit and use hashes other than SHA-1 and RIPEMD/160. Note
-that very few programs currently support these keys and signatures
-from them.
+@c ***************************
+@c ******* Compliance ********
+@c ***************************
+@subsection Compliance options
 
-@item --show-photos
-@itemx --no-show-photos
-Causes --list-keys, --list-sigs, --list-public-keys,
---list-secret-keys, and verifying a signature to also display the
-photo ID attached to the key, if any. See also --photo-viewer. These
-options are deprecated. Use `--list-options [no-]show-photos' and/or
-`--verify-options [no-]show-photos' instead.
+These options control what GnuPG is compliant to. Only one of these
+options may be active at a time. Note that the default setting of
+this is nearly always the correct one. See the INTEROPERABILITY WITH
+OTHER OPENPGP PROGRAMS section below before using one of these
+options.
 
-@item --photo-viewer @code{string}
-This is the command line that should be run to view a photo ID. "%i"
-will be expanded to a filename containing the photo. "%I" does the
-same, except the file will not be deleted once the viewer exits.
-Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
-for the key fingerprint, "%t" for the extension of the image type
-(e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
-and "%%" for an actual percent sign. If neither %i or %I are present,
-then the photo will be supplied to the viewer on standard input.
+@table @gnupgtabopt
 
-The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
-stdin". Note that if your image viewer program is not secure, then
-executing it from GnuPG does not make it secure.
+@item --gnupg
+@opindex gnupg
+Use standard GnuPG behavior. This is essentially OpenPGP behavior
+(see --openpgp), but with some additional workarounds for common
+compatibility problems in different versions of PGP. This is the
+default option, so it is not generally needed, but it may be useful to
+override a different compliance option in the gpg.conf file.
 
-@item --exec-path @code{string}
-Sets a list of directories to search for photo viewers and keyserver
-helpers. If not provided, keyserver helpers use the compiled-in
-default directory, and photo viewers use the $PATH environment
-variable.
-Note, that on W32 system this value is ignored when searching for
-keyserver helpers.
+@item --openpgp
+@opindex openpgp
+Reset all packet, cipher and digest options to strict OpenPGP
+behavior. Use this option to reset all previous options like
+--rfc1991, --force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
+--compress-algo to OpenPGP compliant values. All PGP workarounds are
+disabled.
 
-@item --show-keyring
-Display the keyring name at the head of key listings to show which
-keyring a given key resides on. This option is deprecated: use
-`--list-options [no-]show-keyring' instead.
+@item --rfc2440
+opindex rfc2440
+Reset all packet, cipher and digest options to strict RFC-2440
+behavior. Note that this is currently the same thing as --openpgp.
 
-@item --keyring @code{file}
-Add @code{file} to the current list of keyrings. If @code{file} begins
-with a tilde and a slash, these are replaced by the $HOME
-directory. If the filename does not contain a slash, it is assumed to
-be in the GnuPG home directory ("~/.gnupg" if --homedir or $GNUPGHOME
-is not used).
+@item --rfc1991
+@opindex rfc1991
+Try to be more RFC-1991 (PGP 2.x) compliant.
 
-Note that this adds a keyring to the current list. If the intent is
-to use the specified keyring alone, use --keyring along with
---no-default-keyring.
+@item --pgp2
+@opindex pgp2
+Set up all options to be as PGP 2.x compliant as possible, and warn if
+an action is taken (e.g. encrypting to a non-RSA key) that will create
+a message that PGP 2.x will not be able to handle. Note that `PGP
+2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
+available, but the MIT release is a good common baseline.
 
-@item --secret-keyring @code{file}
-Same as --keyring but for the secret keyrings.
+This option implies `--rfc1991 --disable-mdc --no-force-v4-certs
+--no-sk-comment --escape-from-lines --force-v3-sigs
+--no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
+--digest-algo MD5 --compress-algo 1'. It also disables --textmode
+when encrypting.
 
-@item --primary-keyring @code{file}
-Designate @code{file} as the primary public keyring. This means that
-newly imported keys (via --import or keyserver --recv-from) will go to
-this keyring.
+@item --pgp6
+@opindex pgp6
+Set up all options to be as PGP 6 compliant as possible. This
+restricts you to the ciphers IDEA (if the IDEA plugin is installed),
+3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
+compression algorithms none and ZIP. This also disables
+--throw-keyids, and making signatures with signing subkeys as PGP 6
+does not understand signatures made by signing subkeys.
 
-@item --trustdb-name @code{file}
-Use @code{file} instead of the default trustdb. If @code{file} begins
-with a tilde and a slash, these are replaced by the $HOME
-directory. If the filename does not contain a slash, it is assumed to
-be in the GnuPG home directory ("~/.gnupg" if --homedir or $GNUPGHOME
-is not used).
+This option implies `--disable-mdc --no-sk-comment --escape-from-lines
+--force-v3-sigs --no-ask-sig-expire'
 
-@include opt-homedir.texi
+@item --pgp7
+@opindex pgp7
+Set up all options to be as PGP 7 compliant as possible. This is
+identical to --pgp6 except that MDCs are not disabled, and the list of
+allowable ciphers is expanded to add AES128, AES192, AES256, and
+TWOFISH.
 
+@item --pgp8
+@opindex pgp8
+Set up all options to be as PGP 8 compliant as possible. PGP 8 is a
+lot closer to the OpenPGP standard than previous versions of PGP, so
+all this does is disable --throw-keyids and set --escape-from-lines.
+All algorithms are allowed except for the SHA224, SHA384, and SHA512
+digests.
 
-@item --pcsc-driver @code{file}
-Use @code{file} to access the smartcard reader. The current default is
-`libpcsclite.so.1' for GLIBC based systems,
-`/System/Library/Frameworks/PCSC.framework/PCSC' for MAC OS X,
-`winscard.dll' for Windows and `libpcsclite.so' for other systems.
-
-@item --ctapi-driver @code{file}
-Use @code{file} to access the smartcard reader. The current default
-is `libtowitoko.so'. Note that the use of this interface is
-deprecated; it may be removed in future releases.
-
-@item --disable-ccid
-Disable the integrated support for CCID compliant readers. This
-allows to fall back to one of the other drivers even if the internal
-CCID driver can handle the reader. Note, that CCID support is only
-available if libusb was available at build time.
-
-@item --reader-port @code{number_or_string}
-This option may be used to specify the port of the card terminal. A
-value of 0 refers to the first serial device; add 32768 to access USB
-devices. The default is 32768 (first USB device). PC/SC or CCID
-readers might need a string here; run the program in verbose mode to get
-a list of available readers. The default is then the first reader
-found.
-
-@item --display-charset @code{name}
-Set the name of the native character set. This is used to convert
-some informational strings like user IDs to the proper UTF-8 encoding.
-Note that this has nothing to do with the character set of data to be
-encrypted or signed; GnuPG does not recode user supplied data. If
-this option is not used, the default character set is determined from
-the current locale. A verbosity level of 3 shows the chosen set.
-Valid values for @code{name} are:
-
-@table @asis
-
-@item iso-8859-1
-This is the Latin 1 set.
-
-@item iso-8859-2
-The Latin 2 set.
-
-@item iso-8859-15
-This is currently an alias for
-the Latin 1 set.
-
-@item koi8-r
-The usual Russian set (rfc1489).
-
-@item utf-8
-Bypass all translations and assume
-that the OS uses native UTF-8 encoding.
 @end table
 
-@item --utf8-strings
-@itemx --no-utf8-strings
-Assume that command line arguments are given as UTF8 strings. The
-default (--no-utf8-strings) is to assume that arguments are encoded in
-the character set as specified by --display-charset. These options
-affect all following arguments. Both options may be used multiple
-times.
 
-@item --options @code{file}
-Read options from @code{file} and do not try to read
-them from the default options file in the homedir
-(see --homedir). This option is ignored if used
-in an options file.
+@c *******************************************
+@c ********  ESOTERIC OPTIONS  ***************
+@c *******************************************
+@node GPG Esoteric Options
+@subsection Doing things one usually don't want to do.
 
-@item --no-options
-Shortcut for "--options /dev/null". This option is
-detected before an attempt to open an option file.
-Using this option will also prevent the creation of a
-"~./gnupg" homedir.
+@table @gnupgtabopt
 
-@item --load-extension @code{name}
-Load an extension module. If @code{name} does not contain a slash it is
-searched for in the directory configured when GnuPG was built
-(generally "/usr/local/lib/gnupg"). Extensions are not generally
-useful anymore, and the use of this option is deprecated.
+@item -n
+@itemx --dry-run
+@opindex dry-run
+Don't make any changes (this is not completely implemented).
 
-@item --debug @code{flags}
-Set debugging flags. All flags are or-ed and @code{flags} may
+@item --list-only
+Changes the behaviour of some commands. This is like --dry-run but
+different in some cases. The semantic of this command may be extended in
+the future. Currently it only skips the actual decryption pass and
+therefore enables a fast listing of the encryption keys.
+
+@item -i
+@itemx --interactive
+@opindex interactive
+Prompt before overwriting any files.
+
+@item --debug @var{flags}
+@opindex debug
+Set debugging flags. All flags are or-ed and @var{flags} may
 be given in C syntax (e.g. 0x0042).
 
 @item --debug-all
@@ -1669,13 +1993,6 @@ smartcard, and "%%" results in a single "%". %k, %K, and %f are only
 meaningful when making a key signature (certification), and %c is only
 meaningful when using the OpenPGP smartcard.
 
-@item --show-notation
-@itemx --no-show-notation
-Show signature notations in the --list-sigs or --check-sigs listings
-as well as when verifying a signature with a notation in it. These
-options are deprecated. Use `--list-options [no-]show-notation'
-and/or `--verify-options [no-]show-notation' instead.
-
 @item --sig-policy-url @code{string}
 @itemx --cert-policy-url @code{string}
 @itemx --set-policy-url @code{string}
@@ -1686,13 +2003,6 @@ data signatures. --cert-policy-url sets a policy url for key
 signatures (certifications). --set-policy-url sets both.
 
 The same %-expandos used for notation data are available here as well.
-
-@item --show-policy-url
-@itemx --no-show-policy-url
-Show policy URLs in the --list-sigs or --check-sigs listings as well
-as when verifying a signature with a policy URL in it. These options
-are deprecated. Use `--list-options [no-]show-policy-url' and/or
-`--verify-options [no-]show-policy-url' instead.
 
 @item --sig-keyserver-url @code{string}
 Use @code{string} as a preferred keyserver URL for data signatures. If
@@ -1718,17 +2028,6 @@ display the message. This option overrides --set-filename.
 @itemx --no-use-embedded-filename
 Try to create a file with a name as embedded in the data. This can be
 a dangerous option as it allows to overwrite files. Defaults to no.
-
-@item --completes-needed @code{n}
-Number of completely trusted users to introduce a new
-key signer (defaults to 1).
-
-@item --marginals-needed @code{n}
-Number of marginally trusted users to introduce a new
-key signer (defaults to 3)
-
-@item --max-cert-depth @code{n}
-Maximum depth of a certification chain (default is 5).
 
 @item --cipher-algo @code{name}
 Use @code{name} as cipher algorithm. Running the program with the
@@ -1776,34 +2075,6 @@ GnuPG supports but other OpenPGP implementations do not, then some
 users will not be able to use the key signatures you make, or quite
 possibly your entire key.
 
-@item --s2k-cipher-algo @code{name}
-Use @code{name} as the cipher algorithm used to protect secret keys.
-The default cipher is CAST5. This cipher is also used for
-conventional encryption if --personal-cipher-preferences and
---cipher-algo is not given.
-
-@item --s2k-digest-algo @code{name}
-Use @code{name} as the digest algorithm used to mangle the passphrases.
-The default algorithm is SHA-1.
-
-@item --s2k-mode @code{n}
-Selects how passphrases are mangled. If @code{n} is 0 a plain
-passphrase (which is not recommended) will be used, a 1 adds a salt to
-the passphrase and a 3 (the default) iterates the whole process a
-couple of times. Unless --rfc1991 is used, this mode is also used for
-conventional encryption.
-
-@item --simple-sk-checksum
-Secret keys are integrity protected by using a SHA-1 checksum. This
-method is part of the upcoming enhanced OpenPGP specification but
-GnuPG already uses it as a countermeasure against certain attacks.
-Old applications don't understand this new format, so this option may
-be used to switch back to the old behaviour. Using this option bears
-a security risk. Note that using this option only takes effect when
-the secret key is encrypted - the simplest way to make this happen is
-to change the passphrase on the key (even changing it to the same
-value is acceptable).
-
 @item --disable-cipher-algo @code{name}
 Never allow the use of @code{name} as cipher algorithm.
 The given name will not be checked so that a later loaded algorithm
@@ -1813,29 +2084,6 @@ will still get disabled.
 Never allow the use of @code{name} as public key algorithm.
 The given name will not be checked so that a later loaded algorithm
 will still get disabled.
-
-@item --no-sig-cache
-Do not cache the verification status of key signatures.
-Caching gives a much better performance in key listings. However, if
-you suspect that your public keyring is not save against write
-modifications, you can use this option to disable the caching. It
-probably does not make sense to disable it because all kind of damage
-can be done if someone else has write access to your public keyring.
-
-@item --no-sig-create-check
-GnuPG normally verifies each signature right after creation to protect
-against bugs and hardware malfunctions which could leak out bits from
-the secret key. This extra verification needs some time (about 115%
-for DSA keys), and so this option can be used to disable it.
-However, due to the fact that the signature creation needs manual
-interaction, this performance penalty does not matter in most settings.
-
-@item --auto-check-trustdb
-@itemx --no-auto-check-trustdb
-If GnuPG feels that its information about the Web of Trust has to be
-updated, it automatically runs the --check-trustdb command internally.
-This may be a time consuming process. --no-auto-check-trustdb
-disables this option.
 
 @item --throw-keyids
 @itemx --no-throw-keyids
@@ -1893,111 +2141,6 @@ distribution for details on how to use it.
 Same as --command-fd, except the commands are read out of file
 @code{file}
 
-@item --use-agent
-@itemx --no-use-agent
-Try to use the GnuPG-Agent. Please note that this agent is still under
-development. With this option, GnuPG first tries to connect to the
-agent before it asks for a passphrase. --no-use-agent disables this
-option.
-
-@item --gpg-agent-info
-Override the value of the environment variable
-@samp{GPG_AGENT_INFO}. This is only used when --use-agent has been given
-
-@item Compliance options
-These options control what GnuPG is compliant to. Only one of these
-options may be active at a time. Note that the default setting of
-this is nearly always the correct one. See the INTEROPERABILITY WITH
-OTHER OPENPGP PROGRAMS section below before using one of these
-options.
-
-@table @asis
-
-@item --gnupg
-Use standard GnuPG behavior. This is essentially OpenPGP behavior
-(see --openpgp), but with some additional workarounds for common
-compatibility problems in different versions of PGP. This is the
-default option, so it is not generally needed, but it may be useful to
-override a different compliance option in the gpg.conf file.
-
-@item --openpgp
-Reset all packet, cipher and digest options to strict OpenPGP
-behavior. Use this option to reset all previous options like
---rfc1991, --force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
---compress-algo to OpenPGP compliant values. All PGP workarounds are
-disabled.
-
-@item --rfc2440
-Reset all packet, cipher and digest options to strict RFC-2440
-behavior. Note that this is currently the same thing as --openpgp.
-
-@item --rfc1991
-Try to be more RFC-1991 (PGP 2.x) compliant.
-
-@item --pgp2
-Set up all options to be as PGP 2.x compliant as possible, and warn if
-an action is taken (e.g. encrypting to a non-RSA key) that will create
-a message that PGP 2.x will not be able to handle. Note that `PGP
-2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
-available, but the MIT release is a good common baseline.
-
-This option implies `--rfc1991 --disable-mdc --no-force-v4-certs
---no-sk-comment --escape-from-lines --force-v3-sigs
---no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
---digest-algo MD5 --compress-algo 1'. It also disables --textmode
-when encrypting.
-
-@item --pgp6
-Set up all options to be as PGP 6 compliant as possible. This
-restricts you to the ciphers IDEA (if the IDEA plugin is installed),
-3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
-compression algorithms none and ZIP. This also disables
---throw-keyids, and making signatures with signing subkeys as PGP 6
-does not understand signatures made by signing subkeys.
-
-This option implies `--disable-mdc --no-sk-comment --escape-from-lines
---force-v3-sigs --no-ask-sig-expire'
-
-@item --pgp7
-Set up all options to be as PGP 7 compliant as possible. This is
-identical to --pgp6 except that MDCs are not disabled, and the list of
-allowable ciphers is expanded to add AES128, AES192, AES256, and
-TWOFISH.
-
-@item --pgp8
-Set up all options to be as PGP 8 compliant as possible. PGP 8 is a
-lot closer to the OpenPGP standard than previous versions of PGP, so
-all this does is disable --throw-keyids and set --escape-from-lines.
-All algorithms are allowed except for the SHA224, SHA384, and SHA512
-digests.
-@end table
-
-@item --force-v3-sigs
-@itemx --no-force-v3-sigs
-OpenPGP states that an implementation should generate v4 signatures
-but PGP versions 5 through 7 only recognize v4 signatures on key
-material. This option forces v3 signatures for signatures on data.
-Note that this option overrides --ask-sig-expire, as v3 signatures
-cannot have expiration dates. --no-force-v3-sigs disables this
-option.
-
-@item --force-v4-certs
-@itemx --no-force-v4-certs
-Always use v4 key signatures even on v3 keys. This option also
-changes the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
---no-force-v4-certs disables this option.
-
-@item --force-mdc
-Force the use of encryption with a modification detection code. This
-is always used with the newer ciphers (those with a blocksize greater
-than 64 bits), or if all of the recipient keys indicate MDC support in
-their feature flags.
-
-@item --disable-mdc
-Disable the use of the modification detection code. Note that by
-using this option, the encrypted message becomes vulnerable to a
-message modification attack.
-
 @item --allow-non-selfsigned-uid
 @itemx --no-allow-non-selfsigned-uid
 Allow the import and use of keys with user IDs which are not
@@ -2037,79 +2180,6 @@ necessary to get as much data as possible out of the corrupt message.
 However, be aware that a MDC protection failure may also mean that the
 message was tampered with intentionally by an attacker.
 
-@item --lock-once
-Lock the databases the first time a lock is requested
-and do not release the lock until the process
-terminates.
-
-@item --lock-multiple
-Release the locks every time a lock is no longer
-needed. Use this to override a previous --lock-once
-from a config file.
-
-@item --lock-never
-Disable locking entirely. This option should be used only in very
-special environments, where it can be assured that only one process
-is accessing those files. A bootable floppy with a stand-alone
-encryption system will probably use this. Improper usage of this
-option may lead to data and key corruption.
-
-@item --exit-on-status-write-error
-This option will cause write errors on the status FD to immediately
-terminate the process. That should in fact be the default but it
-never worked this way and thus we need an option to enable this, so
-that the change won't break applications which close their end of a
-status fd connected pipe too early. Using this option along with
---enable-progress-filter may be used to cleanly cancel long running
-gpg operations.
-
-@item --limit-card-insert-tries @code{n}
-With @code{n} greater than 0 the number of prompts asking to insert a
-smartcard gets limited to N-1. Thus with a value of 1 gpg won't at
-all ask to insert a card if none has been inserted at startup. This
-option is useful in the configuration file in case an application does
-not know about the smartcard support and waits ad infinitum for an
-inserted card.
-
-@item --no-random-seed-file
-GnuPG uses a file to store its internal random pool over invocations.
-This makes random generation faster; however sometimes write operations
-are not desired. This option can be used to achieve that with the cost of
-slower random generation.
-
-@item --no-verbose
-Reset verbose level to 0.
-
-@item --no-greeting
-Suppress the initial copyright message.
-
-@item --no-secmem-warning
-Suppress the warning about "using insecure memory".
-
-@item --no-permission-warning
-Suppress the warning about unsafe file and home directory (--homedir)
-permissions. Note that the permission checks that GnuPG performs are
-not intended to be authoritative, but rather they simply warn about
-certain common permission problems. Do not assume that the lack of a
-warning means that your system is secure.
-
-Note that the warning for unsafe --homedir permissions cannot be
-suppressed in the gpg.conf file, as this would allow an attacker to
-place an unsafe gpg.conf file in place, and use this file to suppress
-warnings about itself. The --homedir permissions warning may only be
-suppressed on the command line.
-
-@item --no-mdc-warning
-Suppress the warning about missing MDC integrity protection.
-
-@item --require-secmem
-@itemx --no-require-secmem
-Refuse to run if GnuPG cannot get secure memory. Defaults to no
-(i.e. run, but give a warning).
-
-@item --no-armor
-Assume the input data is not in ASCII armored format.
-
 @item --no-default-keyring
 Do not add the default keyrings to the list of keyrings. Note that
 GnuPG will not operate without any keyrings, so if you use this option
@@ -2122,20 +2192,8 @@ Skip the signature verification step. This may be
 used to make the decryption faster if the signature
 verification is not needed.
 
-@item --with-colons
-Print key listings delimited by colons. Note that the output will be
-encoded in UTF-8 regardless of any --display-charset setting. This
-format is useful when GnuPG is called from scripts and other programs
-as it is easily machine parsed. The details of this format are
-documented in the file doc/DETAILS, which is included in the GnuPG
-source distribution.
-
 @item --with-key-data
 Print key listings delimited by colons (like --with-colons) and print the public key data.
-
-@item --with-fingerprint
-Same as the command --fingerprint but changes only the format of the output
-and may be used together with another command.
 
 @item --fast-list-mode
 Changes the output of the list commands to work faster; this is achieved
@@ -2143,16 +2201,6 @@ by leaving some parts empty. Some applications don't need the user ID and
 the trust information given in the listings. By using this options they
 can get a faster listing. The exact behaviour of this option may change
 in future versions.
-
-@item --fixed-list-mode
-Do not merge primary user ID and primary key in --with-colon listing
-mode and print all timestamps as seconds since 1970-01-01.
-
-@item --list-only
-Changes the behaviour of some commands. This is like --dry-run but
-different in some cases. The semantic of this command may be extended in
-the future. Currently it only skips the actual decryption pass and
-therefore enables a fast listing of the encryption keys.
 
 @item --no-literal
 This is not for normal use. Use the source to see for what it might be useful.
@@ -2176,13 +2224,6 @@ string is the same as the one printed by --show-session-key. This option
 is normally not used but comes handy in case someone forces you to reveal the
 content of an encrypted message; using this option you can do this without
 handing out the secret key.
-
-@item --require-cross-certification
-@itemx --no-require-cross-certification
-When verifying a signature made from a subkey, ensure that the cross
-certification "back signature" on the subkey is present and valid.
-This protects against a subtle attack against subkeys that can sign.
-Defaults to --require-cross-certification for @command{gpg2}.
 
 @item --ask-sig-expire
 @itemx --no-ask-sig-expire
@@ -2214,25 +2255,8 @@ letter d (for days), w (for weeks), m (for months), or y (for years)
 (for example "2m" for two months, or "5y" for five years), or an
 absolute date in the form YYYY-MM-DD. Defaults to "0".
 
-@item --expert
-@itemx --no-expert
-Allow the user to do certain nonsensical or "silly" things like
-signing an expired or revoked key, or certain potentially incompatible
-things like generating unusual key types. This also disables certain
-warning messages about potentially incompatible actions. As the name
-implies, this option is for experts only. If you don't fully
-understand the implications of what it allows you to do, leave this
-off. --no-expert disables this option.
-
 @item --allow-secret-key-import
 This is an obsolete option and is not used anywhere.
-
-@item --try-all-secrets
-Don't look at the key ID as stored in the message but try all secret
-keys in turn to find the right decryption key. This option forces the
-behaviour as used by anonymous recipients (created by using
---throw-keyids) and might come handy in case where an encrypted
-message contains a bogus key ID.
 
 @item --allow-multisig-verification
 Allow verification of concatenated signed messages. This will run a
@@ -2248,54 +2272,9 @@ refer to the file descriptor n and not to a file with that name.
 @item --no-expensive-trust-checks
 Experimental use only.
 
-@item --group @code{name=value1 }
-Sets up a named group, which is similar to aliases in email programs.
-Any time the group name is a recipient (-r or --recipient), it will be
-expanded to the values specified. Multiple groups with the same name
-are automatically merged into a single group.
-
-The values are @code{key IDs} or fingerprints, but any key description
-is accepted. Note that a value with spaces in it will be treated as
-two different values. Note also there is only one level of expansion
-- you cannot make an group that points to another group. When used
-from the command line, it may be necessary to quote the argument to
-this option to prevent the shell from treating it as multiple
-arguments.
-
-@item --ungroup @code{name}
-Remove a given entry from the --group list.
-
-@item --no-groups
-Remove all entries from the --group list.
-
 @item --preserve-permissions
 Don't change the permissions of a secret keyring back to user
 read/write only. Use this option only if you really know what you are doing.
-
-@item --personal-cipher-preferences @code{string}
-Set the list of personal cipher preferences to @code{string}, this list
-should be a string similar to the one printed by the command "pref" in
-the edit menu. This allows the user to factor in their own preferred
-algorithms when algorithms are chosen via recipient key preferences.
-The most highly ranked cipher in this list is also used for the
---symmetric encryption command.
-
-@item --personal-digest-preferences @code{string}
-Set the list of personal digest preferences to @code{string}, this list
-should be a string similar to the one printed by the command "pref" in
-the edit menu. This allows the user to factor in their own preferred
-algorithms when algorithms are chosen via recipient key preferences.
-The most highly ranked digest algorithm in this list is algo used when
-signing without encryption (e.g. --clearsign or --sign). The default
-value is SHA-1.
-
-@item --personal-compress-preferences @code{string}
-Set the list of personal compression preferences to @code{string}, this
-list should be a string similar to the one printed by the command
-"pref" in the edit menu. This allows the user to factor in their own
-preferred algorithms when algorithms are chosen via recipient key
-preferences. The most highly ranked algorithm in this list is also
-used when there are no recipient keys to consider (e.g. --symmetric).
 
 @item --default-preference-list @code{string}
 @opindex default-preference-list
@@ -2320,7 +2299,56 @@ only usable with --with-colons set.
 
 @end table
 
+@c *******************************
+@c ******* Deprecated ************
+@c *******************************
+@subsection Deprecated options
 
+@table @gnupgtabopt
+
+@item --load-extension @code{name}
+Load an extension module. If @code{name} does not contain a slash it is
+searched for in the directory configured when GnuPG was built
+(generally "/usr/local/lib/gnupg"). Extensions are not generally
+useful anymore, and the use of this option is deprecated.
+
+@item --show-photos
+@itemx --no-show-photos
+Causes --list-keys, --list-sigs, --list-public-keys,
+--list-secret-keys, and verifying a signature to also display the
+photo ID attached to the key, if any. See also --photo-viewer. These
+options are deprecated. Use `--list-options [no-]show-photos' and/or
+`--verify-options [no-]show-photos' instead.
+
+@item --show-keyring
+Display the keyring name at the head of key listings to show which
+keyring a given key resides on. This option is deprecated: use
+`--list-options [no-]show-keyring' instead.
+
+@item --ctapi-driver @code{file}
+Use @code{file} to access the smartcard reader. The current default
+is `libtowitoko.so'. Note that the use of this interface is
+deprecated; it may be removed in future releases.
+
+@item --always-trust
+Identical to `--trust-model always'. This option is deprecated.
+
+@item --show-notation
+@itemx --no-show-notation
+Show signature notations in the --list-sigs or --check-sigs listings
+as well as when verifying a signature with a notation in it. These
+options are deprecated. Use `--list-options [no-]show-notation'
+and/or `--verify-options [no-]show-notation' instead.
+
+@item --show-policy-url
+@itemx --no-show-policy-url
+Show policy URLs in the --list-sigs or --check-sigs listings as well
+as when verifying a signature with a policy URL in it. These options
+are deprecated. Use `--list-options [no-]show-policy-url' and/or
+`--verify-options [no-]show-policy-url' instead.
+
+
+@end table
 
 
 @c *******************************************
