@@ -35,10 +35,10 @@ noinst_SCRIPTS = gpgkeys_test
 needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
-gpg2keys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h
-gpg2keys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h
-gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h
-gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
+gpg2keys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h no-libgcrypt.c
+gpg2keys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h no-libgcrypt.c
+gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h no-libgcrypt.c
+gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h no-libgcrypt.c
 
 
 gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
