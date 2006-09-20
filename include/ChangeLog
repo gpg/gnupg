@@ -1,3 +1,9 @@
+2006-09-20  Werner Koch  <wk@g10code.com>
+
+	* errors.h, http.h, memory.h, mpi.h, util.h, i18n.h: Removed.
+	* Makefile.am: New.
+	* distfiles: Removed.
+
 2006-08-16  Werner Koch  <wk@g10code.com>
 
 	* keyserver.h:  Moved to ../common.

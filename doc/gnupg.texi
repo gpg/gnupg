@@ -30,8 +30,8 @@ This is the @cite{The GNU Privacy Guard Manual} (version
 
 @iftex
 Published by the Free Software Foundation@*
-59 Temple Place - Suite 330@*
-Boston, MA 02111-1307 USA
+51 Franklin St, Fifth Floor@*
+Boston, MA 02110-1301 USA
 @end iftex
 
 Copyright @copyright{} 2002, 2004, 2005, 2006 Free Software Foundation, Inc.

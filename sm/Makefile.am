@@ -54,9 +54,18 @@ gpgsm_SOURCES = \
 	qualified.c
 
 
-gpgsm_LDADD = ../jnlib/libjnlib.a ../kbx/libkeybox.a	\
-              ../common/libcommon.a ../gl/libgnu.a \
+common_libs = ../jnlib/libjnlib.a ../kbx/libkeybox.a \
+              ../common/libcommon.a ../gl/libgnu.a
+
+gpgsm_LDADD = $(common_libs) \
               $(LIBGCRYPT_LIBS)  $(KSBA_LIBS) $(LIBASSUAN_LIBS) -lgpg-error \
 	      $(LIBINTL) $(PTH_LIBS) $(ZLIBS)
+
+# Make sure that all libs are build before we use them.  This is
+# important for things like make -j2.
+$(PROGRAMS): $(common_libs)
+
+
+
 
 

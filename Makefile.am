@@ -73,19 +73,10 @@ else
 tests = tests
 endif
 
-SUBDIRS = m4 intl gl jnlib common ${kbx} \
+SUBDIRS = m4 intl gl include jnlib common ${kbx} \
  ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${tools} po ${doc} ${tests}
 
 dist-hook:
-	@set -e; \
-	 for file in `cd $(top_srcdir); \
-		     find scripts include -type f -name distfiles`; do \
-	    dir=`dirname $$file` ; $(mkinstalldirs) $(distdir)/$$dir ; \
-	    for i in distfiles `cat $(top_srcdir)/$$file` ; do \
-		ln $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i 2> /dev/null \
-		|| cp -p $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
-	    done ; \
-	done
 	echo "$(VERSION)" > $(distdir)/VERSION
 
 

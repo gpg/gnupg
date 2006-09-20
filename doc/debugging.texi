@@ -9,8 +9,8 @@ Everyone knows that software often does not do what it should do and thus
 there is a need to track down problems.  We call this debugging in a
 reminiscent to the moth jamming a relay in a Mark II box back in 1947.
 
-Most of the probelsm a merely configuration and user problems but
-nevertheless there are the most annoying ones and reposnible for may
+Most of the problems a merely configuration and user problems but
+nevertheless there are the most annoying ones and reponsible for many
 gray hairs.  We try to give some guidelines here on how to identify and
 solve the problem at hand.
 

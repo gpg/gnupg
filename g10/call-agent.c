@@ -41,6 +41,7 @@
 #include "membuf.h"
 #include "options.h"
 #include "i18n.h"
+#include "asshelp.h"
 #include "call-agent.h"
 
 #ifndef DBG_ASSUAN
@@ -81,11 +82,6 @@ start_agent (void)
   int rc = 0;
   char *infostr, *p;
   assuan_context_t ctx;
-  char *dft_display = NULL;
-  char *dft_ttyname = NULL;
-  char *dft_ttytype = NULL;
-  char *old_lc = NULL;
-  char *dft_lc = NULL;
 
   if (agent_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
@@ -177,123 +173,13 @@ start_agent (void)
   if (DBG_ASSUAN)
     log_debug ("connection to agent established\n");
 
-  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL,NULL);
   if (rc)
     return rc;
 
-#ifdef __GNUC__
-#warning put this code into common/asshelp.c
-#endif
-
-  dft_display = getenv ("DISPLAY");
-  if (opt.display || dft_display)
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION display=%s",
-		    opt.display ? opt.display : dft_display) < 0)
-	return gpg_error_from_syserror ();
-      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return rc;
-    }
-  if (!opt.ttyname)
-    {
-      dft_ttyname = getenv ("GPG_TTY");
-      if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
-        dft_ttyname = ttyname (0);
-    }
-  if (opt.ttyname || dft_ttyname)
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION ttyname=%s",
-		    opt.ttyname ? opt.ttyname : dft_ttyname) < 0)
-	return gpg_error_from_syserror ();
-      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return rc;
-    }
-  dft_ttytype = getenv ("TERM");
-  if (opt.ttytype || (dft_ttyname && dft_ttytype))
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION ttytype=%s",
-		    opt.ttyname ? opt.ttytype : dft_ttytype) < 0)
-	return gpg_error_from_syserror ();
-      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return rc;
-    }
-#if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
-  old_lc = setlocale (LC_CTYPE, NULL);
-  if (old_lc)
-    {
-      old_lc = strdup (old_lc);
-      if (!old_lc)
-        return gpg_error_from_syserror ();
-
-    }
-  dft_lc = setlocale (LC_CTYPE, "");
-#endif
-  if (opt.lc_ctype || (dft_ttyname && dft_lc))
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION lc-ctype=%s",
-		    opt.lc_ctype ? opt.lc_ctype : dft_lc) < 0)
-	rc = gpg_error_from_syserror ();
-      else
-	{
-	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				NULL);
-	  free (optstr);
-	}
-    }
-#if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
-  if (old_lc)
-    {
-      setlocale (LC_CTYPE, old_lc);
-      free (old_lc);
-    }
-#endif
-  if (rc)
-    return rc;
-#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
-  old_lc = setlocale (LC_MESSAGES, NULL);
-  if (old_lc)
-    {
-      old_lc = strdup (old_lc);
-      if (!old_lc)
-        return gpg_error_from_syserror ();
-    }
-  dft_lc = setlocale (LC_MESSAGES, "");
-#endif
-  if (opt.lc_messages || (dft_ttyname && dft_lc))
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION lc-messages=%s",
-		    opt.lc_messages ? opt.lc_messages : dft_lc) < 0)
-	rc = gpg_error_from_syserror ();
-      else
-	{
-	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				NULL);
-	  free (optstr);
-	}
-    }
-#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
-  if (old_lc)
-    {
-      setlocale (LC_MESSAGES, old_lc);
-      free (old_lc);
-    }
-#endif
-
-  return rc;
+  return send_pinentry_environment (agent_ctx, GPG_ERR_SOURCE_DEFAULT,
+                                    opt.display, opt.ttyname, opt.ttytype,
+                                    opt.lc_ctype, opt.lc_messages);
 }
 
 

@@ -50,3 +50,4 @@ kbxutil_LDADD   = ../jnlib/libjnlib.a ../gl/libgnu.a \
 	          $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
                   -lgpg-error $(LIBINTL) ../common/libcommon.a
 
+$(PROGRAMS) : ../jnlib/libjnlib.a ../gl/libgnu.a ../common/libcommon.a

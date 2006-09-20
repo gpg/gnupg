@@ -1308,6 +1308,7 @@ Makefile
 po/Makefile.in
 intl/Makefile
 gl/Makefile
+include/Makefile
 jnlib/Makefile
 common/Makefile
 kbx/Makefile

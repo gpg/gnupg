@@ -32,7 +32,7 @@ libexec_PROGRAMS = $(GPGKEYS_LDAP) $(GPGKEYS_HKP) $(GPGKEYS_FINGER) \
 libexec_SCRIPTS = $(GPGKEYS_MAILTO)
 noinst_SCRIPTS = gpgkeys_test
 
-needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
+common_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 gpg2keys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h no-libgcrypt.c
@@ -42,18 +42,18 @@ gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h no-libgcrypt.c
 
 
 gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
-gpg2keys_ldap_LDADD = $(needed_libs) $(LDAPLIBS) $(NETLIBS) \
+gpg2keys_ldap_LDADD = $(common_libs) $(LDAPLIBS) $(NETLIBS) \
                       $(other_libs) $(W32LIBS)
 
-gpg2keys_finger_LDADD = $(needed_libs) $(LIBGCRYPT_LIBS) \
+gpg2keys_finger_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) \
                         $(NETLIBS) $(other_libs) $(W32LIBS)
 
 if FAKE_CURL
 gpg2keys_curl_SOURCES += curl-shim.c curl-shim.h
-gpg2keys_curl_LDADD = $(needed_libs) $(NETLIBS) $(DNSLIBS) \
+gpg2keys_curl_LDADD = $(common_libs) $(NETLIBS) $(DNSLIBS) \
 	              $(other_libs) $(W32LIBS)
 gpg2keys_hkp_SOURCES += curl-shim.c curl-shim.h
-gpg2keys_hkp_LDADD = $(needed_libs) $(NETLIBS) $(DNSLIBS) \
+gpg2keys_hkp_LDADD = $(common_libs) $(NETLIBS) $(DNSLIBS) \
 	             $(other_libs) $(W32LIBS)
 else
 gpg2keys_curl_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)
@@ -61,4 +61,9 @@ gpg2keys_curl_LDADD = $(LIBCURL) $(GETOPT)
 gpg2keys_hkp_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)
 gpg2keys_hkp_LDADD = $(LIBCURL) $(GETOPT)
 endif
+
+# Make sure that all libs are build before we use them.  This is
+# important for things like make -j2.
+$(PROGRAMS): $(common_libs)
+
 

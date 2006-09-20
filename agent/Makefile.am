@@ -47,9 +47,12 @@ gpg_agent_SOURCES = \
 	learncard.c
 
 
-gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
+common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
+pwquery_libs = ../common/libsimple-pwquery.a
+
+gpg_agent_LDADD = $(common_libs) \
                 $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
-	        $(GPG_ERROR_LIBS) @LIBINTL@ $(NETLIBS)
+	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
@@ -57,9 +60,8 @@ gpg_protect_tool_SOURCES = \
 	minip12.c minip12.h 
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
-gpg_protect_tool_LDADD = ../common/libsimple-pwquery.a \
-	../jnlib/libjnlib.a  ../common/libcommon.a ../gl/libgnu.a \
-	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@ $(NETLIBS)
+gpg_protect_tool_LDADD =  $(pwquery_libs) $(common_libs) \
+         $(LIBGCRYPT_LIBS) -lgpg-error $(LIBINTL) $(NETLIBS)
 if HAVE_W32_SYSTEM
 gpg_protect_tool_LDADD += -lwsock32
 endif
@@ -68,20 +70,24 @@ gpg_preset_passphrase_SOURCES = \
 	preset-passphrase.c
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
-gpg_preset_passphrase_LDADD = ../common/libsimple-pwquery.a \
-	../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
+gpg_preset_passphrase_LDADD =  $(pwquery_libs) $(common_libs) \
 	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@ $(NETLIBS)
 if HAVE_W32_SYSTEM
 gpg_preset_passphrase_LDADD += -lwsock32
 endif
+
+# Make sure that all libs are build before we use them.  This is
+# important for things like make -j2.
+$(PROGRAMS): $(common_libs) $(pwquery_libs)
+
 
 #
 # Module tests
 #
 TESTS = t-protect
 
-t_common_ldadd = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
-                 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@
+t_common_ldadd = $(common_libs) \
+                 $(LIBGCRYPT_LIBS) -lgpg-error $(LIBINTL)
 
 t_protect_SOURCES = t-protect.c protect.c 
 t_protect_LDADD = $(t_common_ldadd)

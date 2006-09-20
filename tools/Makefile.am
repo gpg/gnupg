@@ -51,6 +51,7 @@ endif
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert
 
 common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
+pwquery_libs = ../common/libsimple-pwquery.a
 
 gpgsplit_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(ZLIBS)
 
@@ -58,24 +59,20 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 # jnlib/common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
-gpgconf_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-		../gl/libgnu.a $(LIBINTL) $(GPG_ERROR_LIBS)
+gpgconf_LDADD = $(common_libs) $(LIBINTL) $(GPG_ERROR_LIBS)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD = 
 
 symcryptrun_SOURCES = symcryptrun.c
-symcryptrun_LDADD = $(LIBUTIL_LIBS) ../jnlib/libjnlib.a \
-                    ../common/libcommon.a ../gl/libgnu.a \
-		    ../common/libsimple-pwquery.a $(LIBGCRYPT_LIBS) \
-		    $(GPG_ERROR_LIBS) $(LIBINTL)
+symcryptrun_LDADD = $(LIBUTIL_LIBS) $(common_libs) $(pwquery_libs) \
+                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
 
 watchgnupg_SOURCES = watchgnupg.c 
 watchgnupg_LDADD = $(NETLIBS)
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
-gpg_connect_agent_LDADD = ../jnlib/libjnlib.a \
-                          ../common/libcommon.a ../gl/libgnu.a \
+gpg_connect_agent_LDADD = $(common_libs) \
                           $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
 
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
@@ -85,4 +82,8 @@ gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 gpgkey2ssh_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
 
+
+# Make sure that all libs are build before we use them.  This is
+# important for things like make -j2.
+$(PROGRAMS): $(common_libs) $(pwquery_libs)
 

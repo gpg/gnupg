@@ -28,7 +28,7 @@ EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
              gnupg-card-architecture.pdf \
              faq.raw FAQ faq.html gnupg7.texi \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     $(examples)
+	     texi.css $(examples)
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf FAQ faq.html
@@ -44,7 +44,7 @@ gnupg_TEXINFOS = \
 	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
 	sysnotes.texi gnupg-card-architecture.fig
 
-AM_MAKEFINFOFLAGS = -I $(srcdir)
+AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=$(srcdir)/texi.css
 
 YAT2M_OPTIONS = -I $(srcdir) \
         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"

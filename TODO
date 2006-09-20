@@ -119,5 +119,3 @@ might want to have an agent context for each service request
 
 * Extend selinux support to other modules
 
-* Missing dependencies on libcommon.
-  parallel builds fail.
