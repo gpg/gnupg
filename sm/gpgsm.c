@@ -268,6 +268,7 @@ static ARGPARSE_OPTS opts[] = {
     { aPasswd, "passwd",      256, N_("change a passphrase")},
     { aGPGConfList, "gpgconf-list", 256, "@" },
 
+    { aDumpKeys, "dump-cert", 256, "@"},
     { aDumpKeys, "dump-keys", 256, "@"},
     { aDumpChain, "dump-chain", 256, "@"},
     { aDumpExternalKeys, "dump-external-keys", 256, "@"},

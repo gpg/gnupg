@@ -28,10 +28,6 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
-#ifdef HAVE_LIBREADLINE
-#include <readline/readline.h>
-#include <readline/history.h>
-#endif
 
 #include "gpg.h"
 #include "options.h"
@@ -86,10 +82,7 @@ got_fatal_signal( int sig )
 
     gcry_control (GCRYCTL_TERM_SECMEM );
 
-#ifdef HAVE_LIBREADLINE
-    rl_free_line_state ();
-    rl_cleanup_after_signal ();
-#endif
+    tty_cleanup_rl_after_signal ();
 
     /* Better don't translate these messages. */
     write(2, "\n", 1 );

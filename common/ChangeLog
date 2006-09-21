@@ -1,3 +1,13 @@
+2006-09-21  Werner Koch  <wk@g10code.com>
+
+	* ttyio.c (tty_private_set_rl_hooks): New.
+	(tty_enable_completion, tty_disable_completion): Use a hook to
+	enable readline support.  Now always available.
+	(tty_cleanup_rl_after_signal): New.
+
+	* ttyio.h: Removed readline specific stuff.  Included util.h.
+	* common-defs.h: New.
+
 2006-09-15  Werner Koch  <wk@g10code.com>
 
 	* convert.c: New.

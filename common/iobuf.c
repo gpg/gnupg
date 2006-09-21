@@ -39,7 +39,6 @@
 #include <swis.h>
 #endif /* __riscos__ */
 
-#include "memory.h"
 #include "util.h"
 #include "iobuf.h"
 

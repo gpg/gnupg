@@ -20,7 +20,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-noinst_LIBRARIES = libcommon.a libsimple-pwquery.a
+noinst_LIBRARIES = libcommon.a libsimple-pwquery.a libgpgrl.a
 noinst_PROGRAMS = $(module_tests)
 TESTS = $(module_tests)
 
@@ -30,6 +30,7 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS) \
             $(PTH_CFLAGS)
 
 libcommon_a_SOURCES = \
+	common-defs.h \
 	util.h i18n.h \
 	errors.h \
 	openpgpdefs.h \
@@ -63,6 +64,8 @@ libcommon_a_SOURCES = \
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h
 
+libgpgrl_a_SOURCES = \
+        gpgrlhelp.c
 
 #
 # Module tests

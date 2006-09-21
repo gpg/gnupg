@@ -189,7 +189,9 @@ utilizes the @code{dirmngr} service.
 Same as @option{--list-keys} but also prints all keys making up the chain.
 
 
-@item --dump-keys
+@item --dump-cert
+@itemx --dump-keys
+@opindex dump-cert
 @opindex dump-keys
 List all available certificates stored in the local key database using a
 format useful mainly for debugging.

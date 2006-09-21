@@ -30,7 +30,6 @@
 #include "packet.h"
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "keydb.h"

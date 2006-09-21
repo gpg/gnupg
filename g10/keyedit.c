@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <ctype.h>
 #ifdef HAVE_LIBREADLINE
-#include <stdio.h>
+#define GNUPG_LIBREADLINE_H_INCLUDED
 #include <readline/readline.h>
 #endif
 

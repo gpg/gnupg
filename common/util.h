@@ -45,6 +45,13 @@
 #include "../jnlib/dotlock.h"
 #include "../jnlib/utf8conv.h"
 
+/* We need this type even if we are not using libreadline and or we
+   did not include libreadline in the current file. */
+#ifndef GNUPG_LIBREADLINE_H_INCLUDED
+typedef char **rl_completion_func_t (const char *, int, int);
+#endif /*!GNUPG_LIBREADLINE_H_INCLUDED*/
+
+
 /* Handy malloc macros - please use only them. */
 #define xtrymalloc(a)    gcry_malloc ((a))
 #define xtrymalloc_secure(a)  gcry_malloc_secure ((a))
@@ -153,6 +160,8 @@ char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
 /*-- homedir.c --*/
 const char *default_homedir (void);
 
+/*-- gpgrlhelp.c --*/
+void gnupg_rl_initialize (void);
 
 /*-- miscellaneous.c --*/
 

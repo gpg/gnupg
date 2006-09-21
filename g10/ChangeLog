@@ -1,3 +1,14 @@
+2006-09-21  Werner Koch  <wk@g10code.com>
+
+	* signal.c (got_fatal_signal): Replaced readline stuff by a tty
+	function.
+
+	* Makefile.am (LDADD): Include libgpgrl.a.
+
+	* gpg.c (main): Call gpg_rl_initialize.
+
+	* keyedit.c: Removed double inclusion of stdio.h.
+
 2006-09-20  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c: Include asshelp.h.

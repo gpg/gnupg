@@ -822,7 +822,7 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
       lnr++;
       if (!n || line[n-1] != '\n')
         {
-          err ("%s:$d: trailing linefeed missing, line too long or "
+          err ("%s:%d: trailing linefeed missing, line too long or "
                "embedded Nul character", fname, lnr);
           break;
         }

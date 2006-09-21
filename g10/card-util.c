@@ -38,6 +38,7 @@
 #include "keyserver-internal.h"
 #if GNUPG_MAJOR_VERSION == 1
 # ifdef HAVE_LIBREADLINE
+# define GNUPG_LIBREADLINE_H_INCLUDED
 # include <stdio.h>
 # include <readline/readline.h>
 # endif /*HAVE_LIBREADLINE*/

@@ -108,12 +108,13 @@ gpgv2_SOURCES = gpgv.c           \
 #	       ks-db.h \
 #	       $(common_source)
 
-LDADD =  $(needed_libs) $(ZLIBS) $(DNSLIBS) $(LIBREADLINE) \
+LDADD =  $(needed_libs) ../common/libgpgrl.a \
+         $(ZLIBS) $(DNSLIBS) $(LIBREADLINE) \
          $(LIBINTL) $(CAPLIBS) $(W32LIBS)
 gpg2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS)
 gpgv2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS)
 
-$(PROGRAMS): $(needed_libs)
+$(PROGRAMS): $(needed_libs) ../common/libgpgrl.a
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)

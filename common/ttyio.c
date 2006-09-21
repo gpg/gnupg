@@ -47,15 +47,10 @@
 #endif
 #include <errno.h>
 #include <ctype.h>
-#ifdef HAVE_LIBREADLINE
-#include <readline/readline.h>
-#include <readline/history.h>
-#endif
-
 
 #include "util.h"
-#include "memory.h"
 #include "ttyio.h"
+#include "common-defs.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -81,6 +76,11 @@ static int no_terminal;
     static struct termios termsave;
     static int restore_termios;
 #endif
+
+/* Hooks set by gpgrlhelp.c if required. */
+static void (*my_rl_set_completer) (rl_completion_func_t *);
+static void (*my_rl_inhibit_completion) (int);
+static void (*my_rl_cleanup_after_signal) (void);
 
 
 
@@ -179,34 +179,6 @@ init_ttyfp(void)
 #endif
     initialized = 1;
 }
-
-
-#ifdef HAVE_LIBREADLINE
-void
-tty_enable_completion(rl_completion_func_t *completer)
-{
-/*   if( no_terminal ) */
-/*     return; */
-
-/*   if( !initialized ) */
-/*     init_ttyfp(); */
-
-/*   rl_attempted_completion_function=completer; */
-/*   rl_inhibit_completion=0; */
-}
-
-void
-tty_disable_completion(void)
-{
-/*   if( no_terminal ) */
-/*     return; */
-
-/*   if( !initialized ) */
-/*     init_ttyfp(); */
-
-/*   rl_inhibit_completion=1; */
-}
-#endif /*HAVE_LIBREADLINE*/
 
 
 int
@@ -596,4 +568,49 @@ tty_get_answer_is_yes( const char *prompt )
     yes = answer_is_yes(p);
     xfree(p);
     return yes;
+}
+
+
+/* Called by gnupg_rl_initialize to setup the reradline support. */
+void
+tty_private_set_rl_hooks (void (*set_completer) (rl_completion_func_t*),
+                          void (*inhibit_completion) (int),
+                          void (*cleanup_after_signal) (void))
+{
+  my_rl_set_completer = set_completer;
+  my_rl_inhibit_completion = inhibit_completion;
+  my_rl_cleanup_after_signal = cleanup_after_signal;
+}
+
+
+void
+tty_enable_completion (rl_completion_func_t *completer)
+{
+  if (no_terminal || !my_rl_set_completer )
+    return;
+
+  if (!initialized)
+    init_ttyfp();
+
+  my_rl_set_completer (completer);
+}
+
+void
+tty_disable_completion (void)
+{
+  if (no_terminal || !my_rl_inhibit_completion)
+    return;
+
+  if (!initialized)
+    init_ttyfp();
+
+  my_rl_inhibit_completion (1);
+}
+
+
+void
+tty_cleanup_rl_after_signal (void)
+{
+  if (my_rl_cleanup_after_signal)
+    my_rl_cleanup_after_signal ();
 }
