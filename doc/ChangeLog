@@ -1,3 +1,15 @@
+2006-09-22  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi: Make some parts depend on the "gpgone" set
+	command. This allows us to use the same source for gpg1 and gpg2.
+
+	* yat2m.c (parse_file): Better parsing of @ifset and ifclear.
+	(main): Allow definition of "-D gpgone".
+	(parse_file): Allow macro definitions.
+	(proc_texi_cmd): Expand macros.
+	(proc_texi_buffer): Process commands terminated by the closing
+	brace of the enclosing command.
+
 2006-09-20  Werner Koch  <wk@g10code.com>
 
 	* texi.css: New.  Note that the current vesion of makeinfo has a

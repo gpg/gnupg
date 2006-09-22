@@ -18,6 +18,7 @@ the X.509/CMS (for S/MIME) counterpart of
 @command{gpg2}. @command{gpg-agent} is a passphrase and private key
 daemon which may also emulate the @command{ssh-agent}.
 @mansect see also
+@command{gpg}(1), 
 @command{gpg2}(1), 
 @command{gpgv}(1), 
 @command{gpgsm}(1), 

@@ -7,6 +7,8 @@
 	to OpenSSL.  This is considered a bug fix and forgives all
 	possible violations, pertaining to this issue, possibly occured in
 	the past.
+	
+	* no-libgcrypt.c: Changed license to a simple all permissive one.
 
 	* Makefile.am (gpg2keys_ldap_LDADD): For license reasons do not
 	link against common_libs.

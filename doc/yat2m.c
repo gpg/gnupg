@@ -105,9 +105,25 @@ static const char *opt_select;
 static const char *opt_include;
 static int opt_store;
 
+/* The only define we understand is -D gpgone.  Thus we need a simple
+   boolean tro track it. */
+static int gpgone_defined;
 
 /* Flag to keep track whether any error occurred.  */
 static int any_error;
+
+
+/* Object to keep macro definitions.  */
+struct macro_s
+{
+  struct macro_s *next;
+  char *value;  /* Malloced value. */
+  char name[1];
+};
+typedef struct macro_s *macro_t;
+
+/* List of all defined macros. */
+static macro_t macrolist;
 
 
 /* Object to store one line of content.  */
@@ -468,8 +484,6 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "bullet",  0, "* " },
     { "end",     4 },
     { "quotation",1, ".RS\n\\fB" },
-    { "ifset",   1 },
-    { "ifclear",   1 },
     { NULL }
   };
   size_t n;
@@ -551,8 +565,20 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     }
   else
     {
-      inf ("texinfo command `%s' not supported (%.*s)", command,
-           ((s = memchr (rest, '\n', len)), (s? (s-rest) : len)), rest);
+      macro_t m;
+
+      for (m = macrolist; m ; m = m->next)
+        if (!strcmp (m->name, command))
+            break;
+      if (m)
+        {
+          proc_texi_buffer (fp, m->value, strlen (m->value),
+                            table_level, eol_action);
+          ignore_args = 1; /* Parameterized macros are not yet supported. */
+        }
+      else
+        inf ("texinfo command `%s' not supported (%.*s)", command,
+             ((s = memchr (rest, '\n', len)), (s? (s-rest) : len)), rest);
     }
 
   if (*rest == '{')
@@ -653,6 +679,16 @@ proc_texi_buffer (FILE *fp, const char *line, size_t len,
         }
       else
         putc (*s, fp);
+    }
+
+  if (in_cmd > 1)
+    {
+      cmdbuf[cmdidx] = 0;
+      n = proc_texi_cmd (fp, cmdbuf, s, len, table_level, eol_action);
+      assert (n <= len);
+      s += n; len -= n;
+      s--; len++;
+      in_cmd = 0;
     }
 }
 
@@ -808,9 +844,22 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
 {
   char *line;
   int lnr = 0;
+  /* Fixme: The follwing state variables don't carry over to include
+     files. */
   int in_verbatim = 0;
   int skip_to_end = 0;        /* Used to skip over menu entries. */
   int skip_sect_line = 0;     /* Skip after @mansect.  */
+  int ifset_nesting = 0;      /* How often a ifset has been seen. */
+  int ifclear_nesting = 0;    /* How often a ifclear has been seen. */
+  int in_gpgone = 0;          /* Keep track of "@ifset gpgone" parts.  */
+  int not_in_gpgone = 0;      /* Keep track of "@ifclear gpgone" parts.  */
+  int not_in_man = 0;         /* Keep track of "@ifclear isman" parts.  */
+
+  /* Helper to define a macro. */
+  char *macroname = NULL;     
+  char *macrovalue = NULL; 
+  size_t macrovaluesize = 0;
+  size_t macrovalueused = 0;
 
   line = xmalloc (LINESIZE);
   while (fgets (line, LINESIZE, fp))
@@ -827,6 +876,63 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
           break;
         }
       line[--n] = 0;
+
+      if (*line == '@')
+        {
+          for (p=line+1, n=1; *p && *p != ' ' && *p != '\t'; p++)
+            n++;
+          while (*p == ' ' || *p == '\t')
+            p++;
+        }
+      else
+        p = line;
+
+      /* Take action on macro.  */
+      if (macroname)
+        {
+          if (n == 4 && !memcmp (line, "@end", 4)
+              && (line[4]==' '||line[4]=='\t'||!line[4])
+              && !strncmp (p, "macro", 5)
+              && (p[5]==' '||p[5]=='\t'||!p[5]))
+            {
+              macro_t m;
+
+              if (macrovalueused)
+                macrovalue[--macrovalueused] = 0; /* Kill the last LF. */
+              macrovalue[macrovalueused] = 0;     /* Terminate macro. */
+              macrovalue = xrealloc (macrovalue, macrovalueused+1);
+              
+              for (m= macrolist; m; m = m->next)
+                if (!strcmp (m->name, macroname))
+                  break;
+              if (m)
+                free (m->value);
+              else
+                {
+                  m = xcalloc (1, sizeof *m + strlen (macroname));
+                  strcpy (m->name, macroname);
+                  m->next = macrolist;
+                  macrolist = m;
+                }
+              m->value = macrovalue;
+              macrovalue = NULL;
+              free (macroname);
+              macroname = NULL;
+            }
+          else
+            {
+              if (macrovalueused + strlen (line) + 2 >= macrovaluesize)
+                {
+                  macrovaluesize += strlen (line) + 256;
+                  macrovalue = xrealloc (macrovalue,  macrovaluesize);
+                }
+              strcpy (macrovalue+macrovalueused, line);
+              macrovalueused += strlen (line);
+              macrovalue[macrovalueused++] = '\n';
+            }
+          continue;
+        }
+
 
       if (n >= 5 && !memcmp (line, "@node", 5)
           && (line[5]==' '||line[5]=='\t'||!line[5]))
@@ -849,36 +955,115 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
          few macros used to control this as well as one @ifset
          command.  Parts we know about are saved away into containers
          separate for each section. */
+
+      /* First process ifset/ifclear commands. */
       if (*line == '@')
         {
-          for (p=line+1, n=1; *p && *p != ' ' && *p != '\t'; p++)
-            n++;
-          while (*p == ' ' || *p == '\t')
-            p++;
+          if (n == 6 && !memcmp (line, "@ifset", 6)
+                   && (line[6]==' '||line[6]=='\t'))
+            {
+              ifset_nesting++;
 
+              if (!strncmp (p, "manverb", 7) && (p[7]==' '||p[7]=='\t'||!p[7]))
+                {
+                  if (in_verbatim)
+                    err ("%s:%d: nested \"@ifset manverb\"", fname, lnr);
+                  else
+                    in_verbatim = ifset_nesting;
+                }
+              else if (!strncmp (p, "gpgone", 6)
+                       && (p[6]==' '||p[6]=='\t'||!p[6]))
+                {
+                  if (in_gpgone)
+                    err ("%s:%d: nested \"@ifset gpgone\"", fname, lnr);
+                  else
+                    in_gpgone = ifset_nesting;
+                }
+              continue;
+            }
+          else if (n == 4 && !memcmp (line, "@end", 4)
+                   && (line[4]==' '||line[4]=='\t')
+                   && !strncmp (p, "ifset", 5)
+                   && (p[5]==' '||p[5]=='\t'||!p[5]))
+            {
+              if (in_verbatim && ifset_nesting == in_verbatim)
+                in_verbatim = 0;
+              if (in_gpgone && ifset_nesting == in_gpgone)
+                in_gpgone = 0;
+
+              if (ifset_nesting)
+                ifset_nesting--;
+              else
+                err ("%s:%d: unbalanced \"@end ifset\"", fname, lnr);
+              continue;
+            }
+          else if (n == 8 && !memcmp (line, "@ifclear", 8)
+                   && (line[8]==' '||line[8]=='\t'))
+            {
+              ifclear_nesting++;
+
+              if (!strncmp (p, "gpgone", 6)
+                  && (p[6]==' '||p[6]=='\t'||!p[6]))
+                {
+                  if (not_in_gpgone)
+                    err ("%s:%d: nested \"@ifclear gpgone\"", fname, lnr);
+                  else
+                    not_in_gpgone = ifclear_nesting;
+                }
+
+              else if (!strncmp (p, "isman", 5)
+                       && (p[5]==' '||p[5]=='\t'||!p[5]))
+                {
+                  if (not_in_man)
+                    err ("%s:%d: nested \"@ifclear isman\"", fname, lnr);
+                  else
+                    not_in_man = ifclear_nesting;
+                }
+
+              continue;
+            }
+          else if (n == 4 && !memcmp (line, "@end", 4)
+                   && (line[4]==' '||line[4]=='\t')
+                   && !strncmp (p, "ifclear", 7)
+                   && (p[7]==' '||p[7]=='\t'||!p[7]))
+            {
+              if (not_in_gpgone && ifclear_nesting == not_in_gpgone)
+                not_in_gpgone = 0;
+              if (not_in_man && ifclear_nesting == not_in_man)
+                not_in_man = 0;
+
+              if (ifclear_nesting)
+                ifclear_nesting--;
+              else
+                err ("%s:%d: unbalanced \"@end ifclear\"", fname, lnr);
+              continue;
+            }
+        }
+
+      /* Take action on ifset/ifclear.  */
+      if ( (in_gpgone && !gpgone_defined)
+           || (not_in_gpgone && gpgone_defined)
+           || not_in_man)
+        continue;
+
+      /* Process commands. */
+      if (*line == '@')
+        {
           if (skip_to_end
               && n == 4 && !memcmp (line, "@end", 4)
               && (line[4]==' '||line[4]=='\t'||!line[4]))
             {
               skip_to_end = 0;
             }
-          else if (n == 6 && !memcmp (line, "@ifset", 6)
-              && !strncmp (p, "manverb", 7) && (p[7]==' '||p[7]=='\t'||!p[7]))
-            {
-              if (in_verbatim)
-                err ("%s:%d: nested \"@ifset manverb\"", fname, lnr);
-              else
-                in_verbatim = 1;
-            }
-          else if (in_verbatim && n == 4 && !memcmp (line, "@end", 4)
-                   && !strncmp (p, "ifset", 5)
-                   && (p[5]==' '||p[5]=='\t'||!p[5]))
-            {
-              in_verbatim = 0;
-            }
           else if (in_verbatim)
             {
-              got_line = 1;
+                got_line = 1;
+            }
+          else if (n == 6 && !memcmp (line, "@macro", 6))
+            {
+              macroname = xstrdup (p);
+              macrovalue = xmalloc ((macrovaluesize = 1024));
+              macrovalueused = 0;
             }
           else if (n == 8 && !memcmp (line, "@manpage", 8))
             {
@@ -923,11 +1108,6 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
             {
               skip_to_end = 1;
             }
-          else if (n == 8 && !memcmp (line, "@ifclear", 8)
-              && !strncmp (p, "isman", 5) && (p[5]==' '||p[5]=='\t'||!p[5]))
-            {
-              skip_to_end = 1;
-            }
           else if (n == 8 && !memcmp (line, "@include", 8)
                    && (line[8]==' '||line[8]=='\t'||!line[8]))
             {
@@ -956,6 +1136,11 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
                 }
               free (incname);
             }
+          else if (n == 4 && !memcmp (line, "@bye", 4)
+                   && (line[4]==' '||line[4]=='\t'||!line[4]))
+            {
+              break;
+            }
           else if (!skip_to_end)
             got_line = 1;
         }
@@ -970,6 +1155,8 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
     }
   if (ferror (fp))
     err ("%s:%d: read error: %s", fname, lnr, strerror (errno));
+  free (macroname);
+  free (macrovalue);
   free (line);
 }
 
@@ -979,6 +1166,14 @@ top_parse_file (const char *fname, FILE *fp)
 {
   char *section_name = NULL;  /* Name of the current section or NULL
                                  if not in a section.  */
+  while (macrolist)
+    {
+      macro_t m = macrolist->next;
+      free (m->value);
+      free (m);
+      macrolist = m;
+    }
+
   parse_file (fname, fp, &section_name, 0);
   free (section_name);
   finish_page ();
@@ -1017,7 +1212,8 @@ main (int argc, char **argv)
                 "  --verbose        enable extra informational output\n"
                 "  --debug          enable additional debug output\n"
                 "  --help           display this help and exit\n"
-                "  -I DIR           also search in include DIR\n\n"
+                "  -I DIR           also search in include DIR\n"
+                "  -D gpgone        the only useable define\n\n"
                 "With no FILE, or when FILE is -, read standard input.\n\n"
                 "Report bugs to <bugs@g10code.com>.");
           exit (0);
@@ -1088,6 +1284,16 @@ main (int argc, char **argv)
           if (argc)
             {
               opt_include = *argv;
+              argc--; argv++;
+            }
+        }
+      else if (!strcmp (*argv, "-D"))
+        {
+          argc--; argv++;
+          if (argc)
+            {
+              if (!strcmp (*argv, "gpgone"))
+                gpgone_defined = 1;
               argc--; argv++;
             }
         }

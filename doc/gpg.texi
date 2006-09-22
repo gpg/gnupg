@@ -9,7 +9,36 @@
 @cindex command options
 @cindex options, GPG command
 
+@c Begin GnuPG 1.x specific stuff
+@ifset gpgone
+@macro gpgname
+gpg
+@end macro
+@manpage gpg.1
+@ifset manverb
+.B gpg
+\- OpenPGP encryption and signing tool
+@end ifset
 
+@mansect synopsis
+@ifset manverb
+.B  gpg
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.I command
+.RI [ args ]
+@end ifset
+@end ifset
+@c End GnuPG 1.x specific stuff
+
+@c Begin GnuPG 2 specific stuff
+@ifclear gpgone
+@macro gpgname
+gpg2
+@end macro
 @manpage gpg2.1
 @ifset manverb
 .B gpg2
@@ -27,14 +56,22 @@
 .I command
 .RI [ args ]
 @end ifset
+@end ifclear
+@c Begin GnuPG 2 specific stuff
 
 @mansect description
-@command{gpg2} is the OpenPGP part of the GNU Privacy Guard (GnuPG). It
+@command{@gpgname} is the OpenPGP part of the GNU Privacy Guard (GnuPG). It
 is a tool to provide digital encryption and signing services using the
-OpenPGP standard. @command{gpg2} features complete key management and
+OpenPGP standard. @command{@gpgname} features complete key management and
 all bells and whistles you can expect from a decent OpenPGP
 implementation.
 
+@ifset gpgone
+This is the standa alone version of @command{gpg}.  For desktop use you
+shoul consider using @command{gpg2}.
+@end ifset
+
+@ifclear gpgone
 In contrast to the standalone version @command{gpg}, which is more
 suited for server and embedded platforms, this version is installed
 under the name @command{gpg2} and more targeted to the desktop as it
@@ -43,12 +80,15 @@ will be kept maintained and it is possible to install both versions on
 the same system.  If you need to use different configuration files, you
 should make use of something like @file{gpg.conf-2} instead of just
 @file{gpg.conf}.
+@end ifclear
 
 @manpause
-Documentation for the old standard @command{gpg} is available as man page
-man page and at @inforef{Top,GnuPG 1,gpg}.
+@ifclear gpgone
+Documentation for the old standard @command{gpg} is available as a man
+page and at @inforef{Top,GnuPG 1,gpg}.
+@end ifclear
 
-@xref{Option Index}, for an index to @command{GPG}'s commands and options.
+@xref{Option Index}, for an index to @command{@gpgname}'s commands and options.
 @mancont
 
 @menu
@@ -76,7 +116,7 @@ Developer information:
 Commands are not distinguished from options execpt for the fact that
 only one command is allowed.
 
-@code{gpg2} may be run with no commands, in which case it will
+@command{@gpgname} may be run with no commands, in which case it will
 perform a reasonable action depending on the type of file it is given
 as input (an encrypted message is decrypted, a signature is verified,
 a file containing keys is listed).
@@ -778,7 +818,7 @@ from --edit.
 @node GPG Options
 @section Option Summary
 
-@command{GPG} comes features a bunch of options to control the exact
+@command{@gpgname} comes features a bunch of options to control the exact
 behaviour and to change the default configuration.
 
 @menu
@@ -1380,10 +1420,15 @@ disables this option.
 
 @item --use-agent
 @itemx --no-use-agent
-Try to use the GnuPG-Agent. Please note that this agent is still under
-development. With this option, GnuPG first tries to connect to the
+@ifclear gpgone
+This is dummy option. @command{@gpgname} always requires the agent.
+@end ifclear
+@ifset gpgone
+Try to use the GnuPG-Agent. 
+With this option, GnuPG first tries to connect to the
 agent before it asks for a passphrase. --no-use-agent disables this
 option.
+@end ifset
 
 @item --gpg-agent-info
 Override the value of the environment variable
@@ -1462,7 +1507,7 @@ Refuse to run if GnuPG cannot get secure memory. Defaults to no
 When verifying a signature made from a subkey, ensure that the cross
 certification "back signature" on the subkey is present and valid.
 This protects against a subtle attack against subkeys that can sign.
-Defaults to --require-cross-certification for @command{gpg2}.
+Defaults to --require-cross-certification for @command{@gpgname}.
 
 @item --expert
 @itemx --no-expert
@@ -2361,14 +2406,14 @@ are deprecated. Use `--list-options [no-]show-policy-url' and/or
 @section Configuration files
 
 There are a few configuration files to control certain aspects of
-@command{gpg2}'s operation. Unless noted, they are expected in the
+@command{@gpgname}'s operation. Unless noted, they are expected in the
 current home directory (@pxref{option --homedir}).
 
 @table @file
 
 @item gpg.conf
 @cindex gpgsm.conf
-This is the standard configuration file read by @command{gpg2} on
+This is the standard configuration file read by @command{@gpgname} on
 startup.  It may contain any valid long option; the leading two dashes
 may not be entered and the option may not be abbreviated.  This default
 name may be changed on the command line (@pxref{option
@@ -2382,9 +2427,9 @@ into the directory @file{/etc/skel/.gnupg/} so that newly created users
 start up with a working configuration.  For existing users the a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 
-For internal purposes @command{gpg2} creates and maintaines a few other
+For internal purposes @command{@gpgname} creates and maintaines a few other
 files; They all live in in the current home directory (@pxref{option
---homedir}).  Only the @command{gpg2} may modify these files.
+--homedir}).  Only the @command{@gpgname} may modify these files.
 
 
 @table @file
