@@ -114,6 +114,8 @@ the administration and the architecture.
 @end ifnottex
 
 @menu
+* Installation::        A short installation guide.
+
 * Invoking GPG::        Using the OpenPGP protocol.
 * Invoking GPGSM::      Using the S/MIME protocol.
 * Invoking GPG-AGENT::  How to launch the secret key daemon.
@@ -124,7 +126,7 @@ the administration and the architecture.
 
 * System Notes::        Notes pertaining to certain OSes.
 * Debugging::           How to solve problems
-* Assuan::              Description of the Assuan protocol.
+
 * Copying::             GNU General Public License says
                         how you can copy and share GnuPG
 * Contributors::        People who have contributed to GnuPG.
@@ -148,6 +150,8 @@ the administration and the architecture.
 @end ifhtml
 
 
+@include instguide.texi
+
 @include gpg.texi
 @include gpgsm.texi
 @include gpg-agent.texi
@@ -165,7 +169,6 @@ the administration and the architecture.
 
 @include debugging.texi
 
-@include assuan.texi
 @include gpl.texi
 
 @include contrib.texi

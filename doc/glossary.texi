@@ -13,7 +13,7 @@
 certificates.
 
 @item CRL
-      The @emph{Certificate Revocation List} is a list containing
+     The @emph{Certificate Revocation List} is a list containing
 certificates revoked by the issuer.
 
 @item Keygrip

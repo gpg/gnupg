@@ -1,6 +1,9 @@
-Noteworthy changes in version 1.9.24
+Noteworthy changes in version 1.9.90
 -------------------------------------------------
 
+ * Made readline work for gpg.
+
+ * Cleanups und minor bug fixes.
 
 
 Noteworthy changes in version 1.9.23 (2006-09-18)

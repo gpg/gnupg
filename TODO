@@ -77,10 +77,6 @@ might want to have an agent context for each service request
 
 ** Add a test to check the extkeyusage.
 
-* doc/
-** Explain how to setup a root CA key as trusted
-** Explain how trustlist.txt might be managed.
-
 * Windows port
 ** gpgsm's LISTKEYS does not yet work
     Fix is to change everything to libestream
@@ -90,12 +86,10 @@ might want to have an agent context for each service request
 
 * sm/
 ** check that we issue NO_SECKEY xxx if a -u key was not found
-   We don't. The messages retruned are also wrong (recipient vs. signer).
+   We don't. The messages returned are also wrong (recipient vs. signer).
 
 * jnlib/
 ** provide jnlib_malloc and try to remove all jnlib_xmalloc.
-** Extend utf8conv.c to make use of iconv.
-   Need to merge with the code in 1.4/util/strgutil.c.
 
 * g10/
 ** issue a NO_SECKEY xxxx if a -u key was not found.
@@ -108,14 +102,6 @@ might want to have an agent context for each service request
 ** skclist.c
    As soon as we switch to libgcrypt 1.3 we should remove the hard
    coded constant in random_is_faked.
-
-
-* common/
-** ttyio
-  Add completion support.
-** yesno
-  Update to gpg 1.4.3 version
-
 
 * Extend selinux support to other modules
 

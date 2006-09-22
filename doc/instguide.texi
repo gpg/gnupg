@@ -1,0 +1,19 @@
+@c instguide.texi - Installation guide for GnuPG
+@c Copyright (C) 2006 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Installation
+@chapter A short installation guide.
+
+[to be written]
+
+Tell how to setup the system, install certificates, how dirmngr relates
+to GnuPG etc.
+
+** Explain how to setup a root CA key as trusted
+** Explain how trustlist.txt might be managed.
+
+
+
+

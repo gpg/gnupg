@@ -1,5 +1,9 @@
 2006-09-22  Werner Koch  <wk@g10code.com>
 
+	* instguide.texi (Installation): New.
+	* assuan.texi (Assuan): Removed.  Use the libassuan manual instead.
+	* gnupg.texi: Reflect these changes. 
+
 	* gpg.texi: Make some parts depend on the "gpgone" set
 	command. This allows us to use the same source for gpg1 and gpg2.
 

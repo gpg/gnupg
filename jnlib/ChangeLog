@@ -1,3 +1,9 @@
+2006-09-22  Werner Koch  <wk@g10code.com>
+
+	* utf8conv.c: Reworked to match the gnupg 1.4.5 code.  This now
+	requires iconv support but this is reasonable for all modern
+	systems.
+
 2006-08-29  Werner Koch  <wk@g10code.com>
 
 	* logging.c (do_logv): Emit a missing LF for fatal errors.
