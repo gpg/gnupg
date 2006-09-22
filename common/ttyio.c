@@ -81,7 +81,9 @@ static int no_terminal;
 static void (*my_rl_set_completer) (rl_completion_func_t *);
 static void (*my_rl_inhibit_completion) (int);
 static void (*my_rl_cleanup_after_signal) (void);
-
+static void (*my_rl_init_stream) (FILE *);
+static char *(*my_rl_readline) (const char*);
+static void (*my_rl_add_history) (const char*);
 
 
 /* This is a wrapper around ttyname so that we can use it even when
@@ -174,6 +176,10 @@ init_ttyfp(void)
 	exit(2);
     }
 #endif
+    
+    if (my_rl_init_stream)
+      my_rl_init_stream (ttyfp);
+
 #ifdef HAVE_TCGETATTR
     atexit( cleanup );
 #endif
@@ -520,7 +526,39 @@ do_get( const char *prompt, int hidden )
 char *
 tty_get( const char *prompt )
 {
-    return do_get( prompt, 0 );
+  if (!batchmode && !no_terminal && my_rl_readline && my_rl_add_history)
+    {
+      char *line;
+      char *buf;
+      
+      if (!initialized)
+	init_ttyfp();
+
+      last_prompt_len = 0;
+
+      line = my_rl_readline (prompt?prompt:"");
+
+      /* We need to copy it to memory controlled by our malloc
+         implementations; further we need to convert an EOF to our
+         convention. */
+      buf = xmalloc(line? strlen(line)+1:2);
+      if (line)
+        {
+          strcpy (buf, line);
+          trim_spaces (buf);
+          if (strlen (buf) > 2 )
+            my_rl_add_history (line); /* Note that we test BUF but add LINE. */
+          free (line);
+        }
+      else
+        {
+          buf[0] = CONTROL_D;
+          buf[1] = 0;
+        }
+      return buf;
+    }
+  else
+    return do_get ( prompt, 0 );
 }
 
 char *
@@ -573,13 +611,19 @@ tty_get_answer_is_yes( const char *prompt )
 
 /* Called by gnupg_rl_initialize to setup the reradline support. */
 void
-tty_private_set_rl_hooks (void (*set_completer) (rl_completion_func_t*),
+tty_private_set_rl_hooks (void (*init_stream) (FILE *),
+                          void (*set_completer) (rl_completion_func_t*),
                           void (*inhibit_completion) (int),
-                          void (*cleanup_after_signal) (void))
+                          void (*cleanup_after_signal) (void),
+                          char *(*readline_fun) (const char*),
+                          void (*add_history_fun) (const char*))
 {
+  my_rl_init_stream = init_stream;
   my_rl_set_completer = set_completer;
   my_rl_inhibit_completion = inhibit_completion;
   my_rl_cleanup_after_signal = cleanup_after_signal;
+  my_rl_readline = readline_fun;
+  my_rl_add_history = add_history_fun;
 }
 
 

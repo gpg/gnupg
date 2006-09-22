@@ -18,6 +18,10 @@
 
 ## Process this file with automake to produce Makefile.in
 
+# Note that we have renamed the resulting binaries to from gpgkeys_foo
+# to gpg2keys_foo to allow for a non-conflicting installation of
+# gnupg1 and gnupg2.  Having the same names for the helpers would
+# otherwise lead to trouble when to uninstall one of them.
 EXTRA_PROGRAMS = gpg2keys_ldap gpg2keys_hkp gpg2keys_finger gpg2keys_curl
 EXTRA_SCRIPTS = gpg2keys_mailto
 
@@ -32,7 +36,7 @@ libexec_PROGRAMS = $(GPGKEYS_LDAP) $(GPGKEYS_HKP) $(GPGKEYS_FINGER) \
 libexec_SCRIPTS = $(GPGKEYS_MAILTO)
 noinst_SCRIPTS = gpgkeys_test
 
-common_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
+common_libs = ../gl/libgnu.a  ../common/libcommon.a ../jnlib/libjnlib.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 gpg2keys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h no-libgcrypt.c
@@ -42,7 +46,7 @@ gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h no-libgcrypt.c
 
 
 gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
-gpg2keys_ldap_LDADD = $(common_libs) $(LDAPLIBS) $(NETLIBS) \
+gpg2keys_ldap_LDADD = $(LDAPLIBS) $(NETLIBS) \
                       $(other_libs) $(W32LIBS)
 
 gpg2keys_finger_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) \
@@ -50,10 +54,10 @@ gpg2keys_finger_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) \
 
 if FAKE_CURL
 gpg2keys_curl_SOURCES += curl-shim.c curl-shim.h
-gpg2keys_curl_LDADD = $(common_libs) $(NETLIBS) $(DNSLIBS) \
+gpg2keys_curl_LDADD = $(NETLIBS) $(DNSLIBS) \
 	              $(other_libs) $(W32LIBS)
 gpg2keys_hkp_SOURCES += curl-shim.c curl-shim.h
-gpg2keys_hkp_LDADD = $(common_libs) $(NETLIBS) $(DNSLIBS) \
+gpg2keys_hkp_LDADD = $(NETLIBS) $(DNSLIBS) \
 	             $(other_libs) $(W32LIBS)
 else
 gpg2keys_curl_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)

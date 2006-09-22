@@ -325,13 +325,13 @@ get_key (char *getkey)
       
       if(gotit)
         {
-	  print_nocr(output,line);
-          if (!strncmp(line,END,strlen(END)))
+	  print_nocr(output, (const char*)line);
+          if (!strncmp((char*)line,END,strlen(END)))
             break;
         }
-      else if(!strncmp(line,BEGIN,strlen(BEGIN)))
+      else if(!strncmp((char*)line,BEGIN,strlen(BEGIN)))
         {
-	  print_nocr(output,line);
+	  print_nocr(output, (const char*)line);
           gotit=1;
         }
     }

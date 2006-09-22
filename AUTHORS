@@ -125,8 +125,34 @@ GnuPG.
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
 
- Copyright 1998, 1999, 2000, 2001, 2002, 2004,
-           2005 Free Software Foundation, Inc.
+
+Copyright
+=========
+
+GnuPG is distributed under the GNU General Public License, version 2
+or later.  A few files are under the Lesser General Public License, a
+few other files carry the all permissive license note as found at the
+bottom of this file.  Certain files in keyserver/ allow one specific
+exception:
+
+  In addition, as a special exception, the Free Software Foundation
+  gives permission to link the code of the keyserver helper tools:
+  gpgkeys_ldap, gpgkeys_curl and gpgkeys_hkp with the OpenSSL
+  project's "OpenSSL" library (or with modified versions of it that
+  use the same license as the "OpenSSL" library), and distribute the
+  linked executables.  You must obey the GNU General Public License
+  in all respects for all of the code used other than "OpenSSL".  If
+  you modify this file, you may extend this exception to your version
+  of the file, but you are not obligated to do so.  If you do not
+  wish to do so, delete this exception statement from your version.
+
+Note that the gpgkeys_* binaries are currently installed under the
+name gpg2keys_*.
+
+=========
+
+ Copyright 1998, 1999, 2000, 2001, 2002, 2004, 2005,
+           2006 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

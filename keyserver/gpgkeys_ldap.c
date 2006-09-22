@@ -17,6 +17,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  * USA.
+ *
+ * In addition, as a special exception, the Free Software Foundation
+ * gives permission to link the code of the keyserver helper tools:
+ * gpgkeys_ldap, gpgkeys_curl and gpgkeys_hkp with the OpenSSL
+ * project's "OpenSSL" library (or with modified versions of it that
+ * use the same license as the "OpenSSL" library), and distribute the
+ * linked executables.  You must obey the GNU General Public License
+ * in all respects for all of the code used other than "OpenSSL".  If
+ * you modify this file, you may extend this exception to your version
+ * of the file, but you are not obligated to do so.  If you do not
+ * wish to do so, delete this exception statement from your version.
  */
 
 #include <config.h>
@@ -29,6 +40,7 @@
 #endif
 #include <stdlib.h>
 #include <errno.h>
+#include <assert.h>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -355,7 +367,7 @@ build_attrs(LDAPMod ***modlist,char *line)
   if((record=strsep(&line,":"))==NULL)
     return;
 
-  if(ascii_strcasecmp("pub",record)==0)
+  if(ks_strcasecmp("pub",record)==0)
     {
       char *tok;
       int disabled=0,revoked=0;
@@ -461,7 +473,7 @@ build_attrs(LDAPMod ***modlist,char *line)
       make_one_attr(modlist,"pgpDisabled",disabled?"1":"0");
       make_one_attr(modlist,"pgpRevoked",revoked?"1":"0");
     }
-  else if(ascii_strcasecmp("sub",record)==0)
+  else if(ks_strcasecmp("sub",record)==0)
     {
       char *tok;
 
@@ -499,7 +511,7 @@ build_attrs(LDAPMod ***modlist,char *line)
       /* Ignore the rest of the items for subkeys since the LDAP
 	 schema doesn't store them. */
     }
-  else if(ascii_strcasecmp("uid",record)==0)
+  else if(ks_strcasecmp("uid",record)==0)
     {
       char *userid,*tok;
 
@@ -520,7 +532,7 @@ build_attrs(LDAPMod ***modlist,char *line)
       while(*tok)
 	if(tok[0]=='%' && tok[1] && tok[2])
 	  {
-	    if((userid[i]=hextobyte(&tok[1]))==-1)
+	    if((userid[i]=ks_hextobyte(&tok[1]))==-1)
 	      userid[i]='?';
 
 	    i++;
@@ -536,7 +548,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 
       make_one_attr(modlist,"pgpUserID",userid);
     }
-  else if(ascii_strcasecmp("sig",record)==0)
+  else if(ks_strcasecmp("sig",record)==0)
     {
       char *tok;
 
@@ -2325,7 +2337,7 @@ main(int argc,char *argv[])
       free(searchkey);
     }
   else
-    BUG();
+    assert (!"bad action");
 
   if(!failed)
     ret=KEYSERVER_OK;

@@ -1,3 +1,7 @@
+2006-09-22  Werner Koch  <wk@g10code.com>
+
+	* AUTHORS: Add information about used licenses.
+
 2006-09-20  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (dist-hook): Removed distfiles cruft.

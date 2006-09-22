@@ -1,3 +1,10 @@
+2006-09-22  Werner Koch  <wk@g10code.com>
+
+	* i18n.h: Changed license to an all permissive one.
+
+	* ttyio.c (tty_get): We need to use readline too.  Added two more
+	hooks.
+
 2006-09-21  Werner Koch  <wk@g10code.com>
 
 	* ttyio.c (tty_private_set_rl_hooks): New.

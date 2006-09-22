@@ -1,3 +1,7 @@
+2006-09-22  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c: Changed license to a simple all permissive one.
+
 2006-09-20  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Changes to allow parallel make runs.

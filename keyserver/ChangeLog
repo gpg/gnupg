@@ -1,3 +1,25 @@
+2006-09-22  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_curl.c, gpgkeys_hkp.c, gpgkeys_ldap.c, curl-shim.c:
+	* curl-shim.h, ksutil.c, ksutil.h: Add special license exception
+	for OpenSSL.  This helps to avoid license conflicts if OpenLDAP or
+	cURL is linked against OpenSSL and we would thus indirectly link
+	to OpenSSL.  This is considered a bug fix and forgives all
+	possible violations, pertaining to this issue, possibly occured in
+	the past.
+
+	* Makefile.am (gpg2keys_ldap_LDADD): For license reasons do not
+	link against common_libs.
+	(gpg2keys_curl_LDADD, gpg2keys_hkp_LDADD): Ditto.
+	* ksutil.c (ks_hextobyte, ks_toupper, ks_strcasecmp): New.
+	Identical to the ascii_foo versions from jnlib.
+	* gpgkeys_ldap.c: Include assert.h.
+	(main): Replace BUG by assert.
+	(build_attrs): Use ks_hextobyte and ks_strcasecmp.
+
+	* gpgkeys_finger.c (get_key): Resolved signed/unisgned char
+	mismatch.
+
 2006-09-19  Werner Koch  <wk@g10code.com>
 	
 	* no-libgcrypt.c: New. Taken from ../tools.

@@ -17,6 +17,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  * USA.
+ *
+ * In addition, as a special exception, the Free Software Foundation
+ * gives permission to link the code of the keyserver helper tools:
+ * gpgkeys_ldap, gpgkeys_curl and gpgkeys_hkp with the OpenSSL
+ * project's "OpenSSL" library (or with modified versions of it that
+ * use the same license as the "OpenSSL" library), and distribute the
+ * linked executables.  You must obey the GNU General Public License
+ * in all respects for all of the code used other than "OpenSSL".  If
+ * you modify this file, you may extend this exception to your version
+ * of the file, but you are not obligated to do so.  If you do not
+ * wish to do so, delete this exception statement from your version.
  */
 
 #include <config.h>
@@ -537,4 +548,56 @@ curl_writer_finalize(struct curl_writer_ctx *ctx)
       fprintf(ctx->stream,"\n"END);
       ctx->flags.done=1;
     }
+}
+
+
+int
+ks_hextobyte (const char *s)
+{
+  int c;
+
+  if ( *s >= '0' && *s <= '9' )
+    c = 16 * (*s - '0');
+  else if ( *s >= 'A' && *s <= 'F' )
+    c = 16 * (10 + *s - 'A');
+  else if ( *s >= 'a' && *s <= 'f' )
+    c = 16 * (10 + *s - 'a');
+  else
+    return -1;
+  s++;
+  if ( *s >= '0' && *s <= '9' )
+    c += *s - '0';
+  else if ( *s >= 'A' && *s <= 'F' )
+    c += 10 + *s - 'A';
+  else if ( *s >= 'a' && *s <= 'f' )
+    c += 10 + *s - 'a';
+  else
+    return -1;
+  return c;
+}
+
+
+/* Non localized version of toupper.  */
+int 
+ks_toupper (int c)
+{
+  if (c >= 'a' && c <= 'z')
+    c &= ~0x20;
+  return c;
+}
+
+
+/* Non localized version of strcasecmp.  */
+int
+ks_strcasecmp (const char *a, const char *b)
+{
+  if (a == b)
+    return 0;
+
+  for (; *a && *b; a++, b++)
+    {
+      if (*a != *b && ks_toupper (*a) != ks_toupper (*b))
+        break;
+    }
+  return *a == *b? 0 : (ks_toupper (*a) - ks_toupper (*b));
 }
