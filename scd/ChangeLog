@@ -1,3 +1,8 @@
+2006-09-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* app-openpgp.c (do_sign): Advance INDATA by the SHA1 resp. RMD160
+	prefix length.
+
 2006-09-14  Werner Koch  <wk@g10code.com>
 
  	Replaced all call gpg_error_from_errno(errno) by

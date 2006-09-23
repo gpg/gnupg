@@ -2116,10 +2116,16 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     ;
   else if (indatalen == (15 + 20) && hashalgo == GCRY_MD_SHA1
            && !memcmp (indata, sha1_prefix, 15))
-    ;
+    {
+      indata += 15;
+      indatalen -= 15;
+    }
   else if (indatalen == (15 + 20) && hashalgo == GCRY_MD_RMD160
            && !memcmp (indata, rmd160_prefix, 15))
-    ;
+    {
+      indata += 15;
+      indatalen -= 15;
+    }
   else
     {
       log_error (_("card does not support digest algorithm %s\n"),
