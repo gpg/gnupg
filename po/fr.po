@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-09-25 09:00+0200\n"
+"POT-Creation-Date: 2006-09-25 09:19+0200\n"
 "PO-Revision-Date: 2005-06-28 00:24+0200\n"
 "Last-Translator: Gaël Quéri <gael@lautre.net>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -6584,12 +6584,12 @@ msgstr "la réponse ne contient pas le modulo RSA\n"
 msgid "response does not contain the RSA public exponent\n"
 msgstr "la réponse ne contient pas l'exposant public RSA\n"
 
-#: scd/app-openpgp.c:1297 scd/app-openpgp.c:1385 scd/app-openpgp.c:2196
+#: scd/app-openpgp.c:1297 scd/app-openpgp.c:1385 scd/app-openpgp.c:2202
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "l'appel du PIN a retourné une erreur: %s\n"
 
-#: scd/app-openpgp.c:1303 scd/app-openpgp.c:1391 scd/app-openpgp.c:2202
+#: scd/app-openpgp.c:1303 scd/app-openpgp.c:1391 scd/app-openpgp.c:2208
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
@@ -6597,7 +6597,7 @@ msgstr ""
 "est %d\n"
 
 #: scd/app-openpgp.c:1312 scd/app-openpgp.c:1326 scd/app-openpgp.c:1401
-#: scd/app-openpgp.c:2211 scd/app-openpgp.c:2225
+#: scd/app-openpgp.c:2217 scd/app-openpgp.c:2231
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "la vérification CHV%d a échoué: %s\n"
@@ -6606,11 +6606,11 @@ msgstr "la vérification CHV%d a échoué: %s\n"
 msgid "access to admin commands is not configured\n"
 msgstr "l'accès aux commandes d'administration n'est pas configuré\n"
 
-#: scd/app-openpgp.c:1364 scd/app-openpgp.c:2435
+#: scd/app-openpgp.c:1364 scd/app-openpgp.c:2441
 msgid "error retrieving CHV status from card\n"
 msgstr "erreur pendant la récupération de l'état CHV de la carte\n"
 
-#: scd/app-openpgp.c:1370 scd/app-openpgp.c:2444
+#: scd/app-openpgp.c:1370 scd/app-openpgp.c:2450
 msgid "card is permanently locked!\n"
 msgstr "la carte est irrémédiablement bloquée !\n"
 
@@ -6707,29 +6707,29 @@ msgstr "la génération de clé a été effectuée (%d secondes)\n"
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "structure de carte OpenPGP invalide (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2125
+#: scd/app-openpgp.c:2131
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "signature %s, algorithme de hachage %s\n"
 
-#: scd/app-openpgp.c:2176
+#: scd/app-openpgp.c:2182
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "signatures créées jusqu'ici: %lu\n"
 
-#: scd/app-openpgp.c:2184
+#: scd/app-openpgp.c:2190
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Entrez le PIN%%0A[sigs faites: %lu]"
 
-#: scd/app-openpgp.c:2449
+#: scd/app-openpgp.c:2455
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "la vérification du code PIN d'administration est actuellement interdite\n"
 "au travers de cette commande\n"
 
-#: scd/app-openpgp.c:2522 scd/app-openpgp.c:2532
+#: scd/app-openpgp.c:2528 scd/app-openpgp.c:2538
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "impossible d'accéder à %s - carte OpenPGP invalide ?\n"

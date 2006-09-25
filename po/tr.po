@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-09-25 09:00+0200\n"
+"POT-Creation-Date: 2006-09-25 09:19+0200\n"
 "PO-Revision-Date: 2005-03-16 07:30+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -6413,18 +6413,18 @@ msgstr "yanıt RSA modülü içermiyor\n"
 msgid "response does not contain the RSA public exponent\n"
 msgstr "yanıt RSA genel bileşenini içermiyor\n"
 
-#: scd/app-openpgp.c:1297 scd/app-openpgp.c:1385 scd/app-openpgp.c:2196
+#: scd/app-openpgp.c:1297 scd/app-openpgp.c:1385 scd/app-openpgp.c:2202
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "PIN eylemcisi hata döndürdü: %s\n"
 
-#: scd/app-openpgp.c:1303 scd/app-openpgp.c:1391 scd/app-openpgp.c:2202
+#: scd/app-openpgp.c:1303 scd/app-openpgp.c:1391 scd/app-openpgp.c:2208
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "CHV%d için PIN çok kısa; asgari uzunluk: %d\n"
 
 #: scd/app-openpgp.c:1312 scd/app-openpgp.c:1326 scd/app-openpgp.c:1401
-#: scd/app-openpgp.c:2211 scd/app-openpgp.c:2225
+#: scd/app-openpgp.c:2217 scd/app-openpgp.c:2231
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "CHV%d doğrulaması başarısız oldu: %s\n"
@@ -6433,11 +6433,11 @@ msgstr "CHV%d doğrulaması başarısız oldu: %s\n"
 msgid "access to admin commands is not configured\n"
 msgstr "yönetici komutlarına erişim yapılandırılmamış\n"
 
-#: scd/app-openpgp.c:1364 scd/app-openpgp.c:2435
+#: scd/app-openpgp.c:1364 scd/app-openpgp.c:2441
 msgid "error retrieving CHV status from card\n"
 msgstr "karttan CHV durumu alınırken hata\n"
 
-#: scd/app-openpgp.c:1370 scd/app-openpgp.c:2444
+#: scd/app-openpgp.c:1370 scd/app-openpgp.c:2450
 msgid "card is permanently locked!\n"
 msgstr "kart kalıcı olarak kilitli!\n"
 
@@ -6531,27 +6531,27 @@ msgstr "anahtar üretimi tamamlandı (%d saniye)\n"
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "OpenPGP kartının yapısı geçersiz (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2125
+#: scd/app-openpgp.c:2131
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "%s imzası, %s özümleme algoritması\n"
 
-#: scd/app-openpgp.c:2176
+#: scd/app-openpgp.c:2182
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "şu ana kadar oluşturulan imzalar: %lu\n"
 
-#: scd/app-openpgp.c:2184
+#: scd/app-openpgp.c:2190
 #, fuzzy, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "PIN [yapılan imza: %lu]"
 
-#: scd/app-openpgp.c:2449
+#: scd/app-openpgp.c:2455
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2522 scd/app-openpgp.c:2532
+#: scd/app-openpgp.c:2528 scd/app-openpgp.c:2538
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "%s erişilebilir değil - OpenPGP kartı geçersiz olabilir mi?\n"

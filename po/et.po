@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-09-25 09:00+0200\n"
+"POT-Creation-Date: 2006-09-25 09:19+0200\n"
 "PO-Revision-Date: 2004-06-17 11:04+0300\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -6476,18 +6476,18 @@ msgstr ""
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1297 scd/app-openpgp.c:1385 scd/app-openpgp.c:2196
+#: scd/app-openpgp.c:1297 scd/app-openpgp.c:1385 scd/app-openpgp.c:2202
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1303 scd/app-openpgp.c:1391 scd/app-openpgp.c:2202
+#: scd/app-openpgp.c:1303 scd/app-openpgp.c:1391 scd/app-openpgp.c:2208
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
 #: scd/app-openpgp.c:1312 scd/app-openpgp.c:1326 scd/app-openpgp.c:1401
-#: scd/app-openpgp.c:2211 scd/app-openpgp.c:2225
+#: scd/app-openpgp.c:2217 scd/app-openpgp.c:2231
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "võtmeserverile saatmine ebaõnnestus: %s\n"
@@ -6496,11 +6496,11 @@ msgstr "võtmeserverile saatmine ebaõnnestus: %s\n"
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1364 scd/app-openpgp.c:2435
+#: scd/app-openpgp.c:1364 scd/app-openpgp.c:2441
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1370 scd/app-openpgp.c:2444
+#: scd/app-openpgp.c:1370 scd/app-openpgp.c:2450
 msgid "card is permanently locked!\n"
 msgstr ""
 
@@ -6598,27 +6598,27 @@ msgstr "Võtme genereerimine ebaõnnestus: %s\n"
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2125
+#: scd/app-openpgp.c:2131
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
 
-#: scd/app-openpgp.c:2176
+#: scd/app-openpgp.c:2182
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2184
+#: scd/app-openpgp.c:2190
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr ""
 
-#: scd/app-openpgp.c:2449
+#: scd/app-openpgp.c:2455
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2522 scd/app-openpgp.c:2532
+#: scd/app-openpgp.c:2528 scd/app-openpgp.c:2538
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "ei leia OpenPGP andmeid.\n"

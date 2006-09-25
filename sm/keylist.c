@@ -401,12 +401,14 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
         *truststring = 'i';
     }
 
-  /* Is we have no truststring yet (i.e. the certificate might be
+  /* If we have no truststring yet (i.e. the certificate might be
      good) and this is a root certificate, we ask the agent whether
      this is a trusted root certificate. */
   if (!*truststring && is_root)
     {
-      rc = gpgsm_agent_istrusted (ctrl, cert);
+      struct rootca_flags_s dummy_flags;
+
+      rc = gpgsm_agent_istrusted (ctrl, cert, &dummy_flags);
       if (!rc)
         *truststring = 'u';  /* Yes, we trust this one (ultimately). */
       else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
@@ -680,7 +682,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   else
     fputs ("[?]\n", fp);
 
-  fputs ("     keyUsage: ", fp);
+  fputs ("     keyUsage:", fp);
   err = ksba_cert_get_key_usage (cert, &kusage);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {

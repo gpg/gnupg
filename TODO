@@ -105,3 +105,4 @@ might want to have an agent context for each service request
 
 * Extend selinux support to other modules
 
+* Remove -sat PGP2 compatibility hack

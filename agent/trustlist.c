@@ -38,7 +38,13 @@
 /* A structure to store the information from the trust file. */
 struct trustitem_s
 {
-  int keyflag;            /* The keyflag:  '*', 'P' or 'S'. */
+  struct
+  {
+    int for_pgp:1;        /* Set by '*' or 'P' as first flag. */
+    int for_smime:1;      /* Set by '*' or 'S' as first flag. */
+    int relax:1;          /* Relax checking of root certificate
+                             constraints. */
+  } flags;
   unsigned char fpr[20];  /* The binary fingerprint. */
 };
 typedef struct trustitem_s trustitem_t;
@@ -198,14 +204,22 @@ read_one_trustfile (const char *fname, int allow_include,
       for (; spacep (p); p++)
         ;
       
-      if (!*p)
-        ti->keyflag = '*';
+      memset (&ti->flags, 0, sizeof ti->flags);
+      /* Process the first flag which needs to be the first for
+         backward compatibility. */
+      if (!*p || *p == '*' )
+        {
+          ti->flags.for_smime = 1;
+          ti->flags.for_pgp = 1;
+        }
       else if ( *p == 'P' || *p == 'p')
-        ti->keyflag = 'P';
+        {
+          ti->flags.for_pgp = 1;
+        }
       else if ( *p == 'S' || *p == 's')
-        ti->keyflag = 'S';
-      else if ( *p == '*')
-        ti->keyflag = '*';
+        {
+          ti->flags.for_smime = 1;
+        }
       else
         {
           log_error (_("invalid keyflag in `%s', line %d\n"), fname, lnr);
@@ -219,7 +233,29 @@ read_one_trustfile (const char *fname, int allow_include,
           err = gpg_error (GPG_ERR_BAD_DATA);
           continue;
         }
-      /* Fixme: need to check for trailing garbage. */
+
+      /* Now check for more key-value pairs of the form NAME[=VALUE]. */
+      while (*p)
+        {
+          for (; spacep (p); p++)
+            ;
+          if (!*p)
+            break;
+          n = strcspn (p, "= \t");
+          if (p[n] == '=')
+            {
+              log_error ("assigning a value to a flag is not yet supported; "
+                         "in `%s', line %d\n", fname, lnr);
+              err = gpg_error (GPG_ERR_BAD_DATA);
+              p++;
+            }
+          else if (n == 5 && !memcmp (p, "relax", 5))
+            ti->flags.relax = 1;
+          else
+            log_error ("flag `%.*s' in `%s', line %d ignored\n",
+                       n, p, fname, lnr);
+          p += n;
+        }
       tableidx++;
     }
   if ( !err && !feof (fp) )
@@ -250,7 +286,7 @@ read_trustfiles (void)
   char *fname;
   int allow_include = 1;
 
-  tablesize = 10;
+  tablesize = 20;
   table = xtrycalloc (tablesize, sizeof *table);
   if (!table)
     return gpg_error_from_syserror ();
@@ -302,7 +338,7 @@ read_trustfiles (void)
 /* Check whether the given fpr is in our trustdb.  We expect FPR to be
    an all uppercase hexstring of 40 characters. */
 gpg_error_t 
-agent_istrusted (const char *fpr)
+agent_istrusted (ctrl_t ctrl, const char *fpr)
 {
   gpg_error_t err;
   trustitem_t *ti;
@@ -326,7 +362,17 @@ agent_istrusted (const char *fpr)
     {
       for (ti=trusttable, len = trusttablesize; len; ti++, len--)
         if (!memcmp (ti->fpr, fprbin, 20))
-          return 0; /* Trusted. */
+          {
+            if (ti->flags.relax)
+              {
+                err = agent_write_status (ctrl,
+                                          "TRUSTLISTFLAG", "relax", 
+                                          NULL);
+                if (err)
+                  return err;
+              }
+            return 0; /* Trusted. */
+          }
     }
   return gpg_error (GPG_ERR_NOT_TRUSTED);
 }
@@ -360,7 +406,8 @@ agent_listtrusted (void *assuan_context)
         {
           bin2hex (ti->fpr, 20, key);
           key[40] = ' ';
-          key[41] = ti->keyflag;
+          key[41] = ((ti->flags.for_smime && ti->flags.for_pgp)? '*'
+                     : ti->flags.for_smime? 'S': ti->flags.for_pgp? 'P':' ');
           key[42] = '\n';
           assuan_send_data (assuan_context, key, 43);
           assuan_send_data (assuan_context, NULL, 0); /* flush */
@@ -400,7 +447,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
     }    
   xfree (fname);
 
-  if (!agent_istrusted (fpr))
+  if (!agent_istrusted (ctrl, fpr))
     {
       return 0; /* We already got this fingerprint.  Silently return
                    success. */
@@ -460,7 +507,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
      with the trusttable but using this lock is just fine for our
      purpose.  */
   lock_trusttable ();
-  if (!agent_istrusted (fpr))
+  if (!agent_istrusted (ctrl, fpr))
     {
       unlock_trusttable ();
       return 0; 

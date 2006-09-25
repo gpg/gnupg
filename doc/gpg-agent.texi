@@ -479,6 +479,10 @@ This is however not as secure as maintaining this file manually.  It is
 even advisable to change the permissions to read-only so that this file
 can't be changed inadvertently.
 
+It is possible to add further flags after the @code{S} for use by the
+caller.  The only flag currently defined is @code{relax} to relax
+checking of some root certificate requirements.
+
 As a special feature a line @code{include-default} will include a global
 list of trusted certificates (e.g. @file{/etc/gnupg/trustlist.txt}).
 This global list is also used if the local list ios not available.

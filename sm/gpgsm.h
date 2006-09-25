@@ -179,6 +179,16 @@ struct certlist_s
 };
 typedef struct certlist_s *certlist_t;
 
+
+/* A structure carrying information about trusted root certificates. */
+struct rootca_flags_s
+{
+  unsigned int relax:1;  /* Relax checking of root certificates.  */
+
+};
+
+
+
 /*-- gpgsm.c --*/
 void gpgsm_exit (int rc);
 void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
@@ -319,7 +329,8 @@ int gpgsm_agent_genkey (ctrl_t ctrl,
                         ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey);
 int gpgsm_agent_readkey (ctrl_t ctrl, const char *hexkeygrip,
                          ksba_sexp_t *r_pubkey);
-int gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert);
+int gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert,
+                           struct rootca_flags_s *rootca_flags);
 int gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip);
 int gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert);
 int gpgsm_agent_learn (ctrl_t ctrl);

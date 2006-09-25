@@ -227,8 +227,40 @@ parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
 }
 
 
+/* Write an assuan status line. */
+gpg_error_t
+agent_write_status (ctrl_t ctrl, const char *keyword, ...)
+{
+  gpg_error_t err = 0;
+  va_list arg_ptr;
+  const char *text;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+  char buf[950], *p;
+  size_t n;
+
+  va_start (arg_ptr, keyword);
+
+  p = buf; 
+  n = 0;
+  while ( (text = va_arg (arg_ptr, const char *)) )
+    {
+      if (n)
+        {
+          *p++ = ' ';
+          n++;
+        }
+      for ( ; *text && n < DIM (buf)-2; n++)
+        *p++ = *text++;
+    }
+  *p = 0;
+  err = assuan_write_status (ctx, keyword, buf);
+
+  va_end (arg_ptr);
+  return err;
+}
 
 
+
 /* ISTRUSTED <hexstring_with_fingerprint>
 
    Return OK when we have an entry with this fingerprint in our
@@ -236,6 +268,7 @@ parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
 static int
 cmd_istrusted (assuan_context_t ctx, char *line)
 {
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc, n, i;
   char *p;
   char fpr[41];
@@ -254,7 +287,7 @@ cmd_istrusted (assuan_context_t ctx, char *line)
   for (p=line; i < 40; p++, i++)
     fpr[i] = *p >= 'a'? (*p & 0xdf): *p;
   fpr[i] = 0;
-  rc = agent_istrusted (fpr);
+  rc = agent_istrusted (ctrl, fpr);
   if (!rc || gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
     return rc;
   else if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF )

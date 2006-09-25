@@ -494,14 +494,35 @@ gpgsm_agent_readkey (ctrl_t ctrl, const char *hexkeygrip,
 }
 
 
+
+static int
+istrusted_status_cb (void *opaque, const char *line)
+{
+  struct rootca_flags_s *flags = opaque;
+
+  if (!strncmp (line, "TRUSTLISTFLAG", 13) && (line[13]==' ' || !line[13]))
+    {
+      for (line += 13; *line == ' '; line++)
+        ;
+      if (!strncmp (line, "relax", 5) && (line[5] == ' ' || !line[5]))
+        flags->relax = 1;
+    }
+  return 0;
+}
+
+
+
 /* Ask the agent whether the certificate is in the list of trusted
-   keys */
+   keys.  ROOTCA_FLAGS is guaranteed to be cleared on error. */
 int
-gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert)
+gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert,
+                       struct rootca_flags_s *rootca_flags)
 {
   int rc;
   char *fpr;
   char line[ASSUAN_LINELENGTH];
+
+  memset (rootca_flags, 0, sizeof *rootca_flags);
 
   rc = start_agent (ctrl);
   if (rc)
@@ -518,7 +539,8 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert)
   line[DIM(line)-1] = 0;
   xfree (fpr);
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
+                        istrusted_status_cb, rootca_flags);
   return rc;
 }
 

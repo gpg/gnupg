@@ -174,6 +174,7 @@ void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
 void agent_init_default_ctrl (struct server_control_s *ctrl);
 
 /*-- command.c --*/
+gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...);
 void start_command_handler (int, int);
 
 /*-- command-ssh.c --*/
@@ -252,7 +253,7 @@ int agent_get_shadow_info (const unsigned char *shadowkey,
 
 
 /*-- trustlist.c --*/
-gpg_error_t agent_istrusted (const char *fpr);
+gpg_error_t agent_istrusted (ctrl_t ctrl, const char *fpr);
 gpg_error_t agent_listtrusted (void *assuan_context);
 gpg_error_t agent_marktrusted (ctrl_t ctrl, const char *name,
                                const char *fpr, int flag);

@@ -117,12 +117,21 @@ unknown_criticals (ksba_cert_t cert, int listmode, FILE *fp)
           rc = gpg_error (GPG_ERR_UNSUPPORTED_CERT);
         }
     }
-  if (err && gpg_err_code (err) != GPG_ERR_EOF)
+  /* We ignore the error codes EOF as well as no-value. The later will
+     occur for certificates with no extensions at all. */
+  if (err
+      && gpg_err_code (err) != GPG_ERR_EOF
+      && gpg_err_code (err) != GPG_ERR_NO_VALUE)
     rc = err;
 
   return rc;
 }
 
+
+/* Check whether CERT is an allowed certificate.  This requires that
+   CERT matches all requirements for such a CA, i.e. the
+   BasicConstraints extension.  The function returns 0 on success and
+   the awlloed length of the chain at CHAINLEN. */
 static int
 allowed_ca (ksba_cert_t cert, int *chainlen, int listmode, FILE *fp)
 {
@@ -773,6 +782,19 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       /* Is this a self-issued certificate? */
       if (subject && !strcmp (issuer, subject))
         {  /* Yes. */
+          gpg_error_t istrusted_rc;
+          struct rootca_flags_s rootca_flags;
+
+          /* Check early whether the certificate is listed as trusted.
+             We used to do this only later but changed it to call the
+             check right here so that we can access special flags
+             associated with that specific root certificate.  */
+          istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert,
+                                                &rootca_flags);
+
+          /* Note, that we could save the following signature check
+             because nobody would be so dump to set up a faked chain
+             and fail in creating a valid self-signed certificate. */
           if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
             {
               do_list (1, lm, fp,
@@ -785,10 +807,13 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                                    : GPG_ERR_BAD_CERT);
               goto leave;
             }
-          rc = allowed_ca (subject_cert, NULL, listmode, fp);
-          if (rc)
-            goto leave;
-
+          if (!rootca_flags.relax)
+            {
+              rc = allowed_ca (subject_cert, NULL, listmode, fp);
+              if (rc)
+                goto leave;
+            }
+              
           
           /* Set the flag for qualified signatures.  This flag is
              deduced from a list of root certificates allowed for
@@ -835,8 +860,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             }
 
 
-          /* Check whether we really trust this root certificate. */
-          rc = gpgsm_agent_istrusted (ctrl, subject_cert);
+          /* Act on the check for a trusted root certificates. */
+          rc = istrusted_rc;
           if (!rc)
             ;
           else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
@@ -882,7 +907,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           /* Check for revocations etc. */
           if ((flags & 1))
             ;
-          else if (opt.no_trusted_cert_crl_check)
+          else if (opt.no_trusted_cert_crl_check || rootca_flags.relax)
             ; 
           else
             rc = is_cert_still_valid (ctrl, lm, fp,

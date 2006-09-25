@@ -1,3 +1,8 @@
+2006-09-25  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi (GPG Examples): Add markup to all options.  This is
+	required to have the double dashs printed correclty.
+
 2006-09-22  Werner Koch  <wk@g10code.com>
 
 	* instguide.texi (Installation): New.
