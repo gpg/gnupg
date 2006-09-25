@@ -1,40 +1,97 @@
-# List of files with translatable strings.
+# List of files with translatable strings
 
-agent/gpg-agent.c
-agent/protect-tool.c
+agent/call-pinentry.c
+agent/command-ssh.c
 agent/divert-scd.c
 agent/genkey.c
-agent/call-pinentry.c
+agent/gpg-agent.c
+agent/preset-passphrase.c
+agent/protect-tool.c
 agent/trustlist.c
 
-common/sysutils.c
+common/exechelp.c
+common/http.c
 common/simple-pwquery.c
+common/sysutils.c
+common/yesno.c
+
+g10/armor.c
+g10/build-packet.c
+g10/call-agent.c
+g10/card-util.c
+g10/dearmor.c
+g10/decrypt.c
+g10/delkey.c
+g10/encode.c
+g10/encr-data.c
+g10/exec.c
+g10/export.c
+g10/getkey.c
+g10/gpg.c
+g10/gpgv.c
+g10/helptext.c
+g10/import.c
+g10/keydb.c
+g10/keyedit.c
+g10/keygen.c
+g10/keyid.c
+g10/keylist.c
+g10/keyring.c
+g10/keyserver.c
+g10/mainproc.c
+g10/misc.c
+g10/openfile.c
+g10/parse-packet.c
+g10/passphrase.c
+g10/photoid.c
+g10/pkclist.c
+g10/plaintext.c
+g10/pubkey-enc.c
+g10/revoke.c
+g10/seckey-cert.c
+g10/seskey.c
+g10/sig-check.c
+g10/sign.c
+g10/skclist.c
+g10/tdbdump.c
+g10/tdbio.c
+g10/textfilter.c
+g10/trustdb.c
+g10/verify.c
 
 jnlib/argparse.c
 jnlib/logging.c
+jnlib/utf8conv.c
 
 kbx/kbxutil.c
 
-scd/scdaemon.c
-scd/app-openpgp.c
 scd/app-nks.c
+scd/app-openpgp.c
+scd/scdaemon.c
 
 sm/base64.c
 sm/call-agent.c
 sm/call-dirmngr.c
+sm/certchain.c
+sm/certcheck.c
 sm/certdump.c
 sm/certlist.c
-sm/certchain.c
+sm/certreqgen.c
 sm/decrypt.c
 sm/delete.c
 sm/encrypt.c
+sm/export.c
 sm/gpgsm.c
 sm/import.c
 sm/keydb.c
 sm/keylist.c
+sm/misc.c
+sm/qualified.c
 sm/sign.c
 sm/verify.c
-sm/qualified.c
 
-tools/gpgconf.c
+tools/gpg-connect-agent.c
 tools/gpgconf-comp.c
+tools/gpgconf.c
+tools/no-libgcrypt.c
+tools/symcryptrun.c

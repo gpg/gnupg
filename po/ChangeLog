@@ -1,3 +1,12 @@
+2006-09-25  Werner Koch  <wk@g10code.com>
+
+	* LINGUAS: Copied from gnupg 1.4.5.
+	* de.po: Merged with the version from 1.4.5.
+	* be.po, ca.po, cs.po, da.po, de.po, eo.po, el.po, es.po, et.po
+	* fi.po, fr.po, gl.po, hu.po, id.po, it.po, ja.po, nb.po, pl.po
+	* pt_BR.po, pt.po, ro.po, ru.po, sk.po, sv.po, tr.po, zh_TW.po
+	* zh_CN.po: Copied from gnupg 1.4.5.
+
 2005-11-23  Werner Koch  <wk@g10code.com>
 
 	* de.po: Updated.
