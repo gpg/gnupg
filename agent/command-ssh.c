@@ -2864,8 +2864,8 @@ start_command_handler_ssh (int sock_client)
   if (ret)
     {
       err = gpg_error_from_syserror ();
-      log_error (_("failed to disable buffering "
-                   "on socket stream: %s\n"), gpg_strerror (err));
+      log_error ("failed to disable buffering "
+                 "on socket stream: %s\n", gpg_strerror (err));
       goto out;
     }
 

@@ -1,9 +1,11 @@
-Noteworthy changes in version 1.9.90
+Noteworthy changes in version 1.9.90 (2006-09-25)
 -------------------------------------------------
 
  * Made readline work for gpg.
 
  * Cleanups und minor bug fixes.
+
+ * Included translations from gnupg 1.4.5.
 
 
 Noteworthy changes in version 1.9.23 (2006-09-18)

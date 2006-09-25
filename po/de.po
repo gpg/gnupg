@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-1.4.1\n"
+"Project-Id-Version: gnupg-1.9.90\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-09-25 08:38+0200\n"
-"PO-Revision-Date: 2006-09-25 08:56+0200\n"
+"POT-Creation-Date: 2006-09-25 09:00+0200\n"
+"PO-Revision-Date: 2006-09-25 09:09+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -68,7 +68,7 @@ msgstr "Mantra"
 #: agent/command-ssh.c:533
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
-msgstr "SSH Schlüssel von mehr als %d Bits werden nicht unterstützt"
+msgstr "SSH Schlüssel von mehr als %d Bits werden nicht unterstützt\n"
 
 #: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1018 g10/keygen.c:3045
 #: g10/keygen.c:3075 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
@@ -97,7 +97,7 @@ msgstr "Fehler beim Holen der Seriennummer: %s\n"
 #: agent/command-ssh.c:1623
 #, c-format
 msgid "detected card with S/N: %s\n"
-msgstr "Erkannte Karte hat die Seriennummer: %s"
+msgstr "Erkannte Karte hat die Seriennummer: %s\n"
 
 #: agent/command-ssh.c:1628
 #, fuzzy, c-format
@@ -140,11 +140,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "failed to create stream from socket: %s\n"
 msgstr "Fehler beim Speichern des Schlüssels: %s\n"
-
-#: agent/command-ssh.c:2867
-#, c-format
-msgid "failed to disable buffering on socket stream: %s\n"
-msgstr ""
 
 #: agent/divert-scd.c:217
 msgid "Admin PIN"
@@ -525,7 +520,8 @@ msgstr "Ungültiger Landescode in `%s', Zeile %d\n"
 #: agent/trustlist.c:158
 #, c-format
 msgid "system trustlist `%s' not available\n"
-msgstr "Systemliste der vertrauenswürdigen Zertifikate '%s' ist nicht vorhanden"
+msgstr ""
+"Systemliste der vertrauenswürdigen Zertifikate '%s' ist nicht vorhanden\n"
 
 #: agent/trustlist.c:193
 #, fuzzy, c-format
