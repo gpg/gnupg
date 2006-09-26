@@ -360,6 +360,12 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
       if (item->no_cert)
         continue; /* No public key yet available. */
 
+      if (assuan_context)
+        {
+          agent_write_status (ctrl, "KEYPAIRINFO",
+                              item->hexgrip, item->id, NULL);
+        }
+
       for (p=item->hexgrip, i=0; i < 20; p += 2, i++)
         grip[i] = xtoi_2 (p);
       

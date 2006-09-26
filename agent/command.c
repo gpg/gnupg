@@ -1183,6 +1183,8 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   return 0;
 }
 
+
+
 
 /* Tell the assuan library about our commands */
 static int
