@@ -377,7 +377,10 @@ certificates voluntary without the need of putting all ever issued
 certificates into a CRL.  The disable option may be used to switch this
 extra check off.  Due to the caching done by the Dirmngr, there won't be
 any noticeable performance gain.  Note, that this also disables possible
-OCSP checks for trusted root certificates.
+OCSP checks for trusted root certificates.  A more specific way of
+disabling this check is by adding the ``relax'' keyword to the root CA
+line of the @file{trustlist.txt}
+
 
 @item --force-crl-refresh
 @opindex force-crl-refresh

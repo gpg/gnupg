@@ -1,3 +1,14 @@
+2006-09-26  Werner Koch  <wk@g10code.com>
+
+	* curl-shim.c: Adjusted for changes in http.c.
+	(curl_easy_perform): Changed LINE from unsigned char* to char*.
+
+	* Makefile.am (gpg2keys_curl_LDADD, gpg2keys_hkp_LDADD)
+	[FAKE_CURL]: Need to link against common_libs and pth.
+
+	* curl-shim.h, curl-shim.c: Removed license exception as not
+	needed here.
+
 2006-09-22  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_curl.c, gpgkeys_hkp.c, gpgkeys_ldap.c, curl-shim.c:

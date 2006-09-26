@@ -19,17 +19,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  * USA.
- *
- * In addition, as a special exception, the Free Software Foundation
- * gives permission to link the code of the keyserver helper tools:
- * gpgkeys_ldap, gpgkeys_curl and gpgkeys_hkp with the OpenSSL
- * project's "OpenSSL" library (or with modified versions of it that
- * use the same license as the "OpenSSL" library), and distribute the
- * linked executables.  You must obey the GNU General Public License
- * in all respects for all of the code used other than "OpenSSL".  If
- * you modify this file, you may extend this exception to your version
- * of the file, but you are not obligated to do so.  If you do not
- * wish to do so, delete this exception statement from your version.
  */
 
 #include <config.h>
@@ -114,7 +103,7 @@ curl_easy_cleanup(CURL *curl)
 {
   if (curl)
     {
-      http_close (curl->hd);
+      http_close (curl->hd, 0);
       free(curl);
     }
 }
@@ -210,7 +199,7 @@ curl_easy_perform(CURL *curl)
           curl->status = http_get_status_code (curl->hd);
 	  if (!rc && curl->flags.failonerror && curl->status>=300)
 	    err = CURLE_HTTP_RETURNED_ERROR;
-          http_close(curl->hd);
+          http_close (curl->hd, 0);
           curl->hd = NULL;
 	}
     }
@@ -229,7 +218,7 @@ curl_easy_perform(CURL *curl)
 	      else
 		{
 		  unsigned int maxlen = 1024, buflen, len;
-		  unsigned char *line = NULL;
+		  char *line = NULL;
 
 		  while ((len = es_read_line (http_get_read_ptr (curl->hd),
                                               &line, &buflen, &maxlen)))
@@ -247,34 +236,29 @@ curl_easy_perform(CURL *curl)
 		    }
 
 		  es_free (line);
-		  http_close(curl->hd);
+		  http_close(curl->hd, 0);
                   curl->hd = NULL;
 		}
 	    }
 	  else
             {
-              http_close (curl->hd);
+              http_close (curl->hd, 0);
               curl->hd = NULL;
             }
 	}
     }
 
-  switch(rc)
+  switch(gpg_err_code (rc))
     {
     case 0:
       break;
 
-    case G10ERR_INVALID_URI:
+    case GPG_ERR_INV_URI:
       err=CURLE_UNSUPPORTED_PROTOCOL;
       break;
 
-    case G10ERR_NETWORK:
-      errstr=strerror(errno);
-      err=CURLE_COULDNT_CONNECT;
-      break;
-
     default:
-      errstr=g10_errstr(rc);
+      errstr=gpg_strerror (rc);
       err=CURLE_COULDNT_CONNECT;
       break;
     }
