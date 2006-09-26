@@ -695,10 +695,15 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
     gpgsm_dump_cert ("target", cert);
 
   subject_cert = cert;
+  ksba_cert_ref (subject_cert);
   maxdepth = 50;
 
   for (;;)
     {
+      int is_root;
+      gpg_error_t istrusted_rc;
+      struct rootca_flags_s rootca_flags;
+
       xfree (issuer);
       xfree (subject);
       issuer = ksba_cert_get_issuer (subject_cert, 0);
@@ -711,6 +716,20 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           goto leave;
         }
 
+      /* Is this a self-issued certificate (i.e. the root certificate)? */
+      is_root = (subject && !strcmp (issuer, subject));
+      if (is_root)
+        {
+          /* Check early whether the certificate is listed as trusted.
+             We used to do this only later but changed it to call the
+             check right here so that we can access special flags
+             associated with that specific root certificate.  */
+          istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert,
+                                                &rootca_flags);
+        }
+      
+
+      /* Check the validity period. */
       {
         ksba_isotime_t not_before, not_after;
 
@@ -762,10 +781,12 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           }            
       }
 
+      /* Assert that we understand all critical extensions. */
       rc = unknown_criticals (subject_cert, listmode, fp);
       if (rc)
         goto leave;
 
+      /* Do a policy check. */
       if (!opt.no_policy_check)
         {
           rc = check_cert_policy (subject_cert, listmode, fp);
@@ -780,23 +801,14 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
 
       /* Is this a self-issued certificate? */
-      if (subject && !strcmp (issuer, subject))
-        {  /* Yes. */
-          gpg_error_t istrusted_rc;
-          struct rootca_flags_s rootca_flags;
-
-          /* Check early whether the certificate is listed as trusted.
-             We used to do this only later but changed it to call the
-             check right here so that we can access special flags
-             associated with that specific root certificate.  */
-          istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert,
-                                                &rootca_flags);
-
-          /* Note, that we could save the following signature check
-             because nobody would be so dump to set up a faked chain
-             and fail in creating a valid self-signed certificate. */
-          if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
+      if (is_root)
+        { 
+          if (!istrusted_rc)
+            ; /* No need to check the certificate for a trusted one. */
+          else if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
             {
+              /* We only check the signature if the certificate is not
+                 trusted for better diagnostics. */
               do_list (1, lm, fp,
                        _("self-signed certificate has a BAD signature"));
               if (DBG_X509)
@@ -920,6 +932,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           break;  /* Okay: a self-signed certicate is an end-point. */
         }
       
+      /* Take care that the chain does not get too long. */
       depth++;
       if (depth > maxdepth)
         {
@@ -928,7 +941,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           goto leave;
         }
 
-      /* find the next cert up the tree */
+      /* Find the next cert up the tree. */
       keydb_search_reset (kh);
       rc = find_up (kh, subject_cert, issuer, 0);
       if (rc)
@@ -1013,9 +1026,37 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           goto leave;
         }
 
+      is_root = 0;
+      istrusted_rc = -1;
+
+      /* Check that a CA is allowed to issue certificates. */
       {
         int chainlen;
+
         rc = allowed_ca (issuer_cert, &chainlen, listmode, fp);
+        if (rc)
+          {
+            /* Not allowed.  Check whether this is a trusted root
+               certificate and whether we allow special exceptions.
+               We could carry the result of the test over to the
+               regular root check at the top of the loop but for
+               clarity we won't do that.  Given that the majority of
+               certificates carry proper BasicContraints our way of
+               overriding an error in the way is justified for
+               performance reasons. */
+            if (gpgsm_is_root_cert (issuer_cert))
+              {
+                is_root = 1;
+                istrusted_rc = gpgsm_agent_istrusted (ctrl, issuer_cert,
+                                                      &rootca_flags);
+                if (!istrusted_rc && rootca_flags.relax)
+                  {
+                    /* Ignore the error due to the relax flag.  */
+                    rc = 0;
+                    chainlen = -1;
+                  }
+              }
+          }
         if (rc)
           goto leave;
         if (chainlen >= 0 && (depth - 1) > chainlen)
@@ -1028,6 +1069,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           }
       }
 
+      /* Is the certificate allowed to sign other certificates. */
       if (!listmode)
         {
           rc = gpgsm_cert_use_cert_p (issuer_cert);
@@ -1041,9 +1083,14 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             }
         }
 
-      /* Check for revocations etc. */
+      /* Check for revocations etc.  Note that for a root certioficate
+         this test is done a second time later. This should eventually
+         be fixed. */
       if ((flags & 1))
         rc = 0;
+      else if (is_root && (opt.no_trusted_cert_crl_check
+                           || (!istrusted_rc && rootca_flags.relax)))
+        ; 
       else
         rc = is_cert_still_valid (ctrl, lm, fp,
                                   subject_cert, issuer_cert,
@@ -1054,8 +1101,10 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
       if (opt.verbose && !listmode)
         log_info ("certificate is good\n");
-      
+
+      /* For the next round the current issuer becomes the new subject.  */
       keydb_search_reset (kh);
+      ksba_cert_release (subject_cert);
       subject_cert = issuer_cert;
       issuer_cert = NULL;
     } /* End chain traversal. */
@@ -1110,10 +1159,10 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   if (r_exptime)
     gnupg_copy_time (r_exptime, exptime);
   xfree (issuer);
+  xfree (subject);
   keydb_release (kh); 
   ksba_cert_release (issuer_cert);
-  if (subject_cert != cert)
-    ksba_cert_release (subject_cert);
+  ksba_cert_release (subject_cert);
   return rc;
 }
 
