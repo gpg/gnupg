@@ -17,6 +17,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  * USA.
+ *
+ * In addition, as a special exception, the Free Software Foundation
+ * gives permission to link the code of the keyserver helper tools:
+ * gpgkeys_ldap, gpgkeys_curl and gpgkeys_hkp with the OpenSSL
+ * project's "OpenSSL" library (or with modified versions of it that
+ * use the same license as the "OpenSSL" library), and distribute the
+ * linked executables.  You must obey the GNU General Public License
+ * in all respects for all of the code used other than "OpenSSL".  If
+ * you modify this file, you may extend this exception to your version
+ * of the file, but you are not obligated to do so.  If you do not
+ * wish to do so, delete this exception statement from your version.
  */
 
 #ifndef _KSUTIL_H_
@@ -126,5 +137,10 @@ struct curl_writer_ctx
 
 size_t curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx);
 void curl_writer_finalize(struct curl_writer_ctx *ctx);
+
+int ks_hextobyte (const char *s);
+int ks_toupper (int c);
+int ks_strcasecmp (const char *a, const char *b);
+
 
 #endif /* !_KSUTIL_H_ */

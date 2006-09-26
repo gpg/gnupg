@@ -1,3 +1,19 @@
+2006-09-26  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_finger.c (get_key): Cast away signed/unsigned char ptr
+	mismatches.
+
+	* ksutil.c (ks_hextobyte, ks_toupper, ks_strcasecmp): New.  Use
+	them instead of there ascii_foo counterparts.
+	* gpgkeys_ldap.c (main): Replaced BUG by assert.
+
+	* gpgkeys_curl.c, gpgkeys_hkp.c, gpgkeys_ldap.c, ksutil.c:
+	* ksutil.h: Add special license exception for OpenSSL.  This helps
+	to avoid license conflicts if OpenLDAP or cURL is linked against
+	OpenSSL and we would thus indirectly link to OpenSSL.  This is
+	considered a bug fix and forgives all possible violations,
+	pertaining to this issue, possibly occured in the past.
+
 2006-07-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Fix missing include path for gpgkeys_finger (needs

@@ -69,7 +69,8 @@ is_insecure( PKT_secret_key *sk )
                 continue; /* skip attribute packets */
             if ( strstr( id->name, "(insecure!)" )
                  || strstr( id->name, "not secure" )
-                 || strstr( id->name, "do not use" ) ) {
+                 || strstr( id->name, "do not use" )
+                 || strstr( id->name, "(INSECURE!)" ) ) {
                 insecure = 1;
                 break;
             }
