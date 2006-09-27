@@ -57,14 +57,14 @@ else
 scd =
 endif
 if BUILD_TOOLS
-scd = tools
+tools = tools
 else
-scd =
+tools =
 endif
 if BUILD_DOC
-scd = doc
+doc = doc
 else
-scd =
+doc =
 endif
 
 if HAVE_W32_SYSTEM
