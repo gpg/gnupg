@@ -1037,6 +1037,7 @@ iobuf_close (iobuf_t a)
 	{
 	  memset (a->d.buf, 0, a->d.size);	/* erase the buffer */
 	  xfree (a->d.buf);
+	  xfree (a->unget.buf);
 	}
       xfree (a);
     }
@@ -1538,6 +1539,7 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
       b = a->chain;
       assert (b);
       xfree (a->d.buf);
+      xfree (a->unget.buf);
       xfree (a->real_fname);
       memcpy (a, b, sizeof *a);
       xfree (b);
@@ -1579,6 +1581,7 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
        */
       b = a->chain;
       xfree (a->d.buf);
+      xfree (a->unget.buf);
       xfree (a->real_fname);
       memcpy (a, b, sizeof *a);
       xfree (b);
@@ -1621,6 +1624,7 @@ underflow (iobuf_t a)
 	    log_debug ("iobuf-%d.%d: pop `%s' in underflow\n",
 		       a->no, a->subno, a->desc);
 	  xfree (a->d.buf);
+          xfree (a->unget.buf);
 	  xfree (a->real_fname);
 	  memcpy (a, b, sizeof *a);
 	  xfree (b);
@@ -1695,6 +1699,7 @@ underflow (iobuf_t a)
 		log_debug ("iobuf-%d.%d: pop `%s' in underflow (!len)\n",
 			   a->no, a->subno, a->desc);
 	      xfree (a->d.buf);
+              xfree (a->unget.buf);
 	      xfree (a->real_fname);
 	      memcpy (a, b, sizeof *a);
 	      xfree (b);
@@ -1856,6 +1861,31 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
   while (n < buflen);
   a->nbytes += n;
   return n;
+}
+
+
+
+/* This is a verly limited unget fucntion for an iobuf.  It does only
+   work in certain cases and should be used with care. */
+void
+iobuf_unread (iobuf_t a, const unsigned char *buf, unsigned int buflen)
+{
+  unsigned int new_len;
+  
+  if (!buflen)
+    return;
+
+  /* We always relocate the buffer, which is not optimal.  However,
+     the code is easier to read this way, and it is not on the fast
+     path. */
+  if ( !a->unget.buf )
+    a->unget.size = a->unget.start = a->unget.len = 0;
+
+  new_len = a->unget.len + buflen;
+  a->unget.buf = xrealloc(a->unget.buf, new_len);
+  memcpy(a->unget.buf + a->unget.len, buf, buflen);
+  a->unget.len = new_len;
+  a->nofast |= 2;
 }
 
 

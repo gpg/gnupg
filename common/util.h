@@ -28,8 +28,6 @@
 #include <gpg-error.h> /* We need gpg_error_t. */
 
 /* Common GNUlib includes (-I ../gl/). */
-#include "strpbrk.h"
-#include "strsep.h"
 #include "vasprintf.h"
 
 
@@ -196,13 +194,6 @@ ttyname (int fd)
 };
 #endif /* !HAVE_TTYNAME */
 
-#ifndef HAVE_ISASCII
-static inline int 
-isascii (int c)
-{
-  return (((c) & ~0x7f) == 0);
-}
-#endif /* !HAVE_ISASCII */
 
 /*-- Macros to replace ctype ones to avoid locale problems. --*/
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')

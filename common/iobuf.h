@@ -44,18 +44,21 @@ struct iobuf_struct
 {
   int use;			/* 1 input , 2 output, 3 temp */
   off_t nlimit;
-  off_t nbytes;			/* used together with nlimit */
-  off_t ntotal;			/* total bytes read (position of stream) */
-  int nofast;			/* used by the iobuf_get() */
+  off_t nbytes;			/* Used together with nlimit. */
+  off_t ntotal;			/* Total bytes read (position of stream). */
+  int nofast;			/* Used by the iobuf_get (). */
+                                /* bit 0 (LSB): slow path because of limit. */
+                                /* bit 1:       slow path because of unread. */
   void *directfp;
   struct
   {
-    size_t size;		/* allocated size */
-    size_t start;		/* number of invalid bytes at the begin of the buffer */
-    size_t len;			/* currently filled to this size */
+    size_t size;		/* Allocated size */
+    size_t start;		/* Number of invalid bytes at the
+                                   begin of the buffer */
+    size_t len;			/* Currently filled to this size */
     byte *buf;
-  }
-  d;
+  } d;
+
   int filter_eof;
   int error;
   int (*filter) (void *opaque, int control,
@@ -77,8 +80,7 @@ struct iobuf_struct
                                    begin of the buffer */
     size_t len;			/* currently filled to this size */
     byte *buf;
-  }
-  unget;
+  } unget;
 };
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
@@ -124,6 +126,7 @@ int iobuf_seek (iobuf_t a, off_t newpos);
 
 int iobuf_readbyte (iobuf_t a);
 int iobuf_read (iobuf_t a, void *buf, unsigned buflen);
+void iobuf_unread (iobuf_t a, const unsigned char *buf, unsigned int buflen);
 unsigned iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 			  unsigned *length_of_buffer, unsigned *max_length);
 int iobuf_peek (iobuf_t a, byte * buf, unsigned buflen);
