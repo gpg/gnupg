@@ -574,29 +574,3 @@ ks_hextobyte (const char *s)
     return -1;
   return c;
 }
-
-
-/* Non localized version of toupper.  */
-int 
-ks_toupper (int c)
-{
-  if (c >= 'a' && c <= 'z')
-    c &= ~0x20;
-  return c;
-}
-
-
-/* Non localized version of strcasecmp.  */
-int
-ks_strcasecmp (const char *a, const char *b)
-{
-  if (a == b)
-    return 0;
-
-  for (; *a && *b; a++, b++)
-    {
-      if (*a != *b && ks_toupper (*a) != ks_toupper (*b))
-        break;
-    }
-  return *a == *b? 0 : (ks_toupper (*a) - ks_toupper (*b));
-}

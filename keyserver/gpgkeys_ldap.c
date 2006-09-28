@@ -367,7 +367,7 @@ build_attrs(LDAPMod ***modlist,char *line)
   if((record=strsep(&line,":"))==NULL)
     return;
 
-  if (ks_strcasecmp("pub",record)==0)
+  if (strcmp("pub",record)==0)
     {
       char *tok;
       int disabled=0,revoked=0;
@@ -473,7 +473,7 @@ build_attrs(LDAPMod ***modlist,char *line)
       make_one_attr(modlist,"pgpDisabled",disabled?"1":"0");
       make_one_attr(modlist,"pgpRevoked",revoked?"1":"0");
     }
-  else if (ks_strcasecmp("sub",record)==0)
+  else if (strcmp("sub",record)==0)
     {
       char *tok;
 
@@ -511,7 +511,7 @@ build_attrs(LDAPMod ***modlist,char *line)
       /* Ignore the rest of the items for subkeys since the LDAP
 	 schema doesn't store them. */
     }
-  else if (ks_strcasecmp("uid",record)==0)
+  else if (strcmp("uid",record)==0)
     {
       char *userid,*tok;
 
@@ -548,7 +548,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 
       make_one_attr(modlist,"pgpUserID",userid);
     }
-  else if(ks_strcasecmp("sig",record)==0)
+  else if(strcmp("sig",record)==0)
     {
       char *tok;
 

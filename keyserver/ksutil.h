@@ -139,8 +139,5 @@ size_t curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx);
 void curl_writer_finalize(struct curl_writer_ctx *ctx);
 
 int ks_hextobyte (const char *s);
-int ks_toupper (int c);
-int ks_strcasecmp (const char *a, const char *b);
-
 
 #endif /* !_KSUTIL_H_ */
