@@ -20,11 +20,12 @@
 
 INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
-noinst_LIBRARIES = libutil.a
+noinst_LIBRARIES = libutil.a libcompat.a
 
 libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c \
 		    ttyio.c argparse.c memory.c secmem.c errors.c iobuf.c \
-		    dotlock.c http.c pka.c membuf.c cert.c
+		    dotlock.c http.c pka.c membuf.c cert.c \
+		    $(libcompat_a_SOURCES)
 
 if USE_SIMPLE_GETTEXT
 libutil_a_SOURCES+=simple-gettext.c
@@ -52,9 +53,17 @@ endif
 EXTRA_libutil_a_SOURCES = regcomp.c regexec.c regex_internal.c \
 	                  regex_internal.h
 
-# LIBOBJS is for the replacement functions
+# LIBOBJS and libcompat.a are for the replacement functions and
+# similar simple stuff.  They're segregated in libcompat so we can
+# link it to the keyserver helpers which have different licensing.
+# libutil.a, by definition, includes everything that libcompat.a does.
+
 libutil_a_DEPENDENCIES = @LIBOBJS@
 libutil_a_LIBADD = @LIBOBJS@
+
+libcompat_a_SOURCES=compat.c
+libcompat_a_DEPENDENCIES = @LIBOBJS@
+libcompat_a_LIBADD = @LIBOBJS@
 
 http-test:  http.c
 	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \

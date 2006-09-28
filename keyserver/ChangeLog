@@ -1,5 +1,10 @@
 2006-09-28  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Link gpgkeys_ldap to libcompat.a.
+
+	* gpgkeys_ldap.c, ksutil.h, ksutil.c: Remove hextobyte instead of
+	ks_hextobyte as it is provided by libcompat now.
+
 	* gpgkeys_ldap.c (build_attrs), ksutil.c (ks_toupper,
 	ks_strcasecmp), ksutil.h: Remove the need for strcasecmp as the
 	field tags are always lowercase.

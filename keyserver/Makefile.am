@@ -36,7 +36,7 @@ gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 gpgkeys_ldap_CPPFLAGS = @LDAP_CPPFLAGS@
-gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+gpgkeys_ldap_LDADD = ../util/libcompat.a @LDAPLIBS@ @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 
 gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 

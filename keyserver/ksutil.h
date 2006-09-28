@@ -138,6 +138,4 @@ struct curl_writer_ctx
 size_t curl_writer(const void *ptr,size_t size,size_t nmemb,void *cw_ctx);
 void curl_writer_finalize(struct curl_writer_ctx *ctx);
 
-int ks_hextobyte (const char *s);
-
 #endif /* !_KSUTIL_H_ */

@@ -532,7 +532,7 @@ build_attrs(LDAPMod ***modlist,char *line)
       while(*tok)
 	if(tok[0]=='%' && tok[1] && tok[2])
 	  {
-	    if((userid[i]=ks_hextobyte(&tok[1]))==-1)
+	    if((userid[i]=hextobyte(&tok[1]))==-1)
 	      userid[i]='?';
 
 	    i++;
