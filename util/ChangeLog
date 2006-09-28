@@ -1,5 +1,7 @@
 2006-09-28  David Shaw  <dshaw@jabberwocky.com>
 
+	* strgutil.c (strsep): Move to strsep.c for AC_REPLACE_FUNCS.
+
 	* Makefile.am: Build libcompat.a for keyserver helpers.  libutil.a
 	always contains everything in libcompat.a, so we only need to link
 	to one or the other.

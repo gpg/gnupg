@@ -206,9 +206,6 @@ char *stpcpy(char *a,const char *b);
 #ifndef HAVE_STRLWR
 char *strlwr(char *a);
 #endif
-#ifndef HAVE_STRSEP
-char *strsep (char **stringp, const char *delim);
-#endif
 #ifndef HAVE_STRCASECMP
 int strcasecmp( const char *, const char *b);
 #endif
@@ -296,10 +293,6 @@ int get_cert(const char *name,size_t max_size,IOBUF *iobuf,
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
-
-/* Note this isn't identical to a C locale isspace() without \f and
-   \v, but works for the purposes used here. */
-#define ascii_isspace(a) ((a)==' ' || (a)=='\n' || (a)=='\r' || (a)=='\t')
 
 /******* RISC OS stuff ***********/
 #ifdef __riscos__

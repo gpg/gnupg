@@ -54,7 +54,7 @@
 #include <ldap.h>
 #endif
 
-#include "util.h"
+#include "compat.h"
 #include "keyserver.h"
 #include "ksutil.h"
 
