@@ -13,5 +13,6 @@ keyserver.h
 _regex.h
 dynload.h
 assuan.h
+compat.h
 
 ChangeLog
