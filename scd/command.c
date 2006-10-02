@@ -1782,7 +1782,7 @@ update_reader_status_file (void)
           /* If a status script is executable, run it. */
           {
             const char *args[9], *envs[2];
-            char numbuf1[30], numbuf2[3], numbuf3[30];
+            char numbuf1[30], numbuf2[30], numbuf3[30];
             char *homestr, *envstr;
             gpg_error_t err;
             
