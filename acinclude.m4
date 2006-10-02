@@ -668,13 +668,18 @@ AC_CHECK_TOOL(AS, as, false)
 #                              with an underscore?
 AC_DEFUN([GNUPG_SYS_SYMBOL_UNDERSCORE],
 [tmp_do_check="no"
-case "${target}" in
+case "${host}" in
+    *-mingw32msvc*)
+        ac_cv_sys_symbol_underscore=yes
+        ;;
     i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp)
         ac_cv_sys_symbol_underscore=yes
         ;;
     *)
       if test "$cross_compiling" = yes; then
-         ac_cv_sys_symbol_underscore=yes
+         if test "x$ac_cv_sys_symbol_underscore" = x; then
+            ac_cv_sys_symbol_underscore=yes
+         fi
       else
          tmp_do_check="yes"
       fi

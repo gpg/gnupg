@@ -1,5 +1,9 @@
 2006-10-02  Werner Koch  <wk@g10code.com>
 
+	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Add case for mingw32
+	and allow setting the variable on the command line.  Fixes bug 518.
+	Also use HOST instead of TARGET.
+	
 	* README: Add information about the forthcoming GnuPG 2.0.
 
 	* configure.ac (AB_INIT): New.
