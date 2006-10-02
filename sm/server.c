@@ -182,6 +182,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       int i = *value? atoi (value) : 0;
       ctrl->with_validation = i;
     }
+  else if (!strcmp (key, "with-key-data"))
+    {
+      opt.with_key_data = 1;
+    }
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
@@ -644,7 +648,9 @@ cmd_message (assuan_context_t ctx, char *line)
 }
 
 /* LISTKEYS [<patterns>]
+   DUMPKEYS [<patterns>]
    LISTSECRETKEYS [<patterns>]
+   DUMPSECRETKEYS [<patterns>]
 */
 static int 
 do_listkeys (assuan_context_t ctx, char *line, int mode)
@@ -717,9 +723,21 @@ cmd_listkeys (assuan_context_t ctx, char *line)
 }
 
 static int 
+cmd_dumpkeys (assuan_context_t ctx, char *line)
+{
+  return do_listkeys (ctx, line, 259);
+}
+
+static int 
 cmd_listsecretkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 2);
+}
+
+static int 
+cmd_dumpsecretkeys (assuan_context_t ctx, char *line)
+{
+  return do_listkeys (ctx, line, 258);
 }
 
 
@@ -780,7 +798,9 @@ register_commands (assuan_context_t ctx)
     { "OUTPUT",        NULL }, 
     { "MESSAGE",       cmd_message },
     { "LISTKEYS",      cmd_listkeys },
+    { "DUMPKEYS",      cmd_dumpkeys },
     { "LISTSECRETKEYS",cmd_listsecretkeys },
+    { "DUMPSECRETKEYS",cmd_dumpsecretkeys },
     { "GENKEY",        cmd_genkey },
     { "DELKEYS",       cmd_delkeys },
     { NULL }
