@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.4.6
 ------------------------------------------------
 
+    * Fixed a bug while decrypting certain compressed and encrypted
+      messages. See http://bugs.gnupg.org/537 .
+
 
 Noteworthy changes in version 1.4.5 (2006-08-01)
 ------------------------------------------------

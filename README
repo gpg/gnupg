@@ -1,7 +1,7 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 1.4.5
+			    Version 1.4.6
 
 	 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
 		 2005, 2006 Free Software Foundation, Inc.
@@ -748,17 +748,18 @@
     and BZ2) are universal.
 
 
-    GnuPG 1.4 and GnuPG 1.9
+    GnuPG 1.4 and GnuPG 2.0
     -----------------------
 
-    GnuPG 1.4 is the stable version of GnuPG; GnuPG 1.9 is the
-    development branch.  However, large parts of GnuPG 1.9 are also
-    considered to be stable and useful.  In particular the tools
-    "gpg-agent" (private key operations and passphrase caching) and
-    "gpgsm" (S/MIME cousin of "gpg") are considered stable.  Both
-    packages (1.4.x and 1.9.x) may be installed at the same time and
-    it is actually suggested to do this if you need S/MIME support or
-    want to make use of gpg-agent.
+    GnuPG 2.0 is a newer version of GnuPG with additional support for
+    S/MIME.  It has a different design philosophy that splits
+    functionality up into several modules.  Both versions may be
+    installed simultaneously without any conflict (gpg is called gpg2
+    in GnuPG 2).  In fact, the gpg version from GnuPG 1.4 is able to
+    make use of the gpg-agent as included in GnuPG 2 and allows for
+    seamless passphrase caching.  The advantage of GnupG 1.4 is its
+    smaller size and no dependency on other modules at run and build
+    time.
 
 
     How to Get More Information

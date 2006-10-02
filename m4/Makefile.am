@@ -6,5 +6,6 @@ EXTRA_DIST = intmax.m4 longdouble.m4 longlong.m4 printf-posix.m4 \
              po.m4 progtest.m4 stdint_h.m4 uintmax_t.m4 ulonglong.m4 \
              readline.m4 libcurl.m4 libusb.m4 tar-ustar.m4 \
 	     ldap.m4 \
-	     noexecstack.m4
+	     noexecstack.m4 autobuild.m4
+
 

@@ -1,3 +1,8 @@
+2006-10-02  Werner Koch  <wk@g10code.com>
+
+	* encr-data.c (decrypt_data, mdc_decode_filter): Check the MDC
+	right here and don't let parse-packet handle the MDC.
+
 2006-08-21  Werner Koch  <wk@g10code.com>
 
 	* skclist.c (is_insecure): Also test for uppercase version of the

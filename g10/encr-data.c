@@ -1,5 +1,6 @@
 /* encr-data.c -  process an encrypted data packet
- * Copyright (C) 1998, 1999, 2000, 2001, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2005,
+ *               2006  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -41,7 +42,7 @@ static int decode_filter( void *opaque, int control, IOBUF a,
 typedef struct {
     CIPHER_HANDLE cipher_hd;
     MD_HANDLE mdc_hash;
-    char defer[20];
+    char defer[22];
     int  defer_filled;
     int  eof_seen;
 } decode_filter_ctx_t;
@@ -146,12 +147,30 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     if( ed->mdc_method && dfx.eof_seen == 2 )
 	rc = G10ERR_INVALID_PACKET;
     else if( ed->mdc_method ) { /* check the mdc */
+        /* We used to let parse-packet.c handle the MDC packet but
+           this turned out to be a problem with compressed packets:
+           With old style packets there is no length information
+           available and the decompressor uses an implicit end.
+           However we can't know this implicit end beforehand (:-) and
+           thus may feed the decompressor with more bytes than
+           actually needed.  It would be possible to unread the extra
+           bytes but due to our weird iobuf system any unread is non
+           reliable due to filters already popped off.  The easy and
+           sane solution is to care about the MDC packet only here and
+           never pass it to the packet parser.  Fortunatley the
+           OpenPGP spec requires a strict format for the MDC packet so
+           that we know that 22 bytes are appended.  */
 	int datalen = md_digest_length( ed->mdc_method );
 
-	cipher_decrypt( dfx.cipher_hd, dfx.defer, dfx.defer, 20);
+	cipher_decrypt( dfx.cipher_hd, dfx.defer, dfx.defer, 22);
+        md_write (dfx.mdc_hash, dfx.defer, 2);
 	md_final( dfx.mdc_hash );
-	if( datalen != 20
-	    || memcmp(md_read( dfx.mdc_hash, 0 ), dfx.defer, datalen) )
+        if (dfx.defer[0] != '\xd3' || dfx.defer[1] != '\x14' ) {
+            log_error("mdc_packet with invalid encoding\n");
+            rc = G10ERR_INVALID_PACKET;
+        }
+	else if ( datalen != 20
+	    || memcmp(md_read( dfx.mdc_hash, 0 ), dfx.defer+2, datalen) )
 	    rc = G10ERR_BAD_SIGN;
 	/*log_hexdump("MDC calculated:", md_read( dfx.mdc_hash, 0), datalen);*/
 	/*log_hexdump("MDC message   :", dfx.defer, 20);*/
@@ -182,23 +201,23 @@ mdc_decode_filter( void *opaque, int control, IOBUF a,
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert(a);
-	assert( size > 40 );
+	assert( size > 44 );
 
 	/* get at least 20 bytes and put it somewhere ahead in the buffer */
-	for(n=20; n < 40 ; n++ ) {
+	for(n=22; n < 44 ; n++ ) {
 	    if( (c = iobuf_get(a)) == -1 )
 		break;
 	    buf[n] = c;
 	}
-	if( n == 40 ) {
+	if( n == 44 ) {
 	    /* we have enough stuff - flush the deferred stuff */
 	    /* (we have asserted that the buffer is large enough) */
 	    if( !dfx->defer_filled ) { /* the first time */
-		memcpy(buf, buf+20, 20 );
-		n = 20;
+		memcpy(buf, buf+22, 22 );
+		n = 22;
 	    }
 	    else {
-		memcpy(buf, dfx->defer, 20 );
+		memcpy(buf, dfx->defer, 22 );
 	    }
 	    /* now fill up */
 	    for(; n < size; n++ ) {
@@ -206,22 +225,22 @@ mdc_decode_filter( void *opaque, int control, IOBUF a,
 		    break;
 		buf[n] = c;
 	    }
-	    /* move the last 20 bytes back to the defer buffer */
-	    /* (okay, we are wasting 20 bytes of supplied buffer) */
-	    n -= 20;
-	    memcpy( dfx->defer, buf+n, 20 );
+	    /* Move the last 22 bytes back to the defer buffer. */
+	    /* (okay, we are wasting 22 bytes of supplied buffer) */
+	    n -= 22;
+	    memcpy( dfx->defer, buf+n, 22 );
 	    dfx->defer_filled = 1;
 	}
 	else if( !dfx->defer_filled ) { /* eof seen buf empty defer */
 	    /* this is bad because there is an incomplete hash */
-	    n -= 20;
-	    memcpy(buf, buf+20, n );
+	    n -= 22;
+	    memcpy(buf, buf+22, n );
 	    dfx->eof_seen = 2; /* eof with incomplete hash */
 	}
 	else { /* eof seen */
-	    memcpy(buf, dfx->defer, 20 );
-	    n -= 20;
-	    memcpy( dfx->defer, buf+n, 20 );
+	    memcpy (buf, dfx->defer, 22 );
+	    n -= 22;
+	    memcpy( dfx->defer, buf+n, 22 );
 	    dfx->eof_seen = 1; /* normal eof */
 	}
 
