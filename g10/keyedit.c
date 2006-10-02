@@ -507,7 +507,7 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
  * if some user_ids are marked those will be signed.
  */
 static int
-sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
+sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	   int local, int nonrevocable, int trust, int interactive )
 {
     int rc = 0;
@@ -1501,8 +1501,8 @@ keyedit_completion(const char *text, int start, int end)
 
 
 void
-keyedit_menu( const char *username, STRLIST locusr,
-	      STRLIST commands, int quiet, int seckey_check )
+keyedit_menu( const char *username, strlist_t locusr,
+	      strlist_t commands, int quiet, int seckey_check )
 {
     enum cmdids cmd = 0;
     int rc = 0;

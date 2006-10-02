@@ -1,3 +1,11 @@
+2006-09-27  Werner Koch  <wk@g10code.com>
+
+	* gl/strsep.h, gl/strsep.c, gl/m4/strsep.m4: Removed.
+	* gl/strpbrk.h, gl/strpbrk.c, gl/m4/strpbrk.m4: Removed.
+	* gl/Makefile.am: Removed module strsep and strpbrk.
+	* configure.ac: Check for strsep in the context of jnlib.  Remove
+	check from gl_MODULES. Moved check for timegm into the jnlib context.
+
 2006-09-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am: Fix cut & paste error.

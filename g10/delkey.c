@@ -186,7 +186,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
  * Delete a public or secret key from a keyring.
  */
 int
-delete_keys( STRLIST names, int secret, int allow_both )
+delete_keys( strlist_t names, int secret, int allow_both )
 {
     int rc, avail, force=(!allow_both && !secret && opt.expert);
 

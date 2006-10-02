@@ -131,8 +131,8 @@ main( int argc, char **argv )
 {
     ARGPARSE_ARGS pargs;
     int rc=0;
-    STRLIST sl;
-    STRLIST nrings=NULL;
+    strlist_t sl;
+    strlist_t nrings=NULL;
     unsigned configlineno;
 
     set_strusage (my_strusage);
@@ -186,7 +186,7 @@ main( int argc, char **argv )
     for(sl = nrings; sl; sl = sl->next )
         keydb_add_resource (sl->d, 0, 0 );
     
-    FREE_STRLIST(nrings);
+    FREE_STRLIST (nrings);
     
     if( (rc = verify_signatures( argc, argv ) ))
         log_error("verify signatures failed: %s\n", g10_errstr(rc) );

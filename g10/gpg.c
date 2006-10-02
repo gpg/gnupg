@@ -1371,7 +1371,7 @@ list_config(char *items)
 
 	  for(iter=opt.grouplist;iter;iter=iter->next)
 	    {
-	      STRLIST sl;
+	      strlist_t sl;
 
 	      printf("cfg:group:");
 	      print_string(stdout,iter->name,strlen(iter->name),':');
@@ -1728,8 +1728,8 @@ main (int argc, char **argv )
     const char *fname;
     char *username;
     int may_coredump;
-    STRLIST sl, remusr= NULL, locusr=NULL;
-    STRLIST nrings=NULL, sec_nrings=NULL;
+    strlist_t sl, remusr= NULL, locusr=NULL;
+    strlist_t nrings=NULL, sec_nrings=NULL;
     armor_filter_context_t afx;
     int detached_sig = 0;
     FILE *configfp = NULL;
@@ -4129,7 +4129,7 @@ static void
 add_policy_url( const char *string, int which )
 {
   unsigned int i,critical=0;
-  STRLIST sl;
+  strlist_t sl;
 
   if(*string=='!')
     {
@@ -4162,7 +4162,7 @@ static void
 add_keyserver_url( const char *string, int which )
 {
   unsigned int i,critical=0;
-  STRLIST sl;
+  strlist_t sl;
 
   if(*string=='!')
     {

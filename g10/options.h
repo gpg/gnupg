@@ -114,7 +114,7 @@ struct
   int pgp2_workarounds;
   int shm_coprocess;
   const char *set_filename;
-  STRLIST comments;
+  strlist_t comments;
   int throw_keyid;
   const char *photo_viewer;
   int s2k_mode;
@@ -134,7 +134,7 @@ struct
     char *port;
     char *path;
     char *opaque;
-    STRLIST options;
+    strlist_t options;
     struct
     {
       unsigned int direct_uri:1;
@@ -146,7 +146,7 @@ struct
     unsigned int options;
     unsigned int import_options;
     unsigned int export_options;
-    STRLIST other;
+    strlist_t other;
   } keyserver_options;
   int exec_disable;
   int exec_path_set;
@@ -166,11 +166,11 @@ struct
   int interactive;
   struct notation *sig_notations;
   struct notation *cert_notations;
-  STRLIST sig_policy_url;
-  STRLIST cert_policy_url;
-  STRLIST sig_keyserver_url;
-  STRLIST cert_subpackets;
-  STRLIST sig_subpackets;
+  strlist_t sig_policy_url;
+  strlist_t cert_policy_url;
+  strlist_t sig_keyserver_url;
+  strlist_t cert_subpackets;
+  strlist_t sig_subpackets;
   int allow_non_selfsigned_uid;
   int allow_freeform_uid;
   int no_literal;

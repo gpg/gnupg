@@ -992,7 +992,7 @@ armor_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH && !afx->cancel ) {
 	if( !afx->status ) { /* write the header line */
 	    const char *s;
-	    STRLIST comment=opt.comments;
+	    strlist_t comment=opt.comments;
 
 	    if( afx->what >= DIM(head_strings) )
 		log_bug("afx->what=%d", afx->what);

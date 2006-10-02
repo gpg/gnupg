@@ -45,6 +45,15 @@
 #include "main.h"
 #include "options.h"
 
+
+#ifdef __riscos__
+#define BYTEF_CAST(a) ((Bytef *)(a))
+#else 
+#define BYTEF_CAST(a) (a)
+#endif
+
+
+
 int compress_filter_bz2( void *opaque, int control,
 			 IOBUF a, byte *buf, size_t *ret_len);
 
@@ -92,11 +101,7 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
     unsigned n;
 
     do {
-#ifndef __riscos__
-	zs->next_out = zfx->outbuf;
-#else /* __riscos__ */
-	zs->next_out = (Bytef *) zfx->outbuf;
-#endif /* __riscos__ */
+	zs->next_out = BYTEF_CAST (zfx->outbuf);
 	zs->avail_out = zfx->outbufsize;
 	if( DBG_FILTER )
 	    log_debug("enter deflate: avail_in=%u, avail_out=%u, flush=%d\n",
@@ -171,11 +176,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	if( zs->avail_in < zfx->inbufsize && refill ) {
 	    n = zs->avail_in;
 	    if( !n )
-#ifndef __riscos__
-		zs->next_in = zfx->inbuf;
-#else /* __riscos__ */
-		zs->next_in = (Bytef *) zfx->inbuf;
-#endif /* __riscos__ */
+            zs->next_in = BYTEF_CAST (zfx->inbuf);
 	    count = zfx->inbufsize - n;
 	    nread = iobuf_read( a, zfx->inbuf + n, count );
 	    if( nread == -1 ) nread = 0;
@@ -194,11 +195,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	if( DBG_FILTER )
 	    log_debug("enter inflate: avail_in=%u, avail_out=%u\n",
 		    (unsigned)zs->avail_in, (unsigned)zs->avail_out);
-#ifdef Z_SYNC_FLUSH
-	zrc = inflate( zs, Z_SYNC_FLUSH );
-#else
-	zrc = inflate( zs, Z_PARTIAL_FLUSH );
-#endif
+	zrc = inflate ( zs, Z_SYNC_FLUSH );
 	if( DBG_FILTER )
 	    log_debug("leave inflate: avail_in=%u, avail_out=%u, zrc=%d\n",
 		   (unsigned)zs->avail_in, (unsigned)zs->avail_out, zrc);
@@ -210,10 +207,12 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	    else
 		log_fatal("zlib inflate problem: rc=%d\n", zrc );
 	}
-    } while( zs->avail_out && zrc != Z_STREAM_END  && zrc != Z_BUF_ERROR );
+    } while( zs->avail_out && zrc != Z_STREAM_END && zrc != Z_BUF_ERROR );
+
     *ret_len = zfx->outbufsize - zs->avail_out;
     if( DBG_FILTER )
-	log_debug("do_uncompress: returning %u bytes\n", (unsigned)*ret_len );
+	log_debug("do_uncompress: returning %u bytes (%u ignored)\n",
+                  (unsigned int)*ret_len, (unsigned int)zs->avail_in );
     return rc;
 }
 
@@ -233,11 +232,7 @@ compress_filter( void *opaque, int control,
 	    zfx->status = 1;
 	}
 
-#ifndef __riscos__
-	zs->next_out = buf;
-#else /* __riscos__ */
-	zs->next_out = (Bytef *) buf;
-#endif /* __riscos__ */
+	zs->next_out = BYTEF_CAST (buf);
 	zs->avail_out = size;
 	zfx->outbufsize = size; /* needed only for calculation */
 	rc = do_uncompress( zfx, zs, a, ret_len );
@@ -262,11 +257,7 @@ compress_filter( void *opaque, int control,
 	    zfx->status = 2;
 	}
 
-#ifndef __riscos__
-	zs->next_in = buf;
-#else /* __riscos__ */
-	zs->next_in = (Bytef *) buf;
-#endif /* __riscos__ */
+	zs->next_in = BYTEF_CAST (buf);
 	zs->avail_in = size;
 	rc = do_compress( zfx, zs, Z_NO_FLUSH, a );
     }
@@ -278,11 +269,7 @@ compress_filter( void *opaque, int control,
 	    xfree(zfx->outbuf); zfx->outbuf = NULL;
 	}
 	else if( zfx->status == 2 ) {
-#ifndef __riscos__
-	    zs->next_in = buf;
-#else /* __riscos__ */
-	    zs->next_in = (Bytef *) buf;
-#endif /* __riscos__ */
+	    zs->next_in = BYTEF_CAST (buf);
 	    zs->avail_in = 0;
 	    do_compress( zfx, zs, Z_FINISH, a );
 	    deflateEnd(zs);

@@ -278,7 +278,7 @@ void gpgsm_release_certlist (certlist_t list);
 int gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert);
 
 /*-- keylist.c --*/
-gpg_error_t gpgsm_list_keys (ctrl_t ctrl, STRLIST names,
+gpg_error_t gpgsm_list_keys (ctrl_t ctrl, strlist_t names,
                              FILE *fp, unsigned int mode);
 
 /*-- import.c --*/
@@ -287,11 +287,11 @@ int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
                         int (*of)(const char *fname));
 
 /*-- export.c --*/
-void gpgsm_export (ctrl_t ctrl, STRLIST names, FILE *fp);
+void gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp);
 void gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp);
 
 /*-- delete.c --*/
-int gpgsm_delete (ctrl_t ctrl, STRLIST names);
+int gpgsm_delete (ctrl_t ctrl, strlist_t names);
 
 /*-- verify.c --*/
 int gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp);
@@ -341,7 +341,7 @@ gpg_error_t gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc);
 int gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                            ksba_cert_t cert, ksba_cert_t issuer_cert,
                            int use_ocsp);
-int gpgsm_dirmngr_lookup (ctrl_t ctrl, STRLIST names,
+int gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names,
                           void (*cb)(void*, ksba_cert_t), void *cb_value);
 int gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
                                int argc, char **argv);

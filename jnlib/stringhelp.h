@@ -1,22 +1,23 @@
 /* stringhelp.h
- * Copyright (C) 1998,1999,2000,2001,2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2006  Free Software Foundation, Inc.
  *
- * This file is part of GnuPG.
+ * This file is part of JNLIB.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * JNLIB is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * JNLIB is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
  */
 
 #ifndef LIBJNLIB_STRINGHELP_H
@@ -79,21 +80,33 @@ int memicmp( const char *a, const char *b, size_t n );
 #ifndef HAVE_STPCPY
 char *stpcpy(char *a,const char *b);
 #endif
+#ifndef HAVE_STRSEP
+char *strsep (char **stringp, const char *delim);
+#endif
 #ifndef HAVE_STRLWR
 char *strlwr(char *a);
 #endif
 #ifndef HAVE_STRTOUL
-  #define strtoul(a,b,c)  ((unsigned long)strtol((a),(b),(c)))
+#  define strtoul(a,b,c)  ((unsigned long)strtol((a),(b),(c)))
 #endif
 #ifndef HAVE_MEMMOVE
-  #define memmove(d, s, n) bcopy((s), (d), (n))
+#  define memmove(d, s, n) bcopy((s), (d), (n))
 #endif
 #ifndef HAVE_STRICMP
-  #define stricmp(a,b)	 strcasecmp( (a), (b) )
+#  define stricmp(a,b)	 strcasecmp( (a), (b) )
 #endif
 
+#ifndef HAVE_ISASCII
+static inline int 
+isascii (int c)
+{
+  return (((c) & ~0x7f) == 0);
+}
+#endif /* !HAVE_ISASCII */
+
+
 #ifndef STR
-  #define STR(v) #v
+#  define STR(v) #v
 #endif
 #define STR2(v) STR(v)
 

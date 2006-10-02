@@ -142,7 +142,7 @@ cipher_filter( void *opaque, int control,
 	    byte temp[22];
 
 	    assert( hashlen == 20 );
-	    /* we must hash the prefix of the MDC packet here */
+	    /* We must hash the prefix of the MDC packet here. */
 	    temp[0] = 0xd3;
 	    temp[1] = 0x14;
 	    gcry_md_putc (cfx->mdc_hash, temp[0]);

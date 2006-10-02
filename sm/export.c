@@ -129,14 +129,14 @@ insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
 
 /* Export all certificates or just those given in NAMES. */
 void
-gpgsm_export (ctrl_t ctrl, STRLIST names, FILE *fp)
+gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp)
 {
   KEYDB_HANDLE hd = NULL;
   KEYDB_SEARCH_DESC *desc = NULL;
   int ndesc;
   Base64Context b64writer = NULL;
   ksba_writer_t writer;
-  STRLIST sl;
+  strlist_t sl;
   ksba_cert_t cert = NULL;
   int rc=0;
   int count = 0;

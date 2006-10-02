@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-09-25 09:19+0200\n"
+"POT-Creation-Date: 2006-09-27 17:44+0200\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -532,43 +532,43 @@ msgstr "error en la creació de la contrasenya: %s\n"
 msgid "cancelled\n"
 msgstr "Cancel·la"
 
-#: agent/trustlist.c:109 agent/trustlist.c:267
+#: agent/trustlist.c:115 agent/trustlist.c:303
 #, fuzzy, c-format
 msgid "error opening `%s': %s\n"
 msgstr "error en la lectura de «%s»: %s\n"
 
-#: agent/trustlist.c:124
+#: agent/trustlist.c:130
 #, fuzzy, c-format
 msgid "file `%s', line %d: %s\n"
 msgstr "fitxer d'opcions «%s»: %s\n"
 
-#: agent/trustlist.c:144 agent/trustlist.c:152
+#: agent/trustlist.c:150 agent/trustlist.c:158
 #, c-format
 msgid "statement \"%s\" ignored in `%s', line %d\n"
 msgstr ""
 
 # Parts?  Peces?  ivb
-#: agent/trustlist.c:158
+#: agent/trustlist.c:164
 #, fuzzy, c-format
 msgid "system trustlist `%s' not available\n"
 msgstr "parts de la clau secreta no estan disponbles\n"
 
-#: agent/trustlist.c:193
+#: agent/trustlist.c:199
 #, fuzzy, c-format
 msgid "bad fingerprint in `%s', line %d\n"
 msgstr "error de lectura: %s\n"
 
-#: agent/trustlist.c:211 agent/trustlist.c:218
+#: agent/trustlist.c:225 agent/trustlist.c:232
 #, c-format
 msgid "invalid keyflag in `%s', line %d\n"
 msgstr ""
 
-#: agent/trustlist.c:228
+#: agent/trustlist.c:264
 #, fuzzy, c-format
 msgid "error reading `%s', line %d: %s\n"
 msgstr "error en la lectura de «%s»: %s\n"
 
-#: agent/trustlist.c:320 agent/trustlist.c:349
+#: agent/trustlist.c:356 agent/trustlist.c:395
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -581,7 +581,7 @@ msgstr ""
 #. second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives
 #. the name as store in the certificate.
-#: agent/trustlist.c:424
+#: agent/trustlist.c:471
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -591,7 +591,7 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
 #. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:433
+#: agent/trustlist.c:480
 msgid "Correct"
 msgstr ""
 
@@ -603,19 +603,19 @@ msgstr ""
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:447
+#: agent/trustlist.c:494
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:453
+#: agent/trustlist.c:500
 #, fuzzy
 msgid "Yes"
 msgstr "sí|si"
 
-#: agent/trustlist.c:453
+#: agent/trustlist.c:500
 msgid "No"
 msgstr ""
 
@@ -6932,135 +6932,135 @@ msgstr ""
 msgid "critical certificate extension %s is not supported"
 msgstr "la versió %d del protocol de gpg-agent no està suportada\n"
 
-#: sm/certchain.c:144
+#: sm/certchain.c:153
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
-#: sm/certchain.c:182
+#: sm/certchain.c:191
 msgid "critical marked policy without configured policies"
 msgstr ""
 
-#: sm/certchain.c:192
+#: sm/certchain.c:201
 #, fuzzy, c-format
 msgid "failed to open `%s': %s\n"
 msgstr "no s'ha pogut obrir «%s»: %s\n"
 
-#: sm/certchain.c:199 sm/certchain.c:228
+#: sm/certchain.c:208 sm/certchain.c:237
 msgid "note: non-critical certificate policy not allowed"
 msgstr ""
 
-#: sm/certchain.c:203 sm/certchain.c:232
+#: sm/certchain.c:212 sm/certchain.c:241
 #, fuzzy
 msgid "certificate policy not allowed"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
-#: sm/certchain.c:343
+#: sm/certchain.c:352
 msgid "looking up issuer at external location\n"
 msgstr ""
 
-#: sm/certchain.c:363
+#: sm/certchain.c:372
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
-#: sm/certchain.c:516 sm/certchain.c:680 sm/certchain.c:1118 sm/decrypt.c:261
+#: sm/certchain.c:525 sm/certchain.c:689 sm/certchain.c:1192 sm/decrypt.c:261
 #: sm/encrypt.c:342 sm/sign.c:325 sm/verify.c:107
 #, fuzzy
 msgid "failed to allocated keyDB handle\n"
 msgstr "no s'ha pogut inicialitzar la base de dades de confiança: %s\n"
 
-#: sm/certchain.c:607
+#: sm/certchain.c:616
 #, fuzzy
 msgid "certificate has been revoked"
 msgstr "NOTA: aquesta clau ha estat revocada!"
 
-#: sm/certchain.c:616
+#: sm/certchain.c:625
 #, fuzzy
 msgid "no CRL found for certificate"
 msgstr "Certificat correcte"
 
-#: sm/certchain.c:620
+#: sm/certchain.c:629
 #, fuzzy
 msgid "the available CRL is too old"
 msgstr "La clau és disponible en: "
 
-#: sm/certchain.c:622
+#: sm/certchain.c:631
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
-#: sm/certchain.c:627
+#: sm/certchain.c:636
 #, fuzzy, c-format
 msgid "checking the CRL failed: %s"
 msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
-#: sm/certchain.c:700
+#: sm/certchain.c:714
 #, fuzzy
 msgid "no issuer found in certificate"
 msgstr "Certificat correcte"
 
-#: sm/certchain.c:713
+#: sm/certchain.c:741
 #, fuzzy, c-format
 msgid "certificate with invalid validity: %s"
 msgstr "problema en la lectura del certificat: %s\n"
 
-#: sm/certchain.c:729
+#: sm/certchain.c:757
 #, fuzzy
 msgid "certificate not yet valid"
 msgstr "Certificat de revocació vàlid"
 
-#: sm/certchain.c:742
+#: sm/certchain.c:770
 #, fuzzy
 msgid "certificate has expired"
 msgstr "problema en la lectura del certificat: %s\n"
 
-#: sm/certchain.c:779
+#: sm/certchain.c:813
 msgid "self-signed certificate has a BAD signature"
 msgstr ""
 
-#: sm/certchain.c:844
+#: sm/certchain.c:881
 #, fuzzy
 msgid "root certificate is not marked trusted"
 msgstr ""
 "No s'han trobat certificats amb confiança no definida.\n"
 "\n"
 
-#: sm/certchain.c:855
+#: sm/certchain.c:892
 #, fuzzy, c-format
 msgid "fingerprint=%s\n"
 msgstr "Empremta digital:"
 
-#: sm/certchain.c:860
+#: sm/certchain.c:897
 #, fuzzy
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 "No s'han trobat certificats amb confiança no definida.\n"
 "\n"
 
-#: sm/certchain.c:875
+#: sm/certchain.c:912
 #, fuzzy, c-format
 msgid "checking the trust list failed: %s\n"
 msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
-#: sm/certchain.c:901 sm/import.c:158
+#: sm/certchain.c:939 sm/import.c:158
 #, fuzzy
 msgid "certificate chain too long\n"
 msgstr "Certificat de revocació vàlid"
 
-#: sm/certchain.c:913
+#: sm/certchain.c:951
 #, fuzzy
 msgid "issuer certificate not found"
 msgstr "Certificat de revocació vàlid"
 
-#: sm/certchain.c:946
+#: sm/certchain.c:984
 #, fuzzy
 msgid "certificate has a BAD signature"
 msgstr "verifica una signatura"
 
-#: sm/certchain.c:976
+#: sm/certchain.c:1014
 msgid "found another possible matching CA certificate - trying again"
 msgstr ""
 
-#: sm/certchain.c:999
+#: sm/certchain.c:1065
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr ""

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-09-25 09:19+0200\n"
+"POT-Creation-Date: 2006-09-27 17:44+0200\n"
 "PO-Revision-Date: 2004-06-23 15:54+0200\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -517,42 +517,42 @@ msgstr "b³±d podczas tworzenia has³a: %s\n"
 msgid "cancelled\n"
 msgstr "Anuluj"
 
-#: agent/trustlist.c:109 agent/trustlist.c:267
+#: agent/trustlist.c:115 agent/trustlist.c:303
 #, fuzzy, c-format
 msgid "error opening `%s': %s\n"
 msgstr "b³±d odczytu ,,%s'': %s\n"
 
-#: agent/trustlist.c:124
+#: agent/trustlist.c:130
 #, fuzzy, c-format
 msgid "file `%s', line %d: %s\n"
 msgstr "klucz ,,%s'' nie zosta³ odnaleziony: %s\n"
 
-#: agent/trustlist.c:144 agent/trustlist.c:152
+#: agent/trustlist.c:150 agent/trustlist.c:158
 #, c-format
 msgid "statement \"%s\" ignored in `%s', line %d\n"
 msgstr ""
 
-#: agent/trustlist.c:158
+#: agent/trustlist.c:164
 #, fuzzy, c-format
 msgid "system trustlist `%s' not available\n"
 msgstr "tajne czê¶ci klucza s± niedostêpne\n"
 
-#: agent/trustlist.c:193
+#: agent/trustlist.c:199
 #, fuzzy, c-format
 msgid "bad fingerprint in `%s', line %d\n"
 msgstr "b³±d odczytu: %s\n"
 
-#: agent/trustlist.c:211 agent/trustlist.c:218
+#: agent/trustlist.c:225 agent/trustlist.c:232
 #, c-format
 msgid "invalid keyflag in `%s', line %d\n"
 msgstr ""
 
-#: agent/trustlist.c:228
+#: agent/trustlist.c:264
 #, fuzzy, c-format
 msgid "error reading `%s', line %d: %s\n"
 msgstr "b³±d odczytu ,,%s'': %s\n"
 
-#: agent/trustlist.c:320 agent/trustlist.c:349
+#: agent/trustlist.c:356 agent/trustlist.c:395
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -565,7 +565,7 @@ msgstr ""
 #. second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives
 #. the name as store in the certificate.
-#: agent/trustlist.c:424
+#: agent/trustlist.c:471
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -575,7 +575,7 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
 #. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:433
+#: agent/trustlist.c:480
 msgid "Correct"
 msgstr ""
 
@@ -587,19 +587,19 @@ msgstr ""
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:447
+#: agent/trustlist.c:494
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:453
+#: agent/trustlist.c:500
 #, fuzzy
 msgid "Yes"
 msgstr "tak"
 
-#: agent/trustlist.c:453
+#: agent/trustlist.c:500
 msgid "No"
 msgstr ""
 
@@ -6789,135 +6789,135 @@ msgstr ""
 msgid "critical certificate extension %s is not supported"
 msgstr "wersja %d protoko³u agenta nie jest obs³ugiwana\n"
 
-#: sm/certchain.c:144
+#: sm/certchain.c:153
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
-#: sm/certchain.c:182
+#: sm/certchain.c:191
 msgid "critical marked policy without configured policies"
 msgstr ""
 
-#: sm/certchain.c:192
+#: sm/certchain.c:201
 #, fuzzy, c-format
 msgid "failed to open `%s': %s\n"
 msgstr "nie mo¿na otworzyæ ,,%s'': %s\n"
 
-#: sm/certchain.c:199 sm/certchain.c:228
+#: sm/certchain.c:208 sm/certchain.c:237
 msgid "note: non-critical certificate policy not allowed"
 msgstr ""
 
-#: sm/certchain.c:203 sm/certchain.c:232
+#: sm/certchain.c:212 sm/certchain.c:241
 #, fuzzy
 msgid "certificate policy not allowed"
 msgstr "zapisujê klucz tajny w '%s'\n"
 
-#: sm/certchain.c:343
+#: sm/certchain.c:352
 msgid "looking up issuer at external location\n"
 msgstr ""
 
-#: sm/certchain.c:363
+#: sm/certchain.c:372
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
-#: sm/certchain.c:516 sm/certchain.c:680 sm/certchain.c:1118 sm/decrypt.c:261
+#: sm/certchain.c:525 sm/certchain.c:689 sm/certchain.c:1192 sm/decrypt.c:261
 #: sm/encrypt.c:342 sm/sign.c:325 sm/verify.c:107
 #, fuzzy
 msgid "failed to allocated keyDB handle\n"
 msgstr "inicjowanie Bazy Zaufania nie powiod³o siê: %s\n"
 
-#: sm/certchain.c:607
+#: sm/certchain.c:616
 #, fuzzy
 msgid "certificate has been revoked"
 msgstr "UWAGA: klucz zosta³ uniewa¿niony"
 
-#: sm/certchain.c:616
+#: sm/certchain.c:625
 #, fuzzy
 msgid "no CRL found for certificate"
 msgstr "Poprawny certyfikat"
 
-#: sm/certchain.c:620
+#: sm/certchain.c:629
 #, fuzzy
 msgid "the available CRL is too old"
 msgstr "Klucz dostêpny w: "
 
-#: sm/certchain.c:622
+#: sm/certchain.c:631
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
-#: sm/certchain.c:627
+#: sm/certchain.c:636
 #, fuzzy, c-format
 msgid "checking the CRL failed: %s"
 msgstr "sprawdzenie z³o¿onego podpisu nie powiod³o siê: %s\n"
 
-#: sm/certchain.c:700
+#: sm/certchain.c:714
 #, fuzzy
 msgid "no issuer found in certificate"
 msgstr "Poprawny certyfikat"
 
-#: sm/certchain.c:713
+#: sm/certchain.c:741
 #, fuzzy, c-format
 msgid "certificate with invalid validity: %s"
 msgstr "b³±d przy odczycie certyfikatu: %s\n"
 
-#: sm/certchain.c:729
+#: sm/certchain.c:757
 #, fuzzy
 msgid "certificate not yet valid"
 msgstr "Poprawne uniewa¿nienie certyfikatu"
 
-#: sm/certchain.c:742
+#: sm/certchain.c:770
 #, fuzzy
 msgid "certificate has expired"
 msgstr "b³±d przy odczycie certyfikatu: %s\n"
 
-#: sm/certchain.c:779
+#: sm/certchain.c:813
 msgid "self-signed certificate has a BAD signature"
 msgstr ""
 
-#: sm/certchain.c:844
+#: sm/certchain.c:881
 #, fuzzy
 msgid "root certificate is not marked trusted"
 msgstr ""
 "Brak certyfikatów o niezdefiniowanym poziomie zaufania.\n"
 "\n"
 
-#: sm/certchain.c:855
+#: sm/certchain.c:892
 #, fuzzy, c-format
 msgid "fingerprint=%s\n"
 msgstr "Odcisk klucza:"
 
-#: sm/certchain.c:860
+#: sm/certchain.c:897
 #, fuzzy
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 "Brak certyfikatów o niezdefiniowanym poziomie zaufania.\n"
 "\n"
 
-#: sm/certchain.c:875
+#: sm/certchain.c:912
 #, fuzzy, c-format
 msgid "checking the trust list failed: %s\n"
 msgstr "sprawdzenie z³o¿onego podpisu nie powiod³o siê: %s\n"
 
-#: sm/certchain.c:901 sm/import.c:158
+#: sm/certchain.c:939 sm/import.c:158
 #, fuzzy
 msgid "certificate chain too long\n"
 msgstr "Poprawne uniewa¿nienie certyfikatu"
 
-#: sm/certchain.c:913
+#: sm/certchain.c:951
 #, fuzzy
 msgid "issuer certificate not found"
 msgstr "Poprawne uniewa¿nienie certyfikatu"
 
-#: sm/certchain.c:946
+#: sm/certchain.c:984
 #, fuzzy
 msgid "certificate has a BAD signature"
 msgstr "sprawdzenie podpisu"
 
-#: sm/certchain.c:976
+#: sm/certchain.c:1014
 msgid "found another possible matching CA certificate - trying again"
 msgstr ""
 
-#: sm/certchain.c:999
+#: sm/certchain.c:1065
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr ""

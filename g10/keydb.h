@@ -182,7 +182,7 @@ int keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
 void show_revocation_reason( PKT_public_key *pk, int mode );
 int  check_signatures_trust( PKT_signature *sig );
 void release_pk_list( PK_LIST pk_list );
-int  build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use );
+int  build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned use );
 int  algo_available( preftype_t preftype, int algo,
 		     const union pref_hint *hint );
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype,
@@ -192,7 +192,7 @@ int  select_mdc_from_pklist (PK_LIST pk_list);
 /*-- skclist.c --*/
 int  random_is_faked (void);
 void release_sk_list( SK_LIST sk_list );
-int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
+int  build_sk_list( strlist_t locusr, SK_LIST *ret_sk_list,
 					    int unlock, unsigned use );
 
 /*-- passphrase.h --*/
@@ -225,7 +225,7 @@ int get_pubkey_byname( PKT_public_key *pk,  const char *name,
                        KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd,
 		       int include_unusable );
 int get_pubkey_bynames( GETKEY_CTX *rx, PKT_public_key *pk,
-			STRLIST names, KBNODE *ret_keyblock );
+			strlist_t names, KBNODE *ret_keyblock );
 int get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock );
 void get_pubkey_end( GETKEY_CTX ctx );
 int get_seckey( PKT_secret_key *sk, u32 *keyid );
@@ -240,7 +240,7 @@ int get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid );
 int seckey_available( u32 *keyid );
 int get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock );
 int get_seckey_bynames( GETKEY_CTX *rx, PKT_secret_key *sk,
-			STRLIST names, KBNODE *ret_keyblock );
+			strlist_t names, KBNODE *ret_keyblock );
 int get_seckey_next (GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock);
 void get_seckey_end( GETKEY_CTX ctx );
 

@@ -1,3 +1,8 @@
+2006-09-27  Werner Koch  <wk@g10code.com>
+
+	* signencrypt.test: Add a test for bug 537.
+	* bug537-test.data.asc: New. Taken from the BTS.
+
 2006-08-21  Werner Koch  <wk@g10code.com>
 
 	Copied tests from 1.4 and adjusted paths.

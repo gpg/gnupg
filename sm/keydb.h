@@ -77,7 +77,7 @@ int keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed);
 gpg_error_t keydb_set_cert_flags (ksba_cert_t cert, int which, int idx,
                                   unsigned int value);
 
-void keydb_clear_some_cert_flags (ctrl_t ctrl, STRLIST names);
+void keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names);
 
 
 #endif /*GNUPG_KEYDB_H*/

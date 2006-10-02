@@ -59,7 +59,7 @@ verify_signatures( int nfiles, char **files )
     progress_filter_context_t pfx;
     const char *sigfile;
     int i, rc;
-    STRLIST sl;
+    strlist_t sl;
 
     memset( &afx, 0, sizeof afx);
     /* decide whether we should handle a detached or a normal signature,

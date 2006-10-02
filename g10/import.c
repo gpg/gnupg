@@ -647,7 +647,7 @@ check_prefs(KBNODE keyblock)
 
       if(!opt.batch)
 	{
-	  STRLIST sl=NULL,locusr=NULL;
+	  strlist_t sl=NULL,locusr=NULL;
 	  size_t fprlen=0;
 	  byte fpr[MAX_FINGERPRINT_LEN],*p;
 	  char username[(MAX_FINGERPRINT_LEN*2)+1];

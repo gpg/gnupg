@@ -47,8 +47,8 @@ struct subkey_list_s
 typedef struct subkey_list_s *subkey_list_t;
 
 
-static int do_export( STRLIST users, int secret, unsigned int options );
-static int do_export_stream( IOBUF out, STRLIST users, int secret,
+static int do_export( strlist_t users, int secret, unsigned int options );
+static int do_export_stream( IOBUF out, strlist_t users, int secret,
 			     KBNODE *keyblock_out, unsigned int options,
 			     int *any );
 static int build_sexp (iobuf_t out, PACKET *pkt, int *indent);
@@ -95,7 +95,7 @@ parse_export_options(char *str,unsigned int *options,int noisy)
  * options are defined in main.h.
  * If USERS is NULL, the complete ring will be exported.  */
 int
-export_pubkeys( STRLIST users, unsigned int options )
+export_pubkeys( strlist_t users, unsigned int options )
 {
     return do_export( users, 0, options );
 }
@@ -105,7 +105,7 @@ export_pubkeys( STRLIST users, unsigned int options )
  * been exported
  */
 int
-export_pubkeys_stream( IOBUF out, STRLIST users,
+export_pubkeys_stream( IOBUF out, strlist_t users,
 		       KBNODE *keyblock_out, unsigned int options )
 {
     int any, rc;
@@ -117,7 +117,7 @@ export_pubkeys_stream( IOBUF out, STRLIST users,
 }
 
 int
-export_seckeys( STRLIST users )
+export_seckeys( strlist_t users )
 {
   /* Use only relevant options for the secret key. */
   unsigned int options = (opt.export_options & EXPORT_SEXP_FORMAT);
@@ -125,7 +125,7 @@ export_seckeys( STRLIST users )
 }
 
 int
-export_secsubkeys( STRLIST users )
+export_secsubkeys( strlist_t users )
 {
   /* Use only relevant options for the secret key. */
   unsigned int options = (opt.export_options & EXPORT_SEXP_FORMAT);
@@ -133,7 +133,7 @@ export_secsubkeys( STRLIST users )
 }
 
 static int
-do_export( STRLIST users, int secret, unsigned int options )
+do_export( strlist_t users, int secret, unsigned int options )
 {
   IOBUF out = NULL;
   int any, rc;
@@ -290,7 +290,7 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
    contains a pointer to the first keyblock found and exported.  No
    other keyblocks are exported.  The caller must free it. */
 static int
-do_export_stream( IOBUF out, STRLIST users, int secret,
+do_export_stream( IOBUF out, strlist_t users, int secret,
 		  KBNODE *keyblock_out, unsigned int options, int *any )
 {
     int rc = 0;
@@ -301,7 +301,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
     KEYDB_SEARCH_DESC *desc = NULL;
     subkey_list_t subkey_list = NULL;  /* Track alreay processed subkeys. */
     KEYDB_HANDLE kdbhd;
-    STRLIST sl;
+    strlist_t sl;
     int indent = 0;
 
     *any = 0;

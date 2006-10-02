@@ -2355,6 +2355,9 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 }
 
 
+/* Note, that this code is not anymore used in real life because now
+   the MDC checking is done right after the encryption in
+   decrypt_data. */
 static int
 parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 				   PACKET *pkt, int new_ctb )
@@ -2363,7 +2366,7 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
     PKT_mdc *mdc;
     byte *p;
 
-    mdc = pkt->pkt.mdc=  xmalloc(sizeof *pkt->pkt.mdc );
+    mdc = pkt->pkt.mdc = xmalloc(sizeof *pkt->pkt.mdc );
     if( list_mode )
 	fprintf (listfp, ":mdc packet: length=%lu\n", pktlen);
     if( !new_ctb || pktlen != 20 ) {

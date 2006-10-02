@@ -703,7 +703,7 @@ default_recipient(void)
 }
 
 static int
-expand_id(const char *id,STRLIST *into,unsigned int flags)
+expand_id(const char *id,strlist_t *into,unsigned int flags)
 {
   struct groupitem *groups;
   int count=0;
@@ -713,7 +713,7 @@ expand_id(const char *id,STRLIST *into,unsigned int flags)
       /* need strcasecmp() here, as this should be localized */
       if(strcasecmp(groups->name,id)==0)
 	{
-	  STRLIST each,sl;
+	  strlist_t each,sl;
 
 	  /* this maintains the current utf8-ness */
 	  for(each=groups->values;each;each=each->next)
@@ -732,10 +732,10 @@ expand_id(const char *id,STRLIST *into,unsigned int flags)
 
 /* For simplicity, and to avoid potential loops, we only expand once -
    you can't make an alias that points to an alias. */
-static STRLIST
-expand_group(STRLIST input)
+static strlist_t
+expand_group(strlist_t input)
 {
-  STRLIST sl,output=NULL,rover;
+  strlist_t sl,output=NULL,rover;
 
   for(rover=input;rover;rover=rover->next)
     if(expand_id(rover->d,&output,rover->flags)==0)
@@ -771,13 +771,13 @@ expand_group(STRLIST input)
    not changed.
  */
 int
-build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
+build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
 {
   PK_LIST pk_list = NULL;
   PKT_public_key *pk=NULL;
   int rc=0;
   int any_recipients=0;
-  STRLIST rov,remusr;
+  strlist_t rov,remusr;
   char *def_rec = NULL;
 
   /* Try to expand groups if any have been defined. */
@@ -875,7 +875,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
     { 
       int have_def_rec;
       char *answer = NULL;
-      STRLIST backlog = NULL;
+      strlist_t backlog = NULL;
 
       if (pk_list)
         any_recipients = 1;

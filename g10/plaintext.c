@@ -515,12 +515,12 @@ ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
  * If FILES is NULL, hash stdin.
  */
 int
-hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2, STRLIST files,
+hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
 		const char *sigfilename, int textmode )
 {
     progress_filter_context_t pfx;
     IOBUF fp;
-    STRLIST sl;
+    strlist_t sl;
 
     if( !files ) {
 	/* check whether we can open the signed material */

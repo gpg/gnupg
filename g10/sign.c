@@ -66,7 +66,7 @@ mk_notation_policy_etc( PKT_signature *sig,
 {
     const char *string;
     char *s=NULL;
-    STRLIST pu=NULL;
+    strlist_t pu=NULL;
     struct notation *nd=NULL;
     struct expando_args args;
 
@@ -735,8 +735,8 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
  * uncompressed, non-armored and in binary mode.
  */
 int
-sign_file( STRLIST filenames, int detached, STRLIST locusr,
-	   int encryptflag, STRLIST remusr, const char *outfile )
+sign_file( strlist_t filenames, int detached, strlist_t locusr,
+	   int encryptflag, strlist_t remusr, const char *outfile )
 {
     const char *fname;
     armor_filter_context_t afx;
@@ -987,7 +987,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* Setup the inner packet. */
     if( detached ) {
 	if( multifile ) {
-	    STRLIST sl;
+	    strlist_t sl;
 
 	    if( opt.verbose )
 		log_info(_("signing:") );
@@ -1069,7 +1069,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
  * make a clear signature. note that opt.armor is not needed
  */
 int
-clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
+clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 {
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
@@ -1223,7 +1223,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
  * FIXME: Far too much code is duplicated - revamp the whole file.
  */
 int
-sign_symencrypt_file (const char *fname, STRLIST locusr)
+sign_symencrypt_file (const char *fname, strlist_t locusr)
 {
     armor_filter_context_t afx;
     progress_filter_context_t pfx;

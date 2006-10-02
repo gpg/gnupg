@@ -701,7 +701,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   for (;;)
     {
       int is_root;
-      gpg_error_t istrusted_rc;
+      gpg_error_t istrusted_rc = -1;
       struct rootca_flags_s rootca_flags;
 
       xfree (issuer);

@@ -1037,7 +1037,6 @@ iobuf_close (iobuf_t a)
 	{
 	  memset (a->d.buf, 0, a->d.size);	/* erase the buffer */
 	  xfree (a->d.buf);
-	  xfree (a->unget.buf);
 	}
       xfree (a);
     }
@@ -1539,7 +1538,6 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
       b = a->chain;
       assert (b);
       xfree (a->d.buf);
-      xfree (a->unget.buf);
       xfree (a->real_fname);
       memcpy (a, b, sizeof *a);
       xfree (b);
@@ -1581,7 +1579,6 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
        */
       b = a->chain;
       xfree (a->d.buf);
-      xfree (a->unget.buf);
       xfree (a->real_fname);
       memcpy (a, b, sizeof *a);
       xfree (b);
@@ -1624,7 +1621,6 @@ underflow (iobuf_t a)
 	    log_debug ("iobuf-%d.%d: pop `%s' in underflow\n",
 		       a->no, a->subno, a->desc);
 	  xfree (a->d.buf);
-          xfree (a->unget.buf);
 	  xfree (a->real_fname);
 	  memcpy (a, b, sizeof *a);
 	  xfree (b);
@@ -1699,7 +1695,6 @@ underflow (iobuf_t a)
 		log_debug ("iobuf-%d.%d: pop `%s' in underflow (!len)\n",
 			   a->no, a->subno, a->desc);
 	      xfree (a->d.buf);
-              xfree (a->unget.buf);
 	      xfree (a->real_fname);
 	      memcpy (a, b, sizeof *a);
 	      xfree (b);
@@ -1780,17 +1775,6 @@ iobuf_readbyte (iobuf_t a)
 {
   int c;
 
-  /* nlimit does not work together with unget */
-  /* nbytes is also not valid! */
-  if (a->unget.buf)
-    {
-      if (a->unget.start < a->unget.len)
-	return a->unget.buf[a->unget.start++];
-      xfree (a->unget.buf);
-      a->unget.buf = NULL;
-      a->nofast &= ~2;
-    }
-
   if (a->nlimit && a->nbytes >= a->nlimit)
     return -1;			/* forced EOF */
 
@@ -1812,9 +1796,9 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
   unsigned char *buf = (unsigned char *)buffer;
   int c, n;
 
-  if (a->unget.buf || a->nlimit)
+  if (a->nlimit)
     {
-      /* handle special cases */
+      /* Handle special cases. */
       for (n = 0; n < buflen; n++)
 	{
 	  if ((c = iobuf_readbyte (a)) == -1)
@@ -1865,30 +1849,6 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 
 
 
-/* This is a verly limited unget fucntion for an iobuf.  It does only
-   work in certain cases and should be used with care. */
-void
-iobuf_unread (iobuf_t a, const unsigned char *buf, unsigned int buflen)
-{
-  unsigned int new_len;
-  
-  if (!buflen)
-    return;
-
-  /* We always relocate the buffer, which is not optimal.  However,
-     the code is easier to read this way, and it is not on the fast
-     path. */
-  if ( !a->unget.buf )
-    a->unget.size = a->unget.start = a->unget.len = 0;
-
-  new_len = a->unget.len + buflen;
-  a->unget.buf = xrealloc(a->unget.buf, new_len);
-  memcpy(a->unget.buf + a->unget.len, buf, buflen);
-  a->unget.len = new_len;
-  a->nofast |= 2;
-}
-
-
 /****************
  * Have a look at the iobuf.
  * NOTE: This only works in special cases.
@@ -1905,7 +1865,7 @@ iobuf_peek (iobuf_t a, byte * buf, unsigned buflen)
     {
       if (underflow (a) == -1)
 	return -1;
-      /* and unget this character */
+      /* And unget this character. */
       assert (a->d.start == 1);
       a->d.start = 0;
     }

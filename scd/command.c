@@ -941,7 +941,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
 
   /* (We ignore any garbage for now.) */
 
-  /* FIXME: Applications should not return sensistive data if the card
+  /* FIXME: Applications should not return sensitive data if the card
      is locked.  */
   rc = app_getattr (ctrl->app_ctx, ctrl, keyword);
 

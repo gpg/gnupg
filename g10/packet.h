@@ -370,7 +370,7 @@ struct notation
 /*-- mainproc.c --*/
 int proc_packets( void *ctx, iobuf_t a );
 int proc_signature_packets( void *ctx, iobuf_t a,
-			    STRLIST signedfiles, const char *sigfile );
+			    strlist_t signedfiles, const char *sigfile );
 int proc_encryption_packets( void *ctx, iobuf_t a );
 int list_packets( iobuf_t a );
 

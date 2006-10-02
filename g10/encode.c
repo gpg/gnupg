@@ -428,7 +428,7 @@ write_symkey_enc(STRING2KEY *symkey_s2k,DEK *symkey_dek,DEK *dek,IOBUF out)
  * is supplied).
  */
 int
-encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
+encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
 {
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
@@ -841,7 +841,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 }
 
 void
-encode_crypt_files(int nfiles, char **files, STRLIST remusr)
+encode_crypt_files(int nfiles, char **files, strlist_t remusr)
 {
   int rc = 0;
 

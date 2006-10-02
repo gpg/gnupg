@@ -65,7 +65,7 @@ struct mainproc_context
   md_filter_context_t mfx;
   int sigs_only;    /* Process only signatures and reject all other stuff. */
   int encrypt_only; /* Process only encryption messages. */
-  STRLIST signed_data;
+  strlist_t signed_data;
   const char *sigfilename;
   DEK *dek;
   int last_was_session_key;
@@ -1132,7 +1132,7 @@ proc_packets( void *anchor, IOBUF a )
 
 int
 proc_signature_packets( void *anchor, IOBUF a,
-			STRLIST signedfiles, const char *sigfilename )
+			strlist_t signedfiles, const char *sigfilename )
 {
     CTX c = xmalloc_clear( sizeof *c );
     int rc;

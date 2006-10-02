@@ -1386,7 +1386,7 @@ card_edit_completion(const char *text, int start, int end)
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
 void
-card_edit (STRLIST commands)
+card_edit (strlist_t commands)
 {
   enum cmdids cmd = cmdNOP;
   int have_commands = !!commands;

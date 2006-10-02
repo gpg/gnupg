@@ -35,14 +35,14 @@ struct keyserver_spec *parse_keyserver_uri(const char *string,
 					   const char *configname,
 					   unsigned int configlineno);
 struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig);
-int keyserver_export(STRLIST users);
-int keyserver_import(STRLIST users);
+int keyserver_export(strlist_t users);
+int keyserver_import(strlist_t users);
 int keyserver_import_fprint(const byte *fprint,size_t fprint_len,
 			    struct keyserver_spec *keyserver);
 int keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver);
-int keyserver_refresh(STRLIST users);
-int keyserver_search(STRLIST tokens);
-int keyserver_fetch(STRLIST urilist);
+int keyserver_refresh(strlist_t users);
+int keyserver_search(strlist_t tokens);
+int keyserver_fetch(strlist_t urilist);
 int keyserver_import_cert(const char *name,
 			  unsigned char **fpr,size_t *fpr_len);
 int keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len);

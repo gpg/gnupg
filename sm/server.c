@@ -537,12 +537,12 @@ cmd_export (assuan_context_t ctx, char *line)
   int fd = assuan_get_output_fd (ctx);
   FILE *out_fp;
   char *p;
-  STRLIST list, sl;
+  strlist_t list, sl;
 
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
   
-  /* break the line down into an STRLIST */
+  /* break the line down into an strlist_t */
   list = NULL;
   for (p=line; *p; line = p)
     {
@@ -588,10 +588,10 @@ cmd_delkeys (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   char *p;
-  STRLIST list, sl;
+  strlist_t list, sl;
   int rc;
 
-  /* break the line down into an STRLIST */
+  /* break the line down into an strlist_t */
   list = NULL;
   for (p=line; *p; line = p)
     {
@@ -658,11 +658,11 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   FILE *fp;
   char *p;
-  STRLIST list, sl;
+  strlist_t list, sl;
   unsigned int listmode;
   gpg_error_t err;
 
-  /* Break the line down into an STRLIST. */
+  /* Break the line down into an strlist. */
   list = NULL;
   for (p=line; *p; line = p)
     {

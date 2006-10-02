@@ -47,8 +47,6 @@ struct iobuf_struct
   off_t nbytes;			/* Used together with nlimit. */
   off_t ntotal;			/* Total bytes read (position of stream). */
   int nofast;			/* Used by the iobuf_get (). */
-                                /* bit 0 (LSB): slow path because of limit. */
-                                /* bit 1:       slow path because of unread. */
   void *directfp;
   struct
   {
@@ -63,24 +61,16 @@ struct iobuf_struct
   int error;
   int (*filter) (void *opaque, int control,
 		 iobuf_t chain, byte * buf, size_t * len);
-  void *filter_ov;		/* value for opaque */
+  void *filter_ov;		/* Value for opaque */
   int filter_ov_owner;
   char *real_fname;
-  iobuf_t chain;			/* next iobuf used for i/o if any
+  iobuf_t chain;		/* Next iobuf used for i/o if any
                                    (passed to filter) */
   int no, subno;
   const char *desc;
-  void *opaque;			/* can be used to hold any information
+  void *opaque;			/* Can be used to hold any information
                                    this value is copied to all
                                    instances */
-  struct
-  {
-    size_t size;		/* allocated size */
-    size_t start;		/* number of invalid bytes at the
-                                   begin of the buffer */
-    size_t len;			/* currently filled to this size */
-    byte *buf;
-  } unget;
 };
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
@@ -137,7 +127,6 @@ int iobuf_writestr (iobuf_t a, const char *buf);
 void iobuf_flush_temp (iobuf_t temp);
 int iobuf_write_temp (iobuf_t a, iobuf_t temp);
 size_t iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen);
-void iobuf_unget_and_close_temp (iobuf_t a, iobuf_t temp);
 
 off_t iobuf_get_filelength (iobuf_t a, int *overflow);
 #define IOBUF_FILELENGTH_LIMIT 0xffffffff

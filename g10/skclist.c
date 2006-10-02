@@ -115,7 +115,7 @@ key_present_in_sk_list(SK_LIST sk_list, PKT_secret_key *sk)
 }
 
 static int
-is_duplicated_entry (STRLIST list, STRLIST item)
+is_duplicated_entry (strlist_t list, strlist_t item)
 {
     for(; list && list != item; list = list->next) {
         if ( !strcmp (list->d, item->d) )
@@ -126,7 +126,7 @@ is_duplicated_entry (STRLIST list, STRLIST item)
 
 
 int
-build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
+build_sk_list( strlist_t locusr, SK_LIST *ret_sk_list,
                int unlock, unsigned int use )
 {
     SK_LIST sk_list = NULL;
@@ -168,7 +168,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 	  }
       }
     else {
-        STRLIST locusr_orig = locusr;
+        strlist_t locusr_orig = locusr;
 	for(; locusr; locusr = locusr->next ) {
 	    PKT_secret_key *sk;
             

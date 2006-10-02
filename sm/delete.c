@@ -148,7 +148,7 @@ delete_one (ctrl_t ctrl, const char *username)
 
 /* Delete the certificates specified by NAMES. */
 int
-gpgsm_delete (ctrl_t ctrl, STRLIST names)
+gpgsm_delete (ctrl_t ctrl, strlist_t names)
 {
   int rc;
 

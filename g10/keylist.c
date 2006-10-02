@@ -41,7 +41,7 @@
 #include "status.h"
 
 static void list_all(int);
-static void list_one( STRLIST names, int secret);
+static void list_one( strlist_t names, int secret);
 static void print_card_serialno (PKT_secret_key *sk);
 
 struct sig_stats
@@ -58,7 +58,7 @@ static FILE *attrib_fp=NULL;
  * If list is NULL, all available keys are listed
  */
 void
-public_key_list( STRLIST list )
+public_key_list( strlist_t list )
 {
   if(opt.with_colons)
     {
@@ -110,7 +110,7 @@ public_key_list( STRLIST list )
 }
 
 void
-secret_key_list( STRLIST list )
+secret_key_list( strlist_t list )
 {
     check_trustdb_stale ();
 
@@ -462,7 +462,7 @@ list_all( int secret )
 
 
 static void
-list_one( STRLIST names, int secret )
+list_one( strlist_t names, int secret )
 {
     int rc = 0;
     KBNODE keyblock = NULL;

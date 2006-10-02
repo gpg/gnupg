@@ -80,7 +80,7 @@ static struct parse_options keyserver_opts[]=
     {NULL,0,NULL,NULL}
   };
 
-static int keyserver_work(enum ks_action action,STRLIST list,
+static int keyserver_work(enum ks_action action,strlist_t list,
 			  KEYDB_SEARCH_DESC *desc,int count,
 			  unsigned char **fpr,size_t *fpr_len,
 			  struct keyserver_spec *keyserver);
@@ -91,7 +91,7 @@ static int keyserver_work(enum ks_action action,STRLIST list,
 static size_t max_cert_size=DEFAULT_MAX_CERT_SIZE;
 
 static void
-add_canonical_option(char *option,STRLIST *list)
+add_canonical_option(char *option,strlist_t *list)
 {
   char *arg=argsplit(option);
 
@@ -952,12 +952,12 @@ direct_uri_map(const char *scheme,unsigned int is_direct)
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
 static int 
-keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 		int count,int *prog,unsigned char **fpr,size_t *fpr_len,
 		struct keyserver_spec *keyserver)
 {
   int ret=0,i,gotversion=0,outofband=0;
-  STRLIST temp;
+  strlist_t temp;
   unsigned int maxlen,buflen;
   char *command,*end,*searchstr=NULL;
   byte *line=NULL;
@@ -1167,7 +1167,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
     case KS_GETNAME:
       {
-	STRLIST key;
+	strlist_t key;
 
 	fprintf(spawn->tochild,"COMMAND GETNAME\n\n");
 
@@ -1189,7 +1189,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
     case KS_SEND:
       {
-	STRLIST key;
+	strlist_t key;
 
 	/* Note the extra \n here to send an empty keylist block */
 	fprintf(spawn->tochild,"COMMAND SEND\n\n\n");
@@ -1349,7 +1349,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
     case KS_SEARCH:
       {
-	STRLIST key;
+	strlist_t key;
 
 	fprintf(spawn->tochild,"COMMAND SEARCH\n\n");
 
@@ -1498,7 +1498,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 }
 
 static int 
-keyserver_work(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 	       int count,unsigned char **fpr,size_t *fpr_len,
 	       struct keyserver_spec *keyserver)
 {
@@ -1568,9 +1568,9 @@ keyserver_work(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 }
 
 int 
-keyserver_export(STRLIST users)
+keyserver_export(strlist_t users)
 {
-  STRLIST sl=NULL;
+  strlist_t sl=NULL;
   KEYDB_SEARCH_DESC desc;
   int rc=0;
 
@@ -1600,7 +1600,7 @@ keyserver_export(STRLIST users)
 }
 
 int 
-keyserver_import(STRLIST users)
+keyserver_import(strlist_t users)
 {
   KEYDB_SEARCH_DESC *desc;
   int num=100,count=0;
@@ -1675,13 +1675,13 @@ keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
 
 /* code mostly stolen from do_export_stream */
 static int 
-keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
+keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 {
   int rc=0,ndesc,num=100;
   KBNODE keyblock=NULL,node;
   KEYDB_HANDLE kdbhd;
   KEYDB_SEARCH_DESC *desc;
-  STRLIST sl;
+  strlist_t sl;
 
   *count=0;
 
@@ -1831,7 +1831,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
    usernames to refresh only part of the keyring. */
 
 int
-keyserver_refresh(STRLIST users)
+keyserver_refresh(strlist_t users)
 {
   int rc,count,numdesc,fakev3=0;
   KEYDB_SEARCH_DESC *desc;
@@ -1920,7 +1920,7 @@ keyserver_refresh(STRLIST users)
 }
 
 int
-keyserver_search(STRLIST tokens)
+keyserver_search(strlist_t tokens)
 {
   if(tokens)
     return keyserver_work(KS_SEARCH,tokens,NULL,0,NULL,NULL,opt.keyserver);
@@ -1929,10 +1929,10 @@ keyserver_search(STRLIST tokens)
 }
 
 int
-keyserver_fetch(STRLIST urilist)
+keyserver_fetch(strlist_t urilist)
 {
   KEYDB_SEARCH_DESC desc;
-  STRLIST sl;
+  strlist_t sl;
   unsigned int options=opt.keyserver_options.import_options;
 
   /* Switch on fast-import, since fetch can handle more than one
@@ -2016,7 +2016,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 	  spec=parse_keyserver_uri(url,1,NULL,0);
 	  if(spec)
 	    {
-	      STRLIST list=NULL;
+	      strlist_t list=NULL;
 
 	      add_to_strlist(&list,url);
 
@@ -2083,7 +2083,7 @@ int
 keyserver_import_name(const char *name,unsigned char **fpr,size_t *fpr_len,
 		      struct keyserver_spec *keyserver)
 {
-  STRLIST list=NULL;
+  strlist_t list=NULL;
   int rc;
 
   append_to_strlist(&list,name);
@@ -2102,7 +2102,7 @@ keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *domain;
   struct keyserver_spec *keyserver;
-  STRLIST list=NULL;
+  strlist_t list=NULL;
   int rc;
 
   append_to_strlist(&list,name);

@@ -1420,13 +1420,13 @@ keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
 /* Reset all the certificate flags we have stored with the certificates
    for performance reasons. */
 void
-keydb_clear_some_cert_flags (ctrl_t ctrl, STRLIST names)
+keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
 {
   gpg_error_t err;
   KEYDB_HANDLE hd = NULL;
   KEYDB_SEARCH_DESC *desc = NULL;
   int ndesc;
-  STRLIST sl;
+  strlist_t sl;
   int rc=0;
   unsigned int old_value, value;
   

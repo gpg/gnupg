@@ -197,7 +197,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
  * Generate a revocation certificate for UNAME via a designated revoker
  */
 int
-gen_desig_revoke( const char *uname, STRLIST locusr )
+gen_desig_revoke( const char *uname, strlist_t locusr )
 {
     int rc = 0;
     armor_filter_context_t afx;

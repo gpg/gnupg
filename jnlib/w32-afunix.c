@@ -1,27 +1,29 @@
-/* w32-afunix.c
- * Copyright (C) 2004 g10 Code GmbH
+/* w32-afunix.c - AF_UNIX emulation for Windows.
+ * Copyright (C) 2004, 2006 g10 Code GmbH
  *
- * This file is part of GnuPG.
+ * This file is part of JNLIB.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * JNLIB is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * JNLIB is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
  */
+
 #ifdef _WIN32
 #include <stdio.h>
 #include <windows.h>
 #include <io.h>
+#include <errno.h>
 
 #include "w32-afunix.h"
 
@@ -59,9 +61,11 @@ _w32_sock_connect (int sockfd, struct sockaddr * addr, int addrlen)
   fscanf (fp, "%d", &port);
   fclose (fp);
 
-  /* XXX: set errno in this case */
   if (port < 0 || port > 65535)
-    return -1;
+    {
+      errno = EINVAL;
+      return -1;
+    }
   
   myaddr.sin_family = AF_INET;
   myaddr.sin_port = port; 

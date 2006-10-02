@@ -808,14 +808,14 @@ skip_unusable(void *dummy,u32 *keyid,PKT_user_id *uid)
  */
 
 static int
-key_byname( GETKEY_CTX *retctx, STRLIST namelist,
+key_byname( GETKEY_CTX *retctx, strlist_t namelist,
 	    PKT_public_key *pk, PKT_secret_key *sk,
 	    int secmode, int include_unusable,
             KBNODE *ret_kb, KEYDB_HANDLE *ret_kdbhd )
 {
     int rc = 0;
     int n;
-    STRLIST r;
+    strlist_t r;
     GETKEY_CTX ctx;
     KBNODE help_kb = NULL;
     
@@ -919,7 +919,7 @@ get_pubkey_byname (PKT_public_key *pk,
                    KEYDB_HANDLE *ret_kdbhd, int include_unusable )
 {
   int rc;
-  STRLIST namelist = NULL;
+  strlist_t namelist = NULL;
 
   add_to_strlist( &namelist, name );
 
@@ -1044,7 +1044,7 @@ get_pubkey_byname (PKT_public_key *pk,
 
 int
 get_pubkey_bynames( GETKEY_CTX *retctx, PKT_public_key *pk,
-		    STRLIST names, KBNODE *ret_keyblock )
+		    strlist_t names, KBNODE *ret_keyblock )
 {
     return key_byname( retctx, names, pk, NULL, 0, 1, ret_keyblock, NULL);
 }
@@ -1195,7 +1195,7 @@ get_seckey_byname2( GETKEY_CTX *retctx,
 		    PKT_secret_key *sk, const char *name, int unprotect,
 		    KBNODE *retblock )
 {
-  STRLIST namelist = NULL;
+  strlist_t namelist = NULL;
   int rc,include_unusable=1;
 
   /* If we have no name, try to use the default secret key.  If we
@@ -1228,7 +1228,7 @@ get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock )
 
 int
 get_seckey_bynames( GETKEY_CTX *retctx, PKT_secret_key *sk,
-		    STRLIST names, KBNODE *ret_keyblock )
+		    strlist_t names, KBNODE *ret_keyblock )
 {
     return key_byname( retctx, names, NULL, sk, 1, 1, ret_keyblock, NULL );
 }

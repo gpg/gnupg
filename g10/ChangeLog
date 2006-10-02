@@ -1,3 +1,18 @@
+2006-10-02  Werner Koch  <wk@g10code.com>
+
+	* encr-data.c (decrypt_data, mdc_decode_filter): Check the MDC
+	right here and don't let parse-packet handle the MDC.
+
+2006-09-29  Werner Koch  <wk@g10code.com>
+
+	* compress.c (do_uncompress): Removed use of Z_PARTIAL_FLUSH.
+	This is outdated and old zlib versions which still require it have
+	security problems.
+
+2006-09-27  Werner Koch  <wk@g10code.com>
+
+	Replaced all STRLIST by strlist_t.
+
 2006-09-21  Werner Koch  <wk@g10code.com>
 
 	* signal.c (got_fatal_signal): Replaced readline stuff by a tty

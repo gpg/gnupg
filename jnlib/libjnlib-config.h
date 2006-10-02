@@ -1,22 +1,22 @@
 /* libjnlib-config.h - local configuration of the jnlib functions
  *	Copyright (C) 2000, 2001, 2006 Free Software Foundation, Inc.
  *
- * This file is part of GnuPG.
+ * This file is part of JNLIB.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * JNLIB is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * JNLIB is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
  */
 
 /****************
@@ -33,6 +33,8 @@
 /* We require support for utf-8 conversion. */
 #define JNLIB_NEED_UTF8CONV 1
 
+
+/* Gettext stuff */
 #ifdef USE_SIMPLE_GETTEXT
   int set_gettext_file( const char *filename );
   const char *gettext( const char *msgid );
@@ -59,13 +61,14 @@
 #endif
 #endif /* !USE_SIMPLE_GETTEXT */
 
-
+/* Malloc functions to be jused by jnlib.  */
 #define jnlib_xmalloc(a)    gcry_xmalloc( (a) )
 #define jnlib_xcalloc(a,b)  gcry_xcalloc( (a), (b) )
 #define jnlib_xrealloc(a,n) gcry_xrealloc( (a), (n) )
 #define jnlib_xstrdup(a)    gcry_xstrdup( (a) )
 #define jnlib_free(a)	    gcry_free( (a) )
 
+/* Logging functions to be jused by jnlib.  */
 #define jnlib_log_debug    log_debug
 #define jnlib_log_info	   log_info
 #define jnlib_log_error    log_error

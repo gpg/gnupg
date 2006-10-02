@@ -575,9 +575,9 @@ lookup_cb (void *opaque, const void *buffer, size_t length)
 /* Return a properly escaped pattern from NAMES.  The only error
    return is NULL to indicate a malloc failure. */
 static char *
-pattern_from_strlist (STRLIST names)
+pattern_from_strlist (strlist_t names)
 {
-  STRLIST sl;
+  strlist_t sl;
   int n;
   const char *s;
   char *pattern, *p;
@@ -665,7 +665,7 @@ lookup_status_cb (void *opaque, const char *line)
    the callback CB which will be passed cert by cert.  Note that CTRL
    is optional. */
 int 
-gpgsm_dirmngr_lookup (ctrl_t ctrl, STRLIST names,
+gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names,
                       void (*cb)(void*, ksba_cert_t), void *cb_value)
 { 
   int rc;

@@ -721,8 +721,8 @@ main ( int argc, char **argv)
   const char *fname;
   /*  char *username;*/
   int may_coredump;
-  STRLIST sl, remusr= NULL, locusr=NULL;
-  STRLIST nrings=NULL;
+  strlist_t sl, remusr= NULL, locusr=NULL;
+  strlist_t nrings=NULL;
   int detached_sig = 0;
   FILE *configfp = NULL;
   char *configname = NULL;
@@ -1673,10 +1673,10 @@ main ( int argc, char **argv)
   /* cleanup */
   gpgsm_release_certlist (recplist);
   gpgsm_release_certlist (signerlist);
-  FREE_STRLIST(remusr);
-  FREE_STRLIST(locusr);
+  FREE_STRLIST (remusr);
+  FREE_STRLIST (locusr);
   gpgsm_exit(0);
-  return 8; /*NEVER REACHED*/
+  return 8; /*NOTREACHED*/
 }
 
 /* Note: This function is used by signal handlers!. */

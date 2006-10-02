@@ -952,8 +952,8 @@ AC_CHECK_DECLS(getpagesize)
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
-AC_CHECK_FUNCS([strerror stpcpy strsep strlwr tcgetattr strtoul mmap])
-AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times timegm gmtime_r])
+AC_CHECK_FUNCS([strerror stpcpy strlwr tcgetattr strtoul mmap])
+AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r])
 AC_CHECK_FUNCS([unsetenv getpwnam getpwuid fcntl ftruncate])
 AC_CHECK_FUNCS([memmove gettimeofday getrusage setrlimit clock_gettime])
 AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
@@ -963,20 +963,20 @@ AC_CHECK_FUNCS([ttyname isascii memrchr rand ftello])
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 #
+# These are needed by libjnlib - fixme: we should have macros for them
+#
+AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol])
+AC_CHECK_FUNCS([timegm getrusage setrlimit stat setlocale])
+AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen])
+
+#
 # gnulib checks
 #
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
-gl_MODULES(setenv strsep mkdtemp vasprintf xsize)
+gl_MODULES(setenv mkdtemp vasprintf xsize)
 gl_INIT
 
-
-#
-# These are needed by libjnlib - fixme: we should have macros for them
-#
-AC_CHECK_FUNCS([memicmp stpcpy strlwr strtoul memmove stricmp strtol])
-AC_CHECK_FUNCS([getrusage setrlimit stat setlocale])
-AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen])
 
 
 #

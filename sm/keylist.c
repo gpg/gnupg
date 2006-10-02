@@ -1135,12 +1135,12 @@ list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
    output mode will be used instead of the standard beautified one.
  */
 static gpg_error_t
-list_internal_keys (ctrl_t ctrl, STRLIST names, FILE *fp,
+list_internal_keys (ctrl_t ctrl, strlist_t names, FILE *fp,
                     unsigned int mode, int raw_mode)
 {
   KEYDB_HANDLE hd;
   KEYDB_SEARCH_DESC *desc = NULL;
-  STRLIST sl;
+  strlist_t sl;
   int ndesc;
   ksba_cert_t cert = NULL;
   gpg_error_t rc = 0;
@@ -1329,7 +1329,7 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
    make sense here because it would be unwise to list external secret
    keys */
 static gpg_error_t
-list_external_keys (ctrl_t ctrl, STRLIST names, FILE *fp, int raw_mode)
+list_external_keys (ctrl_t ctrl, strlist_t names, FILE *fp, int raw_mode)
 {
   int rc;
   struct list_external_parm_s parm;
@@ -1359,7 +1359,7 @@ list_external_keys (ctrl_t ctrl, STRLIST names, FILE *fp, int raw_mode)
     Bit 8: Do a raw format dump.
  */
 gpg_error_t
-gpgsm_list_keys (ctrl_t ctrl, STRLIST names, FILE *fp, unsigned int mode)
+gpgsm_list_keys (ctrl_t ctrl, strlist_t names, FILE *fp, unsigned int mode)
 {
   gpg_error_t err = 0;
 

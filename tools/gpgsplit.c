@@ -19,10 +19,6 @@
  * USA.
  */
 
-/* 
- * TODO: Add an option to uncompress packets.  This should come quite handy.
- */
-
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>
@@ -446,6 +442,15 @@ handle_zlib(int algo,FILE *fpin,FILE *fpout)
 	}
     } 
   while (zrc != Z_STREAM_END && zrc != Z_BUF_ERROR);
+  {
+    int i;
+    
+    fputs ("Left over bytes:", stderr);
+    for (i=0; i < zs.avail_in; i++)
+      fprintf (stderr, " %02X", zs.next_in[i]);
+    putc ('\n', stderr);
+
+  }
   inflateEnd (&zs);
 
   return 0;
