@@ -3,7 +3,7 @@
 
 /* code taken from glibc-2.2.1/sysdeps/generic/strsep.c */
 char *
-strsep2 (char **stringp, const char *delim)
+strsep (char **stringp, const char *delim)
 {
   char *begin, *end;
 

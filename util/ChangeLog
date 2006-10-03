@@ -1,3 +1,8 @@
+2006-10-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* strsep.c (strsep): It's strsep, not strsep2 from testing.  (If I
+	had a dollar for every time I've done that...)
+
 2006-09-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* strgutil.c (strsep): Move to strsep.c for AC_REPLACE_FUNCS.
