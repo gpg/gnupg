@@ -136,6 +136,23 @@ has_option (const char *line, const char *name)
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
 
+/* Skip over options.  It is assumed that leading spaces have been
+   removed (this is the case for lines passed to a handler from
+   assuan).  Bkanls after the options are also removed. */
+static char *
+skip_options (char *line)
+{
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  return line;
+}
+
+
 /* Replace all '+' by a blank. */
 static void
 plus_to_blank (char *s)
@@ -639,7 +656,33 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 
-/* GET_PASSPHRASE <cache_id> [<error_message> <prompt> <description>]
+static int
+send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
+{
+  size_t n;
+  int rc;
+
+  assuan_begin_confidential (ctx);
+  n = strlen (pw);
+  if (via_data)
+    rc = assuan_send_data (ctx, pw, n);
+  else
+    {
+      char *p = xtrymalloc_secure (n*2+1);
+      if (!p)
+        rc = gpg_error_from_syserror ();
+      else
+        {
+          bin2hex (pw, n, p);
+          rc = assuan_set_okay_line (ctx, p);
+          xfree (p);
+        }
+    }
+  return rc;
+}
+
+
+/* GET_PASSPHRASE [--data] <cache_id> [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
    for conventional encryption, but may also be used by programs which
@@ -648,6 +691,9 @@ cmd_readkey (assuan_context_t ctx, char *line)
    agent either returns with an error or with a OK followed by the hex
    encoded passphrase.  Note that the length of the strings is
    implicitly limited by the maximum length of a command.
+
+   If the option "--data" is used the passphrase is returned by usual
+   data lines and not on the okay line.
 */
 
 static int
@@ -660,11 +706,12 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   char *cacheid = NULL, *desc = NULL, *prompt = NULL, *errtext = NULL;
   char *p;
   void *cache_marker;
+  int opt_data;
 
-  /* parse the stuff */
-  for (p=line; *p == ' '; p++)
-    ;
-  cacheid = p;
+  opt_data = has_option (line, "--data");
+  line = skip_options (line);
+
+  cacheid = line;
   p = strchr (cacheid, ' ');
   if (p)
     {
@@ -706,13 +753,11 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   if (!strcmp (desc, "X"))
     desc = NULL;
 
-  /* Note: we store the hexified versions in the cache. */
   pw = cacheid ? agent_get_cache (cacheid, CACHE_MODE_NORMAL, &cache_marker)
                : NULL;
   if (pw)
     {
-      assuan_begin_confidential (ctx);
-      rc = assuan_set_okay_line (ctx, pw);
+      rc = send_back_passphrase (ctx, opt_data, pw);
       agent_unlock_cache_entry (&cache_marker);
     }
   else
@@ -733,8 +778,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
         {
           if (cacheid)
             agent_put_cache (cacheid, CACHE_MODE_USER, response, 0);
-          assuan_begin_confidential (ctx);
-          rc = assuan_set_okay_line (ctx, response);
+          rc = send_back_passphrase (ctx, opt_data, response);
           xfree (response);
         }
     }

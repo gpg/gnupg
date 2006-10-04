@@ -284,7 +284,7 @@ check_secret_key( PKT_secret_key *sk, int n )
       mode=0;
 
     if( n < 1 )
-	n = (opt.batch && !opt.use_agent)? 1 : 3; /* use the default value */
+	n = 3; /* Use the default value */
 
     for(i=0; i < n && gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE; i++ ) {
         int canceled = 0;

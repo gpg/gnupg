@@ -1,3 +1,11 @@
+2006-10-04  Werner Koch  <wk@g10code.com>
+
+	* membuf.c (init_membuf_secure): New.
+	(put_membuf): Make sure that ERRNO is set even if the underlying
+	malloc code does not work properly.
+	(get_membuf): Set ERRNO on error.
+	(get_membuf): Allow to pass LEN as NULL.
+
 2006-10-02  Werner Koch  <wk@g10code.com>
 
 	* iobuf.c (iobuf_unread): Removed.  This code is not required.

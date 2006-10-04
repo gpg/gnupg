@@ -413,6 +413,13 @@ agent_askpin (ctrl_t ctrl,
       
       rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
                             NULL, NULL, NULL, NULL);
+      /* Most pinentries out in the wild return the old Assuan error code
+         for canceled which gets translated to an assuan Cancel error and
+         not to the code for a user cancel.  Fix this here. */
+      if (rc && gpg_err_source (rc)
+          && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+        rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
         errtext = is_pin? _("PIN too long")
                         : _("Passphrase too long");
@@ -456,9 +463,8 @@ agent_askpin (ctrl_t ctrl,
 
 
 
-/* Ask for the passphrase using the supplied arguments.  The
-   passphrase is returned in RETPASS as an hex encoded string to be
-   freed by the caller */
+/* Ask for the passphrase using the supplied arguments.  The returned
+   passphrase needs to be freed by the caller. */
 int 
 agent_get_passphrase (ctrl_t ctrl,
                       char **retpass, const char *desc, const char *prompt,
@@ -468,9 +474,6 @@ agent_get_passphrase (ctrl_t ctrl,
   int rc;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
-  unsigned char *p;
-  char *hexstring;
-  int i;
 
   *retpass = NULL;
   if (opt.batch)
@@ -515,27 +518,18 @@ agent_get_passphrase (ctrl_t ctrl,
     return unlock_pinentry (out_of_core ());
 
   assuan_begin_confidential (entry_ctx);
-  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
+                        NULL, NULL, NULL, NULL);
+  /* Most pinentries out in the wild return the old Assuan error code
+     for canceled which gets translated to an assuan Cancel error and
+     not to the code for a user cancel.  Fix this here. */
+  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
   if (rc)
-    {
-      xfree (parm.buffer);
-      return unlock_pinentry (rc);
-    }
-  
-  hexstring = gcry_malloc_secure (strlen ((char*)parm.buffer)*2+1);
-  if (!hexstring)
-    {
-      gpg_error_t tmperr = out_of_core ();
-      xfree (parm.buffer);
-      return unlock_pinentry (tmperr);
-    }
-
-  for (i=0, p=parm.buffer; *p; p++, i += 2)
-    sprintf (hexstring+i, "%02X", *p);
-  
-  xfree (parm.buffer);
-  *retpass = hexstring;
-  return unlock_pinentry (0);
+    xfree (parm.buffer);
+  else
+    *retpass = parm.buffer;
+  return unlock_pinentry (rc);
 }
 
 
@@ -561,6 +555,12 @@ agent_get_confirmation (ctrl_t ctrl,
     snprintf (line, DIM(line)-1, "RESET");
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  /* Most pinentries out in the wild return the old Assuan error code
+     for canceled which gets translated to an assuan Cancel error and
+     not to the code for a user cancel.  Fix this here. */
+  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+
   if (rc)
     return unlock_pinentry (rc);
 

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-09-27 17:44+0200\n"
+"POT-Creation-Date: 2006-10-04 11:35+0200\n"
 "PO-Revision-Date: 2006-06-13 20:31+0200\n"
 "Last-Translator: Trond Endrestøl <Trond.Endrestol@fagskolen.gjovik.no>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
@@ -74,7 +74,7 @@ msgstr "ugyldig passfrase"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr ""
 
-#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1018 g10/keygen.c:3045
+#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1014 g10/keygen.c:3045
 #: g10/keygen.c:3075 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
 #: g10/openfile.c:358 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
 #, c-format
@@ -83,8 +83,8 @@ msgstr "kan ikke opprette «%s»: %s\n"
 
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:193
-#: g10/encode.c:485 g10/gpg.c:1019 g10/gpg.c:3484 g10/import.c:195
-#: g10/keygen.c:2553 g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
+#: g10/encode.c:485 g10/gpg.c:1015 g10/import.c:195 g10/keygen.c:2553
+#: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
 #: g10/tdbio.c:605 g10/verify.c:102 g10/verify.c:158 sm/gpgsm.c:1755
@@ -200,7 +200,7 @@ msgstr ""
 msgid "run in daemon mode (background)"
 msgstr ""
 
-#: agent/gpg-agent.c:113 g10/gpg.c:466 g10/gpgv.c:71 kbx/kbxutil.c:82
+#: agent/gpg-agent.c:113 g10/gpg.c:463 g10/gpgv.c:71 kbx/kbxutil.c:82
 #: scd/scdaemon.c:107 sm/gpgsm.c:335 tools/gpg-connect-agent.c:59
 #: tools/gpgconf.c:63 tools/symcryptrun.c:182
 msgid "verbose"
@@ -323,30 +323,30 @@ msgstr ""
 msgid "out of core while allocating %lu bytes"
 msgstr ""
 
-#: agent/gpg-agent.c:334 g10/gpg.c:925 scd/scdaemon.c:262 sm/gpgsm.c:646
+#: agent/gpg-agent.c:334 g10/gpg.c:921 scd/scdaemon.c:262 sm/gpgsm.c:646
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:505 agent/protect-tool.c:1073 g10/gpg.c:1787
+#: agent/gpg-agent.c:505 agent/protect-tool.c:1073 g10/gpg.c:1781
 #: kbx/kbxutil.c:432 scd/scdaemon.c:354 sm/gpgsm.c:767
 #: tools/symcryptrun.c:1053
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:599 g10/gpg.c:1986 scd/scdaemon.c:431 sm/gpgsm.c:869
+#: agent/gpg-agent.c:599 g10/gpg.c:1980 scd/scdaemon.c:431 sm/gpgsm.c:869
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "MERK: ingen standard valgfil «%s»\n"
 
-#: agent/gpg-agent.c:604 agent/gpg-agent.c:1115 g10/gpg.c:1990
+#: agent/gpg-agent.c:604 agent/gpg-agent.c:1115 g10/gpg.c:1984
 #: scd/scdaemon.c:436 sm/gpgsm.c:873 tools/symcryptrun.c:986
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "valgfil «%s»: %s\n"
 
-#: agent/gpg-agent.c:612 g10/gpg.c:1997 scd/scdaemon.c:444 sm/gpgsm.c:880
+#: agent/gpg-agent.c:612 g10/gpg.c:1991 scd/scdaemon.c:444 sm/gpgsm.c:880
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "leser valg fra «%s»\n"
@@ -1123,7 +1123,7 @@ msgstr "Ugyldig kommando  (prøv «help»)\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output virker ikke for denne kommandoen\n"
 
-#: g10/decrypt.c:162 g10/gpg.c:3846 g10/keyring.c:378 g10/keyring.c:665
+#: g10/decrypt.c:162 g10/gpg.c:3802 g10/keyring.c:378 g10/keyring.c:665
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "kan ikke åpne «%s»\n"
@@ -1248,24 +1248,24 @@ msgstr "du kan ikke bruke %s i %s modus\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s kryptert for: \"%s\"\n"
 
-#: g10/encr-data.c:69 g10/mainproc.c:265
+#: g10/encr-data.c:70 g10/mainproc.c:265
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "%s krypterte data\n"
 
-#: g10/encr-data.c:71 g10/mainproc.c:269
+#: g10/encr-data.c:72 g10/mainproc.c:269
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "kryptert med en ukjent algoritme %d\n"
 
-#: g10/encr-data.c:108 sm/decrypt.c:128
+#: g10/encr-data.c:110 sm/decrypt.c:128
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 "ADVARSEL: meldingen er kryptert med en svak nøkkel for den symmetriske "
 "cipher.\n"
 
-#: g10/encr-data.c:119
+#: g10/encr-data.c:122
 msgid "problem handling encrypted packet\n"
 msgstr "problem ved håndtering av kryptert pakke\n"
 
@@ -1422,7 +1422,7 @@ msgstr "bruker undernøkkel %s i stedet for primærnøkkel %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "nøkkel %s: hemmelig nøkkel uten offentlig nøkkel - hoppet over\n"
 
-#: g10/gpg.c:367 kbx/kbxutil.c:69 sm/gpgsm.c:242 tools/gpgconf.c:54
+#: g10/gpg.c:364 kbx/kbxutil.c:69 sm/gpgsm.c:242 tools/gpgconf.c:54
 msgid ""
 "@Commands:\n"
 " "
@@ -1430,127 +1430,127 @@ msgstr ""
 "@Kommandoer:\n"
 " "
 
-#: g10/gpg.c:369
+#: g10/gpg.c:366
 msgid "|[file]|make a signature"
 msgstr "|[fil]|lage en signatur"
 
-#: g10/gpg.c:370
+#: g10/gpg.c:367
 msgid "|[file]|make a clear text signature"
 msgstr "|[fil]|lage en klartekstsignatur"
 
-#: g10/gpg.c:371 sm/gpgsm.c:246
+#: g10/gpg.c:368 sm/gpgsm.c:246
 msgid "make a detached signature"
 msgstr "lage en adskilt signatur"
 
-#: g10/gpg.c:372 sm/gpgsm.c:247
+#: g10/gpg.c:369 sm/gpgsm.c:247
 msgid "encrypt data"
 msgstr "kryptere data"
 
-#: g10/gpg.c:374 sm/gpgsm.c:248
+#: g10/gpg.c:371 sm/gpgsm.c:248
 msgid "encryption only with symmetric cipher"
 msgstr "kryptering med bare symmetrisk cipher"
 
-#: g10/gpg.c:376 sm/gpgsm.c:249
+#: g10/gpg.c:373 sm/gpgsm.c:249
 msgid "decrypt data (default)"
 msgstr "dekryptere data (standard)"
 
-#: g10/gpg.c:378 sm/gpgsm.c:250
+#: g10/gpg.c:375 sm/gpgsm.c:250
 msgid "verify a signature"
 msgstr "bekrefte en signatur"
 
-#: g10/gpg.c:380 sm/gpgsm.c:252
+#: g10/gpg.c:377 sm/gpgsm.c:252
 msgid "list keys"
 msgstr "liste nøkler"
 
-#: g10/gpg.c:382
+#: g10/gpg.c:379
 msgid "list keys and signatures"
 msgstr "liste nøkler og signaturer"
 
-#: g10/gpg.c:383
+#: g10/gpg.c:380
 msgid "list and check key signatures"
 msgstr "vise og sjekke nøkkelsignaturer"
 
-#: g10/gpg.c:384 sm/gpgsm.c:256
+#: g10/gpg.c:381 sm/gpgsm.c:256
 msgid "list keys and fingerprints"
 msgstr "liste nøkler og fingeravtrykk"
 
-#: g10/gpg.c:385 sm/gpgsm.c:254
+#: g10/gpg.c:382 sm/gpgsm.c:254
 msgid "list secret keys"
 msgstr "liste hemmelige nøkler"
 
-#: g10/gpg.c:386 sm/gpgsm.c:257
+#: g10/gpg.c:383 sm/gpgsm.c:257
 msgid "generate a new key pair"
 msgstr "generere et nytt nøkkelpar"
 
-#: g10/gpg.c:387
+#: g10/gpg.c:384
 msgid "remove keys from the public keyring"
 msgstr "fjerne nøkler fra det offentlige nøkkelknippet"
 
-#: g10/gpg.c:389
+#: g10/gpg.c:386
 msgid "remove keys from the secret keyring"
 msgstr "fjerne nøkler fra det hemmelige nøkkelknippet"
 
-#: g10/gpg.c:390
+#: g10/gpg.c:387
 msgid "sign a key"
 msgstr "signere en nøkkel"
 
-#: g10/gpg.c:391
+#: g10/gpg.c:388
 msgid "sign a key locally"
 msgstr "signere en nøkkel lokalt"
 
-#: g10/gpg.c:392
+#: g10/gpg.c:389
 msgid "sign or edit a key"
 msgstr "signere eller redigere en nøkkel"
 
-#: g10/gpg.c:393
+#: g10/gpg.c:390
 msgid "generate a revocation certificate"
 msgstr "generere et opphevingssertifikat"
 
-#: g10/gpg.c:395
+#: g10/gpg.c:392
 msgid "export keys"
 msgstr "eksportere nøkler"
 
-#: g10/gpg.c:396 sm/gpgsm.c:259
+#: g10/gpg.c:393 sm/gpgsm.c:259
 msgid "export keys to a key server"
 msgstr "eksportere nøkler til en nøkkelserver"
 
-#: g10/gpg.c:397 sm/gpgsm.c:260
+#: g10/gpg.c:394 sm/gpgsm.c:260
 msgid "import keys from a key server"
 msgstr "importere nøkler fra en nøkkelserver"
 
-#: g10/gpg.c:399
+#: g10/gpg.c:396
 msgid "search for keys on a key server"
 msgstr "søke etter nøkler på en nøkkelserver"
 
-#: g10/gpg.c:401
+#: g10/gpg.c:398
 msgid "update all keys from a keyserver"
 msgstr "oppdatere alle nøklene fra en nøkkelserver"
 
-#: g10/gpg.c:405
+#: g10/gpg.c:402
 msgid "import/merge keys"
 msgstr "importere/flette nøkler"
 
-#: g10/gpg.c:408
+#: g10/gpg.c:405
 msgid "print the card status"
 msgstr "vis kortets status"
 
-#: g10/gpg.c:409
+#: g10/gpg.c:406
 msgid "change data on a card"
 msgstr "endre data på et kort"
 
-#: g10/gpg.c:410
+#: g10/gpg.c:407
 msgid "change a card's PIN"
 msgstr "endre PIN på et kort"
 
-#: g10/gpg.c:418
+#: g10/gpg.c:415
 msgid "update the trust database"
 msgstr "oppdatere tillitsdatabasen"
 
-#: g10/gpg.c:425
+#: g10/gpg.c:422
 msgid "|algo [files]|print message digests"
 msgstr "|algo [filer]|skrive meldingsdigester"
 
-#: g10/gpg.c:429 g10/gpgv.c:69 kbx/kbxutil.c:77 sm/gpgsm.c:278
+#: g10/gpg.c:426 g10/gpgv.c:69 kbx/kbxutil.c:77 sm/gpgsm.c:278
 #: tools/gpg-connect-agent.c:57 tools/gpgconf.c:60 tools/symcryptrun.c:175
 msgid ""
 "@\n"
@@ -1561,47 +1561,47 @@ msgstr ""
 "Valg:\n"
 " "
 
-#: g10/gpg.c:431 sm/gpgsm.c:280
+#: g10/gpg.c:428 sm/gpgsm.c:280
 msgid "create ascii armored output"
 msgstr "lage ASCII-beskyttet output"
 
-#: g10/gpg.c:433 sm/gpgsm.c:290
+#: g10/gpg.c:430 sm/gpgsm.c:290
 msgid "|NAME|encrypt for NAME"
 msgstr "|NAVN|kryptere for NAVN"
 
-#: g10/gpg.c:444 sm/gpgsm.c:326
+#: g10/gpg.c:441 sm/gpgsm.c:326
 msgid "use this user-id to sign or decrypt"
 msgstr "bruke denne brukeriden for signering eller dekryptering"
 
-#: g10/gpg.c:445 sm/gpgsm.c:329
+#: g10/gpg.c:442 sm/gpgsm.c:329
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|sette kompresjonsnivå til N (0 slår av kompresjon)"
 
-#: g10/gpg.c:450 sm/gpgsm.c:331
+#: g10/gpg.c:447 sm/gpgsm.c:331
 msgid "use canonical text mode"
 msgstr "bruk kanonisk tekstmodus"
 
-#: g10/gpg.c:464 sm/gpgsm.c:334 tools/gpgconf.c:62
+#: g10/gpg.c:461 sm/gpgsm.c:334 tools/gpgconf.c:62
 msgid "use as output file"
 msgstr "bruk som outputfil"
 
-#: g10/gpg.c:477 kbx/kbxutil.c:84 sm/gpgsm.c:344 tools/gpgconf.c:65
+#: g10/gpg.c:474 kbx/kbxutil.c:84 sm/gpgsm.c:344 tools/gpgconf.c:65
 msgid "do not make any changes"
 msgstr "ikke gjør noen endringer"
 
-#: g10/gpg.c:478
+#: g10/gpg.c:475
 msgid "prompt before overwriting"
 msgstr "spør før overskriving"
 
-#: g10/gpg.c:520
+#: g10/gpg.c:517
 msgid "use strict OpenPGP behavior"
 msgstr "bruk streng OpenPGP-oppførsel"
 
-#: g10/gpg.c:521
+#: g10/gpg.c:518
 msgid "generate PGP 2.x compatible messages"
 msgstr "generere PGP 2.x-kompatible meldinger"
 
-#: g10/gpg.c:549 sm/gpgsm.c:392
+#: g10/gpg.c:546 sm/gpgsm.c:392
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1609,7 +1609,7 @@ msgstr ""
 "@\n"
 "(Se mansiden for en komplett liste over alle kommandoene og valgene)\n"
 
-#: g10/gpg.c:552 sm/gpgsm.c:395
+#: g10/gpg.c:549 sm/gpgsm.c:395
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1629,15 +1629,15 @@ msgstr ""
 " --list-keys [navn]         vise nøkler\n"
 " --fingerprint [navn]       vise fingeravtrykk\n"
 
-#: g10/gpg.c:745 g10/gpgv.c:96
+#: g10/gpg.c:741 g10/gpgv.c:96
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr "Vennligst rapporter feil til <gnupg-bugs@gnu.org>.\n"
 
-#: g10/gpg.c:762
+#: g10/gpg.c:758
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Bruksmåte: gpg [valg] [filer] (-h for hjelp)"
 
-#: g10/gpg.c:765
+#: g10/gpg.c:761
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -1647,7 +1647,7 @@ msgstr ""
 "signere, sjekke, kryptere eller dekryptere\n"
 "standard operasjon avhenger av inputdata\n"
 
-#: g10/gpg.c:776 sm/gpgsm.c:530
+#: g10/gpg.c:772 sm/gpgsm.c:530
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1655,73 +1655,73 @@ msgstr ""
 "\n"
 "Støttede algoritmer:\n"
 
-#: g10/gpg.c:779
+#: g10/gpg.c:775
 msgid "Pubkey: "
 msgstr "Offentlig nøkkel: "
 
-#: g10/gpg.c:786 g10/keyedit.c:2311
+#: g10/gpg.c:782 g10/keyedit.c:2311
 msgid "Cipher: "
 msgstr "Cipher: "
 
-#: g10/gpg.c:793
+#: g10/gpg.c:789
 msgid "Hash: "
 msgstr "Hash: "
 
-#: g10/gpg.c:800 g10/keyedit.c:2357
+#: g10/gpg.c:796 g10/keyedit.c:2357
 msgid "Compression: "
 msgstr "Kompresjon: "
 
-#: g10/gpg.c:884
+#: g10/gpg.c:880
 msgid "usage: gpg [options] "
 msgstr "bruksmåte: gpg [valg] "
 
-#: g10/gpg.c:1056 sm/gpgsm.c:682
+#: g10/gpg.c:1050 sm/gpgsm.c:682
 msgid "conflicting commands\n"
 msgstr "motstridende kommandoer\n"
 
-#: g10/gpg.c:1074
+#: g10/gpg.c:1068
 #, c-format
 msgid "no = sign found in group definition `%s'\n"
 msgstr "fant ingen «=»-tegn i gruppedefinisjonen «%s»\n"
 
-#: g10/gpg.c:1271
+#: g10/gpg.c:1265
 #, c-format
 msgid "WARNING: unsafe ownership on homedir `%s'\n"
 msgstr "ADVARSEL: utrygt eierskap på hjemmekatalogen «%s»\n"
 
-#: g10/gpg.c:1274
+#: g10/gpg.c:1268
 #, c-format
 msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "ADVARSEL: utrygt eierskap på konfigurasjonsfilen «%s»\n"
 
-#: g10/gpg.c:1277
+#: g10/gpg.c:1271
 #, c-format
 msgid "WARNING: unsafe ownership on extension `%s'\n"
 msgstr "ADVARSEL: utrygt eierskap på utvidelsen «%s»\n"
 
-#: g10/gpg.c:1283
+#: g10/gpg.c:1277
 #, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "ADVARSEL: utrygge rettigheter på hjemmekatalogen «%s»\n"
 
-#: g10/gpg.c:1286
+#: g10/gpg.c:1280
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "ADVARSEL: utrygge rettigheter på konfigurasjonsfilen «%s»\n"
 
-#: g10/gpg.c:1289
+#: g10/gpg.c:1283
 #, c-format
 msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "ADVARSEL: utrygge rettigheter på utvidelsen «%s»\n"
 
-#: g10/gpg.c:1295
+#: g10/gpg.c:1289
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr ""
 "ADVARSEL: utrygt eierskap på katalogene på nivåene over hjemmekatalogen «%"
 "s»\n"
 
-#: g10/gpg.c:1298
+#: g10/gpg.c:1292
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
@@ -1729,20 +1729,20 @@ msgstr ""
 "ADVARSEL: utrygt eierskap på katalogene på nivåene over konfigurasjonsfilen "
 "«%s»\n"
 
-#: g10/gpg.c:1301
+#: g10/gpg.c:1295
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgstr ""
 "ADVARSEL: utrygt eierskap på katalogene på nivåene over utvidelsen «%s»\n"
 
-#: g10/gpg.c:1307
+#: g10/gpg.c:1301
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
 "ADVARSEL: utrygge rettigheter på katalogene på nivåene over hjemmekatalogen "
 "«%s»\n"
 
-#: g10/gpg.c:1310
+#: g10/gpg.c:1304
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
@@ -1750,456 +1750,452 @@ msgstr ""
 "ADVARSEL: utrygge rettigheter på katalogene på nivåene over "
 "konfigurasjonsfilen «%s»\n"
 
-#: g10/gpg.c:1313
+#: g10/gpg.c:1307
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr ""
 "ADVARSEL: utrygge rettigheter på katalogene på nivåene over utvidelsen «%s»\n"
 
-#: g10/gpg.c:1456
+#: g10/gpg.c:1450
 #, c-format
 msgid "unknown configuration item `%s'\n"
 msgstr "ukjent konfigurasjonspunkt «%s»\n"
 
-#: g10/gpg.c:1549
+#: g10/gpg.c:1543
 msgid "display photo IDs during key listings"
 msgstr ""
 
-#: g10/gpg.c:1551
+#: g10/gpg.c:1545
 msgid "show policy URLs during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1553
+#: g10/gpg.c:1547
 msgid "show all notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1555
+#: g10/gpg.c:1549
 msgid "show IETF standard notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1559
+#: g10/gpg.c:1553
 msgid "show user-supplied notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1561
+#: g10/gpg.c:1555
 msgid "show preferred keyserver URLs during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1563
+#: g10/gpg.c:1557
 msgid "show user ID validity during key listings"
 msgstr ""
 
-#: g10/gpg.c:1565
+#: g10/gpg.c:1559
 msgid "show revoked and expired user IDs in key listings"
 msgstr ""
 
-#: g10/gpg.c:1567
+#: g10/gpg.c:1561
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
 
-#: g10/gpg.c:1569
+#: g10/gpg.c:1563
 msgid "show the keyring name in key listings"
 msgstr "vise navnet til nøkkelknippene i nøkkellister"
 
-#: g10/gpg.c:1571
+#: g10/gpg.c:1565
 msgid "show expiration dates during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1944
+#: g10/gpg.c:1938
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "MERK: den gamle valgfila «%s» ble ignorert\n"
 
-#: g10/gpg.c:2203 g10/gpg.c:2846 g10/gpg.c:2858
+#: g10/gpg.c:2196 g10/gpg.c:2839 g10/gpg.c:2851
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "MERK: %s er ikke for vanlig bruk!\n"
 
-#: g10/gpg.c:2216
+#: g10/gpg.c:2209
 #, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr "cipherutvidelse «%s» ble ikke lastet på grunn av utrygge rettigheter\n"
 
 # Tenk litt på denne du, Trond.
-#: g10/gpg.c:2368 g10/gpg.c:2380
+#: g10/gpg.c:2361 g10/gpg.c:2373
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "«%s» er ikke en gyldig signaturutgåelse\n"
 
-#: g10/gpg.c:2462
+#: g10/gpg.c:2455
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "«%s» er ikke et gyldig tegnsett\n"
 
-#: g10/gpg.c:2485 g10/gpg.c:2678 g10/keyedit.c:4065
+#: g10/gpg.c:2478 g10/gpg.c:2671 g10/keyedit.c:4065
 msgid "could not parse keyserver URL\n"
 msgstr "kunne ikke parse nøkkelserverens URL\n"
 
-#: g10/gpg.c:2497
+#: g10/gpg.c:2490
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: ugyldige valg for nøkkelserver\n"
 
-#: g10/gpg.c:2500
+#: g10/gpg.c:2493
 msgid "invalid keyserver options\n"
 msgstr "ugyldige valg for nøkkelserver\n"
 
-#: g10/gpg.c:2507
+#: g10/gpg.c:2500
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: ugyldige importvalg\n"
 
-#: g10/gpg.c:2510
+#: g10/gpg.c:2503
 msgid "invalid import options\n"
 msgstr "ugyldige importvalg\n"
 
-#: g10/gpg.c:2517
+#: g10/gpg.c:2510
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: ugyldige eksportvalg\n"
 
-#: g10/gpg.c:2520
+#: g10/gpg.c:2513
 msgid "invalid export options\n"
 msgstr "ugyldige eksportvalg\n"
 
-#: g10/gpg.c:2527
+#: g10/gpg.c:2520
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: ugyldige listevalg\n"
 
-#: g10/gpg.c:2530
+#: g10/gpg.c:2523
 msgid "invalid list options\n"
 msgstr "ugyldige listevalg\n"
 
-#: g10/gpg.c:2538
+#: g10/gpg.c:2531
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2540
+#: g10/gpg.c:2533
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2542
+#: g10/gpg.c:2535
 msgid "show all notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2544
+#: g10/gpg.c:2537
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2548
+#: g10/gpg.c:2541
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2550
+#: g10/gpg.c:2543
 msgid "show preferred keyserver URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2552
+#: g10/gpg.c:2545
 msgid "show user ID validity during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2554
+#: g10/gpg.c:2547
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2556
+#: g10/gpg.c:2549
 msgid "validate signatures with PKA data"
 msgstr ""
 
-#: g10/gpg.c:2558
+#: g10/gpg.c:2551
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 
-#: g10/gpg.c:2565
+#: g10/gpg.c:2558
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: ugyldige valg for bekreftelse\n"
 
-#: g10/gpg.c:2568
+#: g10/gpg.c:2561
 msgid "invalid verify options\n"
 msgstr "ugyldige valg for bekreftelse\n"
 
-#: g10/gpg.c:2575
+#: g10/gpg.c:2568
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "kunne ikke sette exec-path til %s\n"
 
-#: g10/gpg.c:2749
+#: g10/gpg.c:2742
 #, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: ugyldig auto-key-locate-liste\n"
 
-#: g10/gpg.c:2752
+#: g10/gpg.c:2745
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2835 sm/gpgsm.c:1235
+#: g10/gpg.c:2828 sm/gpgsm.c:1235
 msgid "WARNING: program may create a core file!\n"
 msgstr "ADVARSEL: programmet kan opprette en corefil!\n"
 
-#: g10/gpg.c:2839
+#: g10/gpg.c:2832
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "ADVARSEL: %s overstyrere %s\n"
 
-#: g10/gpg.c:2848
+#: g10/gpg.c:2841
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s er ikke tillatt sammen med %s!\n"
 
-#: g10/gpg.c:2851
+#: g10/gpg.c:2844
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s er ikke fornuftig med %s!\n"
 
-#: g10/gpg.c:2866
+#: g10/gpg.c:2859
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr ""
 
-#: g10/gpg.c:2880
+#: g10/gpg.c:2873
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "du kan bare lage adskilte eller klare signaturer i --pgp2-modus\n"
 
-#: g10/gpg.c:2886
+#: g10/gpg.c:2879
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "du kan ikke signere og kryptere samtidig i --pgp2-modus\n"
 
-#: g10/gpg.c:2892
+#: g10/gpg.c:2885
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "du må bruke filer (og ikke en pipe) når --pgp2 er påslått\n"
 
-#: g10/gpg.c:2905
+#: g10/gpg.c:2898
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "kryptering en melding i --pgp2-modus krever IDEA-algoritmen\n"
 
-#: g10/gpg.c:2971 g10/gpg.c:2995 sm/gpgsm.c:1278
+#: g10/gpg.c:2964 g10/gpg.c:2988 sm/gpgsm.c:1278
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valgt krypteringsalgoritme er ugyldig\n"
 
-#: g10/gpg.c:2977 g10/gpg.c:3001 sm/gpgsm.c:1286
+#: g10/gpg.c:2970 g10/gpg.c:2994 sm/gpgsm.c:1286
 msgid "selected digest algorithm is invalid\n"
 msgstr "valg digestalgoritme er ugyldig\n"
 
-#: g10/gpg.c:2983
+#: g10/gpg.c:2976
 msgid "selected compression algorithm is invalid\n"
 msgstr "valgt kompresjonsalgoritme er ugyldig\n"
 
-#: g10/gpg.c:2989
+#: g10/gpg.c:2982
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "valgt sertifikasjondigestalgoritme er ugyldig\n"
 
-#: g10/gpg.c:3004
+#: g10/gpg.c:2997
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed må være større enn 0\n"
 
-#: g10/gpg.c:3006
+#: g10/gpg.c:2999
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-neede må være større enn 1\n"
 
-#: g10/gpg.c:3008
+#: g10/gpg.c:3001
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth må være i intervallet fra 1 til 255\n"
 
-#: g10/gpg.c:3010
+#: g10/gpg.c:3003
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "ugyldig default-cert-level; må være 0, 1, 2 eller 3\n"
 
-#: g10/gpg.c:3012
+#: g10/gpg.c:3005
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "ugyldig min-cert-level; må være 0, 1, 2 eller 3\n"
 
-#: g10/gpg.c:3015
+#: g10/gpg.c:3008
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "MERK: enkel S2K-modus (0) er sterkt frarådet\n"
 
-#: g10/gpg.c:3019
+#: g10/gpg.c:3012
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ugyldig S2K-modus; må være 0, 1 eller 3\n"
 
-#: g10/gpg.c:3026
+#: g10/gpg.c:3019
 msgid "invalid default preferences\n"
 msgstr "ugyldig standard preferanser\n"
 
-#: g10/gpg.c:3035
+#: g10/gpg.c:3028
 msgid "invalid personal cipher preferences\n"
 msgstr "ugyldig personlig cipherpreferanser\n"
 
-#: g10/gpg.c:3039
+#: g10/gpg.c:3032
 msgid "invalid personal digest preferences\n"
 msgstr "ugyldig personlig digestpreferanser\n"
 
-#: g10/gpg.c:3043
+#: g10/gpg.c:3036
 msgid "invalid personal compress preferences\n"
 msgstr "ugyldig personlig kompresjonspreferanser\n"
 
-#: g10/gpg.c:3076
+#: g10/gpg.c:3069
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s virker ikke ennå med %s\n"
 
-#: g10/gpg.c:3123
+#: g10/gpg.c:3116
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "du kan ikke bruke cipheralgoritmen «%s» i %s-modus\n"
 
-#: g10/gpg.c:3128
+#: g10/gpg.c:3121
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "du kan ikke bruke digestalgoritmen «%s» i %s-modus\n"
 
-#: g10/gpg.c:3133
+#: g10/gpg.c:3126
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "du kan ikke bruke kompresjonsalgoritmen «%s» i %s-modus\n"
 
-#: g10/gpg.c:3231
+#: g10/gpg.c:3215
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "klarte ikke å initialisere tillitsdatabasen: %s\n"
 
-#: g10/gpg.c:3242
+#: g10/gpg.c:3226
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "ADVARSEL: mottakere (-r) angitt uten å bruke offentlig nøkkelkryptering\n"
 
-#: g10/gpg.c:3253
+#: g10/gpg.c:3237
 msgid "--store [filename]"
 msgstr "--store [filnavn]"
 
-#: g10/gpg.c:3260
+#: g10/gpg.c:3244
 msgid "--symmetric [filename]"
 msgstr "--symmetric [filnavn]"
 
-#: g10/gpg.c:3262
+#: g10/gpg.c:3246
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "symmetrisk kryptering av «%s» mislyktes: %s\n"
 
-#: g10/gpg.c:3272
+#: g10/gpg.c:3256
 msgid "--encrypt [filename]"
 msgstr "--encrypt [filnavn]"
 
-#: g10/gpg.c:3285
+#: g10/gpg.c:3269
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [filnavn]"
 
-#: g10/gpg.c:3287
+#: g10/gpg.c:3271
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3290
+#: g10/gpg.c:3274
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "du kan ikke bruke --symmtric --encrypt i %s-modus\n"
 
-#: g10/gpg.c:3308
+#: g10/gpg.c:3292
 msgid "--sign [filename]"
 msgstr "--sign [filnavn]"
 
-#: g10/gpg.c:3321
+#: g10/gpg.c:3305
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnavn]"
 
-#: g10/gpg.c:3336
+#: g10/gpg.c:3320
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [filnavn]"
 
-#: g10/gpg.c:3338
+#: g10/gpg.c:3322
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3341
+#: g10/gpg.c:3325
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "du kan ikke bruke --symmetric --sign --encrypt i %s-modus\n"
 
-#: g10/gpg.c:3361
+#: g10/gpg.c:3345
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [filnavn]"
 
-#: g10/gpg.c:3370
+#: g10/gpg.c:3354
 msgid "--clearsign [filename]"
 msgstr "--clearsign [filnavn]"
 
-#: g10/gpg.c:3395
+#: g10/gpg.c:3379
 msgid "--decrypt [filename]"
 msgstr "--decrypt [filnavn]"
 
-#: g10/gpg.c:3403
+#: g10/gpg.c:3387
 msgid "--sign-key user-id"
 msgstr "--sign-key brukerid"
 
-#: g10/gpg.c:3407
+#: g10/gpg.c:3391
 msgid "--lsign-key user-id"
 msgstr "--lsign-key brukerid"
 
-#: g10/gpg.c:3428
+#: g10/gpg.c:3412
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key brukerid [kommandoer]"
 
-#: g10/gpg.c:3499
-msgid "-k[v][v][v][c] [user-id] [keyring]"
-msgstr "-k[v][v][v][c] [brukerid] [nøkkelknippe]"
-
-#: g10/gpg.c:3541
+#: g10/gpg.c:3497
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "sending til nøkkelserver mislyktes: %s\n"
 
-#: g10/gpg.c:3543
+#: g10/gpg.c:3499
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "mottak fra nøkkelserver mislyktes: %s\n"
 
-#: g10/gpg.c:3545
+#: g10/gpg.c:3501
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "nøkkeleksport mislyktes: %s\n"
 
-#: g10/gpg.c:3556
+#: g10/gpg.c:3512
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "søk på nøkkelserver mislyktes: %s\n"
 
-#: g10/gpg.c:3566
+#: g10/gpg.c:3522
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "refresh på nøkkelserver mislyktes: %s\n"
 
-#: g10/gpg.c:3617
+#: g10/gpg.c:3573
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "dearmoring failed: %s\n"
 
-#: g10/gpg.c:3625
+#: g10/gpg.c:3581
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "enarmoring failed: %s\n"
 
-#: g10/gpg.c:3715
+#: g10/gpg.c:3671
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "ugyldig hashalgoritme «%s»\n"
 
-#: g10/gpg.c:3832
+#: g10/gpg.c:3788
 msgid "[filename]"
 msgstr "[filnavn]"
 
-#: g10/gpg.c:3836
+#: g10/gpg.c:3792
 msgid "Go ahead and type your message ...\n"
 msgstr "Sett i gang og tast inn meldingen din ...\n"
 
-#: g10/gpg.c:4147
+#: g10/gpg.c:4103
 msgid "the given certification policy URL is invalid\n"
 msgstr "den angitte URLen for sertifikasjonspolicyen er ugyldig\n"
 
-#: g10/gpg.c:4149
+#: g10/gpg.c:4105
 msgid "the given signature policy URL is invalid\n"
 msgstr "den angitte URLen for signaturpolicy er ugyldig\n"
 
-#: g10/gpg.c:4182
+#: g10/gpg.c:4138
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "den angitte URLen for den foretrukkede nøkkelserveren er ugyldig\n"
 
@@ -7455,6 +7451,9 @@ msgstr ""
 #, fuzzy, c-format
 msgid "class %s is not supported\n"
 msgstr "ikke støttet"
+
+#~ msgid "-k[v][v][v][c] [user-id] [keyring]"
+#~ msgstr "-k[v][v][v][c] [brukerid] [nøkkelknippe]"
 
 #~ msgid "can't gen prime with pbits=%u qbits=%u\n"
 #~ msgstr "kan ikke generere et primtall med pbits=%u qbits=%u\n"

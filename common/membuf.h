@@ -24,7 +24,8 @@
 
 /* The definition of the structure is private, we only need it here,
    so it can be allocated on the stack. */
-struct private_membuf_s {
+struct private_membuf_s 
+{
   size_t len;      
   size_t size;     
   char *buf;       
@@ -35,6 +36,7 @@ typedef struct private_membuf_s membuf_t;
 
 
 void init_membuf (membuf_t *mb, int initiallen);
+void init_membuf_secure (membuf_t *mb, int initiallen);
 void put_membuf  (membuf_t *mb, const void *buf, size_t len);
 void *get_membuf (membuf_t *mb, size_t *len);
 

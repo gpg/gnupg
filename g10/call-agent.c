@@ -218,6 +218,30 @@ unescape_status_string (const unsigned char *s)
   return buffer;
 }
 
+/* Copy the text ATEXT into the buffer P and do plus '+' and percent
+   escaping.  Note that the provided buffer needs to be 3 times the
+   size of ATEXT plus 1.  Returns a pointer to the leading Nul in P. */
+static char *
+percent_plus_escape (char *p, const char *atext)
+{
+  const unsigned char *s;
+
+  for (s=atext; *s; s++)
+    {
+      if (*s < ' ' || *s == '+')
+        {
+          sprintf (p, "%%%02X", *s);
+          p += 3;
+        }
+      else if (*s == ' ')
+        *p++ = '+';
+      else
+        *p++ = *s;
+    }
+  *p = 0;
+  return p;
+}
+
 /* Take a 20 byte hexencoded string and put it into the the provided
    20 byte buffer FPR in binary format. */
 static int
@@ -256,93 +280,6 @@ store_serialno (const char *line)
   return p;
 }
 
-
-
-#if 0
-/* Handle a KEYPARMS inquiry.  Note, we only send the data,
-   assuan_transact takes care of flushing and writing the end */
-static int
-inq_genkey_parms (void *opaque, const char *keyword)
-{
-  struct genkey_parm_s *parm = opaque; 
-  int rc;
-
-  rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);
-  return rc; 
-}
-
-
-
-/* Call the agent to generate a new key */
-int
-agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
-{
-  int rc;
-  struct genkey_parm_s gk_parm;
-  membuf_t data;
-  size_t len;
-  char *buf;
-
-  *r_pubkey = NULL;
-  rc = start_agent ();
-  if (rc)
-    return rc;
-
-  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL,
-                        NULL, NULL, NULL, NULL);
-  if (rc)
-    return rc;
-
-  init_membuf (&data, 1024);
-  gk_parm.ctx = agent_ctx;
-  gk_parm.sexp = keyparms;
-  gk_parm.sexplen = gcry_sexp_canon_len (keyparms, 0, NULL, NULL);
-  if (!gk_parm.sexplen)
-    return gpg_error (GPG_ERR_INV_VALUE);
-  rc = assuan_transact (agent_ctx, "GENKEY",
-                        membuf_data_cb, &data, 
-                        inq_genkey_parms, &gk_parm, NULL, NULL);
-  if (rc)
-    {
-      xfree (get_membuf (&data, &len));
-      return rc;
-    }
-  buf = get_membuf (&data, &len);
-  if (!buf)
-    return gpg_error (GPG_ERR_ENOMEM);
-  if (!gcry_sexp_canon_len (buf, len, NULL, NULL))
-    {
-      xfree (buf);
-      return gpg_error (GPG_ERR_INV_SEXP);
-    }
-  *r_pubkey = buf;
-  return 0;
-}
-#endif /*0*/
-
-
-
-/* Ask the agent whether the corresponding secret key is available for
-   the given keygrip. */
-int
-agent_havekey (const char *hexkeygrip)
-{
-  int rc;
-  char line[ASSUAN_LINELENGTH];
-
-  rc = start_agent ();
-  if (rc)
-    return rc;
-
-  if (!hexkeygrip || strlen (hexkeygrip) != 40)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  snprintf (line, DIM(line)-1, "HAVEKEY %s", hexkeygrip);
-  line[DIM(line)-1] = 0;
-
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return rc;
-}
 
 
 /* Release the card info structure INFO. */
@@ -855,4 +792,101 @@ void
 agent_clear_pin_cache (const char *sn)
 {
 
+}
+
+
+
+
+/* Note: All strings shall be UTF-8. On success the caler needs to
+   free the string stored at R_PASSPHRASE. On error NULL will be
+   stored at R_PASSPHRASE and an appropriate fpf error code
+   returned. */
+gpg_error_t
+agent_get_passphrase (const char *cache_id,
+                      const char *err_msg,
+                      const char *prompt,
+                      const char *desc_msg,
+                      char **r_passphrase)
+{
+  int rc;
+  char *line, *p;
+  char cmd[] = "GET_PASSPHRASE --data -- ";
+  membuf_t data;
+
+  *r_passphrase = NULL;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  /* We allocate 3 times the needed space for the texts so that
+     there is enough space for escaping. */
+  line = xtrymalloc ( strlen (cmd) + 1
+                      + (cache_id? 3*strlen (cache_id): 1) + 1
+                      + (err_msg?  3*strlen (err_msg): 1) + 1
+                      + (prompt?   3*strlen (prompt): 1) + 1
+                      + (desc_msg? 3*strlen (desc_msg): 1) + 1
+                      + 1);
+  if (!line)
+    return gpg_error_from_syserror ();
+
+  p = stpcpy (line, cmd);
+  if (cache_id && *cache_id)
+    p = percent_plus_escape (p, cache_id);
+  else
+    *p++ = 'X';
+  *p++ = ' ';
+
+  if (err_msg && *err_msg)
+    p = percent_plus_escape (p, err_msg);
+  else
+    *p++ = 'X';
+  *p++ = ' ';
+
+  if (prompt && *prompt)
+    p = percent_plus_escape (p, prompt);
+  else
+    *p++ = 'X'; 
+  *p++ = ' ';
+
+  if (desc_msg && *desc_msg)
+    p = percent_plus_escape (p, desc_msg);
+  else
+    *p++ = 'X';
+  *p = 0;
+
+  init_membuf_secure (&data, 64);
+  rc = assuan_transact (agent_ctx, line, 
+                        membuf_data_cb, &data, NULL, NULL, NULL, NULL);
+
+  if (rc)
+    xfree (get_membuf (&data, NULL));
+  else 
+    {
+      put_membuf (&data, "", 1);
+      *r_passphrase = get_membuf (&data, NULL);
+      if (!*r_passphrase)
+        rc = gpg_error_from_syserror ();
+    }
+  xfree (line);
+  return rc;
+}
+
+
+gpg_error_t
+agent_clear_passphrase (const char *cache_id)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  if (!cache_id || !*cache_id)
+    return 0;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  snprintf (line, DIM(line)-1, "CLEAR_PASSPHRASE %s", cache_id);
+  line[DIM(line)-1] = 0;
+  return assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
 }

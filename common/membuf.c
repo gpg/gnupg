@@ -42,7 +42,19 @@ init_membuf (membuf_t *mb, int initiallen)
   mb->out_of_core = 0;
   mb->buf = xtrymalloc (initiallen);
   if (!mb->buf)
-      mb->out_of_core = errno;
+    mb->out_of_core = errno;
+}
+
+/* Same as init_membuf but allocates the buffer in secure memory.  */
+void
+init_membuf_secure (membuf_t *mb, int initiallen)
+{
+  mb->len = 0;
+  mb->size = initiallen;
+  mb->out_of_core = 0;
+  mb->buf = xtrymalloc (initiallen);
+  if (!mb->buf)
+    mb->out_of_core = errno;
 }
 
 
@@ -60,7 +72,7 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
       p = xtryrealloc (mb->buf, mb->size);
       if (!p)
         {
-          mb->out_of_core = errno;
+          mb->out_of_core = errno ? errno : ENOMEM;
           /* Wipe out what we already accumulated.  This is required
              in case we are storing sensitive data here.  The membuf
              API does not provide another way to cleanup after an
@@ -84,11 +96,13 @@ get_membuf (membuf_t *mb, size_t *len)
     {
       xfree (mb->buf);
       mb->buf = NULL;
+      errno = mb->out_of_core;
       return NULL;
     }
 
   p = mb->buf;
-  *len = mb->len;
+  if (len)
+    *len = mb->len;
   mb->buf = NULL;
   mb->out_of_core = ENOMEM; /* hack to make sure it won't get reused. */
   return p;

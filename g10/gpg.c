@@ -78,7 +78,7 @@ enum cmd_and_opt_values
     aDecrypt	  = 'd',
     aEncr	  = 'e',
     oInteractive  = 'i',
-    oListKeys	  = 'k',
+    aListKeys	  = 'k',
     oDryRun	  = 'n',
     oOutput	  = 'o',
     oQuiet	  = 'q',
@@ -140,7 +140,6 @@ enum cmd_and_opt_values
     aListTrustDB,
     aListTrustPath,
     aExportOwnerTrust,
-    aListOwnerTrust,
     aImportOwnerTrust,
     aDeArmor,
     aEnArmor,
@@ -554,7 +553,6 @@ static ARGPARSE_OPTS opts[] = {
     " --fingerprint [names]      show fingerprints\n"  ) },
 
   /* hidden options */
-    { aListOwnerTrust, "list-ownertrust", 256, "@"}, /* deprecated */
     { aPrintMDs, "print-mds" , 256, "@"}, /* old */
     { aListTrustDB, "list-trustdb",0 , "@"},
     /* Not yet used */
@@ -1896,7 +1894,7 @@ main (int argc, char **argv )
     /* malloc hooks go here ... */
     assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
     assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
-
+ 
 
     set_native_charset (NULL); /* Try to auto set the character set */
 
@@ -2014,25 +2012,45 @@ main (int argc, char **argv )
           case aCardEdit: 
           case aChangePIN:
 #endif /* ENABLE_CARD_SUPPORT*/
+	  case aListKeys: 
+	  case aListSigs: 
+	  case aExportSecret: 
+	  case aExportSecretSub: 
+	  case aSym:
+	  case aClearsign: 
+	  case aGenRevoke: 
+	  case aDesigRevoke: 
+	  case aPrimegen: 
+	  case aGenRandom:
+	  case aPrintMD:
+	  case aPrintMDs: 
+	  case aListTrustDB: 
+	  case aCheckTrustDB:
+	  case aUpdateTrustDB: 
+	  case aFixTrustDB: 
+	  case aListTrustPath: 
+	  case aDeArmor: 
+	  case aEnArmor: 
+	  case aSign: 
+	  case aSignKey: 
+	  case aLSignKey:
+	  case aStore: 
+	  case aExportOwnerTrust: 
+	  case aImportOwnerTrust: 
+          case aRebuildKeydbCaches:
             set_cmd (&cmd, pargs.r_opt);
             break;
 
-	  case aListKeys: set_cmd( &cmd, aListKeys); break;
-	  case aListSigs: set_cmd( &cmd, aListSigs); break;
-	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
-	  case aExportSecretSub: set_cmd( &cmd, aExportSecretSub); break;
+	  case aKeygen: 
+	  case aEditKey:
 	  case aDeleteSecretKeys:
-	    set_cmd( &cmd, aDeleteSecretKeys);
-	    greeting=1;
-	    break;
 	  case aDeleteSecretAndPublicKeys:
-            set_cmd( &cmd, aDeleteSecretAndPublicKeys);
-            greeting=1; 
+	  case aDeleteKeys:
+            set_cmd (&cmd, pargs.r_opt);
+            greeting=1;
             break;
-	  case aDeleteKeys: set_cmd( &cmd, aDeleteKeys); greeting=1; break;
 
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
-	  case aSym: set_cmd( &cmd, aSym); break;
 
 	  case aDecryptFiles: multifile=1; /* fall through */
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
@@ -2043,32 +2061,6 @@ main (int argc, char **argv )
 	  case aVerifyFiles: multifile=1; /* fall through */
 	  case aVerify: set_cmd( &cmd, aVerify); break;
 
-	  case aSign: set_cmd( &cmd, aSign );  break;
-	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
-	  case aSignKey: set_cmd( &cmd, aSignKey); break;
-	  case aLSignKey: set_cmd( &cmd, aLSignKey); break;
-	  case aStore: set_cmd( &cmd, aStore); break;
-	  case aEditKey: set_cmd( &cmd, aEditKey); greeting=1; break;
-	  case aClearsign: set_cmd( &cmd, aClearsign); break;
-	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
-	  case aDesigRevoke: set_cmd( &cmd, aDesigRevoke); break;
-	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
-	  case aGenRandom: set_cmd( &cmd, aGenRandom); break;
-	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
-	  case aPrintMDs: set_cmd( &cmd, aPrintMDs); break;
-	  case aListTrustDB: set_cmd( &cmd, aListTrustDB); break;
-	  case aCheckTrustDB: set_cmd( &cmd, aCheckTrustDB); break;
-	  case aUpdateTrustDB: set_cmd( &cmd, aUpdateTrustDB); break;
-	  case aFixTrustDB: set_cmd( &cmd, aFixTrustDB); break;
-	  case aListTrustPath: set_cmd( &cmd, aListTrustPath); break;
-	  case aDeArmor: set_cmd( &cmd, aDeArmor); break;
-	  case aEnArmor: set_cmd( &cmd, aEnArmor); break;
-	  case aListOwnerTrust:
-	    deprecated_warning(configname,configlineno,
-			       "--list-ownertrust","--export-ownertrust","");
-	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
-	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
-          case aRebuildKeydbCaches: set_cmd( &cmd, aRebuildKeydbCaches); break;
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -2085,15 +2077,8 @@ main (int argc, char **argv )
 	    break;
 
 	  case oBatch: opt.batch = 1; nogreeting = 1; break;
-          case oUseAgent:
-#ifndef __riscos__
-            opt.use_agent = 1;
-#else /* __riscos__ */
-            opt.use_agent = 0;
-            riscos_not_implemented("use-agent");
-#endif /* __riscos__ */
-            break;
-          case oNoUseAgent: opt.use_agent = 0; break;
+          case oUseAgent: /* Dummy. */
+          case oNoUseAgent: /* Dummy. */ break;
 	  case oGpgAgentInfo: opt.gpg_agent_info = pargs.r.ret_str; break;
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
@@ -2397,7 +2382,6 @@ main (int argc, char **argv )
 	    break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
-            opt.use_agent = 0;
             break;
 	  case oPasswdFile:
             pwfd = open_info_file (pargs.r.ret_str, 0);
@@ -2808,8 +2792,6 @@ main (int argc, char **argv )
 	  log_info("%s\n",s);
       }
 #endif
-
-    log_info ("WARNING: This version of gpg is not ready for use, use gpg 1.4.x\n");
 
     /* FIXME: We should use logging to a file only in server mode;
        however we have not yet implemetyed that.  Thus we try to get

@@ -73,10 +73,6 @@ int agent_learn (struct agent_card_info_s *info);
 /* Update INFO with the attribute NAME. */
 int agent_scd_getattr (const char *name, struct agent_card_info_s *info);
 
-/* Check whether the secret key for the key identified by HEXKEYGRIP
-   is available.  Return 0 for yes or an error code. */
-int agent_havekey (const char *hexkeygrip);
-
 /* Send a SETATTR command to the SCdaemon. */
 int agent_scd_setattr (const char *name,
                        const unsigned char *value, size_t valuelen,
@@ -108,6 +104,17 @@ int agent_scd_checkpin  (const char *serialno);
 
 /* Dummy function, only implemented by gpg 1.4. */
 void agent_clear_pin_cache (const char *sn);
+
+
+/* Send the GET_PASSPHRASE command to the agent.  */
+gpg_error_t agent_get_passphrase (const char *cache_id,
+                                  const char *err_msg,
+                                  const char *prompt,
+                                  const char *desc_msg,
+                                  char **r_passphrase);
+
+/* Send the CLEAR_PASSPHRASE command to the agent.  */
+gpg_error_t agent_clear_passphrase (const char *cache_id);
 
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/

@@ -970,12 +970,15 @@ special handling of passphrases.  This command uses a syntax which helps
 clients to use the agent with minimum effort.
 
 @example
-  GET_PASSPHRASE @var{cache_id} [@var{error_message} @var{prompt} @var{description}]
+  GET_PASSPHRASE [--data] @var{cache_id} [@var{error_message} @var{prompt} @var{description}]
 @end example
 
-@var{cache_id} is expected to be a hex string used for caching a
+@var{cache_id} is expected to be a string used to identify a cached
 passphrase.  Use a @code{X} to bypass the cache.  With no other
-arguments the agent returns a cached passphrase or an error.
+arguments the agent returns a cached passphrase or an error.  By
+convention either the hexified fingerprint of the key shall be used for
+@var{cache_id} or an arbitrary string prefixed with the name of the
+calling application and a colon: Like @code{gpg:somestring}.
   
 @var{error_message} is either a single @code{X} for no error message or
 a string to be shown as an error message like (e.g. "invalid
@@ -988,9 +991,11 @@ replaced by @code{+}.
 @var{description} is a text shown above the entry field.  Blanks must be
 percent escaped or replaced by @code{+}.
 
-The agent either returns with an error or with a OK followed by the 
-hex encoded passphrase.  Note that the length of the strings is
-implicitly limited by the maximum length of a command.
+The agent either returns with an error or with a OK followed by the hex
+encoded passphrase.  Note that the length of the strings is implicitly
+limited by the maximum length of a command.  If the option
+@option{--data} is used, the passphrase is not returned on the OK line
+but by regular data lines; this is the preferred method.
 
 @example
   CLEAR_PASSPHRASE @var{cache_id}

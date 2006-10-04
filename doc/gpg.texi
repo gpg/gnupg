@@ -2184,6 +2184,7 @@ signatures to prevent the mail system from breaking the signature. Note
 that all other PGP versions do it this way too.  Enabled by
 default. @option{--no-escape-from-lines} disables this option.
 
+@ifset gpgone
 @item --passphrase-fd @code{n}
 Read the passphrase from file descriptor @code{n}. Only the first line
 will be read from file descriptor @code{n}. If you use 0 for @code{n},
@@ -2202,6 +2203,7 @@ Use @code{string} as the passphrase. This can only be used if only one
 passphrase is supplied. Obviously, this is of very questionable
 security on a multi-user system. Don't use this option if you can
 avoid it.
+@end ifset
 
 @item --command-fd @code{n}
 This is a replacement for the deprecated shared-memory IPC mode.

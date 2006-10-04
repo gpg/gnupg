@@ -1,8 +1,26 @@
 2006-10-04  Werner Koch  <wk@g10code.com>
 
+	* call-agent.c (agent_havekey): Removed.
+	(percent_plus_escape): New.
+	(agent_get_passphrase): New.
+	(agent_clear_passphrase): New.
+
+	* passphrase.c: Changed so that we always require the agent.
+	(agent_send_option, agent_send_all_options, agent_open): Removed.
+	(agent_get_passphrase): Cleaned up.  Does now use the call-agent
+	functions.  Renamed to
+	(passphrase_get): .. this.  Changed all callers.
+	(passphrase_clear_cache): Rewritten.
+	(passphrase_to_dek, hash_passphrase): Re-indented.
+
+	* gpg.c (main): Made --use-agent a dummy option.
+	* seckey-cert.c (check_secret_key): We require the agent, so always
+	allow for 3 tries.
+
 	* gpg.c (main): Print a warning if -sat has been used.
 	(main): Removed the special treatment of the -k option. -k is now
 	an alias for --list-keys.
+	(main): Removed --list-ownertrust.
 
 2006-10-02  Werner Koch  <wk@g10code.com>
 
