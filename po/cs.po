@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:13+0200\n"
+"POT-Creation-Date: 2006-10-04 18:34+0200\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -5176,12 +5176,12 @@ msgstr "VAROVÁNÍ: potencionálnì nebezpeènì symetricky za¹ifrován klíè sezení\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "podpaket typu %d má nastavenı kritickı bit\n"
 
-#: g10/passphrase.c:280 g10/passphrase.c:549
+#: g10/passphrase.c:310 g10/passphrase.c:585
 #, c-format
 msgid " (main key ID %s)"
 msgstr "(hlavní ID klíèe %s)"
 
-#: g10/passphrase.c:294
+#: g10/passphrase.c:324
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -5192,24 +5192,24 @@ msgstr ""
 "\"%.*s\"\n"
 "Klíè o délce %u bitù, typ %s, ID %s, vytvoøenı %s%s\n"
 
-#: g10/passphrase.c:319
+#: g10/passphrase.c:349
 msgid "Repeat passphrase\n"
 msgstr "Opakovat heslo\n"
 
-#: g10/passphrase.c:321
+#: g10/passphrase.c:351
 msgid "Enter passphrase\n"
 msgstr "Vlo¾it heslo\n"
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:375
 msgid "cancelled by user\n"
 msgstr "zru¹eno u¾ivatelem\n"
 
-#: g10/passphrase.c:350 g10/passphrase.c:406
+#: g10/passphrase.c:380 g10/passphrase.c:436
 #, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "problém s agentem - pou¾ívání agenta vypnuto\n"
 
-#: g10/passphrase.c:528
+#: g10/passphrase.c:564
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5218,12 +5218,12 @@ msgstr ""
 "Musíte znát heslo, abyste odemknul(a) tajnı klíè pro\n"
 "u¾ivatele: \"%s\"\n"
 
-#: g10/passphrase.c:536
+#: g10/passphrase.c:572
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "délka %u bitù, typ %s, klíè %s, vytvoøenı %s"
 
-#: g10/passphrase.c:545
+#: g10/passphrase.c:581
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr "         (podklíè na hlavním klíèi ID %s)"

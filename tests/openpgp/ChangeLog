@@ -1,3 +1,7 @@
+2006-10-04  Werner Koch  <wk@g10code.com>
+
+	* signencrypt.test: Need to prepend srcdir to the file name
+
 2006-09-27  Werner Koch  <wk@g10code.com>
 
 	* signencrypt.test: Add a test for bug 537.

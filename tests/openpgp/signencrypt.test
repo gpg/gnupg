@@ -11,7 +11,7 @@ for i in $plain_files $data_files ; do
     cmp $i y || error "$i: mismatch"
 done
 
-i=bug537-test.data.asc
+i=$srcdir/bug537-test.data.asc
 info "Checking bug 537: MDC problem with old style compressed packets."
 echo "$usrpass1" | $GPG --passphrase-fd 0 -o y --yes $i
 tmp=`$GPG --with-colons --print-md sha1 <y`

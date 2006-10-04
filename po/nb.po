@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:13+0200\n"
+"POT-Creation-Date: 2006-10-04 18:34+0200\n"
 "PO-Revision-Date: 2006-06-13 20:31+0200\n"
 "Last-Translator: Trond Endrestøl <Trond.Endrestol@fagskolen.gjovik.no>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
@@ -5022,12 +5022,12 @@ msgstr ""
 msgid "subpacket of type %d has critical bit set\n"
 msgstr ""
 
-#: g10/passphrase.c:280 g10/passphrase.c:549
+#: g10/passphrase.c:310 g10/passphrase.c:585
 #, c-format
 msgid " (main key ID %s)"
 msgstr " (hovednøkkelid %s)"
 
-#: g10/passphrase.c:294
+#: g10/passphrase.c:324
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -5038,24 +5038,24 @@ msgstr ""
 "«%.*s»\n"
 "%u-bit %s nøkkel, ID %s, opprettet %s%s\n"
 
-#: g10/passphrase.c:319
+#: g10/passphrase.c:349
 msgid "Repeat passphrase\n"
 msgstr "Gjenta passfrase\n"
 
-#: g10/passphrase.c:321
+#: g10/passphrase.c:351
 msgid "Enter passphrase\n"
 msgstr "Tast inn passfrase\n"
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:375
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:350 g10/passphrase.c:406
+#: g10/passphrase.c:380 g10/passphrase.c:436
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr ""
 
-#: g10/passphrase.c:528
+#: g10/passphrase.c:564
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5064,12 +5064,12 @@ msgstr ""
 "Du trenger en passfrase for å låse opp den hemmelige nøkkelen for\n"
 "brukeren: «%s»\n"
 
-#: g10/passphrase.c:536
+#: g10/passphrase.c:572
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-bit %s-nøkkel, ID %s, opprettet %s"
 
-#: g10/passphrase.c:545
+#: g10/passphrase.c:581
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""

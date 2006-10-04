@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:13+0200\n"
+"POT-Creation-Date: 2006-10-04 18:34+0200\n"
 "PO-Revision-Date: 2004-06-17 11:04+0300\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -5246,12 +5246,12 @@ msgstr ""
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "alampaketil tüübiga %d on kriitiline bitt seatud\n"
 
-#: g10/passphrase.c:280 g10/passphrase.c:549
+#: g10/passphrase.c:310 g10/passphrase.c:585
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (peamise võtme ID %08lX)"
 
-#: g10/passphrase.c:294
+#: g10/passphrase.c:324
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -5262,24 +5262,24 @@ msgstr ""
 "\"%.*s\"\n"
 "%u-bitti %s võti, ID %08lX, loodud %s%s\n"
 
-#: g10/passphrase.c:319
+#: g10/passphrase.c:349
 msgid "Repeat passphrase\n"
 msgstr "Korrake parooli\n"
 
-#: g10/passphrase.c:321
+#: g10/passphrase.c:351
 msgid "Enter passphrase\n"
 msgstr "Sisestage parool\n"
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:375
 msgid "cancelled by user\n"
 msgstr "katkestatud kasutaja poolt\n"
 
-#: g10/passphrase.c:350 g10/passphrase.c:406
+#: g10/passphrase.c:380 g10/passphrase.c:436
 #, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "probleem agendiga: agent tagastas 0x%lx\n"
 
-#: g10/passphrase.c:528
+#: g10/passphrase.c:564
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5289,12 +5289,12 @@ msgstr ""
 "Te vajate kasutaja salajase võtme lahtilukustamiseks\n"
 "parooli: \""
 
-#: g10/passphrase.c:536
+#: g10/passphrase.c:572
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-bitine %s võti, ID %08lX, loodud %s"
 
-#: g10/passphrase.c:545
+#: g10/passphrase.c:581
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""

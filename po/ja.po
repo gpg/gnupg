@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:13+0200\n"
+"POT-Creation-Date: 2006-10-04 18:34+0200\n"
 "PO-Revision-Date: 2004-11-23 11:14+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -5135,12 +5135,12 @@ msgstr "警告: 潜在的に剣呑な対称暗号化セッション鍵です\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "型%dの下位パケットにクリティカル・ビットを発見\n"
 
-#: g10/passphrase.c:280 g10/passphrase.c:549
+#: g10/passphrase.c:310 g10/passphrase.c:585
 #, c-format
 msgid " (main key ID %s)"
 msgstr " (主鍵ID %s)"
 
-#: g10/passphrase.c:294
+#: g10/passphrase.c:324
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -5151,24 +5151,24 @@ msgstr ""
 "\"%.*s\"\n"
 "%uビット%s鍵, ID %s作成日付は%s%s\n"
 
-#: g10/passphrase.c:319
+#: g10/passphrase.c:349
 msgid "Repeat passphrase\n"
 msgstr "パスフレーズを再入力\n"
 
-#: g10/passphrase.c:321
+#: g10/passphrase.c:351
 msgid "Enter passphrase\n"
 msgstr "パスフレーズを入力\n"
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:375
 msgid "cancelled by user\n"
 msgstr "ユーザーによる取消し\n"
 
-#: g10/passphrase.c:350 g10/passphrase.c:406
+#: g10/passphrase.c:380 g10/passphrase.c:436
 #, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "エージェントに障害: エージェントが0x%lxを返却\n"
 
-#: g10/passphrase.c:528
+#: g10/passphrase.c:564
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5177,12 +5177,12 @@ msgstr ""
 "次のユーザーの秘密鍵のロックを解除するには\n"
 "パスフレーズがいります:“%s”\n"
 
-#: g10/passphrase.c:536
+#: g10/passphrase.c:572
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%uビット%s鍵, ID %s作成日付は%s"
 
-#: g10/passphrase.c:545
+#: g10/passphrase.c:581
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr "         (主鍵ID %s の副鍵)"

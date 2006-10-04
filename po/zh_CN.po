@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:13+0200\n"
+"POT-Creation-Date: 2006-10-04 18:34+0200\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -5052,12 +5052,12 @@ msgstr "警告：潜在不安全的对称加密会话密钥\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "%d 类别的子包设定了关键位\n"
 
-#: g10/passphrase.c:280 g10/passphrase.c:549
+#: g10/passphrase.c:310 g10/passphrase.c:585
 #, c-format
 msgid " (main key ID %s)"
 msgstr " (主钥匙号 %s)"
 
-#: g10/passphrase.c:294
+#: g10/passphrase.c:324
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -5068,36 +5068,36 @@ msgstr ""
 "“%.*s”\n"
 "%u 位的 %s 密钥，钥匙号 %s，建立于 %s%s\n"
 
-#: g10/passphrase.c:319
+#: g10/passphrase.c:349
 msgid "Repeat passphrase\n"
 msgstr "请再输入一次密码\n"
 
-#: g10/passphrase.c:321
+#: g10/passphrase.c:351
 msgid "Enter passphrase\n"
 msgstr "请输入密码\n"
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:375
 msgid "cancelled by user\n"
 msgstr "用户取消\n"
 
-#: g10/passphrase.c:350 g10/passphrase.c:406
+#: g10/passphrase.c:380 g10/passphrase.c:436
 #, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "代理程序有问题――正在停用代理程序\n"
 
-#: g10/passphrase.c:528
+#: g10/passphrase.c:564
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
 "user: \"%s\"\n"
 msgstr "您需要输入密码，才能解开这个用户的私钥：“%s”\n"
 
-#: g10/passphrase.c:536
+#: g10/passphrase.c:572
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u 位的 %s 密钥，钥匙号 %s，建立于 %s"
 
-#: g10/passphrase.c:545
+#: g10/passphrase.c:581
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr "         (主钥 %s 的子钥)"

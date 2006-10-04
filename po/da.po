@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:13+0200\n"
+"POT-Creation-Date: 2006-10-04 18:34+0200\n"
 "PO-Revision-Date: 2003-12-03 16:11+0100\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -5081,12 +5081,12 @@ msgstr ""
 msgid "subpacket of type %d has critical bit set\n"
 msgstr ""
 
-#: g10/passphrase.c:280 g10/passphrase.c:549
+#: g10/passphrase.c:310 g10/passphrase.c:585
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (hovednøgle-ID %08lX)"
 
-#: g10/passphrase.c:294
+#: g10/passphrase.c:324
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -5094,26 +5094,26 @@ msgid ""
 "%u-bit %s key, ID %s, created %s%s\n"
 msgstr ""
 
-#: g10/passphrase.c:319
+#: g10/passphrase.c:349
 #, fuzzy
 msgid "Repeat passphrase\n"
 msgstr "Gentag kodesætning: "
 
-#: g10/passphrase.c:321
+#: g10/passphrase.c:351
 #, fuzzy
 msgid "Enter passphrase\n"
 msgstr "Indtast kodesætning: "
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:375
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:350 g10/passphrase.c:406
+#: g10/passphrase.c:380 g10/passphrase.c:436
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr ""
 
-#: g10/passphrase.c:528
+#: g10/passphrase.c:564
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5122,12 +5122,12 @@ msgstr ""
 "Du skal bruge en kodesætning til at beskytte din hemmelige nøgle.\n"
 "\n"
 
-#: g10/passphrase.c:536
+#: g10/passphrase.c:572
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr ""
 
-#: g10/passphrase.c:545
+#: g10/passphrase.c:581
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""

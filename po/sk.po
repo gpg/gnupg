@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:13+0200\n"
+"POT-Creation-Date: 2006-10-04 18:34+0200\n"
 "PO-Revision-Date: 2004-07-20 15:52+0200\n"
 "Last-Translator: Michal Majer <mmajer@econ.umb.sk>\n"
 "Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
@@ -5289,12 +5289,12 @@ msgstr ""
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "podpaket typu %d má nastavený kritický bit\n"
 
-#: g10/passphrase.c:280 g10/passphrase.c:549
+#: g10/passphrase.c:310 g10/passphrase.c:585
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (hlavné ID kµúèa %08lX)"
 
-#: g10/passphrase.c:294
+#: g10/passphrase.c:324
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -5305,24 +5305,24 @@ msgstr ""
 "\"%.*s\"\n"
 "kµúè s då¾kou %u bitov, typ %s, ID %08lX, vytvorený %s%s\n"
 
-#: g10/passphrase.c:319
+#: g10/passphrase.c:349
 msgid "Repeat passphrase\n"
 msgstr "Opakova» heslo\n"
 
-#: g10/passphrase.c:321
+#: g10/passphrase.c:351
 msgid "Enter passphrase\n"
 msgstr "Vlo¾i» heslo\n"
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:375
 msgid "cancelled by user\n"
 msgstr "zru¹ené u¾ívateµom\n"
 
-#: g10/passphrase.c:350 g10/passphrase.c:406
+#: g10/passphrase.c:380 g10/passphrase.c:436
 #, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "problém s agentom: agent vracia 0x%lx\n"
 
-#: g10/passphrase.c:528
+#: g10/passphrase.c:564
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5332,12 +5332,12 @@ msgstr ""
 "Musíte pozna» heslo, aby ste odomkli tajný kµúè pre\n"
 "u¾ívateµa: \""
 
-#: g10/passphrase.c:536
+#: g10/passphrase.c:572
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "då¾ka %u bitov, typ %s, ID %08lX, vytvorený %s"
 
-#: g10/passphrase.c:545
+#: g10/passphrase.c:581
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""

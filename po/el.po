@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.1.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:13+0200\n"
+"POT-Creation-Date: 2006-10-04 18:34+0200\n"
 "PO-Revision-Date: 2003-06-27 12:00+0200\n"
 "Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -5315,12 +5315,12 @@ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: πιθανόν μη ασφαλές κρυπτογραφημένο συμμετρικά κλειδί\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "υποπακέτο τύπου %d έχει ορισμένο το κριτικό bit\n"
 
-#: g10/passphrase.c:280 g10/passphrase.c:549
+#: g10/passphrase.c:310 g10/passphrase.c:585
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (κύριο κλειδί, ID %08lX)"
 
-#: g10/passphrase.c:294
+#: g10/passphrase.c:324
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -5332,24 +5332,24 @@ msgstr ""
 "\"%.*s\"\n"
 "%u-bit %s κλειδί, ID %08lX, δημιουργία %s%s\n"
 
-#: g10/passphrase.c:319
+#: g10/passphrase.c:349
 msgid "Repeat passphrase\n"
 msgstr "Επαναλάβετε τη φράση\n"
 
-#: g10/passphrase.c:321
+#: g10/passphrase.c:351
 msgid "Enter passphrase\n"
 msgstr "Πληκτρολογήστε τη φράση κλειδί\n"
 
-#: g10/passphrase.c:345
+#: g10/passphrase.c:375
 msgid "cancelled by user\n"
 msgstr "ακυρώθηκε από το χρήστη\n"
 
-#: g10/passphrase.c:350 g10/passphrase.c:406
+#: g10/passphrase.c:380 g10/passphrase.c:436
 #, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "πρόβλημα με τον agent: agent επιστρέφει 0x%lx\n"
 
-#: g10/passphrase.c:528
+#: g10/passphrase.c:564
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5359,12 +5359,12 @@ msgstr ""
 "Χρειάζεστε μια φράση κλειδί για να ξεκλειδώσετε το μυστικό κλειδί\n"
 "για το χρήστη: \""
 
-#: g10/passphrase.c:536
+#: g10/passphrase.c:572
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-bit %s κλειδί, ID %08lX, δημιουργία %s"
 
-#: g10/passphrase.c:545
+#: g10/passphrase.c:581
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
