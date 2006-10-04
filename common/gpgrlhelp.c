@@ -31,6 +31,7 @@
 
 #ifdef HAVE_LIBREADLINE
 #define GNUPG_LIBREADLINE_H_INCLUDED
+#include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
