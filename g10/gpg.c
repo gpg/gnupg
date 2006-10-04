@@ -78,7 +78,7 @@ enum cmd_and_opt_values
     aDecrypt	  = 'd',
     aEncr	  = 'e',
     oInteractive  = 'i',
-    oKOption	  = 'k',
+    oListKeys	  = 'k',
     oDryRun	  = 'n',
     oOutput	  = 'o',
     oQuiet	  = 'q',
@@ -115,13 +115,10 @@ enum cmd_and_opt_values
     aDeleteKeys,
     aDeleteSecretKeys,
     aDeleteSecretAndPublicKeys,
-    aKMode,
-    aKModeC,
     aImport,
     aFastImport,
     aVerify,
     aVerifyFiles,
-    aListKeys,
     aListSigs,
     aSendKeys,
     aRecvKeys,
@@ -562,7 +559,6 @@ static ARGPARSE_OPTS opts[] = {
     { aListTrustDB, "list-trustdb",0 , "@"},
     /* Not yet used */
     /* { aListTrustPath, "list-trust-path",0, "@"}, */
-    { oKOption, NULL,	 0, "@"},
     { oPasswd, "passphrase",2, "@" },
     { oPasswdFD, "passphrase-fd",1, "@" },
     { oPasswdFile, "passphrase-file",2, "@" },
@@ -1041,8 +1037,6 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 	cmd = aEncrSym;
     else if( cmd == aEncr && new_cmd == aSym )
 	cmd = aEncrSym;
-    else if( cmd == aKMode && new_cmd == aSym )
-	cmd = aKModeC;
     else if (cmd == aSignEncr && new_cmd == aSym)
         cmd = aSignEncrSym;
     else if (cmd == aSignSym && new_cmd == aEncr)
@@ -2089,7 +2083,6 @@ main (int argc, char **argv )
 	    opt.list_options|=LIST_SHOW_UNUSABLE_UIDS;
 	    opt.list_options|=LIST_SHOW_UNUSABLE_SUBKEYS;
 	    break;
-	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
 	  case oBatch: opt.batch = 1; nogreeting = 1; break;
           case oUseAgent:
@@ -3155,38 +3148,29 @@ main (int argc, char **argv )
 	set_cmd( &cmd, aListKeys);
     }
 
-    if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */
-	if( cmd == aKModeC ) {
-	    opt.fingerprint = 1;
-	    cmd = aKMode;
-	}
-	opt.list_sigs = 0;
-	if( opt.verbose > 2 )
-	    opt.check_sigs++;
-	if( opt.verbose > 1 )
-	    opt.list_sigs++;
-
-	opt.verbose = opt.verbose > 1;
-    }
-
     /* kludge to let -sat generate a clear text signature */
     if( opt.textmode == 2 && !detached_sig && opt.armor && cmd == aSign )
+      {
+        log_info ("compatibility note:\n");
+        log_info ("\"-sat\" won't generate clear signed messages in "
+                  "future versions\n");
+        log_info ("Use \"--clearsign\" instead of \"-sat\"\n");
 	cmd = aClearsign;
+      }
 
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
 
-    /* Add the keyrings, but not for some special commands and not in
-       case of "-kvv userid keyring".  Also avoid adding the secret
-       keyring for a couple of commands to avoid unneeded access in
-       case the secrings are stored on a floppy.
+    /* Add the keyrings, but not for some special commands.  Also
+       avoid adding the secret keyring for a couple of commands to
+       avoid unneeded access in case the secrings are stored on a
+       floppy.
        
        We always need to add the keyrings if we are running under
        SELinux, this is so that the rings are added to the list of
        secured files. */
     if( ALWAYS_ADD_KEYRINGS 
-        || (cmd != aDeArmor && cmd != aEnArmor
-            && !(cmd == aKMode && argc == 2 )) ) 
+        || (cmd != aDeArmor && cmd != aEnArmor) ) 
       {
         if (ALWAYS_ADD_KEYRINGS
             || (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
@@ -3469,34 +3453,6 @@ main (int argc, char **argv )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
 	secret_key_list( sl );
 	free_strlist(sl);
-	break;
-
-      case aKMode: /* list keyring -- NOTE: This will be removed soon */
-	if( argc < 2 ) { /* -kv [userid] */
-	    sl = NULL;
-	    if (argc && **argv)
-		add_to_strlist2( &sl, *argv, utf8_strings );
-	    public_key_list( sl );
-	    free_strlist(sl);
-	}
-	else if( argc == 2 ) { /* -kv userid keyring */
-	    if( access( argv[1], R_OK ) ) {
-		log_error(_("can't open `%s': %s\n"),
-			       print_fname_stdin(argv[1]), strerror(errno));
-	    }
-	    else {
-		/* add keyring (default keyrings are not registered in this
-		 * special case */
-		keydb_add_resource( argv[1], 0, 0 );
-		sl = NULL;
-		if (**argv)
-		    add_to_strlist2( &sl, *argv, utf8_strings );
-		public_key_list( sl );
-		free_strlist(sl);
-	    }
-	}
-	else
-	    wrong_args(_("-k[v][v][v][c] [user-id] [keyring]") );
 	break;
 
       case aKeygen: /* generate a key */

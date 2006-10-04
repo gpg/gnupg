@@ -270,7 +270,7 @@ List all keys from the public keyrings, or just the keys given on the
 command line.
 @ifset gpgone
 @option{-k} is slightly different from @option{--list-keys} in that it
-allwos only for one argument and takes the second argument as the
+allows only for one argument and takes the second argument as the
 keyring to search.  This is for command line compatibility with PGP 2
 and has been removed in @command{gpg2}.
 @end ifset
@@ -2271,10 +2271,11 @@ print the public key data.
 
 @item --fast-list-mode
 Changes the output of the list commands to work faster; this is achieved
-by leaving some parts empty. Some applications don't need the user ID and
-the trust information given in the listings. By using this options they
-can get a faster listing. The exact behaviour of this option may change
-in future versions.
+by leaving some parts empty. Some applications don't need the user ID
+and the trust information given in the listings. By using this options
+they can get a faster listing. The exact behaviour of this option may
+change in future versions.  If you are missing some information, don't
+use this option.
 
 @item --no-literal
 This is not for normal use. Use the source to see for what it might be useful.

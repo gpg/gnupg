@@ -1,8 +1,13 @@
-Noteworthy changes in version 1.9.91
+Noteworthy changes in version 1.9.91 (2006-10-04)
 -------------------------------------------------
 
  * New "relax" flag for trustlist.txt to allow root CA certificates
    without BasicContraints.
+
+ * [gpg2] Removed the -k PGP 2 compatibility hack.  -k is now an
+   alias for --list-keys.
+
+ * [gpg2] Print a warning if "-sat" is used instead of "--clearsign".
 
 
 Noteworthy changes in version 1.9.90 (2006-09-25)
