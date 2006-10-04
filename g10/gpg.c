@@ -3172,7 +3172,7 @@ main (int argc, char **argv )
     FREE_STRLIST(sec_nrings);
 
 
-    if( pwfd != -1 )  /* read the passphrase now. */
+    if( pwfd != -1 )  /* Read the passphrase now. */
 	read_passphrase_from_fd( pwfd );
 
     fname = argc? *argv : NULL;

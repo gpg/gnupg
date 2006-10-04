@@ -1,5 +1,7 @@
 2006-10-04  Werner Koch  <wk@g10code.com>
 
+	* passphrase.c: Allow for a static passphrase in batch mode.
+	
 	* call-agent.c (agent_havekey): Removed.
 	(percent_plus_escape): New.
 	(agent_get_passphrase): New.

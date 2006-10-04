@@ -133,7 +133,7 @@ hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 int
 have_static_passphrase()
 {
-  return 0;
+  return !!fd_passwd && opt.batch;
 }
 
 /****************
@@ -184,24 +184,54 @@ next_to_last_passphrase(void)
 void
 set_passphrase_from_string(const char *pass)
 {
-  xfree( fd_passwd );
+  xfree (fd_passwd);
   fd_passwd = xmalloc_secure(strlen(pass)+1);
-  strcpy(fd_passwd,pass);
+  strcpy (fd_passwd, pass);
 }
 
 
 void
 read_passphrase_from_fd( int fd )
 {
-  /* Not used but we have to do a dummy read, so that it won't end up
-     at the begin of the message if the quite usual trick to prepend
-     the passphtrase to the message is used. */
-  char buf[1];
-  
-  while (!(read (fd, buf, 1) != 1 || *buf == '\n' ))
-    ;
-  *buf = 0;
-  return; 
+  int i, len;
+  char *pw;
+
+  if ( !opt.batch ) 
+    { /* Not used but we have to do a dummy read, so that it won't end
+         up at the begin of the message if the quite usual trick to
+         prepend the passphtrase to the message is used. */
+      char buf[1];
+
+      while (!(read (fd, buf, 1) != 1 || *buf == '\n' ))
+        ;
+      *buf = 0;
+      return; 
+    }
+
+  for (pw = NULL, i = len = 100; ; i++ ) 
+    {
+      if (i >= len-1 ) 
+        {
+          char *pw2 = pw;
+          len += 100;
+          pw = xmalloc_secure( len );
+          if( pw2 )
+            {
+              memcpy(pw, pw2, i );
+              xfree (pw2);
+            }
+          else
+            i=0;
+	}
+      if (read( fd, pw+i, 1) != 1 || pw[i] == '\n' )
+        break;
+    }
+  pw[i] = 0;
+  if (!opt.batch)
+    tty_printf("\b\b\b   \n" );
+
+  xfree ( fd_passwd );
+  fd_passwd = pw;
 }
 
 
@@ -434,9 +464,15 @@ ask_passphrase (const char *description,
         tty_printf ("\n%s\n",description);
     }
                
-  pw = passphrase_get (NULL, 0, cacheid,
-                       tryagain_text, description, prompt,
-                       canceled );
+  if (have_static_passphrase ()) 
+    {
+      pw = xmalloc_secure (strlen(fd_passwd)+1);
+      strcpy (pw, fd_passwd);
+    }
+  else
+    pw = passphrase_get (NULL, 0, cacheid,
+                         tryagain_text, description, prompt,
+                         canceled );
 
   if (!pw || !*pw)
     write_status( STATUS_MISSING_PASSPHRASE );
@@ -561,6 +597,12 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
       /* Simply return the passphrase we already have in NEXT_PW. */
       pw = next_pw;
       next_pw = NULL;
+    }
+  else if ( have_static_passphrase () ) 
+    {
+      /* Return the passphrase we have store in FD_PASSWD. */
+      pw = xmalloc_secure ( strlen(fd_passwd)+1 );
+      strcpy ( pw, fd_passwd );
     }
   else 
     {
