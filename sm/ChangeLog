@@ -1,3 +1,7 @@
+2006-10-05  Werner Koch  <wk@g10code.com>
+
+	* certcheck.c (do_encode_md): Check that the has algo is valid.
+
 2006-10-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* server.c (register_commands): New commands DUMPKEYS and

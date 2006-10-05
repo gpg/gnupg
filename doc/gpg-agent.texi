@@ -740,11 +740,12 @@ test whether the key is a valid key to sign something and responds with
 okay.
 
 @example
-   SETHASH <hexstring>
+   SETHASH <algo> <hexstring>
 @end example
 
-The client can use this command to tell the server about the data
-(which usually is a hash) to be signed.  
+The client can use this command to tell the server about the data <hexstring>
+(which usually is a hash) to be signed. <algo> is the decimal encoded hash
+algorithm number as used by Libgcrypt.
 
 The actual signing is done using
 

@@ -148,6 +148,8 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
   *r_len = 0;
 
   asnlen = DIM(asn);
+  if (!algo || gcry_md_test_algo (algo))
+    return gpg_error (GPG_ERR_DIGEST_ALGO);
   if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
     {
       log_error ("no object identifier for algo %d\n", algo);

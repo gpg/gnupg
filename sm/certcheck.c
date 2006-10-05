@@ -68,6 +68,8 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
       nframe = (nbits+7) / 8;
 
       asnlen = DIM(asn);
+      if (!algo || gcry_md_test_algo (algo))
+        return gpg_error (GPG_ERR_DIGEST_ALGO);
       if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
         {
           log_error ("no object identifier for algo %d\n", algo);

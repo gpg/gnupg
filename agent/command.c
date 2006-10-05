@@ -470,7 +470,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
   char *endp;
   int algo;
 
-  /* parse the algo number and check it */
+  /* Parse the algo number and check it. */
   algo = (int)strtoul (line, &endp, 10);
   for (line = endp; *line == ' ' || *line == '\t'; line++)
     ;
@@ -478,7 +478,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
     return set_error (GPG_ERR_UNSUPPORTED_ALGORITHM, NULL);
   ctrl->digest.algo = algo;
 
-  /* parse the hash value */
+  /* Parse the hash value. */
   rc = parse_hexstring (ctx, line, &n);
   if (rc)
     return rc;

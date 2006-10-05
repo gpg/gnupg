@@ -69,12 +69,6 @@ might want to have an agent context for each service request
  not a real problem because application will get a card removed status
  and should the send a reset to try solving the problem.
 
-* tests
-** Makefile.am
-  We use printf(1) to setup the library path, this is not portable.
-  Furthermore LD_LIBRARY_PATH is not used on all systems.  It doesn't
-  matter for now, because we use some GNU/*BSDish features anyway.
-
 ** Add a test to check the extkeyusage.
 
 * Windows port
@@ -93,15 +87,19 @@ might want to have an agent context for each service request
 
 * g10/
 ** issue a NO_SECKEY xxxx if a -u key was not found.
-** Replace DIGEST_ALGO_SHA224
-   We can't do that right now because it is only defined by newer
-   versions of libgcrypt.  Change this if we require libgcrypt 1.3
-   anyway.
 ** qbits
    We pass a new qbit parameter to genkey - implement this in libgcrypt.
+
+* When switching to libgcrypt 1.3
+** scd#encode_md_for_card, g10#encode_md_value, sm@do_encode_md
+   Remove the extra test for a valid algorithm as libgcrypt will do it
+   then in gcry_md_algo_info.
 ** skclist.c
-   As soon as we switch to libgcrypt 1.3 we should remove the hard
-   coded constant in random_is_faked.
+   Remove the hard coded constant in random_is_faked.
+** g10/ Replace DIGEST_ALGO_SHA224
+   We can't do that right now because it is only defined by newer
+   versions of libgcrypt. 
+
 
 * Extend selinux support to other modules
 

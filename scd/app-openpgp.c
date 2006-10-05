@@ -1926,7 +1926,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   start_at = time (NULL);
   rc = iso7816_generate_keypair 
 #else
-#warning key generation temporary replaced by reading an existing key.
+# warning key generation temporary replaced by reading an existing key.
   rc = iso7816_read_public_key
 #endif
     (app->slot, (const unsigned char*)(keyno == 0? "\xB6" :
