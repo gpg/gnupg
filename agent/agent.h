@@ -36,8 +36,15 @@
 #include "../common/errors.h"
 #include "membuf.h"
 
+/* To convey some special hash algorithms we use algorithm numbers
+   reserved for application use. */
+#ifndef GCRY_MD_USER
+#define GCRY_MD_USER 1024
+#endif
+#define GCRY_MD_USER_TLS_MD5SHA1 (GCRY_MD_USER+1)
 
-#define MAX_DIGEST_LEN 24 
+/* Maximum length of a digest.  */
+#define MAX_DIGEST_LEN 36
 
 /* A large struct name "opt" to keep global flags */
 struct

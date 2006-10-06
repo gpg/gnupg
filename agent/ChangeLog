@@ -1,5 +1,12 @@
 2006-10-05  Werner Koch  <wk@g10code.com>
 
+	* command.c (has_option_name): New.
+	(cmd_sethash): New --hash option.
+	* pksign.c (do_encode_raw_pkcs1): New.
+	(agent_pksign_do): Use it here for the TLS algo.
+	* agent.h (GCRY_MD_USER_TLS_MD5SHA1): New.
+	* divert-scd.c (pksign): Add case for tls-md5sha1.
+	
 	* divert-scd.c (encode_md_for_card): Check that the algo is valid.
 
 2006-10-04  Werner Koch  <wk@g10code.com>

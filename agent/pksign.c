@@ -39,7 +39,7 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
   gcry_sexp_t hash;
   int rc;
 
-  if (! raw_value)
+  if (!raw_value)
     {
       const char *s;
       char tmp[16+1];
@@ -55,7 +55,7 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
 
       rc = gcry_sexp_build (&hash, NULL,
 			    "(data (flags pkcs1) (hash %s %b))",
-			    tmp, mdlen, md);
+			    tmp, (int)mdlen, md);
     }
   else
     {
@@ -75,6 +75,55 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
   *r_hash = hash;
   return rc;   
 }
+
+
+/* Special version of do_encode_md to take care of pckcs#1 padding.
+   For TLS-MD5SHA1 we need to do the padding ourself as Libgrypt does
+   not know about this special scheme.  Fixme: We should have a
+   pkcs1-only-padding flag for Libgcrypt. */
+static int
+do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
+                     gcry_sexp_t *r_hash)
+{
+  int rc;
+  gcry_sexp_t hash;
+  unsigned char *frame;
+  size_t i, n, nframe;
+            
+  nframe = (nbits+7) / 8;
+  if ( !mdlen || mdlen + 8 + 4 > nframe )
+    {
+      /* Can't encode this hash into a frame of size NFRAME. */
+      return gpg_error (GPG_ERR_TOO_SHORT);
+    }
+
+  frame = xtrymalloc (nframe);
+  if (!frame)
+    return gpg_error_from_syserror ();
+  
+  /* Assemble the pkcs#1 block type 1. */
+  n = 0;
+  frame[n++] = 0;
+  frame[n++] = 1; /* Block type. */
+  i = nframe - mdlen - 3 ;
+  assert (i >= 8); /* At least 8 bytes of padding.  */
+  memset (frame+n, 0xff, i );
+  n += i;
+  frame[n++] = 0;
+  memcpy (frame+n, md, mdlen );
+  n += mdlen;
+  assert (n == nframe);
+  
+  /* Create the S-expression.  */
+  rc = gcry_sexp_build (&hash, NULL,
+                        "(data (flags raw) (value %b))",
+                        (int)nframe, frame);
+  xfree (frame);
+
+  *r_hash = hash;
+  return rc;   
+}
+
 
 
 /* SIGN whatever information we have accumulated in CTRL and return
@@ -133,12 +182,18 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
 
       gcry_sexp_t s_hash = NULL;
 
-      /* put the hash into a sexp */
-      rc = do_encode_md (ctrl->digest.value,
-                         ctrl->digest.valuelen,
-                         ctrl->digest.algo,
-                         &s_hash,
-			 ctrl->digest.raw_value);
+      /* Put the hash into a sexp */
+      if (ctrl->digest.algo == GCRY_MD_USER_TLS_MD5SHA1)
+        rc = do_encode_raw_pkcs1 (ctrl->digest.value,
+                                  ctrl->digest.valuelen,
+                                  gcry_pk_get_nbits (s_skey),
+                                  &s_hash);
+      else
+        rc = do_encode_md (ctrl->digest.value,
+                           ctrl->digest.valuelen,
+                           ctrl->digest.algo,
+                           &s_hash,
+                           ctrl->digest.raw_value);
       if (rc)
         goto leave;
 

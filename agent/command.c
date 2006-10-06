@@ -136,6 +136,21 @@ has_option (const char *line, const char *name)
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
 
+/* Same as has_option but does only test for the name of the option
+   and ignores an argument, i.e. with NAME being "--hash" it would
+   return true for "--hash" as well as for "--hash=foo". */
+static int
+has_option_name (const char *line, const char *name)
+{
+  const char *s;
+  int n = strlen (name);
+
+  s = strstr (line, name);
+  return (s && (s == line || spacep (s-1))
+          && (!s[n] || spacep (s+n) || s[n] == '='));
+}
+
+
 /* Skip over options.  It is assumed that leading spaces have been
    removed (this is the case for lines passed to a handler from
    assuan).  Bkanls after the options are also removed. */
@@ -455,7 +470,7 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
 }
 
 
-/* SETHASH <algonumber> <hexstring> 
+/* SETHASH --hash=<name>|<algonumber> <hexstring> 
 
   The client can use this command to tell the server about the data
   (which usually is a hash) to be signed. */
@@ -470,12 +485,37 @@ cmd_sethash (assuan_context_t ctx, char *line)
   char *endp;
   int algo;
 
-  /* Parse the algo number and check it. */
-  algo = (int)strtoul (line, &endp, 10);
-  for (line = endp; *line == ' ' || *line == '\t'; line++)
-    ;
-  if (!algo || gcry_md_test_algo (algo))
-    return set_error (GPG_ERR_UNSUPPORTED_ALGORITHM, NULL);
+  /* Parse the alternative hash options which may be used instead of
+     the algo number.  */
+  if (has_option_name (line, "--hash"))
+    {
+      if (has_option (line, "--hash=sha1"))
+        algo = GCRY_MD_SHA1;
+      else if (has_option (line, "--hash=sha256"))
+        algo = GCRY_MD_SHA256;
+      else if (has_option (line, "--hash=rmd160"))
+        algo = GCRY_MD_RMD160;
+      else if (has_option (line, "--hash=md5"))
+        algo = GCRY_MD_MD5;
+      else if (has_option (line, "--hash=tls-md5sha1"))
+        algo = GCRY_MD_USER_TLS_MD5SHA1;
+      else
+        return set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
+    }
+  else
+    algo = 0;
+
+  line = skip_options (line);
+  
+  if (!algo)
+    {
+      /* No hash option has been given: require an algo number instead  */
+      algo = (int)strtoul (line, &endp, 10);
+      for (line = endp; *line == ' ' || *line == '\t'; line++)
+        ;
+      if (!algo || gcry_md_test_algo (algo))
+        return set_error (GPG_ERR_UNSUPPORTED_ALGORITHM, NULL);
+    }
   ctrl->digest.algo = algo;
 
   /* Parse the hash value. */
@@ -483,8 +523,11 @@ cmd_sethash (assuan_context_t ctx, char *line)
   if (rc)
     return rc;
   n /= 2;
-  if (n != 16 && n != 20 && n != 24 && n != 32)
+  if (algo == GCRY_MD_USER_TLS_MD5SHA1 && n == 36)
+    ;
+  else if (n != 16 && n != 20 && n != 24 && n != 32)
     return set_error (GPG_ERR_ASS_PARAMETER, "unsupported length of hash");
+
   if (n > MAX_DIGEST_LEN)
     return set_error (GPG_ERR_ASS_PARAMETER, "hash value to long");
 

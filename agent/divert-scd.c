@@ -318,26 +318,36 @@ divert_pksign (ctrl_t ctrl,
   int rc;
   char *kid;
   size_t siglen;
-  unsigned char *sigval;
-  unsigned char *data;
-  size_t ndata;
+  unsigned char *sigval = NULL;
 
   rc = ask_for_card (ctrl, shadow_info, &kid);
   if (rc)
     return rc;
 
-  rc = encode_md_for_card (digest, digestlen, algo, 
-                           &data, &ndata);
-  if (rc)
-    return rc;
+  if (algo == GCRY_MD_USER_TLS_MD5SHA1)
+    {
+      rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl,
+                              digest, digestlen, &sigval, &siglen);
+    }
+  else
+    {
+      unsigned char *data;
+      size_t ndata;
 
-  rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl,
-                          data, ndata, &sigval, &siglen);
+      rc = encode_md_for_card (digest, digestlen, algo, &data, &ndata);
+      if (!rc)
+        {
+          rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl,
+                                  data, ndata, &sigval, &siglen);
+          xfree (data);
+        }
+    }
+
   if (!rc)
     *r_sig = sigval;
-  xfree (data);
+
   xfree (kid);
-  
+
   return rc;
 }
 
