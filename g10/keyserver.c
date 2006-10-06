@@ -1322,10 +1322,14 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 			(ulong)block->pkt->pkt.public_key->keyid[0],
 			(ulong)block->pkt->pkt.public_key->keyid[1]);
 
-		fprintf(spawn->tochild,"KEY %s BEGIN\n",key->d);
+		fprintf(spawn->tochild,"KEY %08lX%08lX BEGIN\n",
+			(ulong)block->pkt->pkt.public_key->keyid[0],
+			(ulong)block->pkt->pkt.public_key->keyid[1]);
 		fwrite(iobuf_get_temp_buffer(buffer),
 		       iobuf_get_temp_length(buffer),1,spawn->tochild);
-		fprintf(spawn->tochild,"KEY %s END\n",key->d);
+		fprintf(spawn->tochild,"KEY %08lX%08lX END\n",
+			(ulong)block->pkt->pkt.public_key->keyid[0],
+			(ulong)block->pkt->pkt.public_key->keyid[1]);
 
 		iobuf_close(buffer);
 

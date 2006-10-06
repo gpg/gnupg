@@ -1,3 +1,8 @@
+2006-10-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Write the 16-digit keyid rather
+	than whatever key selector the user used on the command line.
+
 2006-10-05  Werner Koch  <wk@g10code.com>
 
 	* status.c (progress_cb): Changed to libgcrypt API.
