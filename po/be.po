@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2003-10-30 16:35+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nab@mail.by>\n"
 "Language-Team: Belarusian <i18n@mova.org>\n"
@@ -138,20 +138,20 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: немагчыма стварыць хэш-табліцу: %s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 msgid "Admin PIN"
 msgstr ""
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "Паўтарыце пароль: "
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 msgid "PIN not correctly repeated; try again"
 msgstr ""
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
@@ -6479,7 +6479,7 @@ msgstr ""
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA патрабуе выкарыстаньня 160-і бітавага хэш-альгарытму\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 

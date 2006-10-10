@@ -22,7 +22,7 @@
 
 bin_PROGRAMS = gpgsm
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS) \
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(KSBA_CFLAGS) \
             $(PTH_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl 
@@ -58,8 +58,8 @@ common_libs = ../jnlib/libjnlib.a ../kbx/libkeybox.a \
               ../common/libcommon.a ../gl/libgnu.a
 
 gpgsm_LDADD = $(common_libs) \
-              $(LIBGCRYPT_LIBS)  $(KSBA_LIBS) $(LIBASSUAN_LIBS) -lgpg-error \
-	      $(LIBINTL) $(PTH_LIBS) $(ZLIBS)
+              $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_PTH_LIBS) \
+               -lgpg-error  $(LIBINTL) $(PTH_LIBS) $(ZLIBS)
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.

@@ -2,6 +2,8 @@ EXTRA_DIST = intmax.m4 longdouble.m4 longlong.m4 printf-posix.m4 signed.m4 size_
 
 EXTRA_DIST += ldap.m4 libcurl.m4 libusb.m4 tar-ustar.m4 readline.m4
 
+EXTRA_DIST += gnupg-pth.m4
+
 EXTRA_DIST += gpg-error.m4 libgcrypt.m4 libassuan.m4 ksba.m4
 
 EXTRA_DIST += autobuild.m4

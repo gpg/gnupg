@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2004-06-17 11:04+0300\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -137,21 +137,21 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: paisktabeli loomine ebaõnnestus: %s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 msgid "Admin PIN"
 msgstr ""
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "Korrake parooli: "
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 #, fuzzy
 msgid "PIN not correctly repeated; try again"
 msgstr "parooli ei korratud õieti; proovige uuesti"
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
@@ -6826,7 +6826,7 @@ msgstr ""
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA nõuab 160 bitist räsialgoritmi kasutamist\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 

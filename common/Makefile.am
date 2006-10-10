@@ -26,7 +26,7 @@ TESTS = $(module_tests)
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS) \
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(KSBA_CFLAGS) \
             $(PTH_CFLAGS)
 
 libcommon_a_SOURCES = \

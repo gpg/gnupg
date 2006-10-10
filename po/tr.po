@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2005-03-16 07:30+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -138,21 +138,21 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: nitelemeli tablo oluşturulamadı: %s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 #, fuzzy
 msgid "Admin PIN"
 msgstr "|A|Yönetici PIN'i"
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "Bu PIN'i tekrarlayın: "
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN doğru tekrarlanmadı; tekrar deneyin"
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, fuzzy, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "PIN [yapılan imza: %lu]"
@@ -6760,7 +6760,7 @@ msgstr ""
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA, 160 bitlik bir hash algoritması kullanılmasını gerektiriyor\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 

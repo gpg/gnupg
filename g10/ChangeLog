@@ -1,3 +1,17 @@
+2006-10-08  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c: Remove the tty stubs as we are now required to link to
+	tty anyway (it is included in libcommand and has dependencies to
+	other modules as well).
+
+	* keyedit.c (keyedit_menu): Use keyedit_completion only if
+	readline is available.  It would be better to move this code into
+	gpgrlhelp.c
+
+2006-10-06  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CFLAGS): Use PTH version of libassuan.
+
 2006-10-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Write the 16-digit keyid rather

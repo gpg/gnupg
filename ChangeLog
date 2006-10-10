@@ -1,3 +1,11 @@
+2006-10-09  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4: Moved pth check to m4/gnupg-pth.m4.
+
+2006-10-06  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Also check for libassuan's pth version.
+
 2006-10-04  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.91.

@@ -45,6 +45,7 @@ NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.1.94
 
 NEED_LIBASSUAN_VERSION=0.9.1
+NEED_LIBASSUAN_API=1
 
 NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.0.0
@@ -578,8 +579,13 @@ AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_API:$NEED_LIBGCRYPT_VERSION",
 #
 # libassuan is used for IPC
 #
-AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_VERSION",
+AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
                   have_libassuan=yes,have_libassuan=no)
+if test "$have_libassuan" = "yes"; then
+  have_libassuan=no
+  AM_PATH_LIBASSUAN_PTH("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
+                        have_libassuan=yes,have_libassuan=no)
+fi
 
 
 #
@@ -632,17 +638,12 @@ AC_DEFINE_UNQUOTED(SHRED,
 # Check whether the GNU Pth library is available
 # Note, that we include a Pth emulation for W32.
 #
-AC_ARG_WITH(pth-prefix,
-            AC_HELP_STRING([--with-pth-prefix=PFX],
-                           [prefix where GNU Pth is installed (optional)]),
-     pth_config_prefix="$withval", pth_config_prefix="")
-if test x$pth_config_prefix != x ; then
-   PTH_CONFIG="$pth_config_prefix/bin/pth-config"
-fi
-AC_PATH_PROG(PTH_CONFIG, pth-config, no)
-if test "$have_w32_system" = no; then
- if test "$PTH_CONFIG" = "no"; then
-    AC_MSG_WARN([[
+GNUPG_PATH_PTH
+if test "$have_pth" = "yes"; then
+  AC_DEFINE(USE_GNU_PTH, 1,
+              [Defined if the GNU Portable Thread Library should be used])
+else
+  AC_MSG_WARN([[
 ***
 *** To support concurrent access to the gpg-agent and the SCdaemon
 *** we need the support of the GNU Portable Threads Library.
@@ -650,27 +651,8 @@ if test "$have_w32_system" = no; then
 *** On a Debian GNU/Linux system you might want to try 
 ***   apt-get install libpth-dev
 ***]])
- else
-  GNUPG_PTH_VERSION_CHECK(1.3.7)
-  if test $have_pth = yes; then      
-     PTH_CFLAGS=`$PTH_CONFIG --cflags`
-     PTH_LIBS=`$PTH_CONFIG --ldflags`
-     PTH_LIBS="$PTH_LIBS `$PTH_CONFIG --libs --all`"
-     AC_DEFINE(USE_GNU_PTH, 1,
-              [Defined if the GNU Portable Thread Library should be used])
-     AC_DEFINE(HAVE_PTH, 1,
-              [Defined if the GNU Pth is available])
-  fi
- fi
-else 
- have_pth=yes
- PTH_CFLAGS=""
- PTH_LIBS=""
- AC_DEFINE(USE_GNU_PTH, 1)
- AC_DEFINE(HAVE_PTH, 1)
 fi
-AC_SUBST(PTH_CFLAGS)
-AC_SUBST(PTH_LIBS)
+
 
 
 #
@@ -1262,10 +1244,10 @@ if test "$have_libassuan" = "no"; then
    die=yes
    AC_MSG_NOTICE([[
 ***
-*** You need libassuan to build this program.
+*** You need libassuan with Pth support to build this program.
 *** This library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/alpha/libassuan/
-*** (at least version $NEED_LIBASSUAN_VERSION is required).
+*** (at least version $NEED_LIBASSUAN_VERSION (API $NEED_LIBASSUAN_API) is required).
 ***]])
 fi
 if test "$have_ksba" = "no"; then

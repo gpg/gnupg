@@ -66,6 +66,9 @@ any security audit and you should not use any valuable private key.  In
 particular, @strong{using it on a box with more than one user, might
 lead to a key compromise}.
 
+@strong{It is quite possible that the current version does not even
+build.}
+
 @noindent
 Current limitations are:
 

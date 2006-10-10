@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -160,22 +160,22 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: no s'ha pogut crear la taula de dispersió: %s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 #, fuzzy
 msgid "Admin PIN"
 msgstr "Introduïu el nom d'usuari: "
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "Repetiu la contrasenya: "
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 #, fuzzy
 msgid "PIN not correctly repeated; try again"
 msgstr "la contrasenya no s'ha repetit correctament; torneu a intentar-ho"
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
@@ -7053,7 +7053,7 @@ msgstr ""
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA requereix l'ús d'un algoritme de dispersió de 160 bits\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 

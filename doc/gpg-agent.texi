@@ -740,13 +740,23 @@ test whether the key is a valid key to sign something and responds with
 okay.
 
 @example
-   SETHASH <algo> <hexstring>
+   SETHASH --hash=<name>|<algo> <hexstring>
 @end example
 
 The client can use this command to tell the server about the data <hexstring>
 (which usually is a hash) to be signed. <algo> is the decimal encoded hash
-algorithm number as used by Libgcrypt.
+algorithm number as used by Libgcrypt.  Either <algo> or --hash=<name>
+must be given.  Valid names for <name> are:
 
+@table @code
+@item sha1
+@item sha256
+@item rmd160
+@item md5
+@item tls-md5sha1
+@end table
+
+@noindent
 The actual signing is done using
 
 @example
@@ -754,19 +764,9 @@ The actual signing is done using
 @end example
 
 Options are not yet defined, but my later be used to choosen among
-different algorithms (e.g. pkcs 1.5)
-
-The agent does then some checks, asks for the passphrase and
-if SETHASH has not been used asks the client for the data to sign:
-
-@example
-   S: INQUIRE HASHVAL
-   C: D ABCDEF012345678901234
-   C: END
-@end example
-
-As a result the server returns the signature as an SPKI like S-Exp
-in "D" lines:
+different algorithms.  The agent does then some checks, asks for the
+passphrase and as a result the server returns the signature as an SPKI
+like S-expression in "D" lines:
 
 @example  
      (sig-val   

@@ -388,22 +388,6 @@ void cipher_decrypt( gcry_cipher_hd_t c, byte *outbuf,
 void cipher_sync( gcry_cipher_hd_t c ) {}
 
 
-/* Stubs to avoid linking to ../util/ttyio.c */
-int tty_batchmode( int onoff ) { return 0; }
-void tty_printf( const char *fmt, ... ) { }
-void tty_fprintf (FILE *fp, const char *fmt, ... ) { }
-void tty_print_string( const byte *p, size_t n ) { }
-void tty_print_utf8_string( const byte *p, size_t n ) {}
-void tty_print_utf8_string2( const byte *p, size_t n, size_t max_n ) {}
-char *tty_get( const char *prompt ) { return NULL;}
-char *tty_get_hidden( const char *prompt ) {return NULL; }
-void tty_kill_prompt(void) {}
-int tty_get_answer_is_yes( const char *prompt ) {return 0;}
-int tty_no_terminal(int onoff) {return 0;}
-#ifdef HAVE_LIBREADLINE
-void tty_enable_completion(rl_completion_func_t *completer) {}
-void tty_disable_completion(void) {}
-#endif
 
 /* We do not do any locking, so use these stubs here */
 void disable_dotlock(void) {}

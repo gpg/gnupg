@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.9.90\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2006-09-25 09:09+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -141,19 +141,19 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "Fehler beim Speichern des Schlüssels: %s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 msgid "Admin PIN"
 msgstr "Admin PIN"
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 msgid "Repeat this PIN"
 msgstr "PIN bitte wiederholen"
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN wurde nicht richtig wiederholt; noch einmal versuchen"
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Bitte geben Sie die PIN%s%s%s ein um die Karte zu entsperren"
@@ -6931,7 +6931,7 @@ msgstr "Die Zertifikatkette ist länger als von der CA erlaubt (%d)"
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA benötigt einen 160-bit Hash Algorithmus\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(Dies ist der MD2 Algorithmus)\n"
 

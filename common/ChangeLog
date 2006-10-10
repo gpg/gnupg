@@ -1,3 +1,14 @@
+2006-10-08  Werner Koch  <wk@g10code.com>
+
+	* gpgrlhelp.c: Trun all functions into dummies if readline is not
+	available.
+
+2006-10-06  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CFLAGS): Use PTH version of libassuan.
+
+	* util.h (GNUPG_GCC_A_SENTINEL): Defined for gcc >= 4.
+
 2006-10-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgrlhelp.c: readline requires stdio.h.

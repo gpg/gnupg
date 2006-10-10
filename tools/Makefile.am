@@ -79,8 +79,8 @@ gpgkey2ssh_SOURCES = gpgkey2ssh.c
 gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 # common sucks in jnlib, via use of BUG() in an inline function, which
 # some compilers do not eliminate.
-gpgkey2ssh_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
-                   $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+gpgkey2ssh_LDADD = $(common_libs) \
+                   $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
 
 
 # Make sure that all libs are build before we use them.  This is

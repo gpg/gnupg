@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.1.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2003-06-27 12:00+0200\n"
 "Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -137,21 +137,21 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: αδυναμία δημιουργίας hashtable: %s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 msgid "Admin PIN"
 msgstr ""
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "Επαναλάβετε τη φράση κλειδί: "
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 #, fuzzy
 msgid "PIN not correctly repeated; try again"
 msgstr "η φράση κλειδί δεν επαναλήφθηκε σωστά. Δοκιμάστε ξανά"
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
@@ -6922,7 +6922,7 @@ msgstr ""
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "ο DSA απαιτεί τη χρήση ενός 160 bit αλγόριθμου hash\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 

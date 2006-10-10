@@ -1,3 +1,8 @@
+2006-10-08  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpgkey2ssh_LDADD): Add LIBINTL. Suggested by
+	Andreas Metzler.
+
 2006-09-22  Werner Koch  <wk@g10code.com>
 
 	* no-libgcrypt.c: Changed license to a simple all permissive one.

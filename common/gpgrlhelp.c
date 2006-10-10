@@ -40,6 +40,7 @@
 #include "common-defs.h"
 
 
+#ifdef HAVE_LIBREADLINE
 static void
 set_completer (rl_completion_func_t *completer)
 {
@@ -68,12 +69,15 @@ init_stream (FILE *fp)
   rl_inhibit_completion = 1;
 }
 
+#endif /*HAVE_LIBREADLINE*/
+
 
 /* Initialize our readline code.  This should be called as early as
    possible as it is actually a constructur.  */
 void
 gnupg_rl_initialize (void)
 {
+#ifdef HAVE_LIBREADLINE
   tty_private_set_rl_hooks (init_stream,
                             set_completer,
                             inhibit_completion,
@@ -81,7 +85,7 @@ gnupg_rl_initialize (void)
                             readline,
                             add_history);
   rl_readline_name = "GnuPG";
-
+#endif
 }
 
 

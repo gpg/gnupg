@@ -68,6 +68,10 @@ might want to have an agent context for each service request
  Needs to be integrated with the status file update, though.  It is
  not a real problem because application will get a card removed status
  and should the send a reset to try solving the problem.
+** app-p15.c:do_auth
+  We assume SHA1 here.  However we should also allow for TLS-MD5SHA1.
+  To properly inplement this we need to extend the inetrnal API.  A
+  simple workaround by looking at the digest size if possible.
 
 ** Add a test to check the extkeyusage.
 
@@ -99,7 +103,8 @@ might want to have an agent context for each service request
 ** g10/ Replace DIGEST_ALGO_SHA224
    We can't do that right now because it is only defined by newer
    versions of libgcrypt. 
-
+** GCRY_MD_USER
+   Remove these definitions.
 
 * Extend selinux support to other modules
 

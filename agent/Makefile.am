@@ -27,8 +27,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) \
-	$(PTH_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(GPG_ERROR_CFLAGS) \
+	    $(PTH_CFLAGS)
 
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
@@ -51,7 +51,7 @@ common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
 gpg_agent_LDADD = $(common_libs) \
-                $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS) \
+                $(LIBGCRYPT_LIBS) $(LIBASSUAN_PTH_LIBS) $(PTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
 
 gpg_protect_tool_SOURCES = \

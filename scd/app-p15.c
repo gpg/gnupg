@@ -3187,7 +3187,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
 /* Handler for the PKAUTH command. 
 
-   This is basically the same as the PKSIGN command but we firstcheck
+   This is basically the same as the PKSIGN command but we first check
    that the requested key is suitable for authentication; that is, it
    must match the criteria used for the attribute $AUTHKEYID.  See
    do_sign for calling conventions; there is no HASHALGO, though. */

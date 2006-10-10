@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -142,21 +142,21 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s：建立散列表失败：%s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 #, fuzzy
 msgid "Admin PIN"
 msgstr "|A|管理员 PIN"
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "再次输入此 PIN："
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN 再次输入时与首次输入不符；请再试一次"
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, fuzzy, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
@@ -6578,7 +6578,7 @@ msgstr ""
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA 要求使用 160 位的散列算法\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 

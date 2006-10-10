@@ -1,3 +1,12 @@
+2006-10-09  Werner Koch  <wk@g10code.com>
+
+	* gnupg-pth.m4: New.  Taken from ../acinclude.m4.
+	(GNUPG_PATH_PTH): New.
+
+2006-10-06  Werner Koch  <wk@g10code.com>
+
+	* libassuan.m4: Updated.
+
 2006-07-27  Werner Koch  <wk@g10code.com>
 
 	* autobuild.m4: New. 

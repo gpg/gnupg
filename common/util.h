@@ -43,6 +43,13 @@
 #include "../jnlib/dotlock.h"
 #include "../jnlib/utf8conv.h"
 
+#if __GNUC__ >= 4 
+# define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
+#else
+# define GNUPG_GCC_A_SENTINEL(a) 
+#endif
+
+
 /* We need this type even if we are not using libreadline and or we
    did not include libreadline in the current file. */
 #ifndef GNUPG_LIBREADLINE_H_INCLUDED

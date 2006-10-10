@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2005-06-28 00:24+0200\n"
 "Last-Translator: Gaël Quéri <gael@lautre.net>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -145,21 +145,21 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: la création de la table de hachage a échoué: %s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 #, fuzzy
 msgid "Admin PIN"
 msgstr "|A|code PIN d'administration"
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "Répétez ce code PIN: "
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 msgid "PIN not correctly repeated; try again"
 msgstr "le code PIN n'a pas été correctement répété ; recommencez"
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, fuzzy, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "||Entrez le PIN%%0A[sigs faites: %lu]"
@@ -6935,7 +6935,7 @@ msgstr ""
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA nécessite l'utilisation d'un algorithme de hachage de 160 bits\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 

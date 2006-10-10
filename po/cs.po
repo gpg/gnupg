@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-04 18:34+0200\n"
+"POT-Creation-Date: 2006-10-06 19:14+0200\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -138,21 +138,21 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: nepodaøilo se vytvoøit hashovací tabulku: %s\n"
 
-#: agent/divert-scd.c:217
+#: agent/divert-scd.c:219
 #, fuzzy
 msgid "Admin PIN"
 msgstr "|A|PIN administrátora"
 
-#: agent/divert-scd.c:275
+#: agent/divert-scd.c:277
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "Opakujte tento PIN: "
 
-#: agent/divert-scd.c:278
+#: agent/divert-scd.c:280
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN není zopakován správnì; zkuste to znovu"
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:292
 #, fuzzy, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "||Prosím vlo¾te PIN%%0A[podpis hotov: %lu]"
@@ -6744,7 +6744,7 @@ msgstr ""
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA po¾aduje pou¾ití 160-ti bitového hashovacího algoritmu\n"
 
-#: sm/certcheck.c:175 sm/sign.c:479 sm/verify.c:189
+#: sm/certcheck.c:177 sm/sign.c:479 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 

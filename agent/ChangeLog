@@ -1,5 +1,8 @@
 2006-10-06  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am (AM_CFLAGS): Use PTH version of libassuan.
+	(gpg_agent_LDADD): Ditto.
+
 	* divert-scd.c (divert_pksign): Use PKAUTH for the TLS algo.
 
 2006-10-05  Werner Koch  <wk@g10code.com>
