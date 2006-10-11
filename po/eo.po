@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6d\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-06 19:14+0200\n"
+"POT-Creation-Date: 2006-10-10 17:29+0200\n"
 "PO-Revision-Date: 2002-04-14 14:33+0100\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -1136,7 +1136,7 @@ msgstr ""
 msgid "verify the PIN and list all data"
 msgstr ""
 
-#: g10/card-util.c:1454 g10/keyedit.c:1624
+#: g10/card-util.c:1454 g10/keyedit.c:1626
 msgid "Command> "
 msgstr "Komando> "
 
@@ -1155,7 +1155,7 @@ msgstr "malkongruaj komandoj\n"
 msgid "Admin commands are not allowed\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
 
-#: g10/card-util.c:1599 g10/keyedit.c:2245
+#: g10/card-util.c:1599 g10/keyedit.c:2247
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Nevalida komando (provu per \"helpo\")\n"
 
@@ -1168,13 +1168,13 @@ msgstr "--output ne funkcias por æi tiu komando\n"
 msgid "can't open `%s'\n"
 msgstr "ne povas malfermi '%s'\n"
 
-#: g10/delkey.c:75 g10/export.c:325 g10/keyedit.c:3388 g10/keyserver.c:1709
+#: g10/delkey.c:75 g10/export.c:325 g10/keyedit.c:3390 g10/keyserver.c:1713
 #: g10/revoke.c:228
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "þlosilo '%s' ne trovita: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:355 g10/import.c:2348 g10/keyserver.c:1723
+#: g10/delkey.c:83 g10/export.c:355 g10/import.c:2348 g10/keyserver.c:1727
 #: g10/revoke.c:234 g10/revoke.c:478
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -1446,7 +1446,7 @@ msgstr ""
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "Nevalida þlosilo %08lX validigita per --always-trust\n"
 
-#: g10/getkey.c:2381 g10/keyedit.c:3708
+#: g10/getkey.c:2381 g10/keyedit.c:3710
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "estas sekreta þlosilo por la publika þlosilo \"%s\"!\n"
@@ -1699,7 +1699,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr ""
 
-#: g10/gpg.c:780 g10/keyedit.c:2311
+#: g10/gpg.c:780 g10/keyedit.c:2313
 msgid "Cipher: "
 msgstr ""
 
@@ -1707,7 +1707,7 @@ msgstr ""
 msgid "Hash: "
 msgstr ""
 
-#: g10/gpg.c:794 g10/keyedit.c:2357
+#: g10/gpg.c:794 g10/keyedit.c:2359
 #, fuzzy
 msgid "Compression: "
 msgstr "Komento: "
@@ -1865,7 +1865,7 @@ msgstr "%s ne estas valida signaro\n"
 msgid "`%s' is not a valid character set\n"
 msgstr "%s ne estas valida signaro\n"
 
-#: g10/gpg.c:2462 g10/gpg.c:2655 g10/keyedit.c:4065
+#: g10/gpg.c:2462 g10/gpg.c:2655 g10/keyedit.c:4067
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "ne povis analizi URI de þlosilservilo\n"
@@ -3146,13 +3146,13 @@ msgid "User ID \"%s\" is revoked."
 msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 
 #: g10/keyedit.c:609 g10/keyedit.c:637 g10/keyedit.c:664 g10/keyedit.c:832
-#: g10/keyedit.c:897 g10/keyedit.c:1743
+#: g10/keyedit.c:897 g10/keyedit.c:1745
 #, fuzzy
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Æu vi estas certa, ke vi ankoraý volas subskribi øin?\n"
 
 #: g10/keyedit.c:623 g10/keyedit.c:651 g10/keyedit.c:678 g10/keyedit.c:838
-#: g10/keyedit.c:1749
+#: g10/keyedit.c:1751
 msgid "  Unable to sign.\n"
 msgstr ""
 
@@ -3379,8 +3379,8 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Æu vere subskribi? "
 
-#: g10/keyedit.c:1068 g10/keyedit.c:4784 g10/keyedit.c:4875 g10/keyedit.c:4939
-#: g10/keyedit.c:5000 g10/sign.c:352
+#: g10/keyedit.c:1068 g10/keyedit.c:4786 g10/keyedit.c:4877 g10/keyedit.c:4941
+#: g10/keyedit.c:5002 g10/sign.c:352
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "subskribado malsukcesis: %s\n"
@@ -3623,15 +3623,15 @@ msgstr "eraro dum legado de sekreta þlosilbloko '%s': %s\n"
 msgid "Secret key is available.\n"
 msgstr "Sekreta þlosilo estas havebla.\n"
 
-#: g10/keyedit.c:1670
+#: g10/keyedit.c:1672
 msgid "Need the secret key to do this.\n"
 msgstr "Bezonas la sekretan þlosilon por fari tion.\n"
 
-#: g10/keyedit.c:1678
+#: g10/keyedit.c:1680
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Bonvolu uzi la komandon \"toggle\" unue.\n"
 
-#: g10/keyedit.c:1697
+#: g10/keyedit.c:1699
 msgid ""
 "* The `sign' command may be prefixed with an `l' for local signatures "
 "(lsign),\n"
@@ -3639,266 +3639,266 @@ msgid ""
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
 
-#: g10/keyedit.c:1737
+#: g10/keyedit.c:1739
 #, fuzzy
 msgid "Key is revoked."
 msgstr "Þlosilo estas revokita.\n"
 
-#: g10/keyedit.c:1756
+#: g10/keyedit.c:1758
 #, fuzzy
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Æu vere subskribi æiujn uzantidentigilojn? "
 
-#: g10/keyedit.c:1763
+#: g10/keyedit.c:1765
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Sugesto: Elekti la uzantidentigilojn por subskribi\n"
 
-#: g10/keyedit.c:1772
+#: g10/keyedit.c:1774
 #, fuzzy, c-format
 msgid "Unknown signature type `%s'\n"
 msgstr "nekonata klaso de subskribo"
 
-#: g10/keyedit.c:1795
+#: g10/keyedit.c:1797
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Tiu komando ne eblas en la reøimo %s.\n"
 
-#: g10/keyedit.c:1817 g10/keyedit.c:1837 g10/keyedit.c:2003
+#: g10/keyedit.c:1819 g10/keyedit.c:1839 g10/keyedit.c:2005
 msgid "You must select at least one user ID.\n"
 msgstr "Vi devas elekti almenaý unu uzantidentigilon.\n"
 
-#: g10/keyedit.c:1819
+#: g10/keyedit.c:1821
 msgid "You can't delete the last user ID!\n"
 msgstr "Vi ne povas forviþi la lastan uzantidentigilon!\n"
 
-#: g10/keyedit.c:1821
+#: g10/keyedit.c:1823
 #, fuzzy
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "Æu vere forigi æiujn elektitajn uzantidentigilojn? "
 
-#: g10/keyedit.c:1822
+#: g10/keyedit.c:1824
 #, fuzzy
 msgid "Really remove this user ID? (y/N) "
 msgstr "Æu vere forigi æi tiun uzantidentigilon? "
 
-#: g10/keyedit.c:1872
+#: g10/keyedit.c:1874
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Æu vere forigi æi tiun uzantidentigilon? "
 
-#: g10/keyedit.c:1884
+#: g10/keyedit.c:1886
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Vi devas elekti almenaý unu þlosilon.\n"
 
-#: g10/keyedit.c:1912
+#: g10/keyedit.c:1914
 msgid "Command expects a filename argument\n"
 msgstr ""
 
-#: g10/keyedit.c:1926
+#: g10/keyedit.c:1928
 #, fuzzy, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "ne povas malfermi '%s': %s\n"
 
-#: g10/keyedit.c:1943
+#: g10/keyedit.c:1945
 #, fuzzy, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
 
-#: g10/keyedit.c:1967
+#: g10/keyedit.c:1969
 msgid "You must select at least one key.\n"
 msgstr "Vi devas elekti almenaý unu þlosilon.\n"
 
-#: g10/keyedit.c:1970
+#: g10/keyedit.c:1972
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Æu vi vere volas forviþi la elektitajn þlosilojn? "
 
-#: g10/keyedit.c:1971
+#: g10/keyedit.c:1973
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Æu vi vere volas forviþi æi tiun þlosilon? "
 
-#: g10/keyedit.c:2006
+#: g10/keyedit.c:2008
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Æu vere forigi æiujn elektitajn uzantidentigilojn? "
 
-#: g10/keyedit.c:2007
+#: g10/keyedit.c:2009
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Æu vere forigi æi tiun uzantidentigilon? "
 
-#: g10/keyedit.c:2025
+#: g10/keyedit.c:2027
 #, fuzzy
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr "Æu vi vere volas revoki æi tiun þlosilon? "
 
-#: g10/keyedit.c:2036
+#: g10/keyedit.c:2038
 #, fuzzy
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "Æu vi vere volas revoki la elektitajn þlosilojn? "
 
-#: g10/keyedit.c:2038
+#: g10/keyedit.c:2040
 #, fuzzy
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Æu vi vere volas revoki æi tiun þlosilon? "
 
-#: g10/keyedit.c:2088
+#: g10/keyedit.c:2090
 msgid ""
 "Owner trust may not be set while using an user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:2130
+#: g10/keyedit.c:2132
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "agordi liston de preferoj"
 
-#: g10/keyedit.c:2136
+#: g10/keyedit.c:2138
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr "Æu vere aktualigi la preferojn por la elektitaj uzantidentigiloj? "
 
-#: g10/keyedit.c:2138
+#: g10/keyedit.c:2140
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Æu vere aktualigi la preferojn? "
 
-#: g10/keyedit.c:2206
+#: g10/keyedit.c:2208
 #, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Æu skribi þanøojn? "
 
-#: g10/keyedit.c:2209
+#: g10/keyedit.c:2211
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Æu fini sen skribi þanøojn? "
 
-#: g10/keyedit.c:2219
+#: g10/keyedit.c:2221
 #, c-format
 msgid "update failed: %s\n"
 msgstr "aktualigo malsukcesis: %s\n"
 
-#: g10/keyedit.c:2226
+#: g10/keyedit.c:2228
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "aktualigo de sekreto malsukcesis: %s\n"
 
-#: g10/keyedit.c:2233
+#: g10/keyedit.c:2235
 msgid "Key not changed so no update needed.\n"
 msgstr "Þlosilo ne þanøita, do aktualigo ne necesas.\n"
 
-#: g10/keyedit.c:2334
+#: g10/keyedit.c:2336
 msgid "Digest: "
 msgstr ""
 
-#: g10/keyedit.c:2386
+#: g10/keyedit.c:2388
 msgid "Features: "
 msgstr ""
 
-#: g10/keyedit.c:2397
+#: g10/keyedit.c:2399
 msgid "Keyserver no-modify"
 msgstr ""
 
-#: g10/keyedit.c:2412 g10/keylist.c:308
+#: g10/keyedit.c:2414 g10/keylist.c:308
 msgid "Preferred keyserver: "
 msgstr ""
 
-#: g10/keyedit.c:2420 g10/keyedit.c:2421
+#: g10/keyedit.c:2422 g10/keyedit.c:2423
 #, fuzzy
 msgid "Notations: "
 msgstr "Notacio: "
 
-#: g10/keyedit.c:2631
+#: g10/keyedit.c:2633
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr ""
 
-#: g10/keyedit.c:2690
+#: g10/keyedit.c:2692
 #, fuzzy, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr "Æi tiu þlosilo estas revokebla per %s þlosilo %s%s\n"
 
-#: g10/keyedit.c:2711
+#: g10/keyedit.c:2713
 #, fuzzy, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "Æi tiu þlosilo estas revokebla per %s þlosilo %s%s\n"
 
-#: g10/keyedit.c:2717
+#: g10/keyedit.c:2719
 #, fuzzy
 msgid "(sensitive)"
 msgstr " (sentema)"
 
-#: g10/keyedit.c:2733 g10/keyedit.c:2789 g10/keyedit.c:2850 g10/keyedit.c:2865
+#: g10/keyedit.c:2735 g10/keyedit.c:2791 g10/keyedit.c:2852 g10/keyedit.c:2867
 #: g10/keylist.c:194 g10/keyserver.c:516
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "ne povas krei %s: %s\n"
 
-#: g10/keyedit.c:2736 g10/keylist.c:771 g10/keylist.c:865 g10/mainproc.c:952
+#: g10/keyedit.c:2738 g10/keylist.c:771 g10/keylist.c:865 g10/mainproc.c:952
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "rev"
 
-#: g10/keyedit.c:2738 g10/keylist.c:742 g10/keylist.c:777 g10/keylist.c:871
+#: g10/keyedit.c:2740 g10/keylist.c:742 g10/keylist.c:777 g10/keylist.c:871
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [eksvalidiøos: %s]"
 
-#: g10/keyedit.c:2740 g10/keyedit.c:2791 g10/keyedit.c:2852 g10/keyedit.c:2867
+#: g10/keyedit.c:2742 g10/keyedit.c:2793 g10/keyedit.c:2854 g10/keyedit.c:2869
 #: g10/keylist.c:196 g10/keylist.c:748 g10/keylist.c:783 g10/keylist.c:877
 #: g10/keylist.c:898 g10/keyserver.c:522 g10/mainproc.c:958
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [eksvalidiøos: %s]"
 
-#: g10/keyedit.c:2742
+#: g10/keyedit.c:2744
 #, fuzzy, c-format
 msgid "usage: %s"
 msgstr " fido: %c/%c"
 
-#: g10/keyedit.c:2757
+#: g10/keyedit.c:2759
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " fido: %c/%c"
 
-#: g10/keyedit.c:2761
+#: g10/keyedit.c:2763
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2768
+#: g10/keyedit.c:2770
 msgid "This key has been disabled"
 msgstr "Æi tiu þlosilo estas malþaltita"
 
-#: g10/keyedit.c:2796 g10/keylist.c:200
+#: g10/keyedit.c:2798 g10/keylist.c:200
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2820
+#: g10/keyedit.c:2822
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
 msgstr ""
 
-#: g10/keyedit.c:2884 g10/keyedit.c:3230 g10/keyserver.c:526
+#: g10/keyedit.c:2886 g10/keyedit.c:3232 g10/keyserver.c:526
 #: g10/mainproc.c:1753 g10/trustdb.c:1179 g10/trustdb.c:1699
 #, fuzzy
 msgid "revoked"
 msgstr "rev"
 
-#: g10/keyedit.c:2886 g10/keyedit.c:3232 g10/keyserver.c:530
+#: g10/keyedit.c:2888 g10/keyedit.c:3234 g10/keyserver.c:530
 #: g10/mainproc.c:1755 g10/trustdb.c:532 g10/trustdb.c:1701
 #, fuzzy
 msgid "expired"
 msgstr "eksval"
 
-#: g10/keyedit.c:2951
+#: g10/keyedit.c:2953
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
 
-#: g10/keyedit.c:3012
+#: g10/keyedit.c:3014
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3907,55 +3907,55 @@ msgstr ""
 "AVERTO: Æi tiu estas PGP2-stila þlosilo. Aldono de foto-identigilo eble\n"
 "        kaýzos, ke iuj versioj de PGP malakceptos la þlosilon.\n"
 
-#: g10/keyedit.c:3017 g10/keyedit.c:3347
+#: g10/keyedit.c:3019 g10/keyedit.c:3349
 #, fuzzy
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Æu vi estas certa, ke vi ankoraý volas aldoni øin? (j/n) "
 
-#: g10/keyedit.c:3023
+#: g10/keyedit.c:3025
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Ne eblas aldoni foto-identigilon al PGP2-stila þlosilo.\n"
 
-#: g10/keyedit.c:3163
+#: g10/keyedit.c:3165
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Æu forviþi æi tiun bonan subskribon? (j/N/f)"
 
-#: g10/keyedit.c:3173
+#: g10/keyedit.c:3175
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Æu forviþi æi tiun nevalidan subskribon? (j/N/f)"
 
-#: g10/keyedit.c:3177
+#: g10/keyedit.c:3179
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Æu forviþi æi tiun nekonatan subskribon? (j/N/f)"
 
-#: g10/keyedit.c:3183
+#: g10/keyedit.c:3185
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Æu vere forviþi æi tiun mem-subskribon? (j/N)"
 
-#: g10/keyedit.c:3197
+#: g10/keyedit.c:3199
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Forviþis %d subskribon.\n"
 
-#: g10/keyedit.c:3198
+#: g10/keyedit.c:3200
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "Forviþis %d subskribojn.\n"
 
-#: g10/keyedit.c:3201
+#: g10/keyedit.c:3203
 msgid "Nothing deleted.\n"
 msgstr "Nenio estis forviþita.\n"
 
-#: g10/keyedit.c:3234 g10/trustdb.c:1703
+#: g10/keyedit.c:3236 g10/trustdb.c:1703
 msgid "invalid"
 msgstr "nevalida"
 
-#: g10/keyedit.c:3250
+#: g10/keyedit.c:3252
 #, fuzzy, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 
-#: g10/keyedit.c:3342
+#: g10/keyedit.c:3344
 #, fuzzy
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
@@ -3965,201 +3965,201 @@ msgstr ""
 "AVERTO: Æi tiu estas PGP2-stila þlosilo. Aldono de foto-identigilo eble\n"
 "        kaýzos, ke iuj versioj de PGP malakceptos la þlosilon.\n"
 
-#: g10/keyedit.c:3353
+#: g10/keyedit.c:3355
 #, fuzzy
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Ne eblas aldoni foto-identigilon al PGP2-stila þlosilo.\n"
 
-#: g10/keyedit.c:3373
+#: g10/keyedit.c:3375
 #, fuzzy
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Donu la þlosilgrandon"
 
-#: g10/keyedit.c:3398
+#: g10/keyedit.c:3400
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 
-#: g10/keyedit.c:3413
+#: g10/keyedit.c:3415
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr ""
 
-#: g10/keyedit.c:3435
+#: g10/keyedit.c:3437
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "AVERTO: Æi tiu þlosilo estas revokita de sia posedanto!\n"
 
-#: g10/keyedit.c:3454
+#: g10/keyedit.c:3456
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
 
-#: g10/keyedit.c:3460
+#: g10/keyedit.c:3462
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Æu vi estas certa, ke vi ankoraý volas subskribi øin?\n"
 
-#: g10/keyedit.c:3521
+#: g10/keyedit.c:3523
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Bonvolu malelekti la sekretajn þlosilojn.\n"
 
-#: g10/keyedit.c:3527
+#: g10/keyedit.c:3529
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Bonvolu elekti maksimume unu flankan þlosilon.\n"
 
-#: g10/keyedit.c:3531
+#: g10/keyedit.c:3533
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Þanøas la daton de eksvalidiøo de flanka þlosilo.\n"
 
-#: g10/keyedit.c:3534
+#: g10/keyedit.c:3536
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Þanøas la daton de eksvalidiøo de la æefa þlosilo.\n"
 
-#: g10/keyedit.c:3580
+#: g10/keyedit.c:3582
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Vi ne povas þanøi la daton de eksvalidiøo de v3-þlosilo\n"
 
-#: g10/keyedit.c:3596
+#: g10/keyedit.c:3598
 msgid "No corresponding signature in secret ring\n"
 msgstr "Mankas responda subskribo en sekreta þlosilaro\n"
 
-#: g10/keyedit.c:3669
+#: g10/keyedit.c:3671
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 
-#: g10/keyedit.c:3675
+#: g10/keyedit.c:3677
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr ""
 
-#: g10/keyedit.c:3837
+#: g10/keyedit.c:3839
 msgid "Please select exactly one user ID.\n"
 msgstr "Bonvolu elekti precize unu uzantidentigilon.\n"
 
-#: g10/keyedit.c:3876 g10/keyedit.c:3986 g10/keyedit.c:4106 g10/keyedit.c:4247
+#: g10/keyedit.c:3878 g10/keyedit.c:3988 g10/keyedit.c:4108 g10/keyedit.c:4249
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "þlosilo %08lX: nevalida mem-subskribo\n"
 
-#: g10/keyedit.c:4047
+#: g10/keyedit.c:4049
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:4127
+#: g10/keyedit.c:4129
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Æu vi estas certa, ke vi ankoraý volas subskribi øin?\n"
 
-#: g10/keyedit.c:4128
+#: g10/keyedit.c:4130
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Æu vi estas certa, ke vi ankoraý volas subskribi øin?\n"
 
-#: g10/keyedit.c:4190
+#: g10/keyedit.c:4192
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Subskribo-notacio: "
 
-#: g10/keyedit.c:4339
+#: g10/keyedit.c:4341
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Æu surskribi (j/N)? "
 
-#: g10/keyedit.c:4403
+#: g10/keyedit.c:4405
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Mankas uzantidentigilo kun indekso %d\n"
 
-#: g10/keyedit.c:4461
+#: g10/keyedit.c:4463
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Mankas uzantidentigilo kun indekso %d\n"
 
-#: g10/keyedit.c:4488
+#: g10/keyedit.c:4490
 #, fuzzy, c-format
 msgid "No subkey with index %d\n"
 msgstr "Mankas uzantidentigilo kun indekso %d\n"
 
-#: g10/keyedit.c:4623
+#: g10/keyedit.c:4625
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "uzantidentigilo: \""
 
-#: g10/keyedit.c:4626 g10/keyedit.c:4690 g10/keyedit.c:4733
+#: g10/keyedit.c:4628 g10/keyedit.c:4692 g10/keyedit.c:4735
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   subskribita per %08lX je %s%s\n"
 
-#: g10/keyedit.c:4628 g10/keyedit.c:4692 g10/keyedit.c:4735
+#: g10/keyedit.c:4630 g10/keyedit.c:4694 g10/keyedit.c:4737
 msgid " (non-exportable)"
 msgstr ""
 
-#: g10/keyedit.c:4632
+#: g10/keyedit.c:4634
 #, fuzzy, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Æi tiu þlosilo eksvalidiøos je %s.\n"
 
-#: g10/keyedit.c:4636
+#: g10/keyedit.c:4638
 #, fuzzy
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Æu vi estas certa, ke vi ankoraý volas aldoni øin? (j/n) "
 
-#: g10/keyedit.c:4640
+#: g10/keyedit.c:4642
 #, fuzzy
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Æu krei revokatestilon por æi tiu subskribo? (j/N)"
 
-#: g10/keyedit.c:4667
+#: g10/keyedit.c:4669
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Vi subskribis la sekvajn uzantidentigilojn:\n"
 
-#: g10/keyedit.c:4693
+#: g10/keyedit.c:4695
 #, fuzzy
 msgid " (non-revocable)"
 msgstr "subskribi þlosilon nerevokeble"
 
-#: g10/keyedit.c:4700
+#: g10/keyedit.c:4702
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   revokita de %08lX je %s\n"
 
-#: g10/keyedit.c:4722
+#: g10/keyedit.c:4724
 msgid "You are about to revoke these signatures:\n"
 msgstr "Vi revokos la sekvajn subskribojn:\n"
 
-#: g10/keyedit.c:4742
+#: g10/keyedit.c:4744
 #, fuzzy
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Æu vere krei la revokatestilojn? (j/N)"
 
-#: g10/keyedit.c:4772
+#: g10/keyedit.c:4774
 msgid "no secret key\n"
 msgstr "mankas sekreta þlosilo\n"
 
-#: g10/keyedit.c:4842
+#: g10/keyedit.c:4844
 #, fuzzy, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 
-#: g10/keyedit.c:4859
+#: g10/keyedit.c:4861
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 
-#: g10/keyedit.c:4923
+#: g10/keyedit.c:4925
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 
-#: g10/keyedit.c:4985
+#: g10/keyedit.c:4987
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 
-#: g10/keyedit.c:5080
+#: g10/keyedit.c:5082
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
@@ -4792,7 +4792,7 @@ msgstr "el"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr ""
 
-#: g10/keyserver.c:813 g10/keyserver.c:1430
+#: g10/keyserver.c:813 g10/keyserver.c:1434
 #, fuzzy, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "nevalida þlosilaro"
@@ -4827,106 +4827,106 @@ msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 msgid "searching for names from %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1333
+#: g10/keyserver.c:1337
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1337
+#: g10/keyserver.c:1341
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
 msgstr ""
 "\"\n"
 "subskribita per via þlosilo %08lX je %s\n"
 
-#: g10/keyserver.c:1380
+#: g10/keyserver.c:1384
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1383
+#: g10/keyserver.c:1387
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1390 g10/keyserver.c:1486
+#: g10/keyserver.c:1394 g10/keyserver.c:1490
 #, fuzzy
 msgid "no keyserver action!\n"
 msgstr "nevalida þlosilaro"
 
-#: g10/keyserver.c:1438
+#: g10/keyserver.c:1442
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 
-#: g10/keyserver.c:1447
+#: g10/keyserver.c:1451
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
-#: g10/keyserver.c:1509 g10/keyserver.c:2037
+#: g10/keyserver.c:1513 g10/keyserver.c:2041
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "neniu þlosilservilo konata (uzu la opcion --keyserver)\n"
 
-#: g10/keyserver.c:1515
+#: g10/keyserver.c:1519
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 
-#: g10/keyserver.c:1527
+#: g10/keyserver.c:1531
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1532
+#: g10/keyserver.c:1536
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1540
+#: g10/keyserver.c:1544
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr ""
 
-#: g10/keyserver.c:1547
+#: g10/keyserver.c:1551
 #, fuzzy
 msgid "keyserver timed out\n"
 msgstr "þlosilservila eraro"
 
-#: g10/keyserver.c:1552
+#: g10/keyserver.c:1556
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "þlosilservila eraro"
 
-#: g10/keyserver.c:1561
+#: g10/keyserver.c:1565
 #, fuzzy, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "listigo de sekretaj þlosiloj malsukcesis: %s\n"
 
-#: g10/keyserver.c:1586 g10/keyserver.c:1620
+#: g10/keyserver.c:1590 g10/keyserver.c:1624
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: ne valida þlosilidentigilo\n"
 
-#: g10/keyserver.c:1879
+#: g10/keyserver.c:1883
 #, fuzzy, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
-#: g10/keyserver.c:1901
+#: g10/keyserver.c:1905
 #, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
 
-#: g10/keyserver.c:1903
+#: g10/keyserver.c:1907
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
 
-#: g10/keyserver.c:1959
+#: g10/keyserver.c:1963
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
-#: g10/keyserver.c:1965
+#: g10/keyserver.c:1969
 #, fuzzy, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"

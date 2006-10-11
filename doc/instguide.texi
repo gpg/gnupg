@@ -12,7 +12,36 @@ Tell how to setup the system, install certificates, how dirmngr relates
 to GnuPG etc.
 
 ** Explain how to setup a root CA key as trusted
-** Explain how trustlist.txt might be managed.
+
+X.509 is based on a hierarchical key infrastructure.  At the root of the
+tree a trusted anchor (root certificate) is required.  There are usually
+no other means of verfying whether this root certificate is trutsworthy
+than looking it up in a list. GnuPG uses a file (@file{trustlist.txt})
+to keep track of all root certificates it knows about.  There are 3 ways
+to get certificates into this list:
+
+@itemize
+@item
+Use the list which comes with GnuPG. However this list only
+contains a few root certifciates.  Most installations will need more.
+
+@item
+Let @command{gpgsm} ask you whether you want to insert a new root
+certificate.  To enable this feature you need to set the option
+@option{allow-mark-trusted} into @file{gpg-agent.conf}.  In general it
+is not a good idea to do it this way.  Checking whether a root
+certificate is really trustworthy requires a decsions, which casual
+usuers are not up to.  Thus, by default this option is not enabled.
+
+@item 
+Manually maintain the list of trusted root certificates. For a multi
+user installation this can be done once for all users on a machine.
+Specific changes on a per-user base are also possible. 
+@end itemize
+
+XXX decribe how to maintain trustlist.txt and /etc/gnupg/trustlist.txt.
+
+
 ** How to get the ssh support running
    How to use the ssh support.
 

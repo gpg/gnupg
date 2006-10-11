@@ -1,3 +1,9 @@
+2006-10-11  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.92.
+
+	* configure.ac: Require libassuan 0.9.3.
+
 2006-10-09  Werner Koch  <wk@g10code.com>
 
 	* acinclude.m4: Moved pth check to m4/gnupg-pth.m4.

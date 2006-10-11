@@ -27,7 +27,7 @@ min_automake_version="1.9.3"
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
 m4_define([my_version], [1.9.92])
-m4_define([my_issvn], [yes])
+m4_define([my_issvn], [no])
 
 
 m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
@@ -42,10 +42,10 @@ development_version=yes
 NEED_GPG_ERROR_VERSION=1.4
 
 NEED_LIBGCRYPT_API=1
-NEED_LIBGCRYPT_VERSION=1.1.94
+NEED_LIBGCRYPT_VERSION=1.2.0
 
-NEED_LIBASSUAN_VERSION=0.9.1
 NEED_LIBASSUAN_API=1
+NEED_LIBASSUAN_VERSION=0.9.3
 
 NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.0.0
