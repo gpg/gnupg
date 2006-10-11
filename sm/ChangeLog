@@ -1,3 +1,10 @@
+2006-10-11  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (proc_parameters, create_request): Allow for
+	creation directly from a card.
+	* call-agent.c (gpgsm_agent_readkey): New arg FROMCARD.
+	(gpgsm_scd_pksign): New.
+
 2006-10-06  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (AM_CFLAGS): Use PTH version of libassuan.

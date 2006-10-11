@@ -236,7 +236,7 @@ parse_hexstring (assuan_context_t ctx, const char *string, size_t *len)
 }
 
 /* Parse the keygrip in STRING into the provided buffer BUF.  BUF must
-   provide space for 20 bytes. BUF is not changed if the fucntions
+   provide space for 20 bytes. BUF is not changed if the function
    returns an error. */
 static int
 parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)

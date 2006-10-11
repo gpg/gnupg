@@ -271,6 +271,84 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
 }
 
 
+/* Call the scdaemon to do a sign operation using the key identified by
+   the hex string KEYID. */
+int
+gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
+                  unsigned char *digest, size_t digestlen, int digestalgo,
+                  unsigned char **r_buf, size_t *r_buflen )
+{
+  int rc, i;
+  char *p, line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  size_t len;
+  const char *hashopt;
+  unsigned char *sigbuf;
+  size_t sigbuflen;
+
+  *r_buf = NULL;
+
+  switch(digestalgo)
+    {
+    case GCRY_MD_SHA1:  hashopt = "--hash=sha1"; break;
+    case GCRY_MD_RMD160:hashopt = "--hash=rmd160"; break;
+    case GCRY_MD_MD5:   hashopt = "--hash=md5"; break;
+    case GCRY_MD_SHA256:hashopt = "--hash=sha256"; break;
+    default: 
+      return gpg_error (GPG_ERR_DIGEST_ALGO);
+    }
+
+  rc = start_agent (ctrl);
+  if (rc)
+    return rc;
+
+  if (digestlen*2 + 50 > DIM(line))
+    return gpg_error (GPG_ERR_GENERAL);
+
+  p = stpcpy (line, "SCD SETDATA " );
+  for (i=0; i < digestlen ; i++, p += 2 )
+    sprintf (p, "%02X", digest[i]);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return rc;
+
+  init_membuf (&data, 1024);
+
+  snprintf (line, DIM(line)-1, "SCD PKSIGN %s %s", hashopt, keyid);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (agent_ctx, line,
+                        membuf_data_cb, &data, NULL, NULL, NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return rc;
+    }
+  sigbuf = get_membuf (&data, &sigbuflen);
+
+  /* Create an S-expression from it which is formatted like this:
+     "(7:sig-val(3:rsa(1:sSIGBUFLEN:SIGBUF)))" Fixme: If a card ever
+     creates non-RSA keys we need to change things. */
+  *r_buflen = 21 + 11 + sigbuflen + 4;
+  p = xtrymalloc (*r_buflen);
+  *r_buf = (unsigned char*)p;
+  if (!p)
+    {
+      xfree (sigbuf);
+      return 0;
+    }
+  p = stpcpy (p, "(7:sig-val(3:rsa(1:s" );
+  sprintf (p, "%u:", (unsigned int)sigbuflen);
+  p += strlen (p);
+  memcpy (p, sigbuf, sigbuflen);
+  p += sigbuflen;
+  strcpy (p, ")))");
+  xfree (sigbuf);
+
+  assert (gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL));
+  return  0;
+}
+
+
 
 
 /* Handle a CIPHERTEXT inquiry.  Note, we only send the data,
@@ -449,9 +527,12 @@ gpgsm_agent_genkey (ctrl_t ctrl,
 }
 
 
-/* Call the agent to read the public key part for a given keygrip.  */
+/* Call the agent to read the public key part for a given keygrip.  If
+   FROMCARD is true, the key is directly read from the current
+   smartcard. In this case HEXKEYGRIP should be the keyID
+   (e.g. OPENPGP.3). */
 int
-gpgsm_agent_readkey (ctrl_t ctrl, const char *hexkeygrip,
+gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
                      ksba_sexp_t *r_pubkey)
 {
   int rc;
@@ -469,7 +550,8 @@ gpgsm_agent_readkey (ctrl_t ctrl, const char *hexkeygrip,
   if (rc)
     return rc;
 
-  snprintf (line, DIM(line)-1, "READKEY %s", hexkeygrip);
+  snprintf (line, DIM(line)-1, "%sREADKEY %s",
+            fromcard? "SCD ":"", hexkeygrip);
   line[DIM(line)-1] = 0;
 
   init_membuf (&data, 1024);

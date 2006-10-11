@@ -142,6 +142,11 @@ struct app_local_s {
 static unsigned long convert_sig_counter_value (const unsigned char *value,
                                                 size_t valuelen);
 static unsigned long get_sig_counter (app_t app);
+static gpg_error_t do_auth (app_t app, const char *keyidstr,
+                            gpg_error_t (*pincb)(void*, const char *, char **),
+                            void *pincb_arg,
+                            const void *indata, size_t indatalen,
+                            unsigned char **outdata, size_t *outdatalen);
 
 
 
@@ -2088,7 +2093,11 @@ check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
    Note that this function may return the error code
    GPG_ERR_WRONG_CARD to indicate that the card currently present does
    not match the one required for the requested action (e.g. the
-   serial number does not match). */
+   serial number does not match). 
+   
+   As a special feature a KEYIDSTR of "OPENPGP.3" redirects the
+   operation to the auth command.
+*/
 static gpg_error_t 
 do_sign (app_t app, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
@@ -2109,6 +2118,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   int n;
   const char *fpr = NULL;
   unsigned long sigcount;
+  int use_auth = 0;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -2136,6 +2146,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   /* Check whether an OpenPGP card of any version has been requested. */
   if (!strcmp (keyidstr, "OPENPGP.1"))
     ;
+  else if (!strcmp (keyidstr, "OPENPGP.3"))
+    use_auth = 1;
   else if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
     return gpg_error (GPG_ERR_INV_ID);
   else
@@ -2177,6 +2189,14 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   else 
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
   memcpy (data+15, indata, indatalen);
+
+  if (use_auth)
+    {
+      /* This is a hack to redirect to the internal authenticate command.  */
+      return do_auth (app, "OPENPGP.3", pincb, pincb_arg,
+                      data, 35,
+                      outdata, outdatalen);
+    }
 
   sigcount = get_sig_counter (app);
   log_info (_("signatures created so far: %lu\n"), sigcount);

@@ -148,6 +148,7 @@ static int proc_parameters (ctrl_t ctrl,
                             struct reqgen_ctrl_s *outctrl);
 static int create_request (ctrl_t ctrl,
                            struct para_data_s *para,
+                           const char *carddirect,
                            ksba_const_sexp_t public,
                            struct reqgen_ctrl_s *outctrl);
 
@@ -452,15 +453,24 @@ proc_parameters (ctrl_t ctrl,
   ksba_sexp_t public;
   int seq;
   size_t erroff, errlen;
+  char *cardkeyid = NULL;
 
   /* Check that we have all required parameters; */
   assert (get_parameter (para, pKEYTYPE, 0));
 
-  /* We can only use RSA for now.  There is a with pkcs-10 on how to
-     use ElGamal because it is expected that a PK algorithm can always
-     be used for signing. */
+  /* We can only use RSA for now.  There is a problem with pkcs-10 on
+     how to use ElGamal because it is expected that a PK algorithm can
+     always be used for signing. Another problem is that on-card
+     generated encryption keys may not be used for signing.  */
   i = get_parameter_algo (para, pKEYTYPE);
-  if (i < 1 || i != GCRY_PK_RSA )
+  if (!i && (s = get_parameter_value (para, pKEYTYPE, 0)) && *s)
+    {
+      /* Hack to allow creation of certificates directly from a smart
+         card.  For example: "Key-Type: card:OPENPGP.3".  */
+      if (!strncmp (s, "card:", 5) && s[5])
+        cardkeyid = xtrystrdup (s+5);
+    }
+  if ( (i < 1 || i != GCRY_PK_RSA) && !cardkeyid )
     {
       r = get_parameter (para, pKEYTYPE, 0);
       log_error (_("line %d: invalid algorithm\n"), r->lnr);
@@ -472,18 +482,22 @@ proc_parameters (ctrl_t ctrl,
     nbits = 1024;
   else
     nbits = get_parameter_uint (para, pKEYLENGTH);
-  if (nbits < 1024 || nbits > 4096)
+  if ((nbits < 1024 || nbits > 4096) && !cardkeyid)
     {
       /* The BSI specs dated 2002-11-25 don't allow lengths below 1024. */
       r = get_parameter (para, pKEYLENGTH, 0);
       log_error (_("line %d: invalid key length %u (valid are %d to %d)\n"),
                  r->lnr, nbits, 1024, 4096);
+      xfree (cardkeyid);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
     
   /* Check the usage. */
   if (parse_parameter_usage (para, pKEYUSAGE))
-    return gpg_error (GPG_ERR_INV_PARAMETER);
+    {
+      xfree (cardkeyid);
+      return gpg_error (GPG_ERR_INV_PARAMETER);
+    }
 
   /* Check that there is a subject name and that this DN fits our
      requirements. */
@@ -491,6 +505,7 @@ proc_parameters (ctrl_t ctrl,
     {
       r = get_parameter (para, pNAMEDN, 0);
       log_error (_("line %d: no subject name given\n"), r->lnr);
+      xfree (cardkeyid);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
   err = ksba_dn_teststr (s, 0, &erroff, &errlen);
@@ -504,6 +519,7 @@ proc_parameters (ctrl_t ctrl,
         log_error (_("line %d: invalid subject name `%s' at pos %d\n"),
                    r->lnr, s, erroff);
 
+      xfree (cardkeyid);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
 
@@ -518,19 +534,32 @@ proc_parameters (ctrl_t ctrl,
         {
           r = get_parameter (para, pNAMEEMAIL, seq);
           log_error (_("line %d: not a valid email address\n"), r->lnr);
+          xfree (cardkeyid);
           return gpg_error (GPG_ERR_INV_PARAMETER);
         }
     }
 
-  s = get_parameter_value (para, pKEYGRIP, 0);
-  if (s) /* Use existing key.  */
+  if (cardkeyid) /* Take the key from the current smart card. */
     {
-      rc = gpgsm_agent_readkey (ctrl, s, &public);
+      rc = gpgsm_agent_readkey (ctrl, 1, cardkeyid, &public);
+      if (rc)
+        {
+          r = get_parameter (para, pKEYTYPE, 0);
+          log_error (_("line %d: error reading key `%s' from card: %s\n"),
+                     r->lnr, cardkeyid, gpg_strerror (rc));
+          xfree (cardkeyid);
+          return rc;
+        }
+    }
+  else if ((s=get_parameter_value (para, pKEYGRIP, 0))) /* Use existing key.*/
+    {
+      rc = gpgsm_agent_readkey (ctrl, 0, s, &public);
       if (rc)
         {
           r = get_parameter (para, pKEYTYPE, 0);
           log_error (_("line %d: error getting key by keygrip `%s': %s\n"),
                      r->lnr, s, gpg_strerror (rc));
+          xfree (cardkeyid);
           return rc;
         }
     }
@@ -546,12 +575,14 @@ proc_parameters (ctrl_t ctrl,
           r = get_parameter (para, pKEYTYPE, 0);
           log_error (_("line %d: key generation failed: %s\n"),
                      r->lnr, gpg_strerror (rc));
+          xfree (cardkeyid);
           return rc;
         }
     }
 
-  rc = create_request (ctrl, para, public, outctrl);
+  rc = create_request (ctrl, para, cardkeyid, public, outctrl);
   xfree (public);
+  xfree (cardkeyid);
 
   return rc;
 }
@@ -560,8 +591,10 @@ proc_parameters (ctrl_t ctrl,
 /* Parameters are checked, the key pair has been created.  Now
    generate the request and write it out */
 static int
-create_request (ctrl_t ctrl,
-                struct para_data_s *para, ksba_const_sexp_t public,
+create_request (ctrl_t ctrl, 
+                struct para_data_s *para, 
+                const char *carddirect,
+                ksba_const_sexp_t public,
                 struct reqgen_ctrl_s *outctrl)
 {
   ksba_certreq_t cr;
@@ -758,11 +791,18 @@ create_request (ctrl_t ctrl,
           for (n=0; n < 20; n++)
             sprintf (hexgrip+n*2, "%02X", grip[n]);
 
-          rc = gpgsm_agent_pksign (ctrl, hexgrip, NULL,
-                                   gcry_md_read(md, GCRY_MD_SHA1), 
-                                   gcry_md_get_algo_dlen (GCRY_MD_SHA1),
-                                   GCRY_MD_SHA1,
-                                   &sigval, &siglen);
+          if (carddirect)
+            rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
+                                     gcry_md_read(md, GCRY_MD_SHA1), 
+                                     gcry_md_get_algo_dlen (GCRY_MD_SHA1),
+                                     GCRY_MD_SHA1,
+                                     &sigval, &siglen);
+          else
+            rc = gpgsm_agent_pksign (ctrl, hexgrip, NULL,
+                                     gcry_md_read(md, GCRY_MD_SHA1), 
+                                     gcry_md_get_algo_dlen (GCRY_MD_SHA1),
+                                     GCRY_MD_SHA1,
+                                     &sigval, &siglen);
           if (rc)
             {
               log_error ("signing failed: %s\n", gpg_strerror (rc));

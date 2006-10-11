@@ -1,3 +1,7 @@
+2006-10-11  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_sign): Redirect to do_auth for OpenPGP.3.
+
 2006-10-06  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (AM_CFLAGS): Use PTH version of libassuan.

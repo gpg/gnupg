@@ -322,12 +322,15 @@ int gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
                         size_t digestlen,
                         int digestalgo,
                         unsigned char **r_buf, size_t *r_buflen);
+int gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
+                      unsigned char *digest, size_t digestlen, int digestalgo,
+                      unsigned char **r_buf, size_t *r_buflen);
 int gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                            ksba_const_sexp_t ciphertext, 
                            char **r_buf, size_t *r_buflen);
 int gpgsm_agent_genkey (ctrl_t ctrl,
                         ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey);
-int gpgsm_agent_readkey (ctrl_t ctrl, const char *hexkeygrip,
+int gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
                          ksba_sexp_t *r_pubkey);
 int gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert,
                            struct rootca_flags_s *rootca_flags);
