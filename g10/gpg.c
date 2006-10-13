@@ -265,6 +265,7 @@ enum cmd_and_opt_values
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
+    oS2KCount,
     oSimpleSKChecksum,                          
     oDisplayCharset,
     oNotDashEscaped,
@@ -523,6 +524,7 @@ static ARGPARSE_OPTS opts[] = {
     { oS2KMode, "s2k-mode", 1, "@"},
     { oS2KDigest, "s2k-digest-algo", 2, "@"},
     { oS2KCipher, "s2k-cipher-algo", 2, "@"},
+    { oS2KCount, "s2k-count", 1, "@"},
     { oSimpleSKChecksum, "simple-sk-checksum", 0, "@"},
     { oCipherAlgo, "cipher-algo", 2, "@"},
     { oDigestAlgo, "digest-algo", 2, "@"},
@@ -1708,6 +1710,31 @@ reopen_std(void)
 #endif /* HAVE_STAT && !HAVE_W32_SYSTEM */
 }
 
+/* Pack an s2k iteration count into the form specified in 2440.  If
+   we're in between valid values, round up. */
+static unsigned char
+encode_s2k_iterations(int iterations)
+{
+  unsigned char c=0,result;
+  unsigned int count;
+
+  if(iterations<=1024)
+    return 0;
+
+  if(iterations>=65011712)
+    return 255;
+
+  /* Need count to be in the range 16-31 */
+  for(count=iterations>>6;count>=32;count>>=1)
+    c++;
+
+  result=(c<<4)|(count-16);
+
+  if(S2K_DECODE_COUNT(result)<iterations)
+    result++;
+
+  return result;
+}
 
 int
 main (int argc, char **argv )
@@ -1800,6 +1827,7 @@ main (int argc, char **argv )
     opt.cert_digest_algo = 0;
     opt.compress_algo = -1; /* defaults to DEFAULT_COMPRESS_ALGO */
     opt.s2k_mode = 3; /* iterated+salted */
+    opt.s2k_count = 96; /* 65536 iterations */
 #ifdef USE_CAST5
     opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
 #else
@@ -2315,6 +2343,9 @@ main (int argc, char **argv )
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = xstrdup(pargs.r.ret_str); break;
 	  case oS2KCipher: s2k_cipher_string = xstrdup(pargs.r.ret_str); break;
+	  case oS2KCount:
+	    opt.s2k_count=encode_s2k_iterations(pargs.r.ret_int);
+	    break;
           case oSimpleSKChecksum: opt.simple_sk_checksum = 1; break;
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */

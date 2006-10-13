@@ -775,7 +775,9 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	    for(i=0; i < 8; i++ )
 		fprintf (listfp, "%02x", k->s2k.salt[i]);
 	    if( s2kmode == 3 )
-		fprintf (listfp, ", count %lu", (ulong)k->s2k.count );
+		fprintf (listfp, ", count %lu (%lu)",
+			 S2K_DECODE_COUNT((ulong)k->s2k.count),
+			 (ulong)k->s2k.count );
 	    fprintf (listfp, "\n");
 	}
     }
