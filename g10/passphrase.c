@@ -1036,11 +1036,11 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    if( create && !pass ) {
 		randomize_buffer(s2k->salt, 8, 1);
 		if( s2k->mode == 3 )
-		    s2k->count = 96; /* 65536 iterations */
+		    s2k->count = opt.s2k_count;
 	    }
 
 	    if( s2k->mode == 3 ) {
-		count = (16ul + (s2k->count & 15)) << ((s2k->count >> 4) + 6);
+		count = S2K_DECODE_COUNT(s2k->count);
 		if( count < len2 )
 		    count = len2;
 	    }
