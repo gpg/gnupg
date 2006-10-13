@@ -1866,6 +1866,13 @@ the passphrase and a 3 (the default) iterates the whole process a
 couple of times. Unless @option{--rfc1991} is used, this mode is also used for
 conventional encryption.
 
+@item --s2k-count @code{n}
+Specify how many times the passphrase mangling is repeated.  This
+value may range between 1024 and 65011712 inclusive, and the default
+is 65536.  Note that not all values in the 1024-65011712 range are
+legal and if an illegal value is selected, GnuPG will round up to the
+nearest legal value.  This option is only meaningful if
+@option{--s2k-mode} is 3.
 
 
 @end table
