@@ -582,6 +582,9 @@ agent_get_confirmation (ctrl_t ctrl,
     }
 
   rc = assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+
   return unlock_pinentry (rc);
 }
 

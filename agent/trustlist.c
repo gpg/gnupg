@@ -479,8 +479,14 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
      button is "the default "Cancel" of the Pinentry. */
   err = agent_get_confirmation (ctrl, desc, _("Correct"), NULL);
   free (desc);
+  /* If the user did not confirmed this, we return cancel here so that
+     gpgsm may stop asking further questions.  We won't do this for
+     the second question of course. */
   if (err)
-    return err;
+    return (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED ? 
+            gpg_err_make (gpg_err_source (err), GPG_ERR_CANCELED) : err);
+
+
 
   if (asprintf (&desc,
                 /* TRANSLATORS: This prompt is shown by the Pinentry

@@ -1170,7 +1170,7 @@ get_passphrase (int promptno)
   char *pw;
   int err;
   const char *desc;
-#ifdef HAVE_LANGINFO_CODESET
+#ifdef ENABLE_NLS
   char *orig_codeset = NULL;
 #endif
   int error_msgno;

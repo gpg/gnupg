@@ -1,3 +1,13 @@
+2006-10-16  Werner Koch  <wk@g10code.com>
+
+	* call-pinentry.c (agent_get_confirmation): Map Cancel code here too.
+	* trustlist.c (agent_marktrusted): Return Cancel instead of
+	Not_Confirmed for the first question.
+
+2006-10-12  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (get_passphrase): Fix if !HAVE_LANGINFO_CODESET.
+
 2006-10-06  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (AM_CFLAGS): Use PTH version of libassuan.
