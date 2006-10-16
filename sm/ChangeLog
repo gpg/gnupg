@@ -1,3 +1,10 @@
+2006-10-16  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (already_asked_marktrusted) 
+	(set_already_asked_marktrusted): New.
+	(gpgsm_validate_chain) <not trusted>: Keep track of certificates
+	we already asked for.
+
 2006-10-11  Werner Koch  <wk@g10code.com>
 
 	* certreqgen.c (proc_parameters, create_request): Allow for

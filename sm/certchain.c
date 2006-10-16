@@ -41,9 +41,53 @@
 #include "i18n.h"
 
 
+/* Object to keep track of certain root certificates. */
+struct marktrusted_info_s
+{
+  struct marktrusted_info_s *next;
+  unsigned char fpr[20];
+};
+static struct marktrusted_info_s *marktrusted_info;
+
+
 static int get_regtp_ca_info (ksba_cert_t cert, int *chainlen);
 
 
+/* This function returns true if we already asked during this session
+   whether the root certificate CERT shall be marked as trusted.  */
+static int
+already_asked_marktrusted (ksba_cert_t cert)
+{
+  unsigned char fpr[20];
+  struct marktrusted_info_s *r;
+
+  gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, fpr, NULL);
+  /* No context switches in the loop! */
+  for (r=marktrusted_info; r; r= r->next)
+    if (!memcmp (r->fpr, fpr, 20))
+      return 1;
+  return 0;
+}
+
+/* Flag certificate CERT as already asked whether it shall be marked
+   as trusted.  */
+static void
+set_already_asked_marktrusted (ksba_cert_t cert)
+{
+ unsigned char fpr[20];
+ struct marktrusted_info_s *r;
+
+ gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, fpr, NULL);
+ for (r=marktrusted_info; r; r= r->next)
+   if (!memcmp (r->fpr, fpr, 20))
+     return; /* Already marked. */
+ r = xtrycalloc (1, sizeof *r);
+ if (!r)
+   return;
+ memcpy (r->fpr, fpr, 20);
+ r->next = marktrusted_info;
+ marktrusted_info = r;
+}
 
 /* If LISTMODE is true, print FORMAT using LISTMODE to FP.  If
    LISTMODE is false, use the string to print an log_info or, if
@@ -883,28 +927,51 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                  expired it does not make much sense to ask the user
                  whether we wants to trust the root certificate.  He
                  should do this only if the certificate under question
-                 will then be usable. */
-              if (!lm && !any_expired)
+                 will then be usable.  We also check whether the agent
+                 is at all enabled to allo marktrusted and don't call
+                 it in this session again if it is not. */
+              if ( !any_expired
+                   && (!lm || !already_asked_marktrusted (subject_cert)))
                 {
+                  static int no_more_questions; /* during this session. */
                   int rc2;
                   char *fpr = gpgsm_get_fingerprint_string (subject_cert,
                                                             GCRY_MD_SHA1);
                   log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
                   xfree (fpr);
-                  rc2 = gpgsm_agent_marktrusted (ctrl, subject_cert);
+                  if (no_more_questions)
+                    rc2 = gpg_error (GPG_ERR_NOT_SUPPORTED);
+                  else
+                    rc2 = gpgsm_agent_marktrusted (ctrl, subject_cert);
                   if (!rc2)
                     {
                       log_info (_("root certificate has now"
                                   " been marked as trusted\n"));
                       rc = 0;
                     }
-                  else 
+                  else if (!lm)
                     {
                       gpgsm_dump_cert ("issuer", subject_cert);
                       log_info ("after checking the fingerprint, you may want "
                                 "to add it manually to the list of trusted "
                                 "certificates.\n");
                     }
+
+                  if (gpg_err_code (rc2) == GPG_ERR_NOT_SUPPORTED)
+                    {
+                      if (!no_more_questions)
+                        log_info (_("interactive marking as trusted "
+                                    "not enabled in gpg-agent\n"));
+                      no_more_questions = 1;
+                    }
+                  else if (gpg_err_code (rc2) == GPG_ERR_CANCELED)
+                    {
+                      log_info (_("interactive marking as trusted "
+                                  "disabled for this session\n"));
+                      no_more_questions = 1;
+                    }
+                  else
+                    set_already_asked_marktrusted (subject_cert);
                 }
             }
           else 
