@@ -47,20 +47,20 @@ gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h no-libgcrypt.c
 
 gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
 gpg2keys_ldap_LDADD = $(LDAPLIBS) $(NETLIBS) \
-                      $(other_libs) $(W32LIBS)
+                      $(other_libs)
 
 gpg2keys_finger_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) \
-                        $(NETLIBS) $(other_libs) $(W32LIBS)
+                        $(NETLIBS) $(other_libs)
 
 if FAKE_CURL
 gpg2keys_curl_SOURCES += curl-shim.c curl-shim.h
 gpg2keys_curl_CPPFLAGS = $(AM_CPPFLAGS)
 gpg2keys_curl_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(DNSLIBS) \
-	              $(other_libs) $(PTH_LIBS) $(W32LIBS)
+	              $(other_libs) 
 gpg2keys_hkp_SOURCES += curl-shim.c curl-shim.h
 gpg2keys_hkp_CPPFLAGS = $(AM_CPPFLAGS)
 gpg2keys_hkp_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(DNSLIBS) \
-	             $(other_libs)  $(PTH_LIBS) $(W32LIBS)
+	             $(other_libs) 
 else
 gpg2keys_curl_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)
 gpg2keys_curl_LDADD = $(LIBCURL) $(GETOPT)

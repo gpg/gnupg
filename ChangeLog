@@ -1,3 +1,9 @@
+2006-10-17  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh <--build-w32>: Test also for a host "mingw32".
+
+	* configure.ac: Removed W32LIBS. Use NETLIBS instead.
+
 2006-10-11  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.92.

@@ -1,3 +1,8 @@
+2006-10-17  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Removed W32LIBS as they are included in NETLIBS.
+	Removed PTH_LIBS.
+
 2006-09-26  Werner Koch  <wk@g10code.com>
 
 	* curl-shim.c: Adjusted for changes in http.c.

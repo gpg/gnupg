@@ -1107,11 +1107,10 @@ GNUPG_CHECK_GNUMAKE
 # Add some extra libs here so that previous tests don't fail for
 # mysterious reasons - the final link step should bail out. 
 if test "$have_w32_system" = yes; then
-   W32LIBS="-lwsock32"
+   NETLIBS="${NETLIBS} -lwsock32"
 fi
 
 AC_SUBST(NETLIBS)
-AC_SUBST(W32LIBS)
 
 
 #

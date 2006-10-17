@@ -1,3 +1,8 @@
+2006-10-17  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpg_agent_LDADD): Link to libcommonpth.
+	(gpg_agent_CFLAGS): New.  This allows to only link this with Pth.
+
 2006-10-16  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (agent_get_confirmation): Map Cancel code here too.

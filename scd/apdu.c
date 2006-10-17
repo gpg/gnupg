@@ -33,9 +33,9 @@
 #include <assert.h>
 #include <signal.h>
 #ifdef USE_GNU_PTH
-# include <pth.h>
 # include <unistd.h>
 # include <fcntl.h>
+# include <pth.h>
 #endif
 
 

@@ -28,9 +28,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
-#ifdef USE_GNU_PTH
-# include <pth.h>
-#endif
+
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -772,11 +770,6 @@ main ( int argc, char **argv)
       log_fatal( _("libksba is too old (need %s, have %s)\n"),
                  NEED_KSBA_VERSION, ksba_check_version (NULL) );
     }
-
-#ifdef HAVE_W32_SYSTEM
-  /* For W32 we need pth.  */
-  pth_init ();
-#endif
 
 
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);

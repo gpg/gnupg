@@ -1,5 +1,8 @@
 2006-10-17  Werner Koch  <wk@g10code.com>
 
+	* gpgsm.c: No need for pth.h.  
+	(main): or to init it. It used to be hack for W32.
+
 	* sign.c (gpgsm_get_default_cert): Changed to return only
 	certificates usable for signing.
 

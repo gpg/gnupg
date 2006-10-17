@@ -20,16 +20,15 @@
 
 ## Process this file with automake to produce Makefile.in
 
-noinst_LIBRARIES = libcommon.a libsimple-pwquery.a libgpgrl.a
+noinst_LIBRARIES = libcommon.a libcommonpth.a libsimple-pwquery.a libgpgrl.a
 noinst_PROGRAMS = $(module_tests)
 TESTS = $(module_tests)
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(KSBA_CFLAGS) \
-            $(PTH_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
-libcommon_a_SOURCES = \
+common_sources = \
 	common-defs.h \
 	util.h i18n.h \
 	errors.h \
@@ -60,6 +59,12 @@ libcommon_a_SOURCES = \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \
 	http.c http.h 
+
+libcommon_a_SOURCES = $(common_sources)
+libcommon_a_CFLAGS = $(AM_CFLAGS) -DWITHOUT_GNU_PTH=1
+
+libcommonpth_a_SOURCES = $(common_sources)
+libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
 
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h

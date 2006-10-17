@@ -44,9 +44,9 @@ scdaemon_SOURCES = \
 	app.c app-common.h app-help.c $(card_apps)
 
 
-scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
+scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommonpth.a ../gl/libgnu.a \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_PTH_LIBS) $(PTH_LIBS) \
-	$(LIBUSB_LIBS) -lgpg-error $(LIBINTL) $(DL_LIBS) $(NETLIBS)
+	$(LIBUSB_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(DL_LIBS) $(NETLIBS)
 
 # Removed for now: We need to decide whether it makes sense to
 # continue it at all, given that gpg has now all required

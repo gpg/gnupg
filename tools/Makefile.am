@@ -33,7 +33,8 @@ sbin_SCRIPTS = addgnupghome
 
 bin_SCRIPTS = gpgsm-gencert.sh
 if HAVE_USTAR
-bin_SCRIPTS += gpg-zip
+# bin_SCRIPTS += gpg-zip
+noinst_SCRIPTS = gpg-zip
 endif
 
 if BUILD_SYMCRYPTRUN
@@ -43,12 +44,12 @@ else
 endif
 
 bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun} \
-	       gpgparsemail gpgsplit
+	       gpgparsemail
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg
 endif
 
-noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert
+noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 
 common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a

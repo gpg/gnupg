@@ -27,8 +27,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(GPG_ERROR_CFLAGS) \
-	    $(PTH_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
@@ -48,9 +47,11 @@ gpg_agent_SOURCES = \
 
 
 common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
+commonpth_libs = ../jnlib/libjnlib.a ../common/libcommonpth.a ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
-gpg_agent_LDADD = $(common_libs) \
+gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
+gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_PTH_LIBS) $(PTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
 
@@ -61,24 +62,19 @@ gpg_protect_tool_SOURCES = \
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
 gpg_protect_tool_LDADD =  $(pwquery_libs) $(common_libs) \
-         $(LIBGCRYPT_LIBS) -lgpg-error $(LIBINTL) $(NETLIBS)
-if HAVE_W32_SYSTEM
-gpg_protect_tool_LDADD += -lwsock32
-endif
+         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
 
 gpg_preset_passphrase_SOURCES = \
 	preset-passphrase.c
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
 gpg_preset_passphrase_LDADD =  $(pwquery_libs) $(common_libs) \
-	 $(LIBGCRYPT_LIBS) -lgpg-error @LIBINTL@ $(NETLIBS)
-if HAVE_W32_SYSTEM
-gpg_preset_passphrase_LDADD += -lwsock32
-endif
+	 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
+
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
-$(PROGRAMS): $(common_libs) $(pwquery_libs)
+$(PROGRAMS): $(common_libs) $(commonpth_libs) $(pwquery_libs)
 
 
 #

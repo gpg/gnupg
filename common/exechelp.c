@@ -29,6 +29,12 @@
 #include <signal.h>
 #include <unistd.h> 
 #include <fcntl.h>
+
+#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
+#undef HAVE_PTH
+#undef USE_GNU_PTH
+#endif
+
 #ifdef USE_GNU_PTH      
 #include <pth.h>
 #endif

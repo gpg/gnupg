@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.9.93
 -------------------------------------------------
 
+ * In --with-validation mode gpgsm will now also ask whether a root
+   certificate should be trusted.
+
+ * Link to Pth only if really necessary.
+
 
 Noteworthy changes in version 1.9.92 (2006-10-11)
 -------------------------------------------------

@@ -51,13 +51,13 @@ YAT2M_OPTIONS = -I $(srcdir) \
 
 myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
                 scdaemon.texi tools.texi
-myman_pages   = gnupg.7 gpg2.1 gpgsm.1 gpg-agent.1 scdaemon.1 gpgv2.1 \
+myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 scdaemon.1 gpgv2.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
 		gpgsm-gencert.sh.1
 
 man_MANS = $(myman_pages)
-
+noinst_MANS = gnupg.7
 
 watchgnupg_SOURCE = gnupg.texi
 
@@ -65,7 +65,7 @@ watchgnupg_SOURCE = gnupg.texi
 CLEANFILES = faq.raw.xref
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
-		 $(myman_pages)
+		 $(myman_pages) gnupg.7
 
 yat2m_SOURCES = yat2m.c
 
@@ -112,7 +112,7 @@ yat2m-stamp: $(myman_sources)
 
 yat2m-stamp: yat2m
 
-$(myman_pages) : yat2m-stamp
+$(myman_pages) gnupg.7 : yat2m-stamp
 	@if test -f $@; then :; else \
             trap 'rm -rf yat2m-stamp yat2m-lock' 1 2 13 15; \
                if mkdir yat2m-lock 2>/dev/null; then \

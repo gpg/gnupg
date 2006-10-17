@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -38,6 +39,11 @@
 #include <errno.h>
 #include <stddef.h>
 #include <assert.h>
+
+#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
+#undef HAVE_PTH
+#undef USE_GNU_PTH
+#endif
 
 #ifdef HAVE_PTH
 # include <pth.h>
@@ -149,7 +155,12 @@ struct estream_internal
     unsigned int eof: 1;
   } indicators;
   unsigned int deallocate_buffer: 1;
+  unsigned int print_err: 1;     /* Error in print_fun_writer.  */
+  int print_errno;               /* Errno from print_fun_writer.  */
+  size_t print_ntotal;           /* Bytes written from in print_fun_writer. */
+  FILE *print_fp;                /* Stdio stream used by print_fun_writer.  */
 };
+
 
 typedef struct estream_internal *estream_internal_t;
 
@@ -916,6 +927,10 @@ es_initialize (estream_t stream,
   stream->intern->func_close = functions.func_close;
   stream->intern->strategy = _IOFBF;
   stream->intern->fd = fd;
+  stream->intern->print_err = 0;
+  stream->intern->print_errno = 0;
+  stream->intern->print_ntotal = 0;
+  stream->intern->print_fp = NULL;
   stream->intern->indicators.err = 0;
   stream->intern->indicators.eof = 0;
   stream->intern->deallocate_buffer = 0;
@@ -934,6 +949,14 @@ es_deinitialize (estream_t stream)
   es_cookie_close_function_t func_close;
   int err, tmp_err;
 
+  if (stream->intern->print_fp)
+    {
+      int save_errno = errno;
+      fclose (stream->intern->print_fp);
+      stream->intern->print_fp = NULL;
+      errno = save_errno;
+    }
+
   func_close = stream->intern->func_close;
 
   err = 0;
@@ -941,6 +964,7 @@ es_deinitialize (estream_t stream)
     SET_UNLESS_NONZERO (err, tmp_err, es_flush (stream));
   if (func_close)
     SET_UNLESS_NONZERO (err, tmp_err, (*func_close) (stream->intern->cookie));
+
   
   return err;
 }
@@ -1625,13 +1649,80 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
 }
 
 
+/* Helper for esprint. */
+#if defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN)
+static int 
+print_fun_writer (void *cookie_arg, const char *buffer, size_t size)
+{
+  estream_t stream = cookie_arg;
+  size_t nwritten;
+  
+  /* We don't return an error but let es_print check whether an error
+     has occured.  Internally we skip everything after an error. */
+  if (!stream->intern->print_err)
+    {
+      if (es_writen (stream, buffer, size, &nwritten))
+        {
+          stream->intern->print_err = 1;
+          stream->intern->print_errno = errno;
+        }
+      else
+        stream->intern->print_ntotal += nwritten;
+    }
+  return 0;
+}
+#endif /* HAVE_FOPENCOOKIE || HAVE_FUNOPEN */
+
+
+/* The core of our printf function.  This is called in locked state. */
 static int
 es_print (estream_t ES__RESTRICT stream,
 	  const char *ES__RESTRICT format, va_list ap)
 {
+#if defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN)
+
+  if (!stream->intern->print_fp)
+    {
+#ifdef HAVE_FOPENCOOKIE
+      {
+        cookie_io_functions_t io = { NULL };
+        io.write = print_fun_writer;
+        
+        stream->intern->print_fp = fopencookie (stream, "w", io);
+      }
+#else /*!HAVE_FOPENCOOKIE*/
+      stream->intern->print_fp = funopen (stream, NULL,
+                                          print_fun_writer, NULL, NULL);
+#endif /*!HAVE_FOPENCOOKIE*/
+      if (!stream->intern->print_fp)
+        return -1;
+    }
+
+  stream->intern->print_err = 0;
+  stream->intern->print_errno = 0;
+  stream->intern->print_ntotal = 0;
+
+  if ( vfprintf (stream->intern->print_fp, format, ap) < 0 
+       || fflush (stream->intern->print_fp) )
+    {
+      stream->intern->print_errno = errno;
+      stream->intern->print_err = 1;
+      fclose (stream->intern->print_fp);
+      stream->intern->print_fp = NULL;
+    }
+  if (stream->intern->print_err)
+    {
+      errno = stream->intern->print_errno;
+      return -1;
+    }
+
+  return (int)stream->intern->print_ntotal;
+  
+#else /* No funopen or fopencookie. */
+  
   char data[BUFFER_BLOCK_SIZE];
-  size_t bytes_written;
   size_t bytes_read;
+  size_t bytes_written;
   FILE *tmp_stream;
   int err;
 
@@ -1675,11 +1766,11 @@ es_print (estream_t ES__RESTRICT stream,
     goto out;
 
  out:
-
   if (tmp_stream)
     fclose (tmp_stream);
 
   return err ? -1 : bytes_written;
+#endif /* no funopen or fopencookie */
 }
 
 

@@ -1,3 +1,12 @@
+2006-10-17  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (scdaemon_LDADD): Link against libcommonpth.
+
+2006-10-12  Werner Koch  <wk@g10code.com>
+
+	* apdu.c: Include pth.h after unistd.h for the sake of newer Pth
+	versions.
+
 2006-10-11  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_sign): Redirect to do_auth for OpenPGP.3.

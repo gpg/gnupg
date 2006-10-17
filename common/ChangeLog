@@ -1,3 +1,13 @@
+2006-10-17  Werner Koch  <wk@g10code.com>
+
+	* estream.c (struct estream_internal, es_initialize) 
+	(es_deinitialize, print_fun_writer, es_print): New and modified
+	functions to avoid tempfiles for printf style printing. 
+
+	* Makefile.am (libcommonpth_a_SOURCES): New. We now build a secon
+	version of the library with explicit Pth support.
+	* exechelp.c, estream.c: Make use of WITHOUT_GNU_PTH.
+
 2006-10-08  Werner Koch  <wk@g10code.com>
 
 	* gpgrlhelp.c: Trun all functions into dummies if readline is not
