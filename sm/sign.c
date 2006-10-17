@@ -124,8 +124,8 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, ksba_writer_t writer)
 }
 
 
-/* Get the default certificate which is defined as the first one our
-   keyDB returns and has a secret key available. */
+/* Get the default certificate which is defined as the first cabable
+   of signing our keyDB returns and has a secret key available. */
 int
 gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
 {
@@ -153,20 +153,23 @@ gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
           keydb_release (hd);
           return rc;
         }
-      
-      p = gpgsm_get_keygrip_hexstring (cert);
-      if (p)
+
+      if (!gpgsm_cert_use_sign_p (cert))
         {
-          if (!gpgsm_agent_havekey (ctrl, p))
+          p = gpgsm_get_keygrip_hexstring (cert);
+          if (p)
             {
+              if (!gpgsm_agent_havekey (ctrl, p))
+                {
+                  xfree (p);
+                  keydb_release (hd);
+                  *r_cert = cert;
+                  return 0; /* got it */
+                }
               xfree (p);
-              keydb_release (hd);
-              *r_cert = cert;
-              return 0; /* got it */
             }
-          xfree (p);
         }
-    
+
       ksba_cert_release (cert); 
       cert = NULL;
     }

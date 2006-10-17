@@ -1,3 +1,8 @@
+2006-10-17  Werner Koch  <wk@g10code.com>
+
+	* sign.c (gpgsm_get_default_cert): Changed to return only
+	certificates usable for signing.
+
 2006-10-16  Werner Koch  <wk@g10code.com>
 
 	* certchain.c (already_asked_marktrusted) 
