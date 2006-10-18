@@ -159,7 +159,7 @@ do_fingerprint_md_sk( PKT_secret_key *sk )
 u32
 v3_keyid (gcry_mpi_t a, u32 *ki)
 {
-  byte *buffer;
+  byte *buffer, *p;
   size_t nbytes;
 
   if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0, &nbytes, a ))
@@ -172,8 +172,10 @@ v3_keyid (gcry_mpi_t a, u32 *ki)
     ki[0] = ki[1] = 0;
   else 
     {
-      memcpy (ki+0, buffer+nbytes-8, 4);
-      memcpy (ki+1, buffer+nbytes-4, 4);
+      p = buffer + nbytes - 8;
+      ki[0] = (p[0] << 24) | (p[1] <<16) | (p[2] << 8) | p[3];
+      p += 4;
+      ki[1] = (p[0] << 24) | (p[1] <<16) | (p[2] << 8) | p[3];
     }
   xfree (buffer);
   return ki[1];
