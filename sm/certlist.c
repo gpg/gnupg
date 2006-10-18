@@ -57,7 +57,8 @@ cert_usage_p (ksba_cert_t cert, int mode)
   int have_ocsp_signing = 0;
 
   err = ksba_cert_get_ext_key_usages (cert, &extkeyusages);
-  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA
+      || gpg_err_code (err) == GPG_ERR_NO_VALUE)
     err = 0; /* no policy given */
   if (!err)
     {
@@ -116,7 +117,8 @@ cert_usage_p (ksba_cert_t cert, int mode)
 
 
       err = ksba_cert_get_key_usage (cert, &use);
-      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA
+          || gpg_err_code (err) == GPG_ERR_NO_VALUE)
         {
           err = 0;
           if (opt.verbose && mode < 2)
@@ -454,7 +456,8 @@ gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
                          subjectKeyIdentifier matches the requested
                          one. */
                     }
-                  else if (gpg_err_code (rc) == GPG_ERR_NO_DATA)
+                  else if (gpg_err_code (rc) == GPG_ERR_NO_DATA
+                           || gpg_err_code (rc) == GPG_ERR_NO_VALUE)
                     goto nextone;
                 }
             }

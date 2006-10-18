@@ -1,3 +1,13 @@
+2006-10-18  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_cert_raw): Also test for GPG_ERR_NO_VALUE when
+	testing for GPG_ERR_NO_DATA.
+	* certlist.c (cert_usage_p, gpgsm_find_cert): Ditto.
+	* certchain.c (check_cert_policy): Ditto.
+
+	* keylist.c (list_cert_std, list_cert_raw): Print "none" for no
+	chain length available.
+
 2006-10-17  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c: No need for pth.h.  

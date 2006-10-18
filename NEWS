@@ -1,10 +1,17 @@
-Noteworthy changes in version 1.9.93
+Noteworthy changes in version 1.9.93 (2006-10-18)
 -------------------------------------------------
 
  * In --with-validation mode gpgsm will now also ask whether a root
    certificate should be trusted.
 
  * Link to Pth only if really necessary.
+
+ * Fixed a pubring corruption bug in gpg2 occurring when importing
+   signatures or keys with insane lengths.
+
+ * Fixed v3 keyID calculation bug in gpg2.
+
+ * More tweaks for certificates without extensions.
 
 
 Noteworthy changes in version 1.9.92 (2006-10-11)

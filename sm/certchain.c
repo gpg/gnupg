@@ -210,8 +210,9 @@ check_cert_policy (ksba_cert_t cert, int listmode, FILE *fplist)
   int any_critical;
 
   err = ksba_cert_get_cert_policies (cert, &policies);
-  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
-    return 0; /* no policy given */
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA 
+      || gpg_err_code (err) == GPG_ERR_NO_VALUE)
+    return 0; /* No policy given. */
   if (err)
     return err;
 
