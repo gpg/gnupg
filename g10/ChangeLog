@@ -1,3 +1,11 @@
+2006-10-18  Werner Koch  <wk@g10code.com>
+
+	* import.c (import_print_stats): Use log_printf.
+
+	* build-packet.c (do_public_key): Care about mpi_write errors.
+	(do_secret_key, do_pubkey_enc, do_signature): Ditto. 
+	(mpi_write): Print an extra warning on error.
+
 2006-10-17  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (LDADD): Replaced W32LIBS by NETLIBS.

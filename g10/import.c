@@ -299,9 +299,9 @@ import_print_stats (void *hd)
 	    log_info(_("          w/o user IDs: %lu\n"), stats->no_user_id );
 	if( stats->imported || stats->imported_rsa ) {
 	    log_info(_("              imported: %lu"), stats->imported );
-	    if( stats->imported_rsa )
-		fprintf(stderr, "  (RSA: %lu)", stats->imported_rsa );
-	    putc('\n', stderr);
+	    if (stats->imported_rsa)
+              log_printf ("  (RSA: %lu)", stats->imported_rsa );
+	    log_printf ("\n");
 	}
 	if( stats->unchanged )
 	    log_info(_("             unchanged: %lu\n"), stats->unchanged );
@@ -711,7 +711,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	if( uidnode )
 	  print_utf8_string( stderr, uidnode->pkt->pkt.user_id->name,
 			     uidnode->pkt->pkt.user_id->len );
-	putc('\n', stderr);
+	log_printf ("\n");
       }
 
     if( !uidnode )
@@ -1108,7 +1108,7 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	if( uidnode )
 	  print_utf8_string( stderr, uidnode->pkt->pkt.user_id->name,
 			     uidnode->pkt->pkt.user_id->len );
-	putc('\n', stderr);
+	log_printf ("\n");
       }
     stats->secret_read++;
 
