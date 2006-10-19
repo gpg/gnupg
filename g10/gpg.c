@@ -1907,8 +1907,8 @@ main (int argc, char **argv )
 #endif
 
     /* Initialize the secure memory. */
-    gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0);
-    got_secmem = 1; /* FIXME: gcry_control should return an indicator. */
+    if (!gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0))
+      got_secmem = 1; 
 #if defined(HAVE_GETUID) && defined(HAVE_GETEUID)
     /* There should be no way to get to this spot while still carrying
        setuid privs.  Just in case, bomb out if we are. */

@@ -1,5 +1,10 @@
 2006-10-18  Werner Koch  <wk@g10code.com>
 
+	* configure.ac: svn revison magic fixes for old bashs.  Suggested
+	by Alain Guibert.
+
+2006-10-18  Werner Koch  <wk@g10code.com>
+
 	Released 1.9.93.
 
 2006-10-17  Werner Koch  <wk@g10code.com>

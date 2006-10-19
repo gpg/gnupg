@@ -300,6 +300,40 @@ start_pinentry (ctrl_t ctrl)
   return 0;
 }
 
+/* Returns True is the pinentry is currently active. If WAITSECONDS is
+   greater than zero the function will wait for this many seconds
+   before returning.  */
+int
+pinentry_active_p (ctrl_t ctrl, int waitseconds)
+{
+  if (waitseconds > 0)
+    {
+      pth_event_t evt;
+      int rc;
+
+      evt = pth_event (PTH_EVENT_TIME, pth_timeout (waitseconds, 0));
+      if (!pth_mutex_acquire (&entry_lock, 0, evt))
+        {
+          if (pth_event_occurred (evt))
+            rc = gpg_error (GPG_ERR_TIMEOUT);
+          else
+            rc = gpg_error (GPG_ERR_INTERNAL);
+          pth_event_free (evt, PTH_FREE_THIS);
+          return rc;
+        }
+      pth_event_free (evt, PTH_FREE_THIS);
+    }
+  else
+    {
+      if (!pth_mutex_acquire (&entry_lock, 1, NULL))
+        return gpg_error (GPG_ERR_LOCKED);
+    }
+
+  if (!pth_mutex_release (&entry_lock))
+    log_error ("failed to release the entry lock at %d\n", __LINE__);
+  return 0;
+}
+
 
 static int
 getpin_cb (void *opaque, const void *buffer, size_t length)

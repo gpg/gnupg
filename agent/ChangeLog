@@ -1,3 +1,9 @@
+2006-10-19  Werner Koch  <wk@g10code.com>
+
+	* findkey.c (unprotect): Use it to avoid unnecessary calls to
+	agent_askpin.
+	* call-pinentry.c (pinentry_active_p): New.
+
 2006-10-17  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpg_agent_LDADD): Link to libcommonpth.

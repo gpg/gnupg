@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <assert.h>
+#include <pth.h> /* (we use pth_sleep) */
 
 #include "agent.h"
 
@@ -41,7 +42,7 @@ struct try_unprotect_arg_s {
 
 
 /* Write an S-expression formatted key to our key storage.  With FORCE
-   pased as true an existsing key with the given GRIP will get
+   pased as true an existing key with the given GRIP will get
    overwritten.  */
 int
 agent_write_private_key (const unsigned char *grip,
@@ -253,6 +254,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
       void *cache_marker;
       const char *pw;
       
+    retry:
       pw = agent_get_cache (hexgrip, cache_mode, &cache_marker);
       if (pw)
         {
@@ -265,6 +267,29 @@ unprotect (ctrl_t ctrl, const char *desc_text,
               return 0;
             }
           rc  = 0;
+        }
+
+      /* If the pinentry is currently in use, we wait up to 60 seconds
+         for it close and check the cache again.  This solves a common
+         situation where several requests for unprotecting a key have
+         been made but the user is still entering the passphrase for
+         the first request.  Because all requests to agent_askpin are
+         serialized they would then pop up one after the other to
+         request the passphrase - despite that the user has already
+         entered it and is then available in the cache.  This
+         implementation is not race free but in the worst case the
+         user has to enter the passphrase only once more. */
+      if (pinentry_active_p (ctrl, 0))
+        {
+          /* Active - wait */
+          if (!pinentry_active_p (ctrl, 60))
+            {
+              /* We need to give the other thread a chance to actually put
+                 it into the cache. */
+              pth_sleep (1); 
+              goto retry;
+            }
+          /* Timeout - better call pinentry now the plain way. */
         }
     }
   

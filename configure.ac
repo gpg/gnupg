@@ -26,12 +26,12 @@ min_automake_version="1.9.3"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
-m4_define([my_version], [1.9.93])
-m4_define([my_issvn], [no])
+m4_define([my_version], [1.9.94])
+m4_define([my_issvn], [yes])
 
 
-m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
-            || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q}')]))
+m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
+            || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
 AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
         [bug-gnupg@gnupg.org])
 # Set development_version to yes if the minor number is odd or you
@@ -934,21 +934,21 @@ AC_CHECK_DECLS(getpagesize)
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
-AC_CHECK_FUNCS([strerror stpcpy strlwr tcgetattr strtoul mmap])
+AC_CHECK_FUNCS([strerror strlwr tcgetattr mmap])
 AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r])
 AC_CHECK_FUNCS([unsetenv getpwnam getpwuid fcntl ftruncate])
-AC_CHECK_FUNCS([memmove gettimeofday getrusage setrlimit clock_gettime])
+AC_CHECK_FUNCS([gettimeofday getrusage setrlimit clock_gettime])
 AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
 AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe stat getaddrinfo])
-AC_CHECK_FUNCS([ttyname isascii memrchr rand ftello])
+AC_CHECK_FUNCS([ttyname rand ftello])
 
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 #
-# These are needed by libjnlib - fixme: we should have macros for them
+# These are needed by libjnlib - fixme: we should a jnlib.m4
 #
 AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol])
-AC_CHECK_FUNCS([timegm getrusage setrlimit stat setlocale])
+AC_CHECK_FUNCS([memrchr isascii timegm getrusage setrlimit stat setlocale])
 AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen])
 
 #

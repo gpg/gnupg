@@ -205,6 +205,7 @@ int agent_key_available (const unsigned char *grip);
 void initialize_module_query (void);
 void agent_query_dump_state (void);
 void agent_reset_query (ctrl_t ctrl);
+int pinentry_active_p (ctrl_t ctrl, int waitseconds);
 int agent_askpin (ctrl_t ctrl,
                   const char *desc_text, const char *prompt_text,
                   const char *inital_errtext,

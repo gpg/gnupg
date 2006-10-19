@@ -95,6 +95,10 @@ char *strlwr(char *a);
 #ifndef HAVE_STRICMP
 #  define stricmp(a,b)	 strcasecmp( (a), (b) )
 #endif
+#ifndef HAVE_MEMRCHR
+void *memrchr (const void *buffer, int c, size_t n);
+#endif
+
 
 #ifndef HAVE_ISASCII
 static inline int 

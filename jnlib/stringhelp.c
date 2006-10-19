@@ -796,3 +796,15 @@ memicmp( const char *a, const char *b, size_t n )
 #endif
 
 
+#ifndef HAVE_MEMRCHR
+void *
+memrchr (const void *buffer, int c, size_t n)
+{
+  const unsigned char *p = buffer;
+
+  for (p += n; n ; n--)
+    if (*--p == c)
+      return p;
+  return NULL;
+}
+#endif /*HAVE_MEMRCHR*/

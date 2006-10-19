@@ -1,3 +1,8 @@
+2006-10-19  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (get_parameter_algo): Add special case for ELG_E which
+	is not supported by libgcrypt's mapping function.
+
 2006-10-18  Werner Koch  <wk@g10code.com>
 
 	* keyid.c (v3_keyid): Don't use mempcy as we need to hold the

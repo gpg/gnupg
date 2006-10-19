@@ -2176,6 +2176,8 @@ get_parameter_algo( struct para_data_s *para, enum para_name key )
 	return -1;
     if( digitp( r->u.value ) )
 	i = atoi( r->u.value );
+    else if ( !strcmp ( r->u.value, "ELG-E") )
+        i = GCRY_PK_ELG_E;
     else
         i = gcry_pk_map_name (r->u.value);
     if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
