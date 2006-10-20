@@ -1,3 +1,8 @@
+2006-10-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (curl_mrindex_writer): Print a warning if we see
+	HTML coming back from a MR hkp query.
+
 2006-10-17  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Removed W32LIBS as they are included in NETLIBS.
