@@ -68,7 +68,10 @@ curl_mrindex_writer(const void *ptr,size_t size,size_t nmemb,void *stream)
 	 with it on this side of the pipe.  */
       const char *buf=ptr;
       if(buf[0]=='<')
-	swallow=1;
+	{
+	  fprintf(console,"gpgkeys: unsupported response from keyserver\n");
+	  swallow=1;
+	}
 
       checked=1;
     }
