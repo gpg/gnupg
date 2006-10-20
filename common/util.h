@@ -157,6 +157,7 @@ unsigned char *make_simple_sexp_from_hexstr (const char *line,
                                              size_t *nscanned);
 
 /*-- convert.c --*/
+int hex2bin (const char *string, void *buffer, size_t length);
 int hexcolon2bin (const char *string, void *buffer, size_t length);
 char *bin2hex (const void *buffer, size_t length, char *stringbuf);
 char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);

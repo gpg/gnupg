@@ -1140,7 +1140,15 @@ classify_user_id (const char *name,
         mode = KEYDB_SEARCH_MODE_FPR;
       } 
       break;
-           
+
+    case '&': /* Keygrip*/
+      {  
+        if (hex2bin (s+1, desc->u.grip, 20) < 0)
+          return 0; /* Invalid. */
+        mode = KEYDB_SEARCH_MODE_KEYGRIP;
+      } 
+      break;
+
     default:
       if (s[0] == '0' && s[1] == 'x')
         {

@@ -29,6 +29,7 @@
 #include "../jnlib/stringhelp.h" /* ascii_xxxx() */
 
 #include "keybox-defs.h"
+#include <gcrypt.h>
 
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
@@ -456,6 +457,75 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
 }
 
 
+#ifdef KEYBOX_WITH_X509
+/* Return true if the key in BLOB matches the 20 bytes keygrip GRIP.
+   We don't have the keygrips as meta data, thus wen need to parse the
+   certificate. Fixme: We might wat to return proper error codes
+   instead of failing a search for invalid certificates etc.  */
+static int
+blob_x509_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
+{
+  int rc;
+  const unsigned char *buffer;
+  size_t length;
+  size_t cert_off, cert_len;
+  ksba_reader_t reader = NULL;
+  ksba_cert_t cert = NULL;
+  ksba_sexp_t p = NULL;
+  gcry_sexp_t s_pkey;
+  unsigned char array[20];
+  unsigned char *rcp;
+  size_t n;
+  
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 40)
+    return 0; /* Too short. */
+  cert_off = get32 (buffer+8);
+  cert_len = get32 (buffer+12);
+  if (cert_off+cert_len > length)
+    return 0; /* Too short.  */
+
+  rc = ksba_reader_new (&reader);
+  if (rc)
+    return 0; /* Problem with ksba. */
+  rc = ksba_reader_set_mem (reader, buffer+cert_off, cert_len);
+  if (rc)
+    goto failed;
+  rc = ksba_cert_new (&cert);
+  if (rc)
+    goto failed;
+  rc = ksba_cert_read_der (cert, reader);
+  if (rc)
+    goto failed;
+  p = ksba_cert_get_public_key (cert);
+  if (!p)
+    goto failed;
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    goto failed;
+  rc = gcry_sexp_sscan (&s_pkey, NULL, (char*)p, n);
+  if (rc)
+    {
+      gcry_sexp_release (s_pkey);
+      goto failed;
+    }
+  rcp = gcry_pk_get_keygrip (s_pkey, array);
+  gcry_sexp_release (s_pkey);
+  if (!rcp)
+    goto failed; /* Can't calculate keygrip. */
+
+  xfree (p);
+  ksba_cert_release (cert);
+  ksba_reader_release (reader);
+  return !memcmp (array, grip, 20);
+ failed:
+  xfree (p);
+  ksba_cert_release (cert);
+  ksba_reader_release (reader);
+  return 0;
+}
+#endif /*KEYBOX_WITH_X509*/
+
 
 
 /*
@@ -477,6 +547,16 @@ static inline int
 has_fingerprint (KEYBOXBLOB blob, const unsigned char *fpr)
 {
   return blob_cmp_fpr (blob, fpr);
+}
+
+static inline int
+has_keygrip (KEYBOXBLOB blob, const unsigned char *grip)
+{
+#ifdef KEYBOX_WITH_X509
+  if (blob_get_type (blob) == BLOBTYPE_X509)
+    return blob_x509_has_grip (blob, grip);
+#endif
+  return 0;
 }
 
 
@@ -807,6 +887,10 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
             case KEYDB_SEARCH_MODE_FPR:
             case KEYDB_SEARCH_MODE_FPR20:
               if (has_fingerprint (blob, desc[n].u.fpr))
+                goto found;
+              break;
+            case KEYDB_SEARCH_MODE_KEYGRIP:
+              if (has_keygrip (blob, desc[n].u.grip))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_FIRST: 

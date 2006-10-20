@@ -1,3 +1,10 @@
+2006-10-20  Werner Koch  <wk@g10code.com>
+
+	* keybox-search.c (blob_x509_has_grip, has_keygrip): New.
+	(keybox_search): Implement new search mode.
+	* keybox-search-desc.h (KEYDB_SEARCH_MODE_KEYGRIP): New.
+	(keydb_search_desc): New member GRIP.
+
 2006-09-20  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am ($(PROGRAMS): New.

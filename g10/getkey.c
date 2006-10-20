@@ -578,6 +578,7 @@ seckey_available( u32 *keyid )
  *   Words are delimited by white space or "()<>[]{}.@-+_,;/&!"
  *   (note that you can't search for these characters). Compare
  *   is not case sensitive.
+ * - If the userid starts with a '&' a 40 hex digits keygrip is expected.
  */
 
 int
@@ -644,7 +645,7 @@ classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
 #endif
 
 	case '#':  /* local user id */
-            return 0; /* This is now obsolete and van't not be used anymore*/
+            return 0; /* This is now obsolete and can't not be used anymore*/
         
         case ':': /*Unified fingerprint */
             {  
@@ -669,6 +670,9 @@ classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
             } 
             break;
            
+	case '&':  /* keygrip */
+          return 0; /* Not yet implememted. */
+
 	default:
 	    if (s[0] == '0' && s[1] == 'x') {
 		hexprefix = 1;

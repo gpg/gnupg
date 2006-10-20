@@ -131,6 +131,17 @@ RFC-2253 encoded DN of the issuer. See note above.
 @end example
 @end cartouche
 
+@item By keygrip
+This is indicated by an ampersand followed by the 40 hex digits of a
+keygrip.  @command{gpgsm} prints the keygrip when using the command
+@option{--dump-cert}.  It does not yet work for OpenPGP keys.
+
+@cartouche
+@example
+&D75F22C3F86E355877348498CDC92BD21010A480
+@end example
+@end cartouche
+
 
 @item By substring match.
 This is the default mode but applications may want to explicitly

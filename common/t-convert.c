@@ -33,6 +33,93 @@
 
 
 static void
+test_hex2bin (void)
+{
+  static const char *valid[] = {
+    "00112233445566778899aabbccddeeff11223344",
+    "00112233445566778899AABBCCDDEEFF11223344",
+    "00112233445566778899AABBCCDDEEFF11223344 blah",
+    "00112233445566778899AABBCCDDEEFF11223344\tblah",
+    "00112233445566778899AABBCCDDEEFF11223344\nblah",
+    NULL
+  };
+  static const char *invalid[] = {
+    "00112233445566778899aabbccddeeff1122334",
+    "00112233445566778899AABBCCDDEEFF1122334",
+    "00112233445566778899AABBCCDDEEFG11223344",
+    "00 112233445566778899aabbccddeeff11223344",
+    "00:112233445566778899aabbccddeeff11223344",
+    ":00112233445566778899aabbccddeeff11223344",
+    "0:0112233445566778899aabbccddeeff11223344",
+    "00112233445566778899aabbccddeeff11223344:",
+    "00112233445566778899aabbccddeeff112233445",
+    "00112233445566778899aabbccddeeff1122334455",
+    "00112233445566778899aabbccddeeff11223344blah",
+    NULL
+  };
+  static const char *valid2[] = {
+    "00",
+    "00 x",
+    NULL
+  };
+  static const char *invalid2[] = {
+    "",
+    "0",
+    "00:",
+    "00x",
+    " 00",
+    NULL
+  };
+  unsigned char buffer[20];
+  int len;
+  int i;
+  
+  
+  for (i=0; valid[i]; i++)
+    {
+      len = hex2bin (valid[i], buffer, sizeof buffer);
+      if (len < 0)
+        fail (i);
+      if (memcmp (buffer, ("\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa"
+                           "\xbb\xcc\xdd\xee\xff\x11\x22\x33\x44"), 20))
+          fail (i);
+    }
+  if (hex2bin (valid[0], buffer, sizeof buffer) != 40)
+    fail (0);
+  if (hex2bin (valid[2], buffer, sizeof buffer) != 41)
+    fail (0);
+  
+  for (i=0; invalid[i]; i++)
+    {
+      len = hex2bin (invalid[i], buffer, sizeof buffer);
+      if (!(len < 0))
+        fail (i);
+    }
+
+  for (i=0; valid2[i]; i++)
+    {
+      len = hex2bin (valid2[i], buffer, 1);
+      if (len < 0)
+        fail (i);
+      if (memcmp (buffer, "\x00", 1))
+        fail (i);
+    }
+  if (hex2bin (valid2[0], buffer, 1) != 2)
+    fail (0);
+  if (hex2bin (valid2[1], buffer, 1) != 3)
+    fail (0);
+  
+  for (i=0; invalid2[i]; i++)
+    {
+      len = hex2bin (invalid2[i], buffer, 1);
+      if (!(len < 0))
+        fail (i);
+    }
+}
+
+
+
+static void
 test_hexcolon2bin (void)
 {
   static const char *valid[] = {
@@ -195,6 +282,7 @@ int
 main (int argc, char **argv)
 {
   
+  test_hex2bin ();
   test_hexcolon2bin ();
   test_bin2hex ();
   test_bin2hexcolon ();

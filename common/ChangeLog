@@ -1,3 +1,7 @@
+2006-10-20  Werner Koch  <wk@g10code.com>
+
+	* convert.c (hex2bin): New.
+
 2006-10-17  Werner Koch  <wk@g10code.com>
 
 	* estream.c (struct estream_internal, es_initialize) 

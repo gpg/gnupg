@@ -30,6 +30,35 @@
 #define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
 
 
+/* Convert STRING consisting of hex characters into its binary
+   representation and store that at BUFFER.  BUFFER needs to be of
+   LENGTH bytes.  The function check that the STRING will convert
+   exactly to LENGTH bytes. The string is delimited by either end of
+   string or a white space character.  The function returns -1 on
+   error or the length of the parsed string.  */
+int
+hex2bin (const char *string, void *buffer, size_t length)
+{
+  int i;
+  const char *s = string;
+
+  for (i=0; i < length; )
+    {
+      if (!hexdigitp (s) || !hexdigitp (s+1))
+        return -1;           /* Invalid hex digits. */
+      ((unsigned char*)buffer)[i++] = xtoi_2 (s);
+      s += 2;
+    }
+  if (*s && (!isascii (*s) || !isspace (*s)) )
+    return -1;             /* Not followed by Nul or white space.  */
+  if (i != length)
+    return -1;             /* Not of expected length.  */
+  if (*s)
+    s++; /* Skip the delimiter. */
+  return s - string;
+}
+
+
 /* Convert STRING consisting of hex characters into its binary representation
    and store that at BUFFER.  BUFFER needs to be of LENGTH bytes.  The
    function check that the STRING will convert exactly to LENGTH
@@ -71,7 +100,6 @@ hexcolon2bin (const char *string, void *buffer, size_t length)
     s++; /* Skip the delimiter. */
   return s - string;
 }
-
 
 
 static char *

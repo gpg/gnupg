@@ -45,6 +45,7 @@ typedef enum {
   KEYDB_SEARCH_MODE_ISSUER_SN,
   KEYDB_SEARCH_MODE_SN,
   KEYDB_SEARCH_MODE_SUBJECT,
+  KEYDB_SEARCH_MODE_KEYGRIP,
   KEYDB_SEARCH_MODE_FIRST,
   KEYDB_SEARCH_MODE_NEXT
 } KeydbSearchMode;
@@ -59,6 +60,7 @@ struct keydb_search_desc {
     const char *name;
     unsigned char fpr[24];
     unsigned char kid[8]; 
+    unsigned char grip[20];
   } u;
 };
 

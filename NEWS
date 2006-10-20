@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.9.94
 -------------------------------------------------
 
+ * Keys for gpgsm may now be specified using a keygrip.  A keygrip is
+   indicated by a prefixing it with an ampersand.
+
 
 Noteworthy changes in version 1.9.93 (2006-10-18)
 -------------------------------------------------
