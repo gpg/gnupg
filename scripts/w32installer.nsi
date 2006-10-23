@@ -385,11 +385,14 @@ Section "Uninstall"
 
   Delete "$INSTDIR\gpgsplit.exe"
   Delete "$INSTDIR\gpgv.exe"
+
+!ifdef WITH_WINPT
   Delete "$INSTDIR\WinPT.exe"
   Delete "$INSTDIR\PTD.dll"
   Delete "$INSTDIR\Doc\README.winpt.txt"
   Delete "$INSTDIR\Doc\NEWS.winpt.txt"
   Delete "$INSTDIR\Doc\keyserver.conf"
+!endif
 
   Delete "$INSTDIR\Doc\gnupg.man"
   Delete "$INSTDIR\Doc\gpg.man"

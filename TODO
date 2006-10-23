@@ -70,3 +70,5 @@
     no way to issue a cancel when unsing the CLI - this would however
     be a Good Thing when used with mixed symkey/pubkey encrypted
     messages. See comment in mainproc.c:proc_symkey_enc. 
+
+  * Copy the manual from trunk and update the Makefile.

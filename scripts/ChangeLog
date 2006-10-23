@@ -1,3 +1,8 @@
+2006-10-02  Werner Koch  <wk@g10code.com>
+
+	* w32installer.nsi: Don't uninstall winpt if the installer comes
+	without it.  I fixed it despite of what I said in bug 521.
+
 2006-09-13  Werner Koch  <wk@g10code.com>
 
 	* autogen.sh: Better detection of the cross compiler.

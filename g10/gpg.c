@@ -114,6 +114,7 @@ enum cmd_and_opt_values
     aLSignKey,
     aListConfig,
     aGPGConfList,
+    aGPGConfTest,
     aListPackets,
     aEditKey,
     aDeleteKeys,
@@ -420,6 +421,7 @@ static ARGPARSE_OPTS opts[] = {
 #endif
     { aListConfig, "list-config", 256, "@"},
     { aGPGConfList, "gpgconf-list", 256, "@" },
+    { aGPGConfTest, "gpgconf-test", 256, "@" },
     { aListPackets, "list-packets",256, "@"},
     { aExportOwnerTrust, "export-ownertrust", 256, "@"},
     { aImportOwnerTrust, "import-ownertrust", 256, "@"},
@@ -2011,6 +2013,7 @@ main (int argc, char **argv )
 	  case aCheckKeys: 
 	  case aListConfig:
           case aGPGConfList:
+          case aGPGConfTest:
 	  case aListPackets:
 	  case aImport: 
 	  case aFastImport: 
@@ -3184,6 +3187,9 @@ main (int argc, char **argv )
 
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
+
+    if (cmd == aGPGConfTest)
+      g10_exit(0);
 
     /* Add the keyrings, but not for some special commands and not in
        case of "-kvv userid keyring".  Also avoid adding the secret
