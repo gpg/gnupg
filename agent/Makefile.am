@@ -83,7 +83,7 @@ $(PROGRAMS): $(common_libs) $(commonpth_libs) $(pwquery_libs)
 TESTS = t-protect
 
 t_common_ldadd = $(common_libs) \
-                 $(LIBGCRYPT_LIBS) -lgpg-error $(LIBINTL)
+                 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
 
 t_protect_SOURCES = t-protect.c protect.c 
 t_protect_LDADD = $(t_common_ldadd)

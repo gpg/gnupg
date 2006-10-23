@@ -1,3 +1,12 @@
+2006-10-23  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (parse_bag_encrypted_data, parse_bag_data): Allow for
+	a salt of 20 bytes.
+
+2006-10-20  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (t_common_ldadd): Use GPG_ERROR_LIBS instead -o just -l
+
 2006-10-19  Werner Koch  <wk@g10code.com>
 
 	* findkey.c (unprotect): Use it to avoid unnecessary calls to

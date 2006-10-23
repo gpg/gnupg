@@ -497,7 +497,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   const unsigned char *p_start = buffer;
   size_t n = length;
   const char *where;
-  char salt[16];
+  char salt[20];
   size_t saltlen;
   unsigned int iter;
   unsigned char *plain = NULL;
@@ -575,7 +575,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class || ti.tag != TAG_OCTET_STRING
-      || ti.length < 8 || ti.length > 16 )
+      || ti.length < 8 || ti.length > 20 )
     goto bailout;
   saltlen = ti.length;
   memcpy (salt, p, saltlen);
@@ -909,7 +909,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   const unsigned char *p_start = buffer;
   size_t n = length;
   const char *where;
-  char salt[16];
+  char salt[20];
   size_t saltlen;
   unsigned int iter;
   int len;
@@ -997,7 +997,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class || ti.tag != TAG_OCTET_STRING
-      || ti.length < 8 || ti.length > 16)
+      || ti.length < 8 || ti.length > 20)
     goto bailout;
   saltlen = ti.length;
   memcpy (salt, p, saltlen);
