@@ -84,28 +84,52 @@ query_user_menu()
     echo "You selected: $ANSWER" >&2
 }
 
-query_user_menu "Key type" "RSA" "existing key" "OPENPGP.1" "OPENPGP.3"
-case "$ANSWER" in
-  RSA)
-    KEY_TYPE=$ANSWER
-    query_user_menu "Key length" "1024" "2048"
-    KEY_LENGTH=$ANSWER
-    KEY_GRIP=
-    ;;
-  existing*)
-    # User requested to use an existing key; need to set some dummy defaults
-    KEY_TYPE=RSA 
-    KEY_LENGTH=1024
-    query_user "Keygrip "
-    KEY_GRIP=$ANSWER
-    ;;
-  *) 
-    KEY_TYPE="card:$ANSWER"
-    KEY_LENGTH=
-    KEY_GRIP=
-    ;;
-esac
 
+
+KEY_TYPE=""
+while [ -z "$KEY_TYPE" ]; do
+  query_user_menu "Key type" "RSA" "Existing key" "Direct from card"
+  case "$ANSWER" in
+    RSA)
+      KEY_TYPE=$ANSWER
+      query_user_menu "Key length" "1024" "2048"
+      KEY_LENGTH=$ANSWER
+      KEY_GRIP=
+      ;;
+    Existing*)
+      # User requested to use an existing key; need to set some dummy defaults
+      query_user "Keygrip "
+      if [ -n "$ANSWER" ]; then
+        KEY_TYPE=RSA 
+        KEY_LENGTH=1024
+        KEY_GRIP=$ANSWER
+      fi
+      ;;
+    Direct*)
+      tmp=$(echo 'SCD SERIALNO' | gpg-connect-agent | \
+            awk '$2 == "SERIALNO" {print $3}') 
+      if [ -z "$tmp" ]; then
+          echo "No card found" >&2
+      else
+        echo "Card with S/N $tmp found" >&2
+        tmp=$(echo 'SCD LEARN --force' | gpg-connect-agent | \
+              awk '$2 == "KEYPAIRINFO" {printf " %s", $4}')
+        sshid=$(echo 'SCD GETATTR $AUTHKEYID' | gpg-connect-agent | \
+                awk '$2 == "$AUTHKEYID" {print $3}') 
+        [ -n "$sshid" ] && echo "gpg-agent uses $sshid as ssh key" >&2
+        query_user_menu "Select key " $tmp "back"
+        if [ "$ANSWER" != "back" ]; then
+          KEY_TYPE="card:$ANSWER"
+          KEY_LENGTH=
+          KEY_GRIP=
+        fi
+      fi
+      ;;
+    *)
+      exit 1
+      ;;   
+  esac
+done
 
 query_user_menu "Key usage" "sign, encrypt" "sign" "encrypt"
 KEY_USAGE=$ANSWER

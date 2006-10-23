@@ -365,12 +365,13 @@ those of the given name. The new keyring is written to stdout or to the
 file given with option @option{--output}. Use together with
 @option{--armor} to mail those keys.
 
-@item --send-keys
+@item --send-keys @code{key IDs}
 @opindex send-keys
-Same as @option{--export} but sends the keys to a keyserver.  Option
-@option{--keyserver} must be used to give the name of this
-keyserver. Don't send your complete keyring to a keyserver --- select
-only those keys which are new or changed by you.
+Similar to @option{--export} but sends the keys to a keyserver.
+Fingerprints may be used instead of key IDs. Option @option{--keyserver}
+must be used to give the name of this keyserver. Don't send your
+complete keyring to a keyserver --- select only those keys which are new
+or changed by you.
 
 @item --export-secret-keys
 @itemx --export-secret-subkeys

@@ -4,6 +4,11 @@ Noteworthy changes in version 1.9.94
  * Keys for gpgsm may now be specified using a keygrip.  A keygrip is
    indicated by a prefixing it with an ampersand.
 
+ * gpgconf now supports switching the CMS cipher algo (e.g. to AES).
+
+ * New command --gpgconf-test for all major tools. This may be used to
+   check whether the configuration file is sane.
+
 
 Noteworthy changes in version 1.9.93 (2006-10-18)
 -------------------------------------------------

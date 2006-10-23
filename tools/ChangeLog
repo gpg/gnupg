@@ -1,3 +1,11 @@
+2006-10-23  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <gpgsm>: Add --cipher-algo.
+
+2006-10-20  Werner Koch  <wk@g10code.com>
+
+	* gpgsm-gencert.sh: Enhanced the main menu. 
+
 2006-10-12  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpg-zip, gpgsplit): Do not install due to a

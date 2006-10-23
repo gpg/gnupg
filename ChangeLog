@@ -1,3 +1,7 @@
+2006-10-20  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (stowinstall): Add convenience target.
+
 2006-10-18  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: svn revison magic fixes for old bashs.  Suggested

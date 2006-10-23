@@ -1,3 +1,8 @@
+2006-10-20  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Reporder macros for better readability.
+	(gpg2keys_finger_LDADD): Add GPG_ERROR_LIBS.
+
 2006-10-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (curl_mrindex_writer): Print a warning if we see

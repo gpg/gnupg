@@ -2712,7 +2712,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
          general rule for it so we need to decide case by case. */
       if (app->app_local->card_type == CARD_TYPE_BELPIC)
         {
-          /* The eID card has a card number printed on the fron matter
+          /* The eID card has a card number printed on the front matter
              which seems to be a good indication. */
           unsigned char *buffer;
           const unsigned char *p;
@@ -2938,7 +2938,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
 
   /* Due to the fact that the non-repudiation signature on a BELPIC
-     card requires a ver verify immediately before the DSO we set the
+     card requires a verify immediately before the DSO we set the
      MSE before we do the verification.  Other cards might allow to do
      this also but I don't want to break anything, thus we do it only
      for the BELPIC card here. */

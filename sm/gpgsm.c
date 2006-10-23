@@ -90,6 +90,7 @@ enum cmd_and_opt_values {
   aCallProtectTool,
   aPasswd,
   aGPGConfList,
+  aGPGConfTest,
   aDumpKeys,
   aDumpChain,
   aDumpSecretKeys,
@@ -265,6 +266,7 @@ static ARGPARSE_OPTS opts[] = {
                                    N_("invoke gpg-protect-tool")},
     { aPasswd, "passwd",      256, N_("change a passphrase")},
     { aGPGConfList, "gpgconf-list", 256, "@" },
+    { aGPGConfTest, "gpgconf-test", 256, "@" },
 
     { aDumpKeys, "dump-cert", 256, "@"},
     { aDumpKeys, "dump-keys", 256, "@"},
@@ -781,7 +783,7 @@ main ( int argc, char **argv)
   create_dotlock (NULL); /* register locking cleanup */
   i18n_init();
 
-  opt.def_cipher_algoid = "1.2.840.113549.3.7";  /*des-EDE3-CBC*/
+  opt.def_cipher_algoid = "3DES";  /*des-EDE3-CBC*/
 
   opt.homedir = default_homedir ();
 #ifdef HAVE_W32_SYSTEM
@@ -880,6 +882,7 @@ main ( int argc, char **argv)
       switch (pargs.r_opt)
         {
 	case aGPGConfList: 
+	case aGPGConfTest: 
           set_cmd (&cmd, pargs.r_opt);
           do_not_setup_keys = 1;
           nogreeting = 1;
@@ -1265,18 +1268,32 @@ main ( int argc, char **argv)
     }
 
   /* Must do this after dropping setuid, because the mapping functions
-     may try to load an module and we may have disabled an algorithm. */
-  if ( !gcry_cipher_map_name (opt.def_cipher_algoid)
-       || !gcry_cipher_mode_from_oid (opt.def_cipher_algoid))
-    log_error (_("selected cipher algorithm is invalid\n"));
+     may try to load an module and we may have disabled an algorithm.
+     We remap the commonly used algorithms to the OIDs for
+     convenience.  We need to work with the OIDs because they are used
+     to check whether the encryption mode is actually available. */
+  if (!strcmp (opt.def_cipher_algoid, "3DES") )
+    opt.def_cipher_algoid = "1.2.840.113549.3.7";
+  else if (!strcmp (opt.def_cipher_algoid, "AES")
+           || !strcmp (opt.def_cipher_algoid, "AES128"))
+    opt.def_cipher_algoid = "2.16.840.1.101.3.4.1.2";
+  else if (!strcmp (opt.def_cipher_algoid, "AES256") )
+    opt.def_cipher_algoid = "2.16.840.1.101.3.4.1.42";
 
-  if (def_digest_string)
+  if (cmd != aGPGConfList)
     {
-      opt.def_digest_algo = gcry_md_map_name (def_digest_string);
-      xfree (def_digest_string);
-      def_digest_string = NULL;
-      if (our_md_test_algo(opt.def_digest_algo) )
-        log_error (_("selected digest algorithm is invalid\n"));
+      if ( !gcry_cipher_map_name (opt.def_cipher_algoid)
+           || !gcry_cipher_mode_from_oid (opt.def_cipher_algoid))
+        log_error (_("selected cipher algorithm is invalid\n"));
+
+      if (def_digest_string)
+        {
+          opt.def_digest_algo = gcry_md_map_name (def_digest_string);
+          xfree (def_digest_string);
+          def_digest_string = NULL;
+          if (our_md_test_algo(opt.def_digest_algo) )
+            log_error (_("selected digest algorithm is invalid\n"));
+        }
     }
 
   if (log_get_errorcount(0))
@@ -1411,8 +1428,14 @@ main ( int argc, char **argv)
                 GC_OPT_FLAG_NONE );
         printf ("prefer-system-dirmngr:%lu:\n",
                 GC_OPT_FLAG_NONE );
+        printf ("cipher-algo:%lu:\"3DES:\n",
+                GC_OPT_FLAG_DEFAULT );
 
       }
+      break;
+    case aGPGConfTest:
+      /* This is merely a dummy command to test whether the
+         configuration file is valid.  */
       break;
 
     case aServer:

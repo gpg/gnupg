@@ -40,18 +40,17 @@ common_libs = ../gl/libgnu.a  ../common/libcommon.a ../jnlib/libjnlib.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 gpg2keys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h no-libgcrypt.c
-gpg2keys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h no-libgcrypt.c
-gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h no-libgcrypt.c
-gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h no-libgcrypt.c
-
-
 gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
-gpg2keys_ldap_LDADD = $(LDAPLIBS) $(NETLIBS) \
-                      $(other_libs)
+gpg2keys_ldap_LDADD = $(LDAPLIBS) $(NETLIBS) $(other_libs)
 
-gpg2keys_finger_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) \
+gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h no-libgcrypt.c
+gpg2keys_ldap_CPPFLAGS = $(AM_CPPFLAGS)
+gpg2keys_finger_LDADD = $(common_libs) $(GPG_ERROR_LIBS) \
                         $(NETLIBS) $(other_libs)
 
+
+gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h no-libgcrypt.c
+gpg2keys_hkp_SOURCES  = gpgkeys_hkp.c ksutil.c ksutil.h no-libgcrypt.c
 if FAKE_CURL
 gpg2keys_curl_SOURCES += curl-shim.c curl-shim.h
 gpg2keys_curl_CPPFLAGS = $(AM_CPPFLAGS)

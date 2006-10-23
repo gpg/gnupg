@@ -63,6 +63,7 @@ enum cmd_and_opt_values
   
   oNoVerbose = 500,
   aGPGConfList,
+  aGPGConfTest,
   oOptions,
   oDebug,
   oDebugAll,
@@ -97,6 +98,7 @@ enum cmd_and_opt_values
 static ARGPARSE_OPTS opts[] = {
 
   { aGPGConfList, "gpgconf-list", 256, "@" },
+  { aGPGConfTest, "gpgconf-test", 256, "@" },
   
   { 301, NULL, 0, N_("@Options:\n ") },
 
@@ -450,6 +452,7 @@ main (int argc, char **argv )
       switch (pargs.r_opt)
         {
         case aGPGConfList: gpgconf_list = 1; break;
+        case aGPGConfTest: gpgconf_list = 2; break;
         case oQuiet: opt.quiet = 1; break;
         case oVerbose: opt.verbose++; break;
         case oBatch: opt.batch=1; break;
@@ -552,6 +555,8 @@ main (int argc, char **argv )
       log_debug ("... okay\n");
     }
   
+  if (gpgconf_list == 2)
+    scd_exit (0);
   if (gpgconf_list)
     {
       /* List options and default values in the GPG Conf format.  */

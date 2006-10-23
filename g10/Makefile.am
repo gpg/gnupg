@@ -33,11 +33,18 @@ needed_libs = ../gl/libgnu.a ../common/libcommon.a ../jnlib/libjnlib.a
 
 bin_PROGRAMS = gpg2 gpgv2
 
+if ENABLE_BZIP2_SUPPORT
+bzip2_source = compress-bz2.c
+else
+bzip2_source =
+endif
+
+
 common_source =  \
 	      gpg.h             \
 	      build-packet.c	\
 	      compress.c	\
-	      compress-bz2.c	\
+	      $(bzip2_source)	\
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\

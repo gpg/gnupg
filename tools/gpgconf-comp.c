@@ -676,6 +676,9 @@ static gc_option_t gc_options_gpgsm[] =
    { "auto-issuer-key-retrieve", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", "fetch missing issuer certificates",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+   { "cipher-algo", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "|NAME|use cipher algorithm NAME",
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
 
    GC_OPTION_NULL
  };

@@ -110,6 +110,7 @@ enum cmd_and_opt_values
     aLSignKey,
     aListConfig,
     aGPGConfList,
+    aGPGConfTest,
     aListPackets,
     aEditKey,
     aDeleteKeys,
@@ -408,6 +409,7 @@ static ARGPARSE_OPTS opts[] = {
 #endif
     { aListConfig, "list-config", 256, "@"},
     { aGPGConfList, "gpgconf-list", 256, "@" },
+    { aGPGConfTest, "gpgconf-test", 256, "@" },
     { aListPackets, "list-packets",256, "@"},
     { aExportOwnerTrust, "export-ownertrust", 256, "@"},
     { aImportOwnerTrust, "import-ownertrust", 256, "@"},
@@ -2026,6 +2028,7 @@ main (int argc, char **argv )
 	  case aCheckKeys: 
 	  case aListConfig:
           case aGPGConfList:
+          case aGPGConfTest:
 	  case aListPackets:
 	  case aImport: 
 	  case aFastImport: 
@@ -3183,7 +3186,7 @@ main (int argc, char **argv )
        SELinux, this is so that the rings are added to the list of
        secured files. */
     if( ALWAYS_ADD_KEYRINGS 
-        || (cmd != aDeArmor && cmd != aEnArmor) ) 
+        || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest) ) 
       {
         if (ALWAYS_ADD_KEYRINGS
             || (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
@@ -3201,6 +3204,9 @@ main (int argc, char **argv )
       }
     FREE_STRLIST(nrings);
     FREE_STRLIST(sec_nrings);
+
+    if (cmd == aGPGConfTest)
+      g10_exit(0);
 
 
     if( pwfd != -1 )  /* Read the passphrase now. */

@@ -490,10 +490,19 @@ certificate.
 
 @table @gnupgtabopt
 @item --include-certs @var{n}
+@opindex include-certs
 Using @var{n} of -2 includes all certificate except for the root cert,
 -1 includes all certs, 0 does not include any certs, 1 includes only
 the signers cert (this is the default) and all other positive
 values include up to @var{n} certificates starting with the signer cert.
+
+
+@item --cipher-algo @var{oid}
+@opindex cipher-algo
+Use the cipher algorithm with the ASN.1 object identifier @var{oid} for
+encryption.  For convenience the strings @code{3DES}, @code{AES} and
+@code{AES256} may be used instead of their OIDs.  The default is
+@code{3DES} (1.2.840.113549.3.7).
   
 @end table
 

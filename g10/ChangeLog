@@ -1,3 +1,9 @@
+2006-10-23  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): New command --gpgconf-test.
+
+	* Makefile.am (bzip2_source): New.
+
 2006-10-20  Werner Koch  <wk@g10code.com>
 
 	* getkey.c (classify_user_id): Reserve '&' for search by keygrip.
