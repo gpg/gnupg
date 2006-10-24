@@ -61,13 +61,14 @@ common_sources = \
 	http.c http.h 
 
 libcommon_a_SOURCES = $(common_sources)
-libcommon_a_CFLAGS = $(AM_CFLAGS) -DWITHOUT_GNU_PTH=1
+libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_GNU_PTH=1
 
 libcommonpth_a_SOURCES = $(common_sources)
 libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
 
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h
+libsimple_pwquery_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 libgpgrl_a_SOURCES = \
         gpgrlhelp.c
