@@ -44,7 +44,7 @@ gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
 gpg2keys_ldap_LDADD = $(LDAPLIBS) $(NETLIBS) $(other_libs)
 
 gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h no-libgcrypt.c
-gpg2keys_ldap_CPPFLAGS = $(AM_CPPFLAGS)
+gpg2keys_finger_CPPFLAGS = $(AM_CPPFLAGS)
 gpg2keys_finger_LDADD = $(common_libs) $(GPG_ERROR_LIBS) \
                         $(NETLIBS) $(other_libs)
 

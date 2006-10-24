@@ -1,3 +1,8 @@
+2006-10-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (gpg2keys_ldap_CPPFLAGS): Rename second instance to ...
+	(gpg2keys_finger_CPPFLAGS): ... this.
+
 2006-10-20  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Reporder macros for better readability.
