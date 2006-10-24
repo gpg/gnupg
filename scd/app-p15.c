@@ -2868,8 +2868,9 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
   gpg_error_t err;
   int i;
-  unsigned char data[35];   /* Must be large enough for a SHA-1 digest
-                               + the largest OID prefix above. */
+  unsigned char data[36];   /* Must be large enough for a SHA-1 digest
+                               + the largest OID prefix above and also
+                               fit the 36 bytes of md5sha1.  */
   prkdf_object_t prkdf;    /* The private key object. */
   aodf_object_t aodf;      /* The associated authentication object. */
   int no_data_padding = 0; /* True if the card want the data without padding.*/
@@ -2877,7 +2878,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen != 20 && indatalen != 16 && indatalen != 35)
+  if (indatalen != 20 && indatalen != 16 && indatalen != 35 && indatalen != 36)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
@@ -2948,7 +2949,10 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       
       mse[0] = 4;    /* Length of the template. */
       mse[1] = 0x80; /* Algorithm reference tag. */
-      mse[2] = 0x02; /* Algorithm: RSASSA-PKCS1-v1.5 using SHA1. */
+      if (hashalgo == GCRY_MD_USER_TLS_MD5SHA1)
+        mse[2] = 0x01; /* Let card do pkcs#1 0xFF padding. */
+      else
+        mse[2] = 0x02; /* RSASSA-PKCS1-v1.5 using SHA1. */
       mse[3] = 0x84; /* Private key reference tag. */
       mse[4] = prkdf->key_reference_valid? prkdf->key_reference : 0x82;
 
@@ -3118,7 +3122,14 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
 
   /* Prepare the DER object from INDATA. */
-  if (indatalen == 35)
+  if (indatalen == 36)
+    {
+      /* No ASN.1 container used. */
+      if (hashalgo != GCRY_MD_USER_TLS_MD5SHA1)
+        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+      memcpy (data, indata, indatalen);
+    }
+  else if (indatalen == 35)
     {
       /* Alright, the caller was so kind to send us an already
          prepared DER object.  Check that it is what we want and that
@@ -3177,7 +3188,9 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       return err;
     }
 
-  if (no_data_padding)
+  if (hashalgo == GCRY_MD_USER_TLS_MD5SHA1)
+    err = iso7816_compute_ds (app->slot, data, 36, outdata, outdatalen);
+  else if (no_data_padding)
     err = iso7816_compute_ds (app->slot, data+15, 20, outdata, outdatalen);
   else
     err = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
@@ -3200,6 +3213,7 @@ do_auth (app_t app, const char *keyidstr,
 {
   gpg_error_t err;
   prkdf_object_t prkdf;
+  int algo;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -3212,7 +3226,9 @@ do_auth (app_t app, const char *keyidstr,
       log_error ("key %s may not be used for authentication\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
-  return do_sign (app, keyidstr, GCRY_MD_SHA1, pincb, pincb_arg, 
+
+  algo = indatalen == 36? GCRY_MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
+  return do_sign (app, keyidstr, algo, pincb, pincb_arg, 
                   indata, indatalen, outdata, outdatalen);
 }
 

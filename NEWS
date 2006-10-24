@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.9.94
+Noteworthy changes in version 1.9.94 (2006-10-24)
 -------------------------------------------------
 
  * Keys for gpgsm may now be specified using a keygrip.  A keygrip is

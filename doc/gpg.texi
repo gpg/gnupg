@@ -2394,6 +2394,18 @@ source distribution for the details of which configuration items may be
 listed. @option{--list-config} is only usable with
 @option{--with-colons} set.
 
+@item --gpgconf-list
+@opindex gpgconf-list
+This command is simliar to @option{--list-config} but in general only
+internally used by the @command{gpgconf} tool.
+
+@item --gpgconf-test
+@opindex gpgconf-test
+This is more or less dummy action.  However it parses the configuration
+file and returns with failure if the configuraion file would prevent
+@command{gpg} from startup.  Thus it may be used to run a syntax check
+on the configuration file.
+
 @end table
 
 @c *******************************
