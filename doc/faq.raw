@@ -583,7 +583,9 @@ you could search in the mailing list archive.
     GnuPG keeps several files in a special homedir directory. These
     include the options file, pubring.gpg, secring.gpg, trustdb.gpg,
     and others. GnuPG will always create and use these files. On unices,
-    the homedir is usually ~/.gnupg; on Windows "C:\gnupg\".
+    the homedir is usually ~/.gnupg; on Windows it is name "gnupg" and
+    found below the user's application directory.  Run the gpg and
+    pass the option --version to see the name of that directory.
 
     If you want to put your keyrings somewhere else, use the option:
 
@@ -978,7 +980,7 @@ you could search in the mailing list archive.
 
     You are most likely using GnuPG 1.0.2 or older on Windows. That's
     feature isn't yet implemented, but it's a bug not to say it. Newer
-    versions issue a warning. Upgrade to 1.0.4 or newer.
+    versions issue a warning. Upgrade to 1.4.5 or newer.
 
 <Q> I get "gpg: waiting for lock ..."
 

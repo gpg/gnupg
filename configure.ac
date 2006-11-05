@@ -876,7 +876,7 @@ fi
 #
 AC_HEADER_STDC
 AC_CHECK_HEADERS([string.h unistd.h langinfo.h termio.h locale.h getopt.h])
-AC_CHECK_HEADERS([pwd.h inttypes.h])
+AC_CHECK_HEADERS([pty.h pwd.h inttypes.h])
 
 
 #
@@ -1245,7 +1245,7 @@ if test "$have_libassuan" = "no"; then
 ***
 *** You need libassuan with Pth support to build this program.
 *** This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/alpha/libassuan/
+***   ftp://ftp.gnupg.org/gcrypt/libassuan/
 *** (at least version $NEED_LIBASSUAN_VERSION (API $NEED_LIBASSUAN_API) is required).
 ***]])
 fi

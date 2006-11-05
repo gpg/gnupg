@@ -1,3 +1,7 @@
+2006-10-30  Werner Koch  <wk@g10code.com>
+
+	* faq.raw: Minor corrections.
+
 2006-10-12  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (man_MANS): Do not install gnupg.7 due to a conflict

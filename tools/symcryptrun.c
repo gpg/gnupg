@@ -69,10 +69,13 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifdef HAVE_PTY_H
 #include <pty.h>
+#endif
 #include <utmp.h>
 #include <ctype.h>
 #ifdef HAVE_LOCALE_H

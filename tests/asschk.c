@@ -273,10 +273,12 @@ writen (int fd, const char *buffer, size_t length)
    type and store that in recv_type.  The function terminates on a
    communication error.  Returns a pointer into the inputline to the
    first byte of the arguments.  The parsing is very strict to match
-   excalty what we want to send. */
+   exaclty what we want to send. */
 static char *
 read_assuan (int fd)
 {
+  /* FIXME: For general robustness, the pending stuff needs to be
+     associated with FD.  */
   static char pending[MAX_LINELEN];
   static size_t pending_len;
   size_t nleft = sizeof recv_line;
@@ -296,11 +298,18 @@ read_assuan (int fd)
           pending_len = 0;
         }
       else
-        n = read (fd, buf, nleft);
-
-      if (opt_verbose)
+        {
+          do
+            {
+              n = read (fd, buf, nleft);
+            }
+          while (n < 0 && errno == EINTR);
+        }
+      
+      if (opt_verbose && n >= 0 )
 	{
 	  int i;
+
 	  printf ("%s: read \"", __FUNCTION__);
 	  for (i = 0; i < n; i ++)
 	    putc (buf[i], stdout);
@@ -308,11 +317,7 @@ read_assuan (int fd)
 	}
 
       if (n < 0)
-        {
-          if (errno == EINTR)
-            continue;
-          die ("reading fd %d failed: %s", fd, strerror (errno));
-        }
+        die ("reading fd %d failed: %s", fd, strerror (errno));
       else if (!n)
         die ("received incomplete line on fd %d", fd);
       p = buf;

@@ -147,6 +147,9 @@ use_mdc(PK_LIST pk_list,int algo)
   if (gcry_cipher_get_algo_blklen (algo) != 8)
     return 1;
 
+  if (opt.verbose)
+    warn_missing_mdc_from_pklist (pk_list);
+
   return 0; /* No MDC */
 }
 
@@ -521,6 +524,14 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
 	      compliance_failure();
 	    }
 	}
+
+        /* In case 3DES has been selected, print a warning if
+           any key does not have a preference for AES.  This
+           should help to indentify why encrypting to several
+           recipients falls back to 3DES. */
+        if (opt.verbose
+            && cfx.dek->algo == CIPHER_ALGO_3DES)
+          warn_missing_aes_from_pklist (pk_list);
     }
     else {
       if(!opt.expert &&
@@ -533,7 +544,7 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
 
       cfx.dek->algo = opt.def_cipher_algo;
     }
-
+    
     cfx.dek->use_mdc=use_mdc(pk_list,cfx.dek->algo);
 
     /* Only do the is-file-already-compressed check if we are using a
@@ -716,6 +727,14 @@ encrypt_filter( void *opaque, int control,
                      * happen if we do not have any public keys in the list */
 		    efx->cfx.dek->algo = DEFAULT_CIPHER_ALGO;
                 }
+
+                /* In case 3DES has been selected, print a warning if
+                   any key does not have a preference for AES.  This
+                   should help to indentify why encrypting to several
+                   recipients falls back to 3DES. */
+                if (opt.verbose
+                    && efx->cfx.dek->algo == CIPHER_ALGO_3DES)
+                  warn_missing_aes_from_pklist (efx->pk_list);
 	    }
 	    else {
 	      if(!opt.expert &&

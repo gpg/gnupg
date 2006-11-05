@@ -81,6 +81,6 @@ module_tests = t-convert
 t_common_ldadd = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
 
-t_convert_DEPENDENCIES = convert.c
+t_convert_DEPENDENCIES = convert.c libcommon.a
 t_convert_LDADD = $(t_common_ldadd)
 

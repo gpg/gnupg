@@ -1328,9 +1328,10 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request,
 	}
 
 #if 0
-	log_debug("pref mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
+	log_debug("pref mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX (%s)\n",
 	       (ulong)mask[7], (ulong)mask[6], (ulong)mask[5], (ulong)mask[4],
-	     (ulong)mask[3], (ulong)mask[2], (ulong)mask[1], (ulong)mask[0]);
+               (ulong)mask[3], (ulong)mask[2], (ulong)mask[1], (ulong)mask[0],
+               keystr_from_pk (pkr->pk));
 #endif
 	for(i=0; i < 8; i++ )
 	    bits[i] &= mask[i];
@@ -1423,26 +1424,73 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request,
 }
 
 /*
- * Select the MDC flag from the pk_list.  We can only use MDC if all recipients
- * support this feature 
+ * Select the MDC flag from the pk_list.  We can only use MDC if all
+ * recipients support this feature.
  */
 int
 select_mdc_from_pklist (PK_LIST pk_list)
 {
-    PK_LIST pkr;
+  PK_LIST pkr;
 
-    if( !pk_list )
-	return 0;
-
-    for (pkr = pk_list; pkr; pkr = pkr->next) {
-        int mdc;
-
-        if (pkr->pk->user_id) /* selected by user ID */
-            mdc = pkr->pk->user_id->flags.mdc;
-        else
-            mdc = pkr->pk->mdc_feature;
-        if (!mdc)
-            return 0; /* at least one recipient does not support it */
+  if ( !pk_list )
+    return 0;
+  
+  for (pkr = pk_list; pkr; pkr = pkr->next) 
+    {
+      int mdc;
+      
+      if (pkr->pk->user_id) /* selected by user ID */
+        mdc = pkr->pk->user_id->flags.mdc;
+      else
+        mdc = pkr->pk->mdc_feature;
+      if (!mdc)
+        return 0;  /* At least one recipient does not support it. */
     }
-    return 1; /* can be used */
+  return 1; /* Can be used. */
+}
+
+
+/* Print a warning for all keys in PK_LIST missing the MDC feature. */
+void
+warn_missing_mdc_from_pklist (PK_LIST pk_list)
+{
+  PK_LIST pkr;
+  
+  for (pkr = pk_list; pkr; pkr = pkr->next) 
+    {
+      int mdc;
+
+      if (pkr->pk->user_id) /* selected by user ID */
+        mdc = pkr->pk->user_id->flags.mdc;
+      else
+        mdc = pkr->pk->mdc_feature;
+      if (!mdc)
+        log_info (_("Note: key %s has no %s feature\n"),
+                  keystr_from_pk (pkr->pk), "MDC");
+    }
+}
+
+void
+warn_missing_aes_from_pklist (PK_LIST pk_list)
+{
+  PK_LIST pkr;
+ 
+  for (pkr = pk_list; pkr; pkr = pkr->next) 
+    {
+      const prefitem_t *prefs;
+      int i;
+      int gotit = 0;
+
+      prefs = pkr->pk->user_id? pkr->pk->user_id->prefs : pkr->pk->prefs;
+      if (prefs)
+        {
+          for (i=0; !gotit && prefs[i].type; i++ )
+            if (prefs[i].type == PREFTYPE_SYM 
+                && prefs[i].value == CIPHER_ALGO_AES)
+              gotit++;
+	}
+      if (!gotit)
+        log_info (_("Note: key %s has no preference for %s\n"),
+                  keystr_from_pk (pkr->pk), "AES");
+    }
 }
