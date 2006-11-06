@@ -132,6 +132,8 @@ dnl binary
 
 try_extensions=no
 
+try_gettext=yes
+try_dns=yes
 use_rsa=yes
 use_idea=yes
 use_cast5=yes
@@ -148,6 +150,8 @@ disable_keyserver_path=no
 
 AC_ARG_ENABLE(minimal,
    AC_HELP_STRING([--enable-minimal],[build the smallest gpg binary possible]),
+   try_gettext=no
+   try_dns=no
    use_rsa=no
    use_idea=no
    use_cast5=no
@@ -464,7 +468,6 @@ GNUPG_CHECK_USTAR
 
 MPI_OPT_FLAGS=""
 
-try_gettext=yes
 have_dosish_system=no
 need_dlopen=yes
 case "${host}" in
@@ -578,22 +581,24 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 dnl Now try for the resolver functions so we can use DNS for SRV, PKA,
 dnl and CERT.
 
-if test x"$try_hkp" = xyes || test x"$try_http" = xyes ; then
-   AC_ARG_ENABLE(dns-srv,
-      AC_HELP_STRING([--disable-dns-srv],
-   	[disable the use of DNS SRV in HKP and HTTP]),
-      use_dns_srv=$enableval,use_dns_srv=yes)
+if test x"$try_dns" = xyes ; then
+   if test x"$try_hkp" = xyes || test x"$try_http" = xyes ; then
+      AC_ARG_ENABLE(dns-srv,
+         AC_HELP_STRING([--disable-dns-srv],
+      	[disable the use of DNS SRV in HKP and HTTP]),
+         use_dns_srv=$enableval,use_dns_srv=yes)
+   fi
+
+   AC_ARG_ENABLE(dns-pka,
+      AC_HELP_STRING([--disable-dns-pka],
+   	[disable the use of PKA records in DNS]),
+      use_dns_pka=$enableval,use_dns_pka=yes)
+
+   AC_ARG_ENABLE(dns-cert,
+      AC_HELP_STRING([--disable-dns-cert],
+   	[disable the use of CERT records in DNS]),
+      use_dns_cert=$enableval,use_dns_cert=yes)
 fi
-
-AC_ARG_ENABLE(dns-pka,
-   AC_HELP_STRING([--disable-dns-pka],
-	[disable the use of PKA records in DNS]),
-   use_dns_pka=$enableval,use_dns_pka=yes)
-
-AC_ARG_ENABLE(dns-cert,
-   AC_HELP_STRING([--disable-dns-cert],
-	[disable the use of CERT records in DNS]),
-   use_dns_cert=$enableval,use_dns_cert=yes)
 
 if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
   _dns_save_libs=$LIBS

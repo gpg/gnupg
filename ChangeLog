@@ -1,3 +1,8 @@
+2006-11-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: --enable-minimal leaves out gettext and all
+	resolver functions (SRV, PKA, & CERT).
+
 2006-10-02  Werner Koch  <wk@g10code.com>
 
 	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Add case for mingw32
