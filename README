@@ -1,28 +1,22 @@
-                   The GNU Privacy Guard 2
-                  =========================
-                       Version 1.9.x
+                       The GNU Privacy Guard 2
+                      =========================
+                             Version 2.0
 
 
-GnuPG 1.9 is the future version of GnuPG; it is based on the gnupg-1.4
-code and the previous newpg package.  It will very soon lead to a
-GnuPG 2.0 release.
-
-You should use this GnuPG version if you want to use the gpg-agent or
-gpgsm (the S/MIME variant of gpg).  Note that the gpg-agent is also
-helpful when using the standard gpg version (1.4.x).  There are no
-problems installing 1.4 and 1.9 alongside; in fact we suggest to do
-this.
+GnuPG 2.0 is the stable version of GnupG integrating support for
+OpenPGP and S/MIME.  It does not conflict with an installed 1.4
+OpenPGP-only version.
 
 
 BUILD INSTRUCTIONS
 ==================
 
-GnuPG 1.9 depends on the following packages:
+GnuPG 2.0 depends on the following packages:
 
   libgpg-error (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
   libgcrypt    (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
   libksba      (ftp://ftp.gnupg.org/gcrypt/libksba/)
-  libassuan    (ftp://ftp.gnupg.org/gcrypt/alpha/libassuan/)
+  libassuan    (ftp://ftp.gnupg.org/gcrypt/libassuan/)
   
 You also need the pinentry package for most function of GnuPG; however
 it is not a build requirement.  pinentry is available at
