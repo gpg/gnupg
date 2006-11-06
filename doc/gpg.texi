@@ -1864,8 +1864,8 @@ The default algorithm is SHA-1.
 Selects how passphrases are mangled. If @code{n} is 0 a plain
 passphrase (which is not recommended) will be used, a 1 adds a salt to
 the passphrase and a 3 (the default) iterates the whole process a
-couple of times. Unless @option{--rfc1991} is used, this mode is also used for
-conventional encryption.
+number of times (see --s2k-count).  Unless @option{--rfc1991} is used,
+this mode is also used for conventional encryption.
 
 @item --s2k-count @code{n}
 Specify how many times the passphrase mangling is repeated.  This
