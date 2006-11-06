@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-24 16:13+0200\n"
+"POT-Creation-Date: 2006-11-06 10:07+0100\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -84,8 +84,8 @@ msgid "can't create `%s': %s\n"
 msgstr "nu pot crea `%s': %s\n"
 
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
-#: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:193
-#: g10/encode.c:485 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2555
+#: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:196
+#: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2555
 #: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
@@ -175,7 +175,7 @@ msgid "Please re-enter this passphrase"
 msgstr "schimbã fraza-parolã"
 
 #: agent/genkey.c:132 agent/genkey.c:239 agent/protect-tool.c:1221
-#: tools/symcryptrun.c:484
+#: tools/symcryptrun.c:487
 msgid "does not match - try again"
 msgstr ""
 
@@ -205,7 +205,7 @@ msgstr ""
 
 #: agent/gpg-agent.c:115 g10/gpg.c:465 g10/gpgv.c:71 kbx/kbxutil.c:82
 #: scd/scdaemon.c:109 sm/gpgsm.c:335 tools/gpg-connect-agent.c:59
-#: tools/gpgconf.c:63 tools/symcryptrun.c:182
+#: tools/gpgconf.c:63 tools/symcryptrun.c:185
 msgid "verbose"
 msgstr "locvace"
 
@@ -222,7 +222,7 @@ msgstr ""
 msgid "csh-style command output"
 msgstr ""
 
-#: agent/gpg-agent.c:119 tools/symcryptrun.c:185
+#: agent/gpg-agent.c:119 tools/symcryptrun.c:188
 #, fuzzy
 msgid "|FILE|read options from FILE"
 msgstr "|FIªIER|încarcã modulul extensie FIªIER"
@@ -236,7 +236,7 @@ msgid "do not grab keyboard and mouse"
 msgstr ""
 
 #: agent/gpg-agent.c:126 scd/scdaemon.c:122 sm/gpgsm.c:338
-#: tools/symcryptrun.c:184
+#: tools/symcryptrun.c:187
 #, fuzzy
 msgid "use a log file for the server"
 msgstr "cautã pentru chei pe un server de chei"
@@ -294,14 +294,14 @@ msgstr ""
 
 #: agent/gpg-agent.c:238 agent/preset-passphrase.c:96 agent/protect-tool.c:143
 #: scd/scdaemon.c:190 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
-#: tools/gpgconf.c:86 tools/symcryptrun.c:222
+#: tools/gpgconf.c:86 tools/symcryptrun.c:225
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr "Raportaþi bug-uri la <gnupg-bugs@gnu.org>.\n"
 
 #: agent/gpg-agent.c:238 agent/preset-passphrase.c:96 agent/protect-tool.c:143
 #: scd/scdaemon.c:190 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
-#: tools/gpgconf.c:86 tools/symcryptrun.c:222
+#: tools/gpgconf.c:86 tools/symcryptrun.c:225
 msgid ">.\n"
 msgstr ""
 
@@ -333,23 +333,23 @@ msgstr ""
 
 #: agent/gpg-agent.c:507 agent/protect-tool.c:1073 g10/gpg.c:1808
 #: kbx/kbxutil.c:432 scd/scdaemon.c:356 sm/gpgsm.c:767
-#: tools/symcryptrun.c:1053
+#: tools/symcryptrun.c:1056
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:601 g10/gpg.c:2008 scd/scdaemon.c:433 sm/gpgsm.c:864
+#: agent/gpg-agent.c:601 g10/gpg.c:2007 scd/scdaemon.c:433 sm/gpgsm.c:864
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTÃ: nici un fiºier opþiuni implicit `%s'\n"
 
-#: agent/gpg-agent.c:606 agent/gpg-agent.c:1120 g10/gpg.c:2012
-#: scd/scdaemon.c:438 sm/gpgsm.c:868 tools/symcryptrun.c:986
+#: agent/gpg-agent.c:606 agent/gpg-agent.c:1120 g10/gpg.c:2011
+#: scd/scdaemon.c:438 sm/gpgsm.c:868 tools/symcryptrun.c:989
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fiºier opþiuni `%s': %s\n"
 
-#: agent/gpg-agent.c:614 g10/gpg.c:2019 scd/scdaemon.c:446 sm/gpgsm.c:875
+#: agent/gpg-agent.c:614 g10/gpg.c:2018 scd/scdaemon.c:446 sm/gpgsm.c:875
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "citesc opþiuni din `%s'\n"
@@ -500,17 +500,17 @@ msgid ""
 msgstr ""
 "Vã rugãm introduceþi fraza-parolã; aceasta este o propoziþie secretã \n"
 
-#: agent/protect-tool.c:1222 tools/symcryptrun.c:485
+#: agent/protect-tool.c:1222 tools/symcryptrun.c:488
 #, fuzzy
 msgid "Passphrase:"
 msgstr "frazã-parolã incorectã"
 
-#: agent/protect-tool.c:1235 tools/symcryptrun.c:498
+#: agent/protect-tool.c:1235 tools/symcryptrun.c:501
 #, fuzzy, c-format
 msgid "error while asking for the passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolã: %s\n"
 
-#: agent/protect-tool.c:1238 tools/symcryptrun.c:502
+#: agent/protect-tool.c:1238 tools/symcryptrun.c:505
 #, fuzzy
 msgid "cancelled\n"
 msgstr "anulatã"
@@ -1135,11 +1135,11 @@ msgstr "Nu sunt permise comenzi administrare\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comandã invalidã  (încercaþi \"ajutor\")\n"
 
-#: g10/decrypt.c:107 g10/encode.c:850
+#: g10/decrypt.c:107 g10/encode.c:869
 msgid "--output doesn't work for this command\n"
 msgstr "--output nu merge pentru aceastã comandã\n"
 
-#: g10/decrypt.c:162 g10/gpg.c:3821 g10/keyring.c:378 g10/keyring.c:665
+#: g10/decrypt.c:162 g10/gpg.c:3820 g10/keyring.c:378 g10/keyring.c:665
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "nu pot deschide `%s'\n"
@@ -1192,47 +1192,47 @@ msgstr ""
 "folosiþi opþiunea \"--delete-secret-keys\" pentru a o ºterge pe aceasta mai "
 "întâi.\n"
 
-#: g10/encode.c:222 g10/sign.c:1291
+#: g10/encode.c:225 g10/sign.c:1291
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolã: %s\n"
 
-#: g10/encode.c:227
+#: g10/encode.c:230
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "nu pot crea un pachet ESK simetric datoritã modului S2K\n"
 
-#: g10/encode.c:241
+#: g10/encode.c:244
 #, c-format
 msgid "using cipher %s\n"
 msgstr "folosesc cifrul %s\n"
 
-#: g10/encode.c:251 g10/encode.c:547
+#: g10/encode.c:254 g10/encode.c:558
 #, c-format
 msgid "`%s' already compressed\n"
 msgstr "`%s' deja compresat\n"
 
-#: g10/encode.c:302 g10/encode.c:595 g10/sign.c:596
+#: g10/encode.c:305 g10/encode.c:606 g10/sign.c:596
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "AVERTISMENT: `%s' este un fiºier gol\n"
 
-#: g10/encode.c:466
+#: g10/encode.c:469
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
 msgstr ""
 "în modul --pgp2 puteþi cifra numai cu chei RSA de 2048 biþi sau mai puþin\n"
 
-#: g10/encode.c:491
+#: g10/encode.c:494
 #, c-format
 msgid "reading from `%s'\n"
 msgstr "citesc din `%s'\n"
 
-#: g10/encode.c:519
+#: g10/encode.c:522
 msgid ""
 "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
 msgstr ""
 "nu pot folosi cifrul IDEA pentru pentru toate cheile pentru care cifraþi.\n"
 
-#: g10/encode.c:529
+#: g10/encode.c:540
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -1240,7 +1240,7 @@ msgstr ""
 "AVERTISMENT: forþând cifrul simetric %s (%d) violaþi preferinþele "
 "destinatarului\n"
 
-#: g10/encode.c:639 g10/sign.c:968
+#: g10/encode.c:650 g10/sign.c:968
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1249,17 +1249,17 @@ msgstr ""
 "AVERTISMENT: forþând algoritmul de compresie %s (%d) violaþi preferinþele "
 "destinatarului\n"
 
-#: g10/encode.c:725
+#: g10/encode.c:744
 #, c-format
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "forþând cifrul simetric %s (%d) violaþi preferinþele destinatarului\n"
 
-#: g10/encode.c:795 g10/pkclist.c:803 g10/pkclist.c:851
+#: g10/encode.c:814 g10/pkclist.c:803 g10/pkclist.c:851
 #, c-format
 msgid "you may not use %s while in %s mode\n"
 msgstr "nu puteþi folosi %s câtã vreme în modul %s\n"
 
-#: g10/encode.c:822
+#: g10/encode.c:841
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrat pentru: \"%s\"\n"
@@ -1571,7 +1571,7 @@ msgid "|algo [files]|print message digests"
 msgstr "|algo [fiºiere]|afiºeazã rezumate mesaje"
 
 #: g10/gpg.c:428 g10/gpgv.c:69 kbx/kbxutil.c:77 sm/gpgsm.c:278
-#: tools/gpg-connect-agent.c:57 tools/gpgconf.c:60 tools/symcryptrun.c:175
+#: tools/gpg-connect-agent.c:57 tools/gpgconf.c:60 tools/symcryptrun.c:178
 msgid ""
 "@\n"
 "Options:\n"
@@ -1835,408 +1835,408 @@ msgstr "aratã cãruia dintre inelele de chei îi aparþine o cheie enumeratã"
 msgid "show expiration dates during signature listings"
 msgstr "Nici o semnãturã corespunzãtoare în inelul secret\n"
 
-#: g10/gpg.c:1966
+#: g10/gpg.c:1965
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "NOTÃ: fisier opþiuni implicite vechi `%s' ignorat\n"
 
-#: g10/gpg.c:2212 g10/gpg.c:2855 g10/gpg.c:2867
+#: g10/gpg.c:2211 g10/gpg.c:2854 g10/gpg.c:2866
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTÃ: %s nu este pentru o folosire normalã!\n"
 
-#: g10/gpg.c:2225
+#: g10/gpg.c:2224
 #, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr ""
 "extensie cifru `%s' nu a fost încãrcat din cauza permisiunilor nesigure "
 "(unsafe)\n"
 
-#: g10/gpg.c:2380 g10/gpg.c:2392
+#: g10/gpg.c:2379 g10/gpg.c:2391
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "`%s' nu este expirare de semnãturã validã\n"
 
-#: g10/gpg.c:2473
+#: g10/gpg.c:2472
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "`%s' nu este un set de carectere valid\n"
 
 #
-#: g10/gpg.c:2496 g10/gpg.c:2689 g10/keyedit.c:4067
+#: g10/gpg.c:2495 g10/gpg.c:2688 g10/keyedit.c:4067
 msgid "could not parse keyserver URL\n"
 msgstr "nu am putut interpreta URL-ul serverului de chei\n"
 
-#: g10/gpg.c:2508
+#: g10/gpg.c:2507
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: opþiuni server de chei invalide\n"
 
-#: g10/gpg.c:2511
+#: g10/gpg.c:2510
 msgid "invalid keyserver options\n"
 msgstr "opþiuni server de chei invalide\n"
 
-#: g10/gpg.c:2518
+#: g10/gpg.c:2517
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opþiuni import invalide\n"
 
-#: g10/gpg.c:2521
+#: g10/gpg.c:2520
 msgid "invalid import options\n"
 msgstr "opþiuni import invalide\n"
 
-#: g10/gpg.c:2528
+#: g10/gpg.c:2527
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: opþiuni export invalide\n"
 
-#: g10/gpg.c:2531
+#: g10/gpg.c:2530
 msgid "invalid export options\n"
 msgstr "opþiuni export invalide\n"
 
-#: g10/gpg.c:2538
+#: g10/gpg.c:2537
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: opþiuni enumerare invalide\n"
 
-#: g10/gpg.c:2541
+#: g10/gpg.c:2540
 msgid "invalid list options\n"
 msgstr "opþiuni enumerare invalide\n"
 
-#: g10/gpg.c:2549
+#: g10/gpg.c:2548
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2551
+#: g10/gpg.c:2550
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2553
+#: g10/gpg.c:2552
 #, fuzzy
 msgid "show all notations during signature verification"
 msgstr "`%s' nu este expirare de semnãturã validã\n"
 
-#: g10/gpg.c:2555
+#: g10/gpg.c:2554
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2559
+#: g10/gpg.c:2558
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2561
+#: g10/gpg.c:2560
 #, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "URL-ul serverului de chei preferat furnizat este invalid\n"
 
-#: g10/gpg.c:2563
+#: g10/gpg.c:2562
 #, fuzzy
 msgid "show user ID validity during signature verification"
 msgstr "`%s' nu este expirare de semnãturã validã\n"
 
-#: g10/gpg.c:2565
+#: g10/gpg.c:2564
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2567
+#: g10/gpg.c:2566
 msgid "validate signatures with PKA data"
 msgstr ""
 
-#: g10/gpg.c:2569
+#: g10/gpg.c:2568
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 
-#: g10/gpg.c:2576
+#: g10/gpg.c:2575
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: opþiuni verificare invalide\n"
 
-#: g10/gpg.c:2579
+#: g10/gpg.c:2578
 msgid "invalid verify options\n"
 msgstr "opþiuni verificare invalide\n"
 
-#: g10/gpg.c:2586
+#: g10/gpg.c:2585
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "nu pot seta cale-execuþie ca %s\n"
 
-#: g10/gpg.c:2760
+#: g10/gpg.c:2759
 #, fuzzy, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: opþiuni verificare invalide\n"
 
-#: g10/gpg.c:2763
+#: g10/gpg.c:2762
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2844 sm/gpgsm.c:1231
+#: g10/gpg.c:2843 sm/gpgsm.c:1231
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVERTISMENT: programul ar putea crea un fiºier core!\n"
 
-#: g10/gpg.c:2848
+#: g10/gpg.c:2847
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "AVERTISMENT: %s înlocuieºte %s\n"
 
-#: g10/gpg.c:2857
+#: g10/gpg.c:2856
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s nu este permis cu %s!\n"
 
-#: g10/gpg.c:2860
+#: g10/gpg.c:2859
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s nu are sens cu %s!\n"
 
-#: g10/gpg.c:2875
+#: g10/gpg.c:2874
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "nu va rula cu memorie neprotejatã (insecure) pentru cã %s\n"
 
-#: g10/gpg.c:2889
+#: g10/gpg.c:2888
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "puteþi crea doar semnãturi detaºate sau în clar câtã vreme sunteþi în modul "
 "--pgp2\n"
 
-#: g10/gpg.c:2895
+#: g10/gpg.c:2894
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr ""
 "nu puteþi semna ºi cifra în acelaºi timp câtã vreme sunteþi în modul --pgp2\n"
 
-#: g10/gpg.c:2901
+#: g10/gpg.c:2900
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "trebuie sã folosiþi fiºiere (ºi nu un pipe) când lucraþi cu modul --pgp2 "
 "activat.\n"
 
-#: g10/gpg.c:2914
+#: g10/gpg.c:2913
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "cifrarea unui mesaj în modul --pgp2 necesitã un cifru IDEA\n"
 
-#: g10/gpg.c:2980 g10/gpg.c:3004 sm/gpgsm.c:1287
+#: g10/gpg.c:2979 g10/gpg.c:3003 sm/gpgsm.c:1287
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritm cifrare selectat este invalid\n"
 
-#: g10/gpg.c:2986 g10/gpg.c:3010 sm/gpgsm.c:1295
+#: g10/gpg.c:2985 g10/gpg.c:3009 sm/gpgsm.c:1295
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritm rezumat selectat este invalid\n"
 
-#: g10/gpg.c:2992
+#: g10/gpg.c:2991
 msgid "selected compression algorithm is invalid\n"
 msgstr "algoritm compresie selectat este invalid\n"
 
-#: g10/gpg.c:2998
+#: g10/gpg.c:2997
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "algoritm rezumat certificare selectat este invalid\n"
 
-#: g10/gpg.c:3013
+#: g10/gpg.c:3012
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed trebuie sã fie mai mare decât 0\n"
 
-#: g10/gpg.c:3015
+#: g10/gpg.c:3014
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed trebuie sã fie mai mare decât 1\n"
 
-#: g10/gpg.c:3017
+#: g10/gpg.c:3016
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth trebuie sã fie în intervalul de la 1 la 255\n"
 
-#: g10/gpg.c:3019
+#: g10/gpg.c:3018
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "default-cert-level invalid; trebuie sã fie 0, 1, 2 sau 3\n"
 
-#: g10/gpg.c:3021
+#: g10/gpg.c:3020
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "min-cert-level invalid; trebuie sã fie 0, 1, 2 sau 3\n"
 
-#: g10/gpg.c:3024
+#: g10/gpg.c:3023
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTÃ: modul S2K simplu (0) este contraindicat cu insistenþã\n"
 
-#: g10/gpg.c:3028
+#: g10/gpg.c:3027
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "mod S2K invalid; trebuie sã fie 0, 1 sau 3\n"
 
-#: g10/gpg.c:3035
+#: g10/gpg.c:3034
 msgid "invalid default preferences\n"
 msgstr "preferinþe implicite invalide\n"
 
-#: g10/gpg.c:3044
+#: g10/gpg.c:3043
 msgid "invalid personal cipher preferences\n"
 msgstr "preferinþe cifrare personale invalide\n"
 
-#: g10/gpg.c:3048
+#: g10/gpg.c:3047
 msgid "invalid personal digest preferences\n"
 msgstr "preferinþe rezumat personale invalide\n"
 
-#: g10/gpg.c:3052
+#: g10/gpg.c:3051
 msgid "invalid personal compress preferences\n"
 msgstr "preferinþe compresie personale invalide\n"
 
-#: g10/gpg.c:3085
+#: g10/gpg.c:3084
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s nu merge încã cu %s!\n"
 
-#: g10/gpg.c:3132
+#: g10/gpg.c:3131
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "nu puteþi folosi algoritmul de cifrare `%s' câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3137
+#: g10/gpg.c:3136
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "nu puteþi folosi algorimul de rezumat `%s' câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3142
+#: g10/gpg.c:3141
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "nu puteþi folosi algoritmul de compresie `%s' câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3234
+#: g10/gpg.c:3233
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "am eºuat sã iniþializez TrustDB:%s\n"
 
-#: g10/gpg.c:3245
+#: g10/gpg.c:3244
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVERTISMENT: destinatari (-r) furnizaþi fãrã a folosi cifrare cu cheie "
 "publicã\n"
 
-#: g10/gpg.c:3256
+#: g10/gpg.c:3255
 msgid "--store [filename]"
 msgstr "--store [nume_fiºier]"
 
-#: g10/gpg.c:3263
+#: g10/gpg.c:3262
 msgid "--symmetric [filename]"
 msgstr "--symmetric [nume_fiºier]"
 
-#: g10/gpg.c:3265
+#: g10/gpg.c:3264
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "cifrarea simetricã a lui `%s' a eºuat: %s\n"
 
-#: g10/gpg.c:3275
+#: g10/gpg.c:3274
 msgid "--encrypt [filename]"
 msgstr "--encrypt [nume_fiºier]"
 
-#: g10/gpg.c:3288
+#: g10/gpg.c:3287
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [nume_fiºier]"
 
-#: g10/gpg.c:3290
+#: g10/gpg.c:3289
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "nu puteþi folosi --symmetric --encrypt cu --s2k-mode 0\n"
 
-#: g10/gpg.c:3293
+#: g10/gpg.c:3292
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "nu puteþi folosi --symmetric --encrypt câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3311
+#: g10/gpg.c:3310
 msgid "--sign [filename]"
 msgstr "--sign [nume_fiºier]"
 
-#: g10/gpg.c:3324
+#: g10/gpg.c:3323
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nume_fiºier]"
 
-#: g10/gpg.c:3339
+#: g10/gpg.c:3338
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [nume_fiºier]"
 
-#: g10/gpg.c:3341
+#: g10/gpg.c:3340
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "nu puteþi folosi --symmetric --sign --encrypt cu --s2k-mode 0\n"
 
-#: g10/gpg.c:3344
+#: g10/gpg.c:3343
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "nu puteþi folosi --symmetric --sign --encrypt câtã vreme în modul %s\n"
 
-#: g10/gpg.c:3364
+#: g10/gpg.c:3363
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [nume_fiºier]"
 
-#: g10/gpg.c:3373
+#: g10/gpg.c:3372
 msgid "--clearsign [filename]"
 msgstr "--clearsign [nume_fiºier]"
 
-#: g10/gpg.c:3398
+#: g10/gpg.c:3397
 msgid "--decrypt [filename]"
 msgstr "--decrypt [nume_fiºier]"
 
-#: g10/gpg.c:3406
+#: g10/gpg.c:3405
 msgid "--sign-key user-id"
 msgstr "--sign-key id-utilizator"
 
-#: g10/gpg.c:3410
+#: g10/gpg.c:3409
 msgid "--lsign-key user-id"
 msgstr "--lsign-key id-utilizator"
 
-#: g10/gpg.c:3431
+#: g10/gpg.c:3430
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id-utilizator [comenzi]"
 
-#: g10/gpg.c:3516
+#: g10/gpg.c:3515
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "trimitere server de chei eºuatã: %s\n"
 
-#: g10/gpg.c:3518
+#: g10/gpg.c:3517
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "recepþie server de chei eºuatã: %s\n"
 
-#: g10/gpg.c:3520
+#: g10/gpg.c:3519
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "export cheie eºuat: %s\n"
 
-#: g10/gpg.c:3531
+#: g10/gpg.c:3530
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "cãutare server de chei eºuatã: %s\n"
 
-#: g10/gpg.c:3541
+#: g10/gpg.c:3540
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "actualizare server de chei eºuatã: %s\n"
 
-#: g10/gpg.c:3592
+#: g10/gpg.c:3591
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "eliminarea armurii a eºuat: %s\n"
 
-#: g10/gpg.c:3600
+#: g10/gpg.c:3599
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "punerea armurii a eºuat: %s\n"
 
-#: g10/gpg.c:3690
+#: g10/gpg.c:3689
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "algoritm hash invalid `%s'\n"
 
-#: g10/gpg.c:3807
+#: g10/gpg.c:3806
 msgid "[filename]"
 msgstr "[nume_fiºier]"
 
-#: g10/gpg.c:3811
+#: g10/gpg.c:3810
 msgid "Go ahead and type your message ...\n"
 msgstr "Daþi-i drumul ºi scrieþi mesajul ...\n"
 
-#: g10/gpg.c:4122
+#: g10/gpg.c:4121
 msgid "the given certification policy URL is invalid\n"
 msgstr "URL-ul politicii de certificare furnizat este invalid\n"
 
-#: g10/gpg.c:4124
+#: g10/gpg.c:4123
 msgid "the given signature policy URL is invalid\n"
 msgstr "URL-ul politicii de semnãturi furnizat este invalid\n"
 
-#: g10/gpg.c:4157
+#: g10/gpg.c:4156
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "URL-ul serverului de chei preferat furnizat este invalid\n"
 
@@ -5573,6 +5573,16 @@ msgstr "%s: sãritã: cheia publicã este deactivatã\n"
 msgid "no valid addressees\n"
 msgstr "nici un destinatar valid\n"
 
+#: g10/pkclist.c:1468
+#, fuzzy, c-format
+msgid "Note: key %s has no %s feature\n"
+msgstr "cheia %s nu are nici un ID utilizator\n"
+
+#: g10/pkclist.c:1493
+#, fuzzy, c-format
+msgid "Note: key %s has no preference for %s\n"
+msgstr "cheia %s nu are nici un ID utilizator\n"
+
 #: g10/plaintext.c:91
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
@@ -7324,7 +7334,7 @@ msgstr "Semnãturã bunã din \"%s\""
 msgid "                aka"
 msgstr "                aka \"%s\""
 
-#: tools/gpg-connect-agent.c:60 tools/gpgconf.c:64 tools/symcryptrun.c:183
+#: tools/gpg-connect-agent.c:60 tools/gpgconf.c:64 tools/symcryptrun.c:186
 #, fuzzy
 msgid "quiet"
 msgstr "terminã"
@@ -7506,7 +7516,7 @@ msgstr "cheia publicã nu a fost gãsitã"
 msgid "error allocating enough memory: %s\n"
 msgstr "eroare la crearea inelului de chei `%s': %s\n"
 
-#: tools/symcryptrun.c:170
+#: tools/symcryptrun.c:173
 #, fuzzy
 msgid ""
 "@\n"
@@ -7516,162 +7526,162 @@ msgstr ""
 "@Comenzi:\n"
 " "
 
-#: tools/symcryptrun.c:172
+#: tools/symcryptrun.c:175
 #, fuzzy
 msgid "decryption modus"
 msgstr "decriptare OK\n"
 
-#: tools/symcryptrun.c:173
+#: tools/symcryptrun.c:176
 #, fuzzy
 msgid "encryption modus"
 msgstr "decriptare OK\n"
 
-#: tools/symcryptrun.c:177
+#: tools/symcryptrun.c:180
 msgid "tool class (confucius)"
 msgstr ""
 
-#: tools/symcryptrun.c:178
+#: tools/symcryptrun.c:181
 #, fuzzy
 msgid "program filename"
 msgstr "--store [nume_fiºier]"
 
-#: tools/symcryptrun.c:180
+#: tools/symcryptrun.c:183
 msgid "secret key file (required)"
 msgstr ""
 
-#: tools/symcryptrun.c:181
+#: tools/symcryptrun.c:184
 msgid "input file name (default stdin)"
 msgstr ""
 
-#: tools/symcryptrun.c:225
+#: tools/symcryptrun.c:228
 #, fuzzy
 msgid "Usage: symcryptrun [options] (-h for help)"
 msgstr "Folosire: gpg [opþiuni] [fiºiere] (-h pentru ajutor)"
 
-#: tools/symcryptrun.c:228
+#: tools/symcryptrun.c:231
 msgid ""
 "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
 "[options...] COMMAND [inputfile]\n"
 "Call a simple symmetric encryption tool\n"
 msgstr ""
 
-#: tools/symcryptrun.c:310
+#: tools/symcryptrun.c:313
 #, fuzzy, c-format
 msgid "%s on %s aborted with status %i\n"
 msgstr "%s nu este permis cu %s!\n"
 
-#: tools/symcryptrun.c:317
+#: tools/symcryptrun.c:320
 #, fuzzy, c-format
 msgid "%s on %s failed with status %i\n"
 msgstr "fstat pentru `%s' a eºuat în %s: %s\n"
 
-#: tools/symcryptrun.c:343
+#: tools/symcryptrun.c:346
 #, fuzzy, c-format
 msgid "can't create temporary directory `%s': %s\n"
 msgstr "nu pot crea directorul `%s': %s\n"
 
-#: tools/symcryptrun.c:383 tools/symcryptrun.c:400
+#: tools/symcryptrun.c:386 tools/symcryptrun.c:403
 #, fuzzy, c-format
 msgid "could not open %s for writing: %s\n"
 msgstr "nu pot deschide %s: %s\n"
 
-#: tools/symcryptrun.c:411
+#: tools/symcryptrun.c:414
 #, fuzzy, c-format
 msgid "error writing to %s: %s\n"
 msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
-#: tools/symcryptrun.c:418
+#: tools/symcryptrun.c:421
 #, fuzzy, c-format
 msgid "error reading from %s: %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
-#: tools/symcryptrun.c:425 tools/symcryptrun.c:432
+#: tools/symcryptrun.c:428 tools/symcryptrun.c:435
 #, fuzzy, c-format
 msgid "error closing %s: %s\n"
 msgstr "eroare în `%s': %s\n"
 
-#: tools/symcryptrun.c:542
+#: tools/symcryptrun.c:545
 #, fuzzy
 msgid "no --program option provided\n"
 msgstr "nu este suportatã execuþia nici unui program la distanþã\n"
 
-#: tools/symcryptrun.c:548
+#: tools/symcryptrun.c:551
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr ""
 
-#: tools/symcryptrun.c:554
+#: tools/symcryptrun.c:557
 msgid "no --keyfile option provided\n"
 msgstr ""
 
-#: tools/symcryptrun.c:565
+#: tools/symcryptrun.c:568
 msgid "cannot allocate args vector\n"
 msgstr ""
 
-#: tools/symcryptrun.c:583
+#: tools/symcryptrun.c:586
 #, fuzzy, c-format
 msgid "could not create pipe: %s\n"
 msgstr "nu pot crea `%s': %s\n"
 
-#: tools/symcryptrun.c:590
+#: tools/symcryptrun.c:593
 #, fuzzy, c-format
 msgid "could not create pty: %s\n"
 msgstr "nu pot crea `%s': %s\n"
 
-#: tools/symcryptrun.c:606
+#: tools/symcryptrun.c:609
 #, c-format
 msgid "could not fork: %s\n"
 msgstr ""
 
-#: tools/symcryptrun.c:634
+#: tools/symcryptrun.c:637
 #, fuzzy, c-format
 msgid "execv failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
-#: tools/symcryptrun.c:663
+#: tools/symcryptrun.c:666
 #, fuzzy, c-format
 msgid "select failed: %s\n"
 msgstr "stergere keyblock a eºuat: %s\n"
 
-#: tools/symcryptrun.c:680
+#: tools/symcryptrun.c:683
 #, fuzzy, c-format
 msgid "read failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
-#: tools/symcryptrun.c:732
+#: tools/symcryptrun.c:735
 #, fuzzy, c-format
 msgid "pty read failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
-#: tools/symcryptrun.c:784
+#: tools/symcryptrun.c:787
 #, fuzzy, c-format
 msgid "waitpid failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
-#: tools/symcryptrun.c:798
+#: tools/symcryptrun.c:801
 #, c-format
 msgid "child aborted with status %i\n"
 msgstr ""
 
-#: tools/symcryptrun.c:853
+#: tools/symcryptrun.c:856
 #, fuzzy, c-format
 msgid "cannot allocate infile string: %s\n"
 msgstr "nu pot deschide fiºierul: %s\n"
 
-#: tools/symcryptrun.c:866
+#: tools/symcryptrun.c:869
 #, fuzzy, c-format
 msgid "cannot allocate outfile string: %s\n"
 msgstr "nu pot crea fiºier de rezervã `%s': %s\n"
 
-#: tools/symcryptrun.c:1041
+#: tools/symcryptrun.c:1044
 #, c-format
 msgid "either %s or %s must be given\n"
 msgstr ""
 
-#: tools/symcryptrun.c:1061
+#: tools/symcryptrun.c:1064
 msgid "no class provided\n"
 msgstr ""
 
-#: tools/symcryptrun.c:1068
+#: tools/symcryptrun.c:1071
 #, fuzzy, c-format
 msgid "class %s is not supported\n"
 msgstr "algoritm rezumat %d nu este suportat\n"

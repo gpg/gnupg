@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-10-24 16:13+0200\n"
+"POT-Creation-Date: 2006-11-06 10:07+0100\n"
 "PO-Revision-Date: 2005-06-28 00:24+0200\n"
 "Last-Translator: Gaël Quéri <gael@lautre.net>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -84,8 +84,8 @@ msgid "can't create `%s': %s\n"
 msgstr "impossible de créer `%s': %s\n"
 
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
-#: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:193
-#: g10/encode.c:485 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2555
+#: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:196
+#: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2555
 #: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
@@ -178,7 +178,7 @@ msgid "Please re-enter this passphrase"
 msgstr "changer la phrase de passe"
 
 #: agent/genkey.c:132 agent/genkey.c:239 agent/protect-tool.c:1221
-#: tools/symcryptrun.c:484
+#: tools/symcryptrun.c:487
 msgid "does not match - try again"
 msgstr ""
 
@@ -208,7 +208,7 @@ msgstr ""
 
 #: agent/gpg-agent.c:115 g10/gpg.c:465 g10/gpgv.c:71 kbx/kbxutil.c:82
 #: scd/scdaemon.c:109 sm/gpgsm.c:335 tools/gpg-connect-agent.c:59
-#: tools/gpgconf.c:63 tools/symcryptrun.c:182
+#: tools/gpgconf.c:63 tools/symcryptrun.c:185
 msgid "verbose"
 msgstr "bavard"
 
@@ -225,7 +225,7 @@ msgstr ""
 msgid "csh-style command output"
 msgstr ""
 
-#: agent/gpg-agent.c:119 tools/symcryptrun.c:185
+#: agent/gpg-agent.c:119 tools/symcryptrun.c:188
 #, fuzzy
 msgid "|FILE|read options from FILE"
 msgstr "lire les options de `%s'\n"
@@ -239,7 +239,7 @@ msgid "do not grab keyboard and mouse"
 msgstr ""
 
 #: agent/gpg-agent.c:126 scd/scdaemon.c:122 sm/gpgsm.c:338
-#: tools/symcryptrun.c:184
+#: tools/symcryptrun.c:187
 #, fuzzy
 msgid "use a log file for the server"
 msgstr "chercher les clés avec un serveur de clés"
@@ -299,7 +299,7 @@ msgstr ""
 
 #: agent/gpg-agent.c:238 agent/preset-passphrase.c:96 agent/protect-tool.c:143
 #: scd/scdaemon.c:190 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
-#: tools/gpgconf.c:86 tools/symcryptrun.c:222
+#: tools/gpgconf.c:86 tools/symcryptrun.c:225
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr ""
@@ -308,7 +308,7 @@ msgstr ""
 
 #: agent/gpg-agent.c:238 agent/preset-passphrase.c:96 agent/protect-tool.c:143
 #: scd/scdaemon.c:190 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
-#: tools/gpgconf.c:86 tools/symcryptrun.c:222
+#: tools/gpgconf.c:86 tools/symcryptrun.c:225
 msgid ">.\n"
 msgstr ""
 
@@ -340,23 +340,23 @@ msgstr ""
 
 #: agent/gpg-agent.c:507 agent/protect-tool.c:1073 g10/gpg.c:1808
 #: kbx/kbxutil.c:432 scd/scdaemon.c:356 sm/gpgsm.c:767
-#: tools/symcryptrun.c:1053
+#: tools/symcryptrun.c:1056
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:601 g10/gpg.c:2008 scd/scdaemon.c:433 sm/gpgsm.c:864
+#: agent/gpg-agent.c:601 g10/gpg.c:2007 scd/scdaemon.c:433 sm/gpgsm.c:864
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTE: pas de fichier d'options par défaut `%s'\n"
 
-#: agent/gpg-agent.c:606 agent/gpg-agent.c:1120 g10/gpg.c:2012
-#: scd/scdaemon.c:438 sm/gpgsm.c:868 tools/symcryptrun.c:986
+#: agent/gpg-agent.c:606 agent/gpg-agent.c:1120 g10/gpg.c:2011
+#: scd/scdaemon.c:438 sm/gpgsm.c:868 tools/symcryptrun.c:989
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fichier d'options `%s': %s\n"
 
-#: agent/gpg-agent.c:614 g10/gpg.c:2019 scd/scdaemon.c:446 sm/gpgsm.c:875
+#: agent/gpg-agent.c:614 g10/gpg.c:2018 scd/scdaemon.c:446 sm/gpgsm.c:875
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "lire les options de `%s'\n"
@@ -506,17 +506,17 @@ msgid ""
 "needed to complete this operation."
 msgstr "Entrez le mot de passe ; c'est une phrase secrète \n"
 
-#: agent/protect-tool.c:1222 tools/symcryptrun.c:485
+#: agent/protect-tool.c:1222 tools/symcryptrun.c:488
 #, fuzzy
 msgid "Passphrase:"
 msgstr "mauvaise phrase de passe"
 
-#: agent/protect-tool.c:1235 tools/symcryptrun.c:498
+#: agent/protect-tool.c:1235 tools/symcryptrun.c:501
 #, fuzzy, c-format
 msgid "error while asking for the passphrase: %s\n"
 msgstr "erreur pendant la création de la phrase de passe: %s\n"
 
-#: agent/protect-tool.c:1238 tools/symcryptrun.c:502
+#: agent/protect-tool.c:1238 tools/symcryptrun.c:505
 #, fuzzy
 msgid "cancelled\n"
 msgstr "annulé"
@@ -1151,11 +1151,11 @@ msgstr "Les commandes d'administration ne sont pas permises\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Commande invalide  (essayez «help»)\n"
 
-#: g10/decrypt.c:107 g10/encode.c:850
+#: g10/decrypt.c:107 g10/encode.c:869
 msgid "--output doesn't work for this command\n"
 msgstr "--output n'est pas compatible avec cette commande\n"
 
-#: g10/decrypt.c:162 g10/gpg.c:3821 g10/keyring.c:378 g10/keyring.c:665
+#: g10/decrypt.c:162 g10/gpg.c:3820 g10/keyring.c:378 g10/keyring.c:665
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "impossible d'ouvrir `%s'\n"
@@ -1206,50 +1206,50 @@ msgstr "il y a une clé secrète pour la clé publique \"%s\" !\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "utiliser l'option «--delete-secret-keys» pour l'effacer d'abord.\n"
 
-#: g10/encode.c:222 g10/sign.c:1291
+#: g10/encode.c:225 g10/sign.c:1291
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "erreur pendant la création de la phrase de passe: %s\n"
 
-#: g10/encode.c:227
+#: g10/encode.c:230
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr ""
 "il n'est pas possible d'utiliser un paquet ESK symétrique en mode S2K\n"
 
-#: g10/encode.c:241
+#: g10/encode.c:244
 #, c-format
 msgid "using cipher %s\n"
 msgstr "utilisation de l'algorithme de chiffrement %s\n"
 
-#: g10/encode.c:251 g10/encode.c:547
+#: g10/encode.c:254 g10/encode.c:558
 #, c-format
 msgid "`%s' already compressed\n"
 msgstr "`%s' déjà compressé\n"
 
-#: g10/encode.c:302 g10/encode.c:595 g10/sign.c:596
+#: g10/encode.c:305 g10/encode.c:606 g10/sign.c:596
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "AVERTISSEMENT: `%s' est un fichier vide\n"
 
-#: g10/encode.c:466
+#: g10/encode.c:469
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
 msgstr ""
 "le chiffrement RSA ne se fait qu'avec des clés de moins de 2048 bits\n"
 "en mode --pgp2\n"
 
-#: g10/encode.c:491
+#: g10/encode.c:494
 #, c-format
 msgid "reading from `%s'\n"
 msgstr "lecture de `%s'\n"
 
-#: g10/encode.c:519
+#: g10/encode.c:522
 msgid ""
 "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
 msgstr ""
 "impossible d'utiliser le chiffre IDEA pour toutes les clés vers\n"
 "lesquelles vous chiffrez.\n"
 
-#: g10/encode.c:529
+#: g10/encode.c:540
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -1257,7 +1257,7 @@ msgstr ""
 "AVERTISSEMENT: forcer le chiffrement symétrique %s (%d) entre\n"
 "en désaccord avec les préférences du destinataire\n"
 
-#: g10/encode.c:639 g10/sign.c:968
+#: g10/encode.c:650 g10/sign.c:968
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1266,19 +1266,19 @@ msgstr ""
 "AVERTISSEMENT: forcer l'algorithme de compression %s (%d) entre\n"
 "en désaccord avec les préférences du destinataire\n"
 
-#: g10/encode.c:725
+#: g10/encode.c:744
 #, c-format
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
 "forcer le chiffrement symétrique %s (%d) entre en désaccord\n"
 "avec les préferences du destinataire\n"
 
-#: g10/encode.c:795 g10/pkclist.c:803 g10/pkclist.c:851
+#: g10/encode.c:814 g10/pkclist.c:803 g10/pkclist.c:851
 #, c-format
 msgid "you may not use %s while in %s mode\n"
 msgstr "vous ne pouvez pas utiliser %s en mode %s.\n"
 
-#: g10/encode.c:822
+#: g10/encode.c:841
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s chiffré pour: \"%s\"\n"
@@ -1601,7 +1601,7 @@ msgid "|algo [files]|print message digests"
 msgstr "|alg. [fich.]|indiquer les fonctions de hachage"
 
 #: g10/gpg.c:428 g10/gpgv.c:69 kbx/kbxutil.c:77 sm/gpgsm.c:278
-#: tools/gpg-connect-agent.c:57 tools/gpgconf.c:60 tools/symcryptrun.c:175
+#: tools/gpg-connect-agent.c:57 tools/gpgconf.c:60 tools/symcryptrun.c:178
 msgid ""
 "@\n"
 "Options:\n"
@@ -1877,417 +1877,417 @@ msgstr ""
 msgid "show expiration dates during signature listings"
 msgstr "Pas de signature correspondante dans le porte-clés secret\n"
 
-#: g10/gpg.c:1966
+#: g10/gpg.c:1965
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "NOTE: l'ancien fichier d'options par défaut `%s' a été ignoré\n"
 
-#: g10/gpg.c:2212 g10/gpg.c:2855 g10/gpg.c:2867
+#: g10/gpg.c:2211 g10/gpg.c:2854 g10/gpg.c:2866
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTE: %s n'est pas pour une utilisation normale !\n"
 
-#: g10/gpg.c:2225
+#: g10/gpg.c:2224
 #, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr ""
 "l'extension de chiffrement `%s' n'a pas été chargée car ses\n"
 "permissions sont peu sûres\n"
 
-#: g10/gpg.c:2380 g10/gpg.c:2392
+#: g10/gpg.c:2379 g10/gpg.c:2391
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "`%s' n'est pas une date d'expiration de signature valide\n"
 
-#: g10/gpg.c:2473
+#: g10/gpg.c:2472
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "`%s' n'est pas un jeu de caractères valide\n"
 
-#: g10/gpg.c:2496 g10/gpg.c:2689 g10/keyedit.c:4067
+#: g10/gpg.c:2495 g10/gpg.c:2688 g10/keyedit.c:4067
 msgid "could not parse keyserver URL\n"
 msgstr "impossible d'interpréter l'URL du serveur de clés\n"
 
-#: g10/gpg.c:2508
+#: g10/gpg.c:2507
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: les options du serveur de clés sont invalides\n"
 
-#: g10/gpg.c:2511
+#: g10/gpg.c:2510
 msgid "invalid keyserver options\n"
 msgstr "les options du serveur de clés sont invalides\n"
 
-#: g10/gpg.c:2518
+#: g10/gpg.c:2517
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: options d'import invalides\n"
 
-#: g10/gpg.c:2521
+#: g10/gpg.c:2520
 msgid "invalid import options\n"
 msgstr "options d'import invalides\n"
 
-#: g10/gpg.c:2528
+#: g10/gpg.c:2527
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: options d'export invalides\n"
 
-#: g10/gpg.c:2531
+#: g10/gpg.c:2530
 msgid "invalid export options\n"
 msgstr "options d'export invalides\n"
 
-#: g10/gpg.c:2538
+#: g10/gpg.c:2537
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: options de liste invalides\n"
 
-#: g10/gpg.c:2541
+#: g10/gpg.c:2540
 msgid "invalid list options\n"
 msgstr "options de liste invalides\n"
 
-#: g10/gpg.c:2549
+#: g10/gpg.c:2548
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2551
+#: g10/gpg.c:2550
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2553
+#: g10/gpg.c:2552
 #, fuzzy
 msgid "show all notations during signature verification"
 msgstr "`%s' n'est pas une date d'expiration de signature valide\n"
 
-#: g10/gpg.c:2555
+#: g10/gpg.c:2554
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2559
+#: g10/gpg.c:2558
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2561
+#: g10/gpg.c:2560
 #, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "l'URL du serveur de clés favori qui a été donnée est invalide\n"
 
-#: g10/gpg.c:2563
+#: g10/gpg.c:2562
 #, fuzzy
 msgid "show user ID validity during signature verification"
 msgstr "`%s' n'est pas une date d'expiration de signature valide\n"
 
-#: g10/gpg.c:2565
+#: g10/gpg.c:2564
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2567
+#: g10/gpg.c:2566
 msgid "validate signatures with PKA data"
 msgstr ""
 
-#: g10/gpg.c:2569
+#: g10/gpg.c:2568
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 
-#: g10/gpg.c:2576
+#: g10/gpg.c:2575
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: options de vérification invalides\n"
 
-#: g10/gpg.c:2579
+#: g10/gpg.c:2578
 msgid "invalid verify options\n"
 msgstr "options de vérification invalides\n"
 
-#: g10/gpg.c:2586
+#: g10/gpg.c:2585
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "impossible de mettre le chemin d'exécution à %s\n"
 
-#: g10/gpg.c:2760
+#: g10/gpg.c:2759
 #, fuzzy, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: options de vérification invalides\n"
 
-#: g10/gpg.c:2763
+#: g10/gpg.c:2762
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2844 sm/gpgsm.c:1231
+#: g10/gpg.c:2843 sm/gpgsm.c:1231
 msgid "WARNING: program may create a core file!\n"
 msgstr "ATTENTION: Le programme peut créer un fichier «core» !\n"
 
-#: g10/gpg.c:2848
+#: g10/gpg.c:2847
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "ATTENTION: %s remplace %s\n"
 
-#: g10/gpg.c:2857
+#: g10/gpg.c:2856
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s n'est pas permis avec %s !\n"
 
-#: g10/gpg.c:2860
+#: g10/gpg.c:2859
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s n'a aucun sens avec %s !\n"
 
-#: g10/gpg.c:2875
+#: g10/gpg.c:2874
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "pas d'exécution ave une mémoire non sécurisée à cause de %s\n"
 
-#: g10/gpg.c:2889
+#: g10/gpg.c:2888
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "il n'est possible de faire une signature détachée ou en texte clair\n"
 "qu'en mode --pgp2\n"
 
-#: g10/gpg.c:2895
+#: g10/gpg.c:2894
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "vous ne pouvez pas signer et chiffrer en même temps en mode --pgp2\n"
 
-#: g10/gpg.c:2901
+#: g10/gpg.c:2900
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "vous devez utiliser des fichiers (et pas un tube) lorsque --pgp2\n"
 "est activé.\n"
 
-#: g10/gpg.c:2914
+#: g10/gpg.c:2913
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
 "chiffrer un message en mode --pgp2 nécessite l'algorithme de chiffrage IDEA\n"
 
-#: g10/gpg.c:2980 g10/gpg.c:3004 sm/gpgsm.c:1287
+#: g10/gpg.c:2979 g10/gpg.c:3003 sm/gpgsm.c:1287
 msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algorithme de chiffrement sélectionné est invalide\n"
 
-#: g10/gpg.c:2986 g10/gpg.c:3010 sm/gpgsm.c:1295
+#: g10/gpg.c:2985 g10/gpg.c:3009 sm/gpgsm.c:1295
 msgid "selected digest algorithm is invalid\n"
 msgstr "la fonction de hachage sélectionnée est invalide\n"
 
-#: g10/gpg.c:2992
+#: g10/gpg.c:2991
 msgid "selected compression algorithm is invalid\n"
 msgstr "l'algorithme de compression sélectionné est invalide\n"
 
-#: g10/gpg.c:2998
+#: g10/gpg.c:2997
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "la fonction de hachage de certification sélectionnée est invalide\n"
 
-#: g10/gpg.c:3013
+#: g10/gpg.c:3012
 msgid "completes-needed must be greater than 0\n"
 msgstr "«completes-needed» doit être supérieur à 0\n"
 
-#: g10/gpg.c:3015
+#: g10/gpg.c:3014
 msgid "marginals-needed must be greater than 1\n"
 msgstr "«marginals-needed» doit être supérieur à 1\n"
 
-#: g10/gpg.c:3017
+#: g10/gpg.c:3016
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth doit être compris entre 1 et 255\n"
 
-#: g10/gpg.c:3019
+#: g10/gpg.c:3018
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "default-cert-level invalide; doit être 0, 1, 2 ou 3\n"
 
-#: g10/gpg.c:3021
+#: g10/gpg.c:3020
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "min-cert-level invalide; doit être 0, 1, 2 ou 3\n"
 
-#: g10/gpg.c:3024
+#: g10/gpg.c:3023
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTE: le mode S2K simple (0) est fortement déconseillé\n"
 
-#: g10/gpg.c:3028
+#: g10/gpg.c:3027
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "mode S2K invalide; ce doit être 0, 1 ou 3\n"
 
-#: g10/gpg.c:3035
+#: g10/gpg.c:3034
 msgid "invalid default preferences\n"
 msgstr "préférences par défaut invalides\n"
 
-#: g10/gpg.c:3044
+#: g10/gpg.c:3043
 msgid "invalid personal cipher preferences\n"
 msgstr "préférences de chiffrement personnelles invalides\n"
 
-#: g10/gpg.c:3048
+#: g10/gpg.c:3047
 msgid "invalid personal digest preferences\n"
 msgstr "préférences de hachage personnelles invalides\n"
 
-#: g10/gpg.c:3052
+#: g10/gpg.c:3051
 msgid "invalid personal compress preferences\n"
 msgstr "préférences de compression personnelles invalides\n"
 
-#: g10/gpg.c:3085
+#: g10/gpg.c:3084
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ne marche pas encore avec %s\n"
 
-#: g10/gpg.c:3132
+#: g10/gpg.c:3131
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr ""
 "vous ne pouvez pas utiliser l'algorithme de chiffrement `%s'\n"
 "en mode %s.\n"
 
-#: g10/gpg.c:3137
+#: g10/gpg.c:3136
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr ""
 "vous ne pouvez pas utiliser l'algorithme de hachage `%s'\n"
 "en mode %s.\n"
 
-#: g10/gpg.c:3142
+#: g10/gpg.c:3141
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr ""
 "vous ne pouvez pas utiliser l'algorithme de compression `%s'\n"
 "en mode %s.\n"
 
-#: g10/gpg.c:3234
+#: g10/gpg.c:3233
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "impossible d'initialiser la base de confiance: %s\n"
 
-#: g10/gpg.c:3245
+#: g10/gpg.c:3244
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVERTISSEMENT: des destinataires (-r) ont été donnés alors que le\n"
 "chiffrement ne se fait pas par clé publique\n"
 
-#: g10/gpg.c:3256
+#: g10/gpg.c:3255
 msgid "--store [filename]"
 msgstr "--store [nom du fichier]"
 
-#: g10/gpg.c:3263
+#: g10/gpg.c:3262
 msgid "--symmetric [filename]"
 msgstr "--symmetric [nom du fichier]"
 
-#: g10/gpg.c:3265
+#: g10/gpg.c:3264
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "le chiffrement symétrique de `%s' a échoué: %s\n"
 
-#: g10/gpg.c:3275
+#: g10/gpg.c:3274
 msgid "--encrypt [filename]"
 msgstr "--encrypt [nom du fichier]"
 
-#: g10/gpg.c:3288
+#: g10/gpg.c:3287
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [nom du fichier]"
 
-#: g10/gpg.c:3290
+#: g10/gpg.c:3289
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "vous ne pouvez pas utiliser --symmetric --encrypt avec --s2k-mode 0\n"
 
-#: g10/gpg.c:3293
+#: g10/gpg.c:3292
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "vous ne pouvez pas utiliser --symmetric --encrypt en mode %s.\n"
 
-#: g10/gpg.c:3311
+#: g10/gpg.c:3310
 msgid "--sign [filename]"
 msgstr "--sign [nom du fichier]"
 
-#: g10/gpg.c:3324
+#: g10/gpg.c:3323
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nom du fichier]"
 
-#: g10/gpg.c:3339
+#: g10/gpg.c:3338
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [nom du fichier]"
 
-#: g10/gpg.c:3341
+#: g10/gpg.c:3340
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 "Vous ne pouvez pas utiliser --symmetric --sign --encrypt avec\n"
 "--s2k-mode 0\n"
 
-#: g10/gpg.c:3344
+#: g10/gpg.c:3343
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr ""
 "vous ne pouvez pas utiliser --symmetric --sign --encrypt\n"
 "en mode %s.\n"
 
-#: g10/gpg.c:3364
+#: g10/gpg.c:3363
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [nom du fichier]"
 
-#: g10/gpg.c:3373
+#: g10/gpg.c:3372
 msgid "--clearsign [filename]"
 msgstr "--clearsign [nom du fichier]"
 
-#: g10/gpg.c:3398
+#: g10/gpg.c:3397
 msgid "--decrypt [filename]"
 msgstr "--decrypt [nom du fichier]"
 
-#: g10/gpg.c:3406
+#: g10/gpg.c:3405
 msgid "--sign-key user-id"
 msgstr "--sign-key utilisateur"
 
-#: g10/gpg.c:3410
+#: g10/gpg.c:3409
 msgid "--lsign-key user-id"
 msgstr "--lsign-key utilisateur"
 
-#: g10/gpg.c:3431
+#: g10/gpg.c:3430
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key utilisateur [commandes]"
 
-#: g10/gpg.c:3516
+#: g10/gpg.c:3515
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "l'envoi vers le serveur de clés a échoué: %s\n"
 
-#: g10/gpg.c:3518
+#: g10/gpg.c:3517
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "la réception depuis le serveur de clés a échoué: %s\n"
 
-#: g10/gpg.c:3520
+#: g10/gpg.c:3519
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "l'export de la clé a échoué: %s\n"
 
-#: g10/gpg.c:3531
+#: g10/gpg.c:3530
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "la recherche au sein du serveur de clés a échoué: %s\n"
 
-#: g10/gpg.c:3541
+#: g10/gpg.c:3540
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "le rafraîchissement par le serveur de clés a échoué: %s\n"
 
-#: g10/gpg.c:3592
+#: g10/gpg.c:3591
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "la suppression d'une armure a échoué: %s\n"
 
-#: g10/gpg.c:3600
+#: g10/gpg.c:3599
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "la construction d'une armure a échoué: %s \n"
 
-#: g10/gpg.c:3690
+#: g10/gpg.c:3689
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "algorithme de hachage `%s' invalide\n"
 
-#: g10/gpg.c:3807
+#: g10/gpg.c:3806
 msgid "[filename]"
 msgstr "[nom du fichier]"
 
-#: g10/gpg.c:3811
+#: g10/gpg.c:3810
 msgid "Go ahead and type your message ...\n"
 msgstr "Vous pouvez taper votre message...\n"
 
-#: g10/gpg.c:4122
+#: g10/gpg.c:4121
 msgid "the given certification policy URL is invalid\n"
 msgstr "l'URL de politique de certification donnée est invalide\n"
 
-#: g10/gpg.c:4124
+#: g10/gpg.c:4123
 msgid "the given signature policy URL is invalid\n"
 msgstr "l'URL de politique de signature donnée est invalide\n"
 
-#: g10/gpg.c:4157
+#: g10/gpg.c:4156
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "l'URL du serveur de clés favori qui a été donnée est invalide\n"
 
@@ -5686,6 +5686,16 @@ msgstr "%s: ignoré: la clé publique est désactivée\n"
 msgid "no valid addressees\n"
 msgstr "pas de destinataire valide\n"
 
+#: g10/pkclist.c:1468
+#, fuzzy, c-format
+msgid "Note: key %s has no %s feature\n"
+msgstr "clé %s: pas de nom d'utilisateur\n"
+
+#: g10/pkclist.c:1493
+#, fuzzy, c-format
+msgid "Note: key %s has no preference for %s\n"
+msgstr "clé %s: pas de nom d'utilisateur\n"
+
 #: g10/plaintext.c:91
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
@@ -7498,7 +7508,7 @@ msgstr "Bonne signature de « %s »"
 msgid "                aka"
 msgstr "                alias « %s »"
 
-#: tools/gpg-connect-agent.c:60 tools/gpgconf.c:64 tools/symcryptrun.c:183
+#: tools/gpg-connect-agent.c:60 tools/gpgconf.c:64 tools/symcryptrun.c:186
 #, fuzzy
 msgid "quiet"
 msgstr "quitter"
@@ -7682,7 +7692,7 @@ msgstr "clé publique non trouvée"
 msgid "error allocating enough memory: %s\n"
 msgstr "erreur durant la création du porte-clés `%s' : %s\n"
 
-#: tools/symcryptrun.c:170
+#: tools/symcryptrun.c:173
 #, fuzzy
 msgid ""
 "@\n"
@@ -7692,162 +7702,162 @@ msgstr ""
 "@Commandes:\n"
 " "
 
-#: tools/symcryptrun.c:172
+#: tools/symcryptrun.c:175
 #, fuzzy
 msgid "decryption modus"
 msgstr "le déchiffrement a réussi\n"
 
-#: tools/symcryptrun.c:173
+#: tools/symcryptrun.c:176
 #, fuzzy
 msgid "encryption modus"
 msgstr "le déchiffrement a réussi\n"
 
-#: tools/symcryptrun.c:177
+#: tools/symcryptrun.c:180
 msgid "tool class (confucius)"
 msgstr ""
 
-#: tools/symcryptrun.c:178
+#: tools/symcryptrun.c:181
 #, fuzzy
 msgid "program filename"
 msgstr "--store [nom du fichier]"
 
-#: tools/symcryptrun.c:180
+#: tools/symcryptrun.c:183
 msgid "secret key file (required)"
 msgstr ""
 
-#: tools/symcryptrun.c:181
+#: tools/symcryptrun.c:184
 msgid "input file name (default stdin)"
 msgstr ""
 
-#: tools/symcryptrun.c:225
+#: tools/symcryptrun.c:228
 #, fuzzy
 msgid "Usage: symcryptrun [options] (-h for help)"
 msgstr "Utilisation: gpg [options] [fichiers] (-h pour l'aide)"
 
-#: tools/symcryptrun.c:228
+#: tools/symcryptrun.c:231
 msgid ""
 "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
 "[options...] COMMAND [inputfile]\n"
 "Call a simple symmetric encryption tool\n"
 msgstr ""
 
-#: tools/symcryptrun.c:310
+#: tools/symcryptrun.c:313
 #, fuzzy, c-format
 msgid "%s on %s aborted with status %i\n"
 msgstr "%s n'est pas permis avec %s !\n"
 
-#: tools/symcryptrun.c:317
+#: tools/symcryptrun.c:320
 #, fuzzy, c-format
 msgid "%s on %s failed with status %i\n"
 msgstr "fstat de `%s' échoué dans %s: %s\n"
 
-#: tools/symcryptrun.c:343
+#: tools/symcryptrun.c:346
 #, fuzzy, c-format
 msgid "can't create temporary directory `%s': %s\n"
 msgstr "impossible de créer le répertoire `%s': %s\n"
 
-#: tools/symcryptrun.c:383 tools/symcryptrun.c:400
+#: tools/symcryptrun.c:386 tools/symcryptrun.c:403
 #, c-format
 msgid "could not open %s for writing: %s\n"
 msgstr ""
 
-#: tools/symcryptrun.c:411
+#: tools/symcryptrun.c:414
 #, fuzzy, c-format
 msgid "error writing to %s: %s\n"
 msgstr "erreur durant l'écriture du porte-clés `%s': %s\n"
 
-#: tools/symcryptrun.c:418
+#: tools/symcryptrun.c:421
 #, fuzzy, c-format
 msgid "error reading from %s: %s\n"
 msgstr "erreur pendant la lecture de `%s': %s\n"
 
-#: tools/symcryptrun.c:425 tools/symcryptrun.c:432
+#: tools/symcryptrun.c:428 tools/symcryptrun.c:435
 #, fuzzy, c-format
 msgid "error closing %s: %s\n"
 msgstr "erreur dans `%s': %s\n"
 
-#: tools/symcryptrun.c:542
+#: tools/symcryptrun.c:545
 #, fuzzy
 msgid "no --program option provided\n"
 msgstr "aucun programme d'exécution distante n'est supporté\n"
 
-#: tools/symcryptrun.c:548
+#: tools/symcryptrun.c:551
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr ""
 
-#: tools/symcryptrun.c:554
+#: tools/symcryptrun.c:557
 msgid "no --keyfile option provided\n"
 msgstr ""
 
-#: tools/symcryptrun.c:565
+#: tools/symcryptrun.c:568
 msgid "cannot allocate args vector\n"
 msgstr ""
 
-#: tools/symcryptrun.c:583
+#: tools/symcryptrun.c:586
 #, fuzzy, c-format
 msgid "could not create pipe: %s\n"
 msgstr "impossible de créer `%s': %s\n"
 
-#: tools/symcryptrun.c:590
+#: tools/symcryptrun.c:593
 #, fuzzy, c-format
 msgid "could not create pty: %s\n"
 msgstr "impossible de créer `%s': %s\n"
 
-#: tools/symcryptrun.c:606
+#: tools/symcryptrun.c:609
 #, c-format
 msgid "could not fork: %s\n"
 msgstr ""
 
-#: tools/symcryptrun.c:634
+#: tools/symcryptrun.c:637
 #, fuzzy, c-format
 msgid "execv failed: %s\n"
 msgstr "la mise à jour a échoué: %s\n"
 
-#: tools/symcryptrun.c:663
+#: tools/symcryptrun.c:666
 #, fuzzy, c-format
 msgid "select failed: %s\n"
 msgstr "la suppression du bloc de clés a échoué : %s\n"
 
-#: tools/symcryptrun.c:680
+#: tools/symcryptrun.c:683
 #, fuzzy, c-format
 msgid "read failed: %s\n"
 msgstr "la mise à jour a échoué: %s\n"
 
-#: tools/symcryptrun.c:732
+#: tools/symcryptrun.c:735
 #, fuzzy, c-format
 msgid "pty read failed: %s\n"
 msgstr "la mise à jour a échoué: %s\n"
 
-#: tools/symcryptrun.c:784
+#: tools/symcryptrun.c:787
 #, fuzzy, c-format
 msgid "waitpid failed: %s\n"
 msgstr "la mise à jour a échoué: %s\n"
 
-#: tools/symcryptrun.c:798
+#: tools/symcryptrun.c:801
 #, c-format
 msgid "child aborted with status %i\n"
 msgstr ""
 
-#: tools/symcryptrun.c:853
+#: tools/symcryptrun.c:856
 #, fuzzy, c-format
 msgid "cannot allocate infile string: %s\n"
 msgstr "impossible de créer le fichier de sauvegarde `%s': %s\n"
 
-#: tools/symcryptrun.c:866
+#: tools/symcryptrun.c:869
 #, fuzzy, c-format
 msgid "cannot allocate outfile string: %s\n"
 msgstr "impossible de créer le fichier de sauvegarde `%s': %s\n"
 
-#: tools/symcryptrun.c:1041
+#: tools/symcryptrun.c:1044
 #, c-format
 msgid "either %s or %s must be given\n"
 msgstr ""
 
-#: tools/symcryptrun.c:1061
+#: tools/symcryptrun.c:1064
 msgid "no class provided\n"
 msgstr ""
 
-#: tools/symcryptrun.c:1068
+#: tools/symcryptrun.c:1071
 #, fuzzy, c-format
 msgid "class %s is not supported\n"
 msgstr "le hachage de protection %d n'est pas supporté\n"
