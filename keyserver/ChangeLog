@@ -1,3 +1,8 @@
+2006-11-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (curl_mrindex_writer): Revert previous change.
+	Key-not-found still has a HTML response.
+
 2006-10-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (curl_mrindex_writer): Print a warning if we see
