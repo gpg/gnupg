@@ -2,6 +2,15 @@
 
 	* gpg.c (main): New command --gpgconf-list.
 
+2006-10-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_symkeyenc): Show the unpacked as well as
+	the packed s2k iteration count.
+
+	* main.h, options.h, gpg.c (encode_s2k_iterations, main),
+	passphrase.c (hash_passphrase): Add --s2k-count option to specify
+	the number of s2k hash iterations.
+
 2006-10-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Write the 16-digit keyid rather
