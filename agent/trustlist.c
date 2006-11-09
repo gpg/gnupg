@@ -317,8 +317,7 @@ read_trustfiles (void)
     }
 
   /* Fixme: we should drop duplicates and sort the table. */
-
-  ti = xtryrealloc (table, tableidx * sizeof *table);
+  ti = xtryrealloc (table, (tableidx?tableidx:1) * sizeof *table);
   if (!ti)
     {
       xfree (table);

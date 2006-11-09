@@ -145,7 +145,7 @@ my_strusage (int level)
     case 1:
     case 40: p =  _("Usage: gpg-protect-tool [options] (-h for help)\n");
       break;
-    case 41: p =  _("Syntax: gpg-protect-tool [options] [args]]\n"
+    case 41: p =  _("Syntax: gpg-protect-tool [options] [args]\n"
                     "Secret key maintenance tool\n");
     break;
     

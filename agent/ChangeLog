@@ -1,3 +1,15 @@
+2006-11-09  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): In detached mode connect standard
+	descriptors to /dev/null.
+
+	* trustlist.c (read_trustfiles): Make sure not to pass a zero size
+	to realloc as the C standards says that this behaves like free.
+
+2006-11-06  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (my_strusage): Fixed typo.
+
 2006-10-23  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main): New command --gpgconf-test.
