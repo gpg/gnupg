@@ -1,3 +1,10 @@
+2006-11-10  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (mpi_read): Changed NREAD to size_t to match the
+	gcry_mpi-scan prototype. 
+	(mpi_read): Fixed double increment of bytes read to correctly
+	detect overlong MPIs.
+
 2006-11-05  Werner Koch  <wk@g10code.com>
 
 	* gpg.c (main): Remove the default --require-cross-certification.
