@@ -116,9 +116,9 @@ the administration and the architecture.
 @menu
 * Installation::        A short installation guide.
 
+* Invoking GPG-AGENT::  How to launch the secret key daemon.
 * Invoking GPG::        Using the OpenPGP protocol.
 * Invoking GPGSM::      Using the S/MIME protocol.
-* Invoking GPG-AGENT::  How to launch the secret key daemon.
 * Invoking SCDAEMON::   How to handle Smartcards.
 * Specify a User ID::   How to Specify a User Id.
 
@@ -152,9 +152,9 @@ the administration and the architecture.
 
 @include instguide.texi
 
+@include gpg-agent.texi
 @include gpg.texi
 @include gpgsm.texi
-@include gpg-agent.texi
 @include scdaemon.texi
 
 @node Specify a User ID

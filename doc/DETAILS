@@ -58,30 +58,38 @@ record.
 		u = The key is ultimately trusted.  This often means
 		    that the secret key is available, but any key may
 		    be marked as ultimately trusted.
+
  3. Field:  length of key in bits.
+
  4. Field:  Algorithm:	1 = RSA
 		       16 = Elgamal (encrypt only)
 		       17 = DSA (sometimes called DH, sign only)
 		       20 = Elgamal (sign and encrypt - don't use them!)
 	    (for other id's see include/cipher.h)
+
  5. Field:  KeyID
+
  6. Field:  Creation Date (in UTC).  For UID and UAT records, this is the
             self-signature date.  Note that the dae is usally printed
             in seconds since epoch, however, we are migrating to an ISO
             8601 format (e.g. "19660205T091500").  This is currently
             only relevant for X.509, A simple way to detect the format
             is be scannning for the 'T'.
+
  7. Field:  Key or user ID/user attribute expiration date or empty if none.
+
  8. Field:  Used for serial number in crt records (used to be the Local-ID).
             For UID and UAT records, this is a hash of the user ID contents
             used to represent that exact user ID.  For trust signatures,
             this is the trust depth seperated by the trust value by a
             space.
+
  9. Field:  Ownertrust (primary public keys only)
 	    This is a single letter, but be prepared that additional
 	    information may follow in some future versions.  For trust
 	    signatures with a regular expression, this is the regular
 	    expression value, quoted as in field 10.
+
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
             This is not used with --fixed-list-mode in gpg.
@@ -90,11 +98,13 @@ record.
             In gpgsm the issuer name comes here
             An FPR record stores the fingerprint here.
             The fingerprint of an revocation key is stored here.
+
 11. Field:  Signature class.  This is a 2 digit hexnumber followed by
             either the letter 'x' for an exportable signature or the
             letter 'l' for a local-only signature.
             The class byte of an revocation key is also given here,
             'x' and 'l' ist used the same way.
+
 12. Field:  Key capabilities:
                 e = encrypt
                 s = sign
@@ -105,13 +115,15 @@ record.
 	    versions of the letters to denote the _usable_
 	    capabilities of the entire key, and a potential letter 'D'
 	    to indicate a disabled key.
-13. Field:  Used in FPR records for S/MIME keys to store the fingerprint of
-            the issuer certificate.  This is useful to build the
-            certificate path based on certificates stored in the local
-            keyDB; it is only filled if the issue certificate is
-            available. The advantage of using this value is that it is
-            guaranteed to have been been build by the same lookup
-            algorithm as gpgsm uses.
+
+13. Field:  Used in FPR records for S/MIME keys to store the
+            fingerprint of the issuer certificate.  This is useful to
+            build the certificate path based on certificates stored in
+            the local keyDB; it is only filled if the issuer
+            certificate is available. The root has been reached if
+            this is the same string as the fingerprint. The advantage
+            of using this value is that it is guaranteed to have been
+            been build by the same lookup algorithm as gpgsm uses.
             For "uid" recods this lists the preferences n the sameway the 
             -edit menu does.
 	    For "sig" records, this is the fingerprint of the key that

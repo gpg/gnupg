@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.9.94\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-06 10:07+0100\n"
+"POT-Creation-Date: 2006-11-10 00:40+0100\n"
 "PO-Revision-Date: 2006-11-04 03:45+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -326,7 +326,7 @@ msgstr "libgcrypt çok eski (%s lazım, sizinki %s)\n"
 msgid "NOTE: no default option file `%s'\n"
 msgstr "BİLGİ: \"%s\" öntanımlı seçenek dosyası yok\n"
 
-#: agent/gpg-agent.c:606 agent/gpg-agent.c:1120 g10/gpg.c:2011
+#: agent/gpg-agent.c:606 agent/gpg-agent.c:1129 g10/gpg.c:2011
 #: scd/scdaemon.c:438 sm/gpgsm.c:868 tools/symcryptrun.c:989
 #, c-format
 msgid "option file `%s': %s\n"
@@ -343,92 +343,92 @@ msgstr "\"%s\"den seçenekler okunuyor\n"
 msgid "error creating `%s': %s\n"
 msgstr "`%s' oluşturulurken hata: %s\n"
 
-#: agent/gpg-agent.c:1170 agent/gpg-agent.c:1273 agent/gpg-agent.c:1277
-#: agent/gpg-agent.c:1313 agent/gpg-agent.c:1317 g10/exec.c:174
+#: agent/gpg-agent.c:1179 agent/gpg-agent.c:1282 agent/gpg-agent.c:1286
+#: agent/gpg-agent.c:1322 agent/gpg-agent.c:1326 g10/exec.c:174
 #: g10/openfile.c:416 scd/scdaemon.c:916
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "`%s' dizini oluşturulamıyor: %s\n"
 
-#: agent/gpg-agent.c:1184 scd/scdaemon.c:930
+#: agent/gpg-agent.c:1193 scd/scdaemon.c:930
 msgid "name of socket too long\n"
 msgstr "soketin ismi çok uzun\n"
 
-#: agent/gpg-agent.c:1210 scd/scdaemon.c:956
+#: agent/gpg-agent.c:1219 scd/scdaemon.c:956
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "soket oluşturulamıyor: %s\n"
 
-#: agent/gpg-agent.c:1239 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1248 scd/scdaemon.c:985
 #, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "soket `%s'e bağlanırken hata: %s\n"
 
-#: agent/gpg-agent.c:1247 scd/scdaemon.c:993
+#: agent/gpg-agent.c:1256 scd/scdaemon.c:993
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "soket dinleme başarısız: %s\n"
 
-#: agent/gpg-agent.c:1253 scd/scdaemon.c:999
+#: agent/gpg-agent.c:1262 scd/scdaemon.c:999
 #, c-format
 msgid "listening on socket `%s'\n"
 msgstr "`%s' soketi dinlemede\n"
 
-#: agent/gpg-agent.c:1281 agent/gpg-agent.c:1323 g10/openfile.c:419
+#: agent/gpg-agent.c:1290 agent/gpg-agent.c:1332 g10/openfile.c:419
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "dizin `%s' oluşturuldu\n"
 
-#: agent/gpg-agent.c:1329
+#: agent/gpg-agent.c:1338
 #, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "%s için stat() başarısız oldu: %s\n"
 
-#: agent/gpg-agent.c:1333
+#: agent/gpg-agent.c:1342
 #, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "`%s' ev dizini olarak kullanılamıyor\n"
 
-#: agent/gpg-agent.c:1432
+#: agent/gpg-agent.c:1441
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr "tutamak 0x%lx, fd %d için başlatıldı\n"
 
-#: agent/gpg-agent.c:1437
+#: agent/gpg-agent.c:1446
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr "tutamak 0x%lx, fd %d için sonlandırıldı\n"
 
-#: agent/gpg-agent.c:1451
+#: agent/gpg-agent.c:1460
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr "ssh tutamağı 0x%lx, fd %d için başlatıldı\n"
 
-#: agent/gpg-agent.c:1456
+#: agent/gpg-agent.c:1465
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "ssh tutamağı 0x%lx, fd %d için sonlandırıldı\n"
 
-#: agent/gpg-agent.c:1550 scd/scdaemon.c:1115
+#: agent/gpg-agent.c:1559 scd/scdaemon.c:1115
 #, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "pth_select başarısız: %s - 1s bekliyor\n"
 
-#: agent/gpg-agent.c:1634 scd/scdaemon.c:1172
+#: agent/gpg-agent.c:1643 scd/scdaemon.c:1172
 #, c-format
 msgid "%s %s stopped\n"
 msgstr "%s %s durdu\n"
 
-#: agent/gpg-agent.c:1655
+#: agent/gpg-agent.c:1664
 msgid "no gpg-agent running in this session\n"
 msgstr "bu oturumda çalışan gpg-agent yok\n"
 
-#: agent/gpg-agent.c:1665 common/simple-pwquery.c:324 g10/call-agent.c:137
+#: agent/gpg-agent.c:1674 common/simple-pwquery.c:324 g10/call-agent.c:137
 #: sm/call-agent.c:144 tools/gpg-connect-agent.c:713
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO çevre değişkeni hatalı\n"
 
-#: agent/gpg-agent.c:1677 common/simple-pwquery.c:336 g10/call-agent.c:149
+#: agent/gpg-agent.c:1686 common/simple-pwquery.c:336 g10/call-agent.c:149
 #: sm/call-agent.c:156 tools/gpg-connect-agent.c:724
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -453,10 +453,10 @@ msgstr "Kullanımı: gpg-protect-tool [seçenekler] (yardım için -h)\n"
 
 #: agent/protect-tool.c:148
 msgid ""
-"Syntax: gpg-protect-tool [options] [args]]\n"
+"Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
 msgstr ""
-"Sözdizimi: gpg-protect-tool [seçenekler] [arg ...]]\n"
+"Sözdizimi: gpg-protect-tool [seçenekler] [arg ...]\n"
 "Gizli anahtar bakım aracı\n"
 
 #: agent/protect-tool.c:1206
@@ -532,7 +532,7 @@ msgstr "`%s', %d. satırda anahtar bayrağı geçersiz\n"
 msgid "error reading `%s', line %d: %s\n"
 msgstr "`%s' okunurken %d. satırda hata: %s\n"
 
-#: agent/trustlist.c:356 agent/trustlist.c:395
+#: agent/trustlist.c:355 agent/trustlist.c:394
 msgid "error reading list of trusted root certificates\n"
 msgstr "güvenilir kök sertifika listesinin okunmasında hata\n"
 
@@ -545,7 +545,7 @@ msgstr "güvenilir kök sertifika listesinin okunmasında hata\n"
 #. second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives
 #. the name as store in the certificate.
-#: agent/trustlist.c:471
+#: agent/trustlist.c:470
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -557,7 +557,7 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
 #. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:480
+#: agent/trustlist.c:479
 msgid "Correct"
 msgstr "Doğru"
 
@@ -569,7 +569,7 @@ msgstr "Doğru"
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:500
+#: agent/trustlist.c:499
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
@@ -578,11 +578,11 @@ msgstr ""
 "Kullanıcı sertifikalarının%%0A  \"%s\"%%0Aile doğru olarak onaylanacağından "
 "son derece emin misiniz?"
 
-#: agent/trustlist.c:506
+#: agent/trustlist.c:505
 msgid "Yes"
 msgstr "Evet"
 
-#: agent/trustlist.c:506
+#: agent/trustlist.c:505
 msgid "No"
 msgstr "Hayır"
 

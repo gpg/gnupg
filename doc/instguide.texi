@@ -6,16 +6,29 @@
 @node Installation
 @chapter A short installation guide.
 
+
+Unfortunately the installation guide has not been finished in time.
+Instead of delaying the release of GnuPG 2.0 even further, I decided to
+release without that guide.  The chapter on gpg-agent and gpgsm do
+include brief information on how to set up the whole thing.  Please
+watch the GnuPG website for updates of the documentation.  In the
+meantime you may search the GnuPG mailing list archives or ask on the
+gnupg-users mailing listsfor advise on how to solve problems or how to
+get that whole thing up and running. 
+
+Such questions may also help to write a proper installation guide.
+
 [to be written]
 
-Tell how to setup the system, install certificates, how dirmngr relates
+
+XXX Tell how to setup the system, install certificates, how dirmngr relates
 to GnuPG etc.
 
 ** Explain how to setup a root CA key as trusted
 
 X.509 is based on a hierarchical key infrastructure.  At the root of the
 tree a trusted anchor (root certificate) is required.  There are usually
-no other means of verfying whether this root certificate is trutsworthy
+no other means of verifying whether this root certificate is trustworthy
 than looking it up in a list. GnuPG uses a file (@file{trustlist.txt})
 to keep track of all root certificates it knows about.  There are 3 ways
 to get certificates into this list:
@@ -43,10 +56,12 @@ XXX decribe how to maintain trustlist.txt and /etc/gnupg/trustlist.txt.
 
 
 ** How to get the ssh support running
-   How to use the ssh support.
+
+XXX How to use the ssh support.
 
 
 @section Installation Overview 
 
+XXXX
 
 

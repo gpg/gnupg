@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-06 10:07+0100\n"
+"POT-Creation-Date: 2006-11-10 00:40+0100\n"
 "PO-Revision-Date: 2004-06-23 15:54+0200\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -348,7 +348,7 @@ msgstr ""
 msgid "NOTE: no default option file `%s'\n"
 msgstr "UWAGA: brak domy¶lnego pliku opcji ,,%s''\n"
 
-#: agent/gpg-agent.c:606 agent/gpg-agent.c:1120 g10/gpg.c:2011
+#: agent/gpg-agent.c:606 agent/gpg-agent.c:1129 g10/gpg.c:2011
 #: scd/scdaemon.c:438 sm/gpgsm.c:868 tools/symcryptrun.c:989
 #, c-format
 msgid "option file `%s': %s\n"
@@ -365,93 +365,93 @@ msgstr "odczyt opcji z ,,%s''\n"
 msgid "error creating `%s': %s\n"
 msgstr "b³±d tworzenia `%s': %s\n"
 
-#: agent/gpg-agent.c:1170 agent/gpg-agent.c:1273 agent/gpg-agent.c:1277
-#: agent/gpg-agent.c:1313 agent/gpg-agent.c:1317 g10/exec.c:174
+#: agent/gpg-agent.c:1179 agent/gpg-agent.c:1282 agent/gpg-agent.c:1286
+#: agent/gpg-agent.c:1322 agent/gpg-agent.c:1326 g10/exec.c:174
 #: g10/openfile.c:416 scd/scdaemon.c:916
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "nie mo¿na utworzyæ katalogu ,,%s'': %s\n"
 
-#: agent/gpg-agent.c:1184 scd/scdaemon.c:930
+#: agent/gpg-agent.c:1193 scd/scdaemon.c:930
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1210 scd/scdaemon.c:956
+#: agent/gpg-agent.c:1219 scd/scdaemon.c:956
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "nie mo¿na utworzyæ %s: %s\n"
 
-#: agent/gpg-agent.c:1239 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1248 scd/scdaemon.c:985
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "b³±d przy wysy³aniu do ,,%s'': %s\n"
 
-#: agent/gpg-agent.c:1247 scd/scdaemon.c:993
+#: agent/gpg-agent.c:1256 scd/scdaemon.c:993
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "zapis zmian nie powiód³ siê: %s\n"
 
-#: agent/gpg-agent.c:1253 scd/scdaemon.c:999
+#: agent/gpg-agent.c:1262 scd/scdaemon.c:999
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "zapisujê klucz tajny w '%s'\n"
 
-#: agent/gpg-agent.c:1281 agent/gpg-agent.c:1323 g10/openfile.c:419
+#: agent/gpg-agent.c:1290 agent/gpg-agent.c:1332 g10/openfile.c:419
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: katalog utworzony\n"
 
-#: agent/gpg-agent.c:1329
+#: agent/gpg-agent.c:1338
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "baza zaufania: funkcja read() (n=%d) zawiod³a: %s\n"
 
-#: agent/gpg-agent.c:1333
+#: agent/gpg-agent.c:1342
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: nie mo¿na utworzyæ katalogu: %s\n"
 
-#: agent/gpg-agent.c:1432
+#: agent/gpg-agent.c:1441
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1437
+#: agent/gpg-agent.c:1446
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1451
+#: agent/gpg-agent.c:1460
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1456
+#: agent/gpg-agent.c:1465
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1550 scd/scdaemon.c:1115
+#: agent/gpg-agent.c:1559 scd/scdaemon.c:1115
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "zapis zmian na kluczu prywatnym nie powiód³ siê: %s\n"
 
-#: agent/gpg-agent.c:1634 scd/scdaemon.c:1172
+#: agent/gpg-agent.c:1643 scd/scdaemon.c:1172
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "\t%lu kluczy pominiêtych\n"
 
-#: agent/gpg-agent.c:1655
+#: agent/gpg-agent.c:1664
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent nie jest dostêpny w tej sesji\n"
 
-#: agent/gpg-agent.c:1665 common/simple-pwquery.c:324 g10/call-agent.c:137
+#: agent/gpg-agent.c:1674 common/simple-pwquery.c:324 g10/call-agent.c:137
 #: sm/call-agent.c:144 tools/gpg-connect-agent.c:713
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "z³y format zmiennej ¶rodowiskowej GPG_AGENT_INFO\n"
 
-#: agent/gpg-agent.c:1677 common/simple-pwquery.c:336 g10/call-agent.c:149
+#: agent/gpg-agent.c:1686 common/simple-pwquery.c:336 g10/call-agent.c:149
 #: sm/call-agent.c:156 tools/gpg-connect-agent.c:724
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -475,7 +475,7 @@ msgstr "Wywo³anie: gpg [opcje] [pliki] (-h podaje pomoc)"
 
 #: agent/protect-tool.c:148
 msgid ""
-"Syntax: gpg-protect-tool [options] [args]]\n"
+"Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
 msgstr ""
 
@@ -552,7 +552,7 @@ msgstr ""
 msgid "error reading `%s', line %d: %s\n"
 msgstr "b³±d odczytu ,,%s'': %s\n"
 
-#: agent/trustlist.c:356 agent/trustlist.c:395
+#: agent/trustlist.c:355 agent/trustlist.c:394
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -565,7 +565,7 @@ msgstr ""
 #. second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives
 #. the name as store in the certificate.
-#: agent/trustlist.c:471
+#: agent/trustlist.c:470
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -575,7 +575,7 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
 #. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:480
+#: agent/trustlist.c:479
 msgid "Correct"
 msgstr ""
 
@@ -587,19 +587,19 @@ msgstr ""
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:500
+#: agent/trustlist.c:499
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:506
+#: agent/trustlist.c:505
 #, fuzzy
 msgid "Yes"
 msgstr "tak"
 
-#: agent/trustlist.c:506
+#: agent/trustlist.c:505
 msgid "No"
 msgstr ""
 

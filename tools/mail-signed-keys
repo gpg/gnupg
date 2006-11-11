@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-# FIXME: Add --dry-run,  use only valid email addreses, extract only given keys
+# FIXME: Use only valid email addreses, extract only given keys
 
 dryrun=0
 if [ "$1" = "--dry-run" ]; then

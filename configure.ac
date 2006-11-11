@@ -27,7 +27,7 @@ min_automake_version="1.9.3"
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
 m4_define([my_version], [2.0.0])
-m4_define([my_issvn], [yes])
+m4_define([my_issvn], [no])
 
 
 m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
@@ -37,7 +37,7 @@ AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
-development_version=yes
+development_version=no
 
 NEED_GPG_ERROR_VERSION=1.4
 
