@@ -182,6 +182,8 @@ void agent_init_default_ctrl (struct server_control_s *ctrl);
 
 /*-- command.c --*/
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...);
+void bump_key_eventcounter (void);
+void bump_card_eventcounter (void);
 void start_command_handler (int, int);
 
 /*-- command-ssh.c --*/

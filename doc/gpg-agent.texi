@@ -657,6 +657,7 @@ secret keys.
 * Agent LEARN::           Register a smartcard
 * Agent PASSWD::          Change a Passphrase
 * Agent UPDATESTARTUPTTY:: Change the Standard Display
+* Agent GETEVENTCOUNTER:: Get the Event Counters
 @end menu
 
 @node Agent PKDECRYPT
@@ -1074,6 +1075,31 @@ Set the startup TTY and X-DISPLAY variables to the values of this
 session.  This command is useful to direct future pinentry invocations
 to another screen.  It is only required because there is no way in the
 ssh-agent protocol to convey this information.
+
+
+@node Agent GETEVENTCOUNTER
+@subsection Get the Event Counters
+
+@example
+  GETEVENTCOUNTER
+@end example
+
+This function return one status line with the current values of the
+event counters.  The event counters are useful to avoid polling by
+delaying a poll until something has changed.  The values are decimal
+numbers in the range @code{0} to @code{UINT_MAX} and wrapping around to
+0.  The actual values should not be relied upon; they shall only be used
+to detect a change.
+
+The currently defined counters are are:
+@table @code
+@item ANY
+Incremented with any change of any of the other counters.
+@item KEY
+Incremented for added or removed private keys.
+@item CARD
+Incremented for changes of the card readers stati.
+@end table
 
 
 @mansect see also

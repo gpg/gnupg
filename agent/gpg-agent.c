@@ -1400,6 +1400,8 @@ handle_signal (int signo)
     case SIGUSR2:
       if (opt.verbose)
         log_info ("SIGUSR2 received - checking smartcard status\n");
+      /* Nothing to check right now.  We only increment a counter.  */
+      bump_card_eventcounter ();
       break;
 
     case SIGTERM:

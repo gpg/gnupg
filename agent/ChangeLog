@@ -1,3 +1,12 @@
+2006-11-14  Werner Koch  <wk@g10code.com>
+
+	* command.c (bump_key_eventcounter): New.
+	(bump_card_eventcounter): New.
+	(cmd_geteventcounter): New command.
+	* gpg-agent.c (handle_signal): Call bump_card_eventcounter.
+	* findkey.c (agent_write_private_key): Call bump_key_eventcounter.
+	* trustlist.c (agent_reload_trustlist): Ditto.
+
 2006-11-09  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main): In detached mode connect standard

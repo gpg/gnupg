@@ -574,4 +574,5 @@ agent_reload_trustlist (void)
   trusttable = NULL;
   trusttablesize = 0;
   unlock_trusttable ();
+  bump_key_eventcounter ();
 }

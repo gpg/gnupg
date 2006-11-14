@@ -117,7 +117,7 @@ agent_write_private_key (const unsigned char *grip,
       xfree (fname);
       return tmperr;
     }
-
+  bump_key_eventcounter ();
   xfree (fname);
   return 0;
 }

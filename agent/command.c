@@ -73,6 +73,28 @@ struct putval_item_s
 static struct putval_item_s *putval_list;
 
 
+
+/* To help polling clients, we keep tarck of the number of certain
+   events.  This structure keeps those counters.  The counters are
+   integers and there should be no problem if they are overflowing as
+   callers need to check only whether a counter changed.  The actual
+   values are not meaningful. */
+struct 
+{
+  /* Incremented if any of the other counters below changed. */
+  unsigned int any;
+
+  /* Incremented if a key is added or removed from the internal privat
+     key database. */
+  unsigned int key; 
+
+  /* Incremented if a change of the card readers stati has been
+     detected. */
+  unsigned int card;
+
+} eventcounter;
+
+
 
 
 
@@ -290,6 +312,62 @@ agent_write_status (ctrl_t ctrl, const char *keyword, ...)
   va_end (arg_ptr);
   return err;
 }
+
+
+
+/* GETEVENTCOUNTER
+
+   Return a a status line named EVENTCOUNTER with the current values
+   of all event counters.  The values are decimal numbers in the range
+   0 to UINT_MAX and wrapping around to 0.  The actual values should
+   not be relied upon, they shall only be used to detect a change.
+
+   The currently defined counters are:
+
+   ANY  - Incremented with any change of any of the other counters.
+   KEY  - Incremented for added or removed private keys.
+   CARD - Incremented for changes of the card readers stati.
+*/
+static int
+cmd_geteventcounter (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  char any_counter[25];
+  char key_counter[25];
+  char card_counter[25];
+
+  snprintf (any_counter, sizeof any_counter, "%u", eventcounter.any);
+  snprintf (key_counter, sizeof key_counter, "%u", eventcounter.key);
+  snprintf (card_counter, sizeof card_counter, "%u", eventcounter.card);
+
+  return agent_write_status (ctrl, "EVENTCOUNTER",
+                             any_counter,
+                             key_counter,
+                             card_counter,
+                             NULL);
+}
+
+
+/* This function should be called once for all key removals or
+   additions.  Thus function is assured not to do any context
+   switches. */
+void
+bump_key_eventcounter (void)
+{
+  eventcounter.key++;
+  eventcounter.any++;
+}
+
+/* This function should be called for all card reader status
+   changes. Thus function is assured not to do any context
+   switches. */
+void
+bump_card_eventcounter (void)
+{
+  eventcounter.card++;
+  eventcounter.any++;
+}
+
 
 
 
@@ -1281,6 +1359,7 @@ register_commands (assuan_context_t ctx)
     const char *name;
     int (*handler)(assuan_context_t, char *line);
   } table[] = {
+    { "GETEVENTCOUNTER",cmd_geteventcounter },
     { "ISTRUSTED",      cmd_istrusted },
     { "HAVEKEY",        cmd_havekey },
     { "SIGKEY",         cmd_sigkey },
