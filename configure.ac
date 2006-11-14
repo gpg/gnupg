@@ -585,7 +585,11 @@ if test "$have_libassuan" = "yes"; then
   have_libassuan=no
   AM_PATH_LIBASSUAN_PTH("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
                         have_libassuan=yes,have_libassuan=no)
+  AM_CHECK_LIBASSUAN("$NEED_LIBASSUAN_API:1.0.1",
+       [AC_DEFINE(HAVE_ASSUAN_SET_IO_MONITOR, 1,
+         [Define to 1 if you have the `assuan_set_io_monitor' function.])],)  
 fi
+
 
 
 #
@@ -945,7 +949,7 @@ AC_CHECK_FUNCS([ttyname rand ftello])
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 #
-# These are needed by libjnlib - fixme: we should a jnlib.m4
+# These are needed by libjnlib - fixme: we should use a jnlib.m4
 #
 AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol])
 AC_CHECK_FUNCS([memrchr isascii timegm getrusage setrlimit stat setlocale])

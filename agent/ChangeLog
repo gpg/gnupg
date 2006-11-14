@@ -7,6 +7,9 @@
 	* findkey.c (agent_write_private_key): Call bump_key_eventcounter.
 	* trustlist.c (agent_reload_trustlist): Ditto.
 
+	* command.c (post_cmd_notify, io_monitor): New.
+	(register_commands, start_command_handler): Register them.
+
 2006-11-09  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main): In detached mode connect standard

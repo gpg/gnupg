@@ -1,3 +1,7 @@
+2006-11-14  Werner Koch  <wk@g10code.com>
+
+	* libassuan.m4: Updated from libassuan SVN.
+
 2006-10-09  Werner Koch  <wk@g10code.com>
 
 	* gnupg-pth.m4: New.  Taken from ../acinclude.m4.

@@ -56,6 +56,7 @@ struct server_local_s
   int use_cache_for_signing;
   char *keydesc;  /* Allocated description for the next key
                      operation. */
+  int pause_io_logging; /* Used to suppress I/O logging during a command */
 };
 
 
@@ -1351,6 +1352,43 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 
 
 
+/* Called by libassuan after all commands. ERR is the error from the
+   last assuan operation and not the one returned from the command. */
+static void
+post_cmd_notify (assuan_context_t ctx, int err)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  /* Switch off any I/O monitor controlled logging pausing. */
+  ctrl->server_local->pause_io_logging = 0;
+}
+
+
+/* This function is called by libassuan for all I/O.  We use it here
+   to disable logging for the GETEVENTCOUNTER commands.  This is so
+   that the debug output won't get cluttered by this primitive
+   command.  */
+static unsigned int
+io_monitor (assuan_context_t ctx, int direction,
+            const char *line, size_t linelen)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  /* Note that we only check for the uppercase name.  This allows to
+     see the logging for debugging if using a non-upercase command
+     name. */
+  if (ctx && !direction 
+      && linelen >= 15
+      && !strncmp (line, "GETEVENTCOUNTER", 15)
+      && (linelen == 15 || spacep (line+15)))
+    {
+      ctrl->server_local->pause_io_logging = 1;
+    }
+
+  return ctrl->server_local->pause_io_logging? 1:0;
+}
+
+
 /* Tell the assuan library about our commands */
 static int
 register_commands (assuan_context_t ctx)
@@ -1394,6 +1432,9 @@ register_commands (assuan_context_t ctx)
       if (rc)
         return rc;
     } 
+#ifdef HAVE_ASSUAN_SET_IO_MONITOR
+  assuan_register_post_cmd_notify (ctx, post_cmd_notify);
+#endif
   assuan_register_reset_notify (ctx, reset_notify);
   assuan_register_option_handler (ctx, option_handler);
   return 0;
@@ -1452,6 +1493,10 @@ start_command_handler (int listen_fd, int fd)
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
+
+#ifdef HAVE_ASSUAN_SET_IO_MONITOR
+  assuan_set_io_monitor (ctx, io_monitor);
+#endif
 
   for (;;)
     {

@@ -96,6 +96,21 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
 
 ])
 
+dnl AM_CHECK_LIBASSUAN([MINIMUM-VERSION,
+dnl                    [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
+dnl Test whether libassuan has at least MINIMUM-VERSION. This is
+dnl used to test for features only available in newer versions.
+dnl
+AC_DEFUN([AM_CHECK_LIBASSUAN],
+[ _AM_PATH_LIBASSUAN_COMMON($1)
+  if test $ok = yes; then
+    ifelse([$2], , :, [$2])
+  else
+    ifelse([$3], , :, [$3])
+  fi
+])
+
+
 
 
 dnl AM_PATH_LIBASSUAN([MINIMUM-VERSION,
@@ -120,7 +135,7 @@ AC_DEFUN([AM_PATH_LIBASSUAN],
 
 dnl AM_PATH_LIBASSUAN_PTH([MINIMUM-VERSION,
 dnl                      [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
-dnl Test for libassuan and define LIBASSUAN_PTH_CFLAGSand LIBASSUAN_PTH_LIBS
+dnl Test for libassuan and define LIBASSUAN_PTH_CFLAGS and LIBASSUAN_PTH_LIBS
 dnl
 AC_DEFUN([AM_PATH_LIBASSUAN_PTH],
 [ _AM_PATH_LIBASSUAN_COMMON($1,pth)
@@ -144,7 +159,7 @@ dnl Test for libassuan and define LIBASSUAN_PTHREAD_CFLAGS
 dnl                           and LIBASSUAN_PTHREAD_LIBS
 dnl
 AC_DEFUN([AM_PATH_LIBASSUAN_PTHREAD],
-[ _AM_PATH_LIBASSUAN_COMMON($1,pth)
+[ _AM_PATH_LIBASSUAN_COMMON($1,pthread)
   if test $ok = yes; then
     LIBASSUAN_PTHREAD_CFLAGS=`$LIBASSUAN_CONFIG $libassuan_config_args --thread=pthread --cflags`
     LIBASSUAN_PTHREAD_LIBS=`$LIBASSUAN_CONFIG $libassuan_config_args --thread=pthread --libs`
