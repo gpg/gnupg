@@ -199,48 +199,62 @@ more arguments in future versions.
         is useful to define a context for parsing ERROR status
         messages.  No arguments are currently defined.
 
-    GOODSIG	<long keyid>  <username>
+    GOODSIG  <long_keyid_or_fpr>  <username>
 	The signature with the keyid is good.  For each signature only
         one of the three codes GOODSIG, BADSIG or ERRSIG will be
         emitted and they may be used as a marker for a new signature.
         The username is the primary one encoded in UTF-8 and %XX
-        escaped.
+        escaped. The fingerprint may be used instead of the long keyid
+        if it is available.  This is the case with CMS and might
+        eventually also be available for OpenPGP.
 
-    EXPSIG	<long keyid>  <username>
+    EXPSIG  <long_keyid_or_fpr>  <username>
 	The signature with the keyid is good, but the signature is
 	expired. The username is the primary one encoded in UTF-8 and
-	%XX escaped.
+	%XX escaped. The fingerprint may be used instead of the long
+	keyid if it is available.  This is the case with CMS and might
+	eventually also be available for OpenPGP.
 
-    EXPKEYSIG	<long keyid>  <username>
-	The signature with the keyid is good, but the signature was
+    EXPKEYSIG  <long_keyid_or_fpr> <username> 
+        The signature with the keyid is good, but the signature was
 	made by an expired key. The username is the primary one
-	encoded in UTF-8 and %XX escaped.
+	encoded in UTF-8 and %XX escaped.  The fingerprint may be used
+	instead of the long keyid if it is available.  This is the
+	case with CMS and might eventually also be available for
+	OpenPGP.
 
-    REVKEYSIG	<long keyid>  <username>
+    REVKEYSIG  <long_keyid_or_fpr>  <username>
 	The signature with the keyid is good, but the signature was
-	made by a revoked key. The username is the primary one
-	encoded in UTF-8 and %XX escaped.
+	made by a revoked key. The username is the primary one encoded
+	in UTF-8 and %XX escaped. The fingerprint may be used instead
+	of the long keyid if it is available.  This is the case with
+	CMS and might eventually also be available for OpenPGP.
 
-    BADSIG	<long keyid>  <username>
-	The signature with the keyid has not been verified okay.
-        The username is the primary one encoded in UTF-8 and %XX
-        escaped.
+    BADSIG  <long_keyid_or_fpr>  <username>
+	The signature with the keyid has not been verified okay.  The
+        username is the primary one encoded in UTF-8 and %XX
+        escaped. The fingerprint may be used instead of the long keyid
+        if it is available.  This is the case with CMS and might
+        eventually also be available for OpenPGP.
 
-    ERRSIG  <long keyid>  <pubkey_algo> <hash_algo> \
+    ERRSIG  <long_keyid_or_fpr>  <pubkey_algo> <hash_algo> \
 	    <sig_class> <timestamp> <rc>
 	It was not possible to check the signature.  This may be
-	caused by a missing public key or an unsupported algorithm.
-	A RC of 4 indicates unknown algorithm, a 9 indicates a missing
-	public key. The other fields give more information about
-	this signature.  sig_class is a 2 byte hex-value.
+	caused by a missing public key or an unsupported algorithm.  A
+	RC of 4 indicates unknown algorithm, a 9 indicates a missing
+	public key. The other fields give more information about this
+	signature.  sig_class is a 2 byte hex-value.  The fingerprint
+	may be used instead of the long keyid if it is available.
+	This is the case with CMS and might eventually also be
+	available for OpenPGP.
 
         Note, that TIMESTAMP may either be a number with seconds since
         epoch or an ISO 8601 string which can be detected by the
         presence of the letter 'T' inside.
 
     VALIDSIG	<fingerprint in hex> <sig_creation_date> <sig-timestamp>
-		<expire-timestamp> <sig-version> <reserved> <pubkey-algo>
-		<hash-algo> <sig-class> <primary-key-fpr>
+		<expire-timestamp> [ <sig-version> <reserved> <pubkey-algo>
+		<hash-algo> <sig-class> <primary-key-fpr> ]
 
 	The signature with the keyid is good. This is the same as
 	GOODSIG but has the fingerprint as the argument. Both status
@@ -254,6 +268,9 @@ more arguments in future versions.
 	primary key or identical to the first argument.  This is
 	useful to get back to the primary key without running gpg
 	again for this purpose.
+
+        The optional parameters are used for OpenPGP and are not
+        available for CMS signatures.
 
         Note, that *-TIMESTAMP may either be a number with seconds
         since epoch or an ISO 8601 string which can be detected by the

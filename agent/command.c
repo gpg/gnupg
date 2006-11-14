@@ -153,7 +153,7 @@ has_option_name (const char *line, const char *name)
 
 /* Skip over options.  It is assumed that leading spaces have been
    removed (this is the case for lines passed to a handler from
-   assuan).  Bkanls after the options are also removed. */
+   assuan).  Blanks after the options are also removed. */
 static char *
 skip_options (char *line)
 {

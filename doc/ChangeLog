@@ -1,3 +1,7 @@
+2006-11-14  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.texi (GPGSM EXPORT): Document changes.
+
 2006-11-11  Werner Koch  <wk@g10code.com>
 
 	* gnupg.texi (Top): Move gpg-agent part before gpg.

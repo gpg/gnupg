@@ -74,6 +74,22 @@ strcpy_escaped_plus (char *d, const char *s)
 }
 
 
+/* Skip over options.  
+   Blanks after the options are also removed. */
+static char *
+skip_options (const char *line)
+{
+  while (spacep (line))
+    line++;
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  return (char*)line;
+}
 
 
 /* Check whether the option NAME appears in LINE */
@@ -84,6 +100,8 @@ has_option (const char *line, const char *name)
   int n = strlen (name);
 
   s = strstr (line, name);
+  if (s && s >= skip_options (line))
+    return 0;
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
 
@@ -530,6 +548,10 @@ cmd_import (assuan_context_t ctx, char *line)
 }
 
 
+/* EXPORT [--data [--armor|--base64]] [--] pattern
+
+ */
+
 static int 
 cmd_export (assuan_context_t ctx, char *line)
 {
@@ -538,11 +560,20 @@ cmd_export (assuan_context_t ctx, char *line)
   FILE *out_fp;
   char *p;
   strlist_t list, sl;
-
-  if (fd == -1)
-    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+  int use_data;
   
-  /* break the line down into an strlist_t */
+  use_data = has_option (line, "--data");
+
+  if (use_data)
+    {
+      /* We need to override any possible setting done by an OUTPUT command. */
+      ctrl->create_pem = has_option (line, "--armor");
+      ctrl->create_base64 = has_option (line, "--base64");
+    }
+
+  line = skip_options (line);
+
+  /* Break the line down into an strlist_t. */
   list = NULL;
   for (p=line; *p; line = p)
     {
@@ -565,17 +596,36 @@ cmd_export (assuan_context_t ctx, char *line)
         }
     }
 
-  out_fp = fdopen ( dup(fd), "w");
-  if (!out_fp)
+  if (use_data)
     {
-      free_strlist (list);
-      return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+      out_fp = assuan_get_data_fp (ctx);
+      if (!out_fp)
+        {
+          free_strlist (list);
+          return set_error (GPG_ERR_ASS_GENERAL, "no data stream");
+        }
+      gpgsm_export (ctrl, list, out_fp);
+    }
+  else
+    {
+      if (fd == -1)
+        {
+          free_strlist (list);
+          return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+        }
+      out_fp = fdopen ( dup(fd), "w");
+      if (!out_fp)
+        {
+          free_strlist (list);
+          return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+        }
+      
+      gpgsm_export (ctrl, list, out_fp);
+      fclose (out_fp);
     }
 
-  gpgsm_export (ctrl, list, out_fp);
-  fclose (out_fp);
   free_strlist (list);
-  /* close and reset the fd */
+  /* Close and reset the fds. */
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -1097,67 +1147,3 @@ gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
     return gpgsm_status2 (ctrl, no, buf, NULL);
 }
 
-#if 0
-/*
- * Write a status line with a buffer using %XX escapes.  If WRAP is >
- * 0 wrap the line after this length.  If STRING is not NULL it will
- * be prepended to the buffer, no escaping is done for string.
- * A wrap of -1 forces spaces not to be encoded as %20.
- */
-void
-write_status_text_and_buffer ( int no, const char *string,
-                               const char *buffer, size_t len, int wrap )
-{
-    const char *s, *text;
-    int esc, first;
-    int lower_limit = ' ';
-    size_t n, count, dowrap;
-
-    if( !statusfp )
-	return;  /* not enabled */
-    
-    if (wrap == -1) {
-        lower_limit--;
-        wrap = 0;
-    }
-
-    text = get_status_string (no);
-    count = dowrap = first = 1;
-    do {
-        if (dowrap) {
-            fprintf (statusfp, "[GNUPG:] %s ", text );
-            count = dowrap = 0;
-            if (first && string) {
-                fputs (string, statusfp);
-                count += strlen (string);
-            }
-            first = 0;
-        }
-        for (esc=0, s=buffer, n=len; n && !esc; s++, n-- ) {
-            if ( *s == '%' || *(const byte*)s <= lower_limit 
-                           || *(const byte*)s == 127 ) 
-                esc = 1;
-            if ( wrap && ++count > wrap ) {
-                dowrap=1;
-                break;
-            }
-        }
-        if (esc) {
-            s--; n++;
-        }
-        if (s != buffer) 
-            fwrite (buffer, s-buffer, 1, statusfp );
-        if ( esc ) {
-            fprintf (statusfp, "%%%02X", *(const unsigned char*)s );
-            s++; n--;
-        }
-        buffer = s;
-        len = n;
-        if ( dowrap && len )
-            putc ( '\n', statusfp );
-    } while ( len );
-
-    putc ('\n',statusfp);
-    fflush (statusfp);
-}
-#endif

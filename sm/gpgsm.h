@@ -241,6 +241,8 @@ char *gpgsm_format_serial (ksba_const_sexp_t p);
 char *gpgsm_format_name2 (const char *name, int translate);
 char *gpgsm_format_name (const char *name);
 
+char *gpgsm_fpr_and_name_for_status (ksba_cert_t cert);
+
 char *gpgsm_format_keydesc (ksba_cert_t cert);
 
 

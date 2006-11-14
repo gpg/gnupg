@@ -410,7 +410,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
 
               log_error ("invalid signature: message digest attribute "
                          "does not match calculated one\n");
-              fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+              fpr = gpgsm_fpr_and_name_for_status (cert);
               gpgsm_status (ctrl, STATUS_BADSIG, fpr);
               xfree (fpr);
               goto next_signer; 
@@ -447,7 +447,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           char *fpr;
 
           log_error ("invalid signature: %s\n", gpg_strerror (rc));
-          fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+          fpr = gpgsm_fpr_and_name_for_status (cert);
           gpgsm_status (ctrl, STATUS_BADSIG, fpr);
           xfree (fpr);
           goto next_signer;
@@ -463,16 +463,19 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (DBG_X509)
         log_debug ("signature okay - checking certs\n");
       rc = gpgsm_validate_chain (ctrl, cert, keyexptime, 0, NULL, 0);
-      if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
-        {
-          gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);
-          rc = 0;
-        }
-      else
-        gpgsm_status (ctrl, STATUS_GOODSIG, NULL);
-      
       {
-        char *buf, *fpr, *tstr;
+        char *fpr, *buf, *tstr;
+
+        fpr = gpgsm_fpr_and_name_for_status (cert);
+        if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
+          {
+            gpgsm_status (ctrl, STATUS_EXPKEYSIG, fpr);
+            rc = 0;
+          }
+        else
+          gpgsm_status (ctrl, STATUS_GOODSIG, fpr);
+        
+        xfree (fpr);
 
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
         tstr = strtimestamp_r (sigtime);

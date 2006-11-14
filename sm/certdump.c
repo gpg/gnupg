@@ -705,6 +705,59 @@ gpgsm_format_name (const char *name)
 }
 
 
+/* Return fingerprint and a percent escaped name in a human readable
+   format suitable for status messages like GOODSIG.  May return NULL
+   on error (out of core). */
+char *
+gpgsm_fpr_and_name_for_status (ksba_cert_t cert)
+{
+  char *fpr, *name, *p;
+  char *buffer;
+
+  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+  if (!fpr)
+    return NULL;
+  
+  name = ksba_cert_get_subject (cert, 0);
+  if (!name)
+    {
+      xfree (fpr);
+      return NULL;
+    }
+
+  p = gpgsm_format_name2 (name, 0);
+  ksba_free (name);
+  name = p;
+  if (!name)
+    {
+      xfree (fpr);
+      return NULL;
+    }
+
+  buffer = xtrymalloc (strlen (fpr) + 1 + 3*strlen (name) + 1);
+  if (buffer)
+    {
+      const unsigned char *s;
+
+      p = stpcpy (stpcpy (buffer, fpr), " ");
+      for (s = name; *s; s++)
+        {
+          if (*s < ' ')
+            {
+              sprintf (p, "%%%02X", *s);
+              p += 3;
+            }
+          else
+            *p++ = *s;
+        }
+      *p = 0;
+    }
+  xfree (fpr);
+  xfree (name);
+  return buffer;
+}
+
+
 /* Create a key description for the CERT, this may be passed to the
    pinentry.  The caller must free the returned string. NULL may be
    returned on error. */
@@ -800,3 +853,4 @@ gpgsm_format_keydesc (ksba_cert_t cert)
 
   return buffer;
 }
+

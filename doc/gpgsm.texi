@@ -1072,16 +1072,22 @@ Note that options are valid for the entire session.
 To export certificate from the internal key database the command:
 
 @example
-  EXPORT @var{pattern}
+  EXPORT [--data [--armor] [--base64]] [--] @var{pattern}
 @end example
 
 is used.  To allow multiple patterns (which are ORed) quoting is
 required: Spaces are to be translated into "+" or into "%20"; in turn
 this requires that the usual escape quoting rules are done.
 
-The format of the output depends on what was set with the OUTPUT
-command.  When using @acronym{PEM} encoding a few informational lines
-are prepended.
+If the @option{--data} option has not been given, the format of the
+output depends on what was set with the OUTPUT command.  When using
+@acronym{PEM} encoding a few informational lines are prepended.
+
+If the @option{--data} has been given, a target set via OUTPUT is
+ignored and the data is returned inline using standard
+@code{D}-lines. This avoids the need for an extra file descriptor.  In
+this case the options @option{--armor} and @option{--base64} may be used
+in the same way as with the OUTPUT command.
 
 
 @node GPGSM IMPORT

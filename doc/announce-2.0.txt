@@ -1,0 +1,188 @@
+Hello!
+    
+The GNU project is pleased to announce the availability of a new
+stable GnuPG release: Version 2.0.0.
+
+The GNU Privacy Guard (GnuPG) is GNU's tool for secure communication
+and data storage.  It can be used to encrypt data, create digital
+signatures, help authenticating using Secure Shell and to provide a
+framework for public key cryptography.  It includes an advanced key
+management facility and is compliant with the OpenPGP and S/MIME
+standards.
+
+GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.5) in that
+it splits up functionality into several modules.  However, both
+versions may be installed alongside without any conflict.  In fact,
+the gpg version from GnuPG-1 is able to make use of the gpg-agent as
+included in GnuPG-2 and allows for seamless passphrase caching.  The
+advantage of GnuPG-1 is its smaller size and the lack of dependency on
+other modules at run and build time.  We will keep maintaining GnuPG-1
+versions because they are very useful for small systems and for server
+based applications requiring only OpenPGP support.
+
+GnuPG is distributed under the terms of the GNU General Public License
+(GPL).  GnuPG-2 works best on GNU/Linux or *BSD systems.  Other POSIX
+compliant systems are also supported but have not yet been tested very
+well.
+
+
+What's New in GnuPG-2
+=====================
+
+ * The *gpg-agent* is the central place to maintain private keys and
+   to cache passphrases.  It is implemented as a daemon to be started
+   with a user session.
+
+ * *gpgsm* is an implementation of the X.509 and CMS standards and
+   provides the cryptographic core to implement the S/MIME protocol.
+   The command line interface is very similar to the one of gpg.  This
+   helps adding S/MIME to application currently providing OpenPGP
+   support.
+
+ * *scdaemon* is a daemon run by gpg-agent to access different types
+   of smart cards using a unified interface.
+
+ * *gpg-connect-agent* is a tool to help scripts directly accessing
+   services of gpg-agent and scdaemon.
+
+ * *gpgconf* is a tool to maintain the configuration files of all
+   modules using a well defined API.
+
+ * Support for Dirmngr, a separate package to maintain certificate
+   revocation lists, do OCSP requests and to run LDAP queries.
+
+ * Support for the Secure Shell Agent protocol.  In fact, gpg-agent
+   may be used as full replacement of the commonly used ssh-agent
+   daemon.
+
+ * Smart card support for the Secure Shell.
+
+ * Documentation is now done in Texinfo. Thus besides Info, HTML and
+   PDF versions may easily be generated.
+
+ * Man pages for all tools.
+
+
+Getting the Software
+====================
+
+Please follow the instructions found at http://www.gnupg.org/download/
+or read on:
+
+GnuPG 2.0.0 may be downloaded from one of the GnuPG mirror sites or
+direct from ftp://ftp.gnupg.org/gcrypt/ .  The list of mirrors can be
+found at http://www.gnupg.org/mirrors.html .  Note, that GnuPG is not
+available at ftp.gnu.org.
+
+On the mirrors you should find the following files in the *gnupg*
+directory:
+
+  gnupg-2.0.0.tar.bz2 (3.8M)
+  gnupg-2.0.0.tar.bz2.sig
+
+      GnuPG source compressed using BZIP2 and OpenPGP signature.
+
+Please try another mirror if exceptional your mirror is not yet up to
+date.  GnuPG-2 requires a couple of libraries to be installed; see the
+README file or the output of the configure run for details.
+
+
+Checking the Integrity
+======================
+
+In order to check that the version of GnuPG which you are going to
+install is an original and unmodified one, you can do it in one of
+the following ways:
+
+ * If you already have a trusted version of GnuPG installed, you
+   can simply check the supplied signature.  For example to check the
+   signature of the file gnupg-2.0.0.tar.bz2 you would use this command:
+
+     gpg --verify gnupg-2.0.0.tar.bz2.sig
+
+   This checks whether the signature file matches the source file.
+   You should see a message indicating that the signature is good and
+   made by that signing key.  Make sure that you have the right key,
+   either by checking the fingerprint of that key with other sources
+   or by checking that the key has been signed by a trustworthy other
+   key.  Note, that you can retrieve the signing key using the command
+
+     finger wk ,at' g10code.com
+
+   or using a key server like
+
+     gpg --recv-key 1CE0C630
+
+   The distribution key 1CE0C630 is signed by the well known key
+   5B0358A2.  If you get an key expired message, you should retrieve a
+   fresh copy as the expiration date might have been prolonged.
+
+   NEVER USE A GNUPG VERSION YOU JUST DOWNLOADED TO CHECK THE
+   INTEGRITY OF THE SOURCE - USE AN EXISTING GNUPG INSTALLATION!
+
+ * If you are not able to use an existing version of GnuPG, you have
+   to verify the SHA-1 checksum.  Assuming you downloaded the file
+   gnupg-2.0.0.tar.bz2, you would run the sha1sum command like this:
+
+     sha1sum gnupg-2.0.0.tar.bz2
+
+   and check that the output matches this:
+
+c335957368ea88bcb658922e7d3aae7e3ac6896d  gnupg-2.0.0.tar.bz2
+
+
+Internationalization
+====================
+
+GnuPG comes with support for 27 languages.  Due to a lot of new and
+changed strings most translations are not entirely complete. However
+the Turkish and German translators have been very fast in completing
+their translations.  The Russian one came in just a few hours too
+late.  Updates of the other translations are expected for the next
+releases.
+
+
+Documentation
+=============
+
+We are currently working on an installation guide to explain in more
+detail how to configure the new features.  As of now the chapters on
+gpg-agent and gpgsm include brief information on how to set up the
+whole thing.  Please watch the GnuPG website for updates of the
+documentation.  In the meantime you may search the GnuPG mailing list
+archives or ask on the gnupg-users mailing lists for advise on how to
+solve problems.  Many of the new features are around for several years
+and thus enough public knowledge is already available.
+
+
+Support
+=======
+
+Improving GnuPG is costly, but you can help!  We are looking for
+organizations that find GnuPG useful and wish to contribute back.  You
+can contribute by reporting bugs, improve the software, or by donating
+money.
+
+Commercial support contracts for GnuPG are available, and they help
+finance continued maintenance.  g10 Code GmbH, a Duesseldorf based
+company owned and headed by GnuPG's principal author, is currently
+funding GnuPG development.  We are always looking for interesting
+development projects.
+
+A service directory is available at:
+
+  http://www.gnupg.org/service.html
+
+
+Thanks
+======
+
+We have to thank all the people who helped with this release, be it
+testing, coding, translating, suggesting, auditing, administering the
+servers, spreading the word or answering questions on the mailing
+lists.  
+
+
+Happy Hacking,
+
+  The GnuPG Team (David, Werner and all other contributors)

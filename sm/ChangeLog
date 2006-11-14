@@ -1,3 +1,17 @@
+2006-11-14  Werner Koch  <wk@g10code.com>
+
+	* server.c (skip_options): Skip leading spaces.
+	(has_option): Honor "--".
+	(cmd_export): Add option --data to do an inline export.  Skip all
+	options.
+
+	* certdump.c (gpgsm_fpr_and_name_for_status): New.
+	* verify.c (gpgsm_verify): Use it to print correct status messages.
+
+2006-11-11  Werner Koch  <wk@g10code.com>
+
+	* server.c (skip_options): New.
+
 2006-10-24  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (AM_CFLAGS): Add $(LIBASSUAN_CFLAGS).
