@@ -100,7 +100,7 @@ data-80000:
 plain-large:
 	cat $(srcdir)/../../doc/HACKING \
 	    $(srcdir)/../../doc/DETAILS \
-	    $(srcdir)/../../doc/FAQ	 >plain-large
+	    $(srcdir)/../../doc/faq.raw	> plain-large
 
 # To speed up key generation we create a dummy random seed file
 random_seed:
