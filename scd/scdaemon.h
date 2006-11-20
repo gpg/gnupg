@@ -90,6 +90,12 @@ struct app_ctx_s;
 
 struct server_control_s 
 {
+  /* Private data used to fire up the connection thread.  We use this
+     structure do avoid an extra allocation for just a few bytes. */
+  struct {
+    int fd;
+  } thread_startup;
+  
   /* Local data of the server; used only in command.c. */
   struct server_local_s *server_local;
 
@@ -115,11 +121,10 @@ typedef struct app_ctx_s *app_t;
 
 /*-- scdaemon.c --*/
 void scd_exit (int rc);
-void scd_init_default_ctrl (ctrl_t ctrl);
 const char *scd_get_socket_name (void);
 
 /*-- command.c --*/
-void scd_command_handler (int);
+void scd_command_handler (ctrl_t, int);
 void send_status_info (ctrl_t ctrl, const char *keyword, ...)
      GNUPG_GCC_A_SENTINEL(1);
 void scd_update_reader_status_file (void);

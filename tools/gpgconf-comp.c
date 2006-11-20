@@ -530,7 +530,7 @@ static gc_option_t gc_options_scdaemon[] =
    { "disable-ccid", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "do not use the internal CCID driver",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
-   { "disable-keypad", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+   { "disable-keypad", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", "do not use a reader's keypad",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
 

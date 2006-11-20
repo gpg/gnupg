@@ -367,7 +367,7 @@ dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
       u = &info->uids;
       do 
         {
-          printf ("uid\t\t%.*s\n", u->len, image + u->off);
+          printf ("uid\t\t%.*s\n", (int)u->len, image + u->off);
           u = u->next;
         }
       while (u);

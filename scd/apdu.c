@@ -222,6 +222,11 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #define PCSC_E_READER_UNAVAILABLE      0x80100017
 #define PCSC_W_REMOVED_CARD            0x80100069
 
+/* The PC/SC error is defined as a long as per specs.  Due to left
+   shifts bit 31 will get sign extended.  We use this mask to fix
+   it. */
+#define PCSC_ERR_MASK(a)  ((a) & 0xffffffff)
+
 
 struct pcsc_io_request_s
 {
@@ -739,7 +744,7 @@ pcsc_error_to_sw (long ec)
 {
   int rc;
 
-  switch (ec)
+  switch ( PCSC_ERR_MASK (ec) )
     {
     case 0:  rc = 0; break;
 
@@ -834,7 +839,8 @@ reset_pcsc_reader (int slot)
       sw = SW_HOST_GENERAL_ERROR;
       goto command_failed;
     }
-  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
+                       | (msgbuf[7] << 8 ) | msgbuf[8]);
   if (err)
     {
       log_error ("PC/SC RESET failed: %s (0x%lx)\n",
@@ -981,7 +987,8 @@ pcsc_get_status (int slot, unsigned int *status)
       goto command_failed;
     }
   len -= 4; /* Already read the error code. */
-  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
+                       | (msgbuf[7] << 8 ) | msgbuf[8]);
   if (err)
     {
       log_error ("pcsc_status failed: %s (0x%lx)\n",
@@ -1151,7 +1158,8 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
       goto command_failed;
     }
   len -= 4; /* Already read the error code. */
-  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
+                       | (msgbuf[7] << 8 ) | msgbuf[8]);
   if (err)
     {
       log_error ("pcsc_transmit failed: %s (0x%lx)\n",
@@ -1283,7 +1291,8 @@ close_pcsc_reader (int slot)
       goto command_failed;
     }
   len -= 4; /* Already read the error code. */
-  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
+                       | (msgbuf[7] << 8 ) | msgbuf[8]);
   if (err)
     log_error ("pcsc_close failed: %s (0x%lx)\n",
                pcsc_error_string (err), err);
@@ -1470,7 +1479,8 @@ open_pcsc_reader (const char *portstr)
                  (unsigned long)len);
       goto command_failed;
     }
-  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
+                       | (msgbuf[7] << 8 ) | msgbuf[8]);
   if (err)
     {
       log_error ("PC/SC OPEN failed: %s\n", pcsc_error_string (err));

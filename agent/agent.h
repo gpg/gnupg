@@ -112,6 +112,12 @@ struct scd_local_s;
 /* Collection of data per session (aka connection). */
 struct server_control_s 
 {
+  /* Private data used to fire up the connection thread.  We use this
+     structure do avoid an extra allocation for just a few bytes. */
+  struct {
+    int fd;
+  } thread_startup;
+  
   /* Private data of the server (command.c). */
   struct server_local_s *server_local;
 
@@ -178,16 +184,15 @@ cache_mode_t;
 
 /*-- gpg-agent.c --*/
 void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
-void agent_init_default_ctrl (struct server_control_s *ctrl);
 
 /*-- command.c --*/
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...);
 void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
-void start_command_handler (int, int);
+void start_command_handler (ctrl_t, int, int);
 
 /*-- command-ssh.c --*/
-void start_command_handler_ssh (int);
+void start_command_handler_ssh (ctrl_t, int);
 
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,

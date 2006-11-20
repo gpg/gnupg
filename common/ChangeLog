@@ -1,3 +1,11 @@
+2006-11-15  Werner Koch  <wk@g10code.com>
+
+	* estream.c: Disabled Pth soft mapping.
+	(my_funopen_hook_ret_t): New.
+	(print_fun_writer): Use it here.
+
+	* iobuf.c (fd_cache_close): Use %d instead of %p for debug output.
+
 2006-11-03  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (t_convert_DEPENDENCIES): Add libcommon.  From

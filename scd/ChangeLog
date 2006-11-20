@@ -1,3 +1,37 @@
+2006-11-20  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv2): Support for keypads (only CHV2).
+
+	* ccid-driver.c (ccid_transceive_secure): Made it work for Kaan
+	and SCM.
+
+2006-11-17  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (scan_or_find_devices): Use DEBUGOUT_2 instead of
+	log_debug.  Removed few other log_debug.
+
+	* iso7816.c (iso7816_check_keypad): Allow for a SW of 0.
+
+	* command.c (pin_cb): New mode to prompt for a keypad entry.
+
+	* scdaemon.c (main) <gpgconf-list>: Add disable-keypad.
+
+2006-11-15  Werner Koch  <wk@g10code.com>
+
+	* app-p15.c (read_ef_odf): Cast one printf arg.
+
+	* scdaemon.h (struct server_control_s): Add field THREAD_STARTUP.
+	* command.c (scd_command_handler): Add new arg CTRL.
+	* scdaemon.c (scd_init_default_ctrl): Made static.
+	(scd_deinit_default_ctrl): New.
+	(start_connection_thread): Call init/deinit of ctrl.
+	(handle_connections): Allocate CTRL.
+
+	* apdu.c (PCSC_ERR_MASK): New.
+	(reset_pcsc_reader, pcsc_get_status, pcsc_send_apdu)
+	(close_pcsc_reader, open_pcsc_reader): Use it after shifting error
+	values.  Reported by Henrik Nordstrom.  Fixes bug #724.
+
 2006-10-24  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.h (GCRY_MD_USER_TLS_MD5SHA1): New.

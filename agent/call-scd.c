@@ -711,17 +711,19 @@ inq_needpin (void *opaque, const char *line)
         rc = assuan_send_data (parm->ctx, pin, pinlen);
       xfree (pin);
     }
-  else if (!strncmp (line, "KEYPADINFO", 10) && (line[10] == ' ' || !line[10]))
+  else if (!strncmp (line, "POPUPKEYPADPROMPT", 17)
+           && (line[17] == ' ' || !line[17]))
     {
-      size_t code;
-      char *endp;
-
-      code = strtoul (line+10, &endp, 10);
-      line = endp;
+      line += 17;
       while (*line == ' ')
         line++;
       
-      rc = parm->getpin_cb (parm->getpin_cb_arg, line, NULL, code);
+      rc = parm->getpin_cb (parm->getpin_cb_arg, line, NULL, 1);
+    }
+  else if (!strncmp (line, "DISMISSKEYPADPROMPT", 19)
+           && (line[19] == ' ' || !line[19]))
+    {
+      rc = parm->getpin_cb (parm->getpin_cb_arg, "", NULL, 0);
     }
   else
     {

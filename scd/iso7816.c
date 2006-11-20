@@ -235,7 +235,7 @@ iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
   sw = apdu_check_keypad (slot, command, 
                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
                           pininfo->padlen);
-  return map_sw (sw);
+  return iso7816_map_sw (sw);
 }
 
 

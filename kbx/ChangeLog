@@ -1,3 +1,7 @@
+2006-11-15  Werner Koch  <wk@g10code.com>
+
+	* kbxutil.c (dump_openpgp_key): Cast printf argument.
+
 2006-10-20  Werner Koch  <wk@g10code.com>
 
 	* keybox-search.c (blob_x509_has_grip, has_keygrip): New.

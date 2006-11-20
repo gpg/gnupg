@@ -692,7 +692,8 @@ read_ef_odf (app_t app, unsigned short odf_fid)
     }
 
   if (buflen)
-    log_info ("warning: %u bytes of garbage detected at end of ODF\n", buflen);
+    log_info ("warning: %u bytes of garbage detected at end of ODF\n",
+              (unsigned int)buflen);
 
   xfree (buffer);
   return 0;

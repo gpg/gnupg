@@ -888,7 +888,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   gcry_free (plain);
   gcry_free (cram_buffer);
   log_error ("encryptedData error at \"%s\", offset %u\n",
-             where, (p - p_start)+startoffset);
+             where, (unsigned int)((p - p_start)+startoffset));
   if (bad_pass)
     {
       /* Note, that the following string might be used by other programs
@@ -1133,7 +1133,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
     }
   gcry_free (cram_buffer);
   log_error ( "data error at \"%s\", offset %u\n",
-              where, (p - buffer) + startoffset);
+              where, (unsigned int)((p - buffer) + startoffset));
   if (r_consumed)
     *r_consumed = consumed;
   return NULL;
@@ -1309,7 +1309,8 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   gcry_free (cram_buffer);
   return result;
  bailout:
-  log_error ("error at \"%s\", offset %u\n", where, (p - p_start));
+  log_error ("error at \"%s\", offset %u\n",
+             where, (unsigned int)(p - p_start));
   if (result)
     {
       int i;

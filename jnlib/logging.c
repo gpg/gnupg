@@ -48,6 +48,13 @@
 #define USE_FUNWRITER 1
 #endif
 
+#ifdef HAVE_FOPENCOOKIE
+typedef ssize_t my_funopen_hook_ret_t;
+#else
+typedef int     my_funopen_hook_ret_t;
+#endif
+
+
 static FILE *logstream;
 static int log_socket = -1;
 static char prefix_buffer[80];
@@ -111,7 +118,7 @@ writen (int fd, const void *buffer, size_t nbytes)
 }
 
 
-static int 
+static my_funopen_hook_ret_t 
 fun_writer (void *cookie_arg, const char *buffer, size_t size)
 {
   struct fun_cookie_s *cookie = cookie_arg;

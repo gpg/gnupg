@@ -200,7 +200,8 @@ enum {
   VENDOR_CHERRY = 0x046a,
   VENDOR_SCM    = 0x04e6,
   VENDOR_OMNIKEY= 0x076b,
-  VENDOR_GEMPC  = 0x08e6
+  VENDOR_GEMPC  = 0x08e6,
+  VENDOR_KAAN   = 0x0d46
 };
 
 /* A list and a table with special transport descriptions. */
@@ -990,11 +991,10 @@ scan_or_find_devices (int readerno, const char *readerid,
       fd = open (transports[i].name, O_RDWR);
       if (fd == -1)
         {
-          log_debug ("failed to open `%s': %s\n",
+          DEBUGOUT_2 ("failed to open `%s': %s\n",
                      transports[i].name, strerror (errno));
           continue;
         }
-      log_debug ("opened `%s': fd=%d\n", transports[i].name, fd);
 
       rid = malloc (strlen (transports[i].name) + 30 + 10);
       if (!rid)
@@ -1047,7 +1047,6 @@ scan_or_find_devices (int readerno, const char *readerid,
         }
       free (rid);
       close (fd);
-      log_debug ("closed fd %d\n", fd);
     }
 
   if (scan_mode)
@@ -1208,10 +1207,7 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
       if (idev)
         usb_close (idev);
       if (dev_fd != -1)
-        {
-          close (dev_fd);
-          log_debug ("closed fd %d\n", dev_fd);
-        }
+        close (dev_fd);
       free (*handle);
       *handle = NULL;
     }
@@ -1254,7 +1250,6 @@ do_close_reader (ccid_driver_t handle)
   if (handle->dev_fd != -1)
     {
       close (handle->dev_fd);
-      log_debug ("closed fd %d\n", handle->dev_fd);
       handle->dev_fd = -1;
     }
 }
@@ -1324,10 +1319,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
         usb_close (handle->idev);
       handle->idev = NULL;
       if (handle->dev_fd != -1)
-        {
-          close (handle->dev_fd);
-          log_debug ("closed fd %d\n", handle->dev_fd);
-        }
+        close (handle->dev_fd);
       handle->dev_fd = -1;
     }
 
@@ -2369,10 +2361,24 @@ ccid_transceive_secure (ccid_driver_t handle,
       || pinlen_min > pinlen_max)
     return CCID_DRIVER_ERR_INV_VALUE;
 
-  /* We have only tested this with an SCM reader so better don't risk
-     anything and do not allow the use with other readers. */
-  if (handle->id_vendor != VENDOR_SCM)
-    return CCID_DRIVER_ERR_NOT_SUPPORTED;
+  /* We have only tested a few readers so better don't risk anything
+     and do not allow the use with other readers. */
+  switch (handle->id_vendor)
+    {
+    case VENDOR_SCM:  /* Tested with SPR 532. */
+    case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
+      break;
+      /* The CHERRY XX44 does not yet work. I have not investigated it
+         closer because there is another problem: It echos a "*" for
+         each entered character and we somehow need to arrange that it
+         doesn't get to the tty at all.  Given thate are running
+         without a control terminal there is not much we can do about.
+         A weird hack using pinentry comes in mind but I doubnt that
+         this is a clean solution.  Need to contact Cherry.
+       */
+    default:
+     return CCID_DRIVER_ERR_NOT_SUPPORTED;
+    }
 
   if (testmode)
     return 0; /* Success */
@@ -2390,7 +2396,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   msg[0] = PC_to_RDR_Secure;
   msg[5] = 0; /* slot */
   msg[6] = seqno = handle->seqno++;
-  msg[7] = 4; /* bBWI */
+  msg[7] = 0; /* bBWI */
   msg[8] = 0; /* RFU */
   msg[9] = 0; /* RFU */
   msg[10] = 0; /* Perform PIN verification. */
@@ -2411,8 +2417,8 @@ ccid_transceive_secure (ccid_driver_t handle,
       msg[14] = 0x00; /* bmPINLengthFormat:
                          Units are bytes, position is 0. */
     }
-  msg[15] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
-  msg[16] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
+  msg[15] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
+  msg[16] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
   msg[17] = 0x02; /* bEntryValidationCondition:
                      Validation key pressed */
   if (pinlen_min && pinlen_max && pinlen_min == pinlen_max)
@@ -2424,13 +2430,14 @@ ccid_transceive_secure (ccid_driver_t handle,
   /* bTeoProlog follows: */
   msg[22] = handle->nonnull_nad? ((1 << 4) | 0): 0;
   msg[23] = ((handle->t1_ns & 1) << 6); /* I-block */
-  msg[24] = 4; /* apdulen.  */
+  msg[24] = 0; /* The apdulen will be filled in by the reader.  */
   /* APDU follows:  */
   msg[25] = apdu_buf[0]; /* CLA */
   msg[26] = apdu_buf[1]; /* INS */
   msg[27] = apdu_buf[2]; /* P1 */
   msg[28] = apdu_buf[3]; /* P2 */
   msglen = 29;
+  /* An EDC is not required. */
   set_msg_len (msg, msglen - 10);
 
   DEBUGOUT ("sending");
@@ -2444,12 +2451,30 @@ ccid_transceive_secure (ccid_driver_t handle,
   
   msg = recv_buffer;
   rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
-                RDR_to_PC_DataBlock, seqno, 5000, 0);
+                RDR_to_PC_DataBlock, seqno, 30000, 0);
   if (rc)
     return rc;
   
   tpdu = msg + 10;
   tpdulen = msglen - 10;
+
+  if (handle->apdu_level)
+    {
+      if (resp)
+        {
+          if (tpdulen > maxresplen)
+            {
+              DEBUGOUT_2 ("provided buffer too short for received data "
+                          "(%u/%u)\n",
+                          (unsigned int)tpdulen, (unsigned int)maxresplen);
+              return CCID_DRIVER_ERR_INV_VALUE;
+            }
+          
+          memcpy (resp, tpdu, tpdulen); 
+          *nresp = tpdulen;
+        }
+      return 0;
+    }
   
   if (tpdulen < 4) 
     {
@@ -2595,7 +2620,7 @@ main (int argc, char **argv)
 {
   int rc;
   ccid_driver_t ccid;
-  unsigned int slotstat;
+  int slotstat;
   unsigned char result[512];
   size_t resultlen;
   int no_pinpad = 0;
@@ -2623,7 +2648,7 @@ main (int argc, char **argv)
         }
       else if ( !strcmp (*argv, "--debug"))
         {
-          ccid_set_debug_level (1);
+          ccid_set_debug_level (ccid_set_debug_level (-1)+1);
           argc--; argv++;
         }
       else if ( !strcmp (*argv, "--no-poll"))

@@ -1441,18 +1441,16 @@ register_commands (assuan_context_t ctx)
 }
 
 
-/* Startup the server.  If LISTEN_FD and FD is given as -1, this is a simple
-   piper server, otherwise it is a regular server */
+/* Startup the server.  If LISTEN_FD and FD is given as -1, this is a
+   simple piper server, otherwise it is a regular server.  CTRL is the
+   control structure for this connection; it has only the basic
+   intialization. */
 void
-start_command_handler (int listen_fd, int fd)
+start_command_handler (ctrl_t ctrl, int listen_fd, int fd)
 {
   int rc;
   assuan_context_t ctx;
-  struct server_control_s ctrl;
 
-  memset (&ctrl, 0, sizeof ctrl);
-  agent_init_default_ctrl (&ctrl);
-  
   if (listen_fd == -1 && fd == -1)
     {
       int filedes[2];
@@ -1468,7 +1466,7 @@ start_command_handler (int listen_fd, int fd)
   else 
     {
       rc = assuan_init_socket_server_ext (&ctx, fd, 2);
-      ctrl.connection_fd = fd;
+      ctrl->connection_fd = fd;
     }
   if (rc)
     {
@@ -1484,12 +1482,12 @@ start_command_handler (int listen_fd, int fd)
       agent_exit (2);
     }
 
-  assuan_set_pointer (ctx, &ctrl);
-  ctrl.server_local = xcalloc (1, sizeof *ctrl.server_local);
-  ctrl.server_local->assuan_ctx = ctx;
-  ctrl.server_local->message_fd = -1;
-  ctrl.server_local->use_cache_for_signing = 1;
-  ctrl.digest.raw_value = 0;
+  assuan_set_pointer (ctx, ctrl);
+  ctrl->server_local = xcalloc (1, sizeof *ctrl->server_local);
+  ctrl->server_local->assuan_ctx = ctx;
+  ctrl->server_local->message_fd = -1;
+  ctrl->server_local->use_cache_for_signing = 1;
+  ctrl->digest.raw_value = 0;
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
@@ -1520,22 +1518,14 @@ start_command_handler (int listen_fd, int fd)
     }
 
   /* Reset the SCD if needed. */
-  agent_reset_scd (&ctrl);
+  agent_reset_scd (ctrl);
 
   /* Reset the pinentry (in case of popup messages). */
-  agent_reset_query (&ctrl);
+  agent_reset_query (ctrl);
 
+  /* Cleanup.  */
   assuan_deinit_server (ctx);
-  if (ctrl.display)
-    free (ctrl.display);
-  if (ctrl.ttyname)
-    free (ctrl.ttyname);
-  if (ctrl.ttytype)
-    free (ctrl.ttytype);
-  if (ctrl.lc_ctype)
-    free (ctrl.lc_ctype);
-  if (ctrl.lc_messages)
-    free (ctrl.lc_messages);
-  xfree (ctrl.server_local);
+  xfree (ctrl->server_local);
+  ctrl->server_local = NULL;
 }
 

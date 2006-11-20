@@ -1291,27 +1291,52 @@ verify_chv2 (app_t app,
     {
       char *pinvalue;
       iso7816_pininfo_t pininfo;
+      int did_keypad = 0;
 
       memset (&pininfo, 0, sizeof pininfo);
       pininfo.mode = 1;
       pininfo.minlen = 6;
 
-      rc = pincb (pincb_arg, "PIN", &pinvalue); 
-      if (rc)
+      if (!opt.disable_keypad
+          && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
         {
-          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
-          return rc;
+          /* The reader supports the verify command through the keypad. */
+          did_keypad = 1;
+          rc = pincb (pincb_arg,
+                      _("||Please enter your PIN at the reader's keypad"),
+                      NULL);
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              return rc;
+            }
+          rc = iso7816_verify_kp (app->slot, 0x82, "", 0, &pininfo); 
+          /* Dismiss the prompt. */
+          pincb (pincb_arg, NULL, NULL);
+        }
+      else
+        {
+          /* The reader has no keypad or we don't want to use it. */
+          rc = pincb (pincb_arg, "PIN", &pinvalue); 
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              return rc;
+            }
+          
+          if (strlen (pinvalue) < 6)
+            {
+              log_error (_("PIN for CHV%d is too short;"
+                           " minimum length is %d\n"), 2, 6);
+              xfree (pinvalue);
+              return gpg_error (GPG_ERR_BAD_PIN);
+            }
+
+          rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
         }
 
-      if (strlen (pinvalue) < 6)
-        {
-          log_error (_("PIN for CHV%d is too short;"
-                       " minimum length is %d\n"), 2, 6);
-          xfree (pinvalue);
-          return gpg_error (GPG_ERR_BAD_PIN);
-        }
-
-      rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
       if (rc)
         {
           log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
@@ -1321,7 +1346,7 @@ verify_chv2 (app_t app,
         }
       app->did_chv2 = 1;
 
-      if (!app->did_chv1 && !app->force_chv1)
+      if (!app->did_chv1 && !app->force_chv1 && !did_keypad)
         {
           rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
           if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)

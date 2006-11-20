@@ -600,7 +600,7 @@ main (int argc, char **argv )
       printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );
 #endif
       printf ("allow-admin:%lu:\n", GC_OPT_FLAG_NONE );
-
+      printf ("disable-keypad:%lu:\n", GC_OPT_FLAG_NONE );
 
       scd_exit (0);
     }
@@ -615,6 +615,7 @@ main (int argc, char **argv )
   if (pipe_server)
     { 
       /* This is the simple pipe based server */
+      ctrl_t ctrl;
       pth_attr_t tattr;
       int fd = -1;
 
@@ -656,10 +657,19 @@ main (int argc, char **argv )
       pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 512*1024);
       pth_attr_set (tattr, PTH_ATTR_NAME, "pipe-connection");
 
-      if (!pth_spawn (tattr, start_connection_thread, (void*)(-1)))
+      ctrl = xtrycalloc (1, sizeof *ctrl);
+      if ( !ctrl )
+        {
+          log_error ("error allocating connection control data: %s\n",
+                     strerror (errno) );
+          scd_exit (2);
+        }
+      ctrl->thread_startup.fd = -1;
+      if ( !pth_spawn (tattr, start_connection_thread, ctrl) )
         {
           log_error ("error spawning pipe connection handler: %s\n",
                      strerror (errno) );
+          xfree (ctrl);
           scd_exit (2);
         }
 
@@ -810,10 +820,16 @@ scd_exit (int rc)
 }
 
 
-void
+static void
 scd_init_default_ctrl (ctrl_t ctrl)
 {
   ctrl->reader_slot = -1;
+}
+
+static void
+scd_deinit_default_ctrl (ctrl_t ctrl)
+{
+
 }
 
 
@@ -1007,23 +1023,26 @@ create_server_socket (int is_standard_name, const char *name)
 static void *
 start_connection_thread (void *arg)
 {
-  int fd = (int)arg;
+  ctrl_t ctrl = arg;
+
+  scd_init_default_ctrl (ctrl);
+  if (opt.verbose)
+    log_info (_("handler for fd %d started\n"), ctrl->thread_startup.fd);
+
+  scd_command_handler (ctrl, ctrl->thread_startup.fd);
 
   if (opt.verbose)
-    log_info (_("handler for fd %d started\n"), fd);
-
-  scd_command_handler (fd);
-
-  if (opt.verbose)
-    log_info (_("handler for fd %d terminated\n"), fd);
+    log_info (_("handler for fd %d terminated\n"), ctrl->thread_startup.fd);
 
   /* If this thread is the pipe connection thread, flag that a
      shutdown is required.  With the next ticker event and given that
      no other connections are running the shutdown will then
      happen. */
-  if (fd == -1)
+  if (ctrl->thread_startup.fd == -1)
     shutdown_pending = 1;
   
+  scd_deinit_default_ctrl (ctrl);
+  xfree (ctrl);
   return NULL;
 }
 
@@ -1137,23 +1156,33 @@ handle_connections (int listen_fd)
 
       if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
 	{
+          ctrl_t ctrl;
+
           plen = sizeof paddr;
 	  fd = pth_accept (listen_fd, (struct sockaddr *)&paddr, &plen);
 	  if (fd == -1)
 	    {
 	      log_error ("accept failed: %s\n", strerror (errno));
 	    }
+          else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)) )
+            {
+              log_error ("error allocating connection control data: %s\n",
+                         strerror (errno) );
+              close (fd);
+            }
           else
             {
               char threadname[50];
+
               snprintf (threadname, sizeof threadname-1, "conn fd=%d", fd);
               threadname[sizeof threadname -1] = 0;
               pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
-              
-              if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
+              ctrl->thread_startup.fd = fd;
+              if (!pth_spawn (tattr, start_connection_thread, ctrl))
                 {
                   log_error ("error spawning connection handler: %s\n",
                              strerror (errno) );
+                  xfree (ctrl);
                   close (fd);
                 }
             }

@@ -1,3 +1,27 @@
+2006-11-20  Werner Koch  <wk@g10code.com>
+
+	* call-pinentry.c (agent_popup_message_stop): Use SIGKILL.
+	* call-scd.c (inq_needpin): Implement POPUPKEYPADPROMPT and
+	DISMISSKEYPADPROMPT.
+
+2006-11-15  Werner Koch  <wk@g10code.com>
+
+	* protect.c (make_shadow_info): Cast printf arg to unsigned int.
+	* minip12.c (parse_bag_encrypted_data): Ditto.
+	(parse_bag_data, p12_parse): Ditto.
+	* command-ssh.c (ssh_identity_register): Changed buffer_n to
+	size_t.
+
+	* agent.h (struct server_control_s): New field thread_startup.
+	* command.c (start_command_handler): Moved CTRL init code to ..
+	* gpg-agent.c (start_connection_thread): .. here.
+	(agent_deinit_default_ctrl): New.
+	(agent_init_default_ctrl): Made static.
+	(handle_connections): Allocate CTRL and pass it pth_spawn.
+	* command-ssh.c (start_command_handler_ssh): Moved CTRL init code
+	to ..
+	* gpg-agent.c (start_connection_thread_ssh): .. here.
+
 2006-11-14  Werner Koch  <wk@g10code.com>
 
 	* command.c (bump_key_eventcounter): New.

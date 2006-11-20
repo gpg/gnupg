@@ -861,7 +861,7 @@ make_shadow_info (const char *serialno, const char *idstring)
   p = stpcpy (p, numbuf);
   for (s=serialno; *s && s[1]; s += 2)
     *(unsigned char *)p++ = xtoi_2 (s);
-  sprintf (numbuf, "%d:", strlen (idstring));
+  sprintf (numbuf, "%u:", (unsigned int)strlen (idstring));
   p = stpcpy (p, numbuf);
   p = stpcpy (p, idstring);
   *p++ = ')';

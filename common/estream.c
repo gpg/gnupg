@@ -46,6 +46,9 @@
 #endif
 
 #ifdef HAVE_PTH
+  /* We explicitly need to disable soft mapping as Debian currently
+     enables it for no reason. */
+# define PTH_SYSCALL_SOFT 0
 # include <pth.h>
 #endif
 
@@ -59,12 +62,20 @@ void *memrchr (const void *block, int c, size_t size);
 
 #include <estream.h>
 
+
 
 
 /* Generally used types.  */
 
 typedef void *(*func_realloc_t) (void *mem, size_t size);
 typedef void (*func_free_t) (void *mem);
+
+#ifdef HAVE_FOPENCOOKIE
+typedef ssize_t my_funopen_hook_ret_t;
+#else
+typedef int     my_funopen_hook_ret_t;
+#endif
+
 
 
 
@@ -1651,7 +1662,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
 
 /* Helper for esprint. */
 #if defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN)
-static int 
+static my_funopen_hook_ret_t
 print_fun_writer (void *cookie_arg, const char *buffer, size_t size)
 {
   estream_t stream = cookie_arg;

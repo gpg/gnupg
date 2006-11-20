@@ -93,7 +93,55 @@ if test "$1" = "--build-w32"; then
 fi
 # ***** end W32 build script *******
 
+# ***** AMD64 cross build script *******
+# Used to cross-compile for AMD64 (for testing)
+if test "$1" = "--build-amd64"; then
+    tmp=`dirname $0`
+    tsdir=`cd "$tmp"; pwd`
+    shift
+    if [ ! -f $tsdir/scripts/config.guess ]; then
+        echo "$tsdir/scripts/config.guess not found" >&2
+        exit 1
+    fi
+    build=`$tsdir/scripts/config.guess`
 
+    [ -z "$amd64root" ] && amd64root="$HOME/amd64root"
+    echo "Using $amd64root as standard install directory" >&2
+    
+    # Locate the cross compiler
+    crossbindir=
+    for host in x86_64-linux-gnu amd64-linux-gnu; do
+        if ${host}-gcc --version >/dev/null 2>&1 ; then
+            crossbindir=/usr/${host}/bin
+            conf_CC="CC=${host}-gcc"
+            break;
+        fi
+    done
+    if [ -z "$crossbindir" ]; then
+        echo "Cross compiler kit not installed" >&2
+        echo "Stop." >&2
+        exit 1
+    fi
+   
+    if [ -f "$tsdir/config.log" ]; then
+        if ! head $tsdir/config.log | grep "$host" >/dev/null; then
+            echo "Please run a 'make distclean' first" >&2
+            exit 1
+        fi
+    fi
+
+    $tsdir/configure --enable-maintainer-mode --prefix=${amd64root}  \
+             --host=${host} --build=${build} \
+             --with-gpg-error-prefix=${amd64root} \
+	     --with-ksba-prefix=${amd64root} \
+	     --with-libgcrypt-prefix=${amd64root} \
+	     --with-libassuan-prefix=${amd64root} \
+	     --with-zlib=/usr/x86_64-linux-gnu/usr \
+             --with-pth-prefix=/usr/x86_64-linux-gnu/usr
+    rc=$?
+    exit $rc
+fi
+# ***** end AMD64 cross build script *******
 
 
 # Grep the required versions from configure.ac

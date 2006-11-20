@@ -2329,7 +2329,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   unsigned char key_grip_raw[20];
   char key_grip[41];
   unsigned char *buffer = NULL;
-  unsigned int buffer_n;
+  size_t buffer_n;
   char *description = NULL;
   char *comment = NULL;
   unsigned int i;
@@ -2821,32 +2821,28 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 
 /* Start serving client on SOCK_CLIENT.  */
 void
-start_command_handler_ssh (int sock_client)
+start_command_handler_ssh (ctrl_t ctrl, int sock_client)
 {
-  struct server_control_s ctrl;
   estream_t stream_sock;
   gpg_error_t err;
   int ret;
 
   /* Setup control structure.  */
-
-  memset (&ctrl, 0, sizeof (ctrl));
-  agent_init_default_ctrl (&ctrl);
-  ctrl.connection_fd = sock_client;
+  ctrl->connection_fd = sock_client;
 
   /* Because the ssh protocol does not send us information about the
      the current TTY setting, we resort here to use those from startup
      or those explictly set.  */
-  if (!ctrl.display && opt.startup_display)
-    ctrl.display = strdup (opt.startup_display);
-  if (!ctrl.ttyname && opt.startup_ttyname)
-    ctrl.ttyname = strdup (opt.startup_ttyname);
-  if (!ctrl.ttytype && opt.startup_ttytype)
-    ctrl.ttytype = strdup (opt.startup_ttytype);
-  if (!ctrl.lc_ctype && opt.startup_lc_ctype)
-    ctrl.lc_ctype = strdup (opt.startup_lc_ctype);
-  if (!ctrl.lc_messages && opt.startup_lc_messages)
-    ctrl.lc_messages = strdup (opt.startup_lc_messages);
+  if (!ctrl->display && opt.startup_display)
+    ctrl->display = strdup (opt.startup_display);
+  if (!ctrl->ttyname && opt.startup_ttyname)
+    ctrl->ttyname = strdup (opt.startup_ttyname);
+  if (!ctrl->ttytype && opt.startup_ttytype)
+    ctrl->ttytype = strdup (opt.startup_ttytype);
+  if (!ctrl->lc_ctype && opt.startup_lc_ctype)
+    ctrl->lc_ctype = strdup (opt.startup_lc_ctype);
+  if (!ctrl->lc_messages && opt.startup_lc_messages)
+    ctrl->lc_messages = strdup (opt.startup_lc_messages);
 
 
   /* Create stream from socket.  */
@@ -2870,20 +2866,14 @@ start_command_handler_ssh (int sock_client)
     }
 
   /* Main processing loop. */
-  while ( !ssh_request_process (&ctrl, stream_sock) )
+  while ( !ssh_request_process (ctrl, stream_sock) )
     ;
 
   /* Reset the SCD in case it has been used. */
-  agent_reset_scd (&ctrl);
+  agent_reset_scd (ctrl);
 
 
  out:
   if (stream_sock)
     es_fclose (stream_sock);
-
-  free (ctrl.display);
-  free (ctrl.ttyname);
-  free (ctrl.ttytype);
-  free (ctrl.lc_ctype);
-  free (ctrl.lc_messages);
 }

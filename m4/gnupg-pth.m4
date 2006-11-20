@@ -91,6 +91,7 @@ AC_DEFUN([GNUPG_PATH_PTH],
   fi
   AC_PATH_PROG(PTH_CONFIG, pth-config, no)
   tmp=ifelse([$1], ,1.3.7,$1)
+  test -z "$have_w32_system" && have_w32_system="no"
   if test "$have_w32_system" = no; then
    if test "$PTH_CONFIG" != "no"; then
     GNUPG_PTH_VERSION_CHECK($tmp)

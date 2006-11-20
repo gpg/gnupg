@@ -721,6 +721,31 @@ pin_cb (void *opaque, const char *info, char **retstr)
   unsigned char *value;
   size_t valuelen;
 
+  if (!retstr)
+    {
+      /* We prompt for keypad entry.  To make sure that the popup has
+         been show we use an inquire and not just a status message.
+         We ignore any value returned.  */
+      if (info)
+        {
+          log_debug ("prompting for keypad entry '%s'\n", info);
+          rc = asprintf (&command, "POPUPKEYPADPROMPT %s", info);
+          if (rc < 0)
+            return gpg_error (gpg_err_code_from_errno (errno));
+          rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
+          free (command);  
+        }
+      else
+        {
+          log_debug ("dismiss keypad entry prompt\n");
+          rc = assuan_inquire (ctx, "DISMISSKEYPADPROMPT",
+                               &value, &valuelen, MAXLEN_PIN); 
+        }
+      if (!rc)
+        xfree (value);
+      return rc;
+    }
+
   *retstr = NULL;
   log_debug ("asking for PIN '%s'\n", info);
 
@@ -1584,14 +1609,10 @@ register_commands (assuan_context_t ctx)
 /* Startup the server.  If FD is given as -1 this is simple pipe
    server, otherwise it is a regular server. */
 void
-scd_command_handler (int fd)
+scd_command_handler (ctrl_t ctrl, int fd)
 {
   int rc;
   assuan_context_t ctx;
-  struct server_control_s ctrl;
-
-  memset (&ctrl, 0, sizeof ctrl);
-  scd_init_default_ctrl (&ctrl);
   
   if (fd == -1)
     {
@@ -1622,20 +1643,20 @@ scd_command_handler (int fd)
 
   /* Allocate and initialize the server object.  Put it into the list
      of active sessions. */
-  ctrl.server_local = xcalloc (1, sizeof *ctrl.server_local);
-  ctrl.server_local->next_session = session_list;
-  session_list = ctrl.server_local;
-  ctrl.server_local->ctrl_backlink = &ctrl;
-  ctrl.server_local->assuan_ctx = ctx;
+  ctrl->server_local = xcalloc (1, sizeof *ctrl->server_local);
+  ctrl->server_local->next_session = session_list;
+  session_list = ctrl->server_local;
+  ctrl->server_local->ctrl_backlink = ctrl;
+  ctrl->server_local->assuan_ctx = ctx;
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
 
   /* We open the reader right at startup so that the ticker is able to
      update the status file. */
-  if (ctrl.reader_slot == -1)
+  if (ctrl->reader_slot == -1)
     {
-      ctrl.reader_slot = get_reader_slot ();
+      ctrl->reader_slot = get_reader_slot ();
     }
 
   /* Command processing loop. */
@@ -1661,23 +1682,24 @@ scd_command_handler (int fd)
     }
 
   /* Cleanup.  */
-  do_reset (&ctrl, 0); 
+  do_reset (ctrl, 0); 
 
   /* Release the server object.  */
-  if (session_list == ctrl.server_local)
-    session_list = ctrl.server_local->next_session;
+  if (session_list == ctrl->server_local)
+    session_list = ctrl->server_local->next_session;
   else
     {
       struct server_local_s *sl;
       
       for (sl=session_list; sl->next_session; sl = sl->next_session)
-        if (sl->next_session == ctrl.server_local)
+        if (sl->next_session == ctrl->server_local)
           break;
       if (!sl->next_session)
           BUG ();
-      sl->next_session = ctrl.server_local->next_session;
+      sl->next_session = ctrl->server_local->next_session;
     }
-  xfree (ctrl.server_local);
+  xfree (ctrl->server_local);
+  ctrl->server_local = NULL;
 
   /* Release the Assuan context.  */
   assuan_deinit_server (ctx);

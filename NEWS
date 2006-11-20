@@ -1,6 +1,11 @@
 Noteworthy changes in version 2.0.1
 -------------------------------------------------
 
+ * Experimental support for the PIN pads of the SPR 532 and the Kaan
+   Advanced card readers.  Add "disable-keypad" scdaemon.conf if you
+   don't want it.  Does currently only work for the OpenPGP card and
+   the authentication and decrypt keys.
+
 
 Noteworthy changes in version 2.0.0 (2006-11-11)
 -------------------------------------------------

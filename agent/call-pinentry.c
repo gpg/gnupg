@@ -636,7 +636,7 @@ popup_message_thread (void *arg)
 /* Pop up a message window similar to the confirm one but keep it open
    until agent_popup_message_stop has been called.  It is crucial for
    the caller to make sure that the stop function gets called as soon
-   as the message is not anymore required becuase the message is
+   as the message is not anymore required because the message is
    system modal and all other attempts to use the pinentry will fail
    (after a timeout). */
 int 
@@ -723,8 +723,9 @@ agent_popup_message_stop (ctrl_t ctrl)
       if (rc == pid)
         assuan_set_flag (entry_ctx, ASSUAN_NO_WAITPID, 1);
     }
-  else
-    kill (pid, SIGINT);
+  else if (pid > 0)
+    kill (pid, SIGKILL);  /* Need to use SIGKILL due to bad
+                             interaction of SIGINT with Pth. */
 
   /* Now wait for the thread to terminate. */
   rc = pth_join (popup_tid, NULL);

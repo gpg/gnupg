@@ -1,3 +1,7 @@
+2006-11-15  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Add convenience option --build-amd64.
+
 2006-11-14  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (HAVE_ASSUAN_SET_IO_MONITOR): Test for it.

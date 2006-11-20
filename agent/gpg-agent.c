@@ -211,6 +211,9 @@ static char *create_socket_name (int use_standard_socket,
 static int create_server_socket (int is_standard_name, const char *name);
 static void create_directories (void);
 
+static void agent_init_default_ctrl (ctrl_t ctrl);
+static void agent_deinit_default_ctrl (ctrl_t ctrl);
+
 static void handle_connections (int listen_fd, int listen_fd_ssh);
 static int check_for_running_agent (int);
 
@@ -813,8 +816,21 @@ main (int argc, char **argv )
 
 
   if (pipe_server)
-    { /* this is the simple pipe based server */
-      start_command_handler (-1, -1);
+    { 
+      /* This is the simple pipe based server */
+      ctrl_t ctrl;
+
+      ctrl = xtrycalloc (1, sizeof *ctrl);
+      if (!ctrl)
+        {
+          log_error ("error allocating connection control data: %s\n",
+                     strerror (errno) );
+          agent_exit (1);
+        }
+      agent_init_default_ctrl (ctrl);
+      start_command_handler (ctrl, -1, -1);
+      agent_deinit_default_ctrl (ctrl);
+      xfree (ctrl);
     }
   else if (!is_daemon)
     ; /* NOTREACHED */
@@ -1073,8 +1089,8 @@ agent_exit (int rc)
 }
 
 
-void
-agent_init_default_ctrl (struct server_control_s *ctrl)
+static void
+agent_init_default_ctrl (ctrl_t ctrl)
 {
   ctrl->connection_fd = -1;
 
@@ -1102,6 +1118,21 @@ agent_init_default_ctrl (struct server_control_s *ctrl)
   ctrl->lc_messages = default_lc_messages? strdup (default_lc_messages) : NULL;
 }
 
+
+static void
+agent_deinit_default_ctrl (ctrl_t ctrl)
+{
+  if (ctrl->display)
+    free (ctrl->display);
+  if (ctrl->ttyname)
+    free (ctrl->ttyname);
+  if (ctrl->ttytype)
+    free (ctrl->ttytype);
+  if (ctrl->lc_ctype)
+    free (ctrl->lc_ctype);
+  if (ctrl->lc_messages)
+    free (ctrl->lc_messages);
+}
 
 /* Reread parts of the configuration.  Note, that this function is
    obviously not thread-safe and should only be called from the PTH
@@ -1437,17 +1468,20 @@ handle_signal (int signo)
 static void *
 start_connection_thread (void *arg)
 {
-  int fd = (int)arg;
+  ctrl_t ctrl = arg;
 
+  agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d started\n"), 
-              (long)pth_self (), fd);
+              (long)pth_self (), ctrl->thread_startup.fd);
 
-  start_command_handler (-1, fd);
+  start_command_handler (ctrl, -1, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d terminated\n"), 
-              (long)pth_self (), fd);
+              (long)pth_self (), ctrl->thread_startup.fd);
   
+  agent_deinit_default_ctrl (ctrl);
+  xfree (ctrl);
   return NULL;
 }
 
@@ -1456,17 +1490,20 @@ start_connection_thread (void *arg)
 static void *
 start_connection_thread_ssh (void *arg)
 {
-  int fd = (int)arg;
+  ctrl_t ctrl = arg;
 
+  agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d started\n"),
-              (long)pth_self (), fd);
+              (long)pth_self (), ctrl->thread_startup.fd);
 
-  start_command_handler_ssh (fd);
+  start_command_handler_ssh (ctrl, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d terminated\n"),
-              (long)pth_self (), fd);
+              (long)pth_self (), ctrl->thread_startup.fd);
   
+  agent_deinit_default_ctrl (ctrl);
+  xfree (ctrl);
   return NULL;
 }
 
@@ -1584,24 +1621,35 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
       if (FD_ISSET (listen_fd, &read_fdset))
 	{
+          ctrl_t ctrl;
+
           plen = sizeof paddr;
 	  fd = pth_accept (listen_fd, (struct sockaddr *)&paddr, &plen);
 	  if (fd == -1)
 	    {
 	      log_error ("accept failed: %s\n", strerror (errno));
 	    }
+          else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)) )
+            {
+              log_error ("error allocating connection control data: %s\n",
+                         strerror (errno) );
+              close (fd);
+            }
           else 
             {
               char threadname[50];
+
               snprintf (threadname, sizeof threadname-1,
                         "conn fd=%d (gpg)", fd);
               threadname[sizeof threadname -1] = 0;
               pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
-              if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
+              ctrl->thread_startup.fd = fd;
+              if (!pth_spawn (tattr, start_connection_thread, ctrl))
                 {
                   log_error ("error spawning connection handler: %s\n",
                              strerror (errno) );
                   close (fd);
+                  xfree (ctrl);
                 }
             }
           fd = -1;
@@ -1609,25 +1657,36 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
       if (listen_fd_ssh != -1 && FD_ISSET (listen_fd_ssh, &read_fdset))
 	{
+          ctrl_t ctrl;
+
           plen = sizeof paddr;
 	  fd = pth_accept (listen_fd_ssh, (struct sockaddr *)&paddr, &plen);
 	  if (fd == -1)
 	    {
 	      log_error ("accept failed for ssh: %s\n", strerror (errno));
 	    }
+          else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)) )
+            {
+              log_error ("error allocating connection control data: %s\n",
+                         strerror (errno) );
+              close (fd);
+            }
           else
             {
               char threadname[50];
+
+              agent_init_default_ctrl (ctrl);
               snprintf (threadname, sizeof threadname-1,
                         "conn fd=%d (ssh)", fd);
               threadname[sizeof threadname -1] = 0;
               pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
-
-              if (!pth_spawn (tattr, start_connection_thread_ssh, (void*)fd))
+              ctrl->thread_startup.fd = fd;
+              if (!pth_spawn (tattr, start_connection_thread_ssh, ctrl) )
                 {
                   log_error ("error spawning ssh connection handler: %s\n",
                              strerror (errno) );
                   close (fd);
+                  xfree (ctrl);
                 }
             }
           fd = -1;

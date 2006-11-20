@@ -1,3 +1,8 @@
+2006-11-17  Werner Koch  <wk@g10code.com>
+
+	* gnupg-pth.m4: Make sure that have_w32_system is set to no by
+	default.
+
 2006-11-14  Werner Koch  <wk@g10code.com>
 
 	* libassuan.m4: Updated from libassuan SVN.
