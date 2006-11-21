@@ -46,9 +46,6 @@
 #endif
 
 #ifdef HAVE_PTH
-  /* We explicitly need to disable soft mapping as Debian currently
-     enables it for no reason. */
-# define PTH_SYSCALL_SOFT 0
 # include <pth.h>
 #endif
 

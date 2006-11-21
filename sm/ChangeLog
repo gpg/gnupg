@@ -1,3 +1,8 @@
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (my_funopen_hook_ret_t): New.
+	(format_name_writer): Use it for the return value.
+
 2006-11-14  Werner Koch  <wk@g10code.com>
 
 	* server.c (skip_options): Skip leading spaces.

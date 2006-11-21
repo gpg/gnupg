@@ -1,3 +1,10 @@
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (libexec_PROGRAMS): Put pscs-wrapper into libexec.
+	Renamed to gnupg-pcsc-wrapper.
+	* apdu.c (open_pcsc_reader): Use GNUPG_LIBEXECDIR to accces the
+	wrapper.  Suggested by Eric Dorland.
+
 2006-11-20  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (verify_chv2): Support for keypads (only CHV2).

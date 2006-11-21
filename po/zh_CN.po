@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-10 00:40+0100\n"
+"POT-Creation-Date: 2006-11-21 10:53+0100\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -137,7 +137,7 @@ msgid ""
 "0Awithin gpg-agent's key storage"
 msgstr ""
 
-#: agent/command-ssh.c:2857
+#: agent/command-ssh.c:2853
 #, fuzzy, c-format
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s：建立散列表失败：%s\n"
@@ -291,7 +291,7 @@ msgstr ""
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
-#: agent/gpg-agent.c:238 agent/preset-passphrase.c:96 agent/protect-tool.c:143
+#: agent/gpg-agent.c:241 agent/preset-passphrase.c:96 agent/protect-tool.c:143
 #: scd/scdaemon.c:190 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
 #: tools/gpgconf.c:86 tools/symcryptrun.c:225
 #, fuzzy
@@ -300,154 +300,148 @@ msgstr ""
 "请向 <gnupg-bugs@gnu.org> 报告程序缺陷。\n"
 "请向 <zuxyhere@eastday.com> 反映简体中文翻译的问题。\n"
 
-#: agent/gpg-agent.c:238 agent/preset-passphrase.c:96 agent/protect-tool.c:143
-#: scd/scdaemon.c:190 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
-#: tools/gpgconf.c:86 tools/symcryptrun.c:225
-msgid ">.\n"
-msgstr ""
-
-#: agent/gpg-agent.c:241
+#: agent/gpg-agent.c:244
 #, fuzzy
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "用法： gpg [选项] [文件] (用 -h 求助)"
 
-#: agent/gpg-agent.c:243
+#: agent/gpg-agent.c:246
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:302
+#: agent/gpg-agent.c:305
 #, c-format
 msgid "out of core in secure memory while allocating %lu bytes"
 msgstr ""
 
-#: agent/gpg-agent.c:305
+#: agent/gpg-agent.c:308
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr ""
 
-#: agent/gpg-agent.c:336 g10/gpg.c:923 scd/scdaemon.c:264 sm/gpgsm.c:646
+#: agent/gpg-agent.c:339 g10/gpg.c:923 scd/scdaemon.c:264 sm/gpgsm.c:646
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:507 agent/protect-tool.c:1073 g10/gpg.c:1808
+#: agent/gpg-agent.c:510 agent/protect-tool.c:1073 g10/gpg.c:1808
 #: kbx/kbxutil.c:432 scd/scdaemon.c:356 sm/gpgsm.c:767
 #: tools/symcryptrun.c:1056
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:601 g10/gpg.c:2007 scd/scdaemon.c:433 sm/gpgsm.c:864
+#: agent/gpg-agent.c:604 g10/gpg.c:2007 scd/scdaemon.c:433 sm/gpgsm.c:864
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "注意：没有默认配置文件‘%s’\n"
 
-#: agent/gpg-agent.c:606 agent/gpg-agent.c:1129 g10/gpg.c:2011
+#: agent/gpg-agent.c:609 agent/gpg-agent.c:1160 g10/gpg.c:2011
 #: scd/scdaemon.c:438 sm/gpgsm.c:868 tools/symcryptrun.c:989
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "配置文件‘%s’：%s\n"
 
-#: agent/gpg-agent.c:614 g10/gpg.c:2018 scd/scdaemon.c:446 sm/gpgsm.c:875
+#: agent/gpg-agent.c:617 g10/gpg.c:2018 scd/scdaemon.c:446 sm/gpgsm.c:875
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "从‘%s’读取选项\n"
 
-#: agent/gpg-agent.c:914 g10/plaintext.c:136 g10/plaintext.c:141
+#: agent/gpg-agent.c:930 g10/plaintext.c:136 g10/plaintext.c:141
 #: g10/plaintext.c:158
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "建立‘%s’时发生错误：%s\n"
 
-#: agent/gpg-agent.c:1179 agent/gpg-agent.c:1282 agent/gpg-agent.c:1286
-#: agent/gpg-agent.c:1322 agent/gpg-agent.c:1326 g10/exec.c:174
-#: g10/openfile.c:416 scd/scdaemon.c:916
+#: agent/gpg-agent.c:1210 agent/gpg-agent.c:1313 agent/gpg-agent.c:1317
+#: agent/gpg-agent.c:1353 agent/gpg-agent.c:1357 g10/exec.c:174
+#: g10/openfile.c:416 scd/scdaemon.c:932
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "无法建立目录‘%s’：%s\n"
 
-#: agent/gpg-agent.c:1193 scd/scdaemon.c:930
+#: agent/gpg-agent.c:1224 scd/scdaemon.c:946
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1219 scd/scdaemon.c:956
+#: agent/gpg-agent.c:1250 scd/scdaemon.c:972
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "无法建立‘%s’：%s\n"
 
-#: agent/gpg-agent.c:1248 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1279 scd/scdaemon.c:1001
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "在‘%s’中寻找信任度记录时出错：%s\n"
 
-#: agent/gpg-agent.c:1256 scd/scdaemon.c:993
+#: agent/gpg-agent.c:1287 scd/scdaemon.c:1009
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "更新失败：%s\n"
 
-#: agent/gpg-agent.c:1262 scd/scdaemon.c:999
+#: agent/gpg-agent.c:1293 scd/scdaemon.c:1015
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "正在将私钥写至`%s'\n"
 
-#: agent/gpg-agent.c:1290 agent/gpg-agent.c:1332 g10/openfile.c:419
+#: agent/gpg-agent.c:1321 agent/gpg-agent.c:1363 g10/openfile.c:419
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "已创建目录‘%s’\n"
 
-#: agent/gpg-agent.c:1338
+#: agent/gpg-agent.c:1369
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "fstat(%d) 在 %s 中出错：%s\n"
 
-#: agent/gpg-agent.c:1342
+#: agent/gpg-agent.c:1373
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "无法建立目录‘%s’：%s\n"
 
-#: agent/gpg-agent.c:1441
+#: agent/gpg-agent.c:1475
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1446
+#: agent/gpg-agent.c:1480
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1460
+#: agent/gpg-agent.c:1497
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1465
+#: agent/gpg-agent.c:1502
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1559 scd/scdaemon.c:1115
+#: agent/gpg-agent.c:1598 scd/scdaemon.c:1134
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "更新私钥失败：%s\n"
 
-#: agent/gpg-agent.c:1643 scd/scdaemon.c:1172
+#: agent/gpg-agent.c:1704 scd/scdaemon.c:1201
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s：已跳过：%s\n"
 
-#: agent/gpg-agent.c:1664
+#: agent/gpg-agent.c:1725
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent 在此次舍话中无法使用\n"
 
-#: agent/gpg-agent.c:1674 common/simple-pwquery.c:324 g10/call-agent.c:137
+#: agent/gpg-agent.c:1735 common/simple-pwquery.c:324 g10/call-agent.c:137
 #: sm/call-agent.c:144 tools/gpg-connect-agent.c:713
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO 环境变量格式错误\n"
 
-#: agent/gpg-agent.c:1686 common/simple-pwquery.c:336 g10/call-agent.c:149
+#: agent/gpg-agent.c:1747 common/simple-pwquery.c:336 g10/call-agent.c:149
 #: sm/call-agent.c:156 tools/gpg-connect-agent.c:724
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -4211,7 +4205,7 @@ msgstr "密钥于 %s 过期\n"
 msgid "Signature expires at %s\n"
 msgstr "签名于 %s 过期\n"
 
-#: g10/keygen.c:1856
+#: g10/keygen.c:1854
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -4444,7 +4438,7 @@ msgstr "不能创建备份文件‘%s’：%s\n"
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "注意：卡密钥的备份已保存到‘%s’\n"
 
-#: g10/keyid.c:539 g10/keyid.c:551 g10/keyid.c:563 g10/keyid.c:575
+#: g10/keyid.c:540 g10/keyid.c:552 g10/keyid.c:564 g10/keyid.c:576
 msgid "never     "
 msgstr "永不过期"
 
@@ -5448,26 +5442,26 @@ msgstr "匿名收件者；正在尝试使用私钥 %s ……\n"
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "很好，我们就是匿名收件者。\n"
 
-#: g10/pubkey-enc.c:226
+#: g10/pubkey-enc.c:227
 msgid "old encoding of the DEK is not supported\n"
 msgstr "不支持旧式的 DEK 编码\n"
 
-#: g10/pubkey-enc.c:247
+#: g10/pubkey-enc.c:248
 #, c-format
 msgid "cipher algorithm %d%s is unknown or disabled\n"
 msgstr "对称加密算法 %d%s 未知或已停用\n"
 
-#: g10/pubkey-enc.c:285
+#: g10/pubkey-enc.c:286
 #, c-format
 msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr "注意：收件人的首选项中找不到加密算法 %s\n"
 
-#: g10/pubkey-enc.c:305
+#: g10/pubkey-enc.c:306
 #, c-format
 msgid "NOTE: secret key %s expired at %s\n"
 msgstr "注意：私钥 %s 已于 %s 过期\n"
 
-#: g10/pubkey-enc.c:311
+#: g10/pubkey-enc.c:312
 msgid "NOTE: key has been revoked"
 msgstr "注意：密钥已被吊销"
 
@@ -5630,12 +5624,12 @@ msgstr "对称加密无法避免生成弱密钥；已经尝试 %d 次！\n"
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "DSA 需要散列值长度为 8 位的倍数\n"
 
-#: g10/seskey.c:243
+#: g10/seskey.c:242
 #, c-format
 msgid "DSA key %s uses an unsafe (%u bit) hash\n"
 msgstr "DSA 密钥 %s 使用不安全的(%u 位)的散列\n"
 
-#: g10/seskey.c:255
+#: g10/seskey.c:254
 #, c-format
 msgid "DSA key %s requires a %u bit or larger hash\n"
 msgstr "DSA 密钥 %s 需要 %u 位或更长的散列\n"
@@ -6148,7 +6142,7 @@ msgstr ""
 msgid "input line %u too long or missing LF\n"
 msgstr "输入行 %u 太长或者行末的换行符 LF 遗失\n"
 
-#: jnlib/logging.c:619
+#: jnlib/logging.c:626
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "您找到一个程序缺陷了……(%s:%d)\n"
@@ -6183,11 +6177,6 @@ msgstr ""
 "请向 <gnupg-bugs@gnu.org> 报告程序缺陷。\n"
 "请向 <zuxyhere@eastday.com> 反映简体中文翻译的问题。\n"
 
-#: kbx/kbxutil.c:108
-#, fuzzy
-msgid ".\n"
-msgstr "%s.\n"
-
 #: kbx/kbxutil.c:112
 #, fuzzy
 msgid "Usage: kbxutil [options] [files] (-h for help)"
@@ -6218,47 +6207,52 @@ msgstr "无法存储创建日期：%s\n"
 msgid "reading public key failed: %s\n"
 msgstr "无法读出公钥：%s\n"
 
-#: scd/app-openpgp.c:1017 scd/app-openpgp.c:1953
+#: scd/app-openpgp.c:1017 scd/app-openpgp.c:1978
 msgid "response does not contain the public key data\n"
 msgstr "响应未包含公钥数据\n"
 
-#: scd/app-openpgp.c:1025 scd/app-openpgp.c:1961
+#: scd/app-openpgp.c:1025 scd/app-openpgp.c:1986
 msgid "response does not contain the RSA modulus\n"
 msgstr "响应未包含 RSA 余数\n"
 
-#: scd/app-openpgp.c:1034 scd/app-openpgp.c:1971
+#: scd/app-openpgp.c:1034 scd/app-openpgp.c:1996
 msgid "response does not contain the RSA public exponent\n"
 msgstr "响应未包含 RSA 公钥指数\n"
 
-#: scd/app-openpgp.c:1302 scd/app-openpgp.c:1390 scd/app-openpgp.c:2222
+#: scd/app-openpgp.c:1306
+msgid "||Please enter your PIN at the reader's keypad"
+msgstr ""
+
+#: scd/app-openpgp.c:1310 scd/app-openpgp.c:1324 scd/app-openpgp.c:1415
+#: scd/app-openpgp.c:2247
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "PIN 回调返回错误：%s\n"
 
-#: scd/app-openpgp.c:1308 scd/app-openpgp.c:1396 scd/app-openpgp.c:2228
+#: scd/app-openpgp.c:1331 scd/app-openpgp.c:1421 scd/app-openpgp.c:2253
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "CHV%d 的 PIN 太短；最小长度为 %d\n"
 
-#: scd/app-openpgp.c:1317 scd/app-openpgp.c:1331 scd/app-openpgp.c:1406
-#: scd/app-openpgp.c:2237 scd/app-openpgp.c:2251
+#: scd/app-openpgp.c:1342 scd/app-openpgp.c:1356 scd/app-openpgp.c:1431
+#: scd/app-openpgp.c:2262 scd/app-openpgp.c:2276
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "验证 CHV%d 失败：%s\n"
 
-#: scd/app-openpgp.c:1354
+#: scd/app-openpgp.c:1379
 msgid "access to admin commands is not configured\n"
 msgstr "尚未配置管理员命令的权限\n"
 
-#: scd/app-openpgp.c:1369 scd/app-openpgp.c:2461
+#: scd/app-openpgp.c:1394 scd/app-openpgp.c:2486
 msgid "error retrieving CHV status from card\n"
 msgstr "从卡中获取 CHV 状态时出错\n"
 
-#: scd/app-openpgp.c:1375 scd/app-openpgp.c:2470
+#: scd/app-openpgp.c:1400 scd/app-openpgp.c:2495
 msgid "card is permanently locked!\n"
 msgstr "卡被永久锁定！\n"
 
-#: scd/app-openpgp.c:1380
+#: scd/app-openpgp.c:1405
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr "尝试管理员 PIN %d 次后，卡将被永久锁定！\n"
@@ -6266,108 +6260,108 @@ msgstr "尝试管理员 PIN %d 次后，卡将被永久锁定！\n"
 #. TRANSLATORS: Do not translate the "|A|" prefix but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1387
+#: scd/app-openpgp.c:1412
 msgid "|A|Admin PIN"
 msgstr "|A|管理员 PIN"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1536
+#: scd/app-openpgp.c:1561
 msgid "|AN|New Admin PIN"
 msgstr "|AN|新的管理员 PIN"
 
-#: scd/app-openpgp.c:1536
+#: scd/app-openpgp.c:1561
 msgid "|N|New PIN"
 msgstr "新的 PIN"
 
-#: scd/app-openpgp.c:1540
+#: scd/app-openpgp.c:1565
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "获取新 PIN 时出错：%s\n"
 
-#: scd/app-openpgp.c:1590 scd/app-openpgp.c:2039
+#: scd/app-openpgp.c:1615 scd/app-openpgp.c:2064
 msgid "error reading application data\n"
 msgstr "读取应用程序数据时出错\n"
 
-#: scd/app-openpgp.c:1596 scd/app-openpgp.c:2046
+#: scd/app-openpgp.c:1621 scd/app-openpgp.c:2071
 msgid "error reading fingerprint DO\n"
 msgstr "读取指纹 D0 出错\n"
 
-#: scd/app-openpgp.c:1606
+#: scd/app-openpgp.c:1631
 msgid "key already exists\n"
 msgstr "密钥已存在\n"
 
-#: scd/app-openpgp.c:1610
+#: scd/app-openpgp.c:1635
 msgid "existing key will be replaced\n"
 msgstr "现有的密钥将被替换\n"
 
-#: scd/app-openpgp.c:1612
+#: scd/app-openpgp.c:1637
 msgid "generating new key\n"
 msgstr "生成新密钥\n"
 
-#: scd/app-openpgp.c:1779
+#: scd/app-openpgp.c:1804
 msgid "creation timestamp missing\n"
 msgstr "缺少创建时间戳\n"
 
-#: scd/app-openpgp.c:1786
+#: scd/app-openpgp.c:1811
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "RSA 余数缺失或者不是 %d 位长\n"
 
-#: scd/app-openpgp.c:1793
+#: scd/app-openpgp.c:1818
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "RSA 公钥指数缺失或长于 %d 位\n"
 
-#: scd/app-openpgp.c:1801 scd/app-openpgp.c:1808
+#: scd/app-openpgp.c:1826 scd/app-openpgp.c:1833
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "RSA 质数 %s 缺失或者不是 %d 位长\n"
 
-#: scd/app-openpgp.c:1871
+#: scd/app-openpgp.c:1896
 #, c-format
 msgid "failed to store the key: %s\n"
 msgstr "无法存储密钥：%s\n"
 
-#: scd/app-openpgp.c:1930
+#: scd/app-openpgp.c:1955
 msgid "please wait while key is being generated ...\n"
 msgstr "请稍候，正在生成密钥……\n"
 
-#: scd/app-openpgp.c:1944
+#: scd/app-openpgp.c:1969
 msgid "generating key failed\n"
 msgstr "生成密钥失败\n"
 
-#: scd/app-openpgp.c:1947
+#: scd/app-openpgp.c:1972
 #, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "密钥已生成(耗时 %d 秒)\n"
 
-#: scd/app-openpgp.c:2004
+#: scd/app-openpgp.c:2029
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "无效的 OpenPGP 卡结构(D0 0x93)\n"
 
-#: scd/app-openpgp.c:2141
+#: scd/app-openpgp.c:2166
 #, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "卡不支持散列算法 %s\n"
 
-#: scd/app-openpgp.c:2202
+#: scd/app-openpgp.c:2227
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "目前已创建的签名：%lu\n"
 
-#: scd/app-openpgp.c:2210
+#: scd/app-openpgp.c:2235
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
 
-#: scd/app-openpgp.c:2475
+#: scd/app-openpgp.c:2500
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr "目前禁止通过此命令验证管理员 PIN\n"
 
-#: scd/app-openpgp.c:2548 scd/app-openpgp.c:2558
+#: scd/app-openpgp.c:2573 scd/app-openpgp.c:2583
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "不能存取 %s――无效的 OpenPGP 卡？\n"
@@ -6417,16 +6411,16 @@ msgid ""
 "Smartcard daemon for GnuPG\n"
 msgstr ""
 
-#: scd/scdaemon.c:672
+#: scd/scdaemon.c:682
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 
-#: scd/scdaemon.c:1013
+#: scd/scdaemon.c:1030
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr ""
 
-#: scd/scdaemon.c:1018
+#: scd/scdaemon.c:1035
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
@@ -6600,35 +6594,35 @@ msgstr "DSA 要求使用 160 位的散列算法\n"
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
-#: sm/certdump.c:61 sm/certdump.c:147
+#: sm/certdump.c:68 sm/certdump.c:154
 #, fuzzy
 msgid "none"
 msgstr "no"
 
-#: sm/certdump.c:156
+#: sm/certdump.c:163
 #, fuzzy
 msgid "[none]"
 msgstr "[未设定]"
 
-#: sm/certdump.c:529 sm/certdump.c:592
+#: sm/certdump.c:536 sm/certdump.c:599
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "错误：无效的响应。\n"
 
-#: sm/certdump.c:537
+#: sm/certdump.c:544
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:572
+#: sm/certdump.c:579
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:597
+#: sm/certdump.c:604
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "错误：无效的响应。\n"
 
-#: sm/certdump.c:758
+#: sm/certdump.c:818
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
@@ -7132,12 +7126,12 @@ msgstr ""
 msgid " using certificate ID %08lX\n"
 msgstr ""
 
-#: sm/verify.c:506
+#: sm/verify.c:509
 #, fuzzy
 msgid "Good signature from"
 msgstr "完好的签名，来自于“%s”"
 
-#: sm/verify.c:507
+#: sm/verify.c:510
 #, fuzzy
 msgid "                aka"
 msgstr "              亦即“%s”"
@@ -7493,6 +7487,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "class %s is not supported\n"
 msgstr "不支持保护散列 %d\n"
+
+#, fuzzy
+#~ msgid ".\n"
+#~ msgstr "%s.\n"
 
 #~ msgid "problem with the agent - disabling agent use\n"
 #~ msgstr "代理程序有问题――正在停用代理程序\n"

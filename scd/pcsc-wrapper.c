@@ -1,4 +1,4 @@
-/* pcsc-wrapper.c - Wrapper for ccessing the PC/SC service
+/* pcsc-wrapper.c - Wrapper for accessing the PC/SC service
  *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

@@ -155,7 +155,8 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
   int rc;
   gcry_mpi_t plain_dek  = NULL;
   byte *frame = NULL;
-  unsigned n, nframe;
+  unsigned int n;
+  size_t nframe;
   u16 csum, csum2;
   
   int card = 0;
@@ -167,7 +168,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
       size_t rbuflen;
       char *snbuf;
       unsigned char *indata = NULL;
-      unsigned int indatalen;
+      size_t indatalen;
 
       snbuf = serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen, sk);
 

@@ -1,7 +1,7 @@
 #! /bin/sh
 # Output a system dependent table of character encoding aliases.
 #
-#   Copyright (C) 2000-2004 Free Software Foundation, Inc.
+#   Copyright (C) 2000-2004, 2006 Free Software Foundation, Inc.
 #
 #   This program is free software; you can redistribute it and/or modify it
 #   under the terms of the GNU Library General Public License as published
@@ -15,7 +15,7 @@
 #
 #   You should have received a copy of the GNU Library General Public
 #   License along with this program; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 #   USA.
 #
 # The table consists of lines of the form
@@ -31,21 +31,21 @@
 # The current list of GNU canonical charset names is as follows.
 #
 #       name              MIME?             used by which systems
-#   ASCII, ANSI_X3.4-1968       glibc solaris freebsd darwin
-#   ISO-8859-1              Y   glibc aix hpux irix osf solaris freebsd darwin
-#   ISO-8859-2              Y   glibc aix hpux irix osf solaris freebsd darwin
+#   ASCII, ANSI_X3.4-1968       glibc solaris freebsd netbsd darwin
+#   ISO-8859-1              Y   glibc aix hpux irix osf solaris freebsd netbsd darwin
+#   ISO-8859-2              Y   glibc aix hpux irix osf solaris freebsd netbsd darwin
 #   ISO-8859-3              Y   glibc solaris
-#   ISO-8859-4              Y   osf solaris freebsd darwin
-#   ISO-8859-5              Y   glibc aix hpux irix osf solaris freebsd darwin
+#   ISO-8859-4              Y   osf solaris freebsd netbsd darwin
+#   ISO-8859-5              Y   glibc aix hpux irix osf solaris freebsd netbsd darwin
 #   ISO-8859-6              Y   glibc aix hpux solaris
-#   ISO-8859-7              Y   glibc aix hpux irix osf solaris
+#   ISO-8859-7              Y   glibc aix hpux irix osf solaris netbsd darwin
 #   ISO-8859-8              Y   glibc aix hpux osf solaris
-#   ISO-8859-9              Y   glibc aix hpux irix osf solaris
-#   ISO-8859-13                 glibc
+#   ISO-8859-9              Y   glibc aix hpux irix osf solaris darwin
+#   ISO-8859-13                 glibc netbsd darwin
 #   ISO-8859-14                 glibc
-#   ISO-8859-15                 glibc aix osf solaris freebsd
-#   KOI8-R                  Y   glibc solaris freebsd darwin
-#   KOI8-U                  Y   glibc freebsd darwin
+#   ISO-8859-15                 glibc aix osf solaris freebsd darwin
+#   KOI8-R                  Y   glibc solaris freebsd netbsd darwin
+#   KOI8-U                  Y   glibc freebsd netbsd darwin
 #   KOI8-T                      glibc
 #   CP437                       dos
 #   CP775                       dos
@@ -58,7 +58,7 @@
 #   CP862                       dos
 #   CP864                       dos
 #   CP865                       dos
-#   CP866                       freebsd darwin dos
+#   CP866                       freebsd netbsd darwin dos
 #   CP869                       dos
 #   CP874                       woe32 dos
 #   CP922                       aix
@@ -71,22 +71,22 @@
 #   CP1125                      dos
 #   CP1129                      aix
 #   CP1250                      woe32
-#   CP1251                      glibc solaris darwin woe32
+#   CP1251                      glibc solaris netbsd darwin woe32
 #   CP1252                      aix woe32
 #   CP1253                      woe32
 #   CP1254                      woe32
 #   CP1255                      glibc woe32
 #   CP1256                      woe32
 #   CP1257                      woe32
-#   GB2312                  Y   glibc aix hpux irix solaris freebsd darwin
-#   EUC-JP                  Y   glibc aix hpux irix osf solaris freebsd darwin
-#   EUC-KR                  Y   glibc aix hpux irix osf solaris freebsd darwin
-#   EUC-TW                      glibc aix hpux irix osf solaris
-#   BIG5                    Y   glibc aix hpux osf solaris freebsd darwin
+#   GB2312                  Y   glibc aix hpux irix solaris freebsd netbsd darwin
+#   EUC-JP                  Y   glibc aix hpux irix osf solaris freebsd netbsd darwin
+#   EUC-KR                  Y   glibc aix hpux irix osf solaris freebsd netbsd darwin
+#   EUC-TW                      glibc aix hpux irix osf solaris netbsd
+#   BIG5                    Y   glibc aix hpux osf solaris freebsd netbsd darwin
 #   BIG5-HKSCS                  glibc solaris
 #   GBK                         glibc aix osf solaris woe32 dos
-#   GB18030                     glibc solaris
-#   SHIFT_JIS               Y   hpux osf solaris freebsd darwin
+#   GB18030                     glibc solaris netbsd
+#   SHIFT_JIS               Y   hpux osf solaris freebsd netbsd darwin
 #   JOHAB                       glibc solaris woe32
 #   TIS-620                     glibc aix hpux osf solaris
 #   VISCII                  Y   glibc
@@ -100,7 +100,7 @@
 #   HP-KANA8                    hpux
 #   DEC-KANJI                   osf
 #   DEC-HANYU                   osf
-#   UTF-8                   Y   glibc aix hpux osf solaris
+#   UTF-8                   Y   glibc aix hpux osf solaris netbsd darwin
 #
 # Note: Names which are not marked as being a MIME name should not be used in
 # Internet protocols for information interchange (mail, news, etc.).
@@ -388,6 +388,8 @@ case "$os" in
 	echo "ISO8859-2 ISO-8859-2"
 	echo "ISO8859-4 ISO-8859-4"
 	echo "ISO8859-5 ISO-8859-5"
+	echo "ISO8859-7 ISO-8859-7"
+	echo "ISO8859-13 ISO-8859-13"
 	echo "ISO8859-15 ISO-8859-15"
 	echo "eucCN GB2312"
 	echo "eucJP EUC-JP"
@@ -396,7 +398,7 @@ case "$os" in
 	echo "BIG5 BIG5"
 	echo "SJIS SHIFT_JIS"
 	;;
-    darwin*)
+    darwin[56]*)
 	# Darwin 6.8 doesn't have nl_langinfo(CODESET); therefore
 	# localcharset.c falls back to using the full locale name
 	# from the environment variables.
@@ -437,6 +439,36 @@ case "$os" in
 	echo "ja_JP.SJIS SHIFT_JIS"
 	echo "ko_KR.EUC EUC-KR"
 	;;
+    darwin*)
+	# Darwin 7.5 has nl_langinfo(CODESET), but it is useless:
+	# - It returns the empty string when LANG is set to a locale of the
+	#   form ll_CC, although ll_CC/LC_CTYPE is a symlink to an UTF-8
+	#   LC_CTYPE file.
+	# - The environment variables LANG, LC_CTYPE, LC_ALL are not set by
+	#   the system; nl_langinfo(CODESET) returns "US-ASCII" in this case.
+	# - The documentation says:
+	#     "... all code that calls BSD system routines should ensure
+	#      that the const *char parameters of these routines are in UTF-8
+	#      encoding. All BSD system functions expect their string
+	#      parameters to be in UTF-8 encoding and nothing else."
+	#   It also says
+	#     "An additional caveat is that string parameters for files,
+	#      paths, and other file-system entities must be in canonical
+	#      UTF-8. In a canonical UTF-8 Unicode string, all decomposable
+	#      characters are decomposed ..."
+	#   but this is not true: You can pass non-decomposed UTF-8 strings
+	#   to file system functions, and it is the OS which will convert
+	#   them to decomposed UTF-8 before accessing the file system.
+	# - The Apple Terminal application displays UTF-8 by default.
+	# - However, other applications are free to use different encodings:
+	#   - xterm uses ISO-8859-1 by default.
+	#   - TextEdit uses MacRoman by default.
+	# We prefer UTF-8 over decomposed UTF-8-MAC because one should
+	# minimize the use of decomposed Unicode. Unfortunately, through the
+	# Darwin file system, decomposed UTF-8 strings are leaked into user
+	# space nevertheless.
+	echo "* UTF-8"
+	;;
     beos*)
 	# BeOS has a single locale, and it has UTF-8 encoding.
 	echo "* UTF-8"
@@ -450,7 +482,7 @@ case "$os" in
 	echo "# If you find that the encoding given for your language and"
 	echo "# country is not the one your DOS machine actually uses, just"
 	echo "# correct it in this file, and send a mail to"
-	echo "# Juan Manuel Guerrero <st001906@hrz1.hrz.tu-darmstadt.de>"
+	echo "# Juan Manuel Guerrero <juan.guerrero@gmx.de>"
 	echo "# and Bruno Haible <bruno@clisp.org>."
 	echo "#"
 	echo "C ASCII"

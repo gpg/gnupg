@@ -1,3 +1,7 @@
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (list_one_option): Cast print size_t arg.
+
 2006-11-17  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c: Made disable-keypad a basic option.

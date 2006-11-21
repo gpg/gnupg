@@ -77,7 +77,7 @@ make_session_key( DEK *dek )
 gcry_mpi_t
 encode_session_key (DEK *dek, unsigned int nbits)
 {
-    int nframe = (nbits+7) / 8;
+    size_t nframe = (nbits+7) / 8;
     byte *p;
     byte *frame;
     int i,n;
@@ -157,7 +157,7 @@ static gcry_mpi_t
 do_encode_md( gcry_md_hd_t md, int algo, size_t len, unsigned nbits,
 	      const byte *asn, size_t asnlen )
 {
-    int nframe = (nbits+7) / 8;
+    size_t nframe = (nbits+7) / 8;
     byte *frame;
     int i,n;
     gcry_mpi_t a;
@@ -237,11 +237,11 @@ encode_md_value (PKT_public_key *pk, PKT_secret_key *sk,
 	 or something like that, which would look correct but allow
 	 trivial forgeries.  Yes, I know this rules out using MD5 with
 	 DSA. ;) */
-
-      if(qbytes<160)
+      if (qbytes < 160)
 	{
-	  log_error(_("DSA key %s uses an unsafe (%u bit) hash\n"),
-		    pk?keystr_from_pk(pk):keystr_from_sk(sk),qbytes);
+	  log_error (_("DSA key %s uses an unsafe (%u bit) hash\n"),
+                     pk?keystr_from_pk(pk):keystr_from_sk(sk),
+                     (unsigned int)qbytes);
 	  return NULL;
 	}
 
@@ -249,11 +249,11 @@ encode_md_value (PKT_public_key *pk, PKT_secret_key *sk,
 
       /* Check if we're too short.  Too long is safe as we'll
 	 automatically left-truncate. */
-
-      if(gcry_md_get_algo_dlen (hash_algo) < qbytes)
+      if (gcry_md_get_algo_dlen (hash_algo) < qbytes)
 	{
-	  log_error(_("DSA key %s requires a %u bit or larger hash\n"),
-		    pk?keystr_from_pk(pk):keystr_from_sk(sk),qbytes*8);
+	  log_error (_("DSA key %s requires a %u bit or larger hash\n"),
+                     pk?keystr_from_pk(pk):keystr_from_sk(sk),
+                     (unsigned int)(qbytes*8));
 	  return NULL;
 	}
 

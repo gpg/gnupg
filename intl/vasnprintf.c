@@ -1,5 +1,5 @@
 /* vsprintf with automatic memory allocation.
-   Copyright (C) 1999, 2002-2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002-2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Library General Public
    License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.  */
 
 /* Tell glibc's <stdio.h> to provide a prototype for snprintf().
@@ -41,7 +41,7 @@
 #include <stdlib.h>	/* abort(), malloc(), realloc(), free() */
 #include <string.h>	/* memcpy(), strlen() */
 #include <errno.h>	/* errno */
-#include <limits.h>	/* CHAR_BIT */
+#include <limits.h>	/* CHAR_BIT, INT_MAX */
 #include <float.h>	/* DBL_MAX_EXP, LDBL_MAX_EXP */
 #if WIDE_CHAR_VERSION
 # include "wprintf-parse.h"
@@ -51,6 +51,11 @@
 
 /* Checked size_t computations.  */
 #include "xsize.h"
+
+/* Some systems, like OSF/1 4.0 and Woe32, don't have EOVERFLOW.  */
+#ifndef EOVERFLOW
+# define EOVERFLOW E2BIG
+#endif
 
 #ifdef HAVE_WCHAR_T
 # ifdef HAVE_WCSLEN
@@ -316,9 +321,8 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
 			  const CHAR_T *digitp = dp->precision_start + 1;
 
 			  precision = 0;
-			  do
+			  while (digitp != dp->precision_end)
 			    precision = xsum (xtimes (precision, 10), *digitp++ - '0');
-			  while (digitp != dp->precision_end);
 			}
 		    }
 
@@ -331,28 +335,28 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
 			tmp_length =
 			  (unsigned int) (sizeof (unsigned long long) * CHAR_BIT
 					  * 0.30103 /* binary -> decimal */
-					  * 2 /* estimate for FLAG_GROUP */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 1; /* account for leading sign */
+			  + 1; /* turn floor into ceil */
 		      else
 # endif
 		      if (type == TYPE_LONGINT || type == TYPE_ULONGINT)
 			tmp_length =
 			  (unsigned int) (sizeof (unsigned long) * CHAR_BIT
 					  * 0.30103 /* binary -> decimal */
-					  * 2 /* estimate for FLAG_GROUP */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 1; /* account for leading sign */
+			  + 1; /* turn floor into ceil */
 		      else
 			tmp_length =
 			  (unsigned int) (sizeof (unsigned int) * CHAR_BIT
 					  * 0.30103 /* binary -> decimal */
-					  * 2 /* estimate for FLAG_GROUP */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 1; /* account for leading sign */
+			  + 1; /* turn floor into ceil */
+		      if (tmp_length < precision)
+			tmp_length = precision;
+		      /* Multiply by 2, as an estimate for FLAG_GROUP.  */
+		      tmp_length = xsum (tmp_length, tmp_length);
+		      /* Add 1, to account for a leading sign.  */
+		      tmp_length = xsum (tmp_length, 1);
 		      break;
 
 		    case 'o':
@@ -362,8 +366,7 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
 			  (unsigned int) (sizeof (unsigned long long) * CHAR_BIT
 					  * 0.333334 /* binary -> octal */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 1; /* account for leading sign */
+			  + 1; /* turn floor into ceil */
 		      else
 # endif
 		      if (type == TYPE_LONGINT || type == TYPE_ULONGINT)
@@ -371,15 +374,17 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
 			  (unsigned int) (sizeof (unsigned long) * CHAR_BIT
 					  * 0.333334 /* binary -> octal */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 1; /* account for leading sign */
+			  + 1; /* turn floor into ceil */
 		      else
 			tmp_length =
 			  (unsigned int) (sizeof (unsigned int) * CHAR_BIT
 					  * 0.333334 /* binary -> octal */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 1; /* account for leading sign */
+			  + 1; /* turn floor into ceil */
+		      if (tmp_length < precision)
+			tmp_length = precision;
+		      /* Add 1, to account for a leading sign.  */
+		      tmp_length = xsum (tmp_length, 1);
 		      break;
 
 		    case 'x': case 'X':
@@ -389,8 +394,7 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
 			  (unsigned int) (sizeof (unsigned long long) * CHAR_BIT
 					  * 0.25 /* binary -> hexadecimal */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 2; /* account for leading sign or alternate form */
+			  + 1; /* turn floor into ceil */
 		      else
 # endif
 		      if (type == TYPE_LONGINT || type == TYPE_ULONGINT)
@@ -398,15 +402,17 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
 			  (unsigned int) (sizeof (unsigned long) * CHAR_BIT
 					  * 0.25 /* binary -> hexadecimal */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 2; /* account for leading sign or alternate form */
+			  + 1; /* turn floor into ceil */
 		      else
 			tmp_length =
 			  (unsigned int) (sizeof (unsigned int) * CHAR_BIT
 					  * 0.25 /* binary -> hexadecimal */
 					 )
-			  + 1 /* turn floor into ceil */
-			  + 2; /* account for leading sign or alternate form */
+			  + 1; /* turn floor into ceil */
+		      if (tmp_length < precision)
+			tmp_length = precision;
+		      /* Add 2, to account for a leading sign or alternate form.  */
+		      tmp_length = xsum (tmp_length, 2);
 		      break;
 
 		    case 'f': case 'F':
@@ -864,7 +870,18 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
       free (buf_malloced);
     CLEANUP ();
     *lengthp = length;
+    if (length > INT_MAX)
+      goto length_overflow;
     return result;
+
+  length_overflow:
+    /* We could produce such a big string, but its length doesn't fit into
+       an 'int'.  POSIX says that snprintf() fails with errno = EOVERFLOW in
+       this case.  */
+    if (result != resultbuf)
+      free (result);
+    errno = EOVERFLOW;
+    return NULL;
 
   out_of_memory:
     if (!(result == resultbuf || result == NULL))

@@ -59,7 +59,8 @@ hash_public_key( gcry_md_hd_t md, PKT_public_key *pk )
   unsigned int nn[PUBKEY_MAX_NPKEY];
   byte *pp[PUBKEY_MAX_NPKEY];
   int i;
-  size_t nbits, nbytes;
+  unsigned int nbits;
+  size_t nbytes;
   int npkey = pubkey_get_npkey (pk->pubkey_algo);
 
   /* Two extra bytes for the expiration date in v3 */

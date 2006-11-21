@@ -1,5 +1,5 @@
 /* Formatted output to strings, using POSIX/XSI format strings with positions.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This program is free software; you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU Library General Public
    License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.  */
 
 #ifdef HAVE_CONFIG_H
@@ -60,6 +60,14 @@ char *alloca ();
 #endif
 
 #define STATIC static
+
+/* This needs to be consistent with libgnuintl.h.in.  */
+#if defined __NetBSD__ || defined __CYGWIN__ || defined __MINGW32__
+/* Don't break __attribute__((format(printf,M,N))).
+   This redefinition is only possible because the libc in NetBSD, Cygwin,
+   mingw does not have a function __printf__.  */
+# define libintl_printf __printf__
+#endif
 
 /* Define auxiliary functions declared in "printf-args.h".  */
 #include "printf-args.c"

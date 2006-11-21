@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-10 00:40+0100\n"
+"POT-Creation-Date: 2006-11-21 10:53+0100\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -138,7 +138,7 @@ msgid ""
 "0Awithin gpg-agent's key storage"
 msgstr ""
 
-#: agent/command-ssh.c:2857
+#: agent/command-ssh.c:2853
 #, fuzzy, c-format
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: am eºuat sã creez hashtable: %s\n"
@@ -292,161 +292,155 @@ msgstr ""
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
-#: agent/gpg-agent.c:238 agent/preset-passphrase.c:96 agent/protect-tool.c:143
+#: agent/gpg-agent.c:241 agent/preset-passphrase.c:96 agent/protect-tool.c:143
 #: scd/scdaemon.c:190 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
 #: tools/gpgconf.c:86 tools/symcryptrun.c:225
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr "Raportaþi bug-uri la <gnupg-bugs@gnu.org>.\n"
 
-#: agent/gpg-agent.c:238 agent/preset-passphrase.c:96 agent/protect-tool.c:143
-#: scd/scdaemon.c:190 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
-#: tools/gpgconf.c:86 tools/symcryptrun.c:225
-msgid ">.\n"
-msgstr ""
-
-#: agent/gpg-agent.c:241
+#: agent/gpg-agent.c:244
 #, fuzzy
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Folosire: gpg [opþiuni] [fiºiere] (-h pentru ajutor)"
 
-#: agent/gpg-agent.c:243
+#: agent/gpg-agent.c:246
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:302
+#: agent/gpg-agent.c:305
 #, c-format
 msgid "out of core in secure memory while allocating %lu bytes"
 msgstr ""
 
-#: agent/gpg-agent.c:305
+#: agent/gpg-agent.c:308
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr ""
 
-#: agent/gpg-agent.c:336 g10/gpg.c:923 scd/scdaemon.c:264 sm/gpgsm.c:646
+#: agent/gpg-agent.c:339 g10/gpg.c:923 scd/scdaemon.c:264 sm/gpgsm.c:646
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:507 agent/protect-tool.c:1073 g10/gpg.c:1808
+#: agent/gpg-agent.c:510 agent/protect-tool.c:1073 g10/gpg.c:1808
 #: kbx/kbxutil.c:432 scd/scdaemon.c:356 sm/gpgsm.c:767
 #: tools/symcryptrun.c:1056
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:601 g10/gpg.c:2007 scd/scdaemon.c:433 sm/gpgsm.c:864
+#: agent/gpg-agent.c:604 g10/gpg.c:2007 scd/scdaemon.c:433 sm/gpgsm.c:864
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTÃ: nici un fiºier opþiuni implicit `%s'\n"
 
-#: agent/gpg-agent.c:606 agent/gpg-agent.c:1129 g10/gpg.c:2011
+#: agent/gpg-agent.c:609 agent/gpg-agent.c:1160 g10/gpg.c:2011
 #: scd/scdaemon.c:438 sm/gpgsm.c:868 tools/symcryptrun.c:989
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fiºier opþiuni `%s': %s\n"
 
-#: agent/gpg-agent.c:614 g10/gpg.c:2018 scd/scdaemon.c:446 sm/gpgsm.c:875
+#: agent/gpg-agent.c:617 g10/gpg.c:2018 scd/scdaemon.c:446 sm/gpgsm.c:875
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "citesc opþiuni din `%s'\n"
 
-#: agent/gpg-agent.c:914 g10/plaintext.c:136 g10/plaintext.c:141
+#: agent/gpg-agent.c:930 g10/plaintext.c:136 g10/plaintext.c:141
 #: g10/plaintext.c:158
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "eroare la creearea `%s': %s\n"
 
-#: agent/gpg-agent.c:1179 agent/gpg-agent.c:1282 agent/gpg-agent.c:1286
-#: agent/gpg-agent.c:1322 agent/gpg-agent.c:1326 g10/exec.c:174
-#: g10/openfile.c:416 scd/scdaemon.c:916
+#: agent/gpg-agent.c:1210 agent/gpg-agent.c:1313 agent/gpg-agent.c:1317
+#: agent/gpg-agent.c:1353 agent/gpg-agent.c:1357 g10/exec.c:174
+#: g10/openfile.c:416 scd/scdaemon.c:932
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "nu pot crea directorul `%s': %s\n"
 
-#: agent/gpg-agent.c:1193 scd/scdaemon.c:930
+#: agent/gpg-agent.c:1224 scd/scdaemon.c:946
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1219 scd/scdaemon.c:956
+#: agent/gpg-agent.c:1250 scd/scdaemon.c:972
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "nu pot crea `%s': %s\n"
 
-#: agent/gpg-agent.c:1248 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1279 scd/scdaemon.c:1001
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
-#: agent/gpg-agent.c:1256 scd/scdaemon.c:993
+#: agent/gpg-agent.c:1287 scd/scdaemon.c:1009
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
-#: agent/gpg-agent.c:1262 scd/scdaemon.c:999
+#: agent/gpg-agent.c:1293 scd/scdaemon.c:1015
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "scriu cheia secretã în `%s'\n"
 
-#: agent/gpg-agent.c:1290 agent/gpg-agent.c:1332 g10/openfile.c:419
+#: agent/gpg-agent.c:1321 agent/gpg-agent.c:1363 g10/openfile.c:419
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "director `%s' creat\n"
 
-#: agent/gpg-agent.c:1338
+#: agent/gpg-agent.c:1369
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "fstat(%d) a eºuat în %s: %s\n"
 
-#: agent/gpg-agent.c:1342
+#: agent/gpg-agent.c:1373
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: nu pot crea director: %s\n"
 
-#: agent/gpg-agent.c:1441
+#: agent/gpg-agent.c:1475
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1446
+#: agent/gpg-agent.c:1480
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1460
+#: agent/gpg-agent.c:1497
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1465
+#: agent/gpg-agent.c:1502
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1559 scd/scdaemon.c:1115
+#: agent/gpg-agent.c:1598 scd/scdaemon.c:1134
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "actualizarea secretului a eºuat: %s\n"
 
-#: agent/gpg-agent.c:1643 scd/scdaemon.c:1172
+#: agent/gpg-agent.c:1704 scd/scdaemon.c:1201
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s: sãritã: %s\n"
 
-#: agent/gpg-agent.c:1664
+#: agent/gpg-agent.c:1725
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent nu este disponibil în aceastã sesiune\n"
 
-#: agent/gpg-agent.c:1674 common/simple-pwquery.c:324 g10/call-agent.c:137
+#: agent/gpg-agent.c:1735 common/simple-pwquery.c:324 g10/call-agent.c:137
 #: sm/call-agent.c:144 tools/gpg-connect-agent.c:713
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "variabila de mediu GPG_AGENT_INFO anormalã\n"
 
-#: agent/gpg-agent.c:1686 common/simple-pwquery.c:336 g10/call-agent.c:149
+#: agent/gpg-agent.c:1747 common/simple-pwquery.c:336 g10/call-agent.c:149
 #: sm/call-agent.c:156 tools/gpg-connect-agent.c:724
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -4341,7 +4335,7 @@ msgstr "Cheia expirã pe %s\n"
 msgid "Signature expires at %s\n"
 msgstr "Semnãtura expirã pe %s\n"
 
-#: g10/keygen.c:1856
+#: g10/keygen.c:1854
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -4582,7 +4576,7 @@ msgstr "nu pot crea fiºier de rezervã `%s': %s\n"
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "NOTÃ: copia de siguranþa a cheii cardului salvatã la `%s'\n"
 
-#: g10/keyid.c:539 g10/keyid.c:551 g10/keyid.c:563 g10/keyid.c:575
+#: g10/keyid.c:540 g10/keyid.c:552 g10/keyid.c:564 g10/keyid.c:576
 msgid "never     "
 msgstr "niciodatã "
 
@@ -5618,28 +5612,28 @@ msgstr "destinator anonim; încerc cheia secretã %s ...\n"
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "OK, noi suntem destinatarul anonim.\n"
 
-#: g10/pubkey-enc.c:226
+#: g10/pubkey-enc.c:227
 msgid "old encoding of the DEK is not supported\n"
 msgstr "vechea encodare a lui DEK nu este suportatã\n"
 
-#: g10/pubkey-enc.c:247
+#: g10/pubkey-enc.c:248
 #, c-format
 msgid "cipher algorithm %d%s is unknown or disabled\n"
 msgstr "algoritm cifrare %d%s este necunoscut sau deactivat\n"
 
-#: g10/pubkey-enc.c:285
+#: g10/pubkey-enc.c:286
 #, c-format
 msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr ""
 "AVERTISMENT: algoritm cifrare %s nu a fost gãsit în preferinþele "
 "destinatarului\n"
 
-#: g10/pubkey-enc.c:305
+#: g10/pubkey-enc.c:306
 #, c-format
 msgid "NOTE: secret key %s expired at %s\n"
 msgstr "NOTÃ: cheia secretã %s a expirat la %s\n"
 
-#: g10/pubkey-enc.c:311
+#: g10/pubkey-enc.c:312
 msgid "NOTE: key has been revoked"
 msgstr "NOTÃ: cheia a fost revocatã"
 
@@ -5804,12 +5798,12 @@ msgstr "nu pot evita cheie slabã pentru cifru simetric; am încercat %d ori!\n"
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr ""
 
-#: g10/seskey.c:243
+#: g10/seskey.c:242
 #, c-format
 msgid "DSA key %s uses an unsafe (%u bit) hash\n"
 msgstr ""
 
-#: g10/seskey.c:255
+#: g10/seskey.c:254
 #, c-format
 msgid "DSA key %s requires a %u bit or larger hash\n"
 msgstr ""
@@ -6345,7 +6339,7 @@ msgstr ""
 msgid "input line %u too long or missing LF\n"
 msgstr "linia de intrare %u prea lungã sau lipseºte LF\n"
 
-#: jnlib/logging.c:619
+#: jnlib/logging.c:626
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "aþi gãsit un bug ... (%s:%d)\n"
@@ -6378,11 +6372,6 @@ msgstr ""
 msgid "Please report bugs to "
 msgstr "Raportaþi bug-uri la <gnupg-bugs@gnu.org>.\n"
 
-#: kbx/kbxutil.c:108
-#, fuzzy
-msgid ".\n"
-msgstr "%s.\n"
-
 #: kbx/kbxutil.c:112
 #, fuzzy
 msgid "Usage: kbxutil [options] [files] (-h for help)"
@@ -6413,47 +6402,52 @@ msgstr "am eºuat sã stochez data creãrii: %s\n"
 msgid "reading public key failed: %s\n"
 msgstr "citirea cheii publice a eºuat: %s\n"
 
-#: scd/app-openpgp.c:1017 scd/app-openpgp.c:1953
+#: scd/app-openpgp.c:1017 scd/app-openpgp.c:1978
 msgid "response does not contain the public key data\n"
 msgstr "rãspunsul nu conþine datele cheii publice\n"
 
-#: scd/app-openpgp.c:1025 scd/app-openpgp.c:1961
+#: scd/app-openpgp.c:1025 scd/app-openpgp.c:1986
 msgid "response does not contain the RSA modulus\n"
 msgstr "rãspunsul nu conþine modulul RSA\n"
 
-#: scd/app-openpgp.c:1034 scd/app-openpgp.c:1971
+#: scd/app-openpgp.c:1034 scd/app-openpgp.c:1996
 msgid "response does not contain the RSA public exponent\n"
 msgstr "rãspunsul nu conþine exponentul public RSA\n"
 
-#: scd/app-openpgp.c:1302 scd/app-openpgp.c:1390 scd/app-openpgp.c:2222
+#: scd/app-openpgp.c:1306
+msgid "||Please enter your PIN at the reader's keypad"
+msgstr ""
+
+#: scd/app-openpgp.c:1310 scd/app-openpgp.c:1324 scd/app-openpgp.c:1415
+#: scd/app-openpgp.c:2247
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "apelul PIN a returnat eroare: %s\n"
 
-#: scd/app-openpgp.c:1308 scd/app-openpgp.c:1396 scd/app-openpgp.c:2228
+#: scd/app-openpgp.c:1331 scd/app-openpgp.c:1421 scd/app-openpgp.c:2253
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "PIN-ul pentru CHV%d este prea scurt; lungimea minimã este %d\n"
 
-#: scd/app-openpgp.c:1317 scd/app-openpgp.c:1331 scd/app-openpgp.c:1406
-#: scd/app-openpgp.c:2237 scd/app-openpgp.c:2251
+#: scd/app-openpgp.c:1342 scd/app-openpgp.c:1356 scd/app-openpgp.c:1431
+#: scd/app-openpgp.c:2262 scd/app-openpgp.c:2276
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "verificarea CHV%d a eºuat: %s\n"
 
-#: scd/app-openpgp.c:1354
+#: scd/app-openpgp.c:1379
 msgid "access to admin commands is not configured\n"
 msgstr "accesul la comenzile de administrare nu este configuratã\n"
 
-#: scd/app-openpgp.c:1369 scd/app-openpgp.c:2461
+#: scd/app-openpgp.c:1394 scd/app-openpgp.c:2486
 msgid "error retrieving CHV status from card\n"
 msgstr "eroare la recuperarea stãrii CHV de pe card\n"
 
-#: scd/app-openpgp.c:1375 scd/app-openpgp.c:2470
+#: scd/app-openpgp.c:1400 scd/app-openpgp.c:2495
 msgid "card is permanently locked!\n"
 msgstr "cardul este încuiat permanent!\n"
 
-#: scd/app-openpgp.c:1380
+#: scd/app-openpgp.c:1405
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr "%d încercãri PIN Admin rãmase înainte de a încuia cardul permanent\n"
@@ -6461,109 +6455,109 @@ msgstr "%d încercãri PIN Admin rãmase înainte de a încuia cardul permanent\n"
 #. TRANSLATORS: Do not translate the "|A|" prefix but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1387
+#: scd/app-openpgp.c:1412
 msgid "|A|Admin PIN"
 msgstr "|A|PIN Admin"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1536
+#: scd/app-openpgp.c:1561
 msgid "|AN|New Admin PIN"
 msgstr "|AN|PIN Admin Nou"
 
-#: scd/app-openpgp.c:1536
+#: scd/app-openpgp.c:1561
 msgid "|N|New PIN"
 msgstr "|N|PIN Nou"
 
-#: scd/app-openpgp.c:1540
+#: scd/app-openpgp.c:1565
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "eroare la obþinere noului PIN: %s\n"
 
-#: scd/app-openpgp.c:1590 scd/app-openpgp.c:2039
+#: scd/app-openpgp.c:1615 scd/app-openpgp.c:2064
 msgid "error reading application data\n"
 msgstr "eroare la citirea datelor aplicaþiei\n"
 
-#: scd/app-openpgp.c:1596 scd/app-openpgp.c:2046
+#: scd/app-openpgp.c:1621 scd/app-openpgp.c:2071
 msgid "error reading fingerprint DO\n"
 msgstr "eroare la citirea amprentei DO\n"
 
-#: scd/app-openpgp.c:1606
+#: scd/app-openpgp.c:1631
 msgid "key already exists\n"
 msgstr "cheia existã deja\n"
 
-#: scd/app-openpgp.c:1610
+#: scd/app-openpgp.c:1635
 msgid "existing key will be replaced\n"
 msgstr "cheia existentã va fi înlocuitã\n"
 
-#: scd/app-openpgp.c:1612
+#: scd/app-openpgp.c:1637
 msgid "generating new key\n"
 msgstr "generez o nouã cheie\n"
 
-#: scd/app-openpgp.c:1779
+#: scd/app-openpgp.c:1804
 msgid "creation timestamp missing\n"
 msgstr "timestamp-ul de creare lipseºte\n"
 
-#: scd/app-openpgp.c:1786
+#: scd/app-openpgp.c:1811
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "modulus-ul RSA lipseºte sau nu are %d biþi\n"
 
-#: scd/app-openpgp.c:1793
+#: scd/app-openpgp.c:1818
 #, fuzzy, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "exponentul public RSA lipseºte sau are mai mult de %d biþi\n"
 
-#: scd/app-openpgp.c:1801 scd/app-openpgp.c:1808
+#: scd/app-openpgp.c:1826 scd/app-openpgp.c:1833
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "prime-ul RSA %s lipseºte sau nu are %d biþi\n"
 
-#: scd/app-openpgp.c:1871
+#: scd/app-openpgp.c:1896
 #, c-format
 msgid "failed to store the key: %s\n"
 msgstr "am eºuat sã stochez cheia: %s\n"
 
-#: scd/app-openpgp.c:1930
+#: scd/app-openpgp.c:1955
 msgid "please wait while key is being generated ...\n"
 msgstr "vã rugãm aºteptaþi câtã vreme este creatã noua cheie ...\n"
 
-#: scd/app-openpgp.c:1944
+#: scd/app-openpgp.c:1969
 msgid "generating key failed\n"
 msgstr "generarea cheii a eºuat\n"
 
-#: scd/app-openpgp.c:1947
+#: scd/app-openpgp.c:1972
 #, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "generarea cheii este completã (%d secunde)\n"
 
-#: scd/app-openpgp.c:2004
+#: scd/app-openpgp.c:2029
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "structurã invalidã a cardului OpenPGP (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2141
+#: scd/app-openpgp.c:2166
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "semnãturã %s, algoritm rezumat %s\n"
 
-#: scd/app-openpgp.c:2202
+#: scd/app-openpgp.c:2227
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "semnãturi create pânã acum: %lu\n"
 
-#: scd/app-openpgp.c:2210
+#: scd/app-openpgp.c:2235
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Vã rugãm introduceþi PIN%%0A[semnãturi fãcute: %lu]"
 
-#: scd/app-openpgp.c:2475
+#: scd/app-openpgp.c:2500
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "verificarea PIN-ului Admin este deocamdatã interzisã prin aceastã comandã\n"
 
-#: scd/app-openpgp.c:2548 scd/app-openpgp.c:2558
+#: scd/app-openpgp.c:2573 scd/app-openpgp.c:2583
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "nu pot accesa %s - card OpenPGP invalid?\n"
@@ -6616,16 +6610,16 @@ msgid ""
 "Smartcard daemon for GnuPG\n"
 msgstr ""
 
-#: scd/scdaemon.c:672
+#: scd/scdaemon.c:682
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 
-#: scd/scdaemon.c:1013
+#: scd/scdaemon.c:1030
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr ""
 
-#: scd/scdaemon.c:1018
+#: scd/scdaemon.c:1035
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
@@ -6799,35 +6793,35 @@ msgstr "DSA necesitã folosirea unui algoritm cu hash de 160 biþi\n"
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
-#: sm/certdump.c:61 sm/certdump.c:147
+#: sm/certdump.c:68 sm/certdump.c:154
 #, fuzzy
 msgid "none"
 msgstr "nu"
 
-#: sm/certdump.c:156
+#: sm/certdump.c:163
 #, fuzzy
 msgid "[none]"
 msgstr "[nesetat(ã)]"
 
-#: sm/certdump.c:529 sm/certdump.c:592
+#: sm/certdump.c:536 sm/certdump.c:599
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "Eroare: rãspuns invalid.\n"
 
-#: sm/certdump.c:537
+#: sm/certdump.c:544
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:572
+#: sm/certdump.c:579
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:597
+#: sm/certdump.c:604
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "Eroare: rãspuns invalid.\n"
 
-#: sm/certdump.c:758
+#: sm/certdump.c:818
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
@@ -7324,12 +7318,12 @@ msgstr ""
 msgid " using certificate ID %08lX\n"
 msgstr ""
 
-#: sm/verify.c:506
+#: sm/verify.c:509
 #, fuzzy
 msgid "Good signature from"
 msgstr "Semnãturã bunã din \"%s\""
 
-#: sm/verify.c:507
+#: sm/verify.c:510
 #, fuzzy
 msgid "                aka"
 msgstr "                aka \"%s\""
@@ -7685,6 +7679,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "class %s is not supported\n"
 msgstr "algoritm rezumat %d nu este suportat\n"
+
+#, fuzzy
+#~ msgid ".\n"
+#~ msgstr "%s.\n"
 
 #~ msgid "problem with the agent - disabling agent use\n"
 #~ msgstr "problemã cu agentul - deactivez  folosirea agentului\n"

@@ -217,7 +217,9 @@ curl_easy_perform(CURL *curl)
 		err = CURLE_HTTP_RETURNED_ERROR;
 	      else
 		{
-		  unsigned int maxlen = 1024, buflen, len;
+		  size_t maxlen = 1024;
+                  size_t buflen;
+                  unsigned int len;
 		  char *line = NULL;
 
 		  while ((len = es_read_line (http_get_read_ptr (curl->hd),

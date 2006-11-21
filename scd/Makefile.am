@@ -21,7 +21,7 @@
 
 bin_PROGRAMS = scdaemon 
 if ! HAVE_W32_SYSTEM
-pkglib_PROGRAMS = pcsc-wrapper
+libexec_PROGRAMS = gnupg-pcsc-wrapper
 endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
@@ -67,6 +67,6 @@ scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommonpth.a ../gl/libgnu.a \
 #	 $(LIBUSB_LIBS) \
 #        -lgpg-error @LIBINTL@ @DL_LIBS@
 #
-pcsc_wrapper_SOURCES = pcsc-wrapper.c
-pcsc_wrapper_LDADD = $(DL_LIBS)
-pcsc_wrapper_CFLAGS = 
+gnupg_pcsc_wrapper_SOURCES = pcsc-wrapper.c
+gnupg_pcsc_wrapper_LDADD = $(DL_LIBS)
+gnupg_pcsc_wrapper_CFLAGS = 

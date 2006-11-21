@@ -297,7 +297,7 @@ checksum_mpi (gcry_mpi_t a)
 {
   u16 csum;
   byte *buffer;
-  unsigned int nbytes;
+  size_t nbytes;
 
   if ( gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, a) )
     BUG ();
@@ -426,7 +426,7 @@ openpgp_pk_test_algo( int algo )
 int
 openpgp_pk_test_algo2( int algo, unsigned int use )
 {
-  int use_buf = use;
+  size_t use_buf = use;
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;

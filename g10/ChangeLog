@@ -1,3 +1,24 @@
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (ask_expire_interval): Print y2038 warning only for 32
+	bit time_t.
+	(save_unprotected_key_to_card): Made RSA_N_LEN et al a size_t.
+	Cast printf args.
+
+	* seckey-cert.c (do_check): Made NBYTES a size_t.
+	(do_check): Made NDATA a size_t.
+	(protect_secret_key): Made NARR a size_t.
+	(protect_secret_key): Made NVYES a size_t.
+	* pubkey-enc.c (get_it): Made INDATALEN a size_t. 
+	(get_it): Made NFRAME a size_t.
+	* keyid.c (hash_public_key): Made NBITS an unsigned int.
+	* misc.c (checksum_mpi): Made NBYTES a size_t. 
+	(openpgp_pk_test_algo2): Made USE_BUF a size_t.
+	* seskey.c (encode_session_key): Made NFRAME a size_t.
+	(do_encode_md): Ditto.
+	(encode_md_value): Cast size_t argument of printf.
+	(encode_md_value): Ditto.
+
 2006-11-10  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (mpi_read): Changed NREAD to size_t to match the

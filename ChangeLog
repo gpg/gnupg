@@ -1,3 +1,10 @@
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [AH_BOTTOM]: Disable PTH soft mapping.
+	(AC_CHECK_SIZEOF): Check for time_t.
+	(BUILD_INCLUDED_LIBINTL): Remove AM_PO_SUBDIRS as it is not
+	required for C.
+
 2006-11-15  Werner Koch  <wk@g10code.com>
 
 	* autogen.sh: Add convenience option --build-amd64.

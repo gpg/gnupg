@@ -1,3 +1,7 @@
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* curl-shim.c (curl_easy_perform): Made BUFLEN and MAXLNE a size_t.
+
 2006-11-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (curl_mrindex_writer): Revert previous change.

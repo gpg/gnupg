@@ -41,6 +41,13 @@
 #include "keydb.h"
 #include "i18n.h"
 
+#ifdef HAVE_FOPENCOOKIE
+typedef ssize_t my_funopen_hook_ret_t;
+#else
+typedef int     my_funopen_hook_ret_t;
+#endif
+
+
 struct dn_array_s {
   char *key;
   char *value;
@@ -626,7 +633,7 @@ struct format_name_cookie
 };
 
 /* The writer function for the memory stream. */
-static int 
+static my_funopen_hook_ret_t
 format_name_writer (void *cookie, const char *buffer, size_t size)
 {
   struct format_name_cookie *c = cookie;

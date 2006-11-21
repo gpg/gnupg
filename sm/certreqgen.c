@@ -517,7 +517,7 @@ proc_parameters (ctrl_t ctrl,
                    r->lnr, (int)errlen, s+erroff);
       else
         log_error (_("line %d: invalid subject name `%s' at pos %d\n"),
-                   r->lnr, s, erroff);
+                   r->lnr, s, (int)erroff);
 
       xfree (cardkeyid);
       return gpg_error (GPG_ERR_INV_PARAMETER);

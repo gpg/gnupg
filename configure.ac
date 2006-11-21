@@ -422,6 +422,11 @@ AH_BOTTOM([
 /* We don't want the old assuan codes anymore. */
 #define _ASSUAN_ONLY_GPG_ERRORS 1
 
+/* We explicitly need to disable PTH's soft mapping as Debian
+   currently enables it by default for no reason. */
+#define PTH_SYSCALL_SOFT 0
+
+
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
 
@@ -847,7 +852,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 #
 # Check for gettext
 #
-AM_GNU_GETTEXT_VERSION(0.14.1)
+AM_GNU_GETTEXT_VERSION([0.15])
 if test "$try_gettext" = yes; then
   AM_GNU_GETTEXT(,[need-ngettext])
 
@@ -863,7 +868,6 @@ else
   AC_SUBST(USE_NLS)
   AC_SUBST(USE_INCLUDED_LIBINTL)
   AC_SUBST(BUILD_INCLUDED_LIBINTL)
-  AM_PO_SUBDIRS
 fi
 
 
@@ -881,6 +885,7 @@ fi
 AC_HEADER_STDC
 AC_CHECK_HEADERS([string.h unistd.h langinfo.h termio.h locale.h getopt.h])
 AC_CHECK_HEADERS([pty.h pwd.h inttypes.h])
+AC_HEADER_TIME
 
 
 #
@@ -914,6 +919,21 @@ AC_CHECK_SIZEOF(unsigned short)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
+AC_CHECK_SIZEOF(time_t,,[[
+#include <stdio.h>
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+]])
+
+
 # Ensure that we have UINT64_C before we bother to check for uint64_t
 # Fixme: really needed in gnupg?  I think it is only useful in libcgrypt.
 AC_CACHE_CHECK([for UINT64_C],[gnupg_cv_uint64_c_works],

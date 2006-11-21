@@ -45,7 +45,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
     byte *buffer;
     u16 csum=0;
     int i, res;
-    unsigned int nbytes;
+    size_t nbytes;
 
     if( sk->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
@@ -194,7 +194,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    for(i=pubkey_get_npkey(sk->pubkey_algo);
 		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
                 byte *p;
-                int ndata;
+                size_t ndata;
                 unsigned int ndatabits;
 
                 assert (gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE));
@@ -337,7 +337,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 {
     int i,j, rc = 0;
     byte *buffer;
-    unsigned nbytes;
+    size_t nbytes;
     u16 csum;
 
     if( !dek )
@@ -370,8 +370,8 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    gcry_cipher_setiv (cipher_hd, sk->protect.iv, sk->protect.ivlen);
 	    if( sk->version >= 4 ) {
                 byte *bufarr[PUBKEY_MAX_NSKEY];
-		unsigned narr[PUBKEY_MAX_NSKEY];
-		unsigned nbits[PUBKEY_MAX_NSKEY];
+		size_t narr[PUBKEY_MAX_NSKEY];
+		unsigned int nbits[PUBKEY_MAX_NSKEY];
 		int ndata=0;
 		byte *p, *data;
 

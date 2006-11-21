@@ -1849,12 +1849,12 @@ ask_expire_interval(int object,const char *def_expire)
 		       ? _("Key expires at %s\n")
 		       : _("Signature expires at %s\n"),
 		       asctimestamp((ulong)(curtime + interval) ) );
-	    /* FIXME: This check yields warning on alhas: Write a
-	       configure check and to this check here only for 32 bit
-	       machines */
-	    if( (time_t)((ulong)(curtime+interval)) < 0 )
-	      tty_printf(_("Your system can't display dates beyond 2038.\n"
-			   "However, it will be correctly handled up to 2106.\n"));
+#if SIZEOF_TIME_T <= 4
+	    if ( (time_t)((ulong)(curtime+interval)) < 0 )
+	      tty_printf (_("Your system can't display dates beyond 2038.\n"
+                            "However, it will be correctly handled up to"
+                            " 2106.\n"));
+#endif /*SIZEOF_TIME_T*/
 	  }
 
 	if( cpr_enabled() || cpr_get_answer_is_yes("keygen.valid.okay",
@@ -3824,7 +3824,7 @@ save_unprotected_key_to_card (PKT_secret_key *sk, int keyno)
   unsigned char *rsa_e = NULL;
   unsigned char *rsa_p = NULL;
   unsigned char *rsa_q = NULL;
-  unsigned int rsa_n_len, rsa_e_len, rsa_p_len, rsa_q_len;
+  size_t rsa_n_len, rsa_e_len, rsa_p_len, rsa_q_len;
   unsigned char *sexp = NULL;
   unsigned char *p;
   char numbuf[55], numbuf2[50];
@@ -3849,22 +3849,22 @@ save_unprotected_key_to_card (PKT_secret_key *sk, int keyno)
                              + 4*sizeof (numbuf) + 25 + sizeof(numbuf) + 20);
 
   p = stpcpy (p,"(11:private-key(3:rsa(1:n");
-  sprintf (numbuf, "%u:", rsa_n_len);
+  sprintf (numbuf, "%u:", (unsigned int)rsa_n_len);
   p = stpcpy (p, numbuf);
   memcpy (p, rsa_n, rsa_n_len);
   p += rsa_n_len;
 
-  sprintf (numbuf, ")(1:e%u:", rsa_e_len);
+  sprintf (numbuf, ")(1:e%u:", (unsigned int)rsa_e_len);
   p = stpcpy (p, numbuf);
   memcpy (p, rsa_e, rsa_e_len);
   p += rsa_e_len;
 
-  sprintf (numbuf, ")(1:p%u:", rsa_p_len);
+  sprintf (numbuf, ")(1:p%u:", (unsigned int)rsa_p_len);
   p = stpcpy (p, numbuf);
   memcpy (p, rsa_p, rsa_p_len);
   p += rsa_p_len;
 
-  sprintf (numbuf, ")(1:q%u:", rsa_q_len);
+  sprintf (numbuf, ")(1:q%u:", (unsigned int)rsa_q_len);
   p = stpcpy (p, numbuf);
   memcpy (p, rsa_q, rsa_q_len);
   p += rsa_q_len;

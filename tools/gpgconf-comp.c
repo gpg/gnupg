@@ -1175,7 +1175,7 @@ list_one_option (const gc_option_t *option, FILE *out)
       && option->value)
     /* The special format "1,1,1,1,...,1" is converted to a number
        here.  */
-    fprintf (out, ":%u", (strlen (option->value) + 1) / 2);
+    fprintf (out, ":%u", (unsigned int)((strlen (option->value) + 1) / 2));
   else
     fprintf (out, ":%s", option->value ? option->value : "");
 
