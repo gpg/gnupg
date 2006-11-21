@@ -1,5 +1,7 @@
 2006-11-21  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am (needed_libs): libgnu needs to come after libcommon.
+
 	* keygen.c (ask_expire_interval): Print y2038 warning only for 32
 	bit time_t.
 	(save_unprotected_key_to_card): Made RSA_N_LEN et al a size_t.

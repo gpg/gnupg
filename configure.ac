@@ -20,7 +20,7 @@
 # USA.
 
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ(2.52)
+AC_PREREQ(2.59)
 min_automake_version="1.9.3"
 
 # Remember to change the version number immediately *after* a release.
@@ -978,9 +978,9 @@ AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen])
 #
 # gnulib checks
 #
-gl_SOURCE_BASE(gl)
-gl_M4_BASE(gl/m4)
-gl_MODULES(setenv mkdtemp vasprintf xsize)
+gl_SOURCE_BASE([gl])
+gl_M4_BASE([gl/m4])
+gl_MODULES([setenv mkdtemp vasprintf xsize])
 gl_INIT
 
 
