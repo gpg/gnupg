@@ -6,6 +6,7 @@
 	bit time_t.
 	(save_unprotected_key_to_card): Made RSA_N_LEN et al a size_t.
 	Cast printf args.
+	(get_parameter_algo): Allow "ELG" as alias for "ELG-E".
 
 	* seckey-cert.c (do_check): Made NBYTES a size_t.
 	(do_check): Made NDATA a size_t.
