@@ -1639,7 +1639,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
                  gpg_strerror(rc));
       scd_exit (2);
     }
-  assuan_set_pointer (ctx, &ctrl);
+  assuan_set_pointer (ctx, ctrl);
 
   /* Allocate and initialize the server object.  Put it into the list
      of active sessions. */
