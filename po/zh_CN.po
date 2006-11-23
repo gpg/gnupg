@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-21 10:53+0100\n"
+"POT-Creation-Date: 2006-11-21 22:00+0100\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -76,8 +76,8 @@ msgstr "错误的密码"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "不支持保护散列 %d\n"
 
-#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3047
-#: g10/keygen.c:3077 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
+#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3048
+#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
 #: g10/openfile.c:358 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
 #, c-format
 msgid "can't create `%s': %s\n"
@@ -85,7 +85,7 @@ msgstr "无法建立‘%s’：%s\n"
 
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:196
-#: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2555
+#: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2556
 #: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
@@ -849,7 +849,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr "检测到 OpenPGP 卡号 %s\n"
 
 #: g10/card-util.c:77 g10/card-util.c:1403 g10/delkey.c:128 g10/keyedit.c:1525
-#: g10/keygen.c:2739 g10/revoke.c:218 g10/revoke.c:456
+#: g10/keygen.c:2740 g10/revoke.c:218 g10/revoke.c:456
 msgid "can't do this in batch mode\n"
 msgstr "在批处理模式中无法完成此操作\n"
 
@@ -3251,19 +3251,19 @@ msgstr "签名时失败： %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr "只有占位密钥，或者密钥存储在卡上——没有密码可以更改。\n"
 
-#: g10/keyedit.c:1144 g10/keygen.c:3382
+#: g10/keyedit.c:1144 g10/keygen.c:3383
 msgid "This key is not protected.\n"
 msgstr "这把密钥没有被保护。\n"
 
-#: g10/keyedit.c:1148 g10/keygen.c:3370 g10/revoke.c:539
+#: g10/keyedit.c:1148 g10/keygen.c:3371 g10/revoke.c:539
 msgid "Secret parts of primary key are not available.\n"
 msgstr "主钥的私钥部分无法取用。\n"
 
-#: g10/keyedit.c:1152 g10/keygen.c:3385
+#: g10/keyedit.c:1152 g10/keygen.c:3386
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "主钥的私钥部分存储在卡上。\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3389
+#: g10/keyedit.c:1156 g10/keygen.c:3390
 msgid "Key is protected.\n"
 msgstr "密钥受保护。\n"
 
@@ -4009,12 +4009,12 @@ msgid "writing key binding signature\n"
 msgstr "正在写入密钥绑定签名\n"
 
 #: g10/keygen.c:1125 g10/keygen.c:1239 g10/keygen.c:1244 g10/keygen.c:1377
-#: g10/keygen.c:2933
+#: g10/keygen.c:2934
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "密钥尺寸无效：改用 %u 位\n"
 
-#: g10/keygen.c:1130 g10/keygen.c:1250 g10/keygen.c:1382 g10/keygen.c:2939
+#: g10/keygen.c:1130 g10/keygen.c:1250 g10/keygen.c:1382 g10/keygen.c:2940
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "密钥尺寸舍入到 %u 位\n"
@@ -4347,50 +4347,50 @@ msgstr ""
 "我们需要生成大量的随机字节。这个时候您可以多做些琐事(像是敲打键盘、移动\n"
 "鼠标、读写硬盘之类的)，这会让随机数字发生器有更好的机会获得足够的熵数。\n"
 
-#: g10/keygen.c:2878
+#: g10/keygen.c:2879
 msgid "Key generation canceled.\n"
 msgstr "密钥生成已取消。\n"
 
-#: g10/keygen.c:3090 g10/keygen.c:3235
+#: g10/keygen.c:3091 g10/keygen.c:3236
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "正在将公钥写至`%s'\n"
 
-#: g10/keygen.c:3092 g10/keygen.c:3238
+#: g10/keygen.c:3093 g10/keygen.c:3239
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "向‘%s’写入私钥占位符\n"
 
-#: g10/keygen.c:3095 g10/keygen.c:3241
+#: g10/keygen.c:3096 g10/keygen.c:3242
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "正在将私钥写至`%s'\n"
 
-#: g10/keygen.c:3224
+#: g10/keygen.c:3225
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "找不到可写的公钥钥匙环：%s\n"
 
-#: g10/keygen.c:3230
+#: g10/keygen.c:3231
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "找不到可写的私钥钥匙环：%s\n"
 
-#: g10/keygen.c:3248
+#: g10/keygen.c:3249
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "写入公钥钥匙环‘%s’时发生错误： %s\n"
 
-#: g10/keygen.c:3255
+#: g10/keygen.c:3256
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "写入私钥钥匙环‘%s’时发生错误： %s\n"
 
-#: g10/keygen.c:3278
+#: g10/keygen.c:3279
 msgid "public and secret key created and signed.\n"
 msgstr "公钥和私钥已经生成并经签名。\n"
 
-#: g10/keygen.c:3289
+#: g10/keygen.c:3290
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
@@ -4398,42 +4398,42 @@ msgstr ""
 "请注意这把密钥还不能用来加密，您必须先用“--edit-key”指令\n"
 "生成用于加密的子钥。\n"
 
-#: g10/keygen.c:3301 g10/keygen.c:3430 g10/keygen.c:3546
+#: g10/keygen.c:3302 g10/keygen.c:3431 g10/keygen.c:3547
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "生成密钥失败：%s\n"
 
-#: g10/keygen.c:3353 g10/keygen.c:3481 g10/sign.c:277
+#: g10/keygen.c:3354 g10/keygen.c:3482 g10/sign.c:277
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "密钥是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
-#: g10/keygen.c:3355 g10/keygen.c:3483 g10/sign.c:279
+#: g10/keygen.c:3356 g10/keygen.c:3484 g10/sign.c:279
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "密钥是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
-#: g10/keygen.c:3364 g10/keygen.c:3494
+#: g10/keygen.c:3365 g10/keygen.c:3495
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "注意：为 v3 密钥生成子钥会失去 OpenPGP 兼容性\n"
 
-#: g10/keygen.c:3403 g10/keygen.c:3527
+#: g10/keygen.c:3404 g10/keygen.c:3528
 msgid "Really create? (y/N) "
 msgstr "真的要建立吗？(y/N)"
 
-#: g10/keygen.c:3690
+#: g10/keygen.c:3691
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "向卡上存储密钥时失败：%s\n"
 
-#: g10/keygen.c:3738
+#: g10/keygen.c:3739
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "不能创建备份文件‘%s’：%s\n"
 
-#: g10/keygen.c:3764
+#: g10/keygen.c:3765
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "注意：卡密钥的备份已保存到‘%s’\n"

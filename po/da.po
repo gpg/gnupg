@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-21 10:53+0100\n"
+"POT-Creation-Date: 2006-11-21 22:00+0100\n"
 "PO-Revision-Date: 2003-12-03 16:11+0100\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -71,8 +71,8 @@ msgstr "dårlig kodesætning"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "valgte cifferalgoritme %d er ugyldig\n"
 
-#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3047
-#: g10/keygen.c:3077 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
+#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3048
+#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
 #: g10/openfile.c:358 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
 #, fuzzy, c-format
 msgid "can't create `%s': %s\n"
@@ -80,7 +80,7 @@ msgstr "kan ikke oprette %s: %s\n"
 
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:196
-#: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2555
+#: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2556
 #: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
@@ -842,7 +842,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
 #: g10/card-util.c:77 g10/card-util.c:1403 g10/delkey.c:128 g10/keyedit.c:1525
-#: g10/keygen.c:2739 g10/revoke.c:218 g10/revoke.c:456
+#: g10/keygen.c:2740 g10/revoke.c:218 g10/revoke.c:456
 msgid "can't do this in batch mode\n"
 msgstr ""
 
@@ -3230,21 +3230,21 @@ msgstr "signering fejlede: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-#: g10/keyedit.c:1144 g10/keygen.c:3382
+#: g10/keyedit.c:1144 g10/keygen.c:3383
 msgid "This key is not protected.\n"
 msgstr "Denne nøgle er ikke beskyttet.\n"
 
-#: g10/keyedit.c:1148 g10/keygen.c:3370 g10/revoke.c:539
+#: g10/keyedit.c:1148 g10/keygen.c:3371 g10/revoke.c:539
 #, fuzzy
 msgid "Secret parts of primary key are not available.\n"
 msgstr "hemmelig nøgle ikke tilgængelig"
 
-#: g10/keyedit.c:1152 g10/keygen.c:3385
+#: g10/keyedit.c:1152 g10/keygen.c:3386
 #, fuzzy
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "hemmelig nøgle ikke tilgængelig"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3389
+#: g10/keyedit.c:1156 g10/keygen.c:3390
 msgid "Key is protected.\n"
 msgstr "Nøglen er beskyttet.\n"
 
@@ -4036,12 +4036,12 @@ msgid "writing key binding signature\n"
 msgstr ""
 
 #: g10/keygen.c:1125 g10/keygen.c:1239 g10/keygen.c:1244 g10/keygen.c:1377
-#: g10/keygen.c:2933
+#: g10/keygen.c:2934
 #, fuzzy, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "Ønsket nøglestørrelse er %u bit\n"
 
-#: g10/keygen.c:1130 g10/keygen.c:1250 g10/keygen.c:1382 g10/keygen.c:2939
+#: g10/keygen.c:1130 g10/keygen.c:1250 g10/keygen.c:1382 g10/keygen.c:2940
 #, fuzzy, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "rundet op til %u bit\n"
@@ -4355,92 +4355,92 @@ msgid ""
 "generator a better chance to gain enough entropy.\n"
 msgstr ""
 
-#: g10/keygen.c:2878
+#: g10/keygen.c:2879
 msgid "Key generation canceled.\n"
 msgstr "Nøgleoprettelse annulleret.\n"
 
-#: g10/keygen.c:3090 g10/keygen.c:3235
+#: g10/keygen.c:3091 g10/keygen.c:3236
 #, fuzzy, c-format
 msgid "writing public key to `%s'\n"
 msgstr "skriver offentligt certifikat til '%s'\n"
 
-#: g10/keygen.c:3092 g10/keygen.c:3238
+#: g10/keygen.c:3093 g10/keygen.c:3239
 #, fuzzy, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "skriver hemmeligt certifikat til '%s'\n"
 
-#: g10/keygen.c:3095 g10/keygen.c:3241
+#: g10/keygen.c:3096 g10/keygen.c:3242
 #, fuzzy, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "skriver hemmeligt certifikat til '%s'\n"
 
-#: g10/keygen.c:3224
+#: g10/keygen.c:3225
 #, fuzzy, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "nøgle %08lX: offentlig nøgle ikke fundet: %s\n"
 
-#: g10/keygen.c:3230
+#: g10/keygen.c:3231
 #, fuzzy, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "skriver hemmeligt certifikat til '%s'\n"
 
-#: g10/keygen.c:3248
+#: g10/keygen.c:3249
 #, fuzzy, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: g10/keygen.c:3255
+#: g10/keygen.c:3256
 #, fuzzy, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: g10/keygen.c:3278
+#: g10/keygen.c:3279
 msgid "public and secret key created and signed.\n"
 msgstr "offentlig og hemmelig nøgle oprettet og signeret.\n"
 
-#: g10/keygen.c:3289
+#: g10/keygen.c:3290
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
 msgstr ""
 
-#: g10/keygen.c:3301 g10/keygen.c:3430 g10/keygen.c:3546
+#: g10/keygen.c:3302 g10/keygen.c:3431 g10/keygen.c:3547
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr ""
 
-#: g10/keygen.c:3353 g10/keygen.c:3481 g10/sign.c:277
+#: g10/keygen.c:3354 g10/keygen.c:3482 g10/sign.c:277
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
 
-#: g10/keygen.c:3355 g10/keygen.c:3483 g10/sign.c:279
+#: g10/keygen.c:3356 g10/keygen.c:3484 g10/sign.c:279
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr ""
 
-#: g10/keygen.c:3364 g10/keygen.c:3494
+#: g10/keygen.c:3365 g10/keygen.c:3495
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr ""
 
-#: g10/keygen.c:3403 g10/keygen.c:3527
+#: g10/keygen.c:3404 g10/keygen.c:3528
 #, fuzzy
 msgid "Really create? (y/N) "
 msgstr "Vil du virkelig oprette?"
 
-#: g10/keygen.c:3690
+#: g10/keygen.c:3691
 #, fuzzy, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "fjernelse af beskyttelse fejlede: %s\n"
 
-#: g10/keygen.c:3738
+#: g10/keygen.c:3739
 #, fuzzy, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "kan ikke oprette %s: %s\n"
 
-#: g10/keygen.c:3764
+#: g10/keygen.c:3765
 #, fuzzy, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "hemmelige nøgler import: %lu\n"

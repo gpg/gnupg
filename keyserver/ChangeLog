@@ -1,3 +1,8 @@
+2006-11-22  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpg2keys_ldap_LDADD): Add jnlib.  This is needed
+	for some replacement functions.
+
 2006-11-21  Werner Koch  <wk@g10code.com>
 
 	* curl-shim.c (curl_easy_perform): Made BUFLEN and MAXLNE a size_t.

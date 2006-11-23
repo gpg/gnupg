@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-21 10:53+0100\n"
+"POT-Creation-Date: 2006-11-21 22:00+0100\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -72,8 +72,8 @@ msgstr "¹patné heslo"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ochranný algoritmus %d není podporován\n"
 
-#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3047
-#: g10/keygen.c:3077 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
+#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3048
+#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
 #: g10/openfile.c:358 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
 #, c-format
 msgid "can't create `%s': %s\n"
@@ -81,7 +81,7 @@ msgstr "nemohu vytvoøit `%s': %s\n"
 
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:196
-#: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2555
+#: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2556
 #: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
@@ -849,7 +849,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr "Nalezena OpenPGP karta èíslo %s\n"
 
 #: g10/card-util.c:77 g10/card-util.c:1403 g10/delkey.c:128 g10/keyedit.c:1525
-#: g10/keygen.c:2739 g10/revoke.c:218 g10/revoke.c:456
+#: g10/keygen.c:2740 g10/revoke.c:218 g10/revoke.c:456
 msgid "can't do this in batch mode\n"
 msgstr "nelze provést v dávkovém módu\n"
 
@@ -3348,19 +3348,19 @@ msgstr ""
 "K dispozici je jen kontrolní souèet klíèe nebo je klíè na kartì - passphrase "
 "nelze zmìnit.\n"
 
-#: g10/keyedit.c:1144 g10/keygen.c:3382
+#: g10/keyedit.c:1144 g10/keygen.c:3383
 msgid "This key is not protected.\n"
 msgstr "Tento klíè není chránìný.\n"
 
-#: g10/keyedit.c:1148 g10/keygen.c:3370 g10/revoke.c:539
+#: g10/keyedit.c:1148 g10/keygen.c:3371 g10/revoke.c:539
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Tajné èásti primárního klíèe nejsou dostupné.\n"
 
-#: g10/keyedit.c:1152 g10/keygen.c:3385
+#: g10/keyedit.c:1152 g10/keygen.c:3386
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Tajná èást primárního klíèe jsou ulo¾eny na kartì.\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3389
+#: g10/keyedit.c:1156 g10/keygen.c:3390
 msgid "Key is protected.\n"
 msgstr "Klíè je chránìný.\n"
 
@@ -4115,12 +4115,12 @@ msgid "writing key binding signature\n"
 msgstr "zapisuji \"key-binding\" podpis\n"
 
 #: g10/keygen.c:1125 g10/keygen.c:1239 g10/keygen.c:1244 g10/keygen.c:1377
-#: g10/keygen.c:2933
+#: g10/keygen.c:2934
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "neplatná délka klíèe; pou¾iji %u bitù\n"
 
-#: g10/keygen.c:1130 g10/keygen.c:1250 g10/keygen.c:1382 g10/keygen.c:2939
+#: g10/keygen.c:1130 g10/keygen.c:1250 g10/keygen.c:1382 g10/keygen.c:2940
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "délka klíèe zaokrouhlena na %u bitù\n"
@@ -4458,50 +4458,50 @@ msgstr ""
 "pou¾ívat disky); díky tomu má generátor lep¹í ¹anci získat dostatek "
 "entropie.\n"
 
-#: g10/keygen.c:2878
+#: g10/keygen.c:2879
 msgid "Key generation canceled.\n"
 msgstr "Vytváøení klíèe bylo zru¹eno.\n"
 
-#: g10/keygen.c:3090 g10/keygen.c:3235
+#: g10/keygen.c:3091 g10/keygen.c:3236
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "zapisuji veøejný klíè do `%s'\n"
 
-#: g10/keygen.c:3092 g10/keygen.c:3238
+#: g10/keygen.c:3093 g10/keygen.c:3239
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "zapisuji tajný klíè do `%s'\n"
 
-#: g10/keygen.c:3095 g10/keygen.c:3241
+#: g10/keygen.c:3096 g10/keygen.c:3242
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "zapisuji tajný klíè do `%s'\n"
 
-#: g10/keygen.c:3224
+#: g10/keygen.c:3225
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "nenalezen zapisovatelný soubor veøejných klíèù (pubring): %s\n"
 
-#: g10/keygen.c:3230
+#: g10/keygen.c:3231
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "nenalezen zapisovatelný soubor tajných klíèù (secring): %s\n"
 
-#: g10/keygen.c:3248
+#: g10/keygen.c:3249
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "chyba pøi zápisu do souboru veøejných klíèù `%s': %s\n"
 
-#: g10/keygen.c:3255
+#: g10/keygen.c:3256
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "chyba pøi zápisu do souboru tajných klíèù `%s': %s\n"
 
-#: g10/keygen.c:3278
+#: g10/keygen.c:3279
 msgid "public and secret key created and signed.\n"
 msgstr "veøejný a tajný klíè byly vytvoøeny a podepsány.\n"
 
-#: g10/keygen.c:3289
+#: g10/keygen.c:3290
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
@@ -4509,12 +4509,12 @@ msgstr ""
 "Tento klíè nemù¾e být pou¾itý pro ¹ifrování. K vytvoøení\n"
 "sekundárního klíèe pro tento úèel mù¾ete pou¾ít pøíkaz \"--edit-key\".\n"
 
-#: g10/keygen.c:3301 g10/keygen.c:3430 g10/keygen.c:3546
+#: g10/keygen.c:3302 g10/keygen.c:3431 g10/keygen.c:3547
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Vytvoøení klíèe se nepodaøilo: %s\n"
 
-#: g10/keygen.c:3353 g10/keygen.c:3481 g10/sign.c:277
+#: g10/keygen.c:3354 g10/keygen.c:3482 g10/sign.c:277
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4522,7 +4522,7 @@ msgstr ""
 "klíè byl vytvoøen %lu sekund v budoucnosti (do¹lo ke zmìnì èasu nebo\n"
 "je problém se systémovým èasem)\n"
 
-#: g10/keygen.c:3355 g10/keygen.c:3483 g10/sign.c:279
+#: g10/keygen.c:3356 g10/keygen.c:3484 g10/sign.c:279
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -4530,25 +4530,25 @@ msgstr ""
 "klíè byl vytvoøen %lu sekund v budoucnosti (do¹lo ke zmìnì èasu nebo\n"
 "je problém se systémovým èasem)\n"
 
-#: g10/keygen.c:3364 g10/keygen.c:3494
+#: g10/keygen.c:3365 g10/keygen.c:3495
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "POZNÁMKA: vytvoøení podklíèe pro klíèe v3 není v souladu s OpenPGP\n"
 
-#: g10/keygen.c:3403 g10/keygen.c:3527
+#: g10/keygen.c:3404 g10/keygen.c:3528
 msgid "Really create? (y/N) "
 msgstr "Opravdu vytvoøit? (a/N) "
 
-#: g10/keygen.c:3690
+#: g10/keygen.c:3691
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "ulo¾ení klíèe na kartu se nezdaøilo: %s\n"
 
-#: g10/keygen.c:3738
+#: g10/keygen.c:3739
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "nemohu vytvoøit zálohu souboru `%s': %s\n"
 
-#: g10/keygen.c:3764
+#: g10/keygen.c:3765
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "POZNÁMKA: záloha klíèe z karty ulo¾ena do `%s'\n"
