@@ -1,3 +1,8 @@
+2006-11-27  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (ask_outfile_name): Fixed buffer overflow occurring
+	if make_printable_string returns a longer string.  Fixes bug 728.
+
 2006-11-21  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (needed_libs): libgnu needs to come after libcommon.

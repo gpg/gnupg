@@ -95,7 +95,7 @@ overwrite_filep( const char *fname )
 
 
 /****************
- * Strip know extensions from iname and return a newly allocated
+ * Strip known extensions from iname and return a newly allocated
  * filename.  Return NULL if we can't do that.
  */
 char *
@@ -126,45 +126,47 @@ make_outfile_name( const char *iname )
 }
 
 
-/****************
- * Ask for a outputfilename and use the given one as default.
- * Return NULL if no file has been given or it is not possible to
- * ask the user.
+/* Ask for an output filename; use the given one as default.  Return
+   NULL if no file has been given or if it is not possible to ask the
+   user.  NAME is the template len which might conatin enbedded Nuls.
+   NAMELEN is its actual length.
  */
 char *
 ask_outfile_name( const char *name, size_t namelen )
 {
-    size_t n;
-    const char *s;
-    char *prompt;
-    char *fname;
-    char *defname;
+  size_t n;
+  const char *s;
+  char *prompt;
+  char *fname;
+  char *defname;
 
-    if( opt.batch )
-	return NULL;
+  if ( opt.batch )
+    return NULL;
+  
+  defname = name && namelen? make_printable_string (name, namelen, 0) : NULL;
 
-    s = _("Enter new filename");
-
-    n = strlen(s) + namelen + 10;
-    defname = name && namelen? make_printable_string( name, namelen, 0): NULL;
-    prompt = xmalloc(n);
-    if( defname )
-	sprintf(prompt, "%s [%s]: ", s, defname );
-    else
-	sprintf(prompt, "%s: ", s );
-    tty_enable_completion(NULL);
-    fname = cpr_get("openfile.askoutname", prompt );
-    cpr_kill_prompt();
-    tty_disable_completion();
-    xfree(prompt);
-    if( !*fname ) {
-	xfree( fname ); fname = NULL;
-	fname = defname; defname = NULL;
+  s = _("Enter new filename");
+  n = strlen(s) + (defname?strlen (defname):0) + 10;
+  prompt = xmalloc (n);
+  if (defname)
+    snprintf (prompt, n-1, "%s [%s]: ", s, defname );
+  else
+    snprintf (prompt, n-1, "%s: ", s );
+  tty_enable_completion(NULL);
+  fname = cpr_get ("openfile.askoutname", prompt );
+  cpr_kill_prompt ();
+  tty_disable_completion ();
+  xfree (prompt);
+  if ( !*fname ) 
+    {
+      xfree (fname); 
+      fname = defname;
+      defname = NULL;
     }
-    xfree(defname);
-    if (fname)
-        trim_spaces (fname);
-    return fname;
+  xfree (defname);
+  if (fname)
+    trim_spaces (fname);
+  return fname;
 }
 
 
