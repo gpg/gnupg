@@ -144,8 +144,8 @@ ask_outfile_name( const char *name, size_t namelen )
 
     s = _("Enter new filename");
 
-    n = strlen(s) + namelen + 10;
     defname = name && namelen? make_printable_string( name, namelen, 0): NULL;
+    n = strlen(s) + (defname?strlen (defname):0) + 10;
     prompt = xmalloc(n);
     if( defname )
 	sprintf(prompt, "%s [%s]: ", s, defname );
