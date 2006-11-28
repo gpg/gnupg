@@ -70,6 +70,7 @@ typedef gnutls_transport_ptr gnutls_transport_ptr_t;
 #endif
 
 #include "util.h"
+#include "i18n.h"
 #include "http.h"
 #ifdef USE_DNS_SRV
 #include "srv.h"

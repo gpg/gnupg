@@ -1,16 +1,18 @@
-Noteworthy changes in version 2.0.1 (not released)
--------------------------------------------------
+Noteworthy changes in version 2.0.1 (2006-11-28)
+------------------------------------------------
 
  * Experimental support for the PIN pads of the SPR 532 and the Kaan
    Advanced card readers.  Add "disable-keypad" scdaemon.conf if you
    don't want it.  Does currently only work for the OpenPGP card and
-   the authentication and decrypt keys.
+   its authentication and decrypt keys.
 
  * Fixed build problems on some some platforms and crashes on amd64.
 
+ * Fixed a buffer overflow in gpg2. [bug#728]
+
 
 Noteworthy changes in version 2.0.0 (2006-11-11)
--------------------------------------------------
+------------------------------------------------
 
  * First stable version of a GnuPG integrating OpenPGP and S/MIME.
 

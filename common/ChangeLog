@@ -1,3 +1,7 @@
+2006-11-23  Werner Koch  <wk@g10code.com>
+
+	* http.c: Include i18n.h
+
 2006-11-21  Werner Koch  <wk@g10code.com>
 
 	* estream.c: Remove explicit Pth soft mapping diabling becuase it

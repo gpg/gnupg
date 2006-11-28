@@ -73,8 +73,8 @@ watchgnupg_SOURCES = watchgnupg.c
 watchgnupg_LDADD = $(NETLIBS)
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
-gpg_connect_agent_LDADD = $(common_libs) \
-                          $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL)
+gpg_connect_agent_LDADD = $(common_libs) $(LIBASSUAN_LIBS) \
+	                  $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
 
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
 gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)

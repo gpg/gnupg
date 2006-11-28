@@ -26,7 +26,7 @@ min_automake_version="1.9.3"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
-m4_define([my_version], [2.0.1rc1])
+m4_define([my_version], [2.0.1])
 m4_define([my_issvn], [no])
 
 

@@ -34,7 +34,7 @@
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
 
-/* get all the stuff from jnlib */
+/* Get all the stuff from jnlib. */
 #include "../jnlib/logging.h"
 #include "../jnlib/argparse.h"
 #include "../jnlib/stringhelp.h"
@@ -42,6 +42,7 @@
 #include "../jnlib/strlist.h"
 #include "../jnlib/dotlock.h"
 #include "../jnlib/utf8conv.h"
+
 
 #if __GNUC__ >= 4 
 # define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))

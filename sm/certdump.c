@@ -376,7 +376,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
           else if (*s == '\"')
             return NULL; /* invalid encoding */
           else if (*s == ',' || *s == '=' || *s == '+'
-                   || *s == '<' || *s == '>' || *s == '#' || *s == ';' )
+                   || *s == '<' || *s == '>' || *s == ';' )
             break; 
           else
             n++;

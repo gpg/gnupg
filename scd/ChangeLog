@@ -1,3 +1,10 @@
+2006-11-28  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (send_le, apdu_send_direct): Increase RESULTLEN to 258 to
+	allow for full 256 byte and the status word.  This might break
+	some old PC/SC drivers or cards, but we will see.  Suggested by
+	Kenneth Wang.
+
 2006-11-23  Werner Koch  <wk@g10code.com>
 
 	* command.c (scd_command_handler): Fixed use of CTRL.

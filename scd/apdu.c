@@ -2603,7 +2603,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
          unsigned char **retbuf, size_t *retbuflen,
          struct pininfo_s *pininfo)
 {
-#define RESULTLEN 256
+#define RESULTLEN 258
   unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
                                          the driver. */
   size_t resultlen;
@@ -2866,7 +2866,7 @@ apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
                   int handle_more,
                   unsigned char **retbuf, size_t *retbuflen)
 {
-#define RESULTLEN 256
+#define RESULTLEN 258
   unsigned char apdu[5+256+1];
   size_t apdulen;
   unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
