@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-21 22:00+0100\n"
+"POT-Creation-Date: 2006-11-28 16:59+0100\n"
 "PO-Revision-Date: 2004-11-23 11:14+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -75,8 +75,8 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "保護要約%dはサポートしていません\n"
 
 #: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3048
-#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
-#: g10/openfile.c:358 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
+#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:267
+#: g10/openfile.c:360 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "「%s」が作成できません: %s\n"
@@ -84,7 +84,7 @@ msgstr "「%s」が作成できません: %s\n"
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:196
 #: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2556
-#: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
+#: g10/keyring.c:1534 g10/openfile.c:190 g10/openfile.c:345
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
 #: g10/tdbio.c:605 g10/verify.c:102 g10/verify.c:158 sm/gpgsm.c:1771
@@ -353,7 +353,7 @@ msgstr "「%s」の作成エラー: %s\n"
 
 #: agent/gpg-agent.c:1210 agent/gpg-agent.c:1313 agent/gpg-agent.c:1317
 #: agent/gpg-agent.c:1353 agent/gpg-agent.c:1357 g10/exec.c:174
-#: g10/openfile.c:416 scd/scdaemon.c:932
+#: g10/openfile.c:418 scd/scdaemon.c:932
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "ディレクトリー「%s」が作成できません: %s\n"
@@ -382,7 +382,7 @@ msgstr "更新に失敗しました: %s\n"
 msgid "listening on socket `%s'\n"
 msgstr "「%s」へ秘密鍵を書き込みます\n"
 
-#: agent/gpg-agent.c:1321 agent/gpg-agent.c:1363 g10/openfile.c:419
+#: agent/gpg-agent.c:1321 agent/gpg-agent.c:1363 g10/openfile.c:421
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "ディレクトリー「%s」ができました\n"
@@ -629,12 +629,12 @@ msgstr ""
 msgid "error running `%s': terminated\n"
 msgstr "「%s」の読出しエラー: %s\n"
 
-#: common/http.c:1622
+#: common/http.c:1623
 #, fuzzy, c-format
 msgid "error creating socket: %s\n"
 msgstr "「%s」の作成エラー: %s\n"
 
-#: common/http.c:1666
+#: common/http.c:1667
 #, fuzzy
 msgid "host not found"
 msgstr "[ユーザーIDが見つかりません]"
@@ -2737,7 +2737,7 @@ msgstr "鍵%s: 新しい鍵です - とばします\n"
 msgid "no writable keyring found: %s\n"
 msgstr "書込み可能な鍵輪が見つかりません: %s\n"
 
-#: g10/import.c:801 g10/openfile.c:268 g10/sign.c:834 g10/sign.c:1140
+#: g10/import.c:801 g10/openfile.c:270 g10/sign.c:834 g10/sign.c:1140
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "「%s」への書込み\n"
@@ -5092,25 +5092,25 @@ msgstr "上書きしますか? (y/N) "
 msgid "%s: unknown suffix\n"
 msgstr "%s: 未知の拡張子\n"
 
-#: g10/openfile.c:146
+#: g10/openfile.c:148
 msgid "Enter new filename"
 msgstr "新しいファイル名を入力してください"
 
-#: g10/openfile.c:191
+#: g10/openfile.c:193
 msgid "writing to stdout\n"
 msgstr "標準出力に書き込みます\n"
 
-#: g10/openfile.c:306
+#: g10/openfile.c:308
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "署名されたデータが「%s」にあると想定します\n"
 
-#: g10/openfile.c:385
+#: g10/openfile.c:387
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr "新しい構成ファイル「%s」ができました\n"
 
-#: g10/openfile.c:387
+#: g10/openfile.c:389
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr "警告: 「%s」のオプションは起動している間、有効になりません\n"

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-21 22:00+0100\n"
+"POT-Creation-Date: 2006-11-28 16:59+0100\n"
 "PO-Revision-Date: 2005-06-28 00:24+0200\n"
 "Last-Translator: Gaël Quéri <gael@lautre.net>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -77,8 +77,8 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "le hachage de protection %d n'est pas supporté\n"
 
 #: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3048
-#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
-#: g10/openfile.c:358 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
+#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:267
+#: g10/openfile.c:360 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "impossible de créer `%s': %s\n"
@@ -86,7 +86,7 @@ msgstr "impossible de créer `%s': %s\n"
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:196
 #: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2556
-#: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
+#: g10/keyring.c:1534 g10/openfile.c:190 g10/openfile.c:345
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
 #: g10/tdbio.c:605 g10/verify.c:102 g10/verify.c:158 sm/gpgsm.c:1771
@@ -363,7 +363,7 @@ msgstr "erreur pendant la création de `%s': %s\n"
 
 #: agent/gpg-agent.c:1210 agent/gpg-agent.c:1313 agent/gpg-agent.c:1317
 #: agent/gpg-agent.c:1353 agent/gpg-agent.c:1357 g10/exec.c:174
-#: g10/openfile.c:416 scd/scdaemon.c:932
+#: g10/openfile.c:418 scd/scdaemon.c:932
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "impossible de créer le répertoire `%s': %s\n"
@@ -394,7 +394,7 @@ msgstr "la mise à jour a échoué: %s\n"
 msgid "listening on socket `%s'\n"
 msgstr "écriture de la clé secrète dans `%s'\n"
 
-#: agent/gpg-agent.c:1321 agent/gpg-agent.c:1363 g10/openfile.c:419
+#: agent/gpg-agent.c:1321 agent/gpg-agent.c:1363 g10/openfile.c:421
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "répertoire `%s' créé\n"
@@ -643,12 +643,12 @@ msgstr ""
 msgid "error running `%s': terminated\n"
 msgstr "erreur pendant la lecture de `%s': %s\n"
 
-#: common/http.c:1622
+#: common/http.c:1623
 #, fuzzy, c-format
 msgid "error creating socket: %s\n"
 msgstr "erreur pendant la création de `%s': %s\n"
 
-#: common/http.c:1666
+#: common/http.c:1667
 #, fuzzy
 msgid "host not found"
 msgstr "[Nom utilisateur introuvable]"
@@ -2838,7 +2838,7 @@ msgstr "clé %s: nouvelle clé - ignorée\n"
 msgid "no writable keyring found: %s\n"
 msgstr "aucun porte-clé n'a été trouvé avec des droits d'écriture : %s\n"
 
-#: g10/import.c:801 g10/openfile.c:268 g10/sign.c:834 g10/sign.c:1140
+#: g10/import.c:801 g10/openfile.c:270 g10/sign.c:834 g10/sign.c:1140
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "écriture de `%s'\n"
@@ -5266,25 +5266,25 @@ msgstr "Réécrire par-dessus ? (o/N) "
 msgid "%s: unknown suffix\n"
 msgstr "%s: suffixe inconnu\n"
 
-#: g10/openfile.c:146
+#: g10/openfile.c:148
 msgid "Enter new filename"
 msgstr "Entrez le nouveau nom de fichier"
 
-#: g10/openfile.c:191
+#: g10/openfile.c:193
 msgid "writing to stdout\n"
 msgstr "écriture vers la sortie standard\n"
 
-#: g10/openfile.c:306
+#: g10/openfile.c:308
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "les données signées sont supposées être dans `%s'\n"
 
-#: g10/openfile.c:385
+#: g10/openfile.c:387
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr " nouveau fichier de configuration `%s' créé\n"
 
-#: g10/openfile.c:387
+#: g10/openfile.c:389
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr ""

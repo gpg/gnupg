@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2006-11-21 22:00+0100\n"
+"POT-Creation-Date: 2006-11-28 16:59+0100\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -93,8 +93,8 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "l'algoritme de protecció %d%s no està suportat\n"
 
 #: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1016 g10/keygen.c:3048
-#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:265
-#: g10/openfile.c:358 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
+#: g10/keygen.c:3078 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:267
+#: g10/openfile.c:360 g10/sign.c:830 g10/sign.c:1136 g10/tdbio.c:538
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
@@ -102,7 +102,7 @@ msgstr "no s'ha pogut crear «%s»: %s\n"
 #: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:111 g10/decrypt.c:70 g10/encode.c:196
 #: g10/encode.c:488 g10/gpg.c:1017 g10/import.c:195 g10/keygen.c:2556
-#: g10/keyring.c:1534 g10/openfile.c:188 g10/openfile.c:343
+#: g10/keyring.c:1534 g10/openfile.c:190 g10/openfile.c:345
 #: g10/plaintext.c:491 g10/sign.c:812 g10/sign.c:1007 g10/sign.c:1120
 #: g10/sign.c:1272 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
 #: g10/tdbio.c:605 g10/verify.c:102 g10/verify.c:158 sm/gpgsm.c:1771
@@ -376,7 +376,7 @@ msgstr "error en crear «%s»: %s\n"
 
 #: agent/gpg-agent.c:1210 agent/gpg-agent.c:1313 agent/gpg-agent.c:1317
 #: agent/gpg-agent.c:1353 agent/gpg-agent.c:1357 g10/exec.c:174
-#: g10/openfile.c:416 scd/scdaemon.c:932
+#: g10/openfile.c:418 scd/scdaemon.c:932
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "no es pot crear el directori «%s»: %s\n"
@@ -405,7 +405,7 @@ msgstr "ha fallat l'actualització: %s\n"
 msgid "listening on socket `%s'\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
-#: agent/gpg-agent.c:1321 agent/gpg-agent.c:1363 g10/openfile.c:419
+#: agent/gpg-agent.c:1321 agent/gpg-agent.c:1363 g10/openfile.c:421
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: s'ha creat el directori\n"
@@ -653,12 +653,12 @@ msgstr ""
 msgid "error running `%s': terminated\n"
 msgstr "error en la lectura de «%s»: %s\n"
 
-#: common/http.c:1622
+#: common/http.c:1623
 #, fuzzy, c-format
 msgid "error creating socket: %s\n"
 msgstr "error en crear «%s»: %s\n"
 
-#: common/http.c:1666
+#: common/http.c:1667
 #, fuzzy
 msgid "host not found"
 msgstr "%s: no s'ha trobat l'usuari\n"
@@ -2861,7 +2861,7 @@ msgstr "clau %08lX: clau nova - es descarta \n"
 msgid "no writable keyring found: %s\n"
 msgstr "no s'ha trobat cap anell escrivible: %s\n"
 
-#: g10/import.c:801 g10/openfile.c:268 g10/sign.c:834 g10/sign.c:1140
+#: g10/import.c:801 g10/openfile.c:270 g10/sign.c:834 g10/sign.c:1140
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "s'està escrivint en «%s»\n"
@@ -5361,26 +5361,26 @@ msgstr "Voleu sobreescriure? (s/N) "
 msgid "%s: unknown suffix\n"
 msgstr "%s: el sufix és desconegut\n"
 
-#: g10/openfile.c:146
+#: g10/openfile.c:148
 msgid "Enter new filename"
 msgstr "Introduïu el nou nom del fitxer"
 
 # Indi?  ivb
-#: g10/openfile.c:191
+#: g10/openfile.c:193
 msgid "writing to stdout\n"
 msgstr "s'està escrivint en stdout\n"
 
-#: g10/openfile.c:306
+#: g10/openfile.c:308
 #, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "s'asumeix que hi ha dades signades en «%s»\n"
 
-#: g10/openfile.c:385
+#: g10/openfile.c:387
 #, c-format
 msgid "new configuration file `%s' created\n"
 msgstr "s'ha creat el nou fitxer d'opcions «%s»\n"
 
-#: g10/openfile.c:387
+#: g10/openfile.c:389
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr ""
