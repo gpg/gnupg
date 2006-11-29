@@ -1,3 +1,7 @@
+2006-11-29  Werner Koch  <wk@g10code.com>
+
+	Released 1.4.6rc1.
+
 2006-11-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: --enable-minimal leaves out gettext and all

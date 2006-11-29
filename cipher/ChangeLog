@@ -1,3 +1,8 @@
+2006-11-03  Werner Koch  <wk@g10code.com>
+
+	* random.c [HAVE_GETTIMEOFDAY]: Included sys/time.h and not
+	sys/times.h.  Reported by Rafaël Carré.
+
 2006-06-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* rsa.c (generate): Use e=65537 for new RSA keys.
