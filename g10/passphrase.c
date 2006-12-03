@@ -613,17 +613,21 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
         pw = xstrdup ("");
       if ( *pw && mode == 2 )
         {
-          char *pw2 = passphrase_get ( keyid, 2, NULL, NULL, NULL,
-                                       NULL, canceled );
-          if (!pw2)
-            pw2 = xstrdup ("");
-          if ( strcmp(pw, pw2) )
-            {
-              xfree(pw2);
-              xfree(pw);
-              return NULL;
-            }
-          xfree(pw2);
+	  int i;
+	  for(i=0;i<opt.passwd_repeat;i++)
+	    {
+	      char *pw2 = passphrase_get ( keyid, 2, NULL, NULL, NULL,
+					   NULL, canceled );
+	      if (!pw2)
+		pw2 = xstrdup ("");
+	      if ( strcmp(pw, pw2) )
+		{
+		  xfree(pw2);
+		  xfree(pw);
+		  return NULL;
+		}
+	      xfree(pw2);
+	    }
 	}
     }
     

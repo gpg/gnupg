@@ -211,6 +211,7 @@ enum cmd_and_opt_values
     oPasswd,
     oPasswdFD,
     oPasswdFile,
+    oPasswdRepeat,
     oCommandFD,
     oCommandFile,
     oQuickRandom,
@@ -564,6 +565,7 @@ static ARGPARSE_OPTS opts[] = {
     { oPasswd, "passphrase",2, "@" },
     { oPasswdFD, "passphrase-fd",1, "@" },
     { oPasswdFile, "passphrase-file",2, "@" },
+    { oPasswdRepeat, "passphrase-repeat", 1, "@"},
     { oCommandFD, "command-fd",1, "@" },
     { oCommandFile, "command-file",2, "@" },
     { oQuickRandom, "debug-quick-random", 0, "@"},
@@ -1858,6 +1860,7 @@ main (int argc, char **argv )
     opt.def_sig_expire="0";
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
+    opt.passwd_repeat=1;
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
@@ -2419,6 +2422,7 @@ main (int argc, char **argv )
 	  case oPasswdFile:
             pwfd = open_info_file (pargs.r.ret_str, 0);
             break;
+	  case oPasswdRepeat: opt.passwd_repeat=pargs.r.ret_int; break;
 	  case oCommandFD:
             opt.command_fd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             break;

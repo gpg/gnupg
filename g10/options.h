@@ -239,8 +239,8 @@ struct
   } *auto_key_locate;
 
   /* True if multiple concatenated signatures may be verified. */
-  int allow_multisig_verification; 
-
+  int allow_multisig_verification;
+  int passwd_repeat;
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't
