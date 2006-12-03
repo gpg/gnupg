@@ -1,3 +1,10 @@
+2006-12-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, gpg.c (main), passphrase.c (passphrase_to_dek): Add
+	--passphrase-repeat option to control how many times gpg will
+	re-prompt for a passphrase to ensure the user has typed it
+	correctly.  Defaults to 1.
+
 2006-11-27  Werner Koch  <wk@g10code.com>
 
 	* openfile.c (ask_outfile_name): Fixed buffer overflow occurring

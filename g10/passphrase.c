@@ -1,6 +1,6 @@
 /* passphrase.c -  Get a passphrase
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -937,26 +937,32 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
               goto agent_died;
             pw = xstrdup ("");
           }
-        if( *pw && mode == 2 ) {
-            char *pw2 = agent_get_passphrase ( keyid, 2, NULL, NULL, NULL,
-                                               NULL, canceled );
-            if (!pw2)
-              {
-                if (!opt.use_agent)
-                  {
-                    xfree (pw);
-                    pw = NULL;
-                    goto agent_died;
-                  }
-                pw2 = xstrdup ("");
-              }
-	    if( strcmp(pw, pw2) ) {
+        if( *pw && mode == 2 )
+	  {
+	    int i;
+	    for(i=0;i<opt.passwd_repeat;i++)
+	      {
+		char *pw2 = agent_get_passphrase ( keyid, 2, NULL, NULL, NULL,
+						   NULL, canceled );
+		if (!pw2)
+		  {
+		    if (!opt.use_agent)
+		      {
+			xfree (pw);
+			pw = NULL;
+			goto agent_died;
+		      }
+		    pw2 = xstrdup ("");
+		  }
+		if( strcmp(pw, pw2) )
+		  {
+		    xfree(pw2);
+		    xfree(pw);
+		    return NULL;
+		  }
 		xfree(pw2);
-		xfree(pw);
-		return NULL;
-	    }
-	    xfree(pw2);
-	}
+	      }
+	  }
     }
     else if( fd_passwd ) {
         /* Return the passphrase we have store in FD_PASSWD. */
@@ -972,17 +978,23 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
         /* Read the passphrase from the tty or the command-fd. */
 	pw = cpr_get_hidden("passphrase.enter", _("Enter passphrase: ") );
 	tty_kill_prompt();
-	if( mode == 2 && !cpr_enabled() ) {
-	    char *pw2 = cpr_get_hidden("passphrase.repeat",
-				       _("Repeat passphrase: ") );
-	    tty_kill_prompt();
-	    if( strcmp(pw, pw2) ) {
+	if( mode == 2 && !cpr_enabled() )
+	  {
+	    int i;
+	    for(i=0;i<opt.passwd_repeat;i++)
+	      {
+		char *pw2 = cpr_get_hidden("passphrase.repeat",
+					   _("Repeat passphrase: ") );
+		tty_kill_prompt();
+		if( strcmp(pw, pw2) )
+		  {
+		    xfree(pw2);
+		    xfree(pw);
+		    return NULL;
+		  }
 		xfree(pw2);
-		xfree(pw);
-		return NULL;
-	    }
-	    xfree(pw2);
-	}
+	      }
+	  }
     }
 
     if( !pw || !*pw )
