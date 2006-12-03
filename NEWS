@@ -2,9 +2,26 @@ Noteworthy changes in version 1.4.6
 ------------------------------------------------
 
     * Fixed a bug while decrypting certain compressed and encrypted
-      messages. See http://bugs.gnupg.org/537 .
+      messages. [bug#537]
  
-    * Fixed a buffer overflow in gpg2. [bug#728]
+    * Fixed a buffer overflow in gpg. [bug#728, CVE-2006-6169]
+
+    * Added --s2k-count to set the number of times passphrase mangling
+      is repeated.  The default is 65536 times.
+
+    * Added --passphrase-repeat to set the number of times GPG will
+      prompt for a new passphrase to be repeated.  This is useful to
+      help memorize a new passphrase.  The default is 1 repetition.
+
+    * Added a GPL license exception to the keyserver helper programs
+      gpgkeys_ldap, gpgkeys_curl, and gpgkeys_hkp, to clarify any
+      potential questions about the ability to distribute binaries
+      that link to the OpenSSL library.  GnuPG does not link directly
+      to OpenSSL, but libcurl (used for HKP, HTTP, and FTP) and
+      OpenLDAP (used for LDAP) may.  Note that this license exception
+      is considered a bug fix and is intended to forgive any
+      violations pertaining to this issue, including those that may
+      have occurred in the past.
 
 
 Noteworthy changes in version 1.4.5 (2006-08-01)
@@ -24,7 +41,7 @@ Noteworthy changes in version 1.4.5 (2006-08-01)
 Noteworthy changes in version 1.4.4 (2006-06-25)
 ------------------------------------------------
 
-    * User IDs are now capped at 2048 byte.  This avoids a memory
+    * User IDs are now capped at 2048 bytes.  This avoids a memory
       allocation attack (see CVE-2006-3082).
 
     * Added support for the SHA-224 hash.  Like the SHA-384 hash, it
