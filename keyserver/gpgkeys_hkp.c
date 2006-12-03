@@ -426,6 +426,12 @@ search_key(const char *searchkey)
     strcat(request,"11371");
   strcat(request,opt->path);
   append_path(request,"/pks/lookup?op=index&options=mr&search=");
+
+  /* HKP keyservers like the 0x to be present when searching by
+     keyid */
+  if(search_type==KS_SEARCH_KEYID_SHORT || search_type==KS_SEARCH_KEYID_LONG)
+    strcat(request,"0x");
+
   strcat(request,searchkey_encoded);
 
   if(search_type!=KS_SEARCH_SUBSTR)
