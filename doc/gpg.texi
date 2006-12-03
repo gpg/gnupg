@@ -2192,6 +2192,11 @@ signatures to prevent the mail system from breaking the signature. Note
 that all other PGP versions do it this way too.  Enabled by
 default. @option{--no-escape-from-lines} disables this option.
 
+@item --passphrase-repeat @code{n}
+Specify how many times @command{@gpgname} will request a new
+passphrase be repeated.  This is useful for helping memorize a
+passphrase.  Defaults to 1 repetition.
+
 @item --passphrase-fd @code{n}
 Read the passphrase from file descriptor @code{n}. Only the first line
 will be read from file descriptor @code{n}. If you use 0 for @code{n},
