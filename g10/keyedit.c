@@ -3249,7 +3249,12 @@ menu_clean(KBNODE keyblock,int self_only)
 	      modified=1;
 	    }
 	  else
-	    tty_printf(_("User ID \"%s\": already clean\n"),user);
+	    {
+	      tty_printf(self_only==1?
+			 "User ID \"%s\": already minimized\n":
+			 "User ID \"%s\": already clean\n",
+			 user);
+	    }
 
 	  xfree(user);
 	}
