@@ -1,3 +1,7 @@
+2006-12-04  Werner Koch  <wk@g10code.com>
+
+	* yat2m.c: New.
+
 2006-06-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --enable-dsa2, --disable-dsa2, and

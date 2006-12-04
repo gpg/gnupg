@@ -20,13 +20,19 @@
 
 AUTOMAKE_OPTIONS = no-texinfo.tex
 
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 gpgv.sgml gpgv.1 faq.raw FAQ faq.html \
+EXTRA_DIST = DETAILS gpg.1 gpgv.1 faq.raw FAQ faq.html \
              HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 \
              TRANSLATE gpg.ru.sgml gpg.ru.1 highlights-1.4.txt
 
-man_MANS = gpg.1 gpgv.1 gnupg.7 gpg.ru.1
+noinst_PROGRAMS = yat2m
 
-info_TEXINFOS = gpg.texi gpgv.texi
+myman_sources = gpg.texi 
+myman_pages   = gpg.1 
+
+info_TEXINFOS = gpg.texi
+
+man_MANS = $(myman_pages) gnupg.7 gpg.ru.1
+
 
 # Need this to avoid building of dvis with automake 1.4
 DVIS =
@@ -38,26 +44,36 @@ BUILT_SOURCES = FAQ faq.html
 # be built files. 
 
 CLEANFILES = faq.raw.xref gpg.xml gpgv.xml gpg.ru.xml
+DISTCLEANFILES = yat2m-stamp.tmp yat2m-stamp $(myman_pages)
 
+YAT2M_OPTIONS = -I $(srcdir) -D gpgone \
+        --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
 
-# We better build the texi versions manually.
-#%.texi : %.xml
-#if HAVE_DOCBOOK_TO_TEXI
-#	 docbook2texi $< | sed 's,--,---,' \
-#	    | $(top_srcdir)/scripts/fix-db-texi $@  >$@
-#else
-#	 : Warning: missing docbook to texinfo tools, cannot make $@
-#	 touch $@
-#endif
-#
-#%.xml : %.sgml
-#if HAVE_DOCBOOK_TO_TEXI
-#	 sgml2xml -x lower $< >$@
-#else
-#	 : Warning: missing docbook to texinfo tools, cannot make $@
-#	 touch $@
-#endif
-#
+yat2m_SOURCES = yat2m.c
+
+yat2m-stamp: $(myman_sources)
+	@rm -f yat2m-stamp.tmp
+	@touch yat2m-stamp.tmp
+	for file in $(myman_sources) ; do \
+              ./yat2m $(YAT2M_OPTIONS) --store \
+	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
+	@mv -f yat2m-stamp.tmp $@
+
+yat2m-stamp: yat2m
+
+$(myman_pages) : yat2m-stamp
+	@if test -f $@; then :; else \
+            trap 'rm -rf yat2m-stamp yat2m-lock' 1 2 13 15; \
+               if mkdir yat2m-lock 2>/dev/null; then \
+                 rm -f yat2m-stamp; \
+                 $(MAKE) $(AM_MAKEFLAGS) yat2m-stamp; \
+                 rmdir yat2m-lock; \
+               else \
+                 while test -d yat2m-lock; do sleep 1; done; \
+                 test -f yat2m-stamp; exit $$?; \
+               fi; \
+             fi
+
 
 %.1 : %.sgml
 if HAVE_DOCBOOK_TO_MAN
