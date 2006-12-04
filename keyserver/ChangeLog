@@ -1,5 +1,10 @@
 2006-12-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* ksutil.c (classify_ks_search): Try and recognize a key ID even
+	without the 0x prefix.  This isn't exact (it's possible that a
+	user ID string happens to be 8 or 16 digits of hex), but it's
+	extremely unlikely.  Plus GPG itself makes the same assumption.
+
 	* gpgkeys_hkp.c (search_key): HKP keyservers like the 0x to be
 	present when searching by keyID.
 

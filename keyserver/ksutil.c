@@ -350,6 +350,10 @@ print_nocr(FILE *stream,const char *str)
     }
 }
 
+#define HEX "abcdefABCDEF1234567890"
+
+/* Return what sort of item is being searched for.  *search is
+   permuted to remove any special indicators of a search type. */
 enum ks_search_type
 classify_ks_search(const char **search)
 {
@@ -370,14 +374,12 @@ classify_ks_search(const char **search)
     case '0':
       if((*search)[1]=='x')
 	{
-	  if(strlen(*search)==10
-	     && strspn(*search,"abcdefABCDEF1234567890x")==10)
+	  if(strlen(*search)==10 && strspn(*search,HEX"x")==10)
 	    {
 	      (*search)+=2;
 	      return KS_SEARCH_KEYID_SHORT;
 	    }
-	  else if(strlen(*search)==18
-		  && strspn(*search,"abcdefABCDEF1234567890x")==18)
+	  else if(strlen(*search)==18 && strspn(*search,HEX"x")==18)
 	    {
 	      (*search)+=2;
 	      return KS_SEARCH_KEYID_LONG;
@@ -385,6 +387,17 @@ classify_ks_search(const char **search)
 	}
       /* fall through */
     default:
+      /* Try and recognize a key ID.  This isn't exact (it's possible
+	 that a user ID string happens to be 8 or 16 digits of hex),
+	 but it's extremely unlikely.  Plus the main GPG program does
+	 this also, and consistency is good. */
+
+      if(strlen(*search)==8 && strspn(*search,HEX)==8)
+	return KS_SEARCH_KEYID_SHORT;
+      else if(strlen(*search)==16 && strspn(*search,HEX)==16)
+	return KS_SEARCH_KEYID_LONG;
+
+      /* Last resort */
       return KS_SEARCH_SUBSTR;
     }
 }
