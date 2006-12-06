@@ -290,23 +290,8 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 	  }
 	else
 	  {
-            int canceled;
-
 	    c->dek = passphrase_to_dek (NULL, 0, algo, &enc->s2k, 0,
-                                        NULL, &canceled);
-            if (canceled)
-              {
-                /* For unknown reasons passphrase_to_dek does only
-                   return NULL if a new passphrase has been requested
-                   and has not been repeated correctly.  Thus even
-                   with a cancel requested (by means of the gpg-agent)
-                   it won't return NULL but an empty passphrase.  We
-                   take the most conservative approach for now and
-                   work around it right here. */
-                xfree (c->dek);
-                c->dek = NULL;
-              }
-
+                                        NULL, NULL);
 	    if(c->dek)
 	      {
 		c->dek->symmetric=1;

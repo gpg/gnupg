@@ -449,18 +449,20 @@ int
 ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
 			   const char *inname, int textmode )
 {
-    progress_filter_context_t pfx;
+    progress_filter_context_t *pfx;
     char *answer = NULL;
     IOBUF fp;
     int rc = 0;
 
-    fp = open_sigfile( inname, &pfx ); /* open default file */
+    pfx = new_progress_context ();
+    fp = open_sigfile ( inname, pfx ); /* Open default file. */
 
     if( !fp && !opt.batch ) {
 	int any=0;
 	tty_printf(_("Detached signature.\n"));
 	do {
 	    char *name;
+
 	    xfree(answer);
 	    tty_enable_completion(NULL);
 	    name = cpr_get("detached_signature.filename",
@@ -505,6 +507,7 @@ ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
 
   leave:
     xfree(answer);
+    release_progress_context (pfx);
     return rc;
 }
 
@@ -518,19 +521,23 @@ int
 hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
 		const char *sigfilename, int textmode )
 {
-    progress_filter_context_t pfx;
+    progress_filter_context_t *pfx;
     IOBUF fp;
     strlist_t sl;
 
+    pfx = new_progress_context ();
+
     if( !files ) {
 	/* check whether we can open the signed material */
-	fp = open_sigfile( sigfilename, &pfx );
+	fp = open_sigfile( sigfilename, pfx );
 	if( fp ) {
 	    do_hash( md, md2, fp, textmode );
 	    iobuf_close(fp);
+            release_progress_context (pfx);
 	    return 0;
 	}
         log_error (_("no signed data\n"));
+        release_progress_context (pfx);
         return gpg_error (GPG_ERR_NO_DATA);
     }
 
@@ -547,13 +554,15 @@ hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
             int rc = gpg_error_from_syserror ();
 	    log_error(_("can't open signed data `%s'\n"),
 						print_fname_stdin(sl->d));
+            release_progress_context (pfx);
 	    return rc;
 	}
-        handle_progress (&pfx, fp, sl->d);
+        handle_progress (pfx, fp, sl->d);
 	do_hash( md, md2, fp, textmode );
 	iobuf_close(fp);
     }
 
+    release_progress_context (pfx);
     return 0;
 }
 

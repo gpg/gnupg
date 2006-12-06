@@ -1070,6 +1070,9 @@ the filename does not contain a slash, it is assumed to be in the GnuPG
 home directory (@file{~/.gnupg} if @option{--homedir} or $GNUPGHOME is
 not used).
 
+@ifset gpgone
+@anchor{option --homedir}
+@end ifset
 @include opt-homedir.texi
 
 
@@ -1130,6 +1133,9 @@ encoded in the character set as specified by
 @option{--display-charset}. These options affect all following
 arguments. Both options may be used multiple times.
 
+@ifset gpgone
+@anchor{option --options}
+@end ifset
 @item --options @code{file}
 Read options from @code{file} and do not try to read them from the
 default options file in the homedir (see @option{--homedir}). This
@@ -2497,8 +2503,11 @@ name may be changed on the command line (@pxref{option
 @c man:.RE
 Note that on larger installations, it is useful to put predefined files
 into the directory @file{/etc/skel/.gnupg/} so that newly created users
-start up with a working configuration.  For existing users the a small
+start up with a working configuration.
+@ifclear gpgone
+For existing users the a small
 helper script is provided to create these files (@pxref{addgnupghome}).
+@end ifclear
 
 For internal purposes @command{@gpgname} creates and maintaines a few other
 files; They all live in in the current home directory (@pxref{option
@@ -2678,7 +2687,9 @@ as locked memory is allocated.
 @mansect see also
 @ifset isman
 @command{gpgv}(1), 
+@ifclear gpgone
 @command{gpgsm}(1), 
 @command{gpg-agent}(1)
+@end ifclear
 @end ifset
 @include see-also-note.texi

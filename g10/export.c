@@ -137,10 +137,9 @@ do_export( strlist_t users, int secret, unsigned int options )
 {
   IOBUF out = NULL;
   int any, rc;
-  armor_filter_context_t afx;
+  armor_filter_context_t *afx = NULL;
   compress_filter_context_t zfx;
   
-  memset( &afx, 0, sizeof afx);
   memset( &zfx, 0, sizeof zfx);
   
   rc = open_outfile( NULL, 0, &out );
@@ -151,8 +150,9 @@ do_export( strlist_t users, int secret, unsigned int options )
     {
       if ( opt.armor )
         {
-          afx.what = secret?5:1;
-          iobuf_push_filter ( out, armor_filter, &afx );
+          afx = new_armor_context ();
+          afx->what = secret? 5 : 1;
+          push_armor_filter (afx, out);
         }
       if ( opt.compress_keys )
         push_compress_filter (out,&zfx,default_compress_algo());
@@ -164,6 +164,7 @@ do_export( strlist_t users, int secret, unsigned int options )
     iobuf_cancel (out);
   else
     iobuf_close (out);
+  release_armor_context (afx);
   return rc;
 }
 

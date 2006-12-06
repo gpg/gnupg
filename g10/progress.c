@@ -1,5 +1,5 @@
 /* progress.c - emit progress status lines
- * Copyright (C) 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -21,6 +21,7 @@
 
 #include <config.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "gpg.h"
 #include "iobuf.h"
@@ -29,10 +30,54 @@
 #include "util.h"
 #include "options.h"
 
+/* Create a new context for use with the progress filter.  We need to
+   allocate such contexts on the heap because there is no guarantee
+   that at the end of a function the filter has already been popped
+   off.  In general this will happen but with malformed packets it is
+   possible that a filter has not yet reached the end-of-stream when
+   the function has done all processing.  Checking in each function
+   that end-of-stream has been reached would be to cumbersome.
+
+   What we also do is to shortcut the progress handler by having this
+   function return NULL if progress information has not been
+   requested.
+*/
+progress_filter_context_t *
+new_progress_context (void)
+{
+  progress_filter_context_t *pfx;
+
+  if (!opt.enable_progress_filter)
+    return NULL;
+
+  if (!is_status_enabled ())
+    return NULL;
+
+  pfx = xcalloc (1, sizeof *pfx);
+  pfx->refcount = 1;
+
+  return pfx;
+}
+
+/* Release a progress filter context.  Passing NULL is explicitly
+   allowed and a no-op.  */
+void
+release_progress_context (progress_filter_context_t *pfx)
+{
+  if (!pfx)
+    return;
+  assert (pfx->refcount);
+  if ( --pfx->refcount )
+    return;
+  xfree (pfx->what);
+  xfree (pfx);
+}
+
+
 /****************
  * The filter is used to report progress to the user.
  */
-int
+static int
 progress_filter (void *opaque, int control,
 		 IOBUF a, byte *buf, size_t *ret_len)
 {
@@ -85,11 +130,7 @@ progress_filter (void *opaque, int control,
     }
   else if (control == IOBUFCTRL_FREE)
     {
-      /* Note, that we must always dealloc resources of a filter
-         within the filter handler and not anywhere else.  (We set it
-         to NULL and check all uses just in case.) */
-      xfree (pfx->what);
-      pfx->what = NULL;
+      release_progress_context (pfx);
     }
   else if (control == IOBUFCTRL_DESC)
     *(char**)buf = "progress_filter";
@@ -101,11 +142,11 @@ handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
 {
   off_t filesize = 0;
 
-  if (!opt.enable_progress_filter)
+  if (!pfx)
     return;
 
-  if (!is_status_enabled ())
-    return;
+  assert (opt.enable_progress_filter);
+  assert (is_status_enabled ());
 
   if ( !iobuf_is_pipe_filename (name) && *name )
     filesize = iobuf_get_filelength (inp, NULL);
@@ -115,5 +156,6 @@ handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
   /* register the progress filter */
   pfx->what = xstrdup (name ? name : "stdin");
   pfx->total = filesize;
+  pfx->refcount++;
   iobuf_push_filter (inp, progress_filter, pfx);
 }

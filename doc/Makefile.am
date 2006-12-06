@@ -28,7 +28,7 @@ EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
              gnupg-card-architecture.pdf \
              faq.raw FAQ faq.html gnupg7.texi \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     texi.css $(examples)
+	     gpgv.texi texi.css $(examples)
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf FAQ faq.html

@@ -96,13 +96,13 @@ struct output_control_s {
 	char  *fname;
 	char  *newfname;
 	IOBUF stream;
-	armor_filter_context_t afx;
+	armor_filter_context_t *afx;
     } pub;
     struct {
 	char  *fname;
 	char  *newfname;
 	IOBUF stream;
-	armor_filter_context_t afx;
+	armor_filter_context_t *afx;
     } sec;
 };
 
@@ -2045,9 +2045,8 @@ ask_user_id( int mode )
 }
 
 
-/* FIXME: We need a way to cancel this prompt. */
 static DEK *
-do_ask_passphrase( STRING2KEY **ret_s2k )
+do_ask_passphrase ( STRING2KEY **ret_s2k, int *r_canceled )
 {
     DEK *dek = NULL;
     STRING2KEY *s2k;
@@ -2060,8 +2059,13 @@ do_ask_passphrase( STRING2KEY **ret_s2k )
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = S2K_DIGEST_ALGO;
 	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k,2,
-                                 errtext, NULL);
-	if( !dek ) {
+                                 errtext, r_canceled);
+        if (!dek && *r_canceled) {
+	    xfree(dek); dek = NULL;
+	    xfree(s2k); s2k = NULL;
+            break;
+        }
+	else if( !dek ) {
 	    errtext = N_("passphrase not correctly repeated; try again");
 	    tty_printf(_("%s.\n"), _(errtext));
 	}
@@ -2541,6 +2545,8 @@ read_parameter_file( const char *fname )
     struct output_control_s outctrl;
 
     memset( &outctrl, 0, sizeof( outctrl ) );
+    outctrl.pub.afx = new_armor_context ();
+    outctrl.sec.afx = new_armor_context ();
 
     if( !fname || !*fname)
       fname = "-";
@@ -2705,6 +2711,8 @@ read_parameter_file( const char *fname )
 
     release_parameter_list( para );
     iobuf_close (fp);
+    release_armor_context (outctrl.pub.afx);
+    release_armor_context (outctrl.sec.afx);
 }
 
 
@@ -2731,6 +2739,7 @@ generate_keypair (const char *fname, const char *card_serialno,
   struct para_data_s *para = NULL;
   struct para_data_s *r;
   struct output_control_s outctrl;
+  int canceled;
   
   memset( &outctrl, 0, sizeof( outctrl ) );
   
@@ -2886,7 +2895,8 @@ generate_keypair (const char *fname, const char *card_serialno,
   r->next = para;
   para = r;
     
-  dek = card_serialno? NULL : do_ask_passphrase( &s2k );
+  canceled = 0;
+  dek = card_serialno? NULL : do_ask_passphrase ( &s2k, &canceled );
   if( dek )
     {
       r = xmalloc_clear( sizeof *r );
@@ -2900,8 +2910,11 @@ generate_keypair (const char *fname, const char *card_serialno,
       r->next = para;
       para = r;
     }
-    
-  proc_parameter_file( para, "[internal]", &outctrl, !!card_serialno);
+
+  if (canceled) 
+    log_error (_("Key generation canceled.\n"));
+  else
+    proc_parameter_file( para, "[internal]", &outctrl, !!card_serialno);
   release_parameter_list( para );
 }
 
@@ -2923,6 +2936,7 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
   int i;
   size_t nskey, npkey;
   gcry_sexp_t s_parms, s_key;
+  int canceled;
 
   npkey = pubkey_get_npkey (algo);
   nskey = pubkey_get_nskey (algo);
@@ -2940,7 +2954,12 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
       log_info(_("keysize rounded up to %u bits\n"), nbits );
     }
 
-  dek = do_ask_passphrase (&s2k);
+  dek = do_ask_passphrase (&s2k, &canceled);
+  if (canceled)
+    {
+      rc = gpg_error (GPG_ERR_CANCELED);
+      goto leave;
+    }
 
   sk = xmalloc_clear (sizeof *sk);
   sk->timestamp = created_at;
@@ -3050,9 +3069,8 @@ do_generate_keypair( struct para_data_s *para,
 		return;
 	    }
 	    if( opt.armor ) {
-		outctrl->pub.afx.what = 1;
-		iobuf_push_filter( outctrl->pub.stream, armor_filter,
-						    &outctrl->pub.afx );
+		outctrl->pub.afx->what = 1;
+		push_armor_filter (outctrl->pub.afx, outctrl->pub.stream);
 	    }
 	}
 	if( outctrl->sec.newfname ) {
@@ -3080,9 +3098,8 @@ do_generate_keypair( struct para_data_s *para,
 		return;
 	    }
 	    if( opt.armor ) {
-		outctrl->sec.afx.what = 5;
-		iobuf_push_filter( outctrl->sec.stream, armor_filter,
-						    &outctrl->sec.afx );
+		outctrl->sec.afx->what = 5;
+		push_armor_filter (outctrl->sec.afx, outctrl->sec.stream);
 	    }
 	}
 	assert( outctrl->pub.stream );
@@ -3337,6 +3354,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     STRING2KEY *s2k = NULL;
     u32 cur_time;
     int ask_pass = 0;
+    int canceled;
 
     /* break out the primary secret key */
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
@@ -3404,8 +3422,9 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 						  _("Really create? (y/N) ")))
 	goto leave;
 
+    canceled = 0;
     if (ask_pass)
-        dek = do_ask_passphrase (&s2k);
+        dek = do_ask_passphrase (&s2k, &canceled);
     else if (passphrase) {
 	s2k = xmalloc_secure( sizeof *s2k );
 	s2k->mode = opt.s2k_mode;
@@ -3415,8 +3434,12 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
                                  NULL, NULL );
     }
 
-    rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-		    dek, s2k, &sub_sk, expire, 1 );
+    if (canceled)
+      rc = GPG_ERR_CANCELED;
+    
+    if (!rc)
+      rc = do_create (algo, nbits, pub_keyblock, sec_keyblock,
+                      dek, s2k, &sub_sk, expire, 1 );
     if( !rc )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
     if( !rc )

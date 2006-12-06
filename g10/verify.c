@@ -55,13 +55,14 @@ int
 verify_signatures( int nfiles, char **files )
 {
     IOBUF fp;
-    armor_filter_context_t afx;
-    progress_filter_context_t pfx;
+    armor_filter_context_t *afx;
+    progress_filter_context_t *pfx;
     const char *sigfile;
     int i, rc;
     strlist_t sl;
 
-    memset( &afx, 0, sizeof afx);
+    pfx = new_progress_context ();
+    afx = new_armor_context ();
     /* decide whether we should handle a detached or a normal signature,
      * which is needed so that the code later can hash the correct data and
      * not have a normal signature act as detached signature and ignoring the
@@ -101,12 +102,13 @@ verify_signatures( int nfiles, char **files )
         rc = gpg_error_from_syserror ();
 	log_error(_("can't open `%s': %s\n"),
                   print_fname_stdin(sigfile), strerror (errno));
+        release_progress_context (pfx);
 	return rc;
     }
-    handle_progress (&pfx, fp, sigfile);
+    handle_progress (pfx, fp, sigfile);
 
     if( !opt.no_armor && use_armor_filter( fp ) )
-	iobuf_push_filter( fp, armor_filter, &afx );
+	push_armor_filter (afx, fp);
 
     sl = NULL;
     for(i=nfiles-1 ; i > 0 ; i-- )
@@ -114,13 +116,15 @@ verify_signatures( int nfiles, char **files )
     rc = proc_signature_packets( NULL, fp, sl, sigfile );
     free_strlist(sl);
     iobuf_close(fp);
-    if( (afx.no_openpgp_data && rc == -1) || rc == G10ERR_NO_DATA ) {
+    if( (afx->no_openpgp_data && rc == -1) || rc == G10ERR_NO_DATA ) {
 	log_error(_("the signature could not be verified.\n"
 		   "Please remember that the signature file (.sig or .asc)\n"
 		   "should be the first file given on the command line.\n") );
 	rc = 0;
     }
 
+    release_armor_context (afx);
+    release_progress_context (pfx);
     return rc;
 }
 
@@ -139,10 +143,11 @@ static int
 verify_one_file( const char *name )
 {
     IOBUF fp;
-    armor_filter_context_t afx;
-    progress_filter_context_t pfx;
+    armor_filter_context_t *afx = NULL;
+    progress_filter_context_t *pfx;
     int rc;
 
+    pfx = new_progress_context ();
     print_file_status( STATUS_FILE_START, name, 1 );
     fp = iobuf_open(name);
     if (fp)
@@ -158,20 +163,23 @@ verify_one_file( const char *name )
 	log_error(_("can't open `%s': %s\n"),
                   print_fname_stdin(name), strerror (errno));
 	print_file_status( STATUS_FILE_ERROR, name, 1 );
+        release_progress_context (pfx);
 	return rc;
     }
-    handle_progress (&pfx, fp, name);
+    handle_progress (pfx, fp, name);
 
     if( !opt.no_armor ) {
 	if( use_armor_filter( fp ) ) {
-	    memset( &afx, 0, sizeof afx);
-	    iobuf_push_filter( fp, armor_filter, &afx );
+            afx = new_armor_context ();
+	    push_armor_filter (afx, fp);
 	}
     }
 
     rc = proc_signature_packets( NULL, fp, NULL, name );
     iobuf_close(fp);
     write_status( STATUS_FILE_DONE );
+    release_armor_context (afx);
+    release_progress_context (pfx);
     return rc;
 }
 

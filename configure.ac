@@ -26,8 +26,8 @@ min_automake_version="1.9.3"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
-m4_define([my_version], [2.0.1])
-m4_define([my_issvn], [no])
+m4_define([my_version], [2.0.2])
+m4_define([my_issvn], [yes])
 
 
 m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
@@ -619,10 +619,12 @@ AC_CHECK_FUNCS(usb_create_match)
 #
 # Check wether it is necessary to link against libdl.
 #
+gnupg_dlopen_save_libs="$LIBS"
 LIBS=""
 AC_SEARCH_LIBS(dlopen, c dl,,,)
 DL_LIBS=$LIBS
 AC_SUBST(DL_LIBS)
+LIBS="$gnupg_dlopen_save_libs"
 
 #
 # Checks for symcryptrun:

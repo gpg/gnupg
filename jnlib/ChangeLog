@@ -1,3 +1,8 @@
+2006-11-29  Werner Koch  <wk@g10code.com>
+
+	* utf8conv.c (set_native_charset) [HAVE_W32_SYSTEM]: Fixed typo in
+	macro name.
+
 2006-11-15  Werner Koch  <wk@g10code.com>
 
 	* logging.c (my_funopen_hook_ret_t): New.

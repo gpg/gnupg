@@ -102,7 +102,7 @@ set_native_charset (const char *newset)
 
   if (!newset) 
     {
-#ifdef HABE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
       static char codepage[30];
       unsigned int cpno;
       const char *aliases;

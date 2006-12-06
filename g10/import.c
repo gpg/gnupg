@@ -251,9 +251,12 @@ import( IOBUF inp, const char* fname,struct stats_s *stats,
     getkey_disable_caches();
 
     if( !opt.no_armor ) { /* armored reading is not disabled */
-	armor_filter_context_t *afx = xmalloc_clear( sizeof *afx );
+	armor_filter_context_t *afx;
+
+        afx = new_armor_context ();
 	afx->only_keyblocks = 1;
-	iobuf_push_filter2( inp, armor_filter, afx, 1 );
+	push_armor_filter (afx, inp);
+        release_armor_context (afx);
     }
 
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {

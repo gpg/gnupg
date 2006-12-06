@@ -1196,23 +1196,24 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 
 	for(key=list;key!=NULL;key=key->next)
 	  {
-	    armor_filter_context_t afx;
-	    IOBUF buffer=iobuf_temp();
+	    armor_filter_context_t *afx;
+	    IOBUF buffer = iobuf_temp ();
 	    KBNODE block;
 
 	    temp=NULL;
 	    add_to_strlist(&temp,key->d);
 
-	    memset(&afx,0,sizeof(afx));
-	    afx.what=1;
+	    afx = new_armor_context ();
+	    afx->what = 1;
 	    /* Tell the armor filter to use Unix-style \n line
 	       endings, since we're going to fprintf this to a file
 	       that (on Win32) is open in text mode.  The win32 stdio
 	       will transform the \n to \r\n and we'll end up with the
 	       proper line endings on win32.  This is a no-op on
 	       Unix. */
-	    afx.eol[0]='\n';
-	    iobuf_push_filter(buffer,armor_filter,&afx);
+	    afx->eol[0] = '\n';
+	    push_armor_filter (afx, buffer);
+            release_armor_context (afx);
 
 	    /* TODO: Remove Comment: lines from keys exported this
 	       way? */

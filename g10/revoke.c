@@ -200,7 +200,7 @@ int
 gen_desig_revoke( const char *uname, strlist_t locusr )
 {
     int rc = 0;
-    armor_filter_context_t afx;
+    armor_filter_context_t *afx;
     PKT_public_key *pk = NULL;
     PKT_secret_key *sk = NULL;
     PKT_signature *sig = NULL;
@@ -219,7 +219,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	return G10ERR_GENERAL;
       }
 
-    memset( &afx, 0, sizeof afx);
+    afx = new_armor_context ();
 
     kdbhd = keydb_new (0);
     classify_user_id (uname, &desc);
@@ -331,10 +331,10 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	    if( (rc = open_outfile( NULL, 0, &out )) )
 	      goto leave;
 
-	    afx.what = 1;
-	    afx.hdrlines = "Comment: A designated revocation certificate"
+	    afx->what = 1;
+	    afx->hdrlines = "Comment: A designated revocation certificate"
 	      " should follow\n";
-	    iobuf_push_filter( out, armor_filter, &afx );
+	    push_armor_filter (afx, out);
 
 	    /* create it */
 	    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0,
@@ -427,6 +427,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
     else
 	iobuf_close(out);
     release_revocation_reason_info( reason );
+    release_armor_context (afx);
     return rc;
 }
 
@@ -438,7 +439,7 @@ int
 gen_revoke( const char *uname )
 {
     int rc = 0;
-    armor_filter_context_t afx;
+    armor_filter_context_t *afx;
     PACKET pkt;
     PKT_secret_key *sk; /* used as pointer into a kbnode */
     PKT_public_key *pk = NULL;
@@ -457,7 +458,7 @@ gen_revoke( const char *uname )
 	return G10ERR_GENERAL;
       }
 
-    memset( &afx, 0, sizeof afx);
+    afx = new_armor_context ();
     init_packet( &pkt );
 
     /* search the userid: 
@@ -556,9 +557,9 @@ gen_revoke( const char *uname )
     if( (rc = open_outfile( NULL, 0, &out )) )
 	goto leave;
 
-    afx.what = 1;
-    afx.hdrlines = "Comment: A revocation certificate should follow\n";
-    iobuf_push_filter( out, armor_filter, &afx );
+    afx->what = 1;
+    afx->hdrlines = "Comment: A revocation certificate should follow\n";
+    push_armor_filter (afx, out);
 
     /* create it */
     rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0,
@@ -609,6 +610,7 @@ gen_revoke( const char *uname )
     else
 	iobuf_close(out);
     release_revocation_reason_info( reason );
+    release_armor_context (afx);
     return rc;
 }
 

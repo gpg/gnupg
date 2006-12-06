@@ -1,3 +1,58 @@
+2006-12-05  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (passphrase_to_dek): Handle a Cancel request
+	correctly.  [Bug#737]
+	* mainproc.c (proc_symkey_enc): Removed workaround for bogus cancel
+	processing.
+	* encode.c (encode_simple): Distinguish error message between
+	cancel and invalid passphrase.
+	(setup_symkey): Ditto.
+	* sign.c (sign_symencrypt_file): Ditto
+	* keyedit.c (change_passphrase): Allow cancellation.
+	* keygen.c (do_ask_passphrase): New arg R_CANCELED.
+	(generate_keypair): Handle a passphrase cancellation.
+	(generate_raw_key): Ditto.
+	(generate_subkeypair): Ditto.
+
+2006-12-04  Werner Koch  <wk@g10code.com>
+
+	* filter.h (armor_filter_context_t): New element REFCOUNT.
+	* armor.c (armor_filter): Made static.
+	(push_armor_filter, release_armor_context, new_armor_context): New.
+	(armor_filter): Release the context.
+	* gpg.c (main): Use new armor context functions and
+	push_armor_filter.
+	* export.c (do_export): Ditto.
+	* encode.c (encode_simple, encode_crypt): Ditto.
+	* decrypt.c (decrypt_message, decrypt_messages): Ditto.
+	* dearmor.c (dearmor_file, enarmor_file): Ditto.
+	* verify.c (verify_signatures, verify_one_file): Ditto.
+	* sign.c (sign_file, clearsign_file, sign_symencrypt_file): Ditto.
+	* revoke.c (gen_desig_revoke, gen_revoke): Ditto.
+	* keyserver.c (keyserver_spawn): Ditto.
+	* keygen.c (output_control_s): Turn AFX fields into pointers.
+	(read_parameter_file): Allocate and release AFX fields.
+	(do_generate_keypair): Use push_armor_filter.
+	* import.c (import): Replace iobuf_push_filter2 hack by the new
+	armor context stuff.
+
+2006-12-03  Werner Koch  <wk@g10code.com>
+
+	* filter.h: New element REFCOUNT.
+	(handle_progress): Remove prototype.
+	* progress.c (new_progress_context, release_progress_context): New.
+	(progress_filter): Use new function to release context.  Made static.
+	(handle_progress): Bumb reference counter.  No more check for
+	enabled progress as this is handled by new_progress_context.
+	* verify.c (verify_signatures, verify_one_file): Replace stack
+	based progress context by a heap based one.
+	* sign.c (sign_file, clearsign_file, sign_symencrypt_file): Ditto.
+	* plaintext.c (ask_for_detached_datafile, hash_datafiles): Ditto.
+	* encode.c (encode_simple, encode_crypt): Ditto.
+	* decrypt.c (decrypt_message, decrypt_messages): Ditto. 
+
+	* keyedit.c (menu_clean): Made strings translatable.
+
 2006-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_clean): Show "already minimized" rather than
@@ -11,6 +66,11 @@
 	re-prompt for a passphrase to ensure the user has typed it
 	correctly.  Defaults to 1.
 
+2006-12-02  Werner Koch  <wk@g10code.com>
+
+	* encr-data.c: Allocate DFX context on the heap and not on the
+	stack.  Changes at several places.  Fixes CVE-2006-6235.
+	
 2006-11-27  Werner Koch  <wk@g10code.com>
 
 	* openfile.c (ask_outfile_name): Fixed buffer overflow occurring
@@ -4166,7 +4226,7 @@
 	* compress.c (release_context): New.
 	(handle_compressed): Allocate the context and setup a closure to
 	release the context.  This is required because there is no
-	guarabntee that the filter gets popped from the chain at the end
+	guarantee that the filter gets popped from the chain at the end
 	of the function.  Problem noted by Timo and probably also the
 	cause for a couple of other reports.
 	(compress_filter): Use the release function if set.
@@ -5983,7 +6043,7 @@
 	(unarmor_pump): New. 
 	* pipemode.c (pipemode_filter): Use the unarmor_pump to handle
 	armored or non-armored detached signatures.  We can't use the
-	regular armor_filter becuase this does only chack for armored
+	regular armor_filter because this does only check for armored
 	signatures the very first time.  In pipemode we may have a mix of
 	armored and binary detached signatures.
 	* mainproc.c (proc_tree): Do not print the "old style" notice when

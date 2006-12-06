@@ -482,7 +482,9 @@ ask_passphrase (const char *description,
 
 
 /* Return a new DEK object Using the string-to-key sepcifier S2K.  Use
- * KEYID and PUBKEY_ALGO to prompt the user.
+   KEYID and PUBKEY_ALGO to prompt the user.  Returns NULL is the user
+   selected to cancel the passphrase entry and it CANCELED is not
+   NULL, sets it to true.
 
    MODE 0:  Allow cached passphrase
         1:  Ignore cached passphrase 
@@ -496,9 +498,11 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
   char *pw = NULL;
   DEK *dek;
   STRING2KEY help_s2k;
-  
-  if (canceled)
-    *canceled = 0;
+  int dummy_canceled;
+
+  if (!canceled)
+    canceled = &dummy_canceled;
+  *canceled = 0;
   
   if ( !s2k )
     {
@@ -600,7 +604,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
     }
   else if ( have_static_passphrase () ) 
     {
-      /* Return the passphrase we have store in FD_PASSWD. */
+      /* Return the passphrase we have stored in FD_PASSWD. */
       pw = xmalloc_secure ( strlen(fd_passwd)+1 );
       strcpy ( pw, fd_passwd );
     }
@@ -609,6 +613,11 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
       /* Divert to the gpg-agent. */
       pw = passphrase_get ( keyid, mode == 2? 1: 0, NULL,
                             tryagain_text, NULL, NULL, canceled );
+      if (*canceled)
+        {
+          xfree (pw);
+          return NULL;
+        }
       if (!pw)
         pw = xstrdup ("");
       if ( *pw && mode == 2 )
@@ -618,6 +627,12 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
 	    {
 	      char *pw2 = passphrase_get ( keyid, 2, NULL, NULL, NULL,
 					   NULL, canceled );
+              if (*canceled)
+                {
+                  xfree (pw);
+                  xfree (pw2);
+                  return NULL;
+                }
 	      if (!pw2)
 		pw2 = xstrdup ("");
 	      if ( strcmp(pw, pw2) )

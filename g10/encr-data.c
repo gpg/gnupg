@@ -39,14 +39,35 @@ static int mdc_decode_filter ( void *opaque, int control, IOBUF a,
 static int decode_filter ( void *opaque, int control, IOBUF a,
 					byte *buf, size_t *ret_len);
 
-typedef struct 
+typedef struct decode_filter_context_s
 {
   gcry_cipher_hd_t cipher_hd;
   gcry_md_hd_t mdc_hash;
   char defer[22];
   int  defer_filled;
   int  eof_seen;
-} decode_filter_ctx_t;
+  int  refcount;
+} *decode_filter_ctx_t;
+
+
+/* Helper to release the decode context.  */
+static void
+release_dfx_context (decode_filter_ctx_t dfx)
+{
+  if (!dfx)
+    return;
+
+  assert (dfx->refcount);
+  if ( !--dfx->refcount )
+    {
+      gcry_cipher_close (dfx->cipher_hd);
+      dfx->cipher_hd = NULL;
+      gcry_md_close (dfx->mdc_hash);
+      dfx->mdc_hash = NULL;
+      xfree (dfx);
+    }
+}
+
 
 
 /****************
@@ -62,7 +83,11 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
   unsigned blocksize;
   unsigned nprefix;
   
-  memset( &dfx, 0, sizeof dfx );
+  dfx = xtrycalloc (1, sizeof *dfx);
+  if (!dfx)
+    return gpg_error_from_syserror ();
+  dfx->refcount = 1;
+
   if ( opt.verbose && !dek->algo_info_printed )
     {
       const char *s = gcry_cipher_algo_name (dek->algo);
@@ -77,20 +102,20 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     goto leave;
   blocksize = gcry_cipher_get_algo_blklen (dek->algo);
   if ( !blocksize || blocksize > 16 )
-    log_fatal("unsupported blocksize %u\n", blocksize );
+    log_fatal ("unsupported blocksize %u\n", blocksize );
   nprefix = blocksize;
   if ( ed->len && ed->len < (nprefix+2) )
     BUG();
 
   if ( ed->mdc_method ) 
     {
-      if (gcry_md_open (&dfx.mdc_hash, ed->mdc_method, 0 ))
+      if (gcry_md_open (&dfx->mdc_hash, ed->mdc_method, 0 ))
         BUG ();
       if ( DBG_HASHING )
-        gcry_md_start_debug (dfx.mdc_hash, "checkmdc");
+        gcry_md_start_debug (dfx->mdc_hash, "checkmdc");
     }
 
-  rc = gcry_cipher_open (&dfx.cipher_hd, dek->algo,
+  rc = gcry_cipher_open (&dfx->cipher_hd, dek->algo,
                          GCRY_CIPHER_MODE_CFB,
                          (GCRY_CIPHER_SECURE
                           | ((ed->mdc_method || dek->algo >= 100)?
@@ -104,7 +129,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
 
   /* log_hexdump( "thekey", dek->key, dek->keylen );*/
-  rc = gcry_cipher_setkey (dfx.cipher_hd, dek->key, dek->keylen);
+  rc = gcry_cipher_setkey (dfx->cipher_hd, dek->key, dek->keylen);
   if ( gpg_err_code (rc) == GPG_ERR_WEAK_KEY )
     {
       log_info(_("WARNING: message was encrypted with"
@@ -123,7 +148,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
       goto leave;
     }
 
-  gcry_cipher_setiv (dfx.cipher_hd, NULL, 0);
+  gcry_cipher_setiv (dfx->cipher_hd, NULL, 0);
 
   if ( ed->len )
     {
@@ -144,8 +169,8 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
           temp[i] = c;
     }
   
-  gcry_cipher_decrypt (dfx.cipher_hd, temp, nprefix+2, NULL, 0);
-  gcry_cipher_sync (dfx.cipher_hd);
+  gcry_cipher_decrypt (dfx->cipher_hd, temp, nprefix+2, NULL, 0);
+  gcry_cipher_sync (dfx->cipher_hd);
   p = temp;
   /* log_hexdump( "prefix", temp, nprefix+2 ); */
   if (dek->symmetric
@@ -155,17 +180,18 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
       goto leave;
     }
   
-  if ( dfx.mdc_hash )
-    gcry_md_write (dfx.mdc_hash, temp, nprefix+2);
-  
+  if ( dfx->mdc_hash )
+    gcry_md_write (dfx->mdc_hash, temp, nprefix+2);
+
+  dfx->refcount++;
   if ( ed->mdc_method )
-    iobuf_push_filter( ed->buf, mdc_decode_filter, &dfx );
+    iobuf_push_filter ( ed->buf, mdc_decode_filter, dfx );
   else
-    iobuf_push_filter( ed->buf, decode_filter, &dfx );
+    iobuf_push_filter ( ed->buf, decode_filter, dfx );
 
   proc_packets ( procctx, ed->buf );
   ed->buf = NULL;
-  if ( ed->mdc_method && dfx.eof_seen == 2 )
+  if ( ed->mdc_method && dfx->eof_seen == 2 )
     rc = gpg_error (GPG_ERR_INV_PACKET);
   else if ( ed->mdc_method )
     { 
@@ -184,26 +210,28 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
          bytes are appended.  */
       int datalen = gcry_md_get_algo_dlen (ed->mdc_method);
 
-      gcry_cipher_decrypt (dfx.cipher_hd, dfx.defer, 22, NULL, 0);
-      gcry_md_write (dfx.mdc_hash, dfx.defer, 2);
-      gcry_md_final (dfx.mdc_hash);
+      assert (dfx->cipher_hd);
+      assert (dfx->mdc_hash);
+      gcry_cipher_decrypt (dfx->cipher_hd, dfx->defer, 22, NULL, 0);
+      gcry_md_write (dfx->mdc_hash, dfx->defer, 2);
+      gcry_md_final (dfx->mdc_hash);
 
-      if (dfx.defer[0] != '\xd3' || dfx.defer[1] != '\x14' )
+      if (dfx->defer[0] != '\xd3' || dfx->defer[1] != '\x14' )
         {
           log_error("mdc_packet with invalid encoding\n");
           rc = gpg_error (GPG_ERR_INV_PACKET);
         }
       else if (datalen != 20
-               || memcmp (gcry_md_read (dfx.mdc_hash, 0),dfx.defer+2,datalen))
+               || memcmp (gcry_md_read (dfx->mdc_hash, 0),
+                          dfx->defer+2,datalen ))
         rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
-      /* log_printhex("MDC message:", dfx.defer, 22); */
-      /* log_printhex("MDC calc:", gcry_md_read (dfx.mdc_hash,0), datalen); */
+      /* log_printhex("MDC message:", dfx->defer, 22); */
+      /* log_printhex("MDC calc:", gcry_md_read (dfx->mdc_hash,0), datalen); */
     }
   
   
  leave:
-  gcry_cipher_close (dfx.cipher_hd);
-  gcry_md_close (dfx.mdc_hash);
+  release_dfx_context (dfx);
   return rc;
 }
 
@@ -214,7 +242,7 @@ static int
 mdc_decode_filter (void *opaque, int control, IOBUF a,
                    byte *buf, size_t *ret_len)
 {
-  decode_filter_ctx_t *dfx = opaque;
+  decode_filter_ctx_t dfx = opaque;
   size_t n, size = *ret_len;
   int rc = 0;
   int c;
@@ -226,11 +254,11 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
     }
   else if( control == IOBUFCTRL_UNDERFLOW )
     {
-      assert(a);
-      assert( size > 44 );
+      assert (a);
+      assert ( size > 44 );
       
       /* Get at least 22 bytes and put it somewhere ahead in the buffer. */
-      for(n=22; n < 44 ; n++ )
+      for (n=22; n < 44 ; n++ )
         {
           if( (c = iobuf_get(a)) == -1 )
             break;
@@ -279,8 +307,10 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
 
       if ( n )
         {
-          gcry_cipher_decrypt (dfx->cipher_hd, buf, n, NULL, 0);
-          gcry_md_write (dfx->mdc_hash, buf, n);
+          if ( dfx->cipher_hd )
+            gcry_cipher_decrypt (dfx->cipher_hd, buf, n, NULL, 0);
+          if ( dfx->mdc_hash )
+            gcry_md_write (dfx->mdc_hash, buf, n);
 	}
       else
         {
@@ -288,6 +318,10 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
           rc = -1; /* eof */
 	}
       *ret_len = n;
+    }
+  else if ( control == IOBUFCTRL_FREE ) 
+    {
+      release_dfx_context (dfx);
     }
   else if ( control == IOBUFCTRL_DESC ) 
     {
@@ -300,7 +334,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
 static int
 decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
 {
-  decode_filter_ctx_t *fc = opaque;
+  decode_filter_ctx_t fc = opaque;
   size_t n, size = *ret_len;
   int rc = 0;
   
@@ -311,10 +345,17 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
       if ( n == -1 )
         n = 0;
       if ( n )
-        gcry_cipher_decrypt (fc->cipher_hd, buf, n, NULL, 0);
+        {
+          if (fc->cipher_hd)
+            gcry_cipher_decrypt (fc->cipher_hd, buf, n, NULL, 0);
+        }
       else
         rc = -1; /* EOF */
       *ret_len = n;
+    }
+  else if ( control == IOBUFCTRL_FREE ) 
+    {
+      release_dfx_context (fc);
     }
   else if ( control == IOBUFCTRL_DESC )
     {

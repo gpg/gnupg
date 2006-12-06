@@ -169,14 +169,14 @@ encode_simple( const char *filename, int mode, int use_seskey )
     int seskeylen = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
-    armor_filter_context_t afx;
+    armor_filter_context_t  *afx = NULL;
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
-    progress_filter_context_t pfx;
+    progress_filter_context_t *pfx;
     int do_compress = !RFC1991 && default_compress_algo();
 
+    pfx = new_progress_context ();
     memset( &cfx, 0, sizeof cfx);
-    memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
@@ -195,10 +195,11 @@ encode_simple( const char *filename, int mode, int use_seskey )
         rc = gpg_error_from_syserror ();
 	log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]",
                   strerror(errno) );
+        release_progress_context (pfx);
 	return rc;
     }
 
-    handle_progress (&pfx, inp, filename);
+    handle_progress (pfx, inp, filename);
 
     if( opt.textmode )
 	iobuf_push_filter( inp, text_filter, &tfx );
@@ -211,18 +212,21 @@ encode_simple( const char *filename, int mode, int use_seskey )
     
     cfx.dek = NULL;
     if( mode ) {
+        int canceled;
+
 	s2k = xmalloc_clear( sizeof *s2k );
 	s2k->mode = RFC1991? 0:opt.s2k_mode;
 	s2k->hash_algo=S2K_DIGEST_ALGO;
 	cfx.dek = passphrase_to_dek( NULL, 0,
 				     default_cipher_algo(), s2k, 2,
-                                     NULL, NULL);
+                                     NULL, &canceled);
 	if( !cfx.dek || !cfx.dek->keylen ) {
-	    rc = gpg_error (GPG_ERR_INV_PASSPHRASE);
+	    rc = gpg_error (canceled? GPG_ERR_CANCELED:GPG_ERR_INV_PASSPHRASE);
 	    xfree(cfx.dek);
 	    xfree(s2k);
 	    iobuf_close(inp);
 	    log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc));
+            release_progress_context (pfx);
 	    return rc;
 	}
         if (use_seskey && s2k->mode != 1 && s2k->mode != 3) {
@@ -259,11 +263,15 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	iobuf_cancel(inp);
 	xfree(cfx.dek);
 	xfree(s2k);
+        release_progress_context (pfx);
 	return rc;
     }
 
-    if( opt.armor )
-	iobuf_push_filter( out, armor_filter, &afx );
+    if ( opt.armor )
+      {
+        afx = new_armor_context ();
+	push_armor_filter (afx, out);
+      }
 
     if( s2k && !RFC1991 ) {
 	PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc + seskeylen + 1 );
@@ -376,23 +384,27 @@ encode_simple( const char *filename, int mode, int use_seskey )
     free_packet(&pkt);
     xfree(cfx.dek);
     xfree(s2k);
+    release_armor_context (afx);
+    release_progress_context (pfx);
     return rc;
 }
 
 int
 setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
 {
+  int canceled;
+
   *symkey_s2k=xmalloc_clear(sizeof(STRING2KEY));
   (*symkey_s2k)->mode = opt.s2k_mode;
   (*symkey_s2k)->hash_algo = S2K_DIGEST_ALGO;
 
   *symkey_dek=passphrase_to_dek(NULL,0,opt.s2k_cipher_algo,
-				*symkey_s2k,2,NULL,NULL);
+				*symkey_s2k,2,NULL, &canceled);
   if(!*symkey_dek || !(*symkey_dek)->keylen)
     {
       xfree(*symkey_dek);
       xfree(*symkey_s2k);
-      return gpg_error (GPG_ERR_BAD_PASSPHRASE);
+      return gpg_error (canceled?GPG_ERR_CANCELED:GPG_ERR_BAD_PASSPHRASE);
     }
 
   return 0;
@@ -441,25 +453,31 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
     int rc = 0, rc2 = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
-    armor_filter_context_t afx;
+    armor_filter_context_t *afx = NULL;
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
-    progress_filter_context_t pfx;
+    progress_filter_context_t *pfx;
     PK_LIST pk_list,work_list;
     int do_compress = opt.compress_algo && !RFC1991;
 
+    pfx = new_progress_context ();
     memset( &cfx, 0, sizeof cfx);
-    memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
 
     if(use_symkey
        && (rc=setup_symkey(&symkey_s2k,&symkey_dek)))
-      return rc;
+      {
+        release_progress_context (pfx);
+        return rc;
+      }
 
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
+      {
+        release_progress_context (pfx);
 	return rc;
+      }
 
     if(PGP2) {
       for(work_list=pk_list; work_list; work_list=work_list->next)
@@ -493,7 +511,7 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
     else if( opt.verbose )
 	log_info(_("reading from `%s'\n"), filename? filename: "[stdin]");
 
-    handle_progress (&pfx, inp, filename);
+    handle_progress (pfx, inp, filename);
 
     if( opt.textmode )
 	iobuf_push_filter( inp, text_filter, &tfx );
@@ -501,8 +519,11 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) )
 	goto leave;
 
-    if( opt.armor )
-	iobuf_push_filter( out, armor_filter, &afx );
+    if ( opt.armor )
+      {
+        afx = new_armor_context ();
+	push_armor_filter (afx, out);
+      }
 
     /* create a session key */
     cfx.dek = xmalloc_secure_clear (sizeof *cfx.dek);
@@ -695,6 +716,8 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
     xfree(symkey_dek);
     xfree(symkey_s2k);
     release_pk_list( pk_list );
+    release_armor_context (afx);
+    release_progress_context (pfx);
     return rc;
 }
 

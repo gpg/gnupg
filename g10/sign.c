@@ -739,11 +739,11 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	   int encryptflag, strlist_t remusr, const char *outfile )
 {
     const char *fname;
-    armor_filter_context_t afx;
+    armor_filter_context_t *afx;
     compress_filter_context_t zfx;
     md_filter_context_t mfx;
     text_filter_context_t tfx;
-    progress_filter_context_t pfx;
+    progress_filter_context_t *pfx;
     encrypt_filter_context_t efx;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
@@ -754,7 +754,8 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
     int multifile = 0;
     u32 duration=0;
 
-    memset( &afx, 0, sizeof afx);
+    pfx = new_progress_context ();
+    afx = new_armor_context ();
     memset( &zfx, 0, sizeof zfx);
     memset( &mfx, 0, sizeof mfx);
     memset( &efx, 0, sizeof efx);
@@ -814,7 +815,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
           goto leave;
 	}
 
-        handle_progress (&pfx, inp, fname);
+        handle_progress (pfx, inp, fname);
     }
 
     if( outfile ) {
@@ -933,10 +934,10 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	iobuf_push_filter( inp, md_filter, &mfx );
 
     if( detached && !encryptflag && !RFC1991 )
-	afx.what = 2;
+	afx->what = 2;
 
     if( opt.armor && !outfile  )
-	iobuf_push_filter( out, armor_filter, &afx );
+	push_armor_filter (afx, out);
 
     if( encryptflag ) {
 	efx.pk_list = pk_list;
@@ -1008,7 +1009,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 			      sl->d,strerror(errno));
 		    goto leave;
 		  }
-                handle_progress (&pfx, inp, sl->d);
+                handle_progress (pfx, inp, sl->d);
 		if( opt.verbose )
 		    fprintf(stderr, " `%s'", sl->d );
 		if(opt.textmode)
@@ -1060,6 +1061,8 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
     release_sk_list( sk_list );
     release_pk_list( pk_list );
     recipient_digest_algo=0;
+    release_progress_context (pfx);
+    release_armor_context (afx);
     return rc;
 }
 
@@ -1071,8 +1074,8 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 int
 clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 {
-    armor_filter_context_t afx;
-    progress_filter_context_t pfx;
+    armor_filter_context_t *afx;
+    progress_filter_context_t *pfx;
     gcry_md_hd_t textmd = NULL;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
@@ -1083,7 +1086,8 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
     int only_md5 = 0;
     u32 duration=0;
 
-    memset( &afx, 0, sizeof afx);
+    pfx = new_progress_context ();
+    afx = new_armor_context ();
     init_packet( &pkt );
 
     if(!opt.force_v3_sigs && !RFC1991)
@@ -1121,7 +1125,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
-    handle_progress (&pfx, inp, fname);
+    handle_progress (pfx, inp, fname);
 
     if( outfile ) {
         if (is_secured_filename (outfile) ) {
@@ -1199,8 +1203,8 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
     /* fixme: check for read errors */
 
     /* now write the armor */
-    afx.what = 2;
-    iobuf_push_filter( out, armor_filter, &afx );
+    afx->what = 2;
+    push_armor_filter (afx, out);
 
     /* write the signatures */
     rc=write_signature_packets (sk_list, out, textmd, 0x01, 0, duration, 'C');
@@ -1215,6 +1219,8 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
     iobuf_close(inp);
     gcry_md_close ( textmd );
     release_sk_list( sk_list );
+    release_progress_context (pfx);
+    release_armor_context (afx); 
     return rc;
 }
 
@@ -1225,8 +1231,8 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 int
 sign_symencrypt_file (const char *fname, strlist_t locusr)
 {
-    armor_filter_context_t afx;
-    progress_filter_context_t pfx;
+    armor_filter_context_t *afx;
+    progress_filter_context_t *pfx;
     compress_filter_context_t zfx;
     md_filter_context_t mfx;
     text_filter_context_t tfx;
@@ -1239,8 +1245,10 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     SK_LIST sk_rover = NULL;
     int algo;
     u32 duration=0;
+    int canceled;
 
-    memset( &afx, 0, sizeof afx);
+    pfx = new_progress_context ();
+    afx = new_armor_context ();
     memset( &zfx, 0, sizeof zfx);
     memset( &mfx, 0, sizeof mfx);
     memset( &tfx, 0, sizeof tfx);
@@ -1273,7 +1281,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
-    handle_progress (&pfx, inp, fname);
+    handle_progress (pfx, inp, fname);
 
     /* prepare key */
     s2k = xmalloc_clear( sizeof *s2k );
@@ -1284,10 +1292,10 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     if (!opt.quiet || !opt.batch)
         log_info (_("%s encryption will be used\n"),
                   gcry_cipher_algo_name (algo) );
-    cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL, NULL);
+    cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL, &canceled);
 
     if (!cfx.dek || !cfx.dek->keylen) {
-        rc = gpg_error (GPG_ERR_BAD_PASSPHRASE);
+        rc = gpg_error (canceled?GPG_ERR_CANCELED:GPG_ERR_BAD_PASSPHRASE);
         log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc) );
         goto leave;
     }
@@ -1321,7 +1329,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
 
     /* Push armor output filter */
     if (opt.armor)
-	iobuf_push_filter (out, armor_filter, &afx);
+	push_armor_filter (afx, out);
 
     /* Write the symmetric key packet */
     /*(current filters: armor)*/
@@ -1382,6 +1390,8 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     gcry_md_close( mfx.md );
     xfree(cfx.dek);
     xfree(s2k);
+    release_progress_context (pfx);
+    release_armor_context (afx);
     return rc;
 }
 

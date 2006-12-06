@@ -44,7 +44,7 @@
 static void
 write_header( cipher_filter_context_t *cfx, IOBUF a )
 {
-     gcry_error_t err;
+    gcry_error_t err;
     PACKET pkt;
     PKT_encrypted ed;
     byte temp[18];

@@ -52,10 +52,12 @@ int
 decrypt_message( const char *filename )
 {
     IOBUF fp;
-    armor_filter_context_t afx;
-    progress_filter_context_t pfx;
+    armor_filter_context_t *afx = NULL;
+    progress_filter_context_t *pfx;
     int rc;
-    int no_out=0;
+    int no_out = 0;
+
+    pfx = new_progress_context ();
 
     /* Open the message file.  */
     fp = iobuf_open(filename);
@@ -69,15 +71,16 @@ decrypt_message( const char *filename )
         rc = gpg_error_from_syserror ();
 	log_error (_("can't open `%s': %s\n"), print_fname_stdin(filename),
                    gpg_strerror (rc));
+        release_progress_context (pfx);
 	return rc;
     }
 
-    handle_progress (&pfx, fp, filename);
+    handle_progress (pfx, fp, filename);
 
     if( !opt.no_armor ) {
 	if( use_armor_filter( fp ) ) {
-	    memset( &afx, 0, sizeof afx);
-	    iobuf_push_filter( fp, armor_filter, &afx );
+            afx = new_armor_context ();
+	    push_armor_filter ( afx, fp );
 	}
     }
 
@@ -89,6 +92,8 @@ decrypt_message( const char *filename )
     if( no_out )
        opt.outfile = NULL;
     iobuf_close(fp);
+    release_armor_context (afx);
+    release_progress_context (pfx);
     return rc;
 }
 
@@ -96,8 +101,8 @@ void
 decrypt_messages(int nfiles, char *files[])
 {
   IOBUF fp;
-  armor_filter_context_t afx;  
-  progress_filter_context_t pfx;
+  armor_filter_context_t *afx = NULL;  
+  progress_filter_context_t *pfx;
   char *p, *output = NULL;
   int rc=0,use_stdin=0;
   unsigned int lno=0;
@@ -106,8 +111,9 @@ decrypt_messages(int nfiles, char *files[])
     {
       log_error(_("--output doesn't work for this command\n"));
       return;
-        
     }
+
+  pfx = new_progress_context ();
 
   if(!nfiles)
     use_stdin=1;
@@ -163,14 +169,14 @@ decrypt_messages(int nfiles, char *files[])
           goto next_file;
         }
 
-      handle_progress (&pfx, fp, filename);
+      handle_progress (pfx, fp, filename);
 
       if (!opt.no_armor)
         {
           if (use_armor_filter(fp))
             {
-              memset(&afx, 0, sizeof afx);
-              iobuf_push_filter(fp, armor_filter, &afx);
+              afx = new_armor_context ();
+              push_armor_filter ( afx, fp );
             }
         }
       rc = proc_packets(NULL, fp);
@@ -189,4 +195,6 @@ decrypt_messages(int nfiles, char *files[])
     }
 
   set_next_passphrase(NULL);  
+  release_armor_context (afx);
+  release_progress_context (pfx);
 }

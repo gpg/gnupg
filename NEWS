@@ -1,3 +1,14 @@
+Noteworthy changes in version 2.0.2 (unreleased)
+------------------------------------------------
+
+ * Fixed a serious and exploitable bug in processing encrypted
+   packages. [CVE-2006-6235].
+
+ * Added --passphrase-repeat to set the number of times GPG will
+   prompt for a new passphrase to be repeated.  This is useful to help
+   memorize a new passphrase.  The default is 1 repetition.
+
+
 Noteworthy changes in version 2.0.1 (2006-11-28)
 ------------------------------------------------
 
@@ -8,7 +19,7 @@ Noteworthy changes in version 2.0.1 (2006-11-28)
 
  * Fixed build problems on some some platforms and crashes on amd64.
 
- * Fixed a buffer overflow in gpg2. [bug#728]
+ * Fixed a buffer overflow in gpg2. [bug#728,CVE-2006-6169]
 
 
 Noteworthy changes in version 2.0.0 (2006-11-11)

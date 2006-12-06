@@ -1753,7 +1753,7 @@ main (int argc, char **argv )
     int may_coredump;
     strlist_t sl, remusr= NULL, locusr=NULL;
     strlist_t nrings=NULL, sec_nrings=NULL;
-    armor_filter_context_t afx;
+    armor_filter_context_t *afx = NULL;
     int detached_sig = 0;
     FILE *configfp = NULL;
     char *configname = NULL;
@@ -3826,8 +3826,8 @@ main (int argc, char **argv )
 
 	    if( !opt.no_armor ) {
 		if( use_armor_filter( a ) ) {
-		    memset( &afx, 0, sizeof afx);
-		    iobuf_push_filter( a, armor_filter, &afx );
+		    afx = new_armor_context ();
+		    push_armor_filter (afx, a);
 		}
 	    }
 	    if( cmd == aListPackets ) {
@@ -3843,6 +3843,7 @@ main (int argc, char **argv )
       }
 
     /* cleanup */
+    release_armor_context (afx);
     FREE_STRLIST(remusr);
     FREE_STRLIST(locusr);
     g10_exit(0);
