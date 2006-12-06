@@ -1,0 +1,171 @@
+@c Include file to allow for different placements in man pages and the manual
+
+There are different ways to specify a user ID to GnuPG.  Some of them
+are only valid for @command{gpg} others are only good for
+@command{gpgsm}.  Here is the entire list of ways to specify a key:
+
+@itemize @bullet
+
+@item By key Id. 
+This format is deduced from the length of the string and its content or
+@code{0x} prefix. The key Id of an X.509 certificate are the low 64 bits
+of its SHA-1 fingerprint.  The use of key Ids is just a shortcut, for
+all automated processing the fingerprint should be used.
+
+When using @command{gpg} an exclamation mark may be appended to force
+using the specified primary or secondary key and not to try and
+calculate which primary or secondary key to use.
+
+The last four lines of the example give the key ID in their long form as
+internally used by the OpenPGP protocol. You can see the long key ID
+using the option @option{--with-colons}.
+
+@cartouche
+@example
+234567C4
+0F34E556E
+01347A56A
+0xAB123456
+
+234AABBCC34567C4
+0F323456784E56EAB
+01AB3FED1347A5612
+0x234AABBCC34567C4
+@end example
+@end cartouche
+
+
+
+@item By fingerprint.
+This format is deduced from the length of the string and its content or
+the @code{0x} prefix.  Note, that only the 20 byte version fingerprint
+is available with @command{gpgsm} (i.e. the SHA-1 hash of the
+certificate).
+
+When using @command{gpg} an exclamation mark may be appended to force
+using the specified primary or secondary key and not to try and
+calculate which primary or secondary key to use.
+
+The best way to specify a key Id is by using the fingerprint.  This
+avoids any ambiguities in case that there are duplicated key IDs.
+
+@cartouche
+@example
+1234343434343434C434343434343434
+123434343434343C3434343434343734349A3434
+0E12343434343434343434EAB3484343434343434
+0xE12343434343434343434EAB3484343434343434
+@end example
+@end cartouche
+
+@noindent
+(@command{gpgsm} also accepts colons between each pair of hexadecimal
+digits because this is the de-facto standard on how to present X.509
+fingerprints.)
+
+@item By exact match on OpenPGP user ID.
+This is denoted by a leading equal sign. It does not make sense for
+X.509 certificates.
+
+@cartouche
+@example 
+=Heinrich Heine <heinrichh@@uni-duesseldorf.de>
+@end example
+@end cartouche
+
+@item By exact match on an email address.
+This is indicated by enclosing the email address in the usual way
+with left and right angles.
+
+@cartouche
+@example
+<heinrichh@@uni-duesseldorf.de>
+@end example
+@end cartouche
+
+
+@item By word match.
+All words must match exactly (not case sensitive) but can appear in any
+order in the user ID or a subjects name.  Words are any sequences of
+letters, digits, the underscore and all characters with bit 7 set.
+
+@cartouche
+@example
++Heinrich Heine duesseldorf
+@end example
+@end cartouche
+
+@item By exact match on the subject's DN.
+This is indicated by a leading slash, directly followed by the RFC-2253
+encoded DN of the subject.  Note that you can't use the string printed
+by "gpgsm --list-keys" because that one as been reordered and modified
+for better readability; use --with-colons to print the raw (but standard
+escaped) RFC-2253 string
+
+@cartouche
+@example
+/CN=Heinrich Heine,O=Poets,L=Paris,C=FR
+@end example
+@end cartouche
+
+@item By exact match on the issuer's DN.
+This is indicated by a leading hash mark, directly followed by a slash
+and then directly followed by the rfc2253 encoded DN of the issuer.
+This should return the Root cert of the issuer.  See note above.
+
+@cartouche
+@example
+#/CN=Root Cert,O=Poets,L=Paris,C=FR
+@end example
+@end cartouche
+
+
+@item By exact match on serial number and issuer's DN.
+This is indicated by a hash mark, followed by the hexadecmal
+representation of the serial number, the followed by a slash and the
+RFC-2253 encoded DN of the issuer. See note above.
+
+@cartouche
+@example
+#4F03/CN=Root Cert,O=Poets,L=Paris,C=FR
+@end example
+@end cartouche
+
+@item By keygrip
+This is indicated by an ampersand followed by the 40 hex digits of a
+keygrip.  @command{gpgsm} prints the keygrip when using the command
+@option{--dump-cert}.  It does not yet work for OpenPGP keys.
+
+@cartouche
+@example
+&D75F22C3F86E355877348498CDC92BD21010A480
+@end example
+@end cartouche
+
+
+@item By substring match.
+This is the default mode but applications may want to explicitly
+indicate this by putting the asterisk in front.  Match is not case
+sensitive.
+
+@cartouche
+@example
+Heine
+*Heine
+@end example
+@end cartouche
+
+@end itemize
+
+
+Please note that we have reused the hash mark identifier which was used
+in old GnuPG versions to indicate the so called local-id.  It is not
+anymore used and there should be no conflict when used with X.509 stuff.
+
+Using the RFC-2253 format of DNs has the drawback that it is not
+possible to map them back to the original encoding, however we don't
+have to do this because our key database stores this encoding as meta
+data.
+
+
+

@@ -1,0 +1,14 @@
+@c This option is included at several places.
+@item --homedir @var{dir}
+@opindex homedir
+Set the name of the home directory to @var{dir}. If his option is not
+used, the home directory defaults to @file{~/.gnupg}.  It is only
+recognized when given on the command line.  It also overrides any home
+directory stated through the environment variable @env{GNUPGHOME} or
+(on W32 systems) by means on the Registry entry
+@ifset isman
+@var{HKCU\\Software\\GNU\\GnuPG:HomeDir}.
+@end ifset
+@ifclear isman
+@var{HKCU\Software\GNU\GnuPG:HomeDir}.
+@end ifclear

@@ -18,21 +18,20 @@
 
 ## Process this file with automake to create Makefile.in
 
-AUTOMAKE_OPTIONS = no-texinfo.tex
-
-EXTRA_DIST = DETAILS gpg.1 gpgv.1 faq.raw FAQ faq.html \
+EXTRA_DIST = DETAILS faq.raw FAQ faq.html \
              HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 \
-             TRANSLATE gpg.ru.sgml gpg.ru.1 highlights-1.4.txt
+             TRANSLATE gpg.ru.sgml gpg.ru.1 highlights-1.4.txt \
+             gpg.texi gpgv.texi specify-user-id.texi see-also-note.texi \
+	     opt-homedir.texi texi.css yat2m.c gpl.texi
 
-noinst_PROGRAMS = yat2m
+myman_sources = gpg.texi gpgv.texi
+myman_pages   = gpg.1 gpgv.1
 
-myman_sources = gpg.texi 
-myman_pages   = gpg.1 
-
-info_TEXINFOS = gpg.texi
+info_TEXINFOS = gnupg1.texi
 
 man_MANS = $(myman_pages) gnupg.7 gpg.ru.1
 
+gnupg1_TEXINFOS = gnupg1.texi
 
 # Need this to avoid building of dvis with automake 1.4
 DVIS =
@@ -43,13 +42,16 @@ BUILT_SOURCES = FAQ faq.html
 # we can't add gpg.texi gpgv.texi here because automake does not like them to
 # be built files. 
 
-CLEANFILES = faq.raw.xref gpg.xml gpgv.xml gpg.ru.xml
-DISTCLEANFILES = yat2m-stamp.tmp yat2m-stamp $(myman_pages)
+CLEANFILES = faq.raw.xref gpg.xml gpgv.xml gpg.ru.xml 
+DISTCLEANFILES = yat2m yat2m-stamp.tmp yat2m-stamp $(myman_pages)
+
+AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=$(srcdir)/texi.css -D gpgone
 
 YAT2M_OPTIONS = -I $(srcdir) -D gpgone \
         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
 
-yat2m_SOURCES = yat2m.c
+yat2m: Makefile yat2m.c
+	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
 
 yat2m-stamp: $(myman_sources)
 	@rm -f yat2m-stamp.tmp

@@ -114,6 +114,58 @@ static char *tail_strings[] = {
 };
 
 
+/* Create a new context for armor filters.  */
+armor_filter_context_t *
+new_armor_context (void)
+{
+  armor_filter_context_t *afx;
+
+  afx = xcalloc (1, sizeof *afx);
+  afx->refcount = 1;
+
+  return afx;
+}
+
+/* Release an armor filter context.  Passing NULL is explicitly
+   allowed and a no-op.  */
+void
+release_armor_context (armor_filter_context_t *afx)
+{
+  if (!afx)
+    return;
+
+  /* In contrast to 2.0, we use in 1.4 heap based contexts only in a
+     very few places and in general keep the stack based contexts.  A
+     REFCOUNT of 0 indicates a stack based context and thus we don't
+     do anything in this case. */
+  if (!afx->refcount)
+    return;
+
+  if ( --afx->refcount )
+    return;
+  xfree (afx);
+}
+
+/* Push the armor filter onto the iobuf stream IOBUF.  */
+int
+push_armor_filter (armor_filter_context_t *afx, iobuf_t iobuf)
+{
+  int rc; 
+
+  if (!afx->refcount)
+    return iobuf_push_filter (iobuf, armor_filter, afx);
+    
+  afx->refcount++;
+  rc = iobuf_push_filter (iobuf, armor_filter, afx);
+  if (rc)
+    afx->refcount--;
+  return rc;
+}
+
+
+
+
+
 static void
 initialize(void)
 {
@@ -1168,6 +1220,7 @@ armor_filter( void *opaque, int control,
 			"probably a buggy MTA has been used\n") );
 	xfree( afx->buffer );
 	afx->buffer = NULL;
+        release_armor_context (afx);
     }
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "armor_filter";

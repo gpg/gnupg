@@ -1,11 +1,14 @@
-Noteworthy changes in version 1.4.6
+Noteworthy changes in version 1.4.6 (2006-12-06)
 ------------------------------------------------
+
+    * Fixed a serious and exploitable bug in processing encrypted
+      packages. [CVE-2006-6235].
+
+    * Fixed a buffer overflow in gpg. [bug#728, CVE-2006-6169]
 
     * Fixed a bug while decrypting certain compressed and encrypted
       messages. [bug#537]
  
-    * Fixed a buffer overflow in gpg. [bug#728, CVE-2006-6169]
-
     * Added --s2k-count to set the number of times passphrase mangling
       is repeated.  The default is 65536 times.
 
@@ -22,6 +25,8 @@ Noteworthy changes in version 1.4.6
       is considered a bug fix and is intended to forgive any
       violations pertaining to this issue, including those that may
       have occurred in the past.
+
+    * Man pages are now build from the same source as those of GnuPG-2.
 
 
 Noteworthy changes in version 1.4.5 (2006-08-01)

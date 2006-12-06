@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2006-11-29 16:04+0100\n"
+"POT-Creation-Date: 2006-12-04 15:05+0100\n"
 "PO-Revision-Date: 2004-06-16 22:40+0300\n"
 "Last-Translator: Tommi Vainikainen <Tommi.Vainikainen@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -56,7 +56,7 @@ msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 
 #: cipher/random.c:448 g10/card-util.c:678 g10/card-util.c:747
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:474
-#: g10/gpg.c:1007 g10/gpg.c:3499 g10/import.c:195 g10/keygen.c:2385
+#: g10/gpg.c:1009 g10/gpg.c:3503 g10/import.c:195 g10/keygen.c:2385
 #: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:348
 #: g10/plaintext.c:481 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1114
 #: g10/sign.c:1264 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
@@ -93,7 +93,7 @@ msgstr "tiedostoa \"%s\" ei voi lukea: %s\n"
 msgid "note: random_seed file not updated\n"
 msgstr "huom: random_seed-tiedostoa ei päivitetty\n"
 
-#: cipher/random.c:544 g10/exec.c:481 g10/gpg.c:1006 g10/keygen.c:2864
+#: cipher/random.c:544 g10/exec.c:481 g10/gpg.c:1008 g10/keygen.c:2864
 #: g10/keygen.c:2894 g10/keyring.c:1201 g10/keyring.c:1501 g10/openfile.c:269
 #: g10/openfile.c:363 g10/sign.c:826 g10/sign.c:1130 g10/tdbio.c:536
 #, c-format
@@ -324,77 +324,77 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "kelvollista OpenPGP-dataa ei löytynyt.\n"
 
-#: g10/armor.c:320
+#: g10/armor.c:372
 #, c-format
 msgid "armor: %s\n"
 msgstr "ascii-koodaus: %s\n"
 
-#: g10/armor.c:359
+#: g10/armor.c:411
 msgid "invalid armor header: "
 msgstr "epäkelpo ascii-koodausotsake: "
 
-#: g10/armor.c:370
+#: g10/armor.c:422
 msgid "armor header: "
 msgstr "ascii-koodausotsake: "
 
-#: g10/armor.c:381
+#: g10/armor.c:433
 msgid "invalid clearsig header\n"
 msgstr "epäkelpo selkotekstisen allekirjoituksen otsikko\n"
 
-#: g10/armor.c:433
+#: g10/armor.c:485
 msgid "nested clear text signatures\n"
 msgstr "sisäkkäisiä tekstimuotoisia allekirjoituksia\n"
 
-#: g10/armor.c:568
+#: g10/armor.c:620
 #, fuzzy
 msgid "unexpected armor: "
 msgstr "odottamaton ascii-koodaus:"
 
-#: g10/armor.c:580
+#: g10/armor.c:632
 msgid "invalid dash escaped line: "
 msgstr "epäkelpo viiva rivin lopussa: "
 
-#: g10/armor.c:734 g10/armor.c:1343
+#: g10/armor.c:786 g10/armor.c:1396
 #, fuzzy, c-format
 msgid "invalid radix64 character %02X skipped\n"
 msgstr "epäkelpo radix64-merkki %02x ohitettu\n"
 
-#: g10/armor.c:777
+#: g10/armor.c:829
 msgid "premature eof (no CRC)\n"
 msgstr "ennenaikainen tiedoston loppu (ei CRC:tä)\n"
 
-#: g10/armor.c:811
+#: g10/armor.c:863
 msgid "premature eof (in CRC)\n"
 msgstr "ennenaikainen tiedoston loppu (CRC:ssä)\n"
 
-#: g10/armor.c:819
+#: g10/armor.c:871
 msgid "malformed CRC\n"
 msgstr "väärinmuotoiltu CRC\n"
 
-#: g10/armor.c:823 g10/armor.c:1380
+#: g10/armor.c:875 g10/armor.c:1433
 #, fuzzy, c-format
 msgid "CRC error; %06lX - %06lX\n"
 msgstr "CRC-virhe; %06lx - %06lx\n"
 
-#: g10/armor.c:843
+#: g10/armor.c:895
 #, fuzzy
 msgid "premature eof (in trailer)\n"
 msgstr "Ennenaikainen tiedoston loppu (Trailerissa)\n"
 
-#: g10/armor.c:847
+#: g10/armor.c:899
 msgid "error in trailer line\n"
 msgstr "virhe trailer-rivissä\n"
 
-#: g10/armor.c:1158
+#: g10/armor.c:1210
 msgid "no valid OpenPGP data found.\n"
 msgstr "kelvollista OpenPGP-dataa ei löytynyt.\n"
 
-#: g10/armor.c:1163
+#: g10/armor.c:1215
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "epäkelpo ascii-koodaus: yli %d merkkiä pitkä rivi\n"
 
-#: g10/armor.c:1167
+#: g10/armor.c:1219
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -487,7 +487,7 @@ msgstr "ei vastaavaa julkista avainta: %s\n"
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:687 g10/card-util.c:756 g10/import.c:280
+#: g10/card-util.c:687 g10/card-util.c:756 g10/import.c:281
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
@@ -763,7 +763,7 @@ msgstr "Toista salasana: "
 msgid "PIN not correctly repeated; try again"
 msgstr "salasanaa ei toistettu oikein, yritä uudestaan."
 
-#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3864 g10/keyring.c:377
+#: g10/decrypt.c:69 g10/decrypt.c:160 g10/gpg.c:3868 g10/keyring.c:377
 #: g10/keyring.c:663 g10/verify.c:102 g10/verify.c:157
 #, c-format
 msgid "can't open `%s'\n"
@@ -773,13 +773,13 @@ msgstr "tiedostoa \"%s\" ei voi avata\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output ei toimi yhdessä tämän komennon kanssa\n"
 
-#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3387 g10/keyserver.c:1704
+#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3392 g10/keyserver.c:1705
 #: g10/revoke.c:228
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "avainta \"%s\" ei löydy: %s\n"
 
-#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2349 g10/keyserver.c:1718
+#: g10/delkey.c:83 g10/export.c:341 g10/import.c:2350 g10/keyserver.c:1719
 #: g10/revoke.c:234 g10/revoke.c:478
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -889,24 +889,24 @@ msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s salattu vastaanottajalle: \"%s\"\n"
 
-#: g10/encr-data.c:68 g10/mainproc.c:293
+#: g10/encr-data.c:91 g10/mainproc.c:293
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "%s salattua dataa\n"
 
-#: g10/encr-data.c:70 g10/mainproc.c:297
+#: g10/encr-data.c:93 g10/mainproc.c:297
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "salattu tuntemattomalla algoritmilla %d\n"
 
-#: g10/encr-data.c:94
+#: g10/encr-data.c:117
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 "VAROITUS: viesti salattiin symmetrisessä salaimessa \n"
 "esiintyvällä heikolla avaimella.\n"
 
-#: g10/encr-data.c:105
+#: g10/encr-data.c:128
 msgid "problem handling encrypted packet\n"
 msgstr "ongelma käsiteltäessä salattua pakettia\n"
 
@@ -1040,7 +1040,7 @@ msgstr ""
 msgid "WARNING: nothing exported\n"
 msgstr "VAROITUS: mitään ei viety\n"
 
-#: g10/gpg.c:377
+#: g10/gpg.c:378
 msgid ""
 "@Commands:\n"
 " "
@@ -1048,128 +1048,128 @@ msgstr ""
 "@Komennot:\n"
 " "
 
-#: g10/gpg.c:379
+#: g10/gpg.c:380
 msgid "|[file]|make a signature"
 msgstr "|[tiedosto]|tee allekirjoitus"
 
-#: g10/gpg.c:380
+#: g10/gpg.c:381
 msgid "|[file]|make a clear text signature"
 msgstr "|[tiedosto]|tee selkokielinen allekirjoitus"
 
-#: g10/gpg.c:381
+#: g10/gpg.c:382
 msgid "make a detached signature"
 msgstr "tee erillinen allekirjoitus"
 
-#: g10/gpg.c:382
+#: g10/gpg.c:383
 msgid "encrypt data"
 msgstr "salaa tiedot"
 
-#: g10/gpg.c:384
+#: g10/gpg.c:385
 msgid "encryption only with symmetric cipher"
 msgstr "salaa vain symmetrisellä salaimella"
 
-#: g10/gpg.c:386
+#: g10/gpg.c:387
 msgid "decrypt data (default)"
 msgstr "avaa tiedot (oletus)"
 
-#: g10/gpg.c:388
+#: g10/gpg.c:389
 msgid "verify a signature"
 msgstr "tarkista allekirjoitus"
 
-#: g10/gpg.c:390
+#: g10/gpg.c:391
 msgid "list keys"
 msgstr "näytä avaimet"
 
-#: g10/gpg.c:392
+#: g10/gpg.c:393
 msgid "list keys and signatures"
 msgstr "näytä avaimet allekirjoituksineen"
 
-#: g10/gpg.c:393
+#: g10/gpg.c:394
 #, fuzzy
 msgid "list and check key signatures"
 msgstr "tarkista avainten allekirjoitukset"
 
-#: g10/gpg.c:394
+#: g10/gpg.c:395
 msgid "list keys and fingerprints"
 msgstr "näytä avaimet sormenjälkineen"
 
-#: g10/gpg.c:395
+#: g10/gpg.c:396
 msgid "list secret keys"
 msgstr "näytä salaiset avaimet"
 
-#: g10/gpg.c:396
+#: g10/gpg.c:397
 msgid "generate a new key pair"
 msgstr "luo uusi avainpari"
 
-#: g10/gpg.c:397
+#: g10/gpg.c:398
 msgid "remove keys from the public keyring"
 msgstr "poista avaimet julkisten avainten renkaasta"
 
-#: g10/gpg.c:399
+#: g10/gpg.c:400
 msgid "remove keys from the secret keyring"
 msgstr "poista avaimet salaisten avainten renkaasta"
 
-#: g10/gpg.c:400
+#: g10/gpg.c:401
 msgid "sign a key"
 msgstr "allekirjoita avain"
 
-#: g10/gpg.c:401
+#: g10/gpg.c:402
 msgid "sign a key locally"
 msgstr "allekirjoita avain paikallisesti"
 
-#: g10/gpg.c:402
+#: g10/gpg.c:403
 msgid "sign or edit a key"
 msgstr "allekirjoita tai muokkaa avainta"
 
-#: g10/gpg.c:403
+#: g10/gpg.c:404
 msgid "generate a revocation certificate"
 msgstr "luo mitätöintivarmenne"
 
-#: g10/gpg.c:405
+#: g10/gpg.c:406
 msgid "export keys"
 msgstr "vie avaimia"
 
-#: g10/gpg.c:406
+#: g10/gpg.c:407
 msgid "export keys to a key server"
 msgstr "vie avaimia palvelimelle"
 
-#: g10/gpg.c:407
+#: g10/gpg.c:408
 msgid "import keys from a key server"
 msgstr "nouda avaimia avainpalvelimelta"
 
-#: g10/gpg.c:409
+#: g10/gpg.c:410
 msgid "search for keys on a key server"
 msgstr "etsi avaimia avainpalvelimelta"
 
-#: g10/gpg.c:411
+#: g10/gpg.c:412
 msgid "update all keys from a keyserver"
 msgstr "päivitä kaikki avaimet avainpalvelimelta"
 
-#: g10/gpg.c:415
+#: g10/gpg.c:416
 msgid "import/merge keys"
 msgstr "nouda/liitä avaimia"
 
-#: g10/gpg.c:418
+#: g10/gpg.c:419
 msgid "print the card status"
 msgstr ""
 
-#: g10/gpg.c:419
+#: g10/gpg.c:420
 msgid "change data on a card"
 msgstr ""
 
-#: g10/gpg.c:420
+#: g10/gpg.c:421
 msgid "change a card's PIN"
 msgstr ""
 
-#: g10/gpg.c:429
+#: g10/gpg.c:430
 msgid "update the trust database"
 msgstr "päivitä luottamustietokanta"
 
-#: g10/gpg.c:436
+#: g10/gpg.c:437
 msgid "|algo [files]|print message digests"
 msgstr "|algo [tiedostot]|tulosta viestien tiivisteet"
 
-#: g10/gpg.c:440 g10/gpgv.c:71
+#: g10/gpg.c:441 g10/gpgv.c:71
 msgid ""
 "@\n"
 "Options:\n"
@@ -1179,51 +1179,51 @@ msgstr ""
 "Valitsimet:\n"
 " "
 
-#: g10/gpg.c:442
+#: g10/gpg.c:443
 msgid "create ascii armored output"
 msgstr "tuota ascii-koodattu tuloste"
 
-#: g10/gpg.c:444
+#: g10/gpg.c:445
 msgid "|NAME|encrypt for NAME"
 msgstr "|NIMI|salaa vastaanottajalle NIMI"
 
-#: g10/gpg.c:455
+#: g10/gpg.c:456
 msgid "use this user-id to sign or decrypt"
 msgstr "käytä tätä käyttäjätunnusta allekirjoittamiseen ja avaamiseen"
 
-#: g10/gpg.c:456
+#: g10/gpg.c:457
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|aseta pakkausaste N (0 poistaa käytöstä)"
 
-#: g10/gpg.c:461
+#: g10/gpg.c:462
 msgid "use canonical text mode"
 msgstr "käytä tekstimuotoa"
 
-#: g10/gpg.c:475
+#: g10/gpg.c:476
 msgid "use as output file"
 msgstr "käytä tulostustiedostona"
 
-#: g10/gpg.c:477 g10/gpgv.c:73
+#: g10/gpg.c:478 g10/gpgv.c:73
 msgid "verbose"
 msgstr "monisanainen"
 
-#: g10/gpg.c:488
+#: g10/gpg.c:489
 msgid "do not make any changes"
 msgstr "älä tee muutoksia"
 
-#: g10/gpg.c:489
+#: g10/gpg.c:490
 msgid "prompt before overwriting"
 msgstr "kysy ennen ylikirjoittamista"
 
-#: g10/gpg.c:530
+#: g10/gpg.c:531
 msgid "use strict OpenPGP behavior"
 msgstr ""
 
-#: g10/gpg.c:531
+#: g10/gpg.c:532
 msgid "generate PGP 2.x compatible messages"
 msgstr ""
 
-#: g10/gpg.c:560
+#: g10/gpg.c:561
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1232,7 +1232,7 @@ msgstr ""
 "(Katso täydellinen luettelo kaikista komennoista ja valitsimista man-"
 "sivuilta)\n"
 
-#: g10/gpg.c:563
+#: g10/gpg.c:564
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1251,16 +1251,16 @@ msgstr ""
 " --list-keys [nimet]        näytä avaimet\n"
 " --fingerprint [nimet]      näytä sormenjäljet\n"
 
-#: g10/gpg.c:761 g10/gpgv.c:98
+#: g10/gpg.c:763 g10/gpgv.c:98
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr ""
 "Ilmoita ohjelmistovioista (englanniksi) osoitteeseen <gnupg-bugs@gnu.org>.\n"
 
-#: g10/gpg.c:778
+#: g10/gpg.c:780
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Käyttö: gpg [valitsimet] [tiedostot] (-h näyttää ohjeen)"
 
-#: g10/gpg.c:781
+#: g10/gpg.c:783
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -1270,7 +1270,7 @@ msgstr ""
 "allekirjoita, tarkista, salaa tai avaa\n"
 "oletustoiminto riippuu syötteestä\n"
 
-#: g10/gpg.c:792
+#: g10/gpg.c:794
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1278,577 +1278,577 @@ msgstr ""
 "\n"
 "Tuetut algoritmit:\n"
 
-#: g10/gpg.c:795
+#: g10/gpg.c:797
 msgid "Pubkey: "
 msgstr "JulkAvain: "
 
-#: g10/gpg.c:801 g10/keyedit.c:2310
+#: g10/gpg.c:803 g10/keyedit.c:2310
 msgid "Cipher: "
 msgstr "Salaus: "
 
-#: g10/gpg.c:807
+#: g10/gpg.c:809
 msgid "Hash: "
 msgstr "Tiiviste: "
 
-#: g10/gpg.c:813 g10/keyedit.c:2356
+#: g10/gpg.c:815 g10/keyedit.c:2356
 msgid "Compression: "
 msgstr "Pakkaus: "
 
-#: g10/gpg.c:896
+#: g10/gpg.c:898
 msgid "usage: gpg [options] "
 msgstr "käyttö: gpg [valitsimet] "
 
-#: g10/gpg.c:1044
+#: g10/gpg.c:1046
 msgid "conflicting commands\n"
 msgstr "ristiriitainen komento\n"
 
-#: g10/gpg.c:1062
+#: g10/gpg.c:1064
 #, fuzzy, c-format
 msgid "no = sign found in group definition `%s'\n"
 msgstr "=-merkkiä ei löytynyt ryhmämäärityksessä \"%s\"\n"
 
-#: g10/gpg.c:1259
+#: g10/gpg.c:1261
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on homedir `%s'\n"
 msgstr "VAROITUS: omistussuhde kohteessa %s \"%s\" ei ole turvallinen\"\n"
 
-#: g10/gpg.c:1262
+#: g10/gpg.c:1264
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "VAROITUS: omistussuhde kohteessa %s \"%s\" ei ole turvallinen\"\n"
 
-#: g10/gpg.c:1265
+#: g10/gpg.c:1267
 #, fuzzy, c-format
 msgid "WARNING: unsafe ownership on extension `%s'\n"
 msgstr "VAROITUS: omistussuhde kohteessa %s \"%s\" ei ole turvallinen\"\n"
 
-#: g10/gpg.c:1271
+#: g10/gpg.c:1273
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "VAROITUS: oikeudet kohteessa %s \"%s\" eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1274
+#: g10/gpg.c:1276
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "VAROITUS: oikeudet kohteessa %s \"%s\" eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1277
+#: g10/gpg.c:1279
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "VAROITUS: oikeudet kohteessa %s \"%s\" eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1283
+#: g10/gpg.c:1285
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr "VAROITUS: %s \"%s\" hakemiston oikeudet eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1286
+#: g10/gpg.c:1288
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr "VAROITUS: %s \"%s\" hakemiston oikeudet eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1289
+#: g10/gpg.c:1291
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgstr "VAROITUS: %s \"%s\" hakemiston oikeudet eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1295
+#: g10/gpg.c:1297
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "VAROITUS: Hakemiston %s \"%s\" oikeudet eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1298
+#: g10/gpg.c:1300
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "VAROITUS: Hakemiston %s \"%s\" oikeudet eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1301
+#: g10/gpg.c:1303
 #, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "VAROITUS: Hakemiston %s \"%s\" oikeudet eivät ole turvallisia\"\n"
 
-#: g10/gpg.c:1442
+#: g10/gpg.c:1444
 #, fuzzy, c-format
 msgid "unknown configuration item `%s'\n"
 msgstr "tuntematon asetus \"%s\"\n"
 
-#: g10/gpg.c:1535
+#: g10/gpg.c:1537
 msgid "display photo IDs during key listings"
 msgstr ""
 
-#: g10/gpg.c:1537
+#: g10/gpg.c:1539
 msgid "show policy URLs during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1539
+#: g10/gpg.c:1541
 #, fuzzy
 msgid "show all notations during signature listings"
 msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
 
-#: g10/gpg.c:1541
+#: g10/gpg.c:1543
 msgid "show IETF standard notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1545
+#: g10/gpg.c:1547
 msgid "show user-supplied notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1547
+#: g10/gpg.c:1549
 #, fuzzy
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "annettu allekirjoituskäytännön URL on virheellinen\n"
 
-#: g10/gpg.c:1549
+#: g10/gpg.c:1551
 msgid "show user ID validity during key listings"
 msgstr ""
 
-#: g10/gpg.c:1551
+#: g10/gpg.c:1553
 msgid "show revoked and expired user IDs in key listings"
 msgstr ""
 
-#: g10/gpg.c:1553
+#: g10/gpg.c:1555
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
 
-#: g10/gpg.c:1555
+#: g10/gpg.c:1557
 #, fuzzy
 msgid "show the keyring name in key listings"
 msgstr "näytä mihin avainrenkaaseen tulostettu avain kuuluu"
 
-#: g10/gpg.c:1557
+#: g10/gpg.c:1559
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
 
-#: g10/gpg.c:1951
+#: g10/gpg.c:1954
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "HUOM: Vanhat oletusarvoiset asetukset löytyvät tiedostosta \"%s\"\n"
 
-#: g10/gpg.c:1993
+#: g10/gpg.c:1996
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "HUOM: Ei oletusasetustiedostoa \"%s\"\n"
 
-#: g10/gpg.c:1997
+#: g10/gpg.c:2000
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "asetustiedosto \"%s\": %s\n"
 
-#: g10/gpg.c:2004
+#: g10/gpg.c:2007
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "luetaan asetukset tiedostosta \"%s\"\n"
 
-#: g10/gpg.c:2220 g10/gpg.c:2849 g10/gpg.c:2868
+#: g10/gpg.c:2223 g10/gpg.c:2853 g10/gpg.c:2872
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "HUOM: %s ei ole normaaliin käyttöön!\n"
 
-#: g10/gpg.c:2233
+#: g10/gpg.c:2236
 #, fuzzy, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr "Oikeudet eivät ole turvallisia, salainlaajennuksia \"%s\" ei ladattu\n"
 
-#: g10/gpg.c:2399 g10/gpg.c:2411
+#: g10/gpg.c:2402 g10/gpg.c:2414
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "%s ei kelpaa merkistöksi\n"
 
-#: g10/gpg.c:2487
+#: g10/gpg.c:2491
 #, fuzzy, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "%s ei kelpaa merkistöksi\n"
 
-#: g10/gpg.c:2511 g10/gpg.c:2698 g10/keyedit.c:4064
+#: g10/gpg.c:2515 g10/gpg.c:2702 g10/keyedit.c:4069
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "avainpalvelimen URI:iä ei voi jäsentää\n"
 
-#: g10/gpg.c:2523
+#: g10/gpg.c:2527
 #, fuzzy, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: virheelliset vientivalitsimet\n"
 
-#: g10/gpg.c:2526
+#: g10/gpg.c:2530
 #, fuzzy
 msgid "invalid keyserver options\n"
 msgstr "virheelliset vientivalitsimet\n"
 
-#: g10/gpg.c:2533
+#: g10/gpg.c:2537
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: virheelliset tuontivalitsimet\n"
 
-#: g10/gpg.c:2536
+#: g10/gpg.c:2540
 msgid "invalid import options\n"
 msgstr "virheelliset tuontivalitsimet\n"
 
-#: g10/gpg.c:2543
+#: g10/gpg.c:2547
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: virheelliset vientivalitsimet\n"
 
-#: g10/gpg.c:2546
+#: g10/gpg.c:2550
 msgid "invalid export options\n"
 msgstr "virheelliset vientivalitsimet\n"
 
-#: g10/gpg.c:2553
+#: g10/gpg.c:2557
 #, fuzzy, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: virheelliset tuontivalitsimet\n"
 
-#: g10/gpg.c:2556
+#: g10/gpg.c:2560
 #, fuzzy
 msgid "invalid list options\n"
 msgstr "virheelliset tuontivalitsimet\n"
 
-#: g10/gpg.c:2564
+#: g10/gpg.c:2568
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2566
+#: g10/gpg.c:2570
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2568
+#: g10/gpg.c:2572
 #, fuzzy
 msgid "show all notations during signature verification"
 msgstr "%s ei kelpaa merkistöksi\n"
 
-#: g10/gpg.c:2570
+#: g10/gpg.c:2574
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2574
+#: g10/gpg.c:2578
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2576
+#: g10/gpg.c:2580
 #, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "annettu allekirjoituskäytännön URL on virheellinen\n"
 
-#: g10/gpg.c:2578
+#: g10/gpg.c:2582
 #, fuzzy
 msgid "show user ID validity during signature verification"
 msgstr "%s ei kelpaa merkistöksi\n"
 
-#: g10/gpg.c:2580
+#: g10/gpg.c:2584
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2582
+#: g10/gpg.c:2586
 msgid "validate signatures with PKA data"
 msgstr ""
 
-#: g10/gpg.c:2584
+#: g10/gpg.c:2588
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 
-#: g10/gpg.c:2591
+#: g10/gpg.c:2595
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: virheelliset vientivalitsimet\n"
 
-#: g10/gpg.c:2594
+#: g10/gpg.c:2598
 #, fuzzy
 msgid "invalid verify options\n"
 msgstr "virheelliset vientivalitsimet\n"
 
-#: g10/gpg.c:2601
+#: g10/gpg.c:2605
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "exec-polkua kohteeseen %s ei voi asettaa\n"
 
-#: g10/gpg.c:2764
+#: g10/gpg.c:2768
 #, fuzzy, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: virheelliset vientivalitsimet\n"
 
-#: g10/gpg.c:2767
+#: g10/gpg.c:2771
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2838
+#: g10/gpg.c:2842
 msgid "WARNING: program may create a core file!\n"
 msgstr "VAROITUS: ohjelma voi luoda core-tiedoston!\n"
 
-#: g10/gpg.c:2842
+#: g10/gpg.c:2846
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "VAROITUS: %s korvaa %s:n\n"
 
-#: g10/gpg.c:2851
+#: g10/gpg.c:2855
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s ja %s eivät ole sallittuja yhdessä!\n"
 
-#: g10/gpg.c:2854
+#: g10/gpg.c:2858
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s ja %s yhdessä on järjetöntä!\n"
 
-#: g10/gpg.c:2861
+#: g10/gpg.c:2865
 #, fuzzy, c-format
 msgid "NOTE: %s is not available in this version\n"
 msgstr "gpg-agent ei ole käytettävissä tässä istunnossa\n"
 
-#: g10/gpg.c:2876
+#: g10/gpg.c:2880
 #, fuzzy, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 
-#: g10/gpg.c:2890
+#: g10/gpg.c:2894
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "erillisen allekirjoituksen voi luoda vain --pgp2-tilassa\n"
 
-#: g10/gpg.c:2896
+#: g10/gpg.c:2900
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "--pgp2-tilassa ei voi allekirjoittaa ja salata samanaikaisesti\n"
 
-#: g10/gpg.c:2902
+#: g10/gpg.c:2906
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "sinun tulee käyttää tiedostoja (eikä putkitusta) kun --pgp2 on käytössä.\n"
 
-#: g10/gpg.c:2915
+#: g10/gpg.c:2919
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "viestin salaaaminen --pgp2-tilassa vaatii IDEA-salaimen\n"
 
-#: g10/gpg.c:2982 g10/gpg.c:3006
+#: g10/gpg.c:2986 g10/gpg.c:3010
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valittu salausalgoritmi ei kelpaa\n"
 
-#: g10/gpg.c:2988 g10/gpg.c:3012
+#: g10/gpg.c:2992 g10/gpg.c:3016
 msgid "selected digest algorithm is invalid\n"
 msgstr "valittu tiivistealgoritmi ei kelpaa\n"
 
-#: g10/gpg.c:2994
+#: g10/gpg.c:2998
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "valittu salausalgoritmi ei kelpaa\n"
 
-#: g10/gpg.c:3000
+#: g10/gpg.c:3004
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "valittu varmenteen tiivistealgoritmi ei kelpaa\n"
 
-#: g10/gpg.c:3015
+#: g10/gpg.c:3019
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed täytyy olla suurempi kuin 0\n"
 
-#: g10/gpg.c:3017
+#: g10/gpg.c:3021
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed täytyy olla suurempi kuin 1\n"
 
-#: g10/gpg.c:3019
+#: g10/gpg.c:3023
 #, fuzzy
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth tulee olla välillä 1-255\n"
 
-#: g10/gpg.c:3021
+#: g10/gpg.c:3025
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "default-cert-level ei kelpaa; täytyy olla 0, 1, 2 tai 3\n"
 
-#: g10/gpg.c:3023
+#: g10/gpg.c:3027
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "min-cert-level ei kelpaa; täytyy olla 1, 2 tai 3\n"
 
-#: g10/gpg.c:3026
+#: g10/gpg.c:3030
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr ""
 "HUOM: yksinkertaista S2K-tilaa (0) ei todellakaan suositella käytettäväksi\n"
 
-#: g10/gpg.c:3030
+#: g10/gpg.c:3034
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "virheellinen S2K-tila; täytyy olla 0, 1 tai 3\n"
 
-#: g10/gpg.c:3037
+#: g10/gpg.c:3041
 msgid "invalid default preferences\n"
 msgstr "virheelliset oletusarvoiset valinnat\n"
 
-#: g10/gpg.c:3046
+#: g10/gpg.c:3050
 msgid "invalid personal cipher preferences\n"
 msgstr "virheelliset henkilökohtaisen salaimen valinnat\n"
 
-#: g10/gpg.c:3050
+#: g10/gpg.c:3054
 msgid "invalid personal digest preferences\n"
 msgstr "virheelliset henkilökohtaiset tiivisteen valinnat\n"
 
-#: g10/gpg.c:3054
+#: g10/gpg.c:3058
 msgid "invalid personal compress preferences\n"
 msgstr "virheelliset henkilökohtaiset pakkausvalinnat\n"
 
-#: g10/gpg.c:3087
+#: g10/gpg.c:3091
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ja %s eivät vielä toimi yhdessä\n"
 
-#: g10/gpg.c:3134
+#: g10/gpg.c:3138
 #, fuzzy, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
-#: g10/gpg.c:3139
+#: g10/gpg.c:3143
 #, fuzzy, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "tiivistealgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
-#: g10/gpg.c:3144
+#: g10/gpg.c:3148
 #, fuzzy, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "pakkausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
-#: g10/gpg.c:3246
+#: g10/gpg.c:3250
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "TrustDB:n alustaminen ei onnistu: %s\n"
 
-#: g10/gpg.c:3257
+#: g10/gpg.c:3261
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "VAROITUS: vastaanottajia (-r) annettu käyttämättä julkisen avaimen salausta\n"
 
-#: g10/gpg.c:3268
+#: g10/gpg.c:3272
 msgid "--store [filename]"
 msgstr "--store [tiedostonimi]"
 
-#: g10/gpg.c:3275
+#: g10/gpg.c:3279
 msgid "--symmetric [filename]"
 msgstr "--symmetric [tiedostonimi]"
 
-#: g10/gpg.c:3277
+#: g10/gpg.c:3281
 #, fuzzy, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "avaus epäonnistui: %s\n"
 
-#: g10/gpg.c:3287
+#: g10/gpg.c:3291
 msgid "--encrypt [filename]"
 msgstr "--encrypt [tiedostonimi]"
 
-#: g10/gpg.c:3300
+#: g10/gpg.c:3304
 #, fuzzy
 msgid "--symmetric --encrypt [filename]"
 msgstr "--sign --encrypt [tiedostonimi]"
 
-#: g10/gpg.c:3302
+#: g10/gpg.c:3306
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3305
+#: g10/gpg.c:3309
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
 
-#: g10/gpg.c:3323
+#: g10/gpg.c:3327
 msgid "--sign [filename]"
 msgstr "--allekirjoita [tiedostonimi]"
 
-#: g10/gpg.c:3336
+#: g10/gpg.c:3340
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [tiedostonimi]"
 
-#: g10/gpg.c:3351
+#: g10/gpg.c:3355
 #, fuzzy
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--sign --encrypt [tiedostonimi]"
 
-#: g10/gpg.c:3353
+#: g10/gpg.c:3357
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3356
+#: g10/gpg.c:3360
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
 
-#: g10/gpg.c:3376
+#: g10/gpg.c:3380
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [tiedostonimi]"
 
-#: g10/gpg.c:3385
+#: g10/gpg.c:3389
 msgid "--clearsign [filename]"
 msgstr "--clearsign [tiedostonimi]"
 
-#: g10/gpg.c:3410
+#: g10/gpg.c:3414
 msgid "--decrypt [filename]"
 msgstr "--decrypt [tiedostonimi]"
 
-#: g10/gpg.c:3418
+#: g10/gpg.c:3422
 msgid "--sign-key user-id"
 msgstr "--sign-key käyttäjätunnus"
 
-#: g10/gpg.c:3422
+#: g10/gpg.c:3426
 msgid "--lsign-key user-id"
 msgstr "--lsign-key käyttäjätunnus"
 
-#: g10/gpg.c:3443
+#: g10/gpg.c:3447
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key käyttäjätunnus [komennot]"
 
-#: g10/gpg.c:3514
+#: g10/gpg.c:3518
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [käyttäjätunnus] [avainrengas]"
 
-#: g10/gpg.c:3556
+#: g10/gpg.c:3560
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "avainpalvelimelle lähettäminen epäonnistui: %s\n"
 
-#: g10/gpg.c:3558
+#: g10/gpg.c:3562
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "avainpalvelimelta vastaanotto epäonnistui: %s\n"
 
-#: g10/gpg.c:3560
+#: g10/gpg.c:3564
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "avaimen vienti epäonnistui: %s\n"
 
-#: g10/gpg.c:3571
+#: g10/gpg.c:3575
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "avainpalvelimelta etsiminen epäonnistui: %s\n"
 
-#: g10/gpg.c:3581
+#: g10/gpg.c:3585
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "avainpalvelimen päivitys epäonnistui: %s\n"
 
-#: g10/gpg.c:3632
+#: g10/gpg.c:3636
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "ascii-koodauksen purku epäonnistui: %s\n"
 
-#: g10/gpg.c:3640
+#: g10/gpg.c:3644
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "ascii-koodaaminen epäonnistui: %s\n"
 
-#: g10/gpg.c:3727
+#: g10/gpg.c:3731
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "virheellinen tiivistealgoritmi \"%s\"\n"
 
-#: g10/gpg.c:3850
+#: g10/gpg.c:3854
 msgid "[filename]"
 msgstr "[tiedostonimi]"
 
-#: g10/gpg.c:3854
+#: g10/gpg.c:3858
 msgid "Go ahead and type your message ...\n"
 msgstr "Kirjoita viestisi...\n"
 
-#: g10/gpg.c:4158
+#: g10/gpg.c:4162
 msgid "the given certification policy URL is invalid\n"
 msgstr "annettu varmennekäytännön URL on virheellinen\n"
 
-#: g10/gpg.c:4160
+#: g10/gpg.c:4164
 msgid "the given signature policy URL is invalid\n"
 msgstr "annettu allekirjoituskäytännön URL on virheellinen\n"
 
-#: g10/gpg.c:4193
+#: g10/gpg.c:4197
 #, fuzzy
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "annettu allekirjoituskäytännön URL on virheellinen\n"
@@ -1874,7 +1874,7 @@ msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Epäkelpo avain %08lX hyväksytty valitsimella --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2380 g10/keyedit.c:3707
+#: g10/getkey.c:2380 g10/keyedit.c:3712
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "ei salaista aliavainta julkiselle aliavaimelle %08lX - ohitetaan\n"
@@ -2277,429 +2277,429 @@ msgstr "salaista avainta ei voi käyttää"
 msgid "remove as much as possible from key after import"
 msgstr ""
 
-#: g10/import.c:266
+#: g10/import.c:267
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "ohitetaan tyypin %d lohko\n"
 
-#: g10/import.c:275
+#: g10/import.c:276
 #, fuzzy, c-format
 msgid "%lu keys processed so far\n"
 msgstr "tähän mennessä käsitelty %lu avainta\n"
 
-#: g10/import.c:292
+#: g10/import.c:293
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Kaikkiaan käsitelty: %lu\n"
 
-#: g10/import.c:294
+#: g10/import.c:295
 #, c-format
 msgid "      skipped new keys: %lu\n"
 msgstr "      ohitetaan uudet avaimet: %lu\n"
 
-#: g10/import.c:297
+#: g10/import.c:298
 #, c-format
 msgid "          w/o user IDs: %lu\n"
 msgstr "          ilman käyttäjätunnuksia: %lu\n"
 
-#: g10/import.c:299
+#: g10/import.c:300
 #, c-format
 msgid "              imported: %lu"
 msgstr "              tuotu: %lu"
 
-#: g10/import.c:305
+#: g10/import.c:306
 #, c-format
 msgid "             unchanged: %lu\n"
 msgstr "             muuttamatonta: %lu\n"
 
-#: g10/import.c:307
+#: g10/import.c:308
 #, c-format
 msgid "          new user IDs: %lu\n"
 msgstr "          uusia käyttäjätunnuksia: %lu\n"
 
-#: g10/import.c:309
+#: g10/import.c:310
 #, c-format
 msgid "           new subkeys: %lu\n"
 msgstr "           uusia aliavaimia: %lu\n"
 
-#: g10/import.c:311
+#: g10/import.c:312
 #, c-format
 msgid "        new signatures: %lu\n"
 msgstr "        uusia allekirjoituksia: %lu\n"
 
-#: g10/import.c:313
+#: g10/import.c:314
 #, c-format
 msgid "   new key revocations: %lu\n"
 msgstr "   uusia avainten mitätöintejä: %lu\n"
 
-#: g10/import.c:315
+#: g10/import.c:316
 #, c-format
 msgid "      secret keys read: %lu\n"
 msgstr "      luettuja salaisia avaimia: %lu\n"
 
-#: g10/import.c:317
+#: g10/import.c:318
 #, c-format
 msgid "  secret keys imported: %lu\n"
 msgstr "  tuotuja salaisia avaimia: %lu\n"
 
-#: g10/import.c:319
+#: g10/import.c:320
 #, c-format
 msgid " secret keys unchanged: %lu\n"
 msgstr " muuttamattomia salaisia avaimia: %lu\n"
 
-#: g10/import.c:321
+#: g10/import.c:322
 #, c-format
 msgid "          not imported: %lu\n"
 msgstr "          ei tuotu: %lu\n"
 
-#: g10/import.c:323
+#: g10/import.c:324
 #, fuzzy, c-format
 msgid "    signatures cleaned: %lu\n"
 msgstr "        uusia allekirjoituksia: %lu\n"
 
-#: g10/import.c:325
+#: g10/import.c:326
 #, fuzzy, c-format
 msgid "      user IDs cleaned: %lu\n"
 msgstr "      luettuja salaisia avaimia: %lu\n"
 
-#: g10/import.c:566
+#: g10/import.c:567
 #, c-format
 msgid "WARNING: key %s contains preferences for unavailable\n"
 msgstr ""
 
 #. TRANSLATORS: This string is belongs to the previous one.  They are
 #. only split up to allow printing of a common prefix.
-#: g10/import.c:570
+#: g10/import.c:571
 #, fuzzy
 msgid "         algorithms on these user IDs:\n"
 msgstr "Olet allekirjoittanut seuraavat käyttäjätunnukset:\n"
 
-#: g10/import.c:607
+#: g10/import.c:608
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr ""
 
 # Ensimmäinen %s on binary, textmode tai unknown, ks. alla
-#: g10/import.c:619
+#: g10/import.c:620
 #, fuzzy, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
 msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
 
-#: g10/import.c:631
+#: g10/import.c:632
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr ""
 
-#: g10/import.c:644
+#: g10/import.c:645
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr ""
 
-#: g10/import.c:646
+#: g10/import.c:647
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 
-#: g10/import.c:670
+#: g10/import.c:671
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
 msgstr ""
 
-#: g10/import.c:720 g10/import.c:1118
+#: g10/import.c:721 g10/import.c:1119
 #, fuzzy, c-format
 msgid "key %s: no user ID\n"
 msgstr "avain %08lX: ei käyttäjätunnusta\n"
 
-#: g10/import.c:749
+#: g10/import.c:750
 #, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "avain %08lX: HKP-aliavainvirhe korjattu\n"
 
-#: g10/import.c:764
+#: g10/import.c:765
 #, fuzzy, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
 msgstr ""
 "avain %08lX: käyttäjätunnus \"%s\" hyväksytty ilman omaa allekirjoitusta\n"
 
-#: g10/import.c:770
+#: g10/import.c:771
 #, fuzzy, c-format
 msgid "key %s: no valid user IDs\n"
 msgstr "avain %08lX: ei voimassaolevia käyttäjätunnuksia\n"
 
-#: g10/import.c:772
+#: g10/import.c:773
 msgid "this may be caused by a missing self-signature\n"
 msgstr "tämän voi aiheuttaa puuttuva oma-allekirjoitus\n"
 
-#: g10/import.c:782 g10/import.c:1240
+#: g10/import.c:783 g10/import.c:1241
 #, fuzzy, c-format
 msgid "key %s: public key not found: %s\n"
 msgstr "avain %08lX: julkista avainta ei löydetty: %s\n"
 
-#: g10/import.c:788
+#: g10/import.c:789
 #, fuzzy, c-format
 msgid "key %s: new key - skipped\n"
 msgstr "avain %08lX: uusi avain - ohitetaan\n"
 
-#: g10/import.c:797
+#: g10/import.c:798
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "kirjoitettavissa olevaa avainrengasta ei löydy: %s\n"
 
-#: g10/import.c:802 g10/openfile.c:273 g10/sign.c:831 g10/sign.c:1135
+#: g10/import.c:803 g10/openfile.c:273 g10/sign.c:831 g10/sign.c:1135
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "kirjoitetaan kohteeseen \"%s\"\n"
 
-#: g10/import.c:806 g10/import.c:901 g10/import.c:1158 g10/import.c:1301
-#: g10/import.c:2363 g10/import.c:2385
+#: g10/import.c:807 g10/import.c:902 g10/import.c:1159 g10/import.c:1302
+#: g10/import.c:2364 g10/import.c:2386
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
 
-#: g10/import.c:825
+#: g10/import.c:826
 #, fuzzy, c-format
 msgid "key %s: public key \"%s\" imported\n"
 msgstr "avain %08lX: julkinen avain \"%s\" tuotu\n"
 
-#: g10/import.c:849
+#: g10/import.c:850
 #, fuzzy, c-format
 msgid "key %s: doesn't match our copy\n"
 msgstr "avain %08lX: ei vastaa omaa kopiotamme\n"
 
-#: g10/import.c:866 g10/import.c:1258
+#: g10/import.c:867 g10/import.c:1259
 #, fuzzy, c-format
 msgid "key %s: can't locate original keyblock: %s\n"
 msgstr "avain %08lX: alkuperäistä avainlohkoa ei löydy: %s\n"
 
-#: g10/import.c:874 g10/import.c:1265
+#: g10/import.c:875 g10/import.c:1266
 #, fuzzy, c-format
 msgid "key %s: can't read original keyblock: %s\n"
 msgstr "avain %08lX. alkuperäisen avainlohko lukeminen ei onnistu: %s\n"
 
-#: g10/import.c:911
+#: g10/import.c:912
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "avain %08lX: \"%s\" 1 uusi käyttäjätunnus\n"
 
-#: g10/import.c:914
+#: g10/import.c:915
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new user IDs\n"
 msgstr "avain %08lX: \"%s\" %d uutta käyttäjätunnusta\n"
 
-#: g10/import.c:917
+#: g10/import.c:918
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new signature\n"
 msgstr "avain %08lX: \"%s\" 1 uusi allekirjoitus\n"
 
-#: g10/import.c:920
+#: g10/import.c:921
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new signatures\n"
 msgstr "avain %08lX: \"%s\" %d uutta allekirjoitusta\n"
 
-#: g10/import.c:923
+#: g10/import.c:924
 #, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new subkey\n"
 msgstr "avain %08lX: \"%s\" 1 uusi aliavain\n"
 
-#: g10/import.c:926
+#: g10/import.c:927
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d new subkeys\n"
 msgstr "avain %08lX: \"%s\" %d uutta aliavainta\n"
 
-#: g10/import.c:929
+#: g10/import.c:930
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d signature cleaned\n"
 msgstr "avain %08lX: \"%s\" %d uutta allekirjoitusta\n"
 
-#: g10/import.c:932
+#: g10/import.c:933
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d signatures cleaned\n"
 msgstr "avain %08lX: \"%s\" %d uutta allekirjoitusta\n"
 
-#: g10/import.c:935
+#: g10/import.c:936
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d user ID cleaned\n"
 msgstr "avain %08lX: \"%s\" %d uutta käyttäjätunnusta\n"
 
-#: g10/import.c:938
+#: g10/import.c:939
 #, fuzzy, c-format
 msgid "key %s: \"%s\" %d user IDs cleaned\n"
 msgstr "avain %08lX: \"%s\" %d uutta käyttäjätunnusta\n"
 
-#: g10/import.c:961
+#: g10/import.c:962
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "avain %08lX: \"%s\" ei muutoksia\n"
 
-#: g10/import.c:1124
+#: g10/import.c:1125
 #, fuzzy, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "avain %08lX: avaimella on epäkelpo salain %d - ohitetaan\n"
 
-#: g10/import.c:1135
+#: g10/import.c:1136
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 
-#: g10/import.c:1152 g10/import.c:2378
+#: g10/import.c:1153 g10/import.c:2379
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "salaiselle avainrenkaalle ei ole asetettu oletusarvoa: %s\n"
 
-#: g10/import.c:1163
+#: g10/import.c:1164
 #, fuzzy, c-format
 msgid "key %s: secret key imported\n"
 msgstr "avain %08lX: salainen avain tuotu\n"
 
-#: g10/import.c:1193
+#: g10/import.c:1194
 #, fuzzy, c-format
 msgid "key %s: already in secret keyring\n"
 msgstr "avain %08lX: avain on jo avainrenkaassa\n"
 
-#: g10/import.c:1203
+#: g10/import.c:1204
 #, fuzzy, c-format
 msgid "key %s: secret key not found: %s\n"
 msgstr "avain %08lX: salaista avainta ei löydy: %s\n"
 
-#: g10/import.c:1233
+#: g10/import.c:1234
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "avain %08lX: ei julkista avainta - mitätöintivarmennetta ei voida käyttää\n"
 
-#: g10/import.c:1276
+#: g10/import.c:1277
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
 msgstr "avain %08lX: pätemätön mitätöintivarmenne: %s - hylätty\n"
 
-#: g10/import.c:1308
+#: g10/import.c:1309
 #, fuzzy, c-format
 msgid "key %s: \"%s\" revocation certificate imported\n"
 msgstr "avain %08lX: mitätöintivarmenne \"%s\" tuotu\n"
 
-#: g10/import.c:1374
+#: g10/import.c:1375
 #, fuzzy, c-format
 msgid "key %s: no user ID for signature\n"
 msgstr "avain %08lX: allekirjoitukselle ei ole käyttäjätunnusta\n"
 
-#: g10/import.c:1389
+#: g10/import.c:1390
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr "avain %08lX: julkisen avaimen algoritmia \"%s\" ei tueta\n"
 
-#: g10/import.c:1391
+#: g10/import.c:1392
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "avain %08lX: epäkelpo oma-allekirjoitus käyttäjätunnuksella \"%s\"\n"
 
-#: g10/import.c:1409
+#: g10/import.c:1410
 #, fuzzy, c-format
 msgid "key %s: no subkey for key binding\n"
 msgstr "avain %08lX: ei aliavainta avainten riippuvuuksiin\n"
 
-#: g10/import.c:1420 g10/import.c:1470
+#: g10/import.c:1421 g10/import.c:1471
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "avain %08lX: julkisen avaimen algoritmia ei tueta\n"
 
-#: g10/import.c:1422
+#: g10/import.c:1423
 #, fuzzy, c-format
 msgid "key %s: invalid subkey binding\n"
 msgstr "avain %08lX: pätemätön aliavainriippuvuus\n"
 
-#: g10/import.c:1437
+#: g10/import.c:1438
 #, fuzzy, c-format
 msgid "key %s: removed multiple subkey binding\n"
 msgstr "avain %08lX: moninkertainen aliavainriippuvuus poistettu\n"
 
-#: g10/import.c:1459
+#: g10/import.c:1460
 #, fuzzy, c-format
 msgid "key %s: no subkey for key revocation\n"
 msgstr "avain %08lX: ei aliavainta avainten mitätöintiä varten\n"
 
-#: g10/import.c:1472
+#: g10/import.c:1473
 #, fuzzy, c-format
 msgid "key %s: invalid subkey revocation\n"
 msgstr "avain %08lX: epäkelpo aliavaimen mitätöinti\n"
 
-#: g10/import.c:1487
+#: g10/import.c:1488
 #, fuzzy, c-format
 msgid "key %s: removed multiple subkey revocation\n"
 msgstr "avain %08lX: useiden aliavainten mitätöinti poistettu\n"
 
-#: g10/import.c:1529
+#: g10/import.c:1530
 #, fuzzy, c-format
 msgid "key %s: skipped user ID \"%s\"\n"
 msgstr "avain %08lX: käyttäjätunnus ohitettu '"
 
-#: g10/import.c:1550
+#: g10/import.c:1551
 #, fuzzy, c-format
 msgid "key %s: skipped subkey\n"
 msgstr "avain %08lX: aliavain ohitettu\n"
 
-#: g10/import.c:1577
+#: g10/import.c:1578
 #, fuzzy, c-format
 msgid "key %s: non exportable signature (class 0x%02X) - skipped\n"
 msgstr ""
 "avain %08lX: allekirjoitusta ei voida viedä (luokka %02x) - ohitetaan\n"
 
-#: g10/import.c:1587
+#: g10/import.c:1588
 #, fuzzy, c-format
 msgid "key %s: revocation certificate at wrong place - skipped\n"
 msgstr "avain %08lX: mitätöintivarmenne väärässä paikassa - ohitetaan\n"
 
-#: g10/import.c:1604
+#: g10/import.c:1605
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - skipped\n"
 msgstr "avain %08lX: epäkelpo mitätöintivarmenne: %s - ohitetaan\n"
 
-#: g10/import.c:1618
+#: g10/import.c:1619
 #, fuzzy, c-format
 msgid "key %s: subkey signature in wrong place - skipped\n"
 msgstr "avain %08lX: aliavaimen allekirjoitus väärässä paikassa - ohitetaan\n"
 
-#: g10/import.c:1626
+#: g10/import.c:1627
 #, fuzzy, c-format
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr "avain %08lX: odottamaton allekirjoitusluokka (0x%02X) - ohitetaan\n"
 
-#: g10/import.c:1726
+#: g10/import.c:1727
 #, fuzzy, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "avain %08lX: käyttäjätunnuksen kaksoiskappale havaittu - liitetty\n"
 
-#: g10/import.c:1788
+#: g10/import.c:1789
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
 "VAROITUS: avain %08lX saattaa olla mitätöity: haetaan mitätöintiavain %08lX\n"
 
-#: g10/import.c:1802
+#: g10/import.c:1803
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr ""
 "VAROITUS: avain %08lX saattaa olla mitätöity: mitätöintiavainta %08lX \n"
 "ei saatavilla.\n"
 
-#: g10/import.c:1861
+#: g10/import.c:1862
 #, fuzzy, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "avain %08lX: \"%s\"-mitätöintivarmenne lisätty\n"
 
-#: g10/import.c:1895
+#: g10/import.c:1896
 #, fuzzy, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "avain %08lX: lisättiin suora avainallekirjoitus\n"
 
-#: g10/import.c:2284
+#: g10/import.c:2285
 #, fuzzy
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "julkinen avain ei täsmää salaiseen avaimeen!\n"
 
-#: g10/import.c:2292
+#: g10/import.c:2293
 #, fuzzy
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "ohitetaan: salainen avain on jo paikalla\n"
 
-#: g10/import.c:2294
+#: g10/import.c:2295
 #, fuzzy
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "ohitetaan: salainen avain on jo paikalla\n"
@@ -3027,8 +3027,8 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Varmastiko allekirjoita? "
 
-#: g10/keyedit.c:1067 g10/keyedit.c:4783 g10/keyedit.c:4874 g10/keyedit.c:4938
-#: g10/keyedit.c:4999 g10/sign.c:352
+#: g10/keyedit.c:1067 g10/keyedit.c:4788 g10/keyedit.c:4879 g10/keyedit.c:4943
+#: g10/keyedit.c:5004 g10/sign.c:352
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "allekirjoitus epäonnistui: %s\n"
@@ -3557,7 +3557,7 @@ msgstr ""
 "VAROITUS: Tämä on PGP2-muodon avain.  Valokuvan lisääminen voi\n"
 "          saada jotkin PGP:n versiot hylkäämään avaimen.\n"
 
-#: g10/keyedit.c:3016 g10/keyedit.c:3346
+#: g10/keyedit.c:3016 g10/keyedit.c:3351
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Haluatko edelleen varmasti lisätä sen? (k/E) "
 
@@ -3600,12 +3600,32 @@ msgstr "Mitään ei poistettu.\n"
 msgid "invalid"
 msgstr "virheellinen ascii-koodaus"
 
-#: g10/keyedit.c:3249
+#: g10/keyedit.c:3235
+#, fuzzy, c-format
+msgid "User ID \"%s\" compacted: %s\n"
+msgstr "Käyttäjätunnus \"%s\" on mitätöity."
+
+#: g10/keyedit.c:3242
+#, fuzzy, c-format
+msgid "User ID \"%s\": %d signature removed\n"
+msgstr "Käyttäjätunnus \"%s\" on mitätöity."
+
+#: g10/keyedit.c:3243
+#, fuzzy, c-format
+msgid "User ID \"%s\": %d signatures removed\n"
+msgstr "Käyttäjätunnus \"%s\" on mitätöity."
+
+#: g10/keyedit.c:3251
+#, fuzzy, c-format
+msgid "User ID \"%s\": already minimized\n"
+msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
+
+#: g10/keyedit.c:3252
 #, fuzzy, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:3341
+#: g10/keyedit.c:3346
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3615,199 +3635,199 @@ msgstr ""
 "voi\n"
 "          saada jotkin PGP:n versiot hylkäämään avaimen.\n"
 
-#: g10/keyedit.c:3352
+#: g10/keyedit.c:3357
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Et voi lisätä määrättyä mitätöijää PGP 2.x -muodon avaimeen.\n"
 
-#: g10/keyedit.c:3372
+#: g10/keyedit.c:3377
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Syötä määrätyn mitätöijän käyttäjätunnus: "
 
-#: g10/keyedit.c:3397
+#: g10/keyedit.c:3402
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "PGP 2.x -avainta ei voi nimetä määrätyksi mitätöijäksi\n"
 
-#: g10/keyedit.c:3412
+#: g10/keyedit.c:3417
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "et voi nimittää avainta sen omaksi määrätyksi mitätöijäksi\n"
 
-#: g10/keyedit.c:3434
+#: g10/keyedit.c:3439
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "VAROITUS: Tämän avaimen nimetty mitätöijä on mitätöinyt avaimen!\n"
 
-#: g10/keyedit.c:3453
+#: g10/keyedit.c:3458
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "VAROITUS: avaimen nimittämistä määrätyksi mitätöijäksi ei voi perua!\n"
 
-#: g10/keyedit.c:3459
+#: g10/keyedit.c:3464
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Haluatko varmasti nimittää tämän avaimen määrätyksi mitätöijäksi? (k/E): "
 
-#: g10/keyedit.c:3520
+#: g10/keyedit.c:3525
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Poista salaisten avainten valinnat, kiitos.\n"
 
-#: g10/keyedit.c:3526
+#: g10/keyedit.c:3531
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Valitse korkeintaan yksi toissijainen avain, kiitos.\n"
 
-#: g10/keyedit.c:3530
+#: g10/keyedit.c:3535
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Muutetaan toissijaisen avaimen vanhentumisaikaa.\n"
 
-#: g10/keyedit.c:3533
+#: g10/keyedit.c:3538
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Muutetaan ensisijaisen avaimen vanhentumisaikaa.\n"
 
-#: g10/keyedit.c:3579
+#: g10/keyedit.c:3584
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Et voi muuttaa v3-avainten vanhentumispäivää\n"
 
-#: g10/keyedit.c:3595
+#: g10/keyedit.c:3600
 msgid "No corresponding signature in secret ring\n"
 msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
 
-#: g10/keyedit.c:3668
+#: g10/keyedit.c:3673
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "VAROITUS: allekirjoitusaliavain %08lX ei ole ristiinvarmennettu\n"
 
-#: g10/keyedit.c:3674
+#: g10/keyedit.c:3679
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr ""
 
-#: g10/keyedit.c:3836
+#: g10/keyedit.c:3841
 msgid "Please select exactly one user ID.\n"
 msgstr "Valitse tasan yksi käyttäjätunnus!\n"
 
-#: g10/keyedit.c:3875 g10/keyedit.c:3985 g10/keyedit.c:4105 g10/keyedit.c:4246
+#: g10/keyedit.c:3880 g10/keyedit.c:3990 g10/keyedit.c:4110 g10/keyedit.c:4251
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "ohitetaan v3-muodon oma-allekirjoitus käyttäjätunnukselle \"%s\"\n"
 
-#: g10/keyedit.c:4046
+#: g10/keyedit.c:4051
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:4126
+#: g10/keyedit.c:4131
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Haluatko varmasti käyttää sitä (k/E)? "
 
-#: g10/keyedit.c:4127
+#: g10/keyedit.c:4132
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Haluatko varmasti käyttää sitä (k/E)? "
 
-#: g10/keyedit.c:4189
+#: g10/keyedit.c:4194
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Allekirjoitusnotaatio: "
 
-#: g10/keyedit.c:4338
+#: g10/keyedit.c:4343
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Ylikirjoita (k/E)? "
 
-#: g10/keyedit.c:4402
+#: g10/keyedit.c:4407
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Indeksillä %d ei löydy käyttäjätunnusta\n"
 
-#: g10/keyedit.c:4460
+#: g10/keyedit.c:4465
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Indeksillä %d ei löydy käyttäjätunnusta\n"
 
-#: g10/keyedit.c:4487
+#: g10/keyedit.c:4492
 #, fuzzy, c-format
 msgid "No subkey with index %d\n"
 msgstr "Indeksillä %d ei löydy käyttäjätunnusta\n"
 
-#: g10/keyedit.c:4622
+#: g10/keyedit.c:4627
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "käyttäjätunnus: \""
 
-#: g10/keyedit.c:4625 g10/keyedit.c:4689 g10/keyedit.c:4732
+#: g10/keyedit.c:4630 g10/keyedit.c:4694 g10/keyedit.c:4737
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   %08lX allekirjoitti tämän %s%s%s\n"
 
-#: g10/keyedit.c:4627 g10/keyedit.c:4691 g10/keyedit.c:4734
+#: g10/keyedit.c:4632 g10/keyedit.c:4696 g10/keyedit.c:4739
 msgid " (non-exportable)"
 msgstr " (vientiin kelpaamaton)"
 
-#: g10/keyedit.c:4631
+#: g10/keyedit.c:4636
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Tämä allekirjoitus vanheni %s.\n"
 
-#: g10/keyedit.c:4635
+#: g10/keyedit.c:4640
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Haluatko varmasti mitätöidä sen? (k/E) "
 
-#: g10/keyedit.c:4639
+#: g10/keyedit.c:4644
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Luodaanko tälle alekirjoitukselle mitätöintivarmenne? (k/E) "
 
-#: g10/keyedit.c:4666
+#: g10/keyedit.c:4671
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Olet allekirjoittanut seuraavat käyttäjätunnukset:\n"
 
-#: g10/keyedit.c:4692
+#: g10/keyedit.c:4697
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (vientiin kelpaamaton)"
 
-#: g10/keyedit.c:4699
+#: g10/keyedit.c:4704
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   %08lX mitätöi tämän %s\n"
 
-#: g10/keyedit.c:4721
+#: g10/keyedit.c:4726
 msgid "You are about to revoke these signatures:\n"
 msgstr "Olet mitätöimässä seuraavat allekirjoitukset:\n"
 
-#: g10/keyedit.c:4741
+#: g10/keyedit.c:4746
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Varmastiko luo mitätöintivarmenteet? (k/E) "
 
-#: g10/keyedit.c:4771
+#: g10/keyedit.c:4776
 msgid "no secret key\n"
 msgstr "salainen avain ei ole saatavilla\n"
 
-#: g10/keyedit.c:4841
+#: g10/keyedit.c:4846
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:4858
+#: g10/keyedit.c:4863
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "VAROITUS: käyttäjätunnuksen allekirjoitus on päivätty %d sekuntin päähän "
 "tulevaisuuteen\n"
 
-#: g10/keyedit.c:4922
+#: g10/keyedit.c:4927
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:4984
+#: g10/keyedit.c:4989
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:5079
+#: g10/keyedit.c:5084
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
@@ -4434,7 +4454,7 @@ msgstr "disable"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr ""
 
-#: g10/keyserver.c:808 g10/keyserver.c:1425
+#: g10/keyserver.c:808 g10/keyserver.c:1426
 #, fuzzy, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "virheelliset vientivalitsimet\n"
@@ -4469,106 +4489,106 @@ msgstr "etsitään \"%s\" HKP-palvelimelta %s\n"
 msgid "searching for names from %s\n"
 msgstr "etsitään \"%s\" HKP-palvelimelta %s\n"
 
-#: g10/keyserver.c:1328
+#: g10/keyserver.c:1329
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "etsitään \"%s\" HKP-palvelimelta %s\n"
 
-#: g10/keyserver.c:1332
+#: g10/keyserver.c:1333
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
 msgstr ""
 "\"\n"
 "allekirjoitettu avaimellasi %08lX %s\n"
 
-#: g10/keyserver.c:1375
+#: g10/keyserver.c:1376
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "etsitään \"%s\" HKP-palvelimelta %s\n"
 
-#: g10/keyserver.c:1378
+#: g10/keyserver.c:1379
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "etsitään \"%s\" HKP-palvelimelta %s\n"
 
-#: g10/keyserver.c:1385 g10/keyserver.c:1481
+#: g10/keyserver.c:1386 g10/keyserver.c:1482
 #, fuzzy
 msgid "no keyserver action!\n"
 msgstr "virheelliset vientivalitsimet\n"
 
-#: g10/keyserver.c:1433
+#: g10/keyserver.c:1434
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 
-#: g10/keyserver.c:1442
+#: g10/keyserver.c:1443
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
-#: g10/keyserver.c:1504 g10/keyserver.c:2032
+#: g10/keyserver.c:1505 g10/keyserver.c:2033
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
-#: g10/keyserver.c:1510
+#: g10/keyserver.c:1511
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 
-#: g10/keyserver.c:1522
+#: g10/keyserver.c:1523
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1527
+#: g10/keyserver.c:1528
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1535
+#: g10/keyserver.c:1536
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr ""
 
-#: g10/keyserver.c:1542
+#: g10/keyserver.c:1543
 #, fuzzy
 msgid "keyserver timed out\n"
 msgstr "avainpalvelinvirhe"
 
-#: g10/keyserver.c:1547
+#: g10/keyserver.c:1548
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "avainpalvelinvirhe"
 
-#: g10/keyserver.c:1556
+#: g10/keyserver.c:1557
 #, fuzzy, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "avainpalvelimelta vastaanotto epäonnistui: %s\n"
 
-#: g10/keyserver.c:1581 g10/keyserver.c:1615
+#: g10/keyserver.c:1582 g10/keyserver.c:1616
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
 
-#: g10/keyserver.c:1874
+#: g10/keyserver.c:1875
 #, fuzzy, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "VAROITUS: tilapäistiedostoa (%s) \"%s\" ei voi poistaa: %s\n"
 
-#: g10/keyserver.c:1896
+#: g10/keyserver.c:1897
 #, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "pyydetään avainta %08lX kohteesta %s\n"
 
-#: g10/keyserver.c:1898
+#: g10/keyserver.c:1899
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "pyydetään avainta %08lX kohteesta %s\n"
 
-#: g10/keyserver.c:1954
+#: g10/keyserver.c:1955
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "VAROITUS: tilapäistiedostoa (%s) \"%s\" ei voi poistaa: %s\n"
 
-#: g10/keyserver.c:1960
+#: g10/keyserver.c:1961
 #, fuzzy, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr "VAROITUS: tilapäistiedostoa (%s) \"%s\" ei voi poistaa: %s\n"
@@ -4982,12 +5002,12 @@ msgstr "Syötä salasana\n"
 msgid "cancelled by user\n"
 msgstr "käyttäjän peruma\n"
 
-#: g10/passphrase.c:805 g10/passphrase.c:968
+#: g10/passphrase.c:805 g10/passphrase.c:974
 #, fuzzy
 msgid "can't query passphrase in batch mode\n"
 msgstr "salasanan kysyminen ei onnistu eräajossa\n"
 
-#: g10/passphrase.c:812 g10/passphrase.c:973
+#: g10/passphrase.c:812 g10/passphrase.c:979
 msgid "Enter passphrase: "
 msgstr "Syötä salasana: "
 
@@ -5010,7 +5030,7 @@ msgstr "%u-bittinen %s-avain, tunnus %08lX, luotu %s"
 msgid "         (subkey on main key ID %s)"
 msgstr ""
 
-#: g10/passphrase.c:977
+#: g10/passphrase.c:987
 msgid "Repeat passphrase: "
 msgstr "Toista salasana: "
 
@@ -6481,18 +6501,6 @@ msgstr "(olet ehkä käyttänyt tehtävään väärää ohjelmaa)\n"
 #, fuzzy
 #~ msgid "Unable to clean `%s'\n"
 #~ msgstr "komentoa %s \"%s\" ei voi suorittaa: %s\n"
-
-#, fuzzy
-#~ msgid "User ID \"%s\": %d signature removed.\n"
-#~ msgstr "Käyttäjätunnus \"%s\" on mitätöity."
-
-#, fuzzy
-#~ msgid "User ID \"%s\": %d signatures removed.\n"
-#~ msgstr "Käyttäjätunnus \"%s\" on mitätöity."
-
-#, fuzzy
-#~ msgid "User ID \"%s\" removed: %s\n"
-#~ msgstr "Käyttäjätunnus \"%s\" on mitätöity."
 
 #, fuzzy
 #~ msgid "No user IDs are removable.\n"

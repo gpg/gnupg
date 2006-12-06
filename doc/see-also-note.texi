@@ -1,0 +1,14 @@
+@c We append this note to all ``see also'' sections of the man pages
+
+@ifset isman
+The full documentation for this tool is maintained as a Texinfo manual.
+If GnuPG and the info program are properly installed at your site, the
+command
+
+@example
+info gnupg1
+@end example
+
+should give you access to the complete manual including a menu structure
+and an index.
+@end ifset

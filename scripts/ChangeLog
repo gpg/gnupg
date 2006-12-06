@@ -1,3 +1,7 @@
+2006-12-04  Werner Koch  <wk@g10code.com>
+
+	* mk-gpg-texi: Removed.
+
 2006-10-02  Werner Koch  <wk@g10code.com>
 
 	* w32installer.nsi: Don't uninstall winpt if the installer comes

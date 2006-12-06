@@ -32,6 +32,9 @@ typedef struct {
 } md_filter_context_t;
 
 typedef struct {
+    int refcount;           /* Reference counter.  If 0 this structure
+                               is not allocated on the heap. */
+
     /* these fields may be initialized */
     int what;		    /* what kind of armor headers to write */
     int only_keyblocks;     /* skip all headers but ".... key block" */
@@ -130,6 +133,9 @@ int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);
 void free_md_filter_context( md_filter_context_t *mfx );
 
 /*-- armor.c --*/
+armor_filter_context_t *new_armor_context (void);
+void release_armor_context (armor_filter_context_t *afx);
+int push_armor_filter (armor_filter_context_t *afx, IOBUF iobuf);
 int use_armor_filter( IOBUF a );
 int armor_filter( void *opaque, int control,
 		  IOBUF chain, byte *buf, size_t *ret_len);

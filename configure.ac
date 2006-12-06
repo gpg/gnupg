@@ -27,7 +27,7 @@ min_automake_version="1.9.3"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
-m4_define([my_version], [1.4.6rc1])
+m4_define([my_version], [1.4.6])
 m4_define([my_issvn], [no])
 
 m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
@@ -465,6 +465,21 @@ AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
 GNUPG_CHECK_FAQPROG
 GNUPG_CHECK_DOCBOOK_TO_TEXI
 GNUPG_CHECK_USTAR
+
+
+# According to a comment by Marcus Brinkman in libgpg-error, the
+# AC_PROG_CC_FOR_BUILD macro in the AC archive is broken for autoconf
+# 2.57.  Thus we use a simply use "cc" if we are cross-compiling.
+AC_MSG_CHECKING(for cc for build)
+if test "$cross_compiling" = "yes"; then
+  CC_FOR_BUILD="${CC_FOR_BUILD-cc}"
+else
+  CC_FOR_BUILD="${CC_FOR_BUILD-$CC}"
+fi
+AC_MSG_RESULT($CC_FOR_BUILD)
+AC_ARG_VAR(CC_FOR_BUILD,[build system C compiler])
+
+
 
 MPI_OPT_FLAGS=""
 

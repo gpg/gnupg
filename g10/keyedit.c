@@ -3232,25 +3232,25 @@ menu_clean(KBNODE keyblock,int self_only)
 	      else
 		reason=_("invalid");
 
-	      tty_printf("User ID \"%s\" compacted: %s\n",user,reason);
+	      tty_printf (_("User ID \"%s\" compacted: %s\n"), user, reason);
 
 	      modified=1;
 	    }
 	  else if(sigs)
 	    {
-	      tty_printf(sigs==1?
-			 "User ID \"%s\": %d signature removed\n":
-			 "User ID \"%s\": %d signatures removed\n",
-			 user,sigs);
+	      tty_printf (sigs==1?
+			  _("User ID \"%s\": %d signature removed\n"):
+                          _("User ID \"%s\": %d signatures removed\n"),
+                          user,sigs);
 
 	      modified=1;
 	    }
 	  else
 	    {
-	      tty_printf(self_only==1?
-			 "User ID \"%s\": already minimized\n":
-			 "User ID \"%s\": already clean\n",
-			 user);
+	      tty_printf (self_only==1?
+                          _("User ID \"%s\": already minimized\n"):
+                          _("User ID \"%s\": already clean\n"),
+                          user);
 	    }
 
 	  xfree(user);

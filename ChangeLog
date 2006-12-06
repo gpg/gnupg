@@ -1,3 +1,12 @@
+2006-12-06  Werner Koch  <wk@g10code.com>
+
+	Released 1.4.6.
+
+2006-12-04  Werner Koch  <wk@g10code.com>
+
+	* README: Add hint on hjow to set CC_FOR_BUILD.
+	* configure.ac (CC_FOR_BUILD): New.
+
 2006-12-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note the CVE for bug#728, --s2k-count,
