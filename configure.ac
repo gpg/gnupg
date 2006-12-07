@@ -1348,7 +1348,6 @@ cat >g10defs.tmp <<G10EOF
 #else
 #define G10_LOCALEDIR     "${datadir}/locale"
 #define GNUPG_LIBDIR      "${libdir}/gnupg"
-#define GNUPG_DATADIR     "${datadir}/gnupg"
 #ifdef __VMS
 #define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
 #else

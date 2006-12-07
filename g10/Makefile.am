@@ -27,6 +27,7 @@ EXTRA_DIST = options.skel
 
 if ! HAVE_DOSISH_SYSTEM
 AM_CPPFLAGS += -DGNUPG_LIBEXECDIR="\"$(libexecdir)/@PACKAGE@\""
+AM_CPPFLAGS += -DGNUPG_DATADIR="\"$(pkgdatadir)\""
 endif
 
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a

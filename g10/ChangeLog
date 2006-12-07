@@ -1,3 +1,9 @@
+2006-12-07  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CPPFLAGS): Define GNUPG_DATADIR.
+	* openfile.c (copy_options_file): Use log_info and not log_error
+	to avoid error returns in case of a missing skeleton file.
+
 2006-12-04  Werner Koch  <wk@g10code.com>
 
 	* filter.h (armor_filter_context_t): New field REFCOUNT.
