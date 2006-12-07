@@ -1,8 +1,20 @@
 Noteworthy changes in version 1.2.8
 ------------------------------------------------
 
+    Backported security fixes.  Note, that the 1.2.x series has
+    reached end of life status.
+
+    * Fixed a serious and exploitable bug in processing encrypted
+      packages. [CVE-2006-6235].
+
+    * Fixed a buffer overflow in gpg. [bug#728, CVE-2006-6169]
+
+    * User IDs are now capped at 2048 bytes.  This avoids a memory
+      allocation attack [CVE-2006-3082].
+
     * Added countermeasures against the Mister/Zuccherato CFB attack
-    <http://eprint.iacr.org/2005/033>.
+      <http://eprint.iacr.org/2005/033>.
+
 
 Noteworthy changes in version 1.2.7 (2004-12-27)
 ------------------------------------------------

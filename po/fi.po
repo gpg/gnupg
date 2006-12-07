@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-12-27 17:50+0100\n"
+"POT-Creation-Date: 2006-12-07 15:42+0100\n"
 "PO-Revision-Date: 2004-06-16 22:40+0300\n"
 "Last-Translator: Tommi Vainikainen <Tommi.Vainikainen@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -1337,7 +1337,7 @@ msgstr ""
 "Luottamusarvoa ei ole asetettu seuraavalle:\n"
 "%4u%c/%08lX %s \""
 
-#: g10/pkclist.c:290 g10/mainproc.c:1503
+#: g10/pkclist.c:290 g10/mainproc.c:1505
 msgid "                aka \""
 msgstr "                aka \""
 
@@ -3267,7 +3267,7 @@ msgid "rev? problem checking revocation: %s\n"
 msgstr "rev? mitätöinnin tarkistuksessa ongelmia: %s\n"
 
 #: g10/keyedit.c:1974 g10/keyedit.c:2057 g10/keylist.c:492 g10/keylist.c:532
-#: g10/mainproc.c:946
+#: g10/mainproc.c:948
 msgid "[revoked] "
 msgstr "[mitätöity] "
 
@@ -3520,7 +3520,7 @@ msgstr "Kriittinen allekirjoituskäytäntö: "
 msgid "Signature policy: "
 msgstr "Allekirjoituskäytäntö: "
 
-#: g10/keylist.c:139 g10/keylist.c:162 g10/mainproc.c:811 g10/mainproc.c:820
+#: g10/keylist.c:139 g10/keylist.c:162 g10/mainproc.c:813 g10/mainproc.c:822
 msgid "WARNING: invalid notation data found\n"
 msgstr "VAROITUS: löydettiin väärin muotoiltua notaatiodataa\n"
 
@@ -3542,7 +3542,7 @@ msgstr "ei ihmisten luettavissa"
 msgid "Keyring"
 msgstr "Avainrengas"
 
-#: g10/keylist.c:534 g10/mainproc.c:948
+#: g10/keylist.c:534 g10/mainproc.c:950
 #, c-format
 msgid " [expires: %s]"
 msgstr " [vanhenee: %s]"
@@ -3582,12 +3582,12 @@ msgstr "väärä salasana tai tuntematon salausalgoritmi (%d)\n"
 msgid "%s encrypted session key\n"
 msgstr "%s-salattu istuntoavain\n"
 
-#: g10/mainproc.c:301 g10/encr-data.c:66
+#: g10/mainproc.c:301 g10/encr-data.c:89
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "%s salattua dataa\n"
 
-#: g10/mainproc.c:305 g10/encr-data.c:68
+#: g10/mainproc.c:305 g10/encr-data.c:91
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "salattu tuntemattomalla algoritmilla %d\n"
@@ -3597,177 +3597,177 @@ msgstr "salattu tuntemattomalla algoritmilla %d\n"
 msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr "salattu tuntemattomalla algoritmilla %d\n"
 
-#: g10/mainproc.c:358
+#: g10/mainproc.c:360
 #, c-format
 msgid "public key is %08lX\n"
 msgstr "julkinen avain on %08lX\n"
 
-#: g10/mainproc.c:404
+#: g10/mainproc.c:406
 msgid "public key encrypted data: good DEK\n"
 msgstr "julkisella avaimella salattu data: DEK kelpaa\n"
 
-#: g10/mainproc.c:456
+#: g10/mainproc.c:458
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "salattu %u-bittisella %s-avaimella, tunnus %08lX, luotu %s\n"
 
-#: g10/mainproc.c:466
+#: g10/mainproc.c:468
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "salattu %s-avaimella, tunnus %08lX\n"
 
-#: g10/mainproc.c:480
+#: g10/mainproc.c:482
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "julkisen avaimen avaus epäonnistui: %s\n"
 
-#: g10/mainproc.c:494
+#: g10/mainproc.c:496
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "salattu %lu salasanalla\n"
 
-#: g10/mainproc.c:496
+#: g10/mainproc.c:498
 msgid "encrypted with 1 passphrase\n"
 msgstr "salattu yhdellä salasanalla\n"
 
-#: g10/mainproc.c:512 g10/mainproc.c:531
+#: g10/mainproc.c:514 g10/mainproc.c:533
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "oletettavasti %s-salattua dataa\n"
 
-#: g10/mainproc.c:519
+#: g10/mainproc.c:521
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "IDEA-salain ei käytettävissä, yritetään optimistisesti \n"
 "käyttää sen sijaan salainta %s\n"
 
-#: g10/mainproc.c:549
+#: g10/mainproc.c:551
 msgid "decryption okay\n"
 msgstr "avaus onnistui\n"
 
-#: g10/mainproc.c:553
+#: g10/mainproc.c:555
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VAROITUS: viestin eheyttä ei oltu suojattu\n"
 
-#: g10/mainproc.c:556
+#: g10/mainproc.c:558
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "VAROITUS: salattua viestiä on muokattu!\n"
 
-#: g10/mainproc.c:562
+#: g10/mainproc.c:564
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "avaus epäonnistui: %s\n"
 
-#: g10/mainproc.c:581
+#: g10/mainproc.c:583
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "HUOM: lähettäjä määrittää \"vain-sinun-silmillesi\"\n"
 
-#: g10/mainproc.c:583
+#: g10/mainproc.c:585
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "alkuperäisen tiedoston nimi=\"%.*s\"\n"
 
-#: g10/mainproc.c:755
+#: g10/mainproc.c:757
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "itsenäinen mitätöinti - käytä \"gpg --import\" ottaaksesi käyttöön\n"
 
-#: g10/mainproc.c:823
+#: g10/mainproc.c:825
 msgid "Notation: "
 msgstr "Notaatio: "
 
-#: g10/mainproc.c:835
+#: g10/mainproc.c:837
 msgid "Policy: "
 msgstr "Käytäntö: "
 
-#: g10/mainproc.c:1291
+#: g10/mainproc.c:1293
 msgid "signature verification suppressed\n"
 msgstr "allekirjoituksen varmistus vaiennetaan\n"
 
-#: g10/mainproc.c:1333 g10/mainproc.c:1343
+#: g10/mainproc.c:1335 g10/mainproc.c:1345
 msgid "can't handle these multiple signatures\n"
 msgstr "näitä allekirjoituksia ei voi käsitellä\n"
 
-#: g10/mainproc.c:1352
+#: g10/mainproc.c:1354
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr ""
 "Allekirjoitus tehty %.*s käyttämällä %s-algoritmia avaintunnuksella %08lX\n"
 
-#: g10/mainproc.c:1381
+#: g10/mainproc.c:1383
 msgid "Key available at: "
 msgstr "Avain saatavilla kohteessa: "
 
-#: g10/mainproc.c:1430 g10/mainproc.c:1463
+#: g10/mainproc.c:1432 g10/mainproc.c:1465
 msgid "BAD signature from \""
 msgstr "VÄÄRÄ allekirjoitus lähettäjältä \""
 
-#: g10/mainproc.c:1431 g10/mainproc.c:1464
+#: g10/mainproc.c:1433 g10/mainproc.c:1466
 msgid "Expired signature from \""
 msgstr "Vanhentunut allekirjoitus lähettäjältä \""
 
-#: g10/mainproc.c:1432 g10/mainproc.c:1465
+#: g10/mainproc.c:1434 g10/mainproc.c:1467
 msgid "Good signature from \""
 msgstr "Allekirjoitus täsmää lähettäjään \""
 
-#: g10/mainproc.c:1467
+#: g10/mainproc.c:1469
 msgid "[uncertain]"
 msgstr "[ei tiedossa]"
 
-#: g10/mainproc.c:1566
+#: g10/mainproc.c:1568
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Allekirjoitus vanheni %s\n"
 
-#: g10/mainproc.c:1571
+#: g10/mainproc.c:1573
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "Allekirjoitus vanhenee %s\n"
 
 # Ensimmäinen %s on binary, textmode tai unknown, ks. alla
-#: g10/mainproc.c:1574
+#: g10/mainproc.c:1576
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
 
-#: g10/mainproc.c:1575
+#: g10/mainproc.c:1577
 msgid "binary"
 msgstr "binääri"
 
-#: g10/mainproc.c:1576
+#: g10/mainproc.c:1578
 msgid "textmode"
 msgstr "teksti"
 
-#: g10/mainproc.c:1576
+#: g10/mainproc.c:1578
 msgid "unknown"
 msgstr "tuntematon "
 
-#: g10/mainproc.c:1596
+#: g10/mainproc.c:1598
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Allekirjoitusta ei voi tarkistaa: %s\n"
 
-#: g10/mainproc.c:1664 g10/mainproc.c:1680 g10/mainproc.c:1766
+#: g10/mainproc.c:1666 g10/mainproc.c:1682 g10/mainproc.c:1768
 msgid "not a detached signature\n"
 msgstr "allekirjoitus ei ole erillinen\n"
 
-#: g10/mainproc.c:1707
+#: g10/mainproc.c:1709
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
 "VAROITUS: useita allekirjoituksia havaittu.  Vain ensimmäisen voi "
 "tarkistaa.\n"
 
-#: g10/mainproc.c:1715
+#: g10/mainproc.c:1717
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "itsenäinen allekirjoitus luokkaa 0x%02x\n"
 
-#: g10/mainproc.c:1772
+#: g10/mainproc.c:1774
 msgid "old style (PGP 2.x) signature\n"
 msgstr "vanhan tyylin (PGP 2.x) allekirjoitus\n"
 
-#: g10/mainproc.c:1782
+#: g10/mainproc.c:1784
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "epäkelpo juuripaketti havaittu proc_tree():ssä\n"
 
@@ -4568,14 +4568,14 @@ msgstr "%s: hakemistoa ei voi luoda: %s\n"
 msgid "%s: directory created\n"
 msgstr "%s: hakemisto luotu\n"
 
-#: g10/encr-data.c:91
+#: g10/encr-data.c:114
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 "VAROITUS: viesti salattiin symmetrisessä salaimessa \n"
 "esiintyvällä heikolla avaimella.\n"
 
-#: g10/encr-data.c:98
+#: g10/encr-data.c:121
 msgid "problem handling encrypted packet\n"
 msgstr "ongelma käsiteltäessä salattua pakettia\n"
 

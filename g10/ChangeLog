@@ -1,3 +1,18 @@
+2006-12-07  Werner Koch  <wk@g10code.com>
+
+	* encr-data.c: Allocate DFX context on the heap and not on the
+	stack.  Changes at several places.  Fixes CVE-2006-6235.
+
+	* openfile.c (ask_outfile_name): Fixed buffer overflow occurring
+	if make_printable_string returns a longer string.  Fixes bug 728.
+
+	* parse-packet.c (parse_user_id): Cap the user ID size at 2048
+	bytes.  This prevents a memory allocation attack with a very large
+	user ID.  A very large packet length could even cause the
+	allocation (a u32) to wrap around to a small number.  Noted by
+	Evgeny Legerov on full-disclosure.
+	(parse_comment): Likewise.
+
 2005-02-21  Werner Koch  <wk@g10code.com>
 
 	* seckey-cert.c (do_check): Detect card diversion protection.

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.1.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-12-27 17:50+0100\n"
+"POT-Creation-Date: 2006-12-07 15:42+0100\n"
 "PO-Revision-Date: 2004-06-16 17:01+0200\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -1331,7 +1331,7 @@ msgstr ""
 "Nessun valore di fiducia assegnato a:\n"
 "%4u%c/%08lX %s \""
 
-#: g10/pkclist.c:290 g10/mainproc.c:1503
+#: g10/pkclist.c:290 g10/mainproc.c:1505
 msgid "                aka \""
 msgstr "                alias \""
 
@@ -3259,7 +3259,7 @@ msgid "rev? problem checking revocation: %s\n"
 msgstr "rev? problema controllando la revoca: %s\n"
 
 #: g10/keyedit.c:1974 g10/keyedit.c:2057 g10/keylist.c:492 g10/keylist.c:532
-#: g10/mainproc.c:946
+#: g10/mainproc.c:948
 msgid "[revoked] "
 msgstr "[revocata]"
 
@@ -3521,7 +3521,7 @@ msgstr "Politica critica di firma: "
 msgid "Signature policy: "
 msgstr "Politica di firma: "
 
-#: g10/keylist.c:139 g10/keylist.c:162 g10/mainproc.c:811 g10/mainproc.c:820
+#: g10/keylist.c:139 g10/keylist.c:162 g10/mainproc.c:813 g10/mainproc.c:822
 msgid "WARNING: invalid notation data found\n"
 msgstr "ATTENZIONE: trovati dati di una nota non validi\n"
 
@@ -3543,7 +3543,7 @@ msgstr "non leggibile"
 msgid "Keyring"
 msgstr "Portachiavi"
 
-#: g10/keylist.c:534 g10/mainproc.c:948
+#: g10/keylist.c:534 g10/mainproc.c:950
 #, c-format
 msgid " [expires: %s]"
 msgstr "[scadenza: %s]"
@@ -3583,12 +3583,12 @@ msgstr "passphrase errata o algoritmo di cifratura sconosciuto (%d)\n"
 msgid "%s encrypted session key\n"
 msgstr "chiave di sessione cifrata con %s\n"
 
-#: g10/mainproc.c:301 g10/encr-data.c:66
+#: g10/mainproc.c:301 g10/encr-data.c:89
 #, c-format
 msgid "%s encrypted data\n"
 msgstr "dati cifrati con %s\n"
 
-#: g10/mainproc.c:305 g10/encr-data.c:68
+#: g10/mainproc.c:305 g10/encr-data.c:91
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "cifrato con l'algoritmo sconosciuto %d\n"
@@ -3598,171 +3598,171 @@ msgstr "cifrato con l'algoritmo sconosciuto %d\n"
 msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr "cifrato con l'algoritmo sconosciuto %d\n"
 
-#: g10/mainproc.c:358
+#: g10/mainproc.c:360
 #, c-format
 msgid "public key is %08lX\n"
 msgstr "la chiave pubblica è %08lX\n"
 
-#: g10/mainproc.c:404
+#: g10/mainproc.c:406
 msgid "public key encrypted data: good DEK\n"
 msgstr "dati cifrati con la chiave pubblica: DEK corretto\n"
 
-#: g10/mainproc.c:456
+#: g10/mainproc.c:458
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "cifrato con la chiave %2$s di %1$u bit, ID %3$08lX, creata il %4$s\n"
 
-#: g10/mainproc.c:466
+#: g10/mainproc.c:468
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "Cifrato con la chiave %s con ID %08lX\n"
 
-#: g10/mainproc.c:480
+#: g10/mainproc.c:482
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "decifratura della chiave pubblica fallita: %s\n"
 
-#: g10/mainproc.c:494
+#: g10/mainproc.c:496
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "cifratto con %lu passphrase\n"
 
-#: g10/mainproc.c:496
+#: g10/mainproc.c:498
 msgid "encrypted with 1 passphrase\n"
 msgstr "cifratto con 1 passphrase\n"
 
-#: g10/mainproc.c:512 g10/mainproc.c:531
+#: g10/mainproc.c:514 g10/mainproc.c:533
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "suppongo che i dati siano cifrati con %s\n"
 
-#: g10/mainproc.c:519
+#: g10/mainproc.c:521
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "Cifrario IDEA non disponibile, ottimisticamente cerco di usare %s\n"
 
-#: g10/mainproc.c:549
+#: g10/mainproc.c:551
 msgid "decryption okay\n"
 msgstr "decifratura corretta\n"
 
-#: g10/mainproc.c:553
+#: g10/mainproc.c:555
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ATTENZIONE: l'integrità del messaggio non era protetta\n"
 
-#: g10/mainproc.c:556
+#: g10/mainproc.c:558
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "ATTENZIONE: il messaggio cifrato è stato manipolato!\n"
 
-#: g10/mainproc.c:562
+#: g10/mainproc.c:564
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "decifratura fallita: %s\n"
 
-#: g10/mainproc.c:581
+#: g10/mainproc.c:583
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTA: il mittente ha richiesto \"solo-per-i-tuoi-occhi\"\n"
 
-#: g10/mainproc.c:583
+#: g10/mainproc.c:585
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nome del file originale='%.*s'\n"
 
-#: g10/mainproc.c:755
+#: g10/mainproc.c:757
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revoca solitaria - usa \"gpg --import\" per applicarla\n"
 
-#: g10/mainproc.c:823
+#: g10/mainproc.c:825
 msgid "Notation: "
 msgstr "Nota: "
 
-#: g10/mainproc.c:835
+#: g10/mainproc.c:837
 msgid "Policy: "
 msgstr "Policy: "
 
-#: g10/mainproc.c:1291
+#: g10/mainproc.c:1293
 msgid "signature verification suppressed\n"
 msgstr "verifica della firma soppressa\n"
 
-#: g10/mainproc.c:1333 g10/mainproc.c:1343
+#: g10/mainproc.c:1335 g10/mainproc.c:1345
 msgid "can't handle these multiple signatures\n"
 msgstr "impossibile gestire queste firme multiple\n"
 
-#: g10/mainproc.c:1352
+#: g10/mainproc.c:1354
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Firma fatta %.*s usando %s con ID %08lX\n"
 
-#: g10/mainproc.c:1381
+#: g10/mainproc.c:1383
 msgid "Key available at: "
 msgstr "Chiave disponibile presso: "
 
-#: g10/mainproc.c:1430 g10/mainproc.c:1463
+#: g10/mainproc.c:1432 g10/mainproc.c:1465
 msgid "BAD signature from \""
 msgstr "Firma NON corretta da \""
 
-#: g10/mainproc.c:1431 g10/mainproc.c:1464
+#: g10/mainproc.c:1433 g10/mainproc.c:1466
 msgid "Expired signature from \""
 msgstr "Firma scaduta da \""
 
-#: g10/mainproc.c:1432 g10/mainproc.c:1465
+#: g10/mainproc.c:1434 g10/mainproc.c:1467
 msgid "Good signature from \""
 msgstr "Firma valida da \""
 
-#: g10/mainproc.c:1467
+#: g10/mainproc.c:1469
 msgid "[uncertain]"
 msgstr "[incerta]"
 
-#: g10/mainproc.c:1566
+#: g10/mainproc.c:1568
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Firma scaduta il %s\n"
 
-#: g10/mainproc.c:1571
+#: g10/mainproc.c:1573
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "Questa firma scadrà il %s\n"
 
-#: g10/mainproc.c:1574
+#: g10/mainproc.c:1576
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "Firma %s, algoritmo di digest %s\n"
 
-#: g10/mainproc.c:1575
+#: g10/mainproc.c:1577
 msgid "binary"
 msgstr "binario"
 
-#: g10/mainproc.c:1576
+#: g10/mainproc.c:1578
 msgid "textmode"
 msgstr "modo testo"
 
-#: g10/mainproc.c:1576
+#: g10/mainproc.c:1578
 msgid "unknown"
 msgstr "sconosciuto"
 
-#: g10/mainproc.c:1596
+#: g10/mainproc.c:1598
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Impossibile controllare la firma: %s\n"
 
-#: g10/mainproc.c:1664 g10/mainproc.c:1680 g10/mainproc.c:1766
+#: g10/mainproc.c:1666 g10/mainproc.c:1682 g10/mainproc.c:1768
 msgid "not a detached signature\n"
 msgstr "non è una firma separata\n"
 
-#: g10/mainproc.c:1707
+#: g10/mainproc.c:1709
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr "ATTENZIONE: trovate firme multiple. Sarà controllata solo la prima.\n"
 
-#: g10/mainproc.c:1715
+#: g10/mainproc.c:1717
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "firma solitaria di classe 0x%02x\n"
 
-#: g10/mainproc.c:1772
+#: g10/mainproc.c:1774
 msgid "old style (PGP 2.x) signature\n"
 msgstr "firma vecchio stile (PGP 2.x)\n"
 
-#: g10/mainproc.c:1782
+#: g10/mainproc.c:1784
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "individuato un pacchetto radice non valido in proc_tree()\n"
 
@@ -4570,14 +4570,14 @@ msgstr "%s: impossibile creare la directory: %s\n"
 msgid "%s: directory created\n"
 msgstr "%s: directory creata\n"
 
-#: g10/encr-data.c:91
+#: g10/encr-data.c:114
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 "ATTENZIONE: il messaggio era stato cifrato usando una chiave debole\n"
 "per il cifrario simmetrico\n"
 
-#: g10/encr-data.c:98
+#: g10/encr-data.c:121
 msgid "problem handling encrypted packet\n"
 msgstr "problema nella gestione del pacchetto cifrato\n"
 
