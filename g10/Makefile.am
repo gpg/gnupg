@@ -118,8 +118,10 @@ gpgv2_SOURCES = gpgv.c           \
 LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(DNSLIBS) $(LIBREADLINE) \
          $(LIBINTL) $(CAPLIBS) $(NETLIBS)
-gpg2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS)
-gpgv2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS)
+gpg2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+	     $(LIBICONV)
+gpgv2_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+	      $(LIBICONV)
 
 $(PROGRAMS): $(needed_libs) ../common/libgpgrl.a
 

@@ -53,7 +53,7 @@ pwquery_libs = ../common/libsimple-pwquery.a
 gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
 gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_PTH_LIBS) $(PTH_LIBS) \
-	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
+	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
@@ -62,14 +62,14 @@ gpg_protect_tool_SOURCES = \
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
 gpg_protect_tool_LDADD =  $(pwquery_libs) $(common_libs) \
-         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
+         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 gpg_preset_passphrase_SOURCES = \
 	preset-passphrase.c
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
 gpg_preset_passphrase_LDADD =  $(pwquery_libs) $(common_libs) \
-	 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS)
+	 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 
 # Make sure that all libs are build before we use them.  This is
