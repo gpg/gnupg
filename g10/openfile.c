@@ -342,7 +342,7 @@ copy_options_file( const char *destdir )
         errno = EPERM;
       }
     if( !src ) {
-	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
+	log_info (_("can't open `%s': %s\n"), fname, strerror(errno) );
 	xfree(fname);
 	return;
     }
@@ -357,7 +357,7 @@ copy_options_file( const char *destdir )
       dst = fopen( fname, "w" );
     umask(oldmask);
     if( !dst ) {
-	log_error(_("can't create `%s': %s\n"), fname, strerror(errno) );
+	log_info (_("can't create `%s': %s\n"), fname, strerror(errno) );
 	fclose( src );
 	xfree(fname);
 	return;
