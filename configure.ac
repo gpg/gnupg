@@ -354,17 +354,17 @@ dnl LDAP is defined only after we confirm the library is available later
 	[enable email keyserver interface only]),
       try_mailto=$enableval, try_mailto=no)
     AC_MSG_RESULT($try_mailto)
-    fi
-
-    AC_MSG_CHECKING([whether keyserver exec-path is enabled])
-    AC_ARG_ENABLE(keyserver-path,
-      AC_HELP_STRING([--disable-keyserver-path],
-        [disable the exec-path option for keyserver helpers]),
-      [if test "$enableval" = no ; then
-         disable_keyserver_path=yes
-      fi],enableval=yes)
-    AC_MSG_RESULT($enableval)
   fi
+
+  AC_MSG_CHECKING([whether keyserver exec-path is enabled])
+  AC_ARG_ENABLE(keyserver-path,
+    AC_HELP_STRING([--disable-keyserver-path],
+      [disable the exec-path option for keyserver helpers]),
+    [if test "$enableval" = no ; then
+       disable_keyserver_path=yes
+    fi],enableval=yes)
+  AC_MSG_RESULT($enableval)
+fi
 
 AC_MSG_CHECKING([whether the included zlib is requested])
 AC_ARG_WITH(included-zlib,
@@ -1197,12 +1197,11 @@ else
 fi
 
 if test "$use_local_zlib" = yes ; then
-    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
     AC_CONFIG_LINKS(zlib.h:zlib/zlib.h zconf.h:zlib/zconf.h )
     ZLIBS="../zlib/libzlib.a"
-else
-    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
 fi
+
+AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, test "$use_local_zlib" = yes)
 
 if test "$use_bzip2" = yes ; then
   _cppflags="${CPPFLAGS}"
