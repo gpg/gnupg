@@ -1,3 +1,12 @@
+2006-12-11  Werner Koch  <wk@g10code.com>
+
+	* mpi.h (mpi_is_neg, mpi_get_nlimbs): Replaced macros by function
+	prototypes.
+	(struct gcry_mpi): Changed to a forward declaration.
+	(mpi_limb_t): Moved to ../mpi/mpi-internal.h.
+	(MPI_NULL): Removed.
+	(mpi_is_opaque, mpi_is_secure): Implement in terms of mpi_get_flags.
+
 2006-12-04  Werner Koch  <wk@g10code.com>
 
 	* iobuf.h (iobuf_t): New.  That is the name we use in 2.0.

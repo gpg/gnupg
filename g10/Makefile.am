@@ -26,8 +26,10 @@ EXTRA_DIST = options.skel
 #OMIT_DEPENDENCIES = zlib.h zconf.h
 
 if ! HAVE_DOSISH_SYSTEM
+AM_CPPFLAGS += -DLOCALEDIR="\"$(localedir)\""
 AM_CPPFLAGS += -DGNUPG_LIBEXECDIR="\"$(libexecdir)/@PACKAGE@\""
 AM_CPPFLAGS += -DGNUPG_DATADIR="\"$(pkgdatadir)\""
+AM_CPPFLAGS += -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""
 endif
 
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a

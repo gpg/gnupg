@@ -1,3 +1,10 @@
+2006-12-11  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CPPFLAGS): Use in place of INCLUDES.  Define
+	LOCALEDIR.
+	* shmtest.c (i18n_init): s/G10_LOCALEDIR/LOCALEDIR/.
+	* mpicalc.c (i18n_init): Ditto.
+
 2006-04-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* make-dns-cert.c (main): Small exit code tweak from Peter

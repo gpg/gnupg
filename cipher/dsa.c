@@ -138,9 +138,9 @@ static void
 test_keys( DSA_secret_key *sk, unsigned qbits )
 {
     DSA_public_key pk;
-    MPI test = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
-    MPI out1_a = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
-    MPI out1_b = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
+    MPI test = mpi_alloc ( mpi_nlimb_hint_from_nbits (qbits) );
+    MPI out1_a = mpi_alloc ( mpi_nlimb_hint_from_nbits (qbits) );
+    MPI out1_b = mpi_alloc( mpi_nlimb_hint_from_nbits (qbits) );
 
     pk.p = sk->p;
     pk.q = sk->q;

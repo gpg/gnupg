@@ -118,13 +118,13 @@ wiener_map( unsigned int n )
 }
 
 static void
-test_keys( ELG_secret_key *sk, unsigned nbits )
+test_keys( ELG_secret_key *sk, unsigned int nbits )
 {
     ELG_public_key pk;
     MPI test = mpi_alloc( 0 );
-    MPI out1_a = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
-    MPI out1_b = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
-    MPI out2 = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
+    MPI out1_a = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
+    MPI out1_b = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
+    MPI out2   = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
 
     pk.p = sk->p;
     pk.g = sk->g;
@@ -244,9 +244,9 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
     unsigned int xbits;
     byte *rndbuf;
 
-    p_min1 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    temp   = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    qbits = wiener_map( nbits );
+    p_min1 = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
+    temp   = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
+    qbits  = wiener_map ( nbits );
     if( qbits & 1 ) /* better have a even one */
 	qbits++;
     g = mpi_alloc(1);
@@ -271,7 +271,7 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
     xbits = qbits * 3 / 2;
     if( xbits >= nbits )
 	BUG();
-    x = mpi_alloc_secure( xbits/BITS_PER_MPI_LIMB );
+    x = mpi_alloc_secure ( mpi_nlimb_hint_from_nbits (xbits) );
     if( DBG_CIPHER )
 	log_debug("choosing a random x of size %u", xbits );
     rndbuf = NULL;
@@ -296,7 +296,7 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
     xfree(rndbuf);
 
-    y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);
+    y = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
     mpi_powm( y, g, x, p );
 
     if( DBG_CIPHER ) {

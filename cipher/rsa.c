@@ -62,9 +62,9 @@ static void
 test_keys( RSA_secret_key *sk, unsigned nbits )
 {
     RSA_public_key pk;
-    MPI test = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    MPI out1 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    MPI out2 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    MPI test = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
+    MPI out1 = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
+    MPI out2 = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
 
     pk.n = sk->n;
     pk.e = sk->e;
@@ -107,7 +107,7 @@ generate( RSA_secret_key *sk, unsigned nbits )
     if ( (nbits&1) )
       nbits++; 
 
-    n = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    n = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
 
     p = q = NULL;
     do {
@@ -127,9 +127,9 @@ generate( RSA_secret_key *sk, unsigned nbits )
     /* calculate Euler totient: phi = (p-1)(q-1) */
     t1 = mpi_alloc_secure( mpi_get_nlimbs(p) );
     t2 = mpi_alloc_secure( mpi_get_nlimbs(p) );
-    phi = mpi_alloc_secure( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    g	= mpi_alloc_secure( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB  );
-    f	= mpi_alloc_secure( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB  );
+    phi = mpi_alloc_secure ( mpi_nlimb_hint_from_nbits (nbits) );
+    g	= mpi_alloc_secure ( mpi_nlimb_hint_from_nbits (nbits) );
+    f	= mpi_alloc_secure ( mpi_nlimb_hint_from_nbits (nbits) );
     mpi_sub_ui( t1, p, 1 );
     mpi_sub_ui( t2, q, 1 );
     mpi_mul( phi, t1, t2 );
@@ -147,16 +147,16 @@ generate( RSA_secret_key *sk, unsigned nbits )
        This code used 41 until 2006-06-28 when it was changed to use
        65537 as the new best practice.  See FIPS-186-3.
      */
-    e = mpi_alloc( (32+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    e = mpi_alloc ( mpi_nlimb_hint_from_nbits (32) );
     mpi_set_ui( e, 65537); 
     while( !mpi_gcd(t1, e, phi) ) /* (while gcd is not 1) */
       mpi_add_ui( e, e, 2);
 
     /* calculate the secret key d = e^1 mod phi */
-    d = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    d = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
     mpi_invm(d, e, f );
     /* calculate the inverse of p and q (used for chinese remainder theorem)*/
-    u = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
+    u = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
     mpi_invm(u, p, q );
 
     if( DBG_CIPHER ) {
@@ -443,7 +443,7 @@ rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey )
 	return G10ERR_PUBKEY_ALGO;
     pk.n = pkey[0];
     pk.e = pkey[1];
-    result = mpi_alloc( (160+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB);
+    result = mpi_alloc ( mpi_nlimb_hint_from_nbits (160) );
     public( result, data[0], &pk );
     rc = mpi_cmp( result, hash )? G10ERR_BAD_SIGN:0;
     mpi_free(result);

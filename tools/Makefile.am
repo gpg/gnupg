@@ -20,9 +20,16 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = lspgpot ring-a-party mail-signed-keys convert-from-106
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
+
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/intl
+
+if ! HAVE_DOSISH_SYSTEM
+AM_CPPFLAGS += -DLOCALEDIR="\"$(localedir)\""
+endif
+
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a 
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
+
 
 bin_PROGRAMS    = gpgsplit
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest make-dns-cert

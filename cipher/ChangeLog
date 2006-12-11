@@ -1,3 +1,19 @@
+2006-12-11  Werner Koch  <wk@g10code.com>
+
+
+	* elgamal.c (test_keys): Use new mpi_nlimb_hint_from_nbits
+	function.  This also rounds up the value.
+	(generate): Use new mpi_nlimb_hint_from_nbits function.
+	* rsa.c (test_keys): Ditto.
+	(generate): Ditto.
+	(rsa_verify): Ditto.
+	* primegen.c (generate_elg_prime): Ditto.
+	(gen_prime): Ditto.
+	* dsa.c (test_keys): Ditto.  This also rounds up the value.
+
+	* Makefile.am (AM_CPPFLAGS): Use instead of INCLUDES.  define
+	GNUPG_LIBDIR.
+
 2006-11-03  Werner Koch  <wk@g10code.com>
 
 	* random.c [HAVE_GETTIMEOFDAY]: Included sys/time.h and not

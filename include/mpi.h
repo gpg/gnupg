@@ -37,23 +37,6 @@
 #include "types.h"
 #include "memory.h"
 
-#if BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_INT
-  typedef unsigned int mpi_limb_t;
-  typedef   signed int mpi_limb_signed_t;
-#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_LONG
-  typedef unsigned long int mpi_limb_t;
-  typedef   signed long int mpi_limb_signed_t;
-#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_LONG_LONG
-  typedef unsigned long long int mpi_limb_t;
-  typedef   signed long long int mpi_limb_signed_t;
-#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_SHORT
-  typedef unsigned short int mpi_limb_t;
-  typedef   signed short int mpi_limb_signed_t;
-#else
-#error BYTES_PER_MPI_LIMB does not match any C type
-#endif
-#define BITS_PER_MPI_LIMB    (8*BYTES_PER_MPI_LIMB)
-
 #ifndef EXTERN_UNLESS_MAIN_MODULE
 #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
 #define EXTERN_UNLESS_MAIN_MODULE extern
@@ -66,23 +49,9 @@
 EXTERN_UNLESS_MAIN_MODULE int mpi_debug_mode;
 
 
-struct gcry_mpi {
-    int alloced;    /* array size (# of allocated limbs) */
-    int nlimbs;     /* number of valid limbs */
-    unsigned int nbits; /* the real number of valid bits (info only) */
-    int sign;	    /* indicates a negative number */
-    unsigned flags; /* bit 0: array must be allocated in secure memory space */
-		    /* bit 1: not used */
-		    /* bit 2: the limb is a pointer to some xmalloced data */
-    mpi_limb_t *d;  /* array with the limbs */
-};
-
+struct gcry_mpi; 
 typedef struct gcry_mpi *MPI;
 
-#define MPI_NULL NULL
-
-#define mpi_get_nlimbs(a)     ((a)->nlimbs)
-#define mpi_is_neg(a)	      ((a)->sign)
 
 /*-- mpiutil.c --*/
 
@@ -107,10 +76,10 @@ void mpi_free( MPI a );
 void mpi_resize( MPI a, unsigned nlimbs );
 MPI  mpi_copy( MPI a );
 #endif
-#define mpi_is_opaque(a) ((a) && ((a)->flags&4))
+#define mpi_is_opaque(a) ((a) && (mpi_get_flags (a)&4))
 MPI mpi_set_opaque( MPI a, void *p, unsigned int len );
 void *mpi_get_opaque( MPI a, unsigned int *len );
-#define mpi_is_secure(a) ((a) && ((a)->flags&1))
+#define mpi_is_secure(a) ((a) && (mpi_get_flags (a)&1))
 void mpi_set_secure( MPI a );
 void mpi_clear( MPI a );
 void mpi_set( MPI w, MPI u);
@@ -118,6 +87,11 @@ void mpi_set_ui( MPI w, ulong u);
 MPI  mpi_alloc_set_ui( unsigned long u);
 void mpi_m_check( MPI a );
 void mpi_swap( MPI a, MPI b);
+int  mpi_get_nlimbs (MPI a);
+int  mpi_is_neg (MPI a);
+unsigned int mpi_nlimb_hint_from_nbytes (unsigned int nbytes);
+unsigned int mpi_nlimb_hint_from_nbits (unsigned int nbits);
+unsigned int mpi_get_flags (MPI a);
 
 /*-- mpicoder.c --*/
 int mpi_write( IOBUF out, MPI a );

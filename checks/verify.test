@@ -226,6 +226,9 @@ ${msg_clss_asc}"
 #
 # Now run the tests.
 #
+# Note that we need to use set +x/-x for the base case check 
+# to work around a bug in OpenBSD's sh
+#
 for i in $tests ; do
    info "checking: $i"
    eval "(IFS=; echo \"\$$i\")" >x
@@ -236,10 +239,14 @@ for i in $tests ; do
     msg_*_asc_multisig)
        $GPG --verify --allow-multisig-verification x \
            || error "verify of $i failed"
+       set +x
        $GPG --verify x && error "verify of $i succeeded but should not"
+       set -x
        ;;
     bad_*_asc)
+       set +x
        $GPG --verify x && error "verify of $i succeeded but should not"
+       set -x
        ;;
     *)
        error "No handler for test case $i"

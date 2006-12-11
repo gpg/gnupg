@@ -379,7 +379,7 @@ mpi_copy( MPI a )
 
 /****************
  * This function allocates an MPI which is optimized to hold
- * a value as large as the one given in the arhgument and allocates it
+ * a value as large as the one given in the argument and allocates it
  * with the same flags as A.
  */
 MPI
@@ -467,4 +467,41 @@ mpi_swap( MPI a, MPI b)
     struct gcry_mpi tmp;
 
     tmp = *a; *a = *b; *b = tmp;
+}
+
+
+int
+mpi_get_nlimbs (MPI a)
+{
+  return a->nlimbs;
+}
+
+
+int 
+mpi_is_neg (MPI a)
+{
+  return a->sign;
+}
+
+
+/* Return the number of limbs to store an MPI which is specified by
+   the number of bytes to represent it. */
+unsigned int
+mpi_nlimb_hint_from_nbytes (unsigned int nbytes)
+{
+  return (nbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB;
+}
+
+/* Return the number of limbs to store an MPI which is specified by
+   the number of bytes to represent it. */
+unsigned int
+mpi_nlimb_hint_from_nbits (unsigned int nbits)
+{
+  return (nbits+BITS_PER_MPI_LIMB-1) / BITS_PER_MPI_LIMB;
+}
+
+unsigned int
+mpi_get_flags (MPI a)
+{
+  return a->flags;
 }

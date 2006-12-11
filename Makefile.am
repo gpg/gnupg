@@ -30,7 +30,7 @@ endif
 
 SUBDIRS = m4 intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
 EXTRA_DIST = scripts/config.rpath  PROJECTS BUGS config.h.in autogen.sh
-DISTCLEANFILES = g10defs.h 
+DISTCLEANFILES = 
 
 # Add all the files listed in "distfiles" files to the distribution,
 # apply version numbers to some files and create a VERSION file which

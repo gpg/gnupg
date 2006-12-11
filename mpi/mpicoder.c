@@ -78,7 +78,7 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
     unsigned int nmax = *ret_nread;
     unsigned nbits, nbytes, nlimbs, nread=0;
     mpi_limb_t a;
-    MPI val = MPI_NULL;
+    MPI val = NULL;
 
     if (nread == nmax)
         goto overflow;
@@ -148,7 +148,7 @@ mpi_read_from_buffer(byte *buffer, unsigned int *ret_nread, int secure)
     int i, j;
     unsigned nbits, nbytes, nlimbs, nread=0;
     mpi_limb_t a;
-    MPI val = MPI_NULL;
+    MPI val = NULL;
 
     if( *ret_nread < 2 )
 	goto leave;
@@ -180,7 +180,7 @@ mpi_read_from_buffer(byte *buffer, unsigned int *ret_nread, int secure)
                  checksum didn't caught it. */
 		log_info ("mpi larger than buffer\n");
                 mpi_free (val);
-                val = MPI_NULL;
+                val = NULL;
                 goto leave;
           }
           a <<= 8;
@@ -280,7 +280,7 @@ mpi_print( FILE *fp, MPI a, int mode )
 {
     int i, n=0;
 
-    if( a == MPI_NULL )
+    if( a == NULL )
 	return fprintf(fp, "[MPI_NULL]");
     if( !mode ) {
 	unsigned int n1;

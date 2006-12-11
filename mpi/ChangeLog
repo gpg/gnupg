@@ -1,3 +1,15 @@
+2006-12-11  Werner Koch  <wk@g10code.com>
+
+	* mpi-internal.h: Include mpi-asm-defs.h.
+	(mpi_limb_t): Moved definition from mpi.h to here.
+	(struct gcry_mpi): Moved from mpi.h to here.
+	* mpiutil.c (mpi_get_nlimbs, mpi_is_neg): New.  To replace the
+	macros.  This helps hiding details of the MPI implementation.
+	(mpi_nlimb_hint_from_nbytes, mpi_nlimb_hint_from_nbits): Ditto.
+	(mpi_get_flags): Ditto.
+	* mpicoder.c (mpi_read, mpi_read_from_buffer, mpi_print):
+	s/MPI_NULL/NULL/.
+
 2005-09-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* mpicoder.c (mpi_read): Fix minor bug in reading a zero-length

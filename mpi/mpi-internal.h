@@ -32,6 +32,38 @@
 #define G10_MPI_INTERNAL_H
 
 #include "mpi.h"
+#include "mpi-asm-defs.h"
+
+#if BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_INT
+  typedef unsigned int mpi_limb_t;
+  typedef   signed int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_LONG
+  typedef unsigned long int mpi_limb_t;
+  typedef   signed long int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_LONG_LONG
+  typedef unsigned long long int mpi_limb_t;
+  typedef   signed long long int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_SHORT
+  typedef unsigned short int mpi_limb_t;
+  typedef   signed short int mpi_limb_signed_t;
+#else
+#error BYTES_PER_MPI_LIMB does not match any C type
+#endif
+#define BITS_PER_MPI_LIMB    (8*BYTES_PER_MPI_LIMB)
+
+
+struct gcry_mpi {
+    int alloced;    /* array size (# of allocated limbs) */
+    int nlimbs;     /* number of valid limbs */
+    unsigned int nbits; /* the real number of valid bits (info only) */
+    int sign;	    /* indicates a negative number */
+    unsigned flags; /* bit 0: array must be allocated in secure memory space */
+		    /* bit 1: not used */
+		    /* bit 2: the limb is a pointer to some xmalloced data */
+    mpi_limb_t *d;  /* array with the limbs */
+};
+
+
 
 /* If KARATSUBA_THRESHOLD is not already defined, define it to a
  * value which is good on most machines.  */

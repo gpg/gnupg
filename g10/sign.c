@@ -308,8 +308,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         xfree (snbuf);
         if (!rc)
           {
-            sig->data[0] = mpi_alloc ( (rbuflen+BYTES_PER_MPI_LIMB-1)
-                                       / BYTES_PER_MPI_LIMB );
+            sig->data[0] = mpi_alloc ( mpi_nlimb_hint_from_nbytes (rbuflen) );
             mpi_set_buffer (sig->data[0], rbuf, rbuflen, 0);
             xfree (rbuf);
           }

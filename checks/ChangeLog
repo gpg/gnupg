@@ -1,3 +1,7 @@
+2006-12-11  Werner Koch  <wk@g10code.com>
+
+	* verify.test (msg_clsclss_asc): Work around a bug in OpenBSD.
+
 2006-04-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* sigs.test, mds.test: Add tests for SHA-224, SHA-384, and

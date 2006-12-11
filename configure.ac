@@ -417,24 +417,65 @@ AH_BOTTOM([
 /* We didn't define endianness above, so get it from OS macros.  This
 is intended for making fat binary builds on OS X. */
 #if !defined(BIG_ENDIAN_HOST) && !defined(LITTLE_ENDIAN_HOST)
-#if defined(__BIG_ENDIAN__)
-#define BIG_ENDIAN_HOST 1
-#elif defined(__LITTLE_ENDIAN__)
-#define LITTLE_ENDIAN_HOST 1
-#else
-#error "No endianness found"
-#endif
+# if defined(__BIG_ENDIAN__)
+#  define BIG_ENDIAN_HOST 1
+# elif defined(__LITTLE_ENDIAN__)
+#  define LITTLE_ENDIAN_HOST 1
+# else
+#  error "No endianness found"
+# endif
 #endif
 
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
-#define EXEC_TEMPFILE_ONLY
+# define EXEC_TEMPFILE_ONLY
 #endif
+
+/* Please note that the string version must not contain more
+   than one character because the using code assumes strlen()==1 */
+#ifdef HAVE_DOSISH_SYSTEM
+# define DIRSEP_C '\\'
+# define EXTSEP_C '.'
+# define DIRSEP_S "\\"
+# define EXTSEP_S "."
+# define PATHSEP_C ';'
+# define PATHSEP_S ";"
+#else
+# define DIRSEP_C '/'
+# define EXTSEP_C '.'
+# define DIRSEP_S "/"
+# define EXTSEP_S "."
+# define PATHSEP_C ':'
+# define PATHSEP_S ":"
+#endif
+
+
+/* For some OSes we need to use fixed strings for certain directories.  */
+#ifdef HAVE_DRIVE_LETTERS
+# define LOCALEDIR         "c:\\\\lib\\\\gnupg\\\\locale"
+# define GNUPG_LIBDIR      "c:\\\\lib\\\\gnupg"
+# define GNUPG_LIBEXECDIR  "c:\\\\lib\\\\gnupg"
+# define GNUPG_DATADIR     "c:\\\\lib\\\\gnupg"
+# define GNUPG_HOMEDIR     "c:\\\\gnupg"
+#else
+# ifdef __VMS
+#  define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
+# else
+#  define GNUPG_HOMEDIR "~/.gnupg" 
+# endif
+#endif
+
 
 /* This is the major version number of GnuPG so that
    source included files can test for this. */
 #define GNUPG_MAJOR_VERSION 1
 
-#include "g10defs.h"
+/* This is the same as VERSION, but should be overridden if the
+   platform cannot handle things like dots'.' in filenames.  Set
+   SAFE_VERSION_DOT and SAFE_VERSION_DASH to whatever SAFE_VERSION
+   uses for dots and dashes. */
+#define SAFE_VERSION      VERSION
+#define SAFE_VERSION_DOT  '.'
+#define SAFE_VERSION_DASH '-'
 
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
@@ -1332,71 +1373,6 @@ if test "$print_egd_warning" = yes; then
 *** --enable-static-rnd=auto to use it.
 ***]])
 fi
-
-# Note the \\\\ for backslashes.  Autoconf eats one layer, leaving \\
-
-AC_CONFIG_COMMANDS(g10defs.h,[[
-cat >g10defs.tmp <<G10EOF
-/* Generated automatically by configure */
-#ifdef HAVE_DRIVE_LETTERS
-#define G10_LOCALEDIR     "c:\\\\lib\\\\gnupg\\\\locale"
-#define GNUPG_LIBDIR      "c:\\\\lib\\\\gnupg"
-#define GNUPG_LIBEXECDIR  "c:\\\\lib\\\\gnupg"
-#define GNUPG_DATADIR     "c:\\\\lib\\\\gnupg"
-#define GNUPG_HOMEDIR     "c:\\\\gnupg"
-#else
-#define G10_LOCALEDIR     "${datadir}/locale"
-#define GNUPG_LIBDIR      "${libdir}/gnupg"
-#ifdef __VMS
-#define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
-#else
-#define GNUPG_HOMEDIR "~/.gnupg" 
-#endif
-#endif
-/* those are here to be redefined by handcrafted g10defs.h.
-   Please note that the string version must not contain more
-   than one character because the using code assumes strlen()==1 */
-#ifdef HAVE_DOSISH_SYSTEM
-#define DIRSEP_C '\\\\'
-#define EXTSEP_C '.'
-#define DIRSEP_S "\\\\"
-#define EXTSEP_S "."
-#define PATHSEP_C ';'
-#define PATHSEP_S ";"
-#else
-#define DIRSEP_C '/'
-#define EXTSEP_C '.'
-#define DIRSEP_S "/"
-#define EXTSEP_S "."
-#define PATHSEP_C ':'
-#define PATHSEP_S ":"
-#endif
-/* This is the same as VERSION, but should be overridden if the
-   platform cannot handle things like dots'.' in filenames.  Set
-   SAFE_VERSION_DOT and SAFE_VERSION_DASH to whatever SAFE_VERSION
-   uses for dots and dashes. */
-#define SAFE_VERSION      VERSION
-#define SAFE_VERSION_DOT  '.'
-#define SAFE_VERSION_DASH '-'
-G10EOF
-cat mpi/mpi-asm-defs.h >>g10defs.tmp 
-if cmp -s g10defs.h g10defs.tmp 2>/dev/null; then
-    echo "g10defs.h is unchanged"
-    rm -f g10defs.tmp
-else
-    rm -f g10defs.h
-    mv g10defs.tmp g10defs.h
-    echo "g10defs.h created"
-fi
-]],[[
-prefix=$prefix
-exec_prefix=$exec_prefix
-libdir=$libdir
-libexecdir=$libexecdir
-datadir=$datadir
-DATADIRNAME=$DATADIRNAME
-]])
-
 
 AC_CONFIG_FILES([
 Makefile

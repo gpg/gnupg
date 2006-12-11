@@ -132,7 +132,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
     if( DBG_CIPHER )
 	log_debug("gen prime: pbits=%u qbits=%u fbits=%u/%u n=%d\n",
 		    pbits, req_qbits, qbits, fbits, n  );
-    prime = mpi_alloc( (pbits + BITS_PER_MPI_LIMB - 1) /  BITS_PER_MPI_LIMB );
+    prime = mpi_alloc ( mpi_nlimb_hint_from_nbits (pbits) );
     q = gen_prime( qbits, 0, 0 );
     q_factor = mode==1? gen_prime( req_qbits, 0, 0 ) : NULL;
 
@@ -318,8 +318,8 @@ gen_prime( unsigned int nbits, int secret, int randomlevel )
 	    no_of_small_prime_numbers++;
     }
     mods = xmalloc( no_of_small_prime_numbers * sizeof *mods );
-    /* make nbits fit into MPI implementation */
-    nlimbs = (nbits + BITS_PER_MPI_LIMB - 1) /	BITS_PER_MPI_LIMB;
+    /* Make nbits fit into MPI implementation.  */
+    nlimbs = mpi_nlimb_hint_from_nbits (nbits);
     val_2  = mpi_alloc_set_ui( 2 );
     val_3 = mpi_alloc_set_ui( 3);
     prime  = secret? mpi_alloc_secure( nlimbs ): mpi_alloc( nlimbs );

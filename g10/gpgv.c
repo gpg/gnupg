@@ -122,7 +122,7 @@ i18n_init(void)
 #else
 #ifdef ENABLE_NLS
     setlocale( LC_ALL, "" );
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
+    bindtextdomain (PACKAGE, LOCALEDIR);
     textdomain( PACKAGE );
 #endif
 #endif

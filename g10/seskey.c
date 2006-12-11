@@ -138,7 +138,7 @@ encode_session_key( DEK *dek, unsigned nbits )
     frame[n++] = csum >>8;
     frame[n++] = csum;
     assert( n == nframe );
-    a = mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+    a = mpi_alloc_secure ( mpi_nlimb_hint_from_nbytes (nframe) );
     mpi_set_buffer( a, frame, nframe, 0 );
     xfree(frame);
     return a;
@@ -175,9 +175,9 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
     memcpy( frame+n, asn, asnlen ); n += asnlen;
     memcpy( frame+n, md_read(md, algo), len ); n += len;
     assert( n == nframe );
-    a = md_is_secure(md)?
-	 mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
-	 : mpi_alloc( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+    a = (md_is_secure(md)
+	 ? mpi_alloc_secure ( mpi_nlimb_hint_from_nbytes (nframe) )
+	 : mpi_alloc ( mpi_nlimb_hint_from_nbytes (nframe )));
     mpi_set_buffer( a, frame, nframe, 0 );
     xfree(frame);
 
@@ -250,9 +250,9 @@ encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
 	  return NULL;
 	}
 
-      frame = md_is_secure(md)? mpi_alloc_secure((qbytes+BYTES_PER_MPI_LIMB-1)
-						 / BYTES_PER_MPI_LIMB )
-	: mpi_alloc((qbytes+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+      frame = (md_is_secure(md)
+               ? mpi_alloc_secure (mpi_nlimb_hint_from_nbytes (qbytes) )
+               : mpi_alloc ( mpi_nlimb_hint_from_nbytes (qbytes) ));
 
       mpi_set_buffer( frame, md_read(md, hash_algo), qbytes, 0 );
     }
