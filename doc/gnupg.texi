@@ -48,7 +48,7 @@ section entitled ``Copying''.
 
 @dircategory GNU Utilities
 @direntry
-* gpg: (gnupg).            OpenPGP encryption and signing tool.
+* gpg2: (gnupg).           OpenPGP encryption and signing tool.
 * gpgsm: (gnupg).          S/MIME encryption and signing tool.
 @end direntry
 

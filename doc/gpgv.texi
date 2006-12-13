@@ -1,0 +1,162 @@
+@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file GnuPG.texi.
+
+@c
+@c This is included by tools.texi.
+@c
+
+@c Begin GnuPG 1.x specific stuff
+@ifset gpgone
+@macro gpgvname
+gpgv
+@end macro
+@manpage gpgv.1
+@node gpgv
+@section Verify OpenPGP signatures
+@ifset manverb
+.B gpgv
+\- Verify OpenPGP signatures
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpgv
+.RI [ options ]
+.I signed_files
+@end ifset
+@end ifset
+@c End GnuPG 1.x specific stuff
+
+@c Begin GnuPG 2 specific stuff
+@ifclear gpgone
+@macro gpgvname
+gpgv2
+@end macro
+@manpage gpgv2.1
+@node gpgv
+@section Verify OpenPGP signatures
+@ifset manverb
+.B gpgv2
+\- Verify OpenPGP signatures
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpgv2
+.RI [ options ]
+.I signed_files
+@end ifset
+@end ifclear
+@c End GnuPG 2 specific stuff
+
+
+
+@mansect description
+@code{@gpgvname} is an OpenPGP signature verification tool.
+
+This program is actually a stripped down version of @code{gpg} which is
+only able to check signatures. It is somewhat smaller than the fully blown
+@code{gpg} and uses a different (and simpler) way to check that
+the public keys used to make the signature are valid. There are
+no configuration files and only a few options are implemented.
+
+@code{@gpgvname} assumes that all keys in the keyring are trustworthy.
+By default it uses a keyring named @file{trustedkeys.gpg} which is
+assumed to be in the home directory as defined by GnuPG or set by an
+option or an environment variable. An option may be used to specify
+another keyring or even multiple keyrings.
+
+@noindent
+@mansect options
+@code{@gpgvname} recognizes these options:
+
+@table @gnupgtabopt
+
+@item --verbose
+@itemx -v
+@opindex verbose
+Gives more information during processing. If used
+twice, the input data is listed in detail.
+
+@item --quiet
+@itemx -q
+@opindex quiet
+Try to be as quiet as possible.
+
+@item --keyring @var{file}
+@opindex keyring
+Add @var{file} to the list of keyrings.
+If @var{file} begins with a tilde and a slash, these
+are replaced by the HOME directory. If the filename
+does not contain a slash, it is assumed to be in the
+home-directory ("~/.gnupg" if --homedir is not used).
+
+@item --status-fd @var{n}
+@opindex status-fd
+Write special status strings to the file descriptor @var{n}.  See the
+file DETAILS in the documentation for a listing of them.
+
+@item --logger-fd @code{n}
+@opindex logger-fd
+Write log output to file descriptor @code{n} and not to stderr.
+
+@item --ignore-time-conflict
+@opindex ignore-time-conflict
+GnuPG normally checks that the timestamps associated with keys and
+signatures have plausible values. However, sometimes a signature seems to
+be older than the key due to clock problems. This option turns these
+checks into warnings.
+
+@include opt-homedir.texi
+
+@end table
+
+@mansect return value
+
+The program returns 0 if everything was fine, 1 if at least
+one signature was bad, and other error codes for fatal errors.
+
+@mansect examples
+@subsection Examples
+
+@table @asis
+
+@item @gpgvname @code{pgpfile}
+@itemx @gpgvname @code{sigfile} 
+Verify the signature of the file. The second form
+is used for detached signatures, where @code{sigfile} is the detached
+signature (either ASCII armored or binary) and are the signed
+data; if this is not given the name of the file holding the signed data is
+constructed by cutting off the extension (".asc", ".sig" or ".sign") from
+@code{sigfile}.
+
+@end table
+
+@mansect environment
+@subsection Environment
+
+@table @asis
+
+@item HOME
+Used to locate the default home directory.
+
+@item GNUPGHOME
+If set directory used instead of "~/.gnupg".
+
+@end table
+
+@mansect files
+@subsection FILES
+
+@table @asis
+
+@item ~/.gnupg/trustedkeys.gpg
+The default keyring with the allowed keys
+
+@end table
+
+@mansect see also
+@command{gpg2}(1)
+@include see-also-note.texi
+
