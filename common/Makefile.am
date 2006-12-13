@@ -24,7 +24,7 @@ noinst_LIBRARIES = libcommon.a libcommonpth.a libsimple-pwquery.a libgpgrl.a
 noinst_PROGRAMS = $(module_tests)
 TESTS = $(module_tests)
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 

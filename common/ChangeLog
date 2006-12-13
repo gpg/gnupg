@@ -1,3 +1,8 @@
+2006-12-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am (AM_CPPFLAGS): Include intl/ so we can reference the
+	built-in headers.
+
 2006-11-23  Werner Koch  <wk@g10code.com>
 
 	* http.c: Include i18n.h

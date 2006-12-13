@@ -55,7 +55,7 @@ common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
 gpgsplit_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-		 $(ZLIBS) $(LIBICONV)
+		 $(ZLIBS) $(LIBINTL) $(LIBICONV)
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
