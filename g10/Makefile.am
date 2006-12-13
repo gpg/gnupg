@@ -21,7 +21,6 @@
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/intl @LIBUSB_CPPFLAGS@
 
-EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
 
@@ -36,6 +35,7 @@ needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 other_libs = $(LIBICONV) $(DNSLIBS) $(LIBINTL) $(CAPLIBS)
 
 bin_PROGRAMS = gpg gpgv
+dist_pkgdata_DATA = options.skel
 
 if ENABLE_BZIP2_SUPPORT
 bzip2_source = compress-bz2.c
@@ -133,10 +133,7 @@ gpg_LDADD = $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB@
 
 $(PROGRAMS): $(needed_libs)
 
-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) $(srcdir)/options.skel \
-				$(DESTDIR)$(pkgdatadir)/options.skel
+install-exec-hook:
 	@set -e;\
 	 if test -f $(DESTDIR)$(bindir)/gpgm ; then \
 	   echo "removing obsolete gpgm binary" ;   \
