@@ -1,3 +1,7 @@
+2006-12-13  Werner Koch  <wk@g10code.com>
+
+	* gnupg.spec.in: Distribute gnupg1.info.
+
 2006-12-04  Werner Koch  <wk@g10code.com>
 
 	* mk-gpg-texi: Removed.

@@ -187,8 +187,7 @@ rm -f %{buildroot}%{_infodir}/dir
 %config %{_datadir}/%{name}/options.skel
 %{_mandir}/man1/*
 %{_mandir}/man7/*
-%{_infodir}/gpg.info*
-%{_infodir}/gpgv.info*
+%{_infodir}/gnupg1.info*
 %attr (4755,root,root) %{_bindir}/gpg
 %attr (0755,root,root) %{_bindir}/gpgv
 %attr (0755,root,root) %{_bindir}/gpgsplit
