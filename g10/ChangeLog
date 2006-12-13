@@ -1,3 +1,7 @@
+2006-12-13  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c, gpg.c: Do not include the now removed g10defs.h file.
+
 2006-12-11  Werner Koch  <wk@g10code.com>
 
 	* seskey.c (encode_session_key, do_encode_md): Use new

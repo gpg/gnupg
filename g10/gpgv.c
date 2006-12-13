@@ -50,7 +50,6 @@
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
-#include "g10defs.h"
 #include "cardglue.h"
 
 
