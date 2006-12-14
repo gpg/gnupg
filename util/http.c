@@ -212,8 +212,12 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
     iobuf_ioctl (hd->fp_write, 1, 1, NULL); /* keep the socket open */
     iobuf_close (hd->fp_write);
     hd->fp_write = NULL;
-    if ( !(hd->flags & HTTP_FLAG_NO_SHUTDOWN) )
-        shutdown( hd->sock, 1 );
+    /* We do not want the shutdown code anymore.  It used to be there
+       to support old versions of pksd.  These versions are anyway
+       unusable and the latest releases haven been fixed to properly
+       handle HTTP 1.0. */
+    /* if ( !(hd->flags & HTTP_FLAG_NO_SHUTDOWN) ) */
+    /*     shutdown( hd->sock, 1 ); */
     hd->in_data = 0;
 
     hd->fp_read = iobuf_sockopen( hd->sock , "r" );

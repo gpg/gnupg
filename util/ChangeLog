@@ -1,3 +1,7 @@
+2006-12-14  Werner Koch  <wk@g10code.com>
+
+	* http.c (http_wait_response): No more shutdown.  Fixes bug#739.
+
 2006-10-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* strsep.c (strsep): It's strsep, not strsep2 from testing.  (If I
