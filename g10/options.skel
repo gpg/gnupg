@@ -57,7 +57,6 @@
 # Because some mailers change lines starting with "From " to ">From "
 # it is good to handle such lines in a special way when creating
 # cleartext signatures; all other PGP versions do it this way too.
-# To enable full OpenPGP compliance you may want to use this option.
 
 #no-escape-from-lines
 
@@ -66,8 +65,8 @@
 # for supported character sets.  This character set is only used for
 # metadata and not for the actual message which does not undergo any
 # translation.  Note that future version of GnuPG will change to UTF-8
-# as default character set.  In most cases this option is not required 
-# GnuPG is able to figure out the correct charset and use that.
+# as default character set.  In most cases this option is not required
+# as GnuPG is able to figure out the correct charset at runtime.
 
 #charset utf-8
 
@@ -106,11 +105,6 @@
 # through the usual method:
 #      hkp://keyserver.example.net:22742
 #
-# If you have problems connecting to a HKP server through a buggy http
-# proxy, you can use keyserver option broken-http-proxy (see below),
-# but first you should make sure that you have read the man page
-# regarding proxies (keyserver option honor-http-proxy)
-#
 # Most users just set the name and type of their preferred keyserver.
 # Note that most servers (with the notable exception of
 # ldap://keyserver.pgp.com) synchronize changes with each other.  Note
@@ -125,34 +119,33 @@ keyserver hkp://subkeys.pgp.net
 
 # Common options for keyserver functions:
 #
-# include-disabled = when searching, include keys marked as "disabled"
+# include-disabled : when searching, include keys marked as "disabled"
 #                    on the keyserver (not all keyservers support this).
 #
-# no-include-revoked = when searching, do not include keys marked as
+# no-include-revoked : when searching, do not include keys marked as
 #                      "revoked" on the keyserver.
 #
-# verbose = show more information as the keys are fetched.
+# verbose : show more information as the keys are fetched.
 #           Can be used more than once to increase the amount
 #           of information shown.
 #
-# use-temp-files = use temporary files instead of a pipe to talk to the
+# use-temp-files : use temporary files instead of a pipe to talk to the
 #                  keyserver.  Some platforms (Win32 for one) always
 #                  have this on.
 #
-# keep-temp-files = do not delete temporary files after using them
+# keep-temp-files : do not delete temporary files after using them
 #                   (really only useful for debugging)
 #
-# honor-http-proxy = if the keyserver uses HTTP, honor the http_proxy
-#                    environment variable
+# http-proxy="proxy" : set the proxy to use for HTTP and HKP keyservers.
+#                      This overrides the "http_proxy" environment variable,
+#                      if any.
 #
-# broken-http-proxy = try to work around a buggy HTTP proxy
-#
-# auto-key-retrieve = automatically fetch keys as needed from the keyserver
+# auto-key-retrieve : automatically fetch keys as needed from the keyserver
 #                     when verifying signatures or when importing keys that
 #                     have been revoked by a revocation key that is not
 #                     present on the keyring.
 #
-# no-include-attributes = do not include attribute IDs (aka "photo IDs")
+# no-include-attributes : do not include attribute IDs (aka "photo IDs")
 #                         when sending keys to the keyserver.
 
 #keyserver-options auto-key-retrieve
@@ -224,16 +217,18 @@ keyserver hkp://subkeys.pgp.net
 # user@example.com keys on the local keyring.  This option takes the
 # following arguments, in the order they are to be tried:
 # 
-# cert = locate a key using DNS CERT, as specified in 2538bis
-# (currently in draft): http://www.josefsson.org/rfc2538bis/
+# cert = locate a key using DNS CERT, as specified in RFC-4398.
+#        GnuPG can handle both the PGP (key) and IPGP (URL + fingerprint)
+#        CERT methods.
 #
 # pka = locate a key using DNS PKA.
 #
 # ldap = locate a key using the PGP Universal method of checking
-# "ldap://keys.(thedomain)".
+#        "ldap://keys.(thedomain)".  For example, encrypting to
+#        user@example.com will check ldap://keys.example.com.
 #
 # keyserver = locate a key using whatever keyserver is defined using
-# the keyserver option.
+#             the keyserver option.
 #
 # You may also list arbitrary keyservers here by URL.
 #
