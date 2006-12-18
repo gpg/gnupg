@@ -79,6 +79,7 @@ gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
     }
   gcry_md_final (md);
   memcpy (array, gcry_md_read(md, algo), len );
+  gcry_md_close (md);
   return array;
 }
 
