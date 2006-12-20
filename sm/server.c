@@ -967,6 +967,7 @@ gpgsm_server (certlist_t default_recplist)
   ctrl.server_local->recplist = NULL;
   gpgsm_release_certlist (ctrl.server_local->signerlist);
   ctrl.server_local->signerlist = NULL;
+  xfree (ctrl.server_local);
 
   assuan_deinit_server (ctx);
 }
