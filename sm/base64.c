@@ -92,6 +92,11 @@ struct base64_context_s {
     struct reader_cb_parm_s rparm;
     struct writer_cb_parm_s wparm;
   } u;
+
+  union {
+    ksba_reader_t reader;
+    ksba_writer_t writer;
+  } u2;
 };
 
 
@@ -568,6 +573,7 @@ gpgsm_create_reader (Base64Context *ctx,
       return rc;
     }
 
+  (*ctx)->u2.reader = r;
   *r_reader = r;
   return 0;
 }
@@ -582,6 +588,10 @@ gpgsm_reader_eof_seen (Base64Context ctx)
 void
 gpgsm_destroy_reader (Base64Context ctx)
 {
+  if (!ctx)
+    return;
+
+  ksba_reader_release (ctx->u2.reader);  
   xfree (ctx);
 }
 
@@ -630,6 +640,7 @@ gpgsm_create_writer (Base64Context *ctx,
       return rc;
     }
 
+  (*ctx)->u2.writer = w;
   *r_writer = w;
   return 0;
 }
@@ -654,5 +665,9 @@ gpgsm_finish_writer (Base64Context ctx)
 void
 gpgsm_destroy_writer (Base64Context ctx)
 {
+  if (!ctx)
+    return;
+
+  ksba_writer_release (ctx->u2.writer);
   xfree (ctx);
 }

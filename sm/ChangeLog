@@ -1,3 +1,13 @@
+2006-12-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* base64.c: Add new members READER and WRITER in union U2.
+	(gpgsm_create_reader): Initialise CTX->u2.reader.
+	(gpgsm_destroy_reader): Invoke ksba_reader_release.  Return early
+	if CTX is NULL.
+	(gpgsm_create_writer): Initialise CTX->u2.writer.
+	(gpgsm_destroy_writer): Invoke ksba_writer_release.  Return early
+	if CTX is NULL.
+
 2006-12-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* fingerprint.c (gpgsm_get_fingerprint): Close MD.
