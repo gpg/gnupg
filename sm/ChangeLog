@@ -1,3 +1,7 @@
+2006-12-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* encrypt.c (encrypt_dek): Release S_CIPH.
+
 2006-12-20  Marcus Brinkmann  <marcus@g10code.de>
 
 	* server.c (gpgsm_server): Release CTRL->server_local.

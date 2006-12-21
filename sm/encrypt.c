@@ -223,6 +223,7 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, unsigned char **encval)
     }
   len = gcry_sexp_sprint (s_ciph, GCRYSEXP_FMT_CANON, (char*)buf, len);
   assert (len);
+  gcry_sexp_release (s_ciph);
 
   *encval = buf;
   return 0;
