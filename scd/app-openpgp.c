@@ -1277,6 +1277,121 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 }
 
 
+/* Verify a CHV either using using the pinentry or if possibile by
+   using a keypad.  PINCB and PINCB_ARG describe the usual callback
+   for the pinentry.  CHVNO must be either 1 or 2. SIGCOUNT is only
+   ised with CHV1.  PINVALUE is the address of a pointer which will
+   receive a newly allocated block with the actual PIN (this is useful
+   in case that PIN shall be used for another verifiy operation).  The
+   caller needs to free this value.  If the function returns with
+   success and NULL is stored at PINVALUE, the caller should take this
+   as an indication that the keypad has been used.
+   */
+static gpg_error_t
+verify_a_chv (app_t app,
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg,
+              int chvno, unsigned long sigcount, char **pinvalue)
+{
+  int rc = 0;
+  char *prompt;
+  iso7816_pininfo_t pininfo;
+  int minlen = 6;
+
+  assert (chvno == 1 || chvno == 2);
+
+  *pinvalue = NULL;
+
+  memset (&pininfo, 0, sizeof pininfo);
+  pininfo.mode = 1;
+  pininfo.minlen = minlen;
+  
+  if (!opt.disable_keypad
+      && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
+    {
+      /* The reader supports the verify command through the keypad. */
+
+      if (chvno == 1)
+        {
+#define PROMPTSTRING  _("||Please enter your PIN at the reader's keypad%%0A" \
+                        "[sigs done: %lu]")
+          size_t promptsize = strlen (PROMPTSTRING) + 50;
+
+          prompt = xmalloc (promptsize);
+          if (!prompt)
+            return gpg_error_from_syserror ();
+          snprintf (prompt, promptsize-1, PROMPTSTRING, sigcount);
+          rc = pincb (pincb_arg, prompt, NULL); 
+          xfree (prompt);
+#undef PROMPTSTRING
+        }
+      else
+        rc = pincb (pincb_arg,
+                    _("||Please enter your PIN at the reader's keypad"),
+                    NULL);
+      if (rc)
+        {
+          log_info (_("PIN callback returned error: %s\n"),
+                    gpg_strerror (rc));
+          return rc;
+        }
+      rc = iso7816_verify_kp (app->slot, 0x80+chvno, "", 0, &pininfo); 
+      /* Dismiss the prompt. */
+      pincb (pincb_arg, NULL, NULL);
+
+      assert (!*pinvalue);
+    }
+  else
+    {
+      /* The reader has no keypad or we don't want to use it. */
+
+      if (chvno == 1)
+        {
+#define PROMPTSTRING  _("||Please enter the PIN%%0A[sigs done: %lu]")
+          size_t promptsize = strlen (PROMPTSTRING) + 50;
+
+          prompt = xmalloc (promptsize);
+          if (!prompt)
+            return gpg_error_from_syserror ();
+          snprintf (prompt, promptsize-1, PROMPTSTRING, sigcount);
+          rc = pincb (pincb_arg, prompt, pinvalue); 
+          xfree (prompt);
+#undef PROMPTSTRING
+        }
+      else
+        rc = pincb (pincb_arg, "PIN", pinvalue); 
+
+      if (rc)
+        {
+          log_info (_("PIN callback returned error: %s\n"),
+                    gpg_strerror (rc));
+          return rc;
+        }
+      
+      if (strlen (*pinvalue) < minlen)
+        {
+          log_error (_("PIN for CHV%d is too short;"
+                       " minimum length is %d\n"), chvno, minlen);
+          xfree (*pinvalue);
+          *pinvalue = NULL;
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+
+      rc = iso7816_verify (app->slot, 0x80+chvno,
+                           *pinvalue, strlen (*pinvalue));
+    }
+  
+  if (rc)
+    {
+      log_error (_("verify CHV%d failed: %s\n"), chvno, gpg_strerror (rc));
+      xfree (*pinvalue);
+      *pinvalue = NULL;
+      flush_cache_after_error (app);
+    }
+
+  return rc;
+}
+
 
 /* Verify CHV2 if required.  Depending on the configuration of the
    card CHV1 will also be verified. */
@@ -1285,85 +1400,40 @@ verify_chv2 (app_t app,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
-  int rc = 0;
+  int rc;
+  char *pinvalue;
 
-  if (!app->did_chv2) 
+  if (app->did_chv2) 
+    return 0;  /* We already verified CHV2.  */
+
+  rc = verify_a_chv (app, pincb, pincb_arg, 2, 0, &pinvalue);
+  if (rc)
+    return rc;
+
+  app->did_chv2 = 1;
+  
+  if (!app->did_chv1 && !app->force_chv1 && pinvalue)
     {
-      char *pinvalue;
-      iso7816_pininfo_t pininfo;
-      int did_keypad = 0;
-
-      memset (&pininfo, 0, sizeof pininfo);
-      pininfo.mode = 1;
-      pininfo.minlen = 6;
-
-      if (!opt.disable_keypad
-          && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
-        {
-          /* The reader supports the verify command through the keypad. */
-          did_keypad = 1;
-          rc = pincb (pincb_arg,
-                      _("||Please enter your PIN at the reader's keypad"),
-                      NULL);
-          if (rc)
-            {
-              log_info (_("PIN callback returned error: %s\n"),
-                        gpg_strerror (rc));
-              return rc;
-            }
-          rc = iso7816_verify_kp (app->slot, 0x82, "", 0, &pininfo); 
-          /* Dismiss the prompt. */
-          pincb (pincb_arg, NULL, NULL);
-        }
-      else
-        {
-          /* The reader has no keypad or we don't want to use it. */
-          rc = pincb (pincb_arg, "PIN", &pinvalue); 
-          if (rc)
-            {
-              log_info (_("PIN callback returned error: %s\n"),
-                        gpg_strerror (rc));
-              return rc;
-            }
-          
-          if (strlen (pinvalue) < 6)
-            {
-              log_error (_("PIN for CHV%d is too short;"
-                           " minimum length is %d\n"), 2, 6);
-              xfree (pinvalue);
-              return gpg_error (GPG_ERR_BAD_PIN);
-            }
-
-          rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
-        }
-
+      /* For convenience we verify CHV1 here too.  We do this only if
+         the card is not configured to require a verification before
+         each CHV1 controlled operation (force_chv1) and if we are not
+         using the keypad (PINVALUE == NULL). */
+      rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
+      if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+        rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
       if (rc)
         {
-          log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
-          xfree (pinvalue);
+          log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
           flush_cache_after_error (app);
-          return rc;
         }
-      app->did_chv2 = 1;
-
-      if (!app->did_chv1 && !app->force_chv1 && !did_keypad)
-        {
-          rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
-          if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-            rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
-          if (rc)
-            {
-              log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
-              xfree (pinvalue);
-              flush_cache_after_error (app);
-              return rc;
-            }
-          app->did_chv1 = 1;
-        }
-      xfree (pinvalue);
+      else
+        app->did_chv1 = 1;
     }
+  xfree (pinvalue);
+
   return rc;
 }
+
 
 /* Verify CHV3 if required. */
 static gpg_error_t
@@ -2076,6 +2146,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
     if (sha1fpr[i] != fpr[i])
       {
         xfree (buffer);
+        log_info (_("fingerprint on card does not match requested one\n"));
         return gpg_error (GPG_ERR_WRONG_SECKEY);
       }
   xfree (buffer);
@@ -2230,44 +2301,16 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     {
       char *pinvalue;
 
-      {
-        char *prompt;
-#define PROMPTSTRING  _("||Please enter the PIN%%0A[sigs done: %lu]")
-
-        prompt = malloc (strlen (PROMPTSTRING) + 50);
-        if (!prompt)
-          return gpg_error_from_syserror ();
-        sprintf (prompt, PROMPTSTRING, sigcount);
-        rc = pincb (pincb_arg, prompt, &pinvalue); 
-        free (prompt);
-#undef PROMPTSTRING
-      }
+      rc = verify_a_chv (app, pincb, pincb_arg, 1, sigcount, &pinvalue);
       if (rc)
-        {
-          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
-          return rc;
-        }
+        return rc;
 
-      if (strlen (pinvalue) < 6)
-        {
-          log_error (_("PIN for CHV%d is too short;"
-                       " minimum length is %d\n"), 1, 6);
-          xfree (pinvalue);
-          return gpg_error (GPG_ERR_BAD_PIN);
-        }
-
-      rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
-      if (rc)
-        {
-          log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
-          xfree (pinvalue);
-          flush_cache_after_error (app);
-          return rc;
-        }
       app->did_chv1 = 1;
-      if (!app->did_chv2)
+
+      if (!app->did_chv2 && pinvalue)
         {
-          /* We should also verify CHV2. */
+          /* We should also verify CHV2.  Note, that we can't do that
+             if the keypad has been used. */
           rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
           if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
             rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);

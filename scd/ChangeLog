@@ -1,3 +1,11 @@
+2006-12-21  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv2): Factored most code out into...
+	(verify_a_chv): ... new.
+	(do_sign): Factored verification code out to new function and
+	take care of a keypad entered PIN.
+	(compare_fingerprint): Print an additional diagnostic.
+
 2006-11-28  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (send_le, apdu_send_direct): Increase RESULTLEN to 258 to
