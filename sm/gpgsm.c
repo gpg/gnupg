@@ -28,7 +28,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <mcheck.h>
+/*#include <mcheck.h>*/
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -744,7 +744,7 @@ main ( int argc, char **argv)
   certlist_t signerlist = NULL;
   int do_not_setup_keys = 0;
 
-  mtrace();
+  /*mtrace();*/
 
   /* trap_unaligned ();*/
   set_strusage (my_strusage);
