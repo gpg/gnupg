@@ -72,6 +72,7 @@ common_source =  \
 	      pkglue.c pkglue.h 
 
 gpg2_SOURCES  = gpg.c		\
+	      server.c          \
 	      $(common_source)	\
 	      pkclist.c 	\
 	      skclist.c 	\

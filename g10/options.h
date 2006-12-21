@@ -266,6 +266,11 @@ struct {
 #define DBG_EXTPROG_VALUE 1024  /* debug external program calls */
 #define DBG_CARD_IO_VALUE 2048  /* debug smart card I/O.  */
 
+/* Fixme: For now alias this value.  */
+#define DBG_ASSUAN_VALUE  DBG_EXTPROG_VALUE
+
+
+/* Tests for the debugging flags.  */
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
 #define DBG_CIPHER (opt.debug & DBG_CIPHER_VALUE)
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)
@@ -274,6 +279,7 @@ struct {
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 #define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
+#define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
 
 /* FIXME: We need to check whey we did not put this into opt. */
 #define DBG_MEMORY    memory_debug_mode

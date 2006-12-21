@@ -65,8 +65,26 @@ struct mainproc_context
   md_filter_context_t mfx;
   int sigs_only;    /* Process only signatures and reject all other stuff. */
   int encrypt_only; /* Process only encryption messages. */
-  strlist_t signed_data;
+    
+  /* Name of the file with the complete signature or the file with the
+     detached signature.  This is currently only used to deduce the
+     file name of the data file if that has not been given. */
   const char *sigfilename;
+  
+  /* A structure to describe the signed data in case of a detached
+     signature. */
+  struct 
+  {
+    /* A file descriptor of the the signed data.  Only used if not -1. */
+    int data_fd;
+    /* A list of filenames with the data files or NULL. This is only
+       used if DATA_FD is -1. */
+    strlist_t data_names;
+    /* Flag to indicated that either one of the next previous fieldss
+       is used.  This is only needed for better readability. */
+    int used;
+  } signed_data;
+  
   DEK *dek;
   int last_was_session_key;
   KBNODE list;      /* The current list of packets. */
@@ -692,8 +710,14 @@ proc_plaintext( CTX c, PACKET *pkt )
 static int
 proc_compressed_cb( IOBUF a, void *info )
 {
-    return proc_signature_packets( info, a, ((CTX)info)->signed_data,
-					    ((CTX)info)->sigfilename );
+  if ( ((CTX)info)->signed_data.used
+       && ((CTX)info)->signed_data.data_fd != -1)
+    return proc_signature_packets_by_fd (info, a,
+                                         ((CTX)info)->signed_data.data_fd);
+  else
+    return proc_signature_packets (info, a,
+                                   ((CTX)info)->signed_data.data_names,
+                                   ((CTX)info)->sigfilename );
 }
 
 static int
@@ -1124,7 +1148,11 @@ proc_signature_packets( void *anchor, IOBUF a,
 
     c->anchor = anchor;
     c->sigs_only = 1;
-    c->signed_data = signedfiles;
+
+    c->signed_data.data_fd = -1;
+    c->signed_data.data_names = signedfiles;
+    c->signed_data.used = !!signedfiles;
+
     c->sigfilename = sigfilename;
     rc = do_proc_packets( c, a );
 
@@ -1149,6 +1177,43 @@ proc_signature_packets( void *anchor, IOBUF a,
     xfree( c );
     return rc;
 }
+
+int
+proc_signature_packets_by_fd (void *anchor, IOBUF a, int signed_data_fd )
+{
+  int rc;
+  CTX c = xcalloc (1, sizeof *c);
+
+  c->anchor = anchor;
+  c->sigs_only = 1;
+
+  c->signed_data.data_fd = signed_data_fd;
+  c->signed_data.data_names = NULL;
+  c->signed_data.used = (signed_data_fd != -1);
+
+  rc = do_proc_packets ( c, a );
+
+  /* If we have not encountered any signature we print an error
+     messages, send a NODATA status back and return an error code.
+     Using log_error is required because verify_files does not check
+     error codes for each file but we want to terminate the process
+     with an error. */ 
+  if (!rc && !c->any_sig_seen)
+    {
+      write_status_text (STATUS_NODATA, "4");
+      log_error (_("no signature found\n"));
+      rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  
+  /* Propagate the signature seen flag upward. Do this only on success
+     so that we won't issue the nodata status several times. */
+  if (!rc && c->anchor && c->any_sig_seen)
+    c->anchor->any_sig_seen = 1;
+  
+  xfree ( c );
+  return rc;
+}
+
 
 int
 proc_encryption_packets( void *anchor, IOBUF a )
@@ -1899,6 +1964,8 @@ proc_tree( CTX c, KBNODE node )
     else if( node->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	/* check all signatures */
 	if( !c->have_data ) {
+            int use_textmode = 0;
+
 	    free_md_filter_context( &c->mfx );
 	    /* prepare to create all requested message digests */
             if (gcry_md_open (&c->mfx.md, 0, 0))
@@ -1911,23 +1978,33 @@ proc_tree( CTX c, KBNODE node )
 		gcry_md_enable (c->mfx.md,
                                 n1->pkt->pkt.signature->digest_algo);
               }
-	    /* ask for file and hash it */
+
+            if (n1 && n1->pkt->pkt.onepass_sig->sig_class == 0x01)
+                use_textmode = 1;
+
+	    /* Ask for file and hash it. */
 	    if( c->sigs_only ) {
-		rc = hash_datafiles( c->mfx.md, NULL,
-				     c->signed_data, c->sigfilename,
-			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
+                if (c->signed_data.used && c->signed_data.data_fd != -1)
+                    rc = hash_datafile_by_fd (c->mfx.md, NULL,
+                                              c->signed_data.data_fd,
+                                              use_textmode);
+                else
+                    rc = hash_datafiles (c->mfx.md, NULL,
+                                         c->signed_data.data_names,
+                                         c->sigfilename,
+                                         use_textmode );
 	    }
 	    else {
-		rc = ask_for_detached_datafile( c->mfx.md, c->mfx.md2,
+		rc = ask_for_detached_datafile (c->mfx.md, c->mfx.md2,
 						iobuf_get_real_fname(c->iobuf),
-			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
+                                                use_textmode );
 	    }
 	    if( rc ) {
 		log_error("can't hash datafile: %s\n", g10_errstr(rc));
 		return;
 	    }
 	}
-        else if ( c->signed_data ) {
+        else if ( c->signed_data.used ) {
             log_error (_("not a detached signature\n") );
             return;
         }
@@ -1943,7 +2020,7 @@ proc_tree( CTX c, KBNODE node )
             log_error("cleartext signature without data\n" );
             return;
         }
-        else if ( c->signed_data ) {
+        else if ( c->signed_data.used ) {
             log_error (_("not a detached signature\n") );
             return;
         }
@@ -2019,9 +2096,15 @@ proc_tree( CTX c, KBNODE node )
                     gcry_md_start_debug( c->mfx.md2, "verify2" );
             }
 	    if( c->sigs_only ) {
-		rc = hash_datafiles( c->mfx.md, c->mfx.md2,
-				     c->signed_data, c->sigfilename,
-				     (sig->sig_class == 0x01) );
+                if (c->signed_data.used && c->signed_data.data_fd != -1)
+                    rc = hash_datafile_by_fd (c->mfx.md, c->mfx.md2,
+                                              c->signed_data.data_fd, 
+                                              (sig->sig_class == 0x01));
+                else
+                    rc = hash_datafiles (c->mfx.md, c->mfx.md2,
+                                         c->signed_data.data_names,
+                                         c->sigfilename,
+                                         (sig->sig_class == 0x01));
 	    }
 	    else {
 		rc = ask_for_detached_datafile( c->mfx.md, c->mfx.md2,
@@ -2033,7 +2116,7 @@ proc_tree( CTX c, KBNODE node )
 		return;
 	    }
 	}
-        else if ( c->signed_data ) {
+        else if ( c->signed_data.used ) {
             log_error (_("not a detached signature\n") );
             return;
         }

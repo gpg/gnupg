@@ -278,6 +278,7 @@ void print_card_key_info (FILE *fp, KBNODE keyblock);
 void print_file_status( int status, const char *name, int what );
 int verify_signatures( int nfiles, char **files );
 int verify_files( int nfiles, char **files );
+int gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, FILE *out_fp);
 
 /*-- decrypt.c --*/
 int decrypt_message( const char *filename );
@@ -286,6 +287,8 @@ void decrypt_messages(int nfiles, char *files[]);
 /*-- plaintext.c --*/
 int hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2,
 		    strlist_t files, const char *sigfilename, int textmode );
+int hash_datafile_by_fd ( gcry_md_hd_t md, gcry_md_hd_t md2, int data_fd,
+                          int textmode );
 PKT_plaintext *setup_plaintext_name(const char *filename,IOBUF iobuf);
 
 /*-- signal.c --*/

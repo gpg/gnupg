@@ -43,11 +43,43 @@
 #define MAX_FINGERPRINT_LEN 20
 
 
-/* Forward declarations. */
+/* 
+   Forward declarations. 
+ */
+
+/* Object used to keep state locally to server.c . */
+struct server_local_s;
+
+/* Object used to describe a keyblok node.  */
 typedef struct kbnode_struct *KBNODE;
+/* Object used for looking ob keys.  */
 typedef struct keydb_search_desc KEYDB_SEARCH_DESC;
 
 
+
+/* Session control object.  This object is passed to most functions to
+   convey the status of a session.  Note that the defaults are set by
+   gpg_init_default_ctrl(). */
+struct server_control_s
+{
+  struct server_local_s *server_local;
+};
+typedef struct server_control_s *ctrl_t;
+
+
+
+
+/*-- server.c --*/
+int gpg_server (ctrl_t);
+
+
+
+
+
+
+/* 
+     Compatibility stuff to be faded out over time.
+ */
 
 /* Simple wrappers. */
 #define g10_errstr(a)  gpg_strerror ((a))
@@ -96,7 +128,6 @@ typedef struct keydb_search_desc KEYDB_SEARCH_DESC;
 #define G10ERR_UNU_PUBKEY      GPG_ERR_UNUSABLE_PUBKEY       
 #define G10ERR_UNU_SECKEY      GPG_ERR_UNUSABLE_SECKEY       
 #define G10ERR_WRONG_SECKEY    GPG_ERR_WRONG_SECKEY        
-
 
 
 #endif /*GNUPG_G10_GPG_H*/

@@ -149,6 +149,7 @@ enum cmd_and_opt_values
     aCardStatus,
     aCardEdit,
     aChangePIN,
+    aServer,
 
     oTextmode,
     oNoTextmode,
@@ -424,7 +425,8 @@ static ARGPARSE_OPTS opts[] = {
     { aEnArmor, "enarmour", 256, "@"},
     { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
     { aPrimegen, "gen-prime" , 256, "@" },
-    { aGenRandom, "gen-random" , 256, "@" },
+    { aGenRandom, "gen-random", 256, "@" },
+    { aServer,   "server",      256, N_("run in server mode")},
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -1740,6 +1742,25 @@ encode_s2k_iterations(int iterations)
   return result;
 }
 
+
+/* This fucntion called to initialized a new control object.  It is
+   assumed that this object has been zeroed out before calling this
+   function. */
+static void
+gpg_init_default_ctrl (ctrl_t ctrl)
+{
+}
+
+
+/* This function is called to deinitialize a control object.  It is
+   not deallocated. */
+static void
+gpg_deinit_default_ctrl (ctrl_t ctrl)
+{
+}
+
+
+
 int
 main (int argc, char **argv )
 {
@@ -2094,6 +2115,10 @@ main (int argc, char **argv )
 	  case aVerifyFiles: multifile=1; /* fall through */
 	  case aVerify: set_cmd( &cmd, aVerify); break;
 
+          case aServer:
+            set_cmd (&cmd, pargs.r_opt);
+            opt.batch = 1;
+            break;
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -3254,6 +3279,16 @@ main (int argc, char **argv )
 
     switch( cmd )
       {
+      case aServer:
+        {
+          ctrl_t ctrl = xtrycalloc (1, sizeof *ctrl);
+          gpg_init_default_ctrl (ctrl);
+          gpg_server (ctrl);
+          gpg_deinit_default_ctrl (ctrl);
+          xfree (ctrl);
+        }
+        break;
+
       case aStore: /* only store the file */
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
@@ -4169,3 +4204,4 @@ add_keyserver_url( const char *string, int which )
   if(critical)
     sl->flags |= 1;    
 }
+

@@ -371,6 +371,7 @@ struct notation
 int proc_packets( void *ctx, iobuf_t a );
 int proc_signature_packets( void *ctx, iobuf_t a,
 			    strlist_t signedfiles, const char *sigfile );
+int proc_signature_packets_by_fd ( void *anchor, IOBUF a, int signed_data_fd );
 int proc_encryption_packets( void *ctx, iobuf_t a );
 int list_packets( iobuf_t a );
 

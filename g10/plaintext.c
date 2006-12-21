@@ -567,6 +567,42 @@ hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
 }
 
 
+/* Hash the data from file descriptor DATA_FD and append the hash to hash
+   contexts MD and MD2.  */
+int
+hash_datafile_by_fd ( gcry_md_hd_t md, gcry_md_hd_t md2, int data_fd,
+                      int textmode )
+{
+  progress_filter_context_t *pfx = new_progress_context ();
+  iobuf_t fp;
+
+  fp = iobuf_fdopen (data_fd, "rb");
+  if (fp && is_secured_file (data_fd))
+    {
+      iobuf_close (fp);
+      fp = NULL;
+      errno = EPERM;
+    }
+  if ( !fp )
+    {
+      int rc = gpg_error_from_syserror ();
+      log_error ( _("can't open signed data fd=%d: %s\n"),
+                  data_fd, strerror (errno));
+      release_progress_context (pfx);
+      return rc;
+    }
+
+  handle_progress (pfx, fp, NULL);
+
+  do_hash ( md, md2, fp, textmode);
+
+  iobuf_close(fp);
+  
+  release_progress_context (pfx);
+  return 0;
+}
+
+
 /* Set up a plaintext packet with the appropriate filename.  If there
    is a --set-filename, use it (it's already UTF8).  If there is a
    regular filename, UTF8-ize it if necessary.  If there is no
