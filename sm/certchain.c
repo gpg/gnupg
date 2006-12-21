@@ -1333,6 +1333,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
 
  leave:
   xfree (issuer);
+  xfree (subject);
   keydb_release (kh); 
   ksba_cert_release (issuer_cert);
   return rc;

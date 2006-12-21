@@ -1,5 +1,7 @@
 2006-12-21  Marcus Brinkmann  <marcus@g10code.de>
 
+	* certchain.c (gpgsm_basic_cert_check): Release SUBJECT.
+
 	* encrypt.c (encrypt_dek): Release S_CIPH.
 
 2006-12-20  Marcus Brinkmann  <marcus@g10code.de>
