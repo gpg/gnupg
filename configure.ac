@@ -1278,7 +1278,10 @@ AM_CONDITIONAL(ENABLE_BZIP2_SUPPORT,test x"$have_bz2" = "xyes")
 AC_SUBST(ZLIBS)
 
 # libusb allows us to use the integrated CCID smartcard reader driver.
-GNUPG_CHECK_LIBUSB
+# We don't need it if we don't have card support though.
+if test "$card_support" = yes ; then
+   GNUPG_CHECK_LIBUSB
+fi
 
 # Check for readline support
 GNUPG_CHECK_READLINE
