@@ -137,6 +137,12 @@ unknown_criticals (ksba_cert_t cert, int listmode, FILE *fp)
 {
   static const char *known[] = {
     "2.5.29.15", /* keyUsage */
+    "2.5.29.17", /* subjectAltName
+                    Japanese DoCoMo certs mark them as critical.  PKIX
+                    only requires them as critical if subjectName is
+                    empty.  I don't know whether our code gracefully
+                    handles such empry subjectNames but that is
+                    another story. */
     "2.5.29.19", /* basic Constraints */
     "2.5.29.32", /* certificatePolicies */
     "2.5.29.37", /* extendedKeyUsage - handled by certlist.c */

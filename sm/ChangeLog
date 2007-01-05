@@ -1,3 +1,7 @@
+2007-01-05  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (unknown_criticals): Add subjectAltName.
+
 2006-12-21  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c: Comment mtrace feature.
