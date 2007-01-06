@@ -1,5 +1,5 @@
 /* command-ssh.c - gpg-agent's ssh-agent emulation layer
- * Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -254,6 +254,10 @@ realloc_secure (void *a, size_t n)
   else
     p = gcry_malloc_secure (n);
 
+  if (! p)
+    log_error (_("failed to reallocate secure mem (n = %u, a = %p)\n"),
+	       n, a);
+
   return p;
 }
 
@@ -271,6 +275,10 @@ make_cstring (const char *data, size_t data_n)
       memcpy (s, data, data_n);
       s[data_n] = 0;
     }
+  else
+    log_error (_("failed to allocate for cstring "
+		 "(data_n = %u)"),
+	       data_n);
 
   return s;
 }
@@ -294,9 +302,16 @@ stream_read_byte (estream_t stream, unsigned char *b)
   if (ret == EOF)
     {
       if (es_ferror (stream))
-	err = gpg_error_from_syserror ();
+	{
+	  err = gpg_error_from_syserror ();
+	  log_error (_("failed to retrieve byte from stream: %s\n"),
+		     gpg_strerror (err));
+	}
       else
-	err = gpg_error (GPG_ERR_EOF);
+	{
+	  err = gpg_error (GPG_ERR_EOF);
+	  log_error (_("eof while trying to retrieve byte from stream\n"));
+	}
       *b = 0;
     }
   else
@@ -317,7 +332,11 @@ stream_write_byte (estream_t stream, unsigned char b)
 
   ret = es_fputc (b, stream);
   if (ret == EOF)
-    err = gpg_error_from_syserror ();
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("failed to write byte to stream: %s\n"),
+		 gpg_strerror (err));
+    }
   else
     err = 0;
 
@@ -335,11 +354,20 @@ stream_read_uint32 (estream_t stream, u32 *uint32)
 
   ret = es_read (stream, buffer, sizeof (buffer), &bytes_read);
   if (ret)
-    err = gpg_error_from_syserror ();
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("failed to retrieve uint32 buffer from stream: %s\n"),
+		 gpg_strerror (err));
+    }
   else
     {
       if (bytes_read != sizeof (buffer))
-	err = gpg_error (GPG_ERR_EOF);
+	{
+	  err = gpg_error (GPG_ERR_EOF);
+	  log_error (_("failed to retrieve uint32 buffer from stream "
+		       "(bytes_read = %u): %s\n"),
+		     bytes_read, gpg_strerror (err));
+	}
       else
 	{
 	  u32 n;
@@ -368,7 +396,11 @@ stream_write_uint32 (estream_t stream, u32 uint32)
 
   ret = es_write (stream, buffer, sizeof (buffer), NULL);
   if (ret)
-    err = gpg_error_from_syserror ();
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("failed to write uint32 buffer to stream (ret = %i): %s\n"),
+		 ret, gpg_strerror (err));
+    }
   else
     err = 0;
 
@@ -385,11 +417,21 @@ stream_read_data (estream_t stream, unsigned char *buffer, size_t size)
 
   ret = es_read (stream, buffer, size, &bytes_read);
   if (ret)
-    err = gpg_error_from_syserror ();
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("failed to retrieve data from stream "
+		   "(size = %u): %s\n"),
+		 size, gpg_strerror (err));
+    }
   else
     {
       if (bytes_read != size)
-	err = gpg_error (GPG_ERR_EOF);
+	{
+	  err = gpg_error (GPG_ERR_EOF);
+	  log_error (_("failed to retrieve data from stream "
+		       "(size = %u, bytes_read = %u): %s\n"),
+		     size, bytes_read, gpg_strerror (err));
+	}
       else
 	err = 0;
     }
@@ -406,7 +448,12 @@ stream_write_data (estream_t stream, const unsigned char *buffer, size_t size)
 
   ret = es_write (stream, buffer, size, NULL);
   if (ret)
-    err = gpg_error_from_syserror ();
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("failed to write data to stream "
+		   "(size = %u): %s\n"),
+		 size, gpg_strerror (err));
+    }
   else
     err = 0;
 
@@ -425,6 +472,7 @@ stream_read_string (estream_t stream, unsigned int secure,
   u32 length;
 
   buffer = NULL;
+  length = 0;
 
   /* Read string length.  */
   err = stream_read_uint32 (stream, &length);
@@ -456,7 +504,12 @@ stream_read_string (estream_t stream, unsigned int secure,
  out:
 
   if (err)
-    xfree (buffer);
+    {
+      xfree (buffer);
+      log_error (_("failed to retrieve string from stream "
+		   "(length = %u): %s\n"),
+		 length, gpg_strerror (err));
+    }
 
   return err;
 }
@@ -468,6 +521,10 @@ stream_read_cstring (estream_t stream, char **string)
   unsigned char *buffer;
   gpg_error_t err;
 
+  /* (note:) stream_read_string adds NUL termination.  -mo */
+
+  /* FIXME: is the cast ok?  -mo */
+
   err = stream_read_string (stream, 0, &buffer, NULL);
   if (err)
     goto out;
@@ -475,6 +532,10 @@ stream_read_cstring (estream_t stream, char **string)
   *string = (char *) buffer;
 
  out:
+
+  if (err)
+    log_error (_("failed to retreive cstring from stream: %s\n"),
+	       gpg_strerror (err));
 
   return err;
 }
@@ -495,6 +556,10 @@ stream_write_string (estream_t stream,
 
  out:
 
+  if (err)
+    log_error (_("failed to write string to stream (string_n = %u): %s\n"),
+	       string_n, gpg_strerror (err));
+
   return err;
 }
 
@@ -504,8 +569,15 @@ stream_write_cstring (estream_t stream, const char *string)
 {
   gpg_error_t err;
 
+  /* FIXME: is this cast ok? -mo */
+
   err = stream_write_string (stream,
 			     (const unsigned char *) string, strlen (string));
+
+  if (err)
+    log_error (_("failed to write string to stream: %s\n"),
+	       gpg_strerror (err));
+    
 
   return err;
 }			  
@@ -528,7 +600,7 @@ stream_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
 
   /* To avoid excessive use of secure memory we check that an MPI is
      not too large. */
-  if (mpi_data_size > 520)
+  if (mpi_data_size > 520)	/* FIXME: why 520?  -mo */
     {
       log_error (_("ssh keys greater than %d bits are not supported\n"), 4096);
       err = GPG_ERR_TOO_LARGE;
@@ -537,13 +609,21 @@ stream_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
 
   err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_STD, mpi_data, mpi_data_size, NULL);
   if (err)
-    goto out;
+    {
+      log_error (_("failed to convert retrieved mpi data into mpi object: %s\n"),
+		 gpg_strerror (err));
+      goto out;
+    }
 
   *mpint = mpi;
 
  out:
 
   xfree (mpi_data);
+
+  if (err)
+    log_error (_("failed to retrieve mpi from stream: %s\n"),
+	       gpg_strerror (err));
 
   return err;
 }
@@ -560,13 +640,21 @@ stream_write_mpi (estream_t stream, gcry_mpi_t mpint)
 
   err = gcry_mpi_aprint (GCRYMPI_FMT_STD, &mpi_buffer, &mpi_buffer_n, mpint);
   if (err)
-    goto out;
+    {
+      log_error (_("failed to convert mpi object into mpi buffer: %s\n"),
+		 gpg_strerror (err));
+      goto out;
+    }
 
   err = stream_write_string (stream, mpi_buffer, mpi_buffer_n);
 
  out:
 
   xfree (mpi_buffer);
+
+  if (err)
+    log_error (_("failed to write mpi to stream: %s\n"),
+	       gpg_strerror (err));
 
   return err;
 }
@@ -587,16 +675,26 @@ stream_copy (estream_t dst, estream_t src)
       if (ret || (! bytes_read))
 	{
 	  if (ret)
-	    err = gpg_error_from_syserror ();
+	    {
+	      err = gpg_error_from_syserror ();
+	      log_error (_("es_read failed in stream_copy: %s\n"),
+			 gpg_strerror (err));
+	    }
 	  break;
 	}
       ret = es_write (dst, buffer, bytes_read, NULL);
       if (ret)
 	{
 	  err = gpg_error_from_syserror ();
+	  log_error (_("es_write failed in stream_copy: %s\n"),
+		     gpg_strerror (err));
 	  break;
 	}
     }
+
+  if (err)
+    log_error (_("failure in stream_copy: %s\n"),
+	       gpg_strerror (err));
 
   return err;
 }
@@ -624,6 +722,8 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
   if (! stream)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to open file (filename = '%s'): %s\n"),
+		 filename, gpg_strerror (err));
       goto out;
     }
 
@@ -631,6 +731,8 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
   if (ret)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to fstat file (filename = '%s'): %s\n"),
+		 filename, gpg_strerror (err));
       goto out;
     }
 
@@ -638,12 +740,20 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
   if (! buffer_new)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate buffer for file content "
+		   "(filename = '%s', st_size = %lu): %s\n"),
+		 filename, (unsigned long) statbuf.st_size, gpg_strerror (err));
       goto out;
     }
 
   err = stream_read_data (stream, buffer_new, statbuf.st_size);
   if (err)
-    goto out;
+    {
+      log_error (_("failed to read data from file stream into buffer "
+		   "(filename = '%s', st_size = %lu): %s\n"),
+		 filename, (unsigned long) statbuf.st_size, gpg_strerror (err));
+      goto out;
+    }
 
   *buffer = buffer_new;
   *buffer_n = statbuf.st_size;
@@ -654,14 +764,20 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
     es_fclose (stream);
 
   if (err)
-    xfree (buffer_new);
+    {
+      xfree (buffer_new);
+      log_error (_("failed to read file content into memory buffer "
+		   "(filename = '%s'): %s\n"),
+		 filename, gpg_strerror (err));
+    }
 
   return err;
 }
 
 
-
 
+
+
 /* Open the ssh control file and create it if not available. With
    APPEND passed as true the file will be opened in append mode,
    otherwise in read only mode.  On success a file pointer is stored
@@ -785,28 +901,53 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
   gpg_error_t err;
   FILE *fp;
   int disabled;
+  int ret;
 
   err = open_control_file (&fp, 1);
   if (err)
     return err;
 
   err = search_control_file (fp, hexgrip, &disabled);
-  if (err && gpg_err_code(err) == GPG_ERR_EOF)
+  if (err)
     {
-      struct tm *tp;
-      time_t atime = time (NULL);
+      if (gpg_err_code (err) == GPG_ERR_EOF)
+	{
+	  /* Not yet in the file - add it. Because the file has been
+	     opened in append mode, we simply need to write to it.  */
 
-      /* Not yet in the file - add it. Becuase the file has been
-         opened in append mode, we simply need to write to it.  */
-      tp = localtime (&atime);
-      fprintf (fp, "# Key added on %04d-%02d-%02d %02d:%02d:%02d\n%s %d\n",
-               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-               tp->tm_hour, tp->tm_min, tp->tm_sec,
-               hexgrip, ttl);
-               
+	  struct tm *tp;
+	  time_t atime = time (NULL);
+
+	  log_info (_("adding key `%s' to control file\n"), hexgrip);
+	  err = 0;
+
+	  tp = localtime (&atime);
+	  fprintf (fp, "# Key added on %04d-%02d-%02d %02d:%02d:%02d\n%s %d\n",
+		   1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+		   tp->tm_hour, tp->tm_min, tp->tm_sec,
+		   hexgrip, ttl);
+	}
+      else
+	log_error (_("error while searching through control file: %s\n"),
+		   gpg_strerror (err));
     }
-  fclose (fp);
-  return 0;
+  else
+    /* hexgrip has been looked up successfuly; nothing to do here.  */;
+
+  /* Close file.  */
+  ret = fclose (fp);
+  if (ret == EOF)
+    {
+      /* Error during fclose.  */
+
+      log_error (_("fclose failed in add_control_entry: %s\n"),
+		 gpg_strerror (gpg_error_from_syserror ()));
+
+      if (! err)
+	err = gpg_error_from_syserror ();
+    }
+
+  return err;
 }
 
 
@@ -866,6 +1007,8 @@ ssh_receive_mpint_list (estream_t stream, int secret,
   if (!mpis)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate mpi array (elems_n = %u): %s\n"),
+		 elems_n, gpg_strerror (err));
       goto out;
     }
 
@@ -886,7 +1029,12 @@ ssh_receive_mpint_list (estream_t stream, int secret,
  out:
 
   if (err)
-    mpint_list_free (mpis);
+    {
+      mpint_list_free (mpis);
+      log_error (_("failed to retrieve mpi list from stream "
+		   "(secret = %i, key type = '%s'): %s\n"),
+		 secret, key_spec.identifier, gpg_strerror (err));
+    }
 
   return err;
 }
@@ -938,6 +1086,16 @@ ssh_signature_encoder_rsa (estream_t signature_blob, gcry_mpi_t *mpis)
 
   s = mpis[0];
 
+  /* i think, we need to make sure that the signature octet string
+     contains exactly the same amount of octets like the rsa modulus
+     written as an octet string.  This would mean that a 0-prefix
+     might be necessary here.  -mo
+
+     ah - sshd allows for non-padded signatures and does appropriate
+     padding when necessary!  -mo */
+
+  /* FIXME: don't we need _STD here? -mo  */
+
   err = gcry_mpi_aprint (GCRYMPI_FMT_USG, &data, &data_n, s);
   if (err)
     goto out;
@@ -946,6 +1104,10 @@ ssh_signature_encoder_rsa (estream_t signature_blob, gcry_mpi_t *mpis)
   xfree (data);
 
  out:
+
+  if (err)
+    log_error (_("failure while writing rsa signature to stream: %s\n"),
+	       gpg_strerror (err));
 
   return err;
 }
@@ -972,6 +1134,7 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
       if (data_n > SSH_DSA_SIGNATURE_PADDING)
 	{
 	  err = gpg_error (GPG_ERR_INTERNAL); /* FIXME?  */
+	  log_error (_("dsa signature longer than SSH_DSA_SIGNATURE_PADDING\n"));
 	  break;
 	}
       
@@ -991,6 +1154,10 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
  out:
 
   xfree (data);
+
+  if (err)
+    log_error (_("failure while writing dsa signature to stream: %s\n"),
+	       gpg_strerror (err));
 
   return err;
 }
@@ -1041,6 +1208,9 @@ sexp_key_construct (gcry_sexp_t *sexp,
   if (! sexp_template)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate space for key s-expression template "
+		   "(sexp_template_n = %u): %s\n"),
+		 sexp_template_n, gpg_strerror (err));
       goto out;
     }
 
@@ -1049,6 +1219,9 @@ sexp_key_construct (gcry_sexp_t *sexp,
   if (! arg_list)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate space for key s-expression arg_list "
+		   "(elems_n = %u): %s\n"),
+		 elems_n, gpg_strerror (err));
       goto out;
     }
 
@@ -1080,7 +1253,11 @@ sexp_key_construct (gcry_sexp_t *sexp,
 
   err = gcry_sexp_build_array (&sexp_new, NULL, sexp_template, arg_list);
   if (err)
-    goto out;
+    {
+      log_error (_("failed to create key s-expression: %s\n "),
+		 gpg_strerror (err));
+      goto out;
+    }
 
   *sexp = sexp_new;
 
@@ -1128,6 +1305,8 @@ sexp_key_extract (gcry_sexp_t sexp,
   if (! data)
     {
       err = gpg_error (GPG_ERR_INV_SEXP);
+      log_error (_("failed to lookup first element in key s-expression: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
 
@@ -1146,6 +1325,9 @@ sexp_key_extract (gcry_sexp_t sexp,
   else
     {
       err = gpg_error (GPG_ERR_INV_SEXP);
+      /* FIXME: NUL-terminate identifier, so that we can log it here.
+	 -mo.  */
+      log_error (_("unknown identifier while parsing key s-expression\n"));
       goto out;
     }
 
@@ -1154,6 +1336,9 @@ sexp_key_extract (gcry_sexp_t sexp,
   if (!mpis_new)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate space for array to hold mpis from key s-expression "
+		   "(elems_n = %u): %s\n"),
+		 elems_n, gpg_strerror (err));
       goto out;
     }
 
@@ -1161,6 +1346,9 @@ sexp_key_extract (gcry_sexp_t sexp,
   if (! value_list)
     {
       err = gpg_error (GPG_ERR_INV_SEXP);
+      log_error (_("failed to find identifier token in key s-expression "
+		   "(identifier = '%s')\n"),
+		 key_spec.identifier);
       goto out;
     }
 
@@ -1170,6 +1358,9 @@ sexp_key_extract (gcry_sexp_t sexp,
       if (! value_pair)
 	{
 	  err = gpg_error (GPG_ERR_INV_SEXP);
+	  log_error (_("failed to find mpi identifier token in key s-expression "
+		       "(identifier = '%c')\n"),
+		     elems[i]);
 	  break;
 	}
 
@@ -1179,6 +1370,9 @@ sexp_key_extract (gcry_sexp_t sexp,
       if (! mpi)
 	{
 	  err = gpg_error (GPG_ERR_INV_SEXP);
+	  log_error (_("failed to extract mpi from key s-expression "
+		       "(identifier = '%c')\n"),
+		     elems[i]);
 	  break;
 	}
       mpis_new[i] = mpi;
@@ -1223,6 +1417,8 @@ sexp_key_extract (gcry_sexp_t sexp,
     {
       xfree (comment_new);
       mpint_list_free (mpis_new);
+      log_error (_("failed to extract key material from key s-expression: %s\n"),
+		 gpg_strerror (err));
     }
 
   return err;
@@ -1241,7 +1437,9 @@ sexp_extract_identifier (gcry_sexp_t sexp, char **identifier)
 
   identifier_new = NULL;
   err = 0;
-  
+
+  /* FIXME, verify this function ... -mo  */
+
   sublist = gcry_sexp_nth (sexp, 1);
   if (! sublist)
     {
@@ -1297,7 +1495,12 @@ ssh_key_type_lookup (const char *ssh_name, const char *name,
       break;
   
   if (i == DIM (ssh_key_types))
-    err = gpg_error (GPG_ERR_NOT_FOUND);
+    {
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      log_error (_("failed to lookup key spec entry "
+		   "(ssh_name = '%s', name = '%s')\n"),
+		 ssh_name, name);
+    }
   else
     {
       *spec = ssh_key_types[i];
@@ -1375,6 +1578,11 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
   if (read_comment)
     xfree (comment);
 
+  if (err)
+    log_error (_("failed to retrieve key object from stream "
+		 "(secret = %i): %s\n"),
+	       secret, gpg_strerror (err));
+
   return err;
 }
 
@@ -1402,6 +1610,8 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   if (! stream)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("es_mopen for key blob failed: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
 
@@ -1418,17 +1628,26 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   if (blob_size_new == -1)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("es_ftell for key blob failed: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
   
   err = es_fseek (stream, 0, SEEK_SET);
   if (err)
-    goto out;
+    {
+      log_error (_("es_fseek for key blob failed: %s\n"),
+		 gpg_strerror (err));
+      goto out;
+    }
 
   blob_new = xtrymalloc (blob_size_new);
   if (! blob_new)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate memory for key blob "
+		   "(blob_size = %li): %s\n"),
+		 blob_size_new, gpg_strerror (err));
       goto out;
     }
 
@@ -1444,7 +1663,11 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   if (stream)
     es_fclose (stream);
   if (err)
-    xfree (blob_new);
+    {
+      xfree (blob_new);
+      log_error (_("failed to convert key into blob: %s\n"),
+		 gpg_strerror (err));
+    }
 
   return err;
 }
@@ -1501,6 +1724,10 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public,
   xfree (comment);
   xfree (blob);
 
+  if (err)
+    log_error (_("failed to send public key to stream: %s\n"),
+	       gpg_strerror (err));
+
   return err;
 }
 
@@ -1521,6 +1748,8 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
   if (! blob_stream)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("es_mopen for reading public key from blob failed: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
 
@@ -1530,7 +1759,11 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
 
   err = es_fseek (blob_stream, 0, SEEK_SET);
   if (err)
-    goto out;
+    {
+      log_error (_("es_fseek for public key blob failed: %s\n"),
+		 gpg_strerror (err));
+      goto out;
+    }
 
   err = ssh_receive_key (blob_stream, key_public, 0, 0, key_spec);
 
@@ -1538,6 +1771,10 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
 
   if (blob_stream)
     es_fclose (blob_stream);
+
+  if (err)
+    log_error (_("failed to retrieve public key from blob: %s\n"),
+	       gpg_strerror (err));
 
   return err;
 }
@@ -1551,7 +1788,11 @@ static gpg_error_t
 ssh_key_grip (gcry_sexp_t key, unsigned char *buffer)
 {
   if (!gcry_pk_get_keygrip (key, buffer))
-    return gpg_error (GPG_ERR_INTERNAL);
+    {
+      /* FIXME, log key S-Expression in case of failure.  */
+      log_error (_("failed to calculate keygrip\n"));
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
 
   return 0;
 }
@@ -1581,6 +1822,10 @@ key_secret_to_public (gcry_sexp_t *key_public,
 
   mpint_list_free (mpis);
   xfree (comment);
+
+  if (err)
+    log_error (_("failed to derive public key from secret key: %s\n"),
+	       gpg_strerror (err));
 
   return err;
 }
@@ -1616,6 +1861,8 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
       if (err)
         {
           if (opt.verbose)
+	    /* FIXME: shouldn't this be an error-level log message?
+	       -mo */
             log_info (_("error getting serial number of card: %s\n"),
                       gpg_strerror (err));
           return err;
@@ -1666,6 +1913,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
   err = ssh_key_grip (s_pk, grip);
   if (err)
     {
+      /* FIXME: shouldn't this be a error-level message?  -mo  */
       log_debug ("error computing keygrip from received card key: %s\n",
 		 gcry_strerror (err));
       xfree (pkbuf);
@@ -1802,6 +2050,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
   if (! key_blobs)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("es_mopen in request_identities handler failed: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
 
@@ -1810,6 +2060,9 @@ ssh_handler_request_identities (ctrl_t ctrl,
   if (! key_directory)
     {
       err = gpg_err_code_from_errno (errno);
+      log_error (_("failed to construct key directory name "
+		   "(homedir = '%s'): %s\n"),
+		 opt.homedir, gpg_strerror (err));
       goto out;
     }
   key_directory_n = strlen (key_directory);
@@ -1818,6 +2071,9 @@ ssh_handler_request_identities (ctrl_t ctrl,
   if (! key_path)
     {
       err = gpg_err_code_from_errno (errno);
+      log_error (_("failed to allocate memory for key filename "
+		   "(key_directory_n = %u): %s\n"),
+		 key_directory_n, gpg_strerror (err));
       goto out;
     }
 
@@ -1828,6 +2084,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
   if (! dir)
     {
       err = gpg_err_code_from_errno (errno);
+      log_error (_("failed to open key directory (key_directory = '%s'): %s\n"),
+		 key_directory, gpg_strerror (err));
       goto out;
     }
 
@@ -1888,7 +2146,12 @@ ssh_handler_request_identities (ctrl_t ctrl,
 	      
           err = gcry_sexp_sscan (&key_secret, NULL, (char*)buffer, buffer_n);
           if (err)
-            goto out;
+	    {
+	      log_error (_("failed to scan s-expression contained "
+			   "in key file '%s': %s\n"),
+			 dir_entry->d_name, gpg_strerror (err));
+	      goto out;
+	    }
 
           xfree (buffer);
           buffer = NULL;
@@ -1926,6 +2189,9 @@ ssh_handler_request_identities (ctrl_t ctrl,
   if (ret)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to fseek on key_blobs in "
+		   "request_identitities handler: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
 
@@ -1935,6 +2201,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   gcry_sexp_release (key_secret);
   gcry_sexp_release (key_public);
+
+  /* FIXME: verify that this err/ret_err concept makes sense.  -mo */
 
   if (! err)
     {
@@ -2026,6 +2294,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   if (! valuelist)
     {
       err = gpg_error (GPG_ERR_INV_SEXP);
+      log_error (_("no value list in signature s-expression"));
       goto out;
     }
 
@@ -2033,6 +2302,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   if (! stream)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("es_mopen failed: %s\n"), gpg_strerror (err));
       goto out;
     }
 
@@ -2040,6 +2310,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   if (! identifier_raw)
     {
       err = gpg_error (GPG_ERR_INV_SEXP);
+      log_error (_("missing identifier in s-expression value list\n"));
       goto out;
     }
 
@@ -2065,6 +2336,9 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   if (!mpis)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate array for signature mpis "
+		   "(elems_n = %u): %s\n"),
+		 elems_n, gpg_strerror (err));
       goto out;
     }
 
@@ -2074,13 +2348,20 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
       if (! sublist)
 	{
 	  err = gpg_error (GPG_ERR_INV_SEXP);
+	  log_error (_("failed to find mpi identifier token in sig s-expression "
+		       "(identifier = '%c')\n"),
+		     spec.elems_signature[i]);
 	  break;
 	}
 
+      /* FIXME: is _USG correct here? -mo  */
       sig_value = gcry_sexp_nth_mpi (sublist, 1, GCRYMPI_FMT_USG);
       if (! sig_value)
 	{
 	  err = gpg_error (GPG_ERR_INTERNAL); /* FIXME?  */
+	  log_error (_("failed to extract mpi from sig s-expression "
+		       "(mpi identifier = '%c')\n"),
+		     spec.elems_signature[i]);
 	  break;
 	}
       gcry_sexp_release (sublist);
@@ -2093,12 +2374,19 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
 
   err = (*sig_encoder) (stream, mpis);
   if (err)
-    goto out;
+    {
+      /* FIXME: display, WHICH encoder function failed. -mo  */
+      log_error (_("signature encoder function failed: %s\n"),
+		 gpg_strerror (err));
+      goto out;
+    }
 
   sig_blob_n = es_ftell (stream);
   if (sig_blob_n == -1)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("es_ftell for tmp sig blob stream failed: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
 
@@ -2106,6 +2394,9 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   if (! sig_blob)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate memory for new sig blob "
+		   "(sig_blob_n = %u): %s\n"),
+		 sig_blob_n, gpg_strerror (err));
       goto out;
     }
 
@@ -2113,6 +2404,8 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   if (ret)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to fseek on tmp sig blob stream: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }    
 
@@ -2126,7 +2419,10 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
  out:
 
   if (err)
-    xfree (sig_blob);
+    {
+      xfree (sig_blob);
+      log_error (_("failed to create sig blob: %s\n"), gpg_strerror (err));
+    }
 
   if (stream)
     es_fclose (stream);
@@ -2188,8 +2484,14 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   if (! hash_n)
     {
       err = gpg_error (GPG_ERR_INTERNAL);
+      log_error (_("failed to retrieve sign digest length\n"));
       goto out;
     }
+
+  if (opt.verbose)
+    log_debug (_("hashing data (size = %u, digest length = %u)\n"),
+	       data_size, hash_n);
+
   err = data_hash (data, data_size, GCRY_MD_SHA1, hash);
   if (err)
     goto out;
@@ -2213,6 +2515,8 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
  out:
 
   /* Done.  */
+
+  /* FIXME: err/ret_err verification. -mo  */
 
   if (! err)
     {
@@ -2251,6 +2555,9 @@ ssh_key_extract_comment (gcry_sexp_t key, char **comment)
   const char *data;
   size_t data_n;
   gpg_error_t err;
+
+  /* FIXME: shall we really treat a missing comment as error?  is a
+     missing comment possible?  anyway, add error logging.  -mo */
 
   comment_list = gcry_sexp_find_token (key, "comment", 0);
   if (! comment_list)
@@ -2300,6 +2607,9 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
   if (! buffer_new)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate secure memory for key "
+		   "s-expr buffer (buffer_new_n = %u): %s\n"),
+		 buffer_new_n, gpg_strerror (err));
       goto out;
     }
   
@@ -2308,7 +2618,14 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
 
   err = agent_protect (buffer_new, passphrase, buffer, buffer_n);
 
+  /* FIXME: does agent_protect do appropriate error logging?  -mo */
+
  out:
+
+  if (err)
+    log_error (_("failed to convert key from s-expr into protected "
+		 "buffer format: %s\n"),
+	       gpg_strerror (err));
 
   xfree (buffer_new);
 
@@ -2349,6 +2666,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   if (err)
     goto out;
 
+  /* FIXME: isn't there an asprintf wrapper macro?  -mo  */
   if ( asprintf (&description,
                  _("Please enter a passphrase to protect"
                    " the received secret key%%0A"
@@ -2357,6 +2675,8 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
                  comment ? comment : "?") < 0)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to construct passphrase prompt: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
 
@@ -2365,6 +2685,8 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   if (!pi)
     {
       err = gpg_error_from_syserror ();
+      log_error (_("failed to allocate secury memory for askpin context: %s\n"),
+		 gpg_strerror (err));
       goto out;
     }
   pi->max_length = 100;
@@ -2380,6 +2702,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   /* Store this key to our key storage.  */
   err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0);
   if (err)
+    /* FIXME: does agent_write_private_key do error logging? -mo  */
     goto out;
 
   /* Cache this passphrase. */
@@ -2388,13 +2711,18 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
 
   err = agent_put_cache (key_grip, CACHE_MODE_SSH, pi->pin, ttl);
   if (err)
+    /* FIXME: does agent_put_cache do error logging? -mo  */
     goto out;
 
   /* And add an entry to the sshcontrol file.  */
   err = add_control_entry (ctrl, key_grip, ttl);
 
-
  out:
+
+  if (err)
+    log_error (_("failure during identity registration: %s\n"),
+	       gpg_strerror (err));
+
   if (pi && pi->max_length)
     wipememory (pi->pin, pi->max_length);
   xfree (pi);
@@ -2490,6 +2818,8 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 
  out:
 
+  /* FIXME: err/ret_err issue.  -mo */
+
   gcry_sexp_release (key);
 
   if (! err)
@@ -2528,6 +2858,8 @@ ssh_handler_remove_identity (ctrl_t ctrl,
 
  out:
 
+  /* FIXME: err/ret_err issue.  -mo */
+
   xfree (key_blob);
   gcry_sexp_release (key);
 
@@ -2548,7 +2880,9 @@ ssh_identities_remove_all (void)
   err = 0;
 
   /* FIXME: shall we remove _all_ cache entries or only those
-     registered through the ssh emulation?  */
+     registered through the ssh emulation?
+
+     Maybe we should simply wipe out the sshcontrol file?  -mo  */
   
   return err;
 }
@@ -2562,6 +2896,8 @@ ssh_handler_remove_all_identities (ctrl_t ctrl,
   gpg_error_t err;
   
   err = ssh_identities_remove_all ();
+
+  /* FIXME: err/ret_err issue.  -mo */
 
   if (! err)
     ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
@@ -2605,6 +2941,8 @@ ssh_handler_lock (ctrl_t ctrl, estream_t request, estream_t response)
   
   err = ssh_lock ();
 
+  /* FIXME: err/ret_err issue.  -mo */
+
   if (! err)
     ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
   else
@@ -2621,6 +2959,8 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
   gpg_error_t err;
   
   err = ssh_unlock ();
+
+  /* FIXME: err/ret_err issue.  -mo */
 
   if (! err)
     ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
@@ -2646,7 +2986,8 @@ request_spec_lookup (int type)
       break;
   if (i == DIM (request_specs))
     {
-      log_info ("ssh request %u is not supported\n", type);
+      if (opt.verbose > 1)
+	log_info ("ssh request %u is not supported\n", type);
       spec = NULL;
     }
   else
@@ -2677,6 +3018,9 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
   request = NULL;
   send_err = 0;
 
+  if (opt.verbose)
+    log_debug (_("processing request\n"));
+
   /* Create memory streams for request/response data.  The entire
      request will be stored in secure memory, since it might contain
      secret key material.  The response does not have to be stored in
@@ -2704,6 +3048,8 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
       goto out;
       /* Broken request; FIXME.  */
     }
+
+  /* FIXME: add more error logging in this function.  -mo  */
 
   request_type = request_data[0];
   spec = request_spec_lookup (request_type);
@@ -2827,6 +3173,7 @@ start_command_handler_ssh (int sock_client)
   estream_t stream_sock;
   gpg_error_t err;
   int ret;
+  int c;
 
   /* Setup control structure.  */
 
@@ -2870,8 +3217,19 @@ start_command_handler_ssh (int sock_client)
     }
 
   /* Main processing loop. */
-  while ( !ssh_request_process (&ctrl, stream_sock) )
-    ;
+  while (!ssh_request_process (&ctrl, stream_sock))
+    {
+      /* Check wether we have reached EOF before trying to read
+	 another request.  */
+      c = es_fgetc (stream_sock);
+      if (c == EOF)
+	{
+	  if (opt.verbose)
+	    log_debug (_("reached EOF on client socket\n"));
+	  break;
+	}
+      es_ungetc (c, stream_sock);
+    }
 
   /* Reset the SCD in case it has been used. */
   agent_reset_scd (&ctrl);

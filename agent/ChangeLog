@@ -1,3 +1,15 @@
+2007-01-02  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (add_control_entry): Slightly rewritten: added
+	improved error handling/error logging.
+
+2007-01-01  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c: Added a lot of error logging code and FIXMEs.
+	(stream_read_string): Initialize LENGTH to zero.
+	(start_command_handler_ssh): Use es_fgetc/es_ungetc to check if
+	EOF has been reached before trying to process another request.
+
 2006-11-09  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main): In detached mode connect standard
