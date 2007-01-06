@@ -1649,7 +1649,11 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
 }
 
 
-/* Helper for esprint. */
+/* Helper for es_print.  This allows for an optimization for formatted
+   output on estreams: no tempfile is required; instead the formatted
+   output is sent to a special fopencookie/funopen (system) stream,
+   which then passes the data to this writer function, which then
+   writes the data to the original estream.  */
 #if defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN)
 static int 
 print_fun_writer (void *cookie_arg, const char *buffer, size_t size)
