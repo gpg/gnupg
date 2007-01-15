@@ -1533,7 +1533,7 @@ read_protected_v3_mpi (IOBUF inp, unsigned long *length)
   buf = p = xmalloc (2 + nbytes);
   *p++ = nbits >> 8;
   *p++ = nbits;
-  for (; nbytes && length; nbytes--, --*length)
+  for (; nbytes && *length; nbytes--, --*length)
     *p++ = iobuf_get (inp);
   if (nbytes)
     {

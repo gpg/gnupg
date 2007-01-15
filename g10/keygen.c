@@ -1958,7 +1958,7 @@ generate_user_id()
     if( !p )
 	return NULL;
     n = strlen(p);
-    uid = xmalloc_clear( sizeof *uid + n - 1 );
+    uid = xmalloc_clear( sizeof *uid + n );
     uid->len = n;
     strcpy(uid->name, p);
     uid->ref = 1;
