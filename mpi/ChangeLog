@@ -1,3 +1,9 @@
+2007-01-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* config.links: powerpc64* needs to come before powerpc* or it
+	will never match.  Reported by Alon Bar-Lev for libgcrypt, but
+	relevant here as well.
+
 2006-12-11  Werner Koch  <wk@g10code.com>
 
 	* mpi-internal.h: Include mpi-asm-defs.h.

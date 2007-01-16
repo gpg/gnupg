@@ -254,15 +254,15 @@ case "${host}" in
 	mpi_sflags="-Wa,-mppc"
 	path="power powerpc32"
 	;;
-    ppc60[234]*-*-* | \
-    powerpc*-*-*)
-	mpi_sflags="-Wa,-mppc"
-	path="powerpc32"
-	;;
     ppc620-*-*	    | \
     powerpc64*-*-*)
 	mpi_sflags="-Wa,-mppc"
 	path="powerpc64"
+	;;
+    ppc60[234]*-*-* | \
+    powerpc*-*-*)
+	mpi_sflags="-Wa,-mppc"
+	path="powerpc32"
 	;;
 
     *)
