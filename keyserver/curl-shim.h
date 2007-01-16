@@ -1,5 +1,5 @@
 /* curl-shim.h
- * Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -85,7 +85,7 @@ CURL *curl_easy_init(void);
 CURLcode curl_easy_setopt(CURL *curl,CURLoption option,...);
 CURLcode curl_easy_perform(CURL *curl);
 void curl_easy_cleanup(CURL *curl);
-char *curl_escape(char *str,int len);
+char *curl_easy_escape(CURL *curl,char *str,int len);
 void curl_free(char *ptr);
 #define curl_version() "GnuPG curl-shim "VERSION
 

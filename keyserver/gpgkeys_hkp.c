@@ -166,7 +166,7 @@ send_key(int *eof)
       goto fail;
     }
 
-  encoded_key=curl_escape(key,keysize);
+  encoded_key=curl_easy_escape(curl,key,keysize);
   if(!encoded_key)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -317,7 +317,7 @@ get_name(const char *getkey)
 
   memset(&ctx,0,sizeof(ctx));
 
-  searchkey_encoded=curl_escape((char *)getkey,0);
+  searchkey_encoded=curl_easy_escape(curl,(char *)getkey,0);
   if(!searchkey_encoded)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -403,7 +403,7 @@ search_key(const char *searchkey)
     fprintf(console,"gpgkeys: search type is %d, and key is \"%s\"\n",
 	    search_type,searchkey);
 
-  searchkey_encoded=curl_escape((char *)searchkey,0);
+  searchkey_encoded=curl_easy_escape(curl,(char *)searchkey,0);
   if(!searchkey_encoded)
     {
       fprintf(console,"gpgkeys: out of memory\n");

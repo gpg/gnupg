@@ -1,7 +1,7 @@
 /* curl-shim.c - Implement a small subset of the curl API in terms of
  * the iobuf HTTP API
  *
- * Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -265,7 +265,7 @@ curl_easy_perform(CURL *curl)
                         "0123456789"
 
 char *
-curl_escape(char *str,int length)
+curl_easy_escape(CURL *curl,char *str,int length)
 {
   int len,max,idx,enc_idx=0;
   char *enc;
