@@ -1,7 +1,7 @@
 # LIBCURL_CHECK_CONFIG ([DEFAULT-ACTION], [MINIMUM-VERSION],
 #                       [ACTION-IF-YES], [ACTION-IF-NO])
 # ----------------------------------------------------------
-#      David Shaw <dshaw@jabberwocky.com>   May-09-2006
+#      David Shaw <dshaw@jabberwocky.com>   Jan-16-2007
 #
 # Checks for libcurl.  DEFAULT-ACTION is the string yes or no to
 # specify whether to default to --with-libcurl or --without-libcurl.
@@ -162,17 +162,39 @@ x=CURLOPT_VERBOSE;
 
         if test $libcurl_cv_lib_curl_usable = yes ; then
 
-	   # Does curl_free() exist in this version of libcurl?
-	   # If not, fake it with free()
-
            _libcurl_save_cppflags=$CPPFLAGS
            CPPFLAGS="$CPPFLAGS $LIBCURL_CPPFLAGS"
            _libcurl_save_libs=$LIBS
            LIBS="$LIBS $LIBCURL"
 
-           AC_CHECK_FUNC(curl_free,,
-  	      AC_DEFINE(curl_free,free,
-		[Define curl_free() as free() if our version of curl lacks curl_free.]))
+	   # Check for some libcurl functions that aren't in all
+           # versions.
+
+           AC_CHECK_FUNCS([curl_free curl_easy_escape curl_easy_unescape])
+
+           AH_BOTTOM([
+#ifdef HAVE_LIBCURL
+
+/* Define curl_free() via free() if our version of curl lacks
+   curl_free() */
+#if !defined(curl_free) && !defined(HAVE_CURL_FREE)
+#define curl_free(a) free((a))
+#endif
+
+/* Define curl_easy_escape() via curl_escape() if our version of curl
+   lacks curl_easy_escape() */
+#if !defined(curl_easy_escape) && !defined(HAVE_CURL_EASY_ESCAPE)
+#define curl_easy_escape(a,b,c) curl_escape((b),(c))
+#endif
+
+/* Define curl_easy_unescape() via curl_unescape() if our version of
+   curl lacks curl_easy_unescape() */
+#if !defined(curl_easy_unescape) && !defined(HAVE_CURL_EASY_UNESCAPE)
+#define curl_easy_unescape(a,b,c) curl_unescape((b),(c))
+#endif
+
+#endif /* HAVE_LIBCURL */
+])
 
            CPPFLAGS=$_libcurl_save_cppflags
            LIBS=$_libcurl_save_libs
