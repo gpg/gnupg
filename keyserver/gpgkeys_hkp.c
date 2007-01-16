@@ -1,6 +1,6 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
- * Copyright (C) 2001, 2002, 2003, 2004, 2005
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -101,7 +101,17 @@ send_key(int *eof)
   char keyid[17],state[6];
   char line[MAX_LINE];
   char *key=NULL,*encoded_key=NULL;
-  size_t keylen=0,keymax=0;
+  size_t keysize=1;
+
+  key=malloc(1);
+  if(!key)
+    {
+      fprintf(console,"gpgkeys: unable to allocate memory for key\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  key[0]='\0';
 
   /* Read and throw away input until we see the BEGIN */
 
@@ -133,25 +143,19 @@ send_key(int *eof)
       }
     else
       {
-	if(strlen(line)+keylen>keymax)
+	char *tempkey;
+	keysize+=strlen(line);
+	tempkey=realloc(key,keysize);
+	if(tempkey==NULL)
 	  {
-	    char *tmp;
-
-	    keymax+=200;
-	    tmp=realloc(key,keymax+1);
-	    if(!tmp)
-	      {
-		free(key);
-		fprintf(console,"gpgkeys: out of memory\n");
-		ret=KEYSERVER_NO_MEMORY;
-		goto fail;
-	      }
-
-	    key=tmp;
+	    fprintf(console,"gpgkeys: unable to reallocate for key\n");
+	    ret=KEYSERVER_NO_MEMORY;
+	    goto fail;
 	  }
+	else
+	  key=tempkey;
 
-	strcpy(&key[keylen],line);
-	keylen+=strlen(line);
+	strcat(key,line);
       }
 
   if(!end)
@@ -162,7 +166,7 @@ send_key(int *eof)
       goto fail;
     }
 
-  encoded_key=curl_escape(key,keylen);
+  encoded_key=curl_escape(key,keysize);
   if(!encoded_key)
     {
       fprintf(console,"gpgkeys: out of memory\n");
