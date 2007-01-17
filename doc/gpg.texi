@@ -1389,12 +1389,9 @@ For example, when retrieving multiple keys via @option{--recv-keys}, the
 timeout applies separately to each key retrieval, and not to the
 @option{--recv-keys} command as a whole. Defaults to 30 seconds.
 
-@item http-proxy
-For HTTP-like keyserver schemes that (such as HKP and HTTP itself),
-try to access the keyserver over a proxy. If a @code{value} is
-specified, use this as the HTTP proxy. If no @code{value} is
-specified, the value of the environment variable "http_proxy", if any,
-will be used.
+@item http-proxy=@code{value}
+Set the proxy to use for HTTP and HKP keyservers.  This overrides the
+"http_proxy" environment variable, if any.
 
 @item max-cert-size
 When retrieving a key via DNS CERT, only accept keys up to this size.
@@ -2683,6 +2680,13 @@ passphrases or other sensitive material) to disk. If you get no
 warning message about insecure memory your operating system supports
 locking without being root. The program drops root privileges as soon
 as locked memory is allocated.
+
+Note also that some systems (especially laptops) have the ability to
+``suspend to disk'' (also known as ``safe sleep'' or ``hibernate'').
+This writes all memory to disk before going into a low power or even
+powered off mode.  Unless measures are taken in the operating system
+to protect the saved memory, passphrases or other sensitive material
+may be recoverable from it later.
 
 @mansect see also
 @ifset isman
