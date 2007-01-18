@@ -2090,8 +2090,8 @@ The same %-expandos used for notation data are available here as well.
 
 @item --sig-keyserver-url @code{string}
 Use @code{string} as a preferred keyserver URL for data signatures. If
-you prefix it with an exclamation mark, the keyserver URL packet will
-be flagged as critical.
+you prefix it with an exclamation mark (!), the keyserver URL packet
+will be flagged as critical.
 
 The same %-expandos used for notation data are available here as well.
 

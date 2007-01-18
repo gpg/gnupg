@@ -12,8 +12,8 @@ This format is deduced from the length of the string and its content or
 of its SHA-1 fingerprint.  The use of key Ids is just a shortcut, for
 all automated processing the fingerprint should be used.
 
-When using @command{gpg} an exclamation mark may be appended to force
-using the specified primary or secondary key and not to try and
+When using @command{gpg} an exclamation mark (!) may be appended to
+force using the specified primary or secondary key and not to try and
 calculate which primary or secondary key to use.
 
 The last four lines of the example give the key ID in their long form as
@@ -42,8 +42,8 @@ the @code{0x} prefix.  Note, that only the 20 byte version fingerprint
 is available with @command{gpgsm} (i.e. the SHA-1 hash of the
 certificate).
 
-When using @command{gpg} an exclamation mark may be appended to force
-using the specified primary or secondary key and not to try and
+When using @command{gpg} an exclamation mark (!) may be appended to
+force using the specified primary or secondary key and not to try and
 calculate which primary or secondary key to use.
 
 The best way to specify a key Id is by using the fingerprint.  This
