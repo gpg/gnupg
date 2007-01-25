@@ -1,3 +1,25 @@
+2007-01-25  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (get_passphrase): New arg OPT_CHECK.
+	(get_new_passphrase): Enable OTP_CHECK on the first call.
+	* command.c (cmd_get_passphrase): Implement option --check.
+
+2007-01-24  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (MIN_PASSPHRASE_LEN): New
+	(parse_rereadable_options): New option 	--min-passphrase-len.
+	* genkey.c (check_passphrase_constraints): New.
+	(agent_genkey, agent_protect_and_store): Call new function.  Fix
+	memory leak.
+
+	* call-pinentry.c (agent_askpin): Allow translation of the displayed
+	error message.
+	(agent_popup_message_start): Remove arg CANCEL_BTN.
+	(popup_message_thread): Use --one-button option.
+
+	* command.c (cmd_passwd): Now that we don't distinguish between
+	assuan and regular error codes we can jump to the end on error.
+
 2006-12-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Link to iconv for jnlib dependency.

@@ -491,7 +491,7 @@ pincb (void *arg, const char *prompt, char **pinvalue)
 
 /*    pin = simple_pwquery (NULL, NULL, prompt, */
 /*                          "We need the admin's PIN to store the key on the card", */
-/*                          NULL); */
+/*                          0, NULL); */
 /*    if (!pin) */
 /*      return gpg_error (GPG_ERR_CANCELED); */
 

@@ -449,7 +449,7 @@ main (int argc, char **argv)
 "    entire line to it as arguments.\n"
 "/showdef               Print all definitions.\n"
 "/cleardef              Delete all definitions.\n"
-"/sendfd FILE MODE      Open FILE and pass descripor to server.\n"
+"/sendfd FILE MODE      Open FILE and pass descriptor to server.\n"
 "/recvfd                Receive FD from server and print. \n"
                     "/help                  Print this help.");
             }

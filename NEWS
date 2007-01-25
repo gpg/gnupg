@@ -8,6 +8,11 @@ Noteworthy changes in version 2.0.2 (unreleased)
    prompt for a new passphrase to be repeated.  This is useful to help
    memorize a new passphrase.  The default is 1 repetition.
 
+ * Using a PIN pad does now also for for the signing key.
+
+ * A warning is displayed if a new passphrase is too short.  New
+   option --min-passphrase-len defaults to 8.
+
 
 Noteworthy changes in version 2.0.1 (2006-11-28)
 ------------------------------------------------

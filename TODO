@@ -118,3 +118,8 @@
 
 * Cleanup m4/ on next gettext update
   There is at least one couple of duplicate files: inttype[_-]h.m4.
+
+* UTF-8
+** we need a function to count characters.
+  Something like utf8_strlen.  This is needed to correclty count the
+  lengtgh of a passphrase.

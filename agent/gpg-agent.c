@@ -88,6 +88,7 @@ enum cmd_and_opt_values
   oDefCacheTTLSSH,
   oMaxCacheTTL,
   oMaxCacheTTLSSH,
+  oMinPassphraseLen,
   oUseStandardSocket,
   oNoUseStandardSocket,
 
@@ -148,6 +149,7 @@ static ARGPARSE_OPTS opts[] = {
   { oDefCacheTTLSSH, "default-cache-ttl-ssh", 4, "@" },
   { oMaxCacheTTL, "max-cache-ttl", 4, "@" },
   { oMaxCacheTTLSSH, "max-cache-ttl-ssh", 4, "@" },
+  { oMinPassphraseLen, "min-passphrase-len", 4, "@" },
   { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
                                N_("do not use the PIN cache when signing")},
   { oAllowMarkTrusted, "allow-mark-trusted", 0,
@@ -164,6 +166,7 @@ static ARGPARSE_OPTS opts[] = {
 #define DEFAULT_CACHE_TTL     (10*60)  /* 10 minutes */
 #define DEFAULT_CACHE_TTL_SSH (30*60)  /* 30 minutes */
 #define MAX_CACHE_TTL         (120*60) /* 2 hours */
+#define MIN_PASSPHRASE_LEN    (8)      
 
 
 /* flag to indicate that a shutdown was requested */
@@ -403,6 +406,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL_SSH;
       opt.max_cache_ttl = MAX_CACHE_TTL;
       opt.max_cache_ttl_ssh = MAX_CACHE_TTL;
+      opt.min_passphrase_len = MIN_PASSPHRASE_LEN;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
       opt.disable_scdaemon = 0;
@@ -441,6 +445,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oMaxCacheTTL: opt.max_cache_ttl = pargs->r.ret_ulong; break;
     case oMaxCacheTTLSSH: opt.max_cache_ttl_ssh = pargs->r.ret_ulong; break;
       
+    case oMinPassphraseLen: opt.min_passphrase_len = pargs->r.ret_ulong; break;
+
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
 
     case oAllowMarkTrusted: opt.allow_mark_trusted = 1; break;

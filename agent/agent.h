@@ -78,6 +78,8 @@ struct
   unsigned long max_cache_ttl;     /* Default. */
   unsigned long max_cache_ttl_ssh; /* for SSH. */
 
+  /* The require minmum length of a passphrase. */
+  unsigned int min_passphrase_len;
 
   int running_detached; /* We are running detached from the tty. */
 
@@ -222,8 +224,8 @@ int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *errtext);
 int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
 			    const char *cancel);
-int agent_popup_message_start (ctrl_t ctrl, const char *desc,
-                               const char *ok_btn, const char *cancel_btn);
+int agent_popup_message_start (ctrl_t ctrl,
+                               const char *desc, const char *ok_btn);
 void agent_popup_message_stop (ctrl_t ctrl);
 
 
@@ -249,6 +251,7 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                      membuf_t *outbuf);
 
 /*-- genkey.c --*/
+int check_passphrase_constraints (ctrl_t ctrl, const char *pw);
 int agent_genkey (ctrl_t ctrl, 
                   const char *keyparam, size_t keyparmlen, membuf_t *outbuf);
 int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);

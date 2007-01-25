@@ -1,5 +1,5 @@
 /* protect-tool.c - A tool to test the secret key protection
- *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -97,7 +97,7 @@ static const char *opt_passphrase;
 static char *opt_prompt;
 static int opt_status_msg;
 
-static char *get_passphrase (int promptno);
+static char *get_passphrase (int promptno, int opt_check);
 static char *get_new_passphrase (int promptno);
 static void release_passphrase (char *pw);
 static int store_private_key (const unsigned char *grip,
@@ -363,7 +363,7 @@ read_and_protect (const char *fname)
   if (!key)
     return;
 
-  pw = get_passphrase (1);
+  pw = get_passphrase (1, 0);
   rc = agent_protect (key, pw, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
@@ -401,7 +401,7 @@ read_and_unprotect (const char *fname)
   if (!key)
     return;
 
-  rc = agent_unprotect (key, (pw=get_passphrase (1)), &result, &resultlen);
+  rc = agent_unprotect (key, (pw=get_passphrase (1, 0)), &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
   if (rc)
@@ -684,7 +684,7 @@ import_p12_file (const char *fname)
   if (!buf)
     return;
 
-  kparms = p12_parse ((unsigned char*)buf, buflen, (pw=get_passphrase (2)),
+  kparms = p12_parse ((unsigned char*)buf, buflen, (pw=get_passphrase (2, 0)),
                       import_p12_cert_cb, NULL);
   release_passphrase (pw);
   xfree (buf);
@@ -898,7 +898,7 @@ export_p12_file (const char *fname)
       unsigned char *tmpkey;
       size_t tmplen;
 
-      rc = agent_unprotect (key, (pw=get_passphrase (1)), &tmpkey, &tmplen);
+      rc = agent_unprotect (key, (pw=get_passphrase (1, 0)), &tmpkey, &tmplen);
       release_passphrase (pw);
       if (rc)
         {
@@ -1162,10 +1162,11 @@ agent_exit (int rc)
      3 = for protecting a new pkcs#12 object
      4 = for protecting an imported pkcs#12 in our system
      5 = reenter the passphrase
-   When adding 100 to the values, a "does not match - try again" errro message is shown.
+   When adding 100 to the values, a "does not match - try again" error
+   message is shown.
 */
 static char *
-get_passphrase (int promptno)
+get_passphrase (int promptno, int opt_check)
 {
   char *pw;
   int err;
@@ -1219,7 +1220,7 @@ get_passphrase (int promptno)
 
   pw = simple_pwquery (NULL,
                        error_msgno == 1? _("does not match - try again"):NULL,
-                       _("Passphrase:"), desc, &err);
+                       _("Passphrase:"), desc, opt_check, &err);
 
 #ifdef ENABLE_NLS
   if (orig_codeset)
@@ -1251,16 +1252,16 @@ get_new_passphrase (int promptno)
   char *pw;
   int i, secondpromptno;
   
-  pw = get_passphrase (promptno);
+  pw = get_passphrase (promptno, 1);
   if (!pw)
     return NULL; /* Canceled. */
   if (!*pw)
-    return pw; /* Empty passphrase - no need to as for repeating it. */
+    return pw;   /* Empty passphrase - no need to ask for repeating it. */
 
   secondpromptno = 5;
   for (i=0; i < 3; i++)
     {
-      char *pw2 = get_passphrase (secondpromptno);
+      char *pw2 = get_passphrase (secondpromptno, 0);
       if (!pw2)
         {
           xfree (pw);

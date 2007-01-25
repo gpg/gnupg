@@ -71,6 +71,43 @@ store_key (gcry_sexp_t private, const char *passphrase, int force)
   return rc;
 }
 
+
+/* Check whether the passphrase PW is suitable. Returns 0 if the
+   passphrase is suitable and true if it is not and the user should be
+   asked to provide a different one. */
+int
+check_passphrase_constraints (ctrl_t ctrl, const char *pw)
+{
+  gpg_error_t err;
+  unsigned int minlen = opt.min_passphrase_len;
+  
+  if (!pw)
+    pw = "";
+
+  if (strlen (pw) < minlen ) /* FIXME:  should be an utf-8 length. */
+    {
+      char *desc = xtryasprintf 
+        ( ngettext (_("Warning:  You have entered a passphrase that%%0A"
+                      "is obviously not secure.  A passphrase should%%0A"
+                      "be at least %u character long."), 
+                    _("Warning:  You have entered a passphrase that%%0A"
+                      "is obviously not secure.  A passphrase should%%0A"
+                      "be at least %u characters long."), minlen), minlen );
+      if (!desc)
+        return gpg_error_from_syserror ();
+      
+      err = agent_get_confirmation (ctrl, desc,
+                                    _("Take this one anyway"),
+                                    _("Enter new passphrase"));
+      xfree (desc);
+      if (err)
+        return err;
+    }
+
+  return 0;
+}
+
+
 /* Callback function to compare the first entered PIN with the one
    currently being entered. */
 static int
@@ -125,6 +162,12 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     initial_errtext = NULL;
     if (!rc)
       {
+        if (check_passphrase_constraints (ctrl, pi->pin))
+          {
+            pi->failed_tries = 0;
+            pi2->failed_tries = 0;
+            goto next_try;
+          }
         rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
         if (rc == -1)
           { /* The re-entered one did not match and the user did not
@@ -134,7 +177,11 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
           }
       }
     if (rc)
-      return rc;
+      {
+        xfree (pi);
+        return rc;
+      }
+        
     if (!*pi->pin)
       {
         xfree (pi);
@@ -230,8 +277,15 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
 
   next_try:
     rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
+    initial_errtext = NULL;
     if (!rc)
       {
+        if (check_passphrase_constraints (ctrl, pi->pin))
+          {
+            pi->failed_tries = 0;
+            pi2->failed_tries = 0;
+            goto next_try;
+          }
         rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
         if (rc == -1)
           { /* The re-entered one did not match and the user did not
@@ -241,7 +295,11 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
           }
       }
     if (rc)
-      return rc;
+      {
+        xfree (pi);
+        return rc;
+      }
+
     if (!*pi->pin)
       {
         xfree (pi);

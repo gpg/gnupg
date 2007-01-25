@@ -1,5 +1,6 @@
 /* command.c - gpg-agent command handler
- * Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005,
+ *               2006  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -804,7 +805,8 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 }
 
 
-/* GET_PASSPHRASE [--data] <cache_id> [<error_message> <prompt> <description>]
+/* GET_PASSPHRASE [--data] [--check] <cache_id>
+                  [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
    for conventional encryption, but may also be used by programs which
@@ -816,6 +818,10 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 
    If the option "--data" is used the passphrase is returned by usual
    data lines and not on the okay line.
+
+   If the option "--check" is used the passphrase constraints checks as
+   implemented by gpg-agent are applied.  A check is not done if the
+   passphrase has been found in the cache.
 */
 
 static int
@@ -828,9 +834,10 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   char *cacheid = NULL, *desc = NULL, *prompt = NULL, *errtext = NULL;
   char *p;
   void *cache_marker;
-  int opt_data;
+  int opt_data, opt_check;
 
   opt_data = has_option (line, "--data");
+  opt_check = has_option (line, "--check");
   line = skip_options (line);
 
   cacheid = line;
@@ -857,7 +864,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
               desc = p;
               p = strchr (desc, ' ');
               if (p)
-                *p = 0; /* ignore garbage */
+                *p = 0; /* Ignore trailing garbage. */
             }
         }
     }
@@ -895,7 +902,16 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
       if (desc)
         plus_to_blank (desc);
 
-      rc = agent_get_passphrase (ctrl, &response, desc, prompt, errtext);
+      response = NULL;
+      do
+        {
+          xfree (response);
+          rc = agent_get_passphrase (ctrl, &response, desc, prompt, errtext);
+        }
+      while (!rc
+             && opt_check
+             && check_passphrase_constraints (ctrl, response));
+
       if (!rc)
         {
           if (cacheid)
@@ -1019,8 +1035,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 
   rc = parse_keygrip (ctx, line, grip);
   if (rc)
-    return rc; /* we can't jump to leave because this is already an
-                  Assuan error code. */
+    goto leave;
 
   rc = agent_key_from_file (ctrl, ctrl->server_local->keydesc,
                             grip, &shadow_info, CACHE_MODE_IGNORE, &s_skey);
@@ -1036,6 +1051,8 @@ cmd_passwd (assuan_context_t ctx, char *line)
 
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
+
+ leave:
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
   if (rc)

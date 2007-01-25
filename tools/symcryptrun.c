@@ -485,7 +485,7 @@ confucius_get_pass (const char *cacheid, int again, int *canceled)
 
   pw = simple_pwquery (cacheid,
                        again ? _("does not match - try again"):NULL,
-                       _("Passphrase:"), NULL, &err);
+                       _("Passphrase:"), NULL, 0, &err);
 
 #ifdef ENABLE_NLS
   if (orig_codeset)

@@ -237,7 +237,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
         }
       else if (maxbuf == 1)  /* Open the pinentry. */
         {
-          rc = agent_popup_message_start (ctrl, info, NULL, NULL);
+          rc = agent_popup_message_start (ctrl, info, NULL);
         }
       else
         rc = gpg_error (GPG_ERR_INV_VALUE);

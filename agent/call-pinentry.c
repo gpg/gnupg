@@ -434,8 +434,10 @@ agent_askpin (ctrl_t ctrl,
 
       if (errtext)
         { 
-          /* fixme: should we show the try count? It must be translated */
-          snprintf (line, DIM(line)-1, "SETERROR %s (try %d of %d)",
+          /* TRANLATORS: The string is appended to an error message in
+             the pinentry.  The %s is the actual error message, the
+             two %d give the current and maximum number of tries. */
+          snprintf (line, DIM(line)-1, _("SETERROR %s (try %d of %d)"),
                     errtext, pininfo->failed_tries+1, pininfo->max_tries);
           line[DIM(line)-1] = 0;
           rc = assuan_transact (entry_ctx, line,
@@ -627,7 +629,12 @@ agent_get_confirmation (ctrl_t ctrl,
 static void *
 popup_message_thread (void *arg)
 {
-  assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL, NULL, NULL);
+  /* We use the --one-button hack instead of the MESSAGE command to
+     allow the use of old Pinentries.  Those old Pinentries will then
+     show an additional Cancel button but that is mostly a visual
+     annoyance. */
+  assuan_transact (entry_ctx, "CONFIRM --one-button", 
+                   NULL, NULL, NULL, NULL, NULL, NULL);
   popup_finished = 1;
   return NULL;
 }
@@ -640,8 +647,7 @@ popup_message_thread (void *arg)
    system modal and all other attempts to use the pinentry will fail
    (after a timeout). */
 int 
-agent_popup_message_start (ctrl_t ctrl, const char *desc,
-                           const char *ok_btn, const char *cancel_btn)
+agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -663,14 +669,6 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc,
   if (ok_btn)
     {
       snprintf (line, DIM(line)-1, "SETOK %s", ok_btn);
-      line[DIM(line)-1] = 0;
-      rc = assuan_transact (entry_ctx, line, NULL,NULL,NULL,NULL,NULL,NULL);
-      if (rc)
-        return unlock_pinentry (rc);
-    }
-  if (cancel_btn)
-    {
-      snprintf (line, DIM(line)-1, "SETCANCEL %s", cancel_btn);
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL,NULL,NULL,NULL,NULL,NULL);
       if (rc)
