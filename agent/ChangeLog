@@ -1,9 +1,10 @@
 2007-01-25  Werner Koch  <wk@g10code.com>
 
-	* genkey.c (check_passphrase_constraints): Get ngettext call right.
+	* genkey.c (check_passphrase_constraints): Get ngettext call right
+	and use UTF-8 aware strlen.
 
 	* protect-tool.c (get_passphrase): New arg OPT_CHECK.
-	(get_new_passphrase): Enable OTP_CHECK on the first call.
+	(get_new_passphrase): Enable OPT_CHECK on the first call.
 	* command.c (cmd_get_passphrase): Implement option --check.
 
 2007-01-24  Werner Koch  <wk@g10code.com>

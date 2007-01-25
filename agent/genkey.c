@@ -84,7 +84,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
   if (!pw)
     pw = "";
 
-  if (strlen (pw) < minlen ) /* FIXME:  should be an utf-8 length. */
+  if (utf8_charcount (pw) < minlen ) 
     {
       char *desc = xtryasprintf 
         ( ngettext ("Warning:  You have entered a passphrase that%%0A"

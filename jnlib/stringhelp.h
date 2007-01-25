@@ -57,6 +57,9 @@ size_t print_sanitized_utf8_string (FILE *fp, const char *string, int delim);
 char *sanitize_buffer (const void *p, size_t n, int delim);
 
 
+size_t utf8_charcount (const char *s);
+
+
 #ifdef HAVE_W32_SYSTEM
 const char *w32_strerror (int ec);
 #endif

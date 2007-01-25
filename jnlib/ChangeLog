@@ -1,3 +1,7 @@
+2007-01-25  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (utf8_charcount): New.
+
 2006-11-29  Werner Koch  <wk@g10code.com>
 
 	* utf8conv.c (set_native_charset) [HAVE_W32_SYSTEM]: Fixed typo in

@@ -547,6 +547,23 @@ sanitize_buffer (const void *p_arg, size_t n, int delim)
 }
 
 
+/* Given a string containing an UTF-8 encoded text, return the number
+   of characters in this string.  It differs from strlen in that it
+   only counts complete UTF-8 characters.  Note, that this function
+   does not take combined characters into account.  */
+size_t
+utf8_charcount (const char *s)
+{
+  size_t n;
+
+  for (n=0; *s; s++)
+    if ( (*s&0xc0) != 0x80 ) /* Exclude continuation bytes: 10xxxxxx */
+      n++;
+
+  return n;
+}
+
+
 /****************************************************
  **********  W32 specific functions  ****************
  ****************************************************/
