@@ -48,14 +48,16 @@
 /* Ask the gpg-agent for a passphrase and present the user with a
    DESCRIPTION, a PROMPT and optiaonlly with a TRYAGAIN extra text.
    If a CACHEID is not NULL it is used to locate the passphrase in in
-   the cache and store it under this ID.  If ERRORCODE is not NULL it
-   should point a variable receiving an errorcode; this errocode might
-   be 0 if the user canceled the operation.  The function returns NULL
-   to indicate an error. */
+   the cache and store it under this ID.  If OPT_CHECK is true
+   gpg-agent is asked to apply some checks on the passphrase security.
+   If ERRORCODE is not NULL it should point a variable receiving an
+   errorcode; this errocode might be 0 if the user canceled the
+   operation.  The function returns NULL to indicate an error. */
 char *simple_pwquery (const char *cacheid, 
                       const char *tryagain,
                       const char *prompt,
                       const char *description,
+                      int opt_check,
                       int *errorcode);
 
 /* Ask the gpg-agent to clear the passphrase for the cache ID CACHEID.  */

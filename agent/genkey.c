@@ -87,12 +87,12 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
   if (strlen (pw) < minlen ) /* FIXME:  should be an utf-8 length. */
     {
       char *desc = xtryasprintf 
-        ( ngettext (_("Warning:  You have entered a passphrase that%%0A"
-                      "is obviously not secure.  A passphrase should%%0A"
-                      "be at least %u character long."), 
-                    _("Warning:  You have entered a passphrase that%%0A"
-                      "is obviously not secure.  A passphrase should%%0A"
-                      "be at least %u characters long."), minlen), minlen );
+        ( ngettext ("Warning:  You have entered a passphrase that%%0A"
+                    "is obviously not secure.  A passphrase should%%0A"
+                    "be at least %u character long.", 
+                    "Warning:  You have entered a passphrase that%%0A"
+                    "is obviously not secure.  A passphrase should%%0A"
+                    "be at least %u characters long.", minlen), minlen );
       if (!desc)
         return gpg_error_from_syserror ();
       

@@ -9,13 +9,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.9.90\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-01-24 19:08+0100\n"
-"PO-Revision-Date: 2007-01-24 19:16+0100\n"
+"POT-Creation-Date: 2007-01-25 09:30+0100\n"
+"PO-Revision-Date: 2007-01-25 09:33+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: agent/call-pinentry.c:193
 #, c-format
@@ -166,14 +167,11 @@ msgstr "Bitte geben Sie die PIN%s%s%s ein um die Karte zu entsperren"
 msgid ""
 "Warning:  You have entered a passphrase that%%0Ais obviously not secure.  A "
 "passphrase should%%0Abe at least %u character long."
-msgstr "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  Eine Passphrase sollte%%0A mindestens %u Zeichen lang sein."
-
-#: agent/genkey.c:93
-#, c-format
-msgid ""
+msgid_plural ""
 "Warning:  You have entered a passphrase that%%0Ais obviously not secure.  A "
 "passphrase should%%0Abe at least %u characters long."
-msgstr "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  Eine Passphrase sollte%%0A mindestens %u Zeichen lang sein."
+msgstr[0] "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  Eine Passphrase sollte%%0A mindestens %u Zeichen lang sein."
+msgstr[1] "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  Eine Passphrase sollte%%0A mindestens %u Zeichen lang sein."
 
 #: agent/genkey.c:100
 msgid "Take this one anyway"
@@ -188,11 +186,11 @@ msgstr "Neue Passphrase eingeben"
 msgid "Please enter the passphrase to%0Ato protect your new key"
 msgstr "Bitte geben Sie die Passphrase ein%0Aum Ihren Schlüssel zu schützen"
 
-#: agent/genkey.c:148 agent/genkey.c:266 agent/protect-tool.c:1215
+#: agent/genkey.c:148 agent/genkey.c:266 agent/protect-tool.c:1216
 msgid "Please re-enter this passphrase"
 msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
 
-#: agent/genkey.c:175 agent/genkey.c:293 agent/protect-tool.c:1221
+#: agent/genkey.c:175 agent/genkey.c:293 agent/protect-tool.c:1222
 #: tools/symcryptrun.c:487
 msgid "does not match - try again"
 msgstr "Keine Übereinstimmung - bitte nochmal versuchen"
@@ -481,16 +479,16 @@ msgstr ""
 "Syntax: gpg-protect-tool [Optionen] [Argumente]\n"
 "Werkzeug zum Bearbeiten von geheimen Schlüsseln\n"
 
-#: agent/protect-tool.c:1206
+#: agent/protect-tool.c:1207
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
 msgstr "Bitte geben Sie die Passphrase zum Entsperren des PKCS#12 Objekts ein"
 
-#: agent/protect-tool.c:1209
+#: agent/protect-tool.c:1210
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
 msgstr ""
 "Bitte geben Sie die Passphrase zum Schützen des neuen PKCS#12 Objekts ein"
 
-#: agent/protect-tool.c:1212
+#: agent/protect-tool.c:1213
 msgid ""
 "Please enter the passphrase to protect the imported object within the GnuPG "
 "system."
@@ -498,7 +496,7 @@ msgstr ""
 "Bitte geben Sie die Passphrase ein, um das importierte Objekt im GnuPG "
 "System zu schützen."
 
-#: agent/protect-tool.c:1217
+#: agent/protect-tool.c:1218
 msgid ""
 "Please enter the passphrase or the PIN\n"
 "needed to complete this operation."
@@ -506,16 +504,16 @@ msgstr ""
 "Die Eingabe der Passphrase bzw. der PIN\n"
 "wird benötigt um diese Aktion auszuführen."
 
-#: agent/protect-tool.c:1222 tools/symcryptrun.c:488
+#: agent/protect-tool.c:1223 tools/symcryptrun.c:488
 msgid "Passphrase:"
 msgstr "Passphrase:"
 
-#: agent/protect-tool.c:1235 tools/symcryptrun.c:501
+#: agent/protect-tool.c:1236 tools/symcryptrun.c:501
 #, c-format
 msgid "error while asking for the passphrase: %s\n"
 msgstr "Fehler bei der Abfrage der Passphrase: %s\n"
 
-#: agent/protect-tool.c:1238 tools/symcryptrun.c:505
+#: agent/protect-tool.c:1239 tools/symcryptrun.c:505
 msgid "cancelled\n"
 msgstr "Vom Benutzer abgebrochen\n"
 
@@ -677,11 +675,11 @@ msgstr "Kommunikationsproblem mit GPG-Agent\n"
 msgid "problem setting the gpg-agent options\n"
 msgstr "Beim setzen der gpg-agent Optionen ist ein problem aufgetreten\n"
 
-#: common/simple-pwquery.c:527 common/simple-pwquery.c:615
+#: common/simple-pwquery.c:531 common/simple-pwquery.c:619
 msgid "canceled by user\n"
 msgstr "Vom Benutzer abgebrochen\n"
 
-#: common/simple-pwquery.c:534 common/simple-pwquery.c:621
+#: common/simple-pwquery.c:538 common/simple-pwquery.c:625
 msgid "problem with the agent\n"
 msgstr "Problem mit dem Agenten\n"
 
