@@ -1455,9 +1455,15 @@ passphrase. @option{--no-use-agent} disables this option.
 @end ifset
 
 @item --gpg-agent-info
+@ifclear gpgone
+This is dummy option. It has no effect when used with @command{gpg2}.
+@end ifclear
+@ifset gpgone
 Override the value of the environment variable
 @samp{GPG_AGENT_INFO}. This is only used when @option{--use-agent} has
-been given
+been given.  Given that this option is not anymore used by
+@command{gpg2}, it should be avoided if possible.
+@end gpgone
 
 @item --lock-once
 Lock the databases the first time a lock is requested

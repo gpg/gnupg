@@ -469,6 +469,10 @@ openpgp_pk_algo_usage ( int algo )
 int
 openpgp_md_test_algo( int algo )
 {
+  /* Note: If the list of actual supported OpenPGP algorithms changes,
+     make sure that our hard coded values at
+     print_status_begin_signing() gets updated. */
+
   if (algo < 0 || algo > 110)
     return gpg_error (GPG_ERR_DIGEST_ALGO);
   return gcry_md_test_algo (algo);
@@ -734,6 +738,19 @@ deprecated_command (const char *name)
 {
   log_info(_("WARNING: \"%s\" is a deprecated command - do not use it\n"),
            name);
+}
+
+
+void
+obsolete_option (const char *configname, unsigned int configlineno, 
+                 const char *name)
+{
+  if(configname)
+    log_info (_("%s:%u: obsolete option \"%s\" - it has no effect\n"),
+              configname, configlineno, name);
+  else
+    log_info (_("WARNING: \"%s\" is an obsolete option - it has no effect\n"),
+              name);
 }
 
 

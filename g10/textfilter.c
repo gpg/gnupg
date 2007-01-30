@@ -178,7 +178,7 @@ copy_clearsig_text( IOBUF out, IOBUF inp, gcry_md_hd_t md,
     if( !escape_dash )
 	escape_from = 0;
 
-    write_status (STATUS_BEGIN_SIGNING);
+    write_status_begin_signing (md);
 
     for(;;) {
 	maxlen = MAX_LINELEN;

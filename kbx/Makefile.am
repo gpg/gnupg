@@ -48,6 +48,6 @@ libkeybox_a_SOURCES = $(common_sources)
 kbxutil_SOURCES = kbxutil.c $(common_sources)
 kbxutil_LDADD   = ../jnlib/libjnlib.a ../gl/libgnu.a \
 	          $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
-                  -lgpg-error $(LIBINTL) ../common/libcommon.a
+                  -lgpg-error $(LIBINTL) ../common/libcommon.a $(LIBICONV)
 
 $(PROGRAMS) : ../jnlib/libjnlib.a ../gl/libgnu.a ../common/libcommon.a

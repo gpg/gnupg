@@ -316,7 +316,7 @@ more arguments in future versions.
     TRUST_ULTIMATE
 	For good signatures one of these status lines are emitted
 	to indicate how trustworthy the signature is.  The error token
-        values are currently only emiited by gpgsm.
+        values are currently only emitted by gpgsm.
 
     PKA_TRUST_GOOD <mailbox>
     PKA_TRUST_BAD  <mailbox>

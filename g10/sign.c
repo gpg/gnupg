@@ -503,6 +503,7 @@ only_old_style( SK_LIST sk_list )
 }
 
 
+
 static void
 print_status_sig_created ( PKT_secret_key *sk, PKT_signature *sig, int what )
 {
@@ -983,7 +984,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
             goto leave;
     }
 
-    write_status (STATUS_BEGIN_SIGNING);
+    write_status_begin_signing (mfx.md);
 
     /* Setup the inner packet. */
     if( detached ) {
@@ -1361,7 +1362,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
             goto leave;
     }
 
-    write_status (STATUS_BEGIN_SIGNING);
+    write_status_begin_signing (mfx.md);
 
     /* Pipe data through all filters; i.e. write the signed stuff */
     /*(current filters: zip - encrypt - armor)*/

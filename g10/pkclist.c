@@ -464,6 +464,18 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 
       tty_printf("\n");
 
+      
+      if (is_status_enabled ())
+        {
+          u32 kid[2];
+          char *hint_str;
+          
+          keyid_from_pk (pk, kid);
+          hint_str = get_long_user_id_string ( kid );
+          write_status_text ( STATUS_USERID_HINT, hint_str );
+          xfree (hint_str);
+        }
+
       if( cpr_get_answer_is_yes("untrusted_key.override",
 				_("Use this key anyway? (y/N) "))  )
 	rc = 1;

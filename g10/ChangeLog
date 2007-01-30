@@ -1,3 +1,20 @@
+2007-01-30  Werner Koch  <wk@g10code.com>
+
+	* status.c (write_status_begin_signing): New.
+	* sign.c (sign_file, sign_symencrypt_file): Call it.
+	* textfilter.c (copy_clearsig_text): Call it.
+
+	* call-agent.c (agent_scd_pksign): Pass --hash-rmd160 to SCD if
+	required.
+
+	* gpg.c (main): Let --no-use-agent and --gpg-agent-info print a
+	warning.  
+	* misc.c (obsolete_option): New.
+
+2007-01-29  Werner Koch  <wk@g10code.com>
+
+	* pkclist.c (do_we_trust_pre): Issue a user-id-hint status code. 
+
 2007-01-15  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (read_protected_v3_mpi): Make sure to stop

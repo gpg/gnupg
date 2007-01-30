@@ -323,6 +323,39 @@ write_status_buffer ( int no, const char *buffer, size_t len, int wrap )
 }
 
 
+/* Print the BEGIN_SIGNING status message.  If MD is not NULL it is
+   used retrieve the hash algorithms used for the message. */
+void
+write_status_begin_signing (gcry_md_hd_t md)
+{
+  if (md)
+    {
+      char buf[100];
+      size_t buflen;
+      int i;
+      
+      /* We use a hard coded list of possible algorithms.  Using other
+         algorithms than specified by OpenPGP does not make sense
+         anyway.  We do this out of performance reasons: Walking all
+         the 110 allowed Ids is not a good idea given the way the
+         check is implemented in libgcrypt.  Recall that the only use
+         of this status code is to create the micalg algorithm for
+         PGP/MIME. */
+      buflen = 0;
+      for (i=1; i <= 11; i++)
+        if (i < 4 || i > 7)
+          if ( gcry_md_is_enabled (md, i) && buflen < DIM(buf) )
+            {
+              snprintf (buf+buflen, DIM(buf) - buflen - 1, 
+                        "%sH%d", buflen? " ":"",i);
+              buflen += strlen (buf+buflen);
+            }
+      write_status_text ( STATUS_BEGIN_SIGNING, buf );
+    }
+  else
+    write_status ( STATUS_BEGIN_SIGNING );
+}
+
 
 static int
 myread(int fd, void *buf, size_t count)

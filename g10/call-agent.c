@@ -668,7 +668,9 @@ agent_scd_pksign (const char *serialno, int hashalgo,
     snprintf (line, DIM(line)-1, "SCD PKAUTH %s", serialno);
   else
 #endif
-   snprintf (line, DIM(line)-1, "SCD PKSIGN %s", serialno);
+    snprintf (line, DIM(line)-1, "SCD PKSIGN %s%s",
+              hashalgo == GCRY_MD_RMD160? "--hash=rmd160 " : "",
+              serialno);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, membuf_data_cb, &data,
                         NULL, NULL, NULL, NULL);

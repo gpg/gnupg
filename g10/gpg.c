@@ -2134,10 +2134,20 @@ main (int argc, char **argv )
 	    opt.list_options|=LIST_SHOW_UNUSABLE_SUBKEYS;
 	    break;
 
-	  case oBatch: opt.batch = 1; nogreeting = 1; break;
+	  case oBatch:
+            opt.batch = 1;
+            nogreeting = 1;
+            break;
+
           case oUseAgent: /* Dummy. */
-          case oNoUseAgent: /* Dummy. */ break;
-	  case oGpgAgentInfo: opt.gpg_agent_info = pargs.r.ret_str; break;
+            break;
+          case oNoUseAgent:
+	    obsolete_option (configname, configlineno, "--no-use-agent");
+            break;
+	  case oGpgAgentInfo: 
+	    obsolete_option (configname, configlineno, "--gpg-agent-info");
+            break;
+
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;

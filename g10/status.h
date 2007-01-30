@@ -131,6 +131,9 @@ void write_status_buffer ( int no,
 void write_status_text_and_buffer ( int no, const char *text,
                                     const char *buffer, size_t len, int wrap );
 
+void write_status_begin_signing (gcry_md_hd_t md);
+
+
 int cpr_enabled(void);
 char *cpr_get( const char *keyword, const char *prompt );
 char *cpr_get_no_help( const char *keyword, const char *prompt );
