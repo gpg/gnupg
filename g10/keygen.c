@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -777,7 +777,8 @@ make_backsig(PKT_signature *sig,PKT_public_key *pk,
 
   cache_public_key(sub_pk);
 
-  rc=make_keysig_packet(&backsig,pk,NULL,sub_pk,sub_sk,0x19,0,0,0,0,NULL,NULL);
+  rc=make_keysig_packet(&backsig,pk,NULL,sub_pk,sub_sk,0x19,0,0,
+			sub_pk->timestamp,0,NULL,NULL);
   if(rc)
     log_error("make_keysig_packet failed for backsig: %s\n",g10_errstr(rc));
   else
@@ -882,7 +883,7 @@ write_direct_sig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
     cache_public_key (pk);
 
     /* and make the signature */
-    rc = make_keysig_packet(&sig,pk,NULL,NULL,sk,0x1F,0,0,0,0,
+    rc = make_keysig_packet(&sig,pk,NULL,NULL,sk,0x1F,0,0,pk->timestamp,0,
 			    keygen_add_revkey,revkey);
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
@@ -926,8 +927,8 @@ write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
     cache_public_key (pk);
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0, 0, 0,
-        		     keygen_add_std_prefs, pk );
+    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0,
+			     pk->timestamp, 0, keygen_add_std_prefs, pk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -981,7 +982,8 @@ write_keybinding( KBNODE root, KBNODE pub_root,
     /* and make the signature */
     oduap.usage = use;
     oduap.pk = sub_pk;
-    rc=make_keysig_packet(&sig, pri_pk, NULL, sub_pk, pri_sk, 0x18, 0, 0, 0, 0,
+    rc=make_keysig_packet(&sig, pri_pk, NULL, sub_pk, pri_sk, 0x18, 0, 0,
+			  sub_pk->timestamp, 0,
 			  keygen_add_key_flags_and_expire, &oduap );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );

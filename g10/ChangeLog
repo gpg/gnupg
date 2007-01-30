@@ -1,3 +1,11 @@
+2007-01-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (make_backsig, write_direct_sig, write_selfsigs)
+	(write_keybinding): Have the various selfsigs created during key
+	generation use the timestamp of their parent key.  This helps
+	avoid leaking information about the performance of the machine
+	where the keys were generated.  Noted by Christian Danner.
+
 2007-01-15  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (read_protected_v3_mpi): Make sure to stop
