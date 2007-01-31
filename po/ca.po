@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-01-31 14:33+0100\n"
+"POT-Creation-Date: 2007-01-31 15:12+0100\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -92,19 +92,19 @@ msgstr "la contrasenya és errònia"
 msgid "Passphrase"
 msgstr "la contrasenya és errònia"
 
-#: agent/command-ssh.c:533
+#: agent/command-ssh.c:531
 #, fuzzy, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "l'algoritme de protecció %d%s no està suportat\n"
 
-#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1020 g10/keygen.c:3067
+#: agent/command-ssh.c:690 g10/exec.c:480 g10/gpg.c:1020 g10/keygen.c:3067
 #: g10/keygen.c:3096 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:267
 #: g10/openfile.c:360 g10/sign.c:832 g10/sign.c:1141 g10/tdbio.c:538
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
 
-#: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
+#: agent/command-ssh.c:702 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:109 g10/decrypt.c:72 g10/encode.c:196
 #: g10/encode.c:506 g10/gpg.c:1021 g10/import.c:195 g10/keygen.c:2562
 #: g10/keyring.c:1534 g10/openfile.c:190 g10/openfile.c:345
@@ -116,51 +116,51 @@ msgstr "no s'ha pogut crear «%s»: %s\n"
 msgid "can't open `%s': %s\n"
 msgstr "no s'ha pogut obrir «%s»: %s\n"
 
-#: agent/command-ssh.c:1619 agent/command-ssh.c:1637
+#: agent/command-ssh.c:1617 agent/command-ssh.c:1635
 #, fuzzy, c-format
 msgid "error getting serial number of card: %s\n"
 msgstr "error en la creació de la contrasenya: %s\n"
 
-#: agent/command-ssh.c:1623
+#: agent/command-ssh.c:1621
 #, c-format
 msgid "detected card with S/N: %s\n"
 msgstr ""
 
-#: agent/command-ssh.c:1628
+#: agent/command-ssh.c:1626
 #, fuzzy, c-format
 msgid "error getting default authentication keyID of card: %s\n"
 msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
 
-#: agent/command-ssh.c:1648
+#: agent/command-ssh.c:1646
 #, fuzzy, c-format
 msgid "no suitable card key found: %s\n"
 msgstr ""
 "no s'ha trobat cap anell secret de escrivible: %s\n"
 "\n"
 
-#: agent/command-ssh.c:1698
+#: agent/command-ssh.c:1696
 #, fuzzy, c-format
 msgid "shadowing the key failed: %s\n"
 msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
 
-#: agent/command-ssh.c:1713
+#: agent/command-ssh.c:1711
 #, fuzzy, c-format
 msgid "error writing key: %s\n"
 msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
-#: agent/command-ssh.c:2018
+#: agent/command-ssh.c:2016
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%0A  %c"
 msgstr "Introduïu la contrasenya; aquesta ha de ser una frase secreta \n"
 
-#: agent/command-ssh.c:2353
+#: agent/command-ssh.c:2351
 #, c-format
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%"
 "0Awithin gpg-agent's key storage"
 msgstr ""
 
-#: agent/command-ssh.c:2853
+#: agent/command-ssh.c:2852
 #, fuzzy, c-format
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: no s'ha pogut crear la taula de dispersió: %s\n"

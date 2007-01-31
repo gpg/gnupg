@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.9.94\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-01-31 14:33+0100\n"
+"POT-Creation-Date: 2007-01-31 15:12+0100\n"
 "PO-Revision-Date: 2006-11-04 03:45+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -69,19 +69,19 @@ msgstr "Anahtar Parolası hatalı"
 msgid "Passphrase"
 msgstr "Anahtar Parolası"
 
-#: agent/command-ssh.c:533
+#: agent/command-ssh.c:531
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "%d bitlikten daha büyük SSH anahtarları desteklenmiyor\n"
 
-#: agent/command-ssh.c:692 g10/exec.c:480 g10/gpg.c:1020 g10/keygen.c:3067
+#: agent/command-ssh.c:690 g10/exec.c:480 g10/gpg.c:1020 g10/keygen.c:3067
 #: g10/keygen.c:3096 g10/keyring.c:1204 g10/keyring.c:1508 g10/openfile.c:267
 #: g10/openfile.c:360 g10/sign.c:832 g10/sign.c:1141 g10/tdbio.c:538
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "\"%s\" oluşturulamıyor: %s\n"
 
-#: agent/command-ssh.c:704 g10/card-util.c:679 g10/card-util.c:748
+#: agent/command-ssh.c:702 g10/card-util.c:679 g10/card-util.c:748
 #: g10/dearmor.c:62 g10/dearmor.c:109 g10/decrypt.c:72 g10/encode.c:196
 #: g10/encode.c:506 g10/gpg.c:1021 g10/import.c:195 g10/keygen.c:2562
 #: g10/keyring.c:1534 g10/openfile.c:190 g10/openfile.c:345
@@ -93,42 +93,42 @@ msgstr "\"%s\" oluşturulamıyor: %s\n"
 msgid "can't open `%s': %s\n"
 msgstr "`%s' açılamıyor: %s\n"
 
-#: agent/command-ssh.c:1619 agent/command-ssh.c:1637
+#: agent/command-ssh.c:1617 agent/command-ssh.c:1635
 #, c-format
 msgid "error getting serial number of card: %s\n"
 msgstr "kartın seri numarası alınırken hata: %s\n"
 
-#: agent/command-ssh.c:1623
+#: agent/command-ssh.c:1621
 #, c-format
 msgid "detected card with S/N: %s\n"
 msgstr "Algılanan kartın seri nr: %s\n"
 
-#: agent/command-ssh.c:1628
+#: agent/command-ssh.c:1626
 #, c-format
 msgid "error getting default authentication keyID of card: %s\n"
 msgstr "kartın öntanımlı kimlik doğrulama anahtar kimliği alınırken hata: %s\n"
 
-#: agent/command-ssh.c:1648
+#: agent/command-ssh.c:1646
 #, c-format
 msgid "no suitable card key found: %s\n"
 msgstr "uygun bir kart anahtarı yok: %s\n"
 
-#: agent/command-ssh.c:1698
+#: agent/command-ssh.c:1696
 #, c-format
 msgid "shadowing the key failed: %s\n"
 msgstr "anahtar gölgelenemedi: %s\n"
 
-#: agent/command-ssh.c:1713
+#: agent/command-ssh.c:1711
 #, c-format
 msgid "error writing key: %s\n"
 msgstr "anahtarı yazarken hata: %s\n"
 
-#: agent/command-ssh.c:2018
+#: agent/command-ssh.c:2016
 #, c-format
 msgid "Please enter the passphrase for the ssh key%0A  %c"
 msgstr "Lütfen SSH anahtarı %0A  %c için anahtar parolasını giriniz"
 
-#: agent/command-ssh.c:2353
+#: agent/command-ssh.c:2351
 #, c-format
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%"
@@ -137,7 +137,7 @@ msgstr ""
 "gpg-agent'in anahtar deposuna korumak için alınan gizli anahtar %%0A  %s%%0A "
 "için lütfen anahtar parolası giriniz"
 
-#: agent/command-ssh.c:2853
+#: agent/command-ssh.c:2852
 #, c-format
 msgid "failed to create stream from socket: %s\n"
 msgstr "sokette akım oluşturulamadı: %s\n"
