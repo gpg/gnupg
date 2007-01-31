@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.2 (unreleased)
+Noteworthy changes in version 2.0.2 (2007-01-31)
 ------------------------------------------------
 
  * Fixed a serious and exploitable bug in processing encrypted
@@ -8,12 +8,12 @@ Noteworthy changes in version 2.0.2 (unreleased)
    prompt for a new passphrase to be repeated.  This is useful to help
    memorize a new passphrase.  The default is 1 repetition.
 
- * Using a PIN pad does now also for for the signing key.
+ * Using a PIN pad does now also work for the signing key.
 
- * A warning is displayed if a new passphrase is too short.  New
-   option --min-passphrase-len defaults to 8.
+ * A warning is displayed bu gpg-agent if a new passphrase is too
+   short.  New option --min-passphrase-len defaults to 8.
 
- * The status code BEGIN_SIGNING now show the used hash algorithm.
+ * The status code BEGIN_SIGNING now shows the used hash algorithms.
  
 
 Noteworthy changes in version 2.0.1 (2006-11-28)

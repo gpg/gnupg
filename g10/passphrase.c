@@ -377,7 +377,18 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
         *canceled = 1;
     }
   else 
-    log_error (_("problem with the agent: %s\n"), gpg_strerror (rc));
+    {
+      log_error (_("problem with the agent: %s\n"), gpg_strerror (rc));
+      /* Due to limitations in the API of the upper layers they
+         consider an error as no passphrase entered.  This works in
+         most cases but not during key creation where this should
+         definitely not happen and let it continue without requiring a
+         passphrase.  Given that now all the upper layers handle a
+         cancel correctly, we simply set the cancel flag now for all
+         errors from the agent.  */ 
+      if (canceled)
+        *canceled = 1;
+    }
       
 #ifdef ENABLE_NLS
   if (orig_codeset)
@@ -483,7 +494,7 @@ ask_passphrase (const char *description,
 
 /* Return a new DEK object Using the string-to-key sepcifier S2K.  Use
    KEYID and PUBKEY_ALGO to prompt the user.  Returns NULL is the user
-   selected to cancel the passphrase entry and it CANCELED is not
+   selected to cancel the passphrase entry and if CANCELED is not
    NULL, sets it to true.
 
    MODE 0:  Allow cached passphrase

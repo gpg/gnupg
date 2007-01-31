@@ -164,7 +164,8 @@ use @samp{--help} to get a list of supported operations.
 @table @gnupgtabopt
 @item --gen-key
 @opindex gen-key
-Generate a new key and a certificate request.
+This command will only print an error message and direct the user to the
+@command{gpgsm-gencert.sh} script.
 
 @item --list-keys
 @itemx -k 

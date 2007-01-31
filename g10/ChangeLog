@@ -1,3 +1,8 @@
+2007-01-31  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (passphrase_get): Set the cancel flag on all error
+	from the agent.  Fixes a bug reported by Tom Duerbusch.
+
 2007-01-30  Werner Koch  <wk@g10code.com>
 
 	* status.c (write_status_begin_signing): New.

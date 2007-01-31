@@ -2446,9 +2446,9 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   /* make DEK and S2K from the Passphrase */
   r = get_parameter( para, pPASSPHRASE );
   if( r && *r->u.value ) {
-    /* we have a plain text passphrase - create a DEK from it.
+    /* We have a plain text passphrase - create a DEK from it.
      * It is a little bit ridiculous to keep it ih secure memory
-     * but becuase we do this alwasy, why not here */
+     * but because we do this always, why not here */
     STRING2KEY *s2k;
     DEK *dek;
 

@@ -2371,9 +2371,9 @@ ccid_transceive_secure (ccid_driver_t handle,
       /* The CHERRY XX44 does not yet work. I have not investigated it
          closer because there is another problem: It echos a "*" for
          each entered character and we somehow need to arrange that it
-         doesn't get to the tty at all.  Given thate are running
+         doesn't get to the tty at all.  Given that we are running
          without a control terminal there is not much we can do about.
-         A weird hack using pinentry comes in mind but I doubnt that
+         A weird hack using pinentry comes in mind but I doubt that
          this is a clean solution.  Need to contact Cherry.
        */
     default:
@@ -2417,8 +2417,11 @@ ccid_transceive_secure (ccid_driver_t handle,
       msg[14] = 0x00; /* bmPINLengthFormat:
                          Units are bytes, position is 0. */
     }
-  msg[15] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
+
+  /* The following is a little endian word. */
+  msg[15] = pinlen_max;   /* wPINMaxExtraDigit-Maximum. */
   msg[16] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
+
   msg[17] = 0x02; /* bEntryValidationCondition:
                      Validation key pressed */
   if (pinlen_min && pinlen_max && pinlen_min == pinlen_max)

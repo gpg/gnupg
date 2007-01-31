@@ -253,7 +253,7 @@ static ARGPARSE_OPTS opts[] = {
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aListChain,   "list-chain",  256, N_("list certificate chain")}, 
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
-    { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
+    { aKeygen,	   "gen-key",  256, "@" },
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
@@ -1596,8 +1596,11 @@ main ( int argc, char **argv)
       break;
 
 
-    case aKeygen: /* generate a key */
-      log_error ("this function is not yet available from the commandline\n");
+    case aKeygen: /* Generate a key; well kind of. */
+      log_error 
+        (_("key generation is not available from the commandline\n"));
+      log_info (_("please use the script \"%s\" to generate a new key\n"),
+                "gpgsm-gencert.sh");
       break;
 
     case aImport:

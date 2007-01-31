@@ -1463,7 +1463,7 @@ Override the value of the environment variable
 @samp{GPG_AGENT_INFO}. This is only used when @option{--use-agent} has
 been given.  Given that this option is not anymore used by
 @command{gpg2}, it should be avoided if possible.
-@end gpgone
+@end ifset
 
 @item --lock-once
 Lock the databases the first time a lock is requested

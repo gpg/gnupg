@@ -1,3 +1,8 @@
+2007-01-31  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Let --gen-key print a more informative error
+	message.
+
 2007-01-25  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpgsm_LDADD): Add LIBICONV.  Noted by Billy Halsey.
