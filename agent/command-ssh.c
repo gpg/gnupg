@@ -421,10 +421,8 @@ stream_read_string (estream_t stream, unsigned int secure,
 		    unsigned char **string, u32 *string_size)
 {
   gpg_error_t err;
-  unsigned char *buffer;
-  u32 length;
-
-  buffer = NULL;
+  unsigned char *buffer = NULL;
+  u32 length = 0;
 
   /* Read string length.  */
   err = stream_read_uint32 (stream, &length);
@@ -796,7 +794,7 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
       struct tm *tp;
       time_t atime = time (NULL);
 
-      /* Not yet in the file - add it. Becuase the file has been
+      /* Not yet in the file - add it. Because the file has been
          opened in append mode, we simply need to write to it.  */
       tp = localtime (&atime);
       fprintf (fp, "# Key added on %04d-%02d-%02d %02d:%02d:%02d\n%s %d\n",
@@ -2646,7 +2644,8 @@ request_spec_lookup (int type)
       break;
   if (i == DIM (request_specs))
     {
-      log_info ("ssh request %u is not supported\n", type);
+      if (opt.verbose)
+        log_info ("ssh request %u is not supported\n", type);
       spec = NULL;
     }
   else
@@ -2867,7 +2866,16 @@ start_command_handler_ssh (ctrl_t ctrl, int sock_client)
 
   /* Main processing loop. */
   while ( !ssh_request_process (ctrl, stream_sock) )
-    ;
+    {
+      /* Check wether we have reached EOF before trying to read
+	 another request.  */
+      int c;
+
+      c = es_fgetc (stream_sock);
+      if (c == EOF)
+        break;
+      es_ungetc (c, stream_sock);
+    }
 
   /* Reset the SCD in case it has been used. */
   agent_reset_scd (ctrl);

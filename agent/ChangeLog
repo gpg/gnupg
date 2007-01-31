@@ -1,4 +1,12 @@
+2007-01-31  Moritz Schulte  <moritz@g10code.com>  (wk)
+
+	* command-ssh.c (stream_read_string): Initialize LENGTH to zero.
+	(start_command_handler_ssh): Use es_fgetc/es_ungetc to check if
+	EOF has been reached before trying to process another request.
+
 2007-01-31  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (start_command_handler_ssh): 
 
 	* Makefile.am (t_common_ldadd): Add LIBICONV.
 
