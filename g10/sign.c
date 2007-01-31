@@ -572,7 +572,8 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
  * Helper to write the plaintext (literal data) packet
  */
 static int
-write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
+write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname,
+			int ptmode, u32 timestamp)
 {
     PKT_plaintext *pt = NULL;
     u32 filesize;
@@ -613,7 +614,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     if (!opt.no_literal) {
         PACKET pkt;
 
-        pt->timestamp = make_timestamp ();
+        pt->timestamp = timestamp;
         pt->mode = ptmode;
         pt->len = filesize;
         pt->new_ctb = !pt->len && !RFC1991;
@@ -749,7 +750,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     int multifile = 0;
-    u32 duration=0;
+    u32 create_time=make_timestamp(),duration=0;
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -1026,7 +1027,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     }
     else {
         rc = write_plaintext_packet (out, inp, fname,
-                                     opt.textmode && !outfile ? 't':'b');
+                                     opt.textmode && !outfile ? 't':'b',
+				     create_time);
     }
 
     /* catch errors from above */
@@ -1036,7 +1038,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* write the signatures */
     rc = write_signature_packets (sk_list, out, mfx.md,
                                   opt.textmode && !outfile? 0x01 : 0x00,
-				  0, duration, detached ? 'D':'S');
+				  create_time, duration, detached ? 'D':'S');
     if( rc )
         goto leave;
 
@@ -1075,7 +1077,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     SK_LIST sk_rover = NULL;
     int old_style = RFC1991;
     int only_md5 = 0;
-    u32 duration=0;
+    u32 create_time=make_timestamp(),duration=0;
 
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
@@ -1195,7 +1197,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     iobuf_push_filter( out, armor_filter, &afx );
 
     /* write the signatures */
-    rc=write_signature_packets (sk_list, out, textmd, 0x01, 0, duration, 'C');
+    rc=write_signature_packets (sk_list, out, textmd, 0x01,
+				create_time, duration, 'C');
     if( rc )
         goto leave;
 
@@ -1230,7 +1233,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     int algo;
-    u32 duration=0;
+    u32 create_time=make_timestamp(),duration=0;
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -1348,7 +1351,8 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     /* Pipe data through all filters; i.e. write the signed stuff */
     /*(current filters: zip - encrypt - armor)*/
-    rc = write_plaintext_packet (out, inp, fname, opt.textmode ? 't':'b');
+    rc = write_plaintext_packet (out, inp, fname, opt.textmode ? 't':'b',
+				 create_time);
     if (rc)
 	goto leave;
     
@@ -1356,7 +1360,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /*(current filters: zip - encrypt - armor)*/
     rc = write_signature_packets (sk_list, out, mfx.md,
 				  opt.textmode? 0x01 : 0x00,
-				  0, duration, 'S');
+				  create_time, duration, 'S');
     if( rc )
         goto leave;
 
