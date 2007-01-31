@@ -1,3 +1,8 @@
+2007-01-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, keygen.c (ask_expiredate), keyedit.c (menu_expire):
+	Remove the need for ask_expiredate().
+
 2007-01-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (make_backsig, write_direct_sig, write_selfsigs)

@@ -3540,7 +3540,10 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	no_primary_warning(pub_keyblock);
       }
 
-    expiredate = ask_expiredate();
+    expiredate=ask_expire_interval(0,NULL);
+    if(expiredate)
+      expiredate+=make_timestamp();
+
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
     sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
 

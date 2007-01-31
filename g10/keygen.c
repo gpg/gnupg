@@ -1699,14 +1699,6 @@ ask_expire_interval(int object,const char *def_expire)
     return interval;
 }
 
-u32
-ask_expiredate()
-{
-    u32 x = ask_expire_interval(0,NULL);
-    return x? make_timestamp() + x : 0;
-}
-
-
 static char *
 ask_user_id( int mode )
 {
