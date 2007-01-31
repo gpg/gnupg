@@ -60,6 +60,7 @@ enum para_name {
   pREVOKER,
   pUSERID,
   pEXPIREDATE,
+  pCREATETIME, /* in n seconds */
   pKEYEXPIRE, /* in n seconds */
   pSUBKEYEXPIRE, /* in n seconds */
   pPASSPHRASE,
@@ -78,6 +79,7 @@ struct para_data_s {
     union {
         DEK *dek;
         STRING2KEY *s2k;
+        u32 create;
         u32 expire;
         unsigned int usage;
         struct revocation_key revkey;
@@ -120,7 +122,8 @@ static int nzip_prefs;
 static int mdc_available,ks_modify;
 
 static void do_generate_keypair( struct para_data_s *para,
-				 struct output_control_s *outctrl, int card );
+				 struct output_control_s *outctrl,
+				 u32 timestamp, int card );
 static int  write_keyblock( IOBUF out, KBNODE node );
 static int gen_card_key (int algo, int keyno, int is_primary,
                          KBNODE pub_root, KBNODE sec_root,
@@ -1008,7 +1011,8 @@ write_keybinding( KBNODE root, KBNODE pub_root,
 
 static int
 gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 timestamp,
+	u32 expireval, int is_subkey)
 {
     int rc;
     PACKET *pkt;
@@ -1037,11 +1041,11 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     sk = xmalloc_clear( sizeof *sk );
     pk = xmalloc_clear( sizeof *pk );
-    sk->timestamp = pk->timestamp = make_timestamp();
+    sk->timestamp = pk->timestamp = timestamp;
     sk->version = pk->version = 4;
-    if( expireval ) {
-	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
-    }
+    if( expireval )
+      sk->expiredate = pk->expiredate = sk->timestamp + expireval;
+
     sk->pubkey_algo = pk->pubkey_algo = algo;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
@@ -1090,7 +1094,8 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  */
 static int
 gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 timestamp,
+	u32 expireval, int is_subkey)
 {
     int rc;
     PACKET *pkt;
@@ -1152,7 +1157,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     sk = xmalloc_clear( sizeof *sk );
     pk = xmalloc_clear( sizeof *pk );
-    sk->timestamp = pk->timestamp = make_timestamp();
+    sk->timestamp = pk->timestamp = timestamp;
     sk->version = pk->version = 4;
     if( expireval )
       sk->expiredate = pk->expiredate = sk->timestamp + expireval;
@@ -1211,7 +1216,8 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  */
 static int
 gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 timestamp,
+	u32 expireval, int is_subkey)
 {
     int rc;
     PACKET *pkt;
@@ -1240,11 +1246,11 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     sk = xmalloc_clear( sizeof *sk );
     pk = xmalloc_clear( sizeof *pk );
-    sk->timestamp = pk->timestamp = make_timestamp();
+    sk->timestamp = pk->timestamp = timestamp;
     sk->version = pk->version = 4;
-    if( expireval ) {
-	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
-    }
+    if( expireval )
+      sk->expiredate = pk->expiredate = sk->timestamp + expireval;
+
     sk->pubkey_algo = pk->pubkey_algo = algo;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
@@ -1910,8 +1916,8 @@ do_ask_passphrase( STRING2KEY **ret_s2k )
 
 static int
 do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
-	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, u32 expiredate,
-	   int is_subkey )
+	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, u32 timestamp,
+	   u32 expiredate, int is_subkey )
 {
   int rc=0;
 
@@ -1923,14 +1929,14 @@ do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
 "generator a better chance to gain enough entropy.\n") );
 
   if( algo == PUBKEY_ALGO_ELGAMAL_E )
-    rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate,
-		 is_subkey);
+    rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk, timestamp,
+		 expiredate, is_subkey);
   else if( algo == PUBKEY_ALGO_DSA )
-    rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate,
-		 is_subkey);
+    rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, timestamp,
+		 expiredate, is_subkey);
   else if( algo == PUBKEY_ALGO_RSA )
-    rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate,
-		 is_subkey);
+    rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk, timestamp,
+		 expiredate, is_subkey);
   else
     BUG();
 
@@ -2108,6 +2114,8 @@ get_parameter_u32( struct para_data_s *para, enum para_name key )
 	return r->u.expire;
     if( r->key == pKEYUSAGE || r->key == pSUBKEYUSAGE )
 	return r->u.usage;
+    if( r->key == pCREATETIME )
+	return r->u.create;
 
     return (unsigned int)strtoul( r->u.value, NULL, 10 );
 }
@@ -2148,6 +2156,13 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   size_t n;
   char *p;
   int have_user_id=0,err,algo;
+  u32 timestamp;
+
+  /* If we were told a creation time from outside, use it.  Otherwise
+     look at the clock. */
+  timestamp=get_parameter_u32( para, pCREATETIME );
+  if(!timestamp)
+    timestamp=make_timestamp();
 
   /* Check that we have all required parameters. */
   r = get_parameter( para, pKEYTYPE );
@@ -2320,7 +2335,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     return -1;
   }
 
-  do_generate_keypair( para, outctrl, card );
+  do_generate_keypair( para, outctrl, timestamp, card );
   return 0;
 }
 
@@ -2550,7 +2565,7 @@ generate_keypair (const char *fname, const char *card_serialno,
   int algo;
   unsigned int use;
   int both = 0;
-  u32 expire;
+  u32 timestamp,expire;
   struct para_data_s *para = NULL;
   struct para_data_s *r;
   struct output_control_s outctrl;
@@ -2569,6 +2584,13 @@ generate_keypair (const char *fname, const char *card_serialno,
       read_parameter_file( fname );
       return;
     }
+
+  timestamp=make_timestamp();
+  r = xmalloc_clear( sizeof *r );
+  r->key = pCREATETIME;
+  r->u.create = timestamp;
+  r->next = para;
+  para = r;
 
   if (card_serialno)
     {
@@ -2821,8 +2843,8 @@ start_tree(KBNODE *tree)
 }
 
 static void
-do_generate_keypair( struct para_data_s *para,
-		     struct output_control_s *outctrl, int card )
+do_generate_keypair( struct para_data_s *para,struct output_control_s *outctrl,
+		     u32 timestamp,int card )
 {
     KBNODE pub_root = NULL;
     KBNODE sec_root = NULL;
@@ -2925,6 +2947,7 @@ do_generate_keypair( struct para_data_s *para,
                         get_parameter_dek( para, pPASSPHRASE_DEK ),
                         get_parameter_s2k( para, pPASSPHRASE_S2K ),
                         &pri_sk,
+			timestamp,
                         get_parameter_u32( para, pKEYEXPIRE ), 0 );
       }
     else
@@ -2984,6 +3007,7 @@ do_generate_keypair( struct para_data_s *para,
                             get_parameter_dek( para, pPASSPHRASE_DEK ),
                             get_parameter_s2k( para, pPASSPHRASE_S2K ),
                             &sub_sk,
+			    timestamp,
                             get_parameter_u32( para, pSUBKEYEXPIRE ), 1 );
           }
         else
@@ -3145,7 +3169,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     char *passphrase = NULL;
     DEK *dek = NULL;
     STRING2KEY *s2k = NULL;
-    u32 cur_time;
+    u32 timestamp;
     int ask_pass = 0;
 
     /* break out the primary secret key */
@@ -3158,9 +3182,9 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     /* make a copy of the sk to keep the protected one in the keyblock */
     pri_sk = copy_secret_key( NULL, node->pkt->pkt.secret_key );
 
-    cur_time = make_timestamp();
-    if( pri_sk->timestamp > cur_time ) {
-	ulong d = pri_sk->timestamp - cur_time;
+    timestamp = make_timestamp();
+    if( pri_sk->timestamp > timestamp ) {
+	ulong d = pri_sk->timestamp - timestamp;
 	log_info( d==1 ? _("key has been created %lu second "
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
@@ -3226,7 +3250,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-		    dek, s2k, &sub_sk, expire, 1 );
+		    dek, s2k, &sub_sk, timestamp, expire, 1 );
     if( !rc )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
     if( !rc )
@@ -3263,9 +3287,8 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
   PKT_secret_key *pri_sk = NULL, *sub_sk;
   int algo;
   unsigned int use;
-  u32 expire;
+  u32 timestamp,expire;
   char *passphrase = NULL;
-  u32 cur_time;
   struct para_data_s *para = NULL;
 
   assert (keyno >= 1 && keyno <= 3);
@@ -3285,10 +3308,10 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
   /* Make a copy of the sk to keep the protected one in the keyblock */
   pri_sk = copy_secret_key (NULL, node->pkt->pkt.secret_key);
 
-  cur_time = make_timestamp();
-  if (pri_sk->timestamp > cur_time)
+  timestamp = make_timestamp();
+  if (pri_sk->timestamp > timestamp)
     {
-      ulong d = pri_sk->timestamp - cur_time;
+      ulong d = pri_sk->timestamp - timestamp;
       log_info (d==1 ? _("key has been created %lu second "
                          "in future (time warp or clock problem)\n")
                      : _("key has been created %lu seconds "

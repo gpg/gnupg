@@ -1,5 +1,9 @@
 2007-01-31  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (do_generate_keypair, proc_parameter_file,
+	generate_keypair, generate_subkeypair): Pass a timestamp through
+	to all the gen_xxx functions.
+
 	* keyedit.c (sign_uids): Another multiple to single timestamp
 	operation.
 
