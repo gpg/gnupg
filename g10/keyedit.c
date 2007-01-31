@@ -517,6 +517,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     PKT_public_key *primary_pk=NULL;
     int select_all = !count_selected_uids(keyblock) || interactive;
     int all_v3=1;
+    u32 timestamp=make_timestamp();
 
     /* Are there any non-v3 sigs on this key already? */
     if(PGP2)
@@ -544,7 +545,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
         u32 sk_keyid[2],pk_keyid[2];
 	char *p,*trust_regexp=NULL;
 	int force_v4=0,class=0,selfsig=0;
-	u32 duration=0,timestamp=0;
+	u32 duration=0;
 	byte trust_depth=0,trust_value=0;
 
 	if(local || nonrevocable || trust ||
@@ -818,9 +819,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	if(primary_pk->expiredate && !selfsig)
 	  {
-	    u32 now=make_timestamp();
-
-	    if(primary_pk->expiredate<=now)
+	    if(primary_pk->expiredate<=timestamp)
 	      {
 		tty_printf(_("This key has expired!"));
 
@@ -850,14 +849,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 					   "expire at the same time? (Y/n) "));
 		    if(answer_is_yes_no_default(answer,1))
 		      {
-			/* This fixes the signature timestamp we're
-			   going to make as now.  This is so the
-			   expiration date is exactly correct, and not
-			   a few seconds off (due to the time it takes
-			   to answer the questions, enter the
-			   passphrase, etc). */
-			timestamp=now;
-			duration=primary_pk->expiredate-now;
+			/* Set our signature expiration date to match
+			   when the key is going to expire. */
+			duration=primary_pk->expiredate-timestamp;
 			force_v4=1;
 		      }
 

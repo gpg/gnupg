@@ -1,5 +1,8 @@
 2007-01-31  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (sign_uids): Another multiple to single timestamp
+	operation.
+
 	* sign.c (write_plaintext_packet): Take timestamp from outside.
 	Change all callers.
 	(sign_file, clearsign_file, sign_symencrypt_file): Calculate one
