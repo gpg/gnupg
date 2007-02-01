@@ -3348,7 +3348,7 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
     goto leave;
 
   algo = PUBKEY_ALGO_RSA;
-  expire = ask_expire_interval (0,NULL);
+  expire = ask_expire_interval (timestamp,0,NULL);
   if (keyno == 1)
     use = PUBKEY_USAGE_SIG;
   else if (keyno == 2)
