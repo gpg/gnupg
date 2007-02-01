@@ -405,7 +405,8 @@ do_get( const char *prompt, int hidden )
 	init_ttyfp();
 
     last_prompt_len = 0;
-    buf = xmalloc(n=50);
+    n = 50;
+    buf = hidden ? xmalloc_secure(n) : xmalloc(n);
     i = 0;
 
 #ifdef _WIN32 /* windoze version */

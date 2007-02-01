@@ -1,3 +1,9 @@
+2007-01-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* ttyio.c (do_get): Assume that anything read from the user
+	without echoing to the screen is sensitive and put it in secure
+	memory.  Suggested by Benjamin Bennett.
+
 2006-12-14  Werner Koch  <wk@g10code.com>
 
 	* http.c (http_wait_response): No more shutdown.  Fixes bug#739.
