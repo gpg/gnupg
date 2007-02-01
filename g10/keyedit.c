@@ -866,9 +866,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	if(!duration && !selfsig)
 	  {
 	    if(opt.ask_cert_expire)
-	      duration=ask_expire_interval(1,opt.def_cert_expire);
+	      duration=ask_expire_interval(timestamp,1,opt.def_cert_expire);
 	    else
-	      duration=parse_expire_string(opt.def_cert_expire);
+	      duration=parse_expire_string(timestamp,opt.def_cert_expire);
 	  }
 
 	if(duration)
@@ -3514,6 +3514,7 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
     PKT_user_id *uid;
     KBNODE node;
     u32 keyid[2];
+    u32 timestamp=make_timestamp();
 
     if( count_selected_keys( sec_keyblock ) ) {
 	tty_printf(_("Please remove selections from the secret keys.\n"));
@@ -3534,9 +3535,9 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	no_primary_warning(pub_keyblock);
       }
 
-    expiredate=ask_expire_interval(0,NULL);
+    expiredate=ask_expire_interval(timestamp,0,NULL);
     if(expiredate)
-      expiredate+=make_timestamp();
+      expiredate+=timestamp;
 
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
     sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
@@ -3596,6 +3597,13 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		if( !sn )
 		    log_info(_("No corresponding signature in secret ring\n"));
 
+		/* Note the potential oddity that the expiration date
+		   is calculated from the time when this function
+		   started ("timestamp"), but the signature is
+		   calculated from the time within
+		   update_keysig_packet().  On a slow or loaded
+		   machine, these two values may not match, making the
+		   expiration date off by a second or two. */
 		if( mainkey )
 		  rc = update_keysig_packet(&newsig, sig, main_pk, uid, NULL,
 					    sk, keygen_add_key_expire, main_pk);

@@ -2397,7 +2397,7 @@ main (int argc, char **argv )
 	  case oDefSigExpire:
 	    if(*pargs.r.ret_str!='\0')
 	      {
-		if(parse_expire_string(pargs.r.ret_str)==(u32)-1)
+		if(parse_expire_string(0,pargs.r.ret_str)==(u32)-1)
 		  log_error(_("`%s' is not a valid signature expiration\n"),
 			    pargs.r.ret_str);
 		else
@@ -2409,7 +2409,7 @@ main (int argc, char **argv )
 	  case oDefCertExpire:
 	    if(*pargs.r.ret_str!='\0')
 	      {
-		if(parse_expire_string(pargs.r.ret_str)==(u32)-1)
+		if(parse_expire_string(0,pargs.r.ret_str)==(u32)-1)
 		  log_error(_("`%s' is not a valid signature expiration\n"),
 			    pargs.r.ret_str);
 		else

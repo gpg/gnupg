@@ -1584,17 +1584,17 @@ ask_keysize( int algo )
  * similar.
  */
 u32
-parse_expire_string( const char *string )
+parse_expire_string(u32 timestamp,const char *string)
 {
     int mult;
-    u32 seconds,abs_date=0,curtime = make_timestamp();
+    u32 seconds,abs_date=0;
 
     if( !*string )
       seconds = 0;
     else if ( !strncmp (string, "seconds=", 8) )
       seconds = atoi (string+8);
-    else if( (abs_date = scan_isodatestr(string)) && abs_date > curtime )
-      seconds = abs_date - curtime;
+    else if( (abs_date = scan_isodatestr(string)) && abs_date > timestamp )
+      seconds = abs_date - timestamp;
     else if( (mult=check_valid_days(string)) )
       seconds = atoi(string) * 86400L * mult;
     else
@@ -1605,7 +1605,7 @@ parse_expire_string( const char *string )
 
 /* object == 0 for a key, and 1 for a sig */
 u32
-ask_expire_interval(int object,const char *def_expire)
+ask_expire_interval(u32 timestamp,int object,const char *def_expire)
 {
     u32 interval;
     char *answer;
@@ -1645,8 +1645,6 @@ ask_expire_interval(int object,const char *def_expire)
     answer = NULL;
     for(;;)
       {
-	u32 curtime=make_timestamp();
-
 	xfree(answer);
 	if(object==0)
 	  answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
@@ -1669,7 +1667,7 @@ ask_expire_interval(int object,const char *def_expire)
 	  }
 	cpr_kill_prompt();
 	trim_spaces(answer);
-	interval = parse_expire_string( answer );
+	interval = parse_expire_string( timestamp, answer );
 	if( interval == (u32)-1 )
 	  {
 	    tty_printf(_("invalid value\n"));
@@ -1687,11 +1685,11 @@ ask_expire_interval(int object,const char *def_expire)
 	    tty_printf(object==0
 		       ? _("Key expires at %s\n")
 		       : _("Signature expires at %s\n"),
-		       asctimestamp((ulong)(curtime + interval) ) );
+		       asctimestamp((ulong)(timestamp + interval) ) );
 	    /* FIXME: This check yields warning on alhas: Write a
 	       configure check and to this check here only for 32 bit
 	       machines */
-	    if( (time_t)((ulong)(curtime+interval)) < 0 )
+	    if( (time_t)((ulong)(timestamp+interval)) < 0 )
 	      tty_printf(_("Your system can't display dates beyond 2038.\n"
 			   "However, it will be correctly handled up to 2106.\n"));
 	  }
@@ -2314,7 +2312,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     {
       u32 seconds;
 
-      seconds = parse_expire_string( r->u.value );
+      seconds = parse_expire_string( timestamp, r->u.value );
       if( seconds == (u32)-1 )
 	{
 	  log_error("%s:%d: invalid expire date\n", fname, r->lnr );
@@ -2706,7 +2704,7 @@ generate_keypair (const char *fname, const char *card_serialno,
       para = r;
     }
    
-  expire = ask_expire_interval(0,NULL);
+  expire = ask_expire_interval(timestamp,0,NULL);
   r = xmalloc_clear( sizeof *r + 20 );
   r->key = pKEYEXPIRE;
   r->u.expire = expire;
@@ -3233,7 +3231,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     algo = ask_algo( 1, &use );
     assert(algo);
     nbits = ask_keysize( algo );
-    expire = ask_expire_interval(0,NULL);
+    expire = ask_expire_interval(timestamp,0,NULL);
     if( !cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
 						  _("Really create? (y/N) ")))
 	goto leave;
