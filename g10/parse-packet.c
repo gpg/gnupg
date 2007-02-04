@@ -1494,9 +1494,19 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	unknown_pubkey_warning( sig->pubkey_algo );
 	/* We store the plain material in data[0], so that we are able
 	 * to write it back with build_packet() */
-	sig->data[0]= gcry_mpi_set_opaque (NULL, read_rest(inp, pktlen, 0),
-                                           pktlen*8 );
-	pktlen = 0;
+        if (pktlen > (5 * MAX_EXTERN_MPI_BITS/8))
+          {
+            /* However we include a limit to avoid too trivial DoS
+               attacks by having gpg allocate too much memory.  */
+	    log_error ("signature packet: too much data\n");
+	    rc = G10ERR_INVALID_PACKET;
+          }
+        else
+          {
+            sig->data[0]= gcry_mpi_set_opaque (NULL, read_rest(inp, pktlen, 0),
+                                               pktlen*8 );
+            pktlen = 0;
+          }
     }
     else {
 	for( i=0; i < ndata; i++ ) {
