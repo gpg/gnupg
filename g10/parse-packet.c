@@ -38,6 +38,11 @@
 #include "main.h"
 #include "i18n.h"
 
+#ifndef MAX_EXTERN_MPI_BITS
+#define MAX_EXTERN_MPI_BITS 16384
+#endif
+
+
 static int mpi_print_mode;
 static int list_mode;
 static FILE *listfp;
@@ -1437,10 +1442,21 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	if( list_mode )
 	    fprintf (listfp, "\tunknown algorithm %d\n", sig->pubkey_algo );
 	unknown_pubkey_warning( sig->pubkey_algo );
-	/* we store the plain material in data[0], so that we are able
+	/* We store the plain material in data[0], so that we are able
 	 * to write it back with build_packet() */
-	sig->data[0]= mpi_set_opaque(NULL, read_rest(inp, pktlen, 0), pktlen );
-	pktlen = 0;
+        if (pktlen > (5 * MAX_EXTERN_MPI_BITS/8))
+          {
+            /* However we include a limit to avoid too trivial DoS
+               attacks by having gpg allocate too much memory.  */
+	    log_error ("signature packet: too much data\n");
+	    rc = G10ERR_INVALID_PACKET;
+          }
+        else
+          {
+            sig->data[0]= mpi_set_opaque (NULL, read_rest(inp, pktlen, 0),
+                                          pktlen );
+            pktlen = 0;
+          }
     }
     else {
 	for( i=0; i < ndata; i++ ) {
