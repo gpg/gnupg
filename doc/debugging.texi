@@ -125,6 +125,46 @@ should issue the above command before invoking ssh or any other service
 making use of ssh.
 
 
+@item Exporting a secret key without a certificate
+
+I may happen that you have created a certificate request using
+@command{gpgsm} but not yet received and imported the certificate from
+the CA.  However, you want to export the secret key to another machine
+right now to import the certificate over there then.  You can do this
+with a little trick but it requires that you know the approximate time
+you created the signing request.  By running the command
+
+@smallexample
+  ls -ltr ~/.gnupg/private-keys-v1.d
+@end smallexample
+
+you get a listing of all private keys under control of @command{gpg-agent}.
+Pick the key which best matches the creation time and run the command
+ 
+@smallexample
+  /usr/local/libexec/gpg-protect-tool --p12-export ~/.gnupg/private-keys-v1.d/@var{foo} >@var{foo}.p12
+@end smallexample
+
+(Please adjust the path to @command{gpg-protect-tool} to the approriate
+location). @var{foo} is the name of the key file you picked (it should
+have the suffix @file{.key}).  A Pinentry box will pop up and ask you
+for the current passphrase of the key and a new passphrase to protect it
+in the pkcs#12 file.
+
+To import the created file on the machine you use this command:  
+
+@smallexample
+  /usr/local/libexec/gpg-protect-tool --p12-import --store  @var{foo}.p12
+@end smallexample
+
+You will be asked for the pkcs#12 passphrase and a new passphrase to
+protect the imported private key at its new location.
+
+Note that there is no easy way to match existing certificates with
+stored private keys because some private keys are used for Secure Shell
+or other purposes and don't have a corresponding certificate.
+
+
 @end itemize
 
 
