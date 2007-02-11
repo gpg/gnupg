@@ -782,6 +782,7 @@ send_key(int *eof)
   free(modlist);
   free(addlist);
   free(dn);
+  free(key);
 
   if(ret!=0 && begin)
     fprintf(output,"KEY %s FAILED %d\n",keyid,ret);
