@@ -1,3 +1,9 @@
+2007-02-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (do_parse_uri): Remove the hkp port 11371 detection.  We
+	implement hkp in the keyserver handler, and the support here makes
+	it appear like a bad hkp request actually succeeded.
+
 2007-01-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* ttyio.c (do_get): Assume that anything read from the user

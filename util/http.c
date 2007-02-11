@@ -321,8 +321,6 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	uri->scheme = p;
 	if(strcmp(uri->scheme,"http")==0)
 	  uri->port = 80;
-	else if(strcmp(uri->scheme,"hkp")==0)
-	  uri->port = 11371;
 	else
 	  return G10ERR_INVALID_URI; /* Unsupported scheme */
 
