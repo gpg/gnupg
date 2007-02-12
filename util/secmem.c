@@ -449,10 +449,27 @@ secmem_free( void *a )
     cur_alloced -= size;
 }
 
+
+/* Check whether P points into the pool.  */
+static int
+ptr_into_pool_p (const void *p)
+{
+  /* We need to convert pointers to addresses.  This is required by
+     C-99 6.5.8 to avoid undefined behaviour.  Using size_t is at
+     least only implementation defined.  See also
+     http://lists.gnupg.org/pipermail/gcrypt-devel/2007-February/001102.html
+  */
+  size_t p_addr = (size_t)p;
+  size_t pool_addr = (size_t)pool;
+
+  return p_addr >= pool_addr && p_addr <  pool_addr+poolsize;
+}
+
+
 int
 m_is_secure( const void *p )
 {
-    return p >= pool && p < (void*)((char*)pool+poolsize);
+  return pool_okay && ptr_into_pool_p (p);
 }
 
 

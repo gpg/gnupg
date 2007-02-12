@@ -1,3 +1,9 @@
+2007-02-12  Werner Koch  <wk@g10code.com>
+
+	* secmem.c (ptr_into_pool_p): New.
+	(m_is_secure): Implement in terms of above.  Also check that the
+	pool has been initialized.
+
 2007-02-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (do_parse_uri): Remove the hkp port 11371 detection.  We
