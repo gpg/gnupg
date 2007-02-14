@@ -1,3 +1,8 @@
+2007-02-06  Werner Koch  <wk@g10code.com>
+
+	* export.c (do_export_stream): Allow reset-subkey-passwd along
+	with sexp-format.
+
 2007-02-04  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (parse_signature): Limit bytes read for an

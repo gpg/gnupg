@@ -564,7 +564,10 @@ do_export_stream( IOBUF out, strlist_t users, int secret,
                     goto leave;
                   }
 
-		rc = build_packet (out, node->pkt);
+                if ((options&EXPORT_SEXP_FORMAT))
+                  rc = build_sexp (out, node->pkt, &indent);
+                else
+                  rc = build_packet (out, node->pkt);
 
                 node->pkt->pkt.secret_key = sk_save;
                 free_secret_key (sk);
