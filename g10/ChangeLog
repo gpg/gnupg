@@ -1,3 +1,10 @@
+2007-02-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_signature): It's hex.
+
+	* getkey.c (merge_selfsigs_subkey): Avoid listing the contents of
+	a backsig when list mode is on.  Noted by Timo Schulz.
+
 2007-02-04  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (parse_signature): Limit bytes read for an
