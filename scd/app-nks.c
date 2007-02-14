@@ -33,7 +33,8 @@
 #include "app-common.h"
 #include "tlv.h"
 
-static struct {
+static struct
+{
   int fid;       /* File ID. */
   int certtype;  /* Type of certificate or 0 if it is not a certificate. */
   int iskeypair; /* If true has the FID of the correspoding certificate. */
@@ -208,8 +209,8 @@ do_readcert (app_t app, const char *certid,
 
   /* If the requested objects is a plain public key, redirect it to
      the corresponding certificate.  The whole system is a bit messy
-     becuase we sometime use the key directly or let the caller
-     retrieve the key from the certificate.  The valid point behind
+     because we sometime use the key directly or let the caller
+     retrieve the key from the certificate.  The rationale for
      that is to support not-yet stored certificates. */
   if (filelist[i].iskeypair)
     fid = filelist[i].iskeypair;
@@ -385,7 +386,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check that the provided ID is vaid.  This is not really needed
-     but we do it to to enforce correct usage by the caller. */
+     but we do it to enforce correct usage by the caller. */
   if (strncmp (keyidstr, "NKS-DF01.", 9) ) 
     return gpg_error (GPG_ERR_INV_ID);
   keyidstr += 9;
@@ -488,7 +489,7 @@ do_decipher (app_t app, const char *keyidstr,
 
 
 
-/* Select the NKS 2.0 application on the card in SLOT.  */
+/* Select the NKS 2.0 application.  */
 gpg_error_t
 app_select_nks (app_t app)
 {
