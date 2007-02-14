@@ -311,7 +311,7 @@ used by @command{gpgsm}.
 @subsection The DINSIG card application ``dinsig''
 
 This is an application as described in the German draft standard
-@emph{DIN V 66291-1}.  It is intended to be used by cards supporteing
+@emph{DIN V 66291-1}.  It is intended to be used by cards supporting
 the German signature law and its bylaws (SigG and SigV).
 
 @node PKCS#15 Card

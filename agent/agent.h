@@ -72,6 +72,10 @@ struct
   int disable_scdaemon;         /* Never use the SCdaemon. */
   int no_grab;         /* Don't let the pinentry grab the keyboard */
 
+  /* The name of the file pinentry shall tocuh before exiting.  If
+     this is not set the filoe name of the standard socket is used. */
+  const char *pinentry_touch_file;
+
   /* The default and maximum TTL of cache entries. */
   unsigned long def_cache_ttl;     /* Default. */
   unsigned long def_cache_ttl_ssh; /* for SSH. */
@@ -186,6 +190,7 @@ cache_mode_t;
 
 /*-- gpg-agent.c --*/
 void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
+const char *get_agent_socket_name (void);
 
 /*-- command.c --*/
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...);

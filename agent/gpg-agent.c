@@ -78,6 +78,7 @@ enum cmd_and_opt_values
   oBatch,
 
   oPinentryProgram,
+  oPinentryTouchFile,
   oDisplay,
   oTTYname,
   oTTYtype,
@@ -131,6 +132,7 @@ static ARGPARSE_OPTS opts[] = {
 
   { oPinentryProgram, "pinentry-program", 2 ,
                                N_("|PGM|use PGM as the PIN-Entry program") },
+  { oPinentryTouchFile, "pinentry-touch-file", 2 , "@" },
   { oScdaemonProgram, "scdaemon-program", 2 ,
                                N_("|PGM|use PGM as the SCdaemon program") },
   { oDisableScdaemon, "disable-scdaemon", 0, N_("do not use the SCdaemon") },
@@ -401,6 +403,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.debug = 0;
       opt.no_grab = 0;
       opt.pinentry_program = NULL;
+      opt.pinentry_touch_file = NULL;
       opt.scdaemon_program = NULL;
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
       opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL_SSH;
@@ -437,6 +440,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oNoGrab: opt.no_grab = 1; break;
       
     case oPinentryProgram: opt.pinentry_program = pargs->r.ret_str; break;
+    case oPinentryTouchFile: opt.pinentry_touch_file = pargs->r.ret_str; break;
     case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
     case oDisableScdaemon: opt.disable_scdaemon = 1; break;
 
@@ -1185,6 +1189,16 @@ reread_configuration (void)
   set_debug ();
 }
 
+
+/* Return the file name of the socket we are using for native
+   requests.  */
+const char *
+get_agent_socket_name (void)
+{
+  const char *s = socket_name;
+
+  return (s && *s)? s : NULL;
+}
 
 
 

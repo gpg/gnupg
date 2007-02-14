@@ -344,6 +344,17 @@ shorter than this value a warning will be displayed.  Defaults to 8.
 Use program @var{filename} as the PIN entry.  The default is installation
 dependend and can be shown with the @code{--version} command.
 
+@item --pinentry-touch-file @var{filename}
+@opindex pinentry-touch-file
+By default the file name of the socket gpg-agent is listening for
+requests is passed to Pinentry, so that it can touch that file before
+exiting (it does this only in curses mode).  This option changes the
+file passed to Pinentry to @var{filename}.  The special name
+@code{/dev/null} may be used to completely disable this feature.  Note
+that Pinentry will not create that file, it will only change the
+modification and access time.
+
+
 @item --scdaemon-program @var{filename}
 @opindex scdaemon-program
 Use program @var{filename} as the Smartcard daemon.  The default is

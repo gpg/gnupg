@@ -181,6 +181,7 @@ start_pinentry (ctrl_t ctrl)
   int no_close_list[3];
   int i;
   pth_event_t evt;
+  const char *tmpstr;
 
   evt = pth_event (PTH_EVENT_TIME, pth_timeout (LOCK_TIMEOUT, 0));
   if (!pth_mutex_acquire (&entry_lock, 0, evt))
@@ -297,6 +298,30 @@ start_pinentry (ctrl_t ctrl)
       if (rc)
 	return unlock_pinentry (rc);
     }
+
+  
+  /* Tell the pinentry the name of a file it shall touch after having
+     messed with the tty.  This is optional and only supported by
+     newer pinentries and thus we do no error checking. */
+  tmpstr = opt.pinentry_touch_file;
+  if (tmpstr && !strcmp (tmpstr, "/dev/null"))
+    tmpstr = NULL;
+  else if (!tmpstr)
+    tmpstr = get_agent_socket_name ();
+  if (tmpstr)
+    {
+      char *optstr;
+      
+      if (asprintf (&optstr, "OPTION touch-file=%s", tmpstr ) < 0 )
+        ;
+      else
+        {
+          assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+                           NULL);
+          free (optstr);
+        }
+    }
+
   return 0;
 }
 
