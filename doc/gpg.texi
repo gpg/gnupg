@@ -1076,18 +1076,23 @@ not used).
 @include opt-homedir.texi
 
 
+@ifset gpgone
 @item --pcsc-driver @code{file}
 Use @code{file} to access the smartcard reader. The current default is
 `libpcsclite.so.1' for GLIBC based systems,
 `/System/Library/Frameworks/PCSC.framework/PCSC' for MAC OS X,
 `winscard.dll' for Windows and `libpcsclite.so' for other systems.
+@end ifset
 
+@ifset gpgone
 @item --disable-ccid
 Disable the integrated support for CCID compliant readers. This
 allows to fall back to one of the other drivers even if the internal
 CCID driver can handle the reader. Note, that CCID support is only
 available if libusb was available at build time.
+@end ifset
 
+@ifset gpgone
 @item --reader-port @code{number_or_string}
 This option may be used to specify the port of the card terminal. A
 value of 0 refers to the first serial device; add 32768 to access USB
@@ -1095,6 +1100,7 @@ devices. The default is 32768 (first USB device). PC/SC or CCID
 readers might need a string here; run the program in verbose mode to get
 a list of available readers. The default is then the first reader
 found.
+@end ifset
 
 @item --display-charset @code{name}
 Set the name of the native character set. This is used to convert
@@ -2451,10 +2457,12 @@ Display the keyring name at the head of key listings to show which
 keyring a given key resides on. This option is deprecated: use
 @option{--list-options [no-]show-keyring} instead.
 
+@ifset gpgone
 @item --ctapi-driver @code{file}
 Use @code{file} to access the smartcard reader. The current default
 is `libtowitoko.so'. Note that the use of this interface is
 deprecated; it may be removed in future releases.
+@end ifset
 
 @item --always-trust
 Identical to @option{--trust-model always}. This option is deprecated.

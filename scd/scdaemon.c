@@ -139,9 +139,11 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
-/* The card dirver we use by default for PC/SC.  */
+/* The card driver we use by default for PC/SC.  */
 #if defined(HAVE_W32_SYSTEM) || defined(__CYGWIN__)
 #define DEFAULT_PCSC_DRIVER "winscard.dll"
+#elif defined(__APPLE__)
+#define DEFAULT_PCSC_DRIVER "/System/Library/Frameworks/PCSC.framework/PCSC"
 #elif defined(__GLIBC__)
 #define DEFAULT_PCSC_DRIVER "libpcsclite.so.1"
 #else

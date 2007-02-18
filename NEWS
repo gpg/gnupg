@@ -10,7 +10,7 @@ Noteworthy changes in version 2.0.2 (2007-01-31)
 
  * Using a PIN pad does now also work for the signing key.
 
- * A warning is displayed bu gpg-agent if a new passphrase is too
+ * A warning is displayed by gpg-agent if a new passphrase is too
    short.  New option --min-passphrase-len defaults to 8.
 
  * The status code BEGIN_SIGNING now shows the used hash algorithms.
