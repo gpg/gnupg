@@ -214,12 +214,21 @@ start_pinentry (ctrl_t ctrl)
 
   if (!opt.pinentry_program || !*opt.pinentry_program)
     opt.pinentry_program = GNUPG_DEFAULT_PINENTRY;
+    pgmname = opt.pinentry_program;
   if ( !(pgmname = strrchr (opt.pinentry_program, '/')))
     pgmname = opt.pinentry_program;
   else
     pgmname++;
 
+  /* OS X needs the entire file name in argv[0], so that it can locate
+     the resource bundle.  For other systems we stick to the the usual
+     convention of supplying only the name of the program.  */
+#ifdef __APPLE__
+  argv[0] = opt.pinentry_program;
+#else /*!__APPLE__*/
   argv[0] = pgmname;
+#endif /*__APPLE__*/
+
   if (ctrl->display && !opt.keep_display)
     {
       argv[1] = "--display";
