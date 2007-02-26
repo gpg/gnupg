@@ -43,6 +43,7 @@
 #include "types.h"
 #include "util.h"
 
+#include "windows.h" /* For GetModuleFileName.  */
 
 /* The magic number of the GNU message catalog format.	*/
 #define MAGIC	      0x950412de
@@ -232,96 +233,154 @@ load_domain( const char *filename )
 }
 
 
-/****************
- * Set the file used for translations. Pass a NULL to disable
- * translation.  A new filename may be set at anytime.  If REGKEY is
- * not NULL, the function tries to selected the language the registry
- * key "Lang" below that key.  WARNING: After changing the filename you
- * should not access any data retrieved by gettext().
+/* Set the file used for translations.  Pass a NULL to disable
+   translation.  A new filename may be set at anytime.  WARNING: After
+   changing the filename you should not access any data retrieved by
+   gettext().
+
+   If REGKEY is not NULL, the function tries to selected the language
+   the registry key "Lang" below that key.  If in addition the
+   environment variable LANGUAGE has been set, that value will
+   override a value set by the registry key.
  */
 int
 set_gettext_file ( const char *filename, const char *regkey )
 {
-    struct loaded_domain *domain = NULL;
+  struct loaded_domain *domain = NULL;
 
-    if( filename && *filename ) {
-	if( filename[0] == '/'
+  if ( filename && *filename )
+    {
+      if ( filename[0] == '/'
 #ifdef HAVE_DRIVE_LETTERS
-	    || ( isalpha(filename[0])
-		 && filename[1] == ':'
-		 && (filename[2] == '/' || filename[2] == '\\') )
+           || ( isalpha(filename[0])
+                && filename[1] == ':'
+                && (filename[2] == '/' || filename[2] == '\\') )
 #endif
-	   ) {
-	    /* absolute path - use it as is */
-	    domain = load_domain( filename );
+	   )
+        {
+          /* absolute path - use it as is */
+          domain = load_domain( filename );
 	}
-	else if (regkey) { /* Standard.  */
-            char *instdir, *langid, *fname;
-            char *p;
-
-            instdir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
-                                                regkey,
-                                                "Install Directory");
-            if (!instdir)
+      else if (regkey)  /* Standard.  */
+        {
+          char *instdir, *langid, *fname;
+          char *p;
+          int envvar_mode = 0;
+          
+        again:
+          if (!envvar_mode && (p = getenv ("LANGUAGE")) && *p)
+            {
+              envvar_mode = 1;
+              langid = malloc (strlen (p)+1);
+              if (!langid)
                 return -1;
-            langid = read_w32_registry_string (NULL, /* HKCU then HKLM */
-                                               regkey,
-                                               "Lang");
-            if (!langid) {
-                free (instdir);
-                return -1;
-            }
-            /* Strip stuff after a dot in case the user tried to enter
-             * the entire locale synatcs as usual for POSIX. */
-            p = strchr (langid, '.');
-            if (p)
+              strcpy (langid, p);
+              /* We only make use of the first language given.  Strip
+                 the rest.  */
+              p = strchr (langid, ':');
+              if (p)
                 *p = 0;
-                
-            /* Build the key: "<instdir>/<domain>.nls/<langid>.mo" We
-               use a directory below the installation directory with
-               the domain included in case the software has been
-               insalled with other software altogether at the same
-               place. */
-            fname = malloc (strlen (instdir) + 1 + strlen (filename) + 5
-                            + strlen (langid) + 3 + 1);
-            if (!fname) {
-                free (instdir);
-                free (langid);
+              
+              /* In the $LANGUAGE case we do not use the registered
+                 installation directory but the one where the gpg
+                 binary has been found.  */
+              instdir = malloc (MAX_PATH+5);
+              if ( !instdir || !GetModuleFileName (NULL, instdir, MAX_PATH) )
+                {
+                  free (langid);
+                  free (instdir);
+                  return -1; /* Error getting the process' file name.  */
+                }
+              p = strrchr (instdir, DIRSEP_C);
+              if (!p)
+                {
+                  free (langid);
+                  free (instdir);
+                  return -1; /* Invalid file name returned.  */
+                }
+              *p = 0;
+            }
+          else
+            {
+              instdir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
+                                                  regkey,
+                                                  "Install Directory");
+              if (!instdir)
                 return -1;
+              langid = read_w32_registry_string (NULL, /* HKCU then HKLM */
+                                                 regkey,
+                                                 "Lang");
+              if (!langid)
+                {
+                  free (instdir);
+                  return -1;
+                }
             }
-            strcpy (stpcpy (stpcpy (stpcpy (stpcpy ( stpcpy (fname,
-                   instdir),"\\"), filename), ".nls\\"), langid), ".mo");
-            free (instdir);
-            free (langid);
+          
+          /* Strip stuff after a dot in case the user tried to enter
+             the entire locale syntacs as usual for POSIX.  */
+          p = strchr (langid, '.');
+          if (p)
+            *p = 0;
+          
+          /* Build the key: "<instdir>/<domain>.nls/<langid>.mo" We
+             use a directory below the installation directory with the
+             domain included in case the software has been insalled
+             with other software altogether at the same place.  */
+          fname = malloc (strlen (instdir) + 1 + strlen (filename) + 5
+                          + strlen (langid) + 3 + 1);
+          if (!fname)
+            {
+              free (instdir);
+              free (langid);
+              return -1;
+            }
+          strcpy (stpcpy (stpcpy (stpcpy (stpcpy ( stpcpy (fname,
+                  instdir),"\\"), filename), ".nls\\"), langid), ".mo");
+          free (instdir);
+          free (langid);
 
-            /* Better make sure that we don't mix forward and
-               backward slashes.  It seems that some Windoze
-               versions don't accept this. */
-            for (p=fname; *p; p++) {
-                if (*p == '/')
-                    *p = '\\';
+          /* Better make sure that we don't mix forward and backward
+             slashes.  It seems that some Windoze versions don't
+             accept this. */
+          for (p=fname; *p; p++) 
+            {
+              if (*p == '/')
+                *p = '\\';
             }
-            domain = load_domain (fname);
-            free(fname);
+          domain = load_domain (fname);
+          free(fname);
+
+          if (!domain && envvar_mode == 1)
+            {
+              /* In case it failed, we try again using the registry
+                 method. */
+              envvar_mode++;
+              goto again;
+            }
 	}
+      
 
-	if (!domain)
-	    return -1;
+      if (!domain)
+        return -1;
     }
 
-    if( the_domain ) {
-        struct overflow_space_s *os, *os2;
-	free( the_domain->data );
-  	free( the_domain->mapped );
-        for (os=the_domain->overflow_space; os; os = os2) {
-            os2 = os->next;
-            free (os);
+  if ( the_domain )
+    {
+      struct overflow_space_s *os, *os2;
+
+      free ( the_domain->data );
+      free ( the_domain->mapped );
+      for (os=the_domain->overflow_space; os; os = os2)
+        {
+          os2 = os->next;
+          free (os);
         }
-	free( the_domain );
-	the_domain = NULL;
+      free ( the_domain );
+      the_domain = NULL;
     }
-    the_domain = domain;
-    return 0;
+  the_domain = domain;
+  return 0;
 }
 
 

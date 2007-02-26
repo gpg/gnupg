@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.4.7
 ------------------------------------------------
 
+    * [W32] The environment variable LANGUAGE may be used to override
+      the language given by HKCU\Software\GNU\GnuPG:Lang.  The
+      language files "*.mo" are expected in a directory named
+      "gnupg.nls" below the directory with the gpg.exe binary.
+
 
 Noteworthy changes in version 1.4.6 (2006-12-06)
 ------------------------------------------------
