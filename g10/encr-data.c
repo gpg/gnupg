@@ -90,11 +90,10 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
   if ( opt.verbose && !dek->algo_info_printed )
     {
-      const char *s = gcry_cipher_algo_name (dek->algo);
-      if (s && *s)
-        log_info(_("%s encrypted data\n"), s );
+      if (!gcry_cipher_test_algo (dek->algo))
+        log_info (_("%s encrypted data\n"), gcry_cipher_algo_name (dek->algo));
       else
-        log_info(_("encrypted with unknown algorithm %d\n"), dek->algo );
+        log_info (_("encrypted with unknown algorithm %d\n"), dek->algo );
       dek->algo_info_printed = 1;
     }
   rc = openpgp_cipher_test_algo (dek->algo);

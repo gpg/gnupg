@@ -2601,6 +2601,8 @@ main (int argc, char **argv )
 		   N_("show user ID validity during signature verification")},
 		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL,
 		   N_("show revoked and expired user IDs in signature verification")},
+		  {"show-primary-uid-only",VERIFY_SHOW_PRIMARY_UID_ONLY,NULL,
+		   N_("show only the primary user ID in signature verification")},
 		  {"pka-lookups",VERIFY_PKA_LOOKUPS,NULL,
 		   N_("validate signatures with PKA data")},
 		  {"pka-trust-increase",VERIFY_PKA_TRUST_INCREASE,NULL,

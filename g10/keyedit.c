@@ -2319,14 +2319,13 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 	tty_printf (_("Cipher: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_SYM ) {
-                const char *s = gcry_cipher_algo_name (prefs[i].value);
-                
                 if (any)
                     tty_printf (", ");
                 any = 1;
                 /* We don't want to display strings for experimental algos */
-                if (s && prefs[i].value < 100 )
-                    tty_printf ("%s", s );
+                if (!gcry_cipher_test_algo (prefs[i].value)
+                    && prefs[i].value < 100 )
+                    tty_printf ("%s", gcry_cipher_algo_name (prefs[i].value));
                 else
                     tty_printf ("[%d]", prefs[i].value);
                 if (prefs[i].value == CIPHER_ALGO_3DES )
@@ -2342,14 +2341,13 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 	tty_printf (_("Digest: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_HASH ) {
-                const char *s = gcry_md_algo_name (prefs[i].value);
-                
                 if (any)
                     tty_printf (", ");
                 any = 1;
                 /* We don't want to display strings for experimental algos */
-                if (s && prefs[i].value < 100 )
-                    tty_printf ("%s", s );
+                if (!gcry_md_test_algo (prefs[i].value)
+                    && prefs[i].value < 100 )
+                    tty_printf ("%s", gcry_md_algo_name (prefs[i].value) );
                 else
                     tty_printf ("[%d]", prefs[i].value);
                 if (prefs[i].value == DIGEST_ALGO_SHA1 )

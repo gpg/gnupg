@@ -273,7 +273,7 @@ proc_symkey_enc( CTX c, PACKET *pkt )
         int algo = enc->cipher_algo;
 	const char *s = gcry_cipher_algo_name (algo);
 
-	if(s)
+	if (!gcry_cipher_test_algo (algo))
 	  {
 	    if(!opt.quiet)
 	      {
@@ -1768,7 +1768,8 @@ check_sig_and_print( CTX c, KBNODE node )
 
         /* If we have a good signature and already printed 
          * the primary user ID, print all the other user IDs */
-        if ( count && !rc ) {
+        if ( count && !rc
+             && !(opt.verify_options&VERIFY_SHOW_PRIMARY_UID_ONLY)) {
 	    char *p;
             for( un=keyblock; un; un = un->next ) {
                 if( un->pkt->pkttype != PKT_USER_ID )

@@ -1,3 +1,9 @@
+Noteworthy changes in version 2.0.3
+------------------------------------------------
+
+ * New --verify-option show-primary-uid-only. 
+
+
 Noteworthy changes in version 2.0.2 (2007-01-31)
 ------------------------------------------------
 
@@ -14,7 +20,7 @@ Noteworthy changes in version 2.0.2 (2007-01-31)
    short.  New option --min-passphrase-len defaults to 8.
 
  * The status code BEGIN_SIGNING now shows the used hash algorithms.
- 
+
 
 Noteworthy changes in version 2.0.1 (2006-11-28)
 ------------------------------------------------

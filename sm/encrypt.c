@@ -76,8 +76,8 @@ init_dek (DEK dek)
       return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }
   
-  /* Extra check for algorithms we considere to be to weak for
-     encryption, qlthough we suppor them fro decryption.  Note that
+  /* Extra check for algorithms we consider to be too weak for
+     encryption, although we support them for decryption.  Note that
      there is another check below discriminating on the key length. */
   switch (dek->algo)
     {

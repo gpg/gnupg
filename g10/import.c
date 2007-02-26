@@ -603,11 +603,14 @@ check_prefs(KBNODE keyblock)
 		{
 		  if (openpgp_cipher_test_algo (prefs->value))
 		    {
-		      const char *algo = gcry_cipher_algo_name (prefs->value);
+		      const char *algo = 
+                        (gcry_cipher_test_algo (prefs->value)
+                         ? num 
+                         : gcry_cipher_algo_name (prefs->value));
 		      if(!problem)
 			check_prefs_warning(pk);
 		      log_info(_("         \"%s\": preference for cipher"
-				 " algorithm %s\n"),user,algo?algo:num);
+				 " algorithm %s\n"), user, algo);
 		      problem=1;
 		    }
 		}
@@ -615,11 +618,14 @@ check_prefs(KBNODE keyblock)
 		{
 		  if(openpgp_md_test_algo(prefs->value))
 		    {
-		      const char *algo = gcry_md_algo_name (prefs->value);
+		      const char *algo =
+                        (gcry_md_test_algo (prefs->value)
+                         ? num 
+                         : gcry_md_algo_name (prefs->value));
 		      if(!problem)
 			check_prefs_warning(pk);
 		      log_info(_("         \"%s\": preference for digest"
-				 " algorithm %s\n"),user,algo?algo:num);
+				 " algorithm %s\n"), user, algo);
 		      problem=1;
 		    }
 		}

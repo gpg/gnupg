@@ -1003,6 +1003,11 @@ the signature. Defaults to no.
 Show revoked and expired user IDs during signature verification.
 Defaults to no.
 
+@item show-primary-uid-only
+Show only the primary user ID during signature verification.  That is
+all the AKA lines as well as photo Ids are not shown with the signature
+verification status.
+
 @item pka-lookups
 Enable PKA lookups to verify sender addresses. Note that PKA is based
 on DNS, and so enabling this option may disclose information on when
@@ -2580,6 +2585,16 @@ value. The option @option{--gpg-agent-info} can be used to override it.
 @item COLUMNS
 @itemx LINES
 Used to size some displays to the full size of the screen.
+
+
+@item LANGUAGE
+Apart from its use by GNU, it is used in the W32 version to override the
+language selection done through the Registry.  If used and set to a a
+valid and available language name (@var{langid}), the file with the
+translation is loaded from
+@code{@var{gpgdir}/gnupg.nls/@var{langid}.mo}.  Here @var{gpgdir} is the
+directory out of which the gpg binary has been laoded.  If it can't be
+loaded the Registry is tried as a fallback.
 
 @end table
 

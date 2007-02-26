@@ -1,3 +1,16 @@
+2007-02-26  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): Add verify option show-primary-uid-only.
+	* options.h (VERIFY_SHOW_PRIMARY_UID_ONLY): New.
+	* mainproc.c (check_sig_and_print): Implement it.
+
+2007-02-22  Werner Koch  <wk@g10code.com>
+
+	* encr-data.c (decrypt_data): Correctly test for unknown algorithm.
+	* import.c (check_prefs): Ditto.
+	* keyedit.c (show_prefs): Ditto.
+	* mainproc.c (proc_symkey_enc): Ditto.
+
 2007-02-06  Werner Koch  <wk@g10code.com>
 
 	* export.c (do_export_stream): Allow reset-subkey-passwd along

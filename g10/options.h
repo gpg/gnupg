@@ -341,6 +341,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
 #define VERIFY_PKA_LOOKUPS               (1<<7)
 #define VERIFY_PKA_TRUST_INCREASE        (1<<8)
+#define VERIFY_SHOW_PRIMARY_UID_ONLY     (1<<9)
 
 #define KEYSERVER_USE_TEMP_FILES         (1<<0)
 #define KEYSERVER_KEEP_TEMP_FILES        (1<<1)
