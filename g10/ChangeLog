@@ -1,3 +1,20 @@
+2007-03-05  Werner Koch  <wk@g10code.com>
+
+	Converted this file to UTF-8.
+	
+	Ported David and my multiple messages changes from 1.4.7.
+
+	* options.h, gpg.c (main), mainproc.c (check_sig_and_print): Allow
+	multiple sig verification again as this is protected via the
+	multiple-messages code.  New option --allow-multiple-messages and
+	--no variant.
+	* status.h (STATUS_ERROR): New status code.
+	* status.c (get_status_string): Ditto.
+	* mainproc.c (proc_plaintext): Emit it if multiple messages are
+ 	detected. Error out if more than one plaintext packet is
+ 	encountered.	
+	* mainproc.c (literals_seen): New.
+
 2007-02-26  Werner Koch  <wk@g10code.com>
 
 	* gpg.c (main): Add verify option show-primary-uid-only.
@@ -1756,7 +1773,7 @@
 2003-04-10  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (read_passphrase_from_fd): Do a dummy read if the
-	agent is to be used.  Noted by Ingo Klöcker.
+	agent is to be used.  Noted by Ingo KlÃ¶cker.
 	(agent_get_passphrase): Inhibit caching when we have no
 	fingerprint.  This is required for key generation as well as for
 	symmetric only encryption.
@@ -2699,7 +2716,7 @@
 	warning.
 
 	* passphrase.c (agent_get_passphrase): Fixed signed/unsigned char
-	problem in %-escaping.  Noted by Ingo Klöcker.
+	problem in %-escaping.  Noted by Ingo KlÃ¶cker.
 
 2002-10-03  David Shaw  <dshaw@jabberwocky.com>
 
@@ -7027,12 +7044,12 @@ Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
 Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* keyedit.c (menu_expire): Fixed segv due to unitialized sub_pk.
-	By Rémi.
+	By RÃ©mi.
 
 Thu Feb 10 11:39:41 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* keylist.c (list_keyblock): Don't print warnings in the middle of
-	regulat output lines.  By Rémi.
+	regulat output lines.  By RÃ©mi.
 
 	* sig-check.c: Include options.h
 
@@ -7622,7 +7639,7 @@ Mon May 31 19:41:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	* g10.c (main): Fix for SHM init (Michael).
 
 	* compress.c, encr-data.c, mdfilter.c,
-	  plaintext.c, free-packet.c: Speed patches (Rémi).
+	  plaintext.c, free-packet.c: Speed patches (RÃ©mi).
 
 Thu May 27 09:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
@@ -7647,7 +7664,7 @@ Wed May 26 14:36:29 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 Tue May 25 19:50:32 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* sign.c (sign_file): Always use compression algo 1 for signed
-	onyl file becuase we can´ be sure the the verifier supports other
+	onyl file becuase we canÂ´ be sure the the verifier supports other
 	algorithms.
 
 	* build-packet.c (build_sig_subpkt): Support for notation data.
@@ -7837,7 +7854,7 @@ Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	(protect_secret_key). Ditto.
 	* misc.c (print_cipher_algo_note): Twofish is now a standard algo.
 
-	* keygen.c (do_create): Fixed spelling (Gaël Quéri)
+	* keygen.c (do_create): Fixed spelling (GaÃ«l QuÃ©ri)
 	(ask_keysize): Only allow keysizes up to 4096
 
 	* ringedit.c (add_keyblock_resource): chmod newly created secrings.
@@ -7880,7 +7897,7 @@ Wed Mar 17 13:09:03 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* trustdb.c (insert_trust_record): Always use the primary key.
 
-	* encode.c (encode_simple): Added text_mode filter (Rémi Guyomarch)
+	* encode.c (encode_simple): Added text_mode filter (RÃ©mi Guyomarch)
 	(encode_crypt): Ditto.
 
 	* mainproc.c (proc_pubkey_enc): Added status ENC_TO.
@@ -9261,7 +9278,7 @@ Wed Apr  8 13:40:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 Wed Apr  8 09:47:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
-	* sig-check.c (do_check): Applied small fix from Ulf Möller.
+	* sig-check.c (do_check): Applied small fix from Ulf MÃ¶ller.
 
 Tue Apr  7 19:28:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
@@ -9640,7 +9657,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 
 
  Copyright 1998,1999,2000,2001,2002,2003,2004,2005,
-	   2006 Free Software Foundation, Inc.
+	   2006,2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

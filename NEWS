@@ -1,6 +1,13 @@
 Noteworthy changes in version 2.0.3
 ------------------------------------------------
 
+ * By default, do not allow processing multiple plaintexts in a single
+   stream.  Many programs that called GnuPG were assuming that GnuPG
+   did not permit this, and were thus not using the plaintext boundary
+   status tags that GnuPG provides.  This change makes GnuPG reject
+   such messages by default which makes those programs safe again.
+   --allow-multiple-messages returns to the old behavior.
+
  * New --verify-option show-primary-uid-only. 
 
 

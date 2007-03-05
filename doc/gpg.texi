@@ -1985,7 +1985,7 @@ SHA224, SHA384, and SHA512 digests.
 @c ********  ESOTERIC OPTIONS  ***************
 @c *******************************************
 @node GPG Esoteric Options
-@subsection Doing things one usually don't want to do.
+@subsection Doing things one usually doesn't want to do.
 
 @table @gnupgtabopt
 
@@ -2380,11 +2380,13 @@ absolute date in the form YYYY-MM-DD. Defaults to "0".
 @item --allow-secret-key-import
 This is an obsolete option and is not used anywhere.
 
-@item --allow-multisig-verification
-Allow verification of concatenated signed messages. This will run a
-signature verification for each data+signature block. There are some
-security issues with this option and thus it is off by default. Note
-that versions of GPG prior to version 1.4.3 implicitly allowed this.
+@item --allow-multiple-messages
+@item --no-allow-multiple-messages
+Allow processing of multiple OpenPGP messages contained in a single
+file or stream.  Some programs that call GPG are not prepared to deal
+with multiple messages being processed together, so this option
+defaults to no.  Note that versions of GPG prior to 1.4.7 always
+allowed multiple messages.
 
 @item --enable-special-filenames
 This options enables a mode in which filenames of the form

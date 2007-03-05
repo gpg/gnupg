@@ -148,6 +148,7 @@ get_status_string ( int no )
     case STATUS_PKA_TRUST_BAD  : s = "PKA_TRUST_BAD"; break;
     case STATUS_PKA_TRUST_GOOD : s = "PKA_TRUST_GOOD"; break;
     case STATUS_BEGIN_SIGNING  : s = "BEGIN_SIGNING"; break;
+    case STATUS_ERROR          : s = "ERROR"; break;
     default: s = "?"; break;
     }
   return s;

@@ -1,3 +1,9 @@
+2007-03-04  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	* verify.test: Use --allow-multiple-messages instead of
+	--allow-multisig-verification.  Two clearsigs in a row counds as a
+	multiple-message test.
+
 2006-11-16  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (plain-large): Use gpg.texi instead of FAQ which
