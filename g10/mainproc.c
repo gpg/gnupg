@@ -84,10 +84,9 @@ struct mainproc_context
 
 
 static int do_proc_packets( CTX c, IOBUF a );
-
 static void list_node( CTX c, KBNODE node );
 static void proc_tree( CTX c, KBNODE node );
-
+static int literals_seen;
 
 static void
 release_list( CTX c )
@@ -619,6 +618,8 @@ proc_plaintext( CTX c, PACKET *pkt )
     int any, clearsig, only_md5, rc;
     KBNODE n;
 
+    literals_seen++;
+
     if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) )
 	log_info(_("NOTE: sender requested \"for-your-eyes-only\"\n"));
     else if( opt.verbose )
@@ -702,16 +703,37 @@ proc_plaintext( CTX c, PACKET *pkt )
 	if ( c->mfx.md2  )
 	    md_start_debug( c->mfx.md2, "verify2" );
     }
-    if ( c->pipemode.op == 'B' )
-        rc = handle_plaintext( pt, &c->mfx, 1, 0 );
-    else {
-        rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
-        if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
-            /* can't write output but we hash it anyway to
-             * check the signature */
-            rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
-        }
-    }
+
+    rc=0;
+
+    if(literals_seen>1)
+      {
+	log_info(_("WARNING: multiple plaintexts seen\n"));
+
+	if(!opt.flags.allow_multiple_messages)
+	  {
+            write_status_text (STATUS_ERROR, "proc_pkt.plaintext 89_BAD_DATA");
+	    log_inc_errorcount();
+	    rc=G10ERR_UNEXPECTED;
+	  }
+      }
+
+    if(!rc)
+      {
+	if ( c->pipemode.op == 'B' )
+	  rc = handle_plaintext( pt, &c->mfx, 1, 0 );
+	else
+	  {
+	    rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
+	    if( rc == G10ERR_CREATE_FILE && !c->sigs_only)
+	      {
+		/* can't write output but we hash it anyway to
+		 * check the signature */
+		rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
+	      }
+	  }
+      }
+
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
@@ -1478,8 +1500,17 @@ check_sig_and_print( CTX c, KBNODE node )
           n_sig++;
         if (!n_sig)
           goto ambiguous;
-        if (n && !opt.allow_multisig_verification)
-          goto ambiguous;
+
+	/* If we wanted to disallow multiple sig verification, we'd do
+	   something like this:
+
+	   if (n && !opt.allow_multisig_verification)
+               goto ambiguous;
+
+	   However, now that we have --allow-multiple-messages, this
+	   can stay allowable as we can't get here unless multiple
+	   messages (i.e. multiple literals) are allowed. */
+
         if (n_onepass != n_sig)
           {
             log_info ("number of one-pass packets does not match "
@@ -1737,7 +1768,8 @@ check_sig_and_print( CTX c, KBNODE node )
 
         /* If we have a good signature and already printed 
          * the primary user ID, print all the other user IDs */
-        if ( count && !rc ) {
+        if ( count && !rc
+             && !(opt.verify_options&VERIFY_SHOW_PRIMARY_UID_ONLY) ) {
 	    char *p;
             for( un=keyblock; un; un = un->next ) {
                 if( un->pkt->pkttype != PKT_USER_ID )

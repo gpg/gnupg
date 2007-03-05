@@ -1003,6 +1003,11 @@ the signature. Defaults to no.
 Show revoked and expired user IDs during signature verification.
 Defaults to no.
 
+@item show-primary-uid-only
+Show only the primary user ID during signature verification.  That is
+all the AKA lines as well as photo Ids are not shown with the signature
+verification status.
+
 @item pka-lookups
 Enable PKA lookups to verify sender addresses. Note that PKA is based
 on DNS, and so enabling this option may disclose information on when
@@ -1076,18 +1081,23 @@ not used).
 @include opt-homedir.texi
 
 
+@ifset gpgone
 @item --pcsc-driver @code{file}
 Use @code{file} to access the smartcard reader. The current default is
 `libpcsclite.so.1' for GLIBC based systems,
 `/System/Library/Frameworks/PCSC.framework/PCSC' for MAC OS X,
 `winscard.dll' for Windows and `libpcsclite.so' for other systems.
+@end ifset
 
+@ifset gpgone
 @item --disable-ccid
 Disable the integrated support for CCID compliant readers. This
 allows to fall back to one of the other drivers even if the internal
 CCID driver can handle the reader. Note, that CCID support is only
 available if libusb was available at build time.
+@end ifset
 
+@ifset gpgone
 @item --reader-port @code{number_or_string}
 This option may be used to specify the port of the card terminal. A
 value of 0 refers to the first serial device; add 32768 to access USB
@@ -1095,6 +1105,7 @@ devices. The default is 32768 (first USB device). PC/SC or CCID
 readers might need a string here; run the program in verbose mode to get
 a list of available readers. The default is then the first reader
 found.
+@end ifset
 
 @item --display-charset @code{name}
 Set the name of the native character set. This is used to convert
@@ -1389,12 +1400,9 @@ For example, when retrieving multiple keys via @option{--recv-keys}, the
 timeout applies separately to each key retrieval, and not to the
 @option{--recv-keys} command as a whole. Defaults to 30 seconds.
 
-@item http-proxy
-For HTTP-like keyserver schemes that (such as HKP and HTTP itself),
-try to access the keyserver over a proxy. If a @code{value} is
-specified, use this as the HTTP proxy. If no @code{value} is
-specified, the value of the environment variable "http_proxy", if any,
-will be used.
+@item http-proxy=@code{value}
+Set the proxy to use for HTTP and HKP keyservers.  This overrides the
+"http_proxy" environment variable, if any.
 
 @item max-cert-size
 When retrieving a key via DNS CERT, only accept keys up to this size.
@@ -1458,9 +1466,15 @@ passphrase. @option{--no-use-agent} disables this option.
 @end ifset
 
 @item --gpg-agent-info
+@ifclear gpgone
+This is dummy option. It has no effect when used with @command{gpg2}.
+@end ifclear
+@ifset gpgone
 Override the value of the environment variable
 @samp{GPG_AGENT_INFO}. This is only used when @option{--use-agent} has
-been given
+been given.  Given that this option is not anymore used by
+@command{gpg2}, it should be avoided if possible.
+@end ifset
 
 @item --lock-once
 Lock the databases the first time a lock is requested
@@ -1971,7 +1985,7 @@ SHA224, SHA384, and SHA512 digests.
 @c ********  ESOTERIC OPTIONS  ***************
 @c *******************************************
 @node GPG Esoteric Options
-@subsection Doing things one usually don't want to do.
+@subsection Doing things one usually doesn't want to do.
 
 @table @gnupgtabopt
 
@@ -2093,8 +2107,8 @@ The same %-expandos used for notation data are available here as well.
 
 @item --sig-keyserver-url @code{string}
 Use @code{string} as a preferred keyserver URL for data signatures. If
-you prefix it with an exclamation mark, the keyserver URL packet will
-be flagged as critical.
+you prefix it with an exclamation mark (!), the keyserver URL packet
+will be flagged as critical.
 
 The same %-expandos used for notation data are available here as well.
 
@@ -2366,11 +2380,13 @@ absolute date in the form YYYY-MM-DD. Defaults to "0".
 @item --allow-secret-key-import
 This is an obsolete option and is not used anywhere.
 
-@item --allow-multisig-verification
-Allow verification of concatenated signed messages. This will run a
-signature verification for each data+signature block. There are some
-security issues with this option and thus it is off by default. Note
-that versions of GPG prior to version 1.4.3 implicitly allowed this.
+@item --allow-multiple-messages
+@item --no-allow-multiple-messages
+Allow processing of multiple OpenPGP messages contained in a single
+file or stream.  Some programs that call GPG are not prepared to deal
+with multiple messages being processed together, so this option
+defaults to no.  Note that versions of GPG prior to 1.4.7 always
+allowed multiple messages.
 
 @item --enable-special-filenames
 This options enables a mode in which filenames of the form
@@ -2448,10 +2464,12 @@ Display the keyring name at the head of key listings to show which
 keyring a given key resides on. This option is deprecated: use
 @option{--list-options [no-]show-keyring} instead.
 
+@ifset gpgone
 @item --ctapi-driver @code{file}
 Use @code{file} to access the smartcard reader. The current default
 is `libtowitoko.so'. Note that the use of this interface is
 deprecated; it may be removed in future releases.
+@end ifset
 
 @item --always-trust
 Identical to @option{--trust-model always}. This option is deprecated.
@@ -2570,6 +2588,16 @@ value. The option @option{--gpg-agent-info} can be used to override it.
 @itemx LINES
 Used to size some displays to the full size of the screen.
 
+
+@item LANGUAGE
+Apart from its use by GNU, it is used in the W32 version to override the
+language selection done through the Registry.  If used and set to a a
+valid and available language name (@var{langid}), the file with the
+translation is loaded from
+@code{@var{gpgdir}/gnupg.nls/@var{langid}.mo}.  Here @var{gpgdir} is the
+directory out of which the gpg binary has been laoded.  If it can't be
+loaded the Registry is tried as a fallback.
+
 @end table
 
 
@@ -2683,6 +2711,13 @@ passphrases or other sensitive material) to disk. If you get no
 warning message about insecure memory your operating system supports
 locking without being root. The program drops root privileges as soon
 as locked memory is allocated.
+
+Note also that some systems (especially laptops) have the ability to
+``suspend to disk'' (also known as ``safe sleep'' or ``hibernate'').
+This writes all memory to disk before going into a low power or even
+powered off mode.  Unless measures are taken in the operating system
+to protect the saved memory, passphrases or other sensitive material
+may be recoverable from it later.
 
 @mansect see also
 @ifset isman

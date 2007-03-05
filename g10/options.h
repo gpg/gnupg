@@ -226,6 +226,7 @@ struct
     unsigned int use_embedded_filename:1;
     unsigned int utf8_filename:1;
     unsigned int dsa2:1;
+    unsigned int allow_multiple_messages:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local
@@ -237,8 +238,6 @@ struct
     struct akl *next;
   } *auto_key_locate;
 
-  /* True if multiple concatenated signatures may be verified. */
-  int allow_multisig_verification; 
   int passwd_repeat;
 } opt;
 
@@ -324,6 +323,7 @@ struct {
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
 #define VERIFY_PKA_LOOKUPS               (1<<7)
 #define VERIFY_PKA_TRUST_INCREASE        (1<<8)
+#define VERIFY_SHOW_PRIMARY_UID_ONLY     (1<<9)
 
 #define KEYSERVER_USE_TEMP_FILES         (1<<0)
 #define KEYSERVER_KEEP_TEMP_FILES        (1<<1)

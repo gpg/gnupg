@@ -1,3 +1,9 @@
+2007-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* verify.test: Use --allow-multiple-messages instead of
+	--allow-multisig-verification.  Two clearsigs in a row counts as a
+	multiple-message test.
+
 2006-12-11  Werner Koch  <wk@g10code.com>
 
 	* verify.test (msg_clsclss_asc): Work around a bug in OpenBSD.

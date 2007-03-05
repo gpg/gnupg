@@ -1,3 +1,11 @@
+2007-03-05  Werner Koch  <wk@g10code.com>
+
+	Released 1.4.7.
+
+2007-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note --allow-multiple-messages.
+
 2006-12-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Only check for libusb if we're building with card

@@ -367,6 +367,8 @@ enum cmd_and_opt_values
     oAllowMultisigVerification,
     oEnableDSA2,
     oDisableDSA2,
+    oAllowMultipleMessages,
+    oNoAllowMultipleMessages,
 
     oNoop
   };
@@ -710,6 +712,8 @@ static ARGPARSE_OPTS opts[] = {
     { oAllowMultisigVerification, "allow-multisig-verification", 0, "@"},
     { oEnableDSA2, "enable-dsa2", 0, "@"},
     { oDisableDSA2, "disable-dsa2", 0, "@"},
+    { oAllowMultipleMessages, "allow-multiple-messages", 0, "@"},
+    { oNoAllowMultipleMessages, "no-allow-multiple-messages", 0, "@"},
 
     /* These two are aliases to help users of the PGP command line
        product use gpg with minimal pain.  Many commands are common
@@ -2581,6 +2585,8 @@ main (int argc, char **argv )
 		   N_("show user ID validity during signature verification")},
 		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL,
 		   N_("show revoked and expired user IDs in signature verification")},
+		  {"show-primary-uid-only",VERIFY_SHOW_PRIMARY_UID_ONLY,NULL,
+		   N_("show only the primary user ID in signature verification")},
 		  {"pka-lookups",VERIFY_PKA_LOOKUPS,NULL,
 		   N_("validate signatures with PKA data")},
 		  {"pka-trust-increase",VERIFY_PKA_TRUST_INCREASE,NULL,
@@ -2774,12 +2780,17 @@ main (int argc, char **argv )
 	    release_akl();
 	    break;
 
-          case oAllowMultisigVerification:
-            opt.allow_multisig_verification = 1;
-            break;
-
 	  case oEnableDSA2: opt.flags.dsa2=1; break;
 	  case oDisableDSA2: opt.flags.dsa2=0; break;
+
+          case oAllowMultisigVerification:
+	  case oAllowMultipleMessages:
+	    opt.flags.allow_multiple_messages=1;
+	    break;
+
+	  case oNoAllowMultipleMessages:
+	    opt.flags.allow_multiple_messages=0;
+	    break;
 
 	  case oNoop: break;
 

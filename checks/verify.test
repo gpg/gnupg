@@ -121,8 +121,8 @@ IHBlb3BsZS4K
 
 
 # Two standard signed messages in a row
-tests="$tests msg_olsols_asc_multisig"
-msg_olsols_asc_multisig='-----BEGIN PGP MESSAGE-----
+tests="$tests msg_olsols_asc_multiple"
+msg_olsols_asc_multiple='-----BEGIN PGP MESSAGE-----
 
 kA0DAAIRLXJ8x2hpdzQBrQEHYgNtc2dEDFJaSSB0aGluayB0aGF0IGFsbCByaWdo
 dC10aGlua2luZyBwZW9wbGUgaW4gdGhpcyBjb3VudHJ5IGFyZSBzaWNrIGFuZAp0
@@ -215,8 +215,8 @@ EOF
 `
 
 # Two clear text signatures in a row
-tests="$tests msg_clsclss_asc"
-msg_clsclss_asc="${msg_cls_asc}
+tests="$tests msg_clsclss_asc_multiple"
+msg_clsclss_asc_multiple="${msg_cls_asc}
 ${msg_clss_asc}"
 
 
@@ -236,8 +236,8 @@ for i in $tests ; do
     msg_*_asc)
        $GPG --verify x || error "verify of $i failed"
        ;;
-    msg_*_asc_multisig)
-       $GPG --verify --allow-multisig-verification x \
+    msg_*_asc_multiple)
+       $GPG --verify --allow-multiple-messages x \
            || error "verify of $i failed"
        set +x
        $GPG --verify x && error "verify of $i succeeded but should not"
