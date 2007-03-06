@@ -1541,6 +1541,10 @@ keyedit_menu( const char *username, STRLIST locusr,
     if( collapse_uids( &keyblock ) )
 	modified++;
     reorder_keyblock(keyblock);
+    /* We modified the keyblock, so let's make sure the flags are
+       right. */
+    if(modified)
+      merge_keys_and_selfsig( keyblock );
 
     if(seckey_check)
       {/* see whether we have a matching secret key */

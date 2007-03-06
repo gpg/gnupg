@@ -1485,10 +1485,13 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
 
     sig->flags.chosen_selfsig = 1; /* we chose this one */
     uid->created = 0; /* not created == invalid */
-    if ( IS_UID_REV ( sig ) ) {
+    if ( IS_UID_REV ( sig ) )
+      {
         uid->is_revoked = 1;
         return; /* has been revoked */
-    }
+      }
+    else
+      uid->is_revoked=0;
 
     uid->expiredate = sig->expiredate;
 
@@ -1497,6 +1500,8 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
 	uid->is_expired = 1;
 	return; /* has expired */
       }
+    else
+      uid->is_expired=0;
 
     uid->created = sig->timestamp; /* this one is okay */
     uid->selfsigversion = sig->version;
