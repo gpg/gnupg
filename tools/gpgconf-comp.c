@@ -33,6 +33,8 @@
 #include <time.h>
 #include <stdarg.h>
 #include <signal.h>
+#include <pwd.h>
+#include <grp.h>
 
 /* For log_logv(), asctimestamp(), gnupg_get_time ().  */
 #define JNLIB_NEED_LOG_LOGV
@@ -321,6 +323,11 @@ static struct
 /* The NO_ARG_DESC flag for an option indicates that the argument has
    a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
+/* The NO_CHANGE flag for an option indicates that the user should not
+   be allowed to chnage this option using the standard gpgconf method.
+   Frontends using gpgconf should grey out such otions, so that only
+   the current value is displayed.  */
+#define GC_OPT_FLAG_NO_CHANGE   (1UL <<7)
 
 /* A human-readable description for each flag.  */
 static struct
@@ -334,7 +341,8 @@ static struct
     { "runtime" },
     { "default" },
     { "default desc" },
-    { "no arg desc" }
+    { "no arg desc" },
+    { "no change" }
   };
 
 
@@ -471,19 +479,35 @@ static gc_option_t gc_options_gpg_agent[] =
    { "Security",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      "gnupg", N_("Options controlling the security") },
-   { "default-cache-ttl", GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
-     "gnupg", "|N|expire cached PINs after N seconds",
+   { "default-cache-ttl", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_BASIC, "gnupg", 
+     "|N|expire cached PINs after N seconds",
      GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
-   { "ignore-cache-for-signing", GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
-     "gnupg", "do not use the PIN cache when signing",
+   { "default-cache-ttl-ssh", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_ADVANCED, "gnupg",
+     N_("|N|expire SSH keys after N seconds"),
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+   { "max-cache-ttl", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_EXPERT, "gnupg",
+     N_("|N|set maximum PIN cache lifetime to N seconds"),
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+   { "max-cache-ttl-ssh", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_EXPERT, "gnupg", 
+     N_("|N|set maximum SSH key lifetime to N seconds"),
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+   { "ignore-cache-for-signing", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_BASIC, "gnupg", "do not use the PIN cache when signing",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
-   { "allow-mark-trusted", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
-     "gnupg", "allow clients to mark keys as \"trusted\"",
+   { "allow-mark-trusted", GC_OPT_FLAG_RUNTIME | GC_OPT_FLAG_NO_CHANGE,
+     GC_LEVEL_ADVANCED, "gnupg", "allow clients to mark keys as \"trusted\"",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+   { "min-passphrase-len", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_EXPERT, "gnupg", 
+     N_("|N|set minimal required length for new passphrases to N"),
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
    { "no-grab", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT,
      "gnupg", "do not grab keyboard and mouse",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
-
 
    GC_OPTION_NULL
  };
@@ -1539,41 +1563,56 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 
 
 /* Retrieve the currently active options and their defaults from all
-   involved backends for this component.  */
+   involved backends for this component.  Using -1 for component will
+   retrieve all options from all components. */
 void
 gc_component_retrieve_options (int component)
 {
+  int process_all = 0;
   int backend_seen[GC_BACKEND_NR];
   gc_backend_t backend;
-  gc_option_t *option = gc_component[component].options;
+  gc_option_t *option;
 
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     backend_seen[backend] = 0;
 
-  while (option->name)
+  if (component == -1)
     {
-      if (!(option->flags & GC_OPT_FLAG_GROUP))
-	{
-	  backend = option->backend;
-
-	  if (backend_seen[backend])
-	    {
-	      option++;
-	      continue;
-	    }
-	  backend_seen[backend] = 1;
-
-	  assert (backend != GC_BACKEND_ANY);
-
-	  if (gc_backend[backend].program)
-	    retrieve_options_from_program (component, backend);
-	  else
-	    retrieve_options_from_file (component, backend);
-	}
-      option++;
+      process_all = 1;
+      component = 0;
+      assert (component < GC_COMPONENT_NR);
     }
-}
+      
+  do
+    {
+      option = gc_component[component].options;
 
+      while (option->name)
+        {
+          if (!(option->flags & GC_OPT_FLAG_GROUP))
+            {
+              backend = option->backend;
+              
+              if (backend_seen[backend])
+                {
+                  option++;
+                  continue;
+                }
+              backend_seen[backend] = 1;
+              
+              assert (backend != GC_BACKEND_ANY);
+              
+              if (gc_backend[backend].program)
+                retrieve_options_from_program (component, backend);
+              else
+                retrieve_options_from_file (component, backend);
+            }
+          option++;
+        }
+    }
+  while (process_all && ++component < GC_COMPONENT_NR);
+
+}
 
 /* Perform a simple validity check based on the type.  Return in
    NEW_VALUE_NR the value of the number in NEW_VALUE if OPTION is of
@@ -1585,7 +1624,8 @@ option_check_validity (gc_option_t *option, unsigned long flags,
   char *arg;
 
   if (!option->active)
-    gc_error (1, 0, "option %s not supported by backend", option->name);
+    gc_error (1, 0, "option %s not supported by backend %s",
+              option->name, gc_backend[option->backend].name);
       
   if (option->new_flags || option->new_value)
     gc_error (1, 0, "option %s already changed", option->name);
@@ -2270,7 +2310,49 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 }
 
 
-/* Read the modifications from IN and apply them.  */
+/* Common code for gc_component_change_options and
+   gc_process_gpgconf_conf.  */
+static void
+change_one_value (gc_option_t *option, int *runtime,
+                  unsigned long flags, char *new_value)
+{
+  unsigned long new_value_nr = 0;
+
+  option_check_validity (option, flags, new_value, &new_value_nr);
+
+  if (option->flags & GC_OPT_FLAG_RUNTIME)
+    runtime[option->backend] = 1;
+
+  option->new_flags = flags;
+  if (!(flags & GC_OPT_FLAG_DEFAULT))
+    {
+      if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE
+          && (option->flags & GC_OPT_FLAG_LIST))
+        {
+          char *str;
+
+          /* We convert the number to a list of 1's for convenient
+             list handling.  */
+          assert (new_value_nr > 0);
+          option->new_value = xmalloc ((2 * (new_value_nr - 1) + 1) + 1);
+          str = option->new_value;
+          *(str++) = '1';
+          while (--new_value_nr > 0)
+            {
+              *(str++) = ',';
+              *(str++) = '1';
+            }
+          *(str++) = '\0';
+        }
+      else
+        option->new_value = xstrdup (new_value);
+    }
+}
+
+
+/* Read the modifications from IN and apply them.  If IN is NULL the
+   modifications are expected to already have been set to the global
+   table. */
 void
 gc_component_change_options (int component, FILE *in)
 {
@@ -2293,90 +2375,71 @@ gc_component_change_options (int component, FILE *in)
       orig_pathname[backend] = NULL;
     }
 
-  while ((length = read_line (in, &line, &line_len, NULL)) > 0)
+  if (in)
     {
-      char *linep;
-      unsigned long flags = 0;
-      char *new_value = "";
-      unsigned long new_value_nr = 0;
+      /* Read options from the file IN.  */
+      while ((length = read_line (in, &line, &line_len, NULL)) > 0)
+        {
+          char *linep;
+          unsigned long flags = 0;
+          char *new_value = "";
+          
+          /* Strip newline and carriage return, if present.  */
+          while (length > 0
+                 && (line[length - 1] == '\n' || line[length - 1] == '\r'))
+            line[--length] = '\0';
+          
+          linep = strchr (line, ':');
+          if (linep)
+            *(linep++) = '\0';
+          
+          /* Extract additional flags.  Default to none.  */
+          if (linep)
+            {
+              char *end;
+              char *tail;
 
-      /* Strip newline and carriage return, if present.  */
-      while (length > 0
-	     && (line[length - 1] == '\n' || line[length - 1] == '\r'))
-	line[--length] = '\0';
+              end = strchr (linep, ':');
+              if (end)
+                *(end++) = '\0';
+              
+              errno = 0;
+              flags = strtoul (linep, &tail, 0);
+              if (errno)
+                gc_error (1, errno, "malformed flags in option %s", line);
+              if (!(*tail == '\0' || *tail == ':' || *tail == ' '))
+                gc_error (1, 0, "garbage after flags in option %s", line);
+              
+              linep = end;
+            }
 
-      linep = strchr (line, ':');
-      if (linep)
-	*(linep++) = '\0';
-
-      /* Extract additional flags.  Default to none.  */
-      if (linep)
-	{
-	  char *end;
-	  char *tail;
-
-	  end = strchr (linep, ':');
-	  if (end)
-	    *(end++) = '\0';
-
-	  errno = 0;
-	  flags = strtoul (linep, &tail, 0);
-	  if (errno)
-	    gc_error (1, errno, "malformed flags in option %s", line);
-	  if (!(*tail == '\0' || *tail == ':' || *tail == ' '))
-	    gc_error (1, 0, "garbage after flags in option %s", line);
-
-	  linep = end;
-	}
-
-      /* Extract default value, if present.  Default to empty if
-	 not.  */
-      if (linep)
-	{
-	  char *end;
-
-	  end = strchr (linep, ':');
-	  if (end)
-	    *(end++) = '\0';
-
-	  new_value = linep;
-
-	  linep = end;
-	}
-
-      option = find_option (component, line, GC_BACKEND_ANY);
-      if (!option)
-	gc_error (1, 0, "unknown option %s", line);
-
-      option_check_validity (option, flags, new_value, &new_value_nr);
-
-      if (option->flags & GC_OPT_FLAG_RUNTIME)
-	runtime[option->backend] = 1;
-
-      option->new_flags = flags;
-      if (!(flags & GC_OPT_FLAG_DEFAULT))
-	{
-	  if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE
-	      && (option->flags & GC_OPT_FLAG_LIST))
-	    {
-	      char *str;
-
-	      /* We convert the number to a list of 1's for
-		 convenient list handling.  */
-	      assert (new_value_nr > 0);
-	      option->new_value = xmalloc ((2 * (new_value_nr - 1) + 1) + 1);
-	      str = option->new_value;
-	      *(str++) = '1';
-	      while (--new_value_nr > 0)
-		{
-		  *(str++) = ',';
-		  *(str++) = '1';
-		}
-	      *(str++) = '\0';
-	    }
-	  else
-	    option->new_value = xstrdup (new_value);
-	}
+          /* Don't allow setting of the no change flag.  */
+          flags &= ~GC_OPT_FLAG_NO_CHANGE;
+          
+          /* Extract default value, if present.  Default to empty if not.  */
+          if (linep)
+            {
+              char *end;
+              end = strchr (linep, ':');
+              if (end)
+                *(end++) = '\0';
+              new_value = linep;
+              linep = end;
+            }
+          
+          option = find_option (component, line, GC_BACKEND_ANY);
+          if (!option)
+            gc_error (1, 0, "unknown option %s", line);
+          
+          if ((option->flags & GC_OPT_FLAG_NO_CHANGE))
+            {
+              gc_error (0, 0, "ignoring new value for option %s",
+                        option->name);
+              continue;
+            }
+          
+          change_one_value (option, runtime, flags, new_value);
+        }
     }
 
   /* Now that we have collected and locally verified the changes,
@@ -2499,4 +2562,366 @@ gc_component_change_options (int component, FILE *in)
       }
 
   xfree (line);
+}
+
+
+/* Check whether USER matches the current user of one of its group.
+   This function may change USER.  Returns true is there is a
+   match.  */
+static int
+key_matches_user_or_group (char *user)
+{
+  char *group;
+  int n;
+
+  if (*user == '*' && user[1] == 0)
+    return 1; /* A single asterisk matches all users.  */
+
+  group = strchr (user, ':');
+  if (group)
+    *group++ = 0;
+
+  /* First check whether the user matches.  */
+  if (*user)
+    {
+      static char *my_name;
+
+      if (!my_name)
+        {
+          struct passwd *pw = getpwuid ( getuid () );
+          if (!pw)
+            gc_error (1, errno, "getpwuid failed for current user");
+          my_name = xstrdup (pw->pw_name);
+        }
+      if (!strcmp (user, my_name))
+        return 1; /* Found.  */
+    }
+
+  /* If that failed, check whether a group matches.  */
+  if (group && *group)
+    {
+      static char *my_group;
+      static char **my_supgroups;
+
+      if (!my_group)
+        {
+          struct group *gr = getgrgid ( getgid () );
+          if (!gr)
+            gc_error (1, errno, "getgrgid failed for current user");
+          my_group = xstrdup (gr->gr_name);
+        }
+      if (!strcmp (group, my_group))
+        return 1; /* Found.  */
+
+      if (!my_supgroups)
+        {
+          int ngids;
+          gid_t *gids;
+
+          ngids = getgroups (0, NULL);
+          gids  = xcalloc (ngids+1, sizeof *gids);
+          ngids = getgroups (ngids, gids);
+          if (ngids < 0)
+            gc_error (1, errno, "getgroups failed for current user");
+          my_supgroups = xcalloc (ngids+1, sizeof *my_supgroups);
+          for (n=0; n < ngids; n++)
+            {
+              struct group *gr = getgrgid ( gids[n] );
+              if (!gr)
+                gc_error (1, errno, "getgrgid failed for supplementary group");
+              my_supgroups[n] = xstrdup (gr->gr_name);
+            }
+          xfree (gids);
+        }
+
+      for (n=0; my_supgroups[n]; n++)
+        if (!strcmp (group, my_supgroups[n]))
+          return 1; /* Found.  */
+    }
+
+  return 0; /* No match.  */
+}
+
+
+
+/* Read and process the global configuration file for gpgconf.  This
+   optional file is used to update our internal tables at runtime and
+   may also be used to set new default values.  If FNAME is NULL the
+   default name will be used.  With UPDATE set to true the internal
+   tables are actually updated; if not set, only a syntax check is
+   done.  If DEFAULTS is true the global options are written to the
+   configuration files.
+
+   Returns 0 on success or if the config file is not present; -1 is
+   returned on error. */
+int
+gc_process_gpgconf_conf (const char *fname, int update, int defaults)
+{
+  int result = 0;
+  char *line = NULL;
+  size_t line_len = 0;
+  ssize_t length;
+  FILE *config;
+  int lineno = 0;
+  int in_rule = 0;
+  int got_match = 0;
+  int runtime[GC_BACKEND_NR];
+  int used_components[GC_COMPONENT_NR];
+  int backend_id, component_id;
+
+  if (!fname)
+    fname = GNUPG_SYSCONFDIR "/gpgconf.conf";
+
+  for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)
+    runtime[backend_id] = 0;
+  for (component_id = 0; component_id < GC_COMPONENT_NR; component_id++)
+    used_components[component_id] = 0;
+
+  config = fopen (fname, "r");
+  if (!config)
+    {
+      /* Do not print an error if the file is not available, except
+         when runnign in syntax check mode.  */
+      if (errno != ENOENT || !update)
+        {
+          gc_error (0, errno, "can not open global config file `%s'", fname);
+          result = -1;
+        }
+      return result;
+    }
+
+  while ((length = read_line (config, &line, &line_len, NULL)) > 0)
+    {
+      char *key, *component, *option, *flags, *value;
+      char *empty;
+      gc_option_t *option_info = NULL;
+      char *p;
+      int is_continuation;
+      
+      lineno++;
+      key = line;
+      while (*key == ' ' || *key == '\t')
+        key++;
+      if (!*key || *key == '#' || *key == '\r' || *key == '\n')
+        continue;
+
+      is_continuation = (key != line);
+
+      /* Parse the key field.  */
+      if (!is_continuation && got_match)
+        break;  /* Finish after the first match.  */
+      else if (!is_continuation)
+        {
+          in_rule = 0;
+          for (p=key+1; *p && !strchr (" \t\r\n", *p); p++)
+            ;
+          if (!*p)
+            {
+              gc_error (0, 0, "missing rule at `%s', line %d", fname, lineno);
+              result = -1;
+              continue;
+            }
+          *p++ = 0;
+          component = p;
+        }
+      else if (!in_rule)
+        {
+          gc_error (0, 0, "continuation but no rule at `%s', line %d",
+                    fname, lineno);
+          result = -1;
+          continue;
+        }
+      else
+        {
+          component = key;
+          key = NULL;
+        }
+
+      in_rule = 1;
+
+      /* Parse the component.  */
+      while (*component == ' ' || *component == '\t')
+        component++;
+      for (p=component; *p && !strchr (" \t\r\n", *p); p++)
+        ;
+      if (p == component)
+        {
+          gc_error (0, 0, "missing component at `%s', line %d",
+                    fname, lineno);
+          result = -1;
+          continue;
+        }
+      empty = p;
+      *p++ = 0;
+      option = p;
+      component_id = gc_component_find (component);
+      if (component_id < 0)
+        {
+          gc_error (0, 0, "unknown component at `%s', line %d",
+                    fname, lineno);
+          result = -1;
+        }
+
+      /* Parse the option name.  */
+      while (*option == ' ' || *option == '\t')
+        option++;
+      for (p=option; *p && !strchr (" \t\r\n", *p); p++)
+        ;
+      if (p == option)
+        {
+          gc_error (0, 0, "missing option at `%s', line %d",
+                    fname, lineno);
+          result = -1;
+          continue;
+        }
+      *p++ = 0;
+      flags = p;
+      if ( component_id != -1)
+        {
+          option_info = find_option (component_id, option, GC_BACKEND_ANY);
+          if (!option_info)
+            {
+              gc_error (0, 0, "unknown option at `%s', line %d",
+                        fname, lineno);
+              result = -1;
+            }
+        }
+
+
+      /* Parse the optional flags.  */
+      while (*flags == ' ' || *flags == '\t')
+        flags++;
+      if (*flags == '[')
+        {
+          flags++;
+          p = strchr (flags, ']');
+          if (!p)
+            {
+              gc_error (0, 0, "syntax error in rule at `%s', line %d",
+                        fname, lineno);
+              result = -1;
+              continue;
+            }
+          *p++ = 0;
+          value = p;
+        }
+      else  /* No flags given.  */
+        {
+          value = flags;
+          flags = NULL;
+        }
+
+      /* Parse the optional value.  */
+      while (*value == ' ' || *value == '\t')
+       value++;
+      for (p=value; *p && !strchr ("\r\n", *p); p++)
+        ;
+      if (p == value)
+        value = empty; /* No value given; let it point to an empty string.  */
+      else
+        {
+          /* Strip trailing white space.  */
+          *p = 0;
+          for (p--; p > value && (*p == ' ' || *p == '\t'); p--)
+            *p = 0;
+        }
+
+      /* Check flag combinations.  */
+      if (!flags)
+        ;
+      else if (!strcmp (flags, "default"))
+        {
+          if (*value)
+            {
+              gc_error (0, 0, "flag \"default\" may not be combined "
+                        "with a value at `%s', line %d",
+                        fname, lineno);
+              result = -1;
+            }
+        }
+      else if (!strcmp (flags, "change"))
+        ;
+      else if (!strcmp (flags, "no-change"))
+        ;
+      else
+        {
+          gc_error (0, 0, "unknown flag at `%s', line %d",
+                    fname, lineno);
+          result = -1;
+        }
+      
+          
+      /* Check whether the key matches but do this only if we are not
+         running in syntax check mode. */
+      if ( update 
+           && !result
+           && (got_match || (key && key_matches_user_or_group (key))) )
+        {
+          int newflags = 0;
+
+          got_match = 1;
+
+          /* Apply the flags from gpgconf.conf.  */
+          if (!flags)
+            ;
+          else if (!strcmp (flags, "default"))
+            newflags |= GC_OPT_FLAG_DEFAULT;
+          else if (!strcmp (flags, "no-change"))
+            option_info->flags |= GC_OPT_FLAG_NO_CHANGE;
+          else if (!strcmp (flags, "change"))
+            option_info->flags &= ~GC_OPT_FLAG_NO_CHANGE;
+
+          if (defaults)
+            {
+              assert (component_id >= 0 && component_id < GC_COMPONENT_NR);
+              used_components[component_id] = 1;
+
+              /* Here we explicitly allow to update the value again.  */
+              if (newflags)
+                {
+                  option_info->new_flags = 0;
+                }
+              if (*value)
+                {
+                  xfree (option_info->new_value);
+                  option_info->new_value = NULL;
+                }
+              change_one_value (option_info, runtime, newflags, value);
+            }
+        }
+    }
+
+  if (length < 0 || ferror (config))
+    {
+      gc_error (0, errno, "error reading from `%s'", fname);
+      result = -1;
+    }
+  if (fclose (config) && ferror (config))
+    gc_error (0, errno, "error closing `%s'", fname);
+
+  xfree (line);
+
+  /* If it all worked, process the options. */
+  if (!result && update && defaults)
+    {
+      /* We need to switch off the runtime update, so that we can do
+         it later all at once. */
+      int save_opt_runtime = opt.runtime;
+      opt.runtime = 0;
+
+      for (component_id = 0; component_id < GC_COMPONENT_NR; component_id++)
+        {
+          gc_component_change_options (component_id, NULL);
+        }
+      opt.runtime = save_opt_runtime;
+
+      if (opt.runtime)
+        {
+          for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)  
+            if (runtime[backend_id] && gc_backend[backend_id].runtime_change)
+              (*gc_backend[backend_id].runtime_change) ();
+        }
+    }
+
+  return result;
 }

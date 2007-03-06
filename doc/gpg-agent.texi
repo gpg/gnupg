@@ -336,7 +336,7 @@ been accessed recently.  The default are 2 hours (7200 seconds).
 
 @item --min-passphrase-len @var{n}
 @opindex min-passphrase-len
-Set the minimal length of a passphrase.  When entereing a new passphrase
+Set the minimal length of a passphrase.  When entering a new passphrase
 shorter than this value a warning will be displayed.  Defaults to 8.
 
 @item --pinentry-program @var{filename}

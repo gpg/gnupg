@@ -1,3 +1,18 @@
+2007-03-06  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c: Include pwd.h and grp.h.
+	(GC_OPT_FLAG_NO_CHANGE): New.
+	(gc_component_change_options): Implement it.
+	(gc_options_gpg_agent): Add options for all ttl values and
+	min-passphrase-length.  Apply new flag to some of them.
+	(gc_process_gpgconf_conf, key_matches_user_or_group): New.
+	(gc_component_change_options): Factor some code out to ..
+	(change_one_value): .. new. 
+	(gc_component_retrieve_options): Allow -1 for COMPONENT to iterate
+	over al components.
+	* gpgconf.c (main): New commands --check-config and
+	--apply-defaults.  Call gc_process_gpgconf_conf.
+
 2007-01-31  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (symcryptrun_LDADD): Add LIBICONV.

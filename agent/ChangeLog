@@ -1,3 +1,7 @@
+2007-03-06  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main) <gpgconf>: Add entries for all ttl options.
+
 2007-02-20  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (start_pinentry): Fix for OS X to allow loading

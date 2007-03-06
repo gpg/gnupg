@@ -10,6 +10,9 @@ Noteworthy changes in version 2.0.3
 
  * New --verify-option show-primary-uid-only. 
 
+ * gpgconf may now read a global configuration file to select which
+   options are changeable by a frontend.
+
 
 Noteworthy changes in version 2.0.2 (2007-01-31)
 ------------------------------------------------

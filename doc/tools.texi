@@ -199,6 +199,7 @@ throughout this section.
 * Listing components::    List all gpgconf components.
 * Listing options::       List all options of a component.
 * Changing options::      Changing options of a component.
+* Files used by gpgconf:: What files are used by gpgconf.
 @end menu
 
 @manpause
@@ -219,7 +220,17 @@ List all options of the component @var{component}.
 
 @item --change-options @var{component}
 Change the options of the component @var{component}.
+
+@item --apply-defaults
+Update all configuration files with values taken from the global
+configuration file (usually @file{/etc/gnupg/gpgconf.conf}).
+
+@item --check-config [@var{filename}]
+Run a syntax check ion the global configuration file.  If @var{filename}
+is given, check that file instead.
+
 @end table
+
 
 @mansect options
 
@@ -486,6 +497,11 @@ If this flag is set, a (runtime) default is available.  This and the
 @item no arg desc (64)
 If this flag is set, and the @code{optional arg} flag is set, then the
 option has a special meaning if no argument is given.
+
+@item no change (128)
+If this flag is set, gpgconf ignores requests to change the value.  GUI
+frontends should grey out this option.  Note, that manual changes of the
+configuration files are still possible.
 @end table
 
 @item level
@@ -657,6 +673,20 @@ $ echo 'force:16:' | gpgconf --change-options dirmngr
 
 The @code{--runtime} option can influence when the changes take
 effect.
+
+@mansect files
+@node Files used by gpgconf
+@subsection Files used by gpgconf
+
+@table @file
+
+@item /etc/gnupg/gpg-agent.conf
+@cindex gpgconf.conf
+  If this file exists, it is processed as a global configuration file.
+  A commented example can be found in the @file{examples} directory of
+  the distribution.
+@end table
+
 
 @mansect see also
 @command{gpg}(1), 

@@ -1,0 +1,145 @@
+             Multiple Messages Problem in GnuPG and GPGME
+            ==============================================
+                              2007-03-05
+
+
+Summary
+=======
+
+Gerardo Richarte from Core Security Technologies identified a problem
+when using GnuPG in streaming mode.
+
+The problem is actually a variant of a well known problem in the way
+signed material is presented in a MUA.  It is possible to insert
+additional text before or after a signed (or signed and encrypted)
+OpenPGP message and make the user believe that this additional text is
+also covered by the signature.  The Core Security advisory describes
+several variants of the attack; they all boil down to the fact that it
+might not be possible to identify which part of a message is actually
+signed if gpg is not used correctly.
+
+[ Please do not send private mail in response to this message.  The
+  mailing list gnupg-devel is the best place to discuss this problem
+  (please subscribe first so you don't need moderator approval [1]). ]
+
+
+Impact
+======
+
+All applications using GnuPG without properly using the status
+interface to verify signed or signed and encrypted messages.
+
+All GPGME versions up to and including 1.1.3.
+
+Starting with version 1.4.7 and 2.0.3, GnuPG implements an additional
+and sufficient protection against this common usage problem.
+
+Detached signatures are in no way affected by this problem.
+
+
+Description
+===========
+
+When using gpg (or gpg2) in a pipeline or with redirected input and
+output additional data may be inserted into a message.  This allows to
+forge a signed message by prefixing it with arbitrary material.  A way
+to create such a message is:
+
+  echo "This is my sneaky plaintext message" > foobar.txt
+  gpg -z0 --output prefix.gpg --store foobar.txt
+  cat prefix.gpg original-signed-message.gpg > forged.gpg
+
+Using gpg naively this results in:
+
+  $ gpg <forged.gpg
+  This is my sneaky plaintext message
+  Either I'm dead or my watch has stopped.
+                  -- Groucho Marx's last words
+  gpg: Signature made Mon Feb 26 09:57:04 2007 CET using DSA key ID 68697734
+  gpg: Good signature from "Alfa Test (demo key) <alfa@example.net>"
+  [...]
+
+and thus gives the impression that the sneaky message is part of the
+signed Groucho quote.  The correct way to use gpg with redirection is
+by taking care of the status interface:
+
+  $ gpg --status-fd 1 <forged.gpg
+  [GNUPG:] PLAINTEXT 62 1172479053 foobar.txt
+  [GNUPG:] PLAINTEXT_LENGTH 36
+  This is my sneaky plaintext message
+  [GNUPG:] PLAINTEXT 62 1172480224 original-signed-message
+  [GNUPG:] PLAINTEXT_LENGTH 86
+  Either I'm dead or my watch has stopped.
+                  -- Groucho Marx's last words
+  gpg: Signature made Mon Feb 26 09:57:04 2007 CET using DSA key ID 68697734
+  [GNUPG:] SIG_ID UncMPBJYgbG/uszJVNKoCAz+hvY 2007-02-26 1172480224
+  [GNUPG:] GOODSIG 2D727CC768697734 Alfa Test (demo key) <alfa@example.net>
+  gpg: Good signature from "Alfa Test (demo key) <alfa@example.net>"
+  [...]
+
+Here the PLAINTEXT status lines clearly identify the start of a new
+message.
+
+Note, that using gpg on the command line is in almost all cases not
+done with redirection but by letting gpg save the the signed message.
+In this case gpg will save the message to different files or in case
+the file names are identical, prompt the over to overwrite the first
+one again.
+
+Because the problem of identifying the actual signed content when
+mixing the signed data and the signature is very common, the long
+standing suggestion for all digital signatures is to use a detached
+signature.  A detached signature allows to clearly identify what is
+signed and what is the signature.  This is also the reason why
+PGP/MIME signed messages are in general to be preferred over the old
+style clear signed messages.
+
+
+Solution
+========
+
+Given that there are many applications in use which are subject to the
+described problem, we have decided to change GnuPG so that such forged
+OpenPGP messages are detected and the signature verification will
+fail.  GnuPG 1.4.7 has been released today and is available from the
+usual places [2].  If you don't want to update, a minimal patch
+against GnuPG 1.4.6 is available at
+
+ ftp://ftp.gnupg.org/gcrypt/gnupg/patches/gnupg-1.4.6-multiple-message.patch
+
+Many applications are using the library GPGME which implements an easy
+way to process OpenPGP messages using gpg.  We have updated GPGME to
+make it immune against this problem even if an old version of gpg is
+being used.  GPGME 1.1.4 is available from the usual places [2].  A
+patch (against version 1.1.3 or 1.1.2) is available at
+
+ ftp://ftp.gnupg.org/gcrypt/gpgme/patches/gpgme-1.1.3-multiple-message.patch
+
+Please note that - after applying one of these patches - some
+vulnerable applications (mainly MUAs) may fail to handle certain
+messages which are composed of several OpenPGP messages.  To continue
+the support of such messages fixing the application is required as
+there is no way for GnuPG to do it.
+
+
+Support 
+=======
+
+g10 Code GmbH [3], a Duesseldorf based company owned and headed by
+GnuPG's principal author, is currently funding GnuPG development.
+Support contracts or other financial backing will greatly help us to
+improve the quality of GnuPG.
+
+
+Thanks
+======
+
+Gerardo Richarte found this problem.  David Shaw greatly helped to
+analyse and describe the core of the problem.
+
+
+
+
+[1] See http://lists.gnupg.org/mailman/listinfo/gnupg-devel
+[2] See http://www.gnupg.org/download/ 
+[3] See http://www.gnupg.org/service.html

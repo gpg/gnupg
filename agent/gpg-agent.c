@@ -168,6 +168,7 @@ static ARGPARSE_OPTS opts[] = {
 #define DEFAULT_CACHE_TTL     (10*60)  /* 10 minutes */
 #define DEFAULT_CACHE_TTL_SSH (30*60)  /* 30 minutes */
 #define MAX_CACHE_TTL         (120*60) /* 2 hours */
+#define MAX_CACHE_TTL_SSH     (120*60) /* 2 hours */
 #define MIN_PASSPHRASE_LEN    (8)      
 
 
@@ -408,7 +409,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
       opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL_SSH;
       opt.max_cache_ttl = MAX_CACHE_TTL;
-      opt.max_cache_ttl_ssh = MAX_CACHE_TTL;
+      opt.max_cache_ttl_ssh = MAX_CACHE_TTL_SSH;
       opt.min_passphrase_len = MIN_PASSPHRASE_LEN;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
@@ -775,6 +776,14 @@ main (int argc, char **argv )
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME );
       printf ("default-cache-ttl:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, DEFAULT_CACHE_TTL );
+      printf ("default-cache-ttl-ssh:%lu:%d:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, DEFAULT_CACHE_TTL_SSH );
+      printf ("max-cache-ttl:%lu:%d:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL );
+      printf ("max-cache-ttl-ssh:%lu:%d:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL_SSH );
+      printf ("min-passphrase-len:%lu:%d:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MIN_PASSPHRASE_LEN );
       printf ("no-grab:%lu:\n", 
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("ignore-cache-for-signing:%lu:\n",

@@ -44,6 +44,8 @@ enum cmd_and_opt_values
     aListComponents,
     aListOptions,
     aChangeOptions,
+    aApplyDefaults,
+    aCheckConfig
 
   };
 
@@ -56,6 +58,10 @@ static ARGPARSE_OPTS opts[] =
     { aListComponents, "list-components", 256, N_("list all components") },
     { aListOptions, "list-options", 256, N_("|COMPONENT|list options") },
     { aChangeOptions, "change-options", 256, N_("|COMPONENT|change options") },
+    { aApplyDefaults, "apply-defaults", 256,
+      N_("apply global default values") },
+    { aCheckConfig,   "check-config", 256,
+      N_("check global configuration file") },
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
     
@@ -64,7 +70,6 @@ static ARGPARSE_OPTS opts[] =
     { oQuiet, "quiet",      0, N_("quiet") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
     { oRuntime, "runtime",  0, N_("activate changes at runtime, if possible") },
-
     /* hidden options */
     { oNoVerbose, "no-verbose",  0, "@"},
     {0}
@@ -149,6 +154,8 @@ main (int argc, char **argv)
         case aListComponents:
         case aListOptions:
         case aChangeOptions:
+        case aApplyDefaults:
+        case aCheckConfig:
 	  cmd = pargs.r_opt;
 	  break;
 
@@ -189,11 +196,34 @@ main (int argc, char **argv)
 	      exit (1);
 	    }
 	  gc_component_retrieve_options (idx);
+          if (gc_process_gpgconf_conf (NULL, 1, 0))
+            exit (1);
 	  if (cmd == aListOptions)
 	    gc_component_list_options (idx, stdout);
 	  else
-	    gc_component_change_options (idx, stdin);
+            gc_component_change_options (idx, stdin);
 	}
+      break;
+
+    case aCheckConfig:
+      if (gc_process_gpgconf_conf (fname, 0, 0))
+        exit (1);
+      break;
+
+    case aApplyDefaults:
+      if (fname)
+	{
+	  fputs (_("usage: gpgconf [options] "), stderr);
+	  putc ('\n',stderr);
+	  fputs (_("No argument allowed"), stderr);
+	  putc ('\n',stderr);
+	  exit (2);
+	}
+      gc_component_retrieve_options (-1);
+      if (gc_process_gpgconf_conf (NULL, 1, 1))
+        exit (1);
+      break;
+
     }
   
   return 0; 

@@ -56,4 +56,8 @@ void gc_component_list_options (int component, FILE *out);
 /* Read the modifications from IN and apply them.  */
 void gc_component_change_options (int component, FILE *in);
 
+/* Process global configuration file.  */
+int gc_process_gpgconf_conf (const char *fname, int update, int defaults);
+
+
 #endif /*GPGCONF_H*/
