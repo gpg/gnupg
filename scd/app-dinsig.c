@@ -1,5 +1,5 @@
 /* app-dinsig.c - The DINSIG (DIN V 66291-1) card application.
- *	Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -81,6 +81,7 @@
 
 #include "scdaemon.h"
 
+#include "i18n.h"
 #include "iso7816.h"
 #include "app-common.h"
 #include "tlv.h"
@@ -279,11 +280,37 @@ verify_pin (app_t app,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
-  if (!app->did_chv1 || app->force_chv1 ) 
+  const char *s;
+  int rc;
+  iso7816_pininfo_t pininfo;
+
+  if ( app->did_chv1 && !app->force_chv1 ) 
+    return 0;  /* No need to verify it again.  */
+
+  memset (&pininfo, 0, sizeof pininfo);
+  pininfo.mode = 1;
+  pininfo.minlen = 6;
+  pininfo.maxlen = 8;
+
+  if (!opt.disable_keypad
+      && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
     {
-      const char *s;
+      rc = pincb (pincb_arg,
+                  _("||Please enter your PIN at the reader's keypad"),
+                  NULL);
+      if (rc)
+        {
+          log_info (_("PIN callback returned error: %s\n"),
+                    gpg_strerror (rc));
+          return rc;
+        }
+      rc = iso7816_verify_kp (app->slot, 0x81, "", 0, &pininfo); 
+      /* Dismiss the prompt. */
+      pincb (pincb_arg, NULL, NULL);
+    }
+  else  /* No Keypad.  */
+    {
       char *pinvalue;
-      int rc;
 
       rc = pincb (pincb_arg, "PIN", &pinvalue);
       if (rc)
@@ -303,15 +330,17 @@ verify_pin (app_t app,
           return gpg_error (GPG_ERR_BAD_PIN);
         }
 
-      if (strlen (pinvalue) < 6)
+      if (strlen (pinvalue) < pininfo.minlen)
         {
-          log_error ("PIN is too short; minimum length is 6\n");
+          log_error ("PIN is too short; minimum length is %d\n",
+                     pininfo.minlen);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
-      else if (strlen (pinvalue) > 8)
+      else if (strlen (pinvalue) > pininfo.maxlen)
         {
-          log_error ("PIN is too large; maximum length is 8\n");
+          log_error ("PIN is too large; maximum length is %d\n",
+                     pininfo.maxlen);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
@@ -326,7 +355,7 @@ verify_pin (app_t app,
              this. */
           char paddedpin[8];
           int i, ndigits;
-
+          
           for (ndigits=0, s=pinvalue; *s; ndigits++, s++)
             ;
           i = 0;
@@ -336,19 +365,18 @@ verify_pin (app_t app,
           if (i < sizeof paddedpin && *s)
             paddedpin[i++] = (((*s - '0') << 4) | 0x0f);
           while (i < sizeof paddedpin)
-              paddedpin[i++] = 0xff;
+            paddedpin[i++] = 0xff;
           rc = iso7816_verify (app->slot, 0x81, paddedpin, sizeof paddedpin);
         }
-      if (rc)
-        {
-          log_error ("verify PIN failed\n");
-          xfree (pinvalue);
-          return rc;
-        }
-      app->did_chv1 = 1;
       xfree (pinvalue);
     }
 
+  if (rc)
+    {
+      log_error ("verify PIN failed\n");
+      return rc;
+    }
+  app->did_chv1 = 1;
   return 0;
 }
 

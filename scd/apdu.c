@@ -90,7 +90,7 @@
 #define MAX_OPEN_FDS 20
 #endif
 
-/* Helper to pass patrameters related to keypad based operations. */
+/* Helper to pass parameters related to keypad based operations. */
 struct pininfo_s
 {
   int mode;

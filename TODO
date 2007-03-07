@@ -121,3 +121,8 @@
 
 * UTF-8
   UTF-8 specific TODO.
+
+* Pinpad Reader
+  We do not yet support P15 applications.  The trivial thing using
+  ASCII characters will be easy to implement but the otehr cases need
+  some more work.

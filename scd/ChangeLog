@@ -1,3 +1,14 @@
+2007-03-07  Werner Koch  <wk@g10code.com>
+
+	* app-dinsig.c: Include i18n.h.
+	(verify_pin): Support PIN pads.
+	* app-nks.c (verify_pin): Ditto.
+
+	* ccid-driver.c (bulk_in): Handle time extension before checking
+	the message type.
+	(ccid_transceive_secure): Support the Cherry XX44 keyboard.
+	Kudos to the nice folks at Cherry for helping with that.
+
 2007-02-18  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (DEFAULT_PCSC_DRIVER): Add a default for OS X.

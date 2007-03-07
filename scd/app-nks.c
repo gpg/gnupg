@@ -1,5 +1,5 @@
 /* app-nks.c - The Telesec NKS 2.0 card application.
- *	Copyright (C) 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -306,14 +306,43 @@ verify_pin (app_t app,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
+  iso7816_pininfo_t pininfo;
+  int rc;
+
   /* Note that force_chv1 is never set but we do it here anyway so
      that other applications may reuse this function.  For example it
      makes sense to set force_chv1 for German signature law cards.
      NKS is very similar to the DINSIG draft standard. */
-  if (!app->did_chv1 || app->force_chv1 ) 
+  if ( app->did_chv1 && !app->force_chv1 ) 
+    return 0;  /* No need to verify it again.  */
+
+  memset (&pininfo, 0, sizeof pininfo);
+  pininfo.mode = 1;
+  pininfo.minlen = 6;
+  pininfo.maxlen = 16;
+
+  if (!opt.disable_keypad
+      && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
+    {
+      rc = pincb (pincb_arg,
+                  _("||Please enter your PIN at the reader's keypad"),
+                  NULL);
+      if (rc)
+        {
+          log_info (_("PIN callback returned error: %s\n"),
+                    gpg_strerror (rc));
+          return rc;
+        }
+ 
+      /* Although it is possible to use a local PIN, we use the global
+         PIN for this application.  */
+      rc = iso7816_verify_kp (app->slot, 0, "", 0, &pininfo); 
+      /* Dismiss the prompt. */
+      pincb (pincb_arg, NULL, NULL);
+    }
+  else
     {
       char *pinvalue;
-      int rc;
 
       rc = pincb (pincb_arg, "PIN", &pinvalue); 
       if (rc)
@@ -324,34 +353,36 @@ verify_pin (app_t app,
 
       /* The following limits are due to TCOS but also defined in the
          NKS specs. */
-      if (strlen (pinvalue) < 6)
+      if (strlen (pinvalue) < pininfo.minlen)
         {
-          log_error ("PIN is too short; minimum length is 6\n");
+          log_error ("PIN is too short; minimum length is %d\n",
+                     pininfo.minlen);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
-      else if (strlen (pinvalue) > 16)
+      else if (strlen (pinvalue) > pininfo.maxlen)
         {
-          log_error ("PIN is too large; maximum length is 16\n");
+          log_error ("PIN is too large; maximum length is %d\n",
+                     pininfo.maxlen);
           xfree (pinvalue);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
 
-      /* Also it is possible to use a local PIN, we use the gloabl
+      /* Although it is possible to use a local PIN, we use the global
          PIN for this application.  */
       rc = iso7816_verify (app->slot, 0, pinvalue, strlen (pinvalue));
-      if (rc)
-        {
-          if ( gpg_error (rc) == GPG_ERR_USE_CONDITIONS )
-            log_error (_("the NullPIN has not yet been changed\n"));
-          else
-            log_error ("verify PIN failed\n");
-          xfree (pinvalue);
-          return rc;
-        }
-      app->did_chv1 = 1;
       xfree (pinvalue);
     }
+
+  if (rc)
+    {
+      if ( gpg_err_code (rc) == GPG_ERR_USE_CONDITIONS )
+        log_error (_("the NullPIN has not yet been changed\n"));
+      else
+        log_error ("verify PIN failed\n");
+      return rc;
+    }
+  app->did_chv1 = 1;
 
   return 0;
 }
@@ -457,7 +488,7 @@ do_decipher (app_t app, const char *keyidstr,
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* Check that the provided ID is vaid.  This is not really needed
+  /* Check that the provided ID is valid.  This is not really needed
      but we do it to to enforce correct usage by the caller. */
   if (strncmp (keyidstr, "NKS-DF01.", 9) ) 
     return gpg_error (GPG_ERR_INV_ID);

@@ -12,6 +12,7 @@ GnuPG comes with a couple of smaller tools:
 * gpgv::                  Verify OpenPGP signatures.
 * addgnupghome::          Create .gnupg home directories.
 * gpgconf::               Modify .gnupg home directories.
+* applygnupgdefaults::    Run gpgconf for all users.
 * gpgsm-gencert.sh::      Generate an X.509 certificate request.
 * gpg-preset-passphrase:: Put a passphrase into the cache.
 * gpg-connect-agent::     Communicate with a running agent.
@@ -82,10 +83,12 @@ Display a brief help page and exit
 @end table
 
 @mansect see also
+@ifset isman
 @command{gpg}(1), 
 @command{gpgsm}(1), 
 @command{gpg-agent}(1), 
 @command{scdaemon}(1)
+@end ifset
 @include see-also-note.texi
 
 
@@ -680,7 +683,7 @@ effect.
 
 @table @file
 
-@item /etc/gnupg/gpg-agent.conf
+@item /etc/gnupg/gpgconf.conf
 @cindex gpgconf.conf
   If this file exists, it is processed as a global configuration file.
   A commented example can be found in the @file{examples} directory of
@@ -689,15 +692,51 @@ effect.
 
 
 @mansect see also
+@ifset isman
 @command{gpg}(1), 
 @command{gpgsm}(1), 
 @command{gpg-agent}(1), 
 @command{scdaemon}(1),
 @command{dirmngr}(1)
+@end ifset
 @include see-also-note.texi
 
 
-@manpause
+
+@c
+@c    APPLYGNUPGDEFAULTS
+@c
+@manpage applygnupgdefaults.8
+@node applygnupgdefaults
+@section Run gpgconf for all users.
+@ifset manverb
+.B applygnupgdefaults
+\- Run gpgconf --apply-defaults for all users.
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  applygnupgdefaults
+@end ifset
+
+@mansect description
+This script is a wrapper around @command{gpgconf} to run it with the
+command @code{--apply-defaults} for all real users with an existing
+GnuPG home directory.  Admins might want to use this script to update he
+GnuPG configuration files for all users after
+@file{/etc/gnupg/gpgconf.conf} has been changed.  This allows to enforce
+certain policies for all users.  Note, that this is not a bulletproof of
+forcing a user to use certain options.  A user may always directly edit
+the configuration files and bypass gpgconf.
+
+@noindent
+@command{applygnupgdefaults} is invoked by root as:
+
+@example
+applygnupgdefaults
+@end example
+
+
 @c
 @c    GPGSM-GENCERT.SH
 @c
@@ -725,9 +764,11 @@ which will be printed to stdout.
 @samp{gpgsm-cencert.sh}
 
 @mansect see also
+@ifset isman
 @command{gpgsm}(1), 
 @command{gpg-agent}(1), 
 @command{scdaemon}(1)
+@end ifset
 @include see-also-note.texi
 
 
@@ -818,10 +859,12 @@ for other users.
 @end table
 
 @mansect see also
+@ifset isman
 @command{gpg}(1), 
 @command{gpgsm}(1), 
 @command{gpg-agent}(1), 
 @command{scdaemon}(1)
+@end ifset
 @include see-also-note.texi
 
 
@@ -1103,8 +1146,10 @@ The possible exit status codes of @command{symcryptrun} are:
 @end table
 
 @mansect see also
+@ifset isman
 @command{gpg}(1), 
 @command{gpgsm}(1), 
 @command{gpg-agent}(1), 
+@end ifset
 @include see-also-note.texi
 

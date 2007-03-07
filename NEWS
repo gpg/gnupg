@@ -11,7 +11,11 @@ Noteworthy changes in version 2.0.3
  * New --verify-option show-primary-uid-only. 
 
  * gpgconf may now read a global configuration file to select which
-   options are changeable by a frontend.
+   options are changeable by a frontend.  The new applygnupgdefaults
+   tool may be used by an admin to set default options for all users.
+
+ * The PIN pad of the Cherry XX44 keyboard is now supported.  The
+   DINSIG and the NKS applications are now also aware of PIN pads.
 
 
 Noteworthy changes in version 2.0.2 (2007-01-31)
@@ -471,7 +475,7 @@ Noteworthy changes in version 1.9.0 (2003-08-05)
    development branch.
 
 
- Copyright 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -905,7 +905,7 @@ strusage( int level )
     switch( level ) {
       case 11: p = "foo"; break;
       case 13: p = "0.0"; break;
-      case 14: p = "Copyright (C) 2006 Free Software Foundation, Inc."; break;
+      case 14: p = "Copyright (C) 2007 Free Software Foundation, Inc."; break;
       case 15: p =
 "This program comes with ABSOLUTELY NO WARRANTY.\n"
 "This is free software, and you are welcome to redistribute it\n"

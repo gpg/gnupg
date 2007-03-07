@@ -1,3 +1,8 @@
+2007-03-07  Werner Koch  <wk@g10code.com>
+
+	* applygnupgdefaults: New.
+	* Makefile.am (sbin_SCRIPTS): Add it
+
 2007-03-06  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c: Include pwd.h and grp.h.

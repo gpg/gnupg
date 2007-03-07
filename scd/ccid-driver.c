@@ -1,6 +1,6 @@
 /* ccid-driver.c - USB ChipCardInterfaceDevices driver
- *	Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
- *      Written by Werner Koch.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+ * Written by Werner Koch.
  *
  * This file is part of GnuPG.
  *
@@ -1458,11 +1458,6 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       DEBUGOUT_1 ("bulk-in msg too short (%u)\n", (unsigned int)msglen);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
-  if (buffer[0] != expected_type)
-    {
-      DEBUGOUT_1 ("unexpected bulk-in msg type (%02x)\n", buffer[0]);
-      return CCID_DRIVER_ERR_INV_VALUE;
-    }
   if (buffer[5] != 0)    
     {
       DEBUGOUT_1 ("unexpected bulk-in slot (%d)\n", buffer[5]);
@@ -1475,6 +1470,10 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       return CCID_DRIVER_ERR_INV_VALUE;
     }
 
+  /* We need to handle the time extension request before we check that
+     we go the expected message type.  This is in particular required
+     for the Cherry keyboard which sends a time extension request for
+     each key hit.  */
   if ( !(buffer[7] & 0x03) && (buffer[7] & 0xC0) == 0x80)
     { 
       /* Card present and active, time extension requested. */
@@ -1482,6 +1481,13 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                   buffer[7], buffer[8]);
       goto retry;
     }
+
+  if (buffer[0] != expected_type)
+    {
+      DEBUGOUT_1 ("unexpected bulk-in msg type (%02x)\n", buffer[0]);
+      return CCID_DRIVER_ERR_INV_VALUE;
+    }
+
 
   if (!no_debug)
     {
@@ -2330,6 +2336,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   int i;
   size_t dummy_nresp;
   int testmode;
+  int cherry_mode = 0;
 
   testmode = !resp && !nresp;
 
@@ -2368,14 +2375,16 @@ ccid_transceive_secure (ccid_driver_t handle,
     case VENDOR_SCM:  /* Tested with SPR 532. */
     case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
       break;
-      /* The CHERRY XX44 does not yet work. I have not investigated it
-         closer because there is another problem: It echos a "*" for
-         each entered character and we somehow need to arrange that it
-         doesn't get to the tty at all.  Given that we are running
-         without a control terminal there is not much we can do about.
-         A weird hack using pinentry comes in mind but I doubt that
-         this is a clean solution.  Need to contact Cherry.
-       */
+    case VENDOR_CHERRY:
+      /* The CHERRY XX44 keyboard echos an asterisk for each entered
+         character on the keyboard channel.  We use a special variant
+         of PC_to_RDR_Secure which directs these characters to the
+         smart card's bulk-in channel.  We also need to append a zero
+         Lc byte to the APDU.  It seems that it will be replaced with
+         the actual length instead of being appended before the APDU
+         is send to the card. */
+      cherry_mode = 1;
+      break;
     default:
      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     }
@@ -2393,7 +2402,7 @@ ccid_transceive_secure (ccid_driver_t handle,
         return rc;
     }
 
-  msg[0] = PC_to_RDR_Secure;
+  msg[0] = cherry_mode? 0x89 : PC_to_RDR_Secure;
   msg[5] = 0; /* slot */
   msg[6] = seqno = handle->seqno++;
   msg[7] = 0; /* bBWI */
@@ -2405,7 +2414,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (handle->id_vendor == VENDOR_SCM)
     {
       /* For the SPR532 the next 2 bytes need to be zero.  We do this
-         for all SCM product. Kudos to Martin Paljak for this
+         for all SCM products.  Kudos to Martin Paljak for this
          hint.  */
       msg[13] = msg[14] = 0;
     }
@@ -2419,7 +2428,7 @@ ccid_transceive_secure (ccid_driver_t handle,
     }
 
   /* The following is a little endian word. */
-  msg[15] = pinlen_max;   /* wPINMaxExtraDigit-Maximum. */
+  msg[15] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
   msg[16] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
 
   msg[17] = 0x02; /* bEntryValidationCondition:
@@ -2440,6 +2449,8 @@ ccid_transceive_secure (ccid_driver_t handle,
   msg[27] = apdu_buf[2]; /* P1 */
   msg[28] = apdu_buf[3]; /* P2 */
   msglen = 29;
+  if (cherry_mode)
+    msg[msglen++] = 0;
   /* An EDC is not required. */
   set_msg_len (msg, msglen - 10);
 

@@ -1,5 +1,5 @@
 # Makefile.am - Tools directory
-#     	Copyright (C) 2003 Free Software Foundation, Inc.
+#     	Copyright (C) 2003, 2007 Free Software Foundation, Inc.
 # 
 # This file is part of GnuPG.
 # 
@@ -20,7 +20,7 @@
 
 EXTRA_DIST = \
 	Manifest watchgnupg.c \
-	addgnupghome gpgsm-gencert.sh \
+	addgnupghome applygnupgdefaults gpgsm-gencert.sh \
 	lspgpot mail-signed-keys convert-from-106
 
 
@@ -29,7 +29,7 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 
-sbin_SCRIPTS = addgnupghome
+sbin_SCRIPTS = addgnupghome applygnupgdefaults
 
 bin_SCRIPTS = gpgsm-gencert.sh
 if HAVE_USTAR

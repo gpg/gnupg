@@ -1,3 +1,7 @@
+2007-03-07  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (strusage): Set copyright year to 2007.
+
 2007-01-25  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (utf8_charcount): New.
