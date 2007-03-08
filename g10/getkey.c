@@ -1,6 +1,6 @@
 /* getkey.c -  Get a key from the database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1490,18 +1490,23 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
 
     sig->flags.chosen_selfsig = 1; /* we chose this one */
     uid->created = 0; /* not created == invalid */
-    if ( IS_UID_REV ( sig ) ) {
+    if ( IS_UID_REV ( sig ) ) 
+      {
         uid->is_revoked = 1;
         return; /* has been revoked */
-    }
+      }
+    else
+      uid->is_revoked = 0;
 
     uid->expiredate = sig->expiredate;
 
-    if(sig->flags.expired)
+    if (sig->flags.expired)
       {
 	uid->is_expired = 1;
 	return; /* has expired */
       }
+    else
+      uid->is_expired = 0;
 
     uid->created = sig->timestamp; /* this one is okay */
     uid->selfsigversion = sig->version;

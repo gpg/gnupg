@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1554,6 +1554,10 @@ keyedit_menu( const char *username, strlist_t locusr,
     if( collapse_uids( &keyblock ) )
 	modified++;
     reorder_keyblock(keyblock);
+    /* We modified the keyblock, so let's make sure the flags are
+       right. */
+    if (modified)
+      merge_keys_and_selfsig (keyblock);
 
     if(seckey_check)
       {/* see whether we have a matching secret key */

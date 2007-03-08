@@ -1,3 +1,12 @@
+2007-03-08  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	* keyedit.c (keyedit_menu): If we modify the keyblock (via
+	fix_keyblock() or collapse_uids()) make sure we reprocess the
+	keyblock so the flags are correct.  Noted by Robin H. Johnson.
+
+	* getkey.c (fixup_uidnode): Properly clear flags that don't apply
+	to us (revoked, expired) so that we can reprocess a uid.
+
 2007-03-05  Werner Koch  <wk@g10code.com>
 
 	Converted this file to UTF-8.
