@@ -148,7 +148,7 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
    decrypt it and store it inoutbuf which has a maximum size of
    maxoutlen.  The valid bytes in outbuf should be return in outlen.
    Due to different buffer sizes or different length of input and
-   output, it may happen that fewer bytes are process or fewer bytes
+   output, it may happen that fewer bytes are processed or fewer bytes
    are written. */
 static gpg_error_t
 decrypt_filter (void *arg,
@@ -165,7 +165,7 @@ decrypt_filter (void *arg,
 
   if (maxoutlen < 2*parm->blklen)
     return gpg_error (GPG_ERR_BUG);
-  /* make some space becuase we will later need an extra block at the end */
+  /* Make some space because we will later need an extra block at the end.  */
   maxoutlen -= blklen;
 
   if (parm->helpblocklen)
@@ -298,7 +298,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
-  /* parser loop */
+  /* Parser loop. */
   do 
     {
       rc = ksba_cms_parse (cms, &stopreason);

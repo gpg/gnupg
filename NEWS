@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.3
+Noteworthy changes in version 2.0.3 (2007-03-08)
 ------------------------------------------------
 
  * By default, do not allow processing multiple plaintexts in a single
@@ -10,7 +10,7 @@ Noteworthy changes in version 2.0.3
 
  * New --verify-option show-primary-uid-only. 
 
- * gpgconf may now read a global configuration file to select which
+ * gpgconf may now reads a global configuration file to select which
    options are changeable by a frontend.  The new applygnupgdefaults
    tool may be used by an admin to set default options for all users.
 
