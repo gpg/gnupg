@@ -26,7 +26,7 @@
 @c %**end of header
 @copying
 This is the @cite{The GNU Privacy Guard Manual} (version
-@value{VERSION}, @value{UPDATED}).
+@value{VERSION}, @value{UPDATED-MONTH}).
 
 @iftex
 Published by the Free Software Foundation@*
@@ -34,7 +34,7 @@ Published by the Free Software Foundation@*
 Boston, MA 02110-1301 USA
 @end iftex
 
-Copyright @copyright{} 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
+Copyright @copyright{} 2002, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -83,11 +83,11 @@ section entitled ``Copying''.
 @titlepage
 @title Using the GNU Privacy Guard
 @subtitle Version @value{VERSION}
-@subtitle @value{UPDATED}
+@subtitle @value{UPDATED-MONTH}
 
 @sp 3
 
-@image{gnupg-badge-openpgp,8cm,,The GnuPG Logo}
+@image{gnupg-logo,16cm,,The GnuPG Logo}
 
 @sp 3
 
@@ -138,7 +138,7 @@ the administration and the architecture.
 
 @ifhtml
 
-@center @image{gnupg-badge-openpgp,6cm,,The GnuPG Logo}
+@center @image{gnupg-logo,6cm,,The GnuPG Logo}
 
 @end ifhtml
 

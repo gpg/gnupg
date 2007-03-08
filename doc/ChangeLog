@@ -1,3 +1,10 @@
+2007-03-08  Werner Koch  <wk@g10code.com>
+
+	* gnupg-logo.png, gnupg-logo.eps, gnupg-logo.pdf: New.
+	* gnupg-badge-openpgp.eps, gnupg-badge-openpgp.eps
+	* gnupg-badge-openpgp.jpg: Removed.
+	* gnupg.texi: Use new logo.
+
 2007-03-07  Werner Koch  <wk@g10code.com>
 
 	* tools.texi (applygnupgdefaults): New.

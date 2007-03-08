@@ -23,8 +23,7 @@ examples = examples/README examples/scd-event examples/trustlist.txt \
 	   examples/gpgconf.conf
 
 EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
-	     gnupg-badge-openpgp.eps gnupg-badge-openpgp.jpg \
-             gnupg-badge-openpgp.pdf \
+	     gnupg-logo.eps gnupg-logo.jpg gnupg-logo.pdf \
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
              faq.raw FAQ faq.html gnupg7.texi \
@@ -69,6 +68,7 @@ DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
 		 $(myman_pages) gnupg.7
 
 yat2m_SOURCES = yat2m.c
+
 
 
 .fig.png:
@@ -126,10 +126,17 @@ $(myman_pages) gnupg.7 : yat2m-stamp
                fi; \
              fi
 
+# Make sure that gnupg.texi is touched if any other source file has
+# been modified.  This is required so that the version.texi magic
+# updates the release date.
+gnupg.texi : $(gnupg_TEXINFOS)
+	touch $(srcdir)/gnupg.texi
+
 
 online: gnupg.html gnupg.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
+	cp gnupg-logo.png gnupg.html/; \
         user=werner ; \
 	(cd gnupg.html && rsync -vr --exclude='.svn' .  \
 	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg/ ); \
