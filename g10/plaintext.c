@@ -69,6 +69,12 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
       {
 	char status[50];
 
+        /* Better make sure that stdout has been flushed in case the
+           output will be written to it.  This is to make sure that no
+           not-yet-flushed stuff will be written after the plaintext
+           status message.  */
+        fflush (stdout);
+
 	sprintf(status,"%X %lu ",(byte)pt->mode,(ulong)pt->timestamp);
 	write_status_text_and_buffer(STATUS_PLAINTEXT,
 				     status,pt->name,pt->namelen,0);
@@ -394,8 +400,13 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     fp = NULL;
 
   leave:
+    /* Make sure that stdout gets flushed after the plaintext has
+       been handled.  This is for extra security as we do a
+       flush anyway before checking the signature.  */
+    fflush (stdout);
+
     if( fp && fp != stdout )
-	fclose(fp);
+      fclose (fp);
     xfree(fname);
     return rc;
 }
