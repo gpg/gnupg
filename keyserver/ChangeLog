@@ -1,3 +1,12 @@
+2007-03-09  David Shaw  <dshaw@jabberwocky.com>
+
+	From STABLE-BRANCH-1-4
+
+	* gpgkeys_ldap.c (send_key): Missing a free().
+
+	* curl-shim.c (curl_easy_perform): Some debugging items that may
+	be handy.
+
 2006-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (search_key): HKP keyservers like the 0x to be

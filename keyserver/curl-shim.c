@@ -178,7 +178,14 @@ curl_easy_perform(CURL *curl)
     proxy=getenv(HTTP_PROXY_ENV);
 
   if(curl->flags.verbose)
-    fprintf(curl->errors,"* HTTP proxy is \"%s\"\n",proxy?proxy:"null");
+    {
+      fprintf(curl->errors,"* HTTP proxy is \"%s\"\n",proxy?proxy:"null");
+      fprintf(curl->errors,"* HTTP URL is \"%s\"\n",curl->url);
+      fprintf(curl->errors,"* HTTP auth is \"%s\"\n",
+	      curl->auth?curl->auth:"null");
+      fprintf(curl->errors,"* HTTP method is %s\n",
+	      curl->flags.post?"POST":"GET");
+    }
 
   if(curl->flags.post)
     {
