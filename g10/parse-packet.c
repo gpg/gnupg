@@ -1474,7 +1474,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( list_mode ) {
 	fprintf (listfp, ":signature packet: algo %d, keyid %08lX%08lX\n"
-	       "\tversion %d, created %lu, md5len %d, sigclass %02x\n"
+	       "\tversion %d, created %lu, md5len %d, sigclass 0x%02x\n"
 	       "\tdigest algo %d, begin of digest %02x %02x\n",
 		sig->pubkey_algo,
 		(ulong)sig->keyid[0], (ulong)sig->keyid[1],

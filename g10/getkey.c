@@ -2179,6 +2179,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 	  {
 	    PKT_signature *backsig=xmalloc_clear(sizeof(PKT_signature));
 	    IOBUF backsig_buf=iobuf_temp_with_content(p,n);
+	    int save_mode=set_packet_list_mode(0);
 
 	    if(parse_signature(backsig_buf,PKT_SIGNATURE,n,backsig)==0)
 	      {
@@ -2187,6 +2188,8 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 		else
 		  subpk->backsig=1;
 	      }
+
+	    set_packet_list_mode(save_mode);
 
 	    iobuf_close(backsig_buf);
 	    free_seckey_enc(backsig);
