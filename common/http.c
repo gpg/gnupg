@@ -584,8 +584,6 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
           uri->use_tls = 1;
         }
 #endif
-      else if (!strcmp (uri->scheme, "hkp"))
-        uri->port = 11371;
       else
 	return gpg_error (GPG_ERR_INV_URI); /* Unsupported scheme */
 

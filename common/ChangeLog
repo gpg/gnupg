@@ -1,3 +1,11 @@
+2007-03-09  David Shaw  <dshaw@jabberwocky.com>
+
+	From STABLE-BRANCH-1-4
+
+	* http.c (do_parse_uri): Remove the hkp port 11371 detection.  We
+	implement hkp in the keyserver handler, and the support here makes
+	it appear like a bad hkp request actually succeeded.
+
 2007-01-31  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (t_common_ldadd): Add LIBINCONV and LIBINTL.
