@@ -1,3 +1,12 @@
+2007-03-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (main): Use curl_version_info to verify that the
+	protocol we're about to use is actually available.
+
+	* curl-shim.h, curl-shim.c (curl_free): Make into a macro.
+	(curl_version_info): New.  Only advertises "http" for our shim, of
+	course.
+
 2007-02-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (send_key): Missing a free().
