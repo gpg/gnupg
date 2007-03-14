@@ -332,8 +332,13 @@ curl_escape(char *str,int length)
   return enc;
 }
 
-void
-curl_free(char *ptr)
+curl_version_info_data *
+curl_version_info(int type)
 {
-  free(ptr);
+  static curl_version_info_data data;
+  static const char *protocols[]={"http",NULL};
+
+  data.protocols=protocols;
+
+  return &data;
 }

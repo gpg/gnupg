@@ -1,5 +1,5 @@
 /* gpgkeys_curl.c - fetch a key via libcurl
- * Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -112,11 +112,12 @@ show_help (FILE *fp)
 int
 main(int argc,char *argv[])
 {
-  int arg,ret=KEYSERVER_INTERNAL_ERROR;
+  int arg,ret=KEYSERVER_INTERNAL_ERROR,i;
   char line[MAX_LINE];
   char *thekey=NULL;
   long follow_redirects=5;
   char *proxy=NULL;
+  curl_version_info_data *curldata;
 
   console=stderr;
 
@@ -261,11 +262,26 @@ main(int argc,char *argv[])
     }
 
   curl_global_init(CURL_GLOBAL_DEFAULT);
+
   curl=curl_easy_init();
   if(!curl)
     {
       fprintf(console,"gpgkeys: unable to initialize curl\n");
       ret=KEYSERVER_INTERNAL_ERROR;
+      goto fail;
+    }
+
+  /* Make sure we have the protocol the user is asking for so we can
+     print a nicer error message. */
+  curldata=curl_version_info(CURLVERSION_NOW);
+  for(i=0;curldata->protocols[i];i++)
+    if(strcasecmp(curldata->protocols[i],opt->scheme)==0)
+      break;
+
+  if(curldata->protocols[i]==NULL)
+    {
+      fprintf(console,"gpgkeys: protocol `%s' not supported\n",opt->scheme);
+      ret=KEYSERVER_SCHEME_NOT_FOUND;
       goto fail;
     }
 

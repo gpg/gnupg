@@ -76,8 +76,14 @@ typedef struct
   http_t hd;
 } CURL;
 
+typedef struct
+{
+  const char **protocols;
+} curl_version_info_data; 
+
 #define CURL_ERROR_SIZE 256
 #define CURL_GLOBAL_DEFAULT 0
+#define CURLVERSION_NOW 0
 
 CURLcode curl_global_init(long flags);
 void curl_global_cleanup(void);
@@ -86,7 +92,8 @@ CURLcode curl_easy_setopt(CURL *curl,CURLoption option,...);
 CURLcode curl_easy_perform(CURL *curl);
 void curl_easy_cleanup(CURL *curl);
 char *curl_escape(char *str,int len);
-void curl_free(char *ptr);
+#define curl_free(x) free(x)
 #define curl_version() "GnuPG curl-shim "VERSION
+curl_version_info_data *curl_version_info(int type);
 
 #endif /* !_CURL_SHIM_H_ */
