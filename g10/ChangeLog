@@ -1,3 +1,9 @@
+2007-03-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c: Windows Vista doesn't grok X_OK and so fails
+	access() tests.  Previous versions interpreted X_OK as F_OK
+	anyway, so we'll just use F_OK directly.
+
 2007-03-08  Werner Koch  <wk@g10code.com>
 
 	* plaintext.c (handle_plaintext): Add two extra fflush for stdout.

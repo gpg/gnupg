@@ -1,6 +1,6 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,6 +40,14 @@
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "util.h"
+
+#ifdef HAVE_W32_SYSTEM
+/* It seems Vista doesn't grok X_OK and so fails access() tests.
+   Previous versions interpreted X_OK as F_OK anyway, so we'll just
+   use F_OK directly. */
+#undef X_OK
+#define X_OK F_OK
+#endif /* HAVE_W32_SYSTEM */
 
 struct keyrec
 {
