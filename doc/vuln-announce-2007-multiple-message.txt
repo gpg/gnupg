@@ -1,6 +1,6 @@
              Multiple Messages Problem in GnuPG and GPGME
             ==============================================
-                              2007-03-05
+                     2007-03-05  [CVE-2007-1263]
 
 
 Summary

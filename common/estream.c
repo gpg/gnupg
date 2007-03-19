@@ -1,5 +1,5 @@
 /* estream.c - Extended Stream I/O Library
- * Copyright (C) 2004, 2006 g10 Code GmbH
+ * Copyright (C) 2004, 2006, 2007 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -47,6 +47,10 @@
 
 #ifdef HAVE_PTH
 # include <pth.h>
+#endif
+
+#ifdef GNUPG_MAJOR_VERSION
+#include "../common/util.h"
 #endif
 
 #ifndef HAVE_MKSTEMP
@@ -205,7 +209,9 @@ static estream_mutex_t estream_list_lock = ESTREAM_MUTEX_INITIALIZER;
 /* Macros.  */
 
 /* Calculate array dimension.  */
+#ifndef DIM
 #define DIM(array) (sizeof (array) / sizeof (*array))
+#endif
 
 /* Evaluate EXPRESSION, setting VARIABLE to the return code, if
    VARIABLE is zero.  */
@@ -740,6 +746,14 @@ static es_cookie_io_functions_t estream_functions_file =
 static int
 es_convert_mode (const char *mode, unsigned int *flags)
 {
+
+  /* FIXME: We need to allow all combinations for mode flags and for
+     binary we need to do a
+
+     #ifdef HAVE_DOSISH_SYSTEM
+       setmode (fd, O_BINARY);
+     #endif
+  */
   struct
   {
     const char *mode;
@@ -2702,6 +2716,21 @@ es_vfprintf (estream_t ES__RESTRICT stream, const char *ES__RESTRICT format,
 }
 
 
+static int
+es_fprintf_unlocked (estream_t ES__RESTRICT stream,
+	    const char *ES__RESTRICT format, ...)
+{
+  int ret;
+  
+  va_list ap;
+  va_start (ap, format);
+  ret = es_print (stream, format, ap);
+  va_end (ap);
+
+  return ret;
+}
+
+
 int
 es_fprintf (estream_t ES__RESTRICT stream,
 	    const char *ES__RESTRICT format, ...)
@@ -2838,4 +2867,164 @@ es_opaque_get (estream_t stream)
 
   return opaque;
 }
+
+
+
+/* Print a BUFFER to STREAM while replacing all control characters and
+   the characters in DELIMITERS by standard C escape sequences.
+   Returns 0 on success or -1 on error.  If BYTES_WRITTEN is not NULL
+   the number of bytes actually written are stored at this
+   address.  */
+int 
+es_write_sanitized (estream_t ES__RESTRICT stream,
+                    const void * ES__RESTRICT buffer, size_t length,
+                    const char * delimiters, 
+                    size_t * ES__RESTRICT bytes_written)
+{
+  const unsigned char *p = buffer;
+  size_t count = 0;
+  int ret;
+
+  ESTREAM_LOCK (stream);
+  for (; length; length--, p++, count++)
+    {
+      if (*p < 0x20 
+          || (*p >= 0x7f && *p < 0xa0)
+          || (delimiters 
+              && (strchr (delimiters, *p) || *p == '\\')))
+        {
+          es_putc_unlocked ('\\', stream);
+          count++;
+          if (*p == '\n')
+            {
+              es_putc_unlocked ('n', stream);
+              count++;
+            }
+          else if (*p == '\r')
+            {
+              es_putc_unlocked ('r', stream);
+              count++;
+            }
+          else if (*p == '\f')
+            {
+              es_putc_unlocked ('f', stream);
+              count++;
+            }
+          else if (*p == '\v')
+            {
+              es_putc_unlocked ('v', stream);
+              count++;
+            }
+          else if (*p == '\b')
+            {
+              es_putc_unlocked ('b', stream);
+              count++;
+            }
+          else if (!*p)
+            {
+              es_putc_unlocked('0', stream);
+              count++;
+            }
+          else
+            {
+              es_fprintf_unlocked (stream, "x%02x", *p);
+              count += 3;
+            }
+	}
+      else
+        {
+          es_putc_unlocked (*p, stream);
+          count++;
+        }
+    }
+
+  if (bytes_written)
+    *bytes_written = count;
+  ret =  es_ferror_unlocked (stream)? -1 : 0;
+  ESTREAM_UNLOCK (stream);
+
+  return ret;
+}
+
+
+/* Write LENGTH bytes of BUFFER to STREAM as a hex encoded string.
+   RESERVED must be 0.  Returns 0 on success or -1 on error.  If
+   BYTES_WRITTEN is not NULL the number of bytes actually written are
+   stored at this address.  */
+int
+es_write_hexstring (estream_t ES__RESTRICT stream,
+                    const void *ES__RESTRICT buffer, size_t length,
+                    int reserved, size_t *ES__RESTRICT bytes_written )
+{
+  int ret;
+  const unsigned char *s;
+  size_t count = 0;
+
+#define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
+
+  if (!length)
+    return 0;
+
+  ESTREAM_LOCK (stream);
+
+  for (s = buffer; length; s++, length--)
+    {
+      es_putc_unlocked ( tohex ((*s>>4)&15), stream);
+      es_putc_unlocked ( tohex (*s&15), stream);
+      count += 2;
+    }
+
+  if (bytes_written)
+    *bytes_written = count;
+  ret = es_ferror_unlocked (stream)? -1 : 0;
+
+  ESTREAM_UNLOCK (stream);
+
+  return ret;
+
+#undef tohex
+}
+
+
+
+#ifdef GNUPG_MAJOR_VERSION
+/* Special estream function to print an UTF8 string in the native
+   encoding.  The interface is the same as es_write_sanitized, however
+   only one delimiter may be supported. 
+
+   THIS IS NOT A STANDARD ESTREAM FUNCTION AND ONLY USED BY GNUPG. */
+int
+es_write_sanitized_utf8_buffer (estream_t stream,
+                                const void *buffer, size_t length, 
+                                const char *delimiters, size_t *bytes_written)
+{
+  const char *p = buffer;
+  size_t i;
+
+  /* We can handle plain ascii simpler, so check for it first. */
+  for (i=0; i < length; i++ ) 
+    {
+      if ( (p[i] & 0x80) )
+        break;
+    }
+  if (i < length)
+    {
+      int delim = delimiters? *delimiters : 0;
+      char *buf;
+      int ret;
+
+      /*(utf8 conversion already does the control character quoting). */
+      buf = utf8_to_native (p, length, delim);
+      if (bytes_written)
+        *bytes_written = strlen (buf);
+      ret = es_fputs (buf, stream);
+      xfree (buf);
+      return i;
+    }
+  else
+    return es_write_sanitized (stream, p, length, delimiters, bytes_written);
+}
+#endif /*GNUPG_MAJOR_VERSION*/
+
+
 

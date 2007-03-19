@@ -76,8 +76,6 @@
 ** Add a test to check the extkeyusage.
 
 * Windows port
-** gpgsm's LISTKEYS does not yet work
-    Fix is to change everything to libestream
 ** Signals are not support 
     This means we can't reread a configuration
 ** No card status notifications.
@@ -85,6 +83,10 @@
 * sm/
 ** check that we issue NO_SECKEY xxx if a -u key was not found
    We don't. The messages returned are also wrong (recipient vs. signer).
+** cmd_export
+   Does only work on systems with funopen/fopencookie.  Changing is
+   easy.
+
 
 * jnlib/
 ** provide jnlib_malloc and try to remove all jnlib_xmalloc.
@@ -124,5 +126,12 @@
 
 * Pinpad Reader
   We do not yet support P15 applications.  The trivial thing using
-  ASCII characters will be easy to implement but the otehr cases need
+  ASCII characters will be easy to implement but the other cases need
   some more work.
+
+* Bugs
+** After disabling scdaemon and sending a HUP
+   scdaemon stays as a zombie and gpg-agent does not perform any more
+   commands.
+
+

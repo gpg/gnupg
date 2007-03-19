@@ -1,5 +1,5 @@
 /* certdump.c - Dump a certificate for debugging
- *	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -56,30 +56,27 @@ struct dn_array_s {
 };
 
 
-/* print the first element of an S-Expression */
+/* Print the first element of an S-Expression. */
 void
-gpgsm_print_serial (FILE *fp, ksba_const_sexp_t sn)
+gpgsm_print_serial (estream_t fp, ksba_const_sexp_t sn)
 {
   const char *p = (const char *)sn;
   unsigned long n;
   char *endp;
 
   if (!p)
-    fputs (_("none"), fp);
+    es_fputs (_("none"), fp);
   else if (*p != '(')
-    fputs ("[Internal error - not an S-expression]", fp);
+    es_fputs ("[Internal error - not an S-expression]", fp);
   else
     {
       p++;
       n = strtoul (p, &endp, 10);
       p = endp;
       if (*p!=':')
-        fputs ("[Internal Error - invalid S-expression]", fp);
+        es_fputs ("[Internal Error - invalid S-expression]", fp);
       else
-        {
-          for (p++; n; n--, p++)
-            fprintf (fp, "%02X", *(const unsigned char*)p);
-        }
+        es_write_hexstring (fp, p, strlen (p), 0, NULL);
     }
 }
 
@@ -148,13 +145,15 @@ gpgsm_format_serial (ksba_const_sexp_t sn)
 
 
 void
-gpgsm_print_time (FILE *fp, ksba_isotime_t t)
+gpgsm_print_time (estream_t fp, ksba_isotime_t t)
 {
   if (!t || !*t)
-    fputs (_("none"), fp);
+    es_fputs (_("none"), fp);
   else
-    fprintf (fp, "%.4s-%.2s-%.2s %.2s:%.2s:%s", t, t+4, t+6, t+9, t+11, t+13);
+    es_fprintf (fp, "%.4s-%.2s-%.2s %.2s:%.2s:%s",
+                t, t+4, t+6, t+9, t+11, t+13);
 }
+
 
 void
 gpgsm_dump_time (ksba_isotime_t t)
@@ -468,8 +467,10 @@ parse_dn (const unsigned char *string)
 }
 
 
+/* Print a DN part to STREAM or if STREAM is NULL to FP. */
 static void
-print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key, int translate)
+print_dn_part (FILE *fp, estream_t stream,
+               struct dn_array_s *dn, const char *key, int translate)
 {
   struct dn_array_s *first_dn = dn;
 
@@ -487,11 +488,25 @@ print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key, int translate)
         next:
           if (!dn->done && dn->value && *dn->value)
             {
-              fprintf (fp, "/%s=", dn->key);
-              if (translate)
-                print_sanitized_utf8_string (fp, dn->value, '/');
+              if (stream)
+                {
+                  es_fprintf (stream, "/%s=", dn->key);
+                  if (translate)
+                    es_write_sanitized_utf8_buffer (stream, dn->value,
+                                                    strlen (dn->value),
+                                                    "/", NULL);
+                  else
+                    es_write_sanitized (stream, dn->value, strlen (dn->value),
+                                        "/", NULL);
+                }
               else
-                print_sanitized_string (fp, dn->value, '/');
+                {
+                  fprintf (fp, "/%s=", dn->key);
+                  if (translate)
+                    print_sanitized_utf8_string (fp, dn->value, '/');
+                  else
+                    print_sanitized_string (fp, dn->value, '/');
+                }
             }
           dn->done = 1;
           if (dn > first_dn && dn[-1].multivalued)
@@ -506,7 +521,8 @@ print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key, int translate)
 /* Print all parts of a DN in a "standard" sequence.  We first print
    all the known parts, followed by the uncommon ones */
 static void
-print_dn_parts (FILE *fp, struct dn_array_s *dn, int translate)
+print_dn_parts (FILE *fp, estream_t stream,
+                struct dn_array_s *dn, int translate)
 {
   const char *stdpart[] = {
     "CN", "OU", "O", "STREET", "L", "ST", "C", "EMail", NULL 
@@ -514,11 +530,11 @@ print_dn_parts (FILE *fp, struct dn_array_s *dn, int translate)
   int i;
   
   for (i=0; stdpart[i]; i++)
-      print_dn_part (fp, dn, stdpart[i], translate);
+      print_dn_part (fp, stream, dn, stdpart[i], translate);
 
   /* Now print the rest without any specific ordering */
   for (; dn->key; dn++)
-    print_dn_part (fp, dn, dn->key, translate);
+    print_dn_part (fp, stream, dn, dn->key, translate);
 }
 
 
@@ -567,6 +583,53 @@ pretty_print_sexp (FILE *fp, const unsigned char *buf, size_t buflen)
   gcry_sexp_release (sexp);
 }
 
+/* Print the S-Expression in BUF to extended STREAM, which has a valid
+   length of BUFLEN, as a human readable string in one line to FP. */
+static void
+pretty_es_print_sexp (estream_t fp, const unsigned char *buf, size_t buflen)
+{
+  size_t len;
+  gcry_sexp_t sexp;
+  char *result, *p;
+
+  if ( gcry_sexp_sscan (&sexp, NULL, (const char*)buf, buflen) )
+    {
+      es_fputs (_("[Error - invalid encoding]"), fp);
+      return;
+    }
+  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
+  assert (len);
+  result = xtrymalloc (len);
+  if (!result)
+    {
+      es_fputs (_("[Error - out of core]"), fp);
+      gcry_sexp_release (sexp);
+      return;
+    }
+  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, result, len);
+  assert (len);
+  for (p = result; len; len--, p++)
+    {
+      if (*p == '\n')
+        {
+          if (len > 1) /* Avoid printing the trailing LF. */
+            es_fputs ("\\n", fp);
+        }
+      else if (*p == '\r')
+        es_fputs ("\\r", fp);
+      else if (*p == '\v')
+        es_fputs ("\\v", fp);
+      else if (*p == '\t')
+        es_fputs ("\\t", fp);
+      else
+        es_putc (*p, fp);
+    }
+  xfree (result);
+  gcry_sexp_release (sexp);
+}
+
+
+
 
 void
 gpgsm_print_name2 (FILE *fp, const char *name, int translate)
@@ -604,7 +667,7 @@ gpgsm_print_name2 (FILE *fp, const char *name, int translate)
         fputs (_("[Error - invalid DN]"), fp);
       else 
         {
-          print_dn_parts (fp, dn, translate);          
+          print_dn_parts (fp, NULL, dn, translate);          
           for (i=0; dn[i].key; i++)
             {
               xfree (dn[i].key);
@@ -621,6 +684,55 @@ gpgsm_print_name (FILE *fp, const char *name)
 {
   gpgsm_print_name2 (fp, name, 1);
 }
+
+
+/* This is avariant of gpgsm_print_name sending it output to an estream. */
+void
+gpgsm_es_print_name (estream_t fp, const char *name)
+{
+  const unsigned char *s = (const unsigned char *)name;
+  int i;
+
+  if (!s)
+    {
+      es_fputs (_("[Error - No name]"), fp);
+    }
+  else if (*s == '<')
+    {
+      const char *s2 = strchr ( (char*)s+1, '>');
+
+      if (s2)
+        es_write_sanitized_utf8_buffer (fp, s + 1, s2 - (char*)s - 1,
+                                        NULL, NULL);
+    }
+  else if (*s == '(')
+    {
+      pretty_es_print_sexp (fp, s, gcry_sexp_canon_len (s, 0, NULL, NULL));
+    }
+  else if (!((*s >= '0' && *s < '9')
+             || (*s >= 'A' && *s <= 'Z')
+             || (*s >= 'a' && *s <= 'z')))
+    es_fputs (_("[Error - invalid encoding]"), fp);
+  else
+    {
+      struct dn_array_s *dn = parse_dn (s);
+
+      if (!dn)
+        es_fputs (_("[Error - invalid DN]"), fp);
+      else 
+        {
+          print_dn_parts (NULL, fp, dn, 1);          
+          for (i=0; dn[i].key; i++)
+            {
+              xfree (dn[i].key);
+              xfree (dn[i].value);
+            }
+          xfree (dn);
+        }
+    }
+}
+
+
 
 
 /* A cookie structure used for the memory stream. */

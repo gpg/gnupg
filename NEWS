@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.0.4
 ------------------------------------------------
 
+ * The Assuan key listing commands are now also working for systems
+   without the funopen/fopencookie API.
+
 
 Noteworthy changes in version 2.0.3 (2007-03-08)
 ------------------------------------------------
@@ -10,7 +13,7 @@ Noteworthy changes in version 2.0.3 (2007-03-08)
    did not permit this, and were thus not using the plaintext boundary
    status tags that GnuPG provides.  This change makes GnuPG reject
    such messages by default which makes those programs safe again.
-   --allow-multiple-messages returns to the old behavior.
+   --allow-multiple-messages returns to the old behavior. [CVE-2007-1263].
 
  * New --verify-option show-primary-uid-only. 
 

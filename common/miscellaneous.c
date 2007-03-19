@@ -74,6 +74,7 @@ make_printable_string (const void *p, size_t n, int delim )
 }
 
 
+
 /*
  * Check if the file is compressed.
  */

@@ -172,6 +172,13 @@ int es_read (estream_t ES__RESTRICT stream,
 int es_write (estream_t ES__RESTRICT stream,
 	      const void *ES__RESTRICT buffer, size_t bytes_to_write,
 	      size_t *ES__RESTRICT bytes_written);
+int es_write_sanitized (estream_t ES__RESTRICT stream,
+                        const void *ES__RESTRICT buffer, size_t length,
+                        const char *delimiters,
+                        size_t *ES__RESTRICT bytes_written);
+int es_write_hexstring (estream_t ES__RESTRICT stream,
+                        const void *ES__RESTRICT buffer, size_t length,
+                        int reserved, size_t *ES__RESTRICT bytes_written);
 
 size_t es_fread (void *ES__RESTRICT ptr, size_t size, size_t nitems,
 		 estream_t ES__RESTRICT stream);
@@ -202,6 +209,16 @@ estream_t es_tmpfile (void);
 
 void es_opaque_set (estream_t ES__RESTRICT stream, void *ES__RESTRICT opaque);
 void *es_opaque_get (estream_t stream);
+
+
+
+#ifdef GNUPG_MAJOR_VERSION
+int es_write_sanitized_utf8_buffer (estream_t stream,
+                                    const void *buffer, size_t length, 
+                                    const char *delimiters,
+                                    size_t *bytes_written);
+#endif /*GNUPG_MAJOR_VERSION*/
+
 
 #endif /*ESTREAM_H*/
 

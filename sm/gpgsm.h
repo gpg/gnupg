@@ -32,6 +32,7 @@
 #include <ksba.h>
 #include "../common/util.h"
 #include "../common/errors.h"
+#include "../common/estream.h"
 
 #define MAX_DIGEST_LEN 24 
 
@@ -225,10 +226,11 @@ void gpgsm_destroy_writer (Base64Context ctx);
 
 
 /*-- certdump.c --*/
-void gpgsm_print_serial (FILE *fp, ksba_const_sexp_t p);
-void gpgsm_print_time (FILE *fp, ksba_isotime_t t);
+void gpgsm_print_serial (estream_t fp, ksba_const_sexp_t p);
+void gpgsm_print_time (estream_t fp, ksba_isotime_t t);
 void gpgsm_print_name2 (FILE *fp, const char *string, int translate);
 void gpgsm_print_name (FILE *fp, const char *string);
+void gpgsm_es_print_name (estream_t fp, const char *string);
 
 void gpgsm_cert_log_name (const char *text, ksba_cert_t cert);
 
@@ -261,7 +263,7 @@ int gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next);
 int gpgsm_is_root_cert (ksba_cert_t cert);
 int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
                           ksba_isotime_t r_exptime,
-                          int listmode, FILE *listfp,
+                          int listmode, estream_t listfp,
                           unsigned int flags);
 int gpgsm_basic_cert_check (ksba_cert_t cert);
 
@@ -281,7 +283,7 @@ int gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert);
 
 /*-- keylist.c --*/
 gpg_error_t gpgsm_list_keys (ctrl_t ctrl, strlist_t names,
-                             FILE *fp, unsigned int mode);
+                             estream_t fp, unsigned int mode);
 
 /*-- import.c --*/
 int gpgsm_import (ctrl_t ctrl, int in_fd);

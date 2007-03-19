@@ -93,7 +93,7 @@ set_already_asked_marktrusted (ksba_cert_t cert)
    LISTMODE is false, use the string to print an log_info or, if
    IS_ERROR is true, and log_error. */
 static void
-do_list (int is_error, int listmode, FILE *fp, const char *format, ...)
+do_list (int is_error, int listmode, estream_t fp, const char *format, ...)
 {
   va_list arg_ptr;
 
@@ -102,9 +102,9 @@ do_list (int is_error, int listmode, FILE *fp, const char *format, ...)
     {
       if (fp)
         {
-          fputs ("  [", fp);
-          vfprintf (fp, format, arg_ptr);
-          fputs ("]\n", fp);
+          es_fputs ("  [", fp);
+          es_vfprintf (fp, format, arg_ptr);
+          es_fputs ("]\n", fp);
         }
     }
   else
@@ -133,7 +133,7 @@ compare_certs (ksba_cert_t a, ksba_cert_t b)
 
 
 static int
-unknown_criticals (ksba_cert_t cert, int listmode, FILE *fp)
+unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
 {
   static const char *known[] = {
     "2.5.29.15", /* keyUsage */
@@ -183,7 +183,7 @@ unknown_criticals (ksba_cert_t cert, int listmode, FILE *fp)
    BasicConstraints extension.  The function returns 0 on success and
    the awlloed length of the chain at CHAINLEN. */
 static int
-allowed_ca (ksba_cert_t cert, int *chainlen, int listmode, FILE *fp)
+allowed_ca (ksba_cert_t cert, int *chainlen, int listmode, estream_t fp)
 {
   gpg_error_t err;
   int flag;
@@ -208,7 +208,7 @@ allowed_ca (ksba_cert_t cert, int *chainlen, int listmode, FILE *fp)
 
 
 static int
-check_cert_policy (ksba_cert_t cert, int listmode, FILE *fplist)
+check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
 {
   gpg_error_t err;
   char *policies;
@@ -645,7 +645,7 @@ gpgsm_is_root_cert (ksba_cert_t cert)
 
 /* This is a helper for gpgsm_validate_chain. */
 static gpg_error_t 
-is_cert_still_valid (ctrl_t ctrl, int lm, FILE *fp,
+is_cert_still_valid (ctrl_t ctrl, int lm, estream_t fp,
                      ksba_cert_t subject_cert, ksba_cert_t issuer_cert,
                      int *any_revoked, int *any_no_crl, int *any_crl_too_old)
 {
@@ -704,7 +704,7 @@ is_cert_still_valid (ctrl_t ctrl, int lm, FILE *fp,
 */
 int
 gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
-                      int listmode, FILE *fp, unsigned int flags)
+                      int listmode, estream_t fp, unsigned int flags)
 {
   int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;

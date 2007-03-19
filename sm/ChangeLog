@@ -1,3 +1,25 @@
+2007-03-19  Werner Koch  <wk@g10code.com>
+
+        Change to let the key listing use estream to help systems without
+	funopen.
+	
+	* keylist.c: Use estream in place of stdio functions.
+	* gpgsm.c (open_es_fwrite): New.
+	(main): Use it for the list commands.
+	* server.c (data_line_cookie_functions): New.
+	(data_line_cookie_write, data_line_cookie_close): New.
+	(do_listkeys): Use estream.
+	* certdump.c (gpgsm_print_serial): Changed to use estream.
+	(gpgsm_print_time): Ditto.
+	(pretty_es_print_sexp): New.
+	(gpgsm_es_print_name): New.
+	(print_dn_part): New arg STREAM.  Changed all callers.
+	(print_dn_parts): Ditto.
+	* certchain.c (gpgsm_validate_chain): Changed FP to type
+	estream_t.
+	(do_list, unknown_criticals, allowed_ca, check_cert_policy) 
+	(is_cert_still_valid): Ditto.
+
 2007-01-31  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Let --gen-key print a more informative error

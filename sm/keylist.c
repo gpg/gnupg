@@ -38,9 +38,10 @@
 #include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
 #include "i18n.h"
 
-struct list_external_parm_s {
+struct list_external_parm_s 
+{
   ctrl_t ctrl;
-  FILE *fp;
+  estream_t fp;
   int print_header;
   int with_colons;
   int with_chain;
@@ -50,7 +51,8 @@ struct list_external_parm_s {
 
 /* This table is to map Extended Key Usage OIDs to human readable
    names.  */
-struct {
+struct
+{
   const char *oid;
   const char *name;
 } key_purpose_map[] = {
@@ -78,7 +80,8 @@ struct {
 
 
 /* A table mapping OIDs to a descriptive string. */
-static struct {
+static struct 
+{
   char *oid;
   char *name;
   unsigned int flag;
@@ -201,7 +204,7 @@ get_oid_desc (const char *oid, unsigned int *flag)
 
 
 static void
-print_key_data (ksba_cert_t cert, FILE *fp)
+print_key_data (ksba_cert_t cert, estream_t fp)
 {
 #if 0  
   int n = pk ? pubkey_get_npkey( pk->pubkey_algo ) : 0;
@@ -209,7 +212,7 @@ print_key_data (ksba_cert_t cert, FILE *fp)
 
   for(i=0; i < n; i++ ) 
     {
-      fprintf (fp, "pkd:%d:%u:", i, mpi_get_nbits( pk->pkey[i] ) );
+      es_fprintf (fp, "pkd:%d:%u:", i, mpi_get_nbits( pk->pkey[i] ) );
       mpi_print(stdout, pk->pkey[i], 1 );
       putchar(':');
       putchar('\n');
@@ -218,7 +221,7 @@ print_key_data (ksba_cert_t cert, FILE *fp)
 }
 
 static void
-print_capabilities (ksba_cert_t cert, FILE *fp)
+print_capabilities (ksba_cert_t cert, estream_t fp)
 {
   gpg_error_t err;
   unsigned int use;
@@ -230,7 +233,7 @@ print_capabilities (ksba_cert_t cert, FILE *fp)
   if (!err && buflen)
     {
       if (*buffer)
-        putc ('q', fp);
+        es_putc ('q', fp);
     }    
   else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     ; /* Don't know - will not get marked as 'q' */
@@ -242,12 +245,12 @@ print_capabilities (ksba_cert_t cert, FILE *fp)
   if (gpg_err_code (err) == GPG_ERR_NO_DATA
       || gpg_err_code (err) == GPG_ERR_NO_VALUE)
     {
-      putc ('e', fp);
-      putc ('s', fp);
-      putc ('c', fp);
-      putc ('E', fp);
-      putc ('S', fp);
-      putc ('C', fp);
+      es_putc ('e', fp);
+      es_putc ('s', fp);
+      es_putc ('c', fp);
+      es_putc ('E', fp);
+      es_putc ('S', fp);
+      es_putc ('C', fp);
       return;
     }
   if (err)
@@ -258,27 +261,27 @@ print_capabilities (ksba_cert_t cert, FILE *fp)
     } 
 
   if ((use & (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT)))
-    putc ('e', fp);
+    es_putc ('e', fp);
   if ((use & (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION)))
-    putc ('s', fp);
+    es_putc ('s', fp);
   if ((use & KSBA_KEYUSAGE_KEY_CERT_SIGN))
-    putc ('c', fp);
+    es_putc ('c', fp);
   if ((use & (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT)))
-    putc ('E', fp);
+    es_putc ('E', fp);
   if ((use & (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION)))
-    putc ('S', fp);
+    es_putc ('S', fp);
   if ((use & KSBA_KEYUSAGE_KEY_CERT_SIGN))
-    putc ('C', fp);
+    es_putc ('C', fp);
 }
 
 
 static void
-print_time (gnupg_isotime_t t, FILE *fp)
+print_time (gnupg_isotime_t t, estream_t fp)
 {
   if (!t || !*t)
     ;
   else 
-    fputs (t, fp);
+    es_fputs (t, fp);
 }
 
 
@@ -330,7 +333,7 @@ email_kludge (const char *name)
 /* List one certificate in colon mode */
 static void
 list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
-                 FILE *fp, int have_secret)
+                 estream_t fp, int have_secret)
 {
   int rc;
   int idx;
@@ -375,7 +378,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   }
 
 
-  fputs (have_secret? "crs:":"crt:", fp);
+  es_fputs (have_secret? "crs:":"crt:", fp);
 
   /* Note: We can't use multiple flags, like "ei", because the
      validation check does only return one error.  */
@@ -418,18 +421,18 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     }
   
   if (*truststring)
-    fputs (truststring, fp);
+    es_fputs (truststring, fp);
 
   algo = gpgsm_get_key_algo_info (cert, &nbits);
-  fprintf (fp, ":%u:%d:%s:", nbits, algo, fpr+24);
+  es_fprintf (fp, ":%u:%d:%s:", nbits, algo, fpr+24);
 
   /* We assume --fixed-list-mode for gpgsm */
   ksba_cert_get_validity (cert, 0, t);
   print_time (t, fp);
-  putc (':', fp);
+  es_putc (':', fp);
   ksba_cert_get_validity (cert, 1, t);
   print_time ( t, fp);
-  putc (':', fp);
+  es_putc (':', fp);
   /* Field 8, serial number: */
   if ((sexp = ksba_cert_get_serial (cert)))
     {
@@ -443,34 +446,34 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
             len = len*10 + atoi_1 (s);
           if (*s == ':')
             for (s++; len; len--, s++)
-              fprintf (fp,"%02X", *s);
+              es_fprintf (fp,"%02X", *s);
         }
       xfree (sexp);
     }
-  putc (':', fp);
+  es_putc (':', fp);
   /* Field 9, ownertrust - not used here */
-  putc (':', fp);
+  es_putc (':', fp);
   /* field 10, old user ID - we use it here for the issuer DN */
   if ((p = ksba_cert_get_issuer (cert,0)))
     {
-      print_sanitized_string (fp, p, ':');
+      es_write_sanitized (fp, p, strlen (p), ":", NULL);
       xfree (p);
     }
-  putc (':', fp);
+  es_putc (':', fp);
   /* Field 11, signature class - not used */ 
-  putc (':', fp);
+  es_putc (':', fp);
   /* Field 12, capabilities: */ 
   print_capabilities (cert, fp);
-  putc (':', fp);
-  putc ('\n', fp);
+  es_putc (':', fp);
+  es_putc ('\n', fp);
 
   /* FPR record */
-  fprintf (fp, "fpr:::::::::%s:::", fpr);
+  es_fprintf (fp, "fpr:::::::::%s:::", fpr);
   /* Print chaining ID (field 13)*/
   if (chain_id)
-    fputs (chain_id, fp);
-  putc (':', fp);
-  putc ('\n', fp);
+    es_fputs (chain_id, fp);
+  es_putc (':', fp);
+  es_putc ('\n', fp);
   xfree (fpr); fpr = NULL; chain_id = NULL;
   xfree (chain_id_buffer); chain_id_buffer = NULL;
 
@@ -478,7 +481,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     {
       if ( (p = gpgsm_get_keygrip_hexstring (cert)))
         {
-          fprintf (fp, "grp:::::::::%s:\n", p);
+          es_fprintf (fp, "grp:::::::::%s:\n", p);
           xfree (p);
         }
       print_key_data (cert, fp);
@@ -486,11 +489,11 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
 
   for (idx=0; (p = ksba_cert_get_subject (cert,idx)); idx++)
     {
-      fprintf (fp, "uid:%s::::::::", truststring);
-      print_sanitized_string (fp, p, ':');
-      putc (':', fp);
-      putc (':', fp);
-      putc ('\n', fp);
+      es_fprintf (fp, "uid:%s::::::::", truststring);
+      es_write_sanitized (fp, p, strlen (p), ":", NULL);
+      es_putc (':', fp);
+      es_putc (':', fp);
+      es_putc ('\n', fp);
       if (!idx)
         {
           /* It would be better to get the faked email address from
@@ -500,11 +503,11 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
           char *pp = email_kludge (p);
           if (pp)
             {
-              fprintf (fp, "uid:%s::::::::", truststring);
-              print_sanitized_string (fp, pp, ':');
-              putc (':', fp);
-              putc (':', fp);
-              putc ('\n', fp);
+              es_fprintf (fp, "uid:%s::::::::", truststring);
+              es_write_sanitized (fp, pp, strlen (pp), ":", NULL);
+              es_putc (':', fp);
+              es_putc (':', fp);
+              es_putc ('\n', fp);
               xfree (pp);
             }
         }
@@ -514,16 +517,16 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
 
 
 static void
-print_name_raw (FILE *fp, const char *string)
+print_name_raw (estream_t fp, const char *string)
 {
   if (!string)
-    fputs ("[error]", fp);
+    es_fputs ("[error]", fp);
   else
-    print_sanitized_string (fp, string, 0);
+    es_write_sanitized (fp, string, strlen (string), NULL, NULL);
 }
 
 static void
-print_names_raw (FILE *fp, int indent, ksba_name_t name)
+print_names_raw (estream_t fp, int indent, ksba_name_t name)
 {
   int idx;
   const char *s;
@@ -534,16 +537,16 @@ print_names_raw (FILE *fp, int indent, ksba_name_t name)
 
   if (!name)
     {
-      fputs ("none\n", fp);
+      es_fputs ("none\n", fp);
       return;
     }
   
   for (idx=0; (s = ksba_name_enum (name, idx)); idx++)
     {
       char *p = ksba_name_get_uri (name, idx);
-      printf ("%*s", idx||indent_all?indent:0, "");
-      print_sanitized_string (fp, p?p:s, 0);
-      putc ('\n', fp);
+      es_fprintf (fp, "%*s", idx||indent_all?indent:0, "");
+      es_write_sanitized (fp, p?p:s, strlen (p?p:s), NULL, NULL);
+      es_putc ('\n', fp);
       xfree (p);
     }
 }
@@ -554,7 +557,7 @@ print_names_raw (FILE *fp, int indent, ksba_name_t name)
    output sanitation.  It is mainly useful for debugging. */
 static void
 list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
-               ksba_cert_t cert, FILE *fp, int have_secret,
+               ksba_cert_t cert, estream_t fp, int have_secret,
                int with_validation)
 {
   gpg_error_t err;
@@ -571,162 +574,163 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   unsigned int reason;
 
   sexp = ksba_cert_get_serial (cert);
-  fputs ("Serial number: ", fp);
+  es_fputs ("Serial number: ", fp);
   gpgsm_print_serial (fp, sexp);
   ksba_free (sexp);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
 
   dn = ksba_cert_get_issuer (cert, 0);
-  fputs ("       Issuer: ", fp);
+  es_fputs ("       Issuer: ", fp);
   print_name_raw (fp, dn);
   ksba_free (dn);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
   for (idx=1; (dn = ksba_cert_get_issuer (cert, idx)); idx++)
     {
-      fputs ("          aka: ", fp);
+      es_fputs ("          aka: ", fp);
       print_name_raw (fp, dn);
       ksba_free (dn);
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
 
   dn = ksba_cert_get_subject (cert, 0);
-  fputs ("      Subject: ", fp);
+  es_fputs ("      Subject: ", fp);
   print_name_raw (fp, dn);
   ksba_free (dn);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
   for (idx=1; (dn = ksba_cert_get_subject (cert, idx)); idx++)
     {
-      fputs ("          aka: ", fp);
+      es_fputs ("          aka: ", fp);
       print_name_raw (fp, dn);
       ksba_free (dn);
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
 
   dn = gpgsm_get_fingerprint_string (cert, 0);
-  fprintf (fp, "     sha1_fpr: %s\n", dn?dn:"error");
+  es_fprintf (fp, "     sha1_fpr: %s\n", dn?dn:"error");
   xfree (dn);
 
   dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_MD5);
-  fprintf (fp, "      md5_fpr: %s\n", dn?dn:"error");
+  es_fprintf (fp, "      md5_fpr: %s\n", dn?dn:"error");
   xfree (dn);
 
   dn = gpgsm_get_certid (cert);
-  fprintf (fp, "       certid: %s\n", dn?dn:"error");
+  es_fprintf (fp, "       certid: %s\n", dn?dn:"error");
   xfree (dn);
 
   dn = gpgsm_get_keygrip_hexstring (cert);
-  fprintf (fp, "      keygrip: %s\n", dn?dn:"error");
+  es_fprintf (fp, "      keygrip: %s\n", dn?dn:"error");
   xfree (dn);
 
   ksba_cert_get_validity (cert, 0, t);
-  fputs ("    notBefore: ", fp);
+  es_fputs ("    notBefore: ", fp);
   gpgsm_print_time (fp, t);
-  putc ('\n', fp);
-  fputs ("     notAfter: ", fp);
+  es_putc ('\n', fp);
+  es_fputs ("     notAfter: ", fp);
   ksba_cert_get_validity (cert, 1, t);
   gpgsm_print_time (fp, t);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
 
   oid = ksba_cert_get_digest_algo (cert);
   s = get_oid_desc (oid, NULL);
-  fprintf (fp, "     hashAlgo: %s%s%s%s\n", oid, s?" (":"",s?s:"",s?")":"");
+  es_fprintf (fp, "     hashAlgo: %s%s%s%s\n", oid, s?" (":"",s?s:"",s?")":"");
 
   {
     const char *algoname;
     unsigned int nbits;
 
     algoname = gcry_pk_algo_name (gpgsm_get_key_algo_info (cert, &nbits));
-    fprintf (fp, "      keyType: %u bit %s\n",  nbits, algoname? algoname:"?");
+    es_fprintf (fp, "      keyType: %u bit %s\n",
+                nbits, algoname? algoname:"?");
   }
 
   /* subjectKeyIdentifier */
-  fputs ("    subjKeyId: ", fp);
+  es_fputs ("    subjKeyId: ", fp);
   err = ksba_cert_get_subj_key_id (cert, NULL, &keyid);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA
       || gpg_err_code (err) == GPG_ERR_NO_VALUE)
     {
       if (gpg_err_code (err) == GPG_ERR_NO_DATA
           || gpg_err_code (err) == GPG_ERR_NO_VALUE)
-        fputs ("[none]\n", fp);
+        es_fputs ("[none]\n", fp);
       else
         {
           gpgsm_print_serial (fp, keyid);
           ksba_free (keyid);
-          putc ('\n', fp);
+          es_putc ('\n', fp);
         }
     }
   else
-    fputs ("[?]\n", fp);
+    es_fputs ("[?]\n", fp);
 
 
   /* authorityKeyIdentifier */
-  fputs ("    authKeyId: ", fp);
+  es_fputs ("    authKeyId: ", fp);
   err = ksba_cert_get_auth_key_id (cert, &keyid, &name, &sexp);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA
       || gpg_err_code (err) == GPG_ERR_NO_VALUE)
     {
       if (gpg_err_code (err) == GPG_ERR_NO_DATA || !name
           || gpg_err_code (err) == GPG_ERR_NO_VALUE)
-        fputs ("[none]\n", fp);
+        es_fputs ("[none]\n", fp);
       else
         {
           gpgsm_print_serial (fp, sexp);
           ksba_free (sexp);
-          putc ('\n', fp);
+          es_putc ('\n', fp);
           print_names_raw (fp, -15, name);
           ksba_name_release (name);
         }
       if (keyid)
         {
-          fputs (" authKeyId.ki: ", fp);
+          es_fputs (" authKeyId.ki: ", fp);
           gpgsm_print_serial (fp, keyid);
           ksba_free (keyid);
-          putc ('\n', fp);
+          es_putc ('\n', fp);
         }
     }
   else
-    fputs ("[?]\n", fp);
+    es_fputs ("[?]\n", fp);
 
-  fputs ("     keyUsage:", fp);
+  es_fputs ("     keyUsage:", fp);
   err = ksba_cert_get_key_usage (cert, &kusage);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
     {
       if (err)
-        fprintf (fp, " [error: %s]", gpg_strerror (err));
+        es_fprintf (fp, " [error: %s]", gpg_strerror (err));
       else
         {
           if ( (kusage & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
-            fputs (" digitalSignature", fp);
+            es_fputs (" digitalSignature", fp);
           if ( (kusage & KSBA_KEYUSAGE_NON_REPUDIATION))  
-            fputs (" nonRepudiation", fp);
+            es_fputs (" nonRepudiation", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT)) 
-            fputs (" keyEncipherment", fp);
+            es_fputs (" keyEncipherment", fp);
           if ( (kusage & KSBA_KEYUSAGE_DATA_ENCIPHERMENT))
-            fputs (" dataEncipherment", fp);
+            es_fputs (" dataEncipherment", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))    
-            fputs (" keyAgreement", fp);
+            es_fputs (" keyAgreement", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_CERT_SIGN))
-            fputs (" certSign", fp);
+            es_fputs (" certSign", fp);
           if ( (kusage & KSBA_KEYUSAGE_CRL_SIGN))  
-            fputs (" crlSign", fp);
+            es_fputs (" crlSign", fp);
           if ( (kusage & KSBA_KEYUSAGE_ENCIPHER_ONLY))
-            fputs (" encipherOnly", fp);
+            es_fputs (" encipherOnly", fp);
           if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))  
-            fputs (" decipherOnly", fp);
+            es_fputs (" decipherOnly", fp);
         }
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
   else
-    fputs (" [none]\n", fp);
+    es_fputs (" [none]\n", fp);
 
-  fputs ("  extKeyUsage: ", fp);
+  es_fputs ("  extKeyUsage: ", fp);
   err = ksba_cert_get_ext_key_usages (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
     { 
       if (err)
-        fprintf (fp, "[error: %s]", gpg_strerror (err));
+        es_fprintf (fp, "[error: %s]", gpg_strerror (err));
       else
         {
           p = string;
@@ -736,31 +740,31 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
               for (i=0; key_purpose_map[i].oid; i++)
                 if ( !strcmp (key_purpose_map[i].oid, p) )
                   break;
-              fputs (key_purpose_map[i].oid?key_purpose_map[i].name:p, fp);
+              es_fputs (key_purpose_map[i].oid?key_purpose_map[i].name:p, fp);
               p = pend;
               if (*p != 'C')
-                fputs (" (suggested)", fp);
+                es_fputs (" (suggested)", fp);
               if ((p = strchr (p, '\n')))
                 {
                   p++;
-                  fputs ("\n               ", fp);
+                  es_fputs ("\n               ", fp);
                 }
             }
           xfree (string);
         }
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
   else
-    fputs ("[none]\n", fp);
+    es_fputs ("[none]\n", fp);
 
 
-  fputs ("     policies: ", fp);
+  es_fputs ("     policies: ", fp);
   err = ksba_cert_get_cert_policies (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
     {
       if (err)
-        fprintf (fp, "[error: %s]", gpg_strerror (err));
+        es_fprintf (fp, "[error: %s]", gpg_strerror (err));
       else
         {
           p = string;
@@ -770,111 +774,111 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
               for (i=0; key_purpose_map[i].oid; i++)
                 if ( !strcmp (key_purpose_map[i].oid, p) )
                   break;
-              fputs (p, fp);
+              es_fputs (p, fp);
               p = pend;
               if (*p == 'C')
-                fputs (" (critical)", fp);
+                es_fputs (" (critical)", fp);
               if ((p = strchr (p, '\n')))
                 {
                   p++;
-                  fputs ("\n               ", fp);
+                  es_fputs ("\n               ", fp);
                 }
             }
           xfree (string);
         }
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
   else
-    fputs ("[none]\n", fp);
+    es_fputs ("[none]\n", fp);
 
-  fputs ("  chainLength: ", fp);
+  es_fputs ("  chainLength: ", fp);
   err = ksba_cert_is_ca (cert, &is_ca, &chainlen);
   if (err || is_ca)
     {
       if (gpg_err_code (err) == GPG_ERR_NO_VALUE )
-        fprintf (fp, "[none]");
+        es_fprintf (fp, "[none]");
       else if (err)
-        fprintf (fp, "[error: %s]", gpg_strerror (err));
+        es_fprintf (fp, "[error: %s]", gpg_strerror (err));
       else if (chainlen == -1)
-        fputs ("unlimited", fp);
+        es_fputs ("unlimited", fp);
       else
-        fprintf (fp, "%d", chainlen);
-      putc ('\n', fp);
+        es_fprintf (fp, "%d", chainlen);
+      es_putc ('\n', fp);
     }
   else
-    fputs ("not a CA\n", fp);
+    es_fputs ("not a CA\n", fp);
 
 
   /* CRL distribution point */
   for (idx=0; !(err=ksba_cert_get_crl_dist_point (cert, idx, &name, &name2,
                                                   &reason)) ;idx++)
     {
-      fputs ("        crlDP: ", fp);
+      es_fputs ("        crlDP: ", fp);
       print_names_raw (fp, 15, name);
       if (reason)
         {
-          fputs ("               reason: ", fp);
+          es_fputs ("               reason: ", fp);
           if ( (reason & KSBA_CRLREASON_UNSPECIFIED))
-            fputs (" unused", stdout);
+            es_fputs (" unused", fp);
           if ( (reason & KSBA_CRLREASON_KEY_COMPROMISE))
-            fputs (" keyCompromise", stdout);
+            es_fputs (" keyCompromise", fp);
           if ( (reason & KSBA_CRLREASON_CA_COMPROMISE))
-            fputs (" caCompromise", stdout);
+            es_fputs (" caCompromise", fp);
           if ( (reason & KSBA_CRLREASON_AFFILIATION_CHANGED))
-            fputs (" affiliationChanged", stdout);
+            es_fputs (" affiliationChanged", fp);
           if ( (reason & KSBA_CRLREASON_SUPERSEDED))
-            fputs (" superseded", stdout);
+            es_fputs (" superseded", fp);
           if ( (reason & KSBA_CRLREASON_CESSATION_OF_OPERATION))
-            fputs (" cessationOfOperation", stdout);
+            es_fputs (" cessationOfOperation", fp);
           if ( (reason & KSBA_CRLREASON_CERTIFICATE_HOLD))
-            fputs (" certificateHold", stdout);
-          putchar ('\n');
+            es_fputs (" certificateHold", fp);
+          es_putc ('\n', fp);
         }
-      fputs ("               issuer: ", fp);
+      es_fputs ("               issuer: ", fp);
       print_names_raw (fp, 23, name2);
       ksba_name_release (name);
       ksba_name_release (name2);
     }
   if (err && gpg_err_code (err) != GPG_ERR_EOF
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
-    fputs ("        crlDP: [error]\n", fp);
+    es_fputs ("        crlDP: [error]\n", fp);
   else if (!idx)
-    fputs ("        crlDP: [none]\n", fp);
+    es_fputs ("        crlDP: [none]\n", fp);
 
 
   /* authorityInfoAccess. */
   for (idx=0; !(err=ksba_cert_get_authority_info_access (cert, idx, &string,
                                                          &name)); idx++)
     {
-      fputs ("     authInfo: ", fp);
+      es_fputs ("     authInfo: ", fp);
       s = get_oid_desc (string, NULL);
-      fprintf (fp, "%s%s%s%s\n", string, s?" (":"", s?s:"", s?")":"");
+      es_fprintf (fp, "%s%s%s%s\n", string, s?" (":"", s?s:"", s?")":"");
       print_names_raw (fp, -15, name);
       ksba_name_release (name);
       ksba_free (string);
     }
   if (err && gpg_err_code (err) != GPG_ERR_EOF
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
-    fputs ("     authInfo: [error]\n", fp);
+    es_fputs ("     authInfo: [error]\n", fp);
   else if (!idx)
-    fputs ("     authInfo: [none]\n", fp);
+    es_fputs ("     authInfo: [none]\n", fp);
 
   /* subjectInfoAccess. */
   for (idx=0; !(err=ksba_cert_get_subject_info_access (cert, idx, &string,
                                                          &name)); idx++)
     {
-      fputs ("  subjectInfo: ", fp);
+      es_fputs ("  subjectInfo: ", fp);
       s = get_oid_desc (string, NULL);
-      fprintf (fp, "%s%s%s%s\n", string, s?" (":"", s?s:"", s?")":"");
+      es_fprintf (fp, "%s%s%s%s\n", string, s?" (":"", s?s:"", s?")":"");
       print_names_raw (fp, -15, name);
       ksba_name_release (name);
       ksba_free (string);
     }
   if (err && gpg_err_code (err) != GPG_ERR_EOF
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
-    fputs ("     subjInfo: [error]\n", fp);
+    es_fputs ("     subjInfo: [error]\n", fp);
   else if (!idx)
-    fputs ("     subjInfo: [none]\n", fp);
+    es_fputs ("     subjInfo: [none]\n", fp);
 
 
   for (idx=0; !(err=ksba_cert_get_extension (cert, idx,
@@ -885,7 +889,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
       s = get_oid_desc (oid, &flag);
 
       if (!(flag & 1))
-        fprintf (fp, "     %s: %s%s%s%s  [%d octets]\n",
+        es_fprintf (fp, "     %s: %s%s%s%s  [%d octets]\n",
                  i? "critExtn":"    extn",
                  oid, s?" (":"", s?s:"", s?")":"", (int)len);
     }
@@ -895,9 +899,9 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
     {
       err = gpgsm_validate_chain (ctrl, cert, NULL, 1, fp, 0);
       if (!err)
-        fprintf (fp, "  [certificate is good]\n");
+        es_fprintf (fp, "  [certificate is good]\n");
       else
-        fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
+        es_fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
     }
 
   if (opt.with_ephemeral_keys && hd)
@@ -906,9 +910,9 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
 
       err = keydb_get_flags (hd, KEYBOX_FLAG_BLOB, 0, &blobflags);
       if (err)
-        fprintf (fp, "  [error getting keyflags: %s]\n", gpg_strerror (err));
+        es_fprintf (fp, "  [error getting keyflags: %s]\n",gpg_strerror (err));
       else if ((blobflags & 2))
-        fprintf (fp, "  [stored as ephemeral]\n");
+        es_fprintf (fp, "  [stored as ephemeral]\n");
     }
 
 }
@@ -918,7 +922,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
 
 /* List one certificate in standard mode */
 static void
-list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
+list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
                int with_validation)
 {
   gpg_error_t err;
@@ -931,44 +935,44 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
   char *string, *p, *pend;
 
   sexp = ksba_cert_get_serial (cert);
-  fputs ("Serial number: ", fp);
+  es_fputs ("Serial number: ", fp);
   gpgsm_print_serial (fp, sexp);
   ksba_free (sexp);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
 
   dn = ksba_cert_get_issuer (cert, 0);
-  fputs ("       Issuer: ", fp);
-  gpgsm_print_name (fp, dn);
+  es_fputs ("       Issuer: ", fp);
+  gpgsm_es_print_name (fp, dn);
   ksba_free (dn);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
   for (idx=1; (dn = ksba_cert_get_issuer (cert, idx)); idx++)
     {
-      fputs ("          aka: ", fp);
-      gpgsm_print_name (fp, dn);
+      es_fputs ("          aka: ", fp);
+      gpgsm_es_print_name (fp, dn);
       ksba_free (dn);
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
 
   dn = ksba_cert_get_subject (cert, 0);
-  fputs ("      Subject: ", fp);
-  gpgsm_print_name (fp, dn);
+  es_fputs ("      Subject: ", fp);
+  gpgsm_es_print_name (fp, dn);
   ksba_free (dn);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
   for (idx=1; (dn = ksba_cert_get_subject (cert, idx)); idx++)
     {
-      fputs ("          aka: ", fp);
-      gpgsm_print_name (fp, dn);
+      es_fputs ("          aka: ", fp);
+      gpgsm_es_print_name (fp, dn);
       ksba_free (dn);
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
 
   ksba_cert_get_validity (cert, 0, t);
-  fputs ("     validity: ", fp);
+  es_fputs ("     validity: ", fp);
   gpgsm_print_time (fp, t);
-  fputs (" through ", fp);
+  es_fputs (" through ", fp);
   ksba_cert_get_validity (cert, 1, t);
   gpgsm_print_time (fp, t);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
 
 
   {
@@ -976,7 +980,8 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
     unsigned int nbits;
 
     algoname = gcry_pk_algo_name (gpgsm_get_key_algo_info (cert, &nbits));
-    fprintf (fp, "     key type: %u bit %s\n", nbits, algoname? algoname:"?");
+    es_fprintf (fp, "     key type: %u bit %s\n",
+                nbits, algoname? algoname:"?");
   }
 
 
@@ -984,40 +989,40 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
   if (gpg_err_code (err) != GPG_ERR_NO_DATA
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
     {
-      fputs ("    key usage:", fp);
+      es_fputs ("    key usage:", fp);
       if (err)
-        fprintf (fp, " [error: %s]", gpg_strerror (err));
+        es_fprintf (fp, " [error: %s]", gpg_strerror (err));
       else
         {
           if ( (kusage & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
-            fputs (" digitalSignature", fp);
+            es_fputs (" digitalSignature", fp);
           if ( (kusage & KSBA_KEYUSAGE_NON_REPUDIATION))  
-            fputs (" nonRepudiation", fp);
+            es_fputs (" nonRepudiation", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT)) 
-            fputs (" keyEncipherment", fp);
+            es_fputs (" keyEncipherment", fp);
           if ( (kusage & KSBA_KEYUSAGE_DATA_ENCIPHERMENT))
-            fputs (" dataEncipherment", fp);
+            es_fputs (" dataEncipherment", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))    
-            fputs (" keyAgreement", fp);
+            es_fputs (" keyAgreement", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_CERT_SIGN))
-            fputs (" certSign", fp);
+            es_fputs (" certSign", fp);
           if ( (kusage & KSBA_KEYUSAGE_CRL_SIGN))  
-            fputs (" crlSign", fp);
+            es_fputs (" crlSign", fp);
           if ( (kusage & KSBA_KEYUSAGE_ENCIPHER_ONLY))
-            fputs (" encipherOnly", fp);
+            es_fputs (" encipherOnly", fp);
           if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))  
-            fputs (" decipherOnly", fp);
+            es_fputs (" decipherOnly", fp);
         }
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
 
   err = ksba_cert_get_ext_key_usages (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
     { 
-      fputs ("ext key usage: ", fp);
+      es_fputs ("ext key usage: ", fp);
       if (err)
-        fprintf (fp, "[error: %s]", gpg_strerror (err));
+        es_fprintf (fp, "[error: %s]", gpg_strerror (err));
       else
         {
           p = string;
@@ -1027,28 +1032,28 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
               for (i=0; key_purpose_map[i].oid; i++)
                 if ( !strcmp (key_purpose_map[i].oid, p) )
                   break;
-              fputs (key_purpose_map[i].oid?key_purpose_map[i].name:p, fp);
+              es_fputs (key_purpose_map[i].oid?key_purpose_map[i].name:p, fp);
               p = pend;
               if (*p != 'C')
-                fputs (" (suggested)", fp);
+                es_fputs (" (suggested)", fp);
               if ((p = strchr (p, '\n')))
                 {
                   p++;
-                  fputs (", ", fp);
+                  es_fputs (", ", fp);
                 }
             }
           xfree (string);
         }
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
 
   err = ksba_cert_get_cert_policies (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA
       && gpg_err_code (err) != GPG_ERR_NO_VALUE)
     {
-      fputs ("     policies: ", fp);
+      es_fputs ("     policies: ", fp);
       if (err)
-        fprintf (fp, "[error: %s]", gpg_strerror (err));
+        es_fprintf (fp, "[error: %s]", gpg_strerror (err));
       else
         {
           for (p=string; *p; p++)
@@ -1056,36 +1061,36 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
               if (*p == '\n')
                 *p = ',';
             }
-          print_sanitized_string (fp, string, 0);
+          es_write_sanitized (fp, string, strlen (string), NULL, NULL);
           xfree (string);
         }
-      putc ('\n', fp);
+      es_putc ('\n', fp);
     }
 
   err = ksba_cert_is_ca (cert, &is_ca, &chainlen);
   if (err || is_ca)
     {
-      fputs (" chain length: ", fp);
+      es_fputs (" chain length: ", fp);
       if (gpg_err_code (err) == GPG_ERR_NO_VALUE )
-        fprintf (fp, "none");
+        es_fprintf (fp, "none");
       else if (err)
-        fprintf (fp, "[error: %s]", gpg_strerror (err));
+        es_fprintf (fp, "[error: %s]", gpg_strerror (err));
       else if (chainlen == -1)
-        fputs ("unlimited", fp);
+        es_fputs ("unlimited", fp);
       else
-        fprintf (fp, "%d", chainlen);
-      putc ('\n', fp);
+        es_fprintf (fp, "%d", chainlen);
+      es_putc ('\n', fp);
     }
 
   if (opt.with_md5_fingerprint)
     {
       dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_MD5);
-      fprintf (fp, "      md5 fpr: %s\n", dn?dn:"error");
+      es_fprintf (fp, "      md5 fpr: %s\n", dn?dn:"error");
       xfree (dn);
     }
 
   dn = gpgsm_get_fingerprint_string (cert, 0);
-  fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
+  es_fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
   xfree (dn);
 
 
@@ -1102,7 +1107,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
       if (!tmperr && buflen)
         {
           if (*buffer)
-            fputs ("  [qualified]\n", fp);
+            es_fputs ("  [qualified]\n", fp);
         }    
       else if (gpg_err_code (tmperr) == GPG_ERR_NOT_FOUND)
         ; /* Don't know - will not get marked as 'q' */
@@ -1111,9 +1116,9 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
                    gpg_strerror (tmperr)); 
 
       if (!err)
-        fprintf (fp, "  [certificate is good]\n");
+        es_fprintf (fp, "  [certificate is good]\n");
       else
-        fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
+        es_fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
     }
 }
 
@@ -1122,7 +1127,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
 static void
 list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
                  ksba_cert_t cert, int raw_mode,
-                 FILE *fp, int with_validation)
+                 estream_t fp, int with_validation)
 {
   ksba_cert_t next = NULL;
 
@@ -1134,7 +1139,7 @@ list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
   while (!gpgsm_walk_cert_chain (cert, &next))
     {
       ksba_cert_release (cert);
-      fputs ("Certified by\n", fp);
+      es_fputs ("Certified by\n", fp);
       if (raw_mode)
         list_cert_raw (ctrl, hd, next, fp, 0, with_validation);
       else
@@ -1142,7 +1147,7 @@ list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
       cert = next;
     }
   ksba_cert_release (cert);
-  putc ('\n', fp);
+  es_putc ('\n', fp);
 }
 
 
@@ -1153,7 +1158,7 @@ list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
    output mode will be used instead of the standard beautified one.
  */
 static gpg_error_t
-list_internal_keys (ctrl_t ctrl, strlist_t names, FILE *fp,
+list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
                     unsigned int mode, int raw_mode)
 {
   KEYDB_HANDLE hd;
@@ -1247,10 +1252,10 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, FILE *fp,
           
           if (ctrl->no_server)
             {
-              fprintf (fp, "%s\n", resname );
+              es_fprintf (fp, "%s\n", resname );
               for (i=strlen(resname); i; i-- )
-                putc ('-', fp);
-              putc ('\n', fp);
+                es_putc ('-', fp);
+              es_putc ('\n', fp);
               lastresname = resname;
             }
         }
@@ -1288,7 +1293,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, FILE *fp,
               else
                 list_cert_std (ctrl, cert, fp, have_secret,
                                ctrl->with_validation);
-              putc ('\n', fp);
+              es_putc ('\n', fp);
             }
         }
       ksba_cert_release (cert); 
@@ -1321,10 +1326,10 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
       const char *resname = "[external keys]";
       int i;
 
-      fprintf (parm->fp, "%s\n", resname );
+      es_fprintf (parm->fp, "%s\n", resname );
       for (i=strlen(resname); i; i-- )
-        putchar('-');
-      putc ('\n', parm->fp);
+        es_putc('-', parm->fp);
+      es_putc ('\n', parm->fp);
       parm->print_header = 0;
     }
 
@@ -1338,7 +1343,7 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
         list_cert_raw (parm->ctrl, NULL, cert, parm->fp, 0, 0);
       else
         list_cert_std (parm->ctrl, cert, parm->fp, 0, 0);
-      putc ('\n', parm->fp);
+      es_putc ('\n', parm->fp);
     }
 }
 
@@ -1347,7 +1352,7 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
    make sense here because it would be unwise to list external secret
    keys */
 static gpg_error_t
-list_external_keys (ctrl_t ctrl, strlist_t names, FILE *fp, int raw_mode)
+list_external_keys (ctrl_t ctrl, strlist_t names, estream_t fp, int raw_mode)
 {
   int rc;
   struct list_external_parm_s parm;
@@ -1377,7 +1382,8 @@ list_external_keys (ctrl_t ctrl, strlist_t names, FILE *fp, int raw_mode)
     Bit 8: Do a raw format dump.
  */
 gpg_error_t
-gpgsm_list_keys (ctrl_t ctrl, strlist_t names, FILE *fp, unsigned int mode)
+gpgsm_list_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
+                 unsigned int mode)
 {
   gpg_error_t err = 0;
 

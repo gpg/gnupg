@@ -51,7 +51,21 @@ struct server_local_s {
 };
 
 
+/* Cookie definition for assuan data line output.  */
+static ssize_t data_line_cookie_write (void *cookie,
+                                       const void *buffer, size_t size);
+static int data_line_cookie_close (void *cookie);
+static es_cookie_io_functions_t data_line_cookie_functions =
+  {
+    NULL,
+    data_line_cookie_write,
+    NULL,
+    data_line_cookie_close
+  };
 
+
+
+
 /* Note that it is sufficient to allocate the target string D as
    long as the source string S, i.e.: strlen(s)+1; */
 static void
@@ -103,6 +117,37 @@ has_option (const char *line, const char *name)
   if (s && s >= skip_options (line))
     return 0;
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
+}
+
+
+/* A write handler used by es_fopencookie to write assuan data
+   lines.  */
+static ssize_t
+data_line_cookie_write (void *cookie, const void *buffer, size_t size)
+{
+  assuan_context_t ctx = cookie;
+
+  if (assuan_send_data (ctx, buffer, size))
+    {
+      errno = EIO;
+      return -1;
+    }
+
+  return size;
+}
+
+static int
+data_line_cookie_close (void *cookie)
+{
+  assuan_context_t ctx = cookie;
+
+  if (assuan_send_data (ctx, NULL, 0))
+    {
+      errno = EIO;
+      return -1;
+    }
+
+  return 0;
 }
 
 
@@ -706,7 +751,7 @@ static int
 do_listkeys (assuan_context_t ctx, char *line, int mode)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  FILE *fp;
+  estream_t fp;
   char *p;
   strlist_t list, sl;
   unsigned int listmode;
@@ -737,17 +782,20 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
 
   if (ctrl->server_local->list_to_output)
     {
-      if ( assuan_get_output_fd (ctx) == -1 )
+      int outfd = assuan_get_output_fd (ctx);
+
+      if ( outfd == -1 )
         return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
-      fp = fdopen (assuan_get_output_fd (ctx), "w");
+      fp = es_fdopen ( dup (outfd), "w");
       if (!fp)
-        return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+        return set_error (GPG_ERR_ASS_GENERAL, "es_fdopen() failed");
     }
   else
     {
-      fp = assuan_get_data_fp (ctx);
+      fp = es_fopencookie (ctx, "w", data_line_cookie_functions);
       if (!fp)
-        return set_error (GPG_ERR_ASS_GENERAL, "no data stream");
+        return set_error (GPG_ERR_ASS_GENERAL, 
+                          "error setting up a data stream");
     }
   
   ctrl->with_colons = 1;
@@ -758,11 +806,9 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
     listmode |= (1<<7);
   err = gpgsm_list_keys (assuan_get_pointer (ctx), list, fp, listmode);
   free_strlist (list);
+  es_fclose (fp);
   if (ctrl->server_local->list_to_output)
-    {
-      fclose (fp);
-      assuan_close_output_fd (ctx);
-    }
+    assuan_close_output_fd (ctx);
   return err;
 }
 

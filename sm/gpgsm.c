@@ -481,6 +481,7 @@ static void emergency_cleanup (void);
 static int check_special_filename (const char *fname);
 static int open_read (const char *filename);
 static FILE *open_fwrite (const char *filename);
+static estream_t open_es_fwrite (const char *filename);
 static void run_protect_tool (int argc, char **argv);
 
 
@@ -1570,7 +1571,7 @@ main ( int argc, char **argv)
     case aDumpSecretKeys:
       {
         unsigned int mode;
-        FILE *fp;
+        estream_t fp;
 
         switch (cmd)
           {
@@ -1585,13 +1586,12 @@ main ( int argc, char **argv)
           default: BUG();
           }
 
-        fp = open_fwrite (opt.outfile?opt.outfile:"-");
+        fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
         for (sl=NULL; argc; argc--, argv++)
           add_to_strlist (&sl, *argv);
         gpgsm_list_keys (&ctrl, sl, fp, mode);
         free_strlist(sl);
-        if (fp != stdout)
-          fclose (fp);
+        es_fclose (fp);
       }
       break;
 
@@ -1807,6 +1807,44 @@ open_fwrite (const char *filename)
       return fp;
     }
   fp = fopen (filename, "wb");
+  if (!fp)
+    {
+      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
+      gpgsm_exit (2);
+    }
+  return fp;
+}
+
+
+/* Open FILENAME for fwrite and return an extended stream.  Stop with
+   an error message in case of problems.  "-" denotes stdout and if
+   special filenames are allowed the given fd is opened instead.
+   Caller must close the returned stream. */
+static estream_t
+open_es_fwrite (const char *filename)
+{
+  int fd;
+  estream_t fp;
+
+  if (filename[0] == '-' && !filename[1])
+    {
+      fflush (stdout);
+      fp = es_fdopen (dup (fileno(stdout)), "wb");
+      return fp;
+    }
+
+  fd = check_special_filename (filename);
+  if (fd != -1)
+    {
+      fp = es_fdopen (dup (fd), "wb");
+      if (!fp)
+        {
+          log_error ("es_fdopen(%d) failed: %s\n", fd, strerror (errno));
+          gpgsm_exit (2);
+        }
+      return fp;
+    }
+  fp = es_fopen (filename, "wb");
   if (!fp)
     {
       log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
