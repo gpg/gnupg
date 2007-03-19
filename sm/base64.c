@@ -30,6 +30,7 @@
 
 #include "gpgsm.h"
 
+
 #include <ksba.h>
 
 #include "i18n.h"
@@ -43,6 +44,7 @@
 /* data used by the reader callbacks */
 struct reader_cb_parm_s {
   FILE *fp;
+  
   unsigned char line[1024];
   int linelen;
   int readpos;
@@ -71,7 +73,9 @@ struct reader_cb_parm_s {
 
 /* data used by the writer callbacks */
 struct writer_cb_parm_s {
-  FILE *fp;
+  FILE *fp;            /* FP is only used if STREAM is NULL.  */
+  estream_t stream;    /* Alternative output if not NULL.  */
+
   const char *pem_name;
   
   int wrote_begin;
@@ -400,6 +404,27 @@ simple_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 
 
 
+/* Call either es_putc or the plain putc.  */
+static void
+do_putc (int value, FILE *fp, estream_t stream)
+{
+  if (stream)
+    es_putc (value, stream);
+  else
+    putc (value, fp);
+}
+
+/* Call either es_fputs or the plain fputs.  */
+static void
+do_fputs (const char *string, FILE *fp, estream_t stream)
+{
+  if (stream)
+    es_fputs (string, stream);
+  else
+    fputs (string, fp);
+}
+
+
 static int
 base64_writer_cb (void *cb_value, const void *buffer, size_t count)
 {
@@ -408,6 +433,7 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
   int i, c, idx, quad_count;
   const unsigned char *p;
   FILE *fp = parm->fp;
+  estream_t stream = parm->stream;
 
   if (!count)
     return 0;
@@ -416,9 +442,9 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
     {
       if (parm->pem_name)
         {
-          fputs ("-----BEGIN ", fp);
-          fputs (parm->pem_name, fp);
-          fputs ("-----\n", fp);
+          do_fputs ("-----BEGIN ", fp, stream);
+          do_fputs (parm->pem_name, fp, stream);
+          do_fputs ("-----\n", fp, stream);
         }
       parm->wrote_begin = 1;
       parm->base64.idx = 0;
@@ -437,16 +463,16 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
         {
           idx = 0;
           c = bintoasc[(*radbuf >> 2) & 077];
-          putc (c, fp);
+          do_putc (c, fp, stream);
           c = bintoasc[(((*radbuf<<4)&060)|((radbuf[1] >> 4)&017))&077];
-          putc (c, fp);
+          do_putc (c, fp, stream);
           c = bintoasc[(((radbuf[1]<<2)&074)|((radbuf[2]>>6)&03))&077];
-          putc (c, fp);
+          do_putc (c, fp, stream);
           c = bintoasc[radbuf[2]&077];
-          putc (c, fp);
+          do_putc (c, fp, stream);
           if (++quad_count >= (64/4)) 
             {
-              fputs (LF, fp);
+              do_fputs (LF, fp, stream);
               quad_count = 0;
             }
         }
@@ -456,7 +482,31 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
   parm->base64.idx = idx;
   parm->base64.quad_count = quad_count;
 
-  return ferror (fp) ? gpg_error_from_syserror () : 0;
+  return ((stream? es_ferror (stream) : ferror (fp)) 
+          ? gpg_error_from_syserror () 
+          : 0);
+}
+
+/* This callback is only used in stream mode.  Hiowever, we don't
+   restrict it to this.  */
+static int
+plain_writer_cb (void *cb_value, const void *buffer, size_t count)
+{
+  struct writer_cb_parm_s *parm = cb_value;
+  FILE *fp = parm->fp;
+  estream_t stream = parm->stream;
+
+  if (!count)
+    return 0;
+
+  if (stream)
+    es_write (stream, buffer, count, NULL);
+  else
+    fwrite (buffer, count, 1, fp);
+
+  return ((stream? es_ferror (stream) : ferror (fp)) 
+          ? gpg_error_from_syserror () 
+          : 0);
 }
 
 static int
@@ -465,9 +515,10 @@ base64_finish_write (struct writer_cb_parm_s *parm)
   unsigned char radbuf[4];
   int i, c, idx, quad_count;
   FILE *fp = parm->fp;
+  estream_t stream = parm->stream;
 
   if (!parm->wrote_begin)
-    return 0; /* nothing written */
+    return 0; /* Nothing written or we are not called in base-64 mode. */
 
   /* flush the base64 encoding */
   idx = parm->base64.idx;
@@ -478,40 +529,43 @@ base64_finish_write (struct writer_cb_parm_s *parm)
   if (idx)
     {
       c = bintoasc[(*radbuf>>2)&077];
-      putc (c, fp);
+      do_putc (c, fp, stream);
       if (idx == 1)
         {
           c = bintoasc[((*radbuf << 4) & 060) & 077];
-          putc (c, fp);
-          putc ('=', fp);
-          putc ('=', fp);
+          do_putc (c, fp, stream);
+          do_putc ('=', fp, stream);
+          do_putc ('=', fp, stream);
         }
       else 
         { 
           c = bintoasc[(((*radbuf<<4)&060)|((radbuf[1]>>4)&017))&077];
-          putc (c, fp);
+          do_putc (c, fp, stream);
           c = bintoasc[((radbuf[1] << 2) & 074) & 077];
-          putc (c, fp);
-          putc ('=', fp);
+          do_putc (c, fp, stream);
+          do_putc ('=', fp, stream);
 
         }
       if (++quad_count >= (64/4)) 
         {
-          fputs (LF, fp);
+          do_fputs (LF, fp, stream);
           quad_count = 0;
         }
     }
 
   if (quad_count)
-    fputs (LF, fp);
+    do_fputs (LF, fp, stream);
 
   if (parm->pem_name)
     {
-      fputs ("-----END ", fp);
-      fputs (parm->pem_name, fp);
-      fputs ("-----\n", fp);
+      do_fputs ("-----END ", fp, stream);
+      do_fputs (parm->pem_name, fp, stream);
+      do_fputs ("-----\n", fp, stream);
     }
-  return ferror (fp)? gpg_error (gpg_err_code_from_errno (errno)) : 0;
+
+  return ((stream? es_ferror (stream) : ferror (fp)) 
+          ? gpg_error_from_syserror () 
+          : 0);
 }
 
 
@@ -597,15 +651,16 @@ gpgsm_destroy_reader (Base64Context ctx)
 
 
 
-/* Create a writer for the given stream.  Depending on the control
-   information an output encoding is automagically choosen.  The
-   function returns a Base64Context object which must be passed to the
-   gpgme_destroy_writer function.  The created KsbaWriter object is
-   also returned, but the caller must not call the ksba_reader_release
-   function on. */
+/* Create a writer for the given stream FP or STREAM.  Depending on
+   the control information an output encoding is automagically
+   choosen.  The function returns a Base64Context object which must be
+   passed to the gpgme_destroy_writer function.  The created
+   KsbaWriter object is also returned, but the caller must not call
+   the ksba_reader_release function on. */
 int
 gpgsm_create_writer (Base64Context *ctx,
-                     ctrl_t ctrl, FILE *fp, ksba_writer_t *r_writer)
+                     ctrl_t ctrl, FILE *fp, estream_t stream,
+                     ksba_writer_t *r_writer)
 {
   int rc;
   ksba_writer_t w;
@@ -625,10 +680,17 @@ gpgsm_create_writer (Base64Context *ctx,
   if (ctrl->create_pem || ctrl->create_base64)
     {
       (*ctx)->u.wparm.fp = fp;
+      (*ctx)->u.wparm.stream = stream;
       if (ctrl->create_pem)
         (*ctx)->u.wparm.pem_name = ctrl->pem_name? ctrl->pem_name
                                                  : "CMS OBJECT";
       rc = ksba_writer_set_cb (w, base64_writer_cb, &(*ctx)->u.wparm);
+    }
+  else if (stream)
+    {
+      (*ctx)->u.wparm.fp = fp;
+      (*ctx)->u.wparm.stream = stream;
+      rc = ksba_writer_set_cb (w, plain_writer_cb, &(*ctx)->u.wparm);
     }
   else
     rc = ksba_writer_set_file (w, fp);
@@ -655,10 +717,10 @@ gpgsm_finish_writer (Base64Context ctx)
     return gpg_error (GPG_ERR_INV_VALUE);
   parm = &ctx->u.wparm;
   if (parm->did_finish)
-    return 0; /* already done */
+    return 0; /* Already done. */
   parm->did_finish = 1;
-  if (!parm->fp)
-    return 0; /* callback was not used */
+  if (!parm->fp && !parm->stream)
+    return 0; /* Callback was not used.  */
   return base64_finish_write (parm);
 }
 

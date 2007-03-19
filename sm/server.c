@@ -601,8 +601,6 @@ static int
 cmd_export (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int fd = assuan_get_output_fd (ctx);
-  FILE *out_fp;
   char *p;
   strlist_t list, sl;
   int use_data;
@@ -643,16 +641,23 @@ cmd_export (assuan_context_t ctx, char *line)
 
   if (use_data)
     {
-      out_fp = assuan_get_data_fp (ctx);
-      if (!out_fp)
+      estream_t stream;
+
+      stream = es_fopencookie (ctx, "w", data_line_cookie_functions);
+      if (!stream)
         {
           free_strlist (list);
-          return set_error (GPG_ERR_ASS_GENERAL, "no data stream");
+          return set_error (GPG_ERR_ASS_GENERAL, 
+                            "error setting up a data stream");
         }
-      gpgsm_export (ctrl, list, out_fp);
+      gpgsm_export (ctrl, list, NULL, stream);
+      es_fclose (stream);
     }
   else
     {
+      int fd = assuan_get_output_fd (ctx);
+      FILE *out_fp;
+
       if (fd == -1)
         {
           free_strlist (list);
@@ -665,7 +670,7 @@ cmd_export (assuan_context_t ctx, char *line)
           return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
         }
       
-      gpgsm_export (ctrl, list, out_fp);
+      gpgsm_export (ctrl, list, out_fp, NULL);
       fclose (out_fp);
     }
 

@@ -1613,7 +1613,7 @@ main ( int argc, char **argv)
 
         for (sl=NULL; argc; argc--, argv++)
           add_to_strlist (&sl, *argv);
-        gpgsm_export (&ctrl, sl, fp);
+        gpgsm_export (&ctrl, sl, fp, NULL);
         free_strlist(sl);
         if (fp != stdout)
           fclose (fp);

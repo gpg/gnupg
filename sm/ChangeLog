@@ -1,7 +1,7 @@
 2007-03-19  Werner Koch  <wk@g10code.com>
 
-        Change to let the key listing use estream to help systems without
-	funopen.
+        Changes to let export and key listing use estream to help systems
+	without funopen.
 	
 	* keylist.c: Use estream in place of stdio functions.
 	* gpgsm.c (open_es_fwrite): New.
@@ -9,6 +9,7 @@
 	* server.c (data_line_cookie_functions): New.
 	(data_line_cookie_write, data_line_cookie_close): New.
 	(do_listkeys): Use estream.
+
 	* certdump.c (gpgsm_print_serial): Changed to use estream.
 	(gpgsm_print_time): Ditto.
 	(pretty_es_print_sexp): New.
@@ -19,6 +20,17 @@
 	estream_t.
 	(do_list, unknown_criticals, allowed_ca, check_cert_policy) 
 	(is_cert_still_valid): Ditto.
+
+	* export.c (gpgsm_export): New arg STREAM.
+	(do_putc, do_fputs): New.
+	(print_short_info): Allow printing to optional STREAM.
+	* server.c (cmd_export): Use stream.
+	* base64.c (do_putc, do_fputs): New.
+	(base64_writer_cb, base64_finish_write): Let them cope with an
+	alternate output function.
+	(plain_writer_cb): New.
+	(gpgsm_create_writer): New arg STREAM and call plain_writer_cb for
+	binary output to an estream.  Changed call callers.
 
 2007-01-31  Werner Koch  <wk@g10code.com>
 

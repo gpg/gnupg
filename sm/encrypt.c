@@ -364,7 +364,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
   encparm.fp = data_fp;
 
   ctrl->pem_name = "ENCRYPTED MESSAGE";
-  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, NULL, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));

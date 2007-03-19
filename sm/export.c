@@ -57,7 +57,7 @@ typedef struct duptable_s *duptable_t;
 #define DUPTABLE_SIZE (1 << DUPTABLE_BITS)
 
 
-static void print_short_info (ksba_cert_t cert, FILE *fp);
+static void print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream);
 static gpg_error_t export_p12 (ctrl_t ctrl,
                                const unsigned char *certimg, size_t certimglen,
                                const char *prompt, const char *keygrip,
@@ -127,9 +127,10 @@ insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
 
 
 
-/* Export all certificates or just those given in NAMES. */
+/* Export all certificates or just those given in NAMES. If STREAM is
+   not NULL the output is send to this extended stream. */
 void
-gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp)
+gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp, estream_t stream)
 {
   KEYDB_HANDLE hd = NULL;
   KEYDB_SEARCH_DESC *desc = NULL;
@@ -257,16 +258,24 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp)
           if (ctrl->create_pem)
             {
               if (count)
+                {
+                  if (stream)
+                    es_putc ('\n', stream);
+                  else
+                    putc ('\n', fp);
+                }
+              print_short_info (cert, fp, stream);
+              if (stream)
+                es_putc ('\n', stream);
+              else
                 putc ('\n', fp);
-              print_short_info (cert, fp);
-              putc ('\n', fp);
             }
           count++;
 
           if (!b64writer)
             {
               ctrl->pem_name = "CERTIFICATE";
-              rc = gpgsm_create_writer (&b64writer, ctrl, fp, &writer);
+              rc = gpgsm_create_writer (&b64writer, ctrl, fp, stream, &writer);
               if (rc)
                 {
                   log_error ("can't create writer: %s\n", gpg_strerror (rc));
@@ -403,12 +412,12 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
 
   if (ctrl->create_pem)
     {
-      print_short_info (cert, fp);
+      print_short_info (cert, fp, NULL);
       putc ('\n', fp);
     }
 
   ctrl->pem_name = "PKCS12";
-  rc = gpgsm_create_writer (&b64writer, ctrl, fp, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, fp, NULL, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));
@@ -461,9 +470,30 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
 }
 
 
-/* Print some info about the certifciate CERT to FP */
+/* Call either es_putc or the plain putc.  */
 static void
-print_short_info (ksba_cert_t cert, FILE *fp)
+do_putc (int value, FILE *fp, estream_t stream)
+{
+  if (stream)
+    es_putc (value, stream);
+  else
+    putc (value, fp);
+}
+
+/* Call either es_fputs or the plain fputs.  */
+static void
+do_fputs (const char *string, FILE *fp, estream_t stream)
+{
+  if (stream)
+    es_fputs (string, stream);
+  else
+    fputs (string, fp);
+}
+
+
+/* Print some info about the certifciate CERT to FP or STREAM */
+static void
+print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream)
 {
   char *p;
   ksba_sexp_t sexp;
@@ -471,14 +501,18 @@ print_short_info (ksba_cert_t cert, FILE *fp)
 
   for (idx=0; (p = ksba_cert_get_issuer (cert, idx)); idx++)
     {
-      fputs (!idx?   "Issuer ...: "
-                 : "\n   aka ...: ", fp); 
-      gpgsm_print_name (fp, p);
+      do_fputs ((!idx
+                 ?   "Issuer ...: "
+                 : "\n   aka ...: "), fp, stream); 
+      if (stream)
+        gpgsm_es_print_name (stream, p);
+      else
+        gpgsm_print_name (fp, p);
       xfree (p);
     }
-  putc ('\n', fp);
+  do_putc ('\n', fp, stream);
 
-  fputs ("Serial ...: ", fp); 
+  do_fputs ("Serial ...: ", fp, stream); 
   sexp = ksba_cert_get_serial (cert);
   if (sexp)
     {
@@ -491,21 +525,29 @@ print_short_info (ksba_cert_t cert, FILE *fp)
           for (len=0; *s && *s != ':' && digitp (s); s++)
             len = len*10 + atoi_1 (s);
           if (*s == ':')
-            for (s++; len; len--, s++)
-              fprintf (fp, "%02X", *s);
+            {
+              if (stream)
+                es_write_hexstring (stream, s+1, len, 0, NULL);
+              else
+                print_hexstring (fp, s+1, len, 0);
+            }
         }
       xfree (sexp);
     }
-  putc ('\n', fp);
+  do_putc ('\n', fp, stream);
 
   for (idx=0; (p = ksba_cert_get_subject (cert, idx)); idx++)
     {
-      fputs (!idx?   "Subject ..: "
-                 : "\n    aka ..: ", fp); 
-      gpgsm_print_name (fp, p);
+      do_fputs ((!idx
+                 ?   "Subject ..: "
+                 : "\n    aka ..: "), fp, stream); 
+      if (stream)
+        gpgsm_es_print_name (stream, p);
+      else
+        gpgsm_print_name (fp, p);
       xfree (p);
     }
-  putc ('\n', fp);
+  do_putc ('\n', fp, stream);
 }
 
 

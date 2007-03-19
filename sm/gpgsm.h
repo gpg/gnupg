@@ -220,7 +220,8 @@ int  gpgsm_create_reader (Base64Context *ctx,
 int gpgsm_reader_eof_seen (Base64Context ctx);
 void gpgsm_destroy_reader (Base64Context ctx);
 int  gpgsm_create_writer (Base64Context *ctx,
-                          ctrl_t ctrl, FILE *fp, ksba_writer_t *r_writer);
+                          ctrl_t ctrl, FILE *fp, estream_t stream,
+                          ksba_writer_t *r_writer);
 int  gpgsm_finish_writer (Base64Context ctx);
 void gpgsm_destroy_writer (Base64Context ctx);
 
@@ -291,7 +292,7 @@ int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
                         int (*of)(const char *fname));
 
 /*-- export.c --*/
-void gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp);
+void gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp, estream_t stream);
 void gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp);
 
 /*-- delete.c --*/

@@ -67,6 +67,22 @@ print_utf8_string( FILE *fp, const byte *p, size_t n )
     print_utf8_string2 (fp, p, n, 0);
 }
 
+/* Write LENGTH bytes of BUFFER to FP as a hex encoded string.
+   RESERVED must be 0. */
+void
+print_hexstring (FILE *fp, const void *buffer, size_t length, int reserved)
+{
+#define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
+  const unsigned char *s;
+
+  for (s = buffer; length; s++, length--)
+    {
+      putc ( tohex ((*s>>4)&15), fp);
+      putc ( tohex (*s&15), fp);
+    }
+#undef tohex
+}
+
 char *
 make_printable_string (const void *p, size_t n, int delim )
 {

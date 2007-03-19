@@ -850,7 +850,7 @@ gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp)
     }
 
   ctrl->pem_name = "CERTIFICATE REQUEST";
-  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, NULL, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));

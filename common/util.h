@@ -185,6 +185,8 @@ const char *print_fname_stdin (const char *s);
 void print_string (FILE *fp, const byte *p, size_t n, int delim);
 void print_utf8_string2 ( FILE *fp, const byte *p, size_t n, int delim);
 void print_utf8_string (FILE *fp, const byte *p, size_t n);
+void print_hexstring (FILE *fp, const void *buffer, size_t length,
+                      int reserved);
 char *make_printable_string (const void *p, size_t n, int delim);
 
 int is_file_compressed (const char *s, int *ret_rc);
