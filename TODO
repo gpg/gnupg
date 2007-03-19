@@ -83,10 +83,6 @@
 * sm/
 ** check that we issue NO_SECKEY xxx if a -u key was not found
    We don't. The messages returned are also wrong (recipient vs. signer).
-** cmd_export
-   Does only work on systems with funopen/fopencookie.  Changing is
-   easy.
-
 
 * jnlib/
 ** provide jnlib_malloc and try to remove all jnlib_xmalloc.

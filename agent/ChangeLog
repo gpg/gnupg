@@ -1,3 +1,10 @@
+2007-03-19  Werner Koch  <wk@g10code.com>
+
+	* minip12.c: Include iconv.h.
+	(decrypt_block): New.
+	(parse_bag_encrypted_data, parse_bag_data): Use it here.
+	(bag_data_p, bag_decrypted_data_p): New helpers.
+
 2007-03-06  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main) <gpgconf>: Add entries for all ttl options.
@@ -1749,7 +1756,8 @@ Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
 	* Makefile.am: New.
 
 
- Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2003, 2004, 2005,
+	   2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

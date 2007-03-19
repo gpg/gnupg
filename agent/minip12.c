@@ -27,6 +27,7 @@
 #include <string.h>
 #include <assert.h>
 #include <gcrypt.h>
+#include <iconv.h>
 
 #ifdef TEST
 #include <sys/stat.h>
@@ -40,6 +41,12 @@
 #ifndef DIM
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
 #endif
+
+#ifndef ICONV_CONST
+#define ICONV_CONST
+#endif
+
+
 
 enum
 {
@@ -483,6 +490,120 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
 }
   
 
+/* Decrypt a block of data and try several encodings of the key.
+   CIPHERTEXT is the encrypted data of size LENGTH bytes; PLAINTEXT is
+   a buffer of the same size to receive the decryption result. SALT,
+   SALTLEN, ITER and PW are the information required for decryption
+   and CIPHER_ALGO is the algorithm id to use.  CHECK_FNC is a
+   function called with the plaintext and used to check whether the
+   decryption succeeded; i.e. that a correct passphrase has been
+   given.  That function shall return true if the decryption has likely
+   succeeded. */
+static void
+decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
+               char *salt, size_t saltlen,
+               int iter, const char *pw, int cipher_algo,
+               int (*check_fnc) (const void *, size_t))
+{
+  static const char const *charsets[] = {
+    "",   /* No conversion - use the UTF-8 passphrase direct.  */
+    "ISO-8859-1",
+    "ISO-8859-15",
+    "ISO-8859-2",
+    "ISO-8859-3",
+    "ISO-8859-4",
+    "ISO-8859-5",
+    "ISO-8859-6",
+    "ISO-8859-7",
+    "ISO-8859-8",
+    "ISO-8859-9",
+    "KOI8-R",
+    NULL
+  };
+  int charsetidx = 0;
+  char *convertedpw = NULL;   /* Malloced and converted password or NULL.  */
+  size_t convertedpwsize = 0; /* Allocated length.  */
+
+  for (charsetidx=0; charsets[charsetidx]; charsetidx++)
+    {
+      if (*charsets[charsetidx])
+        {
+          iconv_t cd;
+          const char *inptr;
+          char *outptr;
+          size_t inbytes, outbytes;
+
+          if (!convertedpw)
+            {
+              /* We assume one byte encodings.  Thus we can allocate
+                 the buffer of the same size as the original
+                 passphrase; the result will actually be shorter
+                 then.  */
+              convertedpwsize = strlen (pw) + 1;
+              convertedpw = gcry_malloc_secure (convertedpwsize);
+              if (!convertedpw)
+                {
+                  log_info ("out of secure memory while"
+                            " converting passphrase\n");
+                  break; /* Give up.  */
+                }
+            }
+
+          cd = iconv_open (charsets[charsetidx], "utf-8");
+          if (cd == (iconv_t)(-1))
+            continue;
+
+          inptr = pw;
+          inbytes = strlen (pw);
+          outptr = convertedpw;
+          outbytes = convertedpwsize - 1;
+          if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
+                      &outptr, &outbytes) == (size_t)-1) 
+            {
+              iconv_close (cd);
+              continue;
+            }
+          *outptr = 0;
+          iconv_close (cd);
+          log_info ("decryption failed; trying charset `%s'\n",
+                    charsets[charsetidx]);
+        }
+      memcpy (plaintext, ciphertext, length);
+      crypt_block (plaintext, length, salt, saltlen, iter,
+                   convertedpw? convertedpw:pw, cipher_algo, 0);
+      if (check_fnc (plaintext, length))
+        break; /* Decryption succeeded. */
+    }
+  gcry_free (convertedpw);
+}
+
+
+/* Return true if the decryption of an bag_encrypted_data object has
+   likely succeeded.  */
+static int
+bag_decrypted_data_p (const void *plaintext, size_t length)
+{
+  struct tag_info ti;
+  const unsigned char *p = plaintext;
+  size_t n = length;
+
+  /*   { */
+  /* #  warning debug code is enabled */
+  /*     FILE *fp = fopen ("tmp-rc2-plain.der", "wb"); */
+  /*     if (!fp || fwrite (p, n, 1, fp) != 1) */
+  /*       exit (2); */
+  /*     fclose (fp); */
+  /*   } */
+  
+  if (parse_tag (&p, &n, &ti))
+    return 0;
+  if (ti.class || ti.tag != TAG_SEQUENCE)
+    return 0;
+  if (parse_tag (&p, &n, &ti))
+    return 0;
+
+  return 1; 
+}
 
 /* Note: If R_RESULT is passed as NULL, a key object as already be
    processed and thus we need to skip it here. */
@@ -624,22 +745,12 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       log_error ("error allocating decryption buffer\n");
       goto bailout;
     }
-  memcpy (plain, p, ti.length);
-  crypt_block (plain, ti.length, salt, saltlen,
-               iter, pw, 
-               is_3des? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40, 
-               0);
+  decrypt_block (p, plain, ti.length, salt, saltlen, iter, pw, 
+                 is_3des? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40, 
+                 bag_decrypted_data_p);
   n = ti.length;
   startoffset = 0;
   p_start = p = plain;
-
-/*   { */
-/* #  warning debug code is enabled */
-/*     FILE *fp = fopen ("tmp-rc2-plain.der", "wb"); */
-/*     if (!fp || fwrite (p, n, 1, fp) != 1) */
-/*       exit (2); */
-/*     fclose (fp); */
-/*   } */
 
   where = "outer.outer.seq";
   if (parse_tag (&p, &n, &ti))
@@ -899,6 +1010,34 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   return -1;
 }
 
+
+/* Return true if the decryption of a bag_data object has likely
+   succeeded.  */
+static int
+bag_data_p (const void *plaintext, size_t length)
+{
+  struct tag_info ti;
+  const unsigned char *p = plaintext;
+  size_t n = length;
+
+/*   { */
+/* #  warning debug code is enabled */
+/*     FILE *fp = fopen ("tmp-3des-plain-key.der", "wb"); */
+/*     if (!fp || fwrite (p, n, 1, fp) != 1) */
+/*       exit (2); */
+/*     fclose (fp); */
+/*   } */
+
+  if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
+    return 0;
+  if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_INTEGER
+      || ti.length != 1 || *p)
+    return 0;
+
+  return 1; 
+}
+
+
 static gcry_mpi_t *
 parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
                 size_t *r_consumed, const char *pw)
@@ -1028,21 +1167,13 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
       log_error ("error allocating decryption buffer\n");
       goto bailout;
     }
-  memcpy (plain, p, ti.length);
   consumed += p - p_start + ti.length;
-  crypt_block (plain, ti.length, salt, saltlen, iter, pw, GCRY_CIPHER_3DES, 0);
+  decrypt_block (p, plain, ti.length, salt, saltlen, iter, pw, 
+                 GCRY_CIPHER_3DES, 
+                 bag_data_p);
   n = ti.length;
   startoffset = 0;
   p_start = p = plain;
-
-/*   { */
-/* #  warning debug code is enabled */
-/*     FILE *fp = fopen ("tmp-rc2-plain-key.der", "wb"); */
-/*     if (!fp || fwrite (p, n, 1, fp) != 1) */
-/*       exit (2); */
-/*     fclose (fp); */
-/*   } */
-
 
   where = "decrypted-text";
   if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
