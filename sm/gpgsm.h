@@ -74,6 +74,10 @@ struct
   int armor;        /* force base64 armoring (see also ctrl.with_base64) */
   int no_armor;     /* don't try to figure out whether data is base64 armored*/
 
+  const char *p12_charset; /* Use this charset for encoding the
+                              pkcs#12 passphrase.  */
+
+
   const char *def_cipher_algoid;  /* cipher algorithm to use if
                                      nothing else is specified */
 

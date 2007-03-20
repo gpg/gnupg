@@ -65,6 +65,7 @@ enum cmd_and_opt_values
 
   oP12Import,
   oP12Export,
+  oP12Charset,
   oStore,
   oForce,
   oHaveCert,
@@ -96,6 +97,7 @@ static int opt_have_cert;
 static const char *opt_passphrase;
 static char *opt_prompt;
 static int opt_status_msg;
+static const char *opt_p12_charset;
 
 static char *get_passphrase (int promptno, int opt_check);
 static char *get_new_passphrase (int promptno);
@@ -118,8 +120,10 @@ static ARGPARSE_OPTS opts[] = {
   { oShowShadowInfo,  "show-shadow-info", 256, "return the shadow info"},
   { oShowKeygrip, "show-keygrip", 256, "show the \"keygrip\""},
 
-  { oP12Import, "p12-import", 256, "import a PKCS-12 encoded private key"},
-  { oP12Export, "p12-export", 256, "export a private key PKCS-12 encoded"},
+  { oP12Import, "p12-import", 256, "import a pkcs#12 encoded private key"},
+  { oP12Export, "p12-export", 256, "export a private key pkcs#12 encoded"},
+  { oP12Charset,"p12-charset", 2,
+    "|NAME|set charset for a new PKCS#12 passphrase to NAME" },
   { oHaveCert, "have-cert", 0,  "certificate to export provided on STDIN"},
   { oStore,     "store", 0, "store the created key in the appropriate place"},
   { oForce,     "force", 0, "force overwriting"},
@@ -127,6 +131,7 @@ static ARGPARSE_OPTS opts[] = {
   { oHomedir, "homedir", 2, "@" }, 
   { oPrompt,  "prompt", 2, "|ESCSTRING|use ESCSTRING as prompt in pinentry"}, 
   { oStatusMsg, "enable-status-msg", 0, "@"},
+
   {0}
 };
 
@@ -987,7 +992,7 @@ export_p12_file (const char *fname)
   kparms[8] = NULL;
 
   key = p12_build (kparms, cert, certlen,
-                   (pw=get_new_passphrase (3)), &keylen);
+                   (pw=get_new_passphrase (3)), opt_p12_charset, &keylen);
   release_passphrase (pw);
   xfree (cert);
   for (i=0; i < 8; i++)
@@ -1101,6 +1106,7 @@ main (int argc, char **argv )
         case oShowKeygrip: cmd = oShowKeygrip; break;
         case oP12Import: cmd = oP12Import; break;
         case oP12Export: cmd = oP12Export; break;
+        case oP12Charset: opt_p12_charset = pargs.r.ret_str; break;
 
         case oPassphrase: opt_passphrase = pargs.r.ret_str; break;
         case oStore: opt_store = 1; break;

@@ -31,7 +31,8 @@ gcry_mpi_t *p12_parse (const unsigned char *buffer, size_t length,
 
 unsigned char *p12_build (gcry_mpi_t *kparms,
                           unsigned char *cert, size_t certlen,
-                          const char *pw, size_t *r_length);
+                          const char *pw, const char *charset,
+                          size_t *r_length);
 
 
 #endif /*MINIP12_H*/

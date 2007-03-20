@@ -131,6 +131,7 @@ enum cmd_and_opt_values {
 
   oBase64,
   oNoArmor,
+  oP12Charset,
 
   oDisableCRLChecks,
   oEnableCRLChecks,
@@ -280,6 +281,8 @@ static ARGPARSE_OPTS opts[] = {
     { oArmor, "armor",     0, N_("create ascii armored output")},
     { oArmor, "armour",    0, "@" },
     { oBase64, "base64",    0, N_("create base-64 encoded output")},
+
+    { oP12Charset, "p12-charset", 2, "@" },
     
     { oAssumeArmor,  "assume-armor", 0, N_("assume input is in PEM format")},
     { oAssumeBase64, "assume-base64", 0,
@@ -955,7 +958,7 @@ main ( int argc, char **argv)
           set_cmd (&cmd, pargs.r_opt);
           break;
 
-          /* output encoding selection */
+          /* Output encoding selection.  */
         case oArmor:
           ctrl.create_pem = 1;
           break;
@@ -968,7 +971,11 @@ main ( int argc, char **argv)
           ctrl.create_base64 = 0;
           break;
           
-          /* Input encoding selection */
+        case oP12Charset:
+          opt.p12_charset = pargs.r.ret_str;
+          break;
+
+          /* Input encoding selection.  */
         case oAssumeArmor:
           ctrl.autodetect_encoding = 0;
           ctrl.is_pem = 1;

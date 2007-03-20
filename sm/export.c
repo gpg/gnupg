@@ -416,6 +416,12 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
       putc ('\n', fp);
     }
 
+  if (opt.p12_charset)
+    {
+      fprintf (fp, "The passphrase is %s encoded.\n\n",
+               opt.p12_charset);
+    }
+
   ctrl->pem_name = "PKCS12";
   rc = gpgsm_create_writer (&b64writer, ctrl, fp, NULL, &writer);
   if (rc)
@@ -567,6 +573,11 @@ popen_protect_tool (const char *pgmname,
   argv[i++] = "--prompt";
   argv[i++] = prompt?prompt:"";
   argv[i++] = "--enable-status-msg";
+  if (opt.p12_charset)
+    {
+      argv[i++] = "--p12-charset";
+      argv[i++] = opt.p12_charset;
+    }
   argv[i++] = "--",
   argv[i++] = keygrip,
   argv[i] = NULL;
