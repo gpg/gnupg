@@ -1439,6 +1439,8 @@ main ( int argc, char **argv)
                 GC_OPT_FLAG_NONE );
         printf ("cipher-algo:%lu:\"3DES:\n",
                 GC_OPT_FLAG_DEFAULT );
+        printf ("p12-charset:%lu:\n",
+                GC_OPT_FLAG_DEFAULT );
 
       }
       break;

@@ -665,6 +665,9 @@ static gc_option_t gc_options_gpgsm[] =
    { "prefer-system-dirmngr", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", "use system's dirmngr if available",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+   { "p12-charset", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", N_("|NAME|use encoding NAME for PKCS#12 passphrases"),
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,

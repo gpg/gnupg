@@ -1,3 +1,7 @@
+2007-03-20  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gc_options_gpgsm): Add p12-charset.
+
 2007-03-07  Werner Koch  <wk@g10code.com>
 
 	* applygnupgdefaults: New.
