@@ -61,6 +61,19 @@ gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
   if (r_len)
     *r_len = len;
 
+  /* Fist check whether we have cached the fingerprint.  */
+  if (algo == GCRY_MD_SHA1)
+    {
+      size_t buflen;
+
+      assert (len >= 20);
+      if (!ksba_cert_get_user_data (cert, "sha1-fingerprint", 
+                                    array, len, &buflen)
+          && buflen == 20)
+        return array;
+    }
+
+  /* No, need to compute it.  */
   rc = gcry_md_open (&md, algo, 0);
   if (rc)
     {
@@ -80,6 +93,11 @@ gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
   gcry_md_final (md);
   memcpy (array, gcry_md_read(md, algo), len );
   gcry_md_close (md);
+
+  /* Cache an SHA-1 fingerprint.  */
+  if ( algo == GCRY_MD_SHA1 )
+    ksba_cert_set_user_data (cert, "sha1-fingerprint", array, 20);
+
   return array;
 }
 
@@ -90,7 +108,7 @@ gpgsm_get_fingerprint_string (ksba_cert_t cert, int algo)
 {
   unsigned char digest[MAX_DIGEST_LEN];
   char *buf;
-  int len, i;
+  int len;
 
   if (!algo)
     algo = GCRY_MD_SHA1;
@@ -99,9 +117,7 @@ gpgsm_get_fingerprint_string (ksba_cert_t cert, int algo)
   assert (len <= MAX_DIGEST_LEN );
   gpgsm_get_fingerprint (cert, algo, digest, NULL);
   buf = xmalloc (len*3+1);
-  *buf = 0;
-  for (i=0; i < len; i++ )
-    sprintf (buf+strlen(buf), i? ":%02X":"%02X", digest[i]);
+  bin2hexcolon (digest, len, buf);
   return buf;
 }
 
@@ -112,7 +128,7 @@ gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo)
 {
   unsigned char digest[MAX_DIGEST_LEN];
   char *buf;
-  int len, i;
+  int len;
 
   if (!algo)
     algo = GCRY_MD_SHA1;
@@ -120,10 +136,8 @@ gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo)
   len = gcry_md_get_algo_dlen (algo);
   assert (len <= MAX_DIGEST_LEN );
   gpgsm_get_fingerprint (cert, algo, digest, NULL);
-  buf = xmalloc (len*3+1);
-  *buf = 0;
-  for (i=0; i < len; i++ )
-    sprintf (buf+strlen(buf), "%02X", digest[i]);
+  buf = xmalloc (len*2+1);
+  bin2hex (digest, len, buf);
   return buf;
 }
 
@@ -190,13 +204,11 @@ char *
 gpgsm_get_keygrip_hexstring (ksba_cert_t cert)
 {
   unsigned char grip[20];
-  char *buf, *p;
-  int i;
+  char *buf;
 
   gpgsm_get_keygrip (cert, grip);
-  buf = p = xmalloc (20*2+1);
-  for (i=0; i < 20; i++, p += 2 )
-    sprintf (p, "%02X", grip[i]);
+  buf = xmalloc (20*2+1);
+  bin2hex (grip, 20, buf);
   return buf;
 }
 

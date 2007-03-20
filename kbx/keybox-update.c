@@ -452,7 +452,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   ec = _keybox_get_flag_location (buffer, length, what, &flag_pos, &flag_size);
   if (ec)
     return gpg_error (ec);
-
+  
   off += flag_pos;
 
   if (hd->fp)
@@ -631,7 +631,7 @@ keybox_compress (KEYBOX_HANDLE hd)
 
   
   /* Processing loop.  By reading using _keybox_read_blob we
-     automagically skip and blobs flagged as deleted.  Thus what we
+     automagically skip any blobs flagged as deleted.  Thus what we
      only have to do is to check all ephemeral flagged blocks whether
      their time has come and write out all other blobs. */
   cut_time = time(NULL) - 86400;
@@ -682,7 +682,7 @@ keybox_compress (KEYBOX_HANDLE hd)
           break;
         }
       blobflags = ((buffer[pos] << 8) | (buffer[pos+1]));
-      if ((blobflags & 2))
+      if ((blobflags & KEYBOX_FLAG_BLOB_EPHEMERAL))
         {
           /* This is an ephemeral blob. */
           if (_keybox_get_flag_location (buffer, length, 

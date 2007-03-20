@@ -911,7 +911,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
       err = keydb_get_flags (hd, KEYBOX_FLAG_BLOB, 0, &blobflags);
       if (err)
         es_fprintf (fp, "  [error getting keyflags: %s]\n",gpg_strerror (err));
-      else if ((blobflags & 2))
+      else if ((blobflags & KEYBOX_FLAG_BLOB_EPHEMERAL))
         es_fprintf (fp, "  [stored as ephemeral]\n");
     }
 

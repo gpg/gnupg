@@ -50,6 +50,17 @@ struct marktrusted_info_s
 static struct marktrusted_info_s *marktrusted_info;
 
 
+/* While running the validation function we want to keep track of the
+   certificates in the chain.  This type is used for that.  */
+struct chain_item_s
+{
+  struct chain_item_s *next;
+  ksba_cert_t cert;      /* The certificate.  */
+  int is_root;           /* The certificate is the root certificate.  */
+};
+typedef struct chain_item_s *chain_item_t;
+
+
 static int get_regtp_ca_info (ksba_cert_t cert, int *chainlen);
 
 
@@ -222,7 +233,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
   if (err)
     return err;
 
-  /* STRING is a line delimited list of certifiate policies as stored
+  /* STRING is a line delimited list of certificate policies as stored
      in the certificate.  The line itself is colon delimited where the
      first field is the OID of the policy and the second field either
      N or C for normal or critical extension */
@@ -489,7 +500,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
 
       if (rc == -1 && keyid && !find_next)
         {
-          /* Not found by AIK.issuer_sn.  Lets try the AIY.ki
+          /* Not found by AIK.issuer_sn.  Lets try the AIK.ki
              instead. Loop over all certificates with that issuer as
              subject and stop for the one with a matching
              subjectKeyIdentifier. */
@@ -542,7 +553,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
     rc = keydb_search_subject (kh, issuer);
   if (rc == -1 && !find_next)
     {
-      /* Not found, lets see whether we have one in the ephemeral key DB. */
+      /* Not found, let us see whether we have one in the ephemeral key DB. */
       int old = keydb_set_ephemeral (kh, 1);
       if (!old)
         {
@@ -602,8 +613,8 @@ gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next)
   rc = find_up (kh, start, issuer, 0);
   if (rc)
     {
-      /* it is quite common not to have a certificate, so better don't
-         print an error here */
+      /* It is quite common not to have a certificate, so better don't
+         print an error here.  */
       if (rc != -1 && opt.verbose > 1)
         log_error ("failed to find issuer's certificate: rc=%d\n", rc);
       rc = gpg_error (GPG_ERR_MISSING_CERT);
@@ -669,8 +680,8 @@ is_cert_still_valid (ctrl_t ctrl, int lm, estream_t fp,
               /* Store that in the keybox so that key listings are
                  able to return the revoked flag.  We don't care
                  about error, though. */
-              keydb_set_cert_flags (subject_cert, KEYBOX_FLAG_VALIDITY, 0,
-                                    VALIDITY_REVOKED);
+              keydb_set_cert_flags (subject_cert, 1, KEYBOX_FLAG_VALIDITY, 0,
+                                    ~0, VALIDITY_REVOKED);
               break;
             case GPG_ERR_NO_CRL_KNOWN:
               do_list (1, lm, fp, _("no CRL found for certificate"));
@@ -722,6 +733,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                             from a qualified root certificate.
                             -1 = unknown, 0 = no, 1 = yes. */
   int lm = listmode;
+  chain_item_t chain = NULL; /* A list of all certificates in the chain.  */
+
 
   gnupg_get_isotime (current_time);
   if (r_exptime)
@@ -755,6 +768,22 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       gpg_error_t istrusted_rc = -1;
       struct rootca_flags_s rootca_flags;
 
+      /* Put the certificate on our list.  */
+      {
+        chain_item_t ci;
+
+        ci = xtrycalloc (1, sizeof *ci);
+        if (!ci)
+          {
+            rc = gpg_error_from_syserror ();
+            goto leave;
+          }
+        ksba_cert_ref (subject_cert);
+        ci->cert = subject_cert;
+        ci->next = chain;
+        chain = ci;
+      }
+
       xfree (issuer);
       xfree (subject);
       issuer = ksba_cert_get_issuer (subject_cert, 0);
@@ -767,10 +796,12 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           goto leave;
         }
 
+
       /* Is this a self-issued certificate (i.e. the root certificate)? */
       is_root = (subject && !strcmp (issuer, subject));
       if (is_root)
         {
+          chain->is_root = 1;
           /* Check early whether the certificate is listed as trusted.
              We used to do this only later but changed it to call the
              check right here so that we can access special flags
@@ -1157,7 +1188,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             }
         }
 
-      /* Check for revocations etc.  Note that for a root certioficate
+      /* Check for revocations etc.  Note that for a root certificate
          this test is done a second time later. This should eventually
          be fixed. */
       if ((flags & 1))
@@ -1209,32 +1240,69 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
     }
   
  leave:
-  if (is_qualified != -1)
+  /* If we have traversed a complete chain up to the root we will
+     reset the ephemeral flag for all these certificates.  his is done
+     regardless of any error because those errors may only be
+     transient. */
+  if (chain && chain->is_root)
     {
-      /* We figured something about the qualified signature capability
-         of the certificate under question.  Store the result as user
-         data in the certificate object.  We do this even if the
-         validation itself failed. */
-      /* Fixme: We should set this flag for all certificates in the
-         chain for optimizing reasons. */
-      char buf[1];
       gpg_error_t err;
-
-      buf[0] = !!is_qualified;
-      err = ksba_cert_set_user_data (cert, "is_qualified", buf, 1);
-      if (err)
+      chain_item_t ci;
+      
+      for (ci = chain; ci; ci = ci->next)
         {
-          log_error ("set_user_data(is_qualified) failed: %s\n",
-                     gpg_strerror (err)); 
-          if (!rc)
-            rc = err;
+          /* Note that it is possible for the last certificate in the
+             chain (i.e. our target certificate) that it has not yet
+             been stored in the keybox and thus the flag can't be set.
+             We ignore this error becuase it will later be stored
+             anyway.  */
+          err = keydb_set_cert_flags (ci->cert, 1, KEYBOX_FLAG_BLOB, 0,
+                                      KEYBOX_FLAG_BLOB_EPHEMERAL, 0);
+          if (!ci->next && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+            ;
+          else if (err)
+            log_error ("clearing ephemeral flag failed: %s\n",
+                       gpg_strerror (err)); 
         }
     }
+
+  /* If we have figured something about the qualified signature
+     capability of the certificate under question, store the result as
+     user data in all certificates of the chain.  We do this even if the
+     validation itself failed.  */
+  if (is_qualified != -1)
+    {
+      gpg_error_t err;
+      chain_item_t ci;
+      char buf[1];
+
+      buf[0] = !!is_qualified;
+      
+      for (ci = chain; ci; ci = ci->next)
+        {
+          err = ksba_cert_set_user_data (ci->cert, "is_qualified", buf, 1);
+          if (err)
+            {
+              log_error ("set_user_data(is_qualified) failed: %s\n",
+                         gpg_strerror (err)); 
+              if (!rc)
+                rc = err;
+            }
+        }
+    }
+
   if (r_exptime)
     gnupg_copy_time (r_exptime, exptime);
   xfree (issuer);
   xfree (subject);
   keydb_release (kh); 
+  while (chain)
+    {
+      chain_item_t ci_next = chain->next;
+      ksba_cert_release (chain->cert);
+      xfree (chain);
+      chain = ci_next;
+    }
   ksba_cert_release (issuer_cert);
   ksba_cert_release (subject_cert);
   return rc;

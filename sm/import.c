@@ -147,7 +147,8 @@ print_imported_summary (ctrl_t ctrl, struct stats_s *stats)
 
 
 static void
-check_and_store (ctrl_t ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
+check_and_store (ctrl_t ctrl, struct stats_s *stats,
+                 ksba_cert_t cert, int depth)
 {
   int rc;
 

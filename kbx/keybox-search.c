@@ -828,7 +828,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 
       blobflags = blob_get_blob_flags (blob);
       if (!hd->ephemeral && (blobflags & 2))
-        continue; /* not in ephemeral mode but blob is flagged ephemeral */
+        continue; /* Not in ephemeral mode but blob is flagged ephemeral.  */
 
       for (n=0; n < ndesc; n++) 
         {

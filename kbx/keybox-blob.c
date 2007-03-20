@@ -23,7 +23,7 @@
 /* The keybox data formats
 
 The KeyBox uses an augmented OpenPGP/X.509 key format.  This makes
-random access to a keyblock/Certificate easier and also gives the
+random access to a keyblock/certificate easier and also gives the
 opportunity to store additional information (e.g. the fingerprint)
 along with the key.  All integers are stored in network byte order,
 offsets are counted from the beginning of the Blob.

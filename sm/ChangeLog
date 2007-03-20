@@ -1,5 +1,17 @@
 2007-03-20  Werner Koch  <wk@g10code.com>
 
+	* fingerprint.c (gpgsm_get_fingerprint): Add caching.
+	(gpgsm_get_fingerprint_string): Use bin2hexcolon().
+	(gpgsm_get_fingerprint_hexstring): Use bin2hex and allocate only
+	as much memory as required.
+	(gpgsm_get_keygrip_hexstring): Use bin2hex.
+
+	* certchain.c (gpgsm_validate_chain): Keep terack of the
+	certificate chain and reset the ephemeral flags.
+	* keydb.c (keydb_set_cert_flags): New args EPHEMERAL MASK.
+	Changed caller to use a mask of ~0.  Return a proper error code if
+	the certificate is not available.
+
 	* gpgsm.c: Add option --p12-charset.
 	* gpgsm.h (struct opt): Add p12_charset. 
 	* export.c (popen_protect_tool): Use new option.

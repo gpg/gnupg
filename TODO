@@ -12,7 +12,6 @@
    (i.e. Assuan context).
 
 * sm/certchain.c
-** When a certificate chain was sucessfully verified, make ephemeral certs used  in this chain permanent.
 ** Try to keep certificate references somewhere
   This will help with some of our caching code.  We also need to test
   that caching; in particular "regtp_ca_chainlen".

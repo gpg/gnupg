@@ -722,7 +722,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 
 
 
-/* update the current keyblock with KB */
+/* Update the current keyblock with KB.  */
 int
 keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
@@ -1366,7 +1366,9 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
    transaction by locating the certificate in the DB and updating the
    flags. */
 gpg_error_t
-keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
+keydb_set_cert_flags (ksba_cert_t cert, int ephemeral, 
+                      int which, int idx, 
+                      unsigned int mask, unsigned int value)
 {
   KEYDB_HANDLE kh;
   gpg_error_t err;
@@ -1386,6 +1388,9 @@ keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
       return gpg_error (GPG_ERR_ENOMEM);;
     }
 
+  if (ephemeral)
+    keydb_set_ephemeral (kh, 1);
+
   err = keydb_lock (kh);
   if (err)
     {
@@ -1397,8 +1402,11 @@ keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
   err = keydb_search_fpr (kh, fpr);
   if (err)
     {
-      log_error (_("problem re-searching certificate: %s\n"),
-                 gpg_strerror (err));
+      if (err == -1)
+        err = gpg_error (GPG_ERR_NOT_FOUND);
+      else
+        log_error (_("problem re-searching certificate: %s\n"),
+                   gpg_strerror (err));
       keydb_release (kh);
       return err;
     }
@@ -1410,6 +1418,9 @@ keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
       keydb_release (kh);
       return err;
     }
+
+  value = ((old_value & ~mask) | (value & mask));
+
   if (value != old_value)
     {
       err = keydb_set_flags (kh, which, idx, value);
@@ -1420,6 +1431,7 @@ keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
           return err;
         }
     }
+
   keydb_release (kh);               
   return 0;
 }

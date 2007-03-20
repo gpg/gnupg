@@ -58,6 +58,11 @@ typedef enum
     KEYBOX_FLAG_CREATED_AT  /* The date the block was created. */
   } keybox_flag_t;
 
+/* Flag values used with KEYBOX_FLAG_BLOB.  */
+#define KEYBOX_FLAG_BLOB_SECRET     1
+#define KEYBOX_FLAG_BLOB_EPHEMERAL  2
+
+
 
 /*-- keybox-init.c --*/
 void *keybox_register_file (const char *fname, int secret);

@@ -74,8 +74,9 @@ int keydb_search_subject (KEYDB_HANDLE hd, const char *issuer);
 int keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc);
 
 int keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed);
-gpg_error_t keydb_set_cert_flags (ksba_cert_t cert, int which, int idx,
-                                  unsigned int value);
+gpg_error_t keydb_set_cert_flags (ksba_cert_t cert, int ephemeral,
+                                  int which, int idx,
+                                  unsigned int mask, unsigned int value);
 
 void keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names);
 
