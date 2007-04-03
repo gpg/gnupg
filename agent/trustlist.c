@@ -275,7 +275,7 @@ read_one_trustfile (const char *fname, int allow_include,
 }
 
 
-/* Read the trust files and update the global table on success. */
+/* Read the trust files and update the global table on success.  */
 static gpg_error_t
 read_trustfiles (void)
 {
@@ -313,6 +313,16 @@ read_trustfiles (void)
   if (err)
     {
       xfree (table);
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        {
+          /* Take a missing trustlist as an empty one.  */
+          lock_trusttable ();
+          xfree (trusttable);
+          trusttable = NULL;
+          trusttablesize = 0;
+          unlock_trusttable ();
+          err = 0;
+        }
       return err;
     }
 

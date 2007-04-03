@@ -1,3 +1,8 @@
+2007-04-03  Werner Koch  <wk@g10code.com>
+
+	* trustlist.c (read_trustfiles): Take a missing trustlist as an
+	empty one.
+
 2007-03-20  Werner Koch  <wk@g10code.com>
 
 	* protect-tool.c: New option --p12-charset. 
