@@ -1,3 +1,9 @@
+2007-04-03  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (main): New option --decode and commands
+	decode and undecode.
+	(read_and_print_response): Implement option.
+
 2007-03-20  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gc_options_gpgsm): Add p12-charset.

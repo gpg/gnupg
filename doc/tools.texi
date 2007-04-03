@@ -955,6 +955,16 @@ When using @option{-S} or @option{--exec}, @command{gpg-connect-agent}
 connects to the assuan server in extended mode to allow descriptor
 passing.  This option makes it use the old mode.
 
+@item --hex
+@opindex hex
+Print data lines in a hex format and the ASCII representation of
+non-control characters.
+
+@item --decode
+@opindex decode
+Decode data lines.  That is to remove percent escapes but make sure that
+a new line always starts with a D and a space.
+
 @end table
 
 @mansect control commands
@@ -994,6 +1004,14 @@ input source for other commands.
 
 @item /recvfd
 Not yet implemented.
+
+@item /hex
+@itemx /nohex
+Same as the command line option @option{--hex}.
+
+@item /decode
+@itemx /nodecode
+Same as the command line option @option{--decode}.
 
 @item /help
 Print a list of available control commands.

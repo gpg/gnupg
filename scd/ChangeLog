@@ -1,3 +1,9 @@
+2007-04-03  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_getinfo): New subcommand "reader_list".
+	* ccid-driver.c (scan_or_find_devices): Ignore EBUSY in scan mode
+	for special transports.
+
 2007-03-07  Werner Koch  <wk@g10code.com>
 
 	* app-dinsig.c: Include i18n.h.

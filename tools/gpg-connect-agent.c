@@ -1,5 +1,5 @@
 /* gpg-connect-agent.c - Tool to connect to the agent.
- *	Copyright (C) 2005 Free Software Foundation, Inc.
+ *	Copyright (C) 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -46,6 +46,7 @@ enum cmd_and_opt_values
     oNoVerbose	= 500,
     oHomedir,
     oHex,
+    oDecode,
     oNoExtConnect
 
   };
@@ -59,6 +60,7 @@ static ARGPARSE_OPTS opts[] =
     { oVerbose, "verbose",  0, N_("verbose") },
     { oQuiet, "quiet",      0, N_("quiet") },
     { oHex,   "hex",        0, N_("print data out hex encoded") },
+    { oDecode,"decode",     0, N_("decode received data lines") },
     { oRawSocket, "raw-socket", 2, N_("|NAME|connect to Assuan socket NAME")},
     { oExec, "exec", 0, N_("run the Assuan server given on the command line")},
     { oNoExtConnect, "no-ext-connect",
@@ -78,6 +80,7 @@ struct
   int quiet;		/* Be extra quiet.  */
   const char *homedir;  /* Configuration directory name */
   int hex;              /* Print data lines in hex format. */
+  int decode;           /* Decode received data lines.  */
   const char *raw_socket; /* Name of socket to connect in raw mode. */
   int exec;             /* Run the pgm given on the command line. */
   unsigned int connect_flags;    /* Flags used for connecting. */
@@ -306,6 +309,7 @@ main (int argc, char **argv)
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir:   opt.homedir = pargs.r.ret_str; break;
         case oHex:       opt.hex = 1; break;
+        case oDecode:    opt.decode = 1; break;
         case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
         case oExec:      opt.exec = 1; break;
         case oNoExtConnect: opt.connect_flags &= ~(1); break;
@@ -436,6 +440,14 @@ main (int argc, char **argv)
               do_recvfd (ctx, p);
               continue;
             }
+          else if (!strcmp (cmd, "hex"))
+            opt.hex = 1;
+          else if (!strcmp (cmd, "nohex"))
+            opt.hex = 0;
+          else if (!strcmp (cmd, "decode"))
+            opt.decode = 1;
+          else if (!strcmp (cmd, "nodecode"))
+            opt.decode = 0;
           else if (!strcmp (cmd, "help"))
             {
               puts (
@@ -451,7 +463,9 @@ main (int argc, char **argv)
 "/cleardef              Delete all definitions.\n"
 "/sendfd FILE MODE      Open FILE and pass descriptor to server.\n"
 "/recvfd                Receive FD from server and print. \n"
-                    "/help                  Print this help.");
+"/[no]hex               Enable hex dumping of received data lines.\n"
+"/[no]decode            Enable decoding of received data lines.\n"
+"/help                  Print this help.");
             }
           else
             log_error (_("unknown command `%s'\n"), cmd );
@@ -577,6 +591,7 @@ read_and_print_response (assuan_context_t ctx)
   size_t linelen;
   assuan_error_t rc;
   int i, j;
+  int need_lf = 0;
 
   for (;;)
     {
@@ -628,56 +643,92 @@ read_and_print_response (assuan_context_t ctx)
                   putchar ('\n');
                 }
             }
+          else if (opt.decode)
+            {
+              const unsigned char *s;
+              int need_d = 1;
+              int c = 0;
+
+              for (j=2, s=(unsigned char*)line+2; j < linelen; j++, s++ )
+                {
+                  if (need_d)
+                    {
+                      fputs ("D ", stdout);
+                      need_d = 0;
+                    }
+                  if (*s == '%' && j+2 < linelen)
+                    { 
+                      s++; j++;
+                      c = xtoi_2 ( s );
+                      s++; j++;
+                    }
+                  else
+                    c = *s;
+                  if (c == '\n')
+                    need_d = 1;
+                  putchar (c);
+                }
+              need_lf = (c != '\n');
+            }
           else
             {
               fwrite (line, linelen, 1, stdout);
               putchar ('\n');
             }
         }
-      else if (linelen >= 1
-               && line[0] == 'S' 
-               && (line[1] == '\0' || line[1] == ' '))
+      else 
         {
-          fwrite (line, linelen, 1, stdout);
-          putchar ('\n');
-        }  
-      else if (linelen >= 2
-               && line[0] == 'O' && line[1] == 'K'
-               && (line[2] == '\0' || line[2] == ' '))
-        {
-          fwrite (line, linelen, 1, stdout);
-          putchar ('\n');
-          return 0;
+          if (need_lf)
+            {
+              putchar ('\n');
+              need_lf = 0;
+            }
+
+          if (linelen >= 1
+              && line[0] == 'S' 
+              && (line[1] == '\0' || line[1] == ' '))
+            {
+              fwrite (line, linelen, 1, stdout);
+              putchar ('\n');
+            }  
+          else if (linelen >= 2
+                   && line[0] == 'O' && line[1] == 'K'
+                   && (line[2] == '\0' || line[2] == ' '))
+            {
+              fwrite (line, linelen, 1, stdout);
+              putchar ('\n');
+              return 0;
+            }
+          else if (linelen >= 3
+                   && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+                   && (line[3] == '\0' || line[3] == ' '))
+            {
+              fwrite (line, linelen, 1, stdout);
+              putchar ('\n');
+              return 0;
+            }  
+          else if (linelen >= 7
+                   && line[0] == 'I' && line[1] == 'N' && line[2] == 'Q'
+                   && line[3] == 'U' && line[4] == 'I' && line[5] == 'R'
+                   && line[6] == 'E' 
+                   && (line[7] == '\0' || line[7] == ' '))
+            {
+              fwrite (line, linelen, 1, stdout);
+              putchar ('\n');
+              if (!handle_inquire (ctx, line))
+                assuan_write_line (ctx, "CANCEL");
+            }
+          else if (linelen >= 3
+                   && line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
+                   && (line[3] == '\0' || line[3] == ' '))
+            {
+              fwrite (line, linelen, 1, stdout);
+              putchar ('\n');
+              /* Received from server, thus more responses are expected.  */
+            }
+          else
+            return gpg_error (GPG_ERR_ASS_INV_RESPONSE);
         }
-      else if (linelen >= 3
-               && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
-               && (line[3] == '\0' || line[3] == ' '))
-        {
-          fwrite (line, linelen, 1, stdout);
-          putchar ('\n');
-          return 0;
-        }  
-      else if (linelen >= 7
-               && line[0] == 'I' && line[1] == 'N' && line[2] == 'Q'
-               && line[3] == 'U' && line[4] == 'I' && line[5] == 'R'
-               && line[6] == 'E' 
-               && (line[7] == '\0' || line[7] == ' '))
-        {
-          fwrite (line, linelen, 1, stdout);
-          putchar ('\n');
-          if (!handle_inquire (ctx, line))
-            assuan_write_line (ctx, "CANCEL");
-        }
-      else if (linelen >= 3
-               && line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
-               && (line[3] == '\0' || line[3] == ' '))
-        {
-          fwrite (line, linelen, 1, stdout);
-          putchar ('\n');
-          /* Received from server, thus more responses are expected.  */
-        }
-      else
-        return gpg_error (GPG_ERR_ASS_INV_RESPONSE);
     }
 }
 

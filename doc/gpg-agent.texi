@@ -501,7 +501,7 @@ checking of some root certificate requirements.
 
 As a special feature a line @code{include-default} will include a global
 list of trusted certificates (e.g. @file{/etc/gnupg/trustlist.txt}).
-This global list is also used if the local list ios not available.
+This global list is also used if the local list is not available.
 
   
 @item sshcontrol

@@ -38,6 +38,9 @@
 #include "app-common.h"
 #include "apdu.h" /* Required for apdu_*_reader (). */
 #include "exechelp.h"
+#ifdef HAVE_LIBUSB
+#include "ccid-driver.h"
+#endif
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -1382,12 +1385,16 @@ cmd_unlock (assuan_context_t ctx, char *line)
    Supported values of WHAT are:
 
    socket_name - Return the name of the socket.
+
    status - Return the status of the current slot (in the future, may
    also return the status of all slots).  The status is a list of
    one-character flags.  The following flags are currently defined:
      'u'  Usable card present.  This is the normal state during operation.
      'r'  Card removed.  A reset is necessary.
    These flags are exclusive.
+
+   reader_list - Return a list of detected card readers.  Does
+                 currently only work with the internal CCID driver.
 */
 
 static int
@@ -1426,6 +1433,20 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 	    flag = 'u';
 	}
       rc = assuan_send_data (ctx, &flag, 1);
+    }
+  else if (!strcmp (line, "reader_list"))
+    {
+#ifdef HAVE_LIBUSB
+      char *s = ccid_get_reader_list ();
+#else
+      char *s = NULL;
+#endif
+      
+      if (s)
+        rc = assuan_send_data (ctx, s, strlen (s));
+      else
+        rc = gpg_error (GPG_ERR_NO_DATA);
+      xfree (s);
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

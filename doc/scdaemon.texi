@@ -251,6 +251,13 @@ readers might need a string here; run the program in verbose mode to get
 a list of available readers.  The default is then the first reader
 found.
 
+To get a list of available CCID readers you may use this command:
+@smallexample
+echo scd getinfo reader_list | gpg-connect-agent --decode | awk '/^D/ @{print $2@}'
+@end smallexample
+
+
+
 @item --disable-keypad
 @opindex disable-keypad
 Even if a card reader features a keypad, do not try to use it.

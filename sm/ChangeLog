@@ -6,9 +6,9 @@
 	as much memory as required.
 	(gpgsm_get_keygrip_hexstring): Use bin2hex.
 
-	* certchain.c (gpgsm_validate_chain): Keep terack of the
+	* certchain.c (gpgsm_validate_chain): Keep track of the
 	certificate chain and reset the ephemeral flags.
-	* keydb.c (keydb_set_cert_flags): New args EPHEMERAL MASK.
+	* keydb.c (keydb_set_cert_flags): New args EPHEMERAL and MASK.
 	Changed caller to use a mask of ~0.  Return a proper error code if
 	the certificate is not available.
 

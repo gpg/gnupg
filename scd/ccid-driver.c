@@ -989,7 +989,13 @@ scan_or_find_devices (int readerno, const char *readerid,
       char *rid, *p;
 
       fd = open (transports[i].name, O_RDWR);
-      if (fd == -1)
+      if (fd == -1 && scan_mode && errno == EBUSY)
+        {
+          /* Ignore this error in scan mode because it indicates that
+             the device exists but is already open (most likely by us)
+             and thus in general suitable as a reader.  */
+        }
+      else if (fd == -1)
         {
           DEBUGOUT_2 ("failed to open `%s': %s\n",
                      transports[i].name, strerror (errno));
@@ -999,7 +1005,8 @@ scan_or_find_devices (int readerno, const char *readerid,
       rid = malloc (strlen (transports[i].name) + 30 + 10);
       if (!rid)
         {
-          close (fd);
+          if (fd != -1)
+            close (fd);
           free (rid_list);
           return -1; /* Error. */
         }
@@ -1010,7 +1017,8 @@ scan_or_find_devices (int readerno, const char *readerid,
           p = malloc ((rid_list? strlen (rid_list):0) + 1 + strlen (rid) + 1);
           if (!p)
             {
-              close (fd);
+              if (fd != -1)
+                close (fd);
               free (rid_list);
               free (rid);
               return -1; /* Error. */
@@ -1046,7 +1054,8 @@ scan_or_find_devices (int readerno, const char *readerid,
             --readerno;
         }
       free (rid);
-      close (fd);
+      if (fd != -1)
+        close (fd);
     }
 
   if (scan_mode)
