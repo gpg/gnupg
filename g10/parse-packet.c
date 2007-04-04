@@ -1,6 +1,6 @@
 /* parse-packet.c  - read packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -58,6 +58,7 @@ static int  copy_packet( IOBUF inp, IOBUF out, int pkttype,
 static void skip_packet( IOBUF inp, int pkttype,
 			 unsigned long pktlen, int partial );
 static void *read_rest( IOBUF inp, size_t pktlen, int partial );
+static int  parse_marker( IOBUF inp, int pkttype, unsigned long pktlen );
 static int  parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
 							     PACKET *packet );
 static int  parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -531,6 +532,9 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
       case PKT_GPG_CONTROL:
         rc = parse_gpg_control(inp, pkttype, pktlen, pkt, partial );
         break;
+    case PKT_MARKER:
+        rc = parse_marker(inp,pkttype,pktlen);
+	break;
       default:
 	skip_packet(inp, pkttype, pktlen, partial);
 	break;
@@ -595,31 +599,30 @@ copy_packet( IOBUF inp, IOBUF out, int pkttype,
 static void
 skip_packet( IOBUF inp, int pkttype, unsigned long pktlen, int partial )
 {
-    if( list_mode ) {
-	if( pkttype == PKT_MARKER )
-	    fputs(":marker packet:\n", listfp );
-	else
-	    fprintf (listfp, ":unknown packet: type %2d, length %lu\n",
-                     pkttype, pktlen);
-	if( pkttype ) {
-	    int c, i=0 ;
-	    if( pkttype != PKT_MARKER )
-		fputs("dump:", listfp );
-	    if( partial ) {
-		while( (c=iobuf_get(inp)) != -1 )
-		    dump_hex_line(c, &i);
+  if( list_mode )
+    {
+      fprintf (listfp, ":unknown packet: type %2d, length %lu\n",
+	       pkttype, pktlen);
+      if( pkttype )
+	{
+	  int c, i=0 ;
+	  fputs("dump:", listfp );
+	  if( partial )
+	    {
+	      while( (c=iobuf_get(inp)) != -1 )
+		dump_hex_line(c, &i);
 	    }
-	    else {
-		for( ; pktlen; pktlen-- )
-		    dump_hex_line(iobuf_get(inp), &i);
+	  else
+	    {
+	      for( ; pktlen; pktlen-- )
+		dump_hex_line(iobuf_get(inp), &i);
 	    }
-	    putc ('\n', listfp);
-	    return;
+	  putc ('\n', listfp);
+	  return;
 	}
     }
-    iobuf_skip_rest(inp,pktlen,partial);
+  iobuf_skip_rest(inp,pktlen,partial);
 }
-
 
 static void *
 read_rest( IOBUF inp, size_t pktlen, int partial )
@@ -639,7 +642,40 @@ read_rest( IOBUF inp, size_t pktlen, int partial )
     return p;
 }
 
+static int
+parse_marker( IOBUF inp, int pkttype, unsigned long pktlen )
+{
+  if(pktlen!=3)
+    goto fail;
 
+  if(iobuf_get(inp)!='P')
+    {
+      pktlen--;
+      goto fail;
+    }
+
+  if(iobuf_get(inp)!='G')
+    {
+      pktlen--;
+      goto fail;
+    }
+
+  if(iobuf_get(inp)!='P')
+    {
+      pktlen--;
+      goto fail;
+    }
+
+  if(list_mode)
+    fputs(":marker packet: PGP\n", listfp );
+
+  return 0;
+
+ fail:
+  log_error("invalid marker packet\n");
+  iobuf_skip_rest(inp,pktlen,0);
+  return G10ERR_INVALID_PACKET;
+}
 
 static int
 parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )

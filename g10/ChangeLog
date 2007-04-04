@@ -1,3 +1,10 @@
+2007-04-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_marker): New.  Enforce that the marker
+	contains 'P', 'G', 'P', and nothing but.
+	(parse): Call it here.
+	(skip_packet): No longer need to handle marker packets here.
+
 2007-03-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c: Windows Vista doesn't grok X_OK and so fails
