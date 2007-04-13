@@ -908,6 +908,28 @@ Reset verbose level to 0.
 @opindex quiet
 Try to be as quiet as possible.
 
+@item --batch
+@itemx --no-batch
+@opindex batch
+@opindex no-batch
+Use batch mode.  Never ask, do not allow interactive commands.
+@option{--no-batch} disables this option.
+
+@item --no-tty
+@opindex no-tty
+Make sure that the TTY (terminal) is never used for any output.
+This option is needed in some cases because GnuPG sometimes prints
+warnings to the TTY even if @option{--batch} is used.
+
+@item --yes
+@opindex yes
+Assume "yes" on most questions.
+
+@item --no
+@opindex no
+Assume "no" on most questions.
+
+
 @item --list-options @code{parameters}
 @opindex list-options
 This is a space or comma delimited string that gives options used when

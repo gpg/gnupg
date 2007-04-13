@@ -498,7 +498,7 @@ static gc_option_t gc_options_gpg_agent[] =
    { "ignore-cache-for-signing", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_BASIC, "gnupg", "do not use the PIN cache when signing",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
-   { "allow-mark-trusted", GC_OPT_FLAG_RUNTIME | GC_OPT_FLAG_NO_CHANGE,
+   { "allow-mark-trusted", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_ADVANCED, "gnupg", "allow clients to mark keys as \"trusted\"",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
    { "min-passphrase-len", GC_OPT_FLAG_RUNTIME,

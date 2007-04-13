@@ -164,7 +164,7 @@ start_agent (ctrl_t ctrl)
       xfree (infostr);
       if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
         {
-          log_error (_("can't connect to the agent - trying fall back\n"));
+          log_info (_("can't connect to the agent - trying fall back\n"));
           force_pipe_server = 1;
           return start_agent (ctrl);
         }

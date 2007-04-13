@@ -1,3 +1,8 @@
+2007-04-10  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi (GPG Configuration Options): Document --batch, no-tty,
+	--yes and --no.
+
 2007-03-08  Werner Koch  <wk@g10code.com>
 
 	* gnupg-logo.png, gnupg-logo.eps, gnupg-logo.pdf: New.

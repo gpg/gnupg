@@ -3,6 +3,17 @@
 
 Here are some notes on how to maintain GnuPG.
 
+Release Planning:
+=================
+
+If you are planning a new release and strings have changed you should
+send a notification to all tyranslators, so that they have time to
+update their translations.  scripts/mail-to-translators is useful for
+this.  It might need some tweaking and it needs to be armored for
+actual sending.  Running it as is to see what will happen is a good
+idea, though.
+
+
 
 Release process:
 ================

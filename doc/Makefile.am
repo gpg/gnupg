@@ -23,7 +23,7 @@ examples = examples/README examples/scd-event examples/trustlist.txt \
 	   examples/gpgconf.conf
 
 EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
-	     gnupg-logo.eps gnupg-logo.jpg gnupg-logo.pdf \
+	     gnupg-logo.eps gnupg-logo.pdf \
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
              faq.raw FAQ faq.html gnupg7.texi \
