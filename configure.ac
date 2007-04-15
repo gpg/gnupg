@@ -660,12 +660,12 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns
   _dns_save_libs=$LIBS
   LIBS=""
   # the double underscore thing is a glibc-ism?
-  AC_SEARCH_LIBS(res_query,resolv bind,,
-                 AC_SEARCH_LIBS(__res_query,resolv bind,,have_resolver=no))
-  AC_SEARCH_LIBS(dn_expand,resolv bind,,
-                 AC_SEARCH_LIBS(__dn_expand,resolv bind,,have_resolver=no))
-  AC_SEARCH_LIBS(dn_skipname,resolv bind,,
-                 AC_SEARCH_LIBS(__dn_skipname,resolv bind,,have_resolver=no))
+  AC_SEARCH_LIBS(res_query,resolv bind socket,,
+            AC_SEARCH_LIBS(__res_query,resolv bind socket,,have_resolver=no))
+  AC_SEARCH_LIBS(dn_expand,resolv bind socket,,
+            AC_SEARCH_LIBS(__dn_expand,resolv bind socket,,have_resolver=no))
+  AC_SEARCH_LIBS(dn_skipname,resolv bind socket,,
+            AC_SEARCH_LIBS(__dn_skipname,resolv bind socket,,have_resolver=no))
 
   if test x"$have_resolver" != xno ; then
 
