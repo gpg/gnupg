@@ -1,5 +1,5 @@
 /* srv.c - DNS SRV code
- * Copyright (C) 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -26,6 +26,7 @@
 #else
 #include <netinet/in.h>
 #include <arpa/nameser.h>
+#include <arpa/inet.h>
 #include <resolv.h>
 #endif
 #include <unistd.h>

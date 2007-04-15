@@ -1,5 +1,5 @@
 /* pka.c - DNS Public Key Association RR access
- * Copyright (C) 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -32,6 +32,7 @@
 #else
 #include <netinet/in.h>
 #include <arpa/nameser.h>
+#include <arpa/inet.h>
 #include <resolv.h>
 #endif
 #endif /* USE_DNS_PKA */
