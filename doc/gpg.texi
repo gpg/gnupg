@@ -1,5 +1,5 @@
-@c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-@c               2006 Free Software Foundation, Inc.
+@c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+@c               2007 Free Software Foundation, Inc.
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
@@ -1866,31 +1866,31 @@ using this option, the encrypted message becomes vulnerable to a
 message modification attack.
 
 @item --personal-cipher-preferences @code{string}
-Set the list of personal cipher preferences to @code{string}, this list
-should be a string similar to the one printed by the command "pref" in
-the edit menu. This allows the user to factor in their own preferred
-algorithms when algorithms are chosen via recipient key preferences.
-The most highly ranked cipher in this list is also used for the
-@option{--symmetric} encryption command.
+Set the list of personal cipher preferences to @code{string}.  Use
+@command{@gpgname --version} to get a list of available algorithms,
+and use @code{none} to set no preference at all.  This allows the user
+to factor in their own preferred algorithms when algorithms are chosen
+via recipient key preferences.  The most highly ranked cipher in this
+list is also used for the @option{--symmetric} encryption command.
 
 @item --personal-digest-preferences @code{string}
-Set the list of personal digest preferences to @code{string}, this list
-should be a string similar to the one printed by the command "pref" in
-the edit menu. This allows the user to factor in their own preferred
-algorithms when algorithms are chosen via recipient key preferences.
-The most highly ranked digest algorithm in this list is algo used when
-signing without encryption (e.g. @option{--clearsign} or
-@option{--sign}). The default value is SHA-1.
+Set the list of personal digest preferences to @code{string}.  Use
+@command{@gpgname --version} to get a list of available algorithms,
+and use @code{none} to set no preference at all.  This allows the user
+to factor in their own preferred algorithms when algorithms are chosen
+via recipient key preferences.  The most highly ranked digest
+algorithm in this list is algo used when signing without encryption
+(e.g. @option{--clearsign} or @option{--sign}). The default value is
+SHA-1.
 
 @item --personal-compress-preferences @code{string}
-Set the list of personal compression preferences to @code{string}, this
-list should be a string similar to the one printed by the command
-"pref" in the edit menu. This allows the user to factor in their own
-preferred algorithms when algorithms are chosen via recipient key
-preferences. The most highly ranked algorithm in this list is also
-used when there are no recipient keys to consider (e.g. @option{--symmetric}).
-
-
+Set the list of personal compression preferences to @code{string}.
+Use @command{@gpgname --version} to get a list of available
+algorithms, and use @code{none} to set no preference at all.  This
+allows the user to factor in their own preferred algorithms when
+algorithms are chosen via recipient key preferences.  The most highly
+ranked compression algorithm in this list is algo used when there are
+no recipient keys to consider (e.g. @option{--symmetric}).
 
 @item --s2k-cipher-algo @code{name}
 Use @code{name} as the cipher algorithm used to protect secret keys.
