@@ -1,3 +1,8 @@
+2007-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* strgutil.c (ascii_toupper, ascii_tolower, ascii_strcasecmp,
+	ascii_strncasecmp): Move functions to compat.c.
+
 2007-04-16  Werner Koch  <wk@g10code.com>
 
 	* secmem.c (init_pool): Avoid assigning a negative value to a

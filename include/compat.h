@@ -6,6 +6,10 @@
 #define ascii_isspace(a) ((a)==' ' || (a)=='\n' || (a)=='\r' || (a)=='\t')
 
 int hextobyte( const char *s );
+int ascii_toupper (int c);
+int ascii_tolower (int c);
+int ascii_strcasecmp( const char *a, const char *b );
+int ascii_strncasecmp( const char *a, const char *b, size_t n);
 
 #ifndef HAVE_STRSEP
 char *strsep (char **stringp, const char *delim);

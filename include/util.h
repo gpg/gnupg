@@ -194,10 +194,6 @@ int  check_utf8_string( const char *string );
 
 int ascii_isupper (int c);
 int ascii_islower (int c);
-int ascii_toupper (int c);
-int ascii_tolower (int c);
-int ascii_strcasecmp( const char *a, const char *b );
-int ascii_strncasecmp( const char *a, const char *b, size_t n);
 int ascii_memcasecmp( const char *a, const char *b, size_t n);
 
 #ifndef HAVE_STPCPY
