@@ -30,12 +30,15 @@ endif
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a 
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
-
 bin_PROGRAMS    = gpgsplit
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest make-dns-cert
 
 if HAVE_USTAR
 bin_SCRIPTS = gpg-zip
+endif
+
+if HAVE_SHM
+noinst_PROGRAMS += shmtest
 endif
 
 gpgsplit_LDADD  = $(needed_libs) $(other_libs) @ZLIBS@

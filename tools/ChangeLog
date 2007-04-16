@@ -1,3 +1,8 @@
+2007-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am (noinst_PROGRAMS): Don't build shmtest unless we
+	have shm.
+
 2006-12-11  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (AM_CPPFLAGS): Use in place of INCLUDES.  Define

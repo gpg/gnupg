@@ -1051,6 +1051,8 @@ if test "$ac_cv_header_sys_shm_h" = "yes"; then
             [define if the shared memory interface should be made available])
 fi
 
+AM_CONDITIONAL(HAVE_SHM, test "$ac_cv_header_sys_shm_h" = yes)
+
 dnl
 dnl check whether we have a random device
 dnl

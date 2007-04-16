@@ -1,5 +1,7 @@
 2007-04-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: Add a HAVE_SHM conditional.
+
 	* acinclude.m4: Use sysconf() if available to avoid a false
 	positive on HAVE_BROKEN_MLOCK when checking for page size.
 
