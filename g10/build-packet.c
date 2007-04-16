@@ -157,11 +157,11 @@ build_packet( IOBUF out, PACKET *pkt )
 static int
 mpi_write (iobuf_t out, gcry_mpi_t a)
 {
-  char buffer[(MAX_EXTERN_MPI_BITS+7)/8];
+  char buffer[(MAX_EXTERN_MPI_BITS+7)/8+2]; /* 2 is for the mpi length. */
   size_t nbytes;
   int rc;
 
-  nbytes = (MAX_EXTERN_MPI_BITS+7)/8 + 2; /* 2 is for the mpi length. */
+  nbytes = DIM(buffer);
   rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
   if( !rc )
     rc = iobuf_write( out, buffer, nbytes );

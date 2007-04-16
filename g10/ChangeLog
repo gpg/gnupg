@@ -1,3 +1,8 @@
+2007-04-16  Werner Koch  <wk@g10code.com>
+
+	* build-packet.c (mpi_write): Made buffer a bit larger.  Reported
+	by Alexander Feigl.
+
 2007-04-13  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (start_agent): Don't use log_error when using the
