@@ -47,8 +47,8 @@ gpgkeys_hkp_SOURCES += curl-shim.c curl-shim.h
 gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @DNSLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 else
 gpgkeys_curl_CPPFLAGS = @LIBCURL_CPPFLAGS@
-gpgkeys_curl_LDADD = @LIBCURL@ @GETOPT@
+gpgkeys_curl_LDADD = ../util/libcompat.a @LIBCURL@ @GETOPT@
 gpgkeys_hkp_CPPFLAGS = @LIBCURL_CPPFLAGS@
-gpgkeys_hkp_LDADD = @LIBCURL@ @GETOPT@
+gpgkeys_hkp_LDADD = ../util/libcompat.a @LIBCURL@ @GETOPT@
 gpgkeys_finger_CPPFLAGS = @LIBCURL_CPPFLAGS@
 endif

@@ -731,7 +731,7 @@ main(int argc,char *argv[])
   /* Send the response */
 
   fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
-  fprintf(output,"PROGRAM %s\n\n",VERSION);
+  fprintf(output,"PROGRAM %s %s\n\n",VERSION,curl_version());
 
   if(opt->verbose>1)
     {
