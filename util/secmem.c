@@ -1,5 +1,6 @@
 /* secmem.c  -	memory allocation from a secure heap
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *                    2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -218,18 +219,21 @@ lock_pool( void *p, size_t n )
 static void
 init_pool( size_t n)
 {
-    size_t pgsize;
+    size_t pgsize=-1;
 
     poolsize = n;
 
     if( disable_secmem )
 	log_bug("secure memory is disabled");
 
-#ifdef HAVE_GETPAGESIZE
+#if defined(HAVE_SYSCONF) && defined(_SC_PAGESIZE)
+    pgsize = sysconf(_SC_PAGESIZE);
+#elif defined(HAVE_GETPAGESIZE)
     pgsize = getpagesize();
-#else
-    pgsize = 4096;
 #endif
+
+    if(pgsize==-1)
+      pgsize = 4096;
 
 #ifdef HAVE_MMAP
     poolsize = (poolsize + pgsize -1 ) & ~(pgsize-1);

@@ -953,7 +953,7 @@ AC_CHECK_DECLS(getpagesize)
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
-AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr strtoul mmap)
+AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr strtoul mmap sysconf)
 AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times unsetenv getpwnam getpwuid)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)

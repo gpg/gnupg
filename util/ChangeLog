@@ -1,3 +1,8 @@
+2007-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* secmem.c (init_pool): Use sysconf() if available to determine
+	page size.
+
 2007-04-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c (default_strusage): Copyright 2007.

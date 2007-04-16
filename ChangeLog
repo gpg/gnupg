@@ -1,3 +1,10 @@
+2007-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* acinclude.m4: Use sysconf() if available to avoid a false
+	positive on HAVE_BROKEN_MLOCK when checking for page size.
+
+	* configure.ac: Check for sysconf.
+
 2007-04-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: QNX puts resolver functions in libsocket.  From

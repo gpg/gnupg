@@ -420,7 +420,16 @@ define(GNUPG_CHECK_MLOCK,
                 {
                     char *pool;
                     int err;
-                    long int pgsize = getpagesize();
+                    long int pgsize;
+
+		#if defined(HAVE_SYSCONF) && defined(_SC_PAGESIZE)
+                    pgsize = sysconf(_SC_PAGESIZE);
+		#elif defined(HAVE_GETPAGESIZE)
+                    pgsize = getpagesize();
+		#endif
+
+		    if(pgsize==-1)
+	               pgsize = 4096;
 
                     pool = malloc( 4096 + pgsize );
                     if( !pool )
