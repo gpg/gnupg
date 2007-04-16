@@ -1,6 +1,6 @@
 /* pkclist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +24,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
 #include <errno.h>
 #include <assert.h>
 

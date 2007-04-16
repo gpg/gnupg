@@ -1,3 +1,9 @@
+2007-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.c, pkclist.c: #include <strings.h> for strcasecmp if it is
+	present.  Note that autoconf protects us against a strings.h that
+	cannot be used together with string.h.
+
 2007-04-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_marker): New.  Enforce that the marker
