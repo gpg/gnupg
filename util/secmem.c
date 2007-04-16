@@ -219,7 +219,8 @@ lock_pool( void *p, size_t n )
 static void
 init_pool( size_t n)
 {
-    size_t pgsize=-1;
+    long int pgsize_val;
+    size_t pgsize;
 
     poolsize = n;
 
@@ -227,13 +228,14 @@ init_pool( size_t n)
 	log_bug("secure memory is disabled");
 
 #if defined(HAVE_SYSCONF) && defined(_SC_PAGESIZE)
-    pgsize = sysconf(_SC_PAGESIZE);
+    pgsize_val = sysconf (_SC_PAGESIZE);
 #elif defined(HAVE_GETPAGESIZE)
-    pgsize = getpagesize();
+    pgsize_val = getpagesize ();
+#else
+    pgsize_val = -1;
 #endif
+    pgsize = (pgsize_val != -1 && pgsize_val > 0)? pgsize_val : 4096;
 
-    if(pgsize==-1)
-      pgsize = 4096;
 
 #ifdef HAVE_MMAP
     poolsize = (poolsize + pgsize -1 ) & ~(pgsize-1);

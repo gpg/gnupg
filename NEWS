@@ -11,7 +11,7 @@ Noteworthy changes in version 1.4.7 (2007-03-05)
       plaintext boundary status tags that GnuPG provides.  This change
       makes GnuPG reject such messages by default which makes those
       programs safe again.  --allow-multiple-messages returns to the
-      old behavior.
+      old behavior. [CVE-2007-1263].
 
     * [W32] The environment variable LANGUAGE may be used to override
       the language given by HKCU\Software\GNU\GnuPG:Lang.  The

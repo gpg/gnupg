@@ -1,3 +1,9 @@
+2007-04-16  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4: Fix last change.  Make test self-conatined by
+	checking for sysconf and getpagesize.  Remove indentation for the
+	sake of broken C-89 cpp.
+
 2007-04-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add a HAVE_SHM conditional.
