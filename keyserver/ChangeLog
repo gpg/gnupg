@@ -1,3 +1,9 @@
+2007-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c, gpgkeys_ldap.c, gpgkeys_hkp.c, ksutil.c: Rename
+	all str(n)casecmp to ascii_str(n)casecmp.  We want the
+	locale-independent ones here.
+
 2007-03-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c (main): Use curl_version_info to verify that the

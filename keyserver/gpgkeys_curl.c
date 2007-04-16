@@ -44,6 +44,7 @@
 #else
 #include "curl-shim.h"
 #endif
+#include "compat.h"
 #include "keyserver.h"
 #include "ksutil.h"
 
@@ -204,13 +205,13 @@ main(int argc,char *argv[])
 
 	  option[MAX_OPTION]='\0';
 
-	  if(strncasecmp(option,"no-",3)==0)
+	  if(ascii_strncasecmp(option,"no-",3)==0)
 	    {
 	      no=1;
 	      start=&option[3];
 	    }
 
-	  if(strncasecmp(start,"http-proxy",10)==0)
+	  if(ascii_strncasecmp(start,"http-proxy",10)==0)
 	    {
 	      /* Safe to not check the return code of strdup() here.
 		 If it fails, we simply won't use a proxy. */
@@ -228,7 +229,7 @@ main(int argc,char *argv[])
 		    }
 		}
 	    }
-	  else if(strncasecmp(start,"follow-redirects",16)==0)
+	  else if(ascii_strncasecmp(start,"follow-redirects",16)==0)
 	    {
 	      if(no)
 		follow_redirects=0;
@@ -275,7 +276,7 @@ main(int argc,char *argv[])
      print a nicer error message. */
   curldata=curl_version_info(CURLVERSION_NOW);
   for(i=0;curldata->protocols[i];i++)
-    if(strcasecmp(curldata->protocols[i],opt->scheme)==0)
+    if(ascii_strcasecmp(curldata->protocols[i],opt->scheme)==0)
       break;
 
   if(curldata->protocols[i]==NULL)

@@ -1,5 +1,5 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -45,6 +45,7 @@
 #else
 #include "curl-shim.h"
 #endif
+#include "compat.h"
 #include "keyserver.h"
 #include "ksutil.h"
 
@@ -597,13 +598,13 @@ main(int argc,char *argv[])
 
 	  option[MAX_OPTION]='\0';
 
-	  if(strncasecmp(option,"no-",3)==0)
+	  if(ascii_strncasecmp(option,"no-",3)==0)
 	    {
 	      no=1;
 	      start=&option[3];
 	    }
 
-	  if(strncasecmp(start,"http-proxy",10)==0)
+	  if(ascii_strncasecmp(start,"http-proxy",10)==0)
 	    {
 	      if(no)
 		{
@@ -620,7 +621,7 @@ main(int argc,char *argv[])
 		}
 	    }
 #if 0
-	  else if(strcasecmp(start,"try-dns-srv")==0)
+	  else if(ascii_strcasecmp(start,"try-dns-srv")==0)
 	    {
 	      if(no)
 		http_flags&=~HTTP_FLAG_TRY_SRV;

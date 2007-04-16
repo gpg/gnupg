@@ -1,5 +1,6 @@
 /* gpgkeys_ldap.c - talk to a LDAP keyserver
- * Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -131,7 +132,7 @@ key_in_keylist(const char *key,struct keylist *list)
 
   while(keyptr!=NULL)
     {
-      if(strcasecmp(key,keyptr->str)==0)
+      if(ascii_strcasecmp(key,keyptr->str)==0)
 	return 1;
 
       keyptr=keyptr->next;
@@ -270,7 +271,7 @@ make_one_attr(LDAPMod ***modlist,char *attr,const char *value)
   /* Search modlist for the attribute we're playing with. */
   for(m=*modlist;*m;m++)
     {
-      if(strcasecmp((*m)->mod_type,attr)==0)
+      if(ascii_strcasecmp((*m)->mod_type,attr)==0)
 	{
 	  char **ptr=(*m)->mod_values;
 	  int numvalues=0;
@@ -1478,9 +1479,9 @@ search_key(const char *searchkey)
 		    {
 		      /* The LDAP server doesn't exactly handle this
 			 well. */
-		      if(strcasecmp(vals[0],"RSA")==0)
+		      if(ascii_strcasecmp(vals[0],"RSA")==0)
 			fprintf(output,"1");
-		      else if(strcasecmp(vals[0],"DSS/DH")==0)
+		      else if(ascii_strcasecmp(vals[0],"DSS/DH")==0)
 			fprintf(output,"17");
 		      ldap_value_free(vals);
 		    }
@@ -1561,7 +1562,7 @@ search_key(const char *searchkey)
 		      vals=ldap_get_values(ldap,uids,"pgpcertid");
 		      if(vals!=NULL)
 			{
-			  if(strcasecmp(certid[0],vals[0])==0)
+			  if(ascii_strcasecmp(certid[0],vals[0])==0)
 			    {
 			      char **uidvals;
 
@@ -1863,25 +1864,25 @@ main(int argc,char *argv[])
 
 	  optionstr[MAX_OPTION]='\0';
 
-	  if(strncasecmp(optionstr,"no-",3)==0)
+	  if(ascii_strncasecmp(optionstr,"no-",3)==0)
 	    {
 	      no=1;
 	      start=&optionstr[3];
 	    }
 
-	  if(strncasecmp(start,"tls",3)==0)
+	  if(ascii_strncasecmp(start,"tls",3)==0)
 	    {
 	      if(no)
 		use_tls=0;
 	      else if(start[3]=='=')
 		{
-		  if(strcasecmp(&start[4],"no")==0)
+		  if(ascii_strcasecmp(&start[4],"no")==0)
 		    use_tls=0;
-		  else if(strcasecmp(&start[4],"try")==0)
+		  else if(ascii_strcasecmp(&start[4],"try")==0)
 		    use_tls=1;
-		  else if(strcasecmp(&start[4],"warn")==0)
+		  else if(ascii_strcasecmp(&start[4],"warn")==0)
 		    use_tls=2;
-		  else if(strcasecmp(&start[4],"require")==0)
+		  else if(ascii_strcasecmp(&start[4],"require")==0)
 		    use_tls=3;
 		  else
 		    use_tls=1;
@@ -1889,7 +1890,7 @@ main(int argc,char *argv[])
 	      else if(start[3]=='\0')
 		use_tls=1;
 	    }
-	  else if(strncasecmp(start,"basedn",6)==0)
+	  else if(ascii_strncasecmp(start,"basedn",6)==0)
 	    {
 	      if(no)
 		{
@@ -1911,7 +1912,7 @@ main(int argc,char *argv[])
 		  real_ldap=1;
 		}
 	    }
-	  else if(strncasecmp(start,"binddn",6)==0)
+	  else if(ascii_strncasecmp(start,"binddn",6)==0)
 	    {
 	      if(no)
 		{
@@ -1933,7 +1934,7 @@ main(int argc,char *argv[])
 		  real_ldap=1;
 		}
 	    }
-	  else if(strncasecmp(start,"bindpw",6)==0)
+	  else if(ascii_strncasecmp(start,"bindpw",6)==0)
 	    {
 	      if(no)
 		{
@@ -1967,7 +1968,7 @@ main(int argc,char *argv[])
       goto fail;
     }
 
-  if(strcasecmp(opt->scheme,"ldaps")==0)
+  if(ascii_strcasecmp(opt->scheme,"ldaps")==0)
     {
       port=636;
       use_ssl=1;

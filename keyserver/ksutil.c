@@ -1,5 +1,5 @@
 /* ksutil.c - general keyserver utility functions
- * Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -42,6 +42,7 @@
 #else
 #include "curl-shim.h"
 #endif
+#include "compat.h"
 #include "keyserver.h"
 #include "ksutil.h"
 
@@ -149,13 +150,13 @@ parse_ks_options(char *line,struct ks_options *opt)
     {
       command[MAX_COMMAND]='\0';
 
-      if(strcasecmp(command,"get")==0)
+      if(ascii_strcasecmp(command,"get")==0)
 	opt->action=KS_GET;
-      else if(strcasecmp(command,"getname")==0)
+      else if(ascii_strcasecmp(command,"getname")==0)
 	opt->action=KS_GETNAME;
-      else if(strcasecmp(command,"send")==0)
+      else if(ascii_strcasecmp(command,"send")==0)
 	opt->action=KS_SEND;
-      else if(strcasecmp(command,"search")==0)
+      else if(ascii_strcasecmp(command,"search")==0)
 	opt->action=KS_SEARCH;
 
       return 0;
@@ -236,13 +237,13 @@ parse_ks_options(char *line,struct ks_options *opt)
 
       option[MAX_OPTION]='\0';
 
-      if(strncasecmp(option,"no-",3)==0)
+      if(ascii_strncasecmp(option,"no-",3)==0)
 	{
 	  no=1;
 	  start=&option[3];
 	}
 
-      if(strncasecmp(start,"verbose",7)==0)
+      if(ascii_strncasecmp(start,"verbose",7)==0)
 	{
 	  if(no)
 	    opt->verbose=0;
@@ -251,35 +252,35 @@ parse_ks_options(char *line,struct ks_options *opt)
 	  else
 	    opt->verbose++;
 	}
-      else if(strcasecmp(start,"include-disabled")==0)
+      else if(ascii_strcasecmp(start,"include-disabled")==0)
 	{
 	  if(no)
 	    opt->flags.include_disabled=0;
 	  else
 	    opt->flags.include_disabled=1;
 	}
-      else if(strcasecmp(start,"include-revoked")==0)
+      else if(ascii_strcasecmp(start,"include-revoked")==0)
 	{
 	  if(no)
 	    opt->flags.include_revoked=0;
 	  else
 	    opt->flags.include_revoked=1;
 	}
-      else if(strcasecmp(start,"include-subkeys")==0)
+      else if(ascii_strcasecmp(start,"include-subkeys")==0)
 	{
 	  if(no)
 	    opt->flags.include_subkeys=0;
 	  else
 	    opt->flags.include_subkeys=1;
 	}
-      else if(strcasecmp(start,"check-cert")==0)
+      else if(ascii_strcasecmp(start,"check-cert")==0)
 	{
 	  if(no)
 	    opt->flags.check_cert=0;
 	  else
 	    opt->flags.check_cert=1;
 	}
-      else if(strncasecmp(start,"debug",5)==0)
+      else if(ascii_strncasecmp(start,"debug",5)==0)
 	{
 	  if(no)
 	    opt->debug=0;
@@ -288,7 +289,7 @@ parse_ks_options(char *line,struct ks_options *opt)
 	  else if(start[5]=='\0')
 	    opt->debug=1;
 	}
-      else if(strncasecmp(start,"timeout",7)==0)
+      else if(ascii_strncasecmp(start,"timeout",7)==0)
 	{
 	  if(no)
 	    opt->timeout=0;
@@ -297,7 +298,7 @@ parse_ks_options(char *line,struct ks_options *opt)
 	  else if(start[7]=='\0')
 	    opt->timeout=DEFAULT_KEYSERVER_TIMEOUT;
 	}
-      else if(strncasecmp(start,"ca-cert-file",12)==0)
+      else if(ascii_strncasecmp(start,"ca-cert-file",12)==0)
 	{
 	  if(no)
 	    {
