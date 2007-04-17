@@ -1,6 +1,6 @@
 /* mainproc.c - handle packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -87,6 +87,12 @@ static int do_proc_packets( CTX c, IOBUF a );
 static void list_node( CTX c, KBNODE node );
 static void proc_tree( CTX c, KBNODE node );
 static int literals_seen;
+
+void
+reset_literals_seen(void)
+{
+  literals_seen=0;
+}
 
 static void
 release_list( CTX c )

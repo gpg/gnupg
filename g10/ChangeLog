@@ -1,5 +1,12 @@
 2007-04-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* packet.h, mainproc.c (reset_literals_seen): New function to
+	reset the literals count.
+
+	* verify.c (verify_one_file), decrypt.c (decrypt_messages): Call
+	it here so we allow multiple literals in --multifile mode (in
+	different files - not concatenated together).
+
 	* gpg.c, pkclist.c: #include <strings.h> for strcasecmp if it is
 	present.  Note that autoconf protects us against a strings.h that
 	cannot be used together with string.h.
