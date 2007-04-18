@@ -44,7 +44,7 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
   size_t nframe;
   unsigned char *frame;
 
-  if (pkalgo == GCRY_PK_DSA)
+  if (pkalgo == GCRY_PK_DSA || pkalgo == GCRY_PK_ECDSA)
     {
       nframe = gcry_md_get_algo_dlen (algo);
       if (nframe != 20)
@@ -143,6 +143,12 @@ pk_algo_from_sexp (gcry_sexp_t pkey)
     algo = GCRY_PK_RSA;
   else if (n==3 && !memcmp (name, "dsa", 3))
     algo = GCRY_PK_DSA;
+  else if (n==5 && !memcmp (name, "ecdsa", 5))
+    algo = GCRY_PK_ECDSA;
+  /* Because this function is called only for verification we can
+     assume that ECC actually means ECDSA.  */
+  else if (n==3 && !memcmp (name, "ecc", 3))
+    algo = GCRY_PK_ECDSA;
   else if (n==13 && !memcmp (name, "ambiguous-rsa", 13))
     algo = GCRY_PK_RSA;
   else

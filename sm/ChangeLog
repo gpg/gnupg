@@ -1,3 +1,7 @@
+2007-04-18  Werner Koch  <wk@g10code.com>
+
+	* certcheck.c (do_encode_md): Support 160 bit ECDSA.
+
 2007-04-13  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (start_agent): Don't use log_error when using the
