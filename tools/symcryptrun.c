@@ -96,25 +96,6 @@
 #include "../common/simple-pwquery.h"
 
 
-/* Used by gcry for logging */
-static void
-my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
-{
-  /* translate the log levels */
-  switch (level)
-    {
-    case GCRY_LOG_CONT: level = JNLIB_LOG_CONT; break;
-    case GCRY_LOG_INFO: level = JNLIB_LOG_INFO; break;
-    case GCRY_LOG_WARN: level = JNLIB_LOG_WARN; break;
-    case GCRY_LOG_ERROR:level = JNLIB_LOG_ERROR; break;
-    case GCRY_LOG_FATAL:level = JNLIB_LOG_FATAL; break;
-    case GCRY_LOG_BUG:  level = JNLIB_LOG_BUG; break;
-    case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
-    default:            level = JNLIB_LOG_ERROR; break;      }
-  log_logv (level, fmt, arg_ptr);
-}
-
-
 /* From simple-gettext.c.  */
 
 /* We assume to have `unsigned long int' value with at least 32 bits.  */
@@ -1053,10 +1034,10 @@ main (int argc, char **argv)
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
-      log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
+      log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt",
                  NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
     }
-  gcry_set_log_handler (my_gcry_logger, NULL);
+  setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 
   if (!opt.class)

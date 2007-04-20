@@ -171,6 +171,10 @@ void gnupg_rl_initialize (void);
 
 /*-- miscellaneous.c --*/
 
+/* This function is called at startup to tell libgcrypt to use our own
+   logging subsystem. */
+void setup_libgcrypt_logging (void);
+
 /* Same as asprintf but return an allocated buffer suitable to be
    freed using xfree.  This function simply dies on memory failure,
    thus no extra check is required. */

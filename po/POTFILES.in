@@ -14,6 +14,7 @@ common/http.c
 common/simple-pwquery.c
 common/sysutils.c
 common/yesno.c
+common/miscellaneous.c
 
 g10/armor.c
 g10/build-packet.c

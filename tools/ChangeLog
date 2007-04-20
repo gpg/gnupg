@@ -1,3 +1,8 @@
+2007-04-20  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c (my_gcry_logger): Removed.
+	(main): Call setup_libgcrypt_logging.
+
 2007-04-03  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c: Allow changing of --allow-mark-trusted.

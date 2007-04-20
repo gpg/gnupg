@@ -1,3 +1,10 @@
+2007-04-20  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (my_gcry_logger, my_gcry_outofcore_handler): Removed.
+	(main): Call the setup_libgcrypt_logging helper.
+	* protect-tool.c (my_gcry_logger): Removed.
+	(main): Call the setup_libgcrypt_logging helper.
+	
 2007-04-03  Werner Koch  <wk@g10code.com>
 
 	* trustlist.c (read_trustfiles): Take a missing trustlist as an

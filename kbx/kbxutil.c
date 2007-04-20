@@ -429,7 +429,7 @@ main( int argc, char **argv )
      the option parsing may need services of the library.  */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
-      log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
+      log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt",
                  NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
     }
 

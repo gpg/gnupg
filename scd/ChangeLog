@@ -1,3 +1,10 @@
+2007-04-20  Werner Koch  <wk@g10code.com>
+
+	* sc-copykeys.c (my_gcry_logger): Removed.
+	(main): Call setup_libgcrypt_logging helper.
+	* scdaemon.c (my_gcry_logger): Removed.
+	(main): Call setup_libgcrypt_logging helper.
+
 2007-04-03  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_getinfo): New subcommand "reader_list".

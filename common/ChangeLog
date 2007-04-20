@@ -1,3 +1,10 @@
+2007-04-20  Werner Koch  <wk@g10code.com>
+
+	* miscellaneous.c (my_gcry_logger, my_gcry_outofcore_handler):
+	Moved from gpg-agent to here.
+	(my_gcry_fatalerror_handler): new.
+	(setup_libgcrypt_logging): New.
+
 2007-03-19  Werner Koch  <wk@g10code.com>
 
 	* miscellaneous.c (print_hexstring): New.

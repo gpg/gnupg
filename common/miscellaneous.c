@@ -23,8 +23,75 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#define JNLIB_NEED_LOG_LOGV
 #include "util.h"
 #include "iobuf.h"
+#include "i18n.h"
+
+
+/* Used by libgcrypt for logging.  */
+static void
+my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
+{
+  /* Map the log levels.  */
+  switch (level)
+    {
+    case GCRY_LOG_CONT: level = JNLIB_LOG_CONT; break;
+    case GCRY_LOG_INFO: level = JNLIB_LOG_INFO; break;
+    case GCRY_LOG_WARN: level = JNLIB_LOG_WARN; break;
+    case GCRY_LOG_ERROR:level = JNLIB_LOG_ERROR; break;
+    case GCRY_LOG_FATAL:level = JNLIB_LOG_FATAL; break;
+    case GCRY_LOG_BUG:  level = JNLIB_LOG_BUG; break;
+    case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
+    default:            level = JNLIB_LOG_ERROR; break;  
+    }
+  log_logv (level, fmt, arg_ptr);
+}
+
+
+/* This function is called by libgcrypt on a fatal error.  */
+static void
+my_gcry_fatalerror_handler (void *opaque, int rc, const char *text)
+{
+  log_fatal ("libgcrypt problem: %s\n", text ? text : gpg_strerror (rc));
+  abort ();
+}
+
+
+/* This function is called by libgcrypt if it ran out of core and
+   there is no way to return that error to the caller.  We do our own
+   function here to make use of our logging functions. */
+static int
+my_gcry_outofcore_handler (void *opaque, size_t req_n, unsigned int flags)
+{
+  static int been_here;  /* Used to protect against recursive calls. */
+
+  if (!been_here)
+    {
+      been_here = 1;
+      if ( (flags & 1) )
+        log_fatal (_("out of core in secure memory "
+                     "while allocating %lu bytes"), (unsigned long)req_n);
+      else
+        log_fatal (_("out of core while allocating %lu bytes"),
+                   (unsigned long)req_n);
+    }
+  return 0; /* Let libgcrypt call its own fatal error handler.
+               Actually this will turn out to be
+               my_gcry_fatalerror_handler. */
+}
+
+
+/* Setup libgcrypt to use our own logging functions.  Should be used
+   early at startup. */
+void
+setup_libgcrypt_logging (void)
+{
+  gcry_set_log_handler (my_gcry_logger, NULL);
+  gcry_set_fatalerror_handler (my_gcry_fatalerror_handler, NULL);
+  gcry_set_outofcore_handler (my_gcry_outofcore_handler, NULL);
+}
+
 
 
 /* Decide whether the filename is stdout or a real filename and return

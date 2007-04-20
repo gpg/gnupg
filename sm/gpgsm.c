@@ -768,15 +768,11 @@ main ( int argc, char **argv)
   /* Check that the libraries are suitable.  Do it here because the
      option parse may need services of the library */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
-    {
-      log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
-                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
-    }
+    log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt", 
+               NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
   if (!ksba_check_version (NEED_KSBA_VERSION) )
-    {
-      log_fatal( _("libksba is too old (need %s, have %s)\n"),
-                 NEED_KSBA_VERSION, ksba_check_version (NULL) );
-    }
+    log_fatal (_("%s is too old (need %s, have %s)\n"), "libksba",
+               NEED_KSBA_VERSION, ksba_check_version (NULL) );
 
 
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
