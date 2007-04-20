@@ -35,10 +35,38 @@
 #include "keydb.h"
 #include "i18n.h"
 
+/* Return the number of bits of the Q parameter from the DSA key
+   KEY.  */
+static unsigned int
+get_dsa_qbits (gcry_sexp_t key)
+{
+  gcry_sexp_t l1, l2;
+  gcry_mpi_t q;
+  unsigned int nbits;
+
+  l1 = gcry_sexp_find_token (key, "public-key", 0);
+  if (!l1)
+    return 0; /* Does not contain a key object.  */
+  l2 = gcry_sexp_cadr (l1);
+  gcry_sexp_release  (l1);
+  l1 = gcry_sexp_find_token (l2, "q", 1);
+  gcry_sexp_release (l2);
+  if (!l1)
+    return 0; /* Invalid object.  */
+  q = gcry_sexp_nth_mpi (l1, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release (l1);
+  if (!q)
+    return 0; /* Missing value.  */
+  nbits = gcry_mpi_get_nbits (q);
+  gcry_mpi_release (q);
+
+  return nbits;
+}
+
 
 static int
 do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
-              gcry_mpi_t *r_val)
+              gcry_sexp_t pkey, gcry_mpi_t *r_val)
 {
   int n;
   size_t nframe;
@@ -46,17 +74,54 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
 
   if (pkalgo == GCRY_PK_DSA || pkalgo == GCRY_PK_ECDSA)
     {
+      unsigned int qbits;
+
+      if ( pkalgo == GCRY_PK_ECDSA )
+        qbits = gcry_pk_get_nbits (pkey);
+      else
+        qbits = get_dsa_qbits (pkey);
+
+      if ( (qbits%8) )
+	{
+	  log_error(_("DSA requires the hash length to be a"
+		      " multiple of 8 bits\n"));
+	  return gpg_error (GPG_ERR_INTERNAL);
+	}
+
+      /* Don't allow any Q smaller than 160 bits.  We don't want
+	 someone to issue signatures from a key with a 16-bit Q or
+	 something like that, which would look correct but allow
+	 trivial forgeries.  Yes, I know this rules out using MD5 with
+	 DSA. ;) */
+      if (qbits < 160)
+	{
+	  log_error (_("%s key uses an unsafe (%u bit) hash\n"),
+                     gcry_pk_algo_name (pkalgo), qbits);
+	  return gpg_error (GPG_ERR_INTERNAL);
+	}
+
+      /* Check if we're too short.  Too long is safe as we'll
+	 automatically left-truncate. */
       nframe = gcry_md_get_algo_dlen (algo);
-      if (nframe != 20)
+      if (nframe < qbits/8)
         {
-          log_error (_("DSA requires the use of a 160 bit hash algorithm\n"));
-          return gpg_error (GPG_ERR_INTERNAL);
+	  log_error (_("a %u bit hash is not valid for a %u bit %s key\n"),
+                     (unsigned int)nframe*8,
+                     gcry_pk_get_nbits (pkey), 
+                     gcry_pk_algo_name (pkalgo));
+          /* FIXME: we need to check the requirements for ECDSA.  */
+          if (nframe < 20 || pkalgo == GCRY_PK_DSA  )
+            return gpg_error (GPG_ERR_INTERNAL);
         }
+
       frame = xtrymalloc (nframe);
       if (!frame)
         return out_of_core ();
       memcpy (frame, gcry_md_read (md, algo), nframe);
       n = nframe;
+      /* Truncate.  */
+      if (n > qbits/8)
+        n = qbits/8;
     }
   else
     {
@@ -143,8 +208,6 @@ pk_algo_from_sexp (gcry_sexp_t pkey)
     algo = GCRY_PK_RSA;
   else if (n==3 && !memcmp (name, "dsa", 3))
     algo = GCRY_PK_DSA;
-  else if (n==5 && !memcmp (name, "ecdsa", 5))
-    algo = GCRY_PK_ECDSA;
   /* Because this function is called only for verification we can
      assume that ECC actually means ECDSA.  */
   else if (n==3 && !memcmp (name, "ecc", 3))
@@ -158,10 +221,9 @@ pk_algo_from_sexp (gcry_sexp_t pkey)
 }
 
 
-/*
-  Check the signature on CERT using the ISSUER-CERT.  This function
-  does only test the cryptographic signature and nothing else.  It is
-  assumed that the ISSUER_CERT is valid. */
+/* Check the signature on CERT using the ISSUER-CERT.  This function
+   does only test the cryptographic signature and nothing else.  It is
+   assumed that the ISSUER_CERT is valid. */
 int
 gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 {
@@ -249,7 +311,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
     }
 
   rc = do_encode_md (md, algo, pk_algo_from_sexp (s_pkey),
-                     gcry_pk_get_nbits (s_pkey), &frame);
+                     gcry_pk_get_nbits (s_pkey), s_pkey, &frame);
   if (rc)
     {
       gcry_md_close (md);
@@ -322,7 +384,7 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
 
 
   rc = do_encode_md (md, algo, pk_algo_from_sexp (s_pkey),
-                     gcry_pk_get_nbits (s_pkey), &frame);
+                     gcry_pk_get_nbits (s_pkey), s_pkey, &frame);
   if (rc)
     {
       gcry_sexp_release (s_sig);

@@ -1,3 +1,11 @@
+2007-04-19  Werner Koch  <wk@g10code.com>
+
+	* certcheck.c (do_encode_md): Add arg PKEY.  Add support for DSA2
+	and all ECDSA sizes.
+	(get_dsa_qbits): New.
+	(pk_algo_from_sexp): A key will never contain ecdsa as algorithm,
+	so remove that.
+
 2007-04-18  Werner Koch  <wk@g10code.com>
 
 	* certcheck.c (do_encode_md): Support 160 bit ECDSA.
