@@ -627,6 +627,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
       if (*canceled)
         {
           xfree (pw);
+	  write_status( STATUS_MISSING_PASSPHRASE );
           return NULL;
         }
       if (!pw)
@@ -642,6 +643,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
                 {
                   xfree (pw);
                   xfree (pw2);
+		  write_status( STATUS_MISSING_PASSPHRASE );
                   return NULL;
                 }
 	      if (!pw2)
