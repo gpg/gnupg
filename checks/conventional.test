@@ -11,6 +11,10 @@ done
 
 algos="3des"
 
+if have_cipher_algo "IDEA"; then
+   algos="$algos idea"
+fi
+
 if have_cipher_algo "CAST5"; then
    algos="$algos cast5"
 fi
