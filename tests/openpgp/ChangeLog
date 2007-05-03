@@ -1,3 +1,9 @@
+2007-05-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* conventional.test, encrypt.test, encrypt-dsa.test,
+	conventional-mdc.test: Fix some broken tests that were only
+	testing 3DES instead of all available ciphers.
+
 2007-03-04  David Shaw  <dshaw@jabberwocky.com>  (wk)
 
 	* verify.test: Use --allow-multiple-messages instead of
