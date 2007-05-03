@@ -1,3 +1,12 @@
+2007-05-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, mainproc.c (reset_literals_seen): New function to
+	reset the literals count.
+
+	* verify.c (verify_one_file), decrypt.c (decrypt_messages): Call
+	it here so we allow multiple literals in --multifile mode (in
+	different files - not concatenated together).
+
 2007-04-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* passphrase.c (passphrase_to_dek): Write missing passphrase

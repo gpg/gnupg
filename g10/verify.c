@@ -1,5 +1,6 @@
 /* verify.c - Verify signed data
- * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -177,6 +178,8 @@ verify_one_file( const char *name )
     rc = proc_signature_packets( NULL, fp, NULL, name );
     iobuf_close(fp);
     write_status( STATUS_FILE_DONE );
+
+    reset_literals_seen();
 
  leave:
     release_armor_context (afx);
