@@ -1,6 +1,10 @@
+2007-05-04  Werner Koch  <wk@g10code.com>
+
+	* texinfo.tex: Updated from gnulib.
+
 2007-04-04  Werner Koch  <wk@g10code.com>
 
-	* mail-to-translators: Copied from 1.4. and adjusted.
+	* mail-to-translators: Copied from 1.4 and adjusted.
 
 2004-09-30  Werner Koch  <wk@g10code.com>
 

@@ -1,3 +1,9 @@
+2007-05-04  Werner Koch  <wk@g10code.com>
+
+	* gnupg.texi (Top): Fix typo and a grammar issue.
+	* Makefile.am (EXTRA_DIST): Add gnupg-logo.png.  Suggested by
+	Bernard Leak.
+
 2007-04-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi (OpenPGP Options): Update the personal-foo-preferences

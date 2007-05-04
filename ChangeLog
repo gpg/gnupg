@@ -2,7 +2,9 @@
 
 	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Add --enable-mailto
 
-	* configure.ac (AC_CONFIG_FILES): Rename gpgkeys_ to gpg2keys_.
+	* configure.ac: Require automake 1.10
+	(AC_CONFIG_FILES): Rename gpgkeys_ to gpg2keys_.
+	(AM_PROG_CC_C_O): New.
 
 2007-03-08  Werner Koch  <wk@g10code.com>
 

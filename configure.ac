@@ -20,8 +20,8 @@
 # USA.
 
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ(2.59)
-min_automake_version="1.9.3"
+AC_PREREQ(2.60)
+min_automake_version="1.10"
 
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
@@ -445,6 +445,7 @@ AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP
+AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_RANLIB
