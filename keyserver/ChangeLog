@@ -1,3 +1,11 @@
+2007-05-04  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_test.in: Rename to ..
+	* gpg2keys_test.in: .. this.
+	* gpgkeys_mailto.in: Rename to ..
+	* gpg2keys_mailto.in: .. this
+	* Makefile.am: Likewise
+
 2007-03-13  David Shaw  <dshaw@jabberwocky.com>
 
 	From STABLE-BRANCH-1-4

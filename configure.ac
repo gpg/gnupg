@@ -1321,8 +1321,8 @@ sm/Makefile
 agent/Makefile
 scd/Makefile
 keyserver/Makefile
-keyserver/gpgkeys_mailto
-keyserver/gpgkeys_test
+keyserver/gpg2keys_mailto
+keyserver/gpg2keys_test
 tools/gpg-zip
 tools/Makefile
 doc/Makefile

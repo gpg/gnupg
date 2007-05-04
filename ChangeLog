@@ -1,3 +1,9 @@
+2007-05-04  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Add --enable-mailto
+
+	* configure.ac (AC_CONFIG_FILES): Rename gpgkeys_ to gpg2keys_.
+
 2007-03-08  Werner Koch  <wk@g10code.com>
 
 	Released 2.0.3.

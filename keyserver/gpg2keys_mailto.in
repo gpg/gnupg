@@ -1,6 +1,6 @@
 #!@PERL@ -w
 
-# gpgkeys_mailto - talk to a email keyserver 
+# gpg2keys_mailto - talk to a email keyserver 
 # Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -27,7 +27,7 @@ $sendmail="@SENDMAIL@ -t";
 
 sub VERSION_MESSAGE ()
 {
-    print STDOUT "gpgkeys_mailto (GnuPG) @VERSION@\n";
+    print STDOUT "gpg2keys_mailto (GnuPG) @VERSION@\n";
 }
 
 sub HELP_MESSAGE ()

@@ -1,6 +1,6 @@
 #!@PERL@
 
-# gpgkeys_test - keyserver code tester
+# gpg2keys_test - keyserver code tester
 # Copyright (C) 2001 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -26,7 +26,7 @@ $|=1;
 
 sub VERSION_MESSAGE ()
 {
-    print STDOUT "gpgkeys_test (GnuPG) @VERSION@\n";
+    print STDOUT "gpg2keys_test (GnuPG) @VERSION@\n";
 }
 
 sub HELP_MESSAGE ()

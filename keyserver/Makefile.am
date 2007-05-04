@@ -34,7 +34,7 @@ include $(top_srcdir)/am/cmacros.am
 libexec_PROGRAMS = $(GPGKEYS_LDAP) $(GPGKEYS_HKP) $(GPGKEYS_FINGER) \
                    $(GPGKEYS_CURL)
 libexec_SCRIPTS = $(GPGKEYS_MAILTO)
-noinst_SCRIPTS = gpgkeys_test
+noinst_SCRIPTS = gpg2keys_test
 
 common_libs = ../gl/libgnu.a  ../common/libcommon.a ../jnlib/libjnlib.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
