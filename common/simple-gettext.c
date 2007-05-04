@@ -419,6 +419,15 @@ gettext( const char *msgid )
     return msgid;
 }
 
+
+const char *
+ngettext (const char *msgid1, const char *msgid2, unsigned long int n)
+{
+  /* We use the simple Germanic plural rule. */
+  return gettext (n==1? msgid1 : msgid2);
+}
+
+
 #if 0
        unsigned int cp1, cp2;
 

@@ -1,5 +1,6 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2006
+ *               2007  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -29,6 +30,9 @@
 #include "mischelp.h"
 #include "stringhelp.h"
 #include "logging.h"
+#ifdef JNLIB_NEED_UTF8CONV
+#include "utf8conv.h"
+#endif
 #include "argparse.h"
 
 
@@ -438,7 +442,7 @@ find_long_option( ARGPARSE_ARGS *arg,
     for(i=0; opts[i].short_opt; i++ )
 	if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
 	    return i;
-  #if 0
+#if 0
     {
 	ALIAS_DEF a;
 	/* see whether it is an alias */
@@ -450,7 +454,7 @@ find_long_option( ARGPARSE_ARGS *arg,
 	    }
 	}
     }
-  #endif
+#endif
     /* not found, see whether it is an abbreviation */
     /* aliases may not be abbreviated */
     n = strlen( keyword );
@@ -699,18 +703,28 @@ set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s)
 static size_t
 long_opt_strlen( ARGPARSE_OPTS *o )
 {
-    size_t n = strlen(o->long_opt);
+  size_t n = strlen (o->long_opt);
 
-    if( o->description && *o->description == '|' ) {
-	const char *s;
-
-	s=o->description+1;
-	if( *s != '=' )
-	    n++;
-	for(; *s && *s != '|'; s++ )
-	    n++;
+  if ( o->description && *o->description == '|' ) 
+    {
+      const char *s;
+#ifdef JNLIB_NEED_UTF8CONV
+      int is_utf8 = is_native_utf8 ();
+#endif
+        
+      s=o->description+1;
+      if ( *s != '=' )
+        n++;
+      /* For a (mostly) correct length calculation we exclude
+         continuation bytes (10xxxxxx) if we are on a native utf8
+         terminal. */
+      for (; *s && *s != '|'; s++ )
+#ifdef JNLIB_NEED_UTF8CONV
+        if ( is_utf8 && (*s&0xc0) != 0x80 )
+#endif
+          n++;
     }
-    return n;
+  return n;
 }
 
 /****************
@@ -954,17 +968,20 @@ main(int argc, char **argv)
 {
     ARGPARSE_OPTS opts[] = {
     { 'v', "verbose",   0 , "Laut sein"},
-    { 'e', "echo"   ,   0 , "Zeile ausgeben, damit wir sehen, was wir einegegeben haben"},
-    { 'd', "debug",     0 , "Debug\nfalls mal etasws\nSchief geht"},
+    { 'e', "echo"   ,   0 , ("Zeile ausgeben, damit wir sehen, was wir ein"
+                             " gegeben haben")},
+    { 'd', "debug",     0 , "Debug\nfalls mal etwas\nschief geht"},
     { 'o', "output",    2   },
     { 'c', "cross-ref", 2|8, "cross-reference erzeugen\n" },
+    /* Note that on a non-utf8 terminal the ß might garble the output. */
+    { 's', "street",  0,     "|Straße|set the name of the street to Straße" },
     { 'm', "my-option", 1|8 },
     { 500, "a-long-option", 0 },
     {0} };
     ARGPARSE_ARGS pargs = { &argc, &argv, 2|4|32 };
     int i;
 
-    while( ArgParse( &pargs, opts) ) {
+    while( arg_parse ( &pargs, opts) ) {
 	switch( pargs.r_opt ) {
 	  case -1 : printf( "arg=`%s'\n", pargs.r.ret_str); break;
 	  case 'v': opt.verbose++; break;

@@ -17,6 +17,8 @@
 #ifdef USE_SIMPLE_GETTEXT
   int set_gettext_file( const char *filename );
   const char *gettext( const char *msgid );
+  const char *ngettext(const char *msgid1, const char *msgid2,
+                       unsigned long int n);
 # define _(a) gettext (a)
 # define N_(a) (a)
 #else
@@ -34,6 +36,7 @@
 # else
 #  define _(a) (a)
 #  define N_(a) (a)
+#  define ngettext(a,b,c) ((c)==1? (a):(b))
 # endif
 #endif /*!USE_SIMPLE_GETTEXT*/
 

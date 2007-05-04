@@ -256,6 +256,13 @@ get_native_charset ()
   return active_charset_name;
 }
 
+/* Return true if the native charset is utf-8.  */
+int 
+is_native_utf8 (void)
+{
+  return no_translation;
+}
+
 
 /* Convert string, which is in native encoding to UTF8 and return a
    new allocated UTF-8 string.  */
