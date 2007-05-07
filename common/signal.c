@@ -92,9 +92,9 @@ got_fatal_signal (int sig)
   const char *s;
 
   if (caught_fatal_sig)
-	raise (sig);
+    raise (sig);
   caught_fatal_sig = 1;
-
+  
   if (cleanup_fnc)
     cleanup_fnc ();
   /* Better don't translate these messages. */
@@ -109,21 +109,25 @@ got_fatal_signal (int sig)
   else
     {
       /* We are in a signal handler so we can't use any kind of printf
-         even not sprintf.  USe a straightforward algorithm. */
+         even not sprintf.  So we use a straightforward algorithm.  We
+         got a report that on one particular system, raising a signal
+         while in this handler, the parameter SIG get sclobbered and
+         things are messed up because we modify its value.  Although
+         this is a bug in that system, we will protect against it.  */
       if (sig < 0 || sig >= 100000)
         write (2, "?", 1);
       else 
         {
-          int i, any=0;
+          int i, value, any=0;
 
-          for (i=10000; i; i /= 10)
+          for (value=sig,i=10000; i; i /= 10)
             {
-              if (sig >= i || ((any || i==1) && !(sig/i)))
+              if (value >= i || ((any || i==1) && !(value/i)))
                 {
-                  write (2, "0123456789"+(sig/i), 1);
-                  if ((sig/i))
+                  write (2, "0123456789"+(value/i), 1);
+                  if ((value/i))
                     any = 1;
-                  sig %= i;
+                  value %= i;
                 }
             }
         }

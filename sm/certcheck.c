@@ -35,6 +35,11 @@
 #include "keydb.h"
 #include "i18n.h"
 
+
+/* Remove this if libgcrypt 1.3.0 is required. */
+#define MY_GCRY_PK_ECDSA  301
+
+
 /* Return the number of bits of the Q parameter from the DSA key
    KEY.  */
 static unsigned int
@@ -72,11 +77,11 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
   size_t nframe;
   unsigned char *frame;
 
-  if (pkalgo == GCRY_PK_DSA || pkalgo == GCRY_PK_ECDSA)
+  if (pkalgo == GCRY_PK_DSA || pkalgo == MY_GCRY_PK_ECDSA)
     {
       unsigned int qbits;
 
-      if ( pkalgo == GCRY_PK_ECDSA )
+      if ( pkalgo == MY_GCRY_PK_ECDSA )
         qbits = gcry_pk_get_nbits (pkey);
       else
         qbits = get_dsa_qbits (pkey);
@@ -211,7 +216,7 @@ pk_algo_from_sexp (gcry_sexp_t pkey)
   /* Because this function is called only for verification we can
      assume that ECC actually means ECDSA.  */
   else if (n==3 && !memcmp (name, "ecc", 3))
-    algo = GCRY_PK_ECDSA;
+    algo = MY_GCRY_PK_ECDSA;
   else if (n==13 && !memcmp (name, "ambiguous-rsa", 13))
     algo = GCRY_PK_RSA;
   else

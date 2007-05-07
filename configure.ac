@@ -1,4 +1,4 @@
-# configure.ac - for GnuPG 1.9
+# configure.ac - for GnuPG 2.0
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
 #               2006, 2007 Free Software Foundation, Inc.
 # 
@@ -20,7 +20,7 @@
 # USA.
 
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ(2.60)
+AC_PREREQ(2.61)
 min_automake_version="1.10"
 
 # Remember to change the version number immediately *after* a release.
@@ -42,7 +42,7 @@ development_version=no
 NEED_GPG_ERROR_VERSION=1.4
 
 NEED_LIBGCRYPT_API=1
-NEED_LIBGCRYPT_VERSION=1.2.0
+NEED_LIBGCRYPT_VERSION=1.2.2
 
 NEED_LIBASSUAN_API=1
 NEED_LIBASSUAN_VERSION=0.9.3
@@ -446,6 +446,9 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP
 AM_PROG_CC_C_O
+if test "x$ac_cv_prog_cc_c89" = "xno" ; then
+  AC_MSG_ERROR([[No C-89 compiler found]])
+fi
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_RANLIB
@@ -855,7 +858,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 #
 # Check for gettext
 #
-AM_GNU_GETTEXT_VERSION([0.15])
+AM_GNU_GETTEXT_VERSION([0.16.1])
 if test "$try_gettext" = yes; then
   AM_GNU_GETTEXT(,[need-ngettext])
 

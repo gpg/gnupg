@@ -41,7 +41,8 @@ other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 gpg2keys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h no-libgcrypt.c
 gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
-gpg2keys_ldap_LDADD = ../jnlib/libjnlib.a $(LDAPLIBS) $(NETLIBS) $(other_libs)
+gpg2keys_ldap_LDADD = ../jnlib/libjnlib.a $(LDAPLIBS) $(GPG_ERROR_LIBS) \
+                      $(NETLIBS) $(other_libs)
 
 gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h no-libgcrypt.c
 gpg2keys_finger_CPPFLAGS = $(AM_CPPFLAGS)

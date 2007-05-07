@@ -16,9 +16,7 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 /* Specification.  */
 #include "printf-args.h"
@@ -59,7 +57,7 @@ printf_fetchargs (va_list args, arguments *a)
       case TYPE_ULONGINT:
 	ap->a.a_ulongint = va_arg (args, unsigned long int);
 	break;
-#ifdef HAVE_LONG_LONG
+#ifdef HAVE_LONG_LONG_INT
       case TYPE_LONGLONGINT:
 	ap->a.a_longlongint = va_arg (args, long long int);
 	break;
@@ -131,7 +129,7 @@ printf_fetchargs (va_list args, arguments *a)
       case TYPE_COUNT_LONGINT_POINTER:
 	ap->a.a_count_longint_pointer = va_arg (args, long int *);
 	break;
-#ifdef HAVE_LONG_LONG
+#ifdef HAVE_LONG_LONG_INT
       case TYPE_COUNT_LONGLONGINT_POINTER:
 	ap->a.a_count_longlongint_pointer = va_arg (args, long long int *);
 	break;

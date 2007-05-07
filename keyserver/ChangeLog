@@ -1,3 +1,7 @@
+2007-05-07  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpg2keys_ldap_LDADD): Add GPG_ERROR_LIBS.
+
 2007-05-04  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_test.in: Rename to ..

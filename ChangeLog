@@ -1,3 +1,15 @@
+2007-05-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require libgcrypt 1.2.2 to avoid compiler warnings.
+
+2007-05-07  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.16.1.
+
+2007-05-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Bail out if no C-89 compiler has been found.
+
 2007-05-04  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Add --enable-mailto

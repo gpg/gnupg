@@ -19,26 +19,15 @@
 
 /* Written by Bruno Haible <bruno@clisp.org>.  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 /* Specification.  */
 #include "localcharset.h"
 
-#if HAVE_STDDEF_H
-# include <stddef.h>
-#endif
-
+#include <stddef.h>
 #include <stdio.h>
-#if HAVE_STRING_H
-# include <string.h>
-#else
-# include <strings.h>
-#endif
-#if HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
+#include <string.h>
+#include <stdlib.h>
 
 #if defined _WIN32 || defined __WIN32__
 # define WIN32_NATIVE
@@ -53,7 +42,7 @@
 # if HAVE_LANGINFO_CODESET
 #  include <langinfo.h>
 # else
-#  if HAVE_SETLOCALE
+#  if 0 /* see comment below */
 #   include <locale.h>
 #  endif
 # endif
@@ -74,6 +63,11 @@
 # include "relocatable.h"
 #else
 # define relocate(pathname) (pathname)
+#endif
+
+/* Get LIBDIR.  */
+#ifndef LIBDIR
+# include "configmake.h"
 #endif
 
 #if defined _WIN32 || defined __WIN32__ || defined __CYGWIN__ || defined __EMX__ || defined __DJGPP__
@@ -358,7 +352,7 @@ locale_charset (void)
      (like SunOS 4 or DJGPP) have only the C locale.  Therefore we don't
      use setlocale here; it would return "C" when it doesn't support the
      locale name the user has set.  */
-#  if HAVE_SETLOCALE && 0
+#  if 0
   locale = setlocale (LC_CTYPE, NULL);
 #  endif
   if (locale == NULL || locale[0] == '\0')

@@ -24,8 +24,6 @@
 ** Implement --default-key
 ** support the anyPolicy semantic
 ** Check that we are really following the verification procedures in rfc3280.
-** Implement a --card-status command.
-   This is useful to check whether a card is supported at all.
 
 
 * sm/keydb.c
@@ -42,7 +40,6 @@
 ** Make sure that secure memory is used where appropriate
 
 * agent/pkdecrypt.c, agent/pksign.c
-** Don't use stdio to return results.
 ** Support DSA
 
 * Move pkcs-1 encoding into libgcrypt.
@@ -105,19 +102,18 @@
    versions of libgcrypt. 
 ** GCRY_MD_USER
    Remove these definitions.
+** MY_GCRY_PK_ECDSA
+   Removed this.
 
 * Extend selinux support to other modules
 
 * Remove -sat PGP2 compatibility hack
 
-* gnupg14/mpi: rsa_verify
-  Is this is optimized for a 160 bit hash?
-
 * Cleanup m4/ on next gettext update
   There is at least one couple of duplicate files: inttype[_-]h.m4.
 
 * UTF-8
-  UTF-8 specific TODO.
+  (UTF-8 specific TODO0
 
 * Pinpad Reader
   We do not yet support P15 applications.  The trivial thing using
@@ -129,7 +125,6 @@
    scdaemon stays as a zombie and gpg-agent does not perform any more
    commands.
 
-* configure check
-** Update autoconf and use AC_PROG_CC_C89
- to make sure that a compiant compiler is used 
+
+
 

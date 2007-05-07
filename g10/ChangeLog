@@ -1,3 +1,7 @@
+2007-05-07  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (open_outfile, overwrite_filep) [W32]: Use "/dev/nul".
+
 2007-05-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, mainproc.c (reset_literals_seen): New function to

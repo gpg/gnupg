@@ -1,3 +1,20 @@
+2007-05-07  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* gettext.m4: Upgrade to gettext-0.16.1.
+	* lib-link.m4: Upgrade to gettext-0.16.1.
+	* codeset.m4: Upgrade to gettext-0.16.1.
+	* intl.m4: New file, from gettext-0.16.1.
+	* intldir.m4: New file, from gettext-0.16.1.
+	* intmax.m4: Upgrade to gettext-0.16.1.
+	* inttypes_h.m4: Upgrade to gettext-0.16.1.
+	* inttypes-pri.m4: Upgrade to gettext-0.16.1.
+	* lock.m4: Upgrade to gettext-0.16.1.
+	* longlong.m4: Upgrade to gettext-0.16.1.
+	* size_max.m4: Upgrade to gettext-0.16.1.
+	* stdint_h.m4: Upgrade to gettext-0.16.1.
+	* ulonglong.m4: Upgrade to gettext-0.16.1.
+	* Makefile.am (EXTRA_DIST): Add the new files.
+
 2006-11-21  Werner Koch  <wk@g10code.com>
 
 	* gnupg-pth.m4 (GNUPG_PTH_VERSION_CHECK): Use --all with

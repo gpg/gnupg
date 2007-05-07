@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-03-08 14:20+0100\n"
+"POT-Creation-Date: 2007-05-07 20:39+0200\n"
 "PO-Revision-Date: 2003-12-04 11:39+0100\n"
 "Last-Translator: Jacobo Tarrio <jtarrio@trasno.net>\n"
 "Language-Team: Galician <gpul-traduccion@ceu.fi.udc.es>\n"
@@ -89,8 +89,8 @@ msgstr "non se pode crear `%s': %s\n"
 #: g10/keyring.c:1534 g10/openfile.c:190 g10/openfile.c:345
 #: g10/plaintext.c:504 g10/sign.c:814 g10/sign.c:1009 g10/sign.c:1125
 #: g10/sign.c:1281 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:542
-#: g10/tdbio.c:605 g10/verify.c:100 g10/verify.c:163 sm/gpgsm.c:1775
-#: sm/gpgsm.c:1812 sm/qualified.c:74
+#: g10/tdbio.c:605 g10/verify.c:100 g10/verify.c:163 sm/gpgsm.c:1780
+#: sm/gpgsm.c:1817 sm/gpgsm.c:1855 sm/qualified.c:74
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "non se puido abrir `%s': %s\n"
@@ -190,13 +190,13 @@ msgstr ""
 "Necesita un contrasinal para protexe-la súa chave secreta.\n"
 "\n"
 
-#: agent/genkey.c:148 agent/genkey.c:266 agent/protect-tool.c:1216
+#: agent/genkey.c:148 agent/genkey.c:266 agent/protect-tool.c:1202
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "cambia-lo contrasinal"
 
-#: agent/genkey.c:175 agent/genkey.c:293 agent/protect-tool.c:1222
-#: tools/symcryptrun.c:487
+#: agent/genkey.c:175 agent/genkey.c:293 agent/protect-tool.c:1208
+#: tools/symcryptrun.c:468
 msgid "does not match - try again"
 msgstr ""
 
@@ -205,7 +205,7 @@ msgstr ""
 msgid "Please enter the new passphrase"
 msgstr "cambia-lo contrasinal"
 
-#: agent/gpg-agent.c:113 agent/preset-passphrase.c:74 agent/protect-tool.c:109
+#: agent/gpg-agent.c:113 agent/preset-passphrase.c:74 agent/protect-tool.c:111
 #: scd/scdaemon.c:103
 #, fuzzy
 msgid ""
@@ -225,13 +225,13 @@ msgid "run in daemon mode (background)"
 msgstr ""
 
 #: agent/gpg-agent.c:117 g10/gpg.c:470 g10/gpgv.c:71 kbx/kbxutil.c:82
-#: scd/scdaemon.c:109 sm/gpgsm.c:335 tools/gpg-connect-agent.c:59
-#: tools/gpgconf.c:69 tools/symcryptrun.c:185
+#: scd/scdaemon.c:109 sm/gpgsm.c:338 tools/gpg-connect-agent.c:60
+#: tools/gpgconf.c:69 tools/symcryptrun.c:166
 msgid "verbose"
 msgstr "lareto"
 
 #: agent/gpg-agent.c:118 g10/gpgv.c:72 kbx/kbxutil.c:83 scd/scdaemon.c:110
-#: sm/gpgsm.c:336
+#: sm/gpgsm.c:339
 msgid "be somewhat more quiet"
 msgstr "ser un pouquiño máis calado"
 
@@ -243,7 +243,7 @@ msgstr ""
 msgid "csh-style command output"
 msgstr ""
 
-#: agent/gpg-agent.c:121 tools/symcryptrun.c:188
+#: agent/gpg-agent.c:121 tools/symcryptrun.c:169
 #, fuzzy
 msgid "|FILE|read options from FILE"
 msgstr "|FICHEIRO|carga-lo módulo de extensión FICHEIRO"
@@ -256,8 +256,8 @@ msgstr ""
 msgid "do not grab keyboard and mouse"
 msgstr ""
 
-#: agent/gpg-agent.c:128 scd/scdaemon.c:122 sm/gpgsm.c:338
-#: tools/symcryptrun.c:187
+#: agent/gpg-agent.c:128 scd/scdaemon.c:122 sm/gpgsm.c:341
+#: tools/symcryptrun.c:168
 #, fuzzy
 msgid "use a log file for the server"
 msgstr "buscar chaves nun servidor de chaves"
@@ -315,9 +315,9 @@ msgstr ""
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
-#: agent/gpg-agent.c:247 agent/preset-passphrase.c:96 agent/protect-tool.c:143
-#: scd/scdaemon.c:192 sm/gpgsm.c:517 tools/gpg-connect-agent.c:123
-#: tools/gpgconf.c:91 tools/symcryptrun.c:225
+#: agent/gpg-agent.c:247 agent/preset-passphrase.c:96 agent/protect-tool.c:148
+#: scd/scdaemon.c:192 sm/gpgsm.c:521 tools/gpg-connect-agent.c:126
+#: tools/gpgconf.c:91 tools/symcryptrun.c:206
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr ""
@@ -335,138 +335,127 @@ msgid ""
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:311
-#, c-format
-msgid "out of core in secure memory while allocating %lu bytes"
-msgstr ""
-
-#: agent/gpg-agent.c:314
-#, c-format
-msgid "out of core while allocating %lu bytes"
-msgstr ""
-
-#: agent/gpg-agent.c:345 g10/gpg.c:931 scd/scdaemon.c:266 sm/gpgsm.c:646
+#: agent/gpg-agent.c:303 g10/gpg.c:931 scd/scdaemon.c:247 sm/gpgsm.c:650
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:521 agent/protect-tool.c:1073 g10/gpg.c:1835
-#: kbx/kbxutil.c:432 scd/scdaemon.c:358 sm/gpgsm.c:768
-#: tools/symcryptrun.c:1056
+#: agent/gpg-agent.c:479 agent/protect-tool.c:1059 kbx/kbxutil.c:432
+#: scd/scdaemon.c:339 sm/gpgsm.c:771 sm/gpgsm.c:774 tools/symcryptrun.c:1037
 #, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
+msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:615 g10/gpg.c:2035 scd/scdaemon.c:435 sm/gpgsm.c:865
+#: agent/gpg-agent.c:572 g10/gpg.c:2035 scd/scdaemon.c:415 sm/gpgsm.c:865
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: non existe o ficheiro de opcións por defecto `%s'\n"
 
-#: agent/gpg-agent.c:620 agent/gpg-agent.c:1179 g10/gpg.c:2039
-#: scd/scdaemon.c:440 sm/gpgsm.c:869 tools/symcryptrun.c:989
+#: agent/gpg-agent.c:577 agent/gpg-agent.c:1136 g10/gpg.c:2039
+#: scd/scdaemon.c:420 sm/gpgsm.c:869 tools/symcryptrun.c:970
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "ficheiro de opcións `%s': %s\n"
 
-#: agent/gpg-agent.c:628 g10/gpg.c:2046 scd/scdaemon.c:448 sm/gpgsm.c:876
+#: agent/gpg-agent.c:585 g10/gpg.c:2046 scd/scdaemon.c:428 sm/gpgsm.c:876
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "lendo as opcións de `%s'\n"
 
-#: agent/gpg-agent.c:949 g10/plaintext.c:142 g10/plaintext.c:147
+#: agent/gpg-agent.c:906 g10/plaintext.c:142 g10/plaintext.c:147
 #: g10/plaintext.c:164
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "erro ao crear `%s': %s\n"
 
-#: agent/gpg-agent.c:1239 agent/gpg-agent.c:1342 agent/gpg-agent.c:1346
-#: agent/gpg-agent.c:1382 agent/gpg-agent.c:1386 g10/exec.c:174
-#: g10/openfile.c:418 scd/scdaemon.c:934
+#: agent/gpg-agent.c:1196 agent/gpg-agent.c:1299 agent/gpg-agent.c:1303
+#: agent/gpg-agent.c:1339 agent/gpg-agent.c:1343 g10/exec.c:174
+#: g10/openfile.c:418 scd/scdaemon.c:914
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "non se pode crea-lo directorio `%s': %s\n"
 
-#: agent/gpg-agent.c:1253 scd/scdaemon.c:948
+#: agent/gpg-agent.c:1210 scd/scdaemon.c:928
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1279 scd/scdaemon.c:974
+#: agent/gpg-agent.c:1236 scd/scdaemon.c:954
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "non foi posible crear %s: %s\n"
 
-#: agent/gpg-agent.c:1308 scd/scdaemon.c:1003
+#: agent/gpg-agent.c:1265 scd/scdaemon.c:983
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "erro ao enviar a `%s': %s\n"
 
-#: agent/gpg-agent.c:1316 scd/scdaemon.c:1011
+#: agent/gpg-agent.c:1273 scd/scdaemon.c:991
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "a actualización fallou: %s\n"
 
-#: agent/gpg-agent.c:1322 scd/scdaemon.c:1017
+#: agent/gpg-agent.c:1279 scd/scdaemon.c:997
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "gravando a chave secreta en `%s'\n"
 
-#: agent/gpg-agent.c:1350 agent/gpg-agent.c:1392 g10/openfile.c:421
+#: agent/gpg-agent.c:1307 agent/gpg-agent.c:1349 g10/openfile.c:421
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: directorio creado\n"
 
-#: agent/gpg-agent.c:1398
+#: agent/gpg-agent.c:1355
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "base de datos de confianza: fallou a lectura (n=%d): %s\n"
 
-#: agent/gpg-agent.c:1402
+#: agent/gpg-agent.c:1359
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: non foi posible crear un directorio: %s\n"
 
-#: agent/gpg-agent.c:1504
+#: agent/gpg-agent.c:1461
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1509
+#: agent/gpg-agent.c:1466
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1526
+#: agent/gpg-agent.c:1483
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1531
+#: agent/gpg-agent.c:1488
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1627 scd/scdaemon.c:1136
+#: agent/gpg-agent.c:1584 scd/scdaemon.c:1116
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "o segredo da actualización fallou: %s\n"
 
-#: agent/gpg-agent.c:1733 scd/scdaemon.c:1203
+#: agent/gpg-agent.c:1690 scd/scdaemon.c:1183
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "\t%lu chaves omitidas\n"
 
-#: agent/gpg-agent.c:1754
+#: agent/gpg-agent.c:1711
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent non está dispoñible nesta sesión\n"
 
-#: agent/gpg-agent.c:1764 common/simple-pwquery.c:324 g10/call-agent.c:137
-#: sm/call-agent.c:144 tools/gpg-connect-agent.c:713
+#: agent/gpg-agent.c:1721 common/simple-pwquery.c:324 g10/call-agent.c:137
+#: sm/call-agent.c:144 tools/gpg-connect-agent.c:764
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "variable de ambiente GPG_AGENT_INFO mal formada\n"
 
-#: agent/gpg-agent.c:1776 common/simple-pwquery.c:336 g10/call-agent.c:149
-#: sm/call-agent.c:156 tools/gpg-connect-agent.c:724
+#: agent/gpg-agent.c:1733 common/simple-pwquery.c:336 g10/call-agent.c:149
+#: sm/call-agent.c:156 tools/gpg-connect-agent.c:775
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "a versión %d do protocolo de gpg-agent non está soportada\n"
@@ -482,51 +471,51 @@ msgid ""
 "Password cache maintenance\n"
 msgstr ""
 
-#: agent/protect-tool.c:146
+#: agent/protect-tool.c:151
 #, fuzzy
 msgid "Usage: gpg-protect-tool [options] (-h for help)\n"
 msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
 
-#: agent/protect-tool.c:148
+#: agent/protect-tool.c:153
 msgid ""
 "Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
 msgstr ""
 
-#: agent/protect-tool.c:1207
+#: agent/protect-tool.c:1193
 #, fuzzy
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
 msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
-#: agent/protect-tool.c:1210
+#: agent/protect-tool.c:1196
 #, fuzzy
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
 msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
-#: agent/protect-tool.c:1213
+#: agent/protect-tool.c:1199
 msgid ""
 "Please enter the passphrase to protect the imported object within the GnuPG "
 "system."
 msgstr ""
 
-#: agent/protect-tool.c:1218
+#: agent/protect-tool.c:1204
 #, fuzzy
 msgid ""
 "Please enter the passphrase or the PIN\n"
 "needed to complete this operation."
 msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
-#: agent/protect-tool.c:1223 tools/symcryptrun.c:488
+#: agent/protect-tool.c:1209 tools/symcryptrun.c:469
 #, fuzzy
 msgid "Passphrase:"
 msgstr "contrasinal erróneo"
 
-#: agent/protect-tool.c:1236 tools/symcryptrun.c:501
+#: agent/protect-tool.c:1222 tools/symcryptrun.c:482
 #, fuzzy, c-format
 msgid "error while asking for the passphrase: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-#: agent/protect-tool.c:1239 tools/symcryptrun.c:505
+#: agent/protect-tool.c:1225 tools/symcryptrun.c:486
 #, fuzzy
 msgid "cancelled\n"
 msgstr "Cancelar"
@@ -566,7 +555,7 @@ msgstr ""
 msgid "error reading `%s', line %d: %s\n"
 msgstr "erro lendo `%s': %s\n"
 
-#: agent/trustlist.c:355 agent/trustlist.c:394
+#: agent/trustlist.c:365 agent/trustlist.c:404
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -579,7 +568,7 @@ msgstr ""
 #. second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives
 #. the name as store in the certificate.
-#: agent/trustlist.c:470
+#: agent/trustlist.c:480
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -589,7 +578,7 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
 #. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:479
+#: agent/trustlist.c:489
 msgid "Correct"
 msgstr ""
 
@@ -601,19 +590,19 @@ msgstr ""
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:499
+#: agent/trustlist.c:509
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:505
+#: agent/trustlist.c:515
 #, fuzzy
 msgid "Yes"
 msgstr "si|sim"
 
-#: agent/trustlist.c:505
+#: agent/trustlist.c:515
 msgid "No"
 msgstr ""
 
@@ -657,12 +646,12 @@ msgstr ""
 msgid "error running `%s': terminated\n"
 msgstr "erro lendo `%s': %s\n"
 
-#: common/http.c:1623
+#: common/http.c:1621
 #, fuzzy, c-format
 msgid "error creating socket: %s\n"
 msgstr "erro ao crear `%s': %s\n"
 
-#: common/http.c:1667
+#: common/http.c:1665
 #, fuzzy
 msgid "host not found"
 msgstr "%s: usuario non atopado\n"
@@ -755,6 +744,16 @@ msgstr ""
 #, fuzzy
 msgid "cC"
 msgstr "v"
+
+#: common/miscellaneous.c:73
+#, c-format
+msgid "out of core in secure memory while allocating %lu bytes"
+msgstr ""
+
+#: common/miscellaneous.c:76
+#, c-format
+msgid "out of core while allocating %lu bytes"
+msgstr ""
 
 #: g10/armor.c:368
 #, c-format
@@ -1189,13 +1188,13 @@ msgstr "--output non traballa con este comando\n"
 msgid "can't open `%s'\n"
 msgstr "non se puido abrir `%s'\n"
 
-#: g10/delkey.c:75 g10/export.c:326 g10/keyedit.c:3403 g10/keyserver.c:1714
+#: g10/delkey.c:75 g10/export.c:326 g10/keyedit.c:3403 g10/keyserver.c:1721
 #: g10/revoke.c:228
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
-#: g10/delkey.c:83 g10/export.c:356 g10/import.c:2357 g10/keyserver.c:1728
+#: g10/delkey.c:83 g10/export.c:356 g10/import.c:2357 g10/keyserver.c:1735
 #: g10/revoke.c:234 g10/revoke.c:479
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -1480,23 +1479,23 @@ msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Chave %08lX non válida convertida en válida por --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2390 g10/keyedit.c:3723
+#: g10/getkey.c:2393 g10/keyedit.c:3723
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
 "non hai unha sub-chave secreta para a sub-chave pública %08lX - ignórase\n"
 
-#: g10/getkey.c:2621
+#: g10/getkey.c:2624
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "emprégase a chave secundaria %08lX no canto da primaria %08lX\n"
 
-#: g10/getkey.c:2668
+#: g10/getkey.c:2671
 #, fuzzy, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "chave %08lX: chave secreta sen chave pública - omitida\n"
 
-#: g10/gpg.c:369 kbx/kbxutil.c:69 sm/gpgsm.c:241 tools/gpgconf.c:56
+#: g10/gpg.c:369 kbx/kbxutil.c:69 sm/gpgsm.c:242 tools/gpgconf.c:56
 msgid ""
 "@Commands:\n"
 " "
@@ -1512,27 +1511,27 @@ msgstr "|[ficheiro]|facer unha sinatura"
 msgid "|[file]|make a clear text signature"
 msgstr "|[ficheiro]|facer unha sinatura en texto claro"
 
-#: g10/gpg.c:373 sm/gpgsm.c:245
+#: g10/gpg.c:373 sm/gpgsm.c:246
 msgid "make a detached signature"
 msgstr "facer unha sinatura separada"
 
-#: g10/gpg.c:374 sm/gpgsm.c:246
+#: g10/gpg.c:374 sm/gpgsm.c:247
 msgid "encrypt data"
 msgstr "cifrar datos"
 
-#: g10/gpg.c:376 sm/gpgsm.c:247
+#: g10/gpg.c:376 sm/gpgsm.c:248
 msgid "encryption only with symmetric cipher"
 msgstr "cifrar só con cifrado simétrico"
 
-#: g10/gpg.c:378 sm/gpgsm.c:248
+#: g10/gpg.c:378 sm/gpgsm.c:249
 msgid "decrypt data (default)"
 msgstr "descifrar datos (por defecto)"
 
-#: g10/gpg.c:380 sm/gpgsm.c:249
+#: g10/gpg.c:380 sm/gpgsm.c:250
 msgid "verify a signature"
 msgstr "verificar unha sinatura"
 
-#: g10/gpg.c:382 sm/gpgsm.c:251
+#: g10/gpg.c:382 sm/gpgsm.c:252
 msgid "list keys"
 msgstr "ve-la lista de chaves"
 
@@ -1545,11 +1544,11 @@ msgstr "ve-la lista de chaves e sinaturas"
 msgid "list and check key signatures"
 msgstr "verifica-las sinaturas das chaves"
 
-#: g10/gpg.c:386 sm/gpgsm.c:255
+#: g10/gpg.c:386 sm/gpgsm.c:256
 msgid "list keys and fingerprints"
 msgstr "ve-la lista de chaves e pegadas dactilares"
 
-#: g10/gpg.c:387 sm/gpgsm.c:253
+#: g10/gpg.c:387 sm/gpgsm.c:254
 msgid "list secret keys"
 msgstr "ve-la lista de chaves secretas"
 
@@ -1585,11 +1584,11 @@ msgstr "xerar un certificado de revocación"
 msgid "export keys"
 msgstr "exportar chaves"
 
-#: g10/gpg.c:398 sm/gpgsm.c:258
+#: g10/gpg.c:398 sm/gpgsm.c:259
 msgid "export keys to a key server"
 msgstr "exportar chaves a un servidor de chaves"
 
-#: g10/gpg.c:399 sm/gpgsm.c:259
+#: g10/gpg.c:399 sm/gpgsm.c:260
 msgid "import keys from a key server"
 msgstr "importar chaves dun servidor de chaves"
 
@@ -1625,12 +1624,12 @@ msgstr "actualiza-la base de datos de confianza"
 msgid "|algo [files]|print message digests"
 msgstr "|algo [ficheiros]|visualizar resumos de mensaxes"
 
-#: g10/gpg.c:431 sm/gpgsm.c:263
+#: g10/gpg.c:431 sm/gpgsm.c:264
 msgid "run in server mode"
 msgstr ""
 
-#: g10/gpg.c:433 g10/gpgv.c:69 kbx/kbxutil.c:77 sm/gpgsm.c:278
-#: tools/gpg-connect-agent.c:57 tools/gpgconf.c:66 tools/symcryptrun.c:178
+#: g10/gpg.c:433 g10/gpgv.c:69 kbx/kbxutil.c:77 sm/gpgsm.c:279
+#: tools/gpg-connect-agent.c:58 tools/gpgconf.c:66 tools/symcryptrun.c:159
 msgid ""
 "@\n"
 "Options:\n"
@@ -1640,31 +1639,31 @@ msgstr ""
 "Opcións:\n"
 " "
 
-#: g10/gpg.c:435 sm/gpgsm.c:280
+#: g10/gpg.c:435 sm/gpgsm.c:281
 msgid "create ascii armored output"
 msgstr "crear saída con armadura en ascii"
 
-#: g10/gpg.c:437 sm/gpgsm.c:290
+#: g10/gpg.c:437 sm/gpgsm.c:293
 msgid "|NAME|encrypt for NAME"
 msgstr "|NOME|cifrar para NOME"
 
-#: g10/gpg.c:448 sm/gpgsm.c:326
+#: g10/gpg.c:448 sm/gpgsm.c:329
 msgid "use this user-id to sign or decrypt"
 msgstr "empregar este id de usuario para asinar ou descifrar"
 
-#: g10/gpg.c:449 sm/gpgsm.c:329
+#: g10/gpg.c:449 sm/gpgsm.c:332
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|axusta-lo nivel de compresión a N (0 desactiva)"
 
-#: g10/gpg.c:454 sm/gpgsm.c:331
+#: g10/gpg.c:454 sm/gpgsm.c:334
 msgid "use canonical text mode"
 msgstr "usar modo de texto canónico"
 
-#: g10/gpg.c:468 sm/gpgsm.c:334 tools/gpgconf.c:68
+#: g10/gpg.c:468 sm/gpgsm.c:337 tools/gpgconf.c:68
 msgid "use as output file"
 msgstr "usar coma ficheiro de saída"
 
-#: g10/gpg.c:481 kbx/kbxutil.c:84 sm/gpgsm.c:344 tools/gpgconf.c:71
+#: g10/gpg.c:481 kbx/kbxutil.c:84 sm/gpgsm.c:347 tools/gpgconf.c:71
 msgid "do not make any changes"
 msgstr "non facer ningún cambio"
 
@@ -1680,7 +1679,7 @@ msgstr ""
 msgid "generate PGP 2.x compatible messages"
 msgstr ""
 
-#: g10/gpg.c:554 sm/gpgsm.c:392
+#: g10/gpg.c:554 sm/gpgsm.c:395
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1688,7 +1687,7 @@ msgstr ""
 "@\n"
 "(Vexa a páxina man para un listado completo de comandos e opcións)\n"
 
-#: g10/gpg.c:557 sm/gpgsm.c:395
+#: g10/gpg.c:557 sm/gpgsm.c:398
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1728,7 +1727,7 @@ msgstr ""
 "asinar, verificar, cifrar ou descifrar\n"
 "a operación por defecto depende dos datos de entrada\n"
 
-#: g10/gpg.c:782 sm/gpgsm.c:530
+#: g10/gpg.c:782 sm/gpgsm.c:534
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1756,7 +1755,7 @@ msgstr "Compresión: "
 msgid "usage: gpg [options] "
 msgstr "uso: gpg [opcións] "
 
-#: g10/gpg.c:1060 sm/gpgsm.c:682
+#: g10/gpg.c:1060 sm/gpgsm.c:686
 msgid "conflicting commands\n"
 msgstr "comandos conflictivos\n"
 
@@ -1879,6 +1878,11 @@ msgstr "amosar en que chaveiro está unha chave listada"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Non hai unha sinatura correspondiente no chaveiro secreto\n"
+
+#: g10/gpg.c:1835
+#, c-format
+msgid "libgcrypt is too old (need %s, have %s)\n"
+msgstr ""
 
 #: g10/gpg.c:1993
 #, c-format
@@ -2021,7 +2025,7 @@ msgstr "%s:%d: opcións de exportación non válidas\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2893 sm/gpgsm.c:1232
+#: g10/gpg.c:2893 sm/gpgsm.c:1236
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVISO: ¡o programa pode crear un ficheiro 'core'!\n"
 
@@ -2063,11 +2067,11 @@ msgstr ""
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "para cifrar unha mensaxe en modo --pgp2 precísase da cifra IDEA\n"
 
-#: g10/gpg.c:3029 g10/gpg.c:3053 sm/gpgsm.c:1288
+#: g10/gpg.c:3029 g10/gpg.c:3053 sm/gpgsm.c:1292
 msgid "selected cipher algorithm is invalid\n"
 msgstr "o algoritmo de cifrado seleccionado non é válido\n"
 
-#: g10/gpg.c:3035 g10/gpg.c:3059 sm/gpgsm.c:1296
+#: g10/gpg.c:3035 g10/gpg.c:3059 sm/gpgsm.c:1300
 msgid "selected digest algorithm is invalid\n"
 msgstr "o algoritmo de resumo seleccionado non é válido\n"
 
@@ -2303,7 +2307,7 @@ msgstr "toma-las chaves deste chaveiro"
 msgid "make timestamp conflicts only a warning"
 msgstr "converte-los conflictos de selo de data nun aviso"
 
-#: g10/gpgv.c:76 sm/gpgsm.c:367
+#: g10/gpgv.c:76 sm/gpgsm.c:370
 msgid "|FD|write status info to this FD"
 msgstr "|DF|escribi-la información de estado a este DF"
 
@@ -3873,7 +3877,7 @@ msgid "(sensitive)"
 msgstr " (sensible)"
 
 #: g10/keyedit.c:2743 g10/keyedit.c:2799 g10/keyedit.c:2860 g10/keyedit.c:2875
-#: g10/keylist.c:194 g10/keyserver.c:516
+#: g10/keylist.c:194 g10/keyserver.c:523
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "non foi posible crear %s: %s\n"
@@ -3890,7 +3894,7 @@ msgstr " [caduca: %s]"
 
 #: g10/keyedit.c:2750 g10/keyedit.c:2801 g10/keyedit.c:2862 g10/keyedit.c:2877
 #: g10/keylist.c:196 g10/keylist.c:748 g10/keylist.c:783 g10/keylist.c:877
-#: g10/keylist.c:898 g10/keyserver.c:522 g10/mainproc.c:985
+#: g10/keylist.c:898 g10/keyserver.c:529 g10/mainproc.c:985
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [caduca: %s]"
@@ -3926,13 +3930,13 @@ msgstr ""
 "Teña en conta que a validez da chave amosada non é necesariamente\n"
 "correcta a menos que reinicie o programa.\n"
 
-#: g10/keyedit.c:2894 g10/keyedit.c:3240 g10/keyserver.c:526
+#: g10/keyedit.c:2894 g10/keyedit.c:3240 g10/keyserver.c:533
 #: g10/mainproc.c:1831 g10/trustdb.c:1179 g10/trustdb.c:1699
 #, fuzzy
 msgid "revoked"
 msgstr "[revocada] "
 
-#: g10/keyedit.c:2896 g10/keyedit.c:3242 g10/keyserver.c:530
+#: g10/keyedit.c:2896 g10/keyedit.c:3242 g10/keyserver.c:537
 #: g10/mainproc.c:1833 g10/trustdb.c:532 g10/trustdb.c:1701
 #, fuzzy
 msgid "expired"
@@ -4819,185 +4823,185 @@ msgstr "%lu chaves comprobadas (%lu sinaturas)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: chaveiro creado\n"
 
-#: g10/keyserver.c:66
+#: g10/keyserver.c:73
 msgid "include revoked keys in search results"
 msgstr ""
 
-#: g10/keyserver.c:67
+#: g10/keyserver.c:74
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-#: g10/keyserver.c:69
+#: g10/keyserver.c:76
 msgid "use temporary files to pass data to keyserver helpers"
 msgstr ""
 
-#: g10/keyserver.c:71
+#: g10/keyserver.c:78
 msgid "do not delete temporary files after using them"
 msgstr ""
 
-#: g10/keyserver.c:75
+#: g10/keyserver.c:82
 msgid "automatically retrieve keys when verifying signatures"
 msgstr ""
 
-#: g10/keyserver.c:77
+#: g10/keyserver.c:84
 #, fuzzy
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "o URL de normativa de sinaturas dado non é válido\n"
 
-#: g10/keyserver.c:79
+#: g10/keyserver.c:86
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
-#: g10/keyserver.c:145
+#: g10/keyserver.c:152
 #, fuzzy, c-format
 msgid "WARNING: keyserver option `%s' is not used on this platform\n"
 msgstr "AVISO: as opcións de `%s' aínda non están activas nesta execución\n"
 
-#: g10/keyserver.c:528
+#: g10/keyserver.c:535
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
 
-#: g10/keyserver.c:729
+#: g10/keyserver.c:736
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr ""
 
-#: g10/keyserver.c:813 g10/keyserver.c:1435
+#: g10/keyserver.c:820 g10/keyserver.c:1442
 #, fuzzy, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "opcións de exportación non válidas\n"
 
-#: g10/keyserver.c:911
+#: g10/keyserver.c:918
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
-#: g10/keyserver.c:913
+#: g10/keyserver.c:920
 #, fuzzy
 msgid "key not found on keyserver\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
-#: g10/keyserver.c:1154
+#: g10/keyserver.c:1161
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "solicitando a chave %08lX de %s\n"
 
-#: g10/keyserver.c:1158
+#: g10/keyserver.c:1165
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "solicitando a chave %08lX de %s\n"
 
-#: g10/keyserver.c:1182
+#: g10/keyserver.c:1189
 #, fuzzy, c-format
 msgid "searching for names from %s server %s\n"
 msgstr "buscando \"%s\" no servidor HKP %s\n"
 
-#: g10/keyserver.c:1185
+#: g10/keyserver.c:1192
 #, fuzzy, c-format
 msgid "searching for names from %s\n"
 msgstr "buscando \"%s\" no servidor HKP %s\n"
 
-#: g10/keyserver.c:1338
+#: g10/keyserver.c:1345
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "buscando \"%s\" no servidor HKP %s\n"
 
-#: g10/keyserver.c:1342
+#: g10/keyserver.c:1349
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
 msgstr ""
 "\"\n"
 "asinado coa súa chave %08lX no %s\n"
 
-#: g10/keyserver.c:1385
+#: g10/keyserver.c:1392
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "buscando \"%s\" no servidor HKP %s\n"
 
-#: g10/keyserver.c:1388
+#: g10/keyserver.c:1395
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "buscando \"%s\" no servidor HKP %s\n"
 
-#: g10/keyserver.c:1395 g10/keyserver.c:1491
+#: g10/keyserver.c:1402 g10/keyserver.c:1498
 #, fuzzy
 msgid "no keyserver action!\n"
 msgstr "opcións de exportación non válidas\n"
 
-#: g10/keyserver.c:1443
+#: g10/keyserver.c:1450
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 
-#: g10/keyserver.c:1452
+#: g10/keyserver.c:1459
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
-#: g10/keyserver.c:1514 g10/keyserver.c:2042
+#: g10/keyserver.c:1521 g10/keyserver.c:2049
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 "non hai un servidor de chaves coñecido (empregue a opción --keyserver)\n"
 
-#: g10/keyserver.c:1520
+#: g10/keyserver.c:1527
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 
-#: g10/keyserver.c:1532
+#: g10/keyserver.c:1539
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1537
+#: g10/keyserver.c:1544
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1545
+#: g10/keyserver.c:1552
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr ""
 
-#: g10/keyserver.c:1552
+#: g10/keyserver.c:1559
 #, fuzzy
 msgid "keyserver timed out\n"
 msgstr "erro do servidor de chaves"
 
-#: g10/keyserver.c:1557
+#: g10/keyserver.c:1564
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "erro do servidor de chaves"
 
-#: g10/keyserver.c:1566
+#: g10/keyserver.c:1573
 #, fuzzy, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "a recepción do servidor de chaves fallou: %s\n"
 
-#: g10/keyserver.c:1591 g10/keyserver.c:1625
+#: g10/keyserver.c:1598 g10/keyserver.c:1632
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: non é un ID de chave válido\n"
 
-#: g10/keyserver.c:1884
+#: g10/keyserver.c:1891
 #, fuzzy, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "AVISO: non se puido borra-lo ficheiro temporal (%s) `%s': %s\n"
 
-#: g10/keyserver.c:1906
+#: g10/keyserver.c:1913
 #, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "solicitando a chave %08lX de %s\n"
 
-#: g10/keyserver.c:1908
+#: g10/keyserver.c:1915
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "solicitando a chave %08lX de %s\n"
 
-#: g10/keyserver.c:1964
+#: g10/keyserver.c:1971
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "AVISO: non se puido borra-lo ficheiro temporal (%s) `%s': %s\n"
 
-#: g10/keyserver.c:1970
+#: g10/keyserver.c:1977
 #, fuzzy, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr "AVISO: non se puido borra-lo ficheiro temporal (%s) `%s': %s\n"
@@ -5346,17 +5350,17 @@ msgstr " creouse un novo ficheiro de configuración `%s'\n"
 msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr "AVISO: as opcións de `%s' aínda non están activas nesta execución\n"
 
-#: g10/parse-packet.c:192
+#: g10/parse-packet.c:193
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "non é posible manexa-lo algoritmo de chave pública %d\n"
 
-#: g10/parse-packet.c:762
+#: g10/parse-packet.c:798
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "AVISO: chave de sesión cifrada simetricamente potencialmente insegura\n"
 
-#: g10/parse-packet.c:1213
+#: g10/parse-packet.c:1249
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "un subpaquete de tipo %d ten o bit crítico posto\n"
@@ -5975,7 +5979,7 @@ msgstr ""
 "non se pode evitar unha chave feble para o cifrado simétrico; tentouse %d "
 "veces\n"
 
-#: g10/seskey.c:229
+#: g10/seskey.c:229 sm/certcheck.c:91
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr ""
 
@@ -6554,7 +6558,7 @@ msgstr ""
 msgid "iconv_open failed: %s\n"
 msgstr "non se puido abrir un ficheiro: %s\n"
 
-#: jnlib/utf8conv.c:331 jnlib/utf8conv.c:597
+#: jnlib/utf8conv.c:338 jnlib/utf8conv.c:604
 #, fuzzy, c-format
 msgid "conversion from `%s' to `%s' failed: %s\n"
 msgstr "non se puido poñe-la armadura: %s\n"
@@ -6781,7 +6785,7 @@ msgstr "non se atoparon datos OpenPGP válidos.\n"
 msgid "run in multi server mode (foreground)"
 msgstr ""
 
-#: scd/scdaemon.c:113 sm/gpgsm.c:356
+#: scd/scdaemon.c:113 sm/gpgsm.c:359
 #, fuzzy
 msgid "read options from file"
 msgstr "lendo as opcións de `%s'\n"
@@ -6825,21 +6829,21 @@ msgid ""
 "Smartcard daemon for GnuPG\n"
 msgstr ""
 
-#: scd/scdaemon.c:684
+#: scd/scdaemon.c:664
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 
-#: scd/scdaemon.c:1032
+#: scd/scdaemon.c:1012
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr ""
 
-#: scd/scdaemon.c:1037
+#: scd/scdaemon.c:1017
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
-#: sm/base64.c:323
+#: sm/base64.c:327
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "carácter radix64 non válido %02x omitido\n"
@@ -6863,189 +6867,195 @@ msgstr "a versión %d do protocolo de gpg-agent non está soportada\n"
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr ""
 
-#: sm/certchain.c:165
+#: sm/certchain.c:176
 #, fuzzy, c-format
 msgid "critical certificate extension %s is not supported"
 msgstr "a versión %d do protocolo de gpg-agent non está soportada\n"
 
-#: sm/certchain.c:203
+#: sm/certchain.c:214
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
-#: sm/certchain.c:242
+#: sm/certchain.c:253
 msgid "critical marked policy without configured policies"
 msgstr ""
 
-#: sm/certchain.c:252
+#: sm/certchain.c:263
 #, fuzzy, c-format
 msgid "failed to open `%s': %s\n"
 msgstr "non se puido abrir `%s': %s\n"
 
-#: sm/certchain.c:259 sm/certchain.c:288
+#: sm/certchain.c:270 sm/certchain.c:299
 msgid "note: non-critical certificate policy not allowed"
 msgstr ""
 
-#: sm/certchain.c:263 sm/certchain.c:292
+#: sm/certchain.c:274 sm/certchain.c:303
 #, fuzzy
 msgid "certificate policy not allowed"
 msgstr "gravando a chave secreta en `%s'\n"
 
-#: sm/certchain.c:403
+#: sm/certchain.c:414
 msgid "looking up issuer at external location\n"
 msgstr ""
 
-#: sm/certchain.c:423
+#: sm/certchain.c:434
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
-#: sm/certchain.c:576 sm/certchain.c:740 sm/certchain.c:1266 sm/decrypt.c:261
+#: sm/certchain.c:587 sm/certchain.c:753 sm/certchain.c:1334 sm/decrypt.c:261
 #: sm/encrypt.c:343 sm/sign.c:328 sm/verify.c:107
 #, fuzzy
 msgid "failed to allocated keyDB handle\n"
 msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 
-#: sm/certchain.c:667
+#: sm/certchain.c:678
 #, fuzzy
 msgid "certificate has been revoked"
 msgstr "NOTA: a chave está revocada"
 
-#: sm/certchain.c:676
+#: sm/certchain.c:687
 #, fuzzy
 msgid "no CRL found for certificate"
 msgstr "Certificado correcto"
 
-#: sm/certchain.c:680
+#: sm/certchain.c:691
 #, fuzzy
 msgid "the available CRL is too old"
 msgstr "Chave dispoñible en: "
 
-#: sm/certchain.c:682
+#: sm/certchain.c:693
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
-#: sm/certchain.c:687
+#: sm/certchain.c:698
 #, fuzzy, c-format
 msgid "checking the CRL failed: %s"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
-#: sm/certchain.c:765
+#: sm/certchain.c:794
 #, fuzzy
 msgid "no issuer found in certificate"
 msgstr "Certificado correcto"
 
-#: sm/certchain.c:792
+#: sm/certchain.c:823
 #, fuzzy, c-format
 msgid "certificate with invalid validity: %s"
 msgstr "problema de lectura do certificado: %s\n"
 
-#: sm/certchain.c:808
+#: sm/certchain.c:839
 #, fuzzy
 msgid "certificate not yet valid"
 msgstr "Revocación de certificado válida"
 
-#: sm/certchain.c:821
+#: sm/certchain.c:852
 #, fuzzy
 msgid "certificate has expired"
 msgstr "problema de lectura do certificado: %s\n"
 
-#: sm/certchain.c:864
+#: sm/certchain.c:895
 msgid "self-signed certificate has a BAD signature"
 msgstr ""
 
-#: sm/certchain.c:932
+#: sm/certchain.c:963
 #, fuzzy
 msgid "root certificate is not marked trusted"
 msgstr ""
 "Non se atoparon certificados con confianza non definida.\n"
 "\n"
 
-#: sm/certchain.c:947
+#: sm/certchain.c:978
 #, fuzzy, c-format
 msgid "fingerprint=%s\n"
 msgstr "Pegada dactilar:"
 
-#: sm/certchain.c:955
+#: sm/certchain.c:986
 #, fuzzy
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 "Non se atoparon certificados con confianza non definida.\n"
 "\n"
 
-#: sm/certchain.c:970
+#: sm/certchain.c:1001
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr ""
 
-#: sm/certchain.c:976
+#: sm/certchain.c:1007
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr ""
 
-#: sm/certchain.c:986
+#: sm/certchain.c:1017
 #, fuzzy, c-format
 msgid "checking the trust list failed: %s\n"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
-#: sm/certchain.c:1013 sm/import.c:158
+#: sm/certchain.c:1044 sm/import.c:159
 #, fuzzy
 msgid "certificate chain too long\n"
 msgstr "Revocación de certificado válida"
 
-#: sm/certchain.c:1025
+#: sm/certchain.c:1056
 #, fuzzy
 msgid "issuer certificate not found"
 msgstr "Revocación de certificado válida"
 
-#: sm/certchain.c:1058
+#: sm/certchain.c:1089
 #, fuzzy
 msgid "certificate has a BAD signature"
 msgstr "verificar unha sinatura"
 
-#: sm/certchain.c:1088
+#: sm/certchain.c:1119
 msgid "found another possible matching CA certificate - trying again"
 msgstr ""
 
-#: sm/certchain.c:1139
+#: sm/certchain.c:1170
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr ""
 
-#: sm/certcheck.c:52
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA require o emprego dun algoritmo hash de 160 bits\n"
+#: sm/certcheck.c:103
+#, c-format
+msgid "%s key uses an unsafe (%u bit) hash\n"
+msgstr ""
 
-#: sm/certcheck.c:177 sm/sign.c:482 sm/verify.c:189
+#: sm/certcheck.c:113
+#, c-format
+msgid "a %u bit hash is not valid for a %u bit %s key\n"
+msgstr ""
+
+#: sm/certcheck.c:250 sm/sign.c:482 sm/verify.c:189
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
-#: sm/certdump.c:68 sm/certdump.c:154
+#: sm/certdump.c:68 sm/certdump.c:151
 #, fuzzy
 msgid "none"
 msgstr "non|nom"
 
-#: sm/certdump.c:163
+#: sm/certdump.c:162
 #, fuzzy
 msgid "[none]"
 msgstr "descoñecido"
 
-#: sm/certdump.c:536 sm/certdump.c:599
+#: sm/certdump.c:552 sm/certdump.c:597 sm/certdump.c:662 sm/certdump.c:715
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "erro: pegada dactilar non válida\n"
 
-#: sm/certdump.c:544
+#: sm/certdump.c:560 sm/certdump.c:605
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:579
+#: sm/certdump.c:642 sm/certdump.c:698
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:604
+#: sm/certdump.c:667 sm/certdump.c:721
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "erro: pegada dactilar non válida\n"
 
-#: sm/certdump.c:818
+#: sm/certdump.c:930
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
@@ -7060,7 +7070,7 @@ msgstr ""
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 
-#: sm/certlist.c:135 sm/keylist.c:255
+#: sm/certlist.c:135 sm/keylist.c:258
 #, fuzzy, c-format
 msgid "error getting key usage information: %s\n"
 msgstr "erro escribindo no chaveiro secreto `%s': %s\n"
@@ -7147,7 +7157,7 @@ msgstr ""
 msgid "certificate `%s' not found: %s\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
-#: sm/delete.c:113 sm/keydb.c:1392 sm/keydb.c:1485
+#: sm/delete.c:113 sm/keydb.c:1397 sm/keydb.c:1497
 #, fuzzy, c-format
 msgid "error locking keybox: %s\n"
 msgstr "erro ao le-lo bloque de chaves: %s\n"
@@ -7172,191 +7182,191 @@ msgstr "fallou o borrado do bloque de chaves: %s\n"
 msgid "no valid recipients given\n"
 msgstr "(Non se deu unha descrición)\n"
 
-#: sm/export.c:562 sm/export.c:578 sm/import.c:525 sm/import.c:550
+#: sm/export.c:615 sm/export.c:631 sm/import.c:526 sm/import.c:551
 #, fuzzy, c-format
 msgid "error creating temporary file: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-#: sm/export.c:569 sm/import.c:533
+#: sm/export.c:622 sm/import.c:534
 #, fuzzy, c-format
 msgid "error writing to temporary file: %s\n"
 msgstr "escribindo a `%s'\n"
 
-#: sm/gpgsm.c:243
+#: sm/gpgsm.c:244
 #, fuzzy
 msgid "|[FILE]|make a signature"
 msgstr "|[ficheiro]|facer unha sinatura"
 
-#: sm/gpgsm.c:244
+#: sm/gpgsm.c:245
 #, fuzzy
 msgid "|[FILE]|make a clear text signature"
 msgstr "|[ficheiro]|facer unha sinatura en texto claro"
 
-#: sm/gpgsm.c:252
+#: sm/gpgsm.c:253
 #, fuzzy
 msgid "list external keys"
 msgstr "ve-la lista de chaves secretas"
 
-#: sm/gpgsm.c:254
+#: sm/gpgsm.c:255
 #, fuzzy
 msgid "list certificate chain"
 msgstr "Revocación de certificado válida"
 
-#: sm/gpgsm.c:257
+#: sm/gpgsm.c:258
 #, fuzzy
 msgid "remove key from the public keyring"
 msgstr "borrar chaves do chaveiro público"
 
-#: sm/gpgsm.c:260
+#: sm/gpgsm.c:261
 #, fuzzy
 msgid "import certificates"
 msgstr "Certificado correcto"
 
-#: sm/gpgsm.c:261
+#: sm/gpgsm.c:262
 #, fuzzy
 msgid "export certificates"
 msgstr "Certificado correcto"
 
-#: sm/gpgsm.c:262
+#: sm/gpgsm.c:263
 msgid "register a smartcard"
 msgstr ""
 
-#: sm/gpgsm.c:264
+#: sm/gpgsm.c:265
 msgid "pass a command to the dirmngr"
 msgstr ""
 
-#: sm/gpgsm.c:266
+#: sm/gpgsm.c:267
 msgid "invoke gpg-protect-tool"
 msgstr ""
 
-#: sm/gpgsm.c:267
+#: sm/gpgsm.c:268
 #, fuzzy
 msgid "change a passphrase"
 msgstr "cambia-lo contrasinal"
 
-#: sm/gpgsm.c:282
+#: sm/gpgsm.c:283
 #, fuzzy
 msgid "create base-64 encoded output"
 msgstr "crear saída con armadura en ascii"
 
-#: sm/gpgsm.c:284
+#: sm/gpgsm.c:287
 msgid "assume input is in PEM format"
 msgstr ""
 
-#: sm/gpgsm.c:286
+#: sm/gpgsm.c:289
 msgid "assume input is in base-64 format"
 msgstr ""
 
-#: sm/gpgsm.c:288
+#: sm/gpgsm.c:291
 msgid "assume input is in binary format"
 msgstr ""
 
-#: sm/gpgsm.c:293
+#: sm/gpgsm.c:296
 msgid "use system's dirmngr if available"
 msgstr ""
 
-#: sm/gpgsm.c:294
+#: sm/gpgsm.c:297
 msgid "never consult a CRL"
 msgstr ""
 
-#: sm/gpgsm.c:301
+#: sm/gpgsm.c:304
 msgid "check validity using OCSP"
 msgstr ""
 
-#: sm/gpgsm.c:304
+#: sm/gpgsm.c:307
 msgid "|N|number of certificates to include"
 msgstr ""
 
-#: sm/gpgsm.c:307
+#: sm/gpgsm.c:310
 msgid "|FILE|take policy information from FILE"
 msgstr ""
 
-#: sm/gpgsm.c:310
+#: sm/gpgsm.c:313
 msgid "do not check certificate policies"
 msgstr ""
 
-#: sm/gpgsm.c:314
+#: sm/gpgsm.c:317
 msgid "fetch missing issuer certificates"
 msgstr ""
 
-#: sm/gpgsm.c:318
+#: sm/gpgsm.c:321
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NOME|empregar NOME como valor por defecto do destinatario"
 
-#: sm/gpgsm.c:320
+#: sm/gpgsm.c:323
 msgid "use the default key as default recipient"
 msgstr "usa-la chave por defecto coma o destinatario por defecto"
 
-#: sm/gpgsm.c:337
+#: sm/gpgsm.c:340
 msgid "don't use the terminal at all"
 msgstr "non usa-la terminal en absoluto"
 
-#: sm/gpgsm.c:341
+#: sm/gpgsm.c:344
 msgid "force v3 signatures"
 msgstr "forzar sinaturas v3"
 
-#: sm/gpgsm.c:342
+#: sm/gpgsm.c:345
 msgid "always use a MDC for encryption"
 msgstr "sempre usar un MDC para cifrar"
 
-#: sm/gpgsm.c:347
+#: sm/gpgsm.c:350
 msgid "batch mode: never ask"
 msgstr "modo por lotes: non preguntar nunca"
 
-#: sm/gpgsm.c:348
+#: sm/gpgsm.c:351
 msgid "assume yes on most questions"
 msgstr "asumir `si' na maioría das preguntas"
 
-#: sm/gpgsm.c:349
+#: sm/gpgsm.c:352
 msgid "assume no on most questions"
 msgstr "asumir `non' na maioría das preguntas"
 
-#: sm/gpgsm.c:351
+#: sm/gpgsm.c:354
 msgid "add this keyring to the list of keyrings"
 msgstr "engadir este chaveiro á lista de chaveiros"
 
-#: sm/gpgsm.c:352
+#: sm/gpgsm.c:355
 msgid "add this secret keyring to the list"
 msgstr "engadir este chaveiro secreto á lista"
 
-#: sm/gpgsm.c:353
+#: sm/gpgsm.c:356
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NOME|empregar NOME coma chave secreta por defecto"
 
-#: sm/gpgsm.c:354
+#: sm/gpgsm.c:357
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|HOST|empregar este servidor de chaves para buscar chaves"
 
-#: sm/gpgsm.c:355
+#: sm/gpgsm.c:358
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NAME|axusta-lo xogo de caracteres do terminal a NOME"
 
-#: sm/gpgsm.c:359
+#: sm/gpgsm.c:362
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr ""
 
-#: sm/gpgsm.c:374
+#: sm/gpgsm.c:377
 msgid "|FILE|load extension module FILE"
 msgstr "|FICHEIRO|carga-lo módulo de extensión FICHEIRO"
 
-#: sm/gpgsm.c:380
+#: sm/gpgsm.c:383
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NOME|emprega-lo algoritmo de cifrado NOME"
 
-#: sm/gpgsm.c:382
+#: sm/gpgsm.c:385
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NOME|emprega-lo algoritmo de resumos de mensaxes NOME"
 
-#: sm/gpgsm.c:384
+#: sm/gpgsm.c:387
 msgid "|N|use compress algorithm N"
 msgstr "|N|emprega-lo algoritmo de compresión N"
 
-#: sm/gpgsm.c:520
+#: sm/gpgsm.c:524
 #, fuzzy
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
 
-#: sm/gpgsm.c:523
+#: sm/gpgsm.c:527
 #, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
@@ -7367,45 +7377,40 @@ msgstr ""
 "asinar, verificar, cifrar ou descifrar\n"
 "a operación por defecto depende dos datos de entrada\n"
 
-#: sm/gpgsm.c:617
+#: sm/gpgsm.c:621
 #, fuzzy
 msgid "usage: gpgsm [options] "
 msgstr "uso: gpg [opcións] "
 
-#: sm/gpgsm.c:698
+#: sm/gpgsm.c:702
 #, fuzzy, c-format
 msgid "can't encrypt to `%s': %s\n"
 msgstr "non se puido conectar a `%s': %s\n"
 
-#: sm/gpgsm.c:773
-#, c-format
-msgid "libksba is too old (need %s, have %s)\n"
-msgstr ""
-
-#: sm/gpgsm.c:1249
+#: sm/gpgsm.c:1253
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1328
+#: sm/gpgsm.c:1332
 #, fuzzy, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "escribindo a `%s'\n"
 
-#: sm/gpgsm.c:1346
+#: sm/gpgsm.c:1350
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "non se pode pechar `%s': %s\n"
 
-#: sm/gpgsm.c:1536
+#: sm/gpgsm.c:1542
 msgid "this command has not yet been implemented\n"
 msgstr ""
 
-#: sm/gpgsm.c:1601
+#: sm/gpgsm.c:1606
 #, fuzzy
 msgid "key generation is not available from the commandline\n"
 msgstr "gpg-agent non está dispoñible nesta sesión\n"
 
-#: sm/gpgsm.c:1602
+#: sm/gpgsm.c:1607
 #, fuzzy, c-format
 msgid "please use the script \"%s\" to generate a new key\n"
 msgstr "Por favor, seleccione o tipo de chave que quere:\n"
@@ -7415,21 +7420,21 @@ msgstr "Por favor, seleccione o tipo de chave que quere:\n"
 msgid "total number processed: %lu\n"
 msgstr "Número total procesado: %lu\n"
 
-#: sm/import.c:227
+#: sm/import.c:228
 #, fuzzy
 msgid "error storing certificate\n"
 msgstr "Certificado correcto"
 
-#: sm/import.c:235
+#: sm/import.c:236
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
-#: sm/import.c:421 sm/import.c:453
+#: sm/import.c:422 sm/import.c:454
 #, fuzzy, c-format
 msgid "error importing certificate: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-#: sm/import.c:542 tools/gpg-connect-agent.c:384
+#: sm/import.c:543 tools/gpg-connect-agent.c:388
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "erro lendo `%s': %s\n"
@@ -7448,12 +7453,12 @@ msgstr ""
 msgid "keybox `%s' created\n"
 msgstr "chaveiro `%s' creado\n"
 
-#: sm/keydb.c:1312 sm/keydb.c:1378
+#: sm/keydb.c:1312 sm/keydb.c:1380
 #, fuzzy
 msgid "failed to get the fingerprint\n"
 msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 
-#: sm/keydb.c:1319 sm/keydb.c:1385
+#: sm/keydb.c:1319 sm/keydb.c:1387
 #, fuzzy
 msgid "failed to allocate keyDB handle\n"
 msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
@@ -7473,17 +7478,17 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "error storing certificate: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-#: sm/keydb.c:1400
+#: sm/keydb.c:1408
 #, fuzzy, c-format
 msgid "problem re-searching certificate: %s\n"
 msgstr "rev? problema ao comproba-la revocación: %s\n"
 
-#: sm/keydb.c:1409 sm/keydb.c:1497
+#: sm/keydb.c:1417 sm/keydb.c:1509
 #, fuzzy, c-format
 msgid "error getting stored flags: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-#: sm/keydb.c:1418 sm/keydb.c:1508
+#: sm/keydb.c:1429 sm/keydb.c:1520
 #, fuzzy, c-format
 msgid "error storing flags: %s\n"
 msgstr "erro lendo `%s': %s\n"
@@ -7556,104 +7561,108 @@ msgstr "Sinatura correcta de \""
 msgid "                aka"
 msgstr "               alias \""
 
-#: tools/gpg-connect-agent.c:60 tools/gpgconf.c:70 tools/symcryptrun.c:186
+#: tools/gpg-connect-agent.c:61 tools/gpgconf.c:70 tools/symcryptrun.c:167
 #, fuzzy
 msgid "quiet"
 msgstr "abandonar"
 
-#: tools/gpg-connect-agent.c:61
+#: tools/gpg-connect-agent.c:62
 msgid "print data out hex encoded"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:62
+#: tools/gpg-connect-agent.c:63
+msgid "decode received data lines"
+msgstr ""
+
+#: tools/gpg-connect-agent.c:64
 msgid "|NAME|connect to Assuan socket NAME"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:63
+#: tools/gpg-connect-agent.c:65
 msgid "run the Assuan server given on the command line"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:65
+#: tools/gpg-connect-agent.c:67
 msgid "do not use extended connect mode"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:126
+#: tools/gpg-connect-agent.c:129
 #, fuzzy
 msgid "Usage: gpg-connect-agent [options] (-h for help)"
 msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
 
-#: tools/gpg-connect-agent.c:129
+#: tools/gpg-connect-agent.c:132
 msgid ""
 "Syntax: gpg-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:324
+#: tools/gpg-connect-agent.c:328
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:333
+#: tools/gpg-connect-agent.c:337
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:391
+#: tools/gpg-connect-agent.c:395
 #, fuzzy
 msgid "line too long - skipped\n"
 msgstr "liña longa de máis\n"
 
-#: tools/gpg-connect-agent.c:395
+#: tools/gpg-connect-agent.c:399
 msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:457
+#: tools/gpg-connect-agent.c:471
 #, fuzzy, c-format
 msgid "unknown command `%s'\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
 
-#: tools/gpg-connect-agent.c:465
+#: tools/gpg-connect-agent.c:479
 #, fuzzy, c-format
 msgid "sending line failed: %s\n"
 msgstr "fallou a sinatura: %s\n"
 
-#: tools/gpg-connect-agent.c:473
+#: tools/gpg-connect-agent.c:487
 #, fuzzy, c-format
 msgid "receiving line failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
-#: tools/gpg-connect-agent.c:746
+#: tools/gpg-connect-agent.c:797
 #, fuzzy, c-format
 msgid "error sending %s command: %s\n"
 msgstr "erro ao enviar a `%s': %s\n"
 
-#: tools/gpg-connect-agent.c:755
+#: tools/gpg-connect-agent.c:806
 #, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "erro ao enviar a `%s': %s\n"
 
 #: tools/gpgconf-comp.c:445 tools/gpgconf-comp.c:525 tools/gpgconf-comp.c:592
-#: tools/gpgconf-comp.c:648 tools/gpgconf-comp.c:720
+#: tools/gpgconf-comp.c:648 tools/gpgconf-comp.c:723
 msgid "Options controlling the diagnostic output"
 msgstr ""
 
 #: tools/gpgconf-comp.c:458 tools/gpgconf-comp.c:538 tools/gpgconf-comp.c:605
-#: tools/gpgconf-comp.c:661 tools/gpgconf-comp.c:743
+#: tools/gpgconf-comp.c:661 tools/gpgconf-comp.c:746
 msgid "Options controlling the configuration"
 msgstr ""
 
 #: tools/gpgconf-comp.c:468 tools/gpgconf-comp.c:563 tools/gpgconf-comp.c:612
-#: tools/gpgconf-comp.c:671 tools/gpgconf-comp.c:750
+#: tools/gpgconf-comp.c:674 tools/gpgconf-comp.c:753
 #, fuzzy
 msgid "Options useful for debugging"
 msgstr "habilitar depuración total"
 
 #: tools/gpgconf-comp.c:473 tools/gpgconf-comp.c:568 tools/gpgconf-comp.c:617
-#: tools/gpgconf-comp.c:676 tools/gpgconf-comp.c:758
+#: tools/gpgconf-comp.c:679 tools/gpgconf-comp.c:761
 msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:481 tools/gpgconf-comp.c:573 tools/gpgconf-comp.c:684
+#: tools/gpgconf-comp.c:481 tools/gpgconf-comp.c:573 tools/gpgconf-comp.c:687
 msgid "Options controlling the security"
 msgstr ""
 
@@ -7681,31 +7690,36 @@ msgstr ""
 msgid "allow PKA lookups (DNS requests)"
 msgstr ""
 
-#: tools/gpgconf-comp.c:689
+#: tools/gpgconf-comp.c:669
+#, fuzzy
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|NOME|emprega-lo algoritmo de cifrado NOME para os contrasinais"
+
+#: tools/gpgconf-comp.c:692
 msgid "do not check CRLs for root certificates"
 msgstr ""
 
-#: tools/gpgconf-comp.c:733
+#: tools/gpgconf-comp.c:736
 msgid "Options controlling the format of the output"
 msgstr ""
 
-#: tools/gpgconf-comp.c:769
+#: tools/gpgconf-comp.c:772
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-#: tools/gpgconf-comp.c:779
+#: tools/gpgconf-comp.c:782
 msgid "Configuration for HTTP servers"
 msgstr ""
 
-#: tools/gpgconf-comp.c:790
+#: tools/gpgconf-comp.c:793
 msgid "use system's HTTP proxy setting"
 msgstr ""
 
-#: tools/gpgconf-comp.c:795
+#: tools/gpgconf-comp.c:798
 msgid "Configuration of LDAP servers to use"
 msgstr ""
 
-#: tools/gpgconf-comp.c:832
+#: tools/gpgconf-comp.c:835
 msgid "Configuration for OCSP"
 msgstr ""
 
@@ -7769,7 +7783,7 @@ msgstr "gravando a chave secreta en `%s'\n"
 msgid "error allocating enough memory: %s\n"
 msgstr "erro ao crea-lo chaveiro `%s': %s\n"
 
-#: tools/symcryptrun.c:173
+#: tools/symcryptrun.c:154
 #, fuzzy
 msgid ""
 "@\n"
@@ -7779,167 +7793,170 @@ msgstr ""
 "@Comandos:\n"
 " "
 
-#: tools/symcryptrun.c:175
+#: tools/symcryptrun.c:156
 #, fuzzy
 msgid "decryption modus"
 msgstr "descifrado correcto\n"
 
-#: tools/symcryptrun.c:176
+#: tools/symcryptrun.c:157
 #, fuzzy
 msgid "encryption modus"
 msgstr "descifrado correcto\n"
 
-#: tools/symcryptrun.c:180
+#: tools/symcryptrun.c:161
 msgid "tool class (confucius)"
 msgstr ""
 
-#: tools/symcryptrun.c:181
+#: tools/symcryptrun.c:162
 #, fuzzy
 msgid "program filename"
 msgstr "--store [ficheiro]"
 
-#: tools/symcryptrun.c:183
+#: tools/symcryptrun.c:164
 msgid "secret key file (required)"
 msgstr ""
 
-#: tools/symcryptrun.c:184
+#: tools/symcryptrun.c:165
 msgid "input file name (default stdin)"
 msgstr ""
 
-#: tools/symcryptrun.c:228
+#: tools/symcryptrun.c:209
 #, fuzzy
 msgid "Usage: symcryptrun [options] (-h for help)"
 msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
 
-#: tools/symcryptrun.c:231
+#: tools/symcryptrun.c:212
 msgid ""
 "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
 "[options...] COMMAND [inputfile]\n"
 "Call a simple symmetric encryption tool\n"
 msgstr ""
 
-#: tools/symcryptrun.c:313
+#: tools/symcryptrun.c:294
 #, fuzzy, c-format
 msgid "%s on %s aborted with status %i\n"
 msgstr "¡%s non se admite con %s!\n"
 
-#: tools/symcryptrun.c:320
+#: tools/symcryptrun.c:301
 #, fuzzy, c-format
 msgid "%s on %s failed with status %i\n"
 msgstr ""
 "a actualización da base de datos de confianza fallou:\n"
 "%s\n"
 
-#: tools/symcryptrun.c:346
+#: tools/symcryptrun.c:327
 #, fuzzy, c-format
 msgid "can't create temporary directory `%s': %s\n"
 msgstr "non se pode crea-lo directorio `%s': %s\n"
 
-#: tools/symcryptrun.c:386 tools/symcryptrun.c:403
+#: tools/symcryptrun.c:367 tools/symcryptrun.c:384
 #, fuzzy, c-format
 msgid "could not open %s for writing: %s\n"
 msgstr "non se puido abrir %s: %s\n"
 
-#: tools/symcryptrun.c:414
+#: tools/symcryptrun.c:395
 #, fuzzy, c-format
 msgid "error writing to %s: %s\n"
 msgstr "erro escribindo no chaveiro `%s': %s\n"
 
-#: tools/symcryptrun.c:421
+#: tools/symcryptrun.c:402
 #, fuzzy, c-format
 msgid "error reading from %s: %s\n"
 msgstr "erro lendo `%s': %s\n"
 
-#: tools/symcryptrun.c:428 tools/symcryptrun.c:435
+#: tools/symcryptrun.c:409 tools/symcryptrun.c:416
 #, fuzzy, c-format
 msgid "error closing %s: %s\n"
 msgstr "erro lendo `%s': %s\n"
 
-#: tools/symcryptrun.c:545
+#: tools/symcryptrun.c:526
 #, fuzzy
 msgid "no --program option provided\n"
 msgstr "non se soporta a execución remota de programas\n"
 
-#: tools/symcryptrun.c:551
+#: tools/symcryptrun.c:532
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr ""
 
-#: tools/symcryptrun.c:557
+#: tools/symcryptrun.c:538
 msgid "no --keyfile option provided\n"
 msgstr ""
 
-#: tools/symcryptrun.c:568
+#: tools/symcryptrun.c:549
 msgid "cannot allocate args vector\n"
 msgstr ""
 
-#: tools/symcryptrun.c:586
+#: tools/symcryptrun.c:567
 #, fuzzy, c-format
 msgid "could not create pipe: %s\n"
 msgstr "non foi posible crear %s: %s\n"
 
-#: tools/symcryptrun.c:593
+#: tools/symcryptrun.c:574
 #, fuzzy, c-format
 msgid "could not create pty: %s\n"
 msgstr "non foi posible crear %s: %s\n"
 
-#: tools/symcryptrun.c:609
+#: tools/symcryptrun.c:590
 #, fuzzy, c-format
 msgid "could not fork: %s\n"
 msgstr "%s: non se atopou o usuario: %s\n"
 
-#: tools/symcryptrun.c:637
+#: tools/symcryptrun.c:618
 #, fuzzy, c-format
 msgid "execv failed: %s\n"
 msgstr "a actualización fallou: %s\n"
 
-#: tools/symcryptrun.c:666
+#: tools/symcryptrun.c:647
 #, fuzzy, c-format
 msgid "select failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
-#: tools/symcryptrun.c:683
+#: tools/symcryptrun.c:664
 #, fuzzy, c-format
 msgid "read failed: %s\n"
 msgstr "a actualización fallou: %s\n"
 
-#: tools/symcryptrun.c:735
+#: tools/symcryptrun.c:716
 #, fuzzy, c-format
 msgid "pty read failed: %s\n"
 msgstr "a actualización fallou: %s\n"
 
-#: tools/symcryptrun.c:787
+#: tools/symcryptrun.c:768
 #, fuzzy, c-format
 msgid "waitpid failed: %s\n"
 msgstr "a actualización fallou: %s\n"
 
-#: tools/symcryptrun.c:801
+#: tools/symcryptrun.c:782
 #, c-format
 msgid "child aborted with status %i\n"
 msgstr ""
 
-#: tools/symcryptrun.c:856
+#: tools/symcryptrun.c:837
 #, fuzzy, c-format
 msgid "cannot allocate infile string: %s\n"
 msgstr "non se pode crear `%s': %s\n"
 
-#: tools/symcryptrun.c:869
+#: tools/symcryptrun.c:850
 #, fuzzy, c-format
 msgid "cannot allocate outfile string: %s\n"
 msgstr "non se pode crear `%s': %s\n"
 
-#: tools/symcryptrun.c:1044
+#: tools/symcryptrun.c:1025
 #, c-format
 msgid "either %s or %s must be given\n"
 msgstr ""
 
-#: tools/symcryptrun.c:1064
+#: tools/symcryptrun.c:1045
 msgid "no class provided\n"
 msgstr ""
 
-#: tools/symcryptrun.c:1071
+#: tools/symcryptrun.c:1052
 #, fuzzy, c-format
 msgid "class %s is not supported\n"
 msgstr "o algoritmo de protección %d%s non está soportado\n"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA require o emprego dun algoritmo hash de 160 bits\n"
 
 #, fuzzy
 #~ msgid ".\n"
@@ -8713,9 +8730,6 @@ msgstr "o algoritmo de protección %d%s non está soportado\n"
 
 #~ msgid "|NAME|use message digest algorithm NAME for passphrases"
 #~ msgstr "|NOME|emprega-lo algoritmo para resumos NOME para os contrasinais"
-
-#~ msgid "|NAME|use cipher algorithm NAME for passphrases"
-#~ msgstr "|NOME|emprega-lo algoritmo de cifrado NOME para os contrasinais"
 
 #~ msgid "throw keyid field of encrypted packets"
 #~ msgstr "descarta-lo campo de id de chave dos paquetes cifrados"

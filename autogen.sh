@@ -163,7 +163,7 @@ q
 automake_vers_num=`echo "$automake_vers" | cvtver`
 
 gettext_vers=`sed -n '/^AM_GNU_GETTEXT_VERSION(/ { 
-s/^.*(\(.*\))/\1/p
+s/^.*\[\(.*\)])/\1/p
 q
 }' ${configure_ac}`
 gettext_vers_num=`echo "$gettext_vers" | cvtver`

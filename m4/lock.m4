@@ -1,5 +1,5 @@
-# lock.m4 serial 2 (gettext-0.15)
-dnl Copyright (C) 2005 Free Software Foundation, Inc.
+# lock.m4 serial 6 (gettext-0.16)
+dnl Copyright (C) 2005-2006 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -19,14 +19,14 @@ dnl symbols, typically LIBTHREAD="" whereas LIBMULTITHREAD="-lpthread".
 dnl Adds to CPPFLAGS the flag -D_REENTRANT or -D_THREAD_SAFE if needed for
 dnl multithread-safe programs.
 
-AC_DEFUN([gl_LOCK],
+AC_DEFUN([gl_LOCK_EARLY],
 [
-  AC_REQUIRE([gl_LOCK_BODY])
+  AC_REQUIRE([gl_LOCK_EARLY_BODY])
 ])
 
-dnl The guts of gl_LOCK. Needs to be expanded only once.
+dnl The guts of gl_LOCK_EARLY. Needs to be expanded only once.
 
-AC_DEFUN([gl_LOCK_BODY],
+AC_DEFUN([gl_LOCK_EARLY_BODY],
 [
   dnl Ordering constraints: This macro modifies CPPFLAGS in a way that
   dnl influences the result of the autoconf tests that test for *_unlocked
@@ -40,7 +40,43 @@ AC_DEFUN([gl_LOCK_BODY],
   AC_ARG_ENABLE(threads,
 AC_HELP_STRING([--enable-threads={posix|solaris|pth|win32}], [specify multithreading API])
 AC_HELP_STRING([--disable-threads], [build without multithread safety]),
-    gl_use_threads=$enableval, gl_use_threads=yes)
+    [gl_use_threads=$enableval],
+    [case "$host_os" in
+       dnl Disable multithreading by default on OSF/1, because it interferes
+       dnl with fork()/exec(): When msgexec is linked with -lpthread, its child
+       dnl process gets an endless segmentation fault inside execvp().
+       osf*) gl_use_threads=no ;;
+       *)    gl_use_threads=yes ;;
+     esac
+    ])
+  if test "$gl_use_threads" = yes || test "$gl_use_threads" = posix; then
+    # For using <pthread.h>:
+    case "$host_os" in
+      osf*)
+        # On OSF/1, the compiler needs the flag -D_REENTRANT so that it
+        # groks <pthread.h>. cc also understands the flag -pthread, but
+        # we don't use it because 1. gcc-2.95 doesn't understand -pthread,
+        # 2. putting a flag into CPPFLAGS that has an effect on the linker
+        # causes the AC_TRY_LINK test below to succeed unexpectedly,
+        # leading to wrong values of LIBTHREAD and LTLIBTHREAD.
+        CPPFLAGS="$CPPFLAGS -D_REENTRANT"
+        ;;
+    esac
+    # Some systems optimize for single-threaded programs by default, and
+    # need special flags to disable these optimizations. For example, the
+    # definition of 'errno' in <errno.h>.
+    case "$host_os" in
+      aix* | freebsd*) CPPFLAGS="$CPPFLAGS -D_THREAD_SAFE" ;;
+      solaris*) CPPFLAGS="$CPPFLAGS -D_REENTRANT" ;;
+    esac
+  fi
+])
+
+dnl The guts of gl_LOCK. Needs to be expanded only once.
+
+AC_DEFUN([gl_LOCK_BODY],
+[
+  AC_REQUIRE([gl_LOCK_EARLY_BODY])
   gl_threads_api=none
   LIBTHREAD=
   LTLIBTHREAD=
@@ -55,26 +91,12 @@ AC_HELP_STRING([--disable-threads], [build without multithread safety]),
     AC_MSG_RESULT([$gl_have_weak])
     if test "$gl_use_threads" = yes || test "$gl_use_threads" = posix; then
       # On OSF/1, the compiler needs the flag -pthread or -D_REENTRANT so that
-      # it groks <pthread.h>.
-      gl_save_CPPFLAGS="$CPPFLAGS"
-      CPPFLAGS="$CPPFLAGS -D_REENTRANT"
+      # it groks <pthread.h>. It's added above, in gl_LOCK_EARLY_BODY.
       AC_CHECK_HEADER(pthread.h, gl_have_pthread_h=yes, gl_have_pthread_h=no)
-      CPPFLAGS="$gl_save_CPPFLAGS"
       if test "$gl_have_pthread_h" = yes; then
         # Other possible tests:
         #   -lpthreads (FSU threads, PCthreads)
         #   -lgthreads
-        case "$host_os" in
-          osf*)
-            # On OSF/1, the compiler needs the flag -D_REENTRANT so that it
-            # groks <pthread.h>. cc also understands the flag -pthread, but
-            # we don't use it because 1. gcc-2.95 doesn't understand -pthread,
-            # 2. putting a flag into CPPFLAGS that has an effect on the linker
-            # causes the AC_TRY_LINK test below to succeed unexpectedly,
-            # leading to wrong values of LIBTHREAD and LTLIBTHREAD.
-            CPPFLAGS="$CPPFLAGS -D_REENTRANT"
-            ;;
-        esac
         gl_have_pthread=
         # Test whether both pthread_mutex_lock and pthread_mutexattr_init exist
         # in libc. IRIX 6.5 has the first one in both libc and libpthread, but
@@ -139,16 +161,10 @@ AC_HELP_STRING([--disable-threads], [build without multithread safety]),
 error "No, in FreeBSD 4.0 recursive mutexes actually don't work."
 #else
 int x = (int)PTHREAD_MUTEX_RECURSIVE;
+return !x;
 #endif],
             [AC_DEFINE([HAVE_PTHREAD_MUTEX_RECURSIVE], 1,
                [Define if the <pthread.h> defines PTHREAD_MUTEX_RECURSIVE.])])
-          # Some systems optimize for single-threaded programs by default, and
-          # need special flags to disable these optimizations. For example, the
-          # definition of 'errno' in <errno.h>.
-          case "$host_os" in
-            aix* | freebsd*) CPPFLAGS="$CPPFLAGS -D_THREAD_SAFE" ;;
-            solaris*) CPPFLAGS="$CPPFLAGS -D_REENTRANT" ;;
-          esac
         fi
       fi
     fi
@@ -227,6 +243,12 @@ int x = (int)PTHREAD_MUTEX_RECURSIVE;
   AC_SUBST(LTLIBTHREAD)
   AC_SUBST(LIBMULTITHREAD)
   AC_SUBST(LTLIBMULTITHREAD)
+])
+
+AC_DEFUN([gl_LOCK],
+[
+  AC_REQUIRE([gl_LOCK_EARLY])
+  AC_REQUIRE([gl_LOCK_BODY])
   gl_PREREQ_LOCK
 ])
 

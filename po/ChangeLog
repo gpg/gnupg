@@ -1,3 +1,7 @@
+2007-05-07  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.16.1.
+
 2007-02-26  Werner Koch  <wk@g10code.com>
 
 	* sv.po: Update from Daniel.

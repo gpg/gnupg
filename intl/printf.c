@@ -47,8 +47,15 @@ char *alloca ();
 
 #if !HAVE_POSIX_PRINTF
 
+#include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* Some systems, like OSF/1 4.0 and Woe32, don't have EOVERFLOW.  */
+#ifndef EOVERFLOW
+# define EOVERFLOW E2BIG
+#endif
 
 /* When building a DLL, we must export some functions.  Note that because
    the functions are only defined for binary backward compatibility, we
@@ -96,9 +103,15 @@ libintl_vfprintf (FILE *stream, const char *format, va_list args)
       int retval = -1;
       if (result != NULL)
 	{
-	  if (fwrite (result, 1, length, stream) == length)
-	    retval = length;
+	  size_t written = fwrite (result, 1, length, stream);
 	  free (result);
+	  if (written == length)
+	    {
+	      if (length > INT_MAX)
+		errno = EOVERFLOW;
+	      else
+		retval = length;
+	    }
 	}
       return retval;
     }
@@ -152,6 +165,11 @@ libintl_vsprintf (char *resultbuf, const char *format, va_list args)
 	  free (result);
 	  return -1;
 	}
+      if (length > INT_MAX)
+	{
+	  errno = EOVERFLOW;
+	  return -1;
+	}
       else
 	return length;
     }
@@ -194,12 +212,16 @@ libintl_vsnprintf (char *resultbuf, size_t length, const char *format, va_list a
 	{
 	  if (maxlength > 0)
 	    {
-	      if (length < maxlength)
-		abort ();
-	      memcpy (resultbuf, result, maxlength - 1);
-	      resultbuf[maxlength - 1] = '\0';
+	      size_t pruned_length =
+		(length < maxlength ? length : maxlength - 1);
+	      memcpy (resultbuf, result, pruned_length);
+	      resultbuf[pruned_length] = '\0';
 	    }
 	  free (result);
+	}
+      if (length > INT_MAX)
+	{
+	  errno = EOVERFLOW;
 	  return -1;
 	}
       else
@@ -232,6 +254,12 @@ libintl_vasprintf (char **resultp, const char *format, va_list args)
   char *result = libintl_vasnprintf (NULL, &length, format, args);
   if (result == NULL)
     return -1;
+  if (length > INT_MAX)
+    {
+      free (result);
+      errno = EOVERFLOW;
+      return -1;
+    }
   *resultp = result;
   return length;
 }
@@ -293,9 +321,14 @@ libintl_vfwprintf (FILE *stream, const wchar_t *format, va_list args)
 	  for (i = 0; i < length; i++)
 	    if (fputwc (result[i], stream) == WEOF)
 	      break;
-	  if (i == length)
-	    retval = length;
 	  free (result);
+	  if (i == length)
+	    {
+	      if (length > INT_MAX)
+		errno = EOVERFLOW;
+	      else
+		retval = length;
+	    }
 	}
       return retval;
     }
@@ -348,12 +381,22 @@ libintl_vswprintf (wchar_t *resultbuf, size_t length, const wchar_t *format, va_
 	{
 	  if (maxlength > 0)
 	    {
-	      if (length < maxlength)
-		abort ();
-	      memcpy (resultbuf, result, (maxlength - 1) * sizeof (wchar_t));
-	      resultbuf[maxlength - 1] = 0;
+	      size_t pruned_length =
+		(length < maxlength ? length : maxlength - 1);
+	      memcpy (resultbuf, result, pruned_length * sizeof (wchar_t));
+	      resultbuf[pruned_length] = 0;
 	    }
 	  free (result);
+	  /* Unlike vsnprintf, which has to return the number of character that
+	     would have been produced if the resultbuf had been sufficiently
+	     large, the vswprintf function has to return a negative value if
+	     the resultbuf was not sufficiently large.  */
+	  if (length >= maxlength)
+	    return -1;
+	}
+      if (length > INT_MAX)
+	{
+	  errno = EOVERFLOW;
 	  return -1;
 	}
       else

@@ -1,3 +1,8 @@
+2007-05-07  Werner Koch  <wk@g10code.com>
+
+	* signal.c (got_fatal_signal): Protect SIG from being clobbered by
+	a faulty signal implementaion.  Suggested by James Juran. 
+
 2007-04-25  Werner Koch  <wk@g10code.com>
 
 	* i18n.h (ngettext): New.
