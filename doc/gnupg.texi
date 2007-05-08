@@ -104,6 +104,10 @@ section entitled ``Copying''.
 @page
 @end ifnothtml
 
+@ifhtml
+@center @image{gnupg-logo,6cm,,The GnuPG Logo}
+@end ifhtml
+
 @ifnottex
 @node Top
 @top 
@@ -135,12 +139,6 @@ the administration and the architecture.
 * Option Index::        Index to command line options.
 * Index::	        Index of concepts and symbol names.
 @end menu
-
-@ifhtml
-
-@center @image{gnupg-logo,6cm,,The GnuPG Logo}
-
-@end ifhtml
 
 
 @ifhtml

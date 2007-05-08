@@ -44,6 +44,8 @@ gnupg_TEXINFOS = \
 	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
 	sysnotes.texi gnupg-card-architecture.fig
 
+DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
+
 AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=$(srcdir)/texi.css
 
 YAT2M_OPTIONS = -I $(srcdir) \
@@ -132,6 +134,8 @@ $(myman_pages) gnupg.7 : yat2m-stamp
 gnupg.texi : $(gnupg_TEXINFOS)
 	touch $(srcdir)/gnupg.texi
 
+install-html-local:
+	cp $(srcdir)/gnupg-logo.png gnupg.html/
 
 online: gnupg.html gnupg.pdf
 	set -e; \

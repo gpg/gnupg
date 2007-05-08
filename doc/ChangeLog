@@ -1,3 +1,9 @@
+2007-05-08  Werner Koch  <wk@g10code.com>
+
+	* gnupg.texi: Moved the logo for HTML more to the top.
+	* Makefile.am (install-html-local): New.
+	(DVIPS): Redefine to include srcdir.
+
 2007-05-04  Werner Koch  <wk@g10code.com>
 
 	* gnupg.texi (Top): Fix typo and a grammar issue.
