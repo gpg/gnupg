@@ -109,11 +109,7 @@
 
 * Remove -sat PGP2 compatibility hack
 
-* Cleanup m4/ on next gettext update
-  There is at least one couple of duplicate files: inttype[_-]h.m4.
-
-* UTF-8
-  (UTF-8 specific TODO0
+* UTF-8 specific TODOs
 
 * Pinpad Reader
   We do not yet support P15 applications.  The trivial thing using

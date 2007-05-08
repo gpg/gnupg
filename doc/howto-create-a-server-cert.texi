@@ -1,0 +1,288 @@
+@node Howto Create a Server Cert
+@section Creating a TLS server certificate
+
+
+Here is a brief run up on how to create a server certificate. It has
+actually been done this way to get a certificate from CAcert to be used
+on a real server.  It has only been tested with this CA, but there
+shouldn't be any problem to run this against any other CA.
+
+Before you start, make sure that gpg-agent is running.  As there is no
+need for a configuration file, you may simply enter:
+
+@cartouche
+@example
+  $ gpgsm-gencert.sh >a.p10
+  Key type
+   [1] RSA
+   [2] Existing key
+   [3] Direct from card
+  Your selection: 1
+  You selected: RSA
+@end example
+@end cartouche
+
+I opted for creating a new RSA key. The other option is to use an
+already existing key, by selecting @kbd{2} and entering the so-called
+keygrip.  Running the command @samp{gpgsm --dump-secret-key USERID}
+shows you this keygrip.  Using @kbd{3} offers another menu to create a
+certificate directly from a smart card based key.
+
+Let's continue:
+
+@cartouche
+@example
+  Key length
+   [1] 1024
+   [2] 2048
+  Your selection: 1
+  You selected: 1024
+@end example
+@end cartouche
+
+The script offers  two common key sizes. With the current setup of
+CAcert, it does not make much sense to use a 2k key; their policies need
+to be revised anyway (a CA root key valid for 30 years is not really
+serious).
+
+@cartouche
+@example
+  Key usage
+   [1] sign, encrypt
+   [2] sign
+   [3] encrypt
+  Your selection: 1
+  You selected: sign, encrypt
+@end example
+@end cartouche
+
+We want to sign and encrypt using this key. This is just a suggestion
+and the CA may actually assign other key capabilities.
+
+Now for some real data:
+
+@cartouche
+@example
+  Name (DN)
+  > CN=kerckhoffs.g10code.com
+@end example
+@end cartouche
+
+This is the most important value for a server certificate. Enter here
+the canonical name of your server machine. You may add other virtual
+server names later.
+
+@cartouche
+@example
+  E-Mail addresses (end with an empty line)
+  > 
+@end example
+@end cartouche
+
+We don't need email addresses in a server certificate and CAcert would
+anyway ignore such a request. Thus just hit enter.
+
+If you want to create a client certificate for email encryption, this
+would be the place to enter your mail address
+(e.g. @email{joe@@example.org}). You may enter as many addresses as you like,
+however the CA may not accept them all or reject the entire request.
+
+@cartouche
+@example
+  DNS Names (optional; end with an empty line)
+  > www.g10code.com
+  DNS Names (optional; end with an empty line)
+  > ftp.g10code.com
+  DNS Names (optional; end with an empty line)
+  > 
+@end example
+@end cartouche
+
+Here I entered the names of the servers which actually run on the
+machine given in the DN above. The browser will accept a certificate for
+any of these names. As usual the CA must approve all of these names.
+
+@cartouche
+@example
+  URIs (optional; end with an empty line)
+  >
+@end example
+@end cartouche
+
+It is possible to insert arbitrary URIs into a certificate; for a server
+certificate this does not make sense.
+
+We have now entered all required information and @command{gpgsm} will
+display what it has gathered and ask whether to create the certificate
+request:
+
+@cartouche
+@example
+  Parameters for certificate request to create:
+       1	Key-Type: RSA
+       2	Key-Length: 1024
+       3	Key-Usage: sign, encrypt
+       4	Name-DN: CN=kerckhoffs.g10code.com
+       5	Name-DNS: www.g10code.com
+       6	Name-DNS: ftp.g10code.com
+  
+  Really create such a CSR?
+   [1] yes
+   [2] no
+  Your selection: 1
+  You selected: yes
+@end example
+@end cartouche
+
+@command{gpgsm} will now start working on creating the request. As this
+includes the creation of an RSA key it may take a while. During this
+time you will be asked 3 times for a passphrase to protect the created
+private key on your system. A pop up window will appear to ask for
+it. The first two prompts are for the new passphrase and for re-entering it;
+the third one is required to actually create the certificate signing request.
+
+When it is ready, you should see the final notice:
+
+@cartouche
+@example
+  gpgsm: certificate request created
+@end example
+@end cartouche
+
+Now, you may look at the created request:
+
+@cartouche
+@example
+  $ cat a.p10
+  -----BEGIN CERTIFICATE REQUEST-----
+  MIIBnzCCAQgCAQAwITEfMB0GA1UEAxMWa2VyY2tob2Zmcy5nMTBjb2RlLmNvbTCB
+  nzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA5h+uKRenpvbe+BnMY6siPO50LVyg
+  HtB7kr+YISlPJ5JAFO12yQFz9Y0sBLHbjR+V+TOawwP1dZhGjlgnEBkMdWKuEBlS
+  wFTALLX78GAyvAYAmPqSPDEYXkMECyUXVX/bbGI1bY8Y2OGy4w4D+v7e+xD2NBkm
+  Bj5cNy+YMbGVldECAwEAAaA+MDwGCSqGSIb3DQEJDjEvMC0wKwYDVR0RBCQwIoIP
+  d3d3LmcxMGNvZGUuY29tgg9mdHAuZzEwY29kZS5jb20wDQYJKoZIhvcNAQEFBQAD
+  gYEAzBRIi8KTfKyebOlMtDN6oDYBOv+r9A4w3u/Z1ikjffaiN1Bmd2o9Ez9KXKHA
+  IezLeSEA/rGUPN5Ur5qIJnRNQ8xrS+iLftr8msWQSZppVnA/vnqMrtqBUpitqAr0
+  eYBmt1Uem2Y3UFABrKPglv2xzgGkrKX6AqmFoOnJWQ0QcTw=
+  -----END CERTIFICATE REQUEST-----
+  $
+@end example
+@end cartouche
+
+You may now proceed by logging into your account at the CAcert website,
+choose @code{Server Certificates - New}, check @code{sign by class 3 root
+certificate}, paste the above request block into the text field and
+click on @code{Submit}.
+
+If everything works out fine, a certificate will be shown. Now run
+
+@cartouche
+@example
+$ gpgsm --import
+@end example
+@end cartouche
+
+and paste the certificate from the CAcert page into your terminal
+followed by a Ctrl-D
+
+@cartouche
+@example
+  -----BEGIN CERTIFICATE-----
+  MIIEIjCCAgqgAwIBAgIBTDANBgkqhkiG9w0BAQQFADBUMRQwEgYDVQQKEwtDQWNl
+  cnQgSW5jLjEeMBwGA1UECxMVaHR0cDovL3d3dy5DQWNlcnQub3JnMRwwGgYDVQQD
+  ExNDQWNlcnQgQ2xhc3MgMyBSb290MB4XDTA1MTAyODE2MjA1MVoXDTA3MTAyODE2
+  MjA1MVowITEfMB0GA1UEAxMWa2VyY2tob2Zmcy5nMTBjb2RlLmNvbTCBnzANBgkq
+  hkiG9w0BAQEFAAOBjQAwgYkCgYEA5h+uKRenpvbe+BnMY6siPO50LVygHtB7kr+Y
+  ISlPJ5JAFO12yQFz9Y0sBLHbjR+V+TOawwP1dZhGjlgnEBkMdWKuEBlSwFTALLX7
+  8GAyvAYAmPqSPDEYXkMECyUXVX/bbGI1bY8Y2OGy4w4D+v7e+xD2NBkmBj5cNy+Y
+  MbGVldECAwEAAaOBtTCBsjAMBgNVHRMBAf8EAjAAMDQGA1UdJQQtMCsGCCsGAQUF
+  BwMCBggrBgEFBQcDAQYJYIZIAYb4QgQBBgorBgEEAYI3CgMDMAsGA1UdDwQEAwIF
+  oDAyBggrBgEFBQcBAQQmMCQwIgYIKwYBBQUHMAGGFmh0dHA6Ly9vY3NwLmNhY2Vy
+  dC5vcmcwKwYDVR0RBCQwIoIPd3d3LmcxMGNvZGUuY29tgg9mdHAuZzEwY29kZS5j
+  b20wDQYJKoZIhvcNAQEEBQADggIBAAj5XAHCtzQR8PV6PkQBgZqUCbcfxGO/ZIp9
+  aIT6J2z0Jo1OZI6KmConbqnZG9WyDlV5P7msQXW/Z9nBfoj4KSmNR8G/wtb8ClJn
+  W8s75+K3ZLq1UgEyxBDrS7GjtbVaj7gsfZsuiQzxmk9lbl1gbkpJ3VEMjwVCTMlM
+  fpjp8etyPhUZqOZaoKVaq//KTOsjhPMwz7TcfOkHvXketPrWTcefJQU7NKLH16D3
+  mZAwnBxp3P51H6E6VG8AoJO8xCBuVwsbXKEf/FW+tmKG9pog6CaZQ9WibROTtnKj
+  NJjSBsrUk5C+JowO/EyZRGm6R1tlok8iFXj+2aimyeBqDcxozNmFgh9F3S5u0wK0
+  6cfYgkPVMHxgwV3f3Qh+tJkgLExN7KfO9hvpZqAh+CLQtxVmvpxEVEXKR6nwBI5U
+  BaseulvVy3wUfg2daPkG17kDDBzQlsWC0BRF8anH+FWSrvseC3nS0a9g3sXF1Ic3
+  gIqeAMhkant1Ac3RR6YCWtJKr2rcQNdDAxXK35/gUSQNCi9dclEzoOgjziuA1Mha
+  94jYcvGKcwThn0iITVS5hOsCfaySBLxTzfIruLbPxXlpWuCW/6I/7YyivppKgEZU
+  rUTFlNElRXCwIl0YcJkIaYYqWf7+A/aqYJCi8+51usZwMy3Jsq3hJ6MA3h1BgwZs
+  Rtct3tIX
+  -----END CERTIFICATE-----
+  gpgsm: issuer certificate (#/CN=CAcert Class 3 Ro[...]) not found
+  gpgsm: certificate imported
+  
+  gpgsm: total number processed: 1
+  gpgsm:               imported: 1
+@end example
+@end cartouche
+
+gpgsm tells you that it has imported the certificate. It is now
+associated with the key you used when creating the request. The root
+certificate has not been found, so you may want to import it from the
+CACert website.
+
+To see the content of your certificate, you may now enter:
+
+@cartouche
+@example
+  $ gpgsm -K kerckhoffs.g10code.com
+  /home/foo/.gnupg/pubring.kbx
+  ---------------------------
+  Serial number: 4C
+         Issuer: /CN=CAcert Class 3 Root/OU=http:\x2f\x2fwww.[...]
+        Subject: /CN=kerckhoffs.g10code.com
+            aka: (dns-name www.g10code.com)
+            aka: (dns-name ftp.g10code.com)
+       validity: 2005-10-28 16:20:51 through 2007-10-28 16:20:51
+       key type: 1024 bit RSA
+      key usage: digitalSignature keyEncipherment
+  ext key usage: clientAuth (suggested), serverAuth (suggested), [...]
+    fingerprint: 0F:9C:27:B2:DA:05:5F:CB:33:19:D8:E9:65:B9:BD:4F:B1:98:CC:57
+@end example
+@end cartouche
+
+I used @option{-K} above because this will only list certificates for
+which a private key is available.  To see more details, you may use
+@option{--dump-secret-keys} instead of @option{-K}.
+
+
+To make actual use of the certificate you need to install it on your
+server. Server software usally expects a PKCS\#12 file with key and
+certificate. To create such a file, run:
+
+@cartouche
+@example
+  $ gpgsm --export-secret-key-p12 -a >kerckhoffs-cert.pem
+@end example
+@end cartouche
+
+You will be asked for the passphrase as well as for a new passphrase to
+be used to protect the PKCS\#12 file. The file now contains the
+certificate as well as the private key:
+
+@cartouche
+@example
+  $ cat kerckhoffs-cert.pem
+  Issuer ...: /CN=CAcert Class 3 Root/OU=http:\x2f\x2fwww.CA[...]
+  Serial ...: 4C
+  Subject ..: /CN=kerckhoffs.g10code.com
+      aka ..: (dns-name www.g10code.com)
+      aka ..: (dns-name ftp.g10code.com)
+  
+  -----BEGIN PKCS12-----
+  MIIHlwIBAzCCB5AGCSqGSIb37QdHAaCCB4EEggd9MIIHeTk1BJ8GCSqGSIb3DQEu
+  [...many more lines...]
+  -----END PKCS12-----
+  $
+@end example
+@end cartouche
+
+Copy this file in a secure way to the server, install it there and
+delete the file then. You may export the file again at any time as long
+as it is available in GnuPG's private key database.
+
+

@@ -42,7 +42,8 @@ dist_pkgdata_DATA = qualified.txt FAQ faq.html com-certs.pem
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi instguide.texi \
 	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
-	sysnotes.texi gnupg-card-architecture.fig
+	sysnotes.texi gnupg-card-architecture.fig \
+	howtos.texi howto-create-a-server-cert.texi
 
 DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
 

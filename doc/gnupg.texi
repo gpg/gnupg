@@ -128,6 +128,7 @@ the administration and the architecture.
 
 * Helper Tools::        Description of small helper tools
 
+* Howtos::              How to do certain things.
 * System Notes::        Notes pertaining to certain OSes.
 * Debugging::           How to solve problems
 
@@ -162,6 +163,8 @@ the administration and the architecture.
 
 
 @include tools.texi
+
+@include howtos.texi
 
 @include sysnotes.texi
 

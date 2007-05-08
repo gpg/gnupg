@@ -1,5 +1,9 @@
 2007-05-08  Werner Koch  <wk@g10code.com>
 
+	* howtos.texi: New.
+	* howto-create-a-server-cert.texi: New.
+	* Makefile.am (gnupg_TEXINFOS): Add new files.
+
 	* gnupg.texi: Moved the logo for HTML more to the top.
 	* Makefile.am (install-html-local): New.
 	(DVIPS): Redefine to include srcdir.

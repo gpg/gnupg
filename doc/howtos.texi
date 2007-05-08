@@ -1,0 +1,15 @@
+@c Copyright (C) 2007 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Howtos
+@chapter How to do certain things
+
+This is a collection of small howto documents.
+
+@menu
+* Howto Create a Server Cert::  Creating a TLS server certificate.
+@end menu
+
+
+@include howto-create-a-server-cert.texi
