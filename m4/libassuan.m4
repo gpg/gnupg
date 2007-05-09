@@ -74,7 +74,7 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
   fi
 
   if test $ok = yes; then
-    AC_MSG_RESULT(yes)
+    AC_MSG_RESULT([yes ($libassuan_version)])
   else
     AC_MSG_RESULT(no)
   fi

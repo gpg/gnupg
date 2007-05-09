@@ -1,3 +1,7 @@
+2007-05-09  Werner Koch  <wk@g10code.com>
+
+	* gpg-error.m4, ksba.m4, libassuan.m4, libgcrypt.m4: Updated.
+
 2007-05-07  gettextize  <bug-gnu-gettext@gnu.org>
 
 	* gettext.m4: Upgrade to gettext-0.16.1.

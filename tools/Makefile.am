@@ -21,7 +21,7 @@
 EXTRA_DIST = \
 	Manifest watchgnupg.c \
 	addgnupghome applygnupgdefaults gpgsm-gencert.sh \
-	lspgpot mail-signed-keys convert-from-106
+	lspgpot mail-signed-keys convert-from-106 sockprox.c
 
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common

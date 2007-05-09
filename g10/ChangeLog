@@ -1,3 +1,9 @@
+2007-05-09  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (overwrite_filep, open_outfile) [W32]: Need to use
+	just "nul".  Though, I am pretty sure that some MSDOS versions
+	grok the extra /dev/.
+
 2007-05-07  Werner Koch  <wk@g10code.com>
 
 	* openfile.c (open_outfile, overwrite_filep) [W32]: Use "/dev/nul".

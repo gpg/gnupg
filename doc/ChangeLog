@@ -1,3 +1,7 @@
+2007-05-09  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (online): Distinguish between released and svn manuals.
+
 2007-05-08  Werner Koch  <wk@g10code.com>
 
 	* howtos.texi: New.

@@ -75,7 +75,7 @@ AC_DEFUN([AM_PATH_KSBA],
     fi
   fi
   if test $ok = yes; then
-    AC_MSG_RESULT(yes)
+    AC_MSG_RESULT([yes ($ksba_config_version)])
   else
     AC_MSG_RESULT(no)
   fi

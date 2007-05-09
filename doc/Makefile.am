@@ -142,8 +142,13 @@ online: gnupg.html gnupg.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
 	cp gnupg-logo.png gnupg.html/; \
-        user=werner ; \
-	(cd gnupg.html && rsync -vr --exclude='.svn' .  \
-	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg/ ); \
-        rsync -v gnupg.pdf $${user}@cvs.gnupg.org:webspace/manuals/
+        user=werner ; dashdevel="" ; \
+        if echo "@PACKAGE_VERSION@" | grep -- "-svn" >/dev/null; then \
+	  dashdevel="-devel" ; \
+	else \
+          rsync -v gnupg.pdf $${user}@cvs.gnupg.org:webspace/manuals/ ; \
+        fi ; \
+	cd gnupg.html ; \
+        rsync -vr --exclude='.svn' .  \
+	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg$${dashdevel}/ 
 
