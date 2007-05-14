@@ -1,3 +1,13 @@
+2007-05-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* defs.inc (all_cipher_algos): New function to return all ciphers
+	we support.  This is safer than the previous setup which could
+	hide that some ciphers weren't being tested.  Plus, this
+	automatically tests any new ciphers we may add.
+
+	* conventional.test, encrypt-test, encrypt-dsa.test,
+	conventional-mdc.test: Use it here.
+
 2007-05-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* conventional.test, encrypt.test, encrypt-dsa.test,

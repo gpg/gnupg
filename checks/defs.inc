@@ -121,15 +121,6 @@ have_pubkey_algo () {
   fi
 }
 
-have_cipher_algo () {
-  if  ../g10/gpg --homedir .  --version | grep "Cipher:.*$1" >/dev/null
-  then
-	true
-  else
-	false
-  fi
-}
-
 have_hash_algo () {
   if  ../g10/gpg --homedir .  --version | grep "Hash:.*$1" >/dev/null
   then
@@ -137,6 +128,10 @@ have_hash_algo () {
   else
 	false
   fi
+}
+
+all_cipher_algos () {
+  ../g10/gpg --homedir . --version | grep "Cipher" | sed 's/^Cipher: //; s/,//g'
 }
 
 set -e
