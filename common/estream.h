@@ -26,7 +26,82 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-
+/* To use this file with libraries the following macro is useful:
+
+     #define _ESTREAM_EXT_SYM_PREFIX _foo_
+
+       This prefixes all external symbols with "_foo_".
+
+ */
+
+
+#ifdef _ESTREAM_EXT_SYM_PREFIX
+#ifndef _ESTREAM_PREFIX
+#define _ESTREAM_PREFIX1(x,y)  x ## y
+#define _ESTREAM_PREFIX2(x,y) _ESTREAM_PREFIX1(x,y)
+#define _ESTREAM_PREFIX(x)    _ESTREAM_PREFIX2(_ESTREAM_EXT_SYM_PREFIX,x)
+#endif /*_ESTREAM_PREFIX*/
+#define es_fopen              _ESTREAM_PREFIX(es_fopen)
+#define es_mopen              _ESTREAM_PREFIX(es_mopen)
+#define es_open_memstream     _ESTREAM_PREFIX(es_open_memstream)
+#define es_fdopen             _ESTREAM_PREFIX(es_fdopen)
+#define es_freopen            _ESTREAM_PREFIX(es_freopen)
+#define es_fopencookie        _ESTREAM_PREFIX(es_fopencookie)
+#define es_fclose             _ESTREAM_PREFIX(es_fclose)
+#define es_fileno             _ESTREAM_PREFIX(es_fileno)
+#define es_fileno_unlocked    _ESTREAM_PREFIX(es_fileno_unlocked)
+#define es_flockfile          _ESTREAM_PREFIX(es_flockfile)
+#define es_ftrylockfile       _ESTREAM_PREFIX(es_ftrylockfile)
+#define es_funlockfile        _ESTREAM_PREFIX(es_funlockfile)
+#define es_feof               _ESTREAM_PREFIX(es_feof)
+#define es_feof_unlocked      _ESTREAM_PREFIX(es_feof_unlocked)
+#define es_ferror             _ESTREAM_PREFIX(es_ferror)
+#define es_ferror_unlocked    _ESTREAM_PREFIX(es_ferror_unlocked)
+#define es_clearerr           _ESTREAM_PREFIX(es_clearerr)
+#define es_clearerr_unlocked  _ESTREAM_PREFIX(es_clearerr_unlocked)
+#define es_fflush             _ESTREAM_PREFIX(es_fflush)
+#define es_fseek              _ESTREAM_PREFIX(es_fseek)
+#define es_fseeko             _ESTREAM_PREFIX(es_fseeko)
+#define es_ftell              _ESTREAM_PREFIX(es_ftell)
+#define es_ftello             _ESTREAM_PREFIX(es_ftello)
+#define es_rewind             _ESTREAM_PREFIX(es_rewind)
+#define es_fgetc              _ESTREAM_PREFIX(es_fgetc)
+#define es_fputc              _ESTREAM_PREFIX(es_fputc)
+#define _es_getc_underflow    _ESTREAM_PREFIX(_es_getc_underflow)
+#define _es_putc_overflow     _ESTREAM_PREFIX(_es_putc_overflow)
+#define es_ungetc             _ESTREAM_PREFIX(es_ungetc)
+#define es_read               _ESTREAM_PREFIX(es_read)
+#define es_write              _ESTREAM_PREFIX(es_write)
+#define es_write_sanitized    _ESTREAM_PREFIX(es_write_sanitized)
+#define es_write_hexstring    _ESTREAM_PREFIX(es_write_hexstring)
+#define es_fread              _ESTREAM_PREFIX(es_fread)
+#define es_fwrite             _ESTREAM_PREFIX(es_fwrite)
+#define es_fgets              _ESTREAM_PREFIX(es_fgets)
+#define es_fputs              _ESTREAM_PREFIX(es_fputs)
+#define es_getline            _ESTREAM_PREFIX(es_getline)
+#define es_read_line          _ESTREAM_PREFIX(es_read_line)
+#define es_free               _ESTREAM_PREFIX(es_free)
+#define es_fprf               _ESTREAM_PREFIX(es_fprf)
+#define es_vfprf              _ESTREAM_PREFIX(es_vfprf)
+#define es_setvbuf            _ESTREAM_PREFIX(es_setvbuf)
+#define es_setbuf             _ESTREAM_PREFIX(es_setbuf)
+#define es_tmpfile            _ESTREAM_PREFIX(es_tmpfile)
+#define es_opaque_set         _ESTREAM_PREFIX(es_opaque_set)
+#define es_opaque_get         _ESTREAM_PREFIX(es_opaque_get)
+#define es_write_sanitized_utf8_buffer  \
+              _ESTREAM_PREFIX(es_write_sanitized_utf8_buffer)
+#endif /*_ESTREAM_EXT_SYM_PREFIX*/
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#if 0
+}
+#endif
+#endif
+
+
 /* Forward declaration for the (opaque) internal type.  */
 struct estream_internal;
 
@@ -90,6 +165,15 @@ typedef struct es_cookie_io_functions
 } es_cookie_io_functions_t;
 
 
+#ifndef _ESTREAM_GCC_A_PRINTF
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+# define _ESTREAM_GCC_A_PRINTF( f, a )  __attribute__ ((format (printf,f,a)))
+#else
+# define _ESTREAM_GCC_A_PRINTF( f, a )
+#endif
+#endif /*_ESTREAM_GCC_A_PRINTF*/
+
+
 #ifndef ES__RESTRICT
 #  if defined __GNUC__ && defined __GNUC_MINOR__
 #    if  (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 92))
@@ -191,16 +275,17 @@ int es_fputs (const char *ES__RESTRICT s, estream_t ES__RESTRICT stream);
 ssize_t es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr,
 		    size_t *ES__RESTRICT n,
 		    estream_t stream);
-ssize_t es_read_line (estream_t stream, 
+ssize_t es_read_line (estream_t stream,
                       char **addr_of_buffer, size_t *length_of_buffer,
                       size_t *max_length);
 void es_free (void *a);
 
 int es_fprintf (estream_t ES__RESTRICT stream,
-		const char *ES__RESTRICT format, ...);
+		const char *ES__RESTRICT format, ...)
+     _ESTREAM_GCC_A_PRINTF(2,3);
 int es_vfprintf (estream_t ES__RESTRICT stream,
-		 const char *ES__RESTRICT format, va_list ap);
-
+		 const char *ES__RESTRICT format, va_list ap)
+     _ESTREAM_GCC_A_PRINTF(2,0);
 int es_setvbuf (estream_t ES__RESTRICT stream,
 		char *ES__RESTRICT buf, int mode, size_t size);
 void es_setbuf (estream_t ES__RESTRICT stream, char *ES__RESTRICT buf);
@@ -213,12 +298,13 @@ void *es_opaque_get (estream_t stream);
 
 #ifdef GNUPG_MAJOR_VERSION
 int es_write_sanitized_utf8_buffer (estream_t stream,
-                                    const void *buffer, size_t length, 
+                                    const void *buffer, size_t length,
                                     const char *delimiters,
                                     size_t *bytes_written);
 #endif /*GNUPG_MAJOR_VERSION*/
 
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif /*ESTREAM_H*/
-

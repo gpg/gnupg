@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  * USA.
  *
- * $Id: estream-printf.c 54 2007-05-15 14:12:06Z wk $
+ * $Id: estream-printf.c 56 2007-05-15 18:38:43Z wk $
  */
 
 /*  Required autoconf tests:
@@ -34,7 +34,7 @@
 
     Note that the file estream.m4 provides the autoconf macro
     ESTREAM_PRINTF_INIT which runs all required checks.
-
+    See estream-printf.h for ways to tune this code.
 
   Missing stuff:  wchar and wint_t
                   thousands_sep in pr_float.
@@ -61,21 +61,21 @@
 #ifdef TEST
 # include <locale.h>
 #endif
-#ifdef ESTREAM_PRINTF_EXTRA_INCLUDE
-#include ESTREAM_PRINTF_EXTRA_INCLUDE
+#ifdef _ESTREAM_PRINTF_EXTRA_INCLUDE
+#include _ESTREAM_PRINTF_EXTRA_INCLUDE
 #endif
 #include "estream-printf.h"
 
 /* Allow redefinition of asprintf used malloc functions.  */
-#ifdef ESTREAM_ASPRINTF_MALLOC
-#define my_asprintf_malloc(a) ESTREAM_ASPRINTF_MALLOC((a))  
+#ifdef _ESTREAM_PRINTF_MALLOC
+#define my_printf_malloc(a) _ESTREAM_PRINTF_MALLOC((a))  
 #else
-#define my_asprintf_malloc(a) malloc((a))
+#define my_printf_malloc(a) malloc((a))
 #endif
-#ifdef ESTREAM_ASPRINTF_FREE
-#define my_asprintf_free(a)   ESTREAM_ASPRINTF_FREE((a))  
+#ifdef _ESTREAM_PRINTF_FREE
+#define my_printf_free(a)   _ESTREAM_PRINTF_FREE((a))  
 #else
-#define my_asprintf_free(a)   free((a))
+#define my_printf_free(a)   free((a))
 #endif
 
 
@@ -1799,7 +1799,7 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
   parm.error_flag = 0;
   parm.alloced = 512;
   parm.used = 0;
-  parm.buffer = my_asprintf_malloc (parm.alloced);
+  parm.buffer = my_printf_malloc (parm.alloced);
   if (!parm.buffer)
     {
       *bufp = NULL;
@@ -1816,7 +1816,7 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
   if (rc == -1)
     {
       memset (parm.buffer, 0, parm.used);
-      my_asprintf_free (parm.buffer);
+      my_printf_free (parm.buffer);
       *bufp = NULL;
       return -1;
     }

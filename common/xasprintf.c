@@ -27,8 +27,8 @@
 #include "iobuf.h"
 #include "estream-printf.h"
 
-#if !defined(ESTREAM_ASPRINTF_MALLOC) || !defined(ESTREAM_ASPRINTF_FREE)
-#error Need to define ESTREAM_ASPRINTF_MALLOC and _FREE
+#if !defined(_ESTREAM_PRINTF_MALLOC) || !defined(_ESTREAM_PRINTF_FREE)
+#error Need to define ESTREAM_PRINTF_MALLOC and _FREE
 #endif
 
 /* Same as asprintf but return an allocated buffer suitable to be

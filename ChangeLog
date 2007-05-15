@@ -1,6 +1,8 @@
 2007-05-15  Werner Koch  <wk@g10code.com>
 
-	* configure.ac:  Call ESTREAM_INIT and define the memory
+	* configure.ac: Renamed the estream macros. Remove -Wformat-nonliteral.
+
+	* configure.ac: Call ESTREAM_INIT and define the memory
 	allocators for estream_asprintf.
 	(gl_MODULES): Remove vasprintf.
 

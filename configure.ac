@@ -428,9 +428,9 @@ AH_BOTTOM([
 
 /* We want to use the libgcrypt provided memory allocation for
    asprintf.  */
-#define ESTREAM_ASPRINTF_MALLOC      gcry_malloc
-#define ESTREAM_ASPRINTF_FREE        gcry_free
-#define ESTREAM_PRINTF_EXTRA_INCLUDE "util.h"
+#define _ESTREAM_PRINTF_MALLOC        gcry_malloc
+#define _ESTREAM_PRINTF_FREE          gcry_free
+#define _ESTREAM_PRINTF_EXTRA_INCLUDE "util.h"
 
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
@@ -1157,7 +1157,7 @@ if test "$GCC" = yes; then
     # them.
     if test "$USE_MAINTAINER_MODE" = "yes"; then
         CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
-        CFLAGS="$CFLAGS -Wno-format-y2k -Wformat-security -Wformat-nonliteral"
+        CFLAGS="$CFLAGS -Wformat -Wno-format-y2k -Wformat-security"
     else
         CFLAGS="$CFLAGS -Wall"
     fi
