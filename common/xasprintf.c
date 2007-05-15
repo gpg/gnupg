@@ -25,6 +25,11 @@
 
 #include "util.h"
 #include "iobuf.h"
+#include "estream-printf.h"
+
+#if !defined(ESTREAM_ASPRINTF_MALLOC) || !defined(ESTREAM_ASPRINTF_FREE)
+#error Need to define ESTREAM_ASPRINTF_MALLOC and _FREE
+#endif
 
 /* Same as asprintf but return an allocated buffer suitable to be
    freed using xfree.  This function simply dies on memory failure,
@@ -33,15 +38,13 @@ char *
 xasprintf (const char *fmt, ...)
 {
   va_list ap;
-  char *buf, *p;
+  char *buf;
 
   va_start (ap, fmt);
-  if (vasprintf (&buf, fmt, ap) < 0)
-    log_fatal ("asprintf failed: %s\n", strerror (errno));
+  if (estream_vasprintf (&buf, fmt, ap) < 0)
+    log_fatal ("estream_asprintf failed: %s\n", strerror (errno));
   va_end (ap);
-  p = xstrdup (buf);
-  free (buf);
-  return p;
+  return buf;
 }
 
 /* Same as above but return NULL on memory failure.  */
@@ -50,14 +53,12 @@ xtryasprintf (const char *fmt, ...)
 {
   int rc;
   va_list ap;
-  char *buf, *p;
+  char *buf;
 
   va_start (ap, fmt);
-  rc = vasprintf (&buf, fmt, ap);
+  rc = estream_vasprintf (&buf, fmt, ap);
   va_end (ap);
   if (rc < 0)
     return NULL;
-  p = xtrystrdup (buf);
-  free (buf);
-  return p;
+  return buf;
 }

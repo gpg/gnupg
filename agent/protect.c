@@ -1,6 +1,6 @@
 /* protect.c - Un/Protect a secret key
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ *               2003, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -846,23 +846,21 @@ make_shadow_info (const char *serialno, const char *idstring)
 {
   const char *s;
   char *info, *p;
-  char numbuf[21];
-  int n;
+  char numbuf[20];
+  size_t n;
 
   for (s=serialno, n=0; *s && s[1]; s += 2)
     n++;
 
-  info = p = xtrymalloc (1 + 21 + n
-                           + 21 + strlen (idstring) + 1 + 1);
+  info = p = xtrymalloc (1 + sizeof numbuf + n
+                           + sizeof numbuf + strlen (idstring) + 1 + 1);
   if (!info)
     return NULL;
   *p++ = '(';
-  sprintf (numbuf, "%d:", n);
-  p = stpcpy (p, numbuf);
+  p = stpcpy (p, smklen (numbuf, sizeof numbuf, n, NULL));
   for (s=serialno; *s && s[1]; s += 2)
     *(unsigned char *)p++ = xtoi_2 (s);
-  sprintf (numbuf, "%u:", (unsigned int)strlen (idstring));
-  p = stpcpy (p, numbuf);
+  p = stpcpy (p, smklen (numbuf, sizeof numbuf, strlen (idstring), NULL));
   p = stpcpy (p, idstring);
   *p++ = ')';
   *p = 0;

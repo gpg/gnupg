@@ -1,4 +1,10 @@
+2007-05-11  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.texi (--export): Enhanced description.
+
 2007-05-09  Werner Koch  <wk@g10code.com>
+
+	* examples/gpgconf.conf: Remove active example line.
 
 	* Makefile.am (online): Distinguish between released and svn manuals.
 

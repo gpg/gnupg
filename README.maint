@@ -30,16 +30,18 @@ Release process:
   * Run "./autogen.sh --force"
     (--force is required for the svn magic in configure.ac and a good
     idea in any case)
+  * Run configure as usual.
   * Run "make distcheck"
   * Build and test the new tarball (best on a different machine).
-  * [1.4 only] Build and test the W32 vesion.
+  * [1.4 only] Build and test the W32 version.
+  * Using the final test build run a "make -C doc online".
   * Sign the tarball
   * Get the previous tarball and run "mkdiff gnupg".  
     You might need to set a different signature key than mine.  mkdiff
     has an option for this.
-  * If you are satisied with the result tag the release.  Use "svn
+  * If you are satisfied with the result tag the release.  Use "svn
     info" to get the current URL and use an svn cp command similar to
-    "svn cp svn+ssh://host/gnupg/trunk  svn+ssh://host/gnupg/tags/2.n.m"
+    "svn cp svn+ssh://host/gnupg/trunk  svn+ssh://host/gnupg/tags/gnupg-2.n.m"
     (for 1.4 you should see "branches/STABLE-BRANCH-1-4" instead of "trunk",
      however tags are all below tags).
   * Copy the files to the FTP server

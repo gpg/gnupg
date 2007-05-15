@@ -59,18 +59,6 @@ libgnu_a_SOURCES += setenv.h
 
 ## end   gnulib module setenv
 
-## begin gnulib module vasnprintf
-
-libgnu_a_SOURCES += printf-args.h printf-parse.h vasnprintf.h
-
-## end   gnulib module vasnprintf
-
-## begin gnulib module vasprintf
-
-libgnu_a_SOURCES += vasprintf.h
-
-## end   gnulib module vasprintf
-
 ## begin gnulib module xsize
 
 libgnu_a_SOURCES += xsize.h

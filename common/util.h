@@ -27,10 +27,6 @@
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t. */
 
-/* Common GNUlib includes (-I ../gl/). */
-#include "vasprintf.h"
-
-
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
 
@@ -43,6 +39,14 @@
 #include "../jnlib/dotlock.h"
 #include "../jnlib/utf8conv.h"
 
+/* Redefine asprintf by our estream version which uses our own memory
+   allocator..  */
+#include "estream-printf.h"
+#define asprintf estream_asprintf
+#define vasprintf estream_vasprintf
+
+
+/* GCC attributes.  */
 #if __GNUC__ >= 4 
 # define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
 #else
@@ -175,13 +179,9 @@ void gnupg_rl_initialize (void);
    logging subsystem. */
 void setup_libgcrypt_logging (void);
 
-/* Same as asprintf but return an allocated buffer suitable to be
-   freed using xfree.  This function simply dies on memory failure,
-   thus no extra check is required. */
+/* Same as estream_asprintf but die on memory failure.  */
 char *xasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
-/* Same as asprintf but return an allocated buffer suitable to be
-   freed using xfree.  This function returns NULL on memory failure and
-   sets errno. */
+/* This is now an alias to estream_asprintf.  */
 char *xtryasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
 
 const char *print_fname_stdout (const char *s);

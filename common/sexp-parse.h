@@ -1,5 +1,5 @@
 /* sexp-parse.h - S-Exp helper functions
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -96,5 +96,35 @@ smatch (unsigned char const **buf, size_t buflen, const char *token)
   *buf += toklen;
   return 1;
 }
+
+/* Format VALUE for use as the length indicatior of an S-expression.
+   The caller needs to provide a buffer HELP_BUFFER wth a length of
+   HELP_BUFLEN.  The return value is a pointer into HELP_BUFFER with
+   the formatted length string.  The colon and a trailing nul are
+   appended.  HELP_BUFLEN must be at least 3 - a more useful value is
+   15.  If LENGTH is not NULL, the LENGTH of the resulting string
+   (excluding the terminating nul) is stored at that address. */
+static inline char *
+smklen (char *help_buffer, size_t help_buflen, size_t value, size_t *length)
+{
+  char *p = help_buffer + help_buflen;
+
+  if (help_buflen >= 3)
+    {
+      *--p = 0;
+      *--p = ':';
+      do
+        {
+          *--p = '0' + (value % 10);
+          value /= 10;
+        }
+      while (value && p > help_buffer);
+    }
+
+  if (length)
+    *length = (help_buffer + help_buflen) - p;
+  return p;
+}
+    
 
 #endif /*SEXP_PARSE_H*/

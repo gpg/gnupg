@@ -26,8 +26,8 @@ min_automake_version="1.10"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
-m4_define([my_version], [2.0.4])
-m4_define([my_issvn], [no])
+m4_define([my_version], [2.0.5])
+m4_define([my_issvn], [yes])
 
 
 m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
@@ -426,6 +426,11 @@ AH_BOTTOM([
    currently enables it by default for no reason. */
 #define PTH_SYSCALL_SOFT 0
 
+/* We want to use the libgcrypt provided memory allocation for
+   asprintf.  */
+#define ESTREAM_ASPRINTF_MALLOC      gcry_malloc
+#define ESTREAM_ASPRINTF_FREE        gcry_free
+#define ESTREAM_PRINTF_EXTRA_INCLUDE "util.h"
 
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
@@ -986,7 +991,7 @@ AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen])
 #
 gl_SOURCE_BASE([gl])
 gl_M4_BASE([gl/m4])
-gl_MODULES([setenv mkdtemp vasprintf xsize])
+gl_MODULES([setenv mkdtemp xsize])
 gl_INIT
 
 
@@ -1186,6 +1191,12 @@ AC_ARG_ENABLE(optimization,
 if test "$have_w32_system" = yes; then
   AC_CONFIG_LINKS(pth.h:jnlib/w32-pth.h)
 fi
+
+
+#
+# Prepare building of estream
+#
+estream_INIT
 
 
 #

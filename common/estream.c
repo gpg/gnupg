@@ -1,5 +1,5 @@
 /* estream.c - Extended Stream I/O Library
- * Copyright (C) 2004, 2006, 2007 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2006, 2007 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -11,7 +11,7 @@
  * Libestream is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with Libestream; if not, write to the Free Software
@@ -49,6 +49,7 @@
 # include <pth.h>
 #endif
 
+/* This is for the special hack to use estream.c in GnuPG.  */
 #ifdef GNUPG_MAJOR_VERSION
 #include "../common/util.h"
 #endif
@@ -62,7 +63,7 @@ void *memrchr (const void *block, int c, size_t size);
 #endif
 
 #include <estream.h>
-
+#include <estream-printf.h>
 
 
 
@@ -747,8 +748,8 @@ static int
 es_convert_mode (const char *mode, unsigned int *flags)
 {
 
-  /* FIXME: We need to allow all combinations for mode flags and for
-     binary we need to do a
+  /* FIXME: We need to allow all mode flags permutations and for
+     binary mode we need to do a
 
      #ifdef HAVE_DOSISH_SYSTEM
        setmode (fd, O_BINARY);
@@ -1671,29 +1672,19 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
 }
 
 
-/* Helper for esprint. */
-#if defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN)
-static my_funopen_hook_ret_t
-print_fun_writer (void *cookie_arg, const char *buffer, size_t size)
+/* Output fucntion used for estream_format.  */
+static int
+print_writer (void *outfncarg, const char *buf, size_t buflen)
 {
-  estream_t stream = cookie_arg;
+  estream_t stream = outfncarg;
   size_t nwritten;
-  
-  /* We don't return an error but let es_print check whether an error
-     has occured.  Internally we skip everything after an error. */
-  if (!stream->intern->print_err)
-    {
-      if (es_writen (stream, buffer, size, &nwritten))
-        {
-          stream->intern->print_err = 1;
-          stream->intern->print_errno = errno;
-        }
-      else
-        stream->intern->print_ntotal += nwritten;
-    }
-  return 0;
+  int rc;
+
+  nwritten = 0;
+  rc = es_writen (stream, buf, buflen, &nwritten);
+  stream->intern->print_ntotal += nwritten;
+  return rc;
 }
-#endif /* HAVE_FOPENCOOKIE || HAVE_FUNOPEN */
 
 
 /* The core of our printf function.  This is called in locked state. */
@@ -1701,98 +1692,13 @@ static int
 es_print (estream_t ES__RESTRICT stream,
 	  const char *ES__RESTRICT format, va_list ap)
 {
-#if defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN)
+  int rc;
 
-  if (!stream->intern->print_fp)
-    {
-#ifdef HAVE_FOPENCOOKIE
-      {
-        cookie_io_functions_t io = { NULL };
-        io.write = print_fun_writer;
-        
-        stream->intern->print_fp = fopencookie (stream, "w", io);
-      }
-#else /*!HAVE_FOPENCOOKIE*/
-      stream->intern->print_fp = funopen (stream, NULL,
-                                          print_fun_writer, NULL, NULL);
-#endif /*!HAVE_FOPENCOOKIE*/
-      if (!stream->intern->print_fp)
-        return -1;
-    }
-
-  stream->intern->print_err = 0;
-  stream->intern->print_errno = 0;
   stream->intern->print_ntotal = 0;
-
-  if ( vfprintf (stream->intern->print_fp, format, ap) < 0 
-       || fflush (stream->intern->print_fp) )
-    {
-      stream->intern->print_errno = errno;
-      stream->intern->print_err = 1;
-      fclose (stream->intern->print_fp);
-      stream->intern->print_fp = NULL;
-    }
-  if (stream->intern->print_err)
-    {
-      errno = stream->intern->print_errno;
-      return -1;
-    }
-
+  rc = estream_format (print_writer, stream, format, ap);
+  if (rc)
+    return -1;
   return (int)stream->intern->print_ntotal;
-  
-#else /* No funopen or fopencookie. */
-  
-  char data[BUFFER_BLOCK_SIZE];
-  size_t bytes_read;
-  size_t bytes_written;
-  FILE *tmp_stream;
-  int err;
-
-  bytes_written = 0;
-  tmp_stream = NULL;
-  err = 0;
-  
-  tmp_stream = tmpfile ();
-  if (! tmp_stream)
-    {
-      err = errno;
-      goto out;
-    }
-
-  err = vfprintf (tmp_stream, format, ap);
-  if (err < 0)
-    goto out;
-
-  err = fseek (tmp_stream, 0, SEEK_SET);
-  if (err)
-    goto out;
-
-  while (1)
-    {
-      bytes_read = fread (data, 1, sizeof (data), tmp_stream);
-      if (ferror (tmp_stream))
-	{
-	  err = -1;
-	  break;
-	}
-
-      err = es_writen (stream, data, bytes_read, NULL);
-      if (err)
-	break;
-      else
-	bytes_written += bytes_read;
-      if (feof (tmp_stream))
-	break;
-    }
-  if (err)
-    goto out;
-
- out:
-  if (tmp_stream)
-    fclose (tmp_stream);
-
-  return err ? -1 : bytes_written;
-#endif /* no funopen or fopencookie */
 }
 
 
@@ -2718,7 +2624,7 @@ es_vfprintf (estream_t ES__RESTRICT stream, const char *ES__RESTRICT format,
 
 static int
 es_fprintf_unlocked (estream_t ES__RESTRICT stream,
-	    const char *ES__RESTRICT format, ...)
+           const char *ES__RESTRICT format, ...)
 {
   int ret;
   
@@ -2868,8 +2774,6 @@ es_opaque_get (estream_t stream)
   return opaque;
 }
 
-
-
 /* Print a BUFFER to STREAM while replacing all control characters and
    the characters in DELIMITERS by standard C escape sequences.
    Returns 0 on success or -1 on error.  If BYTES_WRITTEN is not NULL
@@ -2992,7 +2896,7 @@ es_write_hexstring (estream_t ES__RESTRICT stream,
    encoding.  The interface is the same as es_write_sanitized, however
    only one delimiter may be supported. 
 
-   THIS IS NOT A STANDARD ESTREAM FUNCTION AND ONLY USED BY GNUPG. */
+   THIS IS NOT A STANDARD ESTREAM FUNCTION AND ONLY USED BY GNUPG!. */
 int
 es_write_sanitized_utf8_buffer (estream_t stream,
                                 const void *buffer, size_t length, 
@@ -3025,6 +2929,3 @@ es_write_sanitized_utf8_buffer (estream_t stream,
     return es_write_sanitized (stream, p, length, delimiters, bytes_written);
 }
 #endif /*GNUPG_MAJOR_VERSION*/
-
-
-

@@ -228,8 +228,14 @@ Delete the keys matching @var{pattern}.
 @item --export [@var{pattern}]
 @opindex export
 Export all certificates stored in the Keybox or those specified by the
-optional @var{pattern}.  When using along with the @code{--armor} option
-a few informational lines are prepended before each block.
+optional @var{pattern}. Those pattern consist of a list of user ids
+(@pxref{how-to-specify-a-user-id}).  When used along with the
+@option{--armor} option a few informational lines are prepended before
+each block.  There is one limitation: As there is no commonly agreed
+upon way to pack more than one certificate into an ASN.1 structure, the
+binary export (i.e. without using @option{armor}) works only for the
+export of one certificate.  Thus it is required to specify a
+@var{pattern} which yields exactly one certificate.
 
 @item --export-secret-key-p12 @var{key-id}
 @opindex export

@@ -34,7 +34,7 @@
 #endif
 
 #include "util.h"
-
+#include "sexp-parse.h"
 
 /* Return the so called "keygrip" which is the SHA-1 hash of the
    public key parameters expressed in a way depended on the algorithm.
@@ -115,7 +115,8 @@ make_simple_sexp_from_hexstr (const char *line, size_t *nscanned)
   const char *s;
   unsigned char *buf;
   unsigned char *p;
-  char numbuf[50];
+  char numbuf[50], *numbufp;
+  size_t numbuflen;
 
   for (n=0, s=line; hexdigitp (s); s++, n++)
     ;
@@ -124,11 +125,12 @@ make_simple_sexp_from_hexstr (const char *line, size_t *nscanned)
   if (!n)
     return NULL;
   len = ((n+1) & ~0x01)/2; 
-  sprintf (numbuf, "(%u:", (unsigned int)len);
-  buf = xtrymalloc (strlen (numbuf) + len + 1 + 1);
+  numbufp = smklen (numbuf, sizeof numbuf, len, &numbuflen);
+  buf = xtrymalloc (1 + numbuflen + len + 1 + 1);
   if (!buf)
     return NULL;
-  p = (unsigned char *)stpcpy ((char *)buf, numbuf);
+  buf[0] = '(';
+  p = (unsigned char *)stpcpy ((char *)buf+1, numbufp);
   s = line;
   if ((n&1))
     {

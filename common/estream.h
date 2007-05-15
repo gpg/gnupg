@@ -1,5 +1,5 @@
 /* estream.h - Extended stream I/O/ Library
- * Copyright (C) 2004 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2006, 2007 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -211,13 +211,13 @@ void es_opaque_set (estream_t ES__RESTRICT stream, void *ES__RESTRICT opaque);
 void *es_opaque_get (estream_t stream);
 
 
-
 #ifdef GNUPG_MAJOR_VERSION
 int es_write_sanitized_utf8_buffer (estream_t stream,
                                     const void *buffer, size_t length, 
                                     const char *delimiters,
                                     size_t *bytes_written);
 #endif /*GNUPG_MAJOR_VERSION*/
+
 
 
 #endif /*ESTREAM_H*/

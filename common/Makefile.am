@@ -54,7 +54,7 @@ common_sources = \
 	w32reg.c \
 	signal.c \
 	dynload.h \
-	estream.c estream.h \
+	estream.c estream.h estream-printf.c estream-printf.h \
 	srv.c srv.h \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \

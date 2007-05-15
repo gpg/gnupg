@@ -8,3 +8,7 @@ EXTRA_DIST += gpg-error.m4 libgcrypt.m4 libassuan.m4 ksba.m4
 
 EXTRA_DIST += autobuild.m4
 
+EXTRA_DIST += estream.m4
+
+
+

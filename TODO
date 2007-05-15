@@ -121,6 +121,8 @@
    scdaemon stays as a zombie and gpg-agent does not perform any more
    commands.
 
+* Howtos
+** Migrate OpenPGP keys to another system
 
 
 

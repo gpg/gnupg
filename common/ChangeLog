@@ -1,3 +1,20 @@
+2007-05-15  Werner Koch  <wk@g10code.com>
+
+	* util.h: Do not include gnulib's vasprintf.  Redefine asprintf
+	and vasprintf.
+
+	* xasprintf.c (xasprintf, xtryasprintf): Use estream_vasprintf.
+
+	* estream-printf.h, estream-printf.c: New.  Taken from current
+	libestream SVN.
+	* Makefile.am (common_sources): Add them.
+
+2007-05-14  Werner Koch  <wk@g10code.com>
+
+	* sexp-parse.h (smklen): New.
+	* sexputil.c: Include sexp-parse.h.
+	(make_simple_sexp_from_hexstr): Replace sprintf by smklen.
+
 2007-05-07  Werner Koch  <wk@g10code.com>
 
 	* signal.c (got_fatal_signal): Protect SIG from being clobbered by
