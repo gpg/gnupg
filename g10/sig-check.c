@@ -438,21 +438,24 @@ check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
   gcry_md_hd_t md;
   int rc;
 
+  /* Always check whether the algorithm is available.  Although
+     gcry_md_open woyuld throw an error, some libgcrypt versions will
+     print a debug message in that case too. */
+  if ((rc=openpgp_md_test_algo (backsig->digest_algo)))
+    return rc;
+
   if(!opt.no_sig_cache && backsig->flags.checked)
+    return backsig->flags.valid? 0 : gpg_error (GPG_ERR_BAD_SIGNATURE);
+
+  rc = gcry_md_open (&md, backsig->digest_algo,0);
+  if (!rc)
     {
-      if((rc=openpgp_md_test_algo (backsig->digest_algo)))
-	return rc;
-
-      return backsig->flags.valid? 0 : gpg_error (GPG_ERR_BAD_SIGNATURE);
+      hash_public_key(md,main_pk);
+      hash_public_key(md,sub_pk);
+      rc=do_check(sub_pk,backsig,md,NULL,NULL,NULL);
+      cache_sig_result(backsig,rc);
+      gcry_md_close(md);
     }
-
-  if (gcry_md_open (&md, backsig->digest_algo,0))
-    BUG ();
-  hash_public_key(md,main_pk);
-  hash_public_key(md,sub_pk);
-  rc=do_check(sub_pk,backsig,md,NULL,NULL,NULL);
-  cache_sig_result(backsig,rc);
-  gcry_md_close(md);
 
   return rc;
 }

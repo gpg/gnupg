@@ -1,3 +1,8 @@
+2007-05-16  Werner Koch  <wk@g10code.com>
+
+	* sig-check.c (check_backsig): Check the digest algorithm before
+	using it.  Fixed bug 797.
+
 2007-05-09  Werner Koch  <wk@g10code.com>
 
 	* openfile.c (overwrite_filep, open_outfile) [W32]: Need to use
