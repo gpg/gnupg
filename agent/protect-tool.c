@@ -1183,7 +1183,10 @@ get_passphrase (int promptno, int opt_check)
       /* We only switch when we are able to restore the codeset later. */
       orig_codeset = xstrdup (orig_codeset);
       if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
-        orig_codeset = NULL; 
+        {
+	  xfree (orig_codeset);
+	  orig_codeset = NULL; 
+	}
     }
 #endif
 

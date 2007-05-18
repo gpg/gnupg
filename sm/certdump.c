@@ -921,7 +921,10 @@ gpgsm_format_keydesc (ksba_cert_t cert)
          bother printing a diagnostic here. */
       orig_codeset = xstrdup (orig_codeset);
       if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
-        orig_codeset = NULL; 
+        {
+	  xfree (orig_codeset);
+	  orig_codeset = NULL; 
+	}
     }
 #endif
 
@@ -938,9 +941,11 @@ gpgsm_format_keydesc (ksba_cert_t cert)
 
 #ifdef ENABLE_NLS
   if (orig_codeset)
-    bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
+    {
+      bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
+      xfree (orig_codeset);
+    }
 #endif
-  xfree (orig_codeset);
 
   if (rc < 0)
     {

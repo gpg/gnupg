@@ -1,6 +1,6 @@
 /* passphrase.c -  Get a passphrase
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005, 2006 Free Software Foundation, Inc.
+ *               2005, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -289,8 +289,11 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
   if (orig_codeset)
     { /* We only switch when we are able to restore the codeset later. */
       orig_codeset = xstrdup (orig_codeset);
-      if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
-        orig_codeset = NULL; 
+      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
+        {
+	  xfree (orig_codeset);
+	  orig_codeset = NULL; 
+	}
     }
 #endif
 
