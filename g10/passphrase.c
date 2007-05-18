@@ -281,7 +281,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
   
 #ifdef ENABLE_NLS
   /* The Assuan agent protocol requires us to transmit utf-8 strings */
-  orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
+  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
 #ifdef HAVE_LANGINFO_CODESET
   if (!orig_codeset)
     orig_codeset = nl_langinfo (CODESET);
@@ -396,7 +396,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
 #ifdef ENABLE_NLS
   if (orig_codeset)
     {
-      bind_textdomain_codeset (PACKAGE, orig_codeset);
+      bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
       xfree (orig_codeset);
     }
 #endif
