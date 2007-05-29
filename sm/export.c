@@ -416,7 +416,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
       putc ('\n', fp);
     }
 
-  if (opt.p12_charset)
+  if (opt.p12_charset && ctrl->create_pem)
     {
       fprintf (fp, "The passphrase is %s encoded.\n\n",
                opt.p12_charset);
