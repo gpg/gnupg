@@ -79,6 +79,8 @@
 * sm/
 ** check that we issue NO_SECKEY xxx if a -u key was not found
    We don't. The messages returned are also wrong (recipient vs. signer).
+** gpgsm_format_name2
+   Replace by an estream based implementation.
 
 * jnlib/
 ** provide jnlib_malloc and try to remove all jnlib_xmalloc.

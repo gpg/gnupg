@@ -92,7 +92,7 @@ if test "$1" = "--build-w32"; then
 	     --with-libassuan-prefix=${w32root} \
 	     --with-zlib=${w32root} \
              --with-pth-prefix=${w32root} \
-             --disable-gpg
+             --without-included-gettext
     rc=$?
     exit $rc
 fi

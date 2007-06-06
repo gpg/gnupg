@@ -33,11 +33,7 @@ int check_permissions (const char *path,int extension,int checkonly);
    _sleep but non for the still existing sleep.  */
 #define sleep(a) _sleep ((a))
 
-/*-- w32reg.c --*/
-char *read_w32_registry_string( const char *root,
-				const char *dir, const char *name );
-int write_w32_registry_string(const char *root, const char *dir,
-                              const char *name, const char *value);
+#include "../jnlib/w32help.h"
 
 #endif /*HAVE_W32_SYSTEM*/
 

@@ -28,9 +28,11 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
+include $(top_srcdir)/am/cmacros.am
+
 common_sources = \
 	common-defs.h \
-	util.h i18n.h \
+	util.h i18n.c i18n.h \
 	errors.h \
 	openpgpdefs.h \
 	keyserver.h \
@@ -50,20 +52,23 @@ common_sources = \
 	ttyio.c ttyio.h \
 	asshelp.c asshelp.h \
 	exechelp.c exechelp.h \
-	simple-gettext.c \
-	w32reg.c \
 	signal.c \
-	dynload.h \
 	estream.c estream.h estream-printf.c estream-printf.h \
-	srv.c srv.h \
+	srv.h \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \
 	http.c http.h 
 
 libcommon_a_SOURCES = $(common_sources)
+if USE_DNS_SRV
+libcommon_a_SOURCES += srv.c
+endif
 libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_GNU_PTH=1
 
 libcommonpth_a_SOURCES = $(common_sources)
+if USE_DNS_SRV
+libcommonpth_a_SOURCES += srv.c
+endif
 libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
 
 libsimple_pwquery_a_SOURCES = \

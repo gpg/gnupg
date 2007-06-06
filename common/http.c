@@ -41,11 +41,11 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <unistd.h>
 
 #ifdef HAVE_W32_SYSTEM
 # include <windows.h>
 #else /*!HAVE_W32_SYSTEM*/
-# include <unistd.h>
 # include <sys/types.h>
 # include <sys/socket.h>
 # include <sys/time.h>
@@ -236,7 +236,7 @@ init_sockets (void)
        || HIBYTE(wsdata.wVersion) != REQ_WINSOCK_MINOR ) 
     {
       log_error ("socket library version is %x.%x - but %d.%d needed\n",
-                 LOBYTE(wsdata.wVersion), HIBYTE(wsdata.wVersion)
+                 LOBYTE(wsdata.wVersion), HIBYTE(wsdata.wVersion),
                  REQ_WINSOCK_MAJOR, REQ_WINSOCK_MINOR);
       WSACleanup();
       return;
@@ -1693,7 +1693,7 @@ write_server (int sock, const char *data, size_t length)
       if ( nwritten == SOCKET_ERROR ) 
         {
           log_info ("network write failed: ec=%d\n", (int)WSAGetLastError ());
-          return G10ERR_NETWORK;
+          return gpg_error (GPG_ERR_NETWORK);
         }
 #else /*!HAVE_W32_SYSTEM*/
       int nwritten = write (sock, data, nleft);
@@ -1829,14 +1829,14 @@ cookie_close (void *cookie)
   if (!c)
     return 0;
 
- #ifdef HTTP_USE_GNUTLS
+#ifdef HTTP_USE_GNUTLS
   if (c->tls_session && !c->keep_socket)
     {
       gnutls_bye (c->tls_session, GNUTLS_SHUT_RDWR);
     }
 #endif /*HTTP_USE_GNUTLS*/
   if (c->fd != -1 && !c->keep_socket)
-    close (c->fd);
+    sock_close (c->fd);
 
   xfree (c);
   return 0;

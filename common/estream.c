@@ -125,9 +125,9 @@ typedef void *estream_mutex_t;
 
 /* Memory allocator functions.  */
 
-#define MEM_ALLOC   malloc
-#define MEM_REALLOC realloc
-#define MEM_FREE    free
+#define ES_MEM_ALLOC   malloc
+#define ES_MEM_REALLOC realloc
+#define ES_MEM_FREE    free
 
 /* Primitive system I/O.  */
 
@@ -194,7 +194,13 @@ struct estream_list
 
 static estream_list_t estream_list;
 #ifdef HAVE_PTH
-static estream_mutex_t estream_list_lock = ESTREAM_MUTEX_INITIALIZER;
+/* Note that we can't use a static initialization with W32Pth; however
+   W32Pth does an implicit initialization anyway.  */
+static estream_mutex_t estream_list_lock
+# ifndef _W32_PTH_H
+         = ESTREAM_MUTEX_INITIALIZER
+# endif
+         ;
 #endif
 
 #define ESTREAM_LIST_LOCK   ESTREAM_MUTEX_LOCK   (estream_list_lock)
@@ -236,7 +242,7 @@ es_list_add (estream_t stream)
   estream_list_t list_obj;
   int ret;
 
-  list_obj = MEM_ALLOC (sizeof (*list_obj));
+  list_obj = ES_MEM_ALLOC (sizeof (*list_obj));
   if (! list_obj)
     ret = -1;
   else
@@ -268,7 +274,7 @@ es_list_remove (estream_t stream)
 	*list_obj->prev_cdr = list_obj->cdr;
 	if (list_obj->cdr)
 	  list_obj->cdr->prev_cdr = list_obj->prev_cdr;
-	MEM_FREE (list_obj);
+	ES_MEM_FREE (list_obj);
 	break;
       }
   ESTREAM_LIST_UNLOCK;
@@ -349,7 +355,7 @@ es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
   estream_cookie_mem_t mem_cookie;
   int err;
 
-  mem_cookie = MEM_ALLOC (sizeof (*mem_cookie));
+  mem_cookie = ES_MEM_ALLOC (sizeof (*mem_cookie));
   if (! mem_cookie)
     err = -1;
   else
@@ -365,8 +371,8 @@ es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
       mem_cookie->dont_free = dont_free ? 1 : 0;
       mem_cookie->ptr = ptr;
       mem_cookie->size = size;
-      mem_cookie->func_realloc = func_realloc ? func_realloc : MEM_REALLOC;
-      mem_cookie->func_free = func_free ? func_free : MEM_FREE;
+      mem_cookie->func_realloc = func_realloc ? func_realloc : ES_MEM_REALLOC;
+      mem_cookie->func_free = func_free ? func_free : ES_MEM_FREE;
       mem_cookie->offset = 0;
       *cookie = mem_cookie;
       err = 0;
@@ -575,7 +581,7 @@ es_func_mem_destroy (void *cookie)
 
   if (! mem_cookie->dont_free)
     (*func_free) (mem_cookie->memory);
-  MEM_FREE (mem_cookie);
+  ES_MEM_FREE (mem_cookie);
 
   return 0;
 }
@@ -603,7 +609,7 @@ es_func_fd_create (void **cookie, int fd, unsigned int flags)
   estream_cookie_fd_t fd_cookie;
   int err;
 
-  fd_cookie = MEM_ALLOC (sizeof (*fd_cookie));
+  fd_cookie = ES_MEM_ALLOC (sizeof (*fd_cookie));
   if (! fd_cookie)
     err = -1;
   else
@@ -676,7 +682,7 @@ es_func_fd_destroy (void *cookie)
   if (fd_cookie)
     {
       err = close (fd_cookie->fd);
-      MEM_FREE (fd_cookie);
+      ES_MEM_FREE (fd_cookie);
     }
   else
     err = 0;
@@ -706,7 +712,7 @@ es_func_file_create (void **cookie, int *filedes,
   err = 0;
   fd = -1;
 
-  file_cookie = MEM_ALLOC (sizeof (*file_cookie));
+  file_cookie = ES_MEM_ALLOC (sizeof (*file_cookie));
   if (! file_cookie)
     {
       err = -1;
@@ -727,7 +733,7 @@ es_func_file_create (void **cookie, int *filedes,
  out:
 
   if (err)
-    MEM_FREE (file_cookie);
+    ES_MEM_FREE (file_cookie);
 
   return err;
 }
@@ -1004,14 +1010,14 @@ es_create (estream_t *stream, void *cookie, int fd,
   stream_new = NULL;
   stream_internal_new = NULL;
 
-  stream_new = MEM_ALLOC (sizeof (*stream_new));
+  stream_new = ES_MEM_ALLOC (sizeof (*stream_new));
   if (! stream_new)
     {
       err = -1;
       goto out;
     }
 
-  stream_internal_new = MEM_ALLOC (sizeof (*stream_internal_new));
+  stream_internal_new = ES_MEM_ALLOC (sizeof (*stream_internal_new));
   if (! stream_internal_new)
     {
       err = -1;
@@ -1040,7 +1046,7 @@ es_create (estream_t *stream, void *cookie, int fd,
       if (stream_new)
 	{
 	  es_deinitialize (stream_new);
-	  MEM_FREE (stream_new);
+	  ES_MEM_FREE (stream_new);
 	}
     }
 
@@ -1057,8 +1063,8 @@ es_destroy (estream_t stream)
     {
       es_list_remove (stream);
       err = es_deinitialize (stream);
-      MEM_FREE (stream->intern);
-      MEM_FREE (stream);
+      ES_MEM_FREE (stream->intern);
+      ES_MEM_FREE (stream);
     }
 
   return err;
@@ -1567,7 +1573,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
   line_stream_cookie = NULL;
 
   err = es_func_mem_create (&line_stream_cookie, NULL, 0, 0, BUFFER_BLOCK_SIZE,
-			    1, 0, 0, NULL, 0, MEM_REALLOC, MEM_FREE, O_RDWR);
+			    1, 0, 0, NULL, 0, ES_MEM_REALLOC, ES_MEM_FREE, O_RDWR);
   if (err)
     goto out;
 
@@ -1633,7 +1639,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
 
   if (! *line)
     {
-      line_new = MEM_ALLOC (line_size + 1);
+      line_new = ES_MEM_ALLOC (line_size + 1);
       if (! line_new)
 	{
 	  err = -1;
@@ -1664,7 +1670,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
   if (err)
     {
       if (! *line)
-	MEM_FREE (line_new);
+	ES_MEM_FREE (line_new);
       stream->intern->indicators.err = 1;
     }
 
@@ -1748,7 +1754,7 @@ es_set_buffering (estream_t ES__RESTRICT stream,
   if (stream->intern->deallocate_buffer)
     {
       stream->intern->deallocate_buffer = 0;
-      MEM_FREE (stream->buffer);
+      ES_MEM_FREE (stream->buffer);
       stream->buffer = NULL;
     }
 
@@ -1762,7 +1768,7 @@ es_set_buffering (estream_t ES__RESTRICT stream,
 	buffer_new = buffer;
       else
 	{
-	  buffer_new = MEM_ALLOC (size);
+	  buffer_new = ES_MEM_ALLOC (size);
 	  if (! buffer_new)
 	    {
 	      err = -1;
@@ -1921,7 +1927,7 @@ es_open_memstream (char **ptr, size_t *size)
   
   err = es_func_mem_create (&cookie, NULL, 0, 0,
 			    BUFFER_BLOCK_SIZE, 1, 1, 1,
-			    ptr, size, MEM_REALLOC, MEM_FREE, flags);
+			    ptr, size, ES_MEM_REALLOC, ES_MEM_FREE, flags);
   if (err)
     goto out;
   
@@ -2454,7 +2460,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
 
 	  void *p;
 
-	  p = MEM_REALLOC (*lineptr, line_n + 1);
+	  p = ES_MEM_REALLOC (*lineptr, line_n + 1);
 	  if (! p)
 	    err = -1;
 	  else
@@ -2470,7 +2476,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
 	  if (*n != line_n)
 	    *n = line_n;
 	}
-      MEM_FREE (line);
+      ES_MEM_FREE (line);
     }
   else
     {
@@ -2530,7 +2536,7 @@ es_read_line (estream_t stream,
     { 
       /* No buffer given - allocate a new one. */
       length = 256;
-      buffer = MEM_ALLOC (length);
+      buffer = ES_MEM_ALLOC (length);
       *addr_of_buffer = buffer;
       if (!buffer)
         {
@@ -2571,11 +2577,11 @@ es_read_line (estream_t stream,
             }
           length += 3; /* Adjust for the reserved bytes. */
           length += length < 1024? 256 : 1024;
-          *addr_of_buffer = MEM_REALLOC (buffer, length);
+          *addr_of_buffer = ES_MEM_REALLOC (buffer, length);
           if (!*addr_of_buffer)
             {
               int save_errno = errno;
-              MEM_FREE (buffer); 
+              ES_MEM_FREE (buffer); 
               *length_of_buffer = *max_length = 0;
               ESTREAM_UNLOCK (stream);
               errno = save_errno;
@@ -2604,7 +2610,7 @@ void
 es_free (void *a)
 {
   if (a)
-    MEM_FREE (a);
+    ES_MEM_FREE (a);
 }
 
 

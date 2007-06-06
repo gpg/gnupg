@@ -821,7 +821,7 @@ memrchr (const void *buffer, int c, size_t n)
 
   for (p += n; n ; n--)
     if (*--p == c)
-      return p;
+      return (void *)p;
   return NULL;
 }
 #endif /*HAVE_MEMRCHR*/

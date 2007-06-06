@@ -735,6 +735,7 @@ gpgsm_es_print_name (estream_t fp, const char *name)
 
 
 
+#if defined (HAVE_FOPENCOOKIE) || defined (HAVE_FUNOPEN)
 /* A cookie structure used for the memory stream. */
 struct format_name_cookie 
 {
@@ -769,6 +770,8 @@ format_name_writer (void *cookie, const char *buffer, size_t size)
 
   return size;
 }
+#endif /*HAVE_FOPENCOOKIE || HAVE_FUNOPEN*/
+
 
 /* Format NAME which is expected to be in rfc2253 format into a better
    human readable format. Caller must free the returned string.  NULL
@@ -890,7 +893,9 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   char created[20];
   char *sn;
   ksba_sexp_t sexp;
+#ifdef ENABLE_NLS
   char *orig_codeset = NULL;
+#endif
 
   name = ksba_cert_get_subject (cert, 0);
   subject = name? gpgsm_format_name2 (name, 0) : NULL;

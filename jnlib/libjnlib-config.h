@@ -34,11 +34,14 @@
 #define JNLIB_NEED_UTF8CONV 1
 
 
+
+#if !defined(JNLIB_NEED_UTF8CONV) && defined(HAVE_W32_SYSTEM)
+#define JNLIB_NEED_UTF8CONV 1
+#endif
+
 /* Gettext stuff */
 #ifdef USE_SIMPLE_GETTEXT
-  int set_gettext_file( const char *filename );
-  const char *gettext( const char *msgid );
-
+# include "w32help.h"
 # define _(a) gettext (a)
 # define N_(a) (a)
 
@@ -61,7 +64,9 @@
 #endif
 #endif /* !USE_SIMPLE_GETTEXT */
 
-/* Malloc functions to be jused by jnlib.  */
+/* Malloc functions to be used by jnlib.  */
+#define jnlib_malloc(a)     gcry_malloc( (a) )
+#define jnlib_calloc(a,b)   gcry_calloc( (a), (b) )
 #define jnlib_xmalloc(a)    gcry_xmalloc( (a) )
 #define jnlib_xcalloc(a,b)  gcry_xcalloc( (a), (b) )
 #define jnlib_xrealloc(a,n) gcry_xrealloc( (a), (n) )

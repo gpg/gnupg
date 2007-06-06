@@ -37,6 +37,7 @@
 #include <signal.h>
 
 #include "libjnlib-config.h"
+#include "stringhelp.h"
 #include "dotlock.h"
 
 #if !defined(DIRSEP_C) && !defined(EXTSEP_C) \

@@ -52,7 +52,7 @@ enum
 {
   UNIVERSAL = 0,
   APPLICATION = 1,
-  CONTEXT = 2,
+  ASNCONTEXT = 2,
   PRIVATE = 3
 };
 
@@ -638,7 +638,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   where = "start";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class != CONTEXT || ti.tag)
+  if (ti.class != ASNCONTEXT || ti.tag)
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
@@ -722,7 +722,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
     goto bailout;
 
   consumed = p - p_start;
-  if (ti.class == CONTEXT && ti.tag == 0 && ti.is_constructed && ti.ndef)
+  if (ti.class == ASNCONTEXT && ti.tag == 0 && ti.is_constructed && ti.ndef)
     {
       /* Mozilla exported certs now come with single byte chunks of
          octect strings.  (Mozilla Firefox 1.0.4).  Arghh. */
@@ -736,7 +736,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       r_consumed = NULL; /* Ugly hack to not update that value any further. */
       ti.length = n;
     }
-  else if (ti.class == CONTEXT && ti.tag == 0 && ti.length )
+  else if (ti.class == ASNCONTEXT && ti.tag == 0 && ti.length )
     ;
   else
     goto bailout;
@@ -818,7 +818,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       where = "certbag.before.certheader";
       if (parse_tag (&p, &n, &ti))
         goto bailout;
-      if (ti.class != CONTEXT || ti.tag)
+      if (ti.class != ASNCONTEXT || ti.tag)
         goto bailout;
       if (iscrlbag)
         {
@@ -937,7 +937,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
           where = "certbag.before.octetstring";
           if (parse_tag (&p, &n, &ti))
             goto bailout;
-          if (ti.class != CONTEXT || ti.tag)
+          if (ti.class != ASNCONTEXT || ti.tag)
             goto bailout;
           if (parse_tag (&p, &n, &ti))
             goto bailout;
@@ -1065,7 +1065,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   where = "start";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class != CONTEXT || ti.tag)
+  if (ti.class != ASNCONTEXT || ti.tag)
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
@@ -1112,7 +1112,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   where = "shrouded,outerseqs";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class != CONTEXT || ti.tag)
+  if (ti.class != ASNCONTEXT || ti.tag)
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
@@ -1324,7 +1324,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
 
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class != CONTEXT || ti.tag)
+  if (ti.class != ASNCONTEXT || ti.tag)
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;

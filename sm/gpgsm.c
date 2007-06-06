@@ -601,21 +601,6 @@ set_binary (FILE *fp)
 
 
 static void
-i18n_init(void)
-{
-#ifdef USE_SIMPLE_GETTEXT
-  set_gettext_file (PACKAGE_GT);
-#else
-# ifdef ENABLE_NLS
-  setlocale (LC_ALL, "" );
-  bindtextdomain (PACKAGE_GT, LOCALEDIR);
-  textdomain (PACKAGE_GT);
-# endif
-#endif
-}
-
-
-static void
 wrong_args (const char *text)
 {
   fputs (_("usage: gpgsm [options] "), stderr);

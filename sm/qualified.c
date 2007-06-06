@@ -290,7 +290,9 @@ gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
   gpg_error_t err;
   char *name, *subject, *buffer, *p;
   const char *s;
+#ifdef ENABLE_NLS
   char *orig_codeset = NULL;
+#endif
 
   if (!opt.qualsig_approval)
     return 0;

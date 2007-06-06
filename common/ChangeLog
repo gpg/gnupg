@@ -1,3 +1,40 @@
+2007-06-06  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Include am/cmacros.am.
+
+	* sysutils.h [W32]: Remove prototypes for the registry access.
+	* w32reg.c:  Move to ../jnlib/w32-reg.c.
+
+	* i18n.c (i18n_init): New.
+
+	* simple-gettext.c: Remove.
+
+	* iobuf.c (iobuf_get_filelength): Rename SIZE to EXSIZE to silent
+	shadowing warning.
+
+2007-06-04  Werner Koch  <wk@g10code.com>
+
+	* http.c [W32]: Include unistd.h also in this case.
+	(write_server) [W32]: Fixed error code.
+	(init_sockets): Fixed syntax error.
+	(cookie_close): Replace close by sock_close macro.
+
+	* estream.c [w32]: Do not init Mutex.
+
+	* Makefile.am (common_sources) [USE_SNS_SRV]: Build srv.c only
+	when needed.
+
+	* ttyio.c (init_ttyfp) [W32]: Do not use TTYFP.
+
+	* util.h: Include ../jnlib/dynload.h.
+
+	* dynload.h:  Move to ../jnlib.
+
+2007-05-30  Werner Koch  <wk@g10code.com>
+
+	* estream.c (MEM_FREE, MEM_ALLOC, MEM_REALLOC): Prefix with ES_ as
+	windows.h also has such definitions,
+
 2007-05-15  Werner Koch  <wk@g10code.com>
 
 	* util.h: Do not include gnulib's vasprintf.  Redefine asprintf

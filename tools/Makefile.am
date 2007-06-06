@@ -43,10 +43,9 @@ else
   symcryptrun =
 endif
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun} \
-	       gpgparsemail
+bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun}
 if !HAVE_W32_SYSTEM
-bin_PROGRAMS += watchgnupg
+bin_PROGRAMS += watchgnupg gpgparsemail
 endif
 
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit

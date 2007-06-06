@@ -107,12 +107,16 @@ unlock_reader (int slot)
 static void
 dump_mutex_state (pth_mutex_t *m)
 {
+#ifdef _W32_PTH_H
+  log_printf ("unknown under W32");
+#else
   if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
     log_printf ("not_initialized");
   else if (!(m->mx_state & PTH_MUTEX_LOCKED))
     log_printf ("not_locked");
   else
     log_printf ("locked tid=0x%lx count=%lu", (long)m->mx_owner, m->mx_count);
+#endif
 }
 
 

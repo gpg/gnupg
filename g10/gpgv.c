@@ -110,21 +110,6 @@ my_strusage( int level )
 }
 
 
-static void
-i18n_init(void)
-{
-#ifdef USE_SIMPLE_GETTEXT
-  set_gettext_file (PACKAGE_GT, "Software\\GNU\\GnuPG");
-#else
-#ifdef ENABLE_NLS
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE_GT, LOCALEDIR);
-  textdomain (PACKAGE_GT);
-#endif
-#endif
-}
-
-
 
 int
 main( int argc, char **argv )

@@ -259,7 +259,9 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
   PKT_public_key *pk = xmalloc_clear( sizeof *pk );
   byte fpr[MAX_FINGERPRINT_LEN];
   int have_fpr = 0;
+#ifdef ENABLE_NLS
   char *orig_codeset = NULL;
+#endif
   char *my_prompt;
   char hexfprbuf[20*2+1];
   const char *my_cacheid;

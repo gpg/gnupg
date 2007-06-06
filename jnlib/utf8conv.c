@@ -29,10 +29,13 @@
 #include <langinfo.h>
 #endif
 #include <errno.h>
-#include <iconv.h>
+#ifndef HAVE_W32_SYSTEM
+# include <iconv.h>
+#endif
 
 #include "libjnlib-config.h"
 #include "stringhelp.h"
+#include "dynload.h"
 #include "utf8conv.h"
 
 #ifndef MB_LEN_MAX
@@ -44,6 +47,58 @@ static unsigned short *active_charset;
 static int no_translation;     /* Set to true if we let simply pass through. */
 static int use_iconv;          /* iconv comversion fucntions required. */
 
+
+/* Under W32 we dlopen the iconv dll and don't require any iconv
+   related headers at all.  However we need to define some stuff.  */
+#ifdef HAVE_W32_SYSTEM
+typedef void *iconv_t;
+#ifndef ICONV_CONST
+#define ICONV_CONST const 
+#endif
+static iconv_t (* __stdcall iconv_open) (const char *tocode,
+                                         const char *fromcode);
+static size_t  (* __stdcall iconv) (iconv_t cd,
+                                    const char **inbuf, size_t *inbytesleft,
+                                    char **outbuf, size_t *outbytesleft);
+static int     (* __stdcall iconv_close) (iconv_t cd);
+
+static int 
+load_libiconv (void)
+{
+  static int done;
+  
+  if (!done)
+    {
+      void *handle;
+
+      done = 1; /* Do it right now because we might get called recursivly
+                   through gettext.  */
+    
+      handle = dlopen ("iconv.dll", RTLD_LAZY);
+      if (handle)
+        {
+          iconv_open  = dlsym (handle, "libiconv_open");
+          if (iconv_open)
+            iconv = dlsym (handle, "libiconv");
+          if (iconv)    
+            iconv_close = dlsym (handle, "libiconv_close");
+        }
+      if (!handle || !iconv_close)
+        {
+          log_info (_("error loading `%s': %s\n"),
+                     "iconv.dll",  dlerror ());
+          log_info (_("please see http://www.gnupg.org/download/iconv.html "
+                      "for more information\n"));
+          iconv_open = NULL;
+          iconv = NULL;
+          iconv_close = NULL;
+          if (handle)
+            dlclose (handle);
+        }
+    }
+  return iconv_open? 0: -1;
+}    
+#endif /*HAVE_W32_SYSTEM*/
 
 
 /* Error handler for iconv failures. This is needed to not clutter the

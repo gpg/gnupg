@@ -1,5 +1,5 @@
-# setenv.m4 serial 5
-dnl Copyright (C) 2001-2004 Free Software Foundation, Inc.
+# setenv.m4 serial 6
+dnl Copyright (C) 2001-2004, 2006 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -57,7 +57,6 @@ AC_DEFUN([gl_PREREQ_SETENV],
   AC_CHECK_HEADERS_ONCE(unistd.h)
   AC_CHECK_HEADERS(search.h)
   AC_CHECK_FUNCS(tsearch)
-  gt_CHECK_VAR_DECL([#include <errno.h>], errno)
   gt_CHECK_VAR_DECL([#include <unistd.h>], environ)
 ])
 
@@ -65,6 +64,5 @@ AC_DEFUN([gl_PREREQ_SETENV],
 AC_DEFUN([gl_PREREQ_UNSETENV],
 [
   AC_CHECK_HEADERS_ONCE(unistd.h)
-  gt_CHECK_VAR_DECL([#include <errno.h>], errno)
   gt_CHECK_VAR_DECL([#include <unistd.h>], environ)
 ])

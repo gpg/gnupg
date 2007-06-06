@@ -1,5 +1,5 @@
-/* Formatted output to strings.
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+/* Searching in a string.
+   Copyright (C) 2001-2002 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,27 +11,18 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
-   with this program; if not, write to the Free Software Foundation,
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
+#if HAVE_STRPBRK
+
+/* Get strpbrk() declaration.  */
+#include <string.h>
+
+#else
+
+/* Find the first occurrence in S of any character in ACCEPT.  */
+extern char *strpbrk (const char *s, const char *accept);
+
 #endif
-
-/* Specification.  */
-#include "vasprintf.h"
-
-#include <stdarg.h>
-
-int
-asprintf (char **resultp, const char *format, ...)
-{
-  va_list args;
-  int result;
-
-  va_start (args, format);
-  result = vasprintf (resultp, format, args);
-  va_end (args);
-  return result;
-}

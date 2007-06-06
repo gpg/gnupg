@@ -1,3 +1,22 @@
+2007-06-06  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add a few notices message so make browsing of the
+	log file easier.
+	(CC_FOR_BUILD): New.
+
+2007-05-30  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [W32]: Do not create a symlink to w32-pth.h.
+	Require the installation of the w32pth package.
+
+2007-05-29  Werner Koch  <wk@g10code.com>
+
+	* gl/: Updated to a newer version.
+
+2007-05-24  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use -Wpointer-arith is possible.
+
 2007-05-15  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Renamed the estream macros. Remove -Wformat-nonliteral.

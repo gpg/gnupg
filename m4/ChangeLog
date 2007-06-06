@@ -1,3 +1,12 @@
+2007-05-30  Werner Koch  <wk@g10code.com>
+
+	* gnupg-pth.m4: Remove W32 kludge.
+
+2007-05-29  Werner Koch  <wk@g10code.com>
+
+	* longlong.m4, ulonglong.m4: Remove.  We now require autoconf
+	2.61.
+
 2007-05-15  Werner Koch  <wk@g10code.com>
 
 	* estream.m4: New.

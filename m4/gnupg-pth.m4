@@ -73,13 +73,11 @@ AC_DEFUN([GNUPG_PTH_VERSION_CHECK],
   ])
 
 
-#
+
 # GNUPG_PATH_PTH([MINIMUM_VERSION])
 #
-# This is a special version of the check whioch assumes that a
-# emulation for W32 systems is available. The test assumes that
-# $have_w32_system has already been set.  On return $have_pth is set
-# as well as HAVE_PTH is defined and PTH_CLFAGS and PTH_LIBS are AS_SUBST.
+# On return $have_pth is set as well as HAVE_PTH is defined and
+# PTH_CLFAGS and PTH_LIBS are AS_SUBST.
 #
 AC_DEFUN([GNUPG_PATH_PTH],
 [ AC_ARG_WITH(pth-prefix,
@@ -91,9 +89,7 @@ AC_DEFUN([GNUPG_PATH_PTH],
   fi
   AC_PATH_PROG(PTH_CONFIG, pth-config, no)
   tmp=ifelse([$1], ,1.3.7,$1)
-  test -z "$have_w32_system" && have_w32_system="no"
-  if test "$have_w32_system" = no; then
-   if test "$PTH_CONFIG" != "no"; then
+  if test "$PTH_CONFIG" != "no"; then
     GNUPG_PTH_VERSION_CHECK($tmp)
     if test $have_pth = yes; then      
        PTH_CFLAGS=`$PTH_CONFIG --cflags`
@@ -102,12 +98,6 @@ AC_DEFUN([GNUPG_PATH_PTH],
        AC_DEFINE(HAVE_PTH, 1,
                 [Defined if the GNU Pth is available])
     fi
-   fi
-  else 
-   have_pth=yes
-   PTH_CFLAGS=""
-   PTH_LIBS=""
-   AC_DEFINE(HAVE_PTH, 1)
   fi
   AC_SUBST(PTH_CFLAGS)
   AC_SUBST(PTH_LIBS)

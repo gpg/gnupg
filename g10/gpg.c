@@ -871,20 +871,6 @@ build_list( const char *text, char letter,
 
 
 static void
-i18n_init(void)
-{
-#ifdef USE_SIMPLE_GETTEXT
-  set_gettext_file (PACKAGE_GT, "Software\\GNU\\GnuPG");
-#else
-#ifdef ENABLE_NLS
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE_GT, LOCALEDIR);
-  textdomain (PACKAGE_GT);
-#endif
-#endif
-}
-
-static void
 wrong_args( const char *text)
 {
     fputs(_("usage: gpg [options] "),stderr);
@@ -2260,18 +2246,8 @@ main (int argc, char **argv )
 	      }
 	    break;
 	  case oLoadExtension:
-#ifndef __riscos__
-#if defined(USE_DYNAMIC_LINKING) || defined(_WIN32)
-	    if(check_permissions(pargs.r.ret_str,2))
-	      log_info(_("cipher extension `%s' not loaded due to"
-			 " unsafe permissions\n"),pargs.r.ret_str);
-	    else
-	      register_cipher_extension(orig_argc? *orig_argv:NULL,
-					pargs.r.ret_str);
-#endif
-#else /* __riscos__ */
-            riscos_not_implemented("load-extension");
-#endif /* __riscos__ */
+            /* Dummy so that gpg 1.4 conf files can work. Should
+               eventually be removed.  */
 	    break;
 	  case oRFC1991:
 	    opt.compliance = CO_RFC1991;

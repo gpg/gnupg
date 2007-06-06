@@ -28,12 +28,10 @@ EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
              gnupg-card-architecture.pdf \
              faq.raw FAQ faq.html gnupg7.texi \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     gpgv.texi texi.css $(examples)
+	     gpgv.texi texi.css $(examples) yat2m.c
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf FAQ faq.html
-
-noinst_PROGRAMS = yat2m
 
 info_TEXINFOS = gnupg.texi
 
@@ -65,13 +63,13 @@ noinst_MANS = gnupg.7
 watchgnupg_SOURCE = gnupg.texi
 
 
-CLEANFILES = faq.raw.xref
+CLEANFILES = faq.raw.xref yat2m
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
 		 $(myman_pages) gnupg.7
 
-yat2m_SOURCES = yat2m.c
-
+yat2m: yat2m.c
+	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
 
 
 .fig.png:

@@ -1,3 +1,15 @@
+2007-06-06  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (enum): Rename CONTEXT to ASNCONTEXT as winnt.h
+	defines such a symbol to access the process context.
+
+	* call-pinentry.c (dump_mutex_state) [W32]: Handle the W32Pth case.
+	* call-scd.c (dump_mutex_state): Ditto.
+
+	* protect-tool.c (i18n_init): Remove.
+	* preset-passphrase.c (i18n_init): Remove.
+	* gpg-agent.c (i18n_init): Remove.
+
 2007-05-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* protect-tool.c (get_passphrase): Free ORIG_CODESET on error.

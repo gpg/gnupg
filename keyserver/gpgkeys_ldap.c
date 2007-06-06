@@ -575,7 +575,7 @@ free_mod_values(LDAPMod *mod)
 }
 
 static int
-send_key(int *eof)
+send_key(int *r_eof)
 {
   int err,begin=0,end=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
   char *dn=NULL,line[MAX_LINE],*key=NULL;
@@ -631,14 +631,14 @@ send_key(int *eof)
     {
       /* i.e. eof before the INFO BEGIN was found.  This isn't an
 	 error. */
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_OK;
       goto fail;
     }
 
   if(strlen(keyid)!=16)
     {
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_KEY_INCOMPLETE;
       goto fail;
     }
@@ -678,7 +678,7 @@ send_key(int *eof)
   if(!end)
     {
       fprintf(console,"gpgkeys: no INFO %s END found\n",keyid);
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_KEY_INCOMPLETE;
       goto fail;
     }
@@ -699,7 +699,7 @@ send_key(int *eof)
     {
       /* i.e. eof before the KEY BEGIN was found.  This isn't an
 	 error. */
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_OK;
       goto fail;
     }
@@ -733,7 +733,7 @@ send_key(int *eof)
   if(!end)
     {
       fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_KEY_INCOMPLETE;
       goto fail;
     }
@@ -791,7 +791,7 @@ send_key(int *eof)
 }
 
 static int
-send_key_keyserver(int *eof)
+send_key_keyserver(int *r_eof)
 {
   int err,begin=0,end=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
   char *dn=NULL,line[MAX_LINE],*key[2]={NULL,NULL};
@@ -840,7 +840,7 @@ send_key_keyserver(int *eof)
     {
       /* i.e. eof before the KEY BEGIN was found.  This isn't an
 	 error. */
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_OK;
       goto fail;
     }
@@ -871,7 +871,7 @@ send_key_keyserver(int *eof)
   if(!end)
     {
       fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_KEY_INCOMPLETE;
       goto fail;
     }
@@ -2272,7 +2272,7 @@ main(int argc,char *argv[])
     }
   else if(opt->action==KS_SEND)
     {
-      int eof=0;
+      int eof_seen = 0;
 
       do
 	{
@@ -2280,16 +2280,16 @@ main(int argc,char *argv[])
 
 	  if(real_ldap)
 	    {
-	      if(send_key(&eof)!=KEYSERVER_OK)
+	      if (send_key(&eof_seen) != KEYSERVER_OK)
 		failed++;
 	    }
 	  else
 	    {
-	      if(send_key_keyserver(&eof)!=KEYSERVER_OK)
+	      if (send_key_keyserver(&eof_seen) != KEYSERVER_OK)
 		failed++;
 	    }
 	}
-      while(!eof);
+      while (!eof_seen);
     }
   else if(opt->action==KS_SEARCH)
     {

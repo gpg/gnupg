@@ -23,13 +23,13 @@
 #define GNUPG_COMMON_SRV_H
 
 #ifdef USE_DNS_SRV
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <netinet/in.h>
-#include <arpa/nameser.h>
-#include <resolv.h>
-#endif /* !_WIN32 */
+# ifdef _WIN32
+#  include <windows.h>
+# else
+#  include <netinet/in.h>
+#  include <arpa/nameser.h>
+#  include <resolv.h>
+# endif /* !_WIN32 */
 #endif /* USE_DNS_SRV */
 
 

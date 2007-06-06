@@ -439,6 +439,7 @@ AH_BOTTOM([
 AM_MAINTAINER_MODE
 
 # Checks for programs.
+AC_MSG_NOTICE([checking for programs])
 AC_PROG_MAKE_SET
 AM_SANITY_CHECK
 missing_dir=`cd $ac_aux_dir && pwd`
@@ -464,6 +465,22 @@ gl_EARLY
 AC_SYS_LARGEFILE
 GNUPG_CHECK_FAQPROG
 GNUPG_CHECK_USTAR
+
+# We need to compile and run a program on the build machine.  A
+# comment in libgpg-error says that the AC_PROG_CC_FOR_BUILD macro in
+# the AC archive is broken for autoconf 2.57.  Given that tehre is no
+# newer version of that macro, we assume that it is also broken for
+# autoconf 2.61 and thus we use a simple but usually sufficient
+# approach.
+AC_MSG_CHECKING(for cc for build)
+if test "$cross_compiling" = "yes"; then
+  CC_FOR_BUILD="${CC_FOR_BUILD-cc}"
+else
+  CC_FOR_BUILD="${CC_FOR_BUILD-$CC}"
+fi
+AC_MSG_RESULT($CC_FOR_BUILD)
+AC_ARG_VAR(CC_FOR_BUILD,[build system C compiler])
+
 
 
 try_gettext=yes
@@ -573,6 +590,7 @@ fi
 #
 # Checks for libraries.
 #
+AC_MSG_NOTICE([checking for libraries])
 
 
 #
@@ -674,6 +692,7 @@ else
 fi
 
 
+AC_MSG_NOTICE([checking for networking options])
 
 #
 # Must check for network library requirements before doing link tests
@@ -863,6 +882,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 #
 # Check for gettext
 #
+AC_MSG_NOTICE([checking for gettext])
 AM_GNU_GETTEXT_VERSION([0.16.1])
 if test "$try_gettext" = yes; then
   AM_GNU_GETTEXT(,[need-ngettext])
@@ -893,6 +913,7 @@ fi
 #
 # Checks for header files.
 #
+AC_MSG_NOTICE([checking for header files])
 AC_HEADER_STDC
 AC_CHECK_HEADERS([string.h unistd.h langinfo.h termio.h locale.h getopt.h])
 AC_CHECK_HEADERS([pty.h pwd.h inttypes.h])
@@ -902,6 +923,7 @@ AC_HEADER_TIME
 #
 # Checks for typedefs, structures, and compiler characteristics.
 #
+AC_MSG_NOTICE([checking for system characteristics])
 AC_C_CONST
 AC_C_INLINE
 AC_C_VOLATILE
@@ -965,6 +987,7 @@ fi
 #
 # Checks for library functions.
 #
+AC_MSG_NOTICE([checking for library functions])
 AC_CHECK_DECLS(getpagesize)
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
@@ -991,9 +1014,8 @@ AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen])
 #
 gl_SOURCE_BASE([gl])
 gl_M4_BASE([gl/m4])
-gl_MODULES([setenv mkdtemp xsize])
+gl_MODULES([setenv mkdtemp xsize strpbrk])
 gl_INIT
-
 
 
 #
@@ -1151,6 +1173,7 @@ AC_SUBST(NETLIBS)
 #
 # Setup gcc specific options
 #
+AC_MSG_NOTICE([checking for cc features])
 if test "$GCC" = yes; then
     # Note that it is okay to use CFLAGS here because this are just
     # warning options and the user should have a chance of overriding
@@ -1171,6 +1194,16 @@ if test "$GCC" = yes; then
     if test x"$_gcc_psign" = xyes ; then
        CFLAGS="$CFLAGS -Wno-pointer-sign"
     fi
+
+    AC_MSG_CHECKING([if gcc supports -Wpointer-arith])
+    _gcc_cflags_save=$CFLAGS
+    CFLAGS="-Wpointer-arith"
+    AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_psign=yes,_gcc_psign=no)
+    AC_MSG_RESULT($_gcc_psign)
+    CFLAGS=$_gcc_cflags_save;
+    if test x"$_gcc_psign" = xyes ; then
+       CFLAGS="$CFLAGS -Wpointer-arith"
+    fi
 fi
 
 
@@ -1184,14 +1217,6 @@ AC_ARG_ENABLE(optimization,
                   [if test $enableval = no ; then
                       CFLAGS=`echo $CFLAGS | sed 's/-O[[0-9]]//'`
                    fi])
-
-#
-# For W32 we need to use our Pth emulation code
-#
-if test "$have_w32_system" = yes; then
-  AC_CONFIG_LINKS(pth.h:jnlib/w32-pth.h)
-fi
-
 
 #
 # Prepare building of estream
@@ -1308,6 +1333,9 @@ if test "$missing_pth" = "yes"; then
 ***   ftp://ftp.gnu.org/gnu/pth/
 *** On a Debian GNU/Linux system you can install it using 
 ***   apt-get install libpth-dev
+*** To build GnuPG for Windows you need to use the W32PTH
+*** package; available at:
+***   ftp://ftp.g10code.com/g10code/w32pth/
 ***]])
    die=yes
 fi

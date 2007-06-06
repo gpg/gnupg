@@ -1,4 +1,4 @@
-/* Copyright (C) 1992,1995-1999,2000-2003 Free Software Foundation, Inc.
+/* Copyright (C) 1992,1995-1999,2000-2003,2005,2006 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software; you can redistribute it and/or modify
@@ -13,9 +13,9 @@
 
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. */
 
-#if HAVE_CONFIG_H
+#if !_LIBC
 # include <config.h>
 #endif
 #include <alloca.h>

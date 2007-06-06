@@ -1,3 +1,9 @@
+2007-06-06  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_ldap.c (send_key, send_key_keyserver): Rename eof to
+	r_eof as some Windows file has such a symbol.
+	(main): Likewise.
+
 2007-05-07  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpg2keys_ldap_LDADD): Add GPG_ERROR_LIBS.

@@ -41,9 +41,12 @@ libjnlib_a_SOURCES = \
 	argparse.c argparse.h \
 	logging.c logging.h  \
 	dotlock.c dotlock.h  \
-	types.h mischelp.c mischelp.h \
-	w32-pth.c w32-pth.h \
-	w32-afunix.c w32-afunix.h 
+	types.h mischelp.c mischelp.h dynload.h w32help.h
+
+if HAVE_W32_SYSTEM
+libjnlib_a_SOURCES += w32-reg.c w32-afunix.c w32-afunix.h w32-gettext.c
+endif
+
 
 # For GnuPG we don't need the xmalloc stuff.
 #       xmalloc.c xmalloc.h       

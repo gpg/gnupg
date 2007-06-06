@@ -33,8 +33,10 @@
 #include <time.h>
 #include <stdarg.h>
 #include <signal.h>
+#ifndef HAVE_W32_SYSTEM
 #include <pwd.h>
 #include <grp.h>
+#endif
 
 /* For log_logv(), asctimestamp(), gnupg_get_time ().  */
 #define JNLIB_NEED_LOG_LOGV
@@ -2574,6 +2576,9 @@ gc_component_change_options (int component, FILE *in)
 static int
 key_matches_user_or_group (char *user)
 {
+#ifdef HAVE_W32_SYSTEM
+# warning We need a real user and group lookup.
+#else
   char *group;
   int n;
 
@@ -2641,7 +2646,7 @@ key_matches_user_or_group (char *user)
         if (!strcmp (group, my_supgroups[n]))
           return 1; /* Found.  */
     }
-
+#endif
   return 0; /* No match.  */
 }
 

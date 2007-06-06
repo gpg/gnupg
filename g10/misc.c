@@ -58,7 +58,6 @@
 #include "gpg.h"
 #ifdef HAVE_W32_SYSTEM
 # include "errors.h"
-# include "dynload.h"
 #endif /*HAVE_W32_SYSTEM*/
 #include "util.h"
 #include "main.h"
@@ -1223,46 +1222,6 @@ is_valid_mailbox (const char *name)
             || name[strlen(name)-1] == '.'
             || strstr (name, "..") );
 }
-
-
-/* This is a helper function to load a Windows function from either of
-   one DLLs. */
-#ifdef HAVE_W32_SYSTEM
-static HRESULT
-w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
-{
-  static int initialized;
-  static HRESULT (WINAPI * func)(HWND,int,HANDLE,DWORD,LPSTR);
-
-  if (!initialized)
-    {
-      static char *dllnames[] = { "shell32.dll", "shfolder.dll", NULL };
-      void *handle;
-      int i;
-
-      initialized = 1;
-
-      for (i=0, handle = NULL; !handle && dllnames[i]; i++)
-        {
-          handle = dlopen (dllnames[i], RTLD_LAZY);
-          if (handle)
-            {
-              func = dlsym (handle, "SHGetFolderPathA");
-              if (!func)
-                {
-                  dlclose (handle);
-                  handle = NULL;
-                }
-            }
-        }
-    }
-
-  if (func)
-    return func (a,b,c,d,e);
-  else
-    return -1;
-}
-#endif /*HAVE_W32_SYSTEM*/
 
 
 /* Return the name of the libexec directory.  The name is allocated in

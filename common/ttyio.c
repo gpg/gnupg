@@ -168,6 +168,8 @@ init_ttyfp(void)
 
 #elif defined(__EMX__)
     ttyfp = stdout; /* Fixme: replace by the real functions: see wklib */
+    if (my_rl_init_stream)
+      my_rl_init_stream (ttyfp);
 #else
     ttyfp = batchmode? stderr : fopen (tty_get_ttyname (), "r+");
     if( !ttyfp ) {
@@ -175,10 +177,10 @@ init_ttyfp(void)
                   strerror(errno) );
 	exit(2);
     }
-#endif
-    
     if (my_rl_init_stream)
       my_rl_init_stream (ttyfp);
+#endif
+    
 
 #ifdef HAVE_TCGETATTR
     atexit( cleanup );

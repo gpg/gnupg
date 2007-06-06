@@ -755,7 +755,7 @@ static void
 finish_page (void)
 {
   FILE *fp;
-  section_buffer_t sect;
+  section_buffer_t sect = NULL;
   int idx;
   const char *s;
   int i;

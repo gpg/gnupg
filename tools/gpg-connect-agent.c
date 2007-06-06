@@ -142,21 +142,6 @@ my_strusage( int level )
 }
 
 
-/* Initialize the gettext system. */
-static void
-i18n_init(void)
-{
-#ifdef USE_SIMPLE_GETTEXT
-  set_gettext_file (PACKAGE_GT);
-#else
-# ifdef ENABLE_NLS
-  setlocale (LC_ALL, "" );
-  bindtextdomain (PACKAGE_GT, LOCALEDIR);
-  textdomain (PACKAGE_GT);
-# endif
-#endif
-}
-
 /* Store an inquire response pattern.  Note, that this function may
    change the content of LINE.  We assume that leading white spaces
    are already removed. */

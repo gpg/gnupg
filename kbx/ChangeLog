@@ -1,3 +1,7 @@
+2007-06-06  Werner Koch  <wk@g10code.com>
+
+	* kbxutil.c (i18n_init): Remove.
+
 2007-03-20  Werner Koch  <wk@g10code.com>
 
 	* keybox.h (KEYBOX_FLAG_BLOB_SECRET, KEYBOX_FLAG_BLOB_EPHEMERAL):

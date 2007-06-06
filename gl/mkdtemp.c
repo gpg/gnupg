@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001-2003 Free Software Foundation, Inc.
+/* Copyright (C) 1999, 2001-2003, 2006 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,7 @@
 
 /* Extracted from misc/mkdtemp.c and sysdeps/posix/tempname.c.  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
 
 /* Specification.  */
 #include "mkdtemp.h"
@@ -30,6 +28,7 @@
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -38,16 +37,7 @@
 # define TMP_MAX 238328
 #endif
 
-#if HAVE_STDINT_H || _LIBC
-# include <stdint.h>
-#endif
-#if HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-
-#if HAVE_UNISTD_H || _LIBC
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
 #if HAVE_GETTIMEOFDAY || _LIBC
 # if HAVE_SYS_TIME_H || _LIBC
@@ -60,9 +50,6 @@
 #endif
 
 #include <sys/stat.h>
-#if STAT_MACROS_BROKEN
-# undef S_ISDIR
-#endif
 #if !defined S_ISDIR && defined S_IFDIR
 # define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
 #endif
@@ -86,9 +73,10 @@
 #endif
 
 #ifdef __MINGW32__
-/* mingw's mkdir() function has 1 argument, but we pass 2 arguments.
+# include <io.h>
+/* mingw's _mkdir() function has 1 argument, but we pass 2 arguments.
    Therefore we have to disable the argument count checking.  */
-# define mkdir ((int (*)()) mkdir)
+# define mkdir ((int (*)()) _mkdir)
 #endif
 
 #if !_LIBC
@@ -126,8 +114,25 @@ gen_tempname (char *tmpl)
   char *XXXXXX;
   static uint64_t value;
   uint64_t random_time_bits;
-  int count, fd = -1;
+  unsigned int count;
+  int fd = -1;
   int save_errno = errno;
+
+  /* A lower bound on the number of temporary files to attempt to
+     generate.  The maximum total number of temporary file names that
+     can exist for a given template is 62**6.  It should never be
+     necessary to try all these combinations.  Instead if a reasonable
+     number of names is tried (we define reasonable as 62**3) fail to
+     give the system administrator the chance to remove the problems.  */
+#define ATTEMPTS_MIN (62 * 62 * 62)
+
+  /* The number of times to attempt to generate a temporary file.  To
+     conform to POSIX, this must be no smaller than TMP_MAX.  */
+#if ATTEMPTS_MIN < TMP_MAX
+  unsigned int attempts = TMP_MAX;
+#else
+  unsigned int attempts = ATTEMPTS_MIN;
+#endif
 
   len = strlen (tmpl);
   if (len < 6 || strcmp (&tmpl[len - 6], "XXXXXX"))
@@ -155,7 +160,7 @@ gen_tempname (char *tmpl)
 #endif
   value += random_time_bits ^ __getpid ();
 
-  for (count = 0; count < TMP_MAX; value += 7777, ++count)
+  for (count = 0; count < attempts; value += 7777, ++count)
     {
       uint64_t v = value;
 

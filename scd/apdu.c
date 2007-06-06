@@ -62,7 +62,6 @@
 #endif /* GNUPG_MAJOR_VERSION != 1 */
 
 #include "apdu.h"
-#include "dynload.h"
 #include "ccid-driver.h"
 
 

@@ -1,3 +1,25 @@
+2007-06-06  Werner Koch  <wk@g10code.com>
+
+	* w32help.h: New.
+	* w32-gettext.c: New.  Taken from gnupg 1.4, added ngettext,
+	changed to use jnlib malloc functions and put under the LGPL.
+	* w32-reg.c: New.  Taken from../common/w32reg.c and changed to
+	LGPL.  Changed API to use the jnlib malloc functions.
+	* Makefile.am (libjnlib_a_SOURCES) [!W32]: Do not build the w32
+	specific modules.
+
+	* dotlock.c: Include stringhelp.h for stpcpy prototype.
+
+2007-06-04  Werner Koch  <wk@g10code.com>
+
+	* dynload.h: New.  Taken from ../common and changed to LGPL.
+
+	* utf8conv.c (load_libiconv): New.  Taken from GnuPG 1.4
+
+2007-05-30  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.h, w32-pth.c: Remove.
+
 2007-04-25  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (long_opt_strlen): Fixed for utf-8.

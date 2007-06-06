@@ -125,7 +125,7 @@ get_session_marker( size_t *rlen )
         ulong a, b;
 
         initialized = 1;
-        /* also this marker is guessable it is not easy to use this 
+        /* Although this marker is guessable it is not easy to use
          * for a faked control packet because an attacker does not
          * have enough control about the time the verification does 
          * take place.  Of course, we can add just more random but 

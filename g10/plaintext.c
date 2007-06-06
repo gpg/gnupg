@@ -297,8 +297,9 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	}
 	else { /* binary mode */
 	    byte *buffer = xmalloc( 32768 );
-	    int eof;
-	    for( eof=0; !eof; ) {
+	    int eof_seen = 0;
+
+	    while ( !eof_seen ) {
 		/* Why do we check for len < 32768:
 		 * If we won't, we would practically read 2 EOFs but
 		 * the first one has already popped the block_filter
@@ -309,7 +310,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( len == -1 )
 		    break;
 		if( len < 32768 )
-		    eof = 1;
+		    eof_seen = 1;
 		if( mfx->md )
 		    gcry_md_write ( mfx->md, buffer, len );
 		if( fp )

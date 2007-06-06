@@ -38,6 +38,7 @@
 #include "../jnlib/strlist.h"
 #include "../jnlib/dotlock.h"
 #include "../jnlib/utf8conv.h"
+#include "../jnlib/dynload.h"
 
 /* Redefine asprintf by our estream version which uses our own memory
    allocator..  */
@@ -204,8 +205,8 @@ int match_multistr (const char *multistr,const char *match);
 static inline char *
 ttyname (int fd) 
 {
-  return NULL
-};
+  return NULL;
+}
 #endif /* !HAVE_TTYNAME */
 
 
