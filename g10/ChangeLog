@@ -1,3 +1,12 @@
+2007-06-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (mk_notation_policy_etc): expect all sigs that this is
+	called for are >=v4.
+	(write_signature_packets, make_keysig_packet): Only call it for
+	>=v4 sigs.  This allows --force-v3-sigs and --force-v4-certs to
+	enable or disable notations, policies, and keyserver URLs.  This
+	is bug#800.
+
 2007-04-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, mainproc.c (reset_literals_seen): New function to

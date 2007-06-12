@@ -1,6 +1,6 @@
 /* sign.c - sign data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -69,32 +69,17 @@ mk_notation_policy_etc( PKT_signature *sig,
     struct notation *nd=NULL;
     struct expando_args args;
 
+    assert(sig->version>=4);
+
     memset(&args,0,sizeof(args));
     args.pk=pk;
     args.sk=sk;
 
-    /* It is actually impossible to get here when making a v3 key
-       signature since keyedit.c:sign_uids will automatically bump a
-       signature with a notation or policy url up to v4, but it is
-       good to do these checks anyway. */
-
     /* notation data */
     if(IS_SIG(sig) && opt.sig_notations)
-      {
-	if(sig->version<4)
-	  log_error(_("can't put notation data into v3 (PGP 2.x style) "
-		      "signatures\n"));
-	else
-	  nd=opt.sig_notations;
-      }
+      nd=opt.sig_notations;
     else if( IS_CERT(sig) && opt.cert_notations )
-      {
-	if(sig->version<4)
-	  log_error(_("can't put notation data into v3 (PGP 2.x style) "
-		      "key signatures\n"));
-	else
-	  nd=opt.cert_notations;
-      }
+      nd=opt.cert_notations;
 
     if(nd)
       {
@@ -119,21 +104,9 @@ mk_notation_policy_etc( PKT_signature *sig,
 
     /* set policy URL */
     if( IS_SIG(sig) && opt.sig_policy_url )
-      {
-	if(sig->version<4)
-	  log_error(_("can't put a policy URL into v3 (PGP 2.x style) "
-		      "signatures\n"));
-	else
-	  pu=opt.sig_policy_url;
-      }
+      pu=opt.sig_policy_url;
     else if( IS_CERT(sig) && opt.cert_policy_url )
-      {
-	if(sig->version<4)
-	  log_error(_("can't put a policy URL into v3 key (PGP 2.x style) "
-		      "signatures\n"));
-	else
-	  pu=opt.cert_policy_url;
-      }
+      pu=opt.cert_policy_url;
 
     for(;pu;pu=pu->next)
       {
@@ -156,12 +129,7 @@ mk_notation_policy_etc( PKT_signature *sig,
 
     /* preferred keyserver URL */
     if( IS_SIG(sig) && opt.sig_keyserver_url )
-      {
-	if(sig->version<4)
-	  log_info("can't put a preferred keyserver URL into v3 signatures\n");
-	else
-	  pu=opt.sig_keyserver_url;
-      }
+      pu=opt.sig_keyserver_url;
 
     for(;pu;pu=pu->next)
       {
@@ -689,8 +657,10 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	md = md_copy (hash);
 
 	if (sig->version >= 4)
+	  {
 	    build_sig_subpkt_from_sig (sig);
-	mk_notation_policy_etc (sig, NULL, sk);
+	    mk_notation_policy_etc (sig, NULL, sk);
+	  }
 
         hash_sigversion_to_magic (md, sig);
 	md_final (md);
@@ -1474,8 +1444,10 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
       sig->expiredate=sig->timestamp+duration;
     sig->sig_class = sigclass;
     if( sig->version >= 4 )
+      {
 	build_sig_subpkt_from_sig( sig );
-    mk_notation_policy_etc( sig, pk, sk );
+	mk_notation_policy_etc( sig, pk, sk );
+      }
 
     /* Crucial that the call to mksubpkt comes LAST before the calls
        to finalize the sig as that makes it possible for the mksubpkt
