@@ -138,4 +138,12 @@ idea_get_info( int algo, size_t *keylen,
                void (**decryptf)( void *c, byte *outbuf, const byte *inbuf )
                );
 
+const char *
+camellia_get_info(int algo, size_t *keylen,
+		  size_t *blocksize, size_t *contextsize,
+		  int (**setkeyf)( void *c, const byte *key, unsigned keylen ),
+		  void (**encryptf)( void *c, byte *outbuf, const byte *inbuf),
+		  void (**decryptf)( void *c, byte *outbuf, const byte *inbuf )
+		  );
+
 #endif /*GNUPG_ALGORITHMS_H*/

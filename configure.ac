@@ -1,6 +1,6 @@
 dnl configure.ac script for GnuPG
-dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-dnl               2006 Free Software Foundation, Inc.
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+dnl               2007 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
 dnl
@@ -140,6 +140,7 @@ use_cast5=yes
 use_blowfish=yes
 use_aes=yes
 use_twofish=yes
+use_camellia=no
 use_sha256=yes
 use_sha512=yes
 use_bzip2=yes
@@ -158,6 +159,7 @@ AC_ARG_ENABLE(minimal,
    use_blowfish=no
    use_aes=no
    use_twofish=no
+   use_camellia=no
    use_sha256=no
    use_sha512=no
    use_bzip2=no
@@ -255,7 +257,20 @@ if test x"$use_twofish" = xyes ; then
    AC_DEFINE(USE_TWOFISH,1,[Define to include the TWOFISH cipher])
 fi
 
-AC_MSG_CHECKING([whether to enable the SHA-256 digest])
+AC_MSG_CHECKING([whether to enable the CAMELLIA cipher])
+AC_ARG_ENABLE(camellia,
+   AC_HELP_STRING([--enable-camellia],[enable the CAMELLIA cipher]),
+   use_camellia=$enableval)
+AC_MSG_RESULT($use_camellia)
+if test x"$use_camellia" = xyes ; then
+   AC_DEFINE(USE_CAMELLIA,1,[Define to include the CAMELLIA cipher])
+   AC_MSG_WARN([[
+***
+*** The Camellia cipher is for testing only and is NOT for production use!
+***]])
+fi
+
+AC_MSG_CHECKING([whether to enable the SHA-224 and SHA-256 digests])
 AC_ARG_ENABLE(sha256,
    AC_HELP_STRING([--disable-sha256],[disable the SHA-224 and SHA-256 digests]),
    use_sha256=$enableval)
@@ -1407,3 +1422,8 @@ if test -n "$show_extraasm"; then
   echo "  Extra cpu specific functions:$show_extraasm"
 fi
 echo
+
+if test  x"$use_camellia" = xyes ; then
+  echo "WARNING: The Camellia cipher is for testing only and is NOT for production use!"
+  echo
+fi

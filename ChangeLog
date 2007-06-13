@@ -1,3 +1,8 @@
+2007-06-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add --enable-camellia.  Disabled by default.  Do
+	not enable this unless you're doing interop testing.
+
 2007-04-16  Werner Koch  <wk@g10code.com>
 
 	* acinclude.m4: Fix last change.  Make test self-conatined by

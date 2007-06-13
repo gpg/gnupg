@@ -1,6 +1,6 @@
 /* cipher.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -38,6 +38,8 @@
 #define CIPHER_ALGO_AES192       8
 #define CIPHER_ALGO_AES256       9
 #define CIPHER_ALGO_TWOFISH 	10  /* twofish 256 bit */
+#define CIPHER_ALGO_CAMELLIA    11  /* camellia 256 bit */
+
 #define CIPHER_ALGO_DUMMY      110  /* no encryption at all */
 
 #define PUBKEY_ALGO_RSA        1
