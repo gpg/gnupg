@@ -1147,7 +1147,7 @@ check_permissions(const char *path,int item)
       if(strchr(path,DIRSEP_C))
 	tmppath=make_filename(path,NULL);
       else
-	tmppath=make_filename(GNUPG_LIBDIR,path,NULL);
+	tmppath=make_filename(gnupg_libdir (),path,NULL);
     }
   else
     tmppath=xstrdup(path);
@@ -1814,6 +1814,9 @@ main (int argc, char **argv )
     gcry_control (GCRYCTL_DISABLE_INTERNAL_LOCKING);
     log_set_prefix ("gpg", 1);
 
+    /* Make sure that our subsystems are ready.  */
+    init_common_subsystems ();
+
     /* Check that the libraries are suitable.  Do it right here because the
        option parsing may need services of the library.  */
     if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
@@ -1938,8 +1941,6 @@ main (int argc, char **argv )
     assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
     assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
  
-
-    set_native_charset (NULL); /* Try to auto set the character set */
 
     /* Try for a version specific config file first */
     if( default_config )

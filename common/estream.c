@@ -109,8 +109,6 @@ typedef pth_mutex_t estream_mutex_t;
   ((pth_mutex_acquire (&(mutex), 1, NULL) == TRUE) ? 0 : -1)
 # define ESTREAM_MUTEX_INITIALIZE(mutex)  \
   pth_mutex_init    (&(mutex))
-# define ESTREAM_THREADING_INIT() ((pth_init () == TRUE) ? 0 : -1)
-
 #else
 
 typedef void *estream_mutex_t;
@@ -119,8 +117,6 @@ typedef void *estream_mutex_t;
 # define ESTREAM_MUTEX_UNLOCK(mutex) (void) 0
 # define ESTREAM_MUTEX_TRYLOCK(mutex) 0
 # define ESTREAM_MUTEX_INITIALIZE(mutex) (void) 0
-# define ESTREAM_THREADING_INIT() 0
-
 #endif
 
 /* Memory allocator functions.  */
@@ -194,13 +190,9 @@ struct estream_list
 
 static estream_list_t estream_list;
 #ifdef HAVE_PTH
-/* Note that we can't use a static initialization with W32Pth; however
-   W32Pth does an implicit initialization anyway.  */
-static estream_mutex_t estream_list_lock
-# ifndef _W32_PTH_H
-         = ESTREAM_MUTEX_INITIALIZER
-# endif
-         ;
+/* Note that we can't use a static initialization with W32Pth, thus we
+   do it in es_init. */
+static estream_mutex_t estream_list_lock;
 #endif
 
 #define ESTREAM_LIST_LOCK   ESTREAM_MUTEX_LOCK   (estream_list_lock)
@@ -308,11 +300,18 @@ es_list_iterate (estream_iterator_t iterator)
 static int
 es_init_do (void)
 {
-  int err;
+#ifdef HAVE_PTH
+  static int initialized;
 
-  err = ESTREAM_THREADING_INIT ();
-
-  return err;
+  if (!initialized)
+    {
+      if (!pth_init ())
+        return -1;
+      if (pth_mutex_init (&estream_list_lock))
+        initialized = 1;
+    }
+#endif
+  return 0;
 }
 
 

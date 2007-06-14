@@ -116,6 +116,9 @@ main (int argc, char **argv)
   set_strusage (my_strusage);
   log_set_prefix ("gpgconf", 1);
 
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
+
   i18n_init();
 
   /* Parse the command line. */

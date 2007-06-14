@@ -1224,43 +1224,6 @@ is_valid_mailbox (const char *name)
 }
 
 
-/* Return the name of the libexec directory.  The name is allocated in
-   a static area on the first use.  This function won't fail. */
-const char *
-get_libexecdir (void)
-{
-#ifdef HAVE_W32_SYSTEM
-  static int got_dir;
-  static char dir[MAX_PATH+5];
-
-  if (!got_dir)
-    {
-      char *p;
-
-      if ( !GetModuleFileName ( NULL, dir, MAX_PATH) )
-        {
-          log_debug ("GetModuleFileName failed: %s\n", w32_strerror (0));
-          *dir = 0;
-        }
-      got_dir = 1;
-      p = strrchr (dir, DIRSEP_C);
-      if (p)
-        *p = 0;
-      else
-        {
-          log_debug ("bad filename `%s' returned for this process\n", dir);
-          *dir = 0; 
-        }
-    }
-
-  if (*dir)
-    return dir;
-  /* Fallback to the hardwired value. */
-#endif /*HAVE_W32_SYSTEM*/
-
-  return GNUPG_LIBEXECDIR;
-}
-
 /* Similar to access(2), but uses PATH to find the file. */
 int
 path_access(const char *file,int mode)

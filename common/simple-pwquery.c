@@ -1,5 +1,5 @@
 /* simple-pwquery.c - A simple password query client for gpg-agent
- *	Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -66,6 +66,11 @@
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 #endif
+
+
+/* Name of the socket to be used if GPG_AGENT_INFO has not been
+   set. No default socket is used if this is NULL.  */
+static char *default_gpg_agent_info;
 
 
 
@@ -154,9 +159,9 @@ readline (int fd, char *buf, size_t buflen)
         ;
       if (n)
         {
-          break; /* at least one full line available - that's enough.
+          break; /* At least one full line available - that's enough.
                     This function is just a simple implementation, so
-                    it is okay to forget about pending bytes */
+                    it is okay to forget about pending bytes.  */
         }
     }
 
@@ -305,6 +310,8 @@ agent_open (int *rfd)
   *rfd = -1;
   infostr = getenv ( "GPG_AGENT_INFO" );
   if ( !infostr || !*infostr ) 
+    infostr = default_gpg_agent_info;
+  if ( !infostr || !*infostr ) 
     {
 #ifdef SPWQ_USE_LOGGING
       log_error (_("gpg-agent is not available in this session\n"));
@@ -322,6 +329,9 @@ agent_open (int *rfd)
     {
 #ifdef SPWQ_USE_LOGGING
       log_error ( _("malformed GPG_AGENT_INFO environment variable\n"));
+      log_debug ( "a='%s'\n", infostr);
+      log_debug ( "a='%s'\n", strchr ( infostr, PATHSEP_C));
+      log_debug ( "a=%td\n", (p-infostr));
 #endif
       return SPWQ_NO_AGENT;
     }
@@ -425,13 +435,34 @@ copy_and_escape (char *buffer, const char *text)
 }
 
 
+/* Set the name of the default socket to NAME.  */
+int 
+simple_pw_set_socket (const char *name)
+{
+  spwq_free (default_gpg_agent_info);
+  if (name)
+    {
+      default_gpg_agent_info = spwq_malloc (strlen (name) + 4 + 1);
+      if (!default_gpg_agent_info)
+        return SPWQ_OUT_OF_CORE;
+      /* We don't know the PID thus we use 0.  */
+      strcpy (stpcpy (default_gpg_agent_info, name),
+              PATHSEP_S "0" PATHSEP_S "1");
+    }
+  else
+    default_gpg_agent_info = NULL;
+
+  return 0;
+}
+
+
 /* Ask the gpg-agent for a passphrase and present the user with a
    DESCRIPTION, a PROMPT and optionally with a TRYAGAIN extra text.
    If a CACHEID is not NULL it is used to locate the passphrase in in
    the cache and store it under this ID.  If OPT_CHECK is true
    gpg-agent is asked to apply some checks on the passphrase security.
    If ERRORCODE is not NULL it should point a variable receiving an
-   errorcode; this errocode might be 0 if the user canceled the
+   errorcode; this error code might be 0 if the user canceled the
    operation.  The function returns NULL to indicate an error.  */
 char *
 simple_pwquery (const char *cacheid, 
@@ -530,7 +561,15 @@ simple_pwquery (const char *cacheid,
 #ifdef SPWQ_USE_LOGGING
       log_info (_("canceled by user\n") );
 #endif
-      *errorcode = 0; /* canceled */
+      *errorcode = 0; /* Special error code to indicate Cancel. */
+    }
+  else if (nread > 4 && !memcmp (pw, "ERR ", 4))
+    {
+      switch ( (strtoul (pw+4, NULL, 0) & 0xffff) )
+        {
+        case 85: rc = SPWQ_NO_PIN_ENTRY;  break;
+        default: rc = SPWQ_GENERAL_ERROR; break;
+        }
     }
   else 
     {

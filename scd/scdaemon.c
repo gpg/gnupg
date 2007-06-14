@@ -303,8 +303,9 @@ main (int argc, char **argv )
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
   log_set_prefix ("scdaemon", 1|4); 
-  /* Try to auto set the character set.  */
-  set_native_charset (NULL); 
+
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
 
   i18n_init ();
 
@@ -522,6 +523,8 @@ main (int argc, char **argv )
       log_debug ("... okay\n");
     }
   
+  initialize_module_command ();
+
   if (gpgconf_list == 2)
     scd_exit (0);
   if (gpgconf_list)
@@ -586,6 +589,7 @@ main (int argc, char **argv )
       pth_attr_t tattr;
       int fd = -1;
 
+#ifndef HAVE_W32_SYSTEM
       {
         struct sigaction sa;
         
@@ -594,6 +598,7 @@ main (int argc, char **argv )
         sa.sa_flags = 0;
         sigaction (SIGPIPE, &sa, NULL);
       }
+#endif
 
       /* If --debug-allow-core-dump has been given we also need to
          switch the working directory to a place where we can actually

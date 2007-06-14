@@ -1,3 +1,23 @@
+2007-06-14  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (start_agent): Use gnupg_module_name.
+	* call-dirmngr.c (start_dirmngr): Ditto.
+	* export.c (export_p12): Ditto.
+	* import.c (parse_p12): Ditto.
+	* gpgsm.c (run_protect_tool): Ditto.
+
+2007-06-12  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Replace some calls by init_common_subsystems.
+	(main): Use gnupg_datadir.
+	* qualified.c (read_list): Use gnupg-datadir.
+
+2007-06-11  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (common_libs): Use libcommaonstd macr.
+
+	* gpgsm.c (main) [W32]: Call pth_init.
+
 2007-06-06  Werner Koch  <wk@g10code.com>
 
 	* qualified.c (gpgsm_not_qualified_warning) [!ENABLE_NLS]: Do not

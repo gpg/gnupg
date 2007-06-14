@@ -2676,9 +2676,13 @@ gc_process_gpgconf_conf (const char *fname, int update, int defaults)
   int runtime[GC_BACKEND_NR];
   int used_components[GC_COMPONENT_NR];
   int backend_id, component_id;
+  char *fname_buffer = NULL;
 
   if (!fname)
-    fname = GNUPG_SYSCONFDIR "/gpgconf.conf";
+    {
+      fname_buffer = make_filename (gnupg_sysconfdir (), "gpgconf.conf", NULL);
+      fname = fname_buffer;
+    }
 
   for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)
     runtime[backend_id] = 0;
@@ -2695,6 +2699,7 @@ gc_process_gpgconf_conf (const char *fname, int update, int defaults)
           gc_error (0, errno, "can not open global config file `%s'", fname);
           result = -1;
         }
+      xfree (fname_buffer);
       return result;
     }
 
@@ -2931,5 +2936,6 @@ gc_process_gpgconf_conf (const char *fname, int update, int defaults)
         }
     }
 
+  xfree (fname_buffer);
   return result;
 }

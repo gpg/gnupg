@@ -1,3 +1,16 @@
+2007-06-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [AH_BOTTOM]: Remove the hardwired names of modules.
+
+2007-06-12  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [AH_BOTTOM]: Define HTTP_NO_WSASTARTUP.
+
+2007-06-11  Werner Koch  <wk@g10code.com>
+
+	* am/cmacros.am (libcommonstd, libcommonpth, libcommonstd_ldadd)
+	(libcommonpth_ldadd): Add macros.
+
 2007-06-06  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Add a few notices message so make browsing of the

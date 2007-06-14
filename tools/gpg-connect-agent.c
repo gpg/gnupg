@@ -274,6 +274,10 @@ main (int argc, char **argv)
 
   set_strusage (my_strusage);
   log_set_prefix ("gpg-connect-agent", 1);
+
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
+
   assuan_set_assuan_err_source (0);
 
   i18n_init();

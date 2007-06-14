@@ -94,6 +94,10 @@ start_agent (ctrl_t ctrl)
       sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
       rc = assuan_socket_connect (&ctx, sockname, 0);
       xfree (sockname);
+#ifdef HAVE_W32_SYSTEM
+#      warning Print a warning if connecting is not possible
+      /* and offer to fire up the agent.  */
+#endif
 
       if (rc)
         {
@@ -112,7 +116,7 @@ start_agent (ctrl_t ctrl)
             }
           
           if (!opt.agent_program || !*opt.agent_program)
-            opt.agent_program = GNUPG_DEFAULT_AGENT;
+            opt.agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
           if ( !(pgmname = strrchr (opt.agent_program, '/')))
             pgmname = opt.agent_program;
           else

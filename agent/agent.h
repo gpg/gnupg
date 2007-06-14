@@ -215,8 +215,8 @@ gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         gcry_sexp_t *result);
 int agent_key_available (const unsigned char *grip);
 
-/*-- query.c --*/
-void initialize_module_query (void);
+/*-- call-pinentry.c --*/
+void initialize_module_call_pinentry (void);
 void agent_query_dump_state (void);
 void agent_reset_query (ctrl_t ctrl);
 int pinentry_active_p (ctrl_t ctrl, int waitseconds);
@@ -276,6 +276,7 @@ int agent_get_shadow_info (const unsigned char *shadowkey,
 
 
 /*-- trustlist.c --*/
+void initialize_module_trustlist (void);
 gpg_error_t agent_istrusted (ctrl_t ctrl, const char *fpr);
 gpg_error_t agent_listtrusted (void *assuan_context);
 gpg_error_t agent_marktrusted (ctrl_t ctrl, const char *name,

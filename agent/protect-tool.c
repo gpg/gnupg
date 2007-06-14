@@ -160,6 +160,8 @@ my_strusage (int level)
 }
 
 
+/* Include the implementation of map_spwq_error.  */
+MAP_SPWQ_ERROR_IMPL
 
 /*  static void */
 /*  print_mpi (const char *text, gcry_mpi_t a) */
@@ -1033,8 +1035,8 @@ main (int argc, char **argv )
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   log_set_prefix ("gpg-protect-tool", 1); 
 
-  /* Try to auto set the character set.  */
-  set_native_charset (NULL); 
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
 
   i18n_init ();
 
@@ -1091,6 +1093,13 @@ main (int argc, char **argv )
     fname = *argv;
   else if (argc > 1)
     usage (1);
+
+  /* Tell simple-pwquery about the the standard socket name.  */
+  {
+    char *tmp = make_filename (opt_homedir, "S.gpg-agent", NULL);
+    simple_pw_set_socket (tmp);
+    xfree (tmp);
+  }
 
   if (opt_prompt)
     opt_prompt = percent_plus_unescape_string (xstrdup (opt_prompt));
@@ -1194,6 +1203,7 @@ get_passphrase (int promptno, int opt_check)
   pw = simple_pwquery (NULL,
                        error_msgno == 1? _("does not match - try again"):NULL,
                        _("Passphrase:"), desc, opt_check, &err);
+  err = map_spwq_error (err);
 
 #ifdef ENABLE_NLS
   if (orig_codeset)

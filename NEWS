@@ -3,6 +3,8 @@ Noteworthy changes in version 2.0.5
 
  * Fixed bug when using the --p12-charset without --armor.
 
+ * Changes required for a port to Windows.
+
 
 Noteworthy changes in version 2.0.4 (2007-05-09)
 ------------------------------------------------

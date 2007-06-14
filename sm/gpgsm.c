@@ -747,8 +747,8 @@ main ( int argc, char **argv)
      somewhere after the option parsing */
   log_set_prefix ("gpgsm", 1);
 
-  /* Try to auto set the character set.  */
-  set_native_charset (NULL); 
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
 
   /* Check that the libraries are suitable.  Do it here because the
      option parse may need services of the library */
@@ -1310,7 +1310,7 @@ main ( int argc, char **argv)
           /* Import the standard certificates for a new default keybox. */
           char *filelist[2];
           
-          filelist[0] = make_filename (GNUPG_DATADIR, "com-certs.pem", NULL);
+          filelist[0] = make_filename (gnupg_datadir (),"com-certs.pem", NULL);
           filelist[1] = NULL;
           if (!access (filelist[0], F_OK))
             {
@@ -1853,7 +1853,7 @@ run_protect_tool (int argc, char **argv)
   int i;
 
   if (!opt.protect_tool_program || !*opt.protect_tool_program)
-    pgm = GNUPG_DEFAULT_PROTECT_TOOL;
+    pgm = gnupg_module_name (GNUPG_MODULE_NAME_PROTECT_TOOL);
   else
     pgm = opt.protect_tool_program;
 

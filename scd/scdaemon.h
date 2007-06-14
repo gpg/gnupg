@@ -124,6 +124,7 @@ void scd_exit (int rc);
 const char *scd_get_socket_name (void);
 
 /*-- command.c --*/
+void initialize_module_command (void);
 void scd_command_handler (ctrl_t, int);
 void send_status_info (ctrl_t ctrl, const char *keyword, ...)
      GNUPG_GCC_A_SENTINEL(1);

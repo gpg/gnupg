@@ -124,3 +124,152 @@ default_homedir (void)
 
   return dir;
 }
+
+
+/* Return the name of the sysconfdir.  This is a static string.  This
+   function is required because under Windows we can't simply compile
+   it in.  */
+const char *
+gnupg_sysconfdir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+#warning get the sysconfdir from somewhere else
+  return GNUPG_SYSCONFDIR;
+#else /*!HAVE_W32_SYSTEM*/
+  return GNUPG_SYSCONFDIR;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
+const char *
+gnupg_bindir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  return gnupg_libexecdir ();
+#else /*!HAVE_W32_SYSTEM*/
+  return GNUPG_BINDIR;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
+/* Return the name of the libexec directory.  The name is allocated in
+   a static area on the first use.  This function won't fail. */
+const char *
+gnupg_libexecdir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  static int got_dir;
+  static char dir[MAX_PATH+5];
+
+  if (!got_dir)
+    {
+      char *p;
+
+      if ( !GetModuleFileName ( NULL, dir, MAX_PATH) )
+        {
+          log_debug ("GetModuleFileName failed: %s\n", w32_strerror (0));
+          *dir = 0;
+        }
+      got_dir = 1;
+      p = strrchr (dir, DIRSEP_C);
+      if (p)
+        *p = 0;
+      else
+        {
+          log_debug ("bad filename `%s' returned for this process\n", dir);
+          *dir = 0; 
+        }
+    }
+
+  if (*dir)
+    return dir;
+  /* Fallback to the hardwired value. */
+#endif /*HAVE_W32_SYSTEM*/
+
+  return GNUPG_LIBEXECDIR;
+}
+
+const char *
+gnupg_libdir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+#warning get the libdir from somewhere else
+  return GNUPG_LIBDIR;
+#else /*!HAVE_W32_SYSTEM*/
+  return GNUPG_LIBDIR;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+const char *
+gnupg_datadir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+#warning get the datadir from somewhere else
+  return GNUPG_DATADIR;
+#else /*!HAVE_W32_SYSTEM*/
+  return GNUPG_DATADIR;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
+/* Return the file name of a helper tool.  WHICH is one of the
+   GNUPG_MODULE_NAME_foo constants.  */
+const char *
+gnupg_module_name (int which)
+{
+  const char *s, *s2;
+
+#define X(a,b) do {                                          \
+        static char *name;                                   \
+        if (!name)                                           \
+          {                                                  \
+            s = gnupg_ ## a ();                              \
+            s2 = DIRSEP_S b EXEEXT_S;                        \
+            name = xmalloc (strlen (s) + strlen (s2) + 1);   \
+            strcpy (stpcpy (name, s), s2);                   \
+          }                                                  \
+        return name;                                         \
+      } while (0)                                                     
+
+  switch (which)
+    {
+    case GNUPG_MODULE_NAME_AGENT:
+#ifdef GNUPG_DEFAULT_AGENT
+      return GNUPG_DEFAULT_AGENT;
+#else 
+      X(bindir, "gpg-agent");
+#endif
+      
+    case GNUPG_MODULE_NAME_PINENTRY:
+#ifdef GNUPG_DEFAULT_PINENTRY
+      return GNUPG_DEFAULT_PINENTRY;
+#else 
+      X(bindir, "pinentry");
+#endif
+
+    case GNUPG_MODULE_NAME_SCDAEMON:
+#ifdef GNUPG_DEFAULT_SCDAEMON
+      return GNUPG_DEFAULT_SCDAEMON;
+#else 
+      X(bindir, "scdaemon");
+#endif
+
+    case GNUPG_MODULE_NAME_DIRMNGR:
+#ifdef GNUPG_DEFAULT_DIRMNGR
+      return GNUPG_DEFAULT_DIRMNGR;
+#else 
+      X(bindir, "dirmngr");
+#endif
+
+    case GNUPG_MODULE_NAME_PROTECT_TOOL:
+#ifdef GNUPG_DEFAULT_PROTECT_TOOL
+      return GNUPG_DEFAULT_PROTECT_TOOL;
+#else 
+      X(libexecdir, "gpg-protect-tool");
+#endif
+
+    default: 
+      BUG ();
+    }
+#undef X
+}

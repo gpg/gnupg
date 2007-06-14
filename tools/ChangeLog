@@ -1,3 +1,25 @@
+2007-06-14  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c (main): Setup default socket name for
+	simple-pwquery.
+	(MAP_SPWQ_ERROR_IMPL): New.  Use it for all spwq error returns.
+
+2007-06-12  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gc_process_gpgconf_conf): Replace
+	GNUPG_SYSCONFDIR by a function call.
+
+	* gpg-connect-agent.c (main): Replace some calls by
+	init_common_subsystems.
+	* gpgconf.c (main): Ditto.
+	* symcryptrun.c (main): Ditto.
+
+2007-06-11  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c (main) [W32]: Call pth_init.
+	* gpgconf.c (main) [W32]: Call pth_init
+	* gpg-connect-agent.c (main) [W32]: Call pth_init.
+
 2007-06-06  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (bin_PROGRAMS) [W32]: Do not build gpgparsemail.

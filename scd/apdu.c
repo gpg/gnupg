@@ -1337,6 +1337,8 @@ open_pcsc_reader (const char *portstr)
   int err;
   unsigned int dummy_status;
   int sw = SW_HOST_CARD_IO_ERROR;
+  /* Note that we use the constant and not the fucntion because this
+     code won't be be used under Windows.  */
   const char *wrapperpgm = GNUPG_LIBEXECDIR "/gnupg-pcsc-wrapper";
 
   if (access (wrapperpgm, X_OK))

@@ -363,30 +363,14 @@ AH_BOTTOM([
    the values may be overridden by the make invocations; this is to
    comply with the GNU coding standards. */
 #ifdef HAVE_DRIVE_LETTERS
+ /* FIXME: We need to use a function to determine these values depending 
+    on the actual installation directory. */
 #define GNUPG_BINDIR      "c:\\gnupg"
 #define GNUPG_LIBEXECDIR  "c:\\gnupg"
 #define GNUPG_LIBDIR      "c:\\gnupg"
 #define GNUPG_DATADIR     "c:\\gnupg"
+#define GNUPG_SYSCONFDIR  "c:\\gnupg"
 #endif
-
-/* Setup the hardwired names of modules. */
-#ifndef GNUPG_DEFAULT_AGENT
-#define GNUPG_DEFAULT_AGENT    ( GNUPG_BINDIR DIRSEP_S "gpg-agent" EXEEXT_S )
-#endif
-#ifndef GNUPG_DEFAULT_PINENTRY
-#define GNUPG_DEFAULT_PINENTRY ( GNUPG_BINDIR DIRSEP_S "pinentry" EXEEXT_S )
-#endif
-#ifndef GNUPG_DEFAULT_SCDAEMON
-#define GNUPG_DEFAULT_SCDAEMON ( GNUPG_BINDIR DIRSEP_S "scdaemon" EXEEXT_S )
-#endif
-#ifndef GNUPG_DEFAULT_DIRMNGR
-#define GNUPG_DEFAULT_DIRMNGR  ( GNUPG_BINDIR DIRSEP_S "dirmngr" EXEEXT_S )
-#endif
-#ifndef GNUPG_DEFAULT_PROTECT_TOOL
-#define GNUPG_DEFAULT_PROTECT_TOOL \
-                    ( GNUPG_LIBEXECDIR DIRSEP_S "gpg-protect-tool" EXEEXT_S )
-#endif
-
 
 /* Derive some other constants. */
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
@@ -415,6 +399,11 @@ AH_BOTTOM([
 
 /* Our HTTP code is used in estream mode.  */
 #define HTTP_USE_ESTREAM 1
+
+/* Under W32 we do an explicit socket initialization, thus we need to
+   avoid the on-demand initialization which would also install an atexit
+   handler.  */
+#define HTTP_NO_WSASTARTUP
 
 /* We always include support for the OpenPGP card.  */
 #define ENABLE_CARD_SUPPORT 1
@@ -460,6 +449,7 @@ AC_PROG_LN_S
 AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, :)
 AC_PATH_PROG(PERL,"perl")
+AC_CHECK_TOOL(WINDRES, windres, :)
 AC_ISC_POSIX
 gl_EARLY
 AC_SYS_LARGEFILE

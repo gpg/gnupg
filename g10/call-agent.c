@@ -106,7 +106,7 @@ start_agent (void)
         }
 
       if (!opt.agent_program || !*opt.agent_program)
-        opt.agent_program = GNUPG_DEFAULT_AGENT;
+        opt.agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
       if ( !(pgmname = strrchr (opt.agent_program, '/')))
         pgmname = opt.agent_program;
       else

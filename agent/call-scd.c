@@ -300,7 +300,7 @@ start_scd (ctrl_t ctrl)
     }
 
   if (!opt.scdaemon_program || !*opt.scdaemon_program)
-    opt.scdaemon_program = GNUPG_DEFAULT_SCDAEMON;
+    opt.scdaemon_program = gnupg_module_name (GNUPG_MODULE_NAME_SCDAEMON);
   if ( !(pgmname = strrchr (opt.scdaemon_program, '/')))
     pgmname = opt.scdaemon_program;
   else
@@ -424,6 +424,9 @@ agent_scd_check_aliveness (void)
   if (primary_scd_ctx)
     {
       pid = assuan_get_pid (primary_scd_ctx);
+#ifdef HAVE_W32_SYSTEM
+#warning Need to implement an alive test for scdaemon
+#else
       if (pid != (pid_t)(-1) && pid
           && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
         {
@@ -454,6 +457,7 @@ agent_scd_check_aliveness (void)
           xfree (socket_name);
           socket_name = NULL;
         }
+#endif
     }
 
   if (!pth_mutex_release (&start_scd_lock))

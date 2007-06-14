@@ -1,3 +1,15 @@
+2007-06-12  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): Replace some calls by init_common_subsystems.
+
+2007-06-11  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (scdaemon_LDADD): Use libcommonpth macro.
+
+	* command.c (initialize_module_command): New.
+	* scdaemon.c (main) [W32]: Do not use sigpipe code.
+	(main): Call initialize_module_command.
+
 2007-06-06  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_sign): Fix arithmetic on void*.

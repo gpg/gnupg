@@ -970,7 +970,7 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
   byte *line=NULL;
   struct exec_info *spawn;
   const char *scheme;
-  const char *libexecdir = get_libexecdir ();
+  const char *libexecdir = gnupg_libexecdir ();
 
   assert(keyserver);
 
@@ -996,7 +996,7 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
      After some more thinking about this we came to the conclusion
      that it is better to load the helpers from the directory where
      the program of this process lives.  Fortunately Windows provides
-     a way to retrieve this and our get_libexecdir function has been
+     a way to retrieve this and our gnupg_libexecdir function has been
      modified to return just this.  Setting the exec-path is not
      anymore required.  
        set_exec_path(libexecdir);

@@ -122,8 +122,13 @@ main( int argc, char **argv )
 
     set_strusage (my_strusage);
     log_set_prefix ("gpgv", 1);
+
+    /* Make sure that our subsystems are ready.  */
+    init_common_subsystems ();
+
     gnupg_init_signals (0, NULL);
     i18n_init();
+
     opt.command_fd = -1; /* no command fd */
     opt.pgp2_workarounds = 1;
     opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
@@ -136,8 +141,6 @@ main( int argc, char **argv )
     tty_batchmode(1);
     disable_dotlock();
 
-    set_native_charset (NULL); /* Try to auto set the character set */
-    
     pargs.argc = &argc;
     pargs.argv = &argv;
     pargs.flags=  1;  /* do not remove the args */

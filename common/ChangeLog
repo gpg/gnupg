@@ -1,3 +1,36 @@
+2007-06-14  Werner Koch  <wk@g10code.com>
+
+	* simple-pwquery.h (MAP_SPWQ_ERROR_IMPL): New.
+	(SPWQ_NO_PIN_ENTRY): New.
+	* simple-pwquery.c (simple_pw_set_socket): New.
+	(agent_open): Use it if GPG_AGENT_INFO is not set.
+	(simple_pwquery): Extended to allow returning of otehyr error codes.
+
+	* util.h (GNUPG_MODULE_NAME_AGENT, GNUPG_MODULE_NAME_PINENTRY) 
+	(GNUPG_MODULE_NAME_SCDAEMON, GNUPG_MODULE_NAME_DIRMNGR) 
+	(GNUPG_MODULE_NAME_PROTECT_TOOL): New.
+	* homedir.c (gnupg_module_name): New.
+	(gnupg_bindir): New.
+
+2007-06-12  Werner Koch  <wk@g10code.com>
+
+	* homedir.c (gnupg_sysconfdir): New.
+	(gnupg_libexecdir): New.  Taken from g10/misc.c:get_libexecdir.
+	(gnupg_datadir): New.
+	(gnupg_libdir): New.
+
+	* http.c (connect_server) [W32]: Do not call init_sockets if
+	HTTP_NO_WSASTARTUP is defined.
+
+	* init.c: New.
+
+	* estream.c (es_init_do): Init stream lock here because we can't
+	use a static initialization with W32pth.
+
+2007-06-11  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (t_common_ldadd): Use libcommonstd macro.
+
 2007-06-06  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Include am/cmacros.am.

@@ -23,6 +23,8 @@ bin_PROGRAMS = gpg-agent
 libexec_PROGRAMS = gpg-protect-tool gpg-preset-passphrase
 noinst_PROGRAMS = $(TESTS)
 
+EXTRA_DIST = gpg-agent.ico gpg-agent-resource.rc
+
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
 include $(top_srcdir)/am/cmacros.am
@@ -45,15 +47,33 @@ gpg_agent_SOURCES = \
 	call-scd.c \
 	learncard.c
 
+if HAVE_W32_SYSTEM
+gpg_agent_SOURCES += w32main.c w32main.h
+endif
 
-common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
-commonpth_libs = ../jnlib/libjnlib.a ../common/libcommonpth.a ../gl/libgnu.a
+common_libs = ../jnlib/libjnlib.a $(libcommon) ../gl/libgnu.a
+commonpth_libs = ../jnlib/libjnlib.a $(libcommonpth) ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
+
+if HAVE_W32_SYSTEM
+.rc.o:
+	$(WINDRES) `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
+	 sed -e 's/-I/--include-dir /g;s/-D/--define /g'` -i $< -o $@
+
+gpg_agent_res_ldflags = -Wl,gpg-agent-resource.o
+gpg_agent_res_deps = gpg-agent-resource.o
+else
+gpg_agent_res_ldflags =
+gpg_agent_res_deps =
+endif
+
 
 gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
 gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_PTH_LIBS) $(PTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
+gpg_agent_LDFLAGS = $(gpg_agent_res_ldflags)
+gpg_agent_DEPENDENCIES = $(gpg_agent_res_deps)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
@@ -61,20 +81,22 @@ gpg_protect_tool_SOURCES = \
 	minip12.c minip12.h 
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
-gpg_protect_tool_LDADD =  $(pwquery_libs) $(common_libs) \
+gpg_protect_tool_LDADD = $(pwquery_libs) $(common_libs) \
          $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 gpg_preset_passphrase_SOURCES = \
 	preset-passphrase.c
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
-gpg_preset_passphrase_LDADD =  $(pwquery_libs) $(common_libs) \
+gpg_preset_passphrase_LDADD = \
+         $(pwquery_libs) $(common_libs) \
 	 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
 $(PROGRAMS): $(common_libs) $(commonpth_libs) $(pwquery_libs)
+
 
 
 #

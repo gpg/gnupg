@@ -50,17 +50,19 @@ endif
 
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 
-common_libs = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a
+common_libs = ../jnlib/libjnlib.a $(libcommon) ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
-gpgsplit_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+gpgsplit_LDADD = $(common_libs) \
+	         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		 $(ZLIBS) $(LIBINTL) $(LIBICONV)
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 # jnlib/common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
-gpgconf_LDADD = $(common_libs) $(LIBINTL) $(GPG_ERROR_LIBS) $(LIBICONV)
+gpgconf_LDADD = $(common_libs) \
+                $(LIBINTL) $(GPG_ERROR_LIBS) $(LIBICONV)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD = 
@@ -73,7 +75,8 @@ watchgnupg_SOURCES = watchgnupg.c
 watchgnupg_LDADD = $(NETLIBS)
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
-gpg_connect_agent_LDADD = $(common_libs) $(LIBASSUAN_LIBS) \
+# FIXME: remove PTH_LIBS (why do we need them at all?)
+gpg_connect_agent_LDADD = $(common_libs) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
 	                  $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 gpgkey2ssh_SOURCES = gpgkey2ssh.c

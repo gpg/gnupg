@@ -30,6 +30,10 @@ AM_CPPFLAGS += -DGNUPG_BINDIR="\"$(bindir)\""            \
                -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
 endif
 
+
+# If a specific protect tool program has been defined, pass its name
+# to cc.  Note that these macros should not be used directly but via
+# the gnupg_module_name function.
 if GNUPG_AGENT_PGM
 AM_CPPFLAGS += -DGNUPG_DEFAULT_AGENT="\"@GNUPG_AGENT_PGM@\""
 endif
@@ -45,3 +49,9 @@ endif
 if GNUPG_PROTECT_TOOL_PGM
 AM_CPPFLAGS += -DGNUPG_DEFAULT_PROTECT_TOOL="\"@GNUPG_PROTECT_TOOL_PGM@\""
 endif
+
+
+# Convenience macros
+libcommon = ../common/libcommon.a
+libcommonpth = ../common/libcommonpth.a
+

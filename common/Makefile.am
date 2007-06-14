@@ -37,6 +37,7 @@ common_sources = \
 	openpgpdefs.h \
 	keyserver.h \
 	sexp-parse.h \
+	init.c \
 	sexputil.c \
 	sysutils.c sysutils.h \
 	homedir.c \
@@ -58,6 +59,7 @@ common_sources = \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \
 	http.c http.h 
+
 
 libcommon_a_SOURCES = $(common_sources)
 if USE_DNS_SRV
@@ -83,7 +85,7 @@ libgpgrl_a_SOURCES = \
 #
 module_tests = t-convert
 
-t_common_ldadd = ../jnlib/libjnlib.a ../common/libcommon.a ../gl/libgnu.a \
+t_common_ldadd = ../jnlib/libjnlib.a $(libcommon) ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
 t_convert_DEPENDENCIES = convert.c libcommon.a

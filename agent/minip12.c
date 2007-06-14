@@ -27,7 +27,6 @@
 #include <string.h>
 #include <assert.h>
 #include <gcrypt.h>
-#include <iconv.h>
 #include <errno.h>
 
 #ifdef TEST
@@ -36,16 +35,12 @@
 #endif
 
 #include "../jnlib/logging.h"
+#include "../jnlib/utf8conv.h"
 #include "minip12.h"
 
 #ifndef DIM
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
 #endif
-
-#ifndef ICONV_CONST
-#define ICONV_CONST
-#endif
-
 
 
 enum
@@ -532,7 +527,7 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
     {
       if (*charsets[charsetidx])
         {
-          iconv_t cd;
+          jnlib_iconv_t cd;
           const char *inptr;
           char *outptr;
           size_t inbytes, outbytes;
@@ -553,22 +548,22 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
                 }
             }
 
-          cd = iconv_open (charsets[charsetidx], "utf-8");
-          if (cd == (iconv_t)(-1))
+          cd = jnlib_iconv_open (charsets[charsetidx], "utf-8");
+          if (cd == (jnlib_iconv_t)(-1))
             continue;
 
           inptr = pw;
           inbytes = strlen (pw);
           outptr = convertedpw;
           outbytes = convertedpwsize - 1;
-          if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
+          if ( jnlib_iconv (cd, (const char **)&inptr, &inbytes,
                       &outptr, &outbytes) == (size_t)-1) 
             {
-              iconv_close (cd);
+              jnlib_iconv_close (cd);
               continue;
             }
           *outptr = 0;
-          iconv_close (cd);
+          jnlib_iconv_close (cd);
           log_info ("decryption failed; trying charset `%s'\n",
                     charsets[charsetidx]);
         }
@@ -2167,7 +2162,7 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
 
   if (charset && pw && *pw)
     {
-      iconv_t cd;
+      jnlib_iconv_t cd;
       const char *inptr;
       char *outptr;
       size_t inbytes, outbytes;
@@ -2182,8 +2177,8 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
           goto failure;
         }
 
-      cd = iconv_open (charset, "utf-8");
-      if (cd == (iconv_t)(-1))
+      cd = jnlib_iconv_open (charset, "utf-8");
+      if (cd == (jnlib_iconv_t)(-1))
         {
           log_error ("can't convert passphrase to"
                      " requested charset `%s': %s\n",
@@ -2196,18 +2191,18 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
       inbytes = strlen (pw);
       outptr = pwbuf;
       outbytes = pwbufsize - 1;
-      if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
+      if ( jnlib_iconv (cd, (const char **)&inptr, &inbytes,
                       &outptr, &outbytes) == (size_t)-1) 
         {
           log_error ("error converting passphrase to"
                      " requested charset `%s': %s\n",
                      charset, strerror (errno));
           gcry_free (pwbuf);
-          iconv_close (cd);
+          jnlib_iconv_close (cd);
           goto failure;
         }
       *outptr = 0;
-      iconv_close (cd);
+      jnlib_iconv_close (cd);
       pw = pwbuf;
     }
 

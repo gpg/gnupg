@@ -1,3 +1,7 @@
+2007-06-12  Werner Koch  <wk@g10code.com>
+
+	* kbxutil.c (main): Replace some calls by init_common_subsystems.
+
 2007-06-06  Werner Koch  <wk@g10code.com>
 
 	* kbxutil.c (i18n_init): Remove.

@@ -124,7 +124,7 @@ static struct server_local_s *locked_session;
 
 /* While doing a reset we need to make sure that the ticker does not
    call scd_update_reader_status_file while we are using it. */
-static pth_mutex_t status_file_update_lock = PTH_MUTEX_INIT;
+static pth_mutex_t status_file_update_lock;
 
 
 /*-- Local prototypes --*/
@@ -132,6 +132,24 @@ static void update_reader_status_file (void);
 
 
 
+
+/* This function must be called once to initialize this module.  This
+   has to be done before a second thread is spawned.  We can't do the
+   static initialization because Pth emulation code might not be able
+   to do a static init; in particular, it is not possible for W32. */
+void
+initialize_module_command (void)
+{
+  static int initialized;
+
+  if (!initialized)
+    {
+      if (pth_mutex_init (&status_file_update_lock))
+        initialized = 1;
+    }
+}
+
+
 /* Update the CARD_REMOVED element of all sessions using the reader
    given by SLOT to VALUE  */
 static void

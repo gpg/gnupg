@@ -33,9 +33,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #ifndef HAVE_W32_SYSTEM
-#include <sys/socket.h>
-#include <sys/un.h>
-#endif /*HAVE_W32_SYSTEM*/
+# include <sys/socket.h>
+# include <sys/un.h>
+#endif /*!HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <signal.h>
 #include <pth.h>
@@ -47,7 +47,8 @@
 #include "i18n.h"
 #include "sysutils.h"
 #ifdef HAVE_W32_SYSTEM
-#include "../jnlib/w32-afunix.h"
+# include "../jnlib/w32-afunix.h"
+# include "w32main.h"
 #endif
 #include "setenv.h"
 
@@ -408,8 +409,16 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 }
 
 
+/* The main entry point.  For W32 another name is used as the real
+   entry points needs to be named WinMain and is defined in
+   w32main.c. */
+#ifdef HAVE_W32_SYSTEM
+int
+w32_main (int argc, char **argv )
+#else
 int
 main (int argc, char **argv )
+#endif
 {
   ARGPARSE_ARGS pargs;
   int orig_argc;
@@ -434,6 +443,7 @@ main (int argc, char **argv )
   gpg_error_t err;
   const char *env_file_name = NULL;
 
+
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
@@ -441,8 +451,8 @@ main (int argc, char **argv )
      somewhere after the option parsing */
   log_set_prefix ("gpg-agent", JNLIB_LOG_WITH_PREFIX|JNLIB_LOG_WITH_PID); 
 
-  /* Try to auto set the character set.  */
-  set_native_charset (NULL); 
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
 
   i18n_init ();
 
@@ -663,8 +673,9 @@ main (int argc, char **argv )
       exit (1);
     }
 
-  initialize_module_query ();
+  initialize_module_call_pinentry ();
   initialize_module_call_scd ();
+  initialize_module_trustlist ();
   
   /* Try to create missing directories. */
   create_directories ();
@@ -837,6 +848,7 @@ main (int argc, char **argv )
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
       printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
+      w32_setup_taskbar ();
 #else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
       if (pid == (pid_t)-1) 
@@ -1029,6 +1041,7 @@ main (int argc, char **argv )
   return 0;
 }
 
+
 void
 agent_exit (int rc)
 {
@@ -1047,7 +1060,6 @@ agent_exit (int rc)
   rc = rc? rc : log_get_errorcount(0)? 2 : 0;
   exit (rc);
 }
-
 
 static void
 agent_init_default_ctrl (ctrl_t ctrl)
@@ -1153,13 +1165,13 @@ get_agent_socket_name (void)
 
 
 /* Create a name for the socket.  With USE_STANDARD_SOCKET given as
-   true using STANDARD_NAME in the home directory or if given has
+   true using STANDARD_NAME in the home directory or if given as
    false from the mkdir type name TEMPLATE.  In the latter case a
    unique name in a unique new directory will be created.  In both
    cases check for valid characters as well as against a maximum
    allowed length for a unix domain socket is done.  The function
    terminates the process in case of an error.  Returns: Pointer to an
-   allcoated string with the absolute name of the socket used.  */
+   allocated string with the absolute name of the socket used.  */
 static char *
 create_socket_name (int use_standard_socket,
 		    char *standard_name, char *template)
@@ -1303,6 +1315,9 @@ static void
 create_directories (void)
 {
   struct stat statbuf;
+#ifdef HAVE_W32_SYSTEM
+#warning change it so that it works like in gpg.
+#endif
   const char *defhome = GNUPG_DEFAULT_HOMEDIR;
   char *home;
 
@@ -1478,7 +1493,7 @@ start_connection_thread_ssh (void *arg)
 }
 
 
-/* Connection handler loop.  Wait for coecntion requests and spawn a
+/* Connection handler loop.  Wait for connection requests and spawn a
    thread after accepting a connection.  */
 static void
 handle_connections (int listen_fd, int listen_fd_ssh)
@@ -1510,6 +1525,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
   ev = NULL;
+  signo = 0;
 #endif
   time_ev = NULL;
 
@@ -1521,6 +1537,10 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   for (;;)
     {
       sigset_t oldsigs;
+
+#ifdef HAVE_W32_SYSTEM
+      w32_poll_events ();
+#endif
 
       if (shutdown_pending)
         {

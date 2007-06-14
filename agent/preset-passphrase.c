@@ -111,31 +111,9 @@ my_strusage (int level)
 
 
 
-static gpg_error_t
-map_spwq_error (int err)
-{
-  switch (err)
-    {
-    case 0:
-      return 0;
-    case SPWQ_OUT_OF_CORE:
-      return gpg_error_from_errno (ENOMEM);
-    case SPWQ_IO_ERROR:
-      return gpg_error_from_errno (EIO);
-    case SPWQ_PROTOCOL_ERROR:
-      return gpg_error (GPG_ERR_PROTOCOL_VIOLATION);
-    case SPWQ_ERR_RESPONSE:
-      return gpg_error (GPG_ERR_INV_RESPONSE);
-    case SPWQ_NO_AGENT:
-      return gpg_error (GPG_ERR_NO_AGENT);
-    case SPWQ_SYS_ERROR:
-      return gpg_error_from_syserror ();
-    case SPWQ_GENERAL_ERROR:
-    default:
-      return gpg_error (GPG_ERR_GENERAL);
-    }
-}
 
+/* Include the implementation of map_spwq_error.  */
+MAP_SPWQ_ERROR_IMPL
       
 /* Convert the string SRC into HEX encoding.  Caller needs to xfree
    the returned string.  */
@@ -260,23 +238,8 @@ main (int argc, char **argv)
   set_strusage (my_strusage);
   log_set_prefix ("gpg-preset-passphrase", 1); 
 
-  /* Try to auto set the character set.  */
-  set_native_charset (NULL); 
-
-#ifdef HAVE_W32_SYSTEM
-  /* Fixme: Need to initialize the Windows sockets: This should be
-     moved to another place and we should make sure that it won't get
-     done twice, like when Pth is used too. */
-  {
-    WSADATA wsadat;
-    if (WSAStartup (0x202, &wsadat) )
-      {
-        log_error ("error initializing socket library: ec=%d\n", 
-                   (int)WSAGetLastError () );
-        return 2;
-      }
-  }
-#endif
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
 
   i18n_init ();
 
@@ -306,6 +269,13 @@ main (int argc, char **argv)
     keygrip = *argv;
   else
     usage (1);
+
+  /* Tell simple-pwquery about the the standard socket name.  */
+  {
+    char *tmp = make_filename (opt_homedir, "S.gpg-agent", NULL);
+    simple_pw_set_socket (tmp);
+    xfree (tmp);
+  }
 
   if (cmd == oPreset)
     preset_passphrase (keygrip);

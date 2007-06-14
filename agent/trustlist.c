@@ -53,7 +53,7 @@ typedef struct trustitem_s trustitem_t;
 static trustitem_t *trusttable; 
 static size_t trusttablesize; 
 /* A mutex used to protect the table. */
-static pth_mutex_t trusttable_lock = PTH_MUTEX_INIT;
+static pth_mutex_t trusttable_lock;
 
 
 
@@ -69,6 +69,24 @@ static const char headerblurb[] =
 "# Include the default trust list\n"
 "include-default\n"
 "\n";
+
+
+/* This function must be called once to initialize this module.  This
+   has to be done before a second thread is spawned.  We can't do the
+   static initialization because Pth emulation code might not be able
+   to do a static init; in particular, it is not possible for W32. */
+void
+initialize_module_trustlist (void)
+{
+  static int initialized;
+
+  if (!initialized)
+    {
+      if (!pth_mutex_init (&trusttable_lock))
+        log_fatal ("error initializing mutex: %s\n", strerror (errno));
+      initialized = 1;
+    }
+}
 
 
 
@@ -153,7 +171,7 @@ read_one_trustfile (const char *fname, int allow_include,
             }
           /* fixme: Should check for trailing garbage.  */
 
-          etcname = make_filename (GNUPG_SYSCONFDIR, "trustlist.txt", NULL);
+          etcname = make_filename (gnupg_sysconfdir (), "trustlist.txt", NULL);
           if ( !strcmp (etcname, fname) ) /* Same file. */
             log_info (_("statement \"%s\" ignored in `%s', line %d\n"),
                       "include-default", fname, lnr);
@@ -303,7 +321,7 @@ read_trustfiles (void)
           log_error (_("error opening `%s': %s\n"), fname, gpg_strerror (err));
         }
       xfree (fname);
-      fname = make_filename (GNUPG_SYSCONFDIR, "trustlist.txt", NULL);
+      fname = make_filename (gnupg_sysconfdir (), "trustlist.txt", NULL);
       allow_include = 0;
     }
   err = read_one_trustfile (fname, allow_include,

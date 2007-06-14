@@ -150,6 +150,7 @@ handle_iconv_error (const char *to, const char *from, int use_fallback)
 }
 
 
+
 int
 set_native_charset (const char *newset)
 {
@@ -693,4 +694,50 @@ char *
 utf8_to_native (const char *string, size_t length, int delim)
 {
   return do_utf8_to_native (string, length, delim, use_iconv);
+}
+
+
+
+
+/* Wrapper function for iconv_open, required for W32 as we dlopen that
+   library on that system.  */
+jnlib_iconv_t 
+jnlib_iconv_open (const char *tocode, const char *fromcode)
+{
+#ifdef HAVE_W32_SYSTEM
+  if (load_libiconv ())
+    return (jnlib_iconv_t)(-1);
+#endif /*HAVE_W32_SYSTEM*/      
+
+  return (jnlib_iconv_t)iconv_open (tocode, fromcode);
+}
+
+
+/* Wrapper function for iconv, required for W32 as we dlopen that
+   library on that system.  */
+size_t
+jnlib_iconv (jnlib_iconv_t cd,
+             const char **inbuf, size_t *inbytesleft,
+             char **outbuf, size_t *outbytesleft)
+{
+
+#ifdef HAVE_W32_SYSTEM
+  if (load_libiconv ())
+    return 0;
+#endif /*HAVE_W32_SYSTEM*/      
+
+  return iconv ((iconv_t)cd, inbuf, inbytesleft, outbuf, outbytesleft);
+}
+
+/* Wrapper function for iconv_close, required for W32 as we dlopen that
+   library on that system.  */
+int
+jnlib_iconv_close (jnlib_iconv_t cd)
+{
+#ifdef HAVE_W32_SYSTEM
+  if (load_libiconv ())
+    return 0;
+#endif /*HAVE_W32_SYSTEM*/      
+
+  return iconv_close ((iconv_t)cd);
 }

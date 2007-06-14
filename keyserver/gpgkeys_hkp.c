@@ -93,7 +93,7 @@ append_path(char *dest,const char *src)
 }
 
 int
-send_key(int *eof)
+send_key(int *r_eof)
 {
   CURLcode res;
   char request[MAX_URL+15];
@@ -117,7 +117,7 @@ send_key(int *eof)
     {
       /* i.e. eof before the KEY BEGIN was found.  This isn't an
 	 error. */
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_OK;
       goto fail;
     }
@@ -157,7 +157,7 @@ send_key(int *eof)
   if(!end)
     {
       fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
-      *eof=1;
+      *r_eof=1;
       ret=KEYSERVER_KEY_INCOMPLETE;
       goto fail;
     }
@@ -768,16 +768,16 @@ main(int argc,char *argv[])
     }
   else if(opt->action==KS_SEND)
     {
-      int eof=0;
+      int myeof=0;
 
       do
 	{
 	  set_timeout(opt->timeout);
 
-	  if(send_key(&eof)!=KEYSERVER_OK)
+	  if(send_key(&myeof)!=KEYSERVER_OK)
 	    failed++;
 	}
-      while(!eof);
+      while(!myeof);
     }
   else if(opt->action==KS_SEARCH)
     {

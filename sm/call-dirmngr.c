@@ -172,7 +172,7 @@ start_dirmngr (void)
       int i;
 
       if (!opt.dirmngr_program || !*opt.dirmngr_program)
-        opt.dirmngr_program = GNUPG_DEFAULT_DIRMNGR;
+        opt.dirmngr_program = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
       if ( !(pgmname = strrchr (opt.dirmngr_program, '/')))
         pgmname = opt.dirmngr_program;
       else

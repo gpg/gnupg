@@ -66,7 +66,7 @@ read_list (char *key, char *country, int *lnr)
 
   if (!listname)
     {
-      listname = make_filename (GNUPG_DATADIR, "qualified.txt", NULL);
+      listname = make_filename (gnupg_datadir (), "qualified.txt", NULL);
       listfp = fopen (listname, "r");
       if (!listfp && errno != ENOENT)
         {

@@ -87,7 +87,7 @@ struct entry_parm_s
    static initialization because Pth emulation code might not be able
    to do a static init; in particular, it is not possible for W32. */
 void
-initialize_module_query (void)
+initialize_module_call_pinentry (void)
 {
   static int initialized;
 
@@ -217,7 +217,7 @@ start_pinentry (ctrl_t ctrl)
     }
 
   if (!opt.pinentry_program || !*opt.pinentry_program)
-    opt.pinentry_program = GNUPG_DEFAULT_PINENTRY;
+    opt.pinentry_program = gnupg_module_name (GNUPG_MODULE_NAME_PINENTRY);
     pgmname = opt.pinentry_program;
   if ( !(pgmname = strrchr (opt.pinentry_program, '/')))
     pgmname = opt.pinentry_program;
@@ -751,6 +751,9 @@ agent_popup_message_stop (ctrl_t ctrl)
     ; /* No pid available can't send a kill. */
   else if (popup_finished)
     ; /* Already finished and ready for joining. */
+#ifdef HAVE_W32_SYSTEM
+#  warning need to implement a kill mechanism for pinentry  
+#else
   else if (pid && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
     { /* The daemon already died.  No need to send a kill.  However
          because we already waited for the process, we need to tell
@@ -762,6 +765,7 @@ agent_popup_message_stop (ctrl_t ctrl)
   else if (pid > 0)
     kill (pid, SIGKILL);  /* Need to use SIGKILL due to bad
                              interaction of SIGINT with Pth. */
+#endif
 
   /* Now wait for the thread to terminate. */
   rc = pth_join (popup_tid, NULL);

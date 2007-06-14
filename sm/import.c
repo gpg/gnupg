@@ -509,7 +509,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
   int bad_pass = 0;
 
   if (!opt.protect_tool_program || !*opt.protect_tool_program)
-    pgmname = GNUPG_DEFAULT_PROTECT_TOOL;
+    pgmname = gnupg_module_name (GNUPG_MODULE_NAME_PROTECT_TOOL);
   else
     pgmname = opt.protect_tool_program;
 

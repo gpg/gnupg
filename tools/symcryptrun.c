@@ -238,6 +238,8 @@ my_strusage (int level)
        __result; }))
 #endif
 
+/* Include the implementation of map_spwq_error.  */
+MAP_SPWQ_ERROR_IMPL
 
 /* Unlink a file, and shred it if SHRED is true.  */
 int
@@ -455,6 +457,7 @@ confucius_get_pass (const char *cacheid, int again, int *canceled)
   pw = simple_pwquery (cacheid,
                        again ? _("does not match - try again"):NULL,
                        _("Passphrase:"), NULL, 0, &err);
+  err = map_spwq_error (err);
 
 #ifdef ENABLE_NLS
   if (orig_codeset)
@@ -911,8 +914,8 @@ main (int argc, char **argv)
   set_strusage (my_strusage);
   log_set_prefix ("symcryptrun", 1);
 
-  /* Try to auto set the character set.  */
-  set_native_charset (NULL); 
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
 
   i18n_init();
 
@@ -1028,13 +1031,22 @@ main (int argc, char **argv)
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 
+  /* Tell simple-pwquery about the the standard socket name.  */
+  {
+    char *tmp = make_filename (opt.homedir, "S.gpg-agent", NULL);
+    simple_pw_set_socket (tmp);
+    xfree (tmp);
+  }
+
   if (!opt.class)
     {
       log_error (_("no class provided\n"));
       res = 1;
     }
   else if (!strcmp (opt.class, "confucius"))
-    res = confucius_main (mode, argc, argv);
+    {
+      res = confucius_main (mode, argc, argv);
+    }
   else
     {
       log_error (_("class %s is not supported\n"), opt.class);

@@ -408,7 +408,10 @@ main( int argc, char **argv )
   set_strusage( my_strusage );
   gcry_control (GCRYCTL_DISABLE_SECMEM);
   log_set_prefix ("kbxutil", 1); 
-  set_native_charset (NULL); 
+
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
+
   i18n_init ();
 
   /* Check that the libraries are suitable.  Do it here because

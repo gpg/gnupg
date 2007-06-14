@@ -120,6 +120,8 @@ gnupg_copy_time (gnupg_isotime_t d, const gnupg_isotime_t s)
   strcpy (d, s);
 }
 
+/*-- init.c --*/
+void init_common_subsystems (void);
 
 /*-- signal.c --*/
 void gnupg_init_signals (int mode, void (*fast_cleanup)(void));
@@ -170,6 +172,20 @@ char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
 
 /*-- homedir.c --*/
 const char *default_homedir (void);
+const char *gnupg_sysconfdir (void);
+const char *gnupg_bindir (void);
+const char *gnupg_libexecdir (void);
+const char *gnupg_libdir (void);
+const char *gnupg_datadir (void);
+
+#define GNUPG_MODULE_NAME_AGENT        1
+#define GNUPG_MODULE_NAME_PINENTRY     2
+#define GNUPG_MODULE_NAME_SCDAEMON     3 
+#define GNUPG_MODULE_NAME_DIRMNGR      4
+#define GNUPG_MODULE_NAME_PROTECT_TOOL 5
+const char *gnupg_module_name (int which);
+
+
 
 /*-- gpgrlhelp.c --*/
 void gnupg_rl_initialize (void);

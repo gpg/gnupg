@@ -330,7 +330,7 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
 static void
 copy_options_file( const char *destdir )
 {
-    const char *datadir = GNUPG_DATADIR;
+    const char *datadir = gnupg_datadir ();
     char *fname;
     FILE *src, *dst;
     int linefeeds=0;
@@ -407,6 +407,9 @@ void
 try_make_homedir( const char *fname )
 {
     const char *defhome = GNUPG_DEFAULT_HOMEDIR;
+#ifdef HAVE_W32_SYSTEM
+#warning use a function and not a constant
+#endif
 
     /* Create the directory only if the supplied directory name
      * is the same as the default one.  This way we avoid to create

@@ -746,6 +746,15 @@ This content of this file is used to maintain the internal state of the
 random number generator accross invocations.  The same file is used by
 other programs of this software too.
 
+@item S.gpg-agent
+@cindex S.gpg-agent
+If this file exists and the environment variable @env{GPG_AGENT_INFO} is
+not set, @command{gpgsm} will first try to connect to this socket for
+accessing @command{gpg-agent} before starting a new @command{gpg-agent}
+instance.  Under Windows this socket (which in reality be a plain file
+describing a regular TCP litening port) is the standard way of
+connecting the @command{gpg-agent}.
+
 @end table
 
 

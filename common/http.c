@@ -30,6 +30,10 @@
   - With HTTP_USE_ESTREAM defined, all I/O is done through estream.
   - With HTTP_USE_GNUTLS support for https is provided (this also
     requires estream).
+  - With HTTP_NO_WSASTARTUP the socket initialization is not done
+    under Windows.  This is useful if the socket layer has already
+    been initialized elsewhere.  This also avoids the installation of
+    an exit handler to cleanup the socket layer.
 */
 
 #ifdef HAVE_CONFIG_H
@@ -200,7 +204,7 @@ struct http_context_s
 
 
 
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && !defined(HTTP_NO_WSASTARTUP)
 
 #if GNUPG_MAJOR_VERSION == 1
 #define REQ_WINSOCK_MAJOR  1
@@ -244,7 +248,7 @@ init_sockets (void)
   atexit ( deinit_sockets );
   initialized = 1;
 }
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM && !HTTP_NO_WSASTARTUP*/
 
 
 
@@ -1504,7 +1508,9 @@ connect_server (const char *server, unsigned short port,
 #ifdef HAVE_W32_SYSTEM
   unsigned long inaddr;
 
-  init_sockets();
+#ifndef HTTP_NO_WSASTARTUP
+  init_sockets ();
+#endif
   /* Win32 gethostbyname doesn't handle IP addresses internally, so we
      try inet_addr first on that platform only. */
   inaddr = inet_addr(server);
