@@ -62,14 +62,15 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 # jnlib/common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = $(common_libs) \
-                $(LIBINTL) $(GPG_ERROR_LIBS) $(LIBICONV)
+                $(LIBINTL) $(GPG_ERROR_LIBS) $(LIBICONV) $(W32SOCKLIBS)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD = 
 
 symcryptrun_SOURCES = symcryptrun.c
 symcryptrun_LDADD = $(LIBUTIL_LIBS) $(common_libs) $(pwquery_libs) \
-                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBINCONV)
+                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) \
+                    $(LIBICONV) $(W32SOCKLIBS)
 
 watchgnupg_SOURCES = watchgnupg.c 
 watchgnupg_LDADD = $(NETLIBS)

@@ -71,10 +71,14 @@
 
 ** Add a test to check the extkeyusage.
 
-* Windows port
+* Windows port (W32)
 ** Signals are not support 
     This means we can't reread a configuration
 ** No card status notifications.
+** Regex support is disabled
+  We need to adjust the test to find the regex we have anyway in 
+  gpg4in.  Is that regex compatible to the OpenPGP requirement?
+
 
 * sm/
 ** check that we issue NO_SECKEY xxx if a -u key was not found
@@ -125,6 +129,5 @@
 
 * Howtos
 ** Migrate OpenPGP keys to another system
-
 
 

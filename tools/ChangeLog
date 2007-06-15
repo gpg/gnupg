@@ -1,3 +1,8 @@
+2007-06-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (symcryptrun_LDADD): It is LIBICONV and not LIBINCONV.
+	(gpgconf_LDADD, symcryptrun_LDADD): Add W32SOCKLIBS.
+
 2007-06-14  Werner Koch  <wk@g10code.com>
 
 	* symcryptrun.c (main): Setup default socket name for

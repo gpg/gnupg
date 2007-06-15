@@ -1152,13 +1152,17 @@ AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 GNUPG_CHECK_GNUMAKE
 
 # Add some extra libs here so that previous tests don't fail for
-# mysterious reasons - the final link step should bail out. 
+# mysterious reasons - the final link step should bail out.
+# W32SOCKLIBS is also defined so that if can be used for tools not
+# requiring any network stuff but linking to code in libcommon which
+# tracks in winsock stuff (e.g. init_common_subsystems.
 if test "$have_w32_system" = yes; then
-   NETLIBS="${NETLIBS} -lwsock32"
+   W32SOCKLIBS="-lwsock32"
+   NETLIBS="${NETLIBS} ${W32SOCKLIBS}"
 fi
 
 AC_SUBST(NETLIBS)
-
+AC_SUBST(W32SOCKLIBS)
 
 #
 # Setup gcc specific options

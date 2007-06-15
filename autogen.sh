@@ -40,7 +40,7 @@ MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 
 DIE=no
 FORCE=
-if test "$1" == "--force"; then
+if test x"$1" = x"--force"; then
   FORCE=" --force"
   shift
 fi
@@ -92,7 +92,8 @@ if test "$1" = "--build-w32"; then
 	     --with-libassuan-prefix=${w32root} \
 	     --with-zlib=${w32root} \
              --with-pth-prefix=${w32root} \
-             --without-included-gettext
+             --without-included-gettext \
+             --disable-regex
     rc=$?
     exit $rc
 fi

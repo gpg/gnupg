@@ -44,10 +44,12 @@ common_sources = \
 
 libkeybox_a_SOURCES = $(common_sources)
 
-# Note that libcommon is only required to resolve the LIBOBJS.
+# We need W32SOCKLIBS because the init subsystem code in libcommon
+# requires it - although we don't actually need it.  It is easier
+# to do it this way.
 kbxutil_SOURCES = kbxutil.c $(common_sources)
 kbxutil_LDADD   = ../jnlib/libjnlib.a ../gl/libgnu.a ../common/libcommon.a \
                   $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
-                  $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
+                  $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 
 $(PROGRAMS) : ../jnlib/libjnlib.a ../gl/libgnu.a ../common/libcommon.a
