@@ -1,6 +1,7 @@
 2007-06-15  Werner Koch  <wk@g10code.com>
 
-	* configure.ac (W32SOCKLIBS): New.
+	* configure.ac: Call AM_PO_SUBDIRS.
+	(W32SOCKLIBS): New.
 
 	* autogen.sh: Use = and not == in test to be POSIXly correct.
 	<build-w32>: Disable use of regex.
