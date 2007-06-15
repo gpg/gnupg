@@ -1,5 +1,5 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
- * Copyright (C) 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1725,6 +1725,51 @@ option_check_validity (gc_option_t *option, unsigned long flags,
   while (arg && *arg);
 }
 
+#ifdef HAVE_W32_SYSTEM
+int
+copy_file (const char *src_name, const char *dst_name)
+{
+#define BUF_LEN 4096
+  char buffer[BUF_LEN];
+  int len;
+  FILE *src;
+  FILE *dst;
+
+  src = fopen (src_name, "r");
+  if (src == NULL)
+    return -1;
+
+  dst = fopen (dst_name, "w");
+  if (dst == NULL)
+    {
+      int saved_err = errno;
+      fclose (src);
+      errno = saved_err;
+      return -1;
+    }
+
+  do
+    {
+      int written;
+
+      len = fread (buffer, 1, BUF_LEN, src);
+      if (len == 0)
+	break;
+      written = fwrite (buffer, 1, len, dst);
+      if (written != len)
+	break;
+    }
+  while (!feof (src) && !ferror (src) && !ferror (dst));
+
+  if (ferror (src) || ferror (dst) || !feof (src))
+    {
+      unlink (dst_name);
+      return -1;
+    }
+
+  return 0;
+}
+#endif /* HAVE_W32_SYSTEM */
 
 /* Create and verify the new configuration file for the specified
    backend and component.  Returns 0 on success and -1 on error.  */
@@ -1785,9 +1830,8 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 	arg = NULL;
     }
 
-#if HAVE_W32_SYSTEM
-  res = 0; 
-#warning no backups for W32 yet - need to write a copy function
+#ifdef HAVE_W32_SYSTEM
+  res = copy_file (dest_filename, orig_filename);
 #else
   res = link (dest_filename, orig_filename);
 #endif
@@ -2054,9 +2098,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, getpid ());
   orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
 
-#if HAVE_W32_SYSTEM
-  res = 0; 
-#warning no backups for W32 yet - need to write a copy function
+#ifdef HAVE_W32_SYSTEM
+  res = copy_file (dest_filename, orig_filename);
 #else
   res = link (dest_filename, orig_filename);
 #endif
@@ -2492,22 +2535,27 @@ gc_component_change_options (int component, FILE *in)
 	      assert (dest_pathname[i]);
 
 	      if (orig_pathname[i])
-		err = rename (src_pathname[i], dest_pathname[i]);
+		{
+#ifdef HAVE_W32_SYSTEM
+		  /* There is no atomic update on W32.  */
+		  unlink (dest_pathname[i]);
+#endif /* HAVE_W32_SYSTEM */
+		  err = rename (src_pathname[i], dest_pathname[i]);
+		}
 	      else
 		{
 #ifdef HAVE_W32_SYSTEM
-                  /* FIXME: Won't work becuase W32 doesn't silently
-                     overwrite. Fix it by creating a backup copy and
-                     deliting the orginal file first. */
+		  /* We skip the unlink if we do not expect the file
+		     to be there.  */
                   err = rename (src_pathname[i], dest_pathname[i]);
-#else /*!HAVE_W32_SYSTEM*/
+#else /* HAVE_W32_SYSTEM */
 		  /* This is a bit safer than rename() because we
 		     expect DEST_PATHNAME not to be there.  If it
 		     happens to be there, this will fail.  */
 		  err = link (src_pathname[i], dest_pathname[i]);
 		  if (!err)
 		    unlink (src_pathname[i]);
-#endif /*!HAVE_W32_SYSTEM*/
+#endif /* !HAVE_W32_SYSTEM */
 		}
 	      if (err)
 		break;
@@ -2538,7 +2586,13 @@ gc_component_change_options (int component, FILE *in)
 		 a version of the file that is even newer than the one
 		 we just installed.  */
 	      if (orig_pathname[i])
-		rename (orig_pathname[i], dest_pathname[i]);
+		{
+#ifdef HAVE_W32_SYSTEM
+		  /* There is no atomic update on W32.  */
+		  unlink (dest_pathname[i]);
+#endif /* HAVE_W32_SYSTEM */
+		  rename (orig_pathname[i], dest_pathname[i]);
+		}
 	      else
 		unlink (dest_pathname[i]);
 	    }
@@ -2663,7 +2717,7 @@ key_matches_user_or_group (char *user)
    Returns 0 on success or if the config file is not present; -1 is
    returned on error. */
 int
-gc_process_gpgconf_conf (const char *fname, int update, int defaults)
+gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults)
 {
   int result = 0;
   char *line = NULL;
@@ -2676,13 +2730,10 @@ gc_process_gpgconf_conf (const char *fname, int update, int defaults)
   int runtime[GC_BACKEND_NR];
   int used_components[GC_COMPONENT_NR];
   int backend_id, component_id;
-  char *fname_buffer = NULL;
+  char *fname = (char *) fname_arg;
 
   if (!fname)
-    {
-      fname_buffer = make_filename (gnupg_sysconfdir (), "gpgconf.conf", NULL);
-      fname = fname_buffer;
-    }
+    fname = make_filename (gnupg_sysconfdir (), "gpgconf.conf", NULL);
 
   for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)
     runtime[backend_id] = 0;
@@ -2699,7 +2750,7 @@ gc_process_gpgconf_conf (const char *fname, int update, int defaults)
           gc_error (0, errno, "can not open global config file `%s'", fname);
           result = -1;
         }
-      xfree (fname_buffer);
+      xfree (fname);
       return result;
     }
 
@@ -2936,6 +2987,6 @@ gc_process_gpgconf_conf (const char *fname, int update, int defaults)
         }
     }
 
-  xfree (fname_buffer);
+  xfree (fname);
   return result;
 }

@@ -1,3 +1,13 @@
+2007-06-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c (copy_file) [HAVE_W32_SYSTEM]: New function.
+	(change_options_file, change_options_program) [HAVE_W32_SYSTEM]:
+	Copy backup file.
+	(gc_component_change_options) [HAVE_W32_SYSTEM]: Non-atomic replace.
+	(gc_process_gpgconf_conf): Rename fname to fname_arg and
+	fname_buffer to fname, initialize fname with fname_arg, discarding
+	const qualifier.
+
 2007-06-15  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (symcryptrun_LDADD): It is LIBICONV and not LIBINCONV.
