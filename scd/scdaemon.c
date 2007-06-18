@@ -1,5 +1,5 @@
 /* scdaemon.c  -  The GnuPG Smartcard Daemon
- *	Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -530,6 +530,8 @@ main (int argc, char **argv )
   if (gpgconf_list)
     {
       /* List options and default values in the GPG Conf format.  */
+      char *filename = NULL;
+      char *filename_esc;
 
       /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
       /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
@@ -548,11 +550,14 @@ main (int argc, char **argv )
          a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
       if (!config_filename)
-        config_filename = make_filename (opt.homedir, "scdaemon.conf", NULL );
+        filename = make_filename (opt.homedir, "scdaemon.conf", NULL );
+      filename_esc = percent_escape (filename);
 
       printf ("gpgconf-scdaemon.conf:%lu:\"%s\n",
-              GC_OPT_FLAG_DEFAULT, config_filename);
-        
+              GC_OPT_FLAG_DEFAULT, filename_esc);
+      xfree (filename_esc);
+      xfree (filename);
+
       printf ("verbose:%lu:\n"
               "quiet:%lu:\n"
               "debug-level:%lu:\"none:\n"

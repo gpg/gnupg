@@ -1,6 +1,6 @@
 /* stringhelp.h
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2006  Free Software Foundation, Inc.
+ *               2006, 2007  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -116,6 +116,9 @@ isascii (int c)
 #  define STR(v) #v
 #endif
 #define STR2(v) STR(v)
+
+/* Percent-escape the string STR by replacing colons with '%3a'.  */
+char *percent_escape (const char *str);
 
 
 #endif /*LIBJNLIB_STRINGHELP_H*/

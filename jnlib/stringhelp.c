@@ -1,6 +1,6 @@
 /* stringhelp.c -  standard string helper functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005,
- *               2006  Free Software Foundation, Inc.
+ *               2006, 2007  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -825,3 +825,37 @@ memrchr (const void *buffer, int c, size_t n)
   return NULL;
 }
 #endif /*HAVE_MEMRCHR*/
+
+
+/* Percent-escape the string STR by replacing colons with '%3a'.  */
+char *
+percent_escape (const char *str)
+{
+  int i = 0;
+  int j = 0;
+  char *ptr;
+
+  if (!str)
+    return NULL;
+
+  while (str[i])
+    if (str[i++] == ':')
+      j++;
+  ptr = jnlib_xmalloc (i + 2 * j + 1);
+  i = 0;
+  while (*str)
+    {
+      if (*str == ':')
+	{
+	  ptr[i++] = '%';
+	  ptr[i++] = '3';
+	  ptr[i++] = 'a';
+	}
+      else
+	ptr[i++] = *str;
+      str++;
+    }
+  ptr[i] = '\0';
+
+  return ptr;
+}

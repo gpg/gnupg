@@ -1,3 +1,8 @@
+2007-06-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* stringhelp.h (percent_escape): New prototype.
+	* stringhelp.c (percent_escape): New function.
+
 2007-06-11  Werner Koch  <wk@g10code.com>
 
 	* utf8conv.c (jnlib_iconv_open, jnlib_iconv, jnlib_iconv_close): New.
@@ -470,7 +475,7 @@ Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
      ***********************************************************	
 	
  Copyright 2000, 2001, 2002, 2003, 2004,
-	   2005, 2006 Free Software Foundation, Inc.
+	   2005, 2006, 2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

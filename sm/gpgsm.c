@@ -1,6 +1,6 @@
 /* gpgsm.c - GnuPG for S/MIME 
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006  Free Software Foundation, Inc.
+ *               2006, 2007  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1393,9 +1393,12 @@ main ( int argc, char **argv)
            a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
+	char *config_filename_esc = percent_escape (opt.config_filename);
+
         printf ("gpgconf-gpgsm.conf:%lu:\"%s\n",
-                GC_OPT_FLAG_DEFAULT, opt.config_filename);
-        
+                GC_OPT_FLAG_DEFAULT, config_filename_esc);
+        xfree (config_filename_esc);
+
         printf ("verbose:%lu:\n"
                 "quiet:%lu:\n"
                 "debug-level:%lu:\"none:\n"

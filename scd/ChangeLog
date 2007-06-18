@@ -1,3 +1,7 @@
+2007-06-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* scdaemon.c (main): Percent escape output of --gpgconf-list.
+
 2007-06-12  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (main): Replace some calls by init_common_subsystems.
@@ -1635,7 +1639,7 @@
 	the gpg-agent.
 
 	
- Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

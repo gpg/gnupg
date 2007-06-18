@@ -693,6 +693,7 @@ main (int argc, char **argv )
   if (gpgconf_list)
     {
       char *filename;
+      char *filename_esc;
 
       /* List options and default values in the GPG Conf format.  */
 
@@ -714,9 +715,12 @@ main (int argc, char **argv )
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
       filename = make_filename (opt.homedir, "gpg-agent.conf", NULL );
+      filename_esc = percent_escape (filename);
+
       printf ("gpgconf-gpg-agent.conf:%lu:\"%s\n",
-              GC_OPT_FLAG_DEFAULT, filename);
+              GC_OPT_FLAG_DEFAULT, filename_esc);
       xfree (filename);
+      xfree (filename_esc);
 
       printf ("verbose:%lu:\n"
               "quiet:%lu:\n"

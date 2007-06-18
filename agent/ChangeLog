@@ -1,3 +1,8 @@
+2007-06-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg-agent.c (main): Percent escape pathname in --gpgconf-list
+	output.
+
 2007-06-18  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_killagent) [W32]: New.
