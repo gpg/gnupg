@@ -191,6 +191,7 @@ cache_mode_t;
 /*-- gpg-agent.c --*/
 void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
 const char *get_agent_socket_name (void);
+const char *get_agent_ssh_socket_name (void);
 
 /*-- command.c --*/
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...);

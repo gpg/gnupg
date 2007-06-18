@@ -674,6 +674,7 @@ secret keys.
 * Agent PASSWD::          Change a Passphrase
 * Agent UPDATESTARTUPTTY:: Change the Standard Display
 * Agent GETEVENTCOUNTER:: Get the Event Counters
+* Agent GETINFO::         Return information about the process
 @end menu
 
 @node Agent PKDECRYPT
@@ -1119,6 +1120,26 @@ Incremented with any change of any of the other counters.
 Incremented for added or removed private keys.
 @item CARD
 Incremented for changes of the card readers stati.
+@end table
+
+@node Agent GETINFO
+@subsection  Return information about the process
+
+This is a multipurpose function to return a variety of information.
+
+@example
+GETINFO @var{what}
+@end example
+
+The value of @var{what} specifies the kind of information returned:
+@table @code
+@item version
+Return the version of the program.
+@item socket_name
+Return the name of the socket used to connect the agent.
+@item ssh_socket_name
+Return the name of the socket used for SSH connections.  If SSH support
+has not been enabled the error @code{GPG_ERR_NO_DATA} will be returned.
 @end table
 
 

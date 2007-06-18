@@ -58,6 +58,10 @@ struct server_local_s
   char *keydesc;  /* Allocated description for the next key
                      operation. */
   int pause_io_logging; /* Used to suppress I/O logging during a command */
+#ifdef HAVE_W32_SYSTEM
+  int stopme;    /* If set to true the agent will be terminated after
+                    the end of this session.  */
+#endif
 };
 
 
@@ -1307,6 +1311,67 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
 
 
 
+#ifdef HAVE_W32_SYSTEM
+/* KILLAGENT
+
+   Under Windows we start the agent on the fly.  Thus it also make
+   sense to allow a client to stop the agent. */
+static int
+cmd_killagent (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  ctrl->server_local->stopme = 1;
+  return 0;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+
+/* GETINFO <what>
+
+   Multipurpose function to return a variety of information.
+   Supported values for WHAT are:
+
+     version     - Return the version of the program.
+     socket_name - Return the name of the socket.
+     ssh_socket_name - Return the name of the ssh socket.
+
+ */
+static int
+cmd_getinfo (assuan_context_t ctx, char *line)
+{
+  int rc = 0;
+
+  if (!strcmp (line, "version"))
+    {
+      const char *s = VERSION;
+      rc = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "socket_name"))
+    {
+      const char *s = get_agent_socket_name ();
+
+      if (s)
+        rc = assuan_send_data (ctx, s, strlen (s));
+      else
+        rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else if (!strcmp (line, "ssh_socket_name"))
+    {
+      const char *s = get_agent_ssh_socket_name ();
+
+      if (s)
+        rc = assuan_send_data (ctx, s, strlen (s));
+      else
+        rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else
+    rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
+  return rc;
+}
+
+
+
 static int
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
@@ -1439,6 +1504,10 @@ register_commands (assuan_context_t ctx)
     { "GETVAL",         cmd_getval },
     { "PUTVAL",         cmd_putval },
     { "UPDATESTARTUPTTY",  cmd_updatestartuptty },
+#ifdef HAVE_W32_SYSTEM
+    { "KILLAGENT",      cmd_killagent },
+#endif
+    { "GETINFO",        cmd_getinfo },
     { NULL }
   };
   int i, rc;
@@ -1542,6 +1611,10 @@ start_command_handler (ctrl_t ctrl, int listen_fd, int fd)
 
   /* Cleanup.  */
   assuan_deinit_server (ctx);
+#ifdef HAVE_W32_SYSTEM
+  if (ctrl->server_local->stopme)
+    agent_exit (0);
+#endif
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
 }

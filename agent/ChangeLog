@@ -1,3 +1,11 @@
+2007-06-18  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_killagent) [W32]: New.
+	(cmd_getinfo): New.
+	* gpg-agent.c (get_agent_ssh_socket_name): New.
+
+	* Makefile.am (gpg_agent_res_ldflags): Pass windows option to ld.
+
 2007-06-14  Werner Koch  <wk@g10code.com>
 
 	* protect-tool.c (main): Setup default socket name for

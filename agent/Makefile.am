@@ -60,7 +60,7 @@ if HAVE_W32_SYSTEM
 	$(WINDRES) `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
 	 sed -e 's/-I/--include-dir /g;s/-D/--define /g'` -i $< -o $@
 
-gpg_agent_res_ldflags = -Wl,gpg-agent-resource.o
+gpg_agent_res_ldflags = -Wl,gpg-agent-resource.o -Wl,--subsystem,windows
 gpg_agent_res_deps = gpg-agent-resource.o
 else
 gpg_agent_res_ldflags =

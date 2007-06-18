@@ -1162,6 +1162,16 @@ get_agent_socket_name (void)
   return (s && *s)? s : NULL;
 }
 
+/* Return the file name of the socket we are using for SSH
+   requests.  */
+const char *
+get_agent_ssh_socket_name (void)
+{
+  const char *s = socket_name_ssh;
+
+  return (s && *s)? s : NULL;
+}
+
 
 
 /* Create a name for the socket.  With USE_STANDARD_SOCKET given as
