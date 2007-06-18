@@ -1563,6 +1563,8 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
   list_option->active = 1;
   list_option->value = list;
 
+  if (fclose (list_file) && ferror (list_file))
+    gc_error (1, errno, "error closing %s", list_pathname);
   xfree (line);
 }
 
@@ -1763,13 +1765,23 @@ copy_file (const char *src_name, const char *dst_name)
 
   if (ferror (src) || ferror (dst) || !feof (src))
     {
+      int saved_errno = errno;
+      fclose (src);
+      fclose (dst);
       unlink (dst_name);
+      errno = saved_errno;
       return -1;
     }
+
+  if (fclose (dst) && ferror (dst))
+    gc_error (1, errno, "error closing %s", dst_name);
+  if (fclose (src) && ferror (src))
+    gc_error (1, errno, "error closing %s", src_name);
 
   return 0;
 }
 #endif /* HAVE_W32_SYSTEM */
+
 
 /* Create and verify the new configuration file for the specified
    backend and component.  Returns 0 on success and -1 on error.  */
@@ -2538,15 +2550,16 @@ gc_component_change_options (int component, FILE *in)
 		{
 #ifdef HAVE_W32_SYSTEM
 		  /* There is no atomic update on W32.  */
-		  unlink (dest_pathname[i]);
+		  err = unlink (dest_pathname[i]);
 #endif /* HAVE_W32_SYSTEM */
-		  err = rename (src_pathname[i], dest_pathname[i]);
+		  if (!err)
+		    err = rename (src_pathname[i], dest_pathname[i]);
 		}
 	      else
 		{
 #ifdef HAVE_W32_SYSTEM
-		  /* We skip the unlink if we do not expect the file
-		     to be there.  */
+		  /* We skip the unlink if we expect the file not to
+		     be there.  */
                   err = rename (src_pathname[i], dest_pathname[i]);
 #else /* HAVE_W32_SYSTEM */
 		  /* This is a bit safer than rename() because we
@@ -2554,7 +2567,7 @@ gc_component_change_options (int component, FILE *in)
 		     happens to be there, this will fail.  */
 		  err = link (src_pathname[i], dest_pathname[i]);
 		  if (!err)
-		    unlink (src_pathname[i]);
+		    err = unlink (src_pathname[i]);
 #endif /* !HAVE_W32_SYSTEM */
 		}
 	      if (err)
@@ -2617,6 +2630,11 @@ gc_component_change_options (int component, FILE *in)
 	assert (dest_pathname[backend]);
 
 	backup_pathname = xasprintf ("%s.gpgconf.bak", dest_pathname[backend]);
+
+#ifdef HAVE_W32_SYSTEM
+	/* There is no atomic update on W32.  */
+	unlink (backup_pathname);
+#endif /* HAVE_W32_SYSTEM */
 	rename (orig_pathname[backend], backup_pathname);
       }
 

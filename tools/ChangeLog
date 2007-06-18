@@ -1,3 +1,10 @@
+2007-06-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c (retrieve_options_from_file): Close LIST_FILE.
+	(copy_file): In error case, save/restore errno.  Close SRC and DST.
+	(gc_component_change_options): Catch error from unlink().  Remove
+	target backup file before rename().
+
 2007-06-15  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c (copy_file) [HAVE_W32_SYSTEM]: New function.
