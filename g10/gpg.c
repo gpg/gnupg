@@ -1456,7 +1456,7 @@ list_config(char *items)
 static void
 gpgconf_list (const char *configfile)
 {
-  char *configfile_esc = percent_escape (configfile);
+  char *configfile_esc = percent_escape (configfile, NULL);
 
   /* The following definitions are taken from gnupg/tools/gpgconf-comp.c.  */
 #define GC_OPT_FLAG_NONE	0UL

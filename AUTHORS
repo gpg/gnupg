@@ -128,6 +128,9 @@ GnuPG.
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
 
+The function build_argv in agent/w32main.c is based on code from
+Alexandre Julliard.
+
 
 Copyright
 =========

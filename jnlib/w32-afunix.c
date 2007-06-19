@@ -22,10 +22,18 @@
 #ifdef _WIN32
 #include <stdio.h>
 #include <windows.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <io.h>
 #include <errno.h>
 
 #include "w32-afunix.h"
+
+#ifndef S_IRGRP
+# define S_IRGRP 0
+# define S_IWGRP 0
+#endif
+
 
 int
 _w32_close (int fd)
@@ -81,34 +89,56 @@ _w32_sock_connect (int sockfd, struct sockaddr * addr, int addrlen)
 
 
 int
-_w32_sock_bind (int sockfd, struct sockaddr * addr, int addrlen)
+_w32_sock_bind (int sockfd, struct sockaddr *addr, int addrlen)
 {
   if (addr->sa_family == AF_LOCAL || addr->sa_family == AF_UNIX)
     {
       struct sockaddr_in myaddr;
-      struct sockaddr_un * unaddr;
-      FILE * fp;
+      struct sockaddr_un *unaddr;
+      int filefd;
+      FILE *fp;
       int len = sizeof myaddr;
       int rc;
+
+      unaddr = (struct sockaddr_un *)addr;
 
       myaddr.sin_port = 0;
       myaddr.sin_family = AF_INET;
       myaddr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
 
-      rc = bind (sockfd, (struct sockaddr *)&myaddr, len);
-      if (rc)
-        return rc;
-      rc = getsockname (sockfd, (struct sockaddr *)&myaddr, &len);
-      if (rc)
-        return rc;
-      unaddr = (struct sockaddr_un *)addr;
-      fp = fopen (unaddr->sun_path, "wb");
+      filefd = open (unaddr->sun_path, 
+                     (O_WRONLY|O_CREAT|O_EXCL|O_BINARY), 
+                     (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP));
+      if (filefd == -1)
+        {
+          if (errno == EEXIST)
+            errno = WSAEADDRINUSE;
+          return -1;
+        }
+      fp = fdopen (filefd, "wb");
       if (!fp)
-        return -1;
+        { 
+          int save_e = errno;
+          close (filefd);
+          errno = save_e;
+          return -1;
+        }
+
+      rc = bind (sockfd, (struct sockaddr *)&myaddr, len);
+      if (!rc)
+        rc = getsockname (sockfd, (struct sockaddr *)&myaddr, &len);
+      if (rc)
+        {
+          int save_e = errno;
+          fclose (fp);
+          remove (unaddr->sun_path);
+          errno = save_e;
+          return rc;
+        }
       fprintf (fp, "%d", myaddr.sin_port);
       fclose (fp);
 
-      /* we need this later. */
+      /* The caller expects these values. */
       unaddr->sun_family = myaddr.sin_family;
       unaddr->sun_port = myaddr.sin_port;
       unaddr->sun_addr.s_addr = myaddr.sin_addr.s_addr;

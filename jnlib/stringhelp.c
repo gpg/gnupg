@@ -34,6 +34,8 @@
 #include "stringhelp.h"
 
 
+#define tohex_lower(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'a'))
+
 /*
  * Look for the substring SUB in buffer and return a pointer to that
  * substring in BUFFER or NULL if not found.
@@ -827,19 +829,19 @@ memrchr (const void *buffer, int c, size_t n)
 #endif /*HAVE_MEMRCHR*/
 
 
-/* Percent-escape the string STR by replacing colons with '%3a'.  */
+/* Percent-escape the string STR by replacing colons with '%3a'.  If
+   EXTRA is not NULL all characters in it are also escaped. */
 char *
-percent_escape (const char *str)
+percent_escape (const char *str, const char *extra)
 {
-  int i = 0;
-  int j = 0;
+  int i, j;
   char *ptr;
 
   if (!str)
     return NULL;
 
-  while (str[i])
-    if (str[i++] == ':')
+  for (i=j=0; str[i]; i++)
+    if (str[i] == ':' || str[i] == '%' || (extra && strchr (extra, str[i])))
       j++;
   ptr = jnlib_xmalloc (i + 2 * j + 1);
   i = 0;
@@ -851,6 +853,18 @@ percent_escape (const char *str)
 	  ptr[i++] = '3';
 	  ptr[i++] = 'a';
 	}
+      else if (*str == '%')
+	{
+	  ptr[i++] = '%';
+	  ptr[i++] = '2';
+	  ptr[i++] = '5';
+	}
+      else if (extra && strchr (extra, *str))
+        {
+	  ptr[i++] = '%';
+          ptr[i++] = tohex_lower ((*str>>4)&15);
+          ptr[i++] = tohex_lower (*str&15);
+        }
       else
 	ptr[i++] = *str;
       str++;

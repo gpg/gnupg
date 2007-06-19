@@ -1,5 +1,6 @@
 /* w32main.c - W32 main entry pint and taskbar support for the GnuPG Agent
  * Copyright (C) 2007 Free Software Foundation, Inc.
+ * Copyright 1996, 1998 Alexandre Julliard
  *
  * This file is part of GnuPG.
  *
@@ -35,6 +36,136 @@
 /* The instance handle has received by WinMain.  */
 static HINSTANCE glob_hinst;
 static HWND glob_hwnd;
+
+
+/* Build an argv array from the command in CMDLINE.  RESERVED is the
+   number of args to reserve before the first one.  This code is based
+   on Alexandre Julliard's LGPLed wine-0.9.34/dlls/kernel32/process.c
+   and modified to fit into our framework.  The function returns NULL
+   on error; on success an arry with the argiments is returned.  This
+   array has been allocaqted using a plain malloc (and not the usual
+   xtrymalloc). */
+static char **
+build_argv (char *cmdline_arg, int reserved)
+{
+  int argc;
+  char **argv;
+  char *cmdline, *s, *arg, *d;
+  int in_quotes, bs_count;
+
+  cmdline = malloc (strlen (cmdline_arg) + 1);
+  if (!cmdline)
+    return NULL;
+  strcpy (cmdline, cmdline_arg);
+
+  /* First determine the required size of the array.  */
+  argc = reserved + 1;
+  bs_count = 0;
+  in_quotes = 0;
+  s = cmdline;
+  for (;;)
+    {
+      if ( !*s || ((*s==' ' || *s=='\t') && !in_quotes)) /* A space.  */
+        {
+          argc++;
+          /* Skip the remaining spaces.  */
+          while (*s==' ' || *s=='\t') 
+            s++;
+          if (!*s)
+            break;
+          bs_count = 0;
+        } 
+      else if (*s=='\\')
+        {
+          bs_count++;
+          s++;
+        }
+      else if ( (*s == '\"') && !(bs_count & 1))
+        {
+          /* Unescaped '\"' */
+          in_quotes = !in_quotes;
+          bs_count=0;
+          s++;
+        } 
+      else /* A regular character. */
+        {
+          bs_count = 0;
+          s++;
+        }
+    }
+
+  argv = malloc (argc * sizeof *argv);
+  if (!argv)
+    {
+      free (cmdline);
+      return NULL;
+    }
+
+  /* Now actually parse the command line.  */
+  argc = reserved;
+  bs_count = 0;
+  in_quotes=0;
+  arg = d = s = cmdline;
+  while (*s)
+    {
+      if ((*s==' ' || *s=='\t') && !in_quotes)
+        {
+          /* Close the argument and copy it. */
+          *d = 0;
+          argv[argc++] = arg;
+
+          /* Skip the remaining spaces. */
+          do 
+            s++;
+          while (*s==' ' || *s=='\t');
+
+          /* Start with a new argument */
+          arg = d = s;
+          bs_count = 0;
+        } 
+      else if (*s=='\\') 
+        {
+          *d++ = *s++;
+          bs_count++;
+        } 
+      else if (*s=='\"') 
+        {
+          if ( !(bs_count & 1) )
+            {
+              /* Preceded by an even number of backslashes, this is
+                 half that number of backslashes, plus a '\"' which we
+                 discard.  */
+              d -= bs_count/2;
+              s++;
+              in_quotes = !in_quotes;
+            }
+          else 
+            {
+              /* Preceded by an odd number of backslashes, this is
+                 half that number of backslashes followed by a '\"'.  */
+              d = d - bs_count/2 - 1;
+              *d++ ='\"';
+              s++;
+            }
+          bs_count=0;
+        } 
+      else /* A regular character. */
+        {
+          *d++ = *s++;
+          bs_count = 0;
+        }
+    }
+
+  if (*arg)
+    {
+      *d = 0;
+      argv[argc++] = arg;
+    }
+  argv[argc] = NULL;
+
+  return argv;
+}
+
 
 
 /* Our window message processing function.  */
@@ -155,24 +286,23 @@ w32_setup_taskbar (void)
 
 
 /* The main entry point for the Windows version.  We save away all GUI
-   related stuff, parse the commandline and finally call the real
+   related stuff, parse the command line and finally call the real
    main.  */
 int WINAPI
 WinMain (HINSTANCE hinst, HINSTANCE hprev, LPSTR cmdline, int showcmd)
 {
-  /* Fixme: We need a parser for the command line.  Should be
-     available in some CRT code - need to see whether we can find a
-     GNU version.  For nopw we call gpg-agent with a couple of fixed arguments 
-   */
-  char *argv[] = { "gpg-agent.exe", "--daemon", "-v", "--debug-all", NULL };
+  char **argv;
+  int argc;
 
+  /* We use the GetCommandLine function because that also includes the
+     program name in contrast to the CMDLINE arg. */
+  argv = build_argv (GetCommandLineA (), 0);
+  if (!argv)
+    return 2; /* Can't do much about a malloc failure.  */
+  for (argc=0; argv[argc]; argc++)
+    ;
 
   glob_hinst = hinst;
 
-  return w32_main (DIM(argv)-1, argv);
+  return w32_main (argc, argv);
 }
-
-
-
-
-

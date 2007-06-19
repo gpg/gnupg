@@ -5,10 +5,14 @@
 
 2007-06-18  Werner Koch  <wk@g10code.com>
 
+	* w32main.c (build_argv): New.
+	(WinMain): Use it.
+
 	* command.c (cmd_killagent) [W32]: New.
 	(cmd_getinfo): New.
 	* gpg-agent.c (get_agent_ssh_socket_name): New.
-
+	(no_force_standard_socket) New.
+	(create_server_socket): Use it.
 	* Makefile.am (gpg_agent_res_ldflags): Pass windows option to ld.
 
 2007-06-14  Werner Koch  <wk@g10code.com>

@@ -93,6 +93,7 @@ enum cmd_and_opt_values
   oMinPassphraseLen,
   oUseStandardSocket,
   oNoUseStandardSocket,
+  oNoReuseStandardSocket,
 
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
@@ -130,6 +131,7 @@ static ARGPARSE_OPTS opts[] = {
   { oUseStandardSocket, "use-standard-socket", 0,
                       N_("use a standard location for the socket")},
   { oNoUseStandardSocket, "no-use-standard-socket", 0, "@"},
+  { oNoReuseStandardSocket, "no-reuse-standard-socket", 0, "@"},
 
   { oPinentryProgram, "pinentry-program", 2 ,
                                N_("|PGM|use PGM as the PIN-Entry program") },
@@ -186,6 +188,10 @@ static char *socket_name;
 /* Name of the communication socket used for ssh-agent-emulation.  */
 static char *socket_name_ssh;
 
+/* If set to true and a standard socket is requested, we won't try to
+   bind to a socket which is already in use.  */
+static int no_reuse_standard_socket;
+
 /* Default values for options passed to the pinentry. */
 static char *default_display;
 static char *default_ttyname;
@@ -215,7 +221,7 @@ static pid_t parent_pid = (pid_t)(-1);
 
 static char *create_socket_name (int use_standard_socket,
                                  char *standard_name, char *template);
-static int create_server_socket (int is_standard_name, const char *name);
+static int create_server_socket (int is_standard_name, char *name);
 static void create_directories (void);
 
 static void agent_init_default_ctrl (ctrl_t ctrl);
@@ -621,6 +627,7 @@ main (int argc, char **argv )
 
         case oUseStandardSocket: standard_socket = 1; break;
         case oNoUseStandardSocket: standard_socket = 0; break;
+        case oNoReuseStandardSocket: no_reuse_standard_socket = 1; break;
 
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
@@ -715,7 +722,7 @@ main (int argc, char **argv )
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
       filename = make_filename (opt.homedir, "gpg-agent.conf", NULL );
-      filename_esc = percent_escape (filename);
+      filename_esc = percent_escape (filename, NULL);
 
       printf ("gpgconf-gpg-agent.conf:%lu:\"%s\n",
               GC_OPT_FLAG_DEFAULT, filename_esc);
@@ -1226,10 +1233,10 @@ create_socket_name (int use_standard_socket,
 
 
 /* Create a Unix domain socket with NAME.  IS_STANDARD_NAME indicates
-   whether a non-random socket is used.  Returns the filedescriptor or
+   whether a non-random socket is used.  Returns the file descriptor or
    terminates the process in case of an error. */
 static int
-create_server_socket (int is_standard_name, const char *name)
+create_server_socket (int is_standard_name, char *name)
 {
   struct sockaddr_un *serv_addr;
   socklen_t len;
@@ -1257,14 +1264,16 @@ create_server_socket (int is_standard_name, const char *name)
 
 #ifdef HAVE_W32_SYSTEM
   rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-  if (is_standard_name && rc == -1 )
+  if (is_standard_name && rc == -1 && errno == WSAEADDRINUSE
+      && !no_reuse_standard_socket)
     {
       remove (name);
-      rc = bind (fd, (struct sockaddr*) serv_addr, len);
+      rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
     }
 #else
   rc = bind (fd, (struct sockaddr*) serv_addr, len);
-  if (is_standard_name && rc == -1 && errno == EADDRINUSE)
+  if (is_standard_name && rc == -1 && errno == EADDRINUSE  
+      && !no_reuse_standard_socket)
     {
       remove (name);
       rc = bind (fd, (struct sockaddr*) serv_addr, len);
@@ -1272,9 +1281,15 @@ create_server_socket (int is_standard_name, const char *name)
 #endif
   if (rc == -1)
     {
+      /* We use gpg_strerror here because it allows us to get strings
+         for some W32 socket error codes.  */
       log_error (_("error binding socket to `%s': %s\n"),
-		 serv_addr->sun_path, strerror (errno));
+		 serv_addr->sun_path, 
+                 gpg_strerror (gpg_error_from_errno (errno)));
+      
       close (fd);
+      if (is_standard_name && no_reuse_standard_socket)
+        *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
 

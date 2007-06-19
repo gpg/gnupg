@@ -23,6 +23,8 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = README
+noinst_PROGRAMS = $(module_tests)
+TESTS = $(module_tests)
 
 AM_CPPFLAGS = -I$(top_srcdir)/intl
 
@@ -50,4 +52,21 @@ endif
 
 # For GnuPG we don't need the xmalloc stuff.
 #       xmalloc.c xmalloc.h       
+
+
+#
+# Module tests.
+#
+# These tests should only be used at the canonical location of jnlib
+# which is the GnuPG package.  The reason for this is that t-support.c
+# defines replacements for the actual used memory allocation functions
+# so that there is no dependency on libgcrypt.
+#
+module_tests = t-stringhelp
+
+t_jnlib_src = t-support.c t-support.h 
+t_jnlib_ldadd = libjnlib.a $(LIBINTL) $(LIBICONV)
+
+t_stringhelp_SOURCES = t-stringhelp.c $(t_jnlib_src)
+t_stringhelp_LDADD = $(t_jnlib_ldadd)
 

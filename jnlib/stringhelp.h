@@ -117,8 +117,9 @@ isascii (int c)
 #endif
 #define STR2(v) STR(v)
 
-/* Percent-escape the string STR by replacing colons with '%3a'.  */
-char *percent_escape (const char *str);
+/* Percent-escape the string STR by replacing colons with '%3a'.  If
+   EXTRA is not NULL, also replace all characters given in EXTRA. */
+char *percent_escape (const char *str, const char *extra);
 
 
 #endif /*LIBJNLIB_STRINGHELP_H*/

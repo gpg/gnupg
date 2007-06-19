@@ -1393,7 +1393,7 @@ main ( int argc, char **argv)
            a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
-	char *config_filename_esc = percent_escape (opt.config_filename);
+	char *config_filename_esc = percent_escape (opt.config_filename, NULL);
 
         printf ("gpgconf-gpgsm.conf:%lu:\"%s\n",
                 GC_OPT_FLAG_DEFAULT, config_filename_esc);

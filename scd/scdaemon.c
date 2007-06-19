@@ -551,7 +551,7 @@ main (int argc, char **argv )
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
       if (!config_filename)
         filename = make_filename (opt.homedir, "scdaemon.conf", NULL );
-      filename_esc = percent_escape (filename);
+      filename_esc = percent_escape (filename, NULL);
 
       printf ("gpgconf-scdaemon.conf:%lu:\"%s\n",
               GC_OPT_FLAG_DEFAULT, filename_esc);
