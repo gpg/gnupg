@@ -94,51 +94,6 @@ static struct secured_file_item *secured_files;
 
 
 
-#if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
-static int
-setsysinfo(unsigned long op, void *buffer, unsigned long size,
-		     int *start, void *arg, unsigned long flag)
-{
-    return syscall(__NR_osf_setsysinfo, op, buffer, size, start, arg, flag);
-}
-
-void
-trap_unaligned(void)
-{
-    unsigned int buf[2];
-
-    buf[0] = SSIN_UACPROC;
-    buf[1] = UAC_SIGBUS | UAC_NOPRINT;
-    setsysinfo(SSI_NVPAIRS, buf, 1, 0, 0, 0);
-}
-#else
-void
-trap_unaligned(void)
-{  /* dummy */
-}
-#endif
-
-
-int
-disable_core_dumps()
-{
-#ifdef HAVE_DOSISH_SYSTEM
-    return 0;
-#else
-#ifdef HAVE_SETRLIMIT
-    struct rlimit limit;
-
-    limit.rlim_cur = 0;
-    limit.rlim_max = 0;
-    if( !setrlimit( RLIMIT_CORE, &limit ) )
-	return 0;
-    if( errno != EINVAL && errno != ENOSYS )
-	log_fatal(_("can't disable core dumps: %s\n"), strerror(errno) );
-#endif
-    return 1;
-#endif
-}
-
 
 /* For the sake of SELinux we want to restrict access through gpg to
    certain files we keep under our own control.  This function
@@ -369,34 +324,6 @@ print_digest_algo_note( int algo )
   else if(algo==DIGEST_ALGO_MD5)
     log_info (_("WARNING: digest algorithm %s is deprecated\n"),
               gcry_md_algo_name (algo));
-}
-
-/* Return a string which is used as a kind of process ID */
-const byte *
-get_session_marker( size_t *rlen )
-{
-  static byte marker[SIZEOF_UNSIGNED_LONG*2];
-  static int initialized;
-  
-  if ( !initialized )
-    {
-      volatile ulong aa, bb; /* We really want the uninitialized value. */
-      ulong a, b;
-      
-      initialized = 1;
-      /* Although this marker is guessable it is not easy to use this
-       * for a faked control packet because an attacker does not have
-       * enough control about the time the verification takes place.
-       * Of course, we could add just more random but than we need the
-       * random generator even for verification tasks - which does not
-       * make sense. */
-      a = aa ^ (ulong)getpid();
-      b = bb ^ (ulong)time(NULL);
-      memcpy ( marker, &a, SIZEOF_UNSIGNED_LONG );
-      memcpy ( marker+SIZEOF_UNSIGNED_LONG, &b, SIZEOF_UNSIGNED_LONG );
-    }
-  *rlen = sizeof(marker);
-  return marker;
 }
 
 /****************

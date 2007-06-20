@@ -26,7 +26,6 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
-#include <unistd.h> /* need sleep() */
 
 #include "gpg.h"
 #include "options.h"
@@ -47,8 +46,6 @@
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define LF "\r\n"
-void __stdcall Sleep(ulong);
-#define sleep(a)  Sleep((a)*1000)
 #else
 #define LF "\n"
 #endif
@@ -1563,7 +1560,7 @@ update_keysig_packet( PKT_signature **ret_sig,
        one. */
     while(sig->timestamp<=orig_sig->timestamp)
       {
-	sleep(1);
+	gnupg_sleep (1);
 	sig->timestamp=make_timestamp();
       }
 

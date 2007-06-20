@@ -20,23 +20,36 @@
  */
 
 #include <config.h>
+
+#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
+# undef HAVE_PTH
+# undef USE_GNU_PTH
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #ifdef HAVE_STAT
-#include <sys/stat.h>
+# include <sys/stat.h>
 #endif
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
-  #include <asm/sysinfo.h>
-  #include <asm/unistd.h>
+# include <asm/sysinfo.h>
+# include <asm/unistd.h>
 #endif
 #ifdef HAVE_SETRLIMIT
-  #include <time.h>
-  #include <sys/time.h>
-  #include <sys/resource.h>
+# include <time.h>
+# include <sys/time.h>
+# include <sys/resource.h>
 #endif
+#ifdef HAVE_W32_SYSTEM
+# include <windows.h>
+#endif
+#ifdef HAVE_PTH      
+# include <pth.h>
+#endif
+
 #include "util.h"
 #include "i18n.h"
 
@@ -229,3 +242,33 @@ check_permissions(const char *path,int extension,int checkonly)
   return 0;
 }
 #endif
+
+
+/* Wrapper around the usual sleep fucntion.  This one won't wake up
+   before the sleep time has really elapsed.  When build with Pth it
+   merely calls pth_sleep and thus suspends only the current
+   thread. */
+void
+gnupg_sleep (unsigned int seconds)
+{
+#ifdef HAVE_PTH
+  /* With Pth we force a regular sleep for seconds == 0 so that also
+     the process will give up its timeslot.  */
+  if (!seconds)
+    {
+# ifdef HAVE_W32_SYSTEM    
+      Sleep (0);
+# else
+      sleep (0);
+# endif
+    }
+  pth_sleep (seconds);
+#else
+  /* Fixme:  make sure that a sleep won't wake up to early.  */
+# ifdef HAVE_W32_SYSTEM    
+  Sleep (seconds*1000);
+# else
+  sleep (seconds);
+# endif
+#endif
+}

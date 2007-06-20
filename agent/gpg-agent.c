@@ -691,7 +691,7 @@ main (int argc, char **argv )
     {
       log_debug ("waiting for debugger - my pid is %u .....\n",
                  (unsigned int)getpid());
-      sleep (debug_wait);
+      gnupg_sleep (debug_wait);
       log_debug ("... okay\n");
     }
   

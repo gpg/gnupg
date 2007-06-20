@@ -26,5 +26,10 @@ entered as a 40 character hexadecimal formatted string.
       The @emph{Online Certificate Status Protocol} is used as an
 alternative to a @acronym{CRL}.  It is described in @code{RFC 2560}.
 
+@item PSE
+      The @emph{Personal Security Environment} describes a database to
+store private keys.  This is either a smartcard or a collection of files
+on a disk; the latter is often called a Soft-PSE.
+
 
 @end table

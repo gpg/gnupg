@@ -1,3 +1,14 @@
+2007-06-20  Werner Koch  <wk@g10code.com>
+
+	* sysutils.c (gnupg_sleep): New.
+	* sysutils.h [W32]: Remove _sleep wrapper.  Changed all callers to
+	use gnupg_sleep.
+
+	* exechelp.c (build_w32_commandline_copy): New.
+	(build_w32_commandline): Factored some code out to new function
+	and correctly process a PGMNAME with spaces.
+	(gnupg_spawn_process_detached) [W32]: Implement.
+
 2007-06-14  Werner Koch  <wk@g10code.com>
 
 	* simple-pwquery.h (MAP_SPWQ_ERROR_IMPL): New.

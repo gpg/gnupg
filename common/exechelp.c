@@ -80,17 +80,51 @@
 
 
 #ifdef HAVE_W32_SYSTEM
+/* Helper function to build_w32_commandline. */
+static char *
+build_w32_commandline_copy (char *buffer, const char *string)
+{
+  char *p = buffer;
+  const char *s;
+
+  if (!*string) /* Empty string. */
+    p = stpcpy (p, "\"\"");
+  else if (strpbrk (string, " \t\n\v\f\""))
+    {
+      /* Need top do some kind of quoting.  */
+      p = stpcpy (p, "\"");
+      for (s=string; *s; s++)
+        {
+          *p++ = *s;
+          if (*s == '\"')
+            *p++ = *s;
+        }
+      *p++ = '\"';
+      *p = 0;
+    }
+  else
+    p = stpcpy (p, string);
+
+  return p;
+}
+
 /* Build a command line for use with W32's CreateProcess.  On success
    CMDLINE gets the address of a newly allocated string.  */
 static gpg_error_t
-build_w32_commandline (const char *pgmname, const char **argv, char **cmdline)
+build_w32_commandline (const char *pgmname, const char * const *argv, 
+                       char **cmdline)
 {
   int i, n;
   const char *s;
   char *buf, *p;
 
   *cmdline = NULL;
-  n = strlen (pgmname);
+  n = 0;
+  s = pgmname;
+  n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting */
+  for (; *s; s++)
+    if (*s == '\"')
+      n++;  /* Need to double inner quotes.  */
   for (i=0; (s=argv[i]); i++)
     {
       n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting */
@@ -104,26 +138,11 @@ build_w32_commandline (const char *pgmname, const char **argv, char **cmdline)
   if (!buf)
     return gpg_error_from_syserror ();
 
-  /* fixme: PGMNAME may not contain spaces etc. */
-  p = stpcpy (p, pgmname);
+  p = build_w32_commandline_copy (p, pgmname);
   for (i=0; argv[i]; i++) 
     {
-      if (!*argv[i]) /* Empty string. */
-        p = stpcpy (p, " \"\"");
-      else if (strpbrk (argv[i], " \t\n\v\f\""))
-        {
-          p = stpcpy (p, " \"");
-          for (s=argv[i]; *s; s++)
-            {
-              *p++ = *s;
-              if (*s == '\"')
-                *p++ = *s;
-            }
-          *p++ = '\"';
-          *p = 0;
-        }
-      else
-        p = stpcpy (stpcpy (p, " "), argv[i]);
+      *p++ = ' ';
+      p = build_w32_commandline_copy (p, argv[i]);
     }
 
   *cmdline= buf;
@@ -330,7 +349,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
              pi.hProcess, pi.hThread,
              (int) pi.dwProcessId, (int) pi.dwThreadId);
 
-  /* Process ha been created suspended; resume it now. */
+  /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread); 
 
@@ -525,7 +544,79 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
                               const char *envp[] )
 {
 #ifdef HAVE_W32_SYSTEM
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gpg_error_t err;
+  SECURITY_ATTRIBUTES sec_attr;
+  PROCESS_INFORMATION pi = 
+    {
+      NULL,      /* Returns process handle.  */
+      0,         /* Returns primary thread handle.  */
+      0,         /* Returns pid.  */
+      0          /* Returns tid.  */
+    };
+  STARTUPINFO si;
+  int cr_flags;
+  char *cmdline;
+
+
+  /* FIXME: We don't make use of ENVP yet.  It is currently only used
+     to pass the GPG_AGENT_INFO variable to gpg-agent.  As the default
+     on windows is to use a standard socket, this does not really
+     matter.  */
+
+
+  if (access (pgmname, X_OK))
+    return gpg_error_from_syserror ();
+
+  /* Prepare security attributes.  */
+  memset (&sec_attr, 0, sizeof sec_attr );
+  sec_attr.nLength = sizeof sec_attr;
+  sec_attr.bInheritHandle = FALSE;
+  
+  /* Build the command line.  */
+  err = build_w32_commandline (pgmname, argv, &cmdline);
+  if (err)
+    return err; 
+
+  /* Start the process.  */
+  memset (&si, 0, sizeof si);
+  si.cb = sizeof (si);
+  si.dwFlags = STARTF_USESHOWWINDOW;
+  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
+
+  cr_flags = (CREATE_DEFAULT_ERROR_MODE
+              | GetPriorityClass (GetCurrentProcess ())
+              | CREATE_NEW_PROCESS_GROUP
+              | DETACHED_PROCESS); 
+  log_debug ("CreateProcess(detached), path=`%s' cmdline=`%s'\n",
+             pgmname, cmdline);
+  if (!CreateProcess (pgmname,       /* Program to start.  */
+                      cmdline,       /* Command line arguments.  */
+                      &sec_attr,     /* Process security attributes.  */
+                      &sec_attr,     /* Thread security attributes.  */
+                      FALSE,          /* Inherit handles.  */
+                      cr_flags,      /* Creation flags.  */
+                      NULL,          /* Environment.  */
+                      NULL,          /* Use current drive/directory.  */
+                      &si,           /* Startup information. */
+                      &pi            /* Returns process information.  */
+                      ))
+    {
+      log_error ("CreateProcess(detached) failed: %s\n", w32_strerror (-1));
+      xfree (cmdline);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+  xfree (cmdline);
+  cmdline = NULL;
+
+  log_debug ("CreateProcess(detached) ready: hProcess=%p hThread=%p"
+             " dwProcessID=%d dwThreadId=%d\n",
+             pi.hProcess, pi.hThread,
+             (int) pi.dwProcessId, (int) pi.dwThreadId);
+
+  CloseHandle (pi.hThread); 
+
+  return 0;
+
 #else
   pid_t pid;
   int i;

@@ -1,3 +1,7 @@
+2007-06-20  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (start_agent) [W32]: Start the agent on the fly.
+
 2007-06-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm.c (main): Percent escape output of --gpgconf-list.

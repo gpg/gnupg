@@ -832,7 +832,7 @@ Here is an example session:
 @subsection Generating a Key
 
 This is used to create a new keypair and store the secret key inside the
-active PSE -w which is in most cases a Soft-PSE.  An not yet defined
+active PSE --- which is in most cases a Soft-PSE.  An not yet defined
 option allows to choose the storage location.  To get the secret key out
 of the PSE, a special export tool has to be used.
 

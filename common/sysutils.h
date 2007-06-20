@@ -27,11 +27,9 @@ int  disable_core_dumps (void);
 int  enable_core_dumps (void);
 const unsigned char *get_session_marker (size_t *rlen);
 int check_permissions (const char *path,int extension,int checkonly);
+void gnupg_sleep (unsigned int seconds);
 
 #ifdef HAVE_W32_SYSTEM
-/* Windows declares sleep as obsolete, but provides a definition for
-   _sleep but non for the still existing sleep.  */
-#define sleep(a) _sleep ((a))
 
 #include "../jnlib/w32help.h"
 
